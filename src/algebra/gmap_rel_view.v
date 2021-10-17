@@ -138,7 +138,7 @@ Section rel.
     simpl in Heq'.
     destruct Heq as [Heqa Heqb]. simpl in Heqb.
     revert Heq'. rewrite -Heqb. destruct 1 as (Heqag&Heq). simpl in Heq.
-    apply leibniz_equiv_iff in Heq. subst. 
+    apply leibniz_equiv_iff in Heq. subst.
     eapply gval_rel_mono; first eauto; eauto.
     simpl in Heqag.
     eapply (inj _) in Heqag.
@@ -415,7 +415,7 @@ Section lemmas.
     intros Hrel.
     split_and!.
     - revert Hrel. rewrite cmra_valid_validN. intros Hrel.
-      specialize (Hrel O). edestruct (gmap_rel_view_frag_op_validN_l); naive_solver. 
+      specialize (Hrel O). edestruct (gmap_rel_view_frag_op_validN_l); naive_solver.
     - revert Hrel. rewrite cmra_valid_validN. intros Hrel.
       apply equiv_dist => n.
       specialize (Hrel n). edestruct (gmap_rel_view_frag_op_validN_l); naive_solver.
@@ -633,6 +633,42 @@ Section lemmas.
         ** inversion Hequiv1 as [Hequiva Hequivb%leibniz_equiv_iff]. simpl in Hequivb. subst. eauto.
   Qed.
 
+  Lemma gmap_rel_view_update_approx_big m (m' : gmap K (_ * (V * A))) (f : V → A → A):
+    (∀ k vm dq v a n, m !! k = Some vm → m' !! k = Some (dq, (v, a)) →
+                      R n vm v a → R n vm v (f v a)) →
+    gmap_rel_view_auth R 1 m ⋅ ([^op map] k↦v ∈ m', gmap_rel_view_frag R k (v.1) (v.2.2) (v.2.1)) ~~>
+      gmap_rel_view_auth R 1 m ⋅
+      ([^op map] k↦v ∈ m', gmap_rel_view_frag R k (v.1) (f (v.2.1) (v.2.2)) (v.2.1)).
+  Proof.
+    intros HR. induction m' as [|k [va [v a]] m' Hlookup IH] using map_ind.
+    { rewrite ?big_opM_empty right_id. done. }
+    rewrite ?big_opM_insert //.
+    rewrite (comm _ (gmap_rel_view_frag _ _ _ _ _)).
+    rewrite (comm _ (gmap_rel_view_frag _ _ _ _ _)).
+    rewrite ?assoc IH; last first.
+    { intros. eapply HR; eauto. rewrite lookup_insert_ne; eauto. set_solver. }
+    rewrite -?assoc.
+    rewrite (comm _ _ (gmap_rel_view_frag _ _ _ _ _)).
+    rewrite (comm _ _ (gmap_rel_view_frag _ _ _ _ _)).
+    rewrite ?assoc.
+    rewrite gmap_rel_view_update_approx; last first.
+    { intros. eapply HR; eauto. rewrite lookup_insert //=. }
+    reflexivity.
+  Qed.
+
+  Lemma gmap_rel_view_update_fmap m f:
+    (∀ k vm v a n, m !! k = Some vm → R n vm v a → R n (f vm) v a) →
+    gmap_rel_view_auth R 1 m ~~> gmap_rel_view_auth R 1 (f <$> m).
+  Proof.
+    intros Hf. apply view_update_auth.
+    { exists ∅; try econstructor. }
+    intros n bf Hrel.
+    intros k [dq' [v' aset']] Hlookup.
+    edestruct (Hrel _ _ Hlookup) as (vf&aset&vm&?&?&Hlookup'&?).
+    exists vf, aset, (f vm). split_and!; eauto.
+    rewrite lookup_fmap Hlookup' //=.
+  Qed.
+
   (*
   Lemma gmap_rel_view_update_big m m0 m1 :
     dom (gset K) m0 = dom (gset K) m1 →
@@ -692,7 +728,7 @@ Section lemmas.
   Global Instance gmap_rel_view_cmra_discrete :
     OfeDiscrete VA →
     OfeDiscrete V → GvalRelDiscrete V A R → CmraDiscrete (gmap_rel_viewR K VA V A R).
-  Proof. apply _. Qed. 
+  Proof. apply _. Qed.
 
   Global Instance gmap_rel_view_frag_mut_is_op dq dq1 dq2 k a v :
     IsOp dq dq1 dq2 →
