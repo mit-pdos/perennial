@@ -315,7 +315,7 @@ Section lemmas.
     ✓ (gmap_rel_view_auth R 1 m1 ⋅ gmap_rel_view_auth R 1 m2) ↔ False.
   Proof. apply view_auth_op_valid. Qed.
 
-  Lemma gmap_rel_view_frag_validN1 n k dq a v :
+  Lemma gmap_rel_view_frag_validN_frac n k dq a v :
     ✓{n} gmap_rel_view_frag R k dq a v → ✓ dq.
   Proof.
     rewrite view_frag_validN. intros Hval%gmap_rel_view_rel_exists_l1. revert Hval.
@@ -346,6 +346,13 @@ Section lemmas.
     rewrite cmra_valid_validN. split.
     - intros. unshelve (eapply gmap_rel_view_frag_validN; eauto); exact O.
     - intros. eapply gmap_rel_view_frag_validN; eauto.
+  Qed.
+
+  Lemma gmap_rel_view_frag_valid_frac k dq a v :
+    ✓ gmap_rel_view_frag R k dq a v → ✓ dq.
+  Proof.
+    intros Hwit. rewrite cmra_valid_validN.
+    intros. unshelve (eapply gmap_rel_view_frag_validN_frac; eauto; eapply Hwit); exact O.
   Qed.
 
   Lemma gmap_rel_view_frag_op k dq1 dq2 a v :
