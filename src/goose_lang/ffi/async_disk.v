@@ -422,6 +422,33 @@ lemmas. *)
     inversion H1; subst; auto.
   Qed.
 
+  (* TODO: it is possible to derive a version where full 1 ownership is not required *)
+  Lemma wp_BarrierOp s E m :
+    {{{ ▷ [∗ map] a ↦ b ∈ m, ∃ aset, a d↦{#1}[aset] b }}}
+      ExternalOp BarrierOp (LitV LitUnit) @ s; E
+    {{{ RET LitV LitUnit; [∗ map] a ↦ b ∈ m, a d↦{#1}[∅] b }}}.
+  Proof.
+    iIntros (Φ) ">H Hϕ".
+    iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    cbv [ffi_local_ctx disk_interp].
+    iSplit.
+    { iPureIntro.
+      eexists _, _, _, _, _; cbn.
+      constructor 1; cbn.
+      repeat (monad_simpl; cbn). }
+    iNext; iIntros (v2 σ2 g2 efs Hstep).
+    apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
+    inv_head_step.
+    monad_inv.
+    iMod (ghost_async_map_update_flush_big with "Hd H") as "[$ Ha]".
+    iModIntro; iSplit; first done.
+    iFrame.
+    iApply ("Hϕ" with "[$]").
+  Qed.
+
   Lemma wp_WriteOp s E (a: u64) aset b0 b q l :
     {{{ ▷ (int.Z a d↦{#1}[aset] b0 ∗ mapsto_block l q b) }}}
       ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
