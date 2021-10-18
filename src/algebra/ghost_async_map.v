@@ -264,14 +264,38 @@ Section lemmas.
     iApply own_update. apply: gmap_rel_view_delete.
   Qed.
 
+  Lemma ghost_async_map_update' {γ ma k a a' al v} w :
+    (∀ x, x ∈ al → x ∈ a') →
+    ghost_async_map_auth γ 1 ma -∗
+    k ↪[γ][a] v ==∗
+    ghost_async_map_auth γ 1 (<[k := Build_async w al]> ma) ∗ k ↪[γ][a'] w.
+  Proof.
+    intros Hsub.
+    unseal. apply bi.wand_intro_r. rewrite -!own_op.
+    apply own_update. apply: gmap_rel_view_update.
+    intros n. rewrite //=; split => //=.
+  Qed.
+
   Lemma ghost_async_map_update {γ ma k a al' v} w :
     ghost_async_map_auth γ 1 ma -∗
     k ↪[γ][a] v ==∗
     ghost_async_map_auth γ 1 (<[k := Build_async w al']> ma) ∗ k ↪[γ][list_to_set al'] w.
   Proof.
-    unseal. apply bi.wand_intro_r. rewrite -!own_op.
-    apply own_update. apply: gmap_rel_view_update.
-    intros n. rewrite //=; split => //=. intros. rewrite elem_of_list_to_set //.
+    apply ghost_async_map_update'. intros; rewrite elem_of_list_to_set //.
+  Qed.
+
+  Lemma ghost_async_map_async_put {γ ma k a vm v} w :
+    ma !! k = Some vm →
+    ghost_async_map_auth γ 1 ma -∗
+    k ↪[γ][a] v ==∗
+    ghost_async_map_auth γ 1 (<[k := async_put w vm]> ma) ∗ k ↪[γ][{[v]} ∪ a] w.
+  Proof.
+    intros Hlook. iIntros "H1 H2".
+    iDestruct (ghost_async_map_lookup with "[$] [$]") as %Hlook'.
+    destruct Hlook' as (vm'&Heq&Hlatest&Hsub).
+    rewrite Heq in Hlook. inversion Hlook; subst.
+    iApply (ghost_async_map_update' with "[$] [$]").
+    rewrite /possible. intros v. rewrite elem_of_app. set_solver.
   Qed.
 
   Lemma ghost_async_map_flush_auth {γ} ma :
@@ -299,6 +323,29 @@ Section lemmas.
     rewrite //=; split => //=. intros. rewrite elem_of_list_to_set //.
   Qed.
 
+  (* TODO: a stronger version of this is provable in which one merely has fractional ownership of
+     k and gets that same fraction back. *)
+  Lemma ghost_async_map_update_flush_big {γ ma m} :
+    ghost_async_map_auth γ 1 ma -∗
+    ([∗ map] k↦v ∈ m, ∃ a, k ↪[γ][a] v) ==∗
+    ghost_async_map_auth γ 1 (flush <$> ma) ∗
+    ([∗ map] k↦v ∈ m, k ↪[γ][∅] v).
+  Proof.
+    iIntros "Hauth Hfrag".
+    iMod (ghost_async_map_flush_auth with "Hauth") as "Hauth".
+    iInduction m as [| k v m Hlookup] "IH" using map_ind.
+    { rewrite ?big_sepM_empty. eauto. }
+    rewrite ?big_sepM_insert //.
+    iDestruct "Hfrag" as "(Hk&Hm)".
+    iMod ("IH" with "[$] [$]") as "(Hauth&$)".
+    iDestruct "Hk" as (?) "Hk".
+    iDestruct (ghost_async_map_lookup with "[$] [$]") as %Hlook.
+    destruct Hlook as (vm&Hlook&Heq&Hsub).
+    iMod (ghost_async_map_update_approx with "[$] [$]") as "($&Hp)"; first eauto.
+    rewrite lookup_fmap in Hlook.
+    apply fmap_Some_1 in Hlook as (?&Hlook&Heq').
+    rewrite Heq' => //=.
+  Qed.
 
   (** Big-op versions of above lemmas *)
   (* TODO: Update these. *)

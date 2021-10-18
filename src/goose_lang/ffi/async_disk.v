@@ -2,7 +2,7 @@ From stdpp Require Import gmap.
 From stdpp Require Import vector fin_maps.
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
-From Perennial.algebra Require Import gen_heap_names log_heap.
+From Perennial.algebra Require Import ghost_async_map log_heap.
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Import ectx_lifting.
 
@@ -96,23 +96,22 @@ Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
   Block_to_vals block0.
 Proof. reflexivity. Qed.
 
-(*
 Class diskGS Σ := DiskGS
-  { diskG_gen_heapG :> gen_heap.gen_heapGS Z Block Σ; }.
-
+  { diskG_ghost_async_mapG :> ghost_async_mapG Σ Z Block ;
+    diskG_ghost_async_name : gname }.
 
 Class disk_preG Σ :=
-  { disk_preG_gen_heapG :> gen_heap.gen_heapGpreS Z Block Σ; }.
+  { disk_preG_ghost_async_mapG :> ghost_async_mapG Σ Z Block }.
 
 Definition diskΣ : gFunctors :=
-  #[gen_heapΣ Z Block].
+  #[ghost_async_mapΣ Z Block].
 
 Instance subG_diskG Σ : subG diskΣ Σ → disk_preG Σ.
 Proof. solve_inG. Qed.
 
-Definition disk_update_pre {Σ} (dG: disk_preG Σ) (n: gen_heap_names) :=
-  {| diskG_gen_heapG := gen_heapG_update_pre (@disk_preG_gen_heapG _ dG) n |}.
-*)
+Definition disk_update_pre {Σ} (dG: disk_preG Σ) (n: gname) :=
+  {| diskG_ghost_async_mapG := disk_preG_ghost_async_mapG;
+     diskG_ghost_async_name := n |}.
 
 Section disk.
   (* these are local instances on purpose, so that importing this files doesn't
@@ -226,16 +225,17 @@ Section disk.
     { ffi_step := ffi_step;
       ffi_crash_step := ffi_crash_step; }.
 
-  (*
   Program Instance disk_interp: ffi_interp disk_model :=
     {| ffiLocalGS := diskGS;
        ffiGlobalGS _ := ()%type;
-       ffi_local_ctx Σ _ (d: @ffi_state disk_model) := gen_heap.gen_heap_interp d;
+       ffi_local_ctx Σ _ (d: @ffi_state disk_model) := ghost_async_map_auth (diskG_ghost_async_name) 1 d;
        ffi_global_ctx _ _ _ := True%I;
        ffi_local_start Σ _ (d: @ffi_state disk_model) :=
-                      ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=Block) l (DfracOwn 1) v))%I;
+       ([∗ map] l↦v ∈ d, (ghost_async_map_elem (K:=Z) (V:=Block) (diskG_ghost_async_name)
+                                               l (DfracOwn 1) (list_to_set (pending v)) (latest v)))%I;
        ffi_global_start _ _ _ := True%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
+       (* TODO: need to actually say that the gname changes and σ2 should be a crashed version of σ1 *)
        ffi_crash_rel Σ hF1 σ1 hF2 σ2 := ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
     |}.
 
@@ -243,10 +243,12 @@ Section disk.
   Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
   Instance goose_diskGS : diskGS Σ := goose_ffiLocalGS.
 
-  Notation "l d↦{ dq } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l dq v%V)
-                             (at level 20, dq at level 50, format "l  d↦{ dq }  v") : bi_scope.
-  Notation "l d↦{# q } v" := (gen_heap.mapsto (L:=Z) (V:=Block) l (DfracOwn q) v%V)
-                             (at level 20, q at level 50, format "l  d↦{# q }  v") : bi_scope.
+  Notation "l d↦{ dq }[ a ] v" := (ghost_async_map_elem (K:=Z) (V:=Block) (diskG_ghost_async_name)
+                                                        l dq a v%V)
+                             (at level 20, dq at level 50, format "l  d↦{ dq }[ a ]  v") : bi_scope.
+  Notation "l d↦{# q }[ a ] v" := (ghost_async_map_elem (K:=Z) (V:=Block) (diskG_ghost_async_name)
+                                                        l (DfracOwn q) a v%V)
+                             (at level 20, q at level 50, format "l  d↦{# q }[ a ]  v") : bi_scope.
   Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
   Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
 
@@ -267,6 +269,7 @@ lemmas. *)
           inversion H; subst; clear H
         end.
 
+  (*
   Theorem read_fresh : forall σ g a b,
       let l := fresh_locs (dom (gset loc) (heap σ)) in
       σ.(world) !! int.Z a = Some b ->
@@ -284,6 +287,7 @@ lemmas. *)
 
   Hint Resolve read_fresh : core.
   Hint Extern 1 (head_step (ExternalOp _ _) _ _ _ _ _) => econstructor; simpl : core.
+   *)
 
   Lemma alloc_block_loc_not_null:
     ∀ (b: Block) σ1 l,
@@ -301,16 +305,17 @@ lemmas. *)
   Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
     ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
 
-  Lemma wp_ReadOp s E (a: u64) q b :
-    {{{ ▷ int.Z a d↦{q} b }}}
+  Lemma wp_ReadOp s E (a: u64) aset q b :
+    {{{ ▷ int.Z a d↦{q}[aset] b }}}
       ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
-    {{{ l, RET LitV (LitLoc l); int.Z a d↦{q} b ∗
+    {{{ l, RET LitV (LitLoc l); int.Z a d↦{q}[aset] b ∗
                                   mapsto_block l 1 b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     cbv [ffi_local_ctx disk_interp].
-    iDestruct (@gen_heap_valid with "Hd Ha") as %?.
+    iDestruct (@ghost_async_map_lookup with "Hd Ha") as %Hlookup.
+    destruct Hlookup as (vm&Hw&Hlatest&Hpend).
     iSplit.
     { iPureIntro.
       eexists _, _, _, _, _; simpl.
@@ -327,12 +332,12 @@ lemmas. *)
     { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
-    iMod (na_heap_alloc_list tls _ l (Block_to_vals b) (Reading O) with "Hσ")
+    iMod (na_heap_alloc_list tls _ l (Block_to_vals (latest vm)) (Reading O) with "Hσ")
       as "(Hσ & Hblock & Hl)".
     { rewrite length_Block_to_vals. rewrite /block_bytes. lia. }
-    { destruct H1 as (?&?); eauto. }
-    { destruct H1 as (H'&?); eauto. eapply H'. }
-    { destruct H1 as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
+    { destruct H0 as (?&?); eauto. }
+    { destruct H0 as (H'&?); eauto. eapply H'. }
+    { destruct H0 as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
         by rewrite (loc_add_0) in Hfresh.
     }
     { eauto. }
@@ -345,7 +350,7 @@ lemmas. *)
       iApply (big_sepL_mono with "Hl").
       iIntros (k x Heq) "(Hli&Hmt)".
       iApply (na_mapsto_to_heap with "Hli").
-      destruct H1 as (H'&?). eapply H'.
+      destruct H0 as (H'&?). eapply H'.
     }
   Qed.
 
@@ -417,16 +422,17 @@ lemmas. *)
     inversion H1; subst; auto.
   Qed.
 
-  Lemma wp_WriteOp s E (a: u64) b q l :
-    {{{ ▷ ∃ b0, int.Z a d↦{#1} b0 ∗ mapsto_block l q b }}}
+  Lemma wp_WriteOp s E (a: u64) aset b0 b q l :
+    {{{ ▷ (int.Z a d↦{#1}[aset] b0 ∗ mapsto_block l q b) }}}
       ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
-    {{{ RET LitV LitUnit; int.Z a d↦{#1} b ∗ mapsto_block l q b}}}.
+    {{{ RET LitV LitUnit; int.Z a d↦{#1}[{[b0]} ∪ aset] b ∗ mapsto_block l q b}}}.
   Proof.
-    iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
+    iIntros (Φ) ">H Hϕ". iDestruct "H" as "(Ha&Hl)".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     cbv [ffi_local_ctx disk_interp].
-    iDestruct (@gen_heap_valid with "Hd Ha") as %?.
+    iDestruct (@ghost_async_map_lookup with "Hd Ha") as %Hlookup.
+    destruct Hlookup as (vm&Hw&Hlatest&Hpend).
     iDestruct (heap_valid_block with "Hσ Hl") as %?.
     iSplit.
     { iPureIntro.
@@ -440,11 +446,12 @@ lemmas. *)
     { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
-    iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
-    assert (b = b1); [ | subst b1 ].
+    iMod (ghost_async_map_async_put with "Hd Ha") as "[$ Ha]".
+    { eauto. }
+    assert (b = b0); [ | subst b0 ].
     { apply Block_to_vals_ext_eq; intros.
-      specialize (H0 i); specialize (H2 i); intuition.
-      simpl in H4.
+      specialize (H i); specialize (H1 i); intuition.
+      simpl in H3.
       destruct_with_eqn (σ1.(heap) !! (l +ₗ i)); try contradiction.
       destruct p as (n0&?); destruct n0; try contradiction; congruence. }
     iModIntro; iSplit; first done.
@@ -453,11 +460,11 @@ lemmas. *)
   Qed.
 
   Definition disk_array (l: Z) (q: dfrac) (vs: list Block): iProp Σ :=
-    ([∗ list] i ↦ b ∈ vs, (l + i) d↦{q} b)%I.
+    ([∗ list] i ↦ b ∈ vs, (l + i) d↦{q}[∅] b)%I.
 
   Theorem disk_array_cons l q b vs :
     disk_array l q (b::vs) ⊣⊢
-               mapsto l q b ∗ disk_array (l + 1) q vs.
+               l d↦{q}[∅] b ∗ disk_array (l + 1) q vs.
   Proof.
     rewrite /disk_array big_sepL_cons.
     rewrite Z.add_0_r.
@@ -494,12 +501,11 @@ lemmas. *)
     auto.
   Qed.
 
-  Lemma disk_array_acc_disc (l: Z) bs (z: Z) b q :
+  Lemma disk_array_acc (l: Z) bs (z: Z) b q :
     0 <= z ->
     bs !! Z.to_nat z = Some b →
-    disk_array l q bs -∗ ((l + z) d↦{q} b ∗
-                          <bdisc> ∀ b', (l + z) d↦{q} b' -∗
-                                                disk_array l q (<[Z.to_nat z:=b']>bs))%I.
+    disk_array l q bs -∗ ((l + z) d↦{q}[∅] b ∗
+                          ∀ b', (l + z) d↦{q}[∅] b' -∗ disk_array l q (<[Z.to_nat z:=b']>bs))%I.
   Proof.
     iIntros (Hpos Hlookup) "Hl".
     rewrite -[X in (disk_array l q X)](take_drop_middle _ (Z.to_nat z) b); last done.
@@ -508,7 +514,7 @@ lemmas. *)
     assert (Z.to_nat z < length bs)%nat as H by (apply lookup_lt_is_Some; by eexists).
     rewrite take_length min_l; last by lia.
     rewrite Z2Nat.id; auto. iFrame "Hl2".
-    iModIntro. iIntros (w) "Hl2".
+    iIntros (w) "Hl2".
     clear Hlookup. assert (<[Z.to_nat z:=w]> bs !! Z.to_nat z = Some w) as Hlookup.
     { apply list_lookup_insert. lia. }
     rewrite -[in (disk_array l q (<[Z.to_nat z:=w]> bs))](take_drop_middle (<[Z.to_nat z:=w]> bs) (Z.to_nat z) w Hlookup).
@@ -518,20 +524,9 @@ lemmas. *)
     rewrite Z2Nat.id; auto. iFrame.
   Qed.
 
-  Lemma disk_array_acc (l: Z) bs (z: Z) b q :
-    0 <= z ->
-    bs !! Z.to_nat z = Some b →
-    disk_array l q bs -∗ ((l + z) d↦{q} b ∗
-                          ∀ b', (l + z) d↦{q} b' -∗
-                                                disk_array l q (<[Z.to_nat z:=b']>bs))%I.
-  Proof.
-    iIntros (Hpos Hlookup) "Hl".
-    iDestruct (disk_array_acc_disc with "[$]") as "($&?)"; eauto.  rewrite own_discrete_elim; eauto.
-  Qed.
-
   Lemma init_disk_sz_lookup_ge sz z:
     Z.of_nat sz <= z →
-    (init_disk ∅ sz : gmap Z Block) !! z = None.
+    (init_disk ∅ sz : gmap Z _) !! z = None.
   Proof.
     induction sz => Hle.
     - apply lookup_empty.
@@ -539,7 +534,8 @@ lemmas. *)
   Qed.
 
   Lemma disk_array_init_disk sz:
-    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{#1} b) -∗ disk_array 0 (DfracOwn 1) (replicate sz (block0 : Block)).
+    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{#1}[list_to_set (pending b)] (latest b)) -∗
+    disk_array 0 (DfracOwn 1) (replicate sz (block0 : Block)).
   Proof.
     induction sz; rewrite /init_disk-/init_disk/disk_array.
     - rewrite big_sepM_empty big_sepL_nil //=.
@@ -547,27 +543,29 @@ lemmas. *)
       rewrite big_sepL_app.
       rewrite replicate_length big_sepL_cons big_sepL_nil.
       rewrite big_sepM_insert.
-      * rewrite comm. apply bi.sep_mono; auto. by rewrite ?right_id Z.add_0_l.
+      * iIntros "(H1&H2)".
+        iSplitL "H2".
+        { iApply IHsz.  eauto. }
+        { rewrite ?right_id Z.add_0_l. simpl latest. simpl list_to_set. eauto. }
       * by apply init_disk_sz_lookup_ge.
   Qed.
 
   End proof.
-   *)
 
 End disk.
 
 Global Opaque Write Read Size Barrier.
 
-(*
-Notation "l d↦{ q } v" := (mapsto (L:=Z) (V:=Block) l q%Qp v%V)
-                            (at level 20, q at level 50, format "l  d↦{ q }  v") : bi_scope.
-Notation "l d↦ v" := (mapsto (L:=Z) (V:=Block) l (DfracOwn 1) v%V)
-                       (at level 20, format "l  d↦  v") : bi_scope.
+Notation "l d↦{ q }[ a ] v" := (ghost_async_map_elem (K:=Z) (V:=Block) (diskG_ghost_async_name) l q%Qp a v%V)
+                            (at level 20, q at level 50, format "l  d↦{ q }[ a ]  v") : bi_scope.
+Notation "l d↦[ a ] v" := (ghost_async_map_elem (K:=Z) (V:=Block) (diskG_ghost_async_name) l (DfracOwn 1) a v%V)
+                       (at level 20, format "l  d↦[ a ]  v") : bi_scope.
 Notation "l d↦∗ vs" := (disk_array l (DfracOwn 1) vs%V)
                        (at level 20, format "l  d↦∗  vs") : bi_scope.
 
 From Perennial.goose_lang Require Import adequacy.
 
+(*
 Program Instance disk_interp_adequacy:
   @ffi_interp_adequacy disk_model disk_interp disk_op disk_semantics :=
   {| ffiGpreS := disk_preG;
