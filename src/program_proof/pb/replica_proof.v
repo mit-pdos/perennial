@@ -29,9 +29,13 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
 
   (* ghost stuff *)
   "Haccepted" ∷ accepted_ptsto γ cn me opLog ∗
-  "Hproposal_lb" ∷ proposal_lb γ cn opLog ∗
-  "HoldConfMax" ∷ φ γ cn opLog ∗
-  "HprimaryOwnsProposal" ∷ if isPrimary then (proposal_ptsto γ cn opLog) else True
+  "HacceptedUnused" ∷ ([∗ set] cn_some ∈ (fin_to_set u64),
+                      ⌜int.Z cn_some < int.Z cn⌝ ∨ accepted_ptsto γ cn_some me []
+                      ) ∗
+  "#Hproposal_lb" ∷ proposal_lb γ cn opLog ∗
+  "#HoldConfMax" ∷ φ γ cn opLog ∗
+  "HprimaryOwnsProposal" ∷ (if isPrimary then (proposal_ptsto γ cn opLog) else True) ∗
+  "#Hcommit_lb" ∷ commit_lb γ (subslice 0 (int.nat commitIdx) opLog)
 .
 
 Definition ReplicaServerN := nroot .@ "ReplicaServer".
@@ -58,12 +62,14 @@ Definition own_AppendArgs (args_ptr:loc) (args:AppendArgsC) : iProp Σ :=
   "HAlog_slice" ∷ is_slice log_sl byteT 1%Qp args.(AA_log)
 .
 
+Search "Subslice".
 Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   {{{
        is_ReplicaServer s rid γ ∗
        own_AppendArgs args_ptr args ∗
        proposal_lb γ args.(AA_cn) args.(AA_log) ∗
-       φ γ args.(AA_cn) args.(AA_log)
+       φ γ args.(AA_cn) args.(AA_log) ∗
+       commit_lb γ (subslice 0 (int.nat args.(AA_commitIdx)) args.(AA_log))
   }}}
     ReplicaServer__AppendRPC #s #args_ptr
   {{{
@@ -93,7 +99,7 @@ Proof.
     iFrame "HmuInv Hlocked". iNext.
     iExists _, _, _, _, _, _, _, _.
     iExists _. (* can only iExists 8 things at a time *)
-    iFrame.
+    iFrame "∗#".
     }
     wp_pures.
     iApply "HΦ".
@@ -101,9 +107,61 @@ Proof.
   }
   (* args.cn ≥ s.cn *)
 
+  (* TODO: Should do if-join here *)
   wp_loadField.
   wp_loadField.
-  (* Should do if-join here *)
+
+  wp_pures.
+  wp_bind (if: _ then #true else _)%E.
+  wp_if_destruct.
+  { (* case: args.cn > s.cn *)
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_storeField with "HopLog").
+    { apply slice_val_ty. }
+    iIntros "HopLog".
+    wp_pures.
+    wp_loadField.
+    wp_storeField.
+
+    (* TODO: upgrade accepted_ptsto and HacceptedUnused to the new CN *)
+
+    (* FIXME: This reasoning should only happen once, not be repeated in the different branches *)
+    wp_loadField.
+    wp_loadField.
+    wp_pures.
+    wp_apply (wp_If_join_evar with "[HcommitIdx HAcommitIdx]").
+    {
+      iIntros.
+      wp_if_destruct.
+      { (* args.commitIdx > commitIdx *)
+        wp_loadField.
+        wp_storeField.
+        iSplitL ""; first done.
+        iAssert (∃ (commitIdx':u64), s ↦[ReplicaServer :: "commitIdx"] #commitIdx'
+                 ∗ commit_lb γ (subslice 0 (int.nat commitIdx') args.(AA_log))
+                )%I with "[HcommitIdx]" as "HH".
+        {
+          iExists _.
+          iFrame.
+          iDestruct "Hpre" as "(_&_&$)".
+        }
+        iNamedAccu.
+      }
+      {
+        iModIntro. iSplitL ""; first done.
+        iFrame.
+        iExists commitIdx.
+        iFrame.
+        (* FIXME: The context is messed up. We want to have the bigger opLog already picked *)
+        admit.
+      }
+    }
+    admit.
+  }
+  { (* case: args.cn == s.cn *)
+    admit.
+  }
 Admitted.
 
 End replica_proof.
