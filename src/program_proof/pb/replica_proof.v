@@ -140,23 +140,38 @@ Proof.
   wp_apply (wp_If_optional with ) *)
 
   (* TODO: Should do if-join here *)
-  wp_apply (wp_If_join_evar with "[Haccepted HacceptedUnused HopLog HopLog_slice HAlog HAlog_slice]").
+  Search Slice.sz.
+  iDestruct (is_slice_sz with "HopLog_slice") as %HopLogLen.
+  iDestruct (is_slice_sz with "HAlog_slice") as %HALogLen.
+  wp_apply (wp_If_join_evar with "[Haccepted HacceptedUnused HopLog HopLog_slice Hcn HAlog HAlog_slice HAcn]").
   {
     iIntros.
     wp_if_destruct; last first.
     { (* won't grow log *)
     iModIntro; iSplitL ""; first done.
-    iAssert (∃ cn' opLog_sl' opLog',
+    iAssert (∃ opLog_sl' opLog',
               "HopLog" ∷ s ↦[ReplicaServer :: "opLog"] (slice_val opLog_sl') ∗
                        "HopLog_slice" ∷ is_slice opLog_sl' byteT 1 opLog' ∗
-                       "Haccepted" ∷ accepted_ptsto γ cn' rid opLog' ∗
-                       "HacceptedUnused" ∷ ([∗ set] cn_some ∈ fin_to_set u64, ⌜int.Z cn_some < int.Z cn'⌝
+                       "Haccepted" ∷ accepted_ptsto γ args.(AA_cn) rid opLog' ∗
+                       "HacceptedUnused" ∷ ([∗ set] cn_some ∈ fin_to_set u64, ⌜int.Z cn_some < int.Z args.(AA_cn)⌝
                                                                               ∨ accepted_ptsto γ cn_some rid []) ∗
-                       "#Hproposal_lb" ∷ proposal_lb γ cn' opLog' ∗
-                       "#HoldConfMax" ∷ φ γ cn' opLog'
-            )%I with "[HopLog HopLog_slice Haccepted HacceptedUnused Hproposal_lb HoldConfMax]" as "HH".
-    { iExists _, _, _; iFrame "∗#". }
-    iClear "HAlog HAlog_slice".
+                       "#Hproposal_lb" ∷ proposal_lb γ args.(AA_cn) opLog' ∗
+                       "#HoldConfMax" ∷ φ γ args.(AA_cn) opLog' ∗
+                       "Hcn" ∷ s ↦[ReplicaServer :: "cn"] #args.(AA_cn) ∗
+                       "#Hcommit_lb" ∷ commit_lb γ (take (int.nat commitIdx) opLog') ∗
+                       "%HnewLog" ∷ ⌜args.(AA_log) ⪯ opLog'⌝
+            )%I with "[HopLog HopLog_slice Haccepted HacceptedUnused Hproposal_lb HoldConfMax Hcn]" as "HH".
+    {
+      replace (cn) with (args.(AA_cn)); last by word.
+      iExists _, _; iFrame "∗#".
+      assert (int.Z opLog_sl.(Slice.sz) >= int.Z log_sl.(Slice.sz))%Z.
+      { word. }
+      iDestruct "Hpre" as "[Hproposal _]".
+      (* TODO: want to combine Hproposal and Hproposal_lb to conclude that they
+         are comparable, and combine with length inequality *)
+      admit.
+    }
+    iClear "HAlog HAcn HAlog_slice".
     iNamedAccu.
     }
     { (* will grow the log *)
@@ -164,10 +179,14 @@ Proof.
       wp_apply (wp_storeField with "HopLog").
       { apply slice_val_ty. }
       iIntros "HopLog".
+      wp_pures.
+      wp_loadField.
+      wp_storeField.
       iSplitL ""; first done.
-      iExists _, _, _.
+      iExists _, _.
       iFrame "HopLog ∗".
       (* TODO: Ghost stuff. *)
+      (* destruct into cases; in case we increase cn, use oldConfMax to maintain commit_lb *)
       admit.
     }
   }
@@ -176,56 +195,48 @@ Proof.
   wp_loadField.
 
   wp_pures.
-  wp_bind (if: _ then #true else _)%E.
-  wp_if_destruct.
-  { (* case: args.cn > s.cn *)
-    wp_pures.
-    wp_loadField.
-    wp_apply (wp_storeField with "HopLog").
-    { apply slice_val_ty. }
-    iIntros "HopLog".
-    wp_pures.
-    wp_loadField.
-    wp_storeField.
-
-    (* TODO: upgrade accepted_ptsto and HacceptedUnused to the new CN *)
-
-    (* FIXME: This reasoning should only happen once, not be repeated in the different branches *)
-    wp_loadField.
-    wp_loadField.
-    wp_pures.
-    wp_apply (wp_If_join_evar with "[HcommitIdx HAcommitIdx]").
-    {
-      iIntros.
-      wp_if_destruct.
-      { (* args.commitIdx > commitIdx *)
-        wp_loadField.
-        wp_storeField.
-        iSplitL ""; first done.
-        iAssert (∃ (commitIdx':u64), s ↦[ReplicaServer :: "commitIdx"] #commitIdx'
-                 ∗ commit_lb γ (subslice 0 (int.nat commitIdx') args.(AA_log))
-                )%I with "[HcommitIdx]" as "HH".
-        {
-          iExists _.
-          iFrame.
-          iDestruct "Hpre" as "(_&_&$)".
-        }
-        iNamedAccu.
-      }
+  iClear "Hproposal_lb HoldConfMax".
+  iRename "Hcommit_lb" into "Hcommit_lb_old".
+  iNamed "HH".
+  iNamed "HH".
+  wp_apply (wp_If_join_evar with "[HcommitIdx HAcommitIdx]").
+  {
+    iIntros.
+    wp_if_destruct.
+    { (* args.commitIdx > commitIdx *)
+      wp_loadField.
+      wp_storeField.
+      iSplitL ""; first done.
+      iAssert (∃ (commitIdx':u64), s ↦[ReplicaServer :: "commitIdx"] #commitIdx'
+                                     ∗ commit_lb γ (take (int.nat commitIdx') opLog')
+              )%I with "[HcommitIdx]" as "HH".
       {
+        iExists _.
+        iFrame.
+        (* prove that args.(AA_log) ≤ opLog' or that
+           opLog' ≤ args.(AA_log);
+         *)
+        (* iDestruct "Hpre" as "(_&_&$&_)". *)
+        iDestruct "Hpre" as "(Hproposal_lb2 & _ & Hcommit & _)".
+        (* Use the fact that args.(AA_log) and opLog' are comparable. *)
+        (* assert (take (int.nat args.(AA_commitIdx)) opLog' ⪯ (take (int.nat args.(AA_commitIdx)) args.(AA_log)) *)
+        admit.
+      }
+      iNamedAccu.
+    }
+    {
         iModIntro. iSplitL ""; first done.
         iFrame.
         iExists commitIdx.
         iFrame.
-        (* FIXME: The context is messed up. We want to have the bigger opLog already picked *)
-        admit.
-      }
+        iFrame "#".
     }
-    admit.
   }
-  { (* case: args.cn == s.cn *)
-    admit.
-  }
+  iIntros "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_loadField.
+  (* TODO: restablish mutex invariant *)
 Admitted.
 
 End replica_proof.
