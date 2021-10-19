@@ -360,15 +360,20 @@ Definition ReplicaServer__BecomePrimaryRPC: val :=
     (if: struct.loadF ReplicaServer "cn" "s" ≥ struct.loadF BecomePrimaryArgs "Cn" "args"
     then #()
     else
-      struct.storeF ReplicaServer "isPrimary" "s" #true;;
-      struct.storeF ReplicaServer "cn" "s" (struct.loadF BecomePrimaryArgs "Cn" "args");;
-      struct.storeF ReplicaServer "conf" "s" (struct.loadF BecomePrimaryArgs "Conf" "args");;
-      struct.storeF ReplicaServer "matchIdx" "s" (NewSlice uint64T (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args"))));;
-      struct.storeF ReplicaServer "replicaClerks" "s" (NewSlice (struct.ptrT ReplicaClerk) (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) - #1));;
-      ForSlice uint64T "i" <> (SliceSkip uint64T (struct.loadF Configuration "Replicas" (struct.loadF ReplicaServer "conf" "s")) #1)
-        (SliceSet (refT (struct.t ReplicaClerk)) (struct.loadF ReplicaServer "replicaClerks" "s") "i" (MakeReplicaClerk (SliceGet uint64T (struct.loadF Configuration "Replicas" (struct.loadF ReplicaServer "conf" "s")) ("i" + #1))));;
-      lock.release (struct.loadF ReplicaServer "mu" "s");;
-      #()).
+      (if: (struct.loadF BecomePrimaryArgs "Cn" "args" > struct.loadF ReplicaServer "cn" "s" + #1) && (struct.loadF ReplicaServer "cn" "s" = #0)
+      then
+        control.impl.Assume #false;;
+        #()
+      else
+        struct.storeF ReplicaServer "isPrimary" "s" #true;;
+        struct.storeF ReplicaServer "cn" "s" (struct.loadF BecomePrimaryArgs "Cn" "args");;
+        struct.storeF ReplicaServer "conf" "s" (struct.loadF BecomePrimaryArgs "Conf" "args");;
+        struct.storeF ReplicaServer "matchIdx" "s" (NewSlice uint64T (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args"))));;
+        struct.storeF ReplicaServer "replicaClerks" "s" (NewSlice (struct.ptrT ReplicaClerk) (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) - #1));;
+        ForSlice uint64T "i" <> (SliceSkip uint64T (struct.loadF Configuration "Replicas" (struct.loadF ReplicaServer "conf" "s")) #1)
+          (SliceSet (refT (struct.t ReplicaClerk)) (struct.loadF ReplicaServer "replicaClerks" "s") "i" (MakeReplicaClerk (SliceGet uint64T (struct.loadF Configuration "Replicas" (struct.loadF ReplicaServer "conf" "s")) ("i" + #1))));;
+        lock.release (struct.loadF ReplicaServer "mu" "s");;
+        #())).
 
 (* used for recovery/adding a new node into the system *)
 Definition ReplicaServer__GetCommitLogRPC: val :=
