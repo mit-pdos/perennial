@@ -3,5 +3,7 @@ From Perennial.goose_lang Require Export ffi.grove_ffi.
 Existing Instances grove_op grove_model grove_ty.
 Existing Instances grove_semantics grove_interp.
 Existing Instance goose_groveGS.
-(* Now that the TC parameter is fixed, we can make this a coercion. *)
+(* Now that the TC parameter is fixed, we can make this a coercion. Sadly,
+[Var'] gets replaced by [Var] on the first substitution, so printing terms still
+prints that [Var] -- but we barely look at those parts of the terms anyway. *)
 Coercion Var' (s: string) := Var s.
