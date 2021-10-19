@@ -404,4 +404,64 @@ Section lemmas.
   Qed.
   *)
 
+  Definition is_possible (d : gmap K (async V)) (addr: K) (b: V) : Prop :=
+    ∃ ab, d !! addr = Some ab ∧ b ∈ possible ab.
+
+  Definition is_crashed (d d': gmap K (async V)) :=
+      dom (gset _) d = dom (gset _) d' ∧
+      (∀ (addr : K) (ab : async V), d' !! addr = Some ab →
+       ∃ (b : V), ab = sync b ∧ is_possible d addr b).
+
+  (* TODO: this could be generalized so that any >/2 fraction can be exchanged for 1,
+     or a □ could be exchanged for a □ *)
+  Definition ghost_async_map_exchanger_key  γ1 γ2 k va2 : iProp Σ :=
+    ((∃ a v, k ↪[γ1][a] v) ∨ k ↪[γ2][list_to_set (pending va2)] (latest va2)).
+
+  Definition ghost_async_map_exchanger γ ma γ' ma' : iProp Σ :=
+    ⌜ is_crashed ma ma' ⌝ ∗
+    ghost_async_map_auth γ 1 ma ∗
+    [∗ map] k↦va ∈ ma,
+    ∃ va', ⌜ ma' !! k = Some va' ⌝ ∗ ghost_async_map_exchanger_key γ γ' k va'.
+
+  Lemma ghost_async_map_exchanger_init γ ma ma' :
+    is_crashed ma ma' →
+    ghost_async_map_auth γ 1 ma ==∗
+    ∃ γ', ghost_async_map_auth γ' 1 ma' ∗ ghost_async_map_exchanger γ ma γ' ma'.
+  Proof.
+    iIntros (Hcrashed) "Hauth".
+    iMod (ghost_async_map_alloc ma') as (γ') "(Hauth'&Hkeys)".
+    iModIntro. iExists _; iFrame.
+    iSplit; first eauto.
+    iApply big_sepM_dom.
+    destruct Hcrashed as (Hdom&?).
+    rewrite Hdom.
+    iApply big_sepM_dom.
+    iApply (big_sepM_mono with "Hkeys").
+    iIntros (k x Hlook). simpl.
+    iIntros "Hk". iExists _; iSplit; eauto. iRight. iFrame.
+  Qed.
+
+  Lemma ghost_async_map_swap γ ma γ' ma' k aset v :
+    ghost_async_map_exchanger γ ma γ' ma' -∗
+    k ↪[γ][aset] v -∗
+    ghost_async_map_exchanger γ ma γ' ma' ∗ ∃ v', ⌜ v' ∈ {[v]} ∪ aset ⌝ ∗
+    k ↪[γ'][∅] v'.
+  Proof.
+    iIntros "(%Hcrashed&Hauth&Hexch) Hk".
+    iDestruct (ghost_async_map_lookup with "[$] [$]") as %Hlook.
+    destruct Hlook as (va&Hlook&Heq&Hsub).
+    iDestruct (big_sepM_lookup_acc with "[$]") as "(Hk_exch&Hexch)"; eauto.
+    iDestruct "Hk_exch" as (va' Hlook') "Hk_exch".
+    destruct Hcrashed as (Hdom&Hc). edestruct (Hc) as (v'&Heq_sync&Hpossible); eauto.
+    subst.
+    iDestruct "Hk_exch" as "[Htaken|Huntaken]".
+    { iDestruct "Htaken" as (??) "Htaken".
+      iDestruct (ghost_async_map_elem_frac_ne with "[$] [$]") as %Hval; eauto. congruence. }
+    iDestruct ("Hexch" with "[Hk]") as "Hexch".
+    { iExists _. iSplit; first eauto. iLeft. iExists _, _. by iFrame. }
+    iFrame. iSplit; first eauto.
+    iExists _. iFrame. iPureIntro. simpl.
+    destruct Hpossible as (?&?&?). set_solver.
+  Qed.
+
 End lemmas.
