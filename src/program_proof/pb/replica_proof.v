@@ -207,8 +207,8 @@ Proof.
       wp_loadField.
       wp_storeField.
       iSplitL ""; first done.
-      iAssert (∃ (commitIdx':u64), s ↦[ReplicaServer :: "commitIdx"] #commitIdx'
-                                     ∗ commit_lb γ (take (int.nat commitIdx') opLog')
+      iAssert (∃ (commitIdx':u64), "Hcommit" ∷ s ↦[ReplicaServer :: "commitIdx"] #commitIdx'
+                                     ∗ "#Hcommit_lb" ∷ commit_lb γ (take (int.nat commitIdx') opLog')
               )%I with "[HcommitIdx]" as "HH".
       {
         iExists _.
@@ -234,9 +234,21 @@ Proof.
   }
   iIntros "HH".
   iNamed "HH".
+  iClear "Hcommit_lb".
+  iNamed "HH".
   wp_pures.
+  wp_storeField.
   wp_loadField.
-  (* TODO: restablish mutex invariant *)
+  wp_apply (release_spec with "[-HΦ]").
+  {
+    iFrame "HmuInv Hlocked".
+    iNext.
+    do 9 iExists _.
+    iFrame "∗#".
+  }
+  wp_pures.
+  iApply "HΦ".
+  by iModIntro.
 Admitted.
 
 End replica_proof.

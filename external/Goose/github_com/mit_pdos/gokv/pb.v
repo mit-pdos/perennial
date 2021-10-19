@@ -350,6 +350,7 @@ Definition ReplicaServer__AppendRPC: val :=
       (if: struct.loadF AppendArgs "commitIdx" "args" > struct.loadF ReplicaServer "commitIdx" "s"
       then struct.storeF ReplicaServer "commitIdx" "s" (struct.loadF AppendArgs "commitIdx" "args")
       else #());;
+      struct.storeF ReplicaServer "isPrimary" "s" #false;;
       lock.release (struct.loadF ReplicaServer "mu" "s");;
       #true).
 
