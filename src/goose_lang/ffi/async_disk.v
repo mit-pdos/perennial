@@ -236,7 +236,9 @@ Section disk.
        ffi_global_start _ _ _ := True%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
        (* TODO: need to actually say that the gname changes and σ2 should be a crashed version of σ1 *)
-       ffi_crash_rel Σ hF1 σ1 hF2 σ2 := ⌜ hF1 = hF2 ∧ σ1 = σ2 ⌝%I;
+       ffi_crash_rel Σ hF1 σ1 hF2 σ2 :=
+         (⌜ (@diskG_ghost_async_mapG _ hF1 = @diskG_ghost_async_mapG _ hF2) ⌝ ∗
+         ghost_async_map_exchanger (@diskG_ghost_async_name _ hF1) σ1 (@diskG_ghost_async_name _ hF2) σ2)%I
     |}.
 
   Section proof.
@@ -592,7 +594,6 @@ Notation "l d↦∗ vs" := (disk_array l (DfracOwn 1) vs%V)
 
 From Perennial.goose_lang Require Import adequacy.
 
-(*
 Program Instance disk_interp_adequacy:
   @ffi_interp_adequacy disk_model disk_interp disk_op disk_semantics :=
   {| ffiGpreS := disk_preG;
@@ -605,36 +606,50 @@ Next Obligation. rewrite //=. iIntros (Σ hPre g). eauto. Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ?) "_".
-  iMod (gen_heap_init σ) as (?) "(Hctx & Hpts & _)".
-  iExists (DiskGS _ _). by iFrame.
+  iMod (ghost_async_map_alloc σ) as (?) "H".
+  iExists (DiskGS _ _ _). by iFrame.
 Qed.
 Next Obligation.
   iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
-  iExists Hold.
-  inversion Hcrash; subst.
-  iFrame. iPureIntro; split_and!; auto.
+  iMod (ghost_async_map_exchanger_init _ σ σ' with "[$]") as (γ') "(Hauth&Hexch)".
+  { inversion Hcrash; eauto. }
+  iExists {| diskG_ghost_async_mapG := diskG_ghost_async_mapG; diskG_ghost_async_name := γ' |}.
+  by iFrame.
 Qed.
 
 Section crash.
-  Existing Instances disk.disk_op disk.disk_model disk.disk_ty.
-  Existing Instances disk.disk_semantics disk.disk_interp.
+  Existing Instances async_disk.disk_op async_disk.disk_model async_disk.disk_ty.
+  Existing Instances async_disk.disk_semantics async_disk.disk_interp.
   Existing Instance goose_diskGS.
 
-  Lemma disk_mapsto_post_crash `{!heapGS Σ} l q v:
-    l d↦{q} v -∗ post_crash (λ _, l d↦{q} v).
+  Lemma disk_mapsto_post_crash `{!heapGS Σ} l a v:
+    l d↦[a] v -∗ post_crash (λ _, ∃ v', ⌜ v' ∈ {[v]} ∪ a ⌝ ∗ l d↦[∅] v').
   Proof.
-    iIntros "H". iIntros (???) "#Hrel".
-    rewrite /ffi_crash_rel.
-    iDestruct "Hrel" as %(Heq1&Heq2).
-    rewrite /goose_diskGS. rewrite Heq1. eauto.
+    iIntros "H". iIntros (???) "Hrel".
+    rewrite /ffi_crash_rel. simpl.
+    iDestruct "Hrel" as "(%Heq&Hrel)".
+    iDestruct (@ghost_async_map_swap with "[$] [H]") as "(H&Hrel)"; last by iFrame.
+    { rewrite Heq. by iFrame. }
   Qed.
 
-  Global Instance disk_mapsto_into_crash `{!heapGS Σ} l q v:
-    IntoCrash (l d↦{q} v)%I (λ hG, l d↦{q} v)%I.
+  Lemma disk_mapsto_post_crash' `{!heapGS Σ} l v:
+    l d↦[∅] v -∗ post_crash (λ _, l d↦[∅] v).
+  Proof.
+    iIntros "H". iIntros (???) "Hrel".
+    rewrite /ffi_crash_rel. simpl.
+    iDestruct "Hrel" as "(%Heq&Hrel)".
+    iDestruct (@ghost_async_map_swap with "[$] [H]") as "(H&Hrel)".
+    { rewrite Heq. by iFrame. }
+    iDestruct "Hrel" as (v') "(%Hin&Hl)".
+    set_unfold in Hin. destruct Hin as [->|[]].
+    iFrame. eauto.
+  Qed.
+
+  Global Instance disk_mapsto_into_crash `{!heapGS Σ} l a v:
+    IntoCrash (l d↦[a] v)%I (λ hG, ∃v', ⌜ v' ∈ {[v]} ∪ a ⌝ ∗ l d↦[∅] v')%I.
   Proof. apply disk_mapsto_post_crash. Qed.
 
   Global Instance disk_array_into_crash `{!heapGS Σ} l vs:
     IntoCrash (l d↦∗ vs)%I (λ _, l d↦∗ vs)%I.
-  Proof. apply _. Qed.
+  Proof. apply big_sepL_into_crash. intros. apply disk_mapsto_post_crash'. Qed.
 End crash.
-*)
