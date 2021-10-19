@@ -2,8 +2,8 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-From Goose Require ..time.
 From Goose Require github_com.mit_pdos.gokv.pb.
+From Goose Require github_com.mit_pdos.gokv.time.
 From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
 From Goose Require github_com.tchajed.marshal.
 
