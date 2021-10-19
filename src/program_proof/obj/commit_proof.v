@@ -270,14 +270,14 @@ Opaque struct.t.
         )%I
         with "[Hbufamap_done Hisbuf Hblkvar Hlockedheap Hblks]"); first iSplit.
       {
-        iIntros "(-> & HΦ)".
+        iIntros "->".
         wp_store.
         apply map_get_true in H0.
         iDestruct (big_sepM2_lookup_l_some with "Hbufamap_done") as (xx) "%Hx"; eauto.
         iDestruct (big_sepM2_delete with "Hbufamap_done") as "[Ha Hbufamap_done]"; eauto.
         iDestruct "Ha" as (b0) "[Hisblock %]".
-        iApply "HΦ".
-        iExists _, _, _. iFrame.
+        iSplitR; first done.
+        iExists _, _, _. iFrame. iModIntro.
         iSplit; first by done.
         iPureIntro.
         rewrite gmap_addr_by_block_fmap.
@@ -287,7 +287,7 @@ Opaque struct.t.
         rewrite H1 in H6. inversion H6; clear H6; subst. eauto.
       }
       {
-        iIntros "(-> & HΦ)".
+        iIntros "->".
         wp_apply (wp_buf_loadField_addr with "Hisbuf"). iIntros "Hisbuf".
         wp_loadField.
         wp_apply (wp_Walog__Read with "[$Hiswal $Hlockedheap]"); eauto.
@@ -298,7 +298,7 @@ Opaque struct.t.
         wp_apply (wp_MapInsert with "[$Hblks]").
         { reflexivity. }
         iIntros "Hblks".
-        iApply "HΦ".
+        iSplitR; first done.
         iExists _, _, _. iFrame.
 
         apply map_get_false in H0; destruct H0; subst.

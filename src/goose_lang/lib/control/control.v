@@ -23,40 +23,34 @@ Proof.
 Qed.
 
 Theorem wp_If_join (R: iProp Σ) (b: bool) stk E e1 e2 :
-  ∀ Φ, (⌜ b = true ⌝ ∗ (R -∗ Φ #()) -∗ WP e1 @ stk; E {{ Φ }}) ∧
-       (⌜ b = false ⌝ ∗ (R -∗ Φ #()) -∗ WP e2 @ stk; E {{ Φ }}) -∗
+  ∀ Φ, (⌜ b = true ⌝ -∗ WP e1 @ stk; E {{ v, ⌜v = #()⌝ ∗ R }}) ∧
+       (⌜ b = false ⌝ -∗ WP e2 @ stk; E {{ v, ⌜v = #()⌝ ∗ R }}) -∗
        ▷ (R -∗ Φ #()) -∗ WP if: #b then e1 else e2 @ stk; E {{ Φ }}.
 Proof.
   iIntros (Φ) "Hwp HΦ".
   wp_if_destruct.
   - iDestruct "Hwp" as "[He1 _]".
-    wp_apply "He1".
-    iFrame. done.
+    iApply (wp_wand with "(He1 [//])").
+    iIntros (?) "[-> HR]". by iApply "HΦ".
   - iDestruct "Hwp" as "[_ He2]".
-    wp_apply "He2".
-    iFrame. done.
-Qed.
-
-(* similar to above but with persistence modalities coming from hoare triple notation *)
-Theorem wp_If_join_triples (P R: iProp Σ) (b: bool) stk E e1 e2 :
-  {{{ P ∗ ⌜ b = true ⌝ }}} e1 @ stk; E {{{ RET #(); R }}} -∗
-  {{{ P ∗ ⌜ b = false ⌝ }}} e2 @ stk; E {{{ RET #(); R }}} -∗
-  {{{ P }}} if: #b then e1 else e2 @ stk; E {{{ RET #(); R }}}.
-Proof.
-  iIntros "#He1 #He2".
-  iIntros "!>" (Φ) "HR HΦ".
-  wp_if_destruct.
-  - wp_apply ("He1" with "[$HR]").
-    1: done.
-    iFrame.
-  - wp_apply ("He2" with "[$HR]").
-    1: done.
-    iFrame.
+    iApply (wp_wand with "(He2 [//])").
+    iIntros (?) "[-> HR]". by iApply "HΦ".
 Qed.
 
 (** Designed for [Q] to be left an evar that is resolved with [iNamedAccu] when
-finishing the first branch. Coq unification will automagically generalize over
-all occurrences of [b'] in the goal at that point. *)
+finishing the first branch. It may look like the b' is entirely redundant, but
+the point is that if at the end of the first branch, your context uses b', then
+[iNamedAccu] will use that as a signal to pick a [Q] that uses its argument in
+that place -- so you semi-automatically can have terms like [λ b, l ↦ if b then
+new_map else old_map ∗ ...].
+
+Unlike [wp_If_join], this deliberately does *not* reduce the [if:], so that you
+can use tactics like [case_bool_decide] instead of having to deduce facts from
+[bool_decide P = true].
+
+The lemma does not really have anything to do with [if:], it but having an [if:]
+in the statement is useful so that [wp_apply] automatically does the right
+[wp_bind]. *)
 Lemma wp_If_join_evar (b : bool) e1 e2 Q Φ :
   (∀ b', ⌜b' = b⌝ -∗ WP if: #b then e1 else e2 {{ v, ⌜v = #()⌝ ∗ Q b' }}) -∗
   (Q b -∗ Φ #()) -∗ WP if: #b then e1 else e2 {{ Φ }}.
@@ -66,6 +60,15 @@ Proof.
   - simpl. iIntros (v) "[-> HQ]". by iApply "Hcont".
 Qed.
 
+(** A version of the above for the case where you do not want or need [Q] to
+depend on which branch was taken. *)
+Lemma wp_If_join_evar' (b : bool) e1 e2 Q Φ :
+  (WP if: #b then e1 else e2 {{ v, ⌜v = #()⌝ ∗ Q }}) -∗
+  (Q -∗ Φ #()) -∗ WP if: #b then e1 else e2 {{ Φ }}.
+Proof.
+  iIntros "Hif Hcont". iApply (wp_If_join_evar with "[Hif] Hcont").
+  iIntros (? ->). done.
+Qed.
 
 Theorem wp_and (P1 P2 : Prop) `{!Decision P1, !Decision P2}
     (e1 e2 : expr) (Φ : val → iProp Σ) :

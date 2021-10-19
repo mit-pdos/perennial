@@ -118,16 +118,16 @@ Proof.
       "%Hcountval1" ∷ ⌜(int.Z offset + int.Z countval ≤ int.Z len)%Z⌝
     ) with "[Hcount Hisize]").
   1: iSplit.
-  { iIntros "[%Hdec HΦ]". apply bool_decide_eq_true_1 in Hdec.
+  { iIntros "%Hdec". apply bool_decide_eq_true_1 in Hdec.
     wp_loadField. wp_store.
-    iApply "HΦ".
+    iSplitR; first done.
     iExists _. iFrame. iPureIntro. split.
     { lia. }
     word.
   }
-  { iIntros "[%Hdec HΦ]". apply bool_decide_eq_false_1 in Hdec.
+  { iIntros "%Hdec". apply bool_decide_eq_false_1 in Hdec.
     wp_pures.
-    iApply "HΦ".
+    iSplitR; first done.
     iExists _. iFrame. iPureIntro. split.
     { lia. }
     revert Hdec. word.

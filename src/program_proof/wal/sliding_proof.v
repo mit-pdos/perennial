@@ -729,12 +729,12 @@ Proof.
     - wp_bind (If _ _ _).
       wp_apply (wp_If_join emp).
       { iSplit.
-        - iIntros "[-> Hwp]".
+        - iIntros "->".
           wp_apply util_proof.wp_DPrintf.
-          iApply "Hwp"; auto.
-        - iIntros "[-> Hwp]".
+          auto.
+        - iIntros "->".
           wp_apply util_proof.wp_DPrintf.
-          iApply "Hwp"; auto.
+          auto.
       }
       iIntros "_"; wp_pures.
       wp_apply (wp_sliding_append with "[$Hs $Hupd]").
