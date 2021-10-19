@@ -45,6 +45,11 @@ From Perennial.program_proof.memkv Require
      lockservice_proof bank_proof
      closed.
 
+From Goose.github_com.mit_pdos.gokv Require
+     pb.
+
+From Goose.github_com.mit_pdos.gokv.pb Require
+     controller.
 (*
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
