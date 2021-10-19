@@ -30,12 +30,9 @@ Proof.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
   iDestruct (struct_fields_split with "srv") as "srv". iNamed "srv".
   wp_storeField.
-  replace  (ref (InjLV (#0, (zero_val (slice.T byteT), (#false, #())))))%E
-    with (NewMap (struct.t ShardReply)) by naive_solver.
   wp_apply (map.wp_NewMap).
   iIntros (lastReply_ptr) "HlastReplyMap".
   wp_storeField.
-  replace (ref (InjLV #0))%E with (NewMap uint64T) by naive_solver.
   wp_apply (wp_NewMap).
   iIntros (lastSeq_ptr) "HlastSeqMap".
   wp_storeField.
@@ -46,7 +43,6 @@ Proof.
   { econstructor. }
   iIntros (kvss_sl) "Hkvss_sl".
   Transparent slice.T. wp_storeField. Opaque slice.T.
-  replace (ref (InjLV #null))%E with ((NewMap (struct.ptrT KVShardClerk))) by auto.
   remember (replicate (int.nat 65536) (IntoVal_def _)) as initShardMapping eqn:Heq_initShardMapping.
   remember (replicate (int.nat 65536) (@zero_val grove_op grove_ty KvMap)) as init_kvs_ptrs eqn:Heq_init_kvs_ptrs.
   wp_apply (wp_NewMap).
@@ -99,7 +95,6 @@ Proof.
     wp_if_destruct.
     {
       wp_pures.
-      replace (ref (InjLV (#null, #0, #0)))%E with ((NewMap (slice.T byteT))) by auto.
       wp_apply (map.wp_NewMap). iIntros (mv) "Hmv".
       wp_apply (wp_LoadAt with "[$Hi]").
       iIntros "Hi".

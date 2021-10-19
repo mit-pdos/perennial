@@ -43,14 +43,14 @@ Definition parseHdr: val :=
 Definition openInodes: val :=
   rec: "openInodes" "d" :=
     let: "inode_addrs" := parseHdr (disk.Read rootInode) in
-    let: "inodes" := NewMap (struct.ptrT inode.Inode) in
+    let: "inodes" := NewMap (struct.ptrT inode.Inode) #() in
     ForSlice uint64T <> "a" "inode_addrs"
       (MapInsert "inodes" "a" (inode.Open "d" "a"));;
     "inodes".
 
 Definition inodeUsedBlocks: val :=
   rec: "inodeUsedBlocks" "inodes" :=
-    let: "used" := NewMap (struct.t alloc.unit) in
+    let: "used" := NewMap (struct.t alloc.unit) #() in
     MapIter "inodes" (λ: "a" "i",
       alloc.SetAdd "used" (SliceSingleton "a");;
       alloc.SetAdd "used" (inode.Inode__UsedBlocks "i"));;

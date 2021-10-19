@@ -162,10 +162,8 @@ Definition free_block γ k : iProp Σ :=
   "Hcrashinv" ∷ (crash_borrow (Ψ k) (block_cinv γ k)) ∗
   "Hmapsto" ∷ (k ↪[alloc_status_name γ] block_free).
 
-(*
-Definition free_block_pending γ n k : iProp Σ :=
+Definition free_block_pending γ k : iProp Σ :=
   (|C={⊤}=> block_cinv γ k).
-*)
 
 Definition reserved_block γ k P : iProp Σ :=
   "Hcrashinv" ∷ (crash_borrow P (block_cinv γ k)) ∗
@@ -182,7 +180,8 @@ Definition used_block γ k : iProp Σ :=
 Definition allocator_linv γ (mref: loc) : iProp Σ :=
  ∃ (freeset: gset u64),
   "Hfreemap" ∷ is_addrset mref (freeset) ∗
-  "Hblocks" ∷ crash_borrow ([∗ set] k ∈ freeset, Ψ k) ([∗ set] k ∈ freeset, block_cinv γ k) ∗
+  "Hblocks" ∷ ([∗ set] k ∈ freeset, k ↪[alloc_status_name γ] block_free) ∗
+  "Hborrows" ∷ crash_borrow ([∗ set] k ∈ freeset, Ψ k) ([∗ set] k ∈ freeset, block_cinv γ k) ∗
   "Hfreeset_frag" ∷ ghost_var (γ.(alloc_free_name)) (1/2) (freeset)
 .
 
@@ -201,7 +200,7 @@ Definition is_allocator_mem_pre (l: loc) σ : iProp Σ :=
     "#free" ∷ readonly (l ↦[Allocator :: "free"] #mref) ∗
     "Hfreemap" ∷ is_addrset mref (alloc.free σ) ∗
     "Hfree_lock" ∷ is_free_lock lref ∗
-    "Hltok" ∷ later_tok ∗ later_tok ∗ later_tok ∗ later_tok.
+    "Hltok" ∷ pre_borrow.
 
 
 Theorem is_allocator_pre_post_crash l σ :
@@ -340,7 +339,7 @@ Theorem wp_newAllocator {mref} {start sz: u64} σ (used: gset u64) :
   {{{ l, RET #l; is_allocator_mem_pre l σ }}}.
 Proof using allocG0.
   iIntros (Hoverflow Hdom Hused Hfree Φ) "Hused HΦ".
-  iApply wp_crash_borrow_generate_tokens; auto.
+  iApply wp_crash_borrow_generate_pre; auto.
   wp_call.
   wp_apply wp_freeRange; first by auto.
   iIntros (mref') "Hfree".
@@ -359,8 +358,10 @@ Proof using allocG0.
   iApply "HΦ".
   iExists _, _; iFrame "# ∗".
   iSplitR; first auto.
+  (*
   iSplitR "Htoks"; last first.
   { iDestruct "Htoks" as "($&$&$&$&_)". }
+   *)
   iExactEq "Hfree".
   rewrite /named.
   f_equal.
@@ -380,11 +381,32 @@ Definition alloc_crash_cond' σ : iProp Σ :=
 Definition alloc_crash_cond (d: gset u64) (post_crash: bool) : iProp Σ :=
   ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
        "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
+       "HPalloc" ∷ ▷ P σ ∗
+       "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
+
+Definition alloc_crash_cond_no_later (d: gset u64) (post_crash: bool) : iProp Σ :=
+  ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
+       "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
        "HPalloc" ∷ P σ ∗
        "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
 
 Lemma alloc_crash_cond_from_post_crash d :
   alloc_crash_cond d true -∗ alloc_crash_cond d false.
+Proof.
+  iNamed 1.
+  iExists _; iFrame "% ∗".
+Qed.
+
+Lemma alloc_crash_cond_strip_later `{∀ σ, Timeless (P σ)} d b :
+  alloc_crash_cond d b ={⊤}=∗ alloc_crash_cond_no_later d b.
+Proof.
+  iNamed 1.
+  iDestruct "HPalloc" as ">HPalloc".
+  iExists _; by iFrame.
+Qed.
+
+Lemma alloc_crash_cond_no_later_from_post_crash d :
+  alloc_crash_cond_no_later d true -∗ alloc_crash_cond_no_later d false.
 Proof.
   iNamed 1.
   iExists _; iFrame "% ∗".
@@ -437,7 +459,7 @@ Proof.
 Qed.
 
 Lemma alloc_crash_cond_crash_true d E :
-  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
+  (∀ σ, ▷ P σ ={E}=∗ ▷ P (revert_reserved σ)) -∗
   alloc_crash_cond d false ={E}=∗ alloc_crash_cond d true.
 Proof.
   clear.
@@ -450,20 +472,46 @@ Proof.
   - rewrite dom_revert_reserved. auto.
 Qed.
 
-(*
+Lemma alloc_crash_cond_no_later_crash_true d E :
+  (∀ σ, P σ ={E}=∗ P (revert_reserved σ)) -∗
+  alloc_crash_cond_no_later d false ={E}=∗ alloc_crash_cond_no_later d true.
+Proof.
+  clear.
+  iIntros "H".
+  iNamed 1.
+  iMod ("H" with "HPalloc"). iModIntro. iExists _. iFrame.
+  rewrite unused_revert_reserved. iFrame.
+  iPureIntro; split.
+  - apply alloc_post_crash_revert_reserved.
+  - rewrite dom_revert_reserved. auto.
+Qed.
+
+(* TODO: this is a more general property about filter *)
+Lemma dom_filter_unfree σ :
+  dom (gset u64) (filter (λ x : u64 * block_status, x.2 ≠ block_free) σ) = alloc.domain σ ∖ alloc.free σ.
+Proof.
+  clear.
+  apply dom_filter_L.
+  intros i. rewrite /alloc.domain/alloc.free.
+  set_unfold. split.
+  * intros (Hi&Hnin).
+    apply elem_of_dom in Hi. destruct Hi as [x Hin].
+    exists x. split; eauto. intros Hin'. eapply Hnin.
+    apply elem_of_filter_dom; eauto.
+  * intros (x&Hi&Hneq). split.
+    ** apply elem_of_dom; eauto.
+    ** intros Hdom. apply elem_of_filter_dom in Hdom as (?&?&Hfree). simpl in Hfree. congruence.
+Qed.
+
 Theorem reserved_block_weaken γ k R R' :
-  □(R -∗ R') -∗
-  ▷ □(R' -∗ block_cinv γ k) -∗
+  □ (R -∗ R') -∗
+  □ (R' -∗ block_cinv γ k) -∗
   reserved_block γ k R -∗
   reserved_block γ k R'.
 Proof.
   iIntros "#HR' #Hwand"; iNamed 1.
-  iFrame.
-Abort.
-  iApply (na_crash_inv_weaken with "HR' []"); auto.
-  iModIntro. iIntros "H". iModIntro. iNext. by iApply "Hwand".
+  iFrame. iApply (crash_borrow_conseq with "[] [] [] Hcrashinv"); eauto.
 Qed.
-*)
 
 Lemma free_big_sepS_to_all σ (Φ: u64 → iProp Σ):
   ([∗ set] k ∈ alloc.free σ, Φ k) ⊣⊢
@@ -475,43 +523,71 @@ Proof.
   try (by rewrite decide_True).
 Qed.
 
-Lemma free_block_init γ n σ E `{∀ a, Timeless (Ψ a)}:
+Lemma alloc_post_crash_big_sepM_split_free σ (Φ : u64 → _ → iProp Σ):
   alloc_post_crash σ →
-  ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
-  ([∗ map] k↦v ∈ σ, k ↪[alloc_status_name γ] v) -∗
-  |={E}=> ([∗ set] k ∈ dom (gset _) σ, <disc> |C={⊤}=> free_block_pending γ n k) ∗
-          ([∗ set] k ∈ alloc.free σ, free_block γ n k).
+  ([∗ map] k↦v ∈σ, Φ k v) -∗
+  ([∗ set] k ∈ alloc.free σ, Φ k block_free) ∗
+  ([∗ set] k ∈ (alloc.domain σ ∖ alloc.free σ), Φ k block_used).
 Proof.
-  iIntros (Hcrashed) "Hfree Hpts".
-  rewrite -?Hcrashed.
-  rewrite ?free_big_sepS_to_all.
-  iCombine "Hpts Hfree" as "H".
-  rewrite -big_opM_dom -?big_sepM_sep.
-  iApply big_sepM_fupd. iApply (big_sepM_mono with "H").
-  iIntros (k x Hlookup) "(Hmaps&HΨ)".
-  destruct x.
-  - iMod (na_crash_inv_alloc _ E (block_cinv γ k) (Ψ k) with "[$] []") as
-        "(Hbund&Hpend)".
-    { iIntros "!> H !>". iLeft. eauto. }
-    iFrame.
-    rewrite /free_block_pending.
-    iModIntro. iModIntro. iMod "Hpend" as ">$". iModIntro. iModIntro. done.
-  - exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
-  - (* TODO: should they all be in the same na_crash_inv? *)
-    iMod (na_crash_inv_alloc _ _ (block_cinv γ k) (k ↪[_] block_used)%I with "[$] []") as
-        "(Hbund&Hpend)".
-    { iIntros "!> H !>". iRight. eauto. }
-    iModIntro. iFrame. iModIntro. iMod "Hpend" as ">Hpend".
-    iModIntro. iFrame. eauto.
+  iIntros (Hcrashed) "Hpts".
+  iDestruct (big_sepM_filter_split _ (λ x, x.2 = block_free) with "Hpts") as "(Hfree&Hnfree)".
+  iSplitL "Hfree".
+  { iApply big_sepM_dom. iApply (big_sepM_mono with "Hfree").
+    iIntros (?? Hlookup).
+    apply map_filter_lookup_Some in Hlookup as (?&Heq). simpl in Heq. subst.
+    eauto. }
+  iAssert ([∗ map] k↦x ∈ filter (λ x : u64 * block_status, x.2 ≠ block_free) σ, Φ k block_used)%I
+           with "[Hnfree]" as "Hused".
+  { iApply (big_sepM_mono with "Hnfree").
+    iIntros (?? Hfilter) "H".
+    apply map_filter_lookup_Some in Hfilter as (?&Heq).
+    simpl in Heq. destruct x; try iFrame; try congruence.
+    exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
+  }
+  iDestruct (big_sepM_dom with "Hused") as "Hused".
+  rewrite dom_filter_unfree. eauto.
 Qed.
 
-Theorem is_allocator_alloc n l σ `{∀ a, Timeless (Ψ a)} :
+Lemma free_block_init γ σ E :
+  alloc_post_crash σ →
+  pre_borrow -∗
+  ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
+  ([∗ map] k↦v ∈ σ, k ↪[alloc_status_name γ] v) -∗
+  |={E}=> init_cancel (([∗ set] k ∈ alloc.free σ, k ↪[alloc_status_name γ] block_free) ∗
+                       crash_borrow ([∗ set] k ∈ alloc.free σ, Ψ k)
+                                    ([∗ set] k ∈ alloc.free σ, block_cinv γ k))
+                      ([∗ set] k ∈ dom (gset _) σ, block_cinv γ k).
+Proof.
+  clear.
+  iIntros (Hcrashed) "Hpre Hfree Hpts".
+  rewrite -?Hcrashed.
+  iModIntro.
+  iDestruct (crash_borrow_init_cancel ([∗ set] k ∈ alloc.free σ, Ψ k)
+                                      ([∗ set] k ∈ alloc.free σ, block_cinv γ k) with "Hpre Hfree []") as "H".
+  { iIntros "!>". iApply big_sepS_mono.
+    iIntros (??) "H"; by iLeft. }
+
+  assert (dom _ σ = (alloc.domain σ ∖ alloc.free σ) ∪ alloc.free σ) as ->.
+  { rewrite /alloc.domain difference_union_L.
+    apply alloc_post_crash_free_used in Hcrashed.
+    set_solver. }
+  iDestruct (alloc_post_crash_big_sepM_split_free with "Hpts") as "(Hfree&Hused)".
+  { auto. }
+  iApply (init_cancel_wand with "H [Hfree]").
+  { iIntros "$". eauto. }
+  iIntros "H".
+  iApply big_sepS_union.
+  { set_solver+. }
+  iFrame. iApply (big_sepS_mono with "Hused").
+  { iIntros (??) "H". by iRight. }
+Qed.
+
+Theorem is_allocator_alloc l σ :
   ([∗ set] k ∈ alloc.unused σ, Ψ k) -∗
   ▷ P σ -∗
   is_allocator_mem_pre l σ
-  ={⊤}=∗
-  ∃ γ, is_allocator l (alloc.domain σ) γ n ∗
-  <disc> |C={⊤}=> alloc_crash_cond (alloc.domain σ) false.
+  ={⊤}=∗ init_cancel (∃ γ, is_allocator l (alloc.domain σ) γ)
+                     (alloc_crash_cond (alloc.domain σ) false).
 Proof.
   clear Hitemcrash.
   iIntros "Hunused HP". iNamed 1.
@@ -523,28 +599,29 @@ Proof.
   iMod (ncinv_alloc Ninv _ (allocator_inv γ (alloc.domain σ)) with "[HP Hctx Hfree]") as "(#Hinv&Hallocinv)".
   { iNext. iExists _. iFrame. eauto. }
 
-  iMod (free_block_init γ n with "[$] [$]") as "(Hpending&Hblock)".
-  { set_solver. }
-
-  iDestruct (big_sepS_own_disc_fupd with "Hpending") as "Hpending".
-  rewrite cfupd_big_sepS.
-
-  iMod (alloc_lock Nlock ⊤ _ (allocator_linv γ n mref)%I
-          with "[$Hfree_lock] [Hfreemap Hblock Hfree_frag]") as "#Hlock".
-  { iExists _; iFrame. }
-
+  iMod (free_block_init γ with "[$] [$] [$]") as "Hic"; first done.
   iModIntro.
-  iExists γ.
-  iSplitR.
-  { iExists _, _; iFrame "#". }
+  iApply (init_cancel_fupd ⊤).
+  iApply (init_cancel_cfupd ⊤).
+  iApply (init_cancel_wand with "Hic [Hfreemap Hfree_lock Hfree_frag]").
+  { iIntros "Hblock".
+    iMod (alloc_lock Nlock ⊤ _ (allocator_linv γ mref)%I
+            with "[$Hfree_lock] [Hfreemap Hblock Hfree_frag]") as "#Hlock".
+    { iExists _; iFrame. }
+    iModIntro.
+    iExists γ.
+    rewrite /is_allocator.
+    { iExists _, _; iFrame "#". }
+  }
+  iMod (own_disc_fupd_elim with "Hallocinv") as "Hallocinv".
+  iIntros "Hpending HC".
   iModIntro.
-  iMod "Hpending" as "Hset".
-  iMod (cfupd_weaken_mask with "Hallocinv") as "Hallocinner"; auto.
-  { lia. }
-  rewrite /free_block_pending.
-  rewrite cfupd_big_sepS.
-  iMod "Hset".
-  iDestruct "Hallocinner" as (?) "(>%Hdom&>Hstatus&>?&?)".
+  iMod (fupd_mask_subseteq (↑Ninv)) as "Hclo".
+  { set_solver+. }
+  iMod ("Hallocinv" with "[$]") as "Hallocinner".
+  iDestruct "Hallocinner" as (?) "(>%Hdom&>Hstatus&>?&HP)".
+  iNamed.
+  iMod "Hclo".
   iModIntro.
   rewrite /alloc_crash_cond.
 
@@ -553,8 +630,9 @@ Proof.
   rewrite /alloc.unused.
   rewrite -Hdom.
   iSplitR; first by auto.
-  rewrite -?big_sepM_dom big_sepM_filter'.
-  iDestruct (big_sepM_mono_with_inv with "Hstatus Hset") as "(_&$)".
+  rewrite /alloc.free.
+  rewrite -?big_sepM_dom ?big_sepM_filter'.
+  iDestruct (big_sepM_mono_with_inv with "Hstatus Hpending") as "(_&$)".
   iIntros (k x Hlookup) "(Hctx&Hfree)".
   rewrite /free_block_pending.
   iDestruct "Hfree" as "[HΨ|Hused]".
@@ -620,10 +698,11 @@ Proof.
   set_solver.
 Qed.
 *)
+  Opaque crash_borrow.
 
-Theorem wp_Reserve (Q: option u64 → iProp Σ) l dset γ n' E1:
+Theorem wp_Reserve (Q: option u64 → iProp Σ) l dset γ E1:
   ↑N ⊆ E1 →
-  {{{ is_allocator l dset γ n' ∗
+  {{{ is_allocator l dset γ ∗
      (∀ σ σ' ma,
           ⌜match ma with
            | Some a => a ∈ alloc.free σ ∧ σ' = <[a := block_reserved]> σ
@@ -633,7 +712,7 @@ Theorem wp_Reserve (Q: option u64 → iProp Σ) l dset γ n' E1:
   }}}
     Allocator__Reserve #l @ E1
   {{{ a (ok: bool), RET (#a, #ok);
-      if ok then Q (Some a) ∗ reserved_block γ (S n') a (Ψ a)
+      if ok then Q (Some a) ∗ reserved_block γ a (Ψ a)
       else Q None }}}.
 Proof.
   clear.
@@ -674,38 +753,47 @@ Proof.
   wp_seq.
   (* Linearization point here. *)
   wp_bind (Skip).
-  iInv "Halloc_inv" as "H".
-  wp_pures.
-
-
   destruct ok.
 
   - (* extract block *)
+    iApply (wp_crash_borrow_split _ _ _ _ _  (Ψ k) ([∗ set] k0 ∈ freeset ∖ {[k]} , Ψ k0)
+                                             (block_cinv γ k) ([∗ set] k0 ∈ freeset ∖ {[k]} , block_cinv γ k0)
+              with "Hborrows").
+    { auto. }
+    { iNext. rewrite big_sepS_delete; auto. }
+    { iIntros "!> !> H". iLeft. auto. }
+    { iIntros "!> !> H". iApply (big_sepS_mono with "H").
+      iIntros. by iLeft. }
+    {  rewrite -big_sepS_delete //. eauto. }
+    iDestruct (big_sepS_delete _ _ k with "Hblocks") as "(Hmapsto&Hblocks)".
+    { eassumption. }
 
+    iInv "Halloc_inv" as "H" "Hclo".
+    wp_pures.
     iNamed "H".
+
     iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
     iMod (fupd_mask_subseteq (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ (Some k) with "[] [$]") as "(HP&HQ)".
     { iPureIntro; split; last by reflexivity. eauto. }
     iMod "Hrestore_mask" as "_".
 
-    iDestruct (big_sepS_delete with "Hblocks") as "[Hbk Hblocks]"; eauto.
-    iNamed "Hbk".
-
     iMod (ghost_map_update block_reserved with "[$] Hmapsto") as "(Hctx&Hmapsto)".
     iCombine "Hfreeset_frag Hfreeset_auth" as "Hfreeset".
     iMod (ghost_var_update (alloc.free (<[k := block_reserved]>σ)) with "[$]")
          as "(Hfreeset_auth&Hfreeset_frag)".
-
-    iModIntro. iSplitL "HP Hfreeset_auth Hctx".
+    iMod ("Hclo" with "[HP Hfreeset_auth Hctx]").
     { iNext. iExists _. iFrame. iPureIntro.
       rewrite dom_insert_L.
       assert (k ∈ dom (gset u64) σ).
       { by apply alloc_free_subset. }
       set_solver.
     }
+    iModIntro.
+    iIntros "(Hborrow&Hborrows)".
     wp_loadField.
-    wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hfreemap $His_locked $His_lock]"); first assumption.
+    wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hborrows Hfreemap $His_locked $His_lock]");
+      first assumption.
     { iExists _; iFrame.
       rewrite alloc_free_reserve. eauto.
     }
@@ -714,7 +802,10 @@ Proof.
 
     iFrame.
     { iExists _. eauto. }
-  - iNamed "H".
+  -
+    iInv "Halloc_inv" as "H".
+    wp_pures.
+    iNamed "H".
     iDestruct (ghost_var_agree with "Hfreeset_auth [$]") as %<-.
     iMod (fupd_mask_subseteq (E1 ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
     iMod ("Hfupd" $! σ _ None with "[] [$]") as "(HP&HQ)".
@@ -725,7 +816,8 @@ Proof.
     { iNext. iExists _. iFrame. iPureIntro. eauto. }
 
     wp_loadField.
-    wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hfreemap $His_locked $His_lock]"); first assumption.
+    wp_apply (release_spec' with "[Hfreeset_frag Hblocks Hborrows Hfreemap $His_locked $His_lock]");
+      first assumption.
     { iExists _; iFrame. rewrite Hk set_empty_difference. iFrame. }
     wp_pures.
     iApply "HΦ"; by iFrame.
@@ -734,10 +826,10 @@ Qed.
 (* NOTE: we used to have a proof of this (with nearly the same proof script as
 above). This spec supports using durable resources for the fupd, preserving them
 on crash. We don't need this feature for our examples, though. *)
-Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E1 :
+Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ E1 :
   ↑N ⊆ E1 →
   □ (∀ o, Q o -∗ Qc) -∗
-  {{{ is_allocator l dset γ n' ∗
+  {{{ is_allocator l dset γ ∗
      (∀ σ σ' ma,
           ⌜match ma with
            | Some a => a ∈ alloc.free σ ∧ σ' = <[a := block_reserved]> σ
@@ -746,9 +838,9 @@ Theorem wpc_Reserve (Q: option u64 → iProp Σ) (Qc: iProp Σ) l dset γ n n' E
           ▷ P σ ={E1 ∖ ↑N}=∗ ▷ P σ' ∗ Q ma) ∧
       Qc
   }}}
-    Allocator__Reserve #l @ n; E1
+    Allocator__Reserve #l @ E1
   {{{ a (ok: bool), RET (#a, #ok);
-      if ok then Q (Some a) ∗ reserved_block γ n' a (Ψ a)
+      if ok then Q (Some a) ∗ reserved_block γ a (Ψ a)
       else Q None }}}
   {{{ Qc }}}.
 Proof.
@@ -771,24 +863,23 @@ Proof.
   iRight; auto.
 Qed.
 
-Lemma prepare_reserved_block_reuse R' R n n' γ e a Φ Φc `{HL: AbsLaterable _ Φc}:
-  (S n ≤ n')%nat →
+Lemma prepare_reserved_block_reuse R' R γ e a Φ Φc :
   language.to_val e = None →
-  reserved_block γ (S n') a R -∗
-  <disc> Φc ∧
-  (▷ R -∗
-   reserved_block_in_prep γ (S n') a -∗
-   WPC e @ (S n); ⊤ {{ λ v, (reserved_block γ (S n') a (R' v) -∗ <disc> Φc ∧ Φ v) ∗
+  reserved_block γ a R -∗
+   Φc ∧
+  (R -∗
+   reserved_block_in_prep γ a -∗
+   WPC e @ ⊤ {{ λ v, (reserved_block γ a (R' v) -∗ Φc ∧ Φ v) ∗
                                            (R' v) ∗
-                                           reserved_block_in_prep γ (S n') a ∗
+                                           reserved_block_in_prep γ a ∗
                                            □ (R' v -∗ block_cinv γ a) }}
-                                   {{ Φc ∗ ▷ block_cinv γ a }}) -∗
-  WPC e @  (S n); ⊤ {{ Φ }} {{ Φc }}.
+                                   {{ Φc ∗ block_cinv γ a }}) -∗
+  WPC e @ ⊤ {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (??) "Hreserved H".
+  iIntros (?) "Hreserved H".
   iNamed "Hreserved".
   iDestruct "Halloc_inv" as (?) "#Hinv".
-  iApply (wpc_na_crash_inv_open_modify (λ v, R' v) _ n _ (S n) with "Hcrashinv [H Hmapsto]"); try iFrame; auto.
+  iApply (wpc_crash_borrow_open_modify _ _ _ with "Hcrashinv [H Hmapsto]"); try iFrame; auto.
   iSplit.
   - iDestruct "H" as "($&_)".
   - iIntros "HR". iDestruct "H" as "(_&H)".
@@ -797,29 +888,29 @@ Proof.
     iApply (wpc_strong_mono with "H"); eauto.
     iSplit.
     * iIntros (?) "(Hclose&HR&Hprep&#Hcinv)". iModIntro. iFrame. iFrame "#".
+      iExists (R' v).
+      iFrame "HR".
       iSplitL "".
-      { iModIntro. iIntros "HR !>"; iNext; by iApply "Hcinv". }
+      { iModIntro. eauto. }
       iIntros. iApply "Hclose". iSplitR "Hprep".
       ** by iFrame.
       ** iIntros. eauto.
-    * iIntros. iIntros "!> (?&?) !>"; by iFrame.
+    * eauto.
 Qed.
 
-Lemma prepare_reserved_block E1 R n n' γ e a Φ Φc `{AbsLaterable _ Φc}:
-  (S n ≤ n')%nat →
+Lemma prepare_reserved_block E1 R γ e a Φ Φc :
   language.to_val e = None →
-  reserved_block γ (S n') a R -∗
-  <disc> Φc ∧
-  (▷ R -∗
-   reserved_block_in_prep γ n' a -∗
-   WPC e @ (S n); E1 {{ λ v, (<disc> Φc ∧ Φ v) ∗ block_cinv γ a }}
-                                   {{ Φc ∗ ▷ block_cinv γ a }}) -∗
-  WPC e @  (S n); E1 {{ Φ }} {{ Φc }}.
+  reserved_block γ a R -∗
+  Φc ∧
+  (R -∗
+   reserved_block_in_prep γ a -∗
+   WPC e @ E1 {{ λ v, (Φc ∧ Φ v) ∗ block_cinv γ a }} {{ Φc ∗ block_cinv γ a }}) -∗
+  WPC e @  E1 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (??) "Hreserved H".
+  iIntros (?) "Hreserved H".
   iNamed "Hreserved".
   iDestruct "Halloc_inv" as (?) "#Hinv".
-  iApply (wpc_na_crash_inv_open_modify (λ v, block_cinv γ a) _ n _ (S n) with "[$] [H Hmapsto]"); try iFrame; auto.
+  iApply (wpc_crash_borrow_open_modify  _ _ with "[$] [H Hmapsto]"); try iFrame; auto.
   iSplit.
   - iDestruct "H" as "($&_)".
   - iIntros "HR". iDestruct "H" as "(_&H)".
@@ -827,11 +918,12 @@ Proof.
     { iFrame. iExists _. eauto. }
     iApply (wpc_strong_mono with "H"); eauto.
     iSplit.
-    * iIntros (?) "(Hclose&Hcinv)". iModIntro. iFrame. iFrame "#".
+    * iIntros (?) "(Hclose&Hcinv)". iModIntro.
+      iExists (block_cinv γ a). iFrame.
       iSplitL "".
       ** eauto.
       ** eauto.
-    * iIntros. iIntros "!> (?&?) !>"; by iFrame.
+    * eauto.
 Qed.
 
 Lemma free_mark_used_non_free σ a:
@@ -853,9 +945,9 @@ Proof.
   apply elem_of_dom; eauto.
 Qed.
 
-Lemma mark_used E γ n' a Q:
+Lemma mark_used E γ a Q:
   ↑Ninv ⊆ E →
-   reserved_block_in_prep γ n' a -∗
+   reserved_block_in_prep γ a -∗
    (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗
          P σ -∗ |NC={E ∖ ↑ N}=> ▷ P (<[a := block_used]> σ) ∗ Q)
    -∗ |NC={E, E ∖ ↑Ninv}=> ▷ |NC={E ∖ ↑Ninv, E}=> Q ∗ used_block γ a.
@@ -919,9 +1011,9 @@ Qed.
 *)
 
 (** XXX: should probably make this a WPC in case the fupd requires a durable resource *)
-Theorem wp_Free (Q: iProp Σ) E l d γ n' (a: u64) :
+Theorem wp_Free (Q: iProp Σ) E l d γ (a: u64) :
   ↑N ⊆ E →
-  {{{ is_allocator l d γ n' ∗ reserved_block γ (S n') a (Ψ a) ∗
+  {{{ is_allocator l d γ ∗ reserved_block γ a (Ψ a) ∗
      (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗ ▷ P σ -∗ |NC={E ∖↑N}=> ▷ P (<[ a := block_free ]> σ) ∗ Q)
   }}}
     Allocator__Free #l #a @ E
@@ -968,17 +1060,36 @@ Proof.
     iPureIntro.
     rewrite /map_insert dom_insert_L alloc_free_free.
     set_solver. }
+  wp_bind (struct.loadF _ _ _).
+  iApply (wp_crash_borrow_combine _ _ _
+                                ([∗ set] k0 ∈ alloc.free (<[a := block_free]> σ), Ψ k0)%I
+                                ([∗ set] k0 ∈ alloc.free (<[a := block_free]> σ), block_cinv γ k0)%I
+            with "Hcrashinv Hborrows").
+  { auto. }
+  { iNext. iModIntro. iApply big_sepS_mono. iIntros (??) "H"; by iLeft. }
+  { iNext.
+    rewrite alloc_free_free. rewrite big_sepS_union; last first.
+    { apply disjoint_singleton_r; auto. by apply reserved_not_in_alloc_free. }
+    rewrite big_opS_singleton.
+    iIntros "($&$)". }
+  { iNext.
+    rewrite alloc_free_free. rewrite big_sepS_union; last first.
+    { apply disjoint_singleton_r; auto. by apply reserved_not_in_alloc_free. }
+    rewrite big_opS_singleton.
+    iIntros "($&$)". eauto. }
   wp_loadField.
-  wp_apply (release_spec' with "[$His_lock $Hlocked Hmapsto Hfreemap Hcrashinv Hfreeset_frag Hblocks]").
+  iIntros "Hborrows".
+  wp_apply (release_spec' with "[$His_lock $Hlocked Hmapsto Hfreemap Hfreeset_frag Hblocks Hborrows]").
   { auto. }
   {
-    iExists _. iFrame "Hfreemap Hfreeset_frag".
+    iExists _. iFrame. 
     rewrite alloc_free_free.
     rewrite big_sepS_union; last first.
     { apply disjoint_singleton_r; auto. by apply reserved_not_in_alloc_free. }
     rewrite big_opS_singleton.
     iFrame.
   }
+  wp_pures.
   iApply ("HΦ" with "[$]").
 Qed.
 

@@ -30,7 +30,7 @@ Definition lockShard := struct.decl [
 
 Definition mkLockShard: val :=
   rec: "mkLockShard" <> :=
-    let: "state" := NewMap (struct.ptrT lockState) in
+    let: "state" := NewMap (struct.ptrT lockState) #() in
     let: "mu" := lock.new #() in
     let: "a" := struct.new lockShard [
       "mu" ::= "mu";

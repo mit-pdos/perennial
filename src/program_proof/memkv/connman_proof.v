@@ -33,7 +33,7 @@ Lemma wp_MakeConnMan :
   {{{ (c_ptr:loc), RET #c_ptr; is_ConnMan c_ptr }}}.
 Proof.
   iIntros "%Φ _ HΦ".
-  wp_lam. (* FIXME this unfolds zero_val and NewMap... *)
+  wp_lam. (* FIXME this unfolds zero_val... *)
   wp_apply wp_allocStruct. { val_ty. }
   iIntros (c_ptr) "Hc".
   iDestruct (struct_fields_split with "Hc") as "HH".
@@ -41,11 +41,9 @@ Proof.
   wp_apply wp_new_free_lock.
   iIntros (mu) "Hfreelock".
   wp_storeField.
-  replace (ref (InjLV #null))%E with (NewMap (struct.ptrT rpc.RPCClient)) at 2 by naive_solver.
   wp_apply (wp_NewMap).
   iIntros (rpcCls) "HrpcCls".
   wp_storeField.
-  replace (ref (InjLV #null))%E with (NewMap condvarRefT) at 1 by naive_solver.
   wp_apply (wp_NewMap).
   iIntros (making) "Hmaking".
   wp_storeField.

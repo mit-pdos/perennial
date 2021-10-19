@@ -4,7 +4,7 @@ From Perennial.Helpers Require Import ModArith.
 From Perennial.goose_lang Require Import crash_modality recovery_lifting.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import toy.
-From Perennial.program_logic Require Import na_crash_inv.
+From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import disk_prelude.
 
@@ -29,7 +29,7 @@ Section goose.
     rewrite /Block_to_vals /written_block //=.
   Qed.
 
-  Theorem wpc_consumeEvenBlock_seq {k E1} (d_ref: loc) (addr: u64) :
+  Theorem wpc_consumeEvenBlock_seq {E1} (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
       consumeEvenBlock #d_ref #addr @ E1
     {{{ RET #(); EBlk addr }}}
@@ -89,54 +89,58 @@ Section goose.
     iApply "HΦ". iExists _, _. iFrame. eauto.
   Qed.
 
-  Theorem wpc_consumeEvenBlock {k k'} (d_ref: loc) (addr: u64):
-    (S k ≤ k')%nat →
-    {{{ na_crash_inv (S k') (EBlk addr) (EBlk addr) }}}
-      consumeEvenBlock #d_ref #addr @ (S k); ⊤
+  Theorem wpc_consumeEvenBlock (d_ref: loc) (addr: u64):
+    {{{ crash_borrow (EBlk addr) (EBlk addr) }}}
+      consumeEvenBlock #d_ref #addr @ ⊤
     {{{ RET #() ; True }}}
     {{{ True }}}.
   Proof.
-    iIntros (? Φ Φc) "Hncinv HΦ".
-    iApply (wpc_step_strong_mono' _ _ _ _ _ _ _
-           (λ v, ⌜ v = #() ⌝ ∗ True)%I _ _ with "[-HΦ] [HΦ]"); auto.
+    iIntros (Φ Φc) "Hncinv HΦ".
+    iApply (wpc_step_strong_mono' _ _ _ _ _
+           (λ v, ⌜ v = #() ⌝ ∗ True)%I _ True with "[-HΦ] [HΦ]"); auto.
     2: { iSplit.
          * iNext. iIntros (?) "H". iDestruct "H" as (?) "%". subst.
            iModIntro. iRight in "HΦ". by iApply "HΦ".
-         * iLeft in "HΦ".  iModIntro. iIntros. iModIntro. by iApply "HΦ". }
-    iApply (wpc_na_crash_inv_open with "Hncinv"); try eassumption.
-    { lia. }
+         * iLeft in "HΦ". iIntros. by iApply "HΦ". }
+    iApply (wpc_crash_borrow_open with "Hncinv").
+    { eauto. }
     iSplit; first eauto.
-    iIntros ">Hblk".
+    iIntros "Hblk".
     wpc_apply (wpc_consumeEvenBlock_seq with "[$]").
     iSplit.
-    { iModIntro. iIntros; iFrame. }
+    { iIntros; iFrame. }
     iNext. iIntros "$ _".
     iSplit; eauto.
     Unshelve. exact ⊤.
   Qed.
 
+  Opaque crash_borrow.
+
   Theorem wpc_TransferEvenBlock (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
-      TransferEvenBlock #d_ref #addr @ 2; ⊤
+      TransferEvenBlock #d_ref #addr @ ⊤
     {{{ RET #() ; True }}}
     {{{ EBlk addr }}}.
   Proof using stagedG0.
     iIntros (Φ Φc) "HEblk HΦ".
-    iMod (na_crash_inv_alloc 1 _ (EBlk addr) (EBlk addr) with "HEblk []") as "(Hcrash&Hcfupd)".
-    { auto. }
-    iApply (wpc_cfupd).
-    iMod "Hcfupd" as "_".
-    wpc_call.
-    { iLeft in "HΦ". iModIntro. iIntros ">H". iIntros "? !>". by iApply "HΦ". }
-    { iLeft in "HΦ". iModIntro. iIntros ">H". iIntros "? !>". by iApply "HΦ". }
-    wpc_pures.
-    { iLeft in "HΦ". iModIntro. iIntros ">H". iIntros "? !>". by iApply "HΦ". }
-    iApply (wpc_idx_mono 1); first by lia.
-    iApply (wpc_fork with "[Hcrash]").
-    { iNext. iApply (wpc_consumeEvenBlock with "Hcrash"); eauto. }
+    rewrite /TransferEvenBlock.
+    iApply (wpc_crash_borrow_init_ctx _ _ _ _ (EBlk addr)%I (EBlk addr)%I id with "HEblk"); auto.
     iSplit.
-    { iLeft in "HΦ". iModIntro. iIntros ">H". iIntros "? !>". by iApply "HΦ". }
-    { iNext; by iApply "HΦ". }
+    { by iLeft in "HΦ". }
+    iIntros "Hborrow".
+    wpc_pures.
+    { iLeft in "HΦ". eauto. }
+    wpc_pures.
+    { iLeft in "HΦ". eauto. }
+    wpc_apply (wpc_fork with "[Hborrow]").
+    { iNext. iApply (wpc_consumeEvenBlock with "Hborrow"); eauto. }
+    iSplit.
+    { iLeft in "HΦ". eauto. }
+    { iNext. simpl. wpc_pures; first by iLeft in "HΦ".
+      iModIntro. iApply wpc_value. iSplit.
+      * iRight in "HΦ". by iApply "HΦ".
+      * iLeft in "HΦ". iModIntro. by iApply "HΦ".
+    }
   Qed.
 
 End goose.

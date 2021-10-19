@@ -163,7 +163,7 @@ Definition Begin: val :=
   rec: "Begin" "log" :=
     let: "txn" := struct.mk Txn [
       "log" ::= "log";
-      "blks" ::= NewMap disk.blockT
+      "blks" ::= NewMap disk.blockT #()
     ] in
     "txn".
 

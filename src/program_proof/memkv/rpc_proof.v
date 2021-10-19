@@ -746,7 +746,6 @@ Proof.
   wp_apply (wp_Assume).
   iIntros (Herr). destruct err; first by (simpl in Herr; first congruence).
 
-  replace (ref (InjLV #null))%E with (NewMap (struct.ptrT callback)) by naive_solver.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
   wp_pures.
   wp_apply (map.wp_NewMap).

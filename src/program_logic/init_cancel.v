@@ -95,6 +95,26 @@ Proof.
   iApply "Hc". eauto.
 Qed.
 
+Lemma init_cancel_cfupd E P Pc :
+  init_cancel (P) (|C={E}=> Pc) -∗ init_cancel P Pc.
+Proof.
+  iIntros "H".
+  iIntros (e s Φ Φc ???) "Hwp".
+  iApply wpc_cfupd.
+  iApply "H"; auto. iIntros "HP".
+  iSpecialize ("Hwp" with "[$]").
+  iApply (wpc_mono with "Hwp").
+  { iIntros (?) "H Hcm". iApply "H".
+    iApply wpc_crash_modality_intro_C. iIntros "HC".
+    iApply (wpc_crash_modality_wand with "Hcm"). iIntros "(H&$)".
+    iMod (fupd_mask_subseteq E) as "Hclo"; first set_solver+.
+    iMod ("H" with "[$]"). iMod "Hclo". iModIntro. eauto. }
+  iIntros "Hc HPC". iIntros "HC".
+  iMod (fupd_mask_subseteq E) as "Hclo"; first set_solver+.
+  iMod ("HPC" with "[$]"). iMod "Hclo". iModIntro.
+  iApply "Hc". eauto.
+Qed.
+
 Lemma init_cancel_intro_l P :
   P -∗ init_cancel P True%I.
 Proof.
@@ -179,6 +199,24 @@ Proof.
     iApply (init_cancel_wand with "H").
     * iIntros "(Hs&H)". iApply big_sepL_app; auto. iFrame; eauto.
     * iIntros "(Hs&H)". iApply big_sepL_app; auto. iFrame; eauto.
+Qed.
+
+Lemma big_sepL2_init_cancel {A B} (Φ Φc : nat → A → B → iProp Σ) (l1 : list A) (l2 : list B) :
+  ([∗ list] k ↦ y1;y2 ∈ l1;l2, init_cancel (Φ k y1 y2) (Φc k y1 y2)) -∗
+  init_cancel ([∗ list] k ↦ y1;y2 ∈ l1; l2, Φ k y1 y2) ([∗ list] k ↦ y1; y2 ∈ l1; l2, Φc k y1 y2).
+Proof.
+  iInduction l1 as [| x l1] "IH" using rev_ind forall (l2).
+  - iIntros "H". iDestruct (big_sepL2_nil_inv_l with "H") as "%". subst.
+    iApply (init_cancel_intro); eauto.
+  - iIntros "H".
+    iDestruct (big_sepL2_app_inv_l with "H") as (l2a l2b ->) "(H1&H2)"; first eauto.
+    iDestruct ("IH" with "[$]") as "H1".
+    iDestruct (big_sepL2_cons_inv_l with "H2") as (?? ->) "(H2&Hnil)".
+    iDestruct (big_sepL2_nil_inv_l with "Hnil") as "%"; subst.
+    iDestruct (init_cancel_sep with "[$] [$]") as "H".
+    iApply (init_cancel_wand with "H").
+    * iIntros "(Hs&H)". iApply (big_sepL2_app with "H"); auto. iFrame; eauto.
+    * iIntros "(Hs&H)". iApply (big_sepL2_app with "H"); auto. iFrame; eauto.
 Qed.
 
 Lemma big_sepS_init_cancel `{Countable A} (Φ Φc : A → iProp Σ) (s : gset A) :

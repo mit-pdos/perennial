@@ -316,7 +316,7 @@ Proof.
   iIntros (? ? jrnll) "(?&?)".
   iNamed.
   wp_loadField.
-  wp_apply (wp_NewMap bool (t:=boolT)).
+  wp_apply (wp_NewMap).
   iIntros (acquired_m) "Hacquired_m".
   wp_apply wp_allocStruct; first by auto.
   iIntros (l) "Hl".

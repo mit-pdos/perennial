@@ -305,7 +305,7 @@ Proof.
   - intros. apply structRefT_comparableTy_val_eq.
 Qed.
 
-Arguments sty_val_interp {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec_interp _ specTy_model Σ _ _}.
+Global Arguments sty_val_interp {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec_interp _ specTy_model Σ _ _}.
 
 Lemma sty_val_size:
       forall  τ vs v,
@@ -419,6 +419,10 @@ Qed.
 
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
     val_typing_ind := Induction for val_transTy Sort Prop.
+
+Global Arguments expr_typing_ind spec_op spec_ty impl_op spec_trans
+          (* make it possible to supply P and P0 using `with` *)
+          spec_atomic_transTy P P0 : rename.
 
 Lemma loc_paired_init l ls:
   meta_token l ⊤ -∗
@@ -2085,7 +2089,7 @@ Proof using spec_trans.
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
             { iNext. iExists _, _. iLeft. iFrame. eauto. }
             iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
-            iIntros "!>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _. 
+            iIntros "!>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
             iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
         }
         {

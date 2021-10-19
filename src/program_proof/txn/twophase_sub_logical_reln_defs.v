@@ -241,6 +241,10 @@ Arguments specTy_model {ext ffi interp spec_ext spec_ffi spec_ffi_semantics spec
 Scheme expr_typing_ind := Induction for atomic_body_expr_transTy Sort Prop with
     val_typing_ind := Induction for atomic_body_val_transTy Sort Prop.
 
+
+(* make it possible to supply P and P0 using `with` *)
+Global Arguments expr_typing_ind P P0 : rename.
+
 Lemma disc_crash_true E :
   ⊢ <disc> (|C={E}=> True).
 Proof. auto. Qed.

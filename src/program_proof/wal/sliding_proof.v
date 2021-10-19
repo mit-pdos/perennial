@@ -183,7 +183,7 @@ Theorem wp_mkSliding s q log (start: u64) :
 Proof.
   iIntros (Hbound Φ) "[Hs Hcap] HΦ".
   rewrite /mkSliding; wp_pures.
-  wp_apply (wp_NewMap u64 (t:=uint64T)).
+  wp_apply (wp_NewMap).
   iIntros (addrPosPtr) "His_map".
   wp_pures.
   iDestruct (updates_slice_frag_len with "Hs") as %Hlen.

@@ -262,7 +262,7 @@ Proof.
   rewrite /jrnl_state_restart.
   iDestruct "Hrestart" as "(Hclosed&Hcrash_toks&Hcrash_ctx&#Hkinds&#Hdom&Hfull)".
   iIntros "Hpre".
-  iModIntro. iExists tt.
+  iExists tt.
   rewrite /twophase_init.  iFrame "Hfull Hclosed".
   rewrite /twophase_crash_cond.
   rewrite /twophase_update.
@@ -272,7 +272,7 @@ Proof.
   iDestruct "Hdom" as "#Hdom".
   iExists γ, dinit, logm, mt. rewrite /twophase_crash_cond_full.
   rewrite -sep_assoc.
-  iSplit; first eauto.
+  iSplitL ""; first eauto.
   rewrite -sep_assoc.
   iSplitL "Htxn_durable".
   {
@@ -281,8 +281,9 @@ Proof.
     specialize (@recovery_proof.is_txn_durable_stable) => Hcrash.
     rewrite /IntoCrash in Hcrash.
     iPoseProof (Hcrash _ _ hG _ with "Hlower_durable") as "H".
-    rewrite /post_crash. iApply ("H" $! _ _ (goose_localGS (heapGS:=hG'))).
-    eauto.
+    rewrite /post_crash. iMod ("H" $! _ _ (goose_localGS (heapGS:=hG')) with "[]") as "(?&$)".
+    { eauto. }
+    { eauto. }
   }
   iAssert (⌜ dom (gset _) mt = dom (gset _) (jrnlData s)⌝)%I with "[]" as %Hdomeq.
   { rewrite /jrnl_dom.
@@ -303,7 +304,7 @@ Proof.
     destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
     rewrite /jrnl_mapsto/jrnl_kinds.
     rewrite Heq_kinds Heq_kinds_name.
-    iFrame "#".
+    by iFrame "#".
   }
   iSplitL "Hmapstos".
   {
@@ -320,6 +321,7 @@ Proof.
       iFrame.
     }
   }
+  iModIntro.
   iDestruct "Hpre" as "($&HpreM)".
   iSplitL "Hcrash_ctx".
   { iExactEq "Hcrash_ctx".

@@ -144,11 +144,11 @@ Proof. reflexivity. Qed.
 
 Theorem wp_NewMap stk E t :
   {{{ True }}}
-    NewMap t @ stk; E
+    NewMap t #() @ stk; E
   {{{ mref, RET #mref;
       is_map mref 1 (∅, zero_val t) }}}.
 Proof.
-  iIntros (Φ) "_ HΦ".
+  iIntros (Φ) "_ HΦ". wp_lam.
   wp_apply wp_alloc_untyped.
   { rewrite map_zero_val; auto. }
   iIntros (mref) "Hm".

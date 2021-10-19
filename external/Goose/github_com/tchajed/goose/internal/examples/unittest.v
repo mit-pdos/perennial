@@ -188,7 +188,7 @@ Definition useSliceIndexing: val :=
 
 Definition useMap: val :=
   rec: "useMap" <> :=
-    let: "m" := NewMap (slice.T byteT) in
+    let: "m" := NewMap (slice.T byteT) #() in
     MapInsert "m" #1 slice.nil;;
     let: ("x", "ok") := MapGet "m" #2 in
     (if: "ok"

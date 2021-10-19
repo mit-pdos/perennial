@@ -44,7 +44,7 @@ Definition Log__Load: val :=
    apply to the same disk block. Assume caller holds commit lock. *)
 Definition Log__installBufsMap: val :=
   rec: "Log__installBufsMap" "l" "bufs" :=
-    let: "blks" := NewMap (slice.T byteT) in
+    let: "blks" := NewMap (slice.T byteT) #() in
     ForSlice (refT (struct.t buf.Buf)) <> "b" "bufs"
       (if: (struct.loadF buf.Buf "Sz" "b" = common.NBITBLOCK)
       then MapInsert "blks" (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b")) (struct.loadF buf.Buf "Data" "b")

@@ -39,7 +39,7 @@ Definition Begin: val :=
     let: "trans" := struct.new Txn [
       "buftxn" ::= jrnl.Begin (struct.loadF Log "log" "tsys");
       "locks" ::= struct.loadF Log "locks" "tsys";
-      "acquired" ::= NewMap boolT
+      "acquired" ::= NewMap boolT #()
     ] in
     util.DPrintf #5 (#(str"tp Begin: %v
     ")) #();;

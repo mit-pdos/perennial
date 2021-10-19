@@ -19,7 +19,7 @@ Definition SingleInode := struct.decl [
 Definition Open: val :=
   rec: "Open" "d" "sz" :=
     let: "i" := inode.Open "d" #0 in
-    let: "used" := NewMap (struct.t alloc.unit) in
+    let: "used" := NewMap (struct.t alloc.unit) #() in
     alloc.SetAdd "used" (inode.Inode__UsedBlocks "i");;
     let: "allocator" := alloc.New #1 ("sz" - #1) "used" in
     struct.new SingleInode [

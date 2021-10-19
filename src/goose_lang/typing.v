@@ -542,9 +542,9 @@ Section goose_lang.
     eauto.
   Qed.
 
-  (* FIXME: Being an expression, this is removed when [subst] is executed.
-     We should use a value instead, probably a thunk. *)
-  Definition NewMap (t:ty) : expr := Alloc (zero_val (mapValT t)).
+  (* A thunk that creates a map. *)
+  Definition NewMap (t:ty) : val :=
+    λ: <>, Alloc (zero_val (mapValT t)).
   (*
   Theorem NewMap_t t Γ : has_zero t -> Γ ⊢ NewMap t : mapT t.
   Proof.

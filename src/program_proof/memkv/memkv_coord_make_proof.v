@@ -132,7 +132,6 @@ Proof.
   }
   iIntros "(Hloop_post&Hi)".
   wp_pures.
-  replace  (ref (InjLV #0))%E with (NewMap uint64T) by auto.
   wp_apply (wp_NewMap).
 
   iIntros (mref) "Hmap".
@@ -146,7 +145,6 @@ Proof.
   (* TODO: Pull this out to separate wp? it is called at least twice *)
   wp_bind (MakeShardClerkSet _).
   wp_lam.
-  replace (ref (InjLV #null))%E with (NewMap (struct.ptrT KVShardClerk)) by auto.
   wp_apply (wp_NewMap).
   iIntros (mref_set) "Hmap_set".
   wp_apply (wp_allocStruct).

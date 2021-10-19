@@ -75,6 +75,25 @@ Section proof.
     iApply "HP". eauto.
   Qed.
 
+  Lemma alloc_crash_lock_init_cancel lk (R Rcrash : iProp Σ):
+    □ (R -∗ Rcrash) ∗
+    R ∗
+    is_free_crash_lock lk -∗
+    init_cancel (is_crash_lock #lk R Rcrash) (Rcrash).
+  Proof.
+    clear.
+    iIntros "(#HRcrash&HR&Hfree&Htoks)".
+    iDestruct (crash_borrow_init_cancel with "[$] HR HRcrash") as "H".
+    iApply (init_cancel_fupd ⊤).
+    iApply (init_cancel_wand with "H [Hfree]").
+    { iIntros "Hborrow".
+      iMod (alloc_lock with "[$] [Hborrow]") as "H".
+      { iNext. iExact "Hborrow". }
+      eauto.
+    }
+    { eauto. }
+  Qed.
+
   Lemma alloc_crash_lock Φ Φc e lk (R Rcrash : iProp Σ):
     □ (R -∗ Rcrash) ∗
     R ∗
@@ -83,14 +102,9 @@ Section proof.
           WPC e @ ⊤ {{ Φ }} {{ Rcrash -∗ Φc }}) -∗
     WPC e @ ⊤ {{ Φ }} {{ Φc }}.
   Proof.
-    clear.
     iIntros "(#HRcrash&HR&Hfree&Hwp)".
-    iDestruct "Hfree" as "(Hfree1&Htoks)".
-    iApply (wpc_crash_borrow_inits with "[$] HR HRcrash").
-    iIntros "Hborrow".
-    iMod (alloc_lock with "[$] [Hborrow]") as "H".
-    { iNext. iExact "Hborrow". }
-    iApply "Hwp". iFrame.
+    iDestruct (alloc_crash_lock_init_cancel with "[$HRcrash $HR $Hfree]") as "H".
+    iApply (init_cancel_elim with "H"). eauto.
   Qed.
 
   Lemma acquire_spec E (R Rcrash : iProp Σ) lk:

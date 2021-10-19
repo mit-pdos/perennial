@@ -1,6 +1,8 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI). *)
 
+From Perennial.algebra Require ghost_async_map.
+
 From Perennial.goose_lang Require
      adequacy recovery_adequacy dist_adequacy
      crash_lock
@@ -10,6 +12,7 @@ From Perennial.goose_lang Require
      logical_reln_adeq
      paper_proof
 .
+From Perennial.goose_lang.ffi Require async_disk.
 From Perennial.program_proof Require
      wal.circ_proof_crash
      lockmap_proof
@@ -26,7 +29,7 @@ From Perennial.program_proof Require
 
 From Perennial.program_proof.examples Require
      replicated_block_proof
-     (*all_examples*)
+     all_examples
 .
 
 (* TODO: refactoring in progress

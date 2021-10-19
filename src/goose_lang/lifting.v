@@ -113,7 +113,6 @@ Class ffi_interp (ffi: ffi_model) :=
     (* ffi_restart is provided to the client in idempotence_wpr *)
     ffi_restart: ∀ `{ffiLocalGS Σ}, ffi_state -> iProp Σ;
     ffi_crash_rel: ∀ Σ, ffiLocalGS Σ → ffi_state → ffiLocalGS Σ → ffi_state → iProp Σ;
-    ffi_crash_rel_pers: ∀ Σ (Hold Hnew: ffiLocalGS Σ) σ σ', Persistent (ffi_crash_rel Σ Hold σ Hnew σ');
   }.
 
 Arguments ffi_local_ctx {ffi FfiInterp Σ} : rename.
