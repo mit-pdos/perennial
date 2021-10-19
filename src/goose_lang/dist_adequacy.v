@@ -24,7 +24,7 @@ Proof.
   iIntros (Hinv ?) "".
   iMod (ffi_global_init _ _ g) as (ffi_namesg) "(Hgw&Hgstart)"; first by auto.
   iMod (credit_name_init (crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
-  
+
   set (hG := GooseGlobalGS _ _ (creditGS_update_pre _ _ name_credit) ffi_namesg).
 
   iExists global_state_interp, fork_post.
@@ -110,7 +110,7 @@ Proof.
   { iModIntro. iIntros (????) "_".
     iModIntro.
     rewrite /post_crash.
-    iIntros (???) "_ _". iSplit; first auto.
+    iIntros (???) "H". iModIntro; iFrame. iIntros "H". iSplit; first auto.
     iApply wpc_value; eauto.
   }
 Qed.
