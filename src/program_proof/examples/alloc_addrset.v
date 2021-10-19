@@ -42,7 +42,7 @@ Theorem wp_freeRange (start sz: u64) E :
 Proof.
   iIntros (Hbound Φ) "_ HΦ".
   wp_call.
-  wp_apply (wp_NewMap () (t:=struct.t unit)).
+  wp_apply (wp_NewMap).
   iIntros (mref) "Hmap".
   wp_apply wp_ref_to; first by val_ty.
   iIntros (il) "i".

@@ -118,7 +118,7 @@ Definition MakeRPCClient: val :=
       "conn" ::= struct.get grove_ffi.ConnectRet "Connection" "a";
       "mu" ::= lock.new #();
       "seq" ::= #1;
-      "pending" ::= NewMap (struct.ptrT callback)
+      "pending" ::= NewMap (struct.ptrT callback) #()
     ] in
     Fork (RPCClient__replyThread "cl");;
     "cl".

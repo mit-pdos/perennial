@@ -74,7 +74,7 @@ Ltac untype :=
 
 Theorem wp_NewMap `{!IntoValForType V t} stk E :
   {{{ True }}}
-    ref (zero_val (mapValT t)) @ stk; E
+    NewMap t #() @ stk; E
   {{{ mref, RET #mref;
       is_map mref 1 ∅ }}}.
 Proof.

@@ -162,7 +162,7 @@ Definition sliding := struct.decl [
 
 Definition mkSliding: val :=
   rec: "mkSliding" "log" "start" :=
-    let: "addrPos" := NewMap LogPosition in
+    let: "addrPos" := NewMap LogPosition #() in
     ForSlice (struct.t Update) "i" "buf" "log"
       (MapInsert "addrPos" (struct.get Update "Addr" "buf") ("start" + "i"));;
     struct.new sliding [

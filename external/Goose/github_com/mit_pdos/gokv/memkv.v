@@ -216,7 +216,7 @@ Definition EncSliceMap: val :=
 Definition DecSliceMap: val :=
   rec: "DecSliceMap" "d" :=
     let: "sz" := marshal.Dec__GetInt "d" in
-    let: "m" := NewMap (slice.T byteT) in
+    let: "m" := NewMap (slice.T byteT) #() in
     let: "i" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, ![uint64T] "i" < "sz"); (λ: <>, Skip) := λ: <>,
@@ -380,7 +380,7 @@ Definition ShardClerkSet := struct.decl [
 Definition MakeShardClerkSet: val :=
   rec: "MakeShardClerkSet" "c" :=
     struct.new ShardClerkSet [
-      "cls" ::= NewMap (struct.ptrT KVShardClerk);
+      "cls" ::= NewMap (struct.ptrT KVShardClerk) #();
       "c" ::= "c"
     ].
 
@@ -554,7 +554,7 @@ Definition KVShardServer__MoveShardRPC: val :=
       #()
     else
       let: "kvs" := SliceGet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "s") (struct.loadF MoveShardRequest "Sid" "args") in
-      SliceSet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "s") (struct.loadF MoveShardRequest "Sid" "args") (NewMap (slice.T byteT));;
+      SliceSet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "s") (struct.loadF MoveShardRequest "Sid" "args") (NewMap (slice.T byteT) #());;
       SliceSet boolT (struct.loadF KVShardServer "shardMap" "s") (struct.loadF MoveShardRequest "Sid" "args") #false;;
       KVShardClerk__InstallShard (Fst (MapGet (struct.loadF KVShardServer "peers" "s") (struct.loadF MoveShardRequest "Dst" "args"))) (struct.loadF MoveShardRequest "Sid" "args") "kvs";;
       lock.release (struct.loadF KVShardServer "mu" "s");;
@@ -564,18 +564,18 @@ Definition MakeKVShardServer: val :=
   rec: "MakeKVShardServer" "is_init" :=
     let: "srv" := struct.alloc KVShardServer (zero_val (struct.t KVShardServer)) in
     struct.storeF KVShardServer "mu" "srv" (lock.new #());;
-    struct.storeF KVShardServer "lastReply" "srv" (NewMap (struct.t ShardReply));;
-    struct.storeF KVShardServer "lastSeq" "srv" (NewMap uint64T);;
+    struct.storeF KVShardServer "lastReply" "srv" (NewMap (struct.t ShardReply) #());;
+    struct.storeF KVShardServer "lastSeq" "srv" (NewMap uint64T #());;
     struct.storeF KVShardServer "shardMap" "srv" (NewSlice boolT NSHARD);;
     struct.storeF KVShardServer "kvss" "srv" (NewSlice KvMap NSHARD);;
-    struct.storeF KVShardServer "peers" "srv" (NewMap (struct.ptrT KVShardClerk));;
+    struct.storeF KVShardServer "peers" "srv" (NewMap (struct.ptrT KVShardClerk) #());;
     struct.storeF KVShardServer "cm" "srv" (connman.MakeConnMan #());;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       SliceSet boolT (struct.loadF KVShardServer "shardMap" "srv") (![uint64T] "i") "is_init";;
       (if: "is_init"
       then
-        SliceSet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "srv") (![uint64T] "i") (NewMap (slice.T byteT));;
+        SliceSet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "srv") (![uint64T] "i") (NewMap (slice.T byteT) #());;
         Continue
       else Continue));;
     "srv".
@@ -591,7 +591,7 @@ Definition KVShardServer__GetCIDRPC: val :=
 
 Definition KVShardServer__Start: val :=
   rec: "KVShardServer__Start" "mkv" "host" :=
-    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) in
+    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) #() in
     MapInsert "handlers" KV_FRESHCID (λ: "rawReq" "rawReply",
       "rawReply" <-[slice.T byteT] EncodeUint64 (KVShardServer__GetCIDRPC "mkv");;
       #()
@@ -692,14 +692,14 @@ Definition MakeKVCoordServer: val :=
     (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       SliceSet uint64T (struct.loadF KVCoord "shardMap" "s") (![uint64T] "i") "initserver";;
       Continue);;
-    struct.storeF KVCoord "hostShards" "s" (NewMap uint64T);;
+    struct.storeF KVCoord "hostShards" "s" (NewMap uint64T #());;
     MapInsert (struct.loadF KVCoord "hostShards" "s") "initserver" NSHARD;;
     struct.storeF KVCoord "shardClerks" "s" (MakeShardClerkSet (connman.MakeConnMan #()));;
     "s".
 
 Definition KVCoord__Start: val :=
   rec: "KVCoord__Start" "c" "host" :=
-    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) in
+    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) #() in
     MapInsert "handlers" COORD_ADD (λ: "rawReq" "rawRep",
       let: "s" := DecodeUint64 "rawReq" in
       KVCoord__AddServerRPC "c" "s";;
