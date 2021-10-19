@@ -10,8 +10,10 @@ Record ConfigurationC :=
 }.
 
 Context `{!heapGS Σ}.
+Implicit Type γ:pb_names.
 
-Definition own_ReplicaServer (s:loc) (me:u64) γ : iProp Σ :=
+Definition own_ReplicaServer (s:loc) (me:u64) γ
+  : iProp Σ :=
   ∃ (cn commitIdx:u64) (matchIdx_sl opLog_sl replicaClerks_sl : Slice.t) (isPrimary:bool)
     (matchIdx:list u64) (opLog:list u8) (replicaClerks:list loc) ,
   "Hcn" ∷ s ↦[ReplicaServer :: "cn"] #cn ∗
@@ -23,17 +25,21 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ : iProp Σ :=
   "HopLog_slice" ∷ is_slice opLog_sl byteT 1%Qp opLog ∗
   "HcommitIdx" ∷ s ↦[ReplicaServer :: "commitIdx"] #commitIdx ∗
   "HmatchIdx" ∷ s ↦[ReplicaServer :: "matchIdx"] (slice_val matchIdx_sl) ∗
-  "HmatchIdx_slice" ∷ is_slice matchIdx_sl uint64T 1%Qp matchIdx
+  "HmatchIdx_slice" ∷ is_slice matchIdx_sl uint64T 1%Qp matchIdx∗
 
-  (* TODO: ghost stuff corresponding to this *)
+  (* ghost stuff *)
+  "Haccepted" ∷ accepted_ptsto γ cn me opLog ∗
+  "Hproposal_lb" ∷ proposal_lb γ cn opLog ∗
+  "HoldConfMax" ∷ φ γ cn opLog ∗
+  "HprimaryOwnsProposal" ∷ if isPrimary then (proposal_ptsto γ cn opLog) else True
 .
 
 Definition ReplicaServerN := nroot .@ "ReplicaServer".
 
-Definition is_ReplicaServer (s:loc) : iProp Σ :=
+Definition is_ReplicaServer (s:loc) (rid:u64) γ: iProp Σ :=
   ∃ (mu:val),
   "#Hmu" ∷ readonly (s ↦[ReplicaServer :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock ReplicaServerN mu (own_ReplicaServer s)
+  "#HmuInv" ∷ is_lock ReplicaServerN mu (own_ReplicaServer s rid γ)
 .
 
 (* TODO: move to a different file *)
@@ -52,9 +58,9 @@ Definition own_AppendArgs (args_ptr:loc) (args:AppendArgsC) : iProp Σ :=
   "HAlog_slice" ∷ is_slice log_sl byteT 1%Qp args.(AA_log)
 .
 
-Lemma wp_ReplicaServer__AppendRPC (s:loc) (args_ptr:loc) args :
+Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   {{{
-       is_ReplicaServer s ∗
+       is_ReplicaServer s rid γ ∗
        own_AppendArgs args_ptr args
   }}}
     ReplicaServer__AppendRPC #s #args_ptr
@@ -97,6 +103,5 @@ Proof.
   wp_loadField.
   (* Should do if-join here *)
 Admitted.
-
 
 End replica_proof.
