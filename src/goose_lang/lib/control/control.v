@@ -89,6 +89,28 @@ Proof.
     rewrite bool_decide_eq_false_2 //. tauto.
 Qed.
 
+Theorem wp_or (P1 P2 : Prop) `{!Decision P1, !Decision P2}
+    (e1 e2 : expr) (Φ : val → iProp Σ) :
+  WP e1 {{ v, ⌜v = #(bool_decide P1)⌝ }} -∗
+  (⌜¬ P1⌝ -∗ WP e2 {{ v, ⌜v = #(bool_decide P2)⌝ }}) -∗
+  Φ #(bool_decide (P1 ∨ P2)) -∗
+  WP e1 || e2 {{ Φ }}.
+Proof.
+  iIntros "He1 He2 HΦ".
+  wp_bind e1. iApply (wp_wand with "He1").
+  iIntros (v1 ->). rewrite (bool_decide_decide P1).
+  destruct (decide P1) as [HP1|HP1].
+  - wp_pures. iClear "He2".
+    rewrite bool_decide_eq_true_2 //. tauto.
+  - wp_pures. iSpecialize ("He2" $! HP1).
+    iApply (wp_wand with "He2").
+    iIntros (v1 ->).
+    rewrite (bool_decide_decide P2).
+    destruct (decide P2) as [HP2|HP2].
+    + rewrite bool_decide_eq_true_2 //. tauto.
+    + rewrite bool_decide_eq_false_2 //. tauto.
+Qed.
+
 Theorem wp_Assume stk E (cond: bool) :
   {{{ True }}}
     Assume #cond @ stk; E
