@@ -70,7 +70,7 @@ Proof.
   iIntros (? ->). done.
 Qed.
 
-Theorem wp_and (P1 P2 : Prop) `{!Decision P1, !Decision P2}
+Theorem wp_and_pure (P1 P2 : Prop) `{!Decision P1, !Decision P2}
     (e1 e2 : expr) (Φ : val → iProp Σ) :
   WP e1 {{ v, ⌜v = #(bool_decide P1)⌝ }} -∗
   (⌜P1⌝ -∗ WP e2 {{ v, ⌜v = #(bool_decide P2)⌝ }}) -∗
@@ -116,6 +116,19 @@ Proof.
       by iApply "HΦ".
     + rewrite bool_decide_eq_false_2 //; last tauto.
       by iApply "HΦ".
+Qed.
+
+Theorem wp_or_pure (P1 P2 : Prop) `{!Decision P1, !Decision P2}
+    (e1 e2 : expr) (Φ : val → iProp Σ) :
+  WP e1 {{ v, ⌜v = #(bool_decide P1)⌝ }} -∗
+  (⌜¬ P1⌝ -∗ WP e2 {{ v, ⌜v = #(bool_decide P2)⌝ }}) -∗
+  Φ #(bool_decide (P1 ∨ P2)) -∗
+  WP e1 || e2 {{ Φ }}.
+Proof.
+  iIntros "He1 He2 HΦ".
+  iApply (wp_or _ _ True with "[//] He1 [He2]").
+  { iIntros "HP _". iApply (wp_wand with "(He2 HP)"). eauto. }
+  eauto.
 Qed.
 
 Theorem wp_Assume stk E (cond: bool) :

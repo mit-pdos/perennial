@@ -51,7 +51,7 @@ Proof.
   wp_loadField.
   wp_pures.
 
-  wp_apply (wp_and ok (int.Z args.(CPR_Seq) ≤ int.Z seqno)%Z).
+  wp_apply (wp_and_pure ok (int.Z args.(CPR_Seq) ≤ int.Z seqno)%Z).
   { wp_pures. by destruct ok. }
   { iIntros "_". wp_pures. done. }
 

@@ -80,7 +80,7 @@ Proof.
   wp_loadField.
   wp_pures.
 
-  wp_apply (wp_and ok (int.Z args.(GR_Seq) ≤ int.Z v)%Z).
+  wp_apply (wp_and_pure ok (int.Z args.(GR_Seq) ≤ int.Z v)%Z).
   { wp_pures. by destruct ok. }
   { iIntros "_". wp_pures. done. }
 
