@@ -343,9 +343,10 @@ Definition ReplicaServer__AppendRPC: val :=
       #false
     else
       (if: (struct.loadF ReplicaServer "cn" "s" < struct.loadF AppendArgs "cn" "args") || (slice.len (struct.loadF AppendArgs "log" "args") > slice.len (struct.loadF ReplicaServer "opLog" "s"))
-      then struct.storeF ReplicaServer "opLog" "s" (struct.loadF AppendArgs "log" "args")
+      then
+        struct.storeF ReplicaServer "opLog" "s" (struct.loadF AppendArgs "log" "args");;
+        struct.storeF ReplicaServer "cn" "s" (struct.loadF AppendArgs "cn" "args")
       else #());;
-      struct.storeF ReplicaServer "cn" "s" (struct.loadF AppendArgs "cn" "args");;
       (if: struct.loadF AppendArgs "commitIdx" "args" > struct.loadF ReplicaServer "commitIdx" "s"
       then struct.storeF ReplicaServer "commitIdx" "s" (struct.loadF AppendArgs "commitIdx" "args")
       else #());;

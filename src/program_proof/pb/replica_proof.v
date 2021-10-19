@@ -35,7 +35,7 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
   "#Hproposal_lb" ∷ proposal_lb γ cn opLog ∗
   "#HoldConfMax" ∷ φ γ cn opLog ∗
   "HprimaryOwnsProposal" ∷ (if isPrimary then (proposal_ptsto γ cn opLog) else True) ∗
-  "#Hcommit_lb" ∷ commit_lb γ (subslice 0 (int.nat commitIdx) opLog)
+  "#Hcommit_lb" ∷ commit_lb γ (take (int.nat commitIdx) opLog)
 .
 
 Definition ReplicaServerN := nroot .@ "ReplicaServer".
@@ -62,14 +62,14 @@ Definition own_AppendArgs (args_ptr:loc) (args:AppendArgsC) : iProp Σ :=
   "HAlog_slice" ∷ is_slice log_sl byteT 1%Qp args.(AA_log)
 .
 
-Search "Subslice".
 Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   {{{
        is_ReplicaServer s rid γ ∗
        own_AppendArgs args_ptr args ∗
        proposal_lb γ args.(AA_cn) args.(AA_log) ∗
        φ γ args.(AA_cn) args.(AA_log) ∗
-       commit_lb γ (subslice 0 (int.nat args.(AA_commitIdx)) args.(AA_log))
+       commit_lb γ (take (int.nat args.(AA_commitIdx)) args.(AA_log)) ∗
+       ⌜int.Z args.(AA_commitIdx) < length args.(AA_log)⌝
   }}}
     ReplicaServer__AppendRPC #s #args_ptr
   {{{
@@ -107,7 +107,71 @@ Proof.
   }
   (* args.cn ≥ s.cn *)
 
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_or with "[HopLog HAlog]").
+  { iNamedAccu. }
+  { by wp_pures. }
+  {
+    iIntros "% HH"; iNamed "HH".
+    wp_loadField.
+    wp_apply (wp_slice_len).
+    wp_loadField.
+    wp_apply (wp_slice_len).
+    wp_pures.
+    by iFrame.
+  }
+  iNamed 1.
+
+  (* Idea: weaken context to the thing that'll be true after the if statement *)
+  (*
+  iAssert (∃ cn' opLog_sl' opLog',
+  "HopLog" ∷ s ↦[ReplicaServer :: "opLog"] (slice_val opLog_sl') ∗
+  "HopLog_slice" ∷ is_slice opLog_sl' byteT 1 opLog' ∗
+  "Haccepted" ∷ accepted_ptsto γ cn' rid opLog' ∗
+  "HacceptedUnused" ∷ ([∗ set] cn_some ∈ fin_to_set u64, ⌜int.Z cn_some < int.Z cn'⌝
+                                                        ∨ accepted_ptsto γ cn_some rid []) ∗
+  "#Hproposal_lb" ∷ proposal_lb γ cn' opLog' ∗
+  "#HoldConfMax" ∷ φ γ cn' opLog'
+  )%I with "[HopLog HopLog_slice Haccepted HacceptedUnused Hproposal_lb HoldConfMax]" as "HH".
+  {
+  admit.
+  }
+  wp_apply (wp_If_optional with ) *)
+
   (* TODO: Should do if-join here *)
+  wp_apply (wp_If_join_evar with "[Haccepted HacceptedUnused HopLog HopLog_slice HAlog HAlog_slice]").
+  {
+    iIntros.
+    wp_if_destruct; last first.
+    { (* won't grow log *)
+    iModIntro; iSplitL ""; first done.
+    iAssert (∃ cn' opLog_sl' opLog',
+              "HopLog" ∷ s ↦[ReplicaServer :: "opLog"] (slice_val opLog_sl') ∗
+                       "HopLog_slice" ∷ is_slice opLog_sl' byteT 1 opLog' ∗
+                       "Haccepted" ∷ accepted_ptsto γ cn' rid opLog' ∗
+                       "HacceptedUnused" ∷ ([∗ set] cn_some ∈ fin_to_set u64, ⌜int.Z cn_some < int.Z cn'⌝
+                                                                              ∨ accepted_ptsto γ cn_some rid []) ∗
+                       "#Hproposal_lb" ∷ proposal_lb γ cn' opLog' ∗
+                       "#HoldConfMax" ∷ φ γ cn' opLog'
+            )%I with "[HopLog HopLog_slice Haccepted HacceptedUnused Hproposal_lb HoldConfMax]" as "HH".
+    { iExists _, _, _; iFrame "∗#". }
+    iClear "HAlog HAlog_slice".
+    iNamedAccu.
+    }
+    { (* will grow the log *)
+      wp_loadField.
+      wp_apply (wp_storeField with "HopLog").
+      { apply slice_val_ty. }
+      iIntros "HopLog".
+      iSplitL ""; first done.
+      iExists _, _, _.
+      iFrame "HopLog ∗".
+      (* TODO: Ghost stuff. *)
+      admit.
+    }
+  }
+  iIntros "HH".
   wp_loadField.
   wp_loadField.
 
