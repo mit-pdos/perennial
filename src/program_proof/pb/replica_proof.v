@@ -61,7 +61,9 @@ Definition own_AppendArgs (args_ptr:loc) (args:AppendArgsC) : iProp Σ :=
 Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   {{{
        is_ReplicaServer s rid γ ∗
-       own_AppendArgs args_ptr args
+       own_AppendArgs args_ptr args ∗
+       proposal_lb γ args.(AA_cn) args.(AA_log) ∗
+       φ γ args.(AA_cn) args.(AA_log)
   }}}
     ReplicaServer__AppendRPC #s #args_ptr
   {{{
@@ -69,7 +71,7 @@ Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   }}}
 .
 Proof.
-  iIntros (Φ) "[#HisRepl Hargs] HΦ".
+  iIntros (Φ) "(#HisRepl & Hargs & #Hpre) HΦ".
   iNamed "HisRepl".
   wp_lam.
   wp_pures.

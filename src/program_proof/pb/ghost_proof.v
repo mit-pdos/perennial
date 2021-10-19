@@ -44,15 +44,30 @@ Admitted.
 Definition commit_ptsto γ (l:Log): iProp Σ.
 Admitted.
 
+Definition commit_lb γ (l:Log): iProp Σ.
+Admitted.
+
+Global Instance proposal_lb_pers γ cn l :
+  Persistent (proposal_lb γ cn l).
+Admitted.
+
+Global Instance accepted_lb_pers γ cn r l :
+  Persistent (accepted_lb γ cn r l).
+Admitted.
+
+Global Instance committed_lb_pers γ l :
+  Persistent (commit_lb γ l).
+Admitted.
+
 Definition accepted_by γ cn l : iProp Σ :=
   ∃ conf, config_ptsto γ cn conf ∗
       ∀ (r:u64), ⌜r ∈ conf⌝ → accepted_lb γ cn r l.
 
 (* oldconfmax *)
 Definition φ γ (cn:u64) log : iProp Σ :=
-  ∀ cn_old log_old ,
+  □(∀ cn_old log_old ,
    ⌜int.Z cn_old < int.Z cn⌝ →
-   accepted_by γ cn_old log_old → ⌜log_old ⪯ log⌝.
+   accepted_by γ cn_old log_old → ⌜log_old ⪯ log⌝).
 
 (* System-wide invariant for primary/backup replication with many replicas with
    configuration changes *)
