@@ -11,7 +11,7 @@ Definition log_po (lhs rhs:Log) : Prop :=
   prefix lhs rhs.
 
 Notation "lhs ⪯ rhs" := (log_po lhs rhs)
-(at level 20, format "lhs ⪯ rhs") : bi_scope.
+(at level 20, format "lhs ⪯ rhs") : stdpp_scope.
 
 Section definitions.
 
@@ -76,5 +76,15 @@ Definition pb_invariant γ : iProp Σ :=
   "Hcommit" ∷ commit_ptsto γ l_committed ∗
   "Haccepted" ∷ accepted_by γ cn_committed l_committed ∗ φ γ cn_committed l_committed
 .
+
+Lemma proposal_lb_comparable γ cn l l' :
+  proposal_lb γ cn l -∗ proposal_lb γ cn l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l'⌝.
+Proof.
+Admitted.
+
+Lemma commit_lb_monotonic γ l l' :
+  (l' ⪯ l) → commit_lb γ l -∗ commit_lb γ l'.
+Proof.
+Admitted.
 
 End definitions.

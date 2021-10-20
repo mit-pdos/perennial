@@ -217,14 +217,26 @@ Proof.
            opLog' ≤ args.(AA_log);
          *)
         (* iDestruct "Hpre" as "(_&_&$&_)". *)
-        iDestruct "Hpre" as "(Hproposal_lb2 & _ & Hcommit & _)".
+        iDestruct "Hpre" as "(Hproposal_lb2 & _ & Hcommit & %HcommitLen)".
         (* Use the fact that args.(AA_log) and opLog' are comparable. *)
-        (* assert (take (int.nat args.(AA_commitIdx)) opLog' ⪯ (take (int.nat args.(AA_commitIdx)) args.(AA_log)) *)
-        admit.
+        assert ( take (int.nat args.(AA_commitIdx)) opLog' ⪯
+                (take (int.nat args.(AA_commitIdx)) args.(AA_log)))%I.
+        {
+          set (l1:=args.(AA_log)) in *.
+          set (l2:=opLog') in *.
+          set (e:=int.nat args.(AA_commitIdx)) in *.
+          assert (e < length l1) by word.
+          clear -H0 HnewLog.
+          admit.
+        }
+        iApply (commit_lb_monotonic with "Hcommit").
+        done.
       }
       iNamedAccu.
     }
-    {
+    { (* args.commitIdx is not larger than commitIdx. boils down to the newly
+         proposed value not contradicting the previously committed stuff, the
+         proof is done earlier for conveneince. *)
         iModIntro. iSplitL ""; first done.
         iFrame.
         iExists commitIdx.
