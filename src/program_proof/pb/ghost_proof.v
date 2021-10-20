@@ -67,8 +67,7 @@ Definition accepted_by γ cn l : iProp Σ :=
   ∃ conf, config_ptsto γ cn conf ∗
       ∀ (r:u64), ⌜r ∈ conf⌝ → accepted_lb γ cn r l.
 
-(* oldconfmax *)
-Definition φ γ (cn:u64) log : iProp Σ :=
+Definition oldConfMax γ (cn:u64) log : iProp Σ :=
   □(∀ cn_old log_old ,
    ⌜int.Z cn_old < int.Z cn⌝ →
    accepted_by γ cn_old log_old → ⌜log_old ⪯ log⌝).
@@ -78,7 +77,7 @@ Definition φ γ (cn:u64) log : iProp Σ :=
 Definition pb_invariant γ : iProp Σ :=
   ∃ cn_committed l_committed,
   "Hcommit" ∷ commit_ptsto γ l_committed ∗
-  "Haccepted" ∷ accepted_by γ cn_committed l_committed ∗ φ γ cn_committed l_committed
+  "Haccepted" ∷ accepted_by γ cn_committed l_committed ∗ oldConfMax γ cn_committed l_committed
 .
 
 Lemma accepted_update γ cn r l l' :
@@ -96,8 +95,18 @@ Definition commit_lb_by γ (cn:u64) l : iProp Σ :=
 
 (* commit_lb_by is covariant in cn, contravariant in l *)
 Lemma commit_lb_by_monotonic γ cn cn' l l' :
-  int.Z cn' ≤ int.Z cn → (l ⪯ l') → commit_lb_by γ cn' l' -∗ commit_lb_by γ cn l.
+  int.Z cn' <= int.Z cn → (l ⪯ l') → commit_lb_by γ cn' l' -∗ commit_lb_by γ cn l.
 Proof.
 Admitted.
+
+Lemma oldConfMax_commit_lb_by γ cn l cn_old l_old :
+  int.Z cn_old < int.Z cn → oldConfMax γ cn l -∗ commit_lb_by γ cn_old l_old -∗ ⌜l_old ⪯ l⌝.
+Proof.
+  iIntros (?) "#Hφ [_ #Hcommit]".
+  iDestruct "Hcommit" as (? ?) "Haccepted_by".
+  iApply ("Hφ" $! cn_old0).
+  { iPureIntro. word. }
+  iFrame "#".
+Qed.
 
 End definitions.

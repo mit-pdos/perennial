@@ -33,7 +33,7 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
                       ⌜int.Z cn_some ≤ int.Z cn⌝ ∨ accepted_ptsto γ cn_some me []
                       ) ∗
   "#Hproposal_lb" ∷ proposal_lb γ cn opLog ∗
-  "#HoldConfMax" ∷ φ γ cn opLog ∗
+  "#HoldConfMax" ∷ oldConfMax γ cn opLog ∗
   "HprimaryOwnsProposal" ∷ (if isPrimary then (proposal_ptsto γ cn opLog) else True) ∗
   "#Hcommit_lb" ∷ commit_lb_by γ cn (take (int.nat commitIdx) opLog)
 .
@@ -67,7 +67,7 @@ Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
        "#HisRepl" ∷ is_ReplicaServer s rid γ ∗
        "Hargs" ∷ own_AppendArgs args_ptr args ∗
        "#Hproposal_lb_in" ∷ proposal_lb γ args.(AA_cn) args.(AA_log) ∗
-       "#HoldConfMax_in" ∷ φ γ args.(AA_cn) args.(AA_log) ∗
+       "#HoldConfMax_in" ∷ oldConfMax γ args.(AA_cn) args.(AA_log) ∗
        "#Hcommit_lb_in" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat args.(AA_commitIdx)) args.(AA_log)) ∗
        "%HcommitLength" ∷ ⌜int.Z args.(AA_commitIdx) < length args.(AA_log)⌝
   }}}
@@ -139,10 +139,9 @@ Proof.
                        "HacceptedUnused" ∷ ([∗ set] cn_some ∈ fin_to_set u64, ⌜int.Z cn_some ≤ int.Z args.(AA_cn)⌝
                                                                               ∨ accepted_ptsto γ cn_some rid []) ∗
                        "#Hproposal_lb" ∷ proposal_lb γ args.(AA_cn) opLog' ∗
-                       "#HoldConfMax" ∷ φ γ args.(AA_cn) opLog' ∗
+                       "#HoldConfMax" ∷ oldConfMax γ args.(AA_cn) opLog' ∗
                        "Hcn" ∷ s ↦[ReplicaServer :: "cn"] #args.(AA_cn) ∗
-                       "#Hcommit_acccepted_by" ∷ (∃ cn_old, ⌜int.Z cn_old <= int.Z args.(AA_cn)⌝ ∗ accepted_by γ cn_old (take (int.nat commitIdx) opLog')) ∗
-                       "#Hcommit_lb_oldIdx" ∷ commit_lb γ (take (int.nat commitIdx) opLog') ∗
+                       "#Hcommit_lb_oldIdx" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat commitIdx) opLog') ∗
                        "%HnewLog" ∷ ⌜args.(AA_log) ⪯ opLog'⌝
             )%I with "[HopLog HopLog_slice Haccepted HacceptedUnused Hproposal_lb HoldConfMax Hcn]" as "HH".
     {
@@ -200,9 +199,10 @@ Proof.
         { (* FIXME:  Need to know that commitIdx ≤ len(opLog) to make this work *)
           admit.
         }
-        iSplitR "".
-        iModIntro.
-        by iApply (commit_lb_monotonic with "Hcommit_lb").
+        iSplitR ""; last done.
+        iApply (commit_lb_by_monotonic with "Hcommit_lb").
+        { done. }
+        { done. }
       }
       { (* args.cn > s.cn: in this case, we want to increase our cn to args.cn *)
         iClear "Haccepted". (* throw away the old accepted↦ *)
@@ -233,14 +233,13 @@ Proof.
            the last config), and need to prove that our commitIndex is still
            valid. We don't need to "take back" anything we told the client that
            we committed. *)
-        (* Lemma:
-           inv (pb_invariant γ) -∗
-           commit_lb γ old_log -∗
-           proposal_lb γ cn log ={⊤}=∗
-           old_log ⪯ log.
-           Proof.
-           Open pb_inv. accepted_by
-         *)
+        iDestruct (oldConfMax_commit_lb_by with "HoldConfMax_in Hcommit_lb") as %HlogLe.
+        { done. }
+        iApply (commit_lb_by_monotonic with "Hcommit_lb").
+        { word. }
+        clear -HlogLe.
+        (* TODO: pure fact about lists and prefixes *)
+        admit.
       }
     }
   }
@@ -262,7 +261,7 @@ Proof.
       wp_storeField.
       iSplitL ""; first done.
       iAssert (∃ (commitIdx':u64), "Hcommit" ∷ s ↦[ReplicaServer :: "commitIdx"] #commitIdx'
-                                     ∗ "#Hcommit_lb" ∷ commit_lb γ (take (int.nat commitIdx') opLog')
+                                     ∗ "#Hcommit_lb" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat commitIdx') opLog')
               )%I with "[HcommitIdx]" as "HH".
       {
         iExists _.
@@ -270,8 +269,6 @@ Proof.
         (* prove that args.(AA_log) ≤ opLog' or that
            opLog' ≤ args.(AA_log);
          *)
-        (* iDestruct "Hpre" as "(_&_&$&_)". *)
-        iDestruct "Hpre" as "(Hproposal_lb2 & _ & Hcommit & %HcommitLen)".
         (* Use the fact that args.(AA_log) and opLog' are comparable. *)
         assert ( take (int.nat args.(AA_commitIdx)) opLog' ⪯
                 (take (int.nat args.(AA_commitIdx)) args.(AA_log)))%I.
@@ -281,9 +278,10 @@ Proof.
           set (e:=int.nat args.(AA_commitIdx)) in *.
           assert (e < length l1) by word.
           clear -H0 HnewLog.
-          admit.
+          admit. (* TODO: pure list fact *)
         }
-        iApply (commit_lb_monotonic with "Hcommit").
+        iApply (commit_lb_by_monotonic with "Hcommit_lb_in").
+        { word. }
         done.
       }
       iNamedAccu.
@@ -300,7 +298,6 @@ Proof.
   }
   iIntros "HH".
   iNamed "HH".
-  iClear "Hcommit_lb".
   iNamed "HH".
   wp_pures.
   wp_storeField.
