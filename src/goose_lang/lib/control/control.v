@@ -51,7 +51,7 @@ can use tactics like [case_bool_decide] instead of having to deduce facts from
 The lemma does not really have anything to do with [if:], it but having an [if:]
 in the statement is useful so that [wp_apply] automatically does the right
 [wp_bind]. *)
-Lemma wp_If_join_evar (b : bool) e1 e2 Q Φ :
+Lemma wp_If_join_evar Q (b : bool) e1 e2 Φ :
   (∀ b', ⌜b' = b⌝ -∗ WP if: #b then e1 else e2 {{ v, ⌜v = #()⌝ ∗ Q b' }}) -∗
   (Q b -∗ Φ #()) -∗ WP if: #b then e1 else e2 {{ Φ }}.
 Proof.
@@ -62,7 +62,7 @@ Qed.
 
 (** A version of the above for the case where you do not want or need [Q] to
 depend on which branch was taken. *)
-Lemma wp_If_join_evar' (b : bool) e1 e2 Q Φ :
+Lemma wp_If_join_evar' Q (b : bool) e1 e2 Φ :
   (WP if: #b then e1 else e2 {{ v, ⌜v = #()⌝ ∗ Q }}) -∗
   (Q -∗ Φ #()) -∗ WP if: #b then e1 else e2 {{ Φ }}.
 Proof.

@@ -38,14 +38,14 @@ Proof.
   wp_apply (wp_MapGet with "HpeersMap").
   iIntros (v ok) "[%Hlookup HpeersMap]".
   wp_pures.
-  wp_apply (wp_If_join_evar _ _ _ (λ _, ∃ peersM, "%Hlookup'" ∷ ⌜ is_Some (peersM !! args.(MR_Dst)) ⌝ ∗
+  wp_apply (wp_If_join_evar' (∃ peersM, "%Hlookup'" ∷ ⌜ is_Some (peersM !! args.(MR_Dst)) ⌝ ∗
                         "HDst" ∷ args_ptr ↦[MoveShardRequest :: "Dst"] #args.(MR_Dst) ∗
                         "Hpeers" ∷ s ↦[KVShardServer :: "peers"] #peers_ptr ∗
                         "HpeerClerks" ∷ ([∗ map] ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn)) ∗
                         "HpeersMap" ∷ is_map peers_ptr 1 peersM)%I
               with "[HDst HpeersMap HpeerClerks Hpeers]").
   {
-    iIntros (b' Heq). wp_if_destruct.
+    wp_if_destruct.
     - do 2 wp_loadField.
       wp_apply (wp_MakeFreshKVShardClerk with "Hother_shard Hiscm").
       iIntros (ck) "Hclerk".

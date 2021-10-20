@@ -1019,10 +1019,10 @@ Proof.
   iDestruct "H" as (b) "(Hdone&Hextracted&Hdone_clo)".
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
   iDestruct ("Hdone_clo" with "[$]") as "Hlockinv".
-  wp_apply (wp_If_join_evar _ _ _ (λ _, lock.locked #lk ∗
+  wp_apply (wp_If_join_evar' (lock.locked #lk ∗
                                   RPCClient_lock_inner Γ cl_ptr lk mref)%I
    with "[Hi Hlockinv]").
-  { iIntros (b' _). clear b'. case_bool_decide; wp_pures.
+  { case_bool_decide; wp_pures.
     - wp_loadField. wp_apply (wp_condWaitTimeout with "[$cond' $Hi $Hlk $Hlockinv]").
       iIntros "(Hi&Hlockinv)". wp_pures.
       iFrame. eauto.
