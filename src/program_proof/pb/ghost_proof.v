@@ -47,6 +47,10 @@ Admitted.
 Definition commit_lb γ (l:Log): iProp Σ.
 Admitted.
 
+Global Instance config_ptsto_pers γ cn conf :
+  Persistent (config_ptsto γ cn conf).
+Admitted.
+
 Global Instance proposal_lb_pers γ cn l :
   Persistent (proposal_lb γ cn l).
 Admitted.
@@ -87,8 +91,12 @@ Lemma proposal_lb_comparable γ cn l l' :
 Proof.
 Admitted.
 
-Lemma commit_lb_monotonic γ l l' :
-  (l' ⪯ l) → commit_lb γ l -∗ commit_lb γ l'.
+Definition commit_lb_by γ (cn:u64) l : iProp Σ :=
+  commit_lb γ l ∗ (∃ cn_old, ⌜int.Z cn_old <= int.Z cn⌝ ∗ accepted_by γ cn_old l).
+
+(* commit_lb_by is covariant in cn, contravariant in l *)
+Lemma commit_lb_by_monotonic γ cn cn' l l' :
+  int.Z cn' ≤ int.Z cn → (l ⪯ l') → commit_lb_by γ cn' l' -∗ commit_lb_by γ cn l.
 Proof.
 Admitted.
 
