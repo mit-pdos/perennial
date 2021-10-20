@@ -289,9 +289,9 @@ Definition ReplicaServer__postAppendRPC: val :=
     lock.acquire (struct.loadF ReplicaServer "mu" "s");;
     (if: (struct.loadF ReplicaServer "cn" "s" = struct.loadF AppendArgs "cn" "args")
     then
-      (if: SliceGet uint64T (struct.loadF ReplicaServer "matchIdx" "s") ("i" + #1) < slice.len (struct.loadF AppendArgs "log" "args")
+      (if: SliceGet uint64T (struct.loadF ReplicaServer "matchIdx" "s") "i" < slice.len (struct.loadF AppendArgs "log" "args")
       then
-        SliceSet uint64T (struct.loadF ReplicaServer "matchIdx" "s") ("i" + #1) (slice.len (struct.loadF AppendArgs "log" "args"));;
+        SliceSet uint64T (struct.loadF ReplicaServer "matchIdx" "s") "i" (slice.len (struct.loadF AppendArgs "log" "args"));;
         let: "m" := min (struct.loadF ReplicaServer "matchIdx" "s") in
         (if: "m" > struct.loadF ReplicaServer "commitIdx" "s"
         then struct.storeF ReplicaServer "commitIdx" "s" "m"
@@ -324,7 +324,7 @@ Definition ReplicaServer__StartAppend: val :=
         (let: "ck" := "ck" in
         let: "i" := "i" in
         Fork (ReplicaClerk__AppendRPC "ck" "args";;
-              ReplicaServer__postAppendRPC "s" "i" "args"));;
+              ReplicaServer__postAppendRPC "s" ("i" + #1) "args"));;
       #true).
 
 Definition ReplicaServer__GetCommittedLog: val :=

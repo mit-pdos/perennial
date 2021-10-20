@@ -15,7 +15,7 @@ Implicit Type γ:pb_names.
 Definition own_ReplicaServer (s:loc) (me:u64) γ
   : iProp Σ :=
   ∃ (cn commitIdx:u64) (matchIdx_sl opLog_sl replicaClerks_sl : Slice.t) (isPrimary:bool)
-    (matchIdx:list u64) (opLog:list u8) (replicaClerks:list loc) ,
+    (matchIdx:list u64) (opLog:list u8) (replicaClerks:list loc),
   "Hcn" ∷ s ↦[ReplicaServer :: "cn"] #cn ∗
   (* don't need use the conf field right now *)
   "HisPrimary" ∷ s ↦[ReplicaServer :: "isPrimary"] #isPrimary ∗
@@ -25,7 +25,7 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
   "HopLog_slice" ∷ is_slice opLog_sl byteT 1%Qp opLog ∗
   "HcommitIdx" ∷ s ↦[ReplicaServer :: "commitIdx"] #commitIdx ∗
   "HmatchIdx" ∷ s ↦[ReplicaServer :: "matchIdx"] (slice_val matchIdx_sl) ∗
-  "HmatchIdx_slice" ∷ is_slice matchIdx_sl uint64T 1%Qp matchIdx∗
+  "HmatchIdx_slice" ∷ is_slice_small matchIdx_sl uint64T 1%Qp matchIdx∗
 
   (* ghost stuff *)
   "Haccepted" ∷ accepted_ptsto γ cn me opLog ∗
@@ -36,7 +36,14 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
   "#HoldConfMax" ∷ oldConfMax γ cn opLog ∗
   "HprimaryOwnsProposal" ∷ (if isPrimary then (proposal_ptsto γ cn opLog) else True) ∗
   "#Hcommit_lb" ∷ commit_lb_by γ cn (take (int.nat commitIdx) opLog) ∗
-  "%HcommitLeLogLen" ∷ ⌜int.Z commitIdx <= length opLog⌝
+  "%HcommitLeLogLen" ∷ ⌜int.Z commitIdx <= length opLog⌝ ∗
+
+  (* this is stuff for the primary only *)
+  if isPrimary then
+    ∃ (conf:list u64),
+  "#HconfPtsto" ∷ config_ptsto γ cn conf ∗
+  "#HmatchIdxAccepted" ∷ [∗ list] _ ↦ rid;j ∈ conf; matchIdx, accepted_lb γ cn rid (take (int.nat j) opLog)
+  else True
 .
 
 Definition ReplicaServerN := nroot .@ "ReplicaServer".
@@ -62,6 +69,118 @@ Definition own_AppendArgs (args_ptr:loc) (args:AppendArgsC) : iProp Σ :=
   "HAlog" ∷ args_ptr ↦[AppendArgs :: "log"] (slice_val log_sl) ∗
   "HAlog_slice" ∷ is_slice log_sl byteT 1%Qp args.(AA_log)
 .
+
+Lemma wp_min sl (l:list u64):
+  {{{
+       is_slice_small sl uint64T 1%Qp l
+  }}}
+    min (slice_val sl)
+  {{{
+       (m:u64), RET #m; ⌜m ∈ l⌝ ∗ ⌜∀ n, n ∈ l → int.Z m ≤ int.Z n⌝
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  wp_lam.
+  wp_apply (wp_ref_to).
+  { naive_solver. }
+  iIntros (m_ptr) "Hm".
+  wp_pures.
+  Search forSlice.
+  wp_apply (wp_forSlice with "[] [$Hpre]").
+  {
+    iIntros.
+    admit.
+  }
+Admitted.
+
+Lemma wp_ReplicaServer__postAppendRPC (s:loc) (i:u64) conf rid γ (args_ptr:loc) args :
+  {{{
+       "#HisRepl" ∷ is_ReplicaServer s rid γ ∗
+       "#Hconf" ∷ config_ptsto γ args.(AA_cn) conf ∗
+       "%Hiconf" ∷ ⌜conf !! int.nat i = Some rid⌝ ∗
+       "Hargs" ∷ own_AppendArgs args_ptr args ∗
+       accepted_lb γ args.(AA_cn) rid args.(AA_log)
+  }}}
+    ReplicaServer__postAppendRPC #s #i #args_ptr
+  {{{
+       RET #(); True
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_pures.
+
+  iNamed "HisRepl".
+
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+  wp_pures.
+  iNamed "Hown".
+  iNamed "Hargs".
+  wp_loadField.
+  wp_loadField.
+  wp_if_destruct; last first.
+  {
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext.
+      do 9 iExists _. iFrame "∗ #".
+      iFrame "Hown".
+      done.
+    }
+    wp_pures.
+    by iApply "HΦ".
+  }
+  wp_loadField.
+  assert (isPrimary = true) as ->.
+  { admit. (* FIXME: have to add some extra monotonic ghost state to establish this *) }
+  iNamed "Hown".
+  iDestruct (config_ptsto_agree with "HconfPtsto Hconf") as %HconfAgree.
+  rewrite HconfAgree.
+  iDestruct (big_sepL2_lookup_1_some with "HmatchIdxAccepted") as %HmatchLookup.
+  { done. }
+  destruct HmatchLookup as [idx HmatchLookup].
+  wp_apply (wp_SliceGet with "[$HmatchIdx_slice]").
+  { done. }
+  iIntros "HmatchIdx_slice".
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  iDestruct (is_slice_sz with "HopLog_slice") as %HopLogLen.
+  wp_if_destruct.
+  { (* increase matchIdx[i] *)
+    wp_loadField.
+    wp_apply (wp_slice_len).
+    wp_loadField.
+    wp_apply (wp_SliceSet with "[$HmatchIdx_slice]").
+    { done. }
+    iIntros "HmatchIdx_slice".
+    wp_pures.
+    wp_loadField.
+    set matchIdx':=(<[int.nat i:=log_sl.(Slice.sz)]> matchIdx).
+    wp_apply (wp_min with "[$HmatchIdx_slice]").
+    iIntros (m) "[%Hm1 %Hm2]".
+    wp_pures.
+    wp_loadField.
+    wp_if_destruct.
+    { (* commit something! *)
+      wp_storeField.
+      wp_loadField.
+      (* Need to do two things: 1) prove HmatchIdxAccepted for the new matchIdx,
+         and 2) prove commit_lb_by using the key ghost lemma *)
+      admit.
+    }
+    admit.
+  }
+  { (* nothing to do; just let go of mutex *)
+    admit.
+  }
+Admitted.
 
 Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   {{{
@@ -102,6 +221,7 @@ Proof.
     iExists _, _, _, _, _, _, _, _.
     iExists _. (* can only iExists 8 things at a time *)
     iFrame "∗#".
+    iFrame "Hown".
     done.
     }
     wp_pures.

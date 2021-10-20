@@ -80,6 +80,11 @@ Definition pb_invariant γ : iProp Σ :=
   "Haccepted" ∷ accepted_by γ cn_committed l_committed ∗ oldConfMax γ cn_committed l_committed
 .
 
+Lemma config_ptsto_agree γ cn conf conf' :
+  config_ptsto γ cn conf -∗ config_ptsto γ cn conf' -∗ ⌜conf = conf'⌝.
+Proof.
+Admitted.
+
 Lemma accepted_update γ cn r l l' :
   (l ⪯ l') → accepted_ptsto γ cn r l ==∗ accepted_ptsto γ cn r l'.
 Proof.
