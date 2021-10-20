@@ -35,7 +35,8 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
   "#Hproposal_lb" ∷ proposal_lb γ cn opLog ∗
   "#HoldConfMax" ∷ oldConfMax γ cn opLog ∗
   "HprimaryOwnsProposal" ∷ (if isPrimary then (proposal_ptsto γ cn opLog) else True) ∗
-  "#Hcommit_lb" ∷ commit_lb_by γ cn (take (int.nat commitIdx) opLog)
+  "#Hcommit_lb" ∷ commit_lb_by γ cn (take (int.nat commitIdx) opLog) ∗
+  "%HcommitLeLogLen" ∷ ⌜int.Z commitIdx <= length opLog⌝
 .
 
 Definition ReplicaServerN := nroot .@ "ReplicaServer".
@@ -73,7 +74,7 @@ Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   }}}
     ReplicaServer__AppendRPC #s #args_ptr
   {{{
-       (r:bool), RET #r; True
+       (r:bool), RET #r; ⌜r = true⌝ ∗ accepted_lb γ args.(AA_cn) rid args.(AA_log) ∨ ⌜r = false⌝
   }}}
 .
 Proof.
@@ -101,9 +102,11 @@ Proof.
     iExists _, _, _, _, _, _, _, _.
     iExists _. (* can only iExists 8 things at a time *)
     iFrame "∗#".
+    done.
     }
     wp_pures.
     iApply "HΦ".
+    iRight.
     done.
   }
   (* args.cn ≥ s.cn *)
@@ -142,23 +145,34 @@ Proof.
                        "#HoldConfMax" ∷ oldConfMax γ args.(AA_cn) opLog' ∗
                        "Hcn" ∷ s ↦[ReplicaServer :: "cn"] #args.(AA_cn) ∗
                        "#Hcommit_lb_oldIdx" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat commitIdx) opLog') ∗
-                       "%HnewLog" ∷ ⌜args.(AA_log) ⪯ opLog'⌝
+                       "%HnewLog" ∷ ⌜args.(AA_log) ⪯ opLog'⌝ ∗
+                       "#Hacc_lb" ∷ accepted_lb γ args.(AA_cn) rid args.(AA_log) ∗
+                       "%HcommitIdxLeNewLogLen" ∷ ⌜int.Z commitIdx ≤ length opLog'⌝
             )%I with "[HopLog HopLog_slice Haccepted HacceptedUnused Hproposal_lb HoldConfMax Hcn]" as "HH".
     {
       replace (cn) with (args.(AA_cn)); last by word.
+      iDestruct (accepted_witness with "Haccepted") as "#Hacc_lb".
       iExists _, _; iFrame "∗#".
       assert (int.nat opLog_sl.(Slice.sz) >= int.nat log_sl.(Slice.sz))%Z as HopLogBigger.
       { word. }
 
       iDestruct (proposal_lb_comparable with "Hproposal_lb_in Hproposal_lb") as %Hcomparable.
-      destruct Hcomparable as [|]; first done.
-      rewrite -HopLogLen in HopLogBigger.
-      rewrite -HALogLen in HopLogBigger.
-      assert (opLog = args.(AA_log)) as ->.
-      { (* FIXME: pure list prefix fact *)
-        admit.
+      destruct Hcomparable as [|].
+      { (* case 1: args.log ⪯ opLog *)
+        iSplitL ""; first done.
+        iSplitR ""; last done.
+        by iApply accepted_lb_monotonic.
       }
-      done.
+      { (* case 2: opLog ⪯ args.log; this will imply that the two are actually equal *)
+        rewrite -HopLogLen in HopLogBigger.
+        rewrite -HALogLen in HopLogBigger.
+        assert (opLog = args.(AA_log)) as ->.
+        { (* FIXME: pure list prefix fact *)
+          admit.
+        }
+        iFrame "#".
+        done.
+      }
     }
     iClear "HAlog HAcn HAlog_slice".
     iNamedAccu.
@@ -193,16 +207,24 @@ Proof.
         assert (opLog ⪯ args.(AA_log)) as HargLogLarger.
         { (* TODO: comparable + longer length -> larger log *)
           admit. }
-        iSplitL "Haccepted".
-        { by iApply (accepted_update with "Haccepted"). }
+        iMod (accepted_update with "Haccepted") as "Haccepted".
+        { done. }
+        iDestruct (accepted_witness with "Haccepted") as "#Hacc_lb".
+        iFrame "Hacc_lb".
+        iSplitL "Haccepted"; first done.
         assert (take (int.nat commitIdx) args.(AA_log) ⪯ take (int.nat commitIdx) opLog).
-        { (* FIXME:  Need to know that commitIdx ≤ len(opLog) to make this work *)
+        { (* TODO: Use the fact that commitIdx ≤ len(opLog) to make this work *)
           admit.
         }
-        iSplitR ""; last done.
-        iApply (commit_lb_by_monotonic with "Hcommit_lb").
-        { done. }
-        { done. }
+        iSplitR "".
+        {
+          iApply (commit_lb_by_monotonic with "Hcommit_lb").
+          { done. }
+          { done. }
+        }
+        iSplitR ""; first done.
+        iPureIntro.
+        word.
       }
       { (* args.cn > s.cn: in this case, we want to increase our cn to args.cn *)
         iClear "Haccepted". (* throw away the old accepted↦ *)
@@ -210,11 +232,10 @@ Proof.
         { set_solver. }
         iDestruct "Haccepted" as "[%Hbad|Haccepted]".
         { exfalso; word. }
-        iSplitL "Haccepted".
-        { iApply (accepted_update with "Haccepted").
-          (* TODO: empty list is prefix of everything *)
-          admit.
-        }
+        iMod (accepted_update _ _ _ _ args.(AA_log) with "Haccepted") as "Haccepted".
+        { admit. }
+        iDestruct (accepted_witness with "Haccepted") as "#Hacc_lb".
+        iSplitL "Haccepted"; first done.
         iSplitL "Hunused".
         {
           iApply "Hunused".
@@ -228,13 +249,17 @@ Proof.
             iLeft. iPureIntro. word.
           }
         }
-        iSplitR ""; last done.
-        (* XXX: we accept a brand new log (possible overwriting what we accepted in
-           the last config), and need to prove that our commitIndex is still
-           valid. We don't need to "take back" anything we told the client that
-           we committed. *)
+        iFrame "Hacc_lb".
+
         iDestruct (oldConfMax_commit_lb_by with "HoldConfMax_in Hcommit_lb") as %HlogLe.
         { done. }
+        iSplitR ""; last first.
+        {
+          iSplitL ""; first done.
+          iPureIntro.
+          admit. (* TODO: Pure fact about lists *)
+        }
+
         iApply (commit_lb_by_monotonic with "Hcommit_lb").
         { word. }
         clear -HlogLe.
@@ -260,8 +285,9 @@ Proof.
       wp_loadField.
       wp_storeField.
       iSplitL ""; first done.
-      iAssert (∃ (commitIdx':u64), "Hcommit" ∷ s ↦[ReplicaServer :: "commitIdx"] #commitIdx'
-                                     ∗ "#Hcommit_lb" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat commitIdx') opLog')
+      iAssert (∃ (commitIdx':u64), "Hcommit" ∷ s ↦[ReplicaServer :: "commitIdx"] #commitIdx' ∗
+                                   "#Hcommit_lb" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat commitIdx') opLog') ∗
+                                   "%HcommitLeLogLen" ∷ ⌜int.Z commitIdx' ≤ length opLog'⌝
               )%I with "[HcommitIdx]" as "HH".
       {
         iExists _.
@@ -280,9 +306,18 @@ Proof.
           clear -H0 HnewLog.
           admit. (* TODO: pure list fact *)
         }
-        iApply (commit_lb_by_monotonic with "Hcommit_lb_in").
-        { word. }
-        done.
+        iSplitR "".
+        {
+          iApply (commit_lb_by_monotonic with "Hcommit_lb_in").
+          { word. }
+          done.
+        }
+        {
+          iPureIntro.
+          assert (length args.(AA_log) ≤ length opLog').
+          { admit. (* TODO: pure fact *) }
+          word.
+        }
       }
       iNamedAccu.
     }
@@ -294,6 +329,12 @@ Proof.
         iExists commitIdx.
         iFrame.
         iFrame "#".
+        {
+          iPureIntro.
+          assert (length args.(AA_log) ≤ length opLog').
+          { admit. (* TODO: pure fact *) }
+          word.
+        }
     }
   }
   iIntros "HH".
@@ -308,9 +349,12 @@ Proof.
     iNext.
     do 9 iExists _.
     iFrame "∗#".
+    done.
   }
   wp_pures.
   iApply "HΦ".
+  iLeft.
+  iFrame "#".
   by iModIntro.
 Admitted.
 

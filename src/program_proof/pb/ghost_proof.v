@@ -85,6 +85,16 @@ Lemma accepted_update γ cn r l l' :
 Proof.
 Admitted.
 
+Lemma accepted_witness γ cn r l :
+  accepted_ptsto γ cn r l -∗ accepted_lb γ cn r l.
+Proof.
+Admitted.
+
+Lemma accepted_lb_monotonic γ cn r l l':
+  l ⪯ l' → accepted_lb γ cn r l' -∗ accepted_lb γ cn r l.
+Proof.
+Admitted.
+
 Lemma proposal_lb_comparable γ cn l l' :
   proposal_lb γ cn l -∗ proposal_lb γ cn l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l⌝.
 Proof.
