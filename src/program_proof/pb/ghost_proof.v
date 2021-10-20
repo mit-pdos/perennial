@@ -77,8 +77,13 @@ Definition pb_invariant γ : iProp Σ :=
   "Haccepted" ∷ accepted_by γ cn_committed l_committed ∗ φ γ cn_committed l_committed
 .
 
+Lemma accepted_update γ cn r l l' :
+  (l ⪯ l') → accepted_ptsto γ cn r l ==∗ accepted_ptsto γ cn r l'.
+Proof.
+Admitted.
+
 Lemma proposal_lb_comparable γ cn l l' :
-  proposal_lb γ cn l -∗ proposal_lb γ cn l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l'⌝.
+  proposal_lb γ cn l -∗ proposal_lb γ cn l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l⌝.
 Proof.
 Admitted.
 

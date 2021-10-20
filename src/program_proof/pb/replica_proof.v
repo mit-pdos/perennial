@@ -64,12 +64,12 @@ Definition own_AppendArgs (args_ptr:loc) (args:AppendArgsC) : iProp Σ :=
 
 Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   {{{
-       is_ReplicaServer s rid γ ∗
-       own_AppendArgs args_ptr args ∗
-       proposal_lb γ args.(AA_cn) args.(AA_log) ∗
-       φ γ args.(AA_cn) args.(AA_log) ∗
-       commit_lb γ (take (int.nat args.(AA_commitIdx)) args.(AA_log)) ∗
-       ⌜int.Z args.(AA_commitIdx) < length args.(AA_log)⌝
+       "#HisRepl" ∷ is_ReplicaServer s rid γ ∗
+       "Hargs" ∷ own_AppendArgs args_ptr args ∗
+       "#Hproposal_lb_in" ∷ proposal_lb γ args.(AA_cn) args.(AA_log) ∗
+       "#HoldConfMax_in" ∷ φ γ args.(AA_cn) args.(AA_log) ∗
+       "#Hcommit_lb_in" ∷ commit_lb γ (take (int.nat args.(AA_commitIdx)) args.(AA_log)) ∗
+       "%HcommitLength" ∷ ⌜int.Z args.(AA_commitIdx) < length args.(AA_log)⌝
   }}}
     ReplicaServer__AppendRPC #s #args_ptr
   {{{
@@ -77,7 +77,8 @@ Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   }}}
 .
 Proof.
-  iIntros (Φ) "(#HisRepl & Hargs & #Hpre) HΦ".
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
   iNamed "HisRepl".
   wp_lam.
   wp_pures.
@@ -123,24 +124,6 @@ Proof.
   }
   iNamed 1.
 
-  (* Idea: weaken context to the thing that'll be true after the if statement *)
-  (*
-  iAssert (∃ cn' opLog_sl' opLog',
-  "HopLog" ∷ s ↦[ReplicaServer :: "opLog"] (slice_val opLog_sl') ∗
-  "HopLog_slice" ∷ is_slice opLog_sl' byteT 1 opLog' ∗
-  "Haccepted" ∷ accepted_ptsto γ cn' rid opLog' ∗
-  "HacceptedUnused" ∷ ([∗ set] cn_some ∈ fin_to_set u64, ⌜int.Z cn_some < int.Z cn'⌝
-                                                        ∨ accepted_ptsto γ cn_some rid []) ∗
-  "#Hproposal_lb" ∷ proposal_lb γ cn' opLog' ∗
-  "#HoldConfMax" ∷ φ γ cn' opLog'
-  )%I with "[HopLog HopLog_slice Haccepted HacceptedUnused Hproposal_lb HoldConfMax]" as "HH".
-  {
-  admit.
-  }
-  wp_apply (wp_If_optional with ) *)
-
-  (* TODO: Should do if-join here *)
-  Search Slice.sz.
   iDestruct (is_slice_sz with "HopLog_slice") as %HopLogLen.
   iDestruct (is_slice_sz with "HAlog_slice") as %HALogLen.
   wp_apply (wp_If_join_evar with "[Haccepted HacceptedUnused HopLog HopLog_slice Hcn HAlog HAlog_slice HAcn]").
@@ -158,18 +141,24 @@ Proof.
                        "#Hproposal_lb" ∷ proposal_lb γ args.(AA_cn) opLog' ∗
                        "#HoldConfMax" ∷ φ γ args.(AA_cn) opLog' ∗
                        "Hcn" ∷ s ↦[ReplicaServer :: "cn"] #args.(AA_cn) ∗
-                       "#Hcommit_lb" ∷ commit_lb γ (take (int.nat commitIdx) opLog') ∗
+                       "#Hcommit_lb_oldIdx" ∷ commit_lb γ (take (int.nat commitIdx) opLog') ∗
                        "%HnewLog" ∷ ⌜args.(AA_log) ⪯ opLog'⌝
             )%I with "[HopLog HopLog_slice Haccepted HacceptedUnused Hproposal_lb HoldConfMax Hcn]" as "HH".
     {
       replace (cn) with (args.(AA_cn)); last by word.
       iExists _, _; iFrame "∗#".
-      assert (int.Z opLog_sl.(Slice.sz) >= int.Z log_sl.(Slice.sz))%Z.
+      assert (int.nat opLog_sl.(Slice.sz) >= int.nat log_sl.(Slice.sz))%Z as HopLogBigger.
       { word. }
-      iDestruct "Hpre" as "[Hproposal _]".
-      (* TODO: want to combine Hproposal and Hproposal_lb to conclude that they
-         are comparable, and combine with length inequality *)
-      admit.
+
+      iDestruct (proposal_lb_comparable with "Hproposal_lb_in Hproposal_lb") as %Hcomparable.
+      destruct Hcomparable as [|]; first done.
+      rewrite -HopLogLen in HopLogBigger.
+      rewrite -HALogLen in HopLogBigger.
+      assert (opLog = args.(AA_log)) as ->.
+      { (* FIXME: pure list prefix fact *)
+        admit.
+      }
+      done.
     }
     iClear "HAlog HAcn HAlog_slice".
     iNamedAccu.
@@ -181,13 +170,42 @@ Proof.
       iIntros "HopLog".
       wp_pures.
       wp_loadField.
+      wp_apply wp_fupd.
       wp_storeField.
       iSplitL ""; first done.
       iExists _, _.
-      iFrame "HopLog ∗".
+      iFrame "HopLog ∗#".
       (* TODO: Ghost stuff. *)
       (* destruct into cases; in case we increase cn, use oldConfMax to maintain commit_lb *)
-      admit.
+      assert (int.Z cn > int.Z args.(AA_cn) ∨ int.Z cn = int.Z args.(AA_cn) ∨ int.Z cn < int.Z args.(AA_cn)) as Htrichotomy.
+      { word. }
+      destruct Htrichotomy as [Hbad|[Heq|HlargerLog]].
+      { exfalso. word. }
+      { (* in this case, must have len(args.log) ≥ len(s.cn) *)
+        assert (int.nat opLog_sl.(Slice.sz) < int.nat log_sl.(Slice.sz)) as HlargerLog2.
+        { word. }
+        rewrite -HopLogLen -HALogLen in HlargerLog2.
+        assert (cn = args.(AA_cn)) as -> by word.
+        iFrame "∗#".
+        iDestruct (proposal_lb_comparable with "Hproposal_lb_in Hproposal_lb") as %Hcomparable.
+        destruct Heqb0 as [Hbad|HargLogLenLarger].
+        { exfalso. word. }
+        assert (opLog ⪯ args.(AA_log)) as HargLogLarger.
+        { (* TODO: comparable + longer length -> larger log *)
+          admit. }
+        iSplitL "Haccepted".
+        { by iApply (accepted_update with "Haccepted"). }
+        iSplitR ""; last done.
+        iModIntro.
+        assert (take (int.nat commitIdx) args.(AA_log) ⪯ take (int.nat commitIdx) opLog).
+        { (* FIXME:  Need to know that commitIdx ≤ len(opLog) to make this work *)
+          admit.
+        }
+        by iApply (commit_lb_monotonic with "Hcommit_lb").
+      }
+      { (* args.cn > s.cn: in this case, we want to increase our cn to args.cn *)
+        admit.
+      }
     }
   }
   iIntros "HH".
