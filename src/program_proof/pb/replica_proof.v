@@ -76,7 +76,8 @@ Lemma wp_min sl (l:list u64):
   }}}
     min (slice_val sl)
   {{{
-       (m:u64), RET #m; ⌜m ∈ l⌝ ∗ ⌜∀ n, n ∈ l → int.Z m ≤ int.Z n⌝
+       (m:u64), RET #m; ⌜m ∈ l⌝ ∗ ⌜∀ n, n ∈ l → int.Z m ≤ int.Z n⌝ ∗
+       is_slice_small sl uint64T 1%Qp l
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -99,7 +100,7 @@ Lemma wp_ReplicaServer__postAppendRPC (s:loc) (i:u64) conf rid γ (args_ptr:loc)
        "#Hconf" ∷ config_ptsto γ args.(AA_cn) conf ∗
        "%Hiconf" ∷ ⌜conf !! int.nat i = Some rid⌝ ∗
        "Hargs" ∷ own_AppendArgs args_ptr args ∗
-       accepted_lb γ args.(AA_cn) rid args.(AA_log)
+       "#Hacc_lb" ∷ accepted_lb γ args.(AA_cn) rid args.(AA_log)
   }}}
     ReplicaServer__postAppendRPC #s #i #args_ptr
   {{{
@@ -164,15 +165,34 @@ Proof.
     wp_loadField.
     set matchIdx':=(<[int.nat i:=log_sl.(Slice.sz)]> matchIdx).
     wp_apply (wp_min with "[$HmatchIdx_slice]").
-    iIntros (m) "[%Hm1 %Hm2]".
+    iIntros (m) "(%Hm1&%Hm2&HmatchIdx_slice)".
     wp_pures.
     wp_loadField.
     wp_if_destruct.
     { (* commit something! *)
       wp_storeField.
       wp_loadField.
-      (* Need to do two things: 1) prove HmatchIdxAccepted for the new matchIdx,
-         and 2) prove commit_lb_by using the key ghost lemma *)
+      wp_apply (release_spec with "[-HΦ]").
+      {
+        iFrame "HmuInv Hlocked".
+        iNext.
+        do 9 iExists _.
+        iFrame "∗#".
+        iFrame "HprimaryOwnsProposal".
+        iSplitL "".
+        { admit. (* use commit lemma *) }
+        iSplitL "".
+        { admit. (* use the fact that min ≤ matchIdx[0] ≤ length opLog or some such *) }
+        iExists _; iFrame "#".
+        Search big_sepL2.
+        iDestruct (big_sepL2_insert_acc with "HmatchIdxAccepted") as "HH".
+        { done. }
+        { done. }
+        Check bi.exist_exist.
+        admit.
+        (* Need to do two things: 1) prove HmatchIdxAccepted for the new matchIdx,
+           and 2) prove commit_lb_by using the key ghost lemma *)
+      }
       admit.
     }
     admit.
