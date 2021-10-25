@@ -124,4 +124,9 @@ Proof.
   iFrame "#".
 Qed.
 
+Lemma do_commit γ cn l :
+  accepted_by γ cn l ={⊤}=∗ commit_lb γ l.
+Proof.
+Admitted.
+
 End definitions.

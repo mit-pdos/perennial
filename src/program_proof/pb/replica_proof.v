@@ -172,6 +172,12 @@ Proof.
     { (* commit something! *)
       wp_storeField.
       wp_loadField.
+
+      iMod (do_commit γ args.(AA_cn) (take (int.nat m) opLog) with "[]") as "#Hcommit_lb2".
+      {
+        iExists _; iFrame "#".
+        iIntros.
+      }
       wp_apply (release_spec with "[-HΦ]").
       {
         iFrame "HmuInv Hlocked".
@@ -179,19 +185,24 @@ Proof.
         do 9 iExists _.
         iFrame "∗#".
         iFrame "HprimaryOwnsProposal".
-        iSplitL "".
-        { admit. (* use commit lemma *) }
+
+        iDestruct do_commit.
+
+
         iSplitL "".
         { admit. (* use the fact that min ≤ matchIdx[0] ≤ length opLog or some such *) }
         iExists _; iFrame "#".
-        Search big_sepL2.
         iDestruct (big_sepL2_insert_acc with "HmatchIdxAccepted") as "HH".
         { done. }
         { done. }
-        Check bi.exist_exist.
-        admit.
-        (* Need to do two things: 1) prove HmatchIdxAccepted for the new matchIdx,
-           and 2) prove commit_lb_by using the key ghost lemma *)
+        iFreeze "HH".
+        replace (conf) with (<[int.nat i:=rid]> conf); last first.
+        { by apply list_insert_id. }
+        iThaw "HH".
+        unfold matchIdx'.
+        iDestruct "HH" as "[Hacc HH]".
+        iApply "HH".
+        admit. (* Show that take (len AA_log) opLog == args.(AA_log)*)
       }
       admit.
     }
