@@ -125,7 +125,7 @@ Proof.
 Qed.
 
 Lemma do_commit γ cn l :
-  accepted_by γ cn l ={⊤}=∗ commit_lb γ l.
+  accepted_by γ cn l ={⊤}=∗ commit_lb_by γ cn l.
 Proof.
 Admitted.
 

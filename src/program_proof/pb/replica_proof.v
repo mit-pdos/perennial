@@ -173,21 +173,24 @@ Proof.
       wp_storeField.
       wp_loadField.
 
-      iMod (do_commit γ args.(AA_cn) (take (int.nat m) opLog) with "[]") as "#Hcommit_lb2".
+      wp_apply (release_spec with "[> -HΦ]").
       {
-        iExists _; iFrame "#".
-        iIntros.
-      }
-      wp_apply (release_spec with "[-HΦ]").
-      {
+        iEval (rewrite -bi.later_intro).
         iFrame "HmuInv Hlocked".
-        iNext.
         do 9 iExists _.
         iFrame "∗#".
         iFrame "HprimaryOwnsProposal".
 
-        iDestruct do_commit.
-
+        iSplitL "".
+        {
+          iMod (do_commit with "[]") as "$"; last done.
+          iExists _; iFrame "#".
+          (* FIXME: want to use x0 ∈ l to get resource out of [∗ list] x;y ∈ l;l', Φ x y *)
+          iDestruct (big_sepL2_lookup_acc with "HmatchIdxAccepted") as "[HH _]".
+          { done. }
+          { done. }
+          admit.
+        }
 
         iSplitL "".
         { admit. (* use the fact that min ≤ matchIdx[0] ≤ length opLog or some such *) }
@@ -202,14 +205,48 @@ Proof.
         unfold matchIdx'.
         iDestruct "HH" as "[Hacc HH]".
         iApply "HH".
-        admit. (* Show that take (len AA_log) opLog == args.(AA_log)*)
+        admit. (* Show that take (len AA_log) opLog == args.(AA_log) by virtue of proposal_ptsto *)
       }
-      admit.
+      wp_pures.
+      by iApply "HΦ".
     }
-    admit.
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iEval (rewrite -bi.later_intro).
+      iFrame "HmuInv Hlocked".
+      do 9 iExists _.
+      iFrame "∗#∗".
+      iSplitL ""; first done.
+      iExists _; iFrame "#".
+
+      iFreeze "HmatchIdxAccepted".
+      replace (conf) with (<[int.nat i:=rid]> conf); last first.
+      { by apply list_insert_id. }
+      iThaw "HmatchIdxAccepted".
+      iDestruct (big_sepL2_insert_acc with "HmatchIdxAccepted") as "[_ HH]".
+      { done. }
+      { done. }
+      iApply "HH".
+      admit. (* Show that take (len AA_log) opLog == args.(AA_log) by virtue of proposal_ptsto *)
+    }
+    wp_pures.
+    by iApply "HΦ".
   }
-  { (* nothing to do; just let go of mutex *)
-    admit.
+  {
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext. do 9 iExists _.
+      iFrame "∗#∗".
+      iSplitL ""; first done.
+      iExists _; iFrame "#".
+    }
+    wp_pures.
+    by iApply "HΦ".
   }
 Admitted.
 
