@@ -373,7 +373,7 @@ Definition ReplicaServer__BecomePrimaryRPC: val :=
         struct.storeF ReplicaServer "cn" "s" (struct.loadF BecomePrimaryArgs "Cn" "args");;
         struct.storeF ReplicaServer "matchIdx" "s" (NewSlice uint64T (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args"))));;
         struct.storeF ReplicaServer "replicaClerks" "s" (NewSlice (struct.ptrT ReplicaClerk) (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) - #1));;
-        ForSlice uint64T "i" <> (SliceSkip uint64T (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) #1)
+        ForSlice (refT (struct.t ReplicaClerk)) "i" <> (struct.loadF ReplicaServer "replicaClerks" "s")
           (SliceSet (refT (struct.t ReplicaClerk)) (struct.loadF ReplicaServer "replicaClerks" "s") "i" (MakeReplicaClerk (SliceGet uint64T (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) ("i" + #1))));;
         lock.release (struct.loadF ReplicaServer "mu" "s");;
         #())).

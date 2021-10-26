@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import pb.
 
 From Perennial.program_proof.pb Require Export ghost_proof replica_proof.
 
-Section replica_proof.
+Section become_primary_proof.
 
 Context `{!heapGS Σ}.
 
@@ -126,11 +126,15 @@ Proof.
   iIntros "HreplicaClerks".
   wp_pures.
   wp_loadField.
-  wp_loadField.
-  wp_apply (wp_SliceSkip' with "[]").
-  {
+  wp_apply (wp_forSlice with "[] [] [-]").
+  { (* step of loop *)
     admit.
   }
+  { (* initial loop invariant *)
+    admit.
+  }
+  (* rest of proof *)
+  iNext.
 Admitted.
 
-End replica_proof.
+End become_primary_proof.
