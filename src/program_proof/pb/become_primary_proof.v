@@ -56,7 +56,17 @@ Proof.
   wp_if_destruct.
   { (* Old BecomePrimary request *)
     (* FIXME: let go of lock here *)
-    by iApply "HΦ".
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext.
+      do 9 iExists _.
+      iFrame "∗# Hown".
+      done.
+    }
+    wp_pures.
+      by iApply "HΦ".
   }
   wp_loadField.
   wp_loadField.
@@ -79,6 +89,48 @@ Proof.
     admit.
   }
   (* become primary in new config *)
+
+  (* Physical part of proof *)
+  wp_storeField.
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+  wp_pures.
+  iNamed "HBconf_own".
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  (* FIXME: what's going on with this wp_apply? *)
+  wp_apply (wp_NewSlice with "[] [-]").
+  { done. }
+  iNext.
+  iClear "HmatchIdx_slice".
+  rename matchIdx_sl into matchIdx_sl_old.
+  iIntros (matchIdx_sl) "HmatchIdx_slice".
+
+  wp_apply (wp_storeField with "[$HmatchIdx]").
+  { apply slice_val_ty. }
+  iIntros "HmatchIdx".
+  wp_pures.
+
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  wp_apply (wp_NewSlice).
+  iClear "HreplicaClerks_slice".
+  rename replicaClerks_sl into replicaClerks_sl_old.
+  iIntros (replicaClerks_sl) "HreplicaClerks_slice".
+
+  wp_apply (wp_storeField with "[$HreplicaClerks]").
+  { apply slice_val_ty. }
+  iIntros "HreplicaClerks".
+  wp_pures.
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_SliceSkip' with "[]").
+  {
+    admit.
+  }
 Admitted.
 
 End replica_proof.
