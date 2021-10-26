@@ -6,7 +6,7 @@ From Perennial.program_proof.pb Require Export ghost_proof.
 Section replica_proof.
 Record ConfigurationC :=
 {
-  replicas: list u64
+  C_replicas: list u64
 }.
 
 Context `{!heapGS Σ}.
