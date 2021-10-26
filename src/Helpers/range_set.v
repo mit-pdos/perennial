@@ -57,7 +57,7 @@ Proof.
   induction sz'; intros; simpl.
   - reflexivity.
   - rewrite -> seqZ_cons by lia. simpl.
-    rewrite elements_union_singleton.
+    rewrite -> elements_union_singleton.
     + rewrite <- (IHsz' (S start')) at 2 by lia.
       simpl. repeat f_equal; lia.
     + intro H.
