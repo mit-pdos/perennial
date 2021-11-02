@@ -7,6 +7,13 @@ From Perennial.goose_lang Require Import crash_borrow.
 
 (* TODO: this file isn't using typed_slice, should fix that *)
 
+Definition numbits := 8 * 4096.
+Lemma numbits_unfold : numbits = 8 * 4096.
+Proof. reflexivity. Qed.
+Opaque numbits.
+Definition max := U64 (8 * 4096).
+
+
 Lemma Z_u8_to_u64 x : int.Z (u8_to_u64 x) = int.Z x.
 Proof.
   rewrite /u8_to_u64 /U64.
@@ -23,7 +30,8 @@ Proof.
   byte_cases x; vm_compute; auto.
 Qed.
 
-Definition is_unset (bn: u64) (bits : list u8) : bool :=
+
+Definition bit_lookup (bn: u64) (bits: list u8) : bool :=
   match bits !! int.nat (word.divu bn 8) with
   | None => false
   | Some byt =>
@@ -32,6 +40,9 @@ Definition is_unset (bn: u64) (bits : list u8) : bool :=
     | Some bt => bt
     end
   end.
+
+Definition is_set (bn: u64) (bits : list u8) : bool := (bit_lookup bn bits).
+Definition is_unset (bn: u64) (bits : list u8) : bool := negb (bit_lookup bn bits).
 
 Definition unset_bit (bn: u64) (bits : list u8) : list u8 :=
   match bits !! int.nat (word.divu bn 8) with
@@ -156,6 +167,12 @@ Section ghost_state.
     bit_ptsto γ k (Clean_synced bv).
   Proof. Admitted.
 
+  Lemma bufblock_init blk :
+    length blk = Z.to_nat 4096 →
+    ⊢ |==> ∃ γ bsm, bufblock_auth γ blk blk bsm ∗ bufblock_frag γ blk blk ∗
+                  [∗ set] i ∈ rangeSet 0 numbits, bit_ptsto γ i (Clean_synced (bit_lookup i blk)).
+  Proof. Admitted.
+
 End ghost_state.
 
 Section proof.
@@ -165,34 +182,55 @@ Context `{!stagedG Σ}.
 Let N: namespace := nroot .@ "alloc".
 Let Ninv: namespace := nroot .@ "alloc_inv".
 
-Definition max := U64 (8 * 4096).
-
 Opaque crash_borrow.
-Check rangeSet.
 
 Context (Ψ: u64 → iProp Σ).
 
+(* TODO: put bufblock frag also in crash borrow? Then we never generate a fresh γ or need exchanger? *)
+
 Definition alloc_linv γ (l: loc) : iProp Σ :=
-  ∃ (next: u64) (bitmap_s: Slice.t) (membits diskbits: list u8),
+  ∃ (next: u64) (bitmap_s: Slice.t) (membits diskbits: list u8) (dirty : bool) (markedset : gset u64),
   "next" ∷ l ↦[Alloc :: "next"] #next ∗
   "bitmap" ∷ l ↦[Alloc :: "bitmap"] (slice_val bitmap_s) ∗
+  "dirty" ∷ l ↦[Alloc :: "dirty"] #dirty ∗
+  "%Hdirty" ∷ ⌜ if negb dirty then membits = diskbits else True ⌝ ∗
   "%Hnext_bound" ∷ ⌜int.Z next < int.Z max⌝ ∗
   "%Hbits_len" ∷ ⌜int.Z max = (8 * (Z.of_nat $ length membits))%Z⌝ ∗
+  "%Hmarkedset" ∷ ⌜ ∀ x, x ∈ markedset → is_set x membits ⌝ ∗
   "Hbits" ∷ is_slice_small bitmap_s byteT 1 (b2val <$> membits) ∗
   "Hbufblock_frag" ∷ bufblock_frag γ membits diskbits ∗
-  "Hborrow" ∷ crash_borrow ([∗ set] i ∈ rangeSet 0 (8 * 4096),
+  "Hborrow" ∷ crash_borrow ([∗ set] i ∈ rangeSet 0 numbits ∖ markedset, (∃ bs, bit_ptsto γ i bs) ∗ Ψ i)
+                           ([∗ set] i ∈ rangeSet 0 numbits ∖ markedset, bit_ptsto γ i (Clean_synced true) ∨ Ψ i)
+.
+
+(*
+  "Hborrow" ∷ crash_borrow ([∗ set] i ∈ rangeSet 0 numbits,
                             if is_unset i membits then
                               (∃ bs, bit_ptsto γ i bs) ∗ Ψ i
                             else
                                True)
-                           ([∗ set] i ∈ rangeSet 0 (8 * 4096), bit_ptsto γ i (Clean_synced true) ∨ Ψ i)
-.
+                           ([∗ set] i ∈ rangeSet 0 numbits, bit_ptsto γ i (Clean_synced true) ∨ Ψ i)
+
+  "Hborrow" ∷ crash_borrow ([∗ set] i ∈ rangeSet 0 numbits ∖ markedset, (∃ bs, bit_ptsto γ i bs) ∗ Ψ i)
+                           ([∗ set] i ∈ rangeSet 0 numbits ∖ markedset, bit_ptsto γ i (Clean_synced true) ∨ Ψ i)
+
+
+*)
+
+Definition bits_synced (bsm : bit_state_map) (aset : gset Block) :=
+  (∀ i, i ∈ rangeSet 0 numbits →
+        ∃ bs, bsm !! i = Some bs ∧
+              match bs with
+              | Clean_synced bt => (∀ blk : Block, blk ∈ aset → bit_lookup i blk = bt)
+              | _ => True
+              end).
 
 
 Definition alloc_inv_inner γ (a : u64) (l : loc)  : iProp Σ :=
   ∃ (memblk diskblk : list u8) aset bsm,
   "Hbufblock_auth" ∷ bufblock_auth γ memblk diskblk bsm ∗
-  "Hblock_ptsto" ∷ int.Z a d↦[aset] (list_to_block diskblk)
+  "Hblock_ptsto" ∷ int.Z a d↦[aset] (list_to_block diskblk) ∗
+  "%Hbitval" ∷ ⌜ bits_synced bsm aset ⌝
 .
 
 Definition alloc_inv γ a l := inv Ninv (alloc_inv_inner γ a l).
@@ -214,7 +252,8 @@ Proof. apply _. Qed.
 Definition is_alloc_pre_durable (addr : u64) : iProp Σ :=
   ∃ (bits : list u8),
     "%Hlen" ∷ ⌜ length bits = Z.to_nat 4096 ⌝ ∗
-    "Hblk" ∷ int.Z addr d↦[∅] (list_to_block bits).
+    "Hblk" ∷ int.Z addr d↦[∅] (list_to_block bits) ∗
+    "HΨs" ∷ ([∗ set] i ∈ rangeSet 0 numbits, if is_unset i bits then Ψ i else True).
 
 Lemma wpc_MkAlloc (addr: u64) d :
   {{{ is_alloc_pre_durable addr }}}
@@ -227,11 +266,42 @@ Proof.
   wpc_pures.
   { iLeft in "HΦ". by iApply "HΦ". }
   iNamed "Hd".
+  wpc_bind (disk.Read #addr).
+  iApply wpc_crash_borrow_generate_pre; first done.
   wpc_apply (wpc_Read with "[$]").
   iSplit.
   { iIntros. iLeft in "HΦ". iApply "HΦ". iExists _. iFrame. eauto. }
   iNext. iIntros (s) "(Hd&Hs)".
-  wpc_frame "Hd HΦ".
+  iIntros "Hpre".
+  iMod (bufblock_init bits) as (γ bsm) "(Hauth&Hfrag&Hptstos)"; first done.
+  iCombine "HΨs Hptstos" as "HΨs".
+  rewrite -big_sepS_sep.
+  iDestruct (crash_borrow_init_cancel
+               ([∗ set] i ∈ rangeSet 0 numbits,
+                            if is_unset i bits then
+                              (∃ bs, bit_ptsto γ i bs) ∗ Ψ i
+                            else
+                               True)
+               ([∗ set] i ∈ rangeSet 0 numbits, bit_ptsto γ i (Clean_synced true) ∨ Ψ i)
+               with "[$] [HΨs] []") as "Hinit_cancel".
+  
+
+
+  iDestruct (crash_borrow_init_cancel
+               ([∗ set] i ∈ rangeSet 0 numbits,
+                            if is_unset i bits then
+                              (∃ bs, bit_ptsto γ i bs) ∗ Ψ i
+                            else
+                               True)
+               ([∗ set] i ∈ rangeSet 0 numbits, bit_ptsto γ i (Clean_synced true) ∨ Ψ i)
+               with "[$] [HΨs] []") as "Hinit_cancel".
+  { iApply (big_sepS_mono with "HΨs"). iIntros (x Hin) "(?&?)".
+    destruct (is_unset _ _); iFrame.
+    iExists _; by iFrame. }
+  { iModIntro.
+
+
+  wpc_frame "Hd HΦ HΨs".
   { iLeft in "HΦ". iApply "HΦ". iExists _. iFrame. eauto. }
   wp_pures.
   wp_apply wp_new_free_lock.
@@ -241,9 +311,9 @@ Proof.
   iIntros (l) "Halloc".
   iApply struct_fields_split in "Halloc".
   iNamed "Halloc".
-  iMod (readonly_alloc_1 with "mu") as "#mu".
-  iMod (readonly_alloc_1 with "addr") as "#addr".
-  iMod (readonly_alloc_1 with "d") as "#d".
+  unshelve (iMod (readonly_alloc_1 with "mu") as "#mu"); try apply _.
+  unshelve (iMod (readonly_alloc_1 with "addr") as "#addr"); try apply _.
+  unshelve (iMod (readonly_alloc_1 with "d") as "#d"); try apply _.
   iMod (alloc_lock N _ _ (alloc_linv l) with "Hl [Hs next bitmap]") as "#Hl".
   { iNext.
     iExists _, _, _; iFrame.
