@@ -1,8 +1,16 @@
+From Perennial.goose_lang Require Import lang typing.
+From Perennial.goose_lang Require Import proofmode notation.
+From Perennial.goose_lang Require Import persistent_readonly.
+From Perennial.goose_lang.lib Require Export slice.
+From Perennial.program_proof Require Export proof_prelude.
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
-From Perennial.program_proof Require Import disk_prelude.
 From Perennial.goose_lang.lib Require Export typed_slice into_val.
 From Perennial.Helpers Require Export range_set.
 
+Section alloc_addrset.
+Context `{ffi_sem: ffi_semantics}.
+Context `{!ffi_interp ffi}.
+Context {ext_tys: ext_types ext}.
 Instance unit_IntoVal : IntoVal ().
 Proof.
   refine {| to_val := λ _, #();
@@ -269,3 +277,4 @@ Proof.
 Qed.
 
 End goose.
+End alloc_addrset.

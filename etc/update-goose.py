@@ -210,8 +210,9 @@ def main():
             "./single_async_inode",
             "./toy",
             "./async_toy",
-            "./async_disk_inode",
-            "./async_alloc",
+            "./async_durable_alloc_inode",
+            "./async_mem_alloc_inode",
+            "./async_durable_alloc",
         )
 
     if distributed_dir is not None:

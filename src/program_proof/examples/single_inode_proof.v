@@ -191,7 +191,8 @@ Section goose.
 
     wpc_pures.
     wpc_frame_seq.
-    wp_apply (wp_NewMap _ (t:=struct.t alloc.unit)).
+    wp_apply (wp_NewMap unit (t:=struct.t alloc.unit)).
+    { apply unit_IntoValForType. }
     iIntros (mref) "Hused".
     iDestruct (is_addrset_from_empty with "Hused") as "Hused".
     iNamed 1.

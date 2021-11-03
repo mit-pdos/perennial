@@ -351,26 +351,6 @@ Proof.
 Qed.
 
 
-(* In contrast to the wp formulations we don't quantify over the aset but include that as part of the map m,
-   so we don't lose information in the crash case *)
-(*
-Lemma wpc_Barrier E1 m :
-  {{{ ▷ [∗ map] a ↦ p ∈ m, a d↦[fst p] (snd p) }}}
-    Barrier #() @ E1
-  {{{ RET #(); [∗ map] a ↦ p ∈ m, a d↦[∅] (snd p) }}}
-  {{{ ([∗ map] a ↦ p ∈ m, a d↦[fst p] (snd p)) ∨ ([∗ map] a ↦ p ∈ m, a d↦[∅] (snd p)) }}}.
-Proof.
-  iIntros (Φ Φc) "_ HΦ".
-  wp_apply (wp_Barrier_atomic
-  rewrite /Barrier.
-  wpc_pures; auto.
-  - by crash_case.
-  - iRight in "HΦ".
-    iApply ("HΦ" with "[//]").
-  - by crash_case.
-Qed.
-*)
-
 Lemma wpc_Read stk E1 (a: u64) aset q b :
   {{{ int.Z a d↦{q}[aset] b }}}
     Read #a @ stk; E1
@@ -522,5 +502,28 @@ Proof.
   { rewrite Hsz. reflexivity. }
   lia.
 Qed.
+
+Lemma wpc_Barrier1 E1 a aset b :
+  {{{ ▷ a d↦[aset] b }}}
+    Barrier #() @ E1
+  {{{ RET #(); a d↦[∅] b }}}
+  {{{ a d↦[aset] b ∨ a d↦[∅] b }}}. 
+Proof.
+  iIntros (Φ Φc) ">Hd HΦ".
+  Transparent async_disk.Barrier.
+  wpc_call.
+  { by iLeft. }
+  Opaque async_disk.Barrier.
+  wpc_atomic.
+  { by iLeft. }
+  wp_apply (wp_BarrierOp _ _ ({[ a := b]}) with "[Hd]").
+  { rewrite big_sepM_singleton. iNext. iExists _. iFrame. }
+  rewrite big_sepM_singleton. iIntros "H".
+  iSplit.
+  - iModIntro. iLeft in "HΦ". iApply "HΦ". by iRight.
+  - iRight in "HΦ".
+    iApply ("HΦ" with "[$]").
+Qed.
+
 
 End goose.

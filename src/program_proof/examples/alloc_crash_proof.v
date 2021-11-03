@@ -6,7 +6,6 @@ From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_logic Require Export ncinv.
-From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.examples Require Import alloc_addrset.
 
 Inductive block_status :=
@@ -126,6 +125,9 @@ Proof.
 Qed.
 
 Section goose.
+Context `{ffi_sem: ffi_semantics}.
+Context `{!ffi_interp ffi}.
+Context {ext_tys: ext_types ext}.
 Context `{!heapGS Σ}.
 Context `{!allocG Σ}.
 Context `{!stagedG Σ}.
@@ -1096,6 +1098,9 @@ Qed.
 End goose.
 
 Section goose.
+Context `{ffi_sem: ffi_semantics}.
+Context `{!ffi_interp ffi}.
+Context {ext_tys: ext_types ext}.
 Context `{!heapGS Σ}.
 Context `{!allocG Σ}.
 

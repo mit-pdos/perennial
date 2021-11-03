@@ -638,6 +638,7 @@ Section goose.
     { crash_case. by iApply pre_inodes_to_cinv. }
     wpc_frame_seq.
     wp_apply wp_NewMap.
+    { apply unit_IntoValForType. }
     iIntros (addrs_ref) "Hused_set".
     iApply is_addrset_from_empty in "Hused_set".
     iNamed 1.
