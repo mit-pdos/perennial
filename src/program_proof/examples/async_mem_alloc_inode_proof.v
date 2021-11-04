@@ -684,6 +684,24 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
 
 Let Ψ (a: u64) := (∃ aset b, int.Z a d↦[aset] b)%I.
 
+Definition append_use_ncfupd P (Palloc : alloc.t → iProp Σ) (b0 : Block) Φc Φ : iProp Σ :=
+   ∀ σ σ' addr',
+     ⌜σ' = set inode.blocks (λ bs, bs ++ [b0]) (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
+     ⌜inode.wf σ⌝ -∗
+     ∀ s,
+     ⌜s !! addr' = Some block_reserved⌝ -∗
+      P σ ∗ ▷ Palloc s -∗ |NC={⊤ ∖ ↑allocN}=>
+      P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (Φc ∧ Φ #true).
+
+Definition append_use_post_crash P (Palloc : alloc.t → iProp Σ) (b0 : Block) Φc : iProp Σ :=
+   ∀ σ σ' addr',
+     ⌜σ' = set inode.blocks (λ bs, bs ++ [b0]) (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
+     ⌜inode.wf σ⌝ -∗
+     ∀ s,
+     ⌜s !! addr' = Some block_reserved⌝ -∗
+      P σ ∗ ▷ Palloc s -∗ |={⊤ ∖ ↑allocN}=>
+      P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ Φc.
+
 Opaque crash_borrow.
 
 (* This does not fit the "atomic triple" pattern because of the possibility to
@@ -715,6 +733,8 @@ Theorem wpc_Inode__Append
          modality
 
       *)
+      "Hfupd" ∷ (Φc ∧ (Φ #false ∧ append_use_ncfupd P Palloc b0 Φc Φ ∧ append_use_post_crash P Palloc b0 Φc))
+      (*
       "Hfupd" ∷ (Φc ∧ ▷ (Φ #false ∧ ∀ σ σ' addr',
         ⌜σ' = set inode.blocks (λ bs, bs ++ [b0])
                               (set inode.addrs ({[addr']} ∪.) σ)⌝ -∗
@@ -723,13 +743,13 @@ Theorem wpc_Inode__Append
         ⌜s !! addr' = Some block_reserved⌝ -∗
          P σ ∗ ▷ Palloc s -∗ |={⊤ ∖ ↑allocN}=>
          P σ' ∗ ▷ Palloc (<[addr' := block_used]> s) ∗ (Φc ∧ Φ #true))) -∗
+      *) -∗
     WPC Inode__Append #l (slice_val b_s) #alloc_ref @ ⊤ {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (? Φ Φc) "Hpre"; iNamed "Hpre".
   iNamed "Hinode". iNamed "Hro_state".
   wpc_call.
   iCache with "Hfupd"; first by crash_case.
-  wpc_pures.
   wpc_frame_seq.
   wp_apply (wp_Reserve _ _ _ (λ ma, emp)%I with "[$Halloc]"); auto.
   { (* Reserve fupd *)
@@ -888,12 +908,31 @@ Proof.
       | |- envs_entails _ (wpc _ _ _ ?Φ0 _) => set (Φ':=Φ0)
       end.
       iNamed "Hdurable".
-      wpc_apply (wpc_Write with "[$Hb Hhdr]").
-      { iExists _, _. iFrame. }
+      wpc_apply (wpc_Write' with "[$Hb Hhdr]").
+      { iFrame. }
       iSplit.
       { iIntros "H".
+        (* There are 3 cases:
+           - We crash before the write took effect, in which case
+             the append did not happen
+           - We crash after the write took effect but on crash it is lost,
+             so the append did not happen.
+           - We crash after the write and the write hits disk, so the append happened *)
+        iDestruct "H" as "[Hnowrite|Hwrite]".
+        { iLeft in "Hfupd". iFrame "Hfupd".
+          iSplitR "Hda"; last first.
+          { iLeft. iExists _, _. eauto. }
+          iDestruct ("HPcrash" with "[$]") as "HPcrash".
+          iAssert (inode_cinv addr σ) with "[-HPcrash]" as "H".
+          { iExists _, _. iFrame. eauto. }
+          iCrash. iExists _. iFrame. }
+        { (* Issue here as we can't prove the block_cinv for the crash borrow
+             until we know whether the block is going to be reserved or not *)
+
+        }
+
+          rewrite /block_cinv.
         iNamed 1.
- iNamed 1. iNext. iIntros "H". iNamed 1.
       iIntros.
 
 
