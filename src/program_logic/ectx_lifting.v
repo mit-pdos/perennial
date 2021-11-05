@@ -16,6 +16,24 @@ Local Definition reducible_not_val_inhabitant e := reducible_not_val e inhabitan
 Local Hint Resolve reducible_not_val_inhabitant : core.
 Local Hint Resolve head_stuck_stuck : core.
 
+Lemma wp_lift_head_step_ncfupd {s E Φ} e1 :
+  to_val e1 = None →
+  (∀ σ1 g1 ns mj D κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns mj D (κ ++ κs) -∗ |NC={E,∅}=> ▷
+    (⌜head_reducible e1 σ1 g1⌝ ∗
+    ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |NC={∅,E}=>
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (step_count_next ns) mj D κs ∗
+      WP e2 @ s; E {{ Φ }} ∗
+      [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }}))
+  ⊢ WP e1 @ s; E {{ Φ }}.
+Proof.
+  iIntros (?) "H". iApply wp_lift_step_ncfupd=>//. iIntros (σ1 g1 ns mj D κ κs nt) "Hσ Hg".
+  iMod ("H" with "Hσ Hg") as "H". iModIntro.
+  iNext. iDestruct "H" as "[% H]".
+  iSplit; first by destruct s; eauto. iIntros (e2 σ2 g2 efs ?).
+  iApply "H"; eauto.
+Qed.
+
 Lemma wp_lift_head_step_fupd {s E Φ} e1 :
   to_val e1 = None →
   (∀ σ1 g1 ns mj D κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns mj D (κ ++ κs) ={E,∅}=∗ ▷
@@ -32,6 +50,21 @@ Proof.
   iNext. iDestruct "H" as "[% H]".
   iSplit; first by destruct s; eauto. iIntros (e2 σ2 g2 efs ?).
   iApply "H"; eauto.
+Qed.
+
+Lemma wp_lift_head_step_nc {s E Φ} e1 :
+  to_val e1 = None →
+  (∀ σ1 g1 ns mj D κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns mj D (κ ++ κs) -∗ |NC={E,∅}=>
+    ⌜head_reducible e1 σ1 g1⌝ ∗
+    ▷ ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |NC={∅,E}=>
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (step_count_next ns) mj D κs ∗
+      WP e2 @ s; E {{ Φ }} ∗
+      [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }})
+  ⊢ WP e1 @ s; E {{ Φ }}.
+Proof.
+  iIntros (?) "H". iApply wp_lift_head_step_ncfupd; [done|]. iIntros (????????) "??".
+  iMod ("H" with "[$] [$]") as "[$ H]". iIntros "!> !>" (e2 σ2 g2 efs ?). by iApply "H".
 Qed.
 
 Lemma wp_lift_head_step {s E Φ} e1 :
@@ -89,6 +122,23 @@ Proof.
 Qed.
 *)
 
+Lemma wp_lift_atomic_head_step_nc {s E Φ} e1 :
+  to_val e1 = None →
+  (∀ σ1 g1 ns mj D κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns mj D (κ ++ κs) -∗ |NC={E}=>
+    ⌜head_reducible e1 σ1 g1⌝ ∗
+    ▷ ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |NC={E}=>
+      state_interp σ2 (length efs + nt) ∗
+      global_state_interp g2 (step_count_next ns) mj D κs ∗
+      from_option Φ False (to_val e2) ∗
+      [∗ list] ef ∈ efs, WP ef @ s; ⊤ {{ fork_post }})
+  ⊢ WP e1 @ s; E {{ Φ }}.
+Proof.
+  iIntros (?) "H". iApply wp_lift_atomic_step_nc; eauto.
+  iIntros (σ1 g1 ns mj D κ κs nt) "Hσ1 Hg1". iMod ("H" with "Hσ1 Hg1") as "[% H]"; iModIntro.
+  iSplit; first by destruct s; auto. iNext. iIntros (e2 σ2 g2 efs Hstep).
+  iApply "H"; eauto.
+Qed.
+
 Lemma wp_lift_atomic_head_step {s E Φ} e1 :
   to_val e1 = None →
   (∀ σ1 g1 ns mj D κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns mj D (κ ++ κs) ={E}=∗
@@ -122,6 +172,21 @@ Proof.
   iIntros "!> !>". iMod "H" as "(-> & ? & ?) /=". by iFrame.
 Qed.
 *)
+
+Lemma wp_lift_atomic_head_step_no_fork_nc {s E Φ} e1 :
+  to_val e1 = None →
+  (∀ σ1 g1 ns mj D κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns mj D (κ ++ κs) -∗ |NC={E}=>
+    ⌜head_reducible e1 σ1 g1⌝ ∗
+    ▷ ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |NC={E}=>
+      ⌜efs = []⌝ ∗ state_interp σ2 nt ∗ global_state_interp g2 (step_count_next ns) mj D κs ∗
+      from_option Φ False (to_val e2))
+  ⊢ WP e1 @ s; E {{ Φ }}.
+Proof.
+  iIntros (?) "H". iApply wp_lift_atomic_head_step_nc; eauto.
+  iIntros (σ1 g1 ns mj D κ κs nt) "Hσ1 Hg1". iMod ("H" $! σ1 with "Hσ1 Hg1") as "[$ H]"; iModIntro.
+  iNext; iIntros (v2 σ2 g2 efs Hstep).
+  iMod ("H" $! v2 σ2 g2 efs with "[//]") as "(-> & ? & ? & ?) /=". by iFrame.
+Qed.
 
 Lemma wp_lift_atomic_head_step_no_fork {s E Φ} e1 :
   to_val e1 = None →
