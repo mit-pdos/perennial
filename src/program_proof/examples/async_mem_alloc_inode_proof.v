@@ -150,10 +150,16 @@ Proof. iNamed 1. iExists _; iFrame. Qed.
 
 Theorem pre_inode_to_cinv l addr σ :
   pre_inode l addr σ -∗ inode_cinv_precrash addr σ.
-Proof.
-  iNamed 1.
-  iApply inode_linv_to_cinv; iFrame.
-Qed.
+Proof. iNamed 1. iApply inode_linv_to_cinv; iFrame. Qed.
+
+Theorem pre_inode_to_cinv' l addr σ :
+  pre_inode l addr σ -∗ inode_cinv_postcrash addr σ.
+Proof. iNamed 1. iApply inode_linv_to_cinv'; iFrame. Qed.
+
+Theorem inode_cinv_post_to_pre addr σ :
+  inode_cinv_postcrash addr σ -∗ inode_cinv_precrash addr σ.
+Proof. iNamed 1. iExists _, _, _. eauto with iFrame. Qed.
+
 
 Global Instance is_inode_Persistent l P addr :
   Persistent (is_inode l P addr).

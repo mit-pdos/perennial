@@ -212,6 +212,7 @@ def main():
             "./async_toy",
             "./async_durable_alloc_inode",
             "./async_mem_alloc_inode",
+            "./async_mem_alloc_dir",
             "./async_durable_alloc",
         )
 
