@@ -552,11 +552,14 @@ Proof.
   lia.
 Qed.
 
-Lemma wpc_Barrier1 E1 a b0 b :
-  {{{ ▷ a d↦[b0] b }}}
+Lemma wpc_Barrier E1 m  :
+  {{{ ▷ [∗ map] a ↦ bs ∈ m, a d↦[fst bs] (snd bs) }}}
     Barrier #() @ E1
-  {{{ RET #(); ⌜ b0 = b ⌝ ∗ a d↦[b0] b }}}
-  {{{ a d↦[b0] b }}}.
+    {{{ RET #();
+        ⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝ ∗
+          ([∗ map] a ↦ bs ∈ m, a d↦[fst bs] (snd bs))
+      }}}
+     {{{ ([∗ map] a ↦ bs ∈ m, a d↦[fst bs] (snd bs)) }}}.
 Proof.
   iIntros (Φ Φc) ">Hd HΦ".
   iLöb as "IH".
@@ -567,21 +570,18 @@ Proof.
   wpc_bind_seq.
   wpc_atomic.
   { eauto. }
-  wp_apply (wp_BarrierOp _ _ ({[ a := (b0, b)]}) with "[Hd]").
-  { iNext.  rewrite big_sepM_singleton. iFrame. }
+  wp_apply (wp_BarrierOp _ _ m with "[Hd]").
+  { iNext. eauto. }
   iIntros (bl). destruct bl.
   - iIntros "(%Heq&H)".
-    rewrite big_sepM_singleton.
     iSplit.
     { iLeft in "HΦ". iApply "HΦ". eauto. }
     iModIntro. wpc_pures.
     { iLeft in "HΦ". iApply "HΦ". eauto. }
     iRight in "HΦ".
     iApply ("HΦ" with "[-]").
-    { iFrame. iPureIntro. eapply (Heq a (b0, b)) => //=.
-      rewrite lookup_singleton //. }
+    { iFrame. iPureIntro. eauto. }
   - iIntros "(_&H)".
-    rewrite big_sepM_singleton.
     iSplit.
     { iLeft in "HΦ". iApply "HΦ". eauto. }
     iModIntro. wpc_pures.
@@ -589,6 +589,36 @@ Proof.
     iApply ("IH" with "[$]"). iSplit.
     * iLeft in "HΦ". eauto.
     * iNext. iRight in "HΦ". eauto.
+Qed.
+
+Lemma wpc_Barrier0 :
+  {{{ True }}}
+    Barrier #() @ ⊤
+  {{{ RET #(); True }}}
+  {{{ True }}}.
+Proof.
+  iIntros (Φ Φc) "_ HΦ".
+  wpc_apply (wpc_Barrier _ ∅); eauto.
+  iSplit.
+  - iIntros. iLeft in "HΦ". by iApply "HΦ".
+  - iNext. iIntros. iRight in "HΦ". by iApply "HΦ".
+Qed.
+
+Lemma wpc_Barrier1 E1 a b0 b :
+  {{{ ▷ a d↦[b0] b }}}
+    Barrier #() @ E1
+  {{{ RET #(); ⌜ b0 = b ⌝ ∗ a d↦[b0] b }}}
+  {{{ a d↦[b0] b }}}.
+Proof.
+  iIntros (Φ Φc) ">Hd HΦ".
+  wpc_apply (wpc_Barrier _ ({[ a := (b0, b)]}) with "[Hd]").
+  { iNext.  rewrite big_sepM_singleton. iFrame. }
+  iSplit.
+  - rewrite ?big_sepM_singleton. iLeft in "HΦ". eauto.
+  - rewrite ?big_sepM_singleton. iNext. iIntros "(%Hlookup&Ha)".
+    iRight in "HΦ". iApply "HΦ". iFrame. iPureIntro.
+    eapply (Hlookup a (b0, b)) => //=.
+    rewrite lookup_singleton //.
 Qed.
 
 End goose.
