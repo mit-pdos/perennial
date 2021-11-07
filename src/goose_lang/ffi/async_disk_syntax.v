@@ -69,3 +69,5 @@ Proof. reflexivity. Qed.
 Global Instance Block0: Inhabited Block := _.
 Global Instance Block_countable : Countable Block := _.
 
+Definition Block_to_vals {ext: ffi_syntax} (bl:Block) : list val :=
+  fmap b2val (vec_to_list bl).

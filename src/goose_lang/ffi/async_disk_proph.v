@@ -36,9 +36,6 @@ Fixpoint init_disk (d: disk_state) (sz: nat) : disk_state :=
   | S n => <[(Z.of_nat n) := cblk_synced block0]> (init_disk d n)
   end.
 
-Definition Block_to_vals {ext: ffi_syntax} (bl:Block) : list val :=
-  fmap b2val (vec_to_list bl).
-
 Lemma length_Block_to_vals {ext: ffi_syntax} b :
     length (Block_to_vals b) = block_bytes.
 Proof.
