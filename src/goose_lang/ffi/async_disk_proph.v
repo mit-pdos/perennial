@@ -177,13 +177,13 @@ Section disk.
     Decision (all_synced σ).
   Proof. apply _. Qed.
 
-  Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) val :=
+  Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) expr :=
     match op, v with
     | ReadOp, LitV (LitInt a) =>
       ab ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
       l ← allocateN;
       modify (λ '(σ,g), (state_insert_list l (Block_to_vals (curr_val ab)) σ, g));;
-      ret $ #(LitLoc l)
+      ret $ Val $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
       old ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
       b ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) b, (forall (i:Z), 0 <= i -> i < 4096 ->
@@ -193,16 +193,16 @@ Section disk.
                 end));
       syncb ← (any bool);
       modify (λ '(σ,g), (set world <[ int.Z a := cblk_upd old b syncb ]> σ, g));;
-      ret #()
+      ret $ Val $ #()
     | SizeOp, LitV LitUnit =>
       sz ← reads (λ '(σ,g), disk_size σ.(world));
-      ret $ LitV $ LitInt (word.of_Z sz)
+      ret $ Val $ LitV $ LitInt (word.of_Z sz)
     | BarrierOp, LitV LitUnit =>
       w ← reads (λ '(σ,g), σ.(world) : gmap Z CrashBlock);
       if decide (all_synced w) then
-        ret #true
+        ret $ Val $ #true
       else
-        ret #false
+        ret $ Val $ #false
     | _, _ => undefined
     end.
 

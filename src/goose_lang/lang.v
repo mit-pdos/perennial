@@ -237,7 +237,7 @@ We produce a val to make external operations atomic.
 *)
 Class ffi_semantics :=
   {
-    ffi_step : ffi_opcode -> val -> transition (state*global_state) val;
+    ffi_step : ffi_opcode -> val -> transition (state*global_state) expr;
     ffi_crash_step : ffi_state -> ffi_state -> Prop;
   }.
 Context {ffi_semantics: ffi_semantics}.
@@ -941,6 +941,9 @@ Definition ret_expr {state} (e:expr): transition state (list observation * expr 
 Definition atomically {state} (tr: transition state val): transition state (list observation * expr * list expr) :=
   (λ v, ([], Val v, [])) <$> tr.
 
+Definition atomicallyM {state} (tr: transition state expr): transition state (list observation * expr * list expr)
+  := (λ v, ([], v, [])) <$> tr.
+
 Definition isFresh (σg: state*global_state) (l: loc) :=
   (forall i, l +ₗ i ≠ null ∧ σg.1.(heap) !! (l +ₗ i) = None)%Z ∧
   (addr_offset l = 0).
@@ -1114,7 +1117,7 @@ Definition head_trans (e: expr) :
        check (is_Writing nav);;
        modifyσ (set heap <[l:=Free v]>);;
        ret $ LitV $ LitUnit)
-  | ExternalOp op (Val v) => atomically $ ffi_step op v
+  | ExternalOp op (Val v) => atomicallyM $ ffi_step op v
   | Input (Val (LitV (LitInt selv))) =>
     atomically
       (x ← reads (λ '(σ,g), σ.(oracle) σ.(trace) selv);

@@ -232,25 +232,25 @@ Section jrnl.
   Global Instance decide_gt0 (m : u64) : Decision (0 < int.Z m).
   Proof. apply _. Qed.
 
-  Definition jrnl_step (op:JrnlOp) (v:val) : transition (state*global_state) val :=
+  Definition jrnl_step (op:JrnlOp) (v:val) : transition (state*global_state) expr :=
     match op, v with
     | OpenOp, _ =>
       j ← open;
-      ret $ LitV $ LitBool $ true
+      ret $ Val $ LitV $ LitBool $ true
     | ReadBufOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V #(LitInt sz) =>
       j ← openΣ;
       d ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
       (* bit reads must be done with ReadBitOp *)
       check (k ≠ KindBit ∧ bufSz k = int.nat sz);;
-      ret $ val_of_obj' d
+      ret $ Val $ val_of_obj' d
     | ReadBitOp, (#(LitInt blkno), (#(LitInt off), #()))%V =>
       j ← openΣ;
       d ← unwrap (jrnlData j !! (Build_addr blkno off));
       k ← unwrap (jrnlKinds j !! blkno);
       (* bit reads must be done with ReadBitOp *)
       check (k = KindBit);;
-      ret $ val_of_obj' d
+      ret $ Val $ val_of_obj' d
     | OverWriteOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V ov =>
       j ← openΣ;
       (* This only allows writing to addresses that already have defined contents *)
@@ -259,7 +259,7 @@ Section jrnl.
       o ← suchThat (λ _ o, val_of_obj' o = ov);
       check (objSz o = bufSz k ∧ k ≠ KindBit);;
       modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
-      ret $ #()
+      ret $ Val $ #()
     | OverWriteBitOp, PairV (#(LitInt blkno), (#(LitInt off), #()))%V ov =>
       j ← openΣ;
       (* This only allows writing to addresses that already have defined contents *)
@@ -268,34 +268,34 @@ Section jrnl.
       o ← suchThat (λ _ o, val_of_obj' o = ov);
       check (objSz o = bufSz k ∧ k = KindBit);;
       modifyΣ (λ j, updateData j (Build_addr blkno off) o);;
-      ret $ #()
+      ret $ Val $ #()
     | MkAllocOp, #(LitInt max) =>
       j ← openΣ;
       l ← suchThat (λ _, isFreshAlloc (jrnlAllocs j));
       check (0 < int.Z max ∧ int.Z max `mod` 8 = 0) ;;
       modifyΣ (λ j, updateAllocs j l max);;
-      ret $ (LitV $ LitLoc $ l)
+      ret $ Val $ (LitV $ LitLoc $ l)
     | MarkUsedOp, PairV #(LitLoc l) #(LitInt n) =>
       j ← openΣ;
       max ← unwrap (jrnlAllocs j !! l);
       check (int.Z n < int.Z max) ;;
-      ret $ #()
+      ret $ Val $ #()
     | FreeNumOp, PairV #(LitLoc l) #(LitInt n) =>
       j ← openΣ;
       max ← unwrap (jrnlAllocs j !! l);
       check (int.Z n ≠ 0 ∧ int.Z n < int.Z max) ;;
-      ret $ #()
+      ret $ Val $ #()
     | AllocOp, #(LitLoc l) =>
       j ← openΣ;
       max ← unwrap (jrnlAllocs j !! l);
       Hpf ← @checkPf _ (0 < int.Z max) (decide_gt0 max);
       n ← @suchThat _ _ (λ _ n, int.Z n < int.Z max) (allocnum_gen _ Hpf);
-      ret $ #(LitInt n)
+      ret $ Val $ #(LitInt n)
     | NumFreeOp, #(LitLoc l) =>
       j ← openΣ;
       max ← unwrap (jrnlAllocs j !! l);
       n ← @suchThat _ _ (λ _ n, int.Z n ≤ int.Z max) (allocnumfree_gen _);
-      ret $ #(LitInt n)
+      ret $ Val $ #(LitInt n)
     | _, _ => undefined
     end.
 

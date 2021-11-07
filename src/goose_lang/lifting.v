@@ -554,8 +554,10 @@ Global Instance linearize_atomic s : Atomic s Linearize.
 Proof. rewrite /Linearize. apply _. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
+(*
 Global Instance ext_atomic s op v : Atomic s (ExternalOp op (Val v)).
 Proof. solve_atomic. Qed.
+ *)
 Global Instance input_atomic s v : Atomic s (Input (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance output_atomic s v : Atomic s (Output (Val v)).

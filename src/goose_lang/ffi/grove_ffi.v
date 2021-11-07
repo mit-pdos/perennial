@@ -114,24 +114,24 @@ Section grove.
   Global Instance chan_GenType Σ : GenType chan Σ :=
     fun z _ => Some (exist _ (U64 z) I).
 
-  Definition ffi_step (op: GroveOp) (v: val): transition (state*global_state) val :=
+  Definition ffi_step (op: GroveOp) (v: val): transition (state*global_state) expr :=
     match op, v with
     | ListenOp, LitV (LitInt c) =>
-      ret (ExtV (ListenSocketV c))
+      ret $ Val $ (ExtV (ListenSocketV c))
     | ConnectOp, LitV (LitInt c_r) =>
       c_l ← suchThat isFreshChan;
       match c_l with
-      | None => ret ((*err*)#true, ExtV BadSocketV)%V
+      | None => ret $ Val $ ((*err*)#true, ExtV BadSocketV)%V
       | Some c_l =>
         modify (λ '(σ,g), (σ, <[ c_l := ∅ ]> g));;
-        ret ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
+        ret $ Val $ ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
       end
     | AcceptOp, ExtV (ListenSocketV c_l) =>
       c_r ← any chan;
-      ret (ExtV (ConnectionSocketV c_l c_r))
+      ret $ Val $ (ExtV (ConnectionSocketV c_l c_r))
     | SendOp, (ExtV (ConnectionSocketV c_l c_r), (LitV (LitLoc l), LitV (LitInt len)))%V =>
       err_early ← any bool;
-      if err_early is true then ret (*err*)#true else
+      if err_early is true then ret $ Val $ (*err*)#true else
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
             length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
@@ -141,7 +141,7 @@ Section grove.
       ms ← reads (λ '(σ,g), g !! c_r) ≫= unwrap;
       modify (λ '(σ,g), (σ, <[ c_r := ms ∪ {[Message c_l data]} ]> g));;
       err_late ← any bool;
-      ret (*err*)#(err_late : bool)
+      ret $ Val $ (*err*)#(err_late : bool)
     | RecvOp, ExtV (ConnectionSocketV c_l c_r) =>
       ms ← reads (λ '(σ,g), g !! c_l) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
@@ -149,11 +149,11 @@ Section grove.
       match m with
       | None =>
         (* We errored *)
-        ret ((*err*)#true, (#locations.null, #0))%V
+        ret $ Val $ ((*err*)#true, (#locations.null, #0))%V
       | Some m =>
         l ← allocateN;
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
-        ret  ((*err*)#false, (#(l : loc), #(length m.(msg_data))))%V
+        ret $ Val $ ((*err*)#false, (#(l : loc), #(length m.(msg_data))))%V
       end
     | _, _ => undefined
     end.
@@ -615,6 +615,19 @@ Section grove.
     rewrite byte_mapsto_untype byte_offset_untype //.
   Qed.
 
+Ltac inv_undefined :=
+  match goal with
+  | [ H: relation.denote (match ?e with | _ => _ end) _ _ _ |- _ ] =>
+    destruct e; try (apply suchThat_false in H; contradiction)
+  end.
+
+Local Ltac solve_atomic :=
+  apply strongly_atomic_atomic, ectx_language_atomic;
+  [ apply heap_head_atomic; cbn [relation.denote head_trans]; intros * H;
+    repeat inv_undefined;
+    try solve [ apply atomically_is_val in H; auto ]
+    |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
+
   Lemma wp_Send c_l c_r (s : Slice.t) (data : list u8) (q : Qp) :
     ⊢ {{{ is_slice_small s byteT q data }}}
       <<< ∀∀ ms, c_r c↦ ms >>>
@@ -631,7 +644,15 @@ Section grove.
     wp_pures.
     iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
     rewrite difference_empty_L.
+    (* TODO(Joe): Cleanup *)
     iMod "HΦ" as (ms) "[Hc HΦ]".
+    { solve_atomic. inversion H.  subst. monad_inv. inversion H0. subst.
+      destruct x0; monad_inv.
+      { econstructor. eauto. }
+      monad_inv.
+      inversion H2. subst. inversion H4. subst. inversion H6. subst. inversion H8.
+      subst. inversion H10. subst. inversion H11. econstructor. eauto.
+    }
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
     iIntros (err_early err_late) "[Hc Hl]".
@@ -660,6 +681,13 @@ Section grove.
     wp_bind (ExternalOp _ _).
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
+    { solve_atomic. inversion H.  subst. monad_inv. inversion H0. subst.
+      inversion H2. subst.
+      destruct x1.
+      * inversion H4. subst. inversion H6. subst. inversion H8. subst.
+        inversion H9. subst. econstructor. eauto.
+      * inversion H4. subst. inversion H5. subst. econstructor.  eauto.
+    }
     wp_apply (wp_RecvOp with "Hc").
     iIntros (err l len data) "(%Hm & Hc & Hl)".
     iMod ("HΦ" $! err data with "[Hc]") as "HΦ".

@@ -138,6 +138,20 @@ Qed.
 
 Transparent disk.Read disk.Write.
 
+Ltac inv_undefined :=
+  match goal with
+  | [ H: relation.denote (match ?e with | _ => _ end) _ _ _ |- _ ] =>
+    destruct e; try (apply suchThat_false in H; contradiction)
+  end.
+
+Local Ltac solve_atomic :=
+  apply strongly_atomic_atomic, ectx_language_atomic;
+  [ apply heap_head_atomic; cbn [relation.denote head_trans]; intros * H;
+    repeat inv_undefined;
+    try solve [ apply atomically_is_val in H; auto ]
+    |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
+
+
 Theorem wp_Write_atomic (a: u64) s q b :
   ⊢ {{{ is_slice_small s byteT q (Block_to_vals b) }}}
   <<< ∀∀ aset b0, int.Z a d↦[aset] b0 >>>
@@ -150,6 +164,9 @@ Proof.
   wp_call.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   iApply (wp_ncatomic _ _ ∅).
+  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
+    inversion H4. subst. inversion H6. subst. inversion H7.
+    inversion H8. subst. inversion H13. eauto. }
   rewrite difference_empty_L.
   iMod "Hupd" as (aset0 b0) "[Hda Hupd]"; iModIntro.
   wp_apply (wp_WriteOp with "[Hda Hs]").
@@ -221,6 +238,9 @@ Proof.
   wp_bind (ExternalOp _ _).
   rewrite difference_empty_L.
   iMod "Hupd" as (? b) "[Hda Hupd]".
+  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
+    inversion H4. subst. inversion H6. subst. inversion H7.
+    subst. eauto. }
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
   iMod ("Hupd" with "Hda") as "HQ"; iModIntro.
@@ -243,6 +263,9 @@ Proof.
   iDestruct (is_slice_sz with "Hs") as %Hsz.
   wp_bind (ExternalOp _ _).
   iApply (wp_ncatomic _ _ ∅).
+  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
+    inversion H4. subst. inversion H6. subst. inversion H7.
+    subst. eauto. }
   rewrite difference_empty_L.
   iMod "Hupd" as (aset db0) "[Hda Hupd]"; iModIntro.
   wp_apply (wp_ReadOp with "[$Hda]").
@@ -359,7 +382,7 @@ Proof.
     iModIntro. iSplit; first done. simpl. wp_pures. iModIntro. iApply ("H" with "[//]").
   - iModIntro; iSplit; first done.
     monad_inv.
-    iFrame. simpl. wp_pures. 
+    iFrame. simpl. wp_pures.
     iApply "IH"; eauto.
 Qed.
 
@@ -409,6 +432,10 @@ Proof.
   wpc_pures.
   { by crash_case. }
   wpc_bind (ExternalOp _ _).
+  assert (Atomic (StronglyAtomic) (ExternalOp ReadOp #a)).
+  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
+    inversion H4. subst. inversion H6. subst. inversion H7.
+    subst. eauto. }
   wpc_atomic; iFrame.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
@@ -439,6 +466,10 @@ Proof.
   wpc_pures.
   { iLeft in "Hfupd". iFrame. }
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  assert (Atomic StronglyAtomic (ExternalOp WriteOp (#a, #s.(Slice.ptr))%V)).
+  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
+    inversion H4. subst. inversion H6. subst. inversion H7.
+    inversion H8. subst. inversion H13. eauto. }
   wpc_atomic.
   iRight in "Hfupd".
   iMod "Hfupd" as (aset b0) "[Hda HQ]".
@@ -568,6 +599,9 @@ Proof.
   { eauto. }
   Opaque async_disk_proph.Barrier.
   wpc_bind_seq.
+  assert (Atomic (StronglyAtomic) (ExternalOp BarrierOp #())).
+  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst.
+    destruct (decide _); inversion H2; subst; inversion H3; econstructor; eauto. }
   wpc_atomic.
   { eauto. }
   wp_apply (wp_BarrierOp _ _ m with "[Hd]").

@@ -180,13 +180,13 @@ Section disk.
   Definition disk_size (d: gmap Z Block): Z :=
     1 + highest_addr (dom _ d).
 
-  Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) val :=
+  Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) expr :=
     match op, v with
     | ReadOp, LitV (LitInt a) =>
       b ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
       l ← allocateN;
       modify (λ '(σ,g), (state_insert_list l (Block_to_vals b) σ, g));;
-      ret $ #(LitLoc l)
+      ret $ Val $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
       _ ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
         (* TODO: use Sydney's executable version from disk_interpreter.v as
@@ -197,10 +197,10 @@ Section disk.
                 | _ => False
                 end));
       modify (λ '(σ,g), (set world <[ int.Z a := b ]> σ, g));;
-      ret #()
+      ret $ Val $ #()
     | SizeOp, LitV LitUnit =>
       sz ← reads (λ '(σ,g), disk_size σ.(world));
-      ret $ LitV $ LitInt (word.of_Z sz)
+      ret $ Val $ LitV $ LitInt (word.of_Z sz)
     | _, _ => undefined
     end.
 
