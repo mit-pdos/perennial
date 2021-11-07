@@ -558,26 +558,269 @@ Section translate.
         rewrite decide_True //.
   Qed.
 
-(*
-  Theorem prim_step_simulation de1 pe1 σ1 g1 κ de2 σ2 g2 defs :
-    translate de1 pe1 →
-    prim_step de1 σ1 g1 κ de2 σ2 g2 defs →
+  Theorem prim_step'_simulation e1 σ1 g1 κ e2 σ2 g2 efs :
+    prim_step' e1 σ1 g1 κ e2 σ2 g2 efs →
     ∀ pg2 pσ2,
       state_compat σ2 pσ2 →
       global_compat g2 pg2 →
-      ∃ pκ pσ1 pg1 pg2 pe2 pefs, state_compat σ1 pσ1 ∧
-                          global_compat g1 pg1 ∧
-                          translate de2 pe2 ∧
-                          translate_tp defs pefs ∧
-                          (prim_step pe1 pσ1 pg1 pκ pe2 pσ2 pg2 pefs ∨
-                          rtc prim_step_noefs (pe1, pσ1) (pe2, pσ2)).
+      ∃ pσ1 pg1 pg2,
+        state_compat σ1 pσ1 ∧
+        global_compat g1 pg1 ∧
+        prim_step' e1 pσ1 pg1 κ e2 pσ2 pg2 efs.
   Proof.
-    intros Htrans Hprim.
-    inversion Hprim.
-    simpl in *.
+    intros Hprim.
+    inversion Hprim; subst.
+    intros. edestruct (head_step_simulation) as (pσ1&pg1&pg2'&?&?&?); eauto.
+    do 3 eexists; split_and!; eauto.
+    econstructor; eauto.
+  Qed.
+
+  Theorem rtc_prim_step'_simulation e1 σ1 g1 e2 σ2 g2 :
+    rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
+        (e1, (σ1, g1)) (e2, (σ2, g2)) →
+    ∀ pg2 pσ2,
+      state_compat σ2 pσ2 →
+      global_compat g2 pg2 →
+      ∃ pσ1 pg1 pg2,
+        state_compat σ1 pσ1 ∧
+        global_compat g1 pg1 ∧
+        rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
+            (e1, (pσ1, pg1)) (e2, (pσ2, pg2)).
+  Proof.
+    remember (e1, (σ1, g1)) as ρ1 eqn:Heqρ1.
+    remember (e2, (σ2, g2)) as ρ2 eqn:Heqρ2.
+    intros Hrtc.
+    revert e1 σ1 g1 Heqρ1.
+    revert e2 σ2 g2 Heqρ2.
+    induction Hrtc; intros; subst.
+    - inversion Heqρ1; subst. do 3 eexists; split_and!; eauto.
+      apply rtc_refl.
+    - destruct y as (e1'&σ1'&g1').
+      edestruct (IHHrtc) as (pσ1'&pg2_&pg1'&Hcompat1&Hcompat2&Hrtc'); eauto.
+      edestruct prim_step'_simulation as (pσ1&pg1&pg0&Hcompat1_0&Hcompat2_0&Hstep); eauto.
+      do 3 eexists; split_and!; eauto.
+      econstructor; eauto. simpl.
+      destruct pg0, pg2_; eauto.
+  Qed.
+
+  Theorem head_step_atomic_simulation e1 σ1 g1 κ e2 σ2 g2 efs :
+    head_step_atomic e1 σ1 g1 κ e2 σ2 g2 efs →
+    ∀ pg2 pσ2,
+      state_compat σ2 pσ2 →
+      global_compat g2 pg2 →
+      ∃ pσ1 pg1 pg2,
+        state_compat σ1 pσ1 ∧
+        global_compat g1 pg1 ∧
+        head_step_atomic e1 pσ1 pg1 κ e2 pσ2 pg2 efs.
+  Proof.
+    intros Hprim.
+    inversion Hprim; subst.
+    - intros.
+      edestruct (head_step_simulation) as (?&?&?&?); eauto.
+      do 3 eexists. split_and!; intuition eauto.
+      econstructor; eauto.
+    - intros.
+      edestruct (rtc_prim_step'_simulation) as (?&?&?&?); eauto.
+      do 3 eexists. split_and!; intuition eauto.
+      apply head_step_atomically; eauto.
+      { admit. }
+    - intros. do 3 eexists. split_and!; eauto.
+      eapply head_step_atomically_fail.
+      { admit. }
+  Admitted.
+
+  Theorem prim_step_simulation e1 σ1 g1 κ e2 σ2 g2 efs :
+    prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
+    ∀ pg2 pσ2,
+      state_compat σ2 pσ2 →
+      global_compat g2 pg2 →
+      ∃ pσ1 pg1 pg2,
+        state_compat σ1 pσ1 ∧
+        global_compat g1 pg1 ∧
+        @prim_step (@goose_lang _ _ ADP.disk_semantics) e1 pσ1 pg1 κ e2 pσ2 pg2 efs.
+  Proof.
+    intros Hprim.
+    inversion Hprim. simpl in *.
+    intros. edestruct (head_step_atomic_simulation) as (?&?&?&?); eauto.
+    do 3 eexists; split_and!; intuition eauto.
+    econstructor; eauto.
+  Qed.
+
+  Theorem step_simulation t1 σ1 g1 κ t2 σ2 g2:
+    step (t1, (σ1, g1)) κ (t2, (σ2, g2)) →
+    ∀ pg2 pσ2,
+      state_compat σ2 pσ2 →
+      global_compat g2 pg2 →
+      ∃ pσ1 pg1 pg2,
+        state_compat σ1 pσ1 ∧
+        global_compat g1 pg1 ∧
+        @step (@goose_lang _ _ ADP.disk_semantics) (t1, (pσ1, pg1)) κ (t2, (pσ2, pg2)).
+  Proof.
+    intros Hstep.
+    inversion Hstep. simpl in *.
+    monad_inv. intros. edestruct (prim_step_simulation) as (?&?&?&?); eauto.
+    do 3 eexists; split_and!; intuition eauto.
+    econstructor; eauto.
+  Qed.
+
+  Theorem erased_step_simulation t1 σ1 g1 t2 σ2 g2:
+    erased_step (t1, (σ1, g1)) (t2, (σ2, g2)) →
+    ∀ pg2 pσ2,
+      state_compat σ2 pσ2 →
+      global_compat g2 pg2 →
+      ∃ pσ1 pg1 pg2,
+        state_compat σ1 pσ1 ∧
+        global_compat g1 pg1 ∧
+        @erased_step (@goose_lang _ _ ADP.disk_semantics) (t1, (pσ1, pg1)) (t2, (pσ2, pg2)).
+  Proof.
+    intros Hstep.
+    inversion Hstep. simpl in *.
+    intros. edestruct (step_simulation) as (?&?&?&?); eauto.
+    do 3 eexists; split_and!; intuition eauto.
+    econstructor; eauto.
+  Qed.
+
+  Theorem rtc_erased_step_simulation t1 σ1 g1 t2 σ2 g2:
+    rtc erased_step (t1, (σ1, g1)) (t2, (σ2, g2)) →
+    ∀ pg2 pσ2,
+      state_compat σ2 pσ2 →
+      global_compat g2 pg2 →
+      ∃ pσ1 pg1 pg2,
+        state_compat σ1 pσ1 ∧
+        global_compat g1 pg1 ∧
+        rtc (@erased_step (@goose_lang _ _ ADP.disk_semantics)) (t1, (pσ1, pg1)) (t2, (pσ2, pg2)).
+  Proof.
+    remember (t1, (σ1, g1)) as ρ1 eqn:Heqρ1.
+    remember (t2, (σ2, g2)) as ρ2 eqn:Heqρ2.
+    intros Hrtc.
+    revert t1 σ1 g1 Heqρ1.
+    revert t2 σ2 g2 Heqρ2.
+    induction Hrtc; intros; subst.
+    - inversion Heqρ1; subst. do 3 eexists; split_and!; eauto.
+      apply rtc_refl.
+    - destruct y as (e1'&σ1'&g1').
+      edestruct (IHHrtc) as (pσ1'&pg2_&pg1'&Hcompat1&Hcompat2&Hrtc'); eauto.
+      edestruct erased_step_simulation as (pσ1&pg1&pg0&Hcompat1_0&Hcompat2_0&Hstep); eauto.
+      do 3 eexists; split_and!; eauto.
+      econstructor; eauto. simpl.
+      destruct pg0, pg2_; eauto.
+  Qed.
+
+  Lemma disk_compat_crash_inv d1 d2 pd2:
+    @ffi_crash_step _ _ (AD.disk_semantics) d1 d2 →
+    disk_compat d2 pd2 →
+    ∃ pd1, @ffi_crash_step _ _ (ADP.disk_semantics) pd1 pd2 ∧
+           disk_compat d1 pd1.
+  Proof.
+    revert d2 pd2.
+    induction (d1 : gmap Z _) as [| ???? IH] using map_ind.
+    - intros d2 pd2. intros Hcrash Hcompat.
+      assert (pd2 = ∅) as ->.
+      { inversion Hcrash. destruct Hcompat as (Hdom&_).
+        apply (dom_empty_inv_L (D := gset _) pd2).
+        { rewrite dom_empty_L in H. destruct H. rewrite H. rewrite Hdom //. }
+      }
+      exists ∅. split.
+      * econstructor; split; eauto. set_solver.
+      * split; rewrite ?dom_empty_L //.
+    - intros d2 pd2 Hcrash.
+      inversion Hcrash. subst.
+      assert (@ffi_crash_step _ _ (AD.disk_semantics) m (delete i d2)).
+      {
+        econstructor; split.
+        * rewrite dom_delete_L. destruct H0. rewrite dom_insert_L in H0.
+          assert (i ∉ dom (gset _) m).
+          { apply not_elem_of_dom. eauto. }
+          set_solver.
+        * intros addr ab Hdel.
+          destruct H0 as (_&Hlookup).
+          apply (lookup_delete_Some d2) in Hdel.
+          edestruct Hlookup.
+          { intuition eauto. }
+          eexists; split; intuition eauto.
+          rewrite /AD.is_possible in H4 *.
+          destruct H4 as (ab'&Hlookup'&Hin).
+          rewrite lookup_insert_ne in Hlookup'; eauto.
+      }
+      intros Hcompat.
+      assert (disk_compat (delete i d2) (delete i pd2)).
+      {
+        split.
+        - rewrite ?dom_delete_L. destruct Hcompat as (Heq&_); eauto.
+          rewrite Heq //.
+        - intros addr ab Hdel.
+          destruct Hcompat as (_&Hlook). edestruct Hlook as (b'&Hin&Hlook').
+          { apply (lookup_delete_Some d2) in Hdel.
+            intuition eauto. }
+          exists b'. split; eauto.
+          rewrite lookup_delete_ne //.
+          intros Heq. rewrite Heq lookup_delete in Hdel. congruence.
+      }
+      edestruct IH as (pd1&Hcrash'&Hcompat'); eauto.
+      destruct Hcompat as (Hdom&Hlook).
+      destruct H0 as (Hdom'&?).
+      assert (is_Some (d2 !! i)) as (ab&?).
+      { apply (elem_of_dom (D := gset Z) d2).
+        rewrite dom_insert_L in Hdom'. rewrite -Hdom'; set_solver. }
+      edestruct (Hlook) as (cb&?&?); eauto.
+      exists (<[i := {| ADP.curr_val := log_heap.latest x; ADP.crash_val := cb |}]> pd1).
+      split.
+      { econstructor; split.
+        * rewrite dom_insert_L. inversion Hcrash'. destruct H6 as (Heqdom&_).
+          rewrite Heqdom. rewrite dom_delete_L. apply (elem_of_dom_2 (D := gset _) pd2) in H5.
+          rewrite -union_difference_singleton_L //.
+        * intros. destruct (decide (addr = i)).
+          ** subst. rewrite lookup_insert in H6. inversion H6.
+             rewrite //=. rewrite H5 => //=.
+             edestruct H0; eauto. destruct H7 as (->&?). rewrite //=.
+             rewrite /log_heap.possible/log_heap.sync//= in H4.
+             apply elem_of_list_singleton in H4. subst. eauto.
+          **  rewrite lookup_insert_ne // in H6.
+              inversion Hcrash'. subst. destruct H7 as (_&Hlookup).
+              eapply Hlookup in H6. rewrite lookup_delete_ne in H6; eauto.
+      }
+      {
+        split.
+        * rewrite ?dom_insert_L. destruct Hcompat' as (Hdomeq&_). rewrite Hdomeq; eauto.
+        * intros. destruct (decide (addr = i)).
+          ** subst. rewrite lookup_insert in H6. inversion H6; subst.
+             rewrite lookup_insert. exists cb; split; eauto.
+             inversion Hcrash. subst. destruct H7 as (?&Hlook_crash).
+             edestruct (Hlook_crash) as (b&?&His_possible); eauto.
+             subst. rewrite /AD.is_possible in His_possible.
+             edestruct His_possible as (?&?&?Hin).
+             rewrite lookup_insert in H8. inversion H8; subst.
+             rewrite /log_heap.possible/log_heap.sync//= in H4.
+             apply elem_of_list_singleton in H4; subst. eauto.
+          ** rewrite lookup_insert_ne //.
+             destruct Hcompat' as (?&Hlook_compat).
+             rewrite lookup_insert_ne // in H6.
+             edestruct Hlook_compat; eauto.
+      }
+  Qed.
+
+  Theorem crash_step_simulation σ1 σ2:
+    crash_prim_step (goose_crash_lang)  σ1 σ2 →
+    ∀ pσ2,
+      state_compat σ2 pσ2 →
+      ∃ pσ1,
+        state_compat σ1 pσ1 ∧
+        crash_prim_step (goose_crash_lang) pσ1 pσ2.
+  Proof.
+    inversion 1; subst.
     inversion H1; subst.
-    - admit.
-    -
-*)
+    intros pσ2 Hcompat.
+    destruct Hcompat as (?&?&?&?).
+    simpl in *.
+    edestruct (disk_compat_crash_inv) as (pd1&?&?); eauto.
+    exists ({| trace := trace σ1;
+               heap := heap σ1;
+               oracle := oracle σ1;
+               world := pd1 |}).
+    split.
+    { split_and!; eauto. }
+    { destruct pσ2; simpl in *; subst. econstructor; eauto. }
+  Qed.
+
 
 End translate.
