@@ -822,5 +822,46 @@ Section translate.
     { destruct pσ2; simpl in *; subst. econstructor; eauto. }
   Qed.
 
+  Definition config_compat (ρ : cfg _) (dρ : cfg _) :=
+    state_compat (ρ.2.1) (dρ.2.1) ∧
+    global_compat (ρ.2.2) (dρ.2.2) ∧
+    ρ.1 = dρ.1.
+
+  Lemma erased_rsteps_simulation r ρ1 ρ2 s :
+    erased_rsteps (CS := @goose_crash_lang _ _ AD.disk_semantics) r ρ1 ρ2 s →
+    ∀ dρ2,
+      config_compat ρ2 dρ2 →
+      ∃ dρ1, config_compat ρ1 dρ1 ∧
+             erased_rsteps (CS := @goose_crash_lang _ _ ADP.disk_semantics) r dρ1 dρ2 s.
+  Proof.
+    induction 1 as [ρ1 ρ2 Hrtc|ρ1 ρ2 ρ3 σ s Hrtc Hcrash Herased].
+    - intros dρ2 Hcompat.
+      destruct ρ1 as (t1, (σ1, g1)).
+      destruct ρ2 as (t2, (σ2, g2)).
+      destruct dρ2 as (dt2, (dσ2, [])).
+      destruct Hcompat as (?&?&Heq).
+      edestruct (rtc_erased_step_simulation) as (dσ1&dg1&[]&Hcompats&?&Hrtc'); eauto.
+      exists (t1, (dσ1, dg1)); eauto.
+      simpl in Heq. subst.
+      split; eauto.
+      * split_and!; eauto.
+      * econstructor; eauto.
+    - intros dρ3 Hcompat.
+      edestruct IHHerased as (dρ2&Hcompat'&Hrtc'); eauto.
+      destruct Hcompat' as (?&?&Heq).
+      simpl in Heq.
+      edestruct (crash_step_simulation) as (dσ2'&?&?); eauto.
+      destruct ρ1 as (t1, (σ1, g1)).
+      destruct ρ2 as (t2, (σ2, g2)).
+      destruct ρ3 as (t3, (σ3, g3)).
+      destruct dρ2 as (dt2, (dσ2, [])).
+      destruct dρ3 as (dt3, (dσ3, [])).
+      edestruct (rtc_erased_step_simulation) as (dp1&dg1&[]&Hcompat1&Hgcompat&Hrtc1); try eapply Hrtc; eauto.
+      exists (t1, (dp1, dg1)).
+      split.
+      { split_and!; eauto. }
+      econstructor; eauto => //=. simpl in Heq. subst.
+      eauto.
+  Qed.
 
 End translate.
