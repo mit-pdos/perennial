@@ -326,6 +326,18 @@ Proof.
   iIntros "!> * Hs". iApply ("HΦ" with "[$]").
 Qed.
 
+  Ltac inv_head_step :=
+    repeat match goal with
+        | _ => progress simplify_map_eq/= (* simplify memory stuff *)
+        | H : to_val _ = Some _ |- _ => apply of_to_val in H
+        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
+          try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
+     and can thus better be avoided. *)
+          inversion H; subst; clear H
+        | H : ffi_step _ _ _ _ _ |- _ =>
+          inversion H; subst; clear H
+        end.
+
 Theorem wp_Barrier_atomic :
   ⊢ {{{ True }}}
   <<< ∀∀ m, [∗ map] a ↦ bs ∈ m, a d↦[fst bs] (snd bs) >>>
@@ -335,16 +347,14 @@ Theorem wp_Barrier_atomic :
   {{{ RET #(); True }}}.
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
-  (* TODO: why does this have to be made transparent whereas the others don't ?? *)
   Transparent async_disk_proph.Barrier.
-  iLöb as "IH".
   wp_rec.
   Opaque async_disk_proph.Barrier.
+  iLöb as "IH".
   wp_bind (ExternalOp _ _).
-  (* TODO: I don't see how to directly derive this from BarrierOp because
-     I only want to fire the opening fupd if the barrier in fact succeeds *)
-  iApply ectx_lifting.wp_lift_atomic_head_step_no_fork_nc; first by auto.
-  iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+  iApply ectx_lifting.wp_lift_head_step_nc; first by auto.
+  iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg".
+  iApply (ncfupd_mask_intro); first set_solver+. iIntros "Hclo".
   cbv [ffi_local_ctx disk_interp].
   iSplit.
   { iPureIntro.
@@ -362,12 +372,12 @@ Proof.
   apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
   iMod (global_state_interp_le with "Hg") as "$".
   { apply step_count_next_incr. }
-  inversion Hstep; subst; clear Hstep.
-  simpl in H.
+  inv_head_step.
   monad_inv.
+  iMod "Hclo". iIntros.
   destruct (decide (all_synced _)) as [Ha|Hna].
   - rewrite difference_empty_L.
-    iMod "Hupd" as (m) "[Hda Hupd]".
+    iMod ("Hupd") as (m) "(Hm&Hclo')".
     iAssert (⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝)%I with "[-]" as "%Hsynced".
     {
       iIntros (k bs Hin).
@@ -375,16 +385,14 @@ Proof.
       iDestruct (gen_heap.gen_heap_valid with "[$] [$]") as %Hlook.
       iPureIntro. eapply Ha in Hlook. eauto.
     }
-    monad_inv.
-    iFrame.
-    iMod ("Hupd" with "[-]") as "H".
-    { iFrame. eauto. }
-    iModIntro. iSplit; first done. simpl. wp_pures. iModIntro. iApply ("H" with "[//]").
-  - iModIntro; iSplit; first done.
-    monad_inv.
-    iFrame. simpl. wp_pures.
-    iApply "IH"; eauto.
-Qed.
+    iFrame. rewrite big_sepL_nil right_id.
+    iMod ("Hclo'" with "[$Hm //]") as "HΦ".
+    iModIntro. monad_inv. iFrame. iApply wp_value. iApply ("HΦ" with "[-]").
+    simpl. iFrame.
+  - iModIntro. monad_inv.
+    iFrame. rewrite big_sepL_nil right_id.
+    iApply ("IH" with "[$] [$]").
+  Qed.
 
 Lemma wp_Barrier_triple E' (Q: iProp Σ) m :
   {{{ |NC={⊤,E'}=> ([∗ map] a ↦ bs ∈ m, a d↦[fst bs] (snd bs)) ∗
@@ -593,37 +601,54 @@ Lemma wpc_Barrier E1 m  :
      {{{ ([∗ map] a ↦ bs ∈ m, a d↦[fst bs] (snd bs)) }}}.
 Proof.
   iIntros (Φ Φc) ">Hd HΦ".
-  iLöb as "IH".
   Transparent async_disk_proph.Barrier.
   wpc_call.
   { eauto. }
+  iLöb as "IH".
   Opaque async_disk_proph.Barrier.
-  wpc_bind_seq.
-  assert (Atomic (StronglyAtomic) (ExternalOp BarrierOp #())).
-  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst.
-    destruct (decide _); inversion H2; subst; inversion H3; econstructor; eauto. }
-  wpc_atomic.
-  { eauto. }
-  wp_apply (wp_BarrierOp _ _ m with "[Hd]").
-  { iNext. eauto. }
-  iIntros (bl). destruct bl.
-  - iIntros "(%Heq&H)".
+  iApply wpc_lift_head_step_fupd; first by auto.
+  iSplit; last first.
+  { iModIntro. iLeft in "HΦ". iApply "HΦ". eauto. }
+  iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd'&Htr) Hg".
+  iApply (fupd_mask_intro); first set_solver+. iIntros "Hclo".
+  cbv [ffi_local_ctx disk_interp].
+  iSplit.
+  { iPureIntro.
+    destruct (decide (all_synced (σ1.(world)))).
+    - eexists _, _, _, _, _; cbn.
+      constructor 1; cbn.
+      repeat (monad_simpl; cbn).
+      rewrite decide_True //. repeat (monad_simpl; cbn).
+    - eexists _, _, _, _, _; cbn.
+      constructor 1; cbn.
+      repeat (monad_simpl; cbn).
+      rewrite decide_False //. repeat (monad_simpl; cbn).
+  }
+  iNext; iIntros (v2 σ2 g2 efs Hstep).
+  apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
+  iMod (global_state_interp_le with "Hg") as "$".
+  { apply step_count_next_incr. }
+  inv_head_step.
+  monad_inv.
+  iMod "Hclo". iIntros.
+  destruct (decide (all_synced _)) as [Ha|Hna].
+  - iModIntro. monad_inv.
+    iAssert (⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝)%I with "[-]" as "%Hsynced".
+    {
+      iIntros (k bs Hin).
+      iDestruct (big_sepM_lookup_acc with "[$]") as "(Hk&_)"; eauto.
+      iDestruct (gen_heap.gen_heap_valid with "[$] [$]") as %Hlook.
+      iPureIntro. eapply Ha in Hlook. eauto.
+    }
+    iFrame. rewrite big_sepL_nil right_id.
+    iApply wpc_value.
     iSplit.
-    { iLeft in "HΦ". iApply "HΦ". eauto. }
-    iModIntro. wpc_pures.
-    { iLeft in "HΦ". iApply "HΦ". eauto. }
-    iRight in "HΦ".
-    iApply ("HΦ" with "[-]").
-    { iFrame. iPureIntro. eauto. }
-  - iIntros "(_&H)".
-    iSplit.
-    { iLeft in "HΦ". iApply "HΦ". eauto. }
-    iModIntro. wpc_pures.
-    { iLeft in "HΦ". iApply "HΦ". eauto. }
-    iApply ("IH" with "[$]"). iSplit.
-    * iLeft in "HΦ". eauto.
-    * iNext. iRight in "HΦ". eauto.
-Qed.
+    * iFrame. iApply ("HΦ" with "[-]"). iFrame. eauto.
+    * iLeft in "HΦ". iModIntro. iApply ("HΦ" with "[-]"). iFrame.
+  - iModIntro. monad_inv.
+    iFrame. rewrite big_sepL_nil right_id.
+    iApply ("IH" with "[$] [$]").
+  Qed.
 
 Lemma wpc_Barrier0 :
   {{{ True }}}

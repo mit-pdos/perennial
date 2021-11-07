@@ -46,7 +46,7 @@ Section disk.
                    | ReadOp => (uint64T, arrayT byteT)
                    | WriteOp => (prodT uint64T (arrayT byteT), unitT)
                    | SizeOp => (unitT, uint64T)
-                   | BarrierOp => (unitT, boolT)
+                   | BarrierOp => (unitT, unitT)
                    end).
 
   Definition disk_ty: ext_types disk_op :=
@@ -144,11 +144,7 @@ Section disk.
     ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
 
   Definition Barrier: val :=
-    rec: "loop" <> :=
-      let: "b" := ExternalOp BarrierOp #() in
-      if: (Var "b") then
-        #()
-      else (Var "loop" #()).
+    λ: <>, ExternalOp BarrierOp #().
 
   Definition Size: val :=
     λ: "v",
@@ -200,9 +196,9 @@ Section disk.
     | BarrierOp, LitV LitUnit =>
       w ← reads (λ '(σ,g), σ.(world) : gmap Z CrashBlock);
       if decide (all_synced w) then
-        ret $ Val $ #true
+        ret $ Val $ #()
       else
-        ret $ Val $ #false
+        ret $ ExternalOp BarrierOp #()
     | _, _ => undefined
     end.
 
@@ -420,13 +416,15 @@ lemmas. *)
   Lemma wp_BarrierOp s E m :
     {{{ ▷ [∗ map] a ↦ bs ∈ m, a d↦{#1}[fst bs] (snd bs) }}}
       @ExternalOp disk_op BarrierOp (LitV LitUnit) @ s; E
-    {{{ (b : bool), RET LitV b;
-       (if b then ⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝ else True%I) ∗
+    {{{ RET #();
+       (⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝) ∗
        [∗ map] a ↦ bs ∈ m, a d↦{#1}[fst bs] (snd bs) }}}.
   Proof.
     iIntros (Φ) ">H Hϕ".
-    iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iLöb as "IH".
+    iApply wp_lift_head_step_nc; first by auto.
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg".
+    iApply (ncfupd_mask_intro); first set_solver+. iIntros "Hclo".
     cbv [ffi_local_ctx disk_interp].
     iSplit.
     { iPureIntro.
@@ -446,9 +444,9 @@ lemmas. *)
     { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
+    iMod "Hclo". iIntros.
     destruct (decide (all_synced _)) as [Ha|Hna].
-    - iModIntro; iSplit; first done.
-      simpl.
+    - iModIntro. monad_inv.
       iAssert (⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝)%I with "[-]" as "%Hsynced".
       {
         iIntros (k bs Hin).
@@ -456,13 +454,13 @@ lemmas. *)
         iDestruct (gen_heap_valid with "[$] [$]") as %Hlook.
         iPureIntro. eapply Ha in Hlook. eauto.
       }
-      monad_inv.
+      iFrame. rewrite big_sepL_nil right_id.
+      iApply wp_value.
       iFrame. iApply ("Hϕ" with "[-]").
       simpl. iFrame. eauto.
-    - iModIntro; iSplit; first done.
-      monad_inv.
-      iFrame. iApply ("Hϕ" with "[-]").
-      simpl. iFrame.
+    - iModIntro. monad_inv.
+      iFrame. rewrite big_sepL_nil right_id.
+      iApply ("IH" with "[$] [$]").
   Qed.
 
   Lemma wp_WriteOp s E (a: u64) bc b0 b q l :
