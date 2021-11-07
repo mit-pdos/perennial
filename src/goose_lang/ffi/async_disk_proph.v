@@ -9,65 +9,11 @@ From Perennial.program_logic Require Import ectx_lifting.
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing.
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang.ffi Require Export async_disk_syntax.
 
 Set Default Proof Using "Type".
-(* this is purely cosmetic but it makes printing line up with how the code is
-usually written *)
 Set Printing Projections.
 
-Inductive DiskOp := ReadOp | WriteOp | SizeOp | BarrierOp.
-Instance eq_DiskOp : EqDecision DiskOp.
-Proof.
-  solve_decision.
-Defined.
-
-Instance DiskOp_fin : Countable DiskOp.
-Proof.
-  solve_countable DiskOp_rec 4%nat.
-Qed.
-
-Definition disk_op : ffi_syntax.
-Proof.
-  refine (mkExtOp DiskOp _ _ () _ _).
-Defined.
-
-Inductive Disk_ty := | DiskInterfaceTy.
-
-Instance disk_val_ty: val_types :=
-  {| ext_tys := Disk_ty; |}.
-
-Section disk.
-  Existing Instances disk_op disk_val_ty.
-
-  Inductive disk_ext_tys : @val disk_op -> (ty * ty) -> Prop :=
-  | DiskOpType op :
-      disk_ext_tys (λ: "v", ExternalOp op (Var "v"))%V
-                   (match op with
-                   | ReadOp => (uint64T, arrayT byteT)
-                   | WriteOp => (prodT uint64T (arrayT byteT), unitT)
-                   | SizeOp => (unitT, uint64T)
-                   | BarrierOp => (unitT, unitT)
-                   end).
-
-  Definition disk_ty: ext_types disk_op :=
-    {| val_tys := disk_val_ty;
-       get_ext_tys := disk_ext_tys |}.
-  Definition Disk: ty := extT DiskInterfaceTy.
-End disk.
-
-Definition block_bytes: nat := Z.to_nat 4096.
-Definition BlockSize {ext: ffi_syntax}: val := #4096.
-Definition Block := vec byte block_bytes.
-Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
-(* TODO: could use vreplicate; not sure how much easier it is to work with *)
-Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
-
-
-Lemma block_bytes_eq : block_bytes = Z.to_nat 4096.
-Proof. reflexivity. Qed.
-
-Global Instance Block0: Inhabited Block := _.
-Global Instance Block_countable : Countable Block := _.
 
 Record CrashBlock :=
   { curr_val : Block;
@@ -647,7 +593,7 @@ Next Obligation.
 Qed.
 
 Section crash.
-  Existing Instances async_disk_proph.disk_op async_disk_proph.disk_model async_disk_proph.disk_ty.
+  Existing Instances async_disk_syntax.disk_op async_disk_proph.disk_model async_disk_syntax.disk_ty.
   Existing Instances async_disk_proph.disk_semantics async_disk_proph.disk_interp.
   Existing Instance goose_diskGS.
 
