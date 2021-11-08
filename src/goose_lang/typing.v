@@ -108,6 +108,10 @@ Section goose_lang.
     | extT x => #() (* dummy value of wrong type *)
     end.
 
+  Lemma zero_prod_val t1 t2 :
+    zero_val (prodT t1 t2) = (zero_val t1, zero_val t2)%V.
+  Proof. reflexivity. Qed.
+
   Fixpoint storable (t:ty): Prop :=
     match t with
     | listT _ => False
@@ -562,6 +566,8 @@ Declare Scope heap_types.
 Delimit Scope heap_types with T.
 Delimit Scope heap_type with ht.
 Bind Scope heap_type with ty.
+
+Arguments zero_val : simpl never.
 
 Notation "Γ ⊢ e : A" := (expr_hasTy Γ%ht e A%ht) : heap_types.
 Notation "Γ ⊢v v : A" := (val_hasTy Γ%ht v A%ht) : heap_types.

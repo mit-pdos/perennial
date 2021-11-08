@@ -368,8 +368,7 @@ Proof.
   rewrite /is_rpcHandler'.
   iSpecialize ("His_rpcHandler" $! args Post s' sl'). 
 
-  replace (zero_val (slice.T byteT)) with
-      (slice_val {| Slice.ptr := null; Slice.sz := U64 0; Slice.cap := U64 0 |}) by auto.
+  rewrite zero_slice_val.
   wp_apply ("His_rpcHandler" with "[$Hsl $Hsl' HPre]").
   { iRewrite -"Hequiv". iFrame "HPre".
     iApply @is_slice_zero.
@@ -743,7 +742,6 @@ Proof.
   iIntros (rep_ptr) "Hrep_ptr".
   wp_pures.
 
-  replace (#0) with (zero_val uint64T) by auto.
   wp_apply (wp_ref_of_zero); first done.
   iIntros (cb_state) "cb_state".
   wp_loadField.

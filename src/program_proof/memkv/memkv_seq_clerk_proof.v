@@ -336,10 +336,7 @@ Proof using Type*.
   rewrite difference_empty_L.
   wp_apply (wp_KVShardClerk__ConditionalPut _ _ _ _ _ _ _ _ (λ b, own_SeqKVClerk ck γ -∗ Φ #b)%I
     with "[Hatomic $HshardCk Hsucc]").
-  {
-    iFrame "#".
-    rewrite /zero_val /=. iFrame.
-  }
+  { eauto with iFrame. }
   iIntros (e) "HshardCondPutPost".
   wp_pures.
   wp_if_destruct.

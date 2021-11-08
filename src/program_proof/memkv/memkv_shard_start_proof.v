@@ -167,10 +167,7 @@ Proof.
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
-      {
-        rewrite zero_slice_val.
-        naive_solver.
-      }
+      { Transparent slice.T. val_ty. Opaque slice.T. }
       iIntros (rep_ptr) "Hrep".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & Hpre)".
@@ -185,8 +182,7 @@ Proof.
       wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep HreqInv Hzero_sl]").
       {
         iFrame "HreqInv".
-        replace (zero_val (struct.t GetReply)) with ((#0, (slice.nil, #()))%V); last first.
-        { naive_solver. }
+        rewrite 2!zero_prod_val zero_slice_val.
 
         iDestruct (struct_fields_split with "Hrep") as "HH".
         iNamed "HH".

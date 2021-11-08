@@ -273,7 +273,7 @@ Proof.
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct).
-  { rewrite zero_slice_val. naive_solver. }
+  { Transparent slice.T. val_ty. Opaque slice.T. }
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -552,7 +552,7 @@ Proof.
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct).
-  { rewrite zero_slice_val. naive_solver. }
+  { Transparent slice.T. val_ty. Opaque slice.T. }
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".

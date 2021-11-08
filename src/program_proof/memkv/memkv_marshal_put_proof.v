@@ -128,10 +128,7 @@ Proof.
   iIntros (Φ) "[%Henc Hsl] HΦ".
   wp_lam.
   wp_apply (wp_allocStruct).
-  {
-    rewrite zero_slice_val.
-    naive_solver.
-  }
+  { Transparent slice.T. val_ty. Opaque slice.T. }
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
   iNamed "HH".

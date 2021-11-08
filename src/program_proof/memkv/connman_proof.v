@@ -33,7 +33,7 @@ Lemma wp_MakeConnMan :
   {{{ (c_ptr:loc), RET #c_ptr; is_ConnMan c_ptr }}}.
 Proof.
   iIntros "%Φ _ HΦ".
-  wp_lam. (* FIXME this unfolds zero_val... *)
+  wp_lam.
   wp_apply wp_allocStruct. { val_ty. }
   iIntros (c_ptr) "Hc".
   iDestruct (struct_fields_split with "Hc") as "HH".
@@ -66,7 +66,6 @@ Proof.
   iIntros "#Hconn !# %Φ _ HΦ".
   iNamed "Hconn".
   Opaque rpc.RPCClient.
-  Opaque zero_val.
   wp_lam. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -186,7 +185,6 @@ Proof.
   iIntros "#Hconn #Hhandler #Hpre !#" (Φ) "H HΦ".
   iDestruct "H" as "(Hslice & Hrep)".
   Opaque rpc.RPCClient.
-  Opaque zero_val.
   wp_lam.
   wp_pures.
   wp_apply (wp_ref_of_zero).

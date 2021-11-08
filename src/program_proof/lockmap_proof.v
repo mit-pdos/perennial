@@ -66,8 +66,6 @@ Definition is_lockShard (ls : loc) (ghostHeap : gname) (covered : gset u64) (P :
 Global Instance is_lockShard_persistent ls gh (P : u64 -> iProp Σ) c : Persistent (is_lockShard ls gh c P).
 Proof. apply _. Qed.
 
-Opaque zero_val.
-
 Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
   {{{ [∗ set] a ∈ covered, P a }}}
     mkLockShard #()

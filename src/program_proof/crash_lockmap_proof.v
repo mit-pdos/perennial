@@ -81,8 +81,6 @@ Definition is_free_lockShard (ls : loc) : iProp Σ :=
 Global Instance is_lockShard_persistent ls gh (P Pc : u64 -> iProp Σ) c : Persistent (is_lockShard ls gh c P Pc).
 Proof. apply _. Qed.
 
-Opaque zero_val.
-
 Theorem wp_mkLockShard :
   {{{ True }}}
     mkLockShard #()

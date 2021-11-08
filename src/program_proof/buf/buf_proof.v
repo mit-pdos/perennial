@@ -287,7 +287,6 @@ Theorem wp_MkBufMap stk E :
 Proof.
   iIntros (Φ) "Hemp HΦ".
 
-Opaque zero_val. (* XXX can we avoid this? *)
   wp_call.
   wp_apply wp_NewMap.
   iIntros (mref) "Hmref".
