@@ -622,21 +622,6 @@ Definition DecSliceMap_invariant dec_v i_ptr m (r:Rec) mref s data : iProp Σ :=
           s q data
 .
 
-(* FIXME: use upstream version when merged *)
-Lemma map_size_disj_union `{FinMap K M} {A} (m1 m2 : M A) :
-  (m1 ##ₘ m2 → size (m1 ∪ m2) = size m1 + size m2)%nat.
-Proof.
-  intros Hdisj. induction m1 as [|k x m1 Hm1 IH] using map_ind.
-  { rewrite map_empty_union. (* FIXME: [rewrite left_id] leaves a goal *)
-    rewrite map_size_empty. done. }
-  rewrite <-insert_union_l.
-  rewrite map_size_insert.
-  rewrite lookup_union_r; try by done.
-  apply map_disjoint_insert_l in Hdisj as [-> Hdisj].
-  rewrite map_size_insert Hm1.
-  rewrite IH; done.
-Qed.
-
 Lemma is_dec_EncBytes_length d v r s q l :
   is_dec d (EncBytes v :: r) s q l  -∗
   ⌜int.Z (length v) = length v⌝.

@@ -234,14 +234,11 @@ Proof.
         iDestruct (own_valid_2 with "Hpending Hpending2") as %Hval%gset_disj_valid_op.
         exfalso. set_solver. }
       iModIntro. iSplit.
-      { iPureIntro. trans (size (pending) - size (C:=gset nat) ({[int.nat cur]}))%nat.
-        - (* TODO use size_difference once upstream std++ MR 324 lands *)
-          rewrite {2}(union_difference {[int.nat cur]} pending); last set_solver.
-          rewrite size_union; last by set_solver+. lia.
-        - rewrite Hsz size_singleton.
-          assert (int.nat nleft ≠ 0%nat). 2:word.
-          rewrite -Hsz. intros Hemp%size_empty_inv.
-          rewrite ->Hemp in Hpending. set_solver. }
+      { iPureIntro. rewrite size_difference; last set_solver.
+        rewrite Hsz size_singleton.
+        assert (int.nat nleft ≠ 0%nat). 2:word.
+        rewrite -Hsz. intros Hemp%size_empty_inv.
+        rewrite ->Hemp in Hpending. set_solver. }
       iThaw "Hclose". iApply "Hclose"; last by eauto with iFrame.
       iIntros "!> %i' %i %Hi %Hnotcur [%Hpend|Hdone]".
       - iLeft. iPureIntro. set_solver.

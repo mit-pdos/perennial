@@ -5,7 +5,7 @@ From iris.proofmode Require Import tactics.
 Set Default Proof Using "Type*".
 
 Section bi.
-Context {PROP:bi} `{!BiAffine PROP}.
+Context {PROP:bi} `{!BiAffine PROP, !BiPersistentlyForall PROP}.
 Implicit Types (P Q: PROP).
 
 Section maplist.

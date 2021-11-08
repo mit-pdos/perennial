@@ -95,7 +95,7 @@ Proof.
 Qed.
 
 Lemma big_sepM_lookup_unit (PROP:bi) `{Countable K}
-  `{BiAffine PROP} (m: gmap K ()) :
+  `{!BiAffine PROP, !BiPersistentlyForall PROP} (m: gmap K ()) :
   ⊢@{PROP} [∗ map] k↦_ ∈ m, ⌜m !! k = Some tt⌝.
 Proof.
   iDestruct (big_sepM_lookup_holds m) as "Hmap".

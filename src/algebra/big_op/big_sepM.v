@@ -198,7 +198,7 @@ End map_zip.
 
 (*! big_sepM *)
 Section bi.
-Context {PROP:bi} `{!BiAffine PROP}.
+Context {PROP:bi} `{!BiAffine PROP, !BiPersistentlyForall PROP}.
 
 Implicit Types P Q : PROP.
 Implicit Types Ps Qs : list PROP.
@@ -208,10 +208,11 @@ Section map.
   Context `{Countable K} {A : Type}.
   Implicit Types m : gmap K A.
   Implicit Types Φ Ψ : K → A → PROP.
+  Set Default Proof Using "Type*".
 
   Lemma big_sepS_exists_sepM Φ (s : gset K) :
     ([∗ set] k ∈ s, ∃ v, Φ k v) -∗ ∃ m, ⌜ dom (gset _) m = s ⌝ ∗ ([∗ map] k ↦ v ∈ m, Φ k v).
-  Proof using BiAffine0.
+  Proof.
     iIntros "Hs".
     iInduction s as [| k s'] "IH" using set_ind_L.
     - iExists ∅. rewrite dom_empty_L; eauto.
@@ -228,7 +229,7 @@ Section map.
   Lemma big_sepM_mono_with_inv' P Φ Ψ m :
     (∀ k x, m !! k = Some x → P ∗ Φ k x ⊢ P ∗ Ψ k x) →
     P ∗ ([∗ map] k ↦ x ∈ m, Φ k x) ⊢ P ∗ [∗ map] k ↦ x ∈ m, Ψ k x.
-  Proof using BiAffine0.
+  Proof.
     intros Hwand.
     induction m as [|i x m ? IH] using map_ind; auto using big_sepM_empty'.
     by rewrite big_opM_eq.
@@ -248,7 +249,7 @@ Section map.
   Lemma big_sepM_mono_with_inv P Φ Ψ m :
     (∀ k x, m !! k = Some x → P ∗ Φ k x ⊢ P ∗ Ψ k x) →
     P -∗ ([∗ map] k ↦ x ∈ m, Φ k x) -∗ P ∗ [∗ map] k ↦ x ∈ m, Ψ k x.
-  Proof using BiAffine0.
+  Proof.
     iIntros (?) "HP H". iApply (big_sepM_mono_with_inv' with "[HP H]"); eauto.
     iFrame.
   Qed.
@@ -258,7 +259,7 @@ Section map.
       I ∗ Φ k x -∗ I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) -∗
     I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
-  Proof using BiAffine0.
+  Proof.
     iIntros "#Hwand [HI Hm]".
     iInduction m as [|i x m] "IH" using map_ind.
     - iFrame. iApply big_sepM_empty. done.
@@ -280,7 +281,7 @@ Section map.
       I ∗ Φ k x ={E}=∗ I ∗ Ψ k x ) -∗
     I ∗ ([∗ map] k↦x ∈ m, Φ k x) ={E}=∗
     I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
-  Proof using BiAffine0.
+  Proof.
     iIntros "#Hfupd [HI Hm]".
     iInduction m as [|i x m] "IH" using map_ind.
     - iModIntro. iFrame. iApply big_sepM_empty. done.
@@ -299,7 +300,7 @@ Section map.
 
   Lemma big_sepM_lookup_holds (m: gmap K A) :
     ⊢@{PROP} [∗ map] k↦v ∈ m, ⌜m !! k = Some v⌝.
-  Proof using BiAffine0.
+  Proof.
     iPureIntro.
     apply map_Forall_lookup; auto.
   Qed.
@@ -309,7 +310,7 @@ Section map.
     ([∗ map] k↦x ∈ m1, Φ k x) -∗
     ([∗ map] k↦x ∈ m2, Φ k x) ∗
     ([∗ map] k↦x ∈ m1 ∖ m2, Φ k x).
-  Proof using BiAffine0.
+  Proof.
     iIntros (Hsubset) "Hm".
     replace (m1) with (m2 ∪ m1 ∖ m2) at 1.
     2: { rewrite map_difference_union; eauto. }
@@ -324,7 +325,7 @@ Section map.
     ([∗ map] k↦x ∈ m2, Φ k x) ∗
     (([∗ map] k↦x ∈ m2, Φ k x) -∗
      [∗ map] k↦x ∈ m1, Φ k x).
-  Proof using BiAffine0.
+  Proof.
     iIntros (Hsubseteq) "Hm1".
     iDestruct (big_sepM_subseteq_diff with "Hm1") as "[Hm2 Hm12]"; eauto.
     iFrame "Hm2".
@@ -340,7 +341,7 @@ Section map.
     ( [∗ map] k↦x ∈ m, Φ k x ) ∗-∗
     ( ( [∗ map] k↦x ∈ filter (λ x, P x) m, Φ k x ) ∗
       ( [∗ map] k↦x ∈ filter (λ x, ~P x) m, Φ k x ) ).
-  Proof using BiAffine0.
+  Proof.
     iSplit.
     - iIntros "Hm".
       erewrite <- (map_filter_union_complement (λ x, P x) m) at 1.
@@ -363,7 +364,7 @@ Section map.
         (Q ∗ Ψ k x2) ) -∗
     (Q ∗ [∗ map] k↦x ∈ m1, Φ k x) -∗
     (Q ∗ [∗ map] k↦x ∈ m2, Ψ k x).
-  Proof using BiAffine0.
+  Proof.
     iIntros "#Hnone #Hsome [HQ Hm]".
     iInduction m1 as [|i x m] "IH" using map_ind forall (m2).
     - iFrame "HQ".
@@ -413,7 +414,7 @@ Section map.
         Ψ k x2 ) -∗
     ([∗ map] k↦x ∈ m1, Φ k x) -∗
     ([∗ map] k↦x ∈ m2, Ψ k x).
-  Proof using BiAffine0.
+  Proof.
     iIntros "#Hnone #Hsome Hm".
     iDestruct (big_sepM_mono_gen_Q emp%I with "Hnone [Hsome] [Hm]") as "[_ Hm]"; iFrame.
     iIntros (k x Hkx). iModIntro. iIntros "[_ H]".
@@ -431,7 +432,7 @@ Section map.
         (Q ∗ Ψ k x2) ) -∗
     (Q ∗ [∗ map] k↦x ∈ m1, Φ k x) -∗
     (Q ∗ [∗ map] k↦x ∈ m2, Ψ k x).
-  Proof using BiAffine0.
+  Proof.
     iIntros (Hnone).
     iApply big_sepM_mono_gen_Q.
     iPureIntro. intros k Hk.
@@ -448,7 +449,7 @@ Section map.
         Ψ k x2 ) -∗
     ([∗ map] k↦x ∈ m1, Φ k x) -∗
     ([∗ map] k↦x ∈ m2, Ψ k x).
-  Proof using BiAffine0.
+  Proof.
     iIntros (Hnone).
     iApply big_sepM_mono_gen.
     iPureIntro. intros k Hk.
@@ -509,7 +510,7 @@ Section map2.
     m2 !! i = Some x2 ->
       ⊢ ([∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2) -∗
           ⌜∃ x1, m1 !! i = Some x1⌝.
-  Proof using BiAffine0.
+  Proof.
     intros.
     iIntros "H".
     iDestruct (big_sepM2_lookup_r with "H") as (x1) "[% _]"; eauto.
@@ -521,7 +522,7 @@ Section map2.
     m1 !! i = None ->
       ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
           ⌜m2 !! i = None⌝.
-  Proof using BiAffine0.
+  Proof.
     case_eq (m2 !! i); auto.
     iIntros (? ? ?) "H".
     iDestruct (big_sepM2_lookup_r with "H") as (x2) "[% _]"; eauto; congruence.
@@ -533,7 +534,7 @@ Section map2.
     m2 !! i = None ->
       ⊢ ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
           ⌜m1 !! i = None⌝.
-  Proof using BiAffine0.
+  Proof.
     case_eq (m1 !! i); auto.
     iIntros (? ? ?) "H".
     iDestruct (big_sepM2_lookup_l with "H") as (x1) "[% _]"; eauto; congruence.
@@ -544,7 +545,7 @@ Section map2.
       (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
     ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
       ( [∗ map] k↦y1 ∈ m1, ∃ y2, ⌜ m2 !! k = Some y2 ⌝ ∗ Φ k y1 y2 ).
-  Proof using BiAffine0.
+  Proof.
     iIntros "H".
     rewrite <- (list_to_map_to_list m1).
     pose proof (NoDup_fst_map_to_list m1); revert H1.
@@ -593,7 +594,7 @@ Section map2.
       (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
     ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) -∗
       ( [∗ map] k↦y2 ∈ m2, ∃ y1, ⌜ m1 !! k = Some y1 ⌝ ∗ Φ k y1 y2 ).
-  Proof using BiAffine0.
+  Proof.
     iIntros "H".
     rewrite <- (list_to_map_to_list m2).
     pose proof (NoDup_fst_map_to_list m2); revert H1.
@@ -640,7 +641,7 @@ Section map2.
       (_ : forall i x1 x2, Absorbing (Φ i x1 x2)) :
     ( [∗ map] k↦y1 ∈ m1, ∃ y2, Φ k y1 y2 ) -∗
     ∃ m2, ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ).
-  Proof using BiAffine0.
+  Proof.
     iIntros "Hm".
     iInduction m1 as [|i x m] "IH" using map_ind.
     - iExists ∅. iApply big_sepM2_empty. done.
@@ -659,7 +660,7 @@ Section map2.
     ( [∗ map] k↦y1 ∈ m1, Φ k y1 ) ∗
     ( [∗ map] k↦y2 ∈ m2, Ψ k y2 ) -∗
     [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 ∗ Ψ k y2.
-  Proof using BiAffine0.
+  Proof.
     iIntros (Hdom) "[Hm1 Hm2]".
     iApply big_sepM2_sepM; last by iFrame.
     intros k. rewrite -!elem_of_dom Hdom. auto.
@@ -669,7 +670,7 @@ Section map2.
     dom (gset K) m1 = dom (gset K) m2 ->
     ( [∗ map] k↦y1 ∈ m1, ∃ y2, ⌜m2 !! k = Some y2⌝ ∗ Φ k y1 y2 ) -∗
     [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2.
-  Proof using BiAffine0.
+  Proof.
     iIntros (Hdom) "Hm".
     iDestruct (big_sepM_sepM2_merge _ (λ _ _, emp)%I with "[Hm]") as "Hm"; eauto.
     iApply (big_sepM2_mono with "Hm").
@@ -683,7 +684,7 @@ Section map2.
     ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) ∗
     ( [∗ map] k↦y1 ∈ m1, Ψ k y1 ) -∗
     ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ∗ Ψ k y1 ).
-  Proof using BiAffine0.
+  Proof.
     iIntros "[Hm2 Hm]".
     iInduction m1 as [|i x m] "IH" using map_ind forall (m2).
     - iDestruct (big_sepM2_empty_r with "Hm2") as "%He". subst. iApply big_sepM2_empty. done.
@@ -706,7 +707,7 @@ Section map2.
     ( [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2 ) ∗-∗
     ( ( [∗ map] k↦y1;y2 ∈ filter (λ x, P x.1) m1;filter (λ x, P x.1) m2, Φ k y1 y2 ) ∗
       ( [∗ map] k↦y1;y2 ∈ filter (λ x, ~P x.1) m1;filter (λ x, ~P x.1) m2, Φ k y1 y2 ) ).
-  Proof using BiAffine0.
+  Proof.
     rewrite big_sepM2_eq /big_sepM2_def.
     iSplit.
     - iIntros "[% Hm]".
@@ -737,7 +738,7 @@ Section map2.
     m1 !! k = None →
     ([∗ map] k↦y1;y2 ∈ <[k := a]>m1; m2, Φ k y1 y2) -∗
     ∃ b, ⌜ m2 !! k = Some b ⌝ ∗ Φ k a b ∗ [∗ map] k↦y1;y2 ∈ m1; delete k m2, Φ k y1 y2.
-  Proof using BiAffine0.
+  Proof.
     iIntros (Hone) "H".
     iDestruct (big_sepM2_dom with "H") as %Hdom.
     assert (∃ b, m2 !! k = Some b) as (b&Hlookup).
