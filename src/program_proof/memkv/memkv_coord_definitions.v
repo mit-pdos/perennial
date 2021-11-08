@@ -43,8 +43,8 @@ Definition is_coord_server_getSpec γkv : RPCSpec :=
                      all_are_shard_servers shardMapping γkv)%I |}.
 
 Definition is_coord_server (host : u64) γ :=
-  ("#HaddSpec" ∷ has_handler γ.(coord_urpc_gn) host (is_coord_server_addSpec γ.(coord_kv_gn)) ∗
-  "#HgetSpec" ∷ has_handler γ.(coord_urpc_gn) host (is_coord_server_getSpec γ.(coord_kv_gn)))%I.
+  ("#HaddSpec" ∷ handler_rpc_spec γ.(coord_urpc_gn) host (is_coord_server_addSpec γ.(coord_kv_gn)) ∗
+  "#HgetSpec" ∷ handler_rpc_spec γ.(coord_urpc_gn) host (is_coord_server_getSpec γ.(coord_kv_gn)))%I.
 
 End memkv_global_coord_definitions.
 

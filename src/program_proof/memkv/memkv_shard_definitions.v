@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Import dist_lifting.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.memkv Require Export common_proof.
-From Perennial.program_proof.memkv Require Export rpc_lib rpc_proof connman_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
+From Perennial.program_proof.memkv Require Export rpc_lib rpc_proof rpc_spec connman_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 
 (** "universal" reply type for the reply cache *)
 Record ShardReplyC := mkShardReplyC {
@@ -128,12 +128,12 @@ Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> i
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   (λ host γ,
   "#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
-  "#HputSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_putSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HconditionalPutSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HgetSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_getSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HmoveSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
-  "#HinstallSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_installSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HfreshSpec" ∷ has_handler γ.(urpc_gn) host (is_shard_server_freshSpec γ.(rpc_gn))
+  "#HputSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_putSpec γ.(kv_gn) γ.(rpc_gn)) ∗
+  "#HconditionalPutSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn) γ.(rpc_gn)) ∗
+  "#HgetSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_getSpec γ.(kv_gn) γ.(rpc_gn)) ∗
+  "#HmoveSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
+  "#HinstallSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_installSpec γ.(kv_gn) γ.(rpc_gn)) ∗
+  "#HfreshSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_freshSpec γ.(rpc_gn))
 )%I.
 
 (* Actually, handler_is is contractive now so we can remove the ▷ in is_shard_server *)
@@ -141,7 +141,7 @@ Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
-  f_equiv. rewrite /has_handler /handler_is. (* FIXME unfolding other abstractions *)
+  f_equiv. rewrite /handler_rpc_spec /handler_spec. (* FIXME unfolding other abstractions *)
   do 10 f_equiv.
   unfold named.
   apply saved_spec.saved_spec_own_contractive.

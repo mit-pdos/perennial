@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import connman.
 From Perennial.program_proof Require Import grove_prelude std_proof.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.algebra Require Import auth_map.
-From Perennial.program_proof.memkv Require Import rpc_proof.
+From Perennial.program_proof.memkv Require Import rpc_proof rpc_spec.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section connman_proof.
@@ -166,7 +166,7 @@ Lemma wp_ConnMan__CallAtLeastOnce (γsmap:server_chan_gnames) (c_ptr:loc) (rpcid
     req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
     Spec Post :
   is_ConnMan c_ptr -∗
-  handler_is γsmap host rpcid Spec -∗
+  handler_spec γsmap host rpcid Spec -∗
   □(▷ Spec reqData Post) -∗
   {{{
       is_slice req byteT 1 reqData ∗
@@ -279,7 +279,7 @@ Lemma wp_ConnMan__CallAtLeastOnce_RPCSpec (spec : RPCSpec) (x : spec.(spec_ty))
   req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
   :
   is_ConnMan c_ptr -∗
-  has_handler γsmap host spec -∗
+  handler_rpc_spec γsmap host spec -∗
   □(▷ spec.(spec_Pre) x reqData) -∗
   {{{
       is_slice req byteT 1 reqData ∗
