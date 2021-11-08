@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import pb.
 
 From Perennial.program_proof.memkv Require Export rpc_proof.
-From Perennial.program_proof.pb Require Export ghost_proof.
+From Perennial.program_proof.pb Require Export replica_ghost_defns.
 
 Section replica_definitions.
 Record ConfigurationC :=
@@ -49,6 +49,7 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
                       ) ∗
   "#Hproposal_lb" ∷ proposal_lb γ cn opLog ∗
   "#HoldConfMax" ∷ oldConfMax γ cn opLog ∗
+
   "HprimaryOwnsProposal" ∷ (if isPrimary then (proposal_ptsto γ cn opLog) else True) ∗
   "#Hcommit_lb" ∷ commit_lb_by γ cn (take (int.nat commitIdx) opLog) ∗
   "%HcommitLeLogLen" ∷ ⌜int.Z commitIdx <= length opLog⌝ ∗

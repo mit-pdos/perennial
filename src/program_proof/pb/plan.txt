@@ -1,0 +1,53 @@
+= Hierarchy
+Ghost state + lemmas
+[ ] commit_lemma accepted_by cn log ={⊤}=∗ committed_by cn log
+[ ] accepted_ptsto cn rid log -∗ raw_proposal_ptsto cn log ={⊤}=∗ proposal_ptsto
+    cn log
+[ ] some ghost state for getting raw_prop_ptsto from invariant.
+
+Ghost replica lemmas
+* own_Replica_ghost
+Have notion of "extra" state.
+* own_Proposer_ghost
+* own_Committer_ghost
+
+Implement Coq version of RPC handlers?
+
+{ proposal(a.cn)≥ a.log
+  own_Replica rid r
+  r.cn > a.cn ∨ r.log ≥ a.log
+}
+  append_grow():
+{ accepted(cn, rid)≥ log
+  own_Replica rid r{cn := a.cn, log := a.log}
+}
+
+{ proposal(a.cn)≥ a.log
+  own_Replica rid r
+  ¬(r.cn > cn ∨ r.log ≥ a.log)
+  r.cn ≥ cn
+}
+  append_grow():
+{ accepted(cn, rid)≥ log
+  own_Replica rid r (* unchanged *)
+}
+
+{ own_Replica rid r
+  own_Committer rid r c
+  commit_by(cn)≥ log
+  accepted(cn,rid)≥log
+}
+  updateCommitIdx()
+{ ownReplica rid r
+  own_Committer rid r c{commitIdx := }
+}
+
+* propose()
+
+* makeProposer()
+
+= Options
+* Incomplete log
+* Quorum structure. Need to be able to prove 2 things:
+  When a replica wants to become leader, must be able to figure out who to talk
+  to to get up-to-date log/confirm that its log is up-to-date.
