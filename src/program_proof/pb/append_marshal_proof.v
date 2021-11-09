@@ -2,7 +2,8 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import pb.
 
 Section append_marshal_proof.
-(* TODO: move to a different file *)
+
+Context `{!heapGS Σ}.
 Record AppendArgsC :=
 {
   AA_cn:u64;
