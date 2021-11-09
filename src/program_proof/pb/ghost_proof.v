@@ -1,5 +1,9 @@
 From Perennial.program_proof Require Import grove_prelude.
 
+(*
+  "Gauge-invariant" part of the proof
+ *)
+
 Record pb_names :=
   {
   commit_gn:gname

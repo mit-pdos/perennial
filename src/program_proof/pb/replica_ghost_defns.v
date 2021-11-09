@@ -2,7 +2,15 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import pb.
 From Perennial.program_proof.pb Require Export ghost_proof.
 
-Section append_ghost_proof.
+(*
+  Ownership/repr predicates for owning a ghost replica.
+
+  The state of a replica is split into the core Replica state, the extra state
+  that a Primary has, and the extra state that a Committer has. A committer is
+  just a replica that also keeps information about what part of the log has been
+  committed.
+ *)
+Section replica_ghost_defns.
 
 Context `{!heapGS Σ}.
 Context `{!rpcregG Σ}.
@@ -23,28 +31,6 @@ Definition own_Replica_ghost γ (r:Replica) : iProp Σ :=
   "#Hproposal_lb" ∷ proposal_lb γ r.(cn) r.(opLog)
 .
 
-Definition append_rpc_new_ghost γ r (newCn:u64) newLog :
-  "Hown" ∷ own_Replica_ghost γ r ∗
-  "#HnewProp" ∷ proposal_lb γ newCn newLog ∗
-  "%Hnew" ∷ ⌜int.Z r.(cn) < int.Z newCn ∨ r.(opLog )⪯ newLog⌝
-  ={⊤}=∗
-  accepted_lb γ newCn r.(rid) newLog.
-Proof.
-  iNamed 1.
-  iNamed "Hown".
-Admitted.
-
-Definition append_rpc_dup_ghost γ r (newCn:u64) newLog :
-  "Hown" ∷ own_Replica_ghost γ r ∗
-  "#HnewProp" ∷ proposal_lb γ newCn newLog ∗
-  "%Hdup" ∷ ⌜int.Z r.(cn) = int.Z newCn ∧ newLog ⪯ r.(opLog )⌝
-  ={⊤}=∗
-  accepted_lb γ newCn r.(rid) newLog.
-Proof.
-  iNamed 1.
-  iNamed "Hown".
-Admitted.
-
 (* A primary is a replica with some more stuff; technically, the rid from the
    replica is not necessary to have a primary*)
 Record PrimaryExtra := mkPrimaryExtra
@@ -64,9 +50,9 @@ Record CommitterExtra := mkCommitterExtra
   commitIdx : u64;
 }.
 
-Definition own_Commiter_ghost γ (r:Replica) (c:CommitterExtra) : iProp Σ :=
+Definition own_Committer_ghost γ (r:Replica) (c:CommitterExtra) : iProp Σ :=
   "#Hcommit_lb" ∷ commit_lb_by γ r.(cn) (take (int.nat c.(commitIdx)) r.(opLog)) ∗
   "%HcommitLeLogLen" ∷ ⌜int.Z c.(commitIdx) <= length r.(opLog)⌝
 .
 
-End append_ghost_proof.
+End replica_ghost_defns.
