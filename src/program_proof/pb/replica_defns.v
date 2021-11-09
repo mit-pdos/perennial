@@ -41,6 +41,7 @@ Definition own_Committer_phys (s:loc) (r:Replica) (c:CommitterExtra) : iProp Σ 
   "HcommitIdx" ∷ s ↦[ReplicaServer :: "commitIdx"] #c.(commitIdx)
 .
 
+(* FIXME: should make `rid` not part of Replica record *)
 Definition own_ReplicaServer (s:loc) (me:u64) γ
   : iProp Σ :=
   ∃ (r:Replica) (p:PrimaryExtra) (c:CommitterExtra) (replicaClerks_sl : Slice.t) (isPrimary:bool) (replicaClerks:list loc),
@@ -52,7 +53,7 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
   "Hcommitter" ∷ own_Committer_phys s r c ∗
 
   (* Ghost stuff *)
-  "HrepG" ∷ own_Replica_ghost γ r ∗
+  "HrepG" ∷ own_Replica_ghost me γ r ∗
   "HprimaryG" ∷ own_Primary_ghost γ r p ∗
   "HcommitterG" ∷ own_Committer_ghost γ r c ∗
 

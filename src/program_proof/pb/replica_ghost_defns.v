@@ -18,15 +18,14 @@ Implicit Type γ:pb_names.
 
 Record Replica := mkReplica
 {
-  rid : u64;
   opLog : list u8;
   cn : u64;
 }.
 
-Definition own_Replica_ghost γ (r:Replica) : iProp Σ :=
-  "Haccepted" ∷ accepted_ptsto γ r.(cn) r.(rid) r.(opLog) ∗
+Definition own_Replica_ghost (rid:u64) γ (r:Replica) : iProp Σ :=
+  "Haccepted" ∷ accepted_ptsto γ r.(cn) rid r.(opLog) ∗
   "HacceptedUnused" ∷ ([∗ set] cn_some ∈ (fin_to_set u64),
-                      ⌜int.Z cn_some ≤ int.Z r.(cn)⌝ ∨ accepted_ptsto γ cn_some r.(rid) []
+                      ⌜int.Z cn_some ≤ int.Z r.(cn)⌝ ∨ accepted_ptsto γ cn_some rid []
                       ) ∗
   "#Hproposal_lb" ∷ proposal_lb γ r.(cn) r.(opLog)
 .
