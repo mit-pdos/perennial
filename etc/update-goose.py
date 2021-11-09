@@ -86,6 +86,12 @@ def main():
         metavar="GOKV_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--mvcc",
+        help="path to go-mvcc repo (skip translation if not provided)",
+        metavar="MVCC_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -96,6 +102,7 @@ def main():
     examples_dir = args.examples
     distributed_dir = args.distributed_examples
     gokv_dir = args.gokv
+    mvcc_dir = args.mvcc
     marshal_dir = args.marshal
     std_dir = args.std
 
@@ -113,6 +120,8 @@ def main():
         )
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
+    if mvcc_dir is not None and not os.path.isdir(mvcc_dir):
+        parser.error("mvcc directory does not exist")
     if marshal_dir is not None and not os.path.isdir(marshal_dir):
         parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
@@ -229,6 +238,15 @@ def main():
                 # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
                 # "From Goose Require github_com.mit_pdos.lockservice."
             )
+
+    if mvcc_dir is not None:
+        run_goose(
+            mvcc_dir,
+            "./txn",
+            "./index",
+            "./gc",
+            "./tuple",
+        )
 
     if marshal_dir is not None:
         run_goose(marshal_dir, ".")
