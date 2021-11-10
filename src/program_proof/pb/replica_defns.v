@@ -54,8 +54,8 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
 
   (* Ghost stuff *)
   "HrepG" ∷ own_Replica_ghost me γ r ∗
-  "HprimaryG" ∷ own_Primary_ghost γ r p ∗
-  "HcommitterG" ∷ own_Committer_ghost γ r c ∗
+  "HprimaryG" ∷ (if isPrimary then own_Primary_ghost γ r p else True) ∗
+  "#HcommitterG" ∷ own_Committer_ghost γ r c ∗
 
   (* only used for primary *)
   "HreplicaClerks" ∷ s ↦[ReplicaServer :: "replicaClerks"] (slice_val replicaClerks_sl) ∗

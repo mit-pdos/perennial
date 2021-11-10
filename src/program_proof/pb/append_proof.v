@@ -14,7 +14,7 @@ Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
        "#Hproposal_lb_in" ∷ proposal_lb γ args.(AA_cn) args.(AA_log) ∗
        "#HoldConfMax_in" ∷ oldConfMax γ args.(AA_cn) args.(AA_log) ∗
        "#Hcommit_lb_in" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat args.(AA_commitIdx)) args.(AA_log)) ∗
-       "%HcommitLength" ∷ ⌜int.Z args.(AA_commitIdx) < length args.(AA_log)⌝
+       "%HcommitLength" ∷ ⌜int.Z args.(AA_commitIdx) ≤ length args.(AA_log)⌝
   }}}
     ReplicaServer__AppendRPC #s #args_ptr
   {{{
@@ -85,10 +85,16 @@ Proof.
       iModIntro; iSplitL ""; first done.
       iAssert (∃ r',
                   "Hrep" ∷ own_Replica_phys s r' ∗
-                  "HrepG" ∷ own_Replica_ghost rid γ r'
+                  "HrepG" ∷ own_Replica_ghost rid γ r' ∗
+                  "#Hacc" ∷ accepted_lb γ args.(AA_cn) rid args.(AA_log) ∗
+                  "#HcommitterG_new" ∷ own_Committer_ghost γ r' c ∗
+                  "%HlatestCn" ∷ ⌜r'.(cn) = args.(AA_cn)⌝
               )%I with "[HopLog HopLog_slice Hcn HrepG]" as "HH".
       {
-        iExists _; iFrame. iExists _; iFrame.
+        iExists _; iFrame "∗#". iSplitR "".
+        { iExists _; iFrame. }
+        iPureIntro.
+        word.
       }
       iClear "HAlog HAcn HAlog_slice".
       iNamedAccu.
@@ -110,6 +116,10 @@ Proof.
       }
       iMod (append_new_ghost with "[$HrepG $Hproposal_lb_in]") as "[$ #Hacc]".
       { word. }
+      iMod (maintain_committer_ghost with "[$Hproposal_lb_in $HcommitterG]") as "$".
+      { word. }
+      { word. }
+      iFrame "#".
       done.
     }
   }
@@ -121,52 +131,31 @@ Proof.
   wp_loadField.
 
   wp_pures.
-  iClear "Hproposal_lb HoldConfMax".
-  iRename "Hcommit_lb" into "Hcommit_lb_old".
   iNamed "HH".
   iNamed "HH".
-  wp_apply (wp_If_join_evar with "[HcommitIdx HAcommitIdx]").
+  wp_apply (wp_If_join_evar with "[Hcommitter HrepG HcommitterG HAcommitIdx]").
   {
     iIntros.
     wp_if_destruct.
     { (* args.commitIdx > commitIdx *)
       wp_loadField.
+      iApply wp_fupd.
       wp_storeField.
       iSplitL ""; first done.
-      iAssert (∃ (commitIdx':u64), "Hcommit" ∷ s ↦[ReplicaServer :: "commitIdx"] #commitIdx' ∗
-                                   "#Hcommit_lb" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat commitIdx') opLog') ∗
-                                   "%HcommitLeLogLen" ∷ ⌜int.Z commitIdx' ≤ length opLog'⌝
-              )%I with "[HcommitIdx]" as "HH".
+      iMod (commit_update with "[$HrepG HcommitterG Hacc Hcommit_lb_in]") as "[HrepG HcommitterG_final]".
+      { done. }
       {
-        iExists _.
-        iFrame.
-        (* prove that args.(AA_log) ≤ opLog' or that
-           opLog' ≤ args.(AA_log);
-         *)
-        (* Use the fact that args.(AA_log) and opLog' are comparable. *)
-        assert ( take (int.nat args.(AA_commitIdx)) opLog' ⪯
-                (take (int.nat args.(AA_commitIdx)) args.(AA_log)))%I.
-        {
-          set (l1:=args.(AA_log)) in *.
-          set (l2:=opLog') in *.
-          set (e:=int.nat args.(AA_commitIdx)) in *.
-          assert (e < length l1) by word.
-          clear -H0 HnewLog.
-          admit. (* TODO: pure list fact *)
-        }
-        iSplitR "".
-        {
-          iApply (commit_lb_by_monotonic with "Hcommit_lb_in").
-          { word. }
-          done.
-        }
-        {
-          iPureIntro.
-          assert (length args.(AA_log) ≤ length opLog').
-          { admit. (* TODO: pure fact *) }
-          word.
-        }
+        rewrite HlatestCn.
+        iFrame "#".
       }
+      iAssert (∃ c', "Hcommitter" ∷ own_Committer_phys s r' c' ∗
+                     "HcommiterG" ∷ own_Committer_ghost γ r' c'
+              )%I with "[Hcommitter HcommitterG_final]" as "HH".
+      {
+        iExists (mkCommitterExtra _).
+        iFrame.
+      }
+      iModIntro.
       iNamedAccu.
     }
     { (* args.commitIdx is not larger than commitIdx. boils down to the newly
@@ -174,17 +163,14 @@ Proof.
          proof is done earlier for conveneince. *)
         iModIntro. iSplitL ""; first done.
         iFrame.
-        iExists commitIdx.
+        iExists _.
         iFrame.
         iFrame "#".
-        {
-          iPureIntro.
-          assert (length args.(AA_log) ≤ length opLog').
-          { admit. (* TODO: pure fact *) }
-          word.
-        }
     }
   }
+  (* Done with committer step.*)
+
+  (* Now, release lock. *)
   iIntros "HH".
   iNamed "HH".
   iNamed "HH".
@@ -195,16 +181,15 @@ Proof.
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    do 9 iExists _.
+    do 6 iExists _.
     iFrame "∗#".
-    done.
   }
   wp_pures.
   iApply "HΦ".
   iLeft.
   iFrame "#".
   by iModIntro.
-Admitted.
+Qed.
 
 Lemma wp_ReplicaServer__postAppendRPC (s:loc) (i:u64) conf rid γ (args_ptr:loc) args :
   {{{
