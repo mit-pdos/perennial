@@ -1,6 +1,8 @@
 From stdpp Require Import list list_numbers.
 From Coq Require Import ssreflect.
 
+Set Default Proof Using "Type".
+
 Section list.
   Context (A:Type).
   Notation list := (list A).
@@ -28,7 +30,7 @@ Section list.
 
   Lemma list_fmap_map {B} (f: A → B) (l: list):
     f <$> l = map f l.
-  Proof. induction l => //=. Qed.
+  Proof. reflexivity. Qed.
 
   Definition Forall_idx (P: nat -> A -> Prop) (start:nat) (l: list): Prop :=
     Forall2 P (seq start (length l)) l.
@@ -79,6 +81,29 @@ Section list.
     intros Hincl HF.
     apply List.Forall_forall; intros a Ha.
     apply List.Forall_forall with (x:=a) in HF; intuition.
+  Qed.
+
+  Lemma prefix_lookup_lt l1 l2 i :
+    i < length l1 →
+    l1 `prefix_of` l2 →
+    l1 !! i = l2 !! i.
+  Proof.
+    intros Hlt Hprefix.
+    apply lookup_lt_is_Some_2 in Hlt as [? Hlookup].
+    rewrite Hlookup.
+    eapply prefix_lookup in Hlookup; eauto.
+  Qed.
+
+  Lemma list_prefix_eq l1 l2 :
+    l1 `prefix_of` l2 → length l2 ≤ length l1 → l1 = l2.
+  Proof.
+    intros Hprefix Hlen.
+    assert (length l1 = length l2).
+    { apply prefix_length in Hprefix; lia. }
+    eapply list_eq_same_length; [ done | done | ].
+    intros i x y ? Hlookup1 Hlookup2.
+    eapply prefix_lookup in Hlookup1; eauto.
+    congruence.
   Qed.
 End list.
 
