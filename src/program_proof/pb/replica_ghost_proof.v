@@ -43,7 +43,8 @@ Lemma append_dup_ghost {rid} γ r (newCn:u64) newLog :
 Proof.
 Admitted.
 
-Lemma commit_update {rid} γ r log newCommitIdx :
+(* Increase commitIdx by getting a commit_lb_by witness from primary *)
+Lemma commit_idx_update {rid} γ r log newCommitIdx :
   int.Z newCommitIdx ≤ length log →
   "Hown" ∷ own_Replica_ghost rid γ r ∗
   "#Hacc" ∷ accepted_lb γ r.(cn) rid log ∗
@@ -51,6 +52,37 @@ Lemma commit_update {rid} γ r log newCommitIdx :
   ={⊤}=∗
   own_Replica_ghost rid γ r ∗
   own_Committer_ghost γ r (mkCommitterExtra newCommitIdx).
+Proof.
+Admitted.
+
+Lemma primary_matchidx_lookup {rid} conf (i:u64) γ r p :
+  conf !! int.nat i = Some rid →
+  "#Hconf" ∷ config_ptsto γ r.(cn) conf ∗
+  "HprimaryG" ∷ own_Primary_ghost γ r p
+  -∗
+  ⌜∃ (x:u64), p.(matchIdx) !! int.nat i = Some x⌝.
+Proof.
+Admitted.
+
+Lemma primary_update_matchidx {rid} (i oldIdx:u64) γ r p newLog (newLogLen:u64) :
+  p.(matchIdx) !! int.nat i = Some oldIdx →
+  length newLog = int.nat newLogLen →
+  "HprimaryG" ∷ own_Primary_ghost γ r p ∗
+  "#Hacc_lb" ∷ accepted_lb γ r.(cn) rid newLog
+  ={⊤}=∗
+  own_Primary_ghost γ r (mkPrimaryExtra
+                           p.(conf)
+                           (<[int.nat i:=newLogLen]> p.(matchIdx)) ).
+Proof.
+Admitted.
+
+Lemma primary_commit m γ r (p:PrimaryExtra) :
+  m ∈ p.(matchIdx) →
+  (∀ n, n ∈ p.(matchIdx) → int.Z m ≤ int.Z n) →
+  own_Primary_ghost γ r p
+  ={⊤}=∗
+  own_Primary_ghost γ r p ∗
+  own_Committer_ghost γ r (mkCommitterExtra m).
 Proof.
 Admitted.
 

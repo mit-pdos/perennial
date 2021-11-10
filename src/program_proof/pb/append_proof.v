@@ -142,7 +142,7 @@ Proof.
       iApply wp_fupd.
       wp_storeField.
       iSplitL ""; first done.
-      iMod (commit_update with "[$HrepG HcommitterG Hacc Hcommit_lb_in]") as "[HrepG HcommitterG_final]".
+      iMod (commit_idx_update with "[$HrepG HcommitterG Hacc Hcommit_lb_in]") as "[HrepG HcommitterG_final]".
       { done. }
       {
         rewrite HlatestCn.
@@ -237,21 +237,24 @@ Proof.
     wp_pures.
     by iApply "HΦ".
   }
+
+  iNamed "Hprimary".
   wp_loadField.
   assert (isPrimary = true) as ->.
   { admit. (* FIXME: have to add some extra monotonic ghost state to establish this *) }
-  iNamed "Hown".
-  iDestruct (config_ptsto_agree with "HconfPtsto Hconf") as %HconfAgree.
-  rewrite HconfAgree.
-  iDestruct (big_sepL2_lookup_1_some with "HmatchIdxAccepted") as %HmatchLookup.
+
+  rewrite -Heqb.
+  iDestruct (primary_matchidx_lookup with "[$Hconf $HprimaryG]") as "%HmatchLookup".
   { done. }
-  destruct HmatchLookup as [idx HmatchLookup].
+  destruct HmatchLookup as [x HmatchLookup].
   wp_apply (wp_SliceGet with "[$HmatchIdx_slice]").
   { done. }
   iIntros "HmatchIdx_slice".
+
   wp_loadField.
   wp_apply (wp_slice_len).
   iDestruct (is_slice_sz with "HopLog_slice") as %HopLogLen.
+  iDestruct (is_slice_sz with "HAlog_slice") as %HALogLen.
   wp_if_destruct.
   { (* increase matchIdx[i] *)
     wp_loadField.
@@ -262,11 +265,17 @@ Proof.
     iIntros "HmatchIdx_slice".
     wp_pures.
     wp_loadField.
-    set matchIdx':=(<[int.nat i:=log_sl.(Slice.sz)]> matchIdx).
+    (* set matchIdx':=(<[int.nat i:=log_sl.(Slice.sz)]> matchIdx). *)
     wp_apply (wp_min with "[$HmatchIdx_slice]").
     iIntros (m) "(%Hm1&%Hm2&HmatchIdx_slice)".
     wp_pures.
     wp_loadField.
+
+    (* ghost update the primary's matchidx state *)
+    iMod (primary_update_matchidx with "[$HprimaryG $Hacc_lb]") as "HprimaryG".
+    { done. }
+    { done. }
+
     wp_if_destruct.
     { (* commit something! *)
       wp_storeField.
@@ -276,35 +285,27 @@ Proof.
       {
         iEval (rewrite -bi.later_intro).
         iFrame "HmuInv Hlocked".
-        do 9 iExists _.
-        iFrame "∗#".
-        iFrame "HprimaryOwnsProposal".
+        do 6 iExists _.
+        (* FIXME: this should be iMod *)
 
-        iSplitL "".
-        {
-          iMod (do_commit with "[]") as "$"; last done.
-          iExists _; iFrame "#".
-          (* FIXME: want to use x0 ∈ l to get resource out of [∗ list] x;y ∈ l;l', Φ x y *)
-          iDestruct (big_sepL2_lookup_acc with "HmatchIdxAccepted") as "[HH _]".
+        iClear "HcommitterG".
+        iMod (primary_commit with "[$HprimaryG]") as "[HprimaryG #HcomitterG]".
+        { (* prove that the min is actually in matchIdx; true if matchIdx is non-empty *)
+          simpl. apply Hm1.
+          assert (is_Some (p.(matchIdx) !! int.nat i)).
           { done. }
-          { done. }
+          eapply lookup_lt_is_Some_1 in H.
+          (* This shouldn't be so hard... *)
           admit.
         }
+        { done. }
 
-        iSplitL "".
-        { admit. (* use the fact that min ≤ matchIdx[0] ≤ length opLog or some such *) }
-        iExists _; iFrame "#".
-        iDestruct (big_sepL2_insert_acc with "HmatchIdxAccepted") as "HH".
-        { done. }
-        { done. }
-        iFreeze "HH".
-        replace (conf) with (<[int.nat i:=rid]> conf); last first.
-        { by apply list_insert_id. }
-        iThaw "HH".
-        unfold matchIdx'.
-        iDestruct "HH" as "[Hacc HH]".
-        iApply "HH".
-        admit. (* Show that take (len AA_log) opLog == args.(AA_log) by virtue of proposal_ptsto *)
+        iFrame "∗#".
+        iSplitL "HopLog HopLog_slice".
+        { iExists _; iFrame. done. }
+        iFrame.
+        iExists _. simpl. iFrame.
+        done.
       }
       wp_pures.
       by iApply "HΦ".
@@ -315,34 +316,26 @@ Proof.
     {
       iEval (rewrite -bi.later_intro).
       iFrame "HmuInv Hlocked".
-      do 9 iExists _.
+      do 6 iExists _.
       iFrame "∗#∗".
-      iSplitL ""; first done.
-      iExists _; iFrame "#".
-
-      iFreeze "HmatchIdxAccepted".
-      replace (conf) with (<[int.nat i:=rid]> conf); last first.
-      { by apply list_insert_id. }
-      iThaw "HmatchIdxAccepted".
-      iDestruct (big_sepL2_insert_acc with "HmatchIdxAccepted") as "[_ HH]".
-      { done. }
-      { done. }
-      iApply "HH".
-      admit. (* Show that take (len AA_log) opLog == args.(AA_log) by virtue of proposal_ptsto *)
+      iSplitL "HopLog HopLog_slice".
+      { iExists _; iFrame. }
+      iExists _; iFrame.
     }
     wp_pures.
     by iApply "HΦ".
   }
-  {
+  { (* don't increase matchIdx[i]; do nothing *)
     wp_pures.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ]").
     {
       iFrame "HmuInv Hlocked".
-      iNext. do 9 iExists _.
+      iNext. do 6 iExists _.
       iFrame "∗#∗".
-      iSplitL ""; first done.
-      iExists _; iFrame "#".
+      iSplitL "HopLog HopLog_slice".
+      { iExists _; iFrame. }
+      iExists _; iFrame.
     }
     wp_pures.
     by iApply "HΦ".
