@@ -82,6 +82,7 @@ Lemma maintain_committer_ghost γ r c newCn newLog :
 Proof.
 Admitted.
 
+(* Same CN as before, and an old log; just get a witness that we already accepted *)
 Lemma append_dup_ghost {rid} γ r (newCn:u64) newLog :
   int.Z r.(cn) = int.Z newCn ∧ length newLog ≤ length r.(opLog) →
   "Hown" ∷ own_Replica_ghost rid γ r ∗
@@ -90,6 +91,25 @@ Lemma append_dup_ghost {rid} γ r (newCn:u64) newLog :
   own_Replica_ghost rid γ r ∗
   accepted_lb γ newCn rid newLog.
 Proof.
+  intros [Hre HstaleLog].
+  assert (r.(cn) = newCn) as <- by word.
+  iNamed 1.
+  iNamed "Hown".
+  iDestruct (accepted_witness with "Haccepted") as "#Hacc1".
+  (* NOTE: idea: introduce a "comparable" predicate, and have some lemmas about that *)
+  iDestruct (proposal_lb_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
+  { (* log must be equal *)
+    replace (newLog) with (r.(opLog)); last first.
+    { admit. } (* len A ≤ len B ∧ B ⪯ A → B = A *)
+    iDestruct (accepted_lb_monotonic with "Hacc1") as "$".
+    { done. }
+    by iFrame "∗#".
+  }
+  {
+    iDestruct (accepted_lb_monotonic with "Hacc1") as "$".
+    { done. }
+    by iFrame "∗#".
+  }
 Admitted.
 
 (* Increase commitIdx by getting a commit_lb_by witness from primary *)
