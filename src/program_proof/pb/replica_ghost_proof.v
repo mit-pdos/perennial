@@ -8,7 +8,9 @@ Context `{!heapGS Σ}.
 Context `{!rpcregG Σ}.
 Implicit Type γ:pb_names.
 
+(* accept a new log *)
 Lemma append_new_ghost {rid} γ r (newCn:u64) newLog :
+  int.Z r.(cn) ≤ int.Z newCn →
   int.Z r.(cn) < int.Z newCn ∨ length r.(opLog) ≤ length newLog →
   "Hown" ∷ own_Replica_ghost rid γ r ∗
   "#HnewProp" ∷ proposal_lb γ newCn newLog
@@ -16,6 +18,53 @@ Lemma append_new_ghost {rid} γ r (newCn:u64) newLog :
   own_Replica_ghost rid γ (mkReplica newLog newCn) ∗
   accepted_lb γ newCn rid newLog.
 Proof.
+  intros Hfresh Hnew.
+  iNamed 1.
+  iNamed "Hown".
+  assert (int.Z r.(cn) < int.Z newCn ∨ int.Z r.(cn) = int.Z newCn) as [HnewCn|HoldCn] by word.
+  { (* brand new cn *)
+    iDestruct (big_sepS_elem_of_acc_impl newCn with "HacceptedUnused") as "[HH HacceptedUnused]".
+    { set_solver. }
+    iClear "Haccepted".
+    iDestruct "HH" as "[%Hbad|Haccepted]".
+    { exfalso. word. }
+    iMod (accepted_update _ _ _ _ newLog with "Haccepted") as "Haccepted".
+    { admit. } (* trivial pure list fact *)
+    iDestruct (accepted_witness with "Haccepted") as "#$".
+    iFrame "Haccepted HnewProp".
+    iApply "HacceptedUnused".
+    { (* prove impl: we have accepted_ptstos past newCn, since newCn > r.(cn) *)
+      iModIntro.
+      iIntros (???) "[%Hineq|$]".
+      iLeft.
+      iPureIntro.
+      simpl.
+      word.
+    }
+    { (* Prove that we don't need the element we accessed *)
+      simpl.
+      by iLeft.
+    }
+  }
+  { (* same cn, but bigger log *)
+    assert (r.(cn) = newCn) as HsameCn.
+    { word. }
+    rewrite HsameCn.
+    iDestruct (proposal_lb_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
+    { (* new log bigger *)
+      iMod (accepted_update _ _ _ _ newLog with "Haccepted") as "Haccepted".
+      { done. }
+      iDestruct (accepted_witness with "Haccepted") as "#$".
+      by iFrame "∗ HnewProp".
+    }
+    { (* new log the same as before *)
+      destruct Hnew as [Hbad|HnewLog].
+      { exfalso; word. }
+      assert (newLog = r.(opLog)) as ->.
+      { admit. } (* pure fact based on A⪯B ∗ length B ≤ length A *)
+      iDestruct (accepted_witness with "Haccepted") as "#$".
+      by iFrame "∗#".
+    }
 Admitted.
 
 (*
