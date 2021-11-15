@@ -1215,9 +1215,9 @@ Proof.
     simpl in Hlog_index_ordering'.
     lia.
   }
+  simpl.
   iSplit.
   1: iPureIntro; lia.
-  simpl.
   iDestruct (txn_val_to_pos with "HdiskEnd_txn_val") as "HdiskEnd_txn_pos".
   iFrame (HdiskEnd_txn') "HdiskEnd_stable' HdiskEnd_txn_pos HinstalledTxn_lb".
 

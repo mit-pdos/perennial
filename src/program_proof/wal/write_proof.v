@@ -848,7 +848,7 @@ Proof.
         iSplit.
         { iExists _; iFrame "#". }
         iExists (set memLog (λ _, memLog') σ); simpl.
-        rewrite memWrite_same_start.
+        rewrite /wal_linv_core memWrite_same_start.
         iFrame.
         iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet
                  HownLoggerPos_linv HownLoggerTxn_linv
@@ -865,7 +865,7 @@ Proof.
         iSplit.
         2: { iExists _. iFrame. iFrame "%". }
         subst memLog'.
-        rewrite Nat.add_sub memWrite_same_start memWrite_same_mutable.
+        rewrite Nat.add_sub memWrite_same_start memWrite_same_mutable /=.
         iSplit.
         1: iPureIntro; lia.
         iFrame "HmemStart_txn Hnew_txn_pos".
@@ -912,7 +912,7 @@ Proof.
       - wp_apply util_proof.wp_DPrintf.
         iAssert (wal_linv σₛ.(wal_st) γ) with "[Hfields HmemLog_linv HdiskEnd_circ Hstart_circ]" as "Hlockinv".
         { iExists _; iFrame. }
-        wp_apply (wp_endGroupTxn with "[$Hwal $Hlockinv]").
+        wp_apply (wp_endGroupTxn with "Hlockinv").
         iIntros "Hlockinv".
         wp_loadField.
         wp_apply (wp_condBroadcast with "[$cond_logger]").

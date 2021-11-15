@@ -157,6 +157,7 @@ Definition sliding := struct.decl [
   "log" :: slice.T (struct.t Update);
   "start" :: LogPosition;
   "mutable" :: LogPosition;
+  "needFlush" :: boolT;
   "addrPos" :: mapT LogPosition
 ].
 
@@ -402,6 +403,15 @@ Definition Walog__waitForSpace: val :=
       Continue);;
     #().
 
+Definition Walog__flushIfNeeded: val :=
+  rec: "Walog__flushIfNeeded" "l" :=
+    (if: struct.loadF sliding "needFlush" (struct.loadF WalogState "memLog" (struct.loadF Walog "st" "l"))
+    then
+      sliding__clearMutable (struct.loadF WalogState "memLog" (struct.loadF Walog "st" "l"));;
+      struct.storeF sliding "needFlush" (struct.loadF WalogState "memLog" (struct.loadF Walog "st" "l")) #false;;
+      #()
+    else #()).
+
 (* logAppend appends to the log, if it can find transactions to append.
 
    It grabs the new writes in memory and not on disk through l.nextDiskEnd; if
@@ -414,6 +424,7 @@ Definition Walog__waitForSpace: val :=
 Definition Walog__logAppend: val :=
   rec: "Walog__logAppend" "l" "circ" :=
     Walog__waitForSpace "l";;
+    Walog__flushIfNeeded "l";;
     let: "diskEnd" := struct.loadF WalogState "diskEnd" (struct.loadF Walog "st" "l") in
     let: "newbufs" := sliding__takeFrom (struct.loadF WalogState "memLog" (struct.loadF Walog "st" "l")) "diskEnd" in
     (if: (slice.len "newbufs" = #0)
@@ -503,7 +514,7 @@ Definition doMemAppend: val :=
    Assumes caller holds memLock. *)
 Definition WalogState__endGroupTxn: val :=
   rec: "WalogState__endGroupTxn" "st" :=
-    sliding__clearMutable (struct.loadF WalogState "memLog" "st");;
+    struct.storeF sliding "needFlush" (struct.loadF WalogState "memLog" "st") #true;;
     #().
 
 Definition copyUpdateBlock: val :=

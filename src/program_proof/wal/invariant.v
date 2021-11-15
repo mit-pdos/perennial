@@ -331,13 +331,15 @@ Definition diskStart_linv γ (start: u64): iProp Σ :=
   "Hstart_exactly" ∷ thread_own_ctx γ.(start_avail_name)
                        ("Hstart_is" ∷ start_is γ.(circ_name) (1/2) start).
 
+Definition wal_linv_core (st: loc) γ σ : iProp Σ :=
+  "Hfields" ∷ wal_linv_fields st σ ∗
+  "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
+  "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
+  "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id).
+
 (** the lock invariant protecting the WalogState, corresponding to l.memLock *)
 Definition wal_linv (st: loc) γ : iProp Σ :=
-  ∃ σ,
-    "Hfields" ∷ wal_linv_fields st σ ∗
-    "HdiskEnd_circ" ∷ diskEnd_linv γ σ.(diskEnd) ∗
-    "Hstart_circ" ∷ diskStart_linv γ σ.(memLog).(slidingM.start) ∗
-    "HmemLog_linv" ∷ memLog_linv γ σ.(memLog) σ.(diskEnd) σ.(locked_diskEnd_txn_id).
+  ∃ σ, wal_linv_core st γ σ.
 
 (* TODO: when possible, refactor wal_linv to use this directly *)
 Definition wal_linv_durable γ cs : iProp Σ :=
