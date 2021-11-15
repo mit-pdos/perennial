@@ -947,6 +947,35 @@ Proof.
   apply elem_of_dom; eauto.
 Qed.
 
+Lemma mark_used' E γ a Q:
+  ↑Ninv ⊆ E →
+   reserved_block_in_prep γ a -∗
+   (∀ σ, ⌜ σ !! a = Some block_reserved ⌝ -∗
+         ▷ P σ -∗ |NC={E ∖ ↑ N}=> ▷ P (<[a := block_used]> σ) ∗ Q)
+   -∗ |NC={E}=> Q ∗ used_block γ a.
+Proof.
+  iIntros (?) "Hprep Hfupd".
+  iNamed "Hprep".
+  iDestruct "Halloc_inv" as (d) "#Hinv".
+  iInv "Hinv" as "H" "Hclo".
+  rewrite /allocator_inv.
+  iDestruct "H" as (?) "(>Hdom&>Hstatus&>Hauth&HP)".
+  iNamed "Hdom". iNamed "Hstatus". iNamed "Hauth".
+  iDestruct (ghost_map_lookup with "[$] Hmapsto") as %Hlookup'.
+  iMod (ncfupd_mask_subseteq (E ∖ ↑N)) as "Hrestore_mask"; first solve_ndisj.
+  iMod ("Hfupd" with "[//] [$]") as "(HP&HQ)".
+  iMod "Hrestore_mask" as "_".
+  iMod (ghost_map_update block_used with "[$] Hmapsto") as "(Hctx&Hmapsto)".
+  iMod ("Hclo" with "[HP Hctx Hfreeset_auth]").
+  { iNext. iExists _. iFrame "HP Hctx".
+    rewrite (dom_update_status σ a block_reserved) //=.
+    iFrame "%".
+    rewrite (free_mark_used_non_free) //=.
+    intros Heq; subst; eauto. rewrite Heq in Hlookup'. congruence.
+  }
+  iModIntro. by iFrame.
+Qed.
+
 Lemma mark_used E γ a Q:
   ↑Ninv ⊆ E →
    reserved_block_in_prep γ a -∗

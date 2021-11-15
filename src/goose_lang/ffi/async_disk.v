@@ -9,65 +9,10 @@ From Perennial.program_logic Require Import ectx_lifting.
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang lifting slice typing.
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang.ffi Require Export async_disk_syntax.
 
 Set Default Proof Using "Type".
-(* this is purely cosmetic but it makes printing line up with how the code is
-usually written *)
 Set Printing Projections.
-
-Inductive DiskOp := ReadOp | WriteOp | SizeOp | BarrierOp.
-Instance eq_DiskOp : EqDecision DiskOp.
-Proof.
-  solve_decision.
-Defined.
-
-Instance DiskOp_fin : Countable DiskOp.
-Proof.
-  solve_countable DiskOp_rec 4%nat.
-Qed.
-
-Definition disk_op : ffi_syntax.
-Proof.
-  refine (mkExtOp DiskOp _ _ () _ _).
-Defined.
-
-Inductive Disk_ty := | DiskInterfaceTy.
-
-Instance disk_val_ty: val_types :=
-  {| ext_tys := Disk_ty; |}.
-
-Section disk.
-  Existing Instances disk_op disk_val_ty.
-
-  Inductive disk_ext_tys : @val disk_op -> (ty * ty) -> Prop :=
-  | DiskOpType op :
-      disk_ext_tys (λ: "v", ExternalOp op (Var "v"))%V
-                   (match op with
-                   | ReadOp => (uint64T, arrayT byteT)
-                   | WriteOp => (prodT uint64T (arrayT byteT), unitT)
-                   | SizeOp => (unitT, uint64T)
-                   | BarrierOp => (unitT, unitT)
-                   end).
-
-  Definition disk_ty: ext_types disk_op :=
-    {| val_tys := disk_val_ty;
-       get_ext_tys := disk_ext_tys |}.
-  Definition Disk: ty := extT DiskInterfaceTy.
-End disk.
-
-Definition block_bytes: nat := Z.to_nat 4096.
-Definition BlockSize {ext: ffi_syntax}: val := #4096.
-Definition Block := vec byte block_bytes.
-Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
-(* TODO: could use vreplicate; not sure how much easier it is to work with *)
-Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
-
-
-Lemma block_bytes_eq : block_bytes = Z.to_nat 4096.
-Proof. reflexivity. Qed.
-
-Global Instance Block0: Inhabited Block := _.
-Global Instance Block_countable : Countable Block := _.
 
 Definition disk_state := gmap Z (async Block).
 
@@ -81,9 +26,6 @@ Fixpoint init_disk (d: disk_state) (sz: nat) : disk_state :=
   | O => d
   | S n => <[(Z.of_nat n) := sync block0]> (init_disk d n)
   end.
-
-Definition Block_to_vals {ext: ffi_syntax} (bl:Block) : list val :=
-  fmap b2val (vec_to_list bl).
 
 Lemma length_Block_to_vals {ext: ffi_syntax} b :
     length (Block_to_vals b) = block_bytes.
@@ -184,13 +126,13 @@ Section disk.
 
   Definition flush_disk (d : @ffi_state disk_model) : @ffi_state disk_model := flush <$> d.
 
-  Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) val :=
+  Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) expr :=
     match op, v with
     | ReadOp, LitV (LitInt a) =>
       ab ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
       l ← allocateN;
       modify (λ '(σ,g), (state_insert_list l (Block_to_vals (latest ab)) σ, g));;
-      ret $ #(LitLoc l)
+      ret $ Val $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
       old ← reads (λ '(σ,g), σ.(world) !! int.Z a) ≫= unwrap;
       b ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) b, (forall (i:Z), 0 <= i -> i < 4096 ->
@@ -199,13 +141,13 @@ Section disk.
                 | _ => False
                 end));
       modify (λ '(σ,g), (set world <[ int.Z a := async_put b old ]> σ, g));;
-      ret #()
+      ret $ Val $ #()
     | SizeOp, LitV LitUnit =>
       sz ← reads (λ '(σ,g), disk_size σ.(world));
-      ret $ LitV $ LitInt (word.of_Z sz)
+      ret $ Val $ LitV $ LitInt (word.of_Z sz)
     | BarrierOp, LitV LitUnit =>
       modify (λ '(σ,g), (set world flush_disk σ, g));;
-      ret #()
+      ret $ Val $ #()
     | _, _ => undefined
     end.
 
@@ -618,7 +560,7 @@ Next Obligation.
 Qed.
 
 Section crash.
-  Existing Instances async_disk.disk_op async_disk.disk_model async_disk.disk_ty.
+  Existing Instances async_disk_syntax.disk_op async_disk.disk_model async_disk_syntax.disk_ty.
   Existing Instances async_disk.disk_semantics async_disk.disk_interp.
   Existing Instance goose_diskGS.
 
