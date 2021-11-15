@@ -29,10 +29,9 @@ Proof.
   wp_storeField.
   wp_apply (typed_slice.wp_NewSlice (V:=u64)).
   iIntros (shardMap_sl) "HshardMap_sl".
-  Transparent slice.T. wp_storeField. Opaque slice.T.
+  wp_storeField.
   remember (replicate (int.nat 65536) (IntoVal_def _)) as initShardMapping eqn:Heq_initShardMapping.
-  wp_apply (wp_ref_to).
-  { repeat econstructor. }
+  wp_apply (wp_ref_to); first val_ty.
   iIntros (iptr) "Hi".
   wp_pures.
   wp_pures.

@@ -151,9 +151,7 @@ Proof.
     (* Now we have a fraction of the slice we were looking for *)
     wp_storeField.
     wp_pures.
-    Transparent slice.T.
     wp_storeField.
-    Opaque slice.T.
     wp_pures.
 
     (* now split into stale/nonstale cases. FIXME: there is still a bunch of duplication here, use lemma for if-with-merging-control-flow? *)
@@ -347,9 +345,7 @@ Proof.
        *)
 
       (* fill in reply struct *)
-      wp_apply (wp_storeField with "HValue").
-      { apply slice_val_ty. }
-      iIntros "HValue".
+      wp_storeField.
       wp_pures.
       wp_storeField.
 

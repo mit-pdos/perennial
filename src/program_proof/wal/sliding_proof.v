@@ -1183,9 +1183,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_apply wp_SliceSkip'; first by (simpl; iPureIntro; word).
-  wp_bind (struct.storeF _ _ _ _).
-  iApply (wp_storeField with "log"); first by (rewrite /field_ty /=; eauto).
-  iIntros "!> log".
+  wp_storeField.
   wp_pures.
 
   destruct σ eqn:Hσ.

@@ -61,7 +61,7 @@ Proof.
     done.
   }
   iIntros (shardMap_sl shardMapping) "(Hcck & HshardMap_sl & %Hlen & #Hall_are_shard_servers)".
-  Transparent slice.T. wp_storeField. Opaque slice.T.
+  wp_storeField.
   iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame.
   iFrame "% #". iExists _, _, _.
@@ -162,9 +162,7 @@ Proof using Type*.
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_KVCoordClerk__GetShardMap with "[$HcoordCk_own]").
     iIntros (shardMap_sl' shardMapping') "(HcoordCk_own & HshardMap_sl & %Hlength & #HshardServers')".
-    wp_apply (wp_storeField with "HshardMap").
-    { apply slice_val_ty. }
-    iIntros "HshardMap".
+    wp_storeField.
     wp_pures.
     iLeft.
     iModIntro.
@@ -261,9 +259,7 @@ Proof using Type*.
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_KVCoordClerk__GetShardMap with "[$HcoordCk_own]").
     iIntros (shardMap_sl' shardMapping') "(HcoordCk_own & HshardMap_sl & %Hlength & #HshardServers')".
-    wp_apply (wp_storeField with "HshardMap").
-    { apply slice_val_ty. }
-    iIntros "HshardMap".
+    wp_storeField.
     wp_pures.
     iLeft.
     iModIntro.
@@ -356,9 +352,7 @@ Proof using Type*.
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     wp_apply (wp_KVCoordClerk__GetShardMap with "[$HcoordCk_own]").
     iIntros (shardMap_sl' shardMapping') "(HcoordCk_own & HshardMap_sl & %Hlength & #HshardServers')".
-    wp_apply (wp_storeField with "HshardMap").
-    { apply slice_val_ty. }
-    iIntros "HshardMap".
+    wp_storeField.
     wp_pures.
     iLeft.
     iModIntro.

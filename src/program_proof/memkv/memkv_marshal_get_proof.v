@@ -156,9 +156,7 @@ Proof.
   iIntros "Hdec".
   wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
   iIntros (??) "[Hsl Hdec]".
-  wp_apply (wp_storeField with "Value").
-  { apply slice_val_ty. }
-  iIntros "Value".
+  wp_storeField.
 
   wp_pures.
   iApply "HΦ".

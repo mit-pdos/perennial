@@ -45,8 +45,7 @@ Proof.
   wp_lam.
   wp_apply (wp_MakeKVClerk with "[$] [$]").
   iIntros (kvCk) "H".
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".

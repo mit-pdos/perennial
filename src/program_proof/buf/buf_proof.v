@@ -268,9 +268,7 @@ Proof using.
   iNamed "Hisbuf".
   iClear "Hbufdata".
   iNamed "Hisbuf_without_data".
-  wp_apply (wp_storeField with "Hdata"); eauto.
-  { eapply slice_val_ty. } (* XXX why does [val_ty] fail? *)
-  iIntros "Hdata".
+  wp_storeField.
   iApply "HΦ".
   iExists _; iFrame. iExists _; iFrame. intuition subst. done.
 Qed.

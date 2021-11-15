@@ -183,17 +183,13 @@ Proof.
   iIntros "Hdec".
   wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
   iIntros (??) "[Hexp_sl Hdec]".
-  wp_apply (wp_storeField with "ExpectedValue").
-  { apply slice_val_ty. }
-  iIntros "ExpectedValue".
+  wp_storeField.
 
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
   wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
   iIntros (??) "[Hnew_sl Hdec]".
-  wp_apply (wp_storeField with "NewValue").
-  { apply slice_val_ty. }
-  iIntros "NewValue".
+  wp_storeField.
 
   wp_pures.
   iApply "HΦ".

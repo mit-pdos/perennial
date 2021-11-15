@@ -78,10 +78,7 @@ Proof.
     wp_apply wp_SliceTake.
     { word. }
     wp_bind (struct.storeF _ _ _ _).
-    (* FIXME why do we have to apply storeField by hand here? *)
-    iApply (wp_storeField with "HfreeClerks").
-    { rewrite /field_ty. simpl. val_ty. }
-    iIntros "!> HfreeClerks".
+    wp_storeField.
     iDestruct "HfreeClerks_own" as "[HfreeClerks_own Hck]".
     wp_loadField.
     iDestruct ("HfreeClerks_close" with "HfreeClerks_sl") as "HfreeClerks_sl".
@@ -117,10 +114,7 @@ Proof.
     wp_apply (wp_SliceAppend with "HfreeClerks_sl").
     iIntros (freeClerks_sl') "HfreeClerks_sl".
     wp_bind (struct.storeF _ _ _ _).
-    (* FIXME why do we have to apply storeField by hand here? *)
-    iApply (wp_storeField with "HfreeClerks").
-    { rewrite /field_ty. simpl. val_ty. }
-    iIntros "!> HfreeClerks".
+    wp_storeField.
     wp_loadField.
     wp_apply (release_spec'' with "Hinv [$Hlocked HfreeClerks_own HfreeClerks_sl HfreeClerks Hck]").
     { rewrite /own_KVClerk. iModIntro. iExists _, _. iFrame.
@@ -149,10 +143,7 @@ Proof.
   wp_storeField.
   wp_apply (wp_NewSlice (V:=loc)).
   iIntros (freeClerks_sl) "HfreeClerks_sl".
-  (* FIXME why do we have to apply storeField by hand here? *)
-  wp_apply (wp_storeField with "freeClerks").
-  { rewrite /field_ty. simpl. val_ty. }
-  iIntros "HfreeClerks".
+  wp_storeField.
   iMod (alloc_lock with "Hfreelock [HfreeClerks HfreeClerks_sl]") as "Hlock"; last first.
   { wp_pures. iApply "HΦ". rewrite /is_KVClerk.
     iExists coord, #mu, _, γ.(coord_urpc_gn). iFrame "Hcoord Hlock".

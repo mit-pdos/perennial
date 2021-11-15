@@ -37,11 +37,10 @@ Proof.
   wp_storeField.
   wp_apply (wp_NewSlice (V:=bool)).
   iIntros (shardMap_sl) "HshardMap_sl".
-  Transparent slice.T. wp_storeField. Opaque slice.T.
-  wp_apply (wp_new_slice).
-  { econstructor. }
+  wp_storeField.
+  wp_apply (wp_new_slice); first by auto.
   iIntros (kvss_sl) "Hkvss_sl".
-  Transparent slice.T. wp_storeField. Opaque slice.T.
+  wp_storeField.
   remember (replicate (int.nat 65536) (IntoVal_def _)) as initShardMapping eqn:Heq_initShardMapping.
   remember (replicate (int.nat 65536) (@zero_val grove_op grove_ty KvMap)) as init_kvs_ptrs eqn:Heq_init_kvs_ptrs.
   wp_apply (wp_NewMap).
@@ -50,8 +49,7 @@ Proof.
   wp_apply (wp_MakeConnMan).
   iIntros (cm) "#Hcm".
   wp_storeField.
-  wp_apply (wp_ref_to).
-  { repeat econstructor. }
+  wp_apply (wp_ref_to); first val_ty.
   iIntros (iptr) "Hi".
   wp_pures.
   wp_apply (wp_forUpto (λ i, ∃ shardMapping kvs_ptrs,

@@ -369,8 +369,7 @@ Proof.
   rewrite /MakeBankClerk.
   wp_lam.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".

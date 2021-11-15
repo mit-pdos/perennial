@@ -110,7 +110,6 @@ Proof.
     wp_loadField.
     wp_apply (wp_SliceAppend (V:=u64) with "[$Hdirect]").
     iIntros (direct_s') "Hdirect".
-    Transparent slice.T.
     wp_storeField.
     wp_loadField.
     wp_storeField.

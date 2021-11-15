@@ -127,8 +127,7 @@ Lemma wp_DecodePutRequest req_sl reqData args :
 Proof.
   iIntros (Φ) "[%Henc Hsl] HΦ".
   wp_lam.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. val_ty. Opaque slice.T. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
   iNamed "HH".
@@ -157,9 +156,7 @@ Proof.
   iIntros "Hdec".
   wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
   iIntros (??) "[Hsl Hdec]".
-  wp_apply (wp_storeField with "Value").
-  { apply slice_val_ty. }
-  iIntros "Value".
+  wp_storeField.
 
   wp_pures.
   iApply "HΦ".

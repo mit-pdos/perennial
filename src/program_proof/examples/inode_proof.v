@@ -815,9 +815,7 @@ Proof.
       wp_loadField.
       wp_apply (wp_SliceAppend (V:=u64) with "[$Haddrs]").
       iIntros (addr_s') "Haddrs".
-      Transparent slice.T.
       wp_storeField.
-      Opaque slice.T.
       iNamed 1.
       wpc_pures.
       wpc_frame_seq.

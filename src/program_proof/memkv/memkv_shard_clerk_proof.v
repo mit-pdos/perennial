@@ -279,9 +279,7 @@ Proof.
   wp_loadField.
   wp_storeField.
   wp_storeField.
-  wp_apply (wp_storeField with "Value").
-  { apply slice_val_ty. }
-  iIntros "Value".
+  wp_storeField.
 
   wp_loadField.
   wp_apply wp_SumAssumeNoOverflow.
@@ -556,12 +554,8 @@ Proof.
   wp_loadField.
   wp_storeField.
   wp_storeField.
-  wp_apply (wp_storeField with "ExpectedValue").
-  { apply slice_val_ty. }
-  iIntros "ExpValue".
-  wp_apply (wp_storeField with "NewValue").
-  { apply slice_val_ty. }
-  iIntros "NewValue".
+  wp_storeField.
+  wp_storeField.
 
   wp_loadField.
   wp_apply wp_SumAssumeNoOverflow.

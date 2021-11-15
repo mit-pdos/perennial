@@ -714,6 +714,17 @@ Notation "l ↦[ d :: f ]{ q } v" :=
 Notation "l ↦[ d :: f ] v" :=
   (struct_field_mapsto l 1 d f%string v%V).
 
+(* Enable solving of val_ty goals where the type is looked up from a struct declaration.
+([simple apply] unification is too weak to do this automatically.)
+Priority is lower than the [constructor] hint to avoid that one unfolding in
+uncontrolled ways. *)
+Hint Extern 5 (val_ty ?v (field_ty ?t ?f)) =>
+  let field_t_expr := constr:(field_ty t f) in
+  (* Try to unfold as little as possible. *)
+  let field_t := eval cbv [field_ty field_offset] in field_t_expr in
+  let field_t2 := eval simpl in field_t in
+  change (val_ty v field_t2)
+  : core.
 
 Tactic Notation "wp_loadField" :=
   let solve_mapsto _ :=
