@@ -21,8 +21,7 @@ Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
   wp_lam.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (s) "srv".
   wp_pures.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
@@ -147,8 +146,7 @@ Proof.
   wp_lam.
   wp_apply (wp_NewMap).
   iIntros (mref_set) "Hmap_set".
-  wp_apply (wp_allocStruct).
-  { eauto. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (clset) "Hset".
   wp_storeField.
   iMod (alloc_lock memKVN _ lk (own_KVCoordServer s γ.(coord_kv_gn)) with "[$Hfree] [-mu HΦ]").

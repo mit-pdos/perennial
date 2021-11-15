@@ -99,7 +99,7 @@ Proof.
   iIntros (shardlock) "Hfreelock".
 
   wp_pures.
-  wp_apply wp_allocStruct; first by eauto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (ls) "Hls".
   wp_pures.
 

@@ -862,8 +862,7 @@ Proof.
   wp_apply (wp_new_dec with "Hslice"); eauto.
   iIntros (d) "Hdec".
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { eauto. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (req) "Hreq".
   wp_pures.
   iDestruct (struct_fields_split with "Hreq") as "H".

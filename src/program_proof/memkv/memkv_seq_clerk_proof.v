@@ -31,12 +31,10 @@ Lemma wp_MakeSeqKVClerk (coord:u64) cm γ :
 Proof.
   iIntros (Φ) "[#Hcoord #Hcm] HΦ".
   wp_lam.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (cck) "Hcck".
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (ck) "Hck".
   iDestruct (struct_fields_split with "Hck") as "HH".
   iNamed "HH".
@@ -52,8 +50,7 @@ Proof.
   wp_lam.
   wp_apply (wp_NewMap).
   iIntros (mref_set) "Hmap_set".
-  wp_apply (wp_allocStruct).
-  { eauto. }
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (clset) "Hset".
   wp_storeField.
   wp_loadField.
@@ -64,9 +61,7 @@ Proof.
     done.
   }
   iIntros (shardMap_sl shardMapping) "(Hcck & HshardMap_sl & %Hlen & #Hall_are_shard_servers)".
-  Transparent slice.T.
-  wp_storeField.
-  Opaque slice.T.
+  Transparent slice.T. wp_storeField. Opaque slice.T.
   iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame.
   iFrame "% #". iExists _, _, _.

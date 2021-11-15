@@ -167,7 +167,7 @@ Proof.
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_allocStruct).
-      { Transparent slice.T. val_ty. Opaque slice.T. }
+      { val_ty. }
       iIntros (rep_ptr) "Hrep".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & Hpre)".

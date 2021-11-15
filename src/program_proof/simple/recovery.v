@@ -394,7 +394,7 @@ Proof using All.
   }
 
    *)
-  wp_apply wp_allocStruct; first by eauto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (nfs) "Hnfs".
 
   iDestruct (struct_fields_split with "Hnfs") as "Hnfs". iNamed "Hnfs".

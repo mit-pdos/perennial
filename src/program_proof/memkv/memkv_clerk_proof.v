@@ -139,7 +139,7 @@ Lemma wp_MakeKVClerk coord cm γ :
 Proof.
   iIntros "#Hcoord #Hcm !> %Φ _ HΦ". wp_lam.
   wp_apply (wp_allocStruct).
-  { Transparent slice.T. val_ty. Opaque slice.T. }
+  { val_ty. }
   iIntros (l) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH". iNamed "HH".
   wp_apply wp_new_free_lock.

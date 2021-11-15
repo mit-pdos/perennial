@@ -47,7 +47,7 @@ Proof.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_pures. wp_call.
-  wp_apply wp_allocStruct; eauto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (iptr) "Hi".
   iDestruct (struct_fields_split with "Hi") as "Hi". iNamed "Hi".
   wp_apply (wp_buf_loadField_data with "Hbuf").

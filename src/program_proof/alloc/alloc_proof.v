@@ -57,7 +57,7 @@ Proof.
   wp_apply wp_new_free_lock.
   iIntros (mu_l) "Hl".
   wp_pures.
-  wp_apply wp_allocStruct; first by eauto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (l) "Halloc".
   iApply struct_fields_split in "Halloc".
   iNamed "Halloc".

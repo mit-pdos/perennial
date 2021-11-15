@@ -223,7 +223,7 @@ Proof.
   rewrite -wp_fupd.
   wp_apply wp_new_free_crash_lock.
   iIntros (lref) "Hlock".
-  wp_apply wp_allocStruct; auto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (l) "inode".
   iDestruct (struct_fields_split with "inode") as "(d&m&addr&addrs&_)".
   iMod (readonly_alloc_1 with "d") as "#d".

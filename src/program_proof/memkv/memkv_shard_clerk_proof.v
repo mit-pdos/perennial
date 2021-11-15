@@ -19,8 +19,7 @@ Lemma wp_MakeFreshKVShardClerk (host:u64) (c:loc) γ :
 Proof.
   iIntros "#His_shard #Hc !#" (Φ) "_ HΦ".
   wp_lam.
-  wp_apply (wp_allocStruct).
-  { naive_solver. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (ck) "Hck".
   iDestruct (struct_fields_split with "Hck") as "HH".
   iNamed "HH".
@@ -101,8 +100,7 @@ Proof.
   iNamed "Hclerk".
   wp_lam.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { naive_solver. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -167,8 +165,7 @@ Proof.
   wp_lam.
   wp_pures.
 
-  wp_apply (wp_allocStruct).
-  { naive_solver. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (l) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -272,8 +269,7 @@ Proof.
   iNamed "Hck".
   wp_lam.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. val_ty. Opaque slice.T. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -411,8 +407,7 @@ Proof.
   rewrite -Hγeq.
   wp_lam.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { naive_solver. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -551,8 +546,7 @@ Proof.
   rewrite -Hγeq.
   wp_lam.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. val_ty. Opaque slice.T. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".

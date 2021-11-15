@@ -48,7 +48,8 @@ Proof.
   iApply "HΦ". iModIntro.
   iSplit.
   { iFrame. }
-  iPureIntro; simpl. eauto.
+  iPureIntro; simpl.
+  by eauto 50.
 Qed.
 
 Theorem wp_rootFattr :
@@ -62,7 +63,7 @@ Theorem wp_rootFattr :
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
-  iApply "HΦ". eauto.
+  iApply "HΦ". eauto 50.
 Qed.
 
 Lemma nfstypes_getattr3res_merge reply s ok :

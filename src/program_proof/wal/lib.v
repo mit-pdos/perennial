@@ -16,6 +16,8 @@ Proof.
   destruct u; rewrite /blockT; val_ty.
 Qed.
 
+Hint Resolve update_val_t : core.
+
 Definition is_update (uv: u64*Slice.t) (q:Qp) (u: update.t): iProp Σ :=
   ⌜uv.1 = u.(update.addr)⌝ ∗
   is_block uv.2 q u.(update.b).
@@ -208,16 +210,6 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Transparent slice.T.
-Theorem val_ty_update uv :
-  val_ty (update_val uv) (struct.t Update).
-Proof.
-  val_ty.
-Qed.
-Opaque slice.T.
-
-Hint Resolve val_ty_update : val_ty.
-
 Theorem wp_SliceSet_updates stk E bk_s q_b bs (i: u64) (u0 u: update.t) uv :
   bs !! int.nat i = Some u0 ->
   {{{ updates_slice_frag' bk_s 1 q_b bs ∗ is_update uv q_b u }}}
@@ -236,7 +228,7 @@ Proof.
     as "[Hbki Hbks]".
   wp_apply (wp_SliceSet with "[$Hbk_s]").
   { iPureIntro.
-    split; auto.
+    split; last val_ty.
     rewrite list_lookup_fmap.
     apply fmap_is_Some.
     eauto. }
@@ -543,4 +535,3 @@ Qed.
 
 End heap.
 
-Hint Resolve update_val_t : val_ty.

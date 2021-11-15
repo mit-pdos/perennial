@@ -144,17 +144,19 @@ Section goose_lang.
 
 End goose_lang.
 
+Hint Resolve zero_val_ty' : core.
+(* give has_zero a chance to simplify, then eauto can keep going *)
+Hint Extern 50 (has_zero _) => progress simpl : core.
+(* Only use constructors as fallback *)
+Hint Extern 10 (val_ty _ _) => constructor : core.
+Hint Extern 10 (lit_ty _ _) => constructor : core.
+(* Just a compat alias *)
 Ltac val_ty :=
-  solve [ repeat lazymatch goal with
-                 | |- val_ty _ _ =>
-                   first [ by auto with val_ty nocore | constructor ]
-                 | |- lit_ty _ _ => constructor
-                 | _ => fail 3 "not a val_ty goal"
-                 end ].
-
-Hint Resolve zero_val_ty' : val_ty.
-
-Hint Extern 2 (val_ty _ _) => val_ty : core.
+  lazymatch goal with
+  | |- val_ty _ _ => by eauto 20
+  | |- lit_ty _ _ => by eauto
+  | _ => fail "not a val_ty goal"
+  end.
 
 Notation "![ t ] e" := (load_ty t e%E) : expr_scope.
 (* NOTE: in code we want to supply arbitrary expressions, so we have the usual

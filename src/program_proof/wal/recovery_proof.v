@@ -1365,7 +1365,7 @@ Proof.
 
   iIntros (lslide) "Hsliding".
   iDestruct (is_sliding_wf with "[$]") as %Hsliding_wf.
-  wp_apply wp_allocStruct; first by auto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (st) "Hwal_state".
   wp_pures.
 

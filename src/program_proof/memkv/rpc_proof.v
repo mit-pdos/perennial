@@ -228,8 +228,7 @@ Proof.
   iIntros (Φ) "Hmap HΦ".
   wp_lam.
   iApply wp_fupd.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (s) "Hs".
   iDestruct (struct_fields_split with "Hs") as "Hs". iNamed "Hs".
   unshelve (iMod (readonly_alloc_1 with "handlers") as "#handlers"); [| apply _ |].
@@ -662,10 +661,7 @@ Proof.
   wp_apply (map.wp_NewMap).
   iIntros (mref) "Hmref".
 
-  wp_apply (wp_allocStruct).
-  { enough (val_ty (connection_socket client srv) Connection) by naive_solver.
-    econstructor.
-  }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (cl) "Hcl".
   iNamed "Hcl".
   iDestruct (struct_fields_split with "Hcl") as "Hcl". iNamed "Hcl".
@@ -748,8 +744,7 @@ Proof.
   wp_bind (lock.newCond _).
   wp_apply (wp_newCond with "[$]").
   iIntros (cb_cond) "#cond".
-  wp_apply (wp_allocStruct).
-  { naive_solver. }
+  wp_apply (wp_allocStruct); first val_ty.
   wp_pures.
   iIntros (cb) "Hcb".
   wp_pures.

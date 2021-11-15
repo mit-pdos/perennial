@@ -23,8 +23,7 @@ Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H".
   wp_lam.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. repeat econstructor.  Opaque slice.T. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (srv) "srv".
   wp_pures.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".

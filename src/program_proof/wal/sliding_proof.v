@@ -222,7 +222,7 @@ Proof.
   wp_pures.
   wp_apply wp_slice_len.
   rewrite -wp_fupd.
-  wp_apply wp_allocStruct; auto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (l) "Hl".
   iDestruct (struct_fields_split with "Hl") as "(Hf1&Hf2&Hf3&Hf4&%)".
   iAssert (updates_slice_frag s q log) with "[Hs Hblocks]" as "Hlog".
@@ -629,8 +629,7 @@ Proof.
   iDestruct "log_readonly_inner" as (q) "[%Hq log_readonly_inner]".
   iMod (readonly_alloc (readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) 1) (Φ := λ q, readonly_log_inner' logSlice' (set slidingM.log (λ log : list update.t, log ++ [u]) σ) q) with "log_readonly_inner") as "#log_readonly'".
   wp_apply (wp_storeField with "log").
-  { rewrite /field_ty //=.
-    val_ty. }
+  { rewrite /field_ty //=. }
   iIntros "log".
   wp_pures.
   wp_loadField.

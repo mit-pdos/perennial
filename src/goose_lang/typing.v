@@ -628,8 +628,10 @@ Ltac typecheck :=
       | [ |- _ = _ ] => reflexivity
       end.
 
+(* RJ: These have been the cause of considerate slowdown, so I disabled them.
 Hint Extern 1 (has_zero _) => (compute; intuition idtac) : core.
 Hint Extern 1 (has_zero _) => (compute; intuition idtac) : val_ty.
+*)
 
 (* the first notation is a location offset in the model (a pure function over
 locations) while the second is a GooseLang expression; the second evaluates to

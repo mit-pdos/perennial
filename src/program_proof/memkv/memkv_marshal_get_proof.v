@@ -99,15 +99,13 @@ Lemma wp_DecodeGetRequest req_sl reqData args :
 Proof.
   iIntros (Φ) "[[%Henc %] Hsl] HΦ".
   wp_lam.
-  wp_apply (wp_allocStruct).
-  { val_ty. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
   iNamed "HH".
   wp_pures.
   iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
-  wp_apply (wp_new_dec with "[$Hsl]").
-  { done. }
+  wp_apply (wp_new_dec with "[$Hsl]"); first done.
   iIntros (?) "Hdec".
   wp_pures.
 
@@ -139,16 +137,14 @@ Lemma wp_DecodeGetReply rep rep_sl repData :
 Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
   wp_lam.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. val_ty. Opaque slice.T. }
+  wp_apply (wp_allocStruct); first val_ty.
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
   iNamed "HH".
   wp_pures.
 
   iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
-  wp_apply (wp_new_dec with "[$Hsl]").
-  { done. }
+  wp_apply (wp_new_dec with "[$Hsl]"); first done.
   iIntros (?) "Hdec".
   wp_pures.
 
@@ -158,8 +154,7 @@ Proof.
 
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
-  wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]").
-  { done. }
+  wp_apply (wp_Dec__GetBytes_ro with "[$Hdec]"); first done.
   iIntros (??) "[Hsl Hdec]".
   wp_apply (wp_storeField with "Value").
   { apply slice_val_ty. }

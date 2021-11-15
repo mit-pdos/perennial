@@ -1307,7 +1307,7 @@ Qed.
 
 End goose_lang.
 
-Hint Resolve slice_val_ty : val_ty.
+Hint Resolve slice_val_ty : core.
 
 Arguments wp_forSlice {_ _ _ _ _ _ _}
           _%bi_scope _ _ _ _%heap_type _%Qp_scope _%list_scope _%val_scope.

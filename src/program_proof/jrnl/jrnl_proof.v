@@ -134,7 +134,7 @@ Proof.
   wp_call.
   wp_apply (wp_MkBufMap with "[$]").
   iIntros (bufmap) "Hbufmap".
-  wp_apply wp_allocStruct; eauto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (buftx) "Hbuftx".
   iDestruct (struct_fields_split with "Hbuftx") as "(Hbuftx.txn & Hbuftx.bufs & %)".
   wp_apply util_proof.wp_DPrintf.

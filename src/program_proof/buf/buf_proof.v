@@ -290,7 +290,7 @@ Proof.
   wp_call.
   wp_apply wp_NewMap.
   iIntros (mref) "Hmref".
-  wp_apply wp_allocStruct; eauto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (bufmap) "Hbufmap".
 
   iDestruct (struct_fields_split with "Hbufmap") as "[Hbufmap _]".
@@ -815,7 +815,7 @@ Theorem wp_MkBuf K a data (bufdata : bufDataT K) stk E :
 Proof using.
   iIntros (Φ) "[Hbufdata %] HΦ".
   wp_call.
-  wp_apply wp_allocStruct; first by auto.
+  wp_apply wp_allocStruct; first val_ty.
 
   iIntros (b) "Hb".
   wp_pures.
@@ -884,7 +884,7 @@ Proof using.
 
   iIntros (s') "Hs".
   wp_pures.
-  wp_apply wp_allocStruct; first by auto.
+  wp_apply wp_allocStruct; first val_ty.
 
   iIntros (b) "Hb".
   wp_pures.
