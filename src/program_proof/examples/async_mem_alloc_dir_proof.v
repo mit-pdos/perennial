@@ -473,8 +473,6 @@ Section goose.
     iFrame.
   Qed.
 
-  Opaque struct.t.
-
   (* TODO: use this to replace list_lookup_lt (it's much easier to remember) *)
   Local Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x) :=
     let H := fresh "H" x "_lookup" in
@@ -668,7 +666,7 @@ Section goose.
     iCache with "HΦ Hpre_inodes".
     { crash_case. by iApply pre_inodes_to_cinv. }
     wpc_frame_seq.
-    wp_apply wp_NewMap.
+    wp_apply (wp_NewMap unit (t:=struct.t alloc.unit)).
     { apply unit_IntoValForType. }
     iIntros (addrs_ref) "Hused_set".
     iApply is_addrset_from_empty in "Hused_set".
@@ -885,9 +883,7 @@ Section goose.
     { congruence. }
     { auto. }
     iIntros (alloc_ref) "Halloc_mem".
-    Transparent struct.t.
     wp_apply wp_allocStruct; first val_ty.
-    Opaque struct.t.
     iIntros (inode_ref) "Hinode_fields".
     iDestruct (struct_fields_split with "Hinode_fields") as "(d&allocator&inodes&_)".
     iMod (readonly_alloc_1 with "d") as "#d".
