@@ -144,7 +144,7 @@ Proof.
   wp_apply (wp_NewSlice (V:=loc)).
   iIntros (freeClerks_sl) "HfreeClerks_sl".
   wp_storeField.
-  iMod (alloc_lock with "Hfreelock [HfreeClerks HfreeClerks_sl]") as "Hlock"; last first.
+  iMod (alloc_lock with "Hfreelock [freeClerks HfreeClerks_sl]") as "Hlock"; last first.
   { wp_pures. iApply "HΦ". rewrite /is_KVClerk.
     iExists coord, #mu, _, γ.(coord_urpc_gn). iFrame "Hcoord Hlock".
     iMod (readonly_alloc_1 with "mu") as "$".

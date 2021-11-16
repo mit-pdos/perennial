@@ -572,7 +572,7 @@ Proof.
     rewrite (zero_slice_val).
     iExists _; iFrame.
   }
-  iAssert (own_ConditionalPutRequest args_ptr expv_sl newv_sl {| CPR_CID := cid; CPR_Seq := seq; CPR_Key := key; CPR_ExpValue := expv; CPR_NewValue := newv |}) with "[CID Seq Key ExpValue NewValue Hexpv_sl Hnewv_sl]" as "Hargs".
+  iAssert (own_ConditionalPutRequest args_ptr expv_sl newv_sl {| CPR_CID := cid; CPR_Seq := seq; CPR_Key := key; CPR_ExpValue := expv; CPR_NewValue := newv |}) with "[CID Seq Key ExpectedValue NewValue Hexpv_sl Hnewv_sl]" as "Hargs".
   {
     iFrame "∗#". simpl. iPureIntro; word.
   }
