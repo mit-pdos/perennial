@@ -205,7 +205,7 @@ Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr
       let 'σg := fst bts in
       t <- mlift (Transitions.interpret [] (ffi_step ReadOp v) σg) "Transitions.interpret failed in ReadOp";
       match t with
-      | (hints, σg', v') => _ <- mput (σg', snd bts); mret (Val v')
+      | (hints, σg', v') => _ <- mput (σg', snd bts); mret v'
       end
   | (WriteOp, (PairV (LitV (LitInt a)) (LitV (LitLoc l)))) =>
     bts <- mget;

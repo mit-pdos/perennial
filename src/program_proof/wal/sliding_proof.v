@@ -38,6 +38,7 @@ Definition is_sliding (l: loc) (q: Qp) (σ: slidingM.t) : iProp Σ :=
     "start" ∷ l ↦[sliding :: "start"] #σ.(slidingM.start) ∗
     "mutable" ∷ l ↦[sliding :: "mutable"] #σ.(slidingM.mutable) ∗
     "addrPos" ∷ l ↦[sliding :: "addrPos"] #addrPosPtr ∗
+    "needFlush" ∷ (∃ (needFlush: bool), "needFlush" ∷ l ↦[sliding :: "needFlush"] #needFlush) ∗
     "#log_readonly" ∷ readonly_log logSlice σ ∗
     "log_mutable" ∷ mutable_log logSlice q σ ∗
     "is_addrPos" ∷ is_map addrPosPtr 1 (slidingM.addrPosMap σ).
@@ -224,7 +225,7 @@ Proof.
   rewrite -wp_fupd.
   wp_apply wp_allocStruct; first val_ty.
   iIntros (l) "Hl".
-  iDestruct (struct_fields_split with "Hl") as "(Hf1&Hf2&Hf3&Hf4&%)".
+  iDestruct (struct_fields_split with "Hl") as "(Hf1&Hf2&Hf3&HfneedFlush&Hf4&%)".
   iAssert (updates_slice_frag s q log) with "[Hs Hblocks]" as "Hlog".
   { iExists _; iFrame. }
   iDestruct (updates_slice_frag_split _ _ _ (U64 $ length log) with "Hlog") as "[Hmut Hreadonly]".
@@ -242,6 +243,7 @@ Proof.
   iSplitL "Hf3".
   { rewrite /named. iExactEq "Hf3". do 3 f_equal.
     word. }
+  iSplitL "HfneedFlush"; first by auto.
   iDestruct (is_slice_cap_wf with "Hcap") as %Hcap.
   iSplitR.
   - rewrite /readonly_log /slidingM.numMutable /=.

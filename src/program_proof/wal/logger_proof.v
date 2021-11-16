@@ -144,6 +144,55 @@ Proof.
   lia.
 Qed.
 
+Theorem wp_Walog__flushIfNeeded l γ dinit σₛ σ :
+  {{{
+      "#?" ∷ readonly (l ↦[Walog :: "st"] #σₛ.(wal_st)) ∗
+      "#Hwal" ∷ is_wal P l γ dinit ∗
+      "Hlkinv" ∷ wal_linv_core σₛ.(wal_st) γ σ
+  }}}
+    Walog__flushIfNeeded #l
+  {{{ σ', RET #();
+      wal_linv_core σₛ.(wal_st) γ σ' ∗
+      ⌜length σ.(memLog).(slidingM.log) = length σ'.(memLog).(slidingM.log)⌝
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
+  wp_call.
+  iNamed "Hlkinv". iNamed "Hfields". iNamed "Hfield_ptsto".
+  iNamed "His_memLog". iNamed "Hinv". iNamed "needFlush".
+  wp_loadField. wp_loadField. wp_loadField.
+  wp_if_destruct.
+  2: {
+    iApply "HΦ".
+    iModIntro.
+    iSplitL; last by trivial.
+    iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
+    iExists _, _. iFrame "∗ #". iExists _. iFrame.
+  }
+  wp_loadField.
+  wp_apply (wp_sliding__clearMutable_wal with "[
+    $Hwal
+    HmemLog HdiskEnd Hshutdown Hnthread
+    log start mutable addrPos needFlush
+    log_mutable is_addrPos
+    HdiskEnd_circ Hstart_circ HmemLog_linv
+  ]").
+  {
+    iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
+    iExists _, _. iFrame "∗ #". iExists _. iFrame.
+  }
+  clear.
+  iIntros (σ') "[Hlkinv %HmemLog_len]".
+  iNamed "Hlkinv". iNamed "Hfields". iNamed "Hfield_ptsto".
+  iNamed "His_memLog". iNamed "Hinv". iNamed "needFlush".
+  wp_loadField. wp_loadField. wp_storeField.
+  iApply "HΦ".
+  iModIntro.
+  iFrame (HmemLog_len).
+  iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
+  iExists _, _. iFrame "∗ #". iExists _. iFrame.
+Qed.
+
 Theorem wp_Walog__logAppend l circ_l γ dinit σₛ :
   {{{ "#HmemLock" ∷ readonly (l ↦[Walog :: "memLock"] #σₛ.(memLock)) ∗
       "#HcondLogger" ∷ readonly (l ↦[Walog :: "condLogger"] #σₛ.(condLogger)) ∗
@@ -167,11 +216,22 @@ Theorem wp_Walog__logAppend l circ_l γ dinit σₛ :
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ"; iNamed "Hpre".
-  iNamed "Hlogger".
   wp_call.
   wp_apply (wp_Walog__waitForSpace with "[$Hlkinv $Hlocked]").
   { iFrameNamed. iFrame "#". }
   iIntros (σ) "Hpost"; iNamed "Hpost".
+
+  wp_apply (wp_Walog__flushIfNeeded with "[
+    $Hwal
+    Hfields HdiskEnd_circ Hstart_circ HmemLog_linv
+  ]").
+  { iSplit; first by iFrame "#". iFrame. }
+  iIntros (σ') "[Hlkinv %HmemLog_len]".
+  rewrite HmemLog_len in Hhas_space.
+  clear HmemLog_len σ. rename σ' into σ.
+
+  iNamed "Hlkinv".
+  iNamed "Hlogger".
   iNamed "Hfields".
   iNamed "Hfield_ptsto".
   wp_loadField. wp_loadField.
@@ -607,6 +667,7 @@ Proof.
     iFrame "HnextDiskEnd_stable_old".
     iFrame "HinstalledTxn_lb".
 
+    simpl.
     iSplit.
     { iPureIntro. word. }
     iSplit.

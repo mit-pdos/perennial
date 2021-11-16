@@ -86,6 +86,23 @@ Section gen_heap_defs.
     iFrame. done.
   Qed.
 
+  Lemma gen_heap_exchanger_init {Σ} (hG1: gen_heapGS L V Σ) σ σ' :
+    dom (gset _) σ = dom (gset _) σ' →
+    gen_heap_interp (hG := hG1) σ ==∗
+    ∃ names, gen_heap_interp (hG := gen_heapG_update hG1 names) σ' ∗
+             gen_heap_exchanger (hG1 := hG1) (hG2 := gen_heapG_update hG1 names) σ σ'.
+  Proof.
+    iIntros (Hdom) "Hauth".
+    iMod (gen_heap_name_strong_init' σ') as (names) "(Hauth'&Hkeys&_)".
+    iModIntro. iExists _; iFrame.
+    iApply big_sepM_dom.
+    rewrite Hdom.
+    iApply big_sepM_dom.
+    iApply (big_sepM_mono with "Hkeys").
+    iIntros (k x Hlook). simpl.
+    iIntros "Hk". iExists _; iSplit; eauto. iRight. iFrame.
+  Qed.
+
   Global Instance mapsto_discretizable {Σ} (hG: gen_heapGS L V Σ) l q v:
     Discretizable (mapsto (hG:=hG) l q v).
   Proof. rewrite mapsto_eq. apply _. Qed.
@@ -99,3 +116,4 @@ Section gen_heap_defs.
   Proof. apply _. Qed.
 
 End gen_heap_defs.
+

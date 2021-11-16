@@ -265,7 +265,7 @@ Proof.
   {
     iIntros (Φ') "(Hlkinv&Hlocked) HΦ".
     wp_loadField.
-    wp_apply (wp_endGroupTxn with "[$Hwal $Hlkinv]").
+    wp_apply (wp_endGroupTxn with "Hlkinv").
     iIntros "Hlkinv".
     wp_pures.
     iApply ("HΦ" with "[$]").

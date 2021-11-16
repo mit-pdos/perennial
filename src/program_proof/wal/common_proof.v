@@ -68,10 +68,13 @@ Proof.
   rewrite lookup_insert_ne in H0; eauto.
 Qed.
 
-Theorem wp_endGroupTxn l st γ dinit :
-  {{{ is_wal P l γ dinit ∗ wal_linv st γ }}}
-    WalogState__endGroupTxn #st
-  {{{ RET #(); wal_linv st γ }}}.
+Theorem wp_sliding__clearMutable_wal l st γ dinit σ :
+  {{{ is_wal P l γ dinit ∗ wal_linv_core st γ σ }}}
+    sliding__clearMutable (struct.loadF WalogState "memLog" #st)
+  {{{ σ', RET #();
+    wal_linv_core st γ σ' ∗
+    ⌜length σ.(memLog).(slidingM.log) = length σ'.(memLog).(slidingM.log)⌝
+  }}}.
 Proof.
   iIntros (Φ) "(#Hwal & Hlkinv) HΦ".
   iNamed "Hlkinv".
@@ -79,13 +82,14 @@ Proof.
   iNamed "Hfield_ptsto".
   rewrite -wp_ncfupd.
   iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf.
-  wp_call.
-  rewrite /WalogState__memEnd.
   wp_loadField.
   wp_apply (wp_sliding__clearMutable with "His_memLog").
   iIntros "His_memLog".
 
-  wp_pures. iApply "HΦ".
+  wp_pures. iApply ("HΦ" $! (set memLog (λ _,
+    (set slidingM.mutable (λ _ : u64, slidingM.endPos σ.(memLog))
+    σ.(memLog))) σ
+  )).
   iNamed "HmemLog_linv".
   iNamed "Hlinv_pers".
   iNamed "Htxns".
@@ -109,9 +113,8 @@ Proof.
 
   iModIntro.
   iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf'.
-  iExists (set memLog (λ _,
-                       (set slidingM.mutable (λ _ : u64, slidingM.endPos σ.(memLog)) σ.(memLog))) σ).
   simpl.
+  iSplitL; last by trivial.
   iFrame "# ∗".
   iSplitR "Howntxns HownLoggerPos_linv HownLoggerTxn_linv HnextDiskEnd HownInstallerPosMem_linv HownInstallerTxnMem_linv HownInstalledTxnMem_linv".
   { iExists _; iFrame.
@@ -172,6 +175,34 @@ Proof.
     rewrite /slidingM.wf /slidingM.endPos /= in Hsliding_wf'.
     word.
   }
+Qed.
+
+Theorem wp_endGroupTxn st γ :
+  {{{ wal_linv st γ }}}
+    WalogState__endGroupTxn #st
+  {{{ RET #(); wal_linv st γ }}}.
+Proof.
+  iIntros (Φ) "Hlkinv HΦ".
+  iNamed "Hlkinv".
+  iNamed "Hfields".
+  iNamed "Hfield_ptsto".
+  iNamed "His_memLog".
+  iNamed "Hinv".
+  iNamed "needFlush".
+  wp_call.
+  wp_loadField.
+  wp_storeField.
+
+  iApply "HΦ".
+  iModIntro.
+  iExists _.
+  iFrame.
+  iExists _.
+  iFrame (Hlocked_wf Hwf) "∗".
+  iExists _, _.
+  iFrame "∗ #".
+  iExists _.
+  iFrame.
 Qed.
 
 Lemma is_txn_mid σ (a b c : nat) pos :
