@@ -91,11 +91,6 @@ Proof.
     wp_apply (map.wp_MapGet with "HlastReplyMap").
     iIntros (reply replyOk) "[%HlookupReply HlastReplyMap]".
     wp_pures.
-    Transparent struct.store.
-    unfold struct.store.
-    Opaque struct.store.
-    Opaque struct.t.
-    wp_pures.
 (*
     iAssert (reply_ptr ↦[struct.t GetReply] (#_, (slice_val val_sl, #())) )%I with "[HValue HErr]" as "Hrep".
     {
@@ -350,9 +345,6 @@ Proof.
       wp_storeField.
 
       (* save reply in reply table *)
-      Transparent struct.load.
-      unfold struct.load.
-
       wp_loadField.
       wp_loadField.
       wp_loadField.
@@ -460,9 +452,6 @@ Proof.
         done.
       }
       iDestruct "HH" as "(#Hreceipt & Hrpc)".
-
-      Transparent struct.load.
-      unfold struct.load.
 
       wp_loadField.
       wp_loadField.
