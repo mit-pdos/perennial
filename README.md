@@ -32,7 +32,8 @@ can also compile without timing information with `make TIMED=false`.
 
 ## Compilation times
 
-Perennial takes about 70-80 CPU minutes to compile. Compiling in parallel with `make -j4` is significantly faster, and can cut the time down to 20-25 minutes.
+Perennial takes about 120 CPU minutes to compile. Compiling in parallel with
+`make -j4` is significantly faster, and can cut the time down to 45-50 minutes.
 
 Incremental builds are better, after Iris and some core libraries are compiled.
 
