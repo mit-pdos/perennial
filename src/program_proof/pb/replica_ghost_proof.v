@@ -29,7 +29,7 @@ Proof.
     iDestruct "HH" as "[%Hbad|Haccepted]".
     { exfalso. word. }
     iMod (accepted_update _ _ _ _ newLog with "Haccepted") as "Haccepted".
-    { apply prefix_nil. }
+    { (* list_solver candidate *) apply prefix_nil. }
     iDestruct (accepted_witness with "Haccepted") as "#$".
     iFrame "Haccepted HnewProp".
     iApply "HacceptedUnused".
@@ -61,7 +61,7 @@ Proof.
       destruct Hnew as [Hbad|HnewLog].
       { exfalso; word. }
       assert (newLog = r.(opLog)) as ->.
-      { eapply list_prefix_eq; eauto.
+      { (* list_solver candidate *) eapply list_prefix_eq; eauto.
         lia. }
       iDestruct (accepted_witness with "Haccepted") as "#$".
       by iFrame "∗#".
