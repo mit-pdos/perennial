@@ -1096,6 +1096,122 @@ Section translate.
         { econstructor; eauto. simpl. eauto. }
   Qed.
 
+  Lemma all_synced_compat_full (pσ1' pσ1 : pstate) σ1:
+    ADP.all_synced (world pσ1') →
+    state_compat σ1 pσ1 →
+    state_compat σ1 pσ1' →
+    ∀ σ2 : dstate, state_compat σ2 pσ1 → state_compat σ2 pσ1'.
+  Proof. Admitted.
+
+  Lemma compat_inhabited σ g :
+    ∃ pσ pg, state_compat σ pσ ∧ global_compat g pg.
+  Proof. Admitted.
+
+  Lemma compat_inhabited_rev pσ pg:
+    ∃ σ g, state_compat σ pσ ∧ global_compat g pg.
+  Proof. Admitted.
+
+  Theorem head_step_compat_simulation e1 pσ1 pg1 pσ1' pg1' pσ2 pg2 σ1 g1 κ e2 efs :
+    head_step e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    state_compat σ1 pσ1' →
+    global_compat g1 pg1' →
+    (∃ e2' pσ2' pg2' efs',
+        head_step e1 pσ1' pg1' κ e2' pσ2' pg2' efs' ∧
+        (∀ σ2, state_compat σ2 pσ2 → state_compat σ2 pσ2') ∧
+        (ADP.all_synced (world pσ1') →
+           ADP.all_synced (world pσ2') ∧
+           ((e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+            (e2 = e2' ∧ efs = efs')))).
+  Proof. Admitted.
+
+  Theorem prim_step'_compat_simulation e1 pσ1 pg1 pσ1' pg1' pσ2 pg2 σ1 g1 κ e2 efs :
+    prim_step' e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    state_compat σ1 pσ1' →
+    global_compat g1 pg1' →
+    (∃ e2' pσ2' pg2' efs',
+        prim_step' e1 pσ1' pg1' κ e2' pσ2' pg2' efs' ∧
+        (∀ σ2, state_compat σ2 pσ2 → state_compat σ2 pσ2') ∧
+        (ADP.all_synced (world pσ1') →
+           ADP.all_synced (world pσ2') ∧
+           ((e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+            (e2 = e2' ∧ efs = efs')))).
+  Proof.
+  Admitted.
+
+  Theorem prim_step'_compat_rtc_simulation e1 pσ1 pg1 (pσ1' : pstate) pg1' pσ2 pg2 σ1 g1 e2 :
+    ADP.all_synced (world pσ1') →
+    rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
+        (e1, (pσ1, pg1)) (e2, (pσ2, pg2)) →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    state_compat σ1 pσ1' →
+    global_compat g1 pg1' →
+    ∃ pσ2' pg2',
+      rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
+          (e1, (pσ1', pg1')) (e2, (pσ2', pg2')) ∧
+       (∀ σ2, state_compat σ2 pσ2 → state_compat σ2 pσ2').
+  Proof.
+    intros Hsynced.
+    remember (e1, (pσ1, pg1)) as pρ1 eqn:Heqρ1.
+    remember (e2, (pσ2, pg2)) as pρ2 eqn:Heqρ2.
+    intros Hrtc.
+    revert e1 σ1 g1 pσ1 pg1 pσ1' pg1' Heqρ1 Hsynced.
+    revert e2 pσ2 pg2 Heqρ2.
+    induction Hrtc; intros; subst.
+    - inversion Heqρ1; subst. do 2 eexists; split.
+      * apply rtc_refl.
+      * eapply all_synced_compat_full; eauto.
+    - destruct y as (emid&pσmid&pgmid).
+      edestruct (prim_step'_compat_simulation) as (e2'&pσ2'&pg2'&efs'&Hstep&?&Hifsynced); eauto.
+      generalize Hsynced as Hsynced' => Hsynced'.
+      apply Hifsynced in Hsynced'. destruct Hsynced' as (Hsynced'&Hcases).
+      destruct Hcases as [Hloop|Hprogress].
+      { destruct Hloop as (->&[]&->&->).
+        eapply IHHrtc.
+        { reflexivity. }
+        { reflexivity. }
+        { auto. }
+        { eassumption. }
+        { eassumption. }
+        { eassumption. }
+        { eassumption. }
+      }
+      {
+      assert (∃ σ1' g1', state_compat σ1' pσmid ∧
+                         state_compat σ1' pσ2' ∧
+                         global_compat g1' pgmid ∧
+                         global_compat g1' pg2') as (σ1'&g1'&?&?&?&?).
+      { edestruct (compat_inhabited_rev pσmid pgmid) as (σ1'&g1'&?&?).
+        do 2 eexists; split_and!; eauto.
+        destruct g1', pg2' => //=.
+      }
+      edestruct IHHrtc as (pσ2_IH&pg2_IH&Hrtc_IH&Hcompat_IH); try eapply Hrtc.
+      { reflexivity. }
+      { reflexivity. }
+      { eassumption. }
+      { eassumption. }
+      { eassumption. }
+      { eassumption. }
+      { eassumption. }
+      { do 2 eexists; split.
+        { econstructor; eauto. simpl. destruct Hprogress as (->&<-). eauto. }
+        eauto. } }
+  Qed.
+
+  Theorem head_step_compat_reducible e1 pσ1 pg1 pσ1' pg1' pσ2 pg2 σ1 g1 κ e2 efs :
+    head_step e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    state_compat σ1 pσ1' →
+    global_compat g1 pg1' →
+    (∃ κ e2' pσ2' pg2' efs', head_step e1 pσ1' pg1' κ e2' pσ2' pg2' efs').
+  Proof.
+    intros.  edestruct head_step_compat_simulation as (?&?&?&?&?&?&?); eauto. do 4 eexists; eauto.
+  Qed.
 
   Lemma stuck'_transport_rev e σ g pσ pg:
     stuck' e pσ pg →
@@ -1107,8 +1223,29 @@ Section translate.
     destruct Hstuck as (Hnval&Hirred).
     split; auto.
     intros κ e' σ' g' efs Hprim.
+    edestruct (compat_inhabited σ' g') as (pσ'&pg'&?&?).
+    edestruct prim_step'_simulation as (pσ1'&pg1'&pg2'&?&?&Hstep); eauto.
+    inversion Hstep as [ ????? Hstep'].
+    eapply (head_step_compat_reducible _ _ _ pσ pg) in Hstep'; eauto.
+    destruct Hstep' as (?&?&?&?&?&?). subst.
     eapply Hirred.
-  Admitted.
+    econstructor; eauto.
+  Qed.
+
+  Lemma stuck'_transport e σ g pσ pg:
+    stuck' e σ g →
+    state_compat σ pσ →
+    global_compat g pg →
+    stuck' e pσ pg.
+  Proof.
+    rewrite /stuck'/irreducible'. intros Hstuck Hcompat Hgcompat.
+    destruct Hstuck as (Hnval&Hirred).
+    split; auto.
+    intros κ e' σ' g' efs Hprim.
+    edestruct prim_step'_simulation_rev as (pσ1'&pg1'&?&?&Hstep); eauto.
+    eapply Hirred.
+    eauto.
+  Qed.
 
   Lemma prim_step'_safe_transport e σ1 g1 pσ1 pg1:
     prim_step'_safe e σ1 g1 →
@@ -1150,6 +1287,57 @@ Section translate.
     - intros. do 3 eexists. split_and!; eauto.
       eapply head_step_atomically_fail.
       { eapply prim_step'_safe_transport; eauto. }
+  Qed.
+
+  Lemma prim_step'_safe_transport_rev e σ1 g1 (pσ1 : pstate) pg1:
+    ADP.all_synced (world pσ1) →
+    prim_step'_safe e pσ1 pg1 →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    prim_step'_safe e σ1 g1.
+  Proof.
+    rewrite /prim_step'_safe. intros Hsynced Hsafe Hcompat Hgcompat.
+    intros e' σ2 g2 Hrtc.
+    destruct (compat_inhabited σ2 g2) as (pσ2'&pg2'&?&?).
+    edestruct rtc_prim_step'_simulation as (pσ1'&[]&[]&Hcompat1'&Hgcompat1'&Hrtc'); eauto.
+    assert (∃ pσ2,  state_compat σ2 pσ2 ∧
+                    rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
+                        (e, (pσ1, ())) (e', (pσ2, ()))) as (pσ2&?&?).
+    {
+      edestruct (prim_step'_compat_rtc_simulation) as (pσ2&pg2&Hrtc''&Hcompat_impl); eauto.
+      eexists. destruct pg2; split; last eauto. eauto.
+    }
+    destruct pg1 as [].
+    eapply Hsafe in H2 as Hnstuck.
+    intros Hstuck. apply Hnstuck.
+    eapply stuck'_transport in Hstuck; eauto.
+    destruct g2; econstructor.
+  Qed.
+
+  Theorem head_step_atomic_simulation_rev e1 (pσ1 : pstate) pg1 κ pσ2 pg2 efs σ1 g1 e2 :
+    ADP.all_synced (world pσ1) →
+    head_step_atomic e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    ∃ σ2 g2 e2',
+      head_step_atomic e1 σ1 g1 κ e2' σ2 g2 efs ∧
+      ((e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+       (e2 = e2' ∧ state_compat σ2 pσ2 ∧ global_compat g2 pg2)).
+  Proof.
+    intros Hsynced Hprim.
+    inversion Hprim; subst.
+    - intros.
+      edestruct (head_step_simulation_rev) as (?&?&?&?&Hcases); eauto.
+      do 3 eexists. split_and!; eauto.
+      econstructor; eauto.
+    - intros.
+      edestruct (prim_step'_rtc_simulation_rev) as (?&?&?&?); eauto.
+      do 3 eexists. split_and!; intuition eauto.
+      apply head_step_atomically; eauto.
+      { eapply prim_step'_safe_transport_rev; eauto. }
+    - intros. do 3 eexists. split_and!; eauto.
+      eapply head_step_atomically_fail.
+      { eapply prim_step'_safe_transport_rev; eauto. }
   Qed.
 
   Theorem prim_step_simulation e1 σ1 g1 κ e2 σ2 g2 efs :
