@@ -603,6 +603,74 @@ Section translate.
       destruct pg0, pg2_; eauto.
   Qed.
 
+  Theorem head_step_simulation_rev e1 pσ1 pg1 pσ2 pg2 σ1 g1 κ e2 efs :
+    head_step e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    ∃ σ2 g2 e2' efs',
+      head_step e1 σ1 g1 κ e2' σ2 g2 efs' ∧
+      ((e2 = e1 ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+       (e2 = e2' ∧ state_compat σ2 pσ2 ∧ global_compat g2 pg2)).
+  Proof.
+  Admitted.
+
+  Theorem prim_step'_simulation_rev e1 pσ1 pg1 pσ2 pg2 σ1 g1 κ e2 efs :
+    prim_step' e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    ∃ σ2 g2 e2' efs',
+      prim_step' e1 σ1 g1 κ e2' σ2 g2 efs' ∧
+      ((e2 = e1 ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+       (e2 = e2' ∧ state_compat σ2 pσ2 ∧ global_compat g2 pg2)).
+  Proof.
+  Admitted.
+
+  Theorem prim_step'_rtc_simulation_rev e1 pσ1 pg1 pσ2 pg2 σ1 g1 e2 :
+    rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
+        (e1, (pσ1, pg1)) (e2, (pσ2, pg2)) →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    ∃ σ2 g2 e2',
+      rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
+          (e1, (σ1, g1)) (e2, (σ2, g2)) ∧
+      ((e2 = e1 ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+       (e2 = e2' ∧ state_compat σ2 pσ2 ∧ global_compat g2 pg2)).
+  Proof.
+  Admitted.
+
+  Lemma stuck'_transport_rev e σ g pσ pg:
+    stuck' e pσ pg →
+    state_compat σ pσ →
+    global_compat g pg →
+    stuck' e σ g.
+  Proof.
+    rewrite /stuck'/irreducible'. intros Hstuck Hcompat Hgcompat.
+    destruct Hstuck as (Hnval&Hirred).
+    split; auto.
+    intros κ e' σ' g' efs Hprim.
+    eapply Hirred.
+  Admitted.
+
+  Lemma prim_step'_safe_transport e σ1 g1 pσ1 pg1:
+    prim_step'_safe e σ1 g1 →
+    state_compat σ1 pσ1 →
+    global_compat g1 pg1 →
+    prim_step'_safe e pσ1 pg1.
+  Proof.
+    rewrite /prim_step'_safe. intros Hsafe Hcompat Hgcompat.
+    intros e' pσ2 pg2 Hrtc.
+    eapply prim_step'_rtc_simulation_rev in Hrtc; eauto.
+    destruct Hrtc as (σ2&g2&e2'&Hrtc&Hcases).
+    destruct Hcases as [Hstutter|(->&Hcompat2&Hgcompat2)].
+    - destruct Hstutter as (->&->&->).
+      intros Hnstuck.
+      eapply stuck'_transport_rev in Hnstuck; eauto.
+      eapply Hsafe; last eassumption. econstructor; eauto.
+    - intros Hnstuck.
+      eapply stuck'_transport_rev in Hnstuck; eauto.
+      eapply Hsafe; last eassumption. eauto.
+  Qed.
+
   Theorem head_step_atomic_simulation e1 σ1 g1 κ e2 σ2 g2 efs :
     head_step_atomic e1 σ1 g1 κ e2 σ2 g2 efs →
     ∀ pg2 pσ2,
@@ -623,11 +691,11 @@ Section translate.
       edestruct (rtc_prim_step'_simulation) as (?&?&?&?); eauto.
       do 3 eexists. split_and!; intuition eauto.
       apply head_step_atomically; eauto.
-      { admit. }
+      { eapply prim_step'_safe_transport; eauto. }
     - intros. do 3 eexists. split_and!; eauto.
       eapply head_step_atomically_fail.
-      { admit. }
-  Admitted.
+      { eapply prim_step'_safe_transport; eauto. }
+  Qed.
 
   Theorem prim_step_simulation e1 σ1 g1 κ e2 σ2 g2 efs :
     prim_step e1 σ1 g1 κ e2 σ2 g2 efs →
