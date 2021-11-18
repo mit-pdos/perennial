@@ -1096,12 +1096,66 @@ Section translate.
         { econstructor; eauto. simpl. eauto. }
   Qed.
 
+  Definition match_curr (dd : @ffi_state ADP.disk_model) (ad: @ffi_state ADP.disk_model) :=
+    dom (gset _) dd = dom (gset _) ad ∧
+    (∀ addr ab, dd !! addr = Some ab → ∃ ab', ad !! addr = Some ab' ∧ ADP.curr_val ab = ADP.curr_val ab').
+
+  Definition state_match_curr (pσ1 : pstate) (pσ2 : pstate) :=
+    heap pσ1 = heap pσ2 ∧
+    match_curr (world pσ1) (world pσ2) ∧
+    trace pσ1 = trace pσ2 ∧
+    oracle pσ1 = oracle pσ2.
+
+  Lemma state_match_curr_disk_size σ pσ :
+    state_match_curr σ pσ →
+    ADP.disk_size (world σ) = ADP.disk_size (world pσ).
+  Proof.
+    intros (?&(Hdom&Hdisk)&_). rewrite /AD.disk_size/ADP.disk_size Hdom //.
+  Qed.
+
+  Lemma disk_compat_common_match_curr d pd1 pd2 :
+    disk_compat d pd1 →
+    disk_compat d pd2 →
+    match_curr pd1 pd2.
+  Proof.
+    intros (Hdom1&Hlook1) (Hdom2&Hlook2).
+    split; first congruence.
+    intros addr cb Hin1.
+    assert (is_Some (d !! addr)) as (ab'&Hab).
+    { apply (elem_of_dom d). rewrite Hdom1. apply (elem_of_dom pd1); eauto. }
+    edestruct Hlook1 as (b&Hin&Heq1); eauto.
+    edestruct Hlook2 as (b'&Hin'&Heq2); eauto.
+    eexists. split; eauto. rewrite //=. rewrite Hin1 in Heq1. inversion Heq1; subst; eauto.
+  Qed.
+
+  Lemma state_compat_state_match_curr σ pσ1 pσ2:
+    state_compat σ pσ1 →
+    state_compat σ pσ2 →
+    state_match_curr pσ1 pσ2.
+  Proof.
+    rewrite /state_compat/state_match_curr.
+    intros. intuition (try congruence).
+    eapply disk_compat_common_match_curr; eauto.
+  Qed.
+
+  Lemma all_synced_match_curr_compat_full (pσ1' pσ1 : pstate) :
+    ADP.all_synced (world pσ1') →
+    state_match_curr pσ1 pσ1' →
+    ∀ σ2 : dstate, state_compat σ2 pσ1 → state_compat σ2 pσ1'.
+  Proof. Admitted.
+
   Lemma all_synced_compat_full (pσ1' pσ1 : pstate) σ1:
     ADP.all_synced (world pσ1') →
     state_compat σ1 pσ1 →
     state_compat σ1 pσ1' →
     ∀ σ2 : dstate, state_compat σ2 pσ1 → state_compat σ2 pσ1'.
-  Proof. Admitted.
+  Proof.
+    intros Hsynced Hcompat1 Hcompat1'.
+    intros. eapply all_synced_match_curr_compat_full; eauto.
+    eapply state_compat_state_match_curr.
+    { eapply Hcompat1. }
+    eauto.
+  Qed.
 
   Lemma compat_inhabited σ g :
     ∃ pσ pg, state_compat σ pσ ∧ global_compat g pg.
@@ -1111,36 +1165,438 @@ Section translate.
     ∃ σ g, state_compat σ pσ ∧ global_compat g pg.
   Proof. Admitted.
 
-  Theorem head_step_compat_simulation e1 pσ1 pg1 pσ1' pg1' pσ2 pg2 σ1 g1 κ e2 efs :
+
+  Lemma match_curr_insert_hd x0 x1 x2 c0 d1 d2 n :
+    match_curr d1 d2 →
+    match_curr (<[n:=ADP.cblk_upd x0 x1 x2]> d1) (<[n:=ADP.cblk_upd c0 x1 true]> d2).
+  Proof.
+    intros (Hdom&Hvals).
+    split.
+    - rewrite ?dom_insert_L; eauto. rewrite Hdom //.
+    - intros ?? Hlook.
+      destruct (decide (addr = n)).
+      { subst. eexists. rewrite lookup_insert. rewrite lookup_insert in Hlook.
+        split.
+        { rewrite //=. }
+        inversion Hlook. subst. rewrite //=.
+      }
+      rewrite lookup_insert_ne //. rewrite lookup_insert_ne // in Hlook.
+      eapply Hvals; eauto.
+  Qed.
+
+  Lemma all_synced_insert_synced d n c0 x1 :
+    ADP.all_synced d →
+    ADP.all_synced (<[n:=ADP.cblk_upd c0 x1 true]> d).
+  Proof.
+    rewrite /ADP.all_synced. intros Hvals z cblk Hlook.
+    destruct (decide (z = n)).
+    { subst. rewrite lookup_insert in Hlook. inversion Hlook; subst => //=. }
+    eapply Hvals. rewrite lookup_insert_ne in Hlook; eauto.
+  Qed.
+
+  Theorem head_step_compat_simulation e1 pσ1 pg1 pσ1' pg1' pσ2 pg2 κ e2 efs :
     head_step e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
-    state_compat σ1 pσ1 →
-    global_compat g1 pg1 →
-    state_compat σ1 pσ1' →
-    global_compat g1 pg1' →
+    state_match_curr pσ1 pσ1' →
     (∃ e2' pσ2' pg2' efs',
         head_step e1 pσ1' pg1' κ e2' pσ2' pg2' efs' ∧
-        (∀ σ2, state_compat σ2 pσ2 → state_compat σ2 pσ2') ∧
-        (ADP.all_synced (world pσ1') →
-           ADP.all_synced (world pσ2') ∧
-           ((e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
-            (e2 = e2' ∧ efs = efs')))).
-  Proof. Admitted.
-
-  Theorem prim_step'_compat_simulation e1 pσ1 pg1 pσ1' pg1' pσ2 pg2 σ1 g1 κ e2 efs :
-    prim_step' e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
-    state_compat σ1 pσ1 →
-    global_compat g1 pg1 →
-    state_compat σ1 pσ1' →
-    global_compat g1 pg1' →
-    (∃ e2' pσ2' pg2' efs',
-        prim_step' e1 pσ1' pg1' κ e2' pσ2' pg2' efs' ∧
-        (∀ σ2, state_compat σ2 pσ2 → state_compat σ2 pσ2') ∧
+        state_match_curr pσ2 pσ2' ∧
         (ADP.all_synced (world pσ1') →
            ADP.all_synced (world pσ2') ∧
            ((e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
             (e2 = e2' ∧ efs = efs')))).
   Proof.
-  Admitted.
+    rewrite /head_step.
+    intros Hstep Hmatch_curr.
+    destruct e1; subst; try inversion Hstep; intuition eauto; subst.
+    - rewrite /head_step//= in Hstep.
+      destruct_head. inversion Hstep; subst.
+      monad_inv. do 4 eexists. split_and!; eauto.
+      { repeat econstructor; eauto. }
+    - rewrite /head_step//= in Hstep.
+      destruct_head. inversion Hstep; subst.
+      monad_inv. do 4 eexists. split_and!; eauto.
+      { repeat econstructor; eauto. }
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      destruct (un_op_eval op v) eqn:Heq; eauto; subst.
+      * inversion Hstep; monad_inv.
+        do 4 eexists. split_and!; eauto.
+        econstructor; rewrite ?Heq; eauto; econstructor; eauto.
+      * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      destruct (bin_op_eval op v) eqn:Heq; eauto; subst.
+      * inversion Hstep; monad_inv.
+        do 4 eexists. split_and!; eauto.
+        econstructor; rewrite ?Heq; eauto; econstructor; eauto.
+      * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct e1_1; monad_inv.
+      destruct e1_2; monad_inv.
+      inversion Hstep; subst.
+      monad_inv.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      destruct v; monad_inv.
+      * inversion Hstep; subst. monad_inv.
+        do 4 eexists. split_and!; eauto.
+        econstructor; eauto; econstructor; eauto.
+      * inversion Hstep; subst. monad_inv.
+        do 4 eexists. split_and!; eauto.
+        econstructor; eauto; econstructor; eauto.
+    - inversion Hstep; subst; monad_inv.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; subst.
+      monad_inv. inversion H. subst. monad_inv.
+      inversion H0; subst.
+      do 4 eexists. split_and!; eauto.
+      econstructor; eauto; repeat econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct op; monad_inv; destruct_head.
+      * inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H.
+        inversion H0; monad_inv; subst; clear H0.
+        destruct x0. destruct n; monad_inv.
+        destruct n; monad_inv.
+        inversion H1; monad_inv; subst; clear H1.
+        destruct (heap pσ1 !! l) eqn:Heq; subst.
+        ** inversion H5; monad_inv; subst.
+           destruct Hmatch_curr as (?&?&?&?).
+           do 4 eexists.
+           split_and!.
+           *** econstructor; eauto; repeat econstructor; eauto.
+               { rewrite //=. rewrite -H Heq. econstructor; eauto. }
+               subst.
+               rewrite //=. repeat econstructor; eauto.
+           *** split_and!; eauto. rewrite /RecordSet.set//=. congruence.
+           *** econstructor; eauto; repeat econstructor; eauto.
+        ** inversion H5; intuition.
+      * inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H.
+        inversion H0; monad_inv; subst; clear H0.
+        destruct x0. destruct n; monad_inv.
+        inversion H1; monad_inv; subst; clear H1.
+        destruct (heap pσ1 !! l) eqn:Heq; subst.
+        ** inversion H5; monad_inv; subst.
+           destruct Hmatch_curr as (?&?&?&?).
+           intuition.
+           do 4 eexists.
+           split_and!.
+           *** econstructor; eauto; repeat econstructor; eauto.
+               { rewrite //=. rewrite -H Heq. econstructor; eauto. }
+               subst.
+               rewrite //=. repeat econstructor; eauto.
+           *** split_and!; eauto. destruct pσ1, pσ1' => //=.
+               simpl in H. rewrite -H. eauto.
+           *** econstructor; eauto; repeat econstructor; eauto.
+        ** inversion H5; intuition.
+      * inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H.
+        inversion H0; monad_inv; subst; clear H0.
+        destruct x0. destruct n; monad_inv.
+        destruct n; monad_inv.
+        inversion H1; monad_inv; subst; clear H1.
+        destruct (heap pσ1 !! l) eqn:Heq; subst.
+        ** inversion H5; monad_inv; subst.
+           destruct Hmatch_curr as (?&?&?&?).
+           do 4 eexists.
+           split_and!.
+           *** econstructor; eauto; repeat econstructor; eauto.
+               { rewrite //=. rewrite -H Heq. econstructor; eauto. }
+               subst.
+               rewrite //=. repeat econstructor; eauto.
+           *** split_and!; eauto. destruct pσ1, pσ1' => //=.
+               simpl in H. rewrite -H. eauto.
+           *** econstructor; eauto; repeat econstructor; eauto.
+        ** inversion H5; intuition.
+      * inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H.
+        inversion H0; monad_inv; subst; clear H0.
+        destruct x0. destruct n; monad_inv.
+        destruct (heap pσ1 !! l) eqn:Heq; subst.
+        ** inversion H5; monad_inv; subst.
+           destruct Hmatch_curr as (?&?&?&?).
+           do 4 eexists.
+           split_and!.
+           *** econstructor; eauto; repeat econstructor; eauto.
+               { rewrite //=. rewrite -H Heq. econstructor; eauto. }
+               subst.
+               rewrite //=.
+           *** split_and!; eauto. 
+           *** econstructor; eauto; repeat econstructor; eauto.
+        ** inversion H5; intuition.
+      * inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H.
+        inversion H1; monad_inv; subst; clear H1.
+        inversion Hmatch_curr; intuition.
+           do 4 eexists.
+           split_and!.
+           *** econstructor; eauto; repeat econstructor; eauto.
+           *** split_and!; eauto. destruct pσ1, pσ1' => //=.
+               simpl in H0, H3. rewrite -H0 -H3. eauto.
+           *** rewrite //=. intros; split; eauto.
+               right. intuition congruence.
+      * inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H.
+        inversion Hmatch_curr; intuition.
+           do 4 eexists.
+           split_and!.
+           *** econstructor; eauto; repeat econstructor; eauto.
+           *** split_and!; eauto. destruct pσ1, pσ1' => //=.
+               simpl in H0, H3. intuition congruence.
+           *** rewrite //=. intros; split; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct op; monad_inv; destruct_head.
+      * inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H. subst.
+        inversion H1; monad_inv; subst; clear H1.
+        inversion H2; monad_inv; subst; clear H2.
+        destruct s0 as (?&[]).
+        destruct (decide (0 < int.Z n)); monad_inv.
+        monad_inv. inversion H. subst.
+        do 4 eexists.
+        subst. inversion Hmatch_curr. intuition.
+        ** econstructor.
+           *** inversion H4; econstructor; eauto.
+               { unfold check. rewrite ifThenElse_if; eauto. rewrite /=. econstructor. rewrite //=. }
+               { repeat econstructor => //=; try eapply H3. rewrite -H0; eapply H3. }
+           *** repeat econstructor => //=.
+        ** split_and!; eauto. rewrite //=.
+           simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
+           intuition congruence.
+        ** rewrite //=.
+      * inversion Hstep; monad_inv.
+        inversion H; monad_inv; clear H. subst.
+        inversion H1; monad_inv; subst; clear H1.
+        destruct (decide (is_Writing (heap pσ1 !! l))); monad_inv.
+        inversion H0; monad_inv; subst; clear H0.
+        do 4 eexists. inversion Hmatch_curr; intuition.
+        ** econstructor.
+           *** econstructor; eauto; repeat (econstructor; eauto).
+               { unfold check. rewrite -H. rewrite ifThenElse_if; eauto. rewrite /=. econstructor. rewrite //=. }
+           *** repeat econstructor => //=.
+        ** split_and!; eauto. rewrite //=.
+           simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
+           intuition congruence.
+        ** rewrite //=.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      inversion Hstep; monad_inv.
+      inversion H; monad_inv; clear H. subst.
+      inversion H0; monad_inv; subst; clear H0.
+      destruct_head.
+      rewrite //= in H1.
+      destruct (heap pσ1 !! l) eqn:Heq; monad_inv; try inv_monad_false.
+      destruct (decide (vals_compare_safe v1 v)); monad_inv; try inv_monad_false; last first.
+      { intuition eauto. }
+      inversion H2; monad_inv; subst; clear H2.
+      destruct (decide (v1 = v)).
+      * subst. rewrite ifThenElse_if in H1; eauto.
+        destruct (decide (n = O)); monad_inv; last first.
+        { rewrite ifThenElse_else in H1; eauto. simpl in H1. inversion H1; monad_inv. exfalso; eauto. }
+        rewrite ifThenElse_if in H1; eauto.
+        simpl in H1. monad_inv. 
+        do 4 eexists. inversion Hmatch_curr. intuition.
+        ** econstructor.
+           *** econstructor; eauto; repeat (econstructor; eauto).
+               { rewrite -H Heq //=. }
+               rewrite //=.
+               unfold check. rewrite ifThenElse_if; eauto. rewrite /=. repeat econstructor; eauto.
+               rewrite /when. rewrite ifThenElse_if; eauto. repeat econstructor.
+           *** repeat econstructor => //=.
+        ** split_and!; eauto. rewrite //=.
+           simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
+           intuition congruence.
+        ** rewrite //=.
+      * rewrite ifThenElse_else in H1; auto. simpl in H1. monad_inv.
+        do 4 eexists. inversion Hmatch_curr. intuition.
+        ** econstructor.
+           *** econstructor; eauto; repeat (econstructor; eauto).
+               { rewrite -H Heq //=. }
+               rewrite //=.
+               unfold check. rewrite ifThenElse_if; eauto. rewrite /=. repeat econstructor; eauto.
+               rewrite /when. rewrite ifThenElse_else; eauto. repeat econstructor.
+           *** repeat econstructor => //=.
+        ** rewrite //=.
+        ** rewrite //=.
+    - destruct op.
+      (* Read *)
+      * rewrite /head_step//= in Hstep.
+        destruct_head. inversion Hstep; monad_inv.
+        destruct_head.
+        inversion H; monad_inv; clear H. subst.
+        inversion H0; monad_inv; subst; clear H0.
+        inversion H1; monad_inv; subst; clear H1.
+        destruct_head.
+        destruct (world pσ1 !! int.Z n) eqn:Heq; rewrite Heq in H2; subst; last first.
+        { inv_monad_false. }
+        inversion H0; monad_inv; clear H0. subst.
+        inversion H2; monad_inv; subst; clear H2.
+        destruct s0 as (?&[]); monad_inv.
+        inversion H; monad_inv; subst; clear H.
+        inversion H4; monad_inv; subst; clear H4.
+        inversion Hmatch_curr. intuition.
+        destruct (world pσ1' !! int.Z n) eqn:Hlook; last first.
+        { exfalso. destruct H3.
+          rewrite //= in H3.
+          revert Hlook. rewrite -not_elem_of_dom.  intros Hfalso.
+          apply Hfalso. rewrite -H3. apply elem_of_dom. eauto.
+        }
+        do 4 eexists.
+        split_and!.
+        *** econstructor; eauto.
+            { repeat econstructor.
+              { rewrite Hlook //=. }
+               { intros Hfalso. eapply H. eauto. }
+               { rewrite -H1. eapply H. }
+               { eauto. }
+            }
+            repeat econstructor.
+        *** simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
+            rewrite /state_match_curr//=.
+            split_and!; eauto.
+            assert (ADP.curr_val x0 = ADP.curr_val c) as ->; last by congruence.
+            {  edestruct H3 as (Hdom&Hlook'). edestruct (Hlook') as (?&?&?); eauto.
+               rewrite H4 in Hlook. inversion Hlook; subst. congruence.
+            }
+        *** eauto.
+      (* WriteOp *)
+      * rewrite /head_step//= in Hstep.
+        destruct_head. inversion Hstep; monad_inv.
+        destruct_head.
+        inversion H; monad_inv; clear H. subst.
+        inversion H1; monad_inv; subst; clear H1.
+        inversion H; monad_inv; subst; clear H.
+        destruct s0.
+        inversion H2; monad_inv; subst; clear H2.
+        inversion H3; monad_inv; subst; clear H3.
+        inversion H; monad_inv; subst; clear H.
+        inversion H0.
+        subst. monad_inv.
+        destruct (world pσ1 !! int.Z n) eqn:Heq; rewrite Heq in H4; subst; last first.
+        { inv_monad_false. }
+        inversion Hmatch_curr. intuition.
+        inversion H4. subst.
+        destruct (world pσ1' !! int.Z n) eqn:Hlook; last first.
+        { exfalso. inversion H4.
+          subst. revert Hlook. rewrite -not_elem_of_dom.  intros Hfalso.
+          apply Hfalso. destruct H5 as (Heqdom&_). rewrite -Heqdom.
+          eapply (elem_of_dom_2 (D := gset _) (world pσ1)); eauto.
+        }
+        inversion H4; monad_inv; subst; clear H4.
+        inversion H0; monad_inv; subst. clear H0.
+        subst.
+        destruct H5.
+        do 4 eexists; split_and!.
+        ** econstructor; eauto.
+            { repeat econstructor.
+              { rewrite Hlook //. }
+              { rewrite //=. rewrite -H. eauto. }
+            }
+            repeat econstructor.
+        ** simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
+            rewrite /state_match_curr//=.
+            split_and!; eauto.
+            apply match_curr_insert_hd; split; eauto.
+        ** rewrite //=. intros Hsynced.
+           split; last first.
+           { right. eauto. }
+           apply all_synced_insert_synced; auto.
+      (* SizeOp *)
+      * rewrite /head_step//= in Hstep.
+        destruct_head. inversion Hstep; monad_inv.
+        destruct_head.
+        inversion H; monad_inv; clear H.
+        do 4 eexists; split_and!; eauto.
+         econstructor; eauto; repeat (econstructor; eauto).
+         do 2 f_equal.
+         symmetry. erewrite state_match_curr_disk_size; eauto.
+      (* BarrierOp *)
+      * rewrite /head_step//= in Hstep.
+        destruct_head. inversion Hstep; monad_inv.
+        destruct_head.
+        inversion H; monad_inv; clear H.
+        destruct (decide (ADP.all_synced _)).
+        **  monad_inv.
+            destruct (decide (ADP.all_synced (world pσ1'))).
+            *** do 4 eexists. split_and!.
+                { repeat econstructor. rewrite decide_True //=. }
+                { eauto. }
+                intros; split; eauto.
+            *** do 4 eexists. split_and!.
+                { repeat econstructor. rewrite decide_False //=. }
+                { eauto. }
+                intros; intuition.
+        **  monad_inv.
+            destruct (decide (ADP.all_synced (world pσ1'))).
+            *** do 4 eexists. split_and!.
+                { repeat econstructor. rewrite decide_True //=. }
+                { eauto. }
+                intros; split; eauto.
+            *** do 4 eexists. split_and!.
+                { repeat econstructor. rewrite decide_False //=. }
+                { eauto. }
+                intros; intuition.
+  Qed.
+
+  Theorem prim_step'_compat_simulation e1 pσ1 pg1 pσ1' pg1' pσ2 pg2 κ e2 efs :
+    prim_step' e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+    state_match_curr pσ1 pσ1' →
+    (∃ e2' pσ2' pg2' efs',
+        prim_step' e1 pσ1' pg1' κ e2' pσ2' pg2' efs' ∧
+        state_match_curr pσ2 pσ2' ∧
+        (ADP.all_synced (world pσ1') →
+           ADP.all_synced (world pσ2') ∧
+           ((e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+            (e2 = e2' ∧ efs = efs')))).
+  Proof.
+    intros Hprim Hc.
+    inversion Hprim; subst.
+    intros. edestruct (head_step_compat_simulation) as (e2_s'&pσ2'&pg2'&efs'&Hstep'&Hcurr&Hifsynced); eauto.
+    do 4 eexists; split_and!.
+    { econstructor; eauto. }
+    { eauto. }
+    intros Hsynced.
+    apply Hifsynced in Hsynced as (?&Hcases). split; auto.
+    destruct Hcases as [Hcases1|Hcases2].
+    - left. intuition congruence.
+    - right. intuition congruence.
+  Qed.
 
   Theorem prim_step'_compat_rtc_simulation e1 pσ1 pg1 (pσ1' : pstate) pg1' pσ2 pg2 σ1 g1 e2 :
     ADP.all_synced (world pσ1') →
@@ -1166,7 +1622,8 @@ Section translate.
       * apply rtc_refl.
       * eapply all_synced_compat_full; eauto.
     - destruct y as (emid&pσmid&pgmid).
-      edestruct (prim_step'_compat_simulation) as (e2'&pσ2'&pg2'&efs'&Hstep&?&Hifsynced); eauto.
+      edestruct (prim_step'_compat_simulation) as (e2'&pσ2'&pg2'&efs'&Hstep&Hmatch_curr&Hifsynced); eauto.
+      { eapply state_compat_state_match_curr; eauto. }
       generalize Hsynced as Hsynced' => Hsynced'.
       apply Hifsynced in Hsynced'. destruct Hsynced' as (Hsynced'&Hcases).
       destruct Hcases as [Hloop|Hprogress].
@@ -1187,6 +1644,7 @@ Section translate.
                          global_compat g1' pg2') as (σ1'&g1'&?&?&?&?).
       { edestruct (compat_inhabited_rev pσmid pgmid) as (σ1'&g1'&?&?).
         do 2 eexists; split_and!; eauto.
+        { eapply all_synced_match_curr_compat_full; eauto. }
         destruct g1', pg2' => //=.
       }
       edestruct IHHrtc as (pσ2_IH&pg2_IH&Hrtc_IH&Hcompat_IH); try eapply Hrtc.
@@ -1210,7 +1668,9 @@ Section translate.
     global_compat g1 pg1' →
     (∃ κ e2' pσ2' pg2' efs', head_step e1 pσ1' pg1' κ e2' pσ2' pg2' efs').
   Proof.
-    intros.  edestruct head_step_compat_simulation as (?&?&?&?&?&?&?); eauto. do 4 eexists; eauto.
+    intros.  edestruct head_step_compat_simulation as (?&?&?&?&?&?&?); eauto.
+    { eapply state_compat_state_match_curr; eauto. }
+    do 4 eexists; eauto.
   Qed.
 
   Lemma stuck'_transport_rev e σ g pσ pg:
