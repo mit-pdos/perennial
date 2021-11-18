@@ -603,13 +603,38 @@ Section translate.
       destruct pg0, pg2_; eauto.
   Qed.
 
+  Definition head_step_barrier_looping e1 pσ1 pg1 :=
+    head_reducible e1 pσ1 pg1 ∧
+    (∀ κ e2 pσ2 pg2 efs,
+        head_step e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+        e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1).
+
+  Definition prim_step'_barrier_looping e1 pσ1 pg1 :=
+    (∀ κ e2 pσ2 pg2 efs,
+        prim_step' e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
+        e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1).
+
+  Lemma head_step_looping_to_prim_step' K e1 pσ1 pg1 :
+    head_step_barrier_looping e1 pσ1 pg1 →
+    prim_step'_barrier_looping (fill' K e1) pσ1 pg1.
+  Proof.
+    intros Hloop ????? Hprim. inversion Hprim as [K' e1']; subst.
+    assert (K' = K ∧ e1' = e1) as (->&->).
+    { eapply head_redex_unique; eauto.
+      - rewrite /head_reducible; last by (do 5 eexists; econstructor; eauto); auto.
+      - eapply Hloop.
+    }
+    edestruct Hloop as (Heq1&He2&Heq3&Heq4); first eassumption; subst.
+    eauto.
+  Qed.
+
   Theorem head_step_simulation_rev e1 pσ1 pg1 pσ2 pg2 σ1 g1 κ e2 efs :
     head_step e1 pσ1 pg1 κ e2 pσ2 pg2 efs →
     state_compat σ1 pσ1 →
     global_compat g1 pg1 →
     ∃ σ2 g2 e2',
       head_step e1 σ1 g1 κ e2' σ2 g2 efs ∧
-      ((e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+      (head_step_barrier_looping e1 pσ1 pg1 ∨
        (e2 = e2' ∧ state_compat σ2 pσ2 ∧ global_compat g2 pg2)).
   Proof.
   Admitted.
@@ -620,7 +645,7 @@ Section translate.
     global_compat g1 pg1 →
     ∃ σ2 g2 e2',
       prim_step' e1 σ1 g1 κ e2' σ2 g2 efs ∧
-      ((e2 = e1 ∧ efs = [] ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
+      (prim_step'_barrier_looping e1 pσ1 pg1 ∨
        (e2 = e2' ∧ state_compat σ2 pσ2 ∧ global_compat g2 pg2)).
   Proof.
     intros Hprim.
@@ -628,7 +653,29 @@ Section translate.
     intros. edestruct (head_step_simulation_rev) as (σ2&g2&e2alt'&Hstep&Hcases); eauto.
     do 3 eexists. split_and!; eauto.
     { econstructor; eauto. }
-    { destruct Hcases as [(->&->&->&->)|(->&Hcompat&Hgcompat)]; eauto. }
+    { destruct Hcases as [Hleft|Hright].
+      { left. eapply head_step_looping_to_prim_step'; eauto. }
+      destruct Hright as (->&Hcompat&Hgcompat); eauto.
+    }
+  Qed.
+
+  Lemma prim_step'_rtc_looping e1 pσ1 pg1 e2 pσ2 pg2 :
+    prim_step'_barrier_looping e1 pσ1 pg1 →
+    rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
+        (e1, (pσ1, pg1)) (e2, (pσ2, pg2)) →
+    e2 = e1 ∧ pσ2 = pσ1 ∧ pg2 = pg1.
+  Proof.
+    intros Hlooping Hrtc.
+    remember (e1, (pσ1, pg1)) as pρ1 eqn:Heqρ1.
+    remember (e2, (pσ2, pg2)) as pρ2 eqn:Heqρ2.
+    revert Hlooping.
+    revert e1 pσ1 pg1 Heqρ1.
+    revert e2 pσ2 pg2 Heqρ2.
+    induction Hrtc; intros; subst.
+    - inversion Heqρ1; subst; eauto.
+    - destruct y as (e1'&pσ1'&pg1').
+      eapply Hlooping in H as (->&?&->&->).
+      eapply IHHrtc; eauto.
   Qed.
 
   Theorem prim_step'_rtc_simulation_rev e1 pσ1 pg1 pσ2 pg2 σ1 g1 e2 :
@@ -636,11 +683,10 @@ Section translate.
         (e1, (pσ1, pg1)) (e2, (pσ2, pg2)) →
     state_compat σ1 pσ1 →
     global_compat g1 pg1 →
-    ∃ σ2 g2 e2',
+    ∃ σ2 g2,
       rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' [])
           (e1, (σ1, g1)) (e2, (σ2, g2)) ∧
-      ((e2 = e1 ∧ pσ2 = pσ1 ∧ pg2 = pg1) ∨
-       (e2 = e2' ∧ state_compat σ2 pσ2 ∧ global_compat g2 pg2)).
+       (state_compat σ2 pσ2 ∧ global_compat g2 pg2).
   Proof.
     remember (e1, (pσ1, pg1)) as pρ1 eqn:Heqρ1.
     remember (e2, (pσ2, pg2)) as pρ2 eqn:Heqρ2.
@@ -648,27 +694,19 @@ Section translate.
     revert e1 σ1 pσ1 pg1 Heqρ1.
     revert e2 g1 pσ2 pg2 Heqρ2.
     induction Hrtc; intros; subst.
-    - inversion Heqρ1; subst. do 3 eexists; split_and!; eauto.
+    - inversion Heqρ1; subst. do 2 eexists; split_and!; eauto.
       apply rtc_refl.
     - destruct y as (e1'&pσ1'&pg1').
       edestruct prim_step'_simulation_rev as (σ1'&g1'&e2'&Hstep&Hcases); eauto.
       destruct Hcases as [Hloop|Hprogress].
-      * destruct Hloop as (->&_&->&->). edestruct IHHrtc; eauto.
+      * edestruct Hloop as (Heq1&Heq2&Heq3&Heq4); eauto; subst.
+        edestruct IHHrtc; eauto.
       * destruct Hprogress as (->&Hcompat'&Hgcompat').
-        edestruct IHHrtc as (σ2&g2&e2''&Hrtc'&Hcases); eauto.
-        do 3 eexists; split; eauto.
+        edestruct IHHrtc as (σ2&g2&Hrtc'&Hcompat''&Hgcompat''); eauto.
+        do 2 eexists; split; eauto.
         { econstructor; eauto. simpl. eauto. }
-        destruct Hcases as [(->&->&->)|(->&Hcompat''&Hgcompat'')].
-  Admitted.
-  (*
-        { right. split_and!; eauto. left. eauto.
-        do 3 eexists; split. last left; eauto.
-      do 3 eexists; split_and!; eauto.
-      econstructor; eauto. simpl.
-      destruct pg0, pg2_; eauto.
-      edestruct (IHHrtc) as (σ1'&g2_&g1'&Hrtc'&Hcases); eauto.
-  Admitted.
-   *)
+  Qed.
+
 
   Lemma stuck'_transport_rev e σ g pσ pg:
     stuck' e pσ pg →
@@ -692,15 +730,11 @@ Section translate.
     rewrite /prim_step'_safe. intros Hsafe Hcompat Hgcompat.
     intros e' pσ2 pg2 Hrtc.
     eapply prim_step'_rtc_simulation_rev in Hrtc; eauto.
-    destruct Hrtc as (σ2&g2&e2'&Hrtc&Hcases).
-    destruct Hcases as [Hstutter|(->&Hcompat2&Hgcompat2)].
-    - destruct Hstutter as (->&->&->).
-      intros Hnstuck.
-      eapply stuck'_transport_rev in Hnstuck; eauto.
-      eapply Hsafe; last eassumption. econstructor; eauto.
-    - intros Hnstuck.
-      eapply stuck'_transport_rev in Hnstuck; eauto.
-      eapply Hsafe; last eassumption. eauto.
+    destruct Hrtc as (σ2&g2&Hrtc&Hcases).
+    destruct Hcases as (Hcompat2&Hgcompat2).
+    intros Hnstuck.
+    eapply stuck'_transport_rev in Hnstuck; eauto.
+    eapply Hsafe; last eassumption. eauto.
   Qed.
 
   Theorem head_step_atomic_simulation e1 σ1 g1 κ e2 σ2 g2 efs :

@@ -1416,6 +1416,21 @@ Proof.
   eapply H.
 Qed.
 
+Lemma head_redex_unique K K' e e' σ g :
+  fill' K e = fill' K' e' →
+  head_reducible e σ g →
+  head_reducible e' σ g →
+  K = K' ∧ e = e'.
+Proof.
+  intros Heq (κ & e2 & σ2 & g2 & efs & Hred) (κ' & e2' & σ2' & g2' & efs' & Hred').
+  edestruct (step_by_val K' K e' e) as [K'' HK]; 
+    [by eauto using ectx_language.val_head_stuck..|].
+  subst K. move: Heq. rewrite -fill_comp'. intros <-%(inj (fill _)).
+  destruct (ectx_language.head_ctx_step_val _ _ _ _ _ _ _ _ _ Hred') as [[]%not_eq_None_Some|HK''].
+  { by eapply ectx_language.val_head_stuck. }
+  subst. rewrite //=.
+Qed.
+
 Global Instance ectx_lang_ctx' K : LanguageCtx' (fill K).
 Proof.
   split; simpl.
