@@ -187,6 +187,10 @@ Section crash.
 Context `{!heapGS Σ}.
 Context `{!stagedG Σ}.
 
+Implicit Types (a: u64) (m: gmap u64 ()) (free: gset u64).
+Implicit Types (P: gset u64 → iProp Σ).
+Implicit Types (l:loc).
+
 Definition valid_allocPred (P Pc: gset u64 → iProp Σ) : iProp Σ :=
   (* Splitting/joining of P *)
   □ (∀ σ1 σ2, ⌜ σ1 ## σ2 ⌝ → P (σ1 ∪ σ2) -∗ (P σ1 ∗ P σ2)) ∗
@@ -242,4 +246,27 @@ Proof.
   iApply "HK".
   iFrame.
 Qed.
+
+Theorem wp_crash_Reserve l P Pc :
+  {{{ is_crash_allocator l P Pc }}}
+    Allocator__Reserve #l
+  {{{ a (ok: bool), RET (#a, #ok);
+      if ok then crash_borrow (P {[a]}) (Pc {[a]}) else True%I }}}.
+Proof.
+  iIntros (Φ) "#Hc HΦ". wp_apply (wp_Reserve).
+  { eauto. }
+  iIntros (a ok) "H". iApply "HΦ".
+  eauto.
+Qed.
+
+Theorem wp_crash_Free P Pc l (a: u64) :
+  {{{ is_crash_allocator l P Pc ∗ crash_borrow (P {[a]}) (Pc {[a]}) }}}
+    Allocator__Free #l #a
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "(#Hc&Hborrow) HΦ". wp_apply (wp_Free with "[Hborrow]").
+  { iFrame "Hc". eauto. }
+  by iApply "HΦ".
+Qed.
+
 End crash.
