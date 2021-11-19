@@ -2,6 +2,7 @@ From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import lang.
 From Perennial.goose_lang.ffi Require async_disk.
 From Perennial.goose_lang.ffi Require async_disk_proph.
+From Perennial.program_logic Require recovery_adequacy.
 
 
 Module ADP := async_disk_proph.
@@ -12,6 +13,9 @@ Section translate.
   Notation pglobal := (@global_state ADP.disk_model).
   Notation dstate := (@state async_disk_syntax.disk_op AD.disk_model).
   Notation dglobal := (@global_state AD.disk_model).
+
+  Definition stable_disk (dd : @ffi_state AD.disk_model) :=
+    (∀ addr ab, dd !! addr = Some ab → log_heap.pending ab = []).
 
   Definition disk_compat (dd : @ffi_state AD.disk_model) (ad: @ffi_state ADP.disk_model) :=
     dom (gset _) dd = dom (gset _) ad ∧
@@ -1172,11 +1176,30 @@ Section translate.
     eauto.
   Qed.
 
-  Lemma disk_compat_inhabited_all_synced d :
-    ∃ pd, ADP.all_synced pd ∧ disk_compat d pd.
-  Proof.
-    exists ((λ ab, {| ADP.curr_val := log_heap.latest ab;
+  Definition d_to_pd (d : gmap Z _) :=
+    ((λ ab, {| ADP.curr_val := log_heap.latest ab;
                        ADP.crash_val := log_heap.latest ab |}) <$> d).
+
+  Lemma stable_disk_compat_unique d pd :
+    stable_disk d →
+    disk_compat d pd →
+    pd = d_to_pd d.
+  Proof.
+    rewrite /stable_disk/disk_compat.
+    intros Hstable (Hdom&Hcompat). unshelve (apply: map_eq).
+    intros z.
+    rewrite /d_to_pd//= lookup_fmap. destruct (d !! z) as [cb|] eqn:Hd.
+    - rewrite Hd //=. edestruct Hcompat as (b&Hposs&->); eauto.
+      do 2 f_equal. rewrite /log_heap.possible in Hposs.
+      erewrite Hstable in Hposs; eauto.
+      simpl in Hposs. set_solver.
+    - rewrite Hd /=. apply not_elem_of_dom.
+      rewrite -Hdom. apply (not_elem_of_dom d). eauto.
+  Qed.
+
+  Lemma disk_compat_inhabited_all_synced d :
+    ADP.all_synced (d_to_pd d) ∧ disk_compat d (d_to_pd d).
+  Proof.
     split.
     - intros z cblk. rewrite lookup_fmap.
       intros Hsome%fmap_Some_1. destruct Hsome as (ab'&Hlook'&Hflush).
@@ -1199,6 +1222,7 @@ Section translate.
     exists tt; split; auto => //=.
     destruct g; split_and!; last done.
     split_and!; eauto.
+    rewrite //=.
   Qed.
 
   Lemma compat_inhabited σ g :
@@ -1207,7 +1231,6 @@ Section translate.
 
   Lemma disk_compat_inhabited_rev pd :
     ∃ d, disk_compat d pd.
-  Print log_heap.async.
   Proof.
     exists ((λ ab, {| log_heap.latest := ADP.curr_val ab;
                       log_heap.pending := [ADP.crash_val ab] |}) <$> pd).
@@ -2066,6 +2089,26 @@ Section translate.
     global_compat (ρ.2.2) (dρ.2.2) ∧
     ρ.1 = dρ.1.
 
+  Lemma config_compat_inhabited_all_synced ρ :
+    ∃ dρ, config_compat ρ dρ ∧ (ADP.all_synced (world (dρ.2.1))).
+  Proof.
+    edestruct (compat_inhabited_all_synced (ρ.2.1) (ρ.2.2)) as (dσ&dg&?&?&?).
+    eexists (_, (_, _)).
+    split => //=; auto.
+    split_and!; eauto.
+    destruct ρ => //=.
+  Qed.
+
+  Lemma stable_disk_config_compat_unique ρ pρ :
+    stable_disk (world (ρ.2.1)) →
+    config_compat ρ pρ →
+    (world (pρ.2.1) = d_to_pd (world (ρ.2.1))).
+  Proof.
+    intros Hstable ((?&?)&?&?).
+    eapply stable_disk_compat_unique; eauto.
+    intuition eauto.
+  Qed.
+
   Lemma erased_rsteps_simulation r ρ1 ρ2 s :
     erased_rsteps (CS := @goose_crash_lang _ _ AD.disk_semantics) r ρ1 ρ2 s →
     ∀ dρ2,
@@ -2102,5 +2145,56 @@ Section translate.
       econstructor; eauto => //=. simpl in Heq. subst.
       eauto.
   Qed.
+
+  Definition dstate_to_pstate (σ : dstate) : pstate :=
+    {| heap := heap σ;
+       world := (d_to_pd (world σ) : (@ffi_state ADP.disk_model));
+       trace := trace σ;
+       oracle := oracle σ |}.
+
+  Lemma stable_disk_config_compat_unique_init e σ ρ1 :
+    stable_disk (world σ) →
+    config_compat ([e], (σ, tt)) ρ1 →
+    ρ1 = ([e], (dstate_to_pstate σ, tt)).
+  Proof.
+    intros Hstable. destruct ρ1 as (?&(?&?)).
+    destruct 1 as ((Hheap&Hdisk&Htrace&Horacle)&?&Htp). simpl in Htp; inversion Htp; subst.
+    destruct g; do 2 f_equal.
+    rewrite /dstate_to_pstate.
+    destruct σ; destruct s.
+    simpl in Horacle, Htrace, Hdisk, Hheap.
+    f_equal; eauto.
+    eapply stable_disk_compat_unique in Hstable; eauto.
+  Qed.
+
+  Lemma recv_adequate_transport s e r (σ : dstate) φ φr:
+    stable_disk (world σ) →
+    recovery_adequacy.recv_adequate (CS := goose_crash_lang) s e r (dstate_to_pstate σ) tt
+                                    (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, True) →
+    recovery_adequacy.recv_adequate (CS := @goose_crash_lang _ AD.disk_model _) s e r σ tt
+                                    (λ v _ _, φ v) (λ v _ _, φr v) (λ σ _, True).
+  Proof.
+    intros Hstable [Hnormal Hcrashed Hnstuck _].
+    split; last done.
+    - intros t2 σ2 g2 v2 Hsteps.
+      edestruct (config_compat_inhabited_all_synced (of_val v2 :: t2, (σ2, g2)))
+                as (ρ2&Hcompat&Hsynced).
+      edestruct erased_rsteps_simulation as (ρ1&Hcompat1&Hpsteps); eauto.
+      eapply stable_disk_config_compat_unique_init in Hcompat1; auto. subst.
+      destruct ρ2 as (?&?&?).
+      destruct Hcompat as (?&?&Heq).
+      eapply (Hnormal t2 _ _ v2).
+      simpl in Heq. rewrite Heq. eauto.
+    - intros t2 σ2 g2 v2 Hsteps.
+      edestruct (config_compat_inhabited_all_synced (of_val v2 :: t2, (σ2, g2)))
+                as (ρ2&Hcompat&Hsynced).
+      edestruct erased_rsteps_simulation as (ρ1&Hcompat1&Hpsteps); eauto.
+      eapply stable_disk_config_compat_unique_init in Hcompat1; auto. subst.
+      destruct ρ2 as (?&?&?).
+      destruct Hcompat as (?&?&Heq).
+      eapply (Hcrashed t2 _ _ v2).
+      simpl in Heq. rewrite Heq. eauto.
+    -
+  Abort.
 
 End translate.
