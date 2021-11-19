@@ -1142,7 +1142,22 @@ Section translate.
     ADP.all_synced (world pσ1') →
     state_match_curr pσ1 pσ1' →
     ∀ σ2 : dstate, state_compat σ2 pσ1 → state_compat σ2 pσ1'.
-  Proof. Admitted.
+  Proof.
+    intros Hsynced (Hheap&Hmatch_curr&?&?).
+    intros σ2 (?&Hdisk&?&?). split_and!; try congruence.
+    destruct Hmatch_curr as (Hdom&Hvals).
+    destruct Hdisk as (Hdom'&Hvals').
+    split; first congruence.
+    intros addr ab Hlook.
+    edestruct Hvals' as (bd&Hin&Hlook'); eauto.
+    edestruct Hvals as (cb'&Hlook''&Hcurr); eauto.
+    destruct cb'.
+    exists (log_heap.latest ab); split.
+    { rewrite /log_heap.possible//=. apply elem_of_app; right; econstructor. }
+    rewrite Hlook''.
+    rewrite //= in Hcurr. subst. do 2 f_equal; eauto.
+    efeed pose proof (Hsynced); eauto.
+  Qed.
 
   Lemma all_synced_compat_full (pσ1' pσ1 : pstate) σ1:
     ADP.all_synced (world pσ1') →
@@ -1157,14 +1172,67 @@ Section translate.
     eauto.
   Qed.
 
+  Lemma disk_compat_inhabited_all_synced d :
+    ∃ pd, ADP.all_synced pd ∧ disk_compat d pd.
+  Proof.
+    exists ((λ ab, {| ADP.curr_val := log_heap.latest ab;
+                       ADP.crash_val := log_heap.latest ab |}) <$> d).
+    split.
+    - intros z cblk. rewrite lookup_fmap.
+      intros Hsome%fmap_Some_1. destruct Hsome as (ab'&Hlook'&Hflush).
+      rewrite Hflush => //=.
+    - split.
+      { rewrite dom_fmap_L //. }
+      intros z cblk Hlook. eexists; split; last first.
+      { rewrite lookup_fmap Hlook //. } 
+      rewrite /log_heap.possible//=. apply elem_of_app; right; econstructor.
+  Qed.
+
+  Lemma compat_inhabited_all_synced σ g :
+    ∃ (pσ : pstate) pg, ADP.all_synced (world pσ) ∧ state_compat σ pσ ∧ global_compat g pg.
+  Proof.
+    edestruct (disk_compat_inhabited_all_synced (world σ)) as (pd&?&?).
+    eexists {| heap := heap σ;
+               world := _;
+               trace := trace σ;
+               oracle := oracle σ |}.
+    exists tt; split; auto => //=.
+    destruct g; split_and!; last done.
+    split_and!; eauto.
+  Qed.
+
   Lemma compat_inhabited σ g :
     ∃ pσ pg, state_compat σ pσ ∧ global_compat g pg.
-  Proof. Admitted.
+  Proof. edestruct compat_inhabited_all_synced as (?&?&?&?); eauto. Qed.
+
+  Lemma disk_compat_inhabited_rev pd :
+    ∃ d, disk_compat d pd.
+  Print log_heap.async.
+  Proof.
+    exists ((λ ab, {| log_heap.latest := ADP.curr_val ab;
+                      log_heap.pending := [ADP.crash_val ab] |}) <$> pd).
+    split.
+    { rewrite dom_fmap_L //. }
+    - intros z cblk. rewrite lookup_fmap.
+      intros Hsome%fmap_Some_1. destruct Hsome as (ab'&Hlook'&Hflush).
+      rewrite Hflush => //=.
+      destruct ab'.
+      eexists; split; last first.
+      { rewrite Hlook' //=. }
+      rewrite //= /log_heap.possible//=. left.
+  Qed.
 
   Lemma compat_inhabited_rev pσ pg:
     ∃ σ g, state_compat σ pσ ∧ global_compat g pg.
-  Proof. Admitted.
-
+  Proof.
+    edestruct (disk_compat_inhabited_rev (world pσ)) as (d&?).
+    eexists {| heap := heap pσ;
+               world := _;
+               trace := trace pσ;
+               oracle := oracle pσ |}.
+    exists tt; split; auto => //=.
+    destruct pg; done.
+  Qed.
 
   Lemma match_curr_insert_hd x0 x1 x2 c0 d1 d2 n :
     match_curr d1 d2 →
