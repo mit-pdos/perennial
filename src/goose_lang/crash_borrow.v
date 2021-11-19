@@ -603,17 +603,15 @@ Proof.
   iIntros (v) "H1 H2". iSplit; first done. iApply "H1". eauto.
 Qed.
 
-Lemma wpc_crash_borrow_combine' E e Φ Φc P Pc P1 P2 Pc1 Pc2 :
+Lemma wpc_crash_borrow_combine'' E e Φ Φc P Pc P1 P2 Pc1 Pc2 :
   language.to_val e = None →
   ▷ crash_borrow P1 Pc1 -∗
   ▷ crash_borrow P2 Pc2 -∗
-  ▷▷ □ (P -∗ Pc) -∗
-  ▷▷ (Pc -∗ (Pc1 ∗ Pc2)) -∗
-  ▷▷ (P1 ∗ P2 ==∗ P) -∗
+  ▷▷ (P1 ∗ P2 ==∗ P ∗ (Pc -∗ (Pc1 ∗ Pc2)) ∗ □ (P -∗ Pc)) -∗
   WPC e @ E {{ λ v, (crash_borrow P Pc) -∗ (Φc ∧ Φ v) }} {{ Φc }} -∗
   WPC e @ E {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (Hnval) "Hborrow1 Hborrow2 #Hc Hwandc12 HwandP Hwpc".
+  iIntros (Hnval) "Hborrow1 Hborrow2 HwandP Hwpc".
 
   iDestruct "Hborrow1" as (??) "(#Hw1&Hw2&Hw3&Hinv1&Htok1&>Htok2)".
   iApply (wpc_later_tok_use2 with "[$]"); first done.
@@ -656,7 +654,7 @@ Proof.
 
   iDestruct ("Htok") as "(Htok1&Htok)".
   iDestruct ("Htok") as "(Htok2&Htok)".
-  iMod ("HwandP" with "[HP1 HP2 Hw2 Hw2']") as "HP".
+  iMod ("HwandP" with "[HP1 HP2 Hw2 Hw2']") as "(HP&Hwandc12&#Hc)".
   { iSplitL "HP1 Hw2".
     - iApply "Hw2". eauto.
     - iApply "Hw2'". eauto. }
@@ -722,6 +720,22 @@ Proof.
  - iDestruct "Hc'" as "(_&$)". eauto.
 Qed.
 
+Lemma wpc_crash_borrow_combine' E e Φ Φc P Pc P1 P2 Pc1 Pc2 :
+  language.to_val e = None →
+  ▷ crash_borrow P1 Pc1 -∗
+  ▷ crash_borrow P2 Pc2 -∗
+  ▷▷ □ (P -∗ Pc) -∗
+  ▷▷ (Pc -∗ (Pc1 ∗ Pc2)) -∗
+  ▷▷ (P1 ∗ P2 ==∗ P) -∗
+  WPC e @ E {{ λ v, (crash_borrow P Pc) -∗ (Φc ∧ Φ v) }} {{ Φc }} -∗
+  WPC e @ E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (Hnval) "Hborrow1 Hborrow2 #Hc Hwandc12 HwandP Hwpc".
+  iApply (wpc_crash_borrow_combine'' with "Hborrow1 Hborrow2 [-Hwpc]"); eauto.
+  iNext. iNext. iIntros "HP12". iMod ("HwandP" with "[$]") as "HP".
+  iFrame. eauto.
+Qed.
+
 Lemma wpc_crash_borrow_combine E e Φ Φc P Pc P1 P2 Pc1 Pc2 :
   language.to_val e = None →
   ▷ crash_borrow P1 Pc1 -∗
@@ -764,6 +778,19 @@ Proof.
   iIntros "Hcb Hsplit Hc1 Hc2 Hc".
   rewrite /post_expr. iIntros (?????) "H".
   iApply (wpc_crash_borrow_split with "Hcb [$] [$] [$] [$]"); auto.
+  iApply (wpc_mono with "H"); auto.
+  iIntros (?) "H H'". iSplit; first done. by iApply "H".
+Qed.
+
+Lemma crash_borrow_combine_post' P Pc P1 P2 Pc1 Pc2 E :
+  ▷ crash_borrow P1 Pc1 -∗
+  ▷ crash_borrow P2 Pc2 -∗
+  ▷ (P1 ∗ P2 ==∗ P ∗ (Pc -∗ (Pc1 ∗ Pc2)) ∗ □ (P -∗ Pc)) -∗
+  post_expr E (crash_borrow P Pc).
+Proof.
+  iIntros "Hcb1 Hcb2 Hc".
+  rewrite /post_expr. iIntros (?????) "H".
+  iApply (wpc_crash_borrow_combine'' with "Hcb1 Hcb2 [$]"); auto.
   iApply (wpc_mono with "H"); auto.
   iIntros (?) "H H'". iSplit; first done. by iApply "H".
 Qed.

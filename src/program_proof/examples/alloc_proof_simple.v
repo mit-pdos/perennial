@@ -3,6 +3,7 @@ From Perennial.Helpers Require Import Map.
 
 From Perennial.program_logic Require Export weakestpre post_expr.
 From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang Require Import proofmode wpc_proofmode notation crash_borrow.
 From Perennial.base_logic Require Import lib.ghost_map.
 
 From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
@@ -13,11 +14,6 @@ Section goose.
 Context `{!heapGS Σ}.
 
 Let allocN := nroot.@"allocator".
-
-Record alloc_names :=
-  { alloc_used_name: gname;}.
-
-Instance alloc_names_eta : Settable _ := settable! Build_alloc_names <alloc_used_name>.
 
 Implicit Types (a: u64) (m: gmap u64 ()) (free: gset u64).
 Implicit Types (P: gset u64 → iProp Σ).
@@ -184,3 +180,66 @@ Proof.
 Qed.
 
 End goose.
+
+Opaque crash_borrow.
+
+Section crash.
+Context `{!heapGS Σ}.
+Context `{!stagedG Σ}.
+
+Definition valid_allocPred (P Pc: gset u64 → iProp Σ) : iProp Σ :=
+  (* Splitting/joining of P *)
+  □ (∀ σ1 σ2, ⌜ σ1 ## σ2 ⌝ → P (σ1 ∪ σ2) -∗ (P σ1 ∗ P σ2)) ∗
+  □ (∀ σ1 σ2, P σ1 -∗ P σ2 -∗ ⌜ σ1 ## σ2 ⌝ ∧ (P (σ1 ∪ σ2))) ∗
+  (* Splitting/joining of Pc *)
+  □ (∀ σ1 σ2, ⌜ σ1 ## σ2 ⌝ → Pc (σ1 ∪ σ2) -∗ (Pc σ1 ∗ Pc σ2)) ∗
+  □ (∀ σ1 σ2, Pc σ1 -∗ Pc σ2 -∗ (Pc (σ1 ∪ σ2))) ∗
+  (* P must imply Pc *)
+  □ (∀ σ, P σ -∗ Pc σ).
+
+Definition is_crash_allocator l P Pc :=
+  is_allocator l (λ σ, crash_borrow (P σ) (Pc σ)).
+
+Theorem wpc_newAllocator Φ Φc (mref : loc) (start sz: u64) used P Pc K `{!LanguageCtx K} :
+  int.Z start + int.Z sz < 2^64 →
+  let σ := (rangeSet (int.Z start) (int.Z sz)) ∖ used in
+  valid_allocPred P Pc -∗
+  P σ -∗
+  is_addrset mref used -∗
+  Φc ∧ (∀ l, is_crash_allocator l P Pc -∗
+     WPC (K (of_val #l)) @ ⊤ {{ Φ }} {{ Φc }}) -∗
+  WPC (K (New #start #sz #mref)) @ ⊤ {{ Φ }} {{ Φc ∗ Pc σ }}.
+Proof.
+  iIntros (Hbound) "#Hvalid HP Haddr HK".
+  iApply (wpc_crash_borrow_init_ctx' _ _ _ _ (P _) (Pc _) with "[HP]"); auto.
+  { iDestruct "Hvalid" as "(?&?&?&?&Himp)". by iApply "Himp". }
+  iSplit.
+  { iLeft in "HK". eauto. }
+  iIntros "Hcb".
+  iCache with "HK".
+  { by iLeft in "HK". }
+  wpc_frame.
+  wp_apply (wp_newAllocator _ _ _ used (λ σ, crash_borrow (P σ) (Pc σ)) with "[$Hcb $Haddr]").
+  { auto. }
+  { iDestruct "Hvalid" as "(Hsplit1&Hjoin1&Hsplit2&Hjoin2&Himp)". iSplit.
+    - iModIntro. iIntros (?? Hdisj) "H".
+      iApply (crash_borrow_split_post with "H").
+      { iApply "Hsplit1". eauto. }
+      { iApply "Himp". }
+      { iApply "Himp". }
+      { iNext. iIntros "(H1&?)". iApply ("Hjoin2" with "H1 [$]"). }
+    - iModIntro. iIntros (??) "H1 H2".
+      iApply (crash_borrow_combine_post' with "H1 H2").
+      {
+        iNext. iIntros "(HP1&HP2)". iDestruct ("Hjoin1" with "HP1 [$]") as "(%Hdisj&HP)".
+        iModIntro. iFrame.
+        iSplit.
+        * iIntros. iApply "Hsplit2"; auto.
+        * iApply "Himp".
+      }
+  }
+  iIntros (l) "Halloc HK".
+  iApply "HK".
+  iFrame.
+Qed.
+End crash.
