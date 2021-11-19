@@ -2194,7 +2194,24 @@ Section translate.
       destruct Hcompat as (?&?&Heq).
       eapply (Hcrashed t2 _ _ v2).
       simpl in Heq. rewrite Heq. eauto.
-    -
-  Abort.
+    - intros t2 σ2 g2 e2 st -> Hsteps Hin.
+      edestruct (config_compat_inhabited_all_synced (t2, (σ2, g2)))
+                as (ρ2&Hcompat&Hsynced).
+      edestruct erased_rsteps_simulation as (ρ1&Hcompat1&Hpsteps); eauto.
+      eapply stable_disk_config_compat_unique_init in Hcompat1; auto. subst.
+      destruct ρ2 as (?&?&?).
+      destruct Hcompat as (?&?&Heq).
+      edestruct (Hnstuck t2) as [Hval|Hred]; eauto.
+      { simpl in Heq. rewrite Heq. eauto. }
+      right. destruct Hred as (?&?&?&?&?&Hprim_step).
+      inversion Hprim_step; subst. simpl in *.
+      edestruct (head_step_atomic_simulation_rev) as (?&?&?&?&?); eauto.
+      econstructor. do 4 eexists. econstructor; eauto.
+  Qed.
 
 End translate.
+
+(*
+Print Assumptions recv_adequate_transport.
+*)
+

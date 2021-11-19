@@ -12,7 +12,7 @@ From Perennial.goose_lang Require
      logical_reln_adeq
      paper_proof
 .
-From Perennial.goose_lang.ffi Require async_disk.
+From Perennial.goose_lang.ffi Require async_disk async_disk_equiv.
 From Perennial.program_proof Require
      wal.circ_proof_crash
      lockmap_proof
