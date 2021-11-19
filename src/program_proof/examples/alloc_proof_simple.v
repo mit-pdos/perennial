@@ -9,12 +9,8 @@ From Goose.github_com.mit_pdos.perennial_examples Require Import alloc.
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof.examples Require Import alloc_addrset.
 
-Class allocG Σ :=
-  { alloc_used_preG :> ghost_mapG Σ u64 (); }.
-
 Section goose.
 Context `{!heapGS Σ}.
-Context `{!allocG Σ}.
 
 Let allocN := nroot.@"allocator".
 
@@ -25,20 +21,20 @@ Instance alloc_names_eta : Settable _ := settable! Build_alloc_names <alloc_used
 
 Implicit Types (a: u64) (m: gmap u64 ()) (free: gset u64).
 Implicit Types (P: gset u64 → iProp Σ).
-Implicit Types (l:loc) (γ:alloc_names).
+Implicit Types (l:loc).
 
-Definition allocator_linv γ P (mref: loc) free : iProp Σ :=
+Definition allocator_linv P (mref: loc) free : iProp Σ :=
   "Hfreemap" ∷ is_addrset mref (free) ∗
   "HP" ∷ P free
 .
 
 Definition is_allocator (l: loc) P : iProp Σ :=
-  ∃ γ (lref mref: loc),
+  ∃ (lref mref: loc),
     "#Hsplit" ∷ □ (∀ σ1 σ2, ⌜ σ1 ## σ2 ⌝ → P (σ1 ∪ σ2) -∗ post_expr ∅ (P σ1 ∗ P σ2)) ∗
     "#Hjoin" ∷ □ (∀ σ1 σ2, P σ1 -∗ P σ2 -∗ post_expr ∅ (P (σ1 ∪ σ2))) ∗
     "#m" ∷ readonly (l ↦[Allocator :: "m"] #lref) ∗
     "#free" ∷ readonly (l ↦[Allocator :: "free"] #mref) ∗
-    "#His_lock" ∷ is_lock allocN #lref (∃ σ, "Hlockinv" ∷ allocator_linv γ P mref σ)
+    "#His_lock" ∷ is_lock allocN #lref (∃ σ, "Hlockinv" ∷ allocator_linv P mref σ)
 .
 
 Global Instance is_allocator_Persistent l P :
@@ -55,7 +51,7 @@ Theorem wp_newAllocator mref (start sz: u64) used P E :
        ▷ P σ0 }}}
     New #start #sz #mref @ E
   {{{ l, RET #l; is_allocator l P }}}.
-Proof using allocG0.
+Proof.
   iIntros (Hoverflow Φ) "(#Hsplit&#Hjoin&Hused&HP) HΦ".
   wp_call.
   wp_apply wp_freeRange; first by auto.
@@ -70,15 +66,13 @@ Proof using allocG0.
   iDestruct (struct_fields_split with "Hallocator") as "(m&free&_)".
   iMod (readonly_alloc_1 with "m") as "#m".
   iMod (readonly_alloc_1 with "free") as "#free".
-  iMod (ghost_map_alloc (gset_to_gmap () used)) as (γ2) "[Husedctx _]".
-  set (γ:={| alloc_used_name := γ2 |}).
   iMod (alloc_lock allocN E _
-                   (∃ σ, "Hlockinv" ∷ allocator_linv γ P mref' σ)%I
+                   (∃ σ, "Hlockinv" ∷ allocator_linv P mref' σ)%I
           with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame. }
   iModIntro.
   iApply ("HΦ" $! _).
-  iExists _, _, _; iFrame "#".
+  iExists _, _; iFrame "#".
 Qed.
 
 Lemma map_empty_difference `{Countable K} {V} (m: gmap K V) :
