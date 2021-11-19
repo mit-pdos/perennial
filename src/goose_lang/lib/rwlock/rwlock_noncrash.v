@@ -212,7 +212,7 @@ Section proof.
     iApply "HΦ". iFrame.
  Qed.
 
-  Lemma alloc_rwlock k Φ Φc e lk (R : Qp → iProp Σ):
+  Lemma alloc_rwlock Φ Φc e lk (R : Qp → iProp Σ):
     □ (∀ q1 q2, ▷ R (q1 + q2)%Qp -∗ post_expr ∅ (R q1 ∗ R q2)) -∗
     □ (∀ q1 q2, ▷ R q1 -∗ ▷ R q2 -∗ post_expr ∅ (R (q1 + q2)%Qp)) -∗
     R 1%Qp ∗
@@ -252,7 +252,7 @@ Section proof.
         iDestruct "HR" as "[>Hl2 HR]".
         iCombine "Hl Hl2" as "Hl".
         rewrite Qp_quarter_three_quarter.
-        iApply (wpc_wp NotStuck 0 _ _ _ True).
+        iApply (wpc_wp NotStuck _ _ _ True).
         iDestruct ("Hwand1" $! (remaining_frac (word.add u 1)) (rfrac) with "[HR]") as "Hpost".
         { rewrite remaining_frac_read_acquire; try naive_solver. }
         iApply (post_expr_elim with "Hpost"); first set_solver+; auto.
@@ -312,7 +312,7 @@ Section proof.
         iDestruct "HR" as "[>Hl2 HR]".
         iCombine "Hl Hl2" as "Hl".
         rewrite Qp_quarter_three_quarter.
-        iApply (wpc_wp NotStuck 0 _ _ _ True).
+        iApply (wpc_wp NotStuck _ _ _ True).
         iDestruct ("Hwand2" $! (remaining_frac u) (rfrac) with "HR Hborrow") as "Hpost".
         iApply (post_expr_elim with "Hpost"); first set_solver+; auto.
         (*

@@ -7,6 +7,7 @@ From Perennial.goose_lang Require
      adequacy recovery_adequacy dist_adequacy
      crash_lock
      rwlock
+     rwlock_derived
      barrier
      refinement refinement_adequacy
      logical_reln_adeq

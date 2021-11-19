@@ -82,7 +82,7 @@ Section proof.
     iApply "HΦ". iFrame.
  Qed.
 
-  Lemma alloc_rwlock k Φ Φc e lk (R Rc : Qp → iProp Σ):
+  Lemma alloc_rwlock Φ Φc e lk (R Rc : Qp → iProp Σ):
     □ (∀ q1 q2, R (q1 + q2)%Qp ∗-∗ R q1 ∗ R q2) -∗
     □ (∀ q1 q2, Rc (q1 + q2)%Qp ∗-∗ Rc q1 ∗ Rc q2) -∗
     □ (∀ q, R q -∗ Rc q) -∗
