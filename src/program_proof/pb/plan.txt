@@ -51,3 +51,9 @@ Implement Coq version of RPC handlers?
 * Quorum structure. Need to be able to prove 2 things:
   When a replica wants to become leader, must be able to figure out who to talk
   to to get up-to-date log/confirm that its log is up-to-date.
+
+= list_solver
+
+x ∈ l ↔ (∃ i, l !! i = Some x)
+l1 ⪯ l2 ↔ ∀ i, l1 !! i = Some x → l2 !! i = Some x
+x ≤ length l ↔ ∀ i, i ≤ x → is_Some (l !! i)

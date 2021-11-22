@@ -49,8 +49,9 @@ From Perennial.program_proof.memkv Require
      lockservice_proof bank_proof
      closed.
 
-From Goose.github_com.mit_pdos.gokv Require
-     pb.
+(* Primary-backup replication system *)
+From Perennial.program_proof.pb Require
+     replica_proof.
 
 From Goose.github_com.mit_pdos.gokv.pb Require
      controller.

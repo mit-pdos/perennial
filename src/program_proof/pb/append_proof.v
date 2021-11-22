@@ -11,7 +11,7 @@ Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   {{{
        "#HisRepl" ∷ is_ReplicaServer s rid γ ∗
        "Hargs" ∷ own_AppendArgs args_ptr args ∗
-       "#Hproposal_lb_in" ∷ proposal_lb γ args.(AA_cn) args.(AA_log) ∗
+       "#Hproposal_lb_in" ∷ proposal_lb_fancy γ args.(AA_cn) args.(AA_log) ∗
        "#HoldConfMax_in" ∷ oldConfMax γ args.(AA_cn) args.(AA_log) ∗
        "#Hcommit_lb_in" ∷ commit_lb_by γ args.(AA_cn) (take (int.nat args.(AA_commitIdx)) args.(AA_log)) ∗
        "%HcommitLength" ∷ ⌜int.Z args.(AA_commitIdx) ≤ length args.(AA_log)⌝
@@ -115,6 +115,7 @@ Proof.
         iExists _. simpl. iFrame. done.
       }
       iMod (append_new_ghost with "[$HrepG $Hproposal_lb_in]") as "[$ #Hacc]".
+      { word. }
       { word. }
       iMod (maintain_committer_ghost with "[$Hproposal_lb_in $HcommitterG]") as "$".
       { word. }

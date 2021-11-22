@@ -117,7 +117,7 @@ Admitted.
 Lemma append_dup_ghost {rid} γ r (newCn:u64) newLog :
   int.Z r.(cn) = int.Z newCn ∧ length newLog ≤ length r.(opLog) →
   "Hown" ∷ own_Replica_ghost rid γ r ∗
-  "#HnewProp" ∷ proposal_lb γ newCn newLog
+  "#HnewProp" ∷ proposal_lb_fancy γ newCn newLog
   ={⊤}=∗
   own_Replica_ghost rid γ r ∗
   accepted_lb γ newCn rid newLog.
