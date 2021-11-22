@@ -37,11 +37,14 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "installed_pos_mem" ∷ ghost_var γnew.(installed_pos_mem_name) 1 (U64 0) ∗
     "installed_txn_id_mem" ∷ ghost_var γnew.(installed_txn_id_mem_name) 1 0%nat ∗
 
+    "diskEnd" ∷ ghost_var γnew.(diskEnd_name) 1 0%nat ∗
+    "diskEnd_txn_id" ∷ ghost_var γnew.(diskEnd_txn_id_name) 1 0%nat ∗
+
     "diskEnd_mem" ∷ mono_nat_auth_own γnew.(diskEnd_mem_name) 1 0%nat ∗
     "diskEnd_mem_txn_id" ∷ mono_nat_auth_own γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
     "being_installed_start_txn" ∷ mono_nat_auth_own γnew.(being_installed_start_txn_name) 1 0%nat ∗
     "being_installed_end_txn" ∷ ghost_var γnew.(being_installed_end_txn_name) 1 0%nat ∗
-    "already_installed" ∷ ghost_var γnew.(already_installed_name) 1 (∅ : gset Z)  ∗
+    "already_installed" ∷ ghost_var γnew.(already_installed_name) 1 ([] : list update.t)  ∗
     "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
     "txns_ctx" ∷ txns_ctx γnew [] ∗
     "start_avail" ∷ thread_own γnew.(start_avail_name) Available ∗
@@ -69,17 +72,21 @@ Definition log_crash_to σ diskEnd_txn_id :=
 Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
   is_durable_txn (Σ:=Σ) γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
   is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
-  ⌜relation.denote log_crash σ (log_crash_to σ diskEnd_txn_id) tt⌝.
+  ⌜relation.denote log_crash σ
+    (log_crash_to σ (σ.(log_state.durable_lb) `max` diskEnd_txn_id))%nat
+  tt⌝.
 Proof.
   iNamed 1.
   rewrite /is_durable.
   iNamed 1.
   iPureIntro.
   simpl.
-  eexists _ diskEnd_txn_id; simpl; monad_simpl.
+  eexists _ (σ.(log_state.durable_lb) `max` diskEnd_txn_id)%nat;
+    simpl; monad_simpl.
   constructor.
   split; try lia.
-  eapply is_txn_bound; eauto.
+  apply is_txn_bound in Hend_txn.
+  lia.
 Qed.
 
 Lemma concat_mono {A: Type} (l1 l2: list (list A)):
@@ -161,22 +168,13 @@ Lemma circ_matches_txns_crash diskEnd cs txns installed_txn_id installer_pos ins
 Proof.
   intros ->.
   rewrite /circ_matches_txns.
-  destruct 1 as (Hupd1&Hupd2&Hupd3&?&?).
-  rewrite /circΣ.diskEnd in H.
-  rewrite !subslice_take.
-  rewrite -> !Nat.min_l by lia.
-  pose proof (has_updates_app _ _ _ _ Hupd2 Hupd3) as Hupd23.
-  rewrite subslice_from_drop in Hupd23.
-  rewrite -> !subslice_app_contig in Hupd23 by lia.
+  intros Hcirc.
+  apply is_memLog_boundaries_take_txns; first by reflexivity.
   replace (Z.to_nat (circΣ.diskEnd cs) - int.nat (start cs))%nat
     with (length (upds cs)) by (rewrite /circΣ.diskEnd; word).
-  split; [ | split; [ | split ] ].
-  - auto.
-  - auto.
-  - rewrite drop_ge //.
-    rewrite subslice_zero_length.
-    apply has_updates_nil.
-  - rewrite /circΣ.diskEnd; lia.
+  eapply (is_memLog_boundaries_move _ _ _ pmwrb_de) in Hcirc.
+  2: reflexivity.
+  assumption.
 Qed.
 
 Lemma is_txn_from_take_is_txn n txns id pos:
@@ -240,7 +238,10 @@ Proof.
   iMod (mono_nat_own_alloc 0%nat) as (diskEnd_mem_name) "[? _]".
   iMod (mono_nat_own_alloc 0%nat) as (diskEnd_mem_txn_id_name) "[? _]".
 
-  iMod (ghost_var_alloc (∅ : gset Z)) as (already_installed_name) "Halready_installed".
+  iMod (ghost_var_alloc 0%nat) as (diskEnd_name) "?".
+  iMod (ghost_var_alloc 0%nat) as (diskEnd_txn_id_name) "?".
+
+  iMod (ghost_var_alloc ([] : list update.t)) as (already_installed_name) "Halready_installed".
   iMod (mono_nat_own_alloc 0%nat) as (being_installed_start_txn_name) "[Hbeing_start _]".
   iMod (ghost_var_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
@@ -269,6 +270,8 @@ Proof.
             installer_txn_id_name := installer_txn_id_name;
             diskEnd_mem_name := diskEnd_mem_name;
             diskEnd_mem_txn_id_name := diskEnd_mem_txn_id_name;
+            diskEnd_name := diskEnd_name;
+            diskEnd_txn_id_name := diskEnd_txn_id_name;
             installed_pos_mem_name := installed_pos_mem_name;
             installed_txn_id_mem_name := installed_txn_id_mem_name;
             base_disk_name := γ.(base_disk_name) |}; simpl.
@@ -322,10 +325,15 @@ Qed.
 
 Definition logger_resources γ : iProp Σ :=
   (* subset of logger, with the pre resources needed to eventually form [is_circular_appender], which depends on in-memory state *)
-  "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
-  "HownLoggerPos_logger" ∷ (∃ (logger_pos : u64), ghost_var γ.(logger_pos_name) (1/2) logger_pos) ∗
-  "HownLoggerTxn_logger" ∷ (∃ (logger_txn_id : nat), ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id) ∗
-  "Happender_pre" ∷ is_circular_appender_pre γ.(circ_name).
+  ∃ diskEnd diskEnd_txn_id,
+    "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
+    "HownLoggerPos_logger" ∷ ghost_var γ.(logger_pos_name) (1/2) diskEnd ∗
+    "HownLoggerTxn_logger" ∷ ghost_var γ.(logger_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEndMem_logger" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn_logger" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEnd_logger" ∷ ghost_var γ.(diskEnd_name) (1/2) (int.nat diskEnd) ∗
+    "HownDiskEndTxn_logger" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "Happender_pre" ∷ is_circular_appender_pre γ.(circ_name).
 
 Definition wal_resources γ : iProp Σ :=
   logger_resources γ ∗ installer_inv γ.
@@ -342,15 +350,15 @@ Ltac iDestruct_2 H :=
   iDestruct H as pat.
 
 Definition memLog_linv_init_ghost_state γ : iProp Σ :=
-  (ghost_var γ.(txns_name) (1 / 2) [(U64 0, [])]
-    ∗ ghost_var γ.(logger_pos_name) (1 / 2) (U64 0)
-    ∗ ghost_var γ.(logger_txn_id_name) (1 / 2) 0%nat
-    ∗ ghost_var γ.(installer_pos_mem_name) (1 / 2) (U64 0)
-    ∗ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) 0%nat
-    ∗ mono_nat_auth_own γ.(diskEnd_mem_name) (1 / 2) 0%nat
-    ∗ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1 / 2) 0%nat
-    ∗ ghost_var γ.(installed_pos_mem_name) (1 / 2) (U64 0)
-    ∗ ghost_var γ.(installed_txn_id_mem_name) (1 / 2) 0%nat
+  (ghost_var γ.(txns_name) (1/2) [(U64 0, [])]
+    ∗ ghost_var γ.(logger_pos_name) (1/2) (U64 0)
+    ∗ ghost_var γ.(logger_txn_id_name) (1/2) 0%nat
+    ∗ ghost_var γ.(installer_pos_mem_name) (1/2) (U64 0)
+    ∗ ghost_var γ.(installer_txn_id_mem_name) (1/2) 0%nat
+    ∗ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2/2) 0%nat
+    ∗ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2/2) 0%nat
+    ∗ ghost_var γ.(installed_pos_mem_name) (1/2) (U64 0)
+    ∗ ghost_var γ.(installed_txn_id_mem_name) (1/2) 0%nat
     ∗ map_ctx γ.(stable_txn_ids_name) (1/2) {[0%nat := ()]}).
 
 Definition memLog_linv_init_pers_state γ : iProp Σ :=
@@ -372,12 +380,41 @@ Proof.
   iSplit; first by done.
   iSplit; first by done.
   iSplit; first by done.
-  rewrite /memLog_linv_txns /named /=.
-  rewrite !subslice_zero_length take_nil drop_nil.
-  iSplit; eauto using has_updates_nil.
+  rewrite /memLog_linv_txns /named /slidingM.logIndex /mwrb.logend /=.
+  replace (int.nat 0) with 0%nat by word.
+  simpl.
   iPureIntro.
-  constructor; auto using Forall_nil.
-  word.
+  split.
+  2: {
+    split; last by word.
+    apply Forall_forall.
+    intros x Hx.
+    apply elem_of_list_singleton in Hx.
+    subst x.
+    word.
+  }
+  replace (_ :: _) with (replicate 6 {| mwrb.txn := 1; mwrb.upd := 0 |});
+    last by reflexivity.
+  split.
+  {
+    intros bndry Hbndry.
+    apply elem_of_replicate_inv in Hbndry.
+    subst bndry.
+    intuition.
+  }
+  intros i bndry1 bndry2 Hbndry1 Hbndry2.
+  apply elem_of_list_lookup_2 in Hbndry1.
+  apply elem_of_list_lookup_2 in Hbndry2.
+  apply elem_of_replicate_inv in Hbndry1.
+  apply elem_of_replicate_inv in Hbndry2.
+  subst bndry1 bndry2.
+  split; first by reflexivity.
+  split; first by reflexivity.
+  split; first by apply has_updates_nil.
+  simpl.
+  intros upd Hin.
+  rewrite subslice_zero_length in Hin.
+  inversion Hin.
 Qed.
 
 Lemma memLog_linv_nextDiskEnd_txn_id_init γ :
@@ -547,6 +584,8 @@ Proof.
   iDestruct_2 "stable_txn_ids".
   iDestruct_2 "diskEnd_mem".
   iDestruct_2 "diskEnd_mem_txn_id".
+  iDestruct_2 "diskEnd".
+  iDestruct_2 "diskEnd_txn_id".
   iDestruct_2 "installed_pos_mem".
   iDestruct_2 "installed_txn_id_mem".
   iDestruct_2 "installer_pos_mem".
@@ -554,10 +593,13 @@ Proof.
   iDestruct_2 "already_installed".
   iDestruct_2 "being_installed_start_txn".
   iDestruct_2 "being_installed_end_txn".
+  iDestruct "diskEnd_mem" as "[diskEnd_mem11 diskEnd_mem12]".
+  iDestruct "diskEnd_mem_txn_id"
+    as "[diskEnd_mem_txn_id11 diskEnd_mem_txn_id12]".
 
   iDestruct (mono_nat_lb_own_get with "being_installed_start_txn")
     as "#being_installed_start_txn_lb".
-  iDestruct (mono_nat_lb_own_get with "diskEnd_mem_txn_id")
+  iDestruct (mono_nat_lb_own_get with "diskEnd_mem_txn_id2")
     as "#diskEnd_mem_txn_id_lb".
   iMod (alloc_txn_pos (U64 0) [] with "txns_ctx") as "[txns_ctx _]".
   simpl.
@@ -580,11 +622,22 @@ Proof.
   iSplitL "Hcirc stable_txn_ids cs
     HmemLog_ghost start_avail_ctx diskEnd_avail_ctx
     Hinstalled_ghost Hdata
-    installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id".
+    installer_pos2 installer_txn_id2
+    diskEnd_mem11 diskEnd_mem_txn_id11
+    diskEnd2 diskEnd_txn_id2
+  ".
   2: {
     iFrame.
-    iSplitL "logger_pos logger_txn_id".
-    1: iSplitL "logger_pos"; iExists _; iFrame.
+    iSplitL "
+      logger_pos logger_txn_id
+      diskEnd_mem2 diskEnd_mem_txn_id2
+      diskEnd diskEnd_txn_id
+    ".
+    {
+      iExists _, _.
+      replace (int.nat 0) with 0%nat by word.
+      iFrame.
+    }
     iExists _, _.
     iFrame "diskEnd_mem_txn_id_lb ∗".
     iSplitL "installer_pos"; first by (iExists _; iFrame).
@@ -625,28 +678,73 @@ Proof.
     iApply (big_sepM_mono (λ a b, a d↦ b)%I).
     {
       iIntros (addr b Hb) "?".
-      iExists _, _.
+      iExists _, 0%nat.
       iFrame.
       iPureIntro.
-      split; first by (intuition; lia).
-      apply elem_of_list_to_map_2 in Hb.
-      destruct (elem_of_lookup_imap_1 _ _ _ Hb) as (a'&b'&Ha'&Hlookup).
-      inversion Ha'.
-      rewrite /LogSz.
-      lia.
+      split.
+      2: {
+        apply elem_of_list_to_map_2 in Hb.
+        destruct (elem_of_lookup_imap_1 _ _ _ Hb) as (a'&b'&Ha'&Hlookup).
+        inversion Ha'.
+        rewrite /LogSz.
+        lia.
+      }
+      split; first by lia.
+      intuition.
     }
     iApply (disk_array_to_big_opM with "Hdata").
   }
-  iSplitL "installer_pos2 installer_txn_id2 diskEnd_mem diskEnd_mem_txn_id".
+  iSplitL.
   {
     iExists _, _, _, _.
     iFrame.
-    eauto.
+    iPureIntro.
+    split; last by (simpl; word).
+    split.
+    {
+      simpl.
+      intros bndry Hbndry.
+      do 4 (
+        apply elem_of_cons in Hbndry;
+        destruct Hbndry as [->|Hbndry];
+        first by (simpl; word)
+      ).
+      inversion Hbndry.
+    }
+    simpl.
+    intros i bndry1 bndry2 Hbndry1 Hbndry2.
+    assert (
+      bndry1 = {| mwrb.txn := 1%nat; mwrb.upd := 0%nat |} ∧
+      bndry2 = {| mwrb.txn := 1%nat; mwrb.upd := 0%nat |}
+    ) as [-> ->].
+    {
+      do 4 (destruct i; first by (
+        simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+        simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2;
+        intuition
+      )).
+      inversion Hbndry1.
+    }
+    simpl.
+    split; first by lia.
+    split; first by lia.
+    rewrite subslice_nil subslice_zero_length.
+    apply is_memLog_region_nil.
   }
   iFrame "#".
   iSplit; first by rewrite /log_state0 //.
-  iSplit; first by (iExists (U64 0); rewrite /log_state0 /circΣ.diskEnd //).
   iPureIntro.
+  split.
+  {
+    exists (U64 0), 0%nat.
+    rewrite /log_state0 /circΣ.diskEnd /=.
+    split; first by lia.
+    split; first by lia.
+    split; first by apply Forall_nil_2.
+    split; first by constructor.
+    split; first by word.
+    constructor.
+  }
   intros.
   rewrite -!elem_of_dom.
   rewrite Hdinit_dom.
@@ -724,18 +822,21 @@ Proof.
     auto.
 Qed.
 
-Lemma init_stable_txns γstable_txn_ids_name (installed_txn_id diskEnd_txn_id : nat) :
+Lemma init_stable_txns γstable_txn_ids_name (installed_txn_id diskEnd_txn_id durable_lb : nat) :
   map_ctx   γstable_txn_ids_name 1 (∅ : gmap nat unit) -∗
-  |==> "Hstable_txns" ∷ map_ctx γstable_txn_ids_name 1 (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id]}) ∗
+  |==> "Hstable_txns" ∷ map_ctx γstable_txn_ids_name 1 (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id; (durable_lb `max` diskEnd_txn_id)%nat]}) ∗
        "#HdiskEnd_stable" ∷ diskEnd_txn_id [[γstable_txn_ids_name]]↦ro () ∗
+       "#Hnew_durable_lb_stable" ∷
+          (durable_lb `max` diskEnd_txn_id)%nat [[γstable_txn_ids_name]]↦ro () ∗
        "#Hinstalled_txn_id_stable" ∷ installed_txn_id [[γstable_txn_ids_name]]↦ro () ∗
-       "#Hstable_ro" ∷ ([∗ map] txn_id ↦ _ ∈ (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id]}),
+       "#Hstable_ro" ∷ ([∗ map] txn_id ↦ _ ∈ (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id; (durable_lb `max` diskEnd_txn_id)%nat]}),
                        txn_id [[γstable_txn_ids_name]]↦ro tt).
 Proof.
   iIntros "Hstable_txns".
   iMod (map_alloc_ro_set with "Hstable_txns") as "[$ Hro]".
   iModIntro.
 
+  iDestruct (big_sepS_elem_of with "Hro") as "#$"; first by set_solver.
   iDestruct (big_sepS_elem_of with "Hro") as "#$"; first by set_solver.
   iDestruct (big_sepS_elem_of with "Hro") as "#$"; first by set_solver.
   iApply big_sepM_dom.
@@ -761,14 +862,52 @@ Qed.
 Lemma is_durable_txn_crash γ γ' cs txns diskEnd_txn_id durable_lb :
   is_durable_txn γ cs txns diskEnd_txn_id durable_lb -∗
   diskEnd_txn_id [[γ'.(stable_txn_ids_name)]]↦ro () -∗
-  is_durable_txn γ' cs (take (S diskEnd_txn_id) txns) diskEnd_txn_id diskEnd_txn_id.
+  (durable_lb `max` diskEnd_txn_id)%nat [[γ'.(stable_txn_ids_name)]]↦ro () -∗
+  let new_durable_lb := (durable_lb `max` diskEnd_txn_id)%nat in
+  is_durable_txn γ'
+    cs (take (S new_durable_lb) txns) diskEnd_txn_id new_durable_lb.
 Proof.
-  iNamed 1. iIntros "#Hend_txn_stable'".
-  rewrite /is_durable_txn.
-  iExists diskEnd; iFrame "%#".
-  iSplit; first (iPureIntro; lia).
+  iNamed 1. iIntros "#Hend_txn_stable' #Hdurable_lb_stable'".
+  rewrite /is_durable_txn take_length.
+  rewrite (Max.max_l (_ `max` _) _); last by lia.
+  iExists diskEnd, diskEnd_txn_id; iFrame "%#".
   iPureIntro.
-  apply is_txn_take; auto.
+  pose proof (is_txn_bound _ _ _ Hend_txn).
+  split; first by lia.
+  rewrite subslice_to_end; last by (rewrite take_length; lia).
+  rewrite -subslice_take_drop.
+  split; first by lia.
+  split.
+  {
+    destruct (decide (durable_lb ≤ diskEnd_txn_id)%nat).
+    {
+      rewrite Max.max_r; last by lia.
+      rewrite subslice_zero_length.
+      apply Forall_nil_2.
+    }
+    rewrite Max.max_l; last by lia.
+    rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
+      last by lia.
+    apply Forall_app in Hdurable_nils.
+    intuition.
+  }
+  split.
+  {
+    apply is_txn_take.
+    assumption.
+  }
+  destruct (decide (durable_lb ≤ diskEnd_txn_id)%nat)
+    as [Hcmp|Hcmp].
+  {
+    rewrite Max.max_r; last by lia.
+    apply is_txn_take; assumption.
+  }
+  rewrite Max.max_l; last by lia.
+  apply (is_txn_from_take_is_txn (S diskEnd_txn_id)).
+  rewrite take_take.
+  rewrite Min.min_l; last by lia.
+  apply is_txn_take.
+  assumption.
 Qed.
 
 Lemma diskEnd_linv_post_crash γ' diskEnd Q :
@@ -805,12 +944,12 @@ Proof.
   by iFrame "#".
 Qed.
 
-Lemma memLog_linv_nextDiskEnd_txn_id_post_crash γ diskEnd diskEnd_txn_id installed_txn_id :
+Lemma memLog_linv_nextDiskEnd_txn_id_post_crash γ diskEnd diskEnd_txn_id installed_txn_id durable_lb :
   (installed_txn_id ≤ diskEnd_txn_id)%nat →
-  map_ctx γ.(stable_txn_ids_name) (1/2) (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id]}) -∗
-  txn_pos γ diskEnd_txn_id diskEnd -∗
-  diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro () -∗
-  memLog_linv_nextDiskEnd_txn_id γ diskEnd diskEnd_txn_id.
+  map_ctx γ.(stable_txn_ids_name) (1/2) (gset_to_gmap () {[diskEnd_txn_id; installed_txn_id; (durable_lb `max` diskEnd_txn_id)%nat]}) -∗
+  txn_pos γ (durable_lb `max` diskEnd_txn_id) diskEnd -∗
+  (durable_lb `max` diskEnd_txn_id)%nat [[γ.(stable_txn_ids_name)]]↦ro () -∗
+  memLog_linv_nextDiskEnd_txn_id γ diskEnd (durable_lb `max` diskEnd_txn_id)%nat.
 Proof.
   iIntros (Hbound) "Hctx #Hpos #HdiskEnd_stable".
   iExists _; iFrame "#∗".
@@ -819,16 +958,23 @@ Proof.
   apply lookup_gset_to_gmap_None.
   assert (txn_id ≠ diskEnd_txn_id) by lia.
   assert (txn_id ≠ installed_txn_id) by lia.
+  assert (txn_id ≠ (durable_lb `max` diskEnd_txn_id)%nat) by lia.
   set_solver.
 Qed.
 
 Lemma is_durable_txn_get_txn_pos γ' cs txns diskEnd_txn_id durable_lb :
   is_durable_txn γ' cs txns diskEnd_txn_id durable_lb -∗
   txns_ctx γ' txns -∗
-  txn_pos γ' diskEnd_txn_id (U64 (circΣ.diskEnd cs)).
+  txn_pos γ' diskEnd_txn_id (U64 (circΣ.diskEnd cs)) ∗
+  txn_pos γ' (durable_lb `max` diskEnd_txn_id) (U64 (circΣ.diskEnd cs)).
 Proof.
   iNamed 1.
   iIntros "Hctx".
+  iSplit.
+  {
+    iDestruct (txns_ctx_txn_pos with "Hctx") as "$"; eauto.
+    replace (U64 (circΣ.diskEnd cs)) with diskEnd by word; auto.
+  }
   iDestruct (txns_ctx_txn_pos with "Hctx") as "$"; eauto.
   replace (U64 (circΣ.diskEnd cs)) with diskEnd by word; auto.
 Qed.
@@ -869,16 +1015,18 @@ Proof.
     congruence.
 Qed.
 
-Lemma nextDiskEnd_inv_post_crash_stable_sound γ txns installed_txn_id diskEnd_txn_id :
+Lemma nextDiskEnd_inv_post_crash_stable_sound γ txns installed_txn_id diskEnd_txn_id durable_lb :
+  Forall (λ x, snd x = nil) (subslice (S diskEnd_txn_id) (S (durable_lb `max` diskEnd_txn_id)) txns) →
   nextDiskEnd_inv γ txns -∗
   installed_txn_id [[γ.(stable_txn_ids_name)]]↦ro () -∗
-  ⌜let stable_txns' := gset_to_gmap tt {[diskEnd_txn_id; installed_txn_id]} in
-  stable_sound (take (S diskEnd_txn_id) txns) stable_txns'⌝.
+  ⌜let stable_txns' := gset_to_gmap tt {[diskEnd_txn_id; installed_txn_id; (durable_lb `max` diskEnd_txn_id)%nat]} in
+  stable_sound (take (S (durable_lb `max` diskEnd_txn_id))%nat txns) stable_txns'⌝.
 Proof.
+  intros Hnils.
   simpl.
   iNamed 1. iIntros "Hinstalled_stable".
   iDestruct (map_ro_valid with "Hstablectx Hinstalled_stable") as %Hinstalled_stable.
-  apply (stable_sound_crash _ _ (S diskEnd_txn_id)) in HafterNextDiskEnd.
+  apply (stable_sound_crash _ _ (S (durable_lb `max` diskEnd_txn_id))) in HafterNextDiskEnd.
   iPureIntro.
 
   iIntros (??? Hlt Hlookup Htxn Htxn').
@@ -886,13 +1034,33 @@ Proof.
   pose proof Htxn' as Htxn'_backup.
   rewrite /is_txn in Htxn'.
   fmap_Some in Htxn' as txn'.
-  assert (txn_id = diskEnd_txn_id ∨ txn_id = installed_txn_id)
-    as [-> | ->] by set_solver.
+  assert (Htxn'_lt:=Htxn').
+  apply mk_is_Some, lookup_lt_is_Some_1 in Htxn'_lt.
+  rewrite take_length in Htxn'_lt.
+  assert (txn_id = diskEnd_txn_id ∨ txn_id = installed_txn_id ∨ txn_id = (durable_lb `max` diskEnd_txn_id)%nat) as [-> | [-> | ->]] by set_solver.
   { (* we're talking about diskEnd_txn_id *)
-    apply mk_is_Some, lookup_lt_is_Some_1 in Htxn'.
-    move: Htxn'; len. }
-  (* this is installed_txn_id, which we get from its stability before *)
-  eapply HafterNextDiskEnd; eauto.
+    unshelve (epose proof (iffLR (Forall_forall _ _) Hnils _ _) as Hnil).
+    2: {
+      apply elem_of_list_lookup.
+      eexists (txn_id' - (S diskEnd_txn_id))%nat.
+      rewrite subslice_lookup; last by lia.
+      rewrite -(lookup_take _ (S (durable_lb `max` diskEnd_txn_id)));
+        last by lia.
+      rewrite le_plus_minus_r; last by lia.
+      eassumption.
+    }
+    rewrite Htxn' /=.
+    simpl in Hnil.
+    rewrite Hnil.
+    reflexivity.
+  }
+  {
+    (* this is installed_txn_id, which we get from its stability before *)
+    eapply HafterNextDiskEnd; eauto.
+  }
+  {
+    move: Htxn'_lt; len.
+  }
 Qed.
 
 (* Called after wpc for recovery is completed, so l is the location of the wal *)
@@ -960,23 +1128,28 @@ Proof.
     iDestruct (is_circular_state_wf with "[$]") as %Hcirc_wf.
 
     iNamed "Hinit".
-    iMod (init_stable_txns γ'.(stable_txn_ids_name) installed_txn_id diskEnd_txn_id with "[$]") as "Hstable". iNamed "Hstable".
+    iMod (init_stable_txns γ'.(stable_txn_ids_name) installed_txn_id diskEnd_txn_id σ.(log_state.durable_lb) with "[$]") as "Hstable". iNamed "Hstable".
 
-    set (σ':= log_crash_to σ diskEnd_txn_id).
+    set (σ':= log_crash_to
+      σ (σ.(log_state.durable_lb) `max` diskEnd_txn_id)
+    ).
     iDestruct (crash_to_diskEnd with "circ.end Hdurable") as %Htrans.
     iNamed "Hdurable".
     iNamed "Hinstalled". iNamed "Howninstalled".
 
     iMod (ghost_var_update installer_pos with "installer_pos") as "[installer_pos1 installer_pos2]".
     iMod (ghost_var_update installer_txn_id with "installer_txn_id") as "[installer_txn_id1 installer_txn_id2]".
-    iMod (ghost_var_update ∅ with "already_installed") as "[already_installed1 already_installed2]".
+    iMod (ghost_var_update [] with "already_installed") as "[already_installed1 already_installed2]".
     iMod (mono_nat_own_update installed_txn_id with "being_installed_start_txn") as "[[being_installed_start_txn1 being_installed_start_txn2] #being_installed_start_txn_id_mem_lb]"; first by lia.
     iMod (ghost_var_update being_installed_end_txn_id with "being_installed_end_txn") as "[being_installed_end_txn1 being_installed_end_txn2]".
-    iMod (txns_ctx_app (take (S diskEnd_txn_id) σ.(log_state.txns)) with "txns_ctx") as "Htxns_ctx'".
+    iMod (txns_ctx_app (take
+      (S (σ.(log_state.durable_lb) `max` diskEnd_txn_id))
+      σ.(log_state.txns)
+    ) with "txns_ctx") as "Htxns_ctx'".
     rewrite app_nil_l.
     iMod (ghost_var_update σ'.(log_state.txns) with "txns") as "[Htxns1 Htxns2]".
 
-    iDestruct (is_durable_txn_crash with "circ.end [$]") as "#Hdurable_txn".
+    iDestruct (is_durable_txn_crash with "circ.end [$] [$]") as "#Hdurable_txn".
 
     iNamed "circ.end".
 
@@ -984,14 +1157,27 @@ Proof.
 
     iPoseProof "circ.start" as "#circ.start2"; iNamed "circ.start2".
     iDestruct "Hcirc_resources" as "(Hcirc_start&Hcirc_diskEnd & Happender)".
-    iDestruct (nextDiskEnd_inv_post_crash_stable_sound _ _ _ diskEnd_txn_id
+    iDestruct (nextDiskEnd_inv_post_crash_stable_sound _ _ _ diskEnd_txn_id σ.(log_state.durable_lb)
                  with "HnextDiskEnd_inv Hstart_txn_stable") as %Hstable.
+    {
+      destruct (decide (σ.(log_state.durable_lb) ≤ diskEnd_txn_id)%nat).
+      {
+        rewrite Max.max_r; last by lia.
+        rewrite subslice_zero_length.
+        apply Forall_nil_2.
+      }
+      rewrite Max.max_l; last by lia.
+      rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
+        last by lia.
+      apply Forall_app in Hdurable_nils.
+      intuition.
+    }
 
     iDestruct (txns_ctx_txn_pos _ _ installed_txn_id with "Htxns_ctx") as "#Hinstalled_pos";
       first by eauto.
 
     iDestruct (txns_ctx_make_factory with "Htxns_ctx Htxns_ctx'") as "[Hold_txns Htxns_ctx']".
-    iDestruct (is_durable_txn_get_txn_pos with "Hdurable_txn Htxns_ctx'") as "#HdiskEnd_pos".
+    iDestruct (is_durable_txn_get_txn_pos with "Hdurable_txn Htxns_ctx'") as "[#HdiskEnd_pos #Hdurable_lb_pos]".
     iDestruct (txn_pos_valid_general with "Htxns_ctx' HdiskEnd_pos") as %HdiskEnd_is_txn.
     iDestruct (old_txn_get_pos with "[$] Hinstalled_pos") as "#Hinstalled_pos'"; first by lia.
 
@@ -1009,8 +1195,9 @@ Proof.
       eauto with f_equal. }
 
     iDestruct "Hstable_txns" as "[Hstable_txns1 Hstable_txns2]".
+    rewrite (Max.max_l (_ `max` _) _); last by lia.
     iDestruct (memLog_linv_nextDiskEnd_txn_id_post_crash with
-               "Hstable_txns1 HdiskEnd_pos [$]")
+               "Hstable_txns1 Hdurable_lb_pos [$]")
               as "HnextDiskEnd_linv"; first by lia.
     iFreeze "# Hdata".
 
@@ -1026,11 +1213,15 @@ Proof.
         as "[logger_pos1 logger_pos2]".
     iMod (ghost_var_update diskEnd_txn_id with "logger_txn_id")
         as "[logger_txn_id1 logger_txn_id2]".
+    iMod (ghost_var_update (int.nat (circΣ.diskEnd cs0)) with "diskEnd")
+        as "[diskEnd1 diskEnd2]".
+    iMod (ghost_var_update diskEnd_txn_id with "diskEnd_txn_id")
+        as "[diskEnd_txn_id1 diskEnd_txn_id2]".
     iMod (ghost_var_update cs0 with "cs")
         as "cs".
 
-    iMod (mono_nat_own_update (int.nat diskEnd) with "diskEnd_mem") as "[[diskEnd_mem1 diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
-    iMod (mono_nat_own_update diskEnd_txn_id with "diskEnd_mem_txn_id") as "[[diskEnd_mem_txn_id1 diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
+    iMod (mono_nat_own_update (int.nat diskEnd) with "diskEnd_mem") as "[[[diskEnd_mem11 diskEnd_mem12] diskEnd_mem2] #diskEnd_mem_lb]"; first by lia.
+    iMod (mono_nat_own_update diskEnd_txn_id with "diskEnd_mem_txn_id") as "[[[diskEnd_mem_txn_id11 diskEnd_mem_txn_id12] diskEnd_mem_txn_id2] #diskEnd_mem_txn_lb]"; first by lia.
 
 
     iThaw "Hwand".
@@ -1051,174 +1242,263 @@ Proof.
              installer_pos_mem2 installer_txn_id_mem2
              already_installed2
              installed_pos_mem2 installed_txn_id_mem2
+             diskEnd2 diskEnd_txn_id2
+             diskEnd_mem2 diskEnd_mem_txn_id2
              Happender
              ".
     {
-    iSplitL "".
-    { iPureIntro. eapply log_crash_to_wf; eauto. }
-    iSplitL "".
-    { iPureIntro. by eapply log_crash_to_post_crash. }
-    iFrame "Htxns_ctx'".
-    iFrame "Htxns2".
-    iSplitL "Hstable_txns2".
-    { iThaw "#". iExists _. iFrame "# ∗".
-      iPureIntro.
-      (* we proved this before with [memLog_linv_nextDiskEnd_txn_id_post_crash] *)
-      assumption. }
-    iExists cs0.
-    iSplitDelay.
-    { rewrite /wal_linv_durable.
-      rewrite sep_exist_r.
-      iExists {| diskEnd := diskEnd;
-                 locked_diskEnd_txn_id := diskEnd_txn_id;
-                 memLog := {| slidingM.log := cs0.(circΣ.upds);
-                              slidingM.start := cs0.(circΣ.start);
-                              slidingM.mutable := U64 (circΣ.diskEnd cs0);
-                           |}
-              |}.
-      simpl.
-      replace (U64 (int.Z diskEnd)) with diskEnd by word.
-      iFrame "HdiskEnd_linv HdiskStart_linv".
-      rewrite /memLog_linv /memLog_linv_core.
-      iSplitL "installer_pos_mem1 installer_txn_id_mem1
-               logger_pos1 logger_txn_id1
-               diskEnd_mem1 diskEnd_mem_txn_id1
-               installed_pos_mem1 installed_txn_id_mem1
-               Htxns1 HnextDiskEnd_linv".
-      - iSplitL ""; first eauto.
-        iSplitL ""; first eauto.
-        iSplitL "".
-        { iPureIntro. rewrite /locked_wf/=; split_and!; try word.
-          rewrite /circ_wf in Hcirc_wf.
-          rewrite /slidingM.wf/=; split_and!; try word.
-          rewrite /circΣ.diskEnd. word.
-        }
-        iExists installed_txn_id, _, _, _, _, _, _.
-        iFrame.
+      iSplitL "".
+      { iPureIntro. eapply log_crash_to_wf; eauto. }
+      iSplitL "".
+      { iPureIntro. by eapply log_crash_to_post_crash. }
+      iFrame "Htxns_ctx'".
+      iFrame "Htxns2".
+      iSplitL "Hstable_txns2".
+      { iThaw "#". iExists _. iFrame "# ∗".
+        iPureIntro.
+        (* we proved this before with [memLog_linv_nextDiskEnd_txn_id_post_crash] *)
+        assumption. }
+      iExists cs0.
+      iSplitDelay.
+      { rewrite /wal_linv_durable.
+        rewrite sep_exist_r.
+        iExists {| diskEnd := diskEnd;
+                   locked_diskEnd_txn_id := diskEnd_txn_id;
+                   memLog := {| slidingM.log := cs0.(circΣ.upds);
+                                slidingM.start := cs0.(circΣ.start);
+                                slidingM.mutable := U64 (circΣ.diskEnd cs0);
+                             |}
+                |}.
         simpl.
-
-        rewrite /memLog_linv_pers_core /=.
-        iThaw "#".
-        replace (U64 (circΣ.diskEnd cs0)) with diskEnd in * by word.
-        iSplit.
-        { iPureIntro; word. }
-        iSplit.
-        { iPureIntro; word. }
-        iFrame "Hinstalled_pos'".
-        iFrame "HdiskEnd_stable".
-        lazymatch goal with
-        | |- context[txn_pos γ' (length ?txns - 1)%nat _] =>
-          replace (length txns - 1)%nat with diskEnd_txn_id by len
-        end.
-
-        replace (slidingM.endPos _) with diskEnd.
-        2: {
-          rewrite /slidingM.endPos /=.
-          apply (inj int.Z).
-          rewrite HdiskEnd_val.
-          rewrite /circΣ.diskEnd.
-          unfold circ_wf in *.
-          word.
-        }
-        iFrame (HdiskEnd_is_txn) "HdiskEnd_pos being_installed_start_txn_id_mem_lb".
-        replace (slidingM.memEnd _) with (int.Z diskEnd) by reflexivity.
-        iSplit.
-        {
-          iPureIntro.
+        replace (U64 (int.Z diskEnd)) with diskEnd by word.
+        iFrame "HdiskEnd_linv HdiskStart_linv".
+        rewrite /memLog_linv /memLog_linv_core.
+        iSplitL "installer_pos_mem1 installer_txn_id_mem1
+                 logger_pos1 logger_txn_id1
+                 diskEnd_mem11 diskEnd_mem_txn_id11
+                 installed_pos_mem1 installed_txn_id_mem1
+                 Htxns1 HnextDiskEnd_linv".
+        - iSplitL ""; first eauto.
+          iSplitL ""; first eauto.
+          iSplitL "".
+          { iPureIntro.
+            rewrite /locked_wf/=; split_and!; try word.
+            {
+              rewrite HdiskEnd_val.
+              rewrite /circΣ.diskEnd.
+              word.
+            }
+            rewrite /circ_wf in Hcirc_wf.
+            rewrite /slidingM.wf/=; split_and!; try word.
+            rewrite /circΣ.diskEnd. word.
+          }
+          iExists installed_txn_id, _, _, _, _, _, _.
+          iFrame.
           simpl.
 
-          replace (slidingM.logIndex _ (start cs0)) with 0%nat; last first.
+          rewrite /memLog_linv_pers_core /=.
+          iThaw "#".
+          replace (U64 (circΣ.diskEnd cs0)) with diskEnd in * by word.
+          iSplit.
           {
-            rewrite /slidingM.logIndex /=.
-            lia.
-          }
-          replace (slidingM.logIndex _ diskEnd) with (length cs0.(circΣ.upds)); last first.
-          {
-            rewrite /slidingM.logIndex /=.
-            unfold circΣ.diskEnd in *.
+            iPureIntro.
+            rewrite HdiskEnd_val /circΣ.diskEnd.
             word.
           }
-          rewrite !subslice_zero_length.
-          rewrite take_0.
-          rewrite subslice_from_start.
-          rewrite firstn_all.
-          rewrite skipn_all.
-          rewrite -> drop_ge by len.
-          split_and!; auto using has_updates_nil.
-          rewrite subslice_take Nat.min_id.
-          apply circ_matches_txns_combine in Hcirc_matches; auto.
-        }
-        iPureIntro.
-        replace (take _ _) with (σ'.(log_state.txns)) by reflexivity.
-        apply txns_mono_lt_last; eauto using log_crash_to_wf.
-        rewrite /σ' /=.
-        replace (length _ - 1)%nat with diskEnd_txn_id by len.
-        auto.
-      - iNamedAccu.
-    }
-    iNamed 1.
-    rewrite Hcirc_name. iFrame "Hcirc".
-    rewrite /disk_inv.
-    iFrame "cs".
-    iExists installed_txn_id, diskEnd_txn_id; simpl.
-    assert (installed_txn_id <= diskEnd_txn_id) by word.
+          iSplit.
+          { iPureIntro; word. }
+          iFrame "Hinstalled_pos'".
+          iFrame "HdiskEnd_stable".
+          rewrite take_length.
+          replace (S (_ `max` _) `min` _)%nat with
+            (S (σ.(log_state.durable_lb) `max` diskEnd_txn_id))%nat;
+            last by lia.
 
-    iSplitL "being_installed_start_txn1 being_installed_end_txn1
-             already_installed1 Hold_txns Hdata".
-    {
-      rewrite /is_installed/is_installed_core.
-      iExists being_installed_end_txn_id, ∅.
-      iFrame "being_installed_start_txn1".
-      iFrame "being_installed_end_txn1".
-      iFrame "already_installed1".
-      iSplitL "".
-      { iPureIntro. split_and!; try len. }
-
-      iSplitL "Hold_txns".
-      { iDestruct (old_txns_are_get with "Hold_txns Hbeing_installed_txns") as "#Hbeing_installed_txns'".
-        { rewrite subslice_length; len. }
-        iExactEq "Hbeing_installed_txns'". rewrite /named.
-        f_equal.
-        rewrite subslice_take_all //.
-        lia.
+          replace (slidingM.endPos _) with diskEnd.
+          2: {
+            rewrite /slidingM.endPos /=.
+            apply (inj int.Z).
+            rewrite HdiskEnd_val.
+            rewrite /circΣ.diskEnd.
+            unfold circ_wf in *.
+            word.
+          }
+          rewrite /= Nat.sub_0_r.
+          iFrame (HdiskEnd_is_txn) "being_installed_start_txn_id_mem_lb".
+          iSplit.
+          {
+            destruct (decide
+              (σ.(log_state.durable_lb) ≤ diskEnd_txn_id)%nat
+            ).
+            {
+              rewrite Max.max_r; last by lia.
+              iAssumption.
+            }
+            rewrite Max.max_l; last by lia.
+            iApply "Hdurable_lb_pos".
+          }
+          replace (slidingM.memEnd _) with (int.Z diskEnd) by reflexivity.
+          iSplit.
+          {
+            iPureIntro.
+            apply circ_matches_txns_combine in Hcirc_matches.
+            rewrite /memLog_linv_txns /slidingM.logIndex /mwrb.logend /=
+              take_length Nat.sub_diag.
+            replace (int.nat diskEnd - _)%nat with (length cs0.(circΣ.upds)).
+            2: {
+              rewrite /slidingM.logIndex /=.
+              unfold circΣ.diskEnd in *.
+              word.
+            }
+            rewrite Min.min_l; last by lia.
+            rewrite /is_memLog_boundaries take_length Min.min_l; last by lia.
+            split.
+            {
+              intros bndry Hbndry.
+              apply elem_of_cons in Hbndry.
+              destruct Hbndry as [->|Hbndry]; first by (simpl; lia).
+              apply elem_of_cons in Hbndry.
+              destruct Hbndry as [->|Hbndry]; first by (simpl; lia).
+              apply elem_of_cons in Hbndry.
+              destruct Hbndry as [->|Hbndry]; first by (simpl; lia).
+              apply elem_of_cons in Hbndry.
+              destruct Hbndry as [->|Hbndry]; first by (simpl; lia).
+              apply elem_of_cons in Hbndry.
+              destruct Hbndry as [->|Hbndry]; first by (simpl; lia).
+              apply elem_of_cons in Hbndry.
+              destruct Hbndry as [->|Hbndry]; first by (simpl; lia).
+              inversion Hbndry.
+            }
+            intros i bndry1 bndry2 Hbndry1 Hbndry2.
+            do 3 (destruct i; first by (
+              simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+              simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2;
+              simpl; (split; first by lia); (split; first by lia);
+              rewrite ?subslice_zero_length -?subslice_complete;
+              try (rewrite subslice_take_all; last by lia);
+              try apply is_memLog_region_nil;
+              try apply Hcirc_matches
+            )).
+            destruct i.
+            2: {
+              destruct i; last by inversion Hbndry2.
+              simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+              simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2;
+              simpl; (split; first by lia); (split; first by lia);
+              rewrite ?subslice_zero_length -?subslice_complete;
+              apply is_memLog_region_nil.
+            }
+            simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+            simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2.
+            simpl.
+            split; first by lia.
+            split; first by lia.
+            rewrite subslice_take Nat.min_id.
+            destruct (decide (σ.(log_state.durable_lb) ≤ diskEnd_txn_id)).
+            {
+              rewrite Max.max_r; last by lia.
+              rewrite !subslice_zero_length.
+              apply is_memLog_region_nil.
+            }
+            rewrite Max.max_l; last by lia.
+            rewrite !subslice_zero_length.
+            apply is_memLog_region_nils.
+            rewrite -(subslice_app_contig _ (S diskEnd_txn_id))
+              in Hdurable_nils; last by lia.
+            apply Forall_app in Hdurable_nils.
+            intuition.
+          }
+          iPureIntro.
+          replace (take _ _) with (σ'.(log_state.txns)) by reflexivity.
+          split; last by word.
+          apply txns_mono_lt_last; eauto using log_crash_to_wf.
+          rewrite /σ' /=.
+          rewrite take_length.
+          rewrite Min.min_l; last by lia.
+          rewrite /= Nat.sub_0_r.
+          apply is_txn_take.
+          assumption.
+        - iNamedAccu.
       }
+      iNamed 1.
+      rewrite Hcirc_name. iFrame "Hcirc".
+      rewrite /disk_inv.
+      iFrame "cs".
+      iExists installed_txn_id, diskEnd_txn_id; simpl.
+      assert (installed_txn_id <= diskEnd_txn_id) by word.
 
-      iApply (big_sepM_mono with "Hdata").
-      iIntros (k x Hlookup) "H". rewrite /is_dblock_with_txns.
-      iDestruct "H" as (b txn_id' Hinstalled) "(?&?)". iExists b, txn_id'. iFrame.
+      iSplitL "being_installed_start_txn1 being_installed_end_txn1
+               already_installed1 Hold_txns Hdata".
+      {
+        rewrite /is_installed/is_installed_core.
+        iExists being_installed_end_txn_id, ∅.
+        iFrame "being_installed_start_txn1".
+        iFrame "being_installed_end_txn1".
+        iFrame "already_installed1".
+        iSplitL "".
+        { iPureIntro. split_and!; try len. }
+
+        iSplitL "Hold_txns".
+        { iDestruct (old_txns_are_get with "Hold_txns Hbeing_installed_txns") as "#Hbeing_installed_txns'".
+          { rewrite subslice_length; len. }
+          iExactEq "Hbeing_installed_txns'". rewrite /named.
+          f_equal.
+          rewrite subslice_take_all //.
+          lia.
+        }
+
+        iApply (big_sepM_mono with "Hdata").
+        iIntros (k x Hlookup) "H". rewrite /is_dblock_with_txns.
+        iDestruct "H" as (b txn_id' Hinstalled) "(?&?)". iExists b, txn_id'. iFrame.
+        iPureIntro.
+        split; first by lia.
+        split.
+        { rewrite take_take. rewrite ->min_l by lia. intuition eauto. }
+        intros Hupda.
+        simpl in Hupda.
+        inversion Hupda.
+      }
+      iFrame (Hdaddrs_init).
+      iDestruct (is_base_disk_crash with "Hbasedisk") as "$".
+      { auto. }
+      iThaw "#".
+      iDestruct (is_installed_txn_crash γ γ' with "circ.start Hinstalled_txn_id_stable") as "$"; first by lia.
+      iFrame "Hdurable_txn".
+      rewrite /is_durable.
+      efeed pose proof (circ_matches_txns_crash (int.nat diskEnd)) as Hcirc_matches'; [ | by eauto | ].
+      { word. }
+      iExists _, _, _, _; iFrame (Hlog_wf) "∗".
       iPureIntro.
-      split_and!; try lia.
-      - set_solver.
-      - rewrite take_take. rewrite ->min_l by lia. intuition eauto.
+      apply (is_memLog_boundaries_append_txns _ _ _ (
+        subslice
+          (S (diskEnd_txn_id))
+          (S (σ.(log_state.durable_lb) `max` diskEnd_txn_id))%nat
+          σ.(log_state.txns)
+      )) in Hcirc_matches'.
+      rewrite subslice_from_take subslice_app_contig in Hcirc_matches';
+        last by lia.
+      rewrite subslice_from_start in Hcirc_matches'.
+      assumption.
     }
-    iFrame (Hdaddrs_init).
-    iDestruct (is_base_disk_crash with "Hbasedisk") as "$".
-    { auto. }
-    iThaw "#".
-    iDestruct (is_installed_txn_crash γ γ' with "circ.start Hinstalled_txn_id_stable") as "$"; first by lia.
-    iFrame "Hdurable_txn".
-    rewrite /is_durable.
-    efeed pose proof (circ_matches_txns_crash (int.nat diskEnd)) as Hcirc_matches'; [ | by eauto | ].
-    { word. }
-    iExists _, _, _, _; iFrame (Hcirc_matches') "∗".
-  }
-  {
-    rewrite /wal_resources /logger_resources.
-    rewrite /installer_inv.
-    rewrite /named.
-    iThaw "#".
-    iDestruct "diskEnd_mem_txn_lb" as "-#diskEnd_mem_txn_lb".
-    iClear "#".
-    iDestruct (mono_nat_lb_own_le being_installed_end_txn_id with "diskEnd_mem_txn_lb") as
-        "diskEnd_mem_txn_lb"; first by word.
-    iFrame "start_avail diskEnd_avail".
-    rewrite Hcirc_name.
-    iFrame "Happender".
-    repeat first [ iExists _ |
-                   rewrite sep_exist_l |
-                   rewrite sep_exist_r ].
-    iFrame.
-  }
+    {
+      rewrite /wal_resources /logger_resources.
+      rewrite /installer_inv.
+      rewrite /named.
+      iThaw "#".
+      iDestruct "diskEnd_mem_txn_lb" as "-#diskEnd_mem_txn_lb".
+      iClear "#".
+      iDestruct (mono_nat_lb_own_le being_installed_end_txn_id with "diskEnd_mem_txn_lb") as
+          "diskEnd_mem_txn_lb"; first by word.
+      iFrame "start_avail diskEnd_avail".
+      rewrite Hcirc_name.
+      iFrame "Happender".
+      repeat first [ iExists _ |
+                     rewrite sep_exist_l |
+                     rewrite sep_exist_r ].
+      rewrite -HdiskEnd_val.
+      replace (U64 (int.Z diskEnd)) with diskEnd by word.
+      iFrame.
+    }
   }
   {
     iNext. iFrame "HPcirc_tok".
@@ -1319,14 +1599,21 @@ Proof.
   wpc_apply (wpc_recoverCircular with "[$]").
   iSplit.
   { iLeft in "HΦ". iIntros "(Hcirc&Happend)". iApply "HΦ".
-    iSplitR "Happend HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hinstaller".
+    iSplitR "
+      Happend HnotLogging
+      HownLoggerPos_logger HownLoggerTxn_logger
+      HownDiskEnd_logger HownDiskEndTxn_logger
+      HownDiskEndMem_logger HownDiskEndMemTxn_logger
+      Hinstaller
+    ".
     {
       iSplit; first by auto.
       iSplit; first by auto.
       iFrame.
       iExists _; iFrame. }
-    { iFrame. }
+    { iFrame. iExists _, _. iFrame. }
   }
+  rename diskEnd into oldDiskEnd.
 
   iIntros "!>" (c diskStart diskEnd bufSlice upds).
   iIntros "(Hupd_slice&Hcirc&Happender&%&%&%)".
@@ -1340,21 +1627,28 @@ Proof.
                  slidingM.mutable := int.Z diskStart + length upds |}).
 
   iApply wpc_fupd.
-  wpc_frame "Hwal_linv Hinstalled HΦ Hcirc Happender HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hdurable
-             Hinstaller Howncs Htxns_ctx γtxns HnextDiskEnd_inv".
+  wpc_frame "Hwal_linv Hinstalled HΦ Hcirc Happender HnotLogging
+    HownLoggerPos_logger HownLoggerTxn_logger
+    HownDiskEnd_logger HownDiskEndTxn_logger
+    HownDiskEndMem_logger HownDiskEndMemTxn_logger
+    Hdurable Hinstaller Howncs Htxns_ctx γtxns HnextDiskEnd_inv".
   {
     iDestruct "Happender" as (????) "(Haddrs&Hblocks&?)".
     crash_case.
     rewrite /is_wal_inner_durable.
     iFrame "Htxns_ctx γtxns HnextDiskEnd_inv".
-    iSplitR "Haddrs Hblocks HnotLogging HownLoggerPos_logger HownLoggerTxn_logger Hinstaller".
+    iSplitR "Haddrs Hblocks HnotLogging
+      HownLoggerPos_logger HownLoggerTxn_logger
+      HownDiskEnd_logger HownDiskEndTxn_logger
+      HownDiskEndMem_logger HownDiskEndMemTxn_logger
+      Hinstaller".
     {
       iSplit; first by auto.
       iSplit; first by auto.
       iExists _. iFrame "Hwal_linv". iFrame "Hcirc". rewrite /disk_inv. iFrame "Howncs".
       iExists _, _. iFrame "# ∗". eauto.
     }
-    { iFrame. iExists _, _. iFrame. eauto. }
+    { iFrame. iExists _, _. iFrame. iExists _, _. iFrame "∗ %". }
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
@@ -1426,8 +1720,13 @@ Proof.
     iFrame.
     iExists _. iFrame. rewrite /disk_inv. iExists _, _. iFrame "# ∗". eauto.
   }
-  iSplitL "Happender HnotLogging HownLoggerPos_logger HownLoggerTxn_logger".
-  { iExists _. iFrame "# ∗". }
+  iSplitL "
+    Happender HnotLogging
+    HownLoggerPos_logger HownLoggerTxn_logger
+    HownDiskEnd_logger HownDiskEndTxn_logger
+    HownDiskEndMem_logger HownDiskEndMemTxn_logger
+  ".
+  { iExists _. iFrame "# ∗". iExists _, _. iFrame. }
   iFrame "Hinstaller".
 Qed.
 

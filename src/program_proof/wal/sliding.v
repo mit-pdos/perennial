@@ -6,6 +6,7 @@ From Perennial.Helpers Require Export NamedProps List Integers Tactics.
 without this, but it's really importing too much (we don't need the IPM here) *)
 From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Export wal.lib wal.highest.
+From Perennial.program_proof Require Export wal.boundaries.
 
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".
@@ -253,4 +254,31 @@ Proof.
   apply IHbufs.
   - apply memWrite_one_NoDup; auto.
   - rewrite memWrite_one_same_start memWrite_one_same_mutable //.
+Qed.
+
+Theorem memWrite_memWrite_generic memLog upds :
+  memWrite memLog upds =
+  set slidingM.log
+    (λ log,
+      memWrite_generic
+        (slidingM.logIndex memLog memLog.(slidingM.mutable)) log upds
+    ) memLog.
+Proof.
+  destruct memLog.
+  rewrite /set /=.
+  rewrite -(rev_involutive upds).
+  induction (rev upds) as [|upd updst Hind]; first by reflexivity.
+  simpl.
+  rewrite memWrite_app1 memWrite_generic_app Hind /=
+    /memWrite_one /memWrite_one_generic /set /slidingM.logIndex /=.
+  destruct (find_highest_index _ _) as [i|] eqn:Hhighest;
+    last by reflexivity.
+  destruct (decide _) as [Hcmp|Hcmp].
+  {
+    f_equal.
+    rewrite decide_True; last by lia.
+    reflexivity.
+  }
+  rewrite decide_False; last by word.
+  reflexivity.
 Qed.

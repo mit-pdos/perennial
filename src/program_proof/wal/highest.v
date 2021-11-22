@@ -232,3 +232,384 @@ Qed.
 Definition compute_memLogMap (memLog: list update.t) (memStart: u64): gmap u64 u64 :=
   (λ (n:nat), U64 (Z.of_nat n)) <$>
     pos_indices (update.addr <$> memLog) (int.nat memStart).
+
+
+
+(** highest_index_is, alternative representation for find_highest_index **)
+
+Definition highest_index_is {A} (l: list A) x i :=
+  l !! i = Some x ∧
+  ∀ j, l !! j = Some x → (j ≤ i)%nat.
+
+Definition highest_index_is_opt {A} (l: list A) x opti :=
+  match opti with
+  | Some i => highest_index_is l x i
+  | None => x ∉ l
+  end.
+
+Theorem highest_index_is_opt_ok `{EqDecision A} (l: list A) x :
+  highest_index_is_opt l x (find_highest_index l x).
+Proof.
+  induction l as [|x' l' Hind]; first by apply not_elem_of_nil.
+  simpl.
+  destruct (find_highest_index l' x) as [i'|].
+  {
+    rewrite decide_bool_decide.
+    rewrite Tauto.if_same.
+    simpl.
+    rewrite /highest_index_is_opt /highest_index_is in Hind.
+    split; first by intuition.
+    intros j Hj.
+    destruct Hind as [Hi' Hhighest].
+    destruct j as [|j]; first by lia.
+    assert (j ≤ i')%nat; last by lia.
+    apply Hhighest.
+    simpl in Hj.
+    assumption.
+  }
+  simpl.
+  destruct (decide (x = x')) as [->|Hx'].
+  {
+    simpl.
+    split; first by reflexivity.
+    intros j Hj.
+    destruct j as [|j]; first by lia.
+    simpl in Hj.
+    apply elem_of_list_lookup_2 in Hj.
+    contradiction.
+  }
+  apply not_elem_of_cons.
+  intuition.
+Qed.
+
+Theorem highest_index_is_opt_inj {A} (l: list A) x opti1 opti2 :
+  highest_index_is_opt l x opti1 →
+  highest_index_is_opt l x opti2 →
+  opti1 = opti2.
+Proof.
+  intros Hhighest1 Hhighest2.
+  destruct opti1 as [i1|].
+  2: {
+    destruct opti2 as [i2|]; last by reflexivity.
+    destruct Hhighest2 as [Hin _].
+    apply elem_of_list_lookup_2 in Hin.
+    contradiction.
+  }
+  destruct opti2 as [i2|].
+  2: {
+    destruct Hhighest1 as [Hin _].
+    apply elem_of_list_lookup_2 in Hin.
+    contradiction.
+  }
+  destruct Hhighest1 as [Hi1 Hhighest1].
+  destruct Hhighest2 as [Hi2 Hhighest2].
+  apply Hhighest2 in Hi1.
+  apply Hhighest1 in Hi2.
+  f_equal.
+  lia.
+Qed.
+
+Theorem highest_index_is_inj {A} (l: list A) x i1 i2 :
+  highest_index_is l x i1 →
+  highest_index_is l x i2 →
+  i1 = i2.
+Proof.
+  intros Hhighest1 Hhighest2.
+  assert (Some i1 = Some i2) as Heq.
+  2: {
+    inversion Heq.
+    reflexivity.
+  }
+  eapply highest_index_is_opt_inj; eassumption.
+Qed.
+
+Theorem highest_index_is_opt_to_find_highest_index `{EqDecision A} l (x: A) i :
+  highest_index_is_opt l x i → find_highest_index l x = i.
+Proof.
+  intros Hhighest.
+  pose proof (highest_index_is_opt_ok l x) as Hhighest'.
+  rewrite -(highest_index_is_opt_inj _ _ _ _ Hhighest Hhighest') //.
+Qed.
+
+Theorem find_highest_index_to_highest_index_is_opt `{EqDecision A} l (x: A) i :
+  find_highest_index l x = i → highest_index_is_opt l x i.
+Proof.
+  intros Hhighest.
+  pose proof (highest_index_is_opt_ok l x) as Hhighest'.
+  rewrite Hhighest in Hhighest'.
+  assumption.
+Qed.
+
+Theorem find_highest_index_Some `{EqDecision A} l (x: A) i :
+  find_highest_index l x = Some i → highest_index_is l x i.
+Proof.
+  intros Hhighest.
+  apply find_highest_index_to_highest_index_is_opt in Hhighest.
+  assumption.
+Qed.
+
+Theorem find_highest_index_None `{EqDecision A} l (x: A) :
+  find_highest_index l x = None → x ∉ l.
+Proof.
+  intros Hhighest.
+  apply find_highest_index_to_highest_index_is_opt in Hhighest.
+  assumption.
+Qed.
+
+Theorem find_highest_index_app `{EqDecision A} l1 l2 (x: A) :
+  find_highest_index (l1 ++ l2) x =
+  match find_highest_index l2 x with
+  | Some i => Some (length l1 + i)%nat
+  | None => find_highest_index l1 x
+  end.
+Proof.
+  destruct (find_highest_index l2 x) as [i2|] eqn:Hi2.
+  {
+    apply find_highest_index_Some in Hi2.
+    apply highest_index_is_opt_to_find_highest_index.
+    destruct Hi2 as [Hin2 Hhighest2].
+    split.
+    {
+      rewrite lookup_app_r; last by lia.
+      rewrite -Hin2.
+      f_equal.
+      lia.
+    }
+    intros j Hj.
+    destruct (decide (j < length l1)%nat) as [Hbnd|Hbnd]; first by lia.
+    apply lookup_app_Some in Hj.
+    apply not_lt in Hbnd.
+    destruct Hj as [Hj|[_ Hj]].
+    {
+      apply lookup_lt_Some in Hj.
+      lia.
+    }
+    apply Hhighest2 in Hj.
+    lia.
+  }
+  apply find_highest_index_None in Hi2.
+  apply highest_index_is_opt_to_find_highest_index.
+  destruct (find_highest_index l1 x) as [i1|] eqn:Hi1.
+  2: {
+    apply find_highest_index_None in Hi1.
+    apply not_elem_of_app.
+    intuition.
+  }
+  apply find_highest_index_Some in Hi1.
+  destruct Hi1 as [Hin1 Hhighest1].
+  split; first by (apply lookup_app_l_Some; assumption).
+  intros j Hj.
+  apply lookup_app_Some in Hj.
+  destruct Hj as [Hj|[_ Hj]].
+  2: {
+    apply elem_of_list_lookup_2 in Hj.
+    contradiction.
+  }
+  apply Hhighest1.
+  assumption.
+Qed.
+
+Theorem highest_index_is_drop {A} l (x: A) i :
+  highest_index_is l x i →
+  x ∉ drop (S i) l.
+Proof.
+  intros [_ Hhighest] Hin.
+  apply elem_of_list_lookup_1 in Hin.
+  destruct Hin as [j Hin].
+  rewrite lookup_drop in Hin.
+  apply Hhighest in Hin.
+  lia.
+Qed.
+
+Theorem highest_index_is_cons {A} (l0: A) l x i :
+  highest_index_is (l0 :: l) x (S i) →
+  highest_index_is l x i.
+Proof.
+  intros [Hin Hhighest].
+  simpl in Hin.
+  split; first by assumption.
+  intros j Hj.
+  specialize (Hhighest (S j)).
+  simpl in Hhighest.
+  apply Hhighest in Hj.
+  lia.
+Qed.
+
+Theorem highest_index_is_exists `{EqDecision A} l (x: A) :
+  x ∈ l →
+  ∃ i, highest_index_is l x i.
+Proof.
+  intros Hin.
+  destruct (find_highest_index l x) as [i|] eqn:Hhighest.
+  2: {
+    apply find_highest_index_None in Hhighest.
+    contradiction.
+  }
+  apply find_highest_index_Some in Hhighest.
+  eexists _.
+  apply Hhighest.
+Qed.
+
+Theorem highest_index_is_app {A} (l1 l2: list A) x i :
+  highest_index_is (l1 ++ l2) x i ↔
+  (i ≥ length l1 ∧ highest_index_is l2 x (i - length l1)%nat) ∨
+  (x ∉ l2 ∧ highest_index_is l1 x i).
+Proof.
+  split.
+  {
+    intros [Hacc Hhighest].
+    apply lookup_app_Some in Hacc.
+    destruct Hacc as [Hacc|[Hibnd Hacc]].
+    {
+      right.
+      split.
+      {
+        intros Hin.
+        apply elem_of_list_lookup in Hin.
+        destruct Hin as [i2 Hacc2].
+        specialize (Hhighest (i2 + length l1)%nat).
+        rewrite lookup_app_r in Hhighest.
+        2: {
+          apply lookup_lt_Some in Hacc2.
+          lia.
+        }
+        rewrite Nat.add_sub in Hhighest.
+        apply Hhighest in Hacc2.
+        apply lookup_lt_Some in Hacc.
+        lia.
+      }
+      split; first by assumption.
+      intros i2 Hacc2.
+      pose proof (lookup_lt_Some _ _ _ Hacc2) as Hi2bnd.
+      rewrite -(lookup_app_l _ l2) in Hacc2; last by assumption.
+      apply Hhighest in Hacc2.
+      assumption.
+    }
+    left.
+    split; first by lia.
+    split; first by assumption.
+    intros i2 Hacc2.
+    specialize (Hhighest (i2 + length l1)%nat).
+    rewrite lookup_app_r in Hhighest.
+    2: {
+      apply lookup_lt_Some in Hacc.
+      lia.
+    }
+    rewrite Nat.add_sub in Hhighest.
+    apply Hhighest in Hacc2.
+    lia.
+  }
+  intros [[Hbnd [Hacc Hhighest]]|[Hnotin [Hacc Hhighest]]].
+  {
+    split.
+    {
+      apply lookup_app_Some.
+      right.
+      split; first by lia.
+      assumption.
+    }
+    intros i2 Hacc2.
+    apply lookup_app_Some in Hacc2.
+    destruct Hacc2 as [Hacc2|[Hi2bnd Hacc2]].
+    {
+      apply lookup_lt_Some in Hacc2.
+      lia.
+    }
+    apply Hhighest in Hacc2.
+    lia.
+  }
+  split.
+  {
+    apply lookup_app_l_Some.
+    assumption.
+  }
+  intros i2 Hacc2.
+  apply lookup_app_Some in Hacc2.
+  destruct Hacc2 as [Hacc2|[Hi2bnd Hacc2]].
+  {
+    apply Hhighest in Hacc2.
+    assumption.
+  }
+  apply elem_of_list_lookup_2 in Hacc2.
+  contradiction.
+Qed.
+
+Theorem highest_index_is_app_r_id {A} (l: list A) x :
+  highest_index_is (l ++ [x]) x (length l).
+Proof.
+  apply highest_index_is_app.
+  left.
+  split; first by lia.
+  rewrite Nat.sub_diag.
+  split; first by reflexivity.
+  intros i Hacc.
+  apply lookup_lt_Some in Hacc.
+  simpl in Hacc.
+  lia.
+Qed.
+
+Theorem highest_index_is_insert_ne {A} l (x y: A) i j :
+  x ≠ y →
+  i ≠ j →
+  highest_index_is l y i →
+  highest_index_is (<[j:=x]>l) y i.
+Proof.
+  intros Hx Hi [Hbnd Hacc].
+  split.
+  {
+    rewrite list_lookup_insert_ne; last by lia.
+    assumption.
+  }
+  intros i2 Hacc2.
+  destruct (decide (i2 = j)) as [->|Hi2].
+  {
+    pose proof (lookup_lt_Some _ _ _ Hacc2) as Hjbnd.
+    rewrite insert_length in Hjbnd.
+    rewrite list_lookup_insert in Hacc2; last by assumption.
+    inversion Hacc2.
+    contradiction.
+  }
+  rewrite list_lookup_insert_ne in Hacc2; last by lia.
+  apply Hacc in Hacc2.
+  assumption.
+Qed.
+
+Theorem highest_index_is_insert_eq {A} l (x : A) i j :
+  (j < length l)%nat →
+  highest_index_is l x i →
+  highest_index_is (<[j:=x]>l) x (i `max` j).
+Proof.
+  intros Hjbnd [Hbnd Hhighest].
+  split.
+  {
+    destruct (decide (i ≤ j)%nat) as [Hcmp|Hcmp].
+    {
+      rewrite Max.max_r; last by assumption.
+      rewrite list_lookup_insert; last by assumption.
+      reflexivity.
+    }
+    rewrite list_lookup_insert_ne; last by lia.
+    rewrite Max.max_l; last by lia.
+    assumption.
+  }
+  intros i2 Hacc2.
+  destruct (decide (j = i2)%nat) as [<-|Hi2]; first by lia.
+  rewrite list_lookup_insert_ne in Hacc2; last by assumption.
+  apply Hhighest in Hacc2.
+  lia.
+Qed.
+
+Theorem highest_index_is_insert_eq_eq {A} l (x : A) i :
+  highest_index_is l x i →
+  highest_index_is (<[i:=x]>l) x i.
+Proof.
+  intros Hhighest.
+  apply (highest_index_is_insert_eq _ _ _ i) in Hhighest.
+  2: {
+    destruct Hhighest as [Hacc _].
+    apply lookup_lt_Some in Hacc.
+    assumption.
+  }
+  rewrite Nat.max_id in Hhighest.
+  assumption.
+Qed.

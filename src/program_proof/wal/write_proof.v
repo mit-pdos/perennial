@@ -341,10 +341,8 @@ Proof.
     iIntros (k x Hkx) "H".
     iDestruct "H" as (b txn_id') "(% & H & %)".
     iExists b, txn_id'. iFrame. iFrame "%". iPureIntro.
-    destruct (decide (k ∈ already_installed)).
-    { intuition. rewrite take_app_le; eauto. lia. }
-    split. { intuition. }
-    rewrite -> take_app_le by lia. intuition eauto.
+    split; first by lia.
+    intuition; rewrite take_app_le //; lia.
 Qed.
 
 Lemma is_durable_append γ cs txns txns' installed_txn_id diskEnd_txn_id :
@@ -357,11 +355,9 @@ Proof.
   iExists _, _, _, _.
   iFrame.
   iPureIntro.
-  rewrite /circ_matches_txns in Hcirc_matches |- *.
-  rewrite -> subslice_app_1 by lia.
-  rewrite -> subslice_app_1 by lia.
-  rewrite -> subslice_app_1 by lia.
-  intuition.
+  split; last by lia.
+  apply is_memLog_boundaries_append_txns.
+  assumption.
 Qed.
 
 Lemma is_txn_app txns extra txn_id pos :
@@ -391,7 +387,21 @@ Proof.
   iSplit.
   { iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
   iSplit.
-  { iExists _. iFrame "#". iFrame "%". iPureIntro. eapply is_txn_app. eauto. }
+  {
+    iExists _.
+    iFrame "#".
+    iExists _.
+    iFrame "%".
+    iPureIntro.
+    rewrite app_length subslice_app_1; last by lia.
+    split; first by lia.
+    split; first by assumption.
+    split.
+    - eapply is_txn_app.
+      assumption.
+    - eapply is_txn_app.
+      assumption.
+  }
   iFrame "#".
   done.
 Qed.
@@ -794,7 +804,11 @@ Proof.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart_txn.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn.
         iMod (fupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
-        iDestruct (memLog_linv_txns_to_is_mem_memLog with "Htxns") as "%His_mem_memLog"; eauto; try lia.
+        unshelve (
+          epose proof (
+            memLog_linv_txns_to_is_mem_memLog _ _ _ _ _ _ _ _ _ _ _ Htxns
+          )
+        ); eauto.
         iMod ("Hsim" $! _ (set log_state.txns (λ txns, txns ++ [(slidingM.endPos memLog', bs)]) σs)
                 with "[% //] [%] [$HP]") as "(%Haddrs & HP & HQ)".
         { simpl; monad_simpl.
@@ -878,32 +892,12 @@ Proof.
         }
         iSplit.
         {
-          iNamed "Htxns".
-          rewrite /memLog_linv_txns.
           iPureIntro.
-          rewrite !memWrite_preserves_logIndex !memWrite_same_mutable.
-          pose proof (is_txn_bound _ _ _ HmemStart_txn).
-          pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn).
-          split_and!.
-          - rewrite -subslice_before_app_eq; last by lia.
-            rewrite memWrite_preserves_mutable; eauto; try word.
-            rewrite /numMutableN /slidingM.logIndex. word.
-          - rewrite -> subslice_app_1 by lia.
-            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
-            auto.
-          - rewrite -> subslice_app_1 by lia.
-            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
-            auto.
-          - rewrite -> subslice_app_1 by lia.
-            rewrite memWrite_preserves_mutable_suffix; [ | word | word | word ].
-            auto.
-          - rewrite -> drop_app_le by lia.
-            eapply memWrite_has_updates in His_nextTxn; [ | eauto | ].
-            { rewrite memWrite_preserves_logIndex in His_nextTxn.
-              rewrite memWrite_same_mutable in His_nextTxn. done. }
-            lia.
+          apply memLog_linv_txns_memWrite.
+          assumption.
         }
         iPureIntro.
+        split; last by lia.
         rewrite fmap_app.
         eapply Forall_app; split.
         { pose proof (memWrite_memEnd_bound σ.(memLog) bs).

@@ -49,7 +49,7 @@ Proof.
   iNamed "circ.end".
   pose proof (is_txn_bound _ _ _ Hend_txn) as Hend_bound.
   iMod (fupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
-  iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, diskEnd_txn_id) σ)
+  iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, (σ.(log_state.durable_lb) `max` diskEnd_txn_id)%nat) σ)
           with "[% //] [%] [$HP]") as "[HP HQ]".
   { simpl.
     econstructor; monad_simpl.
@@ -69,7 +69,23 @@ Proof.
     iFrame.
     iExists _. iFrame "Howncs".
     iExists installed_txn_id, _. simpl. iFrame "# ∗ %".
-    iExists _. iFrame "%". iPureIntro. lia.
+    iExists _, diskEnd_txn_id.
+    rewrite (Max.max_l (_ `max` _)%nat _); last by lia.
+    iFrame "# %".
+    iPureIntro.
+    split; first by lia.
+    split; first by lia.
+    destruct (decide (σ.(log_state.durable_lb) ≤ diskEnd_txn_id)).
+    {
+      rewrite Max.max_r; last by lia.
+      rewrite subslice_zero_length.
+      apply Forall_nil_2.
+    }
+    rewrite Max.max_l; last by lia.
+    rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
+      last by lia.
+    apply Forall_app in Hdurable_nils.
+    intuition.
 Qed.
 
 Theorem simulate_flush l γ Q σ dinit pos txn_id nextDiskEnd_txn_id mutable :
@@ -82,11 +98,14 @@ Theorem simulate_flush l γ Q σ dinit pos txn_id nextDiskEnd_txn_id mutable :
       ⌜wal_wf σ⌝
         -∗ ⌜relation.denote (log_flush pos txn_id) σ σ' b⌝ -∗ P σ ={⊤ ∖ ↑N}=∗ P σ' ∗ Q) -∗
   |NC={⊤ ∖ ↑innerN}=>
-      ∃ σ' nextDiskEnd_txn_id',
-        is_wal_inner l γ σ' dinit ∗ P σ' ∗ Q ∗
-        memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id' ∗
-        ⌜nextDiskEnd_txn_id ≤ nextDiskEnd_txn_id' < length σ.(log_state.txns)⌝ ∗
-        ⌜Forall (λ x, x.2 = []) (subslice (S nextDiskEnd_txn_id) (S nextDiskEnd_txn_id') σ.(log_state.txns))⌝.
+    ∃ σ' nextDiskEnd_txn_id',
+      is_wal_inner l γ σ' dinit ∗ P σ' ∗ Q ∗
+      memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id' ∗
+      ⌜nextDiskEnd_txn_id ≤ nextDiskEnd_txn_id' < length σ.(log_state.txns)⌝ ∗
+      ⌜Forall (λ x, x.2 = []) (
+        subslice (S nextDiskEnd_txn_id) (S nextDiskEnd_txn_id')
+        σ.(log_state.txns)
+      )⌝.
 Proof.
   iIntros "#Hcirc Hinv #Hlb #Hpos_txn HstableSet Hfupd".
   iDestruct "Hinv" as "[Hinner HP]".
@@ -98,30 +117,76 @@ Proof.
   iDestruct (txn_pos_valid_general with "Htxns_ctx Hpos_txn") as %His_txn.
   pose proof (is_txn_bound _ _ _ His_txn).
   pose proof (is_txn_bound _ _ _ Hend_txn).
-  pose proof (wal_wf_txns_mono_pos Hwf His_txn Hend_txn).
+  pose proof (wal_wf_txns_mono_pos Hwf His_txn Hend_txn) as Hpos_diskEnd.
 
   iMod (fupd_mask_subseteq (⊤ ∖ ↑N)) as "HinnerN"; first by solve_ndisj.
-  iMod ("Hfupd" $! σ (set log_state.durable_lb (λ _, Nat.max σ.(log_state.durable_lb) txn_id) σ) with "[% //] [%] HP") as "[HP HQ]".
+  iMod ("Hfupd" $!
+    σ
+    (
+      set log_state.durable_lb (λ _,
+        (diskEnd_txn_id `max` (σ.(log_state.durable_lb) `max` txn_id))%nat
+      ) σ
+    )
+    with "[% //] [%] HP"
+  ) as "[HP HQ]".
   { simpl; monad_simpl.
-    repeat (econstructor; monad_simpl; eauto).
-    lia. }
+    repeat (econstructor; monad_simpl; eauto); lia.
+  }
   iMod "HinnerN" as "_".
   iFrame "HQ".
 
-  iAssert (|==> ⌜Forall (λ x, x.2 = []) (subslice (S diskEnd_txn_id) (S (diskEnd_txn_id `max` txn_id)) σ.(log_state.txns))⌝ ∗
-           (diskEnd_txn_id `max` txn_id)%nat [[γ.(stable_txn_ids_name)]]↦ro tt ∗
-           nextDiskEnd_inv γ σ.(log_state.txns) ∗
-           txns_ctx γ σ.(log_state.txns) ∗
-           ∃ nextDiskEnd_txn_id',
-             memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id' ∗
-             ⌜nextDiskEnd_txn_id ≤ nextDiskEnd_txn_id' < length σ.(log_state.txns)⌝ ∗
-             ⌜Forall (λ x, x.2 = []) (subslice (S nextDiskEnd_txn_id) (S nextDiskEnd_txn_id') σ.(log_state.txns))⌝
-          )%I
+  iAssert (⌜
+    int.Z pos = int.Z diskEnd →
+    Forall (λ x, x.2 = []) (
+      subslice
+        (S (σ.(log_state.durable_lb) `max` diskEnd_txn_id))
+        (S txn_id)
+        σ.(log_state.txns)
+    )
+  ⌝)%I with "[HstableSet HnextDiskEnd_inv]" as "%Hpos_diskEnd_nils".
+  {
+    iApply pure_impl_2.
+    iIntros (Hpos_diskEnd_eq).
+    apply word.unsigned_inj in Hpos_diskEnd_eq.
+    rewrite Hpos_diskEnd_eq in His_txn.
+    iPoseProof (subslice_stable_nils2 with "[HstableSet HnextDiskEnd_inv]")
+      as "Hnils".
+    1: eassumption.
+    1: apply Hdurable_lb_pos.
+    1: apply His_txn.
+    {
+      iSplit; first by iFrame.
+      iFrame "#".
+    }
+    iFrame.
+  }
+
+  iAssert (|==>
+    ⌜Forall (λ x, x.2 = []) (
+      subslice
+        (S diskEnd_txn_id)
+        (S (diskEnd_txn_id `max` (txn_id)))
+        σ.(log_state.txns)
+    )⌝ ∗
+    (diskEnd_txn_id `max` (txn_id))%nat
+      [[γ.(stable_txn_ids_name)]]↦ro tt ∗
+    nextDiskEnd_inv γ σ.(log_state.txns) ∗
+    txns_ctx γ σ.(log_state.txns) ∗
+    ∃ nextDiskEnd_txn_id',
+      memLog_linv_nextDiskEnd_txn_id γ mutable nextDiskEnd_txn_id' ∗
+      ⌜nextDiskEnd_txn_id ≤ nextDiskEnd_txn_id' < length σ.(log_state.txns)⌝ ∗
+      ⌜Forall (λ x, x.2 = []) (
+        subslice (S nextDiskEnd_txn_id) (S nextDiskEnd_txn_id')
+        σ.(log_state.txns)
+      )⌝
+  )%I
     with "[HstableSet HnextDiskEnd_inv Htxns_ctx]"
     as "H".
   {
-    destruct (decide (txn_id ≤ diskEnd_txn_id)).
-    { rewrite -> (max_l diskEnd_txn_id txn_id) by lia.
+    destruct (decide (
+      txn_id ≤ diskEnd_txn_id
+    )%nat).
+    { rewrite -> (max_l diskEnd_txn_id _) by lia.
       rewrite ?subslice_zero_length. iSplitR; first by done.
 
       iAssert (⌜nextDiskEnd_txn_id < length σ.(log_state.txns)⌝)%I as "%HnextDiskEnd_txn_bound".
@@ -137,11 +202,13 @@ Proof.
       iExists nextDiskEnd_txn_id.
       rewrite ?subslice_zero_length.
       iFrame "HstableSet".
-      iModIntro. iPureIntro. intuition eauto; try lia.
+      iModIntro.
+      iSplit; first by iPureIntro; lia.
+      iPureIntro.
+      eauto.
     }
 
     pose proof (wal_wf_txns_mono_pos Hwf His_txn Hend_txn).
-    rewrite -> max_r by lia.
     replace diskEnd with pos in * by word.
 
     iMod (stable_txn_id_advance _ _ _ txn_id
@@ -149,22 +216,39 @@ Proof.
       as "H"; eauto.
     { lia. }
 
-    iDestruct "H" as "(Hstable & HnextDiskEnd_inv & Htxns_ctx & H)".
+    iDestruct "H" as "(#Hstable & HnextDiskEnd_inv & Htxns_ctx & H)".
     iDestruct "H" as (nextDiskEnd_txn_id') "(HstableSet & %Hle & %Hnils')".
     iModIntro.
 
     iSplit.
     {
-      iDestruct (subslice_stable_nils with "[$HnextDiskEnd_inv $Hend_txn_stable]") as "H".
+      iDestruct (subslice_stable_nils with "[$HnextDiskEnd_inv $Hend_txn_stable]") as "%Hnils_txn".
       1: eassumption.
       2: eassumption.
       2: eapply His_txn.
       1: lia.
-      done.
+      iPureIntro.
+      destruct (decide (diskEnd_txn_id ≤ txn_id)%nat).
+      {
+        rewrite Max.max_r; last by lia.
+        assumption.
+      }
+      rewrite Max.max_l; last by lia.
+      rewrite subslice_zero_length.
+      apply Forall_nil_2.
     }
 
-    iFrame "Hstable".
     iFrame "HnextDiskEnd_inv".
+    iSplitR.
+    {
+      destruct (decide (diskEnd_txn_id ≤ txn_id)%nat).
+      {
+        rewrite (Max.max_r _ txn_id); last by lia.
+        iFrame "#".
+      }
+      rewrite (Max.max_l _ txn_id); last by lia.
+      iFrame "#".
+    }
     iFrame "Htxns_ctx".
     iExists nextDiskEnd_txn_id'.
     iFrame "HstableSet".
@@ -175,9 +259,8 @@ Proof.
   iDestruct "H" as (nextDiskEnd_txn_id') "(HstableSet & %Hle & %Hnils')".
 
   iModIntro.
-  iExists _, nextDiskEnd_txn_id'; iFrame "HP".
-  iFrame "HstableSet".
-  iFrame "%".
+  iExists _, _; iFrame "HP".
+  iFrame (Hle Hnils') "HstableSet".
   iSplit; auto.
   { iPureIntro.
     eapply wal_wf_update_durable; eauto.
@@ -187,28 +270,84 @@ Proof.
   simpl.
   iFrame.
   iExists _; iFrame.
-  iExists installed_txn_id, (Nat.max diskEnd_txn_id txn_id). iFrame "# ∗".
-  iSplitL "Hinstalled".
-  { iNamed "Hinstalled". iExists _, _. iFrame. iFrame "#". iPureIntro. auto with lia. }
+  iExists installed_txn_id, _. iFrame "# ∗".
+  iSplitL.
+  2: {
+    iPureIntro.
+    auto with lia.
+  }
+  iExists _, diskEnd_txn_id.
+  simpl.
+  iSplit; first by (iPureIntro; lia).
+  iSplit; first by (iPureIntro; lia).
   iSplit.
-  - iNamed "Hdurable".
-    iExists _, _, _, _.
-    iFrame.
+  {
     iPureIntro.
-    unfold circ_matches_txns in *. intuition try lia.
-    rewrite -> (subslice_split_r _ (S diskEnd_txn_id) _ σ.(log_state.txns)) by lia.
-    eapply has_updates_app_nils; eauto.
-  - iExists diskEnd.
+    destruct (decide (
+      (diskEnd_txn_id `max` txn_id) ≤ σ.(log_state.durable_lb)
+    )%nat).
+    {
+      rewrite Max.max_r; last by lia.
+      rewrite Max.max_l; last by lia.
+      destruct (decide (S diskEnd_txn_id ≤ txn_id)%nat).
+      {
+        rewrite Max.max_r in Hnils; last by lia.
+        rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
+          last by lia.
+        apply Forall_app in Hdurable_nils.
+        intuition.
+      }
+      rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
+        last by lia.
+      apply Forall_app in Hdurable_nils.
+      intuition.
+    }
+    replace (_ `max` (_ `max` _))%nat with (diskEnd_txn_id `max` txn_id)%nat
+      by lia.
+    assumption.
+  }
+  iSplit.
+  {
     iPureIntro.
-    split_and!; simpl; auto.
-    + eapply Nat.max_le_compat_r. lia.
-    + pose proof (wal_wf_txns_mono_pos Hwf His_txn Hend_txn).
-      destruct (decide (txn_id ≤ diskEnd_txn_id)).
-      { rewrite max_l; last by lia. eauto. }
-      rewrite max_r; last by lia.
-      destruct (decide (int.Z pos = int.Z diskEnd)); try lia.
-      replace diskEnd with pos; eauto.
-      word.
+    destruct (decide (int.Z pos < int.Z diskEnd)) as [Hcmp|Hcmp].
+    {
+      apply Hpos_diskEnd in Hcmp.
+      replace (_ `max` _)%nat
+        with (σ.(log_state.durable_lb) `max` diskEnd_txn_id)%nat
+        by lia.
+      eassumption.
+    }
+    rewrite -HdiskEnd_val in Hlb.
+    assert (int.Z pos = int.Z diskEnd) as Hpos_diskEnd_eq by lia.
+    apply word.unsigned_inj in Hpos_diskEnd_eq.
+    subst pos.
+    rewrite Max.max_l; last by lia.
+    destruct (decide
+      ((σ.(log_state.durable_lb) `max` diskEnd_txn_id) ≤ txn_id)%nat
+    ).
+    {
+      rewrite Max.max_r; last by lia.
+      rewrite Max.max_r; last by lia.
+      assumption.
+    }
+    replace (_ `max` _)%nat
+      with (σ.(log_state.durable_lb) `max` diskEnd_txn_id)%nat; last by lia.
+    assumption.
+  }
+  iSplit; first by (iPureIntro; assumption).
+  iSplit; first by (iPureIntro; assumption).
+  destruct (decide (
+    txn_id ≤ (σ.(log_state.durable_lb) `max` diskEnd_txn_id)
+  )%nat).
+  {
+    replace ((_ `max` _) `max` _)%nat
+      with (σ.(log_state.durable_lb) `max` diskEnd_txn_id)%nat;
+      last by lia.
+    iFrame "#".
+  }
+  replace ((_ `max` _) `max` _)%nat
+    with (diskEnd_txn_id `max` txn_id)%nat; last by lia.
+  iFrame "#".
 
   Unshelve.
   all: try constructor.
@@ -275,9 +414,9 @@ Proof.
 
   wp_bind (For _ _ _).
   wp_apply (wp_forBreak_cond (λ b,
-               wal_linv σₛ.(wal_st) γ ∗ locked #σₛ.(memLock) ∗
-               if b then ⊤ else diskEnd_at_least γ.(circ_name) (int.Z pos))%I
-           with "[] [$Hlkinv $Hlocked]").
+    wal_linv σₛ.(wal_st) γ ∗ locked #σₛ.(memLock) ∗
+    if b then ⊤ else diskEnd_at_least γ.(circ_name) (int.Z pos)
+  )%I with "[] [$Hlkinv $Hlocked]").
   { iIntros "!>" (Φ') "(Hlkinv&Hlocked&_) HΦ".
     wp_loadField.
     iNamed "Hlkinv".
@@ -337,15 +476,78 @@ Proof.
     iFrame "∗#%".
     iNamed "Hlinv_pers".
     iFrame "#%".
-    iNamed "Htxns".
-    iFrame "%".
-    iPureIntro. intuition (eauto; try lia).
-    - rewrite -> (subslice_split_r _ (S nextDiskEnd_txn_id) _ σ.(log_state.txns)); try lia.
-      eapply has_updates_app_nils; eauto.
-    - rewrite <- (subslice_to_end _ (length σ.(log_state.txns)) σ.(log_state.txns)) by lia.
-      rewrite <- (subslice_to_end _ (length σ.(log_state.txns)) σ.(log_state.txns)) in His_nextTxn by lia.
-      rewrite -> (subslice_split_r _ (S nextDiskEnd_txn_id') _ σ.(log_state.txns)) in His_nextTxn by lia.
-      eapply has_updates_prepend_nils in His_nextTxn; eauto.
+    iPureIntro.
+    split; first by (intuition (eauto; try lia)).
+    pose proof Htxns as [Hbnds Hregs].
+    split.
+    {
+      intros bndry Hbndry.
+      specialize (Hbnds bndry).
+      apply elem_of_list_lookup in Hbndry.
+      destruct Hbndry as [i Hbndry].
+      do 4 (destruct i; first by (
+        simpl in Hbndry; inversion Hbndry; subst bndry; clear Hbndry;
+        apply Hbnds; set_solver
+      )).
+      destruct i.
+      2: {
+        destruct i; first by (
+          simpl in Hbndry; inversion Hbndry; subst bndry; clear Hbndry;
+          apply Hbnds; set_solver
+        ).
+        inversion Hbndry.
+      }
+      simpl in Hbndry; inversion Hbndry; subst bndry; clear Hbndry.
+      simpl.
+      clear Hbnds.
+      pose proof Htxns as [Hbnds _].
+      unshelve (epose proof (Hbnds _ _) as Hbnd).
+      2: {
+        apply elem_of_list_lookup.
+        exists mwrb_us.
+        reflexivity.
+      }
+      simpl in Hbnd.
+      lia.
+    }
+    intros i bndry1 bndry2 Hbndry1 Hbndry2.
+    specialize (Hregs i bndry1 bndry2).
+    do 3 (destruct i; first by (
+      simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+      simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2;
+      simpl; apply Hregs; reflexivity
+    )).
+    clear Hregs.
+    unshelve (epose proof (
+      is_memLog_boundaries_region_consec mwrb_uss _ _ _ _ _ Htxns _ _
+    ) as Hreg1).
+    3-4: reflexivity.
+    unshelve (epose proof (
+      is_memLog_boundaries_region_consec mwrb_us _ _ _ _ _ Htxns _ _
+    ) as Hreg2).
+    3-4: reflexivity.
+    simpl in Hreg1.
+    simpl in Hreg2.
+    destruct i.
+    {
+      simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+      simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2.
+      simpl.
+      split; first by lia.
+      split; first by lia.
+      rewrite -(subslice_app_contig _ (S nextDiskEnd_txn_id)); last by lia.
+      apply is_memLog_region_append_nils; first by assumption.
+      intuition.
+    }
+    destruct i; last by inversion Hbndry2.
+    simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+    simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2.
+    simpl.
+    split; first by lia.
+    split; first by lia.
+    eapply is_memLog_region_prepend_nils; first by eassumption.
+    rewrite subslice_app_contig; last by lia.
+    intuition.
   }
   wp_pures. by iApply ("HΦ" with "HQ").
 Qed.

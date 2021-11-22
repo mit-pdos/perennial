@@ -92,7 +92,6 @@ Proof.
   )).
   iNamed "HmemLog_linv".
   iNamed "Hlinv_pers".
-  iNamed "Htxns".
   iDestruct "HmemStart_txn" as "#HmemStart_txn".
   iDestruct "HmemEnd_txn" as "#HmemEnd_txn".
   iMod (txn_pos_valid_locked with "Hwal HmemEnd_txn Howntxns") as "(%HmemEnd_is_txn & Howntxns)".
@@ -145,36 +144,22 @@ Proof.
   iSplit.
   { iPureIntro. lia. }
   iSplit.
-  2: { rewrite logIndex_set_mutable /=.
-    replace (S (length σs.(log_state.txns) - 1)) with (length σs.(log_state.txns)) by lia.
-    rewrite !drop_all.
+  2: {
     iPureIntro.
-    apply has_updates_eq_nil; auto.
-    rewrite /slidingM.logIndex /slidingM.endPos /=.
-    word_cleanup.
-    replace (Z.to_nat (int.Z σ.(memLog).(slidingM.start) + length σ.(memLog).(slidingM.log)) -
-         int.nat σ.(memLog).(slidingM.start))%nat with (length σ.(memLog).(slidingM.log)) by lia.
-    rewrite drop_all //. }
-  rewrite (subslice_split_r _ (S nextDiskEnd_txn_id) _ σs.(log_state.txns)); try lia.
-  erewrite <- (subslice_to_end _ _ σs.(log_state.txns)) in His_nextTxn by reflexivity.
-  replace (S (length σs.(log_state.txns) - 1)) with (length σs.(log_state.txns)) by lia.
-  rewrite ?logIndex_set_mutable.
-  rewrite (subslice_split_r _ (slidingM.logIndex σ.(memLog) σ.(memLog).(slidingM.mutable)) _ σ.(memLog).(slidingM.log)).
-  {
-    erewrite <- (subslice_to_end _ (slidingM.logIndex σ.(memLog) (slidingM.endPos σ.(memLog))) σ.(memLog).(slidingM.log)) in His_nextTxn.
-    { iPureIntro. eapply has_updates_app; eauto. }
-    rewrite /slidingM.logIndex /slidingM.endPos. word.
-  }
-  {
-    rewrite /slidingM.logIndex /slidingM.endPos /=.
-    rewrite /slidingM.wf /slidingM.endPos /= in Hsliding_wf'.
+    rewrite /slidingM.endPos.
     word.
   }
-  {
-    rewrite /slidingM.logIndex /=.
-    rewrite /slidingM.wf /slidingM.endPos /= in Hsliding_wf'.
-    word.
-  }
+  iPureIntro.
+  rewrite /memLog_linv_txns !logIndex_set_mutable /slidingM.endPos
+    /mwrb.logend /slidingM.logIndex /=.
+  rewrite /memLog_linv_txns /mwrb.logend /slidingM.logIndex in Htxns.
+  replace (S (_ - 1))%nat with (length σs.(log_state.txns)); last by lia.
+  eapply (is_memLog_boundaries_move _ _ _ mwrb_us) in Htxns;
+    last by reflexivity.
+  simpl in Htxns.
+  replace (int.nat (u64_instance.u64.(word.add) _ _) - _)%nat
+    with (length σ.(memLog).(slidingM.log)) by word.
+  assumption.
 Qed.
 
 Theorem wp_endGroupTxn st γ :

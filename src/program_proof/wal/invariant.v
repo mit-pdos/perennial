@@ -10,6 +10,7 @@ From Perennial.program_proof Require Export disk_prelude.
 From Perennial.program_proof.wal Require Export lib highest thread_owned txns_ctx.
 From Perennial.program_proof.wal Require Export circ_proof sliding_proof.
 From Perennial.program_proof.wal Require Export transitions.
+From Perennial.program_proof.wal Require Export boundaries.
 
 Transparent slice.T.
 
@@ -95,6 +96,9 @@ Record wal_names := mkWalNames
     diskEnd_mem_txn_id_name : gname;
     installed_pos_mem_name : gname;
     installed_txn_id_mem_name : gname;
+    (* the on-disk diskEnd for the interface invariant instead of the lock invariant *)
+    diskEnd_name : gname;
+    diskEnd_txn_id_name : gname;
     base_disk_name : gname;
   }.
 
@@ -108,6 +112,7 @@ Global Instance _eta_wal_names : Settable _ :=
                         installer_pos_name; installer_txn_id_name;
                         diskEnd_mem_name; diskEnd_mem_txn_id_name;
                         installed_pos_mem_name; installed_txn_id_mem_name;
+                        diskEnd_name; diskEnd_txn_id_name;
                         base_disk_name>.
 
 Implicit Types (γ: wal_names).
@@ -140,38 +145,46 @@ Definition locked_wf (σ: locked_state) :=
   int.Z σ.(memLog).(slidingM.start) ≤ int.Z σ.(diskEnd) ≤ int.Z σ.(memLog).(slidingM.mutable) ∧
   slidingM.wf σ.(memLog).
 
-Definition memLog_linv_txns (σ: slidingM.t)
-           (installer_pos_mem diskEnd logger_pos: u64) txns
+Definition mwrb_ms := 0%nat.
+Definition mwrb_des := 1%nat.
+Definition mwrb_de := 2%nat.
+Definition mwrb_uss := 3%nat.
+Definition mwrb_us := 4%nat.
+Definition mwrb_end := 5%nat.
+
+Definition pmwrb_ps := 0%nat.
+Definition pmwrb_des := 1%nat.
+Definition pmwrb_de := 2%nat.
+Definition pmwrb_pe := 3%nat.
+
+Definition memLog_linv_txns (σ: slidingM.t) txns
+           installer_pos_mem diskEnd logger_pos
            installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id
-           logger_txn_id nextDiskEnd_txn_id : iProp Σ :=
-  "%His_installerEnd" ∷
-    ⌜has_updates
-      (take (slidingM.logIndex σ installer_pos_mem)
-            σ.(slidingM.log))
-      (subslice (S installed_txn_id_mem) (S installer_txn_id_mem) txns)⌝ ∗
-  "%His_diskEnd" ∷
-    ⌜has_updates
-      (subslice (slidingM.logIndex σ installer_pos_mem)
-                (slidingM.logIndex σ diskEnd)
-                σ.(slidingM.log))
-      (subslice (S installer_txn_id_mem) (S diskEnd_txn_id) txns)⌝ ∗
-  "%His_loggerEnd" ∷
-    ⌜has_updates
-      (subslice (slidingM.logIndex σ diskEnd)
-                (slidingM.logIndex σ logger_pos)
-                σ.(slidingM.log))
-      (subslice (S diskEnd_txn_id) (S logger_txn_id) txns)⌝ ∗
-  "%His_nextDiskEnd" ∷
-    ⌜has_updates
-      (subslice (slidingM.logIndex σ logger_pos)
-                (slidingM.logIndex σ σ.(slidingM.mutable))
-                σ.(slidingM.log))
-      (subslice (S logger_txn_id) (S nextDiskEnd_txn_id) txns)⌝ ∗
-  "%His_nextTxn" ∷
-    ⌜has_updates
-      (drop (slidingM.logIndex σ σ.(slidingM.mutable))
-            σ.(slidingM.log))
-      (drop (S nextDiskEnd_txn_id) txns)⌝.
+           logger_txn_id nextDiskEnd_txn_id :=
+  is_memLog_boundaries txns σ.(slidingM.log)
+    [
+      {|
+        mwrb.txn := (S installed_txn_id_mem);
+        mwrb.upd := 0%nat;
+      |};
+      {|
+        mwrb.txn := (S installer_txn_id_mem);
+        mwrb.upd := (slidingM.logIndex σ installer_pos_mem);
+      |};
+      {|
+        mwrb.txn := (S diskEnd_txn_id);
+        mwrb.upd := (slidingM.logIndex σ diskEnd);
+      |};
+      {|
+        mwrb.txn := (S logger_txn_id);
+        mwrb.upd := (slidingM.logIndex σ logger_pos);
+      |};
+      {|
+        mwrb.txn := (S nextDiskEnd_txn_id);
+        mwrb.upd := (slidingM.logIndex σ σ.(slidingM.mutable));
+      |};
+      mwrb.logend txns σ.(slidingM.log)
+    ].
 
 (** the simple role of the memLog is to contain all the transactions in the
 abstract state starting at the installed_txn_id_mem *)
@@ -217,12 +230,13 @@ Definition memLog_linv_pers_core γ (σ: slidingM.t)
     (* Here we establish what the memLog contains, which is necessary for reads
     to work (they read through memLogMap, but the lock invariant establishes
     that this matches memLog). *)
-    "#Htxns" ∷ memLog_linv_txns σ
-      installer_pos_mem diskEnd logger_pos txns
-      installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id ∗
+    "%Htxns" ∷ ⌜memLog_linv_txns σ txns
+      installer_pos_mem diskEnd logger_pos
+      installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id⌝ ∗
     (* this should be true from wal_wf_txns_mono_pos' and HmemEnd_txn *)
     "%Htxnpos_bound" ∷
-      ⌜(Forall (λ pos, int.Z pos ≤ slidingM.memEnd σ) txns.*1)⌝
+      ⌜(Forall (λ pos, int.Z pos ≤ slidingM.memEnd σ) txns.*1)⌝ ∗
+    "%Hmutable_wf" ∷ ⌜int.Z σ.(slidingM.mutable) < 2 ^ 64⌝
   .
 
 Global Instance memLog_linv_pers_core_persistent γ σ diskEnd diskEnd_txn_id installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos_mem installer_txn_id_mem :
@@ -249,8 +263,8 @@ Definition memLog_linv_core γ (σ: slidingM.t) (diskEnd: u64) (diskEnd_txn_id: 
     "HownLoggerTxn_linv" ∷ ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id ∗
     "HownInstallerPosMem_linv" ∷ ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem ∗
     "HownInstallerTxnMem_linv" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem ∗
-    "HownDiskEndMem_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
-    "HownDiskEndMemTxn_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEndMem_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2/2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn_linv" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2/2) diskEnd_txn_id ∗
     "HownInstalledPosMem_linv" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
     "HownInstalledTxnMem_linv" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
   .
@@ -270,44 +284,113 @@ Definition memLog_linv γ (σ: slidingM.t) (diskEnd: u64) diskEnd_txn_id : iProp
 the updates (expressed in memLog_linv_txns in a finer-grained way for all the
 subsets, which are needed by the logger/installer but not for reads) *)
 Lemma memLog_linv_txns_combined_updates memLog diskEnd installer_pos_mem logger_pos txns installed_txn_id_mem diskEnd_txn_id installer_txn_id_mem logger_txn_id nextDiskEnd_txn_id :
-    ∀ (Htxn_id_ordering: (installed_txn_id_mem ≤ installer_txn_id_mem ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat)
-      (Hlog_index_ordering: int.Z installer_pos_mem ≤ int.Z diskEnd ≤ int.Z logger_pos ≤ int.Z memLog.(slidingM.mutable)),
-    memLog_linv_txns memLog installer_pos_mem diskEnd logger_pos txns installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id -∗
-    ⌜has_updates memLog.(slidingM.log) (drop (S installed_txn_id_mem) txns)⌝.
+    memLog_linv_txns memLog txns installer_pos_mem diskEnd logger_pos installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id →
+    has_updates memLog.(slidingM.log) (drop (S installed_txn_id_mem) txns).
 Proof.
-  intros ??.
-  iNamed 1.
-  pose proof (has_updates_app _ _ _ _ His_installerEnd His_diskEnd) as Hhas_updates_mid.
-  rewrite -subslice_from_start subslice_app_contig in Hhas_updates_mid.
-  2: rewrite /slidingM.logIndex; lia.
-  rewrite subslice_from_start subslice_app_contig in Hhas_updates_mid.
-  2: rewrite /slidingM.logIndex; lia.
-  pose proof (has_updates_app _ _ _ _ Hhas_updates_mid His_loggerEnd) as Hhas_updates_mid'.
-  rewrite -subslice_from_start subslice_app_contig in Hhas_updates_mid'.
-  2: rewrite /slidingM.logIndex; lia.
-  rewrite subslice_from_start subslice_app_contig in Hhas_updates_mid'.
-  2: rewrite /slidingM.logIndex; lia.
-  pose proof (has_updates_app _ _ _ _ Hhas_updates_mid' His_nextDiskEnd) as Hhas_updates_mid''.
-  rewrite -subslice_from_start subslice_app_contig in Hhas_updates_mid''.
-  2: rewrite /slidingM.logIndex; lia.
-  rewrite subslice_from_start subslice_app_contig in Hhas_updates_mid''.
-  2: rewrite /slidingM.logIndex; lia.
-  pose proof (has_updates_app _ _ _ _ Hhas_updates_mid'' His_nextTxn) as Hhas_updates.
-  rewrite take_drop /subslice drop_take_drop in Hhas_updates; try lia.
-  auto.
+  intros Hboundaries.
+  eapply (is_memLog_boundaries_region mwrb_ms mwrb_end) in Hboundaries.
+  2: {
+    rewrite /mwrb_ms /mwrb_end.
+    lia.
+  }
+  2-3: reflexivity.
+  simpl in Hboundaries.
+  destruct Hboundaries as (_&_&[Hhas _]).
+  rewrite -subslice_complete -subslice_from_drop in Hhas.
+  assumption.
 Qed.
 
 (* NOTE(tej): this is only proven because it was there before; it's just like
 the above but integrates Htxnpos_bound into the result *)
 Lemma memLog_linv_txns_to_is_mem_memLog memLog installer_pos_mem diskEnd logger_pos txns installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id :
-    ∀ (Htxn_id_ordering: (installed_txn_id_mem ≤ installer_txn_id_mem ≤ diskEnd_txn_id ≤ logger_txn_id ≤ nextDiskEnd_txn_id)%nat)
-      (Hlog_index_ordering: int.Z installer_pos_mem ≤ int.Z diskEnd ≤ int.Z logger_pos ≤ int.Z memLog.(slidingM.mutable))
-      (Htxnpos_bound: Forall (λ pos, int.Z pos ≤ slidingM.memEnd memLog) txns.*1),
-    memLog_linv_txns memLog installer_pos_mem diskEnd logger_pos txns installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id -∗
-    ⌜is_mem_memLog memLog txns installed_txn_id_mem⌝.
+    ∀ (Htxnpos_bound: Forall (λ pos, int.Z pos ≤ slidingM.memEnd memLog) txns.*1),
+    memLog_linv_txns memLog txns installer_pos_mem diskEnd logger_pos installed_txn_id_mem installer_txn_id_mem diskEnd_txn_id logger_txn_id nextDiskEnd_txn_id →
+    is_mem_memLog memLog txns installed_txn_id_mem.
 Proof.
-  iIntros (???) "Htxns".
-  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hupds; auto.
+  intros Htxnpos_bound HmemLog.
+  pose proof HmemLog as [Hvalid _].
+  apply memLog_linv_txns_combined_updates in HmemLog.
+  split; assumption.
+Qed.
+
+Theorem memLog_linv_txns_memWrite σ txns installer_pos_mem logger_pos installed_txn_id_mem installer_txn_id_mem logger_txn_id nextDiskEnd_txn_id txnid aupds :
+  memLog_linv_txns
+    σ.(memLog) txns
+    installer_pos_mem σ.(diskEnd)
+    logger_pos installed_txn_id_mem installer_txn_id_mem
+    σ.(locked_diskEnd_txn_id) logger_txn_id nextDiskEnd_txn_id →
+  memLog_linv_txns (memWrite σ.(memLog) aupds)
+    (txns ++ [(txnid, aupds)])
+    installer_pos_mem σ.(diskEnd) logger_pos installed_txn_id_mem
+    installer_txn_id_mem σ.(locked_diskEnd_txn_id) logger_txn_id
+    nextDiskEnd_txn_id.
+Proof.
+  intros HmemLog.
+  rewrite memWrite_memWrite_generic.
+  eapply is_memLog_boundaries_memWrite_generic
+    with (txn := (txnid, aupds)) in HmemLog.
+  2: {
+    simpl.
+    lia.
+  }
+  2-3: reflexivity.
+  rewrite /slidingM.logIndex /= in HmemLog.
+  rewrite /memLog_linv_txns /set /slidingM.logIndex /=.
+  apply HmemLog.
+Qed.
+
+Theorem memLog_linv_txns_rewrite upds txns (u_ms u_us: u64) t_ms t_us :
+  (int.nat u_us = int.nat u_ms + length upds)%nat →
+  (S t_ms ≤ S t_us ≤ length txns)%nat →
+  is_memLog_region
+    (subslice (S t_ms) (S t_us) (take (S t_us) txns))
+    (take (int.nat u_us - int.nat u_ms) upds) →
+  memLog_linv_txns
+  {|
+    slidingM.log := upds;
+    slidingM.start := u_ms;
+    slidingM.mutable := u_us;
+  |} (take (S t_us) txns)
+  (int.nat u_ms) (int.nat u_us) (int.nat u_us)
+  t_ms t_ms t_us t_us t_us.
+Proof.
+  intros Hupdslength Htord Hhas.
+  rewrite /memLog_linv_txns /slidingM.logIndex /mwrb.logend /=.
+  replace (int.nat (int.nat u_ms)) with (int.nat u_ms) by word.
+  replace (int.nat (int.nat u_us)) with (int.nat u_us) by word.
+  replace (int.nat u_us - int.nat u_ms)%nat with (length upds) in * by lia.
+  rewrite Nat.sub_diag /is_memLog_boundaries
+    take_length Min.min_l; last by lia.
+  rewrite firstn_all in Hhas.
+  split.
+  {
+    intros bndry Hbndry.
+    do 6 (
+      apply elem_of_cons in Hbndry;
+      destruct Hbndry as [->|Hbndry];
+      first by (simpl; word)
+    ).
+    inversion Hbndry.
+  }
+  simpl.
+  intros i bndry1 bndry2 Hbndry1 Hbndry2.
+  apply Logic.and_assoc.
+  split.
+  {
+    do 6 (destruct i; first by (
+      simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+      simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2;
+      simpl; word
+    )).
+    inversion Hbndry1.
+  }
+  do 6 (destruct i; first by (
+    simpl in Hbndry1; inversion Hbndry1; subst bndry1; clear Hbndry1;
+    simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2;
+    rewrite /= ?subslice_zero_length ?subslice_from_start ?firstn_all //;
+    try apply is_memLog_region_nil; try apply Hhas
+  )).
+  inversion Hbndry1.
 Qed.
 
 Definition wal_linv_fields st σ: iProp Σ :=
@@ -387,17 +470,26 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
 
 Global Instance is_wal_mem_persistent l γ : Persistent (is_wal_mem l γ) := _.
 
-Definition is_dblock_with_txns d txns (being_installed_start_txn_id: nat) (being_installed_end_txn_id: nat) (already_installed: gset Z) a : iProp Σ :=
+Definition is_dblock_with_txns d txns (being_installed_start_txn_id: nat) (being_installed_end_txn_id: nat) already_installed a : iProp Σ :=
   ∃ (b: Block) (txn_id': nat),
      (* every disk block has at least up to (being_installed_start_txn_id - 1)
      (most have exactly, but some blocks may be in the process of being installed) *)
-     ⌜being_installed_start_txn_id ≤ txn_id' ≤ being_installed_end_txn_id ∧
-      ( a ∈ already_installed → txn_id' = being_installed_end_txn_id ) ∧
-      let subtxns := take (S txn_id') txns in
-      apply_upds (txn_upds subtxns) d !! a = Some b⌝ ∗
+     ⌜
+      being_installed_start_txn_id ≤ txn_id' ≤ being_installed_end_txn_id ∧
+      apply_upds (
+        txn_upds (take (S txn_id') txns)
+      ) d !! a = Some b ∧
+      (
+        a ∈ (λ u, int.Z u.(update.addr)) <$> already_installed →
+        apply_upds (
+          txn_upds (take (S being_installed_start_txn_id) txns) ++
+          already_installed
+        ) d !! a = Some b
+      )
+     ⌝ ∗
      a d↦ b ∗ ⌜2 + LogSz ≤ a⌝.
 
-Definition is_installed_core_ghost γ (being_installed_start_txn_id being_installed_end_txn_id: nat) (already_installed: gset Z) : iProp Σ :=
+Definition is_installed_core_ghost γ (being_installed_start_txn_id being_installed_end_txn_id: nat) (already_installed: list update.t) : iProp Σ :=
   "HownBeingInstalledStartTxn_walinv" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
   "HownBeingInstalledEndTxn_walinv" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
   "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed.
@@ -405,13 +497,13 @@ Definition is_installed_core_ghost γ (being_installed_start_txn_id being_instal
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
-Definition is_installed_core γ d txns (installed_txn_id being_installed_end_txn_id diskEnd_txn_id: nat) (already_installed: gset Z) : iProp Σ :=
+Definition is_installed_core γ d txns (installed_txn_id being_installed_end_txn_id diskEnd_txn_id: nat) already_installed : iProp Σ :=
   (* TODO(tej): the other half of these are owned by the installer, giving it full
    knowledge of in-progress installations and exclusive update rights; need to
    write down what it maintains as part of its loop invariant *)
   "Howninstalled" ∷ is_installed_core_ghost γ installed_txn_id being_installed_end_txn_id already_installed ∗
   (* TODO: ⌜diskEnd_txn_id < length txns⌝ shouldn't be necessary, follows from Hend_txn in is_durable *)
-  "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ installed_txn_id ≤ being_installed_end_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
+  "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ being_installed_end_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
   "#Hbeing_installed_txns" ∷ txns_are γ (S installed_txn_id)
     (subslice (S installed_txn_id) (S being_installed_end_txn_id) txns) ∗
   "Hdata" ∷ ([∗ map] a ↦ _ ∈ d, is_dblock_with_txns d txns installed_txn_id being_installed_end_txn_id already_installed a).
@@ -434,44 +526,66 @@ Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
 Definition circ_matches_txns (cs:circΣ.t) txns
            installed_txn_id installer_pos installer_txn_id
            diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id :=
-  has_updates (take (installer_pos - int.nat cs.(circΣ.start)) cs.(circΣ.upds))
-    (subslice (S installed_txn_id) (S installer_txn_id) txns) ∧
-  has_updates (subslice (installer_pos - int.nat cs.(circΣ.start)) (diskEnd_mem - int.nat cs.(circΣ.start)) cs.(circΣ.upds))
-    (subslice (S installer_txn_id) (S diskEnd_mem_txn_id) txns) ∧
-  has_updates (drop (diskEnd_mem - int.nat cs.(circΣ.start)) cs.(circΣ.upds))
-    (subslice (S diskEnd_mem_txn_id) (S diskEnd_txn_id) txns) ∧
-  (int.nat cs.(circΣ.start) ≤ installer_pos ≤ diskEnd_mem ≤ Z.to_nat (circΣ.diskEnd cs))%nat ∧
-  (installed_txn_id ≤ installer_txn_id ≤ diskEnd_mem_txn_id ≤ diskEnd_txn_id)%nat.
+  is_memLog_boundaries txns cs.(circΣ.upds)
+    [
+      {|
+        mwrb.txn := (S installed_txn_id);
+        mwrb.upd := 0%nat;
+      |};
+      {|
+        mwrb.txn := (S installer_txn_id);
+        mwrb.upd := (installer_pos - int.nat cs.(circΣ.start));
+      |};
+      {|
+        mwrb.txn := (S diskEnd_mem_txn_id);
+        mwrb.upd := (diskEnd_mem - int.nat cs.(circΣ.start));
+      |};
+      {|
+        mwrb.txn := (S diskEnd_txn_id);
+        mwrb.upd := length cs.(circΣ.upds);
+      |}
+    ].
 
 Lemma circ_matches_txns_combine cs txns
       installed_txn_id installer_pos installer_txn_id
       diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id :
   circ_matches_txns cs txns installed_txn_id installer_pos installer_txn_id
                     diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id →
-  has_updates cs.(circΣ.upds) (subslice (S installed_txn_id) (S diskEnd_txn_id) txns).
+  is_memLog_region
+    (subslice (S installed_txn_id) (S diskEnd_txn_id) txns)
+    cs.(circΣ.upds).
 Proof.
-  destruct 1 as (Hupds1 & Hupds2 & Hupds3 & ?&?).
-  rewrite /circΣ.diskEnd in H.
-  pose proof (has_updates_app _ _ _ _ Hupds1 Hupds2) as Hupds12.
-  pose proof (has_updates_app _ _ _ _ Hupds12 Hupds3) as Hupds123.
-  match type of Hupds123 with
-  | has_updates ?us ?txns =>
-    lazymatch goal with
-    | |- has_updates ?us' ?txns' =>
-      replace us' with us;
-        [ replace txns' with txns;
-          [ assumption | ]
-        | ]
-    end
-  end.
-  - rewrite -> subslice_app_contig by lia.
-    rewrite -> subslice_app_contig by lia.
-    auto.
-  - rewrite subslice_from_take.
-    rewrite subslice_from_drop.
-    rewrite -> subslice_app_contig by lia.
-    rewrite -> subslice_app_contig by lia.
-    rewrite -subslice_complete //.
+  intros Hupds.
+  rewrite /circ_matches_txns in Hupds.
+  eapply (is_memLog_boundaries_region pmwrb_ps pmwrb_pe) in Hupds.
+  2: {
+    rewrite /pmwrb_ps /pmwrb_pe.
+    lia.
+  }
+  2-3: reflexivity.
+  rewrite /= -subslice_complete in Hupds.
+  intuition.
+Qed.
+
+Lemma circ_matches_txns_bounds cs txns
+      installed_txn_id installer_pos installer_txn_id
+      diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id :
+  circ_matches_txns cs txns
+    installed_txn_id installer_pos installer_txn_id
+    diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id →
+  (installed_txn_id ≤ installer_txn_id ≤ diskEnd_mem_txn_id ≤ diskEnd_txn_id)%nat.
+Proof.
+  intros Hcirc.
+  unshelve (epose proof (is_memLog_boundaries_region_consec pmwrb_ps _ _ _ _ _ Hcirc _ _) as Hps).
+  3-4: reflexivity.
+  unshelve (epose proof (is_memLog_boundaries_region_consec pmwrb_des _ _ _ _ _ Hcirc _ _) as Hdes).
+  3-4: reflexivity.
+  unshelve (epose proof (is_memLog_boundaries_region_consec pmwrb_de _ _ _ _ _ Hcirc _ _) as Hde).
+  3-4: reflexivity.
+  simpl in Hps.
+  simpl in Hdes.
+  simpl in Hde.
+  word.
 Qed.
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
@@ -480,9 +594,12 @@ Definition is_durable γ cs txns installed_txn_id diskEnd_txn_id : iProp Σ :=
   ∃ (installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id: nat),
     "HownInstallerPos_walinv" ∷ ghost_var γ.(installer_pos_name) (1/2) installer_pos ∗
     "HownInstallerTxn_walinv" ∷ ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id ∗
-    "HownDiskEndMem_walinv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) diskEnd_mem ∗
-    "HownDiskEndMemTxn_walinv" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_mem_txn_id ∗
-    "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id⌝.
+    "HownDiskEndMem_walinv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2/2) diskEnd_mem ∗
+    "HownDiskEndMemTxn_walinv" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2/2) diskEnd_mem_txn_id ∗
+    "HownDiskEnd_walinv" ∷ ghost_var γ.(diskEnd_name) (1/2) (int.nat (circΣ.diskEnd cs)) ∗
+    "HownDiskEndTxn_walinv" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "%Hcirc_matches" ∷ ⌜circ_matches_txns cs txns installed_txn_id installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id diskEnd_txn_id⌝ ∗
+    "%Hlog_wf" ∷ ⌜int.Z cs.(start) + length (upds cs) < 2 ^ 64⌝.
 
 Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :=
     "%Hinstalled_bound" ∷ ⌜(installed_lb ≤ installed_txn_id)%nat⌝ ∗
@@ -490,11 +607,23 @@ Definition is_installed_txn γ cs txns installed_txn_id installed_lb: iProp Σ :
     "#Hstart_txn_stable" ∷ installed_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt.
 
 Definition is_durable_txn γ cs txns diskEnd_txn_id durable_lb: iProp Σ :=
-  ∃ (diskEnd: u64),
-    "%Hdurable_lb" ∷ ⌜(durable_lb ≤ diskEnd_txn_id)%nat⌝ ∗
+  ∃ (diskEnd: u64) durable_lb_alt,
+    "%Hdurable_lb" ∷ ⌜(durable_lb_alt ≤ diskEnd_txn_id)%nat⌝ ∗
+    "%Hdurable_lb_valid" ∷ ⌜(durable_lb_alt ≤ durable_lb < length txns)%nat⌝ ∗
+    "%Hdurable_nils" ∷ ⌜
+      Forall (λ x, x.2 = []) (
+        subslice (S durable_lb_alt) (S durable_lb)
+        txns
+      )
+    ⌝ ∗
+    "%Hdurable_lb_pos" ∷ ⌜
+      is_txn txns (durable_lb `max` diskEnd_txn_id)%nat diskEnd
+    ⌝ ∗
     "%HdiskEnd_val" ∷ ⌜int.Z diskEnd = circΣ.diskEnd cs⌝ ∗
     "%Hend_txn" ∷ ⌜is_txn txns diskEnd_txn_id diskEnd⌝ ∗
-    "#Hend_txn_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt.
+    "#Hend_txn_stable" ∷ diskEnd_txn_id [[γ.(stable_txn_ids_name)]]↦ro tt ∗
+    "#Hdurable_lb_stable" ∷ (durable_lb `max` diskEnd_txn_id)%nat
+      [[γ.(stable_txn_ids_name)]]↦ro tt.
 
 Definition is_base_disk γ (d : disk) : iProp Σ :=
   own γ.(base_disk_name) (to_agree d : agreeR diskO).
@@ -566,10 +695,15 @@ Definition is_wal (l : loc) γ (dinit : disk) : iProp Σ :=
 
 (** logger_inv is the resources exclusively owned by the logger thread *)
 Definition logger_inv γ circ_l: iProp Σ :=
-  "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
-  "HownLoggerPos_logger" ∷ (∃ (logger_pos : u64), ghost_var γ.(logger_pos_name) (1/2) logger_pos) ∗
-  "HownLoggerTxn_logger" ∷ (∃ (logger_txn_id : nat), ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id) ∗
-  "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
+  ∃ diskEnd diskEnd_txn_id,
+    "HnotLogging" ∷ thread_own γ.(diskEnd_avail_name) Available ∗
+    "HownLoggerPos_logger" ∷ ghost_var γ.(logger_pos_name) (1/2) diskEnd ∗
+    "HownLoggerTxn_logger" ∷ ghost_var γ.(logger_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEndMem_logger" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn_logger" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEnd_logger" ∷ ghost_var γ.(diskEnd_name) (1/2) (int.nat diskEnd) ∗
+    "HownDiskEndTxn_logger" ∷ ghost_var γ.(diskEnd_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "Happender" ∷ is_circular_appender γ.(circ_name) circ_l.
 
 (* TODO: also needs authoritative ownership of some other variables *)
 (** installer_inv is the resources exclusively owned by the installer thread *)
@@ -580,7 +714,7 @@ Definition installer_inv γ: iProp Σ :=
     "HownInstallerTxn_installer" ∷ (∃ (installer_txn_id : nat), ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id) ∗
     "HownInstallerPosMem_installer" ∷ (∃ (installer_pos_mem : u64), ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem) ∗
     "HownInstallerTxnMem_installer" ∷ (∃ (installer_txn_id_mem : nat), ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem) ∗
-    "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
+    "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) ([]: list update.t) ∗
     "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) installed_txn_id_mem ∗
     "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
     "#HdiskEndMem_lb_installer" ∷ mono_nat_lb_own γ.(diskEnd_mem_txn_id_name) being_installed_end_txn_id ∗
@@ -850,12 +984,12 @@ Lemma memLog_linv_pers_core_strengthen γ σ diskEnd diskEnd_txn_id nextDiskEnd_
   int.Z installer_pos_mem ≤ int.Z diskEnd →
   memLog_linv_pers_core γ σ diskEnd diskEnd_txn_id installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos_mem installer_txn_id_mem -∗
   ("Hsame_txns" ∷ ghost_var γ.(txns_name) (1/2) txns ∗
-    "Hlp" ∷ ghost_var γ.(logger_pos_name) (1 / 2) logger_pos ∗
-    "Hlt" ∷ ghost_var γ.(logger_txn_id_name) (1 / 2) logger_txn_id ∗
-    "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1 / 2) (int.nat diskEnd) ∗
-    "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1 / 2) diskEnd_txn_id ∗
-    "Hip" ∷ ghost_var γ.(installer_pos_mem_name) (1 / 2) installer_pos_mem ∗
-    "Hit" ∷ ghost_var γ.(installer_txn_id_mem_name) (1 / 2) installer_txn_id_mem ∗
+    "Hlp" ∷ ghost_var γ.(logger_pos_name) (1/2) logger_pos ∗
+    "Hlt" ∷ ghost_var γ.(logger_txn_id_name) (1/2) logger_txn_id ∗
+    "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2/2) (int.nat diskEnd) ∗
+    "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2/2) diskEnd_txn_id ∗
+    "Hip" ∷ ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem ∗
+    "Hit" ∷ ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem ∗
     "HownInstalledPosMem" ∷ ghost_var γ.(installed_pos_mem_name) (1/2) σ.(slidingM.start) ∗
     "HownInstalledTxnMem" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem ∗
     "Hnext" ∷ memLog_linv_nextDiskEnd_txn_id γ σ.(slidingM.mutable) nextDiskEnd_txn_id) -∗

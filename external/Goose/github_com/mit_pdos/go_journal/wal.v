@@ -327,8 +327,7 @@ Definition absorbBufs: val :=
    transaction (with all of bufs applied). *)
 Definition installBlocks: val :=
   rec: "installBlocks" "d" "bufs" :=
-    let: "absorbed" := absorbBufs "bufs" in
-    ForSlice (struct.t Update) "i" "buf" "absorbed"
+    ForSlice (struct.t Update) "i" "buf" "bufs"
       (let: "blkno" := struct.get Update "Addr" "buf" in
       let: "blk" := struct.get Update "Block" "buf" in
       util.DPrintf #5 (#(str"installBlocks: write log block %d to %d

@@ -235,8 +235,8 @@ Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
         (being_installed_start_txn_id: nat) subtxns :
   {{{ "Hbufs_s" ∷ updates_slice_frag bufs_s q bufs ∗
       "#Hwal" ∷ is_wal P l γ dinit ∗
-      "%Hbufs" ∷ ⌜has_updates bufs subtxns⌝ ∗
-      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (∅: gset Z) ∗
+      "%Hbufs" ∷ ⌜is_memLog_region subtxns bufs⌝ ∗
+      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) ([]: list update.t) ∗
       "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
       "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) (being_installed_start_txn_id + length subtxns)%nat ∗
       "#Hsubtxns" ∷ txns_are γ (S being_installed_start_txn_id) subtxns
@@ -244,7 +244,7 @@ Theorem wp_installBlocks γ l dinit (d: val) q bufs_s (bufs: list update.t)
     installBlocks d (slice_val bufs_s)
   {{{ RET #();
       "#Hwal" ∷ is_wal P l γ dinit ∗
-      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) ((λ u, int.Z (update.addr u)) <$> bufs)) ∗
+      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (bufs) ∗
       "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
       "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) (being_installed_start_txn_id + length subtxns)%nat
   }}}.
@@ -254,31 +254,30 @@ Proof.
 
   iMod (txns_are_in_bounds with "Hsubtxns [$]") as %Htxns_addrs; first auto.
   assert (Forall (λ u : update.t, ∃ (b: Block), dinit !! int.Z u.(update.addr) = Some b) bufs) as Hbufs_addrs.
-  { eapply has_updates_addrs in Hbufs.
+  {
+    destruct Hbufs as [Hhas Hmatch].
+    eapply has_updates_addrs in Hhas.
     move: Htxns_addrs.
     change (λ u, ∃ b, dinit !! int.Z u.(update.addr) = Some b) with
       ((λ a, ∃ b, dinit !! a = Some b) ∘ (λ u, int.Z u.(update.addr))).
     intros.
     rewrite -Forall_fmap.
     apply Forall_fmap in Htxns_addrs.
-    eapply Forall_subset; eauto. }
+    eapply Forall_subset; eauto.
+  }
 
-  wp_apply (wp_absorbBufs with "Hbufs_s").
-  iIntros (bks_s upds) "Hpost".
-  iNamed "Hpost".
-  apply (apply_upds_equiv_implies_has_updates_equiv _ _ _ Hsame_upds) in Hbufs.
-  pose proof (equiv_upds_addrs_subseteq _ _ (Hsame_upds ∅)) as Hupds_subseteq.
+  iDestruct "Hbufs_s" as (bks) "(Hbks_s&Hupds)".
+  rename bufs into upds.
 
-  wp_pures.
-  iDestruct "Habsorbed" as (bks) "(Hbks_s&Hupds)".
-  iDestruct (is_slice_to_small with "Hbks_s") as "Hbks_s".
   iDestruct (slice.is_slice_small_sz with "Hbks_s") as %Hslen.
   rewrite fmap_length in Hslen.
   iDestruct (big_sepL2_length with "Hupds") as %Hslen2.
 
   wp_apply (slice.wp_forSlice (fun i =>
     ("Hupds" ∷ [∗ list] uv;upd ∈ bks;upds, is_update uv q upd) ∗
-      "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) (list_to_set (C:=gset Z) (take (int.nat i) ((λ u, int.Z (update.addr u)) <$> upds))) ∗
+      "Halready_installed_installer" ∷
+        ghost_var γ.(already_installed_name) (1/2)
+          (take (int.nat i) (upds)) ∗
       "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
       "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) (being_installed_start_txn_id + length subtxns)%nat
     )%I with "[] [$Hbks_s Hupds $Halready_installed_installer $HownBeingInstalledStartTxn_installer $HownBeingInstalledEndTxn_installer]").
@@ -303,7 +302,6 @@ Proof.
     assert (((λ u : update.t, int.Z u.(update.addr)) <$> upds) !! int.nat i = Some (int.Z addr_i)) as Hu_lookup_map.
     1: rewrite list_lookup_fmap Hu_lookup //.
     apply elem_of_list_lookup_2 in Hu_lookup_map.
-    apply ((iffLR (elem_of_subseteq _ _)) Hupds_subseteq) in Hu_lookup_map.
     apply elem_of_list_fmap in Hu_lookup_map.
     destruct Hu_lookup_map as (upd&(Hupd&Hupd_in)).
     apply ((iffLR (Forall_forall _ _)) Hbufs_addrs _) in Hupd_in.
@@ -320,7 +318,7 @@ Proof.
     iDestruct (ghost_var_agree with "Halready_installed_installer Halready_installed") as %<-.
     iDestruct (mono_nat_auth_own_agree with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as %[_ <-].
     iDestruct (ghost_var_agree with "HownBeingInstalledEndTxn_installer HownBeingInstalledEndTxn_walinv") as %<-.
-    iMod (ghost_var_update_halves (list_to_set (C:=gset Z) (take (S (int.nat i)) ((λ u, int.Z (update.addr u)) <$> upds)))
+    iMod (ghost_var_update_halves (take (S (int.nat i)) upds)
       with "Halready_installed_installer Halready_installed") as
           "[Halready_installed_installer Halready_installed]".
 
@@ -333,11 +331,11 @@ Proof.
     iDestruct ("Hdataclose" $! (λ a _,
         is_dblock_with_txns σs.(log_state.d) σs.(log_state.txns)
         being_installed_start_txn_id (being_installed_start_txn_id + length subtxns)
-        (list_to_set (take
+        (take
             (S (int.nat i)) (* the only change here is incrementing this *)
-            ((λ u : update.t,
-            int.Z u.(update.addr)) <$>
-            upds))) a)%I with "[]") as "Hdataclose".
+            upds
+        ) a
+      )%I with "[]") as "Hdataclose".
     {
       (* show that new big_sepM condition holds for addresses not touched by the update *)
       iModIntro.
@@ -349,20 +347,23 @@ Proof.
       iFrame (Haddr_bound) "∗".
       iPureIntro.
       split; first by lia.
-      split. 2: apply Happly_upds.
-      destruct (decide (addr' ∈ take (S (int.nat i)) ((λ u : update.t, int.Z u.(update.addr)) <$> upds))).
-      - rewrite (take_S_r _ _ (int.Z addr_i)) in e.
-        2: rewrite list_lookup_fmap Hu_lookup //=.
-        apply elem_of_app in e.
-        destruct e as [He | He].
-        2: apply elem_of_list_singleton in He; contradiction.
-        intuition.
-        apply Htxn_id'.
-        apply elem_of_list_to_set.
-        apply He.
-      - intro Haddr'_in.
-        apply elem_of_list_to_set in Haddr'_in.
-        contradiction.
+      split; first by assumption.
+      intros Hinstalled.
+      erewrite take_S_r in Hinstalled; last by apply Hu_lookup.
+      rewrite fmap_app in Hinstalled.
+      apply elem_of_app in Hinstalled.
+      destruct Hinstalled as [Hinstalled|Hinstalled].
+      {
+        unshelve (epose proof (Happly_upds _) as Happly_upds');
+          first by intuition.
+        erewrite (take_S_r upds); last by eassumption.
+        rewrite app_assoc apply_upds_app /=.
+        rewrite lookup_insert_ne; last by lia.
+        assumption.
+      }
+      simpl in Hinstalled.
+      apply elem_of_list_singleton in Hinstalled.
+      contradiction.
     }
 
     iDestruct "Hdata" as (b_disk txn_id') "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
@@ -392,17 +393,39 @@ Proof.
       iSpecialize ("Hdataclose" with "[Haddr_i_mapsto]").
       {
         (* show that the new big_sepM condition holds for address touched by the update *)
-        iExists _, (being_installed_start_txn_id + length subtxns)%nat.
+        destruct Hbufs as [Hhas Hmatch].
+        pose proof (elem_of_list_lookup_2 _ _ _ Hu_lookup) as Hu_in.
+        apply Hmatch in Hu_in.
+        simpl in Hu_in.
+        destruct Hu_in as [txn [Htxn_in Htxn_apply]].
+        destruct txn as [txna txnb].
+        apply elem_of_list_lookup in Htxn_in.
+        destruct Htxn_in as [txni Htxn_lookup].
+        iExists _, (S being_installed_start_txn_id + txni)%nat.
         rewrite -Hupd in Haddr_LogSz_bound.
         iFrame (Haddr_LogSz_bound) "∗".
         iPureIntro.
+        pose proof (lookup_lt_Some _ _ _ Htxn_lookup) as Htxni_lt.
         split; first by lia.
-        intuition.
-        rewrite -subslice_from_start
-          -(subslice_app_contig _ (S being_installed_start_txn_id)).
-        2: lia.
-        rewrite Hsubtxns txn_upds_app apply_upds_app -Hbufs.
-        apply (apply_upds_NoDup_lookup _ _ (int.nat i)); intuition.
+        split.
+        {
+          erewrite take_S_r.
+          2: {
+            rewrite -Hsubtxns in Htxn_lookup.
+            rewrite subslice_lookup in Htxn_lookup; last by lia.
+            eassumption.
+          }
+          rewrite txn_upds_app apply_upds_app txn_upds_single.
+          simpl in Htxn_apply.
+          apply Htxn_apply.
+        }
+        rewrite -Hupd in Hb_disk.
+        destruct Hb_disk as (_&_&Hai).
+        erewrite take_S_r; last by apply Hu_lookup.
+        intros Hinstalled.
+        rewrite fmap_app in Hinstalled.
+        apply elem_of_app in Hinstalled.
+        rewrite app_assoc apply_upds_app /= lookup_insert //.
       }
       rewrite Hsubtxns.
       iFrame.
@@ -410,11 +433,7 @@ Proof.
     iIntros "!> Hb_i".
     iApply "HΦ".
     iFrame.
-    replace (int.nat (word.add i 1)) with (S (int.nat i)).
-    2: {
-      assert (int.Z bks_s.(Slice.sz) ≤ 2^64 - 1) by word.
-      word.
-    }
+    replace (int.nat (word.add i 1)) with (S (int.nat i)); last by word.
     iFrame.
     iApply "Hupds".
     rewrite /is_update /=.
@@ -428,9 +447,7 @@ Proof.
   iIntros "[(?&?&?&?) Hbks_s]".
   iNamed.
   wp_pures. iModIntro. iApply "HΦ".
-  rewrite take_ge.
-  2: rewrite fmap_length; lia.
-  rewrite (equiv_upds_addrs_eq bufs upds Hsame_upds).
+  rewrite take_ge; last by lia.
   by iFrame "∗ #".
 Qed.
 
@@ -457,9 +474,11 @@ Lemma snapshot_memLog_txns_are γ l dinit log diskEnd_pos (diskEnd_txn_id: nat) 
   "HownInstallerPosMem_installer" ∷ (∃ (installer_pos_mem : u64), ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem) -∗
   "HownInstallerTxnMem_installer" ∷ (∃ (installer_txn_id_mem : nat), ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem) -∗
   |NC={⊤}=> ∃ installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id,
-    "%Hsnapshot" ∷ ⌜has_updates
-      (take (slidingM.logIndex log diskEnd_pos) log.(slidingM.log))
-      (subslice (S installed_txn_id_mem) (S diskEnd_txn_id) txns)⌝ ∗
+    "%Hsnapshot" ∷ ⌜
+      is_memLog_region
+        (subslice (S installed_txn_id_mem) (S diskEnd_txn_id) txns)
+        (take (slidingM.logIndex log diskEnd_pos) log.(slidingM.log))
+    ⌝ ∗
     "#Hsnapshot_txns" ∷ txns_are γ (S installed_txn_id_mem) (subslice (S installed_txn_id_mem) (S diskEnd_txn_id) txns) ∗
     "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 installed_txn_id_mem nextDiskEnd_txn_id txns
@@ -474,7 +493,6 @@ Proof.
   iNamed.
   iNamed "Hlinv".
   iNamed "Hlinv_pers".
-  iNamed "Htxns".
   iNamed "HownInstallerPos_installer".
   iNamed "HownInstallerTxn_installer".
   iNamed "HownInstallerPosMem_installer".
@@ -510,7 +528,9 @@ Proof.
   ) as "[HownInstallerTxnMem_installer HownInstallerTxnMem_linv]".
 
   iMod ("Hclose" with "[Htxns_ctx γtxns HnextDiskEnd_inv Howncs
-    HownInstallerPos_walinv HownInstallerTxn_walinv HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
+    HownInstallerPos_walinv HownInstallerTxn_walinv
+    HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
+    HownDiskEnd_walinv HownDiskEndTxn_walinv
     Hinstalled HP]") as "_".
   {
     iNext.
@@ -523,44 +543,37 @@ Proof.
     iFrame "Hinstalled circ.start circ.end Hbasedisk".
     iSplit; [ | by eauto ].
     iExists _, _, _, _.
-    iFrame "HownInstallerPos_walinv HownInstallerTxn_walinv HownDiskEndMem_walinv HownDiskEndMemTxn_walinv".
+    iFrame "
+      HownInstallerPos_walinv HownInstallerTxn_walinv
+      HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
+      HownDiskEnd_walinv HownDiskEndTxn_walinv
+    ".
     iPureIntro.
-    rewrite /circ_matches_txns.
-    destruct Hcirc_matches as
-      (Hmatches_installer_pos&
-        Hmatches_diskEnd_pos&
-        Hmatches_logger&
-        Hlog_index_ordering_walinv&
-        Htxn_id_ordering_walinv).
-    split.
-    {
-      pose proof (has_updates_app _ _ _ _ Hmatches_installer_pos Hmatches_diskEnd_pos) as Hmatches.
-      rewrite -> subslice_app_contig in Hmatches by lia.
-      rewrite <- subslice_from_start, subslice_app_contig in Hmatches by lia.
-      rewrite subslice_from_start in Hmatches.
-      assumption.
-    }
-    split_and!; try lia; eauto.
-    rewrite !subslice_zero_length //.
+    eapply is_memLog_boundaries_move with (i:=pmwrb_des) in Hcirc_matches.
+    2: reflexivity.
+    split; last by lia.
+    apply Hcirc_matches.
   }
 
   iExists _, _, _, _, _.
   iFrame "HownInstallerPos_installer HownInstallerTxn_installer
     HownInstallerPosMem_installer HownInstallerTxnMem_installer
     Htxns_subslice".
-
-  pose proof (has_updates_app _ _ _ _ His_installerEnd His_diskEnd) as Hmatches.
-  rewrite -> subslice_app_contig in Hmatches by lia.
-  rewrite -subslice_from_start subslice_app_contig in Hmatches; last first.
-  { rewrite /slidingM.logIndex; lia. }
-  rewrite subslice_from_start in Hmatches.
-
-  iSplitR; first by eauto.
+  iSplitR.
+  {
+    iPureIntro.
+    eapply (is_memLog_boundaries_region mwrb_ms mwrb_de) in Htxns.
+    2: rewrite /mwrb_ms /mwrb_de; lia.
+    2-3: reflexivity.
+    intuition.
+  }
   iFrame.
   iFrame (HdiskEnd_txn Htxnpos_bound) "#".
   iPureIntro.
   split_and!; auto with lia.
-  rewrite subslice_zero_length subslice_zero_length //.
+  eapply (is_memLog_boundaries_move _ _ _ mwrb_des) in Htxns.
+  2: reflexivity.
+  assumption.
 Qed.
 
 Lemma unify_memLog_installed_pos_mem γ log diskEnd_pos diskEnd_txn_id installed_txn_id_mem nextDiskEnd_txn_id txns logger_pos logger_txn_id installer_pos_mem installer_txn_id_mem installed_pos_mem_ext installed_txn_id_mem_ext :
@@ -649,14 +662,14 @@ Lemma unify_memLog_diskEnd_mem γ log diskEnd_pos diskEnd_txn_id installed_txn_i
                                 installed_txn_id_mem nextDiskEnd_txn_id txns
                                 logger_pos logger_txn_id
                                 installer_pos_mem installer_txn_id_mem -∗
-  "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) diskEnd_pos_ext -∗
-  "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id_ext -∗
+  "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2/2) diskEnd_pos_ext -∗
+  "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2/2) diskEnd_txn_id_ext -∗
     "Hlinv" ∷ memLog_linv_core γ log diskEnd_pos diskEnd_txn_id
                                 installed_txn_id_mem nextDiskEnd_txn_id txns
                                 logger_pos logger_txn_id
                                 installer_pos_mem installer_txn_id_mem ∗
-    "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2) (int.nat diskEnd_pos) ∗
-    "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2) diskEnd_txn_id ∗
+    "HownDiskEndMem" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2/2) (int.nat diskEnd_pos) ∗
+    "HownDiskEndMemTxn" ∷ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2/2) diskEnd_txn_id ∗
     "%HdiskEnd_pos_eq" ∷ ⌜int.nat diskEnd_pos = diskEnd_pos_ext⌝ ∗
     "%HdiskEnd_txn_id_eq" ∷ ⌜diskEnd_txn_id = diskEnd_txn_id_ext⌝.
 Proof.
@@ -828,6 +841,7 @@ Proof.
   iMod ("Hclose" with "[Htxns_ctx γtxns HnextDiskEnd_inv Howncs
     HownInstallerPos_walinv HownInstallerTxn_walinv
     HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
+    HownDiskEnd_walinv HownDiskEndTxn_walinv
     HownBeingInstalledStartTxn_walinv HownBeingInstalledEndTxn_walinv
     Halready_installed Hdata HP]") as "_".
   {
@@ -838,8 +852,11 @@ Proof.
     iFrame "Howncs".
     iExists _, _.
     iFrameNamed.
-    iSplitR "HownInstallerPos_walinv HownInstallerTxn_walinv
-      HownDiskEndMem_walinv HownDiskEndMemTxn_walinv".
+    iSplitR "
+      HownInstallerPos_walinv HownInstallerTxn_walinv
+      HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
+      HownDiskEnd_walinv HownDiskEndTxn_walinv
+    ".
     2: {
       iExists _, _, _, _.
       iFrame.
@@ -851,7 +868,15 @@ Proof.
     iFrame "Hsnapshot_txns".
 
     iSplit.
-    { iPureIntro. rewrite /circ_matches_txns in Hcirc_matches. lia. }
+    {
+      iPureIntro.
+      eapply (is_memLog_boundaries_region pmwrb_de pmwrb_pe)
+        in Hcirc_matches.
+      2: rewrite /pmwrb_de /pmwrb_pe; lia.
+      2-3: reflexivity.
+      simpl in Hcirc_matches.
+      lia.
+    }
     iApply (big_sepM_mono with "Hdata").
     iIntros (addr blk Haddr_bound) "Hdata".
     destruct (decide (addr ∈ (∅ : gset _))).
@@ -867,7 +892,7 @@ Proof.
   (* these names would be free if the above was a lemma *)
   remember σs.(log_state.txns) as txns.
   iClear "circ.start circ.end Hbasedisk Hbeing_installed_txns Hmem HinstalledTxn_lb".
-  clear Heqtxns Hwf Hdaddrs_init σs Hinstalled_bounds Hcirc_matches diskEnd_txn_id installer_pos installer_txn_id cs.
+  clear Heqtxns Hwf Hdaddrs_init σs Hinstalled_bounds Hcirc_matches diskEnd_txn_id installer_pos installer_txn_id cs Hlog_wf.
 
   iModIntro.
   wp_loadField.
@@ -928,7 +953,7 @@ Proof.
         ghost_var γ.(being_installed_end_txn_name) (1/2)
           σ.(locked_diskEnd_txn_id) ∗
       "Halready_installed_installer" ∷
-        ghost_var γ.(already_installed_name) (1/2) (∅: gset Z)
+        ghost_var γ.(already_installed_name) (1/2) ([]: list update.t)
     ) with "[$Hcircular $Hstart_is $HdiskEnd_at_least
       HownInstallerPos_installer HownInstallerTxn_installer
       HownBeingInstalledStartTxn_installer HownBeingInstalledEndTxn_installer
@@ -966,7 +991,7 @@ Proof.
       with "HownBeingInstalledStartTxn_installer HownBeingInstalledStartTxn_walinv") as
           "(HownBeingInstalledStartTxn_installer&HownBeingInstalledStartTxn_walinv&HinstalledTxn_lb')".
     1: lia.
-    iMod (ghost_var_update_halves (∅: gset Z)
+    iMod (ghost_var_update_halves ([]: list update.t)
       with "Halready_installed_installer Halready_installed") as
           "[Halready_installed_installer Halready_installed]".
     iDestruct (txns_are_sound with "Htxns_ctx Hsnapshot_txns") as %Hsnapshot_txns.
@@ -1000,25 +1025,32 @@ Proof.
       iFrame (Haddr_bound) "Hb".
       iPureIntro.
       split; first by lia.
-      split; first by eauto.
-      destruct Htxn_id' as (Htxn_id'&Haddr&Hb).
+      split.
+      2: {
+        intros Hin.
+        inversion Hin.
+      }
+      destruct Htxn_id' as (Htxn_id'&Hb&Haddr).
+      rewrite -le_plus_minus in Hsnapshot_txns_are; last by lia.
+      destruct Hsnapshot as [Hhas Hmatch].
       destruct (decide (
         addr ∈ (
           (λ u, int.Z u.(update.addr)) <$>
             take (slidingM.logIndex σ.(memLog) σ.(diskEnd))
               σ.(memLog).(slidingM.log)
         )
-      )).
+      )) as [Haddr_in_txn|Haddr_in_txn].
       {
-        assert (txn_id' = σ.(locked_diskEnd_txn_id)).
-        {
-          apply Haddr.
-          apply elem_of_list_to_set.
-          apply e.
-        }
-        subst txn_id'.
-        apply Hb.
+        unshelve (epose proof (Haddr _) as Happly); first by intuition.
+        rewrite apply_upds_app in Happly.
+        rewrite Hhas in Happly.
+        rewrite -apply_upds_app -txn_upds_app
+          -Hsnapshot_txns_are subslice_from_take
+          subslice_app_contig in Happly; last by lia.
+        rewrite -subslice_from_take in Happly.
+        assumption.
       }
+
       replace (take (S σ.(locked_diskEnd_txn_id)) σs.(log_state.txns))
         with (take (S txn_id') σs.(log_state.txns) ++
           subslice (S txn_id') (S σ.(locked_diskEnd_txn_id)) σs.(log_state.txns)).
@@ -1029,78 +1061,94 @@ Proof.
       }
       rewrite txn_upds_app apply_upds_app apply_upds_notin'.
       1: apply Hb.
-      rewrite -Hsnapshot_txns in Hsnapshot.
-      intros Haddr_in.
-      assert (
-        (txn_upds
-          (subslice
-            (S txn_id')
-            (S (σ.(locked_diskEnd_txn_id)))
-        σs.(log_state.txns)))
-        ⊆
-        (txn_upds
-          (subslice
-            (S installed_txn_id_mem)
-            (S σ.(locked_diskEnd_txn_id))
-        σs.(log_state.txns)))) as Hsubseteq.
+      intros Haddr_in_txn'.
+      apply Haddr_in_txn.
+      apply equiv_upds_addrs_eq in Hhas.
+      eapply (@elem_of_list_to_set _ (gset Z) _ _ _ _);
+        first by apply gset_semi_set.
+      eapply (@elem_of_list_to_set _ (gset Z) _ _ _ _) in Haddr_in_txn';
+        last by apply gset_semi_set.
+      rewrite -Hhas.
+      rewrite -Hsnapshot_txns.
+      erewrite <- subslice_app_contig.
       {
-        apply txn_upds_subseteq.
-        apply subslice_subslice_subseteq.
-        all: lia.
+        rewrite txn_upds_app fmap_app list_to_set_app.
+        apply elem_of_union_r.
+        apply Haddr_in_txn'.
       }
-      eapply list_fmap_mono in Hsubseteq.
-      apply ((iffLR (elem_of_subseteq _ _)) Hsubseteq addr) in Haddr_in.
-      apply equiv_upds_addrs_subseteq in Hsnapshot.
-      apply ((iffLR (elem_of_subseteq _ _)) Hsnapshot) in Haddr_in.
-      contradiction.
+      lia.
     }
 
-    destruct Hcirc_matches as (Hmatches_locked_diskEnd&Hmatches_diskEnd_mem&Hmatches_diskEnd&Hcirc_log_index_ordering&Hcirc_txn_id_ordering).
-    rewrite /circΣ.diskEnd /= in Hcirc_log_index_ordering.
-    replace (Z.to_nat (int.Z (start σc) + length (circΣ.upds σc)))
-      with (int.nat (start σc) + length (circΣ.upds σc))%nat
-      in Hcirc_log_index_ordering by word.
+    rewrite /circ_matches_txns /= in Hcirc_matches.
 
     iSplitL.
     {
       iExists _, _, _, _.
       iFrame.
-      iPureIntro.
-      rewrite /circ_matches_txns /=.
-      rewrite Nat.sub_diag take_0 subslice_zero_length.
-      split; first by eauto.
-      rewrite subslice_from_start.
-      replace (Z.to_nat (int.Z σ.(diskEnd) - int.Z (start σc))) with (int.nat σ.(diskEnd) - int.nat (start σc))%nat by word.
-      split.
-      {
-        replace (diskEnd_mem - int.nat σ.(diskEnd))%nat
-          with ((diskEnd_mem - int.nat (start σc)) - (int.nat σ.(diskEnd) - int.nat (start σc)))%nat by lia.
-        rewrite -subslice_drop_take.
-        2: lia.
-        intuition.
-      }
-      rewrite drop_drop.
-      replace (int.nat σ.(diskEnd) - int.nat (start σc) + (diskEnd_mem - int.nat σ.(diskEnd)))%nat
-        with (diskEnd_mem - int.nat (start σc))%nat by lia.
-      split; first by intuition.
       rewrite /circΣ.diskEnd /= drop_length.
-      replace (Z.to_nat (int.Z σ.(diskEnd) + (length (circΣ.upds σc) - (int.nat σ.(diskEnd) - int.nat (start σc)))%nat))
-        with (int.nat σ.(diskEnd) + (length (circΣ.upds σc) - (int.nat σ.(diskEnd) - int.nat (start σc))))%nat by word.
-      lia.
+      replace (Z.to_nat (int.Z σ.(diskEnd) - int.Z (start σc)))
+        with (int.nat σ.(diskEnd) - int.nat (start σc))%nat by word.
+      replace (int.Z σ.(diskEnd) + _)
+        with (int.Z (start σc) + length (circ_proof.upds σc)).
+      2: {
+        eapply (is_memLog_boundaries_region pmwrb_des pmwrb_pe)
+          in Hcirc_matches.
+        2: rewrite /pmwrb_des /pmwrb_pe; lia.
+        2-3: reflexivity.
+        simpl in Hcirc_matches.
+        rewrite -Hstart in Hlog_index_ordering.
+        word.
+      }
+      iFrame.
+
+      iPureIntro.
+      split; last by lia.
+      rewrite /circ_matches_txns /=.
+      rewrite Nat.sub_diag.
+      eapply (is_memLog_boundaries_move _ _ _ pmwrb_ps) in Hcirc_matches.
+      2: reflexivity.
+      eapply is_memLog_boundaries_drop_upds in Hcirc_matches.
+      2: reflexivity.
+      simpl in Hcirc_matches.
+      rewrite Nat.sub_diag in Hcirc_matches.
+      replace (diskEnd_mem - _ - _)%nat with
+        (diskEnd_mem - int.nat σ.(diskEnd))%nat
+        in Hcirc_matches.
+      2: {
+        assert (int.nat σ.(diskEnd) ≥ int.nat (start σc))%nat.
+        {
+          rewrite Hstart.
+          lia.
+        }
+        lia.
+      }
+      rewrite drop_length.
+      assumption.
     }
     iSplitL.
     2: {
-      iDestruct "circ.end" as (diskEnd_disk) "(?&?&?&?)".
-      iExists diskEnd_disk.
-      iNamed.
-      iFrame (Hdurable_lb) "Hend_txn_stable".
-      iSplitL.
-      2: eauto.
+      iDestruct "circ.end" as (diskEnd_disk durable_lb_alt) "circ.end".
+      iNamed "circ.end".
+      iExists diskEnd_disk, durable_lb_alt.
+      iFrame (
+        Hdurable_lb Hdurable_lb_valid Hdurable_nils
+        Hdurable_lb_pos Hend_txn
+      ) "#".
       iPureIntro.
       rewrite /circΣ.diskEnd /= drop_length.
       replace (Z.to_nat (int.Z σ.(diskEnd) - int.Z (start σc)))
         with (int.nat σ.(diskEnd) - int.nat (start σc))%nat by word.
       rewrite /circΣ.diskEnd /= in HdiskEnd_val.
+      assert (int.nat σ.(diskEnd) ≥ int.nat (start σc)).
+      {
+        rewrite Hstart.
+        lia.
+      }
+      eapply (is_memLog_boundaries_region pmwrb_des pmwrb_pe)
+        in Hcirc_matches.
+      2: rewrite /pmwrb_des /pmwrb_pe; lia.
+      2-3: reflexivity.
+      simpl in Hcirc_matches.
       word.
     }
     iNamed "circ.start".
@@ -1138,7 +1186,7 @@ Proof.
     as "(Hlinv&HownInstallerPosMem_installer&HownInstallerTxnMem_installer&->&->)".
   iDestruct "Hlinv" as "(#Hlinv_pers&Howntxns&HnextDiskEnd&Hγ)".
   iNamed "Hγ".
-  iDestruct "Hlinv_pers" as "(%Hlog_index_ordering'&%Htxn_id_ordering'&#HmemStart_txn'&%HdiskEnd_txn'&#HdiskEnd_stable'&#HmemEnd_txn'&#HinstalledTxn_lb'&#Htxns'&%Htxnpos_bound')".
+  iDestruct "Hlinv_pers" as "(%Hlog_index_ordering'&%Htxn_id_ordering'&#HmemStart_txn'&%HdiskEnd_txn'&#HdiskEnd_stable'&#HmemEnd_txn'&#HinstalledTxn_lb'&%Htxns'&%Htxnpos_bound')".
   iMod (ghost_var_update_halves σ.(diskEnd)
     with "HownInstalledPosMem_installer HownInstalledPosMem_linv") as
         "[HownInstalledPosMem_installer HownInstalledPosMem_linv]".
@@ -1238,8 +1286,6 @@ Proof.
     iFrame "HmemEnd_txn'".
   }
 
-  iDestruct "Htxns'" as
-    "(%His_installerEnd'&%His_diskEnd'&%His_loggerEnd'&%His_nextDiskEnd'&%His_nextTxn')".
   iSplit.
   2: {
     iPureIntro.
@@ -1251,64 +1297,28 @@ Proof.
   }
 
   iPureIntro.
-  split; first by rewrite Nat.sub_diag take_0 subslice_zero_length //.
-  split.
-  {
-    rewrite Nat.sub_diag.
-    rewrite subslice_drop_take.
-    2: lia.
-    rewrite drop_drop Nat.add_0_r Nat.sub_0_r.
-    rewrite subslice_drop_take in His_diskEnd'.
-    2: lia.
-    replace (int.nat diskEnd - int.nat start -
-      (int.nat σ.(invariant.diskEnd) - int.nat start))%nat
-      with (int.nat diskEnd - int.nat σ.(invariant.diskEnd))%nat
-      in His_diskEnd' by lia.
-    apply His_diskEnd'.
-  }
-  split.
-  {
-    rewrite subslice_drop_take.
-    2: lia.
-    rewrite drop_drop.
-    rewrite subslice_drop_take in His_loggerEnd'.
-    2: lia.
-    replace (int.nat logger_pos' - int.nat start -
-      (int.nat diskEnd - int.nat start))%nat
-      with (int.nat logger_pos' - int.nat diskEnd)%nat
-      in His_loggerEnd' by lia.
-    replace (int.nat logger_pos' - int.nat σ.(invariant.diskEnd) -
-      (int.nat diskEnd - int.nat σ.(invariant.diskEnd)))%nat
-      with (int.nat logger_pos' - int.nat diskEnd)%nat by lia.
-    replace (int.nat σ.(invariant.diskEnd) - int.nat start +
-      (int.nat diskEnd - int.nat σ.(invariant.diskEnd)))%nat
-      with (int.nat diskEnd - int.nat start)%nat by lia.
-    apply His_loggerEnd'.
-  }
-  split.
-  {
-    rewrite subslice_drop_take.
-    2: lia.
-    rewrite drop_drop.
-    rewrite subslice_drop_take in His_nextDiskEnd'.
-    2: lia.
-    replace (int.nat mutable - int.nat start -
-      (int.nat logger_pos' - int.nat start))%nat
-      with (int.nat mutable - int.nat logger_pos')%nat
-      in His_nextDiskEnd' by lia.
-    replace (int.nat mutable - int.nat σ.(invariant.diskEnd) -
-      (int.nat logger_pos' - int.nat σ.(invariant.diskEnd)))%nat
-      with (int.nat mutable - int.nat logger_pos')%nat by lia.
-    replace (int.nat σ.(invariant.diskEnd) - int.nat start +
-      (int.nat logger_pos' - int.nat σ.(invariant.diskEnd)))%nat
-      with (int.nat logger_pos' - int.nat start)%nat by lia.
-    apply His_nextDiskEnd'.
-  }
-  rewrite drop_drop.
-  replace (int.nat σ.(invariant.diskEnd) - int.nat start +
-    (int.nat mutable - int.nat σ.(invariant.diskEnd)))%nat
-    with (int.nat mutable - int.nat start)%nat by lia.
-  by apply His_nextTxn'.
+  rewrite /memLog_linv_txns /slidingM.logIndex /mwrb.logend /= in Htxns'.
+  rewrite /mwrb.logend /=.
+  eapply (is_memLog_boundaries_move _ _ _ mwrb_ms) in Htxns'.
+  2: reflexivity.
+  eapply is_memLog_boundaries_drop_upds in Htxns'.
+  2: reflexivity.
+  simpl in Htxns'.
+  rewrite Nat.sub_diag in Htxns'.
+  replace (int.nat diskEnd - int.nat start -
+    (int.nat σ.(invariant.diskEnd) - int.nat start))%nat
+    with (int.nat diskEnd - int.nat σ.(invariant.diskEnd))%nat
+    in Htxns' by lia.
+  replace (int.nat logger_pos' - int.nat start -
+    (int.nat σ.(invariant.diskEnd) - int.nat start))%nat
+    with (int.nat logger_pos' - int.nat σ.(invariant.diskEnd))%nat
+    in Htxns' by lia.
+  replace (int.nat mutable - int.nat start -
+    (int.nat σ.(invariant.diskEnd) - int.nat start))%nat
+    with (int.nat mutable - int.nat σ.(invariant.diskEnd))%nat
+    in Htxns' by lia.
+  rewrite drop_length Nat.sub_diag.
+  by apply Htxns'.
 Qed.
 
 Theorem wp_Walog__installer γ l dinit :

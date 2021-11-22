@@ -207,9 +207,8 @@ Proof.
   iNamed "Hinner".
   iNamed "Hlinv".
   iNamed "Hlinv_pers".
-  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [lia|lia|].
-
-  iNamed "Htxns".
+  pose proof (memLog_linv_txns_combined_updates _ _ _ _ _ _ _ _ _ _ Htxns)
+    as Hall_updates.
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
 
   iMod ("Hfupd" $! σ σ with "[] [] HP") as "[HP HQ]"; first by eauto.
@@ -278,7 +277,8 @@ Proof.
 
   iNamed "Hlinv".
   iNamed "Hlinv_pers".
-  iDestruct (memLog_linv_txns_combined_updates with "Htxns") as %Hall_updates; [lia|lia|].
+  pose proof (memLog_linv_txns_combined_updates _ _ _ _ _ _ _ _ _ _ Htxns)
+    as Hall_updates.
   iDestruct (ghost_var_agree with "Howntxns γtxns") as %->.
 
   iNamed "Hdisk".
@@ -311,7 +311,9 @@ Proof.
     { eapply (relation.suchThat_runs _ _ false). eauto. }
     simpl. monad_simpl.
     econstructor; simpl.
-    { eapply (relation.suchThat_runs _ _ (Nat.max σ.(log_state.durable_lb) installed_txn_id)).
+    { eapply (relation.suchThat_runs _ _ (
+      σ.(log_state.durable_lb) `max` installed_txn_id
+    )%nat).
       pose proof (is_txn_bound _ _ _ Hend_txn). lia. }
     monad_simpl.
     econstructor; simpl.
@@ -345,7 +347,34 @@ Proof.
     iFrame "Hdurable".
     iFrame "#".
     iSplit. 2: iSplit. 3: iSplit. 4: eauto.
-    3: { iExists diskEnd0. iFrame "%". iFrame "#". iPureIntro. lia. }
+    3: {
+      replace ((_ `max` _) `max` _)%nat
+        with (σ.(log_state.durable_lb) `max` diskEnd_txn_id0)%nat;
+        last by lia.
+      iExists diskEnd0. iFrame "%". iFrame "#".
+      iExists (durable_lb_alt `max` installed_txn_id)%nat.
+      iPureIntro.
+      split; first by lia.
+      split; first by lia.
+      destruct (decide (installed_txn_id ≤ durable_lb_alt)%nat).
+      {
+        rewrite Max.max_l; last by lia.
+        rewrite Max.max_l; last by lia.
+        assumption.
+      }
+      rewrite Max.max_r; last by lia.
+      destruct (decide (installed_txn_id ≤ σ.(log_state.durable_lb))%nat).
+      2: {
+        rewrite Max.max_r; last by lia.
+        rewrite subslice_zero_length.
+        apply Forall_nil_2.
+      }
+      rewrite Max.max_l; last by lia.
+      rewrite -(subslice_app_contig _ (S installed_txn_id))
+        in Hdurable_nils; last by lia.
+      apply Forall_app in Hdurable_nils.
+      intuition.
+    }
     2: { iFrame "# %". iPureIntro. lia. }
     iExists _, _. iFrame. iFrame "%#".
   }
