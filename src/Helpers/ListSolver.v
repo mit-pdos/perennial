@@ -4,6 +4,16 @@ From stdpp Require Import list.
 
 Set Default Proof Using "Type".
 
+Ltac find_nil :=
+  repeat match goal with
+         | H: length ?l = 0 |- _ =>
+             apply nil_length_inv in H; subst
+         | H: 0 = length ?l |- _ =>
+             apply eq_sym, nil_length_inv in H; subst
+         | H: ?l `prefix_of` [] |- _ =>
+             apply prefix_nil_inv in H; subst
+         end.
+
 Ltac list_simpl :=
   repeat first [
       progress rewrite -> ?app_length, ?drop_length in * |
@@ -11,13 +21,21 @@ Ltac list_simpl :=
       rewrite -> @take_length_ge in * by lia |
       rewrite -> @take_length in *
     ];
+  repeat match goal with
+         | H: context[(_ ++ _) !! _] |- _ =>
+             first [ rewrite -> lookup_app_l in H by lia |
+                     rewrite -> lookup_app_r in H by lia ]
+         | |- context[(_ ++ _) !! _] =>
+             first [ rewrite -> lookup_app_l by lia |
+                     rewrite -> lookup_app_r by lia ]
+         end;
   repeat first [
-      progress rewrite -> lookup_app_l in * by lia |
-      progress rewrite -> lookup_app_r in * by lia |
       progress rewrite -> @lookup_drop in * |
       progress rewrite -> @lookup_take in * by lia |
-      progress rewrite -> lookup_take_ge in * by lia
+      progress rewrite -> lookup_take_ge in * by lia |
+      progress rewrite -> lookup_nil in *
     ];
+  find_nil;
   cbn [length] in *.
 
 Section list.
@@ -82,7 +100,7 @@ End list.
 Ltac find_list_hyps :=
   repeat match goal with
          | H: @eq (list _) ?l1 ?l2 |- _ =>
-             learn_hyp (list_eq_length l1 l2);
+             learn_hyp (list_eq_length l1 l2 H);
              pose proof (list_eq_forall l1 l2 H);
              clear H
          | H: ?l1 `prefix_of` ?l2 |- _ =>
@@ -104,16 +122,6 @@ Ltac use_list_hyps :=
          | H: (forall (i:nat), _), i: nat |- _ =>
              let Hi := fresh H i in
              learn_feed_as (H i) Hi; [ lia .. | ]
-         end.
-
-Ltac find_nil :=
-  repeat match goal with
-         | H: length ?l = 0 |- _ =>
-             apply nil_length_inv in H; subst
-         | H: 0 = length ?l |- _ =>
-             apply eq_sym, nil_length_inv in H; subst
-         | H: ?l `prefix_of` [] |- _ =>
-             apply prefix_nil_inv in H; subst
          end.
 
 Create HintDb list.
@@ -183,6 +191,13 @@ Section test.
 
   Theorem test_3 l :
     [] `prefix_of` l.
+  Proof.
+    list_solver.
+  Qed.
+
+  Theorem test_4 l1 l2 :
+    l1 ++ l2 `prefix_of` l2  →
+    l1 `prefix_of` l2.
   Proof.
     list_solver.
   Qed.
