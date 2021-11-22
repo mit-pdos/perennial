@@ -1,6 +1,9 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import pb.
 From Perennial.program_proof.pb Require Export replica_ghost_defns.
+From Perennial.Helpers Require Import ListSolver.
+
+Hint Unfold log_po : list.
 
 Section replica_ghost_proof.
 
@@ -29,7 +32,7 @@ Proof.
     iDestruct "HH" as "[%Hbad|Haccepted]".
     { exfalso. word. }
     iMod (accepted_update _ _ _ _ newLog with "Haccepted") as "Haccepted".
-    { (* list_solver candidate *) apply prefix_nil. }
+    { list_solver. }
     iDestruct (accepted_witness with "Haccepted") as "#$".
     iFrame "Haccepted HnewProp".
     iApply "HacceptedUnused".
@@ -61,8 +64,7 @@ Proof.
       destruct Hnew as [Hbad|HnewLog].
       { exfalso; word. }
       assert (newLog = r.(opLog)) as ->.
-      { (* list_solver candidate *) eapply list_prefix_eq; eauto.
-        lia. }
+      { list_solver. }
       iDestruct (accepted_witness with "Haccepted") as "#$".
       by iFrame "∗#".
     }
@@ -101,14 +103,13 @@ Proof.
       iApply (commit_lb_by_monotonic with "Hcommit_lb").
       { done. }
       (* B[:n] ⪯ A -∗ A[:n] ⪯ B[:n] *)
-      (* set_solver candidate *)
+      (* list_solver candidate *)
       admit.
     }
     {
       iPureIntro.
       (* A[:n] ⪯ B -∗ n ≤ length B *)
-      (* set_solver candidate *)
-      admit.
+      list_solver.
     }
   }
 Admitted.
