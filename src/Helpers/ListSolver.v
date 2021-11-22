@@ -12,12 +12,13 @@ Ltac list_simpl :=
       rewrite -> @take_length in *
     ];
   repeat first [
-      rewrite -> lookup_app_l by lia |
-      rewrite -> lookup_app_r by lia |
-      progress rewrite ?lookup_drop |
-      rewrite -> lookup_take by lia |
-      rewrite -> lookup_take_ge by lia
-    ].
+      progress rewrite -> lookup_app_l in * by lia |
+      progress rewrite -> lookup_app_r in * by lia |
+      progress rewrite -> @lookup_drop in * |
+      progress rewrite -> @lookup_take in * by lia |
+      progress rewrite -> lookup_take_ge in * by lia
+    ];
+  cbn [length] in *.
 
 Section list.
   Context {A: Type}.
@@ -78,7 +79,7 @@ Section list.
   Proof. reflexivity. Qed.
 End list.
 
-Ltac saturate_length :=
+Ltac find_list_hyps :=
   repeat match goal with
          | H: @eq (list _) ?l1 ?l2 |- _ =>
              learn_hyp (list_eq_length l1 l2);
@@ -89,6 +90,20 @@ Ltac saturate_length :=
              learn_hyp (prefix_length l1 l2 H) as Hnew;
              pose proof (list_prefix_forall l1 l2 H);
              clear H
+         end.
+
+Ltac learn_feed_as H i :=
+  feed (fun p => let P := type of p in
+                  lazymatch goal with
+                  | H: P |- _ => fail 1
+                  | _ => pose proof p as i
+                  end) H.
+
+Ltac use_list_hyps :=
+  repeat match goal with
+         | H: (forall (i:nat), _), i: nat |- _ =>
+             let Hi := fresh H i in
+             learn_feed_as (H i) Hi; [ lia .. | ]
          end.
 
 Ltac find_nil :=
@@ -106,7 +121,7 @@ Hint Resolve list_prefix_refl : list.
 Hint Resolve prefix_nil : list.
 
 Ltac solve_list_eq :=
-  saturate_length;
+  find_list_hyps;
   let i := fresh "i" in
   first [
       apply list_eq_bounded;
@@ -114,15 +129,25 @@ Ltac solve_list_eq :=
       apply list_eq; intros i
     ];
   list_simpl;
+  use_list_hyps;
+  list_simpl;
   auto with lia.
 
 (* TODO: actually try list_prefix_bounded *)
 Ltac solve_list_prefix :=
-  saturate_length;
-  auto with list.
+  find_list_hyps;
+  apply list_prefix_bounded;
+  [ list_simpl; solve [ auto with list lia ] |
+    let i := fresh "i" in
+    let Hle := fresh "Hle" in
+    intros i Hle ];
+  list_simpl;
+  use_list_hyps;
+  list_simpl;
+  auto with lia list.
 
 Ltac solve_list_general :=
-  saturate_length;
+  find_list_hyps;
   list_simpl;
   auto with lia.
 
@@ -143,6 +168,21 @@ Section test.
     length l2 ≤ length l1 →
     l1 `prefix_of` l2 →
     l1 = l2.
+  Proof.
+    list_solver.
+  Qed.
+
+  (* B[:n] ⪯ A -∗ A[:n] ⪯ B[:n] *)
+  Theorem test_2 l1 l2 n :
+    n ≤ length l2 →
+    take n l2 `prefix_of` l1 →
+    take n l1 `prefix_of` take n l2.
+  Proof.
+    list_solver.
+  Qed.
+
+  Theorem test_3 l :
+    [] `prefix_of` l.
   Proof.
     list_solver.
   Qed.

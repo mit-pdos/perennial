@@ -103,8 +103,7 @@ Proof.
       iApply (commit_lb_by_monotonic with "Hcommit_lb").
       { done. }
       (* B[:n] ⪯ A -∗ A[:n] ⪯ B[:n] *)
-      (* list_solver candidate *)
-      admit.
+      list_solver.
     }
     {
       iPureIntro.
