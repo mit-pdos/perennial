@@ -76,6 +76,11 @@ Definition oldConfMax γ (cn:u64) log : iProp Σ :=
    ⌜int.Z cn_old < int.Z cn⌝ →
    accepted_by γ cn_old log_old → ⌜log_old ⪯ log⌝).
 
+(* Want better name *)
+Definition proposal_lb_fancy γ cn log : iProp Σ :=
+  proposal_lb γ cn log ∗
+  oldConfMax γ cn log.
+
 (* System-wide invariant for primary/backup replication with many replicas with
    configuration changes *)
 Definition pb_invariant γ : iProp Σ :=
@@ -105,7 +110,7 @@ Proof.
 Admitted.
 
 Lemma proposal_lb_comparable γ cn l l' :
-  proposal_lb γ cn l -∗ proposal_lb γ cn l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l⌝.
+  proposal_lb_fancy γ cn l -∗ proposal_lb_fancy γ cn l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l⌝.
 Proof.
 Admitted.
 
@@ -119,9 +124,10 @@ Proof.
 Admitted.
 
 Lemma oldConfMax_commit_lb_by γ cn l cn_old l_old :
-  int.Z cn_old < int.Z cn → oldConfMax γ cn l -∗ commit_lb_by γ cn_old l_old -∗ ⌜l_old ⪯ l⌝.
+  int.Z cn_old < int.Z cn → proposal_lb_fancy γ cn l -∗ commit_lb_by γ cn_old l_old -∗ ⌜l_old ⪯ l⌝.
 Proof.
   iIntros (?) "#Hφ [_ #Hcommit]".
+  iDestruct "Hφ" as "[_ Hφ]".
   iDestruct "Hcommit" as (? ?) "Haccepted_by".
   iApply ("Hφ" $! cn_old0).
   { iPureIntro. word. }

@@ -13,7 +13,7 @@ Lemma append_new_ghost {rid} γ r (newCn:u64) newLog :
   int.Z r.(cn) ≤ int.Z newCn →
   int.Z r.(cn) < int.Z newCn ∨ length r.(opLog) ≤ length newLog →
   "Hown" ∷ own_Replica_ghost rid γ r ∗
-  "#HnewProp" ∷ proposal_lb γ newCn newLog
+  "#HnewProp" ∷ proposal_lb_fancy γ newCn newLog
   ={⊤}=∗
   own_Replica_ghost rid γ (mkReplica newLog newCn) ∗
   accepted_lb γ newCn rid newLog.
@@ -77,11 +77,40 @@ Qed.
 Lemma maintain_committer_ghost γ r c newCn newLog :
   int.Z r.(cn) ≤ int.Z newCn →
   int.Z r.(cn) < int.Z newCn ∨ length r.(opLog) ≤ length newLog →
-  "#HnewProp" ∷ proposal_lb γ newCn newLog ∗
+  "#HnewProp" ∷ proposal_lb_fancy γ newCn newLog ∗
   "#Hownc" ∷ own_Committer_ghost γ r c
   ={⊤}=∗
   own_Committer_ghost γ (mkReplica newLog newCn) c.
 Proof.
+  intros HnotStale Hnew.
+  iNamed 1.
+  iNamed "Hownc".
+  assert (int.Z r.(cn) = int.Z newCn ∨ int.Z r.(cn) < int.Z newCn) as [Hcase|Hcase] by word.
+  { (* case: newCn == oldCn *)
+    destruct Hnew as [Hbad|HlongerLog]; first word.
+    admit.
+  }
+  { (* case: newCn > oldCn *)
+    iDestruct (oldConfMax_commit_lb_by with "HnewProp Hcommit_lb") as %HlogPrefix.
+    { done. }
+    unfold own_Committer_ghost.
+    simpl.
+    iModIntro.
+    iSplitL "".
+    {
+      iApply (commit_lb_by_monotonic with "Hcommit_lb").
+      { done. }
+      (* B[:n] ⪯ A -∗ A[:n] ⪯ B[:n] *)
+      (* set_solver candidate *)
+      admit.
+    }
+    {
+      iPureIntro.
+      (* A[:n] ⪯ B -∗ n ≤ length B *)
+      (* set_solver candidate *)
+      admit.
+    }
+  }
 Admitted.
 
 (* Same CN as before, and an old log; just get a witness that we already accepted *)
@@ -102,7 +131,7 @@ Proof.
   iDestruct (proposal_lb_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
   { (* log must be equal *)
     replace (newLog) with (r.(opLog)); last first.
-    { admit. } (* len A ≤ len B ∧ B ⪯ A → B = A *)
+    { (* list_solver candidate *) admit. } (* len A ≤ len B ∧ B ⪯ A → B = A *)
     iDestruct (accepted_lb_monotonic with "Hacc1") as "$".
     { done. }
     by iFrame "∗#".

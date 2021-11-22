@@ -27,7 +27,7 @@ Definition own_Replica_ghost (rid:u64) γ (r:Replica) : iProp Σ :=
   "HacceptedUnused" ∷ ([∗ set] cn_some ∈ (fin_to_set u64),
                       ⌜int.Z cn_some ≤ int.Z r.(cn)⌝ ∨ accepted_ptsto γ cn_some rid []
                       ) ∗
-  "#Hproposal_lb" ∷ proposal_lb γ r.(cn) r.(opLog)
+  "#Hproposal_lb" ∷ proposal_lb_fancy γ r.(cn) r.(opLog)
 .
 
 (* A primary is a replica with some more stuff; technically, the rid from the
