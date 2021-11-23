@@ -1,6 +1,9 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI). *)
 
+(* experimental, not being used by anything else in this file yet *)
+From Perennial.Helpers Require Import ListSolver.
+
 From Perennial.algebra Require ghost_async_map.
 
 From Perennial.goose_lang Require

@@ -4,6 +4,20 @@ From stdpp Require Import list.
 
 Set Default Proof Using "Type".
 
+Lemma list_prefix_refl {A} (l: list A) :
+  l `prefix_of` l.
+Proof. reflexivity. Qed.
+
+Lemma list_lookup_eq {A} (l: list A) (i1 i2: nat) :
+  i1 = i2 →
+  l !! i1 = l !! i2.
+Proof. by intros ->. Qed.
+
+Create HintDb list.
+Hint Resolve list_prefix_refl : list.
+Hint Resolve prefix_nil : list.
+Hint Resolve list_lookup_eq : list.
+
 Ltac find_nil :=
   repeat match goal with
          | H: length ?l = 0 |- _ =>
@@ -15,12 +29,13 @@ Ltac find_nil :=
          end.
 
 Ltac list_simpl :=
-  repeat first [
-      progress rewrite -> ?app_length, ?drop_length in * |
-      rewrite -> @take_length_le in * by lia |
-      rewrite -> @take_length_ge in * by lia |
-      rewrite -> @take_length in *
-    ];
+  (* TODO: this is fragile with split_app_lookup: we rely on re-proving [i <
+  length l] with [lia], to detect that a split has been made, but this can break
+  if the hypothesis gets simplified away by the rewriting here.
+
+  This solver needs a more robust way to remember that something has happened,
+  more like the Learn library in coq-tactical, combined with support here for
+  not altering Learned hypotheses. *)
   repeat match goal with
          | H: context[(_ ++ _) !! _] |- _ =>
              first [ rewrite -> lookup_app_l in H by lia |
@@ -29,6 +44,12 @@ Ltac list_simpl :=
              first [ rewrite -> lookup_app_l by lia |
                      rewrite -> lookup_app_r by lia ]
          end;
+  repeat first [
+      progress rewrite -> ?app_length, ?drop_length in * |
+      rewrite -> @take_length_le in * by lia |
+      rewrite -> @take_length_ge in * by lia |
+      rewrite -> @take_length in *
+    ];
   repeat first [
       progress rewrite -> @lookup_drop in * |
       progress rewrite -> @lookup_take in * by lia |
@@ -89,12 +110,9 @@ Section list.
       + list_simpl.
         rewrite Heq //.
       + list_simpl.
-        f_equal; lia.
+        auto with list lia.
   Qed.
 
-  Lemma list_prefix_refl l :
-    l `prefix_of` l.
-  Proof. reflexivity. Qed.
 End list.
 
 Ltac find_list_hyps :=
@@ -124,31 +142,56 @@ Ltac use_list_hyps :=
              learn_feed_as (H i) Hi; [ lia .. | ]
          end.
 
-Create HintDb list.
-Hint Resolve list_prefix_refl : list.
-Hint Resolve prefix_nil : list.
+Ltac start_list_eq :=
+  let i := fresh "i" in
+  first [
+      apply list_eq_bounded; [ lia | intros i ? ] |
+      apply list_eq; intros i
+    ].
+
+Definition lt_le_dec n1 n2 : {n1 < n2} + {n2 ≤ n1}.
+Proof.
+  destruct (decide (n1 < n2)); [ left | right ]; lia.
+Qed.
+
+(* Split on whether i is < length l or not. Checks if the split is
+unnecessary. *)
+Ltac split_i l i :=
+  first [
+      assert_succeeds
+        ((assert (i < length l) by lia) || (assert (length l ≤ i) by lia));
+      fail 1 "i < length l or not already" |
+      destruct (lt_le_dec i (length l))
+    ].
+
+Ltac split_app_lookups :=
+  repeat match goal with
+         | |- context[(?l1 ++ _) !! ?i] =>
+             split_i l1 i
+         | H: context[(?l1 ++ _) !! ?i] |- _ =>
+             split_i l1 i
+         end.
 
 Ltac solve_list_eq :=
   find_list_hyps;
-  let i := fresh "i" in
-  first [
-      apply list_eq_bounded;
-      [ lia | intros i ? ] |
-      apply list_eq; intros i
+  start_list_eq;
+  repeat first [
+      progress list_simpl |
+      progress use_list_hyps |
+      progress split_app_lookups
     ];
-  list_simpl;
-  use_list_hyps;
-  list_simpl;
-  auto with lia.
+  auto with lia list.
 
-(* TODO: actually try list_prefix_bounded *)
-Ltac solve_list_prefix :=
-  find_list_hyps;
+Ltac start_list_prefix :=
   apply list_prefix_bounded;
   [ list_simpl; solve [ auto with list lia ] |
     let i := fresh "i" in
     let Hle := fresh "Hle" in
-    intros i Hle ];
+    intros i Hle ].
+
+Ltac solve_list_prefix :=
+  find_list_hyps;
+  start_list_prefix;
   list_simpl;
   use_list_hyps;
   list_simpl;
@@ -157,7 +200,7 @@ Ltac solve_list_prefix :=
 Ltac solve_list_general :=
   find_list_hyps;
   list_simpl;
-  auto with lia.
+  auto with lia list.
 
 Ltac list_solver :=
   autounfold with list in *;
@@ -198,6 +241,13 @@ Section test.
   Theorem test_4 l1 l2 :
     l1 ++ l2 `prefix_of` l2  →
     l1 `prefix_of` l2.
+  Proof.
+    list_solver.
+  Qed.
+
+  Theorem test_5 l n :
+    n ≤ length l →
+    take n l ++ drop n l = l.
   Proof.
     list_solver.
   Qed.
