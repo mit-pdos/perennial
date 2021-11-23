@@ -54,18 +54,18 @@ a certain key, which ensures that the key stayed unchanged since then.
  Durability is orthogonal to this library: separately from the async we know
  that some index is durable, which guarantees that facts about that index and
  below can be carried across a crash. *)
-Definition async_ctx γ q σs : iProp Σ :=
-   own_last_auth γ q σs ∗
+Definition async_ctx γ (q: Qp) σs : iProp Σ :=
+   own_last_auth γ (DfracOwn q) σs ∗
       (* Everything has the same domain *)
       ⌜Forall (λ σ, dom (gset _) σ = dom (gset _) (latest σs)) (possible σs)⌝ ∗
       (* We also have the [lb] in here to avoid some update modalities below. *)
-      fmlist γ.(async_list) q (possible σs) ∗ fmlist_lb γ.(async_list) (possible σs).
+      fmlist γ.(async_list) (DfracOwn q) (possible σs) ∗ fmlist_lb γ.(async_list) (possible σs).
 
 (* We support two-step initialziation, where the γ is picked in the first step and
 the initial σs are picked in the second step. [async_pre_ctx] is the output of the
 first step and the input to the second. *)
 Definition async_pre_ctx γ : iProp Σ :=
-  own γ.(async_map) (gmap_view_auth 1 ∅) ∗ fmlist γ.(async_list) 1 [].
+  own γ.(async_map) (gmap_view_auth (DfracOwn 1) ∅) ∗ fmlist γ.(async_list) (DfracOwn 1) [].
 
 Definition async_lb γ σs : iProp Σ :=
   fmlist_lb γ.(async_list) (possible σs).
@@ -147,7 +147,7 @@ Proof.
   - iDestruct 1 as "[H1 H2]".
     iDestruct "H1" as (last1 ?) "H1".
     iDestruct "H2" as (last2 ?) "H2".
-    iDestruct (own_valid_2 with "H1 H2") as %Hvalid%gmap_view_auth_frac_op_inv_L.
+    iDestruct (own_valid_2 with "H1 H2") as %Hvalid%gmap_view_auth_dfrac_op_inv_L.
     subst.
     iCombine "H1 H2" as "H".
     eauto.
@@ -169,9 +169,9 @@ Qed.
 Local Lemma own_last_shift γ σs k i i' :
   (i ≤ i')%nat →
   (i' < length (possible σs))%nat →
-  own_last_auth γ 1 σs -∗
+  own_last_auth γ (DfracOwn 1) σs -∗
   own_last_frag  γ k i ==∗
-  own_last_auth γ 1 σs ∗ own_last_frag γ k i'.
+  own_last_auth γ (DfracOwn 1) σs ∗ own_last_frag γ k i'.
 Proof.
   iIntros (Hle Hi') "Halast Hflast".
   iDestruct "Halast" as (last Hlast) "Hmap".
@@ -191,7 +191,7 @@ Proof.
 Qed.
 
 Local Lemma own_last_put γ σs :
-  own_last_auth γ 1 σs -∗ own_last_auth γ 1 (async_put (latest σs) σs).
+  own_last_auth γ (DfracOwn 1) σs -∗ own_last_auth γ (DfracOwn 1) (async_put (latest σs) σs).
 Proof.
   iIntros "Hlast". iDestruct "Hlast" as (last Hlast) "Hmap".
   iExists last. iFrame. iPureIntro.
@@ -217,9 +217,9 @@ Qed.
 (* As far as just [own_last] is concerned, we can change the value of the
 last transaction. *)
 Local Lemma own_last_update γ σs k v' m i :
-  own_last_auth γ 1 (async_put m σs) -∗
+  own_last_auth γ (DfracOwn 1) (async_put m σs) -∗
   own_last_frag γ k i ==∗
-  own_last_auth γ 1 (async_put (<[k:=v']> m) σs) ∗
+  own_last_auth γ (DfracOwn 1) (async_put (<[k:=v']> m) σs) ∗
     own_last_frag γ k (S (length (possible σs)) - 1).
 Proof.
   iIntros "Halast Hflast". iDestruct "Halast" as (last Hlast) "Hmap".
@@ -371,7 +371,7 @@ Proof.
   iClear "Hval".
   iDestruct "Hauth" as "(Halast & Halist & Hflist)".
   iDestruct "Halast" as (last Hlast) "Hmap".
-  iDestruct (own_valid_2 with "Hmap Hlast") as %(_  & _ & Hmap)%gmap_view_both_frac_valid_L.
+  iDestruct (own_valid_2 with "Hmap Hlast") as %(_  & _ & Hmap)%gmap_view_both_dfrac_valid_L.
   destruct (Hlast _ _ Hmap) as (v' & Hlookup' & Htail).
   rewrite Hlookup in Hlookup'. injection Hlookup' as [=<-].
   iApply ephemeral_lookup_txn_val; last first.
@@ -449,7 +449,7 @@ Theorem async_pre_ctx_init:
   ⊢ |==> ∃ γ, async_pre_ctx γ.
 Proof.
   iMod (fmlist_alloc []) as (γlist) "Hlist".
-  iMod (own_alloc (gmap_view_auth 1 ∅)) as (γmap) "Hmap".
+  iMod (own_alloc (gmap_view_auth (DfracOwn 1) ∅)) as (γmap) "Hmap".
   { apply gmap_view_auth_valid. }
   iModIntro. iExists (Build_async_gname γlist γmap).
   rewrite /async_pre_ctx /=. iFrame.

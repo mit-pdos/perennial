@@ -1,6 +1,6 @@
 From Perennial.base_logic.lib Require Import iprop own.
 From iris.proofmode Require Import base tactics classes.
-From iris.algebra Require Import auth gmap.
+From iris.algebra Require Import auth dfrac gmap.
 From Perennial.algebra Require Import auth_frac.
 From iris.bi.lib Require Import fractional.
 From iris.prelude Require Import options.
@@ -197,7 +197,7 @@ Section fmlist_props.
 Context `{fmlistG A Σ}.
 Implicit Types l : list A.
 
-Definition fmlist γ (q : Qp) l:= own γ (●{#q} (MList l)).
+Definition fmlist γ (dq : dfrac) l:= own γ (●{dq} (MList l)).
 Definition fmlist_lb γ l := own γ (◯ (MList l)).
 Definition fmlist_idx γ i a := (∃ l, ⌜ l !! i = Some a ⌝ ∗ fmlist_lb γ l)%I.
 
@@ -258,27 +258,27 @@ Proof.
   apply mlist_included; auto.
 Qed.
 
-Lemma fmlist_sep γ q1 q2 l:
-  fmlist γ (q1 + q2) l ⊣⊢ fmlist γ q1 l ∗ fmlist γ q2 l.
+Lemma fmlist_sep γ dq1 dq2 l:
+  fmlist γ (dq1 ⋅ dq2) l ⊣⊢ fmlist γ dq1 l ∗ fmlist γ dq2 l.
 Proof.
   iSplit.
   - iIntros "(Hm1&Hm2)". iFrame.
   - iIntros "(Hm1&Hm2)". iCombine "Hm1 Hm2" as "$".
 Qed.
 
-Lemma fmlist_to_lb γ q l:
-  fmlist γ q l ==∗ fmlist_lb γ l.
+Lemma fmlist_to_lb γ dq l:
+  fmlist γ dq l ==∗ fmlist_lb γ l.
 Proof.
   iIntros "Hm".
-  iMod (own_update _ _ ((●{#q} (MList l)) ⋅ ◯ (MList l)) with "Hm") as "(?&$)"; last done.
+  iMod (own_update _ _ ((●{dq} (MList l)) ⋅ ◯ (MList l)) with "Hm") as "(?&$)"; last done.
   { apply auth_frac_update_core_id; eauto. apply _. }
 Qed.
 
-Lemma fmlist_get_lb γ q l:
-  fmlist γ q l ==∗ fmlist γ q l ∗ fmlist_lb γ l.
+Lemma fmlist_get_lb γ dq l:
+  fmlist γ dq l ==∗ fmlist γ dq l ∗ fmlist_lb γ l.
 Proof.
   iIntros "Hm".
-  iMod (own_update _ _ ((●{#q} (MList l)) ⋅ ◯ (MList l)) with "Hm") as "(?&$)"; last done.
+  iMod (own_update _ _ ((●{dq} (MList l)) ⋅ ◯ (MList l)) with "Hm") as "(?&$)"; last done.
   { apply auth_frac_update_core_id; eauto. apply _. }
 Qed.
 
@@ -289,7 +289,7 @@ Proof. iIntros (Hlookup) "H". iExists l. iFrame. eauto. Qed.
 
 Lemma fmlist_update l' γ l:
   l `prefix_of` l' ->
-  fmlist γ 1 l ==∗ fmlist γ 1 l' ∗ fmlist_lb γ l'.
+  fmlist γ (DfracOwn 1) l ==∗ fmlist γ (DfracOwn 1) l' ∗ fmlist_lb γ l'.
 Proof.
   iIntros (Hlt) "Hm".
   iMod (own_update with "Hm") as "($&?)"; last done.
@@ -297,7 +297,7 @@ Proof.
 Qed.
 
 Lemma fmlist_alloc l :
-  ⊢ |==> ∃ γ, fmlist γ 1 l.
+  ⊢ |==> ∃ γ, fmlist γ (DfracOwn 1) l.
 Proof.
   iStartProof.
   iMod (own_alloc (● (MList l))) as (γ) "H".
@@ -322,15 +322,15 @@ Proof. apply _. Qed.
 Global Instance fmlist_timeless γ q n: Timeless (fmlist γ q n).
 Proof. apply _. Qed.
 
-Global Instance fmlist_fractional γ n: Fractional (λ q, fmlist γ q n).
-Proof. intros p q. apply fmlist_sep. Qed.
+Global Instance fmlist_fractional γ n: Fractional (λ q, fmlist γ (DfracOwn q) n).
+Proof. intros p q. rewrite -fmlist_sep //. Qed.
 
 Global Instance fmlist_as_fractional γ q n :
-  AsFractional (fmlist γ q n) (λ q, fmlist γ q n) q.
+  AsFractional (fmlist γ (DfracOwn q) n) (λ q, fmlist γ (DfracOwn q) n) q.
 Proof. split; first by done. apply _. Qed.
 
 Global Instance fmlist_into_sep γ n :
-  IntoSep (fmlist γ 1 n) (fmlist γ (1/2) n) (fmlist γ (1/2) n).
+  IntoSep (fmlist γ (DfracOwn 1) n) (fmlist γ (DfracOwn (1/2)) n) (fmlist γ (DfracOwn (1/2)) n).
 Proof. apply _. Qed.
 
 End fmlist_props.

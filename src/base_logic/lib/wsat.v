@@ -857,8 +857,8 @@ Proof.
 Qed.
 
 Lemma wsat_alloc_new_level l:
-  wsat (length l) -∗ fmlist (inv_list_name) 1 l ==∗
-  ∃ (γ: invariant_level_names), fmlist inv_list_name 1 (l ++ [γ]) ∗ wsat (S (length l)).
+  wsat (length l) -∗ fmlist (inv_list_name) (DfracOwn 1) l ==∗
+  ∃ (γ: invariant_level_names), fmlist inv_list_name (DfracOwn 1) (l ++ [γ]) ∗ wsat (S (length l)).
 Proof.
   iIntros "Hw Hlist".
   rewrite ?wsat_unfold. iFrame.
@@ -875,8 +875,8 @@ Proof.
 Qed.
 
 Lemma wsat_alloc_new_levels l n:
-  wsat (length l) -∗ fmlist (inv_list_name) 1 l ==∗
-  ∃ l', ⌜ length l' = n ⌝ ∗ fmlist inv_list_name 1 (l ++ l') ∗ wsat (length (l ++ l')).
+  wsat (length l) -∗ fmlist (inv_list_name) (DfracOwn 1) l ==∗
+  ∃ l', ⌜ length l' = n ⌝ ∗ fmlist inv_list_name (DfracOwn 1) (l ++ l') ∗ wsat (length (l ++ l')).
 Proof.
   iIntros "Hw Hlist".
   iInduction n as [| n] "IH".
@@ -889,7 +889,7 @@ Proof.
     iPureIntro. lia.
 Qed.
 
-Definition wsat_all := (∃ l, wsat (length l) ∗ fmlist (inv_list_name) 1 l)%I.
+Definition wsat_all := (∃ l, wsat (length l) ∗ fmlist (inv_list_name) (DfracOwn 1) l)%I.
 
 Lemma wsat_all_acc n:
   wsat_all ==∗ wsat n ∗ (wsat n -∗ wsat_all).
