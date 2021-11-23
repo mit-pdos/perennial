@@ -157,7 +157,7 @@ Proof.
   eapply (is_memLog_boundaries_move _ _ _ mwrb_us) in Htxns;
     last by reflexivity.
   simpl in Htxns.
-  replace (int.nat (u64_instance.u64.(word.add) _ _) - _)%nat
+  replace (int.nat (word.add _ _) - int.nat _)%nat
     with (length σ.(memLog).(slidingM.log)) by word.
   assumption.
 Qed.
