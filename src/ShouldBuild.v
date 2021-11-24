@@ -1,9 +1,6 @@
 (** ShouldBuild depends on everything that should be regularly compiled (by
 default using make as well as in CI). *)
 
-(* experimental, not being used by anything else in this file yet *)
-From Perennial.Helpers Require Import ListSolver.
-
 From Perennial.algebra Require ghost_async_map.
 
 From Perennial.goose_lang Require
@@ -18,17 +15,10 @@ From Perennial.goose_lang Require
 .
 From Perennial.goose_lang.ffi Require async_disk async_disk_equiv.
 From Perennial.program_proof Require
-     wal.circ_proof_crash
      lockmap_proof
-     crash_lockmap_proof
-     wal.proof
-     obj.obj_proof
-     jrnl.jrnl_proof
-     jrnl.sep_jrnl_recovery_proof
      jrnl_replication.jrnl_replication_proof
      txn.twophase_refinement_thm
      simple.proofs simple.example
-     wp_to_wpc
 .
 
 From Perennial.program_proof.examples Require
@@ -68,7 +58,7 @@ From Perennial.goose_lang.lib Require
 
 (* goose output *)
 From Goose.github_com.tchajed.goose.internal.examples Require
-     semantics unittest comments simpledb logging2 rfc1813.
+     comments simpledb logging2 rfc1813.
 
 (* examples goose output *)
 From Goose.github_com.mit_pdos Require
@@ -76,8 +66,6 @@ From Goose.github_com.mit_pdos Require
 
 (* interpreter semantics tests *)
 From Perennial.goose_lang.interpreter Require
-     interpreter
-     disk_interpreter
      generated_test.
 
 (* ensures this file itself works for Coq's CI and catches any oversight where
