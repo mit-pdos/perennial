@@ -92,21 +92,38 @@ Section go_refinement.
   Context (op_impl_ok: ∀ o, op_simulated o (op_impl o)).
 
   Inductive expr_impl : sexpr → iexpr → Prop :=
-  | expr_impl_val v1 v2 :
-    val_impl v1 v2 →
-    expr_impl (Val v1) (Val v2)
+  | expr_impl_val v v' :
+    val_impl v v' →
+    expr_impl (Val v) (Val v')
   | expr_impl_external_op o se ie :
     expr_impl se ie →
     expr_impl (ExternalOp o se)
               (let: "x" := ie in
                Atomically #() (App (Val (op_impl o)) (Var "x")))%E
+  | expr_impl_var x :
+    expr_impl (Var x) (Var x)
+  | expr_impl_app f f' x x' :
+    expr_impl f f' →
+    expr_impl x x' →
+    expr_impl (App f x) (App f' x')
+  | expr_impl_unop op e e' :
+    expr_impl e e' →
+    expr_impl (UnOp op e) (UnOp op e')
+  | expr_impl_if e1 e1' e2 e2' e3 e3' :
+    expr_impl e1 e1' →
+    expr_impl e2 e2' →
+    expr_impl e3 e3' →
+    expr_impl (If e1 e2 e3) (If e1' e2' e3')
+  | expr_primitive1 op e e' :
+    expr_impl e e' →
+    expr_impl (Primitive1 op e) (Primitive1 op e')
   (* TODO: bunch more cases *)
   with val_impl : sval → ival → Prop :=
-  | val_impl_lit l : val_impl (LitV l) (LitV l)
+  | val_impl_rel sv iv :
+    val_relation sv iv → val_impl sv iv
   | val_recv f x se ie :
     expr_impl se ie →
     val_impl (RecV f x se) (RecV f x ie)
-  (* TODO: bunch more cases *)
   .
 
   Definition crash_simulated :=
@@ -126,6 +143,12 @@ Section go_refinement.
     abstraction sσ sg iσ ig →
     trace_refines se se sσ sg ie ie iσ ig.
   Proof.
+    induction 1; intros.
+    - (* value *)
+      admit.
+    - (* external op *)
+      admit.
+      (* more cases *)
   Abort.
 
 End go_refinement.
