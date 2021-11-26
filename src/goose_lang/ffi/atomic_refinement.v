@@ -52,13 +52,30 @@ Section go_refinement.
     val_relation sv1 iv1 →
     val_relation sv2 iv2 →
     val_relation (PairV sv1 sv2) (PairV iv1 iv2)
+  | val_relation_injl : ∀ sv iv,
+      val_relation sv iv →
+      val_relation (InjLV sv) (InjLV iv)
+  | val_relation_injr : ∀ sv iv,
+      val_relation sv iv →
+      val_relation (InjRV sv) (InjRV iv)
   .
+
+  Definition naVal_relation : nonAtomic sval → nonAtomic ival → Prop :=
+    λ '(m1, sv) '(m2, iv), m1 = m2 ∧ val_relation sv iv.
+
+  Definition heap_relation : gmap loc (nonAtomic sval) → gmap loc (nonAtomic ival) → Prop :=
+    λ m1 m2,
+      dom (gset _) m1 = dom (gset _) m2 ∧
+      (∀ l sv iv, m1 !! l = Some sv →
+                  m2 !! l = Some iv →
+                  naVal_relation sv iv).
 
   Definition abstraction (sσ: sstate) (sg: sgstate)
              (iσ: istate) (ig: igstate) :=
     ffi_abstraction (world sσ) sg (world iσ) ig ∧
-    True ∧ (* TODO: heaps have same domain, val_relation everywhere *)
-    True (* TODO: equality for trace, oracle *).
+    heap_relation (heap sσ) (heap iσ) ∧
+    trace sσ = trace iσ ∧
+    oracle sσ = oracle iσ.
 
   Definition op_simulated (o: @ffi_opcode spec_op) (ie: iexpr) :=
     ∀ iσ ig iσ' ig' (iargv ivret: ival),
