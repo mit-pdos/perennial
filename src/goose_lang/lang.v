@@ -1160,7 +1160,13 @@ Definition stuck' (e : expr) (σ : state) (g : global_state) :=
 
 Definition prim_step'_safe e s g :=
   (∀ e' s' g', rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' []) (e, (s, g)) (e', (s', g')) →
-            ¬ stuck' e' s' g').
+            ¬ stuck' e' s' g'
+              (* TODO: this definition could also forbid any executions of e
+              starting at (s, g) from producing forked threads; otherwise our
+              specifications implicitly say Atomically(Fork(#())) aborts. Our
+              typing judgment for the txn refinement proof already forbids any
+              Fork expressions. *)
+  ).
 
 Inductive head_step_atomic:
     expr -> state -> global_state -> list observation -> expr -> state -> global_state -> list expr -> Prop :=
@@ -1423,7 +1429,7 @@ Lemma head_redex_unique K K' e e' σ g :
   K = K' ∧ e = e'.
 Proof.
   intros Heq (κ & e2 & σ2 & g2 & efs & Hred) (κ' & e2' & σ2' & g2' & efs' & Hred').
-  edestruct (step_by_val K' K e' e) as [K'' HK]; 
+  edestruct (step_by_val K' K e' e) as [K'' HK];
     [by eauto using ectx_language.val_head_stuck..|].
   subst K. move: Heq. rewrite -fill_comp'. intros <-%(inj (fill _)).
   destruct (ectx_language.head_ctx_step_val _ _ _ _ _ _ _ _ _ Hred') as [[]%not_eq_None_Some|HK''].

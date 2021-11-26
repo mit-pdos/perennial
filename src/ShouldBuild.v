@@ -10,6 +10,7 @@ From Perennial.goose_lang Require
      rwlock_derived
      barrier
      refinement refinement_adequacy
+     ffi.atomic_refinement
      logical_reln_adeq
      paper_proof
 .
