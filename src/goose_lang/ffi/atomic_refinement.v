@@ -295,6 +295,25 @@ Section go_refinement.
               (subst' x iv (subst' f (rec: f x := ie) ie)).
   Proof. eauto using expr_impl_subst'. Qed.
 
+  Lemma abstraction_heap_lookup sσ sg iσ ig l na iv :
+    abstraction sσ sg iσ ig →
+    heap iσ !! l = Some (na, iv) →
+    ∃ sv, heap sσ !! l = Some (na, sv) ∧ val_relation sv iv.
+  Proof.
+    intros (?&Hheap&_) Hlook.
+    destruct (heap sσ !! l) as [(?&?)|] eqn:Hlook'.
+    - destruct Hheap as (?&Hvals). edestruct (Hvals _ _ _ Hlook' Hlook).
+      subst; eauto.
+    - destruct Hheap as (Hdom&_).
+      apply not_elem_of_dom in Hlook'.
+      apply elem_of_dom_2 in Hlook. congruence.
+  Qed.
+
+  Lemma val_relation_to_val_impl sv iv :
+    val_relation sv iv →
+    val_impl sv iv.
+  Proof. induction 1; eauto. Qed.
+
   Ltac inv_expr_impl :=
      repeat match goal with
         | H : expr_impl ?se ?ie |- _ =>
@@ -412,7 +431,31 @@ Section go_refinement.
       inv_expr_impl.
       do 4 eexists. split_and!; eauto.
       repeat econstructor; eauto; econstructor; eauto.
-    -
+    - rewrite /head_step//= in Hstep.
+      destruct_head; monad_inv.
+      inv_expr_impl.
+      inv_head_step. monad_inv.
+      do 4 eexists. split_and!; eauto.
+      repeat econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct op; monad_inv; destruct_head.
+      * inv_expr_impl; inv_head_step. monad_inv.
+        destruct (heap _ !! l) as [(?&?)|] eqn:Heq; subst.
+        ** inv_head_step. monad_inv.
+           inv_head_step.
+           destruct n; inv_head_step; monad_inv; try done; [].
+           destruct n; inv_head_step; monad_inv; try done; [].
+           eapply abstraction_heap_lookup in Heq as (sv&Hlook&Hrel); eauto.
+           do 4 eexists. split_and!; eauto.
+           { apply val_relation_to_val_impl in Hrel.
+             repeat econstructor; rewrite ?Hlook => //=.
+             repeat econstructor.
+           }
+           (* This case is ok, but for the next one: *)
+           (* TODO: either need to add an assumption that source program
+              never tries to write a higher order value -- in which case we can go from
+              val_impl to val_relation *)
+           (* That or we just switch to doing this in SProp *)
   Abort.
 
 
