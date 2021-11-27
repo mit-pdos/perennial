@@ -2,6 +2,8 @@ From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import refinement.
 From Perennial.goose_lang Require Import notation.
 
+Set Default Proof Using "Type".
+
 Lemma val_lit_eq_iff `{spec_op: ffi_syntax} l l' :
   #l = #l' ↔ l = l'.
 Proof.
@@ -259,7 +261,7 @@ Section go_refinement.
         | Some iv' => ∃ sv', un_op_eval op sv = Some sv' ∧ val_impl sv' iv'
         | None => un_op_eval op sv = None
          end.
-  Proof using.
+  Proof.
     destruct op, iv => //=;
       try (inversion 1; subst; eauto; inversion H0; subst; eauto; done);
       try (destruct l; inversion 1; subst; eauto; inversion H0; subst; eauto).
@@ -270,7 +272,7 @@ Section go_refinement.
   Lemma val_impl_comparable {sv iv} :
     val_impl sv iv →
     (is_comparable sv ↔ is_comparable iv).
-  Proof using.
+  Proof.
     generalize dependent iv.
     induction sv, iv; simpl; auto;
       try solve [ inversion 1; subst; eauto ].
@@ -283,7 +285,7 @@ Section go_refinement.
   Lemma val_impl_bool_iff P1 P2 `{!Decision P1, !Decision P2} :
     (P1 ↔ P2) →
     val_impl #(bool_decide P1) #(bool_decide P2).
-  Proof using.
+  Proof.
     intros.
     rewrite (bool_decide_iff P1 P2) //.
   Qed.
