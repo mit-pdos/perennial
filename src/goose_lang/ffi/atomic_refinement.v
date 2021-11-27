@@ -151,15 +151,13 @@ Section go_refinement.
     expr_impl e1 e1' →
     expr_impl e2 e2' →
     expr_impl (CmpXchg e0 e1 e2) (CmpXchg e0' e1' e2')
-  (* TODO: consider switching this to only give the conversion when
-     it's of the form ExternalOp o (Var x) or ExternalOp o (Val v). In other words,
-     we only compile programs that either (1) applied to a direct value or (2) already
-     "eta expanded" ExternalOp to be (λ: "x", ExternalOp op "x") *)
-  | expr_impl_external_op o se ie :
-    expr_impl se ie →
-    expr_impl (ExternalOp o se)
-              (let: "x" := ie in
-               Atomically #() (App (Val (op_impl o)) (Var "x")))%E
+  | expr_impl_external_op_var o x:
+    expr_impl (ExternalOp o (Var x))
+              (Atomically #() (App (Val (op_impl o)) (Var x)))%E
+  | expr_impl_external_op_val o sv iv:
+    val_impl sv iv →
+    expr_impl (ExternalOp o sv)
+              (Atomically #() (App (Val (op_impl o)) iv))%E
   (* TODO: bunch more cases *)
   with val_impl : sval → ival → Prop :=
   | val_recv f x se ie :
@@ -168,6 +166,11 @@ Section go_refinement.
   | val_impl_rel sv iv :
     val_relation sv iv → val_impl sv iv
   .
+
+  (* Check to make sure the translation of ExternalOp is not vacuous *)
+  Lemma expr_impl_ExternalOp o :
+    expr_impl (λ: "x", ExternalOp o (Var "x")) (λ: "x", Atomically #() (App (Val (op_impl o)) (Var "x"))).
+  Proof. repeat econstructor. Qed.
 
   Definition crash_simulated :=
     ∀ iw iw',
@@ -244,6 +247,27 @@ Section go_refinement.
     - admit.
   Admitted.
 
+  Lemma expr_impl_subst x sv se iv ie :
+    expr_impl se ie →
+    val_impl sv iv →
+    expr_impl (subst x sv se)
+              (subst x iv ie).
+  Proof. induction 1 => //=; eauto; intros Hval; destruct (decide _); eauto. Qed.
+
+  Lemma expr_impl_subst' x sv se iv ie :
+    expr_impl se ie →
+    val_impl sv iv →
+    expr_impl (subst' x sv se)
+              (subst' x iv ie).
+  Proof. destruct x => /=; eauto using expr_impl_subst. Qed.
+
+  Lemma expr_impl_subst'_2 x f sv se iv ie :
+    expr_impl se ie →
+    val_impl sv iv →
+    expr_impl (subst' x sv (subst' f (rec: f x := se) se))
+              (subst' x iv (subst' f (rec: f x := ie) ie)).
+  Proof. eauto using expr_impl_subst'. Qed.
+
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
     head_step ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
     expr_impl se1 ie1 →
@@ -270,7 +294,7 @@ Section go_refinement.
       inversion H3; subst.
       do 4 eexists. split_and!; eauto.
       * repeat econstructor.
-      * admit. (* need substitution lemma :'( *)
+      * eapply expr_impl_subst'_2; eauto.
     - rewrite /head_step//= in Hstep.
       destruct_head.
       inversion Himpl; subst.
