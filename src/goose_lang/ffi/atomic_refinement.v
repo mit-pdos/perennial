@@ -2,6 +2,24 @@ From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import refinement.
 From Perennial.goose_lang Require Import notation.
 
+Lemma val_lit_eq_iff `{spec_op: ffi_syntax} l l' :
+  #l = #l' ↔ l = l'.
+Proof.
+  naive_solver.
+Qed.
+
+Lemma val_pair_eq_iff `{spec_op: ffi_syntax} v1 v2 v1' v2' :
+  (v1, v2)%V = (v1', v2')%V ↔ v1 = v1' ∧ v2 = v2'.
+Proof. naive_solver. Qed.
+
+Lemma val_injl_eq_iff `{spec_op: ffi_syntax} v1 v1' :
+  InjLV v1 = InjLV v1' ↔ v1 = v1'.
+Proof. naive_solver. Qed.
+
+Lemma val_injr_eq_iff `{spec_op: ffi_syntax} v1 v1' :
+  InjRV v1 = InjRV v1' ↔ v1 = v1'.
+Proof. naive_solver. Qed.
+
 Section go_refinement.
   (* Records defining spec language extensions *)
   Context {spec_op: ffi_syntax}.
@@ -241,10 +259,46 @@ Section go_refinement.
         | Some iv' => ∃ sv', un_op_eval op sv = Some sv' ∧ val_impl sv' iv'
         | None => un_op_eval op sv = None
          end.
-  Proof.
+  Proof using.
     destruct op, iv => //=;
       try (inversion 1; subst; eauto; inversion H0; subst; eauto; done);
       try (destruct l; inversion 1; subst; eauto; inversion H0; subst; eauto).
+  Qed.
+
+  Hint Extern 1 (is_comparable _) => simpl : core.
+
+  Lemma val_impl_comparable {sv iv} :
+    val_impl sv iv →
+    (is_comparable sv ↔ is_comparable iv).
+  Proof using.
+    generalize dependent iv.
+    induction sv, iv; simpl; auto;
+      try solve [ inversion 1; subst; eauto ].
+
+    inversion 1; subst.
+    rewrite IHsv1 //.
+    rewrite IHsv2 //.
+  Qed.
+
+  Lemma val_impl_bool_iff P1 P2 `{!Decision P1, !Decision P2} :
+    (P1 ↔ P2) →
+    val_impl #(bool_decide P1) #(bool_decide P2).
+  Proof using.
+    intros.
+    rewrite (bool_decide_iff P1 P2) //.
+  Qed.
+
+  Lemma val_impl_comparable_to_eq:
+    ∀ (iv1 iv2 : ival) (sv1 sv2 : sval),
+    is_comparable iv1 → is_comparable iv2 →
+    val_impl sv1 iv1 → val_impl sv2 iv2 → sv1 = sv2 ↔ iv1 = iv2.
+  Proof.
+    induction iv1, iv2; simpl; intros ? ? Hv1 Hv2;
+      (* exploit is_comparable *)
+      (try contradiction);
+      (inversion 1; inversion 1; subst; eauto);
+      rewrite ?val_lit_eq_iff ?val_pair_eq_iff ?val_injl_eq_iff ?val_injr_eq_iff //;
+      naive_solver.
   Qed.
 
   Lemma expr_impl_bin_op_eval op sv1 sv2 iv1 iv2 :
@@ -259,20 +313,21 @@ Section go_refinement.
     try (destruct iv1 => //=; inversion 1; subst; eauto; try inversion H0; subst; eauto;
          try (destruct iv2; inversion 1; subst; eauto; try inversion H2; subst; eauto;
            destruct l => //=; destruct l0 => //=; eauto; done); done).
-    (*
 
-       This is actually annoying to handle because = may not evaluate to the
-       same thing because of rec.
+    rewrite /bin_op_eval /bin_op_eval_eq /=.
+    intros Hv1 Hv2.
+    pose proof (val_impl_comparable Hv1) as Hv1compare.
+    pose proof (val_impl_comparable Hv2) as Hv2compare.
+    destruct (decide (is_comparable iv1 ∧ is_comparable iv2));
+      [ rewrite decide_True; [ | naive_solver ]
+      | rewrite decide_False; [ | naive_solver ] ];
+      simpl; auto.
 
-       In the logical relation we handle this by requiring equality to only be
-       at certain types, which forbids testing equality of recv.
-
-       We could just bake the same restriction into the operational semantics of goose lang to make it
-       UB to do function equality testing
-
-     *)
-    - admit.
-  Admitted.
+    eexists; split; [ now eauto | ].
+    destruct a.
+    apply val_impl_bool_iff.
+    apply val_impl_comparable_to_eq; auto.
+  Qed.
 
   Lemma expr_impl_subst x sv se iv ie :
     expr_impl se ie →
