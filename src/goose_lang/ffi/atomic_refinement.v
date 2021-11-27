@@ -133,6 +133,11 @@ Section go_refinement.
   | expr_impl_injr e e' :
     expr_impl e e' →
     expr_impl (InjR e) (InjR e')
+  | expr_impl_case e1 e1' e2 e2' e3 e3' :
+    expr_impl e1 e1' →
+    expr_impl e2 e2' →
+    expr_impl e3 e3' →
+    expr_impl (Case e1 e2 e3) (Case e1' e2' e3')
   | expr_impl_fork e e' :
     expr_impl e e' →
     expr_impl (Fork e) (Fork e')
@@ -225,6 +230,11 @@ Section go_refinement.
            | [ H: relation.denote (match ?e with | _ => _ end) _ _ _ |- _ ] => destruct e; monad_inv; []
            end.
 
+  Ltac destruct_head2 :=
+    repeat match goal with
+           | [ H: relation.denote (match ?e with | _ => _ end) _ _ _ |- _ ] => destruct e; monad_inv; [|]
+           end.
+
   Lemma expr_impl_un_op_eval op sv iv :
         val_impl sv iv →
         match un_op_eval op iv with
@@ -285,6 +295,16 @@ Section go_refinement.
               (subst' x iv (subst' f (rec: f x := ie) ie)).
   Proof. eauto using expr_impl_subst'. Qed.
 
+  Ltac inv_expr_impl :=
+     repeat match goal with
+        | H : expr_impl ?se ?ie |- _ =>
+          try (is_var ie; fail 1);
+          is_var se; inversion H; clear H; subst
+        | H : val_impl ?se ?ie |- _ =>
+          try (is_var ie; fail 1);
+          is_var se; inversion H; clear H; subst
+     end.
+
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
     head_step ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
     expr_impl se1 ie1 →
@@ -305,16 +325,13 @@ Section go_refinement.
     - rewrite /head_step//= in Hstep.
       destruct_head. inversion Hstep; subst.
       monad_inv.
-      inversion Himpl; subst.
-      inversion H2; subst. inversion H1; subst.
-      inversion H3; subst.
+      inv_expr_impl.
       do 4 eexists. split_and!; eauto.
       * repeat econstructor.
       * eapply expr_impl_subst'_2; eauto.
     - rewrite /head_step//= in Hstep.
       destruct_head.
-      inversion Himpl; subst.
-      inversion H1; subst.
+      inv_expr_impl.
       feed pose proof (expr_impl_un_op_eval op _ _ H2) as Heval; eauto.
       destruct (un_op_eval op v).
       * destruct Heval as (sv'&Heval&Hval).
@@ -324,10 +341,8 @@ Section go_refinement.
       * inv_head_step. monad_inv. inversion H.
     - rewrite /head_step//= in Hstep.
       destruct_head.
-      inversion Himpl; subst.
-      inversion H2; subst.
-      inversion H4; subst.
-      feed pose proof (expr_impl_bin_op_eval op _ _ _ _ H1 H3) as Heval; eauto.
+      inv_expr_impl.
+      feed pose proof (expr_impl_bin_op_eval op _ _ _ _ H3 H1) as Heval; eauto.
       destruct (bin_op_eval op _ _).
       * destruct Heval as (sv'&Heval&Hval).
         inv_head_step. monad_inv.
@@ -341,42 +356,60 @@ Section go_refinement.
       inversion Himpl. subst.
       destruct b.
       * inv_head_step; monad_inv. do 4 eexists; split_and!; eauto.
-        inversion H3; subst; eauto. inversion H1; subst; eauto; repeat econstructor.
+        inv_expr_impl. repeat econstructor.
       * inv_head_step; monad_inv. do 4 eexists; split_and!; eauto.
-        inversion H3; subst; eauto. inversion H1; subst; eauto; repeat econstructor.
+        inv_expr_impl. repeat econstructor.
     - rewrite /head_step//= in Hstep.
       destruct_head; monad_inv.
       inversion Hstep; subst; monad_inv.
       inversion Himpl; subst.
-      inversion H2; inversion H3; subst.
+      inv_expr_impl.
       do 4 eexists. split_and!; eauto.
       repeat econstructor; eauto; econstructor; eauto.
     - rewrite /head_step//= in Hstep.
       destruct_head; monad_inv.
       inversion Hstep; subst; monad_inv.
       inversion Himpl; subst.
-      inversion H1; subst; inversion H2; subst.
+      inv_expr_impl.
       do 4 eexists. split_and!; eauto.
       repeat econstructor; eauto; econstructor; eauto.
     - rewrite /head_step//= in Hstep.
       destruct_head; monad_inv.
       inversion Hstep; subst; monad_inv.
       inversion Himpl; subst.
-      inversion H1; subst; inversion H2; subst.
+      inv_expr_impl.
       do 4 eexists. split_and!; eauto.
       repeat econstructor; eauto; econstructor; eauto.
     - rewrite /head_step//= in Hstep.
       destruct_head; monad_inv.
       inversion Hstep; subst; monad_inv.
       inversion Himpl; subst.
-      inversion H1; subst.
+      inv_expr_impl.
       do 4 eexists. split_and!; eauto.
       repeat econstructor; eauto; econstructor; eauto.
     - rewrite /head_step//= in Hstep.
       destruct_head; monad_inv.
       inversion Hstep; subst; monad_inv.
       inversion Himpl; subst.
-      inversion H1; subst.
+      inv_expr_impl.
+      do 4 eexists. split_and!; eauto.
+      repeat econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct_head; monad_inv.
+      destruct_head2; monad_inv.
+      * inversion Hstep; subst; monad_inv.
+        inv_head_step. monad_inv.
+        inv_expr_impl.
+        do 4 eexists. split_and!; eauto.
+        repeat econstructor; eauto; econstructor; eauto.
+      * inversion Hstep; subst; monad_inv.
+        inv_head_step. monad_inv.
+        inv_expr_impl.
+        do 4 eexists. split_and!; eauto.
+        repeat econstructor; eauto; econstructor; eauto.
+    - rewrite /head_step//= in Hstep.
+      destruct_head; monad_inv.
+      inv_expr_impl.
       do 4 eexists. split_and!; eauto.
       repeat econstructor; eauto; econstructor; eauto.
     -
