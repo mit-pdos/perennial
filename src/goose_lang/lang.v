@@ -856,9 +856,27 @@ Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :
   | _ => None
   end.
 
+(* exclude some comparisons *)
+Fixpoint is_comparable v :=
+  match v with
+  | RecV _ _ _ | ExtV _ => False
+  | PairV v1 v2 => is_comparable v1 ∧ is_comparable v2
+  | InjLV v => is_comparable v
+  | InjRV v => is_comparable v
+  | _ => True
+  end.
+Global Instance is_comparable_decide v : Decision (is_comparable v).
+Proof.
+  induction v; simpl; auto; solve_decision.
+Defined.
+
+Definition bin_op_eval_eq (v1 v2 : val) : option base_lit :=
+  if decide (is_comparable v1 ∧ is_comparable v2) then
+    Some $ LitBool $ bool_decide (v1 = v2)
+  else None.
+
 Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
-  if decide (op = EqOp) then
-    Some $ LitV $ LitBool $ bool_decide (v1 = v2)
+  if decide (op = EqOp) then LitV <$> bin_op_eval_eq v1 v2
   else
     match v1, v2 with
     | LitV (LitInt n1), LitV (LitInt n2) =>

@@ -788,6 +788,49 @@ Qed.
 
 Existing Instances sty_inv_persistent.
 
+Lemma val_interp_structRefT_is_loc ts vs v :
+  val_interp (hS:=hS) (structRefT ts) vs v -∗
+  ⌜∃ l1 l2, vs = LitV (LitLoc l1) ∧ v = LitV (LitLoc l2)⌝.
+Proof.
+  iDestruct 1 as "[H|Hnull]".
+  + iDestruct "H" as (?? n ?? (?&?&?&?&Hoffset)) "(Hpaired&_)".
+    subst.
+    eauto.
+  + iDestruct "Hnull" as %(?&(Hnulls&Hnull)). subst.
+    eauto.
+Qed.
+
+Lemma is_comparableTy_is_comparable t vs v :
+  is_comparableTy t = true →
+  val_interp (hS:=hS) t vs v -∗
+  ⌜is_comparable vs ∧ is_comparable v⌝.
+Proof.
+  clear spec_trans.
+  generalize dependent vs.
+  generalize dependent v.
+  induction t; simpl; intros ?? Hcompare; try congruence.
+  - destruct t; cbn [base_ty_interp]; iPureIntro; naive_solver.
+  - cbn [val_interp]. rewrite /prodT_interp.
+    iDestruct 1 as (???? [-> ->]) "[? ?]".
+    apply andb_true_iff in Hcompare as [? ?].
+    iDestruct (IHt1 with "[$]") as %[? ?]; auto.
+    iDestruct (IHt2 with "[$]") as %[? ?]; auto.
+  - cbn [val_interp]. rewrite /sumT_interp.
+    apply andb_true_iff in Hcompare as [? ?].
+    iDestruct 1 as "[ (%&%&%Heq&?) | (%&%&%Heq&?) ]".
+    + destruct Heq as [-> ->].
+      iDestruct (IHt1 with "[$]") as %?; auto.
+    + destruct Heq as [-> ->].
+      iDestruct (IHt2 with "[$]") as %?; auto.
+  - iIntros "H".
+    iDestruct (arrayT_structRefT_promote with "H") as "H".
+    iDestruct (val_interp_structRefT_is_loc with "H") as (??) "[-> ->]".
+    done.
+  - iIntros "H".
+    iDestruct (val_interp_structRefT_is_loc with "H") as (??) "[-> ->]".
+    done.
+Qed.
+
 Lemma sty_fundamental_lemma:
   sty_rules_obligation spec_trans →
   sty_atomic_obligation spec_atomic_transTy →
@@ -1098,14 +1141,21 @@ Proof using spec_trans.
     iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iApply wp_wpc.
+
+    iDestruct (is_comparableTy_is_comparable with "Hv1")
+      as %[Hcomparevs1 Hcomparev1]; auto.
+    iDestruct (is_comparableTy_is_comparable with "Hv2")
+      as %[Hcomparevs2 Hcomparev2]; auto.
     iMod (ghost_step_lifting_puredet with "[Hj]") as "(Hj&Hchild)"; swap 1 3.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
       apply head_prim_step_trans. repeat econstructor; eauto.
+      rewrite /bin_op_eval /bin_op_eval_eq /=.
+      rewrite decide_True //.
     }
-
-    wp_pures; auto.
+    (* need to solve is_comparable side condition *)
+    wp_pure1; [ done | ].
     iExists _. iFrame. iExists (bool_decide (vs1 = vs2)); eauto.
     iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
     iPureIntro. split; first auto. do 2 f_equal.

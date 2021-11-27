@@ -315,6 +315,31 @@ Proof.
   - intros. iIntros "[] H2".
 Qed.
 
+Lemma is_comparableTy_is_comparable t vs v :
+  is_comparableTy t = true →
+  atomically_val_interp t vs v -∗
+  ⌜is_comparable vs ∧ is_comparable v⌝.
+Proof.
+  generalize dependent vs.
+  generalize dependent v.
+  induction t; simpl; intros ?? Hcompare; try congruence.
+  - destruct t; cbn [atomically_base_ty_interp]; iPureIntro; naive_solver.
+  - rewrite /atomically_prodT_interp.
+    iDestruct 1 as (???? [-> ->]) "[? ?]".
+    apply andb_true_iff in Hcompare as [? ?].
+    iDestruct (IHt1 with "[$]") as %[? ?]; auto.
+    iDestruct (IHt2 with "[$]") as %[? ?]; auto.
+  - rewrite /atomically_sumT_interp.
+    apply andb_true_iff in Hcompare as [? ?].
+    iDestruct 1 as "[ (%&%&%Heq&?) | (%&%&%Heq&?) ]".
+    + destruct Heq as [-> ->].
+      iDestruct (IHt1 with "[$]") as %?; auto.
+    + destruct Heq as [-> ->].
+      iDestruct (IHt2 with "[$]") as %?; auto.
+  - iIntros (?); contradiction.
+  - iIntros (?); contradiction.
+Qed.
+
 Opaque is_twophase_started.
 Opaque crash_borrow.
 
@@ -570,11 +595,16 @@ Proof.
     iApply (wpc_mono' with "[Hv1] [] H"); last by auto.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iApply wp_wpc.
+    iDestruct (is_comparableTy_is_comparable with "Hv1") as %[? ?]; auto.
+    iDestruct (is_comparableTy_is_comparable with "Hv2") as %[? ?]; auto.
     iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
     { intros ??.
       apply head_prim_step_trans'. repeat econstructor; eauto.
+      rewrite /bin_op_eval /bin_op_eval_eq /=.
+      rewrite decide_True //.
     }
-    wp_pures; auto.
+    (* need to solve is_comparable side condition *)
+    wp_pure1; [ done | ].
     iExists _. iFrame. iExists (bool_decide (vs1 = vs2)); eauto.
     iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
     iPureIntro. split; first auto. do 2 f_equal.

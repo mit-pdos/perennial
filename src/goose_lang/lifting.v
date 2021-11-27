@@ -615,16 +615,26 @@ Proof. solve_pure_exec. Qed.
 Global Instance pure_binop op v1 v2 v' :
   PureExec (bin_op_eval op v1 v2 = Some v') 1 (BinOp op (Val v1) (Val v2)) (Val v') | 10.
 Proof. solve_pure_exec. Qed.
-(* Higher-priority instance for EqOp. *)
+(* Higher-priority instances for EqOp. *)
 Global Instance pure_eqop v1 v2 :
-  PureExec True 1
-    (BinOp EqOp (Val v1) (Val v2))
-    (Val $ LitV $ LitBool $ bool_decide (v1 = v2)) | 1.
+  PureExec (is_comparable v1 ∧ is_comparable v2) 1
+           (BinOp EqOp (Val v1) (Val v2))
+           (Val $ LitV $ LitBool $ bool_decide (v1 = v2)) | 1.
 Proof.
   intros Hcompare.
   cut (bin_op_eval EqOp v1 v2 = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
   { intros. revert Hcompare. solve_pure_exec. }
-  rewrite /bin_op_eval /= //.
+  rewrite /bin_op_eval /bin_op_eval_eq /= //.
+  rewrite decide_True //.
+Qed.
+
+Global Instance pure_eqop_lit l1 l2 :
+  PureExec True 1
+    (BinOp EqOp (Val (LitV l1)) (Val (LitV l2)))
+    (Val $ LitV $ LitBool $ bool_decide (LitV l1 = LitV l2)) | 1.
+Proof.
+  intros Hcompare.
+  apply pure_eqop; auto.
 Qed.
 
 Global Instance pure_if_true e1 e2 : PureExec True 1 (If (Val $ LitV $ LitBool true) e1 e2) e1.
@@ -669,7 +679,7 @@ Proof.
   iIntros (mj). rewrite /wpc_pre.
   iSplit; last first.
   { iIntros (????) "Hg HC".
-    iAssert (crash_borrow_ginv) with "[Hg]" as "#Hinv". 
+    iAssert (crash_borrow_ginv) with "[Hg]" as "#Hinv".
     { iDestruct "Hg" as "(_&#Hinv&_)". eauto. }
     iDestruct ("H" with "[$]") as "H".
     iDestruct ("H" $! _) as "(_&H)".
