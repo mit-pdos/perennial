@@ -2,11 +2,15 @@ From Perennial.program_logic Require Export crash_weakestpre.
 From Perennial.algebra Require Export abs_laterable.
 Set Default Proof Using "Type".
 
-(* Note regarding the use of '∖Eo%I%I%I%I' below:
-   Coq insists that in a notation, if a nonterminal (like Eo) is used multiple times,
-   it must be under the exact same scope stack each time. Some Iris notations add %I to their nonterminals to ensure
-   they remain in the iris scope. Eo is used below by different Iris connectives, meaning different numbers
-   of these implicit %Is, and that difference has to be compensated by adding some explicit %I *)
+(* Note regarding the use of [Eo%I%I%I%I] below:
+
+   Coq insists that in a notation, if a nonterminal (like Eo) is used multiple
+   times, it must be under the exact same scope stack each time. Some Iris
+   notations add [%I] to their nonterminals to ensure they remain in the iris
+   scope. Eo is used below by different Iris connectives, meaning different
+   numbers of these implicit [%Is], and that difference has to be compensated by
+   adding some explicit [%I] annotations.
+ *)
 
 (** Sugar for TaDA-style logically atomic specs. We only have the variants we need. *)
 (** Use [fupd_mask_intro] if you are stuck with non-matching masks. *)
