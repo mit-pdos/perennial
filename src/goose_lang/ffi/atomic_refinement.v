@@ -225,9 +225,10 @@ Section go_refinement.
         | None => bin_op_eval op sv1 sv2 = None
          end.
   Proof.
-    destruct op, iv1 => //=; inversion 1; subst; eauto; try inversion H0; subst; eauto;
-    try (destruct iv2; inversion 1; subst; eauto; try inversion H2; subst; eauto;
-           destruct l => //=; destruct l0 => //=; eauto; done).
+    destruct op;
+    try (destruct iv1 => //=; inversion 1; subst; eauto; try inversion H0; subst; eauto;
+         try (destruct iv2; inversion 1; subst; eauto; try inversion H2; subst; eauto;
+           destruct l => //=; destruct l0 => //=; eauto; done); done).
     (*
 
        This is actually annoying to handle because = may not evaluate to the
@@ -241,7 +242,7 @@ Section go_refinement.
 
      *)
     - admit.
-  Abort.
+  Admitted.
 
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
     head_step ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
@@ -276,6 +277,18 @@ Section go_refinement.
       inversion H1; subst.
       feed pose proof (expr_impl_un_op_eval op _ _ H2) as Heval; eauto.
       destruct (un_op_eval op v).
+      * destruct Heval as (sv'&Heval&Hval).
+        inv_head_step. monad_inv.
+        do 4 eexists. split_and!; eauto.
+        econstructor. econstructor; rewrite ?Heval //=.
+      * inv_head_step. monad_inv. inversion H.
+    - rewrite /head_step//= in Hstep.
+      destruct_head.
+      inversion Himpl; subst.
+      inversion H2; subst.
+      inversion H4; subst.
+      feed pose proof (expr_impl_bin_op_eval op _ _ _ _ H1 H3) as Heval; eauto.
+      destruct (bin_op_eval op _ _).
       * destruct Heval as (sv'&Heval&Hval).
         inv_head_step. monad_inv.
         do 4 eexists. split_and!; eauto.
