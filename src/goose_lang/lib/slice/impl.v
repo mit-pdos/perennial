@@ -93,9 +93,9 @@ Definition SliceCopy t : val :=
   "n".
 
 (* this models &s[i] (which looks a little like a get but is very different) *)
-Definition SliceRef: val :=
+Definition SliceRef t: val :=
   λ: "s" "i", if: "i" < slice.len "s"
-              then (slice.ptr "s" +ₗ "i")
+              then (slice.ptr "s" +ₗ[t] "i")
               else Panic "slice index out-of-bounds".
 
 (* TODO: it would be nice if we could panic in the model if this goes
@@ -124,7 +124,7 @@ Qed.
 
 Definition SliceGet t: val :=
   λ: "s" "i",
-  load_ty t (slice.ptr "s" +ₗ[t] "i").
+  ![t] (slice.ptr "s" +ₗ[t] "i").
 
 Definition SliceSet t: val :=
   λ: "s" "i" "v",

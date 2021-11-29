@@ -10,6 +10,11 @@ Section goose_lang.
 Context {ext:ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
 
+(* We store the values of the map into single memory cells, even if they are
+entire structs that would usually be laid out with one memory cell per field.
+This is fine because it is not observable by clients: all APIs are by-value,
+there is no way to take a reference 'into' the map. *)
+
 Definition MapGet: val :=
   λ: "mref" "k",
   (rec: "mapGet" "m" :=

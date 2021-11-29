@@ -752,7 +752,7 @@ Definition sliceOps: val :=
     let: "v1" := SliceGet uint64T "x" #2 in
     let: "v2" := SliceSubslice uint64T "x" #2 #3 in
     let: "v3" := SliceTake "x" #3 in
-    let: "v4" := SliceRef "x" #2 in
+    let: "v4" := SliceRef uint64T "x" #2 in
     "v1" + SliceGet uint64T "v2" #0 + SliceGet uint64T "v3" #1 + ![uint64T] "v4".
 
 Definition makeSingletonSlice: val :=
@@ -769,7 +769,7 @@ Definition sliceOfThings := struct.decl [
 
 Definition sliceOfThings__getThingRef: val :=
   rec: "sliceOfThings__getThingRef" "ts" "i" :=
-    SliceRef (struct.get sliceOfThings "things" "ts") "i".
+    SliceRef (struct.t thing) (struct.get sliceOfThings "things" "ts") "i".
 
 Definition makeAlias: val :=
   rec: "makeAlias" <> :=
