@@ -81,6 +81,29 @@ Section go_refinement.
       val_relation (InjRV sv) (InjRV iv)
   .
 
+  Inductive foval : sval → Prop :=
+  | foval_literal : ∀ l, foval (LitV l)
+  | foval_pair : ∀ sv1 sv2,
+    foval sv1 →
+    foval sv2 →
+    foval (PairV sv1 sv2)
+  | foval_injl : ∀ sv,
+      foval sv →
+      foval (InjLV sv)
+  | foval_injr : ∀ sv,
+      foval sv →
+      foval (InjRV sv).
+
+  Definition foheap (m: gmap loc (nonAtomic sval)) : Prop :=
+    ∀ l n v, m !! l = Some (n, v) → foval v.
+
+  Definition fo_head (e : sexpr) (σ : sstate) (g : sgstate) :=
+    ∀ κs e' σ' g' efs',
+      head_step e σ g κs e' σ' g' efs' → foheap (heap σ).
+
+  Definition fo_rsteps (r : sexpr) ρ :=
+    ∀ t2 σ2 g2 s, erased_rsteps (CS := spec_crash_lang) r ρ (t2, (σ2, g2)) s → foheap (heap σ2).
+
   Definition naVal_relation : nonAtomic sval → nonAtomic ival → Prop :=
     λ '(m1, sv) '(m2, iv), m1 = m2 ∧ val_relation sv iv.
 
@@ -303,6 +326,15 @@ Section go_refinement.
       naive_solver.
   Qed.
 
+  Lemma foval_val_impl_relation sv iv :
+    foval sv →
+    val_impl sv iv →
+    val_relation sv iv.
+  Proof.
+    intros Hfoval.
+    induction 1; inversion Hfoval; subst; eauto.
+  Qed.
+
   Lemma expr_impl_bin_op_eval op sv1 sv2 iv1 iv2 :
         val_impl sv1 iv1 →
         val_impl sv2 iv2 →
@@ -371,6 +403,8 @@ Section go_refinement.
     val_impl sv iv.
   Proof. induction 1; eauto. Qed.
 
+  Hint Resolve val_relation_to_val_impl : core.
+
   Ltac inv_expr_impl :=
      repeat match goal with
         | H : expr_impl ?se ?ie |- _ =>
@@ -381,7 +415,29 @@ Section go_refinement.
           is_var se; inversion H; clear H; subst
      end.
 
+  Lemma abstraction_insert l sσ1 sg1 iσ1 ig1 na sv iv :
+    val_relation sv iv →
+    abstraction sσ1 sg1 iσ1 ig1 →
+    abstraction (RecordSet.set heap <[l:=(na, sv)]> sσ1) sg1
+                (RecordSet.set heap <[l:=(na, iv)]> iσ1) ig1.
+  Proof.
+    intros Hval (?&Hheap&?&?).
+    split_and!; subst; eauto.
+    rewrite /heap_relation.
+    destruct Hheap as (Hdom&Hlookup).
+    split.
+    { rewrite ?dom_insert_L // Hdom //. }
+    intros l' ?? => /=.
+    destruct (decide (l = l')).
+    - subst. rewrite ?lookup_insert.
+      inversion 1; subst.
+      inversion 1; subst.
+      split; auto.
+    - rewrite ?lookup_insert_ne //. eapply Hlookup.
+  Qed.
+
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
+    fo_head se1 sσ1 sg1 →
     head_step ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
     expr_impl se1 ie1 →
     abstraction sσ1 sg1 iσ1 ig1 →
@@ -393,7 +449,7 @@ Section go_refinement.
      Forall2 expr_impl sefs iefs).
   Proof.
     rewrite /head_step.
-    destruct ie1; subst; intros Hstep Himpl Habstr; try inversion Hstep; intuition eauto; subst.
+    destruct ie1; subst; intros Hfohead Hstep Himpl Habstr; try inversion Hstep; intuition eauto; subst.
     - monad_inv.
       inversion Himpl; subst.
       do 4 eexists. split_and!; eauto.
@@ -504,15 +560,53 @@ Section go_refinement.
            destruct n; inv_head_step; monad_inv; try done; [].
            eapply abstraction_heap_lookup in Heq as (sv&Hlook&Hrel); eauto.
            do 4 eexists. split_and!; eauto.
-           { apply val_relation_to_val_impl in Hrel.
-             repeat econstructor; rewrite ?Hlook => //=.
-             repeat econstructor.
-           }
-           (* This case is ok, but for the next one: *)
-           (* TODO: either need to add an assumption that source program
-              never tries to write a higher order value -- in which case we can go from
-              val_impl to val_relation *)
-           (* That or we just switch to doing this in SProp *)
+           { repeat econstructor; rewrite ?Hlook => //=. repeat econstructor. }
+           apply abstraction_insert; auto.
+        **  inv_head_step. monad_inv. exfalso; eauto.
+      * inv_expr_impl; inv_head_step. monad_inv.
+        destruct (heap _ !! l) as [(?&?)|] eqn:Heq; subst.
+        ** inv_head_step. monad_inv.
+           inv_head_step.
+           destruct n; inv_head_step; monad_inv; try done; [].
+           eapply abstraction_heap_lookup in Heq as (sv&Hlook&Hrel); eauto.
+           do 4 eexists. split_and!; eauto.
+           { repeat econstructor; rewrite ?Hlook => //=. repeat econstructor. }
+           apply abstraction_insert; auto.
+        ** inv_head_step. monad_inv. exfalso; eauto.
+      * inv_expr_impl; inv_head_step. monad_inv.
+        destruct (heap _ !! l) as [(?&?)|] eqn:Heq; subst.
+        ** inv_head_step. monad_inv.
+           inv_head_step.
+           destruct n; inv_head_step; monad_inv; try done; [].
+           destruct n; inv_head_step; monad_inv; try done; [].
+           eapply abstraction_heap_lookup in Heq as (sv&Hlook&Hrel); eauto.
+           do 4 eexists. split_and!; eauto.
+           { repeat econstructor; rewrite ?Hlook => //=. repeat econstructor. }
+           apply abstraction_insert; auto.
+        ** inv_head_step. monad_inv. exfalso; eauto.
+      * inv_expr_impl; inv_head_step. monad_inv.
+        destruct (heap _ !! l) as [(?&?)|] eqn:Heq; subst.
+        ** inv_head_step. monad_inv.
+           inv_head_step.
+           destruct n; inv_head_step; monad_inv; try done; [].
+           eapply abstraction_heap_lookup in Heq as (sv&Hlook&Hrel); eauto.
+           do 4 eexists. split_and!; eauto.
+           { repeat econstructor; rewrite ?Hlook => //=. }
+        ** inv_head_step. monad_inv. exfalso; eauto.
+      * inv_expr_impl; inv_head_step. monad_inv.
+        do 4 eexists. split_and!; eauto.
+        { repeat econstructor; rewrite ?Hlook => //=.
+          destruct Habstr as (?&?&->&->). eauto. }
+        rewrite /abstraction in Habstr.
+        split_and! => //=; intuition.
+        congruence.
+      * inv_expr_impl; inv_head_step. monad_inv.
+        do 4 eexists. split_and!; eauto.
+        { repeat econstructor; rewrite ?Hlook => //=. }
+        rewrite /abstraction in Habstr.
+        split_and! => //=; intuition.
+        congruence.
+    -
   Abort.
 
 
