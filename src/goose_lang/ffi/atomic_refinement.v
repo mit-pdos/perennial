@@ -99,7 +99,7 @@ Section go_refinement.
 
   Definition fo_head (e : sexpr) (σ : sstate) (g : sgstate) :=
     ∀ κs e' σ' g' efs',
-      head_step e σ g κs e' σ' g' efs' → foheap (heap σ).
+      head_step_atomic e σ g κs e' σ' g' efs' → foheap (heap σ').
 
   Definition fo_rsteps (r : sexpr) ρ :=
     ∀ t2 σ2 g2 s, erased_rsteps (CS := spec_crash_lang) r ρ (t2, (σ2, g2)) s → foheap (heap σ2).
@@ -436,6 +436,116 @@ Section go_refinement.
     - rewrite ?lookup_insert_ne //. eapply Hlookup.
   Qed.
 
+  Lemma heap_array_lookup_is_Some : ∀ (V : Type) (l : loc) (vs : list V) (k : loc),
+      is_Some (heap_array l vs !! k) ↔ (∃ j : Z, 0 ≤ j ∧ k = addr_plus_off l j ∧ is_Some (vs !! Z.to_nat j)).
+  Proof.
+    intros. split.
+    - intros (v&Heq%heap_array_lookup).
+      edestruct Heq as (j&?&?&?). eexists; split_and!; eauto.
+    - intros (z&?&?&[? ?]). edestruct (heap_array_lookup) as (_&Hsome). eexists; eapply Hsome.
+      eexists; split_and!; eauto.
+  Qed.
+
+  Lemma is_Some_free_concat_look {A B} (v1 : list A) (v2 : list B) n m :
+    (length v1 = length v2)%nat →
+    is_Some ((Free <$> concat_replicate n v1) !! m) →
+    is_Some ((Free <$> concat_replicate n v2) !! m).
+  Proof.
+    intros Hlen.
+    rewrite ?list_lookup_fmap ?fmap_is_Some ?lookup_lt_is_Some.
+    rewrite ?lifting.concat_replicate_length.
+    lia.
+  Qed.
+
+  Lemma heap_array_lookup_none2_if {A B} l n (v1 : list A) (v2 : list B) l' :
+    length v1 = length v2 →
+    heap_array l (Free <$> concat_replicate n v1) !! l' = None →
+    heap_array l (Free <$> concat_replicate n v2) !! l' = None.
+  Proof.
+    intros Hlength.
+    destruct (heap_array l (Free <$> concat_replicate n v1) !! l') as [|] eqn:Hlook1; first congruence.
+    destruct (heap_array l (Free <$> concat_replicate n v2) !! l') as [|] eqn:Hlook2; auto.
+    apply mk_is_Some in Hlook2.
+    apply heap_array_lookup_is_Some in Hlook2.
+    edestruct Hlook2 as (?&?&?&Hlookfmap).
+    symmetry in Hlength.
+    eapply (@is_Some_free_concat_look) in Hlookfmap; last by eapply Hlength.
+    apply eq_None_not_Some in Hlook1. exfalso. apply Hlook1.
+    eapply heap_array_lookup_is_Some; eauto.
+  Qed.
+
+  Lemma abstraction_state_init_heap l z sσ1 sg1 iσ1 ig1 sv iv :
+    val_relation sv iv →
+    abstraction sσ1 sg1 iσ1 ig1 →
+    abstraction (state_init_heap l z sv sσ1) sg1 (state_init_heap l z iv iσ1) ig1.
+  Proof.
+    intros Hval (?&Hheap&?&?).
+    split_and!; subst; eauto.
+    rewrite /heap_relation.
+    destruct Hheap as (Hdom&Hlookup).
+    split.
+    { rewrite /state_init_heap//= ?dom_union_L // Hdom //. f_equal.
+      admit.
+    }
+    rewrite /state_init_heap/state_insert_list.
+    intros l' (na1&sv') (na2&iv') => /= Hlook1 Hlook2.
+    apply lookup_union_Some_raw in Hlook1.
+    apply lookup_union_Some_raw in Hlook2.
+    revert Hlook1 Hlook2.  intros Hlook1 Hlook2.
+    destruct Hlook1 as [Hl|Hr].
+    { destruct Hlook2 as [Hl2|Hr]; last first.
+      { destruct Hr as (Hrbad&_).
+        eapply heap_array_lookup_none2_if in Hrbad.
+        { erewrite Hl in Hrbad; congruence. }
+        admit.
+      }
+      (* Need some lemmas about flatten_struct of related values *)
+
+
+    (*
+    rewrite /state_init_heap.
+    rewrite /state_insert_list.
+    remember (Z.to_nat z) as n.
+    revert sσ1 sg1 iσ1 ig1.
+    induction n; intros sσ1 sg1 iσ1 ig1 Hval Habstr.
+    { rewrite //=.
+      assert ((RecordSet.set heap (λ h : gmap loc (nonAtomic sval), ∅ ∪ h) sσ1) = sσ1) as ->.
+      { destruct sσ1 => //=. rewrite /RecordSet.set /= left_id_L //. }
+      assert ((RecordSet.set heap (λ h : gmap loc (nonAtomic ival), ∅ ∪ h) iσ1) = iσ1) as ->.
+      { destruct iσ1 => //=. rewrite /RecordSet.set /= left_id_L //. }
+      auto.
+    }
+     *)
+  Admitted.
+
+  Lemma isFresh_abstraction sσ1 sg1 iσ1 ig1 l:
+    abstraction sσ1 sg1 iσ1 ig1 →
+    isFresh (iσ1, ig1) l →
+    isFresh (sσ1, sg1) l.
+  Proof.
+    rewrite /isFresh.
+    intros (_&(Hdom&Hlook)&_) (Hfresh1&Hfresh2).
+    split; last eauto.
+    intros; split; first eapply Hfresh1.
+    apply not_elem_of_dom. rewrite Hdom. apply not_elem_of_dom. eapply Hfresh1.
+  Qed.
+
+  Lemma is_Writing_abstraction sσ1 sg1 iσ1 ig1 l:
+    abstraction sσ1 sg1 iσ1 ig1 →
+    is_Writing (heap iσ1 !! l) →
+    is_Writing (heap sσ1 !! l).
+  Proof.
+    rewrite /isFresh.
+    intros (_&(Hdom&Hlook)&_) Hwriting1.
+    destruct (heap sσ1 !! l) as [(?&?)|] eqn:Hlook2.
+    { destruct Hwriting1 as (?&Hwriting). eapply Hlook in Hwriting; eauto. destruct Hwriting as (->&_).
+      rewrite /is_Writing. eauto. }
+    apply not_elem_of_dom in Hlook2. rewrite Hdom in Hlook2. exfalso.
+    apply Hlook2. destruct Hwriting1 as (?&Hlook'). eapply elem_of_dom_2; eauto.
+  Qed.
+
+  Hint Resolve isFresh_abstraction is_Writing_abstraction : core.
+
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
     fo_head se1 sσ1 sg1 →
     head_step ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
@@ -606,9 +716,41 @@ Section go_refinement.
         rewrite /abstraction in Habstr.
         split_and! => //=; intuition.
         congruence.
-    -
+    - rewrite /head_step//= in Hstep.
+      destruct op; monad_inv; destruct_head.
+      * inv_expr_impl; inv_head_step. monad_inv.
+        destruct (decide (0 < int.Z n)); monad_inv.
+        ** do 4 eexists. split_and!; eauto.
+           { econstructor. econstructor; unfold check; rewrite ?ifThenElse_if //.
+             econstructor; first done. econstructor.
+             { econstructor; eauto. }
+             repeat econstructor.
+           }
+           apply abstraction_state_init_heap; auto.
+           (* Need to argue that since the heap will contain flatten_struct of v0, then
+              v0 must be fo *)
+           admit.
+        ** exfalso; eauto.
+      * inv_expr_impl; inv_head_step. monad_inv.
+        destruct (decide (is_Writing (heap iσ1 !! l))); monad_inv.
+        ** let sσ2 := fresh "sσ2" in evar (sσ2:sstate).
+           let sg2 := fresh "sg2" in evar (sg2:sgstate).
+           assert (Hstep: head_step_atomic (FinishStore #l v0) sσ1 sg1 [] #() ?sσ2 ?sg2 []).
+           { econstructor. econstructor; unfold check; rewrite ?ifThenElse_if //.
+             econstructor; first done. econstructor.
+             { rewrite ?ifThenElse_if //; eauto. }
+             repeat econstructor.
+           }
+           do 4 eexists; split_and!; eauto.
+           apply abstraction_insert; auto.
+           apply Hfohead in Hstep.
+           apply foval_val_impl_relation; auto.
+           rewrite /= /foheap in Hstep. eapply Hstep.
+           rewrite /Free. apply lookup_insert.
+        ** exfalso; eauto.
+    - admit.
+    - admit.
   Abort.
-
 
   Theorem atomic_concurrent_refinement se ie :
     (* se compiles to ie *)
