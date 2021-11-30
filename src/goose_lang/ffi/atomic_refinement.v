@@ -609,6 +609,45 @@ Section go_refinement.
     apply Hlook2. destruct Hwriting1 as (?&Hlook'). eapply elem_of_dom_2; eauto.
   Qed.
 
+  Lemma fo_flatten_struct_inv v :
+    Forall foval (flatten_struct v) →
+    foval v.
+  Proof.
+    induction v; simpl; eauto; try (inversion 1; subst; eauto; done).
+    - destruct l; inversion 1; eauto. econstructor.
+    - intros [? ?]%Forall_app. econstructor; eauto.
+  Qed.
+
+  Lemma foheap_union_inv_l σ1 σ2 :
+    foheap (σ1 ∪ σ2) →
+    foheap σ1.
+  Proof.
+    rewrite /foheap. intros Hfo l n v Hin. eapply Hfo; eauto.
+    rewrite lookup_union_l; eauto.
+  Qed.
+
+  Lemma heap_array_forall {A} (P : A → Prop) l ls :
+    (∀ k v, heap_array l ls !! k = Some v → P v) → Forall P ls.
+  Proof.
+    intros Hall.
+    apply Forall_forall.
+    intros x Hin.
+    apply elem_of_list_lookup_1 in Hin as (i&Hl).
+    eapply (Hall (addr_plus_off l (Z.of_nat i))).
+    eapply heap_array_lookup. eexists; split_and!; eauto.
+    { lia. }
+    {rewrite Nat2Z.id //. }
+  Qed.
+
+  Lemma Forall_concat_replicate {A} n (l: list A) (P: A → Prop):
+    (0 < n)%nat →
+    Forall P (concat_replicate n l) →
+    Forall P l.
+  Proof.
+    intros Hlt. destruct n; first lia.
+    rewrite lifting.concat_replicate_S Forall_app. intuition.
+  Qed.
+
   Hint Resolve isFresh_abstraction is_Writing_abstraction : core.
 
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
@@ -785,16 +824,27 @@ Section go_refinement.
       destruct op; monad_inv; destruct_head.
       * inv_expr_impl; inv_head_step. monad_inv.
         destruct (decide (0 < int.Z n)); monad_inv.
-        ** do 4 eexists. split_and!; eauto.
+        ** let sσ2 := fresh "sσ2" in evar (sσ2:sstate).
+           let sg2 := fresh "sg2" in evar (sg2:sgstate).
+           let rv := fresh "rv" in evar (rv:sval).
+           assert (Hstep: head_step_atomic (AllocN #n v0) sσ1 sg1 [] ?rv ?sσ2 ?sg2 []).
            { econstructor. econstructor; unfold check; rewrite ?ifThenElse_if //.
              econstructor; first done. econstructor.
              { econstructor; eauto. }
              repeat econstructor.
            }
+           do 4 eexists; split_and!; eauto.
            apply abstraction_state_init_heap; auto.
-           (* Need to argue that since the heap will contain flatten_struct of v0, then
-              v0 must be fo *)
-           admit.
+           apply foval_val_impl_relation; auto.
+           apply Hfohead in Hstep.
+           apply fo_flatten_struct_inv.
+           simpl in Hstep.
+           apply foheap_union_inv_l in Hstep.
+           rewrite /foheap in Hstep.
+           assert (Hforall: Forall foval (concat_replicate (int.nat n) (flatten_struct v0))).
+           { eapply (heap_array_forall _ l0). intros. eapply Hstep.
+             rewrite -heap_array_fmap. rewrite lookup_fmap fmap_Some. eauto. }
+           apply Forall_concat_replicate in Hforall; auto. lia.
         ** exfalso; eauto.
       * inv_expr_impl; inv_head_step. monad_inv.
         destruct (decide (is_Writing (heap iσ1 !! l))); monad_inv.
