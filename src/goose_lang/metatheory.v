@@ -185,6 +185,21 @@ Proof.
     by rewrite fmap_replicate.
 Qed.
 
+Lemma fill_item_closed X K e :
+  is_closed_expr X (fill_item K e) →
+  is_closed_expr X e.
+Proof.
+  revert e. induction K => e //=; try naive_solver; try (destruct op; naive_solver).
+Qed.
+
+Lemma fill_closed X K e :
+  is_closed_expr X (fill K e) →
+  is_closed_expr X e.
+Proof.
+  revert e. induction K => e; first done.
+  rewrite /= => Hclo.  apply IHK in Hclo. eapply fill_item_closed; eauto.
+Qed.
+
 (* The stepping relation preserves closedness *)
 (*
 Lemma head_step_is_closed e1 σ1 obs e2 σ2 es :

@@ -1,6 +1,7 @@
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import refinement.
 From Perennial.goose_lang Require Import notation.
+From Perennial.goose_lang Require Import metatheory.
 
 Set Default Proof Using "Type".
 
@@ -34,12 +35,14 @@ Section go_refinement.
   Context {impl_semantics: ffi_semantics impl_op impl_ffi}.
 
   Notation sexpr := (@expr spec_op).
+  Notation sectx_item := (@ectx_item spec_op).
   Notation sval := (@val spec_op).
   Notation sstate := (@state spec_op spec_ffi).
   Notation sffi_state := (@ffi_state spec_ffi).
   Notation sffi_global_state := (@ffi_global_state spec_ffi).
   Notation sgstate := (@global_state spec_ffi).
   Notation iexpr := (@expr impl_op).
+  Notation iectx_item := (@ectx_item impl_op).
   Notation ival := (@val impl_op).
   Notation istate := (@state impl_op impl_ffi).
   Notation igstate := (@global_state impl_ffi).
@@ -54,6 +57,8 @@ Section go_refinement.
   Canonical Structure spec_crash_lang : crash_semantics spec_lang :=
     @goose_crash_lang (spec_op) (spec_ffi) (spec_semantics).
 
+  Notation scfg := (@cfg spec_lang).
+
   Canonical Structure impl_lang : language :=
     @goose_lang (impl_op) (impl_ffi) (impl_semantics).
   Canonical Structure impl_crash_lang : crash_semantics impl_lang :=
@@ -63,6 +68,23 @@ Section go_refinement.
   Context (op_impl: @ffi_opcode spec_op → ival).
   Context (ffi_abstraction: sffi_state → sffi_global_state →
                             iffi_state → iffi_global_state → Prop).
+
+  (* wf is a client-selected "well-formedness" predicate on source configurations
+     expressions.  This could be a typing relation or other syntactic check on
+     source expressions that the client relies upon to prove their simulation
+     relation.  The idea is that the refinement theorem will only hold for
+     well-formed expressions. *)
+  Context (wf : sexpr → scfg → Prop).
+  Context (wf_closed : ∀ sr sσ sg stp, wf sr (stp, (sσ, sg)) →
+                                       is_closed_expr [] sr ∧ Forall (is_closed_expr []) stp).
+  Context (wf_preserved_step : ∀ sr sρ sρ' s,
+              wf sr sρ →
+              erased_rsteps (CS := spec_crash_lang) sr sρ sρ' s →
+              wf sr sρ').
+
+  Definition in_wf_ctxt (se: sexpr) sσ sg :=
+    ∃ sr tp1 tp2 K,
+      wf sr (tp1 ++ (fill K se) :: tp2, (sσ, sg)).
 
   Inductive val_relation : sval → ival → Prop :=
   | val_relation_literal : ∀ l,
@@ -100,6 +122,10 @@ Section go_refinement.
   Definition fo_head (e : sexpr) (σ : sstate) (g : sgstate) :=
     ∀ κs e' σ' g' efs',
       head_step_atomic e σ g κs e' σ' g' efs' → foheap (heap σ').
+
+  Definition fo_prim (e : sexpr) (σ : sstate) (g : sgstate) :=
+    ∀ κs e' σ' g' efs',
+      prim_step e σ g κs e' σ' g' efs' → foheap (heap σ').
 
   Definition fo_rsteps (r : sexpr) ρ :=
     ∀ t2 σ2 g2 s, erased_rsteps (CS := spec_crash_lang) r ρ (t2, (σ2, g2)) s → foheap (heap σ2).
@@ -218,6 +244,72 @@ Section go_refinement.
     val_impl (RecV f x se) (RecV f x ie)
   .
 
+  Inductive ectx_item_impl : sectx_item → iectx_item → Prop :=
+  | ectx_item_impl_appL sv iv :
+      val_impl sv iv →
+      ectx_item_impl (AppLCtx sv) (AppLCtx iv)
+  | ectx_item_impl_appR se ie :
+      expr_impl se ie →
+      ectx_item_impl (AppRCtx se) (AppRCtx ie)
+  | ectx_item_impl_unop op :
+      ectx_item_impl (UnOpCtx op) (UnOpCtx op)
+  | ectx_item_impl_binopL op se2 ie2 :
+      expr_impl se2 ie2 →
+      ectx_item_impl (BinOpLCtx op se2) (BinOpLCtx op ie2)
+  | ectx_item_impl_binopR op sv1 iv1 :
+      val_impl sv1 iv1 →
+      ectx_item_impl (BinOpRCtx op sv1) (BinOpRCtx op iv1)
+  | ectx_item_impl_if se1 se2 ie1 ie2 :
+      expr_impl se1 ie1 →
+      expr_impl se2 ie2 →
+      ectx_item_impl (IfCtx se1 se2) (IfCtx ie1 ie2)
+  | ectx_item_impl_pairL se ie :
+      expr_impl se ie →
+      ectx_item_impl (PairLCtx se) (PairLCtx ie)
+  | ectx_item_impl_pairR sv iv :
+      val_impl sv iv →
+      ectx_item_impl (PairRCtx sv) (PairRCtx iv)
+  | ectx_item_impl_fst :
+      ectx_item_impl (FstCtx) (FstCtx)
+  | ectx_item_impl_snd :
+      ectx_item_impl (SndCtx) (SndCtx)
+  | ectx_item_impl_injL :
+      ectx_item_impl (InjLCtx) (InjLCtx)
+  | ectx_item_impl_injR :
+      ectx_item_impl (InjRCtx) (InjRCtx)
+  | ectx_item_impl_case se1 se2 ie1 ie2 :
+      expr_impl se1 ie1 →
+      expr_impl se2 ie2 →
+      ectx_item_impl (CaseCtx se1 se2) (CaseCtx ie1 ie2)
+  | ectx_item_impl_primitive1 op :
+      ectx_item_impl (Primitive1Ctx op) (Primitive1Ctx op)
+  | ectx_item_impl_primitive2L op se2 ie2 :
+      expr_impl se2 ie2 →
+      ectx_item_impl (Primitive2LCtx op se2) (Primitive2LCtx op ie2)
+  | ectx_item_impl_primitive2R op sv1 iv1 :
+      val_impl sv1 iv1 →
+      ectx_item_impl (Primitive2RCtx op sv1) (Primitive2RCtx op iv1)
+                     (*
+  | ectx_item_impl_external o :
+      ectx_item_impl (ExternalOpCtx op)
+                     (AppRCtx Atomically #() (App (Val (op_impl o)) (Var x)))
+      val_impl sv1 iv1 →
+      ectx_item_impl (Primitive2RCtx op sv1) (Primitive2RCtx op iv1)
+                      *)
+  | ectx_item_impl_cmpxchgL se1 se2 ie1 ie2 :
+      expr_impl se1 ie1 →
+      expr_impl se2 ie2 →
+      ectx_item_impl (CmpXchgLCtx se1 se2) (CmpXchgLCtx ie1 ie2)
+  | ectx_item_impl_cmpxchgM sv1 se2 iv1 ie2 :
+      val_impl sv1 iv1 →
+      expr_impl se2 ie2 →
+      ectx_item_impl (CmpXchgMCtx sv1 se2) (CmpXchgMCtx iv1 ie2)
+  | ectx_item_impl_cmpxchgR sv1 sv2 iv1 iv2 :
+      val_impl sv1 iv1 →
+      val_impl sv2 iv2 →
+      ectx_item_impl (CmpXchgRCtx sv1 sv2) (CmpXchgRCtx iv1 iv2)
+    .
+
   (* Check to make sure the translation of ExternalOp is not vacuous *)
   Lemma expr_impl_ExternalOp o :
     expr_impl (λ: "x", ExternalOp o (Var "x")) (λ: "x", Atomically #() (App (Val (op_impl o)) (Var "x"))).
@@ -230,6 +322,7 @@ Section go_refinement.
     ∀ sσ sg (sargv: sval),
     val_impl sargv iargv →
     abstraction sσ sg iσ ig →
+    in_wf_ctxt (ExternalOp o (Val sargv)) sσ sg →
     ∃ sσ' sg' svret,
       head_step (ExternalOp o (Val sargv)) sσ sg [] (Val svret) sσ' sg' [] ∧
       val_relation svret ivret ∧
@@ -274,7 +367,7 @@ Section go_refinement.
         | H: relation.denote (unwrap None) _ _ _ |- _ => inversion H; intuition eauto
         end.
 
-  Hint Constructors val_impl expr_impl val_relation : core.
+  Hint Constructors val_impl expr_impl val_relation ectx_item_impl : core.
 
   Ltac inv_monad_false :=
     match goal with
@@ -331,7 +424,8 @@ Section go_refinement.
     ∀ (iv1 iv2 : ival) (sv1 sv2 : sval),
     is_comparable iv1 → is_comparable iv2 →
     val_impl sv1 iv1 → val_impl sv2 iv2 → sv1 = sv2 ↔ iv1 = iv2.
-  Proof.
+  Proof using.
+    clear.
     induction iv1, iv2; simpl; intros ? ? Hv1 Hv2;
       (* exploit is_comparable *)
       (try contradiction);
@@ -357,6 +451,7 @@ Section go_refinement.
         | None => bin_op_eval op sv1 sv2 = None
          end.
   Proof.
+    clear.
     destruct op;
     try (destruct iv1 => //=; inversion 1; subst; eauto; try inversion H0; subst; eauto;
          try (destruct iv2; inversion 1; subst; eauto; try inversion H2; subst; eauto;
@@ -714,6 +809,16 @@ Section go_refinement.
     induction Hvr => ? Hvi; inv_expr_implI; auto; try (f_equal; eauto).
   Qed.
 
+  Lemma in_wf_ctxt_closed se sσ sg :
+    in_wf_ctxt se sσ sg → is_closed_expr [] se.
+  Proof using wf_closed.
+    destruct 1 as (?&K&?&?&Hwf).
+    apply wf_closed in Hwf as (_&Hin_wf).
+    eapply fill_closed.
+    eapply Forall_forall in Hin_wf; eauto.
+    apply elem_of_app. right. left.
+  Qed.
+
   Hint Resolve isFresh_abstraction is_Writing_abstraction : core.
 
   Theorem head_step_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
@@ -991,38 +1096,134 @@ Section go_refinement.
   Qed.
 
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
+    in_wf_ctxt se1 sσ1 sg1 →
     fo_head se1 sσ1 sg1 →
     head_step_atomic ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
     expr_impl se1 ie1 →
     abstraction sσ1 sg1 iσ1 ig1 →
-    (∃ se2 sσ2 sg2 sefs,
-     κ = [] ∧
-     head_step_atomic se1 sσ1 sg1 [] se2 sσ2 sg2 sefs ∧
+    (∃ se2 sσ2 sg2 sκ sefs,
+     head_step_atomic se1 sσ1 sg1 sκ se2 sσ2 sg2 sefs ∧
      expr_impl se2 ie2 ∧
      abstraction sσ2 sg2 iσ2 ig2 ∧
      Forall2 expr_impl sefs iefs).
-  Proof.
-    intros Hfohead Hstep Himpl Habstr. inversion Hstep; subst.
-    - eapply head_step_simulation; eauto.
+  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok.
+    intros Hwf Hfohead Hstep Himpl Habstr. inversion Hstep; subst.
+    - edestruct head_step_simulation as (?&?&?&?&?&?); intuition eauto.
+      do 5 eexists; split_and!; eauto.
     - inv_expr_impl.
-      * admit.
+      * apply in_wf_ctxt_closed in Hwf. inversion Hwf.
       * edestruct (op_impl_succ_ok) as (sσ&sg&svret&Hhead&Hval&Habstr'); eauto.
-        do 4 eexists; split_and!; eauto.
-        { admit. }
+        do 5 eexists; split_and!; eauto.
         econstructor; eauto.
     - inv_expr_impl.
-      * admit.
+      * apply in_wf_ctxt_closed in Hwf. inversion Hwf.
       * edestruct (op_impl_abort_ok) as (sσ&sg&svret&Hhead&Hval&Habstr'); eauto.
-        do 4 eexists; split_and!; eauto.
-        { admit. }
+        do 5 eexists; split_and!; eauto.
         econstructor; eauto.
-  Admitted.
+  Qed.
+
+  Lemma fill_item_impl_inv se iK ie' iσ ig  :
+    reducible ie' iσ ig →
+    expr_impl se (fill_item iK ie') →
+    ∃ sK se', se = fill_item sK se' ∧
+              ectx_item_impl sK iK ∧
+              expr_impl se' ie'.
+  Proof.
+    intros Hred.
+    induction iK; simpl; intros Himpl;
+      inv_expr_impl; try (do 2 eexists; split_and!; eauto; simpl; done).
+    - apply reducible_not_val in Hred. inversion Hred.
+    - apply reducible_not_val in Hred. inversion Hred.
+  Qed.
+
+  Definition ectx_impl sK iK := Forall2 ectx_item_impl sK iK.
+
+  Lemma fill_impl_inv se iK ie' iσ ig  :
+    reducible ie' iσ ig →
+    expr_impl se (fill iK ie') →
+    ∃ sK se', se = fill sK se' ∧
+              ectx_impl sK iK ∧
+              expr_impl se' ie'.
+  Proof.
+    revert se ie' iσ ig.
+    induction iK => se ie' iσ ig.
+    - rewrite //=. intros. eexists [], _. split_and!; eauto. econstructor.
+    - intros Hred Himpl. simpl in Himpl.
+      eapply IHiK in Himpl as (sK&se'1&Heq&HKimpl'&Himpl'); last first.
+      { apply reducible_fill; eauto. }
+      subst. eapply fill_item_impl_inv in Himpl' as (a'&?&?&?&?); eauto.
+      eexists (a' :: sK), _. split_and!; eauto.
+      { subst. rewrite //=. }
+      { econstructor; eauto. }
+  Qed.
+
+  Lemma fill_item_impl se sK ie iK :
+    ectx_item_impl sK iK →
+    expr_impl se ie →
+    expr_impl (fill_item sK se) (fill_item iK ie).
+  Proof.
+    induction 1; rewrite //=; eauto.
+  Qed.
+
+  Lemma fill_impl se sK ie iK :
+    ectx_impl sK iK →
+    expr_impl se ie →
+    expr_impl (fill sK se) (fill iK ie).
+  Proof.
+    intros Hectx.
+    revert se ie.
+    induction Hectx => se ie ?; rewrite //=; eauto.
+    apply IHHectx. apply fill_item_impl; eauto.
+  Qed.
+
+  Lemma fo_prim_sub K se sσ sg:
+    fo_prim (fill K se) sσ sg →
+    fo_head se sσ sg.
+  Proof.
+    rewrite /fo_prim/fo_head.
+    intros Hprim Hhead. intros.
+    eapply Hprim.
+    econstructor; eauto.
+  Qed.
+
+  Theorem prim_step_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
+    in_wf_ctxt se1 sσ1 sg1 →
+    fo_prim se1 sσ1 sg1 →
+    prim_step ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
+    expr_impl se1 ie1 →
+    abstraction sσ1 sg1 iσ1 ig1 →
+    (∃ se2 sσ2 sg2 sκ sefs,
+     prim_step se1 sσ1 sg1 sκ se2 sσ2 sg2 sefs ∧
+     expr_impl se2 ie2 ∧
+     abstraction sσ2 sg2 iσ2 ig2 ∧
+     Forall2 expr_impl sefs iefs).
+  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok.
+    intros Hwf Hfohead Hstep Himpl Habstr. inversion Hstep; subst.
+    simpl in *.
+    edestruct (fill_impl_inv) as (sK&se'&HKe'_eq&HKimpl&Heimpl); [| eassumption|].
+    { econstructor. do 4 eexists.
+      apply head_prim_step; eauto.
+    }
+    assert (Hwf': in_wf_ctxt se' sσ1 sg1).
+    { destruct Hwf as (?&?&?&?&Hwf). do 4 eexists. subst. rewrite -fill_app in Hwf. eauto. }
+    edestruct (head_step_atomic_simulation) as (se2'&sσ2&sg2&sκ&sefs&Hsstep&Himpl2&Habstr2&Himplefs);
+      try eapply Hwf'; eauto.
+    { eapply fo_prim_sub; subst; eauto. }
+    eexists (fill sK se2').
+    do 4 eexists.
+    split_and!.
+    { subst. econstructor; eauto. }
+    { apply fill_impl; eauto. }
+    { eauto. }
+    { eauto. }
+  Qed.
 
   Theorem atomic_concurrent_refinement se ie :
     (* se compiles to ie *)
     expr_impl se ie →
     ∀ sσ sg iσ ig,
     abstraction sσ sg iσ ig →
+    wf se ([se], (sσ, sg)) →
     trace_refines se se sσ sg ie ie iσ ig.
   Proof.
     induction 1; intros.
