@@ -20,10 +20,12 @@ Section val_types.
   Inductive ty :=
   | baseT (t:base_ty)
   | prodT (t1 t2: ty)
-  | listT (t1: ty)
+  | listT (t1: ty) (* for refinement proofs only *)
   | sumT (t1 t2: ty)
   | arrowT (t1 t2: ty)
   | arrayT (t: ty)
+  (* pointer to *flattened* data (the list should usually not contain prodT or
+  unitBT) *)
   | structRefT (ts: list ty)
   (* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
   | mapValT (vt: ty) (* keys are always uint64, for now *)
@@ -40,9 +42,6 @@ Section val_types.
   (* for backwards compatibility; need a sound plan for dealing with recursive
   structs *)
   Definition anyT : ty := unitT.
-
-  Definition refT (t:ty) : ty := structRefT [t].
-  Definition mapT (vt:ty) : ty := refT (mapValT vt).
 
   Definition Ctx := gmap string ty.
   Global Instance ctx_insert : Insert binder ty Ctx.
@@ -104,7 +103,7 @@ Section goose_lang.
     | sumT t1 t2 => InjLV (zero_val t1)
     | arrowT t1 t2 => (λ: <>, Val (zero_val t2))%V
     | arrayT t => #null
-    | structRefT ts => #null
+    | structRefT _ => #null
     | extT x => #() (* dummy value of wrong type *)
     end.
 
@@ -135,7 +134,7 @@ Section goose_lang.
     | extT _ => False
     end.
 
-  (* TODO: list size is not well defined, but it shouldn't be going in structs anyway *)
+  (* TODO: listT size is not well defined, but it shouldn't be going in structs anyway *)
   Fixpoint ty_size (t:ty) : Z :=
     match t with
     | prodT t1 t2 => ty_size t1 + ty_size t2
@@ -157,11 +156,6 @@ Section goose_lang.
   | loc_null_hasTy t : base_lit_hasTy (LitLoc null) (arrayT t)
   | structRef_null_hasTy ts : base_lit_hasTy (LitLoc null) (structRefT ts)
   .
-
-  Theorem array_null_hasTy t : base_lit_hasTy (LitLoc null) (refT t).
-  Proof.
-    apply structRef_null_hasTy.
-  Qed.
 
   Definition bin_op_ty (op:bin_op) (t:ty) : option (ty * ty * ty) :=
     match op with
@@ -237,6 +231,15 @@ Section goose_lang.
     | baseT unitBT => []
     | _ => [t]
     end.
+
+  Definition refT (t:ty) : ty := structRefT (flatten_ty t).
+
+  Definition mapT (vt:ty) : ty := refT (mapValT vt).
+
+  Theorem array_null_hasTy t : base_lit_hasTy (LitLoc null) (refT t).
+  Proof.
+    apply structRef_null_hasTy.
+  Qed.
 
   Theorem ty_size_ge_0 : forall t, (0 <= ty_size t)%Z.
   Proof.
