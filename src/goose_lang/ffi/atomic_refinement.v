@@ -121,20 +121,6 @@ Section go_refinement.
     trace sσ = trace iσ ∧
     oracle sσ = oracle iσ.
 
-  Definition op_simulated (o: @ffi_opcode spec_op) (ie: iexpr) :=
-    ∀ iσ ig iσ' ig' (iargv ivret: ival),
-    rtc_prim_step' (App ie (Val iargv), (iσ, ig)) (Val ivret, (iσ', ig')) →
-    prim_step'_safe ie iσ ig →
-    ∀ sσ sg (sargv svret: sval),
-    val_relation sargv iargv →
-    abstraction sσ sg iσ ig →
-    ∃ sσ' sg',
-      head_step (ExternalOp o (Val sargv)) sσ sg [] (Val svret) sσ' sg' [] ∧
-      val_relation svret ivret
-  .
-
-  Context (op_impl_ok: ∀ o, op_simulated o (op_impl o)).
-
   Inductive expr_impl : sexpr → iexpr → Prop :=
   | expr_impl_val v v' :
     val_impl v v' →
@@ -236,6 +222,34 @@ Section go_refinement.
   Lemma expr_impl_ExternalOp o :
     expr_impl (λ: "x", ExternalOp o (Var "x")) (λ: "x", Atomically #() (App (Val (op_impl o)) (Var "x"))).
   Proof. repeat econstructor. Qed.
+
+  Definition op_simulated_succ (o: @ffi_opcode spec_op) (ie: iexpr) :=
+    ∀ iσ ig iσ' ig' (iargv ivret: ival),
+    rtc_prim_step' (App ie (Val iargv), (iσ, ig)) (Val ivret, (iσ', ig')) →
+    prim_step'_safe (App ie (Val iargv)) iσ ig →
+    ∀ sσ sg (sargv: sval),
+    val_impl sargv iargv →
+    abstraction sσ sg iσ ig →
+    ∃ sσ' sg' svret,
+      head_step (ExternalOp o (Val sargv)) sσ sg [] (Val svret) sσ' sg' [] ∧
+      val_relation svret ivret ∧
+      abstraction sσ' sg' iσ' ig'
+  .
+
+  Definition op_simulated_abort (o: @ffi_opcode spec_op) (ie: iexpr) :=
+    ∀ iσ ig (iargv ivret: ival),
+    prim_step'_safe (App ie (Val iargv)) iσ ig →
+    ∀ sσ sg (sargv: sval),
+    val_impl sargv iargv →
+    abstraction sσ sg iσ ig →
+    ∃ sσ' sg' svret,
+      head_step (ExternalOp o (Val sargv)) sσ sg [] (Val svret) sσ' sg' [] ∧
+      val_relation svret (InjLV #()) ∧
+      abstraction sσ' sg' iσ ig
+  .
+
+  Context (op_impl_succ_ok: ∀ o, op_simulated_succ o (op_impl o)).
+  Context (op_impl_abort_ok: ∀ o, op_simulated_abort o (op_impl o)).
 
   Definition crash_simulated :=
     ∀ iw iw',
@@ -702,7 +716,7 @@ Section go_refinement.
 
   Hint Resolve isFresh_abstraction is_Writing_abstraction : core.
 
-  Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
+  Theorem head_step_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
     fo_head se1 sσ1 sg1 →
     head_step ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
     expr_impl se1 ie1 →
@@ -973,8 +987,36 @@ Section go_refinement.
           { rewrite /when. rewrite ifThenElse_else //. }
           { rewrite ?bool_decide_false //. }
         }
-    - admit.
-  Abort.
+    -  inv_expr_impl.
+  Qed.
+
+  Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
+    fo_head se1 sσ1 sg1 →
+    head_step_atomic ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs →
+    expr_impl se1 ie1 →
+    abstraction sσ1 sg1 iσ1 ig1 →
+    (∃ se2 sσ2 sg2 sefs,
+     κ = [] ∧
+     head_step_atomic se1 sσ1 sg1 [] se2 sσ2 sg2 sefs ∧
+     expr_impl se2 ie2 ∧
+     abstraction sσ2 sg2 iσ2 ig2 ∧
+     Forall2 expr_impl sefs iefs).
+  Proof.
+    intros Hfohead Hstep Himpl Habstr. inversion Hstep; subst.
+    - eapply head_step_simulation; eauto.
+    - inv_expr_impl.
+      * admit.
+      * edestruct (op_impl_succ_ok) as (sσ&sg&svret&Hhead&Hval&Habstr'); eauto.
+        do 4 eexists; split_and!; eauto.
+        { admit. }
+        econstructor; eauto.
+    - inv_expr_impl.
+      * admit.
+      * edestruct (op_impl_abort_ok) as (sσ&sg&svret&Hhead&Hval&Habstr'); eauto.
+        do 4 eexists; split_and!; eauto.
+        { admit. }
+        econstructor; eauto.
+  Admitted.
 
   Theorem atomic_concurrent_refinement se ie :
     (* se compiles to ie *)
