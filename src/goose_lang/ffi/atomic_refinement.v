@@ -415,6 +415,16 @@ Section go_refinement.
           is_var se; inversion H; clear H; subst
      end.
 
+  Ltac inv_expr_implI :=
+     repeat match goal with
+        | H : expr_impl ?se ?ie |- _ =>
+          try (is_var se; fail 1);
+          is_var ie; inversion H; clear H; subst
+        | H : val_impl ?se ?ie |- _ =>
+          try (is_var se; fail 1);
+          is_var ie; inversion H; clear H; subst
+     end.
+
   Lemma abstraction_insert l sσ1 sg1 iσ1 ig1 na sv iv :
     val_relation sv iv →
     abstraction sσ1 sg1 iσ1 ig1 →
@@ -648,6 +658,48 @@ Section go_refinement.
     rewrite lifting.concat_replicate_S Forall_app. intuition.
   Qed.
 
+  Lemma val_impl_compare_safe sv1 sv2 iv1 iv2:
+    val_impl sv1 iv1 →
+    val_impl sv2 iv2 →
+    vals_compare_safe iv1 iv2 →
+    vals_compare_safe sv1 sv2.
+  Proof.
+    intros Hv1 Hv2 Hcs.
+    destruct Hcs.
+    - rewrite /val_is_unboxed in H.
+      destruct iv1; inversion Hv1; subst; try (econstructor; eauto; done).
+      { destruct iv1; try intuition; [].
+        inv_expr_impl. subst. econstructor. rewrite //=. }
+      { destruct iv1; try intuition; [].
+        inv_expr_impl. subst. econstructor. rewrite //=. }
+    - rewrite /val_is_unboxed in H.
+      destruct iv2; inversion Hv2; subst; try (econstructor; eauto; done).
+      { destruct iv2; try intuition; [].
+        inv_expr_impl. right. eauto. }
+      { destruct iv2; try intuition; [].
+        inv_expr_impl. right. eauto. }
+  Qed.
+
+  Lemma val_relation_val_impl_inj sv1 sv2 iv :
+    val_impl sv1 iv →
+    val_relation sv2 iv →
+    sv1 = sv2.
+  Proof.
+    intros Hvi Hvr.
+    revert sv1 Hvi.
+    induction Hvr => ? Hvi; inv_expr_impl; auto; try (f_equal; eauto).
+  Qed.
+
+  Lemma val_relation_val_impl_inji sv iv1 iv2 :
+    val_impl sv iv1 →
+    val_relation sv iv2 →
+    iv1 = iv2.
+  Proof.
+    intros Hvi Hvr.
+    revert iv1 Hvi.
+    induction Hvr => ? Hvi; inv_expr_implI; auto; try (f_equal; eauto).
+  Qed.
+
   Hint Resolve isFresh_abstraction is_Writing_abstraction : core.
 
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
@@ -863,7 +915,64 @@ Section go_refinement.
            rewrite /= /foheap in Hstep. eapply Hstep.
            rewrite /Free. apply lookup_insert.
         ** exfalso; eauto.
-    - admit.
+    - rewrite /head_step//= in Hstep.
+      monad_inv; destruct_head.
+      inv_head_step. monad_inv. inv_head_step.
+      destruct (heap iσ1 !! l) as [(na&vold)|] eqn:Hlook; subst; monad_inv; destruct_head; last first.
+      { inv_head_step. monad_inv. exfalso; auto. }
+      repeat (inv_head_step; monad_inv). destruct na.
+      { inv_head_step. monad_inv. exfalso; auto. }
+      repeat (inv_head_step; monad_inv).
+      destruct (decide (vals_compare_safe vold v)); monad_inv; try inv_monad_false; last by (exfalso; auto).
+      destruct (decide (vold = v)) as [Heqold|Hneqold].
+      * subst. inv_head_step; monad_inv.
+        destruct (decide (n = O)); inv_head_step; monad_inv; last first.
+        { exfalso; eauto. }
+        inv_expr_impl.
+        let sσ2 := fresh "sσ2" in evar (sσ2:sstate).
+        let sg2 := fresh "sg2" in evar (sg2:sgstate).
+        eapply abstraction_heap_lookup in Hlook as (sv&Hlook&Hrel); eauto.
+        assert (Hstep: head_step_atomic (CmpXchg #l v3 v2) sσ1 sg1 [] (v3, #true)%V ?sσ2 ?sg2 []).
+        { econstructor. repeat econstructor => //=.
+          { rewrite Hlook => //=. }
+          simpl.
+          unfold check.
+          rewrite ifThenElse_if; last first.
+          { eapply val_impl_compare_safe; eauto. }
+          assert (Heq: sv = v3).
+          { symmetry. eapply val_relation_val_impl_inj; eauto. }
+          subst.
+          repeat econstructor; eauto.
+          { rewrite /when. rewrite ifThenElse_if //. repeat econstructor. }
+          { rewrite bool_decide_true //. }
+        }
+        do 4 eexists.
+        split_and!; eauto.
+        { rewrite bool_decide_true //. econstructor; eauto. }
+        apply abstraction_insert; auto.
+        apply Hfohead in Hstep.
+        apply foval_val_impl_relation; auto.
+        rewrite /= /foheap in Hstep. eapply Hstep.
+        rewrite /Free. apply lookup_insert.
+      * rewrite ifThenElse_else // in Hstep.
+        inv_head_step; monad_inv.
+        inv_expr_impl.
+        eapply abstraction_heap_lookup in Hlook as (sv&Hlook&Hrel); eauto.
+        do 4 eexists.
+        split_and!; eauto.
+        { econstructor. repeat econstructor => //=.
+          { rewrite Hlook => //=. }
+          simpl.
+          unfold check.
+          rewrite ifThenElse_if; last first.
+          { eapply val_impl_compare_safe; eauto. }
+          assert (Heq: sv ≠ v3).
+          { intros Heq. subst. apply Hneqold. symmetry. eapply val_relation_val_impl_inji; eauto. }
+          subst.
+          repeat econstructor; eauto.
+          { rewrite /when. rewrite ifThenElse_else //. }
+          { rewrite ?bool_decide_false //. }
+        }
     - admit.
   Abort.
 
