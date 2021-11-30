@@ -7,7 +7,7 @@ From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
 (* clerk.go *)
 
 Definition Clerk := struct.decl [
-  "cl" :: struct.ptrT rpc.RPCClient
+  "cl" :: ptrT
 ].
 
 Definition MakeClerk: val :=
@@ -36,12 +36,12 @@ Definition PROPOSE : expr := #2.
 
 (* This isn't quite paxos *)
 Definition Replica := struct.decl [
-  "mu" :: lockRefT;
+  "mu" :: ptrT;
   "promisedPN" :: uint64T;
   "acceptedPN" :: uint64T;
   "acceptedVal" :: ValType;
   "committedVal" :: ValType;
-  "peers" :: slice.T (struct.ptrT Clerk)
+  "peers" :: slice.T ptrT
 ].
 
 Definition PrepareReply := struct.decl [
@@ -96,7 +96,7 @@ Definition Replica__TryDecide: val :=
     let: "highestVal" := ref (zero_val uint64T) in
     "highestVal" <-[uint64T] "v";;
     let: "mu" := lock.new #() in
-    ForSlice (refT (struct.t Clerk)) <> "peer" (struct.loadF Replica "peers" "r")
+    ForSlice ptrT <> "peer" (struct.loadF Replica "peers" "r")
       (let: "local_peer" := "peer" in
       Fork (let: "reply_ptr" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in
             Clerk__Prepare "local_peer" "pn" "reply_ptr";;
@@ -120,7 +120,7 @@ Definition Replica__TryDecide: val :=
       let: "mu2" := lock.new #() in
       let: "numAccepted" := ref (zero_val uint64T) in
       "numAccepted" <-[uint64T] #0;;
-      ForSlice (refT (struct.t Clerk)) <> "peer" (struct.loadF Replica "peers" "r")
+      ForSlice ptrT <> "peer" (struct.loadF Replica "peers" "r")
         (let: "local_peer" := "peer" in
         Fork (let: "r" := Clerk__Propose "local_peer" "pn" "proposeVal" in
               (if: "r"

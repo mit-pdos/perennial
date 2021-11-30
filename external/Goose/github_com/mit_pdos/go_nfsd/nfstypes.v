@@ -646,11 +646,11 @@ Definition Entry3 := struct.decl [
   "Fileid" :: Fileid3;
   "Name" :: Filename3;
   "Cookie" :: Cookie3;
-  "Nextentry" :: refT anyT
+  "Nextentry" :: ptrT
 ].
 
 Definition Dirlist3 := struct.decl [
-  "Entries" :: struct.ptrT Entry3;
+  "Entries" :: ptrT;
   "Eof" :: boolT
 ].
 
@@ -684,11 +684,11 @@ Definition Entryplus3 := struct.decl [
   "Cookie" :: Cookie3;
   "Name_attributes" :: struct.t Post_op_attr;
   "Name_handle" :: struct.t Post_op_fh3;
-  "Nextentry" :: refT anyT
+  "Nextentry" :: ptrT
 ].
 
 Definition Dirlistplus3 := struct.decl [
-  "Entries" :: struct.ptrT Entryplus3;
+  "Entries" :: ptrT;
   "Eof" :: boolT
 ].
 
@@ -877,26 +877,26 @@ Definition Mountres3 := struct.decl [
 Definition Mount3 := struct.decl [
   "Ml_hostname" :: Name3;
   "Ml_directory" :: Dirpath3;
-  "Ml_next" :: refT anyT
+  "Ml_next" :: ptrT
 ].
 
 Definition Mountopt3 := struct.decl [
-  "P" :: struct.ptrT Mount3
+  "P" :: ptrT
 ].
 
 Definition Groups3 := struct.decl [
   "Gr_name" :: Name3;
-  "Gr_next" :: refT anyT
+  "Gr_next" :: ptrT
 ].
 
 Definition Exports3 := struct.decl [
   "Ex_dir" :: Dirpath3;
-  "Ex_groups" :: struct.ptrT Groups3;
-  "Ex_next" :: refT anyT
+  "Ex_groups" :: ptrT;
+  "Ex_next" :: ptrT
 ].
 
 Definition Exportsopt3 := struct.decl [
-  "P" :: struct.ptrT Exports3
+  "P" :: ptrT
 ].
 
 End code.

@@ -194,7 +194,7 @@ Proof.
   wp_apply (wp_ConnMan__getClient with "Hconn").
   iIntros (cl) "Hcl".
   wp_store.
-  iAssert (∃ cl : loc, cl_ptr ↦[refT (struct.t rpc.RPCClient)] #cl ∗ RPCClient_own cl host)%I with "[Hcl Hcl_ptr]" as "Hcl".
+  iAssert (∃ cl : loc, cl_ptr ↦[ptrT] #cl ∗ RPCClient_own cl host)%I with "[Hcl Hcl_ptr]" as "Hcl".
   { eauto with iFrame. }
   clear cl.
   wp_pures.

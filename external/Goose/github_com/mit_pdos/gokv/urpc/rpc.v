@@ -8,7 +8,7 @@ From Goose Require github_com.tchajed.marshal.
 Definition HostName: ty := uint64T.
 
 Definition RPCServer := struct.decl [
-  "handlers" :: mapT ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht)
+  "handlers" :: mapT ((slice.T byteT -> ptrT -> unitT)%ht)
 ].
 
 Definition RPCServer__rpcHandle: val :=
@@ -65,16 +65,16 @@ Definition callbackStateDone : expr := #1.
 Definition callbackStateAborted : expr := #2.
 
 Definition callback := struct.decl [
-  "reply" :: refT (slice.T byteT);
-  "state" :: refT uint64T;
-  "cond" :: condvarRefT
+  "reply" :: ptrT;
+  "state" :: ptrT;
+  "cond" :: ptrT
 ].
 
 Definition RPCClient := struct.decl [
-  "mu" :: lockRefT;
+  "mu" :: ptrT;
   "conn" :: grove_ffi.Connection;
   "seq" :: uint64T;
-  "pending" :: mapT (struct.ptrT callback)
+  "pending" :: mapT ptrT
 ].
 
 Definition RPCClient__replyThread: val :=
@@ -118,7 +118,7 @@ Definition MakeRPCClient: val :=
       "conn" ::= struct.get grove_ffi.ConnectRet "Connection" "a";
       "mu" ::= lock.new #();
       "seq" ::= #1;
-      "pending" ::= NewMap (struct.ptrT callback) #()
+      "pending" ::= NewMap ptrT #()
     ] in
     Fork (RPCClient__replyThread "cl");;
     "cl".

@@ -10,7 +10,7 @@ Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !
 Local Definition own_KVClerk (p:loc) (γ:gname) : iProp Σ :=
   ∃ (freeClerks_sl:Slice.t) (freeClerks:list loc),
   "HfreeClerks" ∷ p ↦[KVClerk :: "freeClerks"] (slice_val freeClerks_sl) ∗
-  "HfreeClerks_sl" ∷ is_slice (V:=loc) freeClerks_sl (struct.ptrT SeqKVClerk) 1 freeClerks ∗
+  "HfreeClerks_sl" ∷ is_slice (V:=loc) freeClerks_sl ptrT 1 freeClerks ∗
   "HfreeClerks_own" ∷ [∗ list] ck ∈ freeClerks, own_SeqKVClerk ck γ
 .
 

@@ -33,7 +33,7 @@ Definition VersionedValue := struct.decl [
 ].
 
 Definition ConfServer := struct.decl [
-  "mu" :: lockRefT;
+  "mu" :: ptrT;
   "kvs" :: mapT (struct.t VersionedValue)
 ].
 
@@ -119,7 +119,7 @@ Definition StartConfServer: val :=
     let: "s" := struct.alloc ConfServer (zero_val (struct.t ConfServer)) in
     struct.storeF ConfServer "mu" "s" (lock.new #());;
     struct.storeF ConfServer "kvs" "s" (NewMap (struct.t VersionedValue) #());;
-    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) #() in
+    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" CONF_PUT (λ: "args" "rep",
       (if: ConfServer__PutRPC "s" (DecodePutArgs "args")
       then
@@ -139,7 +139,7 @@ Definition StartConfServer: val :=
     #().
 
 Definition ConfClerk := struct.decl [
-  "cl" :: struct.ptrT rpc.RPCClient
+  "cl" :: ptrT
 ].
 
 Definition ConfClerk__Put: val :=
@@ -208,7 +208,7 @@ Definition DecodeAppendArgs: val :=
 
 Definition BecomePrimaryArgs := struct.decl [
   "Cn" :: uint64T;
-  "Conf" :: struct.ptrT Configuration
+  "Conf" :: ptrT
 ].
 
 Definition EncodeBecomePrimaryArgs: val :=
@@ -228,7 +228,7 @@ Definition DecodeBecomePrimaryArgs: val :=
     "a".
 
 Definition ReplicaClerk := struct.decl [
-  "cl" :: struct.ptrT rpc.RPCClient
+  "cl" :: ptrT
 ].
 
 Definition ReplicaClerk__AppendRPC: val :=
@@ -264,14 +264,14 @@ Definition MakeReplicaClerk: val :=
 Definition LogEntry: ty := byteT.
 
 Definition ReplicaServer := struct.decl [
-  "mu" :: lockRefT;
+  "mu" :: ptrT;
   "cn" :: uint64T;
-  "conf" :: struct.ptrT Configuration;
+  "conf" :: ptrT;
   "isPrimary" :: boolT;
-  "replicaClerks" :: slice.T (struct.ptrT ReplicaClerk);
+  "replicaClerks" :: slice.T ptrT;
   "opLog" :: slice.T LogEntry;
   "commitIdx" :: uint64T;
-  "commitCond" :: condvarRefT;
+  "commitCond" :: ptrT;
   "matchIdx" :: slice.T uint64T
 ].
 
@@ -320,7 +320,7 @@ Definition ReplicaServer__StartAppend: val :=
         "commitIdx" ::= struct.loadF ReplicaServer "commitIdx" "s"
       ] in
       lock.release (struct.loadF ReplicaServer "mu" "s");;
-      ForSlice (refT (struct.t ReplicaClerk)) "i" "ck" "clerks"
+      ForSlice ptrT "i" "ck" "clerks"
         (let: "ck" := "ck" in
         let: "i" := "i" in
         Fork (ReplicaClerk__AppendRPC "ck" "args";;
@@ -372,9 +372,9 @@ Definition ReplicaServer__BecomePrimaryRPC: val :=
         struct.storeF ReplicaServer "isPrimary" "s" #true;;
         struct.storeF ReplicaServer "cn" "s" (struct.loadF BecomePrimaryArgs "Cn" "args");;
         struct.storeF ReplicaServer "matchIdx" "s" (NewSlice uint64T (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args"))));;
-        struct.storeF ReplicaServer "replicaClerks" "s" (NewSlice (struct.ptrT ReplicaClerk) (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) - #1));;
-        ForSlice (refT (struct.t ReplicaClerk)) "i" <> (struct.loadF ReplicaServer "replicaClerks" "s")
-          (SliceSet (refT (struct.t ReplicaClerk)) (struct.loadF ReplicaServer "replicaClerks" "s") "i" (MakeReplicaClerk (SliceGet uint64T (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) ("i" + #1))));;
+        struct.storeF ReplicaServer "replicaClerks" "s" (NewSlice ptrT (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) - #1));;
+        ForSlice ptrT "i" <> (struct.loadF ReplicaServer "replicaClerks" "s")
+          (SliceSet ptrT (struct.loadF ReplicaServer "replicaClerks" "s") "i" (MakeReplicaClerk (SliceGet uint64T (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) ("i" + #1))));;
         lock.release (struct.loadF ReplicaServer "mu" "s");;
         #())).
 
@@ -394,7 +394,7 @@ Definition StartReplicaServer: val :=
     struct.storeF ReplicaServer "commitIdx" "s" #0;;
     struct.storeF ReplicaServer "cn" "s" #0;;
     struct.storeF ReplicaServer "isPrimary" "s" #false;;
-    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) #() in
+    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" REPLICA_APPEND (λ: "raw_args" "raw_reply",
       let: "a" := DecodeAppendArgs "raw_args" in
       (if: ReplicaServer__AppendRPC "s" "a"

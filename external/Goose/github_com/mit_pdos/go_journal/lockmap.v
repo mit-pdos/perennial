@@ -19,18 +19,18 @@ Local Coercion Var' s: expr := Var s.
 
 Definition lockState := struct.decl [
   "held" :: boolT;
-  "cond" :: condvarRefT;
+  "cond" :: ptrT;
   "waiters" :: uint64T
 ].
 
 Definition lockShard := struct.decl [
-  "mu" :: lockRefT;
-  "state" :: mapT (struct.ptrT lockState)
+  "mu" :: ptrT;
+  "state" :: mapT ptrT
 ].
 
 Definition mkLockShard: val :=
   rec: "mkLockShard" <> :=
-    let: "state" := NewMap (struct.ptrT lockState) #() in
+    let: "state" := NewMap ptrT #() in
     let: "mu" := lock.new #() in
     let: "a" := struct.new lockShard [
       "mu" ::= "mu";
@@ -43,25 +43,25 @@ Definition lockShard__acquire: val :=
     lock.acquire (struct.loadF lockShard "mu" "lmap");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "state" := ref (zero_val (refT (struct.t lockState))) in
+      let: "state" := ref (zero_val ptrT) in
       let: ("state1", "ok1") := MapGet (struct.loadF lockShard "state" "lmap") "addr" in
       (if: "ok1"
-      then "state" <-[refT (struct.t lockState)] "state1"
+      then "state" <-[ptrT] "state1"
       else
-        "state" <-[refT (struct.t lockState)] struct.new lockState [
+        "state" <-[ptrT] struct.new lockState [
           "held" ::= #false;
           "cond" ::= lock.newCond (struct.loadF lockShard "mu" "lmap");
           "waiters" ::= #0
         ];;
-        MapInsert (struct.loadF lockShard "state" "lmap") "addr" (![refT (struct.t lockState)] "state"));;
+        MapInsert (struct.loadF lockShard "state" "lmap") "addr" (![ptrT] "state"));;
       let: "acquired" := ref (zero_val boolT) in
-      (if: ~ (struct.loadF lockState "held" (![refT (struct.t lockState)] "state"))
+      (if: ~ (struct.loadF lockState "held" (![ptrT] "state"))
       then
-        struct.storeF lockState "held" (![refT (struct.t lockState)] "state") #true;;
+        struct.storeF lockState "held" (![ptrT] "state") #true;;
         "acquired" <-[boolT] #true
       else
-        struct.storeF lockState "waiters" (![refT (struct.t lockState)] "state") (struct.loadF lockState "waiters" (![refT (struct.t lockState)] "state") + #1);;
-        lock.condWait (struct.loadF lockState "cond" (![refT (struct.t lockState)] "state"));;
+        struct.storeF lockState "waiters" (![ptrT] "state") (struct.loadF lockState "waiters" (![ptrT] "state") + #1);;
+        lock.condWait (struct.loadF lockState "cond" (![ptrT] "state"));;
         let: ("state2", "ok2") := MapGet (struct.loadF lockShard "state" "lmap") "addr" in
         (if: "ok2"
         then struct.storeF lockState "waiters" "state2" (struct.loadF lockState "waiters" "state2" - #1)
@@ -86,30 +86,30 @@ Definition lockShard__release: val :=
 Definition NSHARD : expr := #65537.
 
 Definition LockMap := struct.decl [
-  "shards" :: slice.T (struct.ptrT lockShard)
+  "shards" :: slice.T ptrT
 ].
 
 Definition MkLockMap: val :=
   rec: "MkLockMap" <> :=
-    let: "shards" := ref (zero_val (slice.T (refT (struct.t lockShard)))) in
+    let: "shards" := ref (zero_val (slice.T ptrT)) in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      "shards" <-[slice.T (refT (struct.t lockShard))] SliceAppend (refT (struct.t lockShard)) (![slice.T (refT (struct.t lockShard))] "shards") (mkLockShard #());;
+      "shards" <-[slice.T ptrT] SliceAppend ptrT (![slice.T ptrT] "shards") (mkLockShard #());;
       Continue);;
     let: "a" := struct.new LockMap [
-      "shards" ::= ![slice.T (refT (struct.t lockShard))] "shards"
+      "shards" ::= ![slice.T ptrT] "shards"
     ] in
     "a".
 
 Definition LockMap__Acquire: val :=
   rec: "LockMap__Acquire" "lmap" "flataddr" :=
-    let: "shard" := SliceGet (refT (struct.t lockShard)) (struct.loadF LockMap "shards" "lmap") ("flataddr" `rem` NSHARD) in
+    let: "shard" := SliceGet ptrT (struct.loadF LockMap "shards" "lmap") ("flataddr" `rem` NSHARD) in
     lockShard__acquire "shard" "flataddr";;
     #().
 
 Definition LockMap__Release: val :=
   rec: "LockMap__Release" "lmap" "flataddr" :=
-    let: "shard" := SliceGet (refT (struct.t lockShard)) (struct.loadF LockMap "shards" "lmap") ("flataddr" `rem` NSHARD) in
+    let: "shard" := SliceGet ptrT (struct.loadF LockMap "shards" "lmap") ("flataddr" `rem` NSHARD) in
     lockShard__release "shard" "flataddr";;
     #().
 

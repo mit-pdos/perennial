@@ -35,10 +35,10 @@ Definition hasEndComment: val :=
 
 Definition condvarWrapping: val :=
   rec: "condvarWrapping" <> :=
-    let: "mu" := ref (zero_val lockRefT) in
-    "mu" <-[lockRefT] lock.new #();;
-    let: "cond1" := lock.newCond (![lockRefT] "mu") in
-    "mu" <-[lockRefT] lock.new #();;
+    let: "mu" := ref (zero_val ptrT) in
+    "mu" <-[ptrT] lock.new #();;
+    let: "cond1" := lock.newCond (![ptrT] "mu") in
+    "mu" <-[ptrT] lock.new #();;
     lock.condWait "cond1";;
     #().
 
@@ -362,7 +362,7 @@ Definition useCondVar: val :=
     #().
 
 Definition hasCondVar := struct.decl [
-  "cond" :: condvarRefT
+  "cond" :: ptrT
 ].
 
 (* log_debugging.go *)
@@ -567,8 +567,8 @@ Definition AssignNilSlice: val :=
 
 Definition AssignNilPointer: val :=
   rec: "AssignNilPointer" <> :=
-    let: "s" := NewSlice (refT uint64T) #4 in
-    SliceSet (refT uint64T) "s" #2 slice.nil;;
+    let: "s" := NewSlice ptrT #4 in
+    SliceSet ptrT "s" #2 slice.nil;;
     #().
 
 Definition CompareSliceToNil: val :=

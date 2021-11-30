@@ -6,7 +6,7 @@ From Goose Require github_com.mit_pdos.gokv.connman.
 From Goose Require github_com.mit_pdos.gokv.memkv.
 
 Definition LockClerk := struct.decl [
-  "kv" :: struct.ptrT memkv.KVClerk
+  "kv" :: ptrT
 ].
 
 Definition LockClerk__Lock: val :=

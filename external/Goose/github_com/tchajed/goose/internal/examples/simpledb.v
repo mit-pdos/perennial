@@ -158,7 +158,7 @@ Definition tableRead: val :=
 
 Definition bufFile := struct.decl [
   "file" :: fileT;
-  "buf" :: refT (slice.T byteT)
+  "buf" :: ptrT
 ].
 
 Definition newBuf: val :=
@@ -196,7 +196,7 @@ Definition tableWriter := struct.decl [
   "index" :: mapT uint64T;
   "name" :: stringT;
   "file" :: struct.t bufFile;
-  "offset" :: refT uint64T
+  "offset" :: ptrT
 ].
 
 Definition newTableWriter: val :=
@@ -255,13 +255,13 @@ Definition tablePut: val :=
 
 (* Database is a handle to an open database. *)
 Definition Database := struct.decl [
-  "wbuffer" :: refT (mapT (slice.T byteT));
-  "rbuffer" :: refT (mapT (slice.T byteT));
-  "bufferL" :: lockRefT;
-  "table" :: struct.ptrT Table;
-  "tableName" :: refT stringT;
-  "tableL" :: lockRefT;
-  "compactionL" :: lockRefT
+  "wbuffer" :: ptrT;
+  "rbuffer" :: ptrT;
+  "bufferL" :: ptrT;
+  "table" :: ptrT;
+  "tableName" :: ptrT;
+  "tableL" :: ptrT;
+  "compactionL" :: ptrT
 ].
 
 Definition makeValueBuffer: val :=

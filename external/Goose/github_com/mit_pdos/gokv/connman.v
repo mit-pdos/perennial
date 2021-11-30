@@ -7,29 +7,29 @@ From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
 Definition HostName: ty := uint64T.
 
 Definition ConnMan := struct.decl [
-  "mu" :: lockRefT;
-  "rpcCls" :: mapT (struct.ptrT rpc.RPCClient);
-  "making" :: mapT condvarRefT
+  "mu" :: ptrT;
+  "rpcCls" :: mapT ptrT;
+  "making" :: mapT ptrT
 ].
 
 Definition MakeConnMan: val :=
   rec: "MakeConnMan" <> :=
     let: "c" := struct.alloc ConnMan (zero_val (struct.t ConnMan)) in
     struct.storeF ConnMan "mu" "c" (lock.new #());;
-    struct.storeF ConnMan "rpcCls" "c" (NewMap (struct.ptrT rpc.RPCClient) #());;
-    struct.storeF ConnMan "making" "c" (NewMap condvarRefT #());;
+    struct.storeF ConnMan "rpcCls" "c" (NewMap ptrT #());;
+    struct.storeF ConnMan "making" "c" (NewMap ptrT #());;
     "c".
 
 Definition ConnMan__getClient: val :=
   rec: "ConnMan__getClient" "c" "host" :=
-    let: "ret" := ref (zero_val (refT (struct.t rpc.RPCClient))) in
+    let: "ret" := ref (zero_val ptrT) in
     lock.acquire (struct.loadF ConnMan "mu" "c");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: ("cl", "ok") := MapGet (struct.loadF ConnMan "rpcCls" "c") "host" in
       (if: "ok"
       then
-        "ret" <-[refT (struct.t rpc.RPCClient)] "cl";;
+        "ret" <-[ptrT] "cl";;
         Break
       else
         let: ("cond", "ok") := MapGet (struct.loadF ConnMan "making" "c") "host" in
@@ -41,34 +41,34 @@ Definition ConnMan__getClient: val :=
           let: "my_cond" := lock.newCond (struct.loadF ConnMan "mu" "c") in
           MapInsert (struct.loadF ConnMan "making" "c") "host" "my_cond";;
           lock.release (struct.loadF ConnMan "mu" "c");;
-          "ret" <-[refT (struct.t rpc.RPCClient)] rpc.MakeRPCClient "host";;
+          "ret" <-[ptrT] rpc.MakeRPCClient "host";;
           lock.acquire (struct.loadF ConnMan "mu" "c");;
-          MapInsert (struct.loadF ConnMan "rpcCls" "c") "host" (![refT (struct.t rpc.RPCClient)] "ret");;
+          MapInsert (struct.loadF ConnMan "rpcCls" "c") "host" (![ptrT] "ret");;
           lock.condBroadcast "my_cond";;
           MapDelete (struct.loadF ConnMan "making" "c") "host";;
           Break)));;
     lock.release (struct.loadF ConnMan "mu" "c");;
-    ![refT (struct.t rpc.RPCClient)] "ret".
+    ![ptrT] "ret".
 
 (* This repeatedly retries the RPC after retryTimeout until it gets a response. *)
 Definition ConnMan__CallAtLeastOnce: val :=
   rec: "ConnMan__CallAtLeastOnce" "c" "host" "rpcid" "args" "reply" "retryTimeout" :=
-    let: "cl" := ref (zero_val (refT (struct.t rpc.RPCClient))) in
-    "cl" <-[refT (struct.t rpc.RPCClient)] ConnMan__getClient "c" "host";;
+    let: "cl" := ref (zero_val ptrT) in
+    "cl" <-[ptrT] ConnMan__getClient "c" "host";;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "err" := rpc.RPCClient__Call (![refT (struct.t rpc.RPCClient)] "cl") "rpcid" "args" "reply" "retryTimeout" in
+      let: "err" := rpc.RPCClient__Call (![ptrT] "cl") "rpcid" "args" "reply" "retryTimeout" in
       (if: ("err" = rpc.ErrTimeout)
       then Continue
       else
         (if: ("err" = rpc.ErrDisconnect)
         then
           lock.acquire (struct.loadF ConnMan "mu" "c");;
-          (if: (![refT (struct.t rpc.RPCClient)] "cl" = Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))
+          (if: (![ptrT] "cl" = Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))
           then MapDelete (struct.loadF ConnMan "rpcCls" "c") "host"
           else #());;
           lock.release (struct.loadF ConnMan "mu" "c");;
-          "cl" <-[refT (struct.t rpc.RPCClient)] ConnMan__getClient "c" "host";;
+          "cl" <-[ptrT] ConnMan__getClient "c" "host";;
           Continue
         else Break)));;
     #().

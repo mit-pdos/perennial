@@ -337,6 +337,7 @@ Proof.
   - iDestruct "Hval" as "[Hval|Hnull]"; last first.
     { iDestruct "Hnull" as (?) "(%&%)"; subst. eauto. }
     iDestruct "Hval" as (?????? (?&?&?&?)) "H1". subst; eauto.
+  - iDestruct "Hval" as (?) "(%&%)"; subst. eauto.
   - iDestruct "Hval" as "[Hval|Hnull]"; last first.
     { iDestruct "Hnull" as (?) "(%&%)"; subst. eauto. }
     iDestruct "Hval" as (????? (?&?&?&?)) "H1". subst; eauto.
@@ -399,6 +400,9 @@ Proof.
       simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
       simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
       iRight. eauto. }
+  - iDestruct "Hval" as (?) "(%&%)"; subst.
+    simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
+    simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
   - iDestruct "Hval" as "[Hval|Hnull]".
     { iDestruct "Hval" as (????? (?&?&?&?)) "H1". subst; eauto.
       simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.

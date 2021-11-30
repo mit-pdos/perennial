@@ -124,13 +124,13 @@ Definition Buf__BnumPut: val :=
 (* bufmap.go *)
 
 Definition BufMap := struct.decl [
-  "addrs" :: mapT (struct.ptrT Buf)
+  "addrs" :: mapT ptrT
 ].
 
 Definition MkBufMap: val :=
   rec: "MkBufMap" <> :=
     let: "a" := struct.new BufMap [
-      "addrs" ::= NewMap (struct.ptrT Buf) #()
+      "addrs" ::= NewMap ptrT #()
     ] in
     "a".
 
@@ -160,9 +160,9 @@ Definition BufMap__Ndirty: val :=
 
 Definition BufMap__DirtyBufs: val :=
   rec: "BufMap__DirtyBufs" "bmap" :=
-    let: "bufs" := ref (zero_val (slice.T (refT (struct.t Buf)))) in
+    let: "bufs" := ref (zero_val (slice.T ptrT)) in
     MapIter (struct.loadF BufMap "addrs" "bmap") (λ: <> "buf",
       (if: struct.loadF Buf "dirty" "buf"
-      then "bufs" <-[slice.T (refT (struct.t Buf))] SliceAppend (refT (struct.t Buf)) (![slice.T (refT (struct.t Buf))] "bufs") "buf"
+      then "bufs" <-[slice.T ptrT] SliceAppend ptrT (![slice.T ptrT] "bufs") "buf"
       else #()));;
-    ![slice.T (refT (struct.t Buf))] "bufs".
+    ![slice.T ptrT] "bufs".

@@ -11,7 +11,7 @@ From Goose Require github_com.tchajed.marshal.
    the number of valid blocks in the log. *)
 
 Definition Log := struct.decl [
-  "m" :: lockRefT;
+  "m" :: ptrT;
   "sz" :: uint64T;
   "diskSz" :: uint64T
 ].

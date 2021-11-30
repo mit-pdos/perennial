@@ -12,7 +12,7 @@ Definition DISKNAME : expr := #(str"goose_kvs.img").
 
 Definition KVS := struct.decl [
   "sz" :: uint64T;
-  "log" :: struct.ptrT obj.Log
+  "log" :: ptrT
 ].
 
 Definition KVPair := struct.decl [

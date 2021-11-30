@@ -148,7 +148,7 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
             "Hmapping_ctx" ∷ map_ctx (ccmapping_name Γ) 1 reqs ∗
             "Hescrow_ctx" ∷ map_ctx (ccescrow_name Γ) 1 estoks ∗
             "Hextracted_ctx" ∷ map_ctx (ccextracted_name Γ) 1 extoks ∗
-            "Hpending_map" ∷ map.is_map mref 1 (pending, zero_val (struct.ptrT callback)) ∗
+            "Hpending_map" ∷ map.is_map mref 1 (pending, zero_val ptrT) ∗
             "Hreqs" ∷ [∗ map] seqno ↦ req ∈ reqs,
                  ∃ (Post : list u8 → iProp Σ),
                  "Hreg_entry" ∷  ptsto_ro (ccmapping_name Γ) seqno req ∗

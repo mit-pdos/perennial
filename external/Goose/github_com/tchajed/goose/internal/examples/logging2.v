@@ -13,13 +13,13 @@ Definition LOGMAXBLK : expr := #510.
 Definition LOGEND : expr := LOGMAXBLK + LOGSTART.
 
 Definition Log := struct.decl [
-  "logLock" :: lockRefT;
-  "memLock" :: lockRefT;
+  "logLock" :: ptrT;
+  "memLock" :: ptrT;
   "logSz" :: uint64T;
-  "memLog" :: refT (slice.T disk.blockT);
-  "memLen" :: refT uint64T;
-  "memTxnNxt" :: refT uint64T;
-  "logTxnNxt" :: refT uint64T
+  "memLog" :: ptrT;
+  "memLen" :: ptrT;
+  "memTxnNxt" :: ptrT;
+  "logTxnNxt" :: ptrT
 ].
 
 Definition Log__writeHdr: val :=
@@ -154,7 +154,7 @@ Definition Log__Logger: val :=
 (* txn.go *)
 
 Definition Txn := struct.decl [
-  "log" :: struct.ptrT Log;
+  "log" :: ptrT;
   "blks" :: mapT disk.blockT
 ].
 

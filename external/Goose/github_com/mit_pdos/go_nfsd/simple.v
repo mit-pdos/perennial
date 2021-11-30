@@ -194,8 +194,8 @@ Definition inodeInit: val :=
 (* mkfs.go *)
 
 Definition Nfs := struct.decl [
-  "t" :: struct.ptrT obj.Log;
-  "l" :: struct.ptrT lockmap.LockMap
+  "t" :: ptrT;
+  "l" :: ptrT
 ].
 
 Definition Mkfs: val :=

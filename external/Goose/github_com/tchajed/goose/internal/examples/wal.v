@@ -9,9 +9,9 @@ Definition logLength : expr := #1 + #2 * MaxTxnWrites.
 
 Definition Log := struct.decl [
   "d" :: disk.Disk;
-  "l" :: lockRefT;
+  "l" :: ptrT;
   "cache" :: mapT disk.blockT;
-  "length" :: refT uint64T
+  "length" :: ptrT
 ].
 
 Definition intToBlock: val :=

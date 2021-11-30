@@ -15,13 +15,13 @@ From Goose Require github_com.mit_pdos.go_journal.util.
    transactions. Lock ordering is still up to the caller to avoid deadlocks. *)
 
 Definition Log := struct.decl [
-  "log" :: struct.ptrT obj.Log;
-  "locks" :: struct.ptrT lockmap.LockMap
+  "log" :: ptrT;
+  "locks" :: ptrT
 ].
 
 Definition Txn := struct.decl [
-  "buftxn" :: struct.ptrT jrnl.Op;
-  "locks" :: struct.ptrT lockmap.LockMap;
+  "buftxn" :: ptrT;
+  "locks" :: ptrT;
   "acquired" :: mapT boolT
 ].
 

@@ -49,8 +49,8 @@ Definition LogBytes : expr := #4096 * #511.
    Call CommitWait to persist the operation's writes.
    To abort the operation simply stop using it. *)
 Definition Op := struct.decl [
-  "log" :: struct.ptrT obj.Log;
-  "bufs" :: struct.ptrT buf.BufMap
+  "log" :: ptrT;
+  "bufs" :: ptrT
 ].
 
 (* Begin starts a local journal operation with no writes from a global object
@@ -78,19 +78,19 @@ Definition Op__ReadBuf: val :=
 (* OverWrite writes an object to addr *)
 Definition Op__OverWrite: val :=
   rec: "Op__OverWrite" "op" "addr" "sz" "data" :=
-    let: "b" := ref_to (refT (struct.t buf.Buf)) (buf.BufMap__Lookup (struct.loadF Op "bufs" "op") "addr") in
-    (if: (![refT (struct.t buf.Buf)] "b" = #null)
+    let: "b" := ref_to ptrT (buf.BufMap__Lookup (struct.loadF Op "bufs" "op") "addr") in
+    (if: (![ptrT] "b" = #null)
     then
-      "b" <-[refT (struct.t buf.Buf)] buf.MkBuf "addr" "sz" "data";;
-      buf.Buf__SetDirty (![refT (struct.t buf.Buf)] "b");;
-      buf.BufMap__Insert (struct.loadF Op "bufs" "op") (![refT (struct.t buf.Buf)] "b");;
+      "b" <-[ptrT] buf.MkBuf "addr" "sz" "data";;
+      buf.Buf__SetDirty (![ptrT] "b");;
+      buf.BufMap__Insert (struct.loadF Op "bufs" "op") (![ptrT] "b");;
       #()
     else
-      (if: "sz" ≠ struct.loadF buf.Buf "Sz" (![refT (struct.t buf.Buf)] "b")
+      (if: "sz" ≠ struct.loadF buf.Buf "Sz" (![ptrT] "b")
       then Panic "overwrite"
       else #());;
-      struct.storeF buf.Buf "Data" (![refT (struct.t buf.Buf)] "b") "data";;
-      buf.Buf__SetDirty (![refT (struct.t buf.Buf)] "b");;
+      struct.storeF buf.Buf "Data" (![ptrT] "b") "data";;
+      buf.Buf__SetDirty (![ptrT] "b");;
       #()).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
