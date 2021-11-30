@@ -804,11 +804,9 @@ Definition MakeSeqKVClerk: val :=
 
 (* 5_memkv_clerk.go *)
 
-Definition seqKVClerkPtr: ty := struct.ptrT SeqKVClerk.
-
 Definition KVClerk := struct.decl [
   "mu" :: lockRefT;
-  "freeClerks" :: slice.T seqKVClerkPtr;
+  "freeClerks" :: slice.T (struct.ptrT SeqKVClerk);
   "cm" :: struct.ptrT connman.ConnMan;
   "coord" :: HostName
 ].
@@ -822,7 +820,7 @@ Definition KVClerk__getSeqClerk: val :=
       lock.release (struct.loadF KVClerk "mu" "p");;
       MakeSeqKVClerk (struct.loadF KVClerk "coord" "p") (connman.MakeConnMan #())
     else
-      let: "ck" := SliceGet seqKVClerkPtr (struct.loadF KVClerk "freeClerks" "p") ("n" - #1) in
+      let: "ck" := SliceGet (refT (struct.t SeqKVClerk)) (struct.loadF KVClerk "freeClerks" "p") ("n" - #1) in
       struct.storeF KVClerk "freeClerks" "p" (SliceTake (struct.loadF KVClerk "freeClerks" "p") ("n" - #1));;
       lock.release (struct.loadF KVClerk "mu" "p");;
       "ck").
@@ -830,7 +828,7 @@ Definition KVClerk__getSeqClerk: val :=
 Definition KVClerk__putSeqClerk: val :=
   rec: "KVClerk__putSeqClerk" "p" "ck" :=
     Fork (lock.acquire (struct.loadF KVClerk "mu" "p");;
-          struct.storeF KVClerk "freeClerks" "p" (SliceAppend seqKVClerkPtr (struct.loadF KVClerk "freeClerks" "p") "ck");;
+          struct.storeF KVClerk "freeClerks" "p" (SliceAppend (refT (struct.t SeqKVClerk)) (struct.loadF KVClerk "freeClerks" "p") "ck");;
           lock.release (struct.loadF KVClerk "mu" "p"));;
     #().
 
@@ -883,5 +881,5 @@ Definition MakeKVClerk: val :=
     struct.storeF KVClerk "mu" "p" (lock.new #());;
     struct.storeF KVClerk "coord" "p" "coord";;
     struct.storeF KVClerk "cm" "p" "cm";;
-    struct.storeF KVClerk "freeClerks" "p" (NewSlice seqKVClerkPtr #0);;
+    struct.storeF KVClerk "freeClerks" "p" (NewSlice (struct.ptrT SeqKVClerk) #0);;
     "p".
