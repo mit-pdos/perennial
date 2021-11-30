@@ -66,13 +66,13 @@ Qed.
 (** instances for IntoVal *)
 Section instances.
   Context {ext: ffi_syntax} {ext_ty: ext_types ext}.
+
   Definition u64val (x:u64) : val := #x.
   Global Instance u64_IntoVal : IntoVal u64.
   Proof.
     refine {| to_val := λ (x: u64), #x;
               IntoVal_def := U64 0; |}; congruence.
   Defined.
-
   Global Instance u64_IntoVal_uint64T : IntoValForType u64 uint64T.
   Proof.
     constructor; auto.
@@ -83,7 +83,6 @@ Section instances.
     refine {| to_val := λ (x: u8), #x;
               IntoVal_def := U8 0; |}; congruence.
   Defined.
-
   Global Instance u8_IntoVal_byteT : IntoValForType u8 byteT.
   Proof.
     constructor; eauto.
@@ -94,13 +93,15 @@ Section instances.
     refine {| to_val := λ (l: loc), #l;
               IntoVal_def := null; |}; congruence.
   Defined.
-
   Global Instance loc_IntoVal_struct_ptr t : IntoValForType loc (struct.ptrT t).
   Proof.
     constructor; auto.
   Qed.
-
   Global Instance loc_IntoVal_ref t : IntoValForType loc (refT t).
+  Proof.
+    constructor; auto.
+  Qed.
+  Global Instance loc_IntoVal_ptr : IntoValForType loc ptrT.
   Proof.
     constructor; auto.
   Qed.
@@ -113,7 +114,6 @@ Section instances.
     intros [] [].
     inversion 1; auto.
   Defined.
-
   Global Instance slice_IntoVal_ref t : IntoValForType Slice.t (slice.T t).
   Proof.
     constructor; auto.
@@ -127,7 +127,6 @@ Section instances.
     refine {| into_val.to_val := λ (x: bool), #x;
               IntoVal_def := false; |}; congruence.
   Defined.
-
   Global Instance bool_IntoVal_boolT : IntoValForType bool boolT.
   Proof. constructor; auto. Qed.
 
