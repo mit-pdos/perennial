@@ -457,6 +457,26 @@ Section go_refinement.
     lia.
   Qed.
 
+  Lemma val_relation_flatten_length sv iv :
+    val_relation sv iv →
+    length (flatten_struct sv) = length (flatten_struct iv).
+  Proof.
+    induction 1; eauto.
+    { destruct l; auto. }
+    { simpl. rewrite ?app_length; congruence. }
+  Qed.
+
+  Lemma val_relation_flatten_relation sv iv :
+    val_relation sv iv →
+    Forall2 val_relation (flatten_struct sv) (flatten_struct iv).
+  Proof.
+    induction 1; simpl.
+    - destruct l; auto.
+    - apply Forall2_app; auto.
+    - econstructor; auto.
+    - econstructor; auto.
+  Qed.
+
   Lemma heap_array_lookup_none2_if {A B} l n (v1 : list A) (v2 : list B) l' :
     length v1 = length v2 →
     heap_array l (Free <$> concat_replicate n v1) !! l' = None →
@@ -474,6 +494,40 @@ Section go_refinement.
     eapply heap_array_lookup_is_Some; eauto.
   Qed.
 
+  Lemma dom_heap_array_length {A B} (l1 : list A) (l2 : list B) l :
+    length l1 = length l2 →
+    dom (gset loc) (heap_array l l1) =
+    dom (gset loc) (heap_array l l2).
+  Proof.
+    revert l l2. induction l1 => l l2.
+    - destruct l2; last by simpl; congruence.
+      intros _. rewrite //= ?dom_empty_L //.
+    - destruct l2; first by simpl; congruence.
+      inversion 1; subst. simpl. rewrite ?dom_union_L ?dom_singleton_L. f_equal; auto.
+  Qed.
+
+   Lemma concat_replicate2_Forall2 {A B} n (l1 : list A) (l2 : list B) R z x y:
+     Forall2 R l1 l2 →
+     concat_replicate n l1 !! z = Some x →
+     concat_replicate n l2 !! z = Some y →
+     R x y.
+   Proof.
+     revert z.
+     induction n => //= z.
+     intros HFR.
+     rewrite ?lifting.concat_replicate_S.
+     rewrite ?lookup_app_Some. intros Hl1 Hl2.
+     destruct Hl1 as [Hl1|(?&Hl1)].
+     - destruct Hl2 as [Hl2|(Hlen&Hl2)]; last first.
+       { apply lookup_lt_Some in Hl1. apply Forall2_length in HFR. lia. }
+       eapply Forall2_lookup_lr; eauto.
+     - destruct Hl2 as [Hl2|(Hlen&Hl2)].
+       { apply lookup_lt_Some in Hl2. apply Forall2_length in HFR. lia. }
+       eapply IHn; eauto.
+       assert (length l1 = length l2) as ->; eauto.
+       { eapply Forall2_length; eauto. }
+   Qed.
+
   Lemma abstraction_state_init_heap l z sσ1 sg1 iσ1 ig1 sv iv :
     val_relation sv iv →
     abstraction sσ1 sg1 iσ1 ig1 →
@@ -485,7 +539,10 @@ Section go_refinement.
     destruct Hheap as (Hdom&Hlookup).
     split.
     { rewrite /state_init_heap//= ?dom_union_L // Hdom //. f_equal.
-      admit.
+      apply dom_heap_array_length. rewrite ?fmap_length.
+      rewrite ?lifting.concat_replicate_length.
+      eapply val_relation_flatten_length in Hval.
+      congruence.
     }
     rewrite /state_init_heap/state_insert_list.
     intros l' (na1&sv') (na2&iv') => /= Hlook1 Hlook2.
@@ -497,26 +554,34 @@ Section go_refinement.
       { destruct Hr as (Hrbad&_).
         eapply heap_array_lookup_none2_if in Hrbad.
         { erewrite Hl in Hrbad; congruence. }
-        admit.
+        symmetry; apply val_relation_flatten_length; auto.
       }
-      (* Need some lemmas about flatten_struct of related values *)
-
-
-    (*
-    rewrite /state_init_heap.
-    rewrite /state_insert_list.
-    remember (Z.to_nat z) as n.
-    revert sσ1 sg1 iσ1 ig1.
-    induction n; intros sσ1 sg1 iσ1 ig1 Hval Habstr.
-    { rewrite //=.
-      assert ((RecordSet.set heap (λ h : gmap loc (nonAtomic sval), ∅ ∪ h) sσ1) = sσ1) as ->.
-      { destruct sσ1 => //=. rewrite /RecordSet.set /= left_id_L //. }
-      assert ((RecordSet.set heap (λ h : gmap loc (nonAtomic ival), ∅ ∪ h) iσ1) = iσ1) as ->.
-      { destruct iσ1 => //=. rewrite /RecordSet.set /= left_id_L //. }
-      auto.
+      apply heap_array_lookup in Hl.
+      apply heap_array_lookup in Hl2.
+      destruct Hl as (j1&?&Heq1&Hl1).
+      destruct Hl2 as (j2&?&Heq2&Hl2).
+      subst.
+      assert (j1 = j2) as ->.
+      { inversion Heq2. lia. }
+      rewrite list_lookup_fmap in Hl1.
+      rewrite list_lookup_fmap in Hl2.
+      apply fmap_Some_1 in Hl1 as (?&Heqa1&Hf1).
+      apply fmap_Some_1 in Hl2 as (?&Heqa2&Hf2).
+      inversion Hf1; inversion Hf2; split; first by congruence.
+      eapply concat_replicate2_Forall2; try eassumption.
+      apply val_relation_flatten_relation; auto.
     }
-     *)
-  Admitted.
+    { destruct Hlook2 as [Hl2|Hr2].
+      { destruct Hr as (Hrbad&_).
+        eapply heap_array_lookup_none2_if in Hrbad.
+        { erewrite Hl2 in Hrbad; congruence. }
+        apply val_relation_flatten_length; auto.
+      }
+      destruct Hr as (_&Hsσ1).
+      destruct Hr2 as (_&Hiσ1).
+      efeed pose proof Hlookup; eauto.
+    }
+  Qed.
 
   Lemma isFresh_abstraction sσ1 sg1 iσ1 ig1 l:
     abstraction sσ1 sg1 iσ1 ig1 →
