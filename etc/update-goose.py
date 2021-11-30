@@ -246,6 +246,8 @@ def main():
             "./index",
             "./gc",
             "./tuple",
+			"./config",
+			# "./cfmutex",
         )
 
     if marshal_dir is not None:
