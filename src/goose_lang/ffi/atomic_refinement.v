@@ -1262,6 +1262,59 @@ Section go_refinement.
     { eauto. }
   Qed.
 
+  Theorem erased_step_simulation it1 iσ1 ig1 it2 iσ2 ig2 sr1 st1 sσ1 sg1 :
+    wf sr1 (st1, (sσ1, sg1)) →
+    fo_rsteps sr1 (st1, (sσ1, sg1)) →
+    erased_step (it1, (iσ1, ig1)) (it2, (iσ2, ig2)) →
+    tp_impl st1 it1 →
+    abstraction sσ1 sg1 iσ1 ig1 →
+    (∃ st2 sσ2 sg2,
+     erased_step (st1, (sσ1, sg1)) (st2, (sσ2, sg2)) ∧
+     tp_impl st2 it2 ∧
+     abstraction sσ2 sg2 iσ2 ig2).
+  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok.
+    intros ?? Hstep. inversion Hstep. simpl in *.
+    intros. edestruct (step_simulation) as (?&?&?&?&?); eauto.
+    do 3 eexists; split_and!; intuition eauto. econstructor; eauto.
+  Qed.
+
+  Theorem rtc_erased_step_simulation it1 iσ1 ig1 it2 iσ2 ig2 sr1 st1 sσ1 sg1 :
+    wf sr1 (st1, (sσ1, sg1)) →
+    fo_rsteps sr1 (st1, (sσ1, sg1)) →
+    rtc erased_step (it1, (iσ1, ig1)) (it2, (iσ2, ig2)) →
+    tp_impl st1 it1 →
+    abstraction sσ1 sg1 iσ1 ig1 →
+    (∃ st2 sσ2 sg2,
+     rtc erased_step (st1, (sσ1, sg1)) (st2, (sσ2, sg2)) ∧
+     tp_impl st2 it2 ∧
+     abstraction sσ2 sg2 iσ2 ig2 ∧
+     wf sr1 (st2, (sσ2, sg2)) ∧
+     fo_rsteps sr1 (st2, (sσ2, sg2))
+    ).
+  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok wf_preserved_step.
+    intros Hwf Hfo Hrtc.
+    remember (it1, (iσ1, ig1)) as ρ1 eqn:Heqρ1.
+    remember (it2, (iσ2, ig2)) as ρ2 eqn:Heqρ2.
+    revert it1 iσ1 ig1 Heqρ1.
+    revert it2 iσ2 ig2 Heqρ2.
+    revert st1 sσ1 sg1 Hwf Hfo.
+    induction Hrtc; intros; subst.
+    - inversion Heqρ1; subst. do 3 eexists; split_and!; eauto.
+      apply rtc_refl.
+    - destruct y as (e1'&σ1'&g1').
+      edestruct erased_step_simulation as (pσ1&pg1&pg0&Hcompat1_0&Hcompat2_0&Habstr); eauto.
+      edestruct (IHHrtc) as (pσ1'&pg2_&pg1'&Hcompat1&Hcompat2&Habstr'&Hwf'&Hfo'); try eapply Habstr.
+      { eapply wf_preserved_step; eauto.
+        econstructor. apply rtc_once. eauto. }
+      { rewrite /fo_rsteps. intros. eapply Hfo.
+        eapply erased_rsteps_l_1; eauto. }
+      { eauto. }
+      { reflexivity. }
+      { eauto. }
+      do 3 eexists. split_and!; eauto.
+      eapply rtc_l; eauto.
+  Qed.
+
   Theorem atomic_concurrent_refinement se ie :
     (* se compiles to ie *)
     expr_impl se ie →

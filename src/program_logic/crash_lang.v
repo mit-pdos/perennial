@@ -98,6 +98,29 @@ Section crash_language.
     eapply rtc_once; eauto.
   Qed.
 
+  Lemma erased_rsteps_l_rtc r ρ ρ' ρ'' s:
+    rtc erased_step ρ ρ' →
+    erased_rsteps r ρ' ρ'' s →
+    erased_rsteps r ρ ρ'' s.
+  Proof.
+    destruct s.
+    - intros Hsteps Herased. inversion Herased; subst.
+      econstructor; last eauto.
+      etransitivity; eauto. eauto.
+    - intros Hstreps Herased. inversion Herased; subst; eauto.
+      econstructor; last eauto.
+      etransitivity; eauto.
+  Qed.
+
+  Lemma erased_rsteps_l_1 r ρ ρ' ρ'' s:
+    erased_step ρ ρ' →
+    erased_rsteps r ρ' ρ'' s →
+    erased_rsteps r ρ ρ'' s.
+  Proof.
+    intros; eapply erased_rsteps_l_rtc; eauto.
+    eapply rtc_once; eauto.
+  Qed.
+
 (*
 FIXME: needs adjustment to global_state, but seems unused?
   Inductive erased_steps_list: cfg Λ → cfg Λ → list (state Λ) → Prop :=
