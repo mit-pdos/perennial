@@ -1408,6 +1408,24 @@ Section go_refinement.
       { intuition eauto. }
   Qed.
 
+  Lemma not_stuck_reflect sσ sg iσ ig se ie :
+    abstraction sσ sg iσ ig →
+    in_wf_ctxt se sσ sg →
+    not_stuck se sσ sg →
+    expr_impl se ie →
+    not_stuck ie iσ ig.
+  Proof.
+  Admitted.
+
+  Lemma in_wf_ctxt_alt sr se2 sσ2 sg2 st2 :
+    se2 ∈ st2 →
+    wf sr (st2, (sσ2, sg2)) →
+    in_wf_ctxt se2 sσ2 sg2.
+  Proof.
+    intros (l1&l2&->)%elem_of_list_split. intros Hwf.
+    eexists sr, _, _, []. simpl. eauto.
+  Qed.
+
   Theorem atomic_concurrent_refinement se ie sσ sg iσ ig :
     (* se compiles to ie *)
     expr_impl se ie →
@@ -1415,15 +1433,26 @@ Section go_refinement.
     wf se ([se], (sσ, sg)) →
     fo_rsteps se ([se], (sσ, sg)) →
     trace_refines ie ie iσ ig se se sσ sg.
-  Proof.
-    intros. split.
-    - admit.
+  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok wf_preserved_step crash_ok.
+    intros Himpl Habstr Hwf Hfo Hsafe. split.
+    - intros it2 iσ2 ig2 ie2 s Hstepi Hin.
+      edestruct (erased_rsteps_simulation) as (sρ2&Hsteps&Hconfig&Hwf2); eauto.
+      { split; eauto. econstructor; eauto. }
+      destruct sρ2 as (st2&sσ2&sg2).
+      destruct Hconfig as (Htpimpl&Habstr').
+      simpl in Htpimpl.
+      assert (∃ se2, se2 ∈ st2 ∧ expr_impl se2 ie2) as (se2&Hin'&Himpl').
+      { apply elem_of_list_lookup_1 in Hin as (i&Hlookup).
+        eapply Forall2_lookup_r in Htpimpl as (se2&?&?); eauto.
+        eexists; split; eauto. eapply elem_of_list_lookup_2; eauto. }
+      eapply not_stuck_reflect; eauto.
+      { eapply in_wf_ctxt_alt; eauto. }
     - intros tr. destruct 1 as (?&?&?&?&?&?). subst.
       edestruct (erased_rsteps_simulation) as (sρ2&Hsteps&Hconfig&_); eauto.
       { split; eauto. econstructor; eauto. }
       destruct sρ2 as (st2&sσ2&sg2).
       do 4 eexists. split_and!; eauto.
       destruct Hconfig as (_&(?&?&?&?)). eauto.
-  Abort.
+  Qed.
 
 End go_refinement.
