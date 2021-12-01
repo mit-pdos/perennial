@@ -29,219 +29,6 @@ Definition is_tuple (tuple_ptr : loc) : iProp Σ :=
     "#HrcondC" ∷ is_cond rcond latch ∗
     "_" ∷ True.
 
-(*****************************************************************)
-(* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
-(*****************************************************************)
-Theorem wp_tuple__AppendVersion tuple_ptr (tid : u64) (val : u64) :
-  is_tuple tuple_ptr -∗
-  {{{ True }}}
-    Tuple__AppendVersion #tuple_ptr #tid #val
-  {{{ b, RET #b; True }}}.
-Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
-  iNamed "Htuple".
-  unfold Tuple__AppendVersion.
-
-  (***********************************************************)
-  (* tuple.latch.Lock()                                      *)
-  (***********************************************************)
-  wp_pures.
-  wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
-
-  (***********************************************************)
-  (* if len(tuple.vers) > 0 {                                *)
-  (*   idx := len(tuple.vers) - 1                            *)
-  (*   verPrevRef := &tuple.vers[idx]                        *)
-  (*   verPrevRef.end = tid                                  *)
-  (* }                                                       *)
-  (***********************************************************)
-  wp_loadField.
-  wp_apply wp_slice_len.
-  wp_if_destruct.
-  { (* `vers` not empty *)
-    wp_loadField.
-    wp_apply wp_slice_len.
-    wp_pures.
-    wp_loadField.
-    wp_lam.
-    wp_pures.
-    wp_apply wp_slice_len.
-    
-    wp_if_destruct; last first.
-    { (* prove in-bound *)
-      exfalso.
-      destruct (bool_decide (int.Z vers.(Slice.sz) = int.Z 0)) eqn:E.
-      - apply bool_decide_eq_true in E. lia.
-      - apply bool_decide_eq_false in E.
-        destruct Heqb0.
-        apply word.decrement_nonzero_lt. done.
-    }
-    wp_apply wp_slice_ptr.
-    wp_pures.
-    iDestruct (slice.is_slice_small_acc with "HversL") as "[HversL HversL_close]".
-    rewrite /slice.is_slice_small.
-    iDestruct "HversL" as "[HversA %HversLen]".
-    (* Below we try to prove the last element of `versL` contains something. *)
-    assert (HversLenLast : ((int.nat (word.sub vers.(Slice.sz) (U64 1))) < length versL)%nat).
-    (* Set Printing Coercions. *)
-    { rewrite fmap_length in HversLen. rewrite HversLen. word. }
-    apply list_lookup_lt in HversLenLast as [x Hsome].
-    iDestruct (update_array with "HversA") as "[Hver HversA]".
-    (* Better proof? *)
-    { rewrite list_lookup_fmap.
-      instantiate (1:=ver_to_val x).
-      instantiate (1:=int.nat (word.sub vers.(Slice.sz) 1)).
-      rewrite Hsome.
-      auto.
-    }
-    iDestruct (struct_fields_split with "Hver") as "Hver".
-    iNamed "Hver".
-    wp_apply (wp_storeField with "[end]"); first auto.
-    { iNext.
-      (* Set Printing Coercions. *)
-      rewrite u64_Z_through_nat.
-      iFrame.
-    }
-    iIntros "end".
-    (* Close things. Better proof? *)
-    remember (vers.(Slice.ptr) +ₗ[struct.t Version] int.nat (word.sub vers.(Slice.sz) 1)) as verLastR.
-    remember (x.1.1, tid, x.2) as verLast.
-    iAssert (verLastR ↦[struct.t Version] (ver_to_val verLast))%I with "[begin val end]" as "Hver".
-    { iDestruct (struct_fields_split verLastR 1%Qp Version (ver_to_val verLast)
-                  with "[begin end val]") as "Hver"; last iFrame.
-      rewrite /struct_fields.
-      simpl.
-      subst.
-      rewrite u64_Z_through_nat.
-      iFrame.
-      done.
-    }
-    iDestruct ("HversA" with "Hver") as "HversA".
-    iDestruct ("HversL_close" with "[HversA]") as "HversL".
-    { iFrame.
-      iPureIntro.
-      rewrite <- HversLen.
-      apply insert_length.
-    }
-    
-    (* Appending new version. *)
-    wp_pures.
-    wp_loadField.
-    wp_apply (wp_SliceAppend' with "[HversL]").
-    { done. }
-    { auto. }
-    { iFrame. }
-    iIntros (vers') "HversL".
-    wp_apply (wp_storeField with "[Hvers]").
-    { apply slice_val_ty. }
-    { done. }
-    iIntros "Hvers".
-    wp_storeField.
-    wp_storeField.
-    wp_loadField.
-    wp_apply (wp_condBroadcast with "[$HrcondC]").
-    wp_pures.
-    wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
-    { iFrame "Hlock Hlocked".
-      iNext.
-      iExists (U64 0), tidrd, tid, vers', _.
-      iFrame.
-      iSplitL; last done.
-      instantiate (1:=(<[int.nat (word.sub vers.(Slice.sz) 1):=verLast]> versL) ++ [(tid, (U64 18446744073709551615), val)]).
-      rewrite fmap_app.
-      rewrite list_fmap_insert.
-      iFrame.
-    }
-    wp_pures.
-    iApply "HΦ".
-    done.
-  }
-
-  (* Appending new version (without updating the latest version). *)
-  (***********************************************************)
-  (* verNext := Version{                                     *)
-  (*   begin   : tid,                                        *)
-  (*   end     : config.TID_SENTINEL,                        *)
-  (*   val     : val,                                        *)
-  (* }                                                       *)
-  (* tuple.vers = append(tuple.vers, verNext)                *)
-  (***********************************************************)
-  wp_pures.
-  wp_loadField.
-  wp_apply (wp_SliceAppend' with "[HversL]").
-  { done. }
-  { auto. }
-  { iFrame. }
-  iIntros (vers') "HversL".
-  wp_apply (wp_storeField with "[Hvers]").
-  { apply slice_val_ty. }
-  { done.}
-  iIntros "Hvers".
-  wp_pures.
-
-  (***********************************************************)
-  (* tuple.tidown = 0                                        *)
-  (* tuple.tidwr = tid                                       *)
-  (***********************************************************)
-  wp_storeField.
-  wp_storeField.
-
-  (***********************************************************)
-  (* tuple.rcond.Broadcast()                                 *)
-  (***********************************************************)
-  wp_loadField.
-  wp_apply (wp_condBroadcast with "[$HrcondC]").
-  wp_pures.
-
-  (***********************************************************)
-  (* tuple.latch.Unlock()                                    *)
-  (***********************************************************)
-  wp_loadField.
-  wp_apply (release_spec with "[-HΦ]").
-  { (* Restoring the lock invariant. *)
-    iFrame "Hlock Hlocked".
-    iNext.
-    rewrite /own_tuple.
-    remember (versL ++ [(tid, (U64 18446744073709551615), val)]) as versL'.
-    iExists (U64 0), tidrd, tid, vers', versL'.
-    iFrame.
-    subst.
-    rewrite fmap_app.
-    iFrame.
-  }
-  wp_pures.
-  iApply "HΦ".
-  done.
-Qed.
-
-Lemma val_to_ver_with_val_ty (x : val) :
-  val_ty x (uint64T * (uint64T * (uint64T * unitT))%ht) ->
-  (∃ (b e v : u64), x = ver_to_val (b, e, v)).
-Proof.
-  intros H.
-  inversion_clear H. 
-  { inversion H0. }
-  inversion_clear H0.
-  inversion_clear H.
-  inversion_clear H1.
-  { inversion H. }
-  inversion_clear H.
-  inversion_clear H1.
-  inversion_clear H0.
-  { inversion H. }
-  inversion_clear H.
-  inversion_clear H0.
-  inversion_clear H1.
-  inversion_clear H.
-  exists x0, x1, x2.
-  reflexivity.
-Qed.  
-
 Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * u64 * u64)) (i : nat) :
   (ver_to_val <$> l) !! i = Some x ->
   (∃ (b e v : u64), x = ver_to_val (b, e, v) ∧ l !! i = Some (b, e, v)).
@@ -386,7 +173,7 @@ Proof.
               with "[] [-HΦ]").
   (**
    * Q: Is it correct to say `wp_forBreak_cond` is used when the loop invariant
-   * is the same as the pre/post conditions? Use `wp_apply (wp_forBreak I)` for
+   * is the same as the pre/post conditions? Use `wp_apply (wp_forBreak_cond I)` for
    * customized loop invariant?
    *)
   (* Customize the loop invariant as waiting on condvar havocs the values. *)
@@ -549,6 +336,221 @@ Proof.
   *)
 Qed.
   
+(*****************************************************************)
+(* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
+(*****************************************************************)
+Theorem wp_tuple__AppendVersion tuple_ptr (tid : u64) (val : u64) :
+  is_tuple tuple_ptr -∗
+  {{{ True }}}
+    Tuple__AppendVersion #tuple_ptr #tid #val
+  {{{ b, RET #b; True }}}.
+Proof.
+  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iNamed "Htuple".
+  wp_call.
+
+  (***********************************************************)
+  (* tuple.latch.Lock()                                      *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+
+  (***********************************************************)
+  (* if len(tuple.vers) > 0 {                                *)
+  (*   idx := len(tuple.vers) - 1                            *)
+  (*   verPrevRef := &tuple.vers[idx]                        *)
+  (*   verPrevRef.end = tid                                  *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply wp_slice_len.
+
+  (**
+   * Note 1(a): We need to create `x` *before* using `wp_apply (wp_If_join_evar ...)`
+   * to make sure that `x` is present at the time the goal evar is
+   * created (so that `iNamedAccu` can succeed).
+   * The general problem here is that I want to destruct a
+   * existentially qutified variable, but can only do that with the
+   * assumption that the branch condition holds.
+   * Is there a better way to deal with this problem?
+   *)
+  assert (H : ∃ (x : u64 * u64 * u64),
+                  (int.nat (word.sub vers.(Slice.sz) 1) < length versL)%nat ->
+                  versL !! int.nat (word.sub vers.(Slice.sz) 1) = Some x).
+  { destruct (bool_decide (int.nat (word.sub vers.(Slice.sz) 1) < length versL)%nat) eqn:E.
+    - case_bool_decide; last congruence.
+      apply list_lookup_lt in H as [x H].
+      exists x.
+      intros _.
+      apply H.
+    - case_bool_decide; first congruence.
+      exists ((U64 0), (U64 0), (U64 0)).
+      intros contra. destruct (H contra).
+  }
+  destruct H as [x Hx].
+  
+  wp_apply (wp_If_join_evar with "[-HΦ]").
+  { iIntros (b') "%Eb'".
+    case_bool_decide.
+    - wp_if_true.
+      wp_loadField.
+      wp_apply wp_slice_len.
+      wp_pures.
+      wp_loadField.
+      wp_lam.
+      wp_pures.
+      wp_apply wp_slice_len.
+      
+      wp_if_destruct; last first.
+      { (* prove in-bound *)
+        exfalso.
+        destruct (bool_decide (int.Z vers.(Slice.sz) = int.Z 0)) eqn:E.
+        - apply bool_decide_eq_true in E. lia.
+        - apply bool_decide_eq_false in E.
+          destruct Heqb.
+          apply word.decrement_nonzero_lt. done.
+      }
+      wp_apply wp_slice_ptr.
+      wp_pures.
+      iDestruct (slice.is_slice_small_acc with "HversL") as "[HversL HversL_close]".
+      rewrite /slice.is_slice_small.
+      iDestruct "HversL" as "[HversA %HversLen]".
+      (**
+       * Note 1(b): Below is a failed attempt to create `x` after the
+       * goal evar is created:
+       * apply list_lookup_lt in HversLenLast as [x Hsome].
+       *)
+      iDestruct (update_array with "HversA") as "[Hver HversA]".
+      (* Better proof? *)
+      { rewrite list_lookup_fmap.
+        instantiate (1:=ver_to_val x).
+        instantiate (1:=int.nat (word.sub vers.(Slice.sz) 1)).
+        rewrite Hx; first last.
+        { rewrite fmap_length in HversLen. rewrite HversLen. word.  }
+        auto.
+      }
+      iDestruct (struct_fields_split with "Hver") as "Hver".
+      iNamed "Hver".
+      wp_apply (wp_storeField with "[end]"); first auto.
+      { iNext.
+        (* Set Printing Coercions. *)
+        rewrite u64_Z_through_nat.
+        iFrame.
+      }
+      iIntros "end".
+      (* Close things. Better proof? *)
+      remember (vers.(Slice.ptr) +ₗ[struct.t Version] int.nat (word.sub vers.(Slice.sz) 1)) as verLastR.
+      remember (x.1.1, tid, x.2) as verLast.
+      iAssert (verLastR ↦[struct.t Version] (ver_to_val verLast))%I with "[begin val end]" as "Hver".
+      { iDestruct (struct_fields_split verLastR 1%Qp Version (ver_to_val verLast)
+                    with "[begin end val]") as "Hver"; last iFrame.
+        rewrite /struct_fields.
+        simpl.
+        subst.
+        rewrite u64_Z_through_nat.
+        iFrame.
+        done.
+      }
+      iDestruct ("HversA" with "Hver") as "HversA".
+      iDestruct ("HversL_close" with "[HversA]") as "HversL".
+      { iFrame.
+        iPureIntro.
+        rewrite <- HversLen.
+        apply insert_length.
+      }
+      iSplitL ""; first done.
+      iAssert (slice.is_slice
+                 vers (struct.t Version) 1
+                 (if b'
+                  then <[int.nat (word.sub vers.(Slice.sz) 1):=ver_to_val verLast]> (ver_to_val <$> versL)
+                  else (ver_to_val <$> versL))) with "[HversL]" as "HversL".
+      { rewrite Eb'. iFrame. }
+      (**
+       * Note 1(c): `verLast` is created *after* the goal evar, so we
+       * should remove `verLast` from the spatial context before
+       * calling `iNamedAccu`.
+       *)
+      subst verLast.
+      iNamedAccu.
+    - wp_if_false.
+      iModIntro.
+      subst.
+      iFrame.
+      done.
+  }
+
+  (***********************************************************)
+  (* verNext := Version{                                     *)
+  (*   begin   : tid,                                        *)
+  (*   end     : config.TID_SENTINEL,                        *)
+  (*   val     : val,                                        *)
+  (* }                                                       *)
+  (* tuple.vers = append(tuple.vers, verNext)                *)
+  (***********************************************************)
+  iIntros "H".
+  iNamed "H".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_SliceAppend' with "[HversL]").
+  { done. }
+  { auto. }
+  { iFrame. }
+  iIntros (vers') "HversL".
+  wp_apply (wp_storeField with "[Hvers]").
+  { apply slice_val_ty. }
+  { done.}
+  iIntros "Hvers".
+  wp_pures.
+
+  (***********************************************************)
+  (* tuple.tidown = 0                                        *)
+  (* tuple.tidwr = tid                                       *)
+  (***********************************************************)
+  wp_storeField.
+  wp_storeField.
+
+  (***********************************************************)
+  (* tuple.rcond.Broadcast()                                 *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "[$HrcondC]").
+  wp_pures.
+
+  (***********************************************************)
+  (* tuple.latch.Unlock()                                    *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ]").
+  { (* Restoring the lock invariant. *)
+    iFrame "Hlock Hlocked".
+    iNext.
+    rewrite /own_tuple.
+    remember ((if bool_decide (int.Z 0 < int.Z vers.(Slice.sz))
+               then <[int.nat (word.sub vers.(Slice.sz) 1):=(x.1.1, tid, x.2)]> versL
+               else versL) ++ [(tid, (U64 18446744073709551615), val)]) as versL'.
+    iExists (U64 0), tidrd, tid, vers', versL'.
+    iFrame.
+    case_bool_decide.
+    { (* The latest version is updated. *)
+      subst.
+      rewrite fmap_app.
+      rewrite list_fmap_insert.
+      iFrame.
+    }
+    { (* No latest version. *)
+      subst.
+      rewrite fmap_app.
+      iFrame.
+    }
+  }
+  wp_pures.
+  iApply "HΦ".
+  done.
+Qed.
+
 (*****************************************************************)
 (* func (tuple *Tuple) Free(tid uint64)                          *)
 (*****************************************************************)
