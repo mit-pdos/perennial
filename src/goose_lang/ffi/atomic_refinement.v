@@ -1218,6 +1218,50 @@ Section go_refinement.
     { eauto. }
   Qed.
 
+  Definition tp_impl stp itp :=
+    Forall2 expr_impl stp itp.
+
+  Theorem step_simulation it1 iσ1 ig1 κ it2 iσ2 ig2 sr1 st1 sσ1 sg1 :
+    wf sr1 (st1, (sσ1, sg1)) →
+    fo_rsteps sr1 (st1, (sσ1, sg1)) →
+    step (it1, (iσ1, ig1)) κ (it2, (iσ2, ig2)) →
+    tp_impl st1 it1 →
+    abstraction sσ1 sg1 iσ1 ig1 →
+    (∃ st2 sσ2 sg2 sκ,
+     step (st1, (sσ1, sg1)) sκ (st2, (sσ2, sg2)) ∧
+     tp_impl st2 it2 ∧
+     abstraction sσ2 sg2 iσ2 ig2).
+  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok.
+    intros Hwf Hfo Hstep Himpl Habstr.
+    inversion Hstep as [????????? Heq1 Heq2]; subst.
+    inversion Heq1. subst.
+    inversion Heq2. subst.
+    assert (∃ se1 st1a st1b,
+               st1 = st1a ++ se1 :: st1b ∧
+               tp_impl st1a t1 ∧
+               tp_impl st1b t2 ∧
+               expr_impl se1 e1) as (se1&st1a&st1b&Heq'&Htpa&Htpb&Himple).
+    { apply Forall2_app_inv_r in Himpl as (?&?&Himpl1&Hrest&?).
+      apply Forall2_cons_inv_r in Hrest as (?&?&Himpl2&Hrest&?).
+      subst.
+      do 3 eexists; split_and!; eauto. }
+    subst.
+    edestruct (prim_step_simulation) as (se2&sσ2&sg2&sκ&sefs&Hprim&Himple'&Habstr'&Himplefs); eauto.
+    { exists sr1, st1a, st1b, []. simpl. subst. eauto. }
+    { rewrite /fo_prim. intros.
+      eapply Hfo. econstructor. apply rtc_once.
+      econstructor; eauto.
+      econstructor; eauto.
+    }
+    do 4 eexists.
+    split_and!.
+    { econstructor; eauto. }
+    { apply Forall2_app; auto.
+      econstructor; eauto.
+      apply Forall2_app; auto. }
+    { eauto. }
+  Qed.
+
   Theorem atomic_concurrent_refinement se ie :
     (* se compiles to ie *)
     expr_impl se ie →
