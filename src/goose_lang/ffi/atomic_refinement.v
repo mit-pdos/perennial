@@ -64,6 +64,8 @@ Section go_refinement.
   Canonical Structure impl_crash_lang : crash_semantics impl_lang :=
     @goose_crash_lang (impl_op) (impl_ffi) (impl_semantics).
 
+  Notation icfg := (@cfg impl_lang).
+
   (* op_impl gives a lambda implementing each spec op code *)
   Context (op_impl: @ffi_opcode spec_op → ival).
   Context (ffi_abstraction: sffi_state → sffi_global_state →
@@ -81,6 +83,19 @@ Section go_refinement.
               wf sr sρ →
               erased_rsteps (CS := spec_crash_lang) sr sρ sρ' s →
               wf sr sρ').
+
+  Lemma wf_preserved_crash sr stp sσ sσ' sg :
+    wf sr (stp, (sσ, sg)) →
+    crash_prim_step ( spec_crash_lang) sσ sσ' →
+    wf sr ([sr], (sσ', sg)).
+  Proof using wf_preserved_step.
+    intros Hwf Hcrash.
+    eapply wf_preserved_step; eauto.
+    eapply erased_rsteps_crash.
+    { apply rtc_refl. }
+    { eauto. }
+    econstructor. eapply rtc_refl.
+  Qed.
 
   Definition in_wf_ctxt (se: sexpr) sσ sg :=
     ∃ sr tp1 tp2 K,
@@ -129,6 +144,21 @@ Section go_refinement.
 
   Definition fo_rsteps (r : sexpr) ρ :=
     ∀ t2 σ2 g2 s, erased_rsteps (CS := spec_crash_lang) r ρ (t2, (σ2, g2)) s → foheap (heap σ2).
+
+  Lemma fo_rsteps_preserved_crash sr stp sσ sσ' sg :
+    fo_rsteps sr (stp, (sσ, sg)) →
+    crash_prim_step ( spec_crash_lang) sσ sσ' →
+    fo_rsteps sr ([sr], (sσ', sg)).
+  Proof.
+    rewrite /fo_rsteps.
+    intros Hwf Hcrash.
+    intros.
+    eapply Hwf.
+    eapply erased_rsteps_crash.
+    { apply rtc_refl. }
+    { eauto. }
+    eauto.
+  Qed.
 
   Definition naVal_relation : nonAtomic sval → nonAtomic ival → Prop :=
     λ '(m1, sv) '(m2, iv), m1 = m2 ∧ val_relation sv iv.
@@ -1313,6 +1343,69 @@ Section go_refinement.
       { eauto. }
       do 3 eexists. split_and!; eauto.
       eapply rtc_l; eauto.
+  Qed.
+
+  Theorem crash_step_simulation sσ1 sg1 iσ1 ig1 iσ2:
+    abstraction sσ1 sg1 iσ1 ig1 →
+    crash_prim_step (impl_crash_lang) iσ1 iσ2 →
+    (∃ sσ2,
+     crash_prim_step (spec_crash_lang) sσ1 sσ2 ∧
+     abstraction sσ2 sg1 iσ2 ig1).
+  Proof using crash_ok.
+    intros Habstr Hprim.
+    inversion Hprim; subst.
+    destruct Habstr as (?&?&?&?).
+    edestruct (crash_ok) as (?&?&?); eauto.
+    eexists. split.
+    { econstructor; eauto. }
+    split_and!; eauto.
+    - simpl. split.
+      * rewrite ?dom_empty_L //.
+      * inversion 1.
+    - rewrite //=. congruence.
+  Qed.
+
+  Definition config_abstraction (sρ : scfg) (iρ : icfg) :=
+    tp_impl sρ.1 iρ.1 ∧
+    abstraction sρ.2.1 sρ.2.2 iρ.2.1 iρ.2.2.
+
+  Theorem erased_rsteps_simulation ir iρ1 iρ2 sρ1 sr st :
+    erased_rsteps (CS := impl_crash_lang) ir iρ1 iρ2 st →
+    wf sr sρ1 →
+    fo_rsteps sr sρ1 →
+    config_abstraction sρ1 iρ1 →
+    expr_impl sr ir →
+    (∃ sρ2,
+     erased_rsteps (CS := spec_crash_lang) sr sρ1 sρ2 st ∧
+     config_abstraction sρ2 iρ2 ∧
+     wf sr sρ2
+    ).
+  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok wf_preserved_step crash_ok.
+    intros Hrsteps.
+    revert sr sρ1.
+    induction Hrsteps as [iρ1 iρ2 Hrtc|iρ1 iρ2 iρ3 iσ st' Hrtc Hcrash Herased];
+      intros sr sρ1 Hwf Hfo (Htp&Habstr) Himplr.
+    - destruct iρ1 as (it1, (iσ1, ig1)).
+      destruct iρ2 as (it2, (iσ2, ig2)).
+      destruct sρ1 as (st1, (sσ1, sg1)).
+      edestruct (rtc_erased_step_simulation) as (st2&sσ2&sg2&H); eauto.
+      eexists. intuition eauto.
+      { econstructor. eauto. }
+      split; eauto.
+    - destruct iρ1 as (it1, (iσ1, ig1)).
+      destruct iρ2 as (it2, (iσ2, ig2)).
+      destruct sρ1 as (st1, (sσ1, sg1)).
+      edestruct (rtc_erased_step_simulation) as (st2&sσ2&sg2&H); eauto.
+      clear Habstr.
+      edestruct (crash_step_simulation) as (sσ2'&?&?); intuition eauto.
+      edestruct (IHHerased sr ([sr], (sσ2', sg2))) as (sρ2&Hcompat'&Hrtc'); eauto.
+      { eapply wf_preserved_crash; eauto. }
+      { eapply fo_rsteps_preserved_crash; eauto. }
+      { split; simpl; eauto. econstructor; eauto. }
+      eexists; split_and!.
+      { econstructor; eauto. }
+      { intuition eauto. }
+      { intuition eauto. }
   Qed.
 
   Theorem atomic_concurrent_refinement se ie :
