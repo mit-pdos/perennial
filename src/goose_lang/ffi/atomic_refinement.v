@@ -1408,20 +1408,22 @@ Section go_refinement.
       { intuition eauto. }
   Qed.
 
-  Theorem atomic_concurrent_refinement se ie :
+  Theorem atomic_concurrent_refinement se ie sσ sg iσ ig :
     (* se compiles to ie *)
     expr_impl se ie →
-    ∀ sσ sg iσ ig,
     abstraction sσ sg iσ ig →
     wf se ([se], (sσ, sg)) →
-    trace_refines se se sσ sg ie ie iσ ig.
+    fo_rsteps se ([se], (sσ, sg)) →
+    trace_refines ie ie iσ ig se se sσ sg.
   Proof.
-    induction 1; intros.
-    - (* value *)
-      admit.
-    - (* external op *)
-      admit.
-      (* more cases *)
+    intros. split.
+    - admit.
+    - intros tr. destruct 1 as (?&?&?&?&?&?). subst.
+      edestruct (erased_rsteps_simulation) as (sρ2&Hsteps&Hconfig&_); eauto.
+      { split; eauto. econstructor; eauto. }
+      destruct sρ2 as (st2&sσ2&sg2).
+      do 4 eexists. split_and!; eauto.
+      destruct Hconfig as (_&(?&?&?&?)). eauto.
   Abort.
 
 End go_refinement.
