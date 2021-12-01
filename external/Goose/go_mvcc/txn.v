@@ -37,7 +37,7 @@ Definition Txn__Put: val :=
     ForSlice (struct.t WrEnt) "i" <> (struct.loadF Txn "wset" "txn")
       (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "i"))
       then
-        let: "went" := SliceRef (struct.loadF Txn "wset" "txn") "i" in
+        let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "i" in
         struct.storeF WrEnt "val" "went" "val";;
         "found" <-[boolT] #true
       else #());;
@@ -64,7 +64,7 @@ Definition Txn__Get: val :=
     ForSlice (struct.t WrEnt) "i" <> (struct.loadF Txn "wset" "txn")
       (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "i"))
       then
-        let: "went" := SliceRef (struct.loadF Txn "wset" "txn") "i" in
+        let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "i" in
         "val" <-[uint64T] struct.loadF WrEnt "val" "went";;
         "found" <-[boolT] #true
       else #());;
@@ -124,7 +124,7 @@ Definition MkTxnMgr: val :=
     struct.storeF TxnMgr "sites" "txnMgr" (NewSlice (struct.t TxnSite) config.N_TXN_SITES);;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < config.N_TXN_SITES); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: "g" := SliceRef (struct.loadF TxnMgr "sites" "txnMgr") (![uint64T] "i") in
+      let: "g" := SliceRef (struct.t TxnSite) (struct.loadF TxnMgr "sites" "txnMgr") (![uint64T] "i") in
       struct.storeF TxnSite "latch" "g" (lock.new #());;
       struct.storeF TxnSite "tidsActive" "g" (NewSlice uint64T #0);;
       Continue);;
@@ -162,7 +162,7 @@ Definition getSID: val :=
 
 Definition TxnMgr__activate: val :=
   rec: "TxnMgr__activate" "txnMgr" "sid" :=
-    let: "site" := SliceRef (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
+    let: "site" := SliceRef (struct.t TxnSite) (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "tid" := ref (zero_val uint64T) in
     "tid" <-[uint64T] genTID "sid";;
@@ -202,7 +202,7 @@ Definition swapWithEnd: val :=
 Definition TxnMgr__deactivate: val :=
   rec: "TxnMgr__deactivate" "txnMgr" "tid" :=
     let: "sid" := getSID "tid" in
-    let: "site" := SliceRef (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
+    let: "site" := SliceRef (struct.t TxnSite) (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "idx" := findTID "tid" (struct.loadF TxnSite "tidsActive" "site") in
     swapWithEnd (struct.loadF TxnSite "tidsActive" "site") "idx";;
@@ -212,7 +212,7 @@ Definition TxnMgr__deactivate: val :=
 
 Definition TxnMgr__getMinActiveTIDSite: val :=
   rec: "TxnMgr__getMinActiveTIDSite" "txnMgr" "sid" :=
-    let: "site" := SliceRef (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
+    let: "site" := SliceRef (struct.t TxnSite) (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "min" := ref_to uint64T config.TID_SENTINEL in
     ForSlice uint64T <> "tid" (struct.loadF TxnSite "tidsActive" "site")
@@ -245,7 +245,7 @@ Definition TxnMgr__getNumActiveTxns: val :=
     let: "n" := ref_to uint64T #0 in
     let: "sid" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "sid" < config.N_TXN_SITES); (λ: <>, "sid" <-[uint64T] ![uint64T] "sid" + #1) := λ: <>,
-      let: "site" := SliceRef (struct.loadF TxnMgr "sites" "txnMgr") (![uint64T] "sid") in
+      let: "site" := SliceRef (struct.t TxnSite) (struct.loadF TxnMgr "sites" "txnMgr") (![uint64T] "sid") in
       lock.acquire (struct.loadF TxnSite "latch" "site");;
       "n" <-[uint64T] ![uint64T] "n" + slice.len (struct.loadF TxnSite "tidsActive" "site");;
       lock.release (struct.loadF TxnSite "latch" "site");;

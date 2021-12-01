@@ -85,7 +85,7 @@ Definition Tuple__AppendVersion: val :=
     (if: slice.len (struct.loadF Tuple "vers" "tuple") > #0
     then
       let: "idx" := slice.len (struct.loadF Tuple "vers" "tuple") - #1 in
-      let: "verPrevRef" := SliceRef (struct.loadF Tuple "vers" "tuple") "idx" in
+      let: "verPrevRef" := SliceRef (struct.t Version) (struct.loadF Tuple "vers" "tuple") "idx" in
       struct.storeF Version "end" "verPrevRef" "tid"
     else #());;
     let: "verNext" := struct.mk Version [

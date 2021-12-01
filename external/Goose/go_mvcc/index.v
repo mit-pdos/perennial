@@ -22,7 +22,7 @@ Definition MkIndex: val :=
     struct.storeF Index "buckets" "idx" (NewSlice (struct.t IndexBucket) config.N_IDX_BUCKET);;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < config.N_IDX_BUCKET); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: "b" := SliceRef (struct.loadF Index "buckets" "idx") (![uint64T] "i") in
+      let: "b" := SliceRef (struct.t IndexBucket) (struct.loadF Index "buckets" "idx") (![uint64T] "i") in
       struct.storeF IndexBucket "latch" "b" (lock.new #());;
       struct.storeF IndexBucket "m" "b" (NewMap (struct.ptrT tuple.Tuple) #());;
       Continue);;
