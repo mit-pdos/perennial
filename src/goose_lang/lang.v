@@ -1533,12 +1533,25 @@ Lemma Panic_fill_item_inv Ki msg e:
   False.
 Proof. destruct Ki => //=. Qed.
 
+Lemma Var_fill_item_inv Ki x e:
+  Var x = fill_item Ki e →
+  False.
+Proof. destruct Ki => //=. Qed.
+
 Lemma ExternalOp_sub_redexes o e:
   is_Some (to_val e) →
   sub_redexes_are_values (ExternalOp o e).
 Proof.
   intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
   apply ExternalOp_fill_item_inv in Heq; subst; auto.
+Qed.
+
+Lemma Var_sub_redexes x:
+  sub_redexes_are_values (Var x).
+Proof.
+  intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
+  apply Var_fill_item_inv in Heq; subst; auto.
+  exfalso; eauto.
 Qed.
 
 Lemma stuck_ExternalOp' σ g o e:
@@ -1548,6 +1561,15 @@ Lemma stuck_ExternalOp' σ g o e:
 Proof.
   intros Hval Hirred. split; first done.
   apply prim_head_irreducible'; auto. apply ExternalOp_sub_redexes; eauto.
+Qed.
+
+Lemma stuck_Var σ g x :
+  stuck (Var x) σ g.
+Proof.
+  split; first done.
+  apply prim_head_irreducible; auto.
+  { inversion 1. inversion H0; eauto. }
+  { apply Var_sub_redexes; eauto. }
 Qed.
 
 Lemma stuck_ExternalOp σ g o e:

@@ -1492,6 +1492,22 @@ Section go_refinement.
     - apply reducible_not_val in Hred. inversion Hred.
   Qed.
 
+  Lemma fill_item_impl_inv' se' sK ie sσ sg  :
+    reducible se' sσ sg →
+    expr_impl (fill_item sK se') ie →
+    ∃ iK ie', ie = fill_item iK ie' ∧
+              ectx_item_impl sK iK ∧
+              expr_impl se' ie'.
+  Proof.
+    intros Hred.
+    induction sK; simpl; intros Himpl;
+      inv_expr_impl; try (do 2 eexists; split_and!; eauto; simpl; done).
+    - assert (irreducible (Var x) sσ sg) as Hirred.
+      { apply stuck_Var. }
+      apply not_reducible in Hirred; intuition eauto.
+    - apply reducible_not_val in Hred. inversion Hred.
+  Qed.
+
   Definition ectx_impl sK iK := Forall2 ectx_item_impl sK iK.
 
   Lemma fill_impl_inv se iK ie' iσ ig  :
@@ -1509,6 +1525,25 @@ Section go_refinement.
       { apply reducible_fill; eauto. }
       subst. eapply fill_item_impl_inv in Himpl' as (a'&?&?&?&?); eauto.
       eexists (a' :: sK), _. split_and!; eauto.
+      { subst. rewrite //=. }
+      { econstructor; eauto. }
+  Qed.
+
+  Lemma fill_impl_inv' se' sK ie sσ sg  :
+    reducible se' sσ sg →
+    expr_impl (fill sK se') ie →
+    ∃ iK ie', ie = fill iK ie' ∧
+              ectx_impl sK iK ∧
+              expr_impl se' ie'.
+  Proof.
+    revert se' ie sσ sg.
+    induction sK => se' ie sσ sg.
+    - rewrite //=. intros. eexists [], _. split_and!; eauto. econstructor.
+    - intros Hred Himpl. simpl in Himpl.
+      eapply IHsK in Himpl as (iK&ie'1&Heq&HKimpl'&Himpl'); last first.
+      { apply reducible_fill; eauto. }
+      subst. eapply fill_item_impl_inv' in Himpl' as (a'&?&?&?&?); eauto.
+      eexists (a' :: iK), _. split_and!; eauto.
       { subst. rewrite //=. }
       { econstructor; eauto. }
   Qed.
@@ -1572,6 +1607,28 @@ Section go_refinement.
     { apply fill_impl; eauto. }
     { eauto. }
     { eauto. }
+  Qed.
+
+  Theorem prim_step_simulation_rev se1 sσ1 sg1 κ se2 sσ2 sg2 sefs ie1 iσ1 ig1 :
+    in_wf_ctxt se1 sσ1 sg1 →
+    prim_step se1 sσ1 sg1 κ se2 sσ2 sg2 sefs →
+    expr_impl se1 ie1 →
+    abstraction sσ1 sg1 iσ1 ig1 →
+    (∃ ie2 iσ2 ig2 iefs,
+     prim_step ie1 iσ1 ig1 [] ie2 iσ2 ig2 iefs).
+  Proof using op_impl_safe_ok wf_closed.
+    intros Hwf Hstep Himpl Habstr. inversion Hstep; subst.
+    simpl in *.
+    edestruct (fill_impl_inv') as (sK&se'&HKe'_eq&HKimpl&Heimpl); [| eassumption|].
+    { econstructor. do 4 eexists.
+      apply head_prim_step; eauto.
+    }
+    assert (Hwf': in_wf_ctxt e1' sσ1 sg1).
+    { destruct Hwf as (?&?&?&?&Hwf). do 4 eexists. subst. rewrite -fill_app in Hwf. eauto. }
+    edestruct (head_step_atomic_simulation_rev) as (ie2'&iσ2&ig2&iefs&Hsstep);
+      try eapply Hwf'; eauto.
+    do 4 eexists.
+    { subst. econstructor; eauto. }
   Qed.
 
   Definition tp_impl stp itp :=
@@ -1740,8 +1797,17 @@ Section go_refinement.
     not_stuck se sσ sg →
     expr_impl se ie →
     not_stuck ie iσ ig.
-  Proof.
-  Admitted.
+  Proof using op_impl_safe_ok wf_closed.
+    rewrite /not_stuck.
+    intros Habstr Hwf Hnstuck Himpl.
+    destruct Hnstuck as [Hval|Hred].
+    - destruct Hval as (v&Heq). left.
+      apply language.of_to_val in Heq. subst. inv_expr_impl; eauto.
+    - right.
+      destruct Hred as (?&?&?&?&?&Hstep).
+      edestruct (prim_step_simulation_rev) as (?&?&?&?&?); eauto.
+      do 4 eexists; eauto.
+  Qed.
 
   Lemma in_wf_ctxt_alt sr se2 sσ2 sg2 st2 :
     se2 ∈ st2 →
@@ -1759,7 +1825,7 @@ Section go_refinement.
     wf se ([se], (sσ, sg)) →
     fo_rsteps se ([se], (sσ, sg)) →
     trace_refines ie ie iσ ig se se sσ sg.
-  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok wf_preserved_step crash_ok.
+  Proof using wf_closed op_impl_succ_ok op_impl_abort_ok wf_preserved_step crash_ok op_impl_safe_ok.
     intros Himpl Habstr Hwf Hfo Hsafe. split.
     - intros it2 iσ2 ig2 ie2 s Hstepi Hin.
       edestruct (erased_rsteps_simulation) as (sρ2&Hsteps&Hconfig&Hwf2); eauto.
