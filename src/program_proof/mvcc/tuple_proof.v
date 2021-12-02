@@ -496,7 +496,7 @@ Proof.
   iIntros (vers') "HversL".
   wp_apply (wp_storeField with "[Hvers]").
   { apply slice_val_ty. }
-  { done.}
+  { done. }
   iIntros "Hvers".
   wp_pures.
 
@@ -762,3 +762,5 @@ Proof.
   iFrame "#".
   done.
 Qed.
+
+End heap.
