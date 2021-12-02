@@ -11,7 +11,7 @@ Context `{!heapGS Σ}.
 Definition ver_to_val (x : u64 * u64 * u64) :=
   (#x.1.1, (#x.1.2, (#x.2, #())))%V.
 
-Definition own_tuple (tuple_ptr : loc) (latch : val) : iProp Σ :=
+Definition own_tuple (tuple_ptr : loc) : iProp Σ :=
   ∃ (tidown tidrd tidwr : u64) (vers : Slice.t)
     (versL : list (u64 * u64 * u64)),
     "Htidown" ∷ tuple_ptr ↦[Tuple :: "tidown"] #tidown ∗
@@ -22,11 +22,11 @@ Definition own_tuple (tuple_ptr : loc) (latch : val) : iProp Σ :=
     "_" ∷ True.
 
 Definition is_tuple (tuple_ptr : loc) : iProp Σ :=
-  ∃ (latch : val) (rcond : loc) γ,
-    "#Hlatch" ∷ readonly (tuple_ptr ↦[Tuple :: "latch"] latch) ∗
-    "#Hlock" ∷ is_lock γ latch (own_tuple tuple_ptr latch) ∗
+  ∃ (latch : loc) (rcond : loc) γ,
+    "#Hlatch" ∷ readonly (tuple_ptr ↦[Tuple :: "latch"] #latch) ∗
+    "#Hlock" ∷ is_lock γ #latch (own_tuple tuple_ptr) ∗
     "#Hrcond" ∷ readonly (tuple_ptr ↦[Tuple :: "rcond"] #rcond) ∗
-    "#HrcondC" ∷ is_cond rcond latch ∗
+    "#HrcondC" ∷ is_cond rcond #latch ∗
     "_" ∷ True.
 
 Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * u64 * u64)) (i : nat) :
@@ -85,7 +85,6 @@ Proof.
               with "[] [HverR HfoundR HversL]").
   { (* Loop body preserves the invariant. *)
     clear Φ.
-    (* More concise proof here? *)
     iIntros (i x Φ).
     iModIntro.
     iIntros "H HΦ".
@@ -168,8 +167,8 @@ Proof.
   (***********************************************************)
   wp_apply (wp_forBreak_cond
               (λ _,
-                 (own_tuple tuple_ptr latch) ∗
-                 (locked latch))%I
+                 (own_tuple tuple_ptr) ∗
+                 (locked #latch))%I
               with "[] [-HΦ]").
   (**
    * Q: Is it correct to say `wp_forBreak_cond` is used when the loop invariant
@@ -372,10 +371,7 @@ Proof.
    * Note 1(a): We need to create `x` *before* using `wp_apply (wp_If_join_evar ...)`
    * to make sure that `x` is present at the time the goal evar is
    * created (so that `iNamedAccu` can succeed).
-   * The general problem here is that I want to destruct a
-   * existentially qutified variable, but can only do that with the
-   * assumption that the branch condition holds.
-   * Is there a better way to deal with this problem?
+   * Q: Is there a better way to deal with this?
    *)
   assert (H : ∃ (x : u64 * u64 * u64),
                   (int.nat (word.sub vers.(Slice.sz) 1) < length versL)%nat ->
@@ -419,12 +415,11 @@ Proof.
       rewrite /slice.is_slice_small.
       iDestruct "HversL" as "[HversA %HversLen]".
       (**
-       * Note 1(b): Below is a failed attempt to create `x` after the
+       * Note 1(b): Below is a wrong attempt which creates `x` after the
        * goal evar is created:
        * apply list_lookup_lt in HversLenLast as [x Hsome].
        *)
       iDestruct (update_array with "HversA") as "[Hver HversA]".
-      (* Better proof? *)
       { rewrite list_lookup_fmap.
         instantiate (1:=ver_to_val x).
         instantiate (1:=int.nat (word.sub vers.(Slice.sz) 1)).
@@ -690,5 +685,80 @@ Proof.
   (* return true                                             *)
   (***********************************************************)
   iApply "HΦ".
+  done.
+Qed.
+
+Definition mvccNS := nroot .@ "mvcc".
+
+(*****************************************************************)
+(* func MkTuple() *Tuple                                         *)
+(*****************************************************************)
+Theorem wp_MkTuple :
+  {{{ True }}}
+    MkTuple #()
+  {{{ (t : loc), RET #t; is_tuple t }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* tuple := new(Tuple)                                     *)
+  (***********************************************************)
+  wp_apply (wp_allocStruct).
+  { apply zero_val_ty'.
+    simpl.
+    repeat split.
+  }
+  iIntros (tuple) "Htuple".
+  iDestruct (struct_fields_split with "Htuple") as "Htuple".
+  iNamed "Htuple".
+  simpl.
+  wp_pures.
+  
+  (***********************************************************)
+  (* tuple.latch = new(sync.Mutex)                           *)
+  (***********************************************************)
+  wp_apply (wp_new_free_lock).
+  iIntros (latch) "Hfree".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* tuple.rcond = sync.NewCond(tuple.latch)                 *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (wp_newCond' with "Hfree").
+  iIntros (rcond) "[Hfree #HrcondC]".
+  
+  (***********************************************************)
+  (* tuple.tidown = 0                                        *)
+  (* tuple.tidrd = 0                                         *)
+  (* tuple.tidwr = 0                                         *)
+  (***********************************************************)
+  repeat wp_storeField.
+  
+  (***********************************************************)
+  (* tuple.vers = make([]Version, 0, 16)                     *)
+  (***********************************************************)
+  wp_apply (wp_new_slice); first auto.
+  iIntros (vers) "HversL".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* return tuple                                            *)
+  (***********************************************************)
+  iMod (alloc_lock mvccNS _ latch (own_tuple tuple) with "[$Hfree] [-latch rcond HΦ]") as "#Hlock".
+  { iNext.
+    remember (replicate (int.nat 0) ((U64 0), (U64 0), (U64 0))) as versL.
+    iExists (U64 0), (U64 0), (U64 0), vers, versL.
+    iFrame.
+    iSplit; last done.
+    subst.
+    auto.
+  }
+  iApply "HΦ".
+  iExists latch, rcond, mvccNS.
+  iMod (readonly_alloc_1 with "latch") as "$".
+  iMod (readonly_alloc_1 with "rcond") as "$".
+  iFrame "#".
   done.
 Qed.
