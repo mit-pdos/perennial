@@ -70,12 +70,8 @@ Record wal_names := mkWalNames
     cs_name : gname;
     txns_ctx_name : gname;
     txns_name : gname;
-    (* the range (being_installed_start, being_installed_end] is the range of txns that the installer is installing *)
-    (* when not installing, we should have being_installed_start = being_installed_end = installed_txn *)
-    (* TODO: being_installed_end_txn should always be the same as installer_txn, remove the redundancy *)
     (* TODO: rename being_installed_start_txn to installed_txn since they are now always the same *)
     being_installed_start_txn_name : gname;
-    being_installed_end_txn_name : gname;
     already_installed_name : gname;
     diskEnd_avail_name : gname;
     start_avail_name : gname;
@@ -104,7 +100,7 @@ Record wal_names := mkWalNames
 
 Global Instance _eta_wal_names : Settable _ :=
   settable! mkWalNames <circ_name; cs_name; txns_ctx_name; txns_name;
-                        being_installed_start_txn_name; being_installed_end_txn_name; already_installed_name;
+                        being_installed_start_txn_name; already_installed_name;
                         diskEnd_avail_name; start_avail_name;
                         stable_txn_ids_name;
                         logger_pos_name; logger_txn_id_name;
@@ -470,55 +466,52 @@ Definition is_wal_mem (l: loc) γ : iProp Σ :=
 
 Global Instance is_wal_mem_persistent l γ : Persistent (is_wal_mem l γ) := _.
 
-Definition is_dblock_with_txns d txns (being_installed_start_txn_id: nat) (being_installed_end_txn_id: nat) already_installed a : iProp Σ :=
+Definition is_dblock_with_txns d txns (installed_txn_id: nat) (installer_txn_id: nat) already_installed a : iProp Σ :=
   ∃ (b: Block) (txn_id': nat),
-     (* every disk block has at least up to (being_installed_start_txn_id - 1)
-     (most have exactly, but some blocks may be in the process of being installed) *)
      ⌜
-      being_installed_start_txn_id ≤ txn_id' ≤ being_installed_end_txn_id ∧
+      installed_txn_id ≤ txn_id' ≤ installer_txn_id ∧
       apply_upds (
         txn_upds (take (S txn_id') txns)
       ) d !! a = Some b ∧
       (
         a ∈ (λ u, int.Z u.(update.addr)) <$> already_installed →
         apply_upds (
-          txn_upds (take (S being_installed_start_txn_id) txns) ++
+          txn_upds (take (S installed_txn_id) txns) ++
           already_installed
         ) d !! a = Some b
       )
      ⌝ ∗
      a d↦ b ∗ ⌜2 + LogSz ≤ a⌝.
 
-Definition is_installed_core_ghost γ (being_installed_start_txn_id being_installed_end_txn_id: nat) (already_installed: list update.t) : iProp Σ :=
-  "HownBeingInstalledStartTxn_walinv" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) being_installed_start_txn_id ∗
-  "HownBeingInstalledEndTxn_walinv" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
+Definition is_installed_core_ghost γ (installed_txn_id: nat) (already_installed: list update.t) : iProp Σ :=
+  "HownBeingInstalledStartTxn_walinv" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) installed_txn_id ∗
   "Halready_installed" ∷ ghost_var γ.(already_installed_name) (1/2) already_installed.
 
 (* this part of the invariant holds the installed disk blocks from the data
 region of the disk and relates them to the logical installed disk, computed via
 the updates through some installed transaction. *)
-Definition is_installed_core γ d txns (installed_txn_id being_installed_end_txn_id diskEnd_txn_id: nat) already_installed : iProp Σ :=
+Definition is_installed_core γ d txns (installed_txn_id installer_txn_id diskEnd_txn_id: nat) already_installed : iProp Σ :=
   (* TODO(tej): the other half of these are owned by the installer, giving it full
    knowledge of in-progress installations and exclusive update rights; need to
    write down what it maintains as part of its loop invariant *)
-  "Howninstalled" ∷ is_installed_core_ghost γ installed_txn_id being_installed_end_txn_id already_installed ∗
+  "Howninstalled" ∷ is_installed_core_ghost γ installed_txn_id already_installed ∗
   (* TODO: ⌜diskEnd_txn_id < length txns⌝ shouldn't be necessary, follows from Hend_txn in is_durable *)
-  "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ being_installed_end_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
+  "%Hinstalled_bounds" ∷ ⌜(installed_txn_id ≤ installer_txn_id ≤ diskEnd_txn_id ∧ diskEnd_txn_id < length txns)%nat⌝ ∗
   "#Hbeing_installed_txns" ∷ txns_are γ (S installed_txn_id)
-    (subslice (S installed_txn_id) (S being_installed_end_txn_id) txns) ∗
-  "Hdata" ∷ ([∗ map] a ↦ _ ∈ d, is_dblock_with_txns d txns installed_txn_id being_installed_end_txn_id already_installed a).
+    (subslice (S installed_txn_id) (S installer_txn_id) txns) ∗
+  "Hdata" ∷ ([∗ map] a ↦ _ ∈ d, is_dblock_with_txns d txns installed_txn_id installer_txn_id already_installed a).
 
-Global Instance is_installed_core_Timeless γ d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed :
-  Timeless (is_installed_core γ d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed) := _.
+Global Instance is_installed_core_Timeless γ d txns installed_txn_id installer_txn_id diskEnd_txn_id already_installed :
+  Timeless (is_installed_core γ d txns installed_txn_id installer_txn_id diskEnd_txn_id already_installed) := _.
 
-Definition is_installed γ d txns (installed_txn_id: nat) (diskEnd_txn_id: nat) : iProp Σ :=
-  ∃ being_installed_end_txn_id already_installed,
-    is_installed_core γ d txns installed_txn_id being_installed_end_txn_id diskEnd_txn_id already_installed.
+Definition is_installed γ d txns (installed_txn_id installer_txn_id diskEnd_txn_id: nat) : iProp Σ :=
+  ∃ already_installed,
+    is_installed_core γ d txns installed_txn_id installer_txn_id diskEnd_txn_id already_installed.
 
 (* weakening of [is_installed] at crash time *)
-Definition is_installed_crash d txns installed_lb diskEnd_txn_id being_installed_end_txn_id : iProp Σ :=
+Definition is_installed_crash d txns installed_lb diskEnd_txn_id installer_txn_id : iProp Σ :=
   ∃ γ already_installed,
-    is_installed_core γ d txns installed_lb diskEnd_txn_id being_installed_end_txn_id already_installed.
+    is_installed_core γ d txns installed_lb diskEnd_txn_id installer_txn_id already_installed.
 
 Definition circular_pred γ (cs : circΣ.t) : iProp Σ :=
   ghost_var γ.(cs_name) (1/2) cs.
@@ -590,8 +583,8 @@ Qed.
 
 (** an invariant governing the data logged for crash recovery of (a prefix of)
 memLog. *)
-Definition is_durable γ cs txns installed_txn_id diskEnd_txn_id : iProp Σ :=
-  ∃ (installer_pos installer_txn_id diskEnd_mem diskEnd_mem_txn_id: nat),
+Definition is_durable γ cs txns installed_txn_id installer_txn_id diskEnd_txn_id : iProp Σ :=
+  ∃ (installer_pos diskEnd_mem diskEnd_mem_txn_id: nat),
     "HownInstallerPos_walinv" ∷ ghost_var γ.(installer_pos_name) (1/2) installer_pos ∗
     "HownInstallerTxn_walinv" ∷ ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id ∗
     "HownDiskEndMem_walinv" ∷ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2/2) diskEnd_mem ∗
@@ -641,9 +634,9 @@ Proof.
 Qed.
 
 Definition disk_inv γ s (cs: circΣ.t) (dinit: disk) : iProp Σ :=
-  ∃ installed_txn_id diskEnd_txn_id,
-      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
-      "Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id diskEnd_txn_id ∗
+  ∃ installed_txn_id installer_txn_id diskEnd_txn_id,
+      "Hinstalled" ∷ is_installed γ s.(log_state.d) s.(log_state.txns) installed_txn_id installer_txn_id diskEnd_txn_id ∗
+      "Hdurable"   ∷ is_durable γ cs s.(log_state.txns) installed_txn_id installer_txn_id diskEnd_txn_id ∗
       "#circ.start" ∷ is_installed_txn γ cs s.(log_state.txns) installed_txn_id s.(log_state.installed_lb) ∗
       "#circ.end"   ∷ is_durable_txn γ cs s.(log_state.txns) diskEnd_txn_id s.(log_state.durable_lb) ∗
       "%Hdaddrs_init" ∷ ⌜ ∀ a, is_Some (s.(log_state.d) !! a) ↔ is_Some (dinit !! a) ⌝ ∗
@@ -708,32 +701,30 @@ Definition logger_inv γ circ_l: iProp Σ :=
 (* TODO: also needs authoritative ownership of some other variables *)
 (** installer_inv is the resources exclusively owned by the installer thread *)
 Definition installer_inv γ: iProp Σ :=
-  ∃ (installed_txn_id_mem being_installed_end_txn_id: nat),
+  ∃ (installed_txn_id_mem installer_txn_id: nat),
     "HnotInstalling" ∷ thread_own γ.(start_avail_name) Available ∗
     "HownInstallerPos_installer" ∷ (∃ (installer_pos : nat), ghost_var γ.(installer_pos_name) (1/2) installer_pos) ∗
-    "HownInstallerTxn_installer" ∷ (∃ (installer_txn_id : nat), ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id) ∗
+    "HownInstallerTxn_installer" ∷ ghost_var γ.(installer_txn_id_name) (1/2) installer_txn_id ∗
     "HownInstallerPosMem_installer" ∷ (∃ (installer_pos_mem : u64), ghost_var γ.(installer_pos_mem_name) (1/2) installer_pos_mem) ∗
     "HownInstallerTxnMem_installer" ∷ (∃ (installer_txn_id_mem : nat), ghost_var γ.(installer_txn_id_mem_name) (1/2) installer_txn_id_mem) ∗
     "Halready_installed_installer" ∷ ghost_var γ.(already_installed_name) (1/2) ([]: list update.t) ∗
     "HownBeingInstalledStartTxn_installer" ∷ mono_nat_auth_own γ.(being_installed_start_txn_name) (1/2) installed_txn_id_mem ∗
-    "HownBeingInstalledEndTxn_installer" ∷ ghost_var γ.(being_installed_end_txn_name) (1/2) being_installed_end_txn_id ∗
-    "#HdiskEndMem_lb_installer" ∷ mono_nat_lb_own γ.(diskEnd_mem_txn_id_name) being_installed_end_txn_id ∗
+    "#HdiskEndMem_lb_installer" ∷ mono_nat_lb_own γ.(diskEnd_mem_txn_id_name) installer_txn_id ∗
     "HownInstalledPosMem_installer" ∷ (∃ (installed_pos_mem : u64), ghost_var γ.(installed_pos_mem_name) (1/2) installed_pos_mem) ∗
     "HownInstalledTxnMem_installer" ∷ ghost_var γ.(installed_txn_id_mem_name) (1/2) installed_txn_id_mem
 .
 
-Global Instance is_installed_crash_Timeless {d txns installed_lb diskEnd_txn_id being_installed_end_txn_id} :
-  Timeless (is_installed_crash d txns installed_lb diskEnd_txn_id being_installed_end_txn_id) := _.
+Global Instance is_installed_crash_Timeless {d txns installed_lb diskEnd_txn_id installer_txn_id} :
+  Timeless (is_installed_crash d txns installed_lb diskEnd_txn_id installer_txn_id) := _.
 
 (* this illustrates what crashes rely on; at crash time being_installed is
 arbitrary, so we weaken to this *)
-Theorem is_installed_weaken_crash γ d txns installed_lb diskEnd_txn_id :
-  is_installed γ d txns installed_lb diskEnd_txn_id -∗
-  ∃ being_installed_end_txn_id,
-    is_installed_crash d txns installed_lb being_installed_end_txn_id diskEnd_txn_id.
+Theorem is_installed_weaken_crash γ d txns installed_lb installer_txn_id diskEnd_txn_id :
+  is_installed γ d txns installed_lb installer_txn_id diskEnd_txn_id -∗
+  is_installed_crash d txns installed_lb installer_txn_id diskEnd_txn_id.
 Proof.
   rewrite /is_installed_crash /is_installed.
-  iIntros "I". iDestruct "I" as (??) "I". iExists _, _, _. iFrame.
+  iIntros "I". iDestruct "I" as (?) "I". iExists _, _. iFrame.
 Qed.
 
 Theorem is_wal_read_mem l γ dinit : is_wal l γ dinit -∗ |NC={⊤}=> ▷ is_wal_mem l γ.

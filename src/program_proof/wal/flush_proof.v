@@ -68,7 +68,7 @@ Proof.
   - simpl.
     iFrame.
     iExists _. iFrame "Howncs".
-    iExists installed_txn_id, _. simpl. iFrame "# ∗ %".
+    iExists installed_txn_id, _, _. simpl. iFrame "# ∗ %".
     iExists _, diskEnd_txn_id.
     rewrite (Max.max_l (_ `max` _)%nat _); last by lia.
     iFrame "# %".
@@ -270,7 +270,7 @@ Proof.
   simpl.
   iFrame.
   iExists _; iFrame.
-  iExists installed_txn_id, _. iFrame "# ∗".
+  iExists installed_txn_id, _, _. iFrame "# ∗".
   iSplitL.
   2: {
     iPureIntro.

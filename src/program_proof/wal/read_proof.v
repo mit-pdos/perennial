@@ -343,7 +343,7 @@ Proof.
       intuition eauto; lia. }
     iFrame.
     iExists _. iFrame "Howncs".
-    iExists installed_txn_id, diskEnd_txn_id0. simpl.
+    iExists installed_txn_id, installer_txn_id, diskEnd_txn_id0. simpl.
     iFrame "Hdurable".
     iFrame "#".
     iSplit. 2: iSplit. 3: iSplit. 4: eauto.
@@ -376,7 +376,7 @@ Proof.
       intuition.
     }
     2: { iFrame "# %". iPureIntro. lia. }
-    iExists _, _. iFrame. iFrame "%#".
+    iExists _. iFrame. iFrame "%#".
   }
 
   repeat iExists _. iFrame. iFrame "#". iFrame "%".

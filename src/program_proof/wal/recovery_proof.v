@@ -43,7 +43,6 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "diskEnd_mem" ∷ mono_nat_auth_own γnew.(diskEnd_mem_name) 1 0%nat ∗
     "diskEnd_mem_txn_id" ∷ mono_nat_auth_own γnew.(diskEnd_mem_txn_id_name) 1 0%nat ∗
     "being_installed_start_txn" ∷ mono_nat_auth_own γnew.(being_installed_start_txn_name) 1 0%nat ∗
-    "being_installed_end_txn" ∷ ghost_var γnew.(being_installed_end_txn_name) 1 0%nat ∗
     "already_installed" ∷ ghost_var γnew.(already_installed_name) 1 ([] : list update.t)  ∗
     "stable_txn_ids" ∷ map_ctx γnew.(stable_txn_ids_name) 1 (∅ : gmap nat unit) ∗
     "txns_ctx" ∷ txns_ctx γnew [] ∗
@@ -69,9 +68,9 @@ Definition log_crash_to σ diskEnd_txn_id :=
   set log_state.durable_lb (λ _, diskEnd_txn_id)
       (set log_state.txns (take (S diskEnd_txn_id)) σ).
 
-Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id :
+Lemma crash_to_diskEnd γ cs σ diskEnd_txn_id installed_txn_id installer_txn_id :
   is_durable_txn (Σ:=Σ) γ cs σ.(log_state.txns) diskEnd_txn_id  σ.(log_state.durable_lb) -∗
-  is_durable γ cs σ.(log_state.txns) installed_txn_id diskEnd_txn_id -∗
+  is_durable γ cs σ.(log_state.txns) installed_txn_id installer_txn_id diskEnd_txn_id -∗
   ⌜relation.denote log_crash σ
     (log_crash_to σ (σ.(log_state.durable_lb) `max` diskEnd_txn_id))%nat
   tt⌝.
@@ -243,7 +242,6 @@ Proof.
 
   iMod (ghost_var_alloc ([] : list update.t)) as (already_installed_name) "Halready_installed".
   iMod (mono_nat_own_alloc 0%nat) as (being_installed_start_txn_name) "[Hbeing_start _]".
-  iMod (ghost_var_alloc 0%nat) as (being_installed_end_txn_name) "Hbeing_end".
   iMod (map_init (K:=nat) (V:=unit) ∅) as (γstable_txn_ids_name) "Hstable_txns".
   iMod (alist_alloc (@nil (u64 * list update.t))) as (γtxns_ctx_name) "Htxns_ctx".
   iMod (thread_own_alloc True with "[//]") as (start_avail_name) "(Hstart_avail_ctx&Hstart_avail)".
@@ -257,7 +255,6 @@ Proof.
             txns_ctx_name := γtxns_ctx_name;
             txns_name := txns_name;
             being_installed_start_txn_name := being_installed_start_txn_name;
-            being_installed_end_txn_name := being_installed_end_txn_name;
             already_installed_name := already_installed_name;
             diskEnd_avail_name := diskEnd_avail_name;
             start_avail_name := start_avail_name;
@@ -592,7 +589,6 @@ Proof.
   iDestruct_2 "installer_txn_id_mem".
   iDestruct_2 "already_installed".
   iDestruct_2 "being_installed_start_txn".
-  iDestruct_2 "being_installed_end_txn".
   iDestruct "diskEnd_mem" as "[diskEnd_mem11 diskEnd_mem12]".
   iDestruct "diskEnd_mem_txn_id"
     as "[diskEnd_mem_txn_id11 diskEnd_mem_txn_id12]".
@@ -617,7 +613,7 @@ Proof.
   1: rewrite //.
   iFrame "txns_ctx txns".
   iAssert (memLog_linv_init_ghost_state _) with "[$]" as "HmemLog_ghost".
-  iAssert (is_installed_core_ghost _ _ _ _) with "[$]" as "Hinstalled_ghost".
+  iAssert (is_installed_core_ghost _ _ _) with "[$]" as "Hinstalled_ghost".
 
   iSplitL "Hcirc stable_txn_ids cs
     HmemLog_ghost start_avail_ctx diskEnd_avail_ctx
@@ -641,7 +637,6 @@ Proof.
     iExists _, _.
     iFrame "diskEnd_mem_txn_id_lb ∗".
     iSplitL "installer_pos"; first by (iExists _; iFrame).
-    iSplitL "installer_txn_id"; first by (iExists _; iFrame).
     iSplitL "installer_pos_mem"; first by (iExists _; iFrame).
     iSplitL "installer_txn_id_mem"; iExists _; iFrame.
   }
@@ -668,10 +663,10 @@ Proof.
     iApply (wal_linv_durable_init with "[start_avail_ctx diskEnd_avail_ctx] [] HmemLog_ghost").
     all: iFrame "∗#".
   }
-  iExists 0%nat, 0%nat.
+  iExists 0%nat, 0%nat, 0%nat.
   iSplitL "Hinstalled_ghost Hdata".
   {
-    iExists _, _.
+    iExists _.
     iFrame.
     iSplit; first by (rewrite /log_state0 /=; iPureIntro; lia).
     iSplit; first by (rewrite subslice_zero_length; iApply txns_are_nil).
@@ -696,7 +691,7 @@ Proof.
   }
   iSplitL.
   {
-    iExists _, _, _, _.
+    iExists _, _, _.
     iFrame.
     iPureIntro.
     split; last by (simpl; word).
@@ -1141,7 +1136,6 @@ Proof.
     iMod (ghost_var_update installer_txn_id with "installer_txn_id") as "[installer_txn_id1 installer_txn_id2]".
     iMod (ghost_var_update [] with "already_installed") as "[already_installed1 already_installed2]".
     iMod (mono_nat_own_update installed_txn_id with "being_installed_start_txn") as "[[being_installed_start_txn1 being_installed_start_txn2] #being_installed_start_txn_id_mem_lb]"; first by lia.
-    iMod (ghost_var_update being_installed_end_txn_id with "being_installed_end_txn") as "[being_installed_end_txn1 being_installed_end_txn2]".
     iMod (txns_ctx_app (take
       (S (σ.(log_state.durable_lb) `max` diskEnd_txn_id))
       σ.(log_state.txns)
@@ -1236,7 +1230,7 @@ Proof.
 
 
     iSplitR "start_avail diskEnd_avail
-             being_installed_start_txn2 being_installed_end_txn2
+             being_installed_start_txn2
              installer_pos2 installer_txn_id2
              logger_pos2 logger_txn_id2
              installer_pos_mem2 installer_txn_id_mem2
@@ -1424,16 +1418,15 @@ Proof.
       rewrite Hcirc_name. iFrame "Hcirc".
       rewrite /disk_inv.
       iFrame "cs".
-      iExists installed_txn_id, diskEnd_txn_id; simpl.
+      iExists installed_txn_id, installer_txn_id, diskEnd_txn_id; simpl.
       assert (installed_txn_id <= diskEnd_txn_id) by word.
 
-      iSplitL "being_installed_start_txn1 being_installed_end_txn1
+      iSplitL "being_installed_start_txn1
                already_installed1 Hold_txns Hdata".
       {
         rewrite /is_installed/is_installed_core.
-        iExists being_installed_end_txn_id, ∅.
+        iExists ∅.
         iFrame "being_installed_start_txn1".
-        iFrame "being_installed_end_txn1".
         iFrame "already_installed1".
         iSplitL "".
         { iPureIntro. split_and!; try len. }
@@ -1467,7 +1460,7 @@ Proof.
       rewrite /is_durable.
       efeed pose proof (circ_matches_txns_crash (int.nat diskEnd)) as Hcirc_matches'; [ | by eauto | ].
       { word. }
-      iExists _, _, _, _; iFrame (Hlog_wf) "∗".
+      iExists _, _, _; iFrame (Hlog_wf) "∗".
       iPureIntro.
       apply (is_memLog_boundaries_append_txns _ _ _ (
         subslice
@@ -1487,7 +1480,7 @@ Proof.
       iThaw "#".
       iDestruct "diskEnd_mem_txn_lb" as "-#diskEnd_mem_txn_lb".
       iClear "#".
-      iDestruct (mono_nat_lb_own_le being_installed_end_txn_id with "diskEnd_mem_txn_lb") as
+      iDestruct (mono_nat_lb_own_le installer_txn_id with "diskEnd_mem_txn_lb") as
           "diskEnd_mem_txn_lb"; first by word.
       iFrame "start_avail diskEnd_avail".
       rewrite Hcirc_name.
@@ -1646,7 +1639,7 @@ Proof.
       iSplit; first by auto.
       iSplit; first by auto.
       iExists _. iFrame "Hwal_linv". iFrame "Hcirc". rewrite /disk_inv. iFrame "Howncs".
-      iExists _, _. iFrame "# ∗". eauto.
+      iExists _, _, _. iFrame "# ∗". eauto.
     }
     { iFrame. iExists _, _. iFrame. iExists _, _. iFrame "∗ %". }
   }
@@ -1718,7 +1711,7 @@ Proof.
       iFrame "#".
     }
     iFrame.
-    iExists _. iFrame. rewrite /disk_inv. iExists _, _. iFrame "# ∗". eauto.
+    iExists _. iFrame. rewrite /disk_inv. iExists _, _, _. iFrame "# ∗". eauto.
   }
   iSplitL "
     Happender HnotLogging
@@ -1850,14 +1843,14 @@ Proof.
   rewrite /IntoCrash. iApply post_crash_nodep.
 Qed.
 
-Instance is_installed_stable γ d txns installed_txn_id diskEnd_txn_id :
-  IntoCrash (is_installed γ d txns installed_txn_id diskEnd_txn_id)
-            (λ _, is_installed γ d txns installed_txn_id diskEnd_txn_id).
+Instance is_installed_stable γ d txns installed_txn_id installer_txn_id diskEnd_txn_id :
+  IntoCrash (is_installed γ d txns installed_txn_id installer_txn_id diskEnd_txn_id)
+            (λ _, is_installed γ d txns installed_txn_id installer_txn_id diskEnd_txn_id).
 Proof.
   rewrite /IntoCrash. iNamed 1.
   iNamed "Howninstalled".
   iDestruct "Hbeing_installed_txns" as "-#Hbeing_installed_txns".
-  iCrash. iExists _, _. iFrame "% ∗".
+  iCrash. iExists _. iFrame "% ∗".
 Qed.
 
 Instance disk_inv_stable γ s cs dinit:
@@ -1868,7 +1861,7 @@ Proof.
   iDestruct (post_crash_nodep with "circ.end") as "-#circ.end'".
   iDestruct (post_crash_nodep with "Hdurable") as "Hdurable".
   iDestruct (post_crash_nodep with "Hbasedisk") as "-#Hbasedisk'".
-  iCrash. iExists _, _. iFrame. eauto.
+  iCrash. iExists _, _, _. iFrame. eauto.
 Qed.
 
 Instance is_wal_inner_durable_stable γ s dinit:

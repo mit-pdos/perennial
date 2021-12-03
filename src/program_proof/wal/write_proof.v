@@ -325,13 +325,13 @@ Proof.
   rewrite /numMutableN; intros; word.
 Qed.
 
-Lemma is_installed_append γ d txns txns' txn_id diskEnd_txn_id :
-  is_installed γ d txns txn_id diskEnd_txn_id -∗
-  is_installed γ d (txns ++ txns') txn_id diskEnd_txn_id.
+Lemma is_installed_append γ d txns txns' txn_id installer_txn_id diskEnd_txn_id :
+  is_installed γ d txns txn_id installer_txn_id diskEnd_txn_id -∗
+  is_installed γ d (txns ++ txns') txn_id installer_txn_id diskEnd_txn_id.
 Proof.
   rewrite /is_installed /is_installed_core.
   iNamed 1. iNamed "Howninstalled".
-  iExists being_installed_end_txn_id, already_installed.
+  iExists already_installed.
   iFrame.
   rewrite -subslice_before_app_eq; last by lia. iFrame "#".
   iSplitR "Hdata".
@@ -345,14 +345,14 @@ Proof.
     intuition; rewrite take_app_le //; lia.
 Qed.
 
-Lemma is_durable_append γ cs txns txns' installed_txn_id diskEnd_txn_id :
+Lemma is_durable_append γ cs txns txns' installed_txn_id installer_txn_id diskEnd_txn_id :
   (diskEnd_txn_id < length txns)%nat ->
-  is_durable γ cs txns installed_txn_id diskEnd_txn_id -∗
-  is_durable (Σ:=Σ) γ cs (txns ++ txns') installed_txn_id diskEnd_txn_id.
+  is_durable γ cs txns installed_txn_id installer_txn_id diskEnd_txn_id -∗
+  is_durable (Σ:=Σ) γ cs (txns ++ txns') installed_txn_id installer_txn_id diskEnd_txn_id.
 Proof.
   intros Hbound.
   rewrite /is_durable; iNamed 1.
-  iExists _, _, _, _.
+  iExists _, _, _.
   iFrame.
   iPureIntro.
   split; last by lia.
@@ -376,7 +376,7 @@ Theorem disk_inv_append γ σs cs dinit pos upds :
   disk_inv γ (set log_state.txns (λ txns, txns ++ [(pos, upds)]) σs) cs dinit.
 Proof.
   rewrite /disk_inv; iNamed 1; simpl.
-  iExists installed_txn_id, diskEnd_txn_id; iFrame.
+  iExists installed_txn_id, installer_txn_id, diskEnd_txn_id; iFrame.
   iNamed "circ.start".
   iNamed "circ.end".
   iSplitL "Hinstalled".

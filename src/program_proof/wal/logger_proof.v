@@ -161,14 +161,14 @@ Proof.
   lia.
 Qed.
 
-Lemma is_installed_extend_durable γ d txns installed_txn_id diskEnd_txn_id diskEnd_txn_id' :
+Lemma is_installed_extend_durable γ d txns installed_txn_id installer_txn_id diskEnd_txn_id diskEnd_txn_id' :
   (diskEnd_txn_id ≤ diskEnd_txn_id' < length txns)%nat →
-  is_installed γ d txns installed_txn_id diskEnd_txn_id -∗
-  is_installed γ d txns installed_txn_id diskEnd_txn_id'.
+  is_installed γ d txns installed_txn_id installer_txn_id diskEnd_txn_id -∗
+  is_installed γ d txns installed_txn_id installer_txn_id diskEnd_txn_id'.
 Proof.
   intros Hbound.
   iNamed 1.
-  iExists _, _. iFrame. iFrame "#".
+  iExists _. iFrame. iFrame "#".
   iPureIntro; lia.
 Qed.
 
@@ -462,7 +462,7 @@ Proof.
     iSplitR; auto.
     iExists _.
     iFrame "Howncs".
-    iExists installed_txn_id, nextDiskEnd_txn_id.
+    iExists installed_txn_id, installer_txn_id, nextDiskEnd_txn_id.
     iSplitL "Hinstalled".
     { iApply (is_installed_extend_durable with "Hinstalled").
       apply is_txn_bound in HnextDiskEnd'.
@@ -470,7 +470,7 @@ Proof.
     iFrame (Hdaddrs_init) "#".
     iSplitL.
     {
-      iExists _, _, _, _.
+      iExists _, _, _.
       iFrame.
       rewrite /circΣ.diskEnd in HdiskEnd_eq.
       rewrite /circΣ.diskEnd /slidingM.logIndex /=
@@ -698,9 +698,9 @@ Proof.
     iFrame (Hwf) "∗".
     iExists _.
     iFrame (Hdaddrs_init) "∗ #".
-    iExists _, _.
+    iExists _, _, _.
     iFrame "Hinstalled #".
-    iExists _, _, _, _.
+    iExists _, _, _.
     iFrame.
 
     iPureIntro.
