@@ -625,93 +625,6 @@ Proof.
   done.
 Qed.
 
-(*****************************************************************)
-(* func (tuple *Tuple) RemoveVersions(tid uint64)                *)
-(*****************************************************************)
-Theorem wp_tuple__RemoveVersions tuple_ptr (tid : u64) :
-  is_tuple tuple_ptr -∗
-  {{{ True }}}
-    Tuple__RemoveVersions #tuple_ptr #tid
-  {{{ b, RET #b; True }}}.
-Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
-  iNamed "Htuple".
-  wp_call.
-  
-  (***********************************************************)
-  (* tuple.latch.Lock()                                      *)
-  (***********************************************************)
-  wp_loadField.
-  wp_apply (acquire_spec with "Hlock").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
-
-  (***********************************************************)
-  (* var idx uint64 = 0                                      *)
-  (* for _, ver := range tuple.vers {                        *)
-  (*   if ver.end <= tid {                                   *)
-  (*     idx++                                               *)
-  (*   }                                                     *)
-  (* }                                                       *)
-  (***********************************************************)
-  wp_apply (wp_ref_to); first auto.
-  iIntros (idxR) "HidxR".
-  wp_pures.
-  wp_loadField.
-  iDestruct (slice.is_slice_small_acc with "HversL") as "[HversS HversL]".
-  wp_apply (slice.wp_forSlice
-              (λ _, ∃ (idx : u64),
-                 (idxR ↦[uint64T] #idx) ∗
-                 (⌜∀ (i : u64), (int.nat i < int.nat idx)%nat ->
-                     ∃ ver, (versL !! (int.nat i)) = Some ver ∧ (int.nat ver.1.2) ≤ (int.nat tid)⌝)
-              )%I
-              _ _ _ _ _ (ver_to_val <$> versL)
-              with "[] [HidxR HversS]").
-  { clear Φ.
-    iIntros (i x Φ).
-    iModIntro.
-    iIntros "[Hinv [%Hbound %Hsome]] HΦ".
-    iDestruct "Hinv" as (idx) "[HidxR %HidxOrder]".
-    apply val_to_ver_with_lookup in Hsome as (b & e & v & Hx & Hsome).
-    subst.
-    wp_pures.
-    wp_if_destruct.
-    - wp_load.
-      wp_store.
-      iApply "HΦ".
-      iModIntro.
-      iExists (word.add idx (U64 1)).
-      iFrame.
-      iPureIntro.
-      intros j.
-      admit.
-    - admit.
-  }
-  { iSplitL "HidxR"; last iFrame.
-    iExists (U64 0).
-    iFrame.
-    iPureIntro.
-    intros i Hi.
-    (**
-     * Note 2: The %nat in `(int.nat i < int.nat idx)%nat` uses the nat <,
-     * otherwise, it's coerced to Z.
-     * Set Printing Coercions.
-     *)
-    inversion Hi.
-  }
-  admit.
-  
-  
-  (***********************************************************)
-  (* tuple.vers = tuple.vers[idx:]                           *)
-  (***********************************************************)
-
-  (***********************************************************)
-  (* tuple.latch.Unlock()                                    *)
-  (***********************************************************)
-Admitted.
-
 Definition mvccNS := nroot .@ "mvcc".
 
 (*****************************************************************)
@@ -786,5 +699,160 @@ Proof.
   iFrame "#".
   done.
 Qed.
+
+Lemma val_to_ver_with_val_ty (x : val) :
+  val_ty x (uint64T * (uint64T * (uint64T * unitT))%ht) ->
+  (∃ (b e v : u64), x = ver_to_val (b, e, v)).
+Proof.
+  intros H.
+  inversion_clear H. 
+  { inversion H0. }
+  inversion_clear H0.
+  inversion_clear H.
+  inversion_clear H1.
+  { inversion H. }
+  inversion_clear H.
+  inversion_clear H1.
+  inversion_clear H0.
+  { inversion H. }
+  inversion_clear H.
+  inversion_clear H0.
+  inversion_clear H1.
+  inversion_clear H.
+  exists x0, x1, x2.
+  reflexivity.
+Qed.
+
+(*****************************************************************)
+(* func (tuple *Tuple) RemoveVersions(tid uint64)                *)
+(*****************************************************************)
+Theorem wp_tuple__RemoveVersions tuple_ptr (tid : u64) :
+  is_tuple tuple_ptr -∗
+  {{{ True }}}
+    Tuple__RemoveVersions #tuple_ptr #tid
+  {{{ b, RET #b; True }}}.
+Proof.
+  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iNamed "Htuple".
+  wp_call.
+  
+  (***********************************************************)
+  (* tuple.latch.Lock()                                      *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+
+  (***********************************************************)
+  (* var idx uint64 = 0                                      *)
+  (* for {                                                   *)
+  (*   if idx >= uint64(len(tuple.vers)) {                   *)
+  (*     break                                               *)
+  (*   }                                                     *)
+  (*   ver := tuple.vers[idx]                                *)
+  (*   if ver.end > tid {                                    *)
+  (*     break                                               *)
+  (*   }                                                     *)
+  (*   idx++                                                 *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_apply (wp_ref_to); first auto.
+  iIntros (idxR) "HidxR".
+  wp_pures.
+  wp_apply (wp_forBreak
+              (λ _,
+                (tuple_ptr ↦[Tuple :: "vers"] to_val vers) ∗
+                (slice.is_slice vers (struct.t Version) 1 (ver_to_val <$> versL)) ∗
+                (∃ (idx : u64), (idxR ↦[uint64T] #idx) ∗
+                                (⌜int.Z idx ≤ int.Z vers.(Slice.sz)⌝) ∗
+                                ([∗ list] k ↦ ver ∈ (take (int.nat idx) versL), ⌜(int.Z ver.1.2) ≤ (int.Z tid)⌝))
+                )%I
+             with "[] [$Hvers $HversL HidxR]").
+  { clear Φ.
+    iIntros (Φ).
+    iModIntro.
+    iIntros "Hinv HΦ".
+    iDestruct "Hinv" as "(Hvers & HversL & Hidx)".
+    iDestruct "Hidx" as (idx) "(HidxR & %Hbound & HidxOrder)".
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_slice_len).
+    wp_load.
+    wp_pures.
+    wp_if_destruct.
+    { iModIntro.
+      iApply "HΦ".
+      eauto 10 with iFrame.
+    }
+    wp_load.
+    wp_loadField.
+    iDestruct (slice.is_slice_small_acc with "HversL") as "[HversS HversL]".
+    iDestruct (slice.is_slice_small_sz with "[$HversS]") as "%HversSz".
+    destruct (list_lookup_lt _ (ver_to_val <$> versL) (int.nat idx)) as [ver Hsome].
+    { apply Z.nle_gt in Heqb.
+      word.
+    }
+    wp_apply (slice.wp_SliceGet with "[HversS]"); first auto.
+    iIntros "[HversS %HverT]".
+    destruct (val_to_ver_with_val_ty _ HverT) as (b & e & v & H).
+    subst.
+    wp_pures.
+    iDestruct ("HversL" with "HversS") as "HversL".
+    wp_if_destruct.
+    { iModIntro.
+      iApply "HΦ".
+      eauto with iFrame.
+    }
+    wp_load.
+    wp_pures.
+    wp_store.
+    iModIntro.
+    iApply "HΦ".
+    iFrame.
+    iExists (word.add idx 1%Z).
+    iFrame.
+    admit.
+  }
+  { iExists (U64 0).
+    iFrame.
+    iSplit.
+    - iPureIntro. word.
+    - change (int.nat 0) with 0%nat.
+      rewrite take_0.
+      naive_solver.
+  }
+  iIntros "(Hvers & HversL & Hidx)".
+  iDestruct "Hidx" as (idx) "(HidxR & %Hbound & HidxOrder)".
+  wp_pures.
+
+  (***********************************************************)
+  (* tuple.vers = tuple.vers[idx:]                           *)
+  (***********************************************************)
+  wp_load.
+  wp_loadField.
+  wp_apply (wp_SliceSkip').
+  { eauto. }
+  wp_storeField.
+  (* Weaken is_slice. Should this go to the slice lib? *)
+  iDestruct "HversL" as "[HversS HversC]".
+  iDestruct (slice.is_slice_small_take_drop _ _ _ idx with "HversS") as "[HversS _]".
+  { word. }
+  iDestruct (slice.is_slice_cap_skip _ _ idx with "HversC") as "HversC".
+  { word. }
+  iDestruct (slice.is_slice_split with "[$HversS $HversC]") as "HversL".
+  rewrite <- fmap_drop.
+  
+  (***********************************************************)
+  (* tuple.latch.Unlock()                                    *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ]").
+  { eauto 10 with iFrame. }
+  wp_pures.
+  iApply "HΦ".
+  done.
+Admitted.
 
 End heap.

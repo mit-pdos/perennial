@@ -139,10 +139,17 @@ Definition Tuple__RemoveVersions: val :=
   rec: "Tuple__RemoveVersions" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
     let: "idx" := ref_to uint64T #0 in
-    ForSlice (struct.t Version) <> "ver" (struct.loadF Tuple "vers" "tuple")
-      (if: struct.get Version "end" "ver" ≤ "tid"
-      then "idx" <-[uint64T] ![uint64T] "idx" + #1
-      else #());;
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: ![uint64T] "idx" ≥ slice.len (struct.loadF Tuple "vers" "tuple")
+      then Break
+      else
+        let: "ver" := SliceGet (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx") in
+        (if: struct.get Version "end" "ver" > "tid"
+        then Break
+        else
+          "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+          Continue)));;
     struct.storeF Tuple "vers" "tuple" (SliceSkip (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx"));;
     lock.release (struct.loadF Tuple "latch" "tuple");;
     #().
