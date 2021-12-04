@@ -12,11 +12,15 @@ Q:=@
 TIMED:=true
 TIMING_DB:=.timing.sqlite3
 
+# We detect Coq CI via the TIMING variable (used in coq_makefile) and then
+# disable the coqc.py wrapper, which doesn't work there
 ifneq (,$(TIMING))
 COQC := coqc
 else ifeq ($(TIMED), true)
 COQC := ./etc/coqc.py --timing-db $(TIMING_DB)
 else
+# setting TIMED to false or the empty string will disable using the wrapper,
+# for environments where it doesn't work
 COQC := coqc
 endif
 
@@ -37,6 +41,7 @@ ifeq ($(filter clean,$(MAKECMDGOALS)),)
 -include .coqdeps.d
 endif
 
+# implement coq_makefile's TIMING support for Coq CI
 ifneq (,$(TIMING))
 TIMING_ARGS=-time
 TIMING_EXT?=timing
