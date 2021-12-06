@@ -1,7 +1,5 @@
-(* Import definitions/theorems of the Perennial framework. *)
-From Perennial.program_proof Require Export proof_prelude.
-(* Use disk FFI as a place holder. *)
-From Perennial.goose_lang Require Export ffi.disk_prelude.
+(* Import definitions/theorems of the Perennial framework with the disk FFI. *)
+From Perennial.program_proof Require Export disk_prelude.
 (* Import Coq model of our Goose program.*)
 From Goose.go_mvcc Require Import tuple.
 
@@ -37,10 +35,7 @@ Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * u64 * u64)) (i : nat) :
 Proof.
   intros H.
   apply list_lookup_fmap_inv in H as [[[y1 y2] y3] [Heq Hsome]].
-  subst.
-  rewrite Hsome.
-  exists y1, y2, y3.
-  auto.
+  naive_solver.
 Qed.
 
 (*****************************************************************)
@@ -108,7 +103,7 @@ Proof.
       wp_store.
       iApply "HΦ".
       iModIntro.
-      iExists (b, e, v), true.
+      iExists _, true.
       iSplitL "HverR"; auto.
     - (* Not the correct version *)
       iApply "HΦ".
@@ -119,7 +114,7 @@ Proof.
   { (* Loop invariant holds at the begining *)
     iFrame.
     simpl.
-    iExists ((U64 0), (U64 0), (U64 0)), false.
+    iExists (_, _, _), false.
     iSplitL "HverR"; last auto.
     iFrame.
   }
@@ -203,7 +198,8 @@ Proof.
       wp_pures.
       iFrame.
       iPureIntro.
-      (* Maybe a more concise proof here? *)
+      (* Maybe a more concise proof here?
+       TODO use upstream lemma once std++ MR 347 lands *)
       assert (H : ∀ (P : Prop) (dec : Decision P), negb (bool_decide P) = bool_decide (not P)).
       { intros P dec. case_bool_decide.
         - simpl. symmetry. rewrite bool_decide_eq_false. auto.
@@ -248,8 +244,7 @@ Proof.
       wp_storeField.
       iSplit; first done.
       (* Update "Htidrd" to use `b'` for merging states. See comments of wp_If_join_evar in control.v. *)
-      iAssert (tuple_ptr ↦[Tuple :: "tidrd"] #(if b' then tid else tidrd)) with "[Htidrd]" as "Htidrd".
-      { rewrite Eb'. iFrame "Htidrd". }
+      replace (#tid) with #(if b' then tid else tidrd) by by rewrite Eb'.
       iNamedAccu.
     - wp_if_false.
       iModIntro.
@@ -314,7 +309,7 @@ Proof.
   { simpl. reflexivity. }
   *)
 Qed.
-  
+
 (*****************************************************************)
 (* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
 (*****************************************************************)
@@ -382,12 +377,7 @@ Proof.
       
       wp_if_destruct; last first.
       { (* prove in-bound *)
-        exfalso.
-        destruct (bool_decide (int.Z vers.(Slice.sz) = int.Z 0)) eqn:E.
-        - apply bool_decide_eq_true in E. lia.
-        - apply bool_decide_eq_false in E.
-          destruct Heqb.
-          apply word.decrement_nonzero_lt. done.
+        exfalso. destruct Heqb; word.
       }
       wp_apply wp_slice_ptr.
       wp_pures.
@@ -438,13 +428,8 @@ Proof.
         apply insert_length.
       }
       iSplitL ""; first done.
-      (* Have to use nat for the offset as later we'll be using `list_fmap_insert`. *)
-      iAssert (slice.is_slice
-                 vers (struct.t Version) 1
-                 (if b'
-                  then <[Z.to_nat (int.Z vers.(Slice.sz) - 1):=ver_to_val verLast]> (ver_to_val <$> versL)
-                  else (ver_to_val <$> versL))) with "[HversL]" as "HversL".
-      { rewrite Eb'. iFrame. }
+      set new_vers := (<[_:=_]> (ver_to_val <$> versL)).
+      replace new_vers with (if b' then new_vers else ver_to_val <$> versL) by by rewrite Eb'.
       (**
        * Note 1(c): `verLast` is created *after* the goal evar, so we
        * should remove `verLast` from the spatial context before
@@ -506,22 +491,15 @@ Proof.
     rewrite /own_tuple.
     case_bool_decide.
     { (* Prove `is_slice` when the slice is updated and appended. *)
-      do 5 iExists _.
+      do 4 iExists _. iExists (_ ++ [(tid, _, val)]).
       iFrame.
-      rewrite <- list_fmap_insert.
-      (* Rewrite `(#a, #b, #c, #())` to `ver_to_val <$> (a, b, c)` to match `fmap_app`. *)
-      change [(#tid, (#18446744073709551615, (#val, #())))%V] with
-        (ver_to_val <$> [(tid, (U64 18446744073709551615), val)]).
-      rewrite <- fmap_app.
+      rewrite -list_fmap_insert fmap_app.
       iFrame.
     }
     { (* Prove `is_slice` when the slice is appended. *)
-      do 5 iExists _.
+      do 4 iExists _. iExists (_ ++ [(tid, _, val)]).
       iFrame.
-      (* Rewrite `(#a, #b, #c, #())` to `ver_to_val <$> (a, b, c)` to match `fmap_app`. *)
-      change [(#tid, (#18446744073709551615, (#val, #())))%V] with
-        (ver_to_val <$> [(tid, (U64 18446744073709551615), val)]).
-      rewrite <- fmap_app.
+      rewrite fmap_app.
       iFrame.
     }
   }
