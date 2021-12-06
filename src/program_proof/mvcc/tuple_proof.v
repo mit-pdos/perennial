@@ -377,7 +377,7 @@ Proof.
       
       wp_if_destruct; last first.
       { (* prove in-bound *)
-        exfalso. destruct Heqb; word.
+        destruct Heqb. word.
       }
       wp_apply wp_slice_ptr.
       wp_pures.
