@@ -358,18 +358,18 @@ Proof.
       split; first by lia.
       destruct (decide (installed_txn_id ≤ durable_lb_alt)%nat).
       {
-        rewrite Max.max_l; last by lia.
-        rewrite Max.max_l; last by lia.
+        rewrite Nat.max_l; last by lia.
+        rewrite Nat.max_l; last by lia.
         assumption.
       }
-      rewrite Max.max_r; last by lia.
+      rewrite Nat.max_r; last by lia.
       destruct (decide (installed_txn_id ≤ σ.(log_state.durable_lb))%nat).
       2: {
-        rewrite Max.max_r; last by lia.
+        rewrite Nat.max_r; last by lia.
         rewrite subslice_zero_length.
         apply Forall_nil_2.
       }
-      rewrite Max.max_l; last by lia.
+      rewrite Nat.max_l; last by lia.
       rewrite -(subslice_app_contig _ (S installed_txn_id))
         in Hdurable_nils; last by lia.
       apply Forall_app in Hdurable_nils.

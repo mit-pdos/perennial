@@ -209,7 +209,7 @@ Proof.
     simpl in Hnotin.
     autorewrite with len in Hlen; subst.
     rewrite -> insert_app_r_alt by len.
-    rewrite minus_diag.
+    rewrite Nat.sub_diag.
     simpl.
     rewrite !apply_upds_app.
     simpl.

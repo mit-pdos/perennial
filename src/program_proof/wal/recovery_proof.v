@@ -864,7 +864,7 @@ Lemma is_durable_txn_crash γ γ' cs txns diskEnd_txn_id durable_lb :
 Proof.
   iNamed 1. iIntros "#Hend_txn_stable' #Hdurable_lb_stable'".
   rewrite /is_durable_txn take_length.
-  rewrite (Max.max_l (_ `max` _) _); last by lia.
+  rewrite (Nat.max_l (_ `max` _) _); last by lia.
   iExists diskEnd, diskEnd_txn_id; iFrame "%#".
   iPureIntro.
   pose proof (is_txn_bound _ _ _ Hend_txn).
@@ -876,11 +876,11 @@ Proof.
   {
     destruct (decide (durable_lb ≤ diskEnd_txn_id)%nat).
     {
-      rewrite Max.max_r; last by lia.
+      rewrite Nat.max_r; last by lia.
       rewrite subslice_zero_length.
       apply Forall_nil_2.
     }
-    rewrite Max.max_l; last by lia.
+    rewrite Nat.max_l; last by lia.
     rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
       last by lia.
     apply Forall_app in Hdurable_nils.
@@ -894,13 +894,13 @@ Proof.
   destruct (decide (durable_lb ≤ diskEnd_txn_id)%nat)
     as [Hcmp|Hcmp].
   {
-    rewrite Max.max_r; last by lia.
+    rewrite Nat.max_r; last by lia.
     apply is_txn_take; assumption.
   }
-  rewrite Max.max_l; last by lia.
+  rewrite Nat.max_l; last by lia.
   apply (is_txn_from_take_is_txn (S diskEnd_txn_id)).
   rewrite take_take.
-  rewrite Min.min_l; last by lia.
+  rewrite Nat.min_l; last by lia.
   apply is_txn_take.
   assumption.
 Qed.
@@ -1156,11 +1156,11 @@ Proof.
     {
       destruct (decide (σ.(log_state.durable_lb) ≤ diskEnd_txn_id)%nat).
       {
-        rewrite Max.max_r; last by lia.
+        rewrite Nat.max_r; last by lia.
         rewrite subslice_zero_length.
         apply Forall_nil_2.
       }
-      rewrite Max.max_l; last by lia.
+      rewrite Nat.max_l; last by lia.
       rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
         last by lia.
       apply Forall_app in Hdurable_nils.
@@ -1189,7 +1189,7 @@ Proof.
       eauto with f_equal. }
 
     iDestruct "Hstable_txns" as "[Hstable_txns1 Hstable_txns2]".
-    rewrite (Max.max_l (_ `max` _) _); last by lia.
+    rewrite (Nat.max_l (_ `max` _) _); last by lia.
     iDestruct (memLog_linv_nextDiskEnd_txn_id_post_crash with
                "Hstable_txns1 Hdurable_lb_pos [$]")
               as "HnextDiskEnd_linv"; first by lia.
@@ -1325,10 +1325,10 @@ Proof.
               (σ.(log_state.durable_lb) ≤ diskEnd_txn_id)%nat
             ).
             {
-              rewrite Max.max_r; last by lia.
+              rewrite Nat.max_r; last by lia.
               iAssumption.
             }
-            rewrite Max.max_l; last by lia.
+            rewrite Nat.max_l; last by lia.
             iApply "Hdurable_lb_pos".
           }
           replace (slidingM.memEnd _) with (int.Z diskEnd) by reflexivity.
@@ -1344,8 +1344,8 @@ Proof.
               unfold circΣ.diskEnd in *.
               word.
             }
-            rewrite Min.min_l; last by lia.
-            rewrite /is_memLog_boundaries take_length Min.min_l; last by lia.
+            rewrite Nat.min_l; last by lia.
+            rewrite /is_memLog_boundaries take_length Nat.min_l; last by lia.
             split.
             {
               intros bndry Hbndry.
@@ -1390,11 +1390,11 @@ Proof.
             rewrite subslice_take Nat.min_id.
             destruct (decide (σ.(log_state.durable_lb) ≤ diskEnd_txn_id)).
             {
-              rewrite Max.max_r; last by lia.
+              rewrite Nat.max_r; last by lia.
               rewrite !subslice_zero_length.
               apply is_memLog_region_nil.
             }
-            rewrite Max.max_l; last by lia.
+            rewrite Nat.max_l; last by lia.
             rewrite !subslice_zero_length.
             apply is_memLog_region_nils.
             rewrite -(subslice_app_contig _ (S diskEnd_txn_id))
@@ -1408,7 +1408,7 @@ Proof.
           apply txns_mono_lt_last; eauto using log_crash_to_wf.
           rewrite /σ' /=.
           rewrite take_length.
-          rewrite Min.min_l; last by lia.
+          rewrite Nat.min_l; last by lia.
           rewrite /= Nat.sub_0_r.
           apply is_txn_take.
           assumption.

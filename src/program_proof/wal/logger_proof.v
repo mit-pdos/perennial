@@ -518,14 +518,14 @@ Proof.
       destruct (decide (nextDiskEnd_txn_id ≤ σs.(log_state.durable_lb))%nat)
         as [Hcmp|Hcmp].
       2: {
-        rewrite Max.max_r; last by lia.
+        rewrite Nat.max_r; last by lia.
         assumption.
       }
-      rewrite Max.max_l; last by lia.
+      rewrite Nat.max_l; last by lia.
       destruct (decide (
         σ.(locked_diskEnd_txn_id) ≤ σs.(log_state.durable_lb))%nat
       ); last by lia.
-      rewrite Max.max_l in Hdurable_lb_pos; last by lia.
+      rewrite Nat.max_l in Hdurable_lb_pos; last by lia.
       pose proof (wal_wf_txns_mono_pos'
         Hwf HnextDiskEnd' Hdurable_lb_pos Hcmp).
       assert (int.Z σ.(memLog).(slidingM.mutable) = int.Z σ.(diskEnd))
@@ -544,14 +544,14 @@ Proof.
     iSplit; first by (iPureIntro; assumption).
     destruct (decide (σs.(log_state.durable_lb) ≤ nextDiskEnd_txn_id)%nat).
     {
-      rewrite (Max.max_r _ nextDiskEnd_txn_id); last by lia.
+      rewrite (Nat.max_r _ nextDiskEnd_txn_id); last by lia.
       iFrame "#".
     }
-    rewrite (Max.max_l _ nextDiskEnd_txn_id); last by lia.
+    rewrite (Nat.max_l _ nextDiskEnd_txn_id); last by lia.
     destruct (decide
       (σs.(log_state.durable_lb) ≤ σ.(locked_diskEnd_txn_id))%nat
     ); first by lia.
-    rewrite Max.max_l; last by lia.
+    rewrite Nat.max_l; last by lia.
     iFrame "#".
   }
 

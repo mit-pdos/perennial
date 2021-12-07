@@ -584,12 +584,12 @@ Proof.
   {
     destruct (decide (i ≤ j)%nat) as [Hcmp|Hcmp].
     {
-      rewrite Max.max_r; last by assumption.
+      rewrite Nat.max_r; last by assumption.
       rewrite list_lookup_insert; last by assumption.
       reflexivity.
     }
     rewrite list_lookup_insert_ne; last by lia.
-    rewrite Max.max_l; last by lia.
+    rewrite Nat.max_l; last by lia.
     assumption.
   }
   intros i2 Hacc2.

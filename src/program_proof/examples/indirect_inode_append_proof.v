@@ -81,9 +81,9 @@ Proof.
   {
     unfold MaxBlocks, roundUpDiv, indirectNumBlocks, maxDirect, indirectNumBlocks, maxIndirect in *.
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H; rewrite HnumInd.
-    + apply bool_decide_eq_true in H. rewrite Max.max_l; word.
+    + apply bool_decide_eq_true in H. rewrite Nat.max_l; word.
     + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
-      rewrite Max.max_r; word.
+      rewrite Nat.max_r; word.
   }
   assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
   {
@@ -153,7 +153,7 @@ Proof.
        ds.(impl_s.indBlkAddrsList)).
     unfold is_inode_durable_with.
     rewrite H.
-    rewrite Min.min_l in HdirAddrs; [ | word].
+    rewrite Nat.min_l in HdirAddrs; [ | word].
 
     assert ((length daddrs) = (length σ.(inode.blocks))%nat) as HdaddrsLen.
     {
@@ -215,7 +215,7 @@ Proof.
           2: {
             rewrite app_assoc.
             assert ((length σ.(inode.blocks) + 1)%nat = length ((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]))) as Hlen.
-            { rewrite app_length. rewrite take_length Min.min_l; simpl; word. }
+            { rewrite app_length. rewrite take_length Nat.min_l; simpl; word. }
             rewrite Hlen.
             rewrite (take_app (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])); auto.
           }
@@ -252,7 +252,7 @@ Proof.
           rewrite cons_middle app_assoc.
           rewrite HdirAddrs.
           rewrite -HdaddrsLen take_app.
-          rewrite Min.min_l; auto; word.
+          rewrite Nat.min_l; auto; word.
         }
 
         (* HindAddrs *)
@@ -293,7 +293,7 @@ Proof.
           (int.nat (U64 (500 - Z.of_nat (length (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) + 1)))%nat)
           with ((500 - (length σ.(inode.blocks) + 1))%nat); auto.
         2: {
-          rewrite take_length. rewrite Min.min_l; word.
+          rewrite take_length. rewrite Nat.min_l; word.
         }
         replace
           (EncUInt64 <$> iaddrs ++ replicate (int.nat (U64 10) - ds.(impl_s.numInd)) (U64 0))
@@ -443,9 +443,9 @@ Proof.
   {
     unfold MaxBlocks, roundUpDiv, indirectNumBlocks, maxDirect, indirectNumBlocks, maxIndirect in *.
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H; rewrite HnumInd.
-    + apply bool_decide_eq_true in H. rewrite Max.max_l; word.
+    + apply bool_decide_eq_true in H. rewrite Nat.max_l; word.
     + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
-      rewrite Max.max_r; word.
+      rewrite Nat.max_r; word.
   }
   assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
   {
@@ -658,9 +658,9 @@ Proof.
   {
     unfold MaxBlocks, roundUpDiv, indirectNumBlocks, maxDirect, indirectNumBlocks, maxIndirect in *.
     destruct (bool_decide (Z.of_nat (length σ.(inode.blocks)) <= 500)) eqn:H; rewrite HnumInd.
-    + apply bool_decide_eq_true in H. rewrite Max.max_l; word.
+    + apply bool_decide_eq_true in H. rewrite Nat.max_l; word.
     + apply bool_decide_eq_false in H. apply Znot_le_gt in H.
-      rewrite Max.max_r; word.
+      rewrite Nat.max_r; word.
   }
   assert (ds.(impl_s.numInd) = length iaddrs) as HiaddrsLen.
   {
@@ -702,12 +702,12 @@ Proof.
     (* Here are a bunch of facts *)
     (* TODO these are replicated from READ *)
     assert (int.Z index < ds.(impl_s.numInd)) as HindexMax. {
-      rewrite take_length Min.min_l in HlenInd; word.
+      rewrite take_length Nat.min_l in HlenInd; word.
     }
     destruct (list_lookup_lt _ (take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) (int.nat index)) as [indA Hlookup].
     {
       unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. rewrite firstn_length.
-      rewrite Min.min_l; word.
+      rewrite Nat.min_l; word.
     }
     assert (int.nat index < 10) as HindexMax10.
     {

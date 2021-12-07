@@ -243,7 +243,7 @@ Proof.
   intros i bndry1 bndry2 Hbndry1 Hbndry2.
   pose proof (Hreg _ _ _ Hbndry1 Hbndry2) as Hreg'.
   rewrite subslice_take.
-  rewrite Min.min_l.
+  rewrite Nat.min_l.
   2: {
     unshelve (
       epose proof (
@@ -430,7 +430,7 @@ Proof.
   }
   apply not_lt in Hgeq.
   rewrite lookup_app_r; last by (rewrite take_length; lia).
-  rewrite take_length Min.min_l; last by lia.
+  rewrite take_length Nat.min_l; last by lia.
   rewrite /memWrite_one_generic.
   rewrite <- (take_drop u_us upds) at 1.
   rewrite /memWrite_one_generic fmap_app find_highest_index_app /=.
@@ -464,10 +464,10 @@ Proof.
     lia.
   }
   rewrite fmap_length take_length decide_True; last by lia.
-  rewrite Min.min_l; last by lia.
+  rewrite Nat.min_l; last by lia.
   rewrite <- (take_drop u_us upds) at 1.
   rewrite insert_app_r_alt take_length; last by lia.
-  rewrite Min.min_l; last by lia.
+  rewrite Nat.min_l; last by lia.
   rewrite minus_plus.
   rewrite lookup_app_r; last by (rewrite take_length; lia).
   rewrite take_length.
@@ -902,7 +902,7 @@ Proof.
   erewrite take_S_r in Hlast; last by eassumption.
   rewrite insert_app_r_alt in Hlast.
   2: rewrite take_length; lia.
-  rewrite take_length Min.min_l in Hlast; last by lia.
+  rewrite take_length Nat.min_l in Hlast; last by lia.
   rewrite Nat.sub_diag /= filter_app filter_cons_True in Hlast;
     last by reflexivity.
   rewrite filter_nil last_snoc in Hlast.

@@ -169,7 +169,7 @@ Proof.
     rewrite drop_app_ge; len.
     rewrite take_app_le; len.
     rewrite take_ge; len.
-    rewrite Hsz1 minus_diag drop_0.
+    rewrite Hsz1 Nat.sub_diag drop_0.
     iFrame. }
   iExists _; iFrame.
   rewrite -{3}(take_drop (int.nat n) log).

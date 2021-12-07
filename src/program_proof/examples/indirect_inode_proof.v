@@ -366,7 +366,7 @@ Proof.
     }
     assert (Z.of_nat ds.(impl_s.numInd) = (roundUpDiv ((Z.of_nat (length σ.(inode.blocks))) - maxDirect) indirectNumBlocks))
     as HnumIndGt. {
-      rewrite HnumInd Max.max_r; word.
+      rewrite HnumInd Nat.max_r; word.
     }
     assert ((roundUpDiv ((Z.of_nat (length σ.(inode.blocks))) - maxDirect) indirectNumBlocks) < maxIndirect + 1)
       as HmaxCmp. {
@@ -1014,7 +1014,7 @@ Proof.
       {
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
         rewrite firstn_length Hindex.
-        rewrite Min.min_l; word.
+        rewrite Nat.min_l; word.
       }
 
       (* Now we actually step through program the *)

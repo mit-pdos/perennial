@@ -70,18 +70,18 @@ Proof.
     iExists _. iFrame "Howncs".
     iExists installed_txn_id, _, _. simpl. iFrame "# ∗ %".
     iExists _, diskEnd_txn_id.
-    rewrite (Max.max_l (_ `max` _)%nat _); last by lia.
+    rewrite (Nat.max_l (_ `max` _)%nat _); last by lia.
     iFrame "# %".
     iPureIntro.
     split; first by lia.
     split; first by lia.
     destruct (decide (σ.(log_state.durable_lb) ≤ diskEnd_txn_id)).
     {
-      rewrite Max.max_r; last by lia.
+      rewrite Nat.max_r; last by lia.
       rewrite subslice_zero_length.
       apply Forall_nil_2.
     }
-    rewrite Max.max_l; last by lia.
+    rewrite Nat.max_l; last by lia.
     rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
       last by lia.
     apply Forall_app in Hdurable_nils.
@@ -230,10 +230,10 @@ Proof.
       iPureIntro.
       destruct (decide (diskEnd_txn_id ≤ txn_id)%nat).
       {
-        rewrite Max.max_r; last by lia.
+        rewrite Nat.max_r; last by lia.
         assumption.
       }
-      rewrite Max.max_l; last by lia.
+      rewrite Nat.max_l; last by lia.
       rewrite subslice_zero_length.
       apply Forall_nil_2.
     }
@@ -243,10 +243,10 @@ Proof.
     {
       destruct (decide (diskEnd_txn_id ≤ txn_id)%nat).
       {
-        rewrite (Max.max_r _ txn_id); last by lia.
+        rewrite (Nat.max_r _ txn_id); last by lia.
         iFrame "#".
       }
-      rewrite (Max.max_l _ txn_id); last by lia.
+      rewrite (Nat.max_l _ txn_id); last by lia.
       iFrame "#".
     }
     iFrame "Htxns_ctx".
@@ -287,11 +287,11 @@ Proof.
       (diskEnd_txn_id `max` txn_id) ≤ σ.(log_state.durable_lb)
     )%nat).
     {
-      rewrite Max.max_r; last by lia.
-      rewrite Max.max_l; last by lia.
+      rewrite Nat.max_r; last by lia.
+      rewrite Nat.max_l; last by lia.
       destruct (decide (S diskEnd_txn_id ≤ txn_id)%nat).
       {
-        rewrite Max.max_r in Hnils; last by lia.
+        rewrite Nat.max_r in Hnils; last by lia.
         rewrite -(subslice_app_contig _ (S diskEnd_txn_id)) in Hdurable_nils;
           last by lia.
         apply Forall_app in Hdurable_nils.
@@ -321,13 +321,13 @@ Proof.
     assert (int.Z pos = int.Z diskEnd) as Hpos_diskEnd_eq by lia.
     apply word.unsigned_inj in Hpos_diskEnd_eq.
     subst pos.
-    rewrite Max.max_l; last by lia.
+    rewrite Nat.max_l; last by lia.
     destruct (decide
       ((σ.(log_state.durable_lb) `max` diskEnd_txn_id) ≤ txn_id)%nat
     ).
     {
-      rewrite Max.max_r; last by lia.
-      rewrite Max.max_r; last by lia.
+      rewrite Nat.max_r; last by lia.
+      rewrite Nat.max_r; last by lia.
       assumption.
     }
     replace (_ `max` _)%nat
