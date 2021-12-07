@@ -7,6 +7,7 @@ From Perennial.program_logic Require Import crash_adequacy.
 Import uPred.
 
 Set Default Proof Using "Type".
+Set Default Goal Selector "!".
 
 Section recovery_adequacy.
 Context `{!irisGS Λ Σ}.
@@ -94,9 +95,9 @@ Proof.
   iApply (step_fupd2N_inner_wand with "H"); auto.
   iIntros "H".
   iAssert (||={⊤|⊤,∅|∅}=> ▷^3 ◇ Q)%I with "[H]" as "H".
-  iMod "H".
-  iPoseProof (step_fupd2N_plain with "H") as "H".
-  iMod "H". iModIntro. iNext. iNext. iMod "H". eauto.
+  { iMod "H".
+    iPoseProof (step_fupd2N_plain with "H") as "H".
+    iMod "H". iModIntro. iNext. iNext. iMod "H". eauto. }
   iMod (fupd2_plain_mask with "H") as "H". eauto.
   iApply step_fupd2N_inner_later; auto. iNext. iNext. iNext.
   iMod (fupd2_mask_subseteq ∅ ∅); auto. iModIntro. iMod "H". eauto.

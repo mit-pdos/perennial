@@ -6,6 +6,7 @@ From Perennial.Helpers Require Import Qextra.
 From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Export step_fupd_extra crash_weakestpre ae_invariants_mutable later_res private_invariants staged_invariant_alt.
+From iris.prelude Require Import options.
 
 Set Default Proof Using "Type".
 
@@ -208,7 +209,7 @@ Proof.
         { iPureIntro. split_and!; auto; try naive_solver. }
         iFrame.
         iModIntro. iIntros "Hwpc".
-        assert (E1' = ⊤) as ->. by set_solver.
+        assert (E1' = ⊤) as -> by set_solver.
         rewrite /wpc_crash_modality.
         iIntros (????) "Hg HC".
         iSpecialize ("Hwpc" with "[$] [$]").

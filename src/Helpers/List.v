@@ -2,6 +2,7 @@ From stdpp Require Import list list_numbers.
 From Coq Require Import ssreflect.
 
 Set Default Proof Using "Type".
+Set Default Goal Selector "!".
 
 Section list.
   Context (A:Type).
@@ -114,17 +115,17 @@ Section list.
     In y (concat l) <-> exists x, In x l /\ In y x.
   Proof.
     induction l; simpl; split; intros.
-    contradiction.
-    destruct H as (x,(H,_)); contradiction.
-    destruct (in_app_or _ _ _ H).
-    exists a; auto.
-    destruct (IHl y) as (H1,_); destruct (H1 H0) as (x,(H2,H3)).
-    exists x; auto.
-    apply in_or_app.
-    destruct H as (x,(H0,H1)); destruct H0.
-    subst; auto.
-    right; destruct (IHl y) as (_,H2); apply H2.
-    exists x; auto.
+    - contradiction.
+    - destruct H as (x,(H,_)); contradiction.
+    - destruct (in_app_or _ _ _ H).
+      + exists a; auto.
+      + destruct (IHl y) as (H1,_); destruct (H1 H0) as (x,(H2,H3)).
+        exists x; auto.
+    - apply in_or_app.
+      destruct H as (x,(H0,H1)); destruct H0.
+      + subst; auto.
+      + right; destruct (IHl y) as (_,H2); apply H2.
+        exists x; auto.
   Qed.
 
   Lemma concat_insert_app {A} : forall (index: nat) (l: list (list A)) (x: list A),

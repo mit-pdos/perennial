@@ -6,6 +6,8 @@ From Perennial.Helpers Require Import Qextra.
 From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Export step_fupd_extra crash_weakestpre ae_invariants_mutable later_res private_invariants staged_invariant_alt wpc_nval.
+From iris.prelude Require Import options.
+From iris.prelude Require Import options.
 
 Set Default Proof Using "Type".
 

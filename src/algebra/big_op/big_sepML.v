@@ -3,6 +3,7 @@ From Perennial.algebra.big_op Require Import big_sepM.
 From iris.proofmode Require Import tactics.
 
 Set Default Proof Using "Type*".
+Set Default Goal Selector "!".
 
 Section bi.
 Context {PROP:bi} `{!BiAffine PROP, !BiPersistentlyForall PROP}.
@@ -250,7 +251,9 @@ Section maplist.
   Proof.
     iIntros "Hml".
     iDestruct (big_sepML_lookup_l_acc with "Hml") as "Hres".
-    { rewrite lookup_app_r. erewrite Nat.sub_diag. eauto. lia. }
+    { rewrite lookup_app_r.
+      - erewrite Nat.sub_diag. eauto.
+      - lia. }
     iDestruct "Hres" as (k v) "(% & Hk & Hml)".
     iExists _, _.
     iSplitR; first eauto.

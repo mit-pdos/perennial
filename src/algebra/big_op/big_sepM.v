@@ -3,6 +3,7 @@ From iris.proofmode Require Import tactics.
 From Perennial.base_logic Require Import ncfupd.
 
 Set Default Proof Using "Type".
+Set Default Goal Selector "!".
 
 (*! Map filter *)
 Section filter.
@@ -232,7 +233,7 @@ Section map.
   Proof.
     intros Hwand.
     induction m as [|i x m ? IH] using map_ind; auto using big_sepM_empty'.
-    by rewrite big_opM_eq.
+    { by rewrite big_opM_eq. }
     rewrite ?big_sepM_insert //.
     iIntros "(HP&Hi&H)".
     iDestruct (Hwand with "[$]") as "(?&$)".

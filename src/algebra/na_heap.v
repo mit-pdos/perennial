@@ -8,6 +8,7 @@ From Perennial.base_logic Require Export lib.own.
 From iris.proofmode Require Export tactics.
 From Perennial.algebra Require Export blocks.
 Set Default Proof Using "Type".
+Set Default Goal Selector "!".
 Import uPred.
 
 (* Heap that supports non-atomic operations. Very mildly adapted from
@@ -230,7 +231,7 @@ Section na_heap.
 
   Global Instance na_heap_mapsto_st_as_fractional l q v:
     AsFractional (na_heap_mapsto_st WSt l q v) (λ q, na_heap_mapsto_st WSt l q v)%I q.
-  Proof. split. done. apply _. Qed.
+  Proof. split; first done. apply _. Qed.
 
   Global Instance na_heap_mapsto_fractional l v: Fractional (λ q, l ↦{q} v)%I.
   Proof.
@@ -239,7 +240,7 @@ Section na_heap.
   Qed.
   Global Instance na_heap_mapsto_as_fractional l q v:
     AsFractional (l ↦{q} v) (λ q, l ↦{q} v)%I q.
-  Proof. split. done. apply _. Qed.
+  Proof. split; first done. apply _. Qed.
 
   Lemma na_heap_mapsto_st_agree l st1 st2 q1 q2 v1 v2 :
     na_heap_mapsto_st st1 l q1 v1 ∗

@@ -6,6 +6,7 @@ From Perennial.Helpers Require Import Qextra.
 From iris.algebra Require Import gmap.
 From iris.proofmode Require Import tactics.
 From Perennial.program_logic Require Export step_fupd_extra crash_weakestpre ae_invariants_mutable later_res private_invariants staged_invariant_alt.
+From iris.prelude Require Import options.
 
 Set Default Proof Using "Type".
 
@@ -204,7 +205,7 @@ Proof.
       { iNext.
         iEval (rewrite staged_inv_inner_unfold).
         iExists _, _, _, _, _. iFrame "∗ #".
-        iLeft. iSplit. iFrame "∗".
+        iLeft. iSplit. { iFrame "∗". }
         iIntros. iMod ("Hwand_new" with "[$] [$]") as "$"; eauto.
       }
       iMod (later_tok_incr with "[$]") as "(Hg&Hltok)".

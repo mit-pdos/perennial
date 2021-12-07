@@ -1,5 +1,6 @@
 From Perennial.program_logic Require Export language.
 Set Default Proof Using "Type".
+Set Default Goal Selector "!".
 
 (** For now, we assume that a crash transition *only affects the local machine*,
 and leaves [global_state Λ] unaffected. *)
@@ -105,8 +106,8 @@ Section crash_language.
   Proof.
     destruct s.
     - intros Hsteps Herased. inversion Herased; subst.
-      econstructor; last eauto.
-      etransitivity; eauto. eauto.
+      econstructor; [ | | eauto ].
+      { etransitivity; eauto. } eauto.
     - intros Hstreps Herased. inversion Herased; subst; eauto.
       econstructor; last eauto.
       etransitivity; eauto.
