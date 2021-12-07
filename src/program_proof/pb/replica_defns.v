@@ -59,7 +59,7 @@ Definition own_ReplicaServer (s:loc) (me:u64) γ
 
   (* only used for primary *)
   "HreplicaClerks" ∷ s ↦[ReplicaServer :: "replicaClerks"] (slice_val replicaClerks_sl) ∗
-  "HreplicaClerks_slice" ∷ is_slice replicaClerks_sl (struct.ptrT ReplicaClerk) 1%Qp replicaClerks
+  "HreplicaClerks_slice" ∷ is_slice replicaClerks_sl ptrT 1%Qp replicaClerks
 .
 
 Definition ReplicaServerN := nroot .@ "ReplicaServer".

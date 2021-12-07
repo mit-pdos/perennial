@@ -7,7 +7,7 @@ Local Coercion Var' s: expr := Var s.
 (* Enc is a stateful encoder for a statically-allocated array. *)
 Definition Enc := struct.decl [
   "b" :: slice.T byteT;
-  "off" :: refT uint64T
+  "off" :: ptrT
 ].
 
 Definition NewEnc: val :=
@@ -65,7 +65,7 @@ Definition Enc__Finish: val :=
    sequentially in a single slice. *)
 Definition Dec := struct.decl [
   "b" :: slice.T byteT;
-  "off" :: refT uint64T
+  "off" :: ptrT
 ].
 
 Definition NewDec: val :=

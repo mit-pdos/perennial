@@ -24,6 +24,8 @@ Section val_types.
   | sumT (t1 t2: ty)
   | arrowT (t1 t2: ty)
   | arrayT (t: ty)
+  (* opaque pointer type, pointee unknown *)
+  | ptrT
   (* pointer to *flattened* data (the list should usually not contain prodT or
   unitBT) *)
   | structRefT (ts: list ty)
@@ -103,7 +105,7 @@ Section goose_lang.
     | sumT t1 t2 => InjLV (zero_val t1)
     | arrowT t1 t2 => (λ: <>, Val (zero_val t2))%V
     | arrayT t => #null
-    | structRefT _ => #null
+    | structRefT _ | ptrT => #null
     | extT x => #() (* dummy value of wrong type *)
     end.
 
@@ -131,6 +133,7 @@ Section goose_lang.
     | arrowT _ t2 => has_zero t2
     | arrayT _ => True
     | structRefT _ => True
+    | ptrT => True
     | extT _ => False
     end.
 
@@ -155,6 +158,7 @@ Section goose_lang.
   case of a location value the programmer can directly and legally refer to *)
   | loc_null_hasTy t : base_lit_hasTy (LitLoc null) (arrayT t)
   | structRef_null_hasTy ts : base_lit_hasTy (LitLoc null) (structRefT ts)
+  | ptr_null_hasTy : base_lit_hasTy (LitLoc null) ptrT
   .
 
   Definition bin_op_ty (op:bin_op) (t:ty) : option (ty * ty * ty) :=
@@ -190,6 +194,7 @@ Section goose_lang.
     | baseT _ => true
     | arrayT _ => true
     | structRefT _ => true
+    | ptrT => false (* seems to only affect the logrel *)
     | _ => false
     end.
 
@@ -198,6 +203,7 @@ Section goose_lang.
     | baseT _ => true
     | arrayT _ => true
     | structRefT _ => true
+    | ptrT => false (* seems to only affect the logrel *)
     | sumT t1 t2 => is_unboxed_baseTy t1 && is_unboxed_baseTy t2
     | _ => false
     end.
@@ -209,6 +215,7 @@ Section goose_lang.
     | sumT t1 t2 => is_comparableTy t1 && is_comparableTy t2
     | arrayT _ => true
     | structRefT _ => true
+    | ptrT => false (* seems to only affect the logrel *)
     | _ => false
     end.
 
@@ -233,8 +240,6 @@ Section goose_lang.
     end.
 
   Definition refT (t:ty) : ty := structRefT (flatten_ty t).
-
-  Definition mapT (vt:ty) : ty := refT (mapValT vt).
 
   Theorem array_null_hasTy t : base_lit_hasTy (LitLoc null) (refT t).
   Proof.
@@ -548,6 +553,8 @@ Section goose_lang.
     eapply array_struct_hasTy.
     eauto.
   Qed.
+
+  Definition mapT (vt:ty) : ty := ptrT.
 
   (* A thunk that creates a map. *)
   Definition NewMap (t:ty) : val :=

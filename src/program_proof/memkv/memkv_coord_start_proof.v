@@ -283,8 +283,6 @@ Proof.
   iIntros "#Hdom #His_coord #His_memkv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
-  change (Alloc (InjLV (λ: <>, (λ: <>, #())%V))) with
-      (NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht)).
   wp_apply map.wp_NewMap.
   iIntros (handlers_ptr) "Hmap".
   wp_pures.

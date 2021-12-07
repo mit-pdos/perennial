@@ -632,7 +632,7 @@ Theorem wp_BufMap__DirtyBufs l m stk E1 :
     BufMap__DirtyBufs #l @ stk ; E1
   {{{
     (s : Slice.t) (bufptrlist : list loc), RET (slice_val s);
-    is_slice s (refT (struct.t Buf)) 1 bufptrlist ∗
+    is_slice s ptrT 1 bufptrlist ∗
     let dirtybufs := filter (λ x, (snd x).(bufDirty) = true) m in
     [∗ maplist] a ↦ b;bufptr ∈ dirtybufs;bufptrlist,
       is_buf bufptr a b
@@ -656,8 +656,8 @@ Proof using.
         "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom (gset addr) amtodo = dom (gset addr) mtodo⌝ ∗
         "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
                                            (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) ) ∗
-        "Hbufs" ∷ bufs ↦[slice.T (refT (struct.t Buf))] (slice_val bufptrslice) ∗
-        "Hbufptrslice" ∷ is_slice bufptrslice (refT (struct.t Buf)) 1 bufptrlist ∗
+        "Hbufs" ∷ bufs ↦[slice.T ptrT] (slice_val bufptrslice) ∗
+        "Hbufptrslice" ∷ is_slice bufptrslice ptrT 1 bufptrlist ∗
         "Hresult" ∷ ( [∗ maplist] a↦b;bufptr ∈ filter (λ x, (x.2).(bufDirty) = true) mdone;bufptrlist,
                                 is_buf bufptr a b )
     )%I

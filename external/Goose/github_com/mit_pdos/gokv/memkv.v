@@ -295,7 +295,7 @@ Definition KVShardClerk := struct.decl [
   "seq" :: uint64T;
   "cid" :: uint64T;
   "host" :: HostName;
-  "c" :: struct.ptrT connman.ConnMan
+  "c" :: ptrT
 ].
 
 Definition MakeFreshKVShardClerk: val :=
@@ -373,14 +373,14 @@ Definition KVShardClerk__MoveShard: val :=
 
 (* The coordinator, and the main clerk, need to talk to a bunch of shards. *)
 Definition ShardClerkSet := struct.decl [
-  "cls" :: mapT (struct.ptrT KVShardClerk);
-  "c" :: struct.ptrT connman.ConnMan
+  "cls" :: mapT ptrT;
+  "c" :: ptrT
 ].
 
 Definition MakeShardClerkSet: val :=
   rec: "MakeShardClerkSet" "c" :=
     struct.new ShardClerkSet [
-      "cls" ::= NewMap (struct.ptrT KVShardClerk) #();
+      "cls" ::= NewMap ptrT #();
       "c" ::= "c"
     ].
 
@@ -400,14 +400,14 @@ Definition KvMap: ty := mapT (slice.T byteT).
 
 Definition KVShardServer := struct.decl [
   "me" :: stringT;
-  "mu" :: lockRefT;
+  "mu" :: ptrT;
   "lastReply" :: mapT (struct.t ShardReply);
   "lastSeq" :: mapT uint64T;
   "nextCID" :: uint64T;
   "shardMap" :: slice.T boolT;
   "kvss" :: slice.T KvMap;
-  "peers" :: mapT (struct.ptrT KVShardClerk);
-  "cm" :: struct.ptrT connman.ConnMan
+  "peers" :: mapT ptrT;
+  "cm" :: ptrT
 ].
 
 Definition PutArgs := struct.decl [
@@ -568,7 +568,7 @@ Definition MakeKVShardServer: val :=
     struct.storeF KVShardServer "lastSeq" "srv" (NewMap uint64T #());;
     struct.storeF KVShardServer "shardMap" "srv" (NewSlice boolT NSHARD);;
     struct.storeF KVShardServer "kvss" "srv" (NewSlice KvMap NSHARD);;
-    struct.storeF KVShardServer "peers" "srv" (NewMap (struct.ptrT KVShardClerk) #());;
+    struct.storeF KVShardServer "peers" "srv" (NewMap ptrT #());;
     struct.storeF KVShardServer "cm" "srv" (connman.MakeConnMan #());;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
@@ -591,7 +591,7 @@ Definition KVShardServer__GetCIDRPC: val :=
 
 Definition KVShardServer__Start: val :=
   rec: "KVShardServer__Start" "mkv" "host" :=
-    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) #() in
+    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" KV_FRESHCID (λ: "rawReq" "rawReply",
       "rawReply" <-[slice.T byteT] EncodeUint64 (KVShardServer__GetCIDRPC "mkv");;
       #()
@@ -635,10 +635,10 @@ Definition COORD_ADD : expr := #1.
 Definition COORD_GET : expr := #2.
 
 Definition KVCoord := struct.decl [
-  "mu" :: lockRefT;
+  "mu" :: ptrT;
   "shardMap" :: slice.T HostName;
   "hostShards" :: mapT uint64T;
-  "shardClerks" :: struct.ptrT ShardClerkSet
+  "shardClerks" :: ptrT
 ].
 
 Definition KVCoord__AddServerRPC: val :=
@@ -699,7 +699,7 @@ Definition MakeKVCoordServer: val :=
 
 Definition KVCoord__Start: val :=
   rec: "KVCoord__Start" "c" "host" :=
-    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) #() in
+    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" COORD_ADD (λ: "rawReq" "rawRep",
       let: "s" := DecodeUint64 "rawReq" in
       KVCoord__AddServerRPC "c" "s";;
@@ -714,7 +714,7 @@ Definition KVCoord__Start: val :=
 
 Definition KVCoordClerk := struct.decl [
   "host" :: HostName;
-  "c" :: struct.ptrT connman.ConnMan
+  "c" :: ptrT
 ].
 
 Definition KVCoordClerk__AddShardServer: val :=
@@ -734,8 +734,8 @@ Definition KVCoordClerk__GetShardMap: val :=
    might be good to not need to duplicate shardMap[] for a pool of clerks that's
    safe for concurrent use *)
 Definition SeqKVClerk := struct.decl [
-  "shardClerks" :: struct.ptrT ShardClerkSet;
-  "coordCk" :: struct.ptrT KVCoordClerk;
+  "shardClerks" :: ptrT;
+  "coordCk" :: ptrT;
   "shardMap" :: slice.T HostName
 ].
 
@@ -805,9 +805,9 @@ Definition MakeSeqKVClerk: val :=
 (* 5_memkv_clerk.go *)
 
 Definition KVClerk := struct.decl [
-  "mu" :: lockRefT;
-  "freeClerks" :: slice.T (struct.ptrT SeqKVClerk);
-  "cm" :: struct.ptrT connman.ConnMan;
+  "mu" :: ptrT;
+  "freeClerks" :: slice.T ptrT;
+  "cm" :: ptrT;
   "coord" :: HostName
 ].
 
@@ -820,7 +820,7 @@ Definition KVClerk__getSeqClerk: val :=
       lock.release (struct.loadF KVClerk "mu" "p");;
       MakeSeqKVClerk (struct.loadF KVClerk "coord" "p") (connman.MakeConnMan #())
     else
-      let: "ck" := SliceGet (refT (struct.t SeqKVClerk)) (struct.loadF KVClerk "freeClerks" "p") ("n" - #1) in
+      let: "ck" := SliceGet ptrT (struct.loadF KVClerk "freeClerks" "p") ("n" - #1) in
       struct.storeF KVClerk "freeClerks" "p" (SliceTake (struct.loadF KVClerk "freeClerks" "p") ("n" - #1));;
       lock.release (struct.loadF KVClerk "mu" "p");;
       "ck").
@@ -828,7 +828,7 @@ Definition KVClerk__getSeqClerk: val :=
 Definition KVClerk__putSeqClerk: val :=
   rec: "KVClerk__putSeqClerk" "p" "ck" :=
     Fork (lock.acquire (struct.loadF KVClerk "mu" "p");;
-          struct.storeF KVClerk "freeClerks" "p" (SliceAppend (refT (struct.t SeqKVClerk)) (struct.loadF KVClerk "freeClerks" "p") "ck");;
+          struct.storeF KVClerk "freeClerks" "p" (SliceAppend ptrT (struct.loadF KVClerk "freeClerks" "p") "ck");;
           lock.release (struct.loadF KVClerk "mu" "p"));;
     #().
 
@@ -881,5 +881,5 @@ Definition MakeKVClerk: val :=
     struct.storeF KVClerk "mu" "p" (lock.new #());;
     struct.storeF KVClerk "coord" "p" "coord";;
     struct.storeF KVClerk "cm" "p" "cm";;
-    struct.storeF KVClerk "freeClerks" "p" (NewSlice (struct.ptrT SeqKVClerk) #0);;
+    struct.storeF KVClerk "freeClerks" "p" (NewSlice ptrT #0);;
     "p".

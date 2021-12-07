@@ -178,6 +178,9 @@ Definition structRefT_interp (ts: list (sval → ival → iProp Σ)) (* (val_lis
                       ⌜addr_offset l + length ts ≤ 0 ∨ n ≤ addr_offset l⌝))
                  ∨ (∃ off, ⌜ vs = #(null +ₗ off) ∧ v = #(null +ₗ off) ⌝))%I.
 
+Definition ptrT_interp : sval → ival → iProp Σ :=
+  λ vs v, (∃ off, ⌜ vs = #(null +ₗ off) ∧ v = #(null +ₗ off) ⌝)%I.
+
 Definition arrowT_interp (t1 t2: sty) (val_interp: sty → sval → ival → iProp Σ) : sval → ival → iProp Σ :=
   λ vs v,
     (∃ f x e fs xs es,
@@ -196,8 +199,9 @@ Fixpoint val_interp (t: sty) {struct t} :=
   | arrayT t => arrayT_interp t flatten_val_interp
   | arrowT t1 t2 => arrowT_interp t1 t2 val_interp
   | extT x => sty_val_interp hS x
-  | mapValT vt => λ _ _, False%I
   | structRefT ts => structRefT_interp (map val_interp ts)
+  | ptrT => ptrT_interp
+  | mapValT _ => λ _ _, False%I
   end with
  flatten_val_interp (t: sty) {struct t} : list (sval → ival → iProp Σ) :=
     match t with
@@ -209,8 +213,9 @@ Fixpoint val_interp (t: sty) {struct t} :=
     | arrayT t => [arrayT_interp t flatten_val_interp]
     | arrowT t1 t2 => [arrowT_interp t1 t2 val_interp]
     | extT x => [sty_val_interp hS x]
-    | mapValT vt => [λ _ _, False%I]
     | structRefT ts => [structRefT_interp (map val_interp ts)]
+    | ptrT => [ptrT_interp]
+    | mapValT _ => [λ _ _, False%I]
     end.
 
 Lemma flatten_val_interp_flatten_ty t:

@@ -273,7 +273,7 @@ Definition sliding__clearMutable: val :=
 (* 0waldefs.go *)
 
 Definition WalogState := struct.decl [
-  "memLog" :: struct.ptrT sliding;
+  "memLog" :: ptrT;
   "diskEnd" :: LogPosition;
   "shutdown" :: boolT;
   "nthread" :: uint64T
@@ -284,13 +284,13 @@ Definition WalogState__memEnd: val :=
     sliding__end (struct.loadF WalogState "memLog" "st").
 
 Definition Walog := struct.decl [
-  "memLock" :: lockRefT;
+  "memLock" :: ptrT;
   "d" :: disk.Disk;
-  "circ" :: struct.ptrT circularAppender;
-  "st" :: struct.ptrT WalogState;
-  "condLogger" :: condvarRefT;
-  "condInstall" :: condvarRefT;
-  "condShut" :: condvarRefT
+  "circ" :: ptrT;
+  "st" :: ptrT;
+  "condLogger" :: ptrT;
+  "condInstall" :: ptrT;
+  "condShut" :: ptrT
 ].
 
 Definition Walog__LogSz: val :=

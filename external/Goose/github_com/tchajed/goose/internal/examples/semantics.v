@@ -484,7 +484,7 @@ Definition standardForLoop: val :=
 
 (* based off diskAppendWait loop pattern in logging2 *)
 Definition LoopStruct := struct.decl [
-  "loopNext" :: refT uint64T
+  "loopNext" :: ptrT
 ].
 
 Definition LoopStruct__forLoopWait: val :=
@@ -714,8 +714,8 @@ Definition testComparePointerToNil: val :=
 
 Definition testCompareNilToNil: val :=
   rec: "testCompareNilToNil" <> :=
-    let: "s" := ref (zero_val (refT uint64T)) in
-    (![refT uint64T] "s" = #null).
+    let: "s" := ref (zero_val ptrT) in
+    (![ptrT] "s" = #null).
 
 Definition testComparePointerWrappedToNil: val :=
   rec: "testComparePointerWrappedToNil" <> :=
@@ -1132,8 +1132,8 @@ Definition failing_testStructUpdates: val :=
     struct.storeF TwoInts "x" "b1" #3;;
     let: "b2" := ref_to (struct.t TwoInts) (S__readB "ns") in
     "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (![struct.t TwoInts] "b2") = #1);;
-    let: "b3" := ref_to (refT (struct.t TwoInts)) (struct.fieldRef S "b" "ns") in
-    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF TwoInts "x" (![refT (struct.t TwoInts)] "b3") = #1);;
+    let: "b3" := ref_to ptrT (struct.fieldRef S "b" "ns") in
+    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF TwoInts "x" (![ptrT] "b3") = #1);;
     S__updateBValX "ns" #4;;
     "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (S__readBVal "ns") = #4);;
     ![boolT] "ok".
@@ -1141,27 +1141,27 @@ Definition failing_testStructUpdates: val :=
 Definition testNestedStructUpdates: val :=
   rec: "testNestedStructUpdates" <> :=
     let: "ok" := ref_to boolT #true in
-    let: "ns" := ref_to (refT (struct.t S)) (NewS #()) in
-    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![refT (struct.t S)] "ns")) #5;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.loadF S "b" (![refT (struct.t S)] "ns")) = #5);;
-    "ns" <-[refT (struct.t S)] NewS #();;
-    let: "p" := ref_to (refT (struct.t TwoInts)) (struct.fieldRef S "b" (![refT (struct.t S)] "ns")) in
-    struct.storeF TwoInts "x" (![refT (struct.t TwoInts)] "p") #5;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.loadF S "b" (![refT (struct.t S)] "ns")) = #5);;
-    "ns" <-[refT (struct.t S)] NewS #();;
-    "p" <-[refT (struct.t TwoInts)] struct.fieldRef S "b" (![refT (struct.t S)] "ns");;
-    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![refT (struct.t S)] "ns")) #5;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.load TwoInts (![refT (struct.t TwoInts)] "p")) = #5);;
-    "ns" <-[refT (struct.t S)] NewS #();;
-    "p" <-[refT (struct.t TwoInts)] struct.fieldRef S "b" (![refT (struct.t S)] "ns");;
-    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![refT (struct.t S)] "ns")) #5;;
-    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF TwoInts "x" (![refT (struct.t TwoInts)] "p") = #5);;
+    let: "ns" := ref_to ptrT (NewS #()) in
+    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![ptrT] "ns")) #5;;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.loadF S "b" (![ptrT] "ns")) = #5);;
+    "ns" <-[ptrT] NewS #();;
+    let: "p" := ref_to ptrT (struct.fieldRef S "b" (![ptrT] "ns")) in
+    struct.storeF TwoInts "x" (![ptrT] "p") #5;;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.loadF S "b" (![ptrT] "ns")) = #5);;
+    "ns" <-[ptrT] NewS #();;
+    "p" <-[ptrT] struct.fieldRef S "b" (![ptrT] "ns");;
+    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![ptrT] "ns")) #5;;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.get TwoInts "x" (struct.load TwoInts (![ptrT] "p")) = #5);;
+    "ns" <-[ptrT] NewS #();;
+    "p" <-[ptrT] struct.fieldRef S "b" (![ptrT] "ns");;
+    struct.storeF TwoInts "x" (struct.fieldRef S "b" (![ptrT] "ns")) #5;;
+    "ok" <-[boolT] (![boolT] "ok") && (struct.loadF TwoInts "x" (![ptrT] "p") = #5);;
     ![boolT] "ok".
 
 Definition testStructConstructions: val :=
   rec: "testStructConstructions" <> :=
     let: "ok" := ref_to boolT #true in
-    let: "p1" := ref (zero_val (refT (struct.t TwoInts))) in
+    let: "p1" := ref (zero_val ptrT) in
     let: "p2" := ref (zero_val (struct.t TwoInts)) in
     let: "p3" := struct.mk TwoInts [
       "y" ::= #0;
@@ -1171,12 +1171,12 @@ Definition testStructConstructions: val :=
       "x" ::= #0;
       "y" ::= #0
     ] in
-    "ok" <-[boolT] (![boolT] "ok") && (![refT (struct.t TwoInts)] "p1" = #null);;
-    "p1" <-[refT (struct.t TwoInts)] struct.alloc TwoInts (zero_val (struct.t TwoInts));;
+    "ok" <-[boolT] (![boolT] "ok") && (![ptrT] "p1" = #null);;
+    "p1" <-[ptrT] struct.alloc TwoInts (zero_val (struct.t TwoInts));;
     "ok" <-[boolT] (![boolT] "ok") && (![struct.t TwoInts] "p2" = "p3");;
     "ok" <-[boolT] (![boolT] "ok") && ("p3" = "p4");;
-    "ok" <-[boolT] (![boolT] "ok") && ("p4" = struct.load TwoInts (![refT (struct.t TwoInts)] "p1"));;
-    "ok" <-[boolT] (![boolT] "ok") && ("p4" ≠ ![refT (struct.t TwoInts)] "p1");;
+    "ok" <-[boolT] (![boolT] "ok") && ("p4" = struct.load TwoInts (![ptrT] "p1"));;
+    "ok" <-[boolT] (![boolT] "ok") && ("p4" ≠ ![ptrT] "p1");;
     ![boolT] "ok".
 
 Definition testIncompleteStruct: val :=
@@ -1207,9 +1207,9 @@ Definition testStoreInStructVar: val :=
 
 Definition testStoreInStructPointerVar: val :=
   rec: "testStoreInStructPointerVar" <> :=
-    let: "p" := ref_to (refT (struct.t StructWrap)) (struct.alloc StructWrap (zero_val (struct.t StructWrap))) in
-    struct.storeF StructWrap "i" (![refT (struct.t StructWrap)] "p") #5;;
-    (struct.loadF StructWrap "i" (![refT (struct.t StructWrap)] "p") = #5).
+    let: "p" := ref_to ptrT (struct.alloc StructWrap (zero_val (struct.t StructWrap))) in
+    struct.storeF StructWrap "i" (![ptrT] "p") #5;;
+    (struct.loadF StructWrap "i" (![ptrT] "p") = #5).
 
 Definition testStoreComposite: val :=
   rec: "testStoreComposite" <> :=
@@ -1256,9 +1256,9 @@ Definition logLength : expr := #1 + #2 * MaxTxnWrites.
 
 Definition Log := struct.decl [
   "d" :: disk.Disk;
-  "l" :: lockRefT;
+  "l" :: ptrT;
   "cache" :: mapT disk.blockT;
-  "length" :: refT uint64T
+  "length" :: ptrT
 ].
 
 Definition intToBlock: val :=

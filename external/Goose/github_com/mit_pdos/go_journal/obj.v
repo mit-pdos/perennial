@@ -16,8 +16,8 @@ From Goose Require github_com.mit_pdos.go_journal.wal.
 
    There is only one Log object. *)
 Definition Log := struct.decl [
-  "mu" :: lockRefT;
-  "log" :: struct.ptrT wal.Walog;
+  "mu" :: ptrT;
+  "log" :: ptrT;
   "pos" :: wal.LogPosition
 ].
 
@@ -45,7 +45,7 @@ Definition Log__Load: val :=
 Definition Log__installBufsMap: val :=
   rec: "Log__installBufsMap" "l" "bufs" :=
     let: "blks" := NewMap (slice.T byteT) #() in
-    ForSlice (refT (struct.t buf.Buf)) <> "b" "bufs"
+    ForSlice ptrT <> "b" "bufs"
       (if: (struct.loadF buf.Buf "Sz" "b" = common.NBITBLOCK)
       then MapInsert "blks" (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b")) (struct.loadF buf.Buf "Data" "b")
       else

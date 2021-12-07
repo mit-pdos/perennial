@@ -85,7 +85,7 @@ Proof.
 
   wp_pures.
   iDestruct (is_free_lock_ty with "Hfreelock") as "%".
-  wp_apply wp_allocStruct; first by eauto.
+  wp_apply wp_allocStruct; first val_ty.
   iIntros (ls) "Hls".
 
   iMod (ghost_map_alloc (∅: gmap u64 bool)) as (hG) "[Hheapctx _]".
@@ -559,7 +559,7 @@ Qed.
 Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (is_slice_small shardslice (struct.ptrT lockShard) 1 shards) ∗
+    "#Hslice" ∷ readonly (is_slice_small shardslice ptrT 1 shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P.
@@ -590,8 +590,8 @@ Proof.
   wp_pures.
   wp_apply (wp_forUpto (λ (i : u64),
                           ∃ s shardlocs ghs,
-                            "Hvar" ∷ shards ↦[slice.T (refT (struct.t lockShard))] (slice_val s) ∗
-                            "Hslice" ∷ is_slice s (struct.ptrT lockShard) 1 shardlocs ∗
+                            "Hvar" ∷ shards ↦[slice.T ptrT] (slice_val s) ∗
+                            "Hslice" ∷ is_slice s ptrT 1 shardlocs ∗
                             "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
                             "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (int.Z i) (NSHARD-int.Z i),
                               [∗ set] a ∈ covered_by_shard (int.Z shardnum) covered, P a ) ∗

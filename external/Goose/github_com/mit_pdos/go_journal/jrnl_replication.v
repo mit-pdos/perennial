@@ -9,8 +9,8 @@ From Goose Require github_com.mit_pdos.go_journal.obj.
 From Goose Require github_com.mit_pdos.go_journal.util.
 
 Definition RepBlock := struct.decl [
-  "txn" :: struct.ptrT obj.Log;
-  "m" :: lockRefT;
+  "txn" :: ptrT;
+  "m" :: ptrT;
   "a0" :: struct.t addr.Addr;
   "a1" :: struct.t addr.Addr
 ].

@@ -10,8 +10,8 @@ From Goose Require github_com.mit_pdos.gokv.memkv.
 Definition BAL_TOTAL : expr := #1000.
 
 Definition BankClerk := struct.decl [
-  "lck" :: struct.ptrT lockservice.LockClerk;
-  "kvck" :: struct.ptrT memkv.SeqKVClerk;
+  "lck" :: ptrT;
+  "kvck" :: ptrT;
   "acc1" :: uint64T;
   "acc2" :: uint64T
 ].

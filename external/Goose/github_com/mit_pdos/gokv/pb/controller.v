@@ -11,7 +11,7 @@ From Goose Require github_com.tchajed.marshal.
 Definition CONTROLLER_ADD : expr := #0.
 
 Definition ControllerClerk := struct.decl [
-  "cl" :: struct.ptrT rpc.RPCClient
+  "cl" :: ptrT
 ].
 
 Definition ControllerClerk__AddNewServer: val :=
@@ -32,10 +32,10 @@ Definition MakeControllerClerk: val :=
 (* controller.go *)
 
 Definition ControllerServer := struct.decl [
-  "mu" :: lockRefT;
+  "mu" :: ptrT;
   "cn" :: uint64T;
-  "conf" :: struct.ptrT pb.Configuration;
-  "hbtimers" :: slice.T timerRefT;
+  "conf" :: ptrT;
+  "hbtimers" :: slice.T ptrT;
   "failed" :: mapT boolT
 ].
 
@@ -68,14 +68,14 @@ Definition ControllerServer__HeartbeatThread: val :=
       let: "conf" := struct.loadF ControllerServer "conf" "s" in
       let: "cn" := struct.loadF ControllerServer "cn" "s" in
       lock.release (struct.loadF ControllerServer "mu" "s");;
-      let: "hbtimers" := NewSlice timerRefT (slice.len (struct.loadF pb.Configuration "Replicas" "conf")) in
-      let: "clerks" := NewSlice (struct.ptrT pb.ReplicaClerk) (slice.len (struct.loadF pb.Configuration "Replicas" "conf")) in
+      let: "hbtimers" := NewSlice ptrT (slice.len (struct.loadF pb.Configuration "Replicas" "conf")) in
+      let: "clerks" := NewSlice ptrT (slice.len (struct.loadF pb.Configuration "Replicas" "conf")) in
       ForSlice uint64T "i" "r" (struct.loadF pb.Configuration "Replicas" "conf")
-        (SliceSet (refT (struct.t pb.ReplicaClerk)) "clerks" "i" (pb.MakeReplicaClerk "r"));;
+        (SliceSet ptrT "clerks" "i" (pb.MakeReplicaClerk "r"));;
       struct.storeF ControllerServer "failed" "s" (NewMap boolT #());;
-      ForSlice (refT (struct.t pb.ReplicaClerk)) "i" <> "clerks"
+      ForSlice ptrT "i" <> "clerks"
         (let: "i" := "i" in
-        SliceSet timerRefT "hbtimers" "i" (time.AfterFunc "HBTIMEOUT" (λ: <>,
+        SliceSet ptrT "hbtimers" "i" (time.AfterFunc "HBTIMEOUT" (λ: <>,
           lock.acquire (struct.loadF ControllerServer "mu" "s");;
           (if: (struct.loadF ControllerServer "cn" "s" = "cn")
           then MapInsert (struct.loadF ControllerServer "failed" "s") "i" #true
@@ -98,11 +98,11 @@ Definition ControllerServer__HeartbeatThread: val :=
             Break
           else
             lock.release (struct.loadF ControllerServer "mu" "s");;
-            ForSlice (refT (struct.t pb.ReplicaClerk)) "i" "ck" "clerks"
+            ForSlice ptrT "i" "ck" "clerks"
               (let: "i" := "i" in
               let: "ck" := "ck" in
               Fork ((if: pb.ReplicaClerk__HeartbeatRPC "ck"
-                    then time.Timer__Reset (SliceGet timerRefT "hbtimers" "i") "HBTIMEOUT"
+                    then time.Timer__Reset (SliceGet ptrT "hbtimers" "i") "HBTIMEOUT"
                     else #())));;
             time.Sleep (#500 * time.Millisecond);;
             Continue)));;
@@ -140,7 +140,7 @@ Definition StartControllerServer: val :=
       "Conf" ::= struct.loadF ControllerServer "conf" "s"
     ]);;
     Fork (ControllerServer__HeartbeatThread "s");;
-    let: "handlers" := NewMap ((slice.T byteT -> refT (slice.T byteT) -> unitT)%ht) #() in
+    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" CONTROLLER_ADD (λ: "raw_args" <>,
       let: "dec" := marshal.NewDec "raw_args" in
       let: "newServer" := marshal.Dec__GetInt "dec" in
