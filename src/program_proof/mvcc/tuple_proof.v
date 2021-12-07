@@ -196,16 +196,8 @@ Proof.
     { iIntros "_ Htidown".
       wp_loadField.
       wp_pures.
-      iFrame.
-      iPureIntro.
-      (* Maybe a more concise proof here?
-       TODO use upstream lemma once std++ MR 347 lands *)
-      assert (H : ∀ (P : Prop) (dec : Decision P), negb (bool_decide P) = bool_decide (not P)).
-      { intros P dec. case_bool_decide.
-        - simpl. symmetry. rewrite bool_decide_eq_false. auto.
-        - simpl. symmetry. rewrite bool_decide_eq_true. apply H. }
-      rewrite H.
-      reflexivity.
+      rewrite -bool_decide_not.
+      eauto with iFrame.
     }
     iIntros "Htidown".
     wp_if_destruct.
