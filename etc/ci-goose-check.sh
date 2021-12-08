@@ -4,25 +4,25 @@ set -e
 ## Repository pinning
 
 GOOSE_REPO=https://github.com/tchajed/goose/
-GOOSE_COMMIT=194a438
+GOOSE_COMMIT=master
 
 STD_REPO=https://github.com/goose-lang/std
-STD_COMMIT=21c4593d3dec287058496318f724f67c23b6ab43
+STD_COMMIT=master
 
 MARSHAL_REPO=https://github.com/tchajed/marshal
-MARSHAL_COMMIT=c83ef7fef021044dd066c60adb197d8e5b1657d1
+MARSHAL_COMMIT=master
 
 EXAMPLES_REPO=https://github.com/mit-pdos/perennial-examples
-EXAMPLES_COMMIT=e851a931fe93455088a8ceab0b2de3f2986bc15a
+EXAMPLES_COMMIT=master
 
 JOURNAL_REPO=https://github.com/mit-pdos/go-journal
-JOURNAL_COMMIT=5c187da39e0cc7f566cfac1ba6d87b33e6cf4ece
+JOURNAL_COMMIT=master
 
-NFSD_REPO=https://github.com/mit-pdos/goose-nfsd
-NFSD_COMMIT=cc2916878dd43ef8929a0dd0258b0214f08f58f3
+NFSD_REPO=https://github.com/mit-pdos/go-nfsd
+NFSD_COMMIT=master
 
-GOKV_REPO=https://github.com/mit-pdos/gokv.git
-GOKV_COMMIT=4af64f65dc1f27691c0fb4c270f6751908983ce5
+GOKV_REPO=https://github.com/mit-pdos/gokv
+GOKV_COMMIT=master
 
 ## Actual test logic
 
