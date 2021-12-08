@@ -22,7 +22,7 @@ NFSD_REPO=https://github.com/mit-pdos/go-nfsd
 NFSD_COMMIT=master
 
 GOKV_REPO=https://github.com/mit-pdos/gokv
-GOKV_COMMIT=master
+GOKV_COMMIT=main
 
 ## Actual test logic
 
