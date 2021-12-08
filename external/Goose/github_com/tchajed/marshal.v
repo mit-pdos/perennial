@@ -10,12 +10,17 @@ Definition Enc := struct.decl [
   "off" :: ptrT
 ].
 
-Definition NewEnc: val :=
-  rec: "NewEnc" "sz" :=
+Definition NewEncFromSlice: val :=
+  rec: "NewEncFromSlice" "b" :=
     struct.mk Enc [
-      "b" ::= NewSlice byteT "sz";
+      "b" ::= "b";
       "off" ::= ref (zero_val uint64T)
     ].
+
+Definition NewEnc: val :=
+  rec: "NewEnc" "sz" :=
+    let: "b" := NewSlice byteT "sz" in
+    NewEncFromSlice "b".
 
 Definition Enc__PutInt: val :=
   rec: "Enc__PutInt" "enc" "x" :=

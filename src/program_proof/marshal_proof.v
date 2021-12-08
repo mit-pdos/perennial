@@ -153,6 +153,25 @@ Definition is_enc (enc_v:val) (sz:Z) (r: Rec) (remaining: Z) : iProp Σ :=
     "%Hencoded" ∷ ⌜has_encoding data r⌝
 .
 
+Theorem wp_new_enc_from_slice stk E s (data: list u8) :
+  {{{ is_slice s byteT 1 data }}}
+    NewEncFromSlice (slice_val s) @ stk; E
+  {{{ (enc_v:val), RET enc_v; is_enc enc_v (length data) [] (length data) }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ".
+  iDestruct (is_slice_split with "Hs") as "[Hs Hcap]".
+  wp_call.
+  wp_apply (typed_mem.wp_AllocAt uint64T); eauto.
+  iIntros (off_l) "Hoff".
+  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  iExists _, _, _; iFrame.
+  iPureIntro.
+  split_and!; auto; len.
+  rewrite /has_encoding //.
+Qed.
+
 Theorem wp_new_enc stk E (sz: u64) :
   {{{ True }}}
     NewEnc #sz @ stk; E
@@ -162,15 +181,10 @@ Proof.
   wp_call.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (s) "Hs".
-  iDestruct (is_slice_split with "Hs") as "[Hs Hcap]".
-  wp_apply (typed_mem.wp_AllocAt uint64T); eauto.
-  iIntros (off_l) "Hoff".
-  wp_pures.
-  iApply "HΦ".
-  iExists _, _, _; iFrame.
-  iPureIntro.
-  split_and!; auto; len.
-  rewrite /has_encoding //.
+  wp_apply (wp_new_enc_from_slice with "Hs").
+  rewrite replicate_length. word_cleanup.
+  iIntros (enc_v) "Henc".
+  iApply ("HΦ" with "Henc").
 Qed.
 
 Lemma has_encoding_app data r data' r' :
