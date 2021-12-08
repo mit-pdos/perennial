@@ -97,3 +97,12 @@ jobs:
         # to avoid a warning at cleanup time
         if: ${{ always() }}
         run: sudo chown -R 1001:116 .
+
+  check-goose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: check that Goosed files are clean
+        run: etc/ci-goose-check.sh
