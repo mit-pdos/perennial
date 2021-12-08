@@ -12,9 +12,9 @@ Definition rootInode : expr := #0.
 
 Definition Dir := struct.decl [
   "d" :: disk.Disk;
-  "allocator" :: struct.ptrT alloc.Allocator;
-  "m" :: lockRefT;
-  "inodes" :: mapT (struct.ptrT inode.Inode)
+  "allocator" :: ptrT;
+  "m" :: ptrT;
+  "inodes" :: mapT ptrT
 ].
 
 Definition Dir__mkHdr: val :=
@@ -43,7 +43,7 @@ Definition parseHdr: val :=
 Definition openInodes: val :=
   rec: "openInodes" "d" :=
     let: "inode_addrs" := parseHdr (disk.Read rootInode) in
-    let: "inodes" := NewMap (struct.ptrT inode.Inode) #() in
+    let: "inodes" := NewMap ptrT #() in
     ForSlice uint64T <> "a" "inode_addrs"
       (MapInsert "inodes" "a" (inode.Open "d" "a"));;
     "inodes".

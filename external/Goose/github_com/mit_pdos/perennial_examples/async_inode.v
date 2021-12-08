@@ -9,7 +9,7 @@ Definition MaxBlocks : expr := #511.
 
 Definition Inode := struct.decl [
   "d" :: disk.Disk;
-  "m" :: lockRefT;
+  "m" :: ptrT;
   "addr" :: uint64T;
   "addrs" :: slice.T uint64T;
   "buffered" :: slice.T disk.blockT

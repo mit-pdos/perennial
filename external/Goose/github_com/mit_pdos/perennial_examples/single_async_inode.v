@@ -9,8 +9,8 @@ From Goose Require github_com.mit_pdos.perennial_examples.async_inode.
    allocator with anything else. *)
 
 Definition SingleInode := struct.decl [
-  "i" :: struct.ptrT async_inode.Inode;
-  "alloc" :: struct.ptrT alloc.Allocator
+  "i" :: ptrT;
+  "alloc" :: ptrT
 ].
 
 (* Restore the SingleInode from disk

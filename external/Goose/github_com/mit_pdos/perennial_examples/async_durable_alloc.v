@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import ffi.async_disk_prelude.
    corresponds to number 0, bit 1 to 1, and so on. *)
 Definition Alloc := struct.decl [
   "d" :: disk.Disk;
-  "mu" :: lockRefT;
+  "mu" :: ptrT;
   "addr" :: uint64T;
   "next" :: uint64T;
   "bitmap" :: slice.T byteT;

@@ -15,7 +15,7 @@ Definition indirectNumBlocks : expr := #512.
 
 Definition Inode := struct.decl [
   "d" :: disk.Disk;
-  "m" :: lockRefT;
+  "m" :: ptrT;
   "addr" :: uint64T;
   "size" :: uint64T;
   "direct" :: slice.T uint64T;

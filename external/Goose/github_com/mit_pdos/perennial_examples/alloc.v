@@ -13,7 +13,7 @@ Definition AddrSet: ty := mapT (struct.t unit).
    the caller is responsible for returning its set of free disk blocks on
    recovery. *)
 Definition Allocator := struct.decl [
-  "m" :: lockRefT;
+  "m" :: ptrT;
   "free" :: mapT (struct.t unit)
 ].
 

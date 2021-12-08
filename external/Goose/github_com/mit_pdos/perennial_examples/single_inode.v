@@ -9,8 +9,8 @@ From Goose Require github_com.mit_pdos.perennial_examples.inode.
    allocator with anything else. *)
 
 Definition SingleInode := struct.decl [
-  "i" :: struct.ptrT inode.Inode;
-  "alloc" :: struct.ptrT alloc.Allocator
+  "i" :: ptrT;
+  "alloc" :: ptrT
 ].
 
 (* Restore the SingleInode from disk

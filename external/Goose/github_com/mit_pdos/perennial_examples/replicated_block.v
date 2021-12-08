@@ -5,7 +5,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 Definition RepBlock := struct.decl [
   "d" :: disk.Disk;
   "addr" :: uint64T;
-  "m" :: lockRefT
+  "m" :: ptrT
 ].
 
 (* Open initializes a replicated block,
