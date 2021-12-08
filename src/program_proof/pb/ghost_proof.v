@@ -1,8 +1,20 @@
+From iris.staging.algebra Require Import mono_list.
 From Perennial.program_proof Require Import grove_prelude.
 
 (*
   "Gauge-invariant" part of the proof
  *)
+Local Definition cn_logR := gmapR u64 (mono_listR (leibnizO u64)).
+Local Definition cn_rep_logR := gmapR u64 (mono_listR (leibnizO u64)).
+Class pb_ghostG Σ :=
+  { pb_ghost_cn_logG :> inG Σ cn_logR;
+    pb_ghost_cn_rep_logG :> inG Σ cn_rep_logR }.
+
+Definition pb_ghostΣ := #[GFunctor cn_logR; GFunctor cn_rep_logR].
+
+Global Instance subG_pb_ghostG {Σ} :
+  subG pb_ghostΣ Σ → pb_ghostG Σ.
+Proof. solve_inG. Qed.
 
 Record pb_names :=
   {
@@ -19,7 +31,7 @@ Notation "lhs ⪯ rhs" := (log_po lhs rhs)
 
 Section definitions.
 
-Context `{!gooseGlobalGS Σ}.
+Context `{!gooseGlobalGS Σ, !pb_ghostG Σ}.
 
 Implicit Type γ : pb_names.
 

@@ -14,6 +14,7 @@ Section replica_ghost_defns.
 
 Context `{!heapGS Σ}.
 Context `{!rpcregG Σ}.
+Context `{!pb_ghostG Σ}.
 Implicit Type γ:pb_names.
 
 Record Replica := mkReplica

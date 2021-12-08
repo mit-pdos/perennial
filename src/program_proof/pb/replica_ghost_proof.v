@@ -9,6 +9,7 @@ Section replica_ghost_proof.
 
 Context `{!heapGS Σ}.
 Context `{!rpcregG Σ}.
+Context `{!pb_ghostG Σ}.
 Implicit Type γ:pb_names.
 
 (* accept a new log *)

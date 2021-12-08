@@ -8,6 +8,7 @@ Section replica_defns.
 
 Context `{!heapGS Σ}.
 Context `{!rpcregG Σ}.
+Context `{!pb_ghostG Σ}.
 Implicit Type γ:pb_names.
 
 Definition uREPLICA_APPEND: nat :=

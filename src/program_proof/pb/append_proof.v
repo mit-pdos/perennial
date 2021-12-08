@@ -6,6 +6,7 @@ From Perennial.program_proof.pb Require Export common_proof append_marshal_proof
 Section append_proof.
 
 Context `{!heapGS Σ}.
+Context `{!pb_ghostG Σ}.
 
 Lemma wp_ReplicaServer__AppendRPC (s:loc) rid γ (args_ptr:loc) args :
   {{{
