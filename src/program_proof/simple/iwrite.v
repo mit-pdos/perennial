@@ -214,7 +214,7 @@ Proof.
       revert fin. word.
     }
     replace (int.nat (word.add count' 1%Z)) with (int.nat count' + 1) by word.
-    rewrite plus_assoc.
+    rewrite Nat.add_assoc.
     rewrite skipn_firstn_comm.
     replace (int.nat offset + int.nat count' + 1 - (int.nat offset + int.nat count')) with 1 by word.
     edestruct (length_1_singleton (T:=u8) (take 1 (drop (int.nat offset + int.nat count') bbuf))) as [x Hx].

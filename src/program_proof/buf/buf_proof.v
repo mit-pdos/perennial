@@ -976,7 +976,7 @@ Opaque PeanoNat.Nat.div.
         rewrite Nat.mod_mul_r in Hy; try word.
       }
       apply Nat.div_exact in Hx; try word.
-      rewrite mult_comm in Hx.
+      rewrite Nat.mul_comm in Hx.
       replace (S ((int.nat (addrOff a) `div` 8) `div` 128) * 128)%nat
          with (((int.nat (addrOff a) `div` 8) `div` 128) * 128 + 128)%nat by lia.
       rewrite -Hx.
@@ -991,7 +991,7 @@ Opaque PeanoNat.Nat.div.
         rewrite Nat.mod_mul_r in Hy; try word.
       }
 
-      rewrite mult_comm. rewrite -> Nat.div_add_l by lia.
+      rewrite Nat.mul_comm. rewrite -> Nat.div_add_l by lia.
       change ((8 * 128 - 1) `div` 8)%nat with (127)%nat.
       lia.
     }

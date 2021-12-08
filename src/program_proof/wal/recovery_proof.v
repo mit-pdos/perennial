@@ -1041,7 +1041,7 @@ Proof.
       rewrite subslice_lookup; last by lia.
       rewrite -(lookup_take _ (S (durable_lb `max` diskEnd_txn_id)));
         last by lia.
-      rewrite le_plus_minus_r; last by lia.
+      rewrite -nat_le_plus_minus; last by lia.
       eassumption.
     }
     rewrite Htxn' /=.

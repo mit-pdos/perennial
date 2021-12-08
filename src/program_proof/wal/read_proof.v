@@ -49,7 +49,7 @@ Proof.
   assert (u = u'); [ | subst ].
   { autorewrite with len in H0.
     rewrite -> lookup_app_r in H0 by lia.
-    rewrite minus_diag /= in H0.
+    rewrite Nat.sub_diag /= in H0.
     congruence. }
   clear H0 H2.
   destruct u' as [a b]; simpl in *.
