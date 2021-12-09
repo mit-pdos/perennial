@@ -459,7 +459,7 @@ Proof using stagedG0.
     iMod (later_tok_decr with "[$]") as (ns' Hle') "Hg".
     iApply (step_fupd2N_inner_fupd2).
     iApply (step_fupd2N_inner_le _ (S (num_laters_per_step ns'))).
-    { apply lt_le_S. apply (num_laters_per_step_lt). lia. }
+    { apply Nat.le_succ_l. apply (num_laters_per_step_lt). lia. }
     simpl.
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
     { exfalso. apply Qp_lt_nge in Hlt2. revert Hval. rewrite frac_valid.
@@ -513,7 +513,7 @@ Proof using stagedG0.
     iMod (later_tok_decr with "[$]") as (ns' Hle') "Hg".
     iApply (step_fupd2N_inner_fupd2).
     iApply (step_fupd2N_inner_le _ (S (num_laters_per_step ns'))).
-    { apply lt_le_S. apply (num_laters_per_step_lt). lia. }
+    { apply Nat.le_succ_l. apply (num_laters_per_step_lt). lia. }
     simpl.
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
     { exfalso. apply Qp_lt_nge in Hlt2. revert Hval. rewrite frac_valid.

@@ -33,8 +33,8 @@ Proof.
     rewrite [a in _ _ a]Nat.pow_add_r.
     rewrite [a in _ _ a]/=.
     transitivity (2 + 3^(n1 + 1) + 3^(n1 + 1))%nat; first by lia.
-    rewrite plus_0_r -plus_assoc.
-    apply plus_le_compat_r.
+    rewrite Nat.add_0_r -Nat.add_assoc.
+    apply Nat.add_le_mono_r.
     clear.
     transitivity (2 ^ 1)%nat; first by auto.
     etransitivity; last eapply (Nat.pow_le_mono_r _ 1); try (simpl; lia).

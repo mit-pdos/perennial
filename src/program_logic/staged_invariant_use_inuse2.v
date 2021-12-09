@@ -219,7 +219,7 @@ Proof.
       iMod (later_tok_incr with "[$]") as "(Hg&Hltok)".
       iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
       iMod (global_state_interp_le with "Hg") as "$".
-      { apply lt_le_S, step_count_next_mono; lia. }
+      { apply Nat.le_succ_l, step_count_next_mono; lia. }
       iModIntro. iFrame.
       iSplitR "Hefs".
       - iEval (rewrite wpc0_unfold /wpc_pre).
@@ -288,7 +288,7 @@ Proof.
     iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
     iMod (later_tok_incr with "[$]") as "(Hg&Hltok)".
     iMod (global_state_interp_le with "Hg") as "$".
-    { apply lt_le_S, step_count_next_mono; lia. }
+    { apply Nat.le_succ_l, step_count_next_mono; lia. }
     iModIntro. iSplitR "Hefs"; last first.
     { iApply (big_sepL_mono with "Hefs").
       iIntros. iApply (wpc0_mj_le); last by iFrame.
@@ -447,7 +447,7 @@ Proof.
       }
       iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
       iMod (global_state_interp_le with "Hg") as "$".
-      { apply lt_le_S, step_count_next_mono; lia. }
+      { apply Nat.le_succ_l, step_count_next_mono; lia. }
       iModIntro. iFrame.
       iSplitR "Hefs".
       - iEval (rewrite wpc0_unfold /wpc_pre).
@@ -536,7 +536,7 @@ Proof.
   }
   iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
   iMod (global_state_interp_le with "Hg") as "$".
-  { apply lt_le_S, step_count_next_mono; lia. }
+  { apply Nat.le_succ_l, step_count_next_mono; lia. }
   iModIntro. iSplitR "Hefs"; last first.
   { iApply (big_sepL_mono with "Hefs").
     iIntros. iApply (wpc0_mj_le); last by iFrame.

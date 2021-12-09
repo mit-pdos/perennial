@@ -89,7 +89,7 @@ Proof.
     iMod (later_tok_incr with "[$]") as "(Hg&Htok')".
     iFrame.
     iMod (global_state_interp_le _ ((step_count_next ns)) _ _ with "Hg") as "Hg".
-    { apply lt_le_S, step_count_next_mono. lia. }
+    { apply Nat.le_succ_l, step_count_next_mono. lia. }
     iFrame.
     iApply (wpc0_strong_mono with "Hwp"); try reflexivity.
     iModIntro. iSplit.

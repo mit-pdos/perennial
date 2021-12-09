@@ -94,7 +94,7 @@ Proof.
   iMod ("H" with "[//]") as "($&Hg&Hwpc0&$)".
   iMod (later_tok_incr with "[$]") as "(Hg&Hltok)".
   iMod (global_state_interp_le with "Hg") as "$".
-  { apply lt_le_S, step_count_next_mono; lia. }
+  { apply Nat.le_succ_l, step_count_next_mono; lia. }
   iModIntro.
   iApply (wpc0_strong_mono with "Hwpc0"); auto.
   iSplit.

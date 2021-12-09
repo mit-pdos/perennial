@@ -224,25 +224,25 @@ Proof.
     { auto. }
     iIntros (HG'') "H".
     iMod "H". iModIntro.
-    rewrite {1}plus_comm Nat_iter_add.
+    rewrite {1}Nat.add_comm Nat_iter_add.
     iEval rewrite -Nat_iter_S Nat_iter_S_r.
     iApply step_fupd2N_le; last iApply (step_fupd2N_wand with "H").
     { apply Nat.eq_le_incl. f_equal.
-      rewrite {1}plus_comm ?Nat_iter_add.
+      rewrite {1}Nat.add_comm ?Nat_iter_add.
       f_equal. rewrite -Nat_iter_S -Nat_iter_S_r //. }
     iIntros ">H".
-    rewrite {1}plus_comm ?Nat_iter_add.
+    rewrite {1}Nat.add_comm ?Nat_iter_add.
     iDestruct "H" as (?? Heq) "(H1&?&Hg&?&?)".
     iExists _, _. iFrame "∗".
     iSplitL ""; first eauto.
     iSplitL "H1".
     { iModIntro. iNext. iNext. iApply (laterN_le with "H1"); auto.
       apply Nat.eq_le_incl. f_equal.
-      rewrite -?Nat_iter_S_r -?Nat_iter_add plus_assoc.
+      rewrite -?Nat_iter_S_r -?Nat_iter_add Nat.add_assoc.
       f_equal. lia. }
     iMod (global_state_interp_le with "Hg") as "$".
     { apply Nat.eq_le_incl.
-      rewrite -?Nat_iter_S_r -?Nat_iter_add plus_assoc.
+      rewrite -?Nat_iter_S_r -?Nat_iter_add Nat.add_assoc.
       f_equal. lia. }
     iModIntro; done.
   - iMod "H" as (HG') "(HNC&Hσ&Hg&Hr)".
@@ -264,7 +264,7 @@ Proof.
     rewrite ?perennial_num_laters_per_step_spec.
     rewrite ?perennial_step_count_next_spec.
     iApply (step_fupd2N_inner_wand with "H"); try set_solver+.
-    { rewrite plus_0_r. auto. }
+    { rewrite Nat.add_0_r. auto. }
     iIntros "H".
     iFrame "Hinv'". rewrite Nat.add_0_r.
     rewrite -Nat_iter_S Nat_iter_S_r.
@@ -348,7 +348,7 @@ Proof.
   { apply disjoint_union_l; split.
     - apply coPset_inl_inr_disj.
     - apply MaybeEn12_disj. }
-  rewrite plus_comm. iEval (simpl).
+  rewrite Nat.add_comm. iEval (simpl).
   iMod ("H" with "[$] [$]") as "[>Hw [>HE >H]]"; eauto.
   iDestruct "H" as (HI HG Hpf1 Hpf2 Hpf3 Hpf4) "H".
   rewrite {1}uPred_fupd_eq {1}/uPred_fupd_def.
