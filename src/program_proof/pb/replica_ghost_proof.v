@@ -54,7 +54,7 @@ Proof.
     assert (r.(cn) = newCn) as HsameCn.
     { word. }
     rewrite HsameCn.
-    iDestruct (proposal_lb_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
+    iDestruct (proposal_lb_fancy_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
     { (* new log bigger *)
       iMod (accepted_update _ _ _ _ newLog with "Haccepted") as "Haccepted".
       { done. }
@@ -129,7 +129,7 @@ Proof.
   iNamed "Hown".
   iDestruct (accepted_witness with "Haccepted") as "#Hacc1".
   (* NOTE: idea: introduce a "comparable" predicate, and have some lemmas about that *)
-  iDestruct (proposal_lb_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
+  iDestruct (proposal_lb_fancy_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
   { (* log must be equal *)
     replace (newLog) with (r.(opLog)); last first.
     { (* list_solver candidate *) admit. } (* len A ≤ len B ∧ B ⪯ A → B = A *)
