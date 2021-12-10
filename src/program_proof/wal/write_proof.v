@@ -43,7 +43,7 @@ Proof.
   iApply "HΦ".
   iSplit.
   { iPureIntro.
-    apply bool_decide_iff.
+    apply bool_decide_ext.
     word. }
   iFrame.
   iExists _; by iFrame "# ∗".

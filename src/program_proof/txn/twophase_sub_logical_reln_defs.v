@@ -608,7 +608,7 @@ Proof.
     iExists _. iFrame. iExists (bool_decide (vs1 = vs2)); eauto.
     iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
     iPureIntro. split; first auto. do 2 f_equal.
-    by apply bool_decide_iff.
+    by apply bool_decide_ext.
   - subst. simpl.
     wpc_bind (subst_map _ e1').
     iPoseProof (IHHtyping1 with "[//] [$] [$]") as "H"; eauto.

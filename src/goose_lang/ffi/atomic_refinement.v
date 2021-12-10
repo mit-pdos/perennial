@@ -456,7 +456,7 @@ Section go_refinement.
     val_impl #(bool_decide P1) #(bool_decide P2).
   Proof.
     intros.
-    rewrite (bool_decide_iff P1 P2) //.
+    rewrite (bool_decide_ext P1 P2) //.
   Qed.
 
   Lemma val_impl_comparable_to_eq:

@@ -1163,7 +1163,7 @@ Proof using spec_trans.
     iExists _. iFrame. iExists (bool_decide (vs1 = vs2)); eauto.
     iDestruct (comparableTy_val_eq with "Hv1 Hv2") as %Heq; auto.
     iPureIntro. split; first auto. do 2 f_equal.
-    by apply bool_decide_iff.
+    by apply bool_decide_ext.
   (* bin op *)
   - subst.
     iIntros (j K Hctx) "Hj". simpl.

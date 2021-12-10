@@ -871,7 +871,7 @@ Proof.
       apply (elem_of_map_2 (D:=gset _) addr2flat) in Hin.
       assumption.
   }
-  rewrite !(decide_iff _ _ _ _ Hlocked_iff) !decide_is_Some.
+  rewrite !(decide_ext _ _ _ _ Hlocked_iff) !decide_is_Some.
   iPoseProof (twophase_lift_if_needed with "Htxn_cinv Hjrnl Hcrash_invs Hlinv")
     as "H".
   iApply (wpc_nval_strong_mono with "H").
@@ -1797,7 +1797,7 @@ Proof.
     rewrite wrap_small;
       last by (apply Z_mod_pos_bound_weak; lia).
     rewrite /get_bit -bool_decide_decide.
-    unshelve (erewrite bool_decide_iff).
+    unshelve (erewrite bool_decide_ext).
     4: {
       split.
       - intros Heq.
@@ -1808,7 +1808,7 @@ Proof.
         assumption.
     }
     1: refine _.
-    unshelve (erewrite bool_decide_iff).
+    unshelve (erewrite bool_decide_ext).
     4: {
       rewrite word.unsigned_and /u8_from_u64 word.unsigned_modu;
         last by word.

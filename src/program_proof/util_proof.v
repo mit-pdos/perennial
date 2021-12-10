@@ -55,7 +55,7 @@ Proof.
   wp_call.
   iApply "HΦ".
   iPureIntro.
-  apply bool_decide_iff, sum_overflow_check.
+  apply bool_decide_ext, sum_overflow_check.
 Qed.
 
 Theorem wp_CloneByteSlice stk E s q vs :

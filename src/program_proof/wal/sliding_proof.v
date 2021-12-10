@@ -663,7 +663,7 @@ Proof.
     { iFrame "% ∗".
       iExists _, _; iFrame "# ∗". }
     iModIntro. iExactEq "HΦ".
-    erewrite bool_decide_iff; eauto.
+    erewrite bool_decide_ext; eauto.
     intuition auto.
   - simpl.
     iApply ("HΦ" with "[$]").
