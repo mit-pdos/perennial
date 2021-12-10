@@ -146,17 +146,40 @@ Proof.
   done.
 Qed.
 
+Lemma commit_lb_monotonic γ l l':
+  l ⪯ l' → commit_lb γ l' -∗ commit_lb γ l.
+Proof.
+  iIntros (Hll'). iApply own_mono.
+  apply mono_list_lb_mono.
+  done.
+Qed.
+
 Lemma proposal_lb_fancy_comparable γ cn l l' :
   proposal_lb_fancy γ cn l -∗ proposal_lb_fancy γ cn l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l⌝.
 Proof.
   iIntros "[Hl _] [Hl' _]". iApply (proposal_lb_comparable with "Hl Hl'").
 Qed.
 
+Lemma accepted_by_monotonic γ cn l l' :
+  (l ⪯ l') → accepted_by γ cn l' -∗ accepted_by γ cn l.
+Proof.
+  iIntros (Hll') "[%conf [Hconf Hacc]]".
+  iExists conf. iFrame "Hconf".
+  iIntros (r Hr). iApply accepted_lb_monotonic; first done.
+  by iApply "Hacc".
+Qed.
+
 (* commit_lb_by is covariant in cn, contravariant in l *)
 Lemma commit_lb_by_monotonic γ cn cn' l l' :
   int.Z cn' <= int.Z cn → (l ⪯ l') → commit_lb_by γ cn' l' -∗ commit_lb_by γ cn l.
 Proof.
-Admitted.
+  iIntros (Hcn Hl) "[Hcomm [%cn_old [%Hcn_old Hacc]]]".
+  iSplitL "Hcomm".
+  { by iApply commit_lb_monotonic. }
+  iExists cn_old. iSplit.
+  - iPureIntro. lia.
+  - by iApply accepted_by_monotonic.
+Qed.
 
 Lemma oldConfMax_commit_lb_by γ cn l cn_old l_old :
   int.Z cn_old < int.Z cn → proposal_lb_fancy γ cn l -∗ commit_lb_by γ cn_old l_old -∗ ⌜l_old ⪯ l⌝.
