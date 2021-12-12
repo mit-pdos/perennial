@@ -77,20 +77,20 @@ Global Instance committed_lb_pers γ l :
   Persistent (commit_lb γ l).
 Proof. apply _. Qed.
 
-Definition accepted_by γ cn l : iProp Σ :=
+Definition accepted_by γ cn l : iProp Σ := (* persistent *)
   ∃ conf, config_ptsto γ cn conf ∗
       ∀ (r:u64), ⌜r ∈ conf⌝ → accepted_lb γ cn r l.
 
-Definition oldConfMax γ (cn:u64) log : iProp Σ :=
+Definition oldConfMax γ (cn:u64) log : iProp Σ := (* persistent *)
   □(∀ cn_old log_old ,
    ⌜int.Z cn_old < int.Z cn⌝ →
    accepted_by γ cn_old log_old → ⌜log_old ⪯ log⌝).
 
-Definition commit_lb_by γ (cn:u64) l : iProp Σ :=
+Definition commit_lb_by γ (cn:u64) l : iProp Σ := (* persistent *)
   commit_lb γ l ∗ (∃ cn_old, ⌜int.Z cn_old <= int.Z cn⌝ ∗ accepted_by γ cn_old l).
 
 (* Want better name *)
-Definition proposal_lb_fancy γ cn log : iProp Σ :=
+Definition proposal_lb_fancy γ cn log : iProp Σ := (* persistent *)
   proposal_lb γ cn log ∗
   oldConfMax γ cn log.
 
@@ -104,6 +104,11 @@ Definition pb_invariant γ : iProp Σ :=
 
 Lemma config_ptsto_agree γ cn conf conf' :
   config_ptsto γ cn conf -∗ config_ptsto γ cn conf' -∗ ⌜conf = conf'⌝.
+Proof.
+Admitted.
+
+Lemma config_ptsto_nonempty γ cn conf :
+  config_ptsto γ cn conf -∗ ⌜∃ r, r ∈ conf⌝.
 Proof.
 Admitted.
 
@@ -222,28 +227,41 @@ Proof.
 Qed.
 
 Lemma do_commit γ cn l :
-  accepted_by γ cn l ∗ pb_invariant γ ==∗ commit_lb_by γ cn l ∗ pb_invariant γ.
+  proposal_lb_fancy γ cn l -∗
+  accepted_by γ cn l -∗
+  pb_invariant γ ==∗
+  commit_lb_by γ cn l ∗ pb_invariant γ.
 Proof.
-  iIntros "[#Hacc [%cn_comitted [%l_committed (Hcomm & #Hcomm_acc & #Holdconf)]]]".
+  iIntros "#Hprop #Hacc [%cn_comitted [%l_committed (Hcomm & #Hcomm_acc & #Holdconf)]]".
   rewrite /named.
   destruct (Z_dec (int.Z cn) (int.Z cn_comitted)) as [[Hcn|Hcn]|Hcn].
   - (* [cn] is older than [cn_comitted]. *)
-    iDestruct ("Holdconf" $! cn _ with "[//] Hacc") as %Hlog.
+    iDestruct ("Holdconf" with "[//] Hacc") as %Hlog.
     iDestruct (commit_witness with "Hcomm") as "#Hwit".
     iSplitR.
     + iSplitR; first by iApply commit_lb_monotonic.
       iExists _. iFrame "Hacc". done.
     + iExists _, _. by eauto with iFrame.
   - (* [cn] is greater than [cn_committed]. *)
-    admit. (* looks like we need some oldConfMax inside [accepted_by]? *)
+    iClear "Holdconf". (* the one from the invariant, now useless *)
+    iDestruct "Hprop" as "[Hprop #Holdconf]".
+    iDestruct ("Holdconf" with "[] Hcomm_acc") as %Hlog.
+    { iPureIntro. lia. }
+    iMod (commit_update l with "Hcomm") as "Hcomm"; first done.
+    iDestruct (commit_witness with "Hcomm") as "#Hwit".
+    iSplitR.
+    + iSplitR; first done.
+      iExists _. iFrame "Hacc". done.
+    + iExists _, _. iFrame "Hcomm". iSplitR.
+      * iApply accepted_by_monotonic; done.
+      * done.
   - (* [cn] is equal to [cn_committed]. *)
     assert (cn = cn_comitted) by word. subst cn. clear Hcn.
     iPoseProof "Hacc" as (conf) "[#Hconf Hacc_lb]".
     iPoseProof "Hcomm_acc" as (comm_conf) "[#Hcomm_conf Hcomm_acc_lb]".
     iDestruct (config_ptsto_agree with "Hconf Hcomm_conf") as %<-.
     iClear "Hcomm_conf".
-    assert (∃ r, r ∈ conf) as [r Hr]. (* FIXME need to track non-emptiness of configs. *)
-    { admit. }
+    iDestruct (config_ptsto_nonempty with "Hconf") as %[r Hr].
     iSpecialize ("Hacc_lb" with "[//]").
     iSpecialize ("Hcomm_acc_lb" with "[//]").
     iDestruct (accepted_lb_comparable with "Hacc_lb Hcomm_acc_lb") as "[%Hl|%Hl]".
@@ -257,12 +275,12 @@ Proof.
       iMod (commit_update l with "Hcomm") as "Hcomm"; first done.
       iDestruct (commit_witness with "Hcomm") as "#Hwit".
       iSplitR.
-      * iSplitR; first by iApply commit_lb_monotonic.
+      * iSplitR; first done.
         iExists _. iFrame "Hacc". done.
       * iExists _, _. iFrame "Hcomm". iSplitR.
         -- iApply accepted_by_monotonic; done.
         -- iApply oldConfMax_monotonic; done.
-Admitted.
+Qed.
 
 End definitions.
 
