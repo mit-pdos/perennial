@@ -44,26 +44,20 @@ Admitted.
 
 Definition proposal_ptsto γ (cn:u64) (l:Log): iProp Σ :=
   own γ.(pb_proposal_gn) {[cn := ●ML (l : list (leibnizO u8))]}.
-
-(* Probably not needed *)
-(* Definition proposal_ptsto_ro γ (cn:u64) (l:Log): iProp Σ.
-Admitted. *)
-
+Definition proposal_ptsto_ro γ (cn:u64) (l:Log): iProp Σ :=
+  own γ.(pb_proposal_gn) {[cn := ●□ML (l : list (leibnizO u8))]}.
 Definition proposal_lb γ (cn:u64) (l:Log): iProp Σ :=
   own γ.(pb_proposal_gn) {[cn := ◯ML (l : list (leibnizO u8))]}.
 
 Definition accepted_ptsto γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
   own γ.(pb_accepted_gn) {[(cn,r) := ●ML (l : list (leibnizO u8))]}.
-
 Definition accepted_ptsto_ro γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
   own γ.(pb_accepted_gn) {[(cn,r) := ●□ML (l : list (leibnizO u8))]}.
-
 Definition accepted_lb γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
   own γ.(pb_accepted_gn) {[(cn,r) := ◯ML (l : list (leibnizO u8))]}.
 
 Definition commit_ptsto γ (l:Log): iProp Σ :=
   own γ.(pb_commit_gn) (●ML (l : list (leibnizO u8))).
-
 Definition commit_lb γ (l:Log): iProp Σ :=
   own γ.(pb_commit_gn) (◯ML (l : list (leibnizO u8))).
 
@@ -113,7 +107,7 @@ Lemma config_ptsto_agree γ cn conf conf' :
 Proof.
 Admitted.
 
-Lemma accepted_update γ cn r l l' :
+Lemma accepted_update {γ cn r l} l' :
   (l ⪯ l') → accepted_ptsto γ cn r l ==∗ accepted_ptsto γ cn r l'.
 Proof.
   iIntros (Hll'). iApply own_update.
@@ -136,6 +130,16 @@ Proof.
   done.
 Qed.
 
+Lemma accepted_lb_comparable γ cn r l l' :
+  accepted_lb γ cn r l -∗ accepted_lb γ cn r l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l⌝.
+Proof.
+  iIntros "Hl Hl'".
+  iDestruct (own_valid_2 with "Hl Hl'") as %Hval.
+  iPureIntro. revert Hval.
+  rewrite singleton_op singleton_valid => /mono_list_lb_op_valid_L.
+  done.
+Qed.
+
 Lemma proposal_lb_comparable γ cn l l' :
   proposal_lb γ cn l -∗ proposal_lb γ cn l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l⌝.
 Proof.
@@ -144,6 +148,21 @@ Proof.
   iPureIntro. revert Hval.
   rewrite singleton_op singleton_valid => /mono_list_lb_op_valid_L.
   done.
+Qed.
+
+Lemma commit_update {γ l} l' :
+  (l ⪯ l') → commit_ptsto γ l ==∗ commit_ptsto γ l'.
+Proof.
+  iIntros (Hll'). iApply own_update.
+  apply mono_list_update.
+  done.
+Qed.
+
+Lemma commit_witness γ l :
+  commit_ptsto γ l -∗ commit_lb γ l.
+Proof.
+  iApply own_mono.
+  apply mono_list_included.
 Qed.
 
 Lemma commit_lb_monotonic γ l l':
@@ -167,6 +186,16 @@ Proof.
   iExists conf. iFrame "Hconf".
   iIntros (r Hr). iApply accepted_lb_monotonic; first done.
   by iApply "Hacc".
+Qed.
+
+Lemma oldConfMax_monotonic γ cn l l' :
+  (l ⪯ l') → oldConfMax γ cn l -∗ oldConfMax γ cn l'.
+Proof.
+  iIntros (Hll') "#Hocm".
+  iIntros "!# %cn_old %log_old % Hacc".
+  iAssert (⌜log_old⪯l⌝)%I as %?.
+  2:{ iPureIntro. by etrans. }
+  iApply "Hocm"; done.
 Qed.
 
 (* commit_lb_by is covariant in cn, contravariant in l *)
@@ -193,10 +222,48 @@ Proof.
 Qed.
 
 Lemma do_commit γ cn l :
-  accepted_by γ cn l ={⊤}=∗ commit_lb_by γ cn l.
+  accepted_by γ cn l ∗ pb_invariant γ ==∗ commit_lb_by γ cn l ∗ pb_invariant γ.
 Proof.
+  iIntros "[#Hacc [%cn_comitted [%l_committed (Hcomm & #Hcomm_acc & #Holdconf)]]]".
+  rewrite /named.
+  destruct (Z_dec (int.Z cn) (int.Z cn_comitted)) as [[Hcn|Hcn]|Hcn].
+  - (* [cn] is older than [cn_comitted]. *)
+    iDestruct ("Holdconf" $! cn _ with "[//] Hacc") as %Hlog.
+    iDestruct (commit_witness with "Hcomm") as "#Hwit".
+    iSplitR.
+    + iSplitR; first by iApply commit_lb_monotonic.
+      iExists _. iFrame "Hacc". done.
+    + iExists _, _. by eauto with iFrame.
+  - (* [cn] is greater than [cn_committed]. *)
+    admit. (* looks like we need some oldConfMax inside [accepted_by]? *)
+  - (* [cn] is equal to [cn_committed]. *)
+    assert (cn = cn_comitted) by word. subst cn. clear Hcn.
+    iPoseProof "Hacc" as (conf) "[#Hconf Hacc_lb]".
+    iPoseProof "Hcomm_acc" as (comm_conf) "[#Hcomm_conf Hcomm_acc_lb]".
+    iDestruct (config_ptsto_agree with "Hconf Hcomm_conf") as %<-.
+    iClear "Hcomm_conf".
+    assert (∃ r, r ∈ conf) as [r Hr]. (* FIXME need to track non-emptiness of configs. *)
+    { admit. }
+    iSpecialize ("Hacc_lb" with "[//]").
+    iSpecialize ("Hcomm_acc_lb" with "[//]").
+    iDestruct (accepted_lb_comparable with "Hacc_lb Hcomm_acc_lb") as "[%Hl|%Hl]".
+    + (* [l] is already committed. *)
+      iDestruct (commit_witness with "Hcomm") as "#Hwit".
+      iSplitR.
+      * iSplitR; first by iApply commit_lb_monotonic.
+        iExists _. iFrame "Hacc". done.
+      * iExists _, _. by eauto with iFrame.
+    + (* we can caommit [l] now. *)
+      iMod (commit_update l with "Hcomm") as "Hcomm"; first done.
+      iDestruct (commit_witness with "Hcomm") as "#Hwit".
+      iSplitR.
+      * iSplitR; first by iApply commit_lb_monotonic.
+        iExists _. iFrame "Hacc". done.
+      * iExists _, _. iFrame "Hcomm". iSplitR.
+        -- iApply accepted_by_monotonic; done.
+        -- iApply oldConfMax_monotonic; done.
 Admitted.
 
 End definitions.
 
-Typeclasses Opaque proposal_ptsto proposal_lb accepted_ptsto accepted_ptsto_ro accepted_lb commit_ptsto commit_lb.
+Typeclasses Opaque proposal_ptsto proposal_ptsto_ro proposal_lb accepted_ptsto accepted_ptsto_ro accepted_lb commit_ptsto commit_lb.
