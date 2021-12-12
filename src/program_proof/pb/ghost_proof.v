@@ -271,7 +271,7 @@ Proof.
       * iSplitR; first by iApply commit_lb_monotonic.
         iExists _. iFrame "Hacc". done.
       * iExists _, _. by eauto with iFrame.
-    + (* we can caommit [l] now. *)
+    + (* we can commit [l] now. *)
       iMod (commit_update l with "Hcomm") as "Hcomm"; first done.
       iDestruct (commit_witness with "Hcomm") as "#Hwit".
       iSplitR.

@@ -32,7 +32,7 @@ Proof.
     iClear "Haccepted".
     iDestruct "HH" as "[%Hbad|Haccepted]".
     { exfalso. word. }
-    iMod (accepted_update _ _ _ _ newLog with "Haccepted") as "Haccepted".
+    iMod (accepted_update newLog with "Haccepted") as "Haccepted".
     { list_solver. }
     iDestruct (accepted_witness with "Haccepted") as "#$".
     iFrame "Haccepted HnewProp".
@@ -56,7 +56,7 @@ Proof.
     rewrite HsameCn.
     iDestruct (proposal_lb_fancy_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
     { (* new log bigger *)
-      iMod (accepted_update _ _ _ _ newLog with "Haccepted") as "Haccepted".
+      iMod (accepted_update newLog with "Haccepted") as "Haccepted".
       { done. }
       iDestruct (accepted_witness with "Haccepted") as "#$".
       by iFrame "∗ HnewProp".
