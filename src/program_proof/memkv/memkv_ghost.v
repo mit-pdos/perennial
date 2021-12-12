@@ -1,12 +1,12 @@
 From Perennial.Helpers Require Export range_set.
-From iris.algebra Require Import gmap lib.mono_nat.
+From iris.algebra Require Import gmap lib.mono_nat lib.frac_agree.
 From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import proof_prelude std_proof.
 From Perennial.program_proof.memkv Require Export common_proof.
 
-Local Definition kvMapUR := gmapUR u64 (prodR (fracR) (agreeR (leibnizO (list u8))) ).
+Local Definition kvMapUR := gmapUR u64 (frac_agreeR (leibnizO (list u8)) ).
 
 Class kvMapG Σ :=
   { kv_map_inG :> inG Σ kvMapUR;
@@ -19,13 +19,17 @@ Global Instance subG_kvMapG {Σ} :
 Proof. solve_inG. Qed.
 
 Definition kvptsto_frac `{!kvMapG Σ} γ (k:u64) (q:Qp) (v:list u8) :=
-  own γ {[ k := ((q / 2)%Qp, to_agree (v: leibnizO (list u8))) ]}.
+  own γ {[ k := to_frac_agree (q / 2) (v: leibnizO (list u8)) ]}.
 
 Definition kvptsto `{!kvMapG Σ} γ k v := kvptsto_frac γ k 1%Qp v.
 
 Section memkv_ghost.
 
 Context `{!kvMapG Σ}.
+
+Global Instance kvptsto_frac_timeles γ k q v :
+  Timeless (kvptsto_frac γ k q v).
+Proof. apply _. Qed.
 
 Lemma kvptsto_agree γ k q v q' v':
   kvptsto_frac γ k q v -∗
@@ -35,8 +39,8 @@ Lemma kvptsto_agree γ k q v q' v':
 Proof.
   iIntros "H1 H2".
   iDestruct (own_valid_2 with "H1 H2") as %H. iPureIntro. move: H.
-  rewrite singleton_op singleton_valid -pair_op pair_valid.
-  intros [_ ?%to_agree_op_inv_L]. done.
+  rewrite singleton_op singleton_valid.
+  intros [??]%frac_agree_op_valid_L. done.
 Qed.
 
 Lemma kvptsto_update v' γ k v1 v2 :
@@ -49,7 +53,8 @@ Proof.
   iIntros "H1 H2". rewrite /kvptsto -own_op.
   iApply (own_update_2 with "H1 H2").
   rewrite !singleton_op. apply singleton_update.
-  rewrite -!pair_op. rewrite frac_op Qp_half_half.
+  (* FIXME this is abstraction-breaking *)
+  rewrite -pair_op frac_op Qp_half_half.
   apply cmra_update_exclusive.
   rewrite pair_valid to_agree_op_valid_L. done.
 Qed.
@@ -66,7 +71,7 @@ Lemma kvptsto_init n :
               ([∗ set] k ∈ fin_to_set u64, kvptsto γ k []).
 Proof.
   intros ->.
-  pose (m := gset_to_gmap (1%Qp, to_agree []) (fin_to_set u64) : kvMapUR).
+  pose (m := gset_to_gmap (to_frac_agree (A:=leibnizO (list u8)) 1 []) (fin_to_set u64) : kvMapUR).
   iMod (own_alloc m) as (γ) "Hown".
   { intros k. rewrite lookup_gset_to_gmap option_guard_True; last by apply elem_of_fin_to_set.
     rewrite Some_valid. done. }
@@ -81,8 +86,8 @@ Proof.
     iIntros "!#" (k x). subst m.
     rewrite lookup_gset_to_gmap_Some.
     iIntros ([_ [= <-]]).
-    iIntros "[H1 H2]".
-    iFrame. }
+    rewrite /kvptsto /kvptsto_frac -own_op singleton_op -frac_agree_op Qp_half_half.
+    auto. }
   rewrite big_sepS_sep.
   iDestruct "Hown" as "[Hown $]".
   rewrite /own_shard.
@@ -103,3 +108,5 @@ Proof.
 Qed.
 
 End memkv_ghost.
+
+Typeclasses Opaque kvptsto_frac.
