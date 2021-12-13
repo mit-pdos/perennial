@@ -38,7 +38,7 @@ Definition own_tuple (tuple_ptr : loc) (γ : mvcc_names) : iProp Σ :=
     "HversLI" ∷ own_versL γ versL ∗
     "_" ∷ True.
 
-Local Hint Extern 1 (environments.envs_entails _ (own_tuple _)) => unfold own_tuple : core.
+Local Hint Extern 1 (environments.envs_entails _ (own_tuple _ _)) => unfold own_tuple : core.
 
 Definition is_tuple (tuple_ptr : loc) (γ : mvcc_names) : iProp Σ :=
   ∃ (latch : loc) (rcond : loc),
@@ -57,16 +57,25 @@ Proof.
   naive_solver.
 Qed.
 
+Definition TID_SENTINEL := (U64 18446744073709551615).
+
+Definition extend_verchain (tid : u64) (val : u64) versL :=
+  match (last versL) with
+  | Some v => <[pred (length versL) := (v.1.1, tid, v.2)]> versL
+  | None => []
+  end ++ [(tid, TID_SENTINEL, val)].
+
 (*****************************************************************)
 (* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
 (*****************************************************************)
-Theorem wp_tuple__AppendVersion tuple_ptr (tid : u64) (val : u64) versLU γ :
+Theorem wp_tuple__AppendVersion tuple_ptr (tid : u64) (val : u64) versL γ :
   is_tuple tuple_ptr γ -∗
-  {{{ own_versL γ versLU }}}
+  {{{ own_versL γ versL }}}
     Tuple__AppendVersion #tuple_ptr #tid #val
-  {{{ b, RET #b; ∃ versLU', own_versL γ versLU' }}}.
+  {{{ b, RET #b; own_versL γ (extend_verchain tid val versL) }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "HversLU HΦ".
+  rename versL into versL'.
   iNamed "Htuple".
   wp_call.
 
@@ -77,6 +86,8 @@ Proof.
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
+  (* Keep the equation of the slice size and the list length. *)
+  iDestruct (is_slice_sz with "HversL") as %HversLen.
   wp_pures.
 
   (***********************************************************)
@@ -130,7 +141,7 @@ Proof.
       wp_pures.
       iDestruct (slice.is_slice_small_acc with "HversL") as "[HversL HversL_close]".
       rewrite /slice.is_slice_small.
-      iDestruct "HversL" as "[HversA %HversLen]".
+      iDestruct "HversL" as "[HversA _]".
       (**
        * Note 1(b): Below is a wrong attempt which creates `x` after the
        * goal evar is created:
@@ -232,8 +243,9 @@ Proof.
   (***********************************************************)
   wp_loadField.
   set b := bool_decide _.
+  iDestruct (ghost_var_agree with "HversLU HversLI") as %->.
   iMod (ghost_var_update_halves (if b then _ else _) with "HversLU HversLI") as "[HversLU HversLI]".
-  wp_apply (release_spec with "[-HΦ HversLI]").
+  wp_apply (release_spec with "[-HΦ HversLU]").
   { (* Restoring the lock invariant. *)
     iFrame "Hlock Hlocked".
     rewrite /own_tuple.
@@ -254,7 +266,52 @@ Proof.
   }
   wp_pures.
   iApply "HΦ".
-  eauto.
+  iModIntro.
+
+  (* Prove the postcondition. Should have better proof... *)
+  rewrite fmap_length in HversLen.
+  rewrite /extend_verchain.
+  unfold b.
+  destruct (last versL) eqn:E.
+  - case_bool_decide.
+    + iExactEq "HversLU".
+      f_equal.
+      rewrite HversLen.
+      replace p with x; last first.
+      { rewrite last_lookup in E.
+        assert (Hpx : Some p = Some x).
+        { rewrite <- Hx; last word.
+          rewrite <- E.
+          f_equal.
+          word.
+        }
+        inversion Hpx.
+        done.
+      }
+      change ({| u64_car := _ |}) with TID_SENTINEL.
+      apply app_inv_tail_iff.
+      f_equal.
+      word.
+    + exfalso.
+      apply mk_is_Some in E.
+      apply last_is_Some in E.
+      rewrite <- length_zero_iff_nil in E.
+      word_cleanup.
+      rewrite HversLen in E.
+      change (int.Z (U64 0)) with 0%Z in *.
+      lia.
+  - case_bool_decide.
+    + exfalso.
+      apply last_None in E.
+      subst.
+      rewrite nil_length in HversLen.
+      word.
+    + iExactEq "HversLU".
+      f_equal.
+      change ({| u64_car := _ |}) with TID_SENTINEL.
+      apply app_inv_tail_iff.
+      apply last_None in E.
+      apply E.
 Qed.
 
 (*****************************************************************)
@@ -354,16 +411,28 @@ Proof.
   auto.
 Qed.
 
+(**
+ * The spec of `ReadVersion` is actually non-trivial. Reasons:
+ * 1) The version chains before and after `ReadVersion` is not
+ *    guaranteed to be the same. However, they should satisfy some
+ *    condition(s). My guess is that the new one is the suffix of
+ *    the old one, appened with at most one element.
+ * 2) `ReadVersion` is allowed to return a false *only* when there
+ *    is no correct version in the old version chain. This should
+ *    be crucial to ensure repeatable read, and hence serializability.
+ *)
+
 (*****************************************************************)
 (* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, bool)    *)
 (*****************************************************************)
-Theorem wp_tuple__ReadVersion tuple_ptr (tid : u64) :
-  is_tuple tuple_ptr -∗
-  {{{ True }}}
+Theorem wp_tuple__ReadVersion tuple_ptr (tid : u64) (versL : list (u64 * u64 * u64)) γ :
+  is_tuple tuple_ptr γ -∗
+  {{{ own_versL γ versL }}}
     Tuple__ReadVersion #tuple_ptr #tid
-  {{{ (v : u64) (b : bool), RET (#v, #b); True }}}.
+  {{{ (v : u64) (b : bool), RET (#v, #b); ∃ versL', own_versL γ versL' }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iIntros "#Htuple !#" (Φ) "HversLU HΦ".
+  rename versL into versL'.
   iNamed "Htuple".
   wp_call.
   
@@ -383,21 +452,18 @@ Proof.
   (***********************************************************)
   wp_apply (wp_forBreak_cond
               (λ _,
-                 (own_tuple tuple_ptr) ∗
-                 (locked #latch))%I
+                 (own_tuple tuple_ptr γ) ∗
+                 (locked #latch) ∗
+                 (∃ versL', own_versL γ versL')
+              )%I
               with "[] [-HΦ]").
-  (**
-   * Q: Is it correct to say `wp_forBreak_cond` is used when the loop invariant
-   * is the same as the pre/post conditions? Use `wp_apply (wp_forBreak_cond I)` for
-   * customized loop invariant?
-   *)
   (* Customize the loop invariant as waiting on condvar havocs the values. *)
   { (* Loop body preserves the invariant. *)
     clear Φ.
     iIntros (Φ).
     iModIntro.
     clear tidown tidrd tidwr vers versL.
-    iIntros "[Hown Hlocked] HΦ".
+    iIntros "(Hown & Hlocked & HversLU) HΦ".
     iNamed "Hown".
     wp_pures.
     wp_loadField.
@@ -422,7 +488,7 @@ Proof.
     wp_if_destruct.
     { wp_pures.
       wp_loadField.
-      wp_apply (wp_condWait with "[-HΦ]").
+      wp_apply (wp_condWait with "[-HversLU HΦ]").
       { eauto 10 with iFrame. }
       iIntros "[Hlocked Hown]".
       wp_pures.
@@ -434,10 +500,11 @@ Proof.
     eauto 10 with iFrame.
   }
   { (* The invariant holds at the start. *)
-    eauto 10 with iFrame.
+    iFrame "Hlocked".
+    iSplitR "HversLU"; eauto 10 with iFrame.
   }
   clear tidown tidrd tidwr vers versL.
-  iIntros "[Hown Hlocked]".
+  iIntros "(Hown & Hlocked & HversLU)".
   iNamed "Hown".
   wp_pures.
   
@@ -483,7 +550,7 @@ Proof.
   (***********************************************************)
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (release_spec with "[-HversLU HΦ]").
     { case_bool_decide; eauto 10 with iFrame. }
     wp_pures.
     iModIntro.
@@ -500,7 +567,7 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (release_spec with "[-HversLU HΦ]").
   { case_bool_decide; eauto 10 with iFrame. }
   wp_pures.
   iModIntro.
@@ -510,27 +577,19 @@ Proof.
   (***********************************************************)
   iApply "HΦ".
   done.
-
-  (**
-   * Q1: Can we avoid simplying (zero_val (refT ..)) (to match the form of wp_ref_of_zero)?
-   * Q2: How does (zero_val (refT ..)) get simplified when there is no case for refT in zero_val?
-   *)
-  (*
-  replace #null with (zero_val (refT (struct.t Version))); last first.
-  { simpl. reflexivity. }
-  *)
 Qed.
 
 (*****************************************************************)
 (* func (tuple *Tuple) Free(tid uint64)                          *)
 (*****************************************************************)
-Theorem wp_tuple__Free tuple_ptr (tid : u64) :
-  is_tuple tuple_ptr -∗
+Theorem wp_tuple__Free tuple_ptr (tid : u64) (versL : list (u64 * u64 * u64)) γ :
+  is_tuple tuple_ptr γ -∗
   {{{ True }}}
     Tuple__Free #tuple_ptr #tid
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "_ HΦ".
+  rename versL into versL'.
   iNamed "Htuple".
   wp_call.
 
@@ -569,13 +628,14 @@ Qed.
 (*****************************************************************)
 (* func (tuple *Tuple) Own(tid uint64) bool                      *)
 (*****************************************************************)
-Theorem wp_tuple__Own tuple_ptr (tid : u64) :
-  is_tuple tuple_ptr -∗
+Theorem wp_tuple__Own tuple_ptr (tid : u64) (versL : list (u64 * u64 * u64)) γ :
+  is_tuple tuple_ptr γ -∗
   {{{ True }}}
     Tuple__Own #tuple_ptr #tid
   {{{ b, RET #b; True }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "_ HΦ".
+  rename versL into versL'.
   iNamed "Htuple".
   wp_call.
   
@@ -646,79 +706,6 @@ Proof.
   done.
 Qed.
 
-(*****************************************************************)
-(* func MkTuple() *Tuple                                         *)
-(*****************************************************************)
-Theorem wp_MkTuple :
-  {{{ True }}}
-    MkTuple #()
-  {{{ (t : loc), RET #t; is_tuple t }}}.
-Proof.
-  iIntros (Φ) "_ HΦ".
-  wp_call.
-
-  (***********************************************************)
-  (* tuple := new(Tuple)                                     *)
-  (***********************************************************)
-  wp_apply (wp_allocStruct).
-  { apply zero_val_ty'.
-    simpl.
-    repeat split.
-  }
-  iIntros (tuple) "Htuple".
-  iDestruct (struct_fields_split with "Htuple") as "Htuple".
-  iNamed "Htuple".
-  simpl.
-  wp_pures.
-  
-  (***********************************************************)
-  (* tuple.latch = new(sync.Mutex)                           *)
-  (***********************************************************)
-  wp_apply (wp_new_free_lock).
-  iIntros (latch) "Hfree".
-  wp_storeField.
-  
-  (***********************************************************)
-  (* tuple.rcond = sync.NewCond(tuple.latch)                 *)
-  (***********************************************************)
-  wp_loadField.
-  wp_apply (wp_newCond' with "Hfree").
-  iIntros (rcond) "[Hfree #HrcondC]".
-  
-  (***********************************************************)
-  (* tuple.tidown = 0                                        *)
-  (* tuple.tidrd = 0                                         *)
-  (* tuple.tidwr = 0                                         *)
-  (***********************************************************)
-  repeat wp_storeField.
-  
-  (***********************************************************)
-  (* tuple.vers = make([]Version, 0, 16)                     *)
-  (***********************************************************)
-  wp_apply (wp_new_slice); first auto.
-  iIntros (vers) "HversL".
-  wp_storeField.
-  
-  (***********************************************************)
-  (* return tuple                                            *)
-  (***********************************************************)
-  iMod (alloc_lock mvccNS _ latch (own_tuple tuple) with "[$Hfree] [-latch rcond HΦ]") as "#Hlock".
-  { iNext.
-    remember (replicate (int.nat 0) ((U64 0), (U64 0), (U64 0))) as versL.
-    iExists (U64 0), (U64 0), (U64 0), vers, versL.
-    iFrame.
-    iSplit; last done.
-    subst.
-    auto.
-  }
-  iApply "HΦ".
-  iExists latch, rcond, mvccNS.
-  iMod (readonly_alloc_1 with "latch") as "$".
-  iMod (readonly_alloc_1 with "rcond") as "$".
-  iFrame "#".
-  done.
-Qed.
-
 Lemma val_to_ver_with_val_ty (x : val) :
   val_ty x (uint64T * (uint64T * (uint64T * unitT))%ht) ->
   (∃ (b e v : u64), x = ver_to_val (b, e, v)).
@@ -742,16 +729,29 @@ Proof.
   reflexivity.
 Qed.
 
+(**
+ * The `safe_rm_verchain` says that,
+ * 1) the new list is a sublist of the old list (so no new versions can be added).
+ * 2) all the versions whose end timestamp is greater than `tid` are preserved.
+ *
+ * We could additionally specify the performance-related condition as follows:
+ * 3) all the versions whose end timestamp is less than or equal to `tid` are removed.
+ *)
+Definition safe_rm_verchain (tid : u64) (versL versL' : list (u64 * u64 * u64)) : iProp Σ :=
+  ⌜sublist versL' versL⌝ ∗
+  [∗ list] ver ∈ versL, ⌜int.Z ver.1.2 > (int.Z tid) → ver ∈ versL'⌝.
+
 (*****************************************************************)
 (* func (tuple *Tuple) RemoveVersions(tid uint64)                *)
 (*****************************************************************)
-Theorem wp_tuple__RemoveVersions tuple_ptr (tid : u64) :
-  is_tuple tuple_ptr -∗
-  {{{ True }}}
+Theorem wp_tuple__RemoveVersions tuple_ptr (tid : u64) versL γ :
+  is_tuple tuple_ptr γ -∗
+  {{{ own_versL γ versL }}}
     Tuple__RemoveVersions #tuple_ptr #tid
-  {{{ b, RET #b; True }}}.
+  {{{ b, RET #b; ∃ versL', own_versL γ versL' ∗ (safe_rm_verchain tid versL versL') }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iIntros "#Htuple !#" (Φ) "HversLU HΦ".
+  rename versL into versL'.
   iNamed "Htuple".
   wp_call.
   
@@ -809,7 +809,7 @@ Proof.
     wp_loadField.
     iDestruct (slice.is_slice_small_acc with "HversL") as "[HversS HversL]".
     iDestruct (slice.is_slice_small_sz with "[$HversS]") as "%HversSz".
-    destruct (list_lookup_lt _ (ver_to_val <$> versL) (int.nat idx)) as [ver Hsome].
+    destruct (list_lookup_lt _ (ver_to_val <$> versL) (int.nat idx)) as [ver HSome].
     { apply Z.nle_gt in Heqb.
       word.
     }
@@ -832,7 +832,24 @@ Proof.
     iFrame.
     iExists (word.add idx 1%Z).
     iFrame.
-    admit.
+    iSplit.
+    { iPureIntro.
+      word.
+    }
+    { replace (int.nat (word.add idx _)) with (S (int.nat idx)); last word.
+      apply list_lookup_fmap_inv in HSome as (y & Heq & HSome).
+      rewrite (take_S_r _ _ y); last apply HSome.
+      iApply (big_sepL_app).
+      iSplit; first done.
+      iApply (big_sepL_singleton).
+      iPureIntro.
+      apply Znot_lt_ge in Heqb0.
+      inversion Heq.
+      rewrite H1 in Heqb0.
+      (* Q: Why can't lia solve this... *)
+      rewrite -Z.ge_le_iff.
+      apply Heqb0.
+    }
   }
   { iExists (U64 0).
     iFrame.
@@ -867,11 +884,105 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ]").
+  iDestruct (ghost_var_agree with "HversLU HversLI") as %->.
+  iMod (ghost_var_update_halves (drop (int.nat idx) versL) with "HversLU HversLI") as "[HversLU HversLI]".
+  wp_apply (release_spec with "[-HidxOrder HversLU HΦ]").
   { eauto 10 with iFrame. }
   wp_pures.
   iApply "HΦ".
+  iModIntro.
+  iExists _.
+  iFrame.
+  rewrite /safe_rm_verchain.
+  iSplit.
+  { iPureIntro. apply sublist_drop. }
+  replace versL with (take (int.nat idx) versL ++ drop (int.nat idx) versL) at 2 by apply take_drop.
+  iApply (big_sepL_app).
+  iSplit.
+  { (* Versions in the removed part have their end timestamps less than or equal `tid`. *)
+    iRevert "HidxOrder".
+    iPureIntro.
+    intros H i ver HSome Hgt.
+    apply H in HSome.
+    lia.
+  }
+  { (* Versions in the remaining part are in the old list. *)
+    iPureIntro.
+    intros i ver HSome _.
+    by apply elem_of_list_lookup_2 in HSome.
+  }
+Qed.
+
+(*****************************************************************)
+(* func MkTuple() *Tuple                                         *)
+(*****************************************************************)
+Theorem wp_MkTuple:
+  {{{ True }}}
+    MkTuple #()
+  {{{ (t : loc) γ, RET #t;
+         is_tuple t γ ∗
+         own_versL γ []
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* tuple := new(Tuple)                                     *)
+  (***********************************************************)
+  wp_apply (wp_allocStruct).
+  { apply zero_val_ty'.
+    simpl.
+    repeat split.
+  }
+  iIntros (tuple) "Htuple".
+  iDestruct (struct_fields_split with "Htuple") as "Htuple".
+  iNamed "Htuple".
+  simpl.
+  wp_pures.
+  
+  (***********************************************************)
+  (* tuple.latch = new(sync.Mutex)                           *)
+  (***********************************************************)
+  wp_apply (wp_new_free_lock).
+  iIntros (latch) "Hfree".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* tuple.rcond = sync.NewCond(tuple.latch)                 *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (wp_newCond' with "Hfree").
+  iIntros (rcond) "[Hfree #HrcondC]".
+  
+  (***********************************************************)
+  (* tuple.tidown = 0                                        *)
+  (* tuple.tidrd = 0                                         *)
+  (* tuple.tidwr = 0                                         *)
+  (***********************************************************)
+  repeat wp_storeField.
+  
+  (***********************************************************)
+  (* tuple.vers = make([]Version, 0, 16)                     *)
+  (***********************************************************)
+  wp_apply (wp_new_slice); first auto.
+  iIntros (vers) "HversL".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* return tuple                                            *)
+  (***********************************************************)
+  iMod (ghost_var_alloc ([] : list (u64 * u64 * u64))) as (tuple_vers_gn) "[HversLI HversLU]".
+  set γ := {| tuple_vers_gn := tuple_vers_gn |}.
+  iMod (alloc_lock mvccNS _ latch (own_tuple tuple γ) with "[$Hfree] [-latch rcond HversLU HΦ]") as "#Hlock".
+  { eauto 10 with iFrame. }
+  iApply ("HΦ" $! _ γ).
+  iSplitR "HversLU"; auto.
+  iExists latch, rcond.
+  iMod (readonly_alloc_1 with "latch") as "$".
+  iMod (readonly_alloc_1 with "rcond") as "$".
+  iFrame "#".
   done.
-Admitted.
+Qed.
 
 End heap.
