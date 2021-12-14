@@ -1553,10 +1553,6 @@ Proof.
   intros Ha_in_dom Hobj' Hsz Hdata.
   wp_start.
   wp_call.
-  wp_apply (util_proof.wp_CloneByteSlice with "Hdata_s").
-  iIntros (data_s') "[Hdata_s Hdata_s']".
-  iDestruct (slice.is_slice_to_small with "Hdata_s'") as "Hdata_s'".
-  iClear "Hdata_s". clear data_s.
   wp_apply (wp_Txn__Acquire_lift with "Htwophase");
     first by assumption.
   iIntros (?) "?".
@@ -1571,7 +1567,7 @@ Proof.
     pose proof (Hvalids _ _ Hlookup_old) as (Hvalid_addr&Hvalid_off&Hkind).
     wp_apply (
       wp_Op__OverWrite
-      with "[$Hjrnl_mem Hjrnl_maps_to Hdata_s']"
+      with "[$Hjrnl_mem Hjrnl_maps_to Hdata_s]"
     ); [eassumption|eassumption| |by iFrame|].
     {
       apply Hvalids in Hlookup_old.
@@ -1636,7 +1632,7 @@ Proof.
       first by assumption.
     wp_apply (
       wp_Op__OverWrite
-      with "[$Hjrnl_mem Hjrnl_maps_to Hdata_s']"
+      with "[$Hjrnl_mem Hjrnl_maps_to Hdata_s]"
     ); [eassumption|eassumption| |by iFrame|].
     {
       apply map_Forall_insert_1_1 in Hvalids.
