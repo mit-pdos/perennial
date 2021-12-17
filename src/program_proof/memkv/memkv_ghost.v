@@ -1,12 +1,12 @@
 From Perennial.Helpers Require Export range_set.
-From iris.algebra Require Import gmap lib.mono_nat lib.frac_agree.
+From iris.algebra Require Import gmap lib.mono_nat lib.dfrac_agree.
 From iris.proofmode Require Import base tactics classes.
 From Perennial.base_logic Require Import lib.own.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import proof_prelude std_proof.
 From Perennial.program_proof.memkv Require Export common_proof.
 
-Local Definition kvMapUR := gmapUR u64 (frac_agreeR (leibnizO (list u8)) ).
+Local Definition kvMapUR := gmapUR u64 (dfrac_agreeR (leibnizO (list u8)) ).
 
 Class kvMapG Σ :=
   { kv_map_inG :> inG Σ kvMapUR;
@@ -39,8 +39,8 @@ Lemma kvptsto_agree γ k q v q' v':
 Proof.
   iIntros "H1 H2".
   iDestruct (own_valid_2 with "H1 H2") as %H. iPureIntro. move: H.
-  rewrite singleton_op singleton_valid.
-  intros [??]%frac_agree_op_valid_L. done.
+  rewrite singleton_op singleton_valid frac_agree_op_valid_L.
+  naive_solver.
 Qed.
 
 Lemma kvptsto_update v' γ k v1 v2 :
@@ -53,10 +53,8 @@ Proof.
   iIntros "H1 H2". rewrite /kvptsto -own_op.
   iApply (own_update_2 with "H1 H2").
   rewrite !singleton_op. apply singleton_update.
-  (* FIXME this is abstraction-breaking *)
-  rewrite -pair_op frac_op Qp_half_half.
-  apply cmra_update_exclusive.
-  rewrite pair_valid to_agree_op_valid_L. done.
+  apply to_frac_agree_update_2.
+  rewrite Qp_half_half. done.
 Qed.
 
 Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
