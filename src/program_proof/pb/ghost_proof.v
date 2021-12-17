@@ -1,18 +1,21 @@
 From iris.staging.algebra Require Import mono_list.
+From iris.algebra Require Import dfrac_agree.
 From Perennial.program_proof Require Import grove_prelude.
 
 (*
   "Gauge-invariant" part of the proof
  *)
+Local Definition configR := gmapR u64 (dfrac_agreeR (leibnizO (list u64))).
 Local Definition logR := mono_listR (leibnizO u8).
 Local Definition cn_logR := gmapR u64 logR.
 Local Definition cn_rep_logR := gmapR (u64*u64) logR.
 Class pb_ghostG Σ :=
-  { pb_ghost_logG :> inG Σ logR;
+  { pb_ghost_configG :> inG Σ configR;
+    pb_ghost_logG :> inG Σ logR;
     pb_ghost_cn_logG :> inG Σ cn_logR;
     pb_ghost_cn_rep_logG :> inG Σ cn_rep_logR }.
 
-Definition pb_ghostΣ := #[GFunctor logR; GFunctor cn_logR; GFunctor cn_rep_logR].
+Definition pb_ghostΣ := #[GFunctor configR; GFunctor logR; GFunctor cn_logR; GFunctor cn_rep_logR].
 
 Global Instance subG_pb_ghostG {Σ} :
   subG pb_ghostΣ Σ → pb_ghostG Σ.
@@ -20,6 +23,7 @@ Proof. solve_inG. Qed.
 
 Record pb_names :=
   {
+  pb_config_gn : gname;
   pb_proposal_gn : gname;
   pb_accepted_gn : gname;
   pb_commit_gn : gname;
@@ -39,8 +43,11 @@ Context `{!gooseGlobalGS Σ, !pb_ghostG Σ}.
 
 Implicit Type γ : pb_names.
 
-Definition config_ptsto γ (cn:u64) (conf:list u64): iProp Σ.
-Admitted.
+Definition config_ptsto γ (cn:u64) (conf:list u64): iProp Σ :=
+  own γ.(pb_config_gn) {[cn := to_dfrac_agree DfracDiscarded (conf : (leibnizO _))]} ∗
+  ⌜length conf > 0⌝.
+Definition config_unset γ (cn:u64) : iProp Σ :=
+  own γ.(pb_config_gn) {[cn := to_dfrac_agree (DfracOwn 1) ([] : (leibnizO _))]}.
 
 Definition proposal_ptsto γ (cn:u64) (l:Log): iProp Σ :=
   own γ.(pb_proposal_gn) {[cn := ●ML (l : list (leibnizO u8))]}.
@@ -63,7 +70,7 @@ Definition commit_lb γ (l:Log): iProp Σ :=
 
 Global Instance config_ptsto_pers γ cn conf :
   Persistent (config_ptsto γ cn conf).
-Admitted.
+Proof. apply _. Qed.
 
 Global Instance proposal_lb_pers γ cn l :
   Persistent (proposal_lb γ cn l).
@@ -105,12 +112,29 @@ Definition pb_invariant γ : iProp Σ :=
 Lemma config_ptsto_agree γ cn conf conf' :
   config_ptsto γ cn conf -∗ config_ptsto γ cn conf' -∗ ⌜conf = conf'⌝.
 Proof.
-Admitted.
+  iIntros "[Hconf _] [Hconf' _]".
+  iDestruct (own_valid_2 with "Hconf Hconf'") as %Hval. iPureIntro. revert Hval.
+  rewrite singleton_op singleton_valid dfrac_agree_op_valid_L.
+  naive_solver.
+Qed.
 
 Lemma config_ptsto_nonempty γ cn conf :
   config_ptsto γ cn conf -∗ ⌜∃ r, r ∈ conf⌝.
 Proof.
-Admitted.
+  iIntros "[_ %Hconf]". iPureIntro.
+  destruct conf as [|r rs]; first done.
+  exists r. constructor.
+Qed.
+
+Lemma config_ptsto_set γ cn conf :
+  length conf > 0 →
+  config_unset γ cn ==∗ config_ptsto γ cn conf.
+Proof.
+  iIntros (?) "Hconf".
+  iMod (own_update with "Hconf") as "$"; last done.
+  apply singleton_update. apply cmra_update_exclusive.
+  done.
+Qed.
 
 Lemma accepted_update {γ cn r l} l' :
   (l ⪯ l') → accepted_ptsto γ cn r l ==∗ accepted_ptsto γ cn r l'.
@@ -284,4 +308,4 @@ Qed.
 
 End definitions.
 
-Typeclasses Opaque proposal_ptsto proposal_ptsto_ro proposal_lb accepted_ptsto accepted_ptsto_ro accepted_lb commit_ptsto commit_lb.
+Typeclasses Opaque config_ptsto config_unset proposal_ptsto proposal_ptsto_ro proposal_lb accepted_ptsto accepted_ptsto_ro accepted_lb commit_ptsto commit_lb.
