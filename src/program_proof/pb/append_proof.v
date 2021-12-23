@@ -144,7 +144,7 @@ Proof.
       iApply wp_fupd.
       wp_storeField.
       iSplitL ""; first done.
-      iMod (commit_idx_update with "[$HrepG HcommitterG Hacc Hcommit_lb_in]") as "[HrepG HcommitterG_final]".
+      iDestruct (commit_idx_update with "[$HrepG HcommitterG Hacc Hcommit_lb_in]") as "[HrepG HcommitterG_final]".
       { done. }
       {
         rewrite HlatestCn.
@@ -274,9 +274,11 @@ Proof.
     wp_loadField.
 
     (* ghost update the primary's matchidx state *)
-    iMod (primary_update_matchidx with "[$HprimaryG $Hacc_lb]") as "HprimaryG".
+    iDestruct (primary_update_matchidx with "[$HprimaryG $Hacc_lb]") as "HprimaryG".
+    { eauto. }
+    { admit. }
     { done. }
-    { done. }
+    { admit. (* TODO: create proposal_lb? *) }
 
     wp_if_destruct.
     { (* commit something! *)
@@ -291,7 +293,7 @@ Proof.
         (* FIXME: this should be iMod *)
 
         iClear "HcommitterG".
-        iMod (primary_commit with "[$HprimaryG]") as "[HprimaryG #HcomitterG]".
+        iMod (primary_commit with "[] [$HprimaryG]") as "[HprimaryG #HcomitterG]".
         { (* prove that the min is actually in matchIdx; true if matchIdx is non-empty *)
           simpl. apply Hm1.
           assert (is_Some (p.(matchIdx) !! int.nat i)).
@@ -301,6 +303,8 @@ Proof.
           admit.
         }
         { done. }
+
+        { admit. (* TODO: pb_inv? *) }
 
         iFrame "∗#".
         iSplitL "HopLog HopLog_slice".
