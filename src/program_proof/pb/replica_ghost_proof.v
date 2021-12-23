@@ -165,7 +165,7 @@ Proof.
   {
     assert (int.nat newCommitIdx <= length log) by word.
     set (a:=int.nat newCommitIdx) in *.
-    admit. (* list_solver candidate *)
+    admit. (* TODO: list_solver candidate *)
   }
   iFrame "∗#".
   iPureIntro.
@@ -180,28 +180,65 @@ Lemma primary_matchidx_lookup {rid} conf (i:u64) γ r p :
   -∗
   ⌜∃ (x:u64), p.(matchIdx) !! int.nat i = Some x⌝.
 Proof.
-Admitted.
+  intros HconfLookup.
+  iNamed 1.
+  iNamed "HprimaryG".
+  iDestruct (config_ptsto_agree with "Hconf HconfPtsto") as %->.
+  iDestruct (big_sepL2_lookup_1_some with "HmatchIdxAccepted") as "$".
+  done.
+Qed.
 
 Lemma primary_update_matchidx {rid} (i oldIdx:u64) γ r p newLog (newLogLen:u64) :
   p.(matchIdx) !! int.nat i = Some oldIdx →
+  p.(conf) !! int.nat i = Some rid →
   length newLog = int.nat newLogLen →
   "HprimaryG" ∷ own_Primary_ghost γ r p ∗
-  "#Hacc_lb" ∷ accepted_lb γ r.(cn) rid newLog
-  ={⊤}=∗
+  "#Hacc_lb" ∷ accepted_lb γ r.(cn) rid newLog ∗
+  "#Hprop_lb" ∷ proposal_lb γ r.(cn) newLog
+  -∗
   own_Primary_ghost γ r (mkPrimaryExtra
                            p.(conf)
                            (<[int.nat i:=newLogLen]> p.(matchIdx)) ).
 Proof.
+  intros HmatchIdxLookup HconfLookup Hlen.
+  iNamed 1.
+  iNamed "HprimaryG".
+  iDestruct (proposal_lb_le with "HprimaryOwnsProposal Hprop_lb") as %HlogLe.
+  unfold own_Primary_ghost.
+  iFrame "∗#".
+  iDestruct (big_sepL2_insert_acc with "HmatchIdxAccepted") as "[_ HH]".
+  { done. }
+  { done. }
+  iSpecialize ("HH" $! rid).
+  replace (<[int.nat i:=rid]> p.(conf)) with (p.(conf)); last first.
+  { by rewrite list_insert_id. }
+  iApply "HH".
+  replace (take (int.nat newLogLen) r.(opLog)) with (newLog); last first.
+  {
+    admit. (* TODO: list_solver. candidate *)
+  }
+  iFrame "#".
 Admitted.
 
 Lemma primary_commit m γ r (p:PrimaryExtra) :
   m ∈ p.(matchIdx) →
   (∀ n, n ∈ p.(matchIdx) → int.Z m ≤ int.Z n) →
+  pb_inv γ -∗
   own_Primary_ghost γ r p
   ={⊤}=∗
   own_Primary_ghost γ r p ∗
   own_Committer_ghost γ r (mkCommitterExtra m).
 Proof.
+  intros Hm Hmin.
+  iIntros "#HpbInv".
+  iNamed 1.
+  iFrame "∗#".
+  unfold own_Committer_ghost.
+  simpl.
+  iSplitR ""; last admit.
+  (* TODO: keep accepted_lb_fancy to prove "%HcommitLeLogLen" ∷ ⌜int.Z m ≤ length r.(opLog)⌝ *)
+  (* Need to know that conf is non-empty for this to work, which is guaranteed be m in p.matchIdx *)
+  iInv "HpbInv" as "Hpb" "Hclose".
 Admitted.
 
 End replica_ghost_proof.

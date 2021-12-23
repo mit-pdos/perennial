@@ -97,6 +97,10 @@ Definition commit_lb_by γ (cn:u64) l : iProp Σ := (* persistent *)
   commit_lb γ l ∗ (∃ cn_old, ⌜int.Z cn_old <= int.Z cn⌝ ∗ accepted_by γ cn_old l).
 
 (* Want better name *)
+Definition proposal_ptsto_fancy γ cn log : iProp Σ :=
+  proposal_ptsto γ cn log ∗
+  oldConfMax γ cn log.
+
 Definition proposal_lb_fancy γ cn log : iProp Σ := (* persistent *)
   proposal_lb γ cn log ∗
   oldConfMax γ cn log.
@@ -108,6 +112,11 @@ Definition pb_invariant γ : iProp Σ :=
   "Hcommit" ∷ commit_ptsto γ l_committed ∗
   "Haccepted" ∷ accepted_by γ cn_committed l_committed ∗ oldConfMax γ cn_committed l_committed
 .
+
+Definition pbN := nroot .@ "pb_inv".
+
+Definition pb_inv γ : iProp Σ :=
+  inv pbN (pb_invariant γ).
 
 Lemma config_ptsto_agree γ cn conf conf' :
   config_ptsto γ cn conf -∗ config_ptsto γ cn conf' -∗ ⌜conf = conf'⌝.
@@ -177,6 +186,16 @@ Proof.
   iDestruct (own_valid_2 with "Hl Hl'") as %Hval.
   iPureIntro. revert Hval.
   rewrite singleton_op singleton_valid => /mono_list_lb_op_valid_L.
+  done.
+Qed.
+
+Lemma proposal_lb_le γ cn l l' :
+  proposal_ptsto γ cn l' -∗ proposal_lb γ cn l -∗ ⌜l ⪯ l'⌝.
+Proof.
+  iIntros "Hl Hl'".
+  iDestruct (own_valid_2 with "Hl Hl'") as %Hval.
+  iPureIntro. revert Hval.
+  rewrite singleton_op singleton_valid mono_list_both_valid_L.
   done.
 Qed.
 
