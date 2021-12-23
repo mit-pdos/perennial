@@ -91,6 +91,7 @@ Proof.
   assert (int.Z r.(cn) = int.Z newCn ∨ int.Z r.(cn) < int.Z newCn) as [Hcase|Hcase] by word.
   { (* case: newCn == oldCn *)
     destruct Hnew as [Hbad|HlongerLog]; first word.
+    unfold own_Committer_ghost.
     admit.
   }
   { (* case: newCn > oldCn *)
@@ -150,10 +151,26 @@ Lemma commit_idx_update {rid} γ r log newCommitIdx :
   "Hown" ∷ own_Replica_ghost rid γ r ∗
   "#Hacc" ∷ accepted_lb γ r.(cn) rid log ∗
   "#Hcommit_lb" ∷ commit_lb_by γ r.(cn) (take (int.nat newCommitIdx) log)
-  ={⊤}=∗
+  -∗
   own_Replica_ghost rid γ r ∗
   own_Committer_ghost γ r (mkCommitterExtra newCommitIdx).
 Proof.
+  (* argument: log ⪯ r.(log); (take n log) == (take n r.(log)); *)
+  intros HcommitIdx.
+  iNamed 1.
+  iNamed "Hown".
+  iDestruct (accepted_lb_le with "Haccepted Hacc") as "%HlogLe".
+  replace (take (int.nat newCommitIdx) log)
+          with (take (int.nat newCommitIdx) r.(opLog)); last first.
+  {
+    assert (int.nat newCommitIdx <= length log) by word.
+    set (a:=int.nat newCommitIdx) in *.
+    admit. (* list_solver candidate *)
+  }
+  iFrame "∗#".
+  iPureIntro.
+  simpl.
+  list_solver.
 Admitted.
 
 Lemma primary_matchidx_lookup {rid} conf (i:u64) γ r p :

@@ -159,6 +159,17 @@ Proof.
   done.
 Qed.
 
+Lemma accepted_lb_le γ cn r l l' :
+  accepted_ptsto γ cn r l' -∗ accepted_lb γ cn r l -∗ ⌜l ⪯ l'⌝.
+Proof.
+  iIntros "Hl Hl'".
+  iDestruct (own_valid_2 with "Hl Hl'") as %Hval.
+  iPureIntro. revert Hval.
+  rewrite singleton_op singleton_valid.
+  rewrite mono_list_both_valid_L.
+  done.
+Qed.
+
 Lemma accepted_lb_comparable γ cn r l l' :
   accepted_lb γ cn r l -∗ accepted_lb γ cn r l' -∗ ⌜l ⪯ l' ∨  l' ⪯ l⌝.
 Proof.
