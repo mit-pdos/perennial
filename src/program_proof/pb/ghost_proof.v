@@ -281,21 +281,25 @@ Proof.
 Qed.
 
 Lemma do_commit γ cn l :
+  pb_inv γ -∗
   proposal_lb_fancy γ cn l -∗
-  accepted_by γ cn l -∗
-  pb_invariant γ ==∗
-  commit_lb_by γ cn l ∗ pb_invariant γ.
+  accepted_by γ cn l
+  ={⊤}=∗
+  commit_lb_by γ cn l.
 Proof.
-  iIntros "#Hprop #Hacc [%cn_comitted [%l_committed (Hcomm & #Hcomm_acc & #Holdconf)]]".
+  iIntros "#Hinv #Hprop #Hacc".
+  iInv "Hinv" as ">Hpb" "HpbClose".
+  iDestruct "Hpb" as "[%cn_comitted [%l_committed (Hcomm & #Hcomm_acc & #Holdconf)]]".
   rewrite /named.
   destruct (Z_dec (int.Z cn) (int.Z cn_comitted)) as [[Hcn|Hcn]|Hcn].
   - (* [cn] is older than [cn_comitted]. *)
     iDestruct ("Holdconf" with "[//] Hacc") as %Hlog.
     iDestruct (commit_witness with "Hcomm") as "#Hwit".
-    iSplitR.
-    + iSplitR; first by iApply commit_lb_monotonic.
-      iExists _. iFrame "Hacc". done.
-    + iExists _, _. by eauto with iFrame.
+    iMod ("HpbClose" with "[Hcomm]") as "_".
+    { iExists _, _. by eauto with iFrame. }
+    iDestruct (commit_lb_monotonic with "Hwit") as "$".
+    { done. }
+    iExists _. iFrame "Hacc". done.
   - (* [cn] is greater than [cn_committed]. *)
     iClear "Holdconf". (* the one from the invariant, now useless *)
     iDestruct "Hprop" as "[Hprop #Holdconf]".
@@ -303,12 +307,14 @@ Proof.
     { iPureIntro. lia. }
     iMod (commit_update l with "Hcomm") as "Hcomm"; first done.
     iDestruct (commit_witness with "Hcomm") as "#Hwit".
-    iSplitR.
-    + iSplitR; first done.
-      iExists _. iFrame "Hacc". done.
-    + iExists _, _. iFrame "Hcomm". iSplitR.
+    iMod ("HpbClose" with "[Hcomm]") as "_".
+    {
+      iExists _, _. iFrame "Hcomm". iSplitR.
       * iApply accepted_by_monotonic; done.
       * done.
+    }
+    iSplitR; first done.
+    iExists _. iFrame "Hacc". done.
   - (* [cn] is equal to [cn_committed]. *)
     assert (cn = cn_comitted) by word. subst cn. clear Hcn.
     iPoseProof "Hacc" as (conf) "[#Hconf Hacc_lb]".
@@ -321,19 +327,21 @@ Proof.
     iDestruct (accepted_lb_comparable with "Hacc_lb Hcomm_acc_lb") as "[%Hl|%Hl]".
     + (* [l] is already committed. *)
       iDestruct (commit_witness with "Hcomm") as "#Hwit".
-      iSplitR.
-      * iSplitR; first by iApply commit_lb_monotonic.
-        iExists _. iFrame "Hacc". done.
-      * iExists _, _. by eauto with iFrame.
+      iMod ("HpbClose" with "[Hcomm]") as "_".
+      { iExists _, _. by eauto with iFrame. }
+      iSplitR; first by iApply commit_lb_monotonic.
+      iExists _. iFrame "Hacc". done.
     + (* we can commit [l] now. *)
       iMod (commit_update l with "Hcomm") as "Hcomm"; first done.
       iDestruct (commit_witness with "Hcomm") as "#Hwit".
-      iSplitR.
-      * iSplitR; first done.
-        iExists _. iFrame "Hacc". done.
-      * iExists _, _. iFrame "Hcomm". iSplitR.
+      iMod ("HpbClose" with "[Hcomm]") as "_".
+      {
+        iExists _, _. iFrame "Hcomm". iSplitR.
         -- iApply accepted_by_monotonic; done.
         -- iApply oldConfMax_monotonic; done.
+      }
+      iSplitR; first done.
+      iExists _. iFrame "Hacc". done.
 Qed.
 
 End definitions.

@@ -238,7 +238,27 @@ Proof.
   iSplitR ""; last admit.
   (* TODO: keep accepted_lb_fancy to prove "%HcommitLeLogLen" ∷ ⌜int.Z m ≤ length r.(opLog)⌝ *)
   (* Need to know that conf is non-empty for this to work, which is guaranteed be m in p.matchIdx *)
-  iInv "HpbInv" as "Hpb" "Hclose".
+  iMod (do_commit with "HpbInv [] []") as "$".
+  { admit. (* TODO: keep proposal_lb_fancy with accepted_lb *) }
+  { unfold accepted_by.
+    iExists _; iFrame "HconfPtsto".
+    iIntros (rid Hrid).
+    assert (exists i, p.(conf) !! i = Some rid) as [i HconfLookup].
+    { by apply elem_of_list_lookup_1. }
+    iDestruct (big_sepL2_lookup_1_some with "HmatchIdxAccepted") as %[n HmatchIdxLookup].
+    { done. }
+    iDestruct (big_sepL2_lookup_acc with "HmatchIdxAccepted") as "[Hacc _]".
+    { done. }
+    { done. }
+    assert (int.Z m <= int.Z n).
+    {
+      apply Hmin.
+      by eapply elem_of_list_lookup_2.
+    }
+    iApply (accepted_lb_monotonic with "Hacc").
+    list_solver.
+  }
+  done.
 Admitted.
 
 End replica_ghost_proof.
