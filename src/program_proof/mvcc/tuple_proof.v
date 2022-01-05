@@ -1,7 +1,7 @@
 (* Import definitions/theorems of the Perennial framework with the disk FFI. *)
 From Perennial.program_proof Require Export disk_prelude.
 (* Import Coq model of our Goose program.*)
-From Goose.go_mvcc Require Import tuple.
+From Goose.github_com.mit_pdos.go_mvcc Require Import tuple.
 
 Class mvcc_ghostG Σ :=
   { mvcc_ghost_versG :> ghost_varG Σ (list (u64 * u64 * u64)) }.
