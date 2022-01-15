@@ -1,7 +1,7 @@
 From Perennial.Helpers Require Import Map gset ipm.
 
 From iris.proofmode Require Import tactics.
-From iris.algebra Require Import excl agree auth gmap csum.
+From iris.algebra Require Import excl agree auth gmap csum dfrac.
 From iris.bi.lib Require Import fractional.
 From Perennial.base_logic.lib Require Import own.
 
@@ -88,7 +88,8 @@ Section auth_map.
   Proof.
     iIntros (q1 q2).
     rewrite /map_ctx.
-    setoid_rewrite auth_auth_frac_op.
+    rewrite -dfrac_op_own.
+    setoid_rewrite auth_auth_dfrac_op.
     setoid_rewrite own_op.
     iSplit.
     - iIntros "H".
