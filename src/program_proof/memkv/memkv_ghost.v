@@ -53,7 +53,7 @@ Proof.
   iIntros "H1 H2". rewrite /kvptsto -own_op.
   iApply (own_update_2 with "H1 H2").
   rewrite !singleton_op. apply singleton_update.
-  apply to_frac_agree_update_2.
+  apply frac_agree_update_2.
   rewrite Qp_half_half. done.
 Qed.
 
