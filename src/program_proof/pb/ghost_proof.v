@@ -1,5 +1,4 @@
-From iris.staging.algebra Require Import mono_list.
-From iris.algebra Require Import dfrac_agree.
+From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof Require Import grove_prelude.
 
 (*
@@ -52,14 +51,14 @@ Definition config_unset γ (cn:u64) : iProp Σ :=
 Definition proposal_ptsto γ (cn:u64) (l:Log): iProp Σ :=
   own γ.(pb_proposal_gn) {[cn := ●ML (l : list (leibnizO u8))]}.
 Definition proposal_ptsto_ro γ (cn:u64) (l:Log): iProp Σ :=
-  own γ.(pb_proposal_gn) {[cn := ●□ML (l : list (leibnizO u8))]}.
+  own γ.(pb_proposal_gn) {[cn := ●ML□ (l : list (leibnizO u8))]}.
 Definition proposal_lb γ (cn:u64) (l:Log): iProp Σ :=
   own γ.(pb_proposal_gn) {[cn := ◯ML (l : list (leibnizO u8))]}.
 
 Definition accepted_ptsto γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
   own γ.(pb_accepted_gn) {[(cn,r) := ●ML (l : list (leibnizO u8))]}.
 Definition accepted_ptsto_ro γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
-  own γ.(pb_accepted_gn) {[(cn,r) := ●□ML (l : list (leibnizO u8))]}.
+  own γ.(pb_accepted_gn) {[(cn,r) := ●ML□ (l : list (leibnizO u8))]}.
 Definition accepted_lb γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
   own γ.(pb_accepted_gn) {[(cn,r) := ◯ML (l : list (leibnizO u8))]}.
 
