@@ -18,8 +18,6 @@ Global Set Printing Projections.
 
 Global Opaque load_ty store_ty.
 
-Global Remove Hints fractional.frame_fractional : typeclass_instances.
-
 Import sel_patterns.
 
 Fixpoint fix_frame_selpat (Hs: list sel_pat) : list sel_pat :=

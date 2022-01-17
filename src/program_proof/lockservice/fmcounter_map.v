@@ -14,9 +14,9 @@ Global Instance subG_fmcount_mapΣm {Σ} :
 Proof. solve_inG. Qed.
 
 Definition fmcounter_map_own `{!fmcounter_mapG Σ} γ (k:u64) q n :=
-  own γ {[ k := mono_nat_auth q n]}.
+  own γ {[ k := ●MN{#q} n]}.
 Definition fmcounter_map_lb `{!fmcounter_mapG Σ} γ (k:u64) n :=
-  own γ {[ k := mono_nat_lb n]}.
+  own γ {[ k := ◯MN n]}.
 
 Notation "k fm[[ γ ]]↦{ q } n " := (fmcounter_map_own γ k q%Qp n)
 (at level 20, format "k  fm[[ γ ]]↦{ q }  n") : bi_scope.
@@ -33,7 +33,7 @@ Section fmcounter_map_props.
   Lemma fmcounter_map_alloc (n : nat) :
     ⊢ |==> ∃ γ, [∗ set] k ∈ (fin_to_set u64), k fm[[γ]]↦ n.
   Proof.
-    pose (m := gset_to_gmap (mono_nat_auth 1 n) (fin_to_set u64)).
+    pose (m := gset_to_gmap (●MN n) (fin_to_set u64)).
     iMod (own_alloc m) as (γ) "Hown".
     { intros k. rewrite lookup_gset_to_gmap option_guard_True; last by apply elem_of_fin_to_set.
       rewrite Some_valid. apply mono_nat_auth_valid. }
@@ -71,7 +71,7 @@ Section fmcounter_map_props.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros "H1 H2".
     iCombine "H1 H2" as "H".
-    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mono_nat_both_frac_valid.
+    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mono_nat_both_dfrac_valid.
     eauto.
   Qed.
 
@@ -80,7 +80,7 @@ Section fmcounter_map_props.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros "H1 H2".
     iCombine "H1 H2" as "H".
-    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mono_nat_both_frac_valid.
+    iDestruct (own_valid with "H") as %[_ Hval]%singleton_valid%mono_nat_both_dfrac_valid.
     eauto with lia.
   Qed.
 
@@ -100,9 +100,9 @@ Section fmcounter_map_props.
   - iIntros "H".
     rewrite -own_op.
     rewrite singleton_op.
-    by rewrite mono_nat_auth_frac_op.
+    by rewrite -mono_nat_auth_dfrac_op.
   - iIntros "(Hm1&Hm2)". iCombine "Hm1 Hm2" as "Hm".
-    by rewrite mono_nat_auth_frac_op.
+    by rewrite -mono_nat_auth_dfrac_op.
   Qed.
 
   Global Instance fmcounter_map_fractional γ k n :
