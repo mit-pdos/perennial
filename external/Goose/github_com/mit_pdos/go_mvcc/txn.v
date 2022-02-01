@@ -7,10 +7,7 @@ Local Coercion Var' s: expr := Var s.
 From Goose Require github_com.mit_pdos.go_mvcc.config.
 From Goose Require github_com.mit_pdos.go_mvcc.gc.
 From Goose Require github_com.mit_pdos.go_mvcc.index.
-From Goose Require github_com.mit_pdos.go_mvcc.tsc.
 From Goose Require github_com.mit_pdos.go_mvcc.tuple.
-
-(* txn.go *)
 
 (* *
     * We need `key` as to match in the local write set *)
@@ -30,77 +27,6 @@ Definition Txn := struct.decl [
   "idx" :: ptrT;
   "txnMgr" :: ptrT
 ].
-
-Definition Txn__Put: val :=
-  rec: "Txn__Put" "txn" "key" "val" :=
-    let: "found" := ref_to boolT #false in
-    ForSlice (struct.t WrEnt) "i" <> (struct.loadF Txn "wset" "txn")
-      (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "i"))
-      then
-        let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "i" in
-        struct.storeF WrEnt "val" "went" "val";;
-        "found" <-[boolT] #true
-      else #());;
-    (if: ![boolT] "found"
-    then #true
-    else
-      let: "idx" := struct.loadF Txn "idx" "txn" in
-      let: "tuple" := index.Index__GetTuple "idx" "key" in
-      let: "ok" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
-      (if: ~ "ok"
-      then #false
-      else
-        struct.storeF Txn "wset" "txn" (SliceAppend (struct.t WrEnt) (struct.loadF Txn "wset" "txn") (struct.mk WrEnt [
-          "key" ::= "key";
-          "val" ::= "val";
-          "tuple" ::= "tuple"
-        ]));;
-        #true)).
-
-Definition Txn__Get: val :=
-  rec: "Txn__Get" "txn" "key" :=
-    let: "found" := ref_to boolT #false in
-    let: "val" := ref_to uint64T #0 in
-    ForSlice (struct.t WrEnt) "i" <> (struct.loadF Txn "wset" "txn")
-      (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "i"))
-      then
-        let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "i" in
-        "val" <-[uint64T] struct.loadF WrEnt "val" "went";;
-        "found" <-[boolT] #true
-      else #());;
-    (if: ![boolT] "found"
-    then (![uint64T] "val", #true)
-    else
-      let: "idx" := struct.loadF Txn "idx" "txn" in
-      let: "tuple" := index.Index__GetTuple "idx" "key" in
-      let: ("valTuple", "foundTuple") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
-      ("valTuple", "foundTuple")).
-
-Definition Txn__Begin: val :=
-  rec: "Txn__Begin" "txn" :=
-    let: "tid" := TxnMgr__activate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") in
-    struct.storeF Txn "tid" "txn" "tid";;
-    struct.storeF Txn "wset" "txn" (SliceTake (struct.loadF Txn "wset" "txn") #0);;
-    #().
-
-Definition Txn__Commit: val :=
-  rec: "Txn__Commit" "txn" :=
-    ForSlice (struct.t WrEnt) <> "wrent" (struct.loadF Txn "wset" "txn")
-      (let: "val" := struct.get WrEnt "val" "wrent" in
-      let: "tuple" := struct.get WrEnt "tuple" "wrent" in
-      tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val");;
-    TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "tid" "txn");;
-    #().
-
-Definition Txn__Abort: val :=
-  rec: "Txn__Abort" "txn" :=
-    ForSlice (struct.t WrEnt) <> "wrent" (struct.loadF Txn "wset" "txn")
-      (let: "tuple" := struct.get WrEnt "tuple" "wrent" in
-      tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
-    TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "tid" "txn");;
-    #().
-
-(* txnmgr.go *)
 
 Definition TxnSite := struct.decl [
   "latch" :: ptrT;
@@ -252,14 +178,6 @@ Definition TxnMgr__getNumActiveTxns: val :=
       Continue);;
     ![uint64T] "n".
 
-Definition TxnMgr__StartGC: val :=
-  rec: "TxnMgr__StartGC" "txnMgr" :=
-    Fork (Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            TxnMgr__runGC "txnMgr";;
-            Continue));;
-    #().
-
 Definition TxnMgr__runGC: val :=
   rec: "TxnMgr__runGC" "txnMgr" :=
     let: "tidMin" := TxnMgr__getMinActiveTID "txnMgr" in
@@ -268,5 +186,90 @@ Definition TxnMgr__runGC: val :=
       gc.GC__Start (struct.loadF TxnMgr "gc" "txnMgr") "tidMin";;
       #()
     else #()).
+
+Definition TxnMgr__StartGC: val :=
+  rec: "TxnMgr__StartGC" "txnMgr" :=
+    Fork (Skip;;
+          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+            TxnMgr__runGC "txnMgr";;
+            Continue));;
+    #().
+
+Definition matchLocalWrites: val :=
+  rec: "matchLocalWrites" "key" "wset" :=
+    let: "idx" := ref_to uint64T #0 in
+    let: "found" := ref_to boolT #false in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: ![uint64T] "idx" ≥ slice.len "wset"
+      then Break
+      else
+        (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "wset" (![uint64T] "idx")))
+        then
+          "found" <-[boolT] #true;;
+          Break
+        else
+          "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+          Continue)));;
+    (![uint64T] "idx", ![boolT] "found").
+
+Definition Txn__Put: val :=
+  rec: "Txn__Put" "txn" "key" "val" :=
+    let: ("pos", "found") := matchLocalWrites "key" (struct.loadF Txn "wset" "txn") in
+    (if: "found"
+    then
+      let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "pos" in
+      struct.storeF WrEnt "val" "went" "val";;
+      #true
+    else
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      let: "ok" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
+      (if: ~ "ok"
+      then #false
+      else
+        struct.storeF Txn "wset" "txn" (SliceAppend (struct.t WrEnt) (struct.loadF Txn "wset" "txn") (struct.mk WrEnt [
+          "key" ::= "key";
+          "val" ::= "val";
+          "tuple" ::= "tuple"
+        ]));;
+        #true)).
+
+Definition Txn__Get: val :=
+  rec: "Txn__Get" "txn" "key" :=
+    let: ("pos", "found") := matchLocalWrites "key" (struct.loadF Txn "wset" "txn") in
+    (if: "found"
+    then
+      let: "val" := struct.get WrEnt "val" (SliceGet (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "pos") in
+      ("val", #true)
+    else
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      let: ("valTuple", "foundTuple") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
+      ("valTuple", "foundTuple")).
+
+Definition Txn__Begin: val :=
+  rec: "Txn__Begin" "txn" :=
+    let: "tid" := TxnMgr__activate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") in
+    struct.storeF Txn "tid" "txn" "tid";;
+    struct.storeF Txn "wset" "txn" (SliceTake (struct.loadF Txn "wset" "txn") #0);;
+    #().
+
+Definition Txn__Commit: val :=
+  rec: "Txn__Commit" "txn" :=
+    ForSlice (struct.t WrEnt) <> "wrent" (struct.loadF Txn "wset" "txn")
+      (let: "val" := struct.get WrEnt "val" "wrent" in
+      let: "tuple" := struct.get WrEnt "tuple" "wrent" in
+      tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val");;
+    TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "tid" "txn");;
+    #().
+
+Definition Txn__Abort: val :=
+  rec: "Txn__Abort" "txn" :=
+    ForSlice (struct.t WrEnt) <> "wrent" (struct.loadF Txn "wset" "txn")
+      (let: "tuple" := struct.get WrEnt "tuple" "wrent" in
+      tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
+    TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "tid" "txn");;
+    #().
 
 End code.

@@ -247,6 +247,7 @@ def main():
             "./gc",
             "./tuple",
 			"./config",
+			"./examples",
 			# "./cfmutex",
         )
 

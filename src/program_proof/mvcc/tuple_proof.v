@@ -2,22 +2,7 @@
 From Perennial.program_proof Require Export disk_prelude.
 (* Import Coq model of our Goose program.*)
 From Goose.github_com.mit_pdos.go_mvcc Require Import tuple.
-
-Class mvcc_ghostG Σ :=
-  { mvcc_ghost_versG :> ghost_varG Σ (list (u64 * u64 * u64)) }.
-
-Definition mvcc_ghostΣ := #[ghost_varΣ (list (u64 * u64 * u64))].
-
-Global Instance subG_mvcc_ghostG {Σ} :
-  subG mvcc_ghostΣ Σ → mvcc_ghostG Σ.
-Proof. solve_inG. Qed.
-
-Record mvcc_names :=
-  {
-    tuple_vers_gn : gname;
-  }.
-
-Definition mvccNS := nroot .@ "mvcc".
+From Perennial.program_proof.mvcc Require Import mvcc_ghost.
 
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -27,24 +12,64 @@ Definition ver_to_val (x : u64 * u64 * u64) :=
 
 Definition own_versL γ (versL : list (u64 * u64 * u64)) := ghost_var γ.(tuple_vers_gn) (1/2) versL.
 
-Definition own_tuple (tuple_ptr : loc) (γ : mvcc_names) : iProp Σ :=
+(* Logical representation of a version. *)
+Record lver :=
+  { dq : dfrac;
+    v  : u64;
+  }.
+
+Definition pvers_rep (pvers : list (u64 * u64 * u64)) : iProp Σ :=
+  (* TODO: end = begin of next ver *)
+  (* TODO: end of the last ver = sentinel *)
+  (* TODO: begin < end *)
+  True.
+
+Definition to_lvers (b e : nat) (v : u64) (dq : dfrac) : list lver :=
+  replicate (e - b) {| dq := dq; v := v |}.
+  
+Definition pver_to_lvers (pver : u64 * u64 * u64) (dq : dfrac) : list lver :=
+  to_lvers (int.nat pver.1.1) (int.nat pver.1.2) pver.2 dq.
+
+(*
+(* TODO: `pvers_to_lvers` hasn't handled empty values in the beginning. *)
+Fixpoint pvers_to_lvers (pvers : list (u64 * u64 * u64)) (fixed : nat) : list lver :=
+  match pvers with
+  (* TODO: empty tuple is handled as a special case. *)
+  | [] => []
+  (* The last physical version is translated to a fixed part and a non-fixed part. *)
+  | pver :: [] => (to_lvers (int.nat pver.1.1) fixed pver.2 DfracDiscarded) ++
+                 (to_lvers fixed tid_sentinel pver.2 (DfracOwn 1))
+  (* Non-last physical versions are always fixed. *)
+  | pver :: tail => (pver_to_lvers pver DfracDiscarded) ++ (pvers_to_lvers tail fixed)
+  end.
+*)
+
+Definition own_tuple (tuple : loc) (key : u64) (γ : mvcc_names) : iProp Σ :=
   ∃ (tidown tidrd tidwr : u64) (vers : Slice.t)
-    (versL : list (u64 * u64 * u64)),
-    "Htidown" ∷ tuple_ptr ↦[Tuple :: "tidown"] #tidown ∗
-    "Htidrd" ∷ tuple_ptr ↦[Tuple :: "tidrd"] #tidrd ∗
-    "Htidwr" ∷ tuple_ptr ↦[Tuple :: "tidwr"] #tidwr ∗
-    "Hvers" ∷ tuple_ptr ↦[Tuple :: "vers"] (to_val vers) ∗
+    (versL : list (u64 * u64 * u64))
+    (* (fixed : nat) *),
+    "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
+    "Htidrd" ∷ tuple ↦[Tuple :: "tidrd"] #tidrd ∗
+    "Htidwr" ∷ tuple ↦[Tuple :: "tidwr"] #tidwr ∗
+    "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
     "HversLI" ∷ own_versL γ versL ∗
+    (*
+    "HpversRep" ∷ pvers_rep versL ∗
+    "Hfixed" ∷ ⌜fixed = max (int.nat tidrd) (int.nat tidwr)⌝ ∗
+    "HfixedQ" ∷ (fixed_ptsto γ 1 key fixed ∧ ⌜tidown = (U64 0)⌝) ∨
+                (fixed_ptsto γ (1/2) key fixed ∧ ⌜tidown ≠ (U64 0)⌝) ∗
+    "Hdbptsto" ∷ [∗ list] ts ↦ v ∈ (pvers_to_lvers versL fixed), db_ptsto γ v.(dq) ts key v.(v) ∗
+    *)
     "_" ∷ True.
 
-Local Hint Extern 1 (environments.envs_entails _ (own_tuple _ _)) => unfold own_tuple : core.
+Local Hint Extern 1 (environments.envs_entails _ (own_tuple _ _ _)) => unfold own_tuple : core.
 
-Definition is_tuple (tuple_ptr : loc) (γ : mvcc_names) : iProp Σ :=
+Definition is_tuple (tuple : loc) (key : u64) (γ : mvcc_names) : iProp Σ :=
   ∃ (latch : loc) (rcond : loc),
-    "#Hlatch" ∷ readonly (tuple_ptr ↦[Tuple :: "latch"] #latch) ∗
-    "#Hlock" ∷ is_lock mvccNS #latch (own_tuple tuple_ptr γ) ∗
-    "#Hrcond" ∷ readonly (tuple_ptr ↦[Tuple :: "rcond"] #rcond) ∗
+    "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
+    "#Hlock" ∷ is_lock mvccN #latch (own_tuple tuple key γ) ∗
+    "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
     "#HrcondC" ∷ is_cond rcond #latch ∗
     "_" ∷ True.
 
@@ -68,11 +93,11 @@ Definition extend_verchain (tid : u64) (val : u64) versL :=
 (*****************************************************************)
 (* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
 (*****************************************************************)
-Theorem wp_tuple__AppendVersion tuple_ptr (tid : u64) (val : u64) versL γ :
-  is_tuple tuple_ptr γ -∗
+Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) versL γ :
+  is_tuple tuple key γ -∗
   {{{ own_versL γ versL }}}
-    Tuple__AppendVersion #tuple_ptr #tid #val
-  {{{ b, RET #b; own_versL γ (extend_verchain tid val versL) }}}.
+    Tuple__AppendVersion #tuple #tid #val
+  {{{ RET #(); own_versL γ (extend_verchain tid val versL) }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "HversLU HΦ".
   rename versL into versL'.
@@ -425,14 +450,13 @@ Qed.
 (*****************************************************************)
 (* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, bool)    *)
 (*****************************************************************)
-Theorem wp_tuple__ReadVersion tuple_ptr (tid : u64) (versL : list (u64 * u64 * u64)) γ :
-  is_tuple tuple_ptr γ -∗
-  {{{ own_versL γ versL }}}
-    Tuple__ReadVersion #tuple_ptr #tid
-  {{{ (v : u64) (b : bool), RET (#v, #b); ∃ versL', own_versL γ versL' }}}.
+Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) γ :
+  is_tuple tuple key γ -∗
+  {{{ True }}}
+    Tuple__ReadVersion #tuple #tid
+  {{{ (val : u64) (found : bool), RET (#val, #found); view_ptsto key val }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "HversLU HΦ".
-  rename versL into versL'.
+  iIntros "#Htuple !#" (Φ) "_ HΦ".
   iNamed "Htuple".
   wp_call.
   
@@ -452,9 +476,8 @@ Proof.
   (***********************************************************)
   wp_apply (wp_forBreak_cond
               (λ _,
-                 (own_tuple tuple_ptr γ) ∗
-                 (locked #latch) ∗
-                 (∃ versL', own_versL γ versL')
+                 (own_tuple tuple key γ) ∗
+                 (locked #latch)
               )%I
               with "[] [-HΦ]").
   (* Customize the loop invariant as waiting on condvar havocs the values. *)
@@ -463,7 +486,7 @@ Proof.
     iIntros (Φ).
     iModIntro.
     clear tidown tidrd tidwr vers versL.
-    iIntros "(Hown & Hlocked & HversLU) HΦ".
+    iIntros "[Hown Hlocked] HΦ".
     iNamed "Hown".
     wp_pures.
     wp_loadField.
@@ -488,7 +511,7 @@ Proof.
     wp_if_destruct.
     { wp_pures.
       wp_loadField.
-      wp_apply (wp_condWait with "[-HversLU HΦ]").
+      wp_apply (wp_condWait with "[-HΦ]").
       { eauto 10 with iFrame. }
       iIntros "[Hlocked Hown]".
       wp_pures.
@@ -500,11 +523,10 @@ Proof.
     eauto 10 with iFrame.
   }
   { (* The invariant holds at the start. *)
-    iFrame "Hlocked".
-    iSplitR "HversLU"; eauto 10 with iFrame.
+    eauto 10 with iFrame.
   }
   clear tidown tidrd tidwr vers versL.
-  iIntros "(Hown & Hlocked & HversLU)".
+  iIntros "[Hown Hlocked]".
   iNamed "Hown".
   wp_pures.
   
@@ -550,7 +572,7 @@ Proof.
   (***********************************************************)
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HversLU HΦ]").
+    wp_apply (release_spec with "[-HΦ]").
     { case_bool_decide; eauto 10 with iFrame. }
     wp_pures.
     iModIntro.
@@ -567,7 +589,7 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (release_spec with "[-HversLU HΦ]").
+  wp_apply (release_spec with "[-HΦ]").
   { case_bool_decide; eauto 10 with iFrame. }
   wp_pures.
   iModIntro.
@@ -582,10 +604,10 @@ Qed.
 (*****************************************************************)
 (* func (tuple *Tuple) Free(tid uint64)                          *)
 (*****************************************************************)
-Theorem wp_tuple__Free tuple_ptr (tid : u64) (versL : list (u64 * u64 * u64)) γ :
-  is_tuple tuple_ptr γ -∗
+Theorem wp_tuple__Free tuple (tid : u64) (key : u64) (versL : list (u64 * u64 * u64)) γ :
+  is_tuple tuple key γ -∗
   {{{ True }}}
-    Tuple__Free #tuple_ptr #tid
+    Tuple__Free #tuple #tid
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "_ HΦ".
@@ -628,10 +650,10 @@ Qed.
 (*****************************************************************)
 (* func (tuple *Tuple) Own(tid uint64) bool                      *)
 (*****************************************************************)
-Theorem wp_tuple__Own tuple_ptr (tid : u64) (versL : list (u64 * u64 * u64)) γ :
-  is_tuple tuple_ptr γ -∗
+Theorem wp_tuple__Own tuple (tid : u64) (key : u64) (versL : list (u64 * u64 * u64)) γ :
+  is_tuple tuple key γ -∗
   {{{ True }}}
-    Tuple__Own #tuple_ptr #tid
+    Tuple__Own #tuple #tid
   {{{ b, RET #b; True }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "_ HΦ".
@@ -744,10 +766,10 @@ Definition safe_rm_verchain (tid : u64) (versL versL' : list (u64 * u64 * u64)) 
 (*****************************************************************)
 (* func (tuple *Tuple) RemoveVersions(tid uint64)                *)
 (*****************************************************************)
-Theorem wp_tuple__RemoveVersions tuple_ptr (tid : u64) versL γ :
-  is_tuple tuple_ptr γ -∗
+Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) versL γ :
+  is_tuple tuple key γ -∗
   {{{ own_versL γ versL }}}
-    Tuple__RemoveVersions #tuple_ptr #tid
+    Tuple__RemoveVersions #tuple #tid
   {{{ b, RET #b; ∃ versL', own_versL γ versL' ∗ (safe_rm_verchain tid versL versL') }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "HversLU HΦ".
@@ -782,7 +804,7 @@ Proof.
   wp_pures.
   wp_apply (wp_forBreak
               (λ _,
-                (tuple_ptr ↦[Tuple :: "vers"] to_val vers) ∗
+                (tuple ↦[Tuple :: "vers"] to_val vers) ∗
                 (slice.is_slice vers (struct.t Version) 1 (ver_to_val <$> versL)) ∗
                 (∃ (idx : u64), (idxR ↦[uint64T] #idx) ∗
                                 (⌜int.Z idx ≤ int.Z vers.(Slice.sz)⌝) ∗
@@ -916,11 +938,11 @@ Qed.
 (*****************************************************************)
 (* func MkTuple() *Tuple                                         *)
 (*****************************************************************)
-Theorem wp_MkTuple:
+Theorem wp_MkTuple (key : u64):
   {{{ True }}}
     MkTuple #()
   {{{ (t : loc) γ, RET #t;
-         is_tuple t γ ∗
+         is_tuple t key γ ∗
          own_versL γ []
   }}}.
 Proof.
@@ -974,7 +996,7 @@ Proof.
   (***********************************************************)
   iMod (ghost_var_alloc ([] : list (u64 * u64 * u64))) as (tuple_vers_gn) "[HversLI HversLU]".
   set γ := {| tuple_vers_gn := tuple_vers_gn |}.
-  iMod (alloc_lock mvccNS _ latch (own_tuple tuple γ) with "[$Hfree] [-latch rcond HversLU HΦ]") as "#Hlock".
+  iMod (alloc_lock mvccN _ latch (own_tuple tuple key γ) with "[$Hfree] [-latch rcond HversLU HΦ]") as "#Hlock".
   { eauto 10 with iFrame. }
   iApply ("HΦ" $! _ γ).
   iSplitR "HversLU"; auto.
