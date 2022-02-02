@@ -377,7 +377,7 @@ Proof.
   { apply auth_both_valid_discrete; split; eauto. econstructor. }
   iMod (ownfCP_init_empty γ) as "Hemp".
   iModIntro. iExists {| credit_name := γ; coPset_name := γ |}.
-  rewrite -{2}(plus_0_l k).
+  rewrite -{2}(Nat.add_0_l k).
   iDestruct (cred_frag_split with "[H2]") as "($&$)".
   { rewrite /cred_frag//=. }
   iFrame.
