@@ -197,21 +197,19 @@ Definition TxnMgr__StartGC: val :=
 
 Definition matchLocalWrites: val :=
   rec: "matchLocalWrites" "key" "wset" :=
-    let: "idx" := ref_to uint64T #0 in
-    let: "found" := ref_to boolT #false in
+    let: "pos" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "idx" ≥ slice.len "wset"
+      (if: ![uint64T] "pos" ≥ slice.len "wset"
       then Break
       else
-        (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "wset" (![uint64T] "idx")))
-        then
-          "found" <-[boolT] #true;;
-          Break
+        (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "wset" (![uint64T] "pos")))
+        then Break
         else
-          "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+          "pos" <-[uint64T] ![uint64T] "pos" + #1;;
           Continue)));;
-    (![uint64T] "idx", ![boolT] "found").
+    let: "found" := ![uint64T] "pos" < slice.len "wset" in
+    (![uint64T] "pos", "found").
 
 Definition Txn__Put: val :=
   rec: "Txn__Put" "txn" "key" "val" :=
