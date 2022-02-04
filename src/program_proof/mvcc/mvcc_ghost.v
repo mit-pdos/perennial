@@ -46,6 +46,10 @@ Theorem view_ptsto_agree (k v v' : u64) :
   view_ptsto k v -∗ view_ptsto k v' -∗ ⌜v = v'⌝.
 Admitted.
 
+Theorem mods_token_witness (k : u64) :
+  mods_token k -∗ ∃ v, view_ptsto k v.
+Admitted.
+
 (*
 Definition fixed_ptsto γ (q : Qp) (key : u64) (fixed : nat) : iProp Σ :=
   own γ.(mvcc_fixed) {[key := to_dfrac_agree (DfracOwn q) (fixed : (leibnizO _))]}.

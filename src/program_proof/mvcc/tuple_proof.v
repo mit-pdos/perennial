@@ -650,14 +650,16 @@ Qed.
 (*****************************************************************)
 (* func (tuple *Tuple) Own(tid uint64) bool                      *)
 (*****************************************************************)
-Theorem wp_tuple__Own tuple (tid : u64) (key : u64) (versL : list (u64 * u64 * u64)) γ :
+Theorem wp_tuple__Own tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
   {{{ True }}}
     Tuple__Own #tuple #tid
-  {{{ b, RET #b; True }}}.
+  {{{ (b : bool), RET #b; if b
+                        then mods_token key
+                        else True
+  }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "_ HΦ".
-  rename versL into versL'.
   iNamed "Htuple".
   wp_call.
   
