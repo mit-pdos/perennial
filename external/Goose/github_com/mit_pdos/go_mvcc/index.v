@@ -13,18 +13,19 @@ Definition IndexBucket := struct.decl [
 ].
 
 Definition Index := struct.decl [
-  "buckets" :: slice.T (struct.t IndexBucket)
+  "buckets" :: slice.T ptrT
 ].
 
 Definition MkIndex: val :=
   rec: "MkIndex" <> :=
     let: "idx" := struct.alloc Index (zero_val (struct.t Index)) in
-    struct.storeF Index "buckets" "idx" (NewSlice (struct.t IndexBucket) config.N_IDX_BUCKET);;
+    struct.storeF Index "buckets" "idx" (NewSlice ptrT config.N_IDX_BUCKET);;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < config.N_IDX_BUCKET); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: "b" := SliceRef (struct.t IndexBucket) (struct.loadF Index "buckets" "idx") (![uint64T] "i") in
+      let: "b" := struct.alloc IndexBucket (zero_val (struct.t IndexBucket)) in
       struct.storeF IndexBucket "latch" "b" (lock.new #());;
       struct.storeF IndexBucket "m" "b" (NewMap ptrT #());;
+      SliceSet ptrT (struct.loadF Index "buckets" "idx") (![uint64T] "i") "b";;
       Continue);;
     "idx".
 
@@ -42,17 +43,17 @@ Definition getBucket: val :=
 Definition Index__GetTuple: val :=
   rec: "Index__GetTuple" "idx" "key" :=
     let: "b" := getBucket "key" in
-    let: "bucket" := SliceGet (struct.t IndexBucket) (struct.loadF Index "buckets" "idx") "b" in
-    lock.acquire (struct.get IndexBucket "latch" "bucket");;
-    let: ("tupleCur", "ok") := MapGet (struct.get IndexBucket "m" "bucket") "key" in
+    let: "bucket" := SliceGet ptrT (struct.loadF Index "buckets" "idx") "b" in
+    lock.acquire (struct.loadF IndexBucket "latch" "bucket");;
+    let: ("tupleCur", "ok") := MapGet (struct.loadF IndexBucket "m" "bucket") "key" in
     (if: "ok"
     then
-      lock.release (struct.get IndexBucket "latch" "bucket");;
+      lock.release (struct.loadF IndexBucket "latch" "bucket");;
       "tupleCur"
     else
       let: "tupleNew" := tuple.MkTuple #() in
-      MapInsert (struct.get IndexBucket "m" "bucket") "key" "tupleNew";;
-      lock.release (struct.get IndexBucket "latch" "bucket");;
+      MapInsert (struct.loadF IndexBucket "m" "bucket") "key" "tupleNew";;
+      lock.release (struct.loadF IndexBucket "latch" "bucket");;
       "tupleNew").
 
 Definition Index__GetKeys: val :=
@@ -61,11 +62,11 @@ Definition Index__GetKeys: val :=
     "keys" <-[slice.T uint64T] NewSlice uint64T #0;;
     let: "b" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "b" < config.N_IDX_BUCKET); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
-      let: "bucket" := SliceGet (struct.t IndexBucket) (struct.loadF Index "buckets" "idx") (![uint64T] "b") in
-      lock.acquire (struct.get IndexBucket "latch" "bucket");;
-      MapIter (struct.get IndexBucket "m" "bucket") (λ: "k" <>,
+      let: "bucket" := SliceGet ptrT (struct.loadF Index "buckets" "idx") (![uint64T] "b") in
+      lock.acquire (struct.loadF IndexBucket "latch" "bucket");;
+      MapIter (struct.loadF IndexBucket "m" "bucket") (λ: "k" <>,
         "keys" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "keys") "k");;
-      lock.release (struct.get IndexBucket "latch" "bucket");;
+      lock.release (struct.loadF IndexBucket "latch" "bucket");;
       Continue);;
     ![slice.T uint64T] "keys".
 

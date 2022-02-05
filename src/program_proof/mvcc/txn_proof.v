@@ -139,7 +139,6 @@ Definition is_txn_impl (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
 
 Definition is_txn (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
   "%Hsubset" ∷ ⌜dom (gset u64) mods ⊆ dom (gset u64) view⌝ ∗
-  (* TODO: separating permissions from values? *)
   "Hmods" ∷ ([∗ map] k ↦ _ ∈ mods, mods_token k) ∗
   "Hview" ∷ ([∗ map] k ↦ v ∈ view, view_ptsto k v) ∗
   "Himpl" ∷ is_txn_impl txn view mods γ.
@@ -589,7 +588,12 @@ Proof using mvcc_ghostG0.
     iDestruct (view_ptsto_agree with "Hview_ptsto Hview_ptsto'") as %->.
     iDestruct ("Hview_close" with "Hview_ptsto") as "Hview".
     iSplit; last done.
-    eauto 20 with iFrame.
+    rewrite /is_txn.
+    iFrame "% Hmods Hview".
+    do 6 iExists _.
+    iFrame "HtxnmgrRI HidxRI".
+    (* [eauto 20 with iFrame] very slow *)
+    eauto 10 with iFrame.
   }
   { (* Proving the first case of `get_spec` (write set misses / first read). *)
     iExists val.
@@ -606,14 +610,6 @@ Proof using mvcc_ghostG0.
     eauto 20 with iFrame.
   }
 Qed.
-
-(*
-Local Lemma list_to_map_insert (A B : Type) (l : list (A * B)) :
-  ∀ m k p v v',
-    m = list_to_map l ->
-    m !! k = Some v ->
-    <[k := v']> m = list_to_map (<[p := (k, v')]> l).
-*)
 
 Definition put_spec txn view mods k v γ : iProp Σ :=
   match view !! k, mods !! k with
@@ -803,8 +799,13 @@ Proof using mvcc_ghostG0.
   (* }                                                       *)
   (***********************************************************)
   wp_if_destruct.
-  { iApply "HΦ".
-    eauto 20 with iFrame.
+  { iModIntro.
+    iApply "HΦ".
+    rewrite /is_txn.
+    iFrame "% Hmods Hview".
+    do 6 iExists _.
+    iFrame "HtxnmgrRI HidxRI".
+    eauto 10 with iFrame.
   }
 
   (************************************************************************)
@@ -842,7 +843,7 @@ Proof using mvcc_ghostG0.
     do 5 iExists _.
     iExists wsetL'.
     (* Framing "HtxnmgrRI" seems faster than a single [iFrame "# ∗"]. *)
-    iFrame "HtxnmgrRI".
+    iFrame "HtxnmgrRI HidxRI".
     iFrame "# ∗".
     iSplitL "HwsetL"; first by rewrite fmap_app.
     iSplit.
@@ -878,7 +879,7 @@ Proof using mvcc_ghostG0.
     { iApply (big_sepM_insert with "[Hview Hview_ptsto]"); eauto with iFrame. }
     do 5 iExists _.
     iExists wsetL'.
-    iFrame "HtxnmgrRI".
+    iFrame "HtxnmgrRI HidxRI".
     iFrame "# ∗".
     iSplitL "HwsetL"; first by rewrite fmap_app.
     iSplit.

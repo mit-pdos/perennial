@@ -53,7 +53,6 @@ Definition own_tuple (tuple : loc) (key : u64) (γ : mvcc_names) : iProp Σ :=
     "Htidwr" ∷ tuple ↦[Tuple :: "tidwr"] #tidwr ∗
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
-    "HversLI" ∷ own_versL γ versL ∗
     (*
     "HpversRep" ∷ pvers_rep versL ∗
     "Hfixed" ∷ ⌜fixed = max (int.nat tidrd) (int.nat tidwr)⌝ ∗
@@ -93,14 +92,13 @@ Definition extend_verchain (tid : u64) (val : u64) versL :=
 (*****************************************************************)
 (* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
 (*****************************************************************)
-Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) versL γ :
+Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ own_versL γ versL }}}
+  {{{ True }}}
     Tuple__AppendVersion #tuple #tid #val
-  {{{ RET #(); own_versL γ (extend_verchain tid val versL) }}}.
+  {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "HversLU HΦ".
-  rename versL into versL'.
+  iIntros "#Htuple !#" (Φ) "_ HΦ".
   iNamed "Htuple".
   wp_call.
 
@@ -263,16 +261,66 @@ Proof.
   wp_apply (wp_condBroadcast with "[$HrcondC]").
   wp_pures.
 
+  (**
+   * Proving that [tuple.AppendVersion] does what it is intended to do
+   * to the physical state (i.e., [extend_verchain]).
+   * Not sure where we'll be using this though.
+   *)
+  set b := bool_decide _.
+  set versL' := (if b
+                 then <[Z.to_nat (int.Z vers.(Slice.sz) - 1):=(x.1.1, tid, x.2)]> versL
+                 else versL) ++ [(tid, TID_SENTINEL, val)].
+  assert (Hspec : versL' = extend_verchain tid val versL).
+  { rewrite fmap_length in HversLen.
+    rewrite /extend_verchain.
+    subst b.
+    subst versL'.
+    destruct (last versL) eqn:E.
+    - case_bool_decide.
+      + f_equal.
+        rewrite HversLen.
+        replace p with x; last first.
+        { rewrite last_lookup in E.
+          assert (Hpx : Some p = Some x).
+          { rewrite <- Hx; last word.
+            rewrite <- E.
+            f_equal.
+            word.
+          }
+          inversion Hpx.
+          done.
+        }
+        change ({| u64_car := _ |}) with TID_SENTINEL.
+        f_equal.
+        word.
+      + exfalso.
+        apply mk_is_Some in E.
+        apply last_is_Some in E.
+        rewrite <- length_zero_iff_nil in E.
+        word_cleanup.
+        rewrite HversLen in E.
+        change (int.Z (U64 0)) with 0%Z in *.
+        lia.
+    - case_bool_decide.
+      + exfalso.
+        apply last_None in E.
+        subst.
+        rewrite nil_length in HversLen.
+        word.
+      + f_equal.
+        change ({| u64_car := _ |}) with TID_SENTINEL.
+        apply last_None in E.
+        apply E.
+  }
+  
   (***********************************************************)
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  set b := bool_decide _.
-  iDestruct (ghost_var_agree with "HversLU HversLI") as %->.
-  iMod (ghost_var_update_halves (if b then _ else _) with "HversLU HversLI") as "[HversLU HversLI]".
-  wp_apply (release_spec with "[-HΦ HversLU]").
+  wp_apply (release_spec with "[-HΦ]").
   { (* Restoring the lock invariant. *)
     iFrame "Hlock Hlocked".
+    iNext.
     rewrite /own_tuple.
     unfold b.
     case_bool_decide.
@@ -290,53 +338,7 @@ Proof.
     }
   }
   wp_pures.
-  iApply "HΦ".
-  iModIntro.
-
-  (* Prove the postcondition. Should have better proof... *)
-  rewrite fmap_length in HversLen.
-  rewrite /extend_verchain.
-  unfold b.
-  destruct (last versL) eqn:E.
-  - case_bool_decide.
-    + iExactEq "HversLU".
-      f_equal.
-      rewrite HversLen.
-      replace p with x; last first.
-      { rewrite last_lookup in E.
-        assert (Hpx : Some p = Some x).
-        { rewrite <- Hx; last word.
-          rewrite <- E.
-          f_equal.
-          word.
-        }
-        inversion Hpx.
-        done.
-      }
-      change ({| u64_car := _ |}) with TID_SENTINEL.
-      apply app_inv_tail_iff.
-      f_equal.
-      word.
-    + exfalso.
-      apply mk_is_Some in E.
-      apply last_is_Some in E.
-      rewrite <- length_zero_iff_nil in E.
-      word_cleanup.
-      rewrite HversLen in E.
-      change (int.Z (U64 0)) with 0%Z in *.
-      lia.
-  - case_bool_decide.
-    + exfalso.
-      apply last_None in E.
-      subst.
-      rewrite nil_length in HversLen.
-      word.
-    + iExactEq "HversLU".
-      f_equal.
-      change ({| u64_car := _ |}) with TID_SENTINEL.
-      apply app_inv_tail_iff.
-      apply last_None in E.
-      apply E.
+  by iApply "HΦ".
 Qed.
 
 (*****************************************************************)
@@ -761,21 +763,20 @@ Qed.
  * We could additionally specify the performance-related condition as follows:
  * 3) all the versions whose end timestamp is less than or equal to `tid` are removed.
  *)
-Definition safe_rm_verchain (tid : u64) (versL versL' : list (u64 * u64 * u64)) : iProp Σ :=
-  ⌜sublist versL' versL⌝ ∗
-  [∗ list] ver ∈ versL, ⌜int.Z ver.1.2 > (int.Z tid) → ver ∈ versL'⌝.
+Definition safe_rm_verchain (tid : u64) (versL versL' : list (u64 * u64 * u64)) :=
+  (sublist versL' versL) ∧
+  (Forall (fun ver => int.Z ver.1.2 > (int.Z tid) -> ver ∈ versL')) versL.
 
 (*****************************************************************)
 (* func (tuple *Tuple) RemoveVersions(tid uint64)                *)
 (*****************************************************************)
-Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) versL γ :
+Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ own_versL γ versL }}}
+  {{{ True }}}
     Tuple__RemoveVersions #tuple #tid
-  {{{ b, RET #b; ∃ versL', own_versL γ versL' ∗ (safe_rm_verchain tid versL versL') }}}.
+  {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "HversLU HΦ".
-  rename versL into versL'.
+  iIntros "#Htuple !#" (Φ) "_ HΦ".
   iNamed "Htuple".
   wp_call.
   
@@ -884,7 +885,7 @@ Proof.
       naive_solver.
   }
   iIntros "(Hvers & HversL & Hidx)".
-  iDestruct "Hidx" as (idx) "(HidxR & %Hbound & HidxOrder)".
+  iDestruct "Hidx" as (idx) "(HidxR & %Hbound & %HidxOrder)".
   wp_pures.
 
   (***********************************************************)
@@ -904,49 +905,48 @@ Proof.
   iDestruct (slice.is_slice_split with "[$HversS $HversC]") as "HversL".
   rewrite <- fmap_drop.
   
+  (**
+   * Proving that [tuple.RemoveVersions] does what it is intended to do
+   * to the physical state (i.e., [safe_rm_verchain]).
+   * Not sure where we'll be using this though.
+   *)
+  set versL'' := drop (int.nat idx) versL.
+  assert (Hspec : safe_rm_verchain tid versL versL'').
+  { rewrite /safe_rm_verchain.
+    split; first apply sublist_drop.
+    replace versL with (take (int.nat idx) versL ++ drop (int.nat idx) versL) by apply take_drop.
+    apply Forall_app.
+    split; apply Forall_forall.
+    { (* Versions in the removed part have their end timestamps less than or equal `tid`. *)
+      intros ver Hin Hgt.
+      apply elem_of_list_lookup_1 in Hin as [i HSome].
+      apply HidxOrder in HSome.
+      lia.
+    }
+    { (* Versions in the remaining part are in the old list. *)
+      intros ver Hin _.
+      apply elem_of_list_lookup_1 in Hin as [i HSome].
+      by apply elem_of_list_lookup_2 in HSome.
+    }
+  }
+  
   (***********************************************************)
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  iDestruct (ghost_var_agree with "HversLU HversLI") as %->.
-  iMod (ghost_var_update_halves (drop (int.nat idx) versL) with "HversLU HversLI") as "[HversLU HversLI]".
-  wp_apply (release_spec with "[-HidxOrder HversLU HΦ]").
+  wp_apply (release_spec with "[-HΦ]").
   { eauto 10 with iFrame. }
   wp_pures.
-  iApply "HΦ".
-  iModIntro.
-  iExists _.
-  iFrame.
-  rewrite /safe_rm_verchain.
-  iSplit.
-  { iPureIntro. apply sublist_drop. }
-  replace versL with (take (int.nat idx) versL ++ drop (int.nat idx) versL) at 2 by apply take_drop.
-  iApply (big_sepL_app).
-  iSplit.
-  { (* Versions in the removed part have their end timestamps less than or equal `tid`. *)
-    iRevert "HidxOrder".
-    iPureIntro.
-    intros H i ver HSome Hgt.
-    apply H in HSome.
-    lia.
-  }
-  { (* Versions in the remaining part are in the old list. *)
-    iPureIntro.
-    intros i ver HSome _.
-    by apply elem_of_list_lookup_2 in HSome.
-  }
+  by iApply "HΦ".
 Qed.
 
 (*****************************************************************)
 (* func MkTuple() *Tuple                                         *)
 (*****************************************************************)
-Theorem wp_MkTuple (key : u64):
+Theorem wp_MkTuple (key : u64) γ :
   {{{ True }}}
     MkTuple #()
-  {{{ (t : loc) γ, RET #t;
-         is_tuple t key γ ∗
-         own_versL γ []
-  }}}.
+  {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
@@ -996,17 +996,18 @@ Proof.
   (***********************************************************)
   (* return tuple                                            *)
   (***********************************************************)
-  iMod (ghost_var_alloc ([] : list (u64 * u64 * u64))) as (tuple_vers_gn) "[HversLI HversLU]".
-  set γ := {| tuple_vers_gn := tuple_vers_gn |}.
-  iMod (alloc_lock mvccN _ latch (own_tuple tuple key γ) with "[$Hfree] [-latch rcond HversLU HΦ]") as "#Hlock".
-  { eauto 10 with iFrame. }
-  iApply ("HΦ" $! _ γ).
-  iSplitR "HversLU"; auto.
+  iMod (alloc_lock mvccN _ latch (own_tuple tuple key γ) with "[$Hfree] [-latch rcond HΦ]") as "#Hlock".
+  { iNext.
+    unfold own_tuple.
+    do 4 iExists _.
+    iExists [].
+    iFrame.
+  }
+  iApply "HΦ".
   iExists latch, rcond.
   iMod (readonly_alloc_1 with "latch") as "$".
   iMod (readonly_alloc_1 with "rcond") as "$".
-  iFrame "#".
-  done.
+  by iFrame "#".
 Qed.
 
 End heap.
