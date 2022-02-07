@@ -7,6 +7,7 @@ From Perennial.program_proof Require Import marshal_proof.
 From Goose.github_com.mit_pdos.gokv.ctrexample Require Import server.
 From Perennial.goose_lang Require Export crash_lock crash_borrow.
 From Perennial.program_proof.ctrexample Require Import wpc_proofmode.
+From Perennial.program_proof.memkv Require Import rpc_proof.
 
 Section server_proof.
 
@@ -246,30 +247,29 @@ Definition crash_cond γ : iProp Σ :=
  ∃ c, own_CtrServer_durable c ∗
  own_CtrServer_ghost γ c.
 
-Lemma wpc_ServerMain (γ:gname) :
-  {{{
+Context `{rpcregG Σ}.
+Lemma wpc_ServerMain γurpc_gn (γ:gname) :
+
+handlers_dom (γurpc_gn) {[ U64 0 ]} -∗
+  crash_cond γ -∗
+        WPC main #() @ NotStuck; ⊤
+  {{
+      v, True
+  }}
+  {{
        crash_cond γ
-  }}}
-    main #() @ NotStuck; ⊤
-  {{{
-       RET #(); True
-  }}}
-  {{{
-       crash_cond γ
-  }}}
+  }}
 .
 Proof.
-  iIntros (Φ Φc) "Hpre HΦ".
+  iIntros "#Hdom Hpre".
   unfold main.
   wpc_pures.
   {
-    iLeft in "HΦ".
-    by iApply "HΦ".
+    iFrame.
   }
   iDestruct "Hpre" as (c) "[Hdur Hghost]".
-  iCache with "HΦ Hdur Hghost".
-  { iLeft in "HΦ". iApply "HΦ". iExists _; iFrame. }
-  wpc_pures.
+  iCache with "Hdur Hghost".
+  { iExists _; iFrame. }
 
   wpc_wpapply (wp_allocStruct).
   { admit. }
@@ -294,8 +294,136 @@ Proof.
 
   wpc_loadField.
 
-  (* have to destruct Hdur *)
-  (* wpc_apply (wpc_Read with "Hdur") *)
+  iDestruct "Hdur" as (data) "[Hdur %Hpure]".
+  wpc_apply (wpc_Read with "Hdur").
+  iSplit.
+  {
+    iIntros.
+    iExists _; iFrame.
+    iExists data; iFrame.
+    done.
+  }
+  iNext.
+  iIntros (sl) "[Hsl Hdur]".
+
+  iCache with "Hdur Hghost".
+  { iExists _; iFrame. iExists _; iFrame. done. }
+
+  wpc_pures.
+
+  wpc_bind (@If _ _ _ _).
+  wpc_frame.
+
+  iDestruct (is_slice_sz with "Hsl") as %HslSize.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  wp_apply (wp_If_join ("Hval" ∷ s ↦[CtrServer :: "val"] #c)
+                       with "[Hval Hsl]"
+           ).
+  {
+    iSplit.
+    {
+      iIntros "%Hslice_empty".
+      wp_storeField.
+      assert (c = 0) as ->.
+      {
+        apply bool_decide_eq_true in Hslice_empty.
+        replace (sl.(Slice.sz)) with (U64 0) in HslSize by naive_solver.
+        admit. (* TODO: some annoying pure reasoning *)
+      }
+      iFrame.
+      done.
+    }
+    {
+      iIntros "%Hslice_nonEmpty".
+      destruct Hpure as [Hbad|Hpure].
+      { exfalso. apply bool_decide_eq_false in Hslice_nonEmpty.
+        assert (sl.(Slice.sz) ≠ 0).
+        { admit. }
+        destruct Hbad as [Hbad _].
+        rewrite Hbad in HslSize.
+        simpl in HslSize.
+        admit. (* TODO: pure reasoning *)
+      }
+      iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+      wp_apply (wp_new_dec with "Hsl").
+      { done. }
+      iIntros (dec) "Hdec".
+      wp_apply (wp_Dec__GetInt with "Hdec").
+      iIntros "_".
+      wp_storeField.
+      iFrame.
+      done.
+    }
+  }
+  iNamed 1.
+  iNamed 1.
+
+  wpc_pures.
+  wpc_apply (alloc_crash_lock
+               ctrServerN _ _ _ mu
+               (∃ c, own_CtrServer_ghost γ c ∗
+                                         own_CtrServer_durable c ∗
+                                         own_CtrServer s c
+               )
+               (∃ c, own_CtrServer_ghost γ c ∗
+                                         own_CtrServer_durable c)
+
+               ).
+  iSplitL "".
+  {
+    iModIntro.
+    iDestruct 1 as (?) "(Hghost & Hdur & Hvol)".
+    iExists _; iFrame.
+  }
+
+  iSplitL "Hdur Hghost Hfilename Hmu Hval".
+  {
+    iExists _.
+    iFrame.
+    iExists _; iFrame.
+    done.
+  }
+  iFrame "HmuInv".
+  iIntros "#HmuInv".
+
+  iApply (wpc_crash_mono _ _ _ _ _ (True) with "[]").
+  {
+    iIntros "_".
+    iDestruct 1 as (?) "[Hghost Hdur]".
+    iExists _; iFrame.
+  }
+  iApply wp_wpc.
+
+  wp_apply (map.wp_NewMap).
+  iIntros (handlers_ptr) "Hmap".
+  wp_pures.
+
+  wp_apply (map.wp_MapInsert with "Hmap").
+  iIntros "Hmap".
+  wp_pures.
+
+  wp_apply (wp_MakeRPCServer with "[$Hmap]").
+
+  iIntros (rs) "Hsown".
+  wp_pures.
+
+  wp_apply (wp_StartRPCServer with "[$Hsown]").
+  { rewrite ?dom_insert_L; set_solver. }
+  {
+    iSplitL "".
+    { rewrite /handlers_complete.
+      rewrite ?dom_insert_L dom_empty_L. iExactEq "Hdom". f_equal. set_solver. }
+    iApply (big_sepM_insert_2 with "").
+    { (* FetchAndIncrement handler_is *)
+      simpl. iExists _.
+      Print handler_spec.
+
+      instantiate (1:=FAISpec γ).
+      iSplitL ""; first admit. (* FIXME: add precondition *)
+      admit.
+  }
+
 Admitted.
 
 End server_proof.

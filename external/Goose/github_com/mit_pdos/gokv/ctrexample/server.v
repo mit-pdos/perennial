@@ -38,7 +38,9 @@ Definition main: val :=
     let: "a" := grove_ffi.Read (struct.loadF CtrServer "filename" "s") in
     (if: (slice.len "a" = #0)
     then struct.storeF CtrServer "val" "s" #0
-    else struct.storeF CtrServer "val" "s" (UInt64Get "a"));;
+    else
+      let: "d" := marshal.NewDec "a" in
+      struct.storeF CtrServer "val" "s" (marshal.Dec__GetInt "d"));;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" #0 (λ: "args" "reply",
       let: "v" := CtrServer__FetchAndIncrement "s" in
