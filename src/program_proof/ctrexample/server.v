@@ -421,7 +421,27 @@ Proof.
 
       instantiate (1:=FAISpec γ).
       iSplitL ""; first admit. (* FIXME: add precondition *)
-      admit.
+
+      iIntros (??????) "!#".
+      iIntros (Φ) "Hpre HΦ".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hp_sl & #HFAISpec)".
+      wp_pures.
+      wp_apply (wp_CtrServer__FetchAndIncrement with "[]").
+      { admit. }
+      iIntros (x) "_".
+      wp_pures.
+      wp_apply (wp_new_enc).
+      iIntros (enc) "Henc".
+      wp_pures.
+      wp_apply (wp_Enc__PutInt with "Henc").
+      { done. }
+      iIntros "Henc".
+      wp_pures.
+      wp_apply (wp_Enc__Finish with "Henc").
+      iIntros (rep_sl data1) "(%Henc & %Hlen & Hsl)".
+      wp_store.
+      iApply "HΦ".
+    }
   }
 
 Admitted.
