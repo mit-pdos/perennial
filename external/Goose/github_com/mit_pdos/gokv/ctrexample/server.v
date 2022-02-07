@@ -3,6 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.tchajed.marshal.
 
 Definition CtrServer := struct.decl [
   "mu" :: ptrT;
@@ -13,9 +14,9 @@ Definition CtrServer := struct.decl [
 (* requires lock to be held *)
 Definition CtrServer__MakeDurable: val :=
   rec: "CtrServer__MakeDurable" "s" :=
-    let: "a" := NewSlice byteT #8 in
-    UInt64Put "a" (struct.loadF CtrServer "val" "s");;
-    grove_ffi.Write (struct.loadF CtrServer "filename" "s") "a";;
+    let: "e" := marshal.NewEnc #8 in
+    marshal.Enc__PutInt "e" (struct.loadF CtrServer "val" "s");;
+    grove_ffi.Write (struct.loadF CtrServer "filename" "s") (marshal.Enc__Finish "e");;
     #().
 
 Definition CtrServer__FetchAndIncrement: val :=
@@ -41,8 +42,9 @@ Definition main: val :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" #0 (λ: "args" "reply",
       let: "v" := CtrServer__FetchAndIncrement "s" in
-      "reply" <-[slice.T byteT] NewSlice byteT #8;;
-      UInt64Put (![slice.T byteT] "reply") "v";;
+      let: "e" := marshal.NewEnc #8 in
+      marshal.Enc__PutInt "e" "v";;
+      "reply" <-[slice.T byteT] marshal.Enc__Finish "e";;
       #()
       );;
     let: "rs" := rpc.MakeRPCServer "handlers" in

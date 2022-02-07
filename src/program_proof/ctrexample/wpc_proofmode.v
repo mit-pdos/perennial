@@ -35,7 +35,7 @@ Tactic Notation "wpc_storeField" :=
 Tactic Notation "wpc_wpapply" open_constr(lem) :=
 iPoseProofCore lem as false (fun H =>
   lazymatch goal with
-  | |- envs_entails _ (wpc ?s ?k ?E1 ?e ?Q ?Qc) =>
+  | |- envs_entails _ (wpc ?s ?E1 ?e ?Q ?Qc) =>
     reshape_expr e ltac:(fun K e' =>
       wpc_bind_core K; (wpc_frame; iApplyHyp H; try iNext; try wp_expr_simpl; solve_bi_true))
   | _ => fail "wpc_wpapply: not a wpc"

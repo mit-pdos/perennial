@@ -44,11 +44,11 @@ Definition is_CtrServer γ (s:loc) : iProp Σ :=
         own_CtrServer_durable c)
 .
 
-Lemma wpc_CtrServer__MakeDurable γ (s:loc) c c' {stuck P}:
+Lemma wpc_CtrServer__MakeDurable γ (s:loc) c c' {stk E}:
   {{{
        own_CtrServer_ghost γ c ∗ own_CtrServer_durable c ∗ own_CtrServer s c'
   }}}
-    CtrServer__MakeDurable #s @ stuck ; P
+    CtrServer__MakeDurable #s @ stk ; E
   {{{
        RET #(); own_CtrServer_ghost γ c' ∗ own_CtrServer_durable c' ∗ own_CtrServer s c'
   }}}
@@ -56,6 +56,33 @@ Lemma wpc_CtrServer__MakeDurable γ (s:loc) c c' {stuck P}:
        ∃ c'', own_CtrServer_ghost γ c'' ∗ own_CtrServer_durable c''
   }}}.
 Proof.
+  iIntros (Φ Φc) "Hpre HΦ".
+  iDestruct "Hpre" as "(Hghost & Hdur & Hvol)".
+  unfold CtrServer__MakeDurable.
+  wpc_pures.
+  { iLeft in "HΦ". iApply "HΦ". iExists _; iFrame. }
+  iCache with "Hghost Hdur HΦ".
+  {
+    iLeft in "HΦ".
+    iApply "HΦ".
+    iExists _; iFrame.
+  }
+
+  (*
+  wpc_wpapply (wp_NewSlice _ _ byteT with "[]").
+  { done. }
+  iIntros (sl) "Hslice".
+  iNamed 1.
+  wpc_pures.
+  iNamed "Hvol".
+  wpc_loadField.
+
+  wpc_wpapply (wp_UInt64Put with "[Hslice]").
+
+  reshape_expr e ltac:(fun K e' =>
+                         wpc_bind_core K; (wpc_frame; iApplyHyp H; try iNext; try wp_expr_simpl; solve_bi_true))
+
+  wpc_loadField. *)
 Admitted.
 
 Lemma wp_CtrServer__FetchAndIncrement γ (s:loc) :
