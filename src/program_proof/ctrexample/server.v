@@ -18,10 +18,9 @@ Context `{stagedG Σ}.
 Definition ctrname := "ctr".
 
 Definition own_CtrServer_durable (c:u64) : iProp Σ :=
-  ctrname f↦ [] ∗ ⌜c = U64 0⌝ ∨ (∃ l, ctrname f↦ l ∗ ⌜has_encoding l [EncUInt64 c]⌝)
+  ∃ l, ctrname f↦ l ∗
+               (⌜l = []⌝ ∗ ⌜c = U64 0⌝ ∨ ⌜has_encoding l [EncUInt64 c]⌝)
 .
-
-Search "wpc".
 
 Definition own_CtrServer_ghost γ (c:u64) : iProp Σ :=
   counter_own γ (int.nat c)
@@ -88,69 +87,60 @@ Proof.
   iNamed 1.
   wpc_loadField.
 
-  iDestruct "Hdur" as "[Hdur | Hdur]".
-  { (* Case 1: initially empty file *)
-    iDestruct "Hdur" as "[Hdur %Hc]".
-    iApply wpc_cfupd.
-    wpc_apply (wpc_Write with "[Hdur Hslice]").
-    {
-      iFrame.
-    }
-    iSplit.
-    { (* crash-condition of Write implies our crash condition *)
-      iLeft in "HΦ".
-      iIntros "Hcrash".
-      unfold cfupd.
-      iIntros "_".
-      iApply "HΦ".
-      iDestruct "Hcrash" as "[Hdur|Hdur]".
-      { (* write didn't go through *)
-        iExists _. iFrame.
-        iLeft.
-        iFrame.
-        done.
-      }
-      { (* write went through *)
-        iExists _.
-        iSplitR "Hdur"; last first.
-        {
-          iRight.
-          iExists _; iFrame.
-          done.
-        }
-        by iApply "Hfupd".
-      }
-    }
-    { (* proof after Write completes *)
-      iNext.
-      iIntros "[Hdur Hslice]".
-      iMod ("Hfupd" with "Hghost") as "Hghost".
-      iCache with "Hdur Hghost HΦ".
-      {
-        iLeft in "HΦ".
-        iModIntro.
-        iApply "HΦ".
-        iExists _; iFrame.
-        iRight.
-        iExists _; iFrame.
-        done.
-      }
-      wpc_pures.
-      iModIntro.
-      iRight in "HΦ".
-      iApply "HΦ".
-      iFrame.
-      iRight.
+  iDestruct "Hdur" as (old_data) "[Hdur %Hpure]".
+  iApply wpc_cfupd.
+  wpc_apply (wpc_Write with "[Hdur Hslice]").
+  {
+    iFrame.
+  }
+  iSplit.
+  { (* crash-condition of Write implies our crash condition *)
+    iLeft in "HΦ".
+    iIntros "Hcrash".
+    unfold cfupd.
+    iIntros "_".
+    iApply "HΦ".
+    iDestruct "Hcrash" as "[Hdur|Hdur]".
+    { (* write didn't go through *)
+      iExists _. iFrame.
       iExists _; iFrame.
       done.
     }
+    { (* write went through *)
+      iExists _.
+      iSplitR "Hdur"; last first.
+      {
+        iModIntro. iExists _; iFrame.
+        iRight.
+        done.
+      }
+        by iApply "Hfupd".
+    }
   }
-  { (* Case 2: old file was non-empty *)
-    (* FIXME: shouldn't have to make this a separate case; would end up
-    copy/pasting the above proof to this branch *)
-    admit.
+  { (* proof after Write completes *)
+    iNext.
+    iIntros "[Hdur Hslice]".
+    iMod ("Hfupd" with "Hghost") as "Hghost".
+    iCache with "Hdur Hghost HΦ".
+    {
+      iLeft in "HΦ".
+      iModIntro.
+      iApply "HΦ".
+      iExists _; iFrame.
+      iExists _; iFrame.
+      iRight.
+      done.
+    }
+    wpc_pures.
+    iModIntro.
+    iRight in "HΦ".
+    iApply "HΦ".
+    iFrame.
+    iExists _; iFrame.
+    iRight.
+    done.
   }
-Admitted.
+Qed.
 
 Lemma wp_CtrServer__FetchAndIncrement γ (s:loc) :
   {{{
@@ -250,6 +240,62 @@ Proof.
     iModIntro. iIntros.
     admit.
   }
+Admitted.
+
+Definition crash_cond γ : iProp Σ :=
+ ∃ c, own_CtrServer_durable c ∗
+ own_CtrServer_ghost γ c.
+
+Lemma wpc_ServerMain (γ:gname) :
+  {{{
+       crash_cond γ
+  }}}
+    main #() @ NotStuck; ⊤
+  {{{
+       RET #(); True
+  }}}
+  {{{
+       crash_cond γ
+  }}}
+.
+Proof.
+  iIntros (Φ Φc) "Hpre HΦ".
+  unfold main.
+  wpc_pures.
+  {
+    iLeft in "HΦ".
+    by iApply "HΦ".
+  }
+  iDestruct "Hpre" as (c) "[Hdur Hghost]".
+  iCache with "HΦ Hdur Hghost".
+  { iLeft in "HΦ". iApply "HΦ". iExists _; iFrame. }
+  wpc_pures.
+
+  wpc_wpapply (wp_allocStruct).
+  { admit. }
+  iIntros (s) "Hs".
+  iNamed 1.
+  iDestruct (struct_fields_split with "Hs") as "(Hmu & Hval & Hfilename & _)".
+  simpl.
+
+  wpc_pures.
+  wpc_bind (lock.new #()).
+  wpc_frame.
+  (* This forces us to have NotStuck *)
+  wp_apply (wp_new_free_crash_lock).
+  iIntros (mu).
+  iIntros "HmuInv".
+  iNamed 1.
+
+  wpc_storeField.
+  wpc_pures.
+  wpc_storeField.
+  wpc_pures.
+
+  wpc_loadField.
+
+  (* have to destruct Hdur *)
+  (* wpc_apply (wpc_Read with "Hdur") *)
 Admitted.
 
 End server_proof.
