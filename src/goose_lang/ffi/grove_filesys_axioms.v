@@ -9,6 +9,7 @@ Class filesysG Σ := FileSysG {
   filesys_inG :> ghost_mapG Σ string (list byte)
 }.
 
+Section filesys.
 Context `{!heapGS Σ}.
 
 Definition file_mapsto {fG:filesysG Σ} (s:string) (c:list byte) (dq:dfrac): iProp Σ :=
@@ -49,3 +50,11 @@ Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) dq,
       filename f↦ content_old ∨
       filename f↦ content
   }}}.
+
+End filesys.
+
+Notation "s f↦{ q } c" := (file_mapsto s c q)
+(at level 20, q at level 50, format "s  f↦{ q } c") : bi_scope.
+
+Notation "s f↦ c" := (s f↦{DfracOwn 1} c)%I
+(at level 20, format "s  f↦ c") : bi_scope.
