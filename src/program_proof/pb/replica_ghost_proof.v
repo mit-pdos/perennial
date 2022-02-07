@@ -80,6 +80,7 @@ Qed.
 Lemma maintain_committer_ghost γ r c newCn newLog :
   int.Z r.(cn) ≤ int.Z newCn →
   int.Z r.(cn) < int.Z newCn ∨ length r.(opLog) ≤ length newLog →
+  "#HoldProp" ∷ proposal_lb_fancy γ r.(cn) r.(opLog) ∗
   "#HnewProp" ∷ proposal_lb_fancy γ newCn newLog ∗
   "#Hownc" ∷ own_Committer_ghost γ r c
   ={⊤}=∗
@@ -92,7 +93,16 @@ Proof.
   { (* case: newCn == oldCn *)
     destruct Hnew as [Hbad|HlongerLog]; first word.
     unfold own_Committer_ghost.
-    admit.
+    simpl.
+    iSplitR ""; last first.
+    { iPureIntro. word. }
+    replace (newCn) with (r.(cn)) by word.
+    iDestruct (proposal_lb_fancy_comparable with "HoldProp HnewProp") as %Hcomp.
+    iApply (commit_lb_by_monotonic with "Hcommit_lb").
+    { done. }
+    destruct Hcomp as [Hlog|Hlog].
+    * list_solver.
+    * list_solver.
   }
   { (* case: newCn > oldCn *)
     iDestruct (oldConfMax_commit_lb_by with "HnewProp Hcommit_lb") as %HlogPrefix.
@@ -113,7 +123,7 @@ Proof.
       list_solver.
     }
   }
-Admitted.
+Qed.
 
 (* Same CN as before, and an old log; just get a witness that we already accepted *)
 Lemma append_dup_ghost {rid} γ r (newCn:u64) newLog :
@@ -133,7 +143,7 @@ Proof.
   iDestruct (proposal_lb_fancy_comparable with "Hproposal_lb HnewProp") as %[Hcomp|Hcomp].
   { (* log must be equal *)
     replace (newLog) with (r.(opLog)); last first.
-    { (* list_solver candidate *) admit. } (* len A ≤ len B ∧ B ⪯ A → B = A *)
+    { (* TODO: list_solver candidate *) admit. } (* len A ≤ len B ∧ B ⪯ A → B = A *)
     iDestruct (accepted_lb_monotonic with "Hacc1") as "$".
     { done. }
     by iFrame "∗#".
@@ -223,23 +233,23 @@ Admitted.
 Lemma primary_commit m γ r (p:PrimaryExtra) :
   m ∈ p.(matchIdx) →
   (∀ n, n ∈ p.(matchIdx) → int.Z m ≤ int.Z n) →
+  int.Z m ≤ length r.(opLog) →
   pb_inv γ -∗
+  proposal_lb_fancy γ r.(cn) r.(opLog) -∗
   own_Primary_ghost γ r p
   ={⊤}=∗
   own_Primary_ghost γ r p ∗
   own_Committer_ghost γ r (mkCommitterExtra m).
 Proof.
-  intros Hm Hmin.
-  iIntros "#HpbInv".
+  intros Hm Hmin HmLog.
+  iIntros "#HpbInv #Hprop_lb".
   iNamed 1.
   iFrame "∗#".
   unfold own_Committer_ghost.
   simpl.
-  iSplitR ""; last admit.
-  (* TODO: keep accepted_lb_fancy to prove "%HcommitLeLogLen" ∷ ⌜int.Z m ≤ length r.(opLog)⌝ *)
-  (* Need to know that conf is non-empty for this to work, which is guaranteed be m in p.matchIdx *)
+  iSplitR ""; last done.
   iMod (do_commit with "HpbInv [] []") as "$".
-  { admit. (* TODO: keep proposal_lb_fancy with accepted_lb *) }
+  { (* TODO: Use accepted_by_fancy. *) }
   { unfold accepted_by.
     iExists _; iFrame "HconfPtsto".
     iIntros (rid Hrid).

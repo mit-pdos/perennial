@@ -229,7 +229,9 @@ def main():
         run_goose(distributed_dir, ".", "./grove_common")
 
     if gokv_dir is not None:
-        pkgs = ["urpc/rpc", "memkv", "connman", "paxi/single", "bank", "lockservice", "pb", "pb/controller"]
+        pkgs = ["urpc/rpc", "memkv", "connman", "paxi/single", "bank",
+                "lockservice", "pb", "pb/controller", "ctrexample/client",
+                "ctrexample/server"]
 
         for pkg in pkgs:
             run_goose(

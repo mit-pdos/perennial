@@ -5,6 +5,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import gen_heap_names.
 From iris.proofmode Require Import tactics.
+From iris.base_logic Require Import ghost_map.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
@@ -732,3 +733,17 @@ Next Obligation.
   inversion Hcrash; subst.
   iFrame. eauto.
 Qed.
+
+
+Section filesys.
+
+Existing Instances grove_op grove_model grove_ty.
+Existing Instances grove_semantics grove_interp.
+Existing Instance goose_groveGS.
+
+(* Axiomatized filesystem interface *)
+
+Axiom Read : goose_lang.val.
+Axiom Write : goose_lang.val.
+
+End filesys.

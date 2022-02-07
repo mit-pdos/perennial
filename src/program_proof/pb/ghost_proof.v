@@ -188,6 +188,26 @@ Proof.
   done.
 Qed.
 
+Lemma proposal_lb_monotonic γ cn l l' :
+  l ⪯ l' →
+  proposal_lb γ cn l' -∗ proposal_lb γ cn l.
+Proof.
+  intros Hle.
+  iApply own_mono.
+  apply singleton_mono. apply mono_list_lb_mono.
+  done.
+Qed.
+
+Lemma oldConfMax_monotonic γ cn l l' :
+  (l ⪯ l') → oldConfMax γ cn l -∗ oldConfMax γ cn l'.
+Proof.
+  iIntros (Hll') "#Hocm".
+  iIntros "!# %cn_old %log_old % Hacc".
+  iAssert (⌜log_old⪯l⌝)%I as %?.
+  2:{ iPureIntro. by etrans. }
+  iApply "Hocm"; done.
+Qed.
+
 Lemma proposal_lb_le γ cn l l' :
   proposal_ptsto γ cn l' -∗ proposal_lb γ cn l -∗ ⌜l ⪯ l'⌝.
 Proof.
@@ -244,16 +264,6 @@ Proof.
   iExists conf. iFrame "Hconf".
   iIntros (r Hr). iApply accepted_lb_monotonic; first done.
   by iApply "Hacc".
-Qed.
-
-Lemma oldConfMax_monotonic γ cn l l' :
-  (l ⪯ l') → oldConfMax γ cn l -∗ oldConfMax γ cn l'.
-Proof.
-  iIntros (Hll') "#Hocm".
-  iIntros "!# %cn_old %log_old % Hacc".
-  iAssert (⌜log_old⪯l⌝)%I as %?.
-  2:{ iPureIntro. by etrans. }
-  iApply "Hocm"; done.
 Qed.
 
 (* commit_lb_by is covariant in cn, contravariant in l *)
