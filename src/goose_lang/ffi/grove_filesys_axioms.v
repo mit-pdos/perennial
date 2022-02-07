@@ -36,12 +36,12 @@ Axiom wpc_Read : ∀ filename (dq:dfrac) content,
       filename f↦{dq} content
   }}}.
 
-Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) dq,
+Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) dq {stk E},
   {{{
       filename f↦ content_old ∗
       typed_slice.is_slice content_sl byteT dq content
   }}}
-    Write #(str filename) (slice_val content_sl) @ ⊤
+    Write #(str filename) (slice_val content_sl) @ stk ; E
   {{{
        RET #(); filename f↦ content ∗
       typed_slice.is_slice content_sl byteT dq content
