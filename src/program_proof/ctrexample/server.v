@@ -21,6 +21,8 @@ Definition own_CtrServer_durable (c:u64) : iProp Σ :=
   ctrname f↦ [] ∗ ⌜c = U64 0⌝ ∨ (∃ l, ctrname f↦ l ∗ ⌜has_encoding l [EncUInt64 c]⌝)
 .
 
+Search "wpc".
+
 Definition own_CtrServer_ghost γ (c:u64) : iProp Σ :=
   counter_own γ (int.nat c)
 .
@@ -40,7 +42,7 @@ Definition is_CtrServer γ (s:loc) : iProp Σ :=
         own_CtrServer_durable c ∗
         own_CtrServer s c
   )
-  (|={⊤}=> ∃ c, own_CtrServer_ghost γ c ∗
+  (∃ c, own_CtrServer_ghost γ c ∗
         own_CtrServer_durable c)
 .
 
@@ -54,21 +56,18 @@ Lemma wpc_CtrServer__MakeDurable γ (s:loc) c c' {stk E}:
        RET #(); own_CtrServer_ghost γ c' ∗ own_CtrServer_durable c' ∗ own_CtrServer s c'
   }}}
   {{{
-       (* FIXME: can I have this fupd here? I actually only need bupd, but want
-       to see if fupd will work *)
-       |={E}=> ∃ c'', own_CtrServer_ghost γ c'' ∗ own_CtrServer_durable c''
+       ∃ c'', own_CtrServer_ghost γ c'' ∗ own_CtrServer_durable c''
   }}}.
 Proof.
   iIntros (Φ Φc) "Hpre HΦ".
   iDestruct "Hpre" as "(Hghost & Hdur & Hvol & Hfupd)".
   unfold CtrServer__MakeDurable.
   wpc_pures.
-  { iLeft in "HΦ". iApply "HΦ". iModIntro. iExists _; iFrame. }
+  { iLeft in "HΦ". iApply "HΦ". iExists _; iFrame. }
   iCache with "Hghost Hdur HΦ".
   {
     iLeft in "HΦ".
     iApply "HΦ".
-    iModIntro.
     iExists _; iFrame.
   }
 
@@ -92,6 +91,7 @@ Proof.
   iDestruct "Hdur" as "[Hdur | Hdur]".
   { (* Case 1: initially empty file *)
     iDestruct "Hdur" as "[Hdur %Hc]".
+    iApply wpc_cfupd.
     wpc_apply (wpc_Write with "[Hdur Hslice]").
     {
       iFrame.
@@ -100,6 +100,8 @@ Proof.
     { (* crash-condition of Write implies our crash condition *)
       iLeft in "HΦ".
       iIntros "Hcrash".
+      unfold cfupd.
+      iIntros "_".
       iApply "HΦ".
       iDestruct "Hcrash" as "[Hdur|Hdur]".
       { (* write didn't go through *)
@@ -126,8 +128,8 @@ Proof.
       iCache with "Hdur Hghost HΦ".
       {
         iLeft in "HΦ".
-        iApply "HΦ".
         iModIntro.
+        iApply "HΦ".
         iExists _; iFrame.
         iRight.
         iExists _; iFrame.
@@ -181,7 +183,6 @@ Proof.
   iCache with "Hghost Hdur".
   {
     iSplitL ""; first done.
-    iModIntro.
     iExists c; iFrame.
   }
 
@@ -206,13 +207,13 @@ Proof.
   iNext.
   iIntros "(Hghost & Hdur & Hvol)".
   iCache with "Hghost Hdur".
-  { iSplitL ""; first done. iModIntro. iExists _; iFrame. }
+  { iSplitL ""; first done. iExists _; iFrame. }
   wpc_pures.
   wpc_loadField.
 
   wpc_apply (wpc_crash_borrow_inits _ _ _ _
   (∃ c, own_CtrServer_ghost γ c ∗ own_CtrServer_durable c ∗ own_CtrServer s c)
-                                    (|={⊤}=> ∃ c, own_CtrServer_ghost γ c ∗ own_CtrServer_durable c)
+                                    (∃ c, own_CtrServer_ghost γ c ∗ own_CtrServer_durable c)
                with "[] [Hvol Hdur Hghost] []").
   { admit. (* FIXME: what is this about? *) }
   {
@@ -221,7 +222,6 @@ Proof.
   {
     iModIntro.
     iIntros "H".
-    iModIntro.
     iDestruct "H" as (c2) "(H & H2 & _)".
     iExists _; iFrame.
   }
