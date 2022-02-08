@@ -257,10 +257,9 @@ Definition crash_cond γ : iProp Σ :=
  own_CtrServer_ghost γ c.
 
 Context `{rpcregG Σ}.
-Definition localhost : chan := U64 53021371269120.
+
 Lemma wpc_ServerMain γurpc_gn (γ:gname) :
-handler_spec γurpc_gn localhost 0 (FAISpec γ) -∗
-handlers_dom (γurpc_gn) {[ U64 0 ]} -∗
+  is_CtrServer_urpc γurpc_gn γ -∗
   crash_cond γ -∗
         WPC main #() @ NotStuck; ⊤
   {{
@@ -271,7 +270,7 @@ handlers_dom (γurpc_gn) {[ U64 0 ]} -∗
   }}
 .
 Proof using Type*.
-  iIntros "#Hhandler #Hdom Hpre".
+  iIntros "#[Hhandler Hdom] Hpre".
   unfold main.
   wpc_pures.
   {
@@ -444,8 +443,6 @@ Proof using Type*.
     iApply (big_sepM_insert_2 with "").
     { (* FetchAndIncrement handler_is *)
       simpl. iExists _.
-      Print handler_spec.
-
       iFrame "Hhandler".
 
       iIntros (??????) "!#".

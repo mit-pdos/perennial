@@ -11,10 +11,13 @@ Section interface.
 
 Context `{!inG Σ mono_natUR}.
 
+Definition localhost : chan := U64 53021371269120.
+
 Definition counter_lb γ (x:nat) : iProp Σ := own γ (◯MN x).
 Definition counter_own γ (x:nat) : iProp Σ := own γ (●MN x).
 
 Context `{!rpcregG Σ}.
+
 Context `{HPRE: !gooseGlobalGS Σ}.
 
 (* HOCAP-style spec *)
@@ -42,5 +45,9 @@ Program Definition FAISpec_tada (γ:gname) : savedSpecO Σ (list u8) (list u8) :
 Next Obligation.
   solve_proper.
 Defined.
+
+Definition is_CtrServer_urpc γurpc_gn γ : iProp Σ :=
+  handler_spec γurpc_gn localhost 0 (FAISpec γ) ∗
+  handlers_dom (γurpc_gn) {[ U64 0 ]}.
 
 End interface.
