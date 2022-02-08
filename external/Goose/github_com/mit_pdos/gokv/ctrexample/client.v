@@ -3,6 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.tchajed.marshal.
 
 Definition FAI_OP : expr := #0.
 
@@ -18,7 +19,8 @@ Definition main: val :=
       (if: "err" ≠ #0
       then Continue
       else
-        let: "v" := UInt64Get (![slice.T byteT] "rep") in
+        let: "dec" := marshal.NewDec (![slice.T byteT] "rep") in
+        let: "v" := marshal.Dec__GetInt "dec" in
         control.impl.Assert ("v" ≥ ![uint64T] "localBound");;
         "localBound" <-[uint64T] "v";;
         (* fmt.Println("One") *)

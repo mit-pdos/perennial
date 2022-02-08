@@ -54,12 +54,15 @@ Proof.
   wp_apply (wp_RPCClient__Call with "[$Hcl $Hrep $Hempty_sl]").
   {
     iDestruct "Hsrv" as "[$ _]".
-    instantiate (1:=(λ l, ∃ (x:nat), ⌜has_encoding l [EncUInt64 (U64 x)] ∧ x ≤ localBound⌝)%I).
+    instantiate (1:=(λ l, ∃ (x:nat), ⌜has_encoding l [EncUInt64 (U64 x)] ∧ localBound ≤ x⌝ ∗ counter_lb γ x)%I).
     iModIntro.
     iModIntro.
     simpl.
     iIntros (x) "Hctr".
-    unfold counter_own.
+    rewrite /counter_own /counter_lb.
+    iDestruct (own_valid_2 with "Hctr Hlb") as %Hineq.
+    (* FIXME: Q: what is setoid_rewrite, and why does it work when rewrite does not? *)
+    setoid_rewrite mono_nat_both_valid in Hineq.
     rewrite mono_nat_auth_lb_op.
     iDestruct (own_op with "Hctr") as "[Hctr #Hlb2]".
     iDestruct (own_update with "Hctr") as ">$".
@@ -69,21 +72,55 @@ Proof.
     iExists x.
     unfold counter_lb.
     iFrame "#".
-    admit.
+    iPureIntro.
+    split.
+    { done. }
+    lia.
   }
   iIntros (err) "(Hcl & Hreq & Hrep)".
+  wp_pures.
+  wp_if_destruct.
+  {
+    iLeft. iModIntro.
+    iSplitL ""; first done.
+    iFrame "∗#".
+    iExists _; iFrame "∗#".
+  }
   destruct err.
   {
-    wp_pures.
-    wp_if_destruct.
-    {
-      admit.
-    }
-    admit.
+    exfalso.
+    destruct c; done.
   }
   iNamed "Hrep".
   iDestruct "Hrep" as "(Hrep & Hrep_sl & HPost)".
-  iDestruct "HPost" as (x) ">[%HencPost #Hlb2]".
+  iDestruct "HPost" as (x) ">[[%HencPost %Hlb2] Hlb2]".
   wp_pures.
+  wp_load.
+  wp_apply (wp_new_dec with "[Hrep_sl]").
+  { done. }
+  {
+    iApply (is_slice_to_small with "Hrep_sl").
+  }
+  iIntros (dec) "Hdec".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_apply (wp_Assert).
+  {
+    apply bool_decide_eq_true.
+    (* FIXME: overflow related *)
+    admit.
+  }
+  wp_pures.
+  wp_store.
+  iModIntro.
+  iLeft.
+  iSplitL ""; first done.
+  iFrame.
+  iExists _; iFrame "∗#".
+Admitted.
 
 End client_proof.
