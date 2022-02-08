@@ -8,6 +8,7 @@ From Goose.github_com.mit_pdos.gokv.ctrexample Require Import server.
 From Perennial.goose_lang Require Export crash_lock crash_borrow.
 From Perennial.program_proof.ctrexample Require Import wpc_proofmode.
 From Perennial.program_proof.memkv Require Import rpc_proof.
+From Perennial.goose_lang Require Import persistent_readonly.
 
 Section server_proof.
 
@@ -46,14 +47,14 @@ Definition is_CtrServer γ (s:loc) : iProp Σ :=
         own_CtrServer_durable c)
 .
 
-Lemma wpc_CtrServer__MakeDurable γ (s:loc) c c' {stk E}:
+Lemma wpc_CtrServer__MakeDurable γ (s:loc) c c' Q {stk E}:
   {{{
        own_CtrServer_ghost γ c ∗ own_CtrServer_durable c ∗ own_CtrServer s c'
-                           ∗ (own_CtrServer_ghost γ c ={E}=∗ own_CtrServer_ghost γ c')
+                           ∗ (own_CtrServer_ghost γ c ={E}=∗ own_CtrServer_ghost γ c' ∗ Q)
   }}}
     CtrServer__MakeDurable #s @ stk ; E
   {{{
-       RET #(); own_CtrServer_ghost γ c' ∗ own_CtrServer_durable c' ∗ own_CtrServer s c'
+       RET #(); own_CtrServer_ghost γ c' ∗ own_CtrServer_durable c' ∗ own_CtrServer s c' ∗ Q
   }}}
   {{{
        ∃ c'', own_CtrServer_ghost γ c'' ∗ own_CtrServer_durable c''
@@ -115,13 +116,14 @@ Proof.
         iRight.
         done.
       }
-        by iApply "Hfupd".
+      iMod ("Hfupd" with "Hghost") as "[$ _]".
+      done.
     }
   }
   { (* proof after Write completes *)
     iNext.
     iIntros "[Hdur Hslice]".
-    iMod ("Hfupd" with "Hghost") as "Hghost".
+    iMod ("Hfupd" with "Hghost") as "[Hghost HQ]".
     iCache with "Hdur Hghost HΦ".
     {
       iLeft in "HΦ".
@@ -143,19 +145,20 @@ Proof.
   }
 Qed.
 
-Lemma wp_CtrServer__FetchAndIncrement γ (s:loc) :
+Lemma wp_CtrServer__FetchAndIncrement γ (s:loc) Post :
   {{{
-       is_CtrServer γ s
+       is_CtrServer γ s ∗
+       FAISpec γ [] Post
   }}}
     CtrServer__FetchAndIncrement #s
   {{{
-       (x:u64), RET #x; True
+       (x:u64), RET #x; (∀ l, ⌜has_encoding l [EncUInt64 x]⌝ -∗ Post l)
   }}}
 .
 Proof.
-  iIntros (Φ) "#Hpre HΦ".
+  iIntros (Φ) "[#Hsrv Hpre] HΦ".
   wp_lam.
-  iNamed "Hpre".
+  iNamed "Hsrv".
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   { done. }
@@ -183,20 +186,26 @@ Proof.
   wpc_pures.
   wpc_storeField.
   wpc_pures.
-  wpc_apply (wpc_CtrServer__MakeDurable with "[$Hghost $Hdur $Hval $Hfilename]").
+  wpc_apply (wpc_CtrServer__MakeDurable with "[$Hghost $Hdur $Hval $Hfilename Hpre]").
   {
+    unfold FAISpec.
+    simpl.
     iIntros "Hghost".
-    iApply (own_update with "Hghost").
-    apply mono_nat_update.
-    (* FIXME: need no-overflow assumption *)
-    admit.
+    iMod ("Hpre" with "Hghost") as "[Hghost HQ]".
+    unfold own_CtrServer_ghost.
+    replace ((int.nat c) + 1)%nat with (int.nat (word.add c 1)); last first.
+    {
+      admit.
+    }
+    iFrame "Hghost".
+    iExact "HQ".
   }
   iSplit.
   { (* crash-condition of MakeDurable ==> our crash condition *)
     eauto.
   }
   iNext.
-  iIntros "(Hghost & Hdur & Hvol)".
+  iIntros "(Hghost & Hdur & Hvol & HQ)".
   iCache with "Hghost Hdur".
   { iSplitL ""; first done. iExists _; iFrame. }
   wpc_pures.
@@ -248,8 +257,9 @@ Definition crash_cond γ : iProp Σ :=
  own_CtrServer_ghost γ c.
 
 Context `{rpcregG Σ}.
+Definition localhost : chan := U64 53021371269120.
 Lemma wpc_ServerMain γurpc_gn (γ:gname) :
-
+handler_spec γurpc_gn localhost 0 (FAISpec γ) -∗
 handlers_dom (γurpc_gn) {[ U64 0 ]} -∗
   crash_cond γ -∗
         WPC main #() @ NotStuck; ⊤
@@ -260,8 +270,8 @@ handlers_dom (γurpc_gn) {[ U64 0 ]} -∗
        crash_cond γ
   }}
 .
-Proof.
-  iIntros "#Hdom Hpre".
+Proof using Type*.
+  iIntros "#Hhandler #Hdom Hpre".
   unfold main.
   wpc_pures.
   {
@@ -272,7 +282,10 @@ Proof.
   { iExists _; iFrame. }
 
   wpc_wpapply (wp_allocStruct).
-  { admit. }
+  {
+    apply zero_val_ty'.
+    eauto.
+  }
   iIntros (s) "Hs".
   iNamed 1.
   iDestruct (struct_fields_split with "Hs") as "(Hmu & Hval & Hfilename & _)".
@@ -329,7 +342,15 @@ Proof.
       {
         apply bool_decide_eq_true in Hslice_empty.
         replace (sl.(Slice.sz)) with (U64 0) in HslSize by naive_solver.
-        admit. (* TODO: some annoying pure reasoning *)
+        destruct Hpure as [Hpure|Hbad].
+        { naive_solver. }
+        exfalso.
+        replace (int.nat 0) with (0)%nat in HslSize by word.
+        apply nil_length_inv in HslSize.
+        rewrite HslSize in Hbad.
+        apply has_encoding_length in Hbad.
+        simpl in Hbad.
+        lia.
       }
       iFrame.
       done.
@@ -338,12 +359,11 @@ Proof.
       iIntros "%Hslice_nonEmpty".
       destruct Hpure as [Hbad|Hpure].
       { exfalso. apply bool_decide_eq_false in Hslice_nonEmpty.
-        assert (sl.(Slice.sz) ≠ 0).
-        { admit. }
         destruct Hbad as [Hbad _].
         rewrite Hbad in HslSize.
         simpl in HslSize.
-        admit. (* TODO: pure reasoning *)
+        replace (sl.(Slice.sz)) with (U64 0) in Hslice_nonEmpty by word.
+        done.
       }
       iDestruct (is_slice_to_small with "Hsl") as "Hsl".
       wp_apply (wp_new_dec with "Hsl").
@@ -377,7 +397,7 @@ Proof.
     iExists _; iFrame.
   }
 
-  iSplitL "Hdur Hghost Hfilename Hmu Hval".
+  iSplitL "Hdur Hghost Hfilename Hval".
   {
     iExists _.
     iFrame.
@@ -386,6 +406,8 @@ Proof.
   }
   iFrame "HmuInv".
   iIntros "#HmuInv".
+
+  iMod (readonly_alloc_1 with "Hmu") as "#Hmu".
 
   iApply (wpc_crash_mono _ _ _ _ _ (True) with "[]").
   {
@@ -408,6 +430,11 @@ Proof.
   iIntros (rs) "Hsown".
   wp_pures.
 
+  iAssert (is_CtrServer γ s)%I as "Hsrv".
+  {
+    iExists _; iFrame "#".
+  }
+
   wp_apply (wp_StartRPCServer with "[$Hsown]").
   { rewrite ?dom_insert_L; set_solver. }
   {
@@ -419,16 +446,14 @@ Proof.
       simpl. iExists _.
       Print handler_spec.
 
-      instantiate (1:=FAISpec γ).
-      iSplitL ""; first admit. (* FIXME: add precondition *)
+      iFrame "Hhandler".
 
       iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hp_sl & #HFAISpec)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & HFAISpec)".
       wp_pures.
-      wp_apply (wp_CtrServer__FetchAndIncrement with "[]").
-      { admit. }
-      iIntros (x) "_".
+      wp_apply (wp_CtrServer__FetchAndIncrement with "[$HFAISpec $Hsrv]").
+      iIntros (x) "HPost".
       wp_pures.
       wp_apply (wp_new_enc).
       iIntros (enc) "Henc".
@@ -441,9 +466,13 @@ Proof.
       iIntros (rep_sl data1) "(%Henc & %Hlen & Hsl)".
       wp_store.
       iApply "HΦ".
+      iFrame.
+      iApply "HPost".
+      done.
     }
+    by iApply big_sepM_empty.
   }
-
-Admitted.
+  by wp_pures.
+Qed.
 
 End server_proof.
