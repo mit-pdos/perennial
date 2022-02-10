@@ -116,7 +116,6 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     (sitesL : list loc),
     "#Hlatch" ∷ readonly (txnmgr ↦[TxnMgr :: "latch"] #latch) ∗
     "#Hlock" ∷ is_lock mvccN #latch (own_txnmgr txnmgr) ∗
-    (* TODO: `is_idx` and `is_gc` *)
     "#Hidx" ∷ readonly (txnmgr ↦[TxnMgr :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Hgc" ∷ readonly (txnmgr ↦[TxnMgr :: "gc"] #gc) ∗
@@ -138,7 +137,7 @@ Definition is_txn_impl (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
     "_" ∷ True.
 
 Definition is_txn (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
-  "%Hsubset" ∷ ⌜dom (gset u64) mods ⊆ dom (gset u64) view⌝ ∗
+  (* "%Hsubset" ∷ ⌜dom (gset u64) mods ⊆ dom (gset u64) view⌝ ∗ *)
   "Hmods" ∷ ([∗ map] k ↦ _ ∈ mods, mods_token k) ∗
   "Hview" ∷ ([∗ map] k ↦ v ∈ view, view_ptsto k v) ∗
   "Himpl" ∷ is_txn_impl txn view mods γ.
@@ -278,7 +277,7 @@ Proof.
   iApply "HΦ".
   iModIntro.
   rewrite /is_txn.
-  do 3 (iSplitR; first eauto).
+  do 2 (iSplitR; first eauto).
   iExists _, _, _, _, _, [].
   iFrame "# ∗".
   repeat rewrite fmap_nil.
@@ -471,13 +470,13 @@ Proof.
 Qed.
 
 Definition get_spec txn view mods k v γ : iProp Σ :=
-  match view !! k, mods !! k with
+  match mods !! k, view !! k with
   (* `k` has not been read or written. *)
   | None, None => ∃ v', is_txn txn (<[k := v']> view) mods γ ∧ ⌜v = v'⌝
   (* `k` has been read, but not written. *)
-  | Some vr, None => is_txn txn view mods γ ∧ ⌜v = vr⌝
+  | None, Some vr => is_txn txn view mods γ ∧ ⌜v = vr⌝
   (* `k` has been written. *)
-  | _, Some vw => is_txn txn view mods γ ∧ ⌜v = vw⌝
+  | Some vw, _ => is_txn txn view mods γ ∧ ⌜v = vw⌝
   end.
 
 (*****************************************************************)
@@ -532,14 +531,6 @@ Proof using mvcc_ghostG0.
       { rewrite -Hkey. auto using surjective_pairing. }
     }
     destruct HmodsSome as [vm HmodsSome].
-    assert (HviewSome : ∃ vv, view !! k = Some vv).
-    { apply elem_of_dom_2 in HmodsSome as Hinmods.
-      assert (Hinview : k ∈ dom (gset u64) view).
-      { by apply elem_of_weaken with (dom (gset u64) mods). }
-      by apply elem_of_dom in Hinview.
-    }
-    destruct HviewSome as [vv HviewSome].
-    rewrite HviewSome.
     rewrite HmodsSome.
     iSplit; last first.
     { iPureIntro.
@@ -599,11 +590,6 @@ Proof using mvcc_ghostG0.
     iExists val.
     iSplit; last done.
     rewrite /is_txn.
-    iSplit.
-    { iPureIntro.
-      rewrite dom_insert.
-      set_solver.
-    }
     iFrame "Hmods".
     iSplitL "Hview Hview_ptsto'".
     { iApply big_sepM_insert; done. }
@@ -612,12 +598,7 @@ Proof using mvcc_ghostG0.
 Qed.
 
 Definition put_spec txn view mods k v γ : iProp Σ :=
-  match view !! k, mods !! k with
-  (* `k` has not been read or written; note that `v'` is not tied to any program variable. *)
-  | None, None => ∃ v', is_txn txn (<[k := v']> view) (<[k := v]> mods) γ
-  (* `k` has been read or written. *)
-  | _, _ => is_txn txn view (<[k := v]> mods) γ
-  end.
+  is_txn txn view (<[k := v]> mods) γ.
 
 Local Lemma NoDup_app_commute (A : Type) (l1 l2 : list A) :
   NoDup (l1 ++ l2) -> NoDup (l2 ++ l1).
@@ -719,33 +700,9 @@ Proof using mvcc_ghostG0.
     iModIntro.
     rewrite /put_spec.
     
-    (* Proving the second case of [put_spec] (key read or written). *)
-    assert (HmodsSome : ∃ vm, mods !! k = Some vm).
-    { exists went.1.2.
-      rewrite Hmods_wsetL.
-      rewrite -elem_of_list_to_map; last auto.
-      apply elem_of_list_fmap_1_alt with went.
-      { by apply elem_of_list_lookup_2 with (int.nat pos). }
-      { rewrite -Hkey. auto using surjective_pairing. }
-    }
-    destruct HmodsSome as [vm HmodsSome].
-    assert (HviewSome : ∃ vv, view !! k = Some vv).
-    { apply elem_of_dom_2 in HmodsSome as Hinmods.
-      assert (Hinview : k ∈ dom (gset u64) view).
-      { by apply elem_of_weaken with (dom (gset u64) mods). }
-      by apply elem_of_dom in Hinview.
-    }
-    destruct HviewSome as [vv HviewSome].
-    rewrite HviewSome.
+    (* Proving for the case where the key has been read or written. *)
     rewrite /is_txn.
-    iFrame.
-    iSplit.
-    { iPureIntro.
-      rewrite dom_insert.
-      rewrite subseteq_union_1; first done.
-      apply singleton_subseteq_l.
-      by apply elem_of_dom_2 with (vm).
-    }
+    iFrame "Hview".
     iSplitL "Hmods"; first done.
     do 6 iExists _.
     iFrame "# ∗".
@@ -826,82 +783,36 @@ Proof using mvcc_ghostG0.
   set wsetL' := (wsetL ++ [(k, v, tuple)]).
   set mods := (list_to_map wsetL.*1). 
   assert (HmodsNone : mods !! k = None) by by apply not_elem_of_list_to_map.
-  rewrite HmodsNone.
-  destruct (view !! k) eqn:HviewLookup.
-  { (* [k] has been read. *)
-    rewrite /is_txn.
-    iFrame "Hview".
-    iSplit.
-    { iPureIntro.
-      rewrite dom_insert.
-      apply union_least; last done.
-      apply elem_of_dom_2 in HviewLookup.
-      set_solver.
-    }
-    iSplit.
-    { iApply big_sepM_insert; done. }
-    do 5 iExists _.
-    iExists wsetL'.
-    (* Framing "HtxnmgrRI" seems faster than a single [iFrame "# ∗"]. *)
-    iFrame "HtxnmgrRI HidxRI".
-    iFrame "# ∗".
-    iSplitL "HwsetL"; first by rewrite fmap_app.
-    iSplit.
-    { iPureIntro.
-      do 2 rewrite fmap_app.
-      simpl.
-      apply NoDup_app_commute.
-      apply NoDup_app.
-      split; first by apply NoDup_singleton.
-      split; last done.
-      intros x H.
-      apply elem_of_list_singleton in H.
-      subst x.
-      by apply not_elem_of_list_to_map.
-    }
-    { iPureIntro.
-      symmetry.
-      subst mods.
-      subst wsetL'.
-      rewrite fmap_app.
-      by apply list_to_map_snoc.
-    }
+  rewrite /is_txn.
+  iFrame "Hview".
+  iSplit.
+  { iApply big_sepM_insert; done. }
+  
+
+  do 5 iExists _.
+  iExists wsetL'.
+  iFrame "HtxnmgrRI HidxRI".
+  iFrame "# ∗".
+  iSplitL "HwsetL"; first by rewrite fmap_app.
+  iSplit.
+  { iPureIntro.
+    do 2 rewrite fmap_app.
+    simpl.
+    apply NoDup_app_commute.
+    apply NoDup_app.
+    split; first by apply NoDup_singleton.
+    split; last done.
+    intros x H.
+    apply elem_of_list_singleton in H.
+    subst x.
+    by apply not_elem_of_list_to_map.
   }
-  { (* [k] has not been read. *)
-    iDestruct (mods_token_witness with "Hmods_token") as (v') "#Hview_ptsto".
-    iExists v'.
-    rewrite /is_txn.
-    iSplit.
-    { iPureIntro. set_solver. }
-    iSplit.
-    { iApply (big_sepM_insert with "[Hmods Hmods_token]"); eauto with iFrame. }
-    iSplit.
-    { iApply (big_sepM_insert with "[Hview Hview_ptsto]"); eauto with iFrame. }
-    do 5 iExists _.
-    iExists wsetL'.
-    iFrame "HtxnmgrRI HidxRI".
-    iFrame "# ∗".
-    iSplitL "HwsetL"; first by rewrite fmap_app.
-    iSplit.
-    { iPureIntro.
-      do 2 rewrite fmap_app.
-      simpl.
-      apply NoDup_app_commute.
-      apply NoDup_app.
-      split; first by apply NoDup_singleton.
-      split; last done.
-      intros x H.
-      apply elem_of_list_singleton in H.
-      subst x.
-      by apply not_elem_of_list_to_map.
-    }
-    { iPureIntro.
-      symmetry.
-      subst mods.
-      subst wsetL'.
-      rewrite fmap_app.
-      by apply list_to_map_snoc.
-    }
+  { iPureIntro.
+    symmetry.
+    subst mods.
+    subst wsetL'.
+    rewrite fmap_app.
+    by apply list_to_map_snoc.
   }
 Qed.
 
