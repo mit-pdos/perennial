@@ -18,8 +18,7 @@ Definition own_index_bucket (bkt : loc) (γ : mvcc_names) : iProp Σ :=
 Local Hint Extern 1 (environments.envs_entails _ (own_index_bucket _ _)) => unfold own_index_bucket : core.
   
 Definition is_index_bucket (bkt : loc) (γ : mvcc_names) : iProp Σ :=
-  ∃ (latch : loc) (lockm : loc)
-    (lockmM : gmap u64 loc),
+  ∃ (latch : loc),
     "#Hlatch" ∷ readonly (bkt ↦[IndexBucket :: "latch"] #latch) ∗
     "#HlatchRP" ∷ is_lock mvccN #latch (own_index_bucket bkt γ) ∗
     "_" ∷ True.
@@ -135,6 +134,135 @@ Proof.
   (* return tupleNew                                         *)
   (***********************************************************)
   by iApply "HΦ".
+Qed.
+
+(*****************************************************************)
+(* func MkIndex() *Index                                         *)
+(*****************************************************************)
+Theorem wp_MkIndex γ :
+  {{{ True }}}
+    MkIndex #()
+  {{{ (idx : loc), RET #idx; is_index idx γ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* idx := new(Index)                                       *)
+  (***********************************************************)
+  wp_apply (wp_allocStruct); first auto.
+  iIntros (idx) "Hidx".
+  iDestruct (struct_fields_split with "Hidx") as "Hidx".
+  iNamed "Hidx".
+  wp_pures.
+  
+  (***********************************************************)
+  (* idx.buckets = make([]*IndexBucket, config.N_IDX_BUCKET) *)
+  (***********************************************************)
+  wp_apply (wp_new_slice); first auto.
+  iIntros (bkts) "HbktsL".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* for i := i := uint64(0); i < config.N_IDX_BUCKET; i++ { *)
+  (*     b := new(IndexBucket)                               *)
+  (*     b.latch = new(sync.Mutex)                           *)
+  (*     b.m = make(map[uint64]*tuple.Tuple)                 *)
+  (*     idx.buckets[i] = b                                  *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_apply (wp_ref_to); first auto.
+  iIntros (iRef) "HiRef".
+  wp_pures.
+  iDestruct (is_slice_to_small with "HbktsL") as "HbktsS".
+  wp_apply (wp_forUpto
+              (λ n, (∃ bktsL, (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
+                              (⌜length bktsL = N_IDX_BUCKET⌝) ∗
+                              ([∗ list] bkt ∈ (take (int.nat n) bktsL), is_index_bucket bkt γ)) ∗
+                    (idx ↦[Index :: "buckets"] (to_val bkts)) ∗
+                    ⌜True⌝)%I
+              _ _ (U64 0) (U64 2048) with "[] [HbktsS $buckets $HiRef]"); first done.
+  { clear Φ.
+    iIntros (i Φ) "!> ((HbktsInv & Hidx & _) & HidxRef & %Hbound) HΦ".
+    iDestruct "HbktsInv" as (bktsL) "(HbktsS & %Hlength & HbktsRP)".
+    wp_pures.
+
+    (* Allocating [IndexBucket]. *)
+    wp_apply (wp_allocStruct); first auto.
+    iIntros (bkt) "Hbkt".
+    iDestruct (struct_fields_split with "Hbkt") as "Hbkt".
+    iNamed "Hbkt".
+    simpl.
+    wp_pures.
+    
+    (* Allocating [Mutex]. *)
+    wp_apply (wp_new_free_lock).
+    iIntros (latch) "Hfree".
+    wp_storeField.
+
+    (* Allocating [map[uint64]*tuple.Tuple]. *)
+    wp_apply (wp_NewMap).
+    iIntros (m) "Hm".
+    wp_storeField.
+
+    wp_load.
+    wp_loadField.
+    assert (HboundNat : (int.nat i < length bktsL)%nat).
+    { rewrite Hlength.
+      rewrite /N_IDX_BUCKET.
+      word.
+    }
+    wp_apply (wp_SliceSet with "[$HbktsS]").
+    { iPureIntro.
+      split; last auto.
+      apply lookup_lt_is_Some.
+      by rewrite fmap_length.
+    }
+    iIntros "HbktsS".
+    wp_pures.
+    iApply "HΦ".
+    iMod (readonly_alloc_1 with "latch") as "#Hlatch".
+    iMod (alloc_lock mvccN _ latch (own_index_bucket bkt γ) with "[$Hfree] [m Hm]") as "#Hlock".
+    { eauto 10 with iFrame. }
+    iModIntro.
+    iFrame.
+    rewrite -list_fmap_insert.
+    iExists _.
+    iFrame.
+    rewrite insert_length.
+    iSplit; first done.
+    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+    rewrite (take_S_r _ _ bkt); last by apply list_lookup_insert.
+    iApply (big_sepL_app).
+    iSplitL "HbktsRP".
+    { by rewrite take_insert; last auto. }
+    iApply (big_sepL_singleton).
+    rewrite /is_index_bucket.
+    eauto 10 with iFrame.
+  }
+  { iExists (replicate 2048 null).
+    auto with iFrame.
+  }
+  iIntros "[(HbktsInv & Hidx & _) HiRef]".
+  iDestruct "HbktsInv" as (bktsL) "(HbktsS & %Hlength & HbktsRP)".
+  wp_pures.
+
+  (***********************************************************)
+  (* return idx                                              *) 
+  (***********************************************************)
+  iApply "HΦ".
+  rewrite /is_index.
+  do 2 iExists _.
+  iMod (readonly_alloc_1 with "Hidx") as "$".
+  iMod (readonly_alloc_1 with "HbktsS") as "$".
+  iModIntro.
+  iSplitL ""; first auto.
+  iSplit; last done.
+  change (int.nat 2048) with 2048%nat.
+  unfold N_IDX_BUCKET in Hlength.
+  rewrite -Hlength.
+  rewrite firstn_all.
+  auto.
 Qed.
 
 End heap.
