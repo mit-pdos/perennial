@@ -2,7 +2,7 @@
 From Perennial.program_proof Require Export disk_prelude.
 (* Import Coq model of our Goose program. *)
 From Goose.github_com.mit_pdos.go_mvcc Require Import txn.
-From Perennial.program_proof.mvcc Require Import mvcc_ghost index_proof tuple_proof.
+From Perennial.program_proof.mvcc Require Import mvcc_ghost gc_proof index_proof tuple_proof.
 
 Section lemmas.
 Context `{FinMap K M}.
@@ -102,23 +102,38 @@ Definition dbinv dbmap := ●dbmap ∗ (C dbmap) ∗ ●log.
 Definition wrent_to_val (x : u64 * u64 * loc) :=
   (#x.1.1, (#x.1.2, (#x.2, #())))%V.
 
-Definition own_txnmgr (txnmgr : loc) : iProp Σ := 
-  ∃ (sidcur : u64) (sites : Slice.t)
-    (* TODO: make `sites` a slice of pointers to `TxnSite` in the implementation. *)
-    (sitesL : list loc),
-    "Hsidcur" ∷ txnmgr ↦[TxnMgr :: "sidCur"] #sidcur ∗
-    "Hsites" ∷ txnmgr ↦[TxnMgr :: "sites"] (to_val sites) ∗
-    "HwsetL" ∷ slice.is_slice sites (structTy TxnSite) 1 (to_val <$> sitesL) ∗
+Definition own_txnsite (txnsite : loc) : iProp Σ := 
+  ∃ (tidlast : u64) (tidsactive : Slice.t)
+    (tidsactiveL : list u64),
+    "Htidlast" ∷ txnsite ↦[TxnSite :: "tidLast"] #tidlast ∗
+    "Hactive" ∷ txnsite ↦[TxnSite :: "tidsActive"] (to_val tidsactive) ∗
+    "HactiveL" ∷ typed_slice.is_slice tidsactive uint64T 1 tidsactiveL ∗
+    "_" ∷ True.
+Local Hint Extern 1 (environments.envs_entails _ (own_txnsite _)) => unfold own_txnsite : core.
+
+Definition is_txnsite (site : loc) : iProp Σ := 
+  ∃ (latch : loc),
+    "#Hlatch" ∷ readonly (site ↦[TxnSite :: "latch"] #latch) ∗
+    "#Hlock" ∷ is_lock mvccN #latch (own_txnsite site) ∗
     "_" ∷ True.
 
+Definition own_txnmgr (txnmgr : loc) : iProp Σ := 
+  ∃ (sidcur : u64),
+    "Hsidcur" ∷ txnmgr ↦[TxnMgr :: "sidCur"] #sidcur ∗
+    "_" ∷ True.
+Local Hint Extern 1 (environments.envs_entails _ (own_txnmgr _)) => unfold own_txnmgr : core.
+
 Definition is_txnmgr (txnmgr : loc) γ : iProp Σ := 
-  ∃ (latch : loc) (sidcur : u64) (sites : Slice.t) (idx gc : loc)
+  ∃ (latch : loc) (sites : Slice.t) (idx gc : loc)
     (sitesL : list loc),
     "#Hlatch" ∷ readonly (txnmgr ↦[TxnMgr :: "latch"] #latch) ∗
     "#Hlock" ∷ is_lock mvccN #latch (own_txnmgr txnmgr) ∗
     "#Hidx" ∷ readonly (txnmgr ↦[TxnMgr :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Hgc" ∷ readonly (txnmgr ↦[TxnMgr :: "gc"] #gc) ∗
+    "#Hsites" ∷ readonly (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
+    "#HsitesL" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
+    "#HsitesRP" ∷ ([∗ list] _ ↦ site ∈ sitesL, is_txnsite site) ∗
     "_" ∷ True.
 
 Definition is_txn_impl (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
@@ -135,12 +150,14 @@ Definition is_txn_impl (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
     "_" ∷ True.
+Local Hint Extern 1 (environments.envs_entails _ (is_txn_impl _ _ _ _)) => unfold is_txn_impl : core.
 
 Definition is_txn (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
   (* "%Hsubset" ∷ ⌜dom (gset u64) mods ⊆ dom (gset u64) view⌝ ∗ *)
   "Hmods" ∷ ([∗ map] k ↦ _ ∈ mods, mods_token k) ∗
   "Hview" ∷ ([∗ map] k ↦ v ∈ view, view_ptsto k v) ∗
   "Himpl" ∷ is_txn_impl txn view mods γ.
+Local Hint Extern 1 (environments.envs_entails _ (is_txn _ _ _ _)) => unfold is_txn : core.
 
 Definition is_txn_uninit (txn : loc) γ : iProp Σ := 
   ∃ (tid sid : u64) (wset : Slice.t) (idx txnmgr : loc)
@@ -155,17 +172,7 @@ Definition is_txn_uninit (txn : loc) γ : iProp Σ :=
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
     "_" ∷ True.
 
-Definition is_txnsite (txnsite : loc) : iProp Σ := 
-  ∃ (latch : loc) (tidlast : u64) (tidsactive : Slice.t)
-    (tidsactiveL : list u64),
-    "#Hlatch" ∷ readonly (txnsite ↦[TxnSite :: "latch"] #latch) ∗
-    "Htidlast" ∷ txnsite ↦[TxnSite :: "tidLast"] #tidlast ∗
-    "Hwset" ∷ txnsite ↦[TxnSite :: "tidsActive"] (to_val tidsactive) ∗
-    "HwsetL" ∷ typed_slice.is_slice tidsactive uint64T 1 tidsactiveL ∗
-    "_" ∷ True.
-
-Local Hint Extern 1 (environments.envs_entails _ (is_txn _ _ _ _)) => unfold is_txn : core.
-Local Hint Extern 1 (environments.envs_entails _ (is_txn_impl _ _ _ _)) => unfold is_txn_impl : core.
+Definition N_TXN_SITES : nat := 64.
 
 (**
  * Extensions of a map are supersets of the map that we logically have
@@ -186,6 +193,145 @@ Admitted.
 (*
 {{{ True }}} wp_txn__New {{{ is_txn_uninit txn }}}
 *)
+
+(*****************************************************************)
+(* func MkTxnMgr() *TxnMgr                                       *)
+(*****************************************************************)
+Theorem wp_MkTxnMgr γ :
+  {{{ True }}}
+    MkTxnMgr #()
+  {{{ (txnmgr : loc), RET #txnmgr; is_txnmgr txnmgr γ }}}.
+Proof using mvcc_ghostG0.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* txnMgr := new(TxnMgr)                                   *)
+  (* txnMgr.latch = new(sync.Mutex)                          *)
+  (* txnMgr.sites = make([]*TxnSite, config.N_TXN_SITES)     *)
+  (***********************************************************)
+  wp_apply (wp_allocStruct); first auto 10.
+  iIntros (txnmgr) "Htxnmgr".
+  iDestruct (struct_fields_split with "Htxnmgr") as "Htxnmgr".
+  iNamed "Htxnmgr".
+  simpl.
+  wp_pures.
+  wp_apply (wp_new_free_lock).
+  iIntros (latch) "Hfree".
+  wp_storeField.
+  wp_apply (wp_new_slice); first done.
+  iIntros (sites) "HsitesL".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* for i := uint64(0); i < config.N_TXN_SITES; i++ {       *)
+  (*     site := new(TxnSite)                                *)
+  (*     site.latch = new(sync.Mutex)                        *)
+  (*     site.tidsActive = make([]uint64, 0, 8)              *)
+  (*     txnMgr.sites[i] = site                              *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_apply (wp_ref_to); first auto.
+  iIntros (iRef) "HiRef".
+  wp_pures.
+  iDestruct (is_slice_to_small with "HsitesL") as "HsitesS".
+  wp_apply (wp_forUpto
+              (λ n, (∃ sitesL, (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
+                               (⌜length sitesL = N_TXN_SITES⌝) ∗
+                               ([∗ list] site ∈ (take (int.nat n) sitesL), is_txnsite site)) ∗
+                    (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
+                    ⌜True⌝)%I
+              _ _ (U64 0) (U64 64) with "[] [HsitesS $sites $HiRef]"); first done.
+  { clear Φ latch.
+    iIntros (i Φ) "!> ((HsitesInv & Htxnmgr & _) & HiRef & %Hbound) HΦ".
+    iDestruct "HsitesInv" as (sitesL) "(HsitesS & %Hlength & HsitesRP)".
+    wp_pures.
+    wp_apply (wp_allocStruct); first auto 10.
+    iIntros (site) "Hsite".
+    iDestruct (struct_fields_split with "Hsite") as "Hsite".
+    iNamed "Hsite".
+    simpl.
+    wp_pures.
+    wp_apply (wp_new_free_lock).
+    iIntros (latch) "Hfree".
+    wp_storeField.
+    wp_apply (wp_NewSlice (V:=u64)).
+    iIntros (active) "HactiveL".
+    wp_storeField.
+    wp_load.
+    wp_loadField.
+    assert (HboundNat : (int.nat i < length sitesL)%nat).
+    { rewrite Hlength.
+      unfold N_TXN_SITES in *.
+      word.
+    }
+    wp_apply (wp_SliceSet with "[$HsitesS]").
+    { iPureIntro.
+      split; last auto.
+      apply lookup_lt_is_Some.
+      by rewrite fmap_length.
+    }
+    iIntros "HsitesS".
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+    
+    iMod (readonly_alloc_1 with "latch") as "#Hlatch".
+    iMod (alloc_lock mvccN _ latch (own_txnsite site) with "[$Hfree] [-HsitesS HsitesRP]") as "#Hlock".
+    { eauto 10 with iFrame. }
+    iModIntro.
+    rewrite -list_fmap_insert.
+    iExists _.
+    iFrame.
+    rewrite insert_length.
+    iSplit; first done.
+    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+    rewrite (take_S_r _ _ site); last by apply list_lookup_insert.
+    iApply (big_sepL_app).
+    iSplitL "HsitesRP".
+    { by rewrite take_insert; last auto. }
+    iApply (big_sepL_singleton).
+    rewrite /is_txnsite.
+    eauto 10 with iFrame.
+  }
+  { iExists (replicate 64 null).
+    auto with iFrame.
+  }
+  iIntros "[(HsitesInv & Hsites & _) HiRef]".
+  iDestruct "HsitesInv" as (bsitesL) "(HsitesS & %Hlength & #HsitesRP)".
+  wp_pures.
+
+  (***********************************************************)
+  (* txnMgr.idx = index.MkIndex()                            *)
+  (* txnMgr.gc = gc.MkGC(txnMgr.idx)                         *)
+  (***********************************************************)
+  wp_apply (wp_MkIndex γ).
+  iIntros (idx) "#HidxRP".
+  wp_storeField.
+  wp_loadField.
+  wp_apply (wp_MkGC _ γ).
+  (* iIntros (gc) "HgcRP". *)
+  iIntros (gc) "_".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* return txnMgr                                           *)
+  (***********************************************************)
+  iApply "HΦ".
+  rewrite /is_txnmgr.
+  iMod (readonly_alloc_1 with "latch") as "#Hlatch".
+  iMod (alloc_lock mvccN _ latch (own_txnmgr txnmgr) with "[$Hfree] [sidCur]") as "#Hlock".
+  { eauto with iFrame. }
+  iMod (readonly_alloc_1 with "idx") as "#Hidx".
+  iMod (readonly_alloc_1 with "gc") as "#Hgc".
+  iMod (readonly_alloc_1 with "Hsites") as "#Hsites".
+  iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".
+  change (int.nat 64) with 64%nat.
+  unfold N_TXN_SITES in Hlength.
+  rewrite -Hlength.
+  rewrite firstn_all.
+  eauto 20 with iFrame.
+Qed.
 
 (*****************************************************************)
 (* func genTID(sid uint64) uint64                                *)
