@@ -57,7 +57,7 @@ Proof.
   (***********************************************************)
   wp_lam.
   wp_pures.
-  wp_apply (wp_loadField_ro with "Hbkts").
+  wp_loadField.
   iMod (readonly_load with "HbktsL") as (q) "HbktsL'".
   list_elem bktsL (int.nat (word.modu key 2048)) as bkt.
   { revert HbktsLen. rewrite /N_IDX_BUCKET. word. }

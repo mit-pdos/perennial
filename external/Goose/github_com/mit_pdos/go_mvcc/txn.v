@@ -69,7 +69,7 @@ Definition TxnMgr__New: val :=
     struct.storeF Txn "idx" "txn" (struct.loadF TxnMgr "idx" "txnMgr");;
     struct.storeF Txn "txnMgr" "txn" "txnMgr";;
     struct.storeF TxnMgr "sidCur" "txnMgr" ("sid" + #1);;
-    (if: (struct.loadF TxnMgr "sidCur" "txnMgr" = config.N_TXN_SITES)
+    (if: struct.loadF TxnMgr "sidCur" "txnMgr" ≥ config.N_TXN_SITES
     then struct.storeF TxnMgr "sidCur" "txnMgr" #0
     else #());;
     lock.release (struct.loadF TxnMgr "latch" "txnMgr");;

@@ -102,6 +102,8 @@ Definition dbinv dbmap := ●dbmap ∗ (C dbmap) ∗ ●log.
 Definition wrent_to_val (x : u64 * u64 * loc) :=
   (#x.1.1, (#x.1.2, (#x.2, #())))%V.
 
+Definition N_TXN_SITES : Z := 64.
+
 Definition own_txnsite (txnsite : loc) : iProp Σ := 
   ∃ (tidlast : u64) (tidsactive : Slice.t)
     (tidsactiveL : list u64),
@@ -120,6 +122,7 @@ Definition is_txnsite (site : loc) : iProp Σ :=
 Definition own_txnmgr (txnmgr : loc) : iProp Σ := 
   ∃ (sidcur : u64),
     "Hsidcur" ∷ txnmgr ↦[TxnMgr :: "sidCur"] #sidcur ∗
+    "%HsidcurB" ∷ ⌜(int.Z sidcur) < N_TXN_SITES⌝ ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (own_txnmgr _)) => unfold own_txnmgr : core.
 
@@ -132,7 +135,8 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "#HidxRI" ∷ is_index idx γ ∗
     "#Hgc" ∷ readonly (txnmgr ↦[TxnMgr :: "gc"] #gc) ∗
     "#Hsites" ∷ readonly (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
-    "#HsitesL" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
+    "#HsitesS" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
+    "%HsitesLen" ∷ ⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝ ∗
     "#HsitesRP" ∷ ([∗ list] _ ↦ site ∈ sitesL, is_txnsite site) ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
@@ -142,6 +146,7 @@ Definition is_txn_impl (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
     (wsetL : list (u64 * u64 * loc)),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
+    "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
     "Hwset" ∷ txn ↦[Txn :: "wset"] (to_val wset) ∗
     "HwsetL" ∷ slice.is_slice wset (structTy WrEnt) 1 (wrent_to_val <$> wsetL) ∗
     "%HwsetLND" ∷ ⌜NoDup (fst <$> wsetL).*1⌝ (* keys are unique *) ∗
@@ -165,6 +170,7 @@ Definition is_txn_uninit (txn : loc) γ : iProp Σ :=
     (wsetL : list (u64 * u64 * loc)),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
+    "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
     "Hwset" ∷ txn ↦[Txn :: "wset"] (to_val wset) ∗
     "HwsetL" ∷ slice.is_slice wset (structTy WrEnt) 1 (wrent_to_val <$> wsetL) ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
@@ -172,8 +178,6 @@ Definition is_txn_uninit (txn : loc) γ : iProp Σ :=
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
     "_" ∷ True.
-
-Definition N_TXN_SITES : nat := 64.
 
 (**
  * Extensions of a map are supersets of the map that we logically have
@@ -234,11 +238,11 @@ Proof using mvcc_ghostG0.
   iDestruct (is_slice_to_small with "HsitesL") as "HsitesS".
   wp_apply (wp_forUpto
               (λ n, (∃ sitesL, (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
-                               (⌜length sitesL = N_TXN_SITES⌝) ∗
+                               (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
                                ([∗ list] site ∈ (take (int.nat n) sitesL), is_txnsite site)) ∗
                     (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
                     ⌜True⌝)%I
-              _ _ (U64 0) (U64 64) with "[] [HsitesS $sites $HiRef]"); first done.
+              _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef]"); first done.
   { clear Φ latch.
     iIntros (i Φ) "!> ((HsitesInv & Htxnmgr & _) & HiRef & %Hbound) HΦ".
     iDestruct "HsitesInv" as (sitesL) "(HsitesS & %Hlength & HsitesRP)".
@@ -257,16 +261,14 @@ Proof using mvcc_ghostG0.
     wp_storeField.
     wp_load.
     wp_loadField.
-    assert (HboundNat : (int.nat i < length sitesL)%nat).
-    { rewrite Hlength.
-      unfold N_TXN_SITES in *.
-      word.
-    }
+    replace (int.Z 64) with (Z.of_nat (length sitesL)) in Hbound.
+    unfold N_TXN_SITES in *.
     wp_apply (wp_SliceSet with "[$HsitesS]").
     { iPureIntro.
       split; last auto.
       apply lookup_lt_is_Some.
-      by rewrite fmap_length.
+      rewrite fmap_length.
+      word.
     }
     iIntros "HsitesS".
     wp_pures.
@@ -282,8 +284,9 @@ Proof using mvcc_ghostG0.
     iFrame.
     rewrite insert_length.
     iSplit; first done.
-    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
-    rewrite (take_S_r _ _ site); last by apply list_lookup_insert.
+    replace (int.nat (word.add i 1)) with (S (int.nat i)); last word.
+    rewrite (take_S_r _ _ site); last first.
+    { apply list_lookup_insert. word. }
     iApply (big_sepL_app).
     iSplitL "HsitesRP".
     { by rewrite take_insert; last auto. }
@@ -295,7 +298,7 @@ Proof using mvcc_ghostG0.
     auto with iFrame.
   }
   iIntros "[(HsitesInv & Hsites & _) HiRef]".
-  iDestruct "HsitesInv" as (bsitesL) "(HsitesS & %Hlength & #HsitesRP)".
+  iDestruct "HsitesInv" as (sitesL) "(HsitesS & %Hlength & #HsitesRP)".
   wp_pures.
 
   (***********************************************************)
@@ -323,9 +326,8 @@ Proof using mvcc_ghostG0.
   iMod (readonly_alloc_1 with "gc") as "#Hgc".
   iMod (readonly_alloc_1 with "Hsites") as "#Hsites".
   iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".
-  change (int.nat 64) with 64%nat.
-  unfold N_TXN_SITES in Hlength.
-  rewrite -Hlength.
+  replace (int.nat (U64 N_TXN_SITES)) with (length sitesL); last first.
+  { unfold N_TXN_SITES in *. word. }
   rewrite firstn_all.
   eauto 20 with iFrame.
 Qed.
@@ -414,7 +416,18 @@ Proof.
   (***********************************************************)
   wp_loadField.
   wp_apply (release_spec with "[Hlocked Hsidcur]").
-  { eauto 10 with iFrame. }
+  { iFrame "Hlock Hlocked".
+    iNext.
+    unfold own_txnmgr.
+    iExists _.
+    iFrame.
+    iSplit; last done.
+    iPureIntro.
+    case_bool_decide; first done.
+    unfold N_TXN_SITES in *.
+    apply Znot_le_gt in H.
+    by apply Z.gt_lt.
+  }
   wp_pures.
   iApply "HΦ".
   iMod (readonly_alloc_1 with "idx") as "#Hidx_txn".
@@ -468,16 +481,112 @@ Proof.
   done.
 Qed.
 
-(* [activate] is related to GC, so not very important for now. *)
+(*****************************************************************)
+(* func (txnMgr *TxnMgr) activate(sid uint64) uint64             *)
+(*****************************************************************)
 Theorem wp_txnMgr__activate (txnmgr : loc) (sid : u64) γ :
   is_txnmgr txnmgr γ -∗
-  {{{ True }}}
+  {{{ ⌜(int.Z sid) < N_TXN_SITES⌝ }}}
     TxnMgr__activate #txnmgr #sid
   {{{ (tid : u64), RET #tid; True }}}.
 Proof.
-  iIntros "#Htxnmgr !>" (Φ) "_ HΦ".
+  iIntros "#Htxnmgr !>" (Φ) "%HsitesBound HΦ".
+  iNamed "Htxnmgr".
   wp_call.
-Admitted.
+  
+  (***********************************************************)
+  (* site := txnMgr.sites[sid]                               *)
+  (* site.latch.Lock()                                       *)
+  (***********************************************************)
+  wp_loadField.
+  iMod (readonly_load with "HsitesS") as (q) "HsitesS'".
+  list_elem sitesL (int.nat sid) as site.
+  wp_apply (wp_SliceGet with "[$HsitesS']").
+  { iPureIntro.
+    rewrite list_lookup_fmap.
+    by rewrite Hsite_lookup.
+  }
+  iIntros "HsitesS'".
+  wp_pures.
+
+  iDestruct (big_sepL_lookup with "HsitesRP") as "HsiteRP"; first done.
+  iClear (latch) "Hlatch Hlock".
+  iNamed "HsiteRP".
+  wp_loadField.
+  wp_apply (acquire_spec with "[$Hlock]").
+  iIntros "[Hlocked HsiteOwn]".
+  iNamed "HsiteOwn".
+  wp_pures.
+  
+  (***********************************************************)
+  (* var tid uint64                                          *)
+  (* tid = genTID(sid)                                       *)
+  (***********************************************************)
+  wp_apply (wp_ref_of_zero); first done.
+  iIntros (tidRef) "HtidRef".
+  wp_pures.
+  wp_apply (wp_genTID).
+  iIntros (tid) "_".
+  wp_store.
+  wp_pures.
+  
+  (***********************************************************)
+  (* for tid <= site.tidLast {                               *)
+  (*     tid = genTID(sid)                                   *)
+  (* }                                                       *)
+  (***********************************************************)
+  set P := λ (b : bool), (∃ (tidLoop : u64),
+             "Htidlast" ∷ site ↦[TxnSite :: "tidLast"] #tidlast ∗
+             "HtidRef" ∷ tidRef ↦[uint64T] #tidLoop ∗
+             "%Hexit" ∷ if b then ⌜True⌝ else ⌜(int.Z tidLoop) > (int.Z tidlast)⌝)%I.
+  wp_apply (wp_forBreak_cond P with "[] [Htidlast HtidRef]").
+  { clear Φ.
+    iIntros (Φ) "!> Hloop HΦ".
+    iNamed "Hloop".
+    wp_load.
+    wp_loadField.
+    wp_pures.
+    case_bool_decide.
+    - wp_if_true.
+      wp_pures.
+      wp_apply (wp_genTID).
+      iIntros (tid'') "_".
+      wp_store.
+      iApply "HΦ".
+      unfold P.
+      eauto with iFrame.
+    - wp_if_false.
+      iApply "HΦ".
+      unfold P.
+      apply Znot_le_gt in H.
+      eauto with iFrame.
+  }
+  { unfold P. eauto with iFrame. }
+  iIntros "Hloop".
+  iNamed "Hloop".
+  wp_pures.
+  
+  (***********************************************************)
+  (* site.tidLast = tid                                      *)
+  (* site.tidsActive = append(site.tidsActive, tid)          *)
+  (* site.latch.Unlock()                                     *)
+  (* return tid                                              *)
+  (***********************************************************)
+  wp_load.
+  wp_storeField.
+  wp_load.
+  wp_loadField.
+  wp_apply (typed_slice.wp_SliceAppend (V := u64) with "HactiveL").
+  iIntros (tidsactive') "HactiveL".
+  wp_storeField.
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ HtidRef]").
+  { eauto 10 with iFrame. }
+  wp_pures.
+  wp_load.
+  iApply "HΦ".
+  done.
+Qed.
 
 (*****************************************************************)
 (* func (txn *Txn) Begin()                                       *)
@@ -496,7 +605,7 @@ Proof.
   (***********************************************************)
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_txnMgr__activate with "HtxnmgrRI").
+  wp_apply (wp_txnMgr__activate with "HtxnmgrRI"); first done.
   rename tid into tid_tmp.
   iIntros (tid) "_".
 
@@ -523,6 +632,7 @@ Proof.
   iFrame "# ∗".
   repeat rewrite fmap_nil.
   iDestruct (is_slice_take_cap _ _ _ (U64 0) with "HwsetL") as "H"; first word.
+  iSplit; first done.
   iSplit; first done.
   iPureIntro.
   split; auto using NoDup_nil_2.
@@ -947,6 +1057,7 @@ Proof using mvcc_ghostG0.
     iSplitL "Hmods"; first done.
     do 6 iExists _.
     iFrame "# ∗".
+    iSplit; first done.
     iSplit; first by rewrite -list_fmap_insert.
     iSplit.
     { iPureIntro.
@@ -1034,6 +1145,7 @@ Proof using mvcc_ghostG0.
   iExists wsetL'.
   iFrame "HtxnmgrRI HidxRI".
   iFrame "# ∗".
+  iSplit; first done.
   iSplitL "HwsetL"; first by rewrite fmap_app.
   iSplit.
   { iPureIntro.
