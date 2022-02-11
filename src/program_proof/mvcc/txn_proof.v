@@ -135,6 +135,7 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "#HsitesL" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
     "#HsitesRP" ∷ ([∗ list] _ ↦ site ∈ sitesL, is_txnsite site) ∗
     "_" ∷ True.
+Local Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
 
 Definition is_txn_impl (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
   ∃ (tid sid : u64) (wset : Slice.t) (idx txnmgr : loc)
@@ -189,10 +190,6 @@ Proof.
   (* 2. Apply the agree rule to deduce that `view` is a subset of `dbmap`. *)
   (* 3. Deduce that `C` holds on `view`. *)
 Admitted.
-
-(*
-{{{ True }}} wp_txn__New {{{ is_txn_uninit txn }}}
-*)
 
 (*****************************************************************)
 (* func MkTxnMgr() *TxnMgr                                       *)
@@ -333,6 +330,104 @@ Proof using mvcc_ghostG0.
   eauto 20 with iFrame.
 Qed.
 
+(*****************************************************************)
+(* func (txnMgr *TxnMgr) New() *Txn                              *)
+(*****************************************************************)
+Theorem wp_txnMgr__New txnmgr γ :
+  is_txnmgr txnmgr γ -∗
+  {{{ True }}}
+    TxnMgr__New #txnmgr
+  {{{ (txn : loc), RET #txn; is_txn_uninit txn γ }}}.
+Proof.
+  iIntros "#Htxnmgr" (Φ) "!> _ HΦ".
+  iNamed "Htxnmgr".
+  wp_call.
+  
+  (***********************************************************)
+  (* txnMgr.latch.Lock()                                     *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "[Hlocked HtxnmgrOwn]".
+  iNamed "HtxnmgrOwn".
+  wp_pures.
+  
+  (***********************************************************)
+  (* txn := new(Txn)                                         *)
+  (* txn.wset = make([]WrEnt, 0, 32)                         *)
+  (***********************************************************)
+  wp_apply (wp_allocStruct); first auto 10.
+  iIntros (txn) "Htxn".
+  iDestruct (struct_fields_split with "Htxn") as "Htxn".
+  iNamed "Htxn".
+  simpl.
+  wp_pures.
+  wp_apply (wp_new_slice); first done.
+  iIntros (wset) "HwsetL".
+  wp_storeField.
+          
+  (***********************************************************)
+  (* sid := txnMgr.sidCur                                    *)
+  (* txn.sid = sid                                           *)
+  (***********************************************************)
+  wp_loadField.
+  wp_pures.
+  wp_storeField.
+  
+  (***********************************************************)
+  (* txn.idx = txnMgr.idx                                    *)
+  (* txn.txnMgr = txnMgr                                     *)
+  (***********************************************************)
+  wp_loadField.
+  do 2 wp_storeField.
+  
+  (***********************************************************)
+  (* txnMgr.sidCur = sid + 1                                 *)
+  (* if txnMgr.sidCur == config.N_TXN_SITES {                *)
+  (*     txnMgr.sidCur = 0                                   *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_storeField.
+  wp_loadField.
+  wp_apply (wp_If_join_evar with "[Hsidcur]").
+  { iIntros (b') "%Eb'".
+    case_bool_decide.
+    { wp_if_true.
+      wp_storeField.
+      iSplit; first done.
+      replace (U64 0) with (if b' then (U64 0) else (word.add sidcur (U64 1))) by by rewrite Eb'.
+      iNamedAccu.
+    }
+    { wp_if_false.
+      iModIntro.
+      subst.
+      by iFrame "∗".
+    }
+  }
+  iIntros "H".
+  iNamed "H".
+  wp_pures.
+    
+  (***********************************************************)
+  (* txnMgr.latch.Unlock()                                   *)
+  (* return txn                                              *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (release_spec with "[Hlocked Hsidcur]").
+  { eauto 10 with iFrame. }
+  wp_pures.
+  iApply "HΦ".
+  iMod (readonly_alloc_1 with "idx") as "#Hidx_txn".
+  iMod (readonly_alloc_1 with "txnMgr") as "#Htxnmgr_txn".
+  replace (int.nat 0) with 0%nat by word.
+  simpl.
+  unfold is_txn_uninit.
+  do 5 iExists _.
+  iExists [].
+  iFrame "# ∗".
+  eauto 20 with iFrame.
+Qed.
+  
 (*****************************************************************)
 (* func genTID(sid uint64) uint64                                *)
 (*****************************************************************)
