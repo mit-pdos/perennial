@@ -76,12 +76,8 @@ Definition Tuple__Own: val :=
         lock.release (struct.loadF Tuple "latch" "tuple");;
         #true)).
 
-(* *
-    * Preconditions:
-    * 1. The txn `tid` has the permission to update this tuple. *)
-Definition Tuple__AppendVersion: val :=
-  rec: "Tuple__AppendVersion" "tuple" "tid" "val" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+Definition Tuple__appendVersion: val :=
+  rec: "Tuple__appendVersion" "tuple" "tid" "val" :=
     (if: slice.len (struct.loadF Tuple "vers" "tuple") > #0
     then
       let: "idx" := slice.len (struct.loadF Tuple "vers" "tuple") - #1 in
@@ -97,6 +93,15 @@ Definition Tuple__AppendVersion: val :=
     struct.storeF Tuple "tidown" "tuple" #0;;
     struct.storeF Tuple "tidwr" "tuple" "tid";;
     lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
+    #().
+
+(* *
+    * Preconditions:
+    * 1. The txn `tid` has the permission to update this tuple. *)
+Definition Tuple__AppendVersion: val :=
+  rec: "Tuple__AppendVersion" "tuple" "tid" "val" :=
+    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+    Tuple__appendVersion "tuple" "tid" "val";;
     lock.release (struct.loadF Tuple "latch" "tuple");;
     #().
 
@@ -132,12 +137,8 @@ Definition Tuple__ReadVersion: val :=
       lock.release (struct.loadF Tuple "latch" "tuple");;
       ("val", #true)).
 
-(* *
-    * Remove all versions whose `end` timestamp is less than or equal to `tid`.
-    * Preconditions: *)
-Definition Tuple__RemoveVersions: val :=
-  rec: "Tuple__RemoveVersions" "tuple" "tid" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+Definition Tuple__removeVersions: val :=
+  rec: "Tuple__removeVersions" "tuple" "tid" :=
     let: "idx" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -151,6 +152,15 @@ Definition Tuple__RemoveVersions: val :=
           "idx" <-[uint64T] ![uint64T] "idx" + #1;;
           Continue)));;
     struct.storeF Tuple "vers" "tuple" (SliceSkip (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx"));;
+    #().
+
+(* *
+    * Remove all versions whose `end` timestamp is less than or equal to `tid`.
+    * Preconditions: *)
+Definition Tuple__RemoveVersions: val :=
+  rec: "Tuple__RemoveVersions" "tuple" "tid" :=
+    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+    Tuple__removeVersions "tuple" "tid";;
     lock.release (struct.loadF Tuple "latch" "tuple");;
     #().
 
