@@ -43,13 +43,15 @@ Fixpoint pvers_to_lvers (pvers : list (u64 * u64 * u64)) (fixed : nat) : list lv
 *)
 
 Definition own_tuple (tuple : loc) (key : u64) versL (γ : mvcc_names) : iProp Σ :=
-  ∃ (tidown tidrd tidwr : u64) (vers : Slice.t)
+  ∃ (tidown tidrd tidwr : u64) (vers : Slice.t) (tidlbN : nat)
     (* (fixed : nat) *),
     "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
     "Htidrd" ∷ tuple ↦[Tuple :: "tidrd"] #tidrd ∗
     "Htidwr" ∷ tuple ↦[Tuple :: "tidwr"] #tidwr ∗
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
+    "HtidlbN" ∷  min_tid_lb γ tidlbN ∗
+    (* TODO: connect physical and logical verchain for versions created after [tidlbN]. *)
     (*
     "HpversRep" ∷ pvers_rep versL ∗
     "Hfixed" ∷ ⌜fixed = max (int.nat tidrd) (int.nat tidwr)⌝ ∗
@@ -89,7 +91,7 @@ Definition extend_verchain (tid : u64) (val : u64) versL :=
 (*****************************************************************)
 (* func (tuple *Tuple) appendVersion(tid uint64, val uint64)     *)
 (*                                                               *)
-(* Note:                                                         *)
+(* Notes:                                                        *)
 (* 1. Require [is_tuple] as this method uses condvar.            *)
 (*****************************************************************)
 Theorem wp_tuple__appendVersion tuple (tid : u64) (val : u64) (key : u64) versL γ :
@@ -246,9 +248,8 @@ Proof.
   iApply "HΦ".
   iModIntro.
   unfold own_tuple.
-  do 4 iExists _.
+  do 5 iExists _.
   iFrame.
-  iSplitL; last done.
 
   (**
    * Proving that [tuple.AppendVersion] does what it is intended to do
@@ -446,16 +447,28 @@ Proof.
   auto.
 Qed.
 
+(**
+ * 1. [view_ptsto] in the postcondition can be obtained by applying
+ *    the invariant between the logical and physical version chains to
+ *    reading a physical verison.
+ * 2. However, when GC is involved, the invariant should hold only for
+ *    those physical versions created after a certain tid (the
+ *    [tidlbN] in [own_tuple]).
+ *    Thus, we need a proof of [(int.nat tid) ≥ tidlbN] in order to
+ *    apply the invariant, which can be proved by:
+ *    - [active_tid γ tid] in the precondition.
+ *    - [min_tid_lb γ tidlbN] in the lock invariant.
+ *)
 (*****************************************************************)
 (* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, bool)    *)
 (*****************************************************************)
 Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ True }}}
+  {{{ active_tid γ tid }}}
     Tuple__ReadVersion #tuple #tid
-  {{{ (val : u64) (found : bool), RET (#val, #found); view_ptsto key val }}}.
+  {{{ (val : u64) (found : bool), RET (#val, #found); active_tid γ tid ∗ view_ptsto key val }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iIntros "#Htuple !#" (Φ) "Hactive HΦ".
   iNamed "Htuple".
   wp_call.
   
@@ -478,7 +491,7 @@ Proof.
                  (∃ versL, own_tuple tuple key versL γ) ∗
                  (locked #latch)
               )%I
-              with "[] [-HΦ]").
+              with "[] [-HΦ Hactive]").
   (* Customize the loop invariant as waiting on condvar havocs the values. *)
   { (* Loop body preserves the invariant. *)
     clear Φ.
@@ -511,7 +524,7 @@ Proof.
     { wp_pures.
       wp_loadField.
       wp_apply (wp_condWait with "[-HΦ]").
-      { eauto 10 with iFrame. }
+      { eauto 15 with iFrame. }
       iIntros "[Hlocked Hown]".
       wp_pures.
       iModIntro.
@@ -571,12 +584,12 @@ Proof.
   (***********************************************************)
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
-    { case_bool_decide; eauto 10 with iFrame. }
+    wp_apply (release_spec with "[-HΦ Hactive]").
+    { case_bool_decide; eauto 15 with iFrame. }
     wp_pures.
     iModIntro.
     iApply "HΦ".
-    done.
+    eauto with iFrame.
   }
 
   (***********************************************************)
@@ -588,8 +601,8 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ]").
-  { case_bool_decide; eauto 10 with iFrame. }
+  wp_apply (release_spec with "[-HΦ Hactive]").
+  { case_bool_decide; eauto 15 with iFrame. }
   wp_pures.
   iModIntro.
 
@@ -597,7 +610,7 @@ Proof.
   (* return val, true                                        *)
   (***********************************************************)
   iApply "HΦ".
-  done.
+  by iFrame.
 Qed.
 
 (*****************************************************************)
@@ -640,10 +653,9 @@ Proof.
   (***********************************************************)
   wp_loadField.
   wp_apply (release_spec with "[-HΦ]").
-  { eauto 10 with iFrame. }
+  { eauto 15 with iFrame. }
   wp_pures.
-  iApply "HΦ".
-  done.
+  by iApply "HΦ".
 Qed.
 
 (*****************************************************************)
@@ -687,7 +699,7 @@ Proof.
   { (* Early return: `tid < tuple.tidrd || tid < tuple.tidwr` *)
     wp_loadField.
     wp_apply (release_spec with "[-HΦ]").
-    { eauto 10 with iFrame. }
+    { eauto 15 with iFrame. }
     wp_pures.
     iModIntro. iApply "HΦ". done.
   }
@@ -703,7 +715,7 @@ Proof.
   { (* Early return: `tuple.tidown != 0` *)
     wp_loadField.
     wp_apply (release_spec with "[-HΦ]").
-    { eauto 10 with iFrame. }
+    { eauto 15 with iFrame. }
     wp_pures.
     iModIntro. iApply "HΦ". done.
   }
@@ -718,15 +730,14 @@ Proof.
   (***********************************************************)
   wp_loadField.
   wp_apply (release_spec with "[-HΦ]").
-  { eauto 10 with iFrame. }
+  { eauto 15 with iFrame. }
   wp_pures.
   iModIntro.
 
   (***********************************************************)
   (* return true                                             *)
   (***********************************************************)
-  iApply "HΦ".
-  done.
+  by iApply "HΦ".
 Qed.
 
 Lemma val_to_ver_with_val_ty (x : val) :
@@ -765,7 +776,7 @@ Definition safe_rm_verchain (tid : u64) (versL versL' : list (u64 * u64 * u64)) 
   (Forall (fun ver => int.Z ver.1.2 > (int.Z tid) -> ver ∈ versL')) versL.
   
 (*****************************************************************)
-(* func (tuple *Tuple) RemoveVersions(tid uint64)                *)
+(* func (tuple *Tuple) removeVersions(tid uint64)                *)
 (*****************************************************************)
 Theorem wp_tuple__removeVersions tuple (tid : u64) (key : u64) versL γ :
   {{{ own_tuple tuple key versL γ }}}
@@ -919,17 +930,22 @@ Proof.
   }
 Qed.
 
-
 (*****************************************************************)
 (* func (tuple *Tuple) RemoveVersions(tid uint64)                *)
+(*                                                               *)
+(* Notes:                                                        *)
+(* 1. This method keeps all versions created after [tid].        *)
+(* 2. The precondition says that [tid] is less than or equal to  *)
+(*    a lower bound of the minimal active tid.                   *)
+(* 3. Call [txnMgr.getMinActiveTID] before calling this method.  *)
 (*****************************************************************)
-Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) γ :
+Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) (tidlbN : nat) γ :
   is_tuple tuple key γ -∗
-  {{{ True }}}
+  {{{ min_tid_lb γ tidlbN ∗ ⌜(int.nat tid ≤ tidlbN)%nat⌝ }}}
     Tuple__RemoveVersions #tuple #tid
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iIntros "#Htuple" (Φ) "!> [HtidlbN %HtidN] HΦ".
   iNamed "Htuple".
   wp_call.
   
@@ -1019,14 +1035,15 @@ Proof.
   { iNext.
     iExists [].
     unfold own_tuple.
-    do 4 iExists _.
+    do 5 iExists _.
     iFrame.
+    admit.
   }
   iApply "HΦ".
   iExists latch, rcond.
   iMod (readonly_alloc_1 with "latch") as "$".
   iMod (readonly_alloc_1 with "rcond") as "$".
   by iFrame "#".
-Qed.
+Admitted.
 
 End heap.

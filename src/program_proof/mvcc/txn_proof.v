@@ -155,6 +155,7 @@ Definition is_txn_impl (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
     "#HidxRI" ∷ is_index idx γ ∗
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
+    "Hactive" ∷ active_tid γ tid ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (is_txn_impl _ _ _ _)) => unfold is_txn_impl : core.
 
@@ -488,7 +489,7 @@ Theorem wp_txnMgr__activate (txnmgr : loc) (sid : u64) γ :
   is_txnmgr txnmgr γ -∗
   {{{ ⌜(int.Z sid) < N_TXN_SITES⌝ }}}
     TxnMgr__activate #txnmgr #sid
-  {{{ (tid : u64), RET #tid; True }}}.
+  {{{ (tid : u64), RET #tid; active_tid γ tid }}}.
 Proof.
   iIntros "#Htxnmgr !>" (Φ) "%HsitesBound HΦ".
   iNamed "Htxnmgr".
@@ -585,8 +586,29 @@ Proof.
   wp_pures.
   wp_load.
   iApply "HΦ".
-  done.
-Qed.
+  admit.
+  (* TODO: prove [active_tid γ tid]. *)
+Admitted.
+
+(*****************************************************************)
+(* func (txnMgr *TxnMgr) getMinActiveTID() uint64                *)
+(*****************************************************************)
+Theorem wp_txnMgr__getMinActiveTID txnmgr γ :
+  {{{ True }}}
+    TxnMgr__getMinActiveTID txnmgr
+  {{{ (tid : u64) (tidlbN : nat), RET #tid; min_tid_lb γ tidlbN ∗ ⌜(int.nat tid ≤ tidlbN)%nat⌝ }}}.
+Proof.
+  (***********************************************************)
+  (* var min uint64 = config.TID_SENTINEL                    *)
+  (* for sid := uint64(0); sid < config.N_TXN_SITES; sid++ { *)
+  (*     tid := txnMgr.getMinActiveTIDSite(sid)              *)
+  (*     if tid < min {                                      *)
+  (*         min = tid                                       *)
+  (*     }                                                   *)
+  (* }                                                       *)
+  (* return min                                              *)
+  (***********************************************************)
+Admitted.
 
 (*****************************************************************)
 (* func (txn *Txn) Begin()                                       *)
@@ -607,7 +629,7 @@ Proof.
   wp_loadField.
   wp_apply (wp_txnMgr__activate with "HtxnmgrRI"); first done.
   rename tid into tid_tmp.
-  iIntros (tid) "_".
+  iIntros (tid) "Hactive".
 
   (***********************************************************)
   (* txn.tid = tid                                           *)
@@ -911,9 +933,9 @@ Proof using mvcc_ghostG0.
   iIntros (tuple) "#HtupleRI".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_tuple__ReadVersion with "HtupleRI").
+  wp_apply (wp_tuple__ReadVersion with "HtupleRI Hactive").
   clear Heqb found.
-  iIntros (val found) "Hview_ptsto'".
+  iIntros (val found) "[Hactive Hview_ptsto']".
   wp_pures.
   iApply "HΦ".
   iModIntro.
