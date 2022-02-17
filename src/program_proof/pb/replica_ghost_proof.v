@@ -249,7 +249,7 @@ Proof.
   simpl.
   iSplitR ""; last done.
   iMod (do_commit with "HpbInv [] []") as "$".
-  { (* TODO: Use accepted_by_fancy. *) }
+  { (* TODO: Use accepted_by_fancy. *) admit. }
   { unfold accepted_by.
     iExists _; iFrame "HconfPtsto".
     iIntros (rid Hrid).
