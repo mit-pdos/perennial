@@ -1,12 +1,17 @@
 From Perennial.program_proof Require Import disk_prelude.
 From iris.algebra Require Import dfrac_agree.
-From iris.algebra.lib Require Import mono_nat gmap_view.
+From iris.algebra.lib Require Import mono_nat mono_list gmap_view.
 
+(* Logical version chain. *)
+Local Definition vchainR := mono_listR (leibnizO (option u64)).
+Local Definition key_vchainR := gmapR u64 vchainR.
+(* GC-related ghost states. *)
 Local Definition tidsR := gmap_viewR u64 (leibnizO unit).
 Local Definition sid_tidsR := gmapR u64 (dfrac_agreeR (leibnizO (gset u64))).
 
 Class mvcc_ghostG Σ :=
   {
+    mvcc_key_vchainG :> inG Σ key_vchainR;
     mvcc_active_tidsG :> inG Σ tidsR;
     mvcc_active_tids_siteG :> inG Σ sid_tidsR;
     mvcc_min_tidG :> inG Σ mono_natR;
@@ -14,6 +19,7 @@ Class mvcc_ghostG Σ :=
 
 Definition mvcc_ghostΣ :=
   #[
+     GFunctor key_vchainR;
      GFunctor tidsR;
      GFunctor sid_tidsR;
      GFunctor mono_natR
@@ -25,7 +31,8 @@ Proof. solve_inG. Qed.
 
 Record mvcc_names :=
   {
-    mvcc_active_tids_gn: gname;
+    mvcc_key_vchain : gname;
+    mvcc_active_tids_gn : gname;
     mvcc_active_tids_site_gn: gname;
     mvcc_min_tid_gn : gname
   }.
@@ -35,15 +42,24 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 Definition mvccN := nroot .@ "mvcc_inv".
 
+Definition vchain_ptsto γ q (k : u64) (vchain : list (option u64)) : iProp Σ :=
+  own γ.(mvcc_key_vchain) {[k := ●ML{# q } (vchain : list (leibnizO (option u64)))]}.
+
+Definition vchain_lb γ (k : u64) (vchain : list (option u64)) : iProp Σ :=
+  own γ.(mvcc_key_vchain) {[k := ◯ML (vchain : list (leibnizO (option u64)))]}.
 
 (* The following points-to facts are defined in terms of the underlying CC resources. *)
-Definition view_ptsto (k v : u64) : iProp Σ := True.
-Definition mods_token (k : u64) : iProp Σ := True.
+Definition view_ptsto γ (k : u64) (v : option u64) (tid : u64) : iProp Σ :=
+  ∃ vchain, vchain_lb γ k vchain ∗ ⌜vchain !! (int.nat tid) = Some v⌝.
 
-Theorem view_ptsto_agree (k v v' : u64) :
-  view_ptsto k v -∗ view_ptsto k v' -∗ ⌜v = v'⌝.
+Definition mods_token γ (k tid : u64) : iProp Σ :=
+  ∃ vchain, vchain_ptsto γ (1/4) k vchain ∗ ⌜length vchain < (int.nat tid)⌝.
+
+Theorem view_ptsto_agree γ (k : u64) (v v' : option u64) (tid : u64) :
+  view_ptsto γ k v tid -∗ view_ptsto γ k v' tid -∗ ⌜v = v'⌝.
 Admitted.
 
+(* Definitions/theorems about GC-related resources. *)
 Definition active_tids_auth γ tids : iProp Σ :=
   own γ.(mvcc_active_tids_gn) (gmap_view_auth (DfracOwn 1) tids).
 
@@ -67,6 +83,7 @@ Admitted.
 
 Definition mvcc_invariant γ : iProp Σ :=
   ∃ tidminN tidsactive,
+    (* TODO: owning 1/2 of logical version chains. *)
     min_tid_auth γ tidminN ∗
     active_tids_auth γ tidsactive ∗
     (* TODO: tidsactive is the union of tids of each *)

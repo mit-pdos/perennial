@@ -311,7 +311,7 @@ Proof.
   f_equal.
   destruct b; auto using list_fmap_insert.
 Qed.
-  
+
 (*****************************************************************)
 (* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
 (*****************************************************************)
@@ -466,7 +466,7 @@ Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
   {{{ active_tid γ tid }}}
     Tuple__ReadVersion #tuple #tid
-  {{{ (val : u64) (found : bool), RET (#val, #found); active_tid γ tid ∗ view_ptsto key val }}}.
+  {{{ (val : u64) (found : bool), RET (#val, #found); active_tid γ tid ∗ view_ptsto γ key (Some val) tid }}}.
 Proof.
   iIntros "#Htuple !#" (Φ) "Hactive HΦ".
   iNamed "Htuple".
@@ -589,7 +589,8 @@ Proof.
     wp_pures.
     iModIntro.
     iApply "HΦ".
-    eauto with iFrame.
+    iFrame.
+    admit. (* TODO: prove view_ptsto *)
   }
 
   (***********************************************************)
@@ -610,8 +611,9 @@ Proof.
   (* return val, true                                        *)
   (***********************************************************)
   iApply "HΦ".
-  by iFrame.
-Qed.
+  iFrame.
+  admit. (* TODO: prove view_ptsto *)
+Admitted.
 
 (*****************************************************************)
 (* func (tuple *Tuple) Free(tid uint64)                          *)
@@ -666,7 +668,7 @@ Theorem wp_tuple__Own tuple (tid : u64) (key : u64) γ :
   {{{ True }}}
     Tuple__Own #tuple #tid
   {{{ (b : bool), RET #b; if b
-                        then mods_token key
+                        then mods_token γ key tid
                         else True
   }}}.
 Proof.
@@ -717,7 +719,7 @@ Proof.
     wp_apply (release_spec with "[-HΦ]").
     { eauto 15 with iFrame. }
     wp_pures.
-    iModIntro. iApply "HΦ". done.
+    by iApply "HΦ".
   }
 
   (***********************************************************)
@@ -737,8 +739,9 @@ Proof.
   (***********************************************************)
   (* return true                                             *)
   (***********************************************************)
-  by iApply "HΦ".
-Qed.
+  iApply "HΦ".
+  admit. (* TODO: prove mods_token *)
+Admitted.
 
 Lemma val_to_ver_with_val_ty (x : val) :
   val_ty x (uint64T * (uint64T * (uint64T * unitT))%ht) ->
