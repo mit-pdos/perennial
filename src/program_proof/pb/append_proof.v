@@ -2,6 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import pb.
 
 From Perennial.program_proof.pb Require Export common_proof append_marshal_proof replica_defns replica_ghost_proof.
+From Perennial.Helpers Require Import ListSolver.
 
 Section append_proof.
 
@@ -121,6 +122,7 @@ Proof.
       iMod (maintain_committer_ghost with "[$Hproposal_lb_in $HcommitterG]") as "$".
       { word. }
       { word. }
+      { admit. (* TODO: adjust proposal_lb_fancy *) }
       iFrame "#".
       done.
     }
@@ -191,7 +193,7 @@ Proof.
   iLeft.
   iFrame "#".
   by iModIntro.
-Qed.
+Admitted.
 
 Lemma wp_ReplicaServer__postAppendRPC (s:loc) (i:u64) conf rid γ (args_ptr:loc) args :
   {{{
@@ -293,18 +295,19 @@ Proof.
         (* FIXME: this should be iMod *)
 
         iClear "HcommitterG".
-        iMod (primary_commit with "[] [$HprimaryG]") as "[HprimaryG #HcomitterG]".
+        iMod (primary_commit with "[] [] [$HprimaryG]") as "[HprimaryG #HcomitterG]".
         { (* prove that the min is actually in matchIdx; true if matchIdx is non-empty *)
           simpl. apply Hm1.
           assert (is_Some (p.(matchIdx) !! int.nat i)).
           { done. }
           eapply lookup_lt_is_Some_1 in H.
-          (* This shouldn't be so hard... *)
-          admit.
+          list_solver.
         }
         { done. }
+        { admit. }
 
         { admit. (* TODO: pb_inv? *) }
+        { admit. (* TODO: proposal_lb_fancy *) }
 
         iFrame "∗#".
         iSplitL "HopLog HopLog_slice".
