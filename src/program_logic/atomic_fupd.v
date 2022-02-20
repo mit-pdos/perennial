@@ -1,5 +1,4 @@
 From Perennial.program_logic Require Export crash_weakestpre.
-From Perennial.algebra Require Export abs_laterable.
 Set Default Proof Using "Type".
 
 (* Note regarding the use of [Eo%I%I%I%I] below:

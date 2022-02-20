@@ -1,5 +1,4 @@
 From Perennial.program_logic Require Export crash_weakestpre.
-From Perennial.algebra Require Export abs_laterable.
 Set Default Proof Using "Type".
 
 (** Sugar for TaDA-style logically atomic non-crash specs. We only have the variants we need. *)
