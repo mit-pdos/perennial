@@ -594,9 +594,7 @@ Qed.
 
 Lemma covered_by_shard_empty x :
   covered_by_shard x ∅ = ∅.
-Proof.
-  rewrite /covered_by_shard filter_empty_L //.
-Qed.
+Proof. done. Qed.
 
 Lemma covered_by_shard_insert x X :
   covered_by_shard (int.Z (word.modu x (U64 NSHARD))) ({[x]} ∪ X) =
@@ -634,10 +632,8 @@ Lemma covered_by_shard_split (P : u64 -> iProp Σ) covered :
     [∗ set] a ∈ covered_by_shard (int.Z shardnum) covered, P a.
 Proof.
   induction covered using set_ind_L.
-  - iIntros "H".
-    setoid_rewrite covered_by_shard_empty.
-    setoid_rewrite big_sepS_empty.
-    iApply big_sepS_forall. done.
+  - setoid_rewrite big_sepS_empty.
+    auto.
   - iIntros "H".
     iDestruct (big_sepS_insert with "H") as "[HP H]"; try assumption.
     iDestruct (IHcovered with "H") as "H".
@@ -686,7 +682,6 @@ Lemma covered_by_shard_join (P : u64 -> iProp Σ) covered :
 Proof.
   induction covered using set_ind_L.
   - iIntros "H".
-    setoid_rewrite covered_by_shard_empty.
     setoid_rewrite big_sepS_empty.
     eauto.
   - iIntros "H".
