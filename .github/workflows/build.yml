@@ -78,8 +78,8 @@ jobs:
           install: |
             startGroup Install dependencies
               sudo apt-get update
-              sudo apt-get install -y python3 python3-pip sqlite3
-              pip3 install -r etc/requirements.txt
+              sudo apt-get install -y python3 python3-pip python3-pandas sqlite3
+              pip3 install argparse
             endGroup
           before_script: |
             sudo chown -R coq:coq . # workaround a permission issue
