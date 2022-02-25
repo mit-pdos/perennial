@@ -4,6 +4,7 @@ Section code.
 Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
+From Goose Require github_com.mit_pdos.go_mvcc.common.
 From Goose Require github_com.mit_pdos.go_mvcc.config.
 From Goose Require github_com.mit_pdos.go_mvcc.gc.
 From Goose Require github_com.mit_pdos.go_mvcc.index.
@@ -219,20 +220,20 @@ Definition Txn__Put: val :=
     then
       let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "pos" in
       struct.storeF WrEnt "val" "went" "val";;
-      #true
+      common.RET_SUCCESS
     else
       let: "idx" := struct.loadF Txn "idx" "txn" in
       let: "tuple" := index.Index__GetTuple "idx" "key" in
-      let: "ok" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
-      (if: ~ "ok"
-      then #false
+      let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
+      (if: "ret" ≠ common.RET_SUCCESS
+      then "ret"
       else
         struct.storeF Txn "wset" "txn" (SliceAppend (struct.t WrEnt) (struct.loadF Txn "wset" "txn") (struct.mk WrEnt [
           "key" ::= "key";
           "val" ::= "val";
           "tuple" ::= "tuple"
         ]));;
-        #true)).
+        common.RET_SUCCESS)).
 
 Definition Txn__Get: val :=
   rec: "Txn__Get" "txn" "key" :=
@@ -240,12 +241,12 @@ Definition Txn__Get: val :=
     (if: "found"
     then
       let: "val" := struct.get WrEnt "val" (SliceGet (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "pos") in
-      ("val", #true)
+      ("val", common.RET_SUCCESS)
     else
       let: "idx" := struct.loadF Txn "idx" "txn" in
       let: "tuple" := index.Index__GetTuple "idx" "key" in
-      let: ("valTuple", "foundTuple") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
-      ("valTuple", "foundTuple")).
+      let: ("val", "ret") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
+      ("val", "ret")).
 
 Definition Txn__Begin: val :=
   rec: "Txn__Begin" "txn" :=

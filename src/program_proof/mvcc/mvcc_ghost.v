@@ -48,6 +48,14 @@ Definition vchain_ptsto γ q (k : u64) (vchain : list (option u64)) : iProp Σ :
 Definition vchain_lb γ (k : u64) (vchain : list (option u64)) : iProp Σ :=
   own γ.(mvcc_key_vchain) {[k := ◯ML (vchain : list (leibnizO (option u64)))]}.
 
+Lemma vchain_witness γ q k vchain :
+  vchain_ptsto γ q k vchain -∗ vchain_lb γ k vchain.
+Admitted.
+
+Lemma vchain_update {γ k q vchain} vchain' :
+  (prefix vchain vchain') → vchain_ptsto γ q k vchain ==∗ vchain_ptsto γ q k vchain'.
+Admitted.
+
 (* The following points-to facts are defined in terms of the underlying CC resources. *)
 Definition view_ptsto γ (k : u64) (v : option u64) (tid : u64) : iProp Σ :=
   ∃ vchain, vchain_lb γ k vchain ∗ ⌜vchain !! (int.nat tid) = Some v⌝.
