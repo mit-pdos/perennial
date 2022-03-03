@@ -13,9 +13,10 @@ Definition RET_NONEXIST := (U64 1).
 Definition RET_RETRY := (U64 100).
 Definition RET_UNSERIALIZABLE := (U64 200).
 
-Definition ver_to_val (x : u64 * u64 * u64) :=
+Definition ver_to_val (x : u64 * bool * u64) :=
   (#x.1.1, (#x.1.2, (#x.2, #())))%V.
 
+(*
 Definition match_ver (tid : u64) (ver : u64 * u64 * u64) :=
   int.Z ver.1.1 < int.Z tid ≤ int.Z ver.1.2.
 
@@ -43,17 +44,30 @@ Definition tuple_abs (tid : u64) (vchain : list (option u64)) (tidlast : u64) (v
 
 Definition tuple_wellformed (tidlast : u64) (verlast : u64 * u64 * u64) :=
   int.Z verlast.1.1 ≤ int.Z tidlast.
+*)
 
-Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) verlast versL (γ : mvcc_names) : iProp Σ :=
+Definition spec_lookup_ver (tid : u64) (res : option u64) (ver : u64 * bool * u64) : option u64 :=
+  match res with
+  | Some x => Some x
+  | None => if decide (int.Z tid > int.Z ver.1.1) then Some ver.2 else None
+  end.
+
+Definition spec_lookup_reverse (vers : list (u64 * bool * u64)) (tid : u64) : option u64 :=
+  foldl (spec_lookup_ver tid) None vers.
+
+Definition spec_lookup (vers : list (u64 * bool * u64)) (tid : u64) : option u64 :=
+  spec_lookup_reverse (reverse vers) tid.
+
+Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ : mvcc_names) : iProp Σ :=
   ∃ (vers : Slice.t) (tidlbN : nat) (vchain : list (option u64)),
     "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
     "Htidlast" ∷ tuple ↦[Tuple :: "tidlast"] #tidlast ∗
-    "Hverlast" ∷ tuple ↦[Tuple :: "verlast"] (ver_to_val verlast) ∗
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
     "HtidlbN" ∷  min_tid_lb γ tidlbN ∗
-    "%Hwellformed" ∷ ⌜tuple_wellformed tidlast verlast⌝ ∗
-    "%HtupleAbs" ∷ (∀ tid, ⌜tuple_abs tid vchain tidlast verlast versL⌝) ∗
+    "%HtupleAbs" ∷ ∀ tid, ⌜vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝ ∗
+    (* "%Hwellformed" ∷ ⌜tuple_wellformed tidlast verlast⌝ ∗ *)
+    (* "%HtupleAbs" ∷ (∀ tid, ⌜tuple_abs tid vchain tidlast verlast versL⌝) ∗ *)
     "Hvchain" ∷ (if decide (tidown = (U64 0))
                  then vchain_ptsto γ (1/2) key vchain
                  else vchain_ptsto γ (1/4) key vchain) ∗
@@ -61,36 +75,79 @@ Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) verlast ve
     "HtupleAbs" ∷ ∀ tid, ⌜tidlbN ≤ int.nat tid -> (tuple_abs vchain tidlast verlast versL tid)⌝ ∗
      *)
     "_" ∷ True.
-Local Hint Extern 1 (environments.envs_entails _ (own_tuple _ _ _ _ _ _ _)) => unfold own_tuple : core.
+Local Hint Extern 1 (environments.envs_entails _ (own_tuple _ _ _ _ _ _)) => unfold own_tuple : core.
 
 Definition is_tuple (tuple : loc) (key : u64) (γ : mvcc_names) : iProp Σ :=
   ∃ (latch : loc) (rcond : loc),
     "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
-    "#Hlock" ∷ is_lock mvccN #latch (∃ tidown tidlast verlast versL, own_tuple tuple key tidown tidlast verlast versL γ) ∗
+    "#Hlock" ∷ is_lock mvccN #latch (∃ tidown tidlast versL, own_tuple tuple key tidown tidlast versL γ) ∗
     "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
     "#HrcondC" ∷ is_cond rcond #latch ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (is_tuple _ _ _)) => unfold is_tuple : core.
 
-Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * u64 * u64)) (i : nat) :
+Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * bool * u64)) (i : nat) :
   (ver_to_val <$> l) !! i = Some x ->
-  (∃ (b e v : u64), x = ver_to_val (b, e, v) ∧ l !! i = Some (b, e, v)).
+  (∃ (b : u64) (d : bool) (v : u64), x = ver_to_val (b, d, v) ∧ l !! i = Some (b, d, v)).
 Proof.
   intros H.
   apply list_lookup_fmap_inv in H as [[[y1 y2] y3] [Heq Hsome]].
   naive_solver.
 Qed.
 
+Local Lemma spec_lookup_reverse_Some vers tid v :
+  foldl (spec_lookup_ver tid) (Some v) vers = Some v.
+Proof.
+  induction vers; done.
+Qed.
+
+Local Lemma spec_lookup_reverse_match vers tid :
+  ∀ vers_take vers_drop ver,
+    vers_take ++ ver :: vers_drop = vers ->
+    spec_lookup_reverse vers_take tid = None ->
+    (int.Z tid > int.Z ver.1.1) ->
+    spec_lookup_reverse vers tid = Some ver.2.
+Proof.
+  intros vers_take vers_drop ver Hvers Htake Hver.
+  rewrite -Hvers.
+  unfold spec_lookup_reverse in *.
+  rewrite foldl_app.
+  rewrite Htake.
+  simpl.
+  case_decide.
+  - induction vers_drop.
+    + done.
+    + by rewrite spec_lookup_reverse_Some.
+  - contradiction.
+Qed.
+
+Local Lemma spec_lookup_reverse_not_match vers tid :
+  ∀ vers_take ver,
+    vers_take ++ [ver] = vers ->
+    spec_lookup_reverse vers_take tid = None ->
+    (int.Z tid ≤ int.Z ver.1.1) ->
+    spec_lookup_reverse vers tid = None.
+Proof.
+  intros vers_take ver Hvers Htake Hver.
+  rewrite -Hvers.
+  unfold spec_lookup_reverse in *.
+  rewrite foldl_app.
+  rewrite Htake.
+  simpl.
+  case_decide.
+  - contradiction.
+  - done.
+Qed.
+  
 (*******************************************************************)
 (* func findRightVer(tid uint64, vers []Version) (Version, uint64) *)
 (*******************************************************************)
 Local Theorem wp_findRightVer (tid : u64) (vers : Slice.t)
-                              (versL : list (u64 * u64 * u64)) :
+                              (versL : list (u64 * bool * u64)) :
   {{{ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) }}}
     findRightVer #tid (to_val vers)
-  {{{ (ver : (u64 * u64 * u64)) (ret : u64), RET (ver_to_val ver, #ret);
-      ⌜(ret = RET_NONEXIST ∧ no_match_vers tid versL) ∨
-       (ret = RET_SUCCESS ∧ match_ver tid ver ∧ ver ∈ versL)⌝ ∗
+  {{{ (val : u64) (found : bool), RET (#val, #found);
+      ⌜spec_lookup versL tid = if found then Some val else None⌝ ∗
       slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL)
   }}}.
 Proof.
@@ -102,105 +159,150 @@ Proof.
   
   (***********************************************************)
   (* var ver Version                                         *)
-  (* var ret uint64 = common.RET_NONEXIST                    *)
+  (* var ret bool = false                                    *)
+  (* length := uint64(len(vers))                             *)
+  (* var idx uint64 = 0                                      *)
   (***********************************************************)
-  wp_apply wp_ref_of_zero; first auto.
+  wp_apply (wp_ref_of_zero); first auto.
   iIntros (verR) "HverR".
   wp_pures.
-  wp_apply wp_ref_to; first auto.
-  iIntros (retR) "HretR".
+  wp_apply (wp_ref_to); first auto.
+  iIntros (foundR) "HfoundR".
+  wp_pures.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  wp_apply (wp_ref_to); first auto.
+  iIntros (idxR) "HidxR".
+  wp_pures.
 
   (***********************************************************)
-  (* for _, v := range vers {                                *)
-  (*     if v.begin < tid && tid <= v.end {                  *)
-  (*         ver = v                                         *)
-  (*         ret = common.RET_SUCCESS                        *)
+  (* for {                                                   *)
+  (*     if idx >= length {                                  *)
+  (*         break                                           *)
   (*     }                                                   *)
+  (*     ver = vers[length - (1 + idx)]                      *)
+  (*     if tid > ver.begin {                                *)
+  (*         found = true                                    *)
+  (*         break                                           *)
+  (*     }                                                   *)
+  (*     idx++                                               *)
   (* }                                                       *)
   (***********************************************************)
-  set P:= (λ (i : u64), ∃ (ver : u64 * u64 * u64) (ret : u64),
+  set P := λ (b : bool), (∃ (ver : u64 * bool * u64) (found : bool) (idx : u64),
              "HverR" ∷ (verR ↦[struct.t Version] ver_to_val ver) ∗
-             "HretR" ∷ (retR ↦[uint64T] #ret) ∗
-             "%Hright" ∷ (⌜(ret = RET_NONEXIST ∧ (no_match_vers tid (take (int.nat i) versL))) ∨
-                           (ret = RET_SUCCESS ∧ (match_ver tid ver) ∧ ver ∈ versL)⌝))%I.
-  wp_apply (slice.wp_forSlice P _ _ _ _ _ (ver_to_val <$> versL)
-              with "[] [HverR HretR HversL]").
-  { (* Loop body preserves the invariant. *)
+             "HfoundR" ∷ (foundR ↦[boolT] #found) ∗
+             "HidxR" ∷ (idxR ↦[uint64T] #idx) ∗
+             "HversL" ∷ is_slice_small vers (struct.t Version) 1 (ver_to_val <$> versL) ∗
+             (* "%Hlookup" ∷ (⌜reverse versL !! (int.nat idx) = Some ver⌝) ∗ *)
+             "%Hloop" ∷ if b
+                        then ⌜spec_lookup_reverse (take (int.nat idx) (reverse versL)) tid = None ∧ found = false⌝
+                        else ⌜spec_lookup_reverse (reverse versL) tid = if found then Some ver.2 else None⌝)%I.
+  wp_apply (wp_forBreak P with "[] [-HΦ HversL_close]").
+  { (* Loop body. *)
     clear Φ.
-    iIntros (i x Φ).
+    iIntros (Φ).
     iModIntro.
-    iIntros "H HΦ".
-    iDestruct "H" as "(H & %Hbound & %Hsome)".
-    iNamed "H".
-    apply val_to_ver_with_lookup in Hsome as (b & e & v & Hx & Hsome).
-    subst.
+    iIntros "Hloop HΦ".
+    iNamed "Hloop".
+    destruct Hloop as [Hspec Hfound].
     wp_pures.
-    wp_apply (wp_and_pure (int.Z b < int.Z tid)%Z (int.Z tid ≤ int.Z e)%Z with "[] []").
-    { wp_pures. done. }
-    { iIntros "_".
-      wp_pures.
-      done.
-    }
+    wp_load.
+    wp_pures.
     wp_if_destruct.
-    - (* Is the correct version *)
-      wp_store.
-      wp_pures.
-      wp_store.
-      iApply "HΦ".
+    { (* Exceeding the bound. *)
       iModIntro.
-      iExists _, RET_SUCCESS.
-      iFrame.
-      iPureIntro.
-      right.
-      by apply elem_of_list_lookup_2 in Hsome.
-    - (* Not the correct version *)
       iApply "HΦ".
-      iModIntro.
-      iExists ver, ret.
-      iFrame.
+      unfold P.
+      rewrite Hfound.
+      replace (take (int.nat idx) _) with (reverse versL) in Hspec; last first.
+      { symmetry.
+        pose proof (reverse_length versL) as HversRevLen.
+        rewrite take_ge; [done | word].
+      }
+      eauto 15 with iFrame.
+    }
+    wp_load.
+    wp_pures.
+    
+    apply Znot_le_gt in Heqb.
+    destruct (list_lookup_lt _ versL (length versL - S (int.nat idx))%nat) as [ver' Hver']; first word.
+    wp_apply (wp_SliceGet with "[HversL]").
+    { iFrame.
       iPureIntro.
-      destruct Hright as [[Hret Hmatch] | [Hret Hmatch]].
-      + (* Case [ret = RET_NONEXIST]. *)
-        left.
-        split; first done.
-        unfold no_match_vers.
-        replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
-        rewrite (take_S_r _ _ (b, e, v)); last auto.
-        apply Forall_app_2; first auto.
-        by rewrite Forall_singleton.
-      + (* Case [ret = RET_SUCCESS]. *)
-        right.
-        split; auto.
-  }
-  { (* Loop invariant holds at the begining *)
-    iFrame.
-    simpl.
-    iExists (_, _, _), RET_NONEXIST.
+      set x := vers.(Slice.sz).
+      (**
+       * Notes on rewriting between [word.sub] and [Z.sub].
+       * 1. In general, to rewrite from [int.Z (word.sub x y)] to [int.Z x - int.Z y],
+       * we need to have [int.Z x ≥ int.Z y] in the context.
+       * 2. For nested [word.sub], e.g., [int.Z (word.sub (word.sub x y) z)], we can
+       * first prove that [int.Z (word.sub x y) ≥ int.Z z], and then replace
+       * [int.Z (word.sub (word.sub x y) z)] with [int.Z x - int.Z y - int.Z z].
+       *)
+      assert (H : Z.ge (int.Z (word.sub x idx)) 1).
+      { subst x. word. }
+      replace (int.Z (word.sub _ (U64 1))) with (int.Z vers.(Slice.sz) - int.Z idx - 1); last first.
+      { subst x. word. }
+      replace (Z.to_nat _) with ((length versL) - (S (int.nat idx)))%nat; last first.
+      { rewrite HversLen. word. }
+      rewrite list_lookup_fmap.
+      rewrite Hver'.
+      by apply fmap_Some_2.
+    }
+    iIntros "[HversL %Hvalty]".
+    wp_store.
+    wp_load.
+    wp_pures.
+    wp_if_destruct.
+    { wp_store.
+      iModIntro.
+      iApply "HΦ".
+      unfold P.
+      do 3 iExists _.
+      iFrame "∗ %".
+      iPureIntro.
+      rewrite -reverse_lookup in Hver'; last word.
+      apply take_drop_middle in Hver'.
+      apply (spec_lookup_reverse_match _ _ _ _ _ Hver'); [done | word].
+    }
+    wp_load.
+    wp_store.
+    iModIntro.
+    iApply "HΦ".
+    unfold P.
+    do 3 iExists _.
     iFrame.
     iPureIntro.
-    left.
-    split; first done.
-    unfold no_match_vers.
-    replace (int.nat 0) with 0%nat by word.
-    by rewrite take_0.
+    split; last done.
+    replace (int.nat (word.add _ _)) with (S (int.nat idx)); last word.
+    rewrite -reverse_lookup in Hver'; last word.
+    rewrite (take_S_r _ _ ver'); last done.
+    set vers_take := take _ _.
+    set versL' := vers_take ++ _.
+    apply Znot_lt_ge in Heqb0.
+    apply (spec_lookup_reverse_not_match versL' _ vers_take ver'); [auto | auto | word].
   }
+  { (* Loop entry. *)
+    unfold P.
+    iExists (U64 0, false, U64 0).
+    do 2 iExists _.
+    iFrame.
+    iPureIntro.
+    change (int.nat 0) with 0%nat.
+    rewrite take_0.
+    split; auto.
+  }
+  iIntros "Hloop".
+  iNamed "Hloop".
+  wp_pures.
   
   (***********************************************************)
-  (* return ver, ret                                         *)
+  (* return ver.val, found                                   *)
   (***********************************************************)
-  iIntros "[H HversL]".
-  iNamed "H".
-  iDestruct ("HversL_close" with "HversL") as "HversL".
+  do 2 wp_load.
   wp_pures.
-  wp_load.
-  wp_load.
-  wp_pures.
-  iModIntro.
   iApply "HΦ".
-  iFrame.
-  iPureIntro.
-  rewrite -HversLen in Hright.
-  by rewrite firstn_all in Hright.
+  iDestruct ("HversL_close" with "HversL") as "HversL".
+  by iFrame.
 Qed.
 
 (**
@@ -1163,5 +1265,14 @@ Proof.
   iMod (readonly_alloc_1 with "rcond") as "$".
   by iFrame "#".
 Admitted.
+
+Fixpoint f (rvers : list (u64 * u64 * bool)) (tid : u64) :=
+  match rvers with
+  | [] => None
+  | (begin, val, deleted) :: t => if (tid ≥ begin)
+                                then if deleted
+                                     then None
+                                     else Some val
+                                else f t tid
 
 End heap.

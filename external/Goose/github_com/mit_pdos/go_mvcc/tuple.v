@@ -5,13 +5,13 @@ Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
 From Goose Require github_com.mit_pdos.go_mvcc.common.
-From Goose Require github_com.mit_pdos.go_mvcc.config.
 
 (* *
-    * The lifetime of a version is a half-open interval `(begin, val]`. *)
+    * The lifetime of a version starts from `begin` of itself to the `begin` of
+    * next version; it's a half-open interval (]. *)
 Definition Version := struct.decl [
   "begin" :: uint64T;
-  "end" :: uint64T;
+  "deleted" :: boolT;
   "val" :: uint64T
 ].
 
@@ -26,7 +26,6 @@ Definition Tuple := struct.decl [
   "rcond" :: ptrT;
   "tidown" :: uint64T;
   "tidlast" :: uint64T;
-  "verlast" :: struct.t Version;
   "vers" :: slice.T (struct.t Version)
 ].
 
@@ -36,14 +35,23 @@ Definition Tuple := struct.decl [
 Definition findRightVer: val :=
   rec: "findRightVer" "tid" "vers" :=
     let: "ver" := ref (zero_val (struct.t Version)) in
-    let: "ret" := ref_to uint64T common.RET_NONEXIST in
-    ForSlice (struct.t Version) <> "v" "vers"
-      (if: (struct.get Version "begin" "v" < "tid") && ("tid" ≤ struct.get Version "end" "v")
-      then
-        "ver" <-[struct.t Version] "v";;
-        "ret" <-[uint64T] common.RET_SUCCESS
-      else #());;
-    (![struct.t Version] "ver", ![uint64T] "ret").
+    let: "found" := ref_to boolT #false in
+    let: "length" := slice.len "vers" in
+    let: "idx" := ref_to uint64T #0 in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      (if: ![uint64T] "idx" ≥ "length"
+      then Break
+      else
+        "ver" <-[struct.t Version] SliceGet (struct.t Version) "vers" ("length" - ![uint64T] "idx" - #1);;
+        (if: "tid" > struct.get Version "begin" (![struct.t Version] "ver")
+        then
+          "found" <-[boolT] #true;;
+          Break
+        else
+          "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+          Continue)));;
+    (struct.get Version "val" (![struct.t Version] "ver"), ![boolT] "found").
 
 (* *
     * Preconditions:
@@ -70,18 +78,12 @@ Definition Tuple__Own: val :=
 
 Definition Tuple__appendVersion: val :=
   rec: "Tuple__appendVersion" "tuple" "tid" "val" :=
-    let: "verLast" := ref (zero_val (struct.t Version)) in
-    "verLast" <-[struct.t Version] struct.loadF Tuple "verlast" "tuple";;
-    (if: (struct.get Version "end" (![struct.t Version] "verLast") = config.TID_SENTINEL)
-    then struct.storeF Version "end" "verLast" "tid"
-    else #());;
-    struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![struct.t Version] "verLast"));;
-    let: "verNext" := struct.mk Version [
+    let: "verNew" := struct.mk Version [
       "begin" ::= "tid";
-      "end" ::= config.TID_SENTINEL;
-      "val" ::= "val"
+      "val" ::= "val";
+      "deleted" ::= #false
     ] in
-    struct.storeF Tuple "verlast" "tuple" "verNext";;
+    struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") "verNew");;
     struct.storeF Tuple "tidown" "tuple" #0;;
     struct.storeF Tuple "tidlast" "tuple" "tid";;
     #().
@@ -99,14 +101,14 @@ Definition Tuple__AppendVersion: val :=
 
 Definition Tuple__killVersion: val :=
   rec: "Tuple__killVersion" "tuple" "tid" :=
-    let: "ret" := ref (zero_val uint64T) in
-    (if: (struct.get Version "end" (struct.loadF Tuple "verlast" "tuple") = config.TID_SENTINEL)
-    then "ret" <-[uint64T] common.RET_SUCCESS
-    else "ret" <-[uint64T] common.RET_NONEXIST);;
-    struct.storeF Version "end" (struct.fieldRef Tuple "verlast" "tuple") "tid";;
+    let: "verNew" := struct.mk Version [
+      "begin" ::= "tid";
+      "deleted" ::= #true
+    ] in
+    struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") "verNew");;
     struct.storeF Tuple "tidown" "tuple" #0;;
     struct.storeF Tuple "tidlast" "tuple" "tid";;
-    ![uint64T] "ret".
+    #true.
 
 (* *
     * Preconditions:
@@ -114,10 +116,14 @@ Definition Tuple__killVersion: val :=
 Definition Tuple__KillVersion: val :=
   rec: "Tuple__KillVersion" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
-    let: "ret" := Tuple__killVersion "tuple" "tid" in
+    let: "ok" := Tuple__killVersion "tuple" "tid" in
+    let: "ret" := ref (zero_val uint64T) in
+    (if: "ok"
+    then "ret" <-[uint64T] common.RET_SUCCESS
+    else "ret" <-[uint64T] common.RET_NONEXIST);;
     lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
     lock.release (struct.loadF Tuple "latch" "tuple");;
-    "ret".
+    ![uint64T] "ret".
 
 (* *
     * Preconditions: *)
@@ -134,31 +140,20 @@ Definition Tuple__Free: val :=
 Definition Tuple__ReadVersion: val :=
   rec: "Tuple__ReadVersion" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
-    let: "verLast" := ref (zero_val (struct.t Version)) in
-    "verLast" <-[struct.t Version] struct.loadF Tuple "verlast" "tuple";;
     Skip;;
-    (for: (λ: <>, ("tid" > struct.get Version "begin" (![struct.t Version] "verLast")) && (struct.loadF Tuple "tidown" "tuple" ≠ #0)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ("tid" > struct.loadF Tuple "tidlast" "tuple") && (struct.loadF Tuple "tidown" "tuple" ≠ #0)); (λ: <>, Skip) := λ: <>,
       lock.condWait (struct.loadF Tuple "rcond" "tuple");;
-      "verLast" <-[struct.t Version] struct.loadF Tuple "verlast" "tuple";;
       Continue);;
-    (if: "tid" ≤ struct.get Version "begin" (![struct.t Version] "verLast")
-    then
-      let: ("ver", "found") := findRightVer "tid" (struct.loadF Tuple "vers" "tuple") in
-      lock.release (struct.loadF Tuple "latch" "tuple");;
-      (struct.get Version "val" "ver", "found")
-    else
-      let: "val" := ref (zero_val uint64T) in
-      let: "ret" := ref (zero_val uint64T) in
-      (if: "tid" ≤ struct.get Version "end" (![struct.t Version] "verLast")
-      then
-        "val" <-[uint64T] struct.get Version "val" (![struct.t Version] "verLast");;
-        "ret" <-[uint64T] common.RET_SUCCESS
-      else "ret" <-[uint64T] common.RET_NONEXIST);;
-      (if: struct.loadF Tuple "tidlast" "tuple" < "tid"
-      then struct.storeF Tuple "tidlast" "tuple" "tid"
-      else #());;
-      lock.release (struct.loadF Tuple "latch" "tuple");;
-      (![uint64T] "val", ![uint64T] "ret")).
+    let: ("val", "found") := findRightVer "tid" (struct.loadF Tuple "vers" "tuple") in
+    let: "ret" := ref (zero_val uint64T) in
+    (if: "found"
+    then "ret" <-[uint64T] common.RET_SUCCESS
+    else "ret" <-[uint64T] common.RET_NONEXIST);;
+    (if: struct.loadF Tuple "tidlast" "tuple" < "tid"
+    then struct.storeF Tuple "tidlast" "tuple" "tid"
+    else #());;
+    lock.release (struct.loadF Tuple "latch" "tuple");;
+    ("val", ![uint64T] "ret").
 
 Definition Tuple__removeVersions: val :=
   rec: "Tuple__removeVersions" "tuple" "tid" :=
@@ -169,7 +164,7 @@ Definition Tuple__removeVersions: val :=
       then Break
       else
         let: "ver" := SliceGet (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx") in
-        (if: struct.get Version "end" "ver" > "tid"
+        (if: struct.get Version "begin" "ver" > "tid"
         then Break
         else
           "idx" <-[uint64T] ![uint64T] "idx" + #1;;
@@ -194,11 +189,6 @@ Definition MkTuple: val :=
     struct.storeF Tuple "rcond" "tuple" (lock.newCond (struct.loadF Tuple "latch" "tuple"));;
     struct.storeF Tuple "tidown" "tuple" #0;;
     struct.storeF Tuple "tidlast" "tuple" #0;;
-    struct.storeF Tuple "verlast" "tuple" (struct.mk Version [
-      "begin" ::= #0;
-      "end" ::= #0;
-      "val" ::= #0
-    ]);;
     struct.storeF Tuple "vers" "tuple" (NewSlice (struct.t Version) #0);;
     "tuple".
 

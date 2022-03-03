@@ -40,6 +40,12 @@ Record mvcc_names :=
 Section definitions.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
+(*
+Inductive dbval : Type :=
+| Nil : dbval
+| Value : u64 -> dbval.
+*)
+
 Definition mvccN := nroot .@ "mvcc_inv".
 
 Definition vchain_ptsto γ q (k : u64) (vchain : list (option u64)) : iProp Σ :=
