@@ -58,8 +58,8 @@ Lemma vchain_witness γ q k vchain :
   vchain_ptsto γ q k vchain -∗ vchain_lb γ k vchain.
 Admitted.
 
-Lemma vchain_update {γ k q vchain} vchain' :
-  (prefix vchain vchain') → vchain_ptsto γ q k vchain ==∗ vchain_ptsto γ q k vchain'.
+Lemma vchain_update {γ k vchain} vchain' :
+  (prefix vchain vchain') → vchain_ptsto γ 1 k vchain ==∗ vchain_ptsto γ 1 k vchain'.
 Admitted.
 
 (* The following points-to facts are defined in terms of the underlying CC resources. *)
