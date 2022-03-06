@@ -2,8 +2,12 @@ From Perennial.program_proof Require Import disk_prelude.
 From iris.algebra Require Import dfrac_agree.
 From iris.algebra.lib Require Import mono_nat mono_list gmap_view.
 
+Definition dbval := option u64.
+Notation Nil := (None : dbval).
+Notation Value x := (Some x : dbval).
+
 (* Logical version chain. *)
-Local Definition vchainR := mono_listR (leibnizO (option u64)).
+Local Definition vchainR := mono_listR (leibnizO dbval).
 Local Definition key_vchainR := gmapR u64 vchainR.
 (* GC-related ghost states. *)
 Local Definition tidsR := gmap_viewR u64 (leibnizO unit).
@@ -40,19 +44,13 @@ Record mvcc_names :=
 Section definitions.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-(*
-Inductive dbval : Type :=
-| Nil : dbval
-| Value : u64 -> dbval.
-*)
-
 Definition mvccN := nroot .@ "mvcc_inv".
 
-Definition vchain_ptsto γ q (k : u64) (vchain : list (option u64)) : iProp Σ :=
-  own γ.(mvcc_key_vchain) {[k := ●ML{# q } (vchain : list (leibnizO (option u64)))]}.
+Definition vchain_ptsto γ q (k : u64) (vchain : list dbval) : iProp Σ :=
+  own γ.(mvcc_key_vchain) {[k := ●ML{# q } (vchain : list (leibnizO dbval))]}.
 
-Definition vchain_lb γ (k : u64) (vchain : list (option u64)) : iProp Σ :=
-  own γ.(mvcc_key_vchain) {[k := ◯ML (vchain : list (leibnizO (option u64)))]}.
+Definition vchain_lb γ (k : u64) (vchain : list dbval) : iProp Σ :=
+  own γ.(mvcc_key_vchain) {[k := ◯ML (vchain : list (leibnizO dbval))]}.
 
 Lemma vchain_witness γ q k vchain :
   vchain_ptsto γ q k vchain -∗ vchain_lb γ k vchain.

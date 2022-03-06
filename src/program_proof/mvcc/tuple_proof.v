@@ -13,7 +13,10 @@ Definition RET_NONEXIST := (U64 1).
 Definition RET_RETRY := (U64 100).
 Definition RET_UNSERIALIZABLE := (U64 200).
 
-Definition ver_to_val (x : u64 * bool * u64) :=
+Definition pver := (u64 * bool * u64)%type.
+
+(* TODO: rename to [pver_to_val]. *)
+Definition ver_to_val (x : pver) :=
   (#x.1.1, (#x.1.2, (#x.2, #())))%V.
 
 (*
@@ -43,29 +46,38 @@ Definition tuple_abs (tid : u64) (vchain : list (option u64)) (tidlast : u64) (v
   pvers_abs_absent tid vchain tidlast versL verlast'.
 *)
 
-Definition spec_lookup_ver (tid : u64) (res : option u64) (ver : u64 * bool * u64) : option u64 :=
+Definition spec_find_ver_step (tid : u64) (res : option pver) (ver : pver) : option pver :=
   match res with
   | Some x => Some x
-  | None => if decide (int.Z tid > int.Z ver.1.1) then Some ver.2 else None
+  | None => if decide (int.Z tid > int.Z ver.1.1) then Some ver else None
   end.
 
-Definition spec_lookup_reverse (vers : list (u64 * bool * u64)) (tid : u64) : option u64 :=
-  foldl (spec_lookup_ver tid) None vers.
+Definition spec_find_ver_reverse (vers : list pver) (tid : u64) : option pver :=
+  foldl (spec_find_ver_step tid) None vers.
 
-Definition spec_lookup (vers : list (u64 * bool * u64)) (tid : u64) : option u64 :=
-  spec_lookup_reverse (reverse vers) tid.
+Definition spec_find_ver (vers : list pver) (tid : u64) : option pver :=
+  spec_find_ver_reverse (reverse vers) tid.
 
-Definition tuple_wellformed (vers : list (u64 * bool * u64)) (tidlast : u64) : iProp Σ :=
-  "%HtidlastGe" ∷ ⌜Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers⌝.
+(* TODO: Renmae to [spec_lookup]. *)
+Definition spec_lookup' (vers : list pver) (tid : u64) : dbval :=
+  match (spec_find_ver vers tid) with
+  | Some ver => if ver.1.2 then Nil else Value ver.2
+  | None => Nil
+  end.
+
+Definition tuple_wellformed (vers : list pver) (tidlast : u64) : iProp Σ :=
+  "%HtidlastGe" ∷ ⌜Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers⌝ ∗
+  (* TODO: restrict tid ≥ tidgc *)
+  "%HexistsLt" ∷ ⌜∀ (tid : u64), Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝.
 
 Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ : mvcc_names) : iProp Σ :=
-  ∃ (vers : Slice.t) (tidlbN : nat) (vchain : list (option u64)),
+  ∃ (vers : Slice.t) (tidlbN : nat) (vchain : list dbval),
     "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
     "Htidlast" ∷ tuple ↦[Tuple :: "tidlast"] #tidlast ∗
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
     "HtidlbN" ∷  min_tid_lb γ tidlbN ∗
-    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
+    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup' versL tid)⌝) ∗
     (* TODO: The lock invariant should only own [1/2] of [vchain]. *)
     "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1) else (1/4))%Qp key vchain ∗
     "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
@@ -94,22 +106,43 @@ Proof.
   naive_solver.
 Qed.
 
-Local Lemma spec_lookup_reverse_Some vers tid v :
-  foldl (spec_lookup_ver tid) (Some v) vers = Some v.
+(* TODO: Rename lemma names. *)
+
+Local Lemma spec_lookup_reverse_Some vers tid ver :
+  foldl (spec_find_ver_step tid) (Some ver) vers = Some ver.
 Proof.
   induction vers; done.
 Qed.
 
+Local Lemma spec_find_ver_lt_Some (vers : list pver) (tid : u64) (ver : pver) :
+  ver ∈ vers ->
+  int.Z ver.1.1 < int.Z tid ->
+  ∃ ver', spec_find_ver vers tid = Some ver'.
+Proof.
+  intros Hin Hlt.
+  apply elem_of_reverse, elem_of_list_lookup_1 in Hin as [idx Hlookup].
+  unfold spec_find_ver, spec_find_ver_reverse.
+  rewrite -(take_drop_middle _ _ _ Hlookup).
+  rewrite foldl_app.
+  destruct (foldl _ None _) as [ver' |].
+  - exists ver'.
+    by rewrite spec_lookup_reverse_Some.
+  - exists ver.
+    simpl.
+    case_decide; last word.
+    by rewrite  spec_lookup_reverse_Some.
+Qed.  
+
 Local Lemma spec_lookup_reverse_match vers tid :
   ∀ vers_take vers_drop ver,
     vers_take ++ ver :: vers_drop = vers ->
-    spec_lookup_reverse vers_take tid = None ->
+    spec_find_ver_reverse vers_take tid = None ->
     (int.Z tid > int.Z ver.1.1) ->
-    spec_lookup_reverse vers tid = Some ver.2.
+    spec_find_ver_reverse vers tid = Some ver.
 Proof.
   intros vers_take vers_drop ver Hvers Htake Hver.
   rewrite -Hvers.
-  unfold spec_lookup_reverse in *.
+  unfold spec_find_ver_reverse in *.
   rewrite foldl_app.
   rewrite Htake.
   simpl.
@@ -123,13 +156,13 @@ Qed.
 Local Lemma spec_lookup_reverse_not_match vers tid :
   ∀ vers_take ver,
     vers_take ++ [ver] = vers ->
-    spec_lookup_reverse vers_take tid = None ->
+    spec_find_ver_reverse vers_take tid = None ->
     (int.Z tid ≤ int.Z ver.1.1) ->
-    spec_lookup_reverse vers tid = None.
+    spec_find_ver_reverse vers tid = None.
 Proof.
   intros vers_take ver Hvers Htake Hver.
   rewrite -Hvers.
-  unfold spec_lookup_reverse in *.
+  unfold spec_find_ver_reverse in *.
   rewrite foldl_app.
   rewrite Htake.
   simpl.
@@ -142,11 +175,11 @@ Local Lemma spec_lookup_extended vers (tidlast tid1 tid2 : u64) :
   int.Z tidlast < int.Z tid1 ->
   int.Z tidlast < int.Z tid2 ->
   Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers ->
-  spec_lookup vers tid1 = spec_lookup vers tid2.
+  spec_find_ver vers tid1 = spec_find_ver vers tid2.
 Proof.
   intros Htid1 Htid2 Hwellformed.
-  unfold spec_lookup.
-  unfold spec_lookup_reverse.
+  unfold spec_find_ver.
+  unfold spec_find_ver_reverse.
   destruct (reverse _) eqn:E; first done.
   simpl.
   setoid_rewrite Forall_forall in Hwellformed.
@@ -162,18 +195,23 @@ Proof.
 Qed.
   
 (*******************************************************************)
-(* func findRightVer(tid uint64, vers []Version) (Version, uint64) *)
+(* func findRightVer(tid uint64, vers []Version) Version           *)
 (*******************************************************************)
 Local Theorem wp_findRightVer (tid : u64) (vers : Slice.t)
                               (versL : list (u64 * bool * u64)) :
-  {{{ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) }}}
+  {{{ ⌜∃ (ver : pver), (ver ∈ versL) ∧ (int.Z ver.1.1 < int.Z tid)⌝ ∗
+      slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL)
+  }}}
     findRightVer #tid (to_val vers)
-  {{{ (val : u64) (found : bool), RET (#val, #found);
-      ⌜spec_lookup versL tid = if found then Some val else None⌝ ∗
+  {{{ (ver : pver), RET (ver_to_val ver);
+      ⌜spec_find_ver versL tid = Some ver⌝ ∗
       slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL)
   }}}.
 Proof.
-  iIntros (Φ) "HversL HΦ".
+  iIntros (Φ) "[%Hlt HversL] HΦ".
+  destruct Hlt as [ver'' [Hin Hlt]].
+  destruct (nil_or_length_pos versL) as [| Hnonempty].
+  { rewrite H in Hin. by destruct (not_elem_of_nil ver''). }
   iDestruct (slice.is_slice_small_acc with "HversL") as "[HversL HversL_close]".
   iDestruct (is_slice_small_sz with "HversL") as "%HversLen".
   rewrite fmap_length in HversLen.
@@ -181,15 +219,11 @@ Proof.
   
   (***********************************************************)
   (* var ver Version                                         *)
-  (* var ret bool = false                                    *)
   (* length := uint64(len(vers))                             *)
   (* var idx uint64 = 0                                      *)
   (***********************************************************)
   wp_apply (wp_ref_of_zero); first auto.
   iIntros (verR) "HverR".
-  wp_pures.
-  wp_apply (wp_ref_to); first auto.
-  iIntros (foundR) "HfoundR".
   wp_pures.
   wp_apply (wp_slice_len).
   wp_pures.
@@ -204,21 +238,19 @@ Proof.
   (*     }                                                   *)
   (*     ver = vers[length - (1 + idx)]                      *)
   (*     if tid > ver.begin {                                *)
-  (*         found = true                                    *)
   (*         break                                           *)
   (*     }                                                   *)
   (*     idx++                                               *)
   (* }                                                       *)
   (***********************************************************)
-  set P := λ (b : bool), (∃ (ver : u64 * bool * u64) (found : bool) (idx : u64),
+  set P := λ (b : bool), (∃ (ver : u64 * bool * u64) (idx : u64),
              "HverR" ∷ (verR ↦[struct.t Version] ver_to_val ver) ∗
-             "HfoundR" ∷ (foundR ↦[boolT] #found) ∗
              "HidxR" ∷ (idxR ↦[uint64T] #idx) ∗
              "HversL" ∷ is_slice_small vers (struct.t Version) 1 (ver_to_val <$> versL) ∗
              (* "%Hlookup" ∷ (⌜reverse versL !! (int.nat idx) = Some ver⌝) ∗ *)
-             "%Hloop" ∷ if b
-                        then ⌜spec_lookup_reverse (take (int.nat idx) (reverse versL)) tid = None ∧ found = false⌝
-                        else ⌜spec_lookup_reverse (reverse versL) tid = if found then Some ver.2 else None⌝)%I.
+             "%Hspec" ∷ if b
+                        then ⌜spec_find_ver_reverse (take (int.nat idx) (reverse versL)) tid = None⌝
+                        else ⌜spec_find_ver_reverse (reverse versL) tid = Some ver⌝)%I.
   wp_apply (wp_forBreak P with "[] [-HΦ HversL_close]").
   { (* Loop body. *)
     clear Φ.
@@ -226,7 +258,6 @@ Proof.
     iModIntro.
     iIntros "Hloop HΦ".
     iNamed "Hloop".
-    destruct Hloop as [Hspec Hfound].
     wp_pures.
     wp_load.
     wp_pures.
@@ -235,13 +266,16 @@ Proof.
       iModIntro.
       iApply "HΦ".
       unfold P.
-      rewrite Hfound.
       replace (take (int.nat idx) _) with (reverse versL) in Hspec; last first.
       { symmetry.
         pose proof (reverse_length versL) as HversRevLen.
-        rewrite take_ge; [done | word].
+        rewrite take_ge; first done.
+        rewrite HversRevLen HversLen.
+        word.
       }
-      eauto 15 with iFrame.
+      destruct (spec_find_ver_lt_Some _ _ _ Hin Hlt).
+      unfold spec_find_ver in H.
+      by rewrite H in Hspec.
     }
     wp_load.
     wp_pures.
@@ -275,14 +309,14 @@ Proof.
     wp_load.
     wp_pures.
     wp_if_destruct.
-    { wp_store.
-      iModIntro.
+    { iModIntro.
       iApply "HΦ".
       unfold P.
-      do 3 iExists _.
+      do 2 iExists _.
       iFrame "∗ %".
       iPureIntro.
-      rewrite -reverse_lookup in Hver'; last word.
+      rewrite -reverse_lookup in Hver'; last first.
+      { rewrite HversLen. word. }
       apply take_drop_middle in Hver'.
       apply (spec_lookup_reverse_match _ _ _ _ _ Hver'); [done | word].
     }
@@ -291,12 +325,12 @@ Proof.
     iModIntro.
     iApply "HΦ".
     unfold P.
-    do 3 iExists _.
+    do 2 iExists _.
     iFrame.
     iPureIntro.
-    split; last done.
     replace (int.nat (word.add _ _)) with (S (int.nat idx)); last word.
-    rewrite -reverse_lookup in Hver'; last word.
+    rewrite -reverse_lookup in Hver'; last first.
+    { rewrite HversLen. word. }
     rewrite (take_S_r _ _ ver'); last done.
     set vers_take := take _ _.
     set versL' := vers_take ++ _.
@@ -306,7 +340,7 @@ Proof.
   { (* Loop entry. *)
     unfold P.
     iExists (U64 0, false, U64 0).
-    do 2 iExists _.
+    iExists _.
     iFrame.
     iPureIntro.
     change (int.nat 0) with 0%nat.
@@ -318,10 +352,9 @@ Proof.
   wp_pures.
   
   (***********************************************************)
-  (* return ver.val, found                                   *)
+  (* return ver                                              *)
   (***********************************************************)
-  do 2 wp_load.
-  wp_pures.
+  wp_load.
   iApply "HΦ".
   iDestruct ("HversL_close" with "HversL") as "HversL".
   by iFrame.
@@ -342,8 +375,8 @@ Qed.
 Definition post_tuple__ReadVersion tid key val (ret : u64) γ : iProp Σ :=
   active_tid γ tid ∗
   match int.Z ret with
-  | 0 => view_ptsto γ key (Some val) tid
-  | 1 => view_ptsto γ key None tid
+  | 0 => view_ptsto γ key (Value val) tid
+  | 1 => view_ptsto γ key Nil tid
   | _ => False
   end.
 
@@ -455,42 +488,44 @@ Proof.
   iIntros "Hloop".
   iNamed "Hloop".
   iNamed "HtupleOwn".
+  iNamed "Hwellformed".
   wp_pures.
 
   (***********************************************************)
-  (* val, found := findRightVer(tid, tuple.vers)             *)
+  (* ver := findRightVer(tid, tuple.vers)                    *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (wp_findRightVer with "HversL").
-  iIntros (val found) "[%Hspec HversL]".
+  wp_apply (wp_findRightVer with "[$HversL]").
+  { iPureIntro. by setoid_rewrite Exists_exists in HexistsLt. }
+  iIntros (ver) "[%Hspec HversL]".
   wp_pures.
 
   (***********************************************************)
   (* var ret uint64                                          *)
-  (* if found {                                              *)
-  (*     ret = common.RET_SUCCESS                            *)
-  (* } else {                                                *)
+  (* if ver.deleted {                                        *)
   (*     ret = common.RET_NONEXIST                           *)
+  (* } else {                                                *)
+  (*     ret = common.RET_SUCCESS                            *)
   (* }                                                       *)
   (***********************************************************)
   wp_apply (wp_ref_of_zero); first done.
   iIntros (retR) "HretR".
   wp_pures.
   (* Q: Need to do this in order to use [case_bool_decide]. Why doesn't [destruct] work? *)
-  replace found with (bool_decide (found = true)); last first.
+  replace ver.1.2 with (bool_decide (ver.1.2 = true)); last first.
   { case_bool_decide.
     - done.
     - by apply not_true_is_false in H.
   }
   wp_apply (wp_If_join_evar with "[HretR]").
   { iIntros (b') "%Eb'".
-    (* XXX: destruct found. *)
+    (* XXX: destruct ver.1.2. *)
     case_bool_decide.
     - wp_if_true.
       wp_store.
       iModIntro.
       iSplit; first done.
-      replace #0 with #(if b' then 0 else 1) by by rewrite Eb'.
+      replace #1 with #(if b' then 1 else 0) by by rewrite Eb'.
       iNamedAccu.
     - wp_if_false.
       wp_store.
@@ -529,8 +564,6 @@ Proof.
   }
   iIntros "H".
   iNamed "H".
-  unfold tuple_wellformed.
-  iNamed "Hwellformed".
   wp_pures.
 
   set q := if decide (tidown = 0) then _ else _.
@@ -542,8 +575,7 @@ Proof.
     "#HvchainW" ∷ vchain_lb γ key vchain ∗
     "%HvchainLen" ∷ ⌜Z.of_nat (length vchain) = (int.Z tidlast' + 1)%Z⌝ ∗
     "%Hwellformed" ∷ tuple_wellformed versL tidlast' ∗
-    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast' -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝))%I.
-    (* "%Hlookup" ∷ ⌜vchain !! int.nat tid = Some (spec_lookup versL tid)⌝)%I. *)
+    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast' -> vchain !! (int.nat tid) = Some (spec_lookup' versL tid)⌝))%I.
   iAssert P with "[Hvchain]" as "H".
   { unfold P.
     subst q.
@@ -552,7 +584,7 @@ Proof.
       subst tidlast'.
       case_bool_decide.
       + (* Case 1a. [tidlast < tid]. Extending the version chain. *)
-        set valtid := (if found then Some val else None).
+        set valtid := (if ver.1.2 then Nil else Value ver.2).
         set vals := replicate (int.nat (int.Z tid - int.Z tidlast)) valtid.
         set vchain' := vchain ++ vals.
         iExists vchain'.
@@ -565,15 +597,18 @@ Proof.
           subst vchain'.
           rewrite app_length.
           (* Set Printing Coercions. *)
-          replace (Z.of_nat _) with ((Z.of_nat (length vchain)) + (Z.of_nat (length vals))); last word.
+          (* Q: weird that cannot simply [by word]. *)
+          assert (Hxy : ∀ (x y : nat), Z.of_nat x + Z.of_nat y = Z.of_nat (x + y)) by word.
+          replace (Z.of_nat _) with ((Z.of_nat (length vchain)) + (Z.of_nat (length vals))) by apply Hxy.
           rewrite HvchainLen.
           subst vals.
           rewrite replicate_length.
-          replace (Z.of_nat _) with ((int.Z tid) - (int.Z tidlast)); last word.
+          replace (Z.of_nat _) with ((int.Z tid) - (int.Z tidlast)) by word.
           word.
         }
         split.
         { (* Prove [Hwellformed]. *)
+          split; last done.
           apply (Forall_impl _ _ _ HtidlastGe).
           word.
         }
@@ -591,9 +626,9 @@ Proof.
             rewrite lookup_replicate_2; last word.
             f_equal.
             subst valtid.
-            rewrite -Hspec.
-            apply Z.lt_gt in H0.
-            apply (spec_lookup_extended _ tidlast); auto using Z.gt_lt.
+            unfold spec_lookup'.
+            rewrite (spec_lookup_extended _ tidlast x tid); auto using Z.gt_lt.
+            by rewrite Hspec.
         }
       + (* Case 1b. [tidlast ≥ tid]. *)
         iExists vchain.
@@ -629,7 +664,7 @@ Proof.
   iNamed "H".
   clear P.
 
-  iAssert (⌜vchain !! int.nat tid = Some (spec_lookup versL tid)⌝)%I as "%Hlookup".
+  iAssert (⌜vchain !! int.nat tid = Some (spec_lookup' versL tid)⌝)%I as "%Hlookup".
   { subst tidlast'.
     case_bool_decide; iPureIntro.
     - by apply HtupleAbs.
@@ -661,28 +696,30 @@ Proof.
   unfold post_tuple__ReadVersion.
   iFrame "Hactive".
   case_bool_decide.
-  { (* Case: [found = true]. *)
-    change (int.Z 0) with 0.
-    simpl.
-    (* Prove [view_ptsto]. *)
-    unfold view_ptsto.
-    rewrite H in Hspec.
-    iExists _.
-    iFrame "HvchainW".
-    iPureIntro.
-    by rewrite Hlookup Hspec.
-  }
-  { (* Case: [found = false]. *)
+  { (* Case: [ret = RET_NONEXIST]. *)
     change (int.Z 1) with 1.
     simpl.
     (* Prove [view_ptsto]. *)
     unfold view_ptsto.
-    apply not_true_is_false in H.
-    rewrite H in Hspec.
     iExists _.
     iFrame "HvchainW".
     iPureIntro.
-    by rewrite Hlookup Hspec.
+    rewrite Hlookup.
+    unfold spec_lookup'.
+    by rewrite Hspec H.
+  }
+  { (* Case: [ret = RET_SUCCESS]. *)
+    change (int.Z 0) with 0.
+    simpl.
+    (* Prove [view_ptsto]. *)
+    unfold view_ptsto.
+    apply not_true_is_false in H.
+    iExists _.
+    iFrame "HvchainW".
+    iPureIntro.
+    rewrite Hlookup.
+    unfold spec_lookup'.
+    by rewrite Hspec H.
   }
 Qed.
 
