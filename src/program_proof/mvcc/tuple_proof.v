@@ -59,7 +59,7 @@ Definition spec_find_ver (vers : list pver) (tid : u64) : option pver :=
   spec_find_ver_reverse (reverse vers) tid.
 
 (* TODO: Renmae to [spec_lookup]. *)
-Definition spec_lookup' (vers : list pver) (tid : u64) : dbval :=
+Definition spec_lookup (vers : list pver) (tid : u64) : dbval :=
   match (spec_find_ver vers tid) with
   | Some ver => if ver.1.2 then Nil else Value ver.2
   | None => Nil
@@ -77,7 +77,7 @@ Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ 
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
     "HtidlbN" ∷  min_tid_lb γ tidlbN ∗
-    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup' versL tid)⌝) ∗
+    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
     (* TODO: The lock invariant should only own [1/2] of [vchain]. *)
     "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1) else (1/4))%Qp key vchain ∗
     "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
@@ -106,9 +106,7 @@ Proof.
   naive_solver.
 Qed.
 
-(* TODO: Rename lemma names. *)
-
-Local Lemma spec_lookup_reverse_Some vers tid ver :
+Local Lemma spec_find_ver_step_Some_noop vers tid ver :
   foldl (spec_find_ver_step tid) (Some ver) vers = Some ver.
 Proof.
   induction vers; done.
@@ -126,14 +124,14 @@ Proof.
   rewrite foldl_app.
   destruct (foldl _ None _) as [ver' |].
   - exists ver'.
-    by rewrite spec_lookup_reverse_Some.
+    by rewrite spec_find_ver_step_Some_noop.
   - exists ver.
     simpl.
     case_decide; last word.
-    by rewrite  spec_lookup_reverse_Some.
+    by rewrite  spec_find_ver_step_Some_noop.
 Qed.  
 
-Local Lemma spec_lookup_reverse_match vers tid :
+Local Lemma spec_find_ver_reverse_match vers tid :
   ∀ vers_take vers_drop ver,
     vers_take ++ ver :: vers_drop = vers ->
     spec_find_ver_reverse vers_take tid = None ->
@@ -149,11 +147,11 @@ Proof.
   case_decide.
   - induction vers_drop.
     + done.
-    + by rewrite spec_lookup_reverse_Some.
+    + by rewrite spec_find_ver_step_Some_noop.
   - contradiction.
 Qed.
 
-Local Lemma spec_lookup_reverse_not_match vers tid :
+Local Lemma spec_find_ver_reverse_not_match vers tid :
   ∀ vers_take ver,
     vers_take ++ [ver] = vers ->
     spec_find_ver_reverse vers_take tid = None ->
@@ -171,7 +169,7 @@ Proof.
   - done.
 Qed.
 
-Local Lemma spec_lookup_extended vers (tidlast tid1 tid2 : u64) :
+Local Lemma spec_find_ver_extended vers (tidlast tid1 tid2 : u64) :
   int.Z tidlast < int.Z tid1 ->
   int.Z tidlast < int.Z tid2 ->
   Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers ->
@@ -191,7 +189,7 @@ Proof.
   { apply Hwellformed in H. apply Z.le_lt_trans with (int.Z tidlast); done. }
   apply Z.lt_gt in H1, H2.
   do 2 (case_decide; last contradiction).
-  by do 2 rewrite spec_lookup_reverse_Some.
+  by do 2 rewrite spec_find_ver_step_Some_noop.
 Qed.
   
 (*******************************************************************)
@@ -318,7 +316,7 @@ Proof.
       rewrite -reverse_lookup in Hver'; last first.
       { rewrite HversLen. word. }
       apply take_drop_middle in Hver'.
-      apply (spec_lookup_reverse_match _ _ _ _ _ Hver'); [done | word].
+      apply (spec_find_ver_reverse_match _ _ _ _ _ Hver'); [done | word].
     }
     wp_load.
     wp_store.
@@ -335,7 +333,7 @@ Proof.
     set vers_take := take _ _.
     set versL' := vers_take ++ _.
     apply Znot_lt_ge in Heqb0.
-    apply (spec_lookup_reverse_not_match versL' _ vers_take ver'); [auto | auto | word].
+    apply (spec_find_ver_reverse_not_match versL' _ vers_take ver'); [auto | auto | word].
   }
   { (* Loop entry. *)
     unfold P.
@@ -575,7 +573,7 @@ Proof.
     "#HvchainW" ∷ vchain_lb γ key vchain ∗
     "%HvchainLen" ∷ ⌜Z.of_nat (length vchain) = (int.Z tidlast' + 1)%Z⌝ ∗
     "%Hwellformed" ∷ tuple_wellformed versL tidlast' ∗
-    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast' -> vchain !! (int.nat tid) = Some (spec_lookup' versL tid)⌝))%I.
+    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast' -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝))%I.
   iAssert P with "[Hvchain]" as "H".
   { unfold P.
     subst q.
@@ -626,8 +624,8 @@ Proof.
             rewrite lookup_replicate_2; last word.
             f_equal.
             subst valtid.
-            unfold spec_lookup'.
-            rewrite (spec_lookup_extended _ tidlast x tid); auto using Z.gt_lt.
+            unfold spec_lookup.
+            rewrite (spec_find_ver_extended _ tidlast x tid); auto using Z.gt_lt.
             by rewrite Hspec.
         }
       + (* Case 1b. [tidlast ≥ tid]. *)
@@ -664,7 +662,7 @@ Proof.
   iNamed "H".
   clear P.
 
-  iAssert (⌜vchain !! int.nat tid = Some (spec_lookup' versL tid)⌝)%I as "%Hlookup".
+  iAssert (⌜vchain !! int.nat tid = Some (spec_lookup versL tid)⌝)%I as "%Hlookup".
   { subst tidlast'.
     case_bool_decide; iPureIntro.
     - by apply HtupleAbs.
@@ -705,7 +703,7 @@ Proof.
     iFrame "HvchainW".
     iPureIntro.
     rewrite Hlookup.
-    unfold spec_lookup'.
+    unfold spec_lookup.
     by rewrite Hspec H.
   }
   { (* Case: [ret = RET_SUCCESS]. *)
@@ -718,7 +716,7 @@ Proof.
     iFrame "HvchainW".
     iPureIntro.
     rewrite Hlookup.
-    unfold spec_lookup'.
+    unfold spec_lookup.
     by rewrite Hspec H.
   }
 Qed.
