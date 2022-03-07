@@ -87,10 +87,10 @@ Definition min_tid_auth γ tidN : iProp Σ :=
 Definition min_tid_lb γ tidN : iProp Σ :=
   own γ.(mvcc_min_tid_gn) (◯MN tidN).
 
-Theorem active_ge_min γ tid tidlbN :
+Theorem active_ge_min γ (tid tidlb : u64) :
   active_tid γ tid -∗
-  min_tid_lb γ tidlbN -∗
-  ⌜(int.nat tid ≥ tidlbN)%nat⌝.
+  min_tid_lb γ (int.nat tidlb) -∗
+  ⌜(int.Z tidlb ≤ int.Z tid)%Z⌝.
 Admitted.
 
 Definition mvcc_invariant γ : iProp Σ :=

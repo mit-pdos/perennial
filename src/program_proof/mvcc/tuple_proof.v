@@ -19,33 +19,6 @@ Definition pver := (u64 * bool * u64)%type.
 Definition ver_to_val (x : pver) :=
   (#x.1.1, (#x.1.2, (#x.2, #())))%V.
 
-(*
-Definition match_ver (tid : u64) (ver : u64 * u64 * u64) :=
-  int.Z ver.1.1 < int.Z tid ≤ int.Z ver.1.2.
-
-Definition no_match_vers tid versL :=
-  Forall (λ ver, ¬(match_ver tid ver)) versL.
-
-Definition pver_abs_present tid (vchain : list (option u64)) ver :=
-  match_ver tid ver -> vchain !! (int.nat tid) = Some (Some ver.2).
-
-Definition pvers_abs_present tid vchain pvers verlast :=
-  (Forall (λ ver, pver_abs_present tid vchain ver)) pvers ∧ (pver_abs_present tid vchain verlast).
-
-Definition pvers_abs_absent tid (vchain : list (option u64)) (tidlast : u64) pvers verlast :=
-  int.Z tid ≤ int.Z tidlast ->
-  no_match_vers tid pvers  ->
-  no_match_vers tid [verlast] ->
-  vchain !! (int.nat tid) = Some None.
-
-Definition tuple_abs (tid : u64) (vchain : list (option u64)) (tidlast : u64) (verlast : u64 * u64 * u64) (versL : list (u64 * u64 * u64)) :=
-  let verlast' := if decide (verlast.1.2 = TID_SENTINEL)
-                  then (verlast.1.1, tidlast, verlast.2)
-                  else verlast in
-  pvers_abs_present tid vchain versL verlast' ∧
-  pvers_abs_absent tid vchain tidlast versL verlast'.
-*)
-
 Definition spec_find_ver_step (tid : u64) (res : option pver) (ver : pver) : option pver :=
   match res with
   | Some x => Some x
@@ -65,26 +38,22 @@ Definition spec_lookup (vers : list pver) (tid : u64) : dbval :=
   | None => Nil
   end.
 
-Definition tuple_wellformed (vers : list pver) (tidlast : u64) : iProp Σ :=
+Definition tuple_wellformed (vers : list pver) (tidlast tidgc : u64) : iProp Σ :=
   "%HtidlastGe" ∷ ⌜Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers⌝ ∗
-  (* TODO: restrict tid ≥ tidgc *)
-  "%HexistsLt" ∷ ⌜∀ (tid : u64), Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝.
+  "%HexistsLt" ∷ ⌜∀ (tid : u64), int.Z tidgc ≤ int.Z tid -> Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝.
 
 Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ : mvcc_names) : iProp Σ :=
-  ∃ (vers : Slice.t) (tidlbN : nat) (vchain : list dbval),
+  ∃ (vers : Slice.t) (tidgc : u64) (vchain : list dbval),
     "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
     "Htidlast" ∷ tuple ↦[Tuple :: "tidlast"] #tidlast ∗
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
-    "HtidlbN" ∷  min_tid_lb γ tidlbN ∗
-    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
+    "Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
+    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
     (* TODO: The lock invariant should only own [1/2] of [vchain]. *)
     "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1) else (1/4))%Qp key vchain ∗
     "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
-    "Hwellformed" ∷ tuple_wellformed versL tidlast ∗
-    (*
-    "HtupleAbs" ∷ ∀ tid, ⌜tidlbN ≤ int.nat tid -> (tuple_abs vchain tidlast verlast versL tid)⌝ ∗
-     *)
+    "Hwellformed" ∷ tuple_wellformed versL tidlast tidgc ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (own_tuple _ _ _ _ _ _)) => unfold own_tuple : core.
 
@@ -191,7 +160,123 @@ Proof.
   do 2 (case_decide; last contradiction).
   by do 2 rewrite spec_find_ver_step_Some_noop.
 Qed.
+
+(*****************************************************************)
+(* func MkTuple() *Tuple                                         *)
+(*****************************************************************)
+Theorem wp_MkTuple (key : u64) γ :
+  {{{ True }}}
+    MkTuple #()
+  {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* tuple := new(Tuple)                                     *)
+  (***********************************************************)
+  wp_apply (wp_allocStruct).
+  { apply zero_val_ty'.
+    simpl.
+    repeat split.
+  }
+  iIntros (tuple) "Htuple".
+  iDestruct (struct_fields_split with "Htuple") as "Htuple".
+  iNamed "Htuple".
+  simpl.
+  wp_pures.
   
+  (***********************************************************)
+  (* tuple.latch = new(sync.Mutex)                           *)
+  (***********************************************************)
+  wp_apply (wp_new_free_lock).
+  iIntros (latch) "Hfree".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* tuple.rcond = sync.NewCond(tuple.latch)                 *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (wp_newCond' with "Hfree").
+  iIntros (rcond) "[Hfree #HrcondC]".
+  
+  (***********************************************************)
+  (* tuple.tidown = 0                                        *)
+  (* tuple.tidlast = 0                                       *)
+  (***********************************************************)
+  repeat wp_storeField.
+  
+  (***********************************************************)
+  (* tuple.vers = make([]Version, 1, 16)                     *)
+  (* tuple.vers[0] = Version{                                *)
+  (*     deleted : true,                                     *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_apply (wp_new_slice); first auto.
+  iIntros (vers) "HversL".
+  wp_storeField.
+  wp_loadField.
+  iDestruct (is_slice_small_acc with "HversL") as "[HversL HversL_close]".
+  wp_apply (wp_SliceSet with "[HversL]").
+  { iFrame.
+    iPureIntro.
+    split; last auto.
+    by rewrite lookup_replicate_2; last word.
+  }
+  iIntros "HversL".
+  iDestruct ("HversL_close" with "HversL") as "HversL".
+  wp_pures.
+  
+  (***********************************************************)
+  (* return tuple                                            *)
+  (***********************************************************)
+  set P := (∃ tidown tidlast versL, own_tuple tuple key tidown tidlast versL γ)%I.
+  iMod (alloc_lock mvccN _ latch P with "[$Hfree] [-latch rcond HΦ]") as "#Hlock".
+  { iNext.
+    unfold P.
+    iExists (U64 0), (U64 0), [(U64 0, true, U64 0)].
+    unfold own_tuple.
+    iExists vers, (U64 1), [Value (U64 0)].
+    iFrame.
+    iSplit.
+    { (* TODO: Prove [Hgclb]. *) admit. }
+    iSplit.
+    { (* Prove [HtupleAbs]. *)
+      iPureIntro.
+      simpl.
+      intros tid Htid.
+      replace (int.Z (U64 0)) with 0 in Htid by word.
+      replace (int.Z (U64 1)) with 1 in Htid by word.
+      word.
+    }
+    iSplit.
+    { (* Prove [Hvchain]. *) admit. }
+    iSplit.
+    { (* Prove [HvchainLen]. *)
+      by rewrite singleton_length.
+    }
+    iSplit; last done.
+    unfold tuple_wellformed.
+    iPureIntro.
+    split.
+    { (* Prove [HtidlastGe]. *)
+      by rewrite Forall_singleton.
+    }
+    { (* Prove [HexistsLt]. *)
+      intros tid.
+      rewrite Exists_cons.
+      left.
+      simpl.
+      word.
+    }
+  }
+  iApply "HΦ".
+  iExists latch, rcond.
+  iMod (readonly_alloc_1 with "latch") as "$".
+  iMod (readonly_alloc_1 with "rcond") as "$".
+  by iFrame "#".
+Admitted.
+
 (*******************************************************************)
 (* func findRightVer(tid uint64, vers []Version) Version           *)
 (*******************************************************************)
@@ -482,7 +567,7 @@ Proof.
     eauto 10 with iFrame.
   }
   clear HtupleAbs HvchainLen.
-  clear tidown tidlast versL vchain.
+  clear tidown tidlast tidgc versL vchain.
   iIntros "Hloop".
   iNamed "Hloop".
   iNamed "HtupleOwn".
@@ -493,8 +578,12 @@ Proof.
   (* ver := findRightVer(tid, tuple.vers)                    *)
   (***********************************************************)
   wp_loadField.
+  iDestruct (active_ge_min with "Hactive Hgclb") as "%HtidGe".
   wp_apply (wp_findRightVer with "[$HversL]").
-  { iPureIntro. by setoid_rewrite Exists_exists in HexistsLt. }
+  { iPureIntro.
+    setoid_rewrite Exists_exists in HexistsLt.
+    by apply HexistsLt.
+  }
   iIntros (ver) "[%Hspec HversL]".
   wp_pures.
 
@@ -572,8 +661,8 @@ Proof.
     "Hvchain" ∷ vchain_ptsto γ q key vchain ∗
     "#HvchainW" ∷ vchain_lb γ key vchain ∗
     "%HvchainLen" ∷ ⌜Z.of_nat (length vchain) = (int.Z tidlast' + 1)%Z⌝ ∗
-    "%Hwellformed" ∷ tuple_wellformed versL tidlast' ∗
-    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tid ≤ int.Z tidlast' -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝))%I.
+    "%Hwellformed" ∷ tuple_wellformed versL tidlast' tidgc ∗
+    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast' -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝))%I.
   iAssert P with "[Hvchain]" as "H".
   { unfold P.
     subst q.
@@ -615,7 +704,8 @@ Proof.
           destruct (decide (int.Z x ≤ int.Z tidlast)); subst vchain'.
           * (* [x ≤ tidlast]. *)
             rewrite lookup_app_l; last word.
-            by apply HtupleAbs.
+            apply HtupleAbs.
+            word.
           * (* [tidlast < x]. *)
             rename n into HxLower.
             apply Znot_le_gt in HxLower.
@@ -1235,76 +1325,5 @@ Proof.
   wp_pures.
   by iApply "HΦ".
 Qed.
-
-(*****************************************************************)
-(* func MkTuple() *Tuple                                         *)
-(*****************************************************************)
-Theorem wp_MkTuple (key : u64) γ :
-  {{{ True }}}
-    MkTuple #()
-  {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
-Proof.
-  iIntros (Φ) "_ HΦ".
-  wp_call.
-
-  (***********************************************************)
-  (* tuple := new(Tuple)                                     *)
-  (***********************************************************)
-  wp_apply (wp_allocStruct).
-  { apply zero_val_ty'.
-    simpl.
-    repeat split.
-  }
-  iIntros (tuple) "Htuple".
-  iDestruct (struct_fields_split with "Htuple") as "Htuple".
-  iNamed "Htuple".
-  simpl.
-  wp_pures.
-  
-  (***********************************************************)
-  (* tuple.latch = new(sync.Mutex)                           *)
-  (***********************************************************)
-  wp_apply (wp_new_free_lock).
-  iIntros (latch) "Hfree".
-  wp_storeField.
-  
-  (***********************************************************)
-  (* tuple.rcond = sync.NewCond(tuple.latch)                 *)
-  (***********************************************************)
-  wp_loadField.
-  wp_apply (wp_newCond' with "Hfree").
-  iIntros (rcond) "[Hfree #HrcondC]".
-  
-  (***********************************************************)
-  (* tuple.tidown = 0                                        *)
-  (* tuple.tidrd = 0                                         *)
-  (* tuple.tidwr = 0                                         *)
-  (***********************************************************)
-  repeat wp_storeField.
-  
-  (***********************************************************)
-  (* tuple.vers = make([]Version, 0, 16)                     *)
-  (***********************************************************)
-  wp_apply (wp_new_slice); first auto.
-  iIntros (vers) "HversL".
-  wp_storeField.
-  
-  (***********************************************************)
-  (* return tuple                                            *)
-  (***********************************************************)
-  iMod (alloc_lock mvccN _ latch (∃ versL, own_tuple tuple key versL γ) with "[$Hfree] [-latch rcond HΦ]") as "#Hlock".
-  { iNext.
-    iExists [].
-    unfold own_tuple.
-    do 5 iExists _.
-    iFrame.
-    admit.
-  }
-  iApply "HΦ".
-  iExists latch, rcond.
-  iMod (readonly_alloc_1 with "latch") as "$".
-  iMod (readonly_alloc_1 with "rcond") as "$".
-  by iFrame "#".
-Admitted.
 
 End heap.

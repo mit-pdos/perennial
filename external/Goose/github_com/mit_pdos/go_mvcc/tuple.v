@@ -188,8 +188,9 @@ Definition MkTuple: val :=
     struct.storeF Tuple "tidown" "tuple" #0;;
     struct.storeF Tuple "tidlast" "tuple" #0;;
     struct.storeF Tuple "vers" "tuple" (NewSlice (struct.t Version) #1);;
-    let: "verRef" := SliceRef (struct.t Version) (struct.loadF Tuple "vers" "tuple") #0 in
-    struct.storeF Version "deleted" "verRef" #true;;
+    SliceSet (struct.t Version) (struct.loadF Tuple "vers" "tuple") #0 (struct.mk Version [
+      "deleted" ::= #true
+    ]);;
     "tuple".
 
 End code.
