@@ -33,7 +33,7 @@ jobs:
       - uses: coq-community/docker-coq-action@v1
         with:
           coq_version: ${{ matrix.coq_version }}
-          ocaml_version: "4.11-flambda"
+          ocaml_version: "4.12-flambda"
           install: |
             startGroup Install dependencies
               sudo apt-get update
@@ -74,7 +74,7 @@ jobs:
       - uses: coq-community/docker-coq-action@v1
         with:
           coq_version: ${{ matrix.coq_version }}
-          ocaml_version: "4.11-flambda"
+          ocaml_version: "4.12-flambda"
           install: |
             startGroup Install dependencies
               sudo apt-get update
