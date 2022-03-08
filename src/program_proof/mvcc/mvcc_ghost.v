@@ -60,12 +60,26 @@ Lemma vchain_update {γ k vchain} vchain' :
   (prefix vchain vchain') → vchain_ptsto γ 1 k vchain ==∗ vchain_ptsto γ 1 k vchain'.
 Admitted.
 
+Lemma vchain_false {γ q q' k vchain vchain'} :
+  (1 < q + q')%Qp ->
+  vchain_ptsto γ q k vchain -∗
+  vchain_ptsto γ q' k vchain' -∗
+  False.
+Admitted.
+
+Lemma vchain_combine {γ q q' k vchain vchain'} :
+  (q + q' = 1)%Qp ->
+  vchain_ptsto γ q k vchain -∗
+  vchain_ptsto γ q' k vchain' -∗
+  vchain_ptsto γ 1 k vchain ∧ ⌜vchain' = vchain⌝.
+Admitted.
+
 (* The following points-to facts are defined in terms of the underlying CC resources. *)
 Definition view_ptsto γ (k : u64) (v : option u64) (tid : u64) : iProp Σ :=
   ∃ vchain, vchain_lb γ k vchain ∗ ⌜vchain !! (int.nat tid) = Some v⌝.
 
 Definition mods_token γ (k tid : u64) : iProp Σ :=
-  ∃ vchain, vchain_ptsto γ (1/4) k vchain ∗ ⌜length vchain < (int.nat tid)⌝.
+  ∃ vchain, vchain_ptsto γ (1/4) k vchain ∗ ⌜(Z.of_nat (length vchain) < (int.Z tid))%Z⌝.
 
 Theorem view_ptsto_agree γ (k : u64) (v v' : option u64) (tid : u64) :
   view_ptsto γ k v tid -∗ view_ptsto γ k v' tid -∗ ⌜v = v'⌝.

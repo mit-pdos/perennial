@@ -29,9 +29,6 @@ Definition Tuple := struct.decl [
   "vers" :: slice.T (struct.t Version)
 ].
 
-(* *
-    * TODO: Maybe start from the end (i.e., the newest version).
-    * TODO: Can simply return a value rather than a version. *)
 Definition findRightVer: val :=
   rec: "findRightVer" "tid" "vers" :=
     let: "ver" := ref (zero_val (struct.t Version)) in

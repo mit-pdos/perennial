@@ -31,7 +31,6 @@ Definition spec_find_ver_reverse (vers : list pver) (tid : u64) : option pver :=
 Definition spec_find_ver (vers : list pver) (tid : u64) : option pver :=
   spec_find_ver_reverse (reverse vers) tid.
 
-(* TODO: Renmae to [spec_lookup]. *)
 Definition spec_lookup (vers : list pver) (tid : u64) : dbval :=
   match (spec_find_ver vers tid) with
   | Some ver => if ver.1.2 then Nil else Value ver.2
@@ -50,8 +49,8 @@ Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ 
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
     "Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
     "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
-    (* TODO: The lock invariant should only own [1/2] of [vchain]. *)
-    "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1) else (1/4))%Qp key vchain ∗
+    (* TODO: The lock invariant should only own [1/2] or [1/4] of [vchain]. *)
+    "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1) else (3/4))%Qp key vchain ∗
     "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
     "Hwellformed" ∷ tuple_wellformed versL tidlast tidgc ∗
     "_" ∷ True.
@@ -144,21 +143,46 @@ Local Lemma spec_find_ver_extended vers (tidlast tid1 tid2 : u64) :
   Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers ->
   spec_find_ver vers tid1 = spec_find_ver vers tid2.
 Proof.
-  intros Htid1 Htid2 Hwellformed.
+  intros Htid1 Htid2 Hlast.
   unfold spec_find_ver.
   unfold spec_find_ver_reverse.
   destruct (reverse _) eqn:E; first done.
   simpl.
-  setoid_rewrite Forall_forall in Hwellformed.
+  setoid_rewrite Forall_forall in Hlast.
   assert (H : p ∈ vers).
   { apply elem_of_reverse. rewrite E. apply elem_of_list_here. }
   assert (H1 : int.Z p.1.1 < int.Z tid1).
-  { apply Hwellformed in H. apply Z.le_lt_trans with (int.Z tidlast); done. }
+  { apply Hlast in H. apply Z.le_lt_trans with (int.Z tidlast); done. }
   assert (H2 : int.Z p.1.1 < int.Z tid2).
-  { apply Hwellformed in H. apply Z.le_lt_trans with (int.Z tidlast); done. }
+  { apply Hlast in H. apply Z.le_lt_trans with (int.Z tidlast); done. }
   apply Z.lt_gt in H1, H2.
   do 2 (case_decide; last contradiction).
   by do 2 rewrite spec_find_ver_step_Some_noop.
+Qed.
+
+Local Lemma spec_lookup_snoc vers ver (tid tidnew : u64) :
+  ver.1.1 = tidnew ->
+  int.Z tid ≤ int.Z tidnew ->
+  spec_lookup (vers ++ [ver]) tid = spec_lookup vers tid.
+Proof.
+  intros Heq Hle.
+  unfold spec_lookup, spec_find_ver, spec_find_ver_reverse.
+  rewrite reverse_snoc.
+  simpl.
+  case_decide.
+  - by rewrite Heq in H.
+  - done.
+Qed.
+
+Local Lemma spec_lookup_extended vers (tidlast tid1 tid2 : u64) :
+  int.Z tidlast < int.Z tid1 ->
+  int.Z tidlast < int.Z tid2 ->
+  Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers ->
+  spec_lookup vers tid1 = spec_lookup vers tid2.
+Proof.
+  intros Htid1 Htid2 Hlast.
+  unfold spec_lookup.
+  by rewrite (spec_find_ver_extended _ _ _ _ Htid1 Htid2); last done.
 Qed.
 
 (*****************************************************************)
@@ -811,84 +835,36 @@ Proof.
   }
 Qed.
 
-Definition post_tuple__appendVersion tuple tid val key verlast versL γ : iProp Σ :=
-  let tidown' := (U64 0) in
-  let tidlast' := tid in
-  let verslast' := (tid, TID_SENTINEL, val) in
-  let end' := if decide (verlast.1.2 = TID_SENTINEL) then tid else verlast.1.2 in
-  let versL' := versL ++ [(verlast.1.1, end', verlast.2)] in
-  own_tuple tuple key tidown' tidlast' verslast' versL' γ.
+Definition own_tuple_phys tuple tidown tidlast versL : iProp Σ :=
+  ∃ vers,
+    "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
+    "Htidlast" ∷ tuple ↦[Tuple :: "tidlast"] #tidlast ∗
+    "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
+    "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL).
 
 (*****************************************************************)
 (* func (tuple *Tuple) appendVersion(tid uint64, val uint64)     *)
 (*****************************************************************)
-Theorem wp_tuple__appendVersion tuple (tid : u64) (val : u64) (key : u64) tidown tidlast verlast versL γ :
-  {{{ own_tuple tuple key tidown tidlast verlast versL γ }}}
+Theorem wp_tuple__appendVersion tuple (tid : u64) (val : u64) tidown tidlast versL :
+  {{{ own_tuple_phys tuple tidown tidlast versL }}}
     Tuple__appendVersion #tuple #tid #val
-  {{{ RET #(); post_tuple__appendVersion tuple tid val key verlast versL γ }}}.
+  {{{ RET #(); own_tuple_phys tuple (U64 0) tid (versL ++ [(tid, false, val)]) }}}.
 Proof.
-  iIntros (Φ) "HtupleOwn HΦ".
-  iNamed "HtupleOwn".
+  iIntros (Φ) "HtuplePhys HΦ".
+  iNamed "HtuplePhys".
   wp_call.
-
-  (***********************************************************)
-  (* var verLast Version                                     *)
-  (* verLast = tuple.verlast                                 *)
-  (* if verLast.end == config.TID_SENTINEL {                 *)
-  (*     verLast.end = tid                                   *)
-  (* }                                                       *)
-  (***********************************************************)
-  wp_apply (wp_ref_of_zero); first done.
-  iIntros (verLastRef) "HverLastRef".
-  wp_pures.
-  wp_loadField.
-  wp_store.
-  wp_load.
-  change (uint64T * _)%ht with (struct.t Version).
-  rewrite struct_fields_split.
-  iNamed "HverLastRef".
-  wp_apply (wp_If_join_evar with "[-HΦ]").
-  { iIntros (b') "%Eb'".
-    case_bool_decide.
-    - wp_if_true.
-      wp_storeField.
-      iSplit; first done.
-      replace #tid with #(if b' then tid else verlast.1.2); last by by rewrite Eb'.
-      (* replace tid with (if b' then tid else verlast.1.2); last by by rewrite Eb'. *)
-      (* Q: What's the @ in the goal? *)
-      iNamedAccu.
-    - wp_if_false.
-      rewrite Eb'.
-      iFrame.
-      by iFrame.
-  }
-  iIntros "H".
-  iNamed "H".
-  wp_pures.
-  set b := bool_decide _.
-  set verlast' := (verlast.1.1, (if b then tid else verlast.1.2), verlast.2).
-  (* Group struct-field points-to to struct points-to. *)
-  iAssert (verLastRef ↦[struct.t Version] (ver_to_val verlast'))%I with "[begin end val]" as "HverLastRef".
-  { rewrite struct_fields_split. iFrame. destruct b; eauto. }
   
   (***********************************************************)
-  (* tuple.vers = append(tuple.vers, verLast)                *)
-  (***********************************************************)
-  wp_load.
-  wp_loadField.
-  wp_apply (wp_SliceAppend' with "[HversL]"); [done | auto | auto |].
-  iIntros (vers') "HversL".
-  wp_storeField.
-
-  (***********************************************************)
-  (* verNext := Version{                                     *)
+  (* verNew := Version{                                      *)
   (*     begin   : tid,                                      *)
-  (*     end     : config.TID_SENTINEL,                      *)
   (*     val     : val,                                      *)
+  (*     deleted : false,                                    *)
   (* }                                                       *)
-  (* tuple.verlast = verNext                                 *)
+  (* tuple.vers = append(tuple.vers, verNew)                 *)
   (***********************************************************)
-  wp_pures.
+  wp_loadField.
+  wp_apply (wp_SliceAppend with "[HversL]"); [done | auto 10 with iFrame |].
+  iIntros (vers') "HversL". 
   wp_storeField.
 
   (***********************************************************)
@@ -899,22 +875,13 @@ Proof.
 
   iModIntro.
   iApply "HΦ".
-  unfold post_tuple__appendVersion.
-  do 3 iExists _.
-  unfold named.
+  unfold own_tuple_phys.
+  iExists _.
+  iFrame.
   iExactEq "HversL".
-  rewrite fmap_app.
-  do 2 f_equal.
-  simpl.
-  do 4 f_equal.
-  subst b.
-  (* Q: Is there an easier way of proving [if a then x else y = if b then x else y] by proving [a = b]? *)
-  case_bool_decide.
-  - inversion H. by rewrite H1.
-  - rewrite decide_bool_decide.
-    case_bool_decide.
-    + rewrite H0 in H. unfold TID_SENTINEL in H. congruence.
-    + done.
+  unfold named.
+  f_equal.
+  by rewrite fmap_app.
 Qed.
 
 (*****************************************************************)
@@ -922,11 +889,11 @@ Qed.
 (*****************************************************************)
 Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ True }}}
+  {{{ active_tid γ tid ∗ mods_token γ key tid }}}
     Tuple__AppendVersion #tuple #tid #val
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iIntros "#Htuple !#" (Φ) "[Hactive Htoken] HΦ".
   iNamed "Htuple".
   wp_call.
   
@@ -936,14 +903,16 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked HtupleOwn]".
-  iDestruct "HtupleOwn" as (tidown tidlast verlast versL) "HtupleOwn".
+  iDestruct "HtupleOwn" as (tidown tidlast versL) "HtupleOwn".
+  iNamed "HtupleOwn".
   wp_pures.
   
   (***********************************************************)
   (* tuple.appendVersion(tid, val)                           *)
   (***********************************************************)
-  wp_apply (wp_tuple__appendVersion with "[$HtupleOwn]"); first eauto 10 with iFrame.
-  iIntros "HtupleOwn".
+  wp_apply (wp_tuple__appendVersion with "[$Htidown $Htidlast Hvers HversL]"); first eauto with iFrame.
+  iIntros "HtuplePhys".
+  iNamed "HtuplePhys".
   wp_pures.
   
   (***********************************************************)
@@ -957,8 +926,76 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  unfold post_tuple__appendVersion.
-  wp_apply (release_spec with "[-HΦ]"); first eauto 10 with iFrame.
+  unfold mods_token.
+  iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
+
+  iAssert ((|==> vchain_ptsto γ 1 key vchain) ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as "[>Hvchain ->]".
+  { case_decide.
+    - by iDestruct (vchain_false with "Hvchain Hvchain'") as "[]".
+    - iDestruct (vchain_combine with "Hvchain Hvchain'") as "[Hvchain ->]"; last auto.
+      apply Qp_three_quarter_quarter.
+  }
+  set vals := replicate (int.nat (int.Z tid - int.Z tidlast)) (spec_lookup versL tid).
+  set vchain' := vchain ++ vals.
+  iMod (vchain_update vchain' with "Hvchain") as "Hvchain"; first by apply prefix_app_r.
+  iDestruct (vchain_witness with "Hvchain") as "#HvchainW".
+  iNamed "Hwellformed".
+  
+  wp_apply (release_spec with "[-HΦ]").
+  { iFrame "Hlock Hlocked".
+    iNext.
+    iExists (U64 0), tid, _.
+    do 2 iExists _.
+    iExists vchain'.
+    iFrame.
+    iSplit.
+    { (* Prove [HtupleAbs]. *)
+      iPureIntro.
+      simpl.
+      intros tidx Htidx.
+      destruct (decide (int.Z tidx ≤ int.Z tidlast)); subst vchain'.
+      - rewrite lookup_app_l; last word.
+        rewrite HtupleAbs; last word.
+        symmetry.
+        f_equal.
+        apply spec_lookup_snoc with tid; [auto | word].
+      - rewrite lookup_app_r; last word.
+        subst vals.
+        rewrite lookup_replicate_2; last word.
+        f_equal.
+        rewrite (spec_lookup_snoc _ _ _ tid); [| auto | word].
+        apply spec_lookup_extended with tidlast; [word | word | auto].
+    }
+    iSplit.
+    { (* Prove [HvchainLen]. *)
+      iPureIntro.
+      subst vchain'.
+      rewrite app_length.
+      (* Set Printing Coercions. *)
+      replace (Z.of_nat _) with ((Z.of_nat (length vchain)) + (Z.of_nat (length vals))) by word.
+      rewrite HvchainLen.
+      subst vals.
+      rewrite replicate_length.
+      replace (Z.of_nat _) with ((int.Z tid) - (int.Z tidlast)) by word.
+      word.
+    }
+    iSplit; last done.
+    { (* Prove [Hwellformed]. *)
+      iPureIntro.
+      split.
+      - (* Prove [HtidlastGe]. *)
+        apply Forall_app_2.
+        + apply (Forall_impl _ _ _ HtidlastGe).
+          word.
+        + by rewrite Forall_singleton.
+      - (* Prove [HexistsLt]. *)
+        intros tidx Htidx.
+        apply Exists_app.
+        left.
+        by apply HexistsLt.
+    }
+  }
+  
   wp_pures.
   by iApply "HΦ".
 Qed.
