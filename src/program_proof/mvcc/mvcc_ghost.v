@@ -74,12 +74,18 @@ Lemma vchain_combine {γ q q' k vchain vchain'} :
   vchain_ptsto γ 1 k vchain ∧ ⌜vchain' = vchain⌝.
 Admitted.
 
+Lemma vchain_split {γ} q q' k vchain :
+  (q + q' = 1)%Qp ->
+  vchain_ptsto γ 1 k vchain -∗
+  vchain_ptsto γ q k vchain ∗ vchain_ptsto γ q' k vchain.
+Admitted.
+
 (* The following points-to facts are defined in terms of the underlying CC resources. *)
 Definition view_ptsto γ (k : u64) (v : option u64) (tid : u64) : iProp Σ :=
   ∃ vchain, vchain_lb γ k vchain ∗ ⌜vchain !! (int.nat tid) = Some v⌝.
 
 Definition mods_token γ (k tid : u64) : iProp Σ :=
-  ∃ vchain, vchain_ptsto γ (1/4) k vchain ∗ ⌜(Z.of_nat (length vchain) < (int.Z tid))%Z⌝.
+  ∃ vchain, vchain_ptsto γ (1/4) k vchain ∗ ⌜(Z.of_nat (length vchain) ≤ (int.Z tid) + 1)%Z⌝.
 
 Theorem view_ptsto_agree γ (k : u64) (v v' : option u64) (tid : u64) :
   view_ptsto γ k v tid -∗ view_ptsto γ k v' tid -∗ ⌜v = v'⌝.
@@ -90,7 +96,7 @@ Definition active_tids_auth γ tids : iProp Σ :=
   own γ.(mvcc_active_tids_gn) (gmap_view_auth (DfracOwn 1) tids).
 
 Definition active_tid γ (tid : u64) : iProp Σ :=
-  own γ.(mvcc_active_tids_gn) (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt).
+  own γ.(mvcc_active_tids_gn) (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt) ∧ ⌜(int.Z tid > 0)%Z⌝.
 
 Definition active_tids_site γ (sid : u64) tids : iProp Σ :=
   own γ.(mvcc_active_tids_site_gn) {[sid := to_dfrac_agree (DfracOwn (1/2)) tids]}.

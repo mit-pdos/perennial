@@ -889,11 +889,11 @@ Qed.
 (*****************************************************************)
 Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ active_tid γ tid ∗ mods_token γ key tid }}}
+  {{{ mods_token γ key tid }}}
     Tuple__AppendVersion #tuple #tid #val
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "[Hactive Htoken] HΦ".
+  iIntros "#Htuple" (Φ) "!> Htoken HΦ".
   iNamed "Htuple".
   wp_call.
   
@@ -1005,11 +1005,11 @@ Qed.
 (*****************************************************************)
 Theorem wp_tuple__Free tuple (tid : u64) (key : u64) (versL : list (u64 * u64 * u64)) γ :
   is_tuple tuple key γ -∗
-  {{{ True }}}
+  {{{ mods_token γ key tid }}}
     Tuple__Free #tuple #tid
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iIntros "#Htuple" (Φ) "!> Htoken HΦ".
   rename versL into versL'.
   iNamed "Htuple".
   wp_call.
@@ -1040,24 +1040,43 @@ Proof.
   (***********************************************************)
   wp_loadField.
   wp_apply (release_spec with "[-HΦ]").
-  { eauto 15 with iFrame. }
+  { iFrame "Hlock Hlocked".
+    iNext.
+    iExists (U64 0).
+    do 2 iExists _.
+    do 3 iExists _.
+    iFrame "% ∗".
+    iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
+    case_decide.
+    - by iDestruct (vchain_false with "Hvchain Hvchain'") as "[]".
+    - iDestruct (vchain_combine with "Hvchain Hvchain'") as "[Hvchain ->]"; last auto.
+      apply Qp_three_quarter_quarter.
+  }
   wp_pures.
   by iApply "HΦ".
 Qed.
+
+Definition post_tuple__Own tid key (ret : u64) γ : iProp Σ :=
+  active_tid γ tid ∗
+  match int.Z ret with
+  | 0 => mods_token γ key tid
+  | 200 | 400 => True
+  | _ => False
+  end.
 
 (*****************************************************************)
 (* func (tuple *Tuple) Own(tid uint64) bool                      *)
 (*****************************************************************)
 Theorem wp_tuple__Own tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ True }}}
+  {{{ active_tid γ tid }}}
     Tuple__Own #tuple #tid
-  {{{ (b : bool), RET #b; if b
-                        then mods_token γ key tid
-                        else True
+  {{{ (ret : u64), RET #ret; post_tuple__Own tid key ret γ
   }}}.
 Proof.
-  iIntros "#Htuple !#" (Φ) "_ HΦ".
+  iIntros "#Htuple" (Φ) "!> Hactive HΦ".
+  iAssert (⌜int.Z tid > 0⌝)%I with "[Hactive]" as "%Htid".
+  { by iDestruct "Hactive" as "[_ %Htid]". }
   iNamed "Htuple".
   wp_call.
   
@@ -1071,40 +1090,35 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* if tid < tuple.tidrd || tid < tuple.tidwr {             *)
+  (* if tid < tuple.tidlast {                                *)
   (*   tuple.latch.Unlock()                                  *)
-  (*   return false                                          *)
+  (*   return common.RET_UNSERIALIZABLE                      *)
   (* }                                                       *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (wp_or with "[Htidwr]").
-  { iApply "Htidwr". }
-  { wp_pures. done. }
-  { iIntros "_ Hidwr". wp_loadField. wp_pures. iFrame. done. }
-  iIntros "Hidrwr".
   wp_if_destruct.
-  { (* Early return: `tid < tuple.tidrd || tid < tuple.tidwr` *)
-    wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+  { wp_loadField.
+    wp_apply (release_spec with "[-HΦ Hactive]").
     { eauto 15 with iFrame. }
     wp_pures.
-    iModIntro. iApply "HΦ". done.
+    iApply "HΦ".
+    by iFrame.
   }
 
   (***********************************************************)
   (* if tuple.tidown != 0 {                                  *)
   (*   tuple.latch.Unlock()                                  *)
-  (*   return false                                          *)
+  (*   return common.RET_RETRY                               *)
   (* }                                                       *)
   (***********************************************************)
   wp_loadField.
   wp_if_destruct.
-  { (* Early return: `tuple.tidown != 0` *)
-    wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+  { wp_loadField.
+    wp_apply (release_spec with "[-HΦ Hactive]").
     { eauto 15 with iFrame. }
     wp_pures.
-    by iApply "HΦ".
+    iApply "HΦ".
+    by iFrame.
   }
 
   (***********************************************************)
@@ -1116,21 +1130,40 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ]").
-  { eauto 15 with iFrame. }
+  iDestruct (vchain_split (3 / 4) (1 / 4) with "Hvchain") as "[Hchain Hvchain']".
+  { apply Qp_three_quarter_quarter. }
+  wp_apply (release_spec with "[-HΦ Hactive Hvchain']").
+  { iFrame "Hlock Hlocked".
+    iNext.
+    iExists tid.
+    do 2 iExists _.
+    do 3 iExists _.
+    iFrame "% ∗".
+    case_decide.
+    - by rewrite H in Htid.
+    - iFrame.
+  }
   wp_pures.
   iModIntro.
 
   (***********************************************************)
-  (* return true                                             *)
+  (* return common.RET_SUCCESS                               *)
   (***********************************************************)
   iApply "HΦ".
-  admit. (* TODO: prove mods_token *)
-Admitted.
+  unfold post_tuple__Own.
+  iFrame.
+  change (int.Z 0) with 0.
+  simpl.
+  unfold mods_token.
+  iExists vchain.
+  iFrame.
+  iPureIntro.
+  word.
+Qed.
 
 Lemma val_to_ver_with_val_ty (x : val) :
-  val_ty x (uint64T * (uint64T * (uint64T * unitT))%ht) ->
-  (∃ (b e v : u64), x = ver_to_val (b, e, v)).
+  val_ty x (uint64T * (boolT * (uint64T * unitT))%ht) ->
+  (∃ (b : u64)  (e : bool) (v : u64), x = ver_to_val (b, e, v)).
 Proof.
   intros H.
   inversion_clear H. 
