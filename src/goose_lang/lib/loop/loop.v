@@ -147,6 +147,41 @@ Proof.
     iApply ("HΦ" with "[$]").
 Qed.
 
+(* Example specification for the usual for i := 0; i < max; i++ loop in Go.
+
+In practice it is easier to use wp_forUpto, which is just after the loop
+variable is allocated (it is a pointer since the loop must mutate it), since it
+applies to just the For combinator rather than the sequence of allocation +
+For. *)
+Theorem wp_simpleFor (I: u64 -> iProp Σ) (max:u64) (body: val) :
+  (∀ (l:loc) (i:u64),
+      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜int.Z i < int.Z max⌝ }}}
+        body #l
+      {{{ RET #true; I (word.add i (U64 1)) ∗ l ↦[uint64T] #i }}}) -∗
+  {{{ I (U64 0) }}}
+    (let: "i" := ref_to uint64T #0 in
+     (for: (λ:<>, ![uint64T] (Var "i") < #max)%E;
+           (λ:<>, (Var "i") <-[uint64T] ![uint64T] (Var "i") + #1)%E :=
+       (λ:<>, body (Var "i"))))
+  {{{ RET #(); I max }}}.
+Proof.
+  iIntros "#Hbody".
+  iIntros (Φ) "!> HI0 HΦ".
+  wp_apply wp_ref_to; [ val_ty | ].
+  iIntros (l) "Hl".
+  wp_pures.
+  wp_apply (wp_forUpto I with "[] [$HI0 $Hl]").
+  { word. }
+  { clear.
+    iIntros (i).
+    iIntros (Φ) "!> (Hi & Hl & %Hbound) HΦ".
+    wp_pures.
+    wp_apply ("Hbody" with "[$Hi $Hl] [$]").
+    iPureIntro; done. }
+  iIntros "[HI _]".
+  iApply ("HΦ" with "[$]").
+Qed.
+
 Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; iPureIntro; word : core.
 
