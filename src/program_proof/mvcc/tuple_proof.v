@@ -39,7 +39,9 @@ Definition spec_lookup (vers : list pver) (tid : u64) : dbval :=
 
 Definition tuple_wellformed (vers : list pver) (tidlast tidgc : u64) : iProp Σ :=
   "%HtidlastGe" ∷ ⌜Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers⌝ ∗
-  "%HexistsLt" ∷ ⌜∀ (tid : u64), int.Z tidgc ≤ int.Z tid -> Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝.
+  "%HexistsLt" ∷ ⌜∀ (tid : u64), int.Z tidgc ≤ int.Z tid -> Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝ ∗
+  "%HtidgcLe" ∷ ⌜Forall (λ ver, int.Z tidgc ≤ int.Z ver.1.1) (tail vers)⌝ ∗
+  "%Hnotnil" ∷ ⌜vers ≠ []⌝.
 
 Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ : mvcc_names) : iProp Σ :=
   ∃ (vers : Slice.t) (tidgc : u64) (vchain : list dbval),
@@ -293,6 +295,7 @@ Proof.
     { (* Prove [HtidlastGe]. *)
       by rewrite Forall_singleton.
     }
+    split.
     { (* Prove [HexistsLt]. *)
       intros tid.
       rewrite Exists_cons.
@@ -300,6 +303,8 @@ Proof.
       simpl.
       word.
     }
+    split; last auto.
+    by simpl.
   }
   iApply "HΦ".
   iExists latch, rcond.
@@ -768,7 +773,7 @@ Proof.
           contradiction.
         - done.
       }
-      auto.
+      auto 10.
   }
 
   clear HtupleAbs HvchainLen vchain.
@@ -889,11 +894,11 @@ Qed.
 (*****************************************************************)
 Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ mods_token γ key tid }}}
+  {{{ active_tid γ tid ∗ mods_token γ key tid }}}
     Tuple__AppendVersion #tuple #tid #val
-  {{{ RET #(); True }}}.
+  {{{ RET #(); active_tid γ tid }}}.
 Proof.
-  iIntros "#Htuple" (Φ) "!> Htoken HΦ".
+  iIntros "#Htuple" (Φ) "!> [Hactive Htoken] HΦ".
   iNamed "Htuple".
   wp_call.
   
@@ -905,6 +910,7 @@ Proof.
   iIntros "[Hlocked HtupleOwn]".
   iDestruct "HtupleOwn" as (tidown tidlast versL) "HtupleOwn".
   iNamed "HtupleOwn".
+  iDestruct (active_ge_min with "Hactive Hgclb") as "%HtidGe".
   wp_pures.
   
   (***********************************************************)
@@ -941,7 +947,7 @@ Proof.
   iDestruct (vchain_witness with "Hvchain") as "#HvchainW".
   iNamed "Hwellformed".
   
-  wp_apply (release_spec with "[-HΦ]").
+  wp_apply (release_spec with "[-HΦ Hactive]").
   { iFrame "Hlock Hlocked".
     iNext.
     iExists (U64 0), tid, _.
@@ -983,21 +989,36 @@ Proof.
     { (* Prove [Hwellformed]. *)
       iPureIntro.
       split.
-      - (* Prove [HtidlastGe]. *)
+      { (* Prove [HtidlastGe]. *)
         apply Forall_app_2.
-        + apply (Forall_impl _ _ _ HtidlastGe).
+        - apply (Forall_impl _ _ _ HtidlastGe).
           word.
-        + by rewrite Forall_singleton.
-      - (* Prove [HexistsLt]. *)
+        - by rewrite Forall_singleton.
+      }
+      split.
+      { (* Prove [HexistsLt]. *)
         intros tidx Htidx.
         apply Exists_app.
         left.
         by apply HexistsLt.
+      }
+      split.
+      { (* Prove [HtidgcLe]. *)
+        destruct versL eqn:EversL; first contradiction.
+        simpl.
+        apply Forall_app_2; first done.
+        by apply Forall_singleton.
+      }
+      { (* Prove [Hnotnil]. *)
+        apply not_eq_sym.
+        apply app_cons_not_nil.
+      }
     }
   }
   
   wp_pures.
-  by iApply "HΦ".
+  iApply "HΦ".
+  by iFrame.
 Qed.
 
 (*****************************************************************)
@@ -1214,18 +1235,6 @@ Proof.
   lia.
 Qed.
 
-(**
- * The `safe_rm_verchain` says that,
- * 1) the new list is a sublist of the old list (so no new versions can be added).
- * 2) all the versions whose end timestamp is greater than `tid` are preserved.
- *
- * We could additionally specify the performance-related condition as follows:
- * 3) all the versions whose end timestamp is less than or equal to `tid` are removed.
- *)
-Definition safe_rm_verchain (tid : u64) (versL versL' : list (u64 * u64 * u64)) :=
-  (sublist versL' versL) ∧
-  (Forall (fun ver => int.Z ver.1.2 > (int.Z tid) -> ver ∈ versL')) versL.
-  
 Definition own_tuple_phys_vers tuple versL : iProp Σ :=
   ∃ vers,
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
@@ -1414,6 +1423,35 @@ Proof.
     { auto. }
 Qed.
 
+Local Lemma spec_find_ver_suffix vers vers_prefix vers_suffix ver (tid : u64) :
+  vers = vers_prefix ++ vers_suffix ->
+  spec_find_ver vers_suffix tid = Some ver ->
+  spec_find_ver vers tid = Some ver.
+Proof.
+  intros Hvers Hlookup.
+  unfold spec_find_ver, spec_find_ver_reverse in *.
+  rewrite Hvers.
+  rewrite reverse_app.
+  rewrite foldl_app.
+  rewrite Hlookup.
+  by rewrite spec_find_ver_step_Some_noop.
+Qed.
+
+Local Lemma spec_lookup_suffix vers vers_prefix vers_suffix (tid : u64) :
+  vers = vers_prefix ++ vers_suffix ->
+  Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers_suffix ->
+  spec_lookup vers tid = spec_lookup vers_suffix tid.
+Proof.
+  intros Hsuffix HexistsLt.
+  rewrite Exists_exists in HexistsLt.
+  destruct HexistsLt as (ver & Hin & Hlt).
+  destruct (spec_find_ver_lt_Some vers_suffix tid ver) as [ver' HSome]; [auto | auto |].
+  
+  unfold spec_lookup.
+  rewrite HSome.
+  rewrite (spec_find_ver_suffix vers vers_prefix vers_suffix ver'); done.
+Qed.
+
 (*****************************************************************)
 (* func (tuple *Tuple) RemoveVersions(tid uint64)                *)
 (*                                                               *)
@@ -1440,13 +1478,14 @@ Proof.
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked HtupleOwn]".
   iNamed "HtupleOwn".
+  iNamed "Hwellformed".
   wp_pures.
 
   (***********************************************************)
   (* tuple.removeVersions(tid)                               *)
   (***********************************************************)
   wp_apply (wp_tuple__removeVersions with "[Hvers HversL]").
-  { unfold own_tuple_phys_vers. admit. }
+  { unfold own_tuple_phys_vers. eauto with iFrame. }
   iIntros "HtuplePhys".
   
   iDestruct "HtuplePhys" as "[HtuplePhys | HtuplePhys]"; last first.
@@ -1466,15 +1505,12 @@ Proof.
   iNamed "HtuplePhys".
   wp_pures.
 
-  (* XXX: in lock inv *)
-  assert (H1 : Forall (λ ver, int.Z tidgc ≤ int.Z ver.1.1) (tail versL)) by admit.
-
   assert (H2 : int.Z tidgc < int.Z tid).
-  { destruct Hsuffix as [versPrefix [Hnotnil Hsuffix]].
+  { destruct Hsuffix as [versPrefix [Hnotnil' Hsuffix]].
     destruct HtidGt as [verPivot [Hin HtidGt]].
     apply Z.le_lt_trans with (int.Z verPivot.1.1).
-    - rewrite Forall_forall in H1.
-      apply H1.
+    - rewrite Forall_forall in HtidgcLe.
+      apply HtidgcLe.
       rewrite Hsuffix.
       destruct versPrefix; first congruence.
       simpl.
@@ -1487,6 +1523,8 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
+  destruct HtidGt as (verHead & Hin & HtidGt).
+  destruct Hsuffix as (versPrefix & Hprefix & Hsuffix).
   wp_apply (release_spec with "[-HΦ]").
   { iFrame "Hlock Hlocked".
     iNext.
@@ -1501,29 +1539,31 @@ Proof.
       simpl.
       intros tidx Htidx.
       rewrite HtupleAbs; last word.
-      admit.
+      f_equal.
+      apply spec_lookup_suffix with versPrefix.
+      { by rewrite Hsuffix. }
+      { rewrite Exists_exists.
+        exists verHead.
+        split; [done | word].
+      }
     }
-    iSplit; last done.
-    iNamed "Hwellformed".
-    unfold tuple_wellformed.
     iPureIntro.
     split.
     { (* Prove [HtidlastGe]. *)
-      unfold suffix in Hsuffix.
-      destruct Hsuffix as [versLRm [Hnotnil Hsuffix]].
       rewrite Hsuffix in HtidlastGe.
       by apply Forall_app in HtidlastGe as [_ ?].
     }
+    split.
     { (* Prove [HexistsLt]. *)
-      destruct HtidGt as [verHead [Hin HtidGt]].
       intros tidx Htidx.
       rewrite Exists_exists.
       exists verHead.
       split; [done | word].
     }
+    { by apply elem_of_not_nil with verHead. }
   }
   wp_pures.
   by iApply "HΦ".
-Admitted.
+Qed.
 
 End heap.
