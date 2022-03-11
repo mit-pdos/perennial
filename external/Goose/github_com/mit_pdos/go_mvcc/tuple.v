@@ -159,7 +159,7 @@ Definition Tuple__removeVersions: val :=
       then Break
       else
         let: "ver" := SliceGet (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx") in
-        (if: struct.get Version "begin" "ver" ≤ "tid"
+        (if: struct.get Version "begin" "ver" < "tid"
         then Break
         else
           "idx" <-[uint64T] ![uint64T] "idx" - #1;;

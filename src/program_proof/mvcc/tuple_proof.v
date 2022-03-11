@@ -185,6 +185,13 @@ Proof.
   by rewrite (spec_find_ver_extended _ _ _ _ Htid1 Htid2); last done.
 Qed.
 
+(* Q: Existing tactic does this? *)
+Local Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
+  (if b then f x else f y) = f (if b then x else y).
+Proof.
+  destruct b; done.
+Qed.
+
 (*****************************************************************)
 (* func MkTuple() *Tuple                                         *)
 (*****************************************************************)
@@ -486,13 +493,6 @@ Definition post_tuple__ReadVersion tid key val (ret : u64) γ : iProp Σ :=
   | 1 => view_ptsto γ key Nil tid
   | _ => False
   end.
-
-(* Q: Existing tactic does this? *)
-Local Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
-  (if b then f x else f y) = f (if b then x else y).
-Proof.
-  destruct b; done.
-Qed.
 
 (*****************************************************************)
 (* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, uint64)  *)
@@ -1184,6 +1184,36 @@ Proof.
   reflexivity.
 Qed.
 
+Lemma inv_ver_to_val (x y : pver) :
+  ver_to_val x = ver_to_val y ->
+  x = y.
+Proof.
+  intros H.
+  inversion H.
+  rewrite (surjective_pairing x).
+  rewrite (surjective_pairing x.1).
+  rewrite (surjective_pairing y).
+  rewrite (surjective_pairing y.1).
+  by rewrite H1 H2 H3.
+Qed.
+
+Lemma drop_1_tail {A : Type} (l : list A) :
+  tail l = drop 1 l.
+Proof.
+  destruct l.
+  - done.
+  - simpl. rewrite drop_0. done.
+Qed.
+
+Lemma drop_tail_commute {A : Type} (n : nat) (l : list A) :
+  tail (drop n l) = drop n (tail l).
+Proof.
+  do 2 rewrite drop_1_tail.
+  do 2 rewrite drop_drop.
+  f_equal.
+  lia.
+Qed.
+
 (**
  * The `safe_rm_verchain` says that,
  * 1) the new list is a sublist of the old list (so no new versions can be added).
@@ -1196,159 +1226,192 @@ Definition safe_rm_verchain (tid : u64) (versL versL' : list (u64 * u64 * u64)) 
   (sublist versL' versL) ∧
   (Forall (fun ver => int.Z ver.1.2 > (int.Z tid) -> ver ∈ versL')) versL.
   
+Definition own_tuple_phys_vers tuple versL : iProp Σ :=
+  ∃ vers,
+    "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
+    "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL).
+
 (*****************************************************************)
 (* func (tuple *Tuple) removeVersions(tid uint64)                *)
 (*****************************************************************)
-Theorem wp_tuple__removeVersions tuple (tid : u64) (key : u64) versL γ :
-  {{{ own_tuple tuple key versL γ }}}
+Theorem wp_tuple__removeVersions tuple (tid : u64) versL :
+  {{{ own_tuple_phys_vers tuple versL ∧ ⌜versL ≠ []⌝ }}}
     Tuple__removeVersions #tuple #tid
-  {{{ RET #(); ∃ versL', (own_tuple tuple key versL' γ) ∗ ⌜(safe_rm_verchain tid versL versL')⌝ }}}.
+  {{{ RET #();
+        (∃ versL',
+           own_tuple_phys_vers tuple versL' ∧
+           (∃ vers_prefix, ⌜vers_prefix ≠ [] ∧ versL = vers_prefix ++ versL'⌝) ∧
+           (⌜Forall (λ ver, int.Z tid ≤ int.Z ver.1.1) (tail versL')⌝) ∧
+           (∃ ver, ⌜ver ∈ versL' ∧ int.Z ver.1.1 < int.Z tid⌝)) ∨
+        (own_tuple_phys_vers tuple versL)
+  }}}.
 Proof.
-  iIntros (Φ) "HtupleOwn HΦ".
-  iNamed "HtupleOwn".
+  iIntros (Φ) "[HtuplePhys %Hnotnil] HΦ".
+  iNamed "HtuplePhys".
   wp_call.
 
+  iDestruct (is_slice_sz with "HversL") as "%HversLen".
+  rewrite fmap_length in HversLen.
+  iDestruct (is_slice_small_acc with "HversL") as "[HversS HversL]".
+
   (***********************************************************)
-  (* var idx uint64 = 0                                      *)
+  (* var idx uint64                                          *)
+  (* idx = uint64(len(tuple.vers)) - 1                       *)
   (* for {                                                   *)
-  (*   if idx >= uint64(len(tuple.vers)) {                   *)
-  (*     break                                               *)
-  (*   }                                                     *)
-  (*   ver := tuple.vers[idx]                                *)
-  (*   if ver.end > tid {                                    *)
-  (*     break                                               *)
-  (*   }                                                     *)
-  (*   idx++                                                 *)
+  (*     if idx == 0 {                                       *)
+  (*         break                                           *)
+  (*     }                                                   *)
+  (*     ver := tuple.vers[idx]                              *)
+  (*     if ver.begin < tid {                                *)
+  (*         break                                           *)
+  (*     }                                                   *)
+  (*     idx--                                               *)
   (* }                                                       *)
   (***********************************************************)
-  wp_apply (wp_ref_to); first auto.
+  wp_apply (wp_ref_of_zero); first auto.
   iIntros (idxR) "HidxR".
   wp_pures.
-  wp_apply (wp_forBreak
-              (λ _,
-                (tuple ↦[Tuple :: "vers"] to_val vers) ∗
-                (slice.is_slice vers (struct.t Version) 1 (ver_to_val <$> versL)) ∗
-                (∃ (idx : u64), (idxR ↦[uint64T] #idx) ∗
-                                (⌜int.Z idx ≤ int.Z vers.(Slice.sz)⌝) ∗
-                                ([∗ list] k ↦ ver ∈ (take (int.nat idx) versL), ⌜(int.Z ver.1.2) ≤ (int.Z tid)⌝))
-                )%I
-             with "[] [$Hvers $HversL HidxR]").
-  { clear Φ.
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_store.
+  wp_pures.
+  set P := λ (b : bool), (∃ (idx : u64),
+             "%Hbound" ∷ (⌜int.Z 0 ≤ int.Z idx < Z.of_nat (length versL)⌝) ∗
+             "HidxR" ∷ idxR ↦[uint64T] #idx ∗
+             "Hvers" ∷ tuple ↦[Tuple :: "vers"] to_val vers ∗
+             "HversS" ∷ is_slice_small vers (struct.t Version) 1 (ver_to_val <$> versL) ∗
+             "%HallLe" ∷ (⌜Forall (λ ver, int.Z tid ≤ int.Z ver.1.1) (drop (S (int.nat idx)) versL)⌝) ∗
+             "%Hexit" ∷ if b
+                        then ⌜True⌝
+                        else ⌜(int.Z idx = 0) ∨
+                              (0 < int.Z idx ∧
+                               ∃ ver, ver ∈ (drop (int.nat idx) versL) ∧
+                               int.Z ver.1.1 < int.Z tid)⌝)%I.
+  wp_apply (wp_forBreak P with "[] [-HΦ HversL]").
+  { (* Loop body. *)
+    clear Φ.
     iIntros (Φ).
     iModIntro.
-    iIntros "Hinv HΦ".
-    iDestruct "Hinv" as "(Hvers & HversL & Hidx)".
-    iDestruct "Hidx" as (idx) "(HidxR & %Hbound & HidxOrder)".
+    iIntros "Hloop HΦ".
+    iNamed "Hloop".
     wp_pures.
-    wp_loadField.
-    wp_apply (wp_slice_len).
     wp_load.
-    wp_pures.
     wp_if_destruct.
-    { iModIntro.
+    { (* [idx = 0]. *)
       iApply "HΦ".
+      iModIntro.
+      unfold P.
+      iExists _.
       eauto 10 with iFrame.
     }
     wp_load.
     wp_loadField.
-    iDestruct (slice.is_slice_small_acc with "HversL") as "[HversS HversL]".
-    iDestruct (slice.is_slice_small_sz with "[$HversS]") as "%HversSz".
     destruct (list_lookup_lt _ (ver_to_val <$> versL) (int.nat idx)) as [ver HSome].
-    { apply Z.nle_gt in Heqb.
-      word.
-    }
-    wp_apply (slice.wp_SliceGet with "[HversS]"); first auto.
-    iIntros "[HversS %HverT]".
-    destruct (val_to_ver_with_val_ty _ HverT) as (b & e & v & H).
-    subst.
+    { rewrite fmap_length. word. }
+    wp_apply (wp_SliceGet with "[HversS]"); first auto.
+    iIntros "[HversS %Hval_ty]".
+    destruct (val_to_ver_with_val_ty ver) as (b & d & v & ->); first auto.
     wp_pures.
-    iDestruct ("HversL" with "HversS") as "HversL".
+    apply u64_val_ne in Heqb.
+    rewrite list_lookup_fmap in HSome.
+    apply fmap_Some_1 in HSome as (verx & Hlookup & Everx).
     wp_if_destruct.
-    { iModIntro.
-      iApply "HΦ".
-      eauto with iFrame.
+    { iApply "HΦ".
+      iModIntro.
+      unfold P.
+      iExists _.
+      iFrame "% ∗".
+      iPureIntro.
+      right.
+      split; first word.
+      exists (b, d, v).
+      split; last done.
+      apply (elem_of_list_lookup_2 _ 0).
+      rewrite lookup_drop.
+      rewrite -plus_n_O.
+      rewrite Hlookup.
+      f_equal.
+      symmetry.
+      by apply inv_ver_to_val.
     }
     wp_load.
-    wp_pures.
     wp_store.
-    iModIntro.
     iApply "HΦ".
+    iExists _.
     iFrame.
-    iExists (word.add idx 1%Z).
-    iFrame.
-    iSplit.
-    { iPureIntro.
-      word.
-    }
-    { replace (int.nat (word.add idx _)) with (S (int.nat idx)); last word.
-      apply list_lookup_fmap_inv in HSome as (y & Heq & HSome).
-      rewrite (take_S_r _ _ y); last apply HSome.
-      iApply (big_sepL_app).
-      iSplit; first done.
-      iApply (big_sepL_singleton).
-      iPureIntro.
-      apply Znot_lt_ge in Heqb0.
-      inversion Heq.
-      rewrite H1 in Heqb0.
-      (* Q: Why can't lia solve this... *)
-      rewrite -Z.ge_le_iff.
-      apply Heqb0.
-    }
+    iPureIntro.
+    split; first word.
+    split; last done.
+    replace (S _) with (int.nat idx); last word.
+    rewrite (drop_S _ (b, d, v)); last first.
+    { rewrite Hlookup. f_equal. by apply inv_ver_to_val. }
+    apply Forall_cons_2; last done.
+    apply Znot_lt_ge in Heqb0.
+    simpl.
+    word.
   }
-  { iExists (U64 0).
+  { (* Loop entry. *)
+    unfold P.
+    iExists _.
     iFrame.
-    iSplit.
-    - iPureIntro. word.
-    - change (int.nat 0) with 0%nat.
-      rewrite take_0.
-      naive_solver.
+    iPureIntro.
+    assert (Hgt : 0 < int.Z vers.(Slice.sz)).
+    { destruct (nil_or_length_pos versL); first contradiction. word. }
+    split; first word.
+    split; last done.
+    replace (S _) with (length versL); last word.
+    by rewrite drop_all.
   }
-  iIntros "(Hvers & HversL & Hidx)".
-  iDestruct "Hidx" as (idx) "(HidxR & %Hbound & %HidxOrder)".
-  wp_pures.
 
-  (***********************************************************)
-  (* tuple.vers = tuple.vers[idx:]                           *)
-  (***********************************************************)
+  iIntros "Hloop".
+  iNamed "Hloop".
+
+  wp_pures.
   wp_load.
   wp_loadField.
   wp_apply (wp_SliceSkip').
-  { eauto. }
+  { iPureIntro. word. }
   wp_storeField.
-  (* Weaken is_slice. Should this go to the slice lib? *)
+
+  iDestruct ("HversL" with "HversS") as "HversL".
   iDestruct "HversL" as "[HversS HversC]".
-  iDestruct (slice.is_slice_small_take_drop _ _ _ idx with "HversS") as "[HversS _]".
-  { word. }
-  iDestruct (slice.is_slice_cap_skip _ _ idx with "HversC") as "HversC".
-  { word. }
+  iDestruct (slice.is_slice_small_take_drop _ _ _ idx with "HversS") as "[HversS _]"; first word.
+  iDestruct (slice.is_slice_cap_skip _ _ idx with "HversC") as "HversC"; first word.
   iDestruct (slice.is_slice_split with "[$HversS $HversC]") as "HversL".
   rewrite <- fmap_drop.
 
   iApply "HΦ".
   iModIntro.
-  set versL' := drop (int.nat idx) versL.
-  iExists versL'.
-  iSplit; first eauto 10 with iFrame.
-  iPureIntro.
-  
-  (**
-   * Proving the postcondition.
-   *)
-  split; first apply sublist_drop.
-  replace versL with (take (int.nat idx) versL ++ drop (int.nat idx) versL) by apply take_drop.
-  apply Forall_app.
-  split; apply Forall_forall.
-  { (* Versions in the removed part have their end timestamps less than or equal `tid`. *)
-    intros ver Hin Hgt.
-    apply elem_of_list_lookup_1 in Hin as [i HSome].
-    apply HidxOrder in HSome.
-    lia.
-  }
-  { (* Versions in the remaining part are in the old list. *)
-    intros ver Hin _.
-    apply elem_of_list_lookup_1 in Hin as [i HSome].
-    by apply elem_of_list_lookup_2 in HSome.
-  }
+  destruct Hexit as [? | [Hgt HexistsLt]].
+  - iRight.
+    rewrite H.
+    change (Z.to_nat 0) with 0%nat.
+    rewrite drop_0.
+    iExists _.
+    iFrame.
+  - iLeft.
+    set versL' := drop (int.nat idx) versL.
+    iExists versL'.
+    iSplit.
+    { iExists _.
+      iFrame.
+    }
+    iPureIntro.
+    split.
+    { exists (take (int.nat idx) versL).
+      split.
+      { apply length_nonzero_neq_nil.
+        rewrite take_length_le; first word.
+        word.
+      }
+      { symmetry. apply take_drop. }
+    }
+    split.
+    { subst versL'.
+      replace (tail _) with (drop (S (int.nat idx)) versL); first done.
+      destruct versL; by rewrite drop_tail_commute.
+    }
+    { auto. }
 Qed.
 
 (*****************************************************************)
@@ -1360,13 +1423,13 @@ Qed.
 (*    a lower bound of the minimal active tid.                   *)
 (* 3. Call [txnMgr.getMinActiveTID] before calling this method.  *)
 (*****************************************************************)
-Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) (tidlbN : nat) γ :
+Theorem wp_tuple__RemoveVersions tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ min_tid_lb γ tidlbN ∗ ⌜(int.nat tid ≤ tidlbN)%nat⌝ }}}
+  {{{ min_tid_lb γ (int.nat tid) }}}
     Tuple__RemoveVersions #tuple #tid
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Htuple" (Φ) "!> [HtidlbN %HtidN] HΦ".
+  iIntros "#Htuple" (Φ) "!> Hgclb' HΦ".
   iNamed "Htuple".
   wp_call.
   
@@ -1376,24 +1439,91 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "Hlock").
   iIntros "[Hlocked HtupleOwn]".
-  iDestruct "HtupleOwn" as (versL) "HtupleOwn".
+  iNamed "HtupleOwn".
   wp_pures.
 
   (***********************************************************)
   (* tuple.removeVersions(tid)                               *)
   (***********************************************************)
-  wp_apply (wp_tuple__removeVersions with "HtupleOwn").
-  iIntros "HtupleOwn".
-  iDestruct "HtupleOwn" as (versL') "[HtupleOwn Hsafe]".
+  wp_apply (wp_tuple__removeVersions with "[Hvers HversL]").
+  { unfold own_tuple_phys_vers. admit. }
+  iIntros "HtuplePhys".
+  
+  iDestruct "HtuplePhys" as "[HtuplePhys | HtuplePhys]"; last first.
+  { (* The list of physcial versions are not changed. *)
+    iNamed "HtuplePhys".
+    wp_pures.
+    wp_loadField.
+    iClear "Hgclb'".
+    wp_apply (release_spec with "[-HΦ]"); first eauto 15 with iFrame.
+    wp_pures.
+    by iApply "HΦ".
+  }
+
+  (* The new list of physical versions is a suffix of the old one. *)
+  iDestruct "HtuplePhys" as (versL') "(HtuplePhys & %Hsuffix & %HtailLe & %HtidGt)".
+  clear vers.
+  iNamed "HtuplePhys".
+  wp_pures.
+
+  (* XXX: in lock inv *)
+  assert (H1 : Forall (λ ver, int.Z tidgc ≤ int.Z ver.1.1) (tail versL)) by admit.
+
+  assert (H2 : int.Z tidgc < int.Z tid).
+  { destruct Hsuffix as [versPrefix [Hnotnil Hsuffix]].
+    destruct HtidGt as [verPivot [Hin HtidGt]].
+    apply Z.le_lt_trans with (int.Z verPivot.1.1).
+    - rewrite Forall_forall in H1.
+      apply H1.
+      rewrite Hsuffix.
+      destruct versPrefix; first congruence.
+      simpl.
+      apply elem_of_app.
+      by right.
+    - done.
+  }
   
   (***********************************************************)
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
   wp_apply (release_spec with "[-HΦ]").
-  { eauto 10 with iFrame. }
+  { iFrame "Hlock Hlocked".
+    iNext.
+    do 2 iExists _.
+    iExists versL'.
+    unfold own_tuple.
+    iExists vers, tid, vchain.
+    iFrame "% ∗".
+    iSplit.
+    { (* Prove [HtupleAbs]. *)
+      iPureIntro.
+      simpl.
+      intros tidx Htidx.
+      rewrite HtupleAbs; last word.
+      admit.
+    }
+    iSplit; last done.
+    iNamed "Hwellformed".
+    unfold tuple_wellformed.
+    iPureIntro.
+    split.
+    { (* Prove [HtidlastGe]. *)
+      unfold suffix in Hsuffix.
+      destruct Hsuffix as [versLRm [Hnotnil Hsuffix]].
+      rewrite Hsuffix in HtidlastGe.
+      by apply Forall_app in HtidlastGe as [_ ?].
+    }
+    { (* Prove [HexistsLt]. *)
+      destruct HtidGt as [verHead [Hin HtidGt]].
+      intros tidx Htidx.
+      rewrite Exists_exists.
+      exists verHead.
+      split; [done | word].
+    }
+  }
   wp_pures.
   by iApply "HΦ".
-Qed.
+Admitted.
 
 End heap.
