@@ -2,16 +2,37 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Export ffi.grove_prelude.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang Require Export ffi.grove_filesys_axioms.
-From Perennial.program_proof.ctrexample Require Import interface.
+From Perennial.program_proof.ctrexample Require Import interface server client.
 From Perennial.program_proof Require Import marshal_proof.
 From Goose.github_com.mit_pdos.gokv Require Import ctrexample.client.
 From Goose.github_com.mit_pdos.gokv Require Import ctrexample.server.
 From Perennial.program_proof.memkv Require Import rpc_proof.
 From Perennial.program_proof.ctrexample Require Import wpc_proofmode.
+From Perennial.program_proof.memkv Require Import rpc_spec.
+From Perennial.base_logic Require Import lib.ghost_map lib.saved_spec.
 
 From Perennial.goose_lang Require adequacy dist_adequacy.
 From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 
+Section ctr_ghost_init.
+Context `{!gooseGlobalGS Σ, rpcregG Σ}.
+
+Lemma ctr_ghost_init (γ : gname) :
+  localhost c↦ ∅ ={⊤}=∗
+  ∃ γurpc_gn,
+    is_CtrServer_urpc γurpc_gn γ.
+Proof.
+  iIntros "Hchan".
+  unfold is_CtrServer_urpc.
+(*
+  iMod (map_alloc_ro (spec_rpcid hd) γsave
+          with "Hmap_ctx") as "(Hmap_ctx&#Hsaved_name)"; auto.
+
+  iMod (saved_spec_alloc (RPCSpec_Spec hd)) as (γsave) "#Hsaved".
+  iMod (handler_is_init_list localhost (shard_SpecList γkv γrpc) with "[Hg]") as (γ) "H". *)
+Admitted.
+
+End ctr_ghost_init.
 
 Section closed_proof.
 
@@ -70,7 +91,11 @@ Proof.
   eapply (goose_dist_adequacy ctrΣ); eauto.
   intros.
   iStartProof.
-  iIntros "Hglobal_init".
+  iIntros "Hnet_init".
+  iEval (rewrite /ffi_global_start /=) in "Hnet_init".
+
+  (* allocate ghost state for counter *)
+
   iSplitR ""; last first.
   {
     iModIntro. iIntros. iApply fupd_mask_intro.
