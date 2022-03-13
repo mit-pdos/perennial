@@ -947,7 +947,7 @@ Opaque PeanoNat.Nat.div.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
-        rewrite -mod_Zmod in Hoff; try word.
+        rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
         rewrite Nat.mod_mul_r in Hy; try word.
@@ -970,7 +970,7 @@ Opaque PeanoNat.Nat.div.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
-        rewrite -mod_Zmod in Hoff; try word.
+        rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
         rewrite Nat.mod_mul_r in Hy; try word.
@@ -985,7 +985,7 @@ Opaque PeanoNat.Nat.div.
       rewrite -> Hz at 1.
       2: {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
-        rewrite -mod_Zmod in Hoff; try word.
+        rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
         rewrite Nat.mod_mul_r in Hy; try word.
