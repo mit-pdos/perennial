@@ -36,6 +36,7 @@ Example testEncDec64_ok : testEncDec64 #() ~~> #true := t.
 
 (* function_ordering.go *)
 Fail Example testFunctionOrdering_ok : failing_testFunctionOrdering #() ~~> #true := t.
+Fail Example testArgumentOrder_ok : failing_testArgumentOrder #() ~~> #true := t.
 
 (* int_conversions.go *)
 Example testU64ToU32_ok : testU64ToU32 #() ~~> #true := t.

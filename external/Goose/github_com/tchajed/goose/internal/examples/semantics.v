@@ -346,6 +346,20 @@ Definition failing_testFunctionOrdering: val :=
                 then #false
                 else (struct.get Pair "x" "p" + struct.get Pair "x" "q" = #109)))))))).
 
+Definition storeAndReturn: val :=
+  rec: "storeAndReturn" "x" "v" :=
+    "x" <-[uint64T] "v";;
+    "v".
+
+(* Goose has a right-to-left evaluation order for function arguments,
+   which is incorrect. *)
+Definition failing_testArgumentOrder: val :=
+  rec: "failing_testArgumentOrder" <> :=
+    let: "x" := ref_to uint64T #0 in
+    addFour64 (storeAndReturn "x" #1) (storeAndReturn "x" #2) (storeAndReturn "x" #3) (storeAndReturn "x" #4);;
+    let: "ok" := (![uint64T] "x" = #4) in
+    "ok".
+
 (* int_conversions.go *)
 
 Definition testU64ToU32: val :=
