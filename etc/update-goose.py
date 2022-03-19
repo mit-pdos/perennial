@@ -40,8 +40,8 @@ def main():
         metavar="GOOSE_PATH",
     )
     parser.add_argument(
-        "--skip-goose-examples",
-        help="skip translating examples in Goose",
+        "--goose-examples",
+        help="also translate tests in Goose",
         action="store_true",
     )
     parser.add_argument(
@@ -161,7 +161,7 @@ def main():
     if args.compile:
         compile_goose()
 
-    if not args.skip_goose_examples:
+    if args.goose_examples:
         run_goose_test_gen(
             path.join(goose_dir, "internal/examples/semantics"),
             path.join(
