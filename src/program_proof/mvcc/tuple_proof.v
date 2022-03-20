@@ -1,4 +1,5 @@
 (* Import definitions/theorems of the Perennial framework with the disk FFI. *)
+From Tactical Require Import SimplMatch.
 From Perennial.program_proof Require Export disk_prelude.
 (* Import Coq model of our Goose program.*)
 From Goose.github_com.mit_pdos.go_mvcc Require Import tuple.
@@ -492,12 +493,20 @@ Qed.
  *    - [min_tid_lb γ tidlbN] in the lock invariant.
  *)
 Definition post_tuple__ReadVersion tid key val (ret : u64) γ : iProp Σ :=
-  active_tid γ tid ∗
   match int.Z ret with
   | 0 => view_ptsto γ key (Value val) tid
   | 1 => view_ptsto γ key Nil tid
   | _ => False
   end.
+
+Lemma case_tuple__ReadVersion tid key val (ret : u64) γ :
+  post_tuple__ReadVersion tid key val ret γ -∗
+  ⌜int.Z ret = 0 ∨ int.Z ret = 1⌝.
+Proof.
+  iIntros "H".
+  unfold post_tuple__ReadVersion.
+  destruct matches.
+Qed.
 
 (*****************************************************************)
 (* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, uint64)  *)
@@ -506,7 +515,7 @@ Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
   {{{ active_tid γ tid }}}
     Tuple__ReadVersion #tuple #tid
-  {{{ (val : u64) (ret : u64), RET (#val, #ret); post_tuple__ReadVersion tid key val ret γ }}}.
+  {{{ (val : u64) (ret : u64), RET (#val, #ret); active_tid γ tid ∗ post_tuple__ReadVersion tid key val ret γ }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".
   iNamed "Htuple".
@@ -810,8 +819,8 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iModIntro.
-  unfold post_tuple__ReadVersion.
   iFrame "Hactive".
+  unfold post_tuple__ReadVersion.
   case_bool_decide.
   { (* Case: [ret = RET_NONEXIST]. *)
     change (int.Z 1) with 1.
@@ -1078,7 +1087,6 @@ Proof.
 Qed.
 
 Definition post_tuple__Own tid key (ret : u64) γ : iProp Σ :=
-  active_tid γ tid ∗
   match int.Z ret with
   | 0 => mods_token γ key tid
   | 200 | 400 => True
@@ -1092,7 +1100,7 @@ Theorem wp_tuple__Own tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
   {{{ active_tid γ tid }}}
     Tuple__Own #tuple #tid
-  {{{ (ret : u64), RET #ret; post_tuple__Own tid key ret γ
+  {{{ (ret : u64), RET #ret; active_tid γ tid ∗ post_tuple__Own tid key ret γ
   }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".

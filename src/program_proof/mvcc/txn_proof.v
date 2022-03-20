@@ -89,9 +89,9 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
  *)
 
 (* Client-defined consistency predicate. *)
-Definition C (m : gmap u64 u64) :=
+Definition C (m : gmap u64 dbval) :=
   ∃ v0 v2,
-    (m !! (U64 0) = Some v0) ∧ (m !! (U64 2) = Some v2) ∧
+    (m !! (U64 0) = Some (Value v0)) ∧ (m !! (U64 2) = Some (Value v2)) ∧
     (int.Z v0) + (int.Z v2) = 10.
 
 (* `dbmap` is a map representing the entire database. *)
@@ -99,8 +99,10 @@ Definition C (m : gmap u64 u64) :=
 Definition dbinv dbmap := ●dbmap ∗ (C dbmap) ∗ ●log.
  *)
 
-Definition wrent_to_val (x : u64 * u64 * loc) :=
-  (#x.1.1, (#x.1.2, (#x.2, #())))%V.
+Definition wrent := (u64 * (bool * u64) * loc)%type.
+
+Definition wrent_to_val (x : wrent) :=
+  (#x.1.1, (#x.1.2.1, (#x.1.2.2, #()), (#x.2, #())))%V.
 
 Definition N_TXN_SITES : Z := 64.
 
@@ -141,34 +143,40 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
 
-Definition is_txn_impl (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
-  ∃ (tid sid : u64) (wset : Slice.t) (idx txnmgr : loc)
-    (wsetL : list (u64 * u64 * loc)),
+Local Definition to_dbval (x : bool * u64) :=
+  if x.1 then Nil else Value x.2.
+
+Local Definition wrent_to_key_dbval (ent : wrent) : (u64 * dbval) :=
+  ((prod_map id to_dbval) ∘ fst) ent.
+
+Definition is_txn_impl (txn : loc) (tid : u64) (view mods : gmap u64 dbval) γ : iProp Σ :=
+  ∃ (sid : u64) (wset : Slice.t) (idx txnmgr : loc)
+    (wsetL : list wrent),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
     "Hwset" ∷ txn ↦[Txn :: "wset"] (to_val wset) ∗
     "HwsetL" ∷ slice.is_slice wset (structTy WrEnt) 1 (wrent_to_val <$> wsetL) ∗
     "%HwsetLND" ∷ ⌜NoDup (fst <$> wsetL).*1⌝ (* keys are unique *) ∗
-    "%Hmods_wsetL" ∷ ⌜mods = (list_to_map (fst <$> wsetL))⌝ ∗
+    "%Hmods_wsetL" ∷ ⌜mods = (list_to_map (wrent_to_key_dbval <$> wsetL))⌝ ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
     "Hactive" ∷ active_tid γ tid ∗
     "_" ∷ True.
-Local Hint Extern 1 (environments.envs_entails _ (is_txn_impl _ _ _ _)) => unfold is_txn_impl : core.
+Local Hint Extern 1 (environments.envs_entails _ (is_txn_impl _ _ _ _ _)) => unfold is_txn_impl : core.
 
-Definition is_txn (txn : loc) (view mods : gmap u64 u64) γ : iProp Σ :=
-  (* "%Hsubset" ∷ ⌜dom (gset u64) mods ⊆ dom (gset u64) view⌝ ∗ *)
-  "Hmods" ∷ ([∗ map] k ↦ _ ∈ mods, mods_token k) ∗
-  "Hview" ∷ ([∗ map] k ↦ v ∈ view, view_ptsto k v) ∗
-  "Himpl" ∷ is_txn_impl txn view mods γ.
+Definition is_txn (txn : loc) (view mods : gmap u64 dbval) γ : iProp Σ :=
+  ∃ (tid : u64),
+    "Hmods" ∷ ([∗ map] k ↦ _ ∈ mods, mods_token γ k tid) ∗
+    "Hview" ∷ ([∗ map] k ↦ v ∈ view, view_ptsto γ k v tid) ∗
+    "Himpl" ∷ is_txn_impl txn tid view mods γ.
 Local Hint Extern 1 (environments.envs_entails _ (is_txn _ _ _ _)) => unfold is_txn : core.
 
 Definition is_txn_uninit (txn : loc) γ : iProp Σ := 
   ∃ (tid sid : u64) (wset : Slice.t) (idx txnmgr : loc)
-    (wsetL : list (u64 * u64 * loc)),
+    (wsetL : list wrent),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
@@ -441,7 +449,7 @@ Proof.
   iFrame "# ∗".
   eauto 20 with iFrame.
 Qed.
-  
+
 (*****************************************************************)
 (* func genTID(sid uint64) uint64                                *)
 (*****************************************************************)
@@ -596,7 +604,7 @@ Admitted.
 Theorem wp_txnMgr__getMinActiveTID txnmgr γ :
   {{{ True }}}
     TxnMgr__getMinActiveTID txnmgr
-  {{{ (tid : u64) (tidlbN : nat), RET #tid; min_tid_lb γ tidlbN ∗ ⌜(int.nat tid ≤ tidlbN)%nat⌝ }}}.
+  {{{ (tid : u64), RET #tid; min_tid_lb γ (int.nat tid) }}}.
 Proof.
   (***********************************************************)
   (* var min uint64 = config.TID_SENTINEL                    *)
@@ -649,8 +657,9 @@ Proof.
   iApply "HΦ".
   iModIntro.
   rewrite /is_txn.
+  iExists tid.
   do 2 (iSplitR; first eauto).
-  iExists _, _, _, _, _, [].
+  iExists _, _, _, _, [].
   iFrame "# ∗".
   repeat rewrite fmap_nil.
   iDestruct (is_slice_take_cap _ _ _ (U64 0) with "HwsetL") as "H"; first word.
@@ -661,8 +670,8 @@ Proof.
 Qed.
 
 Local Lemma val_to_wrent_with_val_ty (x : val) :
-  val_ty x (uint64T * (uint64T * (ptrT * unitT))%ht) ->
-  (∃ (k v : u64) (t : loc), x = wrent_to_val (k, v, t)).
+  val_ty x (uint64T * (boolT * (uint64T * unitT) * (ptrT * unitT))%ht) ->
+  (∃ (k : u64) (d : bool) (v : u64) (t : loc), x = wrent_to_val (k, (d, v), t)).
 Proof.
   intros H.
   inversion_clear H. 
@@ -672,21 +681,29 @@ Proof.
   inversion_clear H1.
   { inversion H. }
   inversion_clear H.
+  { inversion H1. }
   inversion_clear H1.
+  inversion_clear H.
+  inversion_clear H2.
+  { inversion H. }
+  inversion_clear H.
+  inversion_clear H2.
   inversion_clear H0.
   { inversion H. }
   inversion_clear H.
   inversion_clear H0.
   inversion_clear H1.
   inversion_clear H.
-  exists x0, x1, x2.
+  inversion_clear H2.
+  inversion_clear H.
+  exists x0, x1, x2, x3.
   reflexivity.
 Qed.
 
 (*****************************************************************)
 (* func matchLocalWrites(key uint64, wset []WrEnt) (uint64, bool)*)
 (*****************************************************************)
-Local Lemma wp_matchLocalWrites (key : u64) (wset : Slice.t) (wsetL : list (u64 * u64 * loc)) :
+Local Lemma wp_matchLocalWrites (key : u64) (wset : Slice.t) (wsetL : list wrent) :
   {{{ slice.is_slice wset (structTy WrEnt) 1 (wrent_to_val <$> wsetL) }}}
     matchLocalWrites #key (to_val wset)
   {{{ (pos : u64) (found : bool), RET (#pos, #found);
@@ -707,13 +724,13 @@ Proof.
   
   (***********************************************************)
   (* for {                                                   *)
-  (*   if pos >= uint64(len(wset)) {                         *)
-  (*     break                                               *)
-  (*   }                                                     *)
-  (*   if key == wset[pos].key {                             *)
-  (*     break                                               *)
-  (*   }                                                     *)
-  (*   pos++                                                 *)
+  (*     if pos >= uint64(len(wset)) {                       *)
+  (*         break                                           *)
+  (*     }                                                   *)
+  (*     if key == wset[pos].key {                           *)
+  (*         break                                           *)
+  (*     }                                                   *)
+  (*     pos++                                               *)
   (* }                                                       *)
   (***********************************************************)
   wp_apply (wp_forBreak
@@ -723,7 +740,7 @@ Proof.
                     posR ↦[uint64T] #pos ∗
                     (⌜(int.Z pos) ≤ (int.Z wset.(Slice.sz))⌝) ∗
                     (⌜if b then True
-                      else (∃ (went : u64 * u64 * loc), wsetL !! (int.nat pos) = Some went ∧ went.1.1 = key) ∨
+                      else (∃ (ent : wrent), wsetL !! (int.nat pos) = Some ent ∧ ent.1.1 = key) ∨
                            (int.Z wset.(Slice.sz)) ≤ (int.Z pos)⌝) ∗
                     (⌜key ∉ (take (int.nat pos) wsetL.*1.*1)⌝)))%I
               with "[] [$HwsetL HposR]").
@@ -742,14 +759,14 @@ Proof.
     wp_load.
     iDestruct (slice.is_slice_small_acc with "HwsetL") as "[HwsetS HwsetL]".
     iDestruct (slice.is_slice_small_sz with "[$HwsetS]") as "%HwsetSz".
-    destruct (list_lookup_lt _ (wrent_to_val <$> wsetL) (int.nat pos)) as [went HSome].
+    destruct (list_lookup_lt _ (wrent_to_val <$> wsetL) (int.nat pos)) as [ent HSome].
     { apply Z.nle_gt in Heqb.
       word.
     }
     wp_apply (slice.wp_SliceGet with "[HwsetS]"); first auto.
     iIntros "[HwsetS %HwsetT]".
     iDestruct ("HwsetL" with "HwsetS") as "HwsetL".
-    destruct (val_to_wrent_with_val_ty _ HwsetT) as (k & v & t & H).
+    destruct (val_to_wrent_with_val_ty _ HwsetT) as (k & d & v & t & H).
     subst.
     wp_pures.
     wp_if_destruct.
@@ -762,15 +779,16 @@ Proof.
       split; first done.
       split; last done.
       left.
-      exists (k, v, t).
+      exists (k, (d, v), t).
       split; last done.
       rewrite list_lookup_fmap in HSome.
-      apply fmap_Some in HSome as [went [HSome H]].
+      apply fmap_Some in HSome as [ent [HSome H]].
       rewrite HSome.
       f_equal.
       inversion H.
-      rewrite <- (surjective_pairing went.1).
-      rewrite <- (surjective_pairing went).
+      rewrite -(surjective_pairing ent.1.2).
+      rewrite -(surjective_pairing ent.1).
+      rewrite -(surjective_pairing ent).
       done.
     }
     wp_load.
@@ -788,7 +806,7 @@ Proof.
     apply Z.nle_gt in Heqb.
     rewrite (take_S_r _ _ k); last first.
     { rewrite list_lookup_fmap in HSome.
-      apply fmap_Some in HSome as [went [HSome H]].
+      apply fmap_Some in HSome as [ent [HSome H]].
       inversion H.
       do 2 rewrite list_lookup_fmap.
       rewrite HSome.
@@ -852,13 +870,32 @@ Definition get_spec txn view mods k v γ : iProp Σ :=
   | Some vw, _ => is_txn txn view mods γ ∧ ⌜v = vw⌝
   end.
 
+Local Lemma NoDup_wrent_to_key_dbval (wset : list wrent) :
+  NoDup wset.*1.*1 ->
+  NoDup (wrent_to_key_dbval <$> wset).*1.
+Proof.
+  intros H.
+  replace (wrent_to_key_dbval <$> _).*1 with wset.*1.*1; last first.
+  { do 2 rewrite -list_fmap_compose.
+    f_equal.
+  }
+  done.
+Qed.
+
+Local Lemma wrent_to_key_dbval_key_fmap (ents : list wrent) :
+  (wrent_to_key_dbval <$> ents).*1 = ents.*1.*1.
+Proof.
+  do 2 rewrite -list_fmap_compose.
+  by apply list_fmap_ext; last done.
+Qed.
+
 (*****************************************************************)
 (* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
 (*****************************************************************)
-Theorem wp_txn__Get txn (k : u64) (view mods : gmap u64 u64) γ :
+Theorem wp_txn__Get txn (k : u64) (view mods : gmap u64 dbval) γ :
   {{{ is_txn txn view mods γ }}}
     Txn__Get #txn #k
-  {{{ (v : u64) (ok : bool), RET (#v, #ok); get_spec txn view mods k v γ }}}.
+  {{{ (v : u64) (found : bool), RET (#v, #found); get_spec txn view mods k (if found then Value v else Nil) γ }}}.
 Proof using mvcc_ghostG0.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
@@ -875,8 +912,8 @@ Proof using mvcc_ghostG0.
 
   (***********************************************************)
   (* if found {                                              *)
-  (*   val := txn.wset[pos].val                              *)
-  (*   return val, true                                      *)
+  (*     dbval := txn.wset[pos].val                          *)
+  (*     return dbval.val, !dbval.tomb                       *)
   (* }                                                       *)
   (***********************************************************)
   iDestruct (slice.is_slice_small_acc with "HwsetL") as "[HwsetL HwsetL_close]".
@@ -896,12 +933,14 @@ Proof using mvcc_ghostG0.
     rewrite /get_spec.
     (* Proving the third case of `get_spec` (write set hit). *)
     assert (HmodsSome : ∃ vm, mods !! k = Some vm).
-    { exists went.1.2.
+    { exists (if went.1.2.1 then Nil else Value went.1.2.2).
       rewrite Hmods_wsetL.
-      rewrite -elem_of_list_to_map; last auto.
+      rewrite -elem_of_list_to_map; last by apply NoDup_wrent_to_key_dbval.
       apply elem_of_list_fmap_1_alt with went.
       { by apply elem_of_list_lookup_2 with (int.nat pos). }
-      { rewrite -Hkey. auto using surjective_pairing. }
+      { rewrite -Hkey.
+        auto using surjective_pairing.
+      }
     }
     destruct HmodsSome as [vm HmodsSome].
     rewrite HmodsSome.
@@ -913,8 +952,13 @@ Proof using mvcc_ghostG0.
       rewrite (surjective_pairing went.1) in Hlookup.
       rewrite Hkey in Hlookup.
       apply elem_of_list_to_map_1 in Hlookup; last auto.
+      unfold wrent_to_key_dbval in HmodsSome.
+      simpl in HmodsSome.
+      rewrite list_fmap_compose list_to_map_fmap lookup_fmap in HmodsSome.
       rewrite Hlookup in HmodsSome.
-      by inversion HmodsSome.
+      inversion HmodsSome.
+      unfold to_dbval.
+      destruct went.1.2.1; auto.
     }
     iDestruct ("HwsetL_close" with "HwsetL") as "HwsetL".
     eauto 20 with iFrame.
@@ -923,8 +967,8 @@ Proof using mvcc_ghostG0.
   (***********************************************************)
   (* idx := txn.idx                                          *)
   (* tuple := idx.GetTuple(key)                              *)
-  (* valTuple, foundTuple := tuple.ReadVersion(txn.tid)      *)
-  (* return valTuple, foundTuple                             *)
+  (* val, ret := tuple.ReadVersion(txn.tid)                  *)
+  (* return val, ret == common.RET_SUCCESS                   *)
   (***********************************************************)
   iDestruct ("HwsetL_close" with "HwsetL") as "HwsetL".
   wp_loadField.
@@ -935,7 +979,7 @@ Proof using mvcc_ghostG0.
   wp_loadField.
   wp_apply (wp_tuple__ReadVersion with "HtupleRI Hactive").
   clear Heqb found.
-  iIntros (val found) "[Hactive Hview_ptsto']".
+  iIntros (val ret) "[Hactive Hview_ptsto']".
   wp_pures.
   iApply "HΦ".
   iModIntro.
@@ -943,29 +987,55 @@ Proof using mvcc_ghostG0.
   assert (HmodsNone : mods !! k = None).
   { destruct Hmatch as [[_ Hnotin] | [contra _]]; last congruence.
     rewrite Hmods_wsetL.
-    by apply not_elem_of_list_to_map.
+    apply not_elem_of_list_to_map.
+    by rewrite wrent_to_key_dbval_key_fmap.
   }
   rewrite HmodsNone.
   destruct (view !! k) eqn:Eqlookup.
   { (* Proving the second case of `get_spec` (write set misses / non-first read). *)
-    iDestruct (big_sepM_lookup_acc _ view k u with "[Hview]") as "[Hview_ptsto Hview_close]"; [auto | auto |].
-    iDestruct (view_ptsto_agree with "Hview_ptsto Hview_ptsto'") as %->.
+    iDestruct (big_sepM_lookup_acc _ view k d with "[Hview]") as "[Hview_ptsto Hview_close]"; [auto | auto |].
+    simpl.
+    iSplit; last first.
+    { unfold post_tuple__ReadVersion.
+      iDestruct (case_tuple__ReadVersion with "Hview_ptsto'") as "[%H | %H]"; rewrite H.
+      - iDestruct (view_ptsto_agree with "Hview_ptsto Hview_ptsto'") as %->.
+        case_bool_decide; first done.
+        apply u64_val_ne in H0.
+        contradiction.
+      - iDestruct (view_ptsto_agree with "Hview_ptsto Hview_ptsto'") as %->.
+        case_bool_decide; last done.
+        inversion H0.
+        rewrite H2 in H.
+        inversion H.
+    }
     iDestruct ("Hview_close" with "Hview_ptsto") as "Hview".
-    iSplit; last done.
-    rewrite /is_txn.
+    iExists _.
     iFrame "% Hmods Hview".
-    do 6 iExists _.
+    do 5 iExists _.
     iFrame "HtxnmgrRI HidxRI".
     (* [eauto 20 with iFrame] very slow *)
     eauto 10 with iFrame.
   }
   { (* Proving the first case of `get_spec` (write set misses / first read). *)
-    iExists val.
+    iExists _.
     iSplit; last done.
-    rewrite /is_txn.
+    iExists _.
     iFrame "Hmods".
     iSplitL "Hview Hview_ptsto'".
-    { iApply big_sepM_insert; done. }
+    { unfold post_tuple__ReadVersion.
+      iDestruct (case_tuple__ReadVersion with "Hview_ptsto'") as "[%H | %H]"; rewrite H.
+      - iApply big_sepM_insert; first done.
+        iFrame "Hview".
+        case_bool_decide; first done.
+        apply u64_val_ne in H0.
+        contradiction.
+      - iApply big_sepM_insert; first done.
+        iFrame "Hview".
+        case_bool_decide; last done.
+        inversion H0.
+        rewrite H2 in H.
+        inversion H.
+    }
     eauto 20 with iFrame.
   }
 Qed.
@@ -989,11 +1059,11 @@ Qed.
 (*****************************************************************)
 (* func (txn *Txn) Put(key, val uint64) bool                     *)
 (*****************************************************************)
-Theorem wp_txn__Put txn (k : u64) (v : u64) (view mods : gmap u64 u64) γ :
+Theorem wp_txn__Put txn (k : u64) (v : u64) (view mods : gmap u64 dbval) γ :
   {{{ is_txn txn view mods γ }}}
     Txn__Put #txn #k #v
   {{{ (ok : bool), RET #ok; if ok
-                          then put_spec txn view mods k v γ
+                          then put_spec txn view mods k (Value v) γ
                           else is_txn txn view mods γ
   }}}.
 Proof using mvcc_ghostG0.
@@ -1013,7 +1083,10 @@ Proof using mvcc_ghostG0.
   (***********************************************************)
   (* if found {                                              *)
   (*     went := &txn.wset[pos]                              *)
-  (*     went.val = val                                      *)
+  (*     went.val = DBVal{                                   *)
+  (*         tomb : false,                                   *)
+  (*         val  : val,                                     *)
+  (*     }                                                   *)
   (*     return true                                         *)
   (* }                                                       *)
   (***********************************************************)
@@ -1031,6 +1104,7 @@ Proof using mvcc_ghostG0.
     wp_if_destruct; first last.
     { destruct Heqb0.
       apply lookup_lt_Some in HSome.
+      rewrite HwsetSz in HSome.
       word.
     }
     wp_apply (wp_slice_ptr).
@@ -1053,7 +1127,7 @@ Proof using mvcc_ghostG0.
     iIntros "val".
     word_cleanup.
     set wentR := (wset.(Slice.ptr) +ₗ[_] (int.Z pos)).
-    set went' := (went.1.1, v, went.2).
+    set went' := (went.1.1, (false, v), went.2).
     iDestruct (struct_fields_split wentR 1%Qp WrEnt (wrent_to_val went')
                 with "[key val tuple]") as "HwsetP".
     { rewrite /struct_fields.
@@ -1071,13 +1145,23 @@ Proof using mvcc_ghostG0.
     wp_pures.
     iApply "HΦ".
     iModIntro.
-    rewrite /put_spec.
+    unfold put_spec.
     
     (* Proving for the case where the key has been read or written. *)
-    rewrite /is_txn.
+    unfold is_txn.
+    iExists _.
     iFrame "Hview".
-    iSplitL "Hmods"; first done.
-    do 6 iExists _.
+    iSplitL "Hmods".
+    { iApply (big_sepM_insert_override_2 _ _ _ (to_dbval went.1.2) with "[Hmods]"); [| auto | auto].
+      rewrite Hmods_wsetL.
+      apply elem_of_list_to_map_1; first by apply NoDup_wrent_to_key_dbval.
+      apply elem_of_list_fmap.
+      exists went.
+      split; last by apply elem_of_list_lookup_2 with (int.nat pos).
+      unfold wrent_to_key_dbval.
+      by rewrite -Hkey.
+    }
+    do 5 iExists _.
     iFrame "# ∗".
     iSplit; first done.
     iSplit; first by rewrite -list_fmap_insert.
@@ -1100,11 +1184,9 @@ Proof using mvcc_ghostG0.
       simpl.
       (* Related premises: [HSome], [Hkey], [HwsetLND], [Hmods_wsetL]. *)
       subst k.
-      apply list_to_map_insert with went.1.2; first done.
+      apply list_to_map_insert with (to_dbval went.1.2); first by apply NoDup_wrent_to_key_dbval.
       rewrite list_lookup_fmap.
-      rewrite HSome.
-      simpl.
-      by rewrite -surjective_pairing.
+      by rewrite HSome.
     }
   }
   iDestruct ("HwsetL" with "HwsetS") as "HwsetL".
@@ -1112,38 +1194,47 @@ Proof using mvcc_ghostG0.
   (***********************************************************)
   (* idx := txn.idx                                          *)
   (* tuple := idx.GetTuple(key)                              *)
-  (* ok := tuple.Own(txn.tid)                                *)
   (***********************************************************)
   wp_loadField.
   wp_pures.
   wp_apply (wp_index__GetTuple with "HidxRI").
   iIntros (tuple) "#HtupleRI".
   wp_pures.
+  
+  (***********************************************************)
+  (* ret := tuple.Own(txn.tid)                                *)
+  (***********************************************************)
   wp_loadField.
-  wp_apply (wp_tuple__Own with "HtupleRI").
-  iIntros (ok) "Hmods_token".
+  wp_apply (wp_tuple__Own with "HtupleRI Hactive").
+  iIntros (ret) "[Hactive Hmods_token]".
   wp_pures.
   
   (***********************************************************)
-  (* if !ok {                                                *)
+  (* if ret != common.RET_SUCCESS {                          *)
   (*     return false                                        *)
   (* }                                                       *)
   (***********************************************************)
   wp_if_destruct.
   { iModIntro.
     iApply "HΦ".
-    rewrite /is_txn.
+    unfold is_txn.
+    iExists _.
     iFrame "% Hmods Hview".
-    do 6 iExists _.
+    do 5 iExists _.
     iFrame "HtxnmgrRI HidxRI".
     eauto 10 with iFrame.
   }
 
-  (************************************************************************)
-  (* txn.wset = append(txn.wset, WrEnt{key: key, val: val, tuple: tuple}) *)
-  (************************************************************************)
+  (**************************************************************************)
+  (* dbval := DBVal{                                                        *)
+  (*     tomb : false,                                                      *)
+  (*     val  : val,                                                        *)
+  (* }                                                                      *)
+  (* txn.wset = append(txn.wset, WrEnt{key: key, val: dbval, tuple: tuple}) *)
+  (**************************************************************************)
+  wp_pures.
   wp_loadField.
-  wp_apply (wp_SliceAppend' with "[HwsetL]"); auto.
+  wp_apply (wp_SliceAppend' with "[HwsetL]"); [auto 10 | auto 10 | auto |].
   iIntros (wset') "HwsetL".
   wp_storeField.
   
@@ -1154,16 +1245,18 @@ Proof using mvcc_ghostG0.
   iApply "HΦ".
   rewrite /put_spec.
   destruct Hmatch as [[_ Hnotin] | [contra _]]; last congruence.
-  set wsetL' := (wsetL ++ [(k, v, tuple)]).
-  set mods := (list_to_map wsetL.*1). 
-  assert (HmodsNone : mods !! k = None) by by apply not_elem_of_list_to_map.
-  rewrite /is_txn.
+  set wsetL' := (wsetL ++ [(k, (false, v), tuple)]).
+  set mods := (list_to_map _).
+  assert (HmodsNone : mods !! k = None).
+  { apply not_elem_of_list_to_map.
+    by rewrite wrent_to_key_dbval_key_fmap.
+  }
+  iExists _.
   iFrame "Hview".
-  iSplit.
-  { iApply big_sepM_insert; done. }
+  iSplitL "Hmods Hmods_token".
+  { iApply big_sepM_insert; [done | iFrame]. }
   
-
-  do 5 iExists _.
+  do 4 iExists _.
   iExists wsetL'.
   iFrame "HtxnmgrRI HidxRI".
   iFrame "# ∗".
@@ -1179,15 +1272,15 @@ Proof using mvcc_ghostG0.
     split; last done.
     intros x H.
     apply elem_of_list_singleton in H.
-    subst x.
-    by apply not_elem_of_list_to_map.
+    by subst x.
   }
   { iPureIntro.
     symmetry.
     subst mods.
     subst wsetL'.
     rewrite fmap_app.
-    by apply list_to_map_snoc.
+    apply list_to_map_snoc.
+    by rewrite wrent_to_key_dbval_key_fmap.
   }
 Qed.
 
