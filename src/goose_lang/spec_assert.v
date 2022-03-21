@@ -68,7 +68,7 @@ Definition heap_dom_resv {A} (σheap : gmap loc A) : iProp Σ :=
                ⌜ (∀ l, l ∈ dom (gset loc) σheap → 0 < loc_car l ∧ Z.to_pos (loc_car l) ∈ D) ⌝).
 
 Definition spec_interp σ g : iProp Σ :=
-    (na_heap_ctx tls σ.(heap) ∗ ffi_local_ctx refinement_spec_ffiLocalGS σ.(world) ∗ ffi_global_ctx refinement_spec_ffiGlobalGS g ∗
+    (na_heap_ctx tls σ.(heap) ∗ ffi_local_ctx refinement_spec_ffiLocalGS σ.(world) ∗ ffi_global_ctx refinement_spec_ffiGlobalGS g.(global_world) ∗
      trace_auth σ.(trace) ∗ oracle_auth σ.(oracle) ∗ ⌜ null_non_alloc σ.(heap) ⌝ ∗ refinement_ctok ∗
      heap_dom_resv σ.(heap))%I.
 

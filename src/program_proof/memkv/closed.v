@@ -35,14 +35,14 @@ Import adequacy dist_adequacy grove_ffi_adequacy.
 
 Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; rpcregΣ].
 
-Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : ffi_global_state) :
+Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : goose_lang.global_state) :
   shardId ≠ coordId →
-  ffi_initgP g →
-  ffi_initP σshard.(world) g →
-  ffi_initP σcoord.(world) g →
-  ffi_initP σclient.(world) g →
-  (g : gmap chan (gset message)) !! shardId = Some (∅ : gset message) →
-  (g : gmap chan (gset message)) !! coordId = Some (∅ : gset message) →
+  ffi_initgP g.(global_world) →
+  ffi_initP σshard.(world) g.(global_world) →
+  ffi_initP σcoord.(world) g.(global_world) →
+  ffi_initP σclient.(world) g.(global_world) →
+  g.(global_world) !! shardId = Some (∅ : gset message) →
+  g.(global_world) !! coordId = Some (∅ : gset message) →
   dist_adequate_failstop [(shard_boot shardId, σshard);
                           (coord_boot coordId shardId, σcoord);
                           (client_boot coordId, σclient)] g (λ _, True).
@@ -160,17 +160,17 @@ Definition init := U64 0.
 Definition acc1 := U64 1.
 Definition acc2 := U64 2.
 
-Lemma bank_boot σlockshard σlockcoord σkvshard σkvcoord σclient (g : ffi_global_state) :
-  ffi_initgP g →
-  ffi_initP σlockshard.(world) g →
-  ffi_initP σlockcoord.(world) g →
-  ffi_initP σkvshard.(world) g →
-  ffi_initP σkvcoord.(world) g →
-  ffi_initP σclient.(world) g →
-  (g : gmap chan (gset message)) !! lockshardId = Some (∅ : gset message) →
-  (g : gmap chan (gset message)) !! lockcoordId = Some (∅ : gset message) →
-  (g : gmap chan (gset message)) !! kvshardId = Some (∅ : gset message) →
-  (g : gmap chan (gset message)) !! kvcoordId = Some (∅ : gset message) →
+Lemma bank_boot σlockshard σlockcoord σkvshard σkvcoord σclient (g : goose_lang.global_state) :
+  ffi_initgP g.(global_world) →
+  ffi_initP σlockshard.(world) g.(global_world) →
+  ffi_initP σlockcoord.(world) g.(global_world) →
+  ffi_initP σkvshard.(world) g.(global_world) →
+  ffi_initP σkvcoord.(world) g.(global_world) →
+  ffi_initP σclient.(world) g.(global_world) →
+  g.(global_world) !! lockshardId = Some (∅ : gset message) →
+  g.(global_world) !! lockcoordId = Some (∅ : gset message) →
+  g.(global_world) !! kvshardId = Some (∅ : gset message) →
+  g.(global_world) !! kvcoordId = Some (∅ : gset message) →
   dist_adequate_failstop [
                           (shard_boot lockshardId, σlockshard);
                           (coord_boot lockcoordId lockshardId, σlockcoord);

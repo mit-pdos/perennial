@@ -429,7 +429,7 @@ Global Program Instance goose_irisGS `{G: !gooseGlobalGS Σ}:
   num_laters_per_step := (λ n, 3 ^ (n + 1))%nat;
   step_count_next := (λ n, 10 * (n + 1))%nat;
   global_state_interp g ns mj D κs :=
-    (ffi_global_ctx goose_ffiGlobalGS g ∗
+    (ffi_global_ctx goose_ffiGlobalGS g.(global_world) ∗
      @crash_borrow_ginv _ goose_invGS _ ∗
      cred_interp ns ∗
      ⌜(/ 2 < mj ≤ 1) ⌝%Qp ∗

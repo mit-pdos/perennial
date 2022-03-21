@@ -11,18 +11,18 @@ Set Default Proof Using "Type".
 
 Theorem goose_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
         Σ `{hPre: !gooseGpreS Σ} (ebσs : list node_init_cfg)
-        g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g) :
+        g φinv (HINITG: ffi_initgP g.(global_world)) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g.(global_world)) :
   (∀ `(HG : !gooseGlobalGS Σ),
       ⊢
-        ffi_global_start goose_ffiGlobalGS g ={⊤}=∗
+        ffi_global_start goose_ffiGlobalGS g.(global_world) ={⊤}=∗
         wpd ⊤ ebσs ∗
-        (∀ g, ffi_global_ctx goose_ffiGlobalGS g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
+        (∀ g, ffi_global_ctx goose_ffiGlobalGS g.(global_world) -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate (CS := goose_crash_lang) ebσs g (λ g, φinv g).
 Proof.
   intros Hwp.
   eapply (wpd_dist_adequacy_inv Σ _ _ _ _ _ _ _ (λ n, 10 * (n + 1))%nat).
   iIntros (Hinv ?) "".
-  iMod (ffi_global_init _ _ g) as (ffi_namesg) "(Hgw&Hgstart)"; first by auto.
+  iMod (ffi_global_init _ _ g.(global_world)) as (ffi_namesg) "(Hgw&Hgstart)"; first by auto.
   iMod (credit_name_init (crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
 
   set (hG := GooseGlobalGS _ _ (creditGS_update_pre _ _ name_credit) ffi_namesg).
@@ -76,10 +76,10 @@ Definition dist_adequate_failstop (ebσs: list (expr * state)) (g: global_state)
 (* Like above, but, for failstop execution one only needs to prove a wp about initial threads, not a wpr *)
 Theorem goose_dist_adequacy_failstop
         Σ `{hPre: !gooseGpreS Σ} (ebσs : list (expr * state))
-        g φinv (HINITG: ffi_initgP g) (HINIT: ∀ σ, σ ∈ snd  <$> ebσs → ffi_initP σ.(world) g) :
+        g φinv (HINITG: ffi_initgP g.(global_world)) (HINIT: ∀ σ, σ ∈ snd  <$> ebσs → ffi_initP σ.(world) g.(global_world)) :
   (∀ `(HG : !gooseGlobalGS Σ),
       ⊢
-        ffi_global_start goose_ffiGlobalGS g ={⊤}=∗
+        ffi_global_start goose_ffiGlobalGS g.(global_world) ={⊤}=∗
         ([∗ list] ebσ ∈ ebσs,
            let e := fst ebσ in
            let σ := snd ebσ in
@@ -88,7 +88,7 @@ Theorem goose_dist_adequacy_failstop
              trace_frag σ.(trace) -∗
              oracle_frag σ.(oracle) ={⊤}=∗
              ∃ Φ, wp NotStuck ⊤ e Φ) ∗
-        (∀ g, ffi_global_ctx goose_ffiGlobalGS g -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
+        (∀ g, ffi_global_ctx goose_ffiGlobalGS g.(global_world) -∗ |={⊤, ∅}=> ⌜ φinv g ⌝)) →
   dist_adequate_failstop ebσs g (λ g, φinv g).
 Proof.
   intros Hwp. rewrite /dist_adequate_failstop.

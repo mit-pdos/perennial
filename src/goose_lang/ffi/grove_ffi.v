@@ -103,7 +103,7 @@ Section grove.
   Definition isFreshChan (σg : state * global_state) (c : option chan) : Prop :=
     match c with
     | None => True (* failure (to allocate a channel) is always an option *)
-    | Some c => σg.2 !! c = None
+    | Some c => σg.2.(global_world) !! c = None
     end.
 
   Definition gen_isFreshChan σg : isFreshChan σg None.
@@ -115,6 +115,9 @@ Section grove.
   Global Instance chan_GenType Σ : GenType chan Σ :=
     fun z _ => Some (exist _ (U64 z) I).
 
+  Definition modifyf (f : grove_global_state → grove_global_state) : transition (state*global_state) () :=
+    modify (λ '(σ, g), (σ, set global_world f g)).
+
   Definition ffi_step (op: GroveOp) (v: val): transition (state*global_state) expr :=
     match op, v with
     | ListenOp, LitV (LitInt c) =>
@@ -124,7 +127,7 @@ Section grove.
       match c_l with
       | None => ret $ Val $ ((*err*)#true, ExtV BadSocketV)%V
       | Some c_l =>
-        modify (λ '(σ,g), (σ, <[ c_l := ∅ ]> g));;
+        modifyf (λ g, <[ c_l := ∅ ]> g);;
         ret $ Val $ ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
       end
     | AcceptOp, ExtV (ListenSocketV c_l) =>
@@ -139,12 +142,12 @@ Section grove.
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
                 end);
-      ms ← reads (λ '(σ,g), g !! c_r) ≫= unwrap;
-      modify (λ '(σ,g), (σ, <[ c_r := ms ∪ {[Message c_l data]} ]> g));;
+      ms ← reads (λ '(σ,g), g.(global_world) !! c_r) ≫= unwrap;
+      modifyf (λ g, <[ c_r := ms ∪ {[Message c_l data]} ]> g);;
       err_late ← any bool;
       ret $ Val $ (*err*)#(err_late : bool)
     | RecvOp, ExtV (ConnectionSocketV c_l c_r) =>
-      ms ← reads (λ '(σ,g), g !! c_l) ≫= unwrap;
+      ms ← reads (λ '(σ,g), g.(global_world) !! c_l) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ m'.(msg_sender) = c_r);
       match m with

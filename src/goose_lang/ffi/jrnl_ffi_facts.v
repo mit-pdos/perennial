@@ -691,13 +691,14 @@ Proof.
   clear -Hstep Hctx.
   remember (e1, (s,g)) as ρ1 eqn:Hρ1.
   remember (e2, (jrnl_upd σj2 s,g)) as ρ2 eqn:Hρ2.
-  revert Hρ1 Hρ2. destruct g.
+  revert Hρ1 Hρ2.
   generalize (jrnl_upd σj2 s) as s'.
-  revert e1 e2 s.
+  generalize g at 2 4 as g'.
+  revert e1 e2 s g.
   induction Hstep.
   - intros. rewrite Hρ1 in Hρ2. inversion Hρ2. subst.
     apply rtc_refl.
-  - intros. subst. destruct y as (e0'&s0'&[]).
+  - intros. subst. destruct y as (e0'&s0'&g0').
     eapply rtc_l; last first.
     { eapply IHHstep; eauto. }
     simpl. eapply fill_step'. eauto.

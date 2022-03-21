@@ -12,16 +12,16 @@ Set Default Proof Using "Type".
 Section grove_ffi_adeq.
 
 Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} (ebσs : list (expr * state))
-        g φinv (HINITG: ffi_initgP g) :
+        g φinv (HINITG: ffi_initgP g.(global_world)) :
   (∀ HG : gooseGlobalGS Σ,
       ⊢@{iPropI Σ}
-        ([∗ map] e↦ms ∈ g, e c↦ ms) ={⊤}=∗
+        ([∗ map] e↦ms ∈ g.(global_world), e c↦ ms) ={⊤}=∗
           (([∗ list] ebσ ∈ ebσs,
                 let e := fst ebσ in
                 (* We reason about node running e with an arbitrary generation *)
                 ∀ HL : gooseLocalGS Σ,
                   |={⊤}=> ∃ Φ, wp NotStuck ⊤ e Φ) ∗
-          (∀ g', ffi_global_ctx goose_ffiGlobalGS g' ={⊤,∅}=∗ ⌜ φinv g' ⌝) )) →
+          (∀ g', ffi_global_ctx goose_ffiGlobalGS g'.(global_world) ={⊤,∅}=∗ ⌜ φinv g' ⌝) )) →
   dist_adequate_failstop (ffi_sem:=grove_semantics) ebσs g (λ g, φinv g).
 Proof.
   intros. eapply goose_dist_adequacy_failstop; eauto.

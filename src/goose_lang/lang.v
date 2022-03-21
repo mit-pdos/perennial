@@ -214,14 +214,17 @@ Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0)
 (** The state: heaps of vals. *)
 Record state : Type := {
   heap: gmap loc (nonAtomic val);
-  used_proph_id: gset proph_id;
   world: ffi_state;
   trace: Trace;
   oracle: Oracle;
 }.
-Definition global_state : Type := ffi_global_state.
+Record global_state : Type := {
+  global_world: ffi_global_state;
+  used_proph_id: gset proph_id;
+}.
 
-Global Instance eta_state : Settable _ := settable! Build_state <heap; used_proph_id; world; trace; oracle>.
+Global Instance eta_state : Settable _ := settable! Build_state <heap; world; trace; oracle>.
+Global Instance eta_global_state : Settable _ := settable! Build_global_state <global_world; used_proph_id>.
 
 (* Note that ffi_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
@@ -681,9 +684,11 @@ Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Global Instance state_inhabited : Inhabited state :=
-  populate {| heap := inhabitant; used_proph_id := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
+  populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
+Global Instance global_state_inhabited : Inhabited global_state :=
+  populate {| used_proph_id := inhabitant; global_world := inhabitant; |}.
 
 Canonical Structure stateO := leibnizO state.
 Canonical Structure locO := leibnizO loc.
@@ -726,7 +731,7 @@ no head steps (i.e., surface reductions) are taken. This means that contextual
 closure will reduce [Resolve (CmpXchg #l #n (#n + #1)) #p #v] into [Resolve
 (CmpXchg #l #n #(n+1)) #p #v], but it cannot context-step any further. *)
 
-Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
+Definition fill_item (Ki : ectx_item) (e : expr) : expr :=
   match Ki with
   | AppLCtx v2 => App e (of_val v2)
   | AppRCtx e1 => App e1 e
@@ -1033,14 +1038,14 @@ the heap. *)
 Definition allocateN : transition (state*global_state) loc :=
   suchThat (isFresh).
 
-Global Instance newProphId_gen: GenPred proph_id (state*global_state) (fun '(σ,g) p => p ∉ σ.(used_proph_id)).
+Global Instance newProphId_gen: GenPred proph_id (state*global_state) (fun '(σ,g) p => p ∉ g.(used_proph_id)).
 Proof.
-  refine (fun _ '(σ,g) => Some (exist _ (fresh σ.(used_proph_id)) _)).
+  refine (fun _ '(σ,g) => Some (exist _ (fresh g.(used_proph_id)) _)).
   apply is_fresh.
 Defined.
 
 Definition newProphId: transition (state*global_state) proph_id :=
-  suchThat (fun '(σ,g) p => p ∉ σ.(used_proph_id)).
+  suchThat (fun '(σ,g) p => p ∉ g.(used_proph_id)).
 
 Instance gen_anyInt Σ: GenPred u64 Σ (fun _ _ => True).
   refine (fun z _ => Some (U64 z ↾ _)); auto.
@@ -1061,6 +1066,8 @@ Definition transition_star {Σ T} (t : T → transition Σ T) (init:T) : transit
 
 Definition modifyσ (f : state → state) : transition (state*global_state) () :=
   modify (λ '(σ, g), (f σ, g)).
+Definition modifyg (f : global_state → global_state) : transition (state*global_state) () :=
+  modify (λ '(σ, g), (σ, f g)).
 
 Definition head_trans (e: expr) :
  transition (state * global_state) (list observation * expr * list expr) :=
@@ -1154,7 +1161,7 @@ Definition head_trans (e: expr) :
   | NewProph =>
     atomically
       (p ← newProphId;
-       modifyσ (set used_proph_id ({[ p ]} ∪.));;
+       modifyg (set used_proph_id ({[ p ]} ∪.));;
        ret $ LitV $ LitProphecy p)
   | Resolve (Val (LitV (LitProphecy p))) (Val w) =>
     ret ([(p, w)], Val $ LitV LitUnit, [])

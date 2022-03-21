@@ -55,8 +55,8 @@ Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_fie
          spec_ffi_interp_adequacy_field.
 
 Lemma goose_spec_init1 {hG: heapGS Σ} r tp0 σ0 g0 tp σ g s tr or P:
-  ffi_initgP g →
-  ffi_initP σ.(world) g →
+  ffi_initgP g.(global_world) →
+  ffi_initP σ.(world) g.(global_world) →
   null_non_alloc σ.(heap) →
   neg_non_alloc σ.(heap) →
   σ.(trace) = tr →
@@ -65,7 +65,7 @@ Lemma goose_spec_init1 {hG: heapGS Σ} r tp0 σ0 g0 tp σ g s tr or P:
   crash_safe (CS := spec_crash_lang) r (tp0, (σ0,g0)) →
   ⊢ trace_frag tr -∗ oracle_frag or -∗
    |={⊤}=> ∃ hR : refinement_heapG Σ, spec_ctx' r (tp0, (σ0,g0)) ∗ source_pool_map (tpool_to_map tp)
-                                      ∗ ffi_global_start (refinement_spec_ffiGlobalGS) g
+                                      ∗ ffi_global_start (refinement_spec_ffiGlobalGS) g.(global_world)
                                       ∗ ffi_local_start (refinement_spec_ffiLocalGS) σ.(world)
                                       ∗ trace_ctx
                                       ∗ spec_crash_ctx' r (tp0, (σ0,g0)) (P hR)
@@ -76,7 +76,7 @@ Proof using Hrpre Hcpre.
   { rewrite //=. }
   iMod (source_cfg_init_names1 r tp0 σ0 g0 tp σ g (own γ (Cinl 1%Qp))) as (Hcfg_γ) "(Hsource_ctx&Hpool&Hstate&Hcfupd)"; eauto.
   iMod (na_heap_init tls σ.(heap)) as (Hrheap) "Hrh".
-  iMod (ffi_global_init _ (refinement_heap_preG_ffi) g) as (ffi_namesg) "(Hgw&Hgs)"; first by auto.
+  iMod (ffi_global_init _ (refinement_heap_preG_ffi) g.(global_world)) as (ffi_namesg) "(Hgw&Hgs)"; first by auto.
   iMod (ffi_local_init _ (refinement_heap_preG_ffi) σ.(world))
     as (HffiG) "(Hrw&Hrs)"; first by auto.
   iMod (trace_init σ.(trace) σ.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
@@ -117,8 +117,8 @@ Proof using Hrpre Hcpre.
 Qed.
 
 Lemma goose_spec_init2 {hG: heapGS Σ} r tp σ g tr or P:
-  ffi_initgP g →
-  ffi_initP σ.(world) g →
+  ffi_initgP g.(global_world) →
+  ffi_initP σ.(world) g.(global_world) →
   null_non_alloc σ.(heap) →
   neg_non_alloc σ.(heap) →
   σ.(trace) = tr →
@@ -126,7 +126,7 @@ Lemma goose_spec_init2 {hG: heapGS Σ} r tp σ g tr or P:
   crash_safe (CS := spec_crash_lang) r (tp, (σ,g)) →
   ⊢ trace_frag tr -∗ oracle_frag or -∗
    |={⊤}=> ∃ hR : refinement_heapG Σ, spec_ctx' r (tp, (σ,g)) ∗ source_pool_map (tpool_to_map tp)
-                                     ∗ ffi_global_start (refinement_spec_ffiGlobalGS) g
+                                     ∗ ffi_global_start (refinement_spec_ffiGlobalGS) g.(global_world)
                                      ∗ ffi_local_start (refinement_spec_ffiLocalGS) σ.(world)
                                      ∗ trace_ctx
                                      ∗ spec_crash_ctx' r (tp, (σ,g)) (P hR)
@@ -145,7 +145,7 @@ Lemma goose_spec_crash_init {hG: gooseGlobalGS Σ} {hL: gooseLocalGS Σ} {hRG: r
   ⊢ trace_frag tr -∗
     oracle_frag or -∗
     ffi_local_ctx refinement_spec_ffiLocalGS (world σ) -∗
-    ffi_global_ctx refinement_spec_ffiGlobalGS g -∗
+    ffi_global_ctx refinement_spec_ffiGlobalGS g.(global_world) -∗
    |={⊤}=> ∃ hRG' : refinement_heapG Σ, spec_ctx' r (tp0, (σ0,g0)) ∗ source_pool_map (tpool_to_map [r])
              ∗ ffi_crash_rel Σ (@refinement_spec_ffiLocalGS _ _ _ _ _ hRG) (world σ)
                                (refinement_spec_ffiLocalGS) (world σ_post_crash)
@@ -232,10 +232,10 @@ Qed.
 Theorem goose_recv_refinement_adequacy es e rs r σs gs σ g φ φr (Φinv: heapGS Σ → iProp Σ) P n :
   null_non_alloc σs.(heap) →
   neg_non_alloc σs.(heap) →
-  ffi_initgP g →
-  ffi_initP σ.(world) g →
-  ffi_initgP gs →
-  ffi_initP σs.(world) gs →
+  ffi_initgP g.(global_world) →
+  ffi_initP σ.(world) g.(global_world) →
+  ffi_initgP gs.(global_world) →
+  ffi_initP σs.(world) gs.(global_world) →
   σ.(trace) = σs.(trace) →
   σ.(oracle) = σs.(oracle) →
   (∀ `{Hheap : !heapGS Σ} {Href: refinement_heapG Σ},
@@ -370,7 +370,7 @@ Lemma wpc_trace_inv_open es σs gs e (hG: gooseGlobalGS Σ) (hL:gooseLocalGS Σ)
                         ⌜erased_rsteps (CS := spec_crash_lang) es ([es], (σs,gs)) (es', (σs',gs')) stat⌝
                         ∗ ⌜crash_safe (CS := spec_crash_lang) es ([es], (σs,gs))⌝
                         ∗ ▷ ffi_local_ctx refinement_spec_ffiLocalGS (world σs')
-                        ∗ ▷ ffi_global_ctx refinement_spec_ffiGlobalGS (gs')
+                        ∗ ▷ ffi_global_ctx refinement_spec_ffiGlobalGS gs'.(global_world)
                         ∗ trace_frag (trace σs')
                         ∗ oracle_frag (oracle σs')
                         ∗ Φc hRef}}.
@@ -447,8 +447,8 @@ Definition initP_wf initP :=
     (σs: @state (@spec_ffi_op_field spec_ext) (@spec_ffi_model_field spec_ffi))
     (gs: @global_state (@spec_ffi_model_field spec_ffi)),
     initP σ σs → null_non_alloc σs.(heap) ∧ neg_non_alloc σs.(heap) ∧
-                 ffi_initP σ.(world) g ∧ ffi_initP σs.(world) gs ∧
-                 ffi_initgP g ∧ ffi_initgP gs.
+                 ffi_initP σ.(world) g.(global_world) ∧ ffi_initP σs.(world) gs.(global_world) ∧
+                 ffi_initgP g.(global_world) ∧ ffi_initgP gs.(global_world).
 
 Definition excl_crash_token (P : gooseGlobalGS Σ → gooseLocalGS Σ → refinement_heapG Σ → iProp Σ) :=
   ∀ hG hL Href, (⊢ ((P hG hL Href -∗ P hG hL Href -∗ False))).
@@ -499,7 +499,7 @@ Proof using Hrpre Hhpre Hcpre.
          ⌜ erased_rsteps es ([es], (σs,gs)) (es', (σs',gs')) stat ⌝ ∗
          ⌜ crash_safe es ([es], (σs,gs)) ⌝ ∗
          ▷ ffi_local_ctx (refinement_spec_ffiLocalGS) σs'.(world) ∗
-         ▷ ffi_global_ctx (refinement_spec_ffiGlobalGS) gs' ∗
+         ▷ ffi_global_ctx (refinement_spec_ffiGlobalGS) gs'.(global_world) ∗
          trace_frag (trace σs') ∗ oracle_frag (oracle σs')
                 (* spec_ctx' es ([es], σs) ∗ trace_ctx *) ∗  Φc _ hL hRef)%I with "[-]")%I.
   - rewrite /wpc_init/wpc_obligation in Hwp_init.

@@ -72,7 +72,7 @@ Section txn_sequential_refinement.
 
   Context (crash_ok: crash_simulated ffi_abstraction).
 
-  Theorem txn_sequential_refinement se ie e dσ sσ sg iσ ig k :
+  Theorem txn_sequential_refinement se ie e dσ dg sσ sg iσ ig k :
     (* se compiles to ie by replacing ExternalOps with op_impl wrapped by Atomically () *)
     expr_impl op_impl se ie →
     (* ie 'compiles' to e when plugging in journal implementations / Begin/Commit for Atomically () *)
@@ -80,10 +80,11 @@ Section txn_sequential_refinement.
     abstraction ffi_abstraction sσ sg iσ ig →
     dσ.(trace) = iσ.(trace) →
     dσ.(oracle) = iσ.(oracle) →
+    (* dg.(used_proph_id) = ig.(used_proph_id) → *)
     twophase_initP k dσ iσ →
     wf se ([se], (sσ, sg)) →
     fo_rsteps se ([se], (sσ, sg)) →
-    refinement.trace_refines e e dσ ig se se sσ sg.
+    refinement.trace_refines e e dσ dg se se sσ sg.
   Proof using wf_closed op_impl_succ_ok op_impl_abort_ok wf_preserved_step crash_ok op_impl_safe_ok.
     intros Himpl Htype Habstraction Htrace Horacle Hinit Hwf Hfo.
     intros Hsafe.

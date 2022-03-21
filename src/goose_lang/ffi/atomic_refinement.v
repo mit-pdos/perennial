@@ -172,7 +172,7 @@ Section go_refinement.
 
   Definition abstraction (sσ: sstate) (sg: sgstate)
              (iσ: istate) (ig: igstate) :=
-    ffi_abstraction (world sσ) sg (world iσ) ig ∧
+    ffi_abstraction (world sσ) (global_world sg) (world iσ) (global_world ig) ∧
     heap_relation (heap sσ) (heap iσ) ∧
     trace sσ = trace iσ ∧
     oracle sσ = oracle iσ.
