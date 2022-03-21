@@ -247,6 +247,33 @@ Definition Txn__Put: val :=
         ]));;
         #true)).
 
+Definition Txn__Delete: val :=
+  rec: "Txn__Delete" "txn" "key" :=
+    let: ("pos", "found") := matchLocalWrites "key" (struct.loadF Txn "wset" "txn") in
+    (if: "found"
+    then
+      let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "pos" in
+      struct.storeF WrEnt "val" "went" (struct.mk DBVal [
+        "tomb" ::= #true
+      ]);;
+      #true
+    else
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
+      (if: "ret" ≠ common.RET_SUCCESS
+      then #false
+      else
+        let: "dbval" := struct.mk DBVal [
+          "tomb" ::= #true
+        ] in
+        struct.storeF Txn "wset" "txn" (SliceAppend (struct.t WrEnt) (struct.loadF Txn "wset" "txn") (struct.mk WrEnt [
+          "key" ::= "key";
+          "val" ::= "dbval";
+          "tuple" ::= "tuple"
+        ]));;
+        #true)).
+
 Definition Txn__Get: val :=
   rec: "Txn__Get" "txn" "key" :=
     let: ("pos", "found") := matchLocalWrites "key" (struct.loadF Txn "wset" "txn") in

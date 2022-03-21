@@ -860,7 +860,7 @@ Proof.
   }
 Qed.
 
-Definition get_spec txn view mods k v γ : iProp Σ :=
+Definition spec_get txn view mods k v γ : iProp Σ :=
   match mods !! k, view !! k with
   (* `k` has not been read or written. *)
   | None, None => ∃ v', is_txn txn (<[k := v']> view) mods γ ∧ ⌜v = v'⌝
@@ -895,7 +895,7 @@ Qed.
 Theorem wp_txn__Get txn (k : u64) (view mods : gmap u64 dbval) γ :
   {{{ is_txn txn view mods γ }}}
     Txn__Get #txn #k
-  {{{ (v : u64) (found : bool), RET (#v, #found); get_spec txn view mods k (if found then Value v else Nil) γ }}}.
+  {{{ (v : u64) (found : bool), RET (#v, #found); spec_get txn view mods k (if found then Value v else Nil) γ }}}.
 Proof using mvcc_ghostG0.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
@@ -930,8 +930,8 @@ Proof using mvcc_ghostG0.
     wp_pures.
     iApply "HΦ".
     iModIntro.
-    rewrite /get_spec.
-    (* Proving the third case of `get_spec` (write set hit). *)
+    rewrite /spec_get.
+    (* Proving the third case of `spec_get` (write set hit). *)
     assert (HmodsSome : ∃ vm, mods !! k = Some vm).
     { exists (if went.1.2.1 then Nil else Value went.1.2.2).
       rewrite Hmods_wsetL.
@@ -983,7 +983,7 @@ Proof using mvcc_ghostG0.
   wp_pures.
   iApply "HΦ".
   iModIntro.
-  rewrite /get_spec.
+  rewrite /spec_get.
   assert (HmodsNone : mods !! k = None).
   { destruct Hmatch as [[_ Hnotin] | [contra _]]; last congruence.
     rewrite Hmods_wsetL.
@@ -992,7 +992,7 @@ Proof using mvcc_ghostG0.
   }
   rewrite HmodsNone.
   destruct (view !! k) eqn:Eqlookup.
-  { (* Proving the second case of `get_spec` (write set misses / non-first read). *)
+  { (* Proving the second case of `spec_get` (write set misses / non-first read). *)
     iDestruct (big_sepM_lookup_acc _ view k d with "[Hview]") as "[Hview_ptsto Hview_close]"; [auto | auto |].
     simpl.
     iSplit; last first.
@@ -1016,7 +1016,7 @@ Proof using mvcc_ghostG0.
     (* [eauto 20 with iFrame] very slow *)
     eauto 10 with iFrame.
   }
-  { (* Proving the first case of `get_spec` (write set misses / first read). *)
+  { (* Proving the first case of `spec_get` (write set misses / first read). *)
     iExists _.
     iSplit; last done.
     iExists _.
@@ -1040,7 +1040,7 @@ Proof using mvcc_ghostG0.
   }
 Qed.
 
-Definition put_spec txn view mods k v γ : iProp Σ :=
+Definition spec_update txn view mods k v γ : iProp Σ :=
   is_txn txn view (<[k := v]> mods) γ.
 
 Local Lemma NoDup_app_commute (A : Type) (l1 l2 : list A) :
@@ -1063,10 +1063,10 @@ Theorem wp_txn__Put txn (k : u64) (v : u64) (view mods : gmap u64 dbval) γ :
   {{{ is_txn txn view mods γ }}}
     Txn__Put #txn #k #v
   {{{ (ok : bool), RET #ok; if ok
-                          then put_spec txn view mods k (Value v) γ
+                          then spec_update txn view mods k (Value v) γ
                           else is_txn txn view mods γ
   }}}.
-Proof using mvcc_ghostG0.
+Proof.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
   iNamed "Himpl".
@@ -1145,7 +1145,7 @@ Proof using mvcc_ghostG0.
     wp_pures.
     iApply "HΦ".
     iModIntro.
-    unfold put_spec.
+    unfold spec_update.
     
     (* Proving for the case where the key has been read or written. *)
     unfold is_txn.
@@ -1243,9 +1243,235 @@ Proof using mvcc_ghostG0.
   (***********************************************************)
   iModIntro.
   iApply "HΦ".
-  rewrite /put_spec.
+  rewrite /spec_update.
   destruct Hmatch as [[_ Hnotin] | [contra _]]; last congruence.
   set wsetL' := (wsetL ++ [(k, (false, v), tuple)]).
+  set mods := (list_to_map _).
+  assert (HmodsNone : mods !! k = None).
+  { apply not_elem_of_list_to_map.
+    by rewrite wrent_to_key_dbval_key_fmap.
+  }
+  iExists _.
+  iFrame "Hview".
+  iSplitL "Hmods Hmods_token".
+  { iApply big_sepM_insert; [done | iFrame]. }
+  
+  do 4 iExists _.
+  iExists wsetL'.
+  iFrame "HtxnmgrRI HidxRI".
+  iFrame "# ∗".
+  iSplit; first done.
+  iSplitL "HwsetL"; first by rewrite fmap_app.
+  iSplit.
+  { iPureIntro.
+    do 2 rewrite fmap_app.
+    simpl.
+    apply NoDup_app_commute.
+    apply NoDup_app.
+    split; first by apply NoDup_singleton.
+    split; last done.
+    intros x H.
+    apply elem_of_list_singleton in H.
+    by subst x.
+  }
+  { iPureIntro.
+    symmetry.
+    subst mods.
+    subst wsetL'.
+    rewrite fmap_app.
+    apply list_to_map_snoc.
+    by rewrite wrent_to_key_dbval_key_fmap.
+  }
+Qed.
+
+(*****************************************************************)
+(* func (txn *Txn) Delete(key uint64) bool                       *)
+(*****************************************************************)
+Theorem wp_txn__Delete txn (k : u64) (v : u64) (view mods : gmap u64 dbval) γ :
+  {{{ is_txn txn view mods γ }}}
+    Txn__Delete #txn #k
+  {{{ (ok : bool), RET #ok; if ok
+                          then spec_update txn view mods k Nil γ
+                          else is_txn txn view mods γ
+  }}}.
+Proof.
+  iIntros (Φ) "Htxn HΦ".
+  iNamed "Htxn".
+  iNamed "Himpl".
+  wp_call.
+  
+  (***********************************************************)
+  (* pos, found := matchLocalWrites(key, txn.wset)           *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (wp_matchLocalWrites with "HwsetL").
+  iIntros (pos found) "[HwsetL %Hmatch]".
+  wp_pures.
+
+  (***********************************************************)
+  (* if found {                                              *)
+  (*     went := &txn.wset[pos]                              *)
+  (*     went.val = DBVal{                                   *)
+  (*         tomb : true,                                    *)
+  (*     }                                                   *)
+  (*     return true                                         *)
+  (* }                                                       *)
+  (***********************************************************)
+  iDestruct (slice.is_slice_small_acc with "HwsetL") as "[HwsetS HwsetL]".
+  wp_if_destruct.
+  { wp_loadField.
+    destruct Hmatch as [[contra _] | [_ [went [HSome Hkey]]]]; first congruence.
+    wp_lam.
+    wp_pures.
+    
+    (* Handling [SliceRef]; a spec would help. *)
+    wp_apply (wp_slice_len).
+    iDestruct (is_slice_small_sz with "HwsetS") as "%HwsetSz".
+    rewrite fmap_length in HwsetSz.
+    wp_if_destruct; first last.
+    { destruct Heqb0.
+      apply lookup_lt_Some in HSome.
+      rewrite HwsetSz in HSome.
+      word.
+    }
+    wp_apply (wp_slice_ptr).
+    wp_pures.
+    rewrite /is_slice_small.
+    iDestruct "HwsetS" as "[HwsetA %HwsetLen]".
+    iDestruct (update_array (off:=int.nat pos) with "HwsetA") as "[HwsetP HwsetA]".
+    { rewrite list_lookup_fmap.
+      rewrite HSome.
+      done.
+    }
+    iDestruct (struct_fields_split with "HwsetP") as "HwsetP".
+    iNamed "HwsetP".
+    wp_apply (wp_storeField with "[val]"); first auto.
+    { iNext.
+      iExactEq "val".
+      do 3 f_equal.
+      word.
+    }
+    iIntros "val".
+    word_cleanup.
+    set wentR := (wset.(Slice.ptr) +ₗ[_] (int.Z pos)).
+    set went' := (went.1.1, (true, (U64 0)), went.2).
+    iDestruct (struct_fields_split wentR 1%Qp WrEnt (wrent_to_val went')
+                with "[key val tuple]") as "HwsetP".
+    { rewrite /struct_fields.
+      iFrame.
+      done.
+    }
+    iDestruct ("HwsetA" with "HwsetP") as "HwsetA".
+    iDestruct ("HwsetL" with "[HwsetA]") as "HwsetL".
+    { iFrame.
+      iPureIntro.
+      rewrite -HwsetLen.
+      rewrite insert_length.
+      done.
+    }
+    wp_pures.
+    iApply "HΦ".
+    iModIntro.
+    unfold spec_update.
+    
+    (* Proving for the case where the key has been read or written. *)
+    unfold is_txn.
+    iExists _.
+    iFrame "Hview".
+    iSplitL "Hmods".
+    { iApply (big_sepM_insert_override_2 _ _ _ (to_dbval went.1.2) with "[Hmods]"); [| auto | auto].
+      rewrite Hmods_wsetL.
+      apply elem_of_list_to_map_1; first by apply NoDup_wrent_to_key_dbval.
+      apply elem_of_list_fmap.
+      exists went.
+      split; last by apply elem_of_list_lookup_2 with (int.nat pos).
+      unfold wrent_to_key_dbval.
+      by rewrite -Hkey.
+    }
+    do 5 iExists _.
+    iFrame "# ∗".
+    iSplit; first done.
+    iSplit; first by rewrite -list_fmap_insert.
+    iSplit.
+    { iPureIntro.
+      do 2 rewrite list_fmap_insert.
+      subst went'.
+      simpl.
+      replace (<[ _ := _ ]> wsetL.*1.*1) with wsetL.*1.*1; first done.
+      symmetry.
+      apply list_insert_id.
+      do 2 rewrite list_lookup_fmap.
+      by rewrite HSome.
+    }
+    {
+      iPureIntro.
+      rewrite Hmods_wsetL.
+      rewrite list_fmap_insert.
+      subst went'.
+      simpl.
+      (* Related premises: [HSome], [Hkey], [HwsetLND], [Hmods_wsetL]. *)
+      subst k.
+      apply list_to_map_insert with (to_dbval went.1.2); first by apply NoDup_wrent_to_key_dbval.
+      rewrite list_lookup_fmap.
+      by rewrite HSome.
+    }
+  }
+  iDestruct ("HwsetL" with "HwsetS") as "HwsetL".
+
+  (***********************************************************)
+  (* idx := txn.idx                                          *)
+  (* tuple := idx.GetTuple(key)                              *)
+  (***********************************************************)
+  wp_loadField.
+  wp_pures.
+  wp_apply (wp_index__GetTuple with "HidxRI").
+  iIntros (tuple) "#HtupleRI".
+  wp_pures.
+  
+  (***********************************************************)
+  (* ret := tuple.Own(txn.tid)                                *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (wp_tuple__Own with "HtupleRI Hactive").
+  iIntros (ret) "[Hactive Hmods_token]".
+  wp_pures.
+  
+  (***********************************************************)
+  (* if ret != common.RET_SUCCESS {                          *)
+  (*     return false                                        *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_if_destruct.
+  { iModIntro.
+    iApply "HΦ".
+    unfold is_txn.
+    iExists _.
+    iFrame "% Hmods Hview".
+    do 5 iExists _.
+    iFrame "HtxnmgrRI HidxRI".
+    eauto 10 with iFrame.
+  }
+
+  (**************************************************************************)
+  (* dbval := DBVal{                                                        *)
+  (*     tomb : true,                                                       *)
+  (* }                                                                      *)
+  (* txn.wset = append(txn.wset, WrEnt{key: key, val: dbval, tuple: tuple}) *)
+  (**************************************************************************)
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_SliceAppend' with "[HwsetL]"); [auto 10 | auto 10 | auto |].
+  iIntros (wset') "HwsetL".
+  wp_storeField.
+  
+  (***********************************************************)
+  (* return true                                             *)
+  (***********************************************************)
+  iModIntro.
+  iApply "HΦ".
+  rewrite /spec_update.
+  destruct Hmatch as [[_ Hnotin] | [contra _]]; last congruence.
+  set wsetL' := (wsetL ++ [(k, (true, (U64 0)), tuple)]).
   set mods := (list_to_map _).
   assert (HmodsNone : mods !! k = None).
   { apply not_elem_of_list_to_map.
