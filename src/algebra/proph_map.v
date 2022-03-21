@@ -13,7 +13,7 @@ Proof.
   iPureIntro. split =>//.
 Qed.
 
-Lemma proph_map_reinit `{Countable P} `(pG: proph_mapGS P V PVS) pvs ps :
+Lemma proph_map_reinit `{Countable P} `(pGS: proph_mapGpreS P V PVS) (pG: proph_mapGS P V PVS) pvs ps :
   ⊢ |==> ∃ γ : gname, proph_map_interp (pG := {| proph_map_inG := _; proph_map_name := γ|}) pvs ps.
 Proof.
   iMod ghost_map_alloc_empty as (γ) "Hh".
