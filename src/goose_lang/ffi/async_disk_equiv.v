@@ -28,7 +28,8 @@ Section translate.
     heap dσ = heap pσ ∧
     disk_compat (world dσ) (world pσ) ∧
     trace dσ = trace pσ ∧
-    oracle dσ = oracle pσ.
+    oracle dσ = oracle pσ ∧
+    used_proph_id dσ = used_proph_id pσ.
 
   Definition global_compat (dg : dglobal) (pg : pglobal) := dg = pg.
 
@@ -72,7 +73,7 @@ Section translate.
                             pσ))).
   Proof.
     intros Hlookup Hcompat.
-    destruct Hcompat as (Hheap&Hdisk&?&?).
+    destruct Hcompat as (Hheap&Hdisk&?&?&Hpid).
     destruct Hdisk as (Hdom&Hvals).
     destruct (world pσ !! int.Z n) as [cb|] eqn:Heqp; last first.
     { exfalso. revert Heqp. rewrite -not_elem_of_dom.
@@ -141,7 +142,7 @@ Section translate.
     state_compat (RecordSet.set world AD.flush_disk σ1) pσ1.
   Proof.
     rewrite /RecordSet.set //=.
-    intros Hsynced (Hheap&Hdisk&Htrace&Horacle).
+    intros Hsynced (Hheap&Hdisk&Htrace&Horacle&Hproph).
     split_and! => //=.
     destruct Hdisk as (Hdom&Hlook). split.
     { rewrite /AD.flush_disk dom_fmap_L //. }
@@ -162,7 +163,7 @@ Section translate.
     state_compat σ1 pσ2 ∧ ADP.all_synced (world pσ2).
   Proof.
     rewrite /RecordSet.set //=.
-    intros (Hheap&Hdisk&Htrace&Horacle).
+    intros (Hheap&Hdisk&Htrace&Horacle&Hproph).
     split.
     { split_and!; eauto.
       clear -Hdisk. rewrite //= in Hdisk.
@@ -292,6 +293,7 @@ Section translate.
            inversion H.
            intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                      used_proph_id := used_proph_id σ1;
                       world := world pσ2 |}).
            do 2 eexists.
            split_and!.
@@ -314,6 +316,7 @@ Section translate.
            inversion H.
            intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                      used_proph_id := used_proph_id σ1;
                       world := world pσ2 |}).
            do 2 eexists.
            split_and!.
@@ -337,6 +340,7 @@ Section translate.
            inversion H.
            intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                      used_proph_id := used_proph_id σ1;
                       world := world pσ2 |}).
            do 2 eexists.
            split_and!.
@@ -365,6 +369,7 @@ Section translate.
         inversion H3; monad_inv; subst; clear H3.
         inversion H; intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                      used_proph_id := used_proph_id σ1;
                       world := world pσ2 |}).
            do 2 eexists.
            split_and!.
@@ -378,6 +383,7 @@ Section translate.
         inversion H1; monad_inv; clear H1.
         inversion H; intuition.
            exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                      used_proph_id := used_proph_id σ1;
                       world := world pσ2 |}).
            do 2 eexists.
            split_and!.
@@ -387,9 +393,11 @@ Section translate.
                f_equal. f_equal. destruct pσ2; subst.
                simpl in * => //=. rewrite /RecordSet.set //=.
                congruence.
-    - rewrite /head_step//= in Hstep.
+    - (* Primitive2 *)
+      rewrite /head_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
-      * inversion Hstep; monad_inv.
+      * (* AllocN *)
+        inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1. subst.
         inversion H3; monad_inv; subst; clear H3.
         inversion H4; monad_inv; subst; clear H4.
@@ -397,6 +405,7 @@ Section translate.
         destruct (decide (0 < int.Z n)); monad_inv.
         monad_inv. inversion H1.
         exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                   used_proph_id := used_proph_id σ1;
                    world := world pσ2 |}).
         subst. do 2 eexists. inversion H. intuition.
         ** simpl in *. split_and!; eauto.
@@ -404,18 +413,20 @@ Section translate.
         ** econstructor.
            *** inversion H6; econstructor; eauto; repeat (econstructor; eauto).
                { unfold check. rewrite ifThenElse_if; eauto. rewrite /=. econstructor. rewrite //=. }
-               { eapply H5. }
-               { rewrite //=. eapply H5. }
+               { eapply H7. }
+               { rewrite //=. eapply H7. }
            *** repeat econstructor => //=.
                f_equal. f_equal. destruct pσ2; subst.
                simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
                f_equal; eauto.
-      * inversion Hstep; monad_inv.
+      * (* FinishStore *)
+        inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1. subst.
         inversion H3; monad_inv; subst; clear H3.
         destruct (decide (is_Writing (heap σ1 !! l))); monad_inv.
         inversion H2; monad_inv; subst; clear H2.
         exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                   used_proph_id := used_proph_id σ1;
                    world := world pσ2 |}).
         subst. do 2 eexists. inversion H. intuition.
         ** simpl in *. split_and!; eauto.
@@ -446,6 +457,7 @@ Section translate.
         simpl in H1. monad_inv. destruct s2; monad_inv.
         simpl in H4. monad_inv.
       exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                 used_proph_id := used_proph_id σ1;
                  world := world pσ2 |}).
       subst. do 2 eexists. inversion H. intuition.
       ** simpl in *. split_and!; eauto.
@@ -487,6 +499,7 @@ Section translate.
         inversion H2; monad_inv; subst; clear H2.
         inversion H3; monad_inv; subst; clear H3.
              exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                      used_proph_id := used_proph_id σ1;
                         world := world pσ2 |}).
         destruct s0 as (?&[]); monad_inv.
         inversion H4; monad_inv; subst; clear H4.
@@ -509,7 +522,7 @@ Section translate.
                  simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
                  f_equal; eauto.
                  rewrite -H1. do 4 f_equal.
-                 destruct H4. edestruct H6; eauto. destruct H8. rewrite H9 in Hlook. simpl in Hlook.
+                 destruct H4. edestruct H7; eauto. destruct H9. rewrite H10 in Hlook. simpl in Hlook.
                  inversion Hlook. rewrite //=.
                }
       (* WriteOp *)
@@ -565,7 +578,7 @@ Section translate.
            }
       (* SizeOp *)
       * rewrite /head_step//= in Hstep.
-        destruct_head. inversion Hstep; monad_inv.
+        destruct_head. inversion Hstep; monad_inv. clear Hstep.
         destruct_head.
         inversion H1; monad_inv; clear H1.
         do 3 eexists; split_and!; eauto.
@@ -574,7 +587,7 @@ Section translate.
          erewrite state_compat_disk_size; eauto.
       (* BarrierOp *)
       * rewrite /head_step//= in Hstep.
-        destruct_head. inversion Hstep; monad_inv.
+        destruct_head. inversion Hstep; monad_inv. clear Hstep.
         destruct_head.
         inversion H1; monad_inv; clear H1.
         exists pσ2.
@@ -582,6 +595,29 @@ Section translate.
         do 2 eexists; split_and!; eauto.
         econstructor; eauto; repeat (econstructor; eauto).
         rewrite decide_True //.
+    - (* NewProph *)
+      rewrite /head_step//= in Hstep.
+      inversion Hstep; monad_inv.
+      inversion H; monad_inv; clear H.
+      inversion H0; monad_inv; clear H0.
+      inversion H3; monad_inv; clear H3.
+        exists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1;
+                   used_proph_id := used_proph_id σ1;
+                   world := world pσ2 |}).
+        subst. do 2 eexists. inversion H4. intuition.
+        ** simpl in *. split_and!; eauto.
+        ** eauto.
+        ** econstructor.
+           *** repeat (econstructor; eauto).
+           *** rewrite H16. repeat econstructor => //=.
+               f_equal. f_equal. destruct pσ2; subst.
+               simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
+               f_equal; eauto.
+               inversion H16. subst x. done.
+    - (* Resolve *)
+      rewrite /head_step//= in Hstep. destruct_head.
+      do 3 eexists. intuition; eauto.
+      repeat (econstructor; eauto).
   Qed.
 
   Theorem prim_step'_simulation e1 σ1 g1 κ e2 σ2 g2 efs :
@@ -840,7 +876,8 @@ Section translate.
                split_and!; eauto. rewrite /RecordSet.set//=. congruence.
     - rewrite /head_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
-      * inversion Hstep; monad_inv.
+      * (* AllocN *)
+        inversion Hstep; monad_inv.
         inversion H1; monad_inv; clear H1. subst.
         inversion H3; monad_inv; subst; clear H3.
         inversion H4; monad_inv; subst; clear H4.
@@ -853,8 +890,8 @@ Section translate.
         ** econstructor.
            *** inversion H6; econstructor; eauto; repeat (econstructor; eauto).
                { unfold check. rewrite ifThenElse_if; eauto. rewrite /=. econstructor. rewrite //=. }
-               { eapply H5. }
-               { rewrite //=. rewrite H2. eapply H5. }
+               { eapply H7. }
+               { rewrite //=. rewrite H2. eapply H7. }
            *** repeat econstructor => //=.
         ** right. split_and!; eauto.
            split_and!; eauto. rewrite /RecordSet.set//=. congruence.
@@ -948,7 +985,7 @@ Section translate.
                  simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
                  f_equal; eauto.
                  rewrite H1. do 4 f_equal.
-                 destruct H4. edestruct H6; eauto. destruct H8. rewrite H9 in Heq. inversion Heq.
+                 destruct H4. edestruct H7; eauto. destruct H9. rewrite H10 in Heq. inversion Heq.
                  subst. eauto.
                }
         *** right. split_and!; eauto.
@@ -1030,6 +1067,22 @@ Section translate.
             do 3 eexists. split_and!.
             { repeat econstructor. }
             left. split_and!; eauto.
+    - (* NewProph *)
+      rewrite /head_step//= in Hstep.
+      inversion Hstep; monad_inv.
+      inversion H; monad_inv; clear H.
+      inversion H0; monad_inv; clear H0.
+      inversion H3; monad_inv; clear H3.
+      eexists ({| heap := heap σ1; oracle := oracle σ1; trace := trace σ1 |}).
+      subst. do 2 eexists. inversion H4. intuition.
+      { simpl in *. repeat (econstructor; eauto). rewrite H10. eauto. }
+      right. split_and!; eauto.
+      { rewrite H16. done. }
+      split_and!; eauto. rewrite /RecordSet.set//=. congruence.
+    - (* Resolve *)
+      rewrite /head_step//= in Hstep. destruct_head.
+      do 3 eexists. intuition; eauto.
+      repeat (econstructor; eauto).
   Qed.
 
   Theorem prim_step'_simulation_rev e1 pσ1 pg1 pσ2 pg2 σ1 g1 κ e2 efs :
@@ -1108,7 +1161,8 @@ Section translate.
     heap pσ1 = heap pσ2 ∧
     match_curr (world pσ1) (world pσ2) ∧
     trace pσ1 = trace pσ2 ∧
-    oracle pσ1 = oracle pσ2.
+    oracle pσ1 = oracle pσ2 ∧
+    used_proph_id pσ1 = used_proph_id pσ2.
 
   Lemma state_match_curr_disk_size σ pσ :
     state_match_curr σ pσ →
@@ -1147,8 +1201,8 @@ Section translate.
     state_match_curr pσ1 pσ1' →
     ∀ σ2 : dstate, state_compat σ2 pσ1 → state_compat σ2 pσ1'.
   Proof.
-    intros Hsynced (Hheap&Hmatch_curr&?&?).
-    intros σ2 (?&Hdisk&?&?). split_and!; try congruence.
+    intros Hsynced (Hheap&Hmatch_curr&?&?&?).
+    intros σ2 (?&Hdisk&?&?&?). split_and!; try congruence.
     destruct Hmatch_curr as (Hdom&Hvals).
     destruct Hdisk as (Hdom'&Hvals').
     split; first congruence.
@@ -1387,7 +1441,7 @@ Section translate.
         inversion H1; monad_inv; subst; clear H1.
         destruct (heap pσ1 !! l) eqn:Heq; subst.
         ** inversion H5; monad_inv; subst.
-           destruct Hmatch_curr as (?&?&?&?).
+           destruct Hmatch_curr as (?&?&?&?&?).
            do 4 eexists.
            split_and!.
            *** econstructor; eauto; repeat econstructor; eauto.
@@ -1424,7 +1478,7 @@ Section translate.
         inversion H1; monad_inv; subst; clear H1.
         destruct (heap pσ1 !! l) eqn:Heq; subst.
         ** inversion H5; monad_inv; subst.
-           destruct Hmatch_curr as (?&?&?&?).
+           destruct Hmatch_curr as (?&?&?&?&?).
            do 4 eexists.
            split_and!.
            *** econstructor; eauto; repeat econstructor; eauto.
@@ -1441,7 +1495,7 @@ Section translate.
         destruct x0. destruct n; monad_inv.
         destruct (heap pσ1 !! l) eqn:Heq; subst.
         ** inversion H5; monad_inv; subst.
-           destruct Hmatch_curr as (?&?&?&?).
+           destruct Hmatch_curr as (?&?&?&?&?).
            do 4 eexists.
            split_and!.
            *** econstructor; eauto; repeat econstructor; eauto.
@@ -1459,7 +1513,7 @@ Section translate.
            split_and!.
            *** econstructor; eauto; repeat econstructor; eauto.
            *** split_and!; eauto. destruct pσ1, pσ1' => //=.
-               simpl in H0, H3. rewrite -H0 -H3. eauto.
+               simpl in H0, H2. rewrite -H0 -H2. eauto.
            *** rewrite //=. intros; split; eauto.
                right. intuition congruence.
       * inversion Hstep; monad_inv.
@@ -1469,11 +1523,13 @@ Section translate.
            split_and!.
            *** econstructor; eauto; repeat econstructor; eauto.
            *** split_and!; eauto. destruct pσ1, pσ1' => //=.
-               simpl in H0, H3. intuition congruence.
+               simpl in H0, H2. intuition congruence.
            *** rewrite //=. intros; split; eauto.
-    - rewrite /head_step//= in Hstep.
+    - (* Primitive2 *)
+      rewrite /head_step//= in Hstep.
       destruct op; monad_inv; destruct_head.
-      * inversion Hstep; monad_inv.
+      * (* AllocN *)
+        inversion Hstep; monad_inv.
         inversion H; monad_inv; clear H. subst.
         inversion H1; monad_inv; subst; clear H1.
         inversion H2; monad_inv; subst; clear H2.
@@ -1485,7 +1541,7 @@ Section translate.
         ** econstructor.
            *** inversion H4; econstructor; eauto.
                { unfold check. rewrite ifThenElse_if; eauto. rewrite /=. econstructor. rewrite //=. }
-               { repeat econstructor => //=; try eapply H3. rewrite -H0; eapply H3. }
+               { repeat econstructor => //=; try eapply H5. rewrite -H0; eapply H5. }
            *** repeat econstructor => //=.
         ** split_and!; eauto. rewrite //=.
            simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
@@ -1583,7 +1639,7 @@ Section translate.
             split_and!; eauto.
             assert (ADP.curr_val x0 = ADP.curr_val c) as ->; last by congruence.
             {  edestruct H3 as (Hdom&Hlook'). edestruct (Hlook') as (?&?&?); eauto.
-               rewrite H4 in Hlook. inversion Hlook; subst. congruence.
+               rewrite H5 in Hlook. inversion Hlook; subst. congruence.
             }
         *** eauto.
       (* WriteOp *)
@@ -1663,6 +1719,23 @@ Section translate.
                 { repeat econstructor. rewrite decide_False //=. }
                 { eauto. }
                 intros; intuition.
+    - (* NewProph *)
+      rewrite /head_step//= in Hstep.
+      monad_inv; destruct_head.
+      inversion H; monad_inv; clear H.
+      inversion H0; monad_inv; clear H0.
+      inversion H2; monad_inv; clear H2.
+      do 4 eexists. inversion Hmatch_curr. intuition.
+        ** repeat (econstructor; eauto). rewrite -H7. eauto.
+        ** split_and!; eauto. rewrite //= H7. done.
+        ** rewrite //=.
+    - (* Resolve *)
+      rewrite /head_step//= in Hstep.
+      monad_inv; destruct_head.
+      do 4 eexists. inversion Hmatch_curr. intuition.
+      + repeat (econstructor; eauto).
+      + split_and!; eauto.
+      + done.
   Qed.
 
   Theorem prim_step'_compat_simulation e1 pσ1 pg1 pσ1' pg1' pσ2 pg2 κ e2 efs :
@@ -2072,12 +2145,13 @@ Section translate.
     inversion 1; subst.
     inversion H1; subst.
     intros pσ2 Hcompat.
-    destruct Hcompat as (?&?&?&?).
+    destruct Hcompat as (?&?&?&?&?).
     simpl in *.
     edestruct (disk_compat_crash_inv) as (pd1&?&?); eauto.
     exists ({| trace := trace σ1;
                heap := heap σ1;
                oracle := oracle σ1;
+               used_proph_id := used_proph_id σ1;
                world := pd1 |}).
     split.
     { split_and!; eauto. }
@@ -2150,6 +2224,7 @@ Section translate.
     {| heap := heap σ;
        world := (d_to_pd (world σ) : (@ffi_state ADP.disk_model));
        trace := trace σ;
+       used_proph_id := used_proph_id σ;
        oracle := oracle σ |}.
 
   Lemma stable_disk_config_compat_unique_init e σ ρ1 :
@@ -2158,7 +2233,7 @@ Section translate.
     ρ1 = ([e], (dstate_to_pstate σ, tt)).
   Proof.
     intros Hstable. destruct ρ1 as (?&(?&?)).
-    destruct 1 as ((Hheap&Hdisk&Htrace&Horacle)&?&Htp). simpl in Htp; inversion Htp; subst.
+    destruct 1 as ((Hheap&Hdisk&Htrace&Horacle&?)&?&Htp). simpl in Htp; inversion Htp; subst.
     destruct g; do 2 f_equal.
     rewrite /dstate_to_pstate.
     destruct σ; destruct s.
@@ -2214,4 +2289,3 @@ End translate.
 (*
 Print Assumptions recv_adequate_transport.
 *)
-

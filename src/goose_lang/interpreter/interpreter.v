@@ -525,7 +525,7 @@ Section interpreter.
 
       (* Won't interpret anything involving prophecy variables. *)
       | NewProph => mfail_bt "NotImpl: prophecy variable." (* ignore *)
-      | Resolve ex e1 e2 => mfail_bt "NotImpl: resolve."   (* ignore *)
+      | Resolve e1 e2 => mfail_bt "NotImpl: resolve."   (* ignore *)
       end
     end.
 

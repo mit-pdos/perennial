@@ -142,7 +142,7 @@ Inductive expr :=
   | ExternalOp (op: ffi_opcode) (e: expr)
   (* Prophecy *)
   | NewProph
-  | Resolve (e0 : expr) (e1 : expr) (e2 : expr) (* wrapped expr, proph, val *)
+  | Resolve (e1 : expr) (e2 : expr) (* proph, val *)
 with val :=
   | LitV (l : base_lit)
   | RecV (f x : binder) (e : expr)
@@ -214,13 +214,14 @@ Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0)
 (** The state: heaps of vals. *)
 Record state : Type := {
   heap: gmap loc (nonAtomic val);
+  used_proph_id: gset proph_id;
   world: ffi_state;
   trace: Trace;
   oracle: Oracle;
 }.
 Definition global_state : Type := ffi_global_state.
 
-Global Instance eta_state : Settable _ := settable! Build_state <heap; world; trace; oracle>.
+Global Instance eta_state : Settable _ := settable! Build_state <heap; used_proph_id; world; trace; oracle>.
 
 (* Note that ffi_step takes a val, which is itself parameterized by the
 external type, so the semantics of external operations depend on a definition of
@@ -252,12 +253,9 @@ Inductive goose_crash : state -> state -> Prop :=
 .
 
 
-(** An observation associates a prophecy variable (identifier) to a pair of
-values. The first value is the one that was returned by the (atomic) operation
-during which the prophecy resolution happened (typically, a boolean when the
-wrapped operation is a CmpXchg). The second value is the one that the prophecy
-variable was actually resolved to. *)
-Definition observation : Type := proph_id * (val * val).
+(** An observation associates a prophecy variable (identifier) to the
+value it is resolved to. *)
+Definition observation : Type := proph_id * val.
 
 Notation of_val := Val (only parsing).
 
@@ -396,8 +394,8 @@ Proof using ext.
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | NewProph, NewProph => left _
-      | Resolve e0 e1 e2, Resolve e0' e1' e2' =>
-        cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
+      | Resolve e1 e2, Resolve e1' e2' =>
+        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
       | _, _ => right _
       end
           with gov (v1 v2 : val) {struct v1} : Decision (v1 = v2) :=
@@ -620,7 +618,7 @@ Proof using ext.
      | ExternalOp op e => GenNode 20 [GenLeaf $ externOp op; go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
      | NewProph => GenNode 18 []
-     | Resolve e0 e1 e2 => GenNode 19 [go e0; go e1; go e2]
+     | Resolve e1 e2 => GenNode 19 [go e1; go e2]
      end
    with gov v :=
      match v with
@@ -658,7 +656,7 @@ Proof using ext.
      | GenNode 20 [GenLeaf (externOp op); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
      | GenNode 18 [] => NewProph
-     | GenNode 19 [e0; e1; e2] => Resolve (go e0) (go e1) (go e2)
+     | GenNode 19 [e1; e2] => Resolve (go e1) (go e2)
      | _ => Val $ LitV LitUnit (* dummy *)
      end
    with gov v :=
@@ -683,7 +681,7 @@ Global Instance val_countable : Countable val.
 Proof. refine (inj_countable of_val to_val _); auto using to_of_val. Qed.
 
 Global Instance state_inhabited : Inhabited state :=
-  populate {| heap := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
+  populate {| heap := inhabitant; used_proph_id := inhabitant; world := inhabitant; trace := inhabitant; oracle := inhabitant; |}.
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 
@@ -717,9 +715,8 @@ Inductive ectx_item :=
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
   | CmpXchgRCtx (v1 : val) (v2 : val)
-  | ResolveLCtx (ctx : ectx_item) (v1 : val) (v2 : val)
-  | ResolveMCtx (e0 : expr) (v2 : val)
-  | ResolveRCtx (e0 : expr) (e1 : expr)
+  | ResolveLCtx (v2 : val)
+  | ResolveRCtx (e1 : expr)
   | AtomicallyCtx (e0 : expr).
 
 (** Contextual closure will only reduce [e] in [Resolve e (Val _) (Val _)] if
@@ -754,9 +751,8 @@ Fixpoint fill_item (Ki : ectx_item) (e : expr) : expr :=
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
   | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
   | CmpXchgRCtx v0 v1 => CmpXchg (Val v0) (Val v1) e
-  | ResolveLCtx K v1 v2 => Resolve (fill_item K e) (Val v1) (Val v2)
-  | ResolveMCtx ex v2 => Resolve ex e (Val v2)
-  | ResolveRCtx ex e1 => Resolve ex e1 e
+  | ResolveLCtx v2 => Resolve e (Val v2)
+  | ResolveRCtx e1 => Resolve e1 e
   | AtomicallyCtx e1 => Atomically e e1
   end.
 
@@ -786,7 +782,7 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | ExternalOp op e => ExternalOp op (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
-  | Resolve ex e1 e2 => Resolve (subst x v ex) (subst x v e1) (subst x v e2)
+  | Resolve e1 e2 => Resolve (subst x v e1) (subst x v e2)
   end.
 
 Definition subst' (mx : binder) (v : val) : expr → expr :=
@@ -1037,7 +1033,6 @@ the heap. *)
 Definition allocateN : transition (state*global_state) loc :=
   suchThat (isFresh).
 
-(*
 Global Instance newProphId_gen: GenPred proph_id (state*global_state) (fun '(σ,g) p => p ∉ σ.(used_proph_id)).
 Proof.
   refine (fun _ '(σ,g) => Some (exist _ (fresh σ.(used_proph_id)) _)).
@@ -1046,7 +1041,6 @@ Defined.
 
 Definition newProphId: transition (state*global_state) proph_id :=
   suchThat (fun '(σ,g) p => p ∉ σ.(used_proph_id)).
-*)
 
 Instance gen_anyInt Σ: GenPred u64 Σ (fun _ _ => True).
   refine (fun z _ => Some (U64 z ↾ _)); auto.
@@ -1157,6 +1151,13 @@ Definition head_trans (e: expr) :
         ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
       | _ => undefined
       end)
+  | NewProph =>
+    atomically
+      (p ← newProphId;
+       modifyσ (set used_proph_id ({[ p ]} ∪.));;
+       ret $ LitV $ LitProphecy p)
+  | Resolve (Val (LitV (LitProphecy p))) (Val w) =>
+    ret ([(p, w)], Val $ LitV LitUnit, [])
   | _ => undefined
   end.
 
@@ -1263,9 +1264,6 @@ Proof.
     rewrite /head_step /= in H;
     repeat inv_undefined; eauto.
   - inversion H; subst; clear H. done.
-  - inversion H; subst; clear H. done.
-  - inversion H; subst; clear H. done.
-  - inversion H; subst; clear H. exfalso; eauto.
 Qed.
 
 Lemma head_ctx_step_atomic_val Ki e σ1 g1 κ e2 σ2 g2 efs :

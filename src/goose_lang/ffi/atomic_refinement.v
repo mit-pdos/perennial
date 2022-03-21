@@ -1195,7 +1195,9 @@ Section go_refinement.
           { rewrite /when. rewrite ifThenElse_else //. }
           { rewrite ?bool_decide_false //. }
         }
-    -  inv_expr_impl.
+    - inv_expr_impl.
+    - inv_expr_impl.
+    - inv_expr_impl.
   Qed.
 
   Theorem head_step_simulation_rev se1 sσ1 sg1 κ se2 sσ2 sg2 sefs ie1 iσ1 ig1 :
@@ -1435,6 +1437,8 @@ Section go_refinement.
       do 4 eexists. eapply head_step_atomically_fail.
       eapply op_impl_safe_ok; eauto.
       Unshelve. exact 0.
+    - inv_expr_impl.
+    - inv_expr_impl.
   Qed.
 
   Theorem head_step_atomic_simulation ie1 iσ1 ig1 κ ie2 iσ2 ig2 iefs se1 sσ1 sg1 :
