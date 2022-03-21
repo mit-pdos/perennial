@@ -1031,6 +1031,213 @@ Proof.
 Qed.
 
 (*****************************************************************)
+(* func (tuple *Tuple) killVersion(tid uint64) bool              *)
+(*****************************************************************)
+Theorem wp_tuple__killVersion tuple (tid : u64) tidown tidlast versL :
+  {{{ own_tuple_phys tuple tidown tidlast versL }}}
+    Tuple__killVersion #tuple #tid
+  {{{ (ok : bool), RET #ok; own_tuple_phys tuple (U64 0) tid (versL ++ [(tid, true, (U64 0))]) }}}.
+Proof.
+  iIntros (Φ) "HtuplePhys HΦ".
+  iNamed "HtuplePhys".
+  wp_call.
+  
+  (***********************************************************)
+  (* verNew := Version{                                      *)
+  (*     begin   : tid,                                      *)
+  (*     deleted : true,                                     *)
+  (* }                                                       *)
+  (* tuple.vers = append(tuple.vers, verNew)                 *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (wp_SliceAppend with "[HversL]"); [done | auto 10 with iFrame |].
+  iIntros (vers') "HversL". 
+  wp_storeField.
+
+  (***********************************************************)
+  (* tuple.tidown = 0                                        *)
+  (* tuple.tidlast = tid                                     *)
+  (***********************************************************)
+  do 2 wp_storeField.
+
+  iModIntro.
+  iApply "HΦ".
+  unfold own_tuple_phys.
+  iExists _.
+  iFrame.
+  iExactEq "HversL".
+  unfold named.
+  f_equal.
+  by rewrite fmap_app.
+Qed.
+
+(*****************************************************************)
+(* func (tuple *Tuple) KillVersion(tid uint64) uint64            *)
+(*****************************************************************)
+Theorem wp_tuple__KillVersion tuple (tid : u64) (key : u64) γ :
+  is_tuple tuple key γ -∗
+  {{{ active_tid γ tid ∗ mods_token γ key tid }}}
+    Tuple__KillVersion #tuple #tid
+  {{{ (ret : u64), RET #ret; active_tid γ tid }}}.
+Proof.
+  iIntros "#Htuple" (Φ) "!> [Hactive Htoken] HΦ".
+  iNamed "Htuple".
+  wp_call.
+  
+  (***********************************************************)
+  (* tuple.latch.Lock()                                      *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (acquire_spec with "Hlock").
+  iIntros "[Hlocked HtupleOwn]".
+  iDestruct "HtupleOwn" as (tidown tidlast versL) "HtupleOwn".
+  iNamed "HtupleOwn".
+  iDestruct (active_ge_min with "Hactive Hgclb") as "%HtidGe".
+  wp_pures.
+  
+  (***********************************************************)
+  (* ok := tuple.killVersion(tid)                            *)
+  (***********************************************************)
+  wp_apply (wp_tuple__killVersion with "[$Htidown $Htidlast Hvers HversL]"); first eauto with iFrame.
+  iIntros (ok) "HtuplePhys".
+  iNamed "HtuplePhys".
+  wp_pures.
+
+  (***********************************************************)
+  (* var ret uint64                                          *)
+  (* if ok {                                                 *)
+  (*     ret = common.RET_SUCCESS                            *)
+  (* } else {                                                *)
+  (*     ret = common.RET_NONEXIST                           *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_apply (wp_ref_of_zero); first done.
+  iIntros (retR) "HretR".
+  wp_pures.
+  replace ok with (bool_decide (ok = true)); last first.
+  { case_bool_decide.
+    - done.
+    - by apply not_true_is_false in H.
+  }
+  wp_apply (wp_If_join_evar with "[HretR]").
+  { iIntros (b') "%Eb'".
+    case_bool_decide.
+    - wp_if_true.
+      wp_store.
+      iModIntro.
+      iSplit; first done.
+      replace #0 with #(if b' then 0 else 1) by by rewrite Eb'.
+      iNamedAccu.
+    - wp_if_false.
+      wp_store.
+      iModIntro.
+      iSplit; first done.
+      by rewrite Eb'.
+  }
+  iIntros "HretR".
+  wp_pures.
+  
+  (***********************************************************)
+  (* tuple.rcond.Broadcast()                                 *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "[$HrcondC]").
+  wp_pures.
+  
+  (***********************************************************)
+  (* tuple.latch.Unlock()                                    *)
+  (***********************************************************)
+  wp_loadField.
+  unfold mods_token.
+  iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
+
+  iAssert ((|==> vchain_ptsto γ 1 key vchain) ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as "[>Hvchain ->]".
+  { case_decide.
+    - by iDestruct (vchain_false with "Hvchain Hvchain'") as "[]".
+    - iDestruct (vchain_combine with "Hvchain Hvchain'") as "[Hvchain ->]"; last auto.
+      apply Qp_three_quarter_quarter.
+  }
+  set vals := replicate (int.nat (int.Z tid - int.Z tidlast)) (spec_lookup versL tid).
+  set vchain' := vchain ++ vals.
+  iMod (vchain_update vchain' with "Hvchain") as "Hvchain"; first by apply prefix_app_r.
+  iDestruct (vchain_witness with "Hvchain") as "#HvchainW".
+  iNamed "Hwellformed".
+  
+  wp_apply (release_spec with "[-HΦ Hactive HretR]").
+  { iFrame "Hlock Hlocked".
+    iNext.
+    iExists (U64 0), tid, _.
+    do 2 iExists _.
+    iExists vchain'.
+    iFrame.
+    iSplit.
+    { (* Prove [HtupleAbs]. *)
+      iPureIntro.
+      simpl.
+      intros tidx Htidx.
+      destruct (decide (int.Z tidx ≤ int.Z tidlast)); subst vchain'.
+      - rewrite lookup_app_l; last word.
+        rewrite HtupleAbs; last word.
+        symmetry.
+        f_equal.
+        apply spec_lookup_snoc with tid; [auto | word].
+      - rewrite lookup_app_r; last word.
+        subst vals.
+        rewrite lookup_replicate_2; last word.
+        f_equal.
+        rewrite (spec_lookup_snoc _ _ _ tid); [| auto | word].
+        apply spec_lookup_extended with tidlast; [word | word | auto].
+    }
+    iSplit.
+    { (* Prove [HvchainLen]. *)
+      iPureIntro.
+      subst vchain'.
+      rewrite app_length.
+      (* Set Printing Coercions. *)
+      replace (Z.of_nat _) with ((Z.of_nat (length vchain)) + (Z.of_nat (length vals))) by word.
+      rewrite HvchainLen.
+      subst vals.
+      rewrite replicate_length.
+      replace (Z.of_nat _) with ((int.Z tid) - (int.Z tidlast)) by word.
+      word.
+    }
+    iSplit; last done.
+    { (* Prove [Hwellformed]. *)
+      iPureIntro.
+      split.
+      { (* Prove [HtidlastGe]. *)
+        apply Forall_app_2.
+        - apply (Forall_impl _ _ _ HtidlastGe).
+          word.
+        - by rewrite Forall_singleton.
+      }
+      split.
+      { (* Prove [HexistsLt]. *)
+        intros tidx Htidx.
+        apply Exists_app.
+        left.
+        by apply HexistsLt.
+      }
+      split.
+      { (* Prove [HtidgcLe]. *)
+        destruct versL eqn:EversL; first contradiction.
+        simpl.
+        apply Forall_app_2; first done.
+        by apply Forall_singleton.
+      }
+      { (* Prove [Hnotnil]. *)
+        apply not_eq_sym.
+        apply app_cons_not_nil.
+      }
+    }
+  }
+  
+  wp_pures.
+  wp_load.
+  case_bool_decide; by iApply "HΦ".
+Qed.
+
+(*****************************************************************)
 (* func (tuple *Tuple) Free(tid uint64)                          *)
 (*****************************************************************)
 Theorem wp_tuple__Free tuple (tid : u64) (key : u64) (versL : list (u64 * u64 * u64)) γ :
