@@ -8,6 +8,8 @@ Notation Value x := (Some x : dbval).
 
 Definition N_TXN_SITES : Z := 64.
 
+Definition sids_all := U64 <$> seqZ 0 N_TXN_SITES.
+
 (* Logical version chain. *)
 Local Definition vchainR := mono_listR (leibnizO dbval).
 Local Definition key_vchainR := gmapR u64 vchainR.
@@ -15,8 +17,6 @@ Local Definition key_vchainR := gmapR u64 vchainR.
 Local Definition tidsR := gmap_viewR u64 (leibnizO unit).
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
-
-Local Definition sids_all := U64 <$> seqZ 0 N_TXN_SITES.
 
 Lemma sids_all_lookup (sid : u64) :
   int.Z sid < N_TXN_SITES ->
