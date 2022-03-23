@@ -1,0 +1,32 @@
+= Idea behind epoch ctr server
+There's a normal spec for a kv server, with Put/Get ops.
+That spec involves the client having owning part of the kv pairs, and being able
+to do whatever they want with it.
+
+The per-epoch key-value pair is owned by some front-end server.
+For as long as that epoch is the latest for that key, the front-end server can
+do whatever it wants as though it's a client of a normal ctr server.
+
+Here are the differences:
+at the beginning of an epoch, we don't know what the kv pair's value is. At the
+beginning of time in a normal ctr server, we might know the value is some
+default (e.g. 0).
+
+We might have wanted to say "if the server's current epoch number is e, then the
+epoch points-to for e is equal to the real points-to". If a client gets an epoch
+points-to from the config server, this can't work. Instead, we need to
+distinguish "the client owns epoch e" and "the client owns epoch e, and knows
+the kv pair as of epoch e has value v".
+
+=
+Two logical cases of epoch-based ctr.Get():
+1. want to do a Get() for a client, and want to match up end-user half points-to
+   with server half points-to.
+2. want to do a Get() just to get the latest value (as long as epoch is not
+   expired).
+
+There's a kv_ptsto_epoch and there's a kv_ptsto.
+When doing a Get(), sometimes I might just want to only use the kv_ptsto_epoch.
+Other times, I might want to also fire a fupd against the kv_ptsto.
+
+That means I'm gonna have two different specs.... Feels a bit odd.
