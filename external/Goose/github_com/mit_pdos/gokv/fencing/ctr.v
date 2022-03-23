@@ -56,6 +56,26 @@ Definition DecGetArgs: val :=
     struct.storeF GetArgs "epoch" "args" (marshal.Dec__GetInt "dec");;
     "args".
 
+Definition GetReply := struct.decl [
+  "epoch" :: uint64T;
+  "val" :: uint64T
+].
+
+Definition EncGetReply: val :=
+  rec: "EncGetReply" "args" :=
+    let: "enc" := marshal.NewEnc #16 in
+    marshal.Enc__PutInt "enc" (struct.loadF GetReply "epoch" "args");;
+    marshal.Enc__PutInt "enc" (struct.loadF GetReply "val" "args");;
+    marshal.Enc__Finish "enc".
+
+Definition DecGetReply: val :=
+  rec: "DecGetReply" "raw_args" :=
+    let: "dec" := marshal.NewDec "raw_args" in
+    let: "args" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
+    struct.storeF GetReply "epoch" "args" (marshal.Dec__GetInt "dec");;
+    struct.storeF GetReply "val" "args" (marshal.Dec__GetInt "dec");;
+    "args".
+
 (* client.go *)
 
 Definition RPC_GET : expr := #0.
@@ -121,6 +141,7 @@ Definition MakeClerk: val :=
 Definition Server := struct.decl [
   "mu" :: ptrT;
   "v" :: uint64T;
+  "lastEpoch" :: uint64T;
   "lastSeq" :: mapT uint64T;
   "lastReply" :: mapT uint64T;
   "lastCID" :: uint64T
@@ -129,22 +150,34 @@ Definition Server := struct.decl [
 Definition Server__Put: val :=
   rec: "Server__Put" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    let: ("last", "ok") := MapGet (struct.loadF Server "lastSeq" "s") (struct.loadF PutArgs "cid" "args") in
-    let: "seq" := struct.loadF PutArgs "seq" "args" in
-    (if: "ok" && ("seq" ≤ "last")
-    then #()
-    else
-      struct.storeF Server "v" "s" (struct.loadF PutArgs "v" "args");;
-      MapInsert (struct.loadF Server "lastSeq" "s") (struct.loadF PutArgs "cid" "args") "seq";;
+    (if: struct.loadF PutArgs "epoch" "args" < struct.loadF Server "lastEpoch" "s"
+    then
       lock.release (struct.loadF Server "mu" "s");;
-      #()).
+      #()
+    else
+      struct.storeF Server "lastEpoch" "s" (struct.loadF PutArgs "epoch" "args");;
+      let: ("last", "ok") := MapGet (struct.loadF Server "lastSeq" "s") (struct.loadF PutArgs "cid" "args") in
+      let: "seq" := struct.loadF PutArgs "seq" "args" in
+      (if: "ok" && ("seq" ≤ "last")
+      then #()
+      else
+        struct.storeF Server "v" "s" (struct.loadF PutArgs "v" "args");;
+        MapInsert (struct.loadF Server "lastSeq" "s") (struct.loadF PutArgs "cid" "args") "seq";;
+        lock.release (struct.loadF Server "mu" "s");;
+        #())).
 
 Definition Server__Get: val :=
-  rec: "Server__Get" "s" :=
+  rec: "Server__Get" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    let: "ret" := struct.loadF Server "v" "s" in
-    lock.release (struct.loadF Server "mu" "s");;
-    "ret".
+    (if: struct.loadF GetArgs "epoch" "args" < struct.loadF Server "lastEpoch" "s"
+    then
+      lock.release (struct.loadF Server "mu" "s");;
+      #0
+    else
+      struct.storeF Server "lastEpoch" "s" (struct.loadF GetArgs "epoch" "args");;
+      let: "ret" := struct.loadF Server "v" "s" in
+      lock.release (struct.loadF Server "mu" "s");;
+      "ret").
 
 Definition Server__GetFreshCID: val :=
   rec: "Server__GetFreshCID" "s" :=
@@ -163,9 +196,10 @@ Definition StartServer: val :=
     struct.storeF Server "lastSeq" "s" (NewMap uint64T #());;
     struct.storeF Server "lastReply" "s" (NewMap uint64T #());;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_GET (λ: "args" "reply",
+    MapInsert "handlers" RPC_GET (λ: "raw_args" "reply",
+      let: "args" := DecGetArgs "raw_args" in
       let: "enc" := marshal.NewEnc #8 in
-      marshal.Enc__PutInt "enc" (Server__Get "s");;
+      marshal.Enc__PutInt "enc" (Server__Get "s" "args");;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
       );;

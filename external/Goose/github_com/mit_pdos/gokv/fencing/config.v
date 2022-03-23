@@ -37,7 +37,9 @@ Definition Clerk__Lock: val :=
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
     let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_LOCK (marshal.Enc__Finish "enc") "reply_ptr" #100 in
     (if: "err" ≠ #0
-    then log.Fatalf (#(str"config: client failed to run RPC on config server"))
+    then
+      (* log.Println("config: client failed to run RPC on config server") *)
+      grove_ffi.Exit #1
     else #());;
     let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
     marshal.Dec__GetInt "dec".
@@ -47,7 +49,9 @@ Definition Clerk__Get: val :=
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
     let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_LOCK (NewSlice byteT #0) "reply_ptr" #100 in
     (if: "err" ≠ #0
-    then Panic ("config: client failed to run RPC on config server")
+    then
+      (* log.Println("config: client failed to run RPC on config server") *)
+      grove_ffi.Exit #1
     else #());;
     let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
     marshal.Dec__GetInt "dec".
