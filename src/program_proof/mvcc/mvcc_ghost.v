@@ -157,10 +157,16 @@ Lemma site_min_tid_agree γ (sid : u64) tidN tidN' :
   ⌜tidN = tidN'⌝.
 Admitted.
 
-Lemma site_min_tid_update {γ sid tidN tidN'} tidN'' :
+Lemma site_min_tid_update {γ sid tidN} tidN' :
+  (tidN ≤ tidN')%nat ->
   site_min_tid_half_auth γ sid tidN -∗
-  site_min_tid_half_auth γ sid tidN' ==∗
-  site_min_tid_half_auth γ sid tidN'' ∗ site_min_tid_half_auth γ sid tidN''.
+  site_min_tid_half_auth γ sid tidN ==∗
+  site_min_tid_half_auth γ sid tidN' ∗ site_min_tid_half_auth γ sid tidN'.
+Admitted.
+
+Lemma site_min_tid_witness {γ sid tidN} :
+  site_min_tid_half_auth γ sid tidN -∗
+  site_min_tid_lb γ sid tidN.
 Admitted.
 
 Definition min_tid_lb γ tidN : iProp Σ :=

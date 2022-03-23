@@ -147,17 +147,23 @@ Definition TxnMgr__getMinActiveTIDSite: val :=
   rec: "TxnMgr__getMinActiveTIDSite" "txnMgr" "sid" :=
     let: "site" := SliceGet ptrT (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
     lock.acquire (struct.loadF TxnSite "latch" "site");;
-    let: "min" := ref_to uint64T config.TID_SENTINEL in
+    let: "tidnew" := ref (zero_val uint64T) in
+    "tidnew" <-[uint64T] genTID "sid";;
+    Skip;;
+    (for: (λ: <>, ![uint64T] "tidnew" ≤ struct.loadF TxnSite "tidLast" "site"); (λ: <>, Skip) := λ: <>,
+      "tidnew" <-[uint64T] genTID "sid";;
+      Continue);;
+    struct.storeF TxnSite "tidLast" "site" (![uint64T] "tidnew");;
+    let: "tidmin" := ref_to uint64T (![uint64T] "tidnew") in
     ForSlice uint64T <> "tid" (struct.loadF TxnSite "tidsActive" "site")
-      (if: "tid" < ![uint64T] "min"
-      then "min" <-[uint64T] "tid"
+      (if: "tid" < ![uint64T] "tidmin"
+      then "tidmin" <-[uint64T] "tid"
       else #());;
     lock.release (struct.loadF TxnSite "latch" "site");;
-    ![uint64T] "min".
+    ![uint64T] "tidmin".
 
 (* *
-    * This function returns the minimal TID of the active txns. If there is no
-    * active txns, it returns `config.TID_SENTINEL`. *)
+    * This function returns a lower bound of the active TID. *)
 Definition TxnMgr__getMinActiveTID: val :=
   rec: "TxnMgr__getMinActiveTID" "txnMgr" :=
     let: "min" := ref_to uint64T config.TID_SENTINEL in

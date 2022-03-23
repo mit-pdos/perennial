@@ -113,10 +113,15 @@ Definition own_txnsite (txnsite : loc) (sid : u64) γ : iProp Σ :=
     "HactiveAuth" ∷ site_active_tids_half_auth γ sid tidsactiveM ∗
     "%HactiveLM" ∷ ⌜(list_to_set tidsactiveL) = dom (gset u64) tidsactiveM⌝ ∗
     "HminAuth" ∷ site_min_tid_half_auth γ sid (int.nat tidmin) ∗
+    (*
     "%Htidmin" ∷ (⌜if decide (tidsactiveL = [])
                    then int.Z tidmin = int.Z tidlast
                    else minimal Z.le (int.Z tidmin) (int.Z <$> tidsactiveL) ∧ int.Z tidmin ≤ int.Z tidlast⌝) ∗
-    "%HtidlastNotin" ∷ (∀ tid, ⌜int.Z tidlast < int.Z tid -> tid ∉ dom (gset u64) tidsactiveM⌝) ∗
+     *)
+    (* "%Htidmin" ∷ (⌜if decide (tidsactiveL = []) then tidmin = tidlast else tidmin ∈ tidsactiveL⌝) ∗ *)
+    (* "%HtidminLe" ∷ (⌜Forall (λ tid, int.Z tidmin ≤ int.Z tid) (tidlast :: tidsactiveL)⌝) ∗ *)
+    "%HtidOrder" ∷ (⌜Forall (λ tid, int.Z tidmin ≤ int.Z tid ≤ int.Z tidlast) (tidlast :: tidsactiveL)⌝) ∗
+    "%HtidFree" ∷ (∀ tid, ⌜int.Z tidlast < int.Z tid -> tid ∉ dom (gset u64) tidsactiveM⌝) ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (own_txnsite _ _ _)) => unfold own_txnsite : core.
 
@@ -511,7 +516,6 @@ Proof.
   
   (***********************************************************)
   (* site := txnMgr.sites[sid]                               *)
-  (* site.latch.Lock()                                       *)
   (***********************************************************)
   wp_loadField.
   iMod (readonly_load with "HsitesS") as (q) "HsitesS'".
@@ -524,6 +528,9 @@ Proof.
   iIntros "HsitesS'".
   wp_pures.
 
+  (***********************************************************)
+  (* site.latch.Lock()                                       *)
+  (***********************************************************)
   iDestruct (big_sepL_lookup with "HsitesRP") as "HsiteRP"; first done.
   iClear (latch) "Hlatch Hlock".
   iNamed "HsiteRP".
@@ -585,8 +592,6 @@ Proof.
   (***********************************************************)
   (* site.tidLast = tid                                      *)
   (* site.tidsActive = append(site.tidsActive, tid)          *)
-  (* site.latch.Unlock()                                     *)
-  (* return tid                                              *)
   (***********************************************************)
   wp_load.
   wp_storeField.
@@ -597,6 +602,7 @@ Proof.
   wp_storeField.
   wp_loadField.
 
+  (* Open the global invariant. *)
   iApply fupd_wp.
   iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
   (* unfold mvcc_inv_gc_def. *)
@@ -606,48 +612,34 @@ Proof.
   (* Update the set of active tids. *)
   iDestruct (site_active_tids_agree with "HactiveAuth' HactiveAuth") as %->.
   iMod (site_active_tids_insert tidnew with "HactiveAuth' HactiveAuth") as "(HactiveAuth' & HactiveAuth & HactiveFrag)".
-  { apply HtidlastNotin. word. }
+  { apply HtidFree. word. }
   set tidsactiveM' := <[tidnew := tt]>tidsactiveM.
   (* Update the minimal tid. *)
   iDestruct (site_min_tid_agree with "HminAuth' HminAuth") as %->.
   clear tidmin'.
+  (*
   set tidmin' := if decide (tidsactiveL = []) then tidnew else tidmin.
   iMod (site_min_tid_update (int.nat tidmin') with "HminAuth' HminAuth") as "[HminAuth'  HminAuth]".
-  (* Close the invariant. *)
+*)
+  (* Close the global invariant. *)
   iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth' Hmin]") as "HinvgcO".
   { do 2 iExists _.
     iFrame "HactiveAuth' HminAuth'".
-    case_decide; subst tidmin' tidsactiveM'.
-    - (* Case: active tids are empty. *)
-      assert (Hempty : tidsactiveM = ∅).
-      { apply dom_empty_inv_L.
-        rewrite -HactiveLM.
-        set_solver.
-      }
-      rewrite Hempty.
-      rewrite dom_insert_L.
-      iApply big_sepS_insert; first set_solver.
-      iSplit; first done.
-      rewrite dom_empty_L.
-      by iApply big_sepS_empty.
-    - (* Case: active ids not empty. *)
-      destruct Htidmin as [Htidmin HtidminLe].
-      assert (Hempty : tidsactiveM ≠ ∅).
-      { unfold not. intros Hempty.
-        rewrite Hempty dom_empty_L in HactiveLM.
-        destruct H.
-        destruct tidsactiveL; [done | set_solver].
-      }
-      rewrite dom_insert_L.
-      iApply big_sepS_insert.
-      { apply HtidlastNotin. word. }
-      iSplit; last done.
-      iPureIntro.
-      apply Nat.le_trans with (int.nat tidlast); word.
+    subst tidsactiveM'.
+    rewrite dom_insert_L.
+    iApply big_sepS_insert.
+    { apply HtidFree. word. }
+    iSplit; last done.
+    iPureIntro.
+    apply Forall_inv in HtidOrder.
+    trans (int.nat tidlast); word.
   }
   iMod ("HinvgcC" with "[HinvgcO]") as "_"; first done.
   iModIntro.
-  
+    
+  (***********************************************************)
+  (* site.latch.Unlock()                                     *)
+  (***********************************************************)
   wp_apply (release_spec with "[-HΦ HtidRef HactiveFrag]").
   { iFrame "Hlock Hlocked".
     iNext.
@@ -656,7 +648,7 @@ Proof.
     iSplit.
     { (* Prove [HactiveLM]. *)
       iPureIntro.
-      (* Q: Why can't rewrite list_to_set_snoc? *)
+      (* Q: Why can't rewrite list_to_set_snoc? How to rewrite ≡? *)
       rewrite list_to_set_app_L.
       simpl.
       subst tidsactiveM'.
@@ -666,24 +658,20 @@ Proof.
     iSplit.
     { (* Prove [Htidmin]. *)
       iPureIntro.
-      destruct (decide (_ ++ _ = [])).
-      { by destruct (app_cons_not_nil tidsactiveL [] tidnew). }
-      subst tidmin'.
+      apply Forall_cons.
       split.
-      { case_decide.
-        - rewrite H.
-          simpl.
-          unfold minimal.
-          set_solver.
-        - destruct Htidmin as [Htidmin HtidminLe].
-          unfold minimal in *.
-          intros tidZ Hin.
-          rewrite fmap_app elem_of_app in Hin.
-          destruct Hin; first auto.
-          rewrite elem_of_list_singleton in H0.
-          word.
+      { split; last done.
+        apply Forall_inv in HtidOrder. word.
       }
-      { case_decide; word. }
+      apply Forall_app.
+      split; last first.
+      { apply Forall_singleton.
+        split; last done.
+        apply Forall_inv in HtidOrder. word.
+      }
+      apply Forall_inv_tail in HtidOrder.
+      apply (Forall_impl _ _ _ HtidOrder).
+      word.
     }
     iSplit; last done.
     { (* Prove [HtidlastNotin]. *)
@@ -697,11 +685,15 @@ Proof.
       - unfold not. intros contra.
         rewrite elem_of_singleton in contra.
         rewrite contra in Htidx. word.
-      - apply HtidlastNotin. word.
+      - apply HtidFree. word.
     }
   }
   wp_pures.
   wp_load.
+  
+  (***********************************************************)
+  (* return tid                                              *)
+  (***********************************************************)
   iApply "HΦ".
   iModIntro.
   (* Prove [active_tid γ tid]. *)
@@ -717,24 +709,252 @@ Qed.
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) getMinActiveTIDSite(sid uint64) uint64  *)
 (*****************************************************************)
-Theorem wp_txnMgr__getMinActiveTIDSite txnmgr sid γ :
+Theorem wp_txnMgr__getMinActiveTIDSite txnmgr (sid : u64) γ :
+  mvcc_inv_gc γ -∗
   is_txnmgr txnmgr γ -∗
-  {{{ True }}}
+  {{{ ⌜int.Z sid < int.Z N_TXN_SITES⌝ }}}
     TxnMgr__getMinActiveTIDSite #txnmgr #sid
   {{{ (tid : u64), RET #tid; site_min_tid_lb γ sid (int.nat tid) }}}.
 Proof.
-Admitted.
+  iIntros "#Hinvgc #Htxnmgr" (Φ) "!> %Hbound HΦ".
+  iNamed "Htxnmgr".
+  iMod (readonly_load with "HsitesS") as (q) "HsitesS'".
+  wp_call.
+
+  (***********************************************************)
+  (* site := txnMgr.sites[sid]                               *)
+  (***********************************************************)
+  wp_loadField.
+  list_elem sitesL (int.nat sid) as site.
+  { revert HsitesLen. unfold N_TXN_SITES in *. word. }
+  wp_apply (wp_SliceGet with "[$HsitesS']").
+  { iPureIntro.
+    rewrite list_lookup_fmap.
+    by rewrite Hsite_lookup.
+  }
+  iIntros "[HsitesS' _]".
+  wp_pures.
+  
+  (***********************************************************)
+  (* site.latch.Lock()                                       *)
+  (***********************************************************)
+  iDestruct (big_sepL_lookup with "HsitesRP") as "HsiteRP"; first done.
+  iClear (latch) "Hlatch Hlock".
+  iNamed "HsiteRP".
+  wp_loadField.
+  wp_apply (acquire_spec with "[$Hlock]").
+  iIntros "[Hlocked HsiteOwn]".
+  replace (U64 (Z.of_nat _)) with sid by word. 
+  iNamed "HsiteOwn".
+  iDestruct (typed_slice.is_slice_sz with "HactiveL") as "%HtidsactiveSz".
+  wp_pures.
+  
+  (***********************************************************)
+  (* var tidnew uint64                                       *)
+  (* tidnew = genTID(sid)                                    *)
+  (***********************************************************)
+  wp_apply (wp_ref_of_zero); first done.
+  iIntros (tidnewRef) "HtidnewRef".
+  wp_pures.
+  wp_apply (wp_genTID).
+  iIntros (tidnew) "_".
+  wp_store.
+  wp_pures.
+  
+  (***********************************************************)
+  (* for tid <= site.tidLast {                               *)
+  (*     tid = genTID(sid)                                   *)
+  (* }                                                       *)
+  (***********************************************************)
+  set P := λ (b : bool), (∃ (tidnew : u64),
+             "Htidlast" ∷ site ↦[TxnSite :: "tidLast"] #tidlast ∗
+             "HtidnewRef" ∷ tidnewRef ↦[uint64T] #tidnew ∗
+             "%Hexit" ∷ if b then ⌜True⌝ else ⌜(int.Z tidnew) > (int.Z tidlast)⌝)%I.
+  wp_apply (wp_forBreak_cond P with "[] [Htidlast HtidnewRef]").
+  { clear Φ.
+    iIntros (Φ) "!> Hloop HΦ".
+    iNamed "Hloop".
+    wp_load.
+    wp_loadField.
+    wp_pures.
+    case_bool_decide.
+    - wp_if_true.
+      wp_pures.
+      wp_apply (wp_genTID).
+      iIntros (tid'') "_".
+      wp_store.
+      iApply "HΦ".
+      unfold P.
+      eauto with iFrame.
+    - wp_if_false.
+      iApply "HΦ".
+      unfold P.
+      apply Znot_le_gt in H.
+      eauto with iFrame.
+  }
+  { unfold P. eauto with iFrame. }
+  iIntros "Hloop".
+  clear tidnew.
+  iNamed "Hloop".
+  wp_pures.
+  
+  (***********************************************************)
+  (* site.tidLast = tidnew                                   *)
+  (* var tidmin uint64 = tidnew                              *)
+  (***********************************************************)
+  wp_load.
+  wp_storeField.
+  wp_load.
+  wp_apply (wp_ref_to); first auto.
+  iIntros (tidminRef) "HtidminRef".
+  wp_pures.
+
+  (***********************************************************)
+  (* for _, tid := range site.tidsActive {                   *)
+  (*     if tid < tidmin {                                   *)
+  (*         tidmin = tid                                    *)
+  (*     }                                                   *)
+  (* }                                                       *)
+  (***********************************************************)
+  iDestruct (is_slice_small_acc with "HactiveL") as "[HactiveS HactiveC]".
+  wp_loadField.
+  clear P.
+  set P := λ (i : u64), (∃ (tidmin : u64), let tids := tidnew :: (take (int.nat i) tidsactiveL) in
+    "HtidminRef" ∷ tidminRef ↦[uint64T] #tidmin ∗
+    "%Helem" ∷ ⌜tidmin ∈ tids⌝ ∗
+    "%HtidminLe" ∷ (⌜Forall (λ tid, int.Z tidmin ≤ int.Z tid) tids⌝))%I.
+  (*
+    "%Hmin" ∷ (let tids := (tidnew :: (take (int.nat i) tidsactiveL))
+               in ⌜Forall (λ tidx, int.Z tidmin ≤ int.Z tidx) tids ∧ tidmin ∈ tids⌝))%I.
+*)
+  wp_apply (typed_slice.wp_forSlice P _ _ _ _ _ tidsactiveL with "[] [HtidminRef $HactiveS]").
+  { clear Φ.
+    iIntros (i tidx Φ) "!> (Hloop & %Hbound' & %Hlookup) HΦ".
+    iNamed "Hloop".
+    wp_load.
+    wp_if_destruct.
+    - wp_store.
+      iApply "HΦ".
+      iModIntro.
+      iExists _.
+      iFrame.
+      do 2 replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+      rewrite (take_S_r _ _ tidx); last done.
+      iSplit; iPureIntro.
+      { set_solver. }
+      { rewrite app_comm_cons.
+        rewrite Forall_app.
+        split.
+        { apply (Forall_impl _ _ _ HtidminLe). word. }
+        apply Forall_singleton. done.
+      }
+    - iApply "HΦ".
+      iModIntro.
+      iExists _.
+      iFrame.
+      do 2 replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+      rewrite (take_S_r _ _ tidx); last done.
+      iSplit; iPureIntro.
+      { set_solver. }
+      { rewrite app_comm_cons.
+        rewrite Forall_app.
+        split.
+        { apply (Forall_impl _ _ _ HtidminLe). word. }
+        apply Forall_singleton. word.
+      }
+  }
+  { iExists _.
+    iFrame.
+    iPureIntro.
+    rewrite take_0.
+    rewrite Forall_forall.
+    split; set_solver.
+  }
+  iIntros "[Hloop HactiveS]".
+  iNamed "Hloop".
+  rename tidmin0 into tidmin'.
+  rewrite -HtidsactiveSz in Helem HtidminLe.
+  rewrite firstn_all in Helem HtidminLe.
+
+  assert (Hle : int.Z tidmin ≤ int.Z tidmin').
+  { apply elem_of_cons in Helem.
+    destruct Helem.
+    - rewrite H.
+      apply Forall_inv in HtidOrder. word.
+    - apply Forall_inv_tail in HtidOrder.
+      rewrite Forall_forall in HtidOrder. word.
+  }
+  
+  (* Open the global invariant to update [tidmin]. *)
+  wp_apply (fupd_wp).
+  iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
+  iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvgcO HinvgcOAcc]".
+  { by apply sids_all_lookup. }
+  iDestruct "HinvgcO" as (tidsM tidmin'') "(HactiveAuth' & HminAuth' & Hmin)".
+  (* Agree on the set of active tids. *)
+  iDestruct (site_active_tids_agree with "HactiveAuth' HactiveAuth") as %->.
+  (* Update the minimal tid. *)
+  iDestruct (site_min_tid_agree with "HminAuth' HminAuth") as %->.
+  clear tidmin''.
+  iMod (site_min_tid_update (int.nat tidmin') with "HminAuth' HminAuth") as "[HminAuth' HminAuth]"; first word.
+  
+  (* Close the global invariant. *)
+  iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth' Hmin]") as "HinvgcO".
+  { do 2 iExists _.
+    iFrame "HactiveAuth' HminAuth'".
+    iPureIntro.
+    unfold set_Forall.
+    apply Forall_inv_tail in HtidminLe.
+    rewrite Forall_forall in HtidminLe.
+    rewrite -HactiveLM.
+    setoid_rewrite elem_of_list_to_set.
+    word.
+  }
+  iMod ("HinvgcC" with "[HinvgcO]") as "_"; first done.
+  iModIntro.
+
+  (* Obtaining [site_min_tid_lb] for the postcondition. *)
+  iDestruct (site_min_tid_witness with "HminAuth") as "#HminLb".
+  
+  (***********************************************************)
+  (* site.latch.Unlock()                                     *)
+  (* return tidmin                                           *)
+  (***********************************************************)
+  iDestruct ("HactiveC" with "HactiveS") as "HactiveL".
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ HtidminRef]").
+  { iFrame "Hlock Hlocked".
+    iNext.
+    do 5 iExists _.
+    iFrame "% ∗".
+    iSplit; iPureIntro.
+    { apply Forall_and.
+      split; first done.
+      apply Forall_cons.
+      split; first word.
+      apply Forall_inv_tail, Forall_and in HtidOrder.
+      destruct HtidOrder as [_ HtidOrder].
+      apply (Forall_impl _ _ _ HtidOrder).
+      word.
+    }
+    split; last done.
+    { intros tidx Hlt. apply HtidFree. word. }
+  }
+  wp_load.
+  by iApply "HΦ".
+Qed.
 
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) getMinActiveTID() uint64                *)
 (*****************************************************************)
 Theorem wp_txnMgr__getMinActiveTID txnmgr γ :
+  mvcc_inv_gc γ -∗
   is_txnmgr txnmgr γ -∗
   {{{ True }}}
     TxnMgr__getMinActiveTID #txnmgr
   {{{ (tid : u64), RET #tid; min_tid_lb γ (int.nat tid) }}}.
 Proof.
-  iIntros "#Htxnmgr" (Φ) "!> _ HΦ".
+  iIntros "#Hinvgc #Htxnmgr" (Φ) "!> _ HΦ".
   wp_call.
   
   (***********************************************************)
@@ -764,7 +984,7 @@ Proof.
     iNamed "Hloop".
     wp_pures.
     wp_load.
-    wp_apply (wp_txnMgr__getMinActiveTIDSite with "Htxnmgr").
+    wp_apply (wp_txnMgr__getMinActiveTIDSite with "Hinvgc Htxnmgr"); first done.
     iIntros (tid) "Htidlb".
     wp_pures.
     wp_load.
