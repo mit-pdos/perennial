@@ -7,7 +7,7 @@ From Goose Require github_com.tchajed.marshal.
 
 (* client.go *)
 
-Definition RPC_SET : expr := #0.
+Definition RPC_LOCK : expr := #0.
 
 Definition RPC_GET : expr := #1.
 
@@ -15,14 +15,29 @@ Definition Clerk := struct.decl [
   "cl" :: ptrT
 ].
 
-Definition Clerk__Set: val :=
-  rec: "Clerk__Set" "ck" "newFrontend" :=
+Definition Clerk__HeartbeatThread: val :=
+  rec: "Clerk__HeartbeatThread" "ck" "epoch" :=
+    let: "enc" := marshal.NewEnc #8 in
+    marshal.Enc__PutInt "enc" "epoch";;
+    let: "args" := marshal.Enc__Finish "enc" in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
+      grove_ffi.Sleep (("TIMEOUT_MS" * "MILLION") `quot` #3);;
+      let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_LOCK "args" "reply_ptr" #100 in
+      (if: ("err" ≠ #0) || (slice.len (![slice.T byteT] "reply_ptr") ≠ #0)
+      then Break
+      else Continue));;
+    #().
+
+Definition Clerk__Lock: val :=
+  rec: "Clerk__Lock" "ck" "newFrontend" :=
     let: "enc" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "enc" "newFrontend";;
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_SET (marshal.Enc__Finish "enc") "reply_ptr" #100 in
+    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_LOCK (marshal.Enc__Finish "enc") "reply_ptr" #100 in
     (if: "err" ≠ #0
-    then Panic ("config: client failed to run RPC on config server")
+    then log.Fatalf (#(str"config: client failed to run RPC on config server"))
     else #());;
     let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
     marshal.Dec__GetInt "dec".
@@ -30,7 +45,7 @@ Definition Clerk__Set: val :=
 Definition Clerk__Get: val :=
   rec: "Clerk__Get" "ck" :=
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_SET (NewSlice byteT #0) "reply_ptr" #100 in
+    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_LOCK (NewSlice byteT #0) "reply_ptr" #100 in
     (if: "err" ≠ #0
     then Panic ("config: client failed to run RPC on config server")
     else #());;
@@ -45,20 +60,78 @@ Definition MakeClerk: val :=
 
 (* server.go *)
 
+Definition TIMEOUT_MS : expr := #1000.
+
+Definition MILLION : expr := #1000000.
+
 Definition Server := struct.decl [
   "mu" :: ptrT;
   "data" :: uint64T;
-  "currentEpoch" :: uint64T
+  "currentEpoch" :: uint64T;
+  "epoch_cond" :: ptrT;
+  "currHolderActive" :: boolT;
+  "currHolderActive_cond" :: ptrT;
+  "heartbeatExpiration" :: uint64T
 ].
 
-Definition Server__Set: val :=
-  rec: "Server__Set" "s" "newFrontend" :=
+Definition Server__AcquireEpoch: val :=
+  rec: "Server__AcquireEpoch" "s" "newFrontend" :=
     lock.acquire (struct.loadF Server "mu" "s");;
+    Skip;;
+    (for: (λ: <>, struct.loadF Server "currHolderActive" "s"); (λ: <>, Skip) := λ: <>,
+      lock.condWait (struct.loadF Server "currHolderActive_cond" "s");;
+      Continue);;
+    struct.storeF Server "currHolderActive" "s" #true;;
     struct.storeF Server "data" "s" "newFrontend";;
     struct.storeF Server "currentEpoch" "s" (struct.loadF Server "currentEpoch" "s" + #1);;
+    let: "now" := grove_ffi.TimeNow #() in
+    struct.storeF Server "heartbeatExpiration" "s" ("now" + TIMEOUT_MS * MILLION);;
     let: "ret" := struct.loadF Server "currentEpoch" "s" in
     lock.release (struct.loadF Server "mu" "s");;
     "ret".
+
+Definition Server__HeartbeatListener: val :=
+  rec: "Server__HeartbeatListener" "s" :=
+    let: "epochToWaitFor" := ref_to uint64T #1 in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      lock.acquire (struct.loadF Server "mu" "s");;
+      Skip;;
+      (for: (λ: <>, struct.loadF Server "currentEpoch" "s" < ![uint64T] "epochToWaitFor"); (λ: <>, Skip) := λ: <>,
+        lock.condWait (struct.loadF Server "epoch_cond" "s");;
+        Continue);;
+      lock.release (struct.loadF Server "mu" "s");;
+      Skip;;
+      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+        let: "now" := grove_ffi.TimeNow #() in
+        lock.acquire (struct.loadF Server "mu" "s");;
+        (if: "now" < struct.loadF Server "heartbeatExpiration" "s"
+        then
+          let: "delay" := struct.loadF Server "heartbeatExpiration" "s" - "now" in
+          lock.release (struct.loadF Server "mu" "s");;
+          grove_ffi.Sleep "delay";;
+          Continue
+        else
+          struct.storeF Server "currHolderActive" "s" #false;;
+          lock.condSignal (struct.loadF Server "currHolderActive_cond" "s");;
+          "epochToWaitFor" <-[uint64T] struct.loadF Server "currentEpoch" "s" + #1;;
+          lock.release (struct.loadF Server "mu" "s");;
+          Break));;
+      Continue);;
+    #().
+
+Definition Server__Heartbeat: val :=
+  rec: "Server__Heartbeat" "s" "epoch" :=
+    lock.acquire (struct.loadF Server "mu" "s");;
+    let: "ret" := ref_to boolT #false in
+    (if: (struct.loadF Server "currentEpoch" "s" = "epoch")
+    then
+      let: "now" := grove_ffi.TimeNow #() in
+      struct.storeF Server "heartbeatExpiration" "s" ("now" + TIMEOUT_MS);;
+      "ret" <-[boolT] #true
+    else #());;
+    lock.release (struct.loadF Server "mu" "s");;
+    ![boolT] "ret".
 
 (* XXX: don't need to send fencing token here, because client won't need it *)
 Definition Server__Get: val :=
@@ -71,13 +144,18 @@ Definition Server__Get: val :=
 Definition StartServer: val :=
   rec: "StartServer" "me" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
+    struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "data" "s" #0;;
     struct.storeF Server "currentEpoch" "s" #0;;
+    struct.storeF Server "epoch_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
+    struct.storeF Server "currHolderActive" "s" #false;;
+    struct.storeF Server "currHolderActive_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
+    Fork (Server__HeartbeatListener "s");;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_SET (λ: "args" "reply",
+    MapInsert "handlers" RPC_LOCK (λ: "args" "reply",
       let: "dec" := marshal.NewDec "args" in
       let: "enc" := marshal.NewEnc #8 in
-      marshal.Enc__PutInt "enc" (Server__Set "s" (marshal.Dec__GetInt "dec"));;
+      marshal.Enc__PutInt "enc" (Server__AcquireEpoch "s" (marshal.Dec__GetInt "dec"));;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
       );;

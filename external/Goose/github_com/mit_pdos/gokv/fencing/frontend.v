@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+From Goose Require github_com.mit_pdos.gokv.fencing.config.
 From Goose Require github_com.mit_pdos.gokv.fencing.ctr.
 From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
 From Goose Require github_com.tchajed.marshal.
@@ -15,16 +16,17 @@ Definition Clerk := struct.decl [
 ].
 
 Definition Clerk__FetchAndIncrement: val :=
-  rec: "Clerk__FetchAndIncrement" "ck" "key" :=
+  rec: "Clerk__FetchAndIncrement" "ck" "key" "ret" :=
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
     let: "enc" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "enc" "key";;
     let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_FAI (marshal.Enc__Finish "enc") "reply_ptr" #100 in
     (if: "err" ≠ #0
-    then Panic "disconnect"
-    else #());;
-    let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
-    marshal.Dec__GetInt "dec".
+    then "err"
+    else
+      let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
+      "ret" <-[uint64T] marshal.Dec__GetInt "dec";;
+      #0).
 
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
@@ -36,10 +38,9 @@ Definition MakeClerk: val :=
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
+  "epoch" :: uint64T;
   "ck1" :: ptrT;
-  "ctr1" :: uint64T;
-  "ck2" :: ptrT;
-  "ctr2" :: uint64T
+  "ck2" :: ptrT
 ].
 
 (* pre: key == 0 or key == 1 *)
@@ -49,24 +50,22 @@ Definition Server__FetchAndIncrement: val :=
     let: "ret" := ref (zero_val uint64T) in
     (if: ("key" = #0)
     then
-      ctr.Clerk__Put (struct.loadF Server "ck1" "s") (struct.loadF Server "ctr1" "s" + #1);;
-      struct.storeF Server "ctr1" "s" (struct.loadF Server "ctr1" "s" + #1);;
-      "ret" <-[uint64T] struct.loadF Server "ctr1" "s"
+      "ret" <-[uint64T] ctr.Clerk__Get (struct.loadF Server "ck1" "s") (struct.loadF Server "epoch" "s");;
+      ctr.Clerk__Put (struct.loadF Server "ck1" "s") (![uint64T] "ret" + #1) (struct.loadF Server "epoch" "s")
     else
-      ctr.Clerk__Put (struct.loadF Server "ck2" "s") (struct.loadF Server "ctr2" "s" + #1);;
-      struct.storeF Server "ctr2" "s" (struct.loadF Server "ctr2" "s" + #1);;
-      "ret" <-[uint64T] struct.loadF Server "ctr2" "s");;
+      "ret" <-[uint64T] ctr.Clerk__Get (struct.loadF Server "ck1" "s") (struct.loadF Server "epoch" "s");;
+      ctr.Clerk__Put (struct.loadF Server "ck2" "s") (![uint64T] "ret" + #1) (struct.loadF Server "epoch" "s"));;
     lock.release (struct.loadF Server "mu" "s");;
     ![uint64T] "ret".
 
 Definition StartServer: val :=
-  rec: "StartServer" "me" "host1" "host2" :=
+  rec: "StartServer" "me" "configHost" "host1" "host2" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
+    let: "configCk" := config.MakeClerk "configHost" in
+    struct.storeF Server "epoch" "s" (config.Clerk__Lock "configCk" "me");;
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "ck1" "s" (ctr.MakeClerk "host1");;
     struct.storeF Server "ck2" "s" (ctr.MakeClerk "host2");;
-    struct.storeF Server "ctr1" "s" (ctr.Clerk__Get (struct.loadF Server "ck1" "s"));;
-    struct.storeF Server "ctr2" "s" (ctr.Clerk__Get (struct.loadF Server "ck2" "s"));;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" RPC_FAI (λ: "args" "reply",
       let: "dec" := marshal.NewDec "args" in

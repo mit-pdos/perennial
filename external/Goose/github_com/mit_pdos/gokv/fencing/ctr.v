@@ -10,6 +10,7 @@ From Goose Require github_com.tchajed.marshal.
 Definition PutArgs := struct.decl [
   "cid" :: uint64T;
   "seq" :: uint64T;
+  "epoch" :: uint64T;
   "v" :: uint64T
 ].
 
@@ -19,6 +20,7 @@ Definition EncPutArgs: val :=
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "cid" "args");;
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "seq" "args");;
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "v" "args");;
+    marshal.Enc__PutInt "enc" (struct.loadF PutArgs "epoch" "args");;
     marshal.Enc__Finish "enc".
 
 Definition DecPutArgs: val :=
@@ -28,6 +30,30 @@ Definition DecPutArgs: val :=
     struct.storeF PutArgs "cid" "args" (marshal.Dec__GetInt "dec");;
     struct.storeF PutArgs "seq" "args" (marshal.Dec__GetInt "dec");;
     struct.storeF PutArgs "v" "args" (marshal.Dec__GetInt "dec");;
+    struct.storeF PutArgs "epoch" "args" (marshal.Dec__GetInt "dec");;
+    "args".
+
+Definition GetArgs := struct.decl [
+  "cid" :: uint64T;
+  "seq" :: uint64T;
+  "epoch" :: uint64T
+].
+
+Definition EncGetArgs: val :=
+  rec: "EncGetArgs" "args" :=
+    let: "enc" := marshal.NewEnc #24 in
+    marshal.Enc__PutInt "enc" (struct.loadF GetArgs "cid" "args");;
+    marshal.Enc__PutInt "enc" (struct.loadF GetArgs "seq" "args");;
+    marshal.Enc__PutInt "enc" (struct.loadF GetArgs "epoch" "args");;
+    marshal.Enc__Finish "enc".
+
+Definition DecGetArgs: val :=
+  rec: "DecGetArgs" "raw_args" :=
+    let: "dec" := marshal.NewDec "raw_args" in
+    let: "args" := struct.alloc GetArgs (zero_val (struct.t GetArgs)) in
+    struct.storeF GetArgs "cid" "args" (marshal.Dec__GetInt "dec");;
+    struct.storeF GetArgs "seq" "args" (marshal.Dec__GetInt "dec");;
+    struct.storeF GetArgs "epoch" "args" (marshal.Dec__GetInt "dec");;
     "args".
 
 (* client.go *)
@@ -45,9 +71,15 @@ Definition Clerk := struct.decl [
 ].
 
 Definition Clerk__Get: val :=
-  rec: "Clerk__Get" "c" :=
+  rec: "Clerk__Get" "c" "epoch" :=
+    struct.storeF Clerk "seq" "c" (struct.loadF Clerk "seq" "c" + #1);;
+    let: "args" := struct.new GetArgs [
+      "epoch" ::= "epoch";
+      "cid" ::= struct.loadF Clerk "cid" "c";
+      "seq" ::= struct.loadF Clerk "seq" "c"
+    ] in
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "c") RPC_GET (NewSlice byteT #0) "reply_ptr" #100 in
+    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "c") RPC_GET (EncGetArgs "args") "reply_ptr" #100 in
     (if: "err" ≠ #0
     then Panic ("ctr: urpc call failed/timed out")
     else #());;
@@ -55,14 +87,15 @@ Definition Clerk__Get: val :=
     marshal.Dec__GetInt "dec".
 
 Definition Clerk__Put: val :=
-  rec: "Clerk__Put" "c" "v" :=
-    let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
+  rec: "Clerk__Put" "c" "v" "epoch" :=
     struct.storeF Clerk "seq" "c" (struct.loadF Clerk "seq" "c" + #1);;
     let: "args" := struct.new PutArgs [
       "cid" ::= struct.loadF Clerk "cid" "c";
       "seq" ::= struct.loadF Clerk "seq" "c";
-      "v" ::= "v"
+      "v" ::= "v";
+      "epoch" ::= "epoch"
     ] in
+    let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
     let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "c") RPC_GET (EncPutArgs "args") "reply_ptr" #100 in
     (if: "err" ≠ #0
     then
