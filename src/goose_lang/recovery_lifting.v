@@ -1,7 +1,5 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth.
-From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
 From Perennial.goose_lang Require Import crash_modality typing adequacy lang.
@@ -96,7 +94,7 @@ Proof.
   iSpecialize ("Hidemp" with "Hc").
   rewrite /state_interp//=.
   iFrame.
-  iDestruct "Hg" as "($&Hc&$)".
+  iDestruct "Hg" as "($&$&Hc&$)".
   iMod (cred_interp_incr_k _ (9 * ns + 10) with "Hc") as "(Hc&_)".
   assert (ns + (9 * ns + 10) = 10 * (ns + 1))%nat as -> by lia.
   iModIntro. iFrame.

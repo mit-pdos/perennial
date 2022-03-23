@@ -5,7 +5,7 @@ From iris.bi Require Import fractional.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
-From Perennial.base_logic Require Export frac_coPset.
+From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Export tactics notation.
@@ -386,6 +386,7 @@ Qed.
 (** Global ghost state for GooseLang. *)
 Class gooseGlobalGS Σ := GooseGlobalGS {
   goose_invGS : invGS Σ;
+  goose_prophGS :> proph_mapGS proph_id val Σ;
   goose_creditGS :> creditGS Σ;
   goose_ffiGlobalGS : ffiGlobalGS Σ;
 }.
@@ -430,6 +431,7 @@ Global Program Instance goose_irisGS `{G: !gooseGlobalGS Σ}:
   step_count_next := (λ n, 10 * (n + 1))%nat;
   global_state_interp g ns mj D κs :=
     (ffi_global_ctx goose_ffiGlobalGS g.(global_world) ∗
+     proph_map_interp κs g.(used_proph_id) ∗
      @crash_borrow_ginv _ goose_invGS _ ∗
      cred_interp ns ∗
      ⌜(/ 2 < mj ≤ 1) ⌝%Qp ∗
@@ -437,7 +439,7 @@ Global Program Instance goose_irisGS `{G: !gooseGlobalGS Σ}:
   fork_post _ := True%I;
 }.
 Next Obligation.
-  iIntros (Σ ? g ns q D κs) "($&$&Hcred&Htok)".
+  iIntros (Σ ? g ns q D κs) "($&$&$&Hcred&Htok)".
   iFrame. iMod (cred_interp_incr with "Hcred") as "($&_)". eauto.
 Qed.
 Next Obligation. intros => //=. lia. Qed.
@@ -680,20 +682,20 @@ Proof.
   iSplit; last first.
   { iIntros (????) "Hg HC".
     iAssert (crash_borrow_ginv) with "[Hg]" as "#Hinv".
-    { iDestruct "Hg" as "(_&#Hinv&_)". eauto. }
+    { iDestruct "Hg" as "(_&_&#Hinv&_)". eauto. }
     iDestruct ("H" with "[$]") as "H".
     iDestruct ("H" $! _) as "(_&H)".
     iApply ("H" with "[$]"); eauto. }
   destruct (language.to_val _).
   - iIntros (?????) "Hg HNC".
     iAssert (crash_borrow_ginv) with "[Hg]" as "#Hinv".
-    { iDestruct "Hg" as "(_&#Hinv&_)". eauto. }
+    { iDestruct "Hg" as "(_&_&#Hinv&_)". eauto. }
     iDestruct ("H" with "[$]") as "H".
     iDestruct ("H" $! _) as "(H&_)".
     iApply ("H" with "[$]"); eauto.
   - iIntros (????????) "Hσ Hg HNC".
     iAssert (crash_borrow_ginv) with "[Hg]" as "#Hinv".
-    { iDestruct "Hg" as "(_&#Hinv&_)". eauto. }
+    { iDestruct "Hg" as "(_&_&#Hinv&_)". eauto. }
     iDestruct ("H" with "[$]") as "H".
     iDestruct ("H" $! _) as "(H&_)".
     iApply ("H" with "[$] [$]"); eauto.
@@ -713,7 +715,8 @@ Proof.
   iIntros (Φ) "Htr HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 g1 ns mj D κ κs n) "(Hσ&?&?&?) Hg !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step; iFrame.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro. by iApply "HΦ".
 Qed.
 
@@ -727,7 +730,8 @@ Proof.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. iFrame.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (trace_update with "[$] [$]") as "(?&?)".
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
 Qed.
 
@@ -743,7 +747,8 @@ Proof.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
   iFrame. iMod (trace_update with "[$] [$]") as "(?&?)".
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro. iFrame; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
@@ -754,7 +759,9 @@ Proof.
   iIntros "He HΦ". iApply wp_lift_atomic_head_step; [done|].
   iIntros (σ1 g1 mj D ns κ κs n) "Hσ Hg !>"; iSplit; first by eauto.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. iFrame.
-  by iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  done.
 Qed.
 
 (** Heap *)
@@ -941,7 +948,8 @@ Proof.
     by rewrite (loc_add_0) in Hfresh.
   }
   { eauto. }
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro; iSplit; first done.
   iFrame.
   iApply "HΦ".
@@ -974,9 +982,11 @@ Proof.
   iIntros (Hlen Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 g1 ns mj D κ κs k) "[Hσ Hκs] Hg !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
+  rewrite /state_interp/=.
   assert (concat_replicate (int.nat n) (flatten_struct v) = []) as ->.
   { apply nil_length_inv. rewrite concat_replicate_length. lia. }
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   rewrite fmap_nil //= left_id. iFrame. iSplitL ""; eauto. by iApply "HΦ".
 Qed.
 
@@ -1026,7 +1036,8 @@ Proof.
   { simpl in Hlock. congruence. }
   iSplit; first by eauto 8.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro; iSplit=> //. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
 Qed.
@@ -1051,7 +1062,8 @@ Proof.
   iMod (na_heap_write_prepare _ _ _ _ Writing with "Hσ Hl") as (lk1 (Hlookup&Hlock)) "(?&?)"; first done.
   destruct lk1; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro. iSplit=>//. iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
@@ -1065,7 +1077,8 @@ Proof.
   iMod (na_heap_write_finish_vs _ _ _ _ (Reading 0) with "Hl Hσ") as (lkw (?&Hlock)) "(Hσ&Hl)"; first done.
   destruct lkw; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro. iSplit=>//. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
 Qed.
@@ -1085,7 +1098,8 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro. iSplit=>//. iFrame. iApply "HΦ"; by iFrame.
 Qed.
 
@@ -1104,7 +1118,8 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst. iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro. iSplit=>//. iFrame. iApply "HΦ". iApply "Hl_rest". iApply "Hl".
 Qed.
 
@@ -1140,7 +1155,8 @@ Proof.
   destruct lk; inversion Hlock; subst.
   iSplit; first by eauto 8. iNext; iIntros (v2' σ2 g2 efs Hstep); inv_head_step.
   rewrite bool_decide_false //.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro; iSplit=> //. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "Hl").
 Qed.
@@ -1159,7 +1175,8 @@ Proof.
   iModIntro.
   iSplit; first by eauto 8. iNext; iIntros (v2' σ2 g2 efs Hstep); inv_head_step.
   rewrite bool_decide_true //.
-  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$"; first by lia.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
   iModIntro. iSplit=>//. iFrame. iApply "HΦ".
   iApply ("Hl_rest" with "[$]").
 Qed.

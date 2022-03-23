@@ -1,7 +1,5 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth.
-From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
 From Perennial.goose_lang Require Export recovery_lifting.
@@ -32,11 +30,12 @@ Proof.
   iMod (trace_name_init σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   iMod (credit_name_init (n*4 + crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
   iDestruct (cred_frag_split with "Hcred") as "(Hpre&Hcred)".
+  iMod (proph_map_init κs g.(used_proph_id)) as (proph_names) "Hproph".
 
   iAssert (|={⊤}=> crash_borrow_ginv)%I with "[Hcred]" as ">#Hinv".
   { rewrite /crash_borrow_ginv. iApply (inv_alloc _). iNext. eauto. }
   (* TODO(RJ): reformulate init lemmas to better match what we need here. *)
-  set (hG := GooseGlobalGS _ _ (creditGS_update_pre _ _ name_credit) ffi_namesg).
+  set (hG := GooseGlobalGS _ _ proph_names (creditGS_update_pre _ _ name_credit) ffi_namesg).
   set (hL := GooseLocalGS Σ Hc ffi_names (na_heapGS_update_pre _ name_na_heap) (traceGS_update_pre Σ _ name_trace)).
   iExists state_interp, global_state_interp, fork_post.
   iExists _, _.

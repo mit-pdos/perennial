@@ -58,6 +58,10 @@ Class irisGS (Λ : language) (Σ : gFunctors) := IrisGS {
 }.
 Global Opaque iris_invGS.
 
+Global Arguments global_state_interp : simpl never.
+Global Arguments step_count_next : simpl never.
+
+
 (* [generationGS] captures the parameters that can change on each crash,
    and between machines in the distributed setting. *)
 Class generationGS (Λ : language) (Σ : gFunctors) := GenerationGS {
@@ -70,8 +74,10 @@ Class generationGS (Λ : language) (Σ : gFunctors) := GenerationGS {
   state_interp : state Λ → nat → iProp Σ;
 }.
 
-Arguments iris_crashGS {Λ Σ G} : rename.
-Arguments state_interp {Λ Σ G} : rename.
+Global Arguments state_interp : simpl never.
+
+Global Arguments iris_crashGS {Λ Σ G} : rename.
+Global Arguments state_interp {Λ Σ G} : rename.
 
 (* Define a weakestpre with an explicit crash invariant (i.e. there is a postcondition and a crash condition *)
 (* FIXME(RJ): [k] seems unused; get rid of it? *)

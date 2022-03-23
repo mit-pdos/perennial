@@ -261,10 +261,10 @@ lemmas. *)
       monad_simpl. }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    iMod (global_state_interp_le with "Hg") as "$".
-    { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iMod (na_heap_alloc_list tls _ l (Block_to_vals b) (Reading O) with "Hσ")
       as "(Hσ & Hblock & Hl)".
     { rewrite length_Block_to_vals. rewrite /block_bytes. lia. }
@@ -383,13 +383,13 @@ lemmas. *)
     }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    iMod (global_state_interp_le with "Hg") as "$".
-    { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
     iMod "Hclo". iIntros.
     destruct (decide (all_synced _)) as [Ha|Hna].
-    - iModIntro. monad_inv.
+    - monad_inv.
+      iMod (global_state_interp_le with "Hg") as "$".
+      { apply step_count_next_incr. }
       iAssert (⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝)%I with "[-]" as "%Hsynced".
       {
         iIntros (k bs Hin).
@@ -401,7 +401,9 @@ lemmas. *)
       iApply wp_value.
       iFrame. iApply ("Hϕ" with "[-]").
       simpl. iFrame. eauto.
-    - iModIntro. monad_inv.
+    - monad_inv.
+      iMod (global_state_interp_le with "Hg") as "$".
+      { apply step_count_next_incr. }
       iFrame. rewrite big_sepL_nil right_id.
       iApply ("IH" with "[$] [$]").
   Qed.
@@ -431,10 +433,10 @@ lemmas. *)
     }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    iMod (global_state_interp_le with "Hg") as "$".
-    { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".
     assert (b = b1); [ | subst b1 ].
     { apply Block_to_vals_ext_eq; intros.

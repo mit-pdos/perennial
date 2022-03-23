@@ -1,7 +1,5 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth frac agree gmap excl csum.
-From Perennial.base_logic.lib Require Import proph_map frac_coPset.
-From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation crash_borrow.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy spec_assert.
 From Perennial.goose_lang Require Import typing adequacy refinement.
@@ -552,7 +550,7 @@ Proof using Hrpre Hhpre Hcpre.
       eauto.
     { eapply trace_equiv_preserve_crash; eauto. }
     { eapply oracle_equiv_preserve_crash; eauto. }
-    iDestruct "Hg" as "(Hb_ginv&Hc&Hp)".
+    iDestruct "Hg" as "(Hb_ginv&$&Hc&Hp)".
     iMod (cred_interp_incr_k _ (9 * ns + 10) with "Hc") as "(Hc&Hfrag)".
     assert (∃ n0 : nat, 9 * ns + 10 = n * 4 + n0)%nat as (n0'&Heqn0').
     { exists (9 * ns + 10 - 4 * n)%nat. lia. }
@@ -563,7 +561,7 @@ Proof using Hrpre Hhpre Hcpre.
     rewrite /state_interp//=.
     iFrame.
     iSplitL "Hc".
-    { iExactEq "Hc". f_equal. lia. }
+    { iExactEq "Hc". f_equal. rewrite /step_count_next/=. lia. }
     iSplit.
     + iClear "∗". eauto.
     + iDestruct (source_pool_singleton with "Hpool") as "Hpool".

@@ -272,10 +272,10 @@ lemmas. *)
       monad_simpl. }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    iMod (global_state_interp_le with "Hg") as "$".
-    { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iMod (na_heap_alloc_list tls _ l (Block_to_vals (latest vm)) (Reading O) with "Hσ")
       as "(Hσ & Hblock & Hl)".
     { rewrite length_Block_to_vals. rewrite /block_bytes. lia. }
@@ -383,10 +383,10 @@ lemmas. *)
       repeat (monad_simpl; cbn). }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    iMod (global_state_interp_le with "Hg") as "$".
-    { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iMod (ghost_async_map_update_flush_big with "Hd H") as "[$ Ha]".
     iModIntro; iSplit; first done.
     iFrame.
@@ -413,10 +413,10 @@ lemmas. *)
       econstructor; eauto; [ econstructor; eauto| monad_simpl ]. }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
     apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    iMod (global_state_interp_le with "Hg") as "$".
-    { apply step_count_next_incr. }
     inv_head_step.
     monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iMod (ghost_async_map_async_put with "Hd Ha") as "[$ Ha]".
     { eauto. }
     assert (b = b0); [ | subst b0 ].

@@ -1,7 +1,5 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth.
-From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre dist_weakestpre.
 From Perennial.goose_lang Require Import crash_modality typing adequacy lang recovery_lifting.

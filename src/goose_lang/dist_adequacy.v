@@ -1,7 +1,5 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import auth.
-From Perennial.base_logic.lib Require Import proph_map.
-From Perennial.algebra Require Import proph_map.
 From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.program_logic Require Import recovery_weakestpre dist_weakestpre dist_adequacy.
 From Perennial.goose_lang Require Export recovery_lifting dist_lifting.
@@ -24,8 +22,9 @@ Proof.
   iIntros (Hinv ?) "".
   iMod (ffi_global_init _ _ g.(global_world)) as (ffi_namesg) "(Hgw&Hgstart)"; first by auto.
   iMod (credit_name_init (crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
+  iMod (proph_map_init κs g.(used_proph_id)) as (proph_names) "Hproph".
 
-  set (hG := GooseGlobalGS _ _ (creditGS_update_pre _ _ name_credit) ffi_namesg).
+  set (hG := GooseGlobalGS _ _ proph_names (creditGS_update_pre _ _ name_credit) ffi_namesg).
 
   iExists global_state_interp, fork_post.
   iExists _, _.
@@ -35,7 +34,7 @@ Proof.
   iAssert (|={⊤}=> crash_borrow_ginv)%I with "[Hcred]" as ">Hinv".
   { rewrite /crash_borrow_ginv. iApply (inv_alloc _). iNext. eauto. }
   iModIntro.
-  iFrame "Hgw Hinv Hcred_auth Htok".
+  iFrame "Hgw Hinv Hcred_auth Htok Hproph".
   iSplitR; first by eauto.
   iSplitL "Hwp"; last first.
   { iIntros (???) "Hσ".
