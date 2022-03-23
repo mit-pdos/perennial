@@ -370,8 +370,6 @@ Proof.
   }
   iNext; iIntros (v2 σ2 g2 efs Hstep).
   apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-  iMod (global_state_interp_le with "Hg") as "$".
-  { apply step_count_next_incr. }
   inv_head_step.
   monad_inv.
   iMod "Hclo". iIntros.
@@ -385,11 +383,16 @@ Proof.
       iDestruct (gen_heap.gen_heap_valid with "[$] [$]") as %Hlook.
       iPureIntro. eapply Ha in Hlook. eauto.
     }
+    monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iFrame. rewrite big_sepL_nil right_id.
     iMod ("Hclo'" with "[$Hm //]") as "HΦ".
-    iModIntro. monad_inv. iFrame. iApply wp_value. iApply ("HΦ" with "[-]").
+    iFrame. iApply wp_value. iApply ("HΦ" with "[-]").
     simpl. iFrame.
-  - iModIntro. monad_inv.
+  - monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iFrame. rewrite big_sepL_nil right_id.
     iApply ("IH" with "[$] [$]").
   Qed.
@@ -626,13 +629,13 @@ Proof.
   }
   iNext; iIntros (v2 σ2 g2 efs Hstep).
   apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-  iMod (global_state_interp_le with "Hg") as "$".
-  { apply step_count_next_incr. }
   inv_head_step.
   monad_inv.
   iMod "Hclo". iIntros.
   destruct (decide (all_synced _)) as [Ha|Hna].
-  - iModIntro. monad_inv.
+  - monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iAssert (⌜ (∀ k bs, m !! k = Some bs → fst bs = snd bs) ⌝)%I with "[-]" as "%Hsynced".
     {
       iIntros (k bs Hin).
@@ -642,10 +645,12 @@ Proof.
     }
     iFrame. rewrite big_sepL_nil right_id.
     iApply wpc_value.
-    iSplit.
+    iModIntro. iSplit.
     * iFrame. iApply ("HΦ" with "[-]"). iFrame. eauto.
     * iLeft in "HΦ". iModIntro. iApply ("HΦ" with "[-]"). iFrame.
-  - iModIntro. monad_inv.
+  - monad_inv.
+    iMod (global_state_interp_le with "Hg") as "$".
+    { apply step_count_next_incr. }
     iFrame. rewrite big_sepL_nil right_id.
     iApply ("IH" with "[$] [$]").
   Qed.
