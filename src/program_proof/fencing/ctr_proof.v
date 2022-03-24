@@ -10,10 +10,10 @@ Context `{!heapGS Σ}.
 Record ctr_names :=
   {}.
 
-Definition kv_epoch_unknown (k e:u64) : iProp Σ.
+Definition epoch_ptsto (e:u64) : iProp Σ.
 Admitted.
 
-Definition kv_epoch_ptsto (k e v:u64) : iProp Σ.
+Definition kv_epoch_ptsto (k e:u64) (v:option u64) : iProp Σ.
 Admitted.
 
 Definition kv_ptsto (k v:u64) : iProp Σ.
@@ -34,6 +34,7 @@ Lemma wp_Clerk__Put_typical {Eo Ei:coPset} Φ (k v:u64):
 Proof.
 Admitted.
 
+(*
 Lemma wp_Clerk__Put {Eo Ei:coPset} Φ (k e v:u64):
   (|={Eo,Ei}=> ∃ vold, kv_ptsto k vold ∗ kv_epoch_ptsto k e vold ∗
     (kv_ptsto k v ∗ kv_epoch_ptsto k e v ={Ei,Eo}=∗ Φ #v)) -∗
@@ -47,21 +48,17 @@ Lemma wp_Clerk__Put_unknown {Eo Ei:coPset} Φ (k e v:u64):
     WP Clerk__Put #() @ Eo {{ Φ }}.
 Proof.
 Admitted.
+*)
 
-Lemma wp_Clerk__Get_unknown {Eo Ei:coPset} ck (k e:u64):
+Lemma wp_Clerk__Get {Eo Ei Ei2:coPset} ck (k e:u64) :
   ∀ Φ,
   own_Clerk ck -∗
-  (|={Eo,Ei}=> ∃ v, kv_ptsto k v ∗ kv_epoch_unknown k e ∗
-    (kv_ptsto k v ∗ kv_epoch_ptsto k e v ={Ei,Eo}=∗ (own_Clerk ck -∗ Φ #v))) -∗
-    WP Clerk__Get #() @ Eo {{ Φ }}.
-Proof.
-Admitted.
-
-Lemma wp_Clerk__Get_unknown_epoch_only {Eo Ei:coPset} ck (k e:u64):
-  ∀ Φ,
-  own_Clerk ck -∗
-            (|={Eo,Ei}=> ∃ v, kv_epoch_unknown k e ∗ (kv_epoch_ptsto k e v ={Ei,Eo}=∗
-                                                              (own_Clerk ck -∗ Φ #v))) -∗
+  (|={Eo,Ei}=> ∃ latestEpoch, epoch_ptsto latestEpoch ∗
+    (*(⌜int.Z latestEpoch > int.Z e⌝ → epoch_ptsto latestEpoch ={Ei, Eo}=∗ Φ #EStale) ∗*) (* XXX: program exits in this case *)
+    (⌜int.Z latestEpoch ≤ int.Z e⌝ → epoch_ptsto e ={Ei}=∗ (* XXX: one inner mask is probably enough, thhough we could have multiple invariants *)
+     (∃ oldv, kv_epoch_ptsto k e oldv ∗ (∃ v, ⌜is_Some oldv → oldv = Some v⌝ →
+                                               kv_epoch_ptsto k e (Some v) ={Ei2,Eo}=∗
+                                                              (own_Clerk ck -∗ Φ #v))))) -∗
     WP Clerk__Get #ck #e @ Eo {{ Φ }}.
 Proof.
 Admitted.

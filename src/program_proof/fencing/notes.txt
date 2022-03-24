@@ -30,3 +30,28 @@ When doing a Get(), sometimes I might just want to only use the kv_ptsto_epoch.
 Other times, I might want to also fire a fupd against the kv_ptsto.
 
 That means I'm gonna have two different specs.... Feels a bit odd.
+
+= 2022-03-24 notes
+My planned specs for ctr involve both epoch kv points-tos *and* the
+client-facing kv points-to.
+
+An alternative would be for the ctr server to *only* know about the per-epoch kv
+points-to, and leave it to the user to relate it to something else. We'll return
+to that plan later.
+
+Here was the chain of reasoning that led to my plan.
+Initially, I wanted a non-logically-atomic spec for the ctr server.
+The pre and postcondition for ctr.put/get would have `kv_epoch_ptsto`.
+
+The linearization point for the end client's put/get is when the ctr server does
+its put/get. That would mean the ctr server would also have to be aware of the
+`kv_ptsto`. I later decided logical atomicity realized logical atomicity was
+important for the `kv_ptsto`. That led to my confusion about having multiple
+specs for the different things you might do with the ctr server (e.g. are you
+doing a read with only `kv_epoch_ptsto`, or do you also have `kv_ptsto`?)
+
+But, if we're going for logical atomicity, we can just make the ctr server
+unaware of the `kv_ptsto`. The ctr server can provide TaDa-style logically
+atomic spec `kv_epoch_ptsto`, which means that a user-chosen ghost callback will
+be run at linearization point, so the user can access the kv_ptsto in the
+callback.
