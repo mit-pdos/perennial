@@ -142,7 +142,7 @@ Inductive expr :=
   | ExternalOp (op: ffi_opcode) (e: expr)
   (* Prophecy *)
   | NewProph
-  | Resolve (e1 : expr) (e2 : expr) (* proph, val *)
+  | ResolveProph (e1 : expr) (e2 : expr) (* proph, val *)
 with val :=
   | LitV (l : base_lit)
   | RecV (f x : binder) (e : expr)
@@ -397,7 +397,7 @@ Proof using ext.
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
       | NewProph, NewProph => left _
-      | Resolve e1 e2, Resolve e1' e2' =>
+      | ResolveProph e1 e2, ResolveProph e1' e2' =>
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
       | _, _ => right _
       end
@@ -621,7 +621,7 @@ Proof using ext.
      | ExternalOp op e => GenNode 20 [GenLeaf $ externOp op; go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
      | NewProph => GenNode 18 []
-     | Resolve e1 e2 => GenNode 19 [go e1; go e2]
+     | ResolveProph e1 e2 => GenNode 19 [go e1; go e2]
      end
    with gov v :=
      match v with
@@ -659,7 +659,7 @@ Proof using ext.
      | GenNode 20 [GenLeaf (externOp op); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
      | GenNode 18 [] => NewProph
-     | GenNode 19 [e1; e2] => Resolve (go e1) (go e2)
+     | GenNode 19 [e1; e2] => ResolveProph (go e1) (go e2)
      | _ => Val $ LitV LitUnit (* dummy *)
      end
    with gov v :=
@@ -720,16 +720,9 @@ Inductive ectx_item :=
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
   | CmpXchgRCtx (v1 : val) (v2 : val)
-  | ResolveLCtx (v2 : val)
-  | ResolveRCtx (e1 : expr)
+  | ResolveProphLCtx (v2 : val)
+  | ResolveProphRCtx (e1 : expr)
   | AtomicallyCtx (e0 : expr).
-
-(** Contextual closure will only reduce [e] in [Resolve e (Val _) (Val _)] if
-the local context of [e] is non-empty. As a consequence, the first argument of
-[Resolve] is not completely evaluated (down to a value) by contextual closure:
-no head steps (i.e., surface reductions) are taken. This means that contextual
-closure will reduce [Resolve (CmpXchg #l #n (#n + #1)) #p #v] into [Resolve
-(CmpXchg #l #n #(n+1)) #p #v], but it cannot context-step any further. *)
 
 Definition fill_item (Ki : ectx_item) (e : expr) : expr :=
   match Ki with
@@ -756,8 +749,8 @@ Definition fill_item (Ki : ectx_item) (e : expr) : expr :=
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
   | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
   | CmpXchgRCtx v0 v1 => CmpXchg (Val v0) (Val v1) e
-  | ResolveLCtx v2 => Resolve e (Val v2)
-  | ResolveRCtx e1 => Resolve e1 e
+  | ResolveProphLCtx v2 => ResolveProph e (Val v2)
+  | ResolveProphRCtx e1 => ResolveProph e1 e
   | AtomicallyCtx e1 => Atomically e e1
   end.
 
@@ -787,7 +780,7 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | ExternalOp op e => ExternalOp op (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
-  | Resolve e1 e2 => Resolve (subst x v e1) (subst x v e2)
+  | ResolveProph e1 e2 => ResolveProph (subst x v e1) (subst x v e2)
   end.
 
 Definition subst' (mx : binder) (v : val) : expr → expr :=
@@ -1163,7 +1156,7 @@ Definition head_trans (e: expr) :
       (p ← newProphId;
        modifyg (set used_proph_id ({[ p ]} ∪.));;
        ret $ LitV $ LitProphecy p)
-  | Resolve (Val (LitV (LitProphecy p))) (Val w) =>
+  | ResolveProph (Val (LitV (LitProphecy p))) (Val w) =>
     ret ([(p, w)], Val $ LitV LitUnit, [])
   | _ => undefined
   end.
@@ -1320,10 +1313,9 @@ Proof.
   constructor; auto.
 Qed.
 
-(*
 Lemma new_proph_id_fresh σ g :
-  let p := fresh σ.(used_proph_id) in
-  head_step_atomic NewProph σ g [] (Val $ LitV $ LitProphecy p) (set used_proph_id ({[ p ]} ∪.) σ) g [].
+  let p := fresh g.(used_proph_id) in
+  head_step_atomic NewProph σ g [] (Val $ LitV $ LitProphecy p) σ (set used_proph_id ({[ p ]} ∪.) g) [].
 Proof.
   intro p.
   constructor 1.
@@ -1334,7 +1326,6 @@ Proof.
     apply is_fresh. }
   monad_simpl.
 Qed.
-*)
 
 Lemma goose_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step_atomic.
 Proof.

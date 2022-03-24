@@ -605,7 +605,7 @@ Section translate.
                f_equal. destruct pσ2, pg2; subst.
                simpl in * => //=. rewrite /state_init_heap/state_insert_list. rewrite /RecordSet.set //=.
                do 2 f_equal; eauto. rewrite -H7 H6. done.
-    - (* Resolve *)
+    - (* ResolveProph *)
       rewrite /head_step//= in Hstep. destruct_head.
       do 2 eexists. intuition; eauto.
       repeat (econstructor; eauto).
@@ -1070,7 +1070,7 @@ Section translate.
       right. split_and!; eauto.
       { rewrite H16. done. }
       split_and!; eauto. rewrite /RecordSet.set//=. congruence.
-    - (* Resolve *)
+    - (* ResolveProph *)
       rewrite /head_step//= in Hstep. destruct_head.
       do 3 eexists. intuition; eauto.
       repeat (econstructor; eauto).
@@ -1740,7 +1740,7 @@ Section translate.
            rewrite /RecordSet.set/= H13. done.
         ** split_and!; eauto.
         ** rewrite //=.
-    - (* Resolve *)
+    - (* ResolveProph *)
       rewrite /head_step//= in Hstep.
       monad_inv; destruct_head.
       do 4 eexists. inversion Hmatch_curr. intuition.
