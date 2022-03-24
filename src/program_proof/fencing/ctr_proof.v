@@ -25,13 +25,16 @@ Admitted.
 Definition own_Clerk (ck:loc) : iProp Σ.
 Admitted.
 
+(* FIXME: In the case where oldv = None, we need to ensure that v is the last
+   value from latestEpoch. In fact, we can just give the client that old epoch
+   points-to half, because the server doesn't want it anymore. *)
 Lemma wp_Clerk__Get {Eo Ei Ei2:coPset} ck (e:u64) :
   ∀ Φ,
   own_Clerk ck -∗
   (|={Eo,Ei}=> ∃ latestEpoch, own_epoch latestEpoch (1/2)%Qp ∗
     (*(⌜int.Z latestEpoch > int.Z e⌝ → epoch_ptsto latestEpoch ={Ei, Eo}=∗ Φ #EStale) ∗*) (* XXX: program exits in this case *)
     (⌜int.Z latestEpoch ≤ int.Z e⌝ → own_epoch e (1/2)%Qp ={Ei}=∗ (* XXX: one inner mask is probably enough, thhough we could have multiple invariants *)
-     (∃ oldv, own_val e oldv (1/2)%Qp ∗ (∃ v, ⌜is_Some oldv → oldv = Some v⌝ →
+     (∃ oldv, own_val e oldv (1/2)%Qp ∗ (∀ v, ⌜is_Some oldv → oldv = Some v⌝ →
                                                own_val e (Some v) (1/2)%Qp ={Ei2,Eo}=∗
                                                               (own_Clerk ck -∗ Φ #v))))) -∗
     WP Clerk__Get #ck #e @ Eo {{ Φ }}.
