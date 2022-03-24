@@ -65,6 +65,7 @@ Definition is_tuple (tuple : loc) (key : u64) (γ : mvcc_names) : iProp Σ :=
     "#Hlock" ∷ is_lock mvccN #latch (∃ tidown tidlast versL, own_tuple tuple key tidown tidlast versL γ) ∗
     "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
     "#HrcondC" ∷ is_cond rcond #latch ∗
+    "#Hinvgc" ∷ mvcc_inv_gc γ ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (is_tuple _ _ _)) => unfold is_tuple : core.
 
@@ -311,7 +312,8 @@ Proof.
   iExists latch, rcond.
   iMod (readonly_alloc_1 with "latch") as "$".
   iMod (readonly_alloc_1 with "rcond") as "$".
-  by iFrame "#".
+  admit.
+  (* by iFrame "#". *)
 Admitted.
 
 (*******************************************************************)
@@ -489,7 +491,7 @@ Qed.
  *    [tidlbN] in [own_tuple]).
  *    Thus, we need a proof of [(int.nat tid) ≥ tidlbN] in order to
  *    apply the invariant, which can be proved by:
- *    - [active_tid γ tid] in the precondition.
+ *    - [active_tid γ sid tid] in the precondition.
  *    - [min_tid_lb γ tidlbN] in the lock invariant.
  *)
 Definition post_tuple__ReadVersion tid key val (ret : u64) γ : iProp Σ :=
@@ -511,11 +513,11 @@ Qed.
 (*****************************************************************)
 (* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, uint64)  *)
 (*****************************************************************)
-Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) γ :
+Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) (sid : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ active_tid γ tid }}}
+  {{{ active_tid γ tid sid }}}
     Tuple__ReadVersion #tuple #tid
-  {{{ (val : u64) (ret : u64), RET (#val, #ret); active_tid γ tid ∗ post_tuple__ReadVersion tid key val ret γ }}}.
+  {{{ (val : u64) (ret : u64), RET (#val, #ret); active_tid γ tid sid ∗ post_tuple__ReadVersion tid key val ret γ }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".
   iNamed "Htuple".
@@ -616,7 +618,11 @@ Proof.
   (* ver := findRightVer(tid, tuple.vers)                    *)
   (***********************************************************)
   wp_loadField.
-  iDestruct (active_ge_min with "Hactive Hgclb") as "%HtidGe".
+  iApply fupd_wp.
+  iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
+  iDestruct (active_ge_min with "HinvgcO Hactive Hgclb") as "%HtidGe".
+  iMod ("HinvgcC" with "HinvgcO") as "_".
+  iModIntro.
   wp_apply (wp_findRightVer with "[$HversL]").
   { iPureIntro.
     setoid_rewrite Exists_exists in HexistsLt.
@@ -901,11 +907,11 @@ Qed.
 (*****************************************************************)
 (* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
 (*****************************************************************)
-Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) γ :
+Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) (sid : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ active_tid γ tid ∗ mods_token γ key tid }}}
+  {{{ active_tid γ tid sid ∗ mods_token γ key tid }}}
     Tuple__AppendVersion #tuple #tid #val
-  {{{ RET #(); active_tid γ tid }}}.
+  {{{ RET #(); active_tid γ tid sid }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> [Hactive Htoken] HΦ".
   iNamed "Htuple".
@@ -919,7 +925,11 @@ Proof.
   iIntros "[Hlocked HtupleOwn]".
   iDestruct "HtupleOwn" as (tidown tidlast versL) "HtupleOwn".
   iNamed "HtupleOwn".
-  iDestruct (active_ge_min with "Hactive Hgclb") as "%HtidGe".
+  iApply fupd_wp.
+  iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
+  iDestruct (active_ge_min with "HinvgcO Hactive Hgclb") as "%HtidGe".
+  iMod ("HinvgcC" with "HinvgcO") as "_".
+  iModIntro.
   wp_pures.
   
   (***********************************************************)
@@ -1074,11 +1084,11 @@ Qed.
 (*****************************************************************)
 (* func (tuple *Tuple) KillVersion(tid uint64) uint64            *)
 (*****************************************************************)
-Theorem wp_tuple__KillVersion tuple (tid : u64) (key : u64) γ :
+Theorem wp_tuple__KillVersion tuple (tid : u64) (key : u64) (sid : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ active_tid γ tid ∗ mods_token γ key tid }}}
+  {{{ active_tid γ tid sid ∗ mods_token γ key tid }}}
     Tuple__KillVersion #tuple #tid
-  {{{ (ret : u64), RET #ret; active_tid γ tid }}}.
+  {{{ (ret : u64), RET #ret; active_tid γ tid sid }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> [Hactive Htoken] HΦ".
   iNamed "Htuple".
@@ -1092,7 +1102,11 @@ Proof.
   iIntros "[Hlocked HtupleOwn]".
   iDestruct "HtupleOwn" as (tidown tidlast versL) "HtupleOwn".
   iNamed "HtupleOwn".
-  iDestruct (active_ge_min with "Hactive Hgclb") as "%HtidGe".
+  iApply fupd_wp.
+  iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
+  iDestruct (active_ge_min with "HinvgcO Hactive Hgclb") as "%HtidGe".
+  iMod ("HinvgcC" with "HinvgcO") as "_".
+  iModIntro.
   wp_pures.
   
   (***********************************************************)
@@ -1303,11 +1317,11 @@ Definition post_tuple__Own tid key (ret : u64) γ : iProp Σ :=
 (*****************************************************************)
 (* func (tuple *Tuple) Own(tid uint64) bool                      *)
 (*****************************************************************)
-Theorem wp_tuple__Own tuple (tid : u64) (key : u64) γ :
+Theorem wp_tuple__Own tuple (tid : u64) (key : u64) (sid : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ active_tid γ tid }}}
+  {{{ active_tid γ tid sid }}}
     Tuple__Own #tuple #tid
-  {{{ (ret : u64), RET #ret; active_tid γ tid ∗ post_tuple__Own tid key ret γ
+  {{{ (ret : u64), RET #ret; active_tid γ tid sid ∗ post_tuple__Own tid key ret γ
   }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".

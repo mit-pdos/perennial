@@ -128,9 +128,14 @@ Lemma site_active_tids_insert {γ sid tids} tid :
   site_active_tids_frag γ sid tid.
 Admitted.
 
-Definition active_tid γ (tid : u64) : iProp Σ :=
-  ([∨ list] sid ∈ sids_all, site_active_tids_frag γ sid tid) ∧
-  ⌜int.Z tid > 0⌝.
+(**
+ * Q: Can we hide the [sid] from [active_tid]?
+ * The problem of hiding it is that we lose the info of from which txn site
+ * this tid is allocated, which creates problem in [txnMgr.deactivate] as
+ * we cannot deduce [tid] is in the set of active TIDs of that site.
+ *)
+Definition active_tid γ (tid sid : u64) : iProp Σ :=
+  (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜int.Z tid > 0⌝ .
 
 (* Q: Can we have mono_Z? *)
 Definition site_min_tid_half_auth γ (sid : u64) tidN : iProp Σ :=
@@ -179,15 +184,18 @@ Definition mvcc_inv_gc_def γ : iProp Σ :=
       site_min_tid_half_auth γ sid (int.nat tidmin) ∗
       ([∗ set] tid ∈ (dom (gset u64) tids), ⌜(int.nat tidmin) ≤ (int.nat tid)⌝)%nat.
 
-Theorem active_ge_min γ (tid tidlb : u64) :
+Definition mvccN := nroot .@ "mvcc_inv".
+Definition mvccNGC := nroot .@ "mvcc_inv_gc".
+
+Theorem active_ge_min γ (tid tidlb : u64) (sid : u64) :
   mvcc_inv_gc_def γ -∗
-  active_tid γ tid -∗
+  active_tid γ tid sid -∗
   min_tid_lb γ (int.nat tidlb) -∗
   ⌜int.Z tidlb ≤ int.Z tid⌝.
 Proof.
   iIntros "Hinv Hactive Hlb".
-  iDestruct "Hactive" as "[Hactive _]".
-  iDestruct (big_orL_exist with "Hactive") as (k sid) "[%Hlookup Htid]".
+  iDestruct "Hactive" as "[[Htid %Hlookup] _]".
+  apply sids_all_lookup in Hlookup.
   apply elem_of_list_lookup_2 in Hlookup.
   iDestruct (big_sepL_elem_of with "Hlb") as "Htidlb"; first done.
   iDestruct (big_sepL_elem_of with "Hinv") as (tids tidmin) "(Htids & Htidmin & Hle)"; first done.
@@ -204,9 +212,6 @@ End definitions.
 
 Section mvccinv.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
-
-Definition mvccN := nroot .@ "mvcc_inv".
-Definition mvccNGC := nroot .@ "mvcc_inv_gc".
 
 Definition mvcc_inv_gc γ : iProp Σ :=
   inv mvccNGC (mvcc_inv_gc_def γ).
