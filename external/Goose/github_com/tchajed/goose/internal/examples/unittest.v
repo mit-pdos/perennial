@@ -647,6 +647,19 @@ Definition PanicAtTheDisco: val :=
     Panic "disco";;
     #().
 
+(* proph.go *)
+
+Definition Oracle: val :=
+  rec: "Oracle" <> :=
+    let: "p" := NewProph #() in
+    ResolveProph "p" #false;;
+    ResolveProph "p" #0;;
+    #().
+
+Definition typing := struct.decl [
+  "proph" :: ProphIdT
+].
+
 (* reassign.go *)
 
 Definition composite := struct.decl [
