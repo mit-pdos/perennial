@@ -60,6 +60,7 @@ checkout GOKV
 
 echo && echo "Goose check: re-run goose"
 etc/update-goose.py --goose $GOOSE_DIR --compile \
+  --goose-examples \
   --std $STD_DIR \
   --marshal $MARSHAL_DIR \
   --examples $EXAMPLES_DIR \
