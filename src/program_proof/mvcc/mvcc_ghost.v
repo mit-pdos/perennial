@@ -128,6 +128,14 @@ Lemma site_active_tids_insert {γ sid tids} tid :
   site_active_tids_frag γ sid tid.
 Admitted.
 
+Lemma site_active_tids_delete {γ sid tids} tid :
+  site_active_tids_frag γ sid tid -∗
+  site_active_tids_half_auth γ sid tids -∗
+  site_active_tids_half_auth γ sid tids ==∗
+  site_active_tids_half_auth γ sid (delete tid tids) ∗
+  site_active_tids_half_auth γ sid (delete tid tids). 
+Admitted.
+
 (**
  * Q: Can we hide the [sid] from [active_tid]?
  * The problem of hiding it is that we lose the info of from which txn site
@@ -137,7 +145,6 @@ Admitted.
 Definition active_tid γ (tid sid : u64) : iProp Σ :=
   (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜int.Z tid > 0⌝ .
 
-(* Q: Can we have mono_Z? *)
 Definition site_min_tid_half_auth γ (sid : u64) tidN : iProp Σ :=
   own γ.(mvcc_sid_min_tid_gn) {[sid := (●MN{#(1 / 2)} tidN)]}.
 

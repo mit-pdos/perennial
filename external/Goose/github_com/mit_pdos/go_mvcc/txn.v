@@ -88,11 +88,6 @@ Definition genTID: val :=
     "tid" <-[uint64T] (![uint64T] "tid" `and` ~ (config.N_TXN_SITES - #1)) + "sid";;
     ![uint64T] "tid".
 
-Definition getSID: val :=
-  rec: "getSID" "tid" :=
-    let: "sid" := ("tid" `and` config.N_TXN_SITES - #1) in
-    "sid".
-
 Definition TxnMgr__activate: val :=
   rec: "TxnMgr__activate" "txnMgr" "sid" :=
     let: "site" := SliceGet ptrT (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
@@ -111,10 +106,14 @@ Definition TxnMgr__activate: val :=
 Definition findTID: val :=
   rec: "findTID" "tid" "tids" :=
     let: "idx" := ref_to uint64T #0 in
-    ForSlice uint64T "i" "x" "tids"
-      (if: ("tid" = "x")
-      then "idx" <-[uint64T] "i"
-      else #());;
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "tidx" := SliceGet uint64T "tids" (![uint64T] "idx") in
+      (if: ("tid" = "tidx")
+      then Break
+      else
+        "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+        Continue));;
     ![uint64T] "idx".
 
 (* *
@@ -133,8 +132,7 @@ Definition swapWithEnd: val :=
     * Precondition:
     * 1. The set of active transactions contains `tid`. *)
 Definition TxnMgr__deactivate: val :=
-  rec: "TxnMgr__deactivate" "txnMgr" "tid" :=
-    let: "sid" := getSID "tid" in
+  rec: "TxnMgr__deactivate" "txnMgr" "sid" "tid" :=
     let: "site" := SliceGet ptrT (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "idx" := findTID "tid" (struct.loadF TxnSite "tidsActive" "site") in
@@ -306,7 +304,7 @@ Definition Txn__Commit: val :=
       (let: "dbval" := struct.get WrEnt "val" "wrent" in
       let: "tuple" := struct.get WrEnt "tuple" "wrent" in
       tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") (struct.get DBVal "val" "dbval"));;
-    TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "tid" "txn");;
+    TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
 Definition Txn__Abort: val :=
@@ -314,7 +312,7 @@ Definition Txn__Abort: val :=
     ForSlice (struct.t WrEnt) <> "wrent" (struct.loadF Txn "wset" "txn")
       (let: "tuple" := struct.get WrEnt "tuple" "wrent" in
       tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
-    TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "tid" "txn");;
+    TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
 End code.

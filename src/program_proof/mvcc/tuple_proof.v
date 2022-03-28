@@ -271,7 +271,7 @@ Proof.
     unfold P.
     iExists (U64 0), (U64 0), [(U64 0, true, U64 0)].
     unfold own_tuple.
-    iExists vers, (U64 1), [Value (U64 0)].
+    iExists vers, (U64 1), [Nil].
     iFrame.
     iSplit.
     { (* TODO: Prove [Hgclb]. *) admit. }
@@ -281,7 +281,6 @@ Proof.
       simpl.
       intros tid Htid.
       replace (int.Z (U64 0)) with 0 in Htid by word.
-      replace (int.Z (U64 1)) with 1 in Htid by word.
       word.
     }
     iSplit.
