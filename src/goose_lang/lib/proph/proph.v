@@ -16,7 +16,7 @@ Theorem wp_NewProph_list :
   {{{ (p : proph_id) pvs, RET #p; proph p pvs }}}.
 Proof.
   iIntros (Φ) "_ HΦ". wp_lam.
-  wp_apply wp_new_proph. auto.
+  wp_apply wp_new_proph. iIntros (pvs v). by iApply "HΦ".
 Qed.
 
 Theorem wp_ResolveProph_list (p : proph_id) pvs v :
