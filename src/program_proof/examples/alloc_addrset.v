@@ -11,18 +11,6 @@ Section alloc_addrset.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 Context {ext_tys: ext_types ext}.
-Instance unit_IntoVal : IntoVal ().
-Proof.
-  refine {| to_val := λ _, #();
-            IntoVal_def := ();
-         |}.
-  intros [] [] _; auto.
-Defined.
-
-Instance unit_IntoValForType : IntoValForType () (struct.t unit).
-Proof.
-  constructor; auto.
-Qed.
 
 Section goose.
 Context `{!heapGS Σ}.

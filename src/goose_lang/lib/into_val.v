@@ -3,13 +3,22 @@ From Perennial.goose_lang.lib Require Import typed_mem slice.slice struct.struct
 Set Default Proof Using "Type".
 
 Class IntoVal {ext: ffi_syntax} V :=
-  { to_val: V -> val;
+  { to_val: V → val;
+    from_val: val → option V;
     IntoVal_def: V;
-    IntoVal_inj :> Inj eq eq to_val;
+    IntoVal_inj' v : from_val (to_val v) = Some v ;
   }.
 Hint Mode IntoVal - ! : typeclass_instances.
 
 Arguments IntoVal_def {_} V {_}.
+
+Global Instance IntoVal_inj `{IntoVal V} :
+  Inj (A:=V) eq eq to_val.
+Proof.
+  intros ?? Heq.
+  assert (from_val (V:=V) (to_val x) = from_val (to_val y)) as Heq' by by f_equal.
+  rewrite !IntoVal_inj' in Heq'. congruence.
+Qed.
 
 (* IntoVal for a particular GooseLang type *)
 Class IntoValForType {ext} V {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) :=
@@ -71,7 +80,8 @@ Section instances.
   Global Instance u64_IntoVal : IntoVal u64.
   Proof.
     refine {| to_val := λ (x: u64), #x;
-              IntoVal_def := U64 0; |}; congruence.
+              from_val := λ v, match v with #(LitInt x) => Some x | _ => None end;
+              IntoVal_def := U64 0; |}; done.
   Defined.
   Global Instance u64_IntoVal_uint64T : IntoValForType u64 uint64T.
   Proof.
@@ -81,7 +91,8 @@ Section instances.
   Global Instance u8_IntoVal : IntoVal u8.
   Proof.
     refine {| to_val := λ (x: u8), #x;
-              IntoVal_def := U8 0; |}; congruence.
+              from_val := λ v, match v with #(LitByte x) => Some x | _ => None end;
+              IntoVal_def := U8 0; |}; done.
   Defined.
   Global Instance u8_IntoVal_byteT : IntoValForType u8 byteT.
   Proof.
@@ -91,7 +102,8 @@ Section instances.
   Global Instance loc_IntoVal : IntoVal loc.
   Proof.
     refine {| to_val := λ (l: loc), #l;
-              IntoVal_def := null; |}; congruence.
+              from_val := λ v, match v with #(LitLoc x) => Some x | _ => None end;
+              IntoVal_def := null; |}; done.
   Defined.
   Global Instance loc_IntoVal_struct_ptr t : IntoValForType loc (struct.ptrT t).
   Proof.
@@ -109,10 +121,10 @@ Section instances.
   Global Instance slice_IntoVal : IntoVal Slice.t.
     refine
     {| to_val := slice_val;
+       from_val := val_slice;
        IntoVal_def := Slice.nil;
     |}.
-    intros [] [].
-    inversion 1; auto.
+    intros []. auto.
   Defined.
   Global Instance slice_IntoVal_ref t : IntoValForType Slice.t (slice.T t).
   Proof.
@@ -125,9 +137,21 @@ Section instances.
   Global Instance bool_IntoVal : IntoVal bool.
   Proof.
     refine {| into_val.to_val := λ (x: bool), #x;
-              IntoVal_def := false; |}; congruence.
+              from_val := λ v, match v with #(LitBool x) => Some x | _ => None end;
+              IntoVal_def := false; |}; done.
   Defined.
   Global Instance bool_IntoVal_boolT : IntoValForType bool boolT.
+  Proof. constructor; auto. Qed.
+
+  Global Instance unit_IntoVal : IntoVal ().
+  Proof.
+    refine {| to_val := λ _, #();
+              from_val := λ v, match v with #(LitUnit) => Some () | _ => None end;
+              IntoVal_def := ();
+           |}.
+    intros []; auto.
+  Defined.
+  Global Instance unit_IntoValForType : IntoValForType () unitT.
   Proof. constructor; auto. Qed.
 
 End instances.

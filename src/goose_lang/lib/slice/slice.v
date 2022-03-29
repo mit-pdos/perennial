@@ -27,6 +27,11 @@ Implicit Types (v:val) (vs:list val).
 Implicit Types (q:Qp).
 
 Coercion slice_val (s: Slice.t) : val := (#s.(Slice.ptr), #s.(Slice.sz), #s.(Slice.cap)).
+Definition val_slice v : option Slice.t :=
+  match v with
+  | (#(LitLoc ptr), #(LitInt sz), #(LitInt cap))%V => Some (Slice.mk ptr sz cap)
+  | _ => None
+  end.
 
 Transparent slice.T.
 Theorem slice_val_ty s t : val_ty (slice_val s) (slice.T t).
