@@ -8,11 +8,11 @@ Lemma proph_test : ⊢ WP unittest.Oracle #() {{ _, True }}.
 Proof.
   wp_lam.
   wp_apply wp_NewProph_list.
-  iIntros (pvs p) "Hp".
+  iIntros (p pvs1) "Hp".
   wp_apply (wp_ResolveProph_list with "Hp").
-  iIntros (pvs') "[_ Hp]".
+  iIntros (pvs2) "[_ Hp]".
   wp_apply (wp_ResolveProph_list with "Hp").
-  iIntros (pvs'') "[_ Hp]".
+  iIntros (pvs3) "[_ Hp]".
   wp_pures. auto.
 Qed.
 
