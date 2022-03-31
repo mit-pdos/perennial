@@ -249,11 +249,11 @@ Admitted.
 (*****************************************************************)
 (* func MkTxnMgr() *TxnMgr                                       *)
 (*****************************************************************)
-Theorem wp_MkTxnMgr γ :
+Theorem wp_MkTxnMgr :
   {{{ True }}}
     MkTxnMgr #()
-  {{{ (txnmgr : loc), RET #txnmgr; is_txnmgr txnmgr γ }}}.
-Proof using mvcc_ghostG0.
+  {{{ (γ : mvcc_names) (txnmgr : loc), RET #txnmgr; is_txnmgr txnmgr γ }}}.
+Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
 
@@ -274,6 +274,9 @@ Proof using mvcc_ghostG0.
   wp_apply (wp_new_slice); first done.
   iIntros (sites) "HsitesL".
   wp_storeField.
+
+  iMod mvcc_ghost_gc_init as (γ) "(HinvgcO & HactiveAuthAll & HminAuthAll)".
+  iMod (inv_alloc mvccNGC _ (mvcc_inv_gc_def γ) with "[$HinvgcO]") as "#Hinvgc".
   
   (***********************************************************)
   (* for i := uint64(0); i < config.N_TXN_SITES; i++ {       *)
@@ -287,16 +290,17 @@ Proof using mvcc_ghostG0.
   iIntros (iRef) "HiRef".
   wp_pures.
   iDestruct (is_slice_to_small with "HsitesL") as "HsitesS".
-  wp_apply (wp_forUpto
-              (λ n, (∃ sitesL, (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
-                               (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
-                               ([∗ list] sid ↦ site ∈ (take (int.nat n) sitesL), is_txnsite site sid γ)) ∗
-                    (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
-                    ⌜True⌝)%I
-              _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef]"); first done.
+  set P := λ (n : u64), (∃ sitesL,
+    "HsitesS" ∷ is_slice_small sites ptrT 1 (to_val <$> sitesL) ∗
+    "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
+    "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (int.nat n) sitesL), is_txnsite site sid γ) ∗
+    "Hsites" ∷ (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
+    "HactiveAuthAll" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
+    "HminAuthAll" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_min_tid_half_auth γ sid 0))%I.
+  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuthAll HminAuthAll]"); first done.
   { clear Φ latch.
-    iIntros (i Φ) "!> ((HsitesInv & Htxnmgr & _) & HiRef & %Hbound) HΦ".
-    iDestruct "HsitesInv" as (sitesL) "(HsitesS & %Hlength & HsitesRP)".
+    iIntros (i Φ) "!> (Hloop & HiRef & %Hbound) HΦ".
+    iNamed "Hloop".
     wp_pures.
     wp_apply (wp_allocStruct); first auto 10.
     iIntros (site) "Hsite".
@@ -326,24 +330,24 @@ Proof using mvcc_ghostG0.
     iApply "HΦ".
     iFrame.
     
+    rewrite (drop_S _ i); last first.
+    { unfold sids_all, N_TXN_SITES.
+      rewrite list_lookup_fmap.
+      rewrite lookup_seqZ_lt; last word.
+      simpl. f_equal. word.
+    }
+    iDestruct (big_sepL_cons with "HactiveAuthAll") as "[HactiveAuth HactiveAuthAll]".
+    iDestruct (big_sepL_cons with "HminAuthAll") as "[HminAuth HminAuthAll]".
     iMod (readonly_alloc_1 with "latch") as "#Hlatch".
-    iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with "[$Hfree] [-HsitesS HsitesRP]") as "#Hlock".
+    iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with "[$Hfree] [-HsitesS HsitesRP HactiveAuthAll HminAuthAll]") as "#Hlock".
     { iNext.
       unfold own_txnsite.
       iExists (U64 0), (U64 0), active, [], ∅.
       iFrame "% ∗".
-      iSplitL.
-      { (* TODO: Prove [HactiveAuth]. *) admit. }
-      iSplitL.
-      { iPureIntro. set_solver. }
-      iSplit.
-      { iPureIntro. apply NoDup_nil_2. }
-      iSplit.
-      { (*TODO: Prove [HminAuth]. *) admit. }
-      iSplit; iPureIntro.
-      { by apply Forall_singleton. }
-      split; last done.
-      { set_solver. }
+      iPureIntro.
+      split; first set_solver.
+      split; first apply NoDup_nil_2.
+      split; [by apply Forall_singleton | set_solver].
     }
     iModIntro.
     rewrite -list_fmap_insert.
@@ -352,6 +356,7 @@ Proof using mvcc_ghostG0.
     rewrite insert_length.
     iSplit; first done.
     replace (int.nat (word.add i 1)) with (S (int.nat i)); last word.
+    iFrame.
     rewrite (take_S_r _ _ site); last first.
     { apply list_lookup_insert. word. }
     iApply (big_sepL_app).
@@ -368,15 +373,15 @@ Proof using mvcc_ghostG0.
   { iExists (replicate 64 null).
     auto with iFrame.
   }
-  iIntros "[(HsitesInv & Hsites & _) HiRef]".
-  iDestruct "HsitesInv" as (sitesL) "(HsitesS & %Hlength & #HsitesRP)".
+  iIntros "[Hloop HiRef]".
+  iNamed "Hloop".
   wp_pures.
 
   (***********************************************************)
   (* txnMgr.idx = index.MkIndex()                            *)
   (* txnMgr.gc = gc.MkGC(txnMgr.idx)                         *)
   (***********************************************************)
-  wp_apply (wp_MkIndex γ).
+  wp_apply (wp_MkIndex γ); first done.
   iIntros (idx) "#HidxRP".
   wp_storeField.
   wp_loadField.
@@ -400,9 +405,8 @@ Proof using mvcc_ghostG0.
   replace (int.nat (U64 N_TXN_SITES)) with (length sitesL); last first.
   { unfold N_TXN_SITES in *. word. }
   rewrite firstn_all.
-  (* eauto 20 with iFrame. *)
-  (* TODO: allocate global invariant, and the above auto should work. *)
-Admitted.
+  eauto 20 with iFrame.
+Qed.
 
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) New() *Txn                              *)
@@ -509,7 +513,8 @@ Proof.
   unfold is_txn_uninit.
   do 5 iExists _.
   iExists [].
-  iFrame "# ∗".
+  iFrame "∗ %".
+  iFrame "HidxRI Hidx_txn Htxnmgr_txn".
   eauto 20 with iFrame.
 Qed.
 
@@ -664,25 +669,30 @@ Proof.
   (* unfold mvcc_inv_gc_def. *)
   iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvgcO HinvgcOAcc]".
   { by apply sids_all_lookup. }
-  iDestruct "HinvgcO" as (tidsM tidmin') "(HactiveAuth' & HminAuth' & Hmin)".
+  iDestruct "HinvgcO" as (tidsM tidmin') "(HactiveAuth' & HminAuth' & %Hmin)".
   (* Update the set of active tids. *)
   iDestruct (site_active_tids_agree with "HactiveAuth' HactiveAuth") as %->.
   iMod (site_active_tids_insert tidnew with "HactiveAuth' HactiveAuth") as "(HactiveAuth' & HactiveAuth & HactiveFrag)".
   { apply HtidFree. word. }
   set tidsactiveM' := <[tidnew := tt]>tidsactiveM.
-  (* Update the minimal tid. *)
-  iDestruct (site_min_tid_agree with "HminAuth' HminAuth") as %->.
-  clear tidmin'.
+  (* Agree on the minimal tid. *)
+  iDestruct (site_min_tid_agree with "HminAuth' HminAuth") as "%Emin".
+  rewrite Emin. rewrite Emin in Hmin.
+  clear Emin tidmin'.
   (* Close the global invariant. *)
-  iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth' Hmin]") as "HinvgcO".
+  iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth']") as "HinvgcO".
   { do 2 iExists _.
     iFrame "HactiveAuth' HminAuth'".
     subst tidsactiveM'.
     rewrite dom_insert_L.
-    iApply big_sepS_insert.
-    { apply HtidFree. word. }
-    iSplit; last done.
+
     iPureIntro.
+    intros tidx Helem.
+    apply elem_of_union in Helem.
+
+    destruct Helem; last auto.
+    apply elem_of_singleton in H.
+    subst tidx.
     apply Forall_inv in HtidOrder.
     trans (int.nat tidlast); word.
   }
@@ -1055,21 +1065,17 @@ Proof.
   iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
   iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvgcO HinvgcOAcc]".
   { by apply sids_all_lookup. }
-  iDestruct "HinvgcO" as (tidsM tidmin') "(HactiveAuth' & HminAuth' & Hmin)".
+  iDestruct "HinvgcO" as (tidsM tidmin') "(HactiveAuth' & HminAuth' & %Hmin)".
   (* Update the set of active tids. *)
   iDestruct (site_active_tids_agree with "HactiveAuth' HactiveAuth") as %->.
   iMod (site_active_tids_delete tid with "HactiveFrag HactiveAuth' HactiveAuth") as "[HactiveAuth' HactiveAuth]".
   (* Close the global invariant. *)
-  iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth' Hmin]") as "HinvgcO".
+  iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth']") as "HinvgcO".
   { do 2 iExists _.
     iFrame "HactiveAuth' HminAuth'".
+    iPureIntro.
     rewrite dom_delete_L.
-    iDestruct (big_sepS_delete with "Hmin") as "[_ H]".
-    { rewrite -HactiveLM.
-      apply elem_of_list_to_set.
-      by eapply elem_of_list_lookup_2.
-    }
-    done.
+    set_solver.
   }
   iMod ("HinvgcC" with "[HinvgcO]") as "_"; first done.
   iModIntro.
@@ -1769,7 +1775,7 @@ Theorem wp_txn__Get txn (k : u64) (view mods : gmap u64 dbval) γ :
   {{{ is_txn txn view mods γ }}}
     Txn__Get #txn #k
   {{{ (v : u64) (found : bool), RET (#v, #found); spec_get txn view mods k (if found then Value v else Nil) γ }}}.
-Proof using mvcc_ghostG0.
+Proof.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
   iNamed "Himpl".

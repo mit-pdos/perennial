@@ -184,12 +184,22 @@ Admitted.
 Definition min_tid_lb γ tidN : iProp Σ :=
   [∗ list] sid ∈ sids_all, site_min_tid_lb γ sid tidN.
 
+Lemma min_tid_lb_zero γ :
+  ⊢ min_tid_lb γ 0%nat.
+Admitted.
+
 Definition mvcc_inv_gc_def γ : iProp Σ :=
   [∗ list] sid ∈ sids_all,
     ∃ (tids : gmap u64 unit) (tidmin : u64),
       site_active_tids_half_auth γ sid tids ∗
       site_min_tid_half_auth γ sid (int.nat tidmin) ∗
-      ([∗ set] tid ∈ (dom (gset u64) tids), ⌜(int.nat tidmin) ≤ (int.nat tid)⌝)%nat.
+      ∀ tid, ⌜tid ∈ (dom (gset u64) tids) -> (int.nat tidmin) ≤ (int.nat tid)⌝.
+
+Lemma mvcc_ghost_gc_init :
+  ⊢ |==> ∃ γ, mvcc_inv_gc_def γ ∗
+              ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
+              ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
+Admitted.
 
 Definition mvccN := nroot .@ "mvcc_inv".
 Definition mvccNGC := nroot .@ "mvcc_inv_gc".
@@ -205,10 +215,10 @@ Proof.
   apply sids_all_lookup in Hlookup.
   apply elem_of_list_lookup_2 in Hlookup.
   iDestruct (big_sepL_elem_of with "Hlb") as "Htidlb"; first done.
-  iDestruct (big_sepL_elem_of with "Hinv") as (tids tidmin) "(Htids & Htidmin & Hle)"; first done.
+  iDestruct (big_sepL_elem_of with "Hinv") as (tids tidmin) "(Htids & Htidmin & %Hle)"; first done.
   (* Obtaining [tidmin ≤ tid]. *)
   iDestruct (site_active_tids_elem_of with "Htids Htid") as "%Helem".
-  iDestruct (big_sepS_elem_of with "Hle") as "%Hle"; first done.
+  apply Hle in Helem.
   (* Obtaining [tidlb ≤ tidmin]. *)
   iDestruct (site_min_tid_valid with "Htidmin Htidlb") as "%Hle'".
   iPureIntro.

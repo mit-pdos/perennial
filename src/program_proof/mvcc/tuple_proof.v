@@ -40,7 +40,7 @@ Definition spec_lookup (vers : list pver) (tid : u64) : dbval :=
 
 Definition tuple_wellformed (vers : list pver) (tidlast tidgc : u64) : iProp Σ :=
   "%HtidlastGe" ∷ ⌜Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers⌝ ∗
-  "%HexistsLt" ∷ ⌜∀ (tid : u64), int.Z tidgc ≤ int.Z tid -> Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝ ∗
+  "%HexistsLt" ∷ ⌜∀ (tid : u64), 0 < int.Z tid -> int.Z tidgc ≤ int.Z tid -> Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝ ∗
   "%HtidgcLe" ∷ ⌜Forall (λ ver, int.Z tidgc ≤ int.Z ver.1.1) (tail vers)⌝ ∗
   "%Hnotnil" ∷ ⌜vers ≠ []⌝.
 
@@ -200,11 +200,12 @@ Qed.
 (* func MkTuple() *Tuple                                         *)
 (*****************************************************************)
 Theorem wp_MkTuple (key : u64) γ :
-  {{{ True }}}
+  mvcc_inv_gc γ -∗
+  {{{ vchain_ptsto γ 1 key [Nil] }}}
     MkTuple #()
   {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
 Proof.
-  iIntros (Φ) "_ HΦ".
+  iIntros "#Hinvgc" (Φ) "!> Hvchain HΦ".
   wp_call.
 
   (***********************************************************)
@@ -271,20 +272,21 @@ Proof.
     unfold P.
     iExists (U64 0), (U64 0), [(U64 0, true, U64 0)].
     unfold own_tuple.
-    iExists vers, (U64 1), [Nil].
+    iExists vers, (U64 0), [Nil].
     iFrame.
     iSplit.
-    { (* TODO: Prove [Hgclb]. *) admit. }
+    { (* Prove [Hgclb]. *)
+      iApply min_tid_lb_zero.
+    }
     iSplit.
     { (* Prove [HtupleAbs]. *)
       iPureIntro.
       simpl.
       intros tid Htid.
       replace (int.Z (U64 0)) with 0 in Htid by word.
-      word.
+      by replace tid with (U64 0) by word.
+      (* word. *)
     }
-    iSplit.
-    { (* Prove [Hvchain]. *) admit. }
     iSplit.
     { (* Prove [HvchainLen]. *)
       by rewrite singleton_length.
@@ -311,9 +313,8 @@ Proof.
   iExists latch, rcond.
   iMod (readonly_alloc_1 with "latch") as "$".
   iMod (readonly_alloc_1 with "rcond") as "$".
-  admit.
-  (* by iFrame "#". *)
-Admitted.
+  by iFrame "#".
+Qed.
 
 (*******************************************************************)
 (* func findRightVer(tid uint64, vers []Version) Version           *)
@@ -620,12 +621,14 @@ Proof.
   iApply fupd_wp.
   iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
   iDestruct (active_ge_min with "HinvgcO Hactive Hgclb") as "%HtidGe".
+  iAssert (⌜int.Z tid > 0⌝)%I with "[Hactive]" as "%HtidGZ".
+  { by iDestruct "Hactive" as "[_ %H]". }
   iMod ("HinvgcC" with "HinvgcO") as "_".
   iModIntro.
   wp_apply (wp_findRightVer with "[$HversL]").
   { iPureIntro.
     setoid_rewrite Exists_exists in HexistsLt.
-    by apply HexistsLt.
+    apply HexistsLt; [word | done].
   }
   iIntros (ver) "[%Hspec HversL]".
   wp_pures.
@@ -1015,10 +1018,10 @@ Proof.
       }
       split.
       { (* Prove [HexistsLt]. *)
-        intros tidx Htidx.
+        intros tidx HtidxGZ Htidx.
         apply Exists_app.
         left.
-        by apply HexistsLt.
+        apply HexistsLt; done.
       }
       split.
       { (* Prove [HtidgcLe]. *)
@@ -1226,10 +1229,10 @@ Proof.
       }
       split.
       { (* Prove [HexistsLt]. *)
-        intros tidx Htidx.
+        intros tidx HtidxGZ Htidx.
         apply Exists_app.
         left.
-        by apply HexistsLt.
+        apply HexistsLt; done.
       }
       split.
       { (* Prove [HtidgcLe]. *)
@@ -1783,7 +1786,7 @@ Proof.
     }
     split.
     { (* Prove [HexistsLt]. *)
-      intros tidx Htidx.
+      intros tidx HtidxGZ Htidx.
       rewrite Exists_exists.
       exists verHead.
       split; [done | word].

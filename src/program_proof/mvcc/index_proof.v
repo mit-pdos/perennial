@@ -36,6 +36,7 @@ Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
     "#HbktsL" ∷ readonly (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
     "%HbktsLen" ∷ ⌜length bktsL = N_IDX_BUCKET⌝ ∗
     "#HbktsRP" ∷ ([∗ list] _ ↦ bkt ∈ bktsL, is_index_bucket bkt γ) ∗ 
+    "#Hinvgc" ∷ mvcc_inv_gc γ ∗
     "_" ∷ True.
 
 (*****************************************************************)
@@ -110,7 +111,8 @@ Proof.
   (***********************************************************)
   apply map_get_false in Hmap_get as [Hlookup _].
   clear tuple.
-  wp_apply wp_MkTuple.
+  (* TODO: Allocate [vchain_ptsto]. *)
+  wp_apply wp_MkTuple; [done | admit |].
   iIntros (tuple) "#HtupleRP".
   wp_pures.
   wp_loadField.
@@ -134,17 +136,18 @@ Proof.
   (* return tupleNew                                         *)
   (***********************************************************)
   by iApply "HΦ".
-Qed.
+Admitted.
 
 (*****************************************************************)
 (* func MkIndex() *Index                                         *)
 (*****************************************************************)
 Theorem wp_MkIndex γ :
+  mvcc_inv_gc γ -∗
   {{{ True }}}
     MkIndex #()
   {{{ (idx : loc), RET #idx; is_index idx γ }}}.
 Proof.
-  iIntros (Φ) "_ HΦ".
+  iIntros "#Hinvgc" (Φ) "!> _ HΦ".
   wp_call.
 
   (***********************************************************)
@@ -257,7 +260,7 @@ Proof.
   iMod (readonly_alloc_1 with "HbktsS") as "$".
   iModIntro.
   iSplitL ""; first auto.
-  iSplit; last done.
+  iSplit; last auto.
   change (int.nat 2048) with 2048%nat.
   unfold N_IDX_BUCKET in Hlength.
   rewrite -Hlength.
