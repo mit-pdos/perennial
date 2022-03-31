@@ -4,7 +4,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 From Goose Require github_com.mit_pdos.gokv.fencing.config.
 From Goose Require github_com.mit_pdos.gokv.fencing.ctr.
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 (* client.go *)
@@ -20,7 +20,7 @@ Definition Clerk__FetchAndIncrement: val :=
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
     let: "enc" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "enc" "key";;
-    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_FAI (marshal.Enc__Finish "enc") "reply_ptr" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_FAI (marshal.Enc__Finish "enc") "reply_ptr" #100 in
     (if: "err" ≠ #0
     then "err"
     else
@@ -31,7 +31,7 @@ Definition Clerk__FetchAndIncrement: val :=
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
     let: "ck" := struct.alloc Clerk (zero_val (struct.t Clerk)) in
-    struct.storeF Clerk "cl" "ck" (rpc.MakeRPCClient "host");;
+    struct.storeF Clerk "cl" "ck" (urpc.MakeClient "host");;
     "ck".
 
 (* server.go *)
@@ -74,6 +74,6 @@ Definition StartServer: val :=
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
       );;
-    let: "r" := rpc.MakeRPCServer "handlers" in
-    rpc.RPCServer__Serve "r" "me" #1;;
+    let: "r" := urpc.MakeServer "handlers" in
+    urpc.Server__Serve "r" "me";;
     #().

@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 
 Definition HostName: ty := uint64T.
 
@@ -41,7 +41,7 @@ Definition ConnMan__getClient: val :=
           let: "my_cond" := lock.newCond (struct.loadF ConnMan "mu" "c") in
           MapInsert (struct.loadF ConnMan "making" "c") "host" "my_cond";;
           lock.release (struct.loadF ConnMan "mu" "c");;
-          "ret" <-[ptrT] rpc.MakeRPCClient "host";;
+          "ret" <-[ptrT] urpc.MakeClient "host";;
           lock.acquire (struct.loadF ConnMan "mu" "c");;
           MapInsert (struct.loadF ConnMan "rpcCls" "c") "host" (![ptrT] "ret");;
           lock.condBroadcast "my_cond";;
@@ -57,11 +57,11 @@ Definition ConnMan__CallAtLeastOnce: val :=
     "cl" <-[ptrT] ConnMan__getClient "c" "host";;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "err" := rpc.RPCClient__Call (![ptrT] "cl") "rpcid" "args" "reply" "retryTimeout" in
-      (if: ("err" = rpc.ErrTimeout)
+      let: "err" := urpc.Client__Call (![ptrT] "cl") "rpcid" "args" "reply" "retryTimeout" in
+      (if: ("err" = urpc.ErrTimeout)
       then Continue
       else
-        (if: ("err" = rpc.ErrDisconnect)
+        (if: ("err" = urpc.ErrDisconnect)
         then
           lock.acquire (struct.loadF ConnMan "mu" "c");;
           (if: (![ptrT] "cl" = Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))

@@ -4,7 +4,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.connman.
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 (* 0_common.go *)
@@ -624,8 +624,8 @@ Definition KVShardServer__Start: val :=
       "rawReply" <-[slice.T byteT] NewSlice byteT #0;;
       #()
       );;
-    let: "s" := rpc.MakeRPCServer "handlers" in
-    rpc.RPCServer__Serve "s" "host" #1;;
+    let: "s" := urpc.MakeServer "handlers" in
+    urpc.Server__Serve "s" "host";;
     #().
 
 (* 3_memkv_coord.go *)
@@ -706,8 +706,8 @@ Definition KVCoord__Start: val :=
       #()
       );;
     MapInsert "handlers" COORD_GET (KVCoord__GetShardMapRPC "c");;
-    let: "s" := rpc.MakeRPCServer "handlers" in
-    rpc.RPCServer__Serve "s" "host" #1;;
+    let: "s" := urpc.MakeServer "handlers" in
+    urpc.Server__Serve "s" "host";;
     #().
 
 (* 4_memkv_seq_clerk.go *)

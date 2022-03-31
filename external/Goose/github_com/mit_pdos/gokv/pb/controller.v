@@ -3,7 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 From Goose Require github_com.mit_pdos.gokv.pb.
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 (* clerk.go *)
@@ -20,13 +20,13 @@ Definition ControllerClerk__AddNewServer: val :=
     marshal.Enc__PutInt "enc" "newServer";;
     let: "raw_args" := marshal.Enc__Finish "enc" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    rpc.RPCClient__Call (struct.loadF ControllerClerk "cl" "ck") CONTROLLER_ADD "raw_args" "reply" #100;;
+    urpc.Client__Call (struct.loadF ControllerClerk "cl" "ck") CONTROLLER_ADD "raw_args" "reply" #100;;
     #().
 
 Definition MakeControllerClerk: val :=
   rec: "MakeControllerClerk" "host" :=
     let: "ck" := struct.alloc ControllerClerk (zero_val (struct.t ControllerClerk)) in
-    struct.storeF ControllerClerk "cl" "ck" (rpc.MakeRPCClient "host");;
+    struct.storeF ControllerClerk "cl" "ck" (urpc.MakeClient "host");;
     "ck".
 
 (* controller.go *)
@@ -147,6 +147,6 @@ Definition StartControllerServer: val :=
       ControllerServer__AddNewServerRPC "s" "newServer";;
       #()
       );;
-    let: "r" := rpc.MakeRPCServer "handlers" in
-    rpc.RPCServer__Serve "r" "me" #1;;
+    let: "r" := urpc.MakeServer "handlers" in
+    urpc.Server__Serve "r" "me";;
     #().

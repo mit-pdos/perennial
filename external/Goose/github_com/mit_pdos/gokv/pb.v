@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 (* 0_common.go *)
@@ -134,8 +134,8 @@ Definition StartConfServer: val :=
       ConfServer__GetRPC "s" (UInt64Get "args") "v";;
       #()
       );;
-    let: "r" := rpc.MakeRPCServer "handlers" in
-    rpc.RPCServer__Serve "r" "me" #1;;
+    let: "r" := urpc.MakeServer "handlers" in
+    urpc.Server__Serve "r" "me";;
     #().
 
 Definition ConfClerk := struct.decl [
@@ -150,7 +150,7 @@ Definition ConfClerk__Put: val :=
       "prevVer" ::= "prevVer";
       "newVal" ::= "newVal"
     ]) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF ConfClerk "cl" "c") CONF_PUT "raw_args" "raw_reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF ConfClerk "cl" "c") CONF_PUT "raw_args" "raw_reply" #100 in
     (if: ("err" = #0)
     then slice.len (![slice.T byteT] "raw_reply") > #0
     else #false).
@@ -160,7 +160,7 @@ Definition ConfClerk__Get: val :=
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
     let: "raw_args" := NewSlice byteT #8 in
     UInt64Put "raw_args" "key";;
-    let: "err" := rpc.RPCClient__Call (struct.loadF ConfClerk "cl" "c") CONF_GET "raw_args" "raw_reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF ConfClerk "cl" "c") CONF_GET "raw_args" "raw_reply" #100 in
     (if: ("err" = #0)
     then DecodeVersionedValue (![slice.T byteT] "raw_reply")
     else
@@ -170,7 +170,7 @@ Definition ConfClerk__Get: val :=
 Definition MakeConfClerk: val :=
   rec: "MakeConfClerk" "confServer" :=
     struct.new ConfClerk [
-      "cl" ::= rpc.MakeRPCClient "confServer"
+      "cl" ::= urpc.MakeClient "confServer"
     ].
 
 (* 2_replica_clerk.go *)
@@ -235,7 +235,7 @@ Definition ReplicaClerk__AppendRPC: val :=
   rec: "ReplicaClerk__AppendRPC" "ck" "args" :=
     let: "raw_args" := EncodeAppendArgs "args" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_APPEND "raw_args" "reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_APPEND "raw_args" "reply" #100 in
     (if: ("err" = #0) && (slice.len (![slice.T byteT] "reply") > #0)
     then #true
     else #false).
@@ -244,19 +244,19 @@ Definition ReplicaClerk__BecomePrimaryRPC: val :=
   rec: "ReplicaClerk__BecomePrimaryRPC" "ck" "args" :=
     let: "raw_args" := EncodeBecomePrimaryArgs "args" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_BECOMEPRIMARY "raw_args" "reply" #20000 in
+    let: "err" := urpc.Client__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_BECOMEPRIMARY "raw_args" "reply" #20000 in
     control.impl.Assume ("err" = #0);;
     #().
 
 Definition ReplicaClerk__HeartbeatRPC: val :=
   rec: "ReplicaClerk__HeartbeatRPC" "ck" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    (rpc.RPCClient__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_HEARTBEAT (NewSlice byteT #0) "reply" #1000 = #0).
+    (urpc.Client__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_HEARTBEAT (NewSlice byteT #0) "reply" #1000 = #0).
 
 Definition MakeReplicaClerk: val :=
   rec: "MakeReplicaClerk" "host" :=
     let: "ck" := struct.alloc ReplicaClerk (zero_val (struct.t ReplicaClerk)) in
-    struct.storeF ReplicaClerk "cl" "ck" (rpc.MakeRPCClient "host");;
+    struct.storeF ReplicaClerk "cl" "ck" (urpc.MakeClient "host");;
     "ck".
 
 (* 3_replica.go *)
@@ -413,6 +413,6 @@ Definition StartReplicaServer: val :=
     MapInsert "handlers" REPLICA_HEARTBEAT (λ: <> <>,
       #()
       );;
-    let: "r" := rpc.MakeRPCServer "handlers" in
-    rpc.RPCServer__Serve "r" "me" #1;;
+    let: "r" := urpc.MakeServer "handlers" in
+    urpc.Server__Serve "r" "me";;
     "s".

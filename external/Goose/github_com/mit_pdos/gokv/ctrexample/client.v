@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 Definition FAI_OP : expr := #0.
@@ -10,12 +10,12 @@ Definition FAI_OP : expr := #0.
 (* the boot/main() function for the server *)
 Definition main: val :=
   rec: "main" <> :=
-    let: "cl" := rpc.MakeRPCClient #53021371269120 in
+    let: "cl" := urpc.MakeClient #53021371269120 in
     let: "localBound" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "rep" := ref (zero_val (slice.T byteT)) in
-      let: "err" := rpc.RPCClient__Call "cl" FAI_OP (NewSlice byteT #0) "rep" #100 in
+      let: "err" := urpc.Client__Call "cl" FAI_OP (NewSlice byteT #0) "rep" #100 in
       (if: "err" ≠ #0
       then Continue
       else

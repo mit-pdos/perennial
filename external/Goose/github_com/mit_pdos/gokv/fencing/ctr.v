@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 (* 0_marshal.go *)
@@ -99,7 +99,7 @@ Definition Clerk__Get: val :=
       "seq" ::= struct.loadF Clerk "seq" "c"
     ] in
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "c") RPC_GET (EncGetArgs "args") "reply_ptr" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "c") RPC_GET (EncGetArgs "args") "reply_ptr" #100 in
     (if: "err" ≠ #0
     then
       (* log.Println("ctr: urpc get call failed/timed out") *)
@@ -123,7 +123,7 @@ Definition Clerk__Put: val :=
       "epoch" ::= "epoch"
     ] in
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "c") RPC_GET (EncPutArgs "args") "reply_ptr" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "c") RPC_GET (EncPutArgs "args") "reply_ptr" #100 in
     (if: "err" ≠ #0
     then
       (* log.Println("ctr: urpc put call failed/timed out") *)
@@ -142,9 +142,9 @@ Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
     let: "ck" := struct.alloc Clerk (zero_val (struct.t Clerk)) in
     struct.storeF Clerk "seq" "ck" #0;;
-    struct.storeF Clerk "cl" "ck" (rpc.MakeRPCClient "host");;
+    struct.storeF Clerk "cl" "ck" (urpc.MakeClient "host");;
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := rpc.RPCClient__Call (struct.loadF Clerk "cl" "ck") RPC_GET (NewSlice byteT #0) "reply_ptr" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GET (NewSlice byteT #0) "reply_ptr" #100 in
     (if: "err" ≠ #0
     then Panic ("ctr: urpc call failed/timed out")
     else #());;
@@ -240,6 +240,6 @@ Definition StartServer: val :=
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
       );;
-    let: "r" := rpc.MakeRPCServer "handlers" in
-    rpc.RPCServer__Serve "r" "me" #1;;
+    let: "r" := urpc.MakeServer "handlers" in
+    urpc.Server__Serve "r" "me";;
     #().

@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 
 (* clerk.go *)
 
@@ -13,7 +13,7 @@ Definition Clerk := struct.decl [
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
     struct.new Clerk [
-      "cl" ::= rpc.MakeRPCClient "host"
+      "cl" ::= urpc.MakeClient "host"
     ].
 
 Definition Clerk__Prepare: val :=

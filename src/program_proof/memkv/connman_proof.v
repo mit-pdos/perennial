@@ -65,7 +65,7 @@ Local Lemma wp_ConnMan__getClient (c_ptr:loc) (host:u64) :
 Proof.
   iIntros "#Hconn !# %Φ _ HΦ".
   iNamed "Hconn".
-  Opaque rpc.RPCClient.
+  Opaque urpc.Client.
   wp_lam. wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -129,7 +129,7 @@ Proof.
   wp_apply (release_spec with "[$Hinv $Hlocked HrpcCls Hmaking Hmaking_map Hcls_map]").
   { rewrite /own_ConnMan. eauto 10 with iFrame. }
   wp_pures.
-  wp_apply wp_MakeRPCClient.
+  wp_apply wp_MakeClient.
   iIntros (cl_new) "#Hcl_new".
   wp_store.
   wp_loadField.
@@ -184,7 +184,7 @@ Lemma wp_ConnMan__CallAtLeastOnce (γsmap:server_chan_gnames) (c_ptr:loc) (rpcid
 Proof.
   iIntros "#Hconn #Hhandler #Hpre !#" (Φ) "H HΦ".
   iDestruct "H" as "(Hslice & Hrep)".
-  Opaque rpc.RPCClient.
+  Opaque urpc.Client.
   wp_lam.
   wp_pures.
   wp_apply (wp_ref_of_zero).

@@ -1,5 +1,5 @@
 From Perennial.Helpers Require Import ModArith.
-From Goose.github_com.mit_pdos.gokv.urpc Require Import rpc.
+From Goose.github_com.mit_pdos.gokv Require Import urpc.
 From iris.base_logic.lib Require Import saved_prop.
 From Perennial.goose_lang Require Import adequacy.
 From Perennial.program_proof Require Import grove_prelude std_proof.
@@ -137,14 +137,14 @@ Proof. apply _. Qed.
 
 Typeclasses Opaque is_rpcHandler'.
 
-Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
+Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
             "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
             "%Hdom_range" ∷ ⌜ ∀ id, (0 < int.Z id < int.Z n)%Z ↔ id ∈ dom (gset u64) reqs ⌝ ∗
             "%Hdom_eq_es" ∷ ⌜ dom (gset u64) reqs = dom (gset u64) estoks ⌝ ∗
             "%Hdom_eq_ex" ∷ ⌜ dom (gset u64) reqs = dom (gset u64) extoks ⌝ ∗
             "%Hdom_pending" ∷ ⌜ dom (gset u64) pending ⊆ dom (gset u64) reqs  ⌝ ∗
-            "seq" ∷ cl ↦[RPCClient :: "seq"] #n ∗
+            "seq" ∷ cl ↦[Client :: "seq"] #n ∗
             "Hmapping_ctx" ∷ map_ctx (ccmapping_name Γ) 1 reqs ∗
             "Hescrow_ctx" ∷ map_ctx (ccescrow_name Γ) 1 estoks ∗
             "Hextracted_ctx" ∷ map_ctx (ccextracted_name Γ) 1 extoks ∗
@@ -175,22 +175,22 @@ Definition RPCClient_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
                  (* (3) Caller has extracted ownership *)
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
 
-(* TODO: rename to is_RPCClient for consistency? *)
+(* TODO: rename to is_Client for consistency? *)
 Definition RPCClient_own (cl : loc) (srv : chan) : iProp Σ :=
   ∃ Γ (lk : loc) client (mref : loc),
-    "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗
-    "#conn" ∷ readonly (cl ↦[RPCClient :: "conn"] connection_socket client srv) ∗
-    "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
+    "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[Client :: "mu"] #lk) ∗
+    "#conn" ∷ readonly (cl ↦[Client :: "conn"] connection_socket client srv) ∗
+    "#pending" ∷ readonly (cl ↦[Client :: "pending"] #mref)) ∗
     "#Hchan" ∷ inv urpc_clientN (reply_chan_inner Γ client) ∗
-    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk mref).
+    "#Hlk" ∷ is_lock urpc_lockN #lk (Client_lock_inner Γ cl lk mref).
 
-Definition RPCClient_reply_own (cl : loc) : iProp Σ :=
+Definition Client_reply_own (cl : loc) : iProp Σ :=
   ∃ Γ (lk : loc) client srv (mref : loc),
-    "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[RPCClient :: "mu"] #lk) ∗
-    "#conn" ∷ readonly (cl ↦[RPCClient :: "conn"] connection_socket client srv) ∗
-    "#pending" ∷ readonly (cl ↦[RPCClient :: "pending"] #mref)) ∗
+    "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[Client :: "mu"] #lk) ∗
+    "#conn" ∷ readonly (cl ↦[Client :: "conn"] connection_socket client srv) ∗
+    "#pending" ∷ readonly (cl ↦[Client :: "pending"] #mref)) ∗
     "#Hchan" ∷ inv urpc_clientN (reply_chan_inner Γ client) ∗
-    "#Hlk" ∷ is_lock urpc_lockN #lk (RPCClient_lock_inner Γ cl lk mref).
+    "#Hlk" ∷ is_lock urpc_lockN #lk (Client_lock_inner Γ cl lk mref).
 
 (* TODO: move this *)
 Global Instance is_map_AsMapsTo mref hd :
@@ -211,18 +211,18 @@ Proof.
     iApply (fractional.fractional_split). iFrame.
 Qed.
 
-Definition own_RPCServer (s : loc) (handlers: gmap u64 val) : iProp Σ :=
+Definition own_Server (s : loc) (handlers: gmap u64 val) : iProp Σ :=
   ∃ mref def,
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
-  "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref).
+  "#handlers" ∷ readonly (s ↦[Server :: "handlers"] #mref).
 
-Lemma wp_MakeRPCServer (handlers : gmap u64 val) (mref:loc) (def : val) :
+Lemma wp_MakeServer (handlers : gmap u64 val) (mref:loc) (def : val) :
   {{{
        map.is_map mref 1 (handlers, def)
   }}}
-    MakeRPCServer #mref @ ⊤
+    MakeServer #mref @ ⊤
   {{{
-      (s:loc), RET #s; own_RPCServer s handlers
+      (s:loc), RET #s; own_Server s handlers
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
@@ -278,13 +278,13 @@ Qed.
 Definition handlers_complete Γ (handlers : gmap u64 val) :=
   (handlers_dom Γ (dom (gset _) handlers)).
 
-Lemma wp_RPCServer__readThread γ s host client handlers mref def :
+Lemma wp_Server__readThread γ s host client handlers mref def :
   dom (gset u64) handlers ≠ ∅ →
   "#Hcomplete" ∷ handlers_complete γ handlers ∗
   "#His_rpc_map" ∷ rpc_handler_mapping γ host handlers ∗
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
-  "#handlers" ∷ readonly (s ↦[RPCServer :: "handlers"] #mref) -∗
-  WP RPCServer__readThread #s (connection_socket host client) {{ _, True }}.
+  "#handlers" ∷ readonly (s ↦[Server :: "handlers"] #mref) -∗
+  WP Server__readThread #s (connection_socket host client) {{ _, True }}.
 Proof.
   iIntros (Hdom).
   iNamed 1.
@@ -438,15 +438,15 @@ Proof.
   iModIntro. iIntros (err) "[%?]". wp_pures; eauto.
 Qed.
 
-Lemma wp_StartRPCServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
+Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
   dom (gset u64) handlers ≠ ∅ →
   {{{
       handlers_complete γ handlers ∗
-      own_RPCServer s handlers ∗
+      own_Server s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers,
       (∃ Spec, handler_spec γ host rpcid Spec ∗ is_rpcHandler' handler Spec)
   }}}
-    RPCServer__Serve #s #host #n
+    Server__Serve #s #host #n
   {{{
       RET #(); True
   }}}.
@@ -463,13 +463,13 @@ Proof.
   wp_apply (wp_Accept).
   iIntros (client) "_". wp_pures.
   wp_apply (wp_fork).
-  { wp_apply (wp_RPCServer__readThread with "[]"); eauto. }
+  { wp_apply (wp_Server__readThread with "[]"); eauto. }
   wp_pures. iModIntro. by iLeft.
 Qed.
 
-Lemma wp_RPCClient__replyThread cl :
-  RPCClient_reply_own cl -∗
-  WP RPCClient__replyThread #cl {{ _, True }}.
+Lemma wp_Client__replyThread cl :
+  Client_reply_own cl -∗
+  WP Client__replyThread #cl {{ _, True }}.
 Proof.
   iIntros "H". iNamed "H". iNamed "Hstfields".
   wp_lam. wp_pures.
@@ -639,11 +639,11 @@ Proof.
     exfalso. apply map.map_get_true in Hget. congruence. }
 Qed.
 
-Lemma wp_MakeRPCClient (srv:u64):
+Lemma wp_MakeClient (srv:u64):
   {{{
        True
   }}}
-    MakeRPCClient #srv
+    MakeClient #srv
   {{{
        (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr srv
   }}}.
@@ -676,7 +676,7 @@ Proof.
   iMod (map_init (∅ : gmap u64 unit)) as (γccextracted) "Hextracted_ctx".
   set (Γ := {| ccmapping_name := γccmapping; ccescrow_name := γccescrow;
                ccextracted_name := γccextracted |}).
-  iMod (alloc_lock urpc_lockN _ _ (RPCClient_lock_inner Γ cl lk mref) with
+  iMod (alloc_lock urpc_lockN _ _ (Client_lock_inner Γ cl lk mref) with
             "Hfree [Hmapping_ctx Hescrow_ctx Hextracted_ctx seq Hmref]") as "#Hlock".
   { iNext. iExists ∅, ∅, ∅, ∅, _. iFrame.
     rewrite ?dom_empty_L.
@@ -691,7 +691,7 @@ Proof.
   { iNext. iExists ∅. iFrame. rewrite big_sepS_empty //. }
   wp_bind (Fork _).
   iApply wp_fork.
-  { iNext. wp_pures. iApply wp_RPCClient__replyThread. repeat iExists _.
+  { iNext. wp_pures. iApply wp_Client__replyThread. repeat iExists _.
     iSplit. 1:iFrame "mu conn pending".
     iSplit; done. }
   iNext. wp_pures. iModIntro. iApply "HΦ".
@@ -706,7 +706,7 @@ Definition call_errno (err : option call_err) : Z :=
   | Some CallErrDisconnect => 2
   end.
 
-Lemma wp_RPCClient__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
+Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post :
   {{{
       is_slice req byteT 1 reqData ∗
@@ -715,7 +715,7 @@ Lemma wp_RPCClient__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_
       RPCClient_own cl_ptr host ∗
       □(▷ Spec reqData Post)
   }}}
-    RPCClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
+    Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
   {{{
        (err : option call_err), RET #(call_errno err);
        RPCClient_own cl_ptr host ∗
@@ -893,7 +893,7 @@ Proof.
   wp_loadField.
   wp_bind (if: _ then _ else _)%E.
   iAssert (∃ (x: u64), cb_state ↦[uint64T] #x ∗ n [[Γ.(ccextracted_name)]]↦ () ∗
-                        (cb_state ↦[uint64T] #x -∗ RPCClient_lock_inner Γ cl_ptr lk mref))%I
+                        (cb_state ↦[uint64T] #x -∗ Client_lock_inner Γ cl_ptr lk mref))%I
           with "[Hlockinv Hextracted]" as "H".
   { iNamed "Hlockinv".
     iDestruct (map_ro_valid with "Hmapping_ctx [$]") as %Hlookup_reg.
@@ -925,7 +925,7 @@ Proof.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
   iDestruct ("Hdone_clo" with "[$]") as "Hlockinv".
   wp_apply (wp_If_join_evar' (lock.locked #lk ∗
-                                  RPCClient_lock_inner Γ cl_ptr lk mref)%I
+                                  Client_lock_inner Γ cl_ptr lk mref)%I
    with "[Hi Hlockinv]").
   { case_bool_decide; wp_pures.
     - wp_loadField. wp_apply (wp_condWaitTimeout with "[$cond' $Hi $Hlk $Hlockinv]").

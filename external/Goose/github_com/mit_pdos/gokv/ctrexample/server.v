@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-From Goose Require github_com.mit_pdos.gokv.urpc.rpc.
+From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 Definition CtrServer := struct.decl [
@@ -49,6 +49,6 @@ Definition main: val :=
       "reply" <-[slice.T byteT] marshal.Enc__Finish "e";;
       #()
       );;
-    let: "rs" := rpc.MakeRPCServer "handlers" in
-    rpc.RPCServer__Serve "rs" "me" #1;;
+    let: "rs" := urpc.MakeServer "handlers" in
+    urpc.Server__Serve "rs" "me";;
     #().
