@@ -63,7 +63,6 @@ Definition MapLen': val :=
 Definition MapLen: val :=
   λ: "mref", MapLen' (!"mref").
 
-
 Definition mapGetDef: val :=
   rec: "mapGetDef" "m" :=
      match: "m" with
@@ -92,5 +91,15 @@ Definition MapIter: val :=
        "mapIter" (MapDelete' "m_rest" "k")
      end) "mv";;
   FinishRead "mref".
+
+(* alternate implementation strategy - MapLen above was perhaps implemented when
+the general proofs for map iteration weren't ready *)
+Definition MapLen2: val :=
+  λ: "mref",
+    let: "len" := Alloc #0 in
+    MapIter "mref" (λ: <> <>,
+                       "len" <- !"len" + #1;;
+                       Assume (!"len" < #(2^64-1)));;
+    !"len".
 
 End goose_lang.

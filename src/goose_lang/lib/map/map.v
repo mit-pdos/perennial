@@ -642,6 +642,55 @@ Proof.
   iFrame.
 Qed.
 
+Theorem wp_MapLen2 stk E mref q m :
+  {{{
+      is_map mref q m
+  }}}
+    (MapLen2 #mref) @ stk ; E
+  {{{ (s: u64),
+    RET #s; ⌜int.nat s = size m.1⌝ ∗ is_map mref q m
+  }}}.
+Proof.
+  iIntros (Φ) "Hm HΦ".
+  rewrite /MapLen2.
+  wp_pures.
+  wp_apply wp_alloc_untyped; first by done.
+  iIntros (l) "Hlen".
+  wp_pures.
+  wp_apply (wp_MapIter_fold
+              (λ m,
+                ∃ (s: u64),
+                  l ↦ #s ∗
+                  ⌜int.nat s = size m ∧ (int.Z s < 2^64-1)%Z⌝)%I
+  with "Hm [Hlen]").
+  { (* I ∅ *)
+    iExists (U64 0). iFrame.
+    by iPureIntro. }
+  { (* inductive step *)
+    clear.
+    iIntros (m0 _k _v Φ) "!> [HI [%Hk_not_in %Hk_some]] HΦ".
+    iDestruct "HI" as (s) "[Hl [%Hs %Hs_bound]]".
+    wp_pures.
+    wp_apply (wp_load with "[$Hl]"); iIntros "Hl".
+    wp_apply (wp_store with "[$Hl]"); iIntros "Hl".
+    wp_apply (wp_load with "[$Hl]"); iIntros "Hl".
+    wp_apply wp_Assume.
+    iIntros (Hbounded_next%bool_decide_eq_true).
+    iApply "HΦ".
+    iExists _; iFrame.
+    iPureIntro. split.
+    - rewrite map_size_insert_None //.
+      word.
+    - revert Hbounded_next.
+      word.
+  }
+  iIntros "[Hm HI]".
+  iDestruct "HI" as (s) "[Hl [%Hs1 %Hs2]]".
+  wp_apply (wp_load with "[$Hl]"); iIntros "Hl".
+  iApply "HΦ"; iFrame.
+  eauto.
+Qed.
+
 End heap.
 
 Typeclasses Opaque is_map.
