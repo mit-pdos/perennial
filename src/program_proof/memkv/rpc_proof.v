@@ -438,7 +438,7 @@ Proof.
   iModIntro. iIntros (err) "[%?]". wp_pures; eauto.
 Qed.
 
-Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64) :
+Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) :
   dom (gset u64) handlers ≠ ∅ →
   {{{
       handlers_complete γ handlers ∗
@@ -446,7 +446,7 @@ Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) (n:u64)
       [∗ map] rpcid ↦ handler ∈ handlers,
       (∃ Spec, handler_spec γ host rpcid Spec ∗ is_rpcHandler' handler Spec)
   }}}
-    Server__Serve #s #host #n
+    Server__Serve #s #host
   {{{
       RET #(); True
   }}}.

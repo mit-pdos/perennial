@@ -50,13 +50,13 @@ Proof.
   iIntros "Hmap".
   wp_pures.
 
-  wp_apply (wp_MakeRPCServer with "[$Hmap]").
+  wp_apply (wp_MakeServer with "[$Hmap]").
   iIntros (rs) "Hsown".
   wp_pures.
 
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  wp_apply (wp_StartRPCServer with "[$Hsown]").
+  wp_apply (wp_StartServer with "[$Hsown]").
   { rewrite ?dom_insert_L; set_solver. }
   {
     iSplitL "".

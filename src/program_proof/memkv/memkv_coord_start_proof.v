@@ -296,12 +296,12 @@ Proof.
   iIntros "Hmap".
   wp_pures.
 
-  wp_apply (wp_MakeRPCServer with "[$Hmap]").
+  wp_apply (wp_MakeServer with "[$Hmap]").
   iIntros (rs) "Hsown".
   wp_pures.
 
   iNamed "His_coord".
-  wp_apply (wp_StartRPCServer with "[$Hsown]").
+  wp_apply (wp_StartServer with "[$Hsown]").
   { rewrite ?dom_insert_L; set_solver. }
   {
     iSplitL "".
