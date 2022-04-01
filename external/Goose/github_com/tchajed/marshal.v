@@ -108,6 +108,11 @@ Definition Dec__GetBytes: val :=
     struct.get Dec "off" "dec" <-[uint64T] ![uint64T] (struct.get Dec "off" "dec") + "num";;
     "b".
 
+Definition Dec__GetRemainingBytes: val :=
+  rec: "Dec__GetRemainingBytes" "dec" :=
+    let: "remaining" := slice.len (struct.get Dec "b" "dec") - ![uint64T] (struct.get Dec "off" "dec") in
+    Dec__GetBytes "dec" "remaining".
+
 Definition Dec__GetBool: val :=
   rec: "Dec__GetBool" "dec" :=
     let: "off" := ![uint64T] (struct.get Dec "off" "dec") in
