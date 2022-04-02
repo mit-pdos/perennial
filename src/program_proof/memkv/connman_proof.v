@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import connman.
 From Perennial.program_proof Require Import grove_prelude std_proof.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.algebra Require Import auth_map.
-From Perennial.program_proof.memkv Require Import rpc_proof rpc_spec.
+From Perennial.program_proof.memkv Require Import urpc_proof urpc_spec.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section connman_proof.

@@ -83,7 +83,7 @@ SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/program_proof/simple/setattr.v\
 	src/program_proof/simple/write.v\
 	src/program_proof/examples/inode_proof.v\
-	src/program_proof/memkv/rpc_proof.v\
+	src/program_proof/memkv/urpc_proof.v\
 	src/program_proof/memkv/memkv_conditional_put_proof.v\
 	src/program_proof/memkv/memkv_coord_start_proof.v\
 	src/program_proof/memkv/memkv_get_proof.v

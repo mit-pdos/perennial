@@ -6,9 +6,9 @@ From Perennial.program_proof.ctrexample Require Import interface server client.
 From Perennial.program_proof Require Import marshal_proof.
 From Goose.github_com.mit_pdos.gokv Require Import ctrexample.client.
 From Goose.github_com.mit_pdos.gokv Require Import ctrexample.server.
-From Perennial.program_proof.memkv Require Import rpc_proof.
+From Perennial.program_proof.memkv Require Import urpc_proof.
 From Perennial.program_proof.ctrexample Require Import wpc_proofmode.
-From Perennial.program_proof.memkv Require Import rpc_spec.
+From Perennial.program_proof.memkv Require Import urpc_spec.
 From Perennial.base_logic Require Import lib.ghost_map lib.saved_spec.
 
 From Perennial.goose_lang Require adequacy dist_adequacy.

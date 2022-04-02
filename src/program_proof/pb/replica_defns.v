@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import pb.
 
-From Perennial.program_proof.memkv Require Export rpc_proof.
+From Perennial.program_proof.memkv Require Export urpc_proof.
 From Perennial.program_proof.pb Require Export replica_ghost_defns.
 
 Section replica_defns.

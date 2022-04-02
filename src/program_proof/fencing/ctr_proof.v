@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.fencing Require Import ctr.
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.memkv Require Export rpc_lib rpc_proof rpc_spec.
+From Perennial.program_proof.memkv Require Export urpc_lib urpc_proof urpc_spec.
 From iris.algebra Require Import cmra.
 From iris.base_logic Require Import mono_nat.
 
