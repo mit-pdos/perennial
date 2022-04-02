@@ -82,6 +82,7 @@ Proof.
       wp_pures.
       wp_apply (typed_slice.wp_NewSlice (V:=u8)).
       iIntros (rep_sl) "Hrep_sl".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
       wp_store.
       iApply "HΦ".
       iFrame.
@@ -112,6 +113,7 @@ Proof.
       wp_pures.
       wp_apply (typed_slice.wp_NewSlice (V:=u8)).
       iIntros (reply_sl) "Hrep_sl".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
       wp_store.
       iApply "HΦ".
       iFrame.
@@ -151,6 +153,7 @@ Proof.
       wp_pures.
       wp_apply (wp_EncodeConditionalPutReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
       wp_store.
       iApply "HΦ". iFrame. iApply "Hpost".
       iModIntro.
@@ -195,6 +198,7 @@ Proof.
       wp_pures.
       wp_apply (wp_EncodeGetReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
       wp_store.
       iApply "HΦ". iFrame. iApply "Hpost".
       iModIntro.
@@ -234,6 +238,7 @@ Proof.
       wp_pures.
       wp_apply (wp_EncodePutReply with "Hrep").
       iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
       wp_store.
       iApply "HΦ". iFrame. iApply "Hpost".
       iModIntro.
@@ -253,6 +258,7 @@ Proof.
       iIntros (cid) "Hcid".
       wp_apply (wp_EncodeUint64).
       iIntros (rep_sl repData) "[Hrep_sl %HrepEnc]".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
       iSimpl in "Hpre". iDestruct "Hpre" as (_) "[_ Hpost]".
       wp_store.

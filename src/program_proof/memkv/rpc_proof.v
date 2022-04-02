@@ -126,9 +126,9 @@ Local Definition is_rpcHandler' (f:val)
     Spec reqData Post
   }}}
     f (slice_val req) #rep
-  {{{ rep_sl repData, RET #();
+  {{{ rep_sl q repData, RET #();
       rep ↦[slice.T byteT] (slice_val rep_sl) ∗
-      is_slice rep_sl byteT 1 repData ∗
+      is_slice_small rep_sl byteT q repData ∗
       Post repData
   }}}.
 
@@ -372,7 +372,7 @@ Proof.
   { iRewrite -"Hequiv". iFrame "HPre".
     iApply @is_slice_zero.
   }
-  iIntros (rep_sl repData) "(Hsl' & His_slice & HPost)".
+  iIntros (rep_sl rep_q repData) "(Hsl' & His_slice & HPost)".
 
   wp_pures.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
@@ -395,7 +395,6 @@ Proof.
   iIntros "Henc".
   wp_pures.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
-  iDestruct (is_slice_small_read with "His_slice") as "(His_slice&Hsl_close)".
   iDestruct (is_slice_small_sz with "His_slice") as %Hsz.
   wp_apply (wp_Enc__PutBytes with "[$Henc $His_slice]").
   { word. }

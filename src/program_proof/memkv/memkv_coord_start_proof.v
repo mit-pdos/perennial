@@ -338,6 +338,7 @@ Proof.
       iIntros "Hrep".
       iNamed "H".
       iDestruct ("HshardMap_close" with "HshardMap_sl") as "HshardMap_sl".
+      iDestruct (is_slice_to_small with "Hdata") as "Hdata".
       wp_pures.
       wp_loadField.
       wp_apply (release_spec with "[-HΦ Hpost Hrep Hdata]").
@@ -356,6 +357,7 @@ Proof.
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & Hpre)".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
       simpl.
       iDestruct "Hpre" as (x) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc&Hshard)".
