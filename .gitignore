@@ -12,6 +12,9 @@
 # vim
 *.swp
 
+# vscode
+/.vscode
+
 # CoqIDE files
 \#*#
 
