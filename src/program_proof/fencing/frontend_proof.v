@@ -25,7 +25,7 @@ Context `{!inG Σ epochR}.
 Context `{!inG Σ valR}.
 Context `{!mono_nat.mono_natG Σ}.
 Context `{!mapG Σ u64 u64}.
-Context `{!mapG Σ u64 unit}.
+Context `{!mapG Σ u64 bool}.
 
 Definition frontend_inv_def γ: iProp Σ :=
   ∃ (latestEpoch v:u64),
@@ -89,7 +89,7 @@ Proof.
                 (λ v,
               ∃ (v0:u64),
               ⌜v = #v0⌝ ∗
-            "Hlb" ∷ is_latest_epoch_lb γ epoch ∗
+            "#Hlb" ∷ is_latest_epoch_lb γ epoch ∗
             "HepochVal" ∷ own_val γ epoch v0 q4 ∗
             "Hck1_own" ∷ own_Clerk ck1
                     )%I
@@ -113,11 +113,11 @@ Proof.
         }
         iFrame.
         iIntros (v0) "(HnewVal & HprevEpochVal & HlatestEpoch)".
-        iDestruct (ghost_map_points_to_agree with "Hval HprevEpochVal") as %Hagree.
+        iDestruct (own_val_combine with "Hval HprevEpochVal") as "[_ %Hagree]".
         rewrite Hagree.
         iMod "Hmask".
         iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
-        iDestruct "HnewVal" as "[HnewVal HnewVal2]".
+        iDestruct (own_val_split with "HnewVal") as "[HnewVal HnewVal2]".
         iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
         iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
         {
@@ -139,13 +139,11 @@ Proof.
         iDestruct "Hghost1" as "[Hbad|Hghost1]".
         { (* non-matching case, contradictory *)
           iExFalso.
-          (* FIXME: to make this work, own_unused_epoch and own_val have to be contradictory; maybe own_val have a frozen points-to or something *)
-          admit.
+          iDestruct (unused_own_val_false with "Hbad Hval") as "$".
         }
         {
           iDestruct "Hghost1" as (v') "[#Hlb Hghost1]".
-          iDestruct (ghost_map_points_to_combine with "Hval Hghost1") as "[Hval %HvEq]".
-          rewrite dfrac_op_own.
+          iDestruct (own_val_combine with "Hval Hghost1") as "[Hval %HvEq]".
           rewrite Qp_quarter_quarter.
           iExists v.
           iFrame.
@@ -153,7 +151,7 @@ Proof.
           iIntros "[Hval HlatestEpoch]".
           iMod "Hmask".
           iEval (rewrite -Qp_quarter_quarter) in "Hval".
-          iDestruct "Hval" as "[HnewVal HnewVal2]".
+          iDestruct (own_val_split with "Hval") as "[HnewVal HnewVal2]".
           iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
           {
             iNext.
@@ -177,7 +175,57 @@ Proof.
     wp_loadField.
     wp_load.
     wp_loadField.
-    admit.
+
+    wp_apply (wp_Clerk__Put γ with "Hck1_own").
+    iInv "Hinv" as ">HH" "Hclose".
+    iNamed "HH".
+    iExists latestEpoch.
+    iApply (fupd_mask_intro).
+    { set_solver. }
+    iIntros "Hmask".
+    iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
+    destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+    {
+      exfalso.
+      word.
+    }
+    destruct (decide (int.Z latestEpoch = int.Z epoch)%Z) as [Heq|Heasy]; last done.
+    replace (latestEpoch) with (epoch) by word.
+    iDestruct (own_val_combine with "HepochVal Hval") as "[Hval %Hveq]".
+    rewrite Qp_quarter_quarter.
+    rewrite -Hveq.
+    iExists v.
+    iFrame.
+
+    iIntros "[Hval HlatestEpoch]".
+    iMod "Hmask".
+    iEval (rewrite -Qp_quarter_quarter) in "Hval".
+    iDestruct (own_val_split with "Hval") as "[Hval HepochVal]".
+    iMod ("Hclose" with "[Hval HlatestEpoch Hkv]") as "HH".
+    {
+      iNext.
+      iExists _, _; iFrame "Hval∗".
+      (* FIXME: want to update kv_ptsto, which means we need an atomic update from client of frontend *)
+      admit.
+    }
+    iModIntro.
+    iIntros "Hck1_own".
+    wp_pures.
+    wp_loadField.
+
+    wp_apply (release_spec with "[$Hlocked $HmuInv Hck1 Hck2 Hck1_own Hck2_own HepochVal ]").
+    {
+      iExists epoch.
+      iNext.
+      iExists _, _.
+      iFrame "Hck1 Hck2 ∗#".
+      iRight.
+      iExists _; iFrame.
+    }
+    wp_pures.
+    wp_load.
+    iApply "HΦ". (* TODO: post-condition should say something *)
+    done.
   }
   { (* same proof, but with second server *)
     admit.
