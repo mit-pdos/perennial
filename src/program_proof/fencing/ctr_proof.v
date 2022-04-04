@@ -51,7 +51,7 @@ Lemma wp_Clerk__Get γ ck (e:u64) :
                                            own_val γ latestEpoch v (1/2)%Qp ∗
                                            own_latest_epoch γ e (1/2)%Qp
                                            ={∅,⊤}=∗ (own_Clerk ck -∗ Φ #v))
-   else if decide (latestEpoch = e) then
+   else if decide (int.Z latestEpoch = int.Z e) then
     ∃ v, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
      own_val γ e v (1/2)%Qp ∗
     (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (own_Clerk ck -∗ Φ #v))

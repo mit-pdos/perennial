@@ -84,63 +84,100 @@ Proof.
   {
     wp_loadField.
     wp_loadField.
-    wp_apply (wp_Clerk__Get with "Hck1_own").
-    iInv "Hinv" as ">Hown" "Hclose".
-    iNamed "Hown".
-    iApply fupd_mask_intro.
-    { set_solver. }
-    iIntros "Hmask".
+    wp_bind (ctr.Clerk__Get _ _).
+    wp_apply (wp_wand _ _ _
+                (λ v,
+              ∃ (v0:u64),
+              ⌜v = #v0⌝ ∗
+            "Hlb" ∷ is_latest_epoch_lb γ epoch ∗
+            "HepochVal" ∷ own_val γ epoch v0 q4 ∗
+            "Hck1_own" ∷ own_Clerk ck1
+                    )%I
+               with "[Hck1_own Hghost1]").
+    {
+      wp_apply (wp_Clerk__Get with "Hck1_own").
+      iInv "Hinv" as ">Hown" "Hclose".
+      iNamed "Hown".
+      iApply fupd_mask_intro.
+      { set_solver. }
+      iIntros "Hmask".
 
-    iExists latestEpoch.
-    destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
-    { (* case: epoch number is new *)
-      iDestruct "Hghost1" as "[Hunused | Hbad]"; last first.
-      { (* is_latest_epoch_lb contradicts inequality *)
-        iDestruct "Hbad" as (?) "[#Hlb _]".
-        iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
-        exfalso. word.
-      }
-      iFrame.
-      iIntros (v0) "(HnewVal & HprevEpochVal & HlatestEpoch)".
-      iDestruct (ghost_map_points_to_agree with "Hval HprevEpochVal") as %Hagree.
-      rewrite Hagree.
-      iMod "Hmask".
-      iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
-      iDestruct "HnewVal" as "[HnewVal HnewVal2]".
-      iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
-      iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
-      {
-        iNext.
-        iExists _, _.
+      iExists latestEpoch.
+      destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+      { (* case: epoch number is new *)
+        iDestruct "Hghost1" as "[Hunused | Hbad]"; last first.
+        { (* is_latest_epoch_lb contradicts inequality *)
+          iDestruct "Hbad" as (?) "[#Hlb _]".
+          iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
+          exfalso. word.
+        }
         iFrame.
+        iIntros (v0) "(HnewVal & HprevEpochVal & HlatestEpoch)".
+        iDestruct (ghost_map_points_to_agree with "Hval HprevEpochVal") as %Hagree.
+        rewrite Hagree.
+        iMod "Hmask".
+        iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+        iDestruct "HnewVal" as "[HnewVal HnewVal2]".
+        iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
+        iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
+        {
+          iNext.
+          iExists _, _.
+          iFrame.
+        }
+        iModIntro.
+        iIntros "Hck1_own".
+        iRename "HnewVal2" into "HepochVal".
+        iExists _.
+        iSplitL ""; first done.
+        iFrame "∗#".
       }
-      iModIntro.
-      iIntros "Hck1_own".
-      wp_store.
-      wp_loadField.
-      wp_load.
-      wp_loadField.
-      iRename "HnewVal2" into "HepochVal".
-      admit.
-    }
-    { (* case: ctr server already knows about latest epoch number *)
-      simpl.
-      destruct (decide (latestEpoch = epoch)) as [Heq|Hbad]; last first.
-      {
-        admit.
-      }
+      { (* case: ctr server already knows about latest epoch number *)
+        (* XXX: this destruct only handles the if/else when using int.Z. Why? *)
+        destruct (decide (int.Z latestEpoch = int.Z epoch)) as [Heq|Heasy]; last done.
+        replace (latestEpoch) with (epoch) by word.
+        iDestruct "Hghost1" as "[Hbad|Hghost1]".
+        { (* non-matching case, contradictory *)
+          iExFalso.
+          (* FIXME: to make this work, own_unused_epoch and own_val have to be contradictory; maybe own_val have a frozen points-to or something *)
+          admit.
+        }
+        {
+          iDestruct "Hghost1" as (v') "[#Hlb Hghost1]".
+          iDestruct (ghost_map_points_to_combine with "Hval Hghost1") as "[Hval %HvEq]".
+          rewrite dfrac_op_own.
+          rewrite Qp_quarter_quarter.
+          iExists v.
+          iFrame.
 
-      iDestruct "Hghost1" as "[Hbad|Hghost1]".
-      { (* non-matching case, contradictory*)
-        iExFalso.
-        admit.
-      }
-      {
-        iDestruct "Hghost1" as (v') "Hghost1".
-        (* TODO: lemma to combine fractions of own_val *)
-        admit.
+          iIntros "[Hval HlatestEpoch]".
+          iMod "Hmask".
+          iEval (rewrite -Qp_quarter_quarter) in "Hval".
+          iDestruct "Hval" as "[HnewVal HnewVal2]".
+          iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
+          {
+            iNext.
+            iExists _, _.
+            iFrame.
+          }
+          iModIntro.
+          iIntros.
+          iExists _; iSplitL ""; first done.
+          iFrame "∗#".
+        }
       }
     }
+    iIntros (gv) "HH".
+    iDestruct "HH" as (v) "[%Hval HH]".
+    rewrite Hval.
+    iNamed "HH".
+    wp_store.
+
+    (* Put(epoch, ret + 1) *)
+    wp_loadField.
+    wp_load.
+    wp_loadField.
+    admit.
   }
   { (* same proof, but with second server *)
     admit.
