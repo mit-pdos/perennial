@@ -2,9 +2,10 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.fencing Require Import frontend.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.memkv Require Export urpc_lib urpc_proof urpc_spec.
-From Perennial.program_proof.fencing Require Export ctr_proof.
+From Perennial.program_proof.fencing Require Export ctr_proof config_proof.
 From iris.base_logic Require Import mono_nat.
 
+Module frontend.
 Section frontend_proof.
 
 Context `{!heapGS Σ}.
@@ -15,11 +16,7 @@ Local Definition q4 := (1/4)%Qp.
 Definition k0 := (U64 0).
 Definition k1 := (U64 1).
 
-Context `{!inG Σ epochR}.
-Context `{!inG Σ valR}.
-Context `{!mono_nat.mono_natG Σ}.
-Context `{!mapG Σ u64 u64}.
-Context `{!mapG Σ u64 bool}.
+Context `{!ctrG Σ}.
 
 Definition kv_ptsto (γ:gname) (k v:u64) : iProp Σ :=
   k ⤳[γ]{# 1/2} v.
@@ -37,8 +34,8 @@ Definition own_FrontendServer (s:loc) γ (epoch:u64) : iProp Σ :=
   "#Hepoch" ∷ readonly (s ↦[frontend.Server :: "epoch"] #epoch) ∗
   "Hck1" ∷ s ↦[frontend.Server :: "ck1"] #ck1 ∗
   "Hck2" ∷ s ↦[frontend.Server :: "ck2"] #ck2 ∗
-  "Hck1_own" ∷ own_Clerk ck1 ∗
-  "Hck2_own" ∷ own_Clerk ck2 ∗
+  "Hck1_own" ∷ ctr.own_Clerk γ ck1 ∗
+  "Hck2_own" ∷ ctr.own_Clerk γ ck2 ∗
 
   "Hghost1" ∷ (own_unused_epoch γ epoch ∨ (∃ v, is_latest_epoch_lb γ epoch ∗ own_val γ epoch v q4)).
   (* TODO: add second value *)
@@ -90,11 +87,11 @@ Proof.
               ⌜v = #v0⌝ ∗
             "#Hlb" ∷ is_latest_epoch_lb γ epoch ∗
             "HepochVal" ∷ own_val γ epoch v0 q4 ∗
-            "Hck1_own" ∷ own_Clerk ck1
+            "Hck1_own" ∷ ctr.own_Clerk γ ck1
                     )%I
                with "[Hck1_own Hghost1]").
     {
-      wp_apply (wp_Clerk__Get with "Hck1_own").
+      wp_apply (ctr.wp_Clerk__Get with "Hck1_own").
       iInv "Hinv" as ">Hown" "Hclose".
       iNamed "Hown".
       iApply fupd_mask_intro.
@@ -175,7 +172,7 @@ Proof.
     wp_load.
     wp_loadField.
 
-    wp_apply (wp_Clerk__Put γ with "Hck1_own").
+    wp_apply (ctr.wp_Clerk__Put γ with "Hck1_own").
     iInv "Hinv" as ">HH" "Hclose".
     iNamed "HH".
     iExists latestEpoch.
@@ -241,7 +238,8 @@ Proof.
   }
 Admitted.
 
-Lemma wp_StartServer (me configHost host1 host2:u64) :
+Lemma wp_StartServer γ γcfg (me configHost host1 host2:u64) :
+  config.is_host γcfg configHost (own_unused_epoch γ) (λ _, True) -∗
   {{{
       True
   }}}
@@ -250,7 +248,7 @@ Lemma wp_StartServer (me configHost host1 host2:u64) :
         RET #(); True
   }}}.
 Proof.
-  iIntros (Φ) "Hpre HΦ".
+  iIntros "#His_cfg !#" (Φ) "Hpre HΦ".
   Opaque frontend.Server. (* FIXME: why do I need this? *)
   wp_lam.
   wp_pures.
@@ -259,7 +257,33 @@ Proof.
   Opaque frontend.Server.
   iIntros (s) "Hs".
   wp_pures.
-  (* TODO: need spec for config.MakeClerk *)
+  wp_apply (config.wp_MakeClerk with "His_cfg").
+  iIntros (ck) "#His_ck".
+  wp_pures.
+  wp_apply (config.wp_Clerk__AcquireEpoch with "His_cfg His_ck").
+  iIntros (epoch) "Hunused".
+
+  iDestruct (struct_fields_split with "Hs") as "HH".
+  iNamed "HH".
+  simpl.
+  wp_storeField.
+  wp_apply (wp_new_free_lock).
+  iIntros (mu) "Hmu".
+  wp_storeField.
+
+  wp_apply (ctr.wp_MakeClerk).
+  iIntros (ck1) "Hck1_own".
+  wp_storeField.
+
+  wp_apply (ctr.wp_MakeClerk).
+  iIntros (ck2) "Hck2_own".
+  wp_storeField.
+  wp_apply (map.wp_NewMap).
+  iIntros (handlers) "Hhandlers".
+
+  wp_pures.
+  admit.
 Admitted.
 
 End frontend_proof.
+End frontend.

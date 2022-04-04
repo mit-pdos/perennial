@@ -21,9 +21,13 @@ Record ctr_names :=
 
 Implicit Type γ : ctr_names.
 
-Context `{!mono_natG Σ}.
-Context `{!mapG Σ u64 u64}.
-Context `{!mapG Σ u64 bool}.
+Class ctrG Σ :=
+  { mnat_inG:> mono_natG Σ;
+    val_inG:> mapG Σ u64 u64;
+    unused_tok_inG:> mapG Σ u64 bool
+  }.
+
+Context `{!ctrG Σ}.
 
 Definition own_latest_epoch γ (e:u64) (q:Qp) : iProp Σ :=
   mono_nat_auth_own γ.(epoch_gn) q (int.nat e).
@@ -54,25 +58,32 @@ Lemma own_val_split γ e v q1 q2 :
   own_val γ e v (q1 + q2) -∗ own_val γ e v q1 ∗ own_val γ e v q2.
 Proof.
 Admitted.
+End ctr_definitions.
 
-Definition own_Clerk (ck:loc) : iProp Σ.
+Module ctr.
+Section ctr_proof.
+Context `{!ctrG Σ}.
+Context `{!heapGS Σ}.
+Implicit Type γ:ctr_names.
+
+Definition own_Clerk γ (ck:loc) : iProp Σ.
 Admitted.
 
 (* NOTE: consider lt_eq_lt_dec: ∀ n m : nat, {n < m} + {n = m} + {m < n} *)
 Lemma wp_Clerk__Get γ ck (e:u64) :
   ∀ Φ,
-  own_Clerk ck -∗
+  own_Clerk γ ck -∗
   (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
       own_latest_epoch γ latestEpoch (1/2)%Qp ∗
       own_unused_epoch γ e ∗
                             (∀ v, own_val γ e v (1/2)%Qp ∗
                                            own_val γ latestEpoch v (1/2)%Qp ∗
                                            own_latest_epoch γ e (1/2)%Qp
-                                           ={∅,⊤}=∗ (own_Clerk ck -∗ Φ #v))
+                                           ={∅,⊤}=∗ (own_Clerk γ ck -∗ Φ #v))
    else if decide (int.Z latestEpoch = int.Z e) then
     ∃ v, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
      own_val γ e v (1/2)%Qp ∗
-    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (own_Clerk ck -∗ Φ #v))
+    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (own_Clerk γ ck -∗ Φ #v))
    else
      True) -∗
     WP Clerk__Get #ck #e {{ Φ }}.
@@ -81,22 +92,35 @@ Admitted.
 
 Lemma wp_Clerk__Put γ ck (e v:u64) :
   ∀ Φ,
-  own_Clerk ck -∗
+  own_Clerk γ ck -∗
   (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
       own_latest_epoch γ latestEpoch (1/2)%Qp ∗
       own_unused_epoch γ e ∗
                             (own_val γ e v (1/2)%Qp ∗
                              (∃ oldv, own_val γ latestEpoch oldv (1/2)%Qp) ∗
                                            own_latest_epoch γ e (1/2)%Qp
-                                           ={∅,⊤}=∗ (own_Clerk ck -∗ Φ #()))
+                                           ={∅,⊤}=∗ (own_Clerk γ ck -∗ Φ #()))
    else if decide (int.Z latestEpoch = int.Z e) then
     ∃ oldv, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
      own_val γ e oldv (1/2)%Qp ∗
-    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (own_Clerk ck -∗ Φ #()))
+    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (own_Clerk γ ck -∗ Φ #()))
    else
      True) -∗
     WP Clerk__Put #ck #v #e {{ Φ }}.
 Proof.
 Admitted.
 
-End ctr_definitions.
+Lemma wp_MakeClerk host γ :
+  (* is_host host γ *)
+  {{{
+      True
+  }}}
+    MakeClerk #host
+  {{{
+      (ck:loc), RET #ck; own_Clerk γ ck
+  }}}.
+Proof.
+Admitted.
+
+End ctr_proof.
+End ctr.
