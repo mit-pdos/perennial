@@ -17,7 +17,7 @@ Local Definition own_ConnMan (c_ptr:loc) (lock: val) : iProp Σ :=
     "Hmaking" ∷ c_ptr ↦[ConnMan :: "making"] #making ∗
     "Hcls_map" ∷ is_map rpcCls 1 rpcClsM ∗
     "Hmaking_map" ∷ is_map making 1 makingM ∗
-    "#HownRpcCls" ∷ ([∗ map] host ↦ cl ∈ rpcClsM, RPCClient_own cl host) ∗
+    "#HownRpcCls" ∷ ([∗ map] host ↦ cl ∈ rpcClsM, is_RPCClient cl host) ∗
     "#HownMaking" ∷ ([∗ map] host ↦ c ∈ makingM, is_cond c lock)
 .
 
@@ -60,7 +60,7 @@ Local Lemma wp_ConnMan__getClient (c_ptr:loc) (host:u64) :
   {{{ True }}}
     ConnMan__getClient #c_ptr #host
   {{{
-    (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr host
+    (cl_ptr:loc), RET #cl_ptr; is_RPCClient cl_ptr host
   }}}.
 Proof.
   iIntros "#Hconn !# %Φ _ HΦ".
@@ -194,7 +194,7 @@ Proof.
   wp_apply (wp_ConnMan__getClient with "Hconn").
   iIntros (cl) "Hcl".
   wp_store.
-  iAssert (∃ cl : loc, cl_ptr ↦[ptrT] #cl ∗ RPCClient_own cl host)%I with "[Hcl Hcl_ptr]" as "Hcl".
+  iAssert (∃ cl : loc, cl_ptr ↦[ptrT] #cl ∗ is_RPCClient cl host)%I with "[Hcl Hcl_ptr]" as "Hcl".
   { eauto with iFrame. }
   clear cl.
   wp_pures.

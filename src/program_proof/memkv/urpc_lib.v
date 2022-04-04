@@ -50,7 +50,7 @@ Record RPCReply :=
   Rep_Ret : R ;
 }.
 
-Definition RPCClient_own_ghost (γrpc:rpc_names) (cid cseqno:u64) : iProp Σ :=
+Definition is_RPCClient_ghost (γrpc:rpc_names) (cid cseqno:u64) : iProp Σ :=
   "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)
 .
 
@@ -127,7 +127,7 @@ Lemma make_rpc_server E :
   ⊢ |={E}=> ∃ γrpc,
     is_RPCServer γrpc ∗ (* server-side invariant *)
     RPCServer_own_ghost γrpc ∅ ∅ ∗ (* server mutex invariant *)
-    [∗ set] cid ∈ fin_to_set u64, RPCClient_own_ghost γrpc cid 1. (* SEQ counters for all possible clients *)
+    [∗ set] cid ∈ fin_to_set u64, is_RPCClient_ghost γrpc cid 1. (* SEQ counters for all possible clients *)
 Proof.
   iIntros (?).
   iMod fmcounter_map_alloc as (γcseq) "Hcseq".
@@ -136,7 +136,7 @@ Proof.
   iMod (own_alloc (Excl ())) as (γproc) "Hγproc"; first done.
   pose (γrpc := RpcNames γrc γlseq γcseq γproc).
   iExists γrpc.
-  rewrite /is_RPCServer /RPCServer_own_ghost /RPCClient_own_ghost /=.
+  rewrite /is_RPCServer /RPCServer_own_ghost /is_RPCClient_ghost /=.
   iMod (inv_alloc _ _ (ReplyTable_inv γrpc) with "[Hrc]") as "$".
   { iExists ∅. iFrame. iNext. iApply big_sepM_empty. done. }
   iFrame "Hcseq". iFrame. iSplitL; last by iApply big_sepM2_empty.
@@ -150,9 +150,9 @@ Lemma make_request (req:RPCRequestID) PreCond PostCond E γrpc :
   ↑replyTableInvN ⊆ E →
   ((int.nat req.(Req_Seq)) + 1)%nat = int.nat (word.add req.(Req_Seq) 1) →
   is_RPCServer γrpc -∗
-  RPCClient_own_ghost γrpc req.(Req_CID) req.(Req_Seq) -∗
+  is_RPCClient_ghost γrpc req.(Req_CID) req.(Req_Seq) -∗
   ▷ PreCond ={E}=∗
-    RPCClient_own_ghost γrpc req.(Req_CID) (word.add req.(Req_Seq) 1)
+    is_RPCClient_ghost γrpc req.(Req_CID) (word.add req.(Req_Seq) 1)
     ∗ (∃ γreq, is_RPCRequest γrpc γreq PreCond PostCond req ∗ RPCRequest_token γreq).
 Proof using Type*.
   iIntros (? Hsafeincr) "Hinv Hcseq_own HPreCond".
@@ -362,7 +362,7 @@ Qed.
 (** Client side: bounding the sequence number of a stale request. *)
 Lemma client_stale_seqno γrpc req seq :
   RPCRequestStale γrpc req -∗
-  RPCClient_own_ghost γrpc req.(Req_CID) seq -∗
+  is_RPCClient_ghost γrpc req.(Req_CID) seq -∗
     ⌜int.nat seq > (int.nat req.(Req_Seq) + 1)%nat⌝%Z.
 Proof.
   iIntros "Hreq Hcl".

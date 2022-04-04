@@ -113,7 +113,7 @@ Definition is_shard_server_freshSpec γrpc : RPCSpec :=
      spec_ty := unit;
      spec_Pre := (λ x reqData, True)%I;
      spec_Post := (λ x reqData repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
-              RPCClient_own_ghost γrpc cid 1)%I |}.
+              is_RPCClient_ghost γrpc cid 1)%I |}.
 
 Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : RPCSpec :=
   {| spec_rpcid := uKV_MOV_SHARD;
@@ -184,7 +184,7 @@ Definition own_KVShardClerk (ck:loc) γkv : iProp Σ :=
     "Hseq" ∷ ck ↦[KVShardClerk :: "seq"] #seq ∗
     "Hc" ∷ ck ↦[KVShardClerk :: "c"] #c ∗
     "Hhost" ∷ ck ↦[KVShardClerk :: "host"] #host ∗
-    "Hcrpc" ∷ RPCClient_own_ghost γ.(rpc_gn) cid seq ∗
+    "Hcrpc" ∷ is_RPCClient_ghost γ.(rpc_gn) cid seq ∗
     "#Hc_own" ∷ is_ConnMan c ∗
     "#His_shard" ∷ is_shard_server host γ ∗
     "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z ∗
@@ -230,7 +230,7 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
                  ) ∗
   "HpeersMap" ∷ is_map (V:=loc) peers_ptr 1 peersM ∗
   "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn)) ∗
-  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (RPCClient_own_ghost γ.(rpc_gn) cid 1)
+  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_RPCClient_ghost γ.(rpc_gn) cid 1)
 .
 
 Definition is_KVShardServer (s:loc) γ : iProp Σ :=

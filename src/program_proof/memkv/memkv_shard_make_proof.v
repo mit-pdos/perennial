@@ -13,7 +13,7 @@ Lemma wp_MakeKVShardServer (b : bool) γ :
        "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
        "HRPCserver_own" ∷ RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
        "HghostShards" ∷ (if b then [∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ.(kv_gn) sid ∅ else True) ∗
-       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), RPCClient_own_ghost γ.(rpc_gn) cid 1
+       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), is_RPCClient_ghost γ.(rpc_gn) cid 1
   }}}
     MakeKVShardServer #b
   {{{

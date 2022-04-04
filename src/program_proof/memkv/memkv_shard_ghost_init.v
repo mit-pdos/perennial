@@ -26,7 +26,7 @@ Lemma shard_server_ghost_init host (γkv : gname) :
        handlers_dom γ.(urpc_gn) (dom_RPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(rpc_gn)))) ∗
        is_shard_server host γ ∗
        RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
-      ([∗ set] cid ∈ fin_to_set u64, RPCClient_own_ghost γ.(rpc_gn) cid 1).
+      ([∗ set] cid ∈ fin_to_set u64, is_RPCClient_ghost γ.(rpc_gn) cid 1).
 Proof.
   iIntros "Hg".
   iMod (make_rpc_server (R := ShardReplyC)) as (γrpc) "(#Hown&Hrpc1&Hrpc2)".

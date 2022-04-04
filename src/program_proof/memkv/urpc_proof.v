@@ -176,7 +176,7 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
 
 (* TODO: rename to is_Client for consistency? *)
-Definition RPCClient_own (cl : loc) (srv : chan) : iProp Σ :=
+Definition is_RPCClient (cl : loc) (srv : chan) : iProp Σ :=
   ∃ Γ (lk : loc) client (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[Client :: "mu"] #lk) ∗
     "#conn" ∷ readonly (cl ↦[Client :: "conn"] connection_socket client srv) ∗
@@ -644,7 +644,7 @@ Lemma wp_MakeClient (srv:u64):
   }}}
     MakeClient #srv
   {{{
-       (cl_ptr:loc), RET #cl_ptr; RPCClient_own cl_ptr srv
+       (cl_ptr:loc), RET #cl_ptr; is_RPCClient cl_ptr srv
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -711,13 +711,13 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       is_slice req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       handler_spec γsmap host rpcid Spec ∗
-      RPCClient_own cl_ptr host ∗
+      is_RPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
   }}}
     Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
   {{{
        (err : option call_err), RET #(call_errno err);
-       RPCClient_own cl_ptr host ∗
+       is_RPCClient cl_ptr host ∗
        typed_slice.is_slice req byteT 1 reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),

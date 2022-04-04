@@ -22,7 +22,7 @@ Definition is_ReplicaClerk (ck_ptr:loc) (rid:u64) γ : iProp Σ :=
   ∃ (cl_ptr:loc),
   "#Hcl" ∷ readonly (ck_ptr ↦[ReplicaClerk :: "cl"] #cl_ptr) ∗
   "#His_Replica" ∷ is_Replica rid γ ∗
-  "#Hc_own" ∷ RPCClient_own cl_ptr rid
+  "#Hc_own" ∷ is_RPCClient cl_ptr rid
 .
 
 Definition own_Replica_phys (s:loc) (r:Replica) : iProp Σ :=

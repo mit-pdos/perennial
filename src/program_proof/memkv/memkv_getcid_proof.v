@@ -14,7 +14,7 @@ Lemma wp_GetCIDRPC (s:loc) γ :
   }}}
     KVShardServer__GetCIDRPC #s
   {{{
-       cid, RET #cid; RPCClient_own_ghost γ.(rpc_gn) cid 1
+       cid, RET #cid; is_RPCClient_ghost γ.(rpc_gn) cid 1
   }}}
 .
 Proof.
