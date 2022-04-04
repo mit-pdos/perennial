@@ -3,6 +3,7 @@ From Goose.github_com.mit_pdos.gokv.fencing Require Import frontend.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.memkv Require Export urpc_lib urpc_proof urpc_spec.
 From Perennial.program_proof.fencing Require Export ctr_proof config_proof.
+From Perennial.program_proof Require Import marshal_proof.
 From iris.base_logic Require Import mono_nat.
 
 Module frontend.
@@ -17,6 +18,7 @@ Definition k0 := (U64 0).
 Definition k1 := (U64 1).
 
 Context `{!ctrG Σ}.
+Context `{!rpcregG Σ}.
 
 Definition kv_ptsto (γ:gname) (k v:u64) : iProp Σ :=
   k ⤳[γ]{# 1/2} v.
@@ -29,7 +31,7 @@ Definition frontend_inv_def γ: iProp Σ :=
   "Hval" ∷ own_val γ latestEpoch v q4 ∗
   "Hkv" ∷ kv_ptsto γkv k0 v.
 
-Definition own_FrontendServer (s:loc) γ (epoch:u64) : iProp Σ :=
+Definition own_Server (s:loc) γ (epoch:u64) : iProp Σ :=
   ∃ (ck1 ck2:loc),
   "#Hepoch" ∷ readonly (s ↦[frontend.Server :: "epoch"] #epoch) ∗
   "Hck1" ∷ s ↦[frontend.Server :: "ck1"] #ck1 ∗
@@ -45,8 +47,9 @@ Definition frontendN := nroot .@ "frontend".
 Definition is_Server s γ : iProp Σ :=
   ∃ mu,
   "Hmu" ∷ readonly (s ↦[frontend.Server :: "mu"] mu) ∗
-  "HmuInv" ∷ is_lock frontendN mu (∃ epoch, own_FrontendServer s γ epoch)
+  "HmuInv" ∷ is_lock frontendN mu (∃ epoch, own_Server s γ epoch)
 .
+
 Definition frontend_inv γ : iProp Σ :=
   inv frontendN (frontend_inv_def γ).
 
@@ -55,7 +58,7 @@ Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
   is_Server s γ -∗
   frontend_inv γ -∗
   {{{
-        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γkv k0 v ∗ (kv_ptsto γkv k0 (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
+        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γkv key v ∗ (kv_ptsto γkv key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
   }}}
     Server__FetchAndIncrement #s #key
   {{{
@@ -238,8 +241,26 @@ Proof.
   }
 Admitted.
 
-Lemma wp_StartServer γ γcfg (me configHost host1 host2:u64) :
+(* TaDa-style spec *)
+Program Definition FAISpec_tada (γ:gname) :=
+  λ reqData, λne (Φ : list u8 -d> iPropO Σ),
+  (∃ k, ⌜k = 0 ∨ k = 1⌝ ∗ ⌜has_encoding reqData [EncUInt64 k]⌝ ∗
+       |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ k v ∗
+                      (kv_ptsto γ k (word.add v 1) ={∅,⊤∖↑frontendN}=∗ (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ Φ l))
+    )%I
+.
+Next Obligation.
+  solve_proper.
+Defined.
+
+Definition is_host γurpc_gn γ host : iProp Σ :=
+  handlers_dom γurpc_gn {[ (U64 0) ]} ∗
+  handler_spec γurpc_gn host 0 (FAISpec_tada γ).
+
+Lemma wp_StartServer γurpc_gn γ γcfg (me configHost host1 host2:u64) :
   config.is_host γcfg configHost (own_unused_epoch γ) (λ _, True) -∗
+  is_host γurpc_gn γkv me -∗
+  frontend_inv γ -∗
   {{{
       True
   }}}
@@ -248,7 +269,7 @@ Lemma wp_StartServer γ γcfg (me configHost host1 host2:u64) :
         RET #(); True
   }}}.
 Proof.
-  iIntros "#His_cfg !#" (Φ) "Hpre HΦ".
+  iIntros "#His_cfg #His_host #Hinv !#" (Φ) "Hpre HΦ".
   Opaque frontend.Server. (* FIXME: why do I need this? *)
   wp_lam.
   wp_pures.
@@ -268,7 +289,7 @@ Proof.
   simpl.
   wp_storeField.
   wp_apply (wp_new_free_lock).
-  iIntros (mu) "Hmu".
+  iIntros (mu) "HmuInv".
   wp_storeField.
 
   wp_apply (ctr.wp_MakeClerk).
@@ -278,12 +299,87 @@ Proof.
   wp_apply (ctr.wp_MakeClerk).
   iIntros (ck2) "Hck2_own".
   wp_storeField.
+
+  iAssert (|={⊤}=> is_Server s γ)%I with "[HmuInv mu ck1 ck2 epoch Hck1_own Hck2_own Hunused]" as ">#His_srv".
+  {
+    unfold is_Server.
+    iMod (readonly_alloc_1 with "mu") as "#Hmu".
+    iMod (readonly_alloc_1 with "epoch") as "#Hepoch".
+    iExists _; iFrame "#∗".
+    iApply (alloc_lock with "HmuInv").
+    iNext.
+    iExists _.
+    iExists _, _.
+    iFrame "ck1 ck2 #∗".
+  }
+
   wp_apply (map.wp_NewMap).
   iIntros (handlers) "Hhandlers".
 
   wp_pures.
-  admit.
-Admitted.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+  wp_apply (wp_MakeServer with "Hhandlers").
+  iIntros (r) "Hr".
+  wp_pures.
+  wp_apply (wp_StartServer γurpc_gn with "[$Hr]").
+  { set_solver. }
+  {
+    iDestruct "His_host" as "[H1 H2]".
+    unfold handlers_complete.
+    rewrite dom_insert_L.
+    rewrite dom_empty_L.
+    iSplitL "".
+    {
+      iExactEq "H1".
+      f_equal.
+      set_solver.
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      simpl. iExists _; iFrame "#".
+
+      clear Φ.
+      iIntros (??????) "!#".
+      iIntros (Φ) "Hpre HΦ".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & HFAISpec)".
+      wp_pures.
+      iDestruct "HFAISpec" as (k) "(%H01 & %Henc & Hfupd)".
+      iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+      wp_apply (wp_new_dec with "[$Hreq_small]").
+      { done. }
+      iIntros (dec) "Hdec".
+      wp_pures.
+      wp_apply (wp_new_enc).
+      iIntros (enc) "Henc".
+      wp_pures.
+      wp_apply (wp_Dec__GetInt with "Hdec").
+      iIntros "_".
+
+      wp_apply (wp_FetchAndIncrement with "His_srv Hinv [$Hfupd]").
+      { naive_solver. }
+      iIntros (v) "HPost".
+      wp_apply (wp_Enc__PutInt with "Henc").
+      { done. }
+      iIntros "Henc".
+      wp_pures.
+      wp_apply (wp_Enc__Finish with "Henc").
+      iClear "Hrep_sl".
+      iIntros (rep_sl rep_data) "(%Hrep_enc & %Hrep_len & Hrep_sl)".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      wp_store.
+      iApply "HΦ".
+      iModIntro.
+      iFrame.
+      iApply "HPost".
+      done.
+    }
+    by iApply big_sepM_empty.
+  }
+  wp_pures.
+  by iApply "HΦ".
+Qed.
 
 End frontend_proof.
 End frontend.
