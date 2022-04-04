@@ -2,23 +2,20 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+From Goose Require github_com.mit_pdos.gokv.erpc.
 From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 (* 0_marshal.go *)
 
 Definition PutArgs := struct.decl [
-  "cid" :: uint64T;
-  "seq" :: uint64T;
   "epoch" :: uint64T;
   "v" :: uint64T
 ].
 
 Definition EncPutArgs: val :=
   rec: "EncPutArgs" "args" :=
-    let: "enc" := marshal.NewEnc #24 in
-    marshal.Enc__PutInt "enc" (struct.loadF PutArgs "cid" "args");;
-    marshal.Enc__PutInt "enc" (struct.loadF PutArgs "seq" "args");;
+    let: "enc" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "v" "args");;
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "epoch" "args");;
     marshal.Enc__Finish "enc".
@@ -27,23 +24,17 @@ Definition DecPutArgs: val :=
   rec: "DecPutArgs" "raw_args" :=
     let: "dec" := marshal.NewDec "raw_args" in
     let: "args" := struct.alloc PutArgs (zero_val (struct.t PutArgs)) in
-    struct.storeF PutArgs "cid" "args" (marshal.Dec__GetInt "dec");;
-    struct.storeF PutArgs "seq" "args" (marshal.Dec__GetInt "dec");;
     struct.storeF PutArgs "v" "args" (marshal.Dec__GetInt "dec");;
     struct.storeF PutArgs "epoch" "args" (marshal.Dec__GetInt "dec");;
     "args".
 
 Definition GetArgs := struct.decl [
-  "cid" :: uint64T;
-  "seq" :: uint64T;
   "epoch" :: uint64T
 ].
 
 Definition EncGetArgs: val :=
   rec: "EncGetArgs" "args" :=
-    let: "enc" := marshal.NewEnc #24 in
-    marshal.Enc__PutInt "enc" (struct.loadF GetArgs "cid" "args");;
-    marshal.Enc__PutInt "enc" (struct.loadF GetArgs "seq" "args");;
+    let: "enc" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "enc" (struct.loadF GetArgs "epoch" "args");;
     marshal.Enc__Finish "enc".
 
@@ -51,8 +42,6 @@ Definition DecGetArgs: val :=
   rec: "DecGetArgs" "raw_args" :=
     let: "dec" := marshal.NewDec "raw_args" in
     let: "args" := struct.alloc GetArgs (zero_val (struct.t GetArgs)) in
-    struct.storeF GetArgs "cid" "args" (marshal.Dec__GetInt "dec");;
-    struct.storeF GetArgs "seq" "args" (marshal.Dec__GetInt "dec");;
     struct.storeF GetArgs "epoch" "args" (marshal.Dec__GetInt "dec");;
     "args".
 
@@ -86,20 +75,17 @@ Definition RPC_FRESHCID : expr := #2.
 
 Definition Clerk := struct.decl [
   "cl" :: ptrT;
-  "cid" :: uint64T;
-  "seq" :: uint64T
+  "e" :: ptrT
 ].
 
 Definition Clerk__Get: val :=
   rec: "Clerk__Get" "c" "epoch" :=
-    struct.storeF Clerk "seq" "c" (struct.loadF Clerk "seq" "c" + #1);;
     let: "args" := struct.new GetArgs [
-      "epoch" ::= "epoch";
-      "cid" ::= struct.loadF Clerk "cid" "c";
-      "seq" ::= struct.loadF Clerk "seq" "c"
+      "epoch" ::= "epoch"
     ] in
+    let: "req" := erpc.Client__NewRequest (struct.loadF Clerk "e" "c") (EncGetArgs "args") in
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "c") RPC_GET (EncGetArgs "args") "reply_ptr" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "c") RPC_GET "req" "reply_ptr" #100 in
     (if: "err" ≠ #0
     then
       (* log.Println("ctr: urpc get call failed/timed out") *)
@@ -115,15 +101,13 @@ Definition Clerk__Get: val :=
 
 Definition Clerk__Put: val :=
   rec: "Clerk__Put" "c" "v" "epoch" :=
-    struct.storeF Clerk "seq" "c" (struct.loadF Clerk "seq" "c" + #1);;
     let: "args" := struct.new PutArgs [
-      "cid" ::= struct.loadF Clerk "cid" "c";
-      "seq" ::= struct.loadF Clerk "seq" "c";
       "v" ::= "v";
       "epoch" ::= "epoch"
     ] in
+    let: "req" := erpc.Client__NewRequest (struct.loadF Clerk "e" "c") (EncPutArgs "args") in
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "c") RPC_GET (EncPutArgs "args") "reply_ptr" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "c") RPC_PUT "req" "reply_ptr" #100 in
     (if: "err" ≠ #0
     then
       (* log.Println("ctr: urpc put call failed/timed out") *)
@@ -141,25 +125,22 @@ Definition Clerk__Put: val :=
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
     let: "ck" := struct.alloc Clerk (zero_val (struct.t Clerk)) in
-    struct.storeF Clerk "seq" "ck" #0;;
     struct.storeF Clerk "cl" "ck" (urpc.MakeClient "host");;
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GET (NewSlice byteT #0) "reply_ptr" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_FRESHCID (NewSlice byteT #0) "reply_ptr" #100 in
     (if: "err" ≠ #0
     then Panic ("ctr: urpc call failed/timed out")
     else #());;
-    struct.storeF Clerk "cid" "ck" (marshal.Dec__GetInt (marshal.NewDec (![slice.T byteT] "reply_ptr")));;
+    struct.storeF Clerk "e" "ck" (erpc.MakeClient (marshal.Dec__GetInt (marshal.NewDec (![slice.T byteT] "reply_ptr"))));;
     "ck".
 
 (* server.go *)
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
+  "e" :: ptrT;
   "v" :: uint64T;
-  "lastEpoch" :: uint64T;
-  "lastSeq" :: mapT uint64T;
-  "lastReply" :: mapT uint64T;
-  "lastCID" :: uint64T
+  "lastEpoch" :: uint64T
 ].
 
 Definition ENone : expr := #0.
@@ -175,17 +156,9 @@ Definition Server__Put: val :=
       EStale
     else
       struct.storeF Server "lastEpoch" "s" (struct.loadF PutArgs "epoch" "args");;
-      let: ("last", "ok") := MapGet (struct.loadF Server "lastSeq" "s") (struct.loadF PutArgs "cid" "args") in
-      let: "seq" := struct.loadF PutArgs "seq" "args" in
-      (if: "ok" && ("seq" ≤ "last")
-      then
-        lock.release (struct.loadF Server "mu" "s");;
-        ENone
-      else
-        struct.storeF Server "v" "s" (struct.loadF PutArgs "v" "args");;
-        MapInsert (struct.loadF Server "lastSeq" "s") (struct.loadF PutArgs "cid" "args") "seq";;
-        lock.release (struct.loadF Server "mu" "s");;
-        ENone)).
+      struct.storeF Server "v" "s" (struct.loadF PutArgs "v" "args");;
+      lock.release (struct.loadF Server "mu" "s");;
+      ENone).
 
 Definition Server__Get: val :=
   rec: "Server__Get" "s" "args" "reply" :=
@@ -202,41 +175,31 @@ Definition Server__Get: val :=
       lock.release (struct.loadF Server "mu" "s");;
       #()).
 
-Definition Server__GetFreshCID: val :=
-  rec: "Server__GetFreshCID" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
-    struct.storeF Server "lastCID" "s" (struct.loadF Server "lastCID" "s" + #1);;
-    let: "ret" := struct.loadF Server "lastCID" "s" in
-    lock.release (struct.loadF Server "mu" "s");;
-    "ret".
-
 Definition StartServer: val :=
   rec: "StartServer" "me" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
-    struct.storeF Server "lastCID" "s" #0;;
+    struct.storeF Server "e" "s" (erpc.MakeServer #());;
     struct.storeF Server "v" "s" #0;;
-    struct.storeF Server "lastSeq" "s" (NewMap uint64T #());;
-    struct.storeF Server "lastReply" "s" (NewMap uint64T #());;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_GET (λ: "raw_args" "raw_reply",
+    MapInsert "handlers" RPC_GET (erpc.Server__HandleRequest (struct.loadF Server "e" "s") (λ: "raw_args" "raw_reply",
       let: "args" := DecGetArgs "raw_args" in
       let: "reply" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
       Server__Get "s" "args" "reply";;
       "raw_reply" <-[slice.T byteT] EncGetReply "reply";;
       #()
-      );;
-    MapInsert "handlers" RPC_PUT (λ: "raw_args" "reply",
+      ));;
+    MapInsert "handlers" RPC_PUT (erpc.Server__HandleRequest (struct.loadF Server "e" "s") (λ: "raw_args" "reply",
       let: "args" := DecPutArgs "raw_args" in
       let: "err" := Server__Put "s" "args" in
       let: "enc" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "enc" "err";;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
-      );;
+      ));;
     MapInsert "handlers" RPC_FRESHCID (λ: "raw_args" "reply",
       let: "enc" := marshal.NewEnc #8 in
-      marshal.Enc__PutInt "enc" (Server__GetFreshCID "s");;
+      marshal.Enc__PutInt "enc" (erpc.Server__GetFreshCID (struct.loadF Server "e" "s"));;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
       );;

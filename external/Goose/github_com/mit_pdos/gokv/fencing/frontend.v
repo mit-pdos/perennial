@@ -62,7 +62,7 @@ Definition StartServer: val :=
   rec: "StartServer" "me" "configHost" "host1" "host2" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     let: "configCk" := config.MakeClerk "configHost" in
-    struct.storeF Server "epoch" "s" (config.Clerk__Lock "configCk" "me");;
+    struct.storeF Server "epoch" "s" (config.Clerk__AcquireEpoch "configCk" "me");;
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "ck1" "s" (ctr.MakeClerk "host1");;
     struct.storeF Server "ck2" "s" (ctr.MakeClerk "host2");;

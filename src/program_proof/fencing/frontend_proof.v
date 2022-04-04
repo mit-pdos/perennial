@@ -241,4 +241,25 @@ Proof.
   }
 Admitted.
 
+Lemma wp_StartServer (me configHost host1 host2:u64) :
+  {{{
+      True
+  }}}
+    frontend.StartServer #me #configHost #host1 #host2
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  Opaque frontend.Server. (* FIXME: why do I need this? *)
+  wp_lam.
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { apply zero_val_ty'. Transparent Server. unfold Server. done. }
+  Opaque frontend.Server.
+  iIntros (s) "Hs".
+  wp_pures.
+  (* TODO: need spec for config.MakeClerk *)
+Admitted.
+
 End frontend_proof.
