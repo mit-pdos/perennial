@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv.fencing Require Import ctr.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.memkv Require Export urpc_lib urpc_proof urpc_spec.
 From iris.algebra Require Import cmra.
-From iris.base_logic Require Import mono_nat.
+From iris.base_logic Require Export mono_nat.
 
 From Perennial.program_proof.fencing Require Export map.
 
@@ -44,15 +44,16 @@ Admitted.
 Lemma wp_Clerk__Get γ ck (e:u64) :
   ∀ Φ,
   own_Clerk ck -∗
-  (|={⊤,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-    if decide (int.Z latestEpoch < int.Z e)%Z then
+  (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+      own_latest_epoch γ latestEpoch (1/2)%Qp ∗
       own_unused_epoch γ e ∗
                             (∀ v, own_val γ e v (1/2)%Qp ∗
                                            own_val γ latestEpoch v (1/2)%Qp ∗
                                            own_latest_epoch γ e (1/2)%Qp
                                            ={∅,⊤}=∗ (own_Clerk ck -∗ Φ #v))
    else if decide (latestEpoch = e) then
-   ∃ v, own_val γ e v (1/2)%Qp ∗
+    ∃ v, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+     own_val γ e v (1/2)%Qp ∗
     (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (own_Clerk ck -∗ Φ #v))
    else
      True) -∗

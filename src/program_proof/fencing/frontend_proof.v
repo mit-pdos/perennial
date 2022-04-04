@@ -3,6 +3,7 @@ From Goose.github_com.mit_pdos.gokv.fencing Require Import frontend.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.memkv Require Export urpc_lib urpc_proof urpc_spec.
 From Perennial.program_proof.fencing Require Export ctr_proof.
+From iris.base_logic Require Import mono_nat.
 
 Section frontend_proof.
 
@@ -20,27 +21,27 @@ Admitted.
 Global Instance kv_ptsto_timeless k v : Timeless (kv_ptsto k v).
 Admitted.
 
-Definition is_mepoch_lb (e:u64) : iProp Σ.
-Admitted.
-
 Context `{!inG Σ epochR}.
 Context `{!inG Σ valR}.
+Context `{!mono_nat.mono_natG Σ}.
+Context `{!mapG Σ u64 u64}.
+Context `{!mapG Σ u64 unit}.
 
 Definition frontend_inv_def γ: iProp Σ :=
   ∃ (latestEpoch v:u64),
   "HlatestEpoch" ∷ own_latest_epoch γ latestEpoch q2 ∗
-  "Hval" ∷ own_val γ latestEpoch (Some v) q4 ∗
+  "Hval" ∷ own_val γ latestEpoch v q4 ∗
   "Hkv" ∷ kv_ptsto k0 v.
 
 Definition own_FrontendServer (s:loc) γ (epoch:u64) : iProp Σ :=
   ∃ (ck1 ck2:loc),
   "#Hepoch" ∷ readonly (s ↦[frontend.Server :: "epoch"] #epoch) ∗
   "Hck1" ∷ s ↦[frontend.Server :: "ck1"] #ck1 ∗
-  "Hck2" ∷ s ↦[frontend.Server :: "ck1"] #ck2 ∗
+  "Hck2" ∷ s ↦[frontend.Server :: "ck2"] #ck2 ∗
   "Hck1_own" ∷ own_Clerk ck1 ∗
   "Hck2_own" ∷ own_Clerk ck2 ∗
 
-  "Hghost1" ∷ (own_unused_epoch γ epoch ∨ (∃ v, is_mepoch_lb epoch ∗ own_val γ epoch (Some v) q4)).
+  "Hghost1" ∷ (own_unused_epoch γ epoch ∨ (∃ v, is_latest_epoch_lb γ epoch ∗ own_val γ epoch v q4)).
   (* TODO: add second value *)
 
 Definition frontendN := nroot .@ "frontend".
@@ -83,18 +84,52 @@ Proof.
   {
     wp_loadField.
     wp_loadField.
-    wp_apply (wp_Clerk__Get with "Hck2_own").
+    wp_apply (wp_Clerk__Get with "Hck1_own").
     iInv "Hinv" as ">Hown" "Hclose".
     iNamed "Hown".
-    iModIntro.
-    iExists _; iFrame "HlatestEpoch".
-    destruct (decide (int.Z latestEpoch < int.Z epoch)) as [Hineq|Hineq].
+    iApply fupd_mask_intro.
+    { set_solver. }
+    iIntros "Hmask".
+
+    iExists latestEpoch.
+    destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
     { (* case: epoch number is new *)
+      iDestruct "Hghost1" as "[Hunused | Hbad]"; last first.
+      { (* is_latest_epoch_lb contradicts inequality *)
+        iDestruct "Hbad" as (?) "[#Hlb _]".
+        iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
+        exfalso. word.
+      }
+      iFrame.
+      iIntros (v0) "(HnewVal & HprevEpochVal & HlatestEpoch)".
+      iDestruct (ghost_map_points_to_agree with "Hval HprevEpochVal") as %Hagree.
+      rewrite Hagree.
+      iMod "Hmask".
+      iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+      iDestruct "HnewVal" as "[HnewVal HnewVal2]".
+      iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
+      iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
+      {
+        iNext.
+        iExists _, _.
+        iFrame.
+      }
+      iModIntro.
+      iIntros "Hck1_own".
+      wp_store.
+      wp_loadField.
+      wp_load.
+      wp_loadField.
+      iRename "HnewVal2" into "HepochVal".
       admit.
     }
     { (* case: ctr server already knows about latest epoch number *)
-      destruct (decide (latestEpoch = epoch)) as [Heq|Hbad]; last done.
-      rewrite Heq.
+      simpl.
+      destruct (decide (latestEpoch = epoch)) as [Heq|Hbad]; last first.
+      {
+        admit.
+      }
+
       iDestruct "Hghost1" as "[Hbad|Hghost1]".
       { (* non-matching case, contradictory*)
         iExFalso.
@@ -103,16 +138,11 @@ Proof.
       {
         iDestruct "Hghost1" as (v') "Hghost1".
         (* TODO: lemma to combine fractions of own_val *)
+        admit.
       }
     }
-
-    iModIntro.
-    iAssert (∃ oldv, own_val epoch oldv (1/2))%I with "[Hghost1]" as (?) "HH".
-    {
-      admit.
-    }
-    iExists _; iFrame "HH".
-    (* TODO: Get() spec needs to say something about new value *)
+  }
+  { (* same proof, but with second server *)
     admit.
   }
 Admitted.
