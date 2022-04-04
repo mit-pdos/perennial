@@ -175,7 +175,6 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
                  (* (3) Caller has extracted ownership *)
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
 
-(* TODO: rename to is_Client for consistency? *)
 Definition is_RPCClient (cl : loc) (srv : chan) : iProp Σ :=
   ∃ Γ (lk : loc) client (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[Client :: "mu"] #lk) ∗
@@ -717,7 +716,7 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
     Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
   {{{
        (err : option call_err), RET #(call_errno err);
-       is_RPCClient cl_ptr host ∗
+       is_RPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
        typed_slice.is_slice req byteT 1 reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
