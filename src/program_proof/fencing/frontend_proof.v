@@ -15,23 +15,22 @@ Local Definition q4 := (1/4)%Qp.
 Definition k0 := (U64 0).
 Definition k1 := (U64 1).
 
-Definition kv_ptsto (k v:u64) : iProp Σ.
-Admitted.
-
-Global Instance kv_ptsto_timeless k v : Timeless (kv_ptsto k v).
-Admitted.
-
 Context `{!inG Σ epochR}.
 Context `{!inG Σ valR}.
 Context `{!mono_nat.mono_natG Σ}.
 Context `{!mapG Σ u64 u64}.
 Context `{!mapG Σ u64 bool}.
 
+Definition kv_ptsto (γ:gname) (k v:u64) : iProp Σ :=
+  k ⤳[γ]{# 1/2} v.
+
+Context `{γkv:gname}.
+
 Definition frontend_inv_def γ: iProp Σ :=
   ∃ (latestEpoch v:u64),
   "HlatestEpoch" ∷ own_latest_epoch γ latestEpoch q2 ∗
   "Hval" ∷ own_val γ latestEpoch v q4 ∗
-  "Hkv" ∷ kv_ptsto k0 v.
+  "Hkv" ∷ kv_ptsto γkv k0 v.
 
 Definition own_FrontendServer (s:loc) γ (epoch:u64) : iProp Σ :=
   ∃ (ck1 ck2:loc),
@@ -54,20 +53,20 @@ Definition is_Server s γ : iProp Σ :=
 Definition frontend_inv γ : iProp Σ :=
   inv frontendN (frontend_inv_def γ).
 
-Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) :
+Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
   key = 0 ∨ key = 1 →
   is_Server s γ -∗
   frontend_inv γ -∗
   {{{
-        True
+        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γkv k0 v ∗ (kv_ptsto γkv k0 (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
   }}}
     Server__FetchAndIncrement #s #key
   {{{
-        (v:u64), RET #v; True
+        (v:u64), RET #v; Q v
   }}}.
 Proof.
   intros Hkey.
-  iIntros "#Hsrv #Hinv !#" (Φ) "_ HΦ".
+  iIntros "#Hsrv #Hinv !#" (Φ) "Hkvfupd HΦ".
   wp_lam.
   wp_pures.
   iNamed "Hsrv".
@@ -201,12 +200,22 @@ Proof.
     iMod "Hmask".
     iEval (rewrite -Qp_quarter_quarter) in "Hval".
     iDestruct (own_val_split with "Hval") as "[Hval HepochVal]".
+    iMod "Hkvfupd".
+    iDestruct "Hkvfupd" as (?) "[Hkv2 Hkvfupd]".
+    clear Hveq.
+    iDestruct (ghost_map_points_to_combine with "Hkv Hkv2") as "[Hkv %Hveq]".
+    rewrite dfrac_op_own.
+    rewrite Qp_half_half.
+    rewrite -Hveq.
+
+    iMod (ghost_map_points_to_update (word.add v 1) with "Hkv") as "Hkv".
+    iDestruct "Hkv" as "[Hkv Hkv2]".
+    iMod ("Hkvfupd" with "Hkv2") as "HQ".
+
     iMod ("Hclose" with "[Hval HlatestEpoch Hkv]") as "HH".
     {
       iNext.
       iExists _, _; iFrame "Hval∗".
-      (* FIXME: want to update kv_ptsto, which means we need an atomic update from client of frontend *)
-      admit.
     }
     iModIntro.
     iIntros "Hck1_own".
@@ -225,7 +234,7 @@ Proof.
     wp_pures.
     wp_load.
     iApply "HΦ". (* TODO: post-condition should say something *)
-    done.
+    by iFrame.
   }
   { (* same proof, but with second server *)
     admit.

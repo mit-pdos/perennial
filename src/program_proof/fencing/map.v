@@ -110,4 +110,13 @@ Section lemmas.
   Proof.
   Admitted.
 
+  Lemma ghost_map_points_to_update {γ m k v} w :
+    k ⤳[γ] v ==∗ k ⤳[γ] w.
+  Proof.
+    unseal. apply own_update.
+    apply singleton_update.
+    apply cmra_update_exclusive.
+    by constructor.
+  Qed.
+
 End lemmas.
