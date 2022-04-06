@@ -80,10 +80,11 @@ Definition Clerk := struct.decl [
 
 Definition Clerk__Get: val :=
   rec: "Clerk__Get" "c" "epoch" :=
-    let: "args" := struct.new GetArgs [
-      "epoch" ::= "epoch"
-    ] in
-    let: "req" := erpc.Client__NewRequest (struct.loadF Clerk "e" "c") (EncGetArgs "args") in
+    let: "enc" := marshal.NewEnc #8 in
+    marshal.Enc__PutInt "enc" #8;;
+    let: "req" := marshal.Enc__Finish "enc" in
+    let: "errorProph" := NewProph #() in
+    let: "valProph" := NewProph #() in
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "c") RPC_GET "req" "reply_ptr" #100 in
     (if: "err" ≠ #0
@@ -92,11 +93,13 @@ Definition Clerk__Get: val :=
       grove_ffi.Exit #1
     else #());;
     let: "r" := DecGetReply (![slice.T byteT] "reply_ptr") in
+    ResolveProph "errorProph" (struct.loadF GetReply "err" "r" ≠ "ENone");;
     (if: struct.loadF GetReply "err" "r" ≠ "ENone"
     then
       (* log.Println("ctr: get() stale epoch number") *)
       grove_ffi.Exit #1
     else #());;
+    ResolveProph "valProph" (struct.loadF GetReply "val" "r");;
     struct.loadF GetReply "val" "r".
 
 Definition Clerk__Put: val :=
@@ -161,16 +164,16 @@ Definition Server__Put: val :=
       ENone).
 
 Definition Server__Get: val :=
-  rec: "Server__Get" "s" "args" "reply" :=
+  rec: "Server__Get" "s" "epoch" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     struct.storeF GetReply "err" "reply" ENone;;
-    (if: struct.loadF GetArgs "epoch" "args" < struct.loadF Server "lastEpoch" "s"
+    (if: "epoch" < struct.loadF Server "lastEpoch" "s"
     then
       lock.release (struct.loadF Server "mu" "s");;
       struct.storeF GetReply "err" "reply" EStale;;
       #()
     else
-      struct.storeF Server "lastEpoch" "s" (struct.loadF GetArgs "epoch" "args");;
+      struct.storeF Server "lastEpoch" "s" "epoch";;
       struct.storeF GetReply "val" "reply" (struct.loadF Server "v" "s");;
       lock.release (struct.loadF Server "mu" "s");;
       #()).
@@ -182,13 +185,14 @@ Definition StartServer: val :=
     struct.storeF Server "e" "s" (erpc.MakeServer #());;
     struct.storeF Server "v" "s" #0;;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_GET (erpc.Server__HandleRequest (struct.loadF Server "e" "s") (λ: "raw_args" "raw_reply",
-      let: "args" := DecGetArgs "raw_args" in
+    MapInsert "handlers" RPC_GET (λ: "raw_args" "raw_reply",
+      let: "dec" := marshal.NewDec "raw_args" in
+      let: "epoch" := marshal.Dec__GetInt "dec" in
       let: "reply" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
-      Server__Get "s" "args" "reply";;
+      Server__Get "s" "epoch" "reply";;
       "raw_reply" <-[slice.T byteT] EncGetReply "reply";;
       #()
-      ));;
+      );;
     MapInsert "handlers" RPC_PUT (erpc.Server__HandleRequest (struct.loadF Server "e" "s") (λ: "raw_args" "reply",
       let: "args" := DecPutArgs "raw_args" in
       let: "err" := Server__Put "s" "args" in

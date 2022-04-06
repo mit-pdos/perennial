@@ -2,8 +2,10 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.fencing Require Import ctr.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.memkv Require Export urpc_lib urpc_proof urpc_spec.
+From Perennial.program_proof Require Export marshal_proof.
 From iris.algebra Require Import cmra.
 From iris.base_logic Require Export mono_nat.
+From Perennial.goose_lang Require Import proph.
 
 From Perennial.program_proof.fencing Require Export map.
 
@@ -65,6 +67,95 @@ Section ctr_proof.
 Context `{!ctrG Σ}.
 Context `{!heapGS Σ}.
 Implicit Type γ:ctr_names.
+
+Definition own_Server γ (s:loc) : iProp Σ :=
+  ∃ (v latestEpoch:u64),
+  "Hv" ∷ s ↦[Server :: "v"] #v ∗
+  "HlatestEpoch" ∷ s ↦[Server :: "lastEpoch"] #latestEpoch ∗
+  "HghostLatestEpoch" ∷ own_latest_epoch γ latestEpoch (1/2) ∗
+  "HghostV" ∷ own_val γ latestEpoch v (1/2)
+.
+
+Definition ctrN := nroot .@ "ctr".
+
+Definition is_Server γ (s:loc) : iProp Σ :=
+  ∃ mu,
+  "#Hmu" ∷ readonly (s ↦[Server :: "mu"] mu) ∗
+  "#HmuInv" ∷ is_lock ctrN mu (own_Server γ s)
+.
+
+Definition GetPre γ pv e Φ : iProp Σ :=
+  ∃ (repV:u64),
+  proph_once pv repV ∗
+  (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+      own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+      own_unused_epoch γ e ∗
+                            (∀ v, own_val γ e v (1/2)%Qp ∗
+                                           own_val γ latestEpoch v (1/2)%Qp ∗
+                                           own_latest_epoch γ e (1/2)%Qp
+                                           ={∅,⊤}=∗ Φ #v)
+   else if decide (int.Z latestEpoch = int.Z e) then
+    ∃ v, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+     own_val γ e v (1/2)%Qp ∗
+    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ Φ #v)
+   else
+     True).
+
+Program Definition GetSpec γ :=
+  λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
+  (∃ (pv:proph_id) (repV:u64) e,
+  proph_once pv repV ∗
+  ⌜has_encoding reqData [EncUInt64 e]⌝ ∗
+  (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+      own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+      own_unused_epoch γ e ∗
+                            (∀ v, own_val γ e v (1/2)%Qp ∗
+                                           own_val γ latestEpoch v (1/2)%Qp ∗
+                                           own_latest_epoch γ e (1/2)%Qp
+                                  ={∅,⊤}=∗ (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ proph_once pv v -∗ Φ l))
+   else if decide (int.Z latestEpoch = int.Z e) then
+    ∃ v, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+     own_val γ e v (1/2)%Qp ∗
+    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ proph_once pv v -∗ Φ l))
+   else
+     True))%I.
+Next Obligation.
+  solve_proper.
+Defined.
+
+Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) :
+  is_Server γ s -∗
+  {{{
+        "Hrep_error" ∷ rep ↦[GetReply :: "err"] #dummy_err ∗
+        "Hrep_val" ∷ rep ↦[GetReply :: "val"] #dummy_val
+  }}}
+    Server__Get #s #e #rep
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+  iIntros "#His_srv !#" (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_pures.
+  iNamed "His_srv".
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+
+  wp_storeField.
+  wp_loadField.
+  wp_pures.
+
+  wp_if_destruct.
+  {
+    wp_loadField.
+    admit.
+  }
+Admitted.
+
 
 Definition own_Clerk γ (ck:loc) : iProp Σ.
 Admitted.
