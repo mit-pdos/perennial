@@ -81,7 +81,7 @@ Definition Clerk := struct.decl [
 Definition Clerk__Get: val :=
   rec: "Clerk__Get" "c" "epoch" :=
     let: "enc" := marshal.NewEnc #8 in
-    marshal.Enc__PutInt "enc" #8;;
+    marshal.Enc__PutInt "enc" "epoch";;
     let: "req" := marshal.Enc__Finish "enc" in
     let: "errorProph" := NewProph #() in
     let: "valProph" := NewProph #() in
