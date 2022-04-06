@@ -766,7 +766,7 @@ Definition sliceOps: val :=
     let: "v2" := SliceSubslice uint64T "x" #2 #3 in
     let: "v3" := SliceTake "x" #3 in
     let: "v4" := SliceRef uint64T "x" #2 in
-    "v1" + SliceGet uint64T "v2" #0 + SliceGet uint64T "v3" #1 + ![uint64T] "v4".
+    "v1" + SliceGet uint64T "v2" #0 + SliceGet uint64T "v3" #1 + ![uint64T] "v4" + slice.len "x" + slice.cap "x".
 
 Definition makeSingletonSlice: val :=
   rec: "makeSingletonSlice" "x" :=
