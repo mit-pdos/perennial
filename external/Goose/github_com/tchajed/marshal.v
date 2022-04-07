@@ -136,7 +136,7 @@ Definition reserve: val :=
       (if: ![uint64T] "new_cap" < "min_cap"
       then "new_cap" <-[uint64T] "min_cap"
       else #());;
-      SliceAppendSlice byteT (NewSlice byteT #0) "b"
+      SliceAppendSlice byteT (NewSliceWithCap byteT #0 (![uint64T] "new_cap")) "b"
     else "b").
 
 (* Functions for the stateless decoder API *)

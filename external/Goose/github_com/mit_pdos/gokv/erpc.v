@@ -60,7 +60,7 @@ Definition Client := struct.decl [
 Definition Client__NewRequest: val :=
   rec: "Client__NewRequest" "c" "request" :=
     struct.storeF Client "seq" "c" (struct.loadF Client "seq" "c" + #1);;
-    let: "data1" := NewSlice byteT #0 in
+    let: "data1" := NewSliceWithCap byteT #0 (#8 + #8 + slice.len "request") in
     let: "data2" := marshal.WriteInt "data1" (struct.loadF Client "cid" "c") in
     let: "data3" := marshal.WriteInt "data2" (struct.loadF Client "seq" "c") in
     let: "data4" := SliceAppendSlice byteT "data3" "request" in

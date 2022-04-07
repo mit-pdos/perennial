@@ -1003,6 +1003,22 @@ Definition testSliceOps: val :=
     "ok" <-[boolT] (![boolT] "ok") && (![uint64T] "v4" = #10);;
     ![boolT] "ok".
 
+Definition testSliceCapacityOps: val :=
+  rec: "testSliceCapacityOps" <> :=
+    let: "x" := NewSliceWithCap uint64T #0 #10 in
+    let: "sub1" := SliceTake "x" #6 in
+    SliceSet uint64T "sub1" #0 #1;;
+    let: "sub2" := SliceSubslice uint64T "x" #2 #4 in
+    SliceSet uint64T "sub2" #0 #2;;
+    let: "ok" := ref_to boolT #true in
+    "ok" <-[boolT] (![boolT] "ok") && (slice.len "sub1" = #6);;
+    "ok" <-[boolT] (![boolT] "ok") && (slice.cap "sub1" = #10);;
+    "ok" <-[boolT] (![boolT] "ok") && (SliceGet uint64T (SliceTake "x" #10) #0 = #1);;
+    "ok" <-[boolT] (![boolT] "ok") && (slice.len "sub2" = #2);;
+    "ok" <-[boolT] (![boolT] "ok") && (slice.cap "sub2" = #8);;
+    "ok" <-[boolT] (![boolT] "ok") && (SliceGet uint64T (SliceTake "x" #10) #2 = #2);;
+    ![boolT] "ok".
+
 Definition testOverwriteArray: val :=
   rec: "testOverwriteArray" <> :=
     let: "arr" := ref_to (slice.T uint64T) (NewSlice uint64T #4) in

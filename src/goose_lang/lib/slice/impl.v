@@ -66,10 +66,17 @@ Definition make_cap: val :=
   then "sz" + "extra" else "sz".
 
 Definition NewSlice (t: ty): val :=
-  rec: "NewSlice" "sz" :=
+  λ: "sz",
   if: "sz" = #0 then slice.nil
   else let: "cap" := make_cap "sz" in
        let: "p" := AllocN "cap" (zero_val t) in
+       (Var "p", Var "sz", Var "cap").
+
+Definition NewSliceWithCap (t: ty): val :=
+  λ: "sz" "cap",
+  if: "cap" < "sz" then Panic "NewSlice with cap smaller than len"
+  else if: "cap" = #0 then slice.nil
+  else let: "p" := AllocN "cap" (zero_val t) in
        (Var "p", Var "sz", Var "cap").
 
 Definition SliceSingleton: val :=
@@ -104,8 +111,8 @@ Definition SliceSkip t: val :=
   λ: "s" "n", (slice.ptr "s" +ₗ[t] "n", slice.len "s" - "n", slice.cap "s" - "n").
 
 Definition SliceTake: val :=
-  λ: "s" "n", if: slice.len "s" < "n"
-              then Panic "slice index out-of-bounds"
+  λ: "s" "n", if: slice.cap "s" < "n"
+              then Panic "slice (take) index out-of-bounds"
               else
                 (slice.ptr "s", "n", slice.cap "s").
 
@@ -113,9 +120,9 @@ Definition SliceSubslice t: val :=
   λ: "s" "n1" "n2",
   if: "n2" < "n1"
   then Panic "slice indices out of order"
-  else if: slice.len "s" < "n2" - "n1"
-       then Panic "slice index out-of-bounds"
-       else (slice.ptr "s" +ₗ[t] "n1", "n2" - "n1", "n2" - "n1").
+  else if: slice.cap "s" < "n2"
+       then Panic "slice (subslice) index out-of-bounds"
+       else (slice.ptr "s" +ₗ[t] "n1", "n2" - "n1", slice.cap "s" - "n1").
 
 Theorem SliceSubslice_t t : ∅ ⊢ SliceSubslice t : (slice.T t -> uint64T -> uint64T -> slice.T t).
 Proof.

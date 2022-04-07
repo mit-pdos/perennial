@@ -43,7 +43,7 @@ Definition ControllerServer__HandleFailedReplicas: val :=
   rec: "ControllerServer__HandleFailedReplicas" "s" :=
     (* log.Printf("In config %d, %+v failed", s.cn, s.failed) *)
     let: "n" := slice.len (struct.loadF pb.Configuration "Replicas" (struct.loadF ControllerServer "conf" "s")) - MapLen (struct.loadF ControllerServer "failed" "s") in
-    let: "newReplicas" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    let: "newReplicas" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 "n") in
     ForSlice uint64T "i" "r" (struct.loadF pb.Configuration "Replicas" (struct.loadF ControllerServer "conf" "s"))
       (if: ~ (Fst (MapGet (struct.loadF ControllerServer "failed" "s") "i"))
       then "newReplicas" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "newReplicas") "r"

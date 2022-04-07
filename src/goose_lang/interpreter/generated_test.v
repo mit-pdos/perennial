@@ -111,6 +111,7 @@ Example testShortcircuitOrFT_ok : testShortcircuitOrFT #() ~~> #true := t.
 
 (* slices.go *)
 Example testSliceOps_ok : testSliceOps #() ~~> #true := t.
+Example testSliceCapacityOps_ok : testSliceCapacityOps #() ~~> #true := t.
 Example testOverwriteArray_ok : testOverwriteArray #() ~~> #true := t.
 
 (* strings.go *)
