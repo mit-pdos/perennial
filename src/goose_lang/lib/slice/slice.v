@@ -619,7 +619,7 @@ Qed.
 
 Lemma wp_SliceSkip' Φ stk E s t (n: u64):
   ⌜int.Z n ≤ int.Z s.(Slice.sz)⌝ -∗
-  Φ (slice_val (slice_skip s t n)) -∗
+  ▷ Φ (slice_val (slice_skip s t n)) -∗
   WP (SliceSkip t (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof.
   iIntros "% HΦ".
@@ -628,6 +628,21 @@ Proof.
   wp_call.
   wp_call.
   iApply "HΦ".
+Qed.
+
+Lemma wp_SliceSkip'' s t q vs (n : u64) :
+  int.Z n ≤ length vs →
+  {{{ is_slice_small s t q vs }}}
+    SliceSkip t (slice_val s) #n
+  {{{ s', RET (slice_val s'); is_slice_small s' t q (drop (int.nat n) vs) }}}.
+Proof.
+  iIntros (Hbound Φ) "Hs HΦ".
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iApply wp_SliceSkip'.
+  { iPureIntro. word. }
+  iApply "HΦ". iNext.
+  iDestruct (is_slice_small_take_drop _ _ _ n with "Hs") as "[$ _]".
+  word.
 Qed.
 
 Lemma wp_SliceTake {Φ stk E s} (n: u64):
