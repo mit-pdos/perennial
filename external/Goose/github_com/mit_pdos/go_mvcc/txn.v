@@ -98,6 +98,7 @@ Definition TxnMgr__activate: val :=
     (for: (λ: <>, ![uint64T] "tid" ≤ struct.loadF TxnSite "tidLast" "site"); (λ: <>, Skip) := λ: <>,
       "tid" <-[uint64T] genTID "sid";;
       Continue);;
+    control.impl.Assume (![uint64T] "tid" < #18446744073709551615);;
     struct.storeF TxnSite "tidLast" "site" (![uint64T] "tid");;
     struct.storeF TxnSite "tidsActive" "site" (SliceAppend uint64T (struct.loadF TxnSite "tidsActive" "site") (![uint64T] "tid"));;
     lock.release (struct.loadF TxnSite "latch" "site");;

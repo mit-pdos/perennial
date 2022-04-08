@@ -79,7 +79,7 @@ Definition Tuple__appendVersion: val :=
     ] in
     struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") "verNew");;
     struct.storeF Tuple "tidown" "tuple" #0;;
-    struct.storeF Tuple "tidlast" "tuple" "tid";;
+    struct.storeF Tuple "tidlast" "tuple" ("tid" + #1);;
     #().
 
 (* *
@@ -101,7 +101,7 @@ Definition Tuple__killVersion: val :=
     ] in
     struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") "verNew");;
     struct.storeF Tuple "tidown" "tuple" #0;;
-    struct.storeF Tuple "tidlast" "tuple" "tid";;
+    struct.storeF Tuple "tidlast" "tuple" ("tid" + #1);;
     #true.
 
 (* *

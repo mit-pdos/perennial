@@ -143,7 +143,7 @@ Admitted.
  * we cannot deduce [tid] is in the set of active TIDs of that site.
  *)
 Definition active_tid γ (tid sid : u64) : iProp Σ :=
-  (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜int.Z tid > 0⌝ .
+  (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜0 < int.Z tid < 2 ^ 64 - 1⌝ .
 
 Definition site_min_tid_half_auth γ (sid : u64) tidN : iProp Σ :=
   own γ.(mvcc_sid_min_tid_gn) {[sid := (●MN{#(1 / 2)} tidN)]}.

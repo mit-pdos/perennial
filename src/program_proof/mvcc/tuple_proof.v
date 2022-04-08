@@ -164,9 +164,9 @@ Proof.
   by do 2 rewrite spec_find_ver_step_Some_noop.
 Qed.
 
-Local Lemma spec_lookup_snoc vers ver (tid tidnew : u64) :
-  ver.1.1 = tidnew ->
-  int.Z tid ≤ int.Z tidnew ->
+Local Lemma spec_lookup_snoc_l vers ver (tid tidx : u64) :
+  ver.1.1 = tidx ->
+  int.Z tid ≤ int.Z tidx ->
   spec_lookup (vers ++ [ver]) tid = spec_lookup vers tid.
 Proof.
   intros Heq Hle.
@@ -176,6 +176,20 @@ Proof.
   case_decide.
   - by rewrite Heq in H.
   - done.
+Qed.
+
+Local Lemma spec_lookup_snoc_r vers ver (tid tidx : u64) :
+  ver.1.1 = tidx ->
+  int.Z tidx < int.Z tid ->
+  spec_lookup (vers ++ [ver]) tid = (if ver.1.2 then Nil else Some ver.2).
+Proof.
+  intros Heq Hle.
+  unfold spec_lookup, spec_find_ver, spec_find_ver_reverse.
+  rewrite reverse_snoc.
+  simpl.
+  case_decide.
+  - by rewrite spec_find_ver_step_Some_noop.
+  - rewrite Heq in H. word.
 Qed.
 
 Local Lemma spec_lookup_extended vers (tidlast tid1 tid2 : u64) :
@@ -622,7 +636,7 @@ Proof.
   iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
   iDestruct (active_ge_min with "HinvgcO Hactive Hgclb") as "%HtidGe".
   iAssert (⌜int.Z tid > 0⌝)%I with "[Hactive]" as "%HtidGZ".
-  { by iDestruct "Hactive" as "[_ %H]". }
+  { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
   iMod ("HinvgcC" with "HinvgcO") as "_".
   iModIntro.
   wp_apply (wp_findRightVer with "[$HversL]").
@@ -870,7 +884,7 @@ Definition own_tuple_phys tuple tidown tidlast versL : iProp Σ :=
 Theorem wp_tuple__appendVersion tuple (tid : u64) (val : u64) tidown tidlast versL :
   {{{ own_tuple_phys tuple tidown tidlast versL }}}
     Tuple__appendVersion #tuple #tid #val
-  {{{ RET #(); own_tuple_phys tuple (U64 0) tid (versL ++ [(tid, false, val)]) }}}.
+  {{{ RET #(); own_tuple_phys tuple (U64 0) (U64 (int.Z tid + 1)) (versL ++ [(tid, false, val)]) }}}.
 Proof.
   iIntros (Φ) "HtuplePhys HΦ".
   iNamed "HtuplePhys".
@@ -913,7 +927,7 @@ Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) (sid :
   is_tuple tuple key γ -∗
   {{{ active_tid γ tid sid ∗ mods_token γ key tid }}}
     Tuple__AppendVersion #tuple #tid #val
-  {{{ RET #(); active_tid γ tid sid }}}.
+  {{{ RET #(); active_tid γ tid sid ∗ view_ptsto γ key (Value val) (U64 (int.Z tid + 1)) }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> [Hactive Htoken] HΦ".
   iNamed "Htuple".
@@ -963,15 +977,18 @@ Proof.
       apply Qp_three_quarter_quarter.
   }
   set vals := replicate (int.nat (int.Z tid - int.Z tidlast)) (spec_lookup versL tid).
-  set vchain' := vchain ++ vals.
+  set vchain' := vchain ++ vals ++ [Some val].
   iMod (vchain_update vchain' with "Hvchain") as "Hvchain"; first by apply prefix_app_r.
   iDestruct (vchain_witness with "Hvchain") as "#HvchainW".
   iNamed "Hwellformed".
-  
+
+  assert (HlenN : length vchain = S (int.nat tidlast)) by word.
+  iAssert (⌜int.Z tid < 2 ^ 64 - 1⌝)%I with "[Hactive]" as "%Htidmax".
+  { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
   wp_apply (release_spec with "[-HΦ Hactive]").
   { iFrame "Hlock Hlocked".
     iNext.
-    iExists (U64 0), tid, _.
+    iExists (U64 0), (U64 (int.Z tid + 1)), _.
     do 2 iExists _.
     iExists vchain'.
     iFrame.
@@ -985,26 +1002,33 @@ Proof.
         rewrite HtupleAbs; last word.
         symmetry.
         f_equal.
-        apply spec_lookup_snoc with tid; [auto | word].
+        apply spec_lookup_snoc_l with tid; [auto | word].
       - rewrite lookup_app_r; last word.
-        subst vals.
-        rewrite lookup_replicate_2; last word.
-        f_equal.
-        rewrite (spec_lookup_snoc _ _ _ tid); [| auto | word].
-        apply spec_lookup_extended with tidlast; [word | word | auto].
+        apply Znot_le_gt in n.
+        destruct (decide (int.Z tidx ≤ int.Z tid)).
+        + rewrite lookup_app_l; last first.
+          { rewrite HlenN replicate_length. word. }
+          subst vals.
+          rewrite lookup_replicate_2; last word.
+          f_equal.
+          rewrite (spec_lookup_snoc_l _ _ _ tid); [| auto | word].
+          apply spec_lookup_extended with tidlast; [word | word | auto].
+        + apply Znot_le_gt in n0.
+          rewrite lookup_app_r; last first.
+          { rewrite HlenN replicate_length. word. }
+          replace (int.Z (U64 _)) with (int.Z tid + 1) in Htidx by word.
+          assert (Etidx : int.Z tidx = int.Z tid + 1) by word.
+          replace (int.nat tidx - _ - _)%nat with 0%nat; last first.
+          { rewrite replicate_length. word. }
+          simpl. f_equal.
+          rewrite (spec_lookup_snoc_r _ _ _ tid); [done | auto | word].
     }
     iSplit.
     { (* Prove [HvchainLen]. *)
       iPureIntro.
       subst vchain'.
-      rewrite app_length.
-      (* Set Printing Coercions. *)
-      replace (Z.of_nat _) with ((Z.of_nat (length vchain)) + (Z.of_nat (length vals))) by word.
-      rewrite HvchainLen.
-      subst vals.
-      rewrite replicate_length.
-      replace (Z.of_nat _) with ((int.Z tid) - (int.Z tidlast)) by word.
-      word.
+      do 2 rewrite app_length.
+      rewrite HlenN replicate_length singleton_length. word.
     }
     iSplit; last done.
     { (* Prove [Hwellformed]. *)
@@ -1013,8 +1037,9 @@ Proof.
       { (* Prove [HtidlastGe]. *)
         apply Forall_app_2.
         - apply (Forall_impl _ _ _ HtidlastGe).
-          word.
-        - by rewrite Forall_singleton.
+          intros verx Hverx.
+          trans (int.Z tid); word.
+        - rewrite Forall_singleton. simpl. word.
       }
       split.
       { (* Prove [HexistsLt]. *)
@@ -1039,7 +1064,24 @@ Proof.
   
   wp_pures.
   iApply "HΦ".
-  by iFrame.
+  iModIntro.
+  iFrame.
+  iExists vchain'.
+  iFrame "HvchainW".
+  (* Prove [view_ptsto]. *)
+  iPureIntro.
+  subst vchain'.
+  assert (HvchainAppLen : length (vchain ++ vals) = S (int.nat tid)).
+  { rewrite app_length.
+    rewrite HlenN.
+    rewrite replicate_length. word.
+  }
+  rewrite app_assoc.
+  rewrite lookup_app_r; last first.
+  { rewrite HvchainAppLen. word. }
+  replace (int.nat _ - length _)%nat with 0%nat; last first.
+  { rewrite HvchainAppLen. word. }
+  done.
 Qed.
 
 (*****************************************************************)
@@ -1048,7 +1090,7 @@ Qed.
 Theorem wp_tuple__killVersion tuple (tid : u64) tidown tidlast versL :
   {{{ own_tuple_phys tuple tidown tidlast versL }}}
     Tuple__killVersion #tuple #tid
-  {{{ (ok : bool), RET #ok; own_tuple_phys tuple (U64 0) tid (versL ++ [(tid, true, (U64 0))]) }}}.
+  {{{ (ok : bool), RET #ok; own_tuple_phys tuple (U64 0) (int.Z tid + 1) (versL ++ [(tid, true, (U64 0))]) }}}.
 Proof.
   iIntros (Φ) "HtuplePhys HΦ".
   iNamed "HtuplePhys".
@@ -1090,7 +1132,7 @@ Theorem wp_tuple__KillVersion tuple (tid : u64) (key : u64) (sid : u64) γ :
   is_tuple tuple key γ -∗
   {{{ active_tid γ tid sid ∗ mods_token γ key tid }}}
     Tuple__KillVersion #tuple #tid
-  {{{ (ret : u64), RET #ret; active_tid γ tid sid }}}.
+  {{{ (ret : u64), RET #ret; active_tid γ tid sid ∗ view_ptsto γ key Nil (U64 (int.Z tid + 1)) }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> [Hactive Htoken] HΦ".
   iNamed "Htuple".
@@ -1151,6 +1193,7 @@ Proof.
       by rewrite Eb'.
   }
   iIntros "HretR".
+  iNamed "HretR".
   wp_pures.
   
   (***********************************************************)
@@ -1174,15 +1217,18 @@ Proof.
       apply Qp_three_quarter_quarter.
   }
   set vals := replicate (int.nat (int.Z tid - int.Z tidlast)) (spec_lookup versL tid).
-  set vchain' := vchain ++ vals.
+  set vchain' := vchain ++ vals ++ [Nil].
   iMod (vchain_update vchain' with "Hvchain") as "Hvchain"; first by apply prefix_app_r.
   iDestruct (vchain_witness with "Hvchain") as "#HvchainW".
   iNamed "Hwellformed".
   
+  assert (HlenN : length vchain = S (int.nat tidlast)) by word.
+  iAssert (⌜int.Z tid < 2 ^ 64 - 1⌝)%I with "[Hactive]" as "%Htidmax".
+  { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
   wp_apply (release_spec with "[-HΦ Hactive HretR]").
   { iFrame "Hlock Hlocked".
     iNext.
-    iExists (U64 0), tid, _.
+    iExists (U64 0), (U64 (int.Z tid + 1)), _.
     do 2 iExists _.
     iExists vchain'.
     iFrame.
@@ -1196,26 +1242,33 @@ Proof.
         rewrite HtupleAbs; last word.
         symmetry.
         f_equal.
-        apply spec_lookup_snoc with tid; [auto | word].
+        apply spec_lookup_snoc_l with tid; [auto | word].
       - rewrite lookup_app_r; last word.
-        subst vals.
-        rewrite lookup_replicate_2; last word.
-        f_equal.
-        rewrite (spec_lookup_snoc _ _ _ tid); [| auto | word].
-        apply spec_lookup_extended with tidlast; [word | word | auto].
+        apply Znot_le_gt in n.
+        destruct (decide (int.Z tidx ≤ int.Z tid)).
+        + rewrite lookup_app_l; last first.
+          { rewrite HlenN replicate_length. word. }
+          subst vals.
+          rewrite lookup_replicate_2; last word.
+          f_equal.
+          rewrite (spec_lookup_snoc_l _ _ _ tid); [| auto | word].
+          apply spec_lookup_extended with tidlast; [word | word | auto].
+        + apply Znot_le_gt in n0.
+          rewrite lookup_app_r; last first.
+          { rewrite HlenN replicate_length. word. }
+          replace (int.Z (U64 _)) with (int.Z tid + 1) in Htidx by word.
+          assert (Etidx : int.Z tidx = int.Z tid + 1) by word.
+          replace (int.nat tidx - _ - _)%nat with 0%nat; last first.
+          { rewrite replicate_length. word. }
+          simpl. f_equal.
+          rewrite (spec_lookup_snoc_r _ _ _ tid); [done | auto | word].
     }
     iSplit.
     { (* Prove [HvchainLen]. *)
       iPureIntro.
       subst vchain'.
-      rewrite app_length.
-      (* Set Printing Coercions. *)
-      replace (Z.of_nat _) with ((Z.of_nat (length vchain)) + (Z.of_nat (length vals))) by word.
-      rewrite HvchainLen.
-      subst vals.
-      rewrite replicate_length.
-      replace (Z.of_nat _) with ((int.Z tid) - (int.Z tidlast)) by word.
-      word.
+      do 2 rewrite app_length.
+      rewrite HlenN replicate_length singleton_length. word.
     }
     iSplit; last done.
     { (* Prove [Hwellformed]. *)
@@ -1224,8 +1277,9 @@ Proof.
       { (* Prove [HtidlastGe]. *)
         apply Forall_app_2.
         - apply (Forall_impl _ _ _ HtidlastGe).
-          word.
-        - by rewrite Forall_singleton.
+          intros verx Hverx.
+          trans (int.Z tid); word.
+        - rewrite Forall_singleton. simpl. word.
       }
       split.
       { (* Prove [HexistsLt]. *)
@@ -1250,7 +1304,26 @@ Proof.
   
   wp_pures.
   wp_load.
-  case_bool_decide; by iApply "HΦ".
+  rewrite ite_apply.
+  iApply "HΦ".
+  iModIntro.
+  iFrame.
+  iExists vchain'.
+  iFrame "HvchainW".
+  (* Prove [view_ptsto]. *)
+  iPureIntro.
+  subst vchain'.
+  assert (HvchainAppLen : length (vchain ++ vals) = S (int.nat tid)).
+  { rewrite app_length.
+    rewrite HlenN.
+    rewrite replicate_length. word.
+  }
+  rewrite app_assoc.
+  rewrite lookup_app_r; last first.
+  { rewrite HvchainAppLen. word. }
+  replace (int.nat _ - length _)%nat with 0%nat; last first.
+  { rewrite HvchainAppLen. word. }
+  done.
 Qed.
 
 (*****************************************************************)
@@ -1328,7 +1401,7 @@ Theorem wp_tuple__Own tuple (tid : u64) (key : u64) (sid : u64) γ :
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".
   iAssert (⌜int.Z tid > 0⌝)%I with "[Hactive]" as "%Htid".
-  { by iDestruct "Hactive" as "[_ %Htid]". }
+  { iDestruct "Hactive" as "[_ %Htid]". iPureIntro. word. }
   iNamed "Htuple".
   wp_call.
   

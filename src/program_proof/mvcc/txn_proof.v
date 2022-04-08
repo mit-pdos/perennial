@@ -649,6 +649,14 @@ Proof.
   wp_pures.
   
   (***********************************************************)
+  (* machine.Assume(tid < 18446744073709551615)              *)
+  (***********************************************************)
+  wp_load.
+  wp_apply wp_Assume.
+  iIntros "%Htidmax".
+  apply bool_decide_eq_true_1 in Htidmax.
+  
+  (***********************************************************)
   (* site.tidLast = tid                                      *)
   (* site.tidsActive = append(site.tidsActive, tid)          *)
   (***********************************************************)
