@@ -62,7 +62,7 @@ Qed.
 Lemma is_slice_small_sz s t q vs :
   is_slice_small s t q vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
 Proof.
-  iIntros "(_&%) !%".
+  iIntros "(_&[%%]) !%".
   rewrite fmap_length // in H.
 Qed.
 
@@ -245,51 +245,66 @@ Proof.
   iIntros (Φ) "[Hs1 Hs2] HΦ".
 Abort.
 
-(** subslice and produce a new [is_slice_small], dropping the other elements of
-the slice. Most useful in read-only contexts. *)
-(* TODO: these subslicing theorems are still really messy as far as preserving
-the rest of the slice *)
-Lemma wp_SliceSubslice_drop_rest' {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
+(** Only works with the full fraction since some of the ownership is moved from
+the slice part to the extra part *)
+Lemma wp_SliceSubslice_is_slice {stk E} s t `{!IntoVal V} (vs: list V) (n m: u64) :
   (int.nat n ≤ int.nat m ≤ length vs)%nat →
-  {{{ is_slice s t q vs }}}
+  {{{ is_slice s t 1 vs }}}
     SliceSubslice t (slice_val s) #n #m @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t q (subslice (int.nat n) (int.nat m) vs) }}}.
+  {{{ s', RET slice_val s'; is_slice s' t 1 (subslice (int.nat n) (int.nat m) vs) }}}.
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iDestruct (is_slice_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_wf with "Hs") as %Hwf.
   wp_apply wp_SliceSubslice.
   { iPureIntro; word. }
   iApply "HΦ".
   rewrite /is_slice /slice.is_slice /=.
   iDestruct "Hs" as "[Hs Hcap]".
-  iSplitL "Hs".
-  { iDestruct "Hs" as "[Ha _]".
-    rewrite /list.untype.
-    iSplit.
-    {
-      rewrite -{1}(take_drop (int.nat m) vs) fmap_app.
-      rewrite /subslice.
-      iDestruct (array.array_app with "Ha") as "[Ha1 _]".
-      set (vs':=take (int.nat m) vs).
-      rewrite -{1}(take_drop (int.nat n) vs') fmap_app.
-      iDestruct (array.array_app with "Ha1") as "[_ Ha2]".
-      rewrite fmap_length take_length.
-      iExactEq "Ha2".
+  iDestruct "Hs" as "[Ha _]".
+  rewrite /list.untype.
+  rewrite -{1}(take_drop (int.nat m) vs) fmap_app.
+  rewrite /subslice.
+  iDestruct (array.array_app with "Ha") as "[Ha1 Htail]".
+  set (vs':=take (int.nat m) vs).
+  rewrite -{1}(take_drop (int.nat n) vs') fmap_app.
+  iDestruct (array.array_app with "Ha1") as "[_ Ha2]". (* the part before the subslice we can dtop *)
+  rewrite fmap_length take_length.
+  iSplitL "Ha2".
+  { iSplit.
+    - iExactEq "Ha2".
       repeat f_equal.
-      subst vs'; rewrite take_length.
+      subst vs'; rewrite fmap_length. rewrite !take_length.
       rewrite //=.
       rewrite min_l; last word.
       rewrite u64_Z_through_nat. eauto.
-    }
-    { iPureIntro. rewrite fmap_length.
-      rewrite -> subslice_length by lia.
-      rewrite //=. word.
-    }
+    - iPureIntro. rewrite fmap_length /=.
+      split; last word.
+      subst vs'. rewrite drop_length take_length. word.
   }
-  iApply is_slice_cap_drop; auto. word.
+  rewrite /is_slice_cap. simpl.
+  iDestruct "Hcap" as (old_extra) "[% Htail2]".
+  rewrite min_l; last word.
+  iExists (_ ++ _).
+  iSplit; last first.
+  - iApply array.array_app.
+    rewrite loc_add_assoc.
+    replace (ty_size t * int.Z n + ty_size t * int.Z (word.sub m n)) with
+      (ty_size t * int.nat m) by word.
+    iFrame "Htail".
+    iExactEq "Htail2". f_equal.
+    rewrite fmap_length drop_length.
+    rewrite loc_add_assoc.
+    rewrite Hsz.
+    rewrite -Z.mul_add_distr_l.
+    rewrite ->Nat2Z.inj_sub by word.
+    rewrite Zplus_minus.
+    replace (int.Z (Slice.sz s)) with (Z.of_nat $ int.nat (Slice.sz s)) at 1 by word.
+    done.
+  - iPureIntro. rewrite app_length fmap_length drop_length. word.
 Qed.
 
-Lemma wp_SliceSubslice_drop_rest {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
+Lemma wp_SliceSubslice_is_slice_small {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
   (int.nat n ≤ int.nat m ≤ length vs)%nat →
   {{{ is_slice_small s t q vs }}}
     SliceSubslice t (slice_val s) #n #m @ stk; E
@@ -297,6 +312,7 @@ Lemma wp_SliceSubslice_drop_rest {stk E} s t q `{!IntoVal V} (vs: list V) (n m: 
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_small_wf with "Hs") as %Hwf.
   wp_apply wp_SliceSubslice.
   { iPureIntro; word. }
   iApply "HΦ".

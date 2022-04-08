@@ -56,6 +56,14 @@ Proof.
   iPureIntro; word.
 Qed.
 
+Theorem memLog_wf s q σ :
+  mutable_log s q σ -∗
+  ⌜int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap)⌝.
+Proof.
+  iNamed 1.
+  iPureIntro; word.
+Qed.
+
 Theorem wp_log_len l q σ :
   {{{ is_sliding l q σ }}}
     slice.len (struct.loadF sliding "log" #l)
@@ -855,6 +863,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   iDestruct (memLog_sz with "log_mutable") as %Hs.
+  iDestruct (memLog_wf with "log_mutable") as %wf.
   iMod (readonly_load with "log_readonly") as (q) "Hlog".
   iDestruct "Hlog" as (bks) "[Hs Hblocks]".
   wp_apply wp_SliceTake; first by word.
@@ -912,6 +921,7 @@ Theorem wp_SliceTake_updates s (n: u64) q q_b (upds: list update.t) :
 Proof.
   iIntros (Hbound Φ) "Hupds HΦ".
   iDestruct (updates_slice_frag_len with "Hupds") as %Hlen.
+  iDestruct (updates_slice_frag_wf with "Hupds") as %Hwf.
   wp_apply wp_SliceTake; first by word.
   iApply "HΦ".
   iDestruct (updates_slice_frag_split with "Hupds") as "[_ $]".
@@ -931,6 +941,7 @@ Proof.
   wp_call.
   repeat wp_loadField.
   iDestruct (memLog_sz with "log_mutable") as %Hsz.
+  iDestruct (memLog_wf with "log_mutable") as %?.
   iMod (readonly_load with "log_readonly") as (q) "Hlog".
   wp_apply wp_SliceTake.
   { word. }
@@ -1270,9 +1281,7 @@ Proof.
   rewrite /is_slice_small.
   simpl.
   f_equiv.
-  iPureIntro; intuition idtac.
-  - word.
-  - word.
+  iPureIntro; intuition idtac; word.
 Qed.
 
 Theorem wp_sliding__clearMutable l σ :

@@ -122,17 +122,16 @@ Proof.
   by iApply array_to_block_array.
 Qed.
 
-Lemma block_array_to_slice l q b cap :
-  mapsto_block l q b -∗ is_slice_small (Slice.mk l 4096 cap) byteT q (Block_to_vals b).
+Lemma block_array_to_slice_raw l q b :
+  mapsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = int.nat 4096⌝.
 Proof.
   iIntros "Hm".
   rewrite /is_slice_small.
   iSplitL.
-  { by iApply array_to_block_array. }
+  { iApply array_to_block_array. done. }
   iPureIntro.
   rewrite length_Block_to_vals.
-  simpl.
-  reflexivity.
+  simpl. done.
 Qed.
 
 Transparent disk.Read disk.Write.
@@ -161,6 +160,7 @@ Proof.
   wp_call.
   wp_call.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_small_wf with "Hs") as %Hwf.
   iApply (wp_ncatomic _ _ ∅).
   { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
     inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
@@ -236,7 +236,7 @@ Proof.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
   iMod ("Hupd" with "Hda") as "HQ"; iModIntro.
-  iDestruct (block_array_to_slice _ _ _ 4096 with "Hl") as "Hs".
+  iDestruct (block_array_to_slice_raw with "Hl") as "Hs".
   wp_pures.
   wp_apply (wp_raw_slice with "Hs").
   iIntros (s) "Hs".
@@ -253,6 +253,7 @@ Proof.
   iIntros "!#" (Φ) "Hs Hupd".
   wp_call.
   iDestruct (is_slice_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_wf with "Hs") as %Hwf.
   wp_bind (ExternalOp _ _).
   iApply (wp_ncatomic _ _ ∅).
   { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
@@ -363,7 +364,7 @@ Proof.
   wpc_atomic; iFrame.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
-  iDestruct (block_array_to_slice _ _ _ 4096 with "Hl") as "Hs".
+  iDestruct (block_array_to_slice_raw with "Hl") as "Hs".
   iSplit.
   { iDestruct "HΦ" as "(HΦ&_)".
     iModIntro.
@@ -389,6 +390,7 @@ Proof.
   wpc_pures.
   { iLeft in "Hfupd". iFrame. }
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_small_wf with "Hs") as %Hwf.
   assert (Atomic StronglyAtomic (ExternalOp WriteOp (#a, #s.(Slice.ptr))%V)).
   {
     solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
@@ -410,7 +412,9 @@ Proof.
     iFrame.
     destruct s; simpl in Hsz.
     replace sz with (U64 4096).
-    + by iApply block_array_to_slice.
+    + iDestruct (block_array_to_slice_raw with "Hmapsto") as "[? %]".
+      rewrite /is_block /is_slice_small. iFrame.
+      iPureIntro. simpl. split; first done. simpl in Hwf. word.
     + rewrite length_Block_to_vals in Hsz.
       change block_bytes with (Z.to_nat 4096) in Hsz.
       word.

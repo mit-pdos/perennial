@@ -602,12 +602,12 @@ Qed.
 
 (* This version of GetBytes consumes full ownership of the decoder to be able to
    give the full fraction to the returned slice *)
-Theorem wp_Dec__GetBytes' stk E dec_v bs (n: u64) r s q data :
+Theorem wp_Dec__GetBytes' stk E dec_v bs (n: u64) r s data :
   n = U64 (length bs) →
-  {{{ is_dec dec_v (EncBytes bs :: r) s q data ∗
-      (∀ vs' : list u8, is_slice_small s byteT q vs' -∗ is_slice s byteT q vs') }}}
+  {{{ is_dec dec_v (EncBytes bs :: r) s 1 data ∗
+      (∀ vs' : list u8, is_slice_small s byteT 1 vs' -∗ is_slice s byteT 1 vs') }}}
     Dec__GetBytes dec_v #n @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' byteT q bs }}}.
+  {{{ s', RET slice_val s'; is_slice s' byteT 1 bs }}}.
 Proof.
   iIntros (-> Φ) "(Hdec&Hclo) HΦ"; iNamed "Hdec".
   pose proof (has_encoding_length Henc).
@@ -618,7 +618,7 @@ Proof.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   wp_pures.
   iDestruct ("Hclo" with "[$]") as "Hs".
-  wp_apply (wp_SliceSubslice_drop_rest' with "Hs"); first by word.
+  wp_apply (wp_SliceSubslice_is_slice with "Hs"); first by word.
   iIntros (s') "Hbs".
   wp_pures.
   wp_load; wp_store.
@@ -650,7 +650,7 @@ Proof.
      half to reconstruct the decoder (now with half the fraction) *)
   iDestruct (fractional.fractional_half with "Hs") as "[Hs1 Hs2]".
   wp_pures.
-  wp_apply (wp_SliceSubslice_drop_rest with "Hs1"); first by word.
+  wp_apply (wp_SliceSubslice_is_slice_small with "Hs1"); first by word.
   iIntros (s') "Hbs".
   wp_pures.
   wp_load; wp_store.

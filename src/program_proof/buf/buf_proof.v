@@ -1454,7 +1454,9 @@ Proof.
   iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "[Hsrc Hdst]".
   wp_call.
   iDestruct (is_slice_small_sz with "Hsrc") as %Hsrc_sz.
+  iDestruct (is_slice_small_wf with "Hsrc") as %Hsrc_wf.
   iDestruct (is_slice_small_sz with "Hdst") as %Hdst_sz.
+  iDestruct (is_slice_small_wf with "Hdst") as %Hdst_wf.
   wp_apply wp_SliceTake; first by word.
   wp_pures.
   wp_apply wp_SliceSkip'; first by (iPureIntro; word).

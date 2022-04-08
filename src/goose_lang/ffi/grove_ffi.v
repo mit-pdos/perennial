@@ -604,12 +604,13 @@ Section grove.
   Qed.
 
   Lemma mapsto_vals_is_slice_small_byte (s : Slice.t) (data : list u8) (q : Qp) :
+    int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap) →
     length data = int.nat (Slice.sz s) →
     mapsto_vals (Slice.ptr s) q (data_vals data) -∗
     is_slice_small s byteT q data.
   Proof.
-    iIntros (Hlen) "Hl". rewrite /is_slice_small /slice.is_slice_small. iSplit; last first.
-    { iPureIntro. rewrite /list.untype fmap_length. done. }
+    iIntros (? Hlen) "Hl". rewrite /is_slice_small /slice.is_slice_small. iSplit; last first.
+    { iPureIntro. rewrite /list.untype fmap_length. auto. }
     rewrite /array.array /mapsto_vals.
     change (list.untype data) with (data_vals data).
     iApply (big_sepL_impl with "Hl"). iIntros "!#" (i v Hv) "Hl".
@@ -646,6 +647,7 @@ Local Ltac solve_atomic :=
     wp_apply wp_slice_len.
     wp_pures.
     iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
+    iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
     rewrite difference_empty_L.
     (* TODO(Joe): Cleanup *)
     iMod "HΦ" as (ms) "[Hc HΦ]".

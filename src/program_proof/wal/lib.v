@@ -106,12 +106,30 @@ Proof.
   word.
 Qed.
 
+Lemma updates_slice_frag_wf bk_s q1 q2 bs :
+  updates_slice_frag' bk_s q1 q2 bs -∗ ⌜int.Z bk_s.(Slice.sz) ≤ int.Z bk_s.(Slice.cap)⌝.
+Proof.
+  iIntros "Hupds".
+  iDestruct "Hupds" as (bks) "[Hbs Hbks]".
+  iDestruct (is_slice_small_wf with "Hbs") as %Hbs_wf.
+  auto.
+Qed.
+
 Lemma updates_slice_len bk_s q bs :
   updates_slice' q bk_s bs -∗ ⌜int.Z bk_s.(Slice.sz) = length bs⌝.
 Proof.
   iIntros "Hupds".
   iDestruct (updates_slice_frag_acc with "Hupds") as "[Hupds _]".
   iDestruct (updates_slice_frag_len with "Hupds") as %Hlen.
+  auto.
+Qed.
+
+Lemma updates_slice_wf bk_s q bs :
+  updates_slice' q bk_s bs -∗ ⌜int.Z bk_s.(Slice.sz) ≤ int.Z bk_s.(Slice.cap)⌝.
+Proof.
+  iIntros "Hupds".
+  iDestruct (updates_slice_frag_acc with "Hupds") as "[Hupds _]".
+  iDestruct (updates_slice_frag_wf with "Hupds") as %Hwf.
   auto.
 Qed.
 

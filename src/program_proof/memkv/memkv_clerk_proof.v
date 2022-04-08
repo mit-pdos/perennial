@@ -61,6 +61,7 @@ Proof.
     { intros [=Hz]. apply Hnzero. rewrite Hz. word. }
     wp_loadField.
     iDestruct (is_slice_sz with "HfreeClerks_sl") as %Hlen.
+    iDestruct (is_slice_wf with "HfreeClerks_sl") as %Hwf.
     destruct freeClerks as [|freeClerks Hck _] using rev_ind.
     { exfalso. apply Hnzero. done. }
     rewrite app_length in Hlen. simpl in Hlen.
@@ -342,9 +343,9 @@ Proof using Type*.
   iApply ("HΦ" $! vals_sl xs). iModIntro.
   iEval (rewrite {1 2}/is_slice_small /slice.is_slice_small).
   rewrite /array /list.untype !big_sepL_fmap !fmap_length.
-  iEval (rewrite [(_ ∗ ⌜length keys_vals = _⌝)%I]comm -!assoc).
-  iSplit; first done.
-  iEval (rewrite !assoc [(_ ∗ ⌜length xs = _⌝)%I]comm -!assoc).
+  iEval (rewrite [(_ ∗ ⌜length keys_vals = _ ∧ _⌝)%I]comm -!assoc).
+  iSplit; first naive_solver.
+  iEval (rewrite !assoc [(_ ∗ ⌜length xs = _ ∧ _⌝)%I]comm -!assoc).
   rewrite -Hlenxs Hlen. iSplit; first done.
   iEval (rewrite [(([∗ list] k↦y ∈ xs, _) ∗ _)%I]comm).
   rewrite -big_sepL2_sep_sepL_r.
