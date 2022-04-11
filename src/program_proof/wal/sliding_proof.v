@@ -522,9 +522,8 @@ Proof.
   wp_call.
   wp_loadField. wp_loadField. wp_loadField. wp_loadField.
   iNamed "log_mutable".
-  wp_apply wp_SliceSkip'.
-  { iPureIntro.
-    word. }
+  wp_apply wp_SliceSkip.
+  { word. }
   fold (slidingM.numMutable σ).
   iDestruct (updates_slice_frag_acc with "log_mutable") as "[log_mutable log_mutable_full]".
   wp_apply (wp_SliceSet_updates with "[$log_mutable $Hu]").
@@ -794,9 +793,8 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_loadField.
-  wp_apply wp_SliceSkip'.
-  { iPureIntro.
-    simpl; word. }
+  wp_apply wp_SliceSkip.
+  { simpl; word. }
   iApply "HΦ".
   iDestruct "log_mutable" as "[% Hs]".
   iExactEq "Hs".
@@ -867,9 +865,8 @@ Proof.
   iMod (readonly_load with "log_readonly") as (q) "Hlog".
   iDestruct "Hlog" as (bks) "[Hs Hblocks]".
   wp_apply wp_SliceTake; first by word.
-  wp_apply wp_SliceSkip'.
-  { iPureIntro.
-    simpl; word. }
+  wp_apply wp_SliceSkip.
+  { simpl; word. }
   iDestruct (big_sepL2_length with "Hblocks") as %Hbks_len.
   autorewrite with len in Hbks_len.
   fold (slidingM.numMutable σ).
@@ -1195,7 +1192,7 @@ Proof.
   iNamed "HI".
   wp_pures.
   wp_loadField.
-  wp_apply wp_SliceSkip'; first by (simpl; iPureIntro; word).
+  wp_apply wp_SliceSkip; first by (simpl; word).
   wp_storeField.
   wp_pures.
 

@@ -1682,8 +1682,8 @@ Proof.
   wp_pures.
   wp_load.
   wp_loadField.
-  wp_apply (wp_SliceSkip').
-  { iPureIntro. word. }
+  wp_apply wp_SliceSkip.
+  { word. }
   wp_storeField.
 
   iDestruct ("HversL" with "HversS") as "HversL".

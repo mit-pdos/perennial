@@ -3,7 +3,7 @@ From Perennial.Helpers Require Import List.
 From Goose.github_com.tchajed Require Import marshal.
 From Perennial.goose_lang.lib Require Import encoding.
 
-From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import proof_prelude std_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section goose_lang.
@@ -23,6 +23,49 @@ Proof.
   wp_apply (wp_SliceSkip'' with "Hs").
   { rewrite /list.untype fmap_length app_length /=. word. }
   iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
+Qed.
+
+Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
+  {{{ is_slice s byteT 1 vs }}}
+    reserve (slice_val s) #extra
+  {{{ s', RET slice_val s'; ⌜int.Z extra ≤ Slice.extra s'⌝ ∗ is_slice s' byteT 1 vs }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ". wp_lam.
+  iDestruct (is_slice_wf with "Hs") as %Hwf.
+  wp_apply wp_slice_len.
+  wp_apply wp_SumAssumeNoOverflow. iIntros (Hsum).
+  wp_pures. wp_apply wp_slice_cap.
+  wp_if_destruct.
+  - (* we have to grow. *) admit.
+  - (* already big enough *)
+    iApply "HΦ". iFrame. iPureIntro. word.
+Admitted.
+
+Theorem wp_WriteInt s x (vs : list u8) :
+  {{{ is_slice s byteT 1 vs }}}
+    WriteInt (slice_val s) #x
+  {{{ s', RET slice_val s'; is_slice s' byteT 1 (vs ++ u64_le x) }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ". wp_lam. wp_pures.
+  wp_apply (wp_reserve with "Hs"). clear s. iIntros (s) "[% Hs]". wp_pures.
+  iDestruct (is_slice_wf with "Hs") as %Hwf.
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  wp_apply wp_slice_len. wp_pures.
+  wp_apply (wp_SliceTake_full_cap with "Hs").
+  { word. }
+  iIntros (ex) "[%Hex Hsl]".
+  set (s' := slice_take _ _).
+  wp_apply wp_SliceSkip.
+  { rewrite /slice_take /=. word. }
+  iDestruct (slice.is_slice_small_acc with "Hsl") as "[Hsl Hclose]".
+  wp_apply (wp_UInt64Put_skip with "Hsl").
+  { rewrite fmap_length. word. }
+  { rewrite Hex. word. }
+  iIntros "Hsl". iDestruct ("Hclose" with "Hsl") as "Hsl".
+  wp_pures. iApply "HΦ". iModIntro.
+  rewrite /is_slice. iExactEq "Hsl". repeat f_equal.
+  rewrite /list.untype fmap_app. f_equal.
+  rewrite drop_ge //. rewrite Hex. word.
 Qed.
 
 End goose_lang.

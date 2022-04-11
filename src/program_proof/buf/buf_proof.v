@@ -850,7 +850,7 @@ Proof using.
   iDestruct (slice.is_slice_small_sz with "Hs") as "%".
   destruct H as [Hoff Hatoff].
 
-  wp_apply (wp_SliceSubslice_small with "[$Hs]").
+  wp_apply (slice.wp_SliceSubslice_small with "[$Hs]").
   { rewrite /valid_addr in H0.
     rewrite /valid_off in Hoff.
     unfold block_bytes in *.
@@ -1459,7 +1459,7 @@ Proof.
   iDestruct (is_slice_small_wf with "Hdst") as %Hdst_wf.
   wp_apply wp_SliceTake; first by word.
   wp_pures.
-  wp_apply wp_SliceSkip'; first by (iPureIntro; word).
+  wp_apply wp_SliceSkip; first by word.
   iDestruct (slice_small_split _ (word.divu dstoff 8) with "Hdst")
     as "[Hdst1 Hdst2]"; first by word.
   iDestruct (slice_small_split _ (word.divu nbit 8) with "Hsrc")

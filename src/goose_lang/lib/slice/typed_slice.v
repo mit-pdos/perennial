@@ -245,9 +245,11 @@ Proof.
   iIntros (Φ) "[Hs1 Hs2] HΦ".
 Abort.
 
+
+
 (** Only works with the full fraction since some of the ownership is moved from
 the slice part to the extra part *)
-Lemma wp_SliceSubslice_is_slice {stk E} s t `{!IntoVal V} (vs: list V) (n m: u64) :
+Lemma wp_SliceSubslice_full {stk E} s t `{!IntoVal V} (vs: list V) (n m: u64) :
   (int.nat n ≤ int.nat m ≤ length vs)%nat →
   {{{ is_slice s t 1 vs }}}
     SliceSubslice t (slice_val s) #n #m @ stk; E
@@ -257,7 +259,7 @@ Proof.
   iDestruct (is_slice_sz with "Hs") as %Hsz.
   iDestruct (is_slice_wf with "Hs") as %Hwf.
   wp_apply wp_SliceSubslice.
-  { iPureIntro; word. }
+  { word. }
   iApply "HΦ".
   rewrite /is_slice /slice.is_slice /=.
   iDestruct "Hs" as "[Hs Hcap]".
@@ -304,7 +306,7 @@ Proof.
   - iPureIntro. rewrite app_length fmap_length drop_length. word.
 Qed.
 
-Lemma wp_SliceSubslice_is_slice_small {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
+Lemma wp_SliceSubslice_small {stk E} s t q `{!IntoVal V} (vs: list V) (n m: u64) :
   (int.nat n ≤ int.nat m ≤ length vs)%nat →
   {{{ is_slice_small s t q vs }}}
     SliceSubslice t (slice_val s) #n #m @ stk; E
@@ -314,7 +316,7 @@ Proof.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   iDestruct (is_slice_small_wf with "Hs") as %Hwf.
   wp_apply wp_SliceSubslice.
-  { iPureIntro; word. }
+  { word. }
   iApply "HΦ".
   rewrite /is_slice_small /slice.is_slice_small /=.
   iDestruct "Hs" as "[Ha _]".

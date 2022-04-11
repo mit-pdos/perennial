@@ -17,7 +17,6 @@ Module Slice.
   Notation extra s := (int.Z (cap s) - int.Z (sz s)).
   Definition nil := mk null (U64 0) (U64 0).
 End Slice.
-Local Notation slice_extra s := (Slice.extra s).
 
 Section goose_lang.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
@@ -274,6 +273,14 @@ Proof.
   iApply "HΦ".
 Qed.
 
+Lemma wp_slice_cap stk E (s: Slice.t) (Φ: val -> iProp Σ) :
+    Φ #(s.(Slice.cap)) -∗ WP slice.cap (slice_val s) @ stk; E {{ v, Φ v }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  iApply "HΦ".
+Qed.
+
 Lemma wp_slice_ptr stk E (s: Slice.t) (Φ: val -> iProp Σ) :
     Φ #(s.(Slice.ptr)) -∗ WP slice.ptr (slice_val s) @ stk; E {{ v, Φ v }}.
 Proof.
@@ -429,6 +436,9 @@ Definition slice_skip (sl: Slice.t) (t:ty) (n: u64) : Slice.t :=
      Slice.sz := word.sub sl.(Slice.sz) n;
      Slice.cap := word.sub sl.(Slice.cap) n;
   |}.
+
+Definition slice_subslice (sl: Slice.t) (t:ty) (n1 n2: u64) : Slice.t :=
+  Slice.mk (sl.(Slice.ptr) +ₗ[t] int.Z n1) (word.sub n2 n1) (word.sub sl.(Slice.cap) n1).
 
 (* TODO: this theorem isn't true as-is for a correct model of splitting (the
 above gets the capacities wrong) *)
@@ -608,8 +618,8 @@ Qed.
 
 (** * Hoare triples *)
 
-Lemma wp_SliceSkip' Φ stk E s t (n: u64):
-  ⌜int.Z n ≤ int.Z s.(Slice.sz)⌝ -∗
+Lemma wp_SliceSkip Φ stk E s t (n: u64):
+  int.Z n ≤ int.Z s.(Slice.sz) →
   ▷ Φ (slice_val (slice_skip s t n)) -∗
   WP (SliceSkip t (slice_val s) #n) @ stk; E {{ Φ }}.
 Proof.
@@ -621,7 +631,7 @@ Proof.
   iApply "HΦ".
 Qed.
 
-Lemma wp_SliceSkip'' s t q vs (n : u64) :
+Lemma wp_SliceSkip_small s t q vs (n : u64) :
   int.Z n ≤ length vs →
   {{{ is_slice_small s t q vs }}}
     SliceSkip t (slice_val s) #n
@@ -629,8 +639,8 @@ Lemma wp_SliceSkip'' s t q vs (n : u64) :
 Proof.
   iIntros (Hbound Φ) "Hs HΦ".
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  iApply wp_SliceSkip'.
-  { iPureIntro. word. }
+  iApply wp_SliceSkip.
+  { word. }
   iApply "HΦ". iNext.
   iDestruct (is_slice_small_take_drop _ _ _ n with "Hs") as "[$ _]".
   word.
@@ -652,7 +662,7 @@ Proof.
     iApply "HΦ".
 Qed.
 
-Lemma wp_SliceTake' {stk E s} t q vs (n: u64):
+Lemma wp_SliceTake_small {stk E s} t q vs (n: u64):
   int.Z n ≤ length vs →
   {{{ is_slice_small s t q vs }}}
     SliceTake (slice_val s) #n @ stk; E
@@ -668,9 +678,46 @@ Proof.
   word.
 Qed.
 
+(** We have full ownership, and take into the capacity.
+Cannot be typed, since [extra] might not be valid at this type. *)
+Lemma wp_SliceTake_full_cap {stk E s} t vs (n: u64):
+  int.Z s.(Slice.sz) ≤ int.Z n ≤ int.Z s.(Slice.cap) →
+  {{{ is_slice s t 1 vs }}}
+    SliceTake (slice_val s) #n @ stk; E
+  {{{ extra, RET (slice_val (slice_take s n));
+    ⌜length extra = int.nat n - int.nat (s.(Slice.sz))⌝%nat ∗
+    is_slice (slice_take s n) t 1 (vs ++ extra)
+  }}}.
+Proof.
+  iIntros (Hbound Φ) "Hs HΦ".
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_wf with "Hs") as %Hwf.
+  wp_apply (wp_SliceTake).
+  { word. }
+  iDestruct "Hs" as "[Hs [%extra [%Hextra Hextra]]]".
+  set elen := (int.nat n - int.nat (s.(Slice.sz)))%nat.
+  iApply ("HΦ" $! (take elen extra)).
+  iSplit.
+  { iPureIntro. rewrite take_length. word. }
+  rewrite -{1}(take_drop elen extra) array_app.
+  iDestruct "Hextra" as "[He1 He2]".
+  iSplitL "Hs He1".
+  - rewrite /is_slice_small /= array_app. iDestruct "Hs" as "[$ _]".
+    iSplit. { iExactEq "He1". repeat f_equal. word. }
+    iPureIntro. split; last word.
+    rewrite app_length take_length. word.
+  - iExists _. iSplit; last first.
+    + iExactEq "He2". f_equal.
+      rewrite loc_add_assoc. f_equal.
+      rewrite take_length /slice_take /=.
+      rewrite ->Nat.min_l by word.
+      rewrite -Z.mul_add_distr_l. f_equal. word.
+    + iPureIntro. rewrite drop_length /slice_take /=. word.
+Qed.
+
 Lemma wp_SliceSubslice Φ stk E s t (n1 n2: u64):
-  ⌜int.Z n1 ≤ int.Z n2 ∧ int.Z n2 ≤ int.Z s.(Slice.cap)⌝ -∗
-  ▷ Φ (slice_val (Slice.mk (s.(Slice.ptr) +ₗ[t] int.Z n1) (word.sub n2 n1) (word.sub s.(Slice.cap) n1))) -∗
+  int.Z n1 ≤ int.Z n2 ∧ int.Z n2 ≤ int.Z s.(Slice.cap) →
+  ▷ Φ (slice_val (slice_subslice s t n1 n2)) -∗
   WP (SliceSubslice t (slice_val s) #n1 #n2) @ stk; E {{ Φ }}.
 Proof.
   iIntros "% HΦ".
@@ -730,7 +777,7 @@ Proof.
 Qed.
 
 Lemma is_slice_small_subslice s t q vs n1 n2:
-  ⌜int.Z n1 ≤ int.Z n2 ∧ int.Z n2 ≤ int.Z s.(Slice.sz)⌝ -∗
+  int.Z n1 ≤ int.Z n2 ∧ int.Z n2 ≤ int.Z s.(Slice.sz) →
   is_slice_small s t q vs -∗
   is_slice_small (Slice.mk (s.(Slice.ptr) +ₗ[t] int.Z n1)
                            (word.sub n2 n1) (word.sub s.(Slice.cap) n1)) t q
@@ -758,11 +805,11 @@ Proof.
   iIntros (Φ) "[Hs [%%]] HΦ".
   iDestruct (is_slice_small_wf with "Hs") as %Hwf.
   iApply wp_SliceSubslice.
-  { iPureIntro. word. }
+  { word. }
   iApply "HΦ".
   iModIntro.
   iApply is_slice_small_subslice.
-  { iPureIntro. word. }
+  { word. }
   iFrame.
 Qed.
 

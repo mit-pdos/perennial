@@ -972,9 +972,8 @@ Proof.
     wpc_bind_seq.
     wpc_frame.
     wp_loadField.
-    wp_apply (wp_SliceSkip').
-    { iPureIntro.
-      cut (1 ≤ int.nat buffered_s.(Slice.sz)); first by word.
+    wp_apply wp_SliceSkip.
+    { cut (1 ≤ int.nat buffered_s.(Slice.sz)); first by word.
       rewrite -Hlen' Hlen Hbuf_list /=. lia.
     }
     wp_apply (wp_storeField with "buffered").

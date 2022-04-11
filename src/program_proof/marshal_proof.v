@@ -213,9 +213,8 @@ Proof.
   wp_load.
   wp_pures.
   iDestruct (is_slice_small_sz with "Hs") as %Hslice_len.
-  wp_apply wp_SliceSkip'.
-  { iPureIntro.
-    word. }
+  wp_apply wp_SliceSkip.
+  { word. }
   iDestruct (is_slice_small_take_drop _ _ _ (U64 off) with "Hs") as "[Hs2 Hs1]".
   { word. }
   replace (int.nat (U64 off)) with off by word.
@@ -260,9 +259,8 @@ Proof.
   wp_load.
   wp_pures.
   iDestruct (is_slice_small_sz with "Hs") as %Hslice_len.
-  wp_apply wp_SliceSkip'.
-  { iPureIntro.
-    word. }
+  wp_apply wp_SliceSkip.
+  { word. }
   iDestruct (is_slice_small_take_drop _ _ _ (U64 off) with "Hs") as "[Hs2 Hs1]".
   { word. }
   replace (int.nat (U64 off)) with off by word.
@@ -393,8 +391,8 @@ Proof.
   wp_call.
   wp_load; wp_pures.
   iDestruct (is_slice_small_sz with "Hs") as %Hs_sz.
-  wp_apply wp_SliceSkip'.
-  { iPureIntro; len. }
+  wp_apply wp_SliceSkip.
+  { len. }
   iDestruct (slice_small_split _ (U64 (encoded_length r)) with "Hs") as "[Hs1 Hs2]"; first by len.
   wp_apply (wp_SliceCopy (V:=byte) with "[$Hbs $Hs2]"); first by len.
   iIntros "[Hbs Hs2]".
@@ -490,8 +488,8 @@ Proof.
   wp_load; wp_pures.
   wp_load; wp_store.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  wp_apply wp_SliceSkip'.
-  { iPureIntro; word. }
+  wp_apply wp_SliceSkip.
+  { word. }
   iDestruct (slice.slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
   { len. }
   wp_apply (wp_UInt64Get_unchanged with "Hs2").
@@ -531,8 +529,8 @@ Proof.
   wp_load; wp_pures.
   wp_load; wp_store.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  wp_apply wp_SliceSkip'.
-  { iPureIntro; word. }
+  wp_apply wp_SliceSkip.
+  { word. }
   iDestruct (slice.slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
   { len. }
   wp_apply (wp_UInt32Get_unchanged with "Hs2").
@@ -618,7 +616,7 @@ Proof.
   iDestruct (is_slice_small_sz with "Hs") as %Hsz.
   wp_pures.
   iDestruct ("Hclo" with "[$]") as "Hs".
-  wp_apply (wp_SliceSubslice_is_slice with "Hs"); first by word.
+  wp_apply (wp_SliceSubslice_full with "Hs"); first by word.
   iIntros (s') "Hbs".
   wp_pures.
   wp_load; wp_store.
@@ -650,7 +648,7 @@ Proof.
      half to reconstruct the decoder (now with half the fraction) *)
   iDestruct (fractional.fractional_half with "Hs") as "[Hs1 Hs2]".
   wp_pures.
-  wp_apply (wp_SliceSubslice_is_slice_small with "Hs1"); first by word.
+  wp_apply (wp_SliceSubslice_small with "Hs1"); first by word.
   iIntros (s') "Hbs".
   wp_pures.
   wp_load; wp_store.
