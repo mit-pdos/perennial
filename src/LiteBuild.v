@@ -10,7 +10,7 @@ From Perennial.base_logic Require
 (* Prelude and shared files *)
 From Perennial.program_proof Require
      proof_prelude disk_prelude grove_prelude
-     marshal_proof std_proof.
+     marshal_proof marshal_stateless_proof std_proof.
 
 From Perennial.goose_lang Require
      adequacy recovery_adequacy dist_adequacy
