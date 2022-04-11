@@ -154,7 +154,8 @@ Definition SliceAppend t: val :=
     ("p" +ₗ[t] slice.len "s1") <-[t] "x";;
     ("p", "sz", "cap").
 
-(* TODO: update to handle capacity correctly *)
+(* TODO: update to handle capacity correctly.
+For now, it's best to use SliceCopy (copy in Go) instead. *)
 Definition SliceAppendSlice t: val :=
   λ: "s1" "s2",
   let: "new_sz" := slice.len "s1" + slice.len "s2" in
@@ -162,6 +163,7 @@ Definition SliceAppendSlice t: val :=
   MemCpy_rec t "p" (slice.ptr "s1") (slice.len "s1");;
   MemCpy_rec t ("p" +ₗ slice.len "s2") (slice.ptr "s2") "new_sz";;
   (* TODO: unsound, need to de-allocate s1.p *)
+  (* FIXME: does not return a well-formed slice (capacity missing *)
   ("p", "new_sz").
 
 Definition ArrayCopy (t:ty): val :=

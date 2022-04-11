@@ -237,16 +237,6 @@ Proof.
   iApply ("HΦ" with "Hs").
 Qed.
 
-Lemma wp_SliceAppendSlice stk E s1 s2 t q `{!IntoValForType V t} (vs1 vs2: list V) :
-  {{{ is_slice s1 t 1 vs1 ∗ is_slice_small s2 t q vs2 }}}
-    SliceAppendSlice t (slice_val s1) (slice_val s2) @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' t 1 (vs1 ++ vs2) ∗ is_slice_small s2 t q vs2 }}}.
-Proof.
-  iIntros (Φ) "[Hs1 Hs2] HΦ".
-Abort.
-
-
-
 (** Only works with the full fraction since some of the ownership is moved from
 the slice part to the extra part *)
 Lemma wp_SliceSubslice_full {stk E} s t `{!IntoVal V} (vs: list V) (n m: u64) :
