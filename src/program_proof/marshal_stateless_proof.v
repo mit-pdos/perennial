@@ -20,7 +20,7 @@ Proof.
   wp_apply (wp_UInt64Get_unchanged with "Hs").
   { rewrite /list.untype fmap_app take_app_alt //. }
   iIntros "Hs".
-  wp_apply (wp_SliceSkip'' with "Hs").
+  wp_apply (wp_SliceSkip_small with "Hs").
   { rewrite /list.untype fmap_length app_length /=. word. }
   iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
 Qed.
