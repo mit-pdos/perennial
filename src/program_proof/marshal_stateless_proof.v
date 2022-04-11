@@ -46,6 +46,7 @@ Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
 Proof.
   iIntros (Φ) "Hs HΦ". wp_lam.
   iDestruct (is_slice_wf with "Hs") as %Hwf.
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
   wp_apply wp_slice_len.
   wp_apply wp_SumAssumeNoOverflow. iIntros (Hsum).
   wp_pures. wp_apply wp_slice_cap.
@@ -54,14 +55,19 @@ Proof.
     wp_apply wp_slice_cap.
     wp_apply wp_compute_new_cap.
     iIntros (new_cap Hcap).
+    wp_apply wp_slice_len.
     wp_apply wp_new_slice_cap; first done.
     { word. }
-    iIntros (ptr) "Hnew".
-    (* FIXME: needs lemma about SliceAppendSlice. *)
-    admit.
+    iIntros (ptr) "Hnew". wp_pures.
+    iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
+    iDestruct (slice.is_slice_small_acc with "Hnew") as "[Hnew Hcl]".
+    wp_apply (wp_SliceCopy_full with "[Hnew Hs]").
+    { iFrame. iPureIntro. rewrite list_untype_length Hsz replicate_length //. }
+    iIntros "[_ Hnew]". iDestruct ("Hcl" with "Hnew") as "Hnew".
+    wp_pures. iApply "HΦ". iModIntro. iFrame. iPureIntro. simpl. word.
   - (* already big enough *)
     iApply "HΦ". iFrame. iPureIntro. word.
-Admitted.
+Qed.
 
 Theorem wp_WriteInt s x (vs : list u8) :
   {{{ is_slice s byteT 1 vs }}}

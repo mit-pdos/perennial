@@ -138,7 +138,9 @@ Definition reserve: val :=
     (if: slice.cap "b" < "min_cap"
     then
       let: "new_cap" := compute_new_cap (slice.cap "b") "min_cap" in
-      SliceAppendSlice byteT (NewSliceWithCap byteT #0 "new_cap") "b"
+      let: "dest" := NewSliceWithCap byteT (slice.len "b") "new_cap" in
+      SliceCopy byteT "dest" "b";;
+      "dest"
     else "b").
 
 (* Functions for the stateless decoder API *)
