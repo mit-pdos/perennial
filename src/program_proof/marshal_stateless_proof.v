@@ -25,6 +25,20 @@ Proof.
   iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
 Qed.
 
+Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
+  {{{ True }}}
+    compute_new_cap #old_cap #min_cap
+  {{{ (new_cap : u64), RET #new_cap; ⌜int.Z min_cap ≤ int.Z new_cap⌝ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ". wp_call.
+  wp_apply wp_ref_to. { val_ty. }
+  iIntros (l) "Hl". wp_pures.
+  wp_load.
+  wp_if_destruct.
+  - wp_store. wp_load. iApply "HΦ". iPureIntro. done.
+  - wp_load. iApply "HΦ". iPureIntro. word.
+Qed.
+
 Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
   {{{ is_slice s byteT 1 vs }}}
     reserve (slice_val s) #extra
@@ -36,7 +50,15 @@ Proof.
   wp_apply wp_SumAssumeNoOverflow. iIntros (Hsum).
   wp_pures. wp_apply wp_slice_cap.
   wp_if_destruct.
-  - (* we have to grow. *) admit.
+  - (* we have to grow. *)
+    wp_apply wp_slice_cap.
+    wp_apply wp_compute_new_cap.
+    iIntros (new_cap Hcap).
+    wp_apply wp_new_slice_cap; first done.
+    { word. }
+    iIntros (ptr) "Hnew".
+    (* FIXME: needs lemma about SliceAppendSlice. *)
+    admit.
   - (* already big enough *)
     iApply "HΦ". iFrame. iPureIntro. word.
 Admitted.

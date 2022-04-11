@@ -17,6 +17,7 @@ Module Slice.
   Notation extra s := (int.Z (cap s) - int.Z (sz s)).
   Definition nil := mk null (U64 0) (U64 0).
 End Slice.
+Add Printing Constructor Slice.t.
 
 Section goose_lang.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
@@ -406,6 +407,47 @@ Proof.
   iExactEq "Hextra"; word_eq.
 Qed.
 
+Lemma wp_new_slice_cap s E t (sz cap: u64) :
+  has_zero t →
+  int.Z sz ≤ int.Z cap →
+  {{{ True }}}
+    NewSliceWithCap t #sz #cap @ s; E
+  {{{ ptr, RET slice_val (Slice.mk ptr sz cap) ; is_slice (Slice.mk ptr sz cap) t 1 (replicate (int.nat sz) (zero_val t)) }}}.
+Proof.
+  iIntros (Hzero Hsz Φ) "_ HΦ".
+  wp_call.
+  rewrite ->bool_decide_false by lia.
+  wp_if_destruct.
+  - rewrite /slice.nil slice_val_fold.
+    (* FIXME: why can [word] not prove [sz = 0] without this help? *)
+    rewrite unsigned_U64_0 in Hsz.
+    assert (sz = 0) as -> by word.
+    iApply "HΦ".
+    rewrite replicate_0.
+    iApply is_slice_zero.
+  - wp_apply (wp_allocN t); eauto.
+    { apply u64_val_ne in Heqb.
+      change (int.Z 0) with 0 in Heqb.
+      word. }
+  iIntros (l) "Hl".
+  wp_pures.
+  rewrite slice_val_fold. iApply "HΦ". rewrite /is_slice /is_slice_small /=.
+  iDestruct (array_replicate_split (int.nat sz) (int.nat cap - int.nat sz) with "Hl") as "[Hsz Hextra]";
+    first by word.
+  rewrite replicate_length.
+  iFrame.
+  iSplitR.
+  { iPureIntro. split; word. }
+  iExists (replicate (int.nat cap - int.nat sz) (zero_val t)); iFrame.
+  iSplitR.
+  { iPureIntro.
+    rewrite replicate_length.
+    simpl.
+    word. }
+  simpl. iModIntro.
+  iExactEq "Hextra"; word_eq.
+Qed.
+
 Theorem wp_SliceSingleton Φ stk E t x :
   val_ty x t ->
   (∀ s, is_slice s t 1 [x] -∗ Φ (slice_val s)) -∗
@@ -703,7 +745,7 @@ Proof.
   iDestruct "Hextra" as "[He1 He2]".
   iSplitL "Hs He1".
   - rewrite /is_slice_small /= array_app. iDestruct "Hs" as "[$ _]".
-    iSplit. { iExactEq "He1". repeat f_equal. word. }
+    iSplit. { iExactEq "He1". word_eq. }
     iPureIntro. split; last word.
     rewrite app_length take_length. word.
   - iExists _. iSplit; last first.

@@ -122,6 +122,14 @@ Definition Dec__GetBool: val :=
 
 (* stateless.go *)
 
+Definition compute_new_cap: val :=
+  rec: "compute_new_cap" "old_cap" "min_cap" :=
+    let: "new_cap" := ref_to uint64T ("old_cap" * #2) in
+    (if: ![uint64T] "new_cap" < "min_cap"
+    then "new_cap" <-[uint64T] "min_cap"
+    else #());;
+    ![uint64T] "new_cap".
+
 (* Grow a slice to have at least `additional` unused bytes in the capacity.
    Runtime-check against overflow. *)
 Definition reserve: val :=
@@ -129,14 +137,8 @@ Definition reserve: val :=
     let: "min_cap" := std.SumAssumeNoOverflow (slice.len "b") "additional" in
     (if: slice.cap "b" < "min_cap"
     then
-      let: "new_cap" := ref_to uint64T (slice.cap "b" * #2) in
-      (if: ![uint64T] "new_cap" < #8
-      then "new_cap" <-[uint64T] #8
-      else #());;
-      (if: ![uint64T] "new_cap" < "min_cap"
-      then "new_cap" <-[uint64T] "min_cap"
-      else #());;
-      SliceAppendSlice byteT (NewSliceWithCap byteT #0 (![uint64T] "new_cap")) "b"
+      let: "new_cap" := compute_new_cap (slice.cap "b") "min_cap" in
+      SliceAppendSlice byteT (NewSliceWithCap byteT #0 "new_cap") "b"
     else "b").
 
 (* Functions for the stateless decoder API *)
