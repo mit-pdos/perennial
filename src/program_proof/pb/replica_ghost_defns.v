@@ -13,7 +13,7 @@ From Perennial.program_proof.pb Require Export ghost_proof.
 Section replica_ghost_defns.
 
 Context `{!heapGS Σ}.
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 Context `{!pb_ghostG Σ}.
 Implicit Type γ:pb_names.
 

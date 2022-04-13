@@ -6,14 +6,14 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions common
 
 Section memkv_shard_make_proof.
 
-Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeKVShardServer (b : bool) γ :
   {{{
        "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
        "HRPCserver_own" ∷ RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
        "HghostShards" ∷ (if b then [∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ.(kv_gn) sid ∅ else True) ∗
-       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), is_RPCClient_ghost γ.(rpc_gn) cid 1
+       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), is_uRPCClient_ghost γ.(rpc_gn) cid 1
   }}}
     MakeKVShardServer #b
   {{{

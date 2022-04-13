@@ -8,7 +8,7 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section connman_proof.
 
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 Context `{hG: !heapGS Σ}.
 Definition connmanN := nroot .@ "connman".
 Local Definition own_ConnMan (c_ptr:loc) (lock: val) : iProp Σ :=
@@ -17,7 +17,7 @@ Local Definition own_ConnMan (c_ptr:loc) (lock: val) : iProp Σ :=
     "Hmaking" ∷ c_ptr ↦[ConnMan :: "making"] #making ∗
     "Hcls_map" ∷ is_map rpcCls 1 rpcClsM ∗
     "Hmaking_map" ∷ is_map making 1 makingM ∗
-    "#HownRpcCls" ∷ ([∗ map] host ↦ cl ∈ rpcClsM, is_RPCClient cl host) ∗
+    "#HownRpcCls" ∷ ([∗ map] host ↦ cl ∈ rpcClsM, is_uRPCClient cl host) ∗
     "#HownMaking" ∷ ([∗ map] host ↦ c ∈ makingM, is_cond c lock)
 .
 
@@ -60,7 +60,7 @@ Local Lemma wp_ConnMan__getClient (c_ptr:loc) (host:u64) :
   {{{ True }}}
     ConnMan__getClient #c_ptr #host
   {{{
-    (cl_ptr:loc), RET #cl_ptr; is_RPCClient cl_ptr host
+    (cl_ptr:loc), RET #cl_ptr; is_uRPCClient cl_ptr host
   }}}.
 Proof.
   iIntros "#Hconn !# %Φ _ HΦ".
@@ -194,7 +194,7 @@ Proof.
   wp_apply (wp_ConnMan__getClient with "Hconn").
   iIntros (cl) "Hcl".
   wp_store.
-  iAssert (∃ cl : loc, cl_ptr ↦[ptrT] #cl ∗ is_RPCClient cl host)%I with "[Hcl Hcl_ptr]" as "Hcl".
+  iAssert (∃ cl : loc, cl_ptr ↦[ptrT] #cl ∗ is_uRPCClient cl host)%I with "[Hcl Hcl_ptr]" as "Hcl".
   { eauto with iFrame. }
   clear cl.
   wp_pures.
@@ -272,12 +272,12 @@ Proof.
   eauto with iFrame.
 Qed.
 
-Lemma wp_ConnMan__CallAtLeastOnce_RPCSpec (spec : RPCSpec) (x : spec.(spec_ty))
+Lemma wp_ConnMan__CallAtLeastOnce_uRPCSpec (spec : uRPCSpec) (x : spec.(spec_ty))
   (γsmap:server_chan_gnames) (c_ptr:loc) (host:u64)
   req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
   :
   is_ConnMan c_ptr -∗
-  handler_rpc_spec γsmap host spec -∗
+  handler_urpc_spec γsmap host spec -∗
   □(▷ spec.(spec_Pre) x reqData) -∗
   {{{
       is_slice req byteT 1 reqData ∗

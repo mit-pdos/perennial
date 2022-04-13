@@ -4,7 +4,7 @@ From Perennial.program_proof.memkv Require Import common_proof memkv_shard_clerk
 
 Section memkv_coord_clerk_proof.
 
-Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Definition own_KVCoordClerk ck γkv : iProp Σ :=
   ∃ γh (host : u64) (c : loc),
@@ -70,7 +70,7 @@ Proof.
   iIntros (sl0 d) "(Hsl&%)".
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_coord_server_addSpec _) dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_addSpec _) dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
   { simpl. iModIntro. iNext. iFrame "%". iExists _. iFrame "#". iPureIntro; congruence. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
@@ -114,7 +114,7 @@ Proof.
   iIntros (s) "H".
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_ConnMan__CallAtLeastOnce_RPCSpec (is_coord_server_getSpec _) () with "Hc_own HgetSpec [] [$H $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_getSpec _) () with "Hc_own HgetSpec [] [$H $HrawRep //]").
   { done. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.

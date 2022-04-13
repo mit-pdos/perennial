@@ -33,7 +33,7 @@ Definition client_boot (coord : u64) : expr :=
 
 Import adequacy dist_adequacy grove_ffi_adequacy.
 
-Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; rpcregΣ].
+Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; urpcregΣ].
 
 Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : goose_lang.global_state) :
   shardId ≠ coordId →
@@ -149,7 +149,7 @@ Definition auditor_boot (lockcoord kvcoord : u64) (init acc1 acc2 : u64)  : expr
 
 Import adequacy dist_adequacy grove_ffi_adequacy.
 
-Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; rpcregΣ; mapΣ u64 u64].
+Definition shardΣ := #[heapΣ; kvMapΣ; rpcΣ ShardReplyC; urpcregΣ; mapΣ u64 u64].
 
 Definition lockshardId := U64 0.
 Definition lockcoordId := U64 1.

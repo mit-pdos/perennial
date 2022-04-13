@@ -8,11 +8,11 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 Section memkv_shard_ghost_init_proof.
 
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)
-Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 (* TODO: duplicating this specs is unfortunate, should try to unify with the set up in shard_definitions *)
 
-Definition shard_SpecList γkv γrpc : RPCSpecList :=
+Definition shard_SpecList γkv γrpc : uRPCSpecList :=
   spec_cons (is_shard_server_putSpec γkv γrpc)
     (spec_cons (is_shard_server_conditionalPutSpec γkv γrpc)
       (spec_cons (is_shard_server_getSpec γkv γrpc)
@@ -23,10 +23,10 @@ Definition shard_SpecList γkv γrpc : RPCSpecList :=
 Lemma shard_server_ghost_init host (γkv : gname) :
   host c↦ ∅ ={⊤}=∗
   ∃ γ, ⌜ γ.(kv_gn) = γkv ⌝ ∗
-       handlers_dom γ.(urpc_gn) (dom_RPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(rpc_gn)))) ∗
+       handlers_dom γ.(urpc_gn) (dom_uRPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(rpc_gn)))) ∗
        is_shard_server host γ ∗
        RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
-      ([∗ set] cid ∈ fin_to_set u64, is_RPCClient_ghost γ.(rpc_gn) cid 1).
+      ([∗ set] cid ∈ fin_to_set u64, is_uRPCClient_ghost γ.(rpc_gn) cid 1).
 Proof.
   iIntros "Hg".
   iMod (make_rpc_server (R := ShardReplyC)) as (γrpc) "(#Hown&Hrpc1&Hrpc2)".

@@ -50,7 +50,7 @@ Definition init_lock_inv γlock γkv : iProp Σ :=
 End bank_defs.
 
 Section bank_proof.
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !rpcregG Σ, !kvMapG Σ, mapG Σ u64 u64}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !rpcG Σ ShardReplyC, !urpcregG Σ, !kvMapG Σ, mapG Σ u64 u64}.
 
 Context (init_flag: u64) (acc1:u64) (acc2:u64). (* Account names for bank *)
 

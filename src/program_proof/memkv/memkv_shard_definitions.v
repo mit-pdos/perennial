@@ -16,7 +16,7 @@ Record ShardReplyC := mkShardReplyC {
 
 Section memkv_shard_pre_definitions.
 
-Context `{rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 Context `{!gooseGlobalGS Σ}.
 
 Definition uKV_FRESHCID: nat :=
@@ -45,7 +45,7 @@ Definition PreShardGet γkv key Q : iProp Σ :=
   |={⊤,∅}=> (∃ v, kvptsto γkv key v ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q v)).
 Definition PostShardGet γkv (key:u64) Q (rep:ShardReplyC) : iProp Σ :=
   ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardGet γkv key Q) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ (Q rep.(SR_Value)).
-Definition is_shard_server_getSpec γkv γrpc : RPCSpec :=
+Definition is_shard_server_getSpec γkv γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_GET;
      spec_ty := ((list u8 → iProp Σ) * rpc_request_names * GetRequestC);
      spec_Pre := (λ '(Q, γreq, req) reqData, ⌜has_encoding_GetRequest reqData req⌝ ∗
@@ -63,7 +63,7 @@ Definition PreShardPut γkv key Q v : iProp Σ :=
   |={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q)).
 Definition PostShardPut γkv (key:u64) Q v (rep:ShardReplyC) : iProp Σ :=
   ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardPut γkv key Q v) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q .
-Definition is_shard_server_putSpec (γkv : gname) γrpc : RPCSpec :=
+Definition is_shard_server_putSpec (γkv : gname) γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_PUT;
      spec_ty := (iProp Σ * rpc_request_names * PutRequestC)%type;
      spec_Pre := (λ '(Q, γreq, req) reqData, ⌜has_encoding_PutRequest reqData req⌝ ∗
@@ -83,7 +83,7 @@ Definition PreShardConditionalPut γkv key Q expv newv : iProp Σ :=
       |={∅,⊤}=> Q succ)).
 Definition PostShardConditionalPut γkv (key:u64) Q expv newv (rep:ShardReplyC) : iProp Σ :=
   ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardConditionalPut γkv key Q expv newv) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q rep.(SR_Success).
-Definition is_shard_server_conditionalPutSpec γkv γrpc : RPCSpec :=
+Definition is_shard_server_conditionalPutSpec γkv γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_CONDITIONAL_PUT;
      spec_ty := ((bool → iProp Σ) * rpc_request_names * ConditionalPutRequestC);
      spec_Pre :=(λ '(Q, γreq, req) reqData, ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
@@ -97,7 +97,7 @@ Definition is_shard_server_conditionalPutSpec γkv γrpc : RPCSpec :=
                     ∃ dummy_val, RPCReplyReceipt γrpc {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} (mkShardReplyC rep.(CPR_Err) dummy_val rep.(CPR_Succ)))
              )%I |}.
 
-Definition is_shard_server_installSpec γkv γrpc : RPCSpec :=
+Definition is_shard_server_installSpec γkv γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_INS_SHARD;
      spec_ty := rpc_request_names;
      spec_Pre := (λ x reqData, ∃ args, ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
@@ -108,14 +108,14 @@ Definition is_shard_server_installSpec γkv γrpc : RPCSpec :=
              )%I;
      spec_Post := (λ x reqData repData, True)%I |}.
 
-Definition is_shard_server_freshSpec γrpc : RPCSpec :=
+Definition is_shard_server_freshSpec γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_FRESHCID;
      spec_ty := unit;
      spec_Pre := (λ x reqData, True)%I;
      spec_Post := (λ x reqData repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
-              is_RPCClient_ghost γrpc cid 1)%I |}.
+              is_uRPCClient_ghost γrpc cid 1)%I |}.
 
-Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : RPCSpec :=
+Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : uRPCSpec :=
   {| spec_rpcid := uKV_MOV_SHARD;
      spec_ty := memkv_shard_names;
      spec_Pre :=(λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
@@ -128,12 +128,12 @@ Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> i
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   (λ host γ,
   "#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
-  "#HputSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_putSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HconditionalPutSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HgetSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_getSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HmoveSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
-  "#HinstallSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_installSpec γ.(kv_gn) γ.(rpc_gn)) ∗
-  "#HfreshSpec" ∷ handler_rpc_spec γ.(urpc_gn) host (is_shard_server_freshSpec γ.(rpc_gn))
+  "#HputSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_putSpec γ.(kv_gn) γ.(rpc_gn)) ∗
+  "#HconditionalPutSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn) γ.(rpc_gn)) ∗
+  "#HgetSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_getSpec γ.(kv_gn) γ.(rpc_gn)) ∗
+  "#HmoveSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
+  "#HinstallSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_installSpec γ.(kv_gn) γ.(rpc_gn)) ∗
+  "#HfreshSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_freshSpec γ.(rpc_gn))
 )%I.
 
 (* Actually, handler_is is contractive now so we can remove the ▷ in is_shard_server *)
@@ -141,13 +141,13 @@ Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
-  f_equiv. rewrite /handler_rpc_spec /handler_spec. (* FIXME unfolding other abstractions *)
+  f_equiv. rewrite /handler_urpc_spec /handler_spec. (* FIXME unfolding other abstractions *)
   do 10 f_equiv.
   unfold named.
   apply saved_spec.saved_spec_own_contractive.
   rewrite /dist_later. destruct n; auto.
   intros => ?.
-  rewrite /RPCSpec_Spec /is_shard_server_moveSpec_pre /=.
+  rewrite /uRPCSpec_Spec /is_shard_server_moveSpec_pre /=.
   intros Φ. simpl.
   repeat f_equiv.
 Qed.
@@ -176,7 +176,7 @@ End memkv_shard_pre_definitions.
 
 Section memkv_shard_definitions.
 
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Definition own_KVShardClerk (ck:loc) γkv : iProp Σ :=
   ∃ (cid seq:u64) (c:loc) (host:u64) (γ:memkv_shard_names),
@@ -184,7 +184,7 @@ Definition own_KVShardClerk (ck:loc) γkv : iProp Σ :=
     "Hseq" ∷ ck ↦[KVShardClerk :: "seq"] #seq ∗
     "Hc" ∷ ck ↦[KVShardClerk :: "c"] #c ∗
     "Hhost" ∷ ck ↦[KVShardClerk :: "host"] #host ∗
-    "Hcrpc" ∷ is_RPCClient_ghost γ.(rpc_gn) cid seq ∗
+    "Hcrpc" ∷ is_uRPCClient_ghost γ.(rpc_gn) cid seq ∗
     "#Hc_own" ∷ is_ConnMan c ∗
     "#His_shard" ∷ is_shard_server host γ ∗
     "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z ∗
@@ -230,7 +230,7 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
                  ) ∗
   "HpeersMap" ∷ is_map (V:=loc) peers_ptr 1 peersM ∗
   "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn)) ∗
-  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_RPCClient_ghost γ.(rpc_gn) cid 1)
+  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_uRPCClient_ghost γ.(rpc_gn) cid 1)
 .
 
 Definition is_KVShardServer (s:loc) γ : iProp Σ :=

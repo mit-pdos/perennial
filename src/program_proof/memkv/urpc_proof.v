@@ -10,35 +10,35 @@ From Perennial.goose_lang Require Import dist_lifting.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 (** Request descriptor: data describing a particular request *)
-Record rpc_req_desc := ReqDesc {
-  rpc_reg_rpcid  : u64;
-  rpc_reg_args : list u8;
-  rpc_reg_saved : gname; (* Saved pred storing what the reply needs to satisfy *)
-  rpc_reg_done : loc;
-  rpc_reg_rep_ptr : loc;
+Record urpc_req_desc := ReqDesc {
+  urpc_reg_rpcid  : u64;
+  urpc_reg_args : list u8;
+  urpc_reg_saved : gname; (* Saved pred storing what the reply needs to satisfy *)
+  urpc_reg_done : loc;
+  urpc_reg_rep_ptr : loc;
 }.
 
-Class rpcregG (Σ : gFunctors) := RpcRegG {
-  rpcreg_mono_natG :> mono_natG Σ;
-  rpcreg_mapG :> mapG Σ u64 rpc_req_desc;
-  rpcreg_escrowG :> mapG Σ u64 unit;
-  rpcreg_saved_gname_mapG :> mapG Σ u64 gname;
-  rpcreg_saved_handler_specG :> savedSpecG Σ (list u8) (list u8);
-  rpcreg_savedG :> savedPredG Σ (list u8);
-  rpcreg_domG :> inG Σ (agreeR (leibnizO (gset u64)));
+Class urpcregG (Σ : gFunctors) := URpcRegG {
+  urpcreg_mono_natG :> mono_natG Σ;
+  urpcreg_mapG :> mapG Σ u64 urpc_req_desc;
+  urpcreg_escrowG :> mapG Σ u64 unit;
+  urpcreg_saved_gname_mapG :> mapG Σ u64 gname;
+  urpcreg_saved_handler_specG :> savedSpecG Σ (list u8) (list u8);
+  urpcreg_savedG :> savedPredG Σ (list u8);
+  urpcreg_domG :> inG Σ (agreeR (leibnizO (gset u64)));
 }.
 
-Definition rpcregΣ :=
-  #[mono_natΣ; mapΣ u64 rpc_req_desc; mapΣ u64 unit; mapΣ u64 gname; savedSpecΣ (list u8) (list u8); savedPredΣ (list u8);
+Definition urpcregΣ :=
+  #[mono_natΣ; mapΣ u64 urpc_req_desc; mapΣ u64 unit; mapΣ u64 gname; savedSpecΣ (list u8) (list u8); savedPredΣ (list u8);
    GFunctor (agreeR (leibnizO (gset u64)))].
 
-Global Instance subG_rpcregG {Σ} :
-  subG (rpcregΣ) Σ → rpcregG Σ.
+Global Instance subG_urpcregG {Σ} :
+  subG urpcregΣ Σ → urpcregG Σ.
 Proof. solve_inG. Qed.
 
-Section rpc_global_defs.
+Section urpc_global_defs.
 
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 Context `{HPRE: !gooseGlobalGS Σ}.
 
 (* A host-specific mapping from rpc ids on that host to pre/post conditions *)
@@ -108,14 +108,14 @@ Proof. apply _. Qed.
 Definition handlers_dom Γsrv (d: gset u64) :=
   own (scset_name Γsrv) (to_agree (d : leibnizO (gset u64))).
 
-End rpc_global_defs.
+End urpc_global_defs.
 
-Section rpc_proof.
+Section urpc_proof.
 
 Context `{hG: !heapGS Σ}.
-Context `{hReg: !rpcregG Σ}.
+Context `{hReg: !urpcregG Σ}.
 
-Local Definition is_rpcHandler' (f:val)
+Local Definition is_urpcHandler' (f:val)
     (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
    : iProp Σ :=
   ∀ (reqData:list u8) Post req rep dummy_rep_sl dummy,
@@ -132,10 +132,10 @@ Local Definition is_rpcHandler' (f:val)
       Post repData
   }}}.
 
-Local Instance is_rpcHandler'_pers f Spec : Persistent (is_rpcHandler' f Spec).
+Local Instance is_urpcHandler'_pers f Spec : Persistent (is_urpcHandler' f Spec).
 Proof. apply _. Qed.
 
-Typeclasses Opaque is_rpcHandler'.
+Typeclasses Opaque is_urpcHandler'.
 
 Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
@@ -152,30 +152,30 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
             "Hreqs" ∷ [∗ map] seqno ↦ req ∈ reqs,
                  ∃ (Post : list u8 → iProp Σ),
                  "Hreg_entry" ∷  ptsto_ro (ccmapping_name Γ) seqno req ∗
-                 "HPost_saved" ∷ saved_pred_own (rpc_reg_saved req) (Post) ∗
+                 "HPost_saved" ∷ saved_pred_own (urpc_reg_saved req) (Post) ∗
                  (* (1) Reply thread has not yet processed, so it is in pending
                     and we have escrow token *)
                  ((∃ (cb : loc) (cb_cond : loc) dummy (aborted : bool),
                     "%Hpending_cb" ∷ ⌜ pending !! seqno  = Some #cb ⌝ ∗
-                    "#reply" ∷ readonly (cb ↦[callback :: "reply"] #(rpc_reg_rep_ptr req)) ∗
-                    "#state" ∷ readonly (cb ↦[callback :: "state"] #(rpc_reg_done req)) ∗
+                    "#reply" ∷ readonly (cb ↦[callback :: "reply"] #(urpc_reg_rep_ptr req)) ∗
+                    "#state" ∷ readonly (cb ↦[callback :: "state"] #(urpc_reg_done req)) ∗
                     "#cond" ∷ readonly (cb ↦[callback :: "cond"] #cb_cond) ∗
                     "Hescrow" ∷ ptsto_mut (ccescrow_name Γ) seqno 1 tt ∗
                     "#Hcond" ∷ is_cond cb_cond #lk ∗
-                    "Hrep_ptr" ∷ (rpc_reg_rep_ptr req) ↦[slice.T byteT] dummy ∗
-                    "Hstate" ∷ (rpc_reg_done req) ↦[uint64T] #(LitInt $ if aborted then 2 else 0)) ∨
+                    "Hrep_ptr" ∷ (urpc_reg_rep_ptr req) ↦[slice.T byteT] dummy ∗
+                    "Hstate" ∷ (urpc_reg_done req) ↦[uint64T] #(LitInt $ if aborted then 2 else 0)) ∨
                  (* (2) Reply thread has received message, removed from pending,
                     but caller has not extracted ownership *)
                  (∃ reply rep_sl,
                     "%Hpending_cb" ∷ ⌜ pending !! seqno  = None ⌝ ∗
                     "HPost" ∷ (Post reply) ∗
-                    "Hrep_ptr" ∷ (rpc_reg_rep_ptr req) ↦[slice.T byteT] (slice_val rep_sl) ∗
+                    "Hrep_ptr" ∷ (urpc_reg_rep_ptr req) ↦[slice.T byteT] (slice_val rep_sl) ∗
                     "Hrep_data" ∷ typed_slice.is_slice rep_sl byteT 1 reply ∗
-                    "Hstate" ∷ (rpc_reg_done req) ↦[uint64T] #1) ∨
+                    "Hstate" ∷ (urpc_reg_done req) ↦[uint64T] #1) ∨
                  (* (3) Caller has extracted ownership *)
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
 
-Definition is_RPCClient (cl : loc) (srv : chan) : iProp Σ :=
+Definition is_uRPCClient (cl : loc) (srv : chan) : iProp Σ :=
   ∃ Γ (lk : loc) client (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[Client :: "mu"] #lk) ∗
     "#conn" ∷ readonly (cl ↦[Client :: "conn"] connection_socket client srv) ∗
@@ -236,29 +236,29 @@ Proof.
   iFrame "# ∗". eauto.
 Qed.
 
-Definition rpc_handler_mapping (γ : server_chan_gnames) (host : u64) (handlers : gmap u64 val) : iProp Σ :=
+Definition urpc_handler_mapping (γ : server_chan_gnames) (host : u64) (handlers : gmap u64 val) : iProp Σ :=
   ([∗ map] rpcid↦handler ∈ handlers, ∃ Spec,
       handler_spec γ host rpcid Spec ∗
-      is_rpcHandler' handler Spec)%I.
+      is_urpcHandler' handler Spec)%I.
 
-Lemma non_empty_rpc_handler_mapping_inv γ host handlers :
+Lemma non_empty_urpc_handler_mapping_inv γ host handlers :
   dom (gset u64) handlers ≠ ∅ →
-  rpc_handler_mapping γ host handlers -∗
+  urpc_handler_mapping γ host handlers -∗
   "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host γ) ∗
   "#Hhandlers" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ Spec γs,
                           ptsto_ro (scmap_name γ) rpcid γs ∗
                           saved_spec_own γs Spec ∗
-                          is_rpcHandler' handler Spec)%I.
+                          is_urpcHandler' handler Spec)%I.
 Proof.
   iIntros (Hdom) "Hmapping".
   iInduction handlers as [| rpcid handler] "IH" using map_ind.
   { rewrite dom_empty_L in Hdom; congruence. }
-  rewrite /rpc_handler_mapping big_sepM_insert //.
+  rewrite /urpc_handler_mapping big_sepM_insert //.
   iDestruct "Hmapping" as "(H&Hmapping)".
   destruct (decide (dom (gset _) m = ∅)) as [Hemp|Hemp].
-  { iNamed "H". iDestruct "H" as "(Hhandler_spec&His_rpcHandler)".
+  { iNamed "H". iDestruct "H" as "(Hhandler_spec&His_urpcHandler)".
     iNamed "Hhandler_spec". iFrame "% #".
-    rewrite big_sepM_insert //. iSplitL "His_rpcHandler".
+    rewrite big_sepM_insert //. iSplitL "His_urpcHandler".
     { iExists Spec, _.
       iFrame "# ∗". }
     apply dom_empty_iff_L in Hemp. rewrite Hemp big_sepM_empty. eauto.
@@ -266,7 +266,7 @@ Proof.
   iDestruct ("IH" with "[//] [$]") as "HIH".
   iNamed "HIH". iFrame "% #".
   rewrite big_sepM_insert //. iFrame "#".
-  { iNamed "H". iDestruct "H" as "(Hhandler_spec&His_rpcHandler)".
+  { iNamed "H". iDestruct "H" as "(Hhandler_spec&His_urpcHandler)".
     rewrite /handler_spec.
     iDestruct "Hhandler_spec" as (g0 rpcdom) "H".
     iDestruct "H" as "(#Hdom1&%Hdom2&#Hspec_name&#Hspec_saved&H)".
@@ -280,7 +280,7 @@ Definition handlers_complete Γ (handlers : gmap u64 val) :=
 Lemma wp_Server__readThread γ s host client handlers mref def :
   dom (gset u64) handlers ≠ ∅ →
   "#Hcomplete" ∷ handlers_complete γ handlers ∗
-  "#His_rpc_map" ∷ rpc_handler_mapping γ host handlers ∗
+  "#His_rpc_map" ∷ urpc_handler_mapping γ host handlers ∗
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
   "#handlers" ∷ readonly (s ↦[Server :: "handlers"] #mref) -∗
   WP Server__readThread #s (connection_socket host client) {{ _, True }}.
@@ -291,7 +291,7 @@ Proof.
   wp_apply (wp_forBreak_cond'); [ iNamedAccu |].
   iIntros "!> _".
   wp_pures.
-  iDestruct (non_empty_rpc_handler_mapping_inv with "[$]") as "H"; first auto.
+  iDestruct (non_empty_urpc_handler_mapping_inv with "[$]") as "H"; first auto.
   iNamed "H".
   wp_apply (wp_Receive).
   iInv "Hserver_inv" as "Hchan_inner" "Hclo".
@@ -356,18 +356,18 @@ Proof.
   }
   rewrite //= in Hget. inversion Hget; subst.
   iDestruct (big_sepM_lookup with "Hhandlers") as "H"; eauto.
-  iNamed "H". iDestruct "H" as "(#Hsname&#Hsaved&#His_rpcHandler)".
+  iNamed "H". iDestruct "H" as "(#Hsname&#Hsaved&#His_urpcHandler)".
   iDestruct (ptsto_ro_agree with "Hspec_name Hsname") as %->.
 
   iDestruct (saved_spec_agree _ _ _ args Post with "Hspec_saved Hsaved")
     as "#Hequiv".
   wp_pures.
 
-  rewrite /is_rpcHandler'.
-  iSpecialize ("His_rpcHandler" $! args Post s' sl'). 
+  rewrite /is_urpcHandler'.
+  iSpecialize ("His_urpcHandler" $! args Post s' sl'). 
 
   rewrite zero_slice_val.
-  wp_apply ("His_rpcHandler" with "[$Hsl $Hsl' HPre]").
+  wp_apply ("His_urpcHandler" with "[$Hsl $Hsl' HPre]").
   { iRewrite -"Hequiv". iFrame "HPre".
     iApply @is_slice_zero.
   }
@@ -442,7 +442,7 @@ Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) :
       handlers_complete γ handlers ∗
       own_Server s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers,
-      (∃ Spec, handler_spec γ host rpcid Spec ∗ is_rpcHandler' handler Spec)
+      (∃ Spec, handler_spec γ host rpcid Spec ∗ is_urpcHandler' handler Spec)
   }}}
     Server__Serve #s #host
   {{{
@@ -643,7 +643,7 @@ Lemma wp_MakeClient (srv:u64):
   }}}
     MakeClient #srv
   {{{
-       (cl_ptr:loc), RET #cl_ptr; is_RPCClient cl_ptr srv
+       (cl_ptr:loc), RET #cl_ptr; is_uRPCClient cl_ptr srv
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -669,7 +669,7 @@ Proof.
   unshelve (iMod (readonly_alloc_1 with "conn") as "#conn"); [| apply _ |].
   unshelve (iMod (readonly_alloc_1 with "pending") as "#pending"); [| apply _ |].
 
-  iMod (map_init (∅ : gmap u64 rpc_req_desc)) as (γccmapping) "Hmapping_ctx".
+  iMod (map_init (∅ : gmap u64 urpc_req_desc)) as (γccmapping) "Hmapping_ctx".
   iMod (map_init (∅ : gmap u64 unit)) as (γccescrow) "Hescrow_ctx".
   iMod (map_init (∅ : gmap u64 unit)) as (γccextracted) "Hextracted_ctx".
   set (Γ := {| ccmapping_name := γccmapping; ccescrow_name := γccescrow;
@@ -710,13 +710,13 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       is_slice req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       handler_spec γsmap host rpcid Spec ∗
-      is_RPCClient cl_ptr host ∗
+      is_uRPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
   }}}
     Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
   {{{
        (err : option call_err), RET #(call_errno err);
-       is_RPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
+       is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
        typed_slice.is_slice req byteT 1 reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
@@ -996,4 +996,4 @@ Proof.
   }
 Qed.
 
-End rpc_proof.
+End urpc_proof.

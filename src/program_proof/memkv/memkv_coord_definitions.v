@@ -15,14 +15,14 @@ Record memkv_coord_names := {
 
 Section memkv_global_coord_definitions.
 
-Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Definition all_are_shard_servers (s:list u64) γkv : iProp Σ :=
   ∀ sid host, ⌜s !! sid = Some host⌝ →
               (∃ γ, is_shard_server host γ ∗ ⌜γ.(kv_gn) = γkv⌝)
 .
 
-Definition is_coord_server_addSpec γkv : RPCSpec :=
+Definition is_coord_server_addSpec γkv : uRPCSpec :=
   {| spec_rpcid := uCOORD_ADD;
      spec_ty := u64;
      spec_Pre := (λ host reqData, ⌜has_encoding_Uint64 reqData host ⌝ ∗
@@ -33,7 +33,7 @@ Definition has_encoding_shardMapping (data : list u8) (l: list u64) :=
   has_encoding data (EncUInt64 <$> l) ∧
   length l = int.nat 65536.
 
-Definition is_coord_server_getSpec γkv : RPCSpec :=
+Definition is_coord_server_getSpec γkv : uRPCSpec :=
   {| spec_rpcid := uCOORD_GET;
      spec_ty := unit;
      spec_Pre := (λ _ reqData, True)%I;
@@ -43,14 +43,14 @@ Definition is_coord_server_getSpec γkv : RPCSpec :=
                      all_are_shard_servers shardMapping γkv)%I |}.
 
 Definition is_coord_server (host : u64) γ :=
-  ("#HaddSpec" ∷ handler_rpc_spec γ.(coord_urpc_gn) host (is_coord_server_addSpec γ.(coord_kv_gn)) ∗
-  "#HgetSpec" ∷ handler_rpc_spec γ.(coord_urpc_gn) host (is_coord_server_getSpec γ.(coord_kv_gn)))%I.
+  ("#HaddSpec" ∷ handler_urpc_spec γ.(coord_urpc_gn) host (is_coord_server_addSpec γ.(coord_kv_gn)) ∗
+  "#HgetSpec" ∷ handler_urpc_spec γ.(coord_urpc_gn) host (is_coord_server_getSpec γ.(coord_kv_gn)))%I.
 
 End memkv_global_coord_definitions.
 
 Section memkv_coord_definitions.
 
-Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Definition own_ShardClerkSet (s:loc) (γkv:gname) : iProp Σ :=
   ∃ (c:loc) (cls_ptr:loc)  (clsM:gmap u64 loc),

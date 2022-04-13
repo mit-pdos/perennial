@@ -4,7 +4,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions common
 
 Section memkv_shard_proof.
 
-Context `{!heapGS Σ, rpcG Σ ShardReplyC, HREG: rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, HREG: urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_shardOf key :
   {{{

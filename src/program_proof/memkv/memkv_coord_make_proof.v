@@ -6,7 +6,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_coord_make_proof.
 
-Context `{!heapGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeKVCoordServer (initserver : u64) (γ : memkv_coord_names) γinit :
   {{{

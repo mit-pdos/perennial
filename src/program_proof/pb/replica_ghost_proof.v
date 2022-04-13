@@ -8,7 +8,7 @@ Hint Unfold log_po : list.
 Section replica_ghost_proof.
 
 Context `{!heapGS Σ}.
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 Context `{!pb_ghostG Σ}.
 Implicit Type γ:pb_names.
 

@@ -4,7 +4,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions common
 
 Section memkv_put_proof.
 
-Context `{!heapGS Σ, rpcG Σ ShardReplyC, HREG: rpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, rpcG Σ ShardReplyC, HREG: urpcregG Σ, kvMapG Σ}.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 

@@ -8,16 +8,16 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 Section memkv_coord_ghost_init_proof.
 
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)
-Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, rpcregG Σ, kvMapG Σ}.
+Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
-Definition coord_SpecList γkv : RPCSpecList :=
+Definition coord_SpecList γkv : uRPCSpecList :=
   spec_cons (is_coord_server_addSpec γkv)
     (spec_cons (is_coord_server_getSpec γkv) spec_nil).
 
 Lemma coord_server_ghost_init host (γkv : gname) :
   host c↦ ∅ ={⊤}=∗
   ∃ γ, ⌜ γ.(coord_kv_gn) = γkv ⌝ ∗
-       handlers_dom γ.(coord_urpc_gn) (dom_RPCSpecList (coord_SpecList (γ.(coord_kv_gn)))) ∗
+       handlers_dom γ.(coord_urpc_gn) (dom_uRPCSpecList (coord_SpecList (γ.(coord_kv_gn)))) ∗
        is_coord_server host γ.
 Proof.
   iIntros "Hg".
