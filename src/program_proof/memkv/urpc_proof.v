@@ -1,12 +1,10 @@
 From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.gokv Require Import urpc.
 From iris.base_logic.lib Require Import saved_prop.
-From Perennial.goose_lang Require Import adequacy.
 From Perennial.program_proof Require Import grove_prelude std_proof.
 From Perennial.program_proof Require Import marshal_proof.
 From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Import lib.ghost_map lib.mono_nat lib.saved_spec.
-From Perennial.goose_lang Require Import dist_lifting.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 (** Request descriptor: data describing a particular request *)
@@ -73,6 +71,7 @@ Definition reply_chan_inner (Γ : client_chan_gnames) (c: chan) : iProp Σ :=
 
 Implicit Type Spec : savedSpecO Σ (list u8) (list u8).
 
+(* Crucially, this is persistent: note the □Spec *)
 Definition server_chan_inner_msg Γsrv m : iProp Σ :=
     ∃ rpcid seqno args Spec Post Γ γ1 γ2 d rep rpcdom,
        "%Hlen_args" ∷ ⌜ length args = int.nat (U64 (Z.of_nat (length args))) ⌝ ∗
@@ -92,6 +91,7 @@ Definition server_chan_inner (c: chan) γmap : iProp Σ :=
   "Hchan" ∷ c c↦ ms ∗
   "Hmessages" ∷ [∗ set] m ∈ ms, server_chan_inner_msg γmap m.
 
+(** The handler of the given [rpcid] has the given spec. *)
 Definition handler_spec Γsrv (host:chan) (rpcid:u64) Spec : iProp Σ :=
   (∃ γ rpcdom,
    "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
@@ -115,7 +115,8 @@ Section urpc_proof.
 Context `{hG: !heapGS Σ}.
 Context `{hReg: !urpcregG Σ}.
 
-Local Definition is_urpcHandler' (f:val)
+(** This function [f] implements the given handler spec. *)
+Definition impl_handler_spec (f:val)
     (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
    : iProp Σ :=
   ∀ (reqData:list u8) Post req rep dummy_rep_sl dummy,
@@ -132,10 +133,8 @@ Local Definition is_urpcHandler' (f:val)
       Post repData
   }}}.
 
-Local Instance is_urpcHandler'_pers f Spec : Persistent (is_urpcHandler' f Spec).
+Local Instance impl_handler_spec_pers f Spec : Persistent (impl_handler_spec f Spec).
 Proof. apply _. Qed.
-
-Typeclasses Opaque is_urpcHandler'.
 
 Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
@@ -239,7 +238,7 @@ Qed.
 Definition urpc_handler_mapping (γ : server_chan_gnames) (host : u64) (handlers : gmap u64 val) : iProp Σ :=
   ([∗ map] rpcid↦handler ∈ handlers, ∃ Spec,
       handler_spec γ host rpcid Spec ∗
-      is_urpcHandler' handler Spec)%I.
+      impl_handler_spec handler Spec)%I.
 
 Lemma non_empty_urpc_handler_mapping_inv γ host handlers :
   dom (gset u64) handlers ≠ ∅ →
@@ -248,7 +247,7 @@ Lemma non_empty_urpc_handler_mapping_inv γ host handlers :
   "#Hhandlers" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ Spec γs,
                           ptsto_ro (scmap_name γ) rpcid γs ∗
                           saved_spec_own γs Spec ∗
-                          is_urpcHandler' handler Spec)%I.
+                          impl_handler_spec handler Spec)%I.
 Proof.
   iIntros (Hdom) "Hmapping".
   iInduction handlers as [| rpcid handler] "IH" using map_ind.
@@ -363,7 +362,7 @@ Proof.
     as "#Hequiv".
   wp_pures.
 
-  rewrite /is_urpcHandler'.
+  rewrite /impl_handler_spec.
   iSpecialize ("His_urpcHandler" $! args Post s' sl'). 
 
   rewrite zero_slice_val.
@@ -442,7 +441,7 @@ Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) :
       handlers_complete γ handlers ∗
       own_Server s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers,
-      (∃ Spec, handler_spec γ host rpcid Spec ∗ is_urpcHandler' handler Spec)
+      (∃ Spec, handler_spec γ host rpcid Spec ∗ impl_handler_spec handler Spec)
   }}}
     Server__Serve #s #host
   {{{

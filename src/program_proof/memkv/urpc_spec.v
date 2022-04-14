@@ -10,7 +10,7 @@ Section rpc_global_defs.
 Context `{!urpcregG Σ}.
 Context `{HPRE: !gooseGlobalGS Σ}.
 
-(* Higher-level interface for defining a handler with a given spec. *)
+(* Higher-level interface for defining a uRPC spec. *)
 Record uRPCSpec :=
   { spec_rpcid : u64;
     spec_ty : Type;
@@ -20,7 +20,7 @@ Record uRPCSpec :=
 Program Definition uRPCSpec_Spec (spec : uRPCSpec) : savedSpecO Σ (list u8) (list u8) :=
   λ args, λne (Φ : list u8 -d> iPropO Σ), (∃ x : spec.(spec_ty),
     spec.(spec_Pre) x args ∗ (∀ rep, spec.(spec_Post) x args rep -∗ Φ rep))%I.
-Next Obligation. (* FIXME solve_propert solved a very similar goal, why not this? *)
+Next Obligation. (* FIXME solve_proper solved a very similar goal, why not this? *)
   intros ??? Φ1 Φ2 HΦ. f_equiv.
   intros x. f_equiv. f_equiv. intros rep. f_equiv. apply HΦ.
 Qed.
