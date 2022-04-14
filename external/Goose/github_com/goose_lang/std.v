@@ -39,8 +39,8 @@ Definition Multipar: val :=
     let: "num_left_cond" := lock.newCond "num_left_mu" in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "num"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: "i2" := ![uint64T] "i" in
-      Fork ("op" "i2";;
+      let: "i" := ![uint64T] "i" in
+      Fork ("op" "i";;
             lock.acquire "num_left_mu";;
             "num_left" <-[uint64T] ![uint64T] "num_left" - #1;;
             lock.condSignal "num_left_cond";;
