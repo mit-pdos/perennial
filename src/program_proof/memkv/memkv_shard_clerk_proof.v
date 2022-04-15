@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 
 Section memkv_shard_clerk_proof.
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeFreshKVShardClerk (host:u64) (c:loc) γ :
   is_shard_server host γ -∗

@@ -16,7 +16,7 @@ Record ShardReplyC := mkShardReplyC {
 
 Section memkv_shard_pre_definitions.
 
-Context `{rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 Context `{!gooseGlobalGS Σ}.
 
 Definition uKV_FRESHCID: nat :=
@@ -33,7 +33,7 @@ Definition uKV_MOV_SHARD: nat :=
   Eval vm_compute in match KV_MOV_SHARD with LitV (LitInt n) => int.nat n | _ => 0 end.
 
 Record memkv_shard_names := {
- rpc_gn : rpc_names ;
+ rpc_gn : erpc_names ;
  urpc_gn : server_chan_gnames ;
  kv_gn : gname
 }
@@ -47,7 +47,7 @@ Definition PostShardGet γkv (key:u64) Q (rep:ShardReplyC) : iProp Σ :=
   ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardGet γkv key Q) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ (Q rep.(SR_Value)).
 Definition is_shard_server_getSpec γkv γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_GET;
-     spec_ty := ((list u8 → iProp Σ) * rpc_request_names * GetRequestC);
+     spec_ty := ((list u8 → iProp Σ) * erpc_request_names * GetRequestC);
      spec_Pre := (λ '(Q, γreq, req) reqData, ⌜has_encoding_GetRequest reqData req⌝ ∗
                   is_RPCRequest γrpc γreq
                     (PreShardGet γkv req.(GR_Key) Q)
@@ -65,7 +65,7 @@ Definition PostShardPut γkv (key:u64) Q v (rep:ShardReplyC) : iProp Σ :=
   ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardPut γkv key Q v) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q .
 Definition is_shard_server_putSpec (γkv : gname) γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_PUT;
-     spec_ty := (iProp Σ * rpc_request_names * PutRequestC)%type;
+     spec_ty := (iProp Σ * erpc_request_names * PutRequestC)%type;
      spec_Pre := (λ '(Q, γreq, req) reqData, ⌜has_encoding_PutRequest reqData req⌝ ∗
                   is_RPCRequest γrpc γreq
                      (PreShardPut γkv req.(PR_Key) Q req.(PR_Value))
@@ -85,7 +85,7 @@ Definition PostShardConditionalPut γkv (key:u64) Q expv newv (rep:ShardReplyC) 
   ⌜rep.(SR_Err) ≠ 0⌝ ∗ (PreShardConditionalPut γkv key Q expv newv) ∨ ⌜rep.(SR_Err) = 0⌝ ∗ Q rep.(SR_Success).
 Definition is_shard_server_conditionalPutSpec γkv γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_CONDITIONAL_PUT;
-     spec_ty := ((bool → iProp Σ) * rpc_request_names * ConditionalPutRequestC);
+     spec_ty := ((bool → iProp Σ) * erpc_request_names * ConditionalPutRequestC);
      spec_Pre :=(λ '(Q, γreq, req) reqData, ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
                   is_RPCRequest γrpc γreq
                      (PreShardConditionalPut γkv req.(CPR_Key) Q req.(CPR_ExpValue) req.(CPR_NewValue))
@@ -99,7 +99,7 @@ Definition is_shard_server_conditionalPutSpec γkv γrpc : uRPCSpec :=
 
 Definition is_shard_server_installSpec γkv γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_INS_SHARD;
-     spec_ty := rpc_request_names;
+     spec_ty := erpc_request_names;
      spec_Pre := (λ x reqData, ∃ args, ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
                                   ⌜int.Z args.(IR_Sid) < uNSHARD⌝ ∗
                                   is_RPCRequest γrpc x (own_shard γkv args.(IR_Sid) args.(IR_Kvs))
@@ -113,7 +113,7 @@ Definition is_shard_server_freshSpec γrpc : uRPCSpec :=
      spec_ty := unit;
      spec_Pre := (λ x reqData, True)%I;
      spec_Post := (λ x reqData repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
-              is_uRPCClient_ghost γrpc cid 1)%I |}.
+              is_eRPCClient_ghost γrpc cid 1)%I |}.
 
 Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : uRPCSpec :=
   {| spec_rpcid := uKV_MOV_SHARD;
@@ -176,7 +176,7 @@ End memkv_shard_pre_definitions.
 
 Section memkv_shard_definitions.
 
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Definition own_KVShardClerk (ck:loc) γkv : iProp Σ :=
   ∃ (cid seq:u64) (c:loc) (host:u64) (γ:memkv_shard_names),
@@ -184,7 +184,7 @@ Definition own_KVShardClerk (ck:loc) γkv : iProp Σ :=
     "Hseq" ∷ ck ↦[KVShardClerk :: "seq"] #seq ∗
     "Hc" ∷ ck ↦[KVShardClerk :: "c"] #c ∗
     "Hhost" ∷ ck ↦[KVShardClerk :: "host"] #host ∗
-    "Hcrpc" ∷ is_uRPCClient_ghost γ.(rpc_gn) cid seq ∗
+    "Hcrpc" ∷ is_eRPCClient_ghost γ.(rpc_gn) cid seq ∗
     "#Hc_own" ∷ is_ConnMan c ∗
     "#His_shard" ∷ is_shard_server host γ ∗
     "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z ∗
@@ -230,7 +230,7 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
                  ) ∗
   "HpeersMap" ∷ is_map (V:=loc) peers_ptr 1 peersM ∗
   "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn)) ∗
-  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_uRPCClient_ghost γ.(rpc_gn) cid 1)
+  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_eRPCClient_ghost γ.(rpc_gn) cid 1)
 .
 
 Definition is_KVShardServer (s:loc) γ : iProp Σ :=

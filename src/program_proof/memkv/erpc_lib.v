@@ -6,35 +6,36 @@ From Perennial.program_proof.lockservice Require Import fmcounter_map.
 From Perennial.program_proof Require Import proof_prelude.
 
 (** RPC layer ghost names. *)
-Record rpc_names := RpcNames {
+Record erpc_names := eRpcNames {
   rc : gname; (* full reply history: tracks the reply for every (CID, SEQ) pair that exists, where [None] means "reply not yet determined" *)
   lseq : gname; (* latest sequence number for each client seen by server *)
   cseq : gname; (* next sequence number to be used by each client (i.e., one ahead of the latest that it used *)
   proc : gname (* token that server must have in order to start processing a request *)
 }.
 
-Record rpc_request_names := RpcRequestNames {
+Record erpc_request_names := eRpcRequestNames {
   pre : gname; (* token that a server holds while using the precondition of a request; gets exchanged with the server's proc token *)
   post : gname (* token that a client can exchanged for the post condition of a request, if they have a reply receipt *)
 }.
 
 (** Collecting the CMRAs we need. *)
-Class rpcG Σ (R : Type) := RpcG {
+Class erpcG Σ (R : Type) := RpcG {
   rpc_fmcounterG :> fmcounter_mapG Σ;
   rpc_escrowG :> inG Σ (exclR unitO);
   rpc_mapG :> ghost_mapG Σ (u64*u64) (option R);
 }.
 
-Definition rpcΣ R := #[fmcounter_mapΣ; GFunctor (exclR unitO); ghost_mapΣ (u64*u64) (option R)].
+Definition erpcΣ R := #[fmcounter_mapΣ; GFunctor (exclR unitO); ghost_mapΣ (u64*u64) (option R)].
 
 Global Instance subG_kvMapG {Σ} R :
-  subG (rpcΣ R) Σ → (rpcG Σ R).
+  subG (erpcΣ R) Σ → (erpcG Σ R).
 Proof. solve_inG. Qed.
 
+(* TODO: rename more things to erpc. *)
 Section rpc.
 Context `{!ffi_semantics ext ffi, !ext_types ext}.
 Context  {R:Type}.
-Context `{!rpcG Σ R}.
+Context `{!erpcG Σ R}.
 Context `{!invGS Σ}.
 
 (* identifier for a rpc request *)
@@ -50,12 +51,12 @@ Record RPCReply :=
   Rep_Ret : R ;
 }.
 
-Definition is_uRPCClient_ghost (γrpc:rpc_names) (cid cseqno:u64) : iProp Σ :=
+Definition is_eRPCClient_ghost (γrpc:erpc_names) (cid cseqno:u64) : iProp Σ :=
   "Hcseq_own" ∷ (cid fm[[γrpc.(cseq)]]↦ int.nat cseqno)
 .
 
-Implicit Types γrpc : rpc_names.
-Implicit Types γreq : rpc_request_names.
+Implicit Types γrpc : erpc_names.
+Implicit Types γreq : erpc_request_names.
 
 (** Ownership of *all* the server-side sequence number tracking tokens *)
 Definition RPCServer_lseq γrpc (lastSeqM:gmap u64 u64) : iProp Σ :=
@@ -127,16 +128,16 @@ Lemma make_rpc_server E :
   ⊢ |={E}=> ∃ γrpc,
     is_RPCServer γrpc ∗ (* server-side invariant *)
     RPCServer_own_ghost γrpc ∅ ∅ ∗ (* server mutex invariant *)
-    [∗ set] cid ∈ fin_to_set u64, is_uRPCClient_ghost γrpc cid 1. (* SEQ counters for all possible clients *)
+    [∗ set] cid ∈ fin_to_set u64, is_eRPCClient_ghost γrpc cid 1. (* SEQ counters for all possible clients *)
 Proof.
   iIntros (?).
   iMod fmcounter_map_alloc as (γcseq) "Hcseq".
   iMod fmcounter_map_alloc as (γlseq) "Hlseq".
   iMod (ghost_map_alloc (∅ : gmap (u64*u64) (option R))) as (γrc) "[Hrc _]".
   iMod (own_alloc (Excl ())) as (γproc) "Hγproc"; first done.
-  pose (γrpc := RpcNames γrc γlseq γcseq γproc).
+  pose (γrpc := eRpcNames γrc γlseq γcseq γproc).
   iExists γrpc.
-  rewrite /is_RPCServer /RPCServer_own_ghost /is_uRPCClient_ghost /=.
+  rewrite /is_RPCServer /RPCServer_own_ghost /is_eRPCClient_ghost /=.
   iMod (inv_alloc _ _ (ReplyTable_inv γrpc) with "[Hrc]") as "$".
   { iExists ∅. iFrame. iNext. iApply big_sepM_empty. done. }
   iFrame "Hcseq". iFrame. iSplitL; last by iApply big_sepM2_empty.
@@ -150,9 +151,9 @@ Lemma make_request (req:RPCRequestID) PreCond PostCond E γrpc :
   ↑replyTableInvN ⊆ E →
   ((int.nat req.(Req_Seq)) + 1)%nat = int.nat (word.add req.(Req_Seq) 1) →
   is_RPCServer γrpc -∗
-  is_uRPCClient_ghost γrpc req.(Req_CID) req.(Req_Seq) -∗
+  is_eRPCClient_ghost γrpc req.(Req_CID) req.(Req_Seq) -∗
   ▷ PreCond ={E}=∗
-    is_uRPCClient_ghost γrpc req.(Req_CID) (word.add req.(Req_Seq) 1)
+    is_eRPCClient_ghost γrpc req.(Req_CID) (word.add req.(Req_Seq) 1)
     ∗ (∃ γreq, is_RPCRequest γrpc γreq PreCond PostCond req ∗ RPCRequest_token γreq).
 Proof using Type*.
   iIntros (? Hsafeincr) "Hinv Hcseq_own HPreCond".
@@ -170,7 +171,7 @@ Proof using Type*.
   iMod (ghost_map_insert (req.(Req_CID), req.(Req_Seq)) None with "Hrcctx") as "[Hrcctx Hrcptsto]"; first done.
   iMod (own_alloc (Excl ())) as (γpost) "Hγpost"; first done.
   iMod (own_alloc (Excl ())) as (γpre) "Hγpre"; first done.
-  pose (γreq := RpcRequestNames γpre γpost).
+  pose (γreq := eRpcRequestNames γpre γpost).
   iMod (fmcounter_map_update (int.nat req.(Req_Seq) + 1) with "Hcseq_own") as "[Hcseq_own #Hcseq_lb_one]".
   { simpl. lia. }
   iDestruct (big_sepM_insert _ _ _ None with "[$Hcseq_lb Hcseq_lb_one]") as "#Hcseq_lb2"; eauto.
@@ -264,7 +265,7 @@ Qed.
 (** Server side: complete processing a request and register it in the reply table.
 Requires the request postcondition. *)
 Lemma server_completes_request E (PreCond : iProp Σ) (PostCond : R -> iProp Σ)
-    (req:RPCRequestID) (γrpc:rpc_names) (reply:R)
+    (req:RPCRequestID) (γrpc:erpc_names) (reply:R)
     (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γreq :
   ↑replyTableInvN ⊆ E →
   (↑rpcRequestInvN req ⊆ E) →
@@ -325,7 +326,7 @@ Qed.
 
 (** Server side: when a request [args] has a sequence number less than [lseq],
 then it is stale. *)
-Lemma smaller_seqno_stale_fact E (req:RPCRequestID) (lseq:u64) (γrpc:rpc_names) lastSeqM lastReplyM:
+Lemma smaller_seqno_stale_fact E (req:RPCRequestID) (lseq:u64) (γrpc:erpc_names) lastSeqM lastReplyM:
   ↑replyTableInvN ⊆ E →
   lastSeqM !! req.(Req_CID) = Some lseq →
   (int.Z req.(Req_Seq) < int.Z lseq)%Z →
@@ -362,7 +363,7 @@ Qed.
 (** Client side: bounding the sequence number of a stale request. *)
 Lemma client_stale_seqno γrpc req seq :
   RPCRequestStale γrpc req -∗
-  is_uRPCClient_ghost γrpc req.(Req_CID) seq -∗
+  is_eRPCClient_ghost γrpc req.(Req_CID) seq -∗
     ⌜int.nat seq > (int.nat req.(Req_Seq) + 1)%nat⌝%Z.
 Proof.
   iIntros "Hreq Hcl".
@@ -394,7 +395,7 @@ Proof using Type*.
 Qed.
 
 (** Server side: lookup reply in the table, and return the appropriate receipt. *)
-Lemma server_replies_to_request E (req:RPCRequestID) (γrpc:rpc_names) (reply:R)
+Lemma server_replies_to_request E (req:RPCRequestID) (γrpc:erpc_names) (reply:R)
     (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) :
   ↑replyTableInvN ⊆ E →
   (lastSeqM !! req.(Req_CID) = Some req.(Req_Seq)) →

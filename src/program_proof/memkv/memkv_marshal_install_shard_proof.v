@@ -845,7 +845,7 @@ Qed.
 
 Lemma wp_decodeInstallShardRequest args args_sl argsData :
   {{{
-       typed_slice.is_slice args_sl byteT 1%Qp argsData ∗
+       typed_slice.is_slice_small args_sl byteT 1%Qp argsData ∗
        ⌜has_encoding_InstallShardRequest argsData args ⌝
   }}}
     decodeInstallShardRequest (slice_val args_sl)
@@ -858,7 +858,6 @@ Proof.
   wp_lam.
   destruct Henc as (r&?&(l&Hsize&Hnodup&HlistMap&Hmapencoded)&Hdata).
   rewrite Hmapencoded in Hdata.
-  iDestruct (typed_slice.is_slice_to_small with "Hslice") as "Hslice".
   wp_apply (wp_new_dec with "Hslice"); eauto.
   iIntros (d) "Hdec".
   wp_pures.

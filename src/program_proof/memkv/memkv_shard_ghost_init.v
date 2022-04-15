@@ -8,7 +8,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 Section memkv_shard_ghost_init_proof.
 
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)
-Context `{!gooseGlobalGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!gooseGlobalGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 (* TODO: duplicating this specs is unfortunate, should try to unify with the set up in shard_definitions *)
 
@@ -26,7 +26,7 @@ Lemma shard_server_ghost_init host (γkv : gname) :
        handlers_dom γ.(urpc_gn) (dom_uRPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(rpc_gn)))) ∗
        is_shard_server host γ ∗
        RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
-      ([∗ set] cid ∈ fin_to_set u64, is_uRPCClient_ghost γ.(rpc_gn) cid 1).
+      ([∗ set] cid ∈ fin_to_set u64, is_eRPCClient_ghost γ.(rpc_gn) cid 1).
 Proof.
   iIntros "Hg".
   iMod (make_rpc_server (R := ShardReplyC)) as (γrpc) "(#Hown&Hrpc1&Hrpc2)".

@@ -118,7 +118,7 @@ Qed.
 Lemma wp_DecodePutRequest req_sl reqData args :
   {{{
        ⌜has_encoding_PutRequest reqData args⌝ ∗
-       typed_slice.is_slice req_sl byteT 1%Qp reqData
+       typed_slice.is_slice_small req_sl byteT 1%Qp reqData
   }}}
     DecodePutRequest (slice_val req_sl)
   {{{
@@ -133,7 +133,6 @@ Proof.
   iNamed "HH".
   wp_pures.
 
-  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
   destruct Henc as [Henc Hseq].
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }

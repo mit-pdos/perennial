@@ -9,7 +9,7 @@ From Perennial.program_proof.memkv Require Import memkv_coord_clerk_proof.
 
 Section memkv_coord_start_proof.
 
-Context `{!heapGS Σ, rpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
   length shardMapping = int.nat uNSHARD →
@@ -362,7 +362,7 @@ Proof.
       iDestruct "Hpre" as (x) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc&Hshard)".
       iDestruct "Hshard" as (γsh Heq) "#His_shard".
-      wp_apply (wp_DecodeUint64 with "[$Hreq_sl]"); first eauto.
+      wp_apply (wp_DecodeUint64' with "[$Hreq_sl]"); first by eauto.
       wp_pures.
       simpl in x.
       wp_apply (wp_KVCoord__AddServerRPC with "[]").

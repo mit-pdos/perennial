@@ -71,7 +71,7 @@ Qed.
 
 Lemma wp_decodeMoveShardRequest args args_sl argsData :
   {{{
-       typed_slice.is_slice args_sl byteT 1%Qp argsData ∗
+       typed_slice.is_slice_small args_sl byteT 1%Qp argsData ∗
        ⌜has_encoding_MoveShardRequest argsData args ⌝
   }}}
     decodeMoveShardRequest (slice_val args_sl)
@@ -91,7 +91,6 @@ Proof.
   iNamed "HH".
   wp_pures.
 
-  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }
   iIntros (?) "Hdec".

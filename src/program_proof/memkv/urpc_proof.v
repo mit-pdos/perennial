@@ -121,7 +121,7 @@ Definition impl_handler_spec (f:val)
    : iProp Σ :=
   ∀ (reqData:list u8) Post req rep dummy_rep_sl dummy,
   {{{
-    is_slice req byteT 1 reqData ∗
+    is_slice_small req byteT 1 reqData ∗
     rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
     is_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
     Spec reqData Post
@@ -366,6 +366,7 @@ Proof.
   iSpecialize ("His_urpcHandler" $! args Post s' sl'). 
 
   rewrite zero_slice_val.
+  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
   wp_apply ("His_urpcHandler" with "[$Hsl $Hsl' HPre]").
   { iRewrite -"Hequiv". iFrame "HPre".
     iApply @is_slice_zero.
