@@ -67,7 +67,7 @@ Definition own_erpc_server (s : loc) (γ : erpc_names) : iProp Σ :=
 .
 
 Definition is_erpc_server (s:loc) γ : iProp Σ :=
-  ∃ mu (cm:loc),
+  ∃ mu,
   "#His_srv" ∷ is_eRPCServer γ ∗
   "#Hmu" ∷ readonly (s ↦[erpc.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock erpcN mu (own_erpc_server s γ)
@@ -286,17 +286,92 @@ Proof.
     iModIntro. iRight. done.
 Qed.
 
-Lemma wp_erpc_MakeServer (b : bool) γ :
-  {{{
-       "#His_srv" ∷ is_eRPCServer γ ∗
-       "HRPCserver_own" ∷ eRPCServer_own_ghost γ ∅ ∅ ∗
-       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), is_eRPCClient_ghost γ cid 1
-  }}}
+Lemma wp_erpc_MakeServer (b : bool) :
+  {{{ True }}}
     MakeServer #b
-  {{{
-       s, RET #s; is_erpc_server s γ
-  }}}.
+  {{{ γ s, RET #s; is_erpc_server s γ }}}.
 Proof.
-Abort.
+  iIntros (Φ) "_ HΦ".
+  wp_lam.
+  wp_apply (wp_allocStruct); first val_ty.
+  iIntros (srv) "srv".
+  iDestruct (struct_fields_split with "srv") as "srv". iNamed "srv". simpl.
+  wp_pures.
+  wp_apply (map.wp_NewMap).
+  iIntros (lastReply_ptr) "HlastReplyMap".
+  wp_storeField.
+  wp_apply (wp_NewMap).
+  iIntros (lastSeq_ptr) "HlastSeqMap".
+  wp_storeField.
+  wp_storeField.
+  wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
+  wp_storeField.
+
+  iMod make_rpc_server as (γ) "(#Hserv & ? & Hcids)"; first solve_ndisj.
+
+  iMod (alloc_lock erpcN _ lk (own_erpc_server srv γ) with "[$] [-mu HΦ]").
+  {
+    iNext.
+    iExists _, _, _, _, _, _.
+    iFrame "lastReply lastSeq nextCID".
+    iFrame.
+    iSplit.
+    { iPureIntro. rewrite ?dom_empty_L //. }
+    iSplit.
+    { rewrite big_sepM2_empty //. }
+    iApply (big_sepS_mono with "Hcids"); by eauto.
+  }
+  wp_pures. iApply "HΦ". iExists _.
+  iMod (readonly_alloc_1 with "mu") as "$".
+  by iFrame "# ∗".
+Qed.
+
+Lemma wp_erpc_GetFreshCID s γ :
+  {{{ is_erpc_server s γ }}}
+    Server__GetFreshCID #s
+  {{{ (cid : u64), RET #cid; is_eRPCClient_ghost γ cid 1 }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ". wp_lam.
+  iNamed "Hs".
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]". iNamed "Hown".
+
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_SumAssumeNoOverflow. iIntros (Hoverflow).
+  wp_storeField.
+
+  iDestruct (big_sepS_delete _ _ nextCID with "Hcids") as "[Hcid Hcids]".
+  { set_solver. }
+
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ Hcid]").
+  {
+    iFrame "HmuInv Hlocked".
+    iNext.
+    iExists _,_,_,_,_,_.
+    iFrame "HlastReply_structs ∗".
+    iSplit; first done.
+    iApply (big_sepS_delete _ _ nextCID with "[Hcids]").
+    { set_solver. }
+    iSplitR.
+    {
+      iLeft.
+      iPureIntro.
+      word.
+    }
+    iApply (big_sepS_impl with "Hcids").
+    iModIntro. iIntros (??) "[%Hineq|$]".
+    iLeft. iPureIntro.
+    word.
+  }
+  wp_pures.
+  iApply "HΦ".
+  iModIntro.
+  iDestruct "Hcid" as "[%Hbad|$]".
+  exfalso.
+  word.
+Qed.
 
 End erpc_proof.
