@@ -25,7 +25,7 @@ Lemma shard_server_ghost_init host (γkv : gname) :
   ∃ γ, ⌜ γ.(kv_gn) = γkv ⌝ ∗
        handlers_dom γ.(urpc_gn) (dom_uRPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(rpc_gn)))) ∗
        is_shard_server host γ ∗
-       RPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
+       eRPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
       ([∗ set] cid ∈ fin_to_set u64, is_eRPCClient_ghost γ.(rpc_gn) cid 1).
 Proof.
   iIntros "Hg".

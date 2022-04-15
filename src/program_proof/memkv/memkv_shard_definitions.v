@@ -49,14 +49,14 @@ Definition is_shard_server_getSpec γkv γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_GET;
      spec_ty := ((list u8 → iProp Σ) * erpc_request_names * GetRequestC);
      spec_Pre := (λ '(Q, γreq, req) reqData, ⌜has_encoding_GetRequest reqData req⌝ ∗
-                  is_RPCRequest γrpc γreq
+                  is_eRPCRequest γrpc γreq
                     (PreShardGet γkv req.(GR_Key) Q)
                     (PostShardGet γkv req.(GR_Key) Q)
                     {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |}
              )%I;
      spec_Post :=(λ '(Q, γreq, req) reqData repData, ∃ rep, ⌜has_encoding_GetReply repData rep⌝ ∗
-                  (RPCRequestStale γrpc {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
-                    ∃ dummy_succ, RPCReplyReceipt γrpc {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} (mkShardReplyC rep.(GR_Err) rep.(GR_Value) dummy_succ))
+                  (eRPCRequestStale γrpc {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} ∨
+                    ∃ dummy_succ, eRPCReplyReceipt γrpc {| Req_CID:=req.(GR_CID); Req_Seq:=req.(GR_Seq) |} (mkShardReplyC rep.(GR_Err) rep.(GR_Value) dummy_succ))
              )%I |}.
 
 Definition PreShardPut γkv key Q v : iProp Σ :=
@@ -67,14 +67,14 @@ Definition is_shard_server_putSpec (γkv : gname) γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_PUT;
      spec_ty := (iProp Σ * erpc_request_names * PutRequestC)%type;
      spec_Pre := (λ '(Q, γreq, req) reqData, ⌜has_encoding_PutRequest reqData req⌝ ∗
-                  is_RPCRequest γrpc γreq
+                  is_eRPCRequest γrpc γreq
                      (PreShardPut γkv req.(PR_Key) Q req.(PR_Value))
                      (PostShardPut γkv req.(PR_Key) Q req.(PR_Value))
                      {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |}
              )%I;
      spec_Post := (λ '(Q, γreq, req) reqData repData, ∃ rep, ⌜has_encoding_PutReply repData rep⌝ ∗
-                  (RPCRequestStale γrpc {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} ∨
-                    ∃ dummy_val dummy_succ, RPCReplyReceipt γrpc {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkShardReplyC rep.(PR_Err) dummy_val dummy_succ))
+                  (eRPCRequestStale γrpc {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} ∨
+                    ∃ dummy_val dummy_succ, eRPCReplyReceipt γrpc {| Req_CID:=req.(PR_CID); Req_Seq:=req.(PR_Seq) |} (mkShardReplyC rep.(PR_Err) dummy_val dummy_succ))
              )%I |}.
 
 Definition PreShardConditionalPut γkv key Q expv newv : iProp Σ :=
@@ -87,14 +87,14 @@ Definition is_shard_server_conditionalPutSpec γkv γrpc : uRPCSpec :=
   {| spec_rpcid := uKV_CONDITIONAL_PUT;
      spec_ty := ((bool → iProp Σ) * erpc_request_names * ConditionalPutRequestC);
      spec_Pre :=(λ '(Q, γreq, req) reqData, ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
-                  is_RPCRequest γrpc γreq
+                  is_eRPCRequest γrpc γreq
                      (PreShardConditionalPut γkv req.(CPR_Key) Q req.(CPR_ExpValue) req.(CPR_NewValue))
                      (PostShardConditionalPut γkv req.(CPR_Key) Q req.(CPR_ExpValue) req.(CPR_NewValue))
                      {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |}
              )%I;
      spec_Post :=(λ '(Q, γreq, req) reqData repData, ∃ rep, ⌜has_encoding_ConditionalPutReply repData rep⌝ ∗
-                  (RPCRequestStale γrpc {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} ∨
-                    ∃ dummy_val, RPCReplyReceipt γrpc {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} (mkShardReplyC rep.(CPR_Err) dummy_val rep.(CPR_Succ)))
+                  (eRPCRequestStale γrpc {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} ∨
+                    ∃ dummy_val, eRPCReplyReceipt γrpc {| Req_CID:=req.(CPR_CID); Req_Seq:=req.(CPR_Seq) |} (mkShardReplyC rep.(CPR_Err) dummy_val rep.(CPR_Succ)))
              )%I |}.
 
 Definition is_shard_server_installSpec γkv γrpc : uRPCSpec :=
@@ -102,7 +102,7 @@ Definition is_shard_server_installSpec γkv γrpc : uRPCSpec :=
      spec_ty := erpc_request_names;
      spec_Pre := (λ x reqData, ∃ args, ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
                                   ⌜int.Z args.(IR_Sid) < uNSHARD⌝ ∗
-                                  is_RPCRequest γrpc x (own_shard γkv args.(IR_Sid) args.(IR_Kvs))
+                                  is_eRPCRequest γrpc x (own_shard γkv args.(IR_Sid) args.(IR_Kvs))
                                                             (λ _, True)
                                                             {| Req_CID:=args.(IR_CID); Req_Seq:=args.(IR_Seq) |}
              )%I;
@@ -127,7 +127,7 @@ Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> i
 
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   (λ host γ,
-  "#His_rpc" ∷ is_RPCServer γ.(rpc_gn) ∗
+  "#His_rpc" ∷ is_eRPCServer γ.(rpc_gn) ∗
   "#HputSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_putSpec γ.(kv_gn) γ.(rpc_gn)) ∗
   "#HconditionalPutSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn) γ.(rpc_gn)) ∗
   "#HgetSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_getSpec γ.(kv_gn) γ.(rpc_gn)) ∗
@@ -214,7 +214,7 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
   "Hkvss" ∷ s ↦[KVShardServer :: "kvss"] (slice_val kvss_sl) ∗
   "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
   "Hpeers" ∷ s ↦[KVShardServer :: "peers"] #peers_ptr ∗
-  "Hrpc" ∷ RPCServer_own_ghost γ.(rpc_gn) lastSeqM lastReplyM ∗
+  "Hrpc" ∷ eRPCServer_own_ghost γ.(rpc_gn) lastSeqM lastReplyM ∗
   "%HshardMapLength" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
   "%HkvssLength" ∷ ⌜Z.of_nat (length kvs_ptrs) = uNSHARD⌝ ∗
   "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
@@ -235,7 +235,7 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
 
 Definition is_KVShardServer (s:loc) γ : iProp Σ :=
   ∃ mu (cm:loc),
-  "#His_srv" ∷ is_RPCServer γ.(rpc_gn) ∗
+  "#His_srv" ∷ is_eRPCServer γ.(rpc_gn) ∗
   "#Hmu" ∷ readonly (s ↦[KVShardServer :: "mu"] mu) ∗
   "#Hcm" ∷ readonly (s ↦[KVShardServer :: "cm"] #cm) ∗
   "#HmuInv" ∷ is_lock memKVN mu (own_KVShardServer s γ) ∗

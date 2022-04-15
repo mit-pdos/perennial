@@ -13,7 +13,7 @@ Lemma wp_PutRPC (s args_ptr reply_ptr:loc) val_sl args γ γreq Q :
   {{{
        own_PutRequest args_ptr val_sl args ∗
        (∃ dummy_rep, own_PutReply reply_ptr dummy_rep) ∗
-       is_RPCRequest γ.(rpc_gn) γreq (PreShardPut γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
+       is_eRPCRequest γ.(rpc_gn) γreq (PreShardPut γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
                                 (PostShardPut γ.(kv_gn) args.(PR_Key) Q args.(PR_Value))
                                 {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |}
   }}}
@@ -21,8 +21,8 @@ Lemma wp_PutRPC (s args_ptr reply_ptr:loc) val_sl args γ γreq Q :
   {{{
        rep, RET #();
        own_PutReply reply_ptr rep ∗
-       (RPCRequestStale γ.(rpc_gn) {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |} ∨
-        ∃ dummy_val dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |} (mkShardReplyC rep.(PR_Err) dummy_val dummy_succ))
+       (eRPCRequestStale γ.(rpc_gn) {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |} ∨
+        ∃ dummy_val dummy_succ, eRPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(PR_CID); Req_Seq:=args.(PR_Seq) |} (mkShardReplyC rep.(PR_Err) dummy_val dummy_succ))
   }}}.
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".

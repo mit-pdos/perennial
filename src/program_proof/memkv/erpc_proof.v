@@ -20,30 +20,30 @@ Record eRPCSpec {Σ} :=
 Section erpc_defs.
 Context `{!erpcG Σ, !urpcregG Σ, !gooseGlobalGS Σ}.
 
-Local Definition encode_request (rid : RPCRequestID) (payload : list u8) :=
+Local Definition encode_request (rid : eRPCRequestID) (payload : list u8) :=
   u64_le rid.(Req_CID) ++ u64_le rid.(Req_Seq) ++ payload.
 
 (** [Spec] is the spec of the eRPC handler;
     we compute the spec of the underlying uRPC handler. *)
-Definition eRPCSpec_uRPC γrpc (spec : eRPCSpec (Σ:=Σ)) : uRPCSpec :=
+Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : uRPCSpec :=
  {| spec_rpcid := spec.(espec_rpcid);
-    spec_ty := erpc_request_names * RPCRequestID * (list u8) * spec.(espec_ty);
+    spec_ty := erpc_request_names * eRPCRequestID * (list u8) * spec.(espec_ty);
     spec_Pre :=(λ '(γreq, rid, payload, x) req,
                   ⌜req = encode_request rid payload ∧ int.Z rid.(Req_Seq) > 0⌝ ∗
-                  is_RPCRequest γrpc γreq
+                  is_eRPCRequest γerpc γreq
                      (spec.(espec_Pre) x payload)
                      (spec.(espec_Post) x payload)
                      rid
              )%I;
     spec_Post :=(λ '(γreq, rid, payload, x) req rep,
-                (RPCRequestStale γrpc rid ∨
-                 RPCReplyReceipt γrpc rid rep)
+                (eRPCRequestStale γerpc rid ∨
+                 eRPCReplyReceipt γerpc rid rep)
              )%I
  |}.
 
 (** Convenience function to say that a given rpcid has such a handler *)
-Definition handler_erpc_spec `{!urpcregG Σ} Γsrv γrpc (host:u64) (spec : eRPCSpec) :=
-  handler_urpc_spec Γsrv host (eRPCSpec_uRPC γrpc spec).
+Definition handler_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (spec : eRPCSpec) :=
+  handler_urpc_spec Γsrv host (eRPCSpec_uRPC γerpc spec).
 
 End erpc_defs.
 
@@ -64,13 +64,13 @@ Definition own_erpc_server (s : loc) (γ : erpc_names) : iProp Σ :=
   "HlastSeq" ∷ s ↦[erpc.Server :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ is_map lastSeq_ptr 1 lastSeqM ∗
   "HnextCID" ∷ s ↦[erpc.Server :: "nextCID"] #nextCID ∗
-  "Herpc" ∷ RPCServer_own_ghost γ lastSeqM lastReplyM ∗
+  "Herpc" ∷ eRPCServer_own_ghost γ lastSeqM lastReplyM ∗
   "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_eRPCClient_ghost γ cid 1)
 .
 
 Definition is_erpc_server (s:loc) γ : iProp Σ :=
   ∃ mu (cm:loc),
-  "#His_srv" ∷ is_RPCServer γ ∗
+  "#His_srv" ∷ is_eRPCServer γ ∗
   "#Hmu" ∷ readonly (s ↦[erpc.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock erpcN mu (own_erpc_server s γ)
 .
@@ -287,5 +287,18 @@ Proof.
     wp_pures. iApply "HΦ". iFrame.
     iApply "Hpost". iModIntro. iRight. done.
 Qed.
+
+Lemma wp_erpc_MakeServer (b : bool) γ :
+  {{{
+       "#His_srv" ∷ is_eRPCServer γ ∗
+       "HRPCserver_own" ∷ eRPCServer_own_ghost γ ∅ ∅ ∗
+       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), is_eRPCClient_ghost γ cid 1
+  }}}
+    MakeServer #b
+  {{{
+       s, RET #s; is_erpc_server s γ
+  }}}.
+Proof.
+Abort.
 
 End erpc_proof.

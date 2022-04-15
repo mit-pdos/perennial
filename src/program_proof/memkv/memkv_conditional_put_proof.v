@@ -13,7 +13,7 @@ Lemma wp_ConditionalPutRPC (s args_ptr reply_ptr:loc) expv_sl newv_sl args γ γ
   {{{
        own_ConditionalPutRequest args_ptr expv_sl newv_sl args ∗
        (∃ dummy_rep, own_ConditionalPutReply reply_ptr dummy_rep) ∗
-       is_RPCRequest γ.(rpc_gn) γreq (PreShardConditionalPut γ.(kv_gn) args.(CPR_Key) Q args.(CPR_ExpValue) args.(CPR_NewValue))
+       is_eRPCRequest γ.(rpc_gn) γreq (PreShardConditionalPut γ.(kv_gn) args.(CPR_Key) Q args.(CPR_ExpValue) args.(CPR_NewValue))
                                 (PostShardConditionalPut γ.(kv_gn) args.(CPR_Key) Q args.(CPR_ExpValue) args.(CPR_NewValue))
                                 {| Req_CID:=args.(CPR_CID); Req_Seq:=args.(CPR_Seq) |}
   }}}
@@ -21,8 +21,8 @@ Lemma wp_ConditionalPutRPC (s args_ptr reply_ptr:loc) expv_sl newv_sl args γ γ
   {{{
        rep, RET #();
        own_ConditionalPutReply reply_ptr rep ∗
-       (RPCRequestStale γ.(rpc_gn) {| Req_CID:=args.(CPR_CID); Req_Seq:=args.(CPR_Seq) |} ∨
-        ∃ dummy_val, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(CPR_CID); Req_Seq:=args.(CPR_Seq) |} (mkShardReplyC rep.(CPR_Err) dummy_val rep.(CPR_Succ)))
+       (eRPCRequestStale γ.(rpc_gn) {| Req_CID:=args.(CPR_CID); Req_Seq:=args.(CPR_Seq) |} ∨
+        ∃ dummy_val, eRPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(CPR_CID); Req_Seq:=args.(CPR_Seq) |} (mkShardReplyC rep.(CPR_Err) dummy_val rep.(CPR_Succ)))
   }}}.
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".

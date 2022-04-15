@@ -11,7 +11,7 @@ Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
   {{{
        own_InstallShardRequest args_ptr args ∗
        ⌜int.nat args.(IR_Sid) < uNSHARD⌝ ∗
-       is_RPCRequest γ.(rpc_gn) γreq (own_shard γ.(kv_gn) args.(IR_Sid) args.(IR_Kvs))
+       is_eRPCRequest γ.(rpc_gn) γreq (own_shard γ.(kv_gn) args.(IR_Sid) args.(IR_Kvs))
                                 (λ _, True)
                                 {| Req_CID:=args.(IR_CID); Req_Seq:=args.(IR_Seq) |}
   }}}

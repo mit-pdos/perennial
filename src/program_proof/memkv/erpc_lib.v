@@ -39,7 +39,7 @@ Context `{!erpcG Σ R}.
 Context `{!invGS Σ}.
 
 (* identifier for a rpc request *)
-Record RPCRequestID :=
+Record eRPCRequestID :=
 {
   Req_CID : u64 ;
   Req_Seq : u64 ;
@@ -62,24 +62,24 @@ Implicit Types γreq : erpc_request_names.
 Definition RPCServer_lseq γrpc (lastSeqM:gmap u64 u64) : iProp Σ :=
   ([∗ set] cid ∈ (fin_to_set u64), cid fm[[γrpc.(lseq)]]↦ int.nat (default (U64 0) (lastSeqM !! cid)))%I.
 
-Definition RPCServer_own_ghost γrpc (lastSeqM:gmap u64 u64) lastReplyM : iProp Σ :=
+Definition eRPCServer_own_ghost γrpc (lastSeqM:gmap u64 u64) lastReplyM : iProp Σ :=
     "Hlseq_own" ∷ RPCServer_lseq γrpc lastSeqM
   ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) ↪[γrpc.(rc)]□ Some r)
   ∗ "Hproc_own" ∷ own γrpc.(proc) (Excl ())
 .
 
-Definition RPCServer_own_processing γrpc (req:RPCRequestID) lastSeqM lastReplyM : iProp Σ :=
+Definition RPCServer_own_processing γrpc (req:eRPCRequestID) lastSeqM lastReplyM : iProp Σ :=
     "Hlseq_own" ∷ RPCServer_lseq γrpc lastSeqM
   ∗ ("#Hrcagree" ∷ [∗ map] cid ↦ seq ; r ∈ lastSeqM ; lastReplyM, (cid, seq) ↪[γrpc.(rc)]□ Some r).
 
 Definition RPCRequest_token γreq : iProp Σ :=
   (own γreq.(post) (Excl ())).
 
-Definition RPCReplyReceipt γrpc (req:RPCRequestID) (r:R) : iProp Σ :=
+Definition eRPCReplyReceipt γrpc (req:eRPCRequestID) (r:R) : iProp Σ :=
   (req.(Req_CID), req.(Req_Seq)) ↪[γrpc.(rc)]□ Some r
 .
 
-Definition RPCRequestStale γrpc (req:RPCRequestID) : iProp Σ :=
+Definition eRPCRequestStale γrpc (req:eRPCRequestID) : iProp Σ :=
   (req.(Req_CID) fm[[γrpc.(cseq)]]> ((int.nat req.(Req_Seq)) + 1))
 .
 
@@ -89,7 +89,7 @@ processing: Request is being processed, and server has PreCond.
 done: The reply was computed as is waiting for the client to take notice.
 dead: The client took out ownership of the reply. *)
 
-Local Definition RPCRequest_inv γrpc γreq (PreCond : iProp Σ) (PostCond : R -> iProp Σ) (req:RPCRequestID) : iProp Σ :=
+Local Definition RPCRequest_inv γrpc γreq (PreCond : iProp Σ) (PostCond : R -> iProp Σ) (req:eRPCRequestID) : iProp Σ :=
    "#Hlseq_bound" ∷ req.(Req_CID) fm[[γrpc.(cseq)]]> int.nat req.(Req_Seq) ∗
     ( (* Initialized, but server has not started processing *)
       "Hreply" ∷ (req.(Req_CID), req.(Req_Seq)) ↪[γrpc.(rc)] None ∗
@@ -114,20 +114,20 @@ Local Definition ReplyTable_inv γrpc: iProp Σ :=
 Definition replyTableInvN : namespace := nroot .@ "replyTableInvN".
 Definition rpcRequestInvN req := nroot .@ "rpcRequestInvN" .@ (req.(Req_Seq)).
 
-Definition is_RPCRequest γrpc γreq (PreCond : iProp Σ) (PostCond : R -> iProp Σ) (req:RPCRequestID) : iProp Σ :=
+Definition is_eRPCRequest γrpc γreq (PreCond : iProp Σ) (PostCond : R -> iProp Σ) (req:eRPCRequestID) : iProp Σ :=
   inv (rpcRequestInvN req) (RPCRequest_inv γrpc γreq PreCond PostCond req).
 
-Definition is_RPCServer γrpc : iProp Σ :=
+Definition is_eRPCServer γrpc : iProp Σ :=
   inv replyTableInvN (ReplyTable_inv γrpc).
 
-Global Instance RPCServer_durable_own_processing_disc γrpc (req:RPCRequestID) lastSeqM lastReplyM : Discretizable (RPCServer_own_processing γrpc req lastSeqM lastReplyM) := _.
+Global Instance RPCServer_durable_own_processing_disc γrpc (req:eRPCRequestID) lastSeqM lastReplyM : Discretizable (RPCServer_own_processing γrpc req lastSeqM lastReplyM) := _.
 
 (* Allocate ghost state and invariant for reply table *)
 Lemma make_rpc_server E :
   ↑replyTableInvN ⊆ E →
   ⊢ |={E}=> ∃ γrpc,
-    is_RPCServer γrpc ∗ (* server-side invariant *)
-    RPCServer_own_ghost γrpc ∅ ∅ ∗ (* server mutex invariant *)
+    is_eRPCServer γrpc ∗ (* server-side invariant *)
+    eRPCServer_own_ghost γrpc ∅ ∅ ∗ (* server mutex invariant *)
     [∗ set] cid ∈ fin_to_set u64, is_eRPCClient_ghost γrpc cid 1. (* SEQ counters for all possible clients *)
 Proof.
   iIntros (?).
@@ -137,7 +137,7 @@ Proof.
   iMod (own_alloc (Excl ())) as (γproc) "Hγproc"; first done.
   pose (γrpc := eRpcNames γrc γlseq γcseq γproc).
   iExists γrpc.
-  rewrite /is_RPCServer /RPCServer_own_ghost /is_eRPCClient_ghost /=.
+  rewrite /is_eRPCServer /eRPCServer_own_ghost /is_eRPCClient_ghost /=.
   iMod (inv_alloc _ _ (ReplyTable_inv γrpc) with "[Hrc]") as "$".
   { iExists ∅. iFrame. iNext. iApply big_sepM_empty. done. }
   iFrame "Hcseq". iFrame. iSplitL; last by iApply big_sepM2_empty.
@@ -147,14 +147,14 @@ Qed.
 
 (** Client side: allocate a new request.
 Returns the request invariant and the "escrow" token to take out the reply ownership. *)
-Lemma make_request (req:RPCRequestID) PreCond PostCond E γrpc :
+Lemma make_request (req:eRPCRequestID) PreCond PostCond E γrpc :
   ↑replyTableInvN ⊆ E →
   ((int.nat req.(Req_Seq)) + 1)%nat = int.nat (word.add req.(Req_Seq) 1) →
-  is_RPCServer γrpc -∗
+  is_eRPCServer γrpc -∗
   is_eRPCClient_ghost γrpc req.(Req_CID) req.(Req_Seq) -∗
   ▷ PreCond ={E}=∗
     is_eRPCClient_ghost γrpc req.(Req_CID) (word.add req.(Req_Seq) 1)
-    ∗ (∃ γreq, is_RPCRequest γrpc γreq PreCond PostCond req ∗ RPCRequest_token γreq).
+    ∗ (∃ γreq, is_eRPCRequest γrpc γreq PreCond PostCond req ∗ RPCRequest_token γreq).
 Proof using Type*.
   iIntros (? Hsafeincr) "Hinv Hcseq_own HPreCond".
   iInv replyTableInvN as ">Hrcinv" "HNclose".
@@ -185,7 +185,7 @@ Proof using Type*.
   rewrite Hsafeincr. iFrame. iExists _; iFrame "∗#". iFrame.
 Qed.
 
-Local Lemma new_seq_implies_unproc γrpc lastSeqM (req:RPCRequestID) :
+Local Lemma new_seq_implies_unproc γrpc lastSeqM (req:eRPCRequestID) :
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
   req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq) -∗
   RPCServer_lseq γrpc lastSeqM -∗
@@ -202,11 +202,11 @@ Proof.
   word.
 Qed.
 
-Lemma server_takes_request E (req:RPCRequestID) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
+Lemma server_takes_request E (req:eRPCRequestID) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
   ↑(rpcRequestInvN req) ⊆ E →
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
-  is_RPCRequest γrpc γreq PreCond PostCond req -∗
-  RPCServer_own_ghost γrpc lastSeqM lastReplyM
+  is_eRPCRequest γrpc γreq PreCond PostCond req -∗
+  eRPCServer_own_ghost γrpc lastSeqM lastReplyM
   ={E}=∗
   own γreq.(pre) (Excl ()) ∗ ▷ PreCond ∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM.
@@ -235,15 +235,15 @@ Proof.
 Qed.
 
 (* Opposite of above *)
-Lemma server_returns_request E (req:RPCRequestID) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
+Lemma server_returns_request E (req:eRPCRequestID) γrpc γreq PreCond PostCond lastSeqM lastReplyM :
   ↑(rpcRequestInvN req) ⊆ E →
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
-  is_RPCRequest γrpc γreq PreCond PostCond req -∗
+  is_eRPCRequest γrpc γreq PreCond PostCond req -∗
   own γreq.(pre) (Excl ()) -∗
   PreCond -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM
   ={E}=∗
-  RPCServer_own_ghost γrpc lastSeqM lastReplyM.
+  eRPCServer_own_ghost γrpc lastSeqM lastReplyM.
 Proof.
   intros ? Hrseq.
   iIntros "HreqInv HγPre Hpre Hsrpc_proc".
@@ -265,18 +265,18 @@ Qed.
 (** Server side: complete processing a request and register it in the reply table.
 Requires the request postcondition. *)
 Lemma server_completes_request E (PreCond : iProp Σ) (PostCond : R -> iProp Σ)
-    (req:RPCRequestID) (γrpc:erpc_names) (reply:R)
+    (req:eRPCRequestID) (γrpc:erpc_names) (reply:R)
     (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) γreq :
   ↑replyTableInvN ⊆ E →
   (↑rpcRequestInvN req ⊆ E) →
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
-  is_RPCServer γrpc -∗
-  is_RPCRequest γrpc γreq PreCond PostCond req -∗
+  is_eRPCServer γrpc -∗
+  is_eRPCRequest γrpc γreq PreCond PostCond req -∗
   own γreq.(pre) (Excl ()) -∗
   ▷ PostCond reply -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM ={E}=∗
-    RPCReplyReceipt γrpc req reply ∗
-    RPCServer_own_ghost γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM).
+    eRPCReplyReceipt γrpc req reply ∗
+    eRPCServer_own_ghost γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM).
 Proof using Type*.
   rewrite map_get_val.
   intros.
@@ -326,14 +326,14 @@ Qed.
 
 (** Server side: when a request [args] has a sequence number less than [lseq],
 then it is stale. *)
-Lemma smaller_seqno_stale_fact E (req:RPCRequestID) (lseq:u64) (γrpc:erpc_names) lastSeqM lastReplyM:
+Lemma smaller_seqno_stale_fact E (req:eRPCRequestID) (lseq:u64) (γrpc:erpc_names) lastSeqM lastReplyM:
   ↑replyTableInvN ⊆ E →
   lastSeqM !! req.(Req_CID) = Some lseq →
   (int.Z req.(Req_Seq) < int.Z lseq)%Z →
-  is_RPCServer γrpc -∗
-  RPCServer_own_ghost γrpc lastSeqM lastReplyM ={E}=∗
-    RPCServer_own_ghost γrpc lastSeqM lastReplyM ∗
-    RPCRequestStale γrpc req.
+  is_eRPCServer γrpc -∗
+  eRPCServer_own_ghost γrpc lastSeqM lastReplyM ={E}=∗
+    eRPCServer_own_ghost γrpc lastSeqM lastReplyM ∗
+    eRPCRequestStale γrpc req.
 Proof.
   intros ? HlastSeqSome Hineq.
   iIntros "#Hinv (Hlseq_own & #Hsepm & Hproc)".
@@ -362,7 +362,7 @@ Qed.
 
 (** Client side: bounding the sequence number of a stale request. *)
 Lemma client_stale_seqno γrpc req seq :
-  RPCRequestStale γrpc req -∗
+  eRPCRequestStale γrpc req -∗
   is_eRPCClient_ghost γrpc req.(Req_CID) seq -∗
     ⌜int.nat seq > (int.nat req.(Req_Seq) + 1)%nat⌝%Z.
 Proof.
@@ -372,10 +372,10 @@ Proof.
 Qed.
 
 (** Client side: get the postcondition out of a reply using the "escrow" token. *)
-Lemma get_request_post E (req:RPCRequestID) (r:R) γrpc γreq PreCond PostCond :
+Lemma get_request_post E (req:eRPCRequestID) (r:R) γrpc γreq PreCond PostCond :
   ↑rpcRequestInvN req ⊆ E →
-  is_RPCRequest γrpc γreq PreCond PostCond req -∗
-  RPCReplyReceipt γrpc req r -∗
+  is_eRPCRequest γrpc γreq PreCond PostCond req -∗
+  eRPCReplyReceipt γrpc req r -∗
   (RPCRequest_token γreq) ={E}=∗
     ▷ (PostCond r).
 Proof using Type*.
@@ -395,15 +395,15 @@ Proof using Type*.
 Qed.
 
 (** Server side: lookup reply in the table, and return the appropriate receipt. *)
-Lemma server_replies_to_request E (req:RPCRequestID) (γrpc:erpc_names) (reply:R)
+Lemma server_replies_to_request E (req:eRPCRequestID) (γrpc:erpc_names) (reply:R)
     (lastSeqM:gmap u64 u64) (lastReplyM:gmap u64 R) :
   ↑replyTableInvN ⊆ E →
   (lastSeqM !! req.(Req_CID) = Some req.(Req_Seq)) →
   (∃ def, default def (lastReplyM !! req.(Req_CID)) = reply) →
-  is_RPCServer γrpc -∗
-  RPCServer_own_ghost γrpc lastSeqM lastReplyM ={E}=∗
-    RPCReplyReceipt γrpc req reply ∗
-    RPCServer_own_ghost γrpc (lastSeqM) (lastReplyM).
+  is_eRPCServer γrpc -∗
+  eRPCServer_own_ghost γrpc lastSeqM lastReplyM ={E}=∗
+    eRPCReplyReceipt γrpc req reply ∗
+    eRPCServer_own_ghost γrpc (lastSeqM) (lastReplyM).
 Proof.
   intros ? Hsome [def Hreplymapget].
   iIntros "Hlinv Hsown"; iNamed "Hsown".
@@ -417,19 +417,19 @@ Proof.
 Qed.
 
 (* TODO: I think this SP will be annoying *)
-Lemma server_executes_durable_request (req:RPCRequestID) reply γrpc γreq PreCond PostCond lastSeqM lastReplyM ctx ctx' SP:
+Lemma server_executes_durable_request (req:eRPCRequestID) reply γrpc γreq PreCond PostCond lastSeqM lastReplyM ctx ctx' SP:
   (* TODO: get rid of this requirement by putting γPre in the postcondition case *)
   (int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z →
-  is_RPCRequest γrpc γreq PreCond PostCond req -∗
-  is_RPCServer γrpc -∗
+  is_eRPCRequest γrpc γreq PreCond PostCond req -∗
+  is_eRPCServer γrpc -∗
   RPCServer_own_processing γrpc req lastSeqM lastReplyM -∗
   own γreq.(pre) (Excl()) -∗
   (SP) -∗ (* strengthened precond *)
   (SP -∗ own γrpc.(proc) (Excl ()) -∗ req.(Req_CID) fm[[γrpc.(lseq)]]≥ int.nat req.(Req_Seq) -∗ ctx
       ={⊤ ∖ ↑rpcRequestInvN req}=∗ PostCond reply ∗ own γrpc.(proc) (Excl ()) ∗ ctx') -∗
   ctx ={⊤}=∗
-  (RPCReplyReceipt γrpc req reply ∗
-  RPCServer_own_ghost γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM) ∗
+  (eRPCReplyReceipt γrpc req reply ∗
+  eRPCServer_own_ghost γrpc (<[req.(Req_CID):=req.(Req_Seq)]> lastSeqM) (<[req.(Req_CID):=reply]> lastReplyM) ∗
   ctx').
 Proof.
   (* XXX: without [V:=u64], u64 gets unfolded here, which forces us to later unfold u64 more so we can match against Hrseq.*)

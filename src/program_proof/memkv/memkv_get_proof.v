@@ -42,7 +42,7 @@ Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ γreq Q :
   {{{
        own_GetRequest args_ptr args ∗
        (∃ dummy_rep, own_GetReply reply_ptr dummy_rep) ∗
-       is_RPCRequest γ.(rpc_gn) γreq (PreShardGet γ.(kv_gn) args.(GR_Key) Q)
+       is_eRPCRequest γ.(rpc_gn) γreq (PreShardGet γ.(kv_gn) args.(GR_Key) Q)
                                 (PostShardGet γ.(kv_gn) args.(GR_Key) Q)
                                 {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |}
   }}}
@@ -50,8 +50,8 @@ Lemma wp_GetRPC (s args_ptr reply_ptr:loc) args γ γreq Q :
   {{{
        rep, RET #();
        own_GetReply reply_ptr rep ∗
-       (RPCRequestStale γ.(rpc_gn) {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |} ∨
-        ∃ dummy_succ, RPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |} (mkShardReplyC rep.(GR_Err) rep.(GR_Value) dummy_succ))
+       (eRPCRequestStale γ.(rpc_gn) {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |} ∨
+        ∃ dummy_succ, eRPCReplyReceipt γ.(rpc_gn) {| Req_CID:=args.(GR_CID); Req_Seq:=args.(GR_Seq) |} (mkShardReplyC rep.(GR_Err) rep.(GR_Value) dummy_succ))
   }}}.
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".
