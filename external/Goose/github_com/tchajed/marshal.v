@@ -158,4 +158,12 @@ Definition WriteInt: val :=
     UInt64Put (SliceSkip byteT "b3" "off") "i";;
     "b3".
 
+Definition WriteBytes: val :=
+  rec: "WriteBytes" "b" "data" :=
+    let: "b2" := reserve "b" (slice.len "data") in
+    let: "off" := slice.len "b2" in
+    let: "b3" := SliceTake "b2" ("off" + slice.len "data") in
+    SliceCopy byteT (SliceSkip byteT "b3" "off") "data";;
+    "b3".
+
 End code.
