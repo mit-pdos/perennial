@@ -48,9 +48,7 @@ Definition handler_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (spec : eRP
 End erpc_defs.
 
 Section erpc_proof.
-
-Context `{hG: !heapGS Σ}.
-Context `{!urpcregG Σ, !erpcG Σ}.
+Context `{!heapGS Σ, !urpcregG Σ, !erpcG Σ}.
 
 Definition own_erpc_server (s : loc) (γ : erpc_names) : iProp Σ :=
   ∃ (lastReply_ptr lastSeq_ptr:loc)
@@ -77,16 +75,16 @@ Definition is_erpc_server (s:loc) γ : iProp Σ :=
 
 Definition impl_erpc_handler_spec (f : val) (spec : eRPCSpec)
    : iProp Σ :=
-  ∀ (x : spec.(espec_ty)) (reqData : list u8) req rep dummy_rep_sl dummy,
+  ∀ (x : spec.(espec_ty)) (reqData : list u8) req repptr dummy_rep_sl dummy,
   {{{
     is_slice_small req byteT 1 reqData ∗
-    rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+    repptr ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
     is_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
     spec.(espec_Pre) x reqData
   }}}
-    f (slice_val req) #rep
+    f (slice_val req) #repptr
   {{{ rep_sl q repData, RET #();
-      rep ↦[slice.T byteT] (slice_val rep_sl) ∗
+      repptr ↦[slice.T byteT] (slice_val rep_sl) ∗
       is_slice_small rep_sl byteT q repData ∗
       spec.(espec_Post) x reqData repData
   }}}.
@@ -99,9 +97,10 @@ Lemma wp_erpc_Server_HandleRequest spec γ s f :
 Proof.
   iIntros "#Hf %Φ !# #Hs HΦ". wp_call. iModIntro.
   iApply "HΦ". clear Φ.
-  iIntros (reqData Post req repptr ?? Φ) "!# Hpre HΦ". wp_lam.
-  iDestruct "Hpre" as "(Hreq & Hrepptr & Hrep & Hpre)".
-  iSimpl in "Hpre". iDestruct "Hpre" as ([[[γreq rid] payload] x]) "[[[-> %Hseqpos] #HreqInv] Hpost]".
+  iApply urpc_handler_to_handler.
+  iIntros ([[[γreq rid] payload] x] reqData req repptr ?? Φ) "!# Hpre HΦ". wp_lam.
+  iDestruct "Hpre" as "(Hreq & Hrepptr & Hrep & Hpre)". simpl.
+  iDestruct "Hpre" as "[[-> %Hseqpos] #HreqInv]".
 
   wp_apply (wp_ReadInt with "Hreq"). clear req.
   iIntros (req) "Hreq".
@@ -181,7 +180,7 @@ Proof.
       { done. }
       iDestruct "HH" as "[Hrpc #Hstale]".
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hrep_val_sl Hrepptr Hpost]").
+      wp_apply (release_spec with "[-HΦ Hrep_val_sl Hrepptr]").
       {
         iFrame "#∗".
         iNext.
@@ -191,7 +190,7 @@ Proof.
       }
       wp_pures. iApply "HΦ". iModIntro.
       iFrame "Hrep_val_sl Hrepptr".
-      iApply "Hpost". by iLeft.
+      by iLeft.
     }
     { (* Not stale *)
       assert (seqno = rid.(Req_Seq)) as -> by word.
@@ -204,7 +203,7 @@ Proof.
 
       (* prove that rid.(Req_CID) is in lastReplyMV (probably just add [∗ map] _ ↦ _;_ ∈ lastReplyMV ; lastSeq, True) *)
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hrep_val_sl Hrepptr Hpost]").
+      wp_apply (release_spec with "[-HΦ Hrep_val_sl Hrepptr]").
       {
         iFrame "#∗".
         iNext.
@@ -214,7 +213,6 @@ Proof.
       }
       wp_pures. iModIntro. iApply "HΦ".
       iFrame "Hrep_val_sl Hrepptr".
-      iApply "Hpost".
       iRight.
       rewrite HlastReplyMlookup.
       done.
@@ -265,7 +263,7 @@ Proof.
 
     wp_loadField.
     iDestruct "Hrep" as "[Hrep1 Hrep2]".
-    wp_apply (release_spec with "[-HΦ Hrep1 Hrepptr Hpost]").
+    wp_apply (release_spec with "[-HΦ Hrep1 Hrepptr]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -285,7 +283,7 @@ Proof.
       done.
     }
     wp_pures. iApply "HΦ". iFrame.
-    iApply "Hpost". iModIntro. iRight. done.
+    iModIntro. iRight. done.
 Qed.
 
 Lemma wp_erpc_MakeServer (b : bool) γ :

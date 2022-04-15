@@ -100,3 +100,36 @@ Qed.
 
 
 End rpc_global_defs.
+
+Section urpc_spec_impl.
+Context `{!heapGS Σ, !urpcregG Σ}.
+
+Definition impl_urpc_handler_spec (f : val) (spec : uRPCSpec)
+   : iProp Σ :=
+  ∀ (x : spec.(spec_ty)) (reqData : list u8) req repptr dummy_rep_sl dummy,
+  {{{
+    is_slice_small req byteT 1 reqData ∗
+    repptr ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
+    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
+    spec.(spec_Pre) x reqData
+  }}}
+    f (slice_val req) #repptr
+  {{{ rep_sl q repData, RET #();
+      repptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+      is_slice_small rep_sl byteT q repData ∗
+      spec.(spec_Post) x reqData repData
+  }}}.
+
+Lemma urpc_handler_to_handler f spec :
+  impl_urpc_handler_spec f spec -∗
+  impl_handler_spec f (uRPCSpec_Spec spec).
+Proof.
+  iIntros "#Hf %reqData %Cont %req %repptr % % !# %Φ Hpre HΦ".
+  iDestruct "Hpre" as "(Hreq & Hrepptr & Hrep & Hpre)". iSimpl in "Hpre".
+  iDestruct "Hpre" as (x) "[Hpre Hcont]".
+  wp_apply ("Hf" with "[$Hrepptr $Hrep $Hpre $Hreq]").
+  iIntros (???) "(Hrepptr & Hrep & Hpost)".
+  iApply "HΦ". iFrame. iApply "Hcont". done.
+Qed.
+
+End urpc_spec_impl.

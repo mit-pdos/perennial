@@ -67,12 +67,12 @@ Proof.
       simpl. iExists _.
       iFrame "#HmoveSpec".
 
-      clear Φ.
+      clear Φ. iApply urpc_handler_to_handler.
       iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hargs)".
-      simpl. iDestruct "Hargs" as (x) "[Hargs Hpost]".
+      simpl.
       iDestruct "Hargs" as (?) "(%HencArgs & %HsidLe & #Hdst_is_shard)".
       wp_apply (wp_decodeMoveShardRequest with "[$Hreq_sl]").
       { done. }
@@ -85,8 +85,7 @@ Proof.
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
       wp_store.
       iApply "HΦ".
-      iFrame.
-      by iApply "Hpost".
+      by iFrame.
     }
 
     iApply (big_sepM_insert_2 with "").
