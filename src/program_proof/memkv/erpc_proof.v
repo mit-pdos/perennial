@@ -50,7 +50,7 @@ End erpc_defs.
 Section erpc_proof.
 Context `{!heapGS Σ, !urpcregG Σ, !erpcG Σ}.
 
-Definition own_erpc_server (s : loc) (γ : erpc_names) : iProp Σ :=
+Local Definition own_erpc_server (s : loc) (γ : erpc_names) : iProp Σ :=
   ∃ (lastReply_ptr lastSeq_ptr:loc)
     (lastReplyM:gmap u64 (list u8)) (lastReplyMV:gmap u64 goose_lang.val)
     (lastSeqM:gmap u64 u64) (nextCID:u64),
@@ -372,6 +372,84 @@ Proof.
   iDestruct "Hcid" as "[%Hbad|$]".
   exfalso.
   word.
+Qed.
+
+Definition own_erpc_client (c:loc) (γ : erpc_names) : iProp Σ :=
+  ∃ (cid seq:u64),
+    "Hcid" ∷ c ↦[erpc.Client :: "cid"] #cid ∗
+    "Hseq" ∷ c ↦[erpc.Client :: "nextSeq"] #seq ∗
+    "Hcrpc" ∷ is_eRPCClient_ghost γ cid seq ∗
+    "#Hserv" ∷ is_eRPCServer γ ∗
+    "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
+.
+
+Lemma wp_erpc_NewRequest (spec : eRPCSpec) (x : spec.(espec_ty)) c payload payload_sl q γ :
+  {{{
+    own_erpc_client c γ ∗
+    is_slice_small payload_sl byteT q payload ∗
+    spec.(espec_Pre) x payload
+  }}}
+    Client__NewRequest #c (slice_val payload_sl)
+  {{{ y req req_sl, RET (slice_val req_sl);
+    is_slice req_sl byteT 1 req ∗
+    (* The newly computed request *persistently* satisfies the precondition
+       of the underlying uRPC. *)
+    □(eRPCSpec_uRPC γ spec).(spec_Pre) y req ∗
+    (* And when a reply comes back, we can convert it to the [spec] level and
+       relate it to the original request [payload].
+       (We could give back [own_erpc_client] earlier but then we'd have to ask
+       for it again here.) *)
+    (∀ rep, (eRPCSpec_uRPC γ spec).(spec_Post) y req rep ={⊤}=∗
+      own_erpc_client c γ ∗ ▷ spec.(espec_Post) x payload rep)
+  }}}.
+Proof.
+  iIntros (Φ) "(Hc & Hpayload & Hpre) HΦ". wp_lam.
+  iNamed "Hc".
+
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_SumAssumeNoOverflow.
+  iIntros (Hnooverflow).
+  wp_storeField.
+  wp_apply wp_slice_len.
+  wp_apply wp_NewSliceWithCap.
+  { apply encoding.unsigned_64_nonneg. (* FIXME why does [word] not solve this? *) }
+  iIntros (req_ptr) "Hreq".
+  set len := u64_instance.u64.(word.add) _ payload_sl.(Slice.sz).
+  wp_pures.
+  rewrite replicate_0.
+
+  wp_loadField.
+  wp_apply (wp_WriteInt with "Hreq"). clear req_ptr len.
+  iIntros (req_sl) "Hreq".
+  wp_apply (wp_WriteInt with "Hreq"). clear req_sl.
+  iIntros (req_sl) "Hreq".
+  wp_apply (wp_WriteBytes with "[$Hreq $Hpayload]"). clear req_sl.
+  iIntros (req_sl) "[Hreq _]".
+  rewrite -!app_assoc app_nil_l.
+  wp_pures.
+
+  iMod (make_request {| Req_CID:=_; Req_Seq:= _ |}
+    (spec.(espec_Pre) x payload) (spec.(espec_Post) x payload) with "Hserv Hcrpc [$Hpre]")
+    as "[Hcrpc [%γreq [#Hisreq Hreqtok]]]".
+  { done. }
+  { simpl. word. }
+  iApply ("HΦ" $! (γreq, _, _, _)). iFrame "Hreq".
+  cbv [eRPCSpec_uRPC spec_Pre spec_Post]. iFrame "Hisreq".
+  iSplitR.
+  { iPureIntro. split; first done. simpl. word. }
+  iIntros "!> %rep [Hbad|Hreceipt]".
+  {
+    iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
+    exfalso.
+    simpl in Hbad.
+    word.
+  }
+  iMod (get_request_post with "Hisreq Hreceipt Hreqtok") as "$".
+  { done. }
+  iModIntro.
+  iExists _, _. iFrame "∗ #".
+  iPureIntro. simpl. word.
 Qed.
 
 End erpc_proof.

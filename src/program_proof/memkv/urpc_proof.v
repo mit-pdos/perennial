@@ -706,10 +706,10 @@ Definition call_errno (err : option call_err) : Z :=
 
 Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post :
+  handler_spec γsmap host rpcid Spec -∗
   {{{
       is_slice req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
-      handler_spec γsmap host rpcid Spec ∗
       is_uRPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
   }}}
@@ -725,10 +725,10 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
           (▷ Post repData))
   }}}.
 Proof.
-  iIntros (Φ) "H HΦ".
+  iIntros "#Hhandler !#" (Φ) "H HΦ".
   wp_lam.
   wp_pures.
-  iDestruct "H" as "(Hslice&Hrep_out_ptr&Hhandler&Hclient&#HSpec)".
+  iDestruct "H" as "(Hslice&Hrep_out_ptr&Hclient&#HSpec)".
   iNamed "Hclient". iNamed "Hstfields".
 
   wp_apply (wp_ref_of_zero).

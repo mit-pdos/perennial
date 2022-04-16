@@ -206,7 +206,7 @@ Proof.
   iNamed "Hconn2".
   iDestruct "Hcl" as (cl) "[Hcl_ptr #Hcl]".
   wp_load.
-  wp_apply (wp_Client__Call with "[$Hslice $Hrep $Hhandler $Hcl Hpre]").
+  wp_apply (wp_Client__Call with "Hhandler [$Hslice $Hrep $Hcl Hpre]").
   { done. }
   iIntros (err).
   iIntros "(_ & Hslice & Hrep)".

@@ -218,9 +218,8 @@ Proof.
   iDestruct (is_slice_small_take_drop _ _ _ (U64 off) with "Hs") as "[Hs2 Hs1]".
   { word. }
   replace (int.nat (U64 off)) with off by word.
-  wp_apply (wp_UInt64Put with "[$Hs2]").
-  { iPureIntro.
-    len. }
+  wp_apply (wp_UInt64Put with "Hs2").
+  { len. }
   iIntros "Hs2".
   iDestruct (slice.is_slice_combine with "Hs1 Hs2") as "Hs"; first len.
   wp_pures.
@@ -264,9 +263,8 @@ Proof.
   iDestruct (is_slice_small_take_drop _ _ _ (U64 off) with "Hs") as "[Hs2 Hs1]".
   { word. }
   replace (int.nat (U64 off)) with off by word.
-  wp_apply (wp_UInt32Put with "[$Hs2]").
-  { iPureIntro.
-    len. }
+  wp_apply (wp_UInt32Put with "Hs2").
+  { len. }
   iIntros "Hs2".
   iDestruct (slice.is_slice_combine with "Hs1 Hs2") as "Hs"; first len.
   wp_pures.

@@ -605,6 +605,23 @@ Proof.
   word.
 Qed.
 
+Lemma is_slice_split_acc n s t vs :
+  int.Z n <= length vs →
+  is_slice s t 1 vs -∗
+  is_slice_small (slice_skip s t n) t 1 (drop (int.nat n) vs) ∗
+    (∀ vs', is_slice_small (slice_skip s t n) t 1 vs' -∗
+            is_slice s t 1 (take (int.nat n) vs ++ vs')).
+Proof.
+  iIntros (Hlen) "Hs".
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_small_acc with "Hs") as "[Hs Hclose]".
+  iDestruct (slice_small_split _ n with "Hs") as "[Hhead $]".
+  { done. }
+  iIntros (vs') "Htail". iApply "Hclose".
+  iApply (is_slice_combine with "Hhead Htail").
+  word.
+Qed.
+
 Theorem slice_skip_skip (n m: u64) s t :
   int.Z m ≤ int.Z n ≤ int.Z s.(Slice.sz) ->
   int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap) ->

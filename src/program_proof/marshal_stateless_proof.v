@@ -85,15 +85,49 @@ Proof.
   set (s' := slice_take _ _).
   wp_apply wp_SliceSkip.
   { rewrite /slice_take /=. word. }
-  iDestruct (slice.is_slice_small_acc with "Hsl") as "[Hsl Hclose]".
-  wp_apply (wp_UInt64Put_skip with "Hsl").
-  { rewrite fmap_length. word. }
-  { rewrite Hex. word. }
+  iDestruct (slice.is_slice_split_acc s.(Slice.sz) with "Hsl") as "[Hsl Hclose]".
+  { len. }
+  wp_apply (wp_UInt64Put with "Hsl").
+  { len. rewrite Hex. word. }
   iIntros "Hsl". iDestruct ("Hclose" with "Hsl") as "Hsl".
   wp_pures. iApply "HΦ". iModIntro.
   rewrite /is_slice. iExactEq "Hsl". repeat f_equal.
   rewrite /list.untype fmap_app. f_equal.
-  rewrite drop_ge //. rewrite Hex. word.
+  { rewrite take_app_alt //. len. }
+  rewrite drop_ge //. len. rewrite Hex. word.
+Qed.
+
+Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
+  {{{ is_slice s byteT 1 vs ∗ is_slice_small data_sl byteT q data }}}
+    WriteBytes (slice_val s) (slice_val data_sl)
+  {{{ s', RET slice_val s';
+    is_slice s' byteT 1 (vs ++ data) ∗
+    is_slice_small data_sl byteT q data
+  }}}.
+Proof.
+  iIntros (Φ) "[Hs Hdata] HΦ". wp_lam. wp_pures.
+  wp_apply wp_slice_len.
+  wp_apply (wp_reserve with "Hs"). clear s. iIntros (s) "[% Hs]". wp_pures.
+  iDestruct (is_slice_wf with "Hs") as %Hwf.
+  iDestruct (is_slice_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_small_sz with "Hdata") as %Hdatasz.
+  wp_apply wp_slice_len. wp_pures.
+  wp_apply wp_slice_len.
+  wp_apply (wp_SliceTake_full_cap with "Hs").
+  { word. }
+  iIntros (ex) "[%Hex Hsl]".
+  set (s' := slice_take _ _).
+  wp_apply wp_SliceSkip.
+  { rewrite /slice_take /=. word. }
+  iDestruct (slice.is_slice_split_acc s.(Slice.sz) with "Hsl") as "[Hsl Hclose]".
+  { len. }
+  wp_apply (wp_SliceCopy_full with "[$Hdata $Hsl]").
+  { iPureIntro. len. rewrite Hdatasz Hex. word. }
+  iIntros "[Hdata Hsl]". iDestruct ("Hclose" with "Hsl") as "Hsl".
+  wp_pures. iApply "HΦ". iFrame "Hdata". iModIntro.
+  rewrite /is_slice. iExactEq "Hsl". repeat f_equal.
+  rewrite /list.untype fmap_app. f_equal.
+  rewrite take_app_alt //. len.
 Qed.
 
 End goose_lang.

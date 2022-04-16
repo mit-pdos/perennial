@@ -165,6 +165,26 @@ Proof.
   iApply "Hs".
 Qed.
 
+Lemma wp_NewSliceWithCap stk E t `{!IntoValForType V t} (sz cap : u64) :
+  int.Z sz ≤ int.Z cap →
+  {{{ True }}}
+    NewSliceWithCap t #sz #cap @ stk; E
+  {{{ ptr, RET slice_val (Slice.mk ptr sz cap);
+    is_slice (Slice.mk ptr sz cap) t 1 (replicate (int.nat sz) (IntoVal_def V))
+  }}}.
+Proof.
+  iIntros (? Φ) "_ HΦ".
+  wp_apply slice.wp_new_slice_cap.
+  { apply to_val_has_zero. }
+  { done. }
+  iIntros (s) "Hs".
+  iApply "HΦ".
+  rewrite /is_slice.
+  rewrite untype_replicate.
+  rewrite def_is_zero.
+  iApply "Hs".
+Qed.
+
 Lemma wp_SliceGet stk E s t q vs (i: u64) v0 :
   {{{ is_slice_small s t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
     SliceGet t (slice_val s) #i @ stk; E

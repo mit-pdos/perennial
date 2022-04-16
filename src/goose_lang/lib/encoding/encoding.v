@@ -264,11 +264,12 @@ Proof.
 Qed.
 
 Theorem wp_UInt64Put stk E s x vs :
-  {{{ is_slice_small s byteT 1%Qp vs ∗ ⌜length vs >= u64_bytes⌝ }}}
+  length vs >= u64_bytes →
+  {{{ is_slice_small s byteT 1%Qp vs }}}
     UInt64Put (slice_val s) #x @ stk; E
   {{{ RET #(); is_slice_small s byteT 1%Qp (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
 Proof.
-  iIntros (Φ) "[Hsl %] HΦ".
+  iIntros (? Φ) "Hsl HΦ".
   wp_lam.
   wp_let.
   wp_lam.
@@ -288,41 +289,6 @@ Proof.
   lia.
 Qed.
 
-(* For when you use UInt64Put not at the beginning of a subslice, and already
-   got your [is_slice_small] written with a [++]. *)
-Theorem wp_UInt64Put_skip {stk E} s n x (pre vs : list val) :
-  length pre = int.nat n →
-  length vs >= u64_bytes →
-  {{{ is_slice_small s byteT 1%Qp (pre ++ vs) }}}
-    UInt64Put (slice_val $ slice_skip s byteT n) #x @ stk; E
-  {{{ RET #(); is_slice_small s byteT 1%Qp (pre ++ u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
-Proof.
-  iIntros (Hpre Hlen Φ) "Hsl HΦ".
-  wp_lam.
-  wp_let.
-  wp_lam.
-  wp_pures.
-  rewrite /is_slice_small. iDestruct "Hsl" as "(Hptr&[%Hsz %Hwf])".
-  rewrite array_app.
-  rewrite app_length in Hsz.
-  iDestruct "Hptr" as "[Hhead Hptr]".
-  iDestruct (array_split 8 with "Hptr") as "[Henc Hrest]"; first lia.
-  { word. }
-  wp_apply (wp_EncodeUInt64 with "[Henc]").
-  { iSplit.
-    - iNext. iExactEq "Henc". repeat f_equal. word.
-    - iPureIntro. rewrite take_length; word. }
-  iIntros "Henc".
-  change (Z.to_nat 8) with 8%nat.
-  iApply "HΦ". iSplit.
-  - rewrite !array_app. iFrame "Hhead Hrest".
-    iExactEq "Henc". repeat f_equal. word.
-  - iPureIntro.
-    rewrite !app_length drop_length u64_le_bytes_length.
-    word.
-Qed.
-
-
 Definition u32_le_bytes (x: u32) : list val :=
   b2val <$> u32_le x.
 
@@ -332,11 +298,12 @@ Proof.
 Qed.
 
 Theorem wp_UInt32Put stk E s (x: u32) vs :
-  {{{ is_slice_small s byteT 1%Qp vs ∗ ⌜length vs >= u32_bytes⌝ }}}
+  length vs >= u32_bytes →
+  {{{ is_slice_small s byteT 1%Qp vs }}}
     UInt32Put (slice_val s) #x @ stk; E
   {{{ RET #(); is_slice_small s byteT 1%Qp (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
 Proof.
-  iIntros (Φ) "[Hsl %] HΦ".
+  iIntros (? Φ) "Hsl HΦ".
   wp_lam.
   wp_let.
   wp_lam.

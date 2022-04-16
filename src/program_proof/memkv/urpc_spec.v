@@ -120,6 +120,8 @@ Definition impl_urpc_handler_spec (f : val) (spec : uRPCSpec)
       spec.(spec_Post) x reqData repData
   }}}.
 
+(** Lift handler registration and RPC calls to uRPCSpec *)
+
 Lemma urpc_handler_to_handler f spec :
   impl_urpc_handler_spec f spec -∗
   impl_handler_spec f (uRPCSpec_Spec spec).
@@ -130,6 +132,36 @@ Proof.
   wp_apply ("Hf" with "[$Hrepptr $Hrep $Hpre $Hreq]").
   iIntros (???) "(Hrepptr & Hrep & Hpost)".
   iApply "HΦ". iFrame. iApply "Hcont". done.
+Qed.
+
+Lemma wp_Client__Call_uRPCSpec γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) (spec : uRPCSpec) (x : spec.(spec_ty)) :
+  rpcid = spec.(spec_rpcid) →
+  handler_urpc_spec γsmap host spec -∗
+  {{{
+      is_slice req byteT 1 reqData ∗
+      rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      is_uRPCClient cl_ptr host ∗
+      □(spec.(spec_Pre) x reqData)
+  }}}
+    urpc.Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
+  {{{
+       (err : option call_err), RET #(call_errno err);
+       is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
+       typed_slice.is_slice req byteT 1 reqData ∗
+       (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
+        ∃ rep_sl (repData:list u8),
+          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+          typed_slice.is_slice rep_sl byteT 1 repData ∗
+          (▷ spec.(spec_Post) x reqData repData))
+  }}}.
+Proof.
+  iIntros (->) "#Hhandler !# %Φ Hpre HΦ".
+  iDestruct "Hpre" as "(Hslice&Hrep_out_ptr&Hclient&#HSpec)".
+  iApply (wp_Client__Call with "Hhandler [$Hrep_out_ptr $Hclient $Hslice]").
+  { simpl. do 2 iModIntro.
+    iExists _. iFrame "HSpec". iIntros (?) "Hpost". iExact "Hpost". }
+  done.
 Qed.
 
 End urpc_spec_impl.
