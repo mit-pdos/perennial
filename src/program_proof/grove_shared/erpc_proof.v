@@ -403,7 +403,7 @@ Proof.
   wp_apply (wp_NewSliceWithCap (V:=u8)).
   { apply encoding.unsigned_64_nonneg. (* FIXME why does [word] not solve this? *) }
   iIntros (req_ptr) "Hreq".
-  set len := u64_instance.u64.(word.add) _ payload_sl.(Slice.sz).
+  set len := (X in (Slice.mk req_ptr _ X)).
   wp_pures.
   rewrite replicate_0.
 
