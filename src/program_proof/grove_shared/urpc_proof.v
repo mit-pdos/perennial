@@ -2,7 +2,7 @@ From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.gokv Require Import urpc.
 From iris.base_logic.lib Require Import saved_prop.
 From Perennial.program_proof Require Import grove_prelude std_proof.
-From Perennial.program_proof Require Import marshal_proof.
+From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Import lib.ghost_map lib.mono_nat lib.saved_spec.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
@@ -59,8 +59,7 @@ Record server_chan_gnames := {
 Definition reply_chan_inner_msg (Γ : client_chan_gnames) m : iProp Σ :=
     ∃ (rpcid seqno : u64) reqData replyData Post γ d rep,
        "%Hlen_reply" ∷ ⌜ length replyData = int.nat (length replyData) ⌝ ∗
-       "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 seqno;
-                                              EncUInt64 (length replyData); EncBytes replyData] ⌝ ∗
+       "%Henc" ∷ ⌜ msg_data m = u64_le seqno ++ replyData ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid reqData γ d rep) ∗
        "#HPost_saved" ∷ saved_pred_own γ (Post) ∗
        "#HPost" ∷ inv urpc_escrowN (Post replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt).
@@ -77,8 +76,7 @@ Definition server_chan_inner_msg Γsrv m : iProp Σ :=
        "%Hlen_args" ∷ ⌜ length args = int.nat (U64 (Z.of_nat (length args))) ⌝ ∗
        "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
        "%Hdom2" ∷ ⌜ rpcid ∈ rpcdom ⌝ ∗
-       "%Henc" ∷ ⌜ has_encoding (msg_data m) [EncUInt64 rpcid; EncUInt64 seqno;
-                                              EncUInt64 (length args); EncBytes args] ⌝ ∗
+       "%Henc" ∷ ⌜ msg_data m = u64_le rpcid ++ u64_le seqno ++ args  ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid args γ1 d rep) ∗
        "#Hspec_name" ∷ ptsto_ro (scmap_name Γsrv) rpcid γ2 ∗
        "#Hspec_saved" ∷ saved_spec_own γ2 Spec ∗
@@ -169,7 +167,7 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
                     "%Hpending_cb" ∷ ⌜ pending !! seqno  = None ⌝ ∗
                     "HPost" ∷ (Post reply) ∗
                     "Hrep_ptr" ∷ (urpc_reg_rep_ptr req) ↦[slice.T byteT] (slice_val rep_sl) ∗
-                    "Hrep_data" ∷ typed_slice.is_slice rep_sl byteT 1 reply ∗
+                    "Hrep_data" ∷ is_slice_small rep_sl byteT 1 reply ∗
                     "Hstate" ∷ (urpc_reg_done req) ↦[uint64T] #1) ∨
                  (* (3) Caller has extracted ownership *)
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
@@ -315,25 +313,13 @@ Proof.
   destruct err; wp_pures.
   { iRight. iModIntro. iSplit; first done. wp_pures. eauto. }
   iNamed "Hmsg".
-  iDestruct (is_slice_small_acc with "Hsl") as "(Hslice&Hslice_close)".
-  wp_apply (wp_new_dec with "Hslice"); first eauto.
-  iIntros (?) "Hdec".
-  wp_pures.
 
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_pures.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_pures.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_pures.
-  wp_apply (wp_Dec__GetBytes' with "[$Hdec $Hslice_close]").
-  { word. }
-  iIntros (s') "Hsl".
+  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  cbn in Henc. subst m.
+  wp_apply (wp_ReadInt with "Hsl"). clear r.
+  iIntros (r) "Hsl".
+  wp_apply (wp_ReadInt with "Hsl"). clear r.
+  iIntros (r) "Hsl".
   wp_pures.
 
   wp_lam. wp_pures.
@@ -363,45 +349,29 @@ Proof.
   wp_pures.
 
   rewrite /impl_handler_spec.
-  iSpecialize ("His_urpcHandler" $! args Post s' sl'). 
+  iSpecialize ("His_urpcHandler" $! args Post r sl'). 
 
   rewrite zero_slice_val.
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
   wp_apply ("His_urpcHandler" with "[$Hsl $Hsl' HPre]").
   { iRewrite -"Hequiv". iFrame "HPre".
     iApply @is_slice_zero.
   }
   iIntros (rep_sl rep_q repData) "(Hsl' & His_slice & HPost)".
-
-  wp_pures.
-  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
-  wp_apply (wp_slice_len).
-  wp_apply wp_SumAssumeNoOverflow.
-  change (word.add 8 8)%Z with (U64 16).
-  iIntros (Hnooverflow).
-
-  wp_apply (wp_new_enc).
-  iIntros (enc) "Henc".
-  wp_pures.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
-  wp_pures.
-  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
-  wp_apply (wp_slice_len).
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
-  wp_pures.
-  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
   iDestruct (is_slice_small_sz with "His_slice") as %Hsz.
-  wp_apply (wp_Enc__PutBytes with "[$Henc $His_slice]").
-  { word. }
-  iIntros "[Henc Hslice]".
   wp_pures.
-  wp_apply (wp_Enc__Finish with "[$Henc]").
-  iIntros (rep_sl_msg rep_msg_data).
-  iIntros "(%Hencoding&Hlength&Hmsg_slice)".
+  wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
+  wp_apply (wp_slice_len).
+
+  wp_apply (wp_NewSliceWithCap (V:=u8)).
+  { apply encoding.unsigned_64_nonneg. (* FIXME why does [word] not solve this? *) }
+  iIntros (ptr) "Hmsg".
+  rewrite replicate_0.
+  wp_apply (wp_WriteInt with "Hmsg"). clear ptr.
+  iIntros (msg_sl) "Hmsg".
+  wp_load.
+  wp_apply (wp_WriteBytes with "[$Hmsg $His_slice]"). clear msg_sl.
+  iIntros (msg_sl) "[Hmsg_slice _]".
+  rewrite -!app_assoc app_nil_l.
 
   (* Send *)
   iDestruct (is_slice_small_read with "Hmsg_slice") as "(Hmsg_slice&_)".
@@ -416,22 +386,17 @@ Proof.
   iExists _. iFrame "Hchan'". iNext.
   iIntros (msg_sent) "Hchan'".
   iMod "Hclo'" as "_".
-  iMod ("Hclo" with "[Hchan' Hlength]").
+  iMod ("Hclo" with "[Hchan']").
   { iNext. iExists _.
     iFrame.
     destruct msg_sent; last first.
     { iFrame "#". }
-    destruct (decide (Message host rep_msg_data ∈ ms_rep)).
-    { assert (ms_rep ∪ {[Message host rep_msg_data]} = ms_rep) as -> by set_solver. iFrame "#". }
-    iApply big_sepS_union; first by set_solver.
-    iFrame "#".
-    iApply big_sepS_singleton.
+    iEval (rewrite [ms_rep ∪ _]comm_L).
+    iApply big_sepS_insert_2; last done.
     iExists _, _, _, _, _, _, _, _.
     iFrame "#".
-    iPureIntro. simpl. rewrite ?app_nil_l //= in Hencoding. rewrite Hsz.
-    assert (U64 (Z.of_nat (int.nat (rep_sl.(Slice.sz)))) = rep_sl.(Slice.sz)) as ->.
-    { word. }
-    eauto.
+    iPureIntro. cbn. split; last done.
+    word.
   }
   iModIntro. iIntros (err) "[%?]". wp_pures; eauto.
 Qed.
@@ -537,23 +502,12 @@ Proof.
   }
   wp_pures.
   iNamed "Hmsg".
-  iDestruct (typed_slice.is_slice_small_acc with "Hs") as "[Hsl Hsl_close]".
-  wp_apply (wp_new_dec with "[$Hsl]").
-  { done. }
-  iIntros (?) "Hdec".
+  iDestruct (typed_slice.is_slice_to_small with "Hs") as "Hsl".
+  cbn in Henc. subst m.
+  wp_apply (wp_ReadInt with "Hsl"). clear s.
+  iIntros (s) "Hsl".
   wp_pures.
 
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_pures.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_pures.
-  wp_apply (wp_Dec__GetBytes' with "[$Hdec $Hsl_close]").
-  { word. }
-  iIntros (?) "Hsl".
-  wp_pures.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "(Hlked&Hlock_inner)".
@@ -708,7 +662,7 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post :
   handler_spec γsmap host rpcid Spec -∗
   {{{
-      is_slice req byteT 1 reqData ∗
+      is_slice_small req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       is_uRPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
@@ -717,11 +671,11 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
   {{{
        (err : option call_err), RET #(call_errno err);
        is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
-       typed_slice.is_slice req byteT 1 reqData ∗
+       is_slice_small req byteT 1 reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          typed_slice.is_slice rep_sl byteT 1 repData ∗
+          is_slice_small rep_sl byteT 1 repData ∗
           (▷ Post repData))
   }}}.
 Proof.
@@ -816,35 +770,18 @@ Proof.
     iPureIntro. rewrite lookup_insert //. }
   wp_pures.
   wp_apply (wp_slice_len).
-  wp_apply wp_SumAssumeNoOverflow.
-  change (word.add (word.add 8 8) 8)%Z with (U64 24).
-  iIntros (Hoverflow2).
-  wp_apply (wp_new_enc).
-  iIntros (enc) "Henc".
-  wp_pures.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
-  wp_pures.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
-  wp_pures.
-  wp_apply (wp_slice_len).
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
-  wp_pures.
-  iDestruct (is_slice_small_read with "Hslice") as "(Hslice&Hslice_close)".
-  iDestruct (is_slice_small_sz with "Hslice") as %Hsz.
-  wp_apply (wp_Enc__PutBytes with "[$Henc $Hslice]").
-  { word. }
-  iIntros "[Henc Hslice]".
-  wp_pures.
-  wp_apply (wp_Enc__Finish with "[$Henc]").
-  iIntros (rep_sl repData).
-  iIntros "(%Hhas_encoding & % & Hrep_sl)".
-  wp_pures.
+  wp_apply (wp_NewSliceWithCap (V:=u8)).
+  { apply encoding.unsigned_64_nonneg. (* FIXME why does [word] not solve this? *) }
+  iIntros (ptr) "Hmsg".
+  rewrite replicate_0.
+  wp_apply (wp_WriteInt with "Hmsg"). clear ptr.
+  iIntros (msg_sl) "Hmsg".
+  wp_apply (wp_WriteInt with "Hmsg"). clear msg_sl.
+  iIntros (msg_sl) "Hmsg".
+  wp_apply (wp_WriteBytes with "[$Hmsg $Hslice]"). clear msg_sl.
+  iIntros (rep_sl) "[Hrep_sl Hslice]".
+  rewrite -!app_assoc app_nil_l.
+
   wp_loadField.
   iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
   iNamed "Hhandler".
@@ -856,29 +793,25 @@ Proof.
   iExists _. iFrame "Hchan'". iNext.
   iIntros (msg_sent) "Hchan'". iNamed "H".
   iMod ("Hclo'") as "_".
+  iDestruct (is_slice_small_sz with "Hslice") as %Hsz.
   iMod ("Hclo" with "[Hmessages Hchan']") as "_".
   { iNext. iExists _.
     iFrame.
     destruct msg_sent; last by iFrame.
-    destruct (decide (Message client repData ∈ ms)).
-    { assert (ms ∪ {[Message client repData]} = ms) as -> by set_solver. iFrame. }
-    iApply big_sepS_union; first by set_solver.
-    iFrame "Hmessages".
-    iApply big_sepS_singleton.
+    rewrite [ms ∪ _]comm_L.
+    iApply (big_sepS_insert_2 with "[] Hmessages").
     iExists _, _, _, _, _, _, _.
     iExists _, _, _, _.
     iFrame "Hreg".
     assert (U64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as Heqlen.
     { word. }
-    iFrame "#". iSplit; eauto.
-    { iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz. word. }
-    iSplit; eauto.
-    { iPureIntro. simpl. rewrite ?app_nil_l //= in Hhas_encoding. rewrite Hsz Heqlen. eauto. }
+    iFrame "#". iSplit; last by eauto.
+    iPureIntro. word.
   }
   iModIntro. iIntros (err) "[%Herr Hsl_rep]".
   destruct err; wp_pures.
   { iApply ("HΦ" $! (Some CallErrDisconnect)).
-    iDestruct ("Hslice_close" with "Hslice") as "$".
+    iFrame "Hslice".
     iModIntro.
     iSplitR "Hrep_out_ptr".
     - iExists _, _, _, _. by iFrame "#".
@@ -957,7 +890,7 @@ Proof.
     destruct aborted; wp_pures; iModIntro.
     1: iApply ("HΦ" $! (Some CallErrDisconnect)).
     2: iApply ("HΦ" $! (Some CallErrTimeout)).
-    all: iDestruct ("Hslice_close" with "Hslice") as "$".
+    all: iFrame "Hslice".
     all: iSplitR "Hrep_out_ptr"; last by eauto.
     all: iExists _, _, _, _; by iFrame "∗#".
   }
@@ -985,10 +918,9 @@ Proof.
     iApply ("HΦ" $! None).
     iSplitR.
     { iExists _, _, _, _. iFrame "#". }
-    iSplitL "Hslice Hslice_close".
-    { iApply "Hslice_close". eauto. }
+    iFrame "Hslice".
     iExists _, reply.
-    by iFrame.
+    iFrame.
   }
   { iDestruct "Hcase3" as "(?&Hex)".
     iDestruct (ptsto_valid_2 with "Hex [$]") as %Hval.

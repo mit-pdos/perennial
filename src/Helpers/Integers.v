@@ -285,6 +285,7 @@ Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x in
   let t := split (byte:=u8_instance.u8) u64_bytes n in
   tuple.to_list t.
+Global Arguments u64_le : simpl never.
 
 Definition le_to_u64 (l: list byte) : u64.
 Proof.
@@ -328,6 +329,7 @@ Definition u32_le (x: u32) : list byte :=
   let n := word.unsigned x in
   let t := split (byte:=u8_instance.u8) u32_bytes n in
   tuple.to_list t.
+Global Arguments u32_le : simpl never.
 
 Definition le_to_u32 (l: list byte) : u32.
 Proof.

@@ -202,7 +202,7 @@ Qed.
 
 Lemma wp_DecodePutReply rep rep_sl repData :
   {{{
-       typed_slice.is_slice rep_sl byteT 1%Qp repData ∗
+       typed_slice.is_slice_small rep_sl byteT 1%Qp repData ∗
        ⌜has_encoding_PutReply repData rep ⌝
   }}}
     DecodePutReply (slice_val rep_sl)
@@ -222,7 +222,6 @@ Proof.
   iNamed "HH".
   wp_pures.
 
-  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }
   iIntros (?) "Hdec".

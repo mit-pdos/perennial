@@ -139,7 +139,7 @@ Lemma wp_Client__Call_uRPCSpec γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req re
   rpcid = spec.(spec_rpcid) →
   handler_urpc_spec γsmap host spec -∗
   {{{
-      is_slice req byteT 1 reqData ∗
+      is_slice_small req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       is_uRPCClient cl_ptr host ∗
       □(spec.(spec_Pre) x reqData)
@@ -148,11 +148,11 @@ Lemma wp_Client__Call_uRPCSpec γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req re
   {{{
        (err : option call_err), RET #(call_errno err);
        is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
-       typed_slice.is_slice req byteT 1 reqData ∗
+       is_slice_small req byteT 1 reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          typed_slice.is_slice rep_sl byteT 1 repData ∗
+          is_slice_small rep_sl byteT 1 repData ∗
           (▷ spec.(spec_Post) x reqData repData))
   }}}.
 Proof.

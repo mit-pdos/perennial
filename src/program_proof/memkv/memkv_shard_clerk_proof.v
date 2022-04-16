@@ -38,6 +38,7 @@ Proof.
 
   wp_apply (typed_slice.wp_NewSlice (V:=u8)).
   iIntros (req_sl) "Hreq_sl".
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_loadField.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
@@ -49,7 +50,7 @@ Proof.
   (* got reply *)
   wp_load.
   iDestruct "Hpost" as (??) "Hcid".
-  wp_apply (wp_DecodeUint64 with "[$Hrep_sl]").
+  wp_apply (wp_DecodeUint64' with "[$Hrep_sl]").
   { done. }
   wp_storeField.
   wp_storeField.
@@ -130,6 +131,7 @@ Proof.
   iEval (rewrite is_shard_server_unfold) in "His_shard".
   iNamed "His_shard".
   iNamed "HrawRep".
+  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_moveSpec_pre _ _) with "Hc_own HmoveSpec [] [$Hsl $HrawRep //]").
   { simpl. iModIntro. iNext. iExists _. iFrame "%". iSplit. 
     - iNext => /=. iFrame "Hserver".
@@ -218,6 +220,7 @@ Proof.
   iIntros (??) "(%Henc & Hsl & Hargs)".
   wp_loadField.
   wp_loadField.
+  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_installSpec _ _) with "Hc_own HinstallSpec [] [$Hsl $HrawRep //]").
   {
     simpl.
@@ -321,6 +324,7 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_putSpec _ _) (Q, γreq, mkPutRequestC _ _ _ _)
     with "Hc_own HputSpec [] [$Hreq_sl $HrawRep //]").
   {
@@ -458,6 +462,7 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_getSpec _ _) (Q,γreq,mkGetRequestC _ _ _) with "Hc_own HgetSpec [] [$Hreq_sl $HrawRep //]").
   {
     iModIntro.
@@ -596,6 +601,7 @@ Proof.
   wp_loadField.
 
   unfold is_shard_server.
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_conditionalPutSpec _ _) (Q,γreq,mkConditionalPutRequestC _ _ _ _ _)
     with "Hc_own HconditionalPutSpec [] [$Hreq_sl $HrawRep //]").
   {

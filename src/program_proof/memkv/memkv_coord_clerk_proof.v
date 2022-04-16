@@ -17,7 +17,7 @@ Definition own_KVCoordClerk ck γkv : iProp Σ :=
 Lemma wp_decodeShardMap data_sl data (shardMapping : list u64) :
   {{{
        "%Henc" ∷ ⌜ has_encoding_shardMapping data shardMapping ⌝ ∗
-      "Hsl" ∷ typed_slice.is_slice (V:=u8) data_sl byteT 1 data
+      "Hsl" ∷ typed_slice.is_slice_small (V:=u8) data_sl byteT 1 data
   }}}
     decodeShardMap (slice_val data_sl)
   {{{  rep_sl , RET (slice_val rep_sl);
@@ -28,7 +28,6 @@ Proof.
   iNamed "H".
   wp_lam.
 
-  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
   destruct Henc as [Henc Hlen].
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }
@@ -70,6 +69,7 @@ Proof.
   iIntros (sl0 d) "(Hsl&%)".
   wp_loadField.
   wp_loadField.
+  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_addSpec _) dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
   { simpl. iModIntro. iNext. iFrame "%". iExists _. iFrame "#". iPureIntro; congruence. }
   iIntros "(Hreq_sl & Hpost)".
@@ -114,6 +114,7 @@ Proof.
   iIntros (s) "H".
   wp_loadField.
   wp_loadField.
+  iDestruct (is_slice_to_small with "H") as "H".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_getSpec _) () with "Hc_own HgetSpec [] [$H $HrawRep //]").
   { done. }
   iIntros "(Hreq_sl & Hpost)".

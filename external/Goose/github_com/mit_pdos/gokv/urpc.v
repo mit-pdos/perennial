@@ -14,12 +14,10 @@ Definition Server__rpcHandle: val :=
     let: "replyData" := ref (zero_val (slice.T byteT)) in
     let: "f" := Fst (MapGet (struct.loadF Server "handlers" "srv") "rpcid") in
     "f" "data" "replyData";;
-    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8) (slice.len (![slice.T byteT] "replyData")) in
-    let: "e" := marshal.NewEnc "num_bytes" in
-    marshal.Enc__PutInt "e" "seqno";;
-    marshal.Enc__PutInt "e" (slice.len (![slice.T byteT] "replyData"));;
-    marshal.Enc__PutBytes "e" (![slice.T byteT] "replyData");;
-    grove_ffi.Send "conn" (marshal.Enc__Finish "e");;
+    let: "data1" := NewSliceWithCap byteT #0 (#8 + slice.len (![slice.T byteT] "replyData")) in
+    let: "data2" := marshal.WriteInt "data1" "seqno" in
+    let: "data3" := marshal.WriteBytes "data2" (![slice.T byteT] "replyData") in
+    grove_ffi.Send "conn" "data3";;
     #().
 
 Definition MakeServer: val :=
@@ -37,11 +35,9 @@ Definition Server__readThread: val :=
       then Break
       else
         let: "data" := struct.get grove_ffi.ReceiveRet "Data" "r" in
-        let: "d" := marshal.NewDec "data" in
-        let: "rpcid" := marshal.Dec__GetInt "d" in
-        let: "seqno" := marshal.Dec__GetInt "d" in
-        let: "reqLen" := marshal.Dec__GetInt "d" in
-        let: "req" := marshal.Dec__GetBytes "d" "reqLen" in
+        let: ("rpcid", "data") := marshal.ReadInt "data" in
+        let: ("seqno", "data") := marshal.ReadInt "data" in
+        let: "req" := "data" in
         Server__rpcHandle "srv" "conn" "rpcid" "seqno" "req";;
         Continue));;
     #().
@@ -90,10 +86,8 @@ Definition Client__replyThread: val :=
         Break
       else
         let: "data" := struct.get grove_ffi.ReceiveRet "Data" "r" in
-        let: "d" := marshal.NewDec "data" in
-        let: "seqno" := marshal.Dec__GetInt "d" in
-        let: "replyLen" := marshal.Dec__GetInt "d" in
-        let: "reply" := marshal.Dec__GetBytes "d" "replyLen" in
+        let: ("seqno", "data") := marshal.ReadInt "data" in
+        let: "reply" := "data" in
         lock.acquire (struct.loadF Client "mu" "cl");;
         let: ("cb", "ok") := MapGet (struct.loadF Client "pending" "cl") "seqno" in
         (if: "ok"
@@ -139,13 +133,10 @@ Definition Client__Call: val :=
     struct.storeF Client "seq" "cl" (std.SumAssumeNoOverflow (struct.loadF Client "seq" "cl") #1);;
     MapInsert (struct.loadF Client "pending" "cl") "seqno" "cb";;
     lock.release (struct.loadF Client "mu" "cl");;
-    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8 + #8) (slice.len "args") in
-    let: "e" := marshal.NewEnc "num_bytes" in
-    marshal.Enc__PutInt "e" "rpcid";;
-    marshal.Enc__PutInt "e" "seqno";;
-    marshal.Enc__PutInt "e" (slice.len "args");;
-    marshal.Enc__PutBytes "e" "args";;
-    let: "reqData" := marshal.Enc__Finish "e" in
+    let: "data1" := NewSliceWithCap byteT #0 (#8 + #8 + slice.len "args") in
+    let: "data2" := marshal.WriteInt "data1" "rpcid" in
+    let: "data3" := marshal.WriteInt "data2" "seqno" in
+    let: "reqData" := marshal.WriteBytes "data3" "args" in
     (if: grove_ffi.Send (struct.loadF Client "conn" "cl") "reqData"
     then ErrDisconnect
     else
