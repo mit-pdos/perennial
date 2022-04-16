@@ -45,6 +45,10 @@ Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : uRPCSpec :=
 Definition handler_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (spec : eRPCSpec) :=
   handler_urpc_spec Γsrv host (eRPCSpec_uRPC γerpc spec).
 
+(** What a client needs to get started *)
+Definition erpc_make_client_pre γ cid : iProp Σ :=
+  is_eRPCServer γ ∗ is_eRPCClient_ghost γ cid 1.
+
 End erpc_defs.
 
 Section erpc_proof.
@@ -71,6 +75,15 @@ Definition is_erpc_server (s:loc) γ : iProp Σ :=
   "#His_srv" ∷ is_eRPCServer γ ∗
   "#Hmu" ∷ readonly (s ↦[erpc.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock erpcN mu (own_erpc_server s γ)
+.
+
+Definition own_erpc_client (c:loc) (γ : erpc_names) : iProp Σ :=
+  ∃ (cid seq:u64),
+    "Hcid" ∷ c ↦[erpc.Client :: "cid"] #cid ∗
+    "Hseq" ∷ c ↦[erpc.Client :: "nextSeq"] #seq ∗
+    "Hcrpc" ∷ is_eRPCClient_ghost γ cid seq ∗
+    "#Hserv" ∷ is_eRPCServer γ ∗
+    "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
 .
 
 Definition impl_erpc_handler_spec (f : val) (spec : eRPCSpec)
@@ -310,11 +323,10 @@ Proof.
   by iFrame "# ∗".
 Qed.
 
-(** This postcondition matches the [wp_erpc_MakeClient] precondition. *)
 Lemma wp_erpc_GetFreshCID s γ :
   {{{ is_erpc_server s γ }}}
     Server__GetFreshCID #s
-  {{{ (cid : u64), RET #cid; is_eRPCServer γ ∗ is_eRPCClient_ghost γ cid 1 }}}.
+  {{{ (cid : u64), RET #cid; erpc_make_client_pre γ cid }}}.
 Proof.
   iIntros (Φ) "Hs HΦ". wp_lam.
   iNamed "Hs".
@@ -358,15 +370,6 @@ Proof.
   exfalso.
   word.
 Qed.
-
-Definition own_erpc_client (c:loc) (γ : erpc_names) : iProp Σ :=
-  ∃ (cid seq:u64),
-    "Hcid" ∷ c ↦[erpc.Client :: "cid"] #cid ∗
-    "Hseq" ∷ c ↦[erpc.Client :: "nextSeq"] #seq ∗
-    "Hcrpc" ∷ is_eRPCClient_ghost γ cid seq ∗
-    "#Hserv" ∷ is_eRPCServer γ ∗
-    "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
-.
 
 Lemma wp_erpc_NewRequest (spec : eRPCSpec) (x : spec.(espec_ty)) c payload payload_sl q γ :
   {{{
@@ -438,7 +441,7 @@ Proof.
 Qed.
 
 Lemma wp_erpc_MakeClient γ cid :
-  {{{ is_eRPCServer γ ∗ is_eRPCClient_ghost γ cid 1 }}}
+  {{{ erpc_make_client_pre γ cid }}}
     MakeClient #cid
   {{{ c, RET #c; own_erpc_client c γ }}}.
 Proof.
