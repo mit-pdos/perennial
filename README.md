@@ -17,7 +17,7 @@ server built on top.
 
 ## Compiling
 
-We develop Perennial using Coq master and maintain compatibility with Coq 8.14.
+We develop Perennial using Coq master and maintain compatibility with Coq 8.15.
 If CI (updated dependencies) is broken above Perennial should still compile but
 is currently incompatible with an upstream change to one of our dependencies.
 We try to avoid this situation.
