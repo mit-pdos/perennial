@@ -286,9 +286,9 @@ Proof.
     iModIntro. iRight. done.
 Qed.
 
-Lemma wp_erpc_MakeServer (b : bool) :
+Lemma wp_erpc_MakeServer :
   {{{ True }}}
-    MakeServer #b
+    MakeServer #()
   {{{ γ s, RET #s; is_erpc_server s γ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -450,6 +450,25 @@ Proof.
   iModIntro.
   iExists _, _. iFrame "∗ #".
   iPureIntro. simpl. word.
+Qed.
+
+Lemma wp_erpc_MakeClient s γ cid :
+  (* we need the γ of the server *)
+  is_erpc_server s γ -∗
+  {{{ is_eRPCClient_ghost γ cid 1 }}}
+    MakeClient #cid
+  {{{ c, RET #c; own_erpc_client c γ }}}.
+Proof.
+  iIntros "#Hs !#" (Φ) "Hcid HΦ". wp_lam.
+  wp_apply (wp_allocStruct); first val_ty.
+  iIntros (c) "c".
+  iDestruct (struct_fields_split with "c") as "c". iNamed "c". simpl.
+  wp_pures.
+  do 2 wp_storeField.
+
+  iApply "HΦ". iExists _, _. iFrame.
+  iModIntro. iNamed "Hs". iFrame "His_srv".
+  iPureIntro. done.
 Qed.
 
 End erpc_proof.
