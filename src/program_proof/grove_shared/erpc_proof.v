@@ -400,7 +400,7 @@ Proof.
   iIntros (Hnooverflow).
   wp_storeField.
   wp_apply wp_slice_len.
-  wp_apply wp_NewSliceWithCap.
+  wp_apply (wp_NewSliceWithCap (V:=u8)).
   { apply encoding.unsigned_64_nonneg. (* FIXME why does [word] not solve this? *) }
   iIntros (req_ptr) "Hreq".
   set len := u64_instance.u64.(word.add) _ payload_sl.(Slice.sz).
