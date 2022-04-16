@@ -22,8 +22,8 @@ Definition Server__HandleRequest: val :=
       let: ("cid", "raw_args") := marshal.ReadInt "raw_args" in
       let: ("seq", "raw_args") := marshal.ReadInt "raw_args" in
       lock.acquire (struct.loadF Server "mu" "t");;
-      let: ("last", "ok") := MapGet (struct.loadF Server "lastSeq" "t") "cid" in
-      (if: "ok" && ("seq" ≤ "last")
+      let: "last" := Fst (MapGet (struct.loadF Server "lastSeq" "t") "cid") in
+      (if: "seq" ≤ "last"
       then
         "reply" <-[slice.T byteT] Fst (MapGet (struct.loadF Server "lastReply" "t") "cid");;
         lock.release (struct.loadF Server "mu" "t");;

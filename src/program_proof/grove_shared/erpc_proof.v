@@ -117,10 +117,8 @@ Proof.
   wp_apply (wp_MapGet with "HlastSeqMap").
   iIntros (seqno ok) "[%HseqGet HlastSeqMap]".
   wp_pures.
-
-  wp_apply (wp_and_pure ok (int.Z rid.(Req_Seq) ≤ int.Z seqno)%Z).
-  { wp_pures. iPureIntro. by destruct ok. }
-  { iIntros "_". wp_pures. iPureIntro. done. }
+  assert (seqno = (map_get lastSeqM rid.(Req_CID)).1) as Hseqno by rewrite HseqGet //.
+  clear ok HseqGet.
 
   case_bool_decide as Hif.
   - (* we hit the reply table *)
@@ -129,10 +127,10 @@ Proof.
     iIntros (reply replyOk) "[%HlookupReply HlastReplyMap]".
     wp_pures.
 
-    destruct ok; last first.
-    { exfalso. naive_solver. }
-    apply map_get_true in HseqGet.
-    destruct Hif as [_ HseqLe].
+    assert (lastSeqM !! rid.(Req_CID) = Some seqno) as HseqGet.
+    { move: Hseqno. rewrite /map_get.
+      destruct (lastSeqM !! rid.(Req_CID)) eqn:Hlk; rewrite Hlk /=; first naive_solver.
+      intros ->. exfalso. naive_solver. }
 
     (* get a copy of the is_slice for the slice we're giving in reply *)
     assert (is_Some (lastReplyMV !! rid.(Req_CID))) as [xx HlastReplyMVlookup].
@@ -219,26 +217,12 @@ Proof.
     }
   - (* we have to call the handler *)
     assert (int.Z seqno < int.Z rid.(Req_Seq))%Z as HseqFresh.
-    {
-      simpl.
-      destruct ok.
-      {
-        intuition.
-        destruct (Z.le_gt_cases (int.Z rid.(Req_Seq)) (int.Z seqno)) as [Hineq|Hineq].
-        { naive_solver. }
-        { naive_solver. }
-      }
-      {
-        apply map_get_false in HseqGet as [_ ->].
-        simpl.
-        word.
-      }
-    }
+    { simpl. word. }
 
     (* get resources out of escrow *)
     iMod (server_takes_request with "HreqInv Herpc") as "HH".
     { done. }
-    { rewrite HseqGet //. }
+    { rewrite -Hseqno //. }
     iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
 
     (* *Now* we reduce the if, which takes a step. And call the handler. *)
@@ -258,7 +242,7 @@ Proof.
     iMod (server_completes_request with "His_srv HreqInv Hγpre Hspecpost Hproc") as "HH".
     { done. }
     { done. }
-    { rewrite HseqGet. simpl. done. }
+    { rewrite -Hseqno. simpl. done. }
     iDestruct "HH" as "(#Hreceipt & Hrpc)".
 
     wp_loadField.
