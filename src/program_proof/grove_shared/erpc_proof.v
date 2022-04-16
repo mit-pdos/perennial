@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import erpc.
 From Perennial.goose_lang Require Import adequacy.
 From Perennial.base_logic Require Import lib.ghost_map lib.mono_nat lib.saved_spec.
 From Perennial.program_proof Require Import grove_prelude std_proof marshal_stateless_proof.
-From Perennial.program_proof.memkv Require Import urpc_proof urpc_spec erpc_lib.
+From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec erpc_lib.
 
 Notation erpcG Σ := (erpc_lib.erpcG Σ (list u8)).
 

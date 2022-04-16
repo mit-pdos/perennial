@@ -27,13 +27,11 @@ From Perennial.program_proof.examples Require
      all_examples
 .
 
-(* TODO: refactoring in progress
-From Perennial.program_proof.lockservice Require
-     bank_proof incr_proof incr_proxy_proof two_pc_example. *)
+From Perennial.program_proof.grove_shared Require
+     urpc_proof erpc_proof.
 
 (* In-memory sharded KV system *)
 From Perennial.program_proof.memkv Require
-     urpc_proof erpc_proof
      connman_proof
      memkv_clerk_proof memkv_shard_start_proof memkv_shard_make_proof memkv_coord_make_proof
      memkv_clerk_proof

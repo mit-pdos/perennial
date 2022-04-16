@@ -13,7 +13,8 @@ From Perennial.goose_lang.lib Require Import crash_lock.
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc rpc_logatom nondet kv_proof fmcounter_map.
+From Perennial.program_proof.grove_shared Require Import erpc_lib fmcounter_map.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom nondet kv_proof.
 
 Section rpc_durable_proof.
 Context `{!heapGS Σ, !rpcG Σ u64, !stagedG Σ}.

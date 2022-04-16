@@ -3,7 +3,7 @@
 From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Import lib.ghost_map lib.saved_spec.
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.memkv Require Import urpc_proof.
+From Perennial.program_proof.grove_shared Require Import urpc_proof.
 
 Section rpc_global_defs.
 

@@ -2,7 +2,7 @@ From Perennial.Helpers Require Import NamedProps.
 From Perennial.Helpers Require Import ModArith.
 From iris.algebra Require Import gmap lib.mono_nat.
 From Perennial.base_logic Require Import lib.ghost_map.
-From Perennial.program_proof.lockservice Require Import fmcounter_map.
+From Perennial.program_proof.grove_shared Require Import fmcounter_map.
 From Perennial.program_proof Require Import proof_prelude.
 
 (** RPC layer ghost names. *)

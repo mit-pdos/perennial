@@ -2,9 +2,8 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Export ffi.grove_prelude.
 From Perennial.program_proof Require Import proof_prelude.
 From iris.algebra Require Export mono_nat.
-From Perennial.program_proof.memkv Require Import urpc_spec.
+From Perennial.program_proof.grove_shared Require Import urpc_spec urpc_proof.
 From Perennial.program_proof Require Import marshal_proof.
-From Perennial.program_proof.memkv Require Import urpc_proof.
 From Perennial.base_logic Require Import lib.ghost_map lib.saved_spec.
 
 Section interface.

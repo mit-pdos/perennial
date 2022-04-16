@@ -7,7 +7,7 @@ From Perennial.program_proof Require Import marshal_proof.
 From Goose.github_com.mit_pdos.gokv.ctrexample Require Import server.
 From Perennial.goose_lang Require Export crash_lock crash_borrow.
 From Perennial.program_proof.ctrexample Require Import wpc_proofmode.
-From Perennial.program_proof.memkv Require Import urpc_proof.
+From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.goose_lang Require Import persistent_readonly.
 
 Section server_proof.

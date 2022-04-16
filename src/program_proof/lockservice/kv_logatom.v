@@ -12,7 +12,8 @@ From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.lockservice Require Import lockservice.
 From Perennial.program_proof Require Import disk_prelude marshal_proof.
 From Perennial.program_proof.lockservice Require Import grove_ffi.
-From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom rpc nondet fmcounter_map rpc_logatom_proof rpc_durable_proof kv_proof kv_durable wpc_proofmode.
+From Perennial.program_proof.grove_shared Require Export erpc_lib fmcounter_map.
+From Perennial.program_proof.lockservice Require Import rpc_proof rpc_logatom nondet rpc_logatom_proof rpc_durable_proof kv_proof kv_durable wpc_proofmode.
 
 Section kv_logatom_proof.
 Context `{!heapGS Σ, !kvserviceG Σ, stagedG Σ}.

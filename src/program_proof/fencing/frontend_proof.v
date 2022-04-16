@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.fencing Require Import frontend.
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.memkv Require Export erpc_lib urpc_proof urpc_spec.
+From Perennial.program_proof.grove_shared Require Export erpc_lib urpc_proof urpc_spec.
 From Perennial.program_proof.fencing Require Export ctr_proof config_proof.
 From Perennial.program_proof Require Import marshal_proof.
 From iris.base_logic Require Import mono_nat.

@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import goosekv.
 From Perennial.program_proof.lockservice Require Import grove_ffi.
 From Perennial.algebra Require Import mlist auth_map.
 From iris.algebra Require Import mono_nat.
-From Perennial.program_proof.lockservice Require Import rpc rpc_proof aof_proof.
+From Perennial.program_proof.lockservice Require Import rpc_proof aof_proof.
 From Perennial.program_proof Require Import marshal_proof.
 
 Section gokv_proof.

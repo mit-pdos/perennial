@@ -6,7 +6,7 @@ From Perennial.program_proof.lockservice Require Import grove_ffi.
 From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.lockservice Require Import grove_common lockservice.
 From Perennial.program_proof.lockservice Require Import common_proof.
-From Perennial.program_proof.lockservice Require Export rpc.
+From Perennial.program_proof.grove_shared Require Export erpc_lib.
 From Goose.github_com.mit_pdos.lockservice Require Import grove_common.
 From Perennial.goose_lang.lib.slice Require Import typed_slice.
 From Perennial.program_proof Require Import marshal_proof.
