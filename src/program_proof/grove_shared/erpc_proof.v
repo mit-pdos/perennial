@@ -310,10 +310,11 @@ Proof.
   by iFrame "# ∗".
 Qed.
 
+(** This postcondition matches the [wp_erpc_MakeClient] precondition. *)
 Lemma wp_erpc_GetFreshCID s γ :
   {{{ is_erpc_server s γ }}}
     Server__GetFreshCID #s
-  {{{ (cid : u64), RET #cid; is_eRPCClient_ghost γ cid 1 }}}.
+  {{{ (cid : u64), RET #cid; is_eRPCServer γ ∗ is_eRPCClient_ghost γ cid 1 }}}.
 Proof.
   iIntros (Φ) "Hs HΦ". wp_lam.
   iNamed "Hs".
@@ -353,7 +354,7 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iModIntro.
-  iDestruct "Hcid" as "[%Hbad|$]".
+  iDestruct "Hcid" as "[%Hbad|$]"; last done.
   exfalso.
   word.
 Qed.
@@ -436,14 +437,12 @@ Proof.
   iPureIntro. simpl. word.
 Qed.
 
-Lemma wp_erpc_MakeClient s γ cid :
-  (* we need the γ of the server *)
-  is_erpc_server s γ -∗
-  {{{ is_eRPCClient_ghost γ cid 1 }}}
+Lemma wp_erpc_MakeClient γ cid :
+  {{{ is_eRPCServer γ ∗ is_eRPCClient_ghost γ cid 1 }}}
     MakeClient #cid
   {{{ c, RET #c; own_erpc_client c γ }}}.
 Proof.
-  iIntros "#Hs !#" (Φ) "Hcid HΦ". wp_lam.
+  iIntros (Φ) "[#Hserv Hcid] HΦ". wp_lam.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (c) "c".
   iDestruct (struct_fields_split with "c") as "c". iNamed "c". simpl.
@@ -451,7 +450,7 @@ Proof.
   do 2 wp_storeField.
 
   iApply "HΦ". iExists _, _. iFrame.
-  iModIntro. iNamed "Hs". iFrame "His_srv".
+  iModIntro. iFrame "Hserv".
   iPureIntro. done.
 Qed.
 
