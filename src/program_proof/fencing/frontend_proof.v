@@ -18,7 +18,7 @@ Definition k0 := (U64 0).
 Definition k1 := (U64 1).
 
 Context `{!ctrG Σ}.
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 
 Definition kv_ptsto (γ:gname) (k v:u64) : iProp Σ :=
   k ⤳[γ]{# 1/2} v.
@@ -282,6 +282,7 @@ Proof.
   iIntros (ck) "#His_ck".
   wp_pures.
   wp_apply (config.wp_Clerk__AcquireEpoch with "His_cfg His_ck").
+  { auto. }
   iIntros (epoch) "Hunused".
 
   iDestruct (struct_fields_split with "Hs") as "HH".
@@ -346,8 +347,7 @@ Proof.
       iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & HFAISpec)".
       wp_pures.
       iDestruct "HFAISpec" as (k) "(%H01 & %Henc & Hfupd)".
-      iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
-      wp_apply (wp_new_dec with "[$Hreq_small]").
+      wp_apply (wp_new_dec with "Hreq_sl").
       { done. }
       iIntros (dec) "Hdec".
       wp_pures.

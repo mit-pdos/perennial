@@ -44,7 +44,7 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 
 Definition is_host (host:u64) (epoch_tok : u64 → iProp Σ) (host_inv:u64 → iProp Σ): iProp Σ :=
   handler_spec γ.(urpc_gn) host (U64 0) (AcquireEpoch_spec epoch_tok host_inv) ∗
@@ -56,7 +56,7 @@ Definition is_host (host:u64) (epoch_tok : u64 → iProp Σ) (host_inv:u64 → i
 Definition is_Clerk (ck:loc) (host:u64): iProp Σ :=
   ∃ (cl:loc),
     "#Hcl" ∷ readonly (ck ↦[Clerk :: "cl"] #cl) ∗
-    "#His_cl" ∷ is_RPCClient cl host
+    "#His_cl" ∷ is_uRPCClient cl host
 .
 
 Lemma wp_MakeClerk host epoch_tok host_inv :
@@ -117,9 +117,10 @@ Proof.
   iNamed "Hck".
   wp_loadField.
 
-  wp_apply (wp_Client__Call with "[$Hreq_sl $Hrep $His_cl]").
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  wp_apply (wp_Client__Call with "[] [$Hreq_sl $Hrep $His_cl]").
+  { iDestruct "His_host" as "[$ _]". }
   {
-    iDestruct "His_host" as "[$ _]".
     do 2 iModIntro.
     simpl.
     iExists newHost.
@@ -149,8 +150,7 @@ Proof.
   iDestruct "Hpost" as "(Hrep & Hrep_sl & Hpost)".
   wp_load.
   iDestruct "Hpost" as (?) "[%Hrep_enc Hepoch_tok]".
-  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
-  wp_apply (wp_new_dec with "Hrep_small").
+  wp_apply (wp_new_dec with "Hrep_sl").
   { done. }
   iIntros (dec) "Hdec".
   wp_pures.
@@ -183,9 +183,10 @@ Proof.
   iIntros (dummy_req_sl) "Hreq_sl".
   wp_loadField.
 
-  wp_apply (wp_Client__Call with "[$Hreq_sl $Hrep $His_cl]").
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  wp_apply (wp_Client__Call with "[] [$Hreq_sl $Hrep $His_cl]").
+  { iDestruct "His_host" as "[_ [$ _]]". }
   {
-    iDestruct "His_host" as "[_ [$ _]]".
     do 2 iModIntro.
     simpl.
     iIntros.
@@ -212,8 +213,7 @@ Proof.
   iDestruct "Hpost" as "(Hrep & Hrep_sl & Hpost)".
   wp_load.
   iDestruct "Hpost" as (?) "[%Hrep_enc Hepoch_tok]".
-  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
-  wp_apply (wp_new_dec with "Hrep_small").
+  wp_apply (wp_new_dec with "Hrep_sl").
   { done. }
   iIntros (dec) "Hdec".
   wp_pures.

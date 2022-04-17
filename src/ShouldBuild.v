@@ -45,8 +45,8 @@ From Perennial.program_proof.pb Require
 From Goose.github_com.mit_pdos.gokv.pb Require
      controller.
 
-From Goose.github_com.mit_pdos.gokv.fencing Require
-     config ctr frontend.
+From Perennial.program_proof.fencing Require
+     config_proof ctr_proof frontend_proof.
 (*
 From Perennial.goose_lang Require
      ffi.append_log_ffi.

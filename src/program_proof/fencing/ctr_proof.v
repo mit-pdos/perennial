@@ -130,7 +130,7 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 
 Definition is_host (host:u64) γ : iProp Σ :=
   handler_spec γ.(urpc_gn) host (U64 0) (Get_spec γ) ∗
@@ -140,7 +140,7 @@ Definition is_host (host:u64) γ : iProp Σ :=
 Definition own_Clerk γ (ck:loc) : iProp Σ :=
   ∃ (cl:loc) host,
   "#Hcl" ∷ readonly (ck ↦[Clerk :: "cl"] #cl) ∗
-  "#Hcl_own" ∷ is_RPCClient cl host ∗
+  "#Hcl_own" ∷ is_uRPCClient cl host ∗
   "#Hhost" ∷ is_host host γ
 .
 
@@ -187,15 +187,16 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_apply (wp_Client__Call _ _ _ _ _ _ _ _ _ _
                           (λ (l:list u8), ∃ v e, ⌜has_GetReply_encoding l e v⌝ ∗
                                   if (decide (int.Z e = 0)) then
                                     (own_Clerk γ ck -∗ Φ #v) ∗ proph_once valProph v
                                   else
                                     proph_once errProph true)%I
-             with "[$Hreq_sl $Hrep $Hcl_own Hupd Hprophv Hprophe]").
+             with "[] [$Hreq_sl $Hrep $Hcl_own Hupd Hprophv Hprophe]").
+  { iDestruct "Hhost" as "[$ _]". }
   {
-    iDestruct "Hhost" as "[$ _]".
     iAssert (□ proph_once valProph v)%I with "[Hprophv]" as "Hprophv".
     { admit. } (* FIXME: this is false; we're gonna need another piece of ghost state that matches the value of the prophecy, but is persistent *)
     iAssert (□ proph_once errProph e)%I with "[Hprophe]" as "Hprophe".
@@ -269,8 +270,7 @@ Proof.
 
   (* TODO: move this to a different lemma *)
   wp_lam.
-  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
-  wp_apply (wp_new_dec with "[$Hrep_small]").
+  wp_apply (wp_new_dec with "Hrep_sl").
   { done. }
   iIntros (dec) "Hdec".
   wp_pures.
