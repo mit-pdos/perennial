@@ -14,7 +14,7 @@ From Perennial.goose_lang Require adequacy dist_adequacy.
 From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 
 Section ctr_ghost_init.
-Context `{!gooseGlobalGS Σ, rpcregG Σ}.
+Context `{!gooseGlobalGS Σ, !inG Σ mono_natUR, !urpcregG Σ}.
 
 Lemma ctr_ghost_init (γ : gname) :
   localhost c↦ ∅ ={⊤}=∗
@@ -74,12 +74,12 @@ Proof.
   done.
 Admitted.
 
-Definition ctrΣ := #[rpcregΣ].
+Definition ctrΣ := #[urpcregΣ].
 
 Lemma closed_theorem σserver σclient σglobal :
-  ffi_initgP σglobal →
-  ffi_initP σserver.(world) σglobal →
-  ffi_initP σclient.(world) σglobal →
+  ffi_initgP σglobal.(global_world) →
+  ffi_initP σserver.(world) σglobal.(global_world) →
+  ffi_initP σclient.(world) σglobal.(global_world) →
   dist_adequacy.dist_adequate (CS:=goose_crash_lang) (* FIXME: crash semantics *)
     (cfg σserver σclient)
     σglobal

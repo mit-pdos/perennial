@@ -15,7 +15,7 @@ Definition localhost : chan := U64 53021371269120.
 Definition counter_lb γ (x:nat) : iProp Σ := own γ (◯MN x).
 Definition counter_own γ (x:nat) : iProp Σ := own γ (●MN x).
 
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 
 Context `{HPRE: !gooseGlobalGS Σ}.
 

@@ -47,6 +47,9 @@ From Goose.github_com.mit_pdos.gokv.pb Require
 
 From Perennial.program_proof.fencing Require
      config_proof ctr_proof frontend_proof.
+From Perennial.program_proof.ctrexample Require
+     client server closed.
+
 (*
 From Perennial.goose_lang Require
      ffi.append_log_ffi.

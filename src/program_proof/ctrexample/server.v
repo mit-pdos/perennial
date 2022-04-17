@@ -256,7 +256,7 @@ Definition crash_cond γ : iProp Σ :=
  ∃ c, own_CtrServer_durable c ∗
  own_CtrServer_ghost γ c.
 
-Context `{rpcregG Σ}.
+Context `{urpcregG Σ}.
 
 Lemma wpc_ServerMain γurpc_gn (γ:gname) :
   is_CtrServer_urpc γurpc_gn γ -∗
@@ -424,7 +424,7 @@ Proof using Type*.
   iIntros "Hmap".
   wp_pures.
 
-  wp_apply (wp_MakeRPCServer with "[$Hmap]").
+  wp_apply (wp_MakeServer with "[$Hmap]").
 
   iIntros (rs) "Hsown".
   wp_pures.
@@ -434,7 +434,7 @@ Proof using Type*.
     iExists _; iFrame "#".
   }
 
-  wp_apply (wp_StartRPCServer with "[$Hsown]").
+  wp_apply (wp_StartServer with "[$Hsown]").
   { rewrite ?dom_insert_L; set_solver. }
   {
     iSplitL "".
@@ -463,6 +463,7 @@ Proof using Type*.
       iIntros (rep_sl data1) "(%Henc & %Hlen & Hsl)".
       wp_store.
       iApply "HΦ".
+      iDestruct (is_slice_to_small with "Hsl") as "$".
       iFrame.
       iApply "HPost".
       done.

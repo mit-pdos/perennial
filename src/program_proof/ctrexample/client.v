@@ -13,7 +13,7 @@ Section client_proof.
 Context `{!heapGS Σ}.
 Context `{!filesysG Σ}.
 Context `{!inG Σ mono_natUR}.
-Context `{!rpcregG Σ}.
+Context `{!urpcregG Σ}.
 
 Lemma wpc_ClientMain γurpc_gn γ :
   is_CtrServer_urpc γurpc_gn γ -∗
@@ -26,7 +26,7 @@ Proof.
   iIntros "#Hsrv #Hlb".
   wp_lam.
   wp_pures.
-  wp_apply (wp_MakeRPCClient).
+  wp_apply (wp_MakeClient).
   iIntros (cl_ptr) "Hcl".
   wp_pures.
   wp_apply (wp_ref_to).
@@ -51,9 +51,10 @@ Proof.
   wp_apply (wp_NewSlice _ _ byteT).
   iIntros (empty_req) "Hempty_sl".
 
-  wp_apply (wp_RPCClient__Call with "[$Hcl $Hrep $Hempty_sl]").
+  iDestruct (is_slice_to_small with "Hempty_sl") as "Hempty_sl".
+  wp_apply (wp_Client__Call with "[] [$Hcl $Hrep $Hempty_sl]").
+  { iDestruct "Hsrv" as "[$ _]". }
   {
-    iDestruct "Hsrv" as "[$ _]".
     instantiate (1:=(λ l, ∃ (x:nat), ⌜has_encoding l [EncUInt64 (U64 x)] ∧ localBound ≤ x⌝ ∗ counter_lb γ x)%I).
     iModIntro.
     iModIntro.
@@ -98,9 +99,7 @@ Proof.
   wp_load.
   wp_apply (wp_new_dec with "[Hrep_sl]").
   { done. }
-  {
-    iApply (is_slice_to_small with "Hrep_sl").
-  }
+  { done. }
   iIntros (dec) "Hdec".
   wp_pures.
   wp_apply (wp_Dec__GetInt with "Hdec").
