@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 
 Section memkv_shard_clerk_proof.
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeFreshKVShardClerk (host:u64) (c:loc) γ :
   is_shard_server host γ -∗
@@ -52,19 +52,17 @@ Proof.
   iDestruct "Hpost" as (??) "Hcid".
   wp_apply (wp_DecodeUint64' with "[$Hrep_sl]").
   { done. }
-  wp_storeField.
+  wp_apply (wp_erpc_MakeClient with "Hcid").
+  iIntros (erpc) "Herpc".
   wp_storeField.
   iApply "HΦ".
   iModIntro.
-  iExists _, _, _, _, _.
+  iExists _, _, _, _.
   rewrite is_shard_server_unfold.
-  iFrame "seq cid c host". iFrame "Hcid Hc".
+  iFrame "erpc c host". iFrame "Herpc Hc".
   iSplit.
   { iFrame "#". }
-  iFrame "#".
-  iFrame "∗#".
-  iPureIntro.
-  word.
+  done.
 Qed.
 
 Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
@@ -140,8 +138,8 @@ Proof.
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got reply *)
-  wp_pures. iModIntro. iApply "HΦ". iExists _, _, _, _, _.
-  iFrame "Hcid Hseq Hc Hhost Hcrpc Hc_own".
+  wp_pures. iModIntro. iApply "HΦ". iExists _, _, _, _.
+  iFrame "Herpc erpc Hc Hhost Hc_own".
   iSplit; last eauto.
   iEval (rewrite is_shard_server_unfold).
   { iFrame "#". }
@@ -163,7 +161,7 @@ Lemma wp_KVShardClerk__InstallShard γkv (ck:loc) (sid:u64) (kvs_ref:loc) (kvs:g
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hclerk & Hphys & Hghost & %HsidLe)".
-  iNamed "Hclerk".
+  iNamed "Hclerk". subst γkv.
   wp_lam.
   wp_pures.
 
@@ -172,62 +170,24 @@ Proof.
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
 
-  wp_loadField.
-  wp_storeField.
-  wp_loadField.
-  wp_storeField.
   wp_storeField.
   wp_storeField.
 
-  wp_loadField.
-  wp_apply wp_SumAssumeNoOverflow.
-  iIntros (Hnooverflow).
-  wp_storeField.
-
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (rawRep) "HrawRep".
-  wp_pures.
-
-  iAssert (∃ rep_sl, rawRep ↦[slice.T byteT] (slice_val rep_sl) )%I with "[HrawRep]" as "HrawRep".
-  {
-    rewrite (zero_slice_val).
-    iExists _; iFrame.
-  }
-  iAssert (own_InstallShardRequest l _) with "[CID Seq Sid Kvs Hphys]" as "Hargs".
+  wp_apply (wp_encodeInstallShardRequest with "[Sid Kvs Hphys]").
   {
     iDestruct "Hphys" as (?) "[H HH]".
+    instantiate (1:=(mkInstallShardC _ _)).
     iExists _, _.
-    instantiate (1:=(mkInstallShardC _ _ _ _)).
     iFrame.
-    iSimpl. iPureIntro; lia.
   }
+  iIntros (??) "(%Henc & Hsl & Hargs)".
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |}  (own_shard γ.(kv_gn) sid kvs) (λ _, True)%I with "His_rpc Hcrpc [Hghost]") as "Hmkreq".
-  { done. }
-  { simpl. word. }
-  { iNext. rewrite Hγeq. iFrame. }
-  iApply fupd_wp.
-  iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
-  iIntros "Hclo". iMod "Hmkreq" as "[Hcrpc HreqInv]". iMod "Hclo". iModIntro.
-  iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
-
-  iNamed "HrawRep".
-  wp_pures.
-
-  wp_apply (wp_encodeInstallShardRequest with "[$Hargs]").
-  iIntros (??) "(%Henc & Hsl & Hargs)".
-  wp_loadField.
   wp_loadField.
   iDestruct (is_slice_to_small with "Hsl") as "Hsl".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_installSpec _ _) with "Hc_own HinstallSpec [] [$Hsl $HrawRep //]").
-  {
-    simpl.
-    iModIntro.
-    iNext.
-    iExists (mkInstallShardC _ _ _ _); iFrame. simpl.
-    iFrame "HreqInv".
+  wp_apply (wp_erpc_NewRequest (is_shard_server_installSpec _) () with "[$Herpc $Hsl Hghost]").
+  { simpl.
+    iExists (mkInstallShardC _ _); iFrame. simpl.
     iPureIntro.
     split.
     {
@@ -236,17 +196,28 @@ Proof.
     simpl.
     done.
   }
+  clear req_sl. iIntros (y req req_sl) "(Hreq & #Hpre & Htakepost)".
+  iDestruct (is_slice_to_small with "Hreq") as "Hreq".
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rawRep) "HrawRep".
+  wp_pures.
+
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec with "Hc_own HinstallSpec [$Hpre] [$Hreq $HrawRep]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got a reply *)
+  iMod ("Htakepost" with "Hpost") as "[Herpc Hpost]".
   iApply "HΦ". iModIntro.
-  iExists _, _, _, _, _.
+  iExists _, _, _, _.
   rewrite is_shard_server_unfold.
-  iFrame "Hcid Hseq Hc Hhost Hcrpc Hc_own".
+  iFrame "Hc Hhost erpc Herpc Hc_own".
   iSplit.
   { iFrame "#". }
-  iPureIntro.
-  simpl. word.
+  done.
 Qed.
 
 Lemma wp_KVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
@@ -269,7 +240,7 @@ Lemma wp_KVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & #Hval_sl & Hck)".
-  iNamed "Hck".
+  iNamed "Hck". subst γkv.
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct); first val_ty.
@@ -277,101 +248,51 @@ Proof.
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
   wp_pures.
-  wp_loadField.
-  wp_storeField.
-  wp_loadField.
-  wp_storeField.
   wp_storeField.
   wp_storeField.
 
+  wp_apply (wp_EncodePutRequest _ _ (mkPutRequestC _ _) with "[$Key $Value //]").
+  iIntros (??) "(%Henc & Hsl & Hargs)".
+  rewrite is_shard_server_unfold.
+  iNamed "His_shard".
+  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
   wp_loadField.
-  wp_apply wp_SumAssumeNoOverflow.
-  iIntros (Hnooverflow).
-  wp_storeField.
+  wp_apply (wp_erpc_NewRequest (is_shard_server_putSpec _) (_, _) with "[$Herpc $Hsl Hkvptsto]").
+  { simpl. auto. }
+  clear req_sl. iIntros (y req req_sl) "(Hreq & #Hpre & Htakepost)".
+  iDestruct (is_slice_to_small with "Hreq") as "Hreq_sl".
 
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rawRep) "HrawRep".
   wp_pures.
 
-  iAssert (∃ rep_sl, rawRep ↦[slice.T byteT] (slice_val rep_sl) )%I with "[HrawRep]" as "HrawRep".
-  {
-    rewrite (zero_slice_val).
-    iExists _; iFrame.
-  }
-  iAssert (own_PutRequest args_ptr value_sl {| PR_CID := cid; PR_Seq := seq; PR_Key := key; PR_Value := v |}) with "[CID Seq Key Value]" as "Hargs".
-  {
-    iFrame "∗#". simpl. iPureIntro; word.
-  }
-  rewrite is_shard_server_unfold.
-  iNamed "His_shard".
-  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardPut γ.(kv_gn) key Q v) (PostShardPut γ.(kv_gn) key Q v) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq".
-
-  { done. }
-  { simpl. word. }
-  { iNext. rewrite Hγeq /PreShardPut. iFrame. }
-  iApply fupd_wp.
-  iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
-  iIntros "Hclo". iMod "Hmkreq" as "[Hcrpc HreqInv]". iMod "Hclo". iModIntro.
-  iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
-
-  iNamed "HrawRep".
-  wp_pures.
-
-  wp_apply (wp_EncodePutRequest _ _ (mkPutRequestC _ _ _ _) with "[$Hargs]").
-  iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
   wp_loadField.
   wp_loadField.
-
-  unfold is_shard_server.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_putSpec _ _) (Q, γreq, mkPutRequestC _ _ _ _)
-    with "Hc_own HputSpec [] [$Hreq_sl $HrawRep //]").
-  {
-    simpl.
-    iModIntro.
-    iModIntro.
-    iSplitL ""; first done.
-    simpl.
-    iFrame "HreqInv".
-  }
+  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec
+    with "Hc_own HputSpec [$Hpre] [$Hreq_sl $HrawRep //]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
+  iMod ("Htakepost" with "Hpost") as "[Herpc Hpost]".
   wp_pures.
   wp_load.
-  iDestruct "Hpost" as (?) "(% & Hreceipt)".
+  iDestruct "Hpost" as (?) "(% & Hpost)".
   wp_apply (wp_DecodePutReply with "[$Hrep_sl]").
   { done. }
   iIntros (?) "Hrep".
 
-  iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
-  {
-    iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
-    exfalso.
-    move: Hbad.
-    simpl.
-    word.
-  }
-  iDestruct "Hreceipt" as (? ?) "Hreceipt".
-  iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".
-  { done. }
-  (* Doing get_request_post here so we can strip off a ▷ *)
-
-  iNamed "Hrep".
   wp_pures.
   wp_loadField.
   iApply "HΦ".
-  iSplitL "Hc_own Hcrpc Hc Hhost Hcid Hseq".
-  { iExists _, _, _, _, _.
+  iSplitL "Hc_own erpc Herpc Hc Hhost".
+  { iExists _, _, _, _.
     rewrite is_shard_server_unfold.
-    iFrame "Hcid Hseq Hc Hhost Hcrpc Hc_own".
-    iFrame "#". iPureIntro.
-    split; last done. word.
+    iFrame "Hc Hhost erpc Herpc Hc_own".
+    iFrame "#". done.
   }
   iDestruct "Hpost" as "[Hpost|Hpost]".
   {
     iLeft.
-    rewrite Hγeq.
       by iDestruct "Hpost" as "[$ $]".
   }
   {
@@ -405,107 +326,58 @@ Lemma wp_KVShardClerk__Get γkv (ck:loc) (key:u64) (value_ptr:loc) Q :
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & Hck & Hval)".
-  iNamed "Hck".
-  rewrite -Hγeq.
+  iNamed "Hck". subst γkv.
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
-  wp_loadField.
   wp_storeField.
 
+  wp_apply (wp_EncodeGetRequest _ (mkGetRequestC _) with "Key").
+  iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_loadField.
-  wp_storeField.
-  wp_storeField.
-
-  wp_loadField.
-  wp_apply wp_SumAssumeNoOverflow.
-  iIntros (Hnooverflow).
-  wp_storeField.
+  wp_apply (wp_erpc_NewRequest (is_shard_server_getSpec _) (_, _) with "[$Herpc $Hreq_sl Hkvptsto]").
+  { simpl. auto. }
+  clear req_sl. iIntros (y req req_sl) "(Hreq_sl & #Hpre & Htakepost)".
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
 
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rawRep) "HrawRep".
   wp_pures.
 
-  iAssert (∃ rep_sl, rawRep ↦[slice.T byteT] (slice_val rep_sl) )%I with "[HrawRep]" as "HrawRep".
-  {
-    rewrite (zero_slice_val).
-    iExists _; iFrame.
-  }
+  wp_loadField.
+  wp_loadField.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardGet γ.(kv_gn) key Q) (PostShardGet γ.(kv_gn) key Q) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq".
-  { done. }
-  { simpl. word. }
-  { iNext. rewrite /PreShardGet. iFrame. }
-  iApply fupd_wp.
-  iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
-  iIntros "Hclo". iMod "Hmkreq" as "[Hcrpc HreqInv]". iMod "Hclo". iModIntro.
-  iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
-
-  iNamed "HrawRep".
-  wp_pures.
-
-  wp_apply (wp_EncodeGetRequest _ (mkGetRequestC _ _ _) with "[CID Seq Key]").
-  {
-    rewrite /own_GetRequest /=.
-    iFrame.
-    iPureIntro.
-    simpl.
-    word.
-  }
-  iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
-  wp_loadField.
-  wp_loadField.
-
-  unfold is_shard_server.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_getSpec _ _) (Q,γreq,mkGetRequestC _ _ _) with "Hc_own HgetSpec [] [$Hreq_sl $HrawRep //]").
-  {
-    iModIntro.
-    iModIntro.
-    simpl.
-    iFrame "HreqInv".
-    done.
-  }
+  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec
+    with "Hc_own HgetSpec [$Hpre] [$Hreq_sl $HrawRep //]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
-  wp_pures.
+  iMod ("Htakepost" with "Hpost") as "[Herpc Hpost]".
   wp_load.
-  iDestruct "Hpost" as (?) "(% & Hreceipt)".
+  iDestruct "Hpost" as (?) "(% & Hpost)".
   wp_apply (wp_DecodeGetReply with "[$Hrep_sl]").
   { done. }
   iIntros (?) "Hrep".
-
-  iDestruct "Hreceipt" as "[Hbad|[% Hreceipt]]".
-  {
-    iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
-    exfalso.
-    move: Hbad.
-    simpl.
-    word.
-  }
-  iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".
-  { done. }
-  (* Doing get_request_post here so we can strip off a ▷ *)
-
   iNamed "Hrep".
+
   wp_pures.
-  wp_loadField.
   iNamed "Hval".
+  wp_loadField.
   wp_store.
   wp_loadField.
   iApply "HΦ".
-  iSplitL "Hc_own Hcrpc Hc Hhost Hcid Hseq".
-  { iExists _, _, _, _, _.
+  iSplitL "Hc_own erpc Herpc Hc Hhost".
+  { iExists _, _, _, _.
     iFrame. iFrame "Hc_own".
     rewrite is_shard_server_unfold.
     iSplit.
     { iFrame "#". }
-    iPureIntro. word.
+    done.
   }
   iDestruct "Hpost" as "[Hpost|Hpost]".
   {
@@ -545,8 +417,7 @@ Lemma wp_KVShardClerk__ConditionalPut γkv (ck:loc) (key:u64) (expv newv:list u8
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hkvptsto & #Hexpv_sl & #Hnewv_sl & Hck & Hsucc)".
-  iNamed "Hck".
-  rewrite -Hγeq.
+  iNamed "Hck". subst γkv.
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct); first val_ty.
@@ -554,85 +425,39 @@ Proof.
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
   wp_pures.
-  wp_loadField.
-  wp_storeField.
-  wp_loadField.
-  wp_storeField.
   wp_storeField.
   wp_storeField.
   wp_storeField.
 
+  wp_apply (wp_EncodeConditionalPutRequest _ _ _ (mkConditionalPutRequestC _ _ _) with "[Key ExpectedValue NewValue Hexpv_sl Hnewv_sl]").
+  { iFrame. iFrame "#". }
+  iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_loadField.
-  wp_apply wp_SumAssumeNoOverflow.
-  iIntros (Hnooverflow).
-  wp_storeField.
+  wp_apply (wp_erpc_NewRequest (is_shard_server_conditionalPutSpec _) (_, _) with "[$Herpc $Hreq_sl Hkvptsto]").
+  { simpl. auto. }
+  clear req_sl. iIntros (y req req_sl) "(Hreq_sl & #Hpre & Htakepost)".
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
 
   wp_apply (wp_ref_of_zero).
   { done. }
   iIntros (rawRep) "HrawRep".
   wp_pures.
 
-  iAssert (∃ rep_sl, rawRep ↦[slice.T byteT] (slice_val rep_sl) )%I with "[HrawRep]" as "HrawRep".
-  {
-    rewrite (zero_slice_val).
-    iExists _; iFrame.
-  }
-  iAssert (own_ConditionalPutRequest args_ptr expv_sl newv_sl {| CPR_CID := cid; CPR_Seq := seq; CPR_Key := key; CPR_ExpValue := expv; CPR_NewValue := newv |}) with "[CID Seq Key ExpectedValue NewValue Hexpv_sl Hnewv_sl]" as "Hargs".
-  {
-    iFrame "∗#". simpl. iPureIntro; word.
-  }
+  wp_loadField.
+  wp_loadField.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iPoseProof (make_request {| Req_CID:=_; Req_Seq:= _ |} (PreShardConditionalPut γ.(kv_gn) key Q expv newv) (PostShardConditionalPut γ.(kv_gn) key Q expv newv) with "His_rpc Hcrpc [Hkvptsto]") as "Hmkreq". 
-  { done. }
-  { simpl. word. }
-  { iNext. rewrite /PreShardConditionalPut. iFrame. }
-  iApply fupd_wp.
-  iApply (fupd_mask_weaken (↑replyTableInvN)); eauto.
-  iIntros "Hclo". iMod "Hmkreq" as "[Hcrpc HreqInv]". iMod "Hclo". iModIntro.
-  iDestruct "HreqInv" as (?) "[#HreqInv Htok]".
-
-  iNamed "HrawRep".
-  wp_pures.
-
-  wp_apply (wp_EncodeConditionalPutRequest _ _ _ (mkConditionalPutRequestC _ _ _ _ _) with "[$Hargs]").
-  iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
-  wp_loadField.
-  wp_loadField.
-
-  unfold is_shard_server.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_conditionalPutSpec _ _) (Q,γreq,mkConditionalPutRequestC _ _ _ _ _)
-    with "Hc_own HconditionalPutSpec [] [$Hreq_sl $HrawRep //]").
-  {
-    iModIntro.
-    iModIntro.
-    iSplitL ""; first done.
-    simpl.
-    iFrame "HreqInv".
-  }
+  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec
+    with "Hc_own HconditionalPutSpec [$Hpre] [$Hreq_sl $HrawRep //]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
-  wp_pures.
+  iMod ("Htakepost" with "Hpost") as "[Herpc Hpost]".
   wp_load.
-  iDestruct "Hpost" as (?) "(% & Hreceipt)".
+  iDestruct "Hpost" as (?) "(% & Hpost)".
   wp_apply (wp_DecodeConditionalPutReply with "[$Hrep_sl]").
   { done. }
   iIntros (?) "Hrep".
-
-  iDestruct "Hreceipt" as "[Hbad|Hreceipt]".
-  {
-    iDestruct (client_stale_seqno with "Hbad Hcrpc") as "%Hbad".
-    exfalso.
-    move: Hbad.
-    simpl.
-    word.
-  }
-  iDestruct "Hreceipt" as (?) "Hreceipt".
-  iMod (get_request_post with "HreqInv Hreceipt Htok") as "Hpost".
-  { done. }
-  (* Doing get_request_post here so we can strip off a ▷ *)
-
   iNamed "Hrep".
   wp_pures.
   wp_loadField.
@@ -640,13 +465,13 @@ Proof.
   wp_store.
   wp_loadField.
   iApply "HΦ".
-  iSplitL "Hc_own Hcrpc Hc Hhost Hcid Hseq".
-  { iExists _, _, _, _, _.
+  iSplitL "Hc_own erpc Herpc Hc Hhost".
+  { iExists _, _, _, _.
     rewrite is_shard_server_unfold.
-    iFrame "Hcid Hseq Hc Hhost Hcrpc Hc_own".
+    iFrame "Hc Hhost erpc Herpc Hc_own".
     iSplit.
     { iFrame "#". }
-    iPureIntro. word.
+    done.
   }
   iDestruct "Hpost" as "[Hpost|Hpost]".
   {

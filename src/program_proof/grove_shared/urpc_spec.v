@@ -126,6 +126,7 @@ Lemma urpc_handler_to_handler f spec :
   impl_urpc_handler_spec f spec -∗
   impl_handler_spec f (uRPCSpec_Spec spec).
 Proof.
+  rewrite /impl_handler_spec.
   iIntros "#Hf %reqData %Cont %req %repptr % % !# %Φ Hpre HΦ".
   iDestruct "Hpre" as "(Hreq & Hrepptr & Hrep & Hpre)". iSimpl in "Hpre".
   iDestruct "Hpre" as (x) "[Hpre Hcont]".

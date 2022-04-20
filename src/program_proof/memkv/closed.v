@@ -33,7 +33,7 @@ Definition client_boot (coord : u64) : expr :=
 
 Import adequacy dist_adequacy grove_ffi_adequacy.
 
-Definition shardΣ := #[heapΣ; kvMapΣ; erpcΣ ShardReplyC; urpcregΣ].
+Definition shardΣ := #[heapΣ; kvMapΣ; erpcΣ; urpcregΣ].
 
 Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : goose_lang.global_state) :
   shardId ≠ coordId →
@@ -58,7 +58,7 @@ Proof.
   remember (uNSHARD) as uNSHARD' eqn:Heq_unSHARD'.
   iMod (kvptsto_init uNSHARD') as (γkv) "(Hserver_shards&Hclients_ptstos)"; first done.
   iMod (shard_server_ghost_init shardId γkv with "[$Hshard_chan]")
-    as (γ Heq_kv) "(#Hdom&#Hsrv&Hsrv_rpc_ghost&Hsrv_cid)".
+    as (γ Heq_kv) "(#Hdom&#Hsrv&Herpc_ghost)".
 
   (* Init the channel inv for the shard server *)
   iDestruct (big_sepM_delete with "Hrest") as "(Hcoord_chan&_)".
@@ -69,7 +69,7 @@ Proof.
   iModIntro.
   iSplitR ""; last first.
   { iMod (fupd_mask_subseteq ∅); eauto. }
-  iSplitL "Hserver_shards Hsrv_rpc_ghost Hsrv_cid".
+  iSplitL "Hserver_shards Herpc_ghost".
   {
     iIntros (HL).
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
@@ -77,12 +77,8 @@ Proof.
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
     wp_bind (MakeKVShardServer #true).
-    wp_apply (wp_MakeKVShardServer with "[Hsrv_cid Hserver_shards Hsrv_rpc_ghost]").
-    { iSplitL "".
-      { rewrite is_shard_server_unfold. iNamed "Hsrv". iFrame "#". }
-      iClear "Hsrv". iFrame "Hsrv_rpc_ghost".
-      rewrite -Heq_unSHARD' Heq_kv. iFrame "Hserver_shards".
-      eauto. }
+    wp_apply (wp_MakeKVShardServer with "[Hserver_shards $Herpc_ghost]").
+    { rewrite -Heq_unSHARD' Heq_kv. done. }
     iIntros (s) "His_server".
     wp_pures.
     wp_apply (wp_KVShardServer__Start with "[] [] [$His_server]").
@@ -149,7 +145,7 @@ Definition auditor_boot (lockcoord kvcoord : u64) (init acc1 acc2 : u64)  : expr
 
 Import adequacy dist_adequacy grove_ffi_adequacy.
 
-Definition shardΣ := #[heapΣ; kvMapΣ; erpcΣ ShardReplyC; urpcregΣ; mapΣ u64 u64].
+Definition shardΣ := #[heapΣ; kvMapΣ; erpcΣ; urpcregΣ; mapΣ u64 u64].
 
 Definition lockshardId := U64 0.
 Definition lockcoordId := U64 1.
@@ -193,7 +189,7 @@ Proof.
   remember (uNSHARD) as uNSHARD' eqn:Heq_unSHARD'.
   iMod (kvptsto_init uNSHARD') as (γlk) "(Hserver_lockshards&Hclients_lockptstos)"; first done.
   iMod (shard_server_ghost_init lockshardId γlk with "[$Hlockshard_chan]")
-    as (γlk_shard Heq_lockshard) "(#Hdom&#Hsrv&Hsrv_rpc_ghost&Hsrv_cid)".
+    as (γlk_shard Heq_lockshard) "(#Hdom&#Hsrv&Herpc_ghost)".
 
   (* Init the channel inv for the lock coord server *)
   iDestruct (big_sepM_delete with "Hrest") as "(Hlockcoord_chan&Hrest)".
@@ -206,7 +202,7 @@ Proof.
   { rewrite ?lookup_delete_ne; first eapply Hlookup3; eauto. }
   iMod (kvptsto_init uNSHARD') as (γkv) "(Hserver_kvshards&Hclients_kvptstos)"; first done.
   iMod (shard_server_ghost_init kvshardId γkv with "[$Hkvshard_chan]")
-    as (γkv_shard Heq_kvshard) "(#Hdom''&#Hsrv_kv&Hsrv_kv_rpc_ghost&Hsrv_kv_cid)".
+    as (γkv_shard Heq_kvshard) "(#Hdom''&#Hsrv_kv&Herpc_ghost_kv)".
 
   (* Init the channel inv for the kv coord server *)
   iDestruct (big_sepM_delete with "Hrest") as "(Hkvcoord_chan&_)".
@@ -242,24 +238,20 @@ Proof.
   iModIntro.
 
   (* lockserver shard *)
-  iSplitL "Hserver_lockshards Hsrv_rpc_ghost Hsrv_cid".
+  iSplitL "Hserver_lockshards Herpc_ghost".
   {
     iIntros (HL).
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
     wp_bind (MakeKVShardServer #true).
-    wp_apply (wp_MakeKVShardServer with "[Hsrv_cid Hserver_lockshards Hsrv_rpc_ghost]").
-    { iSplitL "".
-      { rewrite is_shard_server_unfold. iNamed "Hsrv". iFrame "#". }
-      iClear "Hsrv". iFrame "Hsrv_rpc_ghost".
-      rewrite -Heq_unSHARD' Heq_lockshard. iFrame "Hserver_lockshards".
-      eauto. }
+    wp_apply (wp_MakeKVShardServer with "[Hserver_lockshards $Herpc_ghost]").
+    { rewrite -Heq_unSHARD' Heq_lockshard. done. }
     iIntros (s) "His_server".
     wp_pures.
     wp_apply (wp_KVShardServer__Start with "[] [] [$His_server]").
     { iExactEq "Hdom". rewrite //=. f_equal. set_solver. }
-    { done.  }
+    { done. }
     eauto.
   }
 
@@ -286,19 +278,15 @@ Proof.
   }
 
   (* kv shard *)
-  iSplitL "Hserver_kvshards Hsrv_kv_rpc_ghost Hsrv_kv_cid".
+  iSplitL "Hserver_kvshards Herpc_ghost_kv".
   {
     iIntros (HL).
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
     wp_bind (MakeKVShardServer #true).
-    wp_apply (wp_MakeKVShardServer with "[Hsrv_kv_cid Hserver_kvshards Hsrv_kv_rpc_ghost]").
-    { iSplitL "".
-      { iEval (rewrite is_shard_server_unfold) in "Hsrv_kv". iNamed "Hsrv_kv". iFrame "#". }
-      iClear "Hsrv". iFrame "Hsrv_kv_rpc_ghost".
-      rewrite -Heq_unSHARD' Heq_kvshard. iFrame "Hserver_kvshards".
-      eauto. }
+    wp_apply (wp_MakeKVShardServer with "[Hserver_kvshards $Herpc_ghost_kv]").
+    { rewrite -Heq_unSHARD' Heq_kvshard. done. }
     iIntros (s) "His_server".
     wp_pures.
     wp_apply (wp_KVShardServer__Start with "[] [] [$His_server]").

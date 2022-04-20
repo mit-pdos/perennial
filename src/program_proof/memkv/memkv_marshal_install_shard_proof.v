@@ -10,8 +10,6 @@ From Perennial.program_proof Require Export marshal_proof memkv.common_proof.
 Section memkv_marshal_install_shard_proof.
 
 Record InstallShardRequestC := mkInstallShardC {
-  IR_CID : u64;
-  IR_Seq : u64;
   IR_Sid : u64;
   IR_Kvs : gmap u64 (list u8)
 }.
@@ -70,9 +68,8 @@ Definition has_byte_map_encoding (m:gmap u64 (list u8)) (r:Rec) :=
 
 Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardRequestC) : Prop :=
   ∃ r, (* (∀ k, k ∈ dom (gset _ ) args.(IR_Kvs) → shardOfC k = args.(IR_CID)) ∧ *)
-       int.Z args.(IR_Seq) > 0 ∧
        has_byte_map_encoding (args.(IR_Kvs)) r ∧
-       has_encoding data ([EncUInt64 args.(IR_CID); EncUInt64 args.(IR_Seq); EncUInt64 args.(IR_Sid)] ++ r).
+       has_encoding data ([EncUInt64 args.(IR_Sid)] ++ r).
 
 Context `{!heapGS Σ}.
 
@@ -180,12 +177,9 @@ Definition EncSliceMap_invariant m0 enc_v (r:Rec) sz map_sz
 
 Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   ∃ (kvs_ptr:loc) (mv:gmap u64 goose_lang.val),
-  "HCID" ∷ args_ptr ↦[InstallShardRequest :: "CID"] #args.(IR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[InstallShardRequest :: "Seq"] #args.(IR_Seq) ∗
   "HKey" ∷ args_ptr ↦[InstallShardRequest :: "Sid"] #args.(IR_Sid) ∗
   "HKvs" ∷ args_ptr ↦[InstallShardRequest :: "Kvs"] #kvs_ptr ∗
   "HKvsMap" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
-  "%HseqPositive" ∷ ⌜int.Z args.(IR_Seq) > 0⌝ ∗
   "%Hdom_install" ∷ ⌜dom (gset _) args.(IR_Kvs) = dom (gset _) mv ⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),
         ⌜shardOfC k ≠ args.(IR_Sid) ∧ mv !! k = None ∧ args.(IR_Kvs) !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (args.(IR_Kvs) !! k))) )
@@ -586,16 +580,6 @@ Proof.
   iIntros "Henc".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { rewrite Hoverflow. word. }
-  iIntros "Henc".
-  wp_pures.
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { rewrite Hoverflow. word. }
-  iIntros "Henc".
-  wp_pures.
-  wp_loadField.
   wp_apply (wp_EncSliceMap with "[$Hslicemap $Henc $HKvsMap]").
   { rewrite Hoverflow. word. }
   iIntros (rmap) "(%Hhas&Hismap&Hslicemap&Henc)".
@@ -856,7 +840,7 @@ Lemma wp_decodeInstallShardRequest args args_sl argsData :
 Proof.
   iIntros (Φ) "(Hslice&%Henc) HΦ".
   wp_lam.
-  destruct Henc as (r&?&(l&Hsize&Hnodup&HlistMap&Hmapencoded)&Hdata).
+  destruct Henc as (r&(l&Hsize&Hnodup&HlistMap&Hmapencoded)&Hdata).
   rewrite Hmapencoded in Hdata.
   wp_apply (wp_new_dec with "Hslice"); eauto.
   iIntros (d) "Hdec".
@@ -869,12 +853,6 @@ Proof.
   wp_apply (wp_Dec__GetInt with "Hdec").
   iIntros "Hdec".
   wp_storeField.
-  wp_apply (wp_Dec__GetInt with "Hdec").
-  iIntros "Hdec".
-  wp_storeField.
-  wp_apply (wp_Dec__GetInt with "Hdec").
-  iIntros "Hdec".
-  wp_storeField.
   wp_apply (wp_DecSliceMap with "[$]"); try eauto.
   iIntros (rmap mv) "(Hmref&Hslicemap)".
   wp_storeField.
@@ -883,8 +861,6 @@ Proof.
   iExists _, _. iFrame.
   iDestruct (is_slicemap_rep_dom with "[$]") as "%Hdom".
   iSplit; auto.
-  iSplit.
-  { eauto. }
   iApply is_slicemap_rep_to_shard. eauto.
 Qed.
 

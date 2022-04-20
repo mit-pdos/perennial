@@ -16,7 +16,7 @@ Record memkv_coord_names := {
 
 Section memkv_global_coord_definitions.
 
-Context `{!gooseGlobalGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!gooseGlobalGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Definition all_are_shard_servers (s:list u64) γkv : iProp Σ :=
   ∀ sid host, ⌜s !! sid = Some host⌝ →
@@ -51,7 +51,7 @@ End memkv_global_coord_definitions.
 
 Section memkv_coord_definitions.
 
-Context `{!heapGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Definition own_ShardClerkSet (s:loc) (γkv:gname) : iProp Σ :=
   ∃ (c:loc) (cls_ptr:loc)  (clsM:gmap u64 loc),

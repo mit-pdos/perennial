@@ -9,7 +9,7 @@ From Perennial.program_proof.memkv Require Import memkv_coord_clerk_proof.
 
 Section memkv_coord_start_proof.
 
-Context `{!heapGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
   length shardMapping = int.nat uNSHARD →
@@ -313,6 +313,7 @@ Proof.
       iFrame "#HgetSpec".
 
       clear Φ.
+      rewrite /impl_handler_spec.
       iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
@@ -353,6 +354,7 @@ Proof.
       iFrame "#HaddSpec".
 
       clear Φ.
+      rewrite /impl_handler_spec.
       iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.

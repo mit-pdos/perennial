@@ -6,14 +6,12 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions common
 
 Section memkv_shard_make_proof.
 
-Context `{!heapGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MakeKVShardServer (b : bool) γ :
   {{{
-       "#His_srv" ∷ is_eRPCServer γ.(rpc_gn) ∗
-       "HRPCserver_own" ∷ eRPCServer_own_ghost γ.(rpc_gn) ∅ ∅ ∗
-       "HghostShards" ∷ (if b then [∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ.(kv_gn) sid ∅ else True) ∗
-       "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), is_eRPCClient_ghost γ.(rpc_gn) cid 1
+       "Hpreserv" ∷ own_erpc_pre_server γ.(erpc_gn) ∗
+       "HghostShards" ∷ (if b then [∗ set] sid ∈ rangeSet 0 uNSHARD, own_shard γ.(kv_gn) sid ∅ else True)
   }}}
     MakeKVShardServer #b
   {{{
@@ -29,11 +27,8 @@ Proof.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
   iDestruct (struct_fields_split with "srv") as "srv". iNamed "srv".
   wp_storeField.
-  wp_apply (map.wp_NewMap).
-  iIntros (lastReply_ptr) "HlastReplyMap".
-  wp_storeField.
-  wp_apply (wp_NewMap).
-  iIntros (lastSeq_ptr) "HlastSeqMap".
+  wp_apply (wp_erpc_MakeServer with "Hpreserv").
+  iIntros (erpc) "#Herpc".
   wp_storeField.
   wp_apply (wp_NewSlice (V:=bool)).
   iIntros (shardMap_sl) "HshardMap_sl".
@@ -239,26 +234,22 @@ Proof.
     apply lookup_replicate_1 in Hfalse as (Hbad&?). rewrite //= in Hbad.
   }
   iIntros "(Hloop_post&Hi)".
-  iMod (alloc_lock memKVN _ lk (own_KVShardServer srv γ) with "[$] [-mu cm HΦ]").
+  iMod (alloc_lock memKVN _ lk (own_KVShardServer srv γ) with "[$] [-mu cm erpc HΦ]").
   {
     iNext. iNamed "Hloop_post".
-    iExists _, _, _, _, _, _, _, _.
-    iExists _, _, _, _.
-    iFrame "lastReply lastSeq nextCID shardMap kvss peers".
+    iExists _, _, _, _, _, _.
+    iFrame "shardMap kvss peers".
     iFrame.
     iSplit.
     { iPureIntro. rewrite ?dom_empty_L //. }
-    iSplitL "".
-    { rewrite big_sepM2_empty //. }
-    iSplit; first done.
     iSplit; first done.
     rewrite big_sepM_empty.
-    iSplit; first done.
-    iApply (big_sepS_mono with "Hcids"); by eauto.
+    done.
   }
-  wp_pures. iApply "HΦ". iExists _, _.
+  wp_pures. iApply "HΦ". iExists _, _, _.
   iMod (readonly_alloc_1 with "mu") as "$".
   iMod (readonly_alloc_1 with "cm") as "$".
+  iMod (readonly_alloc_1 with "erpc") as "$".
   by iFrame "# ∗".
 Qed.
 

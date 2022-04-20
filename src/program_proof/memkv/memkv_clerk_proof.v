@@ -5,7 +5,7 @@ From Perennial.program_proof.memkv Require Export common_proof memkv_coord_defin
 
 Section memkv_concurrent_clerk_proof.
 
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !erpcG Σ ShardReplyC, !urpcregG Σ, !kvMapG Σ}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !erpcG Σ, !urpcregG Σ, !kvMapG Σ}.
 
 Local Definition own_KVClerk (p:loc) (γ:gname) : iProp Σ :=
   ∃ (freeClerks_sl:Slice.t) (freeClerks:list loc),

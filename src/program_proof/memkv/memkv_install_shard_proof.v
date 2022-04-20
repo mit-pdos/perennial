@@ -4,16 +4,14 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_install_shard_proof.
 
-Context `{!heapGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
-Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
+Lemma wp_InstallShardRPC (s args_ptr:loc) args γ :
   is_KVShardServer s γ -∗
   {{{
        own_InstallShardRequest args_ptr args ∗
        ⌜int.nat args.(IR_Sid) < uNSHARD⌝ ∗
-       is_eRPCRequest γ.(rpc_gn) γreq (own_shard γ.(kv_gn) args.(IR_Sid) args.(IR_Kvs))
-                                (λ _, True)
-                                {| Req_CID:=args.(IR_CID); Req_Seq:=args.(IR_Seq) |}
+       (own_shard γ.(kv_gn) args.(IR_Sid) args.(IR_Kvs))
   }}}
     KVShardServer__InstallShardRPC #s #args_ptr
   {{{
@@ -22,7 +20,7 @@ Lemma wp_InstallShardRPC (s args_ptr:loc) args γ γreq :
 .
 Proof.
   iIntros "#His_shard !#" (Φ) "Hpre HΦ".
-  iDestruct "Hpre" as "(Hargs & %HsidLe & #HreqInv)".
+  iDestruct "Hpre" as "(Hargs & %HsidLe & Hpre)".
   iNamed "Hargs".
   wp_lam.
   wp_pures.
@@ -34,57 +32,6 @@ Proof.
   wp_pures.
   wp_lam.
   wp_pures.
-
-  wp_loadField. wp_loadField.
-  wp_apply (wp_MapGet with "HlastSeqMap").
-  iIntros (v ok) "[%HseqGet HlastSeqMap]".
-  wp_pures.
-
-  wp_loadField. wp_pures.
-  wp_apply (wp_and_pure ok (int.Z args.(IR_Seq) ≤ int.Z v)%Z).
-  { wp_pures. by destruct ok. }
-  { iIntros "_". wp_pures. done. }
-
-  wp_if_destruct.
-  { (* reply table *)
-    wp_pures.
-    wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
-    {
-      iFrame "HmuInv Hlocked".
-      iNext.
-      iExists _,_,_,_,_,_,_,_.
-      iExists _,_,_,_.
-      iFrame "HlastReply_structs ∗".
-      done.
-    }
-    wp_pures. by iApply "HΦ".
-  }
-
-  (* fresh sequence number *)
-  assert (int.Z v < int.Z args.(IR_Seq))%Z as HseqFresh.
-  {
-    simpl.
-    destruct ok.
-    {
-      intuition.
-      destruct (Z.le_gt_cases (int.Z args.(IR_Seq)) (int.Z v)) as [Hineq|Hineq].
-      { naive_solver. }
-      { naive_solver. }
-    }
-    {
-      apply map_get_false in HseqGet as [_ ->].
-      simpl.
-      word.
-    }
-  }
-
-  wp_loadField.
-  wp_loadField.
-  wp_loadField.
-  wp_apply (wp_MapInsert with "HlastSeqMap").
-  { done. }
-  iIntros "HlastSeqMap".
 
   (* update shardMap to have sid ↦ true *)
   wp_pures.
@@ -125,53 +72,13 @@ Proof.
   iIntros "Hkvss_small".
   iCombine "Hkvss_sl Hkvss_small" as "Hkvss_sl".
 
-  iMod (server_takes_request with "HreqInv Hrpc") as "HH".
-  { done. }
-  {
-    rewrite HseqGet.
-    simpl.
-    word.
-  }
-  iDestruct "HH" as "(Hγpre & HownShard & Hproc)".
-  iMod (server_completes_request _ _ _ _ _ (mkShardReplyC 0 [] false) with "His_srv HreqInv Hγpre [] Hproc") as "HH".
-  { done. }
-  { done. }
-  { rewrite HseqGet. simpl. word. }
-  { done. }
-  iDestruct "HH" as "[#Hreceipt Hrpc]".
-
-  wp_pures.
-  wp_loadField.
-  wp_loadField.
-
-  wp_apply (map.wp_MapInsert with "HlastReplyMap").
-  iIntros "HlastReplyMap".
-  wp_pures.
-
   wp_loadField.
   wp_apply (release_spec with "[-HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    iExists _,_,_,_,_,_,_,_.
-    iExists _,_,_,_.
-    iFrame "HlastReplyMap HlastSeqMap".
+    iExists _,_,_,_,_,_.
     iFrame.
-    iSplitL "".
-    {
-      iPureIntro. rewrite dom_insert_L.
-      rewrite dom_insert_L. rewrite HlastReplyMVdom.
-      done.
-    }
-    iSplitL "HlastReply_structs".
-    { (* added an empty reply to lastReply *)
-      iApply (big_sepM2_insert_2 with "[] HlastReply_structs").
-      simpl.
-      iExists (Slice.nil),1%Qp.
-      iSplitL ""; first done.
-      iApply typed_slice.is_slice_small_nil.
-      done.
-    }
     iSplitL "Hkvss_sl".
     {
       iDestruct "Hkvss_sl" as "[$ H]".

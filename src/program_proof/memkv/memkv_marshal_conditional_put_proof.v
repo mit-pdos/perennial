@@ -13,8 +13,6 @@ Section memkv_marshal_conditional_put_proof.
 Context `{!heapGS Σ}.
 
 Record ConditionalPutRequestC := mkConditionalPutRequestC {
-  CPR_CID : u64;
-  CPR_Seq : u64;
   CPR_Key : u64;
   CPR_ExpValue : list u8;
   CPR_NewValue : list u8;
@@ -26,14 +24,11 @@ Record ConditionalPutReplyC := mkConditionalPutReplyC {
 }.
 
 Definition own_ConditionalPutRequest args_ptr expv_sl newv_sl args : iProp Σ :=
-  "HCID" ∷ args_ptr ↦[ConditionalPutRequest :: "CID"] #args.(CPR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[ConditionalPutRequest :: "Seq"] #args.(CPR_Seq) ∗
   "HKey" ∷ args_ptr ↦[ConditionalPutRequest :: "Key"] #args.(CPR_Key) ∗
   "HExpValue" ∷ args_ptr ↦[ConditionalPutRequest :: "ExpectedValue"] (slice_val expv_sl) ∗
   "HNewValue" ∷ args_ptr ↦[ConditionalPutRequest :: "NewValue"] (slice_val newv_sl) ∗
   "#HExpValue_sl" ∷ readonly (typed_slice.is_slice_small expv_sl byteT 1%Qp args.(CPR_ExpValue)) ∗
-  "#HNewValue_sl" ∷ readonly (typed_slice.is_slice_small newv_sl byteT 1%Qp args.(CPR_NewValue)) ∗
-  "%HseqPositive" ∷ ⌜int.Z args.(CPR_Seq) > 0⌝
+  "#HNewValue_sl" ∷ readonly (typed_slice.is_slice_small newv_sl byteT 1%Qp args.(CPR_NewValue))
 .
 
 Definition own_ConditionalPutReply reply_ptr rep : iProp Σ :=
@@ -42,10 +37,9 @@ Definition own_ConditionalPutReply reply_ptr rep : iProp Σ :=
 .
 
 Definition has_encoding_ConditionalPutRequest (data:list u8) (args:ConditionalPutRequestC) : Prop :=
-  has_encoding data [ EncUInt64 args.(CPR_CID) ; EncUInt64 args.(CPR_Seq); EncUInt64 args.(CPR_Key);
+  has_encoding data [ EncUInt64 args.(CPR_Key);
     EncUInt64 (length args.(CPR_ExpValue)) ; EncBytes args.(CPR_ExpValue);
-    EncUInt64 (length args.(CPR_NewValue)) ; EncBytes args.(CPR_NewValue)  ] ∧
-  int.Z args.(CPR_Seq) > 0.
+    EncUInt64 (length args.(CPR_NewValue)) ; EncBytes args.(CPR_NewValue)  ].
 
 Definition has_encoding_ConditionalPutReply (data:list u8) (rep:ConditionalPutReplyC) :=
   has_encoding data [ EncUInt64 rep.(CPR_Err); EncBool rep.(CPR_Succ) ].
@@ -74,23 +68,11 @@ Proof.
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hnooverflow1). wp_pures.
   wp_apply wp_SumAssumeNoOverflow.
-  change (word.add (word.add (word.add (word.add 8 8) 8) 8) 8) with (U64 40).
+  change (word.add (word.add 8 8) 8) with (U64 24).
   iIntros (Hnooverflow2).
 
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
-  wp_pures.
-
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
-  wp_pures.
-
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
   wp_pures.
 
   wp_loadField.
@@ -133,9 +115,7 @@ Proof.
   iApply "HΦ".
   iFrame "∗#".
   iPureIntro.
-  split; last word.
   rewrite /has_encoding_ConditionalPutRequest.
-  split; last done.
   replace (U64 (length args.(CPR_ExpValue))) with expv_sl.(Slice.sz) by word.
   replace (U64 (length args.(CPR_NewValue))) with newv_sl.(Slice.sz) by word.
   done.
@@ -160,19 +140,10 @@ Proof.
   iNamed "HH".
   wp_pures.
 
-  destruct Henc as [Henc Hseq].
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }
   iIntros (?) "Hdec".
   wp_pures.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_storeField.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_storeField.
 
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".

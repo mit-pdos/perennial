@@ -23,7 +23,7 @@ Proof.
   eauto.
 Qed.
 
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !erpcG Σ ShardReplyC, !urpcregG Σ}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !erpcG Σ, !urpcregG Σ}.
 
 Definition own_LockClerk (ck:loc) (γ:gname) : iProp Σ :=
   ∃ (kvCk : loc),

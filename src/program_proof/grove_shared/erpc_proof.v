@@ -6,6 +6,7 @@ From Perennial.program_proof Require Import grove_prelude std_proof marshal_stat
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec erpc_lib.
 
 Notation erpcG Σ := (erpc_lib.erpcG Σ (list u8)).
+Notation erpcΣ := (erpc_lib.erpcΣ (list u8)).
 
 Definition erpcN := nroot .@ "erpc".
 
@@ -49,12 +50,29 @@ Definition handler_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (spec : eRP
 Definition erpc_make_client_pre γ cid : iProp Σ :=
   is_eRPCServer γ ∗ is_eRPCClient_ghost γ cid 1.
 
+(** The "pre-server" state: initialization happens in two phasees,
+  a ghost-init step globally before any server starts and the
+  Hoare triple actually initializing the server. This is because
+  the clients also need the γ, so we cannot allocate that
+  in a WP on the server. *)
+Definition own_erpc_pre_server (γ : erpc_names) : iProp Σ :=
+  "#His_srv" ∷ is_eRPCServer γ ∗
+  "HRPCserver_own" ∷ eRPCServer_own_ghost γ ∅ ∅ ∗
+  "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), is_eRPCClient_ghost γ cid 1.
+
+Lemma erpc_init_server_ghost :
+  ⊢ |={⊤}=> ∃ γ, own_erpc_pre_server γ.
+Proof.  
+  iMod make_rpc_server as (γ) "(#Hserv & ? & Hcids)"; first solve_ndisj.
+  iExists γ. iModIntro. iFrame. done.
+Qed.
+
 End erpc_defs.
 
 Section erpc_proof.
 Context `{!heapGS Σ, !urpcregG Σ, !erpcG Σ}.
 
-Local Definition own_erpc_server (s : loc) (γ : erpc_names) : iProp Σ :=
+Local Definition own_erpc_server (γ : erpc_names) (s : loc) : iProp Σ :=
   ∃ (lastReply_ptr lastSeq_ptr:loc)
     (lastReplyM:gmap u64 (list u8)) (lastReplyMV:gmap u64 goose_lang.val)
     (lastSeqM:gmap u64 u64) (nextCID:u64),
@@ -70,14 +88,14 @@ Local Definition own_erpc_server (s : loc) (γ : erpc_names) : iProp Σ :=
   "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_eRPCClient_ghost γ cid 1)
 .
 
-Definition is_erpc_server (s:loc) γ : iProp Σ :=
+Definition is_erpc_server (γ : erpc_names) (s:loc) : iProp Σ :=
   ∃ mu,
   "#His_srv" ∷ is_eRPCServer γ ∗
   "#Hmu" ∷ readonly (s ↦[erpc.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock erpcN mu (own_erpc_server s γ)
+  "#HmuInv" ∷ is_lock erpcN mu (own_erpc_server γ s)
 .
 
-Definition own_erpc_client (c:loc) (γ : erpc_names) : iProp Σ :=
+Definition own_erpc_client (γ : erpc_names) (c:loc) : iProp Σ :=
   ∃ (cid seq:u64),
     "Hcid" ∷ c ↦[erpc.Client :: "cid"] #cid ∗
     "Hseq" ∷ c ↦[erpc.Client :: "nextSeq"] #seq ∗
@@ -104,7 +122,7 @@ Definition impl_erpc_handler_spec (f : val) (spec : eRPCSpec)
 
 Lemma wp_erpc_Server_HandleRequest spec γ s f :
   impl_erpc_handler_spec f spec -∗
-  {{{ is_erpc_server s γ }}}
+  {{{ is_erpc_server γ s }}}
     Server__HandleRequest #s f
   {{{ f', RET f'; impl_handler_spec f' (uRPCSpec_Spec $ eRPCSpec_uRPC γ spec) }}}.
 Proof.
@@ -283,12 +301,12 @@ Proof.
     iModIntro. iRight. done.
 Qed.
 
-Lemma wp_erpc_MakeServer :
-  {{{ True }}}
+Lemma wp_erpc_MakeServer γ :
+  {{{ own_erpc_pre_server γ }}}
     MakeServer #()
-  {{{ γ s, RET #s; is_erpc_server s γ }}}.
+  {{{ s, RET #s; is_erpc_server γ s }}}.
 Proof.
-  iIntros (Φ) "_ HΦ".
+  iIntros (Φ) "(#Hserv & ? & Hcids) HΦ".
   wp_lam.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (srv) "srv".
@@ -304,9 +322,7 @@ Proof.
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
   wp_storeField.
 
-  iMod make_rpc_server as (γ) "(#Hserv & ? & Hcids)"; first solve_ndisj.
-
-  iMod (alloc_lock erpcN _ lk (own_erpc_server srv γ) with "[$] [-mu HΦ]").
+  iMod (alloc_lock erpcN _ lk (own_erpc_server γ srv) with "[$] [-mu HΦ]").
   {
     iNext.
     iExists _, _, _, _, _, _.
@@ -324,7 +340,7 @@ Proof.
 Qed.
 
 Lemma wp_erpc_GetFreshCID s γ :
-  {{{ is_erpc_server s γ }}}
+  {{{ is_erpc_server γ s }}}
     Server__GetFreshCID #s
   {{{ (cid : u64), RET #cid; erpc_make_client_pre γ cid }}}.
 Proof.
@@ -373,7 +389,7 @@ Qed.
 
 Lemma wp_erpc_NewRequest (spec : eRPCSpec) (x : spec.(espec_ty)) c payload payload_sl q γ :
   {{{
-    own_erpc_client c γ ∗
+    own_erpc_client γ c ∗
     is_slice_small payload_sl byteT q payload ∗
     spec.(espec_Pre) x payload
   }}}
@@ -388,7 +404,7 @@ Lemma wp_erpc_NewRequest (spec : eRPCSpec) (x : spec.(espec_ty)) c payload paylo
        (We could give back [own_erpc_client] earlier but then we'd have to ask
        for it again here.) *)
     (∀ rep, (eRPCSpec_uRPC γ spec).(spec_Post) y req rep ={⊤}=∗
-      own_erpc_client c γ ∗ ▷ spec.(espec_Post) x payload rep)
+      own_erpc_client γ c ∗ ▷ spec.(espec_Post) x payload rep)
   }}}.
 Proof.
   iIntros (Φ) "(Hc & Hpayload & Hpre) HΦ". wp_lam.
@@ -443,7 +459,7 @@ Qed.
 Lemma wp_erpc_MakeClient γ cid :
   {{{ erpc_make_client_pre γ cid }}}
     MakeClient #cid
-  {{{ c, RET #c; own_erpc_client c γ }}}.
+  {{{ c, RET #c; own_erpc_client γ c }}}.
 Proof.
   iIntros (Φ) "[#Hserv Hcid] HΦ". wp_lam.
   wp_apply (wp_allocStruct); first val_ty.

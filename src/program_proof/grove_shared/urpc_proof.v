@@ -131,9 +131,6 @@ Definition impl_handler_spec (f:val)
       Post repData
   }}}.
 
-Local Instance impl_handler_spec_pers f Spec : Persistent (impl_handler_spec f Spec).
-Proof. apply _. Qed.
-
 Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
             "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
@@ -927,5 +924,15 @@ Proof.
     exfalso. rewrite //= in Hval.
   }
 Qed.
+
+Global Instance impl_handler_spec_pers f Spec : Persistent (impl_handler_spec f Spec).
+Proof. apply _. Qed.
+
+Global Typeclasses Opaque impl_handler_spec.
+
+Global Instance handler_spec_pers Γsrv host rpcid Spec : Persistent (handler_spec Γsrv host rpcid Spec).
+Proof. apply _. Qed.
+
+Global Typeclasses Opaque impl_handler_spec handler_spec.
 
 End urpc_proof.

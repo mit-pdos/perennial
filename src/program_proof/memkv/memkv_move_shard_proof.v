@@ -4,7 +4,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_move_shard_proof.
 
-Context `{!heapGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_MoveShardRPC (s args_ptr:loc) args γsh γ :
   is_KVShardServer s γ -∗
@@ -90,9 +90,7 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      iExists _,_,_, _, _, _, _, _.
-      iExists _, _, _, _.
-      iFrame "HlastReply_structs".
+      iExists _,_,_, _, _, _.
       iFrame.
       done.
     }
@@ -175,11 +173,8 @@ Proof.
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    iExists _,_,_,_,_,_,_,_.
-    iExists _,_,_,_.
-    iFrame "HlastReply_structs".
+    iExists _,_,_,_,_,_.
     iFrame.
-    iSplitL ""; first done.
     iSplitL "Hkvss_small".
     {
       rewrite -list_fmap_insert.

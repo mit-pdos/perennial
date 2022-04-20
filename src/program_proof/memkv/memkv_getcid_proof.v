@@ -5,7 +5,7 @@ From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_
 
 Section memkv_getcid_proof.
 
-Context `{!heapGS Σ, erpcG Σ ShardReplyC, urpcregG Σ, kvMapG Σ}.
+Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_GetCIDRPC (s:loc) γ :
   is_KVShardServer s γ -∗
@@ -14,7 +14,7 @@ Lemma wp_GetCIDRPC (s:loc) γ :
   }}}
     KVShardServer__GetCIDRPC #s
   {{{
-       cid, RET #cid; is_eRPCClient_ghost γ.(rpc_gn) cid 1
+       cid, RET #cid; erpc_make_client_pre γ.(erpc_gn) cid
   }}}
 .
 Proof.
@@ -22,51 +22,8 @@ Proof.
   wp_lam.
   iNamed "Hmemkv".
   wp_loadField.
-  wp_apply (acquire_spec with "[$HmuInv]").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
-  wp_loadField.
-  wp_pures.
-  wp_loadField.
-  wp_apply wp_SumAssumeNoOverflow.
-  iIntros (Hoverflow).
-
-  wp_loadField.
-  wp_storeField.
-  iDestruct (big_sepS_delete _ _ nextCID with "Hcids") as "[Hcid Hcids]".
-  { set_solver. }
-
-  wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hcid]").
-  {
-    iFrame "HmuInv Hlocked".
-    iNext.
-    iExists _,_,_,_,_,_,_,_.
-    iExists _,_,_,_.
-    iFrame "HlastReply_structs ∗".
-    iSplitL ""; first done.
-    iSplitL ""; first done.
-    iSplitL ""; first done.
-    iApply (big_sepS_delete _ _ nextCID with "[Hcids]").
-    { set_solver. }
-    iSplitL "".
-    {
-      iLeft.
-      iPureIntro.
-      word.
-    }
-    iApply (big_sepS_impl with "Hcids").
-    iModIntro. iIntros (??) "[%Hineq|$]".
-    iLeft. iPureIntro.
-    word.
-  }
-  wp_pures.
-  iApply "HΦ".
-  iModIntro.
-  iDestruct "Hcid" as "[%Hbad|$]".
-  exfalso.
-  word.
+  wp_apply wp_erpc_GetFreshCID; first done.
+  done.
 Qed.
 
 End memkv_getcid_proof.

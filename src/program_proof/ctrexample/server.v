@@ -445,6 +445,7 @@ Proof using Type*.
       simpl. iExists _.
       iFrame "Hhandler".
 
+      rewrite /impl_handler_spec.
       iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & HFAISpec)".

@@ -13,8 +13,6 @@ Section memkv_marshal_get_proof.
 Context `{!heapGS Σ}.
 
 Record GetRequestC := mkGetRequestC {
-  GR_CID : u64;
-  GR_Seq : u64;
   GR_Key : u64
 }.
 
@@ -24,10 +22,7 @@ Record GetReplyC := mkGetReplyC {
 }.
 
 Definition own_GetRequest args_ptr args : iProp Σ :=
-  "HCID" ∷ args_ptr ↦[GetRequest :: "CID"] #args.(GR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[GetRequest :: "Seq"] #args.(GR_Seq) ∗
-  "HKey" ∷ args_ptr ↦[GetRequest :: "Key"] #args.(GR_Key) ∗
-  "%HseqPositive" ∷ ⌜int.Z args.(GR_Seq) > 0⌝
+  "HKey" ∷ args_ptr ↦[GetRequest :: "Key"] #args.(GR_Key)
 .
 
 Definition own_GetReply reply_ptr rep : iProp Σ :=
@@ -38,8 +33,7 @@ Definition own_GetReply reply_ptr rep : iProp Σ :=
 .
 
 Definition has_encoding_GetRequest (data:list u8) (args:GetRequestC) :=
-  has_encoding data [ EncUInt64 args.(GR_CID) ; EncUInt64 args.(GR_Seq) ; EncUInt64 args.(GR_Key) ] ∧
-  int.Z args.(GR_Seq) > 0.
+  has_encoding data [ EncUInt64 args.(GR_Key) ].
 
 Definition has_encoding_GetReply (data:list u8) (rep:GetReplyC) :=
   has_encoding data [ EncUInt64 rep.(GR_Err) ; EncUInt64 (length rep.(GR_Value)) ; EncBytes rep.(GR_Value) ].
@@ -68,18 +62,6 @@ Proof.
   iIntros "Henc".
   wp_pures.
 
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "[$Henc]").
-  { done. }
-  iIntros "Henc".
-  wp_pures.
-
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "[$Henc]").
-  { done. }
-  iIntros "Henc".
-  wp_pures.
-
   wp_apply (wp_Enc__Finish with "[$Henc]").
   iIntros (??) "(%Henc & Hlen & Hsl)".
   iApply "HΦ".
@@ -97,7 +79,7 @@ Lemma wp_DecodeGetRequest req_sl reqData args :
        (args_ptr:loc), RET #args_ptr; own_GetRequest args_ptr args
   }}}.
 Proof.
-  iIntros (Φ) "[[%Henc %] Hsl] HΦ".
+  iIntros (Φ) "[%Henc Hsl] HΦ".
   wp_lam.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (rep_ptr) "Hrep".
@@ -107,14 +89,6 @@ Proof.
   wp_apply (wp_new_dec with "[$Hsl]"); first done.
   iIntros (?) "Hdec".
   wp_pures.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_storeField.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_storeField.
 
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".

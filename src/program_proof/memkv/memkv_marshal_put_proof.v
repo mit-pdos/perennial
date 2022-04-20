@@ -13,8 +13,6 @@ Section memkv_marshal_put_proof.
 Context `{!heapGS Σ}.
 
 Record PutRequestC := mkPutRequestC {
-  PR_CID : u64;
-  PR_Seq : u64;
   PR_Key : u64;
   PR_Value : list u8
 }.
@@ -24,12 +22,9 @@ Record PutReplyC := mkPutReplyC {
 }.
 
 Definition own_PutRequest args_ptr val_sl args : iProp Σ :=
-  "HCID" ∷ args_ptr ↦[PutRequest :: "CID"] #args.(PR_CID) ∗
-  "HSeq" ∷ args_ptr ↦[PutRequest :: "Seq"] #args.(PR_Seq) ∗
   "HKey" ∷ args_ptr ↦[PutRequest :: "Key"] #args.(PR_Key) ∗
   "HValue" ∷ args_ptr ↦[PutRequest :: "Value"] (slice_val val_sl) ∗
-  "#HValue_sl" ∷ readonly (typed_slice.is_slice_small val_sl byteT 1 args.(PR_Value)) ∗
-  "%HseqPositive" ∷ ⌜int.Z args.(PR_Seq) > 0⌝
+  "#HValue_sl" ∷ readonly (typed_slice.is_slice_small val_sl byteT 1 args.(PR_Value))
 .
 
 Definition own_PutReply reply_ptr rep : iProp Σ :=
@@ -37,8 +32,7 @@ Definition own_PutReply reply_ptr rep : iProp Σ :=
 .
 
 Definition has_encoding_PutRequest (data:list u8) (args:PutRequestC) : Prop :=
-  has_encoding data [ EncUInt64 args.(PR_CID) ; EncUInt64 args.(PR_Seq); EncUInt64 args.(PR_Key); EncUInt64 (length args.(PR_Value)) ; EncBytes args.(PR_Value) ] ∧
-  int.Z args.(PR_Seq) > 0.
+  has_encoding data [ EncUInt64 args.(PR_Key); EncUInt64 (length args.(PR_Value)) ; EncBytes args.(PR_Value) ].
 
 Definition has_encoding_PutReply (data:list u8) (rep:PutReplyC) :=
   has_encoding data [ EncUInt64 rep.(PR_Err) ].
@@ -63,23 +57,11 @@ Proof.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_apply wp_SumAssumeNoOverflow.
-  change (word.add (word.add (word.add 8 8) 8) 8) with (U64 32).
+  change (word.add 8 8) with (U64 16).
   iIntros (Hnooverflow).
 
   wp_apply (wp_new_enc).
   iIntros (enc) "Henc".
-  wp_pures.
-
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
-  wp_pures.
-
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "Henc").
-  { word. }
-  iIntros "Henc".
   wp_pures.
 
   wp_loadField.
@@ -108,9 +90,7 @@ Proof.
   iApply "HΦ".
   iFrame "∗#".
   iPureIntro.
-  split; last word.
   rewrite /has_encoding_PutRequest.
-  split; last done.
   replace (U64 (length args.(PR_Value))) with val_sl.(Slice.sz) by word.
   done.
 Qed.
@@ -133,19 +113,10 @@ Proof.
   iNamed "HH".
   wp_pures.
 
-  destruct Henc as [Henc Hseq].
   wp_apply (wp_new_dec with "[$Hsl]").
   { done. }
   iIntros (?) "Hdec".
   wp_pures.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_storeField.
-
-  wp_apply (wp_Dec__GetInt with "[$Hdec]").
-  iIntros "Hdec".
-  wp_storeField.
 
   wp_apply (wp_Dec__GetInt with "[$Hdec]").
   iIntros "Hdec".
