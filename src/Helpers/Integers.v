@@ -13,9 +13,36 @@ Proof.
   exact (word.of_Z 0).
 Qed.
 
-Record u64_rep := Word64 { u64_car : Naive.word64 }.
-Record u32_rep := Word32 { u32_car : Naive.word32 }.
-Record u8_rep := Word8 { u8_car : Naive.word8 }.
+Definition shift_overflow_special_case_handlers := {|
+  Naive.div_by_zero x := -1;
+  Naive.mod_by_zero x := x;
+  (* returns a new shift amount, which we leave as too large (so that the
+  overall shift always produces 0) *)
+  Naive.adjust_too_big_shift_amount n := n;
+|}.
+
+Notation word64 := (Naive.gen_word 64%Z shift_overflow_special_case_handlers).
+#[global] Instance word64_ok : word.ok word64 := Naive.gen_ok 64 _ eq_refl.
+Add Ring wring64 : (Properties.word.ring_theory (word := word64))
+      (preprocess [autorewrite with rew_word_morphism],
+       morphism (Properties.word.ring_morph (word := word64)),
+       constants [Properties.word_cst]).
+Notation word32 := (Naive.gen_word 32%Z shift_overflow_special_case_handlers).
+#[global] Instance word32_ok : word.ok word32 := Naive.gen_ok 32 _ eq_refl.
+Add Ring wring32 : (Properties.word.ring_theory (word := word32))
+      (preprocess [autorewrite with rew_word_morphism],
+       morphism (Properties.word.ring_morph (word := word32)),
+       constants [Properties.word_cst]).
+Notation word8 := (Naive.gen_word 8%Z shift_overflow_special_case_handlers).
+#[global] Instance word8_ok : word.ok word8 := Naive.gen_ok 8 _ eq_refl.
+Add Ring wring8 : (Properties.word.ring_theory (word := word8))
+      (preprocess [autorewrite with rew_word_morphism],
+       morphism (Properties.word.ring_morph (word := word8)),
+       constants [Properties.word_cst]).
+
+Record u64_rep := Word64 { u64_car : word64 }.
+Record u32_rep := Word32 { u32_car : word32 }.
+Record u8_rep := Word8 { u8_car : word8 }.
 
 Definition width64_ok : 0 < 64 := eq_refl.
 Definition width32_ok : 0 < 32 := eq_refl.
@@ -63,10 +90,11 @@ Module u64_instance.
 
   Global Instance u64_word_ok : word.ok u64.
   Proof.
-    destruct (_ : word.ok (Naive.word 64)).
-    constructor; simpl; eauto.
-    - intros []; simpl.
-      rewrite of_Z_unsigned; auto.
+    destruct word64_ok.
+    constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
+    simpl.
+    destruct x as [x]; f_equal; simpl.
+    rewrite <- of_Z_unsigned0; auto.
   Qed.
 
 End u64_instance.
@@ -108,10 +136,11 @@ Module u32_instance.
 
   Global Instance u32_word_ok : word.ok u32.
   Proof.
-    destruct (_ : word.ok (Naive.word 32)).
-    constructor; simpl; eauto.
-    - intros []; simpl.
-      rewrite of_Z_unsigned; auto.
+    destruct word32_ok.
+    constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
+    simpl.
+    destruct x as [x]; f_equal; simpl.
+    rewrite <- of_Z_unsigned0; auto.
   Qed.
 
 End u32_instance.
@@ -153,10 +182,11 @@ Module u8_instance.
 
   Global Instance u8_word_ok : word.ok u8.
   Proof.
-    destruct (_ : word.ok (Naive.word 8)).
-    constructor; simpl; eauto.
-    - intros []; simpl.
-      rewrite of_Z_unsigned; auto.
+    destruct word8_ok.
+    constructor; intros; eauto; try solve [ simpl in *; subst wrap0; eauto ].
+    simpl.
+    destruct x as [x]; f_equal; simpl.
+    rewrite <- of_Z_unsigned0; auto.
   Qed.
 
 End u8_instance.
