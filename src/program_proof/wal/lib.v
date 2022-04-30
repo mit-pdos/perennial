@@ -157,6 +157,25 @@ Proof.
   apply _.
 Qed.
 
+Global Instance update_into_val : IntoVal (u64 * Slice.t).
+Proof.
+  refine {| to_val := update_val;
+           from_val := λ v, match v with
+                            | (#(LitInt a), (slice_v, #()))%V =>
+                                match from_val slice_v with
+                                | Some s => Some (a, s)
+                                | None => None
+                                end
+                            | _ => None
+                            end;
+           IntoVal_def := (U64 0, IntoVal_def Slice.t);
+         |}.
+  destruct v as [a []]; done.
+Defined.
+
+Global Instance update_into_val_for_type : IntoValForType (u64 * Slice.t) (uint64T * (blockT * unitT)%ht).
+Proof. constructor; simpl; done. Qed.
+
 Instance update_val_inj : Inj eq eq update_val.
 Proof.
   intros u1 u2.
@@ -552,4 +571,3 @@ Proof.
 Qed.
 
 End heap.
-

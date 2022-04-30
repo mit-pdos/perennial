@@ -427,11 +427,19 @@ Proof.
   iIntros (Φ) "(#Hinv & #Hiswal & #Hlog & Hlockedheap & Hbufs & Hbufpre) HΦ".
 
   wp_call.
-  wp_apply wp_ref_of_zero; first by eauto.
-  iIntros (blks_var) "Hblks_var".
-
   wp_apply (wp_txn__installBufsMap with "[$Hinv $Hiswal $Hlog $Hlockedheap $Hbufs $Hbufpre]").
   iIntros (blkmapref blkmap) "(Hlockedheap & Hblkmapref & Hbufamap_mapsto & Hblkmap)".
+
+  wp_apply (wp_MapLen with "Hblkmapref").
+  (* we don't use this length, it's just a slice capacity *)
+  iIntros "[%_ Hblkmapref]".
+  wp_apply wp_NewSliceWithCap.
+  { word. }
+  iIntros (ptr) "Hblks_slice".
+  rewrite replicate_0.
+  set (blks_s := Slice.mk ptr 0 _).
+  wp_apply wp_ref_to; first by eauto.
+  iIntros (blks_var) "Hblks_var".
 
   wp_apply (wp_MapIter_2 _ _ _ _ _
     (λ mtodo mdone,
@@ -446,16 +454,15 @@ Proof.
         "Hmdone" ∷ ( [∗ maplist] blkno↦offmap;upd ∈ offmaps_done;upds,
                                           ⌜ upd.(update.addr) = blkno ⌝ ∗
                                           ⌜ updBlockKindOK blkno upd.(update.b) γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝ )
-    )%I with "Hblkmapref [Hblks_var Hblkmap]").
+    )%I with "Hblkmapref [Hblks_var Hblkmap Hblks_slice]").
   {
-    rewrite zero_slice_val.
     iExists _, nil, _, ∅.
     iFrame "Hblks_var".
     iFrame "Hblkmap".
     iSplitL.
     { rewrite /updates_slice. iExists nil. simpl.
       iSplitL; last by done.
-      iApply slice.is_slice_zero.
+      iFrame.
     }
     iSplitL.
     { iPureIntro. rewrite right_id. done. }

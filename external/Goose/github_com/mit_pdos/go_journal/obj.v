@@ -61,8 +61,8 @@ Definition Log__installBufsMap: val :=
 
 Definition Log__installBufs: val :=
   rec: "Log__installBufs" "l" "bufs" :=
-    let: "blks" := ref (zero_val (slice.T (struct.t wal.Update))) in
     let: "bufmap" := Log__installBufsMap "l" "bufs" in
+    let: "blks" := ref_to (slice.T (struct.t wal.Update)) (NewSliceWithCap (struct.t wal.Update) #0 (MapLen "bufmap")) in
     MapIter "bufmap" (λ: "blkno" "data",
       "blks" <-[slice.T (struct.t wal.Update)] SliceAppend (struct.t wal.Update) (![slice.T (struct.t wal.Update)] "blks") (wal.MkBlockData "blkno" "data"));;
     ![slice.T (struct.t wal.Update)] "blks".
