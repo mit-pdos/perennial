@@ -106,27 +106,46 @@ Definition GetPre γ pv e Φ : iProp Σ :=
 Definition has_GetReply_encoding (l:list u8) (err v:u64) :=
   has_encoding l [EncUInt64 err; EncUInt64 v].
 
+Definition EnterNewEpoch_spec γ (e:u64) (Φ:iProp Σ) : iProp Σ :=
+|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+    own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+    own_unused_epoch γ e ∗ (∀ v, own_val γ e v (1/2)%Qp -∗
+                                 own_val γ latestEpoch v (1/2)%Qp -∗
+                                 own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ Φ)
+else (* XXX: it might seem like the server shouldn't need any resources in this case. *)
+  (own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+   (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤}=∗ Φ))
+.
+
+(* In this spec:
+   If the server can prove to the client that latestEpoch < e, then the client
+   needs to give back to the server the own_latest_epoch and own_unused_epoch
+   under a view-shift and the client will get back own_val of the new epoch, and
+   the previous latest epoch.
+
+   I think this might not be strictly TaDa.
+ *)
+Definition EnterNewEpoch_spec' γ (e:u64) (Φ:iProp Σ) : iProp Σ :=
+|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+    own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+    own_unused_epoch γ e ∗ (∀ v, own_val γ e v (1/2)%Qp -∗
+                                 own_val γ latestEpoch v (1/2)%Qp -∗
+                                 own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ Φ)
+else (* XXX: it might seem like the server shouldn't need any resources in this case. *)
+  (own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+   (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤}=∗ Φ))
+.
+
 Program Definition Get_spec γ :=
   λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
   (∃ (pv pe:proph_id) (repV:u64) e,
-  proph_once pv repV ∗
-  ⌜has_encoding reqData [EncUInt64 e]⌝ ∗
-  (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
-      own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-      own_unused_epoch γ e ∗
-                            (∀ v, own_val γ e v (1/2)%Qp ∗
-                                           own_val γ latestEpoch v (1/2)%Qp ∗
-                                           own_latest_epoch γ e (1/2)%Qp
-                                  ={∅,⊤}=∗ (∀ l, ⌜has_GetReply_encoding l 0 v⌝ -∗ proph_once pv v -∗ Φ l))
-   else if decide (int.Z latestEpoch = int.Z e) then
-    ∃ v, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-     own_val γ e v (1/2)%Qp ∗
-    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (∀ l, ⌜has_GetReply_encoding l 0 v⌝ -∗ proph_once pv v -∗ Φ l))
-   else
-     (* FIXME: in this case, the server returns *)
-      (∀ l, ⌜has_GetReply_encoding l 1 0⌝ -∗ proph_once pe true -∗ Φ l)
-     ))%I.
+    ⌜has_encoding reqData [EncUInt64 e]⌝ ∗ EnterNewEpoch_spec γ e (
+    |={⊤, ∅}=> ∃ v, own_val γ e v (1/2)%Qp ∗
+    (own_val γ e v (1/2)%Qp ={∅,⊤}=∗ (∀ l, ⌜has_GetReply_encoding l 0 v⌝ -∗ Φ l))
+     ))%I
+.
 Next Obligation.
+  rewrite /EnterNewEpoch_spec.
   solve_proper.
 Defined.
 
@@ -143,6 +162,13 @@ Definition own_Clerk γ (ck:loc) : iProp Σ :=
   "#Hcl_own" ∷ is_uRPCClient cl host ∗
   "#Hhost" ∷ is_host host γ
 .
+
+(*
+Definition increase_epoch_atomic_update γ : iProp Σ :=
+  λ Φ,
+  (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+   own_latest_epoch γ latestEpoch (1/2)%Qp ∗ (∀ v, own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ Φ)
+. *)
 
 Lemma wp_Clerk__Get γ ck (e:u64) :
   ∀ Φ,
@@ -175,10 +201,10 @@ Proof.
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (req_sl reqData) "(%Hreq_enc & %Hreq_len & Hreq_sl)".
   wp_pures.
-  wp_apply (wp_NewProph_once (T:=u64)).
-  iIntros (valProph v) "Hprophv".
   wp_apply (wp_NewProph_once (T:=bool)).
   iIntros (errProph err) "Hprophe".
+  wp_apply (wp_NewProph_once (T:=u64)).
+  iIntros (valProph v) "Hprophv".
   wp_pures.
 
   wp_apply (wp_ref_of_zero).
@@ -290,6 +316,29 @@ Proof.
   wp_storeField.
   wp_pures.
   (* TODO: move the above to a different lemma *)
+  wp_loadField.
+  destruct (decide (int.Z err = 0)).
+  {
+    (* no error *)
+    replace (err) with (U64 0) by word.
+    wp_pures.
+    rewrite bool_decide_true; last done.
+    simpl.
+
+    (* maybe we don't need this *)
+    wp_apply (wp_ResolveProph_once (T:=bool) with "[]").
+    { admit. }
+    { admit. }
+    iIntros (_).
+
+    wp_pures.
+    wp_loadField.
+    wp_pures.
+    iDestruct "Hpost" as "[Hpost Hprophv]".
+    wp_loadField.
+    wp_apply (wp_ResolveProph_once (T:=u64) with "[$Hprophv]").
+    { done. }
+  }
 Admitted.
 
 Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) :

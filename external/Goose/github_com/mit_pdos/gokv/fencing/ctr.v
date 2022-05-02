@@ -8,6 +8,10 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* 0_marshal.go *)
 
+Definition ENone : expr := #0.
+
+Definition EStale : expr := #1.
+
 Definition PutArgs := struct.decl [
   "epoch" :: uint64T;
   "v" :: uint64T
@@ -93,8 +97,8 @@ Definition Clerk__Get: val :=
       grove_ffi.Exit #1
     else #());;
     let: "r" := DecGetReply (![slice.T byteT] "reply_ptr") in
-    ResolveProph "errorProph" (struct.loadF GetReply "err" "r" ≠ "ENone");;
-    (if: struct.loadF GetReply "err" "r" ≠ "ENone"
+    ResolveProph "errorProph" (struct.loadF GetReply "err" "r" ≠ ENone);;
+    (if: struct.loadF GetReply "err" "r" ≠ ENone
     then
       (* log.Println("ctr: get() stale epoch number") *)
       grove_ffi.Exit #1
@@ -118,7 +122,7 @@ Definition Clerk__Put: val :=
     else #());;
     let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
     let: "epochErr" := marshal.Dec__GetInt "dec" in
-    (if: "epochErr" ≠ "ENone"
+    (if: "epochErr" ≠ ENone
     then
       (* log.Println("ctr: get() stale epoch number") *)
       grove_ffi.Exit #1
@@ -145,10 +149,6 @@ Definition Server := struct.decl [
   "v" :: uint64T;
   "lastEpoch" :: uint64T
 ].
-
-Definition ENone : expr := #0.
-
-Definition EStale : expr := #1.
 
 Definition Server__Put: val :=
   rec: "Server__Put" "s" "args" :=
