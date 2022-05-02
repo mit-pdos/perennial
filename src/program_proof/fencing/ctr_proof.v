@@ -39,6 +39,9 @@ Definition own_latest_epoch γ (e:u64) (q:Qp) : iProp Σ :=
 Definition is_latest_epoch_lb γ (e:u64) : iProp Σ :=
   mono_nat_lb_own γ.(epoch_gn) (int.nat e).
 
+Definition is_latest_epoch_lb_strict γ (e:u64) : iProp Σ :=
+  mono_nat_lb_own γ.(epoch_gn) (int.nat e + 1).
+
 Definition own_unused_epoch γ (e:u64) : iProp Σ :=
   e ⤳[γ.(epoch_token_gn)] false.
 
@@ -126,26 +129,39 @@ else (* XXX: it might seem like the server shouldn't need any resources in this 
    I think this might not be strictly TaDa.
  *)
 Definition EnterNewEpoch_spec' γ (e:u64) (Φ:iProp Σ) : iProp Σ :=
-|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
-    own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-    own_unused_epoch γ e ∗ (∀ v, own_val γ e v (1/2)%Qp -∗
-                                 own_val γ latestEpoch v (1/2)%Qp -∗
-                                 own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ Φ)
-else (* XXX: it might seem like the server shouldn't need any resources in this case. *)
-  (own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-   (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤}=∗ Φ))
+∀ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp -∗
+if decide (int.Z latestEpoch < int.Z e)%Z then
+  |={⊤, ∅}=> own_latest_epoch γ latestEpoch (1)%Qp ∗ own_unused_epoch γ e ∗
+            (∀ v, own_val γ e v (1/2)%Qp -∗
+                  own_val γ latestEpoch v (1/2)%Qp -∗
+                  own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ Φ)
+else
+  Φ
 .
 
+Definition Get_core_spec γ (e:u64) (Φ:u64 → iProp Σ) : iProp Σ :=
+  |={⊤, ∅}=> ∃ v, own_val γ e v (1/2)%Qp ∗
+    (own_val γ e v (1/2)%Qp ={∅,⊤}=∗ (Φ v))
+.
+
+Definition Get_server_spec γ (e:u64) (Φ:u64 → u64 → iProp Σ) : iProp Σ :=
+|={⊤,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+  if decide (int.Z latestEpoch = int.Z e)%Z then
+    Get_core_spec γ e (λ v, Φ 0 v)
+  else
+    (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤}=∗ (∀ dummy_val, Φ 1 dummy_val))
+.
+
+(* TODO: this is pretty monadic *)
 Program Definition Get_spec γ :=
   λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
   (∃ (pv pe:proph_id) (repV:u64) e,
     ⌜has_encoding reqData [EncUInt64 e]⌝ ∗ EnterNewEpoch_spec γ e (
-    |={⊤, ∅}=> ∃ v, own_val γ e v (1/2)%Qp ∗
-    (own_val γ e v (1/2)%Qp ={∅,⊤}=∗ (∀ l, ⌜has_GetReply_encoding l 0 v⌝ -∗ Φ l))
+       Get_server_spec γ e (λ v err, (∀ l, ⌜has_GetReply_encoding l err v⌝ -∗ Φ l))
      ))%I
 .
 Next Obligation.
-  rewrite /EnterNewEpoch_spec.
+  rewrite /EnterNewEpoch_spec /Get_server_spec /Get_core_spec.
   solve_proper.
 Defined.
 
@@ -163,12 +179,85 @@ Definition own_Clerk γ (ck:loc) : iProp Σ :=
   "#Hhost" ∷ is_host host γ
 .
 
-(*
-Definition increase_epoch_atomic_update γ : iProp Σ :=
-  λ Φ,
-  (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
-   own_latest_epoch γ latestEpoch (1/2)%Qp ∗ (∀ v, own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ Φ)
-. *)
+Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) Post :
+  is_Server γ s -∗
+  {{{
+        "Hrep_error" ∷ rep ↦[GetReply :: "err"] #dummy_err ∗
+        "Hrep_val" ∷ rep ↦[GetReply :: "val"] #dummy_val ∗
+
+      "HgetSpec" ∷ EnterNewEpoch_spec γ e (Get_server_spec γ e Post)
+  }}}
+    Server__Get #s #e #rep
+  {{{
+        (err v:u64), RET #();
+        "Hrep_error" ∷ rep ↦[GetReply :: "err"] #err ∗
+        "Hrep_val" ∷ rep ↦[GetReply :: "val"] #v ∗
+        "Hpost" ∷ Post err v
+  }}}.
+Proof.
+  iIntros "#His_srv !#" (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_pures.
+  iNamed "His_srv".
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+
+  wp_storeField.
+  wp_loadField.
+  wp_pures.
+
+  wp_if_destruct.
+  { (* case: Stale epoch number *)
+    wp_loadField.
+    (* First reason about EnterNewEpoch() *)
+    unfold EnterNewEpoch_spec.
+    iApply fupd_wp.
+    iMod "HgetSpec".
+    iDestruct "HgetSpec" as (clientLatestEpoch) "HgetSpec".
+    destruct (decide (int.Z clientLatestEpoch < int.Z e)) as [Hineq|Hineq].
+    { (* TODO(proof): contradiction because clientLatestEpoch == latestEpoch *)
+      exfalso.
+      admit.
+    }
+    (* e ≤ latestEpoch, so getSpec doesn't need own_unused_val *)
+    iDestruct "HgetSpec" as "[Hlatest2 HgetSpec]". (* TODO: why bother with own_latest_epoch in this case? *)
+    iMod ("HgetSpec" with "Hlatest2") as "HgetSpec".
+
+    (* Now for the GetAtEpoch() *)
+    unfold Get_server_spec.
+    iMod "HgetSpec".
+    clear Hineq clientLatestEpoch.
+    iDestruct "HgetSpec" as (clientLatestEpoch) "[Hlatest2 HgetSpec]".
+
+    destruct (decide (int.Z clientLatestEpoch = int.Z e)).
+    { (* TODO(proof): contradiction; we know that latestEpoch > e, and clientLatestEpoch = latestEpoch. *)
+      exfalso.
+      admit.
+    }
+    iMod ("HgetSpec" with "Hlatest2") as "Hpost".
+    iModIntro.
+
+    wp_apply (release_spec with "[$HmuInv $Hlocked Hv HlatestEpoch HghostLatestEpoch HghostV]").
+    {
+      iNext.
+      iExists _, _.
+      iFrame.
+    }
+    wp_pures.
+    wp_storeField.
+    iModIntro.
+    iApply "HΦ".
+    iFrame.
+    iApply "Hpost".
+  }
+  { (* case: epoch number is not stale. *)
+    admit.
+  }
+Admitted.
 
 Lemma wp_Clerk__Get γ ck (e:u64) :
   ∀ Φ,
@@ -340,40 +429,6 @@ Proof.
     { done. }
   }
 Admitted.
-
-Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) :
-  is_Server γ s -∗
-  {{{
-        "Hrep_error" ∷ rep ↦[GetReply :: "err"] #dummy_err ∗
-        "Hrep_val" ∷ rep ↦[GetReply :: "val"] #dummy_val
-  }}}
-    Server__Get #s #e #rep
-  {{{
-        RET #(); True
-  }}}.
-Proof.
-  iIntros "#His_srv !#" (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_lam.
-  wp_pures.
-  iNamed "His_srv".
-  wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
-
-  wp_storeField.
-  wp_loadField.
-  wp_pures.
-
-  wp_if_destruct.
-  {
-    wp_loadField.
-    admit.
-  }
-Admitted.
-
 
 (* NOTE: consider lt_eq_lt_dec: ∀ n m : nat, {n < m} + {n = m} + {m < n} *)
 
