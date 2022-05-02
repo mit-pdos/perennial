@@ -104,7 +104,7 @@ Lemma step_fupdN_inner_plain `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
   Plain P →
   ⊢ (|={⊤, ∅}=> |={∅}▷=>^k |={∅}=> P) -∗
   |={⊤}=> ▷^(S k) P.
-Proof.
+Proof using HAff.
   iIntros (HPlain).
   iInduction k as [| k] "IH" forall (P HPlain).
   - rewrite //=. iIntros "H". iApply fupd_plain_mask. do 2 iMod "H".
