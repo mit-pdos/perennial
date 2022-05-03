@@ -118,13 +118,13 @@ Definition Txn__NDirty: val :=
     jrnl.Op__NDirty (struct.loadF Txn "buftxn" "txn").
 
 Definition Txn__commitNoRelease: val :=
-  rec: "Txn__commitNoRelease" "txn" :=
+  rec: "Txn__commitNoRelease" "txn" "wait" :=
     util.DPrintf #5 (#(str"tp Commit %p
     ")) #();;
-    jrnl.Op__CommitWait (struct.loadF Txn "buftxn" "txn") #true.
+    jrnl.Op__CommitWait (struct.loadF Txn "buftxn" "txn") "wait".
 
 Definition Txn__Commit: val :=
-  rec: "Txn__Commit" "txn" :=
-    let: "ok" := Txn__commitNoRelease "txn" in
+  rec: "Txn__Commit" "txn" "wait" :=
+    let: "ok" := Txn__commitNoRelease "txn" "wait" in
     Txn__ReleaseAll "txn";;
     "ok".

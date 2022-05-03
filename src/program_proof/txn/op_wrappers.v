@@ -35,7 +35,7 @@ Definition Txn__ConditionalCommit' : val :=
   match: "v" with
       NONE => Txn__ReleaseAll "twophase";; "v"
     | SOME "_" =>
-    if: Txn__Commit "twophase" then
+    if: Txn__Commit "twophase" #true then
       "v"
     else
       NONEV

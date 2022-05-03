@@ -286,7 +286,7 @@ Section proof.
 
   Theorem wp_Txn__commitNoRelease' l γ γ' dinit objs_dom j K e1 v :
     {{{ is_twophase_started l γ γ' dinit objs_dom j K e1 (SOMEV v) }}}
-      Txn__commitNoRelease #l
+      Txn__commitNoRelease #l #true
     {{{ (ok:bool), RET #ok;
         "Htwophase" ∷ is_twophase_releasable l γ γ' objs_dom ∗
         "Hj" ∷ (

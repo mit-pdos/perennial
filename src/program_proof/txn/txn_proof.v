@@ -1116,7 +1116,7 @@ Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Discr
       )
     )
   }}}
-    Txn__commitNoRelease #l
+    Txn__commitNoRelease #l #true
   {{{
     (ok:bool), RET #ok;
     "Hlocks" ∷ is_twophase_locks
