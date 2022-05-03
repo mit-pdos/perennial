@@ -152,6 +152,70 @@ Definition Get_server_spec γ (e:u64) (Φ:u64 → u64 → iProp Σ) : iProp Σ :
     (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤}=∗ (∀ dummy_val, Φ 1 dummy_val))
 .
 
+(*
+SpecMonad T := (T → iProp Σ) → iProp Σ = Hom(Hom(T, P), P)
+Sort of a "double dual". Covariant because Hom(-, P) is contravariant.
+
+1. Functoriality:
+Let f: A → B. Then,
+SpecMonad(f) : SpecMonad(A) → SpecMonad(B) is given by
+  (ma: (A → iProp Σ) → iProp Σ ) ↦ (λ (fb:B → iProp Σ), (ma (λ a, fb(f(a)))))
+
+2. Unit transformation.
+η : 1_C → SpecMonad
+
+η_T : T → Hom(Hom(T, P), P) given by
+η_T : (a:T)  →  (λ (fa:T → iProp Σ), fa a)
+
+3. Multiplication transformation.
+
+μ : SpecMonad ∘ SpecMonad → SpecMonad
+
+μ_T: SpecMonad(SpecMonad(T)) → SpecMonad(t)
+
+μ_T : (f: Hom(Hom(Hom(Hom(T, P), P), P), P)) ↦
+(λ (fa:T → P), f (λ (g:((T → P) → P) → P), g (λ (h:(T → P) → P), h fa)))
+
+That's a bit complicated. Maybe easier to see via adjunctions?
+*)
+
+(* Via adjunctions.
+Let F : C → C^{op} be the functor F(T) = (T → iProp Σ) = Hom(T,P).
+Let G : C^{op} → C be the same.
+Let's show that F and G are adjoint:
+
+NTS: ∀ X Y, Hom_op(Hom(Y,P), X) ≅ Hom(Y, Hom(X,P))
+But this is obvious:
+Hom_op(Hom(Y,P), X) ≅ Hom(X, Hom(Y,P)) ≅ Hom(Y, Hom(X,P)).
+Have to think about naturality a bit.
+
+Given f : (Y → P) → X, take
+  λ y x, f (λ y', )
+
+ε: F∘G → 1_{C^op}
+η: 1_C → G∘F
+
+We already defined η above.
+Let's define
+ε_A : Hom_op(F(G(A), A)
+ε_A : Hom(A, F(G(A)),
+so we can define ε_A = η_A, by flipping arrows.
+
+The multiplication map for G∘F can be given by
+
+SpecMonad² = G ∘ F ∘ G ∘ F → G ∘ (1_{C^op}) ∘ F = SpecMonad
+by using ε in the middle.
+*)
+
+(* Via bind.
+  β : SpecMonad(A) → (a → SpecMonad(B)) → SpecMonad(B)
+
+  β:(sa: (A → P) → P) ↦ (λ (f:a → SpecMonad(B)), (λ (fb:b → P), sa (λ a, ((f a) fb) )  ))
+*)
+
+(* NOTE: some reference about this kind of pretty general monad construction:
+ "On Double Dual Monads" https://www.mscand.dk/article/download/10995/9016 *)
+
 (* TODO: this is pretty monadic *)
 Program Definition Get_spec γ :=
   λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
