@@ -335,6 +335,7 @@ Proof.
      True)%I with "[]" as "Hupd".
     { admit. } (* FIXME: will need to put this or the reply in escrow *)
     simpl.
+    (*
     iExists valProph,errProph,_,_; iFrame "Hprophv".
     iSplitL ""; first done.
     iMod "Hupd".
@@ -427,7 +428,7 @@ Proof.
     wp_loadField.
     wp_apply (wp_ResolveProph_once (T:=u64) with "[$Hprophv]").
     { done. }
-  }
+  } *)
 Admitted.
 
 (* NOTE: consider lt_eq_lt_dec: ∀ n m : nat, {n < m} + {n = m} + {m < n} *)
