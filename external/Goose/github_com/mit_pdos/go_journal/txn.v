@@ -45,6 +45,11 @@ Definition Begin: val :=
     ")) #();;
     "trans".
 
+Definition Log__Flush: val :=
+  rec: "Log__Flush" "tsys" :=
+    obj.Log__Flush (struct.loadF Log "log" "tsys");;
+    #().
+
 Definition Txn__acquireNoCheck: val :=
   rec: "Txn__acquireNoCheck" "txn" "addr" :=
     let: "flatAddr" := addr.Addr__Flatid "addr" in
