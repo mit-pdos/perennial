@@ -303,10 +303,18 @@ Defined.
 
 Definition getN := nroot .@ "ctr.get".
 
-Implicit Types γreq : gname.
+Record get_req_names :=
+{
+  op_gn:gname;
+  finish_gn:gname;
+}.
 
-Definition operation_unfinished γreq : iProp Σ := own γreq (DfracOwn 1).
-Definition operation_receipt γreq : iProp Σ := own γreq (DfracDiscarded).
+Implicit Types γreq : get_req_names.
+
+Definition operation_incomplete γreq : iProp Σ := own γreq.(op_gn) (DfracOwn 1).
+Definition operation_receipt γreq : iProp Σ := own γreq.(op_gn) (DfracDiscarded).
+
+Definition result_claimed γreq : iProp Σ := own γreq.(finish_gn) (DfracOwn 1).
 
 Definition Get_req_inv prophV prophErr e γ γreq Φ : iProp Σ :=
   inv getN (
@@ -314,10 +322,11 @@ Definition Get_req_inv prophV prophErr e γ γreq Φ : iProp Σ :=
            It only needs a fupd that can be fired specifically on the input
            prophV, but it's convenient to just reuse the more powerful spec definition.
          *)
-    (EnterNewEpoch_spec γ e
-        (Get_server_spec γ e (λ v err, Φ v err)) ∗ operation_unfinished γreq) ∨
-    (Get_server_spec γ e (λ v err, (∀ l, ⌜has_GetReply_encoding l err v⌝ -∗ Φ err v)%I) ∗ operation_unfinished γreq) ∨
-    (Φ prophErr prophV) ∗ operation_receipt γreq)
+    operation_incomplete γreq ∗ (
+     (EnterNewEpoch_spec γ e (Get_server_spec γ e (λ v err, Φ v err)) ) ∨
+     (Get_server_spec γ e (λ v err, (∀ l, ⌜has_GetReply_encoding l err v⌝ -∗ Φ err v)%I))
+    ) ∨
+    operation_receipt γreq ∗ ((Φ prophErr prophV) ∨ result_claimed γreq) )
 .
 
 Program Definition Get_proph_spec γ :=
@@ -390,8 +399,11 @@ Proof.
   wp_loadField.
   iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
 
-  iMod (own_alloc (DfracOwn 1)) as (γreq) "HreqTok".
+  iMod (own_alloc (DfracOwn 1)) as (γreq_op_gn) "HreqTok".
   { done. }
+  iMod (own_alloc (DfracOwn 1)) as (γreq_finish_gn) "HfinishTok".
+  { done. }
+  set (γreq:={| op_gn:=γreq_op_gn ; finish_gn := γreq_finish_gn |}).
   (* Put the EnterNewEpoch into an invariant now, os we  *)
   set (prophErrCode:=if prophErr then (U64 1) else (U64 0)).
   iAssert (|={⊤}=> Get_req_inv prophVal prophErrCode e γ γreq
@@ -406,6 +418,7 @@ Proof.
     (* Have f(P) in ctx. Want to prove f(Q). Want to know that it's enough to
        show that P -∗ Q. Basically, want to insist that a spec is covariant
        in its Φ argument (or maybe it's contravariant?). *)
+    iLeft.
     iApply (EnterNewEpoch_spec_wand with "[] Hupd").
     iIntros "Hupd".
     rewrite /Get_server_spec.
@@ -536,26 +549,35 @@ Proof.
 
     (* Open HgetInv and use receipt to get Φ. *)
     iInv "HgetInv" as "Hi" "Hclose".
-    iDestruct "Hi" as "[[_ >Hbad] | [[_ >Hbad] | Hgood]]".
+    iDestruct "Hi" as "[[>Hbad _] | Hgood]".
     {
-      iExFalso.
-      admit. (* op_receipt + unfinished -> False *)
+      iDestruct (own_valid_2 with "Hpost Hbad") as %Hbad.
+      exfalso.
+      done.
     }
-    { (* Same as above *)
-      admit.
+    iDestruct "Hgood" as "[_ [Hgood | >Hbad]]"; last first.
+    { (* result can't be claimed from invariant because we have HfinishTok *)
+      iDestruct (own_valid_2 with "HfinishTok Hbad") as %Hbad.
+      exfalso.
+      done.
     }
+
     replace (prophErrCode) with (U64 0) by naive_solver.
     (* XXX: I still don't know what setoid_rewrite does *)
     iEval (setoid_rewrite decide_True) in "Hgood".
-    iMod ("Hclose" with "[]") as "_".
-    { (* FIXME: need another escrow token for taking Φ out of Get_req_inv *)
-      admit.
+    iMod ("Hclose" with "[HfinishTok]") as "_".
+    {
+      iNext.
+      iRight.
+      iFrame "#".
+      iRight.
+      iFrame.
     }
     iModIntro.
     wp_pures.
     wp_loadField.
     rewrite HprophMatches.
-    iDestruct "Hgood" as "[$ _]".
+    iFrame.
   }
   { (* error; we'll exit in this case *)
     wp_pures.
@@ -575,7 +597,7 @@ Proof.
     wp_apply (wp_Exit).
     by iIntros.
   }
-Admitted.
+Qed.
 
 Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) Post :
   is_Server γ s -∗
