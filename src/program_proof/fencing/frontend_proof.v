@@ -98,7 +98,11 @@ Proof.
       iInv "Hinv" as ">Hown" "Hclose".
       iNamed "Hown".
       iApply fupd_mask_intro.
-      { set_solver. }
+      { unfold ctr.ctrN. unfold frontendN.
+        assert (↑nroot.@"ctr" ∩ ↑nroot.@"frontend" = (∅:coPset)).
+        { admit. }
+        set_solver.
+      }
       iIntros "Hmask".
 
       iExists latestEpoch.
@@ -111,10 +115,10 @@ Proof.
           exfalso. word.
         }
         iFrame.
-        iIntros (v0) "(HnewVal & HprevEpochVal & HlatestEpoch)".
+        iIntros (v0) "HnewVal  HprevEpochVal  HlatestEpoch".
         iDestruct (own_val_combine with "Hval HprevEpochVal") as "[_ %Hagree]".
         rewrite Hagree.
-        iMod "Hmask".
+        iMod "Hmask" as "_".
         iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
         iDestruct (own_val_split with "HnewVal") as "[HnewVal HnewVal2]".
         iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
@@ -125,6 +129,8 @@ Proof.
           iFrame.
         }
         iModIntro.
+        (* TODO: have to re-open and close the invariant for the second linearization point *)
+        (*
         iIntros "Hck1_own".
         iRename "HnewVal2" into "HepochVal".
         iExists _.
@@ -238,7 +244,7 @@ Proof.
   }
   { (* same proof, but with second server *)
     admit.
-  }
+  } *)
 Admitted.
 
 (* TaDa-style spec *)
