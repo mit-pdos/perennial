@@ -87,7 +87,6 @@ Definition Clerk__Get: val :=
     let: "enc" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "enc" "epoch";;
     let: "req" := marshal.Enc__Finish "enc" in
-    let: "errorProph" := NewProph #() in
     let: "valProph" := NewProph #() in
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "c") RPC_GET "req" "reply_ptr" #100 in
@@ -97,7 +96,6 @@ Definition Clerk__Get: val :=
       grove_ffi.Exit #1
     else #());;
     let: "r" := DecGetReply (![slice.T byteT] "reply_ptr") in
-    ResolveProph "errorProph" (struct.loadF GetReply "err" "r" ≠ ENone);;
     (if: struct.loadF GetReply "err" "r" ≠ ENone
     then
       (* log.Println("ctr: get() stale epoch number") *)

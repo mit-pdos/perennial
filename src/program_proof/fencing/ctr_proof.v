@@ -316,24 +316,25 @@ Definition operation_receipt γreq : iProp Σ := own γreq.(op_gn) (DfracDiscard
 
 Definition result_claimed γreq : iProp Σ := own γreq.(finish_gn) (DfracOwn 1).
 
-Definition Get_req_inv prophV prophErr e γ γreq Φ : iProp Σ :=
+Definition Get_req_inv prophV e γ γreq Φ : iProp Σ :=
   inv getN (
-        (* The server doesn't actually quite this powerful of a fupd for Get_server_spec.
-           It only needs a fupd that can be fired specifically on the input
-           prophV, but it's convenient to just reuse the more powerful spec definition.
+        (* The server doesn't actually need quite this powerful of a fupd for
+           Get_server_spec.  It only needs a fupd that can be fired specifically
+           on the input prophV, but it's convenient to just reuse the more
+           powerful spec definition.
          *)
     operation_incomplete γreq ∗ (
-     (EnterNewEpoch_spec γ e (Get_server_spec γ e (λ v err, Φ v err)) ) ∨
-     (Get_server_spec γ e (λ v err, (∀ l, ⌜has_GetReply_encoding l err v⌝ -∗ Φ err v)%I))
+     (EnterNewEpoch_spec γ e (Get_server_spec γ e (λ err v, if decide (err = 0) then Φ v else True)%I) ) ∨
+     (Get_server_spec γ e (λ err v, if decide (err = 0) then Φ v else True)%I)
     ) ∨
-    operation_receipt γreq ∗ ((Φ prophErr prophV) ∨ result_claimed γreq) )
+    operation_receipt γreq ∗ ((Φ prophV) ∨ result_claimed γreq) )
 .
 
 Program Definition Get_proph_spec γ :=
   λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
-  (∃ (prophV prophErr e:u64) γreq Φclient,
+  (∃ (prophV e:u64) γreq Φclient,
     ⌜has_encoding reqData [EncUInt64 e]⌝ ∗
-    (Get_req_inv prophV prophErr e γ γreq Φclient) ∗
+    (Get_req_inv prophV e γ γreq Φclient) ∗
     (∀ l err v, ⌜has_GetReply_encoding l err v⌝ -∗
       (if (decide (err = 0)) then operation_receipt γreq else True) -∗ Φ l)
   )%I
@@ -385,8 +386,6 @@ Proof.
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (req_sl reqData) "(%Hreq_enc & %Hreq_len & Hreq_sl)".
   wp_pures.
-  wp_apply (wp_NewProph_once (T:=bool)).
-  iIntros (prophErrID prophErr) "Hprophe".
   wp_apply (wp_NewProph_once (T:=u64)).
   iIntros (prophValID prophVal) "Hprophv".
   wp_pures.
@@ -405,10 +404,8 @@ Proof.
   { done. }
   set (γreq:={| op_gn:=γreq_op_gn ; finish_gn := γreq_finish_gn |}).
   (* Put the EnterNewEpoch into an invariant now, os we  *)
-  set (prophErrCode:=if prophErr then (U64 1) else (U64 0)).
-  iAssert (|={⊤}=> Get_req_inv prophVal prophErrCode e γ γreq
-                              (λ err v, if (decide (err = 0)) then Φ #v else True)
-          )%I with "[Hupd HreqTok]" as ">#HgetInv".
+  iAssert (|={⊤}=> Get_req_inv prophVal e γ γreq (λ v, Φ #v))%I
+               with "[Hupd HreqTok]" as ">#HgetInv".
   {
     rewrite /Get_req_inv.
     iMod (inv_alloc getN  with "[Hupd HreqTok]") as "$"; last done.
@@ -465,7 +462,7 @@ Proof.
     iModIntro.
     iNext.
     rewrite /Get_proph_spec.
-    iExists _, _, _, _, _.
+    iExists _, _, _, _.
     iSplitL ""; first done.
     iFrame "HgetInv".
 
@@ -526,19 +523,7 @@ Proof.
   { (* no error *)
     replace (err) with (U64 0) by word.
     wp_pures.
-    rewrite bool_decide_true; last done.
-    simpl.
 
-    (* maybe we don't need this *)
-    wp_apply (wp_ResolveProph_once (T:=bool) with "[Hprophe]").
-    { done. }
-    { iFrame. }
-    iIntros "%HprophErrFalse".
-    iEval (simpl) in "Hpost".
-    iDestruct "Hpost" as "#Hpost".
-
-    wp_pures.
-    wp_loadField.
     wp_pures.
     wp_loadField.
     wp_apply (wp_ResolveProph_once (T:=u64) with "[$Hprophv]").
@@ -562,9 +547,9 @@ Proof.
       done.
     }
 
-    replace (prophErrCode) with (U64 0) by naive_solver.
     (* XXX: I still don't know what setoid_rewrite does *)
-    iEval (setoid_rewrite decide_True) in "Hgood".
+    erewrite decide_True; last done.
+    iDestruct "Hpost" as "#Hpost".
     iMod ("Hclose" with "[HfinishTok]") as "_".
     {
       iNext.
@@ -585,14 +570,6 @@ Proof.
     { naive_solver. }
     simpl.
 
-    wp_apply (wp_ResolveProph_once (T:=bool) with "[$Hprophe]").
-    { done. }
-    iIntros "%HprophErrTrue".
-    wp_pures.
-    wp_loadField.
-    wp_pures.
-    rewrite bool_decide_false; last first.
-    { naive_solver. }
     wp_pures.
     wp_apply (wp_Exit).
     by iIntros.
