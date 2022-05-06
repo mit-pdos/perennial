@@ -576,12 +576,14 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) Post :
+Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) (prophV:u64) γreq Post Φclient :
   is_Server γ s -∗
   {{{
         "Hrep_error" ∷ rep ↦[GetReply :: "err"] #dummy_err ∗
         "Hrep_val" ∷ rep ↦[GetReply :: "val"] #dummy_val ∗
-        "HgetSpec" ∷ EnterNewEpoch_spec γ e (Get_server_spec γ e Post)
+
+        "#HgetSpec" ∷ (Get_req_inv prophV e γ γreq Φclient) ∗
+        "Hpost" ∷ (∀ (err v:u64), (if (decide (err = 0)) then operation_receipt γreq else True) -∗ Post err v)
   }}}
     Server__Get #s #e #rep
   {{{
@@ -604,44 +606,21 @@ Proof.
 
   wp_storeField.
   wp_loadField.
+  wp_bind (BinOp _ _ _).
+
+  (* XXX: have to fire the fupd here so that we can bind around a pure step to
+     easily strip off later. Ideally, we would've opened the inv after
+     wp_if_destruct on whether the epoch number is stale. *)
+  iInv "HgetSpec" as "Hi" "Hclose".
   wp_pures.
+  wp_apply wp_value. (* FIXME: why do I have to do this manually? *)
 
-  wp_if_destruct.
-  { (* case: Stale epoch number *)
-    wp_loadField.
-    (* First reason about EnterNewEpoch() *)
-    unfold EnterNewEpoch_spec.
-    iApply fupd_wp.
-    iMod "HgetSpec".
-    iDestruct "HgetSpec" as (clientLatestEpoch) "HgetSpec".
-    destruct (decide (int.Z clientLatestEpoch < int.Z e)) as [Hineq|Hineq].
-    { (* contradiction because clientLatestEpoch == latestEpoch *)
-      iDestruct "HgetSpec" as "[HclientLatest _]".
-      iDestruct (own_latest_epoch_combine with "HghostLatestEpoch HclientLatest" ) as "[_ %HepochEq]".
-      exfalso.
-      rewrite -HepochEq in Hineq.
-      word.
-    }
-    (* e ≤ latestEpoch, so getSpec doesn't need own_unused_val *)
-    iDestruct "HgetSpec" as "[Hlatest2 HgetSpec]". (* TODO: why bother with own_latest_epoch in this case? *)
-    iMod ("HgetSpec" with "Hlatest2") as "HgetSpec".
-
-    (* Now for the GetAtEpoch() *)
-    unfold Get_server_spec.
-    iMod "HgetSpec".
-    clear Hineq clientLatestEpoch.
-    iDestruct "HgetSpec" as (clientLatestEpoch) "[HclientLatest HgetSpec]".
-
-    destruct (decide (int.Z clientLatestEpoch = int.Z e)) as [HepochEq|HepochEq].
-    { (* contradiction; we know that latestEpoch > e, and clientLatestEpoch = latestEpoch. *)
-      iDestruct (own_latest_epoch_combine with "HghostLatestEpoch HclientLatest" ) as "[_ %HepochEq2]".
-      exfalso.
-      rewrite -HepochEq2 in HepochEq.
-      word.
-    }
-    iMod ("HgetSpec" with "HclientLatest") as "Hpost".
+  destruct (bool_decide (int.Z e < int.Z latestEpoch)) as [] eqn:Hineq.
+  { (* case: Request epoch number is stale *)
+    iMod ("Hclose" with "[$Hi]").
     iModIntro.
-
+    wp_pures.
+    wp_loadField.
     wp_apply (release_spec with "[$HmuInv $Hlocked Hv HlatestEpoch HghostLatestEpoch HghostV]").
     {
       iNext.
@@ -653,10 +632,30 @@ Proof.
     iModIntro.
     iApply "HΦ".
     iFrame.
-    iApply "Hpost".
+    by iApply "Hpost".
   }
+  (*
+  iApply (wp_later_tok_pure_step).
+  {
+    naive_solver.
+  }
+  iIntros "[HlaterTok _]". *)
   { (* case: epoch number is not stale. *)
-    iApply fupd_wp.
+    (* Use EnterNewEpoch spec regardless of whether the prophecy matches the current value *)
+    rewrite bool_decide_eq_false in Hineq.
+    iDestruct "Hi" as "[Hi | Hbad]"; last first.
+    { admit. } (* FIXME: have is_latest_epoch_lb here *)
+    iDestruct "Hi" as "[_ [Hgood | Hbad]]"; last first.
+    { admit. } (* FIXME: have is_latest_epoch_lb here *)
+    iEval (rewrite /EnterNewEpoch_spec) in "Hgood".
+    (* FIXME: Need to have the fupd mask exclude ↑getN in addition to ↑ctrN *)
+    (*
+    iMod "Hgood".
+
+
+    wp_storeField.
+    wp_loadField.
+    simpl.
 
     iAssert (|={⊤}=> "HgetSpec" ∷ Get_server_spec γ e Post ∗
                     "HghostLatestEpoch" ∷ own_latest_epoch γ e (1/2) ∗
@@ -741,7 +740,8 @@ Proof.
       }
     }
   }
-Qed.
+*)
+Admitted.
 
 (* NOTE: consider lt_eq_lt_dec: ∀ n m : nat, {n < m} + {n = m} + {m < n} *)
 
