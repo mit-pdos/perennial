@@ -93,8 +93,10 @@ Proof.
             "Hck1_own" ∷ ctr.own_Clerk γ ck1
                     )%I
                with "[Hck1_own Hghost1]").
-    {
+    { (* ctr.Clerk__Get *)
       wp_apply (ctr.wp_Clerk__Get with "Hck1_own").
+
+      (* EnterNewEpoch(): first linearization point *)
       iInv "Hinv" as ">Hown" "Hclose".
       iNamed "Hown".
       iApply fupd_mask_intro.
@@ -128,45 +130,68 @@ Proof.
           iFrame.
         }
         iModIntro.
-        (* TODO: have to re-open and close the invariant for the second linearization point *)
-        (*
-        iIntros "Hck1_own".
-        iRename "HnewVal2" into "HepochVal".
-        iExists _.
-        iSplitL ""; first done.
-        iFrame "∗#".
-      }
-      { (* case: ctr server already knows about latest epoch number *)
-        (* XXX: this destruct only handles the if/else when using int.Z. Why? *)
-        destruct (decide (int.Z latestEpoch = int.Z epoch)) as [Heq|Heasy]; last done.
-        replace (latestEpoch) with (epoch) by word.
-        iDestruct "Hghost1" as "[Hbad|Hghost1]".
-        { (* non-matching case, contradictory *)
-          iExFalso.
-          iDestruct (unused_own_val_false with "Hbad Hval") as "$".
-        }
-        {
-          iDestruct "Hghost1" as (v') "[#Hlb Hghost1]".
-          iDestruct (own_val_combine with "Hval Hghost1") as "[Hval %HvEq]".
-          rewrite Qp_quarter_quarter.
-          iExists v.
-          iFrame.
 
-          iIntros "[Hval HlatestEpoch]".
+        (* Second linearization point *)
+        iInv "Hinv" as ">Hi" "Hclose".
+        clear Hineq latestEpoch.
+        iNamed "Hi".
+        iApply fupd_mask_intro.
+        { set_solver. }
+        iIntros "Hmask".
+        iExists latestEpoch.
+        iFrame.
+        destruct (decide (int.Z latestEpoch = int.Z epoch)).
+        { (* e is the latest number seen by the ctr server (i.e. our request is not stale)*)
+          replace (latestEpoch) with (epoch) by naive_solver.
+          iDestruct (own_val_combine with "HnewVal2 Hval") as "[Hval %Hveq]".
+          iModIntro.
+          rewrite (Qp_quarter_quarter).
+          iExists _; iFrame "Hval".
+          iIntros "Hval".
+          iModIntro.
+          iIntros "Hlatest".
           iMod "Hmask".
           iEval (rewrite -Qp_quarter_quarter) in "Hval".
-          iDestruct (own_val_split with "Hval") as "[HnewVal HnewVal2]".
-          iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
+          iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
+          iMod ("Hclose" with "[Hkv Hval2 Hlatest]").
+          {
+            iNext.
+            iExists _, _.
+            rewrite Hveq.
+            iFrame.
+          }
+          iModIntro.
+          iIntros "Hck".
+          iExists _; iFrame "∗#".
+          done.
+        }
+        { (* the server has a different number than e *)
+          iIntros "Hlatest".
+          iMod "Hmask".
+          iMod ("Hclose" with "[Hval Hkv Hlatest]").
           {
             iNext.
             iExists _, _.
             iFrame.
           }
           iModIntro.
-          iIntros.
-          iExists _; iSplitL ""; first done.
-          iFrame "∗#".
+          done.
         }
+      }
+      { (* case: epoch number is not brand new *)
+        iFrame.
+        iIntros "Hlatest".
+        iMod "Hmask".
+        iMod ("Hclose" with "[Hval Hlatest Hkv]").
+        {
+          iNext.
+          iExists _, _. iFrame.
+        }
+        iModIntro.
+        (* Done with EnterNewEpoch *)
+
+        (* Now, prove the fupd for GetAtEpoch(). *)
+        admit. (* FIXME: shouldn't have to repeat the proof here. Should be able to join the branches inside of EnterNewEpoch somehow. *)
       }
     }
     iIntros (gv) "HH".
@@ -243,7 +268,7 @@ Proof.
   }
   { (* same proof, but with second server *)
     admit.
-  } *)
+  }
 Admitted.
 
 (* TaDa-style spec *)

@@ -390,7 +390,7 @@ Lemma wp_Clerk__Get γ ck (e:u64) :
   EnterNewEpoch_spec γ e (
     |={⊤∖↑getN,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1 / 2) ∗
     (if decide (int.Z latestEpoch = int.Z e)
-        then Get_core_spec γ e (λ v : u64, own_latest_epoch γ e (1 / 2) ={∅,⊤∖↑getN}=∗ Φ #v)
+        then Get_core_spec γ e (λ v : u64, own_latest_epoch γ e (1 / 2) ={∅,⊤∖↑getN}=∗ (own_Clerk γ ck -∗ Φ #v))
         else
          own_latest_epoch γ latestEpoch (1 / 2) ={∅,⊤∖↑getN}=∗ True) (* Get_server_spec
          actually has an obligation here; here, we'll exit if the epoch is
@@ -468,6 +468,8 @@ Proof.
       iIntros "H1".
       iMod ("Hupd" with "H1") as "Hupd".
       iModIntro.
+      iSpecialize ("Hupd" with "[]").
+      { iExists _, _. iFrame "Hcl Hcl_own Hhost". } (* FIXME: why doesn't iFrame "#". work well? *)
       iFrame "Hupd".
     }
     {
