@@ -145,7 +145,9 @@ Proof.
             destruct (decide (int.Z latestEpoch = int.Z epoch)).
             {
               replace (latestEpoch) with (epoch) by word.
-              iDestruct (unused_own_val_false with "Hunused Hval") as "HH".
+              iMod (fupd_mask_subseteq (↑ctr.ctrN)).
+              { admit. } (* FIXME: more namespaces+set_solver. *)
+              iMod (ctr.unused_own_val_false with "Hunused Hval") as "HH".
               done.
             }
             iExists _. iRight.

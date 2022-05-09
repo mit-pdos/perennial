@@ -50,47 +50,79 @@ Definition own_val γ (e:u64) (v:u64) (q:Qp): iProp Σ :=
   e ⤳[γ.(val_gn)]{# q } v ∗
   e ⤳[γ.(epoch_token_gn)]□ true.
 
-(* If someone has own_val, that means the ctr sever saw that epoch number, which
-   means the own_unused_epoch was given up. *)
-Lemma unused_own_val_false γ e v q :
-  own_unused_epoch γ e -∗ own_val γ e v q -∗ False.
-Proof.
-Admitted.
-
 Lemma own_val_combine γ e v1 q1 v2 q2 :
   own_val γ e v1 q1 -∗ own_val γ e v2 q2 -∗ own_val γ e v1 (q1 + q2) ∗ ⌜v1 = v2⌝.
 Proof.
-Admitted.
+  iIntros "H1 H2".
+  unfold own_val.
+  iDestruct "H1" as "[H1 #Hepoch]".
+  iDestruct "H2" as "[H2 _]".
+  iDestruct (ghost_map_points_to_combine with "H1 H2") as "[$ $]".
+  iFrame "#".
+Qed.
 
 Lemma own_val_split γ e v q1 q2 :
   own_val γ e v (q1 + q2) -∗ own_val γ e v q1 ∗ own_val γ e v q2.
 Proof.
-Admitted.
+  iIntros "[H1 #Hepoch]".
+  iDestruct "H1" as "[H1 H2]".
+  iFrame "∗#".
+Qed.
+
+Lemma own_val_update v' γ e v:
+  own_val γ e v 1 ==∗ own_val γ e v' 1.
+Proof.
+  iIntros "H1".
+  iDestruct "H1" as "[H1 $]".
+  iMod (ghost_map_points_to_update with "H1") as "$".
+  done.
+Qed.
 
 Lemma own_latest_epoch_combine γ e1 e2 q1 q2 :
   own_latest_epoch γ e1 (q1) -∗ own_latest_epoch γ e2 q2 -∗ own_latest_epoch γ e1 (q1 + q2) ∗ ⌜e1 = e2⌝.
 Proof.
-Admitted.
+  iIntros "H1 H2".
+  unfold own_latest_epoch.
+  iDestruct (mono_nat_auth_own_agree with "H1 H2") as %Hvalid.
+  replace (e1) with (e2) by word.
+  iCombine "H1 H2" as "H1".
+  iFrame.
+  done.
+Qed.
 
 Lemma own_latest_epoch_split γ e q1 q2 :
   own_latest_epoch γ e (q1 + q2) -∗ own_latest_epoch γ e (q1) ∗ own_latest_epoch γ e q2.
 Proof.
-Admitted.
+  iIntros "H1".
+  iDestruct "H1" as "[$ $]".
+Qed.
 
 Lemma own_latest_epoch_update e γ eold :
+  int.nat eold ≤ int.nat e →
   own_latest_epoch γ eold 1 ==∗ own_latest_epoch γ e 1.
 Proof.
-Admitted.
+  intros Hineq.
+  iIntros "H1".
+  iMod (mono_nat_own_update with "H1") as "[$ _]".
+  { word. }
+  done.
+Qed.
 
 Lemma own_latest_epoch_get_lb γ e q :
   own_latest_epoch γ e q -∗ is_latest_epoch_lb γ e.
 Proof.
-Admitted.
+  iIntros "H1".
+  by iApply (mono_nat_lb_own_get).
+Qed.
 
 Lemma own_latest_epoch_with_lb γ e e' q :
   own_latest_epoch γ e q -∗ is_latest_epoch_lb γ e' -∗ ⌜int.Z e' ≤ int.Z e⌝.
 Proof.
-Admitted.
+  iIntros "H1 H2".
+  iDestruct (mono_nat_lb_own_valid with "H1 H2") as "[_ %Hineq]".
+  iPureIntro.
+  word.
+Qed.
 
 End ctr_definitions.
 
@@ -100,17 +132,61 @@ Context `{!ctrG Σ}.
 Context `{!heapGS Σ}.
 Implicit Type γ:ctr_names.
 
-Definition ctrN := nroot .@ "ctr".
+Definition unusedN := nroot .@ "unused".
 
 Definition unused_epoch_inv γ : iProp Σ :=
-  inv ctrN (
+  inv unusedN (
         [∗ set] e ∈ (fin_to_set u64), own_unused_epoch γ e ∨ own_val γ e 0 1
       ).
 
-Lemma activate_unused_epoch v γ e:
-  unused_epoch_inv γ -∗ own_unused_epoch γ e ={↑ctrN}=∗ own_val γ e v 1.
+(* If someone has own_val, that means the ctr sever saw that epoch number, which
+   means the own_unused_epoch was given up. *)
+Lemma unused_own_val_false γ e v (q:Qp) :
+  unused_epoch_inv γ -∗ own_unused_epoch γ e -∗ own_val γ e v q ={↑unusedN}=∗ False.
 Proof.
-Admitted.
+  iIntros "#Hinv Hunused Hval".
+  iInv "Hinv" as ">Hi" "Hclose".
+  iDestruct (big_sepS_elem_of_acc _ _ e with "Hi") as "[Helem HbigSepClose]".
+  { set_solver. }
+  iDestruct "Helem" as "[Hunused2|Hval2]".
+  {
+    unfold own_unused_epoch.
+    iDestruct (ghost_map_points_to_valid_2 with "Hunused Hunused2") as "%Hvalid".
+    exfalso.
+    naive_solver.
+  }
+  iDestruct "Hval" as "[Hval _]".
+  iDestruct "Hval2" as "[Hval2 _]".
+  iDestruct (ghost_map_points_to_valid_2 with "Hval Hval2") as "%Hvalid".
+  exfalso.
+  destruct Hvalid as [Hbad _].
+  rewrite dfrac_op_own in Hbad.
+  rewrite dfrac_valid_own in Hbad.
+  assert (1 < q + 1)%Qp.
+  { apply Qp_lt_add_r. }
+  apply (Qp_lt_le_trans _ _ _ H) in Hbad.
+  clear H.
+  by exfalso. (* Why does "by" work but not anything else I tried? E.g.
+                 naive_solver, done, eauto. *)
+Qed.
+
+Lemma activate_unused_epoch v γ e:
+  unused_epoch_inv γ -∗ own_unused_epoch γ e ={↑unusedN}=∗ own_val γ e v 1.
+Proof.
+  iIntros "#Hinv Hunused".
+  iInv "Hinv" as ">Hi" "Hclose".
+  iDestruct (big_sepS_elem_of_acc _ _ e with "Hi") as "[Helem Hi]".
+  { set_solver. }
+  iDestruct "Helem" as "[Hbad|Hval]".
+  {
+    iDestruct (ghost_map_points_to_valid_2 with "Hunused Hbad") as "%Hvalid".
+    exfalso.
+    naive_solver.
+  }
+  iSpecialize ("Hi" with "[$Hunused]").
+  iMod ("Hclose" with "Hi").
+  iApply (own_val_update with "Hval").
+Qed.
 
 Definition own_Server γ (s:loc) : iProp Σ :=
   ∃ (v latestEpoch:u64),
@@ -123,46 +199,29 @@ Definition own_Server γ (s:loc) : iProp Σ :=
 Definition is_Server γ (s:loc) : iProp Σ :=
   ∃ mu,
   "#Hmu" ∷ readonly (s ↦[Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock ctrN mu (own_Server γ s) ∗
+  "#HmuInv" ∷ is_lock unusedN mu (own_Server γ s) ∗
   "#HunusedInv" ∷ unused_epoch_inv γ
 .
-
-Definition GetPre γ pv e Φ : iProp Σ :=
-  ∃ (repV:u64),
-  proph_once pv repV ∗
-  (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
-      own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-      own_unused_epoch γ e ∗
-                            (∀ v, own_val γ e v (1/2)%Qp ∗
-                                           own_val γ latestEpoch v (1/2)%Qp ∗
-                                           own_latest_epoch γ e (1/2)%Qp
-                                           ={∅,⊤}=∗ Φ #v)
-   else if decide (int.Z latestEpoch = int.Z e) then
-    ∃ v, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-     own_val γ e v (1/2)%Qp ∗
-    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ Φ #v)
-   else
-     True).
 
 Definition has_GetReply_encoding (l:list u8) (err v:u64) :=
   has_encoding l [EncUInt64 err; EncUInt64 v].
 
 (* FIXME: why is it normal to do |={⊤ ∖ mask, ∅}=> rather than |={⊤, mask}=> ? *)
-(* Doing {T ∖ ctrN, ∅} means that I have to open up the invariant with ctrN
-   before firing this fupd. On the other hand, if it's {T, ctrN}, I can
+(* Doing {T ∖ unusedN, ∅} means that I have to open up the invariant with unusedN
+   before firing this fupd. On the other hand, if it's {T, unusedN}, I can
    optionally open the invariant after firing the fupd *)
 
 Definition getN := nroot .@ "ctr.get".
 
 Definition EnterNewEpoch_spec γ (e:u64) (Φ:iProp Σ) : iProp Σ :=
-|={⊤∖↑getN, ↑ctrN}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+|={⊤∖↑getN, ↑unusedN}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
     own_latest_epoch γ latestEpoch (1/2)%Qp ∗
     own_unused_epoch γ e ∗ (∀ v, own_val γ e v (1/2)%Qp -∗
                                  own_val γ latestEpoch v (1/2)%Qp -∗
-                                 own_latest_epoch γ e (1/2)%Qp ={↑ctrN,⊤∖↑getN}=∗ Φ)
-else (* XXX: it might seem like the server shouldn't need any resources in this case. *)
+                                 own_latest_epoch γ e (1/2)%Qp ={↑unusedN,⊤∖↑getN}=∗ Φ)
+else
   (own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-   (own_latest_epoch γ latestEpoch (1/2)%Qp ={↑ctrN, ⊤∖↑getN}=∗ Φ))
+   (own_latest_epoch γ latestEpoch (1/2)%Qp ={↑unusedN, ⊤∖↑getN}=∗ Φ))
 .
 
 Lemma EnterNewEpoch_spec_wand γ e Φ1 Φ2 :
@@ -194,8 +253,13 @@ Proof.
   }
 Qed.
 
+(** The spec for the "core" of a Get operation. This is what's run after the epoch
+    number check succeeds.
+*)
 Definition Get_core_spec γ (e:u64) (Φ:u64 → iProp Σ) : iProp Σ :=
-  |={∅}=> ∃ v, own_val γ e v (1/2)%Qp ∗ (* XXX: have a ∅ here because this runs inside of a larger atomic step *)
+  (* XXX: have a ∅ here because this runs inside of a larger atomic step, so
+     invariants will already have been opened *)
+  |={∅}=> ∃ v, own_val γ e v (1/2)%Qp ∗
     (own_val γ e v (1/2)%Qp ={∅}=∗ (Φ v))
 .
 
@@ -218,6 +282,9 @@ Proof.
   iFrame.
 Qed.
 
+(** This is a "fenced" Get. It checks if the requests's epoch number is current,
+    then runs the core operation if so, and does nothing if not.
+*)
 Definition Get_server_spec γ (e:u64) (Φ:u64 → u64 → iProp Σ) : iProp Σ :=
 |={⊤∖↑getN,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
   if decide (int.Z latestEpoch = int.Z e)%Z then
@@ -296,7 +363,6 @@ by using ε in the middle.
 (* NOTE: some reference about this kind of pretty general monad construction:
  "On Double Dual Monads" https://www.mscand.dk/article/download/10995/9016 *)
 
-(* TODO: this is pretty monadic *)
 Program Definition Get_spec γ :=
   λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
   (∃ (repV:u64) e,
@@ -327,12 +393,20 @@ Definition new_epoch_receipt γreq : iProp Σ := own γreq.(ne_gn) (DfracDiscard
 Lemma complete_operation γreq :
   operation_incomplete γreq ==∗ operation_receipt γreq.
 Proof.
-Admitted.
+  iIntros "H1".
+  iApply (own_update with "H1").
+  apply (cmra_update_exclusive).
+  done.
+Qed.
 
 Lemma complete_newepoch_operation γreq :
   new_epoch_incomplete γreq ==∗ new_epoch_receipt γreq.
 Proof.
-Admitted.
+  iIntros "H1".
+  iApply (own_update with "H1").
+  apply (cmra_update_exclusive).
+  done.
+Qed.
 
 Definition result_claimed γreq : iProp Σ := own γreq.(finish_gn) (DfracOwn 1).
 
@@ -344,7 +418,7 @@ Definition Get_req_inv prophV e γ γreq Φ : iProp Σ :=
            powerful spec definition.
          *)
         (*
-          This invariant is a bit ad-hoc. A more principled approach would be to
+          XXX: This invariant is a bit ad-hoc. A more principled approach would be to
           give the server a fraction of the ghost resources for the "state" of
           this protocol at the beginning of time, and for this invariant to have
           only a fraction of it.
@@ -706,8 +780,8 @@ Proof.
       iEval (rewrite /EnterNewEpoch_spec) in "Hgood".
       iMod "Hgood".
 
-      (* FIXME: currently, we require |={⊤, ↑ctrN}=> from the client fupd.
-       It seems enough to require |={⊤∖↑ctrN, ∅}=>, which should be strictly
+      (* FIXME: currently, we require |={⊤, ↑unusedN}=> from the client fupd.
+       It seems enough to require |={⊤∖↑unusedN, ∅}=>, which should be strictly
        stronger than above. fupd_mask_frame_r can help prove that.
        *)
       iDestruct "Hgood" as (?) "Hupd".
@@ -719,6 +793,7 @@ Proof.
         rewrite Heq.
         rewrite (Qp_half_half).
         iMod (own_latest_epoch_update e with "Hlatest") as "Hlatest".
+        { word. }
         iEval (rewrite -Qp_half_half) in "Hlatest".
         iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
         iMod (activate_unused_epoch v with "HunusedInv Hunused") as "HghostV2".
