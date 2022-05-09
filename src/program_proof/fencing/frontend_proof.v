@@ -19,6 +19,7 @@ Definition k1 := (U64 1).
 
 Context `{!ctrG Σ}.
 Context `{!urpcregG Σ}.
+Context `{!erpcG Σ}.
 
 Definition kv_ptsto (γ:gname) (k v:u64) : iProp Σ :=
   k ⤳[γ]{# 1/2} v.
@@ -102,7 +103,7 @@ Proof.
         iInv "Hinv" as ">Hown" "Hclose".
         iNamed "Hown".
         iApply fupd_mask_intro.
-        { unfold ctr.ctrN. unfold frontendN.
+        { unfold ctr.unusedN. unfold frontendN.
           (* FIXME: just a pure inequality of sets; set_solver. *)
           admit.
         }
@@ -145,9 +146,10 @@ Proof.
             destruct (decide (int.Z latestEpoch = int.Z epoch)).
             {
               replace (latestEpoch) with (epoch) by word.
-              iMod (fupd_mask_subseteq (↑ctr.ctrN)).
+              iMod (fupd_mask_subseteq (↑ctr.unusedN)).
               { admit. } (* FIXME: more namespaces+set_solver. *)
-              iMod (ctr.unused_own_val_false with "Hunused Hval") as "HH".
+              iMod (ctr.unused_own_val_false with "[] Hunused Hval") as "HH".
+              { admit. } (* get this invariant in context somehow *)
               done.
             }
             iExists _. iRight.
@@ -246,6 +248,7 @@ Proof.
         }
       }
     }
+    (* Done with Get() *)
     iIntros (gv) "HH".
     iDestruct "HH" as (v) "[%Hval HH]".
     rewrite Hval.
@@ -262,7 +265,7 @@ Proof.
     iNamed "HH".
     iExists latestEpoch.
     iApply (fupd_mask_intro).
-    { set_solver. }
+    { admit. }
     iIntros "Hmask".
     iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
     destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
@@ -270,6 +273,8 @@ Proof.
       exfalso.
       word.
     }
+
+    (*
     destruct (decide (int.Z latestEpoch = int.Z epoch)%Z) as [Heq|Heasy]; last done.
     replace (latestEpoch) with (epoch) by word.
     iDestruct (own_val_combine with "HepochVal Hval") as "[Hval %Hveq]".
@@ -320,7 +325,7 @@ Proof.
   }
   { (* same proof, but with second server *)
     admit.
-  }
+  } *)
 Admitted.
 
 (* TaDa-style spec *)

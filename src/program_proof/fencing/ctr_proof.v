@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.fencing Require Import ctr.
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.grove_shared Require Export erpc_lib urpc_proof urpc_spec.
+From Perennial.program_proof.grove_shared Require Export erpc_lib urpc_proof urpc_spec erpc_proof.
 From Perennial.program_proof Require Export marshal_proof.
 From iris.algebra Require Import cmra.
 From iris.base_logic Require Export mono_nat.
@@ -21,6 +21,7 @@ Record ctr_names :=
   epoch_token_gn : gname ;
   val_gn : gname ;
   urpc_gn : server_chan_gnames ;
+  erpc_gn : erpc_names
 }.
 
 Implicit Type γ : ctr_names.
@@ -365,7 +366,7 @@ by using ε in the middle.
 
 Program Definition Get_spec γ :=
   λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
-  (∃ (repV:u64) e,
+  (∃ e,
     ⌜has_encoding reqData [EncUInt64 e]⌝ ∗ EnterNewEpoch_spec γ e (
        Get_server_spec γ e (λ v err, (∀ l, ⌜has_GetReply_encoding l err v⌝ -∗ Φ l))
      ))%I
@@ -444,18 +445,60 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition Put_core_spec γ (e v:u64) (Φ:iProp Σ) : iProp Σ :=
+  (* XXX: have a ∅ here because this runs inside of a larger atomic step, so
+     invariants will already have been opened *)
+  |={∅}=> ∃ vold, own_val γ e vold (1/2)%Qp ∗
+    (own_val γ e v (1/2)%Qp ={∅}=∗ Φ)
+.
+
+Definition Put_server_spec γ (e v:u64) (Φ:u64 → iProp Σ) : iProp Σ :=
+|={⊤,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+  if decide (int.Z latestEpoch = int.Z e)%Z then
+    Put_core_spec γ e v (own_latest_epoch γ e (1/2) ={∅,⊤}=∗ Φ 0)
+  else
+    (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤}=∗ Φ 1)
+.
+
+Definition has_PutReply_encoding (l:list u8) (err:u64) :=
+  has_encoding l [EncUInt64 err].
+
+Program Definition Put_spec γ :=
+  λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
+  (∃ e v,
+    ⌜has_encoding reqData [EncUInt64 v ; EncUInt64 e]⌝ ∗ EnterNewEpoch_spec γ e (
+       Put_server_spec γ e v (λ err, (∀ l, ⌜has_PutReply_encoding l err⌝ -∗ Φ l))
+     ))%I
+.
+Next Obligation.
+  rewrite /EnterNewEpoch_spec /Put_server_spec /Put_core_spec.
+  solve_proper.
+Defined.
+
+Definition Put_spec_erpc γ : eRPCSpec :=
+  {|
+    espec_rpcid := 1;
+    espec_ty := (list u8 → iProp Σ);
+    espec_Pre := λ Φ reqData, Put_spec γ reqData Φ;
+    espec_Post := λ Φ reqData retData, (Φ retData);
+  |}.
+
 Context `{!urpcregG Σ}.
+Context `{!erpcG Σ}.
 
 Definition is_host (host:u64) γ : iProp Σ :=
   handler_spec γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ]}
+  handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (Put_spec_erpc γ) ∗
+  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ]}
 .
 
 Definition own_Clerk γ (ck:loc) : iProp Σ :=
-  ∃ (cl:loc) host,
+  ∃ (cl ecl:loc) host,
   "#Hcl" ∷ readonly (ck ↦[Clerk :: "cl"] #cl) ∗
-  "#Hcl_own" ∷ is_uRPCClient cl host ∗
-  "#Hhost" ∷ is_host host γ
+  "#Hcl_is" ∷ is_uRPCClient cl host ∗
+  "#Hhost" ∷ is_host host γ ∗
+  "#He" ∷ readonly (ck ↦[Clerk :: "e"] #ecl) ∗
+  "Hecl_own" ∷ own_erpc_client γ.(erpc_gn) ecl
 .
 
 Lemma wp_Clerk__Get γ ck (e:u64) :
@@ -471,7 +514,7 @@ Lemma wp_Clerk__Get γ ck (e:u64) :
          stale, so the client doesn't need to prove anything about this case *)
   )%I
    -∗
-    WP Clerk__Get #ck #e {{ Φ }}.
+   WP Clerk__Get #ck #e {{ Φ }}.
 Proof.
   iIntros (Φ) "Hck Hupd".
   wp_lam.
@@ -507,10 +550,10 @@ Proof.
   set (γreq:={| op_gn:=γreq_op_gn ; ne_gn:=γreq_ne_gn ; finish_gn := γreq_finish_gn |}).
   (* Put the EnterNewEpoch into an invariant now, os we  *)
   iAssert (|={⊤}=> Get_req_inv prophVal e γ γreq (λ v, Φ #v))%I
-               with "[Hupd HneTok HreqTok]" as ">#HgetInv".
+               with "[Hupd HneTok HreqTok Hecl_own]" as ">#HgetInv".
   {
     rewrite /Get_req_inv.
-    iMod (inv_alloc getN  with "[Hupd HneTok HreqTok]") as "$"; last done.
+    iMod (inv_alloc getN  with "[Hupd HneTok HreqTok Hecl_own]") as "$"; last done.
     iNext.
     iLeft.
     iFrame "HreqTok".
@@ -519,7 +562,7 @@ Proof.
        in its Φ argument (or maybe it's contravariant?). *)
     iLeft.
     iFrame.
-    iApply (EnterNewEpoch_spec_wand with "[] Hupd").
+    iApply (EnterNewEpoch_spec_wand with "[Hecl_own] Hupd").
     iIntros "Hupd".
     rewrite /Get_server_spec.
     iMod "Hupd".
@@ -542,8 +585,8 @@ Proof.
       iIntros "H1".
       iMod ("Hupd" with "H1") as "Hupd".
       iModIntro.
-      iSpecialize ("Hupd" with "[]").
-      { iExists _, _. iFrame "Hcl Hcl_own Hhost". } (* FIXME: why doesn't iFrame "#". work well? *)
+      iSpecialize ("Hupd" with "[Hecl_own ]").
+      { iExists _, _, _. iFrame "Hecl_own He Hcl Hcl_is Hhost". }
       iFrame "Hupd".
     }
     {
@@ -561,7 +604,7 @@ Proof.
                                     operation_receipt _
                                   else
                                     True)%I
-             with "[] [$Hreq_sl $Hrep $Hcl_own HgetInv]").
+             with "[] [$Hreq_sl $Hrep $Hcl_is HgetInv]").
   { iDestruct "Hhost" as "[$ _]". }
   {
     iModIntro.
@@ -964,27 +1007,169 @@ Proof.
   }
 Qed.
 
-(* NOTE: consider lt_eq_lt_dec: ∀ n m : nat, {n < m} + {n = m} + {m < n} *)
+Lemma Put_core_spec_wand γ (e v:u64) (Φ Φ':iProp Σ) :
+  (Φ -∗ Φ') -∗
+  Put_core_spec γ e v Φ -∗
+  Put_core_spec γ e v Φ'.
+Proof.
+  iIntros "Hwand Hupd".
+  iMod "Hupd".
+  iModIntro.
+  iDestruct "Hupd" as (?) "[H1 Hupd]".
+  iExists _; iFrame "H1".
+  iIntros "H1".
+  iApply "Hwand".
+  iApply "Hupd".
+  iFrame.
+Qed.
 
 Lemma wp_Clerk__Put γ ck (e v:u64) :
   ∀ Φ,
   own_Clerk γ ck -∗
-  (|={⊤,∅}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
-      own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-      own_unused_epoch γ e ∗
-                            (own_val γ e v (1/2)%Qp ∗
-                             (∃ oldv, own_val γ latestEpoch oldv (1/2)%Qp) ∗
-                                           own_latest_epoch γ e (1/2)%Qp
-                                           ={∅,⊤}=∗ (own_Clerk γ ck -∗ Φ #()))
-   else if decide (int.Z latestEpoch = int.Z e) then
-    ∃ oldv, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-     own_val γ e oldv (1/2)%Qp ∗
-    (own_val γ e v (1/2)%Qp ∗ own_latest_epoch γ e (1/2)%Qp ={∅,⊤}=∗ (own_Clerk γ ck -∗ Φ #()))
-   else
-     True) -∗
+  EnterNewEpoch_spec γ e (
+    |={⊤,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1 / 2) ∗
+    (if decide (int.Z latestEpoch = int.Z e)
+        then Put_core_spec γ e v (own_latest_epoch γ e (1 / 2) ={∅,⊤}=∗ (own_Clerk γ ck -∗ Φ #()))
+        else
+         own_latest_epoch γ latestEpoch (1 / 2) ={∅,⊤}=∗ True) (* Put_server_spec
+         actually has an obligation here; here, we'll exit if the epoch is
+         stale, so the client doesn't need to prove anything about this case *)
+  )%I
+  -∗
     WP Clerk__Put #ck #v #e {{ Φ }}.
 Proof.
-Admitted.
+  iIntros (Φ) "Hck Hupd".
+  wp_lam.
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+
+  (* TODO: put this in its own lemma *)
+  wp_lam.
+  wp_apply (wp_new_enc).
+  iIntros (enc) "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { done. }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { done. }
+  iIntros "Henc".
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (req_sl reqData) "(%Hreq_enc & %Hreq_len & Hreq_sl)".
+  wp_pures.
+
+  iNamed "Hck".
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+  wp_apply (wp_erpc_NewRequest (Put_spec_erpc γ)
+      (λ l, ∃ err, ⌜has_PutReply_encoding l err⌝ ∗
+      if (decide (err = 0)) then
+        (own_Clerk γ ck -∗ Φ #())
+      else
+        True
+      )%I
+             with "[$Hreq_small $Hecl_own Hupd]").
+  {
+    simpl.
+    iExists _, _.
+    simpl in Hreq_enc.
+    iSplitL ""; first done.
+    iApply (EnterNewEpoch_spec_wand with "[] Hupd").
+    iIntros "Hupd".
+    iMod "Hupd".
+    iModIntro.
+    iDestruct "Hupd" as (?) "[Hlatest Hupd]".
+    iExists _. iFrame.
+    destruct (decide (_)).
+    { (* epoch number is valid; do the operation *)
+      iApply (Put_core_spec_wand with "[] Hupd").
+      iIntros "Hupd".
+      iIntros "Hlatest".
+      iMod ("Hupd" with "Hlatest") as "Hupd".
+      iModIntro.
+      iIntros.
+      iExists _.
+      iSplitL ""; first done.
+      setoid_rewrite decide_True; last done. (* TODO: What is setoid_rewrite?*)
+      iApply "Hupd".
+    }
+    { (* epoch number is stale; do nothing *)
+      iIntros "Hlatest".
+      iMod ("Hupd" with "Hlatest").
+      iModIntro.
+      iIntros.
+      iExists _; iSplitL ""; first done.
+      setoid_rewrite decide_False; last done.
+      done.
+    }
+  }
+
+  (* FIXME: why is so much stuff exposed? Can we hide the urpc precondition etc.
+     and return some blackbox thing that gives us the right to make a urpc
+     client call (maybe we should just return a WP?). *)
+  iIntros (y_urpc reqData_urpc reqSl_urpc) "(Hreq_sl & #Hpre_urpc & Hurpc_post_to_erpc_post)".
+  wp_pures.
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep_ptr) "Hrep".
+  wp_pures.
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+  iDestruct "Hhost" as "(Hhost1 & #Hhost_erpc & Hhost2)".
+  wp_apply (wp_Client__Call_uRPCSpec with "Hhost_erpc [$Hrep $Hreq_small $Hcl_is]").
+  { done. }
+  {
+    iFrame "#".
+  }
+  iIntros (err) "(_ & Hreq_urpc_sl & Hpost)".
+  wp_pures.
+
+  destruct err.
+  { (* urpc error; got no response *)
+    rewrite bool_decide_false; last first.
+    { simpl. by destruct c. }
+    wp_pures.
+    wp_apply (wp_Exit).
+    by iIntros "Hbad".
+  }
+  wp_pures.
+  iDestruct "Hpost" as (rep_sl repData) "(Hrep_ptr & Hrep_sl & Hpost)".
+  wp_load.
+  iMod ("Hurpc_post_to_erpc_post" with "Hpost") as "Hpost".
+  iDestruct "Hpost" as "[Hecl_own Hpost]".
+  simpl.
+  iDestruct "Hpost" as (errStale) "Hpost".
+  iDestruct "Hpost" as "[>%HencRep Hpost]".
+
+  wp_apply (wp_new_dec with "Hrep_sl").
+  { done. }
+  iIntros (dec) "Hdec".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_pures.
+  wp_if_destruct.
+  { (* got stale error *)
+    wp_apply (wp_Exit).
+    by iIntros "Hbad".
+  }
+  wp_pures.
+  iEval (simpl) in "Hpost".
+  iApply "Hpost".
+  iModIntro.
+  iExists _, _, _.
+  iFrame "Hcl Hcl_is He Hecl_own Hhost1 Hhost_erpc Hhost2".
+Qed.
 
 Lemma wp_MakeClerk host γ :
   (* is_host host γ *)

@@ -19,7 +19,7 @@ Definition PutArgs := struct.decl [
 
 Definition EncPutArgs: val :=
   rec: "EncPutArgs" "args" :=
-    let: "enc" := marshal.NewEnc #8 in
+    let: "enc" := marshal.NewEnc #16 in
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "v" "args");;
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "epoch" "args");;
     marshal.Enc__Finish "enc".
