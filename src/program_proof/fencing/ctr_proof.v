@@ -312,6 +312,7 @@ Defined.
 Record get_req_names :=
 {
   op_gn:gname;
+  ne_gn:gname;
   finish_gn:gname;
 }.
 
@@ -320,8 +321,16 @@ Implicit Types γreq : get_req_names.
 Definition operation_incomplete γreq : iProp Σ := own γreq.(op_gn) (DfracOwn 1).
 Definition operation_receipt γreq : iProp Σ := own γreq.(op_gn) (DfracDiscarded).
 
+Definition new_epoch_incomplete γreq : iProp Σ := own γreq.(ne_gn) (DfracOwn 1).
+Definition new_epoch_receipt γreq : iProp Σ := own γreq.(ne_gn) (DfracDiscarded).
+
 Lemma complete_operation γreq :
   operation_incomplete γreq ==∗ operation_receipt γreq.
+Proof.
+Admitted.
+
+Lemma complete_newepoch_operation γreq :
+  new_epoch_incomplete γreq ==∗ new_epoch_receipt γreq.
 Proof.
 Admitted.
 
@@ -334,11 +343,17 @@ Definition Get_req_inv prophV e γ γreq Φ : iProp Σ :=
            on the input prophV, but it's convenient to just reuse the more
            powerful spec definition.
          *)
+        (*
+          This invariant is a bit ad-hoc. A more principled approach would be to
+          give the server a fraction of the ghost resources for the "state" of
+          this protocol at the beginning of time, and for this invariant to have
+          only a fraction of it.
+        *)
     operation_incomplete γreq ∗ (
-     (EnterNewEpoch_spec γ e (Get_server_spec γ e (λ err v, if decide (err = 0) then Φ v else True)%I) ) ∨
-     (Get_server_spec γ e (λ err v, if decide (err = 0) then Φ v else True)%I)
+     (new_epoch_incomplete γreq ∗ EnterNewEpoch_spec γ e (Get_server_spec γ e (λ err v, if decide (err = 0) then Φ v else True)%I) ) ∨
+     (new_epoch_receipt γreq ∗ is_latest_epoch_lb γ e ∗ Get_server_spec γ e (λ err v, if decide (err = 0) then Φ v else True)%I)
     ) ∨
-    operation_receipt γreq ∗ ((Φ prophV) ∨ result_claimed γreq) )
+    is_latest_epoch_lb γ e ∗ new_epoch_receipt γreq  ∗ operation_receipt γreq ∗ ((Φ prophV) ∨ result_claimed γreq) )
 .
 
 Program Definition Get_proph_spec γ :=
@@ -411,15 +426,17 @@ Proof.
 
   iMod (own_alloc (DfracOwn 1)) as (γreq_op_gn) "HreqTok".
   { done. }
+  iMod (own_alloc (DfracOwn 1)) as (γreq_ne_gn) "HneTok".
+  { done. }
   iMod (own_alloc (DfracOwn 1)) as (γreq_finish_gn) "HfinishTok".
   { done. }
-  set (γreq:={| op_gn:=γreq_op_gn ; finish_gn := γreq_finish_gn |}).
+  set (γreq:={| op_gn:=γreq_op_gn ; ne_gn:=γreq_ne_gn ; finish_gn := γreq_finish_gn |}).
   (* Put the EnterNewEpoch into an invariant now, os we  *)
   iAssert (|={⊤}=> Get_req_inv prophVal e γ γreq (λ v, Φ #v))%I
-               with "[Hupd HreqTok]" as ">#HgetInv".
+               with "[Hupd HneTok HreqTok]" as ">#HgetInv".
   {
     rewrite /Get_req_inv.
-    iMod (inv_alloc getN  with "[Hupd HreqTok]") as "$"; last done.
+    iMod (inv_alloc getN  with "[Hupd HneTok HreqTok]") as "$"; last done.
     iNext.
     iLeft.
     iFrame "HreqTok".
@@ -427,6 +444,7 @@ Proof.
        show that P -∗ Q. Basically, want to insist that a spec is covariant
        in its Φ argument (or maybe it's contravariant?). *)
     iLeft.
+    iFrame.
     iApply (EnterNewEpoch_spec_wand with "[] Hupd").
     iIntros "Hupd".
     rewrite /Get_server_spec.
@@ -553,7 +571,7 @@ Proof.
       exfalso.
       done.
     }
-    iDestruct "Hgood" as "[_ [Hgood | >Hbad]]"; last first.
+    iDestruct "Hgood" as "(#HlatestEpoch & #HneComplete & _ & [Hgood | >Hbad])"; last first.
     { (* result can't be claimed from invariant because we have HfinishTok *)
       iDestruct (own_valid_2 with "HfinishTok Hbad") as %Hbad.
       exfalso.
@@ -647,16 +665,42 @@ Proof.
   { (* case: epoch number is not stale. *)
 
     iAssert (|={⊤∖↑getN,⊤}=> "HghostLatestEpoch" ∷ own_latest_epoch γ e (1/2) ∗
-                    "HghostV" ∷ own_val γ e v (1/2)
-                    (* "#Hlatest_lb" ∷ is_latest_epoch_lb γ e *)
+                                                "HghostV" ∷ own_val γ e v (1/2) ∗
+                                                "#HneComplete" ∷ new_epoch_receipt γreq
+            (* "#Hlatest_lb" ∷ is_latest_epoch_lb γ e *)
             )%I with "[Hi Hclose HgetSpec HghostLatestEpoch HghostV]" as "HH".
     {
       (* Use EnterNewEpoch spec regardless of whether the prophecy matches the current value *)
       rewrite bool_decide_eq_false in Hineq.
-      iDestruct "Hi" as "[Hi | Hbad]"; last first.
-      { admit. } (* FIXME: have is_latest_epoch_lb here *)
-      iDestruct "Hi" as "[HopIncomplete [Hgood | Hbad]]"; last first.
-      { admit. } (* FIXME: have is_latest_epoch_lb here *)
+      iDestruct "Hi" as "[Hi | Hi]"; last first.
+      { (* the request was already run previously, and we already have a receipt that the latestEpoch >= e *)
+        iDestruct "Hi" as "[#HlatestLb [#Hreceipt HΦclient]]".
+        iDestruct (own_latest_epoch_with_lb with "HghostLatestEpoch HlatestLb") as "%Hineq2".
+        replace (latestEpoch) with (e); last first.
+        { word. }
+        iMod ("Hclose" with "[HΦclient]").
+        {
+          iNext.
+          iRight.
+          iFrame "#∗".
+        }
+        iModIntro.
+        iFrame "#∗".
+      }
+      iDestruct "Hi" as "[HopIncomplete [[HneIncomplete Hgood] | Hi]]"; last first.
+      { (* the request was run previously, but the Get fupd wasn't fired
+           previously (because the prophecy must not have matched last time). *)
+        iDestruct "Hi" as "(#HnewComplete & #Hlb & Hupd)".
+        iDestruct (own_latest_epoch_with_lb with "HghostLatestEpoch Hlb") as "%Hineq2".
+        replace (latestEpoch) with (e) by word.
+        iFrame "∗#".
+        iMod ("Hclose" with "[-]"); last done.
+        iNext.
+        iLeft.
+        iFrame.
+        iRight.
+        iFrame "#∗".
+      }
       iEval (rewrite /EnterNewEpoch_spec) in "Hgood".
       iMod "Hgood".
 
@@ -665,8 +709,9 @@ Proof.
        stronger than above. fupd_mask_frame_r can help prove that.
        *)
       iDestruct "Hgood" as (?) "Hupd".
+      iMod (complete_newepoch_operation with "HneIncomplete") as "#HneComplete".
       destruct (decide (int.Z latestEpoch0 < int.Z e)).
-      { (* old epoch numbre*)
+      { (* first time seeing the number e *)
         iDestruct "Hupd" as "(Hlatest2 & Hunused & Hupd)".
         iDestruct (own_latest_epoch_combine with "HghostLatestEpoch Hlatest2") as "[Hlatest %Heq]".
         rewrite Heq.
@@ -679,34 +724,40 @@ Proof.
         iDestruct (own_val_split with "HghostV2") as "[HghostV21 HghostV22]".
         iSpecialize ("Hupd" $! v with "HghostV22 HghostV Hlatest2").
         iMod "Hupd".
+        iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#HlatestLb".
         iMod ("Hclose" with "[HopIncomplete Hupd]") as "_".
         {
           iNext.
           iLeft.
           iFrame "HopIncomplete".
           iRight.
-          iFrame.
+          iFrame "∗#".
         }
         iModIntro.
-        iFrame.
+        iFrame "∗#".
       }
-      {
+      { (* e ≤ own_latestEpoch *)
         iDestruct "Hupd" as "[Hlatest2 Hupd]".
         iDestruct (own_latest_epoch_combine with "HghostLatestEpoch Hlatest2") as "[Hlatest %Heq]".
         iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest1 Hlatest2]".
-        rewrite Heq.
+        rewrite -Heq.
+        replace (latestEpoch) with (e); last first.
+        {
+          rewrite -Heq in n.
+          word.
+        }
+        iDestruct (own_latest_epoch_get_lb with "Hlatest2") as "#HlatestLb".
         iMod ("Hupd" with "Hlatest1") as "Hupd".
         iMod ("Hclose" with "[Hupd HopIncomplete]") as "_".
         {
           iNext.
           iLeft.
-          iFrame.
+          iFrame "∗#".
+          iRight.
+          iFrame "∗#".
         }
         iModIntro.
-        replace (latestEpoch0) with (e).
-        { iFrame. }
-        rewrite Heq in Hineq.
-        word.
+        iFrame "∗#".
       }
     }
 
@@ -728,7 +779,7 @@ Proof.
 
     iDestruct "Hi" as "[Hi | HalreadyDone]"; last first.
     { (* case: someone already fired the client fupd and the receipt is sitting in the invariant *)
-      iDestruct "HalreadyDone" as "[#Hreceipt HΦclient]".
+      iDestruct "HalreadyDone" as "(#Hlb & #HneReceipt & #Hreceipt & HΦclient)".
       iMod ("Hclose" with "[HΦclient]").
       {
         iNext.
@@ -754,9 +805,15 @@ Proof.
     }
     { (* case: the operation hasn't been run before, so we might run it now *)
       iDestruct "Hi" as "[Hincomplete [Hbad | Hupd]]".
-      { admit. } (* FIXME: add extra state transition for having run the first fupd *)
+      {
+        iDestruct "Hbad" as "[Hbad _]".
+        iDestruct (own_valid_2 with "HneComplete Hbad") as %Hbad.
+        exfalso.
+        done.
+      }
       destruct (decide (v = prophV)) as [HprophMatches|HprophWrong].
       { (* case: prophecized value matches physical one; we have to run the fupd in this case *)
+        iDestruct "Hupd" as "(#HneReceipt & #Hlb & Hupd)".
         iMod "Hupd".
         clear Hineq latestEpoch.
         iDestruct "Hupd" as (latestEpoch) "[Hlatest2 Hupd]".
@@ -827,7 +884,8 @@ Proof.
         naive_solver.
       }
     }
-Admitted.
+  }
+Qed.
 
 (* NOTE: consider lt_eq_lt_dec: ∀ n m : nat, {n < m} + {n = m} + {m < n} *)
 
