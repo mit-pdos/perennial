@@ -173,6 +173,7 @@ Definition Server__Get: val :=
     else
       struct.storeF Server "lastEpoch" "s" "epoch";;
       struct.storeF GetReply "val" "reply" (struct.loadF Server "v" "s");;
+      Linearize;;
       lock.release (struct.loadF Server "mu" "s");;
       #()).
 

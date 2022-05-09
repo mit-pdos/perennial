@@ -342,7 +342,7 @@ Program Definition Get_proph_spec γ :=
     ⌜has_encoding reqData [EncUInt64 e]⌝ ∗
     (Get_req_inv prophV e γ γreq Φclient) ∗
     (∀ l err v, ⌜has_GetReply_encoding l err v⌝ -∗
-      (if (decide (err = 0)) then operation_receipt γreq else True) -∗ Φ l)
+      (if (decide (err = 0 ∧ v = prophV)) then operation_receipt γreq else True) -∗ Φ l)
   )%I
 .
 Next Obligation.
@@ -458,7 +458,7 @@ Proof.
 
   wp_apply (wp_Client__Call _ _ _ _ _ _ _ _ _ _
                           (λ (l:list u8), ∃ v e, ⌜has_GetReply_encoding l e v⌝ ∗
-                                  if (decide (e = (U64 0))) then
+                                  if (decide (e = (U64 0) ∧ v = prophVal)) then
                                     operation_receipt _
                                   else
                                     True)%I
@@ -474,7 +474,7 @@ Proof.
 
     iIntros (l err v HrepEnc) "Hpost".
     iExists _, _. iSplitL ""; first done.
-    destruct (decide (err = 0)).
+    destruct (decide (_)).
     {
       iFrame "Hpost".
     }
@@ -537,6 +537,8 @@ Proof.
     iIntros "%HprophMatches".
     (* XXX: some later hacking. Open the invariant here so we can strip off a later from the Φ. *)
     iApply fupd_wp.
+    rewrite (decide_True); last done.
+    iDestruct "Hpost" as "#Hpost".
 
     (* Open HgetInv and use receipt to get Φ. *)
     iInv "HgetInv" as "Hi" "Hclose".
@@ -553,9 +555,6 @@ Proof.
       done.
     }
 
-    (* XXX: I still don't know what setoid_rewrite does *)
-    erewrite decide_True; last done.
-    iDestruct "Hpost" as "#Hpost".
     iMod ("Hclose" with "[HfinishTok]") as "_".
     {
       iNext.
@@ -711,11 +710,45 @@ Proof.
     iModIntro.
 
     (* Done with EnterNewEpoch part of the proof; now, just worry about GetAtEpoch *)
+
     wp_pures.
     wp_storeField.
     wp_loadField.
     wp_storeField.
-    wp_loadField.
+    wp_bind (Skip).
+
+    iInv "HgetSpec" as "Hi" "Hclose".
+    wp_pures.
+    wp_apply (wp_value).
+
+    iDestruct "Hi" as "[Hi | HalreadyDone]"; last first.
+    { (* case: someone already fired the client fupd and the receipt is sitting in the invariant *)
+      iDestruct "HalreadyDone" as "[#Hreceipt HΦclient]".
+      iMod ("Hclose" with "[HΦclient]").
+      {
+        iNext.
+        iRight.
+        iFrame "∗#".
+      }
+      iModIntro.
+      wp_pures.
+      wp_loadField.
+      wp_apply (release_spec with "[$Hlocked $HmuInv Hv HlatestEpoch HghostV HghostLatestEpoch]").
+      {
+        iNext.
+        iExists _, _.
+        iFrame.
+      }
+      wp_pures.
+      iModIntro.
+      iApply "HΦ".
+      iFrame.
+      iApply "Hpost".
+      iFrame "#".
+    }
+    { (* case: *)
+      admit.
+    }
 
     (*
     wp_storeField.
