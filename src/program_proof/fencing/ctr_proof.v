@@ -72,6 +72,11 @@ Lemma own_latest_epoch_combine γ e1 e2 q1 q2 :
 Proof.
 Admitted.
 
+Lemma own_latest_epoch_split γ e q1 q2 :
+  own_latest_epoch γ e (q1 + q2) -∗ own_latest_epoch γ e (q1) ∗ own_latest_epoch γ e q2.
+Proof.
+Admitted.
+
 Lemma own_latest_epoch_update e γ eold :
   own_latest_epoch γ eold 1 ==∗ own_latest_epoch γ e 1.
 Proof.
@@ -146,15 +151,18 @@ Definition has_GetReply_encoding (l:list u8) (err v:u64) :=
 (* Doing {T ∖ ctrN, ∅} means that I have to open up the invariant with ctrN
    before firing this fupd. On the other hand, if it's {T, ctrN}, I can
    optionally open the invariant after firing the fupd *)
+
+Definition getN := nroot .@ "ctr.get".
+
 Definition EnterNewEpoch_spec γ (e:u64) (Φ:iProp Σ) : iProp Σ :=
-|={⊤, ↑ctrN}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
+|={⊤∖↑getN, ↑ctrN}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
     own_latest_epoch γ latestEpoch (1/2)%Qp ∗
     own_unused_epoch γ e ∗ (∀ v, own_val γ e v (1/2)%Qp -∗
                                  own_val γ latestEpoch v (1/2)%Qp -∗
-                                 own_latest_epoch γ e (1/2)%Qp ={↑ctrN,⊤}=∗ Φ)
+                                 own_latest_epoch γ e (1/2)%Qp ={↑ctrN,⊤∖↑getN}=∗ Φ)
 else (* XXX: it might seem like the server shouldn't need any resources in this case. *)
   (own_latest_epoch γ latestEpoch (1/2)%Qp ∗
-   (own_latest_epoch γ latestEpoch (1/2)%Qp ={↑ctrN, ⊤}=∗ Φ))
+   (own_latest_epoch γ latestEpoch (1/2)%Qp ={↑ctrN, ⊤∖↑getN}=∗ Φ))
 .
 
 Lemma EnterNewEpoch_spec_wand γ e Φ1 Φ2 :
@@ -300,8 +308,6 @@ Next Obligation.
   rewrite /EnterNewEpoch_spec /Get_server_spec /Get_core_spec.
   solve_proper.
 Defined.
-
-Definition getN := nroot .@ "ctr.get".
 
 Record get_req_names :=
 {
@@ -634,25 +640,84 @@ Proof.
     iFrame.
     by iApply "Hpost".
   }
-  (*
-  iApply (wp_later_tok_pure_step).
-  {
-    naive_solver.
-  }
-  iIntros "[HlaterTok _]". *)
   { (* case: epoch number is not stale. *)
-    (* Use EnterNewEpoch spec regardless of whether the prophecy matches the current value *)
-    rewrite bool_decide_eq_false in Hineq.
-    iDestruct "Hi" as "[Hi | Hbad]"; last first.
-    { admit. } (* FIXME: have is_latest_epoch_lb here *)
-    iDestruct "Hi" as "[_ [Hgood | Hbad]]"; last first.
-    { admit. } (* FIXME: have is_latest_epoch_lb here *)
-    iEval (rewrite /EnterNewEpoch_spec) in "Hgood".
-    (* FIXME: Need to have the fupd mask exclude ↑getN in addition to ↑ctrN *)
+
+    iAssert (|={⊤∖↑getN,⊤}=> "HghostLatestEpoch" ∷ own_latest_epoch γ e (1/2) ∗
+                    "HghostV" ∷ own_val γ e v (1/2)
+                    (* "#Hlatest_lb" ∷ is_latest_epoch_lb γ e *)
+            )%I with "[Hi Hclose HgetSpec HghostLatestEpoch HghostV]" as "HH".
+    {
+      (* Use EnterNewEpoch spec regardless of whether the prophecy matches the current value *)
+      rewrite bool_decide_eq_false in Hineq.
+      iDestruct "Hi" as "[Hi | Hbad]"; last first.
+      { admit. } (* FIXME: have is_latest_epoch_lb here *)
+      iDestruct "Hi" as "[HopIncomplete [Hgood | Hbad]]"; last first.
+      { admit. } (* FIXME: have is_latest_epoch_lb here *)
+      iEval (rewrite /EnterNewEpoch_spec) in "Hgood".
+      iMod "Hgood".
+
+      (* FIXME: currently, we require |={⊤, ↑ctrN}=> from the client fupd.
+       It seems enough to require |={⊤∖↑ctrN, ∅}=>, which should be strictly
+       stronger than above. fupd_mask_frame_r can help prove that.
+       *)
+      iDestruct "Hgood" as (?) "Hupd".
+      destruct (decide (int.Z latestEpoch0 < int.Z e)).
+      { (* old epoch numbre*)
+        iDestruct "Hupd" as "(Hlatest2 & Hunused & Hupd)".
+        iDestruct (own_latest_epoch_combine with "HghostLatestEpoch Hlatest2") as "[Hlatest %Heq]".
+        rewrite Heq.
+        rewrite (Qp_half_half).
+        iMod (own_latest_epoch_update e with "Hlatest") as "Hlatest".
+        iEval (rewrite -Qp_half_half) in "Hlatest".
+        iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
+        iMod (activate_unused_epoch v with "HunusedInv Hunused") as "HghostV2".
+        iEval (rewrite -Qp_half_half) in "HghostV2".
+        iDestruct (own_val_split with "HghostV2") as "[HghostV21 HghostV22]".
+        iSpecialize ("Hupd" $! v with "HghostV22 HghostV Hlatest2").
+        iMod "Hupd".
+        iMod ("Hclose" with "[HopIncomplete Hupd]") as "_".
+        {
+          iNext.
+          iLeft.
+          iFrame "HopIncomplete".
+          iRight.
+          iFrame.
+        }
+        iModIntro.
+        iFrame.
+      }
+      {
+        iDestruct "Hupd" as "[Hlatest2 Hupd]".
+        iDestruct (own_latest_epoch_combine with "HghostLatestEpoch Hlatest2") as "[Hlatest %Heq]".
+        iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest1 Hlatest2]".
+        rewrite Heq.
+        iMod ("Hupd" with "Hlatest1") as "Hupd".
+        iMod ("Hclose" with "[Hupd HopIncomplete]") as "_".
+        {
+          iNext.
+          iLeft.
+          iFrame.
+        }
+        iModIntro.
+        replace (latestEpoch0) with (e).
+        { iFrame. }
+        rewrite Heq in Hineq.
+        word.
+      }
+    }
+
+    iMod "HH".
+    iNamed "HH".
+    iModIntro.
+
+    (* Done with EnterNewEpoch part of the proof; now, just worry about GetAtEpoch *)
+    wp_pures.
+    wp_storeField.
+    wp_loadField.
+    wp_storeField.
+    wp_loadField.
+
     (*
-    iMod "Hgood".
-
-
     wp_storeField.
     wp_loadField.
     simpl.
