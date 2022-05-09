@@ -99,9 +99,8 @@ Proof.
       iNamed "Hown".
       iApply fupd_mask_intro.
       { unfold ctr.ctrN. unfold frontendN.
-        assert (↑nroot.@"ctr" ∩ ↑nroot.@"frontend" = (∅:coPset)).
-        { admit. }
-        set_solver.
+        (* FIXME: just a pure inequality of sets; set_solver. *)
+        admit.
       }
       iIntros "Hmask".
 

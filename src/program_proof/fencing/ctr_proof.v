@@ -219,11 +219,11 @@ Proof.
 Qed.
 
 Definition Get_server_spec γ (e:u64) (Φ:u64 → u64 → iProp Σ) : iProp Σ :=
-|={⊤,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
+|={⊤∖↑getN,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1/2)%Qp ∗
   if decide (int.Z latestEpoch = int.Z e)%Z then
-    Get_core_spec γ e (λ v, own_latest_epoch γ e (1/2) ={∅,⊤}=∗ Φ 0 v)
+    Get_core_spec γ e (λ v, own_latest_epoch γ e (1/2) ={∅,⊤∖↑getN}=∗ Φ 0 v)
   else
-    (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤}=∗ (∀ dummy_val, Φ 1 dummy_val))
+    (own_latest_epoch γ latestEpoch (1/2)%Qp ={∅,⊤∖↑getN}=∗ (∀ dummy_val, Φ 1 dummy_val))
 .
 
 (*
@@ -320,6 +320,11 @@ Implicit Types γreq : get_req_names.
 Definition operation_incomplete γreq : iProp Σ := own γreq.(op_gn) (DfracOwn 1).
 Definition operation_receipt γreq : iProp Σ := own γreq.(op_gn) (DfracDiscarded).
 
+Lemma complete_operation γreq :
+  operation_incomplete γreq ==∗ operation_receipt γreq.
+Proof.
+Admitted.
+
 Definition result_claimed γreq : iProp Σ := own γreq.(finish_gn) (DfracOwn 1).
 
 Definition Get_req_inv prophV e γ γreq Φ : iProp Σ :=
@@ -368,11 +373,11 @@ Lemma wp_Clerk__Get γ ck (e:u64) :
   ∀ Φ,
   own_Clerk γ ck -∗
   EnterNewEpoch_spec γ e (
-    |={⊤,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1 / 2) ∗
+    |={⊤∖↑getN,∅}=> ∃ latestEpoch, own_latest_epoch γ latestEpoch (1 / 2) ∗
     (if decide (int.Z latestEpoch = int.Z e)
-        then Get_core_spec γ e (λ v : u64, own_latest_epoch γ e (1 / 2) ={∅,⊤}=∗ Φ #v)
+        then Get_core_spec γ e (λ v : u64, own_latest_epoch γ e (1 / 2) ={∅,⊤∖↑getN}=∗ Φ #v)
         else
-         own_latest_epoch γ latestEpoch (1 / 2) ={∅,⊤}=∗ True) (* Get_server_spec
+         own_latest_epoch γ latestEpoch (1 / 2) ={∅,⊤∖↑getN}=∗ True) (* Get_server_spec
          actually has an obligation here; here, we'll exit if the epoch is
          stale, so the client doesn't need to prove anything about this case *)
   )%I
@@ -588,7 +593,7 @@ Lemma wp_Server__Get γ s (e:u64) (rep:loc) (dummy_err dummy_val:u64) (prophV:u6
         "Hrep_val" ∷ rep ↦[GetReply :: "val"] #dummy_val ∗
 
         "#HgetSpec" ∷ (Get_req_inv prophV e γ γreq Φclient) ∗
-        "Hpost" ∷ (∀ (err v:u64), (if (decide (err = 0)) then operation_receipt γreq else True) -∗ Post err v)
+        "Hpost" ∷ (∀ (err v:u64), (if (decide (err = 0 ∧ v = prophV)) then operation_receipt γreq else True) -∗ Post err v)
   }}}
     Server__Get #s #e #rep
   {{{
@@ -744,101 +749,84 @@ Proof.
       iApply "HΦ".
       iFrame.
       iApply "Hpost".
-      iFrame "#".
+      destruct (decide (_)); iFrame "#".
+      done.
     }
-    { (* case: *)
-      admit.
-    }
-
-    (*
-    wp_storeField.
-    wp_loadField.
-    simpl.
-
-    iAssert (|={⊤}=> "HgetSpec" ∷ Get_server_spec γ e Post ∗
-                    "HghostLatestEpoch" ∷ own_latest_epoch γ e (1/2) ∗
-                    "HghostV" ∷ own_val γ e v (1/2) ∗
-                    "#Hlatest_lb" ∷ is_latest_epoch_lb γ e
-            )%I with "[HgetSpec HghostLatestEpoch HghostV]" as "HH".
-    { (* doing iAssert so that the two cases of EnterNewEpoch get merged *)
-      iMod "HgetSpec".
-      iDestruct "HgetSpec" as (clientLatestEpoch) "HgetSpec".
-      destruct (decide (int.Z clientLatestEpoch < int.Z e)) as [Hineq|Hineq].
-      { (* first time seeing epoch number *)
-        iDestruct "HgetSpec" as "(HclientLatest & Hunused & HgetSpec)".
-        iMod (activate_unused_epoch v with "HunusedInv Hunused") as "HghostV2".
-        iEval (rewrite -Qp_half_half) in "HghostV2".
-        iDestruct (own_val_split with "HghostV2") as "[HghostV21 HghostV22]".
-        iSpecialize ("HgetSpec" $! v with "HghostV21").
-        iDestruct (own_latest_epoch_combine with "HghostLatestEpoch HclientLatest") as "[Hlatest %HepochEq]".
-        iEval (rewrite Qp_half_half) in "Hlatest".
-        iMod (own_latest_epoch_update e with "Hlatest") as "Hlatest".
-        iEval (rewrite -Qp_half_half) in "Hlatest".
-        iDestruct "Hlatest" as "[Hlatest Hlatest2]".
-        rewrite HepochEq.
-        iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
-        iSpecialize ("HgetSpec" with "HghostV Hlatest").
-        iMod "HgetSpec".
-        iModIntro.
-        iFrame "∗#".
-      }
-      { (* have seen epoch number before *)
-        iDestruct "HgetSpec" as "[HclientLatest HgetSpec]".
-        iDestruct (own_latest_epoch_combine with "HclientLatest HghostLatestEpoch") as "[Hlatest %HepochEq]".
-        iDestruct "Hlatest" as "[Hlatest Hlatest2]".
-        iSpecialize ("HgetSpec" with "Hlatest2").
-        iMod "HgetSpec".
-        iModIntro.
-        rewrite HepochEq in Hineq |- *.
-        replace (e) with (latestEpoch) by word.
-        iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
-        iFrame "∗#".
-      }
-    }
-    iMod "HH".
-    iNamed "HH".
-    iModIntro.
-
-    (* GetAtEpoch *)
-    wp_storeField.
-    wp_loadField.
-    wp_storeField.
-    wp_loadField.
-
-    iApply fupd_wp.
-    iMod "HgetSpec".
-    {
-      iDestruct "HgetSpec" as (clientLatest) "[HclientLatest HgetSpec]".
-      destruct (decide (int.Z clientLatest = int.Z e)) as [Heq|Heq].
-      { (* epoch number is not stale *)
-        unfold Get_core_spec.
-        iMod "HgetSpec".
-        iDestruct "HgetSpec" as (v2) "[Hval HgetSpec]".
-        iDestruct (own_val_combine with "Hval HghostV") as "[HghostV %Hveq]".
-        rewrite Hveq.
-        iDestruct (own_val_split with "HghostV") as "[Hval HghostV]".
-        iMod ("HgetSpec" with "Hval") as "HgetSpec".
-        replace (clientLatest) with (e) by word.
-        iMod ("HgetSpec" with "HclientLatest") as "HPost".
-        iModIntro.
-
-        wp_apply (release_spec with "[$HmuInv $Hlocked Hv HlatestEpoch HghostLatestEpoch HghostV]").
+    { (* case: the operation hasn't been run before, so we might run it now *)
+      iDestruct "Hi" as "[Hincomplete [Hbad | Hupd]]".
+      { admit. } (* FIXME: add extra state transition for having run the first fupd *)
+      destruct (decide (v = prophV)) as [HprophMatches|HprophWrong].
+      { (* case: prophecized value matches physical one; we have to run the fupd in this case *)
+        iMod "Hupd".
+        clear Hineq latestEpoch.
+        iDestruct "Hupd" as (latestEpoch) "[Hlatest2 Hupd]".
+        iDestruct (own_latest_epoch_combine with "HghostLatestEpoch Hlatest2") as "[Hlatest %Heq]".
+        destruct (decide (int.Z latestEpoch = int.Z e)); last first.
+        { (* contradictory: we know for sure that own_latest_epoch e *)
+          exfalso.
+          naive_solver.
+        }
+        iMod "Hupd".
+        iDestruct "Hupd" as (v2) "[Hval2 Hupd]".
+        iDestruct (own_val_combine with "HghostV Hval2") as "[Hval %HvEq]".
+        rewrite -HvEq.
+        iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
+        iMod ("Hupd" with "Hval2") as "Hupd".
+        rewrite Heq.
+        iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
+        iMod ("Hupd" with "Hlatest2") as "Hupd".
+        iMod (complete_operation with "Hincomplete") as "#Hreceipt".
+        rewrite HprophMatches.
+        iMod ("Hclose" with "[Hupd]").
         {
-          iNext. iExists _, _. iFrame.
+          iNext.
+          iRight.
+          iFrame "#".
+          iLeft.
+          iFrame.
+        }
+        iModIntro.
+        wp_pures.
+        wp_loadField.
+        wp_apply (release_spec with "[$Hlocked $HmuInv Hv HlatestEpoch Hval Hlatest]").
+        {
+          iNext.
+          iExists _, _.
+          iFrame.
         }
         wp_pures.
         iModIntro.
         iApply "HΦ".
         iFrame.
+        iApply "Hpost".
+        destruct (decide _); iFrame "#".
+        done.
       }
-      { (* epoch number is stale; this is impossible at this point, because we checked for staleness earlier *)
-        iDestruct (own_latest_epoch_combine with "HclientLatest HghostLatestEpoch") as "[Hlatest %HepochEq]".
-        exfalso.
+      { (* case: prophecized value doesn't match physical one; we don't have to do anything in this case *)
+        iMod ("Hclose" with "[Hincomplete Hupd]").
+        {
+          iNext.
+          iLeft.
+          iFrame.
+        }
+        iModIntro.
+        wp_pures.
+        wp_loadField.
+        wp_apply (release_spec with "[$Hlocked $HmuInv Hv HlatestEpoch HghostV HghostLatestEpoch]").
+        {
+          iNext.
+          iExists _, _.
+          iFrame.
+        }
+        wp_pures.
+        iModIntro.
+        iApply "HΦ".
+        iFrame.
+        iApply "Hpost".
+        rewrite decide_False; first done.
         naive_solver.
       }
     }
-  }
-*)
 Admitted.
 
 (* NOTE: consider lt_eq_lt_dec: ∀ n m : nat, {n < m} + {n = m} + {m < n} *)
