@@ -95,7 +95,9 @@ Proof.
                with "[Hck1_own Hghost1]").
     { (* ctr.Clerk__Get *)
       wp_apply (ctr.wp_Clerk__Get with "Hck1_own").
-      iApply (ctr.EnterNewEpoch_spec_wand _ _ (∃ v, own_val γ epoch v (1 / 4)) with "[] [-]"); last first.
+      iApply (ctr.EnterNewEpoch_spec_wand _ _ (∃ v, own_val γ epoch v (1 / 4)
+                                                    ∨ is_latest_epoch_lb_strict γ epoch
+                                              ) with "[] [-]"); last first.
       { (* EnterNewEpoch(): first linearization point *)
         iInv "Hinv" as ">Hown" "Hclose".
         iNamed "Hown".
@@ -136,18 +138,35 @@ Proof.
           iFrame.
           iIntros "Hlatest".
           iMod "Hmask".
+          iDestruct "Hghost1" as "[Hunused|Hv]".
+          { (* derive a contradiction with e == latestEpoch; the cast e <
+               latestEpoch should require proving True, not proving Φ. We'll have to
+               strengthen the spec for ctr *)
+            destruct (decide (int.Z latestEpoch = int.Z epoch)).
+            {
+              replace (latestEpoch) with (epoch) by word.
+              iDestruct (unused_own_val_false with "Hunused Hval") as "HH".
+              done.
+            }
+            iExists _. iRight.
+            assert (int.Z epoch < int.Z latestEpoch)%Z as Hineq2 by word.
+            iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
+            iMod ("Hclose" with "[Hval Hlatest Hkv]").
+            {
+              iNext.
+              iExists _, _. iFrame.
+            }
+            iModIntro.
+            iApply (mono_nat_lb_own_le (n:=int.nat latestEpoch)).
+            { word. }
+            iFrame "#".
+          }
           iMod ("Hclose" with "[Hval Hlatest Hkv]").
           {
             iNext.
             iExists _, _. iFrame.
           }
           iModIntro.
-          iDestruct "Hghost1" as "[Hunused|Hv]".
-          { (* derive a contradiction with e == latestEpoch; the cast e <
-               latestEpoch should require proving True, not proving Φ. We'll have to
-               strengthen the spec for ctr *)
-            admit.
-          }
           iDestruct "Hv" as (?) "[_ Hv]".
           iExists _; iFrame "Hv".
         }
@@ -161,6 +180,28 @@ Proof.
         iApply fupd_mask_intro.
         { set_solver. }
         iIntros "Hmask".
+
+        iDestruct "Hval2" as "[Hval2|#Hbad]"; last first.
+        { (* case: the epoch number is stale already; this is impossible *)
+          iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hbad") as "[%_ %Hineq]".
+          iExists latestEpoch.
+          iFrame.
+          destruct (decide (int.Z latestEpoch = int.Z epoch)).
+          { (* contradicts the fact that we're in the stale case *)
+            exfalso.
+            word.
+          }
+          iIntros "HlatestEpoch".
+          iMod "Hmask".
+          iMod ("Hclose" with "[Hkv Hval HlatestEpoch]").
+          {
+            iNext.
+            iExists _, _.
+            iFrame.
+          }
+          by iModIntro.
+        }
+
         iExists latestEpoch.
         iFrame.
         destruct (decide (int.Z latestEpoch = int.Z epoch)).
