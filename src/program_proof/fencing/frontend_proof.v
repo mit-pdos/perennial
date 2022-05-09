@@ -95,45 +95,68 @@ Proof.
                with "[Hck1_own Hghost1]").
     { (* ctr.Clerk__Get *)
       wp_apply (ctr.wp_Clerk__Get with "Hck1_own").
-
-      (* EnterNewEpoch(): first linearization point *)
-      iInv "Hinv" as ">Hown" "Hclose".
-      iNamed "Hown".
-      iApply fupd_mask_intro.
-      { unfold ctr.ctrN. unfold frontendN.
-        (* FIXME: just a pure inequality of sets; set_solver. *)
-        admit.
-      }
-      iIntros "Hmask".
-
-      iExists latestEpoch.
-      destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
-      { (* case: epoch number is new *)
-        iDestruct "Hghost1" as "[Hunused | Hbad]"; last first.
-        { (* is_latest_epoch_lb contradicts inequality *)
-          iDestruct "Hbad" as (?) "[#Hlb _]".
-          iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
-          exfalso. word.
+      iApply (ctr.EnterNewEpoch_spec_wand _ _ (∃ v, own_val γ epoch v (1 / 4)) with "[] [-]"); last first.
+      { (* EnterNewEpoch(): first linearization point *)
+        iInv "Hinv" as ">Hown" "Hclose".
+        iNamed "Hown".
+        iApply fupd_mask_intro.
+        { unfold ctr.ctrN. unfold frontendN.
+          (* FIXME: just a pure inequality of sets; set_solver. *)
+          admit.
         }
-        iFrame.
-        iIntros (v0) "HnewVal  HprevEpochVal  HlatestEpoch".
-        iDestruct (own_val_combine with "Hval HprevEpochVal") as "[_ %Hagree]".
-        rewrite Hagree.
-        iMod "Hmask" as "_".
-        iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
-        iDestruct (own_val_split with "HnewVal") as "[HnewVal HnewVal2]".
-        iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
-        iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
-        {
-          iNext.
-          iExists _, _.
+        iIntros "Hmask".
+
+        iExists latestEpoch.
+        destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+        { (* case: epoch number is new *)
+          iDestruct "Hghost1" as "[Hunused | Hbad]"; last first.
+          { (* is_latest_epoch_lb contradicts inequality *)
+            iDestruct "Hbad" as (?) "[#Hlb _]".
+            iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
+            exfalso. word.
+          }
           iFrame.
+          iIntros (v0) "HnewVal  HprevEpochVal  HlatestEpoch".
+          iDestruct (own_val_combine with "Hval HprevEpochVal") as "[_ %Hagree]".
+          rewrite Hagree.
+          iMod "Hmask" as "_".
+          iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+          iDestruct (own_val_split with "HnewVal") as "[HnewVal HnewVal2]".
+          iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
+          iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
+          {
+            iNext.
+            iExists _, _.
+            iFrame.
+          }
+          iModIntro.
+          iExists _; iFrame.
         }
-        iModIntro.
-
-        (* Second linearization point *)
+        { (* case: epoch number is not brand new *)
+          iFrame.
+          iIntros "Hlatest".
+          iMod "Hmask".
+          iMod ("Hclose" with "[Hval Hlatest Hkv]").
+          {
+            iNext.
+            iExists _, _. iFrame.
+          }
+          iModIntro.
+          iDestruct "Hghost1" as "[Hunused|Hv]".
+          { (* derive a contradiction with e == latestEpoch; the cast e <
+               latestEpoch should require proving True, not proving Φ. We'll have to
+               strengthen the spec for ctr *)
+            admit.
+          }
+          iDestruct "Hv" as (?) "[_ Hv]".
+          iExists _; iFrame "Hv".
+        }
+      }
+      (* Now, prove the fupd for GetAtEpoch(). *)
+      { (* Second linearization point *)
+        iIntros "Hval2".
+        iDestruct "Hval2" as (v) "Hval2".
         iInv "Hinv" as ">Hi" "Hclose".
-        clear Hineq latestEpoch.
         iNamed "Hi".
         iApply fupd_mask_intro.
         { set_solver. }
@@ -143,7 +166,7 @@ Proof.
         destruct (decide (int.Z latestEpoch = int.Z epoch)).
         { (* e is the latest number seen by the ctr server (i.e. our request is not stale)*)
           replace (latestEpoch) with (epoch) by naive_solver.
-          iDestruct (own_val_combine with "HnewVal2 Hval") as "[Hval %Hveq]".
+          iDestruct (own_val_combine with "Hval2 Hval") as "[Hval %Hveq]".
           iModIntro.
           rewrite (Qp_quarter_quarter).
           iExists _; iFrame "Hval".
@@ -153,6 +176,7 @@ Proof.
           iMod "Hmask".
           iEval (rewrite -Qp_quarter_quarter) in "Hval".
           iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
+          iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
           iMod ("Hclose" with "[Hkv Hval2 Hlatest]").
           {
             iNext.
@@ -177,21 +201,6 @@ Proof.
           iModIntro.
           done.
         }
-      }
-      { (* case: epoch number is not brand new *)
-        iFrame.
-        iIntros "Hlatest".
-        iMod "Hmask".
-        iMod ("Hclose" with "[Hval Hlatest Hkv]").
-        {
-          iNext.
-          iExists _, _. iFrame.
-        }
-        iModIntro.
-        (* Done with EnterNewEpoch *)
-
-        (* Now, prove the fupd for GetAtEpoch(). *)
-        admit. (* FIXME: shouldn't have to repeat the proof here. Should be able to join the branches inside of EnterNewEpoch somehow. *)
       }
     }
     iIntros (gv) "HH".
