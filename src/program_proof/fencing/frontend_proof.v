@@ -66,8 +66,11 @@ Definition is_Server s γ : iProp Σ :=
 .
 
 Definition frontend_inv γ : iProp Σ :=
-  "Hinv1" ∷ inv frontendN (frontend_inv0_def γ) ∗
-  "Hinv2" ∷ inv frontendN (frontend_inv1_def γ).
+  "#Hinv1" ∷ inv frontendN (frontend_inv0_def γ) ∗
+  "#Hunusedinv1" ∷ ctr.unused_epoch_inv γ.(ctr1_gn) ∗
+  "#Hinv2" ∷ inv frontendN (frontend_inv1_def γ) ∗
+  "#Hunusedinv2" ∷ ctr.unused_epoch_inv γ.(ctr2_gn)
+.
 
 Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
   key = 0 ∨ key = 1 →
@@ -119,9 +122,18 @@ Proof.
         iInv "Hinv1" as ">Hown" "Hclose".
         iNamed "Hown".
         iApply fupd_mask_intro.
-        { unfold ctr.unusedN. unfold frontendN.
-          (* FIXME: just a pure inequality of sets; set_solver. *)
-          admit.
+        {
+          assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑ctr.getN)).
+          {
+            unfold ctr.unusedN. unfold ctr.getN.
+            by apply ndot_ne_disjoint.
+          }
+          assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑frontendN)).
+          {
+            unfold ctr.unusedN. unfold frontendN.
+            by apply ndot_ne_disjoint.
+          }
+          set_solver.
         }
         iIntros "Hmask".
 
@@ -164,9 +176,20 @@ Proof.
             {
               replace (latestEpoch) with (epoch) by word.
               iMod (fupd_mask_subseteq (↑ctr.unusedN)).
-              { admit. } (* FIXME: more namespaces+set_solver. *)
-              iMod (ctr.unused_own_val_false with "[] Hunused Hval") as "HH".
-              { admit. } (* get this invariant in context somehow *)
+              { (* TODO: this is a copy paste of the previous fupd_mask_intro. *)
+                assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑ctr.getN)).
+                {
+                  unfold ctr.unusedN. unfold ctr.getN.
+                  by apply ndot_ne_disjoint.
+                }
+                assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑frontendN)).
+                {
+                  unfold ctr.unusedN. unfold frontendN.
+                  by apply ndot_ne_disjoint.
+                }
+                set_solver.
+              } (* FIXME: more namespaces+set_solver. *)
+              iMod (ctr.unused_own_val_false with "Hunusedinv1 Hunused Hval") as "HH".
               done.
             }
             iRight.
@@ -284,7 +307,19 @@ Proof.
     iNamed "HH".
     iExists latestEpoch.
     iApply (fupd_mask_intro).
-    { admit. }
+    {
+      assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑ctr.getN)).
+      {
+        unfold ctr.unusedN. unfold ctr.getN.
+        by apply ndot_ne_disjoint.
+      }
+      assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑frontendN)).
+      {
+        unfold ctr.unusedN. unfold frontendN.
+        by apply ndot_ne_disjoint.
+      }
+      set_solver.
+    }
     iIntros "Hmask".
     iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
     destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
