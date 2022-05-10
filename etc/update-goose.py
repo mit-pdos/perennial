@@ -232,7 +232,8 @@ def main():
         pkgs = ["urpc", "memkv", "connman", "paxi/single", "bank",
                 "lockservice", "pb", "pb/controller", "ctrexample/client",
                 "ctrexample/server", "fencing/ctr", "fencing/config",
-                "fencing/frontend", "fencing/client", "erpc"]
+                "fencing/frontend", "fencing/client", "fencing/loopclient",
+                "erpc"]
 
         for pkg in pkgs:
             run_goose(
