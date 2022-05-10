@@ -53,10 +53,11 @@ Definition is_host (host:u64) (epoch_tok : u64 → iProp Σ) (host_inv:u64 → i
   handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
 
-Definition is_Clerk (ck:loc) (host:u64): iProp Σ :=
-  ∃ (cl:loc),
+Definition is_Clerk (ck:loc) epoch_tok host_inv : iProp Σ :=
+  ∃ (cl:loc) host,
     "#Hcl" ∷ readonly (ck ↦[Clerk :: "cl"] #cl) ∗
-    "#His_cl" ∷ is_uRPCClient cl host
+    "#His_cl" ∷ is_uRPCClient cl host ∗
+    "#His_host" ∷ is_host host epoch_tok host_inv
 .
 
 Lemma wp_MakeClerk host epoch_tok host_inv :
@@ -66,7 +67,7 @@ Lemma wp_MakeClerk host epoch_tok host_inv :
   }}}
     config.MakeClerk #host
   {{{
-        (ck:loc), RET #ck; is_Clerk ck host
+        (ck:loc), RET #ck; is_Clerk ck epoch_tok host_inv
   }}}.
 Proof.
   iIntros "#Hhost !#" (Φ) "_ HΦ".
@@ -83,13 +84,12 @@ Proof.
   iMod (readonly_alloc_1 with "cl") as "#Hcl".
   iApply "HΦ".
   iModIntro.
-  iExists _.
+  iExists _, _.
   iFrame "#".
 Qed.
 
-Lemma wp_Clerk__AcquireEpoch ck host (newHost:u64) epoch_tok host_inv :
-  is_host host epoch_tok host_inv -∗
-  is_Clerk ck host -∗
+Lemma wp_Clerk__AcquireEpoch ck (newHost:u64) epoch_tok host_inv :
+  is_Clerk ck epoch_tok host_inv -∗
   {{{
         □ host_inv newHost
   }}}
@@ -98,7 +98,7 @@ Lemma wp_Clerk__AcquireEpoch ck host (newHost:u64) epoch_tok host_inv :
         (epoch:u64), RET #epoch; epoch_tok epoch
   }}}.
 Proof.
-  iIntros "#His_host #Hck !#" (Φ) "#Hhost HΦ".
+  iIntros "#Hck !#" (Φ) "#Hhost HΦ".
   wp_lam.
   wp_pures.
   wp_apply (wp_new_enc).
@@ -160,9 +160,8 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_Clerk__Get ck host epoch_tok host_inv :
-  is_host host epoch_tok host_inv -∗
-  is_Clerk ck host -∗
+Lemma wp_Clerk__Get ck epoch_tok host_inv :
+  is_Clerk ck epoch_tok host_inv -∗
   {{{
         True
   }}}
@@ -171,7 +170,7 @@ Lemma wp_Clerk__Get ck host epoch_tok host_inv :
         (v:u64), RET #v; host_inv v
   }}}.
 Proof.
-  iIntros "#His_host #Hck !#" (Φ) "#Hhost HΦ".
+  iIntros "#Hck !#" (Φ) "#Hhost HΦ".
   wp_lam.
   wp_pures.
   wp_apply (wp_ref_of_zero).

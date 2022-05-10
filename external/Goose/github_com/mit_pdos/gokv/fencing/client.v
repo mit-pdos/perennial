@@ -28,4 +28,6 @@ Definition MakeClerk: val :=
   rec: "MakeClerk" "configHost" :=
     let: "ck" := struct.alloc Clerk (zero_val (struct.t Clerk)) in
     struct.storeF Clerk "configCk" "ck" (config.MakeClerk "configHost");;
+    let: "currentFrontend" := config.Clerk__Get (struct.loadF Clerk "configCk" "ck") in
+    struct.storeF Clerk "frontendCk" "ck" (frontend.MakeClerk "currentFrontend");;
     "ck".
