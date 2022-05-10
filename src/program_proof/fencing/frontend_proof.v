@@ -13,6 +13,7 @@ Context `{!heapGS Σ}.
 
 Record frontend_names :=
 {
+  urpc_gn : server_chan_gnames;
   kv_gn : gname;
   ctr1_gn : ctr_names;
   ctr2_gn : ctr_names;
@@ -740,15 +741,15 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition is_host γurpc_gn γ host : iProp Σ :=
-  handlers_dom γurpc_gn {[ (U64 0) ]} ∗
-  handler_spec γurpc_gn host 0 (FAISpec_tada γ).
+Definition is_host γ host : iProp Σ :=
+  handlers_dom γ.(urpc_gn) {[ (U64 0) ]} ∗
+  handler_spec γ.(urpc_gn) host 0 (FAISpec_tada γ).
 
-Lemma wp_StartServer γurpc_gn γ γcfg (me configHost host1 host2:u64) :
+Lemma wp_StartServer γ γcfg (me configHost host1 host2:u64) :
   config.is_host γcfg configHost (λ e, own_unused_epoch γ.(ctr1_gn) e ∗ own_unused_epoch γ.(ctr2_gn) e) (λ _, True) -∗
   ctr.is_host host1 γ.(ctr1_gn) -∗
   ctr.is_host host2 γ.(ctr2_gn) -∗
-  is_host γurpc_gn γ me -∗
+  is_host γ me -∗
   frontend_inv γ -∗
   {{{
       True
@@ -770,7 +771,7 @@ Proof using Type*.
   wp_apply (config.wp_MakeClerk with "His_cfg").
   iIntros (ck) "#His_ck".
   wp_pures.
-  wp_apply (config.wp_Clerk__AcquireEpoch with "His_cfg His_ck").
+  wp_apply (config.wp_Clerk__AcquireEpoch with "His_ck").
   { auto. }
   iIntros (epoch) "Hunused".
 
@@ -814,7 +815,7 @@ Proof using Type*.
   wp_apply (wp_MakeServer with "Hhandlers").
   iIntros (r) "Hr".
   wp_pures.
-  wp_apply (wp_StartServer γurpc_gn with "[$Hr]").
+  wp_apply (wp_StartServer with "[$Hr]").
   { set_solver. }
   {
     iDestruct "His_host" as "[H1 H2]".
@@ -871,6 +872,95 @@ Proof using Type*.
   wp_pures.
   by iApply "HΦ".
 Qed.
+
+Definition is_Clerk γ ck : iProp Σ :=
+  ∃ (cl:loc) (host:chan),
+  "#Hcl" ∷ readonly (ck ↦[frontend.Clerk :: "cl"] #cl) ∗
+  "#Hcl_is" ∷ is_uRPCClient cl host ∗
+  "#His_host" ∷ is_host γ host
+  .
+
+Lemma wp_Clerk__FetchAndIncrement ck (key:u64) γ (ret_ptr:loc) Φ :
+key = 0 ∨ key = 1 →
+  is_Clerk γ ck -∗
+  □ (|={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ key v ∗
+            (kv_ptsto γ key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Φ #0)) -∗
+  □ (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ #err) -∗
+  WP Clerk__FetchAndIncrement #ck #key #ret_ptr {{ Φ }}
+.
+Proof.
+  intros Hkey.
+  iIntros "#Hck_is #HΦ1 #HΦ2".
+  wp_call.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (reply_ptr) "Hreply_ptr".
+  wp_pures.
+
+  wp_apply (wp_new_enc).
+  iIntros (enc) "Henc".
+  wp_pures.
+  wp_apply (wp_Enc__PutInt with "Henc").
+  { done. }
+  iIntros "Henc".
+  wp_pures.
+
+  wp_apply (wp_Enc__Finish with "Henc").
+  iIntros (req_sl reqData) "(%HreqEnc & %HreqLen & Hreq_sl)".
+
+  iNamed "Hck_is".
+  wp_loadField.
+
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+  wp_apply (wp_Client__Call with "[] [$Hreply_ptr $Hreq_small $Hcl_is]").
+  {
+    iDestruct "His_host" as "[_ $]".
+  }
+  {
+    iModIntro.
+    iNext.
+    simpl.
+    iExists (int.nat key).
+    iSplitL "".
+    {
+      iPureIntro.
+      naive_solver.
+    }
+    simpl in HreqEnc.
+    iSplitL "".
+    {
+      iPureIntro.
+      naive_solver.
+    }
+    replace (U64 (int.nat key)) with (key) by word.
+    iMod "HΦ1".
+    iModIntro.
+    iDestruct "HΦ1" as (?) "[Hkv HΦ1]".
+    iExists _; iFrame.
+    iIntros "Hkv".
+    iMod ("HΦ1" with "Hkv") as "HΦ1".
+    iModIntro.
+    iIntros.
+    instantiate (1:=(λ l, ∃ v, ⌜has_encoding l [EncUInt64 v]⌝ ∗ Φ #0)%I).
+    simpl.
+    iExists _; iFrame.
+    done.
+  }
+  iIntros (err) "(_ & Hreq_small & Hpost)".
+  wp_pures.
+
+  destruct err.
+  { (* urpc error *)
+    rewrite bool_decide_false; last by destruct c.
+    wp_pures.
+    iModIntro.
+    iApply "HΦ2".
+    iPureIntro.
+    by destruct c.
+  }
+  (* got a reply *)
+  wp_pures.
+Admitted.
 
 End frontend_proof.
 End frontend.
