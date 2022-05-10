@@ -1026,13 +1026,13 @@ Qed.
 Lemma wp_Server__Put γ s args_ptr Φclient (e v:u64) :
   is_Server γ s -∗
   {{{
-      "Hupd" ∷ EnterNewEpoch_spec γ e (Put_server_spec γ e v (λ err, Φclient #err)) ∗
+      "Hupd" ∷ EnterNewEpoch_spec γ e (Put_server_spec γ e v Φclient) ∗
       "Hargs_val" ∷ args_ptr ↦[PutArgs :: "v"] #v ∗
       "Hargs_epoch" ∷ args_ptr ↦[PutArgs :: "epoch"] #e
   }}}
     Server__Put #s #args_ptr
   {{{
-        (err:u64), RET #err; Φclient #err
+        (err:u64), RET #err; Φclient err
   }}}.
 Proof.
   iIntros "#His_srv !#" (Φ) "Hpre HΦ".
@@ -1107,7 +1107,7 @@ Proof.
 
     (* iAssert to join the two different cases of the EnterNewEpoch fupd *)
     iAssert (
-        |={⊤}=> "Hupd" ∷ Put_server_spec γ e v (λ err : u64, Φclient #err) ∗
+        |={⊤}=> "Hupd" ∷ Put_server_spec γ e v Φclient ∗
                "Hlatest" ∷ own_latest_epoch γ e (1/2) ∗
                "Hval" ∷ own_val γ e v0 (1/2)
       )%I with "[Hupd HghostLatestEpoch HghostV]" as "HH".
@@ -1331,6 +1331,118 @@ Proof.
   iExists _, _, _.
   iFrame "Hcl Hcl_is He Hecl_own Hhost1 Hhost_erpc Hhost2".
 Qed.
+
+Lemma wp_StartServer host γ :
+  is_host host γ -∗
+  {{{
+        own_erpc_pre_server γ.(erpc_gn)
+  }}}
+    StartServer #host
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+  iIntros "#Hhost !#" (Φ) "Hes HΦ".
+  wp_lam.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (s) "Hs".
+  iDestruct (struct_fields_split with "Hs") as "HH".
+  iNamed "HH".
+  simpl.
+
+  wp_pures.
+  wp_apply (wp_new_free_lock).
+  iIntros (mu) "HmuInv".
+
+  wp_storeField.
+
+  wp_apply (wp_erpc_MakeServer with "[$Hes]").
+  iIntros (es) "#His_erpc".
+  wp_storeField.
+  wp_storeField.
+
+  wp_apply (map.wp_NewMap).
+  iIntros (handlers) "Hhandlers".
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (wp_erpc_Server_HandleRequest (Put_spec_erpc γ) with "[] [$His_erpc]").
+  {
+    clear Φ.
+    iIntros (???????) "!# Hpre HΦ".
+    wp_pures.
+    iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+    iDestruct "Hpre" as (??) "[%HreqEnc Hpre]".
+
+    (* TODO: put this in another lemma *)
+    wp_lam.
+    wp_apply (wp_new_dec with "[$Hreq_small]").
+    { done. }
+    iIntros (dec) "Hdec".
+    wp_pures.
+    wp_apply (wp_allocStruct).
+    { repeat econstructor. }
+    iIntros (args_ptr) "Hargs".
+    wp_pures.
+    iDestruct (struct_fields_split with "Hargs") as "HH".
+    iNamed "HH".
+    wp_apply (wp_Dec__GetInt with "Hdec").
+    iIntros "Hdec".
+    wp_storeField.
+
+    wp_apply (wp_Dec__GetInt with "Hdec").
+    iIntros "Hdec".
+    wp_storeField.
+    (* End separate lemma *)
+
+    wp_pures.
+    wp_apply (wp_Server__Put γ with "[] [$Hpre $v $epoch]").
+    {
+      admit. (* TODO: establish is_Server. Also, move this obligation in
+                HandleRequest to a wand in the postcondition. *)
+    }
+    iIntros (err) "Hpost".
+    wp_pures.
+
+    wp_apply (wp_new_enc).
+    iIntros (enc) "Henc".
+    wp_pures.
+    wp_apply (wp_Enc__PutInt with "Henc").
+    { done. }
+    iIntros "Henc".
+    wp_pures.
+    simpl.
+    wp_apply (wp_Enc__Finish with "Henc").
+    iClear "Hrep_sl".
+    iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
+    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+    wp_store.
+    iModIntro.
+    iApply "HΦ".
+    iFrame.
+    iApply "Hpost".
+    done.
+  }
+
+  iIntros (put_urpc_handler) "#Hput_urpc".
+
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_apply (wp_MakeServer with "Hhandlers").
+  iIntros (r) "Hr".
+  wp_pures.
+Admitted.
 
 Lemma wp_MakeClerk host γ :
   (* is_host host γ *)
