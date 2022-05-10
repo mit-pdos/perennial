@@ -883,14 +883,15 @@ Definition is_Clerk γ ck : iProp Σ :=
 Lemma wp_Clerk__FetchAndIncrement ck (key:u64) γ (ret_ptr:loc) Φ :
 key = 0 ∨ key = 1 →
   is_Clerk γ ck -∗
+  (∃ placeholder, ret_ptr ↦[uint64T] #placeholder) -∗
   □ (|={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ key v ∗
-            (kv_ptsto γ key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Φ #0)) -∗
+            (kv_ptsto γ key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))) -∗
   □ (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ #err) -∗
   WP Clerk__FetchAndIncrement #ck #key #ret_ptr {{ Φ }}
 .
 Proof.
   intros Hkey.
-  iIntros "#Hck_is #HΦ1 #HΦ2".
+  iIntros "#Hck_is Hret_ptr #HΦ1 #HΦ2".
   wp_call.
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -941,7 +942,7 @@ Proof.
     iMod ("HΦ1" with "Hkv") as "HΦ1".
     iModIntro.
     iIntros.
-    instantiate (1:=(λ l, ∃ v, ⌜has_encoding l [EncUInt64 v]⌝ ∗ Φ #0)%I).
+    instantiate (1:=(λ l, ∃ v, ⌜has_encoding l [EncUInt64 v]⌝ ∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))%I).
     simpl.
     iExists _; iFrame.
     done.
@@ -960,7 +961,22 @@ Proof.
   }
   (* got a reply *)
   wp_pures.
-Admitted.
+
+  iDestruct "Hpost" as (??) "(Hreply & Hreply_small & Hpost)".
+  wp_load.
+  iDestruct "Hpost" as (?) "[%HrepEnc Hpost]".
+  wp_apply (wp_new_dec with "[$Hreply_small]").
+  { done. }
+  iIntros (dec) "Hdec".
+  wp_pures.
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  iNamed "Hret_ptr".
+  wp_store.
+  iApply "Hpost".
+  iFrame.
+  done.
+Qed.
 
 End frontend_proof.
 End frontend.
