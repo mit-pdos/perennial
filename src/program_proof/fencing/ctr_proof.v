@@ -1023,6 +1023,142 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wp_Server__Put γ s args_ptr Φclient (e v:u64) :
+  is_Server γ s -∗
+  {{{
+      "Hupd" ∷ EnterNewEpoch_spec γ e (Put_server_spec γ e v (λ err, Φclient #err)) ∗
+      "Hargs_val" ∷ args_ptr ↦[PutArgs :: "v"] #v ∗
+      "Hargs_epoch" ∷ args_ptr ↦[PutArgs :: "epoch"] #e
+  }}}
+    Server__Put #s #args_ptr
+  {{{
+        (err:u64), RET #err; Φclient #err
+  }}}.
+Proof.
+  iIntros "#His_srv !#" (Φ) "Hpre HΦ".
+  iNamed "His_srv".
+  iNamed "Hpre".
+  wp_rec.
+  wp_pures.
+  wp_loadField.
+
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+
+  wp_pures.
+
+  wp_loadField.
+  wp_loadField.
+  wp_pures.
+  wp_if_destruct.
+  { (* stale epoch number *)
+    wp_loadField.
+    iApply fupd_wp.
+    iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "Hupd".
+    { set_solver. }
+    iDestruct "Hupd" as (?) "Hupd".
+    destruct (decide (int.Z latestEpoch0 < int.Z e)).
+    { (* case: epoch number is fresh; contradicts the fact that we're in the
+         stale case already *)
+      iDestruct "Hupd" as "[Hlatest2 Hupd]".
+      iDestruct (own_latest_epoch_combine with "Hlatest2 HghostLatestEpoch") as "[_ %Heq]".
+      exfalso.
+      rewrite Heq in l.
+      word.
+    }
+    iDestruct "Hupd" as "[Hlatest Hupd]".
+    iMod ("Hupd" with "Hlatest") as "Hupd".
+    iMod "Hmask" as "_".
+
+    (* second linearization point *)
+    iMod "Hupd".
+    clear latestEpoch0 n.
+    iDestruct "Hupd" as (?) "[Hlatest2 Hupd]".
+    destruct (decide (int.Z latestEpoch0 = int.Z e)).
+    { (* case: epoch number is fresh; contradicts the fact that we're in the
+         stale case *)
+      iDestruct (own_latest_epoch_combine with "Hlatest2 HghostLatestEpoch") as "[_ %Heq]".
+      exfalso.
+      rewrite Heq in e0.
+      word.
+    }
+    iMod ("Hupd" with "Hlatest2") as "HΦclient".
+    iModIntro.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HlatestEpoch Hv HghostLatestEpoch HghostV]").
+    {
+      iNext.
+      iExists _, _.
+      iFrame "∗#".
+    }
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+    done.
+  }
+  { (* case: epoch number is valid *)
+    wp_loadField.
+    wp_storeField.
+    wp_loadField.
+    wp_storeField.
+    wp_loadField.
+
+    iApply fupd_wp.
+
+    (* iAssert to join the two different cases of the EnterNewEpoch fupd *)
+    iAssert (
+        |={⊤}=> "Hupd" ∷ Put_server_spec γ e v (λ err : u64, Φclient #err) ∗
+               "Hlatest" ∷ own_latest_epoch γ e (1/2) ∗
+               "Hval" ∷ own_val γ e v0 (1/2)
+      )%I with "[Hupd HghostLatestEpoch HghostV]" as "HH".
+    {
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "Hupd".
+
+      { set_solver. }
+      iDestruct "Hupd" as (?) "Hupd".
+
+      destruct (decide (int.Z latestEpoch0 < int.Z e)).
+      { (* case: first time seeing client's epoch number *)
+        iDestruct "Hupd" as "(Hlatest2 & Hunused & Hupd)".
+        iMod (activate_unused_epoch v0 with "HunusedInv Hunused") as "Hval".
+        iEval (rewrite -Qp_half_half) in "Hval".
+        iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
+        iDestruct (own_latest_epoch_combine with "Hlatest2 HghostLatestEpoch") as "[Hlatest %Heq]".
+        rewrite Heq.
+        rewrite (Qp_half_half).
+        iMod (own_latest_epoch_update e with "Hlatest") as "Hlatest".
+        { word. }
+        iEval (rewrite -Qp_half_half) in "Hlatest".
+        iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
+        iMod ("Hupd" with "Hval2 HghostV Hlatest2") as "Hupd".
+        iFrame.
+      }
+      { (* case: have seen epoch number before *)
+        iDestruct "Hupd" as "[Hlatest2 Hupd]".
+        iDestruct (own_latest_epoch_combine with "Hlatest2 HghostLatestEpoch") as "[Hlatest %Heq]".
+        rewrite Heq.
+        iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
+        replace (latestEpoch) with (e); last first.
+        {
+          rewrite Heq in n.
+          word_cleanup.
+        }
+        iMod ("Hupd" with "Hlatest2") as "Hupd".
+        iFrame.
+        by iMod "Hmask".
+      }
+    }
+
+    iMod "HH".
+    iNamed "HH".
+
+    iModIntro.
+
+    (* second linearization point: PutAtEpoch () *)
+    admit.
+  }
+Admitted.
+
 Lemma wp_Clerk__Put γ ck (e v:u64) :
   ∀ Φ,
   own_Clerk γ ck -∗

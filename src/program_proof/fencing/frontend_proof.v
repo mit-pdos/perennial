@@ -393,7 +393,7 @@ Lemma wp_StartServer γurpc_gn γ γcfg (me configHost host1 host2:u64) :
   {{{
         RET #(); True
   }}}.
-Proof.
+Proof using Type*.
   iIntros "#His_cfg #His_host #Hinv !#" (Φ) "Hpre HΦ".
   Opaque frontend.Server. (* FIXME: why do I need this? *)
   wp_lam.
