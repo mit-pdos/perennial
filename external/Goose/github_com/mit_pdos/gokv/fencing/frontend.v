@@ -53,7 +53,7 @@ Definition Server__FetchAndIncrement: val :=
       "ret" <-[uint64T] ctr.Clerk__Get (struct.loadF Server "ck1" "s") (struct.loadF Server "epoch" "s");;
       ctr.Clerk__Put (struct.loadF Server "ck1" "s") (![uint64T] "ret" + #1) (struct.loadF Server "epoch" "s")
     else
-      "ret" <-[uint64T] ctr.Clerk__Get (struct.loadF Server "ck1" "s") (struct.loadF Server "epoch" "s");;
+      "ret" <-[uint64T] ctr.Clerk__Get (struct.loadF Server "ck2" "s") (struct.loadF Server "epoch" "s");;
       ctr.Clerk__Put (struct.loadF Server "ck2" "s") (![uint64T] "ret" + #1) (struct.loadF Server "epoch" "s"));;
     lock.release (struct.loadF Server "mu" "s");;
     ![uint64T] "ret".

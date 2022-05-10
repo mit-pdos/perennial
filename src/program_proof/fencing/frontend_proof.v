@@ -33,17 +33,17 @@ Implicit Type γ : frontend_names.
 Definition kv_ptsto γ (k v:u64) : iProp Σ :=
   k ⤳[γ.(kv_gn)]{# 1/2} v.
 
-Definition frontend_inv0_def γ: iProp Σ :=
-  ∃ (latestEpoch v:u64),
-  "HlatestEpoch" ∷ own_latest_epoch γ.(ctr1_gn) latestEpoch q2 ∗
-  "Hval" ∷ own_val γ.(ctr1_gn) latestEpoch v q4 ∗
-  "Hkv" ∷ kv_ptsto γ k0 v.
-
 Definition frontend_inv1_def γ: iProp Σ :=
   ∃ (latestEpoch v:u64),
   "HlatestEpoch" ∷ own_latest_epoch γ.(ctr1_gn) latestEpoch q2 ∗
   "Hval" ∷ own_val γ.(ctr1_gn) latestEpoch v q4 ∗
   "Hkv" ∷ kv_ptsto γ k0 v.
+
+Definition frontend_inv2_def γ: iProp Σ :=
+  ∃ (latestEpoch v:u64),
+  "HlatestEpoch" ∷ own_latest_epoch γ.(ctr2_gn) latestEpoch q2 ∗
+  "Hval" ∷ own_val γ.(ctr2_gn) latestEpoch v q4 ∗
+  "Hkv" ∷ kv_ptsto γ k1 v.
 
 Definition own_Server (s:loc) γ (epoch:u64) : iProp Σ :=
   ∃ (ck1 ck2:loc),
@@ -66,9 +66,9 @@ Definition is_Server s γ : iProp Σ :=
 .
 
 Definition frontend_inv γ : iProp Σ :=
-  "#Hinv1" ∷ inv frontendN (frontend_inv0_def γ) ∗
+  "#Hinv1" ∷ inv frontendN (frontend_inv1_def γ) ∗
   "#Hunusedinv1" ∷ ctr.unused_epoch_inv γ.(ctr1_gn) ∗
-  "#Hinv2" ∷ inv frontendN (frontend_inv1_def γ) ∗
+  "#Hinv2" ∷ inv frontendN (frontend_inv2_def γ) ∗
   "#Hunusedinv2" ∷ ctr.unused_epoch_inv γ.(ctr2_gn)
 .
 
@@ -413,9 +413,320 @@ Proof.
     }
   }
   { (* same proof, but with second server *)
-    admit.
+    assert (key = 1) by naive_solver.
+    wp_loadField.
+    wp_loadField.
+    wp_bind (ctr.Clerk__Get _ _).
+    wp_apply (wp_wand _ _ _
+                (λ v,
+              ∃ (v0:u64),
+              ⌜v = #v0⌝ ∗
+            "#Hlb" ∷ is_latest_epoch_lb γ.(ctr2_gn) epoch ∗
+            "HepochVal" ∷ own_val γ.(ctr2_gn) epoch v0 q4 ∗
+            "Hck2_own" ∷ ctr.own_Clerk γ.(ctr2_gn) ck2
+                    )%I
+               with "[Hck2_own Hghost2]").
+    { (* ctr.Clerk__Get *)
+      wp_apply (ctr.wp_Clerk__Get with "Hck2_own").
+      iApply (ctr.EnterNewEpoch_spec_wand _ _ ((∃ v, own_val γ.(ctr2_gn) epoch v (1 / 4))
+                                                    ∨ is_latest_epoch_lb_strict γ.(ctr2_gn) epoch
+                                              ) with "[] [-]"); last first.
+      { (* EnterNewEpoch(): first linearization point *)
+        iInv "Hinv2" as ">Hown" "Hclose".
+        iNamed "Hown".
+        iApply fupd_mask_intro.
+        {
+          assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑ctr.getN)).
+          {
+            unfold ctr.unusedN. unfold ctr.getN.
+            by apply ndot_ne_disjoint.
+          }
+          assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑frontendN)).
+          {
+            unfold ctr.unusedN. unfold frontendN.
+            by apply ndot_ne_disjoint.
+          }
+          set_solver.
+        }
+        iIntros "Hmask".
+
+        iExists latestEpoch.
+        destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+        { (* case: epoch number is new *)
+          iDestruct "Hghost2" as "[Hunused | Hbad]"; last first.
+          { (* is_latest_epoch_lb contradicts inequality *)
+            iDestruct "Hbad" as (?) "[#Hlb _]".
+            iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
+            exfalso. word.
+          }
+          iFrame.
+          iIntros (v0) "HnewVal  HprevEpochVal  HlatestEpoch".
+          iDestruct (own_val_combine with "Hval HprevEpochVal") as "[_ %Hagree]".
+          rewrite Hagree.
+          iMod "Hmask" as "_".
+          iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+          iDestruct (own_val_split with "HnewVal") as "[HnewVal HnewVal2]".
+          iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
+          iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
+          {
+            iNext.
+            iExists _, _.
+            iFrame.
+          }
+          iModIntro.
+          iLeft.
+          iExists _; iFrame.
+        }
+        { (* case: epoch number is not brand new *)
+          iFrame.
+          iIntros "Hlatest".
+          iMod "Hmask".
+          iDestruct "Hghost2" as "[Hunused|Hv]".
+          { (* derive a contradiction with e == latestEpoch; the cast e <
+               latestEpoch should require proving True, not proving Φ. We'll have to
+               strengthen the spec for ctr *)
+            destruct (decide (int.Z latestEpoch = int.Z epoch)).
+            {
+              replace (latestEpoch) with (epoch) by word.
+              iMod (fupd_mask_subseteq (↑ctr.unusedN)).
+              { (* TODO: this is a copy paste of the previous fupd_mask_intro. *)
+                assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑ctr.getN)).
+                {
+                  unfold ctr.unusedN. unfold ctr.getN.
+                  by apply ndot_ne_disjoint.
+                }
+                assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑frontendN)).
+                {
+                  unfold ctr.unusedN. unfold frontendN.
+                  by apply ndot_ne_disjoint.
+                }
+                set_solver.
+              } (* FIXME: more namespaces+set_solver. *)
+              iMod (ctr.unused_own_val_false with "Hunusedinv2 Hunused Hval") as "HH".
+              done.
+            }
+            iRight.
+            assert (int.Z epoch < int.Z latestEpoch)%Z as Hineq2 by word.
+            iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
+            iMod ("Hclose" with "[Hval Hlatest Hkv]").
+            {
+              iNext.
+              iExists _, _. iFrame.
+            }
+            iModIntro.
+            iApply (mono_nat_lb_own_le (n:=int.nat latestEpoch)).
+            { word. }
+            iFrame "#".
+          }
+          iMod ("Hclose" with "[Hval Hlatest Hkv]").
+          {
+            iNext.
+            iExists _, _. iFrame.
+          }
+          iModIntro.
+          iDestruct "Hv" as (?) "[_ Hv]".
+          iLeft. iExists _; iFrame "Hv".
+        }
+      }
+      (* Now, prove the fupd for GetAtEpoch(). *)
+      { (* Second linearization point *)
+        iIntros "Hval2".
+        iInv "Hinv2" as ">Hi" "Hclose".
+        iNamed "Hi".
+        iApply fupd_mask_intro.
+        { set_solver. }
+        iIntros "Hmask".
+
+        iDestruct "Hval2" as "[Hval2|#Hbad]"; last first.
+        { (* case: the epoch number is stale already; this is impossible *)
+          iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hbad") as "[%_ %Hineq]".
+          iExists latestEpoch.
+          iFrame.
+          destruct (decide (int.Z latestEpoch = int.Z epoch)).
+          { (* contradicts the fact that we're in the stale case *)
+            exfalso.
+            word.
+          }
+          iIntros "HlatestEpoch".
+          iMod "Hmask".
+          iMod ("Hclose" with "[Hkv Hval HlatestEpoch]").
+          {
+            iNext.
+            iExists _, _.
+            iFrame.
+          }
+          by iModIntro.
+        }
+
+        iDestruct "Hval2" as (v2) "Hval2".
+        iExists latestEpoch.
+        iFrame.
+        destruct (decide (int.Z latestEpoch = int.Z epoch)).
+        { (* e is the latest number seen by the ctr server (i.e. our request is not stale)*)
+          replace (latestEpoch) with (epoch) by naive_solver.
+          iDestruct (own_val_combine with "Hval2 Hval") as "[Hval %Hveq]".
+          iModIntro.
+          rewrite (Qp_quarter_quarter).
+          iExists _; iFrame "Hval".
+          iIntros "Hval".
+          iModIntro.
+          iIntros "Hlatest".
+          iMod "Hmask".
+          iEval (rewrite -Qp_quarter_quarter) in "Hval".
+          iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
+          iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
+          iMod ("Hclose" with "[Hkv Hval2 Hlatest]").
+          {
+            iNext.
+            iExists _, _.
+            rewrite Hveq.
+            iFrame.
+          }
+          iModIntro.
+          iIntros "Hck".
+          iExists _; iFrame "∗#".
+          done.
+        }
+        { (* the server has a different number than e *)
+          iIntros "Hlatest".
+          iMod "Hmask".
+          iMod ("Hclose" with "[Hval Hkv Hlatest]").
+          {
+            iNext.
+            iExists _, _.
+            iFrame.
+          }
+          iModIntro.
+          done.
+        }
+      }
+    }
+    (* Done with Get() *)
+    iIntros (gv) "HH".
+    iDestruct "HH" as (v) "[%Hval HH]".
+    rewrite Hval.
+    iNamed "HH".
+    wp_store.
+
+    (* Put(epoch, ret + 1) *)
+    wp_loadField.
+    wp_load.
+    wp_loadField.
+
+    wp_apply (ctr.wp_Clerk__Put γ.(ctr2_gn) with "Hck2_own").
+
+    (* EnterNewEpoch *)
+    iInv "Hinv2" as ">HH" "Hclose".
+    iNamed "HH".
+    iExists latestEpoch.
+    iApply (fupd_mask_intro).
+    {
+      assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑ctr.getN)).
+      {
+        unfold ctr.unusedN. unfold ctr.getN.
+        by apply ndot_ne_disjoint.
+      }
+      assert (disjoint (A:=coPset) (↑ctr.unusedN) (↑frontendN)).
+      {
+        unfold ctr.unusedN. unfold frontendN.
+        by apply ndot_ne_disjoint.
+      }
+      set_solver.
+    }
+    iIntros "Hmask".
+    iDestruct (mono_nat_lb_own_valid with "HlatestEpoch Hlb") as %Hvalid.
+    destruct (decide (int.Z latestEpoch < int.Z epoch)%Z) as [Hineq|Hineq].
+    { (* case: server's first time seeing epoch; cannot be true *)
+      exfalso.
+      word.
+    }
+
+    iFrame.
+    iIntros "Hlatest".
+    iMod "Hmask" as "_".
+    iMod ("Hclose" with "[Hkv Hval Hlatest]") as "_".
+    {
+      iNext.
+      iExists _, _.
+      iFrame.
+    }
+    iModIntro.
+
+    (* PutAtEpoch *)
+    iInv "Hinv2" as ">HH" "Hclose".
+    clear latestEpoch Hineq Hvalid.
+    iNamed "HH".
+    iDestruct (own_latest_epoch_with_lb with "HlatestEpoch Hlb") as %Hineq.
+    iExists _; iFrame.
+
+    destruct (decide _).
+    { (* case: epoch number is valid *)
+
+      iMod "Hkvfupd".
+      iDestruct "Hkvfupd" as (oldv) "[Hkv2 Hkvfupd]".
+
+      unfold ctr.Put_core_spec.
+      replace (latestEpoch) with (epoch) by word.
+      iDestruct (own_val_combine with "Hval HepochVal") as "[Hval %Hveq]".
+      rewrite Qp_quarter_quarter.
+      rewrite Hveq.
+      iExists _; iFrame.
+      iModIntro.
+      iModIntro.
+      iIntros "HnewVal".
+      iModIntro.
+      iIntros "Hlatest".
+      unfold kv_ptsto.
+      rewrite H.
+      iDestruct (ghost_map_points_to_agree with "Hkv2 Hkv") as %Hveq2.
+      rewrite Hveq2.
+      iCombine "Hkv Hkv2" as "Hkv".
+      iMod (ghost_map_points_to_update (word.add v 1) with "Hkv") as "Hkv".
+      iDestruct "Hkv" as "[Hkv Hkv2]".
+
+      iMod ("Hkvfupd" with "Hkv2") as "Hkvfupd".
+      iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+      iDestruct (own_val_split with "HnewVal") as "[Hval Hval2]".
+      iMod ("Hclose" with "[Hkv Hlatest Hval2]") as "_".
+      {
+        iNext.
+        iExists _, _.
+        iFrame.
+      }
+      iModIntro.
+      iIntros "Hck2_own".
+      wp_pures.
+      wp_loadField.
+      wp_apply (release_spec with "[$Hlocked $HmuInv Hck1 Hck2 Hck2_own Hck1_own Hval Hghost1]").
+      {
+        iNext.
+        iExists _, _, _.
+        iFrame "∗#".
+        iRight.
+        iExists _; iFrame.
+      }
+      wp_pures.
+      wp_load.
+      iApply "HΦ".
+      iFrame.
+      done.
+    }
+    { (* case: epoch number is stale *)
+      iApply (fupd_mask_intro).
+      { set_solver. }
+      iIntros "Hmask".
+      iIntros "Hlatest".
+      iMod "Hmask".
+      iMod ("Hclose" with "[Hkv Hval Hlatest]") as "_".
+      {
+        iNext.
+        iExists _, _.
+        iFrame.
+      }
+      done.
+    }
   }
-Admitted.
+Qed.
 
 (* TaDa-style spec *)
 Program Definition FAISpec_tada γ :=
