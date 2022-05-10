@@ -1152,12 +1152,37 @@ Proof.
     iMod "HH".
     iNamed "HH".
 
+    (* second linearization point: PutAtEpoch () *)
+    iMod "Hupd".
+    iDestruct "Hupd" as (?) "[Hlatest2 Hupd]".
+    iDestruct (own_latest_epoch_combine with "Hlatest2 Hlatest") as "[Hlatest %Heq]".
+    rewrite Heq.
+    iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
+    rewrite decide_True; last done.
+    iMod "Hupd".
+    iDestruct "Hupd" as (vold) "[Hval2 Hupd]".
+    iDestruct (own_val_combine with "Hval Hval2") as "[Hval %Hveq]".
+    rewrite Hveq.
+    rewrite Qp_half_half.
+    iMod (own_val_update v with "Hval") as "Hval".
+    iEval (rewrite -Qp_half_half) in "Hval".
+    iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
+    iMod ("Hupd" with "Hval2") as "Hupd".
+    iMod ("Hupd" with "Hlatest2") as "Hupd".
     iModIntro.
 
-    (* second linearization point: PutAtEpoch () *)
-    admit.
+    wp_apply (release_spec with "[$Hlocked $HmuInv Hv HlatestEpoch Hlatest Hval]").
+    {
+      iNext.
+      iExists _, _.
+      iFrame "∗#".
+    }
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+    done.
   }
-Admitted.
+Qed.
 
 Lemma wp_Clerk__Put γ ck (e v:u64) :
   ∀ Φ,
