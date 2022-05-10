@@ -134,7 +134,9 @@ Definition MakeClerk: val :=
     let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_FRESHCID (NewSlice byteT #0) "reply_ptr" #100 in
     (if: "err" ≠ #0
-    then Panic ("ctr: urpc call failed/timed out")
+    then
+      (* log.Println("ctr: urpc getcid call failed/timed out") *)
+      grove_ffi.Exit #1
     else #());;
     struct.storeF Clerk "e" "ck" (erpc.MakeClient (marshal.Dec__GetInt (marshal.NewDec (![slice.T byteT] "reply_ptr"))));;
     "ck".

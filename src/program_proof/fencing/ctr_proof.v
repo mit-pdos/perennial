@@ -1588,7 +1588,7 @@ Proof.
 Qed.
 
 Lemma wp_MakeClerk host γ :
-  (* is_host host γ -∗ *)
+  is_host host γ -∗
   {{{
       True
   }}}
@@ -1597,7 +1597,72 @@ Lemma wp_MakeClerk host γ :
       (ck:loc), RET #ck; own_Clerk γ ck
   }}}.
 Proof.
-Admitted.
+  iIntros "#Hhost !#" (Φ) "_ HΦ".
+  wp_lam.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+
+  iIntros (ck) "Hck".
+  iDestruct (struct_fields_split with "Hck") as "HH".
+  iNamed "HH".
+
+  wp_pures.
+  wp_apply (wp_MakeClient).
+  iIntros (cl) "#His_cl".
+
+  wp_storeField.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+
+  iIntros (reply_ptr) "Hrep".
+  wp_pures.
+  wp_apply (wp_NewSlice).
+  iIntros (dummy_sl) "Hdummy_sl".
+  iDestruct (is_slice_to_small with "Hdummy_sl") as "Hargs_small".
+  wp_loadField.
+
+  wp_apply (wp_Client__Call _ _ _ _ _ _ _ _ _ _ (λ l, (∃ cid, erpc_make_client_pre γ.(erpc_gn) cid ∗ ⌜has_encoding l [EncUInt64 cid]⌝))%I with "[] [$His_cl $Hargs_small $Hrep]").
+  {
+    iDestruct "Hhost" as "(_ & _ & $ & _)".
+  }
+  {
+    iModIntro.
+    iNext.
+    simpl.
+    iIntros.
+    iExists _; iFrame.
+    done.
+  }
+  iIntros (err) "(_ & Hargs_small & Hpost)".
+  wp_pures.
+  destruct err.
+  { (* error *)
+    rewrite bool_decide_false; last first.
+    { by destruct c. }
+    wp_apply (wp_Exit).
+    iIntros "Hbad".
+    done.
+  }
+  wp_pures.
+
+  iDestruct "Hpost" as (??) "(Hrep_ptr & Hrep_small & Hpost)".
+  wp_load.
+  iDestruct "Hpost" as (?) "[Hecl %HrepEnc]".
+  wp_apply (wp_new_dec with "[$Hrep_small]").
+  { done. }
+  iIntros (dec) "Hdec".
+  wp_apply (wp_Dec__GetInt with "Hdec").
+  iIntros "Hdec".
+  wp_apply (wp_erpc_MakeClient with "[$Hecl]").
+  iIntros (e) "He".
+  wp_storeField.
+  iApply "HΦ".
+  iExists _, _, _.
+  iMod (readonly_alloc_1 with "cl") as "$".
+  iMod (readonly_alloc_1 with "e") as "$".
+  iFrame "He His_cl Hhost".
+  done.
+Qed.
 
 End ctr_proof.
 End ctr.
