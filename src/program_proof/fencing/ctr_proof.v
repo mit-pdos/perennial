@@ -197,11 +197,15 @@ Definition own_Server γ (s:loc) : iProp Σ :=
   "HghostV" ∷ own_val γ latestEpoch v (1/2)
 .
 
+Context `{!erpcG Σ}.
+
 Definition is_Server γ (s:loc) : iProp Σ :=
-  ∃ mu,
+  ∃ mu (es:loc),
   "#Hmu" ∷ readonly (s ↦[Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock unusedN mu (own_Server γ s) ∗
-  "#HunusedInv" ∷ unused_epoch_inv γ
+  "#HunusedInv" ∷ unused_epoch_inv γ ∗
+  "#He" ∷ readonly (s ↦[Server :: "e"] #es) ∗
+  "#Hes" ∷ is_erpc_server γ.(erpc_gn) es
 .
 
 Definition has_GetReply_encoding (l:list u8) (err v:u64) :=
@@ -484,11 +488,20 @@ Definition Put_spec_erpc γ : eRPCSpec :=
   |}.
 
 Context `{!urpcregG Σ}.
-Context `{!erpcG Σ}.
+
+Program Definition GetFreshCID_spec γ :=
+  λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
+  (∀ cid l, erpc_make_client_pre γ.(erpc_gn) cid -∗ ⌜has_encoding l [EncUInt64 cid]⌝ -∗ Φ l)%I
+.
+Next Obligation.
+  rewrite /EnterNewEpoch_spec /Put_server_spec /Put_core_spec.
+  solve_proper.
+Defined.
 
 Definition is_host (host:u64) γ : iProp Σ :=
   handler_spec γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
   handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (Put_spec_erpc γ) ∗
+  handler_spec γ.(urpc_gn) host (U64 2) (GetFreshCID_spec γ) ∗
   handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
 
@@ -1335,15 +1348,19 @@ Qed.
 
 Lemma wp_StartServer host γ :
   is_host host γ -∗
+  unused_epoch_inv γ -∗
   {{{
-        own_erpc_pre_server γ.(erpc_gn)
+        "Hes" ∷ own_erpc_pre_server γ.(erpc_gn) ∗
+        "HghostLatestEpoch" ∷ own_latest_epoch γ 0 (1/2) ∗
+        "HghostV" ∷ own_val γ 0 0 (1/2)
   }}}
     StartServer #host
   {{{
         RET #(); True
   }}}.
 Proof.
-  iIntros "#Hhost !#" (Φ) "Hes HΦ".
+  iIntros "#Hhost #Hunused !#" (Φ) "Hpre HΦ".
+  iNamed "Hpre".
   wp_lam.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
@@ -1387,12 +1404,26 @@ Proof.
   wp_apply (wp_MakeServer with "Hhandlers").
   iIntros (r) "Hr".
   wp_pures.
+
+  iAssert (|={⊤}=> is_Server γ s)%I with "[mu e v lastEpoch HmuInv HghostLatestEpoch HghostV]" as "HH".
+  {
+    unfold is_Server.
+    iMod (readonly_alloc_1 with "mu") as "#Hmu".
+    iMod (readonly_alloc_1 with "e") as "#He".
+    iExists _, _; iFrame "#".
+    iApply (alloc_lock with "HmuInv").
+    iNext.
+    iExists _, _.
+    iFrame.
+  }
+  iMod "HH" as "#His_srv".
+
   wp_apply (wp_StartServer with "[$Hr]").
   {
     set_solver.
   }
   {
-    iDestruct "Hhost" as "(H1&H2&Hhandlers)".
+    iDestruct "Hhost" as "(H1&H2&H3&Hhandlers)".
     unfold handlers_complete.
     repeat rewrite dom_insert_L.
     rewrite dom_empty_L.
@@ -1405,7 +1436,34 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     {
-      admit.
+      simpl. iExists _; iFrame "#".
+      clear Φ.
+      unfold impl_handler_spec.
+      iIntros (???????) "!# Hpre HΦ".
+      wp_pures.
+      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+      wp_apply (wp_new_enc).
+      iIntros (enc) "Henc".
+      wp_pures.
+      iNamed "His_srv".
+      wp_loadField.
+      wp_apply (wp_erpc_GetFreshCID with "[$Hes]").
+      iIntros (cid) "Hpost".
+      wp_apply (wp_Enc__PutInt with "Henc").
+      { done. }
+      iIntros "Henc".
+      wp_pures.
+
+      wp_apply (wp_Enc__Finish with "Henc").
+      iClear "Hrep_sl".
+      iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      wp_store.
+      iApply "HΦ".
+      iFrame.
+      unfold GetFreshCID_spec.
+      iApply ("Hpre" with "Hpost").
+      done.
     }
     iApply (big_sepM_insert_2 with "").
     {
@@ -1439,11 +1497,7 @@ Proof.
       (* End separate lemma *)
 
       wp_pures.
-      wp_apply (wp_Server__Put γ with "[] [$Hpre $v $epoch]").
-      {
-        admit. (* TODO: establish is_Server. Also, move this obligation in
-                HandleRequest to a wand in the postcondition. *)
-      }
+      wp_apply (wp_Server__Put γ with "His_srv [$Hpre $v $epoch]").
       iIntros (err) "Hpost".
       wp_pures.
 
@@ -1491,10 +1545,7 @@ Proof.
       iDestruct (struct_fields_split with "Hreply") as "HH".
       iNamed "HH".
       wp_pures.
-      wp_apply (wp_Server__Get γ with "[] [$err $val Hpre]").
-      {
-        admit.
-      }
+      wp_apply (wp_Server__Get γ with "His_srv [$err $val Hpre]").
       {
         iDestruct "Hpre" as "[$ Hpre]".
         iFrame "Hpre".
@@ -1534,10 +1585,10 @@ Proof.
   }
   wp_pures.
   by iApply "HΦ".
-Admitted.
+Qed.
 
 Lemma wp_MakeClerk host γ :
-  (* is_host host γ *)
+  (* is_host host γ -∗ *)
   {{{
       True
   }}}
