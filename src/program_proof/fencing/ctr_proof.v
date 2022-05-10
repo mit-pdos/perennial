@@ -489,7 +489,7 @@ Context `{!erpcG Σ}.
 Definition is_host (host:u64) γ : iProp Σ :=
   handler_spec γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
   handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (Put_spec_erpc γ) ∗
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ]}
+  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
 
 Definition own_Clerk γ (ck:loc) : iProp Σ :=
@@ -1371,65 +1371,9 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (wp_erpc_Server_HandleRequest (Put_spec_erpc γ) with "[] [$His_erpc]").
-  {
-    clear Φ.
-    iIntros (???????) "!# Hpre HΦ".
-    wp_pures.
-    iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
-    iDestruct "Hpre" as (??) "[%HreqEnc Hpre]".
+  wp_apply (wp_erpc_Server_HandleRequest (Put_spec_erpc γ) with "[$His_erpc]").
 
-    (* TODO: put this in another lemma *)
-    wp_lam.
-    wp_apply (wp_new_dec with "[$Hreq_small]").
-    { done. }
-    iIntros (dec) "Hdec".
-    wp_pures.
-    wp_apply (wp_allocStruct).
-    { repeat econstructor. }
-    iIntros (args_ptr) "Hargs".
-    wp_pures.
-    iDestruct (struct_fields_split with "Hargs") as "HH".
-    iNamed "HH".
-    wp_apply (wp_Dec__GetInt with "Hdec").
-    iIntros "Hdec".
-    wp_storeField.
-
-    wp_apply (wp_Dec__GetInt with "Hdec").
-    iIntros "Hdec".
-    wp_storeField.
-    (* End separate lemma *)
-
-    wp_pures.
-    wp_apply (wp_Server__Put γ with "[] [$Hpre $v $epoch]").
-    {
-      admit. (* TODO: establish is_Server. Also, move this obligation in
-                HandleRequest to a wand in the postcondition. *)
-    }
-    iIntros (err) "Hpost".
-    wp_pures.
-
-    wp_apply (wp_new_enc).
-    iIntros (enc) "Henc".
-    wp_pures.
-    wp_apply (wp_Enc__PutInt with "Henc").
-    { done. }
-    iIntros "Henc".
-    wp_pures.
-    simpl.
-    wp_apply (wp_Enc__Finish with "Henc").
-    iClear "Hrep_sl".
-    iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
-    wp_store.
-    iModIntro.
-    iApply "HΦ".
-    iFrame.
-    iApply "Hpost".
-    done.
-  }
-
-  iIntros (put_urpc_handler) "#Hput_urpc".
+  iIntros (put_urpc_handler) "#Hput_erpc_to_urpc".
 
   wp_apply (map.wp_MapInsert with "Hhandlers").
   iIntros "Hhandlers".
@@ -1442,6 +1386,86 @@ Proof.
   wp_apply (wp_MakeServer with "Hhandlers").
   iIntros (r) "Hr".
   wp_pures.
+  wp_apply (wp_StartServer with "[$Hr]").
+  {
+    set_solver.
+  }
+  {
+    iDestruct "Hhost" as "(H1&H2&Hhandlers)".
+    unfold handlers_complete.
+    repeat rewrite dom_insert_L.
+    rewrite dom_empty_L.
+    iSplitL "".
+    {
+      iExactEq "Hhandlers".
+      f_equal.
+      set_solver.
+    }
+
+    iApply (big_sepM_insert_2 with "").
+    {
+      simpl. iExists _; iFrame "#".
+      admit.
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      simpl. iExists _; iFrame "#".
+      iApply "Hput_erpc_to_urpc".
+      clear Φ.
+      iIntros (???????) "!# Hpre HΦ".
+      wp_pures.
+      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+      iDestruct "Hpre" as (??) "[%HreqEnc Hpre]".
+
+      (* TODO: put this in another lemma *)
+      wp_lam.
+      wp_apply (wp_new_dec with "[$Hreq_small]").
+      { done. }
+      iIntros (dec) "Hdec".
+      wp_pures.
+      wp_apply (wp_allocStruct).
+      { repeat econstructor. }
+      iIntros (args_ptr) "Hargs".
+      wp_pures.
+      iDestruct (struct_fields_split with "Hargs") as "HH".
+      iNamed "HH".
+      wp_apply (wp_Dec__GetInt with "Hdec").
+      iIntros "Hdec".
+      wp_storeField.
+
+      wp_apply (wp_Dec__GetInt with "Hdec").
+      iIntros "Hdec".
+      wp_storeField.
+      (* End separate lemma *)
+
+      wp_pures.
+      wp_apply (wp_Server__Put γ with "[] [$Hpre $v $epoch]").
+      {
+        admit. (* TODO: establish is_Server. Also, move this obligation in
+                HandleRequest to a wand in the postcondition. *)
+      }
+      iIntros (err) "Hpost".
+      wp_pures.
+
+      wp_apply (wp_new_enc).
+      iIntros (enc) "Henc".
+      wp_pures.
+      wp_apply (wp_Enc__PutInt with "Henc").
+      { done. }
+      iIntros "Henc".
+      wp_pures.
+      simpl.
+      wp_apply (wp_Enc__Finish with "Henc").
+      iClear "Hrep_sl".
+      iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      wp_store.
+      iModIntro.
+      iApply "HΦ".
+      iFrame.
+      iApply "Hpost".
+      done.
+    }
 Admitted.
 
 Lemma wp_MakeClerk host γ :

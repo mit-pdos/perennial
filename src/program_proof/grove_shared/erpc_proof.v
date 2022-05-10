@@ -121,13 +121,15 @@ Definition impl_erpc_handler_spec (f : val) (spec : eRPCSpec)
   }}}.
 
 Lemma wp_erpc_Server_HandleRequest spec γ s f :
-  impl_erpc_handler_spec f spec -∗
   {{{ is_erpc_server γ s }}}
     Server__HandleRequest #s f
-  {{{ f', RET f'; impl_handler_spec f' (uRPCSpec_Spec $ eRPCSpec_uRPC γ spec) }}}.
+  {{{ f', RET f';
+      □ (impl_erpc_handler_spec f spec -∗
+      impl_handler_spec f' (uRPCSpec_Spec $ eRPCSpec_uRPC γ spec)) }}}.
 Proof.
-  iIntros "#Hf %Φ !# #Hs HΦ". wp_call. iModIntro.
-  iApply "HΦ". clear Φ.
+  iIntros (Φ) "#Hs HΦ". wp_call. iModIntro.
+  iApply "HΦ". iModIntro. clear Φ.
+  iIntros "#Hf".
   iApply urpc_handler_to_handler.
   iIntros ([[[γreq rid] payload] x] reqData req repptr ?? Φ) "!# Hpre HΦ". wp_lam.
   iDestruct "Hpre" as "(Hreq & Hrepptr & Hrep & Hpre)". simpl.

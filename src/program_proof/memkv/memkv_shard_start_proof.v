@@ -35,7 +35,11 @@ Proof.
   iIntros "Hmap".
   wp_pures.
 
-  wp_apply (wp_erpc_Server_HandleRequest (is_shard_server_putSpec γ.(kv_gn)) with "[] Herpc").
+  wp_apply (wp_erpc_Server_HandleRequest (is_shard_server_putSpec γ.(kv_gn)) with "Herpc").
+
+  iIntros (put_handler) "#Hput_handler".
+
+  iSpecialize ("Hput_handler" with "[]").
   {
     clear Φ.
     iIntros ([Q req1] ?????) "!#".
@@ -65,14 +69,17 @@ Proof.
     iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
     iApply "HΦ". iFrame.
-    iExists _; by iFrame. 
+    iExists _; by iFrame.
   }
-  iIntros (put_handler) "#Hput_handler".
+
   wp_apply (map.wp_MapInsert with "Hmap").
   iIntros "Hmap".
   wp_pures.
 
-  wp_apply (wp_erpc_Server_HandleRequest (is_shard_server_getSpec γ.(kv_gn)) with "[] Herpc").
+  wp_apply (wp_erpc_Server_HandleRequest (is_shard_server_getSpec γ.(kv_gn)) with "Herpc").
+  iIntros (get_handler) "#Hget_handler".
+
+  iSpecialize ("Hget_handler" with "[]").
   {
     clear Φ.
     iIntros ([Q req1] ?????) "!#".
@@ -107,51 +114,56 @@ Proof.
     iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
     iApply "HΦ". iFrame.
-    iExists _; by iFrame. 
+    iExists _; by iFrame.
   }
-  iIntros (get_handler) "#Hget_handler".
+
   wp_apply (map.wp_MapInsert with "Hmap").
   iIntros "Hmap".
   wp_pures.
 
-  wp_apply (wp_erpc_Server_HandleRequest (is_shard_server_conditionalPutSpec γ.(kv_gn)) with "[] Herpc").
-  {
-      clear Φ.
-      iIntros ([Q req1] ?????) "!#".
-      iIntros (Φ) "Hpre HΦ".
-      wp_pures.
-      wp_apply (wp_allocStruct).
-      {
-        naive_solver.
-      }
-      iIntros (rep_ptr) "Hrep".
-      wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & [%Henc Hpre])".
-      wp_apply (wp_DecodeConditionalPutRequest with "[$Hreq_sl]").
-      { done. }
-      iIntros (args_ptr expv_sl newv) "Hargs".
-      wp_apply (wp_ConditionalPutRPC with "His_memkv [$Hargs $Hpre Hrep]").
-      {
-        iDestruct (struct_fields_split with "Hrep") as "HH".
-        iNamed "HH".
-        iExists (mkConditionalPutReplyC _ _).
-        iFrame.
-      }
-      iIntros (rep') "[Hrep Hpost']".
-      wp_pures.
-      wp_apply (wp_EncodeConditionalPutReply with "Hrep").
-      iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
-      wp_store.
-      iApply "HΦ". iFrame. iSimpl.
-      iExists _; by iFrame.
-  }
+  wp_apply (wp_erpc_Server_HandleRequest (is_shard_server_conditionalPutSpec γ.(kv_gn)) with "Herpc").
   iIntros (cput_handler) "#Hcput_handler".
+  iSpecialize ("Hcput_handler" with "[]").
+  {
+    clear Φ.
+    iIntros ([Q req1] ?????) "!#".
+    iIntros (Φ) "Hpre HΦ".
+    wp_pures.
+    wp_apply (wp_allocStruct).
+    {
+      naive_solver.
+    }
+    iIntros (rep_ptr) "Hrep".
+    wp_pures.
+    iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & [%Henc Hpre])".
+    wp_apply (wp_DecodeConditionalPutRequest with "[$Hreq_sl]").
+    { done. }
+    iIntros (args_ptr expv_sl newv) "Hargs".
+    wp_apply (wp_ConditionalPutRPC with "His_memkv [$Hargs $Hpre Hrep]").
+    {
+      iDestruct (struct_fields_split with "Hrep") as "HH".
+      iNamed "HH".
+      iExists (mkConditionalPutReplyC _ _).
+      iFrame.
+    }
+    iIntros (rep') "[Hrep Hpost']".
+    wp_pures.
+    wp_apply (wp_EncodeConditionalPutReply with "Hrep").
+    iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
+    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    wp_store.
+    iApply "HΦ". iFrame. iSimpl.
+    iExists _; by iFrame.
+  }
+
   wp_apply (map.wp_MapInsert with "Hmap").
   iIntros "Hmap".
   wp_pures.
 
-  wp_apply (wp_erpc_Server_HandleRequest (is_shard_server_installSpec γ.(kv_gn)) with "[] Herpc").
+  wp_apply (wp_erpc_Server_HandleRequest (is_shard_server_installSpec γ.(kv_gn)) with "Herpc").
+  iIntros (install_handler) "#Hinstall_handler".
+
+  iSpecialize ("Hinstall_handler" with "[]").
   {
     clear Φ.
     iIntros ([] ?????) "!#".
@@ -176,7 +188,7 @@ Proof.
     iApply "HΦ".
     iFrame. done.
   }
-  iIntros (install_handler) "#Hinstall_handler".
+
   wp_apply (map.wp_MapInsert with "Hmap").
   iIntros "Hmap".
   wp_pures.
