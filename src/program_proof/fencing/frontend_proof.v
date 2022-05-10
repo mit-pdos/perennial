@@ -11,6 +11,13 @@ Section frontend_proof.
 
 Context `{!heapGS Σ}.
 
+Record frontend_names :=
+{
+  kv_gn : gname;
+  ctr1_gn : ctr_names;
+  ctr2_gn : ctr_names;
+}.
+
 Local Definition q2 := (1/2)%Qp.
 Local Definition q4 := (1/4)%Qp.
 
@@ -21,27 +28,34 @@ Context `{!ctrG Σ}.
 Context `{!urpcregG Σ}.
 Context `{!erpcG Σ}.
 
-Definition kv_ptsto (γ:gname) (k v:u64) : iProp Σ :=
-  k ⤳[γ]{# 1/2} v.
+Implicit Type γ : frontend_names.
 
-Context `{γkv:gname}.
+Definition kv_ptsto γ (k v:u64) : iProp Σ :=
+  k ⤳[γ.(kv_gn)]{# 1/2} v.
 
-Definition frontend_inv_def γ: iProp Σ :=
+Definition frontend_inv0_def γ: iProp Σ :=
   ∃ (latestEpoch v:u64),
-  "HlatestEpoch" ∷ own_latest_epoch γ latestEpoch q2 ∗
-  "Hval" ∷ own_val γ latestEpoch v q4 ∗
-  "Hkv" ∷ kv_ptsto γkv k0 v.
+  "HlatestEpoch" ∷ own_latest_epoch γ.(ctr1_gn) latestEpoch q2 ∗
+  "Hval" ∷ own_val γ.(ctr1_gn) latestEpoch v q4 ∗
+  "Hkv" ∷ kv_ptsto γ k0 v.
+
+Definition frontend_inv1_def γ: iProp Σ :=
+  ∃ (latestEpoch v:u64),
+  "HlatestEpoch" ∷ own_latest_epoch γ.(ctr1_gn) latestEpoch q2 ∗
+  "Hval" ∷ own_val γ.(ctr1_gn) latestEpoch v q4 ∗
+  "Hkv" ∷ kv_ptsto γ k0 v.
 
 Definition own_Server (s:loc) γ (epoch:u64) : iProp Σ :=
   ∃ (ck1 ck2:loc),
   "#Hepoch" ∷ readonly (s ↦[frontend.Server :: "epoch"] #epoch) ∗
   "Hck1" ∷ s ↦[frontend.Server :: "ck1"] #ck1 ∗
   "Hck2" ∷ s ↦[frontend.Server :: "ck2"] #ck2 ∗
-  "Hck1_own" ∷ ctr.own_Clerk γ ck1 ∗
-  "Hck2_own" ∷ ctr.own_Clerk γ ck2 ∗
+  "Hck1_own" ∷ ctr.own_Clerk γ.(ctr1_gn) ck1 ∗
+  "Hck2_own" ∷ ctr.own_Clerk γ.(ctr2_gn) ck2 ∗
 
-  "Hghost1" ∷ (own_unused_epoch γ epoch ∨ (∃ v, is_latest_epoch_lb γ epoch ∗ own_val γ epoch v q4)).
-  (* TODO: add second value *)
+  "Hghost1" ∷ (own_unused_epoch γ.(ctr1_gn) epoch ∨ (∃ v, is_latest_epoch_lb γ.(ctr1_gn) epoch ∗ own_val γ.(ctr1_gn) epoch v q4)) ∗
+  "Hghost2" ∷ (own_unused_epoch γ.(ctr2_gn) epoch ∨ (∃ v, is_latest_epoch_lb γ.(ctr2_gn) epoch ∗ own_val γ.(ctr2_gn) epoch v q4))
+.
 
 Definition frontendN := nroot .@ "frontend".
 
@@ -52,14 +66,15 @@ Definition is_Server s γ : iProp Σ :=
 .
 
 Definition frontend_inv γ : iProp Σ :=
-  inv frontendN (frontend_inv_def γ).
+  "Hinv1" ∷ inv frontendN (frontend_inv0_def γ) ∗
+  "Hinv2" ∷ inv frontendN (frontend_inv1_def γ).
 
 Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
   key = 0 ∨ key = 1 →
   is_Server s γ -∗
   frontend_inv γ -∗
   {{{
-        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γkv key v ∗ (kv_ptsto γkv key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
+        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ key v ∗ (kv_ptsto γ key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
   }}}
     Server__FetchAndIncrement #s #key
   {{{
@@ -80,6 +95,7 @@ Proof.
   { done. }
   iIntros (Hret_ptr) "Hret".
   wp_pures.
+  iNamed "Hinv".
   wp_if_destruct.
   {
     wp_loadField.
@@ -89,18 +105,18 @@ Proof.
                 (λ v,
               ∃ (v0:u64),
               ⌜v = #v0⌝ ∗
-            "#Hlb" ∷ is_latest_epoch_lb γ epoch ∗
-            "HepochVal" ∷ own_val γ epoch v0 q4 ∗
-            "Hck1_own" ∷ ctr.own_Clerk γ ck1
+            "#Hlb" ∷ is_latest_epoch_lb γ.(ctr1_gn) epoch ∗
+            "HepochVal" ∷ own_val γ.(ctr1_gn) epoch v0 q4 ∗
+            "Hck1_own" ∷ ctr.own_Clerk γ.(ctr1_gn) ck1
                     )%I
                with "[Hck1_own Hghost1]").
     { (* ctr.Clerk__Get *)
       wp_apply (ctr.wp_Clerk__Get with "Hck1_own").
-      iApply (ctr.EnterNewEpoch_spec_wand _ _ ((∃ v, own_val γ epoch v (1 / 4))
-                                                    ∨ is_latest_epoch_lb_strict γ epoch
+      iApply (ctr.EnterNewEpoch_spec_wand _ _ ((∃ v, own_val γ.(ctr1_gn) epoch v (1 / 4))
+                                                    ∨ is_latest_epoch_lb_strict γ.(ctr1_gn) epoch
                                               ) with "[] [-]"); last first.
       { (* EnterNewEpoch(): first linearization point *)
-        iInv "Hinv" as ">Hown" "Hclose".
+        iInv "Hinv1" as ">Hown" "Hclose".
         iNamed "Hown".
         iApply fupd_mask_intro.
         { unfold ctr.unusedN. unfold frontendN.
@@ -179,7 +195,7 @@ Proof.
       (* Now, prove the fupd for GetAtEpoch(). *)
       { (* Second linearization point *)
         iIntros "Hval2".
-        iInv "Hinv" as ">Hi" "Hclose".
+        iInv "Hinv1" as ">Hi" "Hclose".
         iNamed "Hi".
         iApply fupd_mask_intro.
         { set_solver. }
@@ -261,10 +277,10 @@ Proof.
     wp_load.
     wp_loadField.
 
-    wp_apply (ctr.wp_Clerk__Put γ with "Hck1_own").
+    wp_apply (ctr.wp_Clerk__Put γ.(ctr1_gn) with "Hck1_own").
 
     (* EnterNewEpoch *)
-    iInv "Hinv" as ">HH" "Hclose".
+    iInv "Hinv1" as ">HH" "Hclose".
     iNamed "HH".
     iExists latestEpoch.
     iApply (fupd_mask_intro).
@@ -289,7 +305,7 @@ Proof.
     iModIntro.
 
     (* PutAtEpoch *)
-    iInv "Hinv" as ">HH" "Hclose".
+    iInv "Hinv1" as ">HH" "Hclose".
     clear latestEpoch Hineq Hvalid.
     iNamed "HH".
     iDestruct (own_latest_epoch_with_lb with "HlatestEpoch Hlb") as %Hineq.
@@ -332,7 +348,7 @@ Proof.
       iIntros "Hck1_own".
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[$Hlocked $HmuInv Hck1 Hck2 Hck2_own Hck1_own Hval]").
+      wp_apply (release_spec with "[$Hlocked $HmuInv Hck1 Hck2 Hck2_own Hck1_own Hval Hghost2]").
       {
         iNext.
         iExists _, _, _.
@@ -367,7 +383,7 @@ Proof.
 Admitted.
 
 (* TaDa-style spec *)
-Program Definition FAISpec_tada (γ:gname) :=
+Program Definition FAISpec_tada γ :=
   λ reqData, λne (Φ : list u8 -d> iPropO Σ),
   (∃ k, ⌜k = 0 ∨ k = 1⌝ ∗ ⌜has_encoding reqData [EncUInt64 k]⌝ ∗
        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ k v ∗
@@ -383,8 +399,10 @@ Definition is_host γurpc_gn γ host : iProp Σ :=
   handler_spec γurpc_gn host 0 (FAISpec_tada γ).
 
 Lemma wp_StartServer γurpc_gn γ γcfg (me configHost host1 host2:u64) :
-  config.is_host γcfg configHost (own_unused_epoch γ) (λ _, True) -∗
-  is_host γurpc_gn γkv me -∗
+  config.is_host γcfg configHost (λ e, own_unused_epoch γ.(ctr1_gn) e ∗ own_unused_epoch γ.(ctr2_gn) e) (λ _, True) -∗
+  ctr.is_host host1 γ.(ctr1_gn) -∗
+  ctr.is_host host2 γ.(ctr2_gn) -∗
+  is_host γurpc_gn γ me -∗
   frontend_inv γ -∗
   {{{
       True
@@ -394,7 +412,7 @@ Lemma wp_StartServer γurpc_gn γ γcfg (me configHost host1 host2:u64) :
         RET #(); True
   }}}.
 Proof using Type*.
-  iIntros "#His_cfg #His_host #Hinv !#" (Φ) "Hpre HΦ".
+  iIntros "#His_cfg #His_host1 #His_host2 #His_host #Hinv !#" (Φ) "Hpre HΦ".
   Opaque frontend.Server. (* FIXME: why do I need this? *)
   wp_lam.
   wp_pures.
@@ -418,11 +436,11 @@ Proof using Type*.
   iIntros (mu) "HmuInv".
   wp_storeField.
 
-  wp_apply (ctr.wp_MakeClerk).
+  wp_apply (ctr.wp_MakeClerk with "His_host1").
   iIntros (ck1) "Hck1_own".
   wp_storeField.
 
-  wp_apply (ctr.wp_MakeClerk).
+  wp_apply (ctr.wp_MakeClerk with "His_host2").
   iIntros (ck2) "Hck2_own".
   wp_storeField.
 
@@ -437,6 +455,7 @@ Proof using Type*.
     iExists _.
     iExists _, _.
     iFrame "ck1 ck2 #∗".
+    iDestruct "Hunused" as "[$ $]".
   }
 
   wp_apply (map.wp_NewMap).
