@@ -436,8 +436,8 @@ Program Definition Get_proph_spec γ :=
   (∃ (prophV e:u64) γreq Φclient,
     ⌜has_encoding reqData [EncUInt64 e]⌝ ∗
     (Get_req_inv prophV e γ γreq Φclient) ∗
-    (∀ l err v, ⌜has_GetReply_encoding l err v⌝ -∗
-      (if (decide (err = 0 ∧ v = prophV)) then operation_receipt γreq else True) -∗ Φ l)
+    (∀ (err v:u64), (if (decide (err = (U64 0) ∧ v = prophV)) then operation_receipt γreq else True) -∗
+                  (∀ l, ⌜has_GetReply_encoding l err v⌝ -∗ Φ l))
   )%I
 .
 Next Obligation.
@@ -614,7 +614,8 @@ Proof.
     iSplitL ""; first done.
     iFrame "HgetInv".
 
-    iIntros (l err v HrepEnc) "Hpost".
+    iIntros (err v) "Hpost".
+    iIntros (l) "%HrepEnc".
     iExists _, _. iSplitL ""; first done.
     destruct (decide (_)).
     {
@@ -1404,7 +1405,6 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     {
-      simpl. iExists _; iFrame "#".
       admit.
     }
     iApply (big_sepM_insert_2 with "").
@@ -1466,6 +1466,74 @@ Proof.
       iApply "Hpost".
       done.
     }
+    iApply (big_sepM_insert_2 with "").
+    {
+      simpl. iExists _; iFrame "#".
+      clear Φ.
+      unfold impl_handler_spec.
+      iIntros (???????) "!# Hpre HΦ".
+      wp_pures.
+      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+      iDestruct "Hpre" as (????) "[%HreqEnc Hpre]".
+
+      wp_apply (wp_new_dec with "[$Hreq_small]").
+      {
+        done.
+      }
+      iIntros (dec) "Hdec".
+      wp_pures.
+      wp_apply (wp_Dec__GetInt with "Hdec").
+      iIntros "Hdec".
+      wp_pures.
+      wp_apply (wp_allocStruct).
+      { repeat econstructor. }
+      iIntros (reply) "Hreply".
+      iDestruct (struct_fields_split with "Hreply") as "HH".
+      iNamed "HH".
+      wp_pures.
+      wp_apply (wp_Server__Get γ with "[] [$err $val Hpre]").
+      {
+        admit.
+      }
+      {
+        iDestruct "Hpre" as "[$ Hpre]".
+        iFrame "Hpre".
+      }
+      iIntros (err v).
+      iNamed 1.
+      wp_pures.
+
+      (* TODO: move this to a different lemma *)
+      wp_lam.
+      wp_apply (wp_new_enc).
+      iIntros (enc) "Henc".
+      wp_pures.
+      wp_loadField.
+      wp_apply (wp_Enc__PutInt with "Henc").
+      { done. }
+      iIntros "Henc".
+      wp_pures.
+
+      wp_loadField.
+      wp_apply (wp_Enc__PutInt with "Henc").
+      { done. }
+      iIntros "Henc".
+      wp_apply (wp_Enc__Finish with "Henc").
+      iClear "Hrep_sl".
+      iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      wp_store.
+      iApply "HΦ".
+      iModIntro.
+      iFrame.
+      iApply "Hpost".
+      done.
+    }
+    iApply (big_sepM_empty).
+    done.
+  }
+  wp_pures.
+  by iApply "HΦ".
 Admitted.
 
 Lemma wp_MakeClerk host γ :
