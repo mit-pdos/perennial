@@ -78,7 +78,8 @@ Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
   is_Server s γ -∗
   frontend_inv γ -∗
   {{{
-        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗ (kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
+        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗
+      (⌜int.nat v < int.nat (word.add v (U64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
   }}}
     Server__FetchAndIncrement #s #key
   {{{
@@ -296,6 +297,10 @@ Proof.
     iNamed "HH".
     wp_store.
 
+    wp_load.
+    wp_apply (std_proof.wp_SumAssumeNoOverflow).
+    iIntros (Hno_overflow).
+
     (* Put(epoch, ret + 1) *)
     wp_loadField.
     wp_load.
@@ -371,6 +376,11 @@ Proof.
       iMod (ghost_map_points_to_update (word.add v 1) with "Hkv") as "Hkv".
       iDestruct "Hkv" as "[Hkv Hkv2]".
 
+      iSpecialize ("Hkvfupd" with "[]").
+      {
+        iPureIntro.
+        word.
+      }
       iMod ("Hkvfupd" with "Hkv2") as "Hkvfupd".
       iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
       iDestruct (own_val_split with "HnewVal") as "[Hval Hval2]".
@@ -609,6 +619,11 @@ Proof.
     iNamed "HH".
     wp_store.
 
+    (* overflow assumption *)
+    wp_load.
+    wp_apply (std_proof.wp_SumAssumeNoOverflow).
+    iIntros (Hno_overflow).
+
     (* Put(epoch, ret + 1) *)
     wp_loadField.
     wp_load.
@@ -685,6 +700,8 @@ Proof.
       iMod (ghost_map_points_to_update (word.add v 1) with "Hkv") as "Hkv".
       iDestruct "Hkv" as "[Hkv Hkv2]".
 
+      iSpecialize ("Hkvfupd" with "[]").
+      { iPureIntro. word. }
       iMod ("Hkvfupd" with "Hkv2") as "Hkvfupd".
       iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
       iDestruct (own_val_split with "HnewVal") as "[Hval Hval2]".
@@ -733,8 +750,9 @@ Qed.
 Program Definition FAISpec_tada γ :=
   λ reqData, λne (Φ : list u8 -d> iPropO Σ),
   (∃ k, ⌜k = 0 ∨ k = 1⌝ ∗ ⌜has_encoding reqData [EncUInt64 k]⌝ ∗
-       |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) k v ∗
-                      (kv_ptsto γ.(kv_gn) k (word.add v 1) ={∅,⊤∖↑frontendN}=∗ (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ Φ l))
+      |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) k v ∗
+        (⌜int.nat v < int.nat (word.add v (U64 1))⌝ -∗ kv_ptsto γ.(kv_gn) k (word.add v 1) ={∅,⊤∖↑frontendN}=∗
+                (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ Φ l))
     )%I
 .
 Next Obligation.
@@ -914,7 +932,8 @@ key = 0 ∨ key = 1 →
   is_Clerk γ ck -∗
   ret_ptr ↦[uint64T] #ret_placeholder -∗
   □ (|={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗
-            (kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))) -∗
+      (⌜int.nat v < int.nat (word.add v (U64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1)
+       ={∅,⊤∖↑frontendN}=∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))) -∗
   □ (∀ (err:u64), ⌜err ≠ 0⌝ -∗ (ret_ptr ↦[uint64T] #ret_placeholder) -∗ Φ #err) -∗
   WP Clerk__FetchAndIncrement #ck #key #ret_ptr {{ Φ }}
 .
@@ -967,8 +986,8 @@ Proof.
     iModIntro.
     iDestruct "HΦ1" as (?) "[Hkv HΦ1]".
     iExists _; iFrame.
-    iIntros "Hkv".
-    iMod ("HΦ1" with "Hkv") as "HΦ1".
+    iIntros "H1 H2".
+    iMod ("HΦ1" with "H1 H2") as "HΦ1".
     iModIntro.
     iIntros.
     instantiate (1:=(λ l, ∃ v, ⌜has_encoding l [EncUInt64 v]⌝ ∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))%I).

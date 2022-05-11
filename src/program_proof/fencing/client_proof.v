@@ -80,7 +80,9 @@ Lemma wp_Clerk__FetchAndIncrement γ ck (key:u64) Φ :
   key = 0 ∨ key = 1 →
   own_Clerk γ ck -∗
   □ (|={⊤∖↑frontend.frontendN, ∅}=> ∃ v, frontend.kv_ptsto γ.(kv_gn) key v
-        ∗ (frontend.kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅, ⊤∖↑frontend.frontendN}=∗ (own_Clerk γ ck -∗ Φ #v))
+        ∗ (⌜(int.nat v < int.nat (word.add v (U64 1)))%nat ⌝ -∗
+          frontend.kv_ptsto γ.(kv_gn) key (word.add v 1)
+           ={∅, ⊤∖↑frontend.frontendN}=∗ (own_Clerk γ ck -∗ Φ #v))
     ) -∗
   WP client.Clerk__FetchAndIncrement #ck #key {{ Φ }}
 .
@@ -117,8 +119,8 @@ Proof.
     iDestruct "Hupd" as (?) "[Hkv Hupd]".
     rewrite Hfrontend_gn.
     iExists _. iFrame "Hkv".
-    iIntros "Hkv".
-    iMod ("Hupd" with "Hkv") as "Hupd".
+    iIntros "H1 H2".
+    iMod ("Hupd" with "H1 H2") as "Hupd".
     iModIntro.
     iIntros "Hret".
     iNamed 1.

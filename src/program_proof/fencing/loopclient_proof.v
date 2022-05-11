@@ -58,8 +58,7 @@ Proof.
   destruct Hkey as [-> | ->].
   { (* key = 0 *)
     iExists _; iFrame.
-    iIntros "Hkv1". (* FIXME: will need to know that overflow didn't happen *)
-    assert (int.nat (word.add v1 1) > int.nat v1) as Hineq by admit.
+    iIntros (Hoverflow) "Hkv1".
     iMod "Hmask".
     iMod (mono_nat_own_update (int.nat (word.add v1 1)) with "Hmono1") as "[Hmono1 #Hlb]".
     {
@@ -83,10 +82,11 @@ Proof.
     iAssert (∃ (v v':u64), ⌜int.nat v' > int.nat v⌝ ∗ lowerBound ↦[uint64T] #v ∗ mono_nat_lb_own γm1 (int.nat v'))%I with "[HlowerBound]" as "HH".
     {
       iExists _, _; iFrame "∗#".
-      done.
+      iPureIntro.
+      word.
     }
     iClear "Hlb".
-    clear Hineq.
+    clear Hoverflow.
     clear v1 v2.
     wp_forBreak.
 
@@ -108,11 +108,9 @@ Proof.
     (* Need this inequality to know that this value v1 being observed is bigger than the lower bound v *)
     iDestruct (mono_nat_lb_own_valid with "Hmono1 Hlb") as %[_ Hineq2].
     iExists _; iFrame.
-    iIntros "Hkv1".
+    iIntros (Hoverflow) "Hkv1".
     iMod "Hmask".
 
-    assert (int.nat v1 < int.nat (word.add v1 1%nat)).
-    { admit. (* Same issue as above *) }
     iMod (mono_nat_own_update (int.nat (word.add v1 1%nat)) with "Hmono1") as "[Hmono1 #HlbNew]".
     { word. }
     iMod ("Hclose" with "[Hkv1 Hkv2 Hmono1 Hmono2]") as "_".
