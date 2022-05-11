@@ -102,13 +102,42 @@ Section lemmas.
     iMod (own_alloc_strong (A:= (gmapR K (dfrac_agreeR (leibnizO V))))
                               (fmap (λ v, to_dfrac_agree (DfracOwn 1) (v:leibnizO V)) m) P)
       as (γ) "Hauth".
-    (* check fmcounter allocation *)
-  Admitted.
+    { done. }
+    { intros k.
+      rewrite lookup_fmap.
+      by destruct (m !! k).
+    }
+    iExists γ.
+    iDestruct "Hauth" as "[$ Hauth]".
+    rewrite -(big_opM_singletons (_ <$> m)).
+    rewrite big_opM_own_1.
+    rewrite big_sepM_fmap.
+    iApply (big_sepM_impl with "Hauth").
+    do 2 iModIntro.
+    iIntros.
+    iFrame.
+  Qed.
 
-  Lemma ghost_map_alloc_fin (v:V) `{finite.Finite K} :
+  Lemma ghost_map_alloc_fin (v:V) `{!finite.Finite K} :
     ⊢ |==> ∃ γ, [∗ set] k ∈ (fin_to_set K), k ⤳[γ] v.
   Proof.
-  Admitted.
+    set (m:=gset_to_gmap (K:=K) (A:=V) v (fin_to_set K)).
+    iStartProof.
+    iMod (ghost_map_alloc_strong (λ _, True) m) as (?) "[_ H]".
+    { apply pred_infinite_True. }
+    iModIntro.
+    iExists γ.
+    replace (fin_to_set K) with (dom (gset K) m); last first.
+    { apply dom_gset_to_gmap. }
+    iDestruct (big_sepM_dom) as "Hm".
+    iDestruct "Hm" as "[Hm1 _]".
+    iApply ("Hm1" with "[H]").
+    iApply (big_sepM_impl with "H").
+    iModIntro.
+    iIntros.
+    apply lookup_gset_to_gmap_Some in H2.
+    naive_solver.
+  Qed.
 
   Lemma ghost_map_points_to_update {γ k v} w :
     k ⤳[γ] v ==∗ k ⤳[γ] w.
