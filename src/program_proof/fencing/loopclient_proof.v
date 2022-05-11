@@ -18,11 +18,12 @@ Definition kvN := nroot .@ "kv".
 
 Definition kv_inv γ γm1 γm2 : iProp Σ :=
   inv kvN (
-    ∃ v1 v2,
+    (∃ v1,
     "Hkv1" ∷ frontend.kv_ptsto γ.(client.kv_gn) 0 v1 ∗
-    "Hmono1" ∷ mono_nat_auth_own γm1 1 (int.nat v1) ∗
+    "Hmono1" ∷ mono_nat_auth_own γm1 1 (int.nat v1)) ∗
+    (∃ v2,
     "Hkv2" ∷ frontend.kv_ptsto γ.(client.kv_gn) 1 v2 ∗
-    "Hmono2" ∷ mono_nat_auth_own γm2 1 (int.nat v2)
+    "Hmono2" ∷ mono_nat_auth_own γm2 1 (int.nat v2))
   )
 .
 
@@ -41,6 +42,28 @@ Lemma wp_LoopOnKey γ γm1 γm2 (key:u64) config :
 Proof.
   intros Hkey.
   iIntros "#Hcfg #Hinv !#" (Φ) "_ HΦ".
+
+  (* I'm just going to unwrap the definition of inv here. There should be a
+     lemma for this. *)
+  iAssert (∃ γm, inv kvN (∃ v, "Hkv" ∷ frontend.kv_ptsto γ.(client.kv_gn) key v ∗
+               "Hmono" ∷ mono_nat_auth_own γm 1 (int.nat v))
+          )%I as "HH".
+  {
+    destruct Hkey as [-> | -> ].
+    {
+      iExists γm1.
+      iApply (inv_split_l with "Hinv").
+    }
+    {
+      iExists γm2.
+      iApply (inv_split_r with "Hinv").
+    }
+  }
+
+  iClear "Hinv".
+  clear γm1 γm2.
+  iDestruct "HH" as (γm) "Hinv".
+
   wp_call.
   wp_apply (client.wp_MakeClerk with "Hcfg").
   iIntros (ck) "Hck".
@@ -55,31 +78,29 @@ Proof.
   iIntros "Hmask".
 
   iNamed "Hi".
-  destruct Hkey as [-> | ->].
-  { (* key = 0 *)
+  iExists _; iFrame.
+  iIntros (Hoverflow) "Hkv".
+  iMod "Hmask".
+  iMod (mono_nat_own_update (int.nat (word.add v 1)) with "Hmono") as "[Hmono #Hlb]".
+  {
+    word.
+  }
+  iMod ("Hclose" with "[Hkv Hmono]") as "_".
+  {
+    iNext.
     iExists _; iFrame.
-    iIntros (Hoverflow) "Hkv1".
-    iMod "Hmask".
-    iMod (mono_nat_own_update (int.nat (word.add v1 1)) with "Hmono1") as "[Hmono1 #Hlb]".
-    {
-      word.
-    }
-    iMod ("Hclose" with "[Hkv1 Hkv2 Hmono1 Hmono2]") as "_".
-    {
-      iNext.
-      iExists _, _; iFrame.
-    }
-    iModIntro.
-    iIntros "Hck".
+  }
+  iModIntro.
+  iIntros "Hck".
 
-    wp_apply (wp_ref_to).
-    { repeat econstructor. }
-    iIntros (lowerBound) "HlowerBound".
-    wp_pures.
+  wp_apply (wp_ref_to).
+  { repeat econstructor. }
+  iIntros (lowerBound) "HlowerBound".
+  wp_pures.
 
     iClear "Hmask".
     (* weaken resources to loop invariant *)
-    iAssert (∃ (v v':u64), ⌜int.nat v' > int.nat v⌝ ∗ lowerBound ↦[uint64T] #v ∗ mono_nat_lb_own γm1 (int.nat v'))%I with "[HlowerBound]" as "HH".
+    iAssert (∃ (v v':u64), ⌜int.nat v' > int.nat v⌝ ∗ lowerBound ↦[uint64T] #v ∗ mono_nat_lb_own γm (int.nat v'))%I with "[HlowerBound]" as "HH".
     {
       iExists _, _; iFrame "∗#".
       iPureIntro.
@@ -87,7 +108,7 @@ Proof.
     }
     iClear "Hlb".
     clear Hoverflow.
-    clear v1 v2.
+    clear v.
     wp_forBreak.
 
     wp_pures.
@@ -106,17 +127,17 @@ Proof.
 
     iNamed "Hi".
     (* Need this inequality to know that this value v1 being observed is bigger than the lower bound v *)
-    iDestruct (mono_nat_lb_own_valid with "Hmono1 Hlb") as %[_ Hineq2].
+    iDestruct (mono_nat_lb_own_valid with "Hmono Hlb") as %[_ Hineq2].
     iExists _; iFrame.
-    iIntros (Hoverflow) "Hkv1".
+    iIntros (Hoverflow) "Hkv".
     iMod "Hmask".
 
-    iMod (mono_nat_own_update (int.nat (word.add v1 1%nat)) with "Hmono1") as "[Hmono1 #HlbNew]".
+    iMod (mono_nat_own_update (int.nat (word.add v0 1%nat)) with "Hmono") as "[Hmono #HlbNew]".
     { word. }
-    iMod ("Hclose" with "[Hkv1 Hkv2 Hmono1 Hmono2]") as "_".
+    iMod ("Hclose" with "[Hkv Hmono]") as "_".
     {
       iNext.
-      iExists _, _; iFrame.
+      iExists _; iFrame.
     }
     iModIntro.
 
@@ -155,12 +176,7 @@ Proof.
     iFrame "#".
     iPureIntro.
     word.
-  }
-  { (* copy/paste above proof, or carefully engineer it to be done at once (e.g.
-       split the kv_inv into two) *)
-    admit.
-  }
-Admitted.
+Qed.
 
 End loopclient_proof.
 End loopclient.
