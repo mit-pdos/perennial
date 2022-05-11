@@ -76,7 +76,7 @@ Proof.
   done.
 Qed.
 
-Lemma wp_FetchAndIncrement γ ck (key:u64) Φ :
+Lemma wp_Clerk__FetchAndIncrement γ ck (key:u64) Φ :
   key = 0 ∨ key = 1 →
   own_Clerk γ ck -∗
   □ (|={⊤∖↑frontend.frontendN, ∅}=> ∃ v, frontend.kv_ptsto γ.(kv_gn) key v
