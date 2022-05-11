@@ -76,5 +76,94 @@ Proof.
   done.
 Qed.
 
+Lemma wp_FetchAndIncrement γ ck (key:u64) Φ :
+  key = 0 ∨ key = 1 →
+  own_Clerk γ ck -∗
+  □ (|={⊤∖↑frontend.frontendN, ∅}=> ∃ v, frontend.kv_ptsto γ.(kv_gn) key v
+        ∗ (frontend.kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅, ⊤∖↑frontend.frontendN}=∗ (own_Clerk γ ck -∗ Φ #v))
+    ) -∗
+  WP client.Clerk__FetchAndIncrement #ck #key {{ Φ }}
+.
+Proof.
+  intros Hkey.
+  iIntros "Hck #Hupd".
+  wp_call.
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+
+  iIntros (ret_ptr) "Hret".
+  wp_pures.
+
+  wp_forBreak.
+  wp_pures.
+
+  iNamed "Hck".
+  wp_loadField.
+  wp_bind (frontend.Clerk__FetchAndIncrement _ _ _).
+  wp_apply (wp_frame_wand with "[HconfigCk HfrontendCk]").
+  {
+    iNamedAccu.
+  }
+  wp_apply (frontend.wp_Clerk__FetchAndIncrement with "HfrontendCk_is [Hret]").
+  { done. }
+  {
+    iFrame.
+  }
+  { (* non-error case *)
+    iModIntro.
+    iMod "Hupd".
+    iModIntro.
+    iDestruct "Hupd" as (?) "[Hkv Hupd]".
+    rewrite Hfrontend_gn.
+    iExists _. iFrame "Hkv".
+    iIntros "Hkv".
+    iMod ("Hupd" with "Hkv") as "Hupd".
+    iModIntro.
+    iIntros "Hret".
+    iNamed 1.
+    wp_pures.
+    iModIntro.
+    iRight.
+    iSplitL ""; first done.
+    wp_pures.
+    wp_load.
+    iApply "Hupd".
+    iExists _, _, _.
+    iFrame "∗#".
+    done.
+  }
+  { (* got error from frontend; try another one *)
+    iModIntro.
+    iIntros (err Herr).
+    iIntros "Hret".
+    iNamed 1.
+
+    wp_pures.
+    rewrite bool_decide_false; last first.
+    {
+      naive_solver.
+    }
+    wp_pures.
+
+    wp_loadField.
+    wp_apply (config.wp_Clerk__Get with "HconfigCk_is").
+    iIntros (frontendHost) "HfrontendHost".
+    iDestruct "HfrontendHost" as (γfe_new) "[%Hfrontend_gn_new #HfrontendHost]".
+    wp_pures.
+    wp_apply (frontend.wp_MakeClerk with "HfrontendHost").
+    iClear "HfrontendCk_is".
+    iIntros (frontendCk2) "#HfrontendCk_is".
+    wp_storeField.
+    iModIntro.
+    iLeft.
+    iFrame.
+    iSplitL ""; first done.
+    iExists _, _, _.
+    iFrame "∗#".
+    done.
+  }
+Qed.
+
 End client_proof.
 End client.

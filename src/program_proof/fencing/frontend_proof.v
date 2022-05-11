@@ -31,20 +31,20 @@ Context `{!erpcG Σ}.
 
 Implicit Type γ : frontend_names.
 
-Definition kv_ptsto γ (k v:u64) : iProp Σ :=
-  k ⤳[γ.(kv_gn)]{# 1/2} v.
+Definition kv_ptsto γkv (k v:u64) : iProp Σ :=
+  k ⤳[γkv]{# 1/2} v.
 
 Definition frontend_inv1_def γ: iProp Σ :=
   ∃ (latestEpoch v:u64),
   "HlatestEpoch" ∷ own_latest_epoch γ.(ctr1_gn) latestEpoch q2 ∗
   "Hval" ∷ own_val γ.(ctr1_gn) latestEpoch v q4 ∗
-  "Hkv" ∷ kv_ptsto γ k0 v.
+  "Hkv" ∷ kv_ptsto γ.(kv_gn) k0 v.
 
 Definition frontend_inv2_def γ: iProp Σ :=
   ∃ (latestEpoch v:u64),
   "HlatestEpoch" ∷ own_latest_epoch γ.(ctr2_gn) latestEpoch q2 ∗
   "Hval" ∷ own_val γ.(ctr2_gn) latestEpoch v q4 ∗
-  "Hkv" ∷ kv_ptsto γ k1 v.
+  "Hkv" ∷ kv_ptsto γ.(kv_gn) k1 v.
 
 Definition own_Server (s:loc) γ (epoch:u64) : iProp Σ :=
   ∃ (ck1 ck2:loc),
@@ -78,7 +78,7 @@ Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
   is_Server s γ -∗
   frontend_inv γ -∗
   {{{
-        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ key v ∗ (kv_ptsto γ key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
+        |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗ (kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
   }}}
     Server__FetchAndIncrement #s #key
   {{{
@@ -733,8 +733,8 @@ Qed.
 Program Definition FAISpec_tada γ :=
   λ reqData, λne (Φ : list u8 -d> iPropO Σ),
   (∃ k, ⌜k = 0 ∨ k = 1⌝ ∗ ⌜has_encoding reqData [EncUInt64 k]⌝ ∗
-       |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ k v ∗
-                      (kv_ptsto γ k (word.add v 1) ={∅,⊤∖↑frontendN}=∗ (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ Φ l))
+       |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) k v ∗
+                      (kv_ptsto γ.(kv_gn) k (word.add v 1) ={∅,⊤∖↑frontendN}=∗ (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ Φ l))
     )%I
 .
 Next Obligation.
@@ -909,13 +909,13 @@ Proof.
   done.
 Qed.
 
-Lemma wp_Clerk__FetchAndIncrement ck (key:u64) γ (ret_ptr:loc) Φ :
+Lemma wp_Clerk__FetchAndIncrement ck (key:u64) γ (ret_ptr:loc) Φ ret_placeholder :
 key = 0 ∨ key = 1 →
   is_Clerk γ ck -∗
-  (∃ placeholder, ret_ptr ↦[uint64T] #placeholder) -∗
-  □ (|={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ key v ∗
-            (kv_ptsto γ key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))) -∗
-  □ (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ #err) -∗
+  ret_ptr ↦[uint64T] #ret_placeholder -∗
+  □ (|={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗
+            (kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))) -∗
+  □ (∀ (err:u64), ⌜err ≠ 0⌝ -∗ (ret_ptr ↦[uint64T] #ret_placeholder) -∗ Φ #err) -∗
   WP Clerk__FetchAndIncrement #ck #key #ret_ptr {{ Φ }}
 .
 Proof.
@@ -985,8 +985,13 @@ Proof.
     wp_pures.
     iModIntro.
     iApply "HΦ2".
-    iPureIntro.
-    by destruct c.
+    {
+      iPureIntro.
+      by destruct c.
+    }
+    {
+      iFrame.
+    }
   }
   (* got a reply *)
   wp_pures.
