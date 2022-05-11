@@ -880,6 +880,35 @@ Definition is_Clerk γ ck : iProp Σ :=
   "#His_host" ∷ is_host γ host
   .
 
+Lemma wp_MakeClerk γ (host:u64) :
+  is_host γ host -∗
+  {{{
+        True
+  }}}
+    MakeClerk #host
+  {{{
+        (ck:loc), RET #ck; is_Clerk γ ck
+  }}}
+.
+Proof.
+  iIntros "#Hhost !#" (Φ) "_ HΦ".
+  wp_call.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (ck) "Hck".
+  iDestruct (struct_fields_split with "Hck") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply (wp_MakeClient).
+  iIntros (cl) "#Hcl_is".
+  wp_storeField.
+  iMod (readonly_alloc_1 with "cl") as "#Hcl".
+  iApply "HΦ".
+  iExists _, _.
+  iFrame "#".
+  done.
+Qed.
+
 Lemma wp_Clerk__FetchAndIncrement ck (key:u64) γ (ret_ptr:loc) Φ :
 key = 0 ∨ key = 1 →
   is_Clerk γ ck -∗
