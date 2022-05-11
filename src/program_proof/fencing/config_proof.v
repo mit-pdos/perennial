@@ -16,8 +16,6 @@ Record names :=
     urpc_gn:server_chan_gnames
   }.
 
-Context (γ:names).
-
 Program Definition Get_spec host_inv :=
   λ (reqData:list u8), λne (Φ : list u8 -d> iPropO Σ),
   (∀ v l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ host_inv v -∗ Φ l)%I
@@ -46,28 +44,28 @@ Defined.
 
 Context `{!urpcregG Σ}.
 
-Definition is_host (host:u64) (epoch_tok : u64 → iProp Σ) (host_inv:u64 → iProp Σ): iProp Σ :=
+Definition is_host γ (host:u64) (epoch_tok : u64 → iProp Σ) (host_inv:u64 → iProp Σ): iProp Σ :=
   handler_spec γ.(urpc_gn) host (U64 0) (AcquireEpoch_spec epoch_tok host_inv) ∗
   handler_spec γ.(urpc_gn) host (U64 1) (Get_spec host_inv) ∗
   handler_spec γ.(urpc_gn) host (U64 2) trivial_spec ∗
   handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
 
-Definition is_Clerk (ck:loc) epoch_tok host_inv : iProp Σ :=
+Definition is_Clerk γ (ck:loc) epoch_tok host_inv : iProp Σ :=
   ∃ (cl:loc) host,
     "#Hcl" ∷ readonly (ck ↦[Clerk :: "cl"] #cl) ∗
     "#His_cl" ∷ is_uRPCClient cl host ∗
-    "#His_host" ∷ is_host host epoch_tok host_inv
+    "#His_host" ∷ is_host γ host epoch_tok host_inv
 .
 
-Lemma wp_MakeClerk host epoch_tok host_inv :
-  is_host host epoch_tok host_inv -∗
+Lemma wp_MakeClerk γ host epoch_tok host_inv :
+  is_host γ host epoch_tok host_inv -∗
   {{{
         True
   }}}
     config.MakeClerk #host
   {{{
-        (ck:loc), RET #ck; is_Clerk ck epoch_tok host_inv
+        (ck:loc), RET #ck; is_Clerk γ ck epoch_tok host_inv
   }}}.
 Proof.
   iIntros "#Hhost !#" (Φ) "_ HΦ".
@@ -88,8 +86,8 @@ Proof.
   iFrame "#".
 Qed.
 
-Lemma wp_Clerk__AcquireEpoch ck (newHost:u64) epoch_tok host_inv :
-  is_Clerk ck epoch_tok host_inv -∗
+Lemma wp_Clerk__AcquireEpoch γ ck (newHost:u64) epoch_tok host_inv :
+  is_Clerk γ ck epoch_tok host_inv -∗
   {{{
         □ host_inv newHost
   }}}
@@ -160,8 +158,8 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_Clerk__Get ck epoch_tok host_inv :
-  is_Clerk ck epoch_tok host_inv -∗
+Lemma wp_Clerk__Get γ ck epoch_tok host_inv :
+  is_Clerk γ ck epoch_tok host_inv -∗
   {{{
         True
   }}}
