@@ -307,7 +307,7 @@ Theorem wp_MapIter_3 stk E mref q m (I: gmap u64 V -> gmap u64 V -> iProp Σ) (b
   is_map mref q m -∗
   I m ∅ -∗
   (∀ (k: u64) (v: V) (mtodo mdone : gmap u64 V),
-      {{{ I mtodo mdone ∗ ⌜m = mtodo ∪ mdone ∧ dom (gset u64) mtodo ## dom (gset u64) mdone ∧ mtodo !! k = Some v⌝ }}}
+      {{{ I mtodo mdone ∗ ⌜m = mtodo ∪ mdone ∧ dom mtodo ## dom mdone ∧ mtodo !! k = Some v⌝ }}}
         body #k (to_val v) @ stk; E
       {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
   ((is_map mref q m ∗ I ∅ m) -∗ Φ #()) -∗
@@ -317,7 +317,7 @@ Proof using.
   iIntros "Hismap HI #Hbody HΦ".
   wp_apply (wp_MapIter_2 _ _ _ _ _
     (λ mtodo mdone,
-      I mtodo mdone ∗ ⌜m = mtodo ∪ mdone ∧ dom (gset u64) mtodo ## dom (gset u64) mdone⌝)%I
+      I mtodo mdone ∗ ⌜m = mtodo ∪ mdone ∧ dom mtodo ## dom mdone⌝)%I
     with "Hismap [$HI]").
   { iPureIntro; split.
     { rewrite right_id; eauto. }

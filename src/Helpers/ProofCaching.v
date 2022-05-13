@@ -93,7 +93,7 @@ Section bi.
     iIntros (Hlookup Hsubenv).
     destruct_with_eqn (envs_split base.Left c.(cache_names) Δ); [ | contradiction ].
     destruct p as [Γs Γ'].
-    rewrite envs_entails_eq.
+    rewrite envs_entails_unseal.
     iIntros "HΔ".
     iDestruct (envs_lookup_intuitionistic_sound _ _ _ Hlookup with "HΔ") as
         "[#Hcache HΔ]".

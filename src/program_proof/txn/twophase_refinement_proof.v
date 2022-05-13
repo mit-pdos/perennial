@@ -24,7 +24,7 @@ Definition dinit0 sz : gmap Z Block :=
 
 Lemma dom_dinit0:
   ∀ sz : Z,
-    dom (gset Z) (dinit0 sz) = list_to_set (seqZ 513 (sz - 513)).
+    dom (dinit0 sz) = list_to_set (seqZ 513 (sz - 513)).
 Proof.
   intros sz.
   rewrite /dinit0.
@@ -148,20 +148,20 @@ Proof.
 Qed.
 
 Lemma fmap_unit_jrnl_dom_equal (jd jd': gmap addr_proof.addr obj) :
-  dom (gset _) jd = dom (gset _) jd' →
+  dom jd = dom jd' →
   (λ _, ()) <$> jd = (λ _, ()) <$> jd'.
 Proof.
   intros Hdom.
   apply map_eq => i.
-  destruct (decide (i ∈ dom (gset (u64 * u64)) jd)) as [Hin|Hnin].
-  { assert (Hin': i ∈ dom (gset (u64 * u64)) jd').
+  destruct (decide (i ∈ dom jd)) as [Hin|Hnin].
+  { assert (Hin': i ∈ dom jd').
     { rewrite -Hdom; eauto. }
     rewrite ?lookup_fmap.
     apply elem_of_dom in Hin as (?&->).
     apply elem_of_dom in Hin' as (?&->).
     rewrite //=.
   }
-  { assert (Hnin': ¬ i ∈ dom (gset (u64 * u64)) jd').
+  { assert (Hnin': ¬ i ∈ dom jd').
     { rewrite -Hdom; eauto. }
     rewrite ?lookup_fmap.
     apply not_elem_of_dom in Hnin as ->.
@@ -178,7 +178,7 @@ Proof.
   rewrite /sty_crash_inv_obligation//=.
   iIntros (? hG hRG hJrnl) "H Hspec #Hspec_crash_ctx".
   iDestruct "H" as (????) "(Hcrash_cond&Hauth&Htok&Hclosed_frag&Hpre&HpreM)".
-  iAssert (jrnl_dom (dom _ mt)) with "[Hcrash_cond]" as "#Hdom".
+  iAssert (jrnl_dom (dom mt)) with "[Hcrash_cond]" as "#Hdom".
   { iDestruct "Hcrash_cond" as "(H1&?&?&H2)". iFrame. }
   rewrite /twophase_init/twophase_inv.
   iDestruct (crash_borrow.crash_borrow_init_cancel
@@ -285,7 +285,7 @@ Proof.
     { eauto. }
     { eauto. }
   }
-  iAssert (⌜ dom (gset _) mt = dom (gset _) (jrnlData s)⌝)%I with "[]" as %Hdomeq.
+  iAssert (⌜ dom mt = dom (jrnlData s)⌝)%I with "[]" as %Hdomeq.
   { rewrite /jrnl_dom.
     destruct Heq as (Heq_data&Heq_kinds&Heq_dom&Heq_data_name&Heq_kinds_name&Heq_dom_name).
     rewrite /jrnl_mapsto/jrnl_kinds.
@@ -352,7 +352,7 @@ Ltac unfold_expr_vars :=
 
 Lemma atomic_body_expr_subst :
   ∀ Γ x e e' t v,
-    x ∉ dom (gset string) Γ →
+    x ∉ dom Γ →
     x ∉ expr_vars e →
     atomic_body_expr_transTy Γ (Var x) e e' t →
     atomic_body_expr_transTy Γ (of_val v) e (subst x v e') t.
@@ -363,13 +363,13 @@ Proof.
       (P := (λ Γ tph' es e t
                (HTYPE: atomic_body_expr_transTy Γ tph' es e t),
              tph' = Var x →
-             x ∉ dom (gset string) Γ →
+             x ∉ dom Γ →
              x ∉ expr_vars es →
              atomic_body_expr_transTy Γ (of_val v) es (subst x v e) t))
       (P0 := (λ Γ tph' vs vi t
               (HTYPE: atomic_body_val_transTy Γ tph' vs vi t),
               tph' = Var x →
-              x ∉ dom (gset string) Γ →
+              x ∉ dom Γ →
               x ∉ val_vars vs →
               atomic_body_val_transTy Γ (of_val v) vs vi t));
     try (intros; subst; simpl; econstructor; eauto; done);

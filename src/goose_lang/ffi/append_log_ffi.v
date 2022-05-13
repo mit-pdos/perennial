@@ -649,7 +649,7 @@ Proof.
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
     { apply head_prim_step_trans. simpl. econstructor.
-    * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+    * eexists _ (fresh_locs (dom σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
       ** econstructor.
@@ -709,7 +709,7 @@ Proof.
   iDestruct (log_ctx_unify_uninit with "[$] [$]") as %Heq.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step_trans. simpl. econstructor.
-    * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+    * eexists _ (fresh_locs (dom σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
       ** econstructor.
@@ -719,8 +719,8 @@ Proof.
   { solve_ndisj. }
   simpl. rewrite Heq.
   iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
-  iMod (log_uninit_token_open ((fresh_locs (dom _ σ.(heap)))) with "[$] [$]") as "#Hopen".
-  iMod (na_heap_alloc _ σ.(heap) (fresh_locs (dom _ σ.(heap))) (#()) (Reading O) with "Hσ") as "(Hσ&?)".
+  iMod (log_uninit_token_open ((fresh_locs (dom σ.(heap)))) with "[$] [$]") as "#Hopen".
+  iMod (na_heap_alloc _ σ.(heap) (fresh_locs (dom σ.(heap))) (#()) (Reading O) with "Hσ") as "(Hσ&?)".
   { rewrite //=. }
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
@@ -781,7 +781,7 @@ Proof.
     { congruence. }
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
     { apply head_prim_step_trans. simpl. econstructor.
-      * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+      * eexists _ (fresh_locs (dom σ.(heap))); repeat econstructor.
         ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
         ** econstructor.
@@ -812,7 +812,7 @@ Proof.
   iDestruct (log_ctx_unify_closed with "[$] [$] [$]") as %Heq.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
   { apply head_prim_step_trans. simpl. econstructor.
-    * eexists _ (fresh_locs (dom (gset loc) σ.(heap))); repeat econstructor.
+    * eexists _ (fresh_locs (dom σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
       ** econstructor.
@@ -822,8 +822,8 @@ Proof.
   { solve_ndisj. }
   simpl. rewrite Heq.
   iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".
-  iMod (log_closed_token_open ((fresh_locs (dom _ σ.(heap)))) with "[$] [$]") as "#Hopen".
-  iMod (na_heap_alloc _ σ.(heap) (fresh_locs (dom _ σ.(heap))) (#()) (Reading O) with "Hσ") as "(Hσ&?)".
+  iMod (log_closed_token_open ((fresh_locs (dom σ.(heap)))) with "[$] [$]") as "#Hopen".
+  iMod (na_heap_alloc _ σ.(heap) (fresh_locs (dom σ.(heap))) (#()) (Reading O) with "Hσ") as "(Hσ&?)".
   { rewrite //=. }
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }
   { apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh. }

@@ -14,7 +14,7 @@ Section map.
   Implicit Types (m:gmap).
 
 Lemma dom_map_to_list m :
-  dom (gset _) m = list_to_set (map_to_list m).*1.
+  dom m = list_to_set (map_to_list m).*1.
 Proof.
   induction m as [|l v m] using map_ind.
   - rewrite dom_empty_L map_to_list_empty //.
@@ -25,7 +25,7 @@ Proof.
 Qed.
 
 Lemma map_subset_dom_eq m m' :
-  dom (gset _) m = dom (gset _) m' →
+  dom m = dom m' →
   m' ⊆ m →
   m = m'.
 Proof.
@@ -34,7 +34,7 @@ Proof.
   apply option_eq => v.
   split.
   - intros.
-    assert (l ∈ dom (gset _) m') as [v' ?]%elem_of_dom.
+    assert (l ∈ dom m') as [v' ?]%elem_of_dom.
     { rewrite -Hdom.
       apply elem_of_dom; eauto. }
     rewrite H1.
@@ -90,7 +90,7 @@ Proof.
 Qed.
 
 Lemma map_size_dom `{Countable K} `(m: gmap K A) :
-  size m = size (dom (gset K) m).
+  size m = size (dom m).
 Proof.
   induction m using map_ind.
   - rewrite dom_empty_L !map_size_empty //.

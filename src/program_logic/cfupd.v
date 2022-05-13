@@ -308,7 +308,7 @@ Section cfupd.
   Lemma cfupd_big_sepS `{Countable A} (σ: gset A)(P: A → iProp Σ) E1  :
     ([∗ set] a ∈ σ, cfupd E1 (P a)) -∗
     cfupd E1 ([∗ set] a ∈ σ, P a).
-  Proof. rewrite big_opS_eq. apply cfupd_big_sepL. Qed.
+  Proof. rewrite big_op.big_opS_unseal. apply cfupd_big_sepL. Qed.
 
   Lemma is_except_0_wand {PROP:bi} (P Q: PROP) :
     IsExcept0 Q → IsExcept0 (P -∗ Q).

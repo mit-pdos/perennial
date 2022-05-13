@@ -374,7 +374,7 @@ Section maplist.
       iExists _. iSplitR; first by eauto.
       iDestruct (big_sepM2_dom with "Hlm") as "%Hmlm".
       iApply big_sepM2_sep; iFrame.
-      rewrite big_sepM2_eq /big_sepM2_def.
+      rewrite big_op.big_sepM2_unseal /big_op.big_sepM2_def.
       iSplit.
       { iPureIntro. split; intros.
         { apply (elem_of_dom (D:=gset K)). rewrite -Hmlm. apply elem_of_dom. eauto. }
@@ -398,7 +398,7 @@ Section maplist.
       iApply "IH"; last by iFrame.
       iPureIntro.
       rewrite dom_delete_L -Hmlm dom_insert_L.
-      assert (i ∉ dom (gset K) m).
+      assert (i ∉ dom m).
       { apply not_elem_of_dom. eauto. }
       set_solver.
   Qed.
@@ -428,7 +428,7 @@ Section maplist.
     iSplitL "Hlm0".
     + iExists _. iFrame. done.
     + iDestruct (big_sepM.big_sepM2_sepM_2 with "Hlm1") as "Hlm1".
-      rewrite big_opM_eq /big_opM_def H0 big_sepL_fmap.
+      rewrite big_op.big_opM_unseal /big_op.big_opM_def H0 big_sepL_fmap.
       iApply big_sepL_mono; last by iFrame.
       iIntros (???) "H".
       destruct y.
@@ -444,7 +444,7 @@ Section maplist.
     iDestruct "Hlm" as "[Hlm Hl]".
     iDestruct "Hlm" as (lm) "[% Hlm]".
     iExists _. iSplitR; first by eauto.
-    rewrite big_sepM2_eq /big_sepM2_def.
+    rewrite big_op.big_sepM2_unseal /big_op.big_sepM2_def.
     iDestruct "Hlm" as "[% Hlm]".
     iSplit; eauto.
     rewrite H0.
@@ -605,7 +605,7 @@ Section maplist2.
       Φ k v lv -∗
       ⌜ ∃ w, R k v w ⌝ ) -∗
     ∃ mw,
-      ⌜ dom (gset K) mw = dom (gset K) mv ⌝ ∗
+      ⌜ dom mw = dom mv ⌝ ∗
       big_sepML (λ k w lv, ∃ v, ⌜ R k v w ⌝ ∗ Φ k v lv) mw l.
   Proof.
     iIntros "Hml HR".
@@ -625,7 +625,7 @@ Section maplist2.
       iExists (<[k := w]> mw).
       iSplitR.
       { iPureIntro. rewrite dom_insert_L Hdel dom_delete_L.
-        assert (k ∈ dom (gset K) mv).
+        assert (k ∈ dom mv).
         { apply elem_of_dom; eauto. }
         rewrite -union_difference_L; eauto.
         set_solver.
@@ -691,7 +691,7 @@ End maplist2.
 
 
 Theorem big_sepML_change_m {K V0 V1 LV} `{EqDecision K} `{Countable K} (m0 : gmap K V0) (m1 : gmap K V1) (l : list LV) Φ :
-  dom (gset _) m0 = dom (gset _) m1 ->
+  dom m0 = dom m1 ->
   big_sepML (λ k _ lv, Φ k lv) m0 l -∗
   big_sepML (λ k _ lv, Φ k lv) m1 l.
 Proof.
@@ -699,7 +699,7 @@ Proof.
   iIntros (Hdom) "H".
   iDestruct "H" as (lm) "[%Hlm H]".
   iExists lm; iFrame "%".
-  rewrite big_sepM2_eq /big_sepM2_def.
+  rewrite big_op.big_sepM2_unseal /big_op.big_sepM2_def.
   iDestruct "H" as "[% H]".
   iSplit.
   { iPureIntro. intros k. specialize (H0 k).
@@ -769,7 +769,7 @@ Section big_sepms_def.
   Fixpoint bsm_keys_match (keys : gset K) (ms : bsm_maps) : Prop :=
     match ms with
     | @bsm_cons T m ms' =>
-      keys = dom (gset K) m ∧
+      keys = dom m ∧
       bsm_keys_match keys ms'
     | bsm_nil => True
     end.

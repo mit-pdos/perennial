@@ -18,7 +18,7 @@ Context `{!heapGS Σ}.
 Implicit Types (m: gmap u64 ()) (addrs: gset u64).
 
 Definition is_addrset (m_ref: loc) addrs: iProp Σ :=
-  ∃ m, is_map m_ref 1 m ∗ ⌜dom (gset _) m = addrs⌝.
+  ∃ m, is_map m_ref 1 m ∗ ⌜dom m = addrs⌝.
 
 Theorem is_addrset_from_empty (m_ref: loc) :
   is_map m_ref 1 (∅: gmap u64 ()) -∗ is_addrset m_ref ∅.
@@ -45,7 +45,7 @@ Proof.
   wp_pures.
   wp_apply (wp_forUpto (λ i, "%Hilower_bound" ∷ ⌜int.Z start ≤ int.Z i⌝ ∗
                              "*" ∷ ∃ m, "Hmap" ∷ is_map mref 1 m ∗
-                                        "%Hmapdom" ∷ ⌜dom (gset _) m = rangeSet (int.Z start) (int.Z i - int.Z start)⌝)%I
+                                        "%Hmapdom" ∷ ⌜dom m = rangeSet (int.Z start) (int.Z i - int.Z start)⌝)%I
             with "[] [Hmap $i]").
   - word.
 
@@ -206,7 +206,7 @@ Proof.
   wp_pures.
   iDestruct "His_remove" as (m) "[His_remove %Hdom]".
   wp_apply (wp_MapIter_2 _ _ _ _ _
-                         (λ mtodo mdone, is_addrset m_ref (free ∖ dom (gset _) mdone))
+                         (λ mtodo mdone, is_addrset m_ref (free ∖ dom mdone))
               with "His_remove [His_free] [] [HΦ]").
   - rewrite dom_empty_L.
     rewrite difference_empty_L.

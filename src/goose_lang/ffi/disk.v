@@ -178,7 +178,7 @@ Section disk.
     set_fold (λ k r, k `max` r)%Z 0%Z addrs.
 
   Definition disk_size (d: gmap Z Block): Z :=
-    1 + highest_addr (dom _ d).
+    1 + highest_addr (dom d).
 
   Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) expr :=
     match op, v with
@@ -250,7 +250,7 @@ lemmas. *)
         end.
 
   Theorem read_fresh : forall σ g a b,
-      let l := fresh_locs (dom (gset loc) (heap σ)) in
+      let l := fresh_locs (dom (heap σ)) in
       σ.(world) !! int.Z a = Some b ->
       relation.denote (ffi_step ReadOp (LitV $ LitInt a)) (σ,g) (state_insert_list l (Block_to_vals b) σ,g) (LitV $ LitLoc $ l).
   Proof.

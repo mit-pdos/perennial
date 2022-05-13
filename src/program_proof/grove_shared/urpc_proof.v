@@ -134,10 +134,10 @@ Definition impl_handler_spec (f:val)
 Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
             "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
-            "%Hdom_range" ∷ ⌜ ∀ id, (0 < int.Z id < int.Z n)%Z ↔ id ∈ dom (gset u64) reqs ⌝ ∗
-            "%Hdom_eq_es" ∷ ⌜ dom (gset u64) reqs = dom (gset u64) estoks ⌝ ∗
-            "%Hdom_eq_ex" ∷ ⌜ dom (gset u64) reqs = dom (gset u64) extoks ⌝ ∗
-            "%Hdom_pending" ∷ ⌜ dom (gset u64) pending ⊆ dom (gset u64) reqs  ⌝ ∗
+            "%Hdom_range" ∷ ⌜ ∀ id, (0 < int.Z id < int.Z n)%Z ↔ id ∈ dom reqs ⌝ ∗
+            "%Hdom_eq_es" ∷ ⌜ dom reqs = dom estoks ⌝ ∗
+            "%Hdom_eq_ex" ∷ ⌜ dom reqs = dom extoks ⌝ ∗
+            "%Hdom_pending" ∷ ⌜ dom pending ⊆ dom reqs  ⌝ ∗
             "seq" ∷ cl ↦[Client :: "seq"] #n ∗
             "Hmapping_ctx" ∷ map_ctx (ccmapping_name Γ) 1 reqs ∗
             "Hescrow_ctx" ∷ map_ctx (ccescrow_name Γ) 1 estoks ∗
@@ -236,7 +236,7 @@ Definition urpc_handler_mapping (γ : server_chan_gnames) (host : u64) (handlers
       impl_handler_spec handler Spec)%I.
 
 Lemma non_empty_urpc_handler_mapping_inv γ host handlers :
-  dom (gset u64) handlers ≠ ∅ →
+  dom handlers ≠ ∅ →
   urpc_handler_mapping γ host handlers -∗
   "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host γ) ∗
   "#Hhandlers" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ Spec γs,
@@ -249,7 +249,7 @@ Proof.
   { rewrite dom_empty_L in Hdom; congruence. }
   rewrite /urpc_handler_mapping big_sepM_insert //.
   iDestruct "Hmapping" as "(H&Hmapping)".
-  destruct (decide (dom (gset _) m = ∅)) as [Hemp|Hemp].
+  destruct (decide (dom m = ∅)) as [Hemp|Hemp].
   { iNamed "H". iDestruct "H" as "(Hhandler_spec&His_urpcHandler)".
     iNamed "Hhandler_spec". iFrame "% #".
     rewrite big_sepM_insert //. iSplitL "His_urpcHandler".
@@ -269,10 +269,10 @@ Proof.
 Qed.
 
 Definition handlers_complete Γ (handlers : gmap u64 val) :=
-  (handlers_dom Γ (dom (gset _) handlers)).
+  (handlers_dom Γ (dom handlers)).
 
 Lemma wp_Server__readThread γ s host client handlers mref def :
-  dom (gset u64) handlers ≠ ∅ →
+  dom handlers ≠ ∅ →
   "#Hcomplete" ∷ handlers_complete γ handlers ∗
   "#His_rpc_map" ∷ urpc_handler_mapping γ host handlers ∗
   "#Hhandlers_map" ∷ readonly (map.is_map mref 1 (handlers, def)) ∗
@@ -399,7 +399,7 @@ Proof.
 Qed.
 
 Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) :
-  dom (gset u64) handlers ≠ ∅ →
+  dom handlers ≠ ∅ →
   {{{
       handlers_complete γ handlers ∗
       own_Server s handlers ∗

@@ -700,7 +700,7 @@ Unshelve.
 Qed.
 
 Lemma map_filter_elem_of_dom {L} `{Countable L} {V} (m: gmap L V) P `{∀ x, Decision (P x)} (k: L) :
-  k ∈ dom (gset _) (filter P m) ↔
+  k ∈ dom (filter P m) ↔
   ∃ v, m !! k = Some v ∧ P (k, v).
 Proof.
   rewrite !elem_of_dom.
@@ -754,8 +754,8 @@ Proof.
   iDestruct (big_sepM_union with "Hctxelem") as "[Hctxelem0 Hctxelem1]".
   { apply map_disjoint_filter_complement. }
 
-  iAssert (⌜ dom (gset addr) (filter (λ x, bufDirty <$> (gBufmap !! fst x) = Some true) mt) =
-             dom (gset addr) (filter (λ x, (snd x).(bufDirty) = true) gBufmap) ⌝)%I as "%Hdom".
+  iAssert (⌜ dom (filter (λ x, bufDirty <$> (gBufmap !! fst x) = Some true) mt) =
+             dom (filter (λ x, (snd x).(bufDirty) = true) gBufmap) ⌝)%I as "%Hdom".
   { iPureIntro.
    apply dom_filter_L; intros a.
    rewrite map_filter_elem_of_dom /=.

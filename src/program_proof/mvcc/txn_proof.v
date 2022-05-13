@@ -147,11 +147,11 @@ Definition own_txnsite (txnsite : loc) (sid : u64) γ : iProp Σ :=
     "Hactive" ∷ txnsite ↦[TxnSite :: "tidsActive"] (to_val tidsactive) ∗
     "HactiveL" ∷ typed_slice.is_slice tidsactive uint64T 1 tidsactiveL ∗
     "HactiveAuth" ∷ site_active_tids_half_auth γ sid tidsactiveM ∗
-    "%HactiveLM" ∷ ⌜(list_to_set tidsactiveL) = dom (gset u64) tidsactiveM⌝ ∗
+    "%HactiveLM" ∷ ⌜(list_to_set tidsactiveL) = dom tidsactiveM⌝ ∗
     "%HactiveND" ∷ (⌜NoDup tidsactiveL⌝) ∗
     "HminAuth" ∷ site_min_tid_half_auth γ sid (int.nat tidmin) ∗
     "%HtidOrder" ∷ (⌜Forall (λ tid, int.Z tidmin ≤ int.Z tid ≤ int.Z tidlast) (tidlast :: tidsactiveL)⌝) ∗
-    "%HtidFree" ∷ (∀ tid, ⌜int.Z tidlast < int.Z tid -> tid ∉ dom (gset u64) tidsactiveM⌝) ∗
+    "%HtidFree" ∷ (∀ tid, ⌜int.Z tidlast < int.Z tid -> tid ∉ dom tidsactiveM⌝) ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (own_txnsite _ _ _)) => unfold own_txnsite : core.
 
@@ -1165,7 +1165,7 @@ Proof.
     { (* Prove [HtidFree]. *)
       simpl.
       intros tidx Htidx.
-      apply not_elem_of_weaken with (dom (gset u64) tidsactiveM); last set_solver.
+      apply not_elem_of_weaken with (dom tidsactiveM); last set_solver.
       auto.
     }
   }

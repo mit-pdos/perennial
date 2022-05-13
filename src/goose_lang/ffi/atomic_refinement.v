@@ -165,7 +165,7 @@ Section go_refinement.
 
   Definition heap_relation : gmap loc (nonAtomic sval) → gmap loc (nonAtomic ival) → Prop :=
     λ m1 m2,
-      dom (gset _) m1 = dom (gset _) m2 ∧
+      dom m1 = dom m2 ∧
       (∀ l sv iv, m1 !! l = Some sv →
                   m2 !! l = Some iv →
                   naVal_relation sv iv).
@@ -670,8 +670,8 @@ Section go_refinement.
 
   Lemma dom_heap_array_length {A B} (l1 : list A) (l2 : list B) l :
     length l1 = length l2 →
-    dom (gset loc) (heap_array l l1) =
-    dom (gset loc) (heap_array l l2).
+    dom (heap_array l l1) =
+    dom (heap_array l l2).
   Proof.
     revert l l2. induction l1 => l l2.
     - destruct l2; last by simpl; congruence.

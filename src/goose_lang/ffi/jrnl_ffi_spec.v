@@ -150,7 +150,7 @@ Section jrnl.
        jrnlAllocs := ∅ |}.
 
   Definition offsets_aligned (m : jrnl_map) :=
-    (∀ a, a ∈ dom (gset _) (jrnlData m) →
+    (∀ a, a ∈ dom (jrnlData m) →
      ∃ k, jrnlKinds m !! (addrBlock a) = Some k ∧ valid_off k (addrOff a)).
 
   Definition size_consistent_and_aligned a (o: obj) (jk: gmap blkno kind) :=
@@ -196,7 +196,7 @@ Section jrnl.
     σja !! l = None.
 
   Theorem fresh_locs_isFreshAlloc σja :
-    isFreshAlloc σja (fresh_locs (dom (gset loc) σja)).
+    isFreshAlloc σja (fresh_locs (dom σja)).
   Proof.
     * apply (not_elem_of_dom (D := gset loc)).
         by apply fresh_locs_fresh.
@@ -204,7 +204,7 @@ Section jrnl.
 
   Definition gen_isFreshAlloc σja : {l: loc | isFreshAlloc σja l}.
   Proof.
-    refine (exist _ (fresh_locs (dom (gset loc) σja)) _).
+    refine (exist _ (fresh_locs (dom σja)) _).
       by apply fresh_locs_isFreshAlloc.
   Defined.
 

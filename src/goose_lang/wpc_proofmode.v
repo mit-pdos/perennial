@@ -53,7 +53,7 @@ Lemma tac_wpc_pure_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ
   (envs_entails Δ (Φc) → envs_entails Δ' (WPC (fill K e2) @ s; E1 {{ Φ }} {{ Φc }})) →
   envs_entails Δ (WPC (fill K e1) @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
-  rewrite envs_entails_eq=> ??? Hcrash HΔ'.
+  rewrite envs_entails_unseal=> ??? Hcrash HΔ'.
   pose proof @pure_exec_fill.
   rewrite -wpc_pure_step_later //. apply and_intro; auto.
   rewrite into_laterN_env_sound /=.
@@ -68,7 +68,7 @@ Lemma tac_wpc_pure_no_later_ctx `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!
   (envs_entails Δ Φc → envs_entails Δ (WPC (fill K e2) @ s; E1 {{ Φ }} {{ Φc }})) →
   envs_entails Δ (WPC (fill K e1) @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
-  rewrite envs_entails_eq=> ?? Hcrash HΔ'.
+  rewrite envs_entails_unseal=> ?? Hcrash HΔ'.
   pose proof @pure_exec_fill.
   specialize (HΔ' Hcrash).
   rewrite -wpc_pure_step_later //. apply and_intro; auto.
@@ -83,7 +83,7 @@ Lemma tac_wpc_value `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
   envs_entails Δ Φc →
   envs_entails Δ (WPC (Val v) @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
-  rewrite envs_entails_eq -wpc_value => H1 H2.
+  rewrite envs_entails_unseal -wpc_value => H1 H2.
   apply and_intro.
   - rewrite H1. eauto.
   - rewrite H2. iIntros. eauto.
@@ -94,7 +94,7 @@ Lemma tac_wpc_value_fupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
   envs_entails Δ Φc →
   envs_entails Δ (WPC (Val v) @ s; E1 {{ v, |={E1}=> Φ v }} {{ Φc }})%I.
 Proof.
-  rewrite envs_entails_eq -wpc_value => H1 H2.
+  rewrite envs_entails_unseal -wpc_value => H1 H2.
   apply and_intro.
   - rewrite H1. iIntros ">?". eauto.
   - rewrite H2. iIntros. eauto.
@@ -105,7 +105,7 @@ Lemma tac_wpc_value_noncfupd `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
   envs_entails Δ Φc →
   envs_entails Δ (WPC (Val v) @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
-  rewrite envs_entails_eq -wpc_value => H1 H2.
+  rewrite envs_entails_unseal -wpc_value => H1 H2.
   apply and_intro.
   - rewrite H1. eauto.
   - rewrite H2. iIntros. eauto.
@@ -235,7 +235,7 @@ Lemma tac_wpc_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that we can `simpl` it *)
   envs_entails Δ (WPC e @ s; E1 {{ v, WPC f (Val v) @ s; E1 {{ Φ }} {{ Φc }} }} {{ Φc }})%I →
   envs_entails Δ (WPC fill K e @ s; E1 {{ Φ }} {{ Φc }}).
-Proof. rewrite envs_entails_eq=> -> ->. by apply: wpc_bind. Qed.
+Proof. rewrite envs_entails_unseal=> -> ->. by apply: wpc_bind. Qed.
 
 Lemma tac_wpc_wp_frame `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
       `{!heapGS Σ} Δ d js s E1 e (Φ: _ -> iProp Σ) (Φc: iProp Σ) :
@@ -248,7 +248,7 @@ Lemma tac_wpc_wp_frame `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
   envs_entails Δ (WPC e @ s; E1 {{ Φ }} {{ Φc }}).
 Proof.
   destruct (envs_split d js Δ) as [[Δ1 Δ2]|] eqn:Hsplit; [ | contradiction ].
-  rewrite envs_entails_eq=> Hentails.
+  rewrite envs_entails_unseal=> Hentails.
   destruct Hentails as [HΦc Hwp].
   rewrite (envs_split_sound _ _ _ _ _ Hsplit).
   rewrite {}Hwp.
@@ -280,7 +280,7 @@ Lemma tac_wpc_wp_frame_cache `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
   end →
   envs_entails Δ (WPC e @ stk; E1 {{ Φ }} {{ Φc }}).
 Proof.
-  rewrite envs_entails_eq=> Hcache H.
+  rewrite envs_entails_unseal=> Hcache H.
   destruct (envs_split Left (cache_names c) Δ) as [[Δ1 Δ2]|] eqn:Hsplit;
     [ | contradiction ].
   destruct H as (Hcenv & Hwp).

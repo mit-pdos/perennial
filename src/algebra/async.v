@@ -57,7 +57,7 @@ a certain key, which ensures that the key stayed unchanged since then.
 Definition async_ctx γ (q: Qp) σs : iProp Σ :=
    own_last_auth γ (DfracOwn q) σs ∗
       (* Everything has the same domain *)
-      ⌜Forall (λ σ, dom (gset _) σ = dom (gset _) (latest σs)) (possible σs)⌝ ∗
+      ⌜Forall (λ σ, dom σ = dom (latest σs)) (possible σs)⌝ ∗
       (* We also have the [lb] in here to avoid some update modalities below. *)
       fmlist γ.(async_list) (DfracOwn q) (possible σs) ∗ fmlist_lb γ.(async_list) (possible σs).
 
@@ -301,7 +301,7 @@ Proof. iIntros "H1". iDestruct "H1" as "(?&?&?&$)". Qed.
 Theorem async_ctx_doms γ q σs i σ :
   possible σs !! i = Some σ →
   async_ctx γ q σs -∗
-  ⌜ dom (gset K) σ = dom (gset K) σs.(latest) ⌝.
+  ⌜ dom σ = dom σs.(latest) ⌝.
 Proof.
   iIntros (Hi) "(_ & %Hdoms & _)". iPureIntro.
   eapply Forall_lookup_1 in Hdoms; done.
@@ -310,7 +310,7 @@ Qed.
 Theorem async_ctx_doms_prefix_latest γ q σs' σs :
   async_prefix σs' σs →
   async_ctx γ q σs -∗
-  ⌜ dom (gset K) σs'.(latest) = dom (gset K) σs.(latest) ⌝.
+  ⌜ dom σs'.(latest) = dom σs.(latest) ⌝.
 Proof.
   iIntros (Hprefix) "Hctx".
   iDestruct (async_ctx_doms _ _ _ (length (possible σs') - 1) (σs'.(latest)) with "Hctx")
@@ -456,7 +456,7 @@ Proof.
 Qed.
 
 Theorem async_ctx_init γ σs :
-  Forall (λ σ, dom (gset _) σ = dom (gset _) (latest σs)) (pending σs) →
+  Forall (λ σ, dom σ = dom (latest σs)) (pending σs) →
   async_pre_ctx γ ==∗
   async_ctx γ 1 σs ∗
   ([∗ map] k↦v ∈ (latest σs), ephemeral_val_from γ (length (possible σs) - 1) k v).
@@ -513,7 +513,7 @@ Theorem async_ctx_init_set_prefix γ γ' q σs σs' :
      ephemeral_val_from γ' (length (possible σs') - 1) k v).
 Proof.
   iIntros (Hprefix) "Hctxold Hprenew".
-  iAssert (⌜Forall (λ σ, dom (gset _) σ = dom (gset _) (latest σs)) (possible σs)⌝)%I with "[Hctxold]" as %Hdom.
+  iAssert (⌜Forall (λ σ, dom σ = dom (latest σs)) (possible σs)⌝)%I with "[Hctxold]" as %Hdom.
   { iDestruct "Hctxold" as "(_ & $ & _)". }
   iDestruct (async_ctx_doms_prefix_latest with "Hctxold") as %Hlatestdom; first done.
   rewrite big_sepM_sep.
@@ -534,7 +534,7 @@ Proof.
 Qed.
 
 Theorem async_update_map m' γ σs m0 :
-  dom (gset _) m' = dom (gset _) m0 →
+  dom m' = dom m0 →
   async_ctx γ 1 σs -∗
   ([∗ map] k↦v ∈ m0, ephemeral_val_from γ (length (possible σs) - 1) k v) -∗
   |==> let σs' := (async_put (m' ∪ latest σs) σs) in
@@ -585,7 +585,7 @@ Proof.
     iDestruct (big_sepM_delete with "Hm") as "[[_ Hlast] Hm]"; first done.
     iMod ("IH" with "[] Hm Halast") as "[$ Halast]".
     { iPureIntro. rewrite dom_delete_L -Hdom dom_insert_L.
-      assert (a ∉ dom (gset K) m) as Hnotm.
+      assert (a ∉ dom m) as Hnotm.
       { apply not_elem_of_dom. done. }
       set_solver +Hnotm. }
     iClear "IH".

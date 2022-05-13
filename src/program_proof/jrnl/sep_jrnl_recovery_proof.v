@@ -34,8 +34,8 @@ Section goose_lang.
     "Hasync_ctx" ∷ async_ctx γ.(jrnl_async_name) 1 logm.
 
   Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
-    dom (gset _) dinit = list_to_set (seqZ 513 sz) →
-    dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
+    dom dinit = list_to_set (seqZ 513 sz) →
+    dom kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
     (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
     0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
   |==> ∃ γ, let logm0 := Build_async (kind_heap0 kinds) [] in

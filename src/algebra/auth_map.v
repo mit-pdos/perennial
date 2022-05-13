@@ -500,7 +500,7 @@ Section auth_map.
   (* like an update from l↦v0 to l↦v, except that we update an entire subset m0 ⊆
   m to m' *)
   Theorem map_update_map {γ} m' m0 m :
-    dom (gset _) m' = dom _ m0 →
+    dom m' = dom m0 →
     map_ctx γ 1 m -∗
     ([∗ map] a↦v ∈ m0, ptsto_mut γ a 1 v) -∗
     |==> map_ctx γ 1 (m' ∪ m) ∗
@@ -514,7 +514,7 @@ Section auth_map.
     - rewrite big_sepM_insert //.
       iDestruct "Hm0" as "[Hl Hm0]".
       rewrite dom_insert_L in Hdom.
-      assert (l ∈ dom (gset K) m') by set_solver.
+      assert (l ∈ dom m') by set_solver.
       apply elem_of_dom in H0 as [v' Hlookup].
       iMod (map_update _ _ v' with "Hctx Hl") as "[Hctx Hl]".
       iSpecialize ("IH" $! (<[l:=v']> m)).

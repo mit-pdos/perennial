@@ -621,7 +621,7 @@ Section goose_lang.
   Qed.
 
   Lemma exchange_big_sepM_addrs γ γ' (m0 m1 : gmap addr object) crash_txn :
-    dom (gset _) m0 ⊆ dom (gset _) m1 →
+    dom m0 ⊆ dom m1 →
     txn_durable γ' crash_txn -∗
     addr_exchangers crash_txn γ γ' m1 -∗
     ([∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(jrnl_async_name) crash_txn k0 x ∗
@@ -664,7 +664,7 @@ Section goose_lang.
     iInv ("Hinv") as ">H" "Hclo".
     iNamed "H".
     iDestruct "Hcrash_point" as "(Hasync&%Heq)".
-    iAssert (⌜dom (gset addr) m ⊆ dom (gset addr) logm.(latest)⌝)%I with "[Hm Hasync]" as "%Hdom2".
+    iAssert (⌜dom m ⊆ dom logm.(latest)⌝)%I with "[Hm Hasync]" as "%Hdom2".
     {
       iInduction m as [| i x m] "IH" using map_ind.
       { iPureIntro; set_solver. }
@@ -674,7 +674,7 @@ Section goose_lang.
       iDestruct "Hval1" as (?) "((?&?)&?)".
       iDestruct (ephemeral_val_from_agree_latest with "[$] [$]") as %Hlookup.
       iPureIntro. rewrite dom_insert.
-      assert (i ∈ dom (gset addr) (logm.(latest))).
+      assert (i ∈ dom (logm.(latest))).
       { apply elem_of_dom. eauto. }
       set_solver.
     }
@@ -713,7 +713,7 @@ Section goose_lang.
   Qed.
 
   Lemma exchange_mapsto_commit γ γ' m0 m txn_id :
-    dom (gset _) m0 ⊆ dom (gset _) m →
+    dom m0 ⊆ dom m →
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
     "Hold_vals" ∷ ([∗ map] k↦x ∈ m0,
           ∃ i : nat, txn_durable γ i ∗
@@ -729,7 +729,7 @@ Section goose_lang.
     iInv ("Hinv") as ">H" "Hclo".
     iNamed "H".
     iDestruct "Hcrash_point" as "(Hasync&%Heq)".
-    iAssert (⌜dom (gset addr) m ⊆ dom (gset addr) logm.(latest)⌝)%I with "[Hval Hasync]" as "%Hdom2".
+    iAssert (⌜dom m ⊆ dom logm.(latest)⌝)%I with "[Hval Hasync]" as "%Hdom2".
     {
       clear Hdom1.
       iInduction m as [| i x m] "IH" using map_ind.
@@ -739,7 +739,7 @@ Section goose_lang.
       iDestruct ("IH" with "[$] [$]") as %Hdom.
       iDestruct (ephemeral_val_from_agree_latest with "[$] [$]") as %Hlookup.
       iPureIntro. rewrite dom_insert.
-      assert (i ∈ dom (gset addr) (logm.(latest))).
+      assert (i ∈ dom (logm.(latest))).
       { apply elem_of_dom. eauto. }
       set_solver.
     }

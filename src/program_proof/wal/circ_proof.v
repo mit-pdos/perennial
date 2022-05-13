@@ -416,14 +416,6 @@ Qed.
 Global Instance is_circular_state_timeless γ σ :
   Timeless (is_circular_state γ σ) := _.
 
-Global Instance mono_nat_auth_own_discretizable (γ: gname) q n :
-  Discretizable (mono_nat_auth_own γ q n).
-Proof. rewrite mono_nat_auth_own_eq. apply _. Qed.
-
-Global Instance mono_nat_lb_own_discretizable (γ: gname) n :
-  Discretizable (mono_nat_lb_own γ n).
-Proof. rewrite mono_nat_lb_own_eq. apply _. Qed.
-
 Global Instance is_circular_state_discretizable γ σ:
   Discretizable (is_circular_state γ σ).
 Proof. apply _. Qed.

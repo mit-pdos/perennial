@@ -213,10 +213,10 @@ Proof using.
       "Hn" ∷ n_l ↦[uint64T] #n ∗
       "%Hn" ∷ ⌜int.nat n = size (filter (λ x, (x.2).(bufDirty) = true) mdone)⌝ ∗
         "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧
-                  dom (gset addr) mtodo ## dom (gset addr) mdone ∧
+                  dom mtodo ## dom mdone ∧
                   am = amtodo ∪ amdone
                   ⌝ ∗
-        "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom (gset addr) amtodo = dom (gset addr) mtodo⌝ ∗
+        "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom amtodo = dom mtodo⌝ ∗
         "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
                                            (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) ) ∗
         "Hbufs" ∷ [∗ map] a↦bufptr;buf ∈ amdone;mdone, is_buf bufptr a buf
@@ -407,8 +407,8 @@ Proof using.
   wp_apply (wp_MapIter_3 _ _ _ _ _
     (λ (bmtodo bmdone : gmap u64 loc),
       ∃ (bufptrslice : Slice.t) (bufptrlist : list loc) (mtodo mdone : gmap addr buf) (amtodo : gmap addr loc),
-        "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧ dom (gset addr) mtodo ## dom (gset addr) mdone⌝ ∗
-        "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom (gset addr) amtodo = dom (gset addr) mtodo⌝ ∗
+        "%Hpm" ∷ ⌜m = mtodo ∪ mdone ∧ dom mtodo ## dom mdone⌝ ∗
+        "%Hamtodo" ∷ ⌜flatid_addr_map bmtodo amtodo ∧ dom amtodo = dom mtodo⌝ ∗
         "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
                                            (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) ) ∗
         "Hbufs" ∷ bufs ↦[slice.T ptrT] (slice_val bufptrslice) ∗

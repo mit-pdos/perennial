@@ -331,7 +331,7 @@ Section goose_lang.
     envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
     envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
   Proof.
-    rewrite envs_entails_eq=> ???.
+    rewrite envs_entails_unseal=> ???.
     rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_LoadAt.
     rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
     by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
@@ -435,7 +435,7 @@ Section goose_lang.
     envs_entails Δ (WP fill K (store_ty t (PairV (LitV l) v')) @ stk; E {{ Φ }}).
   Proof.
     intros Hty.
-    rewrite envs_entails_eq=> ????.
+    rewrite envs_entails_unseal=> ????.
     rewrite -wp_bind. eapply bi.wand_apply; first by eapply wp_StoreAt.
     rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.

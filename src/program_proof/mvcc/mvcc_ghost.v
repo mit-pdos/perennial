@@ -110,7 +110,7 @@ Definition site_active_tids_frag γ (sid : u64) tid : iProp Σ :=
   own γ.(mvcc_sid_tids_gn) {[sid := (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt)]}.
 
 Lemma site_active_tids_elem_of γ (sid : u64) tids tid :
-  site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ (dom (gset u64) tids)⌝.
+  site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ (dom tids)⌝.
 Admitted.
 
 Lemma site_active_tids_agree γ (sid : u64) tids tids' :
@@ -120,7 +120,7 @@ Lemma site_active_tids_agree γ (sid : u64) tids tids' :
 Admitted.
 
 Lemma site_active_tids_insert {γ sid tids} tid :
-  tid ∉ dom (gset u64) tids ->
+  tid ∉ dom tids ->
   site_active_tids_half_auth γ sid tids -∗
   site_active_tids_half_auth γ sid tids ==∗
   site_active_tids_half_auth γ sid (<[tid := tt]>tids) ∗
@@ -193,7 +193,7 @@ Definition mvcc_inv_gc_def γ : iProp Σ :=
     ∃ (tids : gmap u64 unit) (tidmin : u64),
       site_active_tids_half_auth γ sid tids ∗
       site_min_tid_half_auth γ sid (int.nat tidmin) ∗
-      ∀ tid, ⌜tid ∈ (dom (gset u64) tids) -> (int.nat tidmin) ≤ (int.nat tid)⌝.
+      ∀ tid, ⌜tid ∈ (dom tids) -> (int.nat tidmin) ≤ (int.nat tid)⌝.
 
 Lemma mvcc_ghost_gc_init :
   ⊢ |==> ∃ γ, mvcc_inv_gc_def γ ∗

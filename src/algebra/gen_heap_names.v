@@ -87,7 +87,7 @@ Section gen_heap_defs.
   Qed.
 
   Lemma gen_heap_exchanger_init {Σ} (hG1: gen_heapGS L V Σ) σ σ' :
-    dom (gset _) σ = dom (gset _) σ' →
+    dom σ = dom σ' →
     gen_heap_interp (hG := hG1) σ ==∗
     ∃ names, gen_heap_interp (hG := gen_heapG_update hG1 names) σ' ∗
              gen_heap_exchanger (hG1 := hG1) (hG2 := gen_heapG_update hG1 names) σ σ'.
@@ -105,15 +105,14 @@ Section gen_heap_defs.
 
   Global Instance mapsto_discretizable {Σ} (hG: gen_heapGS L V Σ) l q v:
     Discretizable (mapsto (hG:=hG) l q v).
-  Proof. rewrite mapsto_eq. apply _. Qed.
+  Proof. rewrite gen_heap.mapsto_unseal. apply _. Qed.
 
   Global Instance mapsto_abs_timless {Σ} (hG: gen_heapGS L V Σ) l q v:
     AbsolutelyTimeless (mapsto (hG:=hG) l q v).
-  Proof. rewrite mapsto_eq. apply _. Qed.
+  Proof. rewrite gen_heap.mapsto_unseal. apply _. Qed.
 
   Global Instance gen_heap_interp_abs_timeless {Σ} (hG: gen_heapGS L V Σ) σ:
     AbsolutelyTimeless (gen_heap_interp (hG:=hG) σ).
   Proof. apply _. Qed.
 
 End gen_heap_defs.
-

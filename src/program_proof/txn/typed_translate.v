@@ -233,7 +233,7 @@ Section translate.
   Inductive jrnl_atomic_transTy : SCtx → sexpr → iexpr → sty → sexpr → iexpr → sty → Prop :=
   | jrnl_atomic_transTy_core Γ Γ' etxn etxn' ebdy ebdy' t (tph: string) :
       (∀ x ty, Γ' !! x = Some ty → Γ !! x = Some ty ∧ atomic_convertible ty) →
-      tph ∉ dom (gset _) Γ →
+      tph ∉ dom Γ →
       tph ∉ expr_vars ebdy →
       Γ' @ (Var tph) ⊢ ebdy -- ebdy' : t →
       atomic_deconvertible t →
@@ -271,7 +271,7 @@ Definition twophase_initP kind_sz (σimpl: @goose_lang.state disk_op disk_model)
   (neg_non_alloc σspec.(heap)) ∧
   (σimpl.(world) = init_disk ∅ (513 + sz)) ∧
   (σspec.(world) = Closed σj) ∧
-  dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) ∧
+  dom kinds = list_to_set (U64 <$> (seqZ 513 sz)) ∧
   size (recovery_proof.kind_heap0 kinds) = kind_sz.
 
 End initP.

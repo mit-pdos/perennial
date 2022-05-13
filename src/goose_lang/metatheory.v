@@ -307,7 +307,7 @@ Proof.
     + by rewrite /= Hins // delete_insert_delete.
 Qed.
 Lemma subst_map_subst_comm x v vs e:
-  x ∉ dom (gset string) vs →
+  x ∉ dom vs →
   subst x v (subst_map vs e) = subst_map vs (subst x v e).
 Proof.
   intros Hnin.

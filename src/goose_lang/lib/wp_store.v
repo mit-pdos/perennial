@@ -17,7 +17,7 @@ Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
   envs_entails Δ'' (WP fill K (Val $ LitV LitUnit) @ s; E {{ Φ }}) →
   envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
 Proof.
-  rewrite envs_entails_eq=> ????.
+  rewrite envs_entails_unseal=> ????.
   rewrite -wp_bind. eapply wand_apply; first by eapply wp_store.
   rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
   rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.

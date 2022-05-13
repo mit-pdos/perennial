@@ -29,7 +29,7 @@ Section goose_lang.
   rather than leaving it a wand; this makes it possible to actually update
   rb_rep to a new σ' (by running a fupd) *)
   Lemma rb_rep_lift a0 a1 σ mapsto `{!Conflicting mapsto} :
-    rb_rep a0 a1 σ mapsto -∗ ∃ m, "%Hdom" ∷ ⌜dom (gset _) m = {[a0; a1]}⌝ ∗
+    rb_rep a0 a1 σ mapsto -∗ ∃ m, "%Hdom" ∷ ⌜dom m = {[a0; a1]}⌝ ∗
                                   "rb_rep_m" ∷ ([∗ map] a↦v ∈ m, mapsto a v).
   Proof.
     clear P.

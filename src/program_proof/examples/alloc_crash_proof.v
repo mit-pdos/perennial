@@ -30,10 +30,10 @@ Class allocG Σ :=
 Module alloc.
   Definition t := gmap u64 block_status.
 
-  Definition domain (σ: t) : gset u64 := dom (gset u64) σ.
-  Definition free (σ: t) : gset u64 := dom (gset u64) (filter (λ x, x.2 = block_free) σ).
-  Definition used (σ: t) : gset u64 := dom (gset u64) (filter (λ x, x.2 = block_used) σ).
-  Definition unused (σ: t) : gset u64 := dom (gset u64) (filter (λ x, x.2 ≠ block_used) σ).
+  Definition domain (σ: t) : gset u64 := dom σ.
+  Definition free (σ: t) : gset u64 := dom (filter (λ x, x.2 = block_free) σ).
+  Definition used (σ: t) : gset u64 := dom (filter (λ x, x.2 = block_used) σ).
+  Definition unused (σ: t) : gset u64 := dom (filter (λ x, x.2 ≠ block_used) σ).
 
   Global Instance _witness : Inhabited t.
   Proof. econstructor. apply (∅: gmap u64 block_status). Defined.
@@ -151,7 +151,7 @@ Definition Ninv := N.@"inv".
 
 Definition allocator_inv γ (d: gset u64) : iProp Σ :=
   ∃ σ,
-    "%Hdom" ∷ ⌜ dom _ σ = d ⌝ ∗
+    "%Hdom" ∷ ⌜ dom σ = d ⌝ ∗
     "Hstatus" ∷ ghost_map_auth γ.(alloc_status_name) 1 σ ∗
     "Hfreeset_auth" ∷ ghost_var (γ.(alloc_free_name)) (1/2) (alloc.free σ) ∗
     "HP" ∷ P σ
@@ -225,7 +225,7 @@ Proof.
 Qed.
 
 Lemma elem_of_filter_dom {A B} `{Countable A} (P': A * B → Prop) `{∀ x, Decision (P' x)} (m: gmap A B) (x: A) :
-  x ∈ dom (gset A) (filter P' m) ↔ (∃ (y: B), m !! x = Some y ∧ P' (x,y)).
+  x ∈ dom (filter P' m) ↔ (∃ (y: B), m !! x = Some y ∧ P' (x,y)).
 Proof.
   split; intros.
   - apply elem_of_dom in H1 as [y [H1 Hy]%map_filter_lookup_Some];
@@ -238,7 +238,7 @@ Qed.
 
 Lemma alloc_post_crash_no_reserved σ :
   alloc_post_crash σ ↔
-  dom (gset u64) (filter (λ '(_,s), s = block_reserved) σ) = ∅.
+  dom (filter (λ '(_,s), s = block_reserved) σ) = ∅.
 Proof.
   rewrite /alloc_post_crash.
   split; intros.
@@ -276,7 +276,7 @@ Definition new_alloc_state (start sz: Z) (used: gset u64): alloc.t :=
   gset_to_gmap block_free (rangeSet start sz).
 
 Lemma new_alloc_state_no_reserved start sz used :
-  dom (gset u64) (filter (λ '(_, s), s = block_reserved)
+  dom (filter (λ '(_, s), s = block_reserved)
                           (new_alloc_state start sz used)) = ∅.
 Proof.
   clear.
@@ -382,13 +382,13 @@ Definition alloc_crash_cond' σ : iProp Σ :=
 
 Definition alloc_crash_cond (d: gset u64) (post_crash: bool) : iProp Σ :=
   ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
-       "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
+       "%Halloc_dom" ∷ ⌜dom σ = d⌝ ∗
        "HPalloc" ∷ ▷ P σ ∗
        "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
 
 Definition alloc_crash_cond_no_later (d: gset u64) (post_crash: bool) : iProp Σ :=
   ∃ σ, "%Halloc_post_crash" ∷ ⌜if post_crash then alloc_post_crash σ else True⌝ ∗
-       "%Halloc_dom" ∷ ⌜dom _ σ = d⌝ ∗
+       "%Halloc_dom" ∷ ⌜dom σ = d⌝ ∗
        "HPalloc" ∷ P σ ∗
        "Hunused" ∷ [∗ set] k ∈ alloc.unused σ, Ψ k.
 
@@ -442,7 +442,7 @@ Proof.
 Qed.
 
 Lemma dom_revert_reserved σ:
- dom (gset u64) (revert_reserved σ) = dom (gset u64) σ.
+ dom (revert_reserved σ) = dom σ.
 Proof.
   clear.
   rewrite /revert_reserved dom_fmap_L //.
@@ -490,7 +490,7 @@ Qed.
 
 (* TODO: this is a more general property about filter *)
 Lemma dom_filter_unfree σ :
-  dom (gset u64) (filter (λ x : u64 * block_status, x.2 ≠ block_free) σ) = alloc.domain σ ∖ alloc.free σ.
+  dom (filter (λ x : u64 * block_status, x.2 ≠ block_free) σ) = alloc.domain σ ∖ alloc.free σ.
 Proof.
   clear.
   apply dom_filter_L.
@@ -558,7 +558,7 @@ Lemma free_block_init γ σ E :
   |={E}=> init_cancel (([∗ set] k ∈ alloc.free σ, k ↪[alloc_status_name γ] block_free) ∗
                        crash_borrow ([∗ set] k ∈ alloc.free σ, Ψ k)
                                     ([∗ set] k ∈ alloc.free σ, block_cinv γ k))
-                      ([∗ set] k ∈ dom (gset _) σ, block_cinv γ k).
+                      ([∗ set] k ∈ dom σ, block_cinv γ k).
 Proof.
   clear.
   iIntros (Hcrashed) "Hpre Hfree Hpts".
@@ -569,7 +569,7 @@ Proof.
   { iIntros "!>". iApply big_sepS_mono.
     iIntros (??) "H"; by iLeft. }
 
-  assert (dom _ σ = (alloc.domain σ ∖ alloc.free σ) ∪ alloc.free σ) as ->.
+  assert (dom σ = (alloc.domain σ ∖ alloc.free σ) ∪ alloc.free σ) as ->.
   { rewrite /alloc.domain difference_union_L.
     apply alloc_post_crash_free_used in Hcrashed.
     set_solver. }
@@ -687,7 +687,7 @@ Proof.
 Qed.
 
 Theorem alloc_free_subset σ :
-  alloc.free σ ⊆ dom _ σ.
+  alloc.free σ ⊆ dom σ.
 Proof. by apply dom_filter_subseteq. Qed.
 
 (*
@@ -787,7 +787,7 @@ Proof.
     iMod ("Hclo" with "[HP Hfreeset_auth Hctx]").
     { iNext. iExists _. iFrame. iPureIntro.
       rewrite dom_insert_L.
-      assert (k ∈ dom (gset u64) σ).
+      assert (k ∈ dom σ).
       { by apply alloc_free_subset. }
       set_solver.
     }
@@ -939,10 +939,10 @@ Qed.
 
 Lemma dom_update_status σ a x x':
   σ !! a = Some x →
-  dom (gset u64) (<[a := x']>σ) = dom (gset u64) σ.
+  dom (<[a := x']>σ) = dom σ.
 Proof.
   intros Hlookup. rewrite dom_insert_L.
-  cut (a ∈ dom (gset u64) σ).
+  cut (a ∈ dom σ).
   { set_solver+. }
   apply elem_of_dom; eauto.
 Qed.

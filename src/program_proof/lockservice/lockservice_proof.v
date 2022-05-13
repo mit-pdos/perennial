@@ -43,7 +43,7 @@ Definition Lockserver_inv γ : iProp Σ :=
   ∃ (locksAlloc: gmap u64 unit) (locksMapDom:gset u64),
     "Hdom" ∷ ghost_var γ.(ls_locksMapDomGN) (1/2) locksMapDom ∗ (* we know the lock domain *)
     "Hlocks" ∷ map_ctx γ.(ls_locksAllocGN) 1 locksAlloc ∗ (* we own the logical lock tracking *)
-    "HlocksEx" ∷ ⌜locksMapDom ⊆ dom (gset _) locksAlloc⌝ ∗ (* all physically-existing locks exist logically *)
+    "HlocksEx" ∷ ⌜locksMapDom ⊆ dom locksAlloc⌝ ∗ (* all physically-existing locks exist logically *)
     "HlocksNew" ∷ [∗ map] ln ↦ ex ∈ locksAlloc,
       (* Keep around persistent witness to lock being logically allocated for anything in the map_ctx.
          This is needed to hand out witnesses for existing locks in [lockservice_alloc_lock].
@@ -60,7 +60,7 @@ Definition LockServer_own_core γ (srv:loc) : iProp Σ :=
   ∃ (locks_ptr:loc) (locksM:gmap u64 bool),
     "HlocksOwn" ∷ srv ↦[LockServer :: "locks"] #locks_ptr ∗ (* we own the "locks" field *)
     "Hmap" ∷ is_map (locks_ptr) locksM ∗ (* we control the physical map *)
-    "HmapDom" ∷ ghost_var γ.(ls_locksMapDomGN) (1/2) (dom (gset _) locksM) ∗ (* the physical domain ghost variable matches the physical map *)
+    "HmapDom" ∷ ghost_var γ.(ls_locksMapDomGN) (1/2) (dom locksM) ∗ (* the physical domain ghost variable matches the physical map *)
     "Hlockeds" ∷ [∗ map] ln ↦ locked ∈ locksM, (⌜locked=true⌝ ∨ (Ps ln)) (* we own the invariants of all not-held locks *)
 .
 
@@ -150,9 +150,9 @@ Proof.
 
       iExists _, _; iFrame.
       set (ln := args.(U64_1)) in *.
-      replace (dom (gset u64) (<[ln:=true]> locksM)) with (dom (gset u64) locksM); first done.
+      replace (dom (<[ln:=true]> locksM)) with (dom locksM); first done.
       rewrite dom_insert_L.
-      assert (ln ∈ dom (gset u64) locksM).
+      assert (ln ∈ dom locksM).
       { apply elem_of_dom. eauto. }
       set_solver.
     + (* The lock did not exist yet, we have to "physically allocate" it. *)
@@ -161,7 +161,7 @@ Proof.
       iInv "Hinv" as (locksAlloc locksDom) "(>Hdom & >Hlocks & >HlocksEx &  HlocksNew)".
       iDestruct (ghost_var_agree with "HmapDom Hdom") as %<-.
       set (ln := args.(U64_1)) in *.
-      iMod (ghost_var_update_halves ({[ ln ]} ∪ dom (gset _) locksM) with "HmapDom Hdom") as "[HmapDom Hdom]".
+      iMod (ghost_var_update_halves ({[ ln ]} ∪ dom locksM) with "HmapDom Hdom") as "[HmapDom Hdom]".
       iDestruct (map_valid with "Hlocks Hpre") as %Halloc.
       iDestruct (big_sepM_delete with "HlocksNew") as "[HP HlocksNew]"; first exact Halloc.
       iDestruct "HP" as "[#His_lock [>HP|HP]]".
@@ -171,7 +171,7 @@ Proof.
       { iNext. iExists _, _. iFrame "Hdom Hlocks".
         iSplit.
         - iDestruct "HlocksEx" as %HlocksEx. iPureIntro.
-          assert (ln ∈ dom (gset _) locksAlloc). { apply elem_of_dom. eauto. }
+          assert (ln ∈ dom locksAlloc). { apply elem_of_dom. eauto. }
           set_solver.
         - iFrame "#". iApply (big_sepM_delete _ _ ln); first done. iSplitR.
           { iFrame "#". iLeft. iPureIntro. set_solver. }
@@ -223,9 +223,9 @@ Proof.
     iSplit; last by eauto.
     iExists _, _; iFrame.
     set (ln:=args.(U64_1)) in *.
-    replace (dom (gset u64) (<[ln:=false]> locksM)) with (dom (gset u64) locksM); first done.
+    replace (dom (<[ln:=false]> locksM)) with (dom locksM); first done.
     rewrite dom_insert_L.
-    assert (ln ∈ dom (gset u64) locksM).
+    assert (ln ∈ dom locksM).
     { apply elem_of_dom. eauto. }
     set_solver.
   - wp_pures. iApply "Hpost". iSplitL; eauto.

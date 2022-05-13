@@ -88,7 +88,7 @@ Definition wal_heap_inv_crashes (heaps : async (gmap u64 Block)) (ls : log_state
 
 Definition wal_heap_inv (γ : wal_heap_gnames) (ls : log_state.t) : iProp Σ :=
   ∃ (gh : gmap u64 heap_block) (crash_heaps : async (gmap u64 Block)),
-    "%Hgh_complete" ∷ ⌜set_map int.Z (dom (gset u64) gh) = dom (gset _) ls.(log_state.d)⌝ ∗
+    "%Hgh_complete" ∷ ⌜set_map int.Z (dom gh) = dom ls.(log_state.d)⌝ ∗
     "Hctx" ∷ ghost_map_auth γ.(wal_heap_h) 1 gh ∗
     "Hgh" ∷ ( [∗ map] a ↦ b ∈ gh, wal_heap_inv_addr ls a b ) ∗
     "Htxns" ∷ ghost_var γ.(wal_heap_txns) (1/2) (ls.(log_state.d), ls.(log_state.txns)) ∗
@@ -515,7 +515,7 @@ Lemma wal_heap_gh_crash (γ: gname) crash_txn (gh: gmap u64 heap_block) ls :
   ghost_map_auth γ 1 ∅ -∗
   ([∗ map] a↦b ∈ gh, wal_heap_inv_addr ls a b) -∗
   |==> ∃ gh',
-      ⌜dom (gset _) gh' = dom (gset _) gh⌝ ∗
+      ⌜dom gh' = dom gh⌝ ∗
       ghost_map_auth γ 1 gh' ∗
       (* TODO: something has been lost along the way about how these values
       relate to the old ones; probably the exchanger is the only thing that can
@@ -563,8 +563,8 @@ Proof.
 Qed.
 
 Lemma apply_upds_dom_eq upds d :
-  dom (gset Z) (apply_upds upds d) =
-  list_to_set ((λ u, int.Z u.(update.addr)) <$> upds) ∪ dom (gset Z) d.
+  dom (apply_upds upds d) =
+  list_to_set ((λ u, int.Z u.(update.addr)) <$> upds) ∪ dom d.
 Proof.
   apply set_eq.
   intros.
@@ -596,8 +596,8 @@ Qed.
 
 Lemma disk_at_txn_id_same_dom txn_id ls :
   wal_wf ls →
-  dom (gset _) (disk_at_txn_id txn_id ls) =
-  dom _        ls.(log_state.d).
+  dom (disk_at_txn_id txn_id ls) =
+  dom        ls.(log_state.d).
 Proof.
   intros (Haddrs_wf & _).
   rewrite /disk_at_txn_id.
@@ -623,7 +623,7 @@ Qed.
 
 Lemma big_sepM_sepS_exists {PROP:bi} `{Countable K} V (Φ: K → V → PROP) m :
   ([∗ map] k↦v ∈ m, Φ k v)%I ⊣⊢
-  [∗ set] k ∈ dom (gset _) m, ∃ v, ⌜m !! k = Some v⌝ ∧ Φ k v.
+  [∗ set] k ∈ dom m, ∃ v, ⌜m !! k = Some v⌝ ∧ Φ k v.
 Proof.
   induction m as [|k v m] using map_ind.
   - rewrite big_sepM_empty dom_empty_L big_sepS_empty.
@@ -661,7 +661,7 @@ Qed.
 
 Lemma wal_heap_h_latest_updates γwal_heap_h crash_heaps gh ls :
   wal_wf ls →
-  set_map int.Z (dom (gset u64) gh) = dom (gset _) ls.(log_state.d) →
+  set_map int.Z (dom gh) = dom ls.(log_state.d) →
   ([∗ map] a↦hb ∈ gh,
    wal_heap_inv_addr ls a hb ∗
    a ↪[γwal_heap_h] hb) -∗
@@ -682,8 +682,8 @@ Proof.
 
   (* NOTE(tej): the other direction doesn't seem guaranteed if [last_disk ls]
   maps addresses >2^64... *)
-  assert (set_map int.Z (dom (gset u64) crash_heaps.(latest)) ⊆
-         dom (gset _) (last_disk ls)).
+  assert (set_map int.Z (dom crash_heaps.(latest)) ⊆
+         dom (last_disk ls)).
   { apply elem_of_subseteq; intros a.
     rewrite elem_of_map.
     rewrite elem_of_dom.
@@ -2179,9 +2179,9 @@ Proof.
 Qed.
 
 Lemma dom_memappend_gh_unchanged gh bs olds :
-  (∀ u, u ∈ bs → u.(update.addr) ∈ dom (gset _) gh)  →
-  dom (gset _) (memappend_gh gh bs olds) =
-  dom (gset _) gh.
+  (∀ u, u ∈ bs → u.(update.addr) ∈ dom gh)  →
+  dom (memappend_gh gh bs olds) =
+  dom gh.
 Proof.
   generalize dependent olds.
   generalize dependent gh.

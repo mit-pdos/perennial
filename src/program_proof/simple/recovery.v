@@ -67,7 +67,7 @@ Definition fs_dinit sz : gmap Z Block :=
 Lemma dom_fs_dinit:
   ∀ sz : Z,
     513 + 1 + (32 - 2) ≤ sz
-    → dom (gset Z) (fs_dinit sz) = list_to_set (seqZ 513 (sz - 513)).
+    → dom (fs_dinit sz) = list_to_set (seqZ 513 (sz - 513)).
 Proof.
   intros sz Hsz.
   rewrite /fs_dinit.
@@ -78,7 +78,7 @@ Qed.
 Lemma dom_fs_kinds:
   ∀ sz : Z,
     513 + 1 + (32 - 2) ≤ sz
-    → dom (gset u64) (fs_kinds sz) = list_to_set (U64 <$> seqZ 513 (sz - 513)).
+    → dom (fs_kinds sz) = list_to_set (U64 <$> seqZ 513 (sz - 513)).
 Proof.
   intros sz Hsz.
   rewrite /fs_kinds.
@@ -229,7 +229,7 @@ Proof.
 Qed.
 
 Lemma crash_upd_src γsrc γ' src:
-  dom (gset u64) src = covered_inodes →
+  dom src = covered_inodes →
   ("Hlmcrash" ∷ ([∗ set] y ∈ covered_inodes, is_inode_stable γsrc γ' y) ∗
   "Hsrcheap" ∷ map_ctx γsrc 1 src) ==∗
   ∃ γsrc',

@@ -107,7 +107,7 @@ Section disk.
     set_fold (λ k r, k `max` r)%Z 0%Z addrs.
 
   Definition disk_size {A} (d: gmap Z A): Z :=
-    1 + highest_addr (dom _ d).
+    1 + highest_addr (dom d).
 
   Definition all_synced (σ: gmap Z CrashBlock) :=
     ∀ z cblk, σ !! z = Some cblk → curr_val cblk = crash_val cblk.
@@ -149,7 +149,7 @@ Section disk.
 
   Inductive ffi_crash_step : @ffi_state disk_model → @ffi_state disk_model → Prop :=
   | async_crash d d' :
-      dom (gset _) d = dom (gset _) d' ∧
+      dom d = dom d' ∧
       (∀ addr cb, d !! addr = Some cb → d' !! addr = Some (cblk_synced (crash_val cb))) →
       ffi_crash_step d d'.
 
@@ -205,7 +205,7 @@ lemmas. *)
 
   (*
   Theorem read_fresh : forall σ g a b,
-      let l := fresh_locs (dom (gset loc) (heap σ)) in
+      let l := fresh_locs (dom (heap σ)) in
       σ.(world) !! int.Z a = Some b ->
       relation.denote (ffi_step ReadOp (LitV $ LitInt a)) (σ,g) (state_insert_list l (Block_to_vals b) σ,g) (LitV $ LitLoc $ l).
   Proof.

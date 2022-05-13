@@ -100,8 +100,8 @@ Qed.
 
 Lemma dom_filter_eq `{Countable K} `(m1 : gmap K A) `(m2 : gmap K B) (P : K -> Prop)
                     `{Hdk : ∀ k, Decision (P k)} :
-  dom (gset K) m1 = dom (gset K) m2 ->
-  dom (gset K) (filter (λ x, P x.1) m1) = dom (gset K) (filter (λ x, P x.1) m2).
+  dom m1 = dom m2 ->
+  dom (filter (λ x, P x.1) m1) = dom (filter (λ x, P x.1) m2).
 Proof.
   intros.
   apply set_eq.
@@ -212,7 +212,7 @@ Section map.
   Set Default Proof Using "Type*".
 
   Lemma big_sepS_exists_sepM Φ (s : gset K) :
-    ([∗ set] k ∈ s, ∃ v, Φ k v) -∗ ∃ m, ⌜ dom (gset _) m = s ⌝ ∗ ([∗ map] k ↦ v ∈ m, Φ k v).
+    ([∗ set] k ∈ s, ∃ v, Φ k v) -∗ ∃ m, ⌜ dom m = s ⌝ ∗ ([∗ map] k ↦ v ∈ m, Φ k v).
   Proof.
     iIntros "Hs".
     iInduction s as [| k s'] "IH" using set_ind_L.
@@ -233,7 +233,7 @@ Section map.
   Proof.
     intros Hwand.
     induction m as [|i x m ? IH] using map_ind; auto using big_sepM_empty'.
-    { by rewrite big_opM_eq. }
+    { by rewrite !big_opM_empty. }
     rewrite ?big_sepM_insert //.
     iIntros "(HP&Hi&H)".
     iDestruct (Hwand with "[$]") as "(?&$)".
@@ -424,7 +424,7 @@ Section map.
   Qed.
 
   Lemma big_sepM_mono_dom_Q {B} (Q : PROP) (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :
-    dom (gset K) m1 = dom (gset K) m2 ->
+    dom m1 = dom m2 ->
     □ ( ∀ k x1,
         ⌜ m1 !! k = Some x1 ⌝ -∗
         (Q ∗ Φ k x1) -∗
@@ -441,7 +441,7 @@ Section map.
   Qed.
 
   Lemma big_sepM_mono_dom {B} (Φ : K->A->PROP) (Ψ : K->B->PROP) (m1 : gmap K A) (m2 : gmap K B) :
-    dom (gset K) m1 = dom (gset K) m2 ->
+    dom m1 = dom m2 ->
     □ ( ∀ k x1,
         ⌜ m1 !! k = Some x1 ⌝ -∗
         Φ k x1 -∗
@@ -657,7 +657,7 @@ Section map2.
 
   Lemma big_sepM_sepM2_merge (Φ : K -> A -> PROP) (Ψ : K -> B -> PROP)
     (m1 : gmap K A) (m2 : gmap K B) :
-    dom (gset K) m1 = dom (gset K) m2 ->
+    dom m1 = dom m2 ->
     ( [∗ map] k↦y1 ∈ m1, Φ k y1 ) ∗
     ( [∗ map] k↦y2 ∈ m2, Ψ k y2 ) -∗
     [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 ∗ Ψ k y2.
@@ -668,7 +668,7 @@ Section map2.
   Qed.
 
   Lemma big_sepM_sepM2_merge_ex (Φ : K -> A -> B -> PROP) (m1 : gmap K A) (m2 : gmap K B) :
-    dom (gset K) m1 = dom (gset K) m2 ->
+    dom m1 = dom m2 ->
     ( [∗ map] k↦y1 ∈ m1, ∃ y2, ⌜m2 !! k = Some y2⌝ ∗ Φ k y1 y2 ) -∗
     [∗ map] k↦y1;y2 ∈ m1;m2, Φ k y1 y2.
   Proof.
@@ -709,7 +709,7 @@ Section map2.
     ( ( [∗ map] k↦y1;y2 ∈ filter (λ x, P x.1) m1;filter (λ x, P x.1) m2, Φ k y1 y2 ) ∗
       ( [∗ map] k↦y1;y2 ∈ filter (λ x, ~P x.1) m1;filter (λ x, ~P x.1) m2, Φ k y1 y2 ) ).
   Proof.
-    rewrite big_sepM2_eq /big_sepM2_def.
+    rewrite big_op.big_sepM2_unseal /big_op.big_sepM2_def.
     iSplit.
     - iIntros "[% Hm]".
       erewrite <- (map_filter_union_complement _ (map_zip m1 m2)).

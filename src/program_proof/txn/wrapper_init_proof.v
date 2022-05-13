@@ -33,7 +33,7 @@ Section proof.
   Implicit Types (N: namespace).
   Definition twophase_obj_cfupd_cancel γ γ' d :=
    ((|C={⊤}=> ∃ mt',
-       ⌜ dom (gset _) mt' = d ⌝ ∗
+       ⌜ dom mt' = d ⌝ ∗
        ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
        ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
        "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
@@ -57,18 +57,18 @@ Section proof.
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
-      "#Hjrnl_dom" ∷ jrnl_dom (dom _ mt)
+      "#Hjrnl_dom" ∷ jrnl_dom (dom mt)
     }}}
       let: "twophasePre" := struct.alloc txn.Log (MkLog (disk_val d), (lockmap.MkLockMap #(), #())) in
       Var "twophasePre" @ ⊤
     {{{
       γ' (l: loc), RET #l;
-      "Htwophase" ∷ is_twophase_pre l γ γ' dinit (dom (gset addr) mt) ∗
+      "Htwophase" ∷ is_twophase_pre l γ γ' dinit (dom mt) ∗
       "Hcancel_txn" ∷ txn_cfupd_cancel dinit γ' ∗
-      "Hcancel_obj" ∷ wpc_crash_modality ⊤ mj (twophase_obj_cfupd_cancel γ γ' (dom (gset addr) mt))
+      "Hcancel_obj" ∷ wpc_crash_modality ⊤ mj (twophase_obj_cfupd_cancel γ γ' (dom mt))
     }}}
     {{{ ∃ γ' logm' mt',
-       ⌜ dom (gset _) mt' = dom (gset _) mt ⌝ ∗
+       ⌜ dom mt' = dom mt ⌝ ∗
        ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
        ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
       is_txn_durable γ' dinit logm' ∗
@@ -246,7 +246,7 @@ Section proof.
       j ⤇ (K #true) ∗
       jrnl_open ∗
       ∃ γ γ' dinit (mt : gmap addr object),
-       "Htwophase" ∷ is_twophase_pre l γ γ' dinit (dom (gset addr) mt)
+       "Htwophase" ∷ is_twophase_pre l γ γ' dinit (dom mt)
     }}}.
   Proof.
     iIntros (HinvN HwalN (*Hvalids*) Φ) "Hpre HΦ".

@@ -40,7 +40,7 @@ Section fmcounter_map_props.
     iExists γ.
     rewrite -(big_opM_singletons m).
     rewrite big_opM_own_1.
-    replace (fin_to_set u64) with (dom (gset _) m); last first.
+    replace (fin_to_set u64) with (dom m); last first.
     { rewrite dom_gset_to_gmap. done. }
     iApply big_sepM_dom.
     iApply (big_sepM_impl with "Hown").

@@ -102,7 +102,7 @@ Definition is_twophase_jrnl l γ dinit mt_changed : iProp Σ :=
 Definition is_twophase_raw l γ γ' dinit ex_mapsto objs_dom mt_changed : iProp Σ :=
   "Hlocks" ∷ is_twophase_locks
     l γ γ' ex_mapsto (set_map addr2flat objs_dom)
-    (set_map addr2flat (dom (gset addr) mt_changed)) ∗
+    (set_map addr2flat (dom mt_changed)) ∗
   "Hjrnl" ∷ is_twophase_jrnl l γ dinit mt_changed ∗
   "Hcrash_invs" ∷ (
     [∗ map] a ↦ vobj ∈ mt_changed,
@@ -186,7 +186,7 @@ Proof. econstructor. econstructor. apply (bufBit true). Qed.
 Theorem twophase_init_locks {E} ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} mt γ γ' :
   ↑Njrnl ⊆ E →
   ↑invN ⊆ E →
-  set_Forall valid_addr (dom (gset addr) mt) →
+  set_Forall valid_addr (dom mt) →
   "Hpre" ∷ ([∗ map] _ ↦ _ ∈ mt, pre_borrow) -∗
   "#Htxn_system" ∷ is_txn_system Njrnl γ -∗
   "#Htxn_cinv" ∷ txn_cinv Njrnl γ γ' -∗
@@ -197,7 +197,7 @@ Theorem twophase_init_locks {E} ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a ob
   )
   -∗ |NC={E}=>
   "Hlinvs" ∷ (
-    init_cancel ([∗ set] a ∈ set_map addr2flat (dom (gset addr) mt),
+    init_cancel ([∗ set] a ∈ set_map addr2flat (dom mt),
                  "Hlinv" ∷ twophase_linv_flat ex_mapsto γ γ' a)
                 ("Hcrash" ∷
                    (|C={⊤}=> ([∗ map] a↦_ ∈ mt, ∃ (obj : object),
@@ -374,7 +374,7 @@ Qed.
 Lemma is_twophase_raw_get_mt_in_spec l γ γ' dinit ex_mapsto objs_dom mt_changed :
   "Htwophase" ∷ is_twophase_raw
     l γ γ' dinit ex_mapsto objs_dom mt_changed -∗
-  "Hmt_dom" ∷ ⌜dom (gset addr) mt_changed ⊆ objs_dom⌝.
+  "Hmt_dom" ∷ ⌜dom mt_changed ⊆ objs_dom⌝.
 Proof.
   iNamed 1.
   iNamed "Htwophase".
@@ -851,7 +851,7 @@ Proof.
   }
   iNamed 1.
   assert (
-    addr2flat a ∈ (set_map addr2flat (dom (gset addr) mt_changed): gset _) ↔
+    addr2flat a ∈ (set_map addr2flat (dom mt_changed): gset _) ↔
     is_Some (mt_changed !! a)
   ) as Hlocked_iff.
   {
@@ -944,10 +944,10 @@ Proof.
     wp_MapIter_3 _ _ _ _ _
     (λ mtodo mdone,
       "Htxn.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
-      "Hlockeds" ∷ ([∗ set] flat_a ∈ dom (gset _) mtodo,
+      "Hlockeds" ∷ ([∗ set] flat_a ∈ dom mtodo,
         "Hlocked" ∷ Locked ghs flat_a
       ) ∗
-      "Hlinvs" ∷ ([∗ set] flat_a ∈ dom (gset _) mtodo,
+      "Hlinvs" ∷ ([∗ set] flat_a ∈ dom mtodo,
         "Hlinv" ∷ twophase_linv_flat ex_mapsto γ γ' flat_a
       )
     )%I
@@ -1121,9 +1121,9 @@ Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Discr
     (ok:bool), RET #ok;
     "Hlocks" ∷ is_twophase_locks
       l γ γ' ex_mapsto (set_map addr2flat objs_dom)
-      (set_map addr2flat (dom (gset addr) mt_changed)) ∗
+      (set_map addr2flat (dom mt_changed)) ∗
     "Hlinvs" ∷ (
-      [∗ set] a ∈ dom (gset addr) mt_changed,
+      [∗ set] a ∈ dom mt_changed,
         "Hlinv" ∷ twophase_linv_flat ex_mapsto γ γ' (addr2flat a)
     ) ∗
     "HQ" ∷ (if ok then Qok else Qnok)

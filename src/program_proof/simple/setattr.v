@@ -117,7 +117,7 @@ Proof using Ptimeless.
       simpl.
       destruct (src !! fh) eqn:He.
       { exfalso.
-        assert (fh ∈ dom (gset u64) src) as Hin.
+        assert (fh ∈ dom src) as Hin.
         { apply elem_of_dom. rewrite He. eauto. }
         rewrite Hdom in Hin. apply Hvalid in Hin. congruence. }
       rewrite He.

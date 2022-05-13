@@ -73,7 +73,7 @@ Proof.
     rewrite big_sepS_empty //. }
   iExists Γsrv.
   iAssert (∀ specs', ⌜ uRPCSpecList_wf specs' ⌝ ∗ ⌜ dom_uRPCSpecList specs' ⊆  dom_uRPCSpecList specs ⌝ →
-           |==> ∃ gnames : gmap u64 gname, ⌜ dom (gset _) gnames = dom_uRPCSpecList specs' ⌝ ∗
+           |==> ∃ gnames : gmap u64 gname, ⌜ dom gnames = dom_uRPCSpecList specs' ⌝ ∗
            map_ctx (scmap_name Γsrv) 1 gnames ∗
            handler_uRPCSpecList Γsrv host specs')%I with "[Hmap_ctx]" as "H"; last first.
   { iMod ("H" with "[]") as (?) "(_&_&$)"; eauto. }

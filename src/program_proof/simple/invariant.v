@@ -64,7 +64,7 @@ Definition is_source γ : iProp Σ :=
     (* If we were doing a refinement proof, the top-level source_state would
      * own 1/2 of this [map_ctx] *)
     "Hsrcheap" ∷ map_ctx γ 1%Qp src ∗
-    "%Hdom" ∷ ⌜dom (gset _) src = covered_inodes⌝ ∗
+    "%Hdom" ∷ ⌜dom src = covered_inodes⌝ ∗
     "#Hnooverflow" ∷ no_overflows src ∗
     "HP" ∷ P src.
 

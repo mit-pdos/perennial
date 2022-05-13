@@ -472,16 +472,16 @@ Section gmap_addr_by_block.
   Qed.
 
   Theorem gmap_addr_by_block_dom_union (m0 m1 : gmap addr T) :
-    dom (gset u64) (gmap_addr_by_block (m0 ∪ m1)) =
-    dom (gset u64) (gmap_addr_by_block m0) ∪
-    dom (gset u64) (gmap_addr_by_block m1).
+    dom (gmap_addr_by_block (m0 ∪ m1)) =
+    dom (gmap_addr_by_block m0) ∪
+    dom (gmap_addr_by_block m1).
   Proof.
     rewrite /gmap_addr_by_block.
     eapply set_eq; split; intros.
-    - destruct (decide (x ∈ dom (gset u64) (gmap_curry m0))); try set_solver.
-      destruct (decide (x ∈ dom (gset u64) (gmap_curry m1))); try set_solver.
+    - destruct (decide (x ∈ dom (gmap_curry m0))); try set_solver.
+      destruct (decide (x ∈ dom (gmap_curry m1))); try set_solver.
       exfalso.
-      assert (x ∉ dom (gset u64) (gmap_curry (m0 ∪ m1))); try set_solver.
+      assert (x ∉ dom (gmap_curry (m0 ∪ m1))); try set_solver.
 
       apply not_elem_of_dom in n.
       apply not_elem_of_dom in n0.
@@ -493,9 +493,9 @@ Section gmap_addr_by_block.
       specialize (n j). specialize (n0 j).
       eapply lookup_union_None; eauto.
 
-    - destruct (decide (x ∈ dom (gset u64) (gmap_curry (m0 ∪ m1)))); try set_solver.
+    - destruct (decide (x ∈ dom (gmap_curry (m0 ∪ m1)))); try set_solver.
       exfalso.
-      assert (x ∉ dom (gset u64) (gmap_curry m0) ∪ dom (gset u64) (gmap_curry m1)); try set_solver.
+      assert (x ∉ dom (gmap_curry m0) ∪ dom (gmap_curry m1)); try set_solver.
       apply not_elem_of_dom in n.
       apply not_elem_of_union; split; apply not_elem_of_dom.
 
@@ -588,8 +588,8 @@ Section gmap_addr_by_block.
 
   Lemma gmap_addr_by_block_elem_of_1 m offmap blk off :
     gmap_addr_by_block m !! blk = Some offmap ->
-    off ∈ dom (gset u64) offmap ->
-    (blk, off) ∈ dom (gset addr) m.
+    off ∈ dom offmap ->
+    (blk, off) ∈ dom m.
   Proof.
     rewrite /gmap_addr_by_block; intros.
     apply elem_of_dom. apply elem_of_dom in H0. destruct H0.
@@ -598,8 +598,8 @@ Section gmap_addr_by_block.
 
   Lemma gmap_addr_by_block_elem_of_2 m offmap blk off :
     gmap_addr_by_block m !! blk = Some offmap ->
-    (blk, off) ∈ dom (gset addr) m ->
-    off ∈ dom (gset u64) offmap.
+    (blk, off) ∈ dom m ->
+    off ∈ dom offmap.
   Proof.
     rewrite /gmap_addr_by_block; intros.
     apply elem_of_dom. apply elem_of_dom in H0. destruct H0.
@@ -610,8 +610,8 @@ Section gmap_addr_by_block.
 End gmap_addr_by_block.
 
 Lemma gmap_addr_by_block_dom_eq {T0 T1} (m0 : gmap addr T0) (m1 : gmap addr T1) :
-  dom (gset addr) m0 = dom (gset addr) m1 ->
-  dom (gset u64) (gmap_addr_by_block m0) = dom (gset u64) (gmap_addr_by_block m1).
+  dom m0 = dom m1 ->
+  dom (gmap_addr_by_block m0) = dom (gmap_addr_by_block m1).
 Proof.
   intros.
   eapply set_eq; intros x.
@@ -636,10 +636,10 @@ Proof.
 Qed.
 
 Lemma gmap_addr_by_block_dom_eq2 {T0 T1} (m0 : gmap addr T0) (m1 : gmap addr T1) (blk : u64) (mb0 : gmap u64 T0) (mb1 : gmap u64 T1) :
-  dom (gset addr) m0 = dom (gset addr) m1 ->
+  dom m0 = dom m1 ->
   gmap_addr_by_block m0 !! blk = Some mb0 ->
   gmap_addr_by_block m1 !! blk = Some mb1 ->
-  dom (gset u64) mb0 = dom (gset u64) mb1.
+  dom mb0 = dom mb1.
 Proof.
   intros.
   eapply set_eq; intros x.
@@ -692,7 +692,7 @@ Theorem gmap_addr_by_block_big_sepM2
   ( [∗ map] blkno ↦ offmap1; offmap2 ∈ gmap_addr_by_block m1; gmap_addr_by_block m2,
       [∗ map] off ↦ v1; v2 ∈ offmap1; offmap2, Φ (Build_addr blkno off) v1 v2 ).
 Proof.
-  rewrite big_sepM2_eq /big_sepM2_def.
+  rewrite big_op.big_sepM2_unseal /big_op.big_sepM2_def.
   rewrite gmap_addr_by_block_big_sepM.
   iIntros "[%Hdom Hm]".
   rewrite -gmap_addr_by_block_map_zip //.

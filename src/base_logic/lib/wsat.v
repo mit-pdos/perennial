@@ -783,7 +783,7 @@ Proof.
   iMod (own_unit (gset_disjUR positive) disabled_name) as "HE".
   iMod (own_updateP with "[$]") as "HE".
   { apply (gset_disj_alloc_empty_updateP_strong' (λ i, I !! i = None ∧ φ i)).
-    intros E. destruct (Hfresh (E ∪ dom _ I))
+    intros E. destruct (Hfresh (E ∪ dom I))
       as (i & [? HIi%not_elem_of_dom]%not_elem_of_union & ?); eauto. }
   iDestruct "HE" as (X) "[Hi HE]"; iDestruct "Hi" as %(i & -> & HIi & ?).
   iMod (own_update with "Hw") as "[Hw HiP]".
@@ -831,7 +831,7 @@ Proof.
   iMod (own_unit (gset_disjUR positive) disabled_name) as "HD".
   iMod (own_updateP with "[$]") as "HD".
   { apply (gset_disj_alloc_empty_updateP_strong' (λ i, I !! i = None ∧ φ i)).
-    intros E. destruct (Hfresh (E ∪ dom _ I))
+    intros E. destruct (Hfresh (E ∪ dom I))
       as (i & [? HIi%not_elem_of_dom]%not_elem_of_union & ?); eauto. }
   iDestruct "HD" as (X) "[Hi HD]"; iDestruct "Hi" as %(i & -> & HIi & ?).
   iMod (own_update with "Hw") as "[Hw HiP]".

@@ -270,10 +270,10 @@ Proof.
   iMod (saved_prop_alloc_cofinite ({[ γspc1 ]}) Rc2)
     as (γspc2 ?%not_elem_of_singleton) "#Hspc2".
    *)
-  assert (∃ i1, i1 ∉ dom (gset _) (delete i gmm)) as (i1&Hnotin1).
-  { exists (fresh (dom (gset _) (delete i gmm))). apply is_fresh. }
-  assert (∃ i2, i2 ∉ {[i1]} ∪ (dom (gset _) (delete i gmm))) as (i2&Hnotin2).
-  { exists (fresh ({[i1]} ∪ (dom (gset _) (delete i gmm)))). apply is_fresh. }
+  assert (∃ i1, i1 ∉ dom (delete i gmm)) as (i1&Hnotin1).
+  { exists (fresh (dom (delete i gmm))). apply is_fresh. }
+  assert (∃ i2, i2 ∉ {[i1]} ∪ (dom (delete i gmm))) as (i2&Hnotin2).
+  { exists (fresh ({[i1]} ∪ (dom (delete i gmm)))). apply is_fresh. }
   iMod (ghost_map_insert i1 (γsp1, γspc1) with "[$]") as "(H●&Hkey1)".
   { apply not_elem_of_dom. auto. }
   iMod (ghost_map_insert i2 (γsp2, γspc2) with "[$]") as "(H●&Hkey2)".

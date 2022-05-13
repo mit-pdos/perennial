@@ -1007,7 +1007,7 @@ Proof.
 Qed.
 
 Theorem fresh_locs_isFresh σg :
-  isFresh σg (fresh_locs (dom (gset loc) σg.1.(heap))).
+  isFresh σg (fresh_locs (dom σg.1.(heap))).
 Proof.
   split.
   - split.
@@ -1019,7 +1019,7 @@ Qed.
 
 Definition gen_isFresh σg : {l: loc | isFresh σg l}.
 Proof.
-  refine (exist _ (fresh_locs (dom (gset loc) σg.1.(heap))) _).
+  refine (exist _ (fresh_locs (dom σg.1.(heap))) _).
   by apply fresh_locs_isFresh.
 Defined.
 
@@ -1285,7 +1285,7 @@ Proof using ext.
 Qed.
 
 Lemma alloc_fresh v (n: u64) σ g :
-  let l := fresh_locs (dom (gset loc) σ.(heap)) in
+  let l := fresh_locs (dom σ.(heap)) in
   (0 < int.Z n)%Z →
   head_step_atomic (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ g []
             (Val $ LitV $ LitLoc l) (state_init_heap l (int.Z n) v σ) g [].
@@ -1631,7 +1631,7 @@ Definition neg_non_alloc {V} (h : gmap loc V) :=
   ∀ l, is_Some (h !! l) → 0 < loc_car l.
 
 Lemma fresh_alloc_equiv_null_non_alloc σ v:
-  null_non_alloc (<[fresh_locs (dom (gset loc) σ.(heap)):=v]> σ.(heap)) ↔
+  null_non_alloc (<[fresh_locs (dom σ.(heap)):=v]> σ.(heap)) ↔
   null_non_alloc (σ.(heap)).
 Proof.
   split.

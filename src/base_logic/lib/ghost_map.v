@@ -14,7 +14,7 @@ Section lemmas.
 
   Lemma ghost_map_elem_big_exist γ m :
     ([∗ map] l↦_ ∈ m, ∃ v', l ↪[γ] v') -∗
-    ∃ m', ⌜dom (gset _) m' = dom (gset _) m⌝ ∗
+    ∃ m', ⌜dom m' = dom m⌝ ∗
           [∗ map] l↦v ∈ m', l ↪[γ] v.
   Proof.
     induction m as [|l v m] using map_ind.
@@ -49,15 +49,15 @@ Section lemmas.
 
 
   Global Instance ghost_map_auth_discrete γ q m : Discretizable (ghost_map_auth γ q m).
-  Proof. rewrite ghost_map_auth_eq. apply _. Qed.
+  Proof. rewrite ghost_map.ghost_map_auth_unseal. apply _. Qed.
 
   Global Instance ghost_map_auth_abs_timeless γ q m : AbsolutelyTimeless (ghost_map_auth γ q m).
-  Proof. rewrite ghost_map_auth_eq. apply _. Qed.
+  Proof. rewrite ghost_map.ghost_map_auth_unseal. apply _. Qed.
 
   Global Instance ghost_map_elem_discrete γ dq k v : Discretizable (k ↪[γ]{dq} v).
-  Proof. rewrite ghost_map_elem_eq. apply _. Qed.
+  Proof. rewrite ghost_map.ghost_map_elem_unseal. apply _. Qed.
 
   Global Instance ghost_map_elem_abs_timeless γ dq k v : AbsolutelyTimeless (k ↪[γ]{dq} v).
-  Proof. rewrite ghost_map_elem_eq. apply _. Qed.
+  Proof. rewrite ghost_map.ghost_map_elem_unseal. apply _. Qed.
 
 End lemmas.

@@ -18,7 +18,7 @@ Section translate.
     (∀ addr ab, dd !! addr = Some ab → log_heap.pending ab = []).
 
   Definition disk_compat (dd : @ffi_state AD.disk_model) (ad: @ffi_state ADP.disk_model) :=
-    dom (gset _) dd = dom (gset _) ad ∧
+    dom dd = dom ad ∧
     (∀ addr ab, dd !! addr = Some ab →
      ∃ bd, bd ∈ log_heap.possible ab ∧
            ad !! addr = Some ({| ADP.curr_val := log_heap.latest ab;
@@ -1145,7 +1145,7 @@ Section translate.
   Qed.
 
   Definition match_curr (dd : @ffi_state ADP.disk_model) (ad: @ffi_state ADP.disk_model) :=
-    dom (gset _) dd = dom (gset _) ad ∧
+    dom dd = dom ad ∧
     (∀ addr ab, dd !! addr = Some ab → ∃ ab', ad !! addr = Some ab' ∧ ADP.curr_val ab = ADP.curr_val ab').
 
   Definition state_match_curr (pσ1 : pstate) (pσ2 : pstate) :=
@@ -2081,7 +2081,7 @@ Section translate.
       {
         econstructor; split.
         * rewrite dom_delete_L. destruct H0. rewrite dom_insert_L in H0.
-          assert (i ∉ dom (gset _) m).
+          assert (i ∉ dom m).
           { apply not_elem_of_dom. eauto. }
           set_solver.
         * intros addr ab Hdel.

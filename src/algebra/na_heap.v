@@ -129,11 +129,11 @@ Section definitions.
   Definition meta_eq : @meta = @meta_def := meta_aux.(seal_eq).
 
   Definition block_sizes_wf (σ: gmap L (LK * V)) (sz: gmap Z Z) : Prop :=
-    (∀ l z, l ∈ dom (gset L) σ → sz !! addr_id l = Some z → (0 ≤ addr_offset l < z)%Z) ∧
-    (∀ l, l ∈ dom (gset Z) sz → addr_encode (l, 0)%Z ∈ dom (gset L) σ).
+    (∀ l z, l ∈ dom σ → sz !! addr_id l = Some z → (0 ≤ addr_offset l < z)%Z) ∧
+    (∀ l, l ∈ dom sz → addr_encode (l, 0)%Z ∈ dom σ).
 
   Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ m (sz: gmap Z Z),
-    ⌜ dom _ m ⊆ dom (gset L) σ ⌝ ∧
+    ⌜ dom m ⊆ dom σ ⌝ ∧
      own (na_heap_name hG) (● to_na_heap tls σ) ∗
      own (na_meta_name hG) (gmap_view_auth (DfracOwn 1) m) ∗
      own (na_size_name hG) (● to_na_size sz) ∗
@@ -363,7 +363,7 @@ Section na_heap.
     iApply (own_update with "Hm").
     apply reservation_map_alloc; last done.
     cut (positives_flatten N ∈@{coPset} ↑N); first by set_solver.
-    rewrite nclose_eq. apply elem_coPset_suffixes.
+    rewrite namespaces.nclose_unseal. apply elem_coPset_suffixes.
     exists 1%positive. by rewrite left_id_L.
   Qed.
 
@@ -701,7 +701,7 @@ Section na_heap.
     intros (z&Hlook&Hequiv). revert Hincl; rewrite Hequiv.
     move=> /Some_included_total/to_agree_included. inversion 1; subst.
     destruct Hwf as (Hwf1&Hwf2).
-    destruct (decide (l ∈ dom (gset L) σ)).
+    destruct (decide (l ∈ dom σ)).
     - efeed pose proof (Hwf1 l); eauto.
       { rewrite -addr_id_of_base; eauto. }
       { lia. }
@@ -760,8 +760,8 @@ Section na_heap.
     block_sizes_wf (<[l := b]> σ) sz ↔ block_sizes_wf σ sz.
   Proof.
     rewrite /block_sizes_wf dom_insert_L => ?.
-    assert ({[l]} ∪ dom (gset L) σ = dom (gset L) σ) as ->.
-    { cut (l ∈ dom (gset L) σ); first by set_solver.
+    assert ({[l]} ∪ dom σ = dom σ) as ->.
+    { cut (l ∈ dom σ); first by set_solver.
       apply elem_of_dom; eauto. }
     eauto.
   Qed.

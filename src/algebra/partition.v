@@ -99,7 +99,7 @@ Lemma partition_alloc σ:
         partition_ctx (<[l := {[v]}]>σ) ∗ l ↦ {[v]} ∗ meta_token l ⊤.
 Proof.
   iIntros "(Hdisj&Hctx)". iDestruct "Hdisj" as %Hdisj.
-  iMod (gen_heap_alloc σ (fresh (dom (gset L) σ)) ({[fresh_partition_value σ]}) with "Hctx")
+  iMod (gen_heap_alloc σ (fresh (dom σ)) ({[fresh_partition_value σ]}) with "Hctx")
        as "(Hctx&Hl&Hmeta)".
   { rewrite -(not_elem_of_dom (D := gset L)). apply is_fresh. }
   iModIntro. unshelve (iExists _, _, _, _; iFrame).
@@ -107,11 +107,11 @@ Proof.
   { rewrite /fresh_partition_value. eapply is_fresh. }
   iPureIntro.
   intros i j s1 s2 Hneq.
-  destruct (decide (i = fresh (dom (gset L) σ))) as [He1|Hne1].
+  destruct (decide (i = fresh (dom σ))) as [He1|Hne1].
   { subst. rewrite lookup_insert lookup_insert_ne //.
     inversion 1; subst. intros Hlookup.
     specialize (fresh_partition_value_spec σ j s2). set_solver. }
-  destruct (decide (j = fresh (dom (gset L) σ))) as [He2|Hne2].
+  destruct (decide (j = fresh (dom σ))) as [He2|Hne2].
   { subst. rewrite lookup_insert lookup_insert_ne //.
     inversion 1; subst. intros Hlookup.
     specialize (fresh_partition_value_spec σ i s1). set_solver. }

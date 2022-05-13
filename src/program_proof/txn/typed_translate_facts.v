@@ -15,7 +15,7 @@ TCB. *)
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Lemma kind_heap0_ok kinds :
-  (∀ (a: u64), a ∈ dom (gset _) kinds → int.Z a * 4096 * 8 < 2^64) →
+  (∀ (a: u64), a ∈ dom kinds → int.Z a * 4096 * 8 < 2^64) →
   map_Forall  (kinds_mapsto_valid kinds) (recovery_proof.kind_heap0 kinds).
 Proof.
   intros Hdom.

@@ -132,8 +132,8 @@ Definition AE_eq : AE = AE_def :=
 
 Lemma AlwaysEn_alt : AlwaysEn = ↑(nroot.@(1%positive)).
 Proof.
-  rewrite /AlwaysEn/coPset_inl ?nclose_eq /nclose_def/up_close.
-  rewrite /nroot ndot_eq /ndot_def/encode //=.
+  rewrite /AlwaysEn/coPset_inl ?namespaces.nclose_unseal /namespaces.nclose_def/up_close.
+  rewrite /nroot namespaces.ndot_unseal /namespaces.ndot_def/encode //=.
   apply coPset_suffixes_of_top.
 Qed.
 

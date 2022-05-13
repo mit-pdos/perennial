@@ -346,8 +346,8 @@ Proof.
 Qed.
 
 Lemma apply_upds_dom upds d :
-  ∀ (a: Z), a ∈ dom (gset Z) (apply_upds upds d) ↔
-            a ∈ ((λ u, int.Z u.(update.addr)) <$> upds) ∨ a ∈ (dom (gset Z) d).
+  ∀ (a: Z), a ∈ dom (apply_upds upds d) ↔
+            a ∈ ((λ u, int.Z u.(update.addr)) <$> upds) ∨ a ∈ (dom d).
 Proof.
   induction upds as [|[a b] upds] using rev_ind.
   - simpl.
@@ -358,7 +358,7 @@ Proof.
 Qed.
 
 Lemma apply_upds_empty_dom upds :
-  ∀ a, a ∈ dom (gset Z) (apply_upds upds ∅) ↔
+  ∀ a, a ∈ dom (apply_upds upds ∅) ↔
        a ∈ ((λ u, int.Z u.(update.addr)) <$> upds).
 Proof.
   intros.

@@ -578,7 +578,7 @@ Lemma tac_wp_loadField Δ Δ' s E i l q d f v Φ :
   envs_entails Δ' (Φ v) →
   envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
-  rewrite envs_entails_eq=> ???.
+  rewrite envs_entails_unseal=> ???.
   eapply bi.wand_apply; first exact: wp_loadField.
   rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
   by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
@@ -611,7 +611,7 @@ Lemma tac_wp_loadField_ro {E} Δ s i l d f v Φ :
   envs_entails Δ (Φ v) →
   envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
-  rewrite envs_entails_eq=> ? HΦ.
+  rewrite envs_entails_unseal=> ? HΦ.
   eapply bi.wand_apply; first exact: wp_loadField_ro.
   rewrite envs_lookup_split //; simpl.
   iIntros "[#Hro Henvs]".
@@ -660,7 +660,7 @@ Lemma tac_wp_storeField Δ Δ' Δ'' stk E i l d f v v' Φ :
   envs_entails Δ (WP (struct.storeF d f (LitV l) (Val v')) @ stk; E {{ Φ }}).
 Proof.
   intros Hty.
-  rewrite envs_entails_eq=> ????.
+  rewrite envs_entails_unseal=> ????.
   eapply bi.wand_apply; first by eapply wp_storeField.
   rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
   rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.

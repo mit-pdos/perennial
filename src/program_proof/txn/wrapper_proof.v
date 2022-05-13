@@ -97,7 +97,7 @@ Section proof.
         "Hlinv" ∷ twophase_linv_flat jrnl_mapsto_own γ γ' flat_a
       )) ∗
       "%Hlocks_held" ∷ ⌜
-        set_map addr2flat (dom (gset addr) mt_changed) = locks_held
+        set_map addr2flat (dom mt_changed) = locks_held
       ⌝ ∗
       "%Hjrnl_maps_kinds" ∷ ⌜jrnl_maps_kinds_valid γ σj1 σj2⌝ ∗
       "%Hjrnl_maps_mt" ∷ ⌜jrnl_maps_have_mt mt_changed σj1 σj2⌝.
@@ -204,7 +204,7 @@ Section proof.
 
   Definition twophase_obj_cfupd_cancel γ' d :=
    ((|C={⊤}=> ∃ mt',
-       ⌜ dom (gset _) mt' = d ⌝ ∗
+       ⌜ dom mt' = d ⌝ ∗
        "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
          "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
          "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj)))%I.
@@ -212,7 +212,7 @@ Section proof.
   Lemma map_Forall_exists {A B} `{Countable K} (m: gmap K A) P :
     map_Forall (λ a x, ∃ y, P a x y) m →
     ∃ (m': gmap K B),
-      dom (gset K) m = dom (gset K) m' ∧
+      dom m = dom m' ∧
       map_Forall (λ a xy, P a xy.1 xy.2) (map_zip m m').
   Proof.
     induction m as [|a x m_sub] using map_ind.
@@ -237,7 +237,7 @@ Section proof.
   Qed.
 
   Lemma map_Forall_zip_snd {A B} `{Countable K} (m1: gmap K A) (m2: gmap K B) P :
-    dom (gset K) m2 ⊆ dom (gset K) m1 →
+    dom m2 ⊆ dom m1 →
     map_Forall (λ a xy, P a xy.2) (map_zip m1 m2) →
     map_Forall P m2.
   Proof.
@@ -760,7 +760,7 @@ Section proof.
         "%HLCtxt"∷ ⌜ LanguageCtx K0 ⌝ ∗
         "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
         "%Hnotstuck" ∷ ⌜ (∃ s g, jrnl_sub_state σj2 s ∧
-         dom (gset _) (jrnlData (get_jrnl s.(world))) = objs_dom ∧
+         dom (jrnlData (get_jrnl s.(world))) = objs_dom ∧
          ¬ stuck' (K e) s g) ⌝).
   Proof.
     iIntros (?) "#Hjrnl_alloc1". iNamed 1.
@@ -785,7 +785,7 @@ Section proof.
         "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
         "%Hnotstuck" ∷ ⌜∃ s g,
           jrnl_sub_state (updateAllocs σj2 la u) s ∧
-          dom (gset addr) (jrnlData (get_jrnl s.(world))) =
+          dom (jrnlData (get_jrnl s.(world))) =
             objs_dom ∧ ¬ stuck' (K e) s g
         ⌝
       )%I
@@ -863,7 +863,7 @@ Section proof.
         "%HLCtxt"∷ ⌜ LanguageCtx K0 ⌝ ∗
         "#Hjrnl_dom" ∷ jrnl_dom objs_dom ∗
         "%Hnotstuck" ∷ ⌜ (∃ s g, jrnl_sub_state σj2 s ∧
-         dom (gset _) (jrnlData (get_jrnl s.(world))) = objs_dom ∧
+         dom (jrnlData (get_jrnl s.(world))) = objs_dom ∧
          ¬ stuck' (K e) s g) ⌝).
   Proof.
     iIntros (?). iNamed 1.
@@ -879,7 +879,7 @@ Section proof.
         "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
         "%Hnotstuck" ∷ ⌜∃ s g,
           jrnl_sub_state σj2 s ∧
-          dom (gset addr) (jrnlData (get_jrnl s.(world))) =
+          dom (jrnlData (get_jrnl s.(world))) =
             objs_dom ∧ ¬ stuck' (K e) s g
         ⌝
       )%I

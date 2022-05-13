@@ -74,12 +74,12 @@ Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardReq
 Context `{!heapGS Σ}.
 
 Definition is_slicemap_rep (mv : gmap u64 val) (m : gmap u64 (list u8)) : iProp Σ :=
-  "%Hmdoms" ∷ ⌜ dom (gset _) mv = dom (gset _) m ⌝ ∗
+  "%Hmdoms" ∷ ⌜ dom mv = dom m ⌝ ∗
   "Hmvals" ∷ ([∗ map] k ↦ v ∈ mv, (∃ (q : Qp) vsl, ⌜ v = slice_val vsl ⌝ ∗
               typed_slice.is_slice_small vsl byteT q (default [] (m !! k))))%I.
 
 Lemma is_slicemap_rep_dom  mv m :
-  is_slicemap_rep mv m -∗ ⌜ dom (gset _) mv = dom (gset _) m ⌝.
+  is_slicemap_rep mv m -∗ ⌜ dom mv = dom m ⌝.
 Proof. iIntros "($&_)". Qed.
 
 Lemma is_slicemap_rep_empty_inv m :
@@ -180,7 +180,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   "HKey" ∷ args_ptr ↦[InstallShardRequest :: "Sid"] #args.(IR_Sid) ∗
   "HKvs" ∷ args_ptr ↦[InstallShardRequest :: "Kvs"] #kvs_ptr ∗
   "HKvsMap" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
-  "%Hdom_install" ∷ ⌜dom (gset _) args.(IR_Kvs) = dom (gset _) mv ⌝ ∗
+  "%Hdom_install" ∷ ⌜dom args.(IR_Kvs) = dom mv ⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),
         ⌜shardOfC k ≠ args.(IR_Sid) ∧ mv !! k = None ∧ args.(IR_Kvs) !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (args.(IR_Kvs) !! k))) )
 .
@@ -276,7 +276,7 @@ Proof using Type*.
     iApply "HΦ".
     iExists (delete k mtodo), (<[k := l']> (list_to_map l)).
     iExists (l ++ [(k, l')]), ((remaining - 8 - marshalledMapSize_data (list_to_map l) - 8 - 8 - length l')).
-    assert (k ∉ dom (gset u64) (list_to_map l : gmap u64 (list u8))).
+    assert (k ∉ dom (list_to_map l : gmap u64 (list u8))).
     { intros Hin. apply map_disjoint_dom_1 in Hmdisjoint.
       apply elem_of_dom_2 in Heq2. eauto. }
     iDestruct (is_slicemap_rep_move1 with "Hrep_todo Hrep_done") as "($&$)".
@@ -504,7 +504,7 @@ Proof.
 Qed.
 
 Lemma shard_to_is_slicemap_rep (mv : gmap u64 val) m id:
-  dom (gset _) mv = dom (gset _) m →
+  dom mv = dom m →
   ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
                                ∨ (∃ (q : Qp) (vsl : Slice.t),
                                      ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
@@ -513,7 +513,7 @@ Lemma shard_to_is_slicemap_rep (mv : gmap u64 val) m id:
   is_slicemap_rep mv m.
 Proof.
   iIntros (Hdom) "H".
-  assert (dom (gset _) mv ⊆ fin_to_set u64) as Hdomsub.
+  assert (dom mv ⊆ fin_to_set u64) as Hdomsub.
   { set_unfold. trivial. }
   remember (fin_to_set u64) as U eqn:Heq. clear Heq.
   iSplit; first done.

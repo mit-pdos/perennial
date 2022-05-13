@@ -10,7 +10,7 @@ Proof.
   split.
   intros n x Hvalx Hvala.
   move: Hvala. rewrite /bi_pure//=. uPred_primitive.unseal. red. simpl => Hval.
-  assert (uPred_holds (uPred_cmra_valid_def a) O x).
+  assert (uPred_holds (upred.uPred_cmra_valid_def a) O x).
   { eapply uPred_mono; try eassumption.
     { reflexivity. }
     { lia. }
@@ -375,18 +375,18 @@ Section instances_iProp.
 
   Global Instance big_sepS_discretizable `{Countable A} (Φ: A → iProp Σ) X :
     (∀ x, Discretizable (Φ x)) → Discretizable ([∗ set] x ∈ X, Φ x).
-  Proof. rewrite big_opS_eq /big_opS_def. apply _. Qed.
+  Proof. rewrite big_op.big_opS_unseal /big_op.big_opS_def. apply _. Qed.
 
   Global Instance big_sepM_discretizable `{Countable K} {A: Type} (Φ: K → A → iProp Σ) m :
     (∀ k x, Discretizable (Φ k x)) → Discretizable ([∗ map] k↦x ∈ m, Φ k x).
-  Proof. rewrite big_opM_eq. intros. apply big_sepL_discretizable=> _ [??]; apply _. Qed.
+  Proof. rewrite big_op.big_opM_unseal. intros. apply big_sepL_discretizable=> _ [??]; apply _. Qed.
 
   Global Instance big_sepM2_discretizable `{Countable K} {A B: Type} (Φ: K → A → B → iProp Σ) m1 m2 :
     (∀ k x y, Discretizable (Φ k x y)) →
     Discretizable ([∗ map] k↦x;y ∈ m1;m2, Φ k x y).
   Proof.
-    rewrite big_sepM2_eq. intros.
-    rewrite /big_sepM2_def.
+    rewrite big_op.big_sepM2_unseal. intros.
+    rewrite /big_op.big_sepM2_def.
     rewrite bi.persistent_and_sep.
     apply _.
   Qed.
@@ -712,7 +712,7 @@ Section own_disc_fupd_props.
 
   Lemma big_sepS_own_disc_fupd `{Countable A} (Φ: A → iProp Σ) (l: gset A) :
     ([∗ set] x∈l, <disc> Φ x) -∗ <disc> ([∗ set] x∈l, Φ x).
-  Proof. rewrite big_opS_eq. apply big_sepL_own_disc_fupd. Qed.
+  Proof. rewrite big_op.big_opS_unseal. apply big_sepL_own_disc_fupd. Qed.
 
 End own_disc_fupd_props.
 

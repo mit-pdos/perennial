@@ -65,7 +65,7 @@ Definition refinement_ctok := staged_pending 1 (refinement_crash_name).
 
 Definition heap_dom_resv {A} (σheap : gmap loc A) : iProp Σ :=
   (∃ D: coPset, ownfCP (refinement_resv_name) 1 D ∧
-               ⌜ (∀ l, l ∈ dom (gset loc) σheap → 0 < loc_car l ∧ Z.to_pos (loc_car l) ∈ D) ⌝).
+               ⌜ (∀ l, l ∈ dom σheap → 0 < loc_car l ∧ Z.to_pos (loc_car l) ∈ D) ⌝).
 
 Definition spec_interp σ g : iProp Σ :=
     (na_heap_ctx tls σ.(heap) ∗ ffi_local_ctx refinement_spec_ffiLocalGS σ.(world) ∗ ffi_global_ctx refinement_spec_ffiGlobalGS g.(global_world) ∗
@@ -351,12 +351,12 @@ Proof.
 Qed.
 
 Lemma heap_dom_resv_dom_eq {A} (σ1 σ2 : gmap loc A) :
-  dom (gset loc) σ1 = dom (gset loc) σ2 →
+  dom σ1 = dom σ2 →
   heap_dom_resv σ1 ≡ heap_dom_resv σ2.
 Proof. rewrite /heap_dom_resv => -> //. Qed.
 
 Lemma heap_dom_resv_insert_non_alloc {A} (σ : gmap loc A) l v :
-  l ∈ dom (gset loc) σ →
+  l ∈ dom σ →
   heap_dom_resv (<[l := v]>σ) ≡ heap_dom_resv σ.
 Proof. intros. apply heap_dom_resv_dom_eq. rewrite dom_insert_L. set_solver. Qed.
 

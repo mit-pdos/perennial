@@ -508,7 +508,7 @@ Proof.
 Qed.
 
 Lemma dom_blocks_to_map_u64 {A} (f: Block → A) (bs: list Block) :
-  dom (gset u64) (list_to_map (imap (λ i x, (U64 (513 + i), f x)) bs) : gmap u64 _) =
+  dom (list_to_map (imap (λ i x, (U64 (513 + i), f x)) bs) : gmap u64 _) =
   rangeSet 513 (length bs).
 Proof.
   rewrite dom_list_to_map_L.
@@ -533,7 +533,7 @@ Proof.
 Qed.
 
 Lemma dom_blocks_to_map_Z {A} (f: Block → A) (bs: list Block) :
-  dom (gset Z) (list_to_map (imap (λ i x, (513 + i, f x)) bs) : gmap Z _) =
+  dom (list_to_map (imap (λ i x, (513 + i, f x)) bs) : gmap Z _) =
   list_to_set (seqZ 513 (length bs)).
 Proof.
   rewrite dom_list_to_map_L.
@@ -555,7 +555,7 @@ Proof.
 Qed.
 
 Lemma is_wal_inner_durable_init (bs: list Block) :
-  dom (gset _) dinit = list_to_set (seqZ 513 (length bs)) →
+  dom dinit = list_to_set (seqZ 513 (length bs)) →
   0 d↦∗ repeat block0 513 ∗
   513 d↦∗ bs ==∗
   let σ := log_state0 bs in

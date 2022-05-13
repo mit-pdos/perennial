@@ -190,7 +190,7 @@ Section jrnl_interp.
     ⌜ wf_jrnl m ⌝ ∗
       map_ctx jrnlG_data_name 1 (jrnlData m) ∗
       jrnl_kinds (jrnlKinds m) ∗
-      jrnl_dom (dom (gset _) (jrnlData m)) ∗
+      jrnl_dom (dom (jrnlData m)) ∗
       map_ctx jrnlG_allocs_name 1 (jrnlAllocs m).
 
   Definition jrnl_ctx {Σ} {jG: jrnlG Σ} (jrnl: @ffi_state jrnl_model) : iProp Σ :=
@@ -209,7 +209,7 @@ Section jrnl_interp.
     ([∗ map] a ↦ v ∈ jrnlData m, jrnl_crash_tok a) ∗
     map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> jrnlData m) ∗
     jrnl_kinds (jrnlKinds m) ∗
-    jrnl_dom (dom (gset _) (jrnlData m)) ∗
+    jrnl_dom (dom (jrnlData m)) ∗
     jrnl_full_crash_tok.
 
 
@@ -217,7 +217,7 @@ Section jrnl_interp.
     ([∗ map] a ↦ v ∈ jrnlData m, jrnl_crash_tok a) ∗
     map_ctx jrnlG_crash_toks_name 1 ((λ _, tt) <$> jrnlData m) ∗
     jrnl_kinds (jrnlKinds m) ∗
-    jrnl_dom (dom (gset _) (jrnlData m)) ∗
+    jrnl_dom (dom (jrnlData m)) ∗
     jrnl_full_crash_tok.
 
   Definition jrnl_start {Σ} {jG: jrnlG Σ} (jrnl: @ffi_state jrnl_model) : iProp Σ :=
@@ -366,7 +366,7 @@ Section jrnl_lemmas.
     jrnl_state_ctx m -∗
     ⌜ wf_jrnl m ⌝ ∗
       jrnl_kinds (jrnlKinds m) ∗
-      jrnl_dom (dom (gset _) (jrnlData m)).
+      jrnl_dom (dom (jrnlData m)).
   Proof. iDestruct 1 as "($&?&$&$&?)". Qed.
 
 End jrnl_lemmas.
@@ -391,7 +391,7 @@ Next Obligation.
   iMod (map_init_many ((λ _, tt) <$> jrnlData m)) as (γcrash) "(Hcrash_ctx&Hcrash)".
   iMod (own_alloc (to_agree (jrnlKinds m : leibnizO (gmap blkno kind)))) as (γkinds) "#Hkinds".
   { constructor. }
-  iMod (own_alloc (to_agree (dom (gset _) (jrnlData m) : leibnizO (gset addr)))) as (γdom) "#Hdom".
+  iMod (own_alloc (to_agree (dom (jrnlData m) : leibnizO (gset addr)))) as (γdom) "#Hdom".
   { constructor. }
   iMod (ghost_var_alloc ()) as (γfull) "Hfull".
   iMod (map_init_many (jrnlAllocs m)) as (γallocs) "(Hallocs_ctx&_)".
@@ -530,7 +530,7 @@ Notation shead_step := (@head_step (@spec_ffi_op_field spec_ext)).
 Notation sworld := (@world (@spec_ffi_op_field spec_ext) (@spec_ffi_model_field jrnl_spec_ffi_model)).
 
 Definition jrnl_sub_dom (σj1 σj2 : jrnl_map) : Prop :=
-  (dom (gset _) (jrnlData σj1) = dom _ (jrnlData σj2) ∧ jrnlKinds σj1 ⊆ jrnlKinds σj2 ∧
+  (dom (jrnlData σj1) = dom (jrnlData σj2) ∧ jrnlKinds σj1 ⊆ jrnlKinds σj2 ∧
    jrnlAllocs σj1 = jrnlAllocs σj2 ∧
   wf_jrnl σj1 ∧ wf_jrnl σj2).
 
@@ -649,7 +649,7 @@ Proof.
 Qed.
 
 Lemma insert_jrnl_upd a o σj s :
-  a ∉ dom (gset _) (jrnlData σj) →
+  a ∉ dom (jrnlData σj) →
   jrnl_upd (updateData σj a o) s =
   jrnl_upd σj (jrnl_upd ({| jrnlData := {[ a := o]};
                            jrnlKinds := jrnlKinds σj;
@@ -664,7 +664,7 @@ Proof.
 Qed.
 
 Lemma insert_jrnl_upd_allocs a o σj s :
-  a ∉ dom (gset _) (jrnlAllocs σj) →
+  a ∉ dom (jrnlAllocs σj) →
   jrnl_upd_allocs (updateAllocs σj a o) s =
   jrnl_upd_allocs σj (jrnl_upd_allocs ({| jrnlData := jrnlData σj;
                            jrnlKinds := jrnlKinds σj;
@@ -747,7 +747,7 @@ Proof.
 Qed.
 
 Lemma always_steps_extend e1 σj1 e2 σj2 a o :
-  (a ∉ dom (gset _) (jrnlData σj2)) →
+  (a ∉ dom (jrnlData σj2)) →
   size_consistent_and_aligned a o (jrnlKinds σj1) →
   always_steps e1 σj1 e2 σj2 →
   always_steps e1 (updateData σj1 a o)
@@ -771,7 +771,7 @@ Proof.
     intros i => /=.
     specialize (Hsub_data i).
     destruct Hsub as (Hsub_data'&?).
-    assert (a ∉ dom (gset _) (jrnlData σj1)) as Hdom' by (rewrite Hsub_data'; set_solver).
+    assert (a ∉ dom (jrnlData σj1)) as Hdom' by (rewrite Hsub_data'; set_solver).
     destruct (decide (a = i)).
     * subst. apply not_elem_of_dom in Hdom'.
       rewrite Hdom' => //=. destruct (({[ i := o]} ∪ jrnlData sj) !! i) eqn:Heq; auto.
@@ -780,7 +780,7 @@ Proof.
 Qed.
 
 Lemma always_steps_extend_allocs1 e1 σj1 e2 σj2 l u :
-  (l ∉ dom (gset _) (jrnlAllocs σj2)) →
+  (l ∉ dom (jrnlAllocs σj2)) →
   always_steps e1 σj1 e2 σj2 →
   always_steps e1 (updateAllocs σj1 l u)
                e2 (updateAllocs σj2 l u).
@@ -802,7 +802,7 @@ Proof.
     intros i => /=.
     specialize (Hsub_allocs i).
     destruct Hsub as (Hsub_data'&?&Hsub_alloc'&?).
-    assert (l ∉ dom (gset _) (jrnlAllocs σj1)) as Hdom' by (rewrite Hsub_alloc'; set_solver).
+    assert (l ∉ dom (jrnlAllocs σj1)) as Hdom' by (rewrite Hsub_alloc'; set_solver).
     destruct (decide (l = i)).
     * subst. apply not_elem_of_dom in Hdom'.
       rewrite Hdom' => //=. destruct ((jrnlAllocs sj) !! i) eqn:Heq; auto.
@@ -811,7 +811,7 @@ Proof.
 Qed.
 
 Lemma always_steps_extend_allocs2 e1 σj1 e2 σj2 l u :
-  (l ∉ dom (gset _) (jrnlAllocs σj1) ∨ jrnlAllocs σj1 !! l = Some u) →
+  (l ∉ dom (jrnlAllocs σj1) ∨ jrnlAllocs σj1 !! l = Some u) →
   always_steps e1 σj1 e2 σj2 →
   always_steps e1 (updateAllocs σj1 l u)
                e2 (updateAllocs σj2 l u).
@@ -1056,7 +1056,7 @@ Proof.
   split.
   - rewrite /offsets_aligned => a' Hin.
     eapply Hwf. move: Hin. rewrite dom_insert_L.
-    cut (a ∈ dom (gset _) (jrnlData σj)); first by set_solver.
+    cut (a ∈ dom (jrnlData σj)); first by set_solver.
     apply elem_of_dom. eauto.
   - rewrite /sizes_correct//= => a' o Hlookup'.
     destruct (decide (a' = a)).
@@ -1080,7 +1080,7 @@ Proof.
   split_and!; eauto.
   { split_and!; try set_solver.
     - rewrite //=. rewrite dom_insert_L.
-      cut (a ∈ dom (gset _) (jrnlData σj)); first by set_solver.
+      cut (a ∈ dom (jrnlData σj)); first by set_solver.
       apply elem_of_dom. eauto.
     - eapply wf_jrnl_updateData; eauto. naive_solver.
   }
@@ -1130,7 +1130,7 @@ Proof.
   split_and!; eauto.
   { split_and!; try set_solver.
     - rewrite //=. rewrite dom_insert_L.
-      cut (a ∈ dom (gset _) (jrnlData σj)); first by set_solver.
+      cut (a ∈ dom (jrnlData σj)); first by set_solver.
       apply elem_of_dom. eauto.
     - eapply wf_jrnl_updateData; eauto. naive_solver.
   }
@@ -1285,7 +1285,7 @@ Qed.
 Lemma jrnl_ctx_dom_eq σj (s: sstate) :
   jrnl_dom (σj) -∗
   jrnl_ctx s.(world) -∗
-  ⌜ dom (gset addr) (jrnlData (get_jrnl s.(world))) = σj ⌝.
+  ⌜ dom (jrnlData (get_jrnl s.(world))) = σj ⌝.
 Proof.
   iIntros "#Hdom Hctx".
   rewrite /jrnl_sub_state.
@@ -1380,7 +1380,7 @@ Qed.
 
 Lemma jrnl_ctx_upd σj σjd' σjk σja s :
   wf_jrnl {| jrnlData := σjd'; jrnlKinds := σjk; jrnlAllocs := σja |} →
-  dom (gset _) (jrnlData σj) = dom (gset _) σjd' →
+  dom (jrnlData σj) = dom σjd' →
   jrnl_open -∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o) -∗
   jrnl_kinds σjk -∗
@@ -1396,17 +1396,17 @@ Proof.
   rewrite /jrnl_ctx. rewrite Heq.
   iDestruct "Hctx" as "(_&Hstate)".
   iDestruct "Hstate" as (Hwf0) "(Hctx&Hkinds'&Hdom'&Halloc_ctx)". simpl.
-  assert (Hdom_sub: dom (gset _) (jrnlData σj) ⊆ dom (gset _) (jrnlData sj)).
+  assert (Hdom_sub: dom (jrnlData σj) ⊆ dom (jrnlData sj)).
   { rewrite /jrnl_sub_state/sworld in Hval.
     destruct Hval as (?&Heq'&?&?). rewrite /world in Heq. rewrite Heq in Heq'.
     inversion Heq'; subst.
     apply subseteq_dom. eauto. }
   clear Hval.
   rewrite /jrnl_state_ctx/=.
-  iAssert (jrnl_dom (dom (gset addr) (σjd' ∪ jrnlData (get_jrnl s.(world))))) with "[Hdom']" as "$".
+  iAssert (jrnl_dom (dom (σjd' ∪ jrnlData (get_jrnl s.(world))))) with "[Hdom']" as "$".
   { rewrite Heq /= dom_union_L.
-    assert (dom (gset addr) σjd' ∪ dom (gset addr) (jrnlData sj) =
-            dom (gset addr) (jrnlData sj)) as ->.
+    assert (dom σjd' ∪ dom (jrnlData sj) =
+            dom (jrnlData sj)) as ->.
     { rewrite -Hdom. set_solver. }
     eauto. }
   clear Hdom_sub.
@@ -1415,7 +1415,7 @@ Proof.
     symmetry in Hdom. apply dom_empty_iff_L in Hdom.
     rewrite ?Hdom big_sepM_empty. iFrame.
     rewrite /=. rewrite left_id_L //=. rewrite Heq => //=. iFrame. eauto.
-  - assert (Hin: i ∈ dom (gset _) σjd').
+  - assert (Hin: i ∈ dom σjd').
     { rewrite -Hdom. rewrite dom_insert_L. set_solver. }
     apply elem_of_dom in Hin.
     destruct Hin as (o&Hin).
@@ -1573,7 +1573,7 @@ Lemma ghost_step_jrnl_atomically_ub' E j K {HCTX: LanguageCtx K} (l: sval) e1 σ
   j ⤇ K (Atomically l e1)
   -∗ |NC={E}=>
    ⌜ (∃ s g, jrnl_sub_state σj' s ∧
-        dom (gset _) (jrnlData (get_jrnl s.(world))) = σdom ∧
+        dom (jrnlData (get_jrnl s.(world))) = σdom ∧
         ¬ stuck' e2 s g) ⌝ ∗
   j ⤇ K (Atomically l e1) ∗
   ([∗ map] a ↦ o ∈ (jrnlData σj), jrnl_mapsto a 1 o).
@@ -1627,7 +1627,7 @@ Qed.
 
 Lemma ghost_step_jrnl_atomically_ub E j K {HCTX: LanguageCtx K} (l: sval) e1 σj e2 σj' σdom :
   (∀ s g, jrnl_sub_state σj' s →
-        dom (gset _) (jrnlData (get_jrnl s.(world))) = σdom →
+        dom (jrnlData (get_jrnl s.(world))) = σdom →
         stuck' e2 s g) →
   always_steps e1 σj e2 σj' →
   nclose sN ⊆ E →

@@ -447,7 +447,7 @@ Proof.
         "Hblks_var" ∷ blks_var ↦[slice.T (struct.t Update)] (slice_val blks) ∗
         "Hblks" ∷ updates_slice blks upds ∗
         "%" ∷ ⌜ gmap_addr_by_block bufamap = offmaps_todo ∪ offmaps_done ⌝ ∗
-        "%" ∷ ⌜ dom (gset u64) offmaps_todo ## dom (gset u64) offmaps_done ⌝ ∗
+        "%" ∷ ⌜ dom offmaps_todo ## dom offmaps_done ⌝ ∗
         "Hmtodo" ∷ ( [∗ map] blkno↦blkslice;offmap ∈ mtodo;offmaps_todo, ∃ b : Block,
                                           is_block blkslice 1 b ∗
                                           ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝ ) ∗
@@ -495,7 +495,7 @@ Proof.
     { iPureIntro. set_solver. }
     iApply big_sepML_insert_app.
     { eapply (not_elem_of_dom (D:=gset u64)).
-      assert (k ∈ dom (gset u64) offmaps_todo).
+      assert (k ∈ dom offmaps_todo).
       { eapply elem_of_dom; eauto. }
       set_solver. }
     iFrame "Hmdone".
@@ -543,14 +543,14 @@ Qed.
 Lemma apply_upds_u64_dom : ∀ upds d,
   ( ∀ blkno,
     blkno ∈ update.addr <$> upds ->
-    blkno ∈ dom (gset u64) d ) ->
-  dom (gset u64) (apply_upds_u64 d upds) =
-  dom (gset u64) d.
+    blkno ∈ dom d ) ->
+  dom (apply_upds_u64 d upds) =
+  dom d.
 Proof.
   induction upds; simpl; eauto; intros.
   rewrite IHupds.
   - rewrite dom_insert_L.
-    assert (a.(update.addr) ∈ dom (gset u64) d); last by set_solver.
+    assert (a.(update.addr) ∈ dom d); last by set_solver.
     eapply H. constructor.
   - intros.
     destruct (decide (blkno = a.(update.addr))); subst.
@@ -691,7 +691,7 @@ Proof using txnG0 Σ.
 
     iDestruct (ghost_var_agree with "Hcrashstates Hcrashstates_frag") as %->.
 
-    iAssert (⌜ ∀ a, a ∈ dom (gset _) bufamap -> a ∈ dom (gset _) σl.(latest) ⌝)%I as "%Hsubset_addr".
+    iAssert (⌜ ∀ a, a ∈ dom bufamap -> a ∈ dom σl.(latest) ⌝)%I as "%Hsubset_addr".
     {
       iIntros (a Ha).
       eapply elem_of_dom in Ha. destruct Ha.
@@ -705,7 +705,7 @@ Proof using txnG0 Σ.
 
     iDestruct (gmap_addr_by_block_big_sepM with "Hmapstos") as "Hmapstos".
 
-    iAssert (⌜ ∀ a, a ∈ dom (gset _) (gmap_addr_by_block bufamap) -> a ∈ dom (gset _) (gmap_addr_by_block σl.(latest)) ⌝)%I as "%Hsubset".
+    iAssert (⌜ ∀ a, a ∈ dom (gmap_addr_by_block bufamap) -> a ∈ dom (gmap_addr_by_block σl.(latest)) ⌝)%I as "%Hsubset".
     {
       iIntros (a Ha).
       apply lookup_lookup_total_dom in Ha.
@@ -730,7 +730,7 @@ Proof using txnG0 Σ.
     iDestruct (big_sepML_sep with "Hupdmap") as "[Hupdmap_addr Hupdmap_kind]".
 
     iDestruct (big_sepML_change_m _
-      (filter (λ (k : u64 * _), fst k ∈ dom (gset u64) (gmap_addr_by_block bufamap)) (gmap_addr_by_block σl.(latest)))
+      (filter (λ (k : u64 * _), fst k ∈ dom (gmap_addr_by_block bufamap)) (gmap_addr_by_block σl.(latest)))
       with "Hupdmap_addr") as "Hupdmap_addr_2".
     { symmetry. apply dom_filter_L. intros i; split.
       { intros H. apply Hsubset in H as H'.
@@ -782,7 +782,7 @@ Proof using txnG0 Σ.
       eauto.
     }
     iAssert (⌜∀ lv, lv ∈ updlist_olds ->
-                update.addr (fst lv) ∈ dom (gset u64) (gmap_addr_by_block bufamap)⌝)%I
+                update.addr (fst lv) ∈ dom (gmap_addr_by_block bufamap)⌝)%I
       as "%Hupdlist_olds_σl_latest".
     {
       iIntros (lv Hlv).
@@ -794,7 +794,7 @@ Proof using txnG0 Σ.
       eauto.
     }
     iAssert (⌜∀ (blkno : u64),
-              blkno ∈ dom (gset u64) (gmap_addr_by_block bufamap) ->
+              blkno ∈ dom (gmap_addr_by_block bufamap) ->
               blkno ∈ update.addr <$> updlist_olds.*1⌝)%I
       as "%Hupdlist_olds_bufamap".
     {
@@ -832,7 +832,7 @@ Proof using txnG0 Σ.
 
     pose proof (filter_union_gmap_addr_by_block_ignored σl.(latest)
                   ((λ b, existT _ b.(buf_).(bufData)) <$> bufamap)
-                  (λ x, x ∉ dom (gset u64) (gmap_addr_by_block bufamap))) as Hy.
+                  (λ x, x ∉ dom (gmap_addr_by_block bufamap))) as Hy.
     rewrite Hy.
     2: {
       intros k a Hka.
@@ -858,7 +858,7 @@ Proof using txnG0 Σ.
       iSplitL "Hmapstos Hmetactx". { iAccu. }
       iExact "Hheapmatch".
     }
-    { simpl. epose proof (dom_filter_eq (gmap_addr_by_block σl.(latest)) _ (λ x, x ∈ dom (gset u64) (gmap_addr_by_block bufamap))) as He.
+    { simpl. epose proof (dom_filter_eq (gmap_addr_by_block σl.(latest)) _ (λ x, x ∈ dom (gmap_addr_by_block bufamap))) as He.
       rewrite He. 1: reflexivity.
       rewrite gmap_addr_by_block_dom_union.
       rewrite gmap_addr_by_block_fmap. rewrite dom_fmap_L. set_solver. }
@@ -881,7 +881,7 @@ Proof using txnG0 Σ.
       }
       subst.
 
-      assert (dom (gset _) offmap' ⊆ dom (gset _) offmap).
+      assert (dom offmap' ⊆ dom offmap).
       {
         eapply map_filter_lookup_Some_1_1 in Hoffmap.
         eapply elem_of_subseteq; intros off Hoff'.
@@ -890,7 +890,7 @@ Proof using txnG0 Σ.
         2: {
           rewrite -lookup_gmap_curry. rewrite Hbufamap_in. done.
         }
-        assert (((lv.1).(update.addr), off) ∈ dom (gset _) σl.(latest)).
+        assert (((lv.1).(update.addr), off) ∈ dom σl.(latest)).
         { eapply elem_of_dom_2 in Hoff'. set_solver. }
         eapply elem_of_dom in H. destruct H as [x' H].
         rewrite -lookup_gmap_curry in H. rewrite Hoffmap /= in H.
@@ -924,7 +924,7 @@ Proof using txnG0 Σ.
             ∗ (∃ modifiedSinceInstall : bool,
                  "%Hoff_in_block" ∷ ⌜bufDataT_in_block (latest_update lv.2.1 lv.2.2) blockK (lv.1).(update.addr) k y1⌝ ∗
                  "Hoff_own" ∷ ghost_var y2 (1 / 2) modifiedSinceInstall ∗
-                 "%Hmod_bufamap" ∷ ⌜k ∈ dom (gset _) offmap' -> modifiedSinceInstall = true⌝ ∗
+                 "%Hmod_bufamap" ∷ ⌜k ∈ dom offmap' -> modifiedSinceInstall = true⌝ ∗
                  "%Hoff_prefix_in_block" ∷ ⌜if modifiedSinceInstall
                         then True
                         else
@@ -939,7 +939,7 @@ Proof using txnG0 Σ.
         iExists x. iSplit; first done.
         iDestruct "H" as (γmeta) "[% H]".
         iDestruct "H" as (modsince) "(% & Hmod & %)".
-        destruct (decide (k ∈ dom (gset _) offmap')).
+        destruct (decide (k ∈ dom offmap')).
         {
           apply elem_of_dom in e. destruct e.
           iDestruct (big_sepM_lookup_acc _ bufamap ((lv.1).(update.addr), k) with "Hmapstos") as "[Hk Hmapstos]".
@@ -1064,7 +1064,7 @@ Proof using txnG0 Σ.
         rewrite subseteq_union_1_L; eauto.
 
         assert (∀ (blkno : u64), blkno ∈ update.addr <$> updlist_olds.*1 ->
-                blkno ∈ dom (gset u64) (gmap_addr_by_block σl.(latest)))
+                blkno ∈ dom (gmap_addr_by_block σl.(latest)))
           as Hupdlist_olds_σl_latest_blkno.
         {
           intros blkno Hblkno.

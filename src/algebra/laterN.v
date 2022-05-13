@@ -66,7 +66,7 @@ Proof.
 Qed.
 
 Lemma laterN_exist_big_inhabited A (Φ: A → uPred M) k n x:
-  ✓{n} x →  k ≤ n → uPred_holds (▷^k uPred_exist_def (λ a : A, Φ a)) n x →
+  ✓{n} x →  k ≤ n → uPred_holds (▷^k upred.uPred_exist_def (λ a : A, Φ a)) n x →
   ∃ a : A, True.
 Proof.
   induction 2 as [| ?? IHle].

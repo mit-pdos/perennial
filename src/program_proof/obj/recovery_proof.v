@@ -140,7 +140,7 @@ Theorem mapsto_txn_alloc {T} (γ : gname) (logm : gmap addr T) :
   map_ctx γ 1 ∅
   ==∗
   ∃ m,
-    ⌜dom (gset addr) m = dom (gset addr) logm⌝ ∗
+    ⌜dom m = dom logm⌝ ∗
     map_ctx γ 1 m ∗
     ([∗ map] a↦_ ∈ logm, ∃ (γm : gname), a [[γ]]↦ γm ∗ ghost_var γm (1/2) true) ∗
     ([∗ map] _↦γm ∈ m, ghost_var γm (1/2) true).
@@ -415,8 +415,8 @@ Qed.
 
 (* sz is the number of blocks besides the log (so the size of the disk - 513) *)
 Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
-  dom (gset _) dinit = list_to_set (seqZ 513 sz) →
-  dom (gset _) kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
+  dom dinit = list_to_set (seqZ 513 sz) →
+  dom kinds = list_to_set (U64 <$> (seqZ 513 sz)) →
   (513 + Z.of_nat sz) * block_bytes * 8 < 2^64 →
   0 d↦∗ repeat block0 513 ∗ 513 d↦∗ repeat block0 sz -∗
  |==> ∃ γ,

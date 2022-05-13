@@ -127,7 +127,7 @@ Section lemmas.
     { apply pred_infinite_True. }
     iModIntro.
     iExists γ.
-    replace (fin_to_set K) with (dom (gset K) m); last first.
+    replace (fin_to_set K) with (dom m); last first.
     { apply dom_gset_to_gmap. }
     iDestruct (big_sepM_dom) as "Hm".
     iDestruct "Hm" as "[Hm1 _]".

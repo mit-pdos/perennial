@@ -1002,7 +1002,7 @@ Section SymbolicStep.
       | Some i => let i := i.(latest) in
         match i.(inode_state_type) with
         | Idir m =>
-          let names := dom (gset filename) m in
+          let names := dom m in
           if (decide ((size names) = Z.to_nat 2)) then
             _ <- dir_unlink a dirmeta dm;
             _ <- gc_fh curfh;
@@ -1043,7 +1043,7 @@ Section SymbolicStep.
 
             match src_i.(inode_state_type), dst_i.(inode_state_type) with
             | Idir src_dm, Idir dst_dm =>
-              let dst_names := dom (gset filename) dst_dm in
+              let dst_names := dom dst_dm in
               if (decide (size dst_names = Z.to_nat 2)) then
                 _ <- dir_unlink to to_dirmeta to_dm;
                 _ <- dir_unlink from from_dirmeta from_dm;

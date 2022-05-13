@@ -11,10 +11,10 @@ Section lemmas.
   Implicit Types (a : A) (q : Qp).
 
   Global Instance ghost_var_discrete γ q a : Discretizable (ghost_var γ q a).
-  Proof. rewrite ghost_var_eq. apply _. Qed.
+  Proof. rewrite ghost_var.ghost_var_unseal. apply _. Qed.
 
   Global Instance ghost_var_abs_timeless γ q a : AbsolutelyTimeless (ghost_var γ q a).
-  Proof. rewrite ghost_var_eq. apply _. Qed.
+  Proof. rewrite ghost_var.ghost_var_unseal. apply _. Qed.
 
 End lemmas.
 

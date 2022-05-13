@@ -78,7 +78,7 @@ Local Definition own_erpc_server (γ : erpc_names) (s : loc) : iProp Σ :=
     (lastSeqM:gmap u64 u64) (nextCID:u64),
   "HlastReply" ∷ s ↦[erpc.Server :: "lastReply"] #lastReply_ptr ∗
   "HlastReplyMap" ∷ map.is_map lastReply_ptr 1 (lastReplyMV, zero_val (slice.T byteT)) ∗ (* TODO: default *)
-  "%HlastReplyMVdom" ∷ ⌜dom (gset u64) lastReplyMV = dom (gset u64) lastSeqM⌝ ∗
+  "%HlastReplyMVdom" ∷ ⌜dom lastReplyMV = dom lastSeqM⌝ ∗
   "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM,
     ∃ val_sl q, ⌜v = slice_val val_sl⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep) ∗
   "HlastSeq" ∷ s ↦[erpc.Server :: "lastSeq"] #lastSeq_ptr ∗
@@ -168,9 +168,9 @@ Proof.
     (* get a copy of the is_slice for the slice we're giving in reply *)
     assert (is_Some (lastReplyMV !! rid.(Req_CID))) as [xx HlastReplyMVlookup].
     {
-      assert (rid.(Req_CID) ∈ dom (gset u64) lastSeqM).
+      assert (rid.(Req_CID) ∈ dom lastSeqM).
       { by eapply elem_of_dom_2. }
-      assert (rid.(Req_CID) ∈ dom (gset u64) lastReplyMV).
+      assert (rid.(Req_CID) ∈ dom lastReplyMV).
       { rewrite -HlastReplyMVdom in H. done. }
       apply elem_of_dom.
       done.

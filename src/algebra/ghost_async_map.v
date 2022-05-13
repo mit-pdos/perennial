@@ -391,7 +391,7 @@ Section lemmas.
   Qed.
 
   Theorem ghost_async_map_update_big {γ m} m0 m1 :
-    dom (gset K) m0 = dom (gset K) m1 →
+    dom m0 = dom m1 →
     ghost_async_map_auth γ 1 m -∗
     ([∗ map] k↦v ∈ m0, k ↪[γ] v) ==∗
     ghost_async_map_auth γ 1 (m1 ∪ m) ∗
@@ -408,7 +408,7 @@ Section lemmas.
     ∃ ab, d !! addr = Some ab ∧ b ∈ possible ab.
 
   Definition is_crashed (d d': gmap K (async V)) :=
-      dom (gset _) d = dom (gset _) d' ∧
+      dom d = dom d' ∧
       (∀ (addr : K) (ab : async V), d' !! addr = Some ab →
        ∃ (b : V), ab = sync b ∧ is_possible d addr b).
 

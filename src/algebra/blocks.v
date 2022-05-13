@@ -180,7 +180,7 @@ Section block_addr_defs.
   Qed.
 
   Lemma heap_array_lookup_dom_id {V} l l' (vs: list V):
-    l' ∈ dom (gset L1) (heap_array l vs) →
+    l' ∈ dom (heap_array l vs) →
     addr_id l' = addr_id l.
   Proof.
     revert l l'.
@@ -191,7 +191,7 @@ Section block_addr_defs.
   Qed.
 
   Lemma heap_array_lookup_dom_base {V} l l' (vs: list V):
-    l' ∈ dom (gset L1) (heap_array l vs) →
+    l' ∈ dom (heap_array l vs) →
     addr_base l' = addr_base l.
   Proof.
     rewrite addr_base_eq_addr_id. apply heap_array_lookup_dom_id.

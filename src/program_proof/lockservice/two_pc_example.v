@@ -512,8 +512,8 @@ Definition ps_mu_inv (ps:loc) γ : iProp Σ :=
     "#Htxns_prop_pers" ∷ ([∗ map] tid ↦ txn ∈ txnsM, prepared γ.(ps_tpc) tid ∗ (∃ x, txn_unknown_is γ.(ps_tpc) tid x)) ∗
     (* TODO: need to add post-abort resources *)
     "Htxns_postcommit" ∷ ([∗ map] tid ↦ txn ∈ txnsM, kv_tok γ txn.(key) ∗ ((committed γ.(ps_tpc) tid ={⊤}=∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} (map_get kvsM txn.(key)).1)) ∧ (coordinator_aborted γ.(ps_tpc) tid ={⊤}=∗ (txn.(key) [[γ.(ps_kvs)]]↦{3/4} txn.(oldValue))))) ∗
-    "Hfreshtxns" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom (gset u64) finishedTxnsM⌝ ∨ ⌜tid ∈ dom (gset u64) txnsM⌝ ∨ (do_prepare γ.(ps_tpc) tid ∗ unfinished γ.(ps_tpc) tid ∗ txn_unknown γ.(ps_tpc) tid))) ∗
-    "%" ∷ ⌜(dom (gset u64) txnsM) ## dom (gset u64) finishedTxnsM⌝
+    "Hfreshtxns" ∷ ([∗ set] tid ∈ (fin_to_set u64), (⌜tid ∈ dom finishedTxnsM⌝ ∨ ⌜tid ∈ dom txnsM⌝ ∨ (do_prepare γ.(ps_tpc) tid ∗ unfinished γ.(ps_tpc) tid ∗ txn_unknown γ.(ps_tpc) tid))) ∗
+    "%" ∷ ⌜(dom txnsM) ## dom finishedTxnsM⌝
 .
 
 Definition participantN := nroot .@ "participant".
@@ -813,7 +813,7 @@ Proof.
     iPureIntro.
     rewrite dom_insert.
     apply map_get_false in Hmapget_finished.
-    assert (tid ∉ dom (gset u64) finishedTxnsM).
+    assert (tid ∉ dom finishedTxnsM).
     { apply not_elem_of_dom. naive_solver. }
     set_solver.
   }
@@ -922,8 +922,8 @@ Proof.
       { iLeft. iPureIntro. rewrite dom_insert. set_solver. }
       iDestruct "H" as "[%Hcase|H]".
       {
-        enough (x ∈ dom (gset u64) (<[tid:=true]> finishedTxnsM)
-        ∨ x ∈ dom (gset u64) (delete tid txnsM)).
+        enough (x ∈ dom (<[tid:=true]> finishedTxnsM)
+        ∨ x ∈ dom (delete tid txnsM)).
         { naive_solver. }
         rewrite dom_insert dom_delete.
         destruct (bool_decide (x = tid)) as [|] eqn:X.
@@ -1070,8 +1070,8 @@ Proof.
       { iLeft. iPureIntro. rewrite dom_insert. set_solver. }
       iDestruct "H" as "[%Hcase|H]".
       {
-        enough (x ∈ dom (gset u64) (<[tid:=true]> finishedTxnsM)
-        ∨ x ∈ dom (gset u64) (delete tid txnsM)).
+        enough (x ∈ dom (<[tid:=true]> finishedTxnsM)
+        ∨ x ∈ dom (delete tid txnsM)).
         { naive_solver. }
         rewrite dom_insert dom_delete.
         destruct (bool_decide (x = tid)) as [|] eqn:X.
