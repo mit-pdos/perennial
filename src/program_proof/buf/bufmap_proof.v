@@ -453,7 +453,7 @@ Proof using.
       { iPureIntro. split.
         { apply flatid_addr_delete; eauto.
           eapply flatid_addr_lookup_valid. { apply H4. }
-          apply (elem_of_dom (D:=gset addr)). rewrite H5. apply elem_of_dom. eauto. }
+          apply elem_of_dom. rewrite H5. apply elem_of_dom. eauto. }
         rewrite ?dom_delete_L. congruence. }
       iSplitL "Htodo".
       { iApply (big_sepM_mono with "Htodo"). iIntros (k x Hkx) "H".
@@ -468,9 +468,9 @@ Proof using.
       rewrite map_filter_insert_True; last by eauto.
       iApply big_sepML_insert_app.
       { rewrite map_filter_lookup_None. left.
-        apply (not_elem_of_dom (D:=gset addr)).
+        apply not_elem_of_dom.
         assert (is_Some (mtodo !! a)) as Hsome by eauto.
-        apply (elem_of_dom (D:=gset addr)) in Hsome. set_solver. }
+        apply elem_of_dom in Hsome. set_solver. }
       by iFrame.
     }
     { iApply "HΦ".
@@ -483,7 +483,7 @@ Proof using.
       { iPureIntro. split.
         { apply flatid_addr_delete; eauto.
           eapply flatid_addr_lookup_valid. { apply H4. }
-          apply (elem_of_dom (D:=gset addr)). rewrite H5. apply elem_of_dom. eauto. }
+          apply elem_of_dom. rewrite H5. apply elem_of_dom. eauto. }
         rewrite ?dom_delete_L. congruence. }
       iSplitL "Htodo".
       { iApply (big_sepM_mono with "Htodo"). iIntros (k x Hkx) "H".
@@ -499,7 +499,7 @@ Proof using.
       2: { simpl. congruence. }
       rewrite delete_notin.
       { by iFrame. }
-      apply (not_elem_of_dom (D:=gset addr)).
+      apply not_elem_of_dom.
       assert (is_Some (mtodo !! a)) as Hsome by eauto.
       apply (elem_of_dom (D:=gset addr)) in Hsome. set_solver.
     }

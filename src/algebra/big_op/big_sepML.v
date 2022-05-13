@@ -377,8 +377,8 @@ Section maplist.
       rewrite big_op.big_sepM2_unseal /big_op.big_sepM2_def.
       iSplit.
       { iPureIntro. split; intros.
-        { apply (elem_of_dom (D:=gset K)). rewrite -Hmlm. apply elem_of_dom. eauto. }
-        { apply (elem_of_dom (D:=gset K)). rewrite Hmlm. apply elem_of_dom. eauto. }
+        { apply elem_of_dom. rewrite -Hmlm. apply elem_of_dom. eauto. }
+        { apply elem_of_dom. rewrite Hmlm. apply elem_of_dom. eauto. }
       }
       clear H0.
       iInduction m as [|i x m] "IH" using map_ind forall (lm Hmlm).
@@ -387,7 +387,7 @@ Section maplist.
         rewrite map_zip_empty_l. iApply big_sepM_empty. done. }
       iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       assert (is_Some (lm !! i)) as Hlmi.
-      { apply (elem_of_dom (D:=gset K)). rewrite -Hmlm. apply elem_of_dom. rewrite lookup_insert; eauto. }
+      { apply elem_of_dom. rewrite -Hmlm. apply elem_of_dom. rewrite lookup_insert; eauto. }
       destruct Hlmi.
       replace lm with (<[i:=x0]> (delete i lm)).
       2: { rewrite insert_delete; eauto. }
@@ -633,7 +633,7 @@ Section maplist2.
       iDestruct (big_sepML_insert with "[$Hi Hk]") as "Hml".
       2: { iExists _. iFrame. done. }
       2: iFrame.
-      apply (not_elem_of_dom (D:=gset K)). rewrite Hdel. set_solver.
+      apply not_elem_of_dom. rewrite Hdel. set_solver.
   Qed.
 
   Theorem big_sepML_map_val_exists Φ mv l (R : K -> V -> W -> Prop) :
