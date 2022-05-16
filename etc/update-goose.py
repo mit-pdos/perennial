@@ -233,7 +233,7 @@ def main():
                 "lockservice", "pb", "pb/controller", "ctrexample/client",
                 "ctrexample/server", "fencing/ctr", "fencing/config",
                 "fencing/frontend", "fencing/client", "fencing/loopclient",
-                "erpc"]
+                "erpc", "paxi/reconf"]
 
         for pkg in pkgs:
             run_goose(
