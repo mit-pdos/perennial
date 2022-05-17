@@ -1,17 +1,68 @@
 From Perennial.program_proof Require Import grove_prelude.
 From iris.bi.lib Require Import fractional.
 From iris.algebra Require Import gmap cmra dfrac_agree.
+From iris.algebra Require Import sts.
 From iris.base_logic Require Import mono_nat.
 From iris.proofmode Require Import proofmode.
 
-Section ghost_proof.
+Section poset_cmra.
+(*
+  Given poset (⪯, S), we want a cmra such that
+  x ~~> y iff x ⪯ y.
 
-Class mapG Σ K V `{Countable K} :=
-  { map_inG:> inG Σ (gmapR K (dfrac_agreeR (leibnizO V)))} .
+  Carrier is (option S).
+  x ⋅ y = None, if x ⪯̸ y ∧ y ⪯̸ x
+  x ⋅ y = x if y ⪯ x
+ *)
+
+Context `{T:Type}.
+Context `{R:relation T}.
+Context `{!PartialOrder R}.
+Context `{H: ∀ (x y:T), Decision (R x y)}.
+
+Definition poset_cmra_car := leibnizO (option T).
+
+Local Instance poset_op_instance : Op poset_cmra_car :=
+  λ ox oy,
+    x ← ox ;
+    y ← oy ;
+    if (decide (R x y)) then
+      Some y
+    else
+    if (decide (R y x)) then
+      Some x
+    else
+      None
+.
+
+Local Instance poset_pcore_instance : PCore poset_cmra_car := λ x, Some x.
+Local Instance poset_valid_instance : Valid poset_cmra_car := λ ox, is_Some ox.
+Local Instance poset_validN_instance : ValidN poset_cmra_car := λ _ ox, is_Some ox.
+
+Lemma poset_ra_mixin : RAMixin poset_cmra_car.
+Proof.
+  apply ra_total_mixin; try naive_solver.
+  - intros. intros z w. intros. destruct z, w; naive_solver.
+  - intros z w H1. eauto.
+  - intros z w. intros.
+    unfold impl.
+    intros.
+    unfold validN.
+    unfold poset_validN_instance.
+    naive_solver.
+  - intros x y z.
+    admit.
+Admitted.
+
+Canonical Structure posetR := Cmra (poset_cmra_car) (discrete_cmra_mixin _ poset_ra_mixin).
+
+End poset_cmra.
+
+Section ghost_proof.
 
 Record reconf_names :=
 {
-  accepted_gn:gname
+  acc_gn:gname
 }.
 
 Implicit Type γ:reconf_names.
@@ -45,6 +96,7 @@ Implicit Type mval:MonotonicValueC.
 Implicit Type term:u64.
 
 (* This is just ownership of raw ghost resources. *)
+
 Definition accepted γ srv term mval : iProp Σ.
 Admitted.
 
@@ -69,11 +121,30 @@ Admitted.
 Definition proposed_lb γ term mval : iProp Σ.
 Admitted.
 
+Instance commit_timeless γ mval : Timeless (commit γ mval).
+Admitted.
+
+Instance accepted_lb_timeless γ srv term mval : Timeless (accepted_lb γ srv term mval).
+Admitted.
+
+Instance commit_lb_pers γ mval : Persistent (commit_lb γ mval).
+Admitted.
+
+Instance proposed_lb_pers γ term mval : Persistent (proposed_lb γ term mval).
+Admitted.
+
+
+Instance accepted_ro_pers γ srv term mval : Persistent (accepted_ro γ srv term mval).
+Admitted.
+
+Instance accepted_lb_pers γ srv term mval : Persistent (accepted_lb γ srv term mval).
+Admitted.
+
 (* This is more complicated stuff, beyond raw ghost resource ownership. *)
 
 Definition committed_at_term γ term mval: iProp Σ :=
   ∃ W, ⌜mval.(config).(is_quorum) W⌝ ∗
-  ([∗ set] srv ∈ W, accepted γ srv term mval)
+  ([∗ set] srv ∈ W, accepted_lb γ srv term mval)
 .
 
 Definition old_conf_max γ term mval : iProp Σ :=
@@ -114,8 +185,14 @@ Definition proposed_lb_fancy γ term mval : iProp Σ :=
 Lemma ghost_commit γ term mval :
   sys_inv γ -∗
   committed_at_term γ term mval ={↑sysN}=∗
-  commit_lb γ mval.
+  commit_lb γ mval
+.
 Proof.
+  iIntros "#Hinv #Hcommit".
+  iDestruct "Hcommit" as (W) "[%Hquorum Hacc]".
+  iInv "Hinv" as ">Hi" "Hclose".
+  iDestruct "Hi" as (commitTerm commitVal) "[Hcommit HcommitAcc]".
+  iDestruct "HcommitAcc" as (Wcom) "[%Hcom_quorum HcommitAcc]".
 Admitted.
 
 Lemma become_leader γ term highestVal :

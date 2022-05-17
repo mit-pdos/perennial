@@ -71,6 +71,11 @@ Example testNestedGoStyleLoopsNoComparison_ok : testNestedGoStyleLoopsNoComparis
 Example testIterateMap_ok : testIterateMap #() ~~> #true := t.
 Example testMapSize_ok : testMapSize #() ~~> #true := t.
 
+(* multiple_assign.go *)
+Example testAssignTwo_ok : testAssignTwo #() ~~> #true := t.
+Example testAssignThree_ok : testAssignThree #() ~~> #true := t.
+Example testMultipleAssignToMap_ok : testMultipleAssignToMap #() ~~> #true := t.
+
 (* multiple_return.go *)
 Example testReturnTwo_ok : testReturnTwo #() ~~> #true := t.
 Example testAnonymousBinding_ok : testAnonymousBinding #() ~~> #true := t.
