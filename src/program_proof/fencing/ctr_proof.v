@@ -218,6 +218,7 @@ Definition has_GetReply_encoding (l:list u8) (err v:u64) :=
 
 Definition getN := nroot .@ "ctr.get".
 
+(* put getN and unusedN etc. as sub-namespaces of one big namespaces *)
 Definition EnterNewEpoch_spec γ (e:u64) (Φ:iProp Σ) : iProp Σ :=
 |={⊤∖↑getN, ↑unusedN}=> ∃ latestEpoch, if decide (int.Z latestEpoch < int.Z e)%Z then
     own_latest_epoch γ latestEpoch (1/2)%Qp ∗
@@ -266,6 +267,7 @@ Definition Get_core_spec γ (e:u64) (Φ:u64 → iProp Σ) : iProp Σ :=
      invariants will already have been opened *)
   |={∅}=> ∃ v, own_val γ e v (1/2)%Qp ∗
     (own_val γ e v (1/2)%Qp ={∅}=∗ (Φ v))
+    (* XXX: no need for fupds here *)
 .
 
 Lemma Get_core_spec_wand γ e Φ1 Φ2 :
