@@ -18,7 +18,8 @@ jobs:
     strategy:
       matrix:
         coq_version:
-          - dev
+          # temporarily use this precise version while dev isn't working
+          - dev-ocaml-4.13.1-flambda
           - "8.15"
       max-parallel: 4
       # don't cancel all in-progress jobs if one matrix job fails:
@@ -62,7 +63,8 @@ jobs:
     strategy:
       matrix:
         coq_version:
-          - dev
+          # temporarily use this precise version while dev isn't working
+          - dev-ocaml-4.13.1-flambda
       max-parallel: 4
       # don't cancel all in-progress jobs if one matrix job fails:
       fail-fast: false
