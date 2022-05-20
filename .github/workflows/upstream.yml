@@ -23,9 +23,8 @@ jobs:
           git submodule update --remote
       - uses: coq-community/docker-coq-action@v1
         with:
-          # temporarily use this precise version while dev isn't working
-          coq_version: dev-ocaml-4.13.1-flambda
-          #ocaml_version: "4.12-flambda"
+          coq_version: dev
+          ocaml_version: "4.12-flambda"
           install: |
             startGroup Install dependencies
               sudo apt-get update

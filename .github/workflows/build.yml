@@ -18,8 +18,7 @@ jobs:
     strategy:
       matrix:
         coq_version:
-          # temporarily use this precise version while dev isn't working
-          - dev-ocaml-4.13.1-flambda
+          - dev
           - "8.15"
       max-parallel: 4
       # don't cancel all in-progress jobs if one matrix job fails:
@@ -34,7 +33,7 @@ jobs:
       - uses: coq-community/docker-coq-action@v1
         with:
           coq_version: ${{ matrix.coq_version }}
-          #ocaml_version: "4.12-flambda"
+          ocaml_version: "4.12-flambda"
           install: |
             startGroup Install dependencies
               sudo apt-get update
@@ -63,8 +62,7 @@ jobs:
     strategy:
       matrix:
         coq_version:
-          # temporarily use this precise version while dev isn't working
-          - dev-ocaml-4.13.1-flambda
+          - dev
       max-parallel: 4
       # don't cancel all in-progress jobs if one matrix job fails:
       fail-fast: false
@@ -76,7 +74,7 @@ jobs:
       - uses: coq-community/docker-coq-action@v1
         with:
           coq_version: ${{ matrix.coq_version }}
-          #ocaml_version: "4.12-flambda"
+          ocaml_version: "4.12-flambda"
           install: |
             startGroup Install dependencies
               sudo apt-get update
