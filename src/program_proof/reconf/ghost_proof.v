@@ -94,10 +94,87 @@ Definition committed_at_term γ term mval: iProp Σ :=
   ([∗ set] srv ∈ W, accepted_lb γ srv term mval)
 .
 
-Definition old_conf_max γ term mval : iProp Σ :=
-  □(∀ term' mval', ⌜int.nat term' < int.nat term⌝ →
-  (committed_at_term γ term' mval') -∗
-            ⌜mval_le mval' mval⌝
+Definition overlapping_quorums (config1 config2:ConfigC) :=
+  ∀ W1 W2, (config1.(is_quorum) W1) → (config2.(is_quorum) W2) → W1 ∩ W2 ≠ ∅.
+
+(* Maybe this should say
+   either the config of mval' intersects with the config of mval OR
+   every quorum in mval' contains a server that accepted something bigger than
+   mval'.
+*)
+(*
+  FIXME: should we take term'' = term here?
+  If we do, then it's not clear how to prove (old_conf_max γ term mval -∗
+  old_conf_max γ (term + 1) mval) anymore.
+  If we don't, then when we want to use old_conf_max, it's possible that term''
+  < term, in which case we would want to use old_term_max, but we can't use
+  old_term_max, because it requires old_conf_max.
+
+  There isn't a real circularity, it's just that we want to recursive invoke
+  old_conf and old_term. But, that'll result in later problems.
+ *)
+From iris.bi.lib Require Import fixpoint.
+
+Print fixpoint.
+
+Definition old_conf_max_pre (Φ:(reconf_names -d> u64 -d> (list (leibnizO LogEntry)) -d> iPropO Σ)): (reconf_names -d> u64 -d> (list (leibnizO LogEntry)) -d> iPropO Σ) :=
+  λ γ term mval,
+    (∀ mval', ⌜mval_lt mval' mval⌝ → □(
+        (⌜overlapping_quorums (get_config mval') (get_config mval)⌝ ∨
+         (∃ mval'' term'',
+             ⌜mval_lt mval mval''⌝ ∗
+             ⌜mval_le mval'' mval'⌝ ∗
+             ⌜int.nat term'' ≤ int.nat term⌝ ∗
+             committed_at_term γ term'' mval'' ∗
+             Φ γ term mval'' ∗
+             ⌜overlapping_quorums (get_config mval') (get_config mval'')⌝
+         )
+        )
+     ))%I
+.
+
+Definition old_conf_max_pre_least γ term Φ mval: iProp Σ :=
+  ∀ mval', ⌜mval_lt mval' mval⌝ → □(
+        (⌜overlapping_quorums (get_config mval') (get_config mval)⌝ ∨
+         (∃ mval'' term'',
+             ⌜mval_lt mval mval''⌝ ∗
+             ⌜int.nat term'' ≤ int.nat term⌝ ∗
+             committed_at_term γ term'' mval'' ∗
+             Φ mval'' ∗
+             ⌜overlapping_quorums (get_config mval') (get_config mval'')⌝
+         )
+        )
+     )
+.
+
+
+Definition old_conf_max γ term mval : iProp Σ := (bi_least_fixpoint (old_conf_max_pre_least γ term) mval).
+
+Instance old_conf_max_pre_contr : Contractive old_conf_max_pre.
+Admitted.
+
+Program Definition old_conf_max_2 γ term mval : iProp Σ := □ (fixpoint (old_conf_max_pre) γ term mval).
+
+Definition old_conf_max_orig γ term mval: iProp Σ :=
+  ∀ mval', ⌜mval_lt mval' mval⌝ → □(
+        (⌜overlapping_quorums (get_config mval') (get_config mval)⌝ ∨
+         (∃ mval'' term'',
+             ⌜mval_lt mval mval''⌝ ∗
+             ⌜int.nat term'' ≤ int.nat term⌝ ∗
+             committed_at_term γ term'' mval'' ∗
+             (* FIXME: want to be able to put another old_conf_max here *)
+             ⌜overlapping_quorums (get_config mval') (get_config mval'')⌝
+         )
+        )
+     )
+.
+
+Definition old_term_max γ term mval : iProp Σ :=
+  ∀ term' mval', □(⌜int.nat term' < int.nat term⌝ →
+  proposed_lb γ term' mval' -∗
+  committed_at_term γ term' mval' -∗
+  old_conf_max γ term' mval' -∗
+  ⌜mval_le mval' mval⌝
   )
 .
 
@@ -109,13 +186,11 @@ Definition sys_inv γ : iProp Σ :=
           commit γ mval ∗
           (committed_at_term γ term mval) ∗
           proposed_lb γ term mval ∗
-          old_conf_max γ term mval (* XXX: could make a accepted_lb_fancy, and put this
+          old_term_max γ term mval ∗ (* XXX: could make a accepted_lb_fancy, and put this
                               in there, and add requirement that quorum is
                               non-empty. *)
+          old_conf_max γ term mval
   ).
-
-Definition overlapping_quorums (config1 config2:ConfigC) :=
-  ∀ W1 W2, (config1.(is_quorum) W1) → (config2.(is_quorum) W2) → W1 ∩ W2 ≠ ∅.
 
 Definition no_concurrent_reconfigs_and_overlapping_quorums γ term mval : iProp Σ :=
   ∃ mval',
@@ -145,33 +220,68 @@ Proof.
   apply (transitivity H1 H0).
 Qed.
 
+Instance test γ term: BiMonoPred (old_conf_max_pre_least γ term).
+Proof.
+  apply Build_BiMonoPred.
+  {
+    iIntros (????) "#Hwand".
+    iIntros (?) "#H".
+    iIntros (??) "!#".
+    iSpecialize ("H" $! mval' H1 with "").
+    iDestruct "H" as "[H|H]".
+    {
+      iLeft.
+      done.
+    }
+    {
+      iRight.
+      iDestruct "H" as (??) "H".
+      iExists _, _; iFrame "#".
+      admit.
+    }
+  }
+  {
+    admit.
+  }
+Admitted.
+
 Lemma ghost_commit γ term mval :
   sys_inv γ -∗
   committed_at_term γ term mval -∗
   proposed_lb γ term mval -∗
-  old_conf_max γ term mval (* XXX: could make a accepted_lb_fancy, and put this
+  old_term_max γ term mval -∗ (* XXX: could make a accepted_lb_fancy, and put this
                               in there, and add requirement that quorum is
                               non-empty. *)
+  old_conf_max γ term mval
   ={↑sysN}=∗
   commit_lb γ mval
 .
 Proof.
-  iIntros "#Hinv #HcommitAt #Hproposed #Hold".
-  iInv "Hinv" as ">Hi" "Hclose".
-  iDestruct "Hi" as (commitTerm commitVal) "(Hcommit & #HcommitAcc & #HproposedCommit & #HoldCommit)".
+  iIntros "#Hinv #HcommitAt #Hproposed #Hold Hconf".
+  unfold old_conf_max.
+  rewrite least_fixpoint_unfold.
+  iDestruct "Hconf" as "#Hconf".
+  iInv "Hinv" as "Hi" "Hclose".
+  iDestruct "Hi" as (commitTerm commitVal) "Hi".
+  iEval (unfold old_conf_max) in "Hi".
+  rewrite least_fixpoint_unfold.
+  iDestruct "Hi" as "(>Hcommit & #>HcommitAcc & #>HproposedCommit & #>HoldCommit & #HconfCommit)".
   iAssert (⌜mval_le mval commitVal ∨ mval_le commitVal mval⌝)%I as "%Hcomparable".
   {
     destruct (decide (int.nat term < int.nat commitTerm)).
     { (* case: term < commitTerm *)
-      iDestruct ("HoldCommit" with "[] HcommitAt") as "%HvalLe".
+      iDestruct ("HoldCommit" with "[] Hproposed HcommitAt [Hconf]") as "%HvalLe".
       { done. }
+      {
+        unfold old_conf_max.
+        rewrite least_fixpoint_unfold.
+        iFrame "Hconf".
+      }
       eauto.
     }
     destruct (decide (int.nat term = int.nat commitTerm)).
     { (* case: term == commitTerm *)
       replace (commitTerm) with (term) by word.
-      (* TODO: put together the proposed_lb's to know that one of them is bigger
-       than the other. *)
       iDestruct (own_valid_2 with "Hproposed HproposedCommit") as %Hvalid.
       rewrite singleton_op in Hvalid.
       apply singleton_valid in Hvalid.
@@ -180,8 +290,14 @@ Proof.
     }
     (* case: term > commitTerm *)
     assert (int.nat term > int.nat commitTerm) by word.
-    iDestruct ("Hold" with "[] HcommitAcc") as "%HvalLe".
+    iDestruct ("Hold" with "[] HproposedCommit HcommitAcc [HconfCommit]") as "%HvalLe".
     { done. }
+    {
+      iIntros.
+      unfold old_conf_max.
+      rewrite least_fixpoint_unfold.
+      iFrame "HconfCommit".
+    }
     eauto.
   }
 
@@ -215,7 +331,7 @@ Proof.
     {
       iNext.
       iExists _, _; iFrame.
-      iFrame "#".
+      iFrame "HcommitAt #".
     }
     done.
   }
@@ -227,13 +343,96 @@ Lemma become_leader γ term highestVal :
     (get_config highestVal).(is_quorum) W →
     sys_inv γ -∗
     proposed_lb_fancy γ highestTerm highestVal -∗
+    old_term_max γ highestTerm highestVal -∗
+    old_conf_max γ highestTerm highestVal -∗
     □(
       [∗ set] srv ∈ W,
         (∃ srvVal, ⌜mval_le srvVal highestVal⌝ ∗ accepted_ro γ srv highestTerm srvVal) ∗
         (∀ term', ⌜int.nat highestTerm < int.nat term'⌝ → ⌜int.nat term' < int.nat term⌝ → accepted_ro_none γ srv term')
-    ) ={↑sysN}=∗
-    old_conf_max γ term highestVal.
+    ) -∗
+    old_term_max γ term highestVal.
 Proof.
-Admitted.
+  intros ? ? HtermIneq Hquorum.
+  iIntros "#Hsys #Hproposed #Hold #Hconf #HoldInfo".
+  iIntros (term' mval').
+  iModIntro.
+  iIntros "%Hterm'Ineq".
+  iIntros "#Hproposed'".
+  iIntros "#Hcommit' #Hconf'".
+  destruct (decide (int.nat term' < int.nat highestTerm)).
+  { (* term' < highestTerm, so we can just use the old_term_max of (highestTerm,highestVal) *)
+    by iApply "Hold".
+  }
+  destruct (decide (int.nat term' = int.nat highestTerm)).
+  { (* for term' == highestTerm, we have the first part of "oldInfo" *)
+    replace (term') with (highestTerm); last first.
+    { (* FIXME: why doesn't word work? *)
+      clear -e.
+      Search Z.to_nat.
+      rewrite Z2Nat.inj_iff in e; first last.
+      { word. }
+      { word. }
+      {
+        Search word.unsigned.
+        apply word.unsigned_inj in e.
+        done.
+      }
+    }
+    iDestruct "Hproposed" as "[Hproposed Hfancy]".
+    iDestruct (own_valid_2 with "Hproposed' Hproposed") as %Hvalid.
+    rewrite singleton_op in Hvalid.
+    rewrite singleton_valid in Hvalid.
+    apply mono_list_lb_op_valid_1_L in Hvalid.
+    destruct Hvalid as [Hdone|HlogLe].
+    { done. }
+    destruct (decide (length mval' = length highestVal)).
+    { (* If the two are equal, then no problem *)
+      assert (mval' = highestVal).
+      {
+        symmetry.
+        apply list_prefix_eq.
+        {
+          done.
+        }
+        word.
+      }
+      rewrite H.
+      done.
+    }
+    (* case: mval_lt highestVal mval'. Here, we're gonna derive a contradiction. *)
+    iExFalso.
+    (* now, apply old_conf_max highestTerm mval'' *)
+    iDestruct ("Hconf'" $! highestVal) as "#Hconf2".
+    iSpecialize ("Hconf2" with "[]").
+    {
+      iPureIntro.
+      split; naive_solver.
+    }
+    iDestruct "Hconf2" as "[Hoverlap|Hstale]".
+    { (* In this case, the quorums of mval' overlap with the quorums of highestVal.
+         This gives a contradiction between Hcommit' and HoldInfo.
+       *)
+      admit.
+    }
+    { (* In this case, some highest value mval'' was committed, and has
+         overlapping quorums with highestVal. *)
+      iDestruct "Hstale" as (mval'' term'') "(%Hmval''lt & %Hterm''Ineq & Hcommit'' & %Hoverlap)".
+      (* if term'' < highestTerm, then (old_term_max highestTerm highestVal) takes care of it *)
+      destruct (decide (int.nat term'' < int.nat highestTerm)).
+      {
+        iSpecialize ("Hold" $! term'' mval'' with "[] [] Hcommit''").
+        { done. }
+        {  admit. } (* TODO: add this to old_conf_max. *)
+        (* FIXME: we need old_conf_max to finish instantiating the old_term_max.
+           But, we need old_conf_max for the term'' and mval'' that we
+           destructed from a different old_conf_max.
+         *)
+      }
+      assert (term'' = highestTerm) as -> by word.
+      admit. (* TODO: need to know that mval'' > highestVal to get contradiction *)
+    }
+
+  }
+
 
 End ghost_proof.
