@@ -9,21 +9,28 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition own_index_bucket (bkt : loc) (γ : mvcc_names) : iProp Σ :=
+Definition N_IDX_BUCKET : nat := 2048.
+
+Definition hash_modu (key : u64) : nat :=
+  int.nat (word.modu key N_IDX_BUCKET).
+
+Definition keys_hashed (hash : nat) :=
+  filter (λ x, hash_modu x = hash) keys_all.
+
+Definition own_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp Σ :=
   ∃ (lockm : loc) (lockmM : gmap u64 loc),
     "Hlockm" ∷ bkt ↦[IndexBucket :: "m"] #lockm ∗
     "HlockmOwn" ∷ is_map lockm 1 lockmM ∗
+    "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), vchain_ptsto γ (1/2) key [Nil]) ∗
     "#HtuplesRP" ∷ ([∗ map] key ↦ tuple ∈ lockmM, is_tuple tuple key γ) ∗
     "_" ∷ True.
-Local Hint Extern 1 (environments.envs_entails _ (own_index_bucket _ _)) => unfold own_index_bucket : core.
+Local Hint Extern 1 (environments.envs_entails _ (own_index_bucket _ _ _)) => unfold own_index_bucket : core.
   
-Definition is_index_bucket (bkt : loc) (γ : mvcc_names) : iProp Σ :=
+Definition is_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp Σ :=
   ∃ (latch : loc),
     "#Hlatch" ∷ readonly (bkt ↦[IndexBucket :: "latch"] #latch) ∗
-    "#HlatchRP" ∷ is_lock mvccN #latch (own_index_bucket bkt γ) ∗
+    "#HlatchRP" ∷ is_lock mvccN #latch (own_index_bucket bkt hash γ) ∗
     "_" ∷ True.
-
-Definition N_IDX_BUCKET : nat := 2048.
 
 Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
   ∃ (bkts : Slice.t) (bktsL : list loc),
@@ -35,7 +42,8 @@ Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
      *)
     "#HbktsL" ∷ readonly (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
     "%HbktsLen" ∷ ⌜length bktsL = N_IDX_BUCKET⌝ ∗
-    "#HbktsRP" ∷ ([∗ list] _ ↦ bkt ∈ bktsL, is_index_bucket bkt γ) ∗ 
+    "#HbktsRP" ∷ ([∗ list] i ↦ bkt ∈ bktsL, is_index_bucket bkt i γ) ∗
+    "#Hinvtuple" ∷ mvcc_inv_tuple γ ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
     "_" ∷ True.
 
@@ -97,7 +105,7 @@ Proof.
   { (* The tuple is already in the index. *)
     wp_loadField.
     wp_apply (release_spec with "[-HΦ]").
-    { eauto 10 with iFrame. }
+    { eauto 10 with iFrame . }
     wp_pures.
     iApply "HΦ".
     iApply (big_sepM_lookup with "HtuplesRP").
@@ -111,8 +119,19 @@ Proof.
   (***********************************************************)
   apply map_get_false in Hmap_get as [Hlookup _].
   clear tuple.
-  (* TODO: Allocate [vchain_ptsto]. *)
-  wp_apply wp_MkTuple; [done | admit |].
+  (* Take [vchain_ptsto] from [Hvchains]. *)
+  (* iDestruct (big_sepS_delete with "[Hvchains]") as "H". *)
+  (* Q: How to destruct the other way around? *)
+  rewrite (big_sepS_delete _ _ key); last first.
+  { unfold keys_hashed.
+    rewrite -not_elem_of_dom in Hlookup.
+    apply elem_of_difference.
+    split; last done.
+    rewrite elem_of_filter.
+    split; [auto | set_solver].
+  }
+  iDestruct "Hvchains" as "[Hvchain Hvchains]".
+  wp_apply (wp_MkTuple with "[] [] [$Hvchain]"); [done | done |].
   iIntros (tuple) "#HtupleRP".
   wp_pures.
   wp_loadField.
@@ -126,6 +145,11 @@ Proof.
     rewrite /own_index_bucket.
     do 2 iExists _.
     iFrame.
+    iSplit.
+    { rewrite dom_insert_L.
+      iApply (big_sepS_subseteq with "Hvchains").
+      set_solver.
+    }
     iSplit; last done.
     iApply (big_sepM_insert with "[$HtuplesRP HtupleRP]"); first done.
     iFrame "HtupleRP".
@@ -136,18 +160,34 @@ Proof.
   (* return tupleNew                                         *)
   (***********************************************************)
   by iApply "HΦ".
-Admitted.
+Qed.
 
+Local Lemma filter_subseteq_union_S (s : gset u64) (f : u64 -> nat) (n : nat) :
+  (filter (λ x, S n ≤ f x)%nat s) ∪ (filter (λ x, f x = n)%nat s) ⊆ filter (λ x, n ≤ f x)%nat s.
+Proof.
+  apply elem_of_subseteq.
+  intros x.
+  rewrite elem_of_union.
+  do 3 rewrite elem_of_filter.
+  intros [[Hle Hin] | [Heq Hin]]; auto with lia.
+Qed.
+
+Local Lemma filter_all (P : u64 -> Prop) {H : ∀ x, Decision (P x)} (s : gset u64) :
+  (∀ x, P x) ->
+  s = filter P s.
+Proof. set_solver. Qed.
+  
 (*****************************************************************)
 (* func MkIndex() *Index                                         *)
 (*****************************************************************)
 Theorem wp_MkIndex γ :
+  mvcc_inv_tuple γ -∗
   mvcc_inv_gc γ -∗
-  {{{ True }}}
+  {{{ [∗ set] key ∈ keys_all, vchain_ptsto γ (1/2) key [Nil] }}}
     MkIndex #()
   {{{ (idx : loc), RET #idx; is_index idx γ }}}.
 Proof.
-  iIntros "#Hinvgc" (Φ) "!> _ HΦ".
+  iIntros "#Hinvtuple #Hinvgc" (Φ) "!> Hvchains HΦ".
   wp_call.
 
   (***********************************************************)
@@ -181,12 +221,13 @@ Proof.
   wp_apply (wp_forUpto
               (λ n, (∃ bktsL, (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
                               (⌜length bktsL = N_IDX_BUCKET⌝) ∗
-                              ([∗ list] bkt ∈ (take (int.nat n) bktsL), is_index_bucket bkt γ)) ∗
+                              ([∗ list] i ↦ bkt ∈ (take (int.nat n) bktsL), is_index_bucket bkt i γ)) ∗
                     (idx ↦[Index :: "buckets"] (to_val bkts)) ∗
+                    ([∗ set] key ∈ filter (λ x, (int.nat n) ≤ hash_modu x)%nat keys_all, vchain_ptsto γ (1/2) key [Nil]) ∗
                     ⌜True⌝)%I
-              _ _ (U64 0) (U64 2048) with "[] [HbktsS $buckets $HiRef]"); first done.
+              _ _ (U64 0) (U64 2048) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
   { clear Φ.
-    iIntros (i Φ) "!> ((HbktsInv & Hidx & _) & HidxRef & %Hbound) HΦ".
+    iIntros (i Φ) "!> ((HbktsInv & Hidx & Hvchains & _) & HidxRef & %Hbound) HΦ".
     iDestruct "HbktsInv" as (bktsL) "(HbktsS & %Hlength & HbktsRP)".
     wp_pures.
 
@@ -225,11 +266,30 @@ Proof.
     wp_pures.
     iApply "HΦ".
     iMod (readonly_alloc_1 with "latch") as "#Hlatch".
-    iMod (alloc_lock mvccN _ latch (own_index_bucket bkt γ) with "[$Hfree] [m Hm]") as "#Hlock".
-    { eauto 10 with iFrame. }
+    rewrite big_sepS_subseteq; last first.
+    { apply filter_subseteq_union_S. }
+    rewrite big_sepS_union; last first.
+    { apply elem_of_disjoint.
+      intros x.
+      do 2 rewrite elem_of_filter.
+      lia.
+    }
+    iDestruct "Hvchains" as "[Hvchains Hvchain]".
+    iMod (alloc_lock mvccN _ latch (own_index_bucket bkt (int.nat i) γ) with "[$Hfree] [m Hm Hvchain]") as "#Hlock".
+    { iNext.
+      iExists _, _.
+      iFrame.
+      iSplitL "Hvchain"; last auto.
+      rewrite dom_empty_L difference_empty_L.
+      by iApply "Hvchain".
+    }
     iModIntro.
     iFrame.
     rewrite -list_fmap_insert.
+    iSplitR "Hvchains"; last first.
+    { iSplit; last done.
+      by replace (int.nat (word.add _ _))%nat with (S (int.nat i))%nat; last word.
+    }
     iExists _.
     iFrame.
     rewrite insert_length.
@@ -240,10 +300,20 @@ Proof.
     iSplitL "HbktsRP".
     { by rewrite take_insert; last auto. }
     iApply (big_sepL_singleton).
+    rewrite take_length_le; last first.
+    { rewrite insert_length. word. }
+    replace (int.nat i + 0)%nat with (int.nat i); last word.
     rewrite /is_index_bucket.
     eauto 10 with iFrame.
   }
-  { iExists (replicate 2048 null).
+  { iSplitR "Hvchains"; last first.
+    { iSplit; last done.
+      iExactEq "Hvchains".
+      f_equal.
+      apply filter_all.
+      word.
+    }
+    iExists (replicate 2048 null).
     auto with iFrame.
   }
   iIntros "[(HbktsInv & Hidx & _) HiRef]".

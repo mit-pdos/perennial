@@ -53,7 +53,7 @@ Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ 
     "Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
     "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
     (* TODO: The lock invariant should only own [1/2] or [1/4] of [vchain]. *)
-    "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1) else (3/4))%Qp key vchain ∗
+    "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
     "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
     "Hwellformed" ∷ tuple_wellformed versL tidlast tidgc ∗
     "_" ∷ True.
@@ -66,6 +66,7 @@ Definition is_tuple (tuple : loc) (key : u64) (γ : mvcc_names) : iProp Σ :=
     "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
     "#HrcondC" ∷ is_cond rcond #latch ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
+    "#Hinvtuple" ∷ mvcc_inv_tuple γ ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (is_tuple _ _ _)) => unfold is_tuple : core.
 
@@ -214,12 +215,13 @@ Qed.
 (* func MkTuple() *Tuple                                         *)
 (*****************************************************************)
 Theorem wp_MkTuple (key : u64) γ :
+  mvcc_inv_tuple γ -∗
   mvcc_inv_gc γ -∗
-  {{{ vchain_ptsto γ 1 key [Nil] }}}
+  {{{ vchain_ptsto γ (1/2) key [Nil] }}}
     MkTuple #()
   {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
 Proof.
-  iIntros "#Hinvgc" (Φ) "!> Hvchain HΦ".
+  iIntros "#Hinvtuple #Hinvgc" (Φ) "!> Hvchain HΦ".
   wp_call.
 
   (***********************************************************)
@@ -717,7 +719,7 @@ Proof.
   repeat rewrite ite_apply.
   set tidlast' := if bool_decide _ then tid else tidlast.
   clear P.
-  set P := (|==> ∃ (vchain : list (option u64)),
+  set P := (|={⊤}=> ∃ (vchain : list (option u64)),
     "Hvchain" ∷ vchain_ptsto γ q key vchain ∗
     "#HvchainW" ∷ vchain_lb γ key vchain ∗
     "%HvchainLen" ∷ ⌜Z.of_nat (length vchain) = (int.Z tidlast' + 1)%Z⌝ ∗
@@ -735,8 +737,12 @@ Proof.
         set vals := replicate (int.nat (int.Z tid - int.Z tidlast)) valtid.
         set vchain' := vchain ++ vals.
         iExists vchain'.
-        iMod (vchain_update vchain' with "Hvchain") as "Hvchain"; first by apply prefix_app_r.
+
+        (* Update from [vchain] to [vchain'] with the other half of the ownership in a global inv. *)
+        iMod (vchain_update vchain' with "Hinvtuple Hvchain") as "Hvchain"; [by apply prefix_app_r | done |].
+        (* Obtain a witness of this update. *)
         iDestruct (vchain_witness with "Hvchain") as "#HvchainW".
+        
         iFrame "Hvchain HvchainW".
         iPureIntro.
         split.
@@ -970,15 +976,16 @@ Proof.
   unfold mods_token.
   iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
 
-  iAssert ((|==> vchain_ptsto γ 1 key vchain) ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as "[>Hvchain ->]".
+  iAssert (|={⊤}=> vchain_ptsto γ (1 / 2) key vchain ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as ">[Hvchain ->]".
   { case_decide.
-    - by iDestruct (vchain_false with "Hvchain Hvchain'") as "[]".
-    - iDestruct (vchain_combine with "Hvchain Hvchain'") as "[Hvchain ->]"; last auto.
-      apply Qp_three_quarter_quarter.
+    - iDestruct (vchain_combine (3 / 4) with "Hvchain Hvchain'") as "[Hvchain _]"; first compute_done.
+      iMod (vchain_false with "Hinvtuple Hvchain") as "[]"; done.
+    - iDestruct (vchain_combine (1 / 2) with "Hvchain Hvchain'") as "[Hvchain ->]"; first compute_done.
+      auto.
   }
   set vals := replicate (int.nat (int.Z tid - int.Z tidlast)) (spec_lookup versL tid).
   set vchain' := vchain ++ vals ++ [Some val].
-  iMod (vchain_update vchain' with "Hvchain") as "Hvchain"; first by apply prefix_app_r.
+  iMod (vchain_update vchain' with "Hinvtuple Hvchain") as "Hvchain"; [by apply prefix_app_r | done |].
   iDestruct (vchain_witness with "Hvchain") as "#HvchainW".
   iNamed "Hwellformed".
 
@@ -1210,15 +1217,16 @@ Proof.
   unfold mods_token.
   iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
 
-  iAssert ((|==> vchain_ptsto γ 1 key vchain) ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as "[>Hvchain ->]".
+  iAssert (|={⊤}=> vchain_ptsto γ (1 / 2) key vchain ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as ">[Hvchain ->]".
   { case_decide.
-    - by iDestruct (vchain_false with "Hvchain Hvchain'") as "[]".
-    - iDestruct (vchain_combine with "Hvchain Hvchain'") as "[Hvchain ->]"; last auto.
-      apply Qp_three_quarter_quarter.
+    - iDestruct (vchain_combine (3 / 4) with "Hvchain Hvchain'") as "[Hvchain _]"; first compute_done.
+      iMod (vchain_false with "Hinvtuple Hvchain") as "[]"; done.
+    - iDestruct (vchain_combine (1 / 2) with "Hvchain Hvchain'") as "[Hvchain ->]"; first compute_done.
+      auto.
   }
   set vals := replicate (int.nat (int.Z tid - int.Z tidlast)) (spec_lookup versL tid).
   set vchain' := vchain ++ vals ++ [Nil].
-  iMod (vchain_update vchain' with "Hvchain") as "Hvchain"; first by apply prefix_app_r.
+  iMod (vchain_update vchain' with "Hinvtuple Hvchain") as "Hvchain"; [by apply prefix_app_r | done |].
   iDestruct (vchain_witness with "Hvchain") as "#HvchainW".
   iNamed "Hwellformed".
   
@@ -1373,10 +1381,8 @@ Proof.
     do 3 iExists _.
     iFrame "% ∗".
     iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
-    case_decide.
-    - by iDestruct (vchain_false with "Hvchain Hvchain'") as "[]".
-    - iDestruct (vchain_combine with "Hvchain Hvchain'") as "[Hvchain ->]"; last auto.
-      apply Qp_three_quarter_quarter.
+    case_decide; first iFrame.
+    by iDestruct (vchain_combine (1 / 2) with "Hvchain Hvchain'") as "[Hvchain ->]"; first compute_done.
   }
   wp_pures.
   by iApply "HΦ".
@@ -1455,8 +1461,7 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  iDestruct (vchain_split (3 / 4) (1 / 4) with "Hvchain") as "[Hchain Hvchain']".
-  { apply Qp_three_quarter_quarter. }
+  iDestruct (vchain_split (1 / 4) (1 / 4) with "Hvchain") as "[Hchain Hvchain']"; first compute_done.
   wp_apply (release_spec with "[-HΦ Hactive Hvchain']").
   { iFrame "Hlock Hlocked".
     iNext.

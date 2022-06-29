@@ -8,15 +8,17 @@ Notation Value x := (Some x : dbval).
 
 Definition N_TXN_SITES : Z := 64.
 
-Definition sids_all := U64 <$> seqZ 0 N_TXN_SITES.
+Definition keys_all : gset u64 := fin_to_set u64.
+Definition sids_all : list u64 := U64 <$> seqZ 0 N_TXN_SITES.
 
-(* Logical version chain. *)
+(* Tuple-related RAs. *)
 Local Definition vchainR := mono_listR (leibnizO dbval).
 Local Definition key_vchainR := gmapR u64 vchainR.
-(* GC-related ghost states. *)
+(* GC-related RAs. *)
 Local Definition tidsR := gmap_viewR u64 (leibnizO unit).
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
+(* SST-related RAs. (SST = Strictly Serializable Transactions) *)
 Local Definition tid_modsR := gmap_viewR (u64 * (gmap u64 u64)) (leibnizO unit).
 
 Lemma sids_all_lookup (sid : u64) :
@@ -32,9 +34,12 @@ Qed.
 
 Class mvcc_ghostG Σ :=
   {
+    (* tuple *)
     mvcc_key_vchainG :> inG Σ key_vchainR;
+    (* GC *)
     mvcc_sid_tidsG :> inG Σ sid_tidsR;
     mvcc_sid_min_tidG :> inG Σ sid_min_tidR;
+    (* SST *)
     mvcc_abort_tids_ncaG :> inG Σ tidsR;
     mvcc_abort_tids_faG :> inG Σ tidsR;
     mvcc_abort_tids_fciG :> inG Σ tid_modsR;
@@ -74,50 +79,21 @@ Record mvcc_names :=
 Section definitions.
 Context `{!mvcc_ghostG Σ}.
 
+Definition mvccN := nroot.
+Definition mvccNTuple := nroot .@ "tuple".
+Definition mvccNGC := nroot .@ "gc".
+
 Definition vchain_ptsto γ q (k : u64) (vchain : list dbval) : iProp Σ :=
   own γ.(mvcc_key_vchain) {[k := ●ML{# q } (vchain : list (leibnizO dbval))]}.
 
 Definition vchain_lb γ (k : u64) (vchain : list dbval) : iProp Σ :=
   own γ.(mvcc_key_vchain) {[k := ◯ML (vchain : list (leibnizO dbval))]}.
 
-Lemma vchain_witness γ q k vchain :
-  vchain_ptsto γ q k vchain -∗ vchain_lb γ k vchain.
-Admitted.
-
-Lemma vchain_update {γ k vchain} vchain' :
-  (prefix vchain vchain') → vchain_ptsto γ 1 k vchain ==∗ vchain_ptsto γ 1 k vchain'.
-Admitted.
-
-Lemma vchain_false {γ q q' k vchain vchain'} :
-  (1 < q + q')%Qp ->
-  vchain_ptsto γ q k vchain -∗
-  vchain_ptsto γ q' k vchain' -∗
-  False.
-Admitted.
-
-Lemma vchain_combine {γ q q' k vchain vchain'} :
-  (q + q' = 1)%Qp ->
-  vchain_ptsto γ q k vchain -∗
-  vchain_ptsto γ q' k vchain' -∗
-  vchain_ptsto γ 1 k vchain ∧ ⌜vchain' = vchain⌝.
-Admitted.
-
-Lemma vchain_split {γ} q q' k vchain :
-  (q + q' = 1)%Qp ->
-  vchain_ptsto γ 1 k vchain -∗
-  vchain_ptsto γ q k vchain ∗ vchain_ptsto γ q' k vchain.
-Admitted.
-
-(* The following points-to facts are defined in terms of the underlying CC resources. *)
 Definition view_ptsto γ (k : u64) (v : option u64) (tid : u64) : iProp Σ :=
   ∃ vchain, vchain_lb γ k vchain ∗ ⌜vchain !! (int.nat tid) = Some v⌝.
 
 Definition mods_token γ (k tid : u64) : iProp Σ :=
   ∃ vchain, vchain_ptsto γ (1/4) k vchain ∗ ⌜Z.of_nat (length vchain) ≤ (int.Z tid) + 1⌝.
-
-Theorem view_ptsto_agree γ (k : u64) (v v' : option u64) (tid : u64) :
-  view_ptsto γ k v tid -∗ view_ptsto γ k v' tid -∗ ⌜v = v'⌝.
-Admitted.
 
 (* Definitions/theorems about GC-related resources. *)
 Definition site_active_tids_half_auth γ (sid : u64) tids : iProp Σ :=
@@ -125,6 +101,122 @@ Definition site_active_tids_half_auth γ (sid : u64) tids : iProp Σ :=
 
 Definition site_active_tids_frag γ (sid : u64) tid : iProp Σ :=
   own γ.(mvcc_sid_tids_gn) {[sid := (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt)]}.
+
+Definition active_tid γ (tid sid : u64) : iProp Σ :=
+  (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜0 < int.Z tid < 2 ^ 64 - 1⌝ .
+
+Definition site_min_tid_half_auth γ (sid : u64) tidN : iProp Σ :=
+  own γ.(mvcc_sid_min_tid_gn) {[sid := (●MN{#(1 / 2)} tidN)]}.
+
+Definition site_min_tid_lb γ (sid : u64) tidN : iProp Σ :=
+  own γ.(mvcc_sid_min_tid_gn) {[sid := (◯MN tidN)]}.
+
+Definition min_tid_lb γ tidN : iProp Σ :=
+  [∗ list] sid ∈ sids_all, site_min_tid_lb γ sid tidN.
+
+Definition mvcc_inv_tuple_def γ : iProp Σ :=
+  [∗ set] key ∈ keys_all,
+    ∃ (vchain : list dbval),
+      vchain_ptsto γ (1/2) key vchain.
+
+Definition mvcc_inv_gc_def γ : iProp Σ :=
+  [∗ list] sid ∈ sids_all,
+    ∃ (tids : gmap u64 unit) (tidmin : u64),
+      site_active_tids_half_auth γ sid tids ∗
+      site_min_tid_half_auth γ sid (int.nat tidmin) ∗
+      ∀ tid, ⌜tid ∈ (dom tids) -> (int.nat tidmin) ≤ (int.nat tid)⌝.
+
+End definitions.
+
+Section mvccinv.
+Context `{!heapGS Σ, !mvcc_ghostG Σ}.
+
+Definition mvcc_inv_tuple γ : iProp Σ :=
+  inv mvccNTuple (mvcc_inv_tuple_def γ).
+
+Definition mvcc_inv_gc γ : iProp Σ :=
+  inv mvccNGC (mvcc_inv_gc_def γ).
+
+End mvccinv.
+
+Section lemmas.
+Context `{!heapGS Σ, !mvcc_ghostG Σ}.
+
+Lemma vchain_combine {γ} q {q1 q2 key vchain1 vchain2} :
+  (q1 + q2 = q)%Qp ->
+  vchain_ptsto γ q1 key vchain1 -∗
+  vchain_ptsto γ q2 key vchain2 -∗
+  vchain_ptsto γ q key vchain1 ∧ ⌜vchain2 = vchain1⌝.
+Proof.
+  iIntros "%Hq Hv1 Hv2".
+  iCombine "Hv1 Hv2" as "Hv".
+  iDestruct (own_valid with "Hv") as %Hvalid.
+  rewrite singleton_valid mono_list_auth_dfrac_op_valid_L in Hvalid.
+  destruct Hvalid as [_ <-].
+  rewrite -mono_list_auth_dfrac_op dfrac_op_own Hq.
+  naive_solver.
+Qed.
+
+Lemma vchain_split {γ q} q1 q2 {key vchain} :
+  (q1 + q2 = q)%Qp ->
+  vchain_ptsto γ q key vchain -∗
+  vchain_ptsto γ q1 key vchain ∗ vchain_ptsto γ q2 key vchain.
+Proof.
+  iIntros "%Hq Hv".
+  unfold vchain_ptsto.
+  rewrite -Hq.
+  rewrite -dfrac_op_own.
+  (* rewrite mono_list_auth_dfrac_op. *)
+Admitted.
+
+Lemma vchain_witness γ q k vchain :
+  vchain_ptsto γ q k vchain -∗ vchain_lb γ k vchain.
+Proof.
+  iApply own_mono.
+  apply singleton_mono, mono_list_included.
+Qed.
+
+Lemma vchain_update {γ E key vchain} vchain' :
+  prefix vchain vchain' →
+  ↑mvccNTuple ⊆ E ->
+  mvcc_inv_tuple γ -∗
+  vchain_ptsto γ (1 / 2) key vchain ={E}=∗
+  vchain_ptsto γ (1 / 2) key vchain'.
+Proof.
+  iIntros "%Hprefix %Hsubseteq #Hinvtuple Hvchain".
+  iInv "Hinvtuple" as ">HinvtupleO" "HinvtupleC".
+  unfold mvcc_inv_tuple_def.
+  iDestruct (big_sepS_elem_of_acc _ _ key with "HinvtupleO") as "[HvchainInv HvchainInvC]"; first set_solver.
+  iDestruct "HvchainInv" as (vchainInv') "HvchainInv".
+  iDestruct (vchain_combine 1%Qp with "Hvchain HvchainInv") as "[Hvchain ->]"; first compute_done.
+  iMod (own_update with "Hvchain") as "Hvchain".
+  { apply singleton_update, mono_list_update, Hprefix. }
+  iDestruct (vchain_split (1 / 2) (1 / 2) with "Hvchain") as "[Hvchain Hvchain']"; first compute_done.
+  iDestruct ("HvchainInvC" with "[Hvchain]") as "Hvchains"; first auto.
+  iMod ("HinvtupleC" with "[Hvchains]") as "_"; done.
+Qed.
+
+Lemma vchain_false {γ E q key vchain} :
+  (1 / 2 < q)%Qp ->
+  ↑mvccNTuple ⊆ E ->
+  mvcc_inv_tuple γ -∗
+  vchain_ptsto γ q key vchain ={E}=∗
+  False.
+Proof.
+  iIntros "%Hq %Hsubseteq #Hinvtuple Hvchain".
+  iInv "Hinvtuple" as ">HinvtupleO" "HinvtupleC".
+  unfold mvcc_inv_tuple_def.
+  iDestruct (big_sepS_elem_of_acc _ _ key with "HinvtupleO") as "[HvchainInv HvchainInvC]"; first set_solver.
+  iDestruct "HvchainInv" as (vchainInv') "HvchainInv".
+  iDestruct (vchain_combine (q + 1 / 2) with "Hvchain HvchainInv") as "[Hvchain ->]"; first done.
+  iDestruct (own_valid with "Hvchain") as %Hvalid.
+  rewrite singleton_valid mono_list_auth_dfrac_valid dfrac_valid_own in Hvalid.
+  by rewrite (Qp_add_lt_mono_r _ _ (1 / 2)) Qp_half_half Qp_lt_nge in Hq.
+Qed.
+
+Theorem view_ptsto_agree γ (k : u64) (v v' : option u64) (tid : u64) :
+  view_ptsto γ k v tid -∗ view_ptsto γ k v' tid -∗ ⌜v = v'⌝.
+Admitted.
 
 Lemma site_active_tids_elem_of γ (sid : u64) tids tid :
   site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ (dom tids)⌝.
@@ -152,21 +244,6 @@ Lemma site_active_tids_delete {γ sid tids} tid :
   site_active_tids_half_auth γ sid (delete tid tids) ∗
   site_active_tids_half_auth γ sid (delete tid tids). 
 Admitted.
-
-(**
- * Q: Can we hide the [sid] from [active_tid]?
- * The problem of hiding it is that we lose the info of from which txn site
- * this tid is allocated, which creates problem in [txnMgr.deactivate] as
- * we cannot deduce [tid] is in the set of active TIDs of that site.
- *)
-Definition active_tid γ (tid sid : u64) : iProp Σ :=
-  (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜0 < int.Z tid < 2 ^ 64 - 1⌝ .
-
-Definition site_min_tid_half_auth γ (sid : u64) tidN : iProp Σ :=
-  own γ.(mvcc_sid_min_tid_gn) {[sid := (●MN{#(1 / 2)} tidN)]}.
-
-Definition site_min_tid_lb γ (sid : u64) tidN : iProp Σ :=
-  own γ.(mvcc_sid_min_tid_gn) {[sid := (◯MN tidN)]}.
 
 Lemma site_min_tid_valid γ (sid : u64) tidN tidlbN :
   site_min_tid_half_auth γ sid tidN -∗
@@ -198,35 +275,24 @@ Lemma site_min_tid_witness {γ sid tidN} :
   site_min_tid_lb γ sid tidN.
 Admitted.
 
-Definition min_tid_lb γ tidN : iProp Σ :=
-  [∗ list] sid ∈ sids_all, site_min_tid_lb γ sid tidN.
-
 Lemma min_tid_lb_zero γ :
   ⊢ min_tid_lb γ 0%nat.
 Admitted.
 
-Definition mvcc_inv_gc_def γ : iProp Σ :=
-  [∗ list] sid ∈ sids_all,
-    ∃ (tids : gmap u64 unit) (tidmin : u64),
-      site_active_tids_half_auth γ sid tids ∗
-      site_min_tid_half_auth γ sid (int.nat tidmin) ∗
-      ∀ tid, ⌜tid ∈ (dom tids) -> (int.nat tidmin) ≤ (int.nat tid)⌝.
-
-Lemma mvcc_ghost_gc_init :
-  ⊢ |==> ∃ γ, mvcc_inv_gc_def γ ∗
+Lemma mvcc_ghost_init :
+  ⊢ |==> ∃ γ, mvcc_inv_tuple_def γ ∗
+              ([∗ set] key ∈ keys_all, vchain_ptsto γ (1/2) key [Nil]) ∗
+              mvcc_inv_gc_def γ ∗
               ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
 Admitted.
-
-Definition mvccN := nroot .@ "mvcc_inv".
-Definition mvccNGC := nroot .@ "mvcc_inv_gc".
 
 Theorem active_ge_min γ (tid tidlb : u64) (sid : u64) :
   mvcc_inv_gc_def γ -∗
   active_tid γ tid sid -∗
   min_tid_lb γ (int.nat tidlb) -∗
   ⌜int.Z tidlb ≤ int.Z tid⌝.
-Proof.
+Proof using heapGS0 mvcc_ghostG0 Σ.
   iIntros "Hinv Hactive Hlb".
   iDestruct "Hactive" as "[[Htid %Hlookup] _]".
   apply sids_all_lookup in Hlookup.
@@ -242,7 +308,7 @@ Proof.
   apply Z.le_trans with (int.Z tidmin); word.
 Qed.
 
-End definitions.
+End lemmas.
 
 
 Section event.
@@ -492,13 +558,5 @@ Proof.
   set_solver.
 Qed.
 
+
 End event.
-
-
-Section mvccinv.
-Context `{!heapGS Σ, !mvcc_ghostG Σ}.
-
-Definition mvcc_inv_gc γ : iProp Σ :=
-  inv mvccNGC (mvcc_inv_gc_def γ).
-
-End mvccinv.

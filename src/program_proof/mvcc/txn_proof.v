@@ -230,22 +230,6 @@ Definition is_txn_uninit (txn : loc) γ : iProp Σ :=
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
     "_" ∷ True.
 
-(**
- * Extensions of a map are supersets of the map that we logically have
- * access to, but physically (i.e., the program) does not.
- *)
-
-(* The client can use this theorem to deduce `C` without expanding the definition of `is_txn`. *)
-Theorem db_consistent txn view mods γ :
-  ⊢ is_txn txn view mods γ →
-    ∃ dbmap, ⌜C dbmap ∧ view ⊆ dbmap⌝.
-Proof.
-  iIntros "Htxn".
-  (* 1. Open `dbinv`. *)
-  (* 2. Apply the agree rule to deduce that `view` is a subset of `dbmap`. *)
-  (* 3. Deduce that `C` holds on `view`. *)
-Admitted.
-
 (*****************************************************************)
 (* func MkTxnMgr() *TxnMgr                                       *)
 (*****************************************************************)
@@ -275,7 +259,8 @@ Proof.
   iIntros (sites) "HsitesL".
   wp_storeField.
 
-  iMod mvcc_ghost_gc_init as (γ) "(HinvgcO & HactiveAuthAll & HminAuthAll)".
+  iMod mvcc_ghost_init as (γ) "(HinvtupleO & Hvchains & HinvgcO & HactiveAuthAll & HminAuthAll)".
+  iMod (inv_alloc mvccNTuple _ (mvcc_inv_tuple_def γ) with "[$HinvtupleO]") as "#Hinvtuple".
   iMod (inv_alloc mvccNGC _ (mvcc_inv_gc_def γ) with "[$HinvgcO]") as "#Hinvgc".
   
   (***********************************************************)
@@ -381,7 +366,7 @@ Proof.
   (* txnMgr.idx = index.MkIndex()                            *)
   (* txnMgr.gc = gc.MkGC(txnMgr.idx)                         *)
   (***********************************************************)
-  wp_apply (wp_MkIndex γ); first done.
+  wp_apply (wp_MkIndex γ with "Hinvtuple Hinvgc Hvchains").
   iIntros (idx) "#HidxRP".
   wp_storeField.
   wp_loadField.
@@ -1063,6 +1048,7 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_loadField.
+  iDestruct (is_slice_wf with "HactiveL") as "%HtidsactiveCap".
   wp_apply (wp_SliceTake).
   { apply lookup_lt_Some in Hlookup. word. }
   wp_storeField.
@@ -1998,7 +1984,7 @@ Proof.
     wp_apply (wp_slice_ptr).
     wp_pures.
     rewrite /is_slice_small.
-    iDestruct "HwsetS" as "[HwsetA %HwsetLen]".
+    iDestruct "HwsetS" as "[HwsetA [%HwsetLen %HwsetCap]]".
     iDestruct (update_array (off:=int.nat pos) with "HwsetA") as "[HwsetP HwsetA]".
     { rewrite list_lookup_fmap.
       rewrite HSome.
@@ -2225,7 +2211,7 @@ Proof.
     wp_apply (wp_slice_ptr).
     wp_pures.
     rewrite /is_slice_small.
-    iDestruct "HwsetS" as "[HwsetA %HwsetLen]".
+    iDestruct "HwsetS" as "[HwsetA [%HwsetLen %HwsetCap]]".
     iDestruct (update_array (off:=int.nat pos) with "HwsetA") as "[HwsetP HwsetA]".
     { rewrite list_lookup_fmap.
       rewrite HSome.
