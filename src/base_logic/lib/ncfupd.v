@@ -6,7 +6,6 @@ From Perennial.base_logic.lib Require Import wsat.
 From iris.prelude Require Import options.
 Import uPred.
 
-
 Definition ncfupd_def `{!invGS Σ, !crashGS Σ} (E1 E2 : coPset) (P: iProp Σ) : iProp Σ :=
   ∀ q, NC q -∗ |={E1, E2}=> P ∗ NC q.
 Definition ncfupd_aux `{!invGS Σ, !crashGS Σ} : seal (ncfupd_def). Proof. by eexists. Qed.
@@ -198,20 +197,9 @@ Proof.
   rewrite /FromExist=><-. apply exist_elim=> a. by rewrite -(exist_intro a).
 Qed.
 
-Lemma ncfupd_plain_forall_2 E {A} (Φ : A → iProp Σ) `{!∀ x, Plain (Φ x)} :
-  (∀ x, |NC={E}=> Φ x) ⊢ |NC={E}=> ∀ x, Φ x.
+Local Lemma ncfupd_plainly_mask_empty E P : (|NC={E,∅}=> ■ P) ⊢ |NC={E}=> P.
 Proof.
-  rewrite ncfupd_eq /ncfupd_def.
-  rewrite uPred_fupd_eq /uPred_fupd_def.
-  iIntros "H" (q) "HNC".
-  iIntros "[Hw HE]".
-  iAssert (◇ ∀ x : A, Φ x)%I as "#>HP".
-  { iIntros (x). by iMod ("H" $! x q with "[$] [$Hw $HE]") as "(_&_&?&?)". }
-  iFrame. eauto.
-Qed.
-
-Lemma ncfupd_plainly_mask_empty E P : (|NC={E,∅}=> ■ P) ⊢ |NC={E}=> P.
-Proof.
+  pose local_instance := uPred_bi_fupd_plainly.
   rewrite ncfupd_eq /ncfupd_def.
   iIntros "H". iIntros (q) "HNC".
   iSpecialize ("H" $! q).
@@ -220,53 +208,21 @@ Proof.
   iApply (fupd_plain_mask_empty). by iMod "H" as "($&_)".
 Qed.
 
-Lemma ncfupd_plain_mask_empty E P `{!Plain P} : (|NC={E,∅}=> P) ⊢ |NC={E}=> P.
+Local Lemma ncfupd_plain_mask_empty E P `{!Plain P} : (|NC={E,∅}=> P) ⊢ |NC={E}=> P.
 Proof. by rewrite {1}(plain P) ncfupd_plainly_mask_empty. Qed.
 
 Lemma ncfupd_elim E1 E2 E3 P Q :
   (Q -∗ (|NC={E2,E3}=> P)) → (|NC={E1,E2}=> Q) -∗ (|NC={E1,E3}=> P).
 Proof. intros ->. rewrite ncfupd_trans //. Qed.
 
-Lemma ncfupd_plainly_mask E E' P : (|NC={E,E'}=> ■ P) ⊢ |NC={E}=> P.
+Local Lemma ncfupd_plainly_mask E E' P : (|NC={E,E'}=> ■ P) ⊢ |NC={E}=> P.
 Proof.
   rewrite -(ncfupd_plainly_mask_empty).
   apply ncfupd_elim, (ncfupd_mask_weaken _ _ _). set_solver.
 Qed.
 
-Lemma ncfupd_plain_mask E E' P `{!Plain P} : (|NC={E,E'}=> P) ⊢ |NC={E}=> P.
+Local Lemma ncfupd_plain_mask E E' P `{!Plain P} : (|NC={E,E'}=> P) ⊢ |NC={E}=> P.
 Proof. by rewrite {1}(plain P) ncfupd_plainly_mask. Qed.
-
-Lemma ncfupd_plainly_elim E P : ■ P -∗ |NC={E}=> P.
-Proof. by rewrite (ncfupd_intro E (■ P)%I) ncfupd_plainly_mask. Qed.
-
-Lemma ncfupd_plain_fupd E P  `{!Plain P} : (∀ q, NC q -∗ |={E}=> P) -∗ |NC={E}=> P.
-Proof.
-  rewrite ncfupd_eq /ncfupd_def.
-  iIntros "H" (q) "HNC". iApply (fupd_plain_keep_l). iFrame.
-  iApply "H".
-Qed.
-
-Lemma ncfupd_plain_forall E1 E2 {A} (Φ : A → iProp Σ) `{!∀ x, Plain (Φ x)} :
-  E2 ⊆ E1 →
-  (|NC={E1,E2}=> ∀ x, Φ x) ⊣⊢ (∀ x, |NC={E1,E2}=> Φ x).
-Proof.
-  intros. apply (anti_symm _).
-  { apply forall_intro=> x. by rewrite (forall_elim x). }
-  trans (∀ x, |NC={E1}=> Φ x)%I.
-  { apply forall_mono=> x. by rewrite ncfupd_plain_mask. }
-  rewrite ncfupd_plain_forall_2. apply ncfupd_elim.
-  rewrite {1}(plain (∀ x, Φ x)) (ncfupd_mask_weaken E1 E2 (■ _)%I) //.
-  apply ncfupd_elim. by rewrite ncfupd_plainly_elim.
-Qed.
-
-Global Instance from_forall_ncfupd E1 E2 {A} P (Φ : A → iProp Σ) name :
-  (* Some cases in which [E2 ⊆ E1] holds *)
-  TCOr (TCEq E1 E2) (TCOr (TCEq E1 ⊤) (TCEq E2 ∅)) →
-  FromForall P Φ name → (∀ x, Plain (Φ x)) →
-  FromForall (|NC={E1,E2}=> P)%I (λ a, |NC={E1,E2}=> (Φ a))%I name.
-Proof.
-  rewrite /FromForall=> -[->|[->|->]] <- ?; rewrite ncfupd_plain_forall; set_solver.
-Qed.
 
 Global Instance except_0_ncfupd' E1 E2 P :
   IsExcept0 (|NC={E1,E2}=> P).
@@ -398,28 +354,6 @@ Proof.
     rewrite -step_ncfupd_ncfupd //.
 Qed.
 
-Lemma ncfupd_plainly_later E P : (▷ |NC={E}=> ■ P) ⊢ |NC={E}=> ▷ ◇ P.
-Proof.
-  rewrite ncfupd_eq /ncfupd_def.
-  rewrite uPred_fupd_eq /uPred_fupd_def.
-  iIntros "Hshift" (q) "HNC".
-  iIntros "[Hw HE]".
-  iAssert (▷ ◇ ■ P)%I as "#HP".
-  { iNext. by iMod ("Hshift" with "[$] [$]") as "(_ & _ & HP & _)". }
-  iModIntro. iModIntro. iFrame. iNext. iMod "HP". eauto.
-Qed.
-
-Lemma ncfupd_plain_keep_l E P R `{!Plain P} : (R -∗ |NC={E}=> P) ∗ R ⊢ |NC={E}=> P ∗ R.
-Proof.
-  rewrite ncfupd_eq /ncfupd_def.
-  iIntros "(H&R)" (q) "HNC".
-  rewrite -assoc. iApply fupd_plain_keep_l. iFrame.
-  iIntros "(?&?)". by iDestruct ("H" with "[$] [$]") as ">($&?)".
-Qed.
-
-Lemma ncfupd_plain_later E P `{!Plain P} : (▷ |NC={E}=> P) ⊢ |NC={E}=> ▷ ◇ P.
-Proof. by rewrite {1}(plain P) ncfupd_plainly_later. Qed.
-
 Lemma step_ncfupd_plain Eo Ei P `{!Plain P} : (|NC={Eo}[Ei]▷=> P) -∗ |NC={Eo}=> ▷ ◇ P.
 Proof.
   rewrite ncfupd_eq.
@@ -448,7 +382,7 @@ Qed.
 
 End ncfupd.
 
-Lemma ncfupd_plain_soundness' `{!invGpreS Σ, !crashGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
+Local Lemma ncfupd_plain_soundness' `{!invGpreS Σ, !crashGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
   (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢ ∀ q, NC q -∗ |={E1,E2}=> P) → ⊢ P.
 Proof.
   iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
@@ -461,7 +395,7 @@ Proof.
   iApply (ownE_weaken with "HE"). set_solver.
 Qed.
 
-Lemma ncfupd_plain_soundness `{!invGpreS Σ, !crashGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
+Local Lemma ncfupd_plain_soundness `{!invGpreS Σ, !crashGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
   (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢ |NC={E1,E2}=> P) → ⊢ P.
 Proof.
   iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
@@ -478,6 +412,7 @@ Lemma step_ncfupdN_soundness_alt `{!invGpreS Σ, !crashGpreS Σ} φ n :
   (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢@{iPropI Σ} ∀ q, NC q -∗ |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
+  pose local_instance := uPred_bi_fupd_plainly.
   intros Hiter.
   apply (soundness (M:=iResUR Σ) _  (S n)); simpl.
   apply (ncfupd_plain_soundness' ⊤ ∅ _)=> Hinv Hcrash.

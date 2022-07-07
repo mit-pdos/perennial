@@ -142,7 +142,7 @@ Global Instance uPred_bi_fupd `{!invGS Σ} : BiFUpd (uPredI (iResUR Σ)) :=
 Global Instance uPred_bi_bupd_fupd `{!invGS Σ} : BiBUpdFUpd (uPredI (iResUR Σ)).
 Proof. rewrite /BiBUpdFUpd uPred_fupd_eq. by iIntros (E P) ">? [$ $] !> !>". Qed.
 
-Global Instance uPred_bi_fupd_plainly `{!invGS Σ} : BiFUpdPlainly (uPredI (iResUR Σ)).
+Lemma uPred_bi_fupd_plainly `{!invGS Σ} : BiFUpdPlainly (uPredI (iResUR Σ)).
 Proof.
   split.
   - rewrite uPred_fupd_eq /uPred_fupd_def. iIntros (E P) "H [Hw HE]".
@@ -177,7 +177,7 @@ Proof.
   iIntros (?) "H". by iDestruct (ownE_mono_le_acc with "H") as "($&_)".
 Qed.
 
-Lemma fupd_plain_soundness `{!invGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
+Local Lemma fupd_plain_soundness `{!invGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
   (∀ `{Hinv: !invGS Σ}, ⊢ |={E1,E2}=> P) → ⊢ P.
 Proof.
   iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
@@ -192,6 +192,7 @@ Lemma step_fupdN_soundness `{!invGpreS Σ} φ n :
   (∀ `{Hinv: !invGS Σ}, ⊢@{iPropI Σ} |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
+  pose local_instance := uPred_bi_fupd_plainly.
   intros Hiter.
   apply (soundness (M:=iResUR Σ) _  (S n)); simpl.
   apply (fupd_plain_soundness ⊤ ⊤ _)=> Hinv.
