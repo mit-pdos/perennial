@@ -451,7 +451,7 @@ End ncfupd.
 Lemma ncfupd_plain_soundness' `{!invGpreS Σ, !crashGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
   (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢ ∀ q, NC q -∗ |={E1,E2}=> P) → ⊢ P.
 Proof.
-  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc' as (Hinv) "[Hw HE]".
+  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
   iMod NC_alloc as (Hc) "HNC".
   iAssert (NC 1 -∗ |={⊤,E2}=> P)%I as "H".
   { iIntros "HNC". iMod fupd_mask_subseteq; last iApply Hfupd; done. }
@@ -464,7 +464,7 @@ Qed.
 Lemma ncfupd_plain_soundness `{!invGpreS Σ, !crashGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
   (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢ |NC={E1,E2}=> P) → ⊢ P.
 Proof.
-  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc' as (Hinv) "[Hw HE]".
+  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
   iMod NC_alloc as (Hc) "HNC".
   iAssert (|NC={⊤,E2}=> P)%I as "H".
   { iMod ncfupd_mask_subseteq; last iApply Hfupd. done. }

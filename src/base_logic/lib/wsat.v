@@ -62,17 +62,6 @@ Module invGS.
       inv_names_disabled_name : gname;
     }.
 
-  Definition inv_update_pre `(ipG : invGpreS Σ) (names : inv_names) :=
-    {| inv_inG := ipG;
-       inv_list_name := inv_names_list_name names;
-       enabled_name := inv_names_enabled_name names;
-       disabled_name := inv_names_disabled_name names |}.
-
-  Definition inv_get_names `(iG : invGS Σ) : inv_names :=
-    {| inv_names_list_name := inv_list_name;
-      inv_names_enabled_name := enabled_name;
-      inv_names_disabled_name := disabled_name |}.
-
   Definition invΣ : gFunctors :=
     #[GFunctor (authRF (gmapURF positive
                                 (prodRF (agreeRF (prodOF (listOF (laterOF idOF)) (constOF bi_schemaO)))
@@ -904,21 +893,7 @@ Qed.
 End wsat.
 
 (* Allocation of an initial world *)
-Lemma wsat_alloc'_strong `{HIPRE: !invGpreS Σ} :
-  ⊢ |==> ∃ (_ : invGS Σ) (HEQ: inv_inG = HIPRE), wsat_all ∗ ownE ⊤.
-Proof.
-  iIntros.
-  iMod (fmlist_alloc []) as (γI) "HI".
-  iMod (own_alloc (CoPset ⊤)) as (γE) "HE"; first done.
-  iMod (own_alloc (GSet ∅)) as (γD) "HD"; first done.
-  set (iG := (WsatG _ _ γI γE γD)).
-  unshelve (iExists iG, _); eauto.
-  rewrite /ownE. iFrame. iClear "HD".
-  replace γI with (inv_list_name) by eauto.
-  iExists [] => //=. iFrame. rewrite wsat_unfold //.
-Qed.
-
-Lemma wsat_alloc' `{!invGpreS Σ} :
+Lemma wsat_alloc `{!invGpreS Σ} :
   ⊢ |==> ∃ (_ : invGS Σ), wsat_all ∗ ownE ⊤.
 Proof.
   iIntros.
@@ -930,14 +905,6 @@ Proof.
   rewrite /ownE. iFrame. iClear "HD".
   replace γI with (inv_list_name) by eauto.
   iExists [] => //=. iFrame. rewrite wsat_unfold //.
-Qed.
-
-Lemma wsat_alloc `{!invGpreS Σ} n : ⊢ |==> ∃ _ : invGS Σ, wsat n ∗ ownE ⊤.
-Proof.
-  iIntros.
-  iMod (wsat_alloc') as (?) "(Hall&Hown)".
-  iExists _. iMod (wsat_all_acc n with "[$]") as "(?&?)".
-  by iFrame.
 Qed.
 
 Section schema_test_bupd.

@@ -338,7 +338,7 @@ Lemma step_fupdN_fresh_plain {Λ Σ} `{!invGpreS Σ} `{!crashGpreS Σ} P `{!Plai
   ▷^(fresh_later_count f g ncurr ns + S k) P.
 Proof.
   iIntros "H".
-  iMod wsat_alloc' as (Hinv) "(Hw&HE)".
+  iMod wsat_alloc as (Hinv) "(Hw&HE)".
   iSpecialize ("H" $! Hinv).
   rewrite {1}uPred_fupd_eq {1}/uPred_fupd_def.
   iApply (bupd_plain (▷^(_) P)%I); try (iPureIntro; apply _).

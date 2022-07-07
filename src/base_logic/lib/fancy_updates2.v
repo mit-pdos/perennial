@@ -430,20 +430,9 @@ End fupd2.
 Lemma fupd2_plain_soundness `{!invGpreS Σ} E1 E1' E2 E2' (P: iProp Σ) `{!Plain P} :
   (∀ `{Hinv: !invGS Σ}, ⊢ ||={E1|E1',E2|E2'}=> P) → ⊢ P.
 Proof.
-  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc' as (Hinv) "[Hw HE]".
+  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
   iAssert (||={⊤|⊤,E2|E2'}=> P)%I as "H".
   { iMod (fupd2_mask_subseteq E1 E1') as "_"; [done|done|]. iApply Hfupd. }
-  rewrite uPred_fupd2_eq /uPred_fupd2_def.
-  iMod ("H" with "[$Hw HE]") as "[Hw [HE >H']]"; iFrame.
-  iApply (ownE_weaken with "HE"). set_solver.
-Qed.
-
-Lemma fupd2_plain_soundness_strong `{HIPRE: !invGpreS Σ} E1 E1' E2 E2' (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invGS Σ} (Heq_pre: inv_inG = HIPRE), ⊢ ||={E1|E1',E2|E2'}=> P) → ⊢ P.
-Proof.
-  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc'_strong as (Hinv HEQ) "[Hw HE]".
-  iAssert (||={⊤|⊤,E2|E2'}=> P)%I as "H".
-  { iMod (fupd2_mask_subseteq E1 E1') as "_"; [done|done|]. iApply Hfupd. eauto. }
   rewrite uPred_fupd2_eq /uPred_fupd2_def.
   iMod ("H" with "[$Hw HE]") as "[Hw [HE >H']]"; iFrame.
   iApply (ownE_weaken with "HE"). set_solver.

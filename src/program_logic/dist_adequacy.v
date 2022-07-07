@@ -239,9 +239,9 @@ Theorem wpd_strong_adequacy Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ}
   φ.
 Proof.
   intros Hwp ?.
-  apply (step_fupd2N_soundness_strong _ (steps_sum f1 f2 nsinit n
-         + S (S (f1 (Nat.iter n f2 nsinit))))) => Hinv HEQ.
-(*  (Nat.iter (steps_sum n)) (S (S (f1 (Nat.iter n f2 nsinit)))))) => Hinv HEQ. *)
+  apply (step_fupd2N_soundness _ (steps_sum f1 f2 nsinit n
+         + S (S (f1 (Nat.iter n f2 nsinit))))) => Hinv.
+(*  (Nat.iter (steps_sum n)) (S (S (f1 (Nat.iter n f2 nsinit)))))) => Hinv. *)
   rewrite Nat_iter_add.
   iMod Hwp as (global_stateI fork_post) "Hwp".
   iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
