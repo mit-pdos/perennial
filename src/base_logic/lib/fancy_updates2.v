@@ -6,10 +6,10 @@ From Perennial.base_logic.lib Require Export own.
 From Perennial.base_logic.lib Require Import wsat fancy_updates.
 From iris.prelude Require Import options.
 Export invGS.
-Import uPred.
+Import uPred le_upd.
 
 Definition uPred_fupd2_def `{!invGS Σ} (E1a E1b : coPset) (E2a E2b : coPset) (P : iProp Σ) : iProp Σ :=
-  wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E1a ∪ MaybeEn2 E1b) ==∗
+  wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E1a ∪ MaybeEn2 E1b) -∗ |==£>
            ◇ (wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E2a ∪ MaybeEn2 E2b) ∗ P).
 Definition uPred_fupd2_aux : seal (@uPred_fupd2_def). Proof. by eexists. Qed.
 Definition uPred_fupd2 := uPred_fupd2_aux.(unseal).
@@ -288,6 +288,15 @@ Global Instance frame_fupd2 p E1a E1b E2a E2b R P Q :
   Frame p R P Q → Frame p R (||={E1a|E1b,E2a|E2b}=> P) (||={E1a|E1b,E2a|E2b}=> Q).
 Proof. rewrite /Frame=><-. by rewrite fupd2_frame_l. Qed.
 
+Lemma fupd2_mask_intro {E1a E1b} E2a E2b P :
+  E1a ⊆ E2a → E1b ⊆ E2b →
+  ⊢@{iPropI Σ} ((||={E1a | E1b,E2a | E2b}=> emp) -∗ P) -∗ ||={E2a | E2b,E1a | E1b}=> P.
+Proof.
+  iIntros (??) "H". iMod fupd2_mask_subseteq.
+  3:{ iModIntro. by iApply "H". }
+  all: done.
+Qed.
+
 Lemma fupd2_mask_mono' E1a E1b E2a E2b E1a' E1b' E2a' E2b' P :
   E1a ⊆ E2a →
   E1b ⊆ E2b →
@@ -325,63 +334,30 @@ Proof.
   intros. rewrite -(step_fupd2_mask_mono Eia Eib _ _ Eia Eib) // -!fupd2_intro //.
 Qed.
 
-Lemma fupd2_plainly_mask_empty E1 E2 P :
-  (||={E1|E2,∅|∅}=> ■ P) ⊢ ||={E1|E2,E1|E2}=> P.
-Proof.
-  rewrite uPred_fupd2_eq /uPred_fupd2_def. iIntros "H [Hw HE]".
-  iAssert (◇ ■ P)%I as "#>HP".
-  { by iMod ("H" with "[$]") as "(_ & _ & HP)". }
-  by iFrame.
-Qed.
-
 Lemma fupd2_elim E1 E1' E2 E2' E3 E3' P Q :
   (Q -∗ (||={E2|E2',E3|E3'}=> P)) → (||={E1|E1',E2|E2'}=> Q) -∗ (||={E1|E1',E3|E3'}=> P).
 Proof. intros ->. rewrite fupd2_trans //. Qed.
-
-Lemma fupd2_plainly_mask E1 E2 E1' E2' P :
-  (||={E1|E2,E1'|E2'}=> ■ P) ⊢ ||={E1|E2,E1|E2}=> P.
-Proof.
-  rewrite -(fupd2_plainly_mask_empty).
-  apply fupd2_elim, (fupd2_mask_intro_discard _ _ _); set_solver.
-Qed.
-
-Lemma fupd2_plainly_later E1 E2 P :
-    (▷ ||={E1|E2,E1|E2}=> ■ P) ⊢ ||={E1|E2,E1|E2}=> ▷ ◇ P.
-Proof.
-  rewrite uPred_fupd2_eq /uPred_fupd2_def. iIntros "H [Hw HE]".
-  iAssert (▷ ◇ ■ P)%I as "#HP".
-  { iNext. by iMod ("H" with "[$]") as "(_ & _ & HP)". }
-  iFrame. iIntros "!> !> !>". by iMod "HP".
-Qed.
-
-Lemma fupd2_plain_mask_empty E1 E2 P `{!Plain P} :
-  (||={E1|E2,∅|∅}=> P) ⊢ ||={E1|E2,E1|E2}=> P.
-Proof. by rewrite {1}(plain P) fupd2_plainly_mask_empty. Qed.
-
-Lemma fupd2_plain_mask E1 E2 E1' E2' P `{!Plain P} :
-  (||={E1|E2,E1'|E2'}=> P) ⊢ ||={E1|E2,E1|E2}=> P.
-Proof. by rewrite {1}(plain P) fupd2_plainly_mask. Qed.
-
-Lemma fupd2_plain_later E1 E2 P `{!Plain P} :
-    (▷ ||={E1|E2,E1|E2}=> P) ⊢ ||={E1|E2,E1|E2}=> ▷ ◇ P.
-Proof. by rewrite {1}(plain P) fupd2_plainly_later. Qed.
 
 Lemma fupd2_forall E1 E1' E2 E2' A (Φ : A → _) :
   (||={E1|E1', E2|E2'}=> ∀ x : A, Φ x) ⊢ ∀ x : A, ||={E1|E1', E2|E2'}=> Φ x.
 Proof. apply forall_intro=> a. by rewrite -(forall_elim a). Qed.
 
-Lemma fupd2_plainly_elim E1 E2 P : ■ P -∗ ||={E1|E2, E1|E2}=> P.
-Proof. by rewrite (fupd2_intro E1 _ (■ P)) fupd2_plainly_mask. Qed.
-
 End fupd2.
 
-Lemma fupd2_plain_soundness `{!invGpreS Σ} E1 E1' E2 E2' (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invGS Σ}, ⊢ ||={E1|E1',E2|E2'}=> P) → ⊢ P.
+Local Existing Instance inv_lcPreG.
+
+Lemma fupd2_soundness `{!invGpreS Σ} n E1 E1' E2 E2' (φ : Prop) :
+  (∀ `{Hinv: !invGS Σ}, £ n ⊢ ||={E1|E1',E2|E2'}=> ⌜φ⌝) → φ.
 Proof.
-  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
-  iAssert (||={⊤|⊤,E2|E2'}=> P)%I as "H".
-  { iMod (fupd2_mask_subseteq E1 E1') as "_"; [done|done|]. iApply Hfupd. }
+  iIntros (Hfupd).
+  eapply (lc_soundness (Σ:=Σ) (S n)). intros Hc. rewrite lc_succ.
+  iIntros "[Hone Hn]". rewrite -le_upd_trans. iApply bupd_le_upd.
+  iMod wsat_alloc as (Hinv ->) "[Hw HE]".
+  iAssert (||={⊤|⊤,E2|E2'}=> ⌜φ⌝)%I with "[Hn]" as "H".
+  { iMod (fupd2_mask_subseteq E1 E1') as "_"; [done..|]. by iApply (Hfupd _). }
   rewrite uPred_fupd2_eq /uPred_fupd2_def.
-  iMod ("H" with "[$Hw HE]") as "[Hw [HE >H']]"; iFrame.
-  iApply (ownE_weaken with "HE"). set_solver.
+  iModIntro. iMod ("H" with "[$Hw HE]") as "[Hw [HE H']]".
+  { iApply (ownE_weaken with "HE"). set_solver. }
+  iPoseProof (except_0_into_later with "H'") as "H'".
+  iApply (le_upd_later with "Hone"). iNext. done.
 Qed.

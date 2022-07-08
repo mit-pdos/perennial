@@ -2,7 +2,7 @@ From stdpp Require Export coPset.
 From iris.algebra Require Import gmap auth agree gset coPset list vector excl.
 From Perennial.algebra Require Import mlist.
 From iris.proofmode Require Import tactics.
-From Perennial.base_logic Require Export lib.own.
+From Perennial.base_logic Require Export lib.own lib.later_credits.
 From iris.prelude Require Import options.
 
 (* An inductive grammar of "basic" BI expressions. *)
@@ -47,20 +47,16 @@ Module invGS.
     enabled_inPreG :> inG Σ coPset_disjR;
     disabled_inPreG :> inG Σ (gset_disjR positive);
     mlist_inPreG :> fmlistG (invariant_level_names) Σ;
+    inv_lcPreG : lcGpreS Σ;
   }.
 
   Class invGS (Σ : gFunctors) : Set := WsatG {
     inv_inG :> invGpreS Σ;
+    invGS_lc :> lcGS Σ;
     inv_list_name : gname;
     enabled_name : gname;
     disabled_name : gname;
   }.
-
-  Record inv_names :=
-    { inv_names_list_name : gname;
-      inv_names_enabled_name : gname;
-      inv_names_disabled_name : gname;
-    }.
 
   Definition invΣ : gFunctors :=
     #[GFunctor (authRF (gmapURF positive
@@ -68,7 +64,8 @@ Module invGS.
                                         (optionRF (prodRF fracR (agreeRF (listOF (laterOF idOF))))))));
       GFunctor coPset_disjR;
       GFunctor (gset_disjR positive);
-      fmlistΣ invariant_level_names
+      fmlistΣ invariant_level_names;
+      lcΣ
      ].
 
   (* XXX: magic commands to make the next proof not take 2min. *)
@@ -84,7 +81,7 @@ Module invGS.
   Global Instance subG_invΣ {Σ} : subG invΣ Σ → invGpreS Σ.
   Proof. solve_inG. Qed.
 End invGS.
-Import invGS.
+Import invGS le_upd.
 
 Definition invariant_unfold {Σ} {n} sch (Ps : vec (iProp Σ) n) : agree (list (later (iPropO Σ)) * bi_schema) :=
   to_agree ((λ P, Next P) <$> (vec_to_list Ps), sch).
@@ -892,16 +889,17 @@ Qed.
 
 End wsat.
 
-(* Allocation of an initial world *)
-Lemma wsat_alloc `{!invGpreS Σ} :
-  ⊢ |==> ∃ (_ : invGS Σ), wsat_all ∗ ownE ⊤.
+(* Allocation of an initial world.
+The caller needs to do the later credit init.
+This is just a hack to avoid the wsatGS/invGS split Iris has. *)
+Lemma wsat_alloc `{!invGpreS Σ} {LC: lcGS Σ} :
+  ⊢ |==> ∃ (_ : invGS Σ) (_ : LC = invGS_lc), wsat_all ∗ ownE ⊤.
 Proof.
-  iIntros.
   iMod (fmlist_alloc []) as (γI) "HI".
   iMod (own_alloc (CoPset ⊤)) as (γE) "HE"; first done.
   iMod (own_alloc (GSet ∅)) as (γD) "HD"; first done.
-  set (iG := (WsatG _ _ γI γE γD)).
-  iExists iG.
+  set (iG := (WsatG _ _ _ γI γE γD)).
+  iExists iG, eq_refl.
   rewrite /ownE. iFrame. iClear "HD".
   replace γI with (inv_list_name) by eauto.
   iExists [] => //=. iFrame. rewrite wsat_unfold //.

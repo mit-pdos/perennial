@@ -197,32 +197,9 @@ Proof.
   rewrite /FromExist=><-. apply exist_elim=> a. by rewrite -(exist_intro a).
 Qed.
 
-Local Lemma ncfupd_plainly_mask_empty E P : (|NC={E,∅}=> ■ P) ⊢ |NC={E}=> P.
-Proof.
-  pose local_instance := uPred_bi_fupd_plainly.
-  rewrite ncfupd_eq /ncfupd_def.
-  iIntros "H". iIntros (q) "HNC".
-  iSpecialize ("H" $! q).
-  iApply fupd_plainly_keep_l. iFrame.
-  iIntros "HNC". iSpecialize ("H" with "[$]").
-  iApply (fupd_plain_mask_empty). by iMod "H" as "($&_)".
-Qed.
-
-Local Lemma ncfupd_plain_mask_empty E P `{!Plain P} : (|NC={E,∅}=> P) ⊢ |NC={E}=> P.
-Proof. by rewrite {1}(plain P) ncfupd_plainly_mask_empty. Qed.
-
 Lemma ncfupd_elim E1 E2 E3 P Q :
   (Q -∗ (|NC={E2,E3}=> P)) → (|NC={E1,E2}=> Q) -∗ (|NC={E1,E3}=> P).
 Proof. intros ->. rewrite ncfupd_trans //. Qed.
-
-Local Lemma ncfupd_plainly_mask E E' P : (|NC={E,E'}=> ■ P) ⊢ |NC={E}=> P.
-Proof.
-  rewrite -(ncfupd_plainly_mask_empty).
-  apply ncfupd_elim, (ncfupd_mask_weaken _ _ _). set_solver.
-Qed.
-
-Local Lemma ncfupd_plain_mask E E' P `{!Plain P} : (|NC={E,E'}=> P) ⊢ |NC={E}=> P.
-Proof. by rewrite {1}(plain P) ncfupd_plainly_mask. Qed.
 
 Global Instance except_0_ncfupd' E1 E2 P :
   IsExcept0 (|NC={E1,E2}=> P).
@@ -354,101 +331,37 @@ Proof.
     rewrite -step_ncfupd_ncfupd //.
 Qed.
 
-Local Lemma step_ncfupd_plain Eo Ei P `{!Plain P} : (|NC={Eo}[Ei]▷=> P) -∗ |NC={Eo}=> ▷ ◇ P.
+(** If the goal is a fancy update, this lemma can be used to make a later appear
+  in front of it in exchange for a later credit.
+  This is typically used as [iApply (lc_ncfupd_add_later with "Hcredit")],
+  where ["Hcredit"] is a credit available in the context. *)
+Lemma lc_ncfupd_add_later E1 E2 P :
+  £1 -∗ (▷ |NC={E1, E2}=> P) -∗ |NC={E1, E2}=> P.
 Proof.
-  rewrite ncfupd_eq.
-  iIntros "Hshift" (q) "HNC".
-  rewrite uPred_fupd_eq /uPred_fupd_def.
-  iIntros "[Hw HE]".
-  iAssert (▷ ◇ P)%I as "#HP".
-  {
-    iMod ("Hshift" with "[$] [$]") as ">(Hw & HE & Hshift)".
-    iNext. iMod ("Hshift" with "[$]") as "(Hw & HE & $ & _)".
-  }
-  iFrame "HP".
-  iPoseProof (ncfupd_plain_mask Ei Eo True%I) as "H".
-  by iFrame.
-Qed.
-
-Local Lemma step_ncfupdN_plain Eo Ei n P `{!Plain P} : (|NC={Eo}[Ei]▷=>^n P) -∗ |NC={Eo}=> ▷^n ◇ P.
-Proof.
-  induction n as [|n IH].
-  - by rewrite -ncfupd_intro -except_0_intro.
-  - rewrite Nat_iter_S. setoid_rewrite IH. rewrite -step_ncfupd_ncfupd step_ncfupd_plain.
-    apply ncfupd_mono. destruct n as [|n]; simpl.
-    * by rewrite except_0_idemp.
-    * by rewrite except_0_later.
+  iIntros "Hf Hupd".
+  iMod (lc_fupd_elim_later with "Hf Hupd"). done.
 Qed.
 
 End ncfupd.
 
-Local Lemma ncfupd_plain_soundness' `{!invGpreS Σ, !crashGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢ ∀ q, NC q -∗ |={E1,E2}=> P) → ⊢ P.
+Lemma nc_fupd_soundness `{!invGpreS Σ, !crashGpreS Σ} n E1 E2 (φ : Prop) :
+  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, £ n ⊢ ∀ q, NC q -∗ |={E1,E2}=> ⌜φ⌝) → φ.
 Proof.
-  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
+  iIntros (Hfupd). eapply (fupd_soundness n).
+  iIntros (?) "Hlc".
   iMod NC_alloc as (Hc) "HNC".
-  iAssert (NC 1 -∗ |={⊤,E2}=> P)%I as "H".
-  { iIntros "HNC". iMod fupd_mask_subseteq; last iApply Hfupd; done. }
-  iSpecialize ("H" with "[$]").
-  rewrite uPred_fupd_eq /uPred_fupd_def.
-  iMod ("H" with "[$Hw HE]") as "[Hw [HE >H']]"; iFrame.
-  iApply (ownE_weaken with "HE"). set_solver.
+  iApply (Hfupd with "Hlc"). done.
 Qed.
 
-Local Lemma ncfupd_plain_soundness `{!invGpreS Σ, !crashGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢ |NC={E1,E2}=> P) → ⊢ P.
+Lemma ncfupd_soundness `{!invGpreS Σ, !crashGpreS Σ} n E1 E2 (φ : Prop) :
+  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, £ n ⊢ |NC={E1,E2}=> ⌜φ⌝) → φ.
 Proof.
-  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
+  iIntros (Hfupd). eapply (fupd_soundness n).
+  iIntros (?) "Hlc".
   iMod NC_alloc as (Hc) "HNC".
-  iAssert (|NC={⊤,E2}=> P)%I as "H".
-  { iMod ncfupd_mask_subseteq; last iApply Hfupd. done. }
+  iPoseProof (Hfupd with "Hlc") as "Hfupd".
   rewrite ncfupd_eq /ncfupd_def.
-  rewrite uPred_fupd_eq /uPred_fupd_def.
-  iMod ("H" with "[$HNC] [$Hw HE]") as "[Hw [HE >(H'&_)]]"; iFrame.
-  iApply (ownE_weaken with "HE"). set_solver.
-Qed.
-
-Lemma step_ncfupdN_soundness_alt `{!invGpreS Σ, !crashGpreS Σ} φ n :
-  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢@{iPropI Σ} ∀ q, NC q -∗ |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
-  φ.
-Proof.
-  pose local_instance := uPred_bi_fupd_plainly.
-  intros Hiter.
-  apply (soundness (M:=iResUR Σ) _  (S n)); simpl.
-  apply (ncfupd_plain_soundness' ⊤ ∅ _)=> Hinv Hcrash.
-  iPoseProof (Hiter Hinv) as "H". clear Hiter.
-  iIntros (q) "HNC". iSpecialize ("H" with "[$]").
-  iMod (step_fupdN_plain with "H") as "H". iMod "H". iModIntro.
-  rewrite -later_laterN laterN_later.
-  iNext.
-  iMod "H" as %Hφ. auto.
-Qed.
-
-Lemma step_ncfupdN_soundness `{!invGpreS Σ, !crashGpreS Σ} φ n :
-  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢@{iPropI Σ} |NC={⊤}[∅]▷=>^n |NC={⊤,∅}=> ⌜ φ ⌝) →
-  φ.
-Proof.
-  intros Hiter.
-  apply (soundness (M:=iResUR Σ) _  (S n)); simpl.
-  apply (ncfupd_plain_soundness ⊤ ⊤ _)=> Hinv Hcrash.
-  iPoseProof (Hiter Hinv) as "H". clear Hiter.
-  destruct n as [|n].
-  - iApply ncfupd_plainly_mask_empty. iMod "H" as %?; auto.
-  - iDestruct (step_ncfupdN_wand _ _ _ _ (|NC={⊤}=> ⌜φ⌝) with "H []") as "H'".
-    { by iApply ncfupd_plain_mask_empty. }
-    rewrite -step_ncfupdN_S_ncfupd.
-    iMod (step_ncfupdN_plain with "H'") as "Hφ". iModIntro. iNext.
-    rewrite -later_laterN laterN_later.
-    iNext. by iMod "Hφ".
-Qed.
-
-Lemma step_ncfupdN_soundness' `{!invGpreS Σ, !crashGpreS Σ} φ n :
-  (∀ `{Hinv: !invGS Σ} `{Hcrash: !crashGS Σ}, ⊢@{iPropI Σ} |NC={⊤}[∅]▷=>^n ⌜ φ ⌝) →
-  φ.
-Proof.
-  iIntros (Hiter). eapply (step_ncfupdN_soundness _ n).
-  iIntros (Hinv Hcrash). iPoseProof (Hiter Hinv Hcrash) as "Hiter".
-  iApply (step_ncfupdN_wand with "Hiter"). by iApply ncfupd_mask_weaken.
+  iMod ("Hfupd" with "HNC") as "[? _]". done.
 Qed.
 
 Global Hint Extern 1 (environments.envs_entails _ (|NC={_}=> _)) => iModIntro : core.

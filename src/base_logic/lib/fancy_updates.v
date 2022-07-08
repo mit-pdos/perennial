@@ -1,11 +1,11 @@
 From stdpp Require Export coPset.
 From iris.algebra Require Import gmap auth agree gset coPset.
 From iris.proofmode Require Import tactics.
-From Perennial.base_logic.lib Require Export own.
+From Perennial.base_logic.lib Require Export own later_credits.
 From Perennial.base_logic.lib Require Import wsat.
 From iris.prelude Require Import options.
 Export invGS.
-Import uPred.
+Import uPred le_upd.
 
 (** * Suffix subsets *)
 Fixpoint coPset_suffixes_of_raw (p : positive) (E: coPset_raw) : coPset_raw :=
@@ -59,7 +59,7 @@ Local Hint Extern 0 (AlwaysEn ## MaybeEn1 _) => apply coPset_inl_inr_disj : core
 Local Hint Extern 0 (AlwaysEn ## MaybeEn2 _) => apply coPset_inl_inr_disj : core.
 
 Definition uPred_fupd_def `{!invGS Σ} (E1 E2 : coPset) (P : iProp Σ) : iProp Σ :=
-  wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E1) ==∗ ◇ (wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E2) ∗ P).
+  wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E1) -∗ |==£> ◇ (wsat_all ∗ ownE (AlwaysEn ∪ MaybeEn1 E2) ∗ P).
 Definition uPred_fupd_aux : seal (@uPred_fupd_def). Proof. by eexists. Qed.
 Definition uPred_fupd := uPred_fupd_aux.(unseal).
 Global Arguments uPred_fupd {Σ _}.
@@ -142,27 +142,6 @@ Global Instance uPred_bi_fupd `{!invGS Σ} : BiFUpd (uPredI (iResUR Σ)) :=
 Global Instance uPred_bi_bupd_fupd `{!invGS Σ} : BiBUpdFUpd (uPredI (iResUR Σ)).
 Proof. rewrite /BiBUpdFUpd uPred_fupd_eq. by iIntros (E P) ">? [$ $] !> !>". Qed.
 
-Lemma uPred_bi_fupd_plainly `{!invGS Σ} : BiFUpdPlainly (uPredI (iResUR Σ)).
-Proof.
-  split.
-  - rewrite uPred_fupd_eq /uPred_fupd_def. iIntros (E P) "H [Hw HE]".
-    iAssert (◇ ■ P)%I as "#>HP".
-    { by iMod ("H" with "[$]") as "(_ & _ & HP)". }
-    by iFrame.
-  - rewrite uPred_fupd_eq /uPred_fupd_def. iIntros (E P Q) "[H HQ] [Hw HE]".
-    iAssert (◇ ■ P)%I as "#>HP".
-    { by iMod ("H" with "HQ [$]") as "(_ & _ & HP)". }
-    by iFrame.
-  - rewrite uPred_fupd_eq /uPred_fupd_def. iIntros (E P) "H [Hw HE]".
-    iAssert (▷ ◇ ■ P)%I as "#HP".
-    { iNext. by iMod ("H" with "[$]") as "(_ & _ & HP)". }
-    iFrame. iIntros "!> !> !>". by iMod "HP".
-  - rewrite uPred_fupd_eq /uPred_fupd_def. iIntros (E A Φ) "HΦ [Hw HE]".
-    iAssert (◇ ■ ∀ x : A, Φ x)%I as "#>HP".
-    { iIntros (x). by iMod ("HΦ" with "[$Hw $HE]") as "(_&_&?)". }
-    by iFrame.
-Qed.
-
 Lemma ownE_mono_le_acc `{!invGS Σ} E1 E2:
   E1 ⊆ E2 →
   ownE E2 -∗ ownE E1 ∗ (ownE E1 -∗ ownE E2).
@@ -177,37 +156,67 @@ Proof.
   iIntros (?) "H". by iDestruct (ownE_mono_le_acc with "H") as "($&_)".
 Qed.
 
-Local Lemma fupd_plain_soundness `{!invGpreS Σ} E1 E2 (P: iProp Σ) `{!Plain P} :
-  (∀ `{Hinv: !invGS Σ}, ⊢ |={E1,E2}=> P) → ⊢ P.
+(** [lc_fupd_elim_later] allows to eliminate a later from a hypothesis at an update.
+  This is typically used as [iMod (lc_fupd_elim_later with "Hcredit HP") as "HP".],
+  where ["Hcredit"] is a credit available in the context and ["HP"] is the
+  assumption from which a later should be stripped. *)
+Lemma lc_fupd_elim_later `{!invGS Σ} E P :
+   £1 -∗ (▷ P) -∗ |={E}=> P.
 Proof.
-  iIntros (Hfupd). apply later_soundness. iMod wsat_alloc as (Hinv) "[Hw HE]".
-  iAssert (|={⊤,E2}=> P)%I as "H".
-  { iMod (fupd_mask_subseteq E1) as "_"; first done. iApply Hfupd. }
+  iIntros "Hf Hupd".
   rewrite uPred_fupd_eq /uPred_fupd_def.
-  iMod ("H" with "[$Hw HE]") as "[Hw [HE >H']]"; iFrame.
-  iApply (ownE_weaken with "HE"). set_solver.
+  iIntros "[$ $]". iApply (le_upd_later with "Hf").
+  iNext. by iModIntro.
 Qed.
 
-Lemma step_fupdN_soundness `{!invGpreS Σ} φ n :
+(** If the goal is a fancy update, this lemma can be used to make a later appear
+  in front of it in exchange for a later credit.
+  This is typically used as [iApply (lc_fupd_add_later with "Hcredit")],
+  where ["Hcredit"] is a credit available in the context. *)
+Lemma lc_fupd_add_later `{!invGS Σ} E1 E2 P :
+  £1 -∗ (▷ |={E1, E2}=> P) -∗ |={E1, E2}=> P.
+Proof.
+  iIntros "Hf Hupd". iApply (fupd_trans E1 E1).
+  iApply (lc_fupd_elim_later with "Hf Hupd").
+Qed.
+
+Local Existing Instance inv_lcPreG.
+
+Lemma fupd_soundness `{!invGpreS Σ} n E1 E2 (φ : Prop) :
+  (∀ `{Hinv: !invGS Σ}, £ n ⊢@{iPropI Σ} |={E1,E2}=> ⌜φ⌝) → φ.
+Proof.
+  iIntros (Hfupd).
+  eapply (lc_soundness (Σ:=Σ) (S n)). intros Hc. rewrite lc_succ.
+  iIntros "[Hone Hn]". rewrite -le_upd_trans. iApply bupd_le_upd.
+  iMod wsat_alloc as (Hinv ->) "[Hw HE]".
+  iAssert (|={⊤,E2}=> ⌜φ⌝)%I with "[Hn]" as "H".
+  { iMod (fupd_mask_subseteq E1) as "_"; first done. by iApply (Hfupd _). }
+  rewrite uPred_fupd_eq /uPred_fupd_def.
+  iModIntro. iMod ("H" with "[$Hw HE]") as "[Hw [HE H']]".
+  { iApply (ownE_weaken with "HE"). set_solver. }
+  iPoseProof (except_0_into_later with "H'") as "H'".
+  iApply (le_upd_later with "Hone"). iNext. done.
+Qed.
+
+Lemma step_fupdN_soundness `{!invGpreS Σ} n φ :
   (∀ `{Hinv: !invGS Σ}, ⊢@{iPropI Σ} |={⊤,∅}=> |={∅}▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
-  pose local_instance := uPred_bi_fupd_plainly.
   intros Hiter.
-  apply (soundness (M:=iResUR Σ) _  (S n)); simpl.
-  apply (fupd_plain_soundness ⊤ ⊤ _)=> Hinv.
-  iPoseProof (Hiter Hinv) as "H". clear Hiter.
-  iApply fupd_plainly_mask_empty. iMod "H".
-  iMod (step_fupdN_plain with "H") as "H". iModIntro.
-  rewrite -later_plainly -laterN_plainly -later_laterN laterN_later.
-  iNext. iMod "H" as %Hφ. auto.
+  eapply (fupd_soundness n)=> Hinv. iIntros "Hn".
+  iMod Hiter as "Hupd". clear Hiter.
+  iInduction n as [|n] "IH"; simpl.
+  - by iModIntro.
+  - rewrite lc_succ. iDestruct "Hn" as "[Hone Hn]".
+    iMod "Hupd". iMod (lc_fupd_elim_later with "Hone Hupd") as "> Hupd".
+    by iApply ("IH" with "Hn Hupd").
 Qed.
 
-Lemma step_fupdN_soundness' `{!invGpreS Σ} φ n :
+Lemma step_fupdN_soundness' `{!invGpreS Σ} n φ :
   (∀ `{Hinv: !invGS Σ}, ⊢@{iPropI Σ} |={⊤}[∅]▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
-  iIntros (Hiter). eapply (step_fupdN_soundness _ n)=>Hinv. destruct n as [|n].
+  iIntros (Hiter). eapply (step_fupdN_soundness n)=>Hinv. destruct n as [|n].
   { by iApply fupd_mask_intro_discard; [|iApply (Hiter Hinv)]. }
    simpl in Hiter |- *. iMod Hiter as "H". iIntros "!>!>!>".
   iMod "H". clear. iInduction n as [|n] "IH"; [by iApply fupd_mask_intro_discard|].

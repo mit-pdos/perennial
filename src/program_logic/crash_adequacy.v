@@ -134,16 +134,18 @@ Qed.
 Lemma wpc_safe κs m e σ g ns D Φ Φc q :
   state_interp σ m -∗
   global_state_interp g ns mj D κs -∗
-  WPC e @ ⊤ {{ Φ }} {{ Φc }} -∗ NC q -∗ ||={⊤|⊤, ⊤|⊤}=>
-  ▷^(S (S (num_laters_per_step ns))) ⌜is_Some (to_val e) ∨ reducible e σ g⌝.
+  WPC e @ ⊤ {{ Φ }} {{ Φc }} -∗ NC q -∗
+  ||={⊤|⊤, ∅|∅}=> ||▷=>^(num_laters_per_step ns + 1)
+  ⌜is_Some (to_val e) ∨ reducible e σ g⌝.
 Proof.
   rewrite wpc0_unfold /wpc_pre. iIntros "Hσ Hg H". iDestruct "H" as "(H&_)".
-  destruct (to_val e) as [v|] eqn:?; first by eauto.
+  destruct (to_val e) as [v|] eqn:?.
+  { iIntros "_". iApply fupd2_mask_intro; [done..|].
+    iIntros "_". iApply step_fupd2N_later. auto. }
   iIntros "HNC".
-  iApply (step_fupd2N_inner_plain' (S (num_laters_per_step ns))).
   iMod (fupd2_mask_subseteq ⊤ (⊤ ∖ D)) as "Hclo"; try set_solver+.
   iMod ("H" $! _ _ _ _ _ [] with "[$] [$] [$]") as "H".
-  simpl. iModIntro. iApply (step_fupd2N_wand with "H").
+  simpl. iModIntro. rewrite [_ + 1]comm. iApply (step_fupd2N_wand with "H").
   iNext. iIntros "(%Hred&Hclo')". eauto.
 Qed.
 
@@ -188,8 +190,9 @@ Local Lemma wptp0_progress Φ Φc κs' n e1 t1 κs t2 σ1 g1 ns D σ2 g2 e2 :
   WPC e1 @ NotStuck; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp NotStuck t1 -∗
   NC 1 -∗
-  ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ⊤|⊤}=>
-  ▷^(S (S (num_laters_per_step ((Nat.iter n step_count_next ns))))) (⌜ not_stuck e2 σ2 g2 ⌝).
+  ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ∅|∅}=>
+  ||▷=>^(num_laters_per_step (Nat.iter n step_count_next ns) + 1)
+   ⌜ not_stuck e2 σ2 g2 ⌝.
 Proof.
   iIntros (Hstep Hel) "Hσ Hg He Ht HNC".
   iMod (wptp_steps with "Hσ Hg He Ht HNC") as "Hwp"; first done.
@@ -274,8 +277,9 @@ Lemma wptp_progress Φ Φc κs' n e1 t1 κs t2 σ1 g1 ns mj D σ2 g2 e2 :
   WPC e1 @ NotStuck; ⊤ {{ Φ }} {{ Φc }} -∗
   wptp NotStuck t1 -∗
   NC 1 -∗
-  ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ⊤|⊤}=>
-  ▷^(S (S (num_laters_per_step (Nat.iter n step_count_next ns)))) (⌜not_stuck e2 σ2 g2 ⌝).
+  ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ∅|∅}=>
+  ||▷=>^(num_laters_per_step (Nat.iter n step_count_next ns) + 1)
+  (⌜not_stuck e2 σ2 g2 ⌝).
 Proof.
   iIntros (??) "?? Hwpc Hwptp Hnc".
   iApply (wptp0_progress mj with "[$] [$] [Hwpc] [Hwptp] [$]"); first done; first done.

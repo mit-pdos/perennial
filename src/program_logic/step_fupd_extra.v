@@ -388,6 +388,12 @@ Proof.
   iMod "HP". iModIntro. iApply step_fupd2N_le; try eassumption. auto.
 Qed.
 
+Lemma step_fupd2N_plus k1 k2 P :
+ (||▷=>^k1 ||▷=>^k2 P) ⊣⊢ ||▷=>^(k1 + k2) P.
+Proof.
+  rewrite Nat_iter_add. done.
+Qed.
+
 Lemma step_fupd2N_inner_plus E1a E1b E2a E2b k1 k2 P :
  (||={E1a|E1b,∅|∅}=> ||▷=>^k1 ||={∅|∅, E1a|E1b}=> ||={E1a|E1b,∅|∅}=> ||▷=>^k2 ||={∅|∅,E2a|E2b}=> P)
   ⊢||={E1a|E1b,∅|∅}=> ||▷=>^(k1 + k2) ||={∅|∅,E2a|E2b}=> P.
@@ -410,6 +416,23 @@ Proof.
     iIntros ">H". iModIntro. iNext. iMod "H". auto.
 Qed.
 
+Lemma step_fupd2N_fupd2 n P :
+  n > 0 →
+  (||▷=>^n ||={∅|∅,∅|∅}=> P) ⊢ (||▷=>^n P).
+Proof.
+  intros. destruct n; first lia.
+  rewrite -step_fupd2N_S_fupd2. done.
+Qed.
+
+Lemma step_fupd2_fupd2N n P :
+  n > 0 →
+  (||={∅|∅,∅|∅}=> ||▷=>^n P) ⊢ (||▷=>^n P).
+Proof.
+  intros. destruct n; first lia.
+  replace (S n) with (1 + n) by lia.
+  rewrite Nat_iter_add. iIntros "H". iMod "H". done.
+Qed.
+
 Lemma step_fupd2_fupd2 Eo1 Eo2 Ei1 Ei2 P :
   (||={Eo1|Eo2,Ei1|Ei2}=> ▷ ||={Ei1|Ei2,Eo1|Eo2}=> P) ⊣⊢
   (||={Eo1|Eo2, Ei1|Ei2}=> ▷ ||={Ei1|Ei2,Eo1|Eo2}=> ||={Eo1|Eo2, Eo1|Eo2}=> P).
@@ -419,71 +442,18 @@ Proof.
   - by rewrite fupd2_trans.
 Qed.
 
-Lemma step_fupd2_plain Eo1 Eo2 Ei1 Ei2 P `{!Plain P} :
-  (||={Eo1|Eo2,Ei1|Ei2}=> ▷ ||={Ei1|Ei2, Eo1|Eo2}=> P) -∗ ||={Eo1|Eo2,Eo1|Eo2}=> ▷ ◇ P.
-Proof.
-  rewrite -(fupd2_plain_mask _ _ Ei1 Ei2 (▷ ◇ P)%I).
-  apply fupd2_elim. by rewrite fupd2_plain_mask -fupd2_plain_later.
-Qed.
-
-Lemma step_fupd2N_plain (k: nat) Eo1 Eo2 P `{!Plain P} :
-  (||▷=>^k ||={∅|∅, Eo1|Eo2}=> P) -∗ ||={∅|∅, ∅|∅}=> ▷^k ◇ P.
-Proof.
-  induction k as [|n IH].
-  - simpl. rewrite -except_0_intro fupd2_plain_mask. iIntros "$".
-  - rewrite Nat_iter_S step_fupd2_fupd2 IH !fupd2_trans step_fupd2_plain.
-    apply fupd2_mono. destruct n as [|n]; simpl.
-    * by rewrite except_0_idemp.
-    * by rewrite except_0_later.
-Qed.
-
-Lemma step_fupd2N_inner_plain (k: nat) P D `{PLAIN: !Plain P} :
-  (||={⊤|D, ∅|∅}=> ||▷=>^k ||={∅|∅, ⊤|D}=> P) -∗
-  ||={⊤|D, ⊤|D}=> ▷^(S k) P.
-Proof.
-  iInduction k as [| k] "IH" forall (P PLAIN).
-  - rewrite //=. iIntros "H".
-    iApply fupd2_plain_mask. do 2 iMod "H".
-    by iModIntro.
-  - iIntros "H".
-    iApply fupd2_plain_mask.
-    iMod "H".
-    iMod (step_fupd2N_plain with "H") as "H".
-    iModIntro. rewrite -!later_laterN !laterN_later.
-    iNext. iNext. by iMod "H".
-Qed.
-
-Lemma step_fupd2N_inner_plain' (k: nat) P D `{PLAIN: !Plain P} :
-  (||={⊤|D, ∅|∅}=> ||▷=>^k ||={∅|∅, ∅|∅}=> P) -∗
-  ||={⊤|D, ⊤|D}=> ▷^(S k) P.
-Proof.
-  iInduction k as [| k] "IH" forall (P PLAIN).
-  - rewrite //=. iIntros "H".
-    iApply fupd2_plain_mask. do 2 iMod "H".
-    by iModIntro.
-  - iIntros "H".
-    iApply fupd2_plain_mask.
-    iMod "H".
-    iMod (step_fupd2N_plain with "H") as "H".
-    iModIntro. rewrite -!later_laterN !laterN_later.
-    iNext. iNext. by iMod "H".
-Qed.
 End step_fupd2.
 
-Lemma step_fupd2N_soundness `{!invGpreS Σ} φ n :
+Lemma step_fupd2N_soundness `{!invGpreS Σ} n φ :
   (∀ `{Hinv: !invGS Σ}, ⊢@{iPropI Σ} ||={⊤|⊤,∅|∅}=> ||▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
-  intros Hiter.
-  apply (soundness (M:=iResUR Σ) _  (S n)); simpl.
-  apply (fupd2_plain_soundness ⊤ ⊤ ⊤ ⊤); auto.
-  { apply _. }
-  intros Hinv.
-  iPoseProof (Hiter Hinv) as "H". clear Hiter.
-  iApply fupd2_plainly_mask_empty. iMod "H".
-  iPoseProof (step_fupd2N_plain _ _ _ ⌜φ⌝%I with "[H]") as "H".
-  { iApply (step_fupd2N_wand with "H"). iIntros "H !>". eauto. }
-  rewrite -later_plainly -laterN_plainly -later_laterN laterN_later.
-  iMod "H". iModIntro.
-  iNext. iMod "H" as %Hφ. auto.
+  intros Hiter. eapply (fupd2_soundness n).
+  intros Hinv. iIntros "Hn".
+  iMod Hiter as "Hupd". clear Hiter.
+  iInduction n as [|n] "IH"; simpl.
+  - iModIntro. done. 
+  - rewrite lc_succ. iDestruct "Hn" as "[Hone Hn]".
+    iMod "Hupd". iMod (lc_fupd_elim_later with "Hone Hupd") as "> Hupd".
+    by iApply ("IH" with "Hn Hupd").
 Qed.

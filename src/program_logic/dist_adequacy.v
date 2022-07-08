@@ -190,9 +190,9 @@ Lemma stwpnodes_progress n dns1 g1 ns D dns2 g2 κs κs' dn e :
   dn ∈ dns2 → e ∈ tpool dn →
   global_state_interp g1 ns mj D (κs ++ κs') -∗
   (|={⊤}=> stwpnodes dns1) -∗
-  ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ⊤|⊤}=>
-  (▷^(S (S (num_laters_per_step (Nat.iter n step_count_next ns))))
-      (⌜ not_stuck e (local_state dn) g2 ⌝)).
+  (||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ∅|∅}=>
+   ||▷=>^(num_laters_per_step (Nat.iter n step_count_next ns) + 1)
+      ⌜ not_stuck e (local_state dn) g2 ⌝).
 Proof.
   iIntros (Hstep Hin1 Hin2) "Hg >Ht".
   iMod (stwpnodes_steps with "Hg Ht") as "Hgt"; first done.
@@ -212,13 +212,13 @@ Proof.
     { eauto. }
     iMod ("H" with "[HNC]") as "H".
     { iFrame. }
-    iModIntro. iNext. iNext. iNext. eauto.
+    iModIntro. eauto.
   - iDestruct "Ht" as "(_ & He' & _)".
     iPoseProof (wpc_safe with "Hσ [Hg] He'") as "H".
     { eauto. }
     iMod ("H" with "[HNC]") as "H".
     { iFrame. }
-    iModIntro. iNext. iNext. iNext. eauto.
+    iModIntro. eauto.
 Qed.
 
 End distributed_adequacy.
@@ -243,7 +243,7 @@ Theorem wpd_strong_adequacy Σ Λ CS {Hinvpre : invGpreS Σ} {Hcrashpre : crashG
   φ.
 Proof.
   intros Hwp Hsteps.
-  apply (step_fupd2N_soundness _ (steps_sum f1 f2 nsinit n
+  apply (step_fupd2N_soundness (steps_sum f1 f2 nsinit n
          + S (S (f1 (Nat.iter n f2 nsinit))))) => Hinv.
 (*  (Nat.iter (steps_sum n)) (S (S (f1 (Nat.iter n f2 nsinit)))))) => Hinv. *)
   rewrite Nat_iter_add.
@@ -287,8 +287,8 @@ Proof.
   iPureIntro.
   clear- Hwp Hsteps Hinvpre Hcrashpre.
   intros dn Hin e Hin'.
-  apply (step_fupd2N_soundness _ (steps_sum f1 f2 nsinit n
-         + S (S (f1 (Nat.iter n f2 nsinit))))) => Hinv.
+  apply (step_fupd2N_soundness (steps_sum f1 f2 nsinit n
+         + (f1 (Nat.iter n f2 nsinit) + 1))) => Hinv.
   rewrite Nat_iter_add.
   iMod Hwp as (global_stateI fork_post) "Hwp".
   iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
@@ -316,17 +316,8 @@ Proof.
   }
   iModIntro.
   iApply (step_fupd2N_wand with "H").
-  iIntros "H".
-  iApply step_fupd2N_S_fupd2. simpl. iMod "H".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
-  iModIntro. iNext. iModIntro.
-  iApply (step_fupd2N_later); first auto.
-  iModIntro. iNext. iModIntro.
-  iNext. iMod "Hclo" as "_".
-  iMod (fupd2_mask_subseteq ⊤ ∅) as "Hclo"; try set_solver+.
-  iApply (fupd_fupd2).
-  iApply fupd_mask_intro; first done.
-  auto.
+  iIntros "H". iApply step_fupd2_fupd2N; first lia.
+  iMod "H". iModIntro. done.
 Qed.
 
 Record dist_adequate {Λ CS} (ρs: list (@node_init_cfg Λ)) (g : global_state Λ)
