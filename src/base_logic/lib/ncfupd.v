@@ -354,7 +354,7 @@ Proof.
     rewrite -step_ncfupd_ncfupd //.
 Qed.
 
-Lemma step_ncfupd_plain Eo Ei P `{!Plain P} : (|NC={Eo}[Ei]▷=> P) -∗ |NC={Eo}=> ▷ ◇ P.
+Local Lemma step_ncfupd_plain Eo Ei P `{!Plain P} : (|NC={Eo}[Ei]▷=> P) -∗ |NC={Eo}=> ▷ ◇ P.
 Proof.
   rewrite ncfupd_eq.
   iIntros "Hshift" (q) "HNC".
@@ -370,7 +370,7 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma step_ncfupdN_plain Eo Ei n P `{!Plain P} : (|NC={Eo}[Ei]▷=>^n P) -∗ |NC={Eo}=> ▷^n ◇ P.
+Local Lemma step_ncfupdN_plain Eo Ei n P `{!Plain P} : (|NC={Eo}[Ei]▷=>^n P) -∗ |NC={Eo}=> ▷^n ◇ P.
 Proof.
   induction n as [|n IH].
   - by rewrite -ncfupd_intro -except_0_intro.

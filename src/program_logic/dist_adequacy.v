@@ -176,50 +176,54 @@ Lemma stwpnodes_strong_adequacy n dns1 g1 ns D dns2 g2 κs κs' :
   global_state_interp g1 ns mj D (κs ++ κs') -∗
   (|={⊤}=> stwpnodes dns1) -∗
   ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ⊤|⊤}=>
-  (▷^(S (S (num_laters_per_step (Nat.iter n step_count_next ns))))
-      (⌜ ∀ dn e, dn ∈ dns2 → e ∈ tpool dn → not_stuck e (local_state dn) g2 ⌝)) ∗
   global_state_interp g2 (Nat.iter n step_count_next ns) mj D κs' ∗
   stwpnodes dns2.
 Proof.
   iIntros (Hstep) "Hg >Ht".
   iMod (stwpnodes_steps with "Hg Ht") as "Hgt"; first done.
   iModIntro. iApply (step_fupd2N_wand with "Hgt").
+  iMod 1 as "(Hg & Ht)". iFrame. auto.
+Qed.
+
+Lemma stwpnodes_progress n dns1 g1 ns D dns2 g2 κs κs' dn e :
+  dist_nsteps (CS := CS) n (dns1, g1) κs (dns2, g2) →
+  dn ∈ dns2 → e ∈ tpool dn →
+  global_state_interp g1 ns mj D (κs ++ κs') -∗
+  (|={⊤}=> stwpnodes dns1) -∗
+  ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ⊤|⊤}=>
+  (▷^(S (S (num_laters_per_step (Nat.iter n step_count_next ns))))
+      (⌜ not_stuck e (local_state dn) g2 ⌝)).
+Proof.
+  iIntros (Hstep Hin1 Hin2) "Hg >Ht".
+  iMod (stwpnodes_steps with "Hg Ht") as "Hgt"; first done.
+  iModIntro. iApply (step_fupd2N_wand with "Hgt").
   iMod 1 as "(Hg & Ht)".
-  iMod (fupd2_plain_keep_l ⊤ ⊤
-    (▷^(S (S (num_laters_per_step ((Nat.iter n step_count_next ns)))))
-      (⌜ ∀ dn e, dn ∈ dns2 → e ∈ tpool dn → not_stuck e (local_state dn) g2 ⌝))%I
-    (global_state_interp g2 (Nat.iter n step_count_next ns) mj D κs' ∗
-    stwpnodes dns2)%I
-    with "[$Hg $Ht]") as "(Hsafe&Hg&Ht)".
-  { iIntros "(Hg & Ht)" (dn e' Hin1 Hin2).
-    rewrite /stwpnodes.
-    eapply elem_of_list_lookup_1 in Hin1 as (i&Hlookup1).
-    iDestruct (big_sepL_lookup with "Ht") as "Hdn"; first eassumption.
-    iDestruct "Hdn" as (ct) "Hnode".
-    rewrite /stwpnode.
-    iDestruct "Hnode" as "((Hσ&HNC)&Hwptp)".
-    rewrite /wpnode. destruct (tpool dn) as [| hd tp]; first done.
-    iDestruct "Hwptp" as (???) "(Hwpr&Ht)".
-    apply elem_of_cons in Hin2 as [<-|(t1''&t2''&->)%elem_of_list_split].
-    - rewrite wpr0_unfold/wpr0_pre.
-      iPoseProof (wpc_safe with "Hσ [Hg] Hwpr") as "H".
-      { eauto. }
-      iMod ("H" with "[HNC]") as "H".
-      { iFrame. }
-      iModIntro. iNext. iNext. iNext. eauto.
-    - iDestruct "Ht" as "(_ & He' & _)".
-      iPoseProof (wpc_safe with "Hσ [Hg] He'") as "H".
-      { eauto. }
-      iMod ("H" with "[HNC]") as "H".
-      { iFrame. }
-      iModIntro. iNext. iNext. iNext. eauto.
-  }
-  iModIntro. iFrame.
+  rewrite /stwpnodes.
+  eapply elem_of_list_lookup_1 in Hin1 as (i&Hlookup1).
+  iDestruct (big_sepL_lookup with "Ht") as "Hdn"; first eassumption.
+  iDestruct "Hdn" as (ct) "Hnode".
+  rewrite /stwpnode.
+  iDestruct "Hnode" as "((Hσ&HNC)&Hwptp)".
+  rewrite /wpnode. destruct (tpool dn) as [| hd tp]; first done.
+  iDestruct "Hwptp" as (???) "(Hwpr&Ht)".
+  apply elem_of_cons in Hin2 as [<-|(t1''&t2''&->)%elem_of_list_split].
+  - rewrite wpr0_unfold/wpr0_pre.
+    iPoseProof (wpc_safe with "Hσ [Hg] Hwpr") as "H".
+    { eauto. }
+    iMod ("H" with "[HNC]") as "H".
+    { iFrame. }
+    iModIntro. iNext. iNext. iNext. eauto.
+  - iDestruct "Ht" as "(_ & He' & _)".
+    iPoseProof (wpc_safe with "Hσ [Hg] He'") as "H".
+    { eauto. }
+    iMod ("H" with "[HNC]") as "H".
+    { iFrame. }
+    iModIntro. iNext. iNext. iNext. eauto.
 Qed.
 
 End distributed_adequacy.
 
-Theorem wpd_strong_adequacy Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ}
+Theorem wpd_strong_adequacy Σ Λ CS {Hinvpre : invGpreS Σ} {Hcrashpre : crashGpreS Σ}
   nsinit (ebσs : list node_init_cfg) g1 n κs dns2 g2 φ f1 f2 :
   (∀ `(Hinv : !invGS Σ),
      ⊢ |={⊤}=> ∃
@@ -238,7 +242,7 @@ Theorem wpd_strong_adequacy Σ Λ CS `{!invGpreS Σ} `{!crashGpreS Σ}
   (* Then we can conclude [φ] at the meta-level. *)
   φ.
 Proof.
-  intros Hwp ?.
+  intros Hwp Hsteps.
   apply (step_fupd2N_soundness _ (steps_sum f1 f2 nsinit n
          + S (S (f1 (Nat.iter n f2 nsinit))))) => Hinv.
 (*  (Nat.iter (steps_sum n)) (S (S (f1 (Nat.iter n f2 nsinit)))))) => Hinv. *)
@@ -274,11 +278,55 @@ Proof.
   iApply (step_fupd2N_later); first auto.
   iModIntro. iNext. iModIntro.
   iNext. iMod "Hclo" as "_".
-  iDestruct "H" as "(%Hnotstuck&Hg&_)".
+  iDestruct "H" as "(Hg&_)".
   iMod (fupd2_mask_subseteq ⊤ ∅) as "Hclo"; try set_solver+.
   iApply (fupd_fupd2).
   iApply ("Hφ" with "[] [$]").
-  { iPureIntro. intros dn Hin e Hin'. eapply Hnotstuck; eauto. }
+  (* progress. we run the entire adequacy proof again for this.
+   we could probably factor this better... *)
+  iPureIntro.
+  clear- Hwp Hsteps Hinvpre Hcrashpre.
+  intros dn Hin e Hin'.
+  apply (step_fupd2N_soundness _ (steps_sum f1 f2 nsinit n
+         + S (S (f1 (Nat.iter n f2 nsinit))))) => Hinv.
+  rewrite Nat_iter_add.
+  iMod Hwp as (global_stateI fork_post) "Hwp".
+  iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
+  set (HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b).
+  iMod (stwpnodes_progress _
+               1%Qp n _ _ nsinit _ _ _ _ []
+    with "[Hg] [Hwp]") as "H"; first done.
+  { exact Hin. }
+  { exact Hin'. }
+  { rewrite app_nil_r /=. iExact "Hg". }
+  { rewrite /stwpnodes/wpd.
+    iApply big_sepL_fmap.
+    iApply big_sepL_fupd.
+    iApply (big_sepL_impl with "Hwp").
+    iIntros "!#" (i ρ Hlookup) "H".
+    iMod NC_alloc as (Hc) "HNC".
+    iMod ("H" $! Hc) as (stateI Φ Φrx Φinv) "(Hσ&Hwp)".
+    set (HG := GenerationGS Λ Σ Hc stateI). iExists HG.
+    rewrite /stwpnode.
+    rewrite /=. iFrame "HNC Hσ".
+    rewrite /wpnode/=.
+    iModIntro. iExists Φ, Φinv, Φrx.
+    rewrite /wptp big_sepL_nil right_id.
+    by iApply wpr0_wpr.
+  }
+  iModIntro.
+  iApply (step_fupd2N_wand with "H").
+  iIntros "H".
+  iApply step_fupd2N_S_fupd2. simpl. iMod "H".
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
+  iModIntro. iNext. iModIntro.
+  iApply (step_fupd2N_later); first auto.
+  iModIntro. iNext. iModIntro.
+  iNext. iMod "Hclo" as "_".
+  iMod (fupd2_mask_subseteq ⊤ ∅) as "Hclo"; try set_solver+.
+  iApply (fupd_fupd2).
+  iApply fupd_mask_intro; first done.
+  auto.
 Qed.
 
 Record dist_adequate {Λ CS} (ρs: list (@node_init_cfg Λ)) (g : global_state Λ)

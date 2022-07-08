@@ -345,15 +345,6 @@ Proof.
   apply fupd2_elim, (fupd2_mask_intro_discard _ _ _); set_solver.
 Qed.
 
-Lemma fupd2_plainly_keep_l E1 E2 P R:
-  (R -∗ ||={E1|E2,E1|E2}=> ■ P) ∗ R ⊢ ||={E1|E2,E1|E2}=> P ∗ R.
-Proof.
-  rewrite uPred_fupd2_eq /uPred_fupd2_def. iIntros "[H HQ] [Hw HE]".
-  iAssert (◇ ■ P)%I as "#>HP".
-  { by iMod ("H" with "HQ [$]") as "(_ & _ & HP)". }
-  by iFrame.
-Qed.
-
 Lemma fupd2_plainly_later E1 E2 P :
     (▷ ||={E1|E2,E1|E2}=> ■ P) ⊢ ||={E1|E2,E1|E2}=> ▷ ◇ P.
 Proof.
@@ -361,15 +352,6 @@ Proof.
   iAssert (▷ ◇ ■ P)%I as "#HP".
   { iNext. by iMod ("H" with "[$]") as "(_ & _ & HP)". }
   iFrame. iIntros "!> !> !>". by iMod "HP".
-Qed.
-
-Lemma fupd2_plainly_forall_2 E1 E2 {A} Φ :
-    (∀ x : A, ||={E1|E2,E1|E2}=> ■ Φ x) ⊢ ||={E1|E2,E1|E2}=> ∀ x, Φ x.
-Proof.
-  rewrite uPred_fupd2_eq /uPred_fupd2_def. iIntros "HΦ [Hw HE]".
-  iAssert (◇ ■ ∀ x : A, Φ x)%I as "#>HP".
-  { iIntros (x). by iMod ("HΦ" with "[$Hw $HE]") as "(_&_&?)". }
-  by iFrame.
 Qed.
 
 Lemma fupd2_plain_mask_empty E1 E2 P `{!Plain P} :
@@ -380,20 +362,9 @@ Lemma fupd2_plain_mask E1 E2 E1' E2' P `{!Plain P} :
   (||={E1|E2,E1'|E2'}=> P) ⊢ ||={E1|E2,E1|E2}=> P.
 Proof. by rewrite {1}(plain P) fupd2_plainly_mask. Qed.
 
-Lemma fupd2_plain_keep_l E1 E2 P R `{!Plain P}:
-  (R -∗ ||={E1|E2,E1|E2}=> P) ∗ R ⊢ ||={E1|E2,E1|E2}=> P ∗ R.
-Proof. by rewrite {1}(plain P) fupd2_plainly_keep_l. Qed.
-
 Lemma fupd2_plain_later E1 E2 P `{!Plain P} :
     (▷ ||={E1|E2,E1|E2}=> P) ⊢ ||={E1|E2,E1|E2}=> ▷ ◇ P.
 Proof. by rewrite {1}(plain P) fupd2_plainly_later. Qed.
-
-Lemma fupd2_plain_forall_2 E1 E2 {A} Φ `{!∀ x, Plain (Φ x)}:
-    (∀ x : A, ||={E1|E2,E1|E2}=> Φ x) ⊢ ||={E1|E2,E1|E2}=> ∀ x, Φ x.
-Proof.
-  rewrite -fupd2_plainly_forall_2. apply forall_mono=> x.
-    by rewrite {1}(plain (Φ _)).
-Qed.
 
 Lemma fupd2_forall E1 E1' E2 E2' A (Φ : A → _) :
   (||={E1|E1', E2|E2'}=> ∀ x : A, Φ x) ⊢ ∀ x : A, ||={E1|E1', E2|E2'}=> Φ x.
@@ -401,29 +372,6 @@ Proof. apply forall_intro=> a. by rewrite -(forall_elim a). Qed.
 
 Lemma fupd2_plainly_elim E1 E2 P : ■ P -∗ ||={E1|E2, E1|E2}=> P.
 Proof. by rewrite (fupd2_intro E1 _ (■ P)) fupd2_plainly_mask. Qed.
-
-Lemma fupd2_plain_forall E1 E1' E2 E2' {A} (Φ : A → _) `{!∀ x, Plain (Φ x)} :
-  E2 ⊆ E1 →
-  E2' ⊆ E1' →
-  (||={E1|E1',E2|E2'}=> ∀ x, Φ x) ⊣⊢ (∀ x, ||={E1|E1',E2|E2'}=> Φ x).
-Proof.
-  intros. apply (anti_symm _); first apply fupd2_forall.
-  trans (∀ x, ||={E1|E1', E1|E1'}=> Φ x)%I.
-  { apply forall_mono=> x. by rewrite fupd2_plain_mask. }
-  rewrite fupd2_plain_forall_2. apply fupd2_elim.
-  rewrite {1}(plain (∀ x, Φ x)) (fupd2_mask_intro_discard E1 E1' E2 E2' (■ _)) //.
-  apply fupd2_elim. by rewrite fupd2_plainly_elim.
-Qed.
-
-Global Instance from_forall_fupd2 (E1 E1' E2 E2' : coPset) (A : Type) P (Φ : A → _) (name : ident_name) :
-    TCOr (TCEq E1 E2) (TCOr (TCEq E1 ⊤) (TCEq E2 ∅)) →
-    TCOr (TCEq E1' E2') (TCOr (TCEq E1' ⊤) (TCEq E2' ∅)) →
-    FromForall P Φ name →
-    (∀ x : A, Plain (Φ x)) →
-    FromForall (||={E1|E1',E2|E2'}=> P) (λ a : A, (||={E1|E1',E2|E2'}=> Φ a)%I) name.
-Proof.
-  rewrite /FromForall => -[->|[->|->]] -[->|[->|->]] <- ?; rewrite fupd2_plain_forall; set_solver+.
-Qed.
 
 End fupd2.
 
