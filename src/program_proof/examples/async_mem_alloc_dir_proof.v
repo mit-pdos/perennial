@@ -595,8 +595,7 @@ Section goose.
       iSplitR "Hinode_cinvs".
       - erewrite take_S_r by eauto.
         iApply (big_sepL2_app with "Hpre_inodes").
-        simpl.
-        rewrite right_id.
+        simpl. iSplitL; last done.
         iExactEq "Hpre_inode".
         f_equal.
         word.
