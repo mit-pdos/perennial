@@ -52,7 +52,6 @@ Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ 
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
     "Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
     "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
-    (* TODO: The lock invariant should only own [1/2] or [1/4] of [vchain]. *)
     "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
     "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
     "Hwellformed" ∷ tuple_wellformed versL tidlast tidgc ∗
@@ -911,7 +910,7 @@ Proof.
 
   (***********************************************************)
   (* tuple.tidown = 0                                        *)
-  (* tuple.tidlast = tid                                     *)
+  (* tuple.tidlast = tid + 1                                 *)
   (***********************************************************)
   do 2 wp_storeField.
 
@@ -1117,7 +1116,7 @@ Proof.
 
   (***********************************************************)
   (* tuple.tidown = 0                                        *)
-  (* tuple.tidlast = tid                                     *)
+  (* tuple.tidlast = tid + 1                                 *)
   (***********************************************************)
   do 2 wp_storeField.
 
