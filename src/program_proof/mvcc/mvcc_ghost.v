@@ -622,27 +622,27 @@ Proof.
   set_solver.
 Qed.
 
-Definition find_imme_pred_tid_val_step (tid : nat) (x : nat * dbval) (res : (option nat) * dbval)
+Definition find_tid_val_step (tid : nat) (x : nat * dbval) (res : (option nat) * dbval)
   : (option nat) * dbval :=
   match res.1 with
   | None => if decide (x.1 < tid) then (Some x.1, x.2) else res
   | Some tid' => if decide (tid' < x.1 < tid) then (Some x.1, x.2) else res
   end.
 
-Definition find_imme_pred_tid_val (tid : nat) (v : dbval) (l : list (nat * dbval)) : (option nat) * dbval :=
-  foldr (find_imme_pred_tid_val_step tid) (None, v) l.
+Definition find_tid_val (tid : nat) (v : dbval) (l : list (nat * dbval)) : (option nat) * dbval :=
+  foldr (find_tid_val_step tid) (None, v) l.
 
-Lemma find_imme_pred_tid_val_unfold tid v l :
-  find_imme_pred_tid_val tid v l = foldr (find_imme_pred_tid_val_step tid) (None, v) l.
+Lemma find_tid_val_unfold tid v l :
+  find_tid_val tid v l = foldr (find_tid_val_step tid) (None, v) l.
 Proof. reflexivity. Qed.
 
-Definition find_imme_pred_val tid v l := (find_imme_pred_tid_val tid v l).2.
+Definition find_val tid v l := (find_tid_val tid v l).2.
 
 Definition imme_pred (l : list nat) (p n : nat) :=
   p ∈ l ∧ (p < n)%nat ∧ Forall (λ x, x ≤ p ∨ n ≤ x)%nat l.
 
-Lemma find_imme_pred_tid_val_spec tid v l :
-  let res := find_imme_pred_tid_val tid v l in
+Lemma find_tid_val_spec tid v l :
+  let res := find_tid_val tid v l in
   match res.1 with
   | None => Forall (λ x, tid ≤ x)%nat l.*1 ∧ res.2 = v
   | Some tid' => imme_pred l.*1 tid' tid ∧ (tid', res.2) ∈ l
@@ -651,9 +651,9 @@ Proof.
   induction l as [| x l IHl].
   - by simpl.
   - simpl in IHl.
-    destruct (find_imme_pred_tid_val _ _ l).1 eqn:E.
-    + unfold find_imme_pred_tid_val. simpl.
-      unfold find_imme_pred_tid_val_step. rewrite E.
+    destruct (find_tid_val _ _ l).1 eqn:E.
+    + unfold find_tid_val. simpl.
+      unfold find_tid_val_step. rewrite E.
       case_decide.
       * simpl.
         destruct IHl as [(Helem & Hlt & Hl) _].
@@ -674,8 +674,8 @@ Proof.
         split; first lia.
         apply (Forall_impl _ _ _ Hl).
         lia.
-    + unfold find_imme_pred_tid_val. simpl.
-      unfold find_imme_pred_tid_val_step. rewrite E.
+    + unfold find_tid_val. simpl.
+      unfold find_tid_val_step. rewrite E.
       case_decide.
       * simpl.
         split; last first.
@@ -696,19 +696,19 @@ Proof.
         lia.
 Qed.
 
-Lemma find_imme_pred_tid_val_Some tid d l :
+Lemma find_tid_val_Some tid d l :
   Exists (λ x, x.1 < tid)%nat l ->
-  ∃ tid' v', find_imme_pred_tid_val tid d l = (Some tid', v') ∧ imme_pred l.*1 tid' tid ∧ (tid', v') ∈ l.
+  ∃ tid' v', find_tid_val tid d l = (Some tid', v') ∧ imme_pred l.*1 tid' tid ∧ (tid', v') ∈ l.
 Proof.
   intros HExists.
   rewrite Exists_exists in HExists.
   destruct HExists as (x & Helem & Hlt).
-  pose proof (find_imme_pred_tid_val_spec tid d l) as Hspec. simpl in Hspec.
-  destruct (find_imme_pred_tid_val tid d l).1 eqn:E.
+  pose proof (find_tid_val_spec tid d l) as Hspec. simpl in Hspec.
+  destruct (find_tid_val tid d l).1 eqn:E.
   - destruct Hspec as [_ Helem'].
-    pose proof (find_imme_pred_tid_val_spec tid d l) as Hspec. simpl in Hspec.
+    pose proof (find_tid_val_spec tid d l) as Hspec. simpl in Hspec.
     rewrite E in Hspec.
-    set res := (find_imme_pred_tid_val tid d l).
+    set res := (find_tid_val tid d l).
     exists n, res.2.
     split; last auto.
     rewrite (surjective_pairing res).
@@ -719,22 +719,22 @@ Proof.
     apply Hallge in Helem. lia.
 Qed.
 
-Lemma find_imme_pred_tid_val_None tid d l :
+Lemma find_tid_val_None tid d l :
   Forall (λ x, tid ≤ x.1)%nat l ->
-  find_imme_pred_tid_val tid d l = (None, d).
+  find_tid_val tid d l = (None, d).
 Proof.
   intros HForall.
   induction l as [| x l IHl]; first set_solver.
   rewrite Forall_cons in HForall.
   destruct HForall as [Hx HForall].
   simpl. rewrite IHl; last auto.
-  unfold find_imme_pred_tid_val_step. simpl.
+  unfold find_tid_val_step. simpl.
   by case_decide; first lia.
 Qed.
 
-Lemma find_imme_pred_tid_val_Exists tid d1 d2 l :
+Lemma find_tid_val_Exists tid d1 d2 l :
   Exists (λ x, x.1 < tid)%nat l ->
-  find_imme_pred_tid_val tid d1 l = find_imme_pred_tid_val tid d2 l.
+  find_tid_val tid d1 l = find_tid_val tid d2 l.
 Proof.
   intros HExists.
   induction l as [| x l IHl]; first by apply Exists_nil in HExists.
@@ -742,10 +742,10 @@ Proof.
   apply Exists_cons in HExists.
   destruct HExists.
   - destruct (decide (Forall (λ x, tid ≤ x.1)%nat l)).
-    + pose proof (find_imme_pred_tid_val_None _ d1 l f).
-      pose proof (find_imme_pred_tid_val_None _ d2 l f).
+    + pose proof (find_tid_val_None _ d1 l f).
+      pose proof (find_tid_val_None _ d2 l f).
       rewrite H0 H1.
-      unfold find_imme_pred_tid_val_step. simpl.
+      unfold find_tid_val_step. simpl.
       by case_decide; last lia.
     + apply not_Forall_Exists in n; last apply _.
       f_equal.
@@ -755,10 +755,10 @@ Proof.
   - f_equal. by apply IHl.
 Qed.
 
-Lemma find_imme_pred_tid_val_extended tid tid' v l :
+Lemma find_tid_val_extensible tid tid' v l :
   Forall (λ x, x.1 < tid')%nat l ->
   (tid' ≤ tid)%nat ->
-  find_imme_pred_tid_val tid' v l = find_imme_pred_tid_val tid v l.
+  find_tid_val tid' v l = find_tid_val tid v l.
 Proof.
   intros Hallgt Hle.
   induction l as [| x l IHl]; first done.
@@ -766,8 +766,8 @@ Proof.
   rewrite Forall_cons in Hallgt.
   destruct Hallgt as [Hx Hallgt].
   rewrite IHl; last auto.
-  set res := (find_imme_pred_tid_val _ _ _).
-  unfold find_imme_pred_tid_val_step.
+  set res := (find_tid_val _ _ _).
+  unfold find_tid_val_step.
   destruct res.1.
   - case_decide.
     + case_decide; [done | lia].
@@ -811,24 +811,24 @@ Proof.
   naive_solver.
 Qed.
 
-Theorem find_imme_pred_tid_val_permutation tid v l1 l2 :
+Lemma find_tid_val_perm tid v l1 l2 :
   NoDup l1.*1 ->
   l1 ≡ₚ l2 ->
-  find_imme_pred_tid_val tid v l1 = find_imme_pred_tid_val tid v l2.
+  find_tid_val tid v l1 = find_tid_val tid v l2.
 Proof.
   intros HNoDup Hperm.
   assert (Hpermfst : l1.*1 ≡ₚ l2.*1) by by apply fmap_Permutation.
-  pose proof (find_imme_pred_tid_val_spec tid v l1) as Hl1.
-  pose proof (find_imme_pred_tid_val_spec tid v l2) as Hl2.
+  pose proof (find_tid_val_spec tid v l1) as Hl1.
+  pose proof (find_tid_val_spec tid v l2) as Hl2.
   simpl in Hl1, Hl2.
-  destruct (find_imme_pred_tid_val _ _ l1).1 eqn:E1.
-  - destruct (find_imme_pred_tid_val _ _ l2).1 eqn:E2.
+  destruct (find_tid_val _ _ l1).1 eqn:E1.
+  - destruct (find_tid_val _ _ l2).1 eqn:E2.
     + destruct Hl1 as [Hl1 Helem1].
       destruct Hl2 as [Hl2 Helem2].
       pose proof (imme_pred_perm_eq _ _ _ _ _ Hpermfst Hl1 Hl2) as Heq.
       subst n0.
-      rewrite (surjective_pairing (find_imme_pred_tid_val _ _ l1)).
-      rewrite (surjective_pairing (find_imme_pred_tid_val _ _ l2)).
+      rewrite (surjective_pairing (find_tid_val _ _ l1)).
+      rewrite (surjective_pairing (find_tid_val _ _ l2)).
       rewrite E1 E2.
       apply pair_equal_spec.
       split; first done.
@@ -838,33 +838,33 @@ Proof.
       rewrite elem_of_Permutation_proper in Hn; last apply Hpermfst.
       rewrite Forall_forall in Hl2.
       apply Hl2 in Hn. lia.
-  - destruct (find_imme_pred_tid_val _ _ l2).1 eqn:E2.
+  - destruct (find_tid_val _ _ l2).1 eqn:E2.
     + destruct Hl2 as [(Hn & Hlt & _) _].
       destruct Hl1 as [Hl1 _].
       apply Permutation_sym in Hpermfst.
       rewrite elem_of_Permutation_proper in Hn; last apply Hpermfst.
       rewrite Forall_forall in Hl1.
       apply Hl1 in Hn. lia.
-    + unfold find_imme_pred_val.
+    + unfold find_val.
       destruct Hl1 as [_ Helem1].
       destruct Hl2 as [_ Helem2].
-      rewrite (surjective_pairing (find_imme_pred_tid_val _ _ l1)).
-      rewrite (surjective_pairing (find_imme_pred_tid_val _ _ l2)).
+      rewrite (surjective_pairing (find_tid_val _ _ l1)).
+      rewrite (surjective_pairing (find_tid_val _ _ l2)).
       rewrite E1 E2.
       apply pair_equal_spec.
       split; first done.
       by rewrite Helem1 Helem2.
 Qed.
 
-Definition impred_tid_val (tid : nat) (v : dbval) (s : gset (nat * dbval)) :=
-  find_imme_pred_tid_val tid v (elements s).
+Definition diff_tid_val_at (tid : nat) (v : dbval) (s : gset (nat * dbval)) :=
+  find_tid_val tid v (elements s).
 
-Lemma impred_tid_val_unfold tid v s :
-  impred_tid_val tid v s = find_imme_pred_tid_val tid v (elements s).
+Lemma diff_tid_val_at_unfold tid v s :
+  diff_tid_val_at tid v s = find_tid_val tid v (elements s).
 Proof. reflexivity. Qed.
 
-Definition impred_val (tid : nat) (v : dbval) (s : gset (nat * dbval)) :=
-  (impred_tid_val tid v s).2.
+Definition diff_val_at (tid : nat) (v : dbval) (s : gset (nat * dbval)) :=
+  (diff_tid_val_at tid v s).2.
 
 Definition le_tids_mods (tid : nat) (mods : gset (nat * dbval)) :=
   set_Forall (λ x, (tid <= x.1)%nat) mods.
@@ -875,43 +875,43 @@ Lemma le_tids_mods_weaken tid tid' mods :
   le_tids_mods tid mods.
 Proof. intros Hle H. apply (set_Forall_impl _ _ _ H). lia. Qed.
 
-Lemma impred_tid_val_miss tid v s :
+Lemma diff_tid_val_at_le_all tid v s :
   le_tids_mods tid s ->
-  impred_tid_val tid v s = (None, v).
+  diff_tid_val_at tid v s = (None, v).
 Proof.
   intros Hle.
   unfold le_tids_mods in Hle. rewrite set_Forall_elements in Hle.
-  unfold impred_tid_val.
+  unfold diff_tid_val_at.
   remember (elements s) as l.
   clear Heql.
   induction l as [| x l IHl]; first auto.
   rewrite Forall_cons in Hle.
   destruct Hle as [Hx Hle].
   apply IHl in Hle.
-  unfold find_imme_pred_tid_val.
+  unfold find_tid_val.
   simpl.
-  unfold find_imme_pred_tid_val in Hle.
+  unfold find_tid_val in Hle.
   rewrite Hle.
-  unfold find_imme_pred_tid_val_step. simpl.
+  unfold find_tid_val_step. simpl.
   case_decide; [lia | done].
 Qed.
 
-Theorem impred_val_miss tid v s :
+Lemma diff_val_at_le_all tid v s :
   le_tids_mods tid s ->
-  impred_val tid v s = v.
+  diff_val_at tid v s = v.
 Proof.
-  intros Hle. unfold impred_val.
-  rewrite impred_tid_val_miss; done.
+  intros Hle. unfold diff_val_at.
+  rewrite diff_tid_val_at_le_all; done.
 Qed.
 
-Lemma impred_tid_val_hit (tid : nat) (v d : dbval) (s : gset (nat * dbval)) :
+Lemma diff_tid_val_at_S (tid : nat) (v d : dbval) (s : gset (nat * dbval)) :
   NoDup (elements s).*1 ->
   (tid, v) ∈ s ->
-  impred_tid_val (S tid) d s = (Some tid, v).
+  diff_tid_val_at (S tid) d s = (Some tid, v).
 Proof.
   intros HNoDup Hin.
   rewrite -elem_of_elements in Hin.
-  unfold impred_tid_val.
+  unfold diff_tid_val_at.
   remember (elements s) as l.
   clear Heql s.
   induction l as [| x l IHl]; first set_solver.
@@ -920,10 +920,10 @@ Proof.
   destruct HNoDup as [Hnotin HNoDup].
   rewrite elem_of_cons in Hin.
   destruct Hin.
-  - unfold find_imme_pred_tid_val_step.
+  - unfold find_tid_val_step.
     rewrite (surjective_pairing x) in H. inversion H.
-    destruct (find_imme_pred_tid_val _ _ _).1 eqn:E.
-    + pose proof (find_imme_pred_tid_val_spec (S x.1) d l) as Hspec.
+    destruct (find_tid_val _ _ _).1 eqn:E.
+    + pose proof (find_tid_val_spec (S x.1) d l) as Hspec.
       simpl in Hspec. rewrite E in Hspec.
       destruct Hspec as [(Helem & Hlt & _) _].
       assert (Hneq : tid ≠ n).
@@ -932,42 +932,42 @@ Proof.
       case_decide; [done | lia].
     + case_decide; [done | lia].
   - rewrite IHl; [| auto | auto].
-    unfold find_imme_pred_tid_val_step. simpl.
+    unfold find_tid_val_step. simpl.
     case_decide; [lia | done].
 Qed.
 
-Theorem impred_val_hit (tid : nat) (v d : dbval) (s : gset (nat * dbval)) :
+Lemma diff_val_at_S (tid : nat) (v d : dbval) (s : gset (nat * dbval)) :
   NoDup (elements s).*1 ->
   (tid, v) ∈ s ->
-  impred_val (S tid) d s = v.
+  diff_val_at (S tid) d s = v.
 Proof.
-  intros HNoDup Hin. unfold impred_val.
-  rewrite (impred_tid_val_hit _ v); done.
+  intros HNoDup Hin. unfold diff_val_at.
+  rewrite (diff_tid_val_at_S _ v); done.
 Qed.
 
-Theorem impred_val_minus_smallest (tid tid' : nat) (v d : dbval) (s : gset (nat * dbval)) :
+Lemma diff_val_at_gt_min_sub_min (tid tid' : nat) (v d : dbval) (s : gset (nat * dbval)) :
   NoDup (elements s).*1 ->
   set_Forall (λ x, tid' ≤ x.1)%nat s ->
   (tid', v) ∈ s ->
   (tid' < tid)%nat ->
-  impred_val tid d s = impred_val tid v (s ∖ {[(tid', v)]}).
+  diff_val_at tid d s = diff_val_at tid v (s ∖ {[(tid', v)]}).
 Proof.
   intros HNoDup Hmin Helem Hlt.
-  unfold impred_val.
+  unfold diff_val_at.
   apply union_difference_singleton_L in Helem.
   rewrite {1} Helem.
   set s' := (s ∖ _).
-  unfold impred_tid_val.
-  rewrite (find_imme_pred_tid_val_permutation _ _ _ ((tid', v) :: elements s')); last first.
+  unfold diff_tid_val_at.
+  rewrite (find_tid_val_perm _ _ _ ((tid', v) :: elements s')); last first.
   { apply elements_union_singleton. set_solver. }
   { subst s'. rewrite -union_difference_singleton_L; set_solver. }
   destruct (decide (set_Forall (λ x, tid ≤ x.1)%nat s')).
   - (* No proper TID in the new set [s']. *)
-    rewrite -impred_tid_val_unfold.
-    rewrite (impred_tid_val_miss _ v); last auto.
+    rewrite -diff_tid_val_at_unfold.
+    rewrite (diff_tid_val_at_le_all _ v); last auto.
     simpl.
-    rewrite -impred_tid_val_unfold impred_tid_val_miss; last done.
-    unfold find_imme_pred_tid_val_step. simpl.
+    rewrite -diff_tid_val_at_unfold diff_tid_val_at_le_all; last done.
+    unfold find_tid_val_step. simpl.
     case_decide; [done | lia].
   - apply not_set_Forall_Exists in n; last apply _.
     destruct n as (x & Helem' & Hgt).
@@ -975,10 +975,10 @@ Proof.
     simpl.
     assert (HExists : Exists (λ x, x.1 < tid)%nat (elements s')).
     { rewrite Exists_exists. exists x. set_solver. }
-    rewrite (find_imme_pred_tid_val_Exists _ d v); last auto.
-    destruct (find_imme_pred_tid_val_Some tid v (elements s')) as (tidu & u & Heq & _ & Helemu); first auto.
+    rewrite (find_tid_val_Exists _ d v); last auto.
+    destruct (find_tid_val_Some tid v (elements s')) as (tidu & u & Heq & _ & Helemu); first auto.
     rewrite Heq.
-    unfold find_imme_pred_tid_val_step.
+    unfold find_tid_val_step.
     simpl.
     case_decide; last done.
     assert (contra : (tid' ≤ (tidu, u).1)%nat).
@@ -986,26 +986,26 @@ Proof.
     simpl in contra. lia.
 Qed.
 
-Theorem impred_val_extended (tid tid' : nat) (v : dbval) (s : gset (nat * dbval)) :
+Lemma diff_val_at_extensible (tid tid' : nat) (v : dbval) (s : gset (nat * dbval)) :
   set_Forall (λ x, x.1 < tid')%nat s ->
   (tid' ≤ tid)%nat ->
-  impred_val tid' v s = impred_val tid v s.
+  diff_val_at tid' v s = diff_val_at tid v s.
 Proof.
   intros Hallgt Hle.
-  unfold impred_val, impred_tid_val.
+  unfold diff_val_at, diff_tid_val_at.
   rewrite set_Forall_elements in Hallgt.
-  rewrite (find_imme_pred_tid_val_extended tid tid'); auto.
+  rewrite (find_tid_val_extensible tid tid'); auto.
 Qed.
 
-Lemma impred_val_largest (tid tid' : nat) (v d : dbval) (s : gset (nat * dbval)) :
+Lemma diff_val_at_gt_max (tid tid' : nat) (v d : dbval) (s : gset (nat * dbval)) :
   NoDup (elements s).*1 ->
   set_Forall (λ x, x.1 ≤ tid')%nat s ->
   (tid', v) ∈ s ->
   (tid' < tid)%nat ->
-  impred_tid_val tid d s = (Some tid', v).
+  diff_tid_val_at tid d s = (Some tid', v).
 Proof.
   intros HNoDup Hallge Helem Hlt.
-  unfold impred_val, impred_tid_val.
+  unfold diff_val_at, diff_tid_val_at.
   rewrite set_Forall_elements in Hallge.
   rewrite -elem_of_elements in Helem.
   remember (elements s) as l.
@@ -1020,9 +1020,9 @@ Proof.
   destruct Helem.
   - rewrite -H.
     rewrite (surjective_pairing x) in H. inversion H.
-    unfold find_imme_pred_tid_val_step. simpl.
-    pose proof (find_imme_pred_tid_val_spec tid d l) as Hspec. simpl in Hspec.
-    destruct (find_imme_pred_tid_val _ _ _).1.
+    unfold find_tid_val_step. simpl.
+    pose proof (find_tid_val_spec tid d l) as Hspec. simpl in Hspec.
+    destruct (find_tid_val _ _ _).1.
     + case_decide; first done.
       destruct Hspec as [(Hn & Hlt2 & _) Helem].
       rewrite Forall_forall in Hallge.
@@ -1033,22 +1033,22 @@ Proof.
       lia.
     + case_decide; [done | lia].
   - rewrite IHl; [| auto | auto | auto].
-    unfold find_imme_pred_tid_val_step. simpl.
+    unfold find_tid_val_step. simpl.
     case_decide; [lia | done].
 Qed.
 
-Theorem impred_val_add_largest_before (tid tid' tid'' : nat) (v v' d : dbval) (s : gset (nat * dbval)) :
+Lemma diff_val_at_gt_max_add_max (tid tid' tid'' : nat) (v v' d : dbval) (s : gset (nat * dbval)) :
   NoDup (elements s).*1 ->
   set_Forall (λ x, x.1 ≤ tid')%nat s ->
   (tid', v) ∈ s ->
   (tid' < tid ≤ tid'')%nat ->
-  impred_val tid d ({[(tid'', v')]} ∪ s) = v.
+  diff_val_at tid d ({[(tid'', v')]} ∪ s) = v.
 Proof.
   intros HNoDup Hallge Helem Horder.
-  unfold impred_val, impred_tid_val.
+  unfold diff_val_at, diff_tid_val_at.
   assert (Hnotin : (tid'', v') ∉ s).
   { intros contra. apply Hallge in contra. simpl in contra. lia. }
-  rewrite (find_imme_pred_tid_val_permutation _ _ _ ((tid'', v') :: elements s)); last first.
+  rewrite (find_tid_val_perm _ _ _ ((tid'', v') :: elements s)); last first.
   { by apply elements_union_singleton. }
   { rewrite fmap_Permutation; last by apply elements_union_singleton.
     rewrite fmap_cons. simpl.
@@ -1060,9 +1060,9 @@ Proof.
     apply Hallge in contra. lia.
   }
   simpl.
-  rewrite -impred_tid_val_unfold.
-  rewrite (impred_val_largest _ tid' v); [| auto | auto | auto | lia].
-  unfold find_imme_pred_tid_val_step. simpl.
+  rewrite -diff_tid_val_at_unfold.
+  rewrite (diff_val_at_gt_max _ tid' v); [| auto | auto | auto | lia].
+  unfold find_tid_val_step. simpl.
   case_decide; [lia | done].
 Qed.
 
@@ -1071,12 +1071,12 @@ Definition tuple_mods_rel (phys logi : list dbval) (mods : gset (nat * dbval)) :
     logi = phys ++ diff ∧
     last phys = Some v ∧
     ∀ (i : nat) (u : dbval), diff !! i = Some u ->
-                           u = impred_val (i + length phys) v mods.
+                           u = diff_val_at (i + length phys) v mods.
 (*
   prefix phys logi ∧
   ∃ (v : dbval), last phys = Some v ∧
                  ∀ (i : nat), length phys ≤ i < length logi ->
-                            logi !! i = Some (impred_val i v mods).
+                              logi !! i = Some (diff_val_at i v mods).
 *)
 
 Definition extend {X : Type} (n : nat) (l : list X) :=
@@ -1119,7 +1119,7 @@ Theorem tuplext_read (tid : nat) (phys logi : list dbval) (mods : gset (nat * db
   tuple_mods_rel phys logi mods ->
   tuple_mods_rel (extend (S tid) phys) logi mods.
 Proof.
-  intros [Hlb Hub] Hleall (diff & v & Hprefix & Hlast & Hdiff).
+  intros [Hlb Hub] Hle_all (diff & v & Hprefix & Hlast & Hdiff).
   unfold tuple_mods_rel.
   set lenext := (S tid - length phys)%nat.
   exists (drop lenext diff), v.
@@ -1143,14 +1143,15 @@ Proof.
     destruct Hlookup as [Hlookup Hle].
     apply Hdiff in Hlookup.
     rewrite Hlookup.
-    symmetry. apply impred_val_miss.
+    symmetry. apply diff_val_at_le_all.
     subst lenext.
     assert (H : (i + length phys ≤ tid)%nat) by lia.
     apply le_tids_mods_weaken with tid; auto.
   }
   split.
-  { rewrite -Hlast. apply extend_last. }
-  { intros i u Hlookup.
+  { (* last *) rewrite -Hlast. apply extend_last. }
+  { (* diff *)
+    intros i u Hlookup.
     rewrite lookup_drop in Hlookup.
     apply Hdiff in Hlookup.
     rewrite Hlookup.
