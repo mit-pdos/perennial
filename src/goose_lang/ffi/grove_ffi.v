@@ -5,7 +5,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import gen_heap_names.
 From iris.proofmode Require Import tactics.
-From iris.base_logic Require Import ghost_map.
+From iris.base_logic Require Import ghost_map mono_nat.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
@@ -197,20 +197,24 @@ Section grove.
 End grove.
 
 (** * Grove semantic interpretation and lifting lemmas *)
-Class groveGS Σ :=
-  GroveGS { groveG_gen_heapG :> gen_heap.gen_heapGS chan (gset message) Σ; }.
+Class groveGS Σ := GroveGS {
+  groveG_gen_heapG :> gen_heap.gen_heapGS chan (gset message) Σ;
+}.
+Class groveNodeGS Σ := GroveNodeGS {
+  groveG_tscG :> mono_natG Σ;
+  grove_tsc_name : gname;
+}.
 
-Class groveGpreS Σ :=
-  { grove_preG_gen_heapG :> gen_heap.gen_heapGpreS chan (gset message) Σ; }.
+Class groveGpreS Σ := {
+  grove_preG_gen_heapG :> gen_heap.gen_heapGpreS chan (gset message) Σ;
+  grove_preG_tscG :> mono_natG Σ;
+}.
 
 Definition groveΣ : gFunctors :=
-  #[gen_heapΣ chan (gset message)].
+  #[gen_heapΣ chan (gset message); mono_natΣ].
 
 Instance subG_groveGpreS Σ : subG groveΣ Σ → groveGpreS Σ.
 Proof. solve_inG. Qed.
-
-Definition grove_update_pre {Σ} (dG: groveGpreS Σ) (n: gen_heap_names) :=
-  {| groveG_gen_heapG := gen_heapG_update_pre (@grove_preG_gen_heapG _ dG) n |}.
 
 Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
@@ -225,11 +229,15 @@ Section grove.
 
   Local Program Instance grove_interp: ffi_interp grove_model :=
     {| ffiGlobalGS := groveGS;
-       ffiLocalGS _ := ()%type;
-       ffi_local_ctx _ _ _ := True%I;
-       ffi_global_ctx _ _ g := (gen_heap_interp g ∗ ⌜chan_msg_bounds g⌝)%I;
-       ffi_local_start _ _ _ := True%I;
-       ffi_global_start _ _ g := ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
+       ffiLocalGS := groveNodeGS;
+       ffi_local_ctx _ _ σ :=
+         (mono_nat_auth_own grove_tsc_name 1 (int.nat σ.(grove_node_tsc)))%I;
+       ffi_global_ctx _ _ g :=
+         (gen_heap_interp g ∗ ⌜chan_msg_bounds g⌝)%I;
+       ffi_local_start _ _ σ :=
+         (True)%I;
+       ffi_global_start _ _ g :=
+         ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
        ffi_restart _ _ _ := True%I;
        ffi_crash_rel Σ hF1 σ1 hF2 σ2 := True%I;
     |}.
@@ -241,12 +249,18 @@ Notation "c c↦ ms" := (mapsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
 Section lifting.
   Existing Instances grove_op grove_model grove_semantics grove_interp.
   Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
-  Instance goose_groveGS : groveGS Σ := goose_ffiGlobalGS.
+  Local Instance goose_groveGS : groveGS Σ := goose_ffiGlobalGS.
+  Local Instance goose_groveNodeGS : groveNodeGS Σ := goose_ffiLocalGS.
 
   Definition chan_meta_token (c : chan) (E: coPset) : iProp Σ :=
     gen_heap.meta_token (hG := groveG_gen_heapG) c E.
   Definition chan_meta `{Countable A} (c : chan) N (x : A) : iProp Σ :=
     gen_heap.meta (hG := groveG_gen_heapG) c N x.
+
+  (** "The TSC is at least" *)
+  Definition tsc_lb (time : nat) : iProp Σ :=
+    mono_nat_lb_own grove_tsc_name time.
+
 
   Definition connection_socket (c_l : chan) (c_r : chan) : val :=
     ExtV (ConnectionSocketV c_l c_r).
@@ -391,7 +405,7 @@ lemmas. *)
   Proof.
     iIntros (Hmlen Φ) "[Hc Hl] HΦ".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&$&Htr) Hg".
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
     iDestruct "Hg" as "([Hg %Hg]&?)".
@@ -454,7 +468,7 @@ lemmas. *)
     }}}.
   Proof.
     iIntros (Φ) "He HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&$&Htr) Hg".
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
     iDestruct "Hg" as "([Hg %Hg]&?)".
@@ -758,13 +772,15 @@ Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ??).
-  iExists tt. eauto.
+  iMod (mono_nat_own_alloc (int.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
+  iExists (GroveNodeGS _ _ tsc_name). eauto.
 Qed.
 Next Obligation.
   iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
-  iExists tt.
-  inversion Hcrash; subst.
-  iFrame. eauto.
+  simpl in Hold.
+  iMod (mono_nat_own_alloc (int.nat σ'.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
+  iExists (GroveNodeGS _ _ tsc_name).
+  simpl. iFrame. eauto.
 Qed.
 
 
