@@ -19,7 +19,12 @@ Set Printing Projections.
 
 (** * The Grove extension to GooseLang: primitive operations [Trusted definitions!] *)
 
-Inductive GroveOp := ListenOp | ConnectOp | AcceptOp | SendOp | RecvOp.
+Inductive GroveOp :=
+  (* Network ops *)
+  ListenOp | ConnectOp | AcceptOp | SendOp | RecvOp |
+  (* Time ops *)
+  GetTscOp
+.
 Instance eq_GroveOp : EqDecision GroveOp.
 Proof. solve_decision. Defined.
 Instance GroveOp_fin : Countable GroveOp.
@@ -84,9 +89,21 @@ Qed.
 those endpoints. *)
 Definition grove_global_state : Type := gmap chan (gset message).
 
+(** The per-node state *)
+Record grove_node_state : Type := {
+  grove_node_tsc : u64;
+}.
+
+Global Instance grove_node_state_settable : Settable _ :=
+  settable! Build_grove_node_state <grove_node_tsc>.
+
+Global Instance grove_node_state_inhabited : Inhabited grove_node_state :=
+  populate {| grove_node_tsc := 0; |}.
+
+
 Definition grove_model : ffi_model.
 Proof.
-  refine (mkFfiModel () grove_global_state _ _).
+  refine (mkFfiModel grove_node_state grove_global_state _ _).
 Defined.
 
 (** Initial state where the endpoints exist but have not received any messages yet. *)
@@ -115,8 +132,11 @@ Section grove.
   Global Instance chan_GenType Σ : GenType chan Σ :=
     fun z _ => Some (exist _ (U64 z) I).
 
-  Definition modifyf (f : grove_global_state → grove_global_state) : transition (state*global_state) () :=
+  Local Definition modify_g (f : grove_global_state → grove_global_state) : transition (state*global_state) () :=
     modify (λ '(σ, g), (σ, set global_world f g)).
+
+  Local Definition modify_n (f : grove_node_state → grove_node_state) : transition (state*global_state) () :=
+    modify (λ '(σ, g), (set world f σ, g)).
 
   Definition ffi_step (op: GroveOp) (v: val): transition (state*global_state) expr :=
     match op, v with
@@ -127,7 +147,7 @@ Section grove.
       match c_l with
       | None => ret $ Val $ ((*err*)#true, ExtV BadSocketV)%V
       | Some c_l =>
-        modifyf (λ g, <[ c_l := ∅ ]> g);;
+        modify_g (λ g, <[ c_l := ∅ ]> g);;
         ret $ Val $ ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
       end
     | AcceptOp, ExtV (ListenSocketV c_l) =>
@@ -143,7 +163,7 @@ Section grove.
                 | _ => False
                 end);
       ms ← reads (λ '(σ,g), g.(global_world) !! c_r) ≫= unwrap;
-      modifyf (λ g, <[ c_r := ms ∪ {[Message c_l data]} ]> g);;
+      modify_g (λ g, <[ c_r := ms ∪ {[Message c_l data]} ]> g);;
       err_late ← any bool;
       ret $ Val $ (*err*)#(err_late : bool)
     | RecvOp, ExtV (ConnectionSocketV c_l c_r) =>
@@ -159,6 +179,15 @@ Section grove.
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
         ret $ Val $ ((*err*)#false, (#(l : loc), #(length m.(msg_data))))%V
       end
+    | GetTscOp, LitV LitUnit =>
+      time_since_last ← any u64;
+      modify_n (set grove_node_tsc (λ old_time,
+        let new_time := word.add old_time time_since_last in
+        (* Make sure we did not overflow *)
+        if word.ltu old_time new_time then new_time else old_time
+      ));;
+      new_time ← reads (λ '(σ,g), σ.(world).(grove_node_tsc));
+      ret $ Val $ (#(new_time: u64))
     | _, _ => undefined
     end.
 
