@@ -50,6 +50,14 @@ From Perennial.program_proof.fencing Require
 From Perennial.program_proof.ctrexample Require
      client server closed.
 
+(* MVCC *)
+From Perennial.program_proof.mvcc Require
+     mvcc_ghost
+     txn_proof
+     index_proof
+     gc_proof
+     tuple_proof.
+
 (*
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
