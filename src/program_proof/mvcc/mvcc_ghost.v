@@ -629,6 +629,17 @@ Definition find_tid_val_step (tid : nat) (x : nat * dbval) (res : (option nat) *
   | Some tid' => if decide (tid' < x.1 < tid) then (Some x.1, x.2) else res
   end.
 
+Lemma find_tid_val_step_noop tid x res :
+  (tid ≤ x.1)%nat ->
+  find_tid_val_step tid x res = res.
+Proof.
+  intros Hle.
+  unfold find_tid_val_step.
+  destruct res.1 eqn:E.
+  - case_decide; [lia | done].
+  - case_decide; [lia | done].
+Qed.
+  
 Definition find_tid_val (tid : nat) (v : dbval) (l : list (nat * dbval)) : (option nat) * dbval :=
   foldr (find_tid_val_step tid) (None, v) l.
 
@@ -811,6 +822,22 @@ Proof.
   naive_solver.
 Qed.
 
+Lemma NoDup_elements_fmap_fst (tid : nat) (v : dbval) (s : gset (nat * dbval)) :
+  tid ∉ (elements s).*1 ->
+  NoDup (elements s).*1 ->
+  NoDup (elements ({[ (tid, v) ]} ∪ s)).*1.
+Proof.
+  intros Hnotin HNoDup.
+  rewrite fmap_Permutation; last first.
+  { apply elements_union_singleton.
+    intros contra.
+    rewrite -elem_of_elements in contra.
+    by apply (elem_of_list_fmap_1 fst) in contra.
+  }
+  rewrite fmap_cons. simpl.
+  by apply NoDup_cons_2; last auto.
+Qed.
+  
 Lemma find_tid_val_perm tid v l1 l2 :
   NoDup l1.*1 ->
   l1 ≡ₚ l2 ->
@@ -869,12 +896,25 @@ Definition diff_val_at (tid : nat) (v : dbval) (s : gset (nat * dbval)) :=
 Definition le_tids_mods (tid : nat) (mods : gset (nat * dbval)) :=
   set_Forall (λ x, (tid <= x.1)%nat) mods.
 
+Definition gt_tids_mods (tid : nat) (mods : gset (nat * dbval)) :=
+  set_Forall (λ x, (x.1 < tid)%nat) mods.
+
 Lemma le_tids_mods_weaken tid tid' mods :
   (tid ≤ tid')%nat ->
   le_tids_mods tid' mods ->
   le_tids_mods tid mods.
 Proof. intros Hle H. apply (set_Forall_impl _ _ _ H). lia. Qed.
 
+Lemma gt_tids_mods_Forall_fmap_fst tid mods :
+  gt_tids_mods tid mods ->
+  Forall (λ n, (n < tid)%nat) (elements mods).*1.
+Proof.
+  intros H.
+  unfold gt_tids_mods in H.
+  rewrite set_Forall_elements in H.
+  by apply Forall_fmap.
+Qed.
+                                        
 Lemma diff_tid_val_at_le_all tid v s :
   le_tids_mods tid s ->
   diff_tid_val_at tid v s = (None, v).
@@ -947,7 +987,7 @@ Qed.
 
 Lemma diff_val_at_gt_min_sub_min (tid tid' : nat) (v d : dbval) (s : gset (nat * dbval)) :
   NoDup (elements s).*1 ->
-  set_Forall (λ x, tid' ≤ x.1)%nat s ->
+  le_tids_mods tid' s ->
   (tid', v) ∈ s ->
   (tid' < tid)%nat ->
   diff_val_at tid d s = diff_val_at tid v (s ∖ {[(tid', v)]}).
@@ -986,98 +1026,58 @@ Proof.
     simpl in contra. lia.
 Qed.
 
+
+Lemma diff_val_at_empty (tid : nat) (v : dbval) :
+  diff_val_at tid v ∅ = v.
+Proof. done. Qed.
+
 Lemma diff_val_at_extensible (tid tid' : nat) (v : dbval) (s : gset (nat * dbval)) :
-  set_Forall (λ x, x.1 < tid')%nat s ->
+  gt_tids_mods tid' s ->
   (tid' ≤ tid)%nat ->
   diff_val_at tid' v s = diff_val_at tid v s.
 Proof.
   intros Hallgt Hle.
   unfold diff_val_at, diff_tid_val_at.
+  unfold gt_tids_mods in Hallgt.
   rewrite set_Forall_elements in Hallgt.
   rewrite (find_tid_val_extensible tid tid'); auto.
 Qed.
 
-Lemma diff_val_at_gt_max (tid tid' : nat) (v d : dbval) (s : gset (nat * dbval)) :
+Lemma diff_tid_val_at_add_max_le_max (tid tid' : nat) (v d : dbval) (s : gset (nat * dbval)) :
   NoDup (elements s).*1 ->
-  set_Forall (λ x, x.1 ≤ tid')%nat s ->
-  (tid', v) ∈ s ->
-  (tid' < tid)%nat ->
-  diff_tid_val_at tid d s = (Some tid', v).
+  gt_tids_mods tid' s ->
+  (tid ≤ tid')%nat ->
+  diff_tid_val_at tid d ({[(tid', v)]} ∪ s) = diff_tid_val_at tid d s.
 Proof.
-  intros HNoDup Hallge Helem Hlt.
-  unfold diff_val_at, diff_tid_val_at.
-  rewrite set_Forall_elements in Hallge.
-  rewrite -elem_of_elements in Helem.
-  remember (elements s) as l.
-  clear Heql s.
-  induction l as [| x l IHl]; first set_solver.
-  simpl.
-  rewrite fmap_cons NoDup_cons in HNoDup.
-  destruct HNoDup as [Hnotin HNoDup].
-  rewrite Forall_cons in Hallge.
-  destruct Hallge as [Hx Hallge].
-  rewrite elem_of_cons in Helem.
-  destruct Helem.
-  - rewrite -H.
-    rewrite (surjective_pairing x) in H. inversion H.
-    unfold find_tid_val_step. simpl.
-    pose proof (find_tid_val_spec tid d l) as Hspec. simpl in Hspec.
-    destruct (find_tid_val _ _ _).1.
-    + case_decide; first done.
-      destruct Hspec as [(Hn & Hlt2 & _) Helem].
-      rewrite Forall_forall in Hallge.
-      apply Hallge in Helem. simpl in Helem.
-      assert (Hneq : tid' ≠ n).
-      { intros Heq. rewrite Heq in H1. set_solver. }
-      assert (Hlt1 : n < tid') by lia.
-      lia.
-    + case_decide; [done | lia].
-  - rewrite IHl; [| auto | auto | auto].
-    unfold find_tid_val_step. simpl.
-    case_decide; [lia | done].
-Qed.
-
-Lemma diff_val_at_gt_max_add_max (tid tid' tid'' : nat) (v v' d : dbval) (s : gset (nat * dbval)) :
-  NoDup (elements s).*1 ->
-  set_Forall (λ x, x.1 ≤ tid')%nat s ->
-  (tid', v) ∈ s ->
-  (tid' < tid ≤ tid'')%nat ->
-  diff_val_at tid d ({[(tid'', v')]} ∪ s) = v.
-Proof.
-  intros HNoDup Hallge Helem Horder.
-  unfold diff_val_at, diff_tid_val_at.
-  assert (Hnotin : (tid'', v') ∉ s).
-  { intros contra. apply Hallge in contra. simpl in contra. lia. }
-  rewrite (find_tid_val_perm _ _ _ ((tid'', v') :: elements s)); last first.
-  { by apply elements_union_singleton. }
-  { rewrite fmap_Permutation; last by apply elements_union_singleton.
-    rewrite fmap_cons. simpl.
-    apply NoDup_cons_2; last auto.
+  intros HNoDup Hgt_all Hle.
+  unfold diff_tid_val_at.
+  erewrite find_tid_val_perm; last first.
+  { apply elements_union_singleton.
     intros contra.
-    rewrite set_Forall_elements in Hallge.
-    change (λ x, _) with ((λ tidx : nat, (tidx ≤ tid')%nat) ∘ (fst : nat * dbval -> nat)) in Hallge.
-    rewrite -Forall_fmap Forall_forall in Hallge.
-    apply Hallge in contra. lia.
+    unfold gt_tids_mods in Hgt_all.
+    apply Hgt_all in contra.
+    simpl in contra. lia.
+  }
+  { apply NoDup_elements_fmap_fst; last done.
+    intros contra.
+    apply gt_tids_mods_Forall_fmap_fst in Hgt_all.
+    rewrite Forall_forall in Hgt_all.
+    apply Hgt_all in contra. lia.
   }
   simpl.
-  rewrite -diff_tid_val_at_unfold.
-  rewrite (diff_val_at_gt_max _ tid' v); [| auto | auto | auto | lia].
-  unfold find_tid_val_step. simpl.
-  case_decide; [lia | done].
+  rewrite find_tid_val_step_noop; [done | by simpl].
 Qed.
 
-Definition tuple_mods_rel (phys logi : list dbval) (mods : gset (nat * dbval)) :=
-  ∃ (diff : list dbval) (v : dbval),
-    logi = phys ++ diff ∧
-    last phys = Some v ∧
-    ∀ (i : nat) (u : dbval), diff !! i = Some u ->
-                           u = diff_val_at (i + length phys) v mods.
-(*
-  prefix phys logi ∧
-  ∃ (v : dbval), last phys = Some v ∧
-                 ∀ (i : nat), length phys ≤ i < length logi ->
-                              logi !! i = Some (diff_val_at i v mods).
-*)
+Lemma diff_val_at_add_max_le_max (tid tid' : nat) (v d : dbval) (s : gset (nat * dbval)) :
+  NoDup (elements s).*1 ->
+  gt_tids_mods tid' s ->
+  (tid ≤ tid')%nat ->
+  diff_val_at tid d ({[(tid', v)]} ∪ s) = diff_val_at tid d s.
+Proof.
+  intros HNoDup Hgt_all Hle.
+  unfold diff_val_at.
+  rewrite diff_tid_val_at_add_max_le_max; auto.
+Qed.
 
 Definition extend {X : Type} (n : nat) (l : list X) :=
   match last l with
@@ -1108,18 +1108,61 @@ Proof.
   lia.
 Qed.
 
+Lemma extend_length_ge {X : Type} (n : nat) (l : list X) :
+  (length l ≤ length (extend n l))%nat.
+Proof.
+  unfold extend.
+  destruct (last l) eqn:E.
+  - rewrite app_length. lia.
+  - apply last_None in E. by rewrite E.
+Qed.
+
+Lemma extend_length_ge_n {X : Type} (n : nat) (l : list X) :
+  (∃ x, last l = Some x) ->
+  (n ≤ length (extend n l))%nat.
+Proof.
+  intros [x Hlast].
+  unfold extend.
+  rewrite Hlast.
+  rewrite app_length.
+  rewrite replicate_length.
+  lia.
+Qed.
+
 Lemma extend_last_Some {X : Type} (n : nat) (l : list X) (x : X) :
   last l = Some x ->
   extend n l = l ++ replicate (n - length l) x.
 Proof. intros Hlast. unfold extend. by rewrite Hlast. Qed.
 
+Definition tuple_mods_rel (phys logi : list dbval) (mods : gset (nat * dbval)) :=
+  ∃ (diff : list dbval) (v : dbval),
+    logi = phys ++ diff ∧
+    last phys = Some v ∧
+    set_Forall (λ x, (length phys ≤ S x.1 < length logi)%nat) mods ∧
+    ∀ (i : nat) (u : dbval), diff !! i = Some u ->
+                           u = diff_val_at (i + length phys) v mods.
+
+Lemma tuple_mods_rel_eq_empty (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  phys = logi ->
+  tuple_mods_rel phys logi mods ->
+  mods = ∅.
+Proof.
+  intros Heq (diff & v & Hprefix & Hlast & Hlen & Hdiff).
+  destruct (decide (mods = ∅)); first done.
+  apply set_choose_L in n.
+  destruct n as [x Helem].
+  rewrite Heq in Hlen.
+  apply Hlen in Helem. lia.
+Qed.
+
 Theorem tuplext_read (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
-  (length phys ≤ tid < length logi)%nat ->
+  (length phys ≤ S tid)%nat ->
+  (tid < length logi)%nat ->
   le_tids_mods tid mods ->
   tuple_mods_rel phys logi mods ->
   tuple_mods_rel (extend (S tid) phys) logi mods.
 Proof.
-  intros [Hlb Hub] Hle_all (diff & v & Hprefix & Hlast & Hdiff).
+  intros Hlb Hub Hle_all (diff & v & Hprefix & Hlast & Hlen & Hdiff).
   unfold tuple_mods_rel.
   set lenext := (S tid - length phys)%nat.
   exists (drop lenext diff), v.
@@ -1150,6 +1193,15 @@ Proof.
   }
   split.
   { (* last *) rewrite -Hlast. apply extend_last. }
+  split.
+  { (* len *)
+    unfold le_tids_mods in Hle_all.
+    rewrite extend_length; [| eauto | lia].
+    intros x Helem.
+    apply Hlen in Helem as H1.
+    apply Hle_all in Helem as H2.
+    split; lia.
+  }
   { (* diff *)
     intros i u Hlookup.
     rewrite lookup_drop in Hlookup.
@@ -1157,6 +1209,265 @@ Proof.
     rewrite Hlookup.
     f_equal.
     rewrite extend_length; [lia | eauto | lia].
+  }
+Qed.
+
+Theorem tuplext_write (tid : nat) (v : dbval) (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  (length phys ≤ S tid)%nat ->
+  le_tids_mods tid mods ->
+  (tid, v) ∈ mods ->
+  NoDup (elements mods).*1 ->
+  tuple_mods_rel phys logi mods ->
+  tuple_mods_rel ((extend (S tid) phys) ++ [v]) logi (mods ∖ {[(tid, v)]}).
+Proof.
+  intros Hlb Hle_all Hinmods HNoDup (diff & w & Hprefix & Hlast & Hlen & Hdiff).
+  assert (Hub : (S tid < length logi)%nat).
+  { apply Hlen in Hinmods. simpl in Hinmods. lia. }
+  unfold tuple_mods_rel.
+  set lenext := S (S tid - length phys)%nat.
+  exists (drop lenext diff), v.
+  split.
+  { (* prefix *)
+    apply (extend_last_Some (S tid)) in Hlast as Heq.
+    rewrite Heq Hprefix -app_assoc -app_assoc.
+    rewrite app_inv_head_iff.
+    rewrite -{1} (take_drop lenext diff).
+    rewrite app_assoc.
+    rewrite app_inv_tail_iff.
+    rewrite (take_S_r _ _ v); last first.
+    { (* value at [tid + 1] *)
+      assert (Hgoal : ∃ v', diff !! (S tid - length phys)%nat = Some v').
+      { apply list_lookup_lt.
+        rewrite Hprefix app_length in Hub. lia.
+      }
+      destruct Hgoal as [v' Hgoal].
+      apply Hdiff in Hgoal as Hv'.
+      replace (S tid - _ + _)%nat with (S tid)%nat in Hv' by lia.
+      rewrite (diff_val_at_S tid v w mods) in Hv'; [| auto | auto].
+      by rewrite Hv' in Hgoal.
+    }
+    rewrite app_inv_tail_iff.
+    symmetry. apply replicate_as_Forall.
+    split.
+    { rewrite take_length_le; first done.
+      rewrite Hprefix app_length in Hub. lia.
+    }
+    rewrite Forall_forall.
+    intros u Helem.
+    apply elem_of_list_lookup in Helem.
+    destruct Helem as [i Hlookup].
+    rewrite lookup_take_Some in Hlookup.
+    destruct Hlookup as [Hlookup Hle].
+    apply Hdiff in Hlookup.
+    rewrite Hlookup.
+    symmetry. apply diff_val_at_le_all.
+    subst lenext.
+    assert (H : (i + length phys ≤ tid)%nat) by lia.
+    apply le_tids_mods_weaken with tid; auto.
+  }
+  split.
+  { (* last *) by rewrite last_snoc. }
+  split.
+  { (* len *)
+    unfold le_tids_mods in Hle_all.
+    rewrite app_length.
+    rewrite extend_length; [| eauto | lia].
+    intros x Helem.
+    assert (Helem' : x ∈ mods) by set_solver.
+    apply Hlen in Helem' as H1.
+    apply Hle_all in Helem' as H2.
+    assert (Hneq : x.1 ≠ tid).
+    { intros Heq.
+      rewrite elem_of_difference in Helem.
+      destruct Helem as [_ Hnotin].
+      rewrite not_elem_of_singleton in Hnotin.
+      replace x with (x.1, x.2) in Helem', Hnotin; last first.
+      { symmetry. apply surjective_pairing. }
+      subst tid.
+      rewrite -elem_of_elements in Hinmods.
+      rewrite -elem_of_elements in Helem'.
+      assert (Heq : v = x.2).
+      { eapply NoDup_perm_fmap_fst; eauto. }
+      by subst v.
+    }
+    simpl.
+    split; lia.
+  }
+  { (* diff *)
+    intros i u Hlookup.
+    rewrite lookup_drop in Hlookup.
+    apply Hdiff in Hlookup.
+    rewrite Hlookup.
+    rewrite app_length.
+    rewrite extend_length; [| eauto | lia].
+    rewrite (Nat.add_comm _ i).
+    rewrite -(Nat.add_assoc i).
+    simpl.
+    replace (S tid - _ + _)%nat with (S tid)%nat; last lia.
+    replace (tid + 1)% nat with (S tid)%nat; last lia.
+    apply diff_val_at_gt_min_sub_min; [auto | auto | auto | lia].
+  }
+Qed.
+
+Theorem tuplext_linearize_unchanged (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  tuple_mods_rel phys logi mods ->
+  tuple_mods_rel phys (extend (S (S tid)) logi) mods.
+Proof.
+  intros Hrel.
+  pose proof Hrel as (diff & v & Hprefix & Hlast & Hlen & Hdiff).
+  unfold tuple_mods_rel.
+  assert (Hlast' : ∃ v', last logi = Some v').
+  { rewrite Hprefix last_app. destruct (last diff); eauto. }
+  destruct Hlast' as [v' Hlast'].
+  exists (diff ++ replicate (S (S tid) - length logi) v'), v.
+  split.
+  { (* prefix *)
+    apply (extend_last_Some (S (S tid))) in Hlast' as Heq.
+    by rewrite Heq Hprefix -app_assoc.
+  }
+  split.
+  { (* last *) done. }
+  split.
+  { (* len *)
+    apply (set_Forall_impl _ _ _ Hlen).
+    intros x Hlt.
+    split; first lia.
+    apply Nat.lt_le_trans with (length logi); [lia | apply extend_length_ge].
+  }
+  { (* diff *)
+    intros i u Hlookup.
+    destruct (decide (i < length diff)%nat).
+    - apply Hdiff. by rewrite lookup_app_l in Hlookup; last auto.
+    - apply not_lt in n.
+      rewrite lookup_app_r in Hlookup; last lia.
+      rewrite lookup_replicate in Hlookup.
+      destruct Hlookup as [Heq Hlt]. subst v'.
+      (* Case [diff = nil] is treated as a special case. *)
+      destruct (decide (diff = [])).
+      { rewrite e app_nil_r in Hprefix.
+        rewrite (tuple_mods_rel_eq_empty phys logi mods); [| auto | done].
+        rewrite diff_val_at_empty. subst logi.
+        rewrite Hlast' in Hlast.
+        by inversion Hlast.
+      }
+      (* Use the last value of [logi] as the reference to apply [diff_val_at_extensible]. *)
+      rewrite last_lookup in Hlast'.
+      rewrite -(diff_val_at_extensible _ (pred (length diff) + length phys)); last first.
+      { lia. }
+      { unfold gt_tids_mods.
+        apply (set_Forall_impl _ _ _ Hlen).
+        intros x [_ H].
+        rewrite Hprefix app_length in H. lia.
+      }
+      apply Hdiff.
+      rewrite -Hlast'.
+      do 2 rewrite -last_lookup.
+      rewrite Hprefix.
+      rewrite last_app.
+      destruct (last diff) eqn:E; [done | by rewrite last_None in E].
+  }
+Qed.
+
+Theorem tuplext_linearize_changed (tid : nat) (v : dbval) (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  (length logi ≤ S tid)%nat ->
+  NoDup (elements mods).*1 ->
+  tuple_mods_rel phys logi mods ->
+  tuple_mods_rel phys ((extend (S tid) logi) ++ [v]) ({[(tid, v)]} ∪ mods).
+Proof.
+  intros Hlb HNoDup Hrel.
+  pose proof Hrel as (diff & w & Hprefix & Hlast & Hlen & Hdiff).
+  unfold tuple_mods_rel.
+  assert (Hlast' : ∃ v', last logi = Some v').
+  { rewrite Hprefix last_app. destruct (last diff); eauto. }
+  destruct Hlast' as [v' Hlast'].
+  exists (diff ++ replicate (S tid - length logi) v' ++ [v]), w.
+  split.
+  { (* prefix *)
+    apply (extend_last_Some (S tid)) in Hlast' as Heq.
+    rewrite Heq Hprefix.
+    by do 2 rewrite -app_assoc.
+  }
+  split.
+  { (* last *) done. }
+  split.
+  { (* len *)
+    apply set_Forall_union.
+    { rewrite set_Forall_singleton. simpl.
+      split.
+      - trans (length logi); last lia.
+        rewrite Hprefix app_length. lia.
+      - rewrite app_length. simpl.
+        apply Nat.le_lt_trans with (length (extend (S tid) logi)); last lia.
+        apply extend_length_ge_n. eauto.
+    }
+    apply (set_Forall_impl _ _ _ Hlen).
+    intros x [H1 H2].
+    split; first lia.
+    rewrite app_length. simpl.
+    apply Nat.lt_le_trans with (length logi); first lia.
+    apply Nat.le_trans with (length (extend (S tid) logi)); [apply extend_length_ge | lia].
+  }
+  { (* diff *)
+    intros i u Hlookup.
+    assert (Hgt_all : gt_tids_mods tid mods).
+    { intros x Helem.
+      assert (Hgoal : (S x.1 < S tid)%nat).
+      { apply Hlen in Helem. apply Nat.lt_le_trans with (length logi); lia. }
+      lia.
+    }
+    pose proof Hlb as Hlb'.
+    rewrite Hprefix app_length in Hlb'.
+    destruct (decide (i < S tid - length phys)%nat); last first.
+    { apply Nat.nle_gt in n.
+      rewrite lookup_app_r in Hlookup; last lia.
+      rewrite lookup_app_r in Hlookup; last first.
+      { rewrite replicate_length Hprefix app_length. lia. }
+      rewrite list_lookup_singleton_Some in Hlookup.
+      destruct Hlookup as [Hi Heq].
+      rewrite replicate_length in Hi.
+      rewrite Hprefix app_length in Hi.
+      assert (Hi' : (i + length phys = S tid)%nat) by lia.
+      rewrite Hi'.
+      rewrite (diff_val_at_S _ v); [done | | set_solver].
+      apply NoDup_elements_fmap_fst; last done.
+      intros contra.
+      apply gt_tids_mods_Forall_fmap_fst in Hgt_all.
+      rewrite Forall_forall in Hgt_all.
+      apply Hgt_all in contra. lia.
+    }
+    rewrite diff_val_at_add_max_le_max; [| done | done | lia].
+    rewrite app_assoc in Hlookup.
+    rewrite lookup_app_l in Hlookup; last first.
+    { rewrite app_length replicate_length Hprefix app_length. lia. }
+    destruct (decide (i < length diff)%nat).
+    - apply Hdiff. by rewrite lookup_app_l in Hlookup; last auto.
+    - apply not_lt in n.
+      rewrite lookup_app_r in Hlookup; last lia.
+      rewrite lookup_replicate in Hlookup.
+      destruct Hlookup as [Heq Hlt]. subst v'.
+      (* Case [diff = nil] is treated as a special case. *)
+      destruct (decide (diff = [])).
+      { rewrite e app_nil_r in Hprefix.
+        rewrite (tuple_mods_rel_eq_empty phys logi mods); [| auto | done].
+        rewrite diff_val_at_empty. subst logi.
+        rewrite Hlast' in Hlast.
+        by inversion Hlast.
+      }
+      (* Use the last value of [logi] as the reference to apply [diff_val_at_extensible]. *)
+      rewrite last_lookup in Hlast'.
+      rewrite -(diff_val_at_extensible _ (pred (length diff) + length phys)); last first.
+      { lia. }
+      { unfold gt_tids_mods.
+        apply (set_Forall_impl _ _ _ Hlen).
+        intros x [_ H].
+        rewrite Hprefix app_length in H. lia.
+      }
+      apply Hdiff.
+      rewrite -Hlast'.
+      do 2 rewrite -last_lookup.
+      rewrite Hprefix.
+      rewrite last_app.
+      destruct (last diff) eqn:E; [done | by rewrite last_None in E].
   }
 Qed.
 
