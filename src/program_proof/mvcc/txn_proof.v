@@ -1,8 +1,10 @@
 (* Import definitions/theorems of the Perennial framework with the disk FFI. *)
-From Perennial.program_proof Require Export disk_prelude.
+From Perennial.program_proof Require Export grove_prelude.
 (* Import Coq model of our Goose program. *)
 From Goose.github_com.mit_pdos.go_mvcc Require Import txn.
 From Perennial.program_proof.mvcc Require Import mvcc_ghost gc_proof index_proof tuple_proof.
+(* prefer untyped slices *)
+Import Perennial.goose_lang.lib.slice.slice.
 
 Section lemmas.
 Context `{FinMap K M}.
@@ -521,12 +523,13 @@ Proof.
   wp_apply wp_ref_of_zero; first done.
   iIntros (tid) "Htid".
   wp_pures.
-  wp_call.
 
   (***********************************************************)
-  (* tid = tsc.GetTSC()                                      *)
+  (* tid = GetTSC()                                          *)
   (***********************************************************)
-  wp_apply wp_ArbitraryInt.
+  (* This is a hack *)
+  iMod tsc_lb_0 as "Hlb".
+  wp_apply (wp_GetTSC with "Hlb").
   iIntros (tsc) "_".
 
   (***********************************************************)

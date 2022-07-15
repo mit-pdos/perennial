@@ -2,9 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.go_mvcc.txn.
 
-Section code.
-Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
+From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Example1: val :=
   rec: "Example1" "txn" :=
@@ -13,5 +11,3 @@ Definition Example1: val :=
     let: ("v2", <>) := txn.Txn__Get "txn" #2 in
     let: "total" := "v0" + "v2" in
     "total".
-
-End code.

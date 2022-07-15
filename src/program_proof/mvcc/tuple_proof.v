@@ -1,9 +1,11 @@
 (* Import definitions/theorems of the Perennial framework with the disk FFI. *)
 From Tactical Require Import SimplMatch.
-From Perennial.program_proof Require Export disk_prelude.
+From Perennial.program_proof Require Export grove_prelude.
 (* Import Coq model of our Goose program.*)
 From Goose.github_com.mit_pdos.go_mvcc Require Import tuple.
 From Perennial.program_proof.mvcc Require Import mvcc_ghost.
+(* prefer untyped slices *)
+Import Perennial.goose_lang.lib.slice.slice.
 
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

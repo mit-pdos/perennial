@@ -64,6 +64,7 @@ Module FS.
 End FS.
 Definition fileT {val_tys: val_types}: ty := unitT.
 
+(*
 Module Globals.
   Section goose_lang.
     Context {ext:ffi_syntax}.
@@ -71,13 +72,4 @@ Module Globals.
     Definition setX: val := λ: <>, #().
   End goose_lang.
 End Globals.
-
-Module tsc.
-  Section goose_lang.
-    Context {ext:ffi_syntax}.
-
-    Local Coercion Var' (s:string): expr := Var s.
-
-    Definition GetTSC: val := λ: <>, ArbitraryInt.
-  End goose_lang.
-End tsc.
+*)

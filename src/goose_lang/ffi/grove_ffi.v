@@ -5,7 +5,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import gen_heap_names.
 From iris.proofmode Require Import tactics.
-From iris.base_logic Require Import ghost_map mono_nat.
+From Perennial.base_logic Require Import ghost_map mono_nat.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
@@ -803,6 +803,10 @@ Local Ltac solve_atomic :=
     iIntros (Φ) "Hlb HΦ". wp_lam.
     wp_apply (wp_GetTscOp with "Hlb"). by iApply "HΦ".
   Qed.
+
+  Lemma tsc_lb_0 :
+    ⊢ |==> tsc_lb 0.
+  Proof. iApply mono_nat_lb_own_0. Qed.
 End grove.
 
 From Perennial.goose_lang Require Import adequacy.

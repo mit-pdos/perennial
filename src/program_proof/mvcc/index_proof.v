@@ -1,8 +1,10 @@
 (* Import definitions/theorems of the Perennial framework with the disk FFI. *)
-From Perennial.program_proof Require Export disk_prelude.
+From Perennial.program_proof Require Export grove_prelude.
 (* Import Coq model of our Goose program. *)
 From Goose.github_com.mit_pdos.go_mvcc Require Import index.
 From Perennial.program_proof.mvcc Require Import mvcc_ghost tuple_proof.
+(* prefer untyped slices *)
+Import Perennial.goose_lang.lib.slice.slice.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 

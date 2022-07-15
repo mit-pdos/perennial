@@ -1,6 +1,6 @@
 From iris.algebra Require Import dfrac_agree.
 From iris.algebra.lib Require Import mono_nat mono_list gmap_view.
-From Perennial.program_proof Require Import disk_prelude.
+From Perennial.program_proof Require Import grove_prelude.
 
 Definition dbval := option u64.
 Notation Nil := (None : dbval).

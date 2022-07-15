@@ -6,9 +6,7 @@ From Goose Require github_com.mit_pdos.go_mvcc.gc.
 From Goose Require github_com.mit_pdos.go_mvcc.index.
 From Goose Require github_com.mit_pdos.go_mvcc.tuple.
 
-Section code.
-Context `{ext_ty: ext_types}.
-Local Coercion Var' s: expr := Var s.
+From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition DBVal := struct.decl [
   "tomb" :: boolT;
@@ -84,7 +82,7 @@ Definition TxnMgr__New: val :=
 Definition genTID: val :=
   rec: "genTID" "sid" :=
     let: "tid" := ref (zero_val uint64T) in
-    "tid" <-[uint64T] tsc.GetTSC #();;
+    "tid" <-[uint64T] grove_ffi.GetTSC #();;
     "tid" <-[uint64T] (![uint64T] "tid" `and` ~ (config.N_TXN_SITES - #1)) + "sid";;
     ![uint64T] "tid".
 
@@ -315,5 +313,3 @@ Definition Txn__Abort: val :=
       tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
-
-End code.
