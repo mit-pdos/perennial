@@ -535,6 +535,42 @@ lemmas. *)
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
+  Lemma wp_GetTscOp prev_time s E :
+    {{{ tsc_lb prev_time }}}
+      ExternalOp GetTscOp #() @ s; E
+    {{{ (new_time: u64), RET #new_time;
+      ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time)
+    }}}.
+  Proof.
+    iIntros (Φ) "Hprev HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. econstructor.
+      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      monad_simpl. }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    inv_head_step. iFrame. simpl.
+    iSplitR; first done.
+    set old := σ1.(world).(grove_node_tsc).
+    iDestruct (mono_nat_lb_own_valid with "Hd Hprev") as %[_ Hlb].
+    iClear "Hprev".
+    evar (new: u64).
+    assert (int.nat old <= int.nat new) as Hupd.
+    2: iMod (mono_nat_own_update (int.nat new) with "Hd") as "[Hd Hnew]"; first lia.
+    2: subst new; iFrame "Hd".
+    { subst new. rewrite word.unsigned_ltu. clear.
+      destruct (_ <? _)%Z eqn:Hlt; last by word.
+      (* FIXME Why can word not do this? *)
+      apply Zlt_is_lt_bool in Hlt.
+      apply Z2Nat.inj_le; [word..|].
+      lia. }
+    iApply "HΦ". iFrame. iPureIntro. lia.
+  Qed.
+
 End lifting.
 
 (** * Grove user-facing operations and their specs *)
@@ -595,6 +631,10 @@ Section grove.
         "Err" ::= "err";
         "Data" ::= ("ptr", "len", "len")
       ].
+
+  (** Type: func() uint64 *)
+  Definition GetTsc : val :=
+    λ: <>, ExternalOp GetTscOp #().
 
   Context `{!heapGS Σ}.
 
@@ -751,6 +791,17 @@ Local Ltac solve_atomic :=
     - iApply mapsto_vals_is_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
+  Qed.
+
+  Lemma wp_GetTsc prev_time E :
+    {{{ tsc_lb prev_time }}}
+      GetTsc #() @ E
+    {{{ (new_time: u64), RET #new_time;
+      ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time)
+    }}}.
+  Proof.
+    iIntros (Φ) "Hlb HΦ". wp_lam.
+    wp_apply (wp_GetTscOp with "Hlb"). by iApply "HΦ".
   Qed.
 End grove.
 
