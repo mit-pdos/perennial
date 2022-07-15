@@ -24,6 +24,9 @@ NFSD_COMMIT=master
 GOKV_REPO=https://github.com/mit-pdos/gokv
 GOKV_COMMIT=main
 
+MVCC_REPO=https://github.com/mit-pdos/go-mvcc
+MVCC_COMMIT=main
+
 ## Actual test logic
 
 echo && echo "Goose check: fetch all the repos"
@@ -58,6 +61,9 @@ checkout NFSD
 GOKV_DIR=/tmp/gokv
 checkout GOKV
 
+MVCC_DIR=/tmp/mvcc
+checkout MVCC
+
 echo && echo "Goose check: re-run goose"
 etc/update-goose.py --goose $GOOSE_DIR --compile \
   --goose-examples \
@@ -66,8 +72,9 @@ etc/update-goose.py --goose $GOOSE_DIR --compile \
   --examples $EXAMPLES_DIR \
   --journal $JOURNAL_DIR \
   --nfsd $NFSD_DIR \
-  --gokv $GOKV_DIR
-# Missing: --distributed-examples (not currently used), --mvcc (very WIP)
+  --gokv $GOKV_DIR \
+  --mvcc $MVCC_DIR
+# Missing: --distributed-examples (not currently used)
 
 echo && echo "Goose check: check if anything changed"
 if [ -n "$(git status --porcelain)" ]; then
