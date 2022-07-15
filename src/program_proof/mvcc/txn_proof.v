@@ -521,7 +521,7 @@ Proof.
   (* var tid uint64                                          *)
   (***********************************************************)
   wp_apply wp_ref_of_zero; first done.
-  iIntros (tid) "Htid".
+  iIntros (tidRef) "Htid".
   wp_pures.
 
   (***********************************************************)
@@ -532,12 +532,24 @@ Proof.
   wp_apply (wp_GetTSC with "Hlb").
   iIntros (tsc) "_".
 
-  (***********************************************************)
-  (* tid = (tid & ^(config.N_TXN_SITES - 1)) + sid           *)
-  (***********************************************************)
+  (************************************************************************)
+  (* tid = ((tid + config.N_TXN_SITES) & ^(config.N_TXN_SITES - 1)) + sid *)
+  (************************************************************************)
   wp_store.
   wp_load.
   wp_store.
+  wp_pures.
+  set tid := (word.add _ _).
+
+  (***********************************************************)
+  (* for GetTSC() <= tid {                                   *)
+  (* }                                                       *)
+  (***********************************************************)
+  set P := λ (b : bool), (if b then True else tsc_lb (int.nat tid))%I.
+  wp_apply (wp_forBreak_cond P).
+  { admit. }
+  { done. }
+  iIntros "HP". unfold P. clear P.
   wp_load.
 
   (***********************************************************)
@@ -547,7 +559,7 @@ Proof.
   iModIntro.
   iPureIntro.
   done.
-Qed.
+Admitted.
 
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) activate(sid uint64) uint64             *)
