@@ -633,7 +633,7 @@ Section grove.
       ].
 
   (** Type: func() uint64 *)
-  Definition GetTsc : val :=
+  Definition GetTSC : val :=
     λ: <>, ExternalOp GetTscOp #().
 
   Context `{!heapGS Σ}.
@@ -793,9 +793,9 @@ Local Ltac solve_atomic :=
       iApply array.array_nil. done.
   Qed.
 
-  Lemma wp_GetTsc prev_time E :
+  Lemma wp_GetTSC prev_time E :
     {{{ tsc_lb prev_time }}}
-      GetTsc #() @ E
+      GetTSC #() @ E
     {{{ (new_time: u64), RET #new_time;
       ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time)
     }}}.
