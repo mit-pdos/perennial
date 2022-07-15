@@ -1362,7 +1362,7 @@ Proof.
     rewrite Forall_forall in HtidminLe.
     rewrite -HactiveLM.
     setoid_rewrite elem_of_list_to_set.
-    word.
+    intros ? Hx. specialize (HtidminLe _ Hx). word.
   }
   iMod ("HinvgcC" with "[HinvgcO]") as "_"; first done.
   iModIntro.
