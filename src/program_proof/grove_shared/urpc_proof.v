@@ -151,9 +151,9 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
                     and we have escrow token *)
                  ((∃ (cb : loc) (cb_cond : loc) dummy (aborted : bool),
                     "%Hpending_cb" ∷ ⌜ pending !! seqno  = Some #cb ⌝ ∗
-                    "#reply" ∷ readonly (cb ↦[callback :: "reply"] #(urpc_reg_rep_ptr req)) ∗
-                    "#state" ∷ readonly (cb ↦[callback :: "state"] #(urpc_reg_done req)) ∗
-                    "#cond" ∷ readonly (cb ↦[callback :: "cond"] #cb_cond) ∗
+                    "#reply" ∷ readonly (cb ↦[Callback :: "reply"] #(urpc_reg_rep_ptr req)) ∗
+                    "#state" ∷ readonly (cb ↦[Callback :: "state"] #(urpc_reg_done req)) ∗
+                    "#cond" ∷ readonly (cb ↦[Callback :: "cond"] #cb_cond) ∗
                     "Hescrow" ∷ ptsto_mut (ccescrow_name Γ) seqno 1 tt ∗
                     "#Hcond" ∷ is_cond cb_cond #lk ∗
                     "Hrep_ptr" ∷ (urpc_reg_rep_ptr req) ↦[slice.T byteT] dummy ∗
@@ -655,31 +655,43 @@ Definition call_errno (err : option call_err) : Z :=
   | Some CallErrDisconnect => 2
   end.
 
-Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
-      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post :
+Definition own_uRPC_Callback (cl_ptr cb_ptr : loc) Post : iProp Σ :=
+  ∃ n Γ γ rpcid reqData cb_cond (rep_ptr cb_state lk mref : loc),
+  "#mu" ∷ readonly (cl_ptr ↦[Client :: "mu"] #lk) ∗
+  "#Hlk" ∷ is_lock urpc_lockN #lk (Client_lock_inner Γ cl_ptr lk mref) ∗
+  "#cond'" ∷ is_cond cb_cond #lk ∗
+  "#reply" ∷ readonly (cb_ptr ↦[Callback :: "reply"] #rep_ptr) ∗
+  "#state" ∷ readonly (cb_ptr ↦[Callback :: "state"] #cb_state) ∗
+  "#cond" ∷ readonly (cb_ptr ↦[Callback :: "cond"] #cb_cond) ∗
+  "#Hsaved" ∷ saved_pred_own γ Post ∗
+  "#Hreg" ∷ n [[Γ.(ccmapping_name)]]↦ro {|
+                                         urpc_reg_rpcid := rpcid;
+                                         urpc_reg_args := reqData;
+                                         urpc_reg_saved := γ;
+                                         urpc_reg_done := cb_state;
+                                         urpc_reg_rep_ptr := rep_ptr
+                                       |} ∗
+  "Hextracted" ∷ n [[Γ.(ccextracted_name)]]↦ ().
+
+Lemma wp_Client__CallStart γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req
+      (reqData:list u8) Spec Post :
   handler_spec γsmap host rpcid Spec -∗
   {{{
       is_slice_small req byteT 1 reqData ∗
-      rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       is_uRPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
   }}}
-    Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
+    Client__CallStart #cl_ptr #rpcid (slice_val req)
   {{{
-       (err : option call_err), RET #(call_errno err);
-       is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
+       (err : option call_err) (cb_ptr : loc), RET (#(call_errno err), #cb_ptr);
        is_slice_small req byteT 1 reqData ∗
-       (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
-        ∃ rep_sl (repData:list u8),
-          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          is_slice_small rep_sl byteT 1 repData ∗
-          (▷ Post repData))
+       (if err is Some _ then True else own_uRPC_Callback cl_ptr cb_ptr Post)
   }}}.
 Proof.
   iIntros "#Hhandler !#" (Φ) "H HΦ".
   wp_lam.
   wp_pures.
-  iDestruct "H" as "(Hslice&Hrep_out_ptr&Hclient&#HSpec)".
+  iDestruct "H" as "(Hslice&Hclient&#HSpec)".
   iNamed "Hclient". iNamed "Hstfields".
 
   wp_apply (wp_ref_of_zero).
@@ -732,7 +744,7 @@ Proof.
   { apply not_elem_of_dom. rewrite -Hdom_eq_es -Hdom_range. lia. }
   iMod (map_alloc n tt with "Hextracted_ctx") as "(Hextracted_ctx&Hextracted)".
   { apply not_elem_of_dom. rewrite -Hdom_eq_ex -Hdom_range. lia. }
-  wp_apply (release_spec with "[-Hslice Hhandler HΦ Hextracted Hrep_out_ptr]").
+  wp_apply (release_spec with "[-Hslice Hhandler HΦ Hextracted]").
   { iFrame "Hlk". iFrame "Hlked". iNext. iExists _, _, _, _, _.
     iFrame. rewrite ?dom_insert_L.
     replace (int.Z (word.add n 1)) with (int.Z n + 1)%Z by word.
@@ -776,11 +788,11 @@ Proof.
   wp_apply (wp_WriteInt with "Hmsg"). clear msg_sl.
   iIntros (msg_sl) "Hmsg".
   wp_apply (wp_WriteBytes with "[$Hmsg $Hslice]"). clear msg_sl.
-  iIntros (rep_sl) "[Hrep_sl Hslice]".
+  iIntros (req_sl) "[Hreq_sl Hslice]".
   rewrite -!app_assoc app_nil_l.
 
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
   iNamed "Hhandler".
   wp_apply (wp_Send with "[$]").
   iInv "Hserver_inv" as "Hserver_inner" "Hclo".
@@ -805,15 +817,37 @@ Proof.
     iFrame "#". iSplit; last by eauto.
     iPureIntro. word.
   }
-  iModIntro. iIntros (err) "[%Herr Hsl_rep]".
+  iModIntro. iIntros (err) "[%Herr _]".
   destruct err; wp_pures.
-  { iApply ("HΦ" $! (Some CallErrDisconnect)).
-    iFrame "Hslice".
-    iModIntro.
-    iSplitR "Hrep_out_ptr".
-    - iExists _, _, _, _. by iFrame "#".
-    - by iFrame. }
-  destruct msg_sent; last done. clear Herr.
+  { wp_apply wp_allocStruct; first val_ty. iIntros (cb_ptr) "_". wp_pures.
+    iApply ("HΦ" $! (Some CallErrDisconnect) cb_ptr).
+    iFrame "Hslice". done. }
+  iApply ("HΦ" $! None cb).
+  iFrame "Hslice". iModIntro.
+  do 5 iExists _.
+  eauto 20 with iFrame.
+Qed.
+
+Lemma wp_Client__CallComplete (cl_ptr cb_ptr:loc) rep_out_ptr
+      (timeout_ms : u64) dummy_sl_val Post :
+  {{{
+      rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      own_uRPC_Callback cl_ptr cb_ptr Post
+  }}}
+    Client__CallComplete #cl_ptr #cb_ptr #rep_out_ptr #timeout_ms
+  {{{
+       (err : option call_err), RET #(call_errno err);
+       (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
+        ∃ rep_sl (repData:list u8),
+          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+          is_slice_small rep_sl byteT 1 repData ∗
+          (▷ Post repData))
+  }}}.
+Proof.
+  iIntros (Φ) "[Hrep_out_ptr Hcb] HΦ".
+  iNamed "Hcb".
+  wp_call.
+
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hi Hlockinv]".
@@ -887,14 +921,13 @@ Proof.
     destruct aborted; wp_pures; iModIntro.
     1: iApply ("HΦ" $! (Some CallErrDisconnect)).
     2: iApply ("HΦ" $! (Some CallErrTimeout)).
-    all: iFrame "Hslice".
-    all: iSplitR "Hrep_out_ptr"; last by eauto.
-    all: iExists _, _, _, _; by iFrame "∗#".
+    all: done.
   }
   { iNamed "Hcase2".
     wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
     iDestruct (saved_pred_agree _ _ _ reply with "HPost_saved Hsaved") as "#Hequiv".
     wp_pures.
+    wp_loadField.
     wp_apply (wp_LoadAt with "[$Hrep_ptr]"). iIntros "Hrep_ptr".
     wp_apply (wp_StoreAt with "[$Hrep_out_ptr]").
     { naive_solver. }
@@ -913,9 +946,6 @@ Proof.
     iModIntro.
     iRewrite ("Hequiv") in "HPost".
     iApply ("HΦ" $! None).
-    iSplitR.
-    { iExists _, _, _, _. iFrame "#". }
-    iFrame "Hslice".
     iExists _, reply.
     iFrame.
   }
@@ -923,6 +953,43 @@ Proof.
     iDestruct (ptsto_valid_2 with "Hex [$]") as %Hval.
     exfalso. rewrite //= in Hval.
   }
+Qed.
+
+Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post :
+  handler_spec γsmap host rpcid Spec -∗
+  {{{
+      is_slice_small req byteT 1 reqData ∗
+      rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      is_uRPCClient cl_ptr host ∗
+      □(▷ Spec reqData Post)
+  }}}
+    Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
+  {{{
+       (err : option call_err), RET #(call_errno err);
+       is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
+       is_slice_small req byteT 1 reqData ∗
+       (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
+        ∃ rep_sl (repData:list u8),
+          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
+          is_slice_small rep_sl byteT 1 repData ∗
+          (▷ Post repData))
+  }}}.
+Proof.
+  iIntros "#Hhandler !#" (Φ) "H HΦ".
+  iDestruct "H" as "(Hslice&Hrep_out_ptr&#Hclient&#HSpec)".
+  wp_call.
+  wp_apply (wp_Client__CallStart with "Hhandler [$Hslice $Hclient $HSpec]").
+  iIntros (err cb_ptr) "[Hslice Hcb]".
+  destruct err as [err|]; wp_pures.
+  { destruct err; wp_pures.
+    2: iApply ("HΦ" $! (Some CallErrDisconnect)).
+    1: iApply ("HΦ" $! (Some CallErrTimeout)).
+    all: eauto with iFrame. }
+  wp_apply (wp_Client__CallComplete with "[$Hrep_out_ptr $Hcb]").
+  iIntros ([err|]) "Hcomplete".
+  { iApply ("HΦ" $! (Some err)). eauto with iFrame. }
+  iApply ("HΦ" $! None). eauto with iFrame.
 Qed.
 
 Global Instance impl_handler_spec_pers f Spec : Persistent (impl_handler_spec f Spec).

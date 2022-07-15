@@ -58,7 +58,7 @@ Definition callbackStateDone : expr := #1.
 
 Definition callbackStateAborted : expr := #2.
 
-Definition callback := struct.decl [
+Definition Callback := struct.decl [
   "reply" :: ptrT;
   "state" :: ptrT;
   "cond" :: ptrT
@@ -80,8 +80,8 @@ Definition Client__replyThread: val :=
       then
         lock.acquire (struct.loadF Client "mu" "cl");;
         MapIter (struct.loadF Client "pending" "cl") (λ: <> "cb",
-          struct.loadF callback "state" "cb" <-[uint64T] callbackStateAborted;;
-          lock.condSignal (struct.loadF callback "cond" "cb"));;
+          struct.loadF Callback "state" "cb" <-[uint64T] callbackStateAborted;;
+          lock.condSignal (struct.loadF Callback "cond" "cb"));;
         lock.release (struct.loadF Client "mu" "cl");;
         Break
       else
@@ -93,9 +93,9 @@ Definition Client__replyThread: val :=
         (if: "ok"
         then
           MapDelete (struct.loadF Client "pending" "cl") "seqno";;
-          struct.loadF callback "reply" "cb" <-[slice.T byteT] "reply";;
-          struct.loadF callback "state" "cb" <-[uint64T] callbackStateDone;;
-          lock.condSignal (struct.loadF callback "cond" "cb")
+          struct.loadF Callback "reply" "cb" <-[slice.T byteT] "reply";;
+          struct.loadF Callback "state" "cb" <-[uint64T] callbackStateDone;;
+          lock.condSignal (struct.loadF Callback "cond" "cb")
         else #());;
         lock.release (struct.loadF Client "mu" "cl");;
         Continue));;
@@ -119,15 +119,15 @@ Definition ErrTimeout : expr := #1.
 
 Definition ErrDisconnect : expr := #2.
 
-Definition Client__Call: val :=
-  rec: "Client__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
+Definition Client__CallStart: val :=
+  rec: "Client__CallStart" "cl" "rpcid" "args" :=
     let: "reply_buf" := ref (zero_val (slice.T byteT)) in
-    let: "cb" := struct.new callback [
+    let: "cb" := struct.new Callback [
       "reply" ::= "reply_buf";
       "state" ::= ref (zero_val uint64T);
       "cond" ::= lock.newCond (struct.loadF Client "mu" "cl")
     ] in
-    struct.loadF callback "state" "cb" <-[uint64T] callbackStateWaiting;;
+    struct.loadF Callback "state" "cb" <-[uint64T] callbackStateWaiting;;
     lock.acquire (struct.loadF Client "mu" "cl");;
     let: "seqno" := struct.loadF Client "seq" "cl" in
     struct.storeF Client "seq" "cl" (std.SumAssumeNoOverflow (struct.loadF Client "seq" "cl") #1);;
@@ -138,20 +138,32 @@ Definition Client__Call: val :=
     let: "data3" := marshal.WriteInt "data2" "seqno" in
     let: "reqData" := marshal.WriteBytes "data3" "args" in
     (if: grove_ffi.Send (struct.loadF Client "conn" "cl") "reqData"
-    then ErrDisconnect
+    then
+      (ErrDisconnect, struct.new Callback [
+       ])
+    else (#0, "cb")).
+
+Definition Client__CallComplete: val :=
+  rec: "Client__CallComplete" "cl" "cb" "reply" "timeout_ms" :=
+    lock.acquire (struct.loadF Client "mu" "cl");;
+    (if: (![uint64T] (struct.loadF Callback "state" "cb") = callbackStateWaiting)
+    then lock.condWaitTimeout (struct.loadF Callback "cond" "cb") "timeout_ms"
+    else #());;
+    let: "state" := ![uint64T] (struct.loadF Callback "state" "cb") in
+    (if: ("state" = callbackStateDone)
+    then
+      "reply" <-[slice.T byteT] ![slice.T byteT] (struct.loadF Callback "reply" "cb");;
+      lock.release (struct.loadF Client "mu" "cl");;
+      #0
     else
-      lock.acquire (struct.loadF Client "mu" "cl");;
-      (if: (![uint64T] (struct.loadF callback "state" "cb") = callbackStateWaiting)
-      then lock.condWaitTimeout (struct.loadF callback "cond" "cb") "timeout_ms"
-      else #());;
-      let: "state" := ![uint64T] (struct.loadF callback "state" "cb") in
-      (if: ("state" = callbackStateDone)
-      then
-        "reply" <-[slice.T byteT] ![slice.T byteT] "reply_buf";;
-        lock.release (struct.loadF Client "mu" "cl");;
-        #0
-      else
-        lock.release (struct.loadF Client "mu" "cl");;
-        (if: ("state" = callbackStateAborted)
-        then ErrDisconnect
-        else ErrTimeout))).
+      lock.release (struct.loadF Client "mu" "cl");;
+      (if: ("state" = callbackStateAborted)
+      then ErrDisconnect
+      else ErrTimeout)).
+
+Definition Client__Call: val :=
+  rec: "Client__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
+    let: ("err", "cb") := Client__CallStart "cl" "rpcid" "args" in
+    (if: "err" ≠ #0
+    then "err"
+    else Client__CallComplete "cl" "cb" "reply" "timeout_ms").
