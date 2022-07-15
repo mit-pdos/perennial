@@ -263,7 +263,7 @@ Proof.
   (*     deleted : true,                                     *)
   (* }                                                       *)
   (***********************************************************)
-  wp_apply (wp_new_slice); first auto.
+  wp_apply (wp_new_slice_cap); [auto | word |].
   iIntros (vers) "HversL".
   wp_storeField.
   wp_loadField.
@@ -287,7 +287,7 @@ Proof.
     unfold P.
     iExists (U64 0), (U64 0), [(U64 0, true, U64 0)].
     unfold own_tuple.
-    iExists vers, (U64 0), [Nil].
+    iExists (Slice.mk vers 1 16), (U64 0), [Nil].
     iFrame.
     iSplit.
     { (* Prove [Hgclb]. *)

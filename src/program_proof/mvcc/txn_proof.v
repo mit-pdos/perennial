@@ -296,7 +296,8 @@ Proof.
     wp_apply (wp_new_free_lock).
     iIntros (latch) "Hfree".
     wp_storeField.
-    wp_apply (wp_NewSlice (V:=u64)).
+    (* wp_apply (wp_NewSlice (V:=u64)). *)
+    wp_apply (wp_NewSliceWithCap (V:=u64)); first word.
     iIntros (active) "HactiveL".
     wp_storeField.
     wp_load.
@@ -327,7 +328,7 @@ Proof.
     iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with "[$Hfree] [-HsitesS HsitesRP HactiveAuthAll HminAuthAll]") as "#Hlock".
     { iNext.
       unfold own_txnsite.
-      iExists (U64 0), (U64 0), active, [], ∅.
+      iExists (U64 0), (U64 0), (Slice.mk active 0 8), [], ∅.
       iFrame "% ∗".
       iPureIntro.
       split; first set_solver.
@@ -425,7 +426,7 @@ Proof.
   iNamed "Htxn".
   simpl.
   wp_pures.
-  wp_apply (wp_new_slice); first done.
+  wp_apply (wp_new_slice_cap); [done | word |].
   iIntros (wset) "HwsetL".
   wp_storeField.
           
