@@ -1335,7 +1335,8 @@ Proof.
     - rewrite H.
       apply Forall_inv in HtidOrder. word.
     - apply Forall_inv_tail in HtidOrder.
-      rewrite Forall_forall in HtidOrder. word.
+      rewrite Forall_forall in HtidOrder.
+      apply HtidOrder. done.
   }
   
   (* Open the global invariant to update [tidmin]. *)
