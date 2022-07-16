@@ -19,7 +19,7 @@ Local Definition tidsR := gmap_viewR u64 (leibnizO unit).
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
 (* SST-related RAs. (SST = Strictly Serializable Transactions) *)
-Local Definition tid_modsR := gmap_viewR (u64 * (gmap u64 u64)) (leibnizO unit).
+Local Definition tid_modsR := gmap_viewR (u64 * (gmap u64 dbval)) (leibnizO unit).
 
 Lemma sids_all_lookup (sid : u64) :
   int.Z sid < N_TXN_SITES ->
@@ -314,11 +314,11 @@ End lemmas.
 Section event.
 
 Inductive event :=
-| EvCommit (tid : u64) (mods : gmap u64 u64)
+| EvCommit (tid : u64) (mods : gmap u64 dbval)
 | EvRead   (tid : u64) (key : u64)
 | EvAbort  (tid : u64).
 
-Definition head_commit (tid : u64) (mods : gmap u64 u64) (l : list event) :=
+Definition head_commit (tid : u64) (mods : gmap u64 dbval) (l : list event) :=
   head l = Some (EvCommit tid mods).
 
 Definition head_read (tid : u64) (key : u64) (l : list event) :=
@@ -337,7 +337,7 @@ Definition first_abort (tid : u64) (l : list event) :=
     l = lp ++ e :: ls ∧
     no_commit_abort tid lp.
 
-Definition compatible (tid : u64) (mods : gmap u64 u64) (e : event) :=
+Definition compatible (tid : u64) (mods : gmap u64 dbval) (e : event) :=
   match e with
   | EvCommit tid' mods' => (int.Z tid') < (int.Z tid) ∨ (dom mods) ∩ (dom mods') = ∅
   | EvRead tid' key => (int.Z tid') ≤ (int.Z tid) ∨ key ∉ (dom mods)
@@ -347,28 +347,28 @@ Definition compatible (tid : u64) (mods : gmap u64 u64) (e : event) :=
 Instance compatible_dec tid mods e : Decision (compatible tid mods e).
 Proof. destruct e; simpl; apply _. Defined.
 
-Definition incompatible (tid : u64) (mods : gmap u64 u64) (e : event) := not (compatible tid mods e).
+Definition incompatible (tid : u64) (mods : gmap u64 dbval) (e : event) := not (compatible tid mods e).
 
 Instance incompatible_dec tid mods e : Decision (incompatible tid mods e).
 Proof. destruct e; simpl; apply _. Defined.
 
-Definition compatible_all (tid : u64) (mods : gmap u64 u64) (l : list event) :=
+Definition compatible_all (tid : u64) (mods : gmap u64 dbval) (l : list event) :=
   Forall (compatible tid mods) l.
 
-Definition incompatible_exists (tid : u64) (mods : gmap u64 u64) (l : list event) :=
+Definition incompatible_exists (tid : u64) (mods : gmap u64 dbval) (l : list event) :=
   Exists (incompatible tid mods) l.
 
-Definition first_commit (tid : u64) (mods : gmap u64 u64) (l lp ls : list event) (e : event) :=
+Definition first_commit (tid : u64) (mods : gmap u64 dbval) (l lp ls : list event) (e : event) :=
   e = EvCommit tid mods ∧
   l = lp ++ e :: ls ∧
   no_commit_abort tid lp.
 
-Definition first_commit_incompatible (tid : u64) (mods : gmap u64 u64) (l : list event) :=
+Definition first_commit_incompatible (tid : u64) (mods : gmap u64 dbval) (l : list event) :=
   ∃ e lp ls,
     first_commit tid mods l lp ls e ∧
     incompatible_exists tid mods lp.
 
-Definition first_commit_compatible (tid : u64) (mods : gmap u64 u64) (l : list event) :=
+Definition first_commit_compatible (tid : u64) (mods : gmap u64 dbval) (l : list event) :=
   ∃ e lp ls,
     first_commit tid mods l lp ls e ∧
     compatible_all tid mods lp.
@@ -426,8 +426,8 @@ Qed.
 Inductive tcform :=
 | NCA
 | FA
-| FCI (mods : gmap u64 u64)
-| FCC (mods : gmap u64 u64).
+| FCI (mods : gmap u64 dbval)
+| FCC (mods : gmap u64 dbval).
 
 Definition peek (tid : u64) (l : list event) : tcform :=
   let (lp, ls) := find_max_prefix tid [] l
@@ -504,7 +504,7 @@ Proof.
   intros Hl. rewrite Hl. destruct lp; auto.
 Qed.
 
-Lemma first_abort_false (tid : u64) (mods : gmap u64 u64) (l : list event) :
+Lemma first_abort_false (tid : u64) (mods : gmap u64 dbval) (l : list event) :
   first_abort tid l ->
   head_commit tid mods l ->
   False.
@@ -516,7 +516,7 @@ Proof.
   set_solver.
 Qed.
 
-Lemma first_commit_false (tid : u64) (mods : gmap u64 u64) (l lp ls : list event) (e : event) :
+Lemma first_commit_false (tid : u64) (mods : gmap u64 dbval) (l lp ls : list event) (e : event) :
   first_commit tid mods l lp ls e ->
   head_abort tid l ->
   False.
@@ -528,7 +528,7 @@ Proof.
   set_solver.
 Qed.
 
-Lemma safe_extension_rd (tid tid' : u64) (mods : gmap u64 u64) (key : u64) (l : list event) :
+Lemma safe_extension_rd (tid tid' : u64) (mods : gmap u64 dbval) (key : u64) (l : list event) :
   first_commit_compatible tid mods l ->
   head_read tid' key l ->
   key ∈ (dom mods) ->
@@ -547,7 +547,7 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Lemma safe_extension_wr (tid tid' : u64) (mods mods' : gmap u64 u64) (l : list event) :
+Lemma safe_extension_wr (tid tid' : u64) (mods mods' : gmap u64 dbval) (l : list event) :
   first_commit_compatible tid mods l ->
   head_commit tid' mods' l ->
   (dom mods) ∩ (dom mods') ≠ ∅ ->
@@ -566,7 +566,7 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Lemma first_commit_incompatible_false (tid : u64) (mods : gmap u64 u64) (l : list event) :
+Lemma first_commit_incompatible_false (tid : u64) (mods : gmap u64 dbval) (l : list event) :
   first_commit_incompatible tid mods l ->
   head_commit tid mods l ->
   False.
