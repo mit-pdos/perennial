@@ -42,7 +42,7 @@ Proof.
     iApply (step_fupd2N_inner_wand with "Hwp"); auto.
   }
   rewrite Hnval.
-  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC".
+  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   iDestruct (pri_inv_tok_disj_inv_half with "[$]") as %Hdisj.
   iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
   { set_solver. }
@@ -87,7 +87,9 @@ Proof.
     iSplit; eauto.
     { iIntros. iDestruct ("Hwand" with "[$]") as "$". eauto. }
   }
-  iMod ("Hwp" with "[$] [$] [$]") as "H".
+  iMod ("Hwp" with "[$] [$] [$] [Hlc]") as "H".
+  { iApply (lc_weaken with "Hlc").
+    apply num_laters_per_step_lt in Hlt'. lia. }
   iApply (step_fupd2N_wand with "H").
   iIntros "($&H)".
   iIntros.

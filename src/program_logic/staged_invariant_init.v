@@ -135,8 +135,8 @@ Proof using PRI.
     iIntros. iMod ("Hwp" with "[$] [$]") as "(Hv&$&$)".
     iModIntro. iApply "Hv". iFrame.
   }
-  iIntros.
-  iMod ("Hwp" with "[$] [$] [$]") as "Hwp".
+  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
+  iMod ("Hwp" with "[$] [$] [$] [$]") as "Hwp".
   iModIntro. simpl. iMod "Hwp". iModIntro.
   iNext. iMod "Hwp". iModIntro. iApply (step_fupd2N_wand with "Hwp").
   iIntros "($&Hwp)".
@@ -432,7 +432,7 @@ Proof.
     iModIntro. iApply "Hv". iExists _, _, _, _, _, _, _. iFrame "∗ #". eauto.
   }
   iIntros.
-  iMod ("Hwp" with "[$] [$] [$]") as "Hwp".
+  iMod ("Hwp" with "[$] [$] [$] [$]") as "Hwp".
   iModIntro. simpl. iMod "Hwp". iModIntro.
   iNext. iMod "Hwp". iModIntro. iApply (step_fupd2N_wand with "Hwp").
   iIntros "($&Hwp)".

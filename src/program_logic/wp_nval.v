@@ -71,7 +71,7 @@ Proof.
   rewrite ?wpc_unfold /wpc_pre. iIntros (mj).
   rewrite Hnval. iSplit; last first.
   { iDestruct ("Hwp" $! _) as "(_&$)". }
-  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC".
+  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   iDestruct ("Hwp" $! mj) as "(Hwp&_)".
   iMod (later_tok_decr with "[$]") as (ns' Hle) "Hg".
   iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
@@ -88,7 +88,9 @@ Proof.
   iApply (step_fupd2N_wand with "H"). iNext. iIntros "H".
   simpl. iMod "H". iMod "Hclo'".
   iDestruct "H" as "(Hg&HP&HNC)".
-  iMod ("Hwp" with "[$] [$] [$]") as "Hwp".
+  iMod ("Hwp" with "[$] [$] [$] [Hlc]") as "Hwp".
+  { iApply (lc_weaken with "Hlc").
+    apply num_laters_per_step_lt in Hle. lia. }
   iApply (step_fupd2N_wand with "Hwp"). iNext. iIntros "($&Hwp)".
   iIntros. iMod ("Hwp" with "[//]") as "($&Hg&Hwp&$)".
   iMod (later_tok_incr with "[$]") as "(Hg&Htok)".

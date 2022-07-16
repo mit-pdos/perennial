@@ -80,10 +80,10 @@ Proof.
     iDestruct ("H" $! mj) as "[H _]".
     iMod ("H" with "[$] [$]") as "(H&Hg&HNC)". iMod ("H" with "[$]") as "(H&HNC)". by iFrame.
   }
-  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC".
+  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   iMod ("H" with "[$]") as "(H&HNC)".
   iDestruct ("H" $! mj) as "[H _]".
-  iMod ("H" $! _ σ1 with "Hσ Hg [$]") as "H". iModIntro.
+  iMod ("H" $! _ σ1 with "Hσ Hg [$] [$]") as "H". iModIntro.
   iApply (step_fupd_extra.step_fupd2N_wand with "H").
   iIntros "[% H]". iSplit; first done.
   iIntros (e2 σ2 g2 efs Hstep).
@@ -131,12 +131,12 @@ Proof.
   iIntros (-> ?) "H". iIntros (mj).
   iSplit; last first.
   { iIntros. iApply step_fupd_extra.step_fupd2N_inner_later; [done|done|]. iNext; iFrame. }
-  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC".
+  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   destruct (decide (n ≤ num_laters_per_step ns)) as [Hn|Hn]; first last.
   { iDestruct "H" as "[Hn _]". iMod ("Hn" with "Hσ Hg") as %?. lia. }
   iDestruct "H" as "[_ [>HP Hwp]]".
   iDestruct ("Hwp" $! mj) as "[Hwp _]".
-  iMod ("Hwp" with "Hσ Hg [$]") as "H".
+  iMod ("Hwp" with "Hσ Hg [$] [$]") as "H".
   iMod "HP". iModIntro.
   revert n Hn. generalize (num_laters_per_step ns)=>n0 n Hn.
   iInduction n as [|n] "IH" forall (n0 Hn).

@@ -122,7 +122,7 @@ Context `{PRI: !pri_invG IRISG}.
       iModIntro. iApply "Hclo". iFrame.
     - iIntros.
       iDestruct (pri_inv_tok_global_le_acc with "[//] [$]") as "(Hg&Hclo)".
-      iSpecialize ("Hwpc" with "[$] [$] [$]"). iMod "Hwpc".
+      iSpecialize ("Hwpc" with "[$] [$] [$] [$]"). iMod "Hwpc".
       simpl.
       iModIntro. iMod "Hwpc". iModIntro. iNext. iMod "Hwpc". iModIntro.
       iApply (step_fupd2N_wand with "Hwpc").
@@ -256,7 +256,7 @@ Context `{PRI: !pri_invG IRISG}.
         iDestruct (pri_inv_tok_global_valid with "[$]") as %(?&?).
         iSpecialize ("H" with "[$Hitok //]").
         rewrite wpc0_unfold/ wpc_pre. rewrite Heq_val.
-        iMod "H" as "(H&_)". by iMod ("H" with "[$] [$] [$]") as "$".
+        iMod "H" as "(H&_)". by iMod ("H" with "[$] [$] [$] [$]") as "$".
     }
     iIntros.
     iMod (pri_inv_tok_alloc with "[$]") as (Einv Hdisj) "(Hitok&Hg)".

@@ -264,7 +264,7 @@ Proof.
     iSpecialize ("H" with "[$] [$]").
     iApply (step_fupd2N_inner_wand with "H"); auto. }
   rewrite Hnv.
-  iIntros (q σ g1 ns D κ κs nt) "Hσ Hg HNC".
+  iIntros (q σ g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   iInv "Hinv" as ">H" "Hclo".
   rewrite /crash_borrow_ginv_number.
   iDestruct (cred_frag_split 1 _ with "H") as "(Hlt1&H)".
@@ -275,7 +275,9 @@ Proof.
   iDestruct ("Hwpc") as "(Hwpc&_)".
   rewrite Hnv.
   iMod (later_tok_decr with "[$]") as (ns' Heq) "Hg".
-  iMod ("Hwpc" with "[$] [$] [$]") as "Hwpc".
+  iMod ("Hwpc" with "[$] [$] [$] [Hlc]") as "Hwpc".
+  { iApply (lc_weaken with "Hlc").
+    apply num_laters_per_step_lt in Heq. lia. }
   iModIntro.
   iApply (step_fupd_extra.step_fupd2N_le (S (num_laters_per_step ns')) (num_laters_per_step ns) with "[-]").
   { assert (Hlt: ns' < ns) by lia.
@@ -338,7 +340,7 @@ Proof.
     iIntros "($&$)". iApply "Hwand". iFrame.
   }
   rewrite Hnv.
-  iIntros (q σ g1 ns D κ κs nt) "Hσ Hg HNC".
+  iIntros (q σ g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   iInv "Hinv" as ">H" "Hclo".
   rewrite /crash_borrow_ginv_number.
   iDestruct (cred_frag_split 1 _ with "H") as "(Hlt1&H)".
@@ -392,7 +394,9 @@ Proof.
   iDestruct ("Hwpc") as "(Hwpc&_)".
   rewrite Hnv.
   iMod (later_tok_decr with "[$]") as (ns' Heq) "Hg".
-  iMod ("Hwpc" with "[$] [$] [$]") as "Hwpc".
+  iMod ("Hwpc" with "[$] [$] [$] [Hlc]") as "Hwpc".
+  { iApply (lc_weaken with "Hlc").
+    apply num_laters_per_step_lt in Heq. lia. }
   iModIntro.
   iApply (step_fupd_extra.step_fupd2N_le (S (num_laters_per_step ns')) (num_laters_per_step ns) with "[-]").
   { assert (Hlt: ns' < ns) by lia.

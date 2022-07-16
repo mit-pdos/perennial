@@ -73,7 +73,7 @@ Proof.
   rewrite Hnval.
   iSpecialize ("HP" with "H").
   iDestruct ("HP" $! mj) as "(H&_)".
-  iApply ("H" with "[$] [$] [$]").
+  iApply ("H" with "[$] [$] [$] [$]").
 Qed.
 
 Lemma wpc_nval_elim E1 E2 P e s Φ Φc :

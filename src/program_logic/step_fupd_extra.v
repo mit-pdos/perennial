@@ -444,13 +444,13 @@ Qed.
 
 End step_fupd2.
 
-Lemma step_fupd2N_soundness `{!invGpreS Σ} n φ :
-  (∀ `{Hinv: !invGS Σ}, ⊢@{iPropI Σ} ||={⊤|⊤,∅|∅}=> ||▷=>^n ⌜ φ ⌝) →
+Lemma step_fupd2N_soundness `{!invGpreS Σ} n m φ :
+  (∀ `{Hinv: !invGS Σ}, £ m ⊢@{iPropI Σ} ||={⊤|⊤,∅|∅}=> ||▷=>^n ⌜ φ ⌝) →
   φ.
 Proof.
-  intros Hiter. eapply (fupd2_soundness n).
-  intros Hinv. iIntros "Hn".
-  iMod Hiter as "Hupd". clear Hiter.
+  intros Hiter. eapply (fupd2_soundness (m+n)).
+  intros Hinv. iIntros "[Hm Hn]".
+  iMod (Hiter with "Hm") as "Hupd". clear Hiter.
   iInduction n as [|n] "IH"; simpl.
   - iModIntro. done. 
   - rewrite lc_succ. iDestruct "Hn" as "[Hone Hn]".

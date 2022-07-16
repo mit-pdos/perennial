@@ -1,5 +1,6 @@
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import gmap auth agree gset coPset.
+From Perennial.Helpers Require Import ipm.
 From Perennial.base_logic.lib Require Import wsat.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Export crash_lang recovery_weakestpre dist_weakestpre.
@@ -54,15 +55,16 @@ Lemma stwpnode_step gen eb t1 σ1 g1 D t2 σ2 g2 κ κs ns:
   step (t1, (σ1,g1)) κ (t2, (σ2,g2)) →
   global_state_interp g1 ns mj D (κ ++ κs) -∗
   stwpnode gen {| boot := eb; tpool := t1; local_state := σ1 |} -∗
+  £ (S $ num_laters_per_step ns) -∗
   ||={⊤|⊤,∅|∅}=> ||▷=>^(S $ num_laters_per_step ns) ||={∅|∅, ⊤|⊤}=>
   global_state_interp g2 (step_count_next ns) mj D κs ∗
   stwpnode gen {| boot := eb; tpool := t2; local_state := σ2 |}.
 Proof.
-  iIntros (Hstep) "Hg Hnode".
+  iIntros (Hstep) "Hg Hnode Hlc".
   iDestruct "Hnode" as "((Hσ&HNC)&Hwptp)".
   destruct t1; first done. simpl.
   iDestruct "Hwptp" as (Φ Φinv Φr) "(Hwpr&Hwptp)". simpl.
-  iPoseProof (crash_adequacy.wptp_step with "[$Hσ] [Hg] [Hwpr] [Hwptp] [HNC]") as "H"; eauto.
+  iPoseProof (crash_adequacy.wptp_step with "[$Hσ] [Hg] [Hwpr] [Hwptp] [HNC] [Hlc]") as "H"; eauto.
   { rewrite wpr0_unfold/wpr0_pre. eauto. }
   iMod "H" as (e2 t2' ->) "H".
   iMod "H". iModIntro. simpl. iMod "H". iModIntro. iNext.
@@ -77,11 +79,12 @@ Lemma stwpnode_crash gen eb t1 σ1 g σ2 κs ns D:
   crash_prim_step CS σ1 σ2 →
   global_state_interp g ns mj D κs -∗
   stwpnode gen {| boot := eb; tpool := t1; local_state := σ1 |} -∗
+  £ (S $ num_laters_per_step ns) -∗
   ||={⊤|⊤, ∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,⊤|⊤}=> ▷ |={⊤}=> ∃ gen',
   global_state_interp g (step_count_next ns) mj D κs ∗
   stwpnode gen' {| boot := eb; tpool := [eb]; local_state := σ2 |}.
 Proof.
-  iIntros (Hstep) "Hg Hnode".
+  iIntros (Hstep) "Hg Hnode Hlc".
   iDestruct "Hnode" as "((Hσ&HNC)&Hwptp)".
   destruct t1; first done. simpl.
   iDestruct "Hwptp" as (Φ Φinv Φr) "(Hwpr&Hwptp)".
@@ -110,17 +113,18 @@ Lemma stwpnodes_step dns1 g1 ns D dns2 g2 κ κs :
   dist_step (CS := CS) (dns1, g1) κ (dns2, g2) →
   global_state_interp g1 ns mj D (κ ++ κs) -∗
   stwpnodes dns1 -∗
+  £ (S $ num_laters_per_step ns) -∗
   ||={⊤|⊤,∅|∅}=> ||▷=>^(S $ num_laters_per_step ns) ||={∅|∅, ⊤|⊤}=>
   global_state_interp g2 (step_count_next ns) mj D κs ∗
   stwpnodes dns2.
 Proof.
-  iIntros (Hstep) "Hg Hnodes".
+  iIntros (Hstep) "Hg Hnodes Hlc".
   inversion Hstep as [ρ1 κs' ρ2 m eb t1 σ1 t2 σ2 Hlookup1 Hlookup2 Hprim |
                       ρ1 ρ2 m eb σ1 σ2 tp Hlookup1 Heq1 Heq2 Hcrash].
   - subst. rewrite /stwpnodes.
     iDestruct (big_sepL_insert_acc with "Hnodes") as "(Hdn&Hnodes)"; first eassumption.
     iDestruct "Hdn" as (ct) "Hdn".
-    iDestruct (stwpnode_step with "[$] [$]") as "H"; first eassumption.
+    iDestruct (stwpnode_step with "[$] [$] Hlc") as "H"; first eassumption.
     iApply (step_fupd2N_inner_wand with "H"); auto.
     iIntros "($&Hnode)".
     simpl in Hlookup2. rewrite Hlookup2.
@@ -128,7 +132,7 @@ Proof.
   - subst. rewrite /stwpnodes.
     iDestruct (big_sepL_insert_acc with "Hnodes") as "(Hdn&Hnodes)"; first eassumption.
     iDestruct "Hdn" as (ct) "Hdn".
-    iDestruct (stwpnode_crash with "[$] [$]") as "H"; first eassumption.
+    iDestruct (stwpnode_crash with "[$] [$] Hlc") as "H"; first eassumption.
     rewrite Nat_iter_S_r.
     iMod "H". iModIntro. iApply (step_fupd2N_wand with "H"). iIntros "H".
     iMod "H". iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; auto.
@@ -145,26 +149,44 @@ Local Fixpoint steps_sum (num_laters_per_step step_count_next : nat → nat) (st
   match ns with
   | O => 0
   | S ns =>
-    S $ num_laters_per_step start + steps_sum num_laters_per_step step_count_next (step_count_next start) ns
+    steps_sum num_laters_per_step step_count_next (step_count_next start) ns + S (num_laters_per_step start)
   end.
+
+Lemma steps_sum_S (num_laters_per_step step_count_next : nat → nat) (start ns : nat) :
+  steps_sum num_laters_per_step step_count_next start (S ns) =
+  steps_sum num_laters_per_step step_count_next (step_count_next start) ns + S (num_laters_per_step start).
+Proof. induction ns => //=; try lia. Qed.
+
+Lemma steps_sum_S_r (num_laters_per_step step_count_next : nat → nat) (start ns : nat) :
+  steps_sum num_laters_per_step step_count_next start (S ns) =
+  steps_sum num_laters_per_step step_count_next start ns + S (num_laters_per_step (Nat.iter ns step_count_next start)).
+Proof.
+  revert start.
+  induction ns => start.
+  - rewrite //=; lia.
+  - rewrite steps_sum_S IHns. simpl.
+    rewrite -Nat_iter_S_r /=. lia.
+Qed.
 
 Lemma stwpnodes_steps n dns1 g1 ns D dns2 g2 κs κs' :
   dist_nsteps (CS := CS) n (dns1, g1) κs (dns2, g2) →
   global_state_interp g1 ns mj D (κs ++ κs') -∗
   stwpnodes dns1 -∗
+  £ (steps_sum num_laters_per_step step_count_next ns n) -∗
   ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ⊤|⊤}=>
   global_state_interp g2 (Nat.iter n step_count_next ns) mj D κs' ∗
   stwpnodes dns2.
 Proof.
   revert dns1 dns2 κs κs' g1 ns g2.
-  induction n as [|n IH]=> dns1 dns2 κs κs' g1 ns g2 /=.
-  { inversion_clear 1; iIntros "? ?" => /=.
+  induction n as [|n IH]=> dns1 dns2 κs κs' g1 ns g2.
+  { inversion_clear 1; iIntros "? ? ?" => /=.
     iFrame. by iApply fupd2_mask_subseteq. }
-  iIntros (Hsteps) "Hσ He". inversion_clear Hsteps as [|?? [t1' σ1']].
-  rewrite -(assoc_L (++)) Nat_iter_add.
-  iMod (stwpnodes_step with "Hσ He") as "H"; first eauto; simplify_eq.
+  simpl.
+  iIntros (Hsteps) "Hσ He [Hlc1 Hlc2]". inversion_clear Hsteps as [|?? [t1' σ1']].
+  rewrite -(assoc_L (++)) (comm_L Nat.add) Nat_iter_add.
+  iMod (stwpnodes_step with "Hσ He Hlc2") as "H"; first eauto; simplify_eq.
   iModIntro. iApply step_fupd2N_S_fupd2. iApply (step_fupd2N_wand with "H").
-  iIntros ">(Hσ & He)". iMod (IH with "Hσ He") as "IH"; first done. iModIntro.
+  iIntros ">(Hσ & He)". iMod (IH with "Hσ He Hlc1") as "IH"; first done. iModIntro.
   iApply (step_fupd2N_wand with "IH"). iIntros ">IH".
   iDestruct "IH" as "[??]".
   rewrite -Nat_iter_S_r //=.
@@ -175,12 +197,13 @@ Lemma stwpnodes_strong_adequacy n dns1 g1 ns D dns2 g2 κs κs' :
   dist_nsteps (CS := CS) n (dns1, g1) κs (dns2, g2) →
   global_state_interp g1 ns mj D (κs ++ κs') -∗
   (|={⊤}=> stwpnodes dns1) -∗
+  £ (steps_sum num_laters_per_step step_count_next ns n) -∗
   ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ⊤|⊤}=>
   global_state_interp g2 (Nat.iter n step_count_next ns) mj D κs' ∗
   stwpnodes dns2.
 Proof.
-  iIntros (Hstep) "Hg >Ht".
-  iMod (stwpnodes_steps with "Hg Ht") as "Hgt"; first done.
+  iIntros (Hstep) "Hg >Ht Hlc".
+  iMod (stwpnodes_steps with "Hg Ht Hlc") as "Hgt"; first done.
   iModIntro. iApply (step_fupd2N_wand with "Hgt").
   iMod 1 as "(Hg & Ht)". iFrame. auto.
 Qed.
@@ -190,12 +213,14 @@ Lemma stwpnodes_progress n dns1 g1 ns D dns2 g2 κs κs' dn e :
   dn ∈ dns2 → e ∈ tpool dn →
   global_state_interp g1 ns mj D (κs ++ κs') -∗
   (|={⊤}=> stwpnodes dns1) -∗
+  £ (steps_sum num_laters_per_step step_count_next ns (S n)) -∗
   (||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ns n) ||={∅|∅, ∅|∅}=>
    ||▷=>^(num_laters_per_step (Nat.iter n step_count_next ns) + 1)
       ⌜ not_stuck e (local_state dn) g2 ⌝).
 Proof.
-  iIntros (Hstep Hin1 Hin2) "Hg >Ht".
-  iMod (stwpnodes_steps with "Hg Ht") as "Hgt"; first done.
+  iIntros (Hstep Hin1 Hin2) "Hg >Ht Hlc".
+  rewrite {1}steps_sum_S_r. iDestruct "Hlc" as "[Hlc1 Hlc2]".
+  iMod (stwpnodes_steps with "Hg Ht Hlc1") as "Hgt"; first done.
   iModIntro. iApply (step_fupd2N_wand with "Hgt").
   iMod 1 as "(Hg & Ht)".
   rewrite /stwpnodes.
@@ -210,13 +235,13 @@ Proof.
   - rewrite wpr0_unfold/wpr0_pre.
     iPoseProof (wpc_safe with "Hσ [Hg] Hwpr") as "H".
     { eauto. }
-    iMod ("H" with "[HNC]") as "H".
+    iMod ("H" with "[HNC] Hlc2") as "H".
     { iFrame. }
     iModIntro. eauto.
   - iDestruct "Ht" as "(_ & He' & _)".
     iPoseProof (wpc_safe with "Hσ [Hg] He'") as "H".
     { eauto. }
-    iMod ("H" with "[HNC]") as "H".
+    iMod ("H" with "[HNC] Hlc2") as "H".
     { iFrame. }
     iModIntro. eauto.
 Qed.
@@ -243,16 +268,17 @@ Theorem wpd_strong_adequacy Σ Λ CS {Hinvpre : invGpreS Σ} {Hcrashpre : crashG
   φ.
 Proof.
   intros Hwp Hsteps.
-  apply (step_fupd2N_soundness (steps_sum f1 f2 nsinit n
-         + S (S (f1 (Nat.iter n f2 nsinit))))) => Hinv.
-(*  (Nat.iter (steps_sum n)) (S (S (f1 (Nat.iter n f2 nsinit)))))) => Hinv. *)
+  apply (step_fupd2N_soundness
+          (steps_sum f1 f2 nsinit n + S (S (f1 (Nat.iter n f2 nsinit))))
+          (steps_sum f1 f2 nsinit n)).
+  iIntros (Hinv) "Hlc".
   rewrite Nat_iter_add.
   iMod Hwp as (global_stateI fork_post) "Hwp".
   iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
   set (HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b).
   iMod (stwpnodes_strong_adequacy _
                1%Qp n _ _ nsinit _ _ _ _ []
-    with "[Hg] [Hwp]") as "H"; first done.
+    with "[Hg] [Hwp] [Hlc]") as "H"; first done.
   { rewrite app_nil_r /=. iExact "Hg". }
   { rewrite /stwpnodes/wpd.
     iApply big_sepL_fmap.
@@ -269,6 +295,7 @@ Proof.
     rewrite /wptp big_sepL_nil right_id.
     by iApply wpr0_wpr.
   }
+  { iExactEq "Hlc". f_equal. }
   iModIntro.
   iApply (step_fupd2N_wand with "H").
   iIntros "H".
@@ -287,15 +314,17 @@ Proof.
   iPureIntro.
   clear- Hwp Hsteps Hinvpre Hcrashpre.
   intros dn Hin e Hin'.
-  apply (step_fupd2N_soundness (steps_sum f1 f2 nsinit n
-         + (f1 (Nat.iter n f2 nsinit) + 1))) => Hinv.
+  apply (step_fupd2N_soundness
+          (steps_sum f1 f2 nsinit n + (f1 (Nat.iter n f2 nsinit) + 1))
+          (steps_sum f1 f2 nsinit (S n))).
+  iIntros (Hinv) "Hlc".
   rewrite Nat_iter_add.
   iMod Hwp as (global_stateI fork_post) "Hwp".
   iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
   set (HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b).
   iMod (stwpnodes_progress _
                1%Qp n _ _ nsinit _ _ _ _ []
-    with "[Hg] [Hwp]") as "H"; first done.
+    with "[Hg] [Hwp] [Hlc]") as "H"; first done.
   { exact Hin. }
   { exact Hin'. }
   { rewrite app_nil_r /=. iExact "Hg". }
@@ -314,6 +343,7 @@ Proof.
     rewrite /wptp big_sepL_nil right_id.
     by iApply wpr0_wpr.
   }
+  { done. }
   iModIntro.
   iApply (step_fupd2N_wand with "H").
   iIntros "H". iApply step_fupd2_fupd2N; first lia.

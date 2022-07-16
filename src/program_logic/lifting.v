@@ -32,7 +32,7 @@ Proof.
   rewrite wp_eq /wp_def !wpc_unfold /wpc_pre=>->.
   iIntros "H" (mj). iSplit; last first.
   { iIntros. iApply step_fupd_extra.step_fupd2N_inner_later; auto. iNext; iFrame. }
-  iIntros (????????) "Hσ Hg HNC".
+  iIntros (????????) "Hσ Hg HNC Hlc".
   iSpecialize ("H" with "[$] [$]").
   rewrite ncfupd_eq.
   iMod ("H" with "[$]") as "(H&HNC)".

@@ -68,7 +68,7 @@ Proof.
   rewrite Hnval.
   iIntros (mj).
   iSplit.
-  - iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC".
+  - iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Heq) "Hg".
     iMod (fupd2_mask_subseteq ∅ ∅) as "H"; [ set_solver+ | set_solver+ |].
     iApply (step_fupd_extra.step_fupd2N_le (S (S (S (num_laters_per_step ns')))) (S (num_laters_per_step ns))).
@@ -79,7 +79,10 @@ Proof.
     iModIntro. simpl. iModIntro. iNext.
     iMod "H" as "_".
     iDestruct ("Hwp" $! _) as "(Hwp&_)".
-    iSpecialize ("Hwp" $! _ _ _ _ _ _ _ with "Hσ Hg HNC").
+    iSpecialize ("Hwp" $! _ _ _ _ _ _ _ with "Hσ Hg HNC [Hlc]").
+    { iApply (lc_weaken with "Hlc").
+      assert (Hlt: ns' < ns) by lia.
+      apply num_laters_per_step_lt2 in Hlt. lia. }
     iMod "Hwp".
     iMod "Hwp". iModIntro. iModIntro.
     iNext.
@@ -137,12 +140,15 @@ Proof.
   rewrite Hnval.
   iIntros (mj).
   iSplit.
-  - iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC".
+  - iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Heq) "Hg".
     iMod (fupd2_mask_subseteq ∅ ∅) as "H"; [ set_solver+ | set_solver+ |].
     iModIntro. simpl. iModIntro. iNext. iMod "H" as "_".
     iDestruct ("Hwp" $! _) as "(Hwp&_)".
-    iSpecialize ("Hwp" $! _ _ _ _ _ _ _ with "Hσ Hg HNC").
+    iSpecialize ("Hwp" $! _ _ _ _ _ _ _ with "Hσ Hg HNC [Hlc]").
+    { iApply (lc_weaken with "Hlc").
+      assert (Hlt: ns' < ns) by lia.
+      apply num_laters_per_step_lt2 in Hlt. lia. }
     iMod "Hwp".
     iApply (step_fupd_extra.step_fupd2N_le (S (num_laters_per_step ns')) (num_laters_per_step ns)
               with "[Hwp]").

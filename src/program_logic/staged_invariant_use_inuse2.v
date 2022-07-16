@@ -137,7 +137,7 @@ Proof.
   }
   {
     rewrite Hnval.
-    iIntros.
+    iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
     { exfalso. apply Qp_lt_nge in Hinvalid. revert Hval. rewrite frac_valid. eauto. }
     iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
@@ -178,7 +178,9 @@ Proof.
     iDestruct "HPs" as "(Hltok'&(Hwp&_))".
     rewrite Hnval.
     replace (⊤ ∖ D ∖ E2) with (⊤ ∖ (E2 ∪ D)) by set_solver.
-    iMod ("Hwp" with "[$] [$] [$]") as "Hwp".
+    iMod ("Hwp" with "[$] [$] [$] [Hlc]") as "Hwp".
+    { iApply (lc_weaken with "Hlc").
+      apply num_laters_per_step_lt in Hlt'. lia. }
     iModIntro. iApply (step_fupd2N_wand with "Hwp").
     iIntros "($&Hwp)".
     iIntros. iMod ("Hwp" with "[//]") as "($&Hg&H&Hefs&HNC)".
@@ -337,7 +339,7 @@ Proof.
     iApply (step_fupd2N_inner_wand with "Hwp"); auto.
   }
   rewrite Hnval.
-  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC".
+  iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   iDestruct (pri_inv_tok_disj_inv_half with "[$]") as %Hdisj.
   iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
   { set_solver. }
@@ -397,7 +399,9 @@ Proof.
   iMod ("Hclo'").
   rewrite Hnval.
   replace (⊤ ∖ D ∖ E2) with (⊤ ∖ (E2 ∪ D)) by set_solver.
-  iMod ("Hwp" with "[$] [$] [$]") as "Hwp".
+  iMod ("Hwp" with "[$] [$] [$] [Hlc]") as "Hwp".
+  { iApply (lc_weaken with "Hlc").
+    apply num_laters_per_step_lt in Hlt'. lia. }
   simpl. iMod "Hwp". iModIntro. iNext. iMod "Hwp". iModIntro.
   iApply (step_fupd2N_wand with "Hwp"). iIntros "(%Hred&Hwp)".
   iSplit. { eauto. }

@@ -305,7 +305,7 @@ Proof.
       iMod "H" as "($&$&$)". iMod "Hclo"; eauto. }
   - iIntros.
     iDestruct "H" as "(H&_)".
-    iMod ("H" with "[$] [$] [$]") as "H". iModIntro.
+    iMod ("H" with "[$] [$] [$] [$]") as "H". iModIntro.
     simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
     iApply (step_fupd2N_wand with "H").
     iIntros "($&H)".
@@ -360,7 +360,7 @@ Proof.
       iMod "H" as "($&$&$)". iMod "Hclo"; eauto. }
   - iIntros.
     iDestruct "H" as "(H&_)".
-    iMod ("H" with "[$] [$] [$]") as "H". iModIntro.
+    iMod ("H" with "[$] [$] [$] [$]") as "H". iModIntro.
     simpl. iMod "H". iModIntro. iNext. iMod "H". iModIntro.
     iApply (step_fupd2N_wand with "H").
     iIntros "($&H)".
