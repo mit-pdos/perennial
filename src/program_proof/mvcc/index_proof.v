@@ -23,7 +23,7 @@ Definition own_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp �
   ∃ (lockm : loc) (lockmM : gmap u64 loc),
     "Hlockm" ∷ bkt ↦[IndexBucket :: "m"] #lockm ∗
     "HlockmOwn" ∷ is_map lockm 1 lockmM ∗
-    "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), vchain_ptsto γ (1/2) key [Nil]) ∗
+    "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), ptuple_auth γ (1/2) key [Nil]) ∗
     "#HtuplesRP" ∷ ([∗ map] key ↦ tuple ∈ lockmM, is_tuple tuple key γ) ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (own_index_bucket _ _ _)) => unfold own_index_bucket : core.
@@ -121,7 +121,7 @@ Proof.
   (***********************************************************)
   apply map_get_false in Hmap_get as [Hlookup _].
   clear tuple.
-  (* Take [vchain_ptsto] from [Hvchains]. *)
+  (* Take [ptuple_auth] from [Hvchains]. *)
   (* iDestruct (big_sepS_delete with "[Hvchains]") as "H". *)
   (* Q: How to destruct the other way around? *)
   rewrite (big_sepS_delete _ _ key); last first.
@@ -185,7 +185,7 @@ Proof. set_solver. Qed.
 Theorem wp_MkIndex γ :
   mvcc_inv_tuple γ -∗
   mvcc_inv_gc γ -∗
-  {{{ [∗ set] key ∈ keys_all, vchain_ptsto γ (1/2) key [Nil] }}}
+  {{{ [∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil] }}}
     MkIndex #()
   {{{ (idx : loc), RET #idx; is_index idx γ }}}.
 Proof.
@@ -225,7 +225,7 @@ Proof.
                               (⌜length bktsL = N_IDX_BUCKET⌝) ∗
                               ([∗ list] i ↦ bkt ∈ (take (int.nat n) bktsL), is_index_bucket bkt i γ)) ∗
                     (idx ↦[Index :: "buckets"] (to_val bkts)) ∗
-                    ([∗ set] key ∈ filter (λ x, (int.nat n) ≤ hash_modu x)%nat keys_all, vchain_ptsto γ (1/2) key [Nil]) ∗
+                    ([∗ set] key ∈ filter (λ x, (int.nat n) ≤ hash_modu x)%nat keys_all, ptuple_auth γ (1/2) key [Nil]) ∗
                     ⌜True⌝)%I
               _ _ (U64 0) (U64 2048) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
   { clear Φ.

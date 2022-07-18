@@ -54,7 +54,7 @@ Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ 
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
     "Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
     "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
-    "Hvchain" ∷ vchain_ptsto γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
+    "Hvchain" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
     "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
     "Hwellformed" ∷ tuple_wellformed versL tidlast tidgc ∗
     "_" ∷ True.
@@ -218,7 +218,7 @@ Qed.
 Theorem wp_MkTuple (key : u64) γ :
   mvcc_inv_tuple γ -∗
   mvcc_inv_gc γ -∗
-  {{{ vchain_ptsto γ (1/2) key [Nil] }}}
+  {{{ ptuple_auth γ (1/2) key [Nil] }}}
     MkTuple #()
   {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
 Proof.
@@ -721,8 +721,8 @@ Proof.
   set tidlast' := if bool_decide _ then tid else tidlast.
   clear P.
   set P := (|={⊤}=> ∃ (vchain : list (option u64)),
-    "Hvchain" ∷ vchain_ptsto γ q key vchain ∗
-    "#HvchainW" ∷ vchain_lb γ key vchain ∗
+    "Hvchain" ∷ ptuple_auth γ q key vchain ∗
+    "#HvchainW" ∷ ptuple_lb γ key vchain ∗
     "%HvchainLen" ∷ ⌜Z.of_nat (length vchain) = (int.Z tidlast' + 1)%Z⌝ ∗
     "%Hwellformed" ∷ tuple_wellformed versL tidlast' tidgc ∗
     "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast' -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝))%I.
@@ -977,7 +977,7 @@ Proof.
   unfold mods_token.
   iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
 
-  iAssert (|={⊤}=> vchain_ptsto γ (1 / 2) key vchain ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as ">[Hvchain ->]".
+  iAssert (|={⊤}=> ptuple_auth γ (1 / 2) key vchain ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as ">[Hvchain ->]".
   { case_decide.
     - iDestruct (vchain_combine (3 / 4) with "Hvchain Hvchain'") as "[Hvchain _]"; first compute_done.
       iMod (vchain_false with "Hinvtuple Hvchain") as "[]"; done.
@@ -1218,7 +1218,7 @@ Proof.
   unfold mods_token.
   iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
 
-  iAssert (|={⊤}=> vchain_ptsto γ (1 / 2) key vchain ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as ">[Hvchain ->]".
+  iAssert (|={⊤}=> ptuple_auth γ (1 / 2) key vchain ∧ ⌜vchain' = vchain⌝)%I with "[Hvchain Hvchain']" as ">[Hvchain ->]".
   { case_decide.
     - iDestruct (vchain_combine (3 / 4) with "Hvchain Hvchain'") as "[Hvchain _]"; first compute_done.
       iMod (vchain_false with "Hinvtuple Hvchain") as "[]"; done.
