@@ -415,7 +415,7 @@ Proof.
 Qed.
 
 Theorem combine_bound n t :
-  0 <= combine n t < 2 ^ (8 * Z.of_nat n).
+  0 <= combine (byte := u8_instance.u8) n t < 2 ^ (8 * Z.of_nat n).
 Proof.
   induction n; simpl.
   - cbv; split; congruence.
