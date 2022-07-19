@@ -6,11 +6,24 @@ From Goose Require github_com.mit_pdos.gokv.simplepb.pb.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+Definition InitializeSystem: val :=
+  rec: "InitializeSystem" "configHost" "servers" :=
+    let: "configCk" := config.MakeClerk "configHost" in
+    let: ("epoch", <>) := config.Clerk__GetEpochAndConfig "configCk" in
+    config.Clerk__WriteConfig "configCk" "epoch" "servers";;
+    let: "clerk" := pb.MakeClerk (SliceGet uint64T "servers" #0) in
+    pb.Clerk__BecomePrimary "clerk" (struct.new pb.BecomePrimaryArgs [
+      "Epoch" ::= "epoch";
+      "Replicas" ::= "servers"
+    ]);;
+    e.None.
+
 Definition EnterNewConfig: val :=
   rec: "EnterNewConfig" "configHost" "servers" :=
     let: "configCk" := config.MakeClerk "configHost" in
     let: ("epoch", "oldServers") := config.Clerk__GetEpochAndConfig "configCk" in
-    let: "oldClerk" := pb.MakeClerk (SliceGet uint64T "oldServers" (Data.randomUint64 #()) `rem` (slice.len "oldServers")) in
+    let: "id" := (Data.randomUint64 #() + #1) `rem` (slice.len "oldServers") in
+    let: "oldClerk" := pb.MakeClerk (SliceGet uint64T "oldServers" "id") in
     let: "reply" := pb.Clerk__GetState "oldClerk" (struct.new pb.GetStateArgs [
       "Epoch" ::= "epoch"
     ]) in
@@ -21,17 +34,30 @@ Definition EnterNewConfig: val :=
       ForSlice ptrT "i" <> "clerks"
         (SliceSet ptrT "clerks" "i" (pb.MakeClerk (SliceGet uint64T "servers" "i")));;
       let: "wg" := struct.alloc sync.WaitGroup (zero_val (struct.t sync.WaitGroup)) in
-      ForSlice ptrT <> "clerk" "clerks"
+      let: "errs" := NewSlice uint64T (slice.len "clerks") in
+      ForSlice ptrT "i" "clerk" "clerks"
         (sync.WaitGroup__Add "wg" #1;;
         let: "clerk" := "clerk" in
-        Fork (pb.Clerk__SetState "clerk" (struct.new pb.SetStateArgs [
+        let: "i" := "i" in
+        Fork (SliceSet uint64T "errs" "i" (pb.Clerk__SetState "clerk" (struct.new pb.SetStateArgs [
                 "Epoch" ::= "epoch";
                 "State" ::= struct.loadF pb.GetStateReply "State" "reply"
-              ])));;
+              ]));;
+              sync.WaitGroup__Done "wg"));;
       sync.WaitGroup__Wait "wg";;
-      config.Clerk__WriteConfig "configCk" "epoch" "servers";;
-      pb.Clerk__BecomePrimary (SliceGet ptrT "clerks" #0) (struct.new pb.BecomePrimaryArgs [
-        "Epoch" ::= "epoch";
-        "Replicas" ::= "servers"
-      ]);;
-      e.None).
+      let: "err" := ref_to uint64T e.None in
+      ForSlice uint64T <> "err2" "errs"
+        (if: "err2" ≠ e.None
+        then "err" <-[uint64T] "err2"
+        else #());;
+      (if: ![uint64T] "err" ≠ e.None
+      then ![uint64T] "err"
+      else
+        (if: config.Clerk__WriteConfig "configCk" "epoch" "servers" ≠ e.None
+        then e.Stale
+        else
+          pb.Clerk__BecomePrimary (SliceGet ptrT "clerks" #0) (struct.new pb.BecomePrimaryArgs [
+            "Epoch" ::= "epoch";
+            "Replicas" ::= "servers"
+          ]);;
+          e.None))).

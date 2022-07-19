@@ -140,6 +140,10 @@ Definition RPC_SETSTATE : expr := #1.
 
 Definition RPC_GETSTATE : expr := #2.
 
+Definition RPC_BECOMEPRIMARY : expr := #4.
+
+Definition RPC_PRIMARYAPPLY : expr := #5.
+
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
     struct.new Clerk [
@@ -157,7 +161,7 @@ Definition Clerk__Apply: val :=
 Definition Clerk__SetState: val :=
   rec: "Clerk__SetState" "ck" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_APPLY (EncodeSetStateArgs "args") "reply" #1000 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_SETSTATE (EncodeSetStateArgs "args") "reply" #1000 in
     (if: "err" ≠ #0
     then e.Timeout
     else e.DecodeError (![slice.T byteT] "reply")).
@@ -165,7 +169,7 @@ Definition Clerk__SetState: val :=
 Definition Clerk__GetState: val :=
   rec: "Clerk__GetState" "ck" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_APPLY (EncodeGetStateArgs "args") "reply" #1000 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETSTATE (EncodeGetStateArgs "args") "reply" #1000 in
     (if: "err" ≠ #0
     then
       struct.new GetStateReply [
@@ -176,10 +180,20 @@ Definition Clerk__GetState: val :=
 Definition Clerk__BecomePrimary: val :=
   rec: "Clerk__BecomePrimary" "ck" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_APPLY (EncodeBecomePrimaryArgs "args") "reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_BECOMEPRIMARY (EncodeBecomePrimaryArgs "args") "reply" #100 in
     (if: "err" ≠ #0
     then e.Timeout
     else e.DecodeError (![slice.T byteT] "reply")).
+
+Definition Clerk__PrimaryApply: val :=
+  rec: "Clerk__PrimaryApply" "ck" "op" :=
+    let: "reply" := ref (zero_val (slice.T byteT)) in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_PRIMARYAPPLY "op" "reply" #200 in
+    (if: ("err" = #0)
+    then
+      let: ("err", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
+      ("err", SliceSkip byteT (![slice.T byteT] "reply") #8)
+    else ("err", slice.nil)).
 
 (* server.go *)
 
@@ -205,11 +219,13 @@ Definition Server__Apply: val :=
     lock.acquire (struct.loadF Server "mu" "s");;
     (if: ~ (struct.loadF Server "isPrimary" "s")
     then
+      (* log.Println("Got request while not being primary") *)
       lock.release (struct.loadF Server "mu" "s");;
       (e.Stale, slice.nil)
     else
       let: "ret" := StateMachine__Apply (struct.loadF Server "sm" "s") "op" in
       let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
+      struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
       let: "epoch" := struct.loadF Server "epoch" "s" in
       let: "clerks" := struct.loadF Server "clerks" "s" in
       lock.release (struct.loadF Server "mu" "s");;
@@ -224,13 +240,15 @@ Definition Server__Apply: val :=
         (let: "clerk" := "clerk" in
         let: "i" := "i" in
         sync.WaitGroup__Add "wg" #1;;
-        Fork (SliceSet uint64T "errs" "i" (Clerk__Apply "clerk" "args")));;
+        Fork (SliceSet uint64T "errs" "i" (Clerk__Apply "clerk" "args");;
+              sync.WaitGroup__Done "wg"));;
       sync.WaitGroup__Wait "wg";;
       let: "err" := ref_to uint64T e.None in
       ForSlice uint64T <> "err2" "errs"
         (if: "err2" ≠ e.None
         then "err" <-[uint64T] "err2"
         else #());;
+      (* log.Println("Apply() returned ", err) *)
       (![uint64T] "err", "ret")).
 
 (* called on backup servers to apply an operation so it is replicated and
@@ -256,12 +274,19 @@ Definition Server__ApplyAsBackup: val :=
 Definition Server__SetState: val :=
   rec: "Server__SetState" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF Server "epoch" "s" ≥ struct.loadF SetStateArgs "Epoch" "args"
-    then e.Stale
-    else
-      StateMachine__SetState (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args");;
+    (if: struct.loadF Server "epoch" "s" > struct.loadF SetStateArgs "Epoch" "args"
+    then
       lock.release (struct.loadF Server "mu" "s");;
-      e.None).
+      e.Stale
+    else
+      (if: (struct.loadF Server "epoch" "s" = struct.loadF SetStateArgs "Epoch" "args")
+      then
+        lock.release (struct.loadF Server "mu" "s");;
+        e.None
+      else
+        StateMachine__SetState (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args");;
+        lock.release (struct.loadF Server "mu" "s");;
+        e.None)).
 
 Definition Server__GetState: val :=
   rec: "Server__GetState" "s" "args" :=
@@ -287,6 +312,7 @@ Definition Server__epochFence: val :=
     (if: struct.loadF Server "epoch" "s" < "epoch"
     then
       struct.storeF Server "epoch" "s" "epoch";;
+      StateMachine__EnterEpoch (struct.loadF Server "sm" "s") (struct.loadF Server "epoch" "s");;
       struct.storeF Server "isPrimary" "s" #false;;
       struct.storeF Server "nextIndex" "s" #0
     else #());;
@@ -297,13 +323,15 @@ Definition Server__BecomePrimary: val :=
     lock.acquire (struct.loadF Server "mu" "s");;
     (if: Server__epochFence "s" (struct.loadF BecomePrimaryArgs "Epoch" "args")
     then
+      (* log.Println("Stale BecomePrimary request") *)
       lock.release (struct.loadF Server "mu" "s");;
       e.Stale
     else
+      (* log.Println("Became Primary") *)
       struct.storeF Server "isPrimary" "s" #true;;
-      struct.storeF Server "clerks" "s" (NewSlice ptrT (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args")));;
+      struct.storeF Server "clerks" "s" (NewSlice ptrT (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args") - #1));;
       ForSlice ptrT "i" <> (struct.loadF Server "clerks" "s")
-        (SliceSet ptrT (struct.loadF Server "clerks" "s") "i" (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") "i")));;
+        (SliceSet ptrT (struct.loadF Server "clerks" "s") "i" (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") ("i" + #1))));;
       lock.release (struct.loadF Server "mu" "s");;
       e.None).
 
@@ -331,6 +359,23 @@ Definition Server__Serve: val :=
     MapInsert "handlers" RPC_GETSTATE (λ: "args" "reply",
       "reply" <-[slice.T byteT] EncodeGetStateReply (Server__GetState "s" (DecodeGetStateArgs "args"));;
       #()
+      );;
+    MapInsert "handlers" RPC_BECOMEPRIMARY (λ: "args" "reply",
+      "reply" <-[slice.T byteT] e.EncodeError (Server__BecomePrimary "s" (DecodeBecomePrimaryArgs "args"));;
+      #()
+      );;
+    MapInsert "handlers" RPC_PRIMARYAPPLY (λ: "args" "reply",
+      let: ("err", "ret") := Server__Apply "s" "args" in
+      (if: ("err" = e.None)
+      then
+        "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + slice.len "ret");;
+        "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") "err";;
+        "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") "ret";;
+        #()
+      else
+        "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 #8;;
+        "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") "err";;
+        #())
       );;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;

@@ -2,14 +2,14 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.gokv.simplepb.e.
 From Goose Require github_com.mit_pdos.gokv.simplepb.pb.
-From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* client.go *)
 
-Definition RPC_FAA : expr := #0.
+(* XXX: has to be bigger than all pb RPCs *)
+Definition RPC_FAA : expr := #5.
 
 Definition Clerk := struct.decl [
   "cl" :: ptrT
@@ -18,7 +18,7 @@ Definition Clerk := struct.decl [
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
     struct.new Clerk [
-      "cl" ::= urpc.MakeClient "host"
+      "cl" ::= pb.MakeClerk "host"
     ].
 
 Definition Clerk__FetchAndAppend: val :=
@@ -26,13 +26,7 @@ Definition Clerk__FetchAndAppend: val :=
     let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "val")) in
     "args" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "args") "key";;
     "args" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "args") "val";;
-    let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_FAA (![slice.T byteT] "args") "reply" #200 in
-    (if: ("err" = #0)
-    then
-      let: ("err", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
-      ("err", SliceSkip byteT (![slice.T byteT] "reply") #8)
-    else ("err", slice.nil)).
+    pb.Clerk__PrimaryApply (struct.loadF Clerk "cl" "ck") (![slice.T byteT] "args").
 
 (* example.go *)
 
@@ -45,17 +39,43 @@ Definition KVState := struct.decl [
 
 Definition Op: ty := slice.T byteT.
 
+Definition RecoverKVState: val :=
+  rec: "RecoverKVState" "fname" :=
+    let: "s" := struct.alloc KVState (zero_val (struct.t KVState)) in
+    let: "encState" := ref_to (slice.T byteT) (grove_ffi.Read "fname") in
+    struct.storeF KVState "filename" "s" "fname";;
+    (if: (slice.len (![slice.T byteT] "encState") = #0)
+    then
+      struct.storeF KVState "epoch" "s" #0;;
+      struct.storeF KVState "nextIndex" "s" #0;;
+      struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #())
+    else
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
+      struct.storeF KVState "epoch" "s" "0_ret";;
+      "encState" <-[slice.T byteT] "1_ret";;
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
+      struct.storeF KVState "nextIndex" "s" "0_ret";;
+      "encState" <-[slice.T byteT] "1_ret";;
+      KVState__loadState "s" (![slice.T byteT] "encState"));;
+    "s".
+
+Definition KVState__MakeDurable: val :=
+  rec: "KVState__MakeDurable" "s" :=
+    let: "state" := KVState__GetState "s" in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#16 + slice.len "state")) in
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "epoch" "s");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "nextIndex" "s");;
+    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "state";;
+    grove_ffi.Write (struct.loadF KVState "filename" "s") (![slice.T byteT] "enc");;
+    #().
+
 Definition KVState__Apply: val :=
   rec: "KVState__Apply" "s" "op" :=
     let: ("key", "appendVal") := marshal.ReadInt "op" in
     let: "ret" := Fst (MapGet (struct.loadF KVState "kvs" "s") "key") in
     struct.storeF KVState "nextIndex" "s" (struct.loadF KVState "nextIndex" "s" + #1);;
     MapInsert (struct.loadF KVState "kvs" "s") "key" (SliceAppendSlice byteT (Fst (MapGet (struct.loadF KVState "kvs" "s") "key")) "appendVal");;
-    let: "state" := KVState__GetState "s" in
-    let: "enc" := ref_to (slice.T byteT) (NewSlice byteT (#16 + slice.len "state")) in
-    marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "epoch" "s");;
-    marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "nextIndex" "s");;
-    grove_ffi.Write (struct.loadF KVState "filename" "s") "state";;
+    KVState__MakeDurable "s";;
     "ret".
 
 Definition KVState__GetState: val :=
@@ -66,10 +86,12 @@ Definition KVState__GetState: val :=
       "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "k";;
       "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "v");;
       "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "v");;
+    (* log.Println("Size of encoded state", len(enc)) *)
     ![slice.T byteT] "enc".
 
-Definition KVState__SetState: val :=
-  rec: "KVState__SetState" "s" "snap_in" :=
+Definition KVState__loadState: val :=
+  rec: "KVState__loadState" "s" "snap_in" :=
+    (* log.Println("Loading encoded state: ", len(snap_in)) *)
     let: "snap" := ref_to (slice.T byteT) "snap_in" in
     struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #());;
     let: ("numEntries", "snap") := marshal.ReadInt (![slice.T byteT] "snap") in
@@ -90,63 +112,41 @@ Definition KVState__SetState: val :=
       Continue);;
     #().
 
+Definition KVState__SetState: val :=
+  rec: "KVState__SetState" "s" "snap_in" :=
+    KVState__loadState "s" "snap_in";;
+    KVState__MakeDurable "s";;
+    #().
+
+Definition KVState__EnterEpoch: val :=
+  rec: "KVState__EnterEpoch" "s" "epoch" :=
+    struct.storeF KVState "epoch" "s" "epoch";;
+    KVState__MakeDurable "s";;
+    #().
+
 Definition MakeKVStateMachine: val :=
   rec: "MakeKVStateMachine" "initState" :=
     struct.new pb.StateMachine [
       "Apply" ::= KVState__Apply "initState";
       "SetState" ::= KVState__SetState "initState";
-      "GetState" ::= KVState__GetState "initState"
+      "GetState" ::= KVState__GetState "initState";
+      "EnterEpoch" ::= KVState__EnterEpoch "initState"
     ].
 
 Definition KVServer := struct.decl [
   "r" :: ptrT
 ].
 
-Definition KVServer__FetchAndAppend: val :=
-  rec: "KVServer__FetchAndAppend" "s" "op" :=
-    let: ("err", "ret") := pb.Server__Apply (struct.loadF KVServer "r" "s") "op" in
-    (if: ("err" = e.None)
-    then
-      let: "reply" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "ret")) in
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") "err";;
-      "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") "ret";;
-      ![slice.T byteT] "reply"
-    else
-      let: "reply" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #8) in
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") "err";;
-      ![slice.T byteT] "reply").
-
-Definition MakeKVServer: val :=
-  rec: "MakeKVServer" "fname" :=
+Definition MakeServer: val :=
+  rec: "MakeServer" "fname" :=
     let: "s" := struct.alloc KVServer (zero_val (struct.t KVServer)) in
-    let: "encState" := ref_to (slice.T byteT) (grove_ffi.Read "fname") in
     let: "epoch" := ref (zero_val uint64T) in
     let: "nextIndex" := ref (zero_val uint64T) in
-    let: "state" := ref (zero_val ptrT) in
-    (if: (slice.len (![slice.T byteT] "encState") = #0)
-    then
-      "epoch" <-[uint64T] #0;;
-      "nextIndex" <-[uint64T] #0
-    else
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
-      "epoch" <-[uint64T] "0_ret";;
-      "encState" <-[slice.T byteT] "1_ret";;
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
-      "nextIndex" <-[uint64T] "0_ret";;
-      "encState" <-[slice.T byteT] "1_ret";;
-      "state" <-[ptrT] struct.alloc KVState (zero_val (struct.t KVState));;
-      KVState__SetState (![ptrT] "state") (![slice.T byteT] "encState"));;
-    struct.storeF KVServer "r" "s" (pb.MakeServer (MakeKVStateMachine (![ptrT] "state")) (![uint64T] "nextIndex") (![uint64T] "epoch"));;
+    let: "state" := RecoverKVState "fname" in
+    struct.storeF KVServer "r" "s" (pb.MakeServer (MakeKVStateMachine "state") (![uint64T] "nextIndex") (![uint64T] "epoch"));;
     "s".
 
 Definition KVServer__Serve: val :=
-  rec: "KVServer__Serve" "s" "pbHost" "me" :=
+  rec: "KVServer__Serve" "s" "me" :=
     pb.Server__Serve (struct.loadF KVServer "r" "s") "me";;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_FAA (λ: "args" "reply",
-      "reply" <-[slice.T byteT] KVServer__FetchAndAppend "s" "args";;
-      #()
-      );;
-    let: "rs" := urpc.MakeServer "handlers" in
-    urpc.Server__Serve "rs" "me";;
     #().
