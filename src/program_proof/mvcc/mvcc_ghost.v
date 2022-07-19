@@ -1582,6 +1582,12 @@ Definition per_key_inv_def
     "%Hpprel" ∷ ⌜ptuple_past_rel key phys past⌝ ∗
     "%Hlmrel" ∷ ⌜last logi = m !! key⌝.
 
+Definition cmt_inv_def
+           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list event)
+  : iProp Σ :=
+  "HcmtAuth" ∷ commit_tmods_auth γ tmods ∗
+  "%Hcmt"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
+
 Definition nca_inv_def (γ : mvcc_names) (future : list event) : iProp Σ :=
   ∃ (tids_nca : gset u64),
     "HncaAuth" ∷ nca_tids_auth γ tids_nca ∗
@@ -1601,12 +1607,6 @@ Definition fcc_inv_def (γ : mvcc_names) (future : list event) : iProp Σ :=
   ∃ (tmods_fcc : gset (u64 * dbmap)),
     "HfccAuth" ∷ fcc_tmods_auth γ tmods_fcc ∗
     "%Hfcc"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods_fcc⌝.
-
-Definition cmt_inv_def
-           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list event)
-  : iProp Σ :=
-  "HcmtAuth" ∷ commit_tmods_auth γ tmods ∗
-  "%Hcmt"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
 
 Definition mvcc_inv_sst_def γ : iProp Σ :=
   ∃ (tmods : gset (u64 * dbmap)) (m : dbmap) (past future : list event),

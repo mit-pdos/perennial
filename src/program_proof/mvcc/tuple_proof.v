@@ -53,7 +53,8 @@ Definition own_tuple (tuple : loc) (key : u64) (tidown tidlast : u64) versL (γ 
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val vers) ∗
     "HversL" ∷ slice.is_slice vers (structTy Version) 1 (ver_to_val <$> versL) ∗
     "Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
-    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast -> vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
+    "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast ->
+                           vchain !! (int.nat tid) = Some (spec_lookup versL tid)⌝) ∗
     "Hvchain" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
     "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
     "Hwellformed" ∷ tuple_wellformed versL tidlast tidgc ∗
@@ -534,7 +535,10 @@ Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) (sid : u64) γ :
   is_tuple tuple key γ -∗
   {{{ active_tid γ tid sid }}}
     Tuple__ReadVersion #tuple #tid
-  {{{ (val : u64) (ret : u64), RET (#val, #ret); active_tid γ tid sid ∗ post_tuple__ReadVersion tid key val ret γ }}}.
+  {{{ (val : u64) (ret : u64), RET (#val, #ret);
+      active_tid γ tid sid ∗
+      post_tuple__ReadVersion tid key val ret γ
+  }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".
   iNamed "Htuple".
@@ -841,7 +845,7 @@ Proof.
   wp_pures.
   
   (***********************************************************)
-  (* return val, ret                                         *)
+  (* return ver.val, ret                                     *)
   (***********************************************************)
   (* Set Printing Coercions. *)
   wp_load.
@@ -934,7 +938,9 @@ Theorem wp_tuple__AppendVersion tuple (tid : u64) (val : u64) (key : u64) (sid :
   is_tuple tuple key γ -∗
   {{{ active_tid γ tid sid ∗ mods_token γ key tid }}}
     Tuple__AppendVersion #tuple #tid #val
-  {{{ RET #(); active_tid γ tid sid ∗ view_ptsto γ key (Value val) (U64 (int.Z tid + 1)) }}}.
+  {{{ RET #(); active_tid γ tid sid ∗
+               view_ptsto γ key (Value val) (U64 (int.Z tid + 1))
+  }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> [Hactive Htoken] HΦ".
   iNamed "Htuple".
