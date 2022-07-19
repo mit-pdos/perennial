@@ -895,7 +895,9 @@ Qed.
 Local Theorem wp_findTID (tid : u64) (tidsS : Slice.t) (tids : list u64) :
   {{{ typed_slice.is_slice tidsS uint64T 1 tids ∗ ⌜tid ∈ tids⌝ }}}
     findTID #tid (to_val tidsS)
-  {{{ (idx : u64), RET #idx; typed_slice.is_slice tidsS uint64T 1 tids ∧ (⌜tids !! (int.nat idx) = Some tid⌝) }}}.
+  {{{ (idx : u64), RET #idx; typed_slice.is_slice tidsS uint64T 1 tids ∧
+                             (⌜tids !! (int.nat idx) = Some tid⌝)
+  }}}.
 Proof.
   iIntros (Φ) "[HtidsS %Helem] HΦ".
   wp_call.

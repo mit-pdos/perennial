@@ -4,32 +4,17 @@ From Goose Require github_com.mit_pdos.go_mvcc.common.
 From Goose Require github_com.mit_pdos.go_mvcc.config.
 From Goose Require github_com.mit_pdos.go_mvcc.gc.
 From Goose Require github_com.mit_pdos.go_mvcc.index.
-From Goose Require github_com.mit_pdos.go_mvcc.tuple.
+From Goose Require github_com.mit_pdos.go_mvcc.wrbuf.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-Definition DBVal := struct.decl [
-  "tomb" :: boolT;
-  "val" :: uint64T
-].
-
-(* *
-    * We need `key` as to match in the local write set *)
-Definition WrEnt := struct.decl [
-  "key" :: uint64T;
-  "val" :: struct.t DBVal;
-  "tuple" :: ptrT
-].
-
-(* *
-    * `wset` as a `map[uint64]WrEnt` has the issue of allocating and deallocating
-    * many `WrEnt`. *)
 Definition Txn := struct.decl [
   "tid" :: uint64T;
-  "wset" :: slice.T (struct.t WrEnt);
+  "wrbuf" :: struct.t wrbuf.WrBuf;
   "sid" :: uint64T;
   "idx" :: ptrT;
-  "txnMgr" :: ptrT
+  "txnMgr" :: ptrT;
+  "p" :: ProphIdT
 ].
 
 Definition TxnSite := struct.decl [
@@ -67,7 +52,6 @@ Definition TxnMgr__New: val :=
   rec: "TxnMgr__New" "txnMgr" :=
     lock.acquire (struct.loadF TxnMgr "latch" "txnMgr");;
     let: "txn" := struct.alloc Txn (zero_val (struct.t Txn)) in
-    struct.storeF Txn "wset" "txn" (NewSliceWithCap (struct.t WrEnt) #0 #32);;
     let: "sid" := struct.loadF TxnMgr "sidCur" "txnMgr" in
     struct.storeF Txn "sid" "txn" "sid";;
     struct.storeF Txn "idx" "txn" (struct.loadF TxnMgr "idx" "txnMgr");;
@@ -208,85 +192,34 @@ Definition TxnMgr__StartGC: val :=
             Continue));;
     #().
 
-Definition matchLocalWrites: val :=
-  rec: "matchLocalWrites" "key" "wset" :=
-    let: "pos" := ref_to uint64T #0 in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "pos" ≥ slice.len "wset"
-      then Break
-      else
-        (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "wset" (![uint64T] "pos")))
-        then Break
-        else
-          "pos" <-[uint64T] ![uint64T] "pos" + #1;;
-          Continue)));;
-    let: "found" := ![uint64T] "pos" < slice.len "wset" in
-    (![uint64T] "pos", "found").
-
 Definition Txn__Put: val :=
   rec: "Txn__Put" "txn" "key" "val" :=
-    let: ("pos", "found") := matchLocalWrites "key" (struct.loadF Txn "wset" "txn") in
-    (if: "found"
-    then
-      let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "pos" in
-      struct.storeF WrEnt "val" "went" (struct.mk DBVal [
-        "tomb" ::= #false;
-        "val" ::= "val"
-      ]);;
-      #true
-    else
-      let: "idx" := struct.loadF Txn "idx" "txn" in
-      let: "tuple" := index.Index__GetTuple "idx" "key" in
-      let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
-      (if: "ret" ≠ common.RET_SUCCESS
-      then #false
-      else
-        let: "dbval" := struct.mk DBVal [
-          "tomb" ::= #false;
-          "val" ::= "val"
-        ] in
-        struct.storeF Txn "wset" "txn" (SliceAppend (struct.t WrEnt) (struct.loadF Txn "wset" "txn") (struct.mk WrEnt [
-          "key" ::= "key";
-          "val" ::= "dbval";
-          "tuple" ::= "tuple"
-        ]));;
-        #true)).
+    let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
+    wrbuf.WrBuf__Put "wrbuf" "key" "val";;
+    let: "idx" := struct.loadF Txn "idx" "txn" in
+    let: "tuple" := index.Index__GetTuple "idx" "key" in
+    let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
+    (if: "ret" ≠ common.RET_SUCCESS
+    then #false
+    else #true).
 
 Definition Txn__Delete: val :=
   rec: "Txn__Delete" "txn" "key" :=
-    let: ("pos", "found") := matchLocalWrites "key" (struct.loadF Txn "wset" "txn") in
-    (if: "found"
-    then
-      let: "went" := SliceRef (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "pos" in
-      struct.storeF WrEnt "val" "went" (struct.mk DBVal [
-        "tomb" ::= #true
-      ]);;
-      #true
-    else
-      let: "idx" := struct.loadF Txn "idx" "txn" in
-      let: "tuple" := index.Index__GetTuple "idx" "key" in
-      let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
-      (if: "ret" ≠ common.RET_SUCCESS
-      then #false
-      else
-        let: "dbval" := struct.mk DBVal [
-          "tomb" ::= #true
-        ] in
-        struct.storeF Txn "wset" "txn" (SliceAppend (struct.t WrEnt) (struct.loadF Txn "wset" "txn") (struct.mk WrEnt [
-          "key" ::= "key";
-          "val" ::= "dbval";
-          "tuple" ::= "tuple"
-        ]));;
-        #true)).
+    let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
+    wrbuf.WrBuf__Delete "wrbuf" "key";;
+    let: "idx" := struct.loadF Txn "idx" "txn" in
+    let: "tuple" := index.Index__GetTuple "idx" "key" in
+    let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
+    (if: "ret" ≠ common.RET_SUCCESS
+    then #false
+    else #true).
 
 Definition Txn__Get: val :=
   rec: "Txn__Get" "txn" "key" :=
-    let: ("pos", "found") := matchLocalWrites "key" (struct.loadF Txn "wset" "txn") in
+    let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
+    let: (("valb", "del"), "found") := wrbuf.WrBuf__Lookup "wrbuf" "key" in
     (if: "found"
-    then
-      let: "dbval" := struct.get WrEnt "val" (SliceGet (struct.t WrEnt) (struct.loadF Txn "wset" "txn") "pos") in
-      (struct.get DBVal "val" "dbval", ~ (struct.get DBVal "tomb" "dbval"))
+    then ("valb", ~ "del")
     else
       let: "idx" := struct.loadF Txn "idx" "txn" in
       let: "tuple" := index.Index__GetTuple "idx" "key" in
@@ -297,22 +230,36 @@ Definition Txn__Begin: val :=
   rec: "Txn__Begin" "txn" :=
     let: "tid" := TxnMgr__activate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") in
     struct.storeF Txn "tid" "txn" "tid";;
-    struct.storeF Txn "wset" "txn" (SliceTake (struct.loadF Txn "wset" "txn") #0);;
+    wrbuf.WrBuf__Clear (struct.loadF Txn "wrbuf" "txn");;
     #().
 
 Definition Txn__Commit: val :=
   rec: "Txn__Commit" "txn" :=
-    ForSlice (struct.t WrEnt) <> "wrent" (struct.loadF Txn "wset" "txn")
-      (let: "dbval" := struct.get WrEnt "val" "wrent" in
-      let: "tuple" := struct.get WrEnt "tuple" "wrent" in
-      tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") (struct.get DBVal "val" "dbval"));;
+    let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, ![uint64T] "i" < wrbuf.WrBuf__Len "wrbuf"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      let: (("key", "val"), "del") := wrbuf.WrBuf__GetEntAt "wrbuf" (![uint64T] "i") in
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      (if: "del"
+      then
+        tuple.Tuple__KillVersion "tuple" (struct.loadF Txn "tid" "txn");;
+        Continue
+      else
+        tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val";;
+        Continue));;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
 Definition Txn__Abort: val :=
   rec: "Txn__Abort" "txn" :=
-    ForSlice (struct.t WrEnt) <> "wrent" (struct.loadF Txn "wset" "txn")
-      (let: "tuple" := struct.get WrEnt "tuple" "wrent" in
-      tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
+    let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, ![uint64T] "i" < wrbuf.WrBuf__Len "wrbuf"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      let: (("key", <>), <>) := wrbuf.WrBuf__GetEntAt "wrbuf" (![uint64T] "i") in
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn");;
+      Continue);;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().

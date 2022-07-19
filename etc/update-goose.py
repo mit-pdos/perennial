@@ -256,10 +256,11 @@ def main():
             "./index",
             "./gc",
             "./tuple",
-			"./config",
-			"./common",
-			"./examples",
-			# "./cfmutex",
+            "./wrbuf",
+            "./config",
+            "./common",
+            "./examples",
+            # "./cfmutex",
         )
 
     if marshal_dir is not None:
