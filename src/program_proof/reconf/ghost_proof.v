@@ -120,8 +120,8 @@ Definition old_conf_max_pre (Φ:(reconf_names -d> u64 -d> (list (leibnizO LogEnt
     (∀ mval', ⌜mval_lt mval' mval⌝ → □(
         (⌜overlapping_quorums (get_config mval') (get_config mval)⌝ ∨
          (∃ mval'' term'',
-             ⌜mval_lt mval mval''⌝ ∗
-             ⌜mval_le mval'' mval'⌝ ∗
+             ⌜mval_lt mval' mval''⌝ ∗
+             ⌜mval_le mval'' mval⌝ ∗
              ⌜int.nat term'' ≤ int.nat term⌝ ∗
              committed_at_term γ term'' mval'' ∗
              Φ γ term mval'' ∗
@@ -156,7 +156,7 @@ Definition old_conf_max_orig γ term mval: iProp Σ :=
   ∀ mval', ⌜mval_lt mval' mval⌝ → □(
         (⌜overlapping_quorums (get_config mval') (get_config mval)⌝ ∨
          (∃ mval'' term'',
-             ⌜mval_lt mval mval''⌝ ∗
+             ⌜mval_lt mval' mval''⌝ ∗
              ⌜int.nat term'' ≤ int.nat term⌝ ∗
              committed_at_term γ term'' mval'' ∗
              (* FIXME: want to be able to put another old_conf_max here *)
@@ -490,6 +490,7 @@ Proof.
       (* pure proof: mval' < mval'' ≤ srvVal ≤ highestVal ≤ mval'. Contradiction *)
       admit.
     }
+  }
   }
 
 
