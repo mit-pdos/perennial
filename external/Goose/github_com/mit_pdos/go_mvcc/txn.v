@@ -10,11 +10,10 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Txn := struct.decl [
   "tid" :: uint64T;
-  "wrbuf" :: struct.t wrbuf.WrBuf;
   "sid" :: uint64T;
+  "wrbuf" :: ptrT;
   "idx" :: ptrT;
-  "txnMgr" :: ptrT;
-  "p" :: ProphIdT
+  "txnMgr" :: ptrT
 ].
 
 Definition TxnSite := struct.decl [
@@ -29,7 +28,8 @@ Definition TxnMgr := struct.decl [
   "sidCur" :: uint64T;
   "sites" :: slice.T ptrT;
   "idx" :: ptrT;
-  "gc" :: ptrT
+  "gc" :: ptrT;
+  "p" :: ProphIdT
 ].
 
 Definition MkTxnMgr: val :=
