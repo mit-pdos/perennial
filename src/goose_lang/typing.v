@@ -98,7 +98,7 @@ Section goose_lang.
     | baseT byteBT => #(U8 0)
     | baseT boolBT => #false
     | baseT unitBT => #()
-    | baseT stringT => #(str"")
+    | baseT stringBT => #(str"")
     | mapValT vt => MapNilV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
     | listT t => InjLV (LitV LitUnit)

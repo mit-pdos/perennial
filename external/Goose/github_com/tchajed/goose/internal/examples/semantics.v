@@ -361,6 +361,31 @@ Definition failing_testArgumentOrder: val :=
     let: "ok" := (![uint64T] "x" = #4) in
     "ok".
 
+(* generics.go *)
+
+Definition pair := struct.decl [
+  "a" :: uint64T;
+  "b" :: uint64T
+].
+
+Definition newGeneric (T:ty): val :=
+  rec: "newGeneric" <> :=
+    ref (zero_val T).
+
+Definition storeAndLoadGeneric (T:ty): val :=
+  rec: "storeAndLoadGeneric" "t" "v" :=
+    "t" <-[T] "v";;
+    ![T] "t".
+
+Definition testGenerics: val :=
+  rec: "testGenerics" <> :=
+    let: "x" := newGeneric (struct.t pair) #() in
+    let: "res" := storeAndLoadGeneric (struct.t pair) "x" (struct.mk pair [
+      "a" ::= #10;
+      "b" ::= #37
+    ]) in
+    (struct.get pair "a" "res" = #10) && (struct.get pair "b" "res" = #37).
+
 (* int_conversions.go *)
 
 Definition testU64ToU32: val :=

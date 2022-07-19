@@ -171,6 +171,7 @@ def main():
         run_goose(
             path.join(goose_dir, "internal/examples"),
             "./unittest",
+            "./unittest/generic",
             "./semantics",
             "./append_log",
             "./logging2",
@@ -229,11 +230,25 @@ def main():
         run_goose(distributed_dir, ".", "./grove_common")
 
     if gokv_dir is not None:
-        pkgs = ["urpc", "memkv", "connman", "paxi/single", "bank",
-                "lockservice", "pb", "pb/controller", "ctrexample/client",
-                "ctrexample/server", "fencing/ctr", "fencing/config",
-                "fencing/frontend", "fencing/client", "fencing/loopclient",
-                "erpc", "paxi/reconf"]
+        pkgs = [
+            "urpc",
+            "memkv",
+            "connman",
+            "paxi/single",
+            "bank",
+            "lockservice",
+            "pb",
+            "pb/controller",
+            "ctrexample/client",
+            "ctrexample/server",
+            "fencing/ctr",
+            "fencing/config",
+            "fencing/frontend",
+            "fencing/client",
+            "fencing/loopclient",
+            "erpc",
+            "paxi/reconf",
+        ]
 
         for pkg in pkgs:
             run_goose(
@@ -250,10 +265,10 @@ def main():
             "./index",
             "./gc",
             "./tuple",
-			"./config",
-			"./common",
-			"./examples",
-			# "./cfmutex",
+            "./config",
+            "./common",
+            "./examples",
+            # "./cfmutex",
         )
 
     if marshal_dir is not None:
