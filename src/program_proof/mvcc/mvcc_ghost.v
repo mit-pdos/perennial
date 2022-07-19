@@ -365,33 +365,33 @@ Qed.
 End lemmas.
 
 
-Section event.
+Section action.
 
-Inductive event :=
+Inductive action :=
 | EvCommit (tid : u64) (mods : dbmap)
 | EvRead   (tid : u64) (key : u64)
 | EvAbort  (tid : u64).
 
-Definition head_commit (l : list event) (tid : u64) (mods : dbmap) :=
+Definition head_commit (l : list action) (tid : u64) (mods : dbmap) :=
   head l = Some (EvCommit tid mods).
 
-Definition head_read (l : list event) (tid : u64) (key : u64) :=
+Definition head_read (l : list action) (tid : u64) (key : u64) :=
   head l = Some (EvRead tid key).
 
-Definition head_abort (l : list event) (tid : u64) :=
+Definition head_abort (l : list action) (tid : u64) :=
   head l = Some (EvAbort tid).
 
-Definition no_commit_abort (l : list event) (tid : u64) :=
+Definition no_commit_abort (l : list action) (tid : u64) :=
   (∀ mods, EvCommit tid mods ∉ l) ∧
   (EvAbort tid ∉ l).
 
-Definition first_abort (l : list event) (tid : u64) :=
+Definition first_abort (l : list action) (tid : u64) :=
   ∃ e lp ls,
     e = EvAbort tid ∧
     l = lp ++ e :: ls ∧
     no_commit_abort lp tid.
 
-Definition compatible (tid : u64) (mods : dbmap) (e : event) :=
+Definition compatible (tid : u64) (mods : dbmap) (e : action) :=
   match e with
   | EvCommit tid' mods' => (int.Z tid') < (int.Z tid) ∨ (dom mods) ∩ (dom mods') = ∅
   | EvRead tid' key => (int.Z tid') ≤ (int.Z tid) ∨ key ∉ (dom mods)
@@ -401,33 +401,33 @@ Definition compatible (tid : u64) (mods : dbmap) (e : event) :=
 Instance compatible_dec tid mods e : Decision (compatible tid mods e).
 Proof. destruct e; simpl; apply _. Defined.
 
-Definition incompatible (tid : u64) (mods : dbmap) (e : event) := not (compatible tid mods e).
+Definition incompatible (tid : u64) (mods : dbmap) (e : action) := not (compatible tid mods e).
 
 Instance incompatible_dec tid mods e : Decision (incompatible tid mods e).
 Proof. destruct e; simpl; apply _. Defined.
 
-Definition compatible_all (l : list event) (tid : u64) (mods : dbmap) :=
+Definition compatible_all (l : list action) (tid : u64) (mods : dbmap) :=
   Forall (compatible tid mods) l.
 
-Definition incompatible_exists (l : list event) (tid : u64) (mods : dbmap) :=
+Definition incompatible_exists (l : list action) (tid : u64) (mods : dbmap) :=
   Exists (incompatible tid mods) l.
 
-Definition first_commit (l lp ls : list event) (e : event) (tid : u64) (mods : dbmap) :=
+Definition first_commit (l lp ls : list action) (e : action) (tid : u64) (mods : dbmap) :=
   e = EvCommit tid mods ∧
   l = lp ++ e :: ls ∧
   no_commit_abort lp tid.
 
-Definition first_commit_incompatible (l : list event) (tid : u64) (mods : dbmap) :=
+Definition first_commit_incompatible (l : list action) (tid : u64) (mods : dbmap) :=
   ∃ e lp ls,
     first_commit l lp ls e tid mods ∧
     incompatible_exists lp tid mods.
 
-Definition first_commit_compatible (l : list event) (tid : u64) (mods : dbmap) :=
+Definition first_commit_compatible (l : list action) (tid : u64) (mods : dbmap) :=
   ∃ e lp ls,
     first_commit l lp ls e tid mods ∧
     compatible_all lp tid mods.
 
-Definition is_commit_abort_tid (tid : u64) (e : event) : Prop :=
+Definition is_commit_abort_tid (tid : u64) (e : action) : Prop :=
   match e with
   | EvCommit tid' _ => tid = tid'
   | EvAbort tid' => tid = tid'
@@ -442,7 +442,7 @@ Lemma is_commit_abort_tid_lor tid e :
   (∃ mods, e = EvCommit tid mods) ∨ e = EvAbort tid.
 Proof. intros. destruct e; set_solver. Qed.
 
-Fixpoint find_max_prefix (tid : u64) (lp ls : list event) : (list event * list event) :=
+Fixpoint find_max_prefix (tid : u64) (lp ls : list action) : (list action * list action) :=
   match ls with
   | [] => (lp, ls)
   | hd :: tl => if decide (is_commit_abort_tid tid hd)
@@ -483,7 +483,7 @@ Inductive tcform :=
 | FCI (mods : dbmap)
 | FCC (mods : dbmap).
 
-Definition peek (l : list event) (tid : u64) : tcform :=
+Definition peek (l : list action) (tid : u64) : tcform :=
   let (lp, ls) := find_max_prefix tid [] l
   in match head ls with
      | None => NCA
@@ -505,12 +505,12 @@ Proof.
   destruct (spec_find_max_prefix tid [] l) as (lp & ls & Hspec & Hl & Hnca & Hls).
   rewrite -Hspec.
   destruct (head ls) eqn:Els.
-  - destruct e eqn:Ee.
+  - destruct a eqn:Ee.
     + simpl.
       apply is_commit_abort_tid_lor in Hls.
       destruct Hls as [[mods' Hls] | Hls]; last set_solver.
       inversion Hls. subst tid0 mods'.
-      assert (Hfc : first_commit l lp (tail ls) e tid mods).
+      assert (Hfc : first_commit l lp (tail ls) a tid mods).
       { unfold first_commit.
         split; first done.
         split; last done.
@@ -543,7 +543,7 @@ Proof.
     rewrite Els in Hl. rewrite app_nil_r in Hl. by rewrite Hl.
 Qed.
 
-Lemma no_commit_abort_false (l : list event) (tid : u64) :
+Lemma no_commit_abort_false (l : list action) (tid : u64) :
   no_commit_abort l tid ->
   (∃ mods, head_commit l tid mods) ∨ (head_abort l tid) ->
   False.
@@ -558,7 +558,7 @@ Proof.
   intros Hl. rewrite Hl. destruct lp; auto.
 Qed.
 
-Lemma first_abort_false (l : list event) (tid : u64) (mods : dbmap) :
+Lemma first_abort_false (l : list action) (tid : u64) (mods : dbmap) :
   first_abort l tid ->
   head_commit l tid mods ->
   False.
@@ -570,7 +570,7 @@ Proof.
   set_solver.
 Qed.
 
-Lemma first_commit_false (l lp ls : list event) (e : event) (tid : u64) (mods : dbmap) :
+Lemma first_commit_false (l lp ls : list action) (e : action) (tid : u64) (mods : dbmap) :
   first_commit l lp ls e tid mods ->
   head_abort l tid ->
   False.
@@ -582,7 +582,7 @@ Proof.
   set_solver.
 Qed.
 
-Lemma safe_extension_rd (l : list event) (tid tid' : u64) (mods : dbmap) (key : u64) :
+Lemma safe_extension_rd (l : list action) (tid tid' : u64) (mods : dbmap) (key : u64) :
   first_commit_compatible l tid mods ->
   head_read l tid' key ->
   key ∈ (dom mods) ->
@@ -601,7 +601,7 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Lemma safe_extension_wr (l : list event) (tid tid' : u64) (mods mods' : dbmap) :
+Lemma safe_extension_wr (l : list action) (tid tid' : u64) (mods mods' : dbmap) :
   first_commit_compatible l tid mods ->
   head_commit l tid' mods' ->
   (dom mods) ∩ (dom mods') ≠ ∅ ->
@@ -620,7 +620,7 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Lemma first_commit_incompatible_false (l : list event) (tid : u64) (mods : dbmap) :
+Lemma first_commit_incompatible_false (l : list action) (tid : u64) (mods : dbmap) :
   first_commit_incompatible l tid mods ->
   head_commit l tid mods ->
   False.
@@ -632,7 +632,7 @@ Proof.
 Qed.
 
 
-End event.
+End action.
 
 Section tuplext.
 
@@ -1568,12 +1568,12 @@ Section sstinv.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (* TODO *)
-Definition ptuple_past_rel (key : u64) (phys : list dbval) (past : list event) :=
+Definition ptuple_past_rel (key : u64) (phys : list dbval) (past : list action) :=
   True.
 
 Definition per_key_inv_def
            (γ : mvcc_names) (key : u64) (tmods : gset (u64 * dbmap))
-           (m : dbmap) (past : list event)
+           (m : dbmap) (past : list action)
   : iProp Σ :=
   ∃ (phys logi : list dbval),
     "Hptuple" ∷ ptuple_auth γ (1 / 2) key phys ∗
@@ -1583,33 +1583,33 @@ Definition per_key_inv_def
     "%Hlmrel" ∷ ⌜last logi = m !! key⌝.
 
 Definition cmt_inv_def
-           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list event)
+           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list action)
   : iProp Σ :=
   "HcmtAuth" ∷ commit_tmods_auth γ tmods ∗
   "%Hcmt"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
 
-Definition nca_inv_def (γ : mvcc_names) (future : list event) : iProp Σ :=
+Definition nca_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
   ∃ (tids_nca : gset u64),
     "HncaAuth" ∷ nca_tids_auth γ tids_nca ∗
     "%Hnca"    ∷ ⌜set_Forall (no_commit_abort future) tids_nca⌝.
 
-Definition fa_inv_def (γ : mvcc_names) (future : list event) : iProp Σ :=
+Definition fa_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
   ∃ (tids_fa : gset u64),
     "HfaAuth" ∷ fa_tids_auth γ tids_fa ∗
     "%Hfa"    ∷ ⌜set_Forall (first_abort future) tids_fa⌝.
 
-Definition fci_inv_def (γ : mvcc_names) (past future : list event) : iProp Σ :=
+Definition fci_inv_def (γ : mvcc_names) (past future : list action) : iProp Σ :=
   ∃ (tmods_fci : gset (u64 * dbmap)),
     "HfciAuth" ∷ fci_tmods_auth γ tmods_fci ∗
     "%Hfci"    ∷ ⌜set_Forall (uncurry (first_commit_incompatible (past ++ future))) tmods_fci⌝.
 
-Definition fcc_inv_def (γ : mvcc_names) (future : list event) : iProp Σ :=
+Definition fcc_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
   ∃ (tmods_fcc : gset (u64 * dbmap)),
     "HfccAuth" ∷ fcc_tmods_auth γ tmods_fcc ∗
     "%Hfcc"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods_fcc⌝.
 
 Definition mvcc_inv_sst_def γ : iProp Σ :=
-  ∃ (tmods : gset (u64 * dbmap)) (m : dbmap) (past future : list event),
+  ∃ (tmods : gset (u64 * dbmap)) (m : dbmap) (past future : list action) (p : proph_id),
     (* Global database map, i.e., auth element of the global ptsto. *)
     "Hm" ∷ dbmap_auth γ m ∗
     (* Per-key invariants. *)
