@@ -61,7 +61,7 @@ Definition reply_chan_inner_msg (Γ : client_chan_gnames) m : iProp Σ :=
        "%Hlen_reply" ∷ ⌜ length replyData = int.nat (length replyData) ⌝ ∗
        "%Henc" ∷ ⌜ msg_data m = u64_le seqno ++ replyData ⌝ ∗
        "#Hseqno" ∷ ptsto_ro (ccmapping_name Γ) seqno (ReqDesc rpcid reqData γ d rep) ∗
-       "#HPost_saved" ∷ saved_pred_own γ (Post) ∗
+       "#HPost_saved" ∷ saved_pred_own γ DfracDiscarded (Post) ∗
        "#HPost" ∷ inv urpc_escrowN (Post replyData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt).
 
 Definition reply_chan_inner (Γ : client_chan_gnames) (c: chan) : iProp Σ :=
@@ -81,7 +81,7 @@ Definition server_chan_inner_msg Γsrv m : iProp Σ :=
        "#Hspec_name" ∷ ptsto_ro (scmap_name Γsrv) rpcid γ2 ∗
        "#Hspec_saved" ∷ saved_spec_own γ2 Spec ∗
        "#HPre" ∷ □ Spec args Post ∗
-       "#HPost_saved" ∷ saved_pred_own γ1 (Post) ∗
+       "#HPost_saved" ∷ saved_pred_own γ1 DfracDiscarded (Post) ∗
        "#Hclient_chan_inv" ∷ inv urpc_clientN (reply_chan_inner Γ (msg_sender m)).
 
 Definition server_chan_inner (c: chan) γmap : iProp Σ :=
@@ -146,7 +146,7 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
             "Hreqs" ∷ [∗ map] seqno ↦ req ∈ reqs,
                  ∃ (Post : list u8 → iProp Σ),
                  "Hreg_entry" ∷  ptsto_ro (ccmapping_name Γ) seqno req ∗
-                 "HPost_saved" ∷ saved_pred_own (urpc_reg_saved req) (Post) ∗
+                 "HPost_saved" ∷ saved_pred_own (urpc_reg_saved req) DfracDiscarded (Post) ∗
                  (* (1) Reply thread has not yet processed, so it is in pending
                     and we have escrow token *)
                  ((∃ (cb : loc) (cb_cond : loc) dummy (aborted : bool),
@@ -663,7 +663,7 @@ Definition own_uRPC_Callback (cl_ptr cb_ptr : loc) Post : iProp Σ :=
   "#reply" ∷ readonly (cb_ptr ↦[Callback :: "reply"] #rep_ptr) ∗
   "#state" ∷ readonly (cb_ptr ↦[Callback :: "state"] #cb_state) ∗
   "#cond" ∷ readonly (cb_ptr ↦[Callback :: "cond"] #cb_cond) ∗
-  "#Hsaved" ∷ saved_pred_own γ Post ∗
+  "#Hsaved" ∷ saved_pred_own γ DfracDiscarded Post ∗
   "#Hreg" ∷ n [[Γ.(ccmapping_name)]]↦ro {|
                                          urpc_reg_rpcid := rpcid;
                                          urpc_reg_args := reqData;
@@ -736,6 +736,7 @@ Proof.
   wp_pures.
   wp_loadField.
   iMod (saved_pred_alloc (Post)) as (γ) "#Hsaved".
+  { apply (dfrac_valid_discarded 1). }
   assert (reqs !! n = None).
   { apply not_elem_of_dom. rewrite -Hdom_range. lia. }
   iMod (map_alloc_ro n (ReqDesc rpcid reqData γ cb_state rep_ptr)
@@ -925,7 +926,7 @@ Proof.
   }
   { iNamed "Hcase2".
     wp_apply (wp_LoadAt with "[$]"). iIntros "Hdone".
-    iDestruct (saved_pred_agree _ _ _ reply with "HPost_saved Hsaved") as "#Hequiv".
+    iDestruct (saved_pred_agree _ _ _ _ _ reply with "HPost_saved Hsaved") as "#Hequiv".
     wp_pures.
     wp_loadField.
     wp_apply (wp_LoadAt with "[$Hrep_ptr]"). iIntros "Hrep_ptr".

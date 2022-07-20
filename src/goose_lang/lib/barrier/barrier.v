@@ -48,8 +48,8 @@ Definition barrier_inv (l : loc) (γ : gname) (P : iProp Σ) (Pc : iProp Σ) : i
   (∃ (b : bool) (gmm : gmap nat (gname * gname)) (fprop fcprop : gname → iProp Σ),
     l ↦ #b ∗
     ghost_map_auth γ 1 gmm ∗
-    ([∗ map] i ↦ γsp ∈ fst <$> gmm, saved_prop_own γsp (fprop γsp)) ∗
-    ([∗ map] i ↦ γsp ∈ snd <$> gmm, saved_prop_own γsp (fcprop γsp)) ∗
+    ([∗ map] i ↦ γsp ∈ fst <$> gmm, saved_prop_own γsp DfracDiscarded (fprop γsp)) ∗
+    ([∗ map] i ↦ γsp ∈ snd <$> gmm, saved_prop_own γsp DfracDiscarded (fcprop γsp)) ∗
      (([∗ map] i ↦ γspp ∈ gmm, □ (fprop (fst γspp) -∗ fcprop (snd γspp)))) ∗
     if b then
       crash_borrow ([∗ map] i ↦ γsp ∈ fst <$> gmm, fprop γsp)
@@ -67,8 +67,8 @@ Definition recv (l : loc) (R Rc : iProp Σ) : iProp Σ :=
     ▷ □ (Rc -∗ Rc') ∗
     ▷ □ (R -∗ Rc) ∗
     i  ↪[γ] (γsp, γspc) ∗
-    saved_prop_own γsp R' ∗
-    saved_prop_own γspc Rc')%I.
+    saved_prop_own γsp DfracDiscarded R' ∗
+    saved_prop_own γspc DfracDiscarded Rc')%I.
 
 Definition send (l : loc) (P Pc : iProp Σ) : iProp Σ :=
   (∃ γ, □ (P -∗ Pc) ∗ inv N (barrier_inv l γ P Pc))%I.
@@ -102,7 +102,9 @@ Proof.
   wp_pures.
   iApply ("HΦ" with "[> -]").
   iMod (saved_prop_alloc P) as (γsp) "#Hsp".
+  { apply (dfrac_valid_discarded 1). }
   iMod (saved_prop_alloc Pc) as (γspc) "#Hspc".
+  { apply (dfrac_valid_discarded 1). }
   iMod (ghost_map_alloc ({[O := (γsp, γspc)]})) as (γ) "[Hauth Hkeys]".
   iMod (inv_alloc N _ (barrier_inv l γ P Pc) with "[Hl Hauth Hc]") as "#Hinv".
   { iExists false,({[O := (γsp, γspc)]}),
@@ -262,10 +264,14 @@ Proof.
   iMod (ghost_map_delete with "[$] [$]") as "H●".
   destruct (gmap_gname_codomain_set (delete i gmm)) as (s&Hins).
   iMod (saved_prop_alloc_cofinite s R1) as (γsp1 Hnotin1s) "#Hsp1".
+  { apply (dfrac_valid_discarded 1). }
   iMod (saved_prop_alloc_cofinite (s ∪ {[ γsp1 ]}) R2)
     as (γsp2 [? ?%not_elem_of_singleton_1]%not_elem_of_union) "#Hsp2".
+  { apply (dfrac_valid_discarded 1). }
   iMod (saved_prop_alloc_cofinite (s ∪ {[ γsp1; γsp2]}) Rc1) as (γspc1 Hnotin1c) "#Hspc1".
+  { apply (dfrac_valid_discarded 1). }
   iMod (saved_prop_alloc_cofinite (s ∪ {[ γsp1; γsp2; γspc1]}) Rc2) as (γspc2 Hnotin2c) "#Hspc2".
+  { apply (dfrac_valid_discarded 1). }
   (*
   iMod (saved_prop_alloc_cofinite ({[ γspc1 ]}) Rc2)
     as (γspc2 ?%not_elem_of_singleton) "#Hspc2".

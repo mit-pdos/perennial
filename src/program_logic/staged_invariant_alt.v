@@ -79,8 +79,8 @@ Definition staged_inv_inner_pre
           λ E1 E2 mj mj_ishare (γsaved γfinished γstatus: gname) (P: iProp Σ) ,
   ((∃ γprop_stored γprop_remainder (stat: staged_inv_status) Ps Pr,
              own γsaved (● Excl' (γprop_stored, γprop_remainder)) ∗
-             saved_prop_own γprop_stored Ps ∗
-             saved_prop_own γprop_remainder Pr ∗
+             saved_prop_own γprop_stored DfracDiscarded Ps ∗
+             saved_prop_own γprop_remainder DfracDiscarded Pr ∗
              own γstatus (● Excl' stat) ∗
              pri_inv_tok mj_ishare E2 ∗
              ((match stat with
@@ -137,8 +137,8 @@ Definition staged_value_idle E1 (Ps Pr: iProp Σ) P : iProp Σ :=
   (∃ E2 γsaved γfinished γstatus γprop γprop',
       own γsaved (◯ Excl' (γprop, γprop')) ∗
       own γstatus (◯ Excl' idle) ∗
-          saved_prop_own γprop Ps ∗
-          saved_prop_own γprop' Pr ∗
+          saved_prop_own γprop DfracDiscarded Ps ∗
+          saved_prop_own γprop' DfracDiscarded Pr ∗
           later_tok ∗
           pri_inv_tok (/2)%Qp E2 ∗
           staged_inv E1 E2 γsaved γfinished γstatus P)%I.

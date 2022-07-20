@@ -356,7 +356,9 @@ Proof.
   (* Create the invariant *)
 
   iMod (saved_prop_alloc P) as (γprop) "#Hsaved".
+  { apply (dfrac_valid_discarded 1). }
   iMod (saved_prop_alloc True%I) as (γprop') "#Hsaved'".
+  { apply (dfrac_valid_discarded 1). }
   iMod (own_alloc (● (Excl' (γprop, γprop')) ⋅ ◯ (Excl' (γprop, γprop')))) as (γ) "[H1 H2]".
   { apply auth_both_valid_2; [econstructor | reflexivity]. }
   iMod (pending_alloc) as (γ') "Hpending".

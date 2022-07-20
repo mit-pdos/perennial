@@ -28,10 +28,10 @@ Definition staged_value_inuse2 e E1' E1 mj mj_wp mj_ukeep Φ Φc P :=
       ⌜ (mj_wp ≤ / 2 + mj_ishare) ⌝%Qp ∗
       own γsaved (◯ Excl' (γprop, γprop')) ∗
       own γstatus (◯ Excl' (inuse mj_wp mj_ushare)) ∗
-      saved_prop_own γprop (later_tok ∗ wpc0 NotStuck mj_wp E1 e
+      saved_prop_own γprop DfracDiscarded (later_tok ∗ wpc0 NotStuck mj_wp E1 e
                      (λ v : val Λ, (wpc_crash_modality E1 mj_wp P) ∗ (wpc_crash_modality E1 mj_wp Φc ∧ Φ v))
                      (Φc ∗ (wpc_crash_modality E1 mj_wp P))) ∗
-      saved_prop_own γprop' Φc ∗
+      saved_prop_own γprop' DfracDiscarded Φc ∗
       later_tok ∗
       pri_inv_tok mj_ukeep E2 ∗
       ⌜ /2 < mj ⌝%Qp ∗
@@ -83,6 +83,7 @@ Proof.
     {
       iDestruct "Hfin" as "(HPR&Hrest)".
       iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
+      { apply (dfrac_valid_discarded 1). }
       iMod (own_update_2 _ _ _ (● Excl' (γprop_stored, γprop_remainder') ⋅
                                   ◯ Excl' (γprop_stored, γprop_remainder'))
               with "Hown' Hown") as "[Hown' Hown]".
@@ -123,6 +124,7 @@ Proof.
     rewrite -Heq_mj.
     iDestruct (pri_inv_tok_split with "Hitok") as "(Hitok_ukeep&Hitok_ushare)".
     iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
+    { apply (dfrac_valid_discarded 1). }
     iMod (own_update_2 _ _ _ (● Excl' (γprop_stored, γprop_remainder') ⋅
                                 ◯ Excl' (γprop_stored, γprop_remainder'))
             with "Hown' Hown") as "[Hown' Hown]".
@@ -192,7 +194,9 @@ Proof.
       iMod ("H" with "[$] [$]") as "H".
       iDestruct "H" as "((Hcm&Hv)&Hg&HNC)".
       iMod (saved_prop_alloc (wpc_crash_modality ⊤ mj_wp P)) as (γprop_stored') "#Hsaved1''".
+      { apply (dfrac_valid_discarded 1). }
       iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
+      { apply (dfrac_valid_discarded 1). }
       iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                                 ◯ Excl' (γprop_stored', γprop_remainder'))
               with "Hown' Hown") as "[Hown' Hown]".
@@ -244,7 +248,9 @@ Proof.
             (later_tok ∗ wpc0 NotStuck mj_wp ⊤ e2
               (λ v : val Λ, wpc_crash_modality ⊤ mj_wp P ∗ (wpc_crash_modality ⊤ mj_wp Φc ∧ Φ v))
               (Φc ∗ (wpc_crash_modality ⊤ mj_wp P)))%I) as (γprop_stored') "#Hsaved1''".
+    { apply (dfrac_valid_discarded 1). }
     iMod (saved_prop_alloc Φc) as (γprop_remainder') "#Hsaved2''".
+    { apply (dfrac_valid_discarded 1). }
     iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                               ◯ Excl' (γprop_stored', γprop_remainder'))
             with "Hown' Hown") as "[Hown' Hown]".
@@ -417,7 +423,9 @@ Proof.
 
       iDestruct "H" as "((Hcm&Hv)&Hg&HNC)".
       iMod (saved_prop_alloc (wpc_crash_modality ⊤ mj_wp P)) as (γprop_stored') "#Hsaved1''".
+      { apply (dfrac_valid_discarded 1). }
       iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
+      { apply (dfrac_valid_discarded 1). }
       iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                                 ◯ Excl' (γprop_stored', γprop_remainder'))
               with "Hown' Hown") as "[Hown' Hown]".
@@ -480,7 +488,9 @@ Proof.
           (later_tok ∗ wpc0 NotStuck mj_wp ⊤ e2
             (λ v : val Λ, wpc_crash_modality ⊤ mj_wp P ∗ (wpc_crash_modality ⊤ mj_wp Φc ∧ Φ v))
             (Φc ∗ (wpc_crash_modality ⊤ mj_wp P)))%I) as (γprop_stored') "#Hsaved1''".
+  { apply (dfrac_valid_discarded 1). }
   iMod (saved_prop_alloc Φc) as (γprop_remainder') "#Hsaved2''".
+  { apply (dfrac_valid_discarded 1). }
   iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                             ◯ Excl' (γprop_stored', γprop_remainder'))
           with "Hown' Hown") as "[Hown' Hown]".
