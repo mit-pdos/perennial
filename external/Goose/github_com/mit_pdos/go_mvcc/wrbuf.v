@@ -11,6 +11,14 @@ Definition WrEnt := struct.decl [
   "del" :: boolT
 ].
 
+Definition WrEnt__Key: val :=
+  rec: "WrEnt__Key" "ent" :=
+    struct.get WrEnt "key" "ent".
+
+Definition WrEnt__Destruct: val :=
+  rec: "WrEnt__Destruct" "ent" :=
+    (struct.get WrEnt "key" "ent", struct.get WrEnt "val" "ent", struct.get WrEnt "del" "ent").
+
 Definition WrBuf := struct.decl [
   "ents" :: slice.T (struct.t WrEnt)
 ].
@@ -74,14 +82,9 @@ Definition WrBuf__Delete: val :=
       struct.storeF WrBuf "ents" "wrbuf" (SliceAppend (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "ent");;
       #()).
 
-Definition WrBuf__GetEntAt: val :=
-  rec: "WrBuf__GetEntAt" "wrbuf" "idx" :=
-    let: "ent" := SliceGet (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "idx" in
-    (struct.get WrEnt "key" "ent", struct.get WrEnt "val" "ent", struct.get WrEnt "del" "ent").
-
-Definition WrBuf__Len: val :=
-  rec: "WrBuf__Len" "wrbuf" :=
-    slice.len (struct.loadF WrBuf "ents" "wrbuf").
+Definition WrBuf__IntoEnts: val :=
+  rec: "WrBuf__IntoEnts" "wrbuf" :=
+    struct.loadF WrBuf "ents" "wrbuf".
 
 Definition WrBuf__Clear: val :=
   rec: "WrBuf__Clear" "wrbuf" :=

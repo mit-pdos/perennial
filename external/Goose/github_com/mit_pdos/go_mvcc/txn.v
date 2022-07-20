@@ -233,33 +233,50 @@ Definition Txn__Begin: val :=
     wrbuf.WrBuf__Clear (struct.loadF Txn "wrbuf" "txn");;
     #().
 
-Definition Txn__Commit: val :=
-  rec: "Txn__Commit" "txn" :=
-    let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < wrbuf.WrBuf__Len "wrbuf"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: (("key", "val"), "del") := wrbuf.WrBuf__GetEntAt "wrbuf" (![uint64T] "i") in
+Definition Txn__acquire: val :=
+  rec: "Txn__acquire" "txn" "ents" :=
+    let: "ok" := ref_to boolT #true in
+    ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
+      (let: "key" := wrbuf.WrEnt__Key "ent" in
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
+      (if: "ret" ≠ common.RET_SUCCESS
+      then "ok" <-[boolT] #false
+      else #()));;
+    ![boolT] "ok".
+
+Definition Txn__release: val :=
+  rec: "Txn__release" "txn" "ents" :=
+    ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
+      (let: "key" := wrbuf.WrEnt__Key "ent" in
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
+    #().
+
+Definition Txn__apply: val :=
+  rec: "Txn__apply" "txn" "ents" :=
+    ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
+      (let: (("key", "val"), "del") := wrbuf.WrEnt__Destruct "ent" in
       let: "idx" := struct.loadF Txn "idx" "txn" in
       let: "tuple" := index.Index__GetTuple "idx" "key" in
       (if: "del"
-      then
-        tuple.Tuple__KillVersion "tuple" (struct.loadF Txn "tid" "txn");;
-        Continue
-      else
-        tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val";;
-        Continue));;
+      then tuple.Tuple__KillVersion "tuple" (struct.loadF Txn "tid" "txn")
+      else tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val"));;
+    #().
+
+Definition Txn__Commit: val :=
+  rec: "Txn__Commit" "txn" :=
+    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
+    let: "ret" := Txn__acquire "txn" "ents" in
+    (if: "ret"
+    then Txn__apply "txn" "ents"
+    else Txn__release "txn" "ents");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
 Definition Txn__Abort: val :=
   rec: "Txn__Abort" "txn" :=
-    let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < wrbuf.WrBuf__Len "wrbuf"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: (("key", <>), <>) := wrbuf.WrBuf__GetEntAt "wrbuf" (![uint64T] "i") in
-      let: "idx" := struct.loadF Txn "idx" "txn" in
-      let: "tuple" := index.Index__GetTuple "idx" "key" in
-      tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn");;
-      Continue);;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
