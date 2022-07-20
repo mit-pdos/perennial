@@ -23,7 +23,7 @@ Module waitgroup.
       λ: "wg",
         let: ("mu", "v") := "wg" in
         lock.acquire "mu" ;;
-        "v" <-[uint64T] ("delta" - #1) ;;
+        "v" <-[uint64T] ((![uint64T] "v") - #1) ;;
         lock.release "mu"
     .
 

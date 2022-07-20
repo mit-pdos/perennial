@@ -1,6 +1,7 @@
 From iris.proofmode Require Import tactics.
 From Perennial.base_logic.lib Require Import invariants.
 From Perennial.program_logic Require Import weakestpre.
+From iris.base_logic Require Export lib.ghost_var.
 
 (* From Perennial.goose_lang Require Import lang typing. *)
 From Perennial.goose_lang Require Import proofmode notation.
@@ -8,6 +9,8 @@ From Perennial.goose_lang Require Import proofmode notation.
 From Perennial.goose_lang.lib Require Export waitgroup.impl.
 From Perennial.goose_lang.lib Require Import typed_mem.
 From Perennial.goose_lang.lib Require Export lock.
+From Perennial.Helpers Require Import NamedProps.
+
 
 From Perennial.program_proof.fencing Require Import map.
 Set Default Proof Using "Type".
@@ -35,21 +38,34 @@ Local Coercion Var' (s:string): expr := Var s.
 Section proof.
   Context `{!heapGS Σ} (N : namespace).
   Context `{!mapG Σ u64 unit}.
+  Context `{!ghost_varG Σ u64}.
 
-  Implicit Type γ:gname.
+  Record waitgroup_names :=
+    mkwaitgroup_names {
+      tok_gn:gname;
+      total_gn:gname
+    }.
 
-  Definition own_WaitGroup_token γ (i:u64) : iProp Σ := i ⤳[γ] ().
+  Implicit Type γ:waitgroup_names.
 
-  (* XXX: here, wg is a value. Maybe it should be a loc? *)
-  Definition own_WaitGroup (wg:val) γ (n:u64) (P:u64 → iProp Σ) : iProp Σ :=
+  Definition own_WaitGroup_token γ (i:u64) : iProp Σ := i ⤳[γ.(tok_gn)] ().
+
+  Definition is_WaitGroup wg γ P : iProp Σ :=
     ∃ lk (vptr:loc),
       ⌜wg = (lk, #vptr)%V⌝ ∗
       is_lock N lk (
         ∃ (remaining:gset u64) (total:u64),
-          vptr ↦[uint64T] #(size remaining) ∗
-          ([∗ set] i ∈ (fin_to_set u64), ⌜i ∈ remaining⌝ ∨ own_WaitGroup_token γ i) ∗
-          ([∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
+          "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → int.nat r < int.nat total)⌝ ∗
+          "Htotal" ∷ ghost_var γ.(total_gn) (1/2) total ∗
+          "Hv" ∷ vptr ↦[uint64T] #(size remaining) ∗
+          "Htoks" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜i ∈ remaining⌝ ∨ own_WaitGroup_token γ i) ∗
+          "HP" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
       ).
+
+  (* XXX: here, wg is a value. Maybe it should be a loc? *)
+  Definition own_WaitGroup (wg:val) γ (n:u64) (P:u64 → iProp Σ) : iProp Σ :=
+      ghost_var γ.(total_gn) (1/2) n ∗
+      is_WaitGroup wg γ P.
 
 Lemma wp_NewWaitGroup (P:u64 → iProp Σ) :
   {{{
@@ -70,15 +86,24 @@ Proof.
   iIntros (vptr) "Hv".
   wp_pures.
 
-  iMod (ghost_map_alloc_fin ()) as (tok_gn) "Htokens".
-  iApply "HΦ".
+  iMod (ghost_map_alloc_fin ()) as (γtok) "Htokens".
+  iMod (ghost_var_alloc (U64 0)) as (γtotal) "[Htotal Ht2]".
+  iApply ("HΦ" $! _ (mkwaitgroup_names γtok γtotal)).
+  iFrame.
   iExists _, _.
   iSplitL ""; first done.
+  simpl.
+
   iMod (alloc_lock with "His_lock [-]") as "$"; last done.
   iNext.
   iExists ∅, (U64 0).
   rewrite size_empty.
-  iFrame "Hv".
+  iFrame "Hv Htotal".
+  iSplitL "".
+  {
+    iPureIntro.
+    set_solver.
+  }
   iSplitR "".
   {
     iApply (big_sepS_impl with "Htokens").
@@ -113,15 +138,189 @@ Proof.
   intros Hoverflow.
   iIntros (Φ) "Hwg HΦ".
   wp_call.
-  iDestruct "Hwg" as (??) "[%HwgPair #Hlk]".
+  iDestruct "Hwg" as "(Htotal1 & #His)".
+  iDestruct "His" as (??) "(%HwgPair & Hlk)".
   rewrite HwgPair.
   wp_pures.
   wp_apply (acquire_spec with "Hlk").
   iIntros "[Hlocked Hown]".
   wp_pures.
-  iDestruct "Hown" as (remaining total) "(Hv & Htoks & HP)".
+  iNamed "Hown".
+  iDestruct (ghost_var_agree with "Htotal1 Htotal") as %->.
+  iMod (ghost_var_update_2 (word.add total 1) with "Htotal1 Htotal") as "[Htotal1 Htotal]".
+  { by apply Qp_half_half. }
   wp_load.
   wp_store.
+  iDestruct (big_sepS_elem_of_acc_impl total with "Htoks") as "[Htok Htoks]".
+  { set_solver. }
+
+  iDestruct "Htok" as "[%Hbad | Htok]".
+  {
+    exfalso.
+    apply Hremaining in Hbad.
+    word.
+  }
+  iApply (release_spec with "[$Hlocked $Hlk Htotal HP Htoks Hv]").
+  {
+    iNext.
+    iExists (remaining ∪ {[total]}).
+    iExists (word.add total 1).
+    iSplitL "".
+    {
+      iPureIntro.
+      intros.
+      rewrite elem_of_union in H.
+      destruct H as [|].
+      { apply Hremaining in H. word. }
+      { replace (r) with (total) by set_solver. word. }
+    }
+    iFrame "Htotal".
+    iSplitL "Hv".
+    {
+      replace ((word.add 1 (size remaining))) with (U64 (size (remaining ∪ {[total]}))); last first.
+      {
+        (* TODO: pure reasoning: remaining has size less than n, and n is smaller than UINT64_MAX *)
+        admit.
+      }
+      done.
+    }
+    iSplitL "Htoks".
+    {
+      iApply "Htoks".
+      {
+        iModIntro.
+        iIntros (???) "[%H1|H2]".
+        {
+          iLeft.
+          iPureIntro.
+          set_solver.
+        }
+        iRight.
+        done.
+      }
+      {
+        iLeft.
+        iPureIntro.
+        set_solver.
+      }
+    }
+
+    iApply (big_sepS_impl with "HP").
+    iModIntro.
+    iIntros (??) "[%H1|[%H2|H3]]".
+    {
+      assert (int.nat x = int.nat total ∨ int.nat x ≥ int.nat (word.add total 1)) as Hcases.
+      { word. }
+      destruct Hcases as [|].
+      {
+        replace (x) with (total) by word.
+        iRight. iLeft.
+        iPureIntro. set_solver.
+      }
+      {
+        iLeft. done.
+      }
+    }
+    {
+      iRight.
+      iLeft.
+      iPureIntro.
+      set_solver.
+    }
+    iFrame.
+  }
+  iNext.
+  iIntros.
+  iApply "HΦ".
+  iFrame "Htok".
+  iFrame.
+  iExists _, _; iFrame "#∗".
+  done.
+Admitted.
+
+Lemma wp_WaitGroup__Done wg γ P n :
+  {{{
+      is_WaitGroup wg γ P ∗ own_WaitGroup_token γ n ∗ □ P n
+  }}}
+    waitgroup.Done wg
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+  iIntros (Φ) "(#Hwg & Htok & #HPn) HΦ".
+  wp_call.
+  iDestruct "Hwg" as (??) "(%HwgPair & Hlk)".
+  rewrite HwgPair.
+  wp_pures.
+
+  wp_apply (acquire_spec with "Hlk").
+  iIntros "[Hlocked Hown]".
+  wp_pures.
+  iNamed "Hown".
+  wp_load.
+  wp_store.
+
+  iApply (release_spec with "[$Hlocked $Hlk Htotal HP Htoks Hv Htok HPn]").
+  {
+    iNext.
+    iExists (remaining ∖ {[n]}), total.
+    iSplitL "".
+    { iPureIntro. intros. apply Hremaining. set_solver. }
+    iFrame.
+    iDestruct (big_sepS_elem_of_acc_impl n with "Htoks") as "[HH Htoks]".
+    { set_solver. }
+    iDestruct "HH" as "[%HnRemaining | Hbad]"; last first.
+    {
+      iDestruct (ghost_map_points_to_valid_2 with "Hbad Htok") as %Hbad.
+      exfalso.
+      naive_solver.
+    }
+    iSplitL "Hv".
+    {
+      (* Pure reasoning; need to know that (size remaining) is less than UINT64_MAX *)
+      admit.
+    }
+    iSplitL "Htoks Htok".
+    {
+      iApply "Htoks".
+      {
+        iModIntro.
+        iIntros (???) "[%Hremain|$]".
+        iLeft.
+        iPureIntro.
+        set_solver.
+      }
+      {
+        iFrame.
+      }
+    }
+    iApply (big_sepS_impl with "HP").
+    iModIntro.
+    iIntros (??) "[$|[%Hremain|$]]".
+    destruct (decide (x = n)) as [->|].
+    {
+      iFrame "HPn".
+    }
+    {
+      iRight. iLeft.
+      iPureIntro. set_solver.
+    }
+  }
+  iNext.
+  iIntros.
+  iApply "HΦ".
+  done.
+Admitted.
+
+Lemma wp_WaitGroup__Wait wg γ P n :
+  {{{
+      own_WaitGroup wg γ n P
+  }}}
+    waitgroup.Wait wg
+  {{{
+        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat n⌝ ∨ (P n)
+  }}}.
+Proof.
 Admitted.
 
 End proof.
