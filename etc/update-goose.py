@@ -171,6 +171,7 @@ def main():
         run_goose(
             path.join(goose_dir, "internal/examples"),
             "./unittest",
+            "./unittest/generic",
             "./semantics",
             "./append_log",
             "./logging2",
