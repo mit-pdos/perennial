@@ -82,7 +82,7 @@ Proof.
     {
       iDestruct "Hfin" as "(HPR&Hrest)".
       iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
-      { apply (dfrac_valid_discarded 1). }
+      { apply dfrac_valid_discarded. }
       iMod (own_update_2 _ _ _ (● Excl' (γprop_stored, γprop_remainder') ⋅
                                   ◯ Excl' (γprop_stored, γprop_remainder'))
               with "Hown' Hown") as "[Hown' Hown]".
@@ -122,7 +122,7 @@ Proof.
     rewrite -Heq_mj.
     iDestruct (pri_inv_tok_split with "Hitok") as "(Hitok_ukeep&Hitok_ushare)".
     iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
     iMod (own_update_2 _ _ _ (● Excl' (γprop_stored, γprop_remainder') ⋅
                                 ◯ Excl' (γprop_stored, γprop_remainder'))
             with "Hown' Hown") as "[Hown' Hown]".
@@ -233,9 +233,9 @@ Proof.
     iMod (saved_prop_alloc
             (wpc0 NotStuck mj_wp ⊤ e2 (λ v : val Λ, staged_inv_cancel _ mj_wp P ∗ Φc ∧ Φ v)
               (Φc ∗ P))%I) as (γprop_stored') "#Hsaved1''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
     iMod (saved_prop_alloc Φc) as (γprop_remainder') "#Hsaved2''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
     iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                               ◯ Excl' (γprop_stored', γprop_remainder'))
             with "Hown' Hown") as "[Hown' Hown]".
@@ -438,9 +438,9 @@ Proof.
     iMod (saved_prop_alloc
             (wpc0 NotStuck mj_wp ⊤ e2 (λ v : val Λ, staged_inv_cancel ⊤ mj_wp P ∗ Φc ∧ Φ v)
               (Φc ∗ P))%I) as (γprop_stored') "#Hsaved1''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
   iMod (saved_prop_alloc Φc) as (γprop_remainder') "#Hsaved2''".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                             ◯ Excl' (γprop_stored', γprop_remainder'))
           with "Hown' Hown") as "[Hown' Hown]".

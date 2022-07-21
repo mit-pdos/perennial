@@ -84,7 +84,7 @@ Proof.
     {
       iDestruct "Hfin" as "(HPR&Hrest)".
       iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
-      { apply (dfrac_valid_discarded 1). }
+      { apply dfrac_valid_discarded. }
       iMod (own_update_2 _ _ _ (● Excl' (γprop_stored, γprop_remainder') ⋅
                                   ◯ Excl' (γprop_stored, γprop_remainder'))
               with "Hown' Hown") as "[Hown' Hown]".
@@ -124,7 +124,7 @@ Proof.
     rewrite -Heq_mj.
     iDestruct (pri_inv_tok_split with "Hitok") as "(Hitok_ukeep&Hitok_ushare)".
     iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
     iMod (own_update_2 _ _ _ (● Excl' (γprop_stored, γprop_remainder') ⋅
                                 ◯ Excl' (γprop_stored, γprop_remainder'))
             with "Hown' Hown") as "[Hown' Hown]".
@@ -194,9 +194,9 @@ Proof.
       iDestruct "H" as "(Hv&Hg&HNC)".
       iDestruct "Hv" as (Qnew) "(HQnew&Hwand_new&Hpost)".
       iMod (saved_prop_alloc Qnew) as (γprop_stored') "#Hsaved1''".
-      { apply (dfrac_valid_discarded 1). }
+      { apply dfrac_valid_discarded. }
       iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
-      { apply (dfrac_valid_discarded 1). }
+      { apply dfrac_valid_discarded. }
       iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                                 ◯ Excl' (γprop_stored', γprop_remainder'))
               with "Hown' Hown") as "[Hown' Hown]".
@@ -242,9 +242,9 @@ Proof.
             (wpc0 NotStuck mj_wp ⊤ e2
               (λ v : val Λ, ∃ Qnew : iPropI Σ, Qnew ∗ (Qnew -∗ C ==∗ P) ∗ (staged_value E1' Qnew P -∗ Φc ∧ Φ v))
               (Φc ∗ P))%I) as (γprop_stored') "#Hsaved1''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
     iMod (saved_prop_alloc Φc) as (γprop_remainder') "#Hsaved2''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
     iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                               ◯ Excl' (γprop_stored', γprop_remainder'))
             with "Hown' Hown") as "[Hown' Hown]".
@@ -400,9 +400,9 @@ Proof.
     iDestruct "H" as "(Hv&Hg&HNC)".
     iDestruct "Hv" as (Qnew) "(HQnew&Hwand_new&Hpost)".
     iMod (saved_prop_alloc Qnew) as (γprop_stored') "#Hsaved1''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
     iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
-    { apply (dfrac_valid_discarded 1). }
+    { apply dfrac_valid_discarded. }
     iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                               ◯ Excl' (γprop_stored', γprop_remainder'))
             with "Hown' Hown") as "[Hown' Hown]".
@@ -450,9 +450,9 @@ Proof.
           (wpc0 NotStuck mj_wp ⊤ e2
             (λ v : val Λ, ∃ Qnew : iPropI Σ, Qnew ∗ (Qnew -∗ C ==∗ P) ∗ (staged_value ⊤ Qnew P -∗ Φc ∧ Φ v))
             (Φc ∗ P))%I) as (γprop_stored') "#Hsaved1''".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (saved_prop_alloc Φc) as (γprop_remainder') "#Hsaved2''".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                             ◯ Excl' (γprop_stored', γprop_remainder'))
           with "Hown' Hown") as "[Hown' Hown]".

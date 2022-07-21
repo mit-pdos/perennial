@@ -736,7 +736,7 @@ Proof.
   wp_pures.
   wp_loadField.
   iMod (saved_pred_alloc (Post)) as (γ) "#Hsaved".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   assert (reqs !! n = None).
   { apply not_elem_of_dom. rewrite -Hdom_range. lia. }
   iMod (map_alloc_ro n (ReqDesc rpcid reqData γ cb_state rep_ptr)

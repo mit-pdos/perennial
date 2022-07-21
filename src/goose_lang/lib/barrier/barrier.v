@@ -102,9 +102,9 @@ Proof.
   wp_pures.
   iApply ("HΦ" with "[> -]").
   iMod (saved_prop_alloc P) as (γsp) "#Hsp".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (saved_prop_alloc Pc) as (γspc) "#Hspc".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (ghost_map_alloc ({[O := (γsp, γspc)]})) as (γ) "[Hauth Hkeys]".
   iMod (inv_alloc N _ (barrier_inv l γ P Pc) with "[Hl Hauth Hc]") as "#Hinv".
   { iExists false,({[O := (γsp, γspc)]}),
@@ -264,14 +264,14 @@ Proof.
   iMod (ghost_map_delete with "[$] [$]") as "H●".
   destruct (gmap_gname_codomain_set (delete i gmm)) as (s&Hins).
   iMod (saved_prop_alloc_cofinite s R1) as (γsp1 Hnotin1s) "#Hsp1".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (saved_prop_alloc_cofinite (s ∪ {[ γsp1 ]}) R2)
     as (γsp2 [? ?%not_elem_of_singleton_1]%not_elem_of_union) "#Hsp2".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (saved_prop_alloc_cofinite (s ∪ {[ γsp1; γsp2]}) Rc1) as (γspc1 Hnotin1c) "#Hspc1".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (saved_prop_alloc_cofinite (s ∪ {[ γsp1; γsp2; γspc1]}) Rc2) as (γspc2 Hnotin2c) "#Hspc2".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   (*
   iMod (saved_prop_alloc_cofinite ({[ γspc1 ]}) Rc2)
     as (γspc2 ?%not_elem_of_singleton) "#Hspc2".

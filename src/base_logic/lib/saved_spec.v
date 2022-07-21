@@ -45,7 +45,7 @@ Lemma saved_spec_alloc_cofinite (G : gset gname) Spec :
 Proof.
   rewrite /saved_spec_own.
   iApply saved_anything_alloc_cofinite.
-  apply (dfrac.dfrac_valid_discarded 1).
+  apply dfrac.dfrac_valid_discarded.
 Qed.
 
 Lemma saved_spec_alloc Spec :
@@ -53,7 +53,7 @@ Lemma saved_spec_alloc Spec :
 Proof.
   rewrite /saved_spec_own.
   iApply saved_anything_alloc.
-  apply (dfrac.dfrac_valid_discarded 1).
+  apply dfrac.dfrac_valid_discarded.
 Qed.
 
 (* We put the `x` on the outside to make this lemma easier to apply. *)

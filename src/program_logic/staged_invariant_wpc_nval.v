@@ -74,9 +74,9 @@ Proof.
   iSpecialize ("Hwp" $! mj). rewrite wpc0_unfold /wpc_pre.
   rewrite Hnval. iDestruct "Hwp" as "(Hwp&_)".
   iMod (saved_prop_alloc Qs') as (γprop_stored') "#Hsaved1''".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (saved_prop_alloc True%I) as (γprop_remainder') "#Hsaved2''".
-  { apply (dfrac_valid_discarded 1). }
+  { apply dfrac_valid_discarded. }
   iMod (own_update_2 _ _ _ (● Excl' (γprop_stored', γprop_remainder') ⋅
                               ◯ Excl' (γprop_stored', γprop_remainder'))
               with "Hown' Hown") as "[Hown' Hown]".
