@@ -178,6 +178,7 @@ def main():
             "./rfc1813",
             "./simpledb",
             "./wal",
+            "./trust_import",
         )
 
     if journal_dir is not None:

@@ -72,7 +72,7 @@ From Perennial.goose_lang.lib Require
 
 (* goose output *)
 From Goose.github_com.tchajed.goose.internal.examples Require
-     comments simpledb logging2 rfc1813.
+     comments simpledb logging2 rfc1813 trust_import.
 
 (* examples goose output *)
 From Goose.github_com.mit_pdos Require
