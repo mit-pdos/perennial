@@ -10,16 +10,18 @@ Context `{!heapGS Σ}.
 Definition mvcc_proph (γ : mvcc_names) (p : proph_id) (acs : list action) : iProp Σ.
 Admitted.
 
-Lemma wp_ResolveRead γ p acs (tid key : u64) :
-  {{{ mvcc_proph γ p acs }}}
-    ResolveRead #p #tid #key
-  {{{ acs', RET #(); ⌜acs = EvRead tid key :: acs⌝ ∗ mvcc_proph γ p acs' }}}.
+Lemma wp_ResolveRead γ p (tid key : u64) :
+  ⊢ <<< ∀∀ acs, mvcc_proph γ p acs >>>
+      ResolveRead #p #tid #key @ ∅
+    <<< ∃ acs', ⌜acs = EvRead tid key :: acs⌝ ∗ mvcc_proph γ p acs' >>>
+    {{{ RET #(); True }}}.
 Admitted.
 
-Lemma wp_ResolveAbort γ p acs (tid : u64) :
-  {{{ mvcc_proph γ p acs }}}
-    ResolveAbort #p #tid
-  {{{ acs', RET #(); ⌜acs = EvAbort tid :: acs⌝ ∗ mvcc_proph γ p acs' }}}.
+Lemma wp_ResolveAbort γ p (tid : u64) :
+  ⊢ <<< ∀∀ acs, mvcc_proph γ p acs >>>
+      ResolveAbort #p #tid @ ∅
+    <<< ∃ acs', ⌜acs = EvAbort tid :: acs⌝ ∗ mvcc_proph γ p acs' >>>
+    {{{ RET #(); True }}}.
 Admitted.
 
 (*
