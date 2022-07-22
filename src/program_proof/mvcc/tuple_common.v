@@ -7,9 +7,6 @@ From Perennial.program_proof.mvcc Require Export mvcc_ghost.
 (* prefer untyped slices *)
 Export Perennial.goose_lang.lib.slice.slice.
 
-Section def.
-Context `{!heapGS Σ, !mvcc_ghostG Σ}.
-
 Definition TID_SENTINEL := (U64 18446744073709551615).
 Definition RET_SUCCESS := (U64 0).
 Definition RET_NONEXIST := (U64 1).
@@ -40,62 +37,6 @@ Definition spec_lookup (vers : list pver) (tid : u64) : dbval :=
   | None => Nil
   end.
 
-Definition tuple_wellformed (vers : list pver) (tidlast tidgc : u64) : iProp Σ :=
-  "%HtidlastGe" ∷ ⌜Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers⌝ ∗
-  "%HexistsLt" ∷ ⌜∀ (tid : u64), 0 < int.Z tid ->
-                                 int.Z tidgc ≤ int.Z tid ->
-                                 Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝ ∗
-  "%HtidgcLe" ∷ ⌜Forall (λ ver, int.Z tidgc ≤ int.Z ver.1.1) (tail vers)⌝ ∗
-  "%Hnotnil" ∷ ⌜vers ≠ []⌝.
-
-Definition own_tuple_phys
-           (tuple : loc) (tidown tidlast : u64) (vers : list pver)
-  : iProp Σ :=
-  ∃ (versS : Slice.t),
-    "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
-    "Htidlast" ∷ tuple ↦[Tuple :: "tidlast"] #tidlast ∗
-    "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
-    "HversS" ∷ slice.is_slice versS (structTy Version) 1 (ver_to_val <$> vers).
-
-Definition own_tuple_abst
-           (key : u64) (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval) γ
-  : iProp Σ :=
-  "Hvchain" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
-  "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast ->
-                         vchain !! (int.nat tid) = Some (spec_lookup vers tid)⌝) ∗
-  "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
-  "#Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
-  "Hwellformed" ∷ tuple_wellformed vers tidlast tidgc.
-
-Definition own_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
-  ∃ (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval),
-    "Hphys" ∷ own_tuple_phys tuple tidown tidlast vers ∗
-    "Habst" ∷ own_tuple_abst key tidown tidlast tidgc vers vchain γ.
-
-Definition is_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
-  ∃ (latch : loc) (rcond : loc),
-    "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
-    "#Hlock" ∷ is_lock mvccN #latch (own_tuple tuple key γ) ∗
-    "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
-    "#HrcondC" ∷ is_cond rcond #latch ∗
-    "#Hinvgc" ∷ mvcc_inv_gc γ ∗
-    "#Hinvtuple" ∷ mvcc_inv_tuple γ ∗
-    "_" ∷ True.
-
-Definition tuple_locked tuple (key : u64) (latch : loc) γ : iProp Σ :=
-  "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
-  "#Hlock" ∷ is_lock mvccN #latch (own_tuple tuple key γ) ∗
-  "Hlocked" ∷ locked #latch.
-
-End def.
-
-Hint Extern 1 (environments.envs_entails _ (own_tuple_phys _ _ _ _)) => unfold own_tuple_phys : core.
-Hint Extern 1 (environments.envs_entails _ (own_tuple_abst _ _ _ _ _ _)) => unfold own_tuple_abst : core.
-Hint Extern 1 (environments.envs_entails _ (own_tuple _ _ _)) => unfold own_tuple : core.
-Hint Extern 1 (environments.envs_entails _ (is_tuple _ _ _)) => unfold is_tuple : core.
-
-Section lemma.
-  
 Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * bool * u64)) (i : nat) :
   (ver_to_val <$> l) !! i = Some x ->
   (∃ (b : u64) (d : bool) (v : u64), x = ver_to_val (b, d, v) ∧ l !! i = Some (b, d, v)).
@@ -237,7 +178,62 @@ Proof.
   destruct b; done.
 Qed.
 
-End lemma.
+Section def.
+Context `{!heapGS Σ, !mvcc_ghostG Σ}.
+
+Definition tuple_wellformed (vers : list pver) (tidlast tidgc : u64) : iProp Σ :=
+  "%HtidlastGe" ∷ ⌜Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers⌝ ∗
+  "%HexistsLt" ∷ ⌜∀ (tid : u64), 0 < int.Z tid ->
+                                 int.Z tidgc ≤ int.Z tid ->
+                                 Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝ ∗
+  "%HtidgcLe" ∷ ⌜Forall (λ ver, int.Z tidgc ≤ int.Z ver.1.1) (tail vers)⌝ ∗
+  "%Hnotnil" ∷ ⌜vers ≠ []⌝.
+
+Definition own_tuple_phys
+           (tuple : loc) (tidown tidlast : u64) (vers : list pver)
+  : iProp Σ :=
+  ∃ (versS : Slice.t),
+    "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
+    "Htidlast" ∷ tuple ↦[Tuple :: "tidlast"] #tidlast ∗
+    "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
+    "HversS" ∷ slice.is_slice versS (structTy Version) 1 (ver_to_val <$> vers).
+
+Definition own_tuple_abst
+           (key : u64) (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval) γ
+  : iProp Σ :=
+  "Hvchain" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
+  "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast ->
+                         vchain !! (int.nat tid) = Some (spec_lookup vers tid)⌝) ∗
+  "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
+  "#Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
+  "Hwellformed" ∷ tuple_wellformed vers tidlast tidgc.
+
+Definition own_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
+  ∃ (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval),
+    "Hphys" ∷ own_tuple_phys tuple tidown tidlast vers ∗
+    "Habst" ∷ own_tuple_abst key tidown tidlast tidgc vers vchain γ.
+
+Definition is_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
+  ∃ (latch : loc) (rcond : loc),
+    "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
+    "#Hlock" ∷ is_lock mvccN #latch (own_tuple tuple key γ) ∗
+    "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
+    "#HrcondC" ∷ is_cond rcond #latch ∗
+    "#Hinvgc" ∷ mvcc_inv_gc γ ∗
+    "#Hinvtuple" ∷ mvcc_inv_tuple γ ∗
+    "_" ∷ True.
+
+Definition tuple_locked tuple (key : u64) (latch : loc) γ : iProp Σ :=
+  "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
+  "#Hlock" ∷ is_lock mvccN #latch (own_tuple tuple key γ) ∗
+  "Hlocked" ∷ locked #latch.
+
+End def.
+
+Hint Extern 1 (environments.envs_entails _ (own_tuple_phys _ _ _ _)) => unfold own_tuple_phys : core.
+Hint Extern 1 (environments.envs_entails _ (own_tuple_abst _ _ _ _ _ _)) => unfold own_tuple_abst : core.
+Hint Extern 1 (environments.envs_entails _ (own_tuple _ _ _)) => unfold own_tuple : core.
+Hint Extern 1 (environments.envs_entails _ (is_tuple _ _ _)) => unfold is_tuple : core.
 
 Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
