@@ -51,13 +51,7 @@ From Perennial.program_proof.ctrexample Require
      client server closed.
 
 (* MVCC *)
-From Perennial.program_proof.mvcc Require
-     mvcc_ghost
-     proph_proof
-     (* txn_proof *)
-     index_proof
-     gc_proof
-     tuple_proof.
+From Perennial.program_proof.mvcc Require mvcc_proof.
 
 (*
 From Perennial.goose_lang Require
