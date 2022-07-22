@@ -6,6 +6,30 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+(* 0_marshal.go *)
+
+Definition EncodeConfig: val :=
+  rec: "EncodeConfig" "config" :=
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 * slice.len "config")) in
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "config");;
+    ForSlice uint64T <> "h" "config"
+      ("enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "h");;
+    ![slice.T byteT] "enc".
+
+Definition DecodeConfig: val :=
+  rec: "DecodeConfig" "enc_config" :=
+    let: "enc" := ref_to (slice.T byteT) "enc_config" in
+    let: "configLen" := ref (zero_val uint64T) in
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+    "configLen" <-[uint64T] "0_ret";;
+    "enc" <-[slice.T byteT] "1_ret";;
+    let: "config" := NewSlice uint64T (![uint64T] "configLen") in
+    ForSlice uint64T "i" <> "config"
+      (let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+      SliceSet uint64T "config" "i" "0_ret";;
+      "enc" <-[slice.T byteT] "1_ret");;
+    "config".
+
 (* client.go *)
 
 Definition Clerk := struct.decl [
@@ -64,30 +88,6 @@ Definition Clerk__WriteConfig: val :=
       let: ("e", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
       "e"
     else "err").
-
-(* marshal.go *)
-
-Definition EncodeConfig: val :=
-  rec: "EncodeConfig" "config" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 * slice.len "config")) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "config");;
-    ForSlice uint64T <> "h" "config"
-      ("enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "h");;
-    ![slice.T byteT] "enc".
-
-Definition DecodeConfig: val :=
-  rec: "DecodeConfig" "enc_config" :=
-    let: "enc" := ref_to (slice.T byteT) "enc_config" in
-    let: "configLen" := ref (zero_val uint64T) in
-    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    "configLen" <-[uint64T] "0_ret";;
-    "enc" <-[slice.T byteT] "1_ret";;
-    let: "config" := NewSlice uint64T (![uint64T] "configLen") in
-    ForSlice uint64T "i" <> "config"
-      (let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-      SliceSet uint64T "config" "i" "0_ret";;
-      "enc" <-[slice.T byteT] "1_ret");;
-    "config".
 
 (* server.go *)
 

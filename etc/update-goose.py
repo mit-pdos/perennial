@@ -240,6 +240,7 @@ def main():
                 "simplepb/pb",
                 "simplepb/state",
                 "simplepb/e",
+                "simplepb/client",
                 ]
 
         for pkg in pkgs:

@@ -33,18 +33,18 @@ Definition EnterNewConfig: val :=
       let: "clerks" := NewSlice ptrT (slice.len "servers") in
       ForSlice ptrT "i" <> "clerks"
         (SliceSet ptrT "clerks" "i" (pb.MakeClerk (SliceGet uint64T "servers" "i")));;
-      let: "wg" := struct.alloc sync.WaitGroup (zero_val (struct.t sync.WaitGroup)) in
+      let: "wg" := waitgroup.New #() in
       let: "errs" := NewSlice uint64T (slice.len "clerks") in
       ForSlice ptrT "i" "clerk" "clerks"
-        (sync.WaitGroup__Add "wg" #1;;
+        (waitgroup.Add "wg";;
         let: "clerk" := "clerk" in
         let: "i" := "i" in
         Fork (SliceSet uint64T "errs" "i" (pb.Clerk__SetState "clerk" (struct.new pb.SetStateArgs [
                 "Epoch" ::= "epoch";
                 "State" ::= struct.loadF pb.GetStateReply "State" "reply"
               ]));;
-              sync.WaitGroup__Done "wg"));;
-      sync.WaitGroup__Wait "wg";;
+              waitgroup.Done "wg"));;
+      waitgroup.Wait "wg";;
       let: "err" := ref_to uint64T e.None in
       ForSlice uint64T <> "err2" "errs"
         (if: "err2" ≠ e.None

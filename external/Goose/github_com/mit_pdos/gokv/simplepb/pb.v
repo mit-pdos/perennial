@@ -223,13 +223,13 @@ Definition Server__Apply: val :=
       lock.release (struct.loadF Server "mu" "s");;
       (e.Stale, slice.nil)
     else
-      let: "ret" := StateMachine__Apply (struct.loadF Server "sm" "s") "op" in
+      let: "ret" := struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") "op" in
       let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
       struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
       let: "epoch" := struct.loadF Server "epoch" "s" in
       let: "clerks" := struct.loadF Server "clerks" "s" in
       lock.release (struct.loadF Server "mu" "s");;
-      let: "wg" := struct.alloc sync.WaitGroup (zero_val (struct.t sync.WaitGroup)) in
+      let: "wg" := waitgroup.New #() in
       let: "errs" := NewSlice uint64T (slice.len "clerks") in
       let: "args" := struct.new ApplyArgs [
         "epoch" ::= "epoch";
@@ -239,10 +239,10 @@ Definition Server__Apply: val :=
       ForSlice ptrT "i" "clerk" "clerks"
         (let: "clerk" := "clerk" in
         let: "i" := "i" in
-        sync.WaitGroup__Add "wg" #1;;
+        waitgroup.Add "wg";;
         Fork (SliceSet uint64T "errs" "i" (Clerk__Apply "clerk" "args");;
-              sync.WaitGroup__Done "wg"));;
-      sync.WaitGroup__Wait "wg";;
+              waitgroup.Done "wg"));;
+      waitgroup.Wait "wg";;
       let: "err" := ref_to uint64T e.None in
       ForSlice uint64T <> "err2" "errs"
         (if: "err2" ≠ e.None
@@ -250,6 +250,18 @@ Definition Server__Apply: val :=
         else #());;
       (* log.Println("Apply() returned ", err) *)
       (![uint64T] "err", "ret")).
+
+(* returns true iff stale *)
+Definition Server__epochFence: val :=
+  rec: "Server__epochFence" "s" "epoch" :=
+    (if: struct.loadF Server "epoch" "s" < "epoch"
+    then
+      struct.storeF Server "epoch" "s" "epoch";;
+      struct.loadF StateMachine "EnterEpoch" (struct.loadF Server "sm" "s") (struct.loadF Server "epoch" "s");;
+      struct.storeF Server "isPrimary" "s" #false;;
+      struct.storeF Server "nextIndex" "s" #0
+    else #());;
+    struct.loadF Server "epoch" "s" > "epoch".
 
 (* called on backup servers to apply an operation so it is replicated and
    can be considered committed by primary. *)
@@ -266,7 +278,7 @@ Definition Server__ApplyAsBackup: val :=
         lock.release (struct.loadF Server "mu" "s");;
         e.OutOfOrder
       else
-        StateMachine__Apply (struct.loadF Server "sm" "s") (struct.loadF ApplyArgs "op" "args");;
+        struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") (struct.loadF ApplyArgs "op" "args");;
         struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
         lock.release (struct.loadF Server "mu" "s");;
         e.None)).
@@ -284,7 +296,7 @@ Definition Server__SetState: val :=
         lock.release (struct.loadF Server "mu" "s");;
         e.None
       else
-        StateMachine__SetState (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args");;
+        struct.loadF StateMachine "SetState" (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args");;
         lock.release (struct.loadF Server "mu" "s");;
         e.None)).
 
@@ -299,24 +311,12 @@ Definition Server__GetState: val :=
         "State" ::= slice.nil
       ]
     else
-      let: "ret" := StateMachine__GetState (struct.loadF Server "sm" "s") in
+      let: "ret" := struct.loadF StateMachine "GetState" (struct.loadF Server "sm" "s") #() in
       lock.release (struct.loadF Server "mu" "s");;
       struct.new GetStateReply [
         "Err" ::= e.None;
         "State" ::= "ret"
       ]).
-
-(* returns true iff stale *)
-Definition Server__epochFence: val :=
-  rec: "Server__epochFence" "s" "epoch" :=
-    (if: struct.loadF Server "epoch" "s" < "epoch"
-    then
-      struct.storeF Server "epoch" "s" "epoch";;
-      StateMachine__EnterEpoch (struct.loadF Server "sm" "s") (struct.loadF Server "epoch" "s");;
-      struct.storeF Server "isPrimary" "s" #false;;
-      struct.storeF Server "nextIndex" "s" #0
-    else #());;
-    struct.loadF Server "epoch" "s" > "epoch".
 
 Definition Server__BecomePrimary: val :=
   rec: "Server__BecomePrimary" "s" "args" :=

@@ -138,6 +138,7 @@ Example testStoreInStructVar_ok : testStoreInStructVar #() ~~> #true := t.
 Example testStoreInStructPointerVar_ok : testStoreInStructPointerVar #() ~~> #true := t.
 Example testStoreComposite_ok : testStoreComposite #() ~~> #true := t.
 Example testStoreSlice_ok : testStoreSlice #() ~~> #true := t.
+Example testStructFieldFunc_ok : testStructFieldFunc #() ~~> #true := t.
 
 (* vars.go *)
 Example testPointerAssignment_ok : testPointerAssignment #() ~~> #true := t.

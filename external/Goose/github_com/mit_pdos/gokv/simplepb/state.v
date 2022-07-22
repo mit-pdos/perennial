@@ -39,56 +39,6 @@ Definition KVState := struct.decl [
 
 Definition Op: ty := slice.T byteT.
 
-Definition RecoverKVState: val :=
-  rec: "RecoverKVState" "fname" :=
-    let: "s" := struct.alloc KVState (zero_val (struct.t KVState)) in
-    let: "encState" := ref_to (slice.T byteT) (grove_ffi.Read "fname") in
-    struct.storeF KVState "filename" "s" "fname";;
-    (if: (slice.len (![slice.T byteT] "encState") = #0)
-    then
-      struct.storeF KVState "epoch" "s" #0;;
-      struct.storeF KVState "nextIndex" "s" #0;;
-      struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #())
-    else
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
-      struct.storeF KVState "epoch" "s" "0_ret";;
-      "encState" <-[slice.T byteT] "1_ret";;
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
-      struct.storeF KVState "nextIndex" "s" "0_ret";;
-      "encState" <-[slice.T byteT] "1_ret";;
-      KVState__loadState "s" (![slice.T byteT] "encState"));;
-    "s".
-
-Definition KVState__MakeDurable: val :=
-  rec: "KVState__MakeDurable" "s" :=
-    let: "state" := KVState__GetState "s" in
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#16 + slice.len "state")) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "epoch" "s");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "nextIndex" "s");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "state";;
-    grove_ffi.Write (struct.loadF KVState "filename" "s") (![slice.T byteT] "enc");;
-    #().
-
-Definition KVState__Apply: val :=
-  rec: "KVState__Apply" "s" "op" :=
-    let: ("key", "appendVal") := marshal.ReadInt "op" in
-    let: "ret" := Fst (MapGet (struct.loadF KVState "kvs" "s") "key") in
-    struct.storeF KVState "nextIndex" "s" (struct.loadF KVState "nextIndex" "s" + #1);;
-    MapInsert (struct.loadF KVState "kvs" "s") "key" (SliceAppendSlice byteT (Fst (MapGet (struct.loadF KVState "kvs" "s") "key")) "appendVal");;
-    KVState__MakeDurable "s";;
-    "ret".
-
-Definition KVState__GetState: val :=
-  rec: "KVState__GetState" "s" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (MapLen (struct.loadF KVState "kvs" "s"));;
-    MapIter (struct.loadF KVState "kvs" "s") (λ: "k" "v",
-      "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "k";;
-      "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "v");;
-      "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "v");;
-    (* log.Println("Size of encoded state", len(enc)) *)
-    ![slice.T byteT] "enc".
-
 Definition KVState__loadState: val :=
   rec: "KVState__loadState" "s" "snap_in" :=
     (* log.Println("Loading encoded state: ", len(snap_in)) *)
@@ -111,6 +61,56 @@ Definition KVState__loadState: val :=
       MapInsert (struct.loadF KVState "kvs" "s") (![uint64T] "key") (![slice.T byteT] "val");;
       Continue);;
     #().
+
+Definition RecoverKVState: val :=
+  rec: "RecoverKVState" "fname" :=
+    let: "s" := struct.alloc KVState (zero_val (struct.t KVState)) in
+    let: "encState" := ref_to (slice.T byteT) (grove_ffi.Read "fname") in
+    struct.storeF KVState "filename" "s" "fname";;
+    (if: (slice.len (![slice.T byteT] "encState") = #0)
+    then
+      struct.storeF KVState "epoch" "s" #0;;
+      struct.storeF KVState "nextIndex" "s" #0;;
+      struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #())
+    else
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
+      struct.storeF KVState "epoch" "s" "0_ret";;
+      "encState" <-[slice.T byteT] "1_ret";;
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
+      struct.storeF KVState "nextIndex" "s" "0_ret";;
+      "encState" <-[slice.T byteT] "1_ret";;
+      KVState__loadState "s" (![slice.T byteT] "encState"));;
+    "s".
+
+Definition KVState__GetState: val :=
+  rec: "KVState__GetState" "s" :=
+    let: "enc" := ref_to (slice.T byteT) (NewSlice byteT #0) in
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (MapLen (struct.loadF KVState "kvs" "s"));;
+    MapIter (struct.loadF KVState "kvs" "s") (λ: "k" "v",
+      "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "k";;
+      "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "v");;
+      "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "v");;
+    (* log.Println("Size of encoded state", len(enc)) *)
+    ![slice.T byteT] "enc".
+
+Definition KVState__MakeDurable: val :=
+  rec: "KVState__MakeDurable" "s" :=
+    let: "state" := KVState__GetState "s" in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#16 + slice.len "state")) in
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "epoch" "s");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "nextIndex" "s");;
+    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "state";;
+    grove_ffi.Write (struct.loadF KVState "filename" "s") (![slice.T byteT] "enc");;
+    #().
+
+Definition KVState__Apply: val :=
+  rec: "KVState__Apply" "s" "op" :=
+    let: ("key", "appendVal") := marshal.ReadInt "op" in
+    let: "ret" := Fst (MapGet (struct.loadF KVState "kvs" "s") "key") in
+    struct.storeF KVState "nextIndex" "s" (struct.loadF KVState "nextIndex" "s" + #1);;
+    MapInsert (struct.loadF KVState "kvs" "s") "key" (SliceAppendSlice byteT (Fst (MapGet (struct.loadF KVState "kvs" "s") "key")) "appendVal");;
+    KVState__MakeDurable "s";;
+    "ret".
 
 Definition KVState__SetState: val :=
   rec: "KVState__SetState" "s" "snap_in" :=

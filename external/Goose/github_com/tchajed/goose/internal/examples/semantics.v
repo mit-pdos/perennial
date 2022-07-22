@@ -1322,6 +1322,18 @@ Definition testStoreSlice: val :=
     "p" <-[slice.T uint64T] "s";;
     (slice.len (![slice.T uint64T] "p") = #3).
 
+Definition StructWithFunc := struct.decl [
+  "fn" :: (uint64T -> uint64T)%ht
+].
+
+Definition testStructFieldFunc: val :=
+  rec: "testStructFieldFunc" <> :=
+    let: "a" := struct.alloc StructWithFunc (zero_val (struct.t StructWithFunc)) in
+    struct.storeF StructWithFunc "fn" "a" (λ: "arg",
+      "arg" * #2
+      );;
+    (struct.loadF StructWithFunc "fn" "a" #10 = #20).
+
 (* vars.go *)
 
 Definition testPointerAssignment: val :=
