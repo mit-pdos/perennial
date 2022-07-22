@@ -793,15 +793,25 @@ Local Ltac solve_atomic :=
       iApply array.array_nil. done.
   Qed.
 
-  Lemma wp_GetTSC prev_time E :
-    {{{ tsc_lb prev_time }}}
-      GetTSC #() @ E
-    {{{ (new_time: u64), RET #new_time;
-      ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time)
-    }}}.
+  Lemma wp_GetTSC :
+  ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
+      GetTSC #() @ ∅
+    <<<▷ ∃∃ (new_time: u64), ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time) >>>
+    {{{ RET #new_time; True }}}.
   Proof.
-    iIntros (Φ) "Hlb HΦ". wp_lam.
-    wp_apply (wp_GetTscOp with "Hlb"). by iApply "HΦ".
+    iIntros "!>" (Φ) "HAU". wp_lam.
+    rewrite difference_empty_L.
+    iMod "HAU" as (prev_time) "[Hlb HΦ]".
+    { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst.
+      inversion H2. subst.
+      destruct x1.
+      * inversion H4. subst. inversion H6. subst. inversion H7. subst. done.
+    }
+    wp_apply (wp_GetTscOp with "Hlb").
+    iIntros (new_time) "[%Hprev Hlb]".
+    iMod ("HΦ" with "[Hlb]") as "HΦ".
+    { eauto with iFrame. }
+    by iApply "HΦ".
   Qed.
 
   Lemma tsc_lb_0 :
