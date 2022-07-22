@@ -208,6 +208,12 @@ Proof. by rewrite /IsExcept0 except_0_ncfupd. Qed.
 Global Instance from_modal_ncfupd E P :
   FromModal True modality_id (|NC={E}=> P) (|NC={E}=> P) P.
 Proof. by rewrite /FromModal /= -ncfupd_intro. Qed.
+Global Instance from_modal_ncfupd_wrong_mask E1 E2 P :
+  FromModal
+        (pm_error "Only non-mask-changing update modalities can be introduced directly.
+Use [iApply ncfupd_mask_intro] to introduce mask-changing update modalities")
+    modality_id (|NC={E1,E2}=> P) (|NC={E1,E2}=> P) P | 100.
+Proof. by intros []. Qed.
 
 Global Instance elim_modal_bupd_ncfupd p E1 E2 P Q :
   ElimModal True p false (|==> P) P (|NC={E1,E2}=> Q) (|NC={E1,E2}=> Q) | 10.
