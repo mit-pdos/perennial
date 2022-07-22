@@ -90,7 +90,6 @@ Definition Tuple__AppendVersion: val :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
     Tuple__appendVersion "tuple" "tid" "val";;
     lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
-    lock.release (struct.loadF Tuple "latch" "tuple");;
     #().
 
 Definition Tuple__killVersion: val :=
@@ -116,7 +115,6 @@ Definition Tuple__KillVersion: val :=
     then "ret" <-[uint64T] common.RET_SUCCESS
     else "ret" <-[uint64T] common.RET_NONEXIST);;
     lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
-    lock.release (struct.loadF Tuple "latch" "tuple");;
     ![uint64T] "ret".
 
 (* *
@@ -146,8 +144,12 @@ Definition Tuple__ReadVersion: val :=
     (if: struct.loadF Tuple "tidlast" "tuple" < "tid"
     then struct.storeF Tuple "tidlast" "tuple" "tid"
     else #());;
-    lock.release (struct.loadF Tuple "latch" "tuple");;
     (struct.get Version "val" "ver", ![uint64T] "ret").
+
+Definition Tuple__Release: val :=
+  rec: "Tuple__Release" "tuple" :=
+    lock.release (struct.loadF Tuple "latch" "tuple");;
+    #().
 
 Definition Tuple__removeVersions: val :=
   rec: "Tuple__removeVersions" "tuple" "tid" :=
