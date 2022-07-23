@@ -74,8 +74,7 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
 
-(* TODO: rename [is_txn] to [own_txn]. *)
-Definition is_txn_impl (txn : loc) (tid : u64) (mods : dbmap) γ : iProp Σ :=
+Definition own_txn_impl (txn : loc) (tid : u64) (mods : dbmap) γ : iProp Σ :=
   ∃ (sid : u64) (wrbuf : loc) (idx txnmgr : loc),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
@@ -88,14 +87,14 @@ Definition is_txn_impl (txn : loc) (tid : u64) (mods : dbmap) γ : iProp Σ :=
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
     "Hactive" ∷ active_tid γ tid sid ∗
     "_" ∷ True.
-Local Hint Extern 1 (environments.envs_entails _ (is_txn_impl _ _ _ _)) => unfold is_txn_impl : core.
+Local Hint Extern 1 (environments.envs_entails _ (own_txn_impl _ _ _ _)) => unfold own_txn_impl : core.
 
-Definition is_txn (txn : loc) γ : iProp Σ :=
+Definition own_txn (txn : loc) γ : iProp Σ :=
   ∃ (tid : u64) (mods : dbmap),
-    "Himpl" ∷ is_txn_impl txn tid mods γ.
-Local Hint Extern 1 (environments.envs_entails _ (is_txn _ _)) => unfold is_txn : core.
+    "Himpl" ∷ own_txn_impl txn tid mods γ.
+Local Hint Extern 1 (environments.envs_entails _ (own_txn _ _)) => unfold own_txn : core.
 
-Definition is_txn_uninit (txn : loc) γ : iProp Σ := 
+Definition own_txn_uninit (txn : loc) γ : iProp Σ := 
   ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
@@ -279,7 +278,7 @@ Theorem wp_txnMgr__New txnmgr γ :
   is_txnmgr txnmgr γ -∗
   {{{ True }}}
     TxnMgr__New #txnmgr
-  {{{ (txn : loc), RET #txn; is_txn_uninit txn γ }}}.
+  {{{ (txn : loc), RET #txn; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "#Htxnmgr" (Φ) "!> _ HΦ".
   iNamed "Htxnmgr".
@@ -377,7 +376,7 @@ Proof.
   iMod (readonly_alloc_1 with "txnMgr") as "#Htxnmgr_txn".
   replace (int.nat 0) with 0%nat by word.
   simpl.
-  unfold is_txn_uninit.
+  unfold own_txn_uninit.
   do 5 iExists _.
   iFrame "∗ %".
   iFrame "HidxRI Hidx_txn Htxnmgr_txn".
@@ -1402,9 +1401,9 @@ Qed.
 (* func (txn *Txn) Begin()                                       *)
 (*****************************************************************)
 Theorem wp_txn__Begin txn γ :
-  {{{ is_txn_uninit txn γ }}}
+  {{{ own_txn_uninit txn γ }}}
     Txn__Begin #txn
-  {{{ RET #(); is_txn txn γ }}}.
+  {{{ RET #(); own_txn txn γ }}}.
 Proof.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
@@ -1443,9 +1442,9 @@ Qed.
 (* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
 (*****************************************************************)
 Theorem wp_txn__Get txn (k : u64) γ :
-  {{{ is_txn txn γ }}}
+  {{{ own_txn txn γ }}}
     Txn__Get #txn #k
-  {{{ (v : u64) (found : bool), RET (#v, #found); is_txn txn γ }}}.
+  {{{ (v : u64) (found : bool), RET (#v, #found); own_txn txn γ }}}.
 Proof.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
@@ -1500,9 +1499,9 @@ Qed.
 (* func (txn *Txn) Put(key, val uint64)                          *)
 (*****************************************************************)
 Theorem wp_txn__Put txn (k : u64) (v : u64) γ :
-  {{{ is_txn txn γ }}}
+  {{{ own_txn txn γ }}}
     Txn__Put #txn #k #v
-  {{{ RET #(); is_txn txn γ }}}.
+  {{{ RET #(); own_txn txn γ }}}.
 Proof.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
@@ -1528,9 +1527,9 @@ Qed.
 (* func (txn *Txn) Delete(key uint64) bool                       *)
 (*****************************************************************)
 Theorem wp_txn__Delete txn (k : u64) γ :
-  {{{ is_txn txn γ }}}
+  {{{ own_txn txn γ }}}
     Txn__Delete #txn #k
-  {{{ (ok : bool), RET #ok; is_txn txn γ }}}.
+  {{{ (ok : bool), RET #ok; own_txn txn γ }}}.
 Proof.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
@@ -1556,9 +1555,9 @@ Proof.
 Qed.
 
 Theorem wp_txn__Commit txn γ :
-  {{{ is_txn txn γ }}}
+  {{{ own_txn txn γ }}}
     Txn__Commit #txn
-  {{{ RET #(); is_txn_uninit txn γ }}}.
+  {{{ RET #(); own_txn_uninit txn γ }}}.
 Admitted.
 
 End heap.
