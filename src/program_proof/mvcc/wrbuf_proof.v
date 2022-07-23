@@ -53,6 +53,48 @@ Proof.
   reflexivity.
 Qed.
 
+(*****************************************************************)
+(* func MkWrBuf() *WrBuf                                         *)
+(*****************************************************************)
+Theorem wp_MkWrBuf :
+  {{{ True }}}
+    MkWrBuf #()
+  {{{ (wrbuf : loc), RET #wrbuf; own_wrbuf wrbuf ∅ }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  
+  (***********************************************************)
+  (* wrbuf := new(WrBuf)                                     *)
+  (***********************************************************)
+  wp_apply (wp_allocStruct); first auto 10.
+  iIntros (wrbuf) "Hwrbuf".
+  wp_pures.
+
+  (***********************************************************)
+  (* wrbuf.ents = make([]WrEnt, 0, 16)                       *)
+  (***********************************************************)
+  iDestruct (struct_fields_split with "Hwrbuf") as "Hwrbuf".
+  iNamed "Hwrbuf".
+  simpl.
+  wp_pures.
+  wp_apply (wp_new_slice_cap); [done | word |].
+  iIntros (ents) "HentsS".
+  wp_storeField.
+
+  (***********************************************************)
+  (* return wrbuf                                            *)
+  (***********************************************************)
+  iModIntro.
+  iApply "HΦ".
+  iExists _, [].
+  change (int.nat 0) with 0%nat.
+  rewrite replicate_0.
+  iFrame.
+  iPureIntro.
+  split; [apply NoDup_nil_2 | done].
+Qed.
+
 Definition spec_search (key : u64) (ents : list wrent) (pos : u64) (found : bool) :=
   match found with
   | false => key ∉ ents.*1.*1
@@ -626,7 +668,7 @@ Proof.
 Qed.
 
 (*****************************************************************)
-(* (wrbuf *WrBuf) Clear()                                        *)
+(* func (wrbuf *WrBuf) Clear()                                   *)
 (*****************************************************************)
 Theorem wp_wrbuf__Clear wrbuf m :
   {{{ own_wrbuf wrbuf m }}}

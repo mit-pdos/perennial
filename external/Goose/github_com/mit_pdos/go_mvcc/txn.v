@@ -52,6 +52,7 @@ Definition TxnMgr__New: val :=
   rec: "TxnMgr__New" "txnMgr" :=
     lock.acquire (struct.loadF TxnMgr "latch" "txnMgr");;
     let: "txn" := struct.alloc Txn (zero_val (struct.t Txn)) in
+    struct.storeF Txn "wrbuf" "txn" (wrbuf.MkWrBuf #());;
     let: "sid" := struct.loadF TxnMgr "sidCur" "txnMgr" in
     struct.storeF Txn "sid" "txn" "sid";;
     struct.storeF Txn "idx" "txn" (struct.loadF TxnMgr "idx" "txnMgr");;

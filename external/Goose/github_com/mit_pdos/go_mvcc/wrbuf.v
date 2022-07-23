@@ -39,6 +39,12 @@ Definition WrBuf := struct.decl [
   "ents" :: slice.T (struct.t WrEnt)
 ].
 
+Definition MkWrBuf: val :=
+  rec: "MkWrBuf" <> :=
+    let: "wrbuf" := struct.alloc WrBuf (zero_val (struct.t WrBuf)) in
+    struct.storeF WrBuf "ents" "wrbuf" (NewSliceWithCap (struct.t WrEnt) #0 #16);;
+    "wrbuf".
+
 Definition WrBuf__Lookup: val :=
   rec: "WrBuf__Lookup" "wrbuf" "key" :=
     let: ("pos", "found") := search (struct.loadF WrBuf "ents" "wrbuf") "key" in
