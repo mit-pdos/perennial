@@ -19,29 +19,29 @@ Definition WrEnt__Destruct: val :=
   rec: "WrEnt__Destruct" "ent" :=
     (struct.get WrEnt "key" "ent", struct.get WrEnt "val" "ent", struct.get WrEnt "del" "ent").
 
-Definition WrBuf := struct.decl [
-  "ents" :: slice.T (struct.t WrEnt)
-].
-
-Definition WrBuf__lookup: val :=
-  rec: "WrBuf__lookup" "wrbuf" "key" :=
+Definition search: val :=
+  rec: "search" "ents" "key" :=
     let: "pos" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "pos" ≥ slice.len (struct.loadF WrBuf "ents" "wrbuf")
+      (if: ![uint64T] "pos" ≥ slice.len "ents"
       then Break
       else
-        (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") (![uint64T] "pos")))
+        (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "pos")))
         then Break
         else
           "pos" <-[uint64T] ![uint64T] "pos" + #1;;
           Continue)));;
-    let: "found" := ![uint64T] "pos" < slice.len (struct.loadF WrBuf "ents" "wrbuf") in
+    let: "found" := ![uint64T] "pos" < slice.len "ents" in
     (![uint64T] "pos", "found").
+
+Definition WrBuf := struct.decl [
+  "ents" :: slice.T (struct.t WrEnt)
+].
 
 Definition WrBuf__Lookup: val :=
   rec: "WrBuf__Lookup" "wrbuf" "key" :=
-    let: ("pos", "found") := WrBuf__lookup "wrbuf" "key" in
+    let: ("pos", "found") := search (struct.loadF WrBuf "ents" "wrbuf") "key" in
     (if: "found"
     then
       let: "ent" := SliceGet (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
@@ -50,12 +50,12 @@ Definition WrBuf__Lookup: val :=
 
 Definition WrBuf__Put: val :=
   rec: "WrBuf__Put" "wrbuf" "key" "val" :=
-    let: ("pos", "found") := WrBuf__lookup "wrbuf" "key" in
+    let: ("pos", "found") := search (struct.loadF WrBuf "ents" "wrbuf") "key" in
     (if: "found"
     then
-      let: "went" := SliceRef (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
-      struct.storeF WrEnt "val" "went" "val";;
-      struct.storeF WrEnt "del" "went" #false;;
+      let: "ent" := SliceRef (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
+      struct.storeF WrEnt "val" "ent" "val";;
+      struct.storeF WrEnt "del" "ent" #false;;
       #()
     else
       let: "ent" := struct.mk WrEnt [
@@ -68,11 +68,11 @@ Definition WrBuf__Put: val :=
 
 Definition WrBuf__Delete: val :=
   rec: "WrBuf__Delete" "wrbuf" "key" :=
-    let: ("pos", "found") := WrBuf__lookup "wrbuf" "key" in
+    let: ("pos", "found") := search (struct.loadF WrBuf "ents" "wrbuf") "key" in
     (if: "found"
     then
-      let: "went" := SliceRef (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
-      struct.storeF WrEnt "del" "went" #true;;
+      let: "ent" := SliceRef (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
+      struct.storeF WrEnt "del" "ent" #true;;
       #()
     else
       let: "ent" := struct.mk WrEnt [

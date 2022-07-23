@@ -2,7 +2,7 @@
 From Perennial.program_proof Require Export grove_prelude.
 (* Import Coq model of our Goose program. *)
 From Goose.github_com.mit_pdos.go_mvcc Require Import txn.
-From Perennial.program_proof.mvcc Require Import mvcc_ghost mvcc_misc gc_proof index_proof tuple_proof.
+From Perennial.program_proof.mvcc Require Import mvcc_ghost mvcc_misc gc_proof index_proof tuple_proof wrbuf_proof.
 (* prefer untyped slices *)
 Import Perennial.goose_lang.lib.slice.slice.
 
@@ -87,15 +87,12 @@ Local Definition wrent_to_key_dbval (ent : wrent) : (u64 * dbval) :=
 
 (* TODO: rename [is_txn] to [own_txn]. *)
 Definition is_txn_impl (txn : loc) (tid : u64) (view mods : gmap u64 dbval) γ : iProp Σ :=
-  ∃ (sid : u64) (wset : Slice.t) (idx txnmgr : loc)
-    (wsetL : list wrent),
+  ∃ (sid : u64) (wrbuf : loc) (idx txnmgr : loc),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
-    "Hwset" ∷ txn ↦[Txn :: "wset"] (to_val wset) ∗
-    "HwsetL" ∷ slice.is_slice wset (structTy WrEnt) 1 (wrent_to_val <$> wsetL) ∗
-    "%HwsetLND" ∷ ⌜NoDup (fst <$> wsetL).*1⌝ (* keys are unique *) ∗
-    "%Hmods_wsetL" ∷ ⌜mods = (list_to_map (wrent_to_key_dbval <$> wsetL))⌝ ∗
+    "Hwrbuf" ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
+    "HwrbufR" ∷ own_wrbuf wrbuf mods ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
@@ -112,13 +109,11 @@ Definition is_txn (txn : loc) (view mods : gmap u64 dbval) γ : iProp Σ :=
 Local Hint Extern 1 (environments.envs_entails _ (is_txn _ _ _ _)) => unfold is_txn : core.
 
 Definition is_txn_uninit (txn : loc) γ : iProp Σ := 
-  ∃ (tid sid : u64) (wset : Slice.t) (idx txnmgr : loc)
-    (wsetL : list wrent),
+  ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
-    "Hwset" ∷ txn ↦[Txn :: "wset"] (to_val wset) ∗
-    "HwsetL" ∷ slice.is_slice wset (structTy WrEnt) 1 (wrent_to_val <$> wsetL) ∗
+    "Hwrbuf" ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
@@ -313,7 +308,6 @@ Proof.
   
   (***********************************************************)
   (* txn := new(Txn)                                         *)
-  (* txn.wset = make([]WrEnt, 0, 32)                         *)
   (***********************************************************)
   wp_apply (wp_allocStruct); first auto 10.
   iIntros (txn) "Htxn".
@@ -321,9 +315,10 @@ Proof.
   iNamed "Htxn".
   simpl.
   wp_pures.
-  wp_apply (wp_new_slice_cap); [done | word |].
-  iIntros (wset) "HwsetL".
-  wp_storeField.
+  
+  (***********************************************************)
+  (* TODO: MkWrBuf                                           *)
+  (***********************************************************)
           
   (***********************************************************)
   (* sid := txnMgr.sidCur                                    *)
@@ -393,7 +388,6 @@ Proof.
   simpl.
   unfold is_txn_uninit.
   do 5 iExists _.
-  iExists [].
   iFrame "∗ %".
   iFrame "HidxRI Hidx_txn Htxnmgr_txn".
   eauto 20 with iFrame.
@@ -422,8 +416,17 @@ Proof.
   (***********************************************************)
   (* This is a hack *)
   iMod tsc_lb_0 as "Hlb".
-  wp_apply (wp_GetTSC with "Hlb").
-  iIntros (tsc) "_".
+  wp_apply (wp_GetTSC).
+  (* XXX: We're wasting the fupd here since we're not opening any invariant. *)
+  iApply ncfupd_mask_intro; first done.
+  iIntros "HfupdC".
+  iExists 0%nat.
+  iFrame.
+  iNext.
+  iIntros (new_time) "[%Hnew Hlb]".
+  iMod "HfupdC".
+  iModIntro.
+  iIntros "_".
 
   (************************************************************************)
   (* tid = ((tid + config.N_TXN_SITES) & ^(config.N_TXN_SITES - 1)) + sid *)
@@ -1069,7 +1072,7 @@ Proof.
   wp_pures.
   by iApply "HΦ".
 Qed.
-  
+
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) getMinActiveTIDSite(sid uint64) uint64  *)
 (*****************************************************************)
@@ -1454,197 +1457,6 @@ Proof.
   split; auto using NoDup_nil_2.
 Qed.
 
-Local Lemma val_to_wrent_with_val_ty (x : val) :
-  val_ty x (uint64T * (boolT * (uint64T * unitT) * (ptrT * unitT))%ht) ->
-  (∃ (k : u64) (d : bool) (v : u64) (t : loc), x = wrent_to_val (k, (d, v), t)).
-Proof.
-  intros H.
-  inversion_clear H. 
-  { inversion H0. }
-  inversion_clear H0.
-  inversion_clear H.
-  inversion_clear H1.
-  { inversion H. }
-  inversion_clear H.
-  { inversion H1. }
-  inversion_clear H1.
-  inversion_clear H.
-  inversion_clear H2.
-  { inversion H. }
-  inversion_clear H.
-  inversion_clear H2.
-  inversion_clear H0.
-  { inversion H. }
-  inversion_clear H.
-  inversion_clear H0.
-  inversion_clear H1.
-  inversion_clear H.
-  inversion_clear H2.
-  inversion_clear H.
-  exists x0, x1, x2, x3.
-  reflexivity.
-Qed.
-
-(*****************************************************************)
-(* func matchLocalWrites(key uint64, wset []WrEnt) (uint64, bool)*)
-(*****************************************************************)
-Local Lemma wp_matchLocalWrites (key : u64) (wset : Slice.t) (wsetL : list wrent) :
-  {{{ slice.is_slice wset (structTy WrEnt) 1 (wrent_to_val <$> wsetL) }}}
-    matchLocalWrites #key (to_val wset)
-  {{{ (pos : u64) (found : bool), RET (#pos, #found);
-        slice.is_slice wset (structTy WrEnt) 1 (wrent_to_val <$> wsetL) ∗
-        ⌜(found = false ∧ key ∉ wsetL.*1.*1) ∨
-         (found = true ∧ ∃ went, wsetL !! (int.nat pos) = Some went ∧ went.1.1 = key)⌝
-  }}}.
-Proof.
-  iIntros (Φ) "HwsetL HΦ".
-  wp_call.
-  
-  (***********************************************************)
-  (* var pos uint64 = 0                                      *)
-  (***********************************************************)
-  wp_apply (wp_ref_to); first auto.
-  iIntros (posR) "HposR".
-  wp_pures.
-  
-  (***********************************************************)
-  (* for {                                                   *)
-  (*     if pos >= uint64(len(wset)) {                       *)
-  (*         break                                           *)
-  (*     }                                                   *)
-  (*     if key == wset[pos].key {                           *)
-  (*         break                                           *)
-  (*     }                                                   *)
-  (*     pos++                                               *)
-  (* }                                                       *)
-  (***********************************************************)
-  wp_apply (wp_forBreak
-              (λ b,
-                 (slice.is_slice wset (struct.t WrEnt) 1 (wrent_to_val <$> wsetL)) ∗
-                 (∃ (pos : u64),
-                    posR ↦[uint64T] #pos ∗
-                    (⌜(int.Z pos) ≤ (int.Z wset.(Slice.sz))⌝) ∗
-                    (⌜if b then True
-                      else (∃ (ent : wrent), wsetL !! (int.nat pos) = Some ent ∧ ent.1.1 = key) ∨
-                           (int.Z wset.(Slice.sz)) ≤ (int.Z pos)⌝) ∗
-                    (⌜key ∉ (take (int.nat pos) wsetL.*1.*1)⌝)))%I
-              with "[] [$HwsetL HposR]").
-  { clear Φ.
-    iIntros (Φ).
-    iModIntro.
-    iIntros "[HwsetL Hinv] HΦ".
-    iDestruct "Hinv" as (pos) "(Hpos & %Hbound & _ & %Hnotin)".
-    wp_pures.
-    wp_apply (wp_slice_len).
-    wp_load.
-    wp_if_destruct.
-    { iApply "HΦ".
-      eauto 10 with iFrame.
-    }
-    wp_load.
-    iDestruct (slice.is_slice_small_acc with "HwsetL") as "[HwsetS HwsetL]".
-    iDestruct (slice.is_slice_small_sz with "[$HwsetS]") as "%HwsetSz".
-    destruct (list_lookup_lt _ (wrent_to_val <$> wsetL) (int.nat pos)) as [ent HSome].
-    { apply Z.nle_gt in Heqb.
-      word.
-    }
-    wp_apply (slice.wp_SliceGet with "[HwsetS]"); first auto.
-    iIntros "[HwsetS %HwsetT]".
-    iDestruct ("HwsetL" with "HwsetS") as "HwsetL".
-    destruct (val_to_wrent_with_val_ty _ HwsetT) as (k & d & v & t & H).
-    subst.
-    wp_pures.
-    wp_if_destruct.
-    { iApply "HΦ".
-      iModIntro.
-      iFrame.
-      iExists pos.
-      iFrame.
-      iPureIntro.
-      split; first done.
-      split; last done.
-      left.
-      exists (k, (d, v), t).
-      split; last done.
-      rewrite list_lookup_fmap in HSome.
-      apply fmap_Some in HSome as [ent [HSome H]].
-      rewrite HSome.
-      f_equal.
-      inversion H.
-      rewrite -(surjective_pairing ent.1.2).
-      rewrite -(surjective_pairing ent.1).
-      rewrite -(surjective_pairing ent).
-      done.
-    }
-    wp_load.
-    wp_pures.
-    wp_store.
-    iModIntro.
-    iApply "HΦ".
-    iFrame.
-    iExists (word.add pos 1%Z).
-    iFrame.
-    iPureIntro.
-    split; first word.
-    split; first done.
-    replace (int.nat (word.add pos 1)) with (S (int.nat pos)); last word.
-    apply Z.nle_gt in Heqb.
-    rewrite (take_S_r _ _ k); last first.
-    { rewrite list_lookup_fmap in HSome.
-      apply fmap_Some in HSome as [ent [HSome H]].
-      inversion H.
-      do 2 rewrite list_lookup_fmap.
-      rewrite HSome.
-      done.
-    }
-    apply not_elem_of_app.
-    split; first done.
-    simpl.
-    rewrite elem_of_list_singleton.
-    unfold not.
-    intros Eqkey.
-    rewrite Eqkey in Heqb0.
-    contradiction.
-  }
-  { iExists (U64 0).
-    iFrame.
-    iPureIntro.
-    change (int.nat 0) with 0%nat.
-    rewrite take_0.
-    split; first word.
-    split; auto using not_elem_of_nil.
-  }
-  iIntros "[HwsetL Hinv]".
-  iDestruct "Hinv" as (pos) "(Hpos & _ & %Hexit & %Hnotin)".
-  wp_pures.
-  
-  (***********************************************************)
-  (* found := pos < uint64(len(wset))                        *)
-  (* return pos, found                                       *)
-  (***********************************************************)
-  wp_load.
-  wp_apply (wp_slice_len).
-  wp_pures.
-  wp_load.
-  iDestruct (is_slice_sz with "HwsetL") as "%Hsz".
-  rewrite fmap_length in Hsz.
-  case_bool_decide; (wp_pures; iModIntro; iApply "HΦ"; iFrame; iPureIntro).
-  { (* Write entry found. *)
-    right.
-    split; first done.
-    destruct Hexit; [done | word].
-  }
-  { (* Write entry not found. *)
-    left.
-    split; first done.
-    apply Z.nlt_ge in H.
-    rewrite take_ge in Hnotin; first done.
-    do 2 rewrite fmap_length.
-    rewrite Hsz.
-    word.
-  }
-Qed.
-
 Definition spec_get txn view mods k v γ : iProp Σ :=
   match mods !! k, view !! k with
   (* `k` has not been read or written. *)
@@ -1654,25 +1466,6 @@ Definition spec_get txn view mods k v γ : iProp Σ :=
   (* `k` has been written. *)
   | Some vw, _ => is_txn txn view mods γ ∧ ⌜v = vw⌝
   end.
-
-Local Lemma NoDup_wrent_to_key_dbval (wset : list wrent) :
-  NoDup wset.*1.*1 ->
-  NoDup (wrent_to_key_dbval <$> wset).*1.
-Proof.
-  intros H.
-  replace (wrent_to_key_dbval <$> _).*1 with wset.*1.*1; last first.
-  { do 2 rewrite -list_fmap_compose.
-    f_equal.
-  }
-  done.
-Qed.
-
-Local Lemma wrent_to_key_dbval_key_fmap (ents : list wrent) :
-  (wrent_to_key_dbval <$> ents).*1 = ents.*1.*1.
-Proof.
-  do 2 rewrite -list_fmap_compose.
-  by apply list_fmap_ext; last done.
-Qed.
 
 (*****************************************************************)
 (* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
@@ -1828,19 +1621,6 @@ Qed.
 
 Definition spec_update txn view mods k v γ : iProp Σ :=
   is_txn txn view (<[k := v]> mods) γ.
-
-Local Lemma NoDup_app_commute (A : Type) (l1 l2 : list A) :
-  NoDup (l1 ++ l2) -> NoDup (l2 ++ l1).
-Proof.
-  intros H.
-  apply NoDup_app in H as (H1 & H2 & H3).
-  apply NoDup_app.
-  split; first done.
-  split; last done.
-  intros x Hl2 Hl1.
-  apply H2 in Hl1.
-  contradiction.
-Qed.
 
 (*****************************************************************)
 (* func (txn *Txn) Put(key, val uint64) bool                     *)
@@ -2087,7 +1867,7 @@ Proof.
   wp_call.
   
   (***********************************************************)
-  (* pos, found := matchLocalWrites(key, txn.wset)           *)
+  (* pos, found := search(key, txn.wset)                     *)
   (***********************************************************)
   wp_loadField.
   wp_apply (wp_matchLocalWrites with "HwsetL").

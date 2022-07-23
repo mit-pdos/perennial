@@ -196,23 +196,13 @@ Definition Txn__Put: val :=
   rec: "Txn__Put" "txn" "key" "val" :=
     let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
     wrbuf.WrBuf__Put "wrbuf" "key" "val";;
-    let: "idx" := struct.loadF Txn "idx" "txn" in
-    let: "tuple" := index.Index__GetTuple "idx" "key" in
-    let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
-    (if: "ret" ≠ common.RET_SUCCESS
-    then #false
-    else #true).
+    #().
 
 Definition Txn__Delete: val :=
   rec: "Txn__Delete" "txn" "key" :=
     let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
     wrbuf.WrBuf__Delete "wrbuf" "key";;
-    let: "idx" := struct.loadF Txn "idx" "txn" in
-    let: "tuple" := index.Index__GetTuple "idx" "key" in
-    let: "ret" := tuple.Tuple__Own "tuple" (struct.loadF Txn "tid" "txn") in
-    (if: "ret" ≠ common.RET_SUCCESS
-    then #false
-    else #true).
+    #true.
 
 Definition Txn__Get: val :=
   rec: "Txn__Get" "txn" "key" :=
