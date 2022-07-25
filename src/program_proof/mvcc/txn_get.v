@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import txn_common.
+From Perennial.program_proof.mvcc Require Import txn_common proph_proof tuple_read_version.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -36,14 +36,13 @@ Proof.
   { wp_pures.
     iModIntro.
     iApply "HΦ".
-    eauto 15 with iFrame.
+    eauto 20 with iFrame.
   }
 
   (***********************************************************)
   (* idx := txn.idx                                          *)
   (* tuple := idx.GetTuple(key)                              *)
   (* val, ret := tuple.ReadVersion(txn.tid)                  *)
-  (* return val, ret == common.RET_SUCCESS                   *)
   (***********************************************************)
   wp_loadField.
   wp_pures.
@@ -55,9 +54,43 @@ Proof.
   { unfold active_tid. eauto with iFrame. }
   iIntros (val ret latch) "[Hactive [Hlocked Hread]]".
   wp_pures.
+
+  (***********************************************************)
+  (* proph.ResolveRead(txn.txnMgr.p, txn.tid, key)           *)
+  (***********************************************************)
+  do 3 wp_loadField.
+  wp_apply (wp_ResolveRead γ).
+  iInv "Hinv" as "> HinvO" "HinvC".
+  iApply ncfupd_mask_intro; first set_solver.
+  iIntros "Hclose".
+  iNamed "HinvO".
+  iExists future.
+  iFrame "Hproph".
+  iIntros "(%future' & %Hresolve & Hproph)".
+  iDestruct (big_sepS_elem_of_acc _ _ k with "Hkeys") as "[Hkey Hkeys]"; first set_solver.
+  iMod (tuple_read_safe with "[$Hkey $Hcmt] Hread") as "[[Hkey Hcmt] Htuple]"; first set_solver.
+  iDestruct ("Hkeys" with "Hkey") as "Hkeys".
+  iMod "Hclose".
+  iMod ("HinvC" with "[Hproph Hm Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
+  { (* Close the inv. *) admit. }
+  iModIntro.
+  iIntros "_".
+  wp_pures.
+
+  (***********************************************************)
+  (* tuple.Release()                                         *)
+  (***********************************************************)
+  wp_apply (wp_tuple__Release with "[$Htuple $Hlocked]").
+  wp_pures.
+
+  (***********************************************************)
+  (* return val, ret == common.RET_SUCCESS                   *)
+  (***********************************************************)
   iModIntro.
   iApply "HΦ".
-  eauto 15 with iFrame.
-Qed.
+  do 7 iExists _.
+  iFrame "Hactive".
+  iFrameNamed.
+Admitted.
 
 End program.

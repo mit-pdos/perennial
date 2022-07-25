@@ -13,6 +13,7 @@ Theorem wp_txnMgr__New txnmgr γ :
   {{{ (txn : loc), RET #txn; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "#Htxnmgr" (Φ) "!> _ HΦ".
+  iPoseProof "Htxnmgr" as "Htxnmgr'".
   iNamed "Htxnmgr".
   wp_call.
   
@@ -109,9 +110,6 @@ Proof.
   replace (int.nat 0) with 0%nat by word.
   simpl.
   unfold own_txn_uninit.
-  do 5 iExists _.
-  iFrame "∗ %".
-  iFrame "HidxRI Hidx_txn Htxnmgr_txn".
   eauto 20 with iFrame.
 Qed.
 

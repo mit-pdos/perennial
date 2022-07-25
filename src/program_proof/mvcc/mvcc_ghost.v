@@ -88,10 +88,6 @@ Record mvcc_names :=
 Section definitions.
 Context `{!mvcc_ghostG Σ}.
 
-Definition mvccN := nroot.
-Definition mvccNTuple := nroot .@ "tuple".
-Definition mvccNGC := nroot .@ "gc".
-
 Definition ptuple_auth γ q (k : u64) (phys : list dbval) : iProp Σ :=
   own γ.(mvcc_ptuple) {[k := ●ML{# q } (phys : list (leibnizO dbval))]}.
 
@@ -104,7 +100,7 @@ Definition ltuple_auth γ (k : u64) (logi : list dbval) : iProp Σ :=
 Definition ltuple_lb γ (k : u64) (logi : list dbval) : iProp Σ :=
   own γ.(mvcc_ltuple) {[k := ◯ML (logi : list (leibnizO dbval))]}.
 
-Definition view_ptsto γ (k : u64) (v : option u64) (tid : u64) : iProp Σ :=
+Definition view_ptsto γ (k : u64) (v : dbval) (tid : u64) : iProp Σ :=
   ∃ phys, ptuple_lb γ k phys ∗ ⌜phys !! (int.nat tid) = Some v⌝.
 
 Definition mods_token γ (k tid : u64) : iProp Σ :=
@@ -128,19 +124,6 @@ Definition site_min_tid_lb γ (sid : u64) tidN : iProp Σ :=
 
 Definition min_tid_lb γ tidN : iProp Σ :=
   [∗ list] sid ∈ sids_all, site_min_tid_lb γ sid tidN.
-
-(* XXX: remove this *)
-Definition mvcc_inv_tuple_def γ : iProp Σ :=
-  [∗ set] key ∈ keys_all,
-    ∃ (vchain : list dbval),
-      ptuple_auth γ (1/2) key vchain.
-
-Definition mvcc_inv_gc_def γ : iProp Σ :=
-  [∗ list] sid ∈ sids_all,
-    ∃ (tids : gmap u64 unit) (tidmin : u64),
-      site_active_tids_half_auth γ sid tids ∗
-      site_min_tid_half_auth γ sid (int.nat tidmin) ∗
-      ∀ tid, ⌜tid ∈ (dom tids) -> (int.nat tidmin) ≤ (int.nat tid)⌝.
 
 (* Definitions about SST-related resources. *)
 Definition nca_tids_auth γ (tids : gset u64) : iProp Σ :=
@@ -181,17 +164,6 @@ Definition dbmap_ptsto γ k v : iProp Σ :=
 
 End definitions.
 
-Section mvccinv.
-Context `{!heapGS Σ, !mvcc_ghostG Σ}.
-
-Definition mvcc_inv_tuple γ : iProp Σ :=
-  inv mvccNTuple (mvcc_inv_tuple_def γ).
-
-Definition mvcc_inv_gc γ : iProp Σ :=
-  inv mvccNGC (mvcc_inv_gc_def γ).
-
-End mvccinv.
-
 Section lemmas.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
@@ -230,43 +202,20 @@ Proof.
   apply singleton_mono, mono_list_included.
 Qed.
 
-Lemma vchain_update {γ E key vchain} vchain' :
+Lemma vchain_update {γ key vchain} vchain' :
   prefix vchain vchain' →
-  ↑mvccNTuple ⊆ E ->
-  mvcc_inv_tuple γ -∗
-  ptuple_auth γ (1 / 2) key vchain ={E}=∗
-  ptuple_auth γ (1 / 2) key vchain'.
+  ptuple_auth γ (1 / 2) key vchain -∗
+  ptuple_auth γ (1 / 2) key vchain ==∗
+  ptuple_auth γ (1 / 2) key vchain' ∗ ptuple_auth γ (1 / 2) key vchain'.
 Proof.
-  iIntros "%Hprefix %Hsubseteq #Hinvtuple Hvchain".
-  iInv "Hinvtuple" as ">HinvtupleO" "HinvtupleC".
-  unfold mvcc_inv_tuple_def.
-  iDestruct (big_sepS_elem_of_acc _ _ key with "HinvtupleO") as "[HvchainInv HvchainInvC]"; first set_solver.
-  iDestruct "HvchainInv" as (vchainInv') "HvchainInv".
-  iDestruct (vchain_combine 1%Qp with "Hvchain HvchainInv") as "[Hvchain ->]"; first compute_done.
-  iMod (own_update with "Hvchain") as "Hvchain".
-  { apply singleton_update, mono_list_update, Hprefix. }
-  iDestruct (vchain_split (1 / 2) (1 / 2) with "Hvchain") as "[Hvchain Hvchain']"; first compute_done.
-  iDestruct ("HvchainInvC" with "[Hvchain]") as "Hvchains"; first auto.
-  iMod ("HinvtupleC" with "[Hvchains]") as "_"; done.
-Qed.
+Admitted.
 
-Lemma vchain_false {γ E q key vchain} :
-  (1 / 2 < q)%Qp ->
-  ↑mvccNTuple ⊆ E ->
-  mvcc_inv_tuple γ -∗
-  ptuple_auth γ q key vchain ={E}=∗
+Lemma vchain_false {γ q key vchain} :
+  (1 < q)%Qp ->
+  ptuple_auth γ q key vchain -∗
   False.
 Proof.
-  iIntros "%Hq %Hsubseteq #Hinvtuple Hvchain".
-  iInv "Hinvtuple" as ">HinvtupleO" "HinvtupleC".
-  unfold mvcc_inv_tuple_def.
-  iDestruct (big_sepS_elem_of_acc _ _ key with "HinvtupleO") as "[HvchainInv HvchainInvC]"; first set_solver.
-  iDestruct "HvchainInv" as (vchainInv') "HvchainInv".
-  iDestruct (vchain_combine (q + 1 / 2) with "Hvchain HvchainInv") as "[Hvchain ->]"; first done.
-  iDestruct (own_valid with "Hvchain") as %Hvalid.
-  rewrite singleton_valid mono_list_auth_dfrac_valid dfrac_valid_own in Hvalid.
-  by rewrite (Qp_add_lt_mono_r _ _ (1 / 2)) Qp_half_half Qp_lt_nge in Hq.
-Qed.
+Admitted.
 
 Theorem view_ptsto_agree γ (k : u64) (v v' : option u64) (tid : u64) :
   view_ptsto γ k v tid -∗ view_ptsto γ k v' tid -∗ ⌜v = v'⌝.
@@ -334,36 +283,15 @@ Lemma min_tid_lb_zero γ :
 Admitted.
 
 Lemma mvcc_ghost_init :
-  ⊢ |==> ∃ γ, mvcc_inv_tuple_def γ ∗
+  ⊢ |==> ∃ γ, ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil]) ∗
               ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil]) ∗
-              mvcc_inv_gc_def γ ∗
               ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
+              ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
+              ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0) ∗
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
 Admitted.
 
-Theorem active_ge_min γ (tid tidlb : u64) (sid : u64) :
-  mvcc_inv_gc_def γ -∗
-  active_tid γ tid sid -∗
-  min_tid_lb γ (int.nat tidlb) -∗
-  ⌜int.Z tidlb ≤ int.Z tid⌝.
-Proof using heapGS0 mvcc_ghostG0 Σ.
-  iIntros "Hinv Hactive Hlb".
-  iDestruct "Hactive" as "[[Htid %Hlookup] _]".
-  apply sids_all_lookup in Hlookup.
-  apply elem_of_list_lookup_2 in Hlookup.
-  iDestruct (big_sepL_elem_of with "Hlb") as "Htidlb"; first done.
-  iDestruct (big_sepL_elem_of with "Hinv") as (tids tidmin) "(Htids & Htidmin & %Hle)"; first done.
-  (* Obtaining [tidmin ≤ tid]. *)
-  iDestruct (site_active_tids_elem_of with "Htids Htid") as "%Helem".
-  apply Hle in Helem.
-  (* Obtaining [tidlb ≤ tidmin]. *)
-  iDestruct (site_min_tid_valid with "Htidmin Htidlb") as "%Hle'".
-  iPureIntro.
-  apply Z.le_trans with (int.Z tidmin); word.
-Qed.
-
 End lemmas.
-
 
 Section action.
 
@@ -1563,68 +1491,3 @@ Proof.
 Qed.
 
 End tuplext.
-
-Section sstinv.
-Context `{!heapGS Σ, !mvcc_ghostG Σ}.
-
-(* TODO *)
-Definition ptuple_past_rel (key : u64) (phys : list dbval) (past : list action) :=
-  True.
-
-Definition per_key_inv_def
-           (γ : mvcc_names) (key : u64) (tmods : gset (u64 * dbmap))
-           (m : dbmap) (past : list action)
-  : iProp Σ :=
-  ∃ (phys logi : list dbval),
-    "Hptuple" ∷ ptuple_auth γ (1 / 2) key phys ∗
-    "Hltuple" ∷ ltuple_auth γ key logi ∗
-    "%Htmrel" ∷ ⌜tuple_mods_rel phys logi (per_tuple_mods tmods key)⌝ ∗
-    "%Hpprel" ∷ ⌜ptuple_past_rel key phys past⌝ ∗
-    "%Hlmrel" ∷ ⌜last logi = m !! key⌝.
-
-Definition cmt_inv_def
-           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list action)
-  : iProp Σ :=
-  "HcmtAuth" ∷ commit_tmods_auth γ tmods ∗
-  "%Hcmt"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
-
-Definition nca_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
-  ∃ (tids_nca : gset u64),
-    "HncaAuth" ∷ nca_tids_auth γ tids_nca ∗
-    "%Hnca"    ∷ ⌜set_Forall (no_commit_abort future) tids_nca⌝.
-
-Definition fa_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
-  ∃ (tids_fa : gset u64),
-    "HfaAuth" ∷ fa_tids_auth γ tids_fa ∗
-    "%Hfa"    ∷ ⌜set_Forall (first_abort future) tids_fa⌝.
-
-Definition fci_inv_def (γ : mvcc_names) (past future : list action) : iProp Σ :=
-  ∃ (tmods_fci : gset (u64 * dbmap)),
-    "HfciAuth" ∷ fci_tmods_auth γ tmods_fci ∗
-    "%Hfci"    ∷ ⌜set_Forall (uncurry (first_commit_incompatible (past ++ future))) tmods_fci⌝.
-
-Definition fcc_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
-  ∃ (tmods_fcc : gset (u64 * dbmap)),
-    "HfccAuth" ∷ fcc_tmods_auth γ tmods_fcc ∗
-    "%Hfcc"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods_fcc⌝.
-
-Definition mvcc_inv_sst_def γ : iProp Σ :=
-  ∃ (tmods : gset (u64 * dbmap)) (m : dbmap) (past future : list action) (p : proph_id),
-    (* Global database map, i.e., auth element of the global ptsto. *)
-    "Hm" ∷ dbmap_auth γ m ∗
-    (* Per-key invariants. *)
-    "Hkey" ∷ ([∗ set] key ∈ keys_all, per_key_inv_def γ key tmods m past) ∗
-    (* Ok txns. *)
-    "Hcmt" ∷ cmt_inv_def γ tmods future ∗
-    (* Doomed txns. *)
-    "Hnca" ∷ nca_inv_def γ future ∗
-    "Hfa"  ∷ fa_inv_def  γ future ∗
-    "Hfci" ∷ fci_inv_def γ past future ∗
-    "Hfcc" ∷ fcc_inv_def γ future.
-
-Definition mvccNSST := nroot .@ "sst".
-
-Definition mvcc_inv_sst γ : iProp Σ :=
-  inv mvccNSST (mvcc_inv_sst_def γ).
-
-End sstinv.

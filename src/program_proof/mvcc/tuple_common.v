@@ -3,7 +3,7 @@ From Tactical Require Export SimplMatch.
 From Perennial.program_proof Require Export grove_prelude.
 (* Import Coq model of our Goose program.*)
 From Goose.github_com.mit_pdos.go_mvcc Require Export tuple.
-From Perennial.program_proof.mvcc Require Export mvcc_ghost.
+From Perennial.program_proof.mvcc Require Export mvcc_ghost mvcc_inv.
 (* prefer untyped slices *)
 Export Perennial.goose_lang.lib.slice.slice.
 
@@ -220,7 +220,6 @@ Definition is_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
     "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
     "#HrcondC" ∷ is_cond rcond #latch ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
-    "#Hinvtuple" ∷ mvcc_inv_tuple γ ∗
     "_" ∷ True.
 
 Definition tuple_locked tuple (key : u64) (latch : loc) γ : iProp Σ :=
@@ -242,13 +241,12 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (* func MkTuple() *Tuple                                         *)
 (*****************************************************************)
 Theorem wp_MkTuple (key : u64) γ :
-  mvcc_inv_tuple γ -∗
   mvcc_inv_gc γ -∗
   {{{ ptuple_auth γ (1/2) key [Nil] }}}
     MkTuple #()
   {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
 Proof.
-  iIntros "#Hinvtuple #Hinvgc" (Φ) "!> Hvchain HΦ".
+  iIntros "#Hinvgc" (Φ) "!> Hvchain HΦ".
   wp_call.
 
   (***********************************************************)

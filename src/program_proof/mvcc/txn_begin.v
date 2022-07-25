@@ -41,7 +41,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iExists tid, ∅.
-  eauto 15 with iFrame.
+  eauto 20 with iFrame.
 Qed.
 
 End program.

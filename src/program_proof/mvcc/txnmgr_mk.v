@@ -1,4 +1,5 @@
-From Perennial.program_proof.mvcc Require Import txn_common.
+From Perennial.program_proof.mvcc Require Import proph_proof txn_common.
+(* XXX: Must import in this order because of typed/untyped slices... *)
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -31,10 +32,17 @@ Proof.
   iIntros (sites) "HsitesL".
   wp_storeField.
 
-  iMod mvcc_ghost_init as (γ) "(HinvtupleO & Hvchains & HinvgcO & HactiveAuthAll & HminAuthAll)".
-  iMod (inv_alloc mvccNTuple _ (mvcc_inv_tuple_def γ) with "[$HinvtupleO]") as "#Hinvtuple".
-  iMod (inv_alloc mvccNGC _ (mvcc_inv_gc_def γ) with "[$HinvgcO]") as "#Hinvgc".
-  
+  iMod mvcc_ghost_init as (γ) "(Hvchains & Hvchains' & HactiveAuths & HactiveAuths' & HminAuths & HminAuths')".
+  (* TODO: allocate inv sst with Hvchains' *)
+  iMod (inv_alloc mvccNGC _ (mvcc_inv_gc_def γ) with "[HactiveAuths' HminAuths']") as "#Hinvgc".
+  { iNext. unfold mvcc_inv_gc_def.
+    iDestruct (big_sepL_sep_2 with "HactiveAuths' HminAuths'") as "HinvgcO".
+    iApply big_sepL_mono; last iAccu.
+    iIntros (i sid) "%Hlookup [HactiveAuths' HminAuths']".
+    iExists ∅, (U64 0).
+    by iFrame.
+  }
+
   (***********************************************************)
   (* for i := uint64(0); i < config.N_TXN_SITES; i++ {       *)
   (*     site := new(TxnSite)                                *)
@@ -52,9 +60,9 @@ Proof.
     "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (int.nat n) sitesL), is_txnsite site sid γ) ∗
     "Hsites" ∷ (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
-    "HactiveAuthAll" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
-    "HminAuthAll" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_min_tid_half_auth γ sid 0))%I.
-  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuthAll HminAuthAll]"); first done.
+    "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
+    "HminAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_min_tid_half_auth γ sid 0))%I.
+  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuths HminAuths]"); first done.
   { clear Φ latch.
     iIntros (i Φ) "!> (Hloop & HiRef & %Hbound) HΦ".
     iNamed "Hloop".
@@ -94,10 +102,10 @@ Proof.
       rewrite lookup_seqZ_lt; last word.
       simpl. f_equal. word.
     }
-    iDestruct (big_sepL_cons with "HactiveAuthAll") as "[HactiveAuth HactiveAuthAll]".
-    iDestruct (big_sepL_cons with "HminAuthAll") as "[HminAuth HminAuthAll]".
+    iDestruct (big_sepL_cons with "HactiveAuths") as "[HactiveAuth HactiveAuths]".
+    iDestruct (big_sepL_cons with "HminAuths") as "[HminAuth HminAuths]".
     iMod (readonly_alloc_1 with "latch") as "#Hlatch".
-    iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with "[$Hfree] [-HsitesS HsitesRP HactiveAuthAll HminAuthAll]") as "#Hlock".
+    iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with "[$Hfree] [-HsitesS HsitesRP HactiveAuths HminAuths]") as "#Hlock".
     { iNext.
       unfold own_txnsite.
       iExists (U64 0), (U64 0), (Slice.mk active 0 8), [], ∅.
@@ -139,7 +147,7 @@ Proof.
   (* txnMgr.idx = index.MkIndex()                            *)
   (* txnMgr.gc = gc.MkGC(txnMgr.idx)                         *)
   (***********************************************************)
-  wp_apply (wp_MkIndex γ with "Hinvtuple Hinvgc Hvchains").
+  wp_apply (wp_MkIndex γ with "Hinvgc Hvchains").
   iIntros (idx) "#HidxRP".
   wp_storeField.
   wp_loadField.
@@ -147,6 +155,23 @@ Proof.
   (* iIntros (gc) "HgcRP". *)
   iIntros (gc) "_".
   wp_storeField.
+  
+  (***********************************************************)
+  (* txnMgr.p = machine.NewProph()                           *)
+  (***********************************************************)
+  wp_apply (wp_NewProphActions γ).
+  iIntros (p acs) "Hproph".
+  (* FIXME: Cannot use tactic [wp_storeField]. *)
+  wp_apply (wp_storeField with "p").
+  { (* Prove [val_ty] *)
+    admit.
+  }
+  iIntros "p".
+  wp_pures.
+  iMod (inv_alloc mvccNSST _ (mvcc_inv_sst_def γ p) with "[Hvchains']") as "#Hinvsst".
+  { (* Prove [mvcc_inv_sst_def]. *)
+    admit.
+  }
   
   (***********************************************************)
   (* return txnMgr                                           *)
@@ -158,12 +183,14 @@ Proof.
   { eauto with iFrame. }
   iMod (readonly_alloc_1 with "idx") as "#Hidx".
   iMod (readonly_alloc_1 with "gc") as "#Hgc".
+  iMod (readonly_alloc_1 with "p") as "#Hp".
   iMod (readonly_alloc_1 with "Hsites") as "#Hsites".
   iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".
   replace (int.nat (U64 N_TXN_SITES)) with (length sitesL); last first.
   { unfold N_TXN_SITES in *. word. }
   rewrite firstn_all.
-  eauto 20 with iFrame.
-Qed.
+  do 6 iExists _.
+  by iFrame "# %".
+Admitted.
 
 End program.

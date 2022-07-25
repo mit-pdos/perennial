@@ -198,6 +198,18 @@ Definition tuple_read tuple tid key val (ret : u64) γ : iProp Σ :=
                | _ => False
                end⌝.
 
+Definition per_key_cmt_inv_def key tmods m past future γ : iProp Σ :=
+  per_key_inv_def γ key tmods m past ∗ cmt_inv_def γ tmods future.
+
+Lemma tuple_read_safe tid key tmods m past future tuple val ret γ :
+  head_read future tid key ->
+  per_key_cmt_inv_def key tmods m past future γ -∗
+  tuple_read tuple tid key val ret γ ==∗
+  per_key_cmt_inv_def key tmods m past future γ ∗
+  own_tuple tuple key γ.
+  (* view_ptsto γ key DBVAL tid *)
+Admitted.
+
 (*
 Lemma case_tuple__ReadVersion tuple tid key val (ret : u64) γ :
   post_tuple__ReadVersion tuple tid key val ret γ -∗

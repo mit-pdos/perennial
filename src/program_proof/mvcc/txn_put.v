@@ -28,7 +28,7 @@ Proof.
 
   iModIntro.
   iApply "HΦ".
-  eauto 15 with iFrame.
+  eauto 20 with iFrame.
 Qed.
 
 End program.

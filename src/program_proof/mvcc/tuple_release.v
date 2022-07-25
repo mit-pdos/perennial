@@ -6,7 +6,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func (tuple *Tuple) Release()                                 *)
 (*****************************************************************)
-Theorem wp_tuple__Release tuple (key : u64) (sid : u64) (latch : loc) γ :
+Theorem wp_tuple__Release tuple (key : u64) (latch : loc) γ :
   {{{ tuple_locked tuple key latch γ ∗ own_tuple tuple key γ }}}
     Tuple__Release #tuple
   {{{ RET #(); True }}}.

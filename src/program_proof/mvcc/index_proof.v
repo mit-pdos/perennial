@@ -45,7 +45,6 @@ Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
     "#HbktsL" ∷ readonly (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
     "%HbktsLen" ∷ ⌜length bktsL = N_IDX_BUCKET⌝ ∗
     "#HbktsRP" ∷ ([∗ list] i ↦ bkt ∈ bktsL, is_index_bucket bkt i γ) ∗
-    "#Hinvtuple" ∷ mvcc_inv_tuple γ ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
     "_" ∷ True.
 
@@ -133,7 +132,7 @@ Proof.
     split; [auto | set_solver].
   }
   iDestruct "Hvchains" as "[Hvchain Hvchains]".
-  wp_apply (wp_MkTuple with "[] [] [$Hvchain]"); [done | done |].
+  wp_apply (wp_MkTuple with "[] [$Hvchain]"); [done |].
   iIntros (tuple) "#HtupleRP".
   wp_pures.
   wp_loadField.
@@ -183,13 +182,12 @@ Proof. set_solver. Qed.
 (* func MkIndex() *Index                                         *)
 (*****************************************************************)
 Theorem wp_MkIndex γ :
-  mvcc_inv_tuple γ -∗
   mvcc_inv_gc γ -∗
   {{{ [∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil] }}}
     MkIndex #()
   {{{ (idx : loc), RET #idx; is_index idx γ }}}.
 Proof.
-  iIntros "#Hinvtuple #Hinvgc" (Φ) "!> Hvchains HΦ".
+  iIntros "#Hinvgc" (Φ) "!> Hvchains HΦ".
   wp_call.
 
   (***********************************************************)

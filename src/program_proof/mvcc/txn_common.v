@@ -38,7 +38,7 @@ Definition own_txnmgr (txnmgr : loc) : iProp Σ :=
 
 Definition is_txnmgr (txnmgr : loc) γ : iProp Σ := 
   ∃ (latch : loc) (sites : Slice.t) (idx gc : loc)
-    (sitesL : list loc),
+    (sitesL : list loc) (p : proph_id),
     "#Hlatch" ∷ readonly (txnmgr ↦[TxnMgr :: "latch"] #latch) ∗
     "#Hlock" ∷ is_lock mvccN #latch (own_txnmgr txnmgr) ∗
     "#Hidx" ∷ readonly (txnmgr ↦[TxnMgr :: "idx"] #idx) ∗
@@ -48,7 +48,9 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "#HsitesS" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
     "%HsitesLen" ∷ ⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝ ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ sitesL, is_txnsite site sid γ) ∗
+    "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
+    "#Hinvsst" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
 (**
@@ -72,7 +74,7 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
  *)
 
 Definition own_txn_impl (txn : loc) (tid : u64) (mods : dbmap) γ : iProp Σ :=
-  ∃ (sid : u64) (wrbuf : loc) (idx txnmgr : loc),
+  ∃ (sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
@@ -83,6 +85,8 @@ Definition own_txn_impl (txn : loc) (tid : u64) (mods : dbmap) γ : iProp Σ :=
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
     "Hactive" ∷ active_tid γ tid sid ∗
+    "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
+    "#Hinv" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
 Definition own_txn (txn : loc) γ : iProp Σ :=
@@ -90,7 +94,7 @@ Definition own_txn (txn : loc) γ : iProp Σ :=
     "Himpl" ∷ own_txn_impl txn tid mods γ.
 
 Definition own_txn_uninit (txn : loc) γ : iProp Σ := 
-  ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc),
+  ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
@@ -100,6 +104,8 @@ Definition own_txn_uninit (txn : loc) γ : iProp Σ :=
     "#HidxRI" ∷ is_index idx γ ∗
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
+    "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
+    "#Hinv" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
 End def.

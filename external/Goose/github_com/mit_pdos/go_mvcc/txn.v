@@ -4,6 +4,7 @@ From Goose Require github_com.mit_pdos.go_mvcc.common.
 From Goose Require github_com.mit_pdos.go_mvcc.config.
 From Goose Require github_com.mit_pdos.go_mvcc.gc.
 From Goose Require github_com.mit_pdos.go_mvcc.index.
+From Goose Require github_com.mit_pdos.go_mvcc.proph.
 From Goose Require github_com.mit_pdos.go_mvcc.wrbuf.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
@@ -46,6 +47,7 @@ Definition MkTxnMgr: val :=
       Continue);;
     struct.storeF TxnMgr "idx" "txnMgr" (index.MkIndex #());;
     struct.storeF TxnMgr "gc" "txnMgr" (gc.MkGC (struct.loadF TxnMgr "idx" "txnMgr"));;
+    struct.storeF TxnMgr "p" "txnMgr" (NewProph #());;
     "txnMgr".
 
 Definition TxnMgr__New: val :=
@@ -215,6 +217,8 @@ Definition Txn__Get: val :=
       let: "idx" := struct.loadF Txn "idx" "txn" in
       let: "tuple" := index.Index__GetTuple "idx" "key" in
       let: ("val", "ret") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
+      proph.ResolveRead (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") "key";;
+      tuple.Tuple__Release "tuple";;
       ("val", ("ret" = common.RET_SUCCESS))).
 
 Definition Txn__Begin: val :=
