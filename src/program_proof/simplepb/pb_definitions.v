@@ -17,6 +17,7 @@ Record pb_server_names :=
 Implicit Type γ : pb_server_names.
 
 Implicit Type σ : list (list u8).
+Implicit Type epoch : u64.
 
 Definition proposal_ptsto γ (epoch:u64) (σ:list (list u8)) : iProp Σ.
 Admitted.
@@ -32,9 +33,28 @@ Definition own_epoch γ (epoch:u64) : iProp Σ :=
 Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
   mono_nat_lb_own γ.(epoch_gn) (int.nat epoch).
 
+Definition own_Server_ghost γ epoch σ : iProp Σ.
+Admitted.
 
-Definition own_Server (s:loc) γ : iProp Σ :=
-  ∃ (epoch:u64) (nextIndex:u64) (isPrimary:bool) (sm:loc) (clerks:Slice.t),
+Definition is_ApplyFn (applyFn:val) γ P : iProp Σ :=
+  ∀ op_sl (epoch:u64) σ op,
+  {{{
+        (own_Server_ghost γ epoch σ ={⊤}=∗ own_Server_ghost γ epoch (σ++[op])) ∗ P epoch σ ∗ is_slice op_sl byteT 1 op
+  }}}
+    applyFn (slice_val op_sl)
+  {{{
+        RET #(); P epoch (σ ++ [op])
+  }}}
+.
+
+Definition is_StateMachine (sm:loc) γ P : iProp Σ :=
+  ∃ (applyFn:val),
+  "#Happly" ∷ sm ↦[pb.StateMachine :: "Apply"] applyFn ∗
+  "#HapplySpec" ∷ is_ApplyFn applyFn γ P
+.
+
+Definition own_Server (s:loc) γ P : iProp Σ :=
+  ∃ (epoch:u64) σ (nextIndex:u64) (isPrimary:bool) (sm:loc) (clerks:Slice.t),
   (* physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
@@ -42,21 +62,21 @@ Definition own_Server (s:loc) γ : iProp Σ :=
   "Hsm" ∷ s ↦[pb.Server :: "sm"] #sm ∗
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks) ∗
 
-  (* ghost *)
-  "HepochGhost" ∷ own_epoch γ epoch ∗
+  (* state-machine *)
+  "#HisSm" ∷ is_StateMachine sm γ P ∗
 
-  (* durable *)
+  "Hstate" ∷ P epoch σ ∗
 
   (* primary-only *)
-  "#HareClerks" ∷ True
+  "#Hclerks_rpc" ∷ True
 .
 
 Definition pbN := nroot .@ "pb".
 
 Definition is_Server (s:loc) γ : iProp Σ :=
-  ∃ (mu:val),
+  ∃ (mu:val) P,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ).
+  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ P).
 
 Record ApplyArgsC :=
 {
@@ -175,6 +195,13 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_if_destruct.
+  { (* return error "not primary" *)
+    admit.
+  }
+  wp_loadField.
 Admitted.
 
 End pb_definitions.
