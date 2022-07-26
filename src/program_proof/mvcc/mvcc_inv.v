@@ -23,8 +23,8 @@ Definition mvcc_inv_gc γ : iProp Σ :=
 
 (* SST invariants. *)
 (* TODO *)
-Definition ptuple_past_rel (key : u64) (phys : list dbval) (past : list action) :=
-  True.
+Definition ptuple_past_rel (key : u64) (phys : list dbval) (past : list action) : Prop.
+Admitted.
 
 Definition per_key_inv_def
            (γ : mvcc_names) (key : u64) (tmods : gset (u64 * dbmap))
@@ -43,29 +43,35 @@ Definition cmt_inv_def
   "HcmtAuth" ∷ commit_tmods_auth γ tmods ∗
   "%Hcmt"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
 
-Definition nca_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
-  ∃ (tids_nca : gset u64),
-    "HncaAuth" ∷ nca_tids_auth γ tids_nca ∗
-    "%Hnca"    ∷ ⌜set_Forall (no_commit_abort future) tids_nca⌝.
+Definition nca_inv_def
+           (γ : mvcc_names) (tids : gset u64) (future : list action)
+  : iProp Σ :=
+  "HncaAuth" ∷ nca_tids_auth γ tids ∗
+  "%Hnca"    ∷ ⌜set_Forall (no_commit_abort future) tids⌝.
 
-Definition fa_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
-  ∃ (tids_fa : gset u64),
-    "HfaAuth" ∷ fa_tids_auth γ tids_fa ∗
-    "%Hfa"    ∷ ⌜set_Forall (first_abort future) tids_fa⌝.
+Definition fa_inv_def
+           (γ : mvcc_names) (tids : gset u64) (future : list action)
+  : iProp Σ :=
+  "HfaAuth" ∷ fa_tids_auth γ tids ∗
+  "%Hfa"    ∷ ⌜set_Forall (first_abort future) tids⌝.
 
-Definition fci_inv_def (γ : mvcc_names) (past future : list action) : iProp Σ :=
-  ∃ (tmods_fci : gset (u64 * dbmap)),
-    "HfciAuth" ∷ fci_tmods_auth γ tmods_fci ∗
-    "%Hfci"    ∷ ⌜set_Forall (uncurry (first_commit_incompatible (past ++ future))) tmods_fci⌝.
+Definition fci_inv_def
+           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (past future : list action)
+  : iProp Σ :=
+    "HfciAuth" ∷ fci_tmods_auth γ tmods ∗
+    "%Hfci"    ∷ ⌜set_Forall (uncurry (first_commit_incompatible (past ++ future))) tmods⌝.
 
-Definition fcc_inv_def (γ : mvcc_names) (future : list action) : iProp Σ :=
-  ∃ (tmods_fcc : gset (u64 * dbmap)),
-    "HfccAuth" ∷ fcc_tmods_auth γ tmods_fcc ∗
-    "%Hfcc"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods_fcc⌝.
+Definition fcc_inv_def
+           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list action)
+  : iProp Σ :=
+  "HfccAuth" ∷ fcc_tmods_auth γ tmods ∗
+  "%Hfcc"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
 
 Definition mvcc_inv_sst_def γ p : iProp Σ :=
-  ∃ (tmods : gset (u64 * dbmap)) (m : dbmap) (past future : list action),
-    (* Prophcy. *)
+  ∃ (tids_nca tids_fa : gset u64)
+    (tmods_fci tmods_fcc tmods : gset (u64 * dbmap))
+    (m : dbmap) (past future : list action),
+    (* Prophecy. *)
     "Hproph" ∷ mvcc_proph γ p future ∗
     (* Global database map, i.e., auth element of the global ptsto. *)
     "Hm" ∷ dbmap_auth γ m ∗
@@ -74,10 +80,10 @@ Definition mvcc_inv_sst_def γ p : iProp Σ :=
     (* Ok txns. *)
     "Hcmt"  ∷ cmt_inv_def γ tmods future ∗
     (* Doomed txns. *)
-    "Hnca"  ∷ nca_inv_def γ future ∗
-    "Hfa"   ∷ fa_inv_def  γ future ∗
-    "Hfci"  ∷ fci_inv_def γ past future ∗
-    "Hfcc"  ∷ fcc_inv_def γ future.
+    "Hnca"  ∷ nca_inv_def γ tids_nca future ∗
+    "Hfa"   ∷ fa_inv_def  γ tids_fa future ∗
+    "Hfci"  ∷ fci_inv_def γ tmods_fci past future ∗
+    "Hfcc"  ∷ fcc_inv_def γ tmods_fcc future.
 
 Instance mvcc_inv_sst_timeless γ p :
   Timeless (mvcc_inv_sst_def γ p).
@@ -112,5 +118,64 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   iPureIntro.
   apply Z.le_trans with (int.Z tidmin); word.
 Qed.
+
+Definition tuple_auth_prefix (γ : mvcc_names) (key : u64) : iProp Σ :=
+  ∃ (phys logi : list dbval),
+    "Hptuple" ∷ ptuple_auth γ (1 / 2) key phys ∗
+    "Hltuple" ∷ ltuple_auth γ key logi ∗
+    "%prefix" ∷ ⌜prefix phys logi⌝.
+
+Lemma per_key_inv_tuple_acc γ key tmods m past :
+  per_key_inv_def γ key tmods m past -∗
+  tuple_auth_prefix γ key ∗
+  (tuple_auth_prefix γ key -∗ per_key_inv_def γ key tmods m past).
+Admitted.
+
+Theorem ltuple_ptuple_ptsto_eq γ k v1 v2 tid:
+  tuple_auth_prefix γ k -∗
+  ltuple_ptsto γ k v1 tid -∗
+  view_ptsto γ k v2 tid -∗
+  ⌜v1 = v2⌝.
+Admitted.
+
+Theorem nca_inv_head_read γ l l' tid key tids :
+  l = EvRead tid key :: l' ->
+  nca_inv_def γ tids l -∗
+  nca_inv_def γ tids l'.
+Admitted.
+
+Theorem fa_inv_head_read γ l l' tid key tids :
+  l = EvRead tid key :: l' ->
+  fa_inv_def γ tids l -∗
+  fa_inv_def γ tids l'.
+Admitted.
+
+Theorem fci_inv_head_read γ p l l' tid key tmods :
+  l = EvRead tid key :: l' ->
+  fci_inv_def γ tmods p l -∗
+  fci_inv_def γ tmods (p ++ [EvRead tid key]) l'.
+Admitted.
+
+Theorem fcc_inv_head_read γ l l' tid key tmods :
+  l = EvRead tid key :: l' ->
+  fcc_inv_def γ tmods l -∗
+  fcc_inv_def γ tmods l'.
+Proof.
+  iIntros "%Hl Hfcc".
+  iNamed "Hfcc".
+  iFrame.
+  iPureIntro.
+  apply (set_Forall_impl _ _ _ Hfcc).
+  intros tmod H.
+  destruct tmod as [t m].
+  simpl in *.
+  by apply (first_commit_compatible_preserved Hl); first auto.
+Qed.
+
+Theorem cmt_inv_head_read γ l l' tid key tmods :
+  l = EvRead tid key :: l' ->
+  cmt_inv_def γ tmods l -∗
+  cmt_inv_def γ tmods l'.
+Admitted.
 
 End theorem.

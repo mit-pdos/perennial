@@ -137,14 +137,10 @@ Definition Tuple__ReadVersion: val :=
       lock.condWait (struct.loadF Tuple "rcond" "tuple");;
       Continue);;
     let: "ver" := findRightVer "tid" (struct.loadF Tuple "vers" "tuple") in
-    let: "ret" := ref (zero_val uint64T) in
-    (if: struct.get Version "deleted" "ver"
-    then "ret" <-[uint64T] common.RET_NONEXIST
-    else "ret" <-[uint64T] common.RET_SUCCESS);;
     (if: struct.loadF Tuple "tidlast" "tuple" < "tid"
     then struct.storeF Tuple "tidlast" "tuple" "tid"
     else #());;
-    (struct.get Version "val" "ver", ![uint64T] "ret").
+    (struct.get Version "val" "ver", ~ (struct.get Version "deleted" "ver")).
 
 Definition Tuple__Release: val :=
   rec: "Tuple__Release" "tuple" :=

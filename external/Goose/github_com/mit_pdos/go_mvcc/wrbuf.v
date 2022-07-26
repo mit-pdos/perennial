@@ -8,7 +8,7 @@ Local Coercion Var' s: expr := Var s.
 Definition WrEnt := struct.decl [
   "key" :: uint64T;
   "val" :: uint64T;
-  "del" :: boolT
+  "wr" :: boolT
 ].
 
 Definition WrEnt__Key: val :=
@@ -17,7 +17,7 @@ Definition WrEnt__Key: val :=
 
 Definition WrEnt__Destruct: val :=
   rec: "WrEnt__Destruct" "ent" :=
-    (struct.get WrEnt "key" "ent", struct.get WrEnt "val" "ent", struct.get WrEnt "del" "ent").
+    (struct.get WrEnt "key" "ent", struct.get WrEnt "val" "ent", struct.get WrEnt "wr" "ent").
 
 Definition search: val :=
   rec: "search" "ents" "key" :=
@@ -51,7 +51,7 @@ Definition WrBuf__Lookup: val :=
     (if: "found"
     then
       let: "ent" := SliceGet (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
-      (struct.get WrEnt "val" "ent", struct.get WrEnt "del" "ent", #true)
+      (struct.get WrEnt "val" "ent", struct.get WrEnt "wr" "ent", #true)
     else (#0, #false, #false)).
 
 Definition WrBuf__Put: val :=
@@ -61,13 +61,13 @@ Definition WrBuf__Put: val :=
     then
       let: "ent" := SliceRef (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
       struct.storeF WrEnt "val" "ent" "val";;
-      struct.storeF WrEnt "del" "ent" #false;;
+      struct.storeF WrEnt "wr" "ent" #true;;
       #()
     else
       let: "ent" := struct.mk WrEnt [
         "key" ::= "key";
         "val" ::= "val";
-        "del" ::= #false
+        "wr" ::= #true
       ] in
       struct.storeF WrBuf "ents" "wrbuf" (SliceAppend (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "ent");;
       #()).
@@ -78,12 +78,12 @@ Definition WrBuf__Delete: val :=
     (if: "found"
     then
       let: "ent" := SliceRef (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
-      struct.storeF WrEnt "del" "ent" #true;;
+      struct.storeF WrEnt "wr" "ent" #false;;
       #()
     else
       let: "ent" := struct.mk WrEnt [
         "key" ::= "key";
-        "del" ::= #true
+        "wr" ::= #false
       ] in
       struct.storeF WrBuf "ents" "wrbuf" (SliceAppend (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "ent");;
       #()).

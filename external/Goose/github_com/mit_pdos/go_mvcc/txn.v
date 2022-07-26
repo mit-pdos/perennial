@@ -210,16 +210,16 @@ Definition Txn__Delete: val :=
 Definition Txn__Get: val :=
   rec: "Txn__Get" "txn" "key" :=
     let: "wrbuf" := struct.loadF Txn "wrbuf" "txn" in
-    let: (("valb", "del"), "found") := wrbuf.WrBuf__Lookup "wrbuf" "key" in
+    let: (("valb", "wr"), "found") := wrbuf.WrBuf__Lookup "wrbuf" "key" in
     (if: "found"
-    then ("valb", ~ "del")
+    then ("valb", "wr")
     else
       let: "idx" := struct.loadF Txn "idx" "txn" in
       let: "tuple" := index.Index__GetTuple "idx" "key" in
-      let: ("val", "ret") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
+      let: ("val", "found") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
       proph.ResolveRead (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") "key";;
       tuple.Tuple__Release "tuple";;
-      ("val", ("ret" = common.RET_SUCCESS))).
+      ("val", "found")).
 
 Definition Txn__Begin: val :=
   rec: "Txn__Begin" "txn" :=

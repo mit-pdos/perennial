@@ -9,7 +9,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Theorem wp_txn__Begin txn γ :
   {{{ own_txn_uninit txn γ }}}
     Txn__Begin #txn
-  {{{ RET #(); own_txn txn γ }}}.
+  {{{ RET #(); ∃ τ, own_txn txn γ τ }}}.
 Proof.
   iIntros (Φ) "Htxn HΦ".
   iNamed "Htxn".
@@ -37,10 +37,16 @@ Proof.
   wp_apply (wp_wrbuf__Clear with "HwrbufRP").
   iIntros "HwrbufRP".
   wp_pures.
-  
+
+  (* FIXME: Replace [∅] with [r] from the post of [activate]. *)
+  iMod (txnmap_alloc ∅) as (τ) "[Htxnmap Hptstos]".
   iModIntro.
   iApply "HΦ".
-  iExists tid, ∅.
+  iExists τ.
+  unfold own_txn.
+  iExists tid, ∅, ∅.
+  rewrite map_empty_union.
+  iFrame "Htxnmap".
   eauto 20 with iFrame.
 Qed.
 

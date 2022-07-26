@@ -181,7 +181,7 @@ Qed.
  *    - [min_tid_lb γ tidlbN] in the lock invariant.
  *)
 
-Definition tuple_read tuple tid key val (ret : u64) γ : iProp Σ :=
+Definition tuple_read tuple tid key val found γ : iProp Σ :=
   ∃ (tidown tidlast tidgc : u64) (vers : list pver)
     (vchain : list dbval),
     (* physical state is updated, but logical state is not. *)
@@ -192,22 +192,20 @@ Definition tuple_read tuple tid key val (ret : u64) γ : iProp Σ :=
     "Hphys" ∷ own_tuple_phys tuple tidown tidlast' vers ∗
     "Habst" ∷ own_tuple_abst key tidown tidlast tidgc vers vchain γ ∗
     "%Htid" ∷ ⌜int.Z tid ≤ int.Z tidlast ∨ int.Z tidown = 0⌝ ∗
-    "%Hret" ∷ ⌜match int.Z ret with
-               | 0 => spec_lookup vers tid = Value val
-               | 1 => spec_lookup vers tid = Nil
-               | _ => False
-               end⌝.
+    "%Hret" ∷ ⌜spec_lookup vers tid = to_dbval found val⌝.
 
 Definition per_key_cmt_inv_def key tmods m past future γ : iProp Σ :=
   per_key_inv_def γ key tmods m past ∗ cmt_inv_def γ tmods future.
 
-Lemma tuple_read_safe tid key tmods m past future tuple val ret γ :
+Lemma tuple_read_safe tid key tmods m past future tuple val found γ :
   head_read future tid key ->
-  per_key_cmt_inv_def key tmods m past future γ -∗
-  tuple_read tuple tid key val ret γ ==∗
-  per_key_cmt_inv_def key tmods m past future γ ∗
-  own_tuple tuple key γ.
-  (* view_ptsto γ key DBVAL tid *)
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods m past) -∗
+  cmt_inv_def γ tmods future -∗
+  tuple_read tuple tid key val found γ ==∗
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods m (past ++ [EvRead tid key])) ∗
+  cmt_inv_def γ tmods future ∗
+  own_tuple tuple key γ ∗
+  view_ptsto γ key (to_dbval found val) tid.
 Admitted.
 
 (*
@@ -227,10 +225,10 @@ Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) (sid : u64) γ :
   is_tuple tuple key γ -∗
   {{{ active_tid γ tid sid }}}
     Tuple__ReadVersion #tuple #tid
-  {{{ (val : u64) (ret : u64) (latch : loc), RET (#val, #ret);
+  {{{ (val : u64) (found : bool) (latch : loc), RET (#val, #found);
       active_tid γ tid sid ∗
       tuple_locked tuple key latch γ ∗
-      tuple_read tuple tid key val ret γ
+      tuple_read tuple tid key val found γ
   }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".
@@ -350,43 +348,6 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* var ret uint64                                          *)
-  (* if ver.deleted {                                        *)
-  (*     ret = common.RET_NONEXIST                           *)
-  (* } else {                                                *)
-  (*     ret = common.RET_SUCCESS                            *)
-  (* }                                                       *)
-  (***********************************************************)
-  wp_apply (wp_ref_of_zero); first done.
-  iIntros (retR) "HretR".
-  wp_pures.
-  (* Q: Need to do this in order to use [case_bool_decide]. Why doesn't [destruct] work? *)
-  replace ver.1.2 with (bool_decide (ver.1.2 = true)); last first.
-  { case_bool_decide.
-    - done.
-    - by apply not_true_is_false in H.
-  }
-  wp_apply (wp_If_join_evar with "[HretR]").
-  { iIntros (b') "%Eb'".
-    (* XXX: destruct ver.1.2. *)
-    case_bool_decide.
-    - wp_if_true.
-      wp_store.
-      iModIntro.
-      iSplit; first done.
-      replace #1 with #(if b' then 1 else 0) by by rewrite Eb'.
-      iNamedAccu.
-    - wp_if_false.
-      wp_store.
-      iModIntro.
-      iSplit; first done.
-      by rewrite Eb'.
-  }
-  iIntros "H".
-  iNamed "H".
-  wp_pures.
-  
-  (***********************************************************)
   (* if tuple.tidlast < tid {                                *)
   (*     tuple.tidlast = tid                                 *)
   (* }                                                       *)
@@ -416,10 +377,8 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* return ver.val, ret                                     *)
+  (* return ver.val, !ver.deleted                            *)
   (***********************************************************)
-  wp_load.
-  wp_pures.
   (* Set Printing Coercions. *)
   repeat rewrite ite_apply.
   iModIntro.
@@ -435,14 +394,11 @@ Proof.
   { iFrame "% # ∗". }
   iFrame "%".
   iPureIntro.
-  case_bool_decide.
-  - change (int.Z (U64 1)) with 1. simpl.
-    unfold spec_lookup. rewrite Hspec.
-    by rewrite H.
-  - change (int.Z (U64 0)) with 0. simpl.
-    unfold spec_lookup. rewrite Hspec.
-    apply not_true_is_false in H.
-    by rewrite H.
+  unfold spec_lookup.
+  rewrite Hspec.
+  destruct (negb ver.1.2) eqn:E.
+  - rewrite negb_true_iff in E. by rewrite E.
+  - rewrite negb_false_iff in E. by rewrite E.
 Qed.
 
 End proof.

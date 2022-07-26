@@ -89,10 +89,13 @@ Definition own_txn_impl (txn : loc) (tid : u64) (mods : dbmap) γ : iProp Σ :=
     "#Hinv" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
-Definition own_txn (txn : loc) γ : iProp Σ :=
-  ∃ (tid : u64) (mods : dbmap),
-    "Himpl" ∷ own_txn_impl txn tid mods γ.
+Definition own_txn (txn : loc) γ τ : iProp Σ :=
+  ∃ (tid : u64) (view : dbmap) (mods : dbmap),
+    "Himpl" ∷ own_txn_impl txn tid mods γ ∗
+    "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v tid) ∗
+    "Htxnmap" ∷ txnmap_auth τ (mods ∪ view).
 
+(* TODO: Unify [own_txn_impl] and [own_txn_uninit]. *)
 Definition own_txn_uninit (txn : loc) γ : iProp Σ := 
   ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
@@ -114,4 +117,4 @@ Hint Extern 1 (environments.envs_entails _ (own_txnsite _ _ _)) => unfold own_tx
 Hint Extern 1 (environments.envs_entails _ (own_txnmgr _)) => unfold own_txnmgr : core.
 Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
 Hint Extern 1 (environments.envs_entails _ (own_txn_impl _ _ _ _)) => unfold own_txn_impl : core.
-Hint Extern 1 (environments.envs_entails _ (own_txn _ _)) => unfold own_txn : core.
+Hint Extern 1 (environments.envs_entails _ (own_txn _ _ _)) => unfold own_txn : core.

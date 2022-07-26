@@ -6,6 +6,9 @@ Definition dbval := option u64.
 Notation Nil := (None : dbval).
 Notation Value x := (Some x : dbval).
 
+Definition to_dbval (b : bool) (v : u64) :=
+  if b then Value v else Nil.
+
 Definition dbmap := gmap u64 dbval.
 
 Definition N_TXN_SITES : Z := 64.
@@ -35,6 +38,7 @@ Proof.
   simpl. f_equal. word.
 Qed.
 
+(* Global ghost states. *)
 Class mvcc_ghostG Σ :=
   {
     (* tuple *)
@@ -70,7 +74,6 @@ Global Instance subG_mvcc_ghostG {Σ} :
   subG mvcc_ghostΣ Σ → mvcc_ghostG Σ.
 Proof. solve_inG. Qed.
 
-(* TODO: remove the [mvcc_] prefix? *)
 Record mvcc_names :=
   {
     mvcc_ptuple : gname;
@@ -84,6 +87,22 @@ Record mvcc_names :=
     mvcc_commit_tmods : gname;
     mvcc_dbmap : gname
   }.
+
+(* Per-txn ghost state. *)
+Class mvcc_txn_ghostG Σ :=
+  {
+    mvcc_txnmapG :> inG Σ dbmapR;
+  }.
+
+Definition mvcc_txn_ghostΣ :=
+  #[
+     GFunctor dbmapR
+   ].
+
+Global Instance subG_mvcc_txn_ghostG {Σ} :
+  subG mvcc_txn_ghostΣ Σ → mvcc_txn_ghostG Σ.
+Proof. solve_inG. Qed.
+
 
 Section definitions.
 Context `{!mvcc_ghostG Σ}.
@@ -100,11 +119,15 @@ Definition ltuple_auth γ (k : u64) (logi : list dbval) : iProp Σ :=
 Definition ltuple_lb γ (k : u64) (logi : list dbval) : iProp Σ :=
   own γ.(mvcc_ltuple) {[k := ◯ML (logi : list (leibnizO dbval))]}.
 
+(* TODO: rename [view_ptsto] to [ptuple_ptsto]. *)
 Definition view_ptsto γ (k : u64) (v : dbval) (tid : u64) : iProp Σ :=
   ∃ phys, ptuple_lb γ k phys ∗ ⌜phys !! (int.nat tid) = Some v⌝.
 
 Definition mods_token γ (k tid : u64) : iProp Σ :=
   ∃ phys, ptuple_auth γ (1/4) k phys ∗ ⌜Z.of_nat (length phys) ≤ (int.Z tid) + 1⌝.
+
+Definition ltuple_ptsto γ (k : u64) (v : dbval) (tid : u64) : iProp Σ :=
+  ∃ logi, ltuple_lb γ k logi ∗ ⌜logi !! (int.nat tid) = Some v⌝.
 
 (* Definitions about GC-related resources. *)
 Definition site_active_tids_half_auth γ (sid : u64) tids : iProp Σ :=
@@ -162,12 +185,18 @@ Definition dbmap_auth γ m : iProp Σ :=
 Definition dbmap_ptsto γ k v : iProp Σ :=
   own γ.(mvcc_dbmap) (gmap_view_frag k (DfracOwn 1) v).
 
+(* Definitions about per-txn resources. *)
+Definition txnmap_auth τ m : iProp Σ :=
+  own τ (gmap_view_auth (DfracOwn 1) m).
+
+Definition txnmap_ptsto τ k v : iProp Σ :=
+  own τ (gmap_view_frag k (DfracOwn 1) v).
+
 End definitions.
 
 Section lemmas.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-(* TODO: rename [vchain] to [ptuple] *)
 Lemma vchain_combine {γ} q {q1 q2 key vchain1 vchain2} :
   (q1 + q2 = q)%Qp ->
   ptuple_auth γ q1 key vchain1 -∗
@@ -291,6 +320,23 @@ Lemma mvcc_ghost_init :
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
 Admitted.
 
+Lemma txnmap_lookup τ m k v :
+  txnmap_auth τ m -∗
+  txnmap_ptsto τ k v -∗
+  ⌜m !! k = Some v⌝.
+Admitted.
+
+Lemma txnmap_update {τ m k v} w :
+  txnmap_auth τ m -∗
+  txnmap_ptsto τ k v ==∗
+  txnmap_auth τ (<[ k := w ]> m) ∗
+  txnmap_ptsto τ k w.
+Admitted.
+
+Lemma txnmap_alloc m :
+  ⊢ |==> ∃ τ, txnmap_auth τ m ∗ ([∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v).
+Admitted.
+
 End lemmas.
 
 Section action.
@@ -314,9 +360,8 @@ Definition no_commit_abort (l : list action) (tid : u64) :=
   (EvAbort tid ∉ l).
 
 Definition first_abort (l : list action) (tid : u64) :=
-  ∃ e lp ls,
-    e = EvAbort tid ∧
-    l = lp ++ e :: ls ∧
+  ∃ lp ls,
+    l = lp ++ (EvAbort tid) :: ls ∧
     no_commit_abort lp tid.
 
 Definition compatible (tid : u64) (mods : dbmap) (e : action) :=
@@ -340,19 +385,18 @@ Definition compatible_all (l : list action) (tid : u64) (mods : dbmap) :=
 Definition incompatible_exists (l : list action) (tid : u64) (mods : dbmap) :=
   Exists (incompatible tid mods) l.
 
-Definition first_commit (l lp ls : list action) (e : action) (tid : u64) (mods : dbmap) :=
-  e = EvCommit tid mods ∧
-  l = lp ++ e :: ls ∧
+Definition first_commit (l lp ls : list action) (tid : u64) (mods : dbmap) :=
+  l = lp ++ (EvCommit tid mods) :: ls ∧
   no_commit_abort lp tid.
 
 Definition first_commit_incompatible (l : list action) (tid : u64) (mods : dbmap) :=
-  ∃ e lp ls,
-    first_commit l lp ls e tid mods ∧
+  ∃ lp ls,
+    first_commit l lp ls tid mods ∧
     incompatible_exists lp tid mods.
 
 Definition first_commit_compatible (l : list action) (tid : u64) (mods : dbmap) :=
-  ∃ e lp ls,
-    first_commit l lp ls e tid mods ∧
+  ∃ lp ls,
+    first_commit l lp ls tid mods ∧
     compatible_all lp tid mods.
 
 Definition is_commit_abort_tid (tid : u64) (e : action) : Prop :=
@@ -438,31 +482,26 @@ Proof.
       apply is_commit_abort_tid_lor in Hls.
       destruct Hls as [[mods' Hls] | Hls]; last set_solver.
       inversion Hls. subst tid0 mods'.
-      assert (Hfc : first_commit l lp (tail ls) a tid mods).
+      assert (Hfc : first_commit l lp (tail ls) tid mods).
       { unfold first_commit.
-        split; first done.
         split; last done.
         rewrite Hl.
         f_equal.
-        rewrite Ee.
         by apply hd_error_tl_repr.
       }
       case_decide.
       * unfold first_commit_compatible.
-        exists (EvCommit tid mods), lp, (tail ls).
-        by rewrite Ee in Hfc.
+        by exists lp, (tail ls).
       * unfold first_commit_incompatible.
-        exists (EvCommit tid mods), lp, (tail ls).
+        exists lp, (tail ls).
         unfold compatible_all in H.
-        apply not_Forall_Exists in H; last apply _.
-        by rewrite Ee in Hfc.
+        by apply not_Forall_Exists in H; last apply _.
     + unfold is_commit_abort_tid in Hls. set_solver.
     + apply is_commit_abort_tid_lor in Hls.
       destruct Hls; first set_solver.
       inversion H. subst tid0.
       unfold first_abort.
-      exists (EvAbort tid), lp, (tail ls).
-      split; first done.
+      exists lp, (tail ls).
       split; last done.
       rewrite Hl.
       f_equal.
@@ -486,37 +525,37 @@ Proof.
   intros Hl. rewrite Hl. destruct lp; auto.
 Qed.
 
-Lemma first_abort_false (l : list action) (tid : u64) (mods : dbmap) :
+Theorem first_abort_false (l : list action) (tid : u64) (mods : dbmap) :
   first_abort l tid ->
   head_commit l tid mods ->
   False.
 Proof.
-  intros (e & lp & ls & He & Hl & HnotinC & _) Hhead.
+  intros (lp & ls & Hl & HnotinC & _) Hhead.
   unfold head_commit in Hhead.
   rewrite (head_middle _ _ _ _ Hl) in Hhead.
   apply head_Some_elem_of in Hhead.
   set_solver.
 Qed.
 
-Lemma first_commit_false (l lp ls : list action) (e : action) (tid : u64) (mods : dbmap) :
-  first_commit l lp ls e tid mods ->
+Theorem first_commit_false (l lp ls : list action) (e : action) (tid : u64) (mods : dbmap) :
+  first_commit l lp ls tid mods ->
   head_abort l tid ->
   False.
 Proof.
-  intros (He & Hl & _ & HnotinA) Hhead.
+  intros (Hl & _ & HnotinA) Hhead.
   unfold head_abort in Hhead.
   rewrite (head_middle _ _ _ _ Hl) in Hhead.
   apply head_Some_elem_of in Hhead.
   set_solver.
 Qed.
 
-Lemma safe_extension_rd (l : list action) (tid tid' : u64) (mods : dbmap) (key : u64) :
+Theorem safe_extension_rd (l : list action) (tid tid' : u64) (mods : dbmap) (key : u64) :
   first_commit_compatible l tid mods ->
   head_read l tid' key ->
   key ∈ (dom mods) ->
   (int.Z tid') ≤ (int.Z tid).
 Proof.
-  intros (e & lp & ls & (He & Hl & _) & Hcomp) Hhead Hin.
+  intros (lp & ls & [Hl _] & Hcomp) Hhead Hin.
   unfold head_read in Hhead.
   rewrite (head_middle _ _ _ _ Hl) in Hhead.
   destruct lp; first set_solver.
@@ -529,13 +568,13 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Lemma safe_extension_wr (l : list action) (tid tid' : u64) (mods mods' : dbmap) :
+Theorem safe_extension_wr (l : list action) (tid tid' : u64) (mods mods' : dbmap) :
   first_commit_compatible l tid mods ->
   head_commit l tid' mods' ->
   (dom mods) ∩ (dom mods') ≠ ∅ ->
   (int.Z tid') ≤ (int.Z tid).
 Proof.
-  intros (e & lp & ls & (He & Hl & _) & Hcomp) Hhead Hdom.
+  intros (lp & ls & [Hl _] & Hcomp) Hhead Hdom.
   unfold head_commit in Hhead.
   rewrite (head_middle _ _ _ _ Hl) in Hhead.
   destruct lp; first set_solver.
@@ -548,17 +587,48 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Lemma first_commit_incompatible_false (l : list action) (tid : u64) (mods : dbmap) :
+Theorem first_commit_incompatible_false (l : list action) (tid : u64) (mods : dbmap) :
   first_commit_incompatible l tid mods ->
   head_commit l tid mods ->
   False.
 Proof.
-  intros (e & lp & ls & (_ & Hl & [HnotinC _]) & Hincomp) Hhead.
+  intros (lp & ls & [Hl [HnotinC _]] & Hincomp) Hhead.
   destruct lp; first by apply Exists_nil in Hincomp.
   unfold head_commit in Hhead.
   set_solver.
 Qed.
 
+Lemma notin_tail {X} (x : X) (l : list X) :
+  x ∉ l ->
+  x ∉ tail l.
+Proof.
+  intros Hnotin.
+  destruct l; first done.
+  intros contra. simpl in contra. set_solver.
+Qed.
+
+Lemma first_commit_compatible_preserved {l l' : list action} {a : action} {tid : u64} {mods : dbmap} :
+  l = a :: l' ->
+  (∀ mods', a ≠ EvCommit tid mods') ->
+  first_commit_compatible l tid mods ->
+  first_commit_compatible l' tid mods.
+Proof.
+  intros Hhead Hneq Hfci.
+  destruct Hfci as (lp & ls & [Hl [HnotinC HnotinA]] & Hcomp).
+  exists (tail lp), ls.
+  split; last by apply Forall_tail.
+  split; last first.
+  { unfold no_commit_abort.
+    split; last by apply notin_tail.
+    intros mods'. by apply notin_tail.
+  }
+  unfold first_commit.
+  destruct lp eqn:Elp; first set_solver.
+  simpl.
+  rewrite -hd_error_tl_repr in Hhead.
+  destruct Hhead as [_ Hl'].
+  by rewrite -Hl' Hl.
+Qed.
 
 End action.
 

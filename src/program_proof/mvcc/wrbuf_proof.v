@@ -15,9 +15,6 @@ Definition wrent := (u64 * u64 * bool)%type.
 Definition wrent_to_val (x : wrent) :=
   (#x.1.1, (#x.1.2, (#x.2, #())))%V.
 
-Local Definition to_dbval (d : bool) (v : u64) :=
-  if d then Nil else Value v.
-
 Local Definition wrent_to_key_dbval (x : wrent) : (u64 * dbval) :=
   (x.1.1, (to_dbval x.2 x.1.2)).
 
@@ -289,8 +286,8 @@ Proof.
 Qed.
 
 (* TODO: Return values first or others first? Make it consistent. *)
-Definition spec_wrbuf__Lookup (v : u64) (d ok : bool) (key : u64) (m : gmap u64 dbval) :=
-  if ok then m !! key = Some (to_dbval d v) else m !! key = None.
+Definition spec_wrbuf__Lookup (v : u64) (b ok : bool) (key : u64) (m : gmap u64 dbval) :=
+  if ok then m !! key = Some (to_dbval b v) else m !! key = None.
 
 (*****************************************************************)
 (* func (wrbuf *WrBuf) Lookup(key uint64) (uint64, bool, bool)   *)
@@ -298,8 +295,8 @@ Definition spec_wrbuf__Lookup (v : u64) (d ok : bool) (key : u64) (m : gmap u64 
 Theorem wp_wrbuf__Lookup wrbuf (key : u64) m :
   {{{ own_wrbuf wrbuf m }}}
     WrBuf__Lookup #wrbuf #key
-  {{{ (v : u64) (d ok : bool), RET (#v, #d, #ok);
-      own_wrbuf wrbuf m ∗ ⌜spec_wrbuf__Lookup v d ok key m⌝
+  {{{ (v : u64) (b ok : bool), RET (#v, #b, #ok);
+      own_wrbuf wrbuf m ∗ ⌜spec_wrbuf__Lookup v b ok key m⌝
   }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
@@ -360,7 +357,6 @@ Proof.
   by rewrite wrent_to_key_dbval_key_fmap.
 Qed.
 
-
 (*****************************************************************)
 (* func (wrbuf *WrBuf) Put(key, val uint64)                      *)
 (*****************************************************************)
@@ -385,7 +381,7 @@ Proof.
   (* if found {                                              *)
   (*     ent := &wrbuf.ents[pos]                             *)
   (*     ent.val = val                                       *)
-  (*     ent.del = false                                     *)
+  (*     ent.wr  = true                                      *)
   (*     return                                              *)
   (* }                                                       *)
   (***********************************************************)
@@ -423,19 +419,19 @@ Proof.
     }
     iIntros "val".
     wp_pures.
-    (* update [del] *)
-    wp_apply (wp_storeField with "[del]"); first auto.
+    (* update [wr] *)
+    wp_apply (wp_storeField with "[wr]"); first auto.
     { iNext.
-      iExactEq "del".
+      iExactEq "wr".
       do 3 f_equal.
       word.
     }
-    iIntros "del".
+    iIntros "wr".
     word_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (int.Z pos)).
-    set ent' := (ent.1.1, val, false).
+    set ent' := (ent.1.1, val, true).
     iDestruct (struct_fields_split entR 1%Qp WrEnt (wrent_to_val ent')
-                with "[key val del]") as "HentsP".
+                with "[key val wr]") as "HentsP".
     { rewrite /struct_fields. by iFrame. }
     iDestruct ("HentsA" with "HentsP") as "HentsA".
     iDestruct ("HentsC" with "[HentsA]") as "HentsS".
@@ -475,7 +471,7 @@ Proof.
   (* ent := WrEnt {                                          *)
   (*     key : key,                                          *)
   (*     val : val,                                          *)
-  (*     del : false,                                        *)
+  (*     wr  : true,                                         *)
   (* }                                                       *)
   (* wrbuf.ents = append(wrbuf.ents, ent)                    *)
   (***********************************************************)
@@ -490,7 +486,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   unfold spec_search in Hsearch.
-  set ents' := (ents ++ [(key, val, false)]).
+  set ents' := (ents ++ [(key, val, true)]).
   unfold own_wrbuf.
 
   iExists _, ents'.
@@ -542,7 +538,7 @@ Proof.
   (***********************************************************)
   (* if found {                                              *)
   (*     ent := &wrbuf.ents[pos]                             *)
-  (*     ent.del = true                                      *)
+  (*     ent.wr = false                                      *)
   (*     return                                              *)
   (* }                                                       *)
   (***********************************************************)
@@ -571,19 +567,19 @@ Proof.
     { by rewrite list_lookup_fmap Hlookup. }
     iDestruct (struct_fields_split with "HentsP") as "HentsP".
     iNamed "HentsP".
-    (* update [del] *)
-    wp_apply (wp_storeField with "[del]"); first auto.
+    (* update [wr] *)
+    wp_apply (wp_storeField with "[wr]"); first auto.
     { iNext.
-      iExactEq "del".
+      iExactEq "wr".
       do 3 f_equal.
       word.
     }
-    iIntros "del".
+    iIntros "wr".
     word_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (int.Z pos)).
-    set ent' := (ent.1.1, ent.1.2, true).
+    set ent' := (ent.1.1, ent.1.2, false).
     iDestruct (struct_fields_split entR 1%Qp WrEnt (wrent_to_val ent')
-                with "[key val del]") as "HentsP".
+                with "[key val wr]") as "HentsP".
     { rewrite /struct_fields. by iFrame. }
     iDestruct ("HentsA" with "HentsP") as "HentsA".
     iDestruct ("HentsC" with "[HentsA]") as "HentsS".
@@ -638,7 +634,7 @@ Proof.
   iApply "HΦ".
   unfold spec_search in Hsearch.
   (* [(U64 0)] is the zero-value of [u64]. *)
-  set ents' := (ents ++ [(key, (U64 0), true)]).
+  set ents' := (ents ++ [(key, (U64 0), false)]).
   unfold own_wrbuf.
 
   iExists _, ents'.
