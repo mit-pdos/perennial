@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Goose.github_com.mit_pdos.gokv.simplepb Require Import pb.
+From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
@@ -336,18 +336,30 @@ Proof.
   done.
 Admitted.
 
-Lemma wp_Server__Apply (s:loc) γ op_sl:
+Implicit Type σ : list (list u8).
+Implicit Type epoch : u64.
+
+Definition applyFn σ : (list (list u8)).
+Admitted.
+Definition replyFn σ : (list u8).
+Admitted.
+
+Lemma wp_Server__Apply (s:loc) γ op_sl op Q :
   {{{
-        is_Server s γ
+        is_Server s γ ∗
+        is_slice op_sl byteT 1 op ∗
+        (|={⊤,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [op]) ={∅,⊤}=∗ Q σ))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
-        RET #(); True
+        reply_sl σ, RET (slice_val reply_sl);
+        is_slice reply_sl byteT 1 (replyFn σ) ∗
+        (Q σ)
   }}}
   .
 Proof.
-  iIntros (Φ) "#Hpre HΦ".
-  iNamed "Hpre".
+  iIntros (Φ) "[#His Hpre] HΦ".
+  iNamed "His".
   wp_call.
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
