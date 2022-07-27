@@ -276,6 +276,25 @@ Definition testEncDec64: val :=
     "ok" <-[boolT] (![boolT] "ok") && (roundtripEncDec64 (#1 ≪ #64 - #1) = #1 ≪ #64 - #1);;
     ![boolT] "ok".
 
+(* first_class_function.go *)
+
+Definition FirstClassFunction: val :=
+  rec: "FirstClassFunction" "a" :=
+    "a" + #10.
+
+Definition ApplyF: val :=
+  rec: "ApplyF" "a" "f" :=
+    "f" "a".
+
+Definition testFirstClassFunction: val :=
+  rec: "testFirstClassFunction" <> :=
+    (ApplyF #1 FirstClassFunction = #11).
+
+Definition Recursive: val :=
+  rec: "Recursive" <> :=
+    Recursive #();;
+    #().
+
 (* function_ordering.go *)
 
 (* helpers *)

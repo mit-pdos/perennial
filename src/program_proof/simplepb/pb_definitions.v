@@ -102,14 +102,21 @@ Lemma append γ epoch σ op :
 Proof.
 Admitted.
 
-Lemma propose γ epoch σ op :
+Lemma propose γ epoch σ op Q :
   own_proposal γ epoch σ -∗
-  is_proposal_facts γ epoch σ
+  is_proposal_facts γ epoch σ -∗
+  (|={⊤,∅}=> own_ghost γ σ ∗ (own_ghost γ (σ ++ [op]) ={∅,⊤}=∗ Q σ))
   ={⊤}=∗
   own_proposal γ epoch (σ ++ [op]) ∗
   is_proposal_facts γ epoch (σ ++ [op]).
 Proof.
 Admitted.
+
+(*
+{ (|={⊤,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ σ++op ={∅,⊤}=∗ Q)) }
+  Apply(op)
+{ Q }
+*)
 
 Lemma commit γ epoch σ :
   committed_by γ epoch σ
