@@ -1,43 +1,129 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Import pb.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
-From iris.base_logic Require Export lib.ghost_var.
-From iris.base_logic Require Export mono_nat.
+From iris.base_logic Require Export lib.ghost_var mono_nat.
+From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 
-Section pb_definitions.
+Section pb_protocol.
 
 Context `{!heapGS Σ}.
-Context `{!stagedG Σ}.
 
 Record pb_server_names :=
 {
   urpc_gn: server_chan_gnames ;
-  epoch_gn: gname ;
+  pb_epoch_gn: gname ;
+  pb_accepted_gn : gname ;
+  pb_proposal_gn : gname ; (* system-wide *)
+  pb_config_gn : gname; (* system-wide *)
+  pb_state_gn : gname ; (* system-wide *)
 }.
 
-Implicit Type γ : pb_server_names.
+Local Definition logR := mono_listR (leibnizO (list u8)).
 
+Class pbG Σ := {
+    pb_epochG :> mono_natG Σ ;
+    pb_proposalG :> inG Σ (gmapR (u64) logR) ;
+    pb_commitG :> inG Σ logR ;
+    pb_configG :> inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (list pb_server_names)))) ;
+}.
+
+Context `{!pbG Σ}.
+
+Implicit Type γ : pb_server_names.
 Implicit Type σ : list (list u8).
 Implicit Type epoch : u64.
 
-Definition proposal_ptsto γ (epoch:u64) (σ:list (list u8)) : iProp Σ.
-Admitted.
-
-Definition accepted_lb γ (epoch:u64) (σ:list (list u8)) : iProp Σ.
-Admitted.
-
-Context `{!mono_natG Σ}.
-
 Definition own_epoch γ (epoch:u64) : iProp Σ :=
-  mono_nat_auth_own γ.(epoch_gn) 1 (int.nat epoch).
-
+  mono_nat_auth_own γ.(pb_epoch_gn) 1 (int.nat epoch).
 Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
-  mono_nat_lb_own γ.(epoch_gn) (int.nat epoch).
+  mono_nat_lb_own γ.(pb_epoch_gn) (int.nat epoch).
+
+Definition own_proposal γ epoch σ : iProp Σ :=
+  own γ.(pb_proposal_gn) {[ epoch := ●ML (σ : list (leibnizO (list u8)))]}.
+Definition is_proposal_lb γ epoch σ : iProp Σ :=
+  own γ.(pb_proposal_gn) {[ epoch := ◯ML (σ : list (leibnizO (list u8)))]}.
+
+Definition own_accepted γ epoch σ : iProp Σ :=
+  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (list u8)))]}.
+Definition is_accepted_lb γ epoch σ : iProp Σ :=
+  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (list u8)))]}.
+Definition is_accepted_ro γ epoch σ : iProp Σ :=
+  own γ.(pb_accepted_gn) {[ epoch := ●ML□ (σ : list (leibnizO (list u8)))]}.
+
+(* TODO: if desired, can make these exclusive by adding an exclusive token to each *)
+Definition own_ghost γ σ : iProp Σ :=
+  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (list u8)))).
+Definition own_commit γ σ : iProp Σ :=
+  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (list u8)))).
+Definition is_ghost_lb γ σ : iProp Σ :=
+  own γ.(pb_state_gn) (◯ML (σ : list (leibnizO (list u8)))).
+
+Notation "lhs ⪯ rhs" := (prefix lhs rhs)
+(at level 20, format "lhs ⪯ rhs") : stdpp_scope.
+
+Definition is_epoch_config γ epoch (conf:list pb_server_names): iProp Σ :=
+  own γ.(pb_config_gn) {[ epoch := to_dfrac_agree DfracDiscarded (conf : (leibnizO _))]} ∗
+  ⌜length conf > 0⌝.
+Definition config_unset γ (cn:u64) : iProp Σ :=
+  own γ.(pb_config_gn) {[cn := to_dfrac_agree (DfracOwn 1) ([] : (leibnizO _))]}.
+
+Definition committed_by γ epoch σ : iProp Σ :=
+  ∃ conf, is_epoch_config γ epoch conf ∗
+      ∀ γ, ⌜γ ∈ conf⌝ → is_accepted_lb γ epoch σ.
+
+Definition old_proposal_max γ epoch σ : iProp Σ := (* persistent *)
+  □(∀ epoch_old (σ_old:list (list u8)),
+   ⌜int.nat epoch_old < int.nat epoch⌝ →
+   committed_by γ epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
+
+Definition is_proposal_valid γ epoch σ : iProp Σ.
+Admitted.
+
+Definition is_proposal_facts γ epoch σ: iProp Σ :=
+  old_proposal_max γ epoch σ ∗
+  is_proposal_valid γ epoch σ.
 
 Definition own_Server_ghost γ epoch σ : iProp Σ :=
-  "Hepoch_ghost" ∷ own_epoch γ epoch
+  "Hepoch_ghost" ∷ own_epoch γ epoch ∗
+  "Haccepted" ∷ own_accepted γ epoch σ ∗
+  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat epoch⌝ ∨
+                                                      own_accepted γ epoch []) ∗
+  "#Hproposal_lb" ∷ is_proposal_lb γ epoch σ ∗
+  "#Hvalid" ∷ is_proposal_facts γ epoch σ
 .
+
+Lemma append γ epoch σ op :
+  own_Server_ghost γ epoch σ -∗
+  is_proposal_lb γ epoch σ -∗
+  is_proposal_facts γ epoch σ
+  ={⊤}=∗
+  own_Server_ghost γ epoch (σ++[op]).
+Proof.
+Admitted.
+
+Lemma propose γ epoch σ op :
+  own_proposal γ epoch σ -∗
+  is_proposal_facts γ epoch σ
+  ={⊤}=∗
+  own_proposal γ epoch (σ ++ [op]) ∗
+  is_proposal_facts γ epoch (σ ++ [op]).
+Proof.
+Admitted.
+
+Lemma commit γ epoch σ :
+  committed_by γ epoch σ
+  ={⊤}=∗
+  is_ghost_lb γ σ.
+Proof.
+Admitted.
+
+End pb_protocol.
+
+Section pb_definitions.
+
+Context `{!heapGS Σ, !stagedG Σ}.
+Context `{!pbG Σ}.
 
 Definition is_ApplyFn (applyFn:val) γ P : iProp Σ :=
   ∀ op_sl (epoch:u64) σ op,
@@ -113,10 +199,10 @@ Program Definition ApplyAsBackup_spec γ :=
     ⌜has_encoding_ApplyArgs encoded_args args⌝ ∗
     ⌜length σ = int.nat args.(index)⌝ ∗
     ⌜last σ = Some args.(op)⌝ ∗
-    proposal_ptsto γ args.(epoch) σ ∗
+    is_proposal_lb γ args.(epoch) σ ∗
     (∀ error (reply:list u8),
         ⌜has_encoding_Error reply error⌝ -∗
-        (if (decide (error = 0)) then accepted_lb γ args.(epoch) σ else True) -∗
+        (if (decide (error = 0)) then is_accepted_lb γ args.(epoch) σ else True) -∗
         Φ reply)
     )%I
 .
@@ -196,10 +282,11 @@ Proof.
   {
     iIntros.
     iSplitL ""; first done.
-    iExists _, _; iFrame.
+    iExists _, _; iFrame "∗#".
   }
   iNext.
   iIntros "(%Hineq & Hepoch & $)".
+  iFrame "Haccepted Haccepted_rest Hghost Hproposal_lb".
   iFrame "HP".
   iIntros "Hstate".
   iSplitL ""; first done.
