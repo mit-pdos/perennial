@@ -3,10 +3,12 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Import pb.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From iris.base_logic Require Export lib.ghost_var.
 From iris.base_logic Require Export mono_nat.
+From Perennial.goose_lang Require Import crash_borrow.
 
 Section pb_definitions.
 
 Context `{!heapGS Σ}.
+Context `{!stagedG Σ}.
 
 Record pb_server_names :=
 {
@@ -33,23 +35,33 @@ Definition own_epoch γ (epoch:u64) : iProp Σ :=
 Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
   mono_nat_lb_own γ.(epoch_gn) (int.nat epoch).
 
-Definition own_Server_ghost γ epoch σ : iProp Σ.
-Admitted.
+Definition own_Server_ghost γ epoch σ : iProp Σ :=
+  "Hepoch_ghost" ∷ own_epoch γ epoch
+.
 
 Definition is_ApplyFn (applyFn:val) γ P : iProp Σ :=
   ∀ op_sl (epoch:u64) σ op,
   {{{
-        (own_Server_ghost γ epoch σ ={⊤}=∗ own_Server_ghost γ epoch (σ++[op])) ∗ P epoch σ ∗ is_slice op_sl byteT 1 op
+        (own_Server_ghost γ epoch σ ={⊤}=∗ own_Server_ghost γ epoch (σ++[op])) ∗
+        crash_borrow (own_Server_ghost γ epoch σ ∗ P epoch σ) (
+          ∃ epoch' σ',
+          (own_Server_ghost γ epoch' σ' ∗ P epoch' σ')
+        )
+        ∗ is_slice op_sl byteT 1 op
   }}}
     applyFn (slice_val op_sl)
   {{{
-        RET #(); P epoch (σ ++ [op])
+        RET #();
+        crash_borrow (own_Server_ghost γ epoch (σ ++ [op]) ∗ P epoch (σ ++ [op])) (
+          ∃ epoch' σ',
+          (own_Server_ghost γ epoch' σ' ∗ P epoch' σ')
+        )
   }}}
 .
 
 Definition is_StateMachine (sm:loc) γ P : iProp Σ :=
   ∃ (applyFn:val),
-  "#Happly" ∷ sm ↦[pb.StateMachine :: "Apply"] applyFn ∗
+  "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "Apply"] applyFn) ∗
   "#HapplySpec" ∷ is_ApplyFn applyFn γ P
 .
 
@@ -65,7 +77,11 @@ Definition own_Server (s:loc) γ P : iProp Σ :=
   (* state-machine *)
   "#HisSm" ∷ is_StateMachine sm γ P ∗
 
-  "Hstate" ∷ P epoch σ ∗
+  (* ghost-state *)
+  "Hstate" ∷ crash_borrow (own_Server_ghost γ epoch σ ∗ P epoch σ) (
+    ∃ epoch σ,
+    own_Server_ghost γ epoch σ ∗ P epoch σ
+  ) ∗
 
   (* primary-only *)
   "#Hclerks_rpc" ∷ True
@@ -120,15 +136,20 @@ Definition is_Clerk (ck:loc) γ : iProp Σ :=
   "#Hsrv" ∷ is_pb_host γ srv
 .
 
-Lemma wp_Server__epochFence (s:loc) γ (currEpoch epoch:u64) :
+Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :
   {{{
         is_epoch_lb γ epoch ∗
         s ↦[pb.Server :: "epoch"] #currEpoch ∗
         own_epoch γ currEpoch
   }}}
-    pb.Server__epochFence #s #epoch
+    pb.Server__epochFence #s #epoch @ stk
   {{{
-        RET #(negb (bool_decide (int.nat currEpoch = int.nat epoch))); s ↦[pb.Server :: "epoch"] #currEpoch ∗ own_epoch γ currEpoch
+        RET #(bool_decide (int.nat currEpoch > int.nat epoch));
+        ⌜int.nat currEpoch ≥ int.nat epoch⌝ ∗
+        s ↦[pb.Server :: "epoch"] #currEpoch ∗ own_epoch γ currEpoch
+  }}}
+  {{{
+        own_epoch γ currEpoch
   }}}
 .
 Proof.
@@ -145,7 +166,7 @@ Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ (epoch index:u64) (op:l
   }}}
     pb.Server__ApplyAsBackup #s #args_ptr
   {{{
-        RET #(); True
+        RET #0; True
   }}}
   .
 Proof.
@@ -158,9 +179,30 @@ Proof.
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
+  Opaque crash_borrow.
   wp_loadField.
-  wp_apply (wp_Server__epochFence with "[$Hepoch $HepochGhost $HepochLb]").
-  iIntros "Hepoch".
+  wp_bind (Server__epochFence _ _).
+  iApply (wpc_wp _ _ _ _ True).
+  iApply (wpc_crash_borrow_open with "Hstate").
+  {
+    econstructor.
+  }
+  iSplitL ""; first done.
+  iIntros "[Hghost HP]".
+  unfold own_Server_ghost.
+  iNamed "Hghost".
+  wpc_apply (wpc_Server__epochFence with "[$Hepoch $Hepoch_ghost $HepochLb]").
+  iSplit.
+  {
+    iIntros.
+    iSplitL ""; first done.
+    iExists _, _; iFrame.
+  }
+  iNext.
+  iIntros "(%Hineq & Hepoch & $)".
+  iFrame "HP".
+  iIntros "Hstate".
+  iSplitL ""; first done.
   wp_if_destruct.
   { (* return error: stale *)
     admit.
@@ -176,6 +218,28 @@ Proof.
 
   wp_loadField.
   wp_loadField.
+  iNamed "HisSm".
+  wp_loadField.
+
+  wp_apply ("HapplySpec" with "[$Hstate $HopSl]").
+  { (* prove protocol step *)
+    admit.
+  }
+  iIntros "Hstate".
+  wp_pures.
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate]").
+  {
+    iNext.
+    iExists _, _, _, _, _, _.
+    iFrame.
+    iExists _; iFrame "#".
+  }
+  wp_pures.
+  iApply "HΦ".
+  done.
 Admitted.
 
 Lemma wp_Server__Apply (s:loc) γ op_sl:
