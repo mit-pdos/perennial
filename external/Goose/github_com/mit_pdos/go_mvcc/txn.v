@@ -264,14 +264,39 @@ Definition Txn__apply: val :=
 Definition Txn__Commit: val :=
   rec: "Txn__Commit" "txn" :=
     let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
-    let: "ret" := Txn__acquire "txn" "ents" in
-    (if: "ret"
+    let: "ok" := Txn__acquire "txn" "ents" in
+    (if: "ok"
     then Txn__apply "txn" "ents"
     else Txn__release "txn" "ents");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
-    #().
+    "ok".
 
 Definition Txn__Abort: val :=
   rec: "Txn__Abort" "txn" :=
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
+
+Definition Txn__DoTxn: val :=
+  rec: "Txn__DoTxn" "txn" "body" :=
+    Txn__Begin "txn";;
+    let: "cmt" := "body" "txn" in
+    (if: ~ "cmt"
+    then
+      Txn__Abort "txn";;
+      #false
+    else
+      let: "ok" := Txn__Commit "txn" in
+      "ok").
+
+(*  TODO: Move these to examples. *)
+Definition SwapSeq: val :=
+  rec: "SwapSeq" "txn" :=
+    let: ("v1", <>) := Txn__Get "txn" #10 in
+    let: ("v2", <>) := Txn__Get "txn" #20 in
+    Txn__Put "txn" #10 "v2";;
+    Txn__Put "txn" #20 "v1";;
+    #true.
+
+Definition Swap: val :=
+  rec: "Swap" "txn" :=
+    Txn__DoTxn "txn" SwapSeq.

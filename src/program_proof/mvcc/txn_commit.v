@@ -6,7 +6,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Theorem wp_txn__Commit txn γ τ :
   {{{ own_txn txn γ τ }}}
     Txn__Commit #txn
-  {{{ RET #(); own_txn_uninit txn γ }}}.
+  {{{ (ok : bool), RET #ok; own_txn_uninit txn γ }}}.
 Admitted.
 
 End program.

@@ -5,4 +5,5 @@ From Perennial.program_proof.mvcc Require Export
      txnmgr_mk txnmgr_new txnmgr_get_min_active_tid
      txnmgr_activate txnmgr_deactivate
      (* txn *)
-     txn_begin txn_commit txn_get txn_put txn_delete.
+     txn_begin txn_commit txn_get txn_put txn_delete
+     txn_do_txn.
