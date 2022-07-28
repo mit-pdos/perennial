@@ -13,11 +13,16 @@ Implicit Type σ : list (list u8).
 Context `{!ghost_mapG Σ u64 (list u8)}.
 Definition own_kvs (γkv:gname) σ : iProp Σ :=
   (* TODO: m has to agree with σ *)
-  ∃ m,
-  ghost_map_auth γkv 1 m.
+  ∃ m (ops:list (u64 * (list u8))),
+  ⌜σ = map (λ op, (u64_le op.1) ++ op.2) ops⌝ ∗
+  ghost_map_auth γkv 1 m ∗
+  ⌜m = foldl (λ m' op, <[op.1 := (default [] (m' !! op.1)) ++ op.2 ]>m') ∅ ops⌝
+.
+
+Definition stateN := nroot .@ "state".
 
 Definition sys_inv γ γkv : iProp Σ :=
-  inv pbN ( ∃ σ, own_ghost γ σ ∗ own_kvs γkv σ).
+  inv stateN ( ∃ σ, own_ghost γ σ ∗ own_kvs γkv σ).
 
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
   k ↪[γkv] v.
@@ -44,8 +49,8 @@ Lemma wp_Clerk__FetchAndAppend ck γ γkv key val_sl value Φ:
   sys_inv γ γkv -∗
   is_Clerk ck -∗
   is_slice val_sl byteT 1 value -∗
-  (|={⊤∖↑pbN,∅}=> ∃ old_value, kv_ptsto γkv key old_value ∗
-    (kv_ptsto γkv key (old_value ++ value) ={∅,⊤∖↑pbN}=∗
+  (|={⊤,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
+    (kv_ptsto γkv key (old_value ++ value) ={↑stateN,⊤}=∗
   (∀ reply_sl, is_slice reply_sl byteT 1 old_value -∗
       Φ (slice_val reply_sl))))
   -∗
@@ -86,8 +91,9 @@ Proof.
   wp_loadField.
 
   wp_apply (wp_Clerk__PrimaryApply with "Hop_sl").
-  iInv "Hinv" as ">Hown" "Hclose".
   iMod "Hupd".
+  iInv "Hinv" as ">Hown" "Hclose".
+  replace (↑_∖_) with (∅:coPset); last set_solver.
   iModIntro.
 
   iDestruct "Hown" as (?) "[Hown Hkvs]".
@@ -95,8 +101,6 @@ Proof.
   iFrame.
 
   iIntros "Hghost".
-  iMod (fupd_mask_subseteq).
-  { admit. } (* FIXME: the masks are wrong *)
   (* need to update own_kvs; need to fire Hupd *)
   iMod ("Hclose" with "[Hghost Hkvs]") as "HH".
   {

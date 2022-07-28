@@ -93,7 +93,7 @@ Definition own_Server_ghost γ epoch σ : iProp Σ :=
   "#Hvalid" ∷ is_proposal_facts γ epoch σ
 .
 
-Lemma append γ epoch σ op :
+Lemma ghost_accept γ epoch σ op :
   own_Server_ghost γ epoch σ -∗
   is_proposal_lb γ epoch σ -∗
   is_proposal_facts γ epoch σ
@@ -102,23 +102,39 @@ Lemma append γ epoch σ op :
 Proof.
 Admitted.
 
-Lemma propose γ epoch σ op Q :
+Definition pbN := nroot .@ "pb".
+
+Definition claim_Q_tok γ epoch σ : iProp Σ :=
+  True
+.
+
+Definition single_op_inv γ epoch σ op Q: iProp Σ :=
+  inv pbN (
+    (|={⊤,∅}=> ∃ someσ, own_ghost γ someσ ∗ (own_ghost γ (someσ ++ [op]) ={∅,⊤}=∗ Q)) ∨
+    (Q ∨ claim_Q_tok γ epoch σ)
+).
+
+Lemma ghost_propose γ epoch σ op Q :
   own_proposal γ epoch σ -∗
   is_proposal_facts γ epoch σ -∗
-  (|={⊤,∅}=> own_ghost γ σ ∗ (own_ghost γ (σ ++ [op]) ={∅,⊤}=∗ Q σ))
+  (* FIXME: can strengthen this to only requiring an update if (someσ = σ) *)
+  (|={⊤,∅}=> ∃ someσ, own_ghost γ someσ ∗ (own_ghost γ (someσ ++ [op]) ={∅,⊤}=∗ Q))
   ={⊤}=∗
   own_proposal γ epoch (σ ++ [op]) ∗
-  is_proposal_facts γ epoch (σ ++ [op]).
+  is_proposal_facts γ epoch (σ ++ [op]) ∗
+  single_op_inv γ epoch σ op Q.
 Proof.
 Admitted.
 
 (*
-{ (|={⊤,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ σ++op ={∅,⊤}=∗ Q)) }
-  Apply(op)
-{ Q }
-*)
+  XXX: Not sure if we need `is_ghost_lb γ σ` as postcondition. Really, all that
+  the user of ghost_commit cares about is getting something to get the (Q σ)
+  that they want.
 
-Lemma commit γ epoch σ :
+  We would care about (is_ghost_lb γ σ) if we had an explicit `commitIndex`,
+  which this system does not.
+ *)
+Lemma ghost_commit γ epoch σ :
   committed_by γ epoch σ
   ={⊤}=∗
   is_ghost_lb γ σ.
@@ -179,8 +195,6 @@ Definition own_Server (s:loc) γ P : iProp Σ :=
   (* primary-only *)
   "#Hclerks_rpc" ∷ True
 .
-
-Definition pbN := nroot .@ "pb".
 
 Definition is_Server (s:loc) γ : iProp Σ :=
   ∃ (mu:val) P,
@@ -339,22 +353,20 @@ Admitted.
 Implicit Type σ : list (list u8).
 Implicit Type epoch : u64.
 
-Definition applyFn σ : (list (list u8)).
-Admitted.
-Definition replyFn σ : (list u8).
+Definition replyFn σ (op:list u8) : (list u8).
 Admitted.
 
 Lemma wp_Server__Apply (s:loc) γ op_sl op Q :
   {{{
         is_Server s γ ∗
         is_slice op_sl byteT 1 op ∗
-        (|={⊤,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [op]) ={∅,⊤}=∗ Q σ))
+        (|={⊤,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [op]) ={∅,⊤}=∗ Q (replyFn σ op)))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
         reply_sl σ, RET (slice_val reply_sl);
-        is_slice reply_sl byteT 1 (replyFn σ) ∗
-        (Q σ)
+        is_slice reply_sl byteT 1 (replyFn σ op) ∗
+        (Q (replyFn σ op))
   }}}
   .
 Proof.
