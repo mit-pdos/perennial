@@ -19,7 +19,9 @@ Record pb_server_names :=
   pb_state_gn : gname ; (* system-wide *)
 }.
 
-Local Definition logR := mono_listR (leibnizO (list u8)).
+Context `{EntryType:Type}.
+
+Local Definition logR := mono_listR (leibnizO EntryType).
 
 Class pbG Σ := {
     pb_epochG :> mono_natG Σ ;
@@ -31,7 +33,7 @@ Class pbG Σ := {
 Context `{!pbG Σ}.
 
 Implicit Type γ : pb_server_names.
-Implicit Type σ : list (list u8).
+Implicit Type σ : list EntryType.
 Implicit Type epoch : u64.
 
 Definition own_epoch γ (epoch:u64) : iProp Σ :=
@@ -40,24 +42,24 @@ Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
   mono_nat_lb_own γ.(pb_epoch_gn) (int.nat epoch).
 
 Definition own_proposal γ epoch σ : iProp Σ :=
-  own γ.(pb_proposal_gn) {[ epoch := ●ML (σ : list (leibnizO (list u8)))]}.
+  own γ.(pb_proposal_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
 Definition is_proposal_lb γ epoch σ : iProp Σ :=
-  own γ.(pb_proposal_gn) {[ epoch := ◯ML (σ : list (leibnizO (list u8)))]}.
+  own γ.(pb_proposal_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
 
 Definition own_accepted γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (list u8)))]}.
+  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
 Definition is_accepted_lb γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (list u8)))]}.
+  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
 Definition is_accepted_ro γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ●ML□ (σ : list (leibnizO (list u8)))]}.
+  own γ.(pb_accepted_gn) {[ epoch := ●ML□ (σ : list (leibnizO (EntryType)))]}.
 
 (* TODO: if desired, can make these exclusive by adding an exclusive token to each *)
 Definition own_ghost γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (list u8)))).
+  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).
 Definition own_commit γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (list u8)))).
+  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).
 Definition is_ghost_lb γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (◯ML (σ : list (leibnizO (list u8)))).
+  own γ.(pb_state_gn) (◯ML (σ : list (leibnizO (EntryType)))).
 
 Notation "lhs ⪯ rhs" := (prefix lhs rhs)
 (at level 20, format "lhs ⪯ rhs") : stdpp_scope.
@@ -73,12 +75,25 @@ Definition committed_by γ epoch σ : iProp Σ :=
       ∀ γ, ⌜γ ∈ conf⌝ → is_accepted_lb γ epoch σ.
 
 Definition old_proposal_max γ epoch σ : iProp Σ := (* persistent *)
-  □(∀ epoch_old (σ_old:list (list u8)),
+  □(∀ epoch_old σ_old,
    ⌜int.nat epoch_old < int.nat epoch⌝ →
    committed_by γ epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
-Definition is_proposal_valid γ epoch σ : iProp Σ.
-Admitted.
+Definition pbN := nroot .@ "pb".
+
+Definition is_valid_inv γ epoch σ op : iProp Σ :=
+  inv pbN (
+    (|={⊤,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤}=∗ True)) ∨
+    is_ghost_lb γ (σ ++ [op])
+  )
+.
+
+Search "list".
+
+Definition is_proposal_valid γ epoch σ : iProp Σ :=
+  ∀ σprev op σnext,
+  ⌜σ = σprev ++ [op] ++ σnext⌝ -∗
+  is_valid_inv γ epoch σprev op.
 
 Definition is_proposal_facts γ epoch σ: iProp Σ :=
   old_proposal_max γ epoch σ ∗
@@ -102,37 +117,18 @@ Lemma ghost_accept γ epoch σ op :
 Proof.
 Admitted.
 
-Definition pbN := nroot .@ "pb".
-
-Definition claim_Q_tok γ epoch σ : iProp Σ :=
-  True
-.
-
-Definition single_op_inv γ epoch σ op Q: iProp Σ :=
-  inv pbN (
-    (|={⊤,∅}=> ∃ someσ, own_ghost γ someσ ∗ (own_ghost γ (someσ ++ [op]) ={∅,⊤}=∗ Q)) ∨
-    (Q ∨ claim_Q_tok γ epoch σ)
-).
-
-Lemma ghost_propose γ epoch σ op Q :
+Lemma ghost_propose γ epoch σ op :
   own_proposal γ epoch σ -∗
   is_proposal_facts γ epoch σ -∗
-  (* FIXME: can strengthen this to only requiring an update if (someσ = σ) *)
-  (|={⊤,∅}=> ∃ someσ, own_ghost γ someσ ∗ (own_ghost γ (someσ ++ [op]) ={∅,⊤}=∗ Q))
+  (|={⊤,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤}=∗ True))
   ={⊤}=∗
   own_proposal γ epoch (σ ++ [op]) ∗
-  is_proposal_facts γ epoch (σ ++ [op]) ∗
-  single_op_inv γ epoch σ op Q.
+  is_proposal_facts γ epoch (σ ++ [op]).
 Proof.
 Admitted.
 
 (*
-  XXX: Not sure if we need `is_ghost_lb γ σ` as postcondition. Really, all that
-  the user of ghost_commit cares about is getting something to get the (Q σ)
-  that they want.
-
-  We would care about (is_ghost_lb γ σ) if we had an explicit `commitIndex`,
-  which this system does not.
+  User will get their (Q) by knowing (is_ghost_lb γ σ) where (op, Q) ∈ σ.
  *)
 Lemma ghost_commit γ epoch σ :
   committed_by γ epoch σ
