@@ -27,7 +27,7 @@ Definition ptuple_past_rel (key : u64) (phys : list dbval) (past : list action) 
 Admitted.
 
 Definition per_key_inv_def
-           (γ : mvcc_names) (key : u64) (tmods : gset (u64 * dbmap))
+           (γ : mvcc_names) (key : u64) (tmods : gset (nat * dbmap))
            (ts : nat) (m : dbmap) (past : list action)
   : iProp Σ :=
   ∃ (phys logi : list dbval),
@@ -39,38 +39,38 @@ Definition per_key_inv_def
     "%Htsge"  ∷ ⌜length logi ≤ S ts⌝.
 
 Definition cmt_inv_def
-           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list action)
+           (γ : mvcc_names) (tmods : gset (nat * dbmap)) (future : list action)
   : iProp Σ :=
   "HcmtAuth" ∷ commit_tmods_auth γ tmods ∗
   "%Hcmt"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
 
 Definition nca_inv_def
-           (γ : mvcc_names) (tids : gset u64) (future : list action)
+           (γ : mvcc_names) (tids : gset nat) (future : list action)
   : iProp Σ :=
   "HncaAuth" ∷ nca_tids_auth γ tids ∗
   "%Hnca"    ∷ ⌜set_Forall (no_commit_abort future) tids⌝.
 
 Definition fa_inv_def
-           (γ : mvcc_names) (tids : gset u64) (future : list action)
+           (γ : mvcc_names) (tids : gset nat) (future : list action)
   : iProp Σ :=
   "HfaAuth" ∷ fa_tids_auth γ tids ∗
   "%Hfa"    ∷ ⌜set_Forall (first_abort future) tids⌝.
 
 Definition fci_inv_def
-           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (past future : list action)
+           (γ : mvcc_names) (tmods : gset (nat * dbmap)) (past future : list action)
   : iProp Σ :=
   "HfciAuth" ∷ fci_tmods_auth γ tmods ∗
   "%Hfci"    ∷ ⌜set_Forall (uncurry (first_commit_incompatible (past ++ future))) tmods⌝.
 
 Definition fcc_inv_def
-           (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list action)
+           (γ : mvcc_names) (tmods : gset (nat * dbmap)) (future : list action)
   : iProp Σ :=
   "HfccAuth" ∷ fcc_tmods_auth γ tmods ∗
   "%Hfcc"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
 
 Definition mvcc_inv_sst_def γ p : iProp Σ :=
-  ∃ (tids_nca tids_fa : gset u64)
-    (tmods_fci tmods_fcc tmods : gset (u64 * dbmap))
+  ∃ (tids_nca tids_fa : gset nat)
+    (tmods_fci tmods_fcc tmods : gset (nat * dbmap))
     (ts : nat) (m : dbmap) (past future : list action),
     (* Prophecy. *)
     "Hproph" ∷ mvcc_proph γ p future ∗

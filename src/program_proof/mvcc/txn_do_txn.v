@@ -60,8 +60,8 @@ Proof.
   (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
   iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
   (* FIXME: This is ugly, and might be problematic... *)
-  pose proof (spec_peek future (U64 ts)).
-  destruct (peek future (U64 ts)).
+  pose proof (spec_peek future ts).
+  destruct (peek future ts).
   { (* Case NCA. *)
     iMod ("HAUC" $! false with "Hdbps") as "HΦ".
     (* TODO: Add [tid] to [tmods_nca] and get a piece of evidence. *)

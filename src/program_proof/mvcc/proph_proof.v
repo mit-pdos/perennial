@@ -20,17 +20,19 @@ Lemma wp_NewProphActions γ :
   {{{ (p : proph_id) acs, RET #p; mvcc_proph γ p acs }}}.
 Admitted.
 
-Lemma wp_ResolveRead γ p (tid key : u64) :
-  ⊢ <<< ∀∀ acs, mvcc_proph γ p acs >>>
+Lemma wp_ResolveRead γ p (tid key : u64) (ts : nat) :
+  ⊢ {{{ ⌜int.nat tid = ts⌝ }}}
+    <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveRead #p #tid #key @ ∅
-    <<< ∃ acs', ⌜acs = EvRead tid key :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
+    <<< ∃ acs', ⌜acs = EvRead ts key :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
 Admitted.
 
-Lemma wp_ResolveAbort γ p (tid : u64) :
-  ⊢ <<< ∀∀ acs, mvcc_proph γ p acs >>>
+Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
+  ⊢ {{{ ⌜int.nat tid = ts⌝ }}}
+    <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveAbort #p #tid @ ∅
-    <<< ∃ acs', ⌜acs = EvAbort tid :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
+    <<< ∃ acs', ⌜acs = EvAbort ts :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
 Admitted.
 

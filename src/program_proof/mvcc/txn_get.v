@@ -67,7 +67,7 @@ Proof.
   (* proph.ResolveRead(txn.txnMgr.p, txn.tid, key)           *)
   (***********************************************************)
   do 3 wp_loadField.
-  wp_apply (wp_ResolveRead γ).
+  wp_apply (wp_ResolveRead γ); first auto.
   iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
@@ -101,7 +101,7 @@ Proof.
   { (* Close the inv. *)
     iNext. unfold mvcc_inv_sst_def.
     do 7 iExists _.
-    iExists (past ++ [EvRead tid k]), future'.
+    iExists (past ++ [EvRead ts k]), future'.
     iDestruct (nca_inv_head_read with "Hnca") as "Hnca"; first apply Hresolve.
     iDestruct (fa_inv_head_read  with "Hfa")  as "Hfa";  first apply Hresolve.
     iDestruct (fci_inv_head_read with "Hfci") as "Hfci"; first apply Hresolve.
