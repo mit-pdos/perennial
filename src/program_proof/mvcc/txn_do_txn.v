@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import mvcc_inv txn_common txn_begin txn_commit.
+From Perennial.program_proof.mvcc Require Import mvcc_inv txn_common txn_begin txn_abort txn_acquire txn_commit.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -31,6 +31,13 @@ Proof.
   (*     txn.Abort()                                         *)
   (*     return false                                        *)
   (* }                                                       *)
+  (*                                                         *)
+  (* ok := txn.acquire()                                     *)
+  (* if !ok {                                                *)
+  (*     txn.Abort()                                         *)
+  (*     return false                                        *)
+  (* }                                                       *)
+  (*                                                         *)
   (* txn.Commit()                                            *)
   (* return true                                             *)
   (***********************************************************)
@@ -52,13 +59,21 @@ Proof.
   iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first auto.
   (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
   iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
+  (* FIXME: This is ugly, and might be problematic... *)
   pose proof (spec_peek future (U64 ts)).
   destruct (peek future (U64 ts)).
   { (* Case NCA. *)
     iMod ("HAUC" $! false with "Hdbps") as "HΦ".
     (* TODO: Add [tid] to [tmods_nca] and get a piece of evidence. *)
-    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps ]") as "_".
-    { (* TODO: close the inv. *) admit. }
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps]") as "_".
+    { (* Close the invariant. *)
+      iNext.
+      iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
+      { iIntros (k) "%Helem Hkeys".
+        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+      }
+      eauto 15 with iFrame.
+    }
     iIntros "!>" (tid) "[Htxn %Etid]".
     iAssert (own_txn txn γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
     { iExists _, r, ∅. rewrite map_empty_union. iFrame. }
@@ -67,11 +82,27 @@ Proof.
     iIntros (w ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
-    { (* Abort branch. *) admit. }
-    wp_apply (wp_txn__Commit with "Htxn").
+    { (* Application-abort branch. *)
+      wp_apply (wp_txn__Abort with "Htxn").
+      iIntros "Htxn".
+      wp_pures.
+      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
+      by iApply ("HΦ" $! (U64 0)).
+    }
+    wp_apply (wp_txn__acquire with "Htxn").
     iIntros (ok) "Htxn".
     wp_pures.
-    admit.
+    wp_if_destruct.
+    { (* System-abort branch. *)
+      wp_apply (wp_txn__Abort with "Htxn").
+      iIntros "Htxn".
+      wp_pures.
+      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
+      by iApply ("HΦ" $! (U64 0)).
+    }
+    (* Commit branch. *)
+    wp_apply (wp_txn__Commit_false with "Htxn").
+    by iIntros (ok) "%contra".
   }
   { (* Case FA. *)
     admit.
@@ -80,10 +111,10 @@ Proof.
     admit.
   }
   destruct (decide (Q r (mods ∪ r))); last first.
-  { (* Case FCC, [Q r (w ∪ m)] not holds. *)
+  { (* Case FCC, [Q r w] not holds. *)
     admit.
   }
-  { (* Case FCC, [Q r (w ∪ m)] holds. *)
+  { (* Case FCC, [Q r w] holds. *)
     admit.
   }
 Admitted.

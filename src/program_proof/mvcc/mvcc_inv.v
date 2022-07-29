@@ -97,6 +97,8 @@ Definition mvcc_inv_sst γ p : iProp Σ :=
 
 End def.
 
+Hint Extern 1 (environments.envs_entails _ (mvcc_inv_sst_def _ _)) => unfold mvcc_inv_sst_def : core.
+
 Section theorem.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 

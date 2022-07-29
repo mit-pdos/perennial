@@ -222,7 +222,8 @@ Definition Txn__Begin: val :=
     #().
 
 Definition Txn__acquire: val :=
-  rec: "Txn__acquire" "txn" "ents" :=
+  rec: "Txn__acquire" "txn" :=
+    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
     let: "ok" := ref_to boolT #true in
     ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
       (let: "key" := wrbuf.WrEnt__Key "ent" in
@@ -243,8 +244,11 @@ Definition Txn__release: val :=
       tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
     #().
 
-Definition Txn__apply: val :=
-  rec: "Txn__apply" "txn" "ents" :=
+(* *
+    * TODO: Figure out the right way to handle latches and locks. *)
+Definition Txn__Commit: val :=
+  rec: "Txn__Commit" "txn" :=
+    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
     ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
       (let: (("key", "val"), "del") := wrbuf.WrEnt__Destruct "ent" in
       let: "idx" := struct.loadF Txn "idx" "txn" in
@@ -252,17 +256,8 @@ Definition Txn__apply: val :=
       (if: "del"
       then tuple.Tuple__KillVersion "tuple" (struct.loadF Txn "tid" "txn")
       else tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val"));;
-    #().
-
-Definition Txn__Commit: val :=
-  rec: "Txn__Commit" "txn" :=
-    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
-    let: "ok" := Txn__acquire "txn" "ents" in
-    (if: "ok"
-    then Txn__apply "txn" "ents"
-    else Txn__release "txn" "ents");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
-    "ok".
+    #().
 
 Definition Txn__Abort: val :=
   rec: "Txn__Abort" "txn" :=
@@ -278,8 +273,14 @@ Definition Txn__DoTxn: val :=
       Txn__Abort "txn";;
       #false
     else
-      let: "ok" := Txn__Commit "txn" in
-      "ok").
+      let: "ok" := Txn__acquire "txn" in
+      (if: ~ "ok"
+      then
+        Txn__Abort "txn";;
+        #false
+      else
+        Txn__Commit "txn";;
+        #true)).
 
 (*  TODO: Move these to examples. *)
 Definition SwapSeq: val :=

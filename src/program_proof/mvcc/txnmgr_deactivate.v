@@ -222,7 +222,7 @@ Qed.
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) deactivate(sid uint64, tid uint64)      *)
 (*****************************************************************)
-Local Theorem wp_txnMgr__deactivate txnmgr (sid tid : u64) γ :
+Theorem wp_txnMgr__deactivate txnmgr (sid tid : u64) γ :
   is_txnmgr txnmgr γ -∗
   {{{ active_tid γ tid sid }}}
     TxnMgr__deactivate #txnmgr #sid #tid

@@ -93,20 +93,28 @@ Definition own_txn_impl (txn : loc) (ts : nat) (mods : dbmap) γ : iProp Σ :=
     "#Hinv" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
+(* TODO: Unify [own_txn] and [own_txn_ready]. *)
 Definition own_txn (txn : loc) γ τ : iProp Σ :=
   ∃ (ts : nat) (view : dbmap) (mods : dbmap),
     "Himpl" ∷ own_txn_impl txn ts mods γ ∗
     "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap" ∷ txnmap_auth τ (mods ∪ view).
 
+Definition own_txn_ready (txn : loc) γ τ : iProp Σ :=
+  ∃ (ts : nat) (view : dbmap) (mods : dbmap),
+    "Himpl" ∷ own_txn_impl txn ts mods γ ∗
+    "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
+    "Htxnmap" ∷ txnmap_auth τ (mods ∪ view) ∗
+    "Hlocks" ∷ ([∗ map] k ↦ _ ∈ mods, mods_token γ k ts).
+
 (* TODO: Unify [own_txn_impl] and [own_txn_uninit]. *)
 Definition own_txn_uninit (txn : loc) γ : iProp Σ := 
-  ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id),
+  ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id) (mods : dbmap),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
     "Hwrbuf" ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
-    "HwrbufRP" ∷ own_wrbuf wrbuf ∅ ∗
+    "HwrbufRP" ∷ own_wrbuf wrbuf mods ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
@@ -122,6 +130,7 @@ Hint Extern 1 (environments.envs_entails _ (own_txnmgr _)) => unfold own_txnmgr 
 Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
 Hint Extern 1 (environments.envs_entails _ (own_txn_impl _ _ _ _)) => unfold own_txn_impl : core.
 Hint Extern 1 (environments.envs_entails _ (own_txn _ _ _)) => unfold own_txn : core.
+Hint Extern 1 (environments.envs_entails _ (own_txn_uninit _ _)) => unfold own_txn_uninit : core.
 
 Section lemma.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

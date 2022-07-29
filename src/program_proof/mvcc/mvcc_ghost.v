@@ -126,8 +126,8 @@ Definition ltuple_lb γ (k : u64) (logi : list dbval) : iProp Σ :=
 Definition ptuple_ptsto γ (k : u64) (v : dbval) (ts : nat) : iProp Σ :=
   ∃ phys, ptuple_lb γ k phys ∗ ⌜phys !! ts = Some v⌝.
 
-Definition mods_token γ (k tid : u64) : iProp Σ :=
-  ∃ phys, ptuple_auth γ (1/4) k phys ∗ ⌜Z.of_nat (length phys) ≤ (int.Z tid) + 1⌝.
+Definition mods_token γ (k : u64) (ts : nat) : iProp Σ :=
+  ∃ phys, ptuple_auth γ (1/4) k phys ∗ ⌜(length phys ≤ S ts)%nat⌝.
 
 Definition ltuple_ptsto γ (k : u64) (v : dbval) (ts : nat) : iProp Σ :=
   ∃ logi, ltuple_lb γ k logi ∗ ⌜logi !! ts = Some v⌝.

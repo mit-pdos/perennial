@@ -3,9 +3,9 @@ From Perennial.program_proof.mvcc Require Import tuple_common.
 Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition post_tuple__Own tid key (ret : u64) γ : iProp Σ :=
+Definition post_tuple__Own ts key (ret : u64) γ : iProp Σ :=
   match int.Z ret with
-  | 0 => mods_token γ key tid
+  | 0 => mods_token γ key ts
   | 200 | 400 => True
   | _ => False
   end.
@@ -19,7 +19,7 @@ Theorem wp_tuple__Own tuple (tid : u64) (key : u64) (sid : u64) γ :
     Tuple__Own #tuple #tid
   {{{ (ret : u64), RET #ret;
       active_tid γ tid sid ∗
-      post_tuple__Own tid key ret γ
+      post_tuple__Own (int.nat tid) key ret γ
   }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Hactive HΦ".
