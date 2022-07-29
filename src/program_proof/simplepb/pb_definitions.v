@@ -81,22 +81,27 @@ Definition old_proposal_max γ epoch σ : iProp Σ := (* persistent *)
    committed_by γ epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition pbN := nroot .@ "pb".
+Definition sysN := pbN .@ "sys".
+Definition opN := pbN .@ "op".
 
-Definition is_valid_inv γ epoch σ op : iProp Σ :=
-  inv pbN (
-    (|={⊤,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤}=∗ True)) ∨
+Definition is_valid_inv γ σ op : iProp Σ :=
+  inv opN (
+    (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True)) ∨
     is_ghost_lb γ (σ ++ [op])
   )
 .
 
-Definition is_proposal_valid γ epoch σ : iProp Σ :=
+Definition is_proposal_valid_old γ σ : iProp Σ :=
   ∀ σprev op σnext,
   ⌜σ = σprev ++ [op] ++ σnext⌝ -∗
-  is_valid_inv γ epoch σprev op.
+  is_valid_inv γ σprev op.
+
+Definition is_proposal_valid γ σ : iProp Σ :=
+  □(∀ σ', ⌜σ' ⪯ σ⌝ → own_commit γ σ' ={⊤∖↑sysN}=∗ own_commit γ σ).
 
 Definition is_proposal_facts γ epoch σ: iProp Σ :=
   old_proposal_max γ epoch σ ∗
-  is_proposal_valid γ epoch σ.
+  is_proposal_valid γ σ.
 
 Definition own_Server_ghost γ epoch σ : iProp Σ :=
   "Hepoch_ghost" ∷ own_epoch γ epoch ∗
@@ -175,10 +180,10 @@ Qed.
 Lemma ghost_propose γ epoch σ op :
   own_proposal γ epoch σ -∗
   is_proposal_facts γ epoch σ -∗
-  (|={⊤,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤}=∗ True))
+  (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True))
   ={⊤}=∗
   own_proposal γ epoch (σ ++ [op]) ∗
-  is_proposal_facts γ epoch (σ ++ [op]).
+  (▷ is_proposal_facts γ epoch (σ ++ [op])).
 Proof.
   iIntros "Hprop #Hprop_facts Hupd".
   iSplitL "Hprop".
@@ -196,6 +201,7 @@ Proof.
     iModIntro.
     unfold old_proposal_max.
     iModIntro.
+    iModIntro.
     iIntros.
     iAssert (⌜σ_old ⪯ σ⌝)%I as "%Hprefix".
     {
@@ -212,7 +218,7 @@ Proof.
   iDestruct "Hprop_facts" as "[_ #Hvalid]".
   unfold is_proposal_valid.
 
-  iAssert (|={⊤}=> is_valid_inv γ epoch σ op)%I with "[Hupd]" as ">#Hinv".
+  iAssert (|={⊤}=> is_valid_inv γ σ op)%I with "[Hupd]" as ">#Hinv".
   {
     iMod (inv_alloc with "[Hupd]") as "$".
     {
@@ -221,47 +227,114 @@ Proof.
     }
     done.
   }
+  (* prove is_proposal_valid γ (σ ++ [op]) *)
   iModIntro.
-  iIntros (σprev op_some σnext Hσ).
-  assert (length σnext = 0 ∨ length σnext > 0) as Hineqs by lia.
-  destruct Hineqs as [Hineq | Hineq].
-  {
-    rewrite length_zero_iff_nil in Hineq.
-    rewrite Hineq in Hσ.
-    simpl in Hσ.
-    assert (op = op_some) as ->.
-    { (* TODO: list_solver *)
-      apply (f_equal last) in Hσ.
-      rewrite last_snoc in Hσ.
-      rewrite last_snoc in Hσ.
-      naive_solver.
-    }
-    apply app_inv_tail in Hσ.
-    rewrite Hσ.
-    iFrame "Hinv".
-  }
-  {
-    assert (σ = σprev ++ [op_some] ++ removelast σnext) as H.
+  iModIntro.
+  iModIntro.
+  iIntros (σ') "%Hσ' Hσ'".
+  assert (σ' ⪯ σ ∨ σ' = (σ ++ [op])) as [Hprefix_old|Hlatest].
+  { (* TODO: list_solver. *)
+    Search prefix.
+    assert (Hlen := Hσ').
+    apply prefix_length in Hlen.
+    assert (length σ' = length (σ ++ [op]) ∨ length σ' < length (σ ++ [op])) as [|] by word.
     {
-      (* TODO: list_solver *)
-      assert (removelast (σ ++ [op]) = removelast (σprev ++ [op_some] ++ σnext)).
-      { by rewrite Hσ. }
-      rewrite removelast_last in H.
-      rewrite removelast_app in H; last first.
-      { done. }
-      rewrite removelast_app in H; last first.
-      { by apply length_nonzero_neq_nil. }
-      done.
+      right.
+      apply list_prefix_eq; eauto.
+      lia.
     }
-    iApply "Hvalid".
-    done.
+    {
+      left.
+      rewrite app_length in H.
+      simpl in H.
+      apply list_prefix_bounded.
+      { word. }
+      intros.
+      assert (σ !! i = (σ ++ [op]) !! i).
+      {
+        rewrite lookup_app_l.
+        { done. }
+        { word. }
+      }
+      rewrite H1.
+      apply list_prefix_forall.
+      { done. }
+      { done. }
+    }
   }
-Qed.
+  {
+    iMod ("Hvalid" $! σ' Hprefix_old with "Hσ'") as "Hσ".
+    iInv "Hinv" as "Hi" "Hclose".
+    iDestruct "Hi" as "[Hupd|#>Hlb]"; last first.
+    {
+      iDestruct (own_valid_2 with "Hσ Hlb") as "%Hvalid".
+      exfalso.
+      rewrite mono_list_both_dfrac_valid_L in Hvalid.
+      destruct Hvalid as [_ Hvalid].
+      apply prefix_length in Hvalid.
+      rewrite app_length in Hvalid.
+      simpl in Hvalid.
+      word.
+    }
+    iAssert (|={⊤ ∖ ↑pbN,∅}=>
+                ∃ someσ : list EntryType, own_ghost γ someσ ∗
+                  (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤ ∖ ↑pbN}=∗ True))%I
+            with "[Hupd]" as "Hupd".
+    { (* FIXME: need to strip off this later *)
+      admit.
+    }
+    iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
+    {
+      assert ((↑sysN:coPset) ⊆ (↑pbN:coPset)).
+      { apply nclose_subseteq. }
+      assert ((↑opN:coPset) ⊆ (↑pbN:coPset)).
+      { apply nclose_subseteq. }
+      set_solver.
+    }
+    iMod "Hupd".
+    iDestruct "Hupd" as (?) "[Hghost Hupd]".
+    iDestruct (own_valid_2 with "Hghost Hσ") as %Hvalid.
+    rewrite mono_list_auth_dfrac_op_valid_L in Hvalid.
+    destruct Hvalid as [_ ->].
+    iCombine "Hghost Hσ" as "Hσ".
+    rewrite -mono_list_auth_dfrac_op.
+    rewrite dfrac_op_own.
+    rewrite Qp_half_half.
+    iMod (own_update with "Hσ") as "Hσ".
+    {
+      apply (mono_list_update (σ ++ [op] : list (leibnizO EntryType))).
+      by apply prefix_app_r.
+    }
+    iEval (rewrite -Qp_half_half) in "Hσ".
+    rewrite -dfrac_op_own.
+    rewrite mono_list_auth_dfrac_op.
+    iDestruct "Hσ" as "[Hσ Hcommit]".
+    iSpecialize ("Hupd" with "[] Hσ").
+    { done. }
+    iMod "Hupd".
 
-Definition sys_inv γ := inv pbN
+    rewrite mono_list_auth_lb_op.
+    iDestruct "Hcommit" as "[Hcommit #Hlb]".
+    iMod "Hmask".
+    iMod ("Hclose" with "[]").
+    {
+      iNext.
+      iRight.
+      iFrame "Hlb".
+    }
+    iModIntro.
+    iFrame.
+  }
+  {
+    rewrite Hlatest.
+    by iFrame.
+  }
+Admitted.
+
+Definition sys_inv γ := inv sysN
 (
   ∃ σ epoch,
-  own_ghost γ σ ∗
+  own_commit γ σ ∗
   committed_by γ epoch σ ∗
   is_proposal_lb γ epoch σ ∗
   is_proposal_facts γ epoch σ
@@ -307,11 +380,24 @@ Proof.
 
   destruct Hlog as [Hcan_update|Halready_updated].
   {
-    (* TODO: need to fire a bunch of fupds *)
-    admit.
+    iEval (unfold is_proposal_valid) in "Hvalid".
+    iDestruct ("Hvalid" $! σcommit with "[] Hghost") as "Hghost".
+    { done. }
+    iMod "Hghost".
+    unfold own_commit.
+    iEval (rewrite mono_list_auth_lb_op) in "Hghost".
+    iDestruct "Hghost" as "[Hghost $]".
+    iMod ("Hclose" with "[-]").
+    {
+      iNext.
+      iExists _, _. iFrame "∗".
+      iFrame "Hcom".
+      iFrame "#".
+    }
+    done.
   }
   {
-    unfold own_ghost.
+    unfold own_commit.
     iEval (rewrite mono_list_auth_lb_op) in "Hghost".
     iDestruct "Hghost" as "[Hghost #Hlb]".
     iDestruct (own_mono with "Hlb") as "$".
@@ -325,7 +411,7 @@ Proof.
     }
     done.
   }
-Admitted.
+Qed.
 
 End pb_protocol.
 
