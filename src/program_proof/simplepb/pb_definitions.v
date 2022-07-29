@@ -86,6 +86,7 @@ Definition opN := pbN .@ "op".
 
 Definition is_valid_inv γ σ op : iProp Σ :=
   inv opN (
+    £ 1 ∗
     (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True)) ∨
     is_ghost_lb γ (σ ++ [op])
   )
@@ -180,12 +181,13 @@ Qed.
 Lemma ghost_propose γ epoch σ op :
   own_proposal γ epoch σ -∗
   is_proposal_facts γ epoch σ -∗
+  £ 1 -∗
   (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True))
   ={⊤}=∗
   own_proposal γ epoch (σ ++ [op]) ∗
   (▷ is_proposal_facts γ epoch (σ ++ [op])).
 Proof.
-  iIntros "Hprop #Hprop_facts Hupd".
+  iIntros "Hprop #Hprop_facts Hlc Hupd".
   iSplitL "Hprop".
   {
     iApply (own_update with "Hprop").
@@ -218,12 +220,13 @@ Proof.
   iDestruct "Hprop_facts" as "[_ #Hvalid]".
   unfold is_proposal_valid.
 
-  iAssert (|={⊤}=> is_valid_inv γ σ op)%I with "[Hupd]" as ">#Hinv".
+  iAssert (|={⊤}=> is_valid_inv γ σ op)%I with "[Hupd Hlc]" as ">#Hinv".
   {
-    iMod (inv_alloc with "[Hupd]") as "$".
+    iMod (inv_alloc with "[Hupd Hlc]") as "$".
     {
       iNext.
-      iFrame "Hupd".
+      iLeft.
+      iFrame.
     }
     done.
   }
@@ -276,13 +279,8 @@ Proof.
       simpl in Hvalid.
       word.
     }
-    iAssert (|={⊤ ∖ ↑pbN,∅}=>
-                ∃ someσ : list EntryType, own_ghost γ someσ ∗
-                  (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤ ∖ ↑pbN}=∗ True))%I
-            with "[Hupd]" as "Hupd".
-    { (* FIXME: need to strip off this later *)
-      admit.
-    }
+    iDestruct "Hupd" as "[>Hlc Hupd]".
+    iMod (lc_fupd_elim_later with "Hlc Hupd" ) as "Hupd".
     iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
     {
       assert ((↑sysN:coPset) ⊆ (↑pbN:coPset)).
@@ -329,7 +327,7 @@ Proof.
     rewrite Hlatest.
     by iFrame.
   }
-Admitted.
+Qed.
 
 Definition sys_inv γ := inv sysN
 (
