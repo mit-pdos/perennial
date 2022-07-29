@@ -93,6 +93,9 @@ Proof.
     }
     iIntros "HsitesS".
     wp_pures.
+    (* FIXME: Call `genTID` to get a lower bound. *)
+    iAssert (ts_lb γ 1%nat)%I as "#Htslb".
+    { admit. }
     iApply "HΦ".
     iFrame.
     
@@ -109,7 +112,8 @@ Proof.
     { iNext.
       unfold own_txnsite.
       iExists (U64 0), (U64 0), (Slice.mk active 0 8), [], ∅.
-      iFrame "% ∗".
+      replace (int.nat (U64 0)) with 0%nat by word.
+      iFrame "% # ∗".
       iPureIntro.
       split; first set_solver.
       split; first apply NoDup_nil_2.

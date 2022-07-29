@@ -28,14 +28,15 @@ Admitted.
 
 Definition per_key_inv_def
            (γ : mvcc_names) (key : u64) (tmods : gset (u64 * dbmap))
-           (m : dbmap) (past : list action)
+           (ts : nat) (m : dbmap) (past : list action)
   : iProp Σ :=
   ∃ (phys logi : list dbval),
     "Hptuple" ∷ ptuple_auth γ (1 / 2) key phys ∗
     "Hltuple" ∷ ltuple_auth γ key logi ∗
     "%Htmrel" ∷ ⌜tuple_mods_rel phys logi (per_tuple_mods tmods key)⌝ ∗
     "%Hpprel" ∷ ⌜ptuple_past_rel key phys past⌝ ∗
-    "%Hlmrel" ∷ ⌜last logi = m !! key⌝.
+    "%Hlmrel" ∷ ⌜last logi = m !! key⌝ ∗
+    "%Htsge"  ∷ ⌜length logi ≤ S ts⌝.
 
 Definition cmt_inv_def
            (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list action)
@@ -58,8 +59,8 @@ Definition fa_inv_def
 Definition fci_inv_def
            (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (past future : list action)
   : iProp Σ :=
-    "HfciAuth" ∷ fci_tmods_auth γ tmods ∗
-    "%Hfci"    ∷ ⌜set_Forall (uncurry (first_commit_incompatible (past ++ future))) tmods⌝.
+  "HfciAuth" ∷ fci_tmods_auth γ tmods ∗
+  "%Hfci"    ∷ ⌜set_Forall (uncurry (first_commit_incompatible (past ++ future))) tmods⌝.
 
 Definition fcc_inv_def
            (γ : mvcc_names) (tmods : gset (u64 * dbmap)) (future : list action)
@@ -70,13 +71,15 @@ Definition fcc_inv_def
 Definition mvcc_inv_sst_def γ p : iProp Σ :=
   ∃ (tids_nca tids_fa : gset u64)
     (tmods_fci tmods_fcc tmods : gset (u64 * dbmap))
-    (m : dbmap) (past future : list action),
+    (ts : nat) (m : dbmap) (past future : list action),
     (* Prophecy. *)
     "Hproph" ∷ mvcc_proph γ p future ∗
+    (* Current timestamp. *)
+    "Hts" ∷ ts_auth γ ts ∗
     (* Global database map, i.e., auth element of the global ptsto. *)
     "Hm" ∷ dbmap_auth γ m ∗
     (* Per-key invariants. *)
-    "Hkeys" ∷ ([∗ set] key ∈ keys_all, per_key_inv_def γ key tmods m past) ∗
+    "Hkeys" ∷ ([∗ set] key ∈ keys_all, per_key_inv_def γ key tmods ts m past) ∗
     (* Ok txns. *)
     "Hcmt"  ∷ cmt_inv_def γ tmods future ∗
     (* Doomed txns. *)
@@ -125,16 +128,89 @@ Definition tuple_auth_prefix (γ : mvcc_names) (key : u64) : iProp Σ :=
     "Hltuple" ∷ ltuple_auth γ key logi ∗
     "%prefix" ∷ ⌜prefix phys logi⌝.
 
-Lemma per_key_inv_tuple_acc γ key tmods m past :
-  per_key_inv_def γ key tmods m past -∗
+Lemma per_key_inv_tuple_acc γ key tmods ts m past :
+  per_key_inv_def γ key tmods ts m past -∗
   tuple_auth_prefix γ key ∗
-  (tuple_auth_prefix γ key -∗ per_key_inv_def γ key tmods m past).
+  (tuple_auth_prefix γ key -∗ per_key_inv_def γ key tmods ts m past).
 Admitted.
 
-Theorem ltuple_ptuple_ptsto_eq γ k v1 v2 tid:
+Lemma per_key_inv_weaken_ts {γ key tmods ts} ts' {m past} :
+  (ts ≤ ts')%nat ->
+  per_key_inv_def γ key tmods ts m past -∗
+  per_key_inv_def γ key tmods ts' m past.
+Admitted.
+
+Lemma per_key_inv_ltuple_ptsto γ tmods ts m past :
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past) ==∗
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past ∗
+                         (∀ v, ⌜m !! k = Some v⌝ -∗ ltuple_ptsto γ k v ts)).
+Proof.
+  iIntros "Hkeys".
+  iApply big_sepS_bupd.
+  iApply (big_sepS_mono with "Hkeys").
+  iIntros (k) "%Helem Hkey".
+  iNamed "Hkey".
+  iMod (ltuple_update (extend (S ts) logi) with "Hltuple") as "Hltuple".
+  { apply extend_prefix. }
+  iModIntro.
+  iDestruct (ltuple_witness with "Hltuple") as "#Hlb".
+  iSplitL.
+  { do 2 iExists _.
+    apply tuple_mods_rel_last_logi in Htmrel as Hlogi.
+    apply (tuplext_linearize_unchanged ts) in Htmrel.
+    iFrame "% ∗".
+    iPureIntro.
+    split.
+    { rewrite -Hlmrel. apply extend_last. }
+    { rewrite extend_length; [lia | auto]. }
+  }
+  iIntros (v) "%Hlookup".
+  iExists _.
+  iFrame "Hlb".
+  iPureIntro.
+  rewrite Hlookup in Hlmrel.
+  rewrite (extend_last_Some _ _ v); last auto.
+  destruct (decide (length logi ≤ ts)%nat).
+  - rewrite lookup_app_r; last auto.
+    apply lookup_replicate_2. lia.
+  - apply not_le in n.
+    rewrite lookup_app_l; last lia.
+    rewrite last_lookup in Hlmrel.
+    rewrite -Hlmrel.
+    f_equal. lia.
+Qed.
+
+Lemma big_sepS_big_sepM_ltuple_ptstos γ tid m :
+  ([∗ set] k ∈ keys_all, (∀ v, ⌜m !! k = Some v⌝ -∗ ltuple_ptsto γ k v tid)) -∗
+  ([∗ map] k ↦ v ∈ m, ltuple_ptsto γ k v tid).
+Proof.
+  iIntros "Hset".
+  (* Q: We should be able to prove this without persistence. *)
+  rewrite big_sepM_forall.
+  rewrite big_sepS_forall.
+  iIntros (k v) "%Hlookup".
+  iApply "Hset"; last done.
+  iPureIntro.
+  apply elem_of_fin_to_set.
+Qed.
+
+Theorem per_key_inv_ltuple_ptstos γ tmods tid m past :
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods tid m past) ==∗
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods tid m past) ∗
+  ([∗ map] k ↦ v ∈ m, ltuple_ptsto γ k v tid).
+Proof.
+  iIntros "Hkeys".
+  iMod (per_key_inv_ltuple_ptsto with "Hkeys") as "Hkeys".
+  rewrite big_sepS_sep.
+  iDestruct "Hkeys" as "[Hkeys Hltuples]".
+  iDestruct (big_sepS_big_sepM_ltuple_ptstos with "Hltuples") as "Hltuples".
+  by iFrame.
+Qed.
+                         
+Theorem ltuple_ptuple_ptsto_eq γ k v1 v2 ts:
   tuple_auth_prefix γ k -∗
-  ltuple_ptsto γ k v1 tid -∗
-  view_ptsto γ k v2 tid -∗
+  ltuple_ptsto γ k v1 ts -∗
+  ptuple_ptsto γ k v2 ts -∗
   ⌜v1 = v2⌝.
 Admitted.
 

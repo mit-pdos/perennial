@@ -307,6 +307,7 @@ Proof.
   (***********************************************************)
   (* return tuple                                            *)
   (***********************************************************)
+  iMod (min_tid_lb_zero γ) as "#Hlb".
   set P := (own_tuple tuple key γ)%I.
   iMod (alloc_lock mvccN _ latch P with "[$Hfree] [-latch rcond HΦ]") as "#Hlock".
   { iNext.
@@ -331,7 +332,7 @@ Proof.
     }
     iSplit.
     { (* Prove [Hgclb]. *)
-      iApply min_tid_lb_zero.
+      done.
     }
     iSplit.
     { (* Prove [HtidlastGe]. *)

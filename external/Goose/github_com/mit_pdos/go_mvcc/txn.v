@@ -82,10 +82,6 @@ Definition TxnMgr__activate: val :=
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "tid" := ref (zero_val uint64T) in
     "tid" <-[uint64T] genTID "sid";;
-    Skip;;
-    (for: (λ: <>, ![uint64T] "tid" ≤ struct.loadF TxnSite "tidLast" "site"); (λ: <>, Skip) := λ: <>,
-      "tid" <-[uint64T] genTID "sid";;
-      Continue);;
     control.impl.Assume (![uint64T] "tid" < #18446744073709551615);;
     struct.storeF TxnSite "tidLast" "site" (![uint64T] "tid");;
     struct.storeF TxnSite "tidsActive" "site" (SliceAppend uint64T (struct.loadF TxnSite "tidsActive" "site") (![uint64T] "tid"));;
@@ -136,10 +132,7 @@ Definition TxnMgr__getMinActiveTIDSite: val :=
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "tidnew" := ref (zero_val uint64T) in
     "tidnew" <-[uint64T] genTID "sid";;
-    Skip;;
-    (for: (λ: <>, ![uint64T] "tidnew" ≤ struct.loadF TxnSite "tidLast" "site"); (λ: <>, Skip) := λ: <>,
-      "tidnew" <-[uint64T] genTID "sid";;
-      Continue);;
+    control.impl.Assume (![uint64T] "tidnew" < #18446744073709551615);;
     struct.storeF TxnSite "tidLast" "site" (![uint64T] "tidnew");;
     let: "tidmin" := ref_to uint64T (![uint64T] "tidnew") in
     ForSlice uint64T <> "tid" (struct.loadF TxnSite "tidsActive" "site")

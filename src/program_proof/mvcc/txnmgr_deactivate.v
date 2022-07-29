@@ -322,7 +322,7 @@ Proof.
     set idxlast := (word.sub _ _).
     iExists _, _, _, tids, _.
     iFrame "Hactive".
-    iFrame.
+    iFrame "∗ #".
     assert (Hidxlast : int.nat idxlast = length tids).
     { subst idxlast.
       rewrite (Permutation_length Hperm).

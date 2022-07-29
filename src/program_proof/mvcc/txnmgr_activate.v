@@ -7,12 +7,14 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (* func (txnMgr *TxnMgr) activate(sid uint64) uint64             *)
 (*****************************************************************)
 Theorem wp_txnMgr__activate (txnmgr : loc) (sid : u64) γ :
-  is_txnmgr txnmgr γ -∗
-  {{{ ⌜(int.Z sid) < N_TXN_SITES⌝ }}}
-    TxnMgr__activate #txnmgr #sid
-  {{{ (tid : u64), RET #tid; active_tid γ tid sid }}}.
+  ⊢ is_txnmgr txnmgr γ -∗
+    {{{ ⌜(int.Z sid) < N_TXN_SITES⌝ }}}
+    <<< ∀∀ (ts : nat), ts_auth γ ts >>>
+      TxnMgr__activate #txnmgr #sid @ ∅
+    <<< ∃ n, ts_auth γ (ts + n)%nat ∗ ⌜0 < n⌝ >>>
+    {{{ (tid : u64), RET #tid; active_tid γ tid sid ∧ ⌜int.nat tid = ts⌝ }}}.
 Proof.
-  iIntros "#Htxnmgr !>" (Φ) "%HsitesBound HΦ".
+  iIntros "#Htxnmgr !>" (Φ) "%HsitesBound HAU".
   iNamed "Htxnmgr".
   wp_call.
   
@@ -51,45 +53,23 @@ Proof.
   iIntros (tidRef) "HtidRef".
   wp_pures.
   wp_apply (wp_genTID).
-  iIntros (tid) "_".
-  wp_store.
-  wp_pures.
-  
-  (***********************************************************)
-  (* for tid <= site.tidLast {                               *)
-  (*     tid = genTID(sid)                                   *)
-  (* }                                                       *)
-  (***********************************************************)
-  set P := λ (b : bool), (∃ (tidnew : u64),
-             "Htidlast" ∷ site ↦[TxnSite :: "tidLast"] #tidlast ∗
-             "HtidRef" ∷ tidRef ↦[uint64T] #tidnew ∗
-             "%Hexit" ∷ if b then True else ⌜(int.Z tidnew) > (int.Z tidlast)⌝)%I.
-  wp_apply (wp_forBreak_cond P with "[] [Htidlast HtidRef]").
-  { clear Φ.
-    iIntros (Φ) "!> Hloop HΦ".
-    iNamed "Hloop".
-    wp_load.
-    wp_loadField.
-    wp_pures.
-    case_bool_decide.
-    - wp_if_true.
-      wp_pures.
-      wp_apply (wp_genTID).
-      iIntros (tid'') "_".
-      wp_store.
-      iApply "HΦ".
-      unfold P.
-      eauto with iFrame.
-    - wp_if_false.
-      iApply "HΦ".
-      unfold P.
-      apply Znot_le_gt in H.
-      eauto with iFrame.
+  iMod "HAU" as (ts) "[Hts HAUC]".
+  iModIntro.
+  iExists ts.
+  (* Deduce [tslast < ts] with [Hts] and [Htslb]. *)
+  iDestruct (ts_auth_lb_le with "Hts Htslb") as "%HltN".
+  iFrame "Hts".
+  iIntros "[%n [Hts %Hgz]]".
+  (* Before we close the invariant, obtain a witness of a LB of timestamp. *)
+  iAssert (ts_lb γ (S ts))%I as "#Htslb'".
+  { iDestruct (ts_witness with "Hts") as "#H".
+    iApply (ts_lb_weaken with "H"). lia.
   }
-  { unfold P. eauto with iFrame. }
-  iIntros "Hloop".
-  iNamed "Hloop".
-  wp_pures.
+  iMod ("HAUC" with "[Hts]") as "HΦ"; first eauto with iFrame.
+  iModIntro.
+  iIntros (tid) "%Etid".
+  assert (Hlt : int.Z tidlast < int.Z tid) by lia.
+  wp_store.
   
   (***********************************************************)
   (* machine.Assume(tid < 18446744073709551615)              *)
@@ -123,9 +103,9 @@ Proof.
   iDestruct "HinvgcO" as (tidsM tidmin') "(HactiveAuth' & HminAuth' & %Hmin)".
   (* Update the set of active tids. *)
   iDestruct (site_active_tids_agree with "HactiveAuth' HactiveAuth") as %->.
-  iMod (site_active_tids_insert tidnew with "HactiveAuth' HactiveAuth") as "(HactiveAuth' & HactiveAuth & HactiveFrag)".
+  iMod (site_active_tids_insert tid with "HactiveAuth' HactiveAuth") as "(HactiveAuth' & HactiveAuth & HactiveFrag)".
   { apply HtidFree. word. }
-  set tidsactiveM' := <[tidnew := tt]>tidsactiveM.
+  set tidsactiveM' := <[tid := tt]>tidsactiveM.
   (* Agree on the minimal tid. *)
   iDestruct (site_min_tid_agree with "HminAuth' HminAuth") as "%Emin".
   rewrite Emin. rewrite Emin in Hmin.
@@ -156,8 +136,10 @@ Proof.
   wp_apply (release_spec with "[-HΦ HtidRef HactiveFrag]").
   { iFrame "Hlock Hlocked".
     iNext.
-    do 5 iExists _.
-    iFrame "% ∗".
+    iExists tid.
+    do 4 iExists _.
+    rewrite Etid.
+    iFrame "∗ # %".
     iSplit.
     { (* Prove [HactiveLM]. *)
       iPureIntro.
@@ -177,7 +159,7 @@ Proof.
       intros tidx Hin.
       rewrite -HactiveLM in HtidFree.
       setoid_rewrite not_elem_of_list_to_set in HtidFree.
-      assert (contra : tidnew ∉ tidsactiveL).
+      assert (contra : tid ∉ tidsactiveL).
       { apply HtidFree. word. }
       set_solver.
     }
@@ -220,7 +202,7 @@ Proof.
   (***********************************************************)
   iApply "HΦ".
   iModIntro.
-  iFrame.
+  iFrame "∗ # %".
   iPureIntro. word.
 Qed.
 

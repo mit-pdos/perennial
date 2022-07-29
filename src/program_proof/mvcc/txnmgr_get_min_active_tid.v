@@ -53,46 +53,41 @@ Proof.
   iIntros (tidnewRef) "HtidnewRef".
   wp_pures.
   wp_apply (wp_genTID).
-  iIntros (tidnew) "_".
+  iInv "Hinvsst" as "> HinvO" "HinvC".
+  iNamed "HinvO".
+  iApply ncfupd_mask_intro; first set_solver.
+  iIntros "Hclose".
+  iExists ts.
+  (* Deduce [tslast < ts] with [Hts] and [Htslb]. *)
+  iDestruct (ts_auth_lb_le with "Hts Htslb") as "%HltN".
+  iFrame "Hts".
+  iIntros "[%n [Hts %Hgz]]".
+  (* Before we close the invariant, obtain a witness of a LB of timestamp. *)
+  iAssert (ts_lb γ (S ts))%I as "#Htslb'".
+  { iDestruct (ts_witness with "Hts") as "#H".
+    iApply (ts_lb_weaken with "H"). lia.
+  }
+  iMod "Hclose" as "_".
+  iMod ("HinvC" with "[Hproph Hts Hm Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
+  { iNext.
+    iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
+    { iIntros (k) "%Helem Hkeys".
+      iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+    }
+    do 9 iExists _.
+    iFrame.
+  }
+  iIntros "!>" (tidnew) "%Etidnew".
+  assert (Hlt : int.Z tidlast < int.Z tidnew) by lia.
   wp_store.
-  wp_pures.
   
   (***********************************************************)
-  (* for tid <= site.tidLast {                               *)
-  (*     tid = genTID(sid)                                   *)
-  (* }                                                       *)
+  (* machine.Assume(tidnew < 18446744073709551615)           *)
   (***********************************************************)
-  set P := λ (b : bool), (∃ (tidnew : u64),
-             "Htidlast" ∷ site ↦[TxnSite :: "tidLast"] #tidlast ∗
-             "HtidnewRef" ∷ tidnewRef ↦[uint64T] #tidnew ∗
-             "%Hexit" ∷ if b then ⌜True⌝ else ⌜(int.Z tidnew) > (int.Z tidlast)⌝)%I.
-  wp_apply (wp_forBreak_cond P with "[] [Htidlast HtidnewRef]").
-  { clear Φ.
-    iIntros (Φ) "!> Hloop HΦ".
-    iNamed "Hloop".
-    wp_load.
-    wp_loadField.
-    wp_pures.
-    case_bool_decide.
-    - wp_if_true.
-      wp_pures.
-      wp_apply (wp_genTID).
-      iIntros (tid'') "_".
-      wp_store.
-      iApply "HΦ".
-      unfold P.
-      eauto with iFrame.
-    - wp_if_false.
-      iApply "HΦ".
-      unfold P.
-      apply Znot_le_gt in H.
-      eauto with iFrame.
-  }
-  { unfold P. eauto with iFrame. }
-  iIntros "Hloop".
-  clear tidnew.
-  iNamed "Hloop".
-  wp_pures.
+  wp_load.
+  wp_apply wp_Assume.
+  iIntros "%Htidmax".
+  apply bool_decide_eq_true_1 in Htidmax.
   
   (***********************************************************)
   (* site.tidLast = tidnew                                   *)
@@ -114,7 +109,6 @@ Proof.
   (***********************************************************)
   iDestruct (is_slice_small_acc with "HactiveL") as "[HactiveS HactiveC]".
   wp_loadField.
-  clear P.
   set P := λ (i : u64), (∃ (tidmin : u64), let tids := tidnew :: (take (int.nat i) tidsactiveL) in
     "HtidminRef" ∷ tidminRef ↦[uint64T] #tidmin ∗
     "%Helem" ∷ ⌜tidmin ∈ tids⌝ ∗
@@ -219,8 +213,11 @@ Proof.
   wp_apply (release_spec with "[-HΦ HtidminRef]").
   { iFrame "Hlock Hlocked".
     iNext.
-    do 5 iExists _.
-    iFrame "% ∗".
+    iExists tidnew.
+    rewrite Etidnew.
+    do 4 iExists _.
+    iClear "Htslb".
+    iFrame "% # ∗".
     iSplit; iPureIntro.
     { apply Forall_and.
       split; first done.
@@ -232,7 +229,7 @@ Proof.
       word.
     }
     split; last done.
-    { intros tidx Hlt. apply HtidFree. word. }
+    { intros tidx Hlt'. apply HtidFree. word. }
   }
   wp_load.
   by iApply "HΦ".

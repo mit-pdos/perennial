@@ -48,6 +48,7 @@ Class mvcc_ghostG Σ :=
     mvcc_sid_tidsG :> inG Σ sid_tidsR;
     mvcc_sid_min_tidG :> inG Σ sid_min_tidR;
     (* SST *)
+    mvcc_tsG :> inG Σ mono_natR;
     mvcc_abort_tids_ncaG :> inG Σ tidsR;
     mvcc_abort_tids_faG :> inG Σ tidsR;
     mvcc_abort_tids_fciG :> inG Σ tid_modsR;
@@ -62,6 +63,7 @@ Definition mvcc_ghostΣ :=
      GFunctor key_vchainR;
      GFunctor sid_tidsR;
      GFunctor sid_min_tidR;
+     GFunctor mono_natR;
      GFunctor tidsR;
      GFunctor tidsR;
      GFunctor tid_modsR;
@@ -80,6 +82,7 @@ Record mvcc_names :=
     mvcc_ltuple : gname;
     mvcc_sid_tids : gname;
     mvcc_sid_min_tid : gname;
+    mvcc_ts : gname;
     mvcc_abort_tids_nca : gname;
     mvcc_abort_tids_fa : gname;
     mvcc_abort_tmods_fci : gname;
@@ -119,15 +122,18 @@ Definition ltuple_auth γ (k : u64) (logi : list dbval) : iProp Σ :=
 Definition ltuple_lb γ (k : u64) (logi : list dbval) : iProp Σ :=
   own γ.(mvcc_ltuple) {[k := ◯ML (logi : list (leibnizO dbval))]}.
 
-(* TODO: rename [view_ptsto] to [ptuple_ptsto]. *)
-Definition view_ptsto γ (k : u64) (v : dbval) (tid : u64) : iProp Σ :=
-  ∃ phys, ptuple_lb γ k phys ∗ ⌜phys !! (int.nat tid) = Some v⌝.
+(* TODO: use nat rather than u64 for tid. *)
+Definition ptuple_ptsto γ (k : u64) (v : dbval) (ts : nat) : iProp Σ :=
+  ∃ phys, ptuple_lb γ k phys ∗ ⌜phys !! ts = Some v⌝.
 
 Definition mods_token γ (k tid : u64) : iProp Σ :=
   ∃ phys, ptuple_auth γ (1/4) k phys ∗ ⌜Z.of_nat (length phys) ≤ (int.Z tid) + 1⌝.
 
-Definition ltuple_ptsto γ (k : u64) (v : dbval) (tid : u64) : iProp Σ :=
-  ∃ logi, ltuple_lb γ k logi ∗ ⌜logi !! (int.nat tid) = Some v⌝.
+Definition ltuple_ptsto γ (k : u64) (v : dbval) (ts : nat) : iProp Σ :=
+  ∃ logi, ltuple_lb γ k logi ∗ ⌜logi !! ts = Some v⌝.
+
+Definition ltuple_ptstos γ (m : dbmap) (ts : nat) : iProp Σ :=
+  [∗ map] k ↦ v ∈ m, ltuple_ptsto γ k v ts.
 
 (* Definitions about GC-related resources. *)
 Definition site_active_tids_half_auth γ (sid : u64) tids : iProp Σ :=
@@ -149,6 +155,12 @@ Definition min_tid_lb γ tidN : iProp Σ :=
   [∗ list] sid ∈ sids_all, site_min_tid_lb γ sid tidN.
 
 (* Definitions about SST-related resources. *)
+Definition ts_auth γ (ts : nat) : iProp Σ :=
+  own γ.(mvcc_ts) (●MN ts).
+
+Definition ts_lb γ (ts : nat) : iProp Σ :=
+  own γ.(mvcc_ts) (◯MN ts).
+
 Definition nca_tids_auth γ (tids : gset u64) : iProp Σ :=
   own γ.(mvcc_abort_tids_nca) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tids)).
 
@@ -185,12 +197,18 @@ Definition dbmap_auth γ m : iProp Σ :=
 Definition dbmap_ptsto γ k v : iProp Σ :=
   own γ.(mvcc_dbmap) (gmap_view_frag k (DfracOwn 1) v).
 
+Definition dbmap_ptstos γ (m : dbmap) : iProp Σ :=
+  [∗ map] k ↦ v ∈ m, dbmap_ptsto γ k v.
+
 (* Definitions about per-txn resources. *)
 Definition txnmap_auth τ m : iProp Σ :=
   own τ (gmap_view_auth (DfracOwn 1) m).
 
 Definition txnmap_ptsto τ k v : iProp Σ :=
   own τ (gmap_view_frag k (DfracOwn 1) v).
+
+Definition txnmap_ptstos τ (m : dbmap) : iProp Σ :=
+  [∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v.
 
 End definitions.
 
@@ -246,9 +264,19 @@ Lemma vchain_false {γ q key vchain} :
 Proof.
 Admitted.
 
-Theorem view_ptsto_agree γ (k : u64) (v v' : option u64) (tid : u64) :
-  view_ptsto γ k v tid -∗ view_ptsto γ k v' tid -∗ ⌜v = v'⌝.
+Lemma ltuple_update {γ key l} l' :
+  prefix l l' →
+  ltuple_auth γ key l ==∗
+  ltuple_auth γ key l'.
+Proof.
 Admitted.
+
+Lemma ltuple_witness γ k l :
+  ltuple_auth γ k l -∗ ltuple_lb γ k l.
+Proof.
+  iApply own_mono.
+  apply singleton_mono, mono_list_included.
+Qed.
 
 Lemma site_active_tids_elem_of γ (sid : u64) tids tid :
   site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ (dom tids)⌝.
@@ -308,7 +336,28 @@ Lemma site_min_tid_witness {γ sid tidN} :
 Admitted.
 
 Lemma min_tid_lb_zero γ :
-  ⊢ min_tid_lb γ 0%nat.
+  ⊢ |==> min_tid_lb γ 0%nat.
+Admitted.
+
+Lemma ts_witness {γ ts} :
+  ts_auth γ ts -∗
+  ts_lb γ ts.
+Admitted.
+
+Lemma ts_lb_weaken {γ ts} ts' :
+  (ts' ≤ ts)%nat ->
+  ts_lb γ ts -∗
+  ts_lb γ ts'.
+Admitted.
+
+Lemma ts_auth_lb_le {γ ts ts'} :
+  ts_auth γ ts -∗
+  ts_lb γ ts' -∗
+  ⌜(ts' ≤ ts)%nat⌝.
+Admitted.
+
+Lemma ts_lb_zero γ :
+  ⊢ |==> ts_lb γ 0%nat.
 Admitted.
 
 Lemma mvcc_ghost_init :
@@ -318,6 +367,12 @@ Lemma mvcc_ghost_init :
               ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0) ∗
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
+Admitted.
+
+Lemma dbmap_lookup_big {γ m} m' :
+  dbmap_auth γ m -∗
+  dbmap_ptstos γ m' -∗
+  ⌜m' ⊆ m⌝.
 Admitted.
 
 Lemma txnmap_lookup τ m k v :
@@ -1211,6 +1266,15 @@ Lemma extend_last_Some {X : Type} (n : nat) (l : list X) (x : X) :
   extend n l = l ++ replicate (n - length l) x.
 Proof. intros Hlast. unfold extend. by rewrite Hlast. Qed.
 
+Lemma extend_prefix {X : Type} (n : nat) (l : list X) :
+  prefix l (extend n l).
+Proof.
+  unfold extend.
+  destruct (last l) eqn:E.
+  - unfold prefix. eauto.
+  - rewrite last_None in E. by rewrite E.
+Qed.
+
 Definition tuple_mods_rel (phys logi : list dbval) (mods : gset (nat * dbval)) :=
   ∃ (diff : list dbval) (v : dbval),
     logi = phys ++ diff ∧
@@ -1231,6 +1295,17 @@ Proof.
   destruct n as [x Helem].
   rewrite Heq in Hlen.
   apply Hlen in Helem. lia.
+Qed.
+
+Lemma tuple_mods_rel_last_logi (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  tuple_mods_rel phys logi mods ->
+  ∃ v, last logi = Some v.
+Proof.
+  intros Hrel.
+  destruct Hrel as (diff & v & Hprefix & Hphys & _).
+  rewrite Hprefix.
+  rewrite last_app.
+  destruct (last diff); eauto.
 Qed.
 
 Theorem tuplext_read (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
@@ -1391,6 +1466,67 @@ Proof.
 Qed.
 
 Theorem tuplext_linearize_unchanged (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  tuple_mods_rel phys logi mods ->
+  tuple_mods_rel phys (extend (S tid) logi) mods.
+Proof.
+  intros Hrel.
+  pose proof Hrel as (diff & v & Hprefix & Hlast & HNoDup & Hlen & Hdiff).
+  unfold tuple_mods_rel.
+  assert (Hlast' : ∃ v', last logi = Some v').
+  { rewrite Hprefix last_app. destruct (last diff); eauto. }
+  destruct Hlast' as [v' Hlast'].
+  exists (diff ++ replicate (S tid - length logi) v'), v.
+  split.
+  { (* prefix *)
+    apply (extend_last_Some (S tid)) in Hlast' as Heq.
+    by rewrite Heq Hprefix -app_assoc.
+  }
+  split.
+  { (* last *) done. }
+  split; first done.
+  split.
+  { (* len *)
+    apply (set_Forall_impl _ _ _ Hlen).
+    intros x Hlt.
+    split; first lia.
+    apply Nat.lt_le_trans with (length logi); [lia | apply extend_length_ge].
+  }
+  { (* diff *)
+    intros i u Hlookup.
+    destruct (decide (i < length diff)%nat).
+    - apply Hdiff. by rewrite lookup_app_l in Hlookup; last auto.
+    - apply not_lt in n.
+      rewrite lookup_app_r in Hlookup; last lia.
+      rewrite lookup_replicate in Hlookup.
+      destruct Hlookup as [Heq Hlt]. subst v'.
+      (* Case [diff = nil] is treated as a special case. *)
+      destruct (decide (diff = [])).
+      { rewrite e app_nil_r in Hprefix.
+        rewrite (tuple_mods_rel_eq_empty phys logi mods); [| auto | done].
+        rewrite diff_val_at_empty. subst logi.
+        rewrite Hlast' in Hlast.
+        by inversion Hlast.
+      }
+      (* Use the last value of [logi] as the reference to apply [diff_val_at_extensible]. *)
+      rewrite last_lookup in Hlast'.
+      rewrite -(diff_val_at_extensible _ (pred (length diff) + length phys)); last first.
+      { lia. }
+      { unfold gt_tids_mods.
+        apply (set_Forall_impl _ _ _ Hlen).
+        intros x [_ H].
+        rewrite Hprefix app_length in H. lia.
+      }
+      apply Hdiff.
+      rewrite -Hlast'.
+      do 2 rewrite -last_lookup.
+      rewrite Hprefix.
+      rewrite last_app.
+      destruct (last diff) eqn:E; [done | by rewrite last_None in E].
+  }
+Qed.
+
+(* XXX: not used *)
+Theorem tuplext_linearize_unchanged' (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
   tuple_mods_rel phys logi mods ->
   tuple_mods_rel phys (extend (S (S tid)) logi) mods.
 Proof.

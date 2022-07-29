@@ -11,9 +11,11 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (* TODO: [site_active_tids_half_auth γ sid (gset_to_gmap () (list_to_set tidsactiveL))] to remove [tidsactiveM] *)
 Definition own_txnsite (txnsite : loc) (sid : u64) γ : iProp Σ := 
+  (* FIXME: don't need [tidlast] anymore. *)
   ∃ (tidlast tidmin : u64) (tidsactive : Slice.t)
     (tidsactiveL : list u64) (tidsactiveM : gmap u64 unit),
     "Htidlast" ∷ txnsite ↦[TxnSite :: "tidLast"] #tidlast ∗
+    "#Htslb" ∷ ts_lb γ (S (int.nat tidlast)) ∗
     "Hactive" ∷ txnsite ↦[TxnSite :: "tidsActive"] (to_val tidsactive) ∗
     "HactiveL" ∷ typed_slice.is_slice tidsactive uint64T 1 tidsactiveL ∗
     "HactiveAuth" ∷ site_active_tids_half_auth γ sid tidsactiveM ∗
@@ -73,9 +75,11 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
  *    c) something that can give the client a proof that the txn actually executes.
  *)
 
-Definition own_txn_impl (txn : loc) (tid : u64) (mods : dbmap) γ : iProp Σ :=
-  ∃ (sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id),
+Definition own_txn_impl (txn : loc) (ts : nat) (mods : dbmap) γ : iProp Σ :=
+  ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
+    (* This ensures we do not lose the info that [tid] does not overflow. *)
+    "%Etid" ∷ ⌜int.nat tid = ts⌝ ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
     "Hwrbuf" ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
@@ -90,9 +94,9 @@ Definition own_txn_impl (txn : loc) (tid : u64) (mods : dbmap) γ : iProp Σ :=
     "_" ∷ True.
 
 Definition own_txn (txn : loc) γ τ : iProp Σ :=
-  ∃ (tid : u64) (view : dbmap) (mods : dbmap),
-    "Himpl" ∷ own_txn_impl txn tid mods γ ∗
-    "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v tid) ∗
+  ∃ (ts : nat) (view : dbmap) (mods : dbmap),
+    "Himpl" ∷ own_txn_impl txn ts mods γ ∗
+    "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap" ∷ txnmap_auth τ (mods ∪ view).
 
 (* TODO: Unify [own_txn_impl] and [own_txn_uninit]. *)
@@ -118,3 +122,13 @@ Hint Extern 1 (environments.envs_entails _ (own_txnmgr _)) => unfold own_txnmgr 
 Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
 Hint Extern 1 (environments.envs_entails _ (own_txn_impl _ _ _ _)) => unfold own_txn_impl : core.
 Hint Extern 1 (environments.envs_entails _ (own_txn _ _ _)) => unfold own_txn : core.
+
+Section lemma.
+Context `{!heapGS Σ, !mvcc_ghostG Σ}.
+
+Lemma own_txn_impl_tid txn ts m γ :
+  own_txn_impl txn ts m γ -∗
+  ∃ (tid : u64), ⌜int.nat tid = ts⌝.
+Proof. iIntros "Htxn". iNamed "Htxn". eauto. Qed.
+
+End lemma.

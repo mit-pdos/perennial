@@ -43,7 +43,7 @@ Proof.
     rewrite Hlookup' in Hlookup.
     inversion_clear Hlookup.
     iSplitR "Hptsto".
-    { eauto 20 with iFrame. }
+    { eauto 25 with iFrame. }
     by iFrame.
   }
 
@@ -82,6 +82,7 @@ Proof.
   iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup'".
   rewrite lookup_union_r in Hlookup'; last auto.
   iDestruct (big_sepM_lookup_acc with "Hltuples") as "[Hltuple Hltuples]"; first apply Hlookup'.
+  rewrite Etid.
   iDestruct (ltuple_ptuple_ptsto_eq with "[Hkey] Hltuple Hptuple") as "%Heq".
   { iNamed "Hkey".
     unfold tuple_auth_prefix.
@@ -96,10 +97,10 @@ Proof.
   iDestruct ("Hkeys" with "Hkey") as "Hkeys".
   iDestruct ("Hltuples" with "Hltuple") as "Hltuples".
   iMod "Hclose".
-  iMod ("HinvC" with "[Hproph Hm Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
+  iMod ("HinvC" with "[Hproph Hm Hts Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
   { (* Close the inv. *)
     iNext. unfold mvcc_inv_sst_def.
-    do 6 iExists _.
+    do 7 iExists _.
     iExists (past ++ [EvRead tid k]), future'.
     iDestruct (nca_inv_head_read with "Hnca") as "Hnca"; first apply Hresolve.
     iDestruct (fa_inv_head_read  with "Hfa")  as "Hfa";  first apply Hresolve.
@@ -126,7 +127,7 @@ Proof.
   iSplitR "Hptsto".
   { do 3 iExists _.
     iFrame "Hltuples Htxnmap".
-    do 5 iExists _.
+    do 6 iExists _.
     iFrame "Hactive Htid Hsid Hwrbuf HwrbufRP".
     by iFrame "#".
   }

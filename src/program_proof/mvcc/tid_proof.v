@@ -4,15 +4,21 @@ From Perennial.program_proof.mvcc Require Import txn_common.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
+(**
+ * [int.nat tid = ts] means no overflow, which we would have to assume.
+ * It takes around 120 years for TSC to overflow on a 4-GHz CPU.
+ *)
 (*****************************************************************)
 (* func genTID(sid uint64) uint64                                *)
 (*****************************************************************)
-Theorem wp_genTID (sid : u64) :
-  {{{ True }}}
-    genTID #sid
-  {{{ (tid : u64), RET #tid; True }}}.
+Theorem wp_genTID (sid : u64) γ :
+  ⊢ {{{ True }}}
+    <<< ∀∀ (ts : nat), ts_auth γ ts >>>
+      genTID #sid @ ∅
+    <<< ∃ n, ts_auth γ (ts + n)%nat ∗ ⌜0 < n⌝ >>>
+    {{{ (tid : u64), RET #tid; ⌜int.nat tid = ts⌝ }}}.
 Proof.
-  iIntros (Φ) "Hpre HΦ".
+  iIntros "!>" (Φ) "Hpre HAU".
   wp_call.
 
   (***********************************************************)
@@ -62,10 +68,6 @@ Proof.
   (***********************************************************)
   (* return tid                                              *) 
   (***********************************************************)
-  iApply "HΦ".
-  iModIntro.
-  iPureIntro.
-  done.
 Admitted.
 
 End program.
