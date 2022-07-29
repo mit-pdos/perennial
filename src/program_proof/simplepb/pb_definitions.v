@@ -89,8 +89,6 @@ Definition is_valid_inv γ epoch σ op : iProp Σ :=
   )
 .
 
-Search "list".
-
 Definition is_proposal_valid γ epoch σ : iProp Σ :=
   ∀ σprev op σnext,
   ⌜σ = σprev ++ [op] ++ σnext⌝ -∗
@@ -260,14 +258,73 @@ Proof.
   }
 Qed.
 
+Definition sys_inv γ := inv pbN
+(
+  ∃ σ epoch,
+  own_ghost γ σ ∗
+  committed_by γ epoch σ ∗
+  is_proposal_lb γ epoch σ ∗
+  is_proposal_facts γ epoch σ
+).
+
 (*
   User will get their (Q) by knowing (is_ghost_lb γ σ) where (op, Q) ∈ σ.
  *)
 Lemma ghost_commit γ epoch σ :
-  committed_by γ epoch σ
+  sys_inv γ -∗
+  committed_by γ epoch σ -∗
+  is_proposal_lb γ epoch σ -∗
+  is_proposal_facts γ epoch σ
   ={⊤}=∗
   is_ghost_lb γ σ.
 Proof.
+  iIntros "#Hinv #Hcom #Hprop_lb #Hprop_facts".
+  iInv "Hinv" as "Hown" "Hclose".
+  iDestruct "Hown" as (σcommit epoch_commit) "(>Hghost & >#Hcom_com & >#Hprop_lb_com & #Hprop_facts_com)".
+  iDestruct "Hprop_facts_com" as "[>Hmax_com Hvalid_com]".
+  iDestruct "Hprop_facts" as "[Hmax Hvalid]".
+  iAssert (⌜σcommit ⪯ σ⌝ ∨ ⌜σ ⪯ σcommit⌝)%I as "%Hlog".
+  {
+    assert (int.nat epoch < int.nat epoch_commit ∨ int.nat epoch = int.nat epoch_commit ∨ int.nat epoch > int.nat epoch_commit) as [Hepoch|[Hepoch|Hepoch]]by word.
+    { (* case epoch < epoch_commit: use old_proposal_max of epoch_commit. *)
+      iRight.
+      by iApply "Hmax_com".
+    }
+    { (* case epoch = epoch_commit: proposal is comparable *)
+      replace (epoch) with (epoch_commit) by word.
+      iDestruct (own_valid_2 with "Hprop_lb Hprop_lb_com") as %Hvalid.
+      rewrite singleton_op in Hvalid.
+      rewrite singleton_valid in Hvalid.
+      apply mono_list_lb_op_valid_1_L in Hvalid.
+      iPureIntro.
+      naive_solver.
+    }
+    { (* case epoch_commit < epoch: use old_proposal_max of epoch *)
+      iLeft.
+      by iApply "Hmax".
+    }
+  }
+
+  destruct Hlog as [Hcan_update|Halready_updated].
+  {
+    (* TODO: need to fire a bunch of fupds *)
+    admit.
+  }
+  {
+    unfold own_ghost.
+    iEval (rewrite mono_list_auth_lb_op) in "Hghost".
+    iDestruct "Hghost" as "[Hghost #Hlb]".
+    iDestruct (own_mono with "Hlb") as "$".
+    {
+      by apply mono_list_lb_mono.
+    }
+    iMod ("Hclose" with "[-]").
+    {
+      iNext.
+      iExists _, _. iFrame "∗#".
+    }
+    done.
+  }
 Admitted.
 
 End pb_protocol.
