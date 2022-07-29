@@ -47,7 +47,7 @@ Definition is_proposal_lb γ epoch σ : iProp Σ :=
   own γ.(pb_proposal_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
 
 Definition own_accepted γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
+  own γ.(pb_accepted_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
 Definition is_accepted_lb γ epoch σ : iProp Σ :=
   own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
 Definition is_accepted_ro γ epoch σ : iProp Σ :=
@@ -103,19 +103,75 @@ Definition own_Server_ghost γ epoch σ : iProp Σ :=
   "Hepoch_ghost" ∷ own_epoch γ epoch ∗
   "Haccepted" ∷ own_accepted γ epoch σ ∗
   "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat epoch⌝ ∨
-                                                      own_accepted γ epoch []) ∗
+                                                      own_accepted γ e' []) ∗
   "#Hproposal_lb" ∷ is_proposal_lb γ epoch σ ∗
   "#Hvalid" ∷ is_proposal_facts γ epoch σ
 .
 
-Lemma ghost_accept γ epoch σ op :
+Lemma ghost_accept γ epoch epoch' σ σ' :
+  int.nat epoch ≤ int.nat epoch' →
+  σ ⪯ σ' →
   own_Server_ghost γ epoch σ -∗
-  is_proposal_lb γ epoch σ -∗
-  is_proposal_facts γ epoch σ
-  ={⊤}=∗
-  own_Server_ghost γ epoch (σ++[op]).
+  is_proposal_lb γ epoch' σ' -∗
+  is_proposal_facts γ epoch' σ'
+  ==∗
+  own_Server_ghost γ epoch' σ'.
 Proof.
-Admitted.
+  intros Hepoch_ineq Hσ_ineq.
+  iIntros "Hown #Hprop_lb #Hprop_facts".
+  iNamed "Hown".
+  destruct (decide (epoch = epoch')).
+  {
+    rewrite -e.
+    iFrame "Hepoch_ghost".
+    iFrame "Haccepted_rest".
+    iFrame "Hprop_lb".
+    iFrame "Hprop_facts".
+    iApply (own_update with "Haccepted").
+    apply singleton_update.
+    apply mono_list_update.
+    done.
+  }
+  {
+    assert (int.nat epoch < int.nat epoch') as Hepoch_new.
+    {
+      assert (int.nat epoch < int.nat epoch' ∨ int.nat epoch = int.nat epoch') as [|] by word.
+      { done. }
+      { exfalso. assert (epoch = epoch') by word. done. }
+    }
+    iSplitL "Hepoch_ghost".
+    {
+      iDestruct (mono_nat_own_update with "Hepoch_ghost") as "[$ _]".
+      done.
+    }
+    iFrame "Hprop_lb Hprop_facts".
+    iDestruct (big_sepS_elem_of_acc_impl epoch' with "Haccepted_rest") as "[HH Haccepted_rest]".
+    { set_solver. }
+    iClear "Haccepted".
+    iDestruct "HH" as "[%Hbad|Haccepted]".
+    {
+      exfalso.
+      word.
+    }
+    iSplitL "Haccepted".
+    {
+      iApply (own_update with "Haccepted").
+      apply singleton_update.
+      apply mono_list_update.
+      apply prefix_nil.
+    }
+    iApply "Haccepted_rest".
+    {
+      iModIntro.
+      iIntros (???) "[%Hineq|$]".
+      iLeft.
+      iPureIntro.
+      word.
+    }
+    iLeft.
+    done.
+  }
+Qed.
 
 Lemma ghost_propose γ epoch σ op :
   own_proposal γ epoch σ -∗
