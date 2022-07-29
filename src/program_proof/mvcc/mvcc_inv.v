@@ -41,7 +41,7 @@ Definition per_key_inv_def
 Definition cmt_inv_def
            (γ : mvcc_names) (tmods : gset (nat * dbmap)) (future : list action)
   : iProp Σ :=
-  "HcmtAuth" ∷ commit_tmods_auth γ tmods ∗
+  "HcmtAuth" ∷ cmt_tmods_auth γ tmods ∗
   "%Hcmt"    ∷ ⌜set_Forall (uncurry (first_commit_compatible future)) tmods⌝.
 
 Definition nca_inv_def

@@ -89,7 +89,7 @@ Record mvcc_names :=
     mvcc_abort_tids_fa : gname;
     mvcc_abort_tmods_fci : gname;
     mvcc_abort_tmods_fcc : gname;
-    mvcc_commit_tmods : gname;
+    mvcc_cmt_tmods : gname;
     mvcc_dbmap : gname
   }.
 
@@ -166,32 +166,32 @@ Definition ts_lb γ (ts : nat) : iProp Σ :=
 Definition nca_tids_auth γ (tids : gset nat) : iProp Σ :=
   own γ.(mvcc_abort_tids_nca) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tids)).
 
-Definition nca_tids_frag γ tid : iProp Σ :=
+Definition nca_tids_frag γ (tid : nat) : iProp Σ :=
   own γ.(mvcc_abort_tids_nca) (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt).
 
 Definition fa_tids_auth γ (tids : gset nat) : iProp Σ :=
   own γ.(mvcc_abort_tids_fa) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tids)).
 
-Definition fa_tids_frag γ tid : iProp Σ :=
+Definition fa_tids_frag γ (tid : nat) : iProp Σ :=
   own γ.(mvcc_abort_tids_fa) (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt).
 
 Definition fci_tmods_auth γ tmods : iProp Σ :=
   own γ.(mvcc_abort_tmods_fci) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
 
-Definition fci_tmods_frag γ tmod : iProp Σ :=
+Definition fci_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
   own γ.(mvcc_abort_tmods_fci) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
 
 Definition fcc_tmods_auth γ tmods : iProp Σ :=
   own γ.(mvcc_abort_tmods_fcc) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
 
-Definition fcc_tmods_frag γ tmod : iProp Σ :=
+Definition fcc_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
   own γ.(mvcc_abort_tmods_fcc) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
 
-Definition commit_tmods_auth γ tmods : iProp Σ :=
-  own γ.(mvcc_commit_tmods) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
+Definition cmt_tmods_auth γ tmods : iProp Σ :=
+  own γ.(mvcc_cmt_tmods) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
 
-Definition commit_tmods_frag γ tmod : iProp Σ :=
-  own γ.(mvcc_commit_tmods) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
+Definition cmt_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
+  own γ.(mvcc_cmt_tmods) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
 
 Definition dbmap_auth γ m : iProp Σ :=
   own γ.(mvcc_dbmap) (gmap_view_auth (DfracOwn 1) m).
@@ -392,6 +392,36 @@ Admitted.
 
 Lemma txnmap_alloc m :
   ⊢ |==> ∃ τ, txnmap_auth τ m ∗ ([∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v).
+Admitted.
+
+Lemma nca_tids_insert {γ tids} tid :
+  tid ∉ tids ->
+  nca_tids_auth γ tids ==∗
+  nca_tids_auth γ ({[ tid ]} ∪ tids) ∗ nca_tids_frag γ tid.
+Admitted.
+
+Lemma fa_tids_insert {γ tids} tid :
+  tid ∉ tids ->
+  fa_tids_auth γ tids ==∗
+  fa_tids_auth γ ({[ tid ]} ∪ tids) ∗ fa_tids_frag γ tid.
+Admitted.
+
+Lemma fci_tmods_insert {γ tmods} tmod :
+  tmod ∉ tmods ->
+  fci_tmods_auth γ tmods ==∗
+  fci_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fci_tmods_frag γ tmod.
+Admitted.
+
+Lemma fcc_tmods_insert {γ tmods} tmod :
+  tmod ∉ tmods ->
+  fcc_tmods_auth γ tmods ==∗
+  fcc_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fcc_tmods_frag γ tmod.
+Admitted.
+
+Lemma cmt_tmods_insert {γ tmods} tmod :
+  tmod ∉ tmods ->
+  cmt_tmods_auth γ tmods ==∗
+  cmt_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ cmt_tmods_frag γ tmod.
 Admitted.
 
 End lemmas.

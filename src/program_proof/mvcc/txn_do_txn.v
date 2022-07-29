@@ -64,8 +64,16 @@ Proof.
   destruct (peek future ts).
   { (* Case NCA. *)
     iMod ("HAUC" $! false with "Hdbps") as "HΦ".
-    (* TODO: Add [tid] to [tmods_nca] and get a piece of evidence. *)
-    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps]") as "_".
+    (* Add [tid] to [tids_nca] and get a piece of evidence. *)
+    iNamed "Hnca".
+    iMod (nca_tids_insert ts with "HncaAuth") as "[HncaAuth HncaFrag]".
+    { (* TODO: Prove [ts ∉ tids_nca]. *) admit. }
+    iAssert (nca_inv_def _ _ _)%I with "[HncaAuth]" as "Hnca".
+    { unfold nca_inv_def. iFrame. iPureIntro.
+      apply set_Forall_union; last eauto.
+      by rewrite set_Forall_singleton.
+    }
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HncaFrag]") as "_".
     { (* Close the invariant. *)
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
@@ -74,7 +82,7 @@ Proof.
       }
       eauto 15 with iFrame.
     }
-    iIntros "!>" (tid) "[Htxn %Etid]".
+    iIntros "!>" (tid) "[Htxn _]".
     iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
     { iExists r, ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
@@ -101,7 +109,8 @@ Proof.
       by iApply ("HΦ" $! (U64 0)).
     }
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit_false with "Htxn").
+    wp_apply (wp_txn__Commit_false with "[$Htxn HncaFrag]").
+    { unfold abort_cases. eauto. }
     by iIntros (ok) "%contra".
   }
   { (* Case FA. *)
