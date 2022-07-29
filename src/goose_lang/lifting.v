@@ -718,6 +718,7 @@ Proof.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step; iFrame.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
+  iIntros "Hlc".
   iModIntro. by iApply "HΦ".
 Qed.
 
@@ -733,6 +734,7 @@ Proof.
   iMod (trace_update with "[$] [$]") as "(?&?)".
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
+  iIntros "Hlc".
   iModIntro. iFrame; iSplitL; last done. by iApply "HΦ".
 Qed.
 
@@ -750,6 +752,7 @@ Proof.
   iFrame. iMod (trace_update with "[$] [$]") as "(?&?)".
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
+  iIntros "Hlc".
   iModIntro. iFrame; iSplitL; last done. iApply ("HΦ" with "[$]").
 Qed.
 
@@ -762,6 +765,7 @@ Proof.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step. iFrame.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
+  iIntros "Hlc".
   done.
 Qed.
 
@@ -951,6 +955,7 @@ Proof.
   { eauto. }
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
+  iIntros "Hlc".
   iModIntro; iSplit; first done.
   iFrame.
   iApply "HΦ".
@@ -982,7 +987,7 @@ Lemma wp_allocN_seq0 s E v (n: u64) :
 Proof.
   iIntros (Hlen Hn Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 g1 ns mj D κ κs k) "[Hσ ?] Hg !>"; iSplit; first by auto with lia.
-  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
+  iNext; iIntros (v2 σ2 g2 efs Hstep) "Hlc"; inv_head_step.
   rewrite /state_interp/=.
   assert (concat_replicate (int.nat n) (flatten_struct v) = []) as ->.
   { apply nil_length_inv. rewrite concat_replicate_length. lia. }
@@ -1028,7 +1033,7 @@ Proof.
 Qed.
 
 Lemma wp_load s E l q v :
-  {{{ ▷ l ↦{q} v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; l ↦{q} v }}}.
+  {{{ ▷ l ↦{q} v }}} Load (Val $ LitV $ LitLoc l) @ s; E {{{ RET v; £ 1 ∗ l ↦{q} v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_head_step_no_fork; auto.
   iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg !>".
@@ -1039,7 +1044,8 @@ Proof.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_head_step.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
-  iModIntro; iSplit=> //. iFrame. iApply "HΦ".
+  iIntros "Hlc". iModIntro; iSplit=> //. iFrame. iApply "HΦ".
+  iDestruct (lc_succ with "Hlc") as "[$ _]".
   iApply ("Hl_rest" with "Hl").
 Qed.
 
