@@ -4,6 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
+From Perennial.Helpers Require Import ListSolver.
 
 Section pb_protocol.
 
@@ -181,7 +182,83 @@ Lemma ghost_propose γ epoch σ op :
   own_proposal γ epoch (σ ++ [op]) ∗
   is_proposal_facts γ epoch (σ ++ [op]).
 Proof.
-Admitted.
+  iIntros "Hprop #Hprop_facts Hupd".
+  iSplitL "Hprop".
+  {
+    iApply (own_update with "Hprop").
+    apply singleton_update.
+    apply mono_list_update.
+    apply prefix_app_r.
+    done.
+  }
+  unfold is_proposal_facts.
+  iSplitL "".
+  {
+    iDestruct "Hprop_facts" as "[#Hmax _]".
+    iModIntro.
+    unfold old_proposal_max.
+    iModIntro.
+    iIntros.
+    iAssert (⌜σ_old ⪯ σ⌝)%I as "%Hprefix".
+    {
+      iApply "Hmax".
+      {
+        done.
+      }
+      iFrame "#".
+    }
+    iPureIntro.
+    apply prefix_app_r.
+    done.
+  }
+  iDestruct "Hprop_facts" as "[_ #Hvalid]".
+  unfold is_proposal_valid.
+
+  iAssert (|={⊤}=> is_valid_inv γ epoch σ op)%I with "[Hupd]" as ">#Hinv".
+  {
+    iMod (inv_alloc with "[Hupd]") as "$".
+    {
+      iNext.
+      iFrame "Hupd".
+    }
+    done.
+  }
+  iModIntro.
+  iIntros (σprev op_some σnext Hσ).
+  assert (length σnext = 0 ∨ length σnext > 0) as Hineqs by lia.
+  destruct Hineqs as [Hineq | Hineq].
+  {
+    rewrite length_zero_iff_nil in Hineq.
+    rewrite Hineq in Hσ.
+    simpl in Hσ.
+    assert (op = op_some) as ->.
+    { (* TODO: list_solver *)
+      apply (f_equal last) in Hσ.
+      rewrite last_snoc in Hσ.
+      rewrite last_snoc in Hσ.
+      naive_solver.
+    }
+    apply app_inv_tail in Hσ.
+    rewrite Hσ.
+    iFrame "Hinv".
+  }
+  {
+    assert (σ = σprev ++ [op_some] ++ removelast σnext) as H.
+    {
+      (* TODO: list_solver *)
+      assert (removelast (σ ++ [op]) = removelast (σprev ++ [op_some] ++ σnext)).
+      { by rewrite Hσ. }
+      rewrite removelast_last in H.
+      rewrite removelast_app in H; last first.
+      { done. }
+      rewrite removelast_app in H; last first.
+      { by apply length_nonzero_neq_nil. }
+      done.
+    }
+    iApply "Hvalid".
+    done.
+  }
+Qed.
 
 (*
   User will get their (Q) by knowing (is_ghost_lb γ σ) where (op, Q) ∈ σ.
