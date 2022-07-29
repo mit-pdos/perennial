@@ -6,11 +6,11 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
 (*****************************************************************)
-Theorem wp_txn__Get txn (k : u64) dbv γ τ :
-  {{{ own_txn txn γ τ ∗ txnmap_ptsto τ k dbv }}}
+Theorem wp_txn__Get txn tid (k : u64) dbv γ τ :
+  {{{ own_txn txn tid γ τ ∗ txnmap_ptsto τ k dbv }}}
     Txn__Get #txn #k
   {{{ (v : u64) (found : bool), RET (#v, #found);
-      own_txn txn γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
+      own_txn txn tid γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hptsto] HΦ".
@@ -101,7 +101,7 @@ Proof.
   { (* Close the inv. *)
     iNext. unfold mvcc_inv_sst_def.
     do 7 iExists _.
-    iExists (past ++ [EvRead ts k]), future'.
+    iExists (past ++ [EvRead tid k]), future'.
     iDestruct (nca_inv_head_read with "Hnca") as "Hnca"; first apply Hresolve.
     iDestruct (fa_inv_head_read  with "Hfa")  as "Hfa";  first apply Hresolve.
     iDestruct (fci_inv_head_read with "Hfci") as "Hfci"; first apply Hresolve.
@@ -125,7 +125,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iSplitR "Hptsto".
-  { do 3 iExists _.
+  { do 2 iExists _.
     iFrame "Hltuples Htxnmap".
     do 6 iExists _.
     iFrame "Hactive Htid Hsid Hwrbuf HwrbufRP".

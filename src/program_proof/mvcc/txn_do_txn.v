@@ -3,17 +3,17 @@ From Perennial.program_proof.mvcc Require Import mvcc_inv txn_common txn_begin t
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition spec_body (body : val) (txn :loc) r P Q γ τ : iProp Σ :=
-  {{{ own_txn txn γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r }}}
+Definition spec_body (body : val) (txn :loc) tid r P Q γ τ : iProp Σ :=
+  {{{ own_txn txn tid γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r }}}
     body #txn
   {{{ w (ok : bool), RET #ok;
-      own_txn txn γ τ ∗
+      own_txn txn tid γ τ ∗
       if ok then ⌜Q r w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 
 Theorem wp_txn__DoTxn txn (body : val) P Q γ :
   (∀ r w, (Decision (Q r w))) ->
-  ⊢ {{{ own_txn_uninit txn γ ∗ (∀ r τ, spec_body body txn r P Q γ τ) }}}
+  ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body body txn tid r P Q γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ r >>>
       Txn__DoTxn #txn body @ ↑mvccNSST
     <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q r w⌝ ∗ dbmap_ptstos γ w) else dbmap_ptstos γ r >>>
@@ -75,8 +75,8 @@ Proof.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn %Etid]".
-    iAssert (own_txn txn γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists _, r, ∅. rewrite map_empty_union. iFrame. }
+    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists r, ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
     iIntros (w ok) "[Htxn Hpost]".
@@ -125,11 +125,11 @@ Admitted.
 Definition post_Swap (r w : dbmap) : Prop.
 Admitted.
 
-Theorem wp_SwapSeq txn r γ τ :
-  {{{ own_txn txn γ τ ∗ ⌜pre_Swap r⌝ ∗ txnmap_ptstos τ r }}}
+Theorem wp_SwapSeq txn tid r γ τ :
+  {{{ own_txn txn tid γ τ ∗ ⌜pre_Swap r⌝ ∗ txnmap_ptstos τ r }}}
     SwapSeq #txn
   {{{ w (ok : bool), RET #ok;
-      own_txn txn γ τ ∗
+      own_txn txn tid γ τ ∗
       if ok then ⌜post_Swap r w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 Admitted.
@@ -149,7 +149,7 @@ Proof.
   wp_call.
   wp_apply (wp_txn__DoTxn _ _ _ post_Swap with "[$Htxn]").
   { unfold spec_body.
-    iIntros (r τ Φ') "!> Hpre HΦ'".
+    iIntros (tid r τ Φ') "!> Hpre HΦ'".
     iApply (wp_SwapSeq with "Hpre HΦ'").
   }
   done.
