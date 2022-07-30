@@ -64,14 +64,25 @@ Proof.
   destruct (peek future ts).
   { (* Case NCA. *)
     iMod ("HAUC" $! false with "Hdbps") as "HΦ".
-    (* Add [tid] to [tids_nca] and get a piece of evidence. *)
+    (* Add [ts] to [tids_nca] and get a piece of evidence. *)
     iNamed "Hnca".
     iMod (nca_tids_insert ts with "HncaAuth") as "[HncaAuth HncaFrag]".
-    { (* TODO: Prove [ts ∉ tids_nca]. *) admit. }
-    iAssert (nca_inv_def _ _ _)%I with "[HncaAuth]" as "Hnca".
+    { (* Prove [ts ∉ tids_nca]. *)
+      intros contra. apply HncaLt in contra. lia.
+    }
+    iAssert (nca_inv_def _ _ _ _)%I with "[HncaAuth]" as "Hnca".
     { unfold nca_inv_def. iFrame. iPureIntro.
-      apply set_Forall_union; last eauto.
-      by rewrite set_Forall_singleton.
+      split.
+      - (* Prove NCA holds on the new set. *)
+        apply set_Forall_union; last eauto.
+        by rewrite set_Forall_singleton.
+      - (* Prove new TS > every elem of the new set. *)
+        apply set_Forall_union.
+        { rewrite set_Forall_singleton.
+          assert (Hts : (ts < ts + n)%nat) by lia.
+          apply Hts.
+        }
+        apply (set_Forall_impl _ _ _ HncaLt). lia.
     }
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HncaFrag]") as "_".
     { (* Close the invariant. *)
@@ -80,6 +91,10 @@ Proof.
       { iIntros (k) "%Helem Hkeys".
         iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
       }
+      iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
@@ -114,19 +129,271 @@ Proof.
     by iIntros (ok) "%contra".
   }
   { (* Case FA. *)
-    admit.
+    iMod ("HAUC" $! false with "Hdbps") as "HΦ".
+    (* Add [s] to [tids_fa] and get a piece of evidence. *)
+    iNamed "Hfa".
+    iMod (fa_tids_insert ts with "HfaAuth") as "[HfaAuth HfaFrag]".
+    { (* Prove [ts ∉ tids_fa]. *)
+      intros contra. apply HfaLt in contra. lia.
+    }
+    iAssert (fa_inv_def _ _ _ _)%I with "[HfaAuth]" as "Hfa".
+    { unfold fa_inv_def. iFrame. iPureIntro.
+      split.
+      - (* Prove FA holds on the new set. *)
+        apply set_Forall_union; last eauto.
+        by rewrite set_Forall_singleton.
+      - (* Prove new TS > every elem of the new set. *)
+        apply set_Forall_union.
+        { rewrite set_Forall_singleton.
+          assert (Hts : (ts < ts + n)%nat) by lia.
+          apply Hts.
+        }
+        apply (set_Forall_impl _ _ _ HfaLt). lia.
+    }
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfaFrag]") as "_".
+    { (* Close the invariant. *)
+      iNext.
+      iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
+      { iIntros (k) "%Helem Hkeys".
+        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+      }
+      iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
+      iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+      eauto 15 with iFrame.
+    }
+    iIntros "!>" (tid) "[Htxn _]".
+    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    wp_pures.
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
+    iIntros (w ok) "[Htxn Hpost]".
+    wp_pures.
+    wp_if_destruct.
+    { (* Application-abort branch. *)
+      wp_apply (wp_txn__Abort with "Htxn").
+      iIntros "Htxn".
+      wp_pures.
+      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
+      by iApply ("HΦ" $! (U64 0)).
+    }
+    wp_apply (wp_txn__acquire with "Htxn").
+    iIntros (ok) "Htxn".
+    wp_pures.
+    wp_if_destruct.
+    { (* System-abort branch. *)
+      wp_apply (wp_txn__Abort with "Htxn").
+      iIntros "Htxn".
+      wp_pures.
+      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
+      by iApply ("HΦ" $! (U64 0)).
+    }
+    (* Commit branch. *)
+    wp_apply (wp_txn__Commit_false with "[$Htxn HfaFrag]").
+    { unfold abort_cases. eauto. }
+    by iIntros (ok) "%contra".
   }
   { (* Case FCI. *)
-    admit.
+    iMod ("HAUC" $! false with "Hdbps") as "HΦ".
+    (* Add [(ts, mods)] to [tmods_fci] and get a piece of evidence. *)
+    iNamed "Hfci".
+    iMod (fci_tmods_insert (ts, mods) with "HfciAuth") as "[HfciAuth HfciFrag]".
+    { (* Prove [ts ∉ tmods_fci]. *)
+      intros contra. apply HfciLt in contra. simpl in contra. lia.
+    }
+    iAssert (fci_inv_def _ _ _ _ _)%I with "[HfciAuth]" as "Hfci".
+    { unfold fci_inv_def. iFrame. iPureIntro.
+      split.
+      - (* Prove FCI holds on the new set. *)
+        apply set_Forall_union; last eauto.
+        rewrite set_Forall_singleton.
+        by apply first_commit_incompatible_suffix.
+      - (* Prove new TS > every elem of the new set. *)
+        apply set_Forall_union.
+        { rewrite set_Forall_singleton.
+          assert (Hts : (ts < ts + n)%nat) by lia.
+          apply Hts.
+        }
+        apply (set_Forall_impl _ _ _ HfciLt). lia.
+    }
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfciFrag]") as "_".
+    { (* Close the invariant. *)
+      iNext.
+      iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
+      { iIntros (k) "%Helem Hkeys".
+        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+      }
+      iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
+      iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+      eauto 15 with iFrame.
+    }
+    iIntros "!>" (tid) "[Htxn _]".
+    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    wp_pures.
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
+    iIntros (w ok) "[Htxn Hpost]".
+    wp_pures.
+    wp_if_destruct.
+    { (* Application-abort branch. *)
+      wp_apply (wp_txn__Abort with "Htxn").
+      iIntros "Htxn".
+      wp_pures.
+      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
+      by iApply ("HΦ" $! (U64 0)).
+    }
+    wp_apply (wp_txn__acquire with "Htxn").
+    iIntros (ok) "Htxn".
+    wp_pures.
+    wp_if_destruct.
+    { (* System-abort branch. *)
+      wp_apply (wp_txn__Abort with "Htxn").
+      iIntros "Htxn".
+      wp_pures.
+      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
+      by iApply ("HΦ" $! (U64 0)).
+    }
+    (* Commit branch. *)
+    wp_apply (wp_txn__Commit_false with "[$Htxn HfciFrag]").
+    { unfold abort_cases. eauto. }
+    by iIntros (ok) "%contra".
   }
   destruct (decide (Q r (mods ∪ r))); last first.
   { (* Case FCC, [Q r w] not holds. *)
-    admit.
+    iMod ("HAUC" $! false with "Hdbps") as "HΦ".
+    (* Add [(ts, mods)] to [tmods_fcc] and get a piece of evidence. *)
+    iNamed "Hfcc".
+    iMod (fcc_tmods_insert (ts, mods) with "HfccAuth") as "[HfccAuth HfccFrag]".
+    { (* Prove [ts ∉ tmods_fcc]. *)
+      intros contra. apply HfccLt in contra. simpl in contra. lia.
+    }
+    iAssert (fcc_inv_def _ _ _ _)%I with "[HfccAuth]" as "Hfcc".
+    { unfold fcc_inv_def. iFrame. iPureIntro.
+      split.
+      - (* Prove FCC holds on the new set. *)
+        apply set_Forall_union; last eauto.
+        by rewrite set_Forall_singleton.
+      - (* Prove new TS > every elem of the new set. *)
+        apply set_Forall_union.
+        { rewrite set_Forall_singleton.
+          assert (Hts : (ts < ts + n)%nat) by lia.
+          apply Hts.
+        }
+        apply (set_Forall_impl _ _ _ HfccLt). lia.
+    }
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfccFrag]") as "_".
+    { (* Close the invariant. *)
+      iNext.
+      iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
+      { iIntros (k) "%Helem Hkeys".
+        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+      }
+      iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
+      iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+      eauto 15 with iFrame.
+    }
+    iIntros "!>" (tid) "[Htxn _]".
+    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    wp_pures.
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
+    iIntros (w ok) "[Htxn Hpost]".
+    wp_pures.
+    wp_if_destruct.
+    { (* Application-abort branch. *)
+      wp_apply (wp_txn__Abort with "Htxn").
+      iIntros "Htxn".
+      wp_pures.
+      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
+      by iApply ("HΦ" $! (U64 0)).
+    }
+    wp_apply (wp_txn__acquire with "Htxn").
+    iIntros (ok) "Htxn".
+    wp_pures.
+    wp_if_destruct.
+    { (* System-abort branch. *)
+      wp_apply (wp_txn__Abort with "Htxn").
+      iIntros "Htxn".
+      wp_pures.
+      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
+      by iApply ("HΦ" $! (U64 0)).
+    }
+    (* TODO: Destruct [Hpost] to get [Q r w]. *)
+    (* Commit branch. *)
+    wp_apply (wp_txn__Commit_false with "[$Htxn HfccFrag]").
+    { unfold abort_cases. eauto. }
+    by iIntros (ok) "%contra".
   }
   { (* Case FCC, [Q r w] holds. *)
-    admit.
+    (* Update [dbmap_ptstos γ r] to [dbmap_ptstos γ (mods ∪ r)]. *)
+    iMod (per_key_inv_dbmap_ptstos_update r mods with "Hdbps Hkeys") as "[Hdbps Hkeys]".
+    iMod ("HAUC" $! true with "[Hdbps]") as "HΦ".
+    { iExists _. by iFrame. }
+    (* Add [(ts, mods)] to [tmods] and get a piece of evidence. *)
+    iNamed "Hcmt".
+    iMod (cmt_tmods_insert (ts, mods) with "HcmtAuth") as "[HcmtAuth HcmtFrag]".
+    { (* Prove [ts ∉ tmods_cmt]. *)
+      intros contra. apply HcmtLt in contra. simpl in contra. lia.
+    }
+    iAssert (cmt_inv_def _ _ _ _)%I with "[HcmtAuth]" as "Hcmt".
+    { unfold cmt_inv_def. iFrame. iPureIntro.
+      split.
+      - (* Prove CMT holds on the new set. *)
+        apply set_Forall_union; last eauto.
+        by rewrite set_Forall_singleton.
+      - (* Prove new TS > every elem of the new set. *)
+        apply set_Forall_union.
+        { rewrite set_Forall_singleton.
+          assert (Hts : (ts < ts + n)%nat) by lia.
+          apply Hts.
+        }
+        apply (set_Forall_impl _ _ _ HcmtLt). lia.
+    }
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HcmtFrag]") as "_".
+    { (* Close the invariant. *)
+      iNext.
+      iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
+      { iIntros (k) "%Helem Hkeys".
+        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+      }
+      iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
+      eauto 15 with iFrame.
+    }
+    iIntros "!>" (tid) "[Htxn _]".
+    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    wp_pures.
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
+    iIntros (w ok) "[Htxn Hpost]".
+    wp_pures.
+    wp_if_destruct.
+    { (* Application-abort branch. *)
+      wp_apply (wp_txn__Abort_false with "[$Htxn $HcmtFrag]").
+      by iIntros "contra".
+    }
+    wp_apply (wp_txn__acquire with "Htxn").
+    iIntros (ok) "Htxn".
+    wp_pures.
+    wp_if_destruct.
+    { (* System-abort branch. *)
+      wp_apply (wp_txn__Abort_false with "[$Htxn $HcmtFrag]").
+      by iIntros "contra".
+    }
+    (* Commit branch. *)
+    wp_apply (wp_txn__Commit with "[$Htxn]").
+    iIntros (ok) "Htxn".
+    wp_pures.
+    by iApply ("HΦ" $! (U64 0)).
   }
-Admitted.
+Qed.
 
 
 Definition pre_Swap (r : dbmap) : Prop.

@@ -476,10 +476,10 @@ Definition first_commit (l lp ls : list action) (tid : nat) (mods : dbmap) :=
   l = lp ++ (EvCommit tid mods) :: ls ∧
   no_commit_abort lp tid.
 
-Definition first_commit_incompatible (l : list action) (tid : nat) (mods : dbmap) :=
+Definition first_commit_incompatible (l1 l2 : list action) (tid : nat) (mods : dbmap) :=
   ∃ lp ls,
-    first_commit l lp ls tid mods ∧
-    incompatible_exists lp tid mods.
+    first_commit l2 lp ls tid mods ∧
+    incompatible_exists (l1 ++ lp) tid mods.
 
 Definition first_commit_compatible (l : list action) (tid : nat) (mods : dbmap) :=
   ∃ lp ls,
@@ -556,7 +556,7 @@ Theorem spec_peek l tid :
   match peek l tid with
   | NCA => no_commit_abort l tid
   | FA => first_abort l tid
-  | FCI mods => first_commit_incompatible l tid mods
+  | FCI mods => first_commit_incompatible [] l tid mods
   | FCC mods => first_commit_compatible l tid mods
   end.
 Proof.
@@ -674,13 +674,13 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Theorem first_commit_incompatible_false (l : list action) (tid : nat) (mods : dbmap) :
-  first_commit_incompatible l tid mods ->
-  head_commit l tid mods ->
-  False.
+Theorem first_commit_incompatible_false (l1 l2 : list action) (tid : nat) (mods : dbmap) :
+  first_commit_incompatible l1 l2 tid mods ->
+  head_commit l2 tid mods ->
+  Exists (incompatible tid mods) l1.
 Proof.
   intros (lp & ls & [Hl [HnotinC _]] & Hincomp) Hhead.
-  destruct lp; first by apply Exists_nil in Hincomp.
+  destruct lp; first by rewrite app_nil_r in Hincomp.
   unfold head_commit in Hhead.
   set_solver.
 Qed.
@@ -715,6 +715,19 @@ Proof.
   rewrite -hd_error_tl_repr in Hhead.
   destruct Hhead as [_ Hl'].
   by rewrite -Hl' Hl.
+Qed.
+
+Theorem first_commit_incompatible_suffix (l1 l2 : list action) (tid : nat) (mods : dbmap) :
+  first_commit_incompatible [] l2 tid mods ->
+  first_commit_incompatible l1 l2 tid mods.
+Proof.
+  intros Hfci.
+  unfold first_commit_incompatible in *.
+  destruct Hfci as (lp & ls & Hfc & Hincomp).
+  exists lp, ls.
+  split; first auto.
+  simpl in Hincomp.
+  apply Exists_app. by right.
 Qed.
 
 End action.

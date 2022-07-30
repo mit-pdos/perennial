@@ -74,8 +74,12 @@ Proof.
     { iIntros (k) "%Helem Hkeys".
       iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
     }
-    do 9 iExists _.
-    iFrame.
+    iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
+    iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
+    iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
+    iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
+    iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+    eauto 20 with iFrame.
   }
   iIntros "!>" (tidnew) "%Etidnew".
   assert (Hlt : int.Z tidlast < int.Z tidnew) by lia.

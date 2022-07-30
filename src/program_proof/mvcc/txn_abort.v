@@ -3,6 +3,12 @@ From Perennial.program_proof.mvcc Require Import txn_common txnmgr_deactivate.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
+Theorem wp_txn__Abort_false txn tid tmods γ τ :
+  {{{ own_txn txn tid γ τ ∗ cmt_tmods_frag γ tmods }}}
+    Txn__Abort #txn
+  {{{ RET #(); False }}}.
+Admitted.
+
 Theorem wp_txn__Abort txn tid γ τ :
   {{{ own_txn txn tid γ τ }}}
     Txn__Abort #txn
