@@ -657,7 +657,7 @@ Proof.
     rewrite Els in Hl. rewrite app_nil_r in Hl. by rewrite Hl.
 Qed.
 
-Lemma no_commit_abort_false (l : list action) (tid : nat) :
+Lemma no_commit_abort_false {l : list action} {tid : nat} :
   no_commit_abort l tid ->
   (∃ mods, head_commit l tid mods) ∨ (head_abort l tid) ->
   False.
@@ -672,7 +672,7 @@ Proof.
   intros Hl. rewrite Hl. destruct lp; auto.
 Qed.
 
-Theorem first_abort_false (l : list action) (tid : nat) (mods : dbmap) :
+Theorem first_abort_false {l : list action} {tid : nat} {mods : dbmap} :
   first_abort l tid ->
   head_commit l tid mods ->
   False.
@@ -684,7 +684,7 @@ Proof.
   set_solver.
 Qed.
 
-Theorem first_commit_false (l lp ls : list action) (e : action) (tid : nat) (mods : dbmap) :
+Theorem first_commit_false {l lp ls : list action} {tid : nat} {mods : dbmap} :
   first_commit l lp ls tid mods ->
   head_abort l tid ->
   False.

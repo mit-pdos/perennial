@@ -3,17 +3,76 @@ From Perennial.program_proof.mvcc Require Import proph_proof txn_common txnmgr_d
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition abort_false_cases γ : iProp Σ :=
-  (∃ tid, nca_tids_frag γ tid) ∨
-  (∃ tmods, fci_tmods_frag γ tmods) ∨
-  (∃ tmods, fcc_tmods_frag γ tmods) ∨
-  (∃ tmods, cmt_tmods_frag γ tmods).
+Definition abort_false_cases tid γ : iProp Σ :=
+  (nca_tids_frag γ tid) ∨
+  (∃ mods, fci_tmods_frag γ (tid, mods)) ∨
+  (∃ mods, fcc_tmods_frag γ (tid, mods)) ∨
+  (∃ mods, cmt_tmods_frag γ (tid, mods)).
 
 Theorem wp_txn__Abort_false txn tid γ τ :
-  {{{ own_txn txn tid γ τ ∗ abort_false_cases γ }}}
+  {{{ own_txn txn tid γ τ ∗ abort_false_cases tid γ }}}
     Txn__Abort #txn
   {{{ RET #(); False }}}.
-Admitted.
+Proof.
+  iIntros (Φ) "[Htxn Hfrag] HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* proph.ResolveAbort(txn.txnMgr.p, txn.tid)               *)
+  (***********************************************************)
+  iNamed "Htxn".
+  iNamed "Himpl".
+  do 3 wp_loadField.
+  wp_apply (wp_ResolveAbort); first auto.
+  iInv "Hinv" as "> HinvO" "HinvC".
+  iApply ncfupd_mask_intro; first set_solver.
+  iIntros "Hclose".
+  iNamed "HinvO".
+  iExists future.
+  iFrame "Hproph".
+  iIntros "(%future' & %Hhead & Hproph)".
+
+  (* Obtain contradiction for each case. *)
+  unfold abort_false_cases.
+  iDestruct "Hfrag" as "[HncaFrag | Hfrag]".
+  { (* Case NCA. *)
+    iNamed "Hnca".
+    iDestruct (nca_tids_lookup with "HncaFrag HncaAuth") as "%Helem".
+    apply Hnca in Helem.
+    destruct (no_commit_abort_false Helem).
+    right.
+    set_solver.
+  }
+  iDestruct "Hfrag" as "[HfciFrag | Hfrag]".
+  { (* Case FCI. *)
+    iNamed "Hfci".
+    iDestruct "HfciFrag" as (m') "HfciFrag".
+    iDestruct (fci_tmods_lookup with "HfciFrag HfciAuth") as "%Helem".
+    apply Hfci in Helem. simpl in Helem.
+    destruct Helem as (lp & ls & Hfc & _).
+    destruct (first_commit_false Hfc).
+    set_solver.
+  }
+  iDestruct "Hfrag" as "[HfccFrag | HcmtFrag]".
+  { (* Case FCC. *)
+    iNamed "Hfcc".
+    iDestruct "HfccFrag" as (m') "HfccFrag".
+    iDestruct (fcc_tmods_lookup with "HfccFrag HfccAuth") as "%Helem".
+    apply Hfcc in Helem. simpl in Helem.
+    destruct Helem as (lp & ls & Hfc & _).
+    destruct (first_commit_false Hfc).
+    set_solver.
+  }
+  { (* Case CMT. *)
+    iNamed "Hcmt".
+    iDestruct "HcmtFrag" as (m') "HcmtFrag".
+    iDestruct (cmt_tmods_lookup with "HcmtFrag HcmtAuth") as "%Helem".
+    apply Hcmt in Helem. simpl in Helem.
+    destruct Helem as (lp & ls & Hfc & _).
+    destruct (first_commit_false Hfc).
+    set_solver.
+  }
+Qed.
 
 Theorem wp_txn__Abort txn tid γ τ :
   {{{ own_txn txn tid γ τ ∗ fa_tids_frag γ tid }}}
@@ -62,4 +121,4 @@ Qed.
 
 End program.
 
-Hint Extern 1 (environments.envs_entails _ (abort_false_cases _)) => unfold abort_false_cases : core.
+Hint Extern 1 (environments.envs_entails _ (abort_false_cases _ _)) => unfold abort_false_cases : core.
