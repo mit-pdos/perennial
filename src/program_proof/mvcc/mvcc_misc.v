@@ -89,3 +89,14 @@ Proof.
   replace (S _) with (length l); last lia.
   by rewrite drop_all.
 Qed.
+
+Lemma set_Forall_subseteq {A C : Type} `{SemiSet A C} (P : A -> Prop) (X Y : C) :
+  X ⊆ Y ->
+  set_Forall P Y ->
+  set_Forall P X.
+Proof.
+  intros Hsubseteq HY.
+  intros x Helem.
+  apply (elem_of_weaken _ _ Y) in Helem; last auto.
+  by apply HY in Helem.
+Qed.

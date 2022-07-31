@@ -400,10 +400,34 @@ Lemma nca_tids_insert {γ tids} tid :
   nca_tids_auth γ ({[ tid ]} ∪ tids) ∗ nca_tids_frag γ tid.
 Admitted.
 
+Lemma nca_tids_delete {γ tids} tid :
+  nca_tids_frag γ tid -∗
+  nca_tids_auth γ tids ==∗
+  nca_tids_auth γ (tids ∖ {[ tid ]}).
+Admitted.
+
+Lemma nca_tids_lookup {γ tids} tid :
+  nca_tids_frag γ tid -∗
+  nca_tids_auth γ tids -∗
+  ⌜tid ∈ tids⌝.
+Admitted.
+
 Lemma fa_tids_insert {γ tids} tid :
   tid ∉ tids ->
   fa_tids_auth γ tids ==∗
   fa_tids_auth γ ({[ tid ]} ∪ tids) ∗ fa_tids_frag γ tid.
+Admitted.
+
+Lemma fa_tids_delete {γ tids} tid :
+  fa_tids_frag γ tid -∗
+  fa_tids_auth γ tids ==∗
+  fa_tids_auth γ (tids ∖ {[ tid ]}).
+Admitted.
+
+Lemma fa_tids_lookup {γ tids} tid :
+  fa_tids_frag γ tid -∗
+  fa_tids_auth γ tids -∗
+  ⌜tid ∈ tids⌝.
 Admitted.
 
 Lemma fci_tmods_insert {γ tmods} tmod :
@@ -412,16 +436,52 @@ Lemma fci_tmods_insert {γ tmods} tmod :
   fci_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fci_tmods_frag γ tmod.
 Admitted.
 
+Lemma fci_tmods_delete {γ tmods} tmod :
+  fci_tmods_frag γ tmod -∗
+  fci_tmods_auth γ tmods ==∗
+  fci_tmods_auth γ (tmods ∖ {[ tmod ]}).
+Admitted.
+
+Lemma fci_tmods_lookup {γ tmods} tmod :
+  fci_tmods_frag γ tmod -∗
+  fci_tmods_auth γ tmods -∗
+  ⌜tmod ∈ tmods⌝.
+Admitted.
+
 Lemma fcc_tmods_insert {γ tmods} tmod :
   tmod ∉ tmods ->
   fcc_tmods_auth γ tmods ==∗
   fcc_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fcc_tmods_frag γ tmod.
 Admitted.
 
+Lemma fcc_tmods_delete {γ tmods} tmod :
+  fcc_tmods_frag γ tmod -∗
+  fcc_tmods_auth γ tmods ==∗
+  fcc_tmods_auth γ (tmods ∖ {[ tmod ]}).
+Admitted.
+
+Lemma fcc_tmods_lookup {γ tmods} tmod :
+  fcc_tmods_frag γ tmod -∗
+  fcc_tmods_auth γ tmods -∗
+  ⌜tmod ∈ tmods⌝.
+Admitted.
+
 Lemma cmt_tmods_insert {γ tmods} tmod :
   tmod ∉ tmods ->
   cmt_tmods_auth γ tmods ==∗
   cmt_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ cmt_tmods_frag γ tmod.
+Admitted.
+
+Lemma cmt_tmods_delete {γ tmods} tmod :
+  cmt_tmods_frag γ tmod -∗
+  cmt_tmods_auth γ tmods ==∗
+  cmt_tmods_auth γ (tmods ∖ {[ tmod ]}).
+Admitted.
+
+Lemma cmt_tmods_lookup {γ tmods} tmod :
+  cmt_tmods_frag γ tmod -∗
+  cmt_tmods_auth γ tmods -∗
+  ⌜tmod ∈ tmods⌝.
 Admitted.
 
 End lemmas.
@@ -674,7 +734,7 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Theorem first_commit_incompatible_false (l1 l2 : list action) (tid : nat) (mods : dbmap) :
+Theorem first_commit_incompatible_exists (l1 l2 : list action) (tid : nat) (mods : dbmap) :
   first_commit_incompatible l1 l2 tid mods ->
   head_commit l2 tid mods ->
   Exists (incompatible tid mods) l1.
@@ -694,14 +754,80 @@ Proof.
   intros contra. simpl in contra. set_solver.
 Qed.
 
+Lemma no_commit_abort_preserved (l l' : list action) {tid : nat} :
+  l' = tail l ->
+  no_commit_abort l tid ->
+  no_commit_abort l' tid.
+Proof.
+  intros Htl [Hnc Hna].
+  rewrite Htl.
+  unfold no_commit_abort in *.
+  split.
+  - intros mods. by apply notin_tail.
+  - by apply notin_tail.
+Qed.
+  
+Lemma first_abort_preserved {l l' : list action} {a : action} {tid : nat} :
+  l = a :: l' ->
+  a ≠ EvAbort tid ->
+  first_abort l tid ->
+  first_abort l' tid.
+Proof.
+  intros Hhead Hneq Hfa.
+  destruct Hfa as (lp & ls & [Hl [HnotinC HnotinA]]).
+  exists (tail lp), ls.
+  split; last first.
+  { unfold no_commit_abort.
+    split; last by apply notin_tail.
+    intros mods'. by apply notin_tail.
+  }
+  destruct lp eqn:Elp; first set_solver.
+  simpl.
+  rewrite -hd_error_tl_repr in Hhead.
+  destruct Hhead as [_ Hl'].
+  by rewrite -Hl' Hl.
+Qed.
+
+Lemma first_commit_incompatible_preserved {p l l' : list action} {a : action} {tid : nat} {mods : dbmap} :
+  l = a :: l' ->
+  (∀ mods', a ≠ EvCommit tid mods') ->
+  first_commit_incompatible p l tid mods ->
+  first_commit_incompatible (p ++ [a]) l' tid mods.
+Proof.
+  intros Hhead Hneq Hfci.
+  destruct Hfci as (lp & ls & [Hl [HnotinC HnotinA]] & Hincomp).
+  exists (tail lp), ls.
+  split; last first.
+  { rewrite -app_assoc.
+    simpl.
+    replace (a :: tail lp) with lp; first done.
+    destruct lp eqn:Elp; first set_solver.
+    simpl.
+    rewrite -hd_error_tl_repr in Hhead.
+    destruct Hhead as [Hhead _].
+    set_solver.
+  }
+  split; last first.
+  { unfold no_commit_abort.
+    split; last by apply notin_tail.
+    intros mods'. by apply notin_tail.
+  }
+  unfold first_commit.
+  destruct lp eqn:Elp; first set_solver.
+  simpl.
+  rewrite -hd_error_tl_repr in Hhead.
+  destruct Hhead as [_ Hl'].
+  by rewrite -Hl' Hl.
+Qed.
+
 Lemma first_commit_compatible_preserved {l l' : list action} {a : action} {tid : nat} {mods : dbmap} :
   l = a :: l' ->
   (∀ mods', a ≠ EvCommit tid mods') ->
   first_commit_compatible l tid mods ->
   first_commit_compatible l' tid mods.
 Proof.
-  intros Hhead Hneq Hfci.
-  destruct Hfci as (lp & ls & [Hl [HnotinC HnotinA]] & Hcomp).
+  intros Hhead Hneq Hfcc.
+  destruct Hfcc as (lp & ls & [Hl [HnotinC HnotinA]] & Hcomp).
   exists (tail lp), ls.
   split; last by apply Forall_tail.
   split; last first.

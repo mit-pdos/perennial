@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Export grove_prelude.
-From Perennial.program_proof.mvcc Require Import mvcc_ghost proph_proof.
+From Perennial.program_proof.mvcc Require Import mvcc_ghost mvcc_misc proph_proof.
 
 (* Invariant namespaces. *)
 Definition mvccN := nroot.
@@ -103,6 +103,7 @@ Definition mvcc_inv_sst γ p : iProp Σ :=
 End def.
 
 Hint Extern 1 (environments.envs_entails _ (mvcc_inv_sst_def _ _)) => unfold mvcc_inv_sst_def : core.
+Hint Extern 1 (environments.envs_entails _ (per_key_inv_def _ _ _ _ _ _)) => unfold per_key_inv_def : core.
 
 Section theorem.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -264,45 +265,181 @@ Theorem ltuple_ptuple_ptsto_eq γ k v1 v2 ts:
   ⌜v1 = v2⌝.
 Admitted.
 
-Theorem nca_inv_head_read γ l l' tid key tids ts :
-  l = EvRead tid key :: l' ->
+(* Theorems to re-establish invariants after prophecy resolution. *)
+Definition diff_abort_action (a : action) (tids : gset nat) :=
+  match a with
+  | EvAbort tid => tid ∉ tids
+  | _ => True
+  end.
+
+Definition diff_commit_action (a : action) (tmods : gset (nat * dbmap)) :=
+  match a with
+  | EvCommit tid _ => ∀ mods, (tid, mods) ∉ tmods
+  | _ => True
+  end.
+
+Lemma nca_inv_any_action γ l l' a tids ts :
+  l = a :: l' ->
   nca_inv_def γ tids l ts -∗
   nca_inv_def γ tids l' ts.
-Admitted.
+Proof.
+  iIntros "%Hhead Hnca".
+  iNamed "Hnca".
+  iFrame "∗ %".
+  iPureIntro.
+  apply (set_Forall_impl _ _ _ Hnca).
+  intros tid H.
+  rewrite -hd_error_tl_repr in Hhead.
+  destruct Hhead as [_ Htl].
+  apply (no_commit_abort_preserved l); auto.
+Qed.
 
-Theorem fa_inv_head_read γ l l' tid key tids ts :
-  l = EvRead tid key :: l' ->
+Lemma fa_inv_diff_action γ l l' a tids ts :
+  l = a :: l' ->
+  diff_abort_action a tids ->
   fa_inv_def γ tids l ts -∗
   fa_inv_def γ tids l' ts.
-Admitted.
+Proof.
+  iIntros "%Hl %Ha Hfa".
+  iNamed "Hfa".
+  iFrame "∗ %".
+  iPureIntro.
+  intros tid Helem.
+  apply Hfa in Helem as H.
+  apply (first_abort_preserved Hl); [intros contra; set_solver | auto].
+Qed.
 
-Theorem fci_inv_head_read γ p l l' tid key tmods ts :
-  l = EvRead tid key :: l' ->
+Lemma fa_inv_same_action γ l l' tid tids ts :
+  l = EvAbort tid :: l' ->
+  fa_tids_frag γ tid -∗
+  fa_inv_def γ tids l ts ==∗
+  fa_inv_def γ (tids ∖ {[ tid ]}) l' ts.
+Proof using heapGS0 mvcc_ghostG0 Σ.
+  (* FIXME *)
+  iIntros "%Hl Hfrag Hfa".
+  iNamed "Hfa".
+  iDestruct (fa_tids_lookup with "Hfrag HfaAuth") as "%Helem".
+  iMod (fa_tids_delete with "Hfrag HfaAuth") as "HfaAuth".
+  iModIntro.
+  iFrame.
+  iPureIntro.
+  split.
+  - set tids' := tids ∖ _.
+    apply (set_Forall_subseteq _ tids') in Hfa; last set_solver.
+    intros t Helem'.
+    apply Hfa in Helem' as H.
+    apply (first_abort_preserved Hl); [set_solver | auto].
+  - apply set_Forall_subseteq with tids; [set_solver | auto].
+Qed.
+
+Lemma fci_inv_diff_action γ p l l' a tmods ts :
+  l = a :: l' ->
+  diff_commit_action a tmods ->
   fci_inv_def γ tmods p l ts -∗
-  fci_inv_def γ tmods (p ++ [EvRead tid key]) l' ts.
-Admitted.
+  fci_inv_def γ tmods (p ++ [a]) l' ts.
+Proof.
+  iIntros "%Hl %Ha Hfcc".
+  iNamed "Hfcc".
+  iFrame "∗ %".
+  iPureIntro.
+  intros tmod Helem.
+  destruct tmod as [t m].
+  apply Hfci in Helem as H.
+  simpl in *.
+  apply (first_commit_incompatible_preserved Hl); [set_solver | auto].
+Qed.
 
-Theorem fcc_inv_head_read γ l l' tid key tmods ts :
-  l = EvRead tid key :: l' ->
+Lemma fcc_inv_diff_action γ l l' a tmods ts :
+  l = a :: l' ->
+  diff_commit_action a tmods ->
   fcc_inv_def γ tmods l ts -∗
   fcc_inv_def γ tmods l' ts.
 Proof.
-  iIntros "%Hl Hfcc".
+  iIntros "%Hl %Ha Hfcc".
   iNamed "Hfcc".
-  iFrame.
+  iFrame "∗ %".
   iPureIntro.
-  split; last auto.
-  apply (set_Forall_impl _ _ _ Hfcc).
-  intros tmod H.
+  intros tmod Helem.
   destruct tmod as [t m].
+  apply Hfcc in Helem as H.
   simpl in *.
-  by apply (first_commit_compatible_preserved Hl); first auto.
+  apply (first_commit_compatible_preserved Hl); [set_solver | auto].
 Qed.
 
-Theorem cmt_inv_head_read γ l l' tid key tmods ts :
-  l = EvRead tid key :: l' ->
+Local Lemma NoDup_notin_difference {tmods : gset (nat * dbmap)} {tid mods} :
+  NoDup (elements tmods).*1 ->
+  (tid, mods) ∈ tmods ->
+  ∀ m, (tid, m) ∉ tmods ∖ {[ (tid, mods) ]}.
+Proof.
+  intros HND Helem m Helem'.
+  apply union_difference_singleton_L in Helem.
+  set tmods' := tmods ∖ {[ (tid, mods) ]} in Helem Helem'.
+  rewrite Helem in HND.
+  rewrite fmap_Permutation in HND; last first.
+  { apply elements_union_singleton. set_solver. }
+  simpl in HND.
+  apply NoDup_cons_1_1 in HND.
+  set_solver.
+Qed.
+
+Lemma cmt_inv_diff_action γ l l' a tmods ts :
+  l = a :: l' ->
+  diff_commit_action a tmods ->
   cmt_inv_def γ tmods l ts -∗
   cmt_inv_def γ tmods l' ts.
+Proof.
+  iIntros "%Hl %Ha Hcmt".
+  iNamed "Hcmt".
+  iFrame "∗ %".
+  iPureIntro.
+  intros tmod Helem.
+  destruct tmod as [t m].
+  apply Hcmt in Helem as H.
+  simpl in *.
+  apply (first_commit_compatible_preserved Hl); [set_solver | auto].
+Qed.
+
+Lemma cmt_inv_same_action γ l l' tid mods tmods ts :
+  NoDup (elements tmods).*1 ->
+  l = EvCommit tid mods :: l' ->
+  cmt_tmods_frag γ (tid, mods) -∗
+  cmt_inv_def γ tmods l ts ==∗
+  cmt_inv_def γ (tmods ∖ {[ (tid, mods) ]}) l' ts.
+Proof using heapGS0 mvcc_ghostG0 Σ.
+  (* FIXME *)
+  iIntros "%HND %Hl Hfrag Hcmt".
+  iNamed "Hcmt".
+  iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
+  iMod (cmt_tmods_delete with "Hfrag HcmtAuth") as "HcmtAuth".
+  iModIntro.
+  iFrame.
+  iPureIntro.
+  split.
+  - set tmods' := tmods ∖ _.
+    apply (set_Forall_subseteq _ tmods') in Hcmt; last set_solver.
+    pose proof (NoDup_notin_difference HND Helem) as Hnotin.
+    intros [t m] Helem'.
+    apply Hcmt in Helem' as H.
+    simpl in *.
+    apply (first_commit_compatible_preserved Hl); [set_solver | auto].
+  - apply set_Forall_subseteq with tmods; [set_solver | auto].
+Qed.
+
+Lemma ptuple_past_rel_abort key phys past tid :
+  ptuple_past_rel key phys past ->
+  ptuple_past_rel key phys (past ++ [EvAbort tid]).
 Admitted.
+
+Lemma per_key_inv_past_abort {γ tmods ts m past} tid :
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past) -∗
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m (past ++ [EvAbort tid])).
+Proof.
+  iIntros "Hkeys".
+  iApply big_sepS_mono; last eauto.
+  iIntros (key) "%Helem Hkey".
+  iNamed "Hkey".
+  apply (ptuple_past_rel_abort _ _ _ tid) in Hpprel.
+  eauto with iFrame.
+Qed.
 
 End theorem.

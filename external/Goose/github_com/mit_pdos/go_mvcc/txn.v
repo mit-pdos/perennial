@@ -261,6 +261,7 @@ Definition Txn__Commit: val :=
 
 Definition Txn__Abort: val :=
   rec: "Txn__Abort" "txn" :=
+    proph.ResolveAbort (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 

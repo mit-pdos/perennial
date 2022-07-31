@@ -74,7 +74,7 @@ Proof.
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
-  iIntros "(%future' & %Hresolve & Hproph)".
+  iIntros "(%future' & %Hhead & Hproph)".
   (* Extend the physical tuple. *)
   iMod (tuple_read_safe with "Hkeys Hcmt Hread") as "(Hkeys & Hcmt & Htuple & Hptuple)"; first set_solver.
   (* Deduce eq between logical and physical read. *)
@@ -102,11 +102,11 @@ Proof.
     iNext. unfold mvcc_inv_sst_def.
     do 7 iExists _.
     iExists (past ++ [EvRead tid k]), future'.
-    iDestruct (nca_inv_head_read with "Hnca") as "Hnca"; first apply Hresolve.
-    iDestruct (fa_inv_head_read  with "Hfa")  as "Hfa";  first apply Hresolve.
-    iDestruct (fci_inv_head_read with "Hfci") as "Hfci"; first apply Hresolve.
-    iDestruct (fcc_inv_head_read with "Hfcc") as "Hfcc"; first apply Hresolve.
-    iDestruct (cmt_inv_head_read with "Hcmt") as "Hcmt"; first apply Hresolve.
+    iDestruct (nca_inv_any_action with "Hnca") as "Hnca"; first apply Hhead.
+    iDestruct (fa_inv_diff_action  with "Hfa")  as "Hfa";  [apply Hhead | done |].
+    iDestruct (fci_inv_diff_action with "Hfci") as "Hfci"; [apply Hhead | done |].
+    iDestruct (fcc_inv_diff_action with "Hfcc") as "Hfcc"; [apply Hhead | done |].
+    iDestruct (cmt_inv_diff_action with "Hcmt") as "Hcmt"; [apply Hhead | done |].
     iFrame.
   }
   iModIntro.
