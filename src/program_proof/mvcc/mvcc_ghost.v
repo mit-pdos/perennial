@@ -672,7 +672,7 @@ Proof.
   intros Hl. rewrite Hl. destruct lp; auto.
 Qed.
 
-Theorem first_abort_false {l : list action} {tid : nat} {mods : dbmap} :
+Theorem first_abort_false {l : list action} {tid : nat} (mods : dbmap) :
   first_abort l tid ->
   head_commit l tid mods ->
   False.

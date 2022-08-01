@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Export grove_prelude.
 From Goose.github_com.mit_pdos.go_mvcc Require Import proph.
-From Perennial.program_proof.mvcc Require Import mvcc_ghost.
+From Perennial.program_proof.mvcc Require Import mvcc_ghost wrbuf_proof.
 
 Section proph.
 Context `{!heapGS Σ}.
@@ -36,13 +36,12 @@ Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
     {{{ RET #(); True }}}.
 Admitted.
 
-(*
-FIXME needs a gmap representation of wrbuf?
-Lemma wp_ResolveCommit γ p acs (tid : u64) (wrbuf : dbmap)  :
-  {{{ mvcc_proph γ p acs }}}
-    ResolveCommit #p #tid ??
-  {{{ acs', RET #(); ⌜acs = EvCommit tid wrbuf :: acs⌝ ∗ mvcc_proph γ p acs' }}}.
+Lemma wp_ResolveCommit γ p (tid : u64) (ts : nat) (wrbuf : loc) (m : dbmap) :
+  ⊢ {{{ ⌜int.nat tid = ts⌝ ∗ own_wrbuf wrbuf m }}}
+    <<< ∀∀ acs, mvcc_proph γ p acs >>>
+      ResolveCommit #p #tid #wrbuf @ ∅
+    <<< ∃ acs', ⌜acs = EvCommit ts m :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
+    {{{ RET #(); own_wrbuf wrbuf m }}}.
 Admitted.
-*)
 
 End proph.

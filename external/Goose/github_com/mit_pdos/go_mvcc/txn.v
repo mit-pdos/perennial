@@ -235,6 +235,18 @@ Definition Txn__acquire: val :=
       else #()));;
     ![boolT] "ok".
 
+Definition Txn__apply: val :=
+  rec: "Txn__apply" "txn" :=
+    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
+    ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
+      (let: (("key", "val"), "del") := wrbuf.WrEnt__Destruct "ent" in
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      (if: "del"
+      then tuple.Tuple__KillVersion "tuple" (struct.loadF Txn "tid" "txn")
+      else tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val"));;
+    #().
+
 Definition Txn__release: val :=
   rec: "Txn__release" "txn" "ents" :=
     ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
@@ -248,14 +260,8 @@ Definition Txn__release: val :=
     * TODO: Figure out the right way to handle latches and locks. *)
 Definition Txn__Commit: val :=
   rec: "Txn__Commit" "txn" :=
-    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
-    ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
-      (let: (("key", "val"), "del") := wrbuf.WrEnt__Destruct "ent" in
-      let: "idx" := struct.loadF Txn "idx" "txn" in
-      let: "tuple" := index.Index__GetTuple "idx" "key" in
-      (if: "del"
-      then tuple.Tuple__KillVersion "tuple" (struct.loadF Txn "tid" "txn")
-      else tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val"));;
+    Txn__apply "txn";;
+    proph.ResolveCommit (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") (struct.loadF Txn "wrbuf" "txn");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
