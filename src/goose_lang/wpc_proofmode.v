@@ -446,3 +446,10 @@ Tactic Notation "wpc_loadField" :=
     end
   | _ => fail 1 "wpc_loadField: not a wpc"
   end.
+
+(* NOTE: This won't work if the points-to for the store is part of the crash resources *)
+Tactic Notation "wpc_storeField" :=
+  wpc_bind (struct.storeF _ _ _ _);
+  wpc_frame;
+  wp_storeField;
+  iNamed 1.
