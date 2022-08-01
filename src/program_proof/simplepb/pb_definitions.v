@@ -114,7 +114,7 @@ Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :
   }}}
     pb.Server__epochFence #s #epoch @ stk
   {{{
-        RET #(bool_decide (int.nat currEpoch > int.nat epoch));
+        RET #(bool_decide (int.Z epoch < int.Z currEpoch));
         ⌜int.nat currEpoch ≥ int.nat epoch⌝ ∗
         s ↦[pb.Server :: "epoch"] #currEpoch ∗ own_epoch γ currEpoch
   }}}
@@ -123,7 +123,32 @@ Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ Φc) "(#Hlb & HcurrEpoch & Hepoch) HΦ".
+  wpc_call.
+  { iFrame. }
+  { iFrame. }
+  iCache with "Hepoch HΦ".
+  { iLeft in "HΦ". iApply "HΦ". iFrame. }
+
+  wpc_pures.
+  wpc_loadField.
+  wpc_pures.
+  iDestruct (mono_nat_lb_own_valid with "Hepoch Hlb") as %[_ Hineq].
+
+  destruct (bool_decide (int.Z currEpoch < int.Z epoch)%Z) as [] eqn:Hineq2.
+  {
+    apply bool_decide_eq_true in Hineq2.
+    exfalso.
+    word.
+  }
+  wpc_pures.
+  wpc_loadField.
+  wpc_pures.
+  iRight in "HΦ".
+  iModIntro.
+  iApply ("HΦ").
+  iFrame "∗%".
+Qed.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv (epoch index:u64) σ ghost_op (op:list u8) op_sl :
   is_Server s γ γsrv -∗
