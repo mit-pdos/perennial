@@ -59,7 +59,7 @@ Proof.
   iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first auto.
   (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
   iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
-  (* FIXME: This is ugly, and might be problematic... *)
+  (* Do case distinction on the form of [future]. *)
   pose proof (spec_peek future ts).
   destruct (peek future ts).
   { (* Case NCA. *)
@@ -101,6 +101,7 @@ Proof.
     iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
     { iExists r, ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
+    (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
     iIntros (w ok) "[Htxn Hpost]".
     wp_pures.
@@ -160,6 +161,7 @@ Proof.
     iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
     { iExists r, ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
+    (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
     iIntros (w ok) "[Htxn Hpost]".
     wp_pures.
@@ -226,6 +228,7 @@ Proof.
     iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
     { iExists r, ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
+    (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
     iIntros (w ok) "[Htxn Hpost]".
     wp_pures.
@@ -286,6 +289,7 @@ Proof.
     iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
     { iExists r, ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
+    (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
     iIntros (w ok) "[Htxn Hpost]".
     wp_pures.
@@ -349,6 +353,7 @@ Proof.
     iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
     { iExists r, ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
+    (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
     iIntros (w ok) "[Htxn Hpost]".
     wp_pures.

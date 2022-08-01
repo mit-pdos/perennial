@@ -47,7 +47,7 @@ Proof.
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
-  iIntros "(%future' & %Hhead & Hproph)".
+  iIntros "(%future' & %Hfuture & Hproph)".
 
   (* Obtain contradiction for each case. *)
   unfold commit_false_cases.
@@ -71,17 +71,27 @@ Proof.
   iDestruct "Hfrag" as "[HfciFrag | HfccFrag]".
   { (* Case FCI. *)
     iNamed "Hfci".
-    iDestruct "HfciFrag" as (m') "HfciFrag".
+    iDestruct "HfciFrag" as (mods') "HfciFrag".
     iDestruct (fci_tmods_lookup with "HfciFrag HfciAuth") as "%Helem".
     apply Hfci in Helem. simpl in Helem.
+    destruct Helem as (lp & ls & Hfc & Hincomp).
+    apply hd_error_tl_repr in Hfuture as [Hhead _].
+    pose proof (first_commit_eq Hfc Hhead) as Emods.
+    subst mods'.
+
     (* TODO: Obtain contradiction by length of physical tuple. *)
     admit.
   }
   { (* Case FCC. *)
     iNamed "Hfcc".
-    iDestruct "HfccFrag" as (m') "HfccFrag".
+    iDestruct "HfccFrag" as (mods') "HfccFrag".
     iDestruct (fcc_tmods_lookup with "HfccFrag HfccAuth") as "%Helem".
     apply Hfcc in Helem. simpl in Helem.
+    destruct Helem as (lp & ls & Hfc & Hcomp).
+    apply hd_error_tl_repr in Hfuture as Hhdtl.
+    destruct Hhdtl as [Hhead _].
+    pose proof (first_commit_eq Hfc Hhead) as Emods.
+    subst mods'.
     (* TODO: Obtain contradiction from [Q r w] and [¬ Q r w]. *)
     admit.
   }
@@ -115,18 +125,23 @@ Proof.
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
-  iIntros "(%future' & %Hhead & Hproph)".
+  iIntros "(%future' & %Hfuture & Hproph)".
 
   iNamed "Hcmt".
   iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
+  (* Obtain equality between [mods] and [mods0] using [Helem] and [Hhead]. *)
   apply Hcmt in Helem. simpl in Helem.
-  (* TODO: Obtain equality between [mods] and [mods0] using [Helem] and [Hhead]. *)
+  destruct Helem as (lp & ls & Hfc & Hcomp).
+  apply hd_error_tl_repr in Hfuture as Hhdtl.
+  destruct Hhdtl as [Hhead _].
+  pose proof (first_commit_eq Hfc Hhead) as Emods.
+  subst mods0.
+
+  (* TODO: Remove [(tid, mods)] from [tmods]. *)
 
   (* TODO: Update the abstract part of the tuple RP to match the physical part. *)
 
   (* TODO: Update the sets of ok/doomed txns to re-establish inv w.r.t. [future']. *)
-
-  (* TODO: Remove [(tid, mods)] from [tmods]. *)
 
   (***********************************************************)
   (* txn.txnMgr.deactivate(txn.sid, txn.tid)                 *)

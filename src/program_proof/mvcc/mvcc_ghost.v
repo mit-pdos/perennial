@@ -696,6 +696,16 @@ Proof.
   set_solver.
 Qed.
 
+Theorem first_commit_eq {l lp ls : list action} {tid : nat} {mods mods' : dbmap} :
+  first_commit l lp ls tid mods ->
+  head_commit l tid mods' ->
+  mods = mods'.
+Proof.
+  intros (Hl & HnotinC & _) Hhead.
+  unfold head_commit in Hhead.
+  destruct lp; set_solver.
+Qed.
+
 Theorem safe_extension_rd (l : list action) (tid tid' : nat) (mods : dbmap) (key : u64) :
   first_commit_compatible l tid mods ->
   head_read l tid' key ->
