@@ -146,7 +146,7 @@ Qed.
 Lemma wp_lift_pure_step_no_fork `{!Inhabited (state Λ), !Inhabited (global_state Λ)} s E E' Φ e1 :
   (∀ σ1 g1, if s is NotStuck then reducible e1 σ1 g1 else to_val e1 = None) →
   (∀ κ σ1 g1 e2 σ2 g2 efs, prim_step e1 σ1 g1 κ e2 σ2 g2 efs → κ = [] ∧ σ2 = σ1 ∧ g2 = g1 ∧ efs = []) →
-  (|={E}[E']▷=> ∀ κ e2 efs σ g, ⌜prim_step e1 σ g κ e2 σ g efs⌝ → WP e2 @ s; E {{ Φ }})
+  (|={E}[E']▷=> ∀ κ e2 efs σ g, ⌜prim_step e1 σ g κ e2 σ g efs⌝ -∗ £ 1 -∗ WP e2 @ s; E {{ Φ }})
   ⊢ WP e1 @ s; E {{ Φ }}.
 Proof.
   iIntros (Hsafe Hstep) "H". iApply wp_lift_step.
@@ -159,7 +159,8 @@ Proof.
   iFrame "Hσ". iMod (global_state_interp_le with "Hg") as "$".
   { apply step_count_next_incr. }
   iMod "Hclose" as "_". iMod "H". iModIntro.
-  by iDestruct ("H" with "[//]") as "$".
+  iPoseProof (lc_weaken _ 1 with "Hlc") as "Hlc"; first lia.
+  by iDestruct ("H" with "[//] Hlc") as "$".
 Qed.
 
 (*
@@ -251,7 +252,7 @@ Lemma wp_lift_pure_det_step_no_fork `{!Inhabited (state Λ), !Inhabited (global_
   (∀ σ1 g1, if s is NotStuck then reducible e1 σ1 g1 else to_val e1 = None) →
   (∀ σ1 g1 κ e2' σ2 g2 efs', prim_step e1 σ1 g1 κ e2' σ2 g2 efs' →
     κ = [] ∧ σ2 = σ1 ∧ g2 = g1 ∧ e2' = e2 ∧ efs' = []) →
-  (|={E}[E']▷=> WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }}.
+  (|={E}[E']▷=> £ 1 -∗  WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }}.
 Proof.
   iIntros (? Hpuredet) "H". iApply (wp_lift_pure_step_no_fork s E E'); try done.
   { naive_solver. }
@@ -262,22 +263,30 @@ Qed.
 Lemma wp_pure_step_fupd `{!Inhabited (state Λ), !Inhabited (global_state Λ)} s E E' e1 e2 φ n Φ :
   PureExec φ n e1 e2 →
   φ →
-  (|={E}[E']▷=>^n WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }}.
+  (|={E}[E']▷=>^n £ n -∗  WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }}.
 Proof.
   iIntros (Hexec Hφ) "Hwp". specialize (Hexec Hφ).
-  iInduction Hexec as [e|n e1 e2 e3 [Hsafe ?]] "IH"; simpl; first done.
+  iInduction Hexec as [e|n e1 e2 e3 [Hsafe ?]] "IH"; simpl.
+  { iMod lc_zero as "Hz". by iApply "Hwp". }
   iApply wp_lift_pure_det_step_no_fork.
-  - intros σ g. specialize (Hsafe σ g). destruct s; eauto using reducible_not_val.
+    - intros σ g. specialize (Hsafe σ g). destruct s; eauto using reducible_not_val.
   - done.
-  - by iApply (step_fupd_wand with "Hwp").
+  - iApply (step_fupd_wand with "Hwp").
+    iIntros "Hwp Hone".
+    iApply "IH".
+    iApply (step_fupdN_wand with "Hwp").
+    iIntros "Hwp Hlc".
+    iApply ("Hwp" with "[Hone Hlc]").
+    rewrite (lc_succ n). iFrame.
 Qed.
 
 Lemma wp_pure_step_later `{!Inhabited (state Λ), !Inhabited (global_state Λ)} s E e1 e2 φ n Φ :
   PureExec φ n e1 e2 →
   φ →
-  ▷^n WP e2 @ s; E {{ Φ }} ⊢ WP e1 @ s; E {{ Φ }}.
+  ▷^n (£ n -∗ WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }}.
 Proof.
   intros Hexec ?. rewrite -wp_pure_step_fupd //. clear Hexec.
+  enough (∀ P, ▷^n P -∗ |={E}▷=>^n P) as Hwp by apply Hwp. iIntros (?).
   induction n as [|n IH]; by rewrite //= -step_fupd_intro // IH.
 Qed.
 End lifting.

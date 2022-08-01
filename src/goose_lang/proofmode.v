@@ -33,6 +33,8 @@ Proof.
   (* We want [pure_exec_fill] to be available to TC search locally. *)
   pose proof @pure_exec_fill.
   rewrite HΔ' -lifting.wp_pure_step_later //.
+  iIntros "H". iApply (laterN_mono with "H").
+  by iIntros.
 Qed.
 
 Lemma tac_wp_pure_no_later `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
@@ -40,6 +42,35 @@ Lemma tac_wp_pure_no_later `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!goose
   PureExec φ n e1 e2 →
   φ →
   envs_entails Δ (WP (fill K e2) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_unseal=> ?? HΔ'.
+  (* We want [pure_exec_fill] to be available to TC search locally. *)
+  pose proof @pure_exec_fill.
+  rewrite HΔ' -lifting.wp_pure_step_later //.
+  iIntros "$".
+  iApply laterN_intro. by iIntros.
+Qed.
+
+Lemma tac_wp_pure_gen_cred `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+      Δ Δ' s E K e1 e2 φ n Φ :
+  PureExec φ n e1 e2 →
+  φ →
+  MaybeIntoLaterNEnvs n Δ Δ' →
+  envs_entails Δ' (£ n -∗ WP (fill K e2) @ s; E {{ Φ }}) →
+  envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
+Proof.
+  rewrite envs_entails_unseal=> ??? HΔ'. rewrite into_laterN_env_sound /=.
+  (* We want [pure_exec_fill] to be available to TC search locally. *)
+  pose proof @pure_exec_fill.
+  rewrite HΔ' -lifting.wp_pure_step_later //.
+Qed.
+
+Lemma tac_wp_pure_no_later_gen_cred `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+      Δ s E K e1 e2 φ n Φ :
+  PureExec φ n e1 e2 →
+  φ →
+  envs_entails Δ (£ n -∗ WP (fill K e2) @ s; E {{ Φ }}) →
   envs_entails Δ (WP (fill K e1) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ?? HΔ'.
@@ -177,6 +208,53 @@ Ltac wp_pure_filter e' :=
         | eunify e' (Case (Val _) _ _)
         | eunify e' (UnOp _ (Val _))
         | eunify e' (BinOp _ (Val _) (Val _))].
+
+Tactic Notation "wp_pure_later_credit" tactic3(filter) "as" constr(credName) :=
+  lazymatch goal with
+  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
+    let e := eval simpl in e in
+    reshape_expr e ltac:(fun K e' =>
+      filter e';
+      first [ eapply (tac_wp_pure_gen_cred _ _ _ _ K e');
+      [iSolveTC                       (* PureExec *)
+      |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
+      |iSolveTC                       (* IntoLaters *)
+      |(iIntros credName || fail 4 "wp_pure: unalbe to introduce hypothesis for credit");
+       (* XXX(upamanyu): 4 is chosen to be one more than 3, but I don't know what it really does *)
+       wp_finish                      (* new goal *)
+      ] | fail 3 "wp_pure: first pattern match is not a redex" ]
+          (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
+   ) || fail "wp_pure: cannot find redex pattern"
+  | _ => fail "wp_pure: not a 'wp'"
+  end.
+
+Tactic Notation "wp_pure_no_later_credit" tactic3(filter) "as" constr(credName) :=
+  lazymatch goal with
+  | |- envs_entails ?envs (wp ?s ?E ?e ?Q) =>
+    let e := eval simpl in e in
+    reshape_expr e ltac:(fun K e' =>
+      filter e';
+      first [ eapply (tac_wp_pure_no_later_gen_cred _ _ _ K e');
+      [iSolveTC                       (* PureExec *)
+      |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
+      | (iIntros credName || fail 4 "wp_pure: unable to introduce hypothesis for credit");
+         wp_finish                    (* new goal *)
+      ] | fail 3 "wp_pure: first pattern match is not a redex" ]
+   ) || fail "wp_pure: cannot find redex pattern"
+  | _ => fail "wp_pure: not a 'wp'"
+  end.
+
+Tactic Notation "wp_pure_smart_credit" tactic3(filter) "as" constr(credName) :=
+  iStartProof;
+  lazymatch goal with
+  | |- envs_entails ?envs _ =>
+    lazymatch envs with
+    | context[Esnoc _ _ (bi_later _)] => wp_pure_later_credit filter as credName
+    | _ => wp_pure_no_later_credit filter as credName
+    end
+  end.
+Tactic Notation "wp_pure1_credit" constr(credName) :=
+  iStartProof; wp_pure_smart_credit wp_pure_filter as credName.
 
 Ltac wp_pure1 :=
   iStartProof; wp_pure_smart wp_pure_filter.
