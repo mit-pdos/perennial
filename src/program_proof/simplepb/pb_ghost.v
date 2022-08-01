@@ -87,6 +87,7 @@ Definition committed_by γsys epoch σ : iProp Σ :=
 Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
   □(∀ epoch_old σ_old,
    ⌜int.nat epoch_old < int.nat epoch⌝ →
+   is_proposal_lb γsys epoch_old σ_old →
    committed_by γsys epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition pbN := nroot .@ "pb".
@@ -220,7 +221,8 @@ Proof.
       {
         done.
       }
-      iFrame "#".
+      { iFrame "#". }
+      { iFrame "#". }
     }
     iPureIntro.
     apply prefix_app_r.
@@ -439,33 +441,56 @@ Proof.
   {
     apply singleton_update.
     apply mono_list_update.
-    instantiate (1:=σ).
+    instantiate (1:=σ : list (leibnizO _)).
     apply prefix_nil.
   }
-
-  mono_list_lb_op_valid_1_L:
+  iFrame "Hprop".
   iDestruct "Hprop_facts" as "[Hmax $]".
-  iDestruct "Hcommit" as "[Hcommit #Hlb]".
 
-  iDestruct (own_valid_)
   iModIntro.
   iIntros (epoch_old σ_old).
   iModIntro.
   iIntros (Hepoch).
-  iIntros "#Hcom".
+  iIntros "#Hprop_lb_old #Hcom_old".
   assert (int.nat epoch_old < int.nat epoch ∨ int.nat epoch_old = int.nat epoch ∨ int.nat epoch < int.nat epoch_old ) as Hcases.
   { word. }
   destruct Hcases as [Hineq|[HepochEq|Hineq]].
-  {
+  { (* for old enough epochs, use existing old_prop_max *)
     iApply "Hmax".
     { done. }
-    iFrame "#".
+    { iFrame "#". }
+    { iFrame "#". }
   }
   {
-    iDestruct (own_valid_2 with "Hprop_lb Hprop_lb_com") as %Hvalid.
-    rewrite singleton_op in Hvalid.
-    rewrite singleton_valid in Hvalid.
-    apply mono_list_lb_op_valid_1_L in Hvalid.
+    replace (epoch_old) with (epoch) by word.
+    iDestruct "Hcom_old" as (conf_old) "[Hconf_old Hcom_old]".
+    iDestruct "Hconf_old" as "[Hconf_old _]".
+    iDestruct "His_conf" as "[His_conf _]".
+    iDestruct (own_valid_2 with "Hconf_old His_conf") as %Hvalid.
+    rewrite singleton_op singleton_valid dfrac_agree_op_valid in Hvalid.
+    destruct Hvalid as [_ Hvalid].
+    replace (conf_old) with (conf) by naive_solver.
+    iSpecialize ("Hcom_old" $! γsrv with "[//]").
+    clear Hvalid.
+    iDestruct (own_valid_2 with "Hacc_ro Hcom_old") as %Hvalid.
+    iPureIntro.
+    rewrite singleton_op singleton_valid in Hvalid.
+    rewrite mono_list_both_dfrac_valid_L in Hvalid.
+    naive_solver.
+  }
+  { (* skipped epochs; prove False *)
+    unfold committed_by.
+    iDestruct "Hcom_old" as (conf_old) "[#Hconf_old _]".
+    iSpecialize ("Hskip" $! epoch_old with "[//] [//]").
+    iExFalso.
+    (* Hconf_old and Hskip are contradictory *)
+    iDestruct "Hconf_old" as "[Hconf_old _]".
+    iDestruct (own_valid_2 with "Hconf_old Hskip") as %Hbad.
+    exfalso.
+    rewrite singleton_op in Hbad.
+    rewrite singleton_valid in Hbad.
+    rewrite dfrac_agree_op_valid in Hbad.
+    naive_solver.
   }
 Qed.
 
