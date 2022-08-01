@@ -435,9 +435,9 @@ Tactic Notation "wpc_loadField" :=
                                 (App (Val (struct.loadF ?d ?fname))
                                      (Val (LitV (LitLoc ?l)))) _ _) =>
       match env with
-      | _ => wpc_frame_go "" base.Right (@nil ident); [idtac]
       | context[Esnoc _ ?i (l ↦[d :: fname] _)%I] =>
         wpc_frame_go i base.Right [i]; [idtac]
+      | _ => wpc_frame_go "" base.Right (@nil ident); [idtac]
       | _ => fail 1 "wpc_loadField: could not frame automatically"
       end;
       wp_loadField;
