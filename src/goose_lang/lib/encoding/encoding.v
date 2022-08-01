@@ -142,7 +142,6 @@ Proof.
   simpl.
   cbv [array].
   iDestruct "Hl" as "(Hv&Hv0&Hv1&Hv2&_)".
-
   wp_pures.
   rewrite ?Z.mul_1_l.
   wp_apply (wp_StoreAt with "[Hv]").
