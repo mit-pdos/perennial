@@ -159,7 +159,7 @@ Proof.
   iFrame "Hσ". iMod (global_state_interp_le with "Hg") as "$".
   { apply step_count_next_incr. }
   iMod "Hclose" as "_". iMod "H". iModIntro.
-  iPoseProof (lc_weaken _ 1 with "Hlc") as "Hlc"; first lia.
+  iPoseProof (lc_weaken 1 with "Hlc") as "Hlc"; first lia.
   by iDestruct ("H" with "[//] Hlc") as "$".
 Qed.
 
