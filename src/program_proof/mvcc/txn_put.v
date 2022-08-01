@@ -6,11 +6,12 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func (txn *Txn) Put(key, val uint64)                          *)
 (*****************************************************************)
-Theorem wp_txn__Put txn (k : u64) dbv v γ τ :
-  {{{ own_txn txn γ τ ∗ txnmap_ptsto τ k dbv }}}
+Theorem wp_txn__Put txn tid (k : u64) dbv v γ τ :
+  {{{ own_txn txn tid γ τ ∗ txnmap_ptsto τ k dbv }}}
     Txn__Put #txn #k #v
   {{{ RET #();
-      own_txn txn γ τ ∗ txnmap_ptsto τ k (Value v) }}}.
+      own_txn txn tid γ τ ∗ txnmap_ptsto τ k (Value v)
+  }}}.
 Proof.
   iIntros (Φ) "[Htxn Hptsto] HΦ".
   iNamed "Htxn".
@@ -34,7 +35,7 @@ Proof.
   { unfold own_txn.
     rewrite insert_union_l.
     set mods' := (<[ _ := _ ]> mods).
-    iExists _, view, mods'.
+    iExists view, mods'.
     eauto 20 with iFrame.
   }
   iFrame.

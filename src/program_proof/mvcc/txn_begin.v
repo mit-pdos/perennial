@@ -7,11 +7,13 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (* func (txn *Txn) Begin()                                       *)
 (*****************************************************************)
 Theorem wp_txn__Begin txn γ :
-  {{{ own_txn_uninit txn γ }}}
-    Txn__Begin #txn
-  {{{ RET #(); ∃ τ, own_txn txn γ τ }}}.
+  ⊢ {{{ own_txn_uninit txn γ }}}
+    <<< ∀∀ (ts : nat), ts_auth γ ts >>>
+      Txn__Begin #txn @ ∅
+    <<< ∃ n, ts_auth γ (ts + n)%nat ∗ ⌜0 < n⌝ >>>
+    {{{ (tid : u64), RET #(); own_txn_impl txn ts ∅ γ ∧ ⌜int.nat tid = ts⌝ }}}.
 Proof.
-  iIntros (Φ) "Htxn HΦ".
+  iIntros "!>" (Φ) "Htxn HAU".
   iNamed "Htxn".
   wp_call.
   
@@ -22,7 +24,13 @@ Proof.
   wp_loadField.
   wp_apply (wp_txnMgr__activate with "HtxnmgrRI"); first done.
   rename tid into tid_tmp.
-  iIntros (tid) "[Hactive %HtidNZ]".
+  iMod "HAU" as (ts) "[Hts HAUC]".
+  iModIntro.
+  iExists ts.
+  iFrame "Hts".
+  iIntros "[%n H]".
+  iMod ("HAUC" with "[H]") as "HΦ"; first eauto with iFrame.
+  iIntros "!>" (tid) "[Hactive %HtidNZ]".
 
   (***********************************************************)
   (* txn.tid = tid                                           *)
@@ -38,15 +46,8 @@ Proof.
   iIntros "HwrbufRP".
   wp_pures.
 
-  (* FIXME: Replace [∅] with [r] from the post of [activate]. *)
-  iMod (txnmap_alloc ∅) as (τ) "[Htxnmap Hptstos]".
   iModIntro.
   iApply "HΦ".
-  iExists τ.
-  unfold own_txn.
-  iExists tid, ∅, ∅.
-  rewrite map_empty_union.
-  iFrame "Htxnmap".
   eauto 20 with iFrame.
 Qed.
 

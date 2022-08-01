@@ -239,7 +239,7 @@ Definition Server__Apply: val :=
       ForSlice ptrT "i" "clerk" "clerks"
         (let: "clerk" := "clerk" in
         let: "i" := "i" in
-        waitgroup.Add "wg";;
+        waitgroup.Add "wg" #1;;
         Fork (SliceSet uint64T "errs" "i" (Clerk__Apply "clerk" "args");;
               waitgroup.Done "wg"));;
       waitgroup.Wait "wg";;

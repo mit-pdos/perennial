@@ -36,7 +36,7 @@ Definition EnterNewConfig: val :=
       let: "wg" := waitgroup.New #() in
       let: "errs" := NewSlice uint64T (slice.len "clerks") in
       ForSlice ptrT "i" "clerk" "clerks"
-        (waitgroup.Add "wg";;
+        (waitgroup.Add "wg" #1;;
         let: "clerk" := "clerk" in
         let: "i" := "i" in
         Fork (SliceSet uint64T "errs" "i" (pb.Clerk__SetState "clerk" (struct.new pb.SetStateArgs [

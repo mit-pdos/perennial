@@ -194,18 +194,16 @@ Definition tuple_read tuple tid key val found γ : iProp Σ :=
     "%Htid" ∷ ⌜int.Z tid ≤ int.Z tidlast ∨ int.Z tidown = 0⌝ ∗
     "%Hret" ∷ ⌜spec_lookup vers tid = to_dbval found val⌝.
 
-Definition per_key_cmt_inv_def key tmods m past future γ : iProp Σ :=
-  per_key_inv_def γ key tmods m past ∗ cmt_inv_def γ tmods future.
-
-Lemma tuple_read_safe tid key tmods m past future tuple val found γ :
-  head_read future tid key ->
-  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods m past) -∗
-  cmt_inv_def γ tmods future -∗
+Lemma tuple_read_safe (tid : u64) ts key tmods m past future tuple val found γ :
+  let tidN := (int.nat tid) in 
+  head_read future tidN key ->
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past) -∗
+  cmt_inv_def γ tmods future ts -∗
   tuple_read tuple tid key val found γ ==∗
-  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods m (past ++ [EvRead tid key])) ∗
-  cmt_inv_def γ tmods future ∗
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m (past ++ [EvRead tidN key])) ∗
+  cmt_inv_def γ tmods future ts ∗
   own_tuple tuple key γ ∗
-  view_ptsto γ key (to_dbval found val) tid.
+  ptuple_ptsto γ key (to_dbval found val) tidN.
 Admitted.
 
 (*

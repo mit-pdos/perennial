@@ -1,450 +1,44 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
+From Perennial.program_proof.simplepb Require Import pb_ghost.
+From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
-From Perennial.Helpers Require Import ListSolver.
-
-Section pb_protocol.
-
-Context `{!heapGS Σ}.
-
-Record pb_server_names :=
-{
-  urpc_gn: server_chan_gnames ;
-  pb_epoch_gn: gname ;
-  pb_accepted_gn : gname ;
-  pb_proposal_gn : gname ; (* system-wide *)
-  pb_config_gn : gname; (* system-wide *)
-  pb_state_gn : gname ; (* system-wide *)
-}.
-
-Context `{EntryType:Type}.
-
-Local Definition logR := mono_listR (leibnizO EntryType).
-
-Class pbG Σ := {
-    pb_epochG :> mono_natG Σ ;
-    pb_proposalG :> inG Σ (gmapR (u64) logR) ;
-    pb_commitG :> inG Σ logR ;
-    pb_configG :> inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (list pb_server_names)))) ;
-}.
-
-Context `{!pbG Σ}.
-
-Implicit Type γ : pb_server_names.
-Implicit Type σ : list EntryType.
-Implicit Type epoch : u64.
-
-Definition own_epoch γ (epoch:u64) : iProp Σ :=
-  mono_nat_auth_own γ.(pb_epoch_gn) 1 (int.nat epoch).
-Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
-  mono_nat_lb_own γ.(pb_epoch_gn) (int.nat epoch).
-
-Definition own_proposal γ epoch σ : iProp Σ :=
-  own γ.(pb_proposal_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
-Definition is_proposal_lb γ epoch σ : iProp Σ :=
-  own γ.(pb_proposal_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
-
-Definition own_accepted γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
-Definition is_accepted_lb γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
-Definition is_accepted_ro γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ●ML□ (σ : list (leibnizO (EntryType)))]}.
-
-(* TODO: if desired, can make these exclusive by adding an exclusive token to each *)
-Definition own_ghost γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).
-Definition own_commit γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).
-Definition is_ghost_lb γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (◯ML (σ : list (leibnizO (EntryType)))).
-
-Notation "lhs ⪯ rhs" := (prefix lhs rhs)
-(at level 20, format "lhs ⪯ rhs") : stdpp_scope.
-
-Definition is_epoch_config γ epoch (conf:list pb_server_names): iProp Σ :=
-  own γ.(pb_config_gn) {[ epoch := to_dfrac_agree DfracDiscarded (conf : (leibnizO _))]} ∗
-  ⌜length conf > 0⌝.
-Definition config_unset γ (cn:u64) : iProp Σ :=
-  own γ.(pb_config_gn) {[cn := to_dfrac_agree (DfracOwn 1) ([] : (leibnizO _))]}.
-
-Definition committed_by γ epoch σ : iProp Σ :=
-  ∃ conf, is_epoch_config γ epoch conf ∗
-      ∀ γ, ⌜γ ∈ conf⌝ → is_accepted_lb γ epoch σ.
-
-Definition old_proposal_max γ epoch σ : iProp Σ := (* persistent *)
-  □(∀ epoch_old σ_old,
-   ⌜int.nat epoch_old < int.nat epoch⌝ →
-   committed_by γ epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
-
-Definition pbN := nroot .@ "pb".
-Definition sysN := pbN .@ "sys".
-Definition opN := pbN .@ "op".
-
-Definition is_valid_inv γ σ op : iProp Σ :=
-  inv opN (
-    £ 1 ∗
-    (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True)) ∨
-    is_ghost_lb γ (σ ++ [op])
-  )
-.
-
-Definition is_proposal_valid_old γ σ : iProp Σ :=
-  ∀ σprev op σnext,
-  ⌜σ = σprev ++ [op] ++ σnext⌝ -∗
-  is_valid_inv γ σprev op.
-
-Definition is_proposal_valid γ σ : iProp Σ :=
-  □(∀ σ', ⌜σ' ⪯ σ⌝ → own_commit γ σ' ={⊤∖↑sysN}=∗ own_commit γ σ).
-
-Definition is_proposal_facts γ epoch σ: iProp Σ :=
-  old_proposal_max γ epoch σ ∗
-  is_proposal_valid γ σ.
-
-Definition own_Server_ghost γ epoch σ : iProp Σ :=
-  "Hepoch_ghost" ∷ own_epoch γ epoch ∗
-  "Haccepted" ∷ own_accepted γ epoch σ ∗
-  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat epoch⌝ ∨
-                                                      own_accepted γ e' []) ∗
-  "#Hproposal_lb" ∷ is_proposal_lb γ epoch σ ∗
-  "#Hvalid" ∷ is_proposal_facts γ epoch σ
-.
-
-Lemma ghost_accept γ epoch epoch' σ σ' :
-  int.nat epoch ≤ int.nat epoch' →
-  σ ⪯ σ' →
-  own_Server_ghost γ epoch σ -∗
-  is_proposal_lb γ epoch' σ' -∗
-  is_proposal_facts γ epoch' σ'
-  ==∗
-  own_Server_ghost γ epoch' σ'.
-Proof.
-  intros Hepoch_ineq Hσ_ineq.
-  iIntros "Hown #Hprop_lb #Hprop_facts".
-  iNamed "Hown".
-  destruct (decide (epoch = epoch')).
-  {
-    rewrite -e.
-    iFrame "Hepoch_ghost".
-    iFrame "Haccepted_rest".
-    iFrame "Hprop_lb".
-    iFrame "Hprop_facts".
-    iApply (own_update with "Haccepted").
-    apply singleton_update.
-    apply mono_list_update.
-    done.
-  }
-  {
-    assert (int.nat epoch < int.nat epoch') as Hepoch_new.
-    {
-      assert (int.nat epoch < int.nat epoch' ∨ int.nat epoch = int.nat epoch') as [|] by word.
-      { done. }
-      { exfalso. assert (epoch = epoch') by word. done. }
-    }
-    iSplitL "Hepoch_ghost".
-    {
-      iDestruct (mono_nat_own_update with "Hepoch_ghost") as "[$ _]".
-      done.
-    }
-    iFrame "Hprop_lb Hprop_facts".
-    iDestruct (big_sepS_elem_of_acc_impl epoch' with "Haccepted_rest") as "[HH Haccepted_rest]".
-    { set_solver. }
-    iClear "Haccepted".
-    iDestruct "HH" as "[%Hbad|Haccepted]".
-    {
-      exfalso.
-      word.
-    }
-    iSplitL "Haccepted".
-    {
-      iApply (own_update with "Haccepted").
-      apply singleton_update.
-      apply mono_list_update.
-      apply prefix_nil.
-    }
-    iApply "Haccepted_rest".
-    {
-      iModIntro.
-      iIntros (???) "[%Hineq|$]".
-      iLeft.
-      iPureIntro.
-      word.
-    }
-    iLeft.
-    done.
-  }
-Qed.
-
-Lemma ghost_propose γ epoch σ op :
-  own_proposal γ epoch σ -∗
-  is_proposal_facts γ epoch σ -∗
-  £ 1 -∗
-  (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True))
-  ={⊤}=∗
-  own_proposal γ epoch (σ ++ [op]) ∗
-  (▷ is_proposal_facts γ epoch (σ ++ [op])).
-Proof.
-  iIntros "Hprop #Hprop_facts Hlc Hupd".
-  iSplitL "Hprop".
-  {
-    iApply (own_update with "Hprop").
-    apply singleton_update.
-    apply mono_list_update.
-    apply prefix_app_r.
-    done.
-  }
-  unfold is_proposal_facts.
-  iSplitL "".
-  {
-    iDestruct "Hprop_facts" as "[#Hmax _]".
-    iModIntro.
-    unfold old_proposal_max.
-    iModIntro.
-    iModIntro.
-    iIntros.
-    iAssert (⌜σ_old ⪯ σ⌝)%I as "%Hprefix".
-    {
-      iApply "Hmax".
-      {
-        done.
-      }
-      iFrame "#".
-    }
-    iPureIntro.
-    apply prefix_app_r.
-    done.
-  }
-  iDestruct "Hprop_facts" as "[_ #Hvalid]".
-  unfold is_proposal_valid.
-
-  iAssert (|={⊤}=> is_valid_inv γ σ op)%I with "[Hupd Hlc]" as ">#Hinv".
-  {
-    iMod (inv_alloc with "[Hupd Hlc]") as "$".
-    {
-      iNext.
-      iLeft.
-      iFrame.
-    }
-    done.
-  }
-  (* prove is_proposal_valid γ (σ ++ [op]) *)
-  iModIntro.
-  iModIntro.
-  iModIntro.
-  iIntros (σ') "%Hσ' Hσ'".
-  assert (σ' ⪯ σ ∨ σ' = (σ ++ [op])) as [Hprefix_old|Hlatest].
-  { (* TODO: list_solver. *)
-    Search prefix.
-    assert (Hlen := Hσ').
-    apply prefix_length in Hlen.
-    assert (length σ' = length (σ ++ [op]) ∨ length σ' < length (σ ++ [op])) as [|] by word.
-    {
-      right.
-      apply list_prefix_eq; eauto.
-      lia.
-    }
-    {
-      left.
-      rewrite app_length in H.
-      simpl in H.
-      apply list_prefix_bounded.
-      { word. }
-      intros.
-      assert (σ !! i = (σ ++ [op]) !! i).
-      {
-        rewrite lookup_app_l.
-        { done. }
-        { word. }
-      }
-      rewrite H1.
-      apply list_prefix_forall.
-      { done. }
-      { done. }
-    }
-  }
-  {
-    iMod ("Hvalid" $! σ' Hprefix_old with "Hσ'") as "Hσ".
-    iInv "Hinv" as "Hi" "Hclose".
-    iDestruct "Hi" as "[Hupd|#>Hlb]"; last first.
-    {
-      iDestruct (own_valid_2 with "Hσ Hlb") as "%Hvalid".
-      exfalso.
-      rewrite mono_list_both_dfrac_valid_L in Hvalid.
-      destruct Hvalid as [_ Hvalid].
-      apply prefix_length in Hvalid.
-      rewrite app_length in Hvalid.
-      simpl in Hvalid.
-      word.
-    }
-    iDestruct "Hupd" as "[>Hlc Hupd]".
-    iMod (lc_fupd_elim_later with "Hlc Hupd" ) as "Hupd".
-    iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
-    {
-      assert ((↑sysN:coPset) ⊆ (↑pbN:coPset)).
-      { apply nclose_subseteq. }
-      assert ((↑opN:coPset) ⊆ (↑pbN:coPset)).
-      { apply nclose_subseteq. }
-      set_solver.
-    }
-    iMod "Hupd".
-    iDestruct "Hupd" as (?) "[Hghost Hupd]".
-    iDestruct (own_valid_2 with "Hghost Hσ") as %Hvalid.
-    rewrite mono_list_auth_dfrac_op_valid_L in Hvalid.
-    destruct Hvalid as [_ ->].
-    iCombine "Hghost Hσ" as "Hσ".
-    rewrite -mono_list_auth_dfrac_op.
-    rewrite dfrac_op_own.
-    rewrite Qp_half_half.
-    iMod (own_update with "Hσ") as "Hσ".
-    {
-      apply (mono_list_update (σ ++ [op] : list (leibnizO EntryType))).
-      by apply prefix_app_r.
-    }
-    iEval (rewrite -Qp_half_half) in "Hσ".
-    rewrite -dfrac_op_own.
-    rewrite mono_list_auth_dfrac_op.
-    iDestruct "Hσ" as "[Hσ Hcommit]".
-    iSpecialize ("Hupd" with "[] Hσ").
-    { done. }
-    iMod "Hupd".
-
-    rewrite mono_list_auth_lb_op.
-    iDestruct "Hcommit" as "[Hcommit #Hlb]".
-    iMod "Hmask".
-    iMod ("Hclose" with "[]").
-    {
-      iNext.
-      iRight.
-      iFrame "Hlb".
-    }
-    iModIntro.
-    iFrame.
-  }
-  {
-    rewrite Hlatest.
-    by iFrame.
-  }
-Qed.
-
-Definition sys_inv γ := inv sysN
-(
-  ∃ σ epoch,
-  own_commit γ σ ∗
-  committed_by γ epoch σ ∗
-  is_proposal_lb γ epoch σ ∗
-  is_proposal_facts γ epoch σ
-).
-
-(*
-  User will get their (Q) by knowing (is_ghost_lb γ σ) where (op, Q) ∈ σ.
- *)
-Lemma ghost_commit γ epoch σ :
-  sys_inv γ -∗
-  committed_by γ epoch σ -∗
-  is_proposal_lb γ epoch σ -∗
-  is_proposal_facts γ epoch σ
-  ={⊤}=∗
-  is_ghost_lb γ σ.
-Proof.
-  iIntros "#Hinv #Hcom #Hprop_lb #Hprop_facts".
-  iInv "Hinv" as "Hown" "Hclose".
-  iDestruct "Hown" as (σcommit epoch_commit) "(>Hghost & >#Hcom_com & >#Hprop_lb_com & #Hprop_facts_com)".
-  iDestruct "Hprop_facts_com" as "[>Hmax_com Hvalid_com]".
-  iDestruct "Hprop_facts" as "[Hmax Hvalid]".
-  iAssert (⌜σcommit ⪯ σ⌝ ∨ ⌜σ ⪯ σcommit⌝)%I as "%Hlog".
-  {
-    assert (int.nat epoch < int.nat epoch_commit ∨ int.nat epoch = int.nat epoch_commit ∨ int.nat epoch > int.nat epoch_commit) as [Hepoch|[Hepoch|Hepoch]]by word.
-    { (* case epoch < epoch_commit: use old_proposal_max of epoch_commit. *)
-      iRight.
-      by iApply "Hmax_com".
-    }
-    { (* case epoch = epoch_commit: proposal is comparable *)
-      replace (epoch) with (epoch_commit) by word.
-      iDestruct (own_valid_2 with "Hprop_lb Hprop_lb_com") as %Hvalid.
-      rewrite singleton_op in Hvalid.
-      rewrite singleton_valid in Hvalid.
-      apply mono_list_lb_op_valid_1_L in Hvalid.
-      iPureIntro.
-      naive_solver.
-    }
-    { (* case epoch_commit < epoch: use old_proposal_max of epoch *)
-      iLeft.
-      by iApply "Hmax".
-    }
-  }
-
-  destruct Hlog as [Hcan_update|Halready_updated].
-  {
-    iEval (unfold is_proposal_valid) in "Hvalid".
-    iDestruct ("Hvalid" $! σcommit with "[] Hghost") as "Hghost".
-    { done. }
-    iMod "Hghost".
-    unfold own_commit.
-    iEval (rewrite mono_list_auth_lb_op) in "Hghost".
-    iDestruct "Hghost" as "[Hghost $]".
-    iMod ("Hclose" with "[-]").
-    {
-      iNext.
-      iExists _, _. iFrame "∗".
-      iFrame "Hcom".
-      iFrame "#".
-    }
-    done.
-  }
-  {
-    unfold own_commit.
-    iEval (rewrite mono_list_auth_lb_op) in "Hghost".
-    iDestruct "Hghost" as "[Hghost #Hlb]".
-    iDestruct (own_mono with "Hlb") as "$".
-    {
-      by apply mono_list_lb_mono.
-    }
-    iMod ("Hclose" with "[-]").
-    {
-      iNext.
-      iExists _, _. iFrame "∗#".
-    }
-    done.
-  }
-Qed.
-
-End pb_protocol.
 
 Section pb_definitions.
 
 Context `{!heapGS Σ, !stagedG Σ}.
-Context `{!pbG Σ}.
+Context `{!pbG (EntryType:=((list u8) * (iProp Σ))%type ) Σ}.
 
-Definition is_ApplyFn (applyFn:val) γ P : iProp Σ :=
-  ∀ op_sl (epoch:u64) σ op,
+Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
+  ∀ op_sl (epoch:u64) σ entry Q,
   {{{
-        (own_Server_ghost γ epoch σ ={⊤}=∗ own_Server_ghost γ epoch (σ++[op])) ∗
-        crash_borrow (own_Server_ghost γ epoch σ ∗ P epoch σ) (
-          ∃ epoch' σ',
-          (own_Server_ghost γ epoch' σ' ∗ P epoch' σ')
+        (own_Server_ghost γ γsrv epoch σ ={⊤}=∗ own_Server_ghost γ γsrv epoch (σ++[entry]) ∗ Q) ∗
+        crash_borrow (own_Server_ghost γ γsrv epoch σ ∗ P epoch σ) (
+          ∃ epoch' σ', (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
         )
-        ∗ is_slice op_sl byteT 1 op
+        ∗ is_slice op_sl byteT 1 entry.1
   }}}
     applyFn (slice_val op_sl)
   {{{
         RET #();
-        crash_borrow (own_Server_ghost γ epoch (σ ++ [op]) ∗ P epoch (σ ++ [op])) (
+        crash_borrow (own_Server_ghost γ γsrv epoch (σ ++ [entry]) ∗ P epoch (σ ++ [entry])) (
           ∃ epoch' σ',
-          (own_Server_ghost γ epoch' σ' ∗ P epoch' σ')
-        )
+          (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
+        ) ∗
+        Q
   }}}
 .
 
-Definition is_StateMachine (sm:loc) γ P : iProp Σ :=
+Definition is_StateMachine (sm:loc) γ γsrv P : iProp Σ :=
   ∃ (applyFn:val),
   "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "Apply"] applyFn) ∗
-  "#HapplySpec" ∷ is_ApplyFn applyFn γ P
+  "#HapplySpec" ∷ is_ApplyFn applyFn γ γsrv P
 .
 
-Definition own_Server (s:loc) γ P : iProp Σ :=
+Definition own_Server (s:loc) γ γsrv P : iProp Σ :=
   ∃ (epoch:u64) σ (nextIndex:u64) (isPrimary:bool) (sm:loc) (clerks:Slice.t),
   (* physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
@@ -454,22 +48,27 @@ Definition own_Server (s:loc) γ P : iProp Σ :=
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks) ∗
 
   (* state-machine *)
-  "#HisSm" ∷ is_StateMachine sm γ P ∗
+  "#HisSm" ∷ is_StateMachine sm γ γsrv P ∗
 
   (* ghost-state *)
-  "Hstate" ∷ crash_borrow (own_Server_ghost γ epoch σ ∗ P epoch σ) (
-    ∃ epoch σ,
-    own_Server_ghost γ epoch σ ∗ P epoch σ
+  "Hstate" ∷ crash_borrow (own_Server_ghost γ γsrv epoch σ ∗ P epoch σ) (
+    ∃ epoch σ, own_Server_ghost γ γsrv epoch σ ∗ P epoch σ
   ) ∗
+  "%Hσ_nextIndex" ∷ ⌜length σ = int.nat nextIndex⌝ ∗
 
   (* primary-only *)
-  "#Hclerks_rpc" ∷ True
+  "HprimaryOnly" ∷ if isPrimary then (
+            "#Hclerks_rpc" ∷ True ∗
+            "Hproposal" ∷ own_proposal γ epoch σ ∗
+            "#Hprop_facts" ∷ is_proposal_facts γ epoch σ
+        )
+                   else True
 .
 
-Definition is_Server (s:loc) γ : iProp Σ :=
+Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   ∃ (mu:val) P,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ P).
+  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv P).
 
 Record ApplyArgsC :=
 {
@@ -484,16 +83,16 @@ Admitted.
 Definition has_encoding_Error (encoded:list u8) (error:u64) : Prop.
 Admitted.
 
-Program Definition ApplyAsBackup_spec γ :=
+Program Definition ApplyAsBackup_spec γ γsrv :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ args σ,
+  (∃ args σ Q,
     ⌜has_encoding_ApplyArgs encoded_args args⌝ ∗
     ⌜length σ = int.nat args.(index)⌝ ∗
-    ⌜last σ = Some args.(op)⌝ ∗
+    ⌜last σ = Some (args.(op), Q) ⌝ ∗
     is_proposal_lb γ args.(epoch) σ ∗
     (∀ error (reply:list u8),
         ⌜has_encoding_Error reply error⌝ -∗
-        (if (decide (error = 0)) then is_accepted_lb γ args.(epoch) σ else True) -∗
+        (if (decide (error = 0)) then is_accepted_lb γsrv args.(epoch) σ else True) -∗
         Φ reply)
     )%I
 .
@@ -503,14 +102,14 @@ Defined.
 
 Context `{!urpcregG Σ}.
 
-Definition is_pb_host γ (host:chan) :=
-  handler_spec γ.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ).
+Definition is_pb_host γ γsrv (host:chan) :=
+  handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv).
 
-Definition is_Clerk (ck:loc) γ : iProp Σ :=
+Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[pb.Clerk :: "cl"] #cl) ∗
   "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
-  "#Hsrv" ∷ is_pb_host γ srv
+  "#Hsrv" ∷ is_pb_host γ γsrv srv
 .
 
 Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :
@@ -521,7 +120,7 @@ Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :
   }}}
     pb.Server__epochFence #s #epoch @ stk
   {{{
-        RET #(bool_decide (int.nat currEpoch > int.nat epoch));
+        RET #(bool_decide (int.Z epoch < int.Z currEpoch));
         ⌜int.nat currEpoch ≥ int.nat epoch⌝ ∗
         s ↦[pb.Server :: "epoch"] #currEpoch ∗ own_epoch γ currEpoch
   }}}
@@ -530,20 +129,55 @@ Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ Φc) "(#Hlb & HcurrEpoch & Hepoch) HΦ".
+  wpc_call.
+  { iFrame. }
+  { iFrame. }
+  iCache with "Hepoch HΦ".
+  { iLeft in "HΦ". iApply "HΦ". iFrame. }
 
-Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ (epoch index:u64) (op:list u8) op_sl :
-  is_Server s γ -∗
+  wpc_pures.
+  wpc_loadField.
+  wpc_pures.
+  iDestruct (mono_nat_lb_own_valid with "Hepoch Hlb") as %[_ Hineq].
+
+  destruct (bool_decide (int.Z currEpoch < int.Z epoch)%Z) as [] eqn:Hineq2.
+  {
+    apply bool_decide_eq_true in Hineq2.
+    exfalso.
+    word.
+  }
+  wpc_pures.
+  wpc_loadField.
+  wpc_pures.
+  iRight in "HΦ".
+  iModIntro.
+  iApply ("HΦ").
+  iFrame "∗%".
+Qed.
+
+Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv (epoch index:u64) σ ghost_op (op:list u8) op_sl :
+  is_Server s γ γsrv -∗
   {{{
+        "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
+        "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
+        "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
+        "%Hghost_op_σ" ∷ ⌜last σ = Some ghost_op⌝ ∗
+        "%Hghost_op_op" ∷ ⌜ghost_op.1 = op⌝ ∗
+        "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
+
         "HargEpoch" ∷ args_ptr ↦[pb.ApplyArgs :: "epoch"] #epoch ∗
         "HargIndex" ∷ args_ptr ↦[pb.ApplyArgs :: "index"] #index ∗
         "HargOp" ∷ args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val op_sl) ∗
-        "HopSl" ∷ is_slice op_sl byteT 1 op ∗
-        "#HepochLb" ∷ is_epoch_lb γ epoch
+        "HopSl" ∷ is_slice op_sl byteT 1 op
   }}}
     pb.Server__ApplyAsBackup #s #args_ptr
   {{{
-        RET #0; True
+        (err:u64), RET #err;
+        if (decide (err = 0)) then
+          is_accepted_lb γsrv epoch σ
+        else
+          True
   }}}
   .
 Proof.
@@ -555,6 +189,8 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
+  assert (isPrimary = false) as HnotPrimary.
+  { admit. } (* FIXME: maintain something to prove this *)
   wp_pures.
   Opaque crash_borrow.
   wp_loadField.
@@ -566,7 +202,6 @@ Proof.
   }
   iSplitL ""; first done.
   iIntros "[Hghost HP]".
-  unfold own_Server_ghost.
   iNamed "Hghost".
   wpc_apply (wpc_Server__epochFence with "[$Hepoch $Hepoch_ghost $HepochLb]").
   iSplit.
@@ -577,70 +212,119 @@ Proof.
   }
   iNext.
   iIntros "(%Hineq & Hepoch & $)".
-  iFrame "Haccepted Haccepted_rest Hghost Hproposal_lb".
-  iFrame "HP".
+  iFrame "Haccepted Haccepted_rest HP Hproposal_lb Hvalid".
   iIntros "Hstate".
   iSplitL ""; first done.
   wp_if_destruct.
   { (* return error: stale *)
-    admit.
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _.
+      iFrame "∗#%".
+    }
+    wp_pures.
+    iApply "HΦ".
+    done.
   }
   replace (epoch0) with (epoch) by word.
 
   wp_loadField.
   wp_loadField.
-  wp_if_destruct.
+  wp_pures.
+  destruct (bool_decide (_)) as [] eqn:Hindex; last first.
   { (* return errror: out-of-order *)
-    admit.
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _.
+      iFrame "∗#%".
+    }
+    wp_pures.
+    iApply "HΦ".
+    done.
   }
+
+  wp_pures.
+  apply bool_decide_eq_true in Hindex.
 
   wp_loadField.
   wp_loadField.
   iNamed "HisSm".
   wp_loadField.
 
-  wp_apply ("HapplySpec" with "[$Hstate $HopSl]").
+  wp_apply ("HapplySpec" with "[$Hstate HopSl]").
   { (* prove protocol step *)
-    admit.
+    instantiate (1:=ghost_op).
+    simpl.
+    rewrite Hghost_op_op.
+    iFrame "HopSl".
+    iIntros "Hghost".
+    assert (index = nextIndex) by naive_solver.
+    iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
+    { rewrite H in Hσ_index. word. }
+    { done. }
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
+    { done. }
+    {
+      rewrite H in Hσ_index.
+      word.
+    }
+    rewrite Happend.
+    iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
+    iFrame "HH".
+    iModIntro.
+    instantiate (1:=is_accepted_lb γsrv epoch σ).
+    done.
   }
-  iIntros "Hstate".
+  iIntros "[Hstate #Hlb]".
   wp_pures.
   wp_loadField.
   wp_storeField.
   wp_loadField.
-  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate]").
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate HprimaryOnly]").
   {
     iNext.
     iExists _, _, _, _, _, _.
-    iFrame.
-    iExists _; iFrame "#".
+    rewrite HnotPrimary.
+    iFrame "Hstate ∗#".
+    iSplitL "".
+    { iExists _; iFrame "#". }
+    iSplitL ""; last done.
+    iPureIntro.
+    (* FIXME: add no overflow assumption *)
+    admit.
   }
   wp_pures.
   iApply "HΦ".
+  iFrame "Hlb".
   done.
 Admitted.
 
-Implicit Type σ : list (list u8).
-Implicit Type epoch : u64.
-
-Definition replyFn σ (op:list u8) : (list u8).
+Definition replyFn (σ:list (list u8))  (op:list u8) : (list u8).
 Admitted.
 
-Lemma wp_Server__Apply (s:loc) γ op_sl op Q :
+Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op ghost_op Q :
   {{{
-        is_Server s γ ∗
+        is_Server s γ γsrv ∗
         is_slice op_sl byteT 1 op ∗
-        (|={⊤,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [op]) ={∅,⊤}=∗ Q (replyFn σ op)))
+        ⌜ghost_op.1 = op⌝ ∗
+        (* FIXME: maybe have a layer below this for the Qs *)
+        (|={⊤∖↑pbN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑pbN}=∗ Q (replyFn (map (λ x, x.1) σ) op)))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
-        reply_sl σ, RET (slice_val reply_sl);
-        is_slice reply_sl byteT 1 (replyFn σ op) ∗
-        (Q (replyFn σ op))
+        reply_sl σphys, RET (slice_val reply_sl);
+        is_slice reply_sl byteT 1 (replyFn σphys op) ∗
+        (Q (replyFn σphys op))
   }}}
   .
 Proof.
   iIntros (Φ) "[#His Hpre] HΦ".
+  iDestruct "Hpre" as "(Hsl & %Hghostop_op & Hupd)".
   iNamed "His".
   wp_call.
   wp_loadField.
@@ -654,6 +338,99 @@ Proof.
     admit.
   }
   wp_loadField.
+  iNamed "HisSm".
+
+  (* make proposal *)
+  iNamed "HprimaryOnly".
+  iMod (ghost_propose with "Hproposal Hprop_facts [] [Hupd]") as "[Hprop #Hprop_facts2]".
+  { admit. } (* FIXME: get credit *)
+  {
+    iMod "Hupd".
+    iModIntro.
+    iDestruct "Hupd" as (?) "[Hghost Hupd]".
+    iExists _; iFrame "Hghost".
+    iIntros (->) "Hghost".
+    iSpecialize ("Hupd" with "Hghost").
+    iMod "Hupd".
+    done.
+  }
+
+  iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb".
+
+  wp_loadField.
+
+  wp_apply ("HapplySpec" with "[$Hstate $Hsl]").
+  {
+    iIntros "Hghost".
+    iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
+    { apply app_length. }
+    { apply last_snoc. }
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts2") as "HH".
+    { done. }
+    { rewrite app_length. word. }
+    iFrame "HH".
+    instantiate (1:=True%I).
+    done.
+  }
+  iIntros "[Hstate _]".
+
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate Hprop]").
+  {
+    iNext.
+    iExists _, _, _, _, _, _.
+    iFrame "Hstate ∗#".
+    iSplitL "".
+    { iExists _; iFrame "#". }
+    iFrame "Hprop".
+    iPureIntro.
+    (* FIXME: add no overflow assumption *)
+    admit.
+  }
+
+  wp_pures.
+  wp_apply (wp_NewWaitGroup).
+  iIntros (wg γwg) "Hwg".
+  wp_pures.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_new_slice).
+  { done. }
+  iIntros (errs_sl) "Herrs_sl".
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { econstructor; eauto. }
+  iIntros (Hargs) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply (wp_forSlice (λ j, own_WaitGroup pbN wg γwg j (λ _, True%I)) with "[] [Hwg]").
+  {
+    iIntros (i ck).
+    clear Φ.
+    iIntros (Φ) "!# (Hwg & %Hi_ineq & Hlookup) HΦ".
+    wp_pures.
+    wp_apply (wp_WaitGroup__Add with "[$Hwg]").
+    { word. }
+    iIntros "[Hwg HwgTok]".
+    wp_pures.
+    (* use wgTok to set errs_sl *)
+    admit.
+  }
+  {
+    admit.
+  }
+  iIntros "[Hwg Hclerks_sl]".
+  wp_pures.
 Admitted.
 
 End pb_definitions.

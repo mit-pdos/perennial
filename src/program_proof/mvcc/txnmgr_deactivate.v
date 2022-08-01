@@ -222,7 +222,7 @@ Qed.
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) deactivate(sid uint64, tid uint64)      *)
 (*****************************************************************)
-Local Theorem wp_txnMgr__deactivate txnmgr (sid tid : u64) γ :
+Theorem wp_txnMgr__deactivate txnmgr (sid tid : u64) γ :
   is_txnmgr txnmgr γ -∗
   {{{ active_tid γ tid sid }}}
     TxnMgr__deactivate #txnmgr #sid #tid
@@ -322,7 +322,7 @@ Proof.
     set idxlast := (word.sub _ _).
     iExists _, _, _, tids, _.
     iFrame "Hactive".
-    iFrame.
+    iFrame "∗ #".
     assert (Hidxlast : int.nat idxlast = length tids).
     { subst idxlast.
       rewrite (Permutation_length Hperm).

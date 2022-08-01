@@ -82,10 +82,6 @@ Definition TxnMgr__activate: val :=
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "tid" := ref (zero_val uint64T) in
     "tid" <-[uint64T] genTID "sid";;
-    Skip;;
-    (for: (λ: <>, ![uint64T] "tid" ≤ struct.loadF TxnSite "tidLast" "site"); (λ: <>, Skip) := λ: <>,
-      "tid" <-[uint64T] genTID "sid";;
-      Continue);;
     control.impl.Assume (![uint64T] "tid" < #18446744073709551615);;
     struct.storeF TxnSite "tidLast" "site" (![uint64T] "tid");;
     struct.storeF TxnSite "tidsActive" "site" (SliceAppend uint64T (struct.loadF TxnSite "tidsActive" "site") (![uint64T] "tid"));;
@@ -136,10 +132,7 @@ Definition TxnMgr__getMinActiveTIDSite: val :=
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "tidnew" := ref (zero_val uint64T) in
     "tidnew" <-[uint64T] genTID "sid";;
-    Skip;;
-    (for: (λ: <>, ![uint64T] "tidnew" ≤ struct.loadF TxnSite "tidLast" "site"); (λ: <>, Skip) := λ: <>,
-      "tidnew" <-[uint64T] genTID "sid";;
-      Continue);;
+    control.impl.Assume (![uint64T] "tidnew" < #18446744073709551615);;
     struct.storeF TxnSite "tidLast" "site" (![uint64T] "tidnew");;
     let: "tidmin" := ref_to uint64T (![uint64T] "tidnew") in
     ForSlice uint64T <> "tid" (struct.loadF TxnSite "tidsActive" "site")
@@ -229,7 +222,8 @@ Definition Txn__Begin: val :=
     #().
 
 Definition Txn__acquire: val :=
-  rec: "Txn__acquire" "txn" "ents" :=
+  rec: "Txn__acquire" "txn" :=
+    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
     let: "ok" := ref_to boolT #true in
     ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
       (let: "key" := wrbuf.WrEnt__Key "ent" in
@@ -241,17 +235,9 @@ Definition Txn__acquire: val :=
       else #()));;
     ![boolT] "ok".
 
-Definition Txn__release: val :=
-  rec: "Txn__release" "txn" "ents" :=
-    ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
-      (let: "key" := wrbuf.WrEnt__Key "ent" in
-      let: "idx" := struct.loadF Txn "idx" "txn" in
-      let: "tuple" := index.Index__GetTuple "idx" "key" in
-      tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
-    #().
-
 Definition Txn__apply: val :=
-  rec: "Txn__apply" "txn" "ents" :=
+  rec: "Txn__apply" "txn" :=
+    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
     ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
       (let: (("key", "val"), "del") := wrbuf.WrEnt__Destruct "ent" in
       let: "idx" := struct.loadF Txn "idx" "txn" in
@@ -261,18 +247,27 @@ Definition Txn__apply: val :=
       else tuple.Tuple__AppendVersion "tuple" (struct.loadF Txn "tid" "txn") "val"));;
     #().
 
+Definition Txn__release: val :=
+  rec: "Txn__release" "txn" "ents" :=
+    ForSlice (struct.t wrbuf.WrEnt) <> "ent" "ents"
+      (let: "key" := wrbuf.WrEnt__Key "ent" in
+      let: "idx" := struct.loadF Txn "idx" "txn" in
+      let: "tuple" := index.Index__GetTuple "idx" "key" in
+      tuple.Tuple__Free "tuple" (struct.loadF Txn "tid" "txn"));;
+    #().
+
+(* *
+    * TODO: Figure out the right way to handle latches and locks. *)
 Definition Txn__Commit: val :=
   rec: "Txn__Commit" "txn" :=
-    let: "ents" := wrbuf.WrBuf__IntoEnts (struct.loadF Txn "wrbuf" "txn") in
-    let: "ok" := Txn__acquire "txn" "ents" in
-    (if: "ok"
-    then Txn__apply "txn" "ents"
-    else Txn__release "txn" "ents");;
+    Txn__apply "txn";;
+    proph.ResolveCommit (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") (struct.loadF Txn "wrbuf" "txn");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
-    "ok".
+    #().
 
 Definition Txn__Abort: val :=
   rec: "Txn__Abort" "txn" :=
+    proph.ResolveAbort (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
@@ -285,8 +280,14 @@ Definition Txn__DoTxn: val :=
       Txn__Abort "txn";;
       #false
     else
-      let: "ok" := Txn__Commit "txn" in
-      "ok").
+      let: "ok" := Txn__acquire "txn" in
+      (if: ~ "ok"
+      then
+        Txn__Abort "txn";;
+        #false
+      else
+        Txn__Commit "txn";;
+        #true)).
 
 (*  TODO: Move these to examples. *)
 Definition SwapSeq: val :=

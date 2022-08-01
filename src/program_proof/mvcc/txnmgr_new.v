@@ -109,7 +109,6 @@ Proof.
   iMod (readonly_alloc_1 with "txnMgr") as "#Htxnmgr_txn".
   replace (int.nat 0) with 0%nat by word.
   simpl.
-  unfold own_txn_uninit.
   eauto 20 with iFrame.
 Qed.
 

@@ -6,11 +6,11 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
 (*****************************************************************)
-Theorem wp_txn__Get txn (k : u64) dbv γ τ :
-  {{{ own_txn txn γ τ ∗ txnmap_ptsto τ k dbv }}}
+Theorem wp_txn__Get txn tid (k : u64) dbv γ τ :
+  {{{ own_txn txn tid γ τ ∗ txnmap_ptsto τ k dbv }}}
     Txn__Get #txn #k
   {{{ (v : u64) (found : bool), RET (#v, #found);
-      own_txn txn γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
+      own_txn txn tid γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hptsto] HΦ".
@@ -43,7 +43,7 @@ Proof.
     rewrite Hlookup' in Hlookup.
     inversion_clear Hlookup.
     iSplitR "Hptsto".
-    { eauto 20 with iFrame. }
+    { eauto 25 with iFrame. }
     by iFrame.
   }
 
@@ -67,14 +67,14 @@ Proof.
   (* proph.ResolveRead(txn.txnMgr.p, txn.tid, key)           *)
   (***********************************************************)
   do 3 wp_loadField.
-  wp_apply (wp_ResolveRead γ).
+  wp_apply (wp_ResolveRead γ); first auto.
   iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
-  iIntros "(%future' & %Hresolve & Hproph)".
+  iIntros "(%future' & %Hhead & Hproph)".
   (* Extend the physical tuple. *)
   iMod (tuple_read_safe with "Hkeys Hcmt Hread") as "(Hkeys & Hcmt & Htuple & Hptuple)"; first set_solver.
   (* Deduce eq between logical and physical read. *)
@@ -82,6 +82,7 @@ Proof.
   iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup'".
   rewrite lookup_union_r in Hlookup'; last auto.
   iDestruct (big_sepM_lookup_acc with "Hltuples") as "[Hltuple Hltuples]"; first apply Hlookup'.
+  rewrite Etid.
   iDestruct (ltuple_ptuple_ptsto_eq with "[Hkey] Hltuple Hptuple") as "%Heq".
   { iNamed "Hkey".
     unfold tuple_auth_prefix.
@@ -96,16 +97,16 @@ Proof.
   iDestruct ("Hkeys" with "Hkey") as "Hkeys".
   iDestruct ("Hltuples" with "Hltuple") as "Hltuples".
   iMod "Hclose".
-  iMod ("HinvC" with "[Hproph Hm Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
+  iMod ("HinvC" with "[Hproph Hm Hts Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
   { (* Close the inv. *)
     iNext. unfold mvcc_inv_sst_def.
-    do 6 iExists _.
+    do 7 iExists _.
     iExists (past ++ [EvRead tid k]), future'.
-    iDestruct (nca_inv_head_read with "Hnca") as "Hnca"; first apply Hresolve.
-    iDestruct (fa_inv_head_read  with "Hfa")  as "Hfa";  first apply Hresolve.
-    iDestruct (fci_inv_head_read with "Hfci") as "Hfci"; first apply Hresolve.
-    iDestruct (fcc_inv_head_read with "Hfcc") as "Hfcc"; first apply Hresolve.
-    iDestruct (cmt_inv_head_read with "Hcmt") as "Hcmt"; first apply Hresolve.
+    iDestruct (nca_inv_any_action with "Hnca") as "Hnca"; first apply Hhead.
+    iDestruct (fa_inv_diff_action  with "Hfa")  as "Hfa";  [apply Hhead | done |].
+    iDestruct (fci_inv_diff_action with "Hfci") as "Hfci"; [apply Hhead | done |].
+    iDestruct (fcc_inv_diff_action with "Hfcc") as "Hfcc"; [apply Hhead | done |].
+    iDestruct (cmt_inv_diff_action with "Hcmt") as "Hcmt"; [apply Hhead | done |].
     iFrame.
   }
   iModIntro.
@@ -124,9 +125,9 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iSplitR "Hptsto".
-  { do 3 iExists _.
+  { do 2 iExists _.
     iFrame "Hltuples Htxnmap".
-    do 5 iExists _.
+    do 6 iExists _.
     iFrame "Hactive Htid Hsid Hwrbuf HwrbufRP".
     by iFrame "#".
   }

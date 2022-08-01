@@ -1,0 +1,26 @@
+From Perennial.program_proof.mvcc Require Import txn_common.
+
+Section program.
+Context `{!heapGS Σ, !mvcc_ghostG Σ}.
+
+Theorem wp_txn__apply txn tid γ τ :
+  {{{ own_txn_ready txn tid γ τ }}}
+    Txn__apply #txn
+  {{{ RET #(); own_txn_applied txn tid γ τ }}}.
+Proof.
+  (***********************************************************)
+  (* ents := txn.wrbuf.IntoEnts()                            *)
+  (* for _, ent := range ents {                              *)
+  (*     key, val, del := ent.Destruct()                     *)
+  (*     idx := txn.idx                                      *)
+  (*     tuple := idx.GetTuple(key)                          *)
+  (*     if del {                                            *)
+  (*         tuple.KillVersion(txn.tid)                      *)
+  (*     } else {                                            *)
+  (*         tuple.AppendVersion(txn.tid, val)               *)
+  (*     }                                                   *)
+  (* }                                                       *)
+  (***********************************************************)
+Admitted.
+
+End program.

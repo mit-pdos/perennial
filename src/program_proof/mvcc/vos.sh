@@ -3,7 +3,7 @@
 dir='./src/program_proof/mvcc'
 
 cd ../../../
-files=`find ${dir} -name "${1}*.v" | sed 's/\.v/\.vok/'`
+files=`find ${dir} -name "${1}*.v" | sed "s/\.v/\.vos/"`
 if [[ -z ${files} ]]; then
     echo "No target files."
     exit 1

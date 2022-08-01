@@ -24,7 +24,9 @@ Local Definition tidsR := gmap_viewR u64 (leibnizO unit).
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
 (* SST-related RAs. (SST = Strictly Serializable Transactions) *)
-Local Definition tid_modsR := gmap_viewR (u64 * dbmap) (leibnizO unit).
+(* TODO: See if we can make [tidsR] used by GC also [tsR]. *)
+Local Definition tsR := gmap_viewR nat (leibnizO unit).
+Local Definition ts_modsR := gmap_viewR (nat * dbmap) (leibnizO unit).
 Local Definition dbmapR := gmap_viewR u64 (leibnizO dbval).
 
 Lemma sids_all_lookup (sid : u64) :
@@ -48,11 +50,12 @@ Class mvcc_ghostG Σ :=
     mvcc_sid_tidsG :> inG Σ sid_tidsR;
     mvcc_sid_min_tidG :> inG Σ sid_min_tidR;
     (* SST *)
-    mvcc_abort_tids_ncaG :> inG Σ tidsR;
-    mvcc_abort_tids_faG :> inG Σ tidsR;
-    mvcc_abort_tids_fciG :> inG Σ tid_modsR;
-    mvcc_abort_tids_fccG :> inG Σ tid_modsR;
-    mvcc_commit_tidsG :> inG Σ tid_modsR;
+    mvcc_tsG :> inG Σ mono_natR;
+    mvcc_abort_tids_ncaG :> inG Σ tsR;
+    mvcc_abort_tids_faG :> inG Σ tsR;
+    mvcc_abort_tids_fciG :> inG Σ ts_modsR;
+    mvcc_abort_tids_fccG :> inG Σ ts_modsR;
+    mvcc_commit_tidsG :> inG Σ ts_modsR;
     mvcc_dbmapG :> inG Σ dbmapR;
   }.
 
@@ -62,11 +65,12 @@ Definition mvcc_ghostΣ :=
      GFunctor key_vchainR;
      GFunctor sid_tidsR;
      GFunctor sid_min_tidR;
-     GFunctor tidsR;
-     GFunctor tidsR;
-     GFunctor tid_modsR;
-     GFunctor tid_modsR;
-     GFunctor tid_modsR;
+     GFunctor mono_natR;
+     GFunctor tsR;
+     GFunctor tsR;
+     GFunctor ts_modsR;
+     GFunctor ts_modsR;
+     GFunctor ts_modsR;
      GFunctor dbmapR
    ].
 
@@ -80,11 +84,12 @@ Record mvcc_names :=
     mvcc_ltuple : gname;
     mvcc_sid_tids : gname;
     mvcc_sid_min_tid : gname;
+    mvcc_ts : gname;
     mvcc_abort_tids_nca : gname;
     mvcc_abort_tids_fa : gname;
     mvcc_abort_tmods_fci : gname;
     mvcc_abort_tmods_fcc : gname;
-    mvcc_commit_tmods : gname;
+    mvcc_cmt_tmods : gname;
     mvcc_dbmap : gname
   }.
 
@@ -119,15 +124,18 @@ Definition ltuple_auth γ (k : u64) (logi : list dbval) : iProp Σ :=
 Definition ltuple_lb γ (k : u64) (logi : list dbval) : iProp Σ :=
   own γ.(mvcc_ltuple) {[k := ◯ML (logi : list (leibnizO dbval))]}.
 
-(* TODO: rename [view_ptsto] to [ptuple_ptsto]. *)
-Definition view_ptsto γ (k : u64) (v : dbval) (tid : u64) : iProp Σ :=
-  ∃ phys, ptuple_lb γ k phys ∗ ⌜phys !! (int.nat tid) = Some v⌝.
+(* TODO: use nat rather than u64 for tid. *)
+Definition ptuple_ptsto γ (k : u64) (v : dbval) (ts : nat) : iProp Σ :=
+  ∃ phys, ptuple_lb γ k phys ∗ ⌜phys !! ts = Some v⌝.
 
-Definition mods_token γ (k tid : u64) : iProp Σ :=
-  ∃ phys, ptuple_auth γ (1/4) k phys ∗ ⌜Z.of_nat (length phys) ≤ (int.Z tid) + 1⌝.
+Definition mods_token γ (k : u64) (ts : nat) : iProp Σ :=
+  ∃ phys, ptuple_auth γ (1/4) k phys ∗ ⌜(length phys ≤ S ts)%nat⌝.
 
-Definition ltuple_ptsto γ (k : u64) (v : dbval) (tid : u64) : iProp Σ :=
-  ∃ logi, ltuple_lb γ k logi ∗ ⌜logi !! (int.nat tid) = Some v⌝.
+Definition ltuple_ptsto γ (k : u64) (v : dbval) (ts : nat) : iProp Σ :=
+  ∃ logi, ltuple_lb γ k logi ∗ ⌜logi !! ts = Some v⌝.
+
+Definition ltuple_ptstos γ (m : dbmap) (ts : nat) : iProp Σ :=
+  [∗ map] k ↦ v ∈ m, ltuple_ptsto γ k v ts.
 
 (* Definitions about GC-related resources. *)
 Definition site_active_tids_half_auth γ (sid : u64) tids : iProp Σ :=
@@ -149,35 +157,41 @@ Definition min_tid_lb γ tidN : iProp Σ :=
   [∗ list] sid ∈ sids_all, site_min_tid_lb γ sid tidN.
 
 (* Definitions about SST-related resources. *)
-Definition nca_tids_auth γ (tids : gset u64) : iProp Σ :=
+Definition ts_auth γ (ts : nat) : iProp Σ :=
+  own γ.(mvcc_ts) (●MN ts).
+
+Definition ts_lb γ (ts : nat) : iProp Σ :=
+  own γ.(mvcc_ts) (◯MN ts).
+
+Definition nca_tids_auth γ (tids : gset nat) : iProp Σ :=
   own γ.(mvcc_abort_tids_nca) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tids)).
 
-Definition nca_tids_frag γ tid : iProp Σ :=
+Definition nca_tids_frag γ (tid : nat) : iProp Σ :=
   own γ.(mvcc_abort_tids_nca) (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt).
 
-Definition fa_tids_auth γ (tids : gset u64) : iProp Σ :=
+Definition fa_tids_auth γ (tids : gset nat) : iProp Σ :=
   own γ.(mvcc_abort_tids_fa) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tids)).
 
-Definition fa_tids_frag γ tid : iProp Σ :=
+Definition fa_tids_frag γ (tid : nat) : iProp Σ :=
   own γ.(mvcc_abort_tids_fa) (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt).
 
 Definition fci_tmods_auth γ tmods : iProp Σ :=
   own γ.(mvcc_abort_tmods_fci) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
 
-Definition fci_tmods_frag γ tmod : iProp Σ :=
+Definition fci_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
   own γ.(mvcc_abort_tmods_fci) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
 
 Definition fcc_tmods_auth γ tmods : iProp Σ :=
   own γ.(mvcc_abort_tmods_fcc) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
 
-Definition fcc_tmods_frag γ tmod : iProp Σ :=
+Definition fcc_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
   own γ.(mvcc_abort_tmods_fcc) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
 
-Definition commit_tmods_auth γ tmods : iProp Σ :=
-  own γ.(mvcc_commit_tmods) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
+Definition cmt_tmods_auth γ tmods : iProp Σ :=
+  own γ.(mvcc_cmt_tmods) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
 
-Definition commit_tmods_frag γ tmod : iProp Σ :=
-  own γ.(mvcc_commit_tmods) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
+Definition cmt_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
+  own γ.(mvcc_cmt_tmods) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
 
 Definition dbmap_auth γ m : iProp Σ :=
   own γ.(mvcc_dbmap) (gmap_view_auth (DfracOwn 1) m).
@@ -185,12 +199,18 @@ Definition dbmap_auth γ m : iProp Σ :=
 Definition dbmap_ptsto γ k v : iProp Σ :=
   own γ.(mvcc_dbmap) (gmap_view_frag k (DfracOwn 1) v).
 
+Definition dbmap_ptstos γ (m : dbmap) : iProp Σ :=
+  [∗ map] k ↦ v ∈ m, dbmap_ptsto γ k v.
+
 (* Definitions about per-txn resources. *)
 Definition txnmap_auth τ m : iProp Σ :=
   own τ (gmap_view_auth (DfracOwn 1) m).
 
 Definition txnmap_ptsto τ k v : iProp Σ :=
   own τ (gmap_view_frag k (DfracOwn 1) v).
+
+Definition txnmap_ptstos τ (m : dbmap) : iProp Σ :=
+  [∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v.
 
 End definitions.
 
@@ -246,9 +266,19 @@ Lemma vchain_false {γ q key vchain} :
 Proof.
 Admitted.
 
-Theorem view_ptsto_agree γ (k : u64) (v v' : option u64) (tid : u64) :
-  view_ptsto γ k v tid -∗ view_ptsto γ k v' tid -∗ ⌜v = v'⌝.
+Lemma ltuple_update {γ key l} l' :
+  prefix l l' →
+  ltuple_auth γ key l ==∗
+  ltuple_auth γ key l'.
+Proof.
 Admitted.
+
+Lemma ltuple_witness γ k l :
+  ltuple_auth γ k l -∗ ltuple_lb γ k l.
+Proof.
+  iApply own_mono.
+  apply singleton_mono, mono_list_included.
+Qed.
 
 Lemma site_active_tids_elem_of γ (sid : u64) tids tid :
   site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ (dom tids)⌝.
@@ -308,7 +338,28 @@ Lemma site_min_tid_witness {γ sid tidN} :
 Admitted.
 
 Lemma min_tid_lb_zero γ :
-  ⊢ min_tid_lb γ 0%nat.
+  ⊢ |==> min_tid_lb γ 0%nat.
+Admitted.
+
+Lemma ts_witness {γ ts} :
+  ts_auth γ ts -∗
+  ts_lb γ ts.
+Admitted.
+
+Lemma ts_lb_weaken {γ ts} ts' :
+  (ts' ≤ ts)%nat ->
+  ts_lb γ ts -∗
+  ts_lb γ ts'.
+Admitted.
+
+Lemma ts_auth_lb_le {γ ts ts'} :
+  ts_auth γ ts -∗
+  ts_lb γ ts' -∗
+  ⌜(ts' ≤ ts)%nat⌝.
+Admitted.
+
+Lemma ts_lb_zero γ :
+  ⊢ |==> ts_lb γ 0%nat.
 Admitted.
 
 Lemma mvcc_ghost_init :
@@ -318,6 +369,12 @@ Lemma mvcc_ghost_init :
               ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0) ∗
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
+Admitted.
+
+Lemma dbmap_lookup_big {γ m} m' :
+  dbmap_auth γ m -∗
+  dbmap_ptstos γ m' -∗
+  ⌜m' ⊆ m⌝.
 Admitted.
 
 Lemma txnmap_lookup τ m k v :
@@ -337,69 +394,159 @@ Lemma txnmap_alloc m :
   ⊢ |==> ∃ τ, txnmap_auth τ m ∗ ([∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v).
 Admitted.
 
+Lemma nca_tids_insert {γ tids} tid :
+  tid ∉ tids ->
+  nca_tids_auth γ tids ==∗
+  nca_tids_auth γ ({[ tid ]} ∪ tids) ∗ nca_tids_frag γ tid.
+Admitted.
+
+Lemma nca_tids_delete {γ tids} tid :
+  nca_tids_frag γ tid -∗
+  nca_tids_auth γ tids ==∗
+  nca_tids_auth γ (tids ∖ {[ tid ]}).
+Admitted.
+
+Lemma nca_tids_lookup {γ tids} tid :
+  nca_tids_frag γ tid -∗
+  nca_tids_auth γ tids -∗
+  ⌜tid ∈ tids⌝.
+Admitted.
+
+Lemma fa_tids_insert {γ tids} tid :
+  tid ∉ tids ->
+  fa_tids_auth γ tids ==∗
+  fa_tids_auth γ ({[ tid ]} ∪ tids) ∗ fa_tids_frag γ tid.
+Admitted.
+
+Lemma fa_tids_delete {γ tids} tid :
+  fa_tids_frag γ tid -∗
+  fa_tids_auth γ tids ==∗
+  fa_tids_auth γ (tids ∖ {[ tid ]}).
+Admitted.
+
+Lemma fa_tids_lookup {γ tids} tid :
+  fa_tids_frag γ tid -∗
+  fa_tids_auth γ tids -∗
+  ⌜tid ∈ tids⌝.
+Admitted.
+
+Lemma fci_tmods_insert {γ tmods} tmod :
+  tmod ∉ tmods ->
+  fci_tmods_auth γ tmods ==∗
+  fci_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fci_tmods_frag γ tmod.
+Admitted.
+
+Lemma fci_tmods_delete {γ tmods} tmod :
+  fci_tmods_frag γ tmod -∗
+  fci_tmods_auth γ tmods ==∗
+  fci_tmods_auth γ (tmods ∖ {[ tmod ]}).
+Admitted.
+
+Lemma fci_tmods_lookup {γ tmods} tmod :
+  fci_tmods_frag γ tmod -∗
+  fci_tmods_auth γ tmods -∗
+  ⌜tmod ∈ tmods⌝.
+Admitted.
+
+Lemma fcc_tmods_insert {γ tmods} tmod :
+  tmod ∉ tmods ->
+  fcc_tmods_auth γ tmods ==∗
+  fcc_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fcc_tmods_frag γ tmod.
+Admitted.
+
+Lemma fcc_tmods_delete {γ tmods} tmod :
+  fcc_tmods_frag γ tmod -∗
+  fcc_tmods_auth γ tmods ==∗
+  fcc_tmods_auth γ (tmods ∖ {[ tmod ]}).
+Admitted.
+
+Lemma fcc_tmods_lookup {γ tmods} tmod :
+  fcc_tmods_frag γ tmod -∗
+  fcc_tmods_auth γ tmods -∗
+  ⌜tmod ∈ tmods⌝.
+Admitted.
+
+Lemma cmt_tmods_insert {γ tmods} tmod :
+  tmod ∉ tmods ->
+  cmt_tmods_auth γ tmods ==∗
+  cmt_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ cmt_tmods_frag γ tmod.
+Admitted.
+
+Lemma cmt_tmods_delete {γ tmods} tmod :
+  cmt_tmods_frag γ tmod -∗
+  cmt_tmods_auth γ tmods ==∗
+  cmt_tmods_auth γ (tmods ∖ {[ tmod ]}).
+Admitted.
+
+Lemma cmt_tmods_lookup {γ tmods} tmod :
+  cmt_tmods_frag γ tmod -∗
+  cmt_tmods_auth γ tmods -∗
+  ⌜tmod ∈ tmods⌝.
+Admitted.
+
 End lemmas.
 
 Section action.
 
 Inductive action :=
-| EvCommit (tid : u64) (mods : dbmap)
-| EvRead   (tid : u64) (key : u64)
-| EvAbort  (tid : u64).
+| EvCommit (tid : nat) (mods : dbmap)
+| EvRead   (tid : nat) (key : u64)
+| EvAbort  (tid : nat).
 
-Definition head_commit (l : list action) (tid : u64) (mods : dbmap) :=
+Definition head_commit (l : list action) (tid : nat) (mods : dbmap) :=
   head l = Some (EvCommit tid mods).
 
-Definition head_read (l : list action) (tid : u64) (key : u64) :=
+Definition head_read (l : list action) (tid : nat) (key : u64) :=
   head l = Some (EvRead tid key).
 
-Definition head_abort (l : list action) (tid : u64) :=
+Definition head_abort (l : list action) (tid : nat) :=
   head l = Some (EvAbort tid).
 
-Definition no_commit_abort (l : list action) (tid : u64) :=
+Definition no_commit_abort (l : list action) (tid : nat) :=
   (∀ mods, EvCommit tid mods ∉ l) ∧
   (EvAbort tid ∉ l).
 
-Definition first_abort (l : list action) (tid : u64) :=
+Definition first_abort (l : list action) (tid : nat) :=
   ∃ lp ls,
     l = lp ++ (EvAbort tid) :: ls ∧
     no_commit_abort lp tid.
 
-Definition compatible (tid : u64) (mods : dbmap) (e : action) :=
+Definition compatible (tid : nat) (mods : dbmap) (e : action) :=
   match e with
-  | EvCommit tid' mods' => (int.Z tid') < (int.Z tid) ∨ (dom mods) ∩ (dom mods') = ∅
-  | EvRead tid' key => (int.Z tid') ≤ (int.Z tid) ∨ key ∉ (dom mods)
+  | EvCommit tid' mods' => (tid' < tid)%nat ∨ (dom mods) ∩ (dom mods') = ∅
+  | EvRead tid' key => (tid' ≤ tid)%nat ∨ key ∉ (dom mods)
   | EvAbort tid' => True
   end.
 
 Instance compatible_dec tid mods e : Decision (compatible tid mods e).
 Proof. destruct e; simpl; apply _. Defined.
 
-Definition incompatible (tid : u64) (mods : dbmap) (e : action) := not (compatible tid mods e).
+Definition incompatible (tid : nat) (mods : dbmap) (e : action) := not (compatible tid mods e).
 
 Instance incompatible_dec tid mods e : Decision (incompatible tid mods e).
 Proof. destruct e; simpl; apply _. Defined.
 
-Definition compatible_all (l : list action) (tid : u64) (mods : dbmap) :=
+Definition compatible_all (l : list action) (tid : nat) (mods : dbmap) :=
   Forall (compatible tid mods) l.
 
-Definition incompatible_exists (l : list action) (tid : u64) (mods : dbmap) :=
+Definition incompatible_exists (l : list action) (tid : nat) (mods : dbmap) :=
   Exists (incompatible tid mods) l.
 
-Definition first_commit (l lp ls : list action) (tid : u64) (mods : dbmap) :=
+Definition first_commit (l lp ls : list action) (tid : nat) (mods : dbmap) :=
   l = lp ++ (EvCommit tid mods) :: ls ∧
   no_commit_abort lp tid.
 
-Definition first_commit_incompatible (l : list action) (tid : u64) (mods : dbmap) :=
+Definition first_commit_incompatible (l1 l2 : list action) (tid : nat) (mods : dbmap) :=
   ∃ lp ls,
-    first_commit l lp ls tid mods ∧
-    incompatible_exists lp tid mods.
+    first_commit l2 lp ls tid mods ∧
+    incompatible_exists (l1 ++ lp) tid mods.
 
-Definition first_commit_compatible (l : list action) (tid : u64) (mods : dbmap) :=
+Definition first_commit_compatible (l : list action) (tid : nat) (mods : dbmap) :=
   ∃ lp ls,
     first_commit l lp ls tid mods ∧
     compatible_all lp tid mods.
 
-Definition is_commit_abort_tid (tid : u64) (e : action) : Prop :=
+Definition is_commit_abort_tid (tid : nat) (e : action) : Prop :=
   match e with
   | EvCommit tid' _ => tid = tid'
   | EvAbort tid' => tid = tid'
@@ -414,7 +561,7 @@ Lemma is_commit_abort_tid_lor tid e :
   (∃ mods, e = EvCommit tid mods) ∨ e = EvAbort tid.
 Proof. intros. destruct e; set_solver. Qed.
 
-Fixpoint find_max_prefix (tid : u64) (lp ls : list action) : (list action * list action) :=
+Fixpoint find_max_prefix (tid : nat) (lp ls : list action) : (list action * list action) :=
   match ls with
   | [] => (lp, ls)
   | hd :: tl => if decide (is_commit_abort_tid tid hd)
@@ -455,7 +602,7 @@ Inductive tcform :=
 | FCI (mods : dbmap)
 | FCC (mods : dbmap).
 
-Definition peek (l : list action) (tid : u64) : tcform :=
+Definition peek (l : list action) (tid : nat) : tcform :=
   let (lp, ls) := find_max_prefix tid [] l
   in match head ls with
      | None => NCA
@@ -469,7 +616,7 @@ Theorem spec_peek l tid :
   match peek l tid with
   | NCA => no_commit_abort l tid
   | FA => first_abort l tid
-  | FCI mods => first_commit_incompatible l tid mods
+  | FCI mods => first_commit_incompatible [] l tid mods
   | FCC mods => first_commit_compatible l tid mods
   end.
 Proof.
@@ -510,7 +657,7 @@ Proof.
     rewrite Els in Hl. rewrite app_nil_r in Hl. by rewrite Hl.
 Qed.
 
-Lemma no_commit_abort_false (l : list action) (tid : u64) :
+Lemma no_commit_abort_false {l : list action} {tid : nat} :
   no_commit_abort l tid ->
   (∃ mods, head_commit l tid mods) ∨ (head_abort l tid) ->
   False.
@@ -525,7 +672,7 @@ Proof.
   intros Hl. rewrite Hl. destruct lp; auto.
 Qed.
 
-Theorem first_abort_false (l : list action) (tid : u64) (mods : dbmap) :
+Theorem first_abort_false {l : list action} {tid : nat} (mods : dbmap) :
   first_abort l tid ->
   head_commit l tid mods ->
   False.
@@ -537,7 +684,7 @@ Proof.
   set_solver.
 Qed.
 
-Theorem first_commit_false (l lp ls : list action) (e : action) (tid : u64) (mods : dbmap) :
+Theorem first_commit_false {l lp ls : list action} {tid : nat} {mods : dbmap} :
   first_commit l lp ls tid mods ->
   head_abort l tid ->
   False.
@@ -549,11 +696,11 @@ Proof.
   set_solver.
 Qed.
 
-Theorem safe_extension_rd (l : list action) (tid tid' : u64) (mods : dbmap) (key : u64) :
+Theorem safe_extension_rd (l : list action) (tid tid' : nat) (mods : dbmap) (key : u64) :
   first_commit_compatible l tid mods ->
   head_read l tid' key ->
   key ∈ (dom mods) ->
-  (int.Z tid') ≤ (int.Z tid).
+  (tid' ≤ tid)%nat.
 Proof.
   intros (lp & ls & [Hl _] & Hcomp) Hhead Hin.
   unfold head_read in Hhead.
@@ -568,11 +715,11 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Theorem safe_extension_wr (l : list action) (tid tid' : u64) (mods mods' : dbmap) :
+Theorem safe_extension_wr (l : list action) (tid tid' : nat) (mods mods' : dbmap) :
   first_commit_compatible l tid mods ->
   head_commit l tid' mods' ->
   (dom mods) ∩ (dom mods') ≠ ∅ ->
-  (int.Z tid') ≤ (int.Z tid).
+  (tid' ≤ tid)%nat.
 Proof.
   intros (lp & ls & [Hl _] & Hcomp) Hhead Hdom.
   unfold head_commit in Hhead.
@@ -587,13 +734,13 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Theorem first_commit_incompatible_false (l : list action) (tid : u64) (mods : dbmap) :
-  first_commit_incompatible l tid mods ->
-  head_commit l tid mods ->
-  False.
+Theorem first_commit_incompatible_exists (l1 l2 : list action) (tid : nat) (mods : dbmap) :
+  first_commit_incompatible l1 l2 tid mods ->
+  head_commit l2 tid mods ->
+  Exists (incompatible tid mods) l1.
 Proof.
   intros (lp & ls & [Hl [HnotinC _]] & Hincomp) Hhead.
-  destruct lp; first by apply Exists_nil in Hincomp.
+  destruct lp; first by rewrite app_nil_r in Hincomp.
   unfold head_commit in Hhead.
   set_solver.
 Qed.
@@ -607,14 +754,80 @@ Proof.
   intros contra. simpl in contra. set_solver.
 Qed.
 
-Lemma first_commit_compatible_preserved {l l' : list action} {a : action} {tid : u64} {mods : dbmap} :
+Lemma no_commit_abort_preserved (l l' : list action) {tid : nat} :
+  l' = tail l ->
+  no_commit_abort l tid ->
+  no_commit_abort l' tid.
+Proof.
+  intros Htl [Hnc Hna].
+  rewrite Htl.
+  unfold no_commit_abort in *.
+  split.
+  - intros mods. by apply notin_tail.
+  - by apply notin_tail.
+Qed.
+  
+Lemma first_abort_preserved {l l' : list action} {a : action} {tid : nat} :
+  l = a :: l' ->
+  a ≠ EvAbort tid ->
+  first_abort l tid ->
+  first_abort l' tid.
+Proof.
+  intros Hhead Hneq Hfa.
+  destruct Hfa as (lp & ls & [Hl [HnotinC HnotinA]]).
+  exists (tail lp), ls.
+  split; last first.
+  { unfold no_commit_abort.
+    split; last by apply notin_tail.
+    intros mods'. by apply notin_tail.
+  }
+  destruct lp eqn:Elp; first set_solver.
+  simpl.
+  rewrite -hd_error_tl_repr in Hhead.
+  destruct Hhead as [_ Hl'].
+  by rewrite -Hl' Hl.
+Qed.
+
+Lemma first_commit_incompatible_preserved {p l l' : list action} {a : action} {tid : nat} {mods : dbmap} :
+  l = a :: l' ->
+  (∀ mods', a ≠ EvCommit tid mods') ->
+  first_commit_incompatible p l tid mods ->
+  first_commit_incompatible (p ++ [a]) l' tid mods.
+Proof.
+  intros Hhead Hneq Hfci.
+  destruct Hfci as (lp & ls & [Hl [HnotinC HnotinA]] & Hincomp).
+  exists (tail lp), ls.
+  split; last first.
+  { rewrite -app_assoc.
+    simpl.
+    replace (a :: tail lp) with lp; first done.
+    destruct lp eqn:Elp; first set_solver.
+    simpl.
+    rewrite -hd_error_tl_repr in Hhead.
+    destruct Hhead as [Hhead _].
+    set_solver.
+  }
+  split; last first.
+  { unfold no_commit_abort.
+    split; last by apply notin_tail.
+    intros mods'. by apply notin_tail.
+  }
+  unfold first_commit.
+  destruct lp eqn:Elp; first set_solver.
+  simpl.
+  rewrite -hd_error_tl_repr in Hhead.
+  destruct Hhead as [_ Hl'].
+  by rewrite -Hl' Hl.
+Qed.
+
+Lemma first_commit_compatible_preserved {l l' : list action} {a : action} {tid : nat} {mods : dbmap} :
   l = a :: l' ->
   (∀ mods', a ≠ EvCommit tid mods') ->
   first_commit_compatible l tid mods ->
   first_commit_compatible l' tid mods.
 Proof.
-  intros Hhead Hneq Hfci.
-  destruct Hfci as (lp & ls & [Hl [HnotinC HnotinA]] & Hcomp).
+  intros Hhead Hneq Hfcc.
+  destruct Hfcc as (lp & ls & [Hl [HnotinC HnotinA]] & Hcomp).
   exists (tail lp), ls.
   split; last by apply Forall_tail.
   split; last first.
@@ -630,29 +843,40 @@ Proof.
   by rewrite -Hl' Hl.
 Qed.
 
+Theorem first_commit_incompatible_suffix (l1 l2 : list action) (tid : nat) (mods : dbmap) :
+  first_commit_incompatible [] l2 tid mods ->
+  first_commit_incompatible l1 l2 tid mods.
+Proof.
+  intros Hfci.
+  unfold first_commit_incompatible in *.
+  destruct Hfci as (lp & ls & Hfc & Hincomp).
+  exists lp, ls.
+  split; first auto.
+  simpl in Hincomp.
+  apply Exists_app. by right.
+Qed.
+
 End action.
 
 Section tuplext.
 
 (**
  * Convert global modifications to per-tuple modification.
- * Note that it converts TID's type from [u64] to [nat], as what we resolve
- * are [u64]s, but tuple extension requires [nat]s.
  *)
-Fixpoint per_tuple_mods_list (l : list (u64 * (dbmap))) (key : u64) : gset (nat * dbval) :=
+Fixpoint per_tuple_mods_list (l : list (nat * dbmap)) (key : u64) : gset (nat * dbval) :=
   match l with
   | [] => ∅
   | hd :: tl => match hd.2 !! key with
               | None => per_tuple_mods_list tl key
-              | Some v => {[ (int.nat hd.1, v) ]} ∪ (per_tuple_mods_list tl key)
+              | Some v => {[ (hd.1, v) ]} ∪ (per_tuple_mods_list tl key)
               end
   end.
 
-Definition per_tuple_mods (s : gset (u64 * (dbmap))) (key : u64) : gset (nat * dbval) :=
+Definition per_tuple_mods (s : gset (nat * dbmap)) (key : u64) : gset (nat * dbval) :=
   per_tuple_mods_list (elements s) key.
 
 Lemma mods_tuple_to_global_list l key tid v :
-  (int.nat tid, v) ∈ per_tuple_mods_list l key ->
+  (tid, v) ∈ per_tuple_mods_list l key ->
   ∃ mods, (tid, mods) ∈ l ∧ mods !! key = Some v.
 Proof.
   intros H.
@@ -663,9 +887,6 @@ Proof.
     destruct H; last set_solver.
     rewrite elem_of_singleton in H.
     inversion H.
-    assert (Hz : int.Z tid = int.Z x.1) by word.
-    assert (Hu64 : tid = x.1).
-    { apply int_Z_inj; [apply u64_instance.u64_word_ok | auto]. }
     subst tid d.
     exists x.2.
     rewrite -(surjective_pairing x).
@@ -675,7 +896,7 @@ Proof.
 Qed.
 
 Theorem mods_tuple_to_global s key tid v :
-  (int.nat tid, v) ∈ per_tuple_mods s key ->
+  (tid, v) ∈ per_tuple_mods s key ->
   ∃ mods, (tid, mods) ∈ s ∧ mods !! key = Some v.
 Proof.
   intros H.
@@ -1211,6 +1432,15 @@ Lemma extend_last_Some {X : Type} (n : nat) (l : list X) (x : X) :
   extend n l = l ++ replicate (n - length l) x.
 Proof. intros Hlast. unfold extend. by rewrite Hlast. Qed.
 
+Lemma extend_prefix {X : Type} (n : nat) (l : list X) :
+  prefix l (extend n l).
+Proof.
+  unfold extend.
+  destruct (last l) eqn:E.
+  - unfold prefix. eauto.
+  - rewrite last_None in E. by rewrite E.
+Qed.
+
 Definition tuple_mods_rel (phys logi : list dbval) (mods : gset (nat * dbval)) :=
   ∃ (diff : list dbval) (v : dbval),
     logi = phys ++ diff ∧
@@ -1231,6 +1461,17 @@ Proof.
   destruct n as [x Helem].
   rewrite Heq in Hlen.
   apply Hlen in Helem. lia.
+Qed.
+
+Lemma tuple_mods_rel_last_logi (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  tuple_mods_rel phys logi mods ->
+  ∃ v, last logi = Some v.
+Proof.
+  intros Hrel.
+  destruct Hrel as (diff & v & Hprefix & Hphys & _).
+  rewrite Hprefix.
+  rewrite last_app.
+  destruct (last diff); eauto.
 Qed.
 
 Theorem tuplext_read (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
@@ -1391,6 +1632,67 @@ Proof.
 Qed.
 
 Theorem tuplext_linearize_unchanged (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  tuple_mods_rel phys logi mods ->
+  tuple_mods_rel phys (extend (S tid) logi) mods.
+Proof.
+  intros Hrel.
+  pose proof Hrel as (diff & v & Hprefix & Hlast & HNoDup & Hlen & Hdiff).
+  unfold tuple_mods_rel.
+  assert (Hlast' : ∃ v', last logi = Some v').
+  { rewrite Hprefix last_app. destruct (last diff); eauto. }
+  destruct Hlast' as [v' Hlast'].
+  exists (diff ++ replicate (S tid - length logi) v'), v.
+  split.
+  { (* prefix *)
+    apply (extend_last_Some (S tid)) in Hlast' as Heq.
+    by rewrite Heq Hprefix -app_assoc.
+  }
+  split.
+  { (* last *) done. }
+  split; first done.
+  split.
+  { (* len *)
+    apply (set_Forall_impl _ _ _ Hlen).
+    intros x Hlt.
+    split; first lia.
+    apply Nat.lt_le_trans with (length logi); [lia | apply extend_length_ge].
+  }
+  { (* diff *)
+    intros i u Hlookup.
+    destruct (decide (i < length diff)%nat).
+    - apply Hdiff. by rewrite lookup_app_l in Hlookup; last auto.
+    - apply not_lt in n.
+      rewrite lookup_app_r in Hlookup; last lia.
+      rewrite lookup_replicate in Hlookup.
+      destruct Hlookup as [Heq Hlt]. subst v'.
+      (* Case [diff = nil] is treated as a special case. *)
+      destruct (decide (diff = [])).
+      { rewrite e app_nil_r in Hprefix.
+        rewrite (tuple_mods_rel_eq_empty phys logi mods); [| auto | done].
+        rewrite diff_val_at_empty. subst logi.
+        rewrite Hlast' in Hlast.
+        by inversion Hlast.
+      }
+      (* Use the last value of [logi] as the reference to apply [diff_val_at_extensible]. *)
+      rewrite last_lookup in Hlast'.
+      rewrite -(diff_val_at_extensible _ (pred (length diff) + length phys)); last first.
+      { lia. }
+      { unfold gt_tids_mods.
+        apply (set_Forall_impl _ _ _ Hlen).
+        intros x [_ H].
+        rewrite Hprefix app_length in H. lia.
+      }
+      apply Hdiff.
+      rewrite -Hlast'.
+      do 2 rewrite -last_lookup.
+      rewrite Hprefix.
+      rewrite last_app.
+      destruct (last diff) eqn:E; [done | by rewrite last_None in E].
+  }
+Qed.
+
+(* XXX: not used *)
+Theorem tuplext_linearize_unchanged' (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
   tuple_mods_rel phys logi mods ->
   tuple_mods_rel phys (extend (S (S tid)) logi) mods.
 Proof.
