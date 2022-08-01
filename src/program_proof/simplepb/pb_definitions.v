@@ -2,6 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Import pb_ghost.
+From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
@@ -56,7 +57,12 @@ Definition own_Server (s:loc) γ γsrv P : iProp Σ :=
   "%Hσ_nextIndex" ∷ ⌜length σ = int.nat nextIndex⌝ ∗
 
   (* primary-only *)
-  "#Hclerks_rpc" ∷ True
+  "HprimaryOnly" ∷ if isPrimary then (
+            "#Hclerks_rpc" ∷ True ∗
+            "Hproposal" ∷ own_proposal γ epoch σ ∗
+            "#Hprop_facts" ∷ is_proposal_facts γ epoch σ
+        )
+                   else True
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
@@ -183,6 +189,8 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
+  assert (isPrimary = false) as HnotPrimary.
+  { admit. } (* FIXME: maintain something to prove this *)
   wp_pures.
   Opaque crash_borrow.
   wp_loadField.
@@ -210,7 +218,7 @@ Proof.
   wp_if_destruct.
   { (* return error: stale *)
     wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate]").
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate HprimaryOnly]").
     {
       iNext.
       iExists _, _, _, _, _, _.
@@ -229,7 +237,7 @@ Proof.
   { (* return errror: out-of-order *)
     wp_pures.
     wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate]").
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate HprimaryOnly]").
     {
       iNext.
       iExists _, _, _, _, _, _.
@@ -277,13 +285,15 @@ Proof.
   wp_loadField.
   wp_storeField.
   wp_loadField.
-  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate]").
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate HprimaryOnly]").
   {
     iNext.
     iExists _, _, _, _, _, _.
-    iFrame "∗#".
+    rewrite HnotPrimary.
+    iFrame "Hstate ∗#".
     iSplitL "".
     { iExists _; iFrame "#". }
+    iSplitL ""; last done.
     iPureIntro.
     (* FIXME: add no overflow assumption *)
     admit.
@@ -294,27 +304,27 @@ Proof.
   done.
 Admitted.
 
-Implicit Type σ : list (list u8).
-Implicit Type epoch : u64.
-
-Definition replyFn σ (op:list u8) : (list u8).
+Definition replyFn (σ:list (list u8))  (op:list u8) : (list u8).
 Admitted.
 
-Lemma wp_Server__Apply (s:loc) γ op_sl op Q :
+Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op ghost_op Q :
   {{{
-        is_Server s γ ∗
+        is_Server s γ γsrv ∗
         is_slice op_sl byteT 1 op ∗
-        (|={⊤,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [op]) ={∅,⊤}=∗ Q (replyFn σ op)))
+        ⌜ghost_op.1 = op⌝ ∗
+        (* FIXME: maybe have a layer below this for the Qs *)
+        (|={⊤∖↑pbN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑pbN}=∗ Q (replyFn (map (λ x, x.1) σ) op)))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
-        reply_sl σ, RET (slice_val reply_sl);
-        is_slice reply_sl byteT 1 (replyFn σ op) ∗
-        (Q (replyFn σ op))
+        reply_sl σphys, RET (slice_val reply_sl);
+        is_slice reply_sl byteT 1 (replyFn σphys op) ∗
+        (Q (replyFn σphys op))
   }}}
   .
 Proof.
   iIntros (Φ) "[#His Hpre] HΦ".
+  iDestruct "Hpre" as "(Hsl & %Hghostop_op & Hupd)".
   iNamed "His".
   wp_call.
   wp_loadField.
@@ -328,6 +338,99 @@ Proof.
     admit.
   }
   wp_loadField.
+  iNamed "HisSm".
+
+  (* make proposal *)
+  iNamed "HprimaryOnly".
+  iMod (ghost_propose with "Hproposal Hprop_facts [] [Hupd]") as "[Hprop #Hprop_facts2]".
+  { admit. } (* FIXME: get credit *)
+  {
+    iMod "Hupd".
+    iModIntro.
+    iDestruct "Hupd" as (?) "[Hghost Hupd]".
+    iExists _; iFrame "Hghost".
+    iIntros (->) "Hghost".
+    iSpecialize ("Hupd" with "Hghost").
+    iMod "Hupd".
+    done.
+  }
+
+  iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb".
+
+  wp_loadField.
+
+  wp_apply ("HapplySpec" with "[$Hstate $Hsl]").
+  {
+    iIntros "Hghost".
+    iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
+    { apply app_length. }
+    { apply last_snoc. }
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts2") as "HH".
+    { done. }
+    { rewrite app_length. word. }
+    iFrame "HH".
+    instantiate (1:=True%I).
+    done.
+  }
+  iIntros "[Hstate _]".
+
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate Hprop]").
+  {
+    iNext.
+    iExists _, _, _, _, _, _.
+    iFrame "Hstate ∗#".
+    iSplitL "".
+    { iExists _; iFrame "#". }
+    iFrame "Hprop".
+    iPureIntro.
+    (* FIXME: add no overflow assumption *)
+    admit.
+  }
+
+  wp_pures.
+  wp_apply (wp_NewWaitGroup).
+  iIntros (wg γwg) "Hwg".
+  wp_pures.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_new_slice).
+  { done. }
+  iIntros (errs_sl) "Herrs_sl".
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { econstructor; eauto. }
+  iIntros (Hargs) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply (wp_forSlice (λ j, own_WaitGroup pbN wg γwg j (λ _, True%I)) with "[] [Hwg]").
+  {
+    iIntros (i ck).
+    clear Φ.
+    iIntros (Φ) "!# (Hwg & %Hi_ineq & Hlookup) HΦ".
+    wp_pures.
+    wp_apply (wp_WaitGroup__Add with "[$Hwg]").
+    { word. }
+    iIntros "[Hwg HwgTok]".
+    wp_pures.
+    (* use wgTok to set errs_sl *)
+    admit.
+  }
+  {
+    admit.
+  }
+  iIntros "[Hwg Hclerks_sl]".
+  wp_pures.
 Admitted.
 
 End pb_definitions.

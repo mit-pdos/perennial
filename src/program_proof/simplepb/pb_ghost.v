@@ -264,6 +264,12 @@ Proof.
   admit.
 Admitted.
 
+Lemma ghost_get_propose_lb γsys epoch σ :
+  own_proposal γsys epoch σ -∗
+  is_proposal_lb γsys epoch σ.
+Proof.
+Admitted.
+
 Lemma ghost_propose γsys epoch σ op :
   own_proposal γsys epoch σ -∗
   is_proposal_facts γsys epoch σ -∗
@@ -271,7 +277,7 @@ Lemma ghost_propose γsys epoch σ op :
   (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True))
   ={⊤}=∗
   own_proposal γsys epoch (σ ++ [op]) ∗
-  (▷ is_proposal_facts γsys epoch (σ ++ [op])).
+  (is_proposal_facts γsys epoch (σ ++ [op])).
 Proof.
   iIntros "Hprop #Hprop_facts Hlc Hupd".
   iSplitL "Hprop".
@@ -288,7 +294,6 @@ Proof.
     iDestruct "Hprop_facts" as "[#Hmax _]".
     iModIntro.
     unfold old_proposal_max.
-    iModIntro.
     iModIntro.
     iIntros.
     iAssert (⌜σ_old ⪯ σ⌝)%I as "%Hprefix".
@@ -318,7 +323,6 @@ Proof.
     done.
   }
   (* prove is_proposal_valid γ (σ ++ [op]) *)
-  iModIntro.
   iModIntro.
   iModIntro.
   iIntros (σ') "%Hσ' Hσ'".
