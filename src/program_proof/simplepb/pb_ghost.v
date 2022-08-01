@@ -87,7 +87,7 @@ Definition committed_by γsys epoch σ : iProp Σ :=
 Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
   □(∀ epoch_old σ_old,
    ⌜int.nat epoch_old < int.nat epoch⌝ →
-   is_proposal_lb γsys epoch_old σ_old →
+   is_proposal_lb γsys epoch_old σ_old → (* FIXME: remove this *)
    committed_by γsys epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition pbN := nroot .@ "pb".
@@ -125,18 +125,29 @@ Definition own_Server_ghost γsys γsrv epoch σ : iProp Σ :=
 
 Lemma ghost_accept γsys γsrv epoch epoch' σ σ' :
   int.nat epoch ≤ int.nat epoch' →
-  σ ⪯ σ' →
+  length σ ≤ length σ' →
   own_Server_ghost γsys γsrv epoch σ -∗
   is_proposal_lb γsys epoch' σ' -∗
   is_proposal_facts γsys epoch' σ'
   ==∗
   own_Server_ghost γsys γsrv epoch' σ'.
 Proof.
-  intros Hepoch_ineq Hσ_ineq.
+  intros Hepoch_ineq Hσlen_ineq.
   iIntros "Hown #Hprop_lb #Hprop_facts".
   iNamed "Hown".
+
   destruct (decide (epoch = epoch')).
   {
+    iDestruct (own_valid_2 with "Hprop_lb Hproposal_lb") as %Hσ_ineq.
+    rewrite e in Hσ_ineq.
+    rewrite singleton_op singleton_valid in Hσ_ineq.
+    rewrite mono_list_lb_op_valid_L in Hσ_ineq.
+    assert (σ⪯σ').
+    {
+      destruct Hσ_ineq as [Hbad|Hσ_ineq]; last done.
+      enough (σ'=σ) by naive_solver.
+      by apply list_prefix_eq.
+    }
     rewrite -e.
     iFrame "Hepoch_ghost".
     iFrame "Haccepted_rest".
@@ -187,6 +198,71 @@ Proof.
     done.
   }
 Qed.
+
+(* Used by ApplyAsBackup *)
+Lemma ghost_accept_helper newOp γsys γsrv epoch σ σ_old:
+  length σ = length σ_old + 1 →
+  last σ = Some newOp →
+  is_proposal_lb γsys epoch σ -∗
+  own_Server_ghost γsys γsrv epoch σ_old -∗
+  own_Server_ghost γsys γsrv epoch σ_old ∗
+  ⌜σ = σ_old ++ [newOp]⌝
+.
+Proof.
+  intros Hlen Hlast.
+  iIntros "#Hprop_lb Hghost".
+  iNamed "Hghost".
+  rewrite last_Some in Hlast.
+  destruct Hlast as [σ' Hlast].
+  assert (length σ' + 1 = length σ).
+  {
+    rewrite Hlast.
+    rewrite app_length.
+    done.
+  }
+  assert (length σ' = length σ_old) by lia.
+  iDestruct (own_mono with "Hprop_lb") as "#Hprop'_lb".
+  {
+    instantiate (1:={[epoch := ◯ML (σ' : list (leibnizO EntryType))]}).
+    rewrite singleton_included.
+    right.
+    apply mono_list_lb_mono.
+    by exists [newOp].
+  }
+  iDestruct (own_valid_2 with "Hprop'_lb Hproposal_lb") as %Hσ_ineq.
+  rewrite singleton_op singleton_valid in Hσ_ineq.
+  rewrite mono_list_lb_op_valid_L in Hσ_ineq.
+  assert (σ' = σ_old).
+  {
+    destruct Hσ_ineq as [|].
+    {
+      apply list_prefix_eq.
+      { done. }
+      word.
+    }
+    {
+      symmetry.
+      apply list_prefix_eq.
+      { done. }
+      word.
+    }
+  }
+  iFrame "∗#".
+  rewrite -H1.
+  iPureIntro.
+  done.
+Qed.
+
+Lemma ghost_get_accepted_lb γsys γsrv epoch σ :
+  own_Server_ghost γsys γsrv epoch σ -∗
+  is_accepted_lb γsrv epoch σ.
+Proof.
+  iNamed 1.
+  unfold own_accepted.
+  (* FIXME: how to get lower bound? *)
+  (* rewrite mono_list_auth_lb_op. *)
+  admit.
+Admitted.
 
 Lemma ghost_propose γsys epoch σ op :
   own_proposal γsys epoch σ -∗
