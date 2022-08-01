@@ -19,8 +19,8 @@ Definition commit_false_cases tid γ : iProp Σ :=
   (∃ mods, fci_tmods_frag γ (tid, mods)) ∨
   (∃ mods, fcc_tmods_frag γ (tid, mods)).
 
-Theorem wp_txn__Commit_false txn tid γ τ :
-  {{{ own_txn_ready txn tid γ τ ∗ commit_false_cases tid γ }}}
+Theorem wp_txn__Commit_false txn tid view γ τ :
+  {{{ own_txn_ready txn tid view γ τ ∗ commit_false_cases tid γ }}}
     Txn__Commit #txn
   {{{ (ok : bool), RET #ok; False }}}.
 Proof.
@@ -97,8 +97,8 @@ Proof.
   }
 Admitted.
 
-Theorem wp_txn__Commit txn tid mods γ τ :
-  {{{ own_txn_ready txn tid γ τ ∗ cmt_tmods_frag γ (tid, mods) }}}
+Theorem wp_txn__Commit txn tid view mods γ τ :
+  {{{ own_txn_ready txn tid view γ τ ∗ cmt_tmods_frag γ (tid, mods) }}}
     Txn__Commit #txn
   {{{ (ok : bool), RET #ok; own_txn_uninit txn γ }}}.
 Proof.

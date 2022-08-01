@@ -3,10 +3,10 @@ From Perennial.program_proof.mvcc Require Import txn_common.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Theorem wp_txn__apply txn tid γ τ :
-  {{{ own_txn_ready txn tid γ τ }}}
+Theorem wp_txn__apply txn tid view γ τ :
+  {{{ own_txn_ready txn tid view γ τ }}}
     Txn__apply #txn
-  {{{ RET #(); own_txn_applied txn tid γ τ }}}.
+  {{{ RET #(); own_txn_applied txn tid view γ τ }}}.
 Proof.
   (***********************************************************)
   (* ents := txn.wrbuf.IntoEnts()                            *)

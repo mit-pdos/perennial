@@ -4,10 +4,10 @@ Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 Definition spec_body (body : val) (txn :loc) tid r P Q γ τ : iProp Σ :=
-  {{{ own_txn txn tid γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r }}}
+  {{{ own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r }}}
     body #txn
   {{{ w (ok : bool), RET #ok;
-      own_txn txn tid γ τ ∗
+      own_txn txn tid r γ τ ∗
       if ok then ⌜Q r w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 
@@ -98,8 +98,8 @@ Proof.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -158,8 +158,8 @@ Proof.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -225,8 +225,8 @@ Proof.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -286,8 +286,8 @@ Proof.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -350,8 +350,8 @@ Proof.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists r, ∅. rewrite map_empty_union. iFrame. }
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
+    { iExists ∅. rewrite map_empty_union. iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -385,10 +385,10 @@ Definition post_Swap (r w : dbmap) : Prop.
 Admitted.
 
 Theorem wp_SwapSeq txn tid r γ τ :
-  {{{ own_txn txn tid γ τ ∗ ⌜pre_Swap r⌝ ∗ txnmap_ptstos τ r }}}
+  {{{ own_txn txn tid r γ τ ∗ ⌜pre_Swap r⌝ ∗ txnmap_ptstos τ r }}}
     SwapSeq #txn
   {{{ w (ok : bool), RET #ok;
-      own_txn txn tid γ τ ∗
+      own_txn txn tid r γ τ ∗
       if ok then ⌜post_Swap r w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 Admitted.

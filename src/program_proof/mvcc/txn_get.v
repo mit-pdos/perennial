@@ -6,11 +6,11 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
 (*****************************************************************)
-Theorem wp_txn__Get txn tid (k : u64) dbv γ τ :
-  {{{ own_txn txn tid γ τ ∗ txnmap_ptsto τ k dbv }}}
+Theorem wp_txn__Get txn tid view (k : u64) dbv γ τ :
+  {{{ own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv }}}
     Txn__Get #txn #k
   {{{ (v : u64) (found : bool), RET (#v, #found);
-      own_txn txn tid γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
+      own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hptsto] HΦ".
@@ -125,7 +125,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iSplitR "Hptsto".
-  { do 2 iExists _.
+  { iExists _.
     iFrame "Hltuples Htxnmap".
     do 6 iExists _.
     iFrame "Hactive Htid Hsid Hwrbuf HwrbufRP".

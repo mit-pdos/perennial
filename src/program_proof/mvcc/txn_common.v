@@ -94,14 +94,14 @@ Definition own_txn_impl (txn : loc) (ts : nat) (mods : dbmap) γ : iProp Σ :=
     "_" ∷ True.
 
 (* TODO: Unify [own_txn] and [own_txn_ready]. *)
-Definition own_txn (txn : loc) (ts : nat) γ τ : iProp Σ :=
-  ∃ (view : dbmap) (mods : dbmap),
+Definition own_txn (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
+  ∃ (mods : dbmap),
     "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
     "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view).
 
-Definition own_txn_ready (txn : loc) (ts : nat) γ τ : iProp Σ :=
-  ∃ (view : dbmap) (mods : dbmap),
+Definition own_txn_ready (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
+  ∃ (mods : dbmap),
     "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
     "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
@@ -115,8 +115,8 @@ Definition tuple_applied
   | Nil => tuple_killed tuple tid k γ
   end.
 
-Definition own_txn_applied (txn : loc) (ts : nat) γ τ : iProp Σ :=
-  ∃ (view : dbmap) (mods : dbmap),
+Definition own_txn_applied (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
+  ∃ (mods : dbmap),
     "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
     "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
@@ -147,9 +147,9 @@ Hint Extern 1 (environments.envs_entails _ (own_txnsite _ _ _)) => unfold own_tx
 Hint Extern 1 (environments.envs_entails _ (own_txnmgr _)) => unfold own_txnmgr : core.
 Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
 Hint Extern 1 (environments.envs_entails _ (own_txn_impl _ _ _ _)) => unfold own_txn_impl : core.
-Hint Extern 1 (environments.envs_entails _ (own_txn _ _ _ _)) => unfold own_txn : core.
-Hint Extern 1 (environments.envs_entails _ (own_txn_ready _ _ _ _)) => unfold own_txn_ready : core.
-Hint Extern 1 (environments.envs_entails _ (own_txn_applied _ _ _ _)) => unfold own_txn_applied : core.
+Hint Extern 1 (environments.envs_entails _ (own_txn _ _ _ _ _)) => unfold own_txn : core.
+Hint Extern 1 (environments.envs_entails _ (own_txn_ready _ _ _ _ _)) => unfold own_txn_ready : core.
+Hint Extern 1 (environments.envs_entails _ (own_txn_applied _ _ _ _ _)) => unfold own_txn_applied : core.
 Hint Extern 1 (environments.envs_entails _ (own_txn_uninit _ _)) => unfold own_txn_uninit : core.
 
 Section lemma.
