@@ -75,13 +75,32 @@ Proof.
     iDestruct "HfciFrag" as (mods') "HfciFrag".
     iDestruct (fci_tmods_lookup with "HfciFrag HfciAuth") as "%Helem".
     apply Hfci in Helem. simpl in Helem.
-    destruct Helem as (lp & ls & Hfc & Hincomp).
+    (* Obtain contradiction by length of physical tuple. *)
+    pose proof Helem as Hfci'.
     apply hd_error_tl_repr in Hfuture as [Hhead _].
+    destruct Helem as (lp & ls & Hfc & Hincomp).
     pose proof (first_commit_eq Hfc Hhead) as Emods.
     subst mods'.
-
-    (* TODO: Obtain contradiction by length of physical tuple. *)
-    admit.
+    destruct (Exists_incompatible_exists past tid mods) as (key & tid' & H).
+    { apply first_commit_incompatible_Exists with future; auto. }
+    (* Get the invariant for [key] from which we obtain contradiction. *)
+    iDestruct (big_sepS_elem_of _ _ key with "Hkeys") as "Hkey"; first set_solver.
+    iNamed "Hkey".
+    unfold ptuple_past_rel in Hpprel.
+    rewrite Forall_forall in Hpprel.
+    destruct H as [Helem H].
+    iDestruct (big_sepM_lookup_dom with "Hlocks") as "Htoken".
+    { by apply elem_of_dom in Helem. }
+    iDestruct "Htoken" as (phys') "[Hptuple' %HlenLe]".
+    iDestruct (ptuple_agree with "Hptuple' Hptuple") as "->".
+    destruct H as [H | H].
+    - (* Case EvRead. *)
+      destruct H as [Hact Hlt].
+      (* Q: How to transform [x = x -> Q] to [Q]? *)
+      apply Hpprel in Hact. simpl in Hact. lia.
+    - (* Case EvCommit. *)
+      destruct H as (mods' & Helem' & Hact & Hle).
+      apply Hpprel in Hact. simpl in Hact. lia.
   }
   { (* Case FCC. *)
     iNamed "Hfcc".
@@ -102,7 +121,7 @@ Proof.
     pose proof (Map.map_subset_dom_eq _ _ _ _ Hdom Hw) as H.
     by subst w.
   }
-Admitted.
+Qed.
 
 Theorem wp_txn__Commit txn tid view mods γ τ :
   {{{ own_txn_ready txn tid view γ τ ∗ cmt_tmods_frag γ (tid, mods) }}}

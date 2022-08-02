@@ -22,9 +22,16 @@ Definition mvcc_inv_gc γ : iProp Σ :=
   inv mvccNGC (mvcc_inv_gc_def γ).
 
 (* SST invariants. *)
-(* TODO *)
-Definition ptuple_past_rel (key : u64) (phys : list dbval) (past : list action) : Prop.
-Admitted.
+
+Definition len_ptuple_pact_rel (key : u64) (len : nat) (act : action) :=
+  match act with
+  | EvCommit tid mods => (key ∈ dom mods) -> (S tid < len)%nat
+  | EvRead tid key' => (key = key') -> (tid < len)%nat
+  | _ => True
+  end.
+
+Definition ptuple_past_rel (key : u64) (phys : list dbval) (past : list action) :=
+  Forall (len_ptuple_pact_rel key (length phys)) past.
 
 Definition per_key_inv_def
            (γ : mvcc_names) (key : u64) (tmods : gset (nat * dbmap))
@@ -433,7 +440,7 @@ Admitted.
 Lemma per_key_inv_past_abort {γ tmods ts m past} tid :
   ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past) -∗
   ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m (past ++ [EvAbort tid])).
-Proof.
+Proof using heapGS0 mvcc_ghostG0 Σ.
   iIntros "Hkeys".
   iApply big_sepS_mono; last eauto.
   iIntros (key) "%Helem Hkey".

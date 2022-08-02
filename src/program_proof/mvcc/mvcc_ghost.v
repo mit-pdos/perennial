@@ -217,6 +217,7 @@ End definitions.
 Section lemmas.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
+(* TODO: Renmae [vchain_] to [ptuple_] *)
 Lemma vchain_combine {γ} q {q1 q2 key vchain1 vchain2} :
   (q1 + q2 = q)%Qp ->
   ptuple_auth γ q1 key vchain1 -∗
@@ -264,6 +265,12 @@ Lemma vchain_false {γ q key vchain} :
   ptuple_auth γ q key vchain -∗
   False.
 Proof.
+Admitted.
+
+Lemma ptuple_agree {γ q1 q2 key vchain1 vchain2} :
+  ptuple_auth γ q1 key vchain1 -∗
+  ptuple_auth γ q2 key vchain2 -∗
+  ⌜vchain1 = vchain2⌝.
 Admitted.
 
 Lemma ltuple_update {γ key l} l' :
@@ -750,7 +757,7 @@ Proof.
   apply elem_of_list_here.
 Qed.
 
-Theorem first_commit_incompatible_exists (l1 l2 : list action) (tid : nat) (mods : dbmap) :
+Lemma first_commit_incompatible_Exists (l1 l2 : list action) (tid : nat) (mods : dbmap) :
   first_commit_incompatible l1 l2 tid mods ->
   head_commit l2 tid mods ->
   Exists (incompatible tid mods) l1.
@@ -759,6 +766,31 @@ Proof.
   destruct lp; first by rewrite app_nil_r in Hincomp.
   unfold head_commit in Hhead.
   set_solver.
+Qed.
+
+Lemma Exists_incompatible_exists (l : list action) (tid : nat) (mods : dbmap) :
+  Exists (incompatible tid mods) l ->
+  ∃ key tid', key ∈ dom mods ∧
+    ((EvRead tid' key ∈ l ∧ (tid < tid')%nat) ∨
+     (∃ mods', key ∈ dom mods' ∧ EvCommit tid' mods' ∈ l ∧ (tid ≤ tid')%nat)).
+Proof.
+  intros H.
+  rewrite Exists_exists in H.
+  destruct H as (a & Helem & Hincomp).
+  unfold incompatible, compatible in Hincomp.
+  destruct a as [tid' mods' | tid' key |] eqn:E; last done.
+  - (* Case Evcommit. *)
+    apply Decidable.not_or in Hincomp.
+    destruct Hincomp as [Hle Hoverlap].
+    assert (Hindom : ∃ key, key ∈ dom mods ∧ key ∈ dom mods').
+    { apply set_choose_L in Hoverlap. set_solver. }
+    destruct Hindom as (key & Hindom & Hindom').
+    eauto 10 with lia.
+  - (* Case EvRead. *)
+    apply Decidable.not_or in Hincomp.
+    destruct Hincomp as [Hlt Hindom].
+    apply dec_stable in Hindom.
+    eauto 10 with lia.
 Qed.
 
 Lemma notin_tail {X} (x : X) (l : list X) :
