@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import txn_common proph_proof tuple_read_version.
+From Perennial.program_proof.mvcc Require Import txn_common proph_proof tuple_read_version tuple_release.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

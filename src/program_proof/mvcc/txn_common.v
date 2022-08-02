@@ -2,7 +2,7 @@
 From Perennial.program_proof Require Export grove_prelude.
 (* Import Coq model of our Goose program. *)
 From Goose.github_com.mit_pdos.go_mvcc Require Export txn.
-From Perennial.program_proof.mvcc Require Export mvcc_ghost mvcc_misc gc_proof index_proof tuple_proof wrbuf_proof.
+From Perennial.program_proof.mvcc Require Export mvcc_ghost mvcc_inv mvcc_misc gc_proof index_proof wrbuf_proof tuple_append_version tuple_kill_version tuple_common.
 (* prefer untyped slices *)
 Export Perennial.goose_lang.lib.slice.slice.
 
