@@ -96,8 +96,10 @@ Proof.
     destruct H as [H | H].
     - (* Case EvRead. *)
       destruct H as [Hact Hlt].
-      (* Q: How to transform [x = x -> Q] to [Q]? *)
-      apply Hpprel in Hact. simpl in Hact. lia.
+      apply Hpprel in Hact. simpl in Hact.
+      (* Funny way to transform [x = x -> Q] to [Q]... *)
+      assert (H : key = key) by reflexivity.
+      apply Hact in H. lia.
     - (* Case EvCommit. *)
       destruct H as (mods' & Helem' & Hact & Hle).
       apply Hpprel in Hact. simpl in Hact. lia.
