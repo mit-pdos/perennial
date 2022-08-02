@@ -244,10 +244,15 @@ Definition Server__Apply: val :=
               waitgroup.Done "wg"));;
       waitgroup.Wait "wg";;
       let: "err" := ref_to uint64T e.None in
-      ForSlice uint64T <> "err2" "errs"
+      let: "i" := ref_to uint64T #0 in
+      Skip;;
+      (for: (λ: <>, ![uint64T] "i" < slice.len "errs"); (λ: <>, Skip) := λ: <>,
+        let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
         (if: "err2" ≠ e.None
         then "err" <-[uint64T] "err2"
         else #());;
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        Continue);;
       (* log.Println("Apply() returned ", err) *)
       (![uint64T] "err", "ret")).
 
