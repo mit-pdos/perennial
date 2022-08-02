@@ -67,13 +67,20 @@ Section proof.
       ghost_var γ.(total_gn) (1/2) n ∗
       is_WaitGroup wg γ P.
 
-Lemma wp_NewWaitGroup (P:u64 → iProp Σ) :
+  Definition own_free_WaitGroup (wg:val) : iProp Σ :=
+    ∃ (mu:loc) (vptr:loc),
+      ⌜wg = (#mu, #vptr)%V⌝ ∗
+      is_free_lock mu ∗
+      vptr ↦[uint64T] #0
+  .
+
+Lemma wp_NewWaitGroup_free :
   {{{
       True
   }}}
     waitgroup.New #()
   {{{
-        (wg:val) γ, RET wg; own_WaitGroup wg γ 0 P
+        (wg:val), RET wg; own_free_WaitGroup wg
   }}}
 .
 Proof.
@@ -85,10 +92,20 @@ Proof.
   { naive_solver. }
   iIntros (vptr) "Hv".
   wp_pures.
+  iApply "HΦ".
+  iExists _, _.
+  iFrame.
+  done.
+Qed.
 
+Lemma free_WaitGroup_alloc wg P :
+  own_free_WaitGroup wg ={↑N}=∗ (∃ γ, own_WaitGroup wg γ 0 P).
+Proof.
+  iIntros "Hwg".
+  iDestruct "Hwg" as (??) "(%Hwg & His_lock & Hv)".
   iMod (ghost_map_alloc_fin ()) as (γtok) "Htokens".
   iMod (ghost_var_alloc (U64 0)) as (γtotal) "[Htotal Ht2]".
-  iApply ("HΦ" $! _ (mkwaitgroup_names γtok γtotal)).
+  iExists (mkwaitgroup_names γtok γtotal).
   iFrame.
   iExists _, _.
   iSplitL ""; first done.
@@ -121,6 +138,28 @@ Proof.
     iPureIntro.
     word.
   }
+Qed.
+
+Lemma wp_NewWaitGroup (P:u64 → iProp Σ) :
+  {{{
+      True
+  }}}
+    waitgroup.New #()
+  {{{
+        (wg:val) γ, RET wg; own_WaitGroup wg γ 0 P
+  }}}
+.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_fupd.
+  wp_apply (wp_NewWaitGroup_free).
+  iIntros (?) "Hwg".
+  iMod (fupd_mask_subseteq (↑N)) as "Hmask".
+  { set_solver. }
+  iMod (free_WaitGroup_alloc with "Hwg") as (?) "Hwg".
+  iMod "Hmask".
+  iApply "HΦ".
+  by iFrame.
 Qed.
 
 Local Opaque load_ty store_ty.
