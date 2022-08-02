@@ -582,7 +582,87 @@ Proof.
   iIntros (err_ptr) "Herr".
   wp_pures.
 
+  wp_apply (wp_ref_to).
+  { do 2 econstructor. }
+  iIntros (j_ptr) "Hi".
+  wp_pures.
+
   set (conf:=(γsrv::backups)).
+  iAssert (∃ (j err:u64),
+              "Hj" ∷ j_ptr ↦[uint64T] #j ∗
+              "Herr" ∷ err_ptr ↦[uint64T] #err ∗
+              "Hrest" ∷ if (decide (err = 0)) then
+                (∀ k γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! k = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch0 (σ++[ghost_op]))
+              else
+                True
+          )%I with "[Hi Herr]" as "Hloop".
+  {
+    iExists _, _.
+    iFrame.
+    destruct (decide (_)).
+    {
+      iIntros.
+      (* FIXME: show that the leader has accepted *)
+      admit.
+    }
+    {
+      done.
+    }
+  }
+  wp_forBreak_cond.
+  wp_pures.
+  iNamed "Hloop".
+  wp_load.
+  wp_apply wp_slice_len.
+
+  wp_pures.
+  wp_if_destruct.
+  {
+    wp_pures.
+    wp_load.
+    unfold SliceGet.
+    wp_call.
+    iDestruct (big_sepS_elem_of_acc _ _ j with "Hwg_post") as "[HH _]".
+    { set_solver. }
+    iDestruct "HH" as "[%Hbad|HH]".
+    { exfalso. word. }
+    iDestruct "HH" as (??) "(%HbackupLookup & Herr2 & Hpost)".
+    wp_apply (wp_slice_ptr).
+    wp_pure1.
+    iEval (simpl) in "Herr2".
+    iMod (readonly_load with "Herr2") as (?) "Herr3".
+    wp_load.
+    wp_pures.
+    wp_if_destruct.
+    {
+      wp_store.
+      wp_pures.
+      wp_load; wp_store.
+      iLeft.
+      iModIntro.
+      iSplitL ""; first done.
+      admit.
+    }
+    {
+      wp_pures.
+      wp_load; wp_store.
+      iLeft.
+      iModIntro.
+      iSplitL ""; first done.
+      admit.
+    }
+  }
+  iRight.
+  iModIntro.
+  iSplitL ""; first done.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  iModIntro.
+  (* iApply "HΦ". *)
+  admit.
+
+  }
   wp_apply (wp_forSlice (λ j,
                           ∃ (err:u64),
                           err_ptr ↦[uint64T] #err ∗

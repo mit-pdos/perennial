@@ -363,7 +363,7 @@ Lemma wp_WaitGroup__Wait wg γ P n :
   }}}
     waitgroup.Wait wg
   {{{
-        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat n⌝ ∨ (P n)
+        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat n⌝ ∨ (P i)
   }}}.
 Proof.
 Admitted.
