@@ -31,6 +31,7 @@ Proof.
   iMod ("H" with "Hσ Hg") as "H". iModIntro.
   iNext. iDestruct "H" as "[% H]".
   iSplit; first by destruct s; eauto. iIntros (e2 σ2 g2 efs ?).
+  iIntros "Hlc".
   iApply "H"; eauto.
 Qed.
 
@@ -49,6 +50,7 @@ Proof.
   iMod ("H" with "Hσ Hg") as "H". iModIntro.
   iNext. iDestruct "H" as "[% H]".
   iSplit; first by destruct s; eauto. iIntros (e2 σ2 g2 efs ?).
+  iIntros "Hlc".
   iApply "H"; eauto.
 Qed.
 
@@ -153,6 +155,7 @@ Proof.
   iIntros (?) "H". iApply wp_lift_atomic_step; eauto.
   iIntros (σ1 g1 ns mj D κ κs nt) "Hσ1 Hg1". iMod ("H" with "Hσ1 Hg1") as "[% H]"; iModIntro.
   iSplit; first by destruct s; auto. iNext. iIntros (e2 σ2 g2 efs Hstep).
+  iIntros "Hlc".
   iApply "H"; eauto.
 Qed.
 
@@ -211,6 +214,7 @@ Lemma wp_lift_pure_det_head_step_no_fork {s E E' Φ} e1 e2 :
   (|={E}[E']▷=> WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }}.
 Proof using Hinh Hginh.
   intros. rewrite -(wp_lift_pure_det_step_no_fork e1 e2); eauto.
+  { iIntros "H". iApply (step_fupd_wand with "H"). by iIntros. }
   destruct s; by auto.
 Qed.
 
