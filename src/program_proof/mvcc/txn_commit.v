@@ -12,7 +12,6 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
  * 5. Prove tuple-read safe extension
  *)
 
-(* TODO: the last case also needs [¬ Q r w].*)
 Definition commit_false_cases tid r γ τ : iProp Σ :=
   (nca_tids_frag γ tid) ∨
   (fa_tids_frag γ tid)  ∨
@@ -97,12 +96,16 @@ Proof.
     - (* Case EvRead. *)
       destruct H as [Hact Hlt].
       apply Hpprel in Hact. simpl in Hact.
-      (* Funny way to transform [x = x -> Q] to [Q]... *)
-      assert (H : key = key) by reflexivity.
-      apply Hact in H. lia.
+      (* The following also do the work. *)
+      (* specialize (Hact eq_refl). *)
+      (* specialize (Hact ltac:(auto)). *)
+      unshelve epose proof (Hact _); first reflexivity.
+      lia.
     - (* Case EvCommit. *)
       destruct H as (mods' & Helem' & Hact & Hle).
-      apply Hpprel in Hact. simpl in Hact. lia.
+      apply Hpprel in Hact. simpl in Hact.
+      unshelve epose proof (Hact _); first auto.
+      lia.
   }
   { (* Case FCC. *)
     iNamed "Hfcc".
