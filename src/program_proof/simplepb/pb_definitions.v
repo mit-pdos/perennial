@@ -12,6 +12,52 @@ Section pb_definitions.
 Context `{!heapGS Σ, !stagedG Σ}.
 Context `{!pbG (EntryType:=((list u8) * (iProp Σ))%type ) Σ}.
 
+(* Client/RPC spec definitions *)
+
+Record ApplyArgsC :=
+{
+  epoch : u64 ;
+  index : u64 ;
+  op : list u8 ;
+}.
+
+Definition has_encoding_ApplyArgs (encoded:list u8) (args:ApplyArgsC) : Prop.
+Admitted.
+
+Definition has_encoding_Error (encoded:list u8) (error:u64) : Prop.
+Admitted.
+
+Program Definition ApplyAsBackup_spec γ γsrv :=
+  λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ args σ Q,
+    ⌜has_encoding_ApplyArgs encoded_args args⌝ ∗
+    ⌜length σ = int.nat args.(index)⌝ ∗
+    ⌜last σ = Some (args.(op), Q) ⌝ ∗
+    is_proposal_lb γ args.(epoch) σ ∗
+    (∀ error (reply:list u8),
+        ⌜has_encoding_Error reply error⌝ -∗
+        (if (decide (error = 0)) then is_accepted_lb γsrv args.(epoch) σ else True) -∗
+        Φ reply)
+    )%I
+.
+Next Obligation.
+  solve_proper.
+Defined.
+
+Context `{!urpcregG Σ}.
+
+Definition is_pb_host γ γsrv (host:chan) :=
+  handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv).
+
+Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
+  ∃ (cl:loc) srv,
+  "#Hcl" ∷ readonly (ck ↦[pb.Clerk :: "cl"] #cl) ∗
+  "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
+  "#Hsrv" ∷ is_pb_host γ γsrv srv
+.
+
+(* Server-side definitions *)
+
 Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
   ∀ op_sl (epoch:u64) σ entry Q,
   {{{
@@ -70,48 +116,6 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv P).
 
-Record ApplyArgsC :=
-{
-  epoch : u64 ;
-  index : u64 ;
-  op : list u8 ;
-}.
-
-Definition has_encoding_ApplyArgs (encoded:list u8) (args:ApplyArgsC) : Prop.
-Admitted.
-
-Definition has_encoding_Error (encoded:list u8) (error:u64) : Prop.
-Admitted.
-
-Program Definition ApplyAsBackup_spec γ γsrv :=
-  λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ args σ Q,
-    ⌜has_encoding_ApplyArgs encoded_args args⌝ ∗
-    ⌜length σ = int.nat args.(index)⌝ ∗
-    ⌜last σ = Some (args.(op), Q) ⌝ ∗
-    is_proposal_lb γ args.(epoch) σ ∗
-    (∀ error (reply:list u8),
-        ⌜has_encoding_Error reply error⌝ -∗
-        (if (decide (error = 0)) then is_accepted_lb γsrv args.(epoch) σ else True) -∗
-        Φ reply)
-    )%I
-.
-Next Obligation.
-  solve_proper.
-Defined.
-
-Context `{!urpcregG Σ}.
-
-Definition is_pb_host γ γsrv (host:chan) :=
-  handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv).
-
-Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
-  ∃ (cl:loc) srv,
-  "#Hcl" ∷ readonly (ck ↦[pb.Clerk :: "cl"] #cl) ∗
-  "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
-  "#Hsrv" ∷ is_pb_host γ γsrv srv
-.
-
 Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :
   {{{
         is_epoch_lb γ epoch ∗
@@ -165,6 +169,7 @@ Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv (epoch index:u64)
         "%Hghost_op_σ" ∷ ⌜last σ = Some ghost_op⌝ ∗
         "%Hghost_op_op" ∷ ⌜ghost_op.1 = op⌝ ∗
         "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
+        "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
 
         "HargEpoch" ∷ args_ptr ↦[pb.ApplyArgs :: "epoch"] #epoch ∗
         "HargIndex" ∷ args_ptr ↦[pb.ApplyArgs :: "index"] #index ∗
@@ -189,8 +194,6 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
-  assert (isPrimary = false) as HnotPrimary.
-  { admit. } (* FIXME: maintain something to prove this *)
   wp_pures.
   Opaque crash_borrow.
   wp_loadField.
@@ -230,6 +233,7 @@ Proof.
   }
   replace (epoch0) with (epoch) by word.
 
+  assert (isPrimary = false) as HnotPrimary by admit.
   wp_loadField.
   wp_loadField.
   wp_pures.
@@ -295,8 +299,11 @@ Proof.
     { iExists _; iFrame "#". }
     iSplitL ""; last done.
     iPureIntro.
-    (* FIXME: add no overflow assumption *)
-    admit.
+    rewrite app_length.
+    rewrite Hσ_nextIndex.
+    simpl.
+    replace (nextIndex) with (index) by naive_solver.
+    word.
   }
   wp_pures.
   iApply "HΦ".
@@ -317,9 +324,12 @@ Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op ghost_op Q :
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
-        reply_sl σphys, RET (slice_val reply_sl);
-        is_slice reply_sl byteT 1 (replyFn σphys op) ∗
-        (Q (replyFn σphys op))
+        (err:u64) reply_sl σphys, RET (#err, slice_val reply_sl);
+        if (decide (err = 0)) then
+            is_slice reply_sl byteT 1 (replyFn σphys op) ∗
+            (Q (replyFn σphys op))
+        else
+          True
   }}}
   .
 Proof.
@@ -331,6 +341,7 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
+  wp_pure1_credit "Hcred".
   wp_pures.
   wp_loadField.
   wp_if_destruct.
@@ -342,8 +353,7 @@ Proof.
 
   (* make proposal *)
   iNamed "HprimaryOnly".
-  iMod (ghost_propose with "Hproposal Hprop_facts [] [Hupd]") as "[Hprop #Hprop_facts2]".
-  { admit. } (* FIXME: get credit *)
+  iMod (ghost_propose with "Hproposal Hprop_facts Hcred [Hupd]") as "[Hprop #Hprop_facts2]".
   {
     iMod "Hupd".
     iModIntro.
