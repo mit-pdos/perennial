@@ -14,8 +14,11 @@ Lemma list_lookup_eq {A} (l: list A) (i1 i2: nat) :
 Proof. by intros ->. Qed.
 
 Create HintDb list.
+#[global]
 Hint Resolve list_prefix_refl : list.
+#[global]
 Hint Resolve prefix_nil : list.
+#[global]
 Hint Resolve list_lookup_eq : list.
 
 Ltac find_nil :=

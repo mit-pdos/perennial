@@ -10,8 +10,10 @@ From Perennial.goose_lang.interpreter Require Import interpreter.
 From Perennial.goose_lang.ffi Require Import disk disk_prelude.
 Require Import Program.
 
+#[global]
 Instance statet_disk_error_bind : MBind (StateT state Error) :=
   StateT_bind Error Error_fmap Error_join Error_bind.
+#[global]
 Instance statet_disk_error_ret : MRet (StateT state Error) :=
   StateT_ret Error Error_ret.
 
@@ -184,6 +186,7 @@ Proof.
   simpl; reflexivity.
 Qed.
 
+#[global]
 Instance pretty_disk_op : Pretty DiskOp :=
   fun x => match x with
         | ReadOp => "ReadOp"
@@ -192,8 +195,10 @@ Instance pretty_disk_op : Pretty DiskOp :=
         end.
 
 (* Not imported from interpreter.v? *)
+#[global]
 Instance statet_error_bind : MBind (StateT btstate Error) :=
   StateT_bind Error Error_fmap Error_join Error_bind.
+#[global]
 Instance statet_error_ret : MRet (StateT btstate Error) :=
   StateT_ret Error Error_ret.
 
@@ -290,6 +295,7 @@ Proof.
   }
 Qed.
 
+#[global]
 Instance disk_interpretable : @ext_interpretable disk_op disk_model disk_semantics :=
   { ext_interpret_step := disk_interpret_step;
     ext_interpret_ok := disk_interpret_ok }.

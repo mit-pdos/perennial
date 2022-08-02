@@ -62,12 +62,14 @@ Proof.
     + rewrite -IHposs //.
 Qed.
 
+#[global]
 Instance is_txn_dec txns txn_id pos : Decision (is_txn txns txn_id pos).
 Proof.
   rewrite /is_txn.
   apply _.
 Defined.
 
+#[global]
 Instance is_txn_for_pos_dec txns pos : Decision (∃ txn_id, is_txn txns txn_id pos).
 Proof.
   rewrite /is_txn.

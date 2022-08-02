@@ -9,15 +9,18 @@ Inductive Error (X: Type) : Type :=
 | Fail (s: string)
 .
 
+#[global]
 Instance Error_fmap : FMap Error :=
   fun A B f => (fun err => match err with
                      | Works _ x => Works _ (f x)
                      | Fail _ s => Fail _ s
                      end).
 
+#[global]
 Instance Error_ret : MRet Error := Works.
 
 (* eex : Error Error A *)
+#[global]
 Instance Error_join : MJoin Error :=
   fun A eex => match eex with
             | Works _ (Fail _ s) => Fail _ s
@@ -25,6 +28,7 @@ Instance Error_join : MJoin Error :=
             | Fail _ s => Fail _ s
             end.
 
+#[global]
 Instance Error_bind : MBind Error :=
   (fun _ _ f a => mjoin (f <$> a)).
 
@@ -140,6 +144,7 @@ Proof.
   reflexivity.
 Qed.
 
+#[global]
 Hint Resolve runStateT_Error_bind : core.
 
 Definition StateT_ret {Σ: Type} M (mr: MRet M) : MRet (StateT Σ M) :=

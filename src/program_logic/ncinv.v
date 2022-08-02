@@ -12,6 +12,7 @@ Definition ncinv_aux : seal (@ncinv_def). Proof. by eexists. Qed.
 Definition ncinv := ncinv_aux.(unseal).
 Arguments ncinv {Σ _ _} N P%bi_scope.
 Definition ncinv_eq : @ncinv = @ncinv_def := ncinv_aux.(seal_eq).
+#[global]
 Instance: Params (@ncinv) 4 := {}.
 
 Definition crash_inv_def `{!invGS Σ, !crashGS Σ} N P : iProp Σ :=
@@ -20,6 +21,7 @@ Definition crash_inv_aux : seal (@crash_inv_def). Proof. by eexists. Qed.
 Definition crash_inv := crash_inv_aux.(unseal).
 Arguments crash_inv {Σ _ _} N P%bi_scope.
 Definition crash_inv_eq : @crash_inv = @crash_inv_def := crash_inv_aux.(seal_eq).
+#[global]
 Instance: Params (@crash_inv) 4 := {}.
 
 Section ci.

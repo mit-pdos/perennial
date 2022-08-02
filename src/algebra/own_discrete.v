@@ -276,12 +276,14 @@ Class Discretizable {M} {P : uPred M} := discretizable :
   P -∗ own_discrete P.
 Arguments Discretizable {_} _%I : simpl never.
 Arguments discretizable {_} _%I {_}.
+#[global]
 Hint Mode Discretizable + ! : typeclass_instances.
 
 Class IntoDiscrete {M} (P Q : uPred M) :=
   into_discrete : P ⊢ own_discrete Q.
 Arguments IntoDiscrete {_} _%I _%I.
 Arguments into_discrete {_} _%I _%I {_}.
+#[global]
 Hint Mode IntoDiscrete + ! - : typeclass_instances.
 
 Section instances.
@@ -555,6 +557,7 @@ Class IntoDiscreteFupd `{!invGS Σ} (P Q : iProp Σ) :=
   into_discrete_fupd : P ⊢ own_discrete_fupd Q.
 Arguments IntoDiscreteFupd {_ _} _%I _%I.
 Arguments into_discrete_fupd {_ _} _%I _%I {_}.
+#[global]
 Hint Mode IntoDiscreteFupd + + ! - : typeclass_instances.
 
 
@@ -716,6 +719,7 @@ Section own_disc_fupd_props.
 
 End own_disc_fupd_props.
 
+#[global]
 Hint Extern 1 (environments.envs_entails _ (<disc> _)) => iModIntro : core.
 
 Section test.

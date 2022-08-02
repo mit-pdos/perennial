@@ -718,6 +718,7 @@ Notation "l ↦[ d :: f ] v" :=
 ([simple apply] unification is too weak to do this automatically.)
 Priority is lower than the [constructor] hint to avoid that one unfolding in
 uncontrolled ways. *)
+#[global]
 Hint Extern 5 (val_ty ?v (field_ty ?t ?f)) =>
   let field_t_expr := constr:(field_ty t f) in
   (* Try to unfold as little as possible. *)

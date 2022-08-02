@@ -20,6 +20,7 @@ Class frac_countG Σ :=
   { frac_count_inG :> inG Σ (authR frac_countUR) }.
 
 Definition frac_countΣ : gFunctors := #[GFunctor (authR frac_countUR)].
+#[global]
 Instance subG_frac_countΣ {Σ} : subG frac_countΣ Σ → frac_countG Σ.
 Proof. solve_inG. Qed.
 

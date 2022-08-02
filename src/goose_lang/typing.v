@@ -587,21 +587,31 @@ Proof.
   reflexivity.
 Qed.
 
+#[global]
 Hint Resolve empty_context_to_any empty_context_to_any_val : types.
 (*
 Hint Resolve NewMap_t : types.
 *)
+#[global]
 Hint Resolve hasTy_ty_congruence : types.
+#[global]
 Hint Constructors expr_hasTy : types.
+#[global]
 Hint Constructors val_hasTy : types.
+#[global]
 Hint Constructors base_lit_hasTy : types.
 (* note that this has to be after [Hint Constructors expr_hasTy] to get higher
 priority than Panic_hasTy *)
+#[global]
 Hint Resolve Panic_unit_t : types.
+#[global]
 Hint Resolve zero_val_ty : types.
+#[global]
 Hint Resolve var_hasTy : types.
+#[global]
 Hint Resolve array_null_hasTy : types.
 
+#[global]
 Hint Extern 1 (expr_hasTy _ _ _) => apply var_hasTy; reflexivity : types.
 
 Local Ltac simp := rewrite ?insert_anon.

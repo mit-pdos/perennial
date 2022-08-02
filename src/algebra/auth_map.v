@@ -41,6 +41,7 @@ Class mapG Σ K V `{Countable K} :=
 Definition mapΣ K V `{Countable K} :=
   #[GFunctor (authR (mapUR K V))].
 
+#[global]
 Instance subG_mapG K V `{Countable K} Σ :
   subG (mapΣ K V) Σ → mapG Σ K V.
 Proof. solve_inG. Qed.

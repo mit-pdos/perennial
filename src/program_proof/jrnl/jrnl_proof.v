@@ -15,6 +15,7 @@ From Perennial.program_proof Require wp_to_wpc.
 Definition mkVersioned {K:bufDataKind} (c m: bufDataT K) : versioned_object :=
   existT K (c, m).
 
+#[global]
 Instance object_eq_dec : EqDecision object.
 Proof.
   intros o1 o2.
@@ -30,6 +31,7 @@ Proof.
   - right; intros H%eq_sigT_fst; auto.
 Qed.
 
+#[global]
 Instance versioned_object_eq_dec : EqDecision versioned_object.
 Proof.
   intros o1 o2.
@@ -63,6 +65,7 @@ Class jrnlG Σ :=
 Definition jrnlΣ : gFunctors :=
   #[ txnΣ ].
 
+#[global]
 Instance subG_jrnlΣ Σ : subG jrnlΣ Σ → jrnlG Σ.
 Proof. solve_inG. Qed.
 

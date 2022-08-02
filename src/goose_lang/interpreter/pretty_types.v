@@ -6,17 +6,21 @@ From Perennial.goose_lang Require Import locations lang.
 
 Set Default Proof Using "Type".
 
+#[global]
 Instance pretty_u64 : Pretty Integers.u64 :=
   fun x => pretty (word.unsigned x).
 
+#[global]
 Instance pretty_u32 : Pretty Integers.u32 :=
   fun x => pretty (word.unsigned x).
 
+#[global]
 Instance pretty_loc : Pretty loc :=
   fun x => pretty x.(loc_car).
 
 Definition quoted (s:string) : string := ("""" ++ s ++ """")%string.
 
+#[global]
 Instance pretty_lit : Pretty base_lit :=
   fun x => match x with
         | LitInt n => "#" ++ pretty n
@@ -30,6 +34,7 @@ Instance pretty_lit : Pretty base_lit :=
         | LitProphecy p => "LitProphecy"
         end%string.
 
+#[global]
 Instance pretty_un_op : Pretty un_op :=
   fun x => match x with
         | NegOp => "NegOp"
@@ -40,6 +45,7 @@ Instance pretty_un_op : Pretty un_op :=
         | ToStringOp => "to_string"
         end.
 
+#[global]
 Instance pretty_bin_op : Pretty bin_op :=
   fun x => match x with
         | PlusOp => "PlusOp"

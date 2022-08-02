@@ -16,6 +16,7 @@ Class barrierG Σ := BarrierG {
 Definition barrierΣ : gFunctors :=
   #[ ghost_mapΣ nat (gname * gname); savedPropΣ ].
 
+#[global]
 Instance subG_barrierΣ {Σ} : subG barrierΣ Σ → barrierG Σ.
 Proof. solve_inG. Qed.
 

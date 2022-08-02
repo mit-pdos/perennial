@@ -18,6 +18,7 @@ Proof.
   rewrite /list.untype fmap_length //.
 Qed.
 
+#[global]
 Hint Rewrite @list_untype_length : len.
 
 Section heap.

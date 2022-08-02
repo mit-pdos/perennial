@@ -181,4 +181,5 @@ Admitted.
 
 End program.
 
+#[global]
 Hint Extern 1 (environments.envs_entails _ (commit_false_cases _ _ _ _)) => unfold commit_false_cases : core.

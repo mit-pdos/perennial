@@ -16,11 +16,13 @@ usually written *)
 Set Printing Projections.
 
 Inductive DiskOp := ReadOp | WriteOp | SizeOp.
+#[global]
 Instance eq_DiskOp : EqDecision DiskOp.
 Proof.
   solve_decision.
 Defined.
 
+#[global]
 Instance DiskOp_fin : Countable DiskOp.
 Proof.
   solve_countable DiskOp_rec 3%nat.
@@ -33,6 +35,7 @@ Defined.
 
 Inductive Disk_ty := | DiskInterfaceTy.
 
+#[global]
 Instance disk_val_ty: val_types :=
   {| ext_tys := Disk_ty; |}.
 
@@ -105,6 +108,7 @@ Class disk_preG Σ :=
 Definition diskΣ : gFunctors :=
   #[gen_heapΣ Z Block].
 
+#[global]
 Instance subG_diskG Σ : subG diskΣ Σ → disk_preG Σ.
 Proof. solve_inG. Qed.
 
@@ -548,6 +552,7 @@ Notation "l d↦∗ vs" := (disk_array l (DfracOwn 1) vs%V)
 
 From Perennial.goose_lang Require Import adequacy.
 
+#[global]
 Program Instance disk_interp_adequacy:
   @ffi_interp_adequacy disk_model disk_interp disk_op disk_semantics :=
   {| ffiGpreS := disk_preG;

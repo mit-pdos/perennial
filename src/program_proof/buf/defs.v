@@ -10,8 +10,10 @@ Definition inode_buf := vec u8 inode_bytes.
 Definition inode_to_vals {ext: ffi_syntax} (i:inode_buf) : list val :=
   fmap b2val (vec_to_list i).
 Definition inode_buf0 : inode_buf := vreplicate inode_bytes (U8 0).
+#[global]
 Instance inode_witness : Inhabited inode_buf := populate inode_buf0.
 
+#[global]
 Hint Unfold inode_bytes : word.
 
 Definition list_to_inode_buf (l: list u8) : inode_buf :=

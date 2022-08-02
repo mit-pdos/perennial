@@ -28,6 +28,7 @@ Definition txnΣ : gFunctors :=
    ghost_varΣ (async (gmap addr object))
    ].
 
+#[global]
 Instance subG_txnΣ Σ : subG txnΣ Σ → txnG Σ.
 Proof. solve_inG. Qed.
 

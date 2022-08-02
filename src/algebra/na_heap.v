@@ -74,6 +74,7 @@ Ltac solve_inG_deep :=
                            | H:subG _ _ |- _ =>apply subG_inG in H || clear H
                            end; intros; try done; split; assumption || by apply _.
 
+#[global]
 Instance subG_na_heapPreG {Σ L V} `{BlockAddr L} :
   subG (na_heapΣ L V) Σ → na_heapGpreS L V Σ.
 Proof. solve_inG_deep. Qed.
@@ -141,6 +142,7 @@ Section definitions.
 End definitions.
 
 Typeclasses Opaque na_heap_mapsto.
+#[global]
 Instance: Params (@na_heap_mapsto) 8 := {}.
 
 Notation "l ↦{ q } v" := (na_heap_mapsto l q v)

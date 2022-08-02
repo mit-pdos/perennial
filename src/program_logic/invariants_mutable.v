@@ -14,6 +14,7 @@ Definition inv_mut_def `{!invGS Σ} (k: nat) (N : namespace) sch (Ps : list (iPr
 Definition inv_mut_aux : seal (@inv_mut_def). Proof. by eexists. Qed.
 Definition inv_mut {Σ i} := inv_mut_aux.(unseal) Σ i.
 Definition inv_mut_eq : @inv_mut = @inv_mut_def := inv_mut_aux.(seal_eq).
+#[global]
 Instance: Params (@inv_mut) 3 := {}.
 Typeclasses Opaque inv_mut.
 
@@ -22,6 +23,7 @@ Definition inv_mut_full_def `{!invGS Σ} (k: nat) (N : namespace) sch (Qs Ps : l
 Definition inv_mut_full_aux : seal (@inv_mut_full_def). Proof. by eexists. Qed.
 Definition inv_mut_full {Σ i} := inv_mut_full_aux.(unseal) Σ i.
 Definition inv_mut_full_eq : @inv_mut_full = @inv_mut_full_def := inv_mut_full_aux.(seal_eq).
+#[global]
 Instance: Params (@inv_mut_full) 3 := {}.
 Typeclasses Opaque inv_mut_full.
 

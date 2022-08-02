@@ -31,11 +31,13 @@ Module tests.
   Inductive Three :=
     one | two | three.
 
+  #[global]
   Instance Three_eq_dec : EqDecision Three.
   Proof.
     solve_decision.
   Qed.
 
+  #[global]
   Instance Three_countable : Countable Three.
   Proof.
     solve_countable Three_rec 3.

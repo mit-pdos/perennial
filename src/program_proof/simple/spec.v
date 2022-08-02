@@ -11,6 +11,7 @@ Module SimpleNFS.
 Notation "x <- p1 ; p2" := (bind p1 (fun x => p2))
                             (at level 20, p1 at level 100, p2 at level 200, right associativity).
 
+#[global]
 Existing Instance fallback_genBool | 99.
 
 Definition fh := u64.

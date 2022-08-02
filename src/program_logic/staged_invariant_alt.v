@@ -33,6 +33,7 @@ Definition stagedΣ : gFunctors :=
    GFunctor (authR (optionUR (exclR staged_inv_statusO)));
    savedPropΣ].
 
+#[global]
 Instance subG_stagedG {Σ} : subG stagedΣ Σ → stagedG Σ.
 Proof. solve_inG. Qed.
 

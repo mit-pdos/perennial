@@ -229,9 +229,13 @@ Definition tuple_locked tuple (key : u64) (latch : loc) γ : iProp Σ :=
 
 End def.
 
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_tuple_phys _ _ _ _)) => unfold own_tuple_phys : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_tuple_abst _ _ _ _ _ _)) => unfold own_tuple_abst : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_tuple _ _ _)) => unfold own_tuple : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (is_tuple _ _ _)) => unfold is_tuple : core.
 
 Section proof.

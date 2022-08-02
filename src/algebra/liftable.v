@@ -180,4 +180,5 @@ Section liftable.
 
 End liftable.
 
+#[global]
 Hint Mode Liftable ! ! ! ! ! ! : typeclass_instances.

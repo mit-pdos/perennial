@@ -25,8 +25,10 @@ Inductive GroveOp :=
   (* Time ops *)
   GetTscOp
 .
+#[global]
 Instance eq_GroveOp : EqDecision GroveOp.
 Proof. solve_decision. Defined.
+#[global]
 Instance GroveOp_fin : Countable GroveOp.
 Proof. solve_countable GroveOp_rec 10%nat. Qed.
 
@@ -39,8 +41,10 @@ Inductive GroveVal :=
 | ConnectionSocketV (c_l : chan) (c_r : chan)
 (** A bad (error'd) connection *)
 | BadSocketV.
+#[global]
 Instance GroveVal_eq_decision : EqDecision GroveVal.
 Proof. solve_decision. Defined.
+#[global]
 Instance GroveVal_countable : Countable GroveVal.
 Proof.
   refine (inj_countable'
@@ -66,6 +70,7 @@ Defined.
 Inductive GroveTys := GroveListenTy | GroveConnectionTy.
 
 (* TODO: Why is this an instance but the ones above are not? *)
+#[global]
 Instance grove_val_ty: val_types :=
   {| ext_tys := GroveTys; |}.
 Definition grove_ty: ext_types grove_op :=
@@ -74,8 +79,10 @@ Definition grove_ty: ext_types grove_op :=
 
 Record message := Message { msg_sender : chan; msg_data : list u8 }.
 Add Printing Constructor message. (* avoid printing with record syntax *)
+#[global]
 Instance message_eq_decision : EqDecision message.
 Proof. solve_decision. Defined.
+#[global]
 Instance message_countable : Countable message.
 Proof.
   refine (inj_countable'
@@ -213,6 +220,7 @@ Class groveGpreS Σ := {
 Definition groveΣ : gFunctors :=
   #[gen_heapΣ chan (gset message); mono_natΣ].
 
+#[global]
 Instance subG_groveGpreS Σ : subG groveΣ Σ → groveGpreS Σ.
 Proof. solve_inG. Qed.
 
@@ -821,6 +829,7 @@ End grove.
 
 From Perennial.goose_lang Require Import adequacy.
 
+#[global]
 Program Instance grove_interp_adequacy:
   @ffi_interp_adequacy grove_model grove_interp grove_op grove_semantics :=
   {| ffiGpreS := groveGpreS;

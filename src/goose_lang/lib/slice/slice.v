@@ -1426,6 +1426,7 @@ Qed.
 
 End goose_lang.
 
+#[global]
 Hint Resolve slice_val_ty : core.
 
 Arguments wp_forSlice {_ _ _ _ _ _ _}

@@ -127,6 +127,7 @@ Section goose_lang.
 
 End goose_lang.
 
+#[global]
 Instance heap_mapsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapGS loc val Σ}
          (l: loc) (v: val) :
   AsMapsTo (l ↦ v) (λ q, l ↦{q} v)%I.
@@ -134,6 +135,7 @@ Proof.
   split; [done|apply _|apply _].
 Qed.
 
+#[global]
 Hint Mode AsMapsTo - + - : typeclass_instances.
 Typeclasses Opaque readonly.
 Arguments readonly {Σ _} _%bi_scope {Φ}%function_scope {H}.

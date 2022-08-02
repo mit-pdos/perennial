@@ -32,6 +32,7 @@ Definition walheapΣ : gFunctors :=
    ghost_varΣ (async (gmap u64 Block));
    walΣ ].
 
+#[global]
 Instance subG_walheapΣ Σ : subG walheapΣ Σ → walheapG Σ.
 Proof. solve_inG. Qed.
 

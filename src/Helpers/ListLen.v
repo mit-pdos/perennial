@@ -11,13 +11,20 @@ Proof. reflexivity. Qed.
 Lemma nil_length {A} : length (@nil A) = 0%nat.
 Proof. reflexivity. Qed.
 
+#[global]
 Hint Rewrite @singleton_length @cons_length @nil_length : len.
+#[global]
 Hint Rewrite app_length @drop_length @take_length @fmap_length
      @replicate_length @repeat_length : len.
+#[global]
 Hint Rewrite @vec_to_list_length : len.
+#[global]
 Hint Rewrite @insert_length : len.
+#[global]
 Hint Rewrite @alter_length : len.
+#[global]
 Hint Rewrite u64_le_length : len.
+#[global]
 Hint Rewrite u32_le_length : len.
 
 Ltac len := autorewrite with len; try word.

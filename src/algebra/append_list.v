@@ -15,6 +15,7 @@ Class alistG Σ A :=
 
 Definition alistΣ A : gFunctors := #[ mapΣ nat A ].
 
+#[global]
 Instance subG_alistΣ Σ A : subG (alistΣ A) Σ → alistG Σ A.
 Proof. solve_inG. Qed.
 

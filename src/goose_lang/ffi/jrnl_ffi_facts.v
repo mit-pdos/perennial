@@ -102,6 +102,7 @@ Definition jrnlΣ : gFunctors :=
     mapΣ loc u64
    ].
 
+#[global]
 Instance subG_jrnlG Σ: subG jrnlΣ Σ → jrnl_preG Σ.
 Proof. solve_inG. Qed.
 
@@ -373,6 +374,7 @@ End jrnl_lemmas.
 
 From Perennial.goose_lang Require Import adequacy.
 
+#[global]
 Program Instance jrnl_interp_adequacy:
   @ffi_interp_adequacy jrnl_model jrnl_interp jrnl_op jrnl_semantics :=
   {| ffiGpreS := jrnl_preG;
