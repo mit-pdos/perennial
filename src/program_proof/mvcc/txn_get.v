@@ -127,6 +127,7 @@ Proof.
   iSplitR "Hptsto".
   { iExists _.
     iFrame "Hltuples Htxnmap".
+    iSplitL; last done.
     do 6 iExists _.
     iFrame "Hactive Htid Hsid Hwrbuf HwrbufRP".
     by iFrame "#".

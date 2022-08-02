@@ -8,7 +8,7 @@ Definition spec_body (body : val) (txn :loc) tid r P Q γ τ : iProp Σ :=
     body #txn
   {{{ w (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
-      if ok then ⌜Q r w⌝ ∗ txnmap_ptstos τ w else True
+      if ok then ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 
 Theorem wp_txn__DoTxn txn (body : val) P Q γ :
@@ -99,7 +99,7 @@ Proof.
     }
     iIntros "!>" (tid) "[Htxn _]".
     iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. iFrame. }
+    { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -159,7 +159,7 @@ Proof.
     }
     iIntros "!>" (tid) "[Htxn _]".
     iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. iFrame. }
+    { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -226,7 +226,7 @@ Proof.
     }
     iIntros "!>" (tid) "[Htxn _]".
     iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. iFrame. }
+    { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -287,7 +287,7 @@ Proof.
     }
     iIntros "!>" (tid) "[Htxn _]".
     iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. iFrame. }
+    { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -306,9 +306,13 @@ Proof.
       wp_apply (wp_txn__Abort_false with "[$Htxn HfccFrag]"); first eauto 10.
       by iIntros "contra".
     }
-    (* TODO: Destruct [Hpost] to get [Q r w]. *)
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit_false with "[$Htxn HfccFrag]"); first eauto 10.
+    iDestruct "Hpost" as "[[%HQ %Hdom] Htxnps]".
+    wp_apply (wp_txn__Commit_false with "[$Htxn HfccFrag Htxnps]").
+    { unfold commit_false_cases. do 3 iRight.
+      iExists mods, w, Q.
+      by iFrame.
+    }
     by iIntros (ok) "contra".
   }
   { (* Case FCC, [Q r w] holds. *)
@@ -351,7 +355,7 @@ Proof.
     }
     iIntros "!>" (tid) "[Htxn _]".
     iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. iFrame. }
+    { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
@@ -389,7 +393,7 @@ Theorem wp_SwapSeq txn tid r γ τ :
     SwapSeq #txn
   {{{ w (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
-      if ok then ⌜post_Swap r w⌝ ∗ txnmap_ptstos τ w else True
+      if ok then ⌜post_Swap r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 Admitted.
 

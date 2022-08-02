@@ -98,13 +98,15 @@ Definition own_txn (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
   ∃ (mods : dbmap),
     "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
     "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
-    "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view).
+    "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
+    "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝.
 
 Definition own_txn_ready (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
   ∃ (mods : dbmap),
     "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
     "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
+    "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
     "Hlocks"   ∷ ([∗ map] k ↦ _ ∈ mods, mods_token γ k ts).
 
 Definition tuple_applied
@@ -120,6 +122,7 @@ Definition own_txn_applied (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp �
     "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
     "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
+    "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
     "Hlocks"   ∷ ([∗ map] k ↦ _ ∈ mods, mods_token γ k ts) ∗
     "Hphys"    ∷ ([∗ map] k ↦ v ∈ mods,
                     ∃ tuple latch, tuple_applied tuple ts k v γ ∗

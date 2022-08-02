@@ -17,6 +17,7 @@ Proof.
   iNamed "Htxn".
   iNamed "Himpl".
   wp_call.
+  iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup".
   
   (***********************************************************)
   (* wrbuf := txn.wrbuf                                      *)
@@ -39,7 +40,15 @@ Proof.
     rewrite insert_union_l.
     set mods' := (<[ _ := _ ]> mods).
     iExists mods'.
-    eauto 20 with iFrame.
+    iFrame "Hltuples Htxnmap".
+    iSplitL; first eauto 20 with iFrame.
+    iPureIntro.
+    destruct (mods !! k) eqn:E.
+    - rewrite dom_insert_lookup_L; auto.
+    - rewrite lookup_union_r in Hlookup; last auto.
+      rewrite dom_insert_L.
+      apply elem_of_dom_2 in Hlookup.
+      set_solver.
   }
   iFrame.
 Qed.

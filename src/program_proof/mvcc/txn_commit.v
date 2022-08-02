@@ -13,14 +13,15 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
  *)
 
 (* TODO: the last case also needs [¬ Q r w].*)
-Definition commit_false_cases tid γ : iProp Σ :=
+Definition commit_false_cases tid r γ τ : iProp Σ :=
   (nca_tids_frag γ tid) ∨
   (fa_tids_frag γ tid)  ∨
   (∃ mods, fci_tmods_frag γ (tid, mods)) ∨
-  (∃ mods, fcc_tmods_frag γ (tid, mods)).
+  (∃ mods w Q, fcc_tmods_frag γ (tid, mods) ∗ txnmap_ptstos τ w ∗
+               ⌜Q r w ∧ ¬ Q r (mods ∪ r) ∧ dom w = dom r⌝).
 
 Theorem wp_txn__Commit_false txn tid view γ τ :
-  {{{ own_txn_ready txn tid view γ τ ∗ commit_false_cases tid γ }}}
+  {{{ own_txn_ready txn tid view γ τ ∗ commit_false_cases tid view γ τ }}}
     Txn__Commit #txn
   {{{ (ok : bool), RET #ok; False }}}.
 Proof.
@@ -84,16 +85,22 @@ Proof.
   }
   { (* Case FCC. *)
     iNamed "Hfcc".
-    iDestruct "HfccFrag" as (mods') "HfccFrag".
+    iDestruct "HfccFrag" as (mods' w Q) "(HfccFrag & Htxnps & %HQ & %HnotQ & %Hdom)".
     iDestruct (fcc_tmods_lookup with "HfccFrag HfccAuth") as "%Helem".
     apply Hfcc in Helem. simpl in Helem.
+    (* Obtain equality between [mods] (in proph) and [mods'] (in evidence). *)
     destruct Helem as (lp & ls & Hfc & Hcomp).
     apply hd_error_tl_repr in Hfuture as Hhdtl.
     destruct Hhdtl as [Hhead _].
     pose proof (first_commit_eq Hfc Hhead) as Emods.
     subst mods'.
-    (* TODO: Obtain contradiction from [Q r w] and [¬ Q r w]. *)
-    admit.
+    (* Obtain contradiction from [Q r w] and [¬ Q r w]. *)
+    iDestruct (txnmap_lookup_big with "Htxnmap Htxnps") as "%Hw".
+    assert (Hviewdom : dom view = dom (mods ∪ view)) by set_solver.
+    rewrite Hviewdom in Hdom.
+    symmetry in Hdom.
+    pose proof (Map.map_subset_dom_eq _ _ _ _ Hdom Hw) as H.
+    by subst w.
   }
 Admitted.
 
@@ -150,4 +157,4 @@ Admitted.
 
 End program.
 
-Hint Extern 1 (environments.envs_entails _ (commit_false_cases _ _)) => unfold commit_false_cases : core.
+Hint Extern 1 (environments.envs_entails _ (commit_false_cases _ _ _ _)) => unfold commit_false_cases : core.

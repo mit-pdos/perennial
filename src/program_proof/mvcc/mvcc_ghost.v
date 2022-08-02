@@ -383,6 +383,12 @@ Lemma txnmap_lookup τ m k v :
   ⌜m !! k = Some v⌝.
 Admitted.
 
+Lemma txnmap_lookup_big τ m m' :
+  txnmap_auth τ m -∗
+  txnmap_ptstos τ m' -∗
+  ⌜m' ⊆ m⌝.
+Admitted.
+
 Lemma txnmap_update {τ m k v} w :
   txnmap_auth τ m -∗
   txnmap_ptsto τ k v ==∗
