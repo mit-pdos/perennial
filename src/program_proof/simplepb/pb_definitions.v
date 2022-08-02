@@ -59,6 +59,7 @@ Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
 
 Lemma wp_Clerk__Apply γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl op :
   {{{
+        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
         "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
         "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
@@ -67,19 +68,21 @@ Lemma wp_Clerk__Apply γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl o
         "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
         "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
 
-        "HargEpoch" ∷ args_ptr ↦[pb.ApplyArgs :: "epoch"] #epoch ∗
-        "HargIndex" ∷ args_ptr ↦[pb.ApplyArgs :: "index"] #index ∗
-        "HargOp" ∷ args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val op_sl) ∗
-        "HopSl" ∷ is_slice op_sl byteT 1 op
+        "#HargEpoch" ∷ readonly (args_ptr ↦[pb.ApplyArgs :: "epoch"] #epoch) ∗
+        "#HargIndex" ∷ readonly (args_ptr ↦[pb.ApplyArgs :: "index"] #index) ∗
+        "#HargOp" ∷ readonly (args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val op_sl)) ∗
+        "#HopSl" ∷ readonly (is_slice_small op_sl byteT 1 op)
   }}}
     Clerk__Apply #ck #args_ptr
   {{{
-        (err:u64), RET #err; if (decide (err = 0)) then
+        (err:u64), RET #err; □ if (decide (err = 0)) then
                                is_accepted_lb γsrv epoch σ
                              else True
   }}}.
 Proof.
 Admitted.
+(* How to show `if decide (err = 0) then
+   SomethingPersistent else SomethingElsePersistent` is persistent? *)
 
 (* Server-side definitions *)
 
@@ -90,7 +93,8 @@ Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
         crash_borrow (own_Server_ghost γ γsrv epoch σ ∗ P epoch σ) (
           ∃ epoch' σ', (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
         )
-        ∗ is_slice op_sl byteT 1 entry.1
+        ∗
+        readonly (is_slice_small op_sl byteT 1 entry.1)
   }}}
     applyFn (slice_val op_sl)
   {{{
@@ -133,7 +137,9 @@ Definition own_Server (s:loc) γ γsrv P : iProp Σ :=
             "#Hconf" ∷ is_epoch_config γ epoch (γsrv :: backups) ∗
                      (* FIXME: ptrT vs refT (struct.t Clerk) *)
             "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
-            "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv') ∗
+            "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗
+                                                                      is_epoch_lb γsrv' epoch
+                             ) ∗
             "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
             "Hproposal" ∷ own_proposal γ epoch σ
         )
@@ -346,7 +352,7 @@ Admitted.
 Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op ghost_op Q :
   {{{
         is_Server s γ γsrv ∗
-        is_slice op_sl byteT 1 op ∗
+        readonly (is_slice_small op_sl byteT 1 op) ∗
         ⌜ghost_op.1 = op⌝ ∗
         (* FIXME: maybe have a layer below this for the Qs *)
         (|={⊤∖↑pbN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑pbN}=∗ Q (replyFn (map (λ x, x.1) σ) op)))
@@ -363,7 +369,7 @@ Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op ghost_op Q :
   .
 Proof.
   iIntros (Φ) "[#His Hpre] HΦ".
-  iDestruct "Hpre" as "(Hsl & %Hghostop_op & Hupd)".
+  iDestruct "Hpre" as "(#Hsl & %Hghostop_op & Hupd)".
   iNamed "His".
   wp_call.
   wp_loadField.
@@ -453,7 +459,15 @@ Proof.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
   iMod (free_WaitGroup_alloc pbN _
-                             (λ i, True%I)
+                             (λ i,
+                               ∃ (err:u64) γsrv',
+                               ⌜backups !! int.nat i = Some γsrv'⌝ ∗
+                               readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
+                               if (decide (err = 0)) then
+                                 is_accepted_lb γsrv' epoch0 (σ ++ [ghost_op])
+                               else
+                                 True
+                             )%I
          with "Hwg") as (γwg) "Hwg".
   iMod "Hmask".
   iModIntro.
@@ -463,35 +477,124 @@ Proof.
   iIntros (Hargs) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
+  iMod (readonly_alloc_1 with "epoch") as "#Hargs_epoch".
+  iMod (readonly_alloc_1 with "index") as "#Hargs_index".
+  iMod (readonly_alloc_1 with "op") as "#Hargs_op".
   wp_pures.
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
-  wp_apply (wp_forSlice (λ j, own_WaitGroup pbN wg γwg j _) with "[] [Hwg $Hclerks_sl2]").
+  wp_apply (wp_forSlice (λ j, (own_WaitGroup pbN wg γwg j _) ∗
+                              (errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z j)↦∗[uint64T] (replicate (int.nat clerks_sl.(Slice.sz) - int.nat j) #0)
+                        )%I with "[] [Hwg Herrs_sl $Hclerks_sl2]").
+  2: {
+    iSplitR "Herrs_sl".
+    { iExactEq "Hwg". econstructor. }
+    {
+      unfold slice.is_slice. unfold slice.is_slice_small.
+      iDestruct "Herrs_sl" as "[[Herrs_sl %Hlen] _]".
+      destruct Hlen as [Hlen _].
+      rewrite replicate_length in Hlen.
+      rewrite Hlen.
+      iExactEq "Herrs_sl".
+      simpl.
+      replace (1 * int.Z _)%Z with (0%Z) by word.
+      rewrite loc_add_0.
+      replace (int.nat _ - int.nat 0) with (int.nat errs_sl.(Slice.sz)) by word.
+      done.
+    }
+  }
   {
     iIntros (i ck).
     clear Φ.
-    iIntros (Φ) "!# (Hwg & %Hi_ineq & Hlookup) HΦ".
+    iIntros (Φ) "!# ([Hwg Herr_ptrs]& %Hi_ineq & %Hlookup) HΦ".
     wp_pures.
     wp_apply (wp_WaitGroup__Add with "[$Hwg]").
     { word. }
-    iIntros "[Hwg HwgTok]".
+    iIntros "[Hwg Hwg_tok]".
     wp_pures.
+    replace (int.nat clerks_sl.(Slice.sz) - int.nat i) with (S (int.nat clerks_sl.(Slice.sz) - (int.nat (word.add i 1)))) by word.
+    rewrite replicate_S.
+    iDestruct (array_cons with "Herr_ptrs") as "[Herr_ptr Herr_ptrs]".
     (* use wgTok to set errs_sl *)
-    admit.
+    iDestruct (own_WaitGroup_to_is_WaitGroup with "[Hwg]") as "#His_wg".
+    {
+      iExactEq "Hwg". econstructor. (* FIXME: why doesn't framing work? *)
+    }
+    wp_apply (wp_fork with "[Hwg_tok Herr_ptr]").
+    {
+      iNext.
+      iDestruct (big_sepL2_lookup_1_some with "Hclerks_rpc") as %[γsrv' Hlookupγ].
+      { done. }
+      iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc") as "Hclerk_rpc".
+      { done. }
+      { done. }
+      iDestruct "Hclerk_rpc" as "[[Hclerk_rpc Hepoch_lb] _]".
+      wp_apply (wp_Clerk__Apply with "[$Hclerk_rpc $Hepoch_lb]").
+      {
+        iFrame "Hprop_lb Hprop_facts2 # %".
+        iPureIntro.
+        rewrite last_app.
+        rewrite app_length.
+        rewrite Hσ_nextIndex.
+        simpl.
+        split; eauto.
+        split; eauto.
+        split; first done.
+        (* FIXME: add overflow check *)
+        admit.
+      }
+      iIntros (err) "#Hpost".
+      unfold SliceSet.
+      wp_pures.
+      unfold slice.ptr.
+      wp_pures.
+      wp_store.
+
+      iMod (readonly_alloc_1 with "Herr_ptr") as "#Herr_ptr".
+      wp_apply (wp_WaitGroup__Done with "[$Hwg_tok $His_wg Herr_ptr Hpost]").
+      {
+        iModIntro.
+        iExists _, _.
+        iSplitL ""; first done.
+        iFrame "#".
+      }
+      done.
+    }
+    iApply "HΦ".
+    iSplitL "Hwg".
+    {
+      iExactEq "Hwg". econstructor. (* FIXME: more framing not working *)
+    }
+    iExactEq "Herr_ptrs".
+    f_equal.
+    rewrite /ty_size //=.
+    rewrite loc_add_assoc.
+    f_equal.
+    word.
   }
-  {
-    iExactEq "Hwg". done.
-  }
-  iIntros "[Hwg _]".
+  iIntros "[[Hwg _] _]".
   wp_pures.
 
-  wp_apply (wp_WaitGroup__Wait with "Hwg").
-  iIntros "HwgPost".
+  wp_apply (wp_WaitGroup__Wait with "[$Hwg]").
+  iIntros "Hwg_post".
   wp_pures.
   wp_apply (wp_ref_to).
   { repeat econstructor. }
   iIntros (err_ptr) "Herr".
   wp_pures.
 
+  set (conf:=(γsrv::backups)).
+  wp_apply (wp_forSlice (λ j,
+                          ∃ (err:u64),
+                          err_ptr ↦[uint64T] #err ∗
+                          if (decide (err = 0)) then
+                            (∀ k γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! k = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch0 (σ++[ghost_op]))%I
+                          else
+                            True
+           )%I with "[Herr]").
+  {
+    iIntros (??).
+    admit.
+  }
 Admitted.
 
 End pb_definitions.

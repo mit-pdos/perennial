@@ -98,8 +98,14 @@ Proof.
   done.
 Qed.
 
+Lemma own_WaitGroup_to_is_WaitGroup wg γ P n :
+  own_WaitGroup wg γ n P -∗ is_WaitGroup wg γ P.
+Proof.
+  iIntros "[_ $]".
+Qed.
+
 Lemma free_WaitGroup_alloc wg P :
-  own_free_WaitGroup wg ={↑N}=∗ (∃ γ, own_WaitGroup wg γ 0 P).
+  own_free_WaitGroup wg ={↑N}=∗ (∃ γ, own_WaitGroup wg γ 0 P ).
 Proof.
   iIntros "Hwg".
   iDestruct "Hwg" as (??) "(%Hwg & His_lock & Hv)".
