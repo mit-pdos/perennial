@@ -404,7 +404,7 @@ Theorem wp_Swap (txn : loc) γ :
     <<< ∀∀ (r : dbmap), ⌜pre_Swap r⌝ ∗ dbmap_ptstos γ r >>>
       Swap #txn @ ↑mvccNSST
     <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜post_Swap r w⌝ ∗ dbmap_ptstos γ w) else dbmap_ptstos γ r >>>
-    {{{ (v : u64), RET #ok; own_txn_uninit txn γ }}}.
+    {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
