@@ -14,6 +14,7 @@ Definition ae_inv_mut_def `{!invGS Σ} (k: nat) mj sch (Ps : list (iProp Σ)) : 
 Definition ae_inv_mut_aux : seal (@ae_inv_mut_def). Proof. by eexists. Qed.
 Definition ae_inv_mut {Σ i} := ae_inv_mut_aux.(unseal) Σ i.
 Definition ae_inv_mut_eq : @ae_inv_mut = @ae_inv_mut_def := ae_inv_mut_aux.(seal_eq).
+#[global]
 Instance: Params (@ae_inv_mut) 3 := {}.
 Typeclasses Opaque ae_inv_mut.
 
@@ -22,6 +23,7 @@ Definition ae_inv_mut_full_def `{!invGS Σ} (k: nat) mj sch (Qs Ps : list (iProp
 Definition ae_inv_mut_full_aux : seal (@ae_inv_mut_full_def). Proof. by eexists. Qed.
 Definition ae_inv_mut_full {Σ i} := ae_inv_mut_full_aux.(unseal) Σ i.
 Definition ae_inv_mut_full_eq : @ae_inv_mut_full = @ae_inv_mut_full_def := ae_inv_mut_full_aux.(seal_eq).
+#[global]
 Instance: Params (@ae_inv_mut_full) 3 := {}.
 Typeclasses Opaque ae_inv_mut_full.
 

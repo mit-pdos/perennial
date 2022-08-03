@@ -17,6 +17,7 @@ Class asyncG Σ (K V: Type) `{Countable K, EqDecision V} := {
 Definition asyncΣ K V `{Countable K, EqDecision V} : gFunctors :=
   #[ fmlistΣ (gmap K V); GFunctor (gmap_viewR K natO) ].
 
+#[global]
 Instance subG_asyncΣ Σ K V `{Countable K, EqDecision V} : subG (asyncΣ K V) Σ → asyncG Σ K V.
 Proof.
   intros.

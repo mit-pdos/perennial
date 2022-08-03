@@ -62,6 +62,7 @@ Definition list_to_async {A} `{!Inhabited A} (l: list A) : async A :=
      pending := take (length l - 1)%nat l;
   |}.
 
+#[global]
 Instance rev_inj A : Inj eq eq (@rev A).
 Proof.
   intros l1 l2 Heq.

@@ -10,6 +10,7 @@ From iris.prelude Require Import options.
 
 Set Default Proof Using "Type".
 
+#[global]
 Existing Instances pri_inv_tok_timeless later_tok_timeless.
 
 Section inv.

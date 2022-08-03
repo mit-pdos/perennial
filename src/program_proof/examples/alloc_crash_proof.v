@@ -13,6 +13,7 @@ Inductive block_status :=
 | block_reserved
 | block_used.
 
+#[global]
 Instance block_status_eq_dec : EqDecision block_status.
 Proof.
   intros e1 e2.

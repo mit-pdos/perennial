@@ -7,6 +7,7 @@ From Perennial Require Import Helpers.LittleEndian.
 
 Open Scope Z_scope.
 
+#[global]
 Instance word_inhabited width (word: Interface.word width) : Inhabited word.
 Proof.
   constructor.
@@ -48,6 +49,7 @@ Definition width64_ok : 0 < 64 := eq_refl.
 Definition width32_ok : 0 < 32 := eq_refl.
 Definition width8_ok : 0 < 8 := eq_refl.
 
+#[global]
 Hint Resolve width64_ok width32_ok width8_ok : typeclass_instances.
 
 Opaque Naive.word.
@@ -57,6 +59,7 @@ Module u64_instance.
   Import Interface.word.
   Notation "'lift1' f" := (fun w => Word64 (f w.(u64_car))) (at level 10, only parsing).
   Notation "'lift2' f" := (fun w1 w2 => Word64 (f w1.(u64_car) w2.(u64_car))) (at level 10, only parsing).
+  #[global]
   Instance u64 : word 64 :=
     {|
       rep := u64_rep;
@@ -103,6 +106,7 @@ Module u32_instance.
   Import Interface.word.
   Notation "'lift1' f" := (fun w => Word32 (f w.(u32_car))) (at level 10, only parsing).
   Notation "'lift2' f" := (fun w1 w2 => Word32 (f w1.(u32_car) w2.(u32_car))) (at level 10, only parsing).
+  #[global]
   Instance u32 : word 32 :=
     {|
       rep := u32_rep;
@@ -149,6 +153,7 @@ Module u8_instance.
   Import Interface.word.
   Notation "'lift1' f" := (fun w => Word8 (f w.(u8_car))) (at level 10, only parsing).
   Notation "'lift2' f" := (fun w1 w2 => Word8 (f w1.(u8_car) w2.(u8_car))) (at level 10, only parsing).
+  #[global]
   Instance u8 : word 8 :=
     {|
       rep := u8_rep;
@@ -208,6 +213,7 @@ Definition U64 (x:Z) : u64 := word.of_Z x.
 Definition U32 (x:Z) : u32 := word.of_Z x.
 Definition U8 (x:Z)  : u8  := word.of_Z x.
 
+#[global]
 Instance word_eq_dec {width} (word: word width) {word_ok: word.ok word} : EqDecision word.
 Proof.
   hnf; intros; hnf.
@@ -216,10 +222,14 @@ Proof.
     [ left | right]; inversion H; auto.
 Defined.
 
+#[global]
 Instance u64_eq_dec : EqDecision u64 := _.
+#[global]
 Instance u32_eq_dec : EqDecision u32 := _.
+#[global]
 Instance u8_eq_dec : EqDecision u8 := _.
 
+#[global]
 Instance int_Z_inj `(word: Interface.word width) {word_ok: word.ok word} : Inj eq eq (@word.unsigned width _).
 Proof.
   intros x1 x2.
@@ -227,9 +237,11 @@ Proof.
   apply word.unsigned_inj in H; auto.
 Qed.
 
+#[global]
 Instance byte_eq_dec : EqDecision byte.
 Proof. solve_decision. Defined.
 
+#[global]
 Instance word_countable `(word: Interface.word width) {word_ok: word.ok word} : Countable word.
 Proof.
   apply (inj_countable'
@@ -238,10 +250,13 @@ Proof.
   by rewrite word.of_Z_unsigned.
 Qed.
 
+#[global]
 Instance u64_countable : Countable u64.
 Proof. apply _. Qed.
+#[global]
 Instance u32_countable : Countable u32.
 Proof. apply _. Qed.
+#[global]
 Instance u8_countable : Countable byte.
 Proof. apply _. Qed.
 
@@ -580,6 +595,7 @@ Proof.
   - word.
 Qed.
 
+#[global]
 Instance word_finite `(word: Interface.word width) {word_ok: word.ok word} : Finite word.
 Proof.
   apply (enc_finite

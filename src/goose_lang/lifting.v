@@ -1353,6 +1353,7 @@ Hint Cut [ ( _* ) (goose_localGS | goose_globalGS) ( _* ) HeapGS] : typeclass_in
 *)
 Global Existing Instances goose_globalGS goose_localGS.
 
+#[global]
 Hint Extern 0 (AsRecV (RecV _ _ _) _ _ _) =>
   apply AsRecV_recv : typeclass_instances.
 

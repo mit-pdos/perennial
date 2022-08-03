@@ -439,6 +439,7 @@ End goose.
 Typeclasses Opaque rblock_cinv.
 
 (* rblock_cinv is durable *)
+#[global]
 Instance rblock_crash `{!heapGS Σ} addr σ :
   IntoCrash (rblock_cinv addr σ) (λ _, rblock_cinv addr σ).
 Proof.
@@ -508,6 +509,7 @@ Section recov.
   Qed.
 End recov.
 
+#[global]
 Existing Instances subG_stagedG.
 
 Definition repΣ := #[stagedΣ; heapΣ; crashΣ].

@@ -109,7 +109,9 @@ Definition mvcc_inv_sst γ p : iProp Σ :=
 
 End def.
 
+#[global]
 Hint Extern 1 (environments.envs_entails _ (mvcc_inv_sst_def _ _)) => unfold mvcc_inv_sst_def : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (per_key_inv_def _ _ _ _ _ _)) => unfold per_key_inv_def : core.
 
 Section theorem.

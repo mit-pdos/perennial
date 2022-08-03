@@ -185,6 +185,7 @@ Qed.
 
 End goose_lang.
 
+#[global]
 Hint Extern 3 (descriptor_wf ?d) => exact (proj_descriptor_wf d) : typeclass_instances.
 
 Module struct.

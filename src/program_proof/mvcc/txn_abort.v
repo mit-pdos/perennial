@@ -121,4 +121,5 @@ Qed.
 
 End program.
 
+#[global]
 Hint Extern 1 (environments.envs_entails _ (abort_false_cases _ _)) => unfold abort_false_cases : core.

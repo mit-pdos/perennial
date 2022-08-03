@@ -17,6 +17,7 @@ Ltac len := autorewrite with len; try word.
 
 Class lockmapG Σ := lockmap_inG :> ghost_mapG Σ u64 bool.
 Definition lockmapΣ := ghost_mapΣ u64 bool.
+#[global]
 Instance subG_lockmapΣ Σ : subG lockmapΣ Σ → lockmapG Σ.
 Proof. solve_inG. Qed.
 

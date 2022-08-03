@@ -3,6 +3,7 @@ From Goose.github_com.mit_pdos.gokv Require Import pb.
 From Perennial.program_proof.pb Require Export replica_ghost_defns.
 From Perennial.Helpers Require Import ListSolver.
 
+#[global]
 Hint Unfold log_po : list.
 
 Section replica_ghost_proof.

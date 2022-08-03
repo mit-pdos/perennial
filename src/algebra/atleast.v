@@ -14,13 +14,16 @@ Definition bi_atleast {PROP : bi} (k : nat) (P : PROP) : PROP := (▷^k False �
 Arguments bi_atleast {_} _ _%I : simpl never.
 Notation "◇_ n P" := (bi_atleast n P) (at level 20, n at level 9, P at level 20,
    format "◇_ n  P").
+#[global]
 Instance: Params (@bi_atleast) 2 := {}.
 Typeclasses Opaque bi_atleast.
 
 Class AbsolutelyTimeless {PROP : bi} (P : PROP) := abs_timeless : ∀ k, ▷^k P ⊢ ◇_k P.
 Arguments AbsolutelyTimeless {_} _%I : simpl never.
 Arguments abs_timeless {_} _%I {_}.
+#[global]
 Hint Mode AbsolutelyTimeless + ! : typeclass_instances.
+#[global]
 Instance: Params (@AbsolutelyTimeless) 1 := {}.
 
 Section PROP_laws.
@@ -285,21 +288,26 @@ End uPred_laws.
 Class IntoAtLeast {PROP : bi} k (P Q : PROP) := into_atleast : P ⊢ ◇_k Q.
 Arguments IntoAtLeast {_} _ _%I _%I : simpl never.
 Arguments into_atleast {_} _ _%I _%I {_}.
+#[global]
 Hint Mode IntoAtLeast + - ! - : typeclass_instances.
+#[global]
 Hint Mode IntoAtLeast + - - ! : typeclass_instances.
 
 Class IsAtLeast {PROP : bi} k (Q : PROP) := is_atleast : ◇_k Q ⊢ Q.
 Arguments IsAtLeast {_} _ _%I : simpl never.
 Arguments is_atleast {_} _ _%I {_}.
+#[global]
 Hint Mode IsAtLeast + + ! : typeclass_instances.
 
 Class MakeAtLeast {PROP : bi} k (P Q : PROP) :=
   make_atleast : ◇_k P ⊣⊢ Q.
 Arguments MakeAtLeast {_} _ _%I _%I.
+#[global]
 Hint Mode MakeAtLeast + - - - : typeclass_instances.
 Class KnownMakeAtLeast {PROP : bi} k (P Q : PROP) :=
   known_make_except_0 :> MakeAtLeast k P Q.
 Arguments KnownMakeAtLeast {_} _ _%I _%I.
+#[global]
 Hint Mode KnownMakeAtLeast + + ! - : typeclass_instances.
 
 Section class_instances_atleast.

@@ -20,6 +20,7 @@ Definition ae_inv_def `{!invGS Σ} (k : nat) (mj: option nat) (P : iProp Σ) : i
 Definition ae_inv_aux : seal (@ae_inv_def). Proof. by eexists. Qed.
 Definition ae_inv {Σ i} := ae_inv_aux.(unseal) Σ i.
 Definition ae_inv_eq : @ae_inv = @ae_inv_def := ae_inv_aux.(seal_eq).
+#[global]
 Instance: Params (@ae_inv) 3 := {}.
 Typeclasses Opaque ae_inv.
 

@@ -75,9 +75,11 @@ Inductive JrnlOp :=
   | AllocOp (* alloc *)
 .
 
+#[global]
 Instance eq_JrnlOp : EqDecision JrnlOp.
 Proof. solve_decision. Defined.
 
+#[global]
 Instance JrnlOp_fin : Countable JrnlOp.
 Proof. solve_countable JrnlOp_rec 9%nat. Qed.
 
@@ -88,6 +90,7 @@ Inductive Jrnl_ty :=
  | JrnlT
  | AllocT.
 
+#[global]
 Instance jrnl_val_ty: val_types :=
   {| ext_tys := Jrnl_ty; |}.
 

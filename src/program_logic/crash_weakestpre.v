@@ -124,6 +124,7 @@ Definition wpc_aux `{!irisGS Λ Σ, !generationGS Λ Σ} : seal (@wpc_def Λ Σ 
 
 Definition wpc `{!irisGS Λ Σ, !generationGS Λ Σ} := wpc_aux.(unseal).
 Arguments wpc {Λ Σ _ _} _ E _%E _%I _%I.
+#[global]
 Instance: Params (@wpc) 7 := {}.
 Definition wpc_eq `{!irisGS Λ Σ, !generationGS Λ Σ} : wpc = @wpc_def Λ Σ _ _ := wpc_aux.(seal_eq).
 

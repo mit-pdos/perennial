@@ -8,6 +8,7 @@ Class IntoVal {ext: ffi_syntax} V :=
     IntoVal_def: V;
     IntoVal_inj' v : from_val (to_val v) = Some v ;
   }.
+#[global]
 Hint Mode IntoVal - ! : typeclass_instances.
 
 Arguments IntoVal_def {_} V {_}.
@@ -27,9 +28,12 @@ Class IntoValForType {ext} V {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) 
       (* TODO: this isn't necessary, but it seems reasonable *)
       to_val_ty: forall v:V, val_ty (to_val v) t; }.
 (* Require [V] or [ty] to not be an evar before doing TC search *)
+#[global]
 Hint Mode IntoValForType - - - - ! : typeclass_instances.
+#[global]
 Hint Mode IntoValForType - ! - - - : typeclass_instances.
 
+#[global]
 Instance Permutation_inj_list_fmap {A B} (f: A -> B) `{!Inj eq eq f} :
   Inj (≡ₚ) (≡ₚ) (fmap (M:=list) f).
 Proof.
@@ -53,6 +57,7 @@ Proof.
   apply _.
 Qed.
 
+#[global]
 Instance Inj_fmap_map {K} `{!EqDecision K} `{!Countable K} {A B} (f: A → B) `{!Inj eq eq f} :
   Inj eq eq (fmap (M:=gmap K) f).
 Proof.

@@ -28,6 +28,7 @@ Definition simpleΣ :=
    lockmapΣ
   ].
 
+#[global]
 Instance subG_simpleΣ Σ : subG simpleΣ Σ → simpleG Σ.
 Proof. solve_inG. Qed.
 

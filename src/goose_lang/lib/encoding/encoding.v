@@ -755,7 +755,9 @@ Qed.
 
 End heap.
 
+#[global]
 Hint Rewrite @u64_le_bytes_length : len.
+#[global]
 Hint Rewrite @u32_le_bytes_length : len.
 
 Ltac Zify.zify_post_hook ::= idtac.

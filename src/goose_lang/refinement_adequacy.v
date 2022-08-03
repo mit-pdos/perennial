@@ -22,8 +22,10 @@ Class refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi sp
   refinement_heap_resv :> inG Σ (frac_coPsetR);
 }.
 
+#[global]
 Existing Instances spec_ffi_op_field spec_ext_semantics_field spec_ffi_model_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 Definition refinement_heapΣ `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} : gFunctors := #[GFunctor (frac_coPsetR); invΣ; na_heapΣ loc val; ffiΣ; proph_mapΣ proph_id (val * val); traceΣ; frac_countΣ].
+#[global]
 Instance subG_refinement_heapPreG `{ext: spec_ffi_op} `{@spec_ffi_interp_adequacy ffi spec_ffi ext EXT} {Σ} :
   subG refinement_heapΣ Σ → refinement_heapPreG Σ.
 Proof.

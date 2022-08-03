@@ -50,6 +50,7 @@ Definition walΣ : gFunctors :=
    mono_natΣ
    ].
 
+#[global]
 Instance subG_walΣ Σ : subG walΣ Σ → walG Σ.
 Proof. solve_inG. Qed.
 
@@ -1086,6 +1087,7 @@ Ltac destruct_is_wal :=
   wp_call;
   iNamed "Hmem"; iNamed "Hstfields".
 
+#[global]
 Hint Unfold locked_wf : word.
 
 Typeclasses Opaque is_base_disk.

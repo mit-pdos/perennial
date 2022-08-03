@@ -5,7 +5,9 @@ From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang.ffi Require Import jrnl_ffi atomic_refinement.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert.
 
+#[global]
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy jrnl_semantics.
+#[global]
 Existing Instances spec_ffi_model_field spec_ffi_op_field spec_ext_semantics_field spec_ffi_interp_field spec_ffi_interp_adequacy_field.
 
 (* This first result proves a refinement theorem showing that the GoTxn scheme of wrapping

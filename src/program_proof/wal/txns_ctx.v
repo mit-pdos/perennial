@@ -13,6 +13,7 @@ txn_id is referenced by pos, log < pos contains updates through and including up
 Class txns_ctxG Σ := { txns_ctx_alist :> alistG Σ (u64 * list update.t) }.
 Definition txns_ctxΣ : gFunctors := #[alistΣ (u64 * list update.t)].
 
+#[global]
 Instance subG_txns_ctx Σ : subG txns_ctxΣ Σ → txns_ctxG Σ.
 Proof. solve_inG. Qed.
 

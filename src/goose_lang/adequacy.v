@@ -36,6 +36,7 @@ Class ffi_interp_adequacy `{FFI: !ffi_interp ffi} `{EXT: !ffi_semantics ext ffi}
 (* this is the magic that lets subG_ffiPreG solve for an ffiGpreS using only
 typeclass resolution, which is the one thing solve_inG tries. *)
 Existing Class ffiGpreS.
+#[global]
 Hint Resolve subG_ffiPreG : typeclass_instances.
 
 Class gooseGpreS `{ext: ffi_syntax} `{EXT_SEM: !ffi_semantics ext ffi}
@@ -69,6 +70,7 @@ Ltac solve_inG_deep :=
 
 Definition heapΣ `{ext: ffi_syntax} `{ffi_interp_adequacy} : gFunctors :=
   #[invΣ; crashΣ; na_heapΣ loc val; proph_mapΣ proph_id val; ffiΣ; traceΣ; creditΣ].
+#[global]
 Instance subG_heapPreG `{ext: ffi_syntax} `{@ffi_interp_adequacy ffi Hinterp ext EXT} {Σ} :
   subG heapΣ Σ → gooseGpreS Σ.
 Proof.

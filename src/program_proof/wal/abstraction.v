@@ -16,6 +16,7 @@ Module update.
 End update.
 
 Definition LogSz: Z := 511.
+#[global]
 Hint Unfold LogSz : word.
 
 Definition disk := gmap Z Block.

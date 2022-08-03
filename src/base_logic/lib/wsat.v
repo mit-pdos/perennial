@@ -100,7 +100,9 @@ Definition ownI_mut `{!invGS Σ} {n} (lvl: nat) (i : positive) q (Qs : vec (iPro
          own (invariant_name γs) (◯ {[ i := (l, inv_mut_unfold q Qs) ]})).
 Global Arguments ownI_mut {_ _ _} _ _ _%I.
 Typeclasses Opaque ownI_mut.
+#[global]
 Instance: Params (@inv_mut_unfold) 1 := {}.
+#[global]
 Instance: Params (@ownI_mut) 3 := {}.
 
 Definition ownE `{!invGS Σ} (E : coPset) : iProp Σ :=

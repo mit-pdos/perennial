@@ -146,13 +146,21 @@ Definition own_txn_uninit (txn : loc) γ : iProp Σ :=
 
 End def.
 
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_txnsite _ _ _)) => unfold own_txnsite : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_txnmgr _)) => unfold own_txnmgr : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (is_txnmgr _ _)) => unfold is_txnmgr : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_txn_impl _ _ _ _)) => unfold own_txn_impl : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_txn _ _ _ _ _)) => unfold own_txn : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_txn_ready _ _ _ _ _)) => unfold own_txn_ready : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_txn_applied _ _ _ _ _)) => unfold own_txn_applied : core.
+#[global]
 Hint Extern 1 (environments.envs_entails _ (own_txn_uninit _ _)) => unfold own_txn_uninit : core.
 
 Section lemma.

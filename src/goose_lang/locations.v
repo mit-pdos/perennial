@@ -7,9 +7,11 @@ Record loc := Loc { loc_car : Z; loc_off : Z }.
 Add Printing Constructor loc. (* avoid printing with record syntax *)
 Definition null := {| loc_car := 0; loc_off := 0 |}.
 
+#[global]
 Instance loc_eq_decision : EqDecision loc.
 Proof. solve_decision. Defined.
 
+#[global]
 Instance loc_inhabited : Inhabited loc := populate null.
 
 (* loc_countable was originally given with a non-constructive proof,
@@ -19,13 +21,16 @@ operations. *)
 Lemma loc_car_inj : forall x : loc, {| loc_car := loc_car x; loc_off := loc_off x |} = x.
   by intros [].
 Qed.
+#[global]
 Instance loc_countable : Countable loc :=
   inj_countable' (λ x, (loc_car x, loc_off x)) (fun i => {| loc_car := i.1; loc_off := i.2 |}) loc_car_inj.
 
+#[global]
 Program Instance loc_infinite : Infinite loc :=
   inj_infinite (λ p, {| loc_car := p; loc_off := 0 |}) (λ l, Some (loc_car l)) _.
 Next Obligation. done. Qed.
 
+#[global]
 Program Instance locs_BlockAddr: BlockAddr loc :=
   {| addr_decode := λ l, (loc_car l, loc_off l);
      addr_encode := λ l, {| loc_car := fst l; loc_off := snd l |} |}.
@@ -55,6 +60,7 @@ Proof. apply addr_plus_eq_inv. Qed.
 Lemma loc_add_ne l i : (0 < i)%Z -> l +ₗ i <> l.
 Proof. apply addr_plus_ne. Qed.
 
+#[global]
 Instance loc_add_inj l : Inj eq eq (loc_add l).
 Proof. apply addr_plus_off_inj. Qed.
 

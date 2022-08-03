@@ -15,6 +15,7 @@ Arguments GenPred : clear implicits.
 Notation GenType T Σ := (GenPred T Σ (fun _ _ => True)).
 
 Definition fallback_genPred T Σ p : GenPred T Σ p (* | 99 *) := fun _ _ => None.
+#[global]
 Instance bool_GenType Σ : GenType bool Σ := fun z _ => Some (exist _ (z mod 2 =? 0)%Z I).
 
 Class GenBool T Σ (b: Σ -> T -> bool) := genNextBool : Z -> forall (s:Σ), option {x:T | b s x = true}.

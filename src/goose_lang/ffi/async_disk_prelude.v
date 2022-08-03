@@ -1,7 +1,10 @@
 From Perennial.goose_lang Require Import lang.
 From Perennial.goose_lang Require Export ffi.async_disk_proph.
+#[global]
 Existing Instances async_disk_syntax.disk_op async_disk_proph.disk_model async_disk_syntax.disk_ty.
+#[global]
 Existing Instances async_disk_proph.disk_semantics async_disk_proph.disk_interp.
+#[global]
 Existing Instance goose_diskGS.
 (* Now that the TC parameter is fixed, we can make this a coercion. *)
 Coercion Var' (s: string) := Var s.

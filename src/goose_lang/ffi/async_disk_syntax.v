@@ -16,11 +16,13 @@ usually written *)
 Set Printing Projections.
 
 Inductive DiskOp := ReadOp | WriteOp | SizeOp | BarrierOp.
+#[global]
 Instance eq_DiskOp : EqDecision DiskOp.
 Proof.
   solve_decision.
 Defined.
 
+#[global]
 Instance DiskOp_fin : Countable DiskOp.
 Proof.
   solve_countable DiskOp_rec 4%nat.
@@ -33,6 +35,7 @@ Defined.
 
 Inductive Disk_ty := | DiskInterfaceTy.
 
+#[global]
 Instance disk_val_ty: val_types :=
   {| ext_tys := Disk_ty; |}.
 

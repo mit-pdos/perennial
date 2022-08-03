@@ -145,11 +145,15 @@ Section goose_lang.
 
 End goose_lang.
 
+#[global]
 Hint Resolve zero_val_ty' : core.
 (* give has_zero a chance to simplify, then eauto can keep going *)
+#[global]
 Hint Extern 50 (has_zero _) => progress simpl : core.
 (* Only use constructors as fallback *)
+#[global]
 Hint Extern 10 (val_ty _ _) => constructor : core.
+#[global]
 Hint Extern 10 (lit_ty _ _) => constructor : core.
 (* Just a compat alias *)
 Ltac val_ty :=

@@ -52,6 +52,7 @@ Class jrnlG Σ :=
 Definition jrnlΣ : gFunctors :=
   #[ mapΣ addr object; mspec.jrnlΣ; asyncΣ addr object ].
 
+#[global]
 Instance subG_jrnlΣ Σ : subG jrnlΣ Σ → jrnlG Σ.
 Proof. solve_inG. Qed.
 

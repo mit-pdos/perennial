@@ -11,6 +11,7 @@ From Perennial.program_proof Require Import wal.lib.
 From Perennial.program_proof Require Import marshal_block util_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
+#[global]
 Existing Instance r_mbind.
 
 Module circΣ.
@@ -48,6 +49,7 @@ Class circG Σ :=
 Definition circΣ : gFunctors :=
   #[ghost_varΣ (list u64); ghost_varΣ (list Block); mono_natΣ; stagedΣ].
 
+#[global]
 Instance subG_circΣ Σ : subG circΣ Σ → circG Σ.
 Proof. solve_inG. Qed.
 

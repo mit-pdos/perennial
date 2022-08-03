@@ -14,6 +14,7 @@ From Perennial.program_proof Require Import alloc.alloc_proof.
 
 From Goose Require github_com.mit_pdos.go_journal.obj.
 
+#[global]
 Existing Instances jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics jrnl_spec_ffi_interp jrnl_spec_interp_adequacy.
 
 Section refinement_defs.

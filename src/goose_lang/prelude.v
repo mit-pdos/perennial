@@ -40,9 +40,11 @@ Module Data.
   End goose_lang.
 End Data.
 
+#[global]
 Hint Resolve Data.stringToBytes_t Data.bytesToString_t : types.
 
 Opaque Data.randomUint64.
+#[global]
 Hint Resolve Data.randomUint64_t : types.
 
 Module FS.

@@ -22,6 +22,7 @@ Proof.
   rewrite /byte_to_bits fmap_length seqZ_length //.
 Qed.
 
+#[global]
 Hint Rewrite length_byte_to_bits : len.
 
 Definition bits_to_byte (bs: list bool): byte :=

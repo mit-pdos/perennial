@@ -30,6 +30,7 @@ Module inode.
   Definition size σ := length σ.(blocks).
 End inode.
 
+#[global]
 Hint Unfold inode.wf InodeMaxBlocks : word.
 
 Section goose.

@@ -10,7 +10,9 @@ From Perennial.program_proof Require Import wal.abstraction.
 
 Implicit Types (txn_id:nat) (pos: u64).
 
+#[global]
 Existing Instance r_mbind.
+#[global]
 Existing Instance fallback_genPred.
 
 Definition update_durable: transition log_state.t unit :=

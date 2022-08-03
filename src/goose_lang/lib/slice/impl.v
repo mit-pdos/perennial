@@ -32,6 +32,7 @@ Module slice.
   End types.
 End slice.
 
+#[global]
 Hint Resolve slice.ptr_t slice.len_t slice.nil_t : types.
 
 Section goose_lang.
@@ -188,5 +189,6 @@ Definition ForSlice t (iv: binder) (xv: binder) (s: expr) (body: expr): expr :=
 
 End goose_lang.
 
+#[global]
 Hint Resolve has_zero_slice_T : core.
 Global Opaque slice.T raw_slice SliceAppend SliceAppendSlice.
