@@ -221,7 +221,7 @@ Proof.
     iInv bankN as ">HbankInv" "HbankInvClose".
     iNamed "HbankInv".
     iDestruct (map_valid with "[$] Hacc1_log") as "%Hval1".
-    rewrite lookup_union_l lookup_singleton // in Hval1. inversion Hval1; subst.
+    rewrite lookup_union_l' lookup_singleton // in Hval1. inversion Hval1; subst.
 
     iDestruct (map_valid with "[$] Hacc2_log") as "%Hval2".
     rewrite lookup_union_r in Hval2; last first.

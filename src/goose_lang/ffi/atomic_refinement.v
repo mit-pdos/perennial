@@ -823,7 +823,7 @@ Section go_refinement.
     foheap σ1.
   Proof.
     rewrite /foheap. intros Hfo l n v Hin. eapply Hfo; eauto.
-    rewrite lookup_union_l; eauto.
+    rewrite lookup_union_l'; eauto.
   Qed.
 
   Lemma heap_array_forall {A} (P : A → Prop) l ls :
