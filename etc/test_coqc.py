@@ -45,6 +45,13 @@ def test_classify_def():
         )
         == "σ"
     )
+    assert (
+        Classify.get_def(
+            r"""#[global]
+Instance GroveOp_fin : Countable GroveOp."""
+        )
+        == "GroveOp_fin"
+    )
 
     assert Classify.get_def(r"""Require Import Utf8.""") is None
 
