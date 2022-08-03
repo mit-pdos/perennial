@@ -46,6 +46,7 @@ Next Obligation.
 Defined.
 
 Context `{!urpcregG Σ}.
+Context `{!waitgroupG Σ}.
 
 Definition is_pb_host γ γsrv (host:chan) :=
   handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv).
@@ -86,6 +87,9 @@ Admitted.
 
 (* Server-side definitions *)
 
+Definition replyFn (σ:list (list u8))  (op:list u8) : (list u8).
+Admitted.
+
 Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
   ∀ op_sl (epoch:u64) σ entry Q,
   {{{
@@ -98,11 +102,13 @@ Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
   }}}
     applyFn (slice_val op_sl)
   {{{
-        RET #();
+        reply_sl,
+        RET (slice_val reply_sl);
         crash_borrow (own_Server_ghost γ γsrv epoch (σ ++ [entry]) ∗ P epoch (σ ++ [entry])) (
           ∃ epoch' σ',
           (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
         ) ∗
+        is_slice reply_sl byteT 1 (replyFn ((λ x, x.1) <$> σ) entry.1) ∗
         Q
   }}}
 .
@@ -134,6 +140,7 @@ Definition own_Server (s:loc) γ γsrv P : iProp Σ :=
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
             ∃ (clerks:list loc) (backups:list pb_server_names),
+            "%Hconf_clerk_len" ∷ ⌜length clerks = length (γsrv :: backups)⌝ ∗
             "#Hconf" ∷ is_epoch_config γ epoch (γsrv :: backups) ∗
                      (* FIXME: ptrT vs refT (struct.t Clerk) *)
             "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
@@ -210,7 +217,7 @@ Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv (epoch index:u64)
         "HargEpoch" ∷ args_ptr ↦[pb.ApplyArgs :: "epoch"] #epoch ∗
         "HargIndex" ∷ args_ptr ↦[pb.ApplyArgs :: "index"] #index ∗
         "HargOp" ∷ args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val op_sl) ∗
-        "HopSl" ∷ is_slice op_sl byteT 1 op
+        "HopSl" ∷ readonly (is_slice_small op_sl byteT 1 op)
   }}}
     pb.Server__ApplyAsBackup #s #args_ptr
   {{{
@@ -319,7 +326,7 @@ Proof.
     instantiate (1:=is_accepted_lb γsrv epoch σ).
     done.
   }
-  iIntros "[Hstate #Hlb]".
+  iIntros (reply) "(Hstate & Hreply & #Hlb)".
   wp_pures.
   wp_loadField.
   wp_storeField.
@@ -346,23 +353,22 @@ Proof.
   done.
 Admitted.
 
-Definition replyFn (σ:list (list u8))  (op:list u8) : (list u8).
-Admitted.
-
-Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op ghost_op Q :
+Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   {{{
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op) ∗
         ⌜ghost_op.1 = op⌝ ∗
         (* FIXME: maybe have a layer below this for the Qs *)
-        (|={⊤∖↑pbN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑pbN}=∗ Q (replyFn (map (λ x, x.1) σ) op)))
+        (|={⊤∖↑pbN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑pbN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
-        (err:u64) reply_sl σphys, RET (#err, slice_val reply_sl);
+        (err:u64) reply_sl, RET (#err, slice_val reply_sl);
         if (decide (err = 0)) then
+          ∃ σ,
+            let σphys := (λ x, x.1) <$> σ in
             is_slice reply_sl byteT 1 (replyFn σphys op) ∗
-            (Q (replyFn σphys op))
+            is_ghost_lb γ (σ ++ [ghost_op])
         else
           True
   }}}
@@ -417,7 +423,8 @@ Proof.
     instantiate (1:=True%I).
     done.
   }
-  iIntros "[Hstate _]".
+  (* FIXME: get accepted witness here *)
+  iIntros (reply) "(Hstate & Hreply & _)".
 
   wp_pures.
   wp_loadField.
@@ -444,6 +451,7 @@ Proof.
       admit.
     }
     iExists _, _; iFrame "∗#".
+    done.
   }
 
   wp_pures.
@@ -463,7 +471,7 @@ Proof.
                                ∃ (err:u64) γsrv',
                                ⌜backups !! int.nat i = Some γsrv'⌝ ∗
                                readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
-                               if (decide (err = 0)) then
+                               □ if (decide (err = 0)) then
                                  is_accepted_lb γsrv' epoch0 (σ ++ [ghost_op])
                                else
                                  True
@@ -530,7 +538,7 @@ Proof.
       iDestruct "Hclerk_rpc" as "[[Hclerk_rpc Hepoch_lb] _]".
       wp_apply (wp_Clerk__Apply with "[$Hclerk_rpc $Hepoch_lb]").
       {
-        iFrame "Hprop_lb Hprop_facts2 # %".
+        iFrame "Hprop_lb Hprop_facts2 #".
         iPureIntro.
         rewrite last_app.
         rewrite app_length.
@@ -575,7 +583,7 @@ Proof.
   wp_pures.
 
   wp_apply (wp_WaitGroup__Wait with "[$Hwg]").
-  iIntros "Hwg_post".
+  iIntros "#Hwg_post".
   wp_pures.
   wp_apply (wp_ref_to).
   { repeat econstructor. }
@@ -590,9 +598,10 @@ Proof.
   set (conf:=(γsrv::backups)).
   iAssert (∃ (j err:u64),
               "Hj" ∷ j_ptr ↦[uint64T] #j ∗
+              "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
-              "Hrest" ∷ if (decide (err = 0)) then
-                (∀ k γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! k = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch0 (σ++[ghost_op]))
+              "#Hrest" ∷ □ if (decide (err = 0)) then
+                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch0 (σ++[ghost_op]))
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -615,6 +624,10 @@ Proof.
   wp_load.
   wp_apply wp_slice_len.
 
+  iMod (readonly_load with "Hclerks_sl") as (?) "Htemp".
+  iDestruct (is_slice_small_sz with "Htemp") as %Hclerk_sz.
+  iClear "Htemp".
+
   wp_pures.
   wp_if_destruct.
   {
@@ -633,7 +646,22 @@ Proof.
     iMod (readonly_load with "Herr2") as (?) "Herr3".
     wp_load.
     wp_pures.
-    wp_if_destruct.
+    destruct (bool_decide (_)) as [] eqn:Herr; wp_pures.
+    {
+      rewrite bool_decide_eq_true in Herr.
+      wp_pures.
+      wp_load; wp_store.
+      iLeft.
+      iModIntro.
+      iSplitL ""; first done.
+      iFrame "∗".
+      iExists _, _.
+      iFrame "Hj Herr".
+      iSplitL "".
+      { iPureIntro. word. }
+      iModIntro.
+      destruct (decide (err = 0)); admit.
+    }
     {
       wp_store.
       wp_pures.
@@ -641,15 +669,13 @@ Proof.
       iLeft.
       iModIntro.
       iSplitL ""; first done.
-      admit.
-    }
-    {
-      wp_pures.
-      wp_load; wp_store.
-      iLeft.
-      iModIntro.
-      iSplitL ""; first done.
-      admit.
+      iFrame "∗".
+      iExists _, _.
+      iFrame "Hj Herr".
+      destruct (decide (err0 = _)).
+      { exfalso. naive_solver. }
+      iPureIntro.
+      word.
     }
   }
   iRight.
@@ -658,22 +684,33 @@ Proof.
   wp_pures.
   wp_load.
   wp_pures.
-  iModIntro.
-  (* iApply "HΦ". *)
-  admit.
 
-  }
-  wp_apply (wp_forSlice (λ j,
-                          ∃ (err:u64),
-                          err_ptr ↦[uint64T] #err ∗
-                          if (decide (err = 0)) then
-                            (∀ k γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! k = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch0 (σ++[ghost_op]))%I
-                          else
-                            True
-           )%I with "[Herr]").
+
+  iApply "HΦ".
+  destruct (decide (err = 0)); last first.
   {
-    iIntros (??).
-    admit.
+    done.
+  }
+  {
+    iExists _.
+    iMod (ghost_commit with "[] [Hrest] Hprop_lb Hprop_facts2") as "$".
+    { admit. }
+    {
+      iExists _; iFrame "#".
+      iIntros.
+      apply elem_of_list_lookup_1 in H as [k Hlookup_conf].
+      replace (int.nat j) with (length clerks); last first.
+      { word. }
+      epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.
+      replace (k) with (int.nat k) in *; last first.
+      { admit. }
+      iApply ("Hrest" $! k).
+      { iPureIntro. rewrite Hconf_clerk_len. unfold conf in HH.
+        lia. }
+      { done. }
+    }
+    iFrame "Hreply".
+    by iModIntro.
   }
 Admitted.
 

@@ -37,8 +37,12 @@ Local Coercion Var' (s:string): expr := Var s.
 
 Section proof.
   Context `{!heapGS Σ} (N : namespace).
-  Context `{!mapG Σ u64 unit}.
-  Context `{!ghost_varG Σ u64}.
+
+  Class waitgroupG Σ := {
+      wg_tokG :> mapG Σ u64 unit;
+      wg_totalG :> ghost_varG Σ u64 (* TODO: this will need to be mnat *)
+  }.
+  Context `{!waitgroupG Σ}.
 
   Record waitgroup_names :=
     mkwaitgroup_names {
