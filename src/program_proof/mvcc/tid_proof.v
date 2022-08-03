@@ -39,7 +39,6 @@ Proof.
   iIntros "HfupdC".
   iExists 0%nat.
   iFrame.
-  iNext.
   iIntros (new_time) "[%Hnew Hlb]".
   iMod "HfupdC".
   iModIntro.
