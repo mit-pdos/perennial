@@ -106,7 +106,8 @@ Theorem wp_Walog__ReadInstalled (Q: Block -> iProp Σ) l γ dinit a :
   {{{ bl, RET slice_val bl; ∃ b, is_block bl 1 b ∗ Q b}}}.
 Proof.
   iIntros (Φ) "(#Hwal & #Ha_valid & Hfupd) HΦ".
-  wp_call.
+  rewrite /Walog__ReadInstalled.
+  wp_pure1_credit "Hcred".
   wp_apply wp_Read_atomic.
   iDestruct "Hwal" as "[Hwal Hcirc]".
   iInv "Hwal" as (σ) "[Hinner HP]" "Hclose".
@@ -120,7 +121,6 @@ Proof.
       (b txn_id) "(%Htxn_id&Hb&%Hbound&Hinstalled)".
   iApply ncfupd_mask_intro; first set_solver+. iIntros "HcloseE".
   iExists _; iFrame "Hb".
-  iNext.
   iIntros "Hb".
   iMod "HcloseE" as "_".
   iSpecialize ("Hinstalled" with "Hb").
@@ -130,6 +130,7 @@ Proof.
   { solve_ndisj. }
   iDestruct (is_durable_txn_bound with "circ.end") as %Hdurable_bound.
 
+  iMod (lc_fupd_elim_later with "Hcred HP") as "HP".
   iMod ("Hfupd" $! σ σ b with "[//] [] HP") as "[HP HQ]".
   { iPureIntro.
     repeat (simpl; monad_simpl).
@@ -372,7 +373,7 @@ Proof.
     rewrite -Hupd.
     iFrame "Haddr_i_mapsto".
     iApply ncfupd_mask_intro; first set_solver+.
-    iIntros "HcloseE !> /= Haddr_i_mapsto".
+    iIntros "HcloseE /= Haddr_i_mapsto".
     iMod "HcloseE" as "_".
     iDestruct (txns_are_sound with "Htxns_ctx Hsubtxns") as %Hsubtxns.
 

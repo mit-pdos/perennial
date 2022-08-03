@@ -156,7 +156,7 @@ Theorem wp_Write_atomic (a: u64) s q b :
   ⊢ {{{ is_slice_small s byteT q (Block_to_vals b) }}}
   <<< ∀∀ aset b0, int.Z a d↦[aset] b0 >>>
     Write #a (slice_val s) @ ∅
-  <<<▷ ∃ b',⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b >>>
+  <<< ∃ b',⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b >>>
   {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
@@ -188,16 +188,16 @@ Qed.
 Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
   {{{ is_slice_small s byteT q (Block_to_vals b) ∗
       (|NC={⊤,E'}=> ∃ aset b0, int.Z a d↦[aset] b0 ∗
-                    ▷ (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b -∗ |NC={E',⊤}=> Q)) }}}
+                    (∀ b', ⌜ b' = aset ∨ b' = b ⌝ ∗ int.Z a d↦[b'] b -∗ |NC={E',⊤}=> Q)) }}}
     Write #a (slice_val s)
   {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
 Proof.
   iIntros (Φ) "[Hs Hupd] HΦ". iApply (wp_Write_atomic with "Hs").
-  rewrite difference_empty_L.
+  rewrite difference_empty_L. iNext.
   iMod "Hupd" as (aset b0) "[Hda Hclose]".
   iApply ncfupd_mask_intro; first set_solver+.
   iIntros "HcloseE". iExists aset, b0.
-  iFrame. iIntros "!> Hda". iMod "HcloseE" as "_". iDestruct "Hda" as (?) "Hda". iMod ("Hclose" with "Hda").
+  iFrame. iIntros "Hda". iMod "HcloseE" as "_". iDestruct "Hda" as (?) "Hda". iMod ("Hclose" with "Hda").
   iIntros "!> Hs". iApply "HΦ". iFrame.
 Qed.
 
@@ -212,7 +212,7 @@ Proof.
   wp_apply (wp_Write_atomic with "Hs").
   iApply ncfupd_mask_intro; first set_solver+.
   iIntros "Hclose". iExists _, _. iFrame.
-  iIntros "!> Hda". iMod "Hclose" as "_".
+  iIntros "Hda". iMod "Hclose" as "_".
   iIntros "!> Hs". iApply "HΦ". iFrame.
 Qed.
 
@@ -231,7 +231,7 @@ Qed.
 Lemma wp_Read_atomic (a: u64) q :
   ⊢ <<< ∀∀ aset b, int.Z a d↦{q}[aset] b >>>
       Read #a @ ∅
-    <<<▷ int.Z a d↦{q}[aset] b >>>
+    <<< int.Z a d↦{q}[aset] b >>>
     {{{ s, RET slice_val s; is_block_full s b }}}.
 Proof.
   iIntros "!#" (Φ) "Hupd".
@@ -256,7 +256,7 @@ Lemma wp_ReadTo_atomic (a: u64) b0 s q :
   ⊢ {{{ is_block_full s b0 }}}
   <<< ∀∀ aset b, int.Z a d↦{q}[aset] b >>>
       ReadTo #a (slice_val s) @ ∅
-    <<< ▷ int.Z a d↦{q}[aset] b >>>
+    <<< int.Z a d↦{q}[aset] b >>>
     {{{ RET #(); is_block_full s b }}}.
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
@@ -300,17 +300,17 @@ Proof.
 Qed.
 
 Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
-  {{{ |NC={⊤,E'}=> ∃ aset b, int.Z a d↦{q}[aset] b ∗ ▷ (int.Z a d↦{q}[aset] b -∗ |NC={E',⊤}=> Q b) }}}
+  {{{ |NC={⊤,E'}=> ∃ aset b, int.Z a d↦{q}[aset] b ∗ (int.Z a d↦{q}[aset] b -∗ |NC={E',⊤}=> Q b) }}}
     Read #a
   {{{ s b, RET slice_val s;
       Q b ∗ is_block_full s b }}}.
 Proof.
   iIntros (Φ) "Hupd HΦ". iApply wp_Read_atomic.
-  rewrite difference_empty_L.
+  rewrite difference_empty_L. iNext.
   iMod "Hupd" as (aset b0) "[Hda Hclose]".
   iApply ncfupd_mask_intro; first set_solver+.
   iIntros "HcloseE". iExists _, _. iFrame.
-  iIntros "!> Hda". iMod "HcloseE" as "_". iMod ("Hclose" with "Hda").
+  iIntros "Hda". iMod "HcloseE" as "_". iMod ("Hclose" with "Hda").
   iIntros "!> * Hs". iApply "HΦ". iFrame.
 Qed.
 
@@ -324,7 +324,7 @@ Proof.
   wp_apply wp_Read_atomic.
   iApply ncfupd_mask_intro; first set_solver+.
   iIntros "HcloseE". iExists _, _. iFrame.
-  iIntros "!> Hda". iMod "HcloseE" as "_".
+  iIntros "Hda". iMod "HcloseE" as "_".
   iIntros "!> * Hs". iApply ("HΦ" with "[$]").
 Qed.
 

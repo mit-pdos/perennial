@@ -596,6 +596,7 @@ Proof.
   rename H into Hpre.
   wp_call.
   wp_apply wp_hdr2; iIntros (s hdr2) "[Hb %Henchdr2]".
+  wp_pure1_credit "Hcred".
   wp_apply (wp_Write_atomic with "Hb").
   rewrite /is_circular.
   iInv "Hcirc" as "Hcirc_inv" "Hclose".
@@ -609,8 +610,9 @@ Proof.
   iDestruct "Hlow" as (hdr1 hdr2_0 Hhdr1 Hhdr2) "(Hhdr1&Hhdr2&Hblocks)".
   iExists hdr2_0; iFrame "Hhdr2".
   iApply ncfupd_mask_intro; first set_solver+.
-  iIntros "HcloseE !> Hhdr2".
+  iIntros "HcloseE Hhdr2".
   iMod "HcloseE" as "_".
+  iMod (lc_fupd_elim_later with "Hcred HP") as "HP".
   iDestruct ("Hfupd" with "[$HP]") as "Hfupd"; first by eauto.
   rewrite difference_empty_L.
   iMod ("Hfupd" with "[]") as "[HP' HQ]".
@@ -905,7 +907,7 @@ Proof.
 
   iFrame "Hdi".
   iApply ncfupd_mask_intro; first set_solver+.
-  iIntros "HcloseE !> Hdi".
+  iIntros "HcloseE Hdi".
   iMod "HcloseE" as "_".
   iSpecialize ("Hd2" with "Hdi").
   iDestruct "Hown" as (_) "[Haddrs_auth Hblocks_auth]".
@@ -1129,6 +1131,7 @@ Proof.
   wp_pures.
   wp_apply (wp_hdr1 with "[$HdiskAddrs $Hs]"); first by len.
   iIntros (b_s b) "(HdiskAddrs&Hs&Hb&%)".
+  wp_pure1_credit "Hcred".
   wp_pures.
 
   iDestruct (slice.is_slice_small_sz with "Hb") as %Hslen.
@@ -1145,7 +1148,7 @@ Proof.
   iDestruct "Hlow" as (hdr1 hdr2 Hhdr1 Hhdr2) "(Hd0 & Hd1 & Hd2)".
   iExists _. iFrame "Hd0".
   iApply ncfupd_mask_intro; first set_solver+.
-  iIntros "HcloseE !> Hd0".
+  iIntros "HcloseE Hd0".
   iMod "HcloseE" as "_".
 
   iDestruct (ghost_var_agree with "Hblocks Hγblocks") as %->.
@@ -1156,6 +1159,7 @@ Proof.
   iDestruct (start_at_least_to_le with "[$] Hstart") as %Hstart_lb'.
 
   rewrite difference_empty_L.
+  iMod (lc_fupd_elim_later with "Hcred HP") as "HP".
   iMod ("Hfupd" with "[$HP //] []") as "[HP HQ]".
   { iPureIntro.
     split.

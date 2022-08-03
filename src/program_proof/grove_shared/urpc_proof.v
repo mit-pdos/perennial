@@ -294,11 +294,10 @@ Proof.
   iIntros "Hclo'".
   iExists _.
   iFrame "Hchan'".
-  iNext.
   iIntros (err m) "(Hchan&Herr)".
-  iAssert (if err then True else server_chan_inner_msg γ (Message client m))%I with "[Hchan_inner Herr]" as "Hmsg".
+  iAssert (if err then True else ▷ server_chan_inner_msg γ (Message client m))%I with "[Hchan_inner Herr]" as "Hmsg".
   { destruct err; auto.
-    iDestruct "Herr" as %Hin.
+    iDestruct "Herr" as %Hin. iNext.
     iApply (big_sepS_elem_of with "Hchan_inner"); first eassumption.
   }
   iMod ("Hclo'") as "_".
@@ -380,7 +379,7 @@ Proof.
   iDestruct "Hclient_chan_inner" as (ms_rep) "(>Hchan'&#Hclient_chan_inner)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
-  iExists _. iFrame "Hchan'". iNext.
+  iExists _. iFrame "Hchan'".
   iIntros (msg_sent) "Hchan'".
   iMod "Hclo'" as "_".
   iMod ("Hclo" with "[Hchan']").
@@ -442,11 +441,11 @@ Proof.
   iDestruct "Hchan_inner" as (ms) "(>Hchan'&#Hchan_inner)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
-  iExists _. iFrame "Hchan'". iNext.
+  iExists _. iFrame "Hchan'".
   iIntros (err m) "(Hchan'&Herr)".
-  iAssert (if err then True else reply_chan_inner_msg Γ (Message srv m))%I with "[Hchan_inner Herr]" as "Hmsg".
+  iAssert (if err then True else ▷ reply_chan_inner_msg Γ (Message srv m))%I with "[Hchan_inner Herr]" as "Hmsg".
   { destruct err; auto.
-    iDestruct "Herr" as %Hin.
+    iDestruct "Herr" as %Hin. iNext.
     iApply (big_sepS_elem_of with "Hchan_inner"); first eassumption.
   }
   iMod "Hclo'" as "_". iMod ("Hclo" with "[Hchan']") as "_".
@@ -797,11 +796,11 @@ Proof.
   iNamed "Hhandler".
   wp_apply (wp_Send with "[$]").
   iInv "Hserver_inv" as "Hserver_inner" "Hclo".
-  iDestruct "Hserver_inner" as (ms) "(>Hchan'&H)".
+  iDestruct "Hserver_inner" as (ms) "(>Hchan'&Hmessages)".
   iApply (ncfupd_mask_intro _); first set_solver+.
   iIntros "Hclo'".
-  iExists _. iFrame "Hchan'". iNext.
-  iIntros (msg_sent) "Hchan'". iNamed "H".
+  iExists _. iFrame "Hchan'".
+  iIntros (msg_sent) "Hchan'". rewrite /named.
   iMod ("Hclo'") as "_".
   iDestruct (is_slice_small_sz with "Hslice") as %Hsz.
   iMod ("Hclo" with "[Hmessages Hchan']") as "_".

@@ -727,7 +727,7 @@ Local Ltac solve_atomic :=
     ⊢ {{{ is_slice_small s byteT q data }}}
       <<< ∀∀ ms, c_r c↦ ms >>>
         Send (connection_socket c_l c_r) (slice_val s) @ ∅
-      <<<▷ ∃∃ (msg_sent : bool),
+      <<< ∃∃ (msg_sent : bool),
         c_r c↦ (if msg_sent then ms ∪ {[Message c_l data]} else ms)
       >>>
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
@@ -762,7 +762,7 @@ Local Ltac solve_atomic :=
   Lemma wp_Receive c_l c_r :
     ⊢ <<< ∀∀ ms, c_l c↦ ms >>>
         Receive (connection_socket c_l c_r) @ ∅
-      <<<▷ ∃∃ (err : bool) (data : list u8),
+      <<< ∃∃ (err : bool) (data : list u8),
         c_l c↦ ms ∗ if err then True else ⌜Message c_r data ∈ ms⌝
       >>>
       {{{ (s : Slice.t),
@@ -804,7 +804,7 @@ Local Ltac solve_atomic :=
   Lemma wp_GetTSC :
   ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
       GetTSC #() @ ∅
-    <<<▷ ∃∃ (new_time: u64), ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time) >>>
+    <<< ∃∃ (new_time: u64), ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time) >>>
     {{{ RET #new_time; True }}}.
   Proof.
     iIntros "!>" (Φ) "HAU". wp_lam.
