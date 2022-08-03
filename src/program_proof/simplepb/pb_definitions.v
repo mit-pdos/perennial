@@ -37,7 +37,7 @@ Program Definition ApplyAsBackup_spec γ γsrv :=
     is_proposal_facts γ args.(epoch) σ ∗
     (∀ error (reply:list u8),
         ⌜has_encoding_Error reply error⌝ -∗
-        (if (decide (error = 0)) then is_accepted_lb γsrv args.(epoch) σ else True) -∗
+        (if (decide (error = (U64 0))) then is_accepted_lb γsrv args.(epoch) σ else True) -∗
         Φ reply)
     )%I
 .
@@ -156,7 +156,8 @@ Definition own_Server (s:loc) γ γsrv P : iProp Σ :=
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   ∃ (mu:val) P,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv P).
+  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv P) ∗
+  "#Hsys_inv" ∷ sys_inv γ.
 
 Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :
   {{{
@@ -364,7 +365,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
     pb.Server__Apply #s (slice_val op_sl)
   {{{
         (err:u64) reply_sl, RET (#err, slice_val reply_sl);
-        if (decide (err = 0)) then
+        if (decide (err = 0%Z)) then
           ∃ σ,
             let σphys := (λ x, x.1) <$> σ in
             is_slice reply_sl byteT 1 (replyFn σphys op) ∗
@@ -387,7 +388,17 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { (* return error "not primary" *)
-    admit.
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _.
+      iFrame "Hstate ∗#".
+      iSplitL ""; done.
+    }
+    wp_pures.
+    iApply ("HΦ" $! 1  Slice.nil).
+    done.
   }
   wp_loadField.
   iNamed "HisSm".
@@ -419,17 +430,20 @@ Proof.
     iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts2") as "HH".
     { done. }
     { rewrite app_length. word. }
+    iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
     iFrame "HH".
-    instantiate (1:=True%I).
+    iModIntro.
+    instantiate (1:=is_accepted_lb γsrv epoch0 (σ ++ [ghost_op])).
     done.
   }
-  (* FIXME: get accepted witness here *)
-  iIntros (reply) "(Hstate & Hreply & _)".
+  iIntros (reply) "(Hstate & Hreply & #Hprimary_acc_lb)".
 
   wp_pures.
   wp_loadField.
   wp_pures.
   wp_loadField.
+  wp_apply (std_proof.wp_SumAssumeNoOverflow).
+  iIntros "%Hno_overflow".
   wp_storeField.
   wp_loadField.
   wp_pures.
@@ -447,8 +461,9 @@ Proof.
     iSplitL "".
     {
       iPureIntro.
-      (* FIXME: add no overflow assumption *)
-      admit.
+      rewrite app_length.
+      simpl.
+      word.
     }
     iExists _, _; iFrame "∗#".
     done.
@@ -471,7 +486,7 @@ Proof.
                                ∃ (err:u64) γsrv',
                                ⌜backups !! int.nat i = Some γsrv'⌝ ∗
                                readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
-                               □ if (decide (err = 0)) then
+                               □ if (decide (err = U64 0)) then
                                  is_accepted_lb γsrv' epoch0 (σ ++ [ghost_op])
                                else
                                  True
@@ -547,8 +562,7 @@ Proof.
         split; eauto.
         split; eauto.
         split; first done.
-        (* FIXME: add overflow check *)
-        admit.
+        word.
       }
       iIntros (err) "#Hpost".
       unfold SliceSet.
@@ -600,7 +614,7 @@ Proof.
               "Hj" ∷ j_ptr ↦[uint64T] #j ∗
               "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
-              "#Hrest" ∷ □ if (decide (err = 0)) then
+              "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
                 (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch0 (σ++[ghost_op]))
               else
                 True
@@ -611,8 +625,16 @@ Proof.
     destruct (decide (_)).
     {
       iIntros.
-      (* FIXME: show that the leader has accepted *)
-      admit.
+      iSplitL "".
+      { iPureIntro. word. }
+      iModIntro.
+      iIntros.
+      replace (int.nat 0%Z) with (0) in H by word.
+      replace (int.nat k) with (0) in H0 by word.
+      unfold conf in H0.
+      simpl in H0.
+      injection H0 as <-.
+      iFrame "Hprimary_acc_lb".
     }
     {
       done.
@@ -649,6 +671,7 @@ Proof.
     destruct (bool_decide (_)) as [] eqn:Herr; wp_pures.
     {
       rewrite bool_decide_eq_true in Herr.
+      replace (err0) with (U64 0%Z) by naive_solver.
       wp_pures.
       wp_load; wp_store.
       iLeft.
@@ -660,7 +683,33 @@ Proof.
       iSplitL "".
       { iPureIntro. word. }
       iModIntro.
-      destruct (decide (err = 0)); admit.
+      destruct (decide (err = 0%Z)).
+      {
+        iIntros.
+        assert (int.nat k ≤ int.nat j ∨ int.nat k = int.nat (word.add j 1%Z)) as [|].
+        {
+          replace (int.nat (word.add j 1%Z)) with (int.nat j + 1) in * by word.
+          word.
+        }
+        {
+          by iApply "Hrest".
+        }
+        {
+          destruct (decide (_)); last by exfalso.
+          replace (γsrv'0) with (γsrv'); last first.
+          {
+            rewrite H1 in H0.
+            replace (int.nat (word.add j 1%Z)) with (S (int.nat j)) in H0 by word.
+            unfold conf in H0.
+            rewrite lookup_cons in H0.
+            naive_solver.
+          }
+          iDestruct "Hpost" as "#$".
+        }
+      }
+      {
+        done.
+      }
     }
     {
       wp_store.
@@ -687,14 +736,13 @@ Proof.
 
 
   iApply "HΦ".
-  destruct (decide (err = 0)); last first.
+  destruct (decide (err = 0%Z)); last first.
   {
     done.
   }
   {
     iExists _.
-    iMod (ghost_commit with "[] [Hrest] Hprop_lb Hprop_facts2") as "$".
-    { admit. }
+    iMod (ghost_commit with "Hsys_inv [Hrest] Hprop_lb Hprop_facts2") as "$".
     {
       iExists _; iFrame "#".
       iIntros.
@@ -703,7 +751,11 @@ Proof.
       { word. }
       epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.
       replace (k) with (int.nat k) in *; last first.
-      { admit. }
+      {
+        rewrite -Hconf_clerk_len in HH.
+        rewrite Hclerk_sz in HH.
+        word.
+      }
       iApply ("Hrest" $! k).
       { iPureIntro. rewrite Hconf_clerk_len. unfold conf in HH.
         lia. }
@@ -712,7 +764,7 @@ Proof.
     iFrame "Hreply".
     by iModIntro.
   }
-Admitted.
+Qed.
 
 Definition client_logR := mono_listR (leibnizO (list u8)).
 Context `{!inG Σ client_logR}.
@@ -797,7 +849,6 @@ Proof using Type*.
     }
     iMod (fupd_mask_subseteq (↑escrowN)) as "Hmask".
     {
-      Search disjoint.
       assert ((↑escrowN:coPset) ## (↑pbN:coPset)).
       { by apply ndot_ne_disjoint. }
       assert ((↑escrowN:coPset) ## (↑appN:coPset)).
