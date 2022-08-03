@@ -17,8 +17,7 @@ Theorem wp_txn__DoTxn txn (body : val) P Q γ :
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ r >>>
       Txn__DoTxn #txn body @ ↑mvccNSST
     <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q r w⌝ ∗ dbmap_ptstos γ w) else dbmap_ptstos γ r >>>
-    (* We put [v] here as a placeholder; also, there seems to be no notation for no-binder case. *)
-    {{{ (v : u64), RET #ok; own_txn_uninit txn γ }}}.
+    {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros (Hdec) "!>".
   iIntros (Φ) "[Htxn #Hbody] HAU".
@@ -170,8 +169,8 @@ Proof.
       wp_apply (wp_txn__Abort with "[$Htxn $HfaFrag]").
       iIntros "Htxn".
       wp_pures.
-      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
-      by iApply ("HΦ" $! (U64 0)).
+      (* We'll return something meaningful once [res] is added. *)
+      by iApply "HΦ".
     }
     wp_apply (wp_txn__acquire with "Htxn").
     iIntros (ok) "Htxn".
@@ -181,8 +180,8 @@ Proof.
       wp_apply (wp_txn__Abort with "[$Htxn $HfaFrag]").
       iIntros "Htxn".
       wp_pures.
-      (* We'll return something meaningful (rather than [0]) once [res] is added. *)
-      by iApply ("HΦ" $! (U64 0)).
+      (* We'll return something meaningful once [res] is added. *)
+      by iApply "HΦ".
     }
     (* Commit branch. *)
     wp_apply (wp_txn__Commit_false with "[$Htxn HfaFrag]"); first eauto.
@@ -378,7 +377,7 @@ Proof.
     wp_apply (wp_txn__Commit with "[$Htxn $HcmtFrag]").
     iIntros (ok) "Htxn".
     wp_pures.
-    by iApply ("HΦ" $! (U64 0)).
+    by iApply "HΦ".
   }
 Qed.
 
