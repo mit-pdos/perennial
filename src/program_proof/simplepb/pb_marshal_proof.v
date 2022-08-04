@@ -473,17 +473,79 @@ Proof.
   replace (replicas_sl.(Slice.sz)) with (U64 (length args.(replicas))) by word.
 
   wp_loadField.
-  (*
-  wp_apply (wp_forSlice
+  wp_apply (wp_forSlice (V:=u64)
               (λ j,
                 ∃ enc_sl (replicas_so_far:list chan),
-  "%Hreplicas" ∷ True ∗
+  "%Hreplicas_prefix" ∷ ⌜replicas_so_far `prefix_of` args.(replicas)⌝ ∗
+  "%Hreplicas_len" ∷ ⌜length replicas_so_far = int.nat j⌝ ∗
   "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
   "Henc_sl" ∷ is_slice enc_sl byteT 1 (([] ++ u64_le args.(epoch)) ++ u64_le (length args.(replicas)) ++ (flat_map u64_le replicas_so_far))
               )%I
-              with "[] [] []"
-           ). *)
-Admitted.
+              with "[] [$Hargs_replicas_sl Henc Henc_sl]"
+           ).
+  {
+    iIntros.
+    clear Φ.
+    iIntros (?) "!# (Hpre & %Hneq & %Hlookup) HΦ".
+    iNamed "Hpre".
+    wp_call.
+    wp_load.
+    wp_apply (wp_WriteInt with "Henc_sl").
+    iIntros (?) "Henc_sl".
+    wp_store.
+    iApply "HΦ".
+    iModIntro.
+    iExists _, (replicas_so_far ++ [x]).
+    iFrame.
+    rewrite flat_map_app.
+    iFrame.
+    iPureIntro; split.
+    {
+      unfold prefix.
+      destruct Hreplicas_prefix as [rest Hreplicas_prefix].
+      exists (tail rest).
+      rewrite Hreplicas_prefix.
+      rewrite -app_assoc.
+      rewrite Hreplicas_prefix in Hlookup.
+      rewrite lookup_app_r in Hlookup; last first.
+      { rewrite Hreplicas_len. done. }
+      f_equal.
+      rewrite Hreplicas_len in Hlookup.
+      replace (int.nat i - int.nat i)%nat with (0%nat) in Hlookup by word.
+      assert (length replicas_so_far < length args.(replicas)) by word.
+      destruct rest.
+      { done. }
+      simpl.
+      simpl in Hlookup.
+      by inversion Hlookup.
+    }
+    {
+      rewrite app_length //=.
+      word.
+    }
+  }
+  {
+    iExists _, [].
+    iFrame.
+    iPureIntro; split; eauto.
+    apply prefix_nil.
+  }
+  iIntros "[H1 Hsl]".
+  iNamed "H1".
+  wp_pures.
+  wp_load.
+  iModIntro.
+  iApply "HΦ".
+  iFrame "Henc_sl".
+  replace (replicas_so_far) with (args.(replicas)); last first.
+  { (* TODO: list_sover. *)
+    rewrite -Hsz in Hreplicas_len.
+    symmetry.
+    apply list_prefix_eq; last word.
+    done.
+  }
+  done.
+Qed.
 
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
@@ -494,6 +556,157 @@ Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         args_ptr, RET #args_ptr; own args_ptr args
   }}}.
+Proof.
+  iIntros (Φ) "[%Henc Henc_sl] HΦ".
+  wp_call.
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (enc_ptr) "Henc".
+  wp_apply (wp_allocStruct).
+  { naive_solver. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  rewrite Henc.
+  wp_load.
+  wp_apply (wp_ReadInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (?) "Hlen".
+  wp_load.
+
+  wp_apply (wp_ReadInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_pures.
+  wp_store.
+  wp_store.
+  wp_load.
+  wp_apply (wp_NewSlice).
+  iIntros (replicas_sl) "Hreplicas_sl".
+  wp_storeField.
+  wp_loadField.
+
+  iDestruct (is_slice_to_small with "Hreplicas_sl") as "Hreplicas_sl".
+  iDestruct (is_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz.
+  (* FIXME: need to do a forSlice and write to the elements of that slice *)
+  wp_apply (wp_forSlice (V:=u64)
+              (λ j,
+                ∃ (replicas_done replicas_left:list chan) enc_sl,
+  "%Hreplicas_prefix" ∷ ⌜args.(replicas) = replicas_done ++ replicas_left⌝ ∗
+  "%Hreplicas_len" ∷ ⌜length replicas_done = int.nat j⌝ ∗
+  "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
+  "Henc_sl" ∷ is_slice_small enc_sl byteT 1 (flat_map u64_le replicas_left) ∗
+  "HReplicas" ∷ args_ptr ↦[BecomePrimaryArgs :: "Replicas"] (slice_val replicas_sl) ∗
+  "Hreplicas_sl" ∷ is_slice_small replicas_sl uint64T 1 (replicas_done ++ (replicate (length replicas_left) (U64 0)))
+              )%I
+              with "[] [$Hreplicas_sl Henc Henc_sl $Replicas]"
+           ).
+  {
+    clear Φ.
+    iIntros (???) "!# (Hpre & %Hineq & %Hlookup) HΦ".
+    iNamed "Hpre".
+    wp_call.
+    wp_load.
+    rewrite replicate_length in Hreplicas_sz.
+    assert (int.nat i < length args.(replicas)).
+    {
+      admit.
+    }
+    destruct replicas_left as [|next_replica replicas_left'].
+    { exfalso. rewrite -Hreplicas_len in H.
+      rewrite app_nil_r in Hreplicas_prefix.
+      rewrite Hreplicas_prefix in H.
+      word.
+    }
+
+    replace (next_replica :: replicas_left') with ([next_replica] ++ replicas_left') by done.
+    rewrite flat_map_app.
+    wp_apply (wp_ReadInt with "Henc_sl").
+    iIntros (?) "Henc_sl".
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_SliceSet (V:=chan) with "[$Hreplicas_sl]").
+    {
+      iPureIntro.
+      apply lookup_lt_is_Some_2.
+      simpl.
+      rewrite app_length.
+      rewrite cons_length.
+      admit.
+    }
+    iIntros "Hreplicas_sl".
+    wp_pures.
+    wp_store.
+    iModIntro.
+    iApply "HΦ".
+    iExists _, _, _; iFrame.
+    iSplitL "".
+    {
+      iPureIntro.
+      rewrite Hreplicas_prefix.
+      rewrite cons_middle.
+      rewrite app_assoc.
+      done.
+    }
+    iSplitL "".
+    {
+      iPureIntro.
+      rewrite app_length.
+      simpl.
+      word.
+    }
+    iApply to_named.
+    iExactEq "Hreplicas_sl".
+    f_equal.
+    apply list_eq.
+    intros j.
+    destruct (decide (j = int.nat i)).
+    {
+      rewrite e.
+      rewrite list_lookup_insert; last first.
+      {
+        rewrite app_length.
+        admit.
+      }
+      {
+        rewrite lookup_app_l; last first.
+        { rewrite -Hreplicas_len. rewrite app_length. simpl.
+          unfold chan.
+          word. }
+        rewrite lookup_app_r; last first.
+        {
+          rewrite Hreplicas_len.
+          word.
+        }
+        replace (int.nat i - length replicas_done)%nat with (0%nat) by word.
+        rewrite list_lookup_singleton.
+        done.
+      }
+    }
+    {
+      admit.
+    }
+  }
+  {
+    iExists _, _, _.
+    iFrame "∗".
+    admit.
+  }
+
+  iIntros "(H1 & _)".
+  iNamed "H1".
+  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  iExists _; iFrame.
+  admit.
 Admitted.
 
 End BecomePrimaryArgs.

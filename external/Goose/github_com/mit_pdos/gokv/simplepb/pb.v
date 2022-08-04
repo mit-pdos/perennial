@@ -121,8 +121,11 @@ Definition DecodeBecomePrimaryArgs: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     struct.storeF BecomePrimaryArgs "Epoch" "args" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    let: ("replicasLen", "enc") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF BecomePrimaryArgs "Replicas" "args" (NewSlice uint64T "replicasLen");;
+    let: "replicasLen" := ref (zero_val uint64T) in
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+    "replicasLen" <-[uint64T] "0_ret";;
+    "enc" <-[slice.T byteT] "1_ret";;
+    struct.storeF BecomePrimaryArgs "Replicas" "args" (NewSlice uint64T (![uint64T] "replicasLen"));;
     ForSlice uint64T "i" <> (struct.loadF BecomePrimaryArgs "Replicas" "args")
       (let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       SliceSet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") "i" "0_ret";;
