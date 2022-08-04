@@ -6,6 +6,7 @@ From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
+From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 
 Section pb_definitions.
 
@@ -14,30 +15,17 @@ Context `{!pbG (EntryType:=((list u8) * (list (list u8) → iProp Σ))%type ) Σ
 
 (* Client/RPC spec definitions *)
 
-Record ApplyArgsC :=
-{
-  epoch : u64 ;
-  index : u64 ;
-  op : list u8 ;
-}.
-
-Definition has_encoding_ApplyArgs (encoded:list u8) (args:ApplyArgsC) : Prop.
-Admitted.
-
-Definition has_encoding_Error (encoded:list u8) (error:u64) : Prop.
-Admitted.
-
 Program Definition ApplyAsBackup_spec γ γsrv :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ Q,
-    ⌜has_encoding_ApplyArgs encoded_args args⌝ ∗
-    ⌜length σ = int.nat args.(index)⌝ ∗
-    ⌜last σ = Some (args.(op), Q) ⌝ ∗
-    is_proposal_lb γ args.(epoch) σ ∗
-    is_proposal_facts γ args.(epoch) σ ∗
+    ⌜ApplyArgs.has_encoding encoded_args args⌝ ∗
+    ⌜length σ = int.nat args.(ApplyArgs.index)⌝ ∗
+    ⌜last σ = Some (args.(ApplyArgs.op), Q) ⌝ ∗
+    is_proposal_lb γ args.(ApplyArgs.epoch) σ ∗
+    is_proposal_facts γ args.(ApplyArgs.epoch) σ ∗
     (∀ error (reply:list u8),
         ⌜has_encoding_Error reply error⌝ -∗
-        (if (decide (error = (U64 0))) then is_accepted_lb γsrv args.(epoch) σ else True) -∗
+        (if (decide (error = (U64 0))) then is_accepted_lb γsrv args.(ApplyArgs.epoch) σ else True) -∗
         Φ reply)
     )%I
 .
@@ -82,8 +70,6 @@ Lemma wp_Clerk__Apply γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl o
   }}}.
 Proof.
 Admitted.
-(* How to show `if decide (err = 0) then
-   SomethingPersistent else SomethingElsePersistent` is persistent? *)
 
 (* Server-side definitions *)
 
@@ -276,6 +262,8 @@ Proof.
   }
   replace (epoch0) with (epoch) by word.
 
+  (* FIXME: use uniqueness of γsrv to show that we are not primary, or else have
+     the code set isPrimary := false *)
   assert (isPrimary = false) as HnotPrimary by admit.
   wp_loadField.
   wp_loadField.
@@ -359,7 +347,6 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op) ∗
         ⌜ghost_op.1 = op⌝ ∗
-        (* FIXME: maybe have a layer below this for the Qs *)
         (|={⊤∖↑pbN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑pbN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
