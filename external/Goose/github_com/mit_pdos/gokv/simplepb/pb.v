@@ -85,7 +85,7 @@ Definition GetStateReply := struct.decl [
 
 Definition EncodeGetStateReply: val :=
   rec: "EncodeGetStateReply" "reply" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #8) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF GetStateReply "State" "reply"))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "Err" "reply");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF GetStateReply "State" "reply");;
     ![slice.T byteT] "enc".
