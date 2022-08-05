@@ -11,7 +11,7 @@
 -Q external/stdpp/theories stdpp
 -Q external/iris/iris iris
 -Q external/iris/iris_deprecated iris.deprecated
--Q external/iris/iris_staging iris.staging
+-Q external/iris/iris_unstable iris.unstable
 -Q external/iris/iris_heap_lang iris.heap_lang
 -Q external/coqutil/src/coqutil coqutil
 -Q external/Goose Goose
