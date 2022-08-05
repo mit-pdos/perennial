@@ -128,6 +128,24 @@ Proof.
   }
 Qed.
 
+Definition ltuple_extend_wr_pre γ tmods ts m past tid tuple k v : iProp Σ :=
+  per_key_inv_def γ k tmods ts m past ∗
+  mods_token γ k tid ∗
+  tuple_applied tuple tid k v γ.
+
+Definition ltuple_extend_wr_post γ tmods ts m past tid mods tuple k : iProp Σ :=
+  per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods]) ∗
+  mods_token γ k tid ∗
+  own_tuple tuple k γ.
+
+Theorem ltuple_extend_wr γ tmods ts m past tid mods tuple :
+  cmt_tmods_auth γ tmods -∗
+  ([∗ map] k ↦ v ∈ mods, ltuple_extend_wr_pre γ tmods ts m past tid tuple k v) ==∗
+  cmt_tmods_auth γ (tmods ∖ {[ (tid, mods) ]}) ∗
+  ([∗ map] k ↦ _ ∈ mods, ltuple_extend_wr_post γ tmods ts m past tid mods tuple k).
+Proof.
+Admitted.
+
 Theorem wp_txn__Commit txn tid view mods γ τ :
   {{{ own_txn_ready txn tid view γ τ ∗ cmt_tmods_frag γ (tid, mods) }}}
     Txn__Commit #txn
@@ -167,10 +185,19 @@ Proof.
   destruct Hhdtl as [Hhead _].
   pose proof (first_commit_eq Hfc Hhead) as Emods.
   subst mods0.
-
-  (* TODO: Remove [(tid, mods)] from [tmods]. *)
+  (* Separate out the per-key invariant for keys modified by this txn. *)
+  set keys := dom mods.
+  rewrite (union_difference_L keys keys_all); last set_solver.
+  rewrite big_sepS_union; last set_solver.
+  iDestruct "Hkeys" as "[Hkeys HkeysFix]".
+  rewrite -big_sepM_dom.
+  (* Combine [Hlocks] (the mod tokens), [Hphys] (the tuple state), and [Hkeys] (per-key inv). *)
+  iDestruct (big_sepM_sep_2 with "Hlocks Hphys") as "H".
+  iDestruct (big_sepM_sep_2 with "Hkeys H") as "H".
 
   (* TODO: Update the abstract part of the tuple RP to match the physical part. *)
+
+  (* TODO: Remove [(tid, mods)] from [tmods]. *)
 
   (* TODO: Update the sets of ok/doomed txns to re-establish inv w.r.t. [future']. *)
 

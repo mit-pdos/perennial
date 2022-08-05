@@ -11,7 +11,7 @@ Definition spec_body (body : val) (txn :loc) tid r P Q γ τ : iProp Σ :=
       if ok then ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 
-Theorem wp_txn__DoTxn txn (body : val) P Q γ :
+Theorem wp_txn__DoTxn txn (body : val) (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop) γ :
   (∀ r w, (Decision (Q r w))) ->
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body body txn tid r P Q γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ r >>>

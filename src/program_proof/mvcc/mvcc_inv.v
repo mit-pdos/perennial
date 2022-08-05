@@ -451,4 +451,20 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   eauto with iFrame.
 Qed.
 
+Lemma fcc_head_commit_le_all tid mods tmods future :
+  set_Forall (uncurry (first_commit_compatible future)) tmods ->
+  head_commit future tid mods ->
+  set_Forall (λ key, le_tids_mods tid (per_tuple_mods tmods key)) (dom mods).
+Proof.
+  intros Hfci Hhead key Hinmods.
+  unfold le_tids_mods.
+  intros tm Helem.
+  destruct tm as [t m]. simpl.
+  apply mods_tuple_to_global in Helem.
+  destruct Helem as (mods' & Hinmods' & Hlookup).
+  apply Hfci in Hinmods'. simpl in Hinmods'.
+  apply elem_of_dom_2 in Hlookup.
+  eapply safe_extension_wr; [eauto | eauto | set_solver].
+Qed.
+
 End theorem.
