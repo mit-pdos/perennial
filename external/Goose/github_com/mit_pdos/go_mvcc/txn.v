@@ -45,9 +45,9 @@ Definition MkTxnMgr: val :=
       struct.storeF TxnSite "tidsActive" "site" (NewSliceWithCap uint64T #0 #8);;
       SliceSet ptrT (struct.loadF TxnMgr "sites" "txnMgr") (![uint64T] "i") "site";;
       Continue);;
+    struct.storeF TxnMgr "p" "txnMgr" (NewProph #());;
     struct.storeF TxnMgr "idx" "txnMgr" (index.MkIndex #());;
     struct.storeF TxnMgr "gc" "txnMgr" (gc.MkGC (struct.loadF TxnMgr "idx" "txnMgr"));;
-    struct.storeF TxnMgr "p" "txnMgr" (NewProph #());;
     "txnMgr".
 
 Definition TxnMgr__New: val :=
@@ -209,9 +209,9 @@ Definition Txn__Get: val :=
     else
       let: "idx" := struct.loadF Txn "idx" "txn" in
       let: "tuple" := index.Index__GetTuple "idx" "key" in
-      let: ("val", "found") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
+      tuple.Tuple__ReadWait "tuple" (struct.loadF Txn "tid" "txn");;
       proph.ResolveRead (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") "key";;
-      tuple.Tuple__Release "tuple";;
+      let: ("val", "found") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
       ("val", "found")).
 
 Definition Txn__Begin: val :=
@@ -260,8 +260,8 @@ Definition Txn__release: val :=
     * TODO: Figure out the right way to handle latches and locks. *)
 Definition Txn__Commit: val :=
   rec: "Txn__Commit" "txn" :=
-    Txn__apply "txn";;
     proph.ResolveCommit (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") (struct.loadF Txn "wrbuf" "txn");;
+    Txn__apply "txn";;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 

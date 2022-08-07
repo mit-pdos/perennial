@@ -23,7 +23,7 @@ Definition own_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp �
   ∃ (lockm : loc) (lockmM : gmap u64 loc),
     "Hlockm" ∷ bkt ↦[IndexBucket :: "m"] #lockm ∗
     "HlockmOwn" ∷ is_map lockm 1 lockmM ∗
-    "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), ptuple_auth γ (1/2) key [Nil]) ∗
+    "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), ptuple_auth γ (1/2) key [Nil; Nil]) ∗
     "#HtuplesRP" ∷ ([∗ map] key ↦ tuple ∈ lockmM, is_tuple tuple key γ) ∗
     "_" ∷ True.
 Local Hint Extern 1 (environments.envs_entails _ (own_index_bucket _ _ _)) => unfold own_index_bucket : core.
@@ -35,7 +35,7 @@ Definition is_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp Σ
     "_" ∷ True.
 
 Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
-  ∃ (bkts : Slice.t) (bktsL : list loc),
+  ∃ (bkts : Slice.t) (bktsL : list loc) (p : proph_id),
     "#Hbkts" ∷ readonly (idx ↦[Index :: "buckets"] (to_val bkts)) ∗
     (**
      * Goose seems to translate accessing slices of structs (via [SliceGet] or [SlicePut])
@@ -46,6 +46,7 @@ Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
     "%HbktsLen" ∷ ⌜length bktsL = N_IDX_BUCKET⌝ ∗
     "#HbktsRP" ∷ ([∗ list] i ↦ bkt ∈ bktsL, is_index_bucket bkt i γ) ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
+    "#Hinv" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
 (*****************************************************************)
@@ -132,7 +133,7 @@ Proof.
     split; [auto | set_solver].
   }
   iDestruct "Hvchains" as "[Hvchain Hvchains]".
-  wp_apply (wp_MkTuple with "[] [$Hvchain]"); [done |].
+  wp_apply (wp_MkTuple with "Hinvgc Hinv Hvchain").
   iIntros (tuple) "#HtupleRP".
   wp_pures.
   wp_loadField.
@@ -181,13 +182,14 @@ Proof. set_solver. Qed.
 (*****************************************************************)
 (* func MkIndex() *Index                                         *)
 (*****************************************************************)
-Theorem wp_MkIndex γ :
+Theorem wp_MkIndex γ p :
   mvcc_inv_gc γ -∗
-  {{{ [∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil] }}}
+  mvcc_inv_sst γ p -∗
+  {{{ [∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil; Nil] }}}
     MkIndex #()
   {{{ (idx : loc), RET #idx; is_index idx γ }}}.
 Proof.
-  iIntros "#Hinvgc" (Φ) "!> Hvchains HΦ".
+  iIntros "#Hinv #Hinvgc" (Φ) "!> Hvchains HΦ".
   wp_call.
 
   (***********************************************************)
@@ -223,7 +225,7 @@ Proof.
                               (⌜length bktsL = N_IDX_BUCKET⌝) ∗
                               ([∗ list] i ↦ bkt ∈ (take (int.nat n) bktsL), is_index_bucket bkt i γ)) ∗
                     (idx ↦[Index :: "buckets"] (to_val bkts)) ∗
-                    ([∗ set] key ∈ filter (λ x, (int.nat n) ≤ hash_modu x)%nat keys_all, ptuple_auth γ (1/2) key [Nil]) ∗
+                    ([∗ set] key ∈ filter (λ x, (int.nat n) ≤ hash_modu x)%nat keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
                     ⌜True⌝)%I
               _ _ (U64 0) (U64 2048) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
   { clear Φ.
@@ -325,17 +327,16 @@ Proof.
   (***********************************************************)
   iApply "HΦ".
   rewrite /is_index.
-  do 2 iExists _.
+  do 3 iExists _.
   iMod (readonly_alloc_1 with "Hidx") as "$".
   iMod (readonly_alloc_1 with "HbktsS") as "$".
   iModIntro.
-  iSplitL ""; first auto.
-  iSplit; last auto.
+  iSplitL ""; first done.
+  iSplit; last iFrame "#".
   change (int.nat 2048) with 2048%nat.
   unfold N_IDX_BUCKET in Hlength.
   rewrite -Hlength.
-  rewrite firstn_all.
-  auto.
+  by rewrite firstn_all.
 Qed.
 
 End heap.

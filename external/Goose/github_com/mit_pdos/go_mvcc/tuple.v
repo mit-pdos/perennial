@@ -70,6 +70,11 @@ Definition Tuple__Own: val :=
         lock.release (struct.loadF Tuple "latch" "tuple");;
         common.RET_SUCCESS)).
 
+Definition Tuple__WriteLock: val :=
+  rec: "Tuple__WriteLock" "tuple" :=
+    lock.acquire (struct.loadF Tuple "latch" "tuple");;
+    #().
+
 Definition Tuple__appendVersion: val :=
   rec: "Tuple__appendVersion" "tuple" "tid" "val" :=
     let: "verNew" := struct.mk Version [
@@ -87,9 +92,9 @@ Definition Tuple__appendVersion: val :=
     * 1. The txn `tid` has the permission to update this tuple. *)
 Definition Tuple__AppendVersion: val :=
   rec: "Tuple__AppendVersion" "tuple" "tid" "val" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
     Tuple__appendVersion "tuple" "tid" "val";;
     lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
+    lock.release (struct.loadF Tuple "latch" "tuple");;
     #().
 
 Definition Tuple__killVersion: val :=
@@ -108,13 +113,13 @@ Definition Tuple__killVersion: val :=
     * 1. The txn `tid` has the permission to update this tuple. *)
 Definition Tuple__KillVersion: val :=
   rec: "Tuple__KillVersion" "tuple" "tid" :=
-    lock.acquire (struct.loadF Tuple "latch" "tuple");;
     let: "ok" := Tuple__killVersion "tuple" "tid" in
     let: "ret" := ref (zero_val uint64T) in
     (if: "ok"
     then "ret" <-[uint64T] common.RET_SUCCESS
     else "ret" <-[uint64T] common.RET_NONEXIST);;
     lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
+    lock.release (struct.loadF Tuple "latch" "tuple");;
     ![uint64T] "ret".
 
 (* *
@@ -127,25 +132,25 @@ Definition Tuple__Free: val :=
     lock.release (struct.loadF Tuple "latch" "tuple");;
     #().
 
-(* *
-    * Preconditions: *)
-Definition Tuple__ReadVersion: val :=
-  rec: "Tuple__ReadVersion" "tuple" "tid" :=
+Definition Tuple__ReadWait: val :=
+  rec: "Tuple__ReadWait" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
     Skip;;
     (for: (λ: <>, ("tid" > struct.loadF Tuple "tidlast" "tuple") && (struct.loadF Tuple "tidown" "tuple" ≠ #0)); (λ: <>, Skip) := λ: <>,
       lock.condWait (struct.loadF Tuple "rcond" "tuple");;
       Continue);;
+    #().
+
+(* *
+    * Preconditions: *)
+Definition Tuple__ReadVersion: val :=
+  rec: "Tuple__ReadVersion" "tuple" "tid" :=
     let: "ver" := findRightVer "tid" (struct.loadF Tuple "vers" "tuple") in
     (if: struct.loadF Tuple "tidlast" "tuple" < "tid"
     then struct.storeF Tuple "tidlast" "tuple" "tid"
     else #());;
-    (struct.get Version "val" "ver", ~ (struct.get Version "deleted" "ver")).
-
-Definition Tuple__Release: val :=
-  rec: "Tuple__Release" "tuple" :=
     lock.release (struct.loadF Tuple "latch" "tuple");;
-    #().
+    (struct.get Version "val" "ver", ~ (struct.get Version "deleted" "ver")).
 
 Definition Tuple__removeVersions: val :=
   rec: "Tuple__removeVersions" "tuple" "tid" :=
@@ -181,7 +186,7 @@ Definition MkTuple: val :=
     struct.storeF Tuple "latch" "tuple" (lock.new #());;
     struct.storeF Tuple "rcond" "tuple" (lock.newCond (struct.loadF Tuple "latch" "tuple"));;
     struct.storeF Tuple "tidown" "tuple" #0;;
-    struct.storeF Tuple "tidlast" "tuple" #0;;
+    struct.storeF Tuple "tidlast" "tuple" #1;;
     struct.storeF Tuple "vers" "tuple" (NewSliceWithCap (struct.t Version) #1 #16);;
     SliceSet (struct.t Version) (struct.loadF Tuple "vers" "tuple") #0 (struct.mk Version [
       "deleted" ::= #true

@@ -168,68 +168,26 @@ Proof.
   by iFrame.
 Qed.
 
-(**
- * 1. [view_ptsto] in the postcondition can be obtained by applying
- *    the invariant between the logical and physical version chains to
- *    reading a physical verison.
- * 2. However, when GC is involved, the invariant should hold only for
- *    those physical versions created after a certain tid (the
- *    [tidlbN] in [own_tuple]).
- *    Thus, we need a proof of [(int.nat tid) ≥ tidlbN] in order to
- *    apply the invariant, which can be proved by:
- *    - [active_tid γ sid tid] in the precondition.
- *    - [min_tid_lb γ tidlbN] in the lock invariant.
- *)
-
-Definition tuple_read tuple tid key val found γ : iProp Σ :=
-  ∃ (tidown tidlast tidgc : u64) (vers : list pver)
-    (vchain : list dbval),
-    (* physical state is updated, but logical state is not. *)
-    let tidlast' := if bool_decide (int.Z tidlast < int.Z tid)
-                    then tid
-                    else tidlast
-    in
-    "Hphys" ∷ own_tuple_phys tuple tidown tidlast' vers ∗
-    "Habst" ∷ own_tuple_abst key tidown tidlast tidgc vers vchain γ ∗
-    "%Htid" ∷ ⌜int.Z tid ≤ int.Z tidlast ∨ int.Z tidown = 0⌝ ∗
-    "%Hret" ∷ ⌜spec_lookup vers tid = to_dbval found val⌝.
-
-Lemma tuple_read_safe (tid : u64) ts key tmods m past future tuple val found γ :
-  let tidN := (int.nat tid) in 
-  head_read future tidN key ->
-  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past) -∗
-  cmt_inv_def γ tmods future ts -∗
-  tuple_read tuple tid key val found γ ==∗
-  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m (past ++ [EvRead tidN key])) ∗
-  cmt_inv_def γ tmods future ts ∗
-  own_tuple tuple key γ ∗
-  ptuple_ptsto γ key (to_dbval found val) tidN.
-Admitted.
-
-(*
-Lemma case_tuple__ReadVersion tuple tid key val (ret : u64) γ :
-  post_tuple__ReadVersion tuple tid key val ret γ -∗
-  ⌜int.Z ret = 0 ∨ int.Z ret = 1⌝.
-Proof.
-  iIntros "H".
-  iNamed "H".
-Admitted.
- *)
+Definition ptuple_auth_tidown
+           γ (key : u64) (tidown : u64) (vchain : list dbval)
+  : iProp Σ :=
+  ptuple_auth γ (if decide (tidown = (U64 0)) then (1 / 2) else (1 / 4))%Qp key vchain.
 
 (*****************************************************************)
-(* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, uint64)  *)
+(* func (tuple *Tuple) ReadWait(tid uint64)                      *)
 (*****************************************************************)
-Theorem wp_tuple__ReadVersion tuple (tid : u64) (key : u64) (sid : u64) γ :
+Theorem wp_tuple__ReadWait tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
-  {{{ active_tid γ tid sid }}}
-    Tuple__ReadVersion #tuple #tid
-  {{{ (val : u64) (found : bool) (latch : loc), RET (#val, #found);
-      active_tid γ tid sid ∗
-      tuple_locked tuple key latch γ ∗
-      tuple_read tuple tid key val found γ
+  {{{ True }}}
+    Tuple__ReadWait #tuple #tid
+  {{{ (tidown : u64) (vchain : list dbval), RET #();
+      is_tuple_locked tuple key γ ∗
+      own_tuple_read tuple key tidown vchain γ ∗
+      ptuple_auth_tidown γ key tidown vchain ∗
+      ⌜int.Z tidown = 0 ∨ (int.nat tid < length vchain)%nat⌝
   }}}.
 Proof.
-  iIntros "#Htuple" (Φ) "!> Hactive HΦ".
+  iIntros "#Htuple" (Φ) "!> _ HΦ".
   iNamed "Htuple".
   wp_call.
 
@@ -250,10 +208,11 @@ Proof.
   set P := λ (b : bool),
              (∃ (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval),
                  "Hphys" ∷ own_tuple_phys tuple tidown tidlast vers ∗
-                 "Habst" ∷ own_tuple_abst key tidown tidlast tidgc vers vchain γ ∗
+                 "Habst" ∷ own_tuple_repr key tidlast tidgc vers vchain γ ∗
                  "Hlocked" ∷ locked #latch ∗
+                 "Hptuple" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
                  "%Hexit" ∷ if b then ⌜True⌝ else ⌜(int.Z tid) ≤ (int.Z tidlast) ∨ (int.Z tidown) = 0⌝)%I.
-  wp_apply (wp_forBreak_cond P with "[] [-HΦ Hactive]").
+  wp_apply (wp_forBreak_cond P with "[] [-HΦ]").
   { (* Loop body preserves the invariant. *)
     clear Φ.
     clear tidown tidlast tidgc vers vchain.
@@ -302,11 +261,13 @@ Proof.
     apply not_and_l in Heqb.
     destruct Heqb; (iModIntro; do 5 iExists _; iFrame "Hlocked Habst").
     { (* Case [verLast.begin ≥ tid]. *)
+      iFrame "Hptuple".
       iSplitR ""; first eauto 10 with iFrame.
       iPureIntro.
       left. word.
     }
     { (* Case [tuple.tidown = 0]. *)
+      iFrame "Hptuple".
       iSplitR ""; first eauto 10 with iFrame.
       iPureIntro.
       right.
@@ -326,9 +287,61 @@ Proof.
   iNamed "Hwellformed".
   wp_pures.
 
+  iModIntro.
+  iApply "HΦ".
+  iFrame "Hptuple".
+  iSplitL "Hlocked"; first by eauto 10 with iFrame.
+  iSplit; first by eauto 20 with iFrame.
+  iPureIntro.
+  destruct Hexit; word.
+Qed.
+
+(**
+ * Notes (A) about the preconditions:
+ * 1. [mvcc_inv_gc] and [active_tid] are used to deduce that [tidgc ≤ tid] (see
+ * B-2).
+ * 2. [own_tuple_read] consists of physical states and their relation to logical
+ * state.
+ * 3. [ptuple_auth_tidown] consists of extended logical state.
+ * 4. The last one comes from waiting on the CV.
+ *
+ * Notes (B) about the postcondition [ptuple_ptsto]:
+ * 1. [ptuple_ptsto] in the postcondition can be obtained by applying the
+ * invariant (i.e., [HtupleAbs]) between the logical and physical version chains
+ * to reading a physical verison.
+ * 2. However, when GC is involved, the invariant holds only for those physical
+ * versions created after a certain tid (i.e., [tidlbN] in [own_tuple]). Thus,
+ * we need a proof of [tidlbN ≤ (int.nat tid)] in order to apply the invariant,
+ * which can be deduced from [active_tid γ sid tid] and [min_tid_lb γ tidlbN].
+ *)
+(*****************************************************************)
+(* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, uint64)  *)
+(*****************************************************************)
+Theorem wp_tuple__ReadVersion
+        tuple (tid : u64) (key : u64) (sid : u64) (tidown : u64)
+        (vchain : list dbval) γ :
+  {{{ active_tid γ tid sid ∗
+      is_tuple_locked tuple key γ ∗
+      own_tuple_read tuple key tidown vchain γ ∗
+      ptuple_auth_tidown γ key tidown (extend (S (int.nat tid)) vchain) ∧
+      ⌜int.Z tidown = 0 ∨ (int.nat tid < length vchain)%nat⌝
+  }}}
+    Tuple__ReadVersion #tuple #tid
+  {{{ (val : u64) (found : bool), RET (#val, #found);
+      active_tid γ tid sid ∗ ptuple_ptsto γ key (to_dbval found val) (int.nat tid)
+  }}}.
+Proof.
+  iIntros (Φ) "(Hactive & Htuple & HtupleOwn & Hptuple & %Hwait) HΦ".
+  wp_call.
+
   (***********************************************************)
   (* ver := findRightVer(tid, tuple.vers)                    *)
   (***********************************************************)
+  iNamed "HtupleOwn".
+  iNamed "Hphys".
+  iNamed "Hrepr".
+  iNamed "Hwellformed".
+  iNamed "Htuple".
   wp_loadField.
   iApply fupd_wp.
   iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
@@ -374,24 +387,128 @@ Proof.
   iNamed "H".
   wp_pures.
 
-  (***********************************************************)
-  (* return ver.val, !ver.deleted                            *)
-  (***********************************************************)
-  (* Set Printing Coercions. *)
+  set vchain' := extend _ _.
+  iDestruct (vchain_witness with "Hptuple") as "#Hlb".
+  unfold ptuple_auth_tidown.
+  set q := if decide (tidown = 0) then _ else _.
   repeat rewrite ite_apply.
+  set tidlast' := if bool_decide _ then tid else tidlast.
+  set P : iProp Σ :=
+    ("%Hlen" ∷ ⌜Z.of_nat (length vchain') = (int.Z tidlast' + 1)%Z⌝ ∗
+     "%Hwellformed" ∷ tuple_wellformed vers tidlast' tidgc ∗
+     "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast' ->
+                            vchain' !! (int.nat tid) = Some (spec_lookup vers tid)⌝))%I.
+  iAssert P with "[]" as "HP".
+  { unfold P.
+    subst q.
+    destruct (decide (tidown = 0)).
+    - (* Case 1. [tidown = 0]. *)
+      subst tidlast'.
+      case_bool_decide.
+      + (* Case 1a. [tidlast < tid]. Extending the version chain. *)
+        (* TODO: negate [del] and use [to_dbval]. *)
+        assert (Hfind : spec_find_ver vers tid = spec_find_ver vers tidlast).
+        { apply (spec_find_ver_extensible _ tidlast); [word | done | done]. }
+        set v' := if ver.1.2 then Nil else Value ver.2.
+        assert (Hv' : last vchain = Some v').
+        { rewrite Hlast.
+          unfold spec_lookup.
+          by rewrite -Hfind Hspec.
+        }
+        (* Obtain a witness that the value at index [tid] is [v']. *)
+        iPureIntro.
+        split.
+        { (* Prove [HvchainLen]. *)
+          rewrite extend_length; last by eauto.
+          word.
+        }
+        split.
+        { (* Prove [Hwellformed]. *)
+          split; last done.
+          apply (Forall_impl _ _ _ HtidlastGt).
+          word.
+        }
+        { (* Prove [HtupleAbs]. *)
+          intros tidx Hbound.
+          subst vchain'.
+          rewrite (extend_last_Some _ _ _ Hv').
+          destruct (decide (int.Z tidx ≤ int.Z tidlast)).
+          { (* [x ≤ tidlast]. *)
+            rewrite lookup_app_l; last word.
+            apply HtupleAbs.
+            word.
+          }
+          { (* [tidlast < x]. *)
+            rename n into HxLower.
+            apply Znot_le_gt in HxLower.
+            rewrite lookup_app_r; last word.
+            rewrite lookup_replicate_2; last word.
+            f_equal.
+            subst v'.
+            unfold spec_lookup.
+            rewrite (spec_find_ver_extensible _ tidlast tidx tid); [ | word | word | done].
+            by rewrite Hspec.
+          }
+        }
+      + (* Case 1b. [tid ≤ tidlast]. *)
+        apply Znot_lt_ge, Z.ge_le in H.
+        subst vchain'.
+        replace (extend _ _) with vchain; last first.
+        { symmetry. apply extend_length_same. lia. }
+        iPureIntro.
+        do 2 (split; first auto).
+        by apply HtupleAbs.
+    - (* Case 2. [tidown ≠ 0]. *)
+      subst vchain'.
+      iPureIntro.
+      destruct Hwait as [Htidown | Hlen].
+      { (* Obtain contradiction from [Htidown] and [H]. *)
+        by assert (contra : tidown = U64 0) by word.
+      }
+      replace tidlast' with tidlast; last first.
+      { subst tidlast'.
+        case_bool_decide; last done.
+        (* Obtain contradiction from [Hlen], [H0], and [HvchainLen]. *)
+        word.
+      }
+      replace (extend _ _) with vchain; last first.
+      { symmetry. apply extend_length_same. lia. }
+      done.
+  }
+  clear HtupleAbs.
+  iNamed "HP".
+  clear P.
+
+  iAssert (⌜vchain' !! int.nat tid = Some (spec_lookup vers tid)⌝)%I as "%Hlookup".
+  { subst tidlast'.
+    iPureIntro.
+    case_bool_decide.
+    - by apply HtupleAbs.
+    - apply Znot_lt_ge, Z.ge_le in H. by apply HtupleAbs.
+  }
+
+  assert (Hlast' : last vchain' = Some (spec_lookup vers tidlast')).
+  { subst vchain' tidlast'.
+    case_bool_decide; last by rewrite extend_last.
+    rewrite last_lookup.
+    rewrite extend_length; last by eauto.
+    replace (_ -  _ + _)%nat with (S (int.nat tid))%nat; last lia.
+    by simpl.
+  }
+  clear Hlast.
+
+  (***********************************************************)
+  (* tuple.latch.Unlock()                                    *)
+  (***********************************************************)
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ Hactive]").
+  { iFrame "Hlock Hlocked". eauto 25 with iFrame. }
+  wp_pures.
   iModIntro.
   iApply "HΦ".
-  iFrame "Hactive".
-  iSplitL "Hlocked".
-  { iFrame "# ∗". }
-  unfold tuple_read.
-  do 5 iExists _.
-  iSplitL "Htidown Hvers HversS Htidlast".
-  { eauto with iFrame. }
-  iSplitL "Hvchain".
-  { iFrame "% # ∗". }
-  iFrame "%".
-  iPureIntro.
+  iFrame. iExists _.
+  iFrame "Hlb". iPureIntro.
+  rewrite Hlookup.
   unfold spec_lookup.
   rewrite Hspec.
   destruct (negb ver.1.2) eqn:E.

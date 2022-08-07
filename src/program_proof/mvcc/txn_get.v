@@ -1,7 +1,12 @@
-From Perennial.program_proof.mvcc Require Import txn_common proph_proof tuple_read_version tuple_release.
+From Perennial.program_proof.mvcc Require Import txn_common proph_proof tuple_read_version.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
+
+Theorem extend_length_le {X : Type} (n : nat) (l : list X) :
+  (n ≤ length l)%nat ->
+  extend n l = l.
+Admitted.
 
 (*****************************************************************)
 (* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
@@ -14,6 +19,8 @@ Theorem wp_txn__Get txn tid view (k : u64) dbv γ τ :
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hptsto] HΦ".
+  (* We need this to obtain a lb on logical tuple of key [k]. *)
+  iDestruct (own_txn_txnmap_ptsto_dom with "Htxn Hptsto") as "%Hindom".
   iNamed "Htxn".
   iNamed "Himpl".
   wp_call.
@@ -50,17 +57,19 @@ Proof.
   (***********************************************************)
   (* idx := txn.idx                                          *)
   (* tuple := idx.GetTuple(key)                              *)
-  (* val, found := tuple.ReadVersion(txn.tid)                *)
   (***********************************************************)
   wp_loadField.
   wp_pures.
   wp_apply (wp_index__GetTuple with "HidxRI").
   iIntros (tuple) "#HtupleRI".
   wp_pures.
+
+  (***********************************************************)
+  (* tuple.ReadWait(txn.tid)                                 *)
+  (***********************************************************)
   wp_loadField.
-  wp_apply (wp_tuple__ReadVersion with "HtupleRI [Hactive]").
-  { unfold active_tid. eauto with iFrame. }
-  iIntros (val found latch) "[Hactive [Hlocked Hread]]".
+  wp_apply (wp_tuple__ReadWait with "HtupleRI").
+  iIntros (tidown vchain) "(Htuple & HtupleOwn & Hptuple & %Hwait)".
   wp_pures.
 
   (***********************************************************)
@@ -76,26 +85,73 @@ Proof.
   iFrame "Hproph".
   iIntros "(%future' & %Hhead & Hproph)".
   (* Extend the physical tuple. *)
-  iMod (tuple_read_safe with "Hkeys Hcmt Hread") as "(Hkeys & Hcmt & Htuple & Hptuple)"; first set_solver.
-  (* Deduce eq between logical and physical read. *)
-  iDestruct (big_sepS_elem_of_acc _ _ k with "Hkeys") as "[Hkey Hkeys]"; first set_solver.
-  iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup'".
-  rewrite lookup_union_r in Hlookup'; last auto.
-  iDestruct (big_sepM_lookup_acc with "Hltuples") as "[Hltuple Hltuples]"; first apply Hlookup'.
-  rewrite Etid.
-  iDestruct (ltuple_ptuple_ptsto_eq with "[Hkey] Hltuple Hptuple") as "%Heq".
-  { iNamed "Hkey".
-    unfold tuple_auth_prefix.
-    unfold tuple_mods_rel in Htmrel.
-    destruct Htmrel as (diff & _ & [H _]).
-    do 2 iExists _.
-    iFrame.
-    iPureIntro.
-    by exists diff.
+  unfold ptuple_auth_tidown.
+  (* iMod (tuple_read_safe with "Hkeys Hcmt Hread") as "(Hkeys & Hcmt & Htuple & Hptuple)"; first set_solver. *)
+  set Ψ := (λ key, per_key_inv_def γ key tmods ts m (past ++ [EvRead tid k]))%I.
+  iDestruct (big_sepS_elem_of_acc_impl k with "Hkeys") as "[Hkey Hkeys]"; first set_solver.
+  iRename "Hptuple" into "Hptuple'".
+  iDestruct (cmt_inv_fcc_tmods with "Hcmt") as "%Hcmtfcc".
+  iAssert (|==> ptuple_auth_tidown γ k tidown (extend (S tid) vchain) ∗ Ψ k)%I
+    with "[Hptuple' Hkey]" as "> [Hptuple Hkey]".
+  { destruct Hwait as [Htidown | Hlen].
+    - (* Case [tidown = 0]. *)
+      assert (Htidown' : tidown = (U64 0)) by word.
+      unfold ptuple_auth_tidown.
+      case_decide; last done.
+      iNamed "Hkey".
+      iDestruct (ptuple_agree with "Hptuple Hptuple'") as "%Eptuple".
+      subst vchain.
+      iMod (vchain_update (extend (S tid) phys) with "Hptuple Hptuple'") as "[Hptuple Hptuple']".
+      { apply extend_prefix. }
+      iModIntro.
+      iFrame "Hptuple'".
+      subst Ψ. simpl.
+      do 2 iExists _.
+      (* Get a lb on [logi] required by [tuplext_read]. *)
+      rewrite elem_of_dom in Hindom. destruct Hindom as [u Hlookup'].
+      iDestruct (big_sepM_lookup _ _ k with "Hltuples") as (logi') "[#Hlb %Hlen]"; first done.
+      apply lookup_lt_Some in Hlen.
+      iDestruct (ltuple_prefix with "Hltuple Hlb") as "%Hprefix".
+      apply prefix_length in Hprefix.
+      iFrame "∗ %".
+      iPureIntro.
+      split.
+      { (* Prove [tuple_mods_rel] (i.e., safe extension). *)
+        apply tuplext_read; [lia | | done].
+        apply fcc_head_read_le_all with future; [done | set_solver].
+      }
+      { (* Prove [ptuple_past_rel]. *)
+        apply ptuple_past_rel_lt_len.
+        { (* Note: [x < y] is a notation for [S x ≤ y]. *)
+          apply extend_length_ge_n.
+          by eapply tuple_mods_rel_last_phys.
+        }
+        apply (ptuple_past_rel_extensible _ phys); last done.
+        apply extend_prefix.
+      }
+    - (* Case [tid < length vchain]. *)
+      iModIntro.
+      (* First we deduce eq between physical tuples in global and tuple invs. *)
+      iNamed "Hkey".
+      iDestruct (ptuple_agree with "Hptuple Hptuple'") as "%Eptuple".
+      subst vchain.
+      iSplitL "Hptuple'".
+      { replace (extend (S tid) phys) with phys; first done.
+        symmetry.
+        apply extend_length_le. lia.
+      }
+      subst Ψ. simpl.
+      do 2 iExists _.
+      iFrame "∗ %".
+      iPureIntro.
+      apply ptuple_past_rel_lt_len; [lia | done].
   }
-  (* Close things. *)
-  iDestruct ("Hkeys" with "Hkey") as "Hkeys".
-  iDestruct ("Hltuples" with "Hltuple") as "Hltuples".
+  iDestruct ("Hkeys" with "[] [Hkey]") as "Hkeys"; [ | iAccu | ].
+  { (* Adding [EvRead tid k] to [past] where [key ≠ k] preserves [per_key_inv_def]. *)
+    iIntros "!>" (key) "%Helem %Hneq Hkey".
+    subst Ψ. simpl.
+    iApply per_key_inv_past_snoc_diff_key; done.
+  }
   iMod "Hclose".
   iMod ("HinvC" with "[Hproph Hm Hts Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
   { (* Close the inv. *)
@@ -114,10 +170,36 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* tuple.Release()                                         *)
+  (* val, found := tuple.ReadVersion(txn.tid)                *)
   (***********************************************************)
-  wp_apply (wp_tuple__Release with "[$Htuple $Hlocked]").
+  wp_loadField.
+  iDestruct (is_tuple_invgc with "HtupleRI") as "#Hinvgc".
+  wp_apply (wp_tuple__ReadVersion with "[$Hactive $Htuple $HtupleOwn Hptuple]").
+  { rewrite Etid. iFrame. iPureIntro. word. }
+  iIntros (val found) "[Hactive Hpptsto]".
+  rewrite Etid.
   wp_pures.
+  iInv "Hinv" as "> HinvO" "HinvC".
+  iNamed "HinvO".
+  (* Deduce eq between logical and physical read. *)
+  iDestruct (big_sepS_elem_of_acc _ _ k with "Hkeys") as "[Hkey Hkeys]"; first set_solver.
+  iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup'".
+  rewrite lookup_union_r in Hlookup'; last auto.
+  iDestruct (big_sepM_lookup with "Hltuples") as "Hlptsto"; first apply Hlookup'.
+  iDestruct (ltuple_ptuple_ptsto_eq with "[Hkey] Hlptsto Hpptsto") as "%Heq".
+  { iNamed "Hkey".
+    unfold tuple_auth_prefix.
+    unfold tuple_mods_rel in Htmrel.
+    destruct Htmrel as (diff & _ & [H _]).
+    do 2 iExists _.
+    iFrame.
+    iPureIntro.
+    by exists diff.
+  }
+  (* Close things. *)
+  iDestruct ("Hkeys" with "Hkey") as "Hkeys".
+  iMod ("HinvC" with "[Hproph Hm Hts Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
+  { eauto 20 with iFrame. }
 
   (***********************************************************)
   (* return val, found                                       *)
@@ -130,7 +212,8 @@ Proof.
     iSplitL; last done.
     do 6 iExists _.
     iFrame "Hactive Htid Hsid Hwrbuf HwrbufRP".
-    by iFrame "#".
+    iFrame "Hidx HidxRI Htxnmgr HtxnmgrRI Hp Hinv".
+    done.
   }
   by iFrame "Hptsto".
 Qed.

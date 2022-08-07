@@ -2,7 +2,7 @@
 From Perennial.program_proof Require Export grove_prelude.
 (* Import Coq model of our Goose program. *)
 From Goose.github_com.mit_pdos.go_mvcc Require Export txn.
-From Perennial.program_proof.mvcc Require Export mvcc_ghost mvcc_inv mvcc_misc gc_proof index_proof wrbuf_proof tuple_append_version tuple_kill_version tuple_common.
+From Perennial.program_proof.mvcc Require Export mvcc_ghost mvcc_inv mvcc_misc gc_proof index_proof wrbuf_proof tuple_common.
 (* prefer untyped slices *)
 Export Perennial.goose_lang.lib.slice.slice.
 
@@ -97,36 +97,18 @@ Definition own_txn_impl (txn : loc) (ts : nat) (mods : dbmap) γ : iProp Σ :=
 Definition own_txn (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
   ∃ (mods : dbmap),
     "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
-    "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
+    "#Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
     "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝.
 
 Definition own_txn_ready (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
   ∃ (mods : dbmap),
-    "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
-    "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
-    "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
+    "Himpl"     ∷ own_txn_impl txn ts mods γ ∗
+    "#Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
+    "Htxnmap"   ∷ txnmap_auth τ (mods ∪ view) ∗
     "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
-    "Hlocks"   ∷ ([∗ map] k ↦ _ ∈ mods, mods_token γ k ts).
-
-Definition tuple_applied
-           (tuple : loc) (tid : nat) (k : u64) (v : dbval) γ
-  : iProp Σ :=
-  match v with
-  | Some w => tuple_appended tuple tid k w γ
-  | Nil => tuple_killed tuple tid k γ
-  end.
-
-Definition own_txn_applied (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
-  ∃ (mods : dbmap),
-    "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
-    "Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
-    "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
-    "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
-    "Hlocks"   ∷ ([∗ map] k ↦ _ ∈ mods, mods_token γ k ts) ∗
-    "Hphys"    ∷ ([∗ map] k ↦ v ∈ mods,
-                    ∃ tuple latch, tuple_applied tuple ts k v γ ∗
-                                   tuple_locked tuple k latch γ).
+    (* FIXME: make [tuple] below a physical thing. *)
+    "Htuples"   ∷ ([∗ map] k ↦ _ ∈ mods, ∃ tuple phys, own_tuple_locked tuple k ts phys phys γ).
 
 (* TODO: Unify [own_txn_impl] and [own_txn_uninit]. *)
 Definition own_txn_uninit (txn : loc) γ : iProp Σ := 
@@ -159,12 +141,22 @@ Hint Extern 1 (environments.envs_entails _ (own_txn _ _ _ _ _)) => unfold own_tx
 #[global]
 Hint Extern 1 (environments.envs_entails _ (own_txn_ready _ _ _ _ _)) => unfold own_txn_ready : core.
 #[global]
-Hint Extern 1 (environments.envs_entails _ (own_txn_applied _ _ _ _ _)) => unfold own_txn_applied : core.
-#[global]
 Hint Extern 1 (environments.envs_entails _ (own_txn_uninit _ _)) => unfold own_txn_uninit : core.
 
 Section lemma.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
+
+Lemma own_txn_txnmap_ptsto_dom {txn ts view k v γ τ} :
+  own_txn txn ts view γ τ -∗
+  txnmap_ptsto τ k v -∗
+  ⌜k ∈ dom view⌝.
+Proof.
+  iIntros "Htxn Hptsto".
+  iNamed "Htxn".
+  iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup".
+  iPureIntro.
+  apply elem_of_dom_2 in Hlookup. set_solver.
+Qed.
 
 Lemma own_txn_impl_tid txn ts m γ :
   own_txn_impl txn ts m γ -∗

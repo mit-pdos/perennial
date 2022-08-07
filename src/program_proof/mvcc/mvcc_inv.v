@@ -22,7 +22,6 @@ Definition mvcc_inv_gc γ : iProp Σ :=
   inv mvccNGC (mvcc_inv_gc_def γ).
 
 (* SST invariants. *)
-
 Definition len_ptuple_pact_rel (key : u64) (len : nat) (act : action) :=
   match act with
   | EvCommit tid mods => (key ∈ dom mods) -> (S tid < len)%nat
@@ -175,6 +174,59 @@ Lemma cmt_inv_weaken_ts {γ tmods l ts} ts' :
   cmt_inv_def γ tmods l ts'.
 Admitted.
 
+Lemma ptuple_past_rel_diff_key key keyr tid phys past :
+  key ≠ keyr ->
+  ptuple_past_rel key phys past ->
+  ptuple_past_rel key phys (past ++ [EvRead tid keyr]).
+Proof.
+  intros Hneq Hrel.
+  unfold ptuple_past_rel.
+  rewrite Forall_app.
+  split; first done.
+  rewrite Forall_singleton.
+  by simpl.
+Qed.
+
+Lemma ptuple_past_rel_lt_len key tid phys past :
+  (tid < length phys)%nat ->
+  ptuple_past_rel key phys past ->
+  ptuple_past_rel key phys (past ++ [EvRead tid key]).
+Proof.
+  intros Hlt Hrel.
+  unfold ptuple_past_rel.
+  rewrite Forall_app.
+  split; first done.
+  rewrite Forall_singleton.
+  by simpl.
+Qed.
+
+Lemma len_ptuple_pact_rel_weaken_len {key} len {len' act} :
+  (len ≤ len')%nat ->
+  len_ptuple_pact_rel key len act ->
+  len_ptuple_pact_rel key len' act.
+Proof.
+  intros Hlen Hrel.
+  unfold len_ptuple_pact_rel in *.
+  destruct act as [tid mods | tid key' |]; last done.
+  - (* Case [EvCommit]. *)
+    intros Helem. apply Hrel in Helem. lia.
+  - (* Case [EvRead]. *)
+    intros Helem. apply Hrel in Helem. lia.
+Qed.
+
+Lemma ptuple_past_rel_extensible key phys phys' past :
+  prefix phys phys' ->
+  ptuple_past_rel key phys past ->
+  ptuple_past_rel key phys' past.
+Proof.
+  intros Hprefix Hrel.
+  unfold ptuple_past_rel in *.
+  apply (Forall_impl _ _ _ Hrel).
+  intros a Hlen.
+  apply (len_ptuple_pact_rel_weaken_len (length phys)); last done.
+  by apply prefix_length.
+Qed.
+
 Definition tuple_auth_prefix (γ : mvcc_names) (key : u64) : iProp Σ :=
   ∃ (phys logi : list dbval),
     "Hptuple" ∷ ptuple_auth γ (1 / 2) key phys ∗
@@ -192,6 +244,18 @@ Lemma per_key_inv_weaken_ts {γ key tmods ts} ts' {m past} :
   per_key_inv_def γ key tmods ts m past -∗
   per_key_inv_def γ key tmods ts' m past.
 Admitted.
+
+Lemma per_key_inv_past_snoc_diff_key {γ key keyr tmods ts} tid {m past} :
+  key ≠ keyr ->
+  per_key_inv_def γ key tmods ts m past -∗
+  per_key_inv_def γ key tmods ts m (past ++ [EvRead tid keyr]).
+Proof.
+  iIntros "%Hneq Hkey".
+  iNamed "Hkey".
+  do 2 iExists _.
+  iFrame "∗ %".
+  iPureIntro. apply ptuple_past_rel_diff_key; done.
+Qed.
 
 Lemma per_key_inv_ltuple_ptsto γ tmods ts m past :
   ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past) ==∗
@@ -434,6 +498,11 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   - apply set_Forall_subseteq with tmods; [set_solver | auto].
 Qed.
 
+Lemma cmt_inv_fcc_tmods γ l tmods ts :
+  cmt_inv_def γ tmods l ts -∗
+  ⌜set_Forall (uncurry (first_commit_compatible l)) tmods⌝.
+Proof. iIntros "Hcmt". by iNamed "Hcmt". Qed.
+
 Lemma ptuple_past_rel_abort key phys past tid :
   ptuple_past_rel key phys past ->
   ptuple_past_rel key phys (past ++ [EvAbort tid]).
@@ -451,20 +520,40 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   eauto with iFrame.
 Qed.
 
+(**
+ * The following lemma says that from FCC we know txns must write the same key in
+ * TID order.
+ *)
 Lemma fcc_head_commit_le_all tid mods tmods future :
   set_Forall (uncurry (first_commit_compatible future)) tmods ->
   head_commit future tid mods ->
   set_Forall (λ key, le_tids_mods tid (per_tuple_mods tmods key)) (dom mods).
 Proof.
-  intros Hfci Hhead key Hinmods.
+  intros Hfcc Hhead key Hinmods.
   unfold le_tids_mods.
   intros tm Helem.
   destruct tm as [t m]. simpl.
   apply mods_tuple_to_global in Helem.
   destruct Helem as (mods' & Hinmods' & Hlookup).
-  apply Hfci in Hinmods'. simpl in Hinmods'.
+  apply Hfcc in Hinmods'. simpl in Hinmods'.
   apply elem_of_dom_2 in Hlookup.
-  eapply safe_extension_wr; [eauto | eauto | set_solver].
+  eapply safe_extension_wr; [by eauto | by eauto | set_solver].
+Qed.
+
+Lemma fcc_head_read_le_all tid key tmods future :
+  set_Forall (uncurry (first_commit_compatible future)) tmods ->
+  head_read future tid key ->
+  le_tids_mods tid (per_tuple_mods tmods key).
+Proof.
+  intros Hfcc Hhead.
+  unfold le_tids_mods.
+  intros tm Helem.
+  destruct tm as [t m]. simpl.
+  apply mods_tuple_to_global in Helem.
+  destruct Helem as (mods & Hinmods & Hlookup).
+  apply Hfcc in Hinmods. simpl in Hinmods.
+  apply elem_of_dom_2 in Hlookup.
+  eapply safe_extension_rd; [by eauto | by eauto | set_solver].
 Qed.
 
 End theorem.

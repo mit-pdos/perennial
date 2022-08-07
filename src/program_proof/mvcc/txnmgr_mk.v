@@ -148,19 +148,6 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* txnMgr.idx = index.MkIndex()                            *)
-  (* txnMgr.gc = gc.MkGC(txnMgr.idx)                         *)
-  (***********************************************************)
-  wp_apply (wp_MkIndex γ with "Hinvgc Hvchains").
-  iIntros (idx) "#HidxRP".
-  wp_storeField.
-  wp_loadField.
-  wp_apply (wp_MkGC _ γ).
-  (* iIntros (gc) "HgcRP". *)
-  iIntros (gc) "_".
-  wp_storeField.
-  
-  (***********************************************************)
   (* txnMgr.p = machine.NewProph()                           *)
   (***********************************************************)
   wp_apply (wp_NewProphActions γ).
@@ -172,11 +159,24 @@ Proof.
   }
   iIntros "p".
   wp_pures.
-  iMod (inv_alloc mvccNSST _ (mvcc_inv_sst_def γ p) with "[Hvchains']") as "#Hinvsst".
+  iMod (inv_alloc mvccNSST _ (mvcc_inv_sst_def γ p) with "[Hvchains']") as "#Hinv".
   { (* Prove [mvcc_inv_sst_def]. *)
     admit.
   }
   
+  (***********************************************************)
+  (* txnMgr.idx = index.MkIndex()                            *)
+  (* txnMgr.gc = gc.MkGC(txnMgr.idx)                         *)
+  (***********************************************************)
+  wp_apply (wp_MkIndex γ with "Hinvgc Hinv Hvchains").
+  iIntros (idx) "#HidxRP".
+  wp_storeField.
+  wp_loadField.
+  wp_apply (wp_MkGC _ γ).
+  (* iIntros (gc) "HgcRP". *)
+  iIntros (gc) "_".
+  wp_storeField.
+
   (***********************************************************)
   (* return txnMgr                                           *)
   (***********************************************************)
@@ -194,7 +194,7 @@ Proof.
   { unfold N_TXN_SITES in *. word. }
   rewrite firstn_all.
   do 6 iExists _.
-  by iFrame "# %".
+  (* by iFrame "# %". *)
 Admitted.
 
 End program.

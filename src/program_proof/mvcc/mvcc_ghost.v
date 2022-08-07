@@ -287,6 +287,12 @@ Proof.
   apply singleton_mono, mono_list_included.
 Qed.
 
+Lemma ltuple_prefix γ k l l' :
+  ltuple_auth γ k l -∗
+  ltuple_lb γ k l' -∗
+  ⌜prefix l' l⌝.
+Admitted.
+
 Lemma site_active_tids_elem_of γ (sid : u64) tids tid :
   site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ (dom tids)⌝.
 Admitted.
@@ -370,8 +376,8 @@ Lemma ts_lb_zero γ :
 Admitted.
 
 Lemma mvcc_ghost_init :
-  ⊢ |==> ∃ γ, ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil]) ∗
-              ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil]) ∗
+  ⊢ |==> ∃ γ, ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
+              ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
               ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
               ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0) ∗
@@ -1475,6 +1481,17 @@ Proof.
   lia.
 Qed.
 
+Lemma extend_length_same {X : Type} (n : nat) (l : list X) :
+  (n ≤ length l)%nat ->
+  extend n l = l.
+Proof.
+  intros Hlen.
+  unfold extend.
+  destruct (last l) eqn:E.
+  - replace (n - length l)%nat with 0%nat by lia. simpl. apply app_nil_r.
+  - symmetry. by apply last_None.
+Qed.
+
 Lemma extend_last_Some {X : Type} (n : nat) (l : list X) (x : X) :
   last l = Some x ->
   extend n l = l ++ replicate (n - length l) x.
@@ -1510,6 +1527,11 @@ Proof.
   rewrite Heq in Hlen.
   apply Hlen in Helem. lia.
 Qed.
+
+Lemma tuple_mods_rel_last_phys (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  tuple_mods_rel phys logi mods ->
+  ∃ v, last phys = Some v.
+Admitted.
 
 Lemma tuple_mods_rel_last_logi (phys logi : list dbval) (mods : gset (nat * dbval)) :
   tuple_mods_rel phys logi mods ->

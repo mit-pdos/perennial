@@ -43,7 +43,7 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  iNamed "Habst".
+  iNamed "Hrepr".
   wp_apply (release_spec with "[-HΦ]").
   { iFrame "Hlock Hlocked".
     iNext.
@@ -52,9 +52,9 @@ Proof.
     iSplitL "Htidown Htidlast Hvers HversS".
     { eauto with iFrame. }
     iFrame "% # ∗".
-    iDestruct "Htoken" as (vchain') "[Hvchain' %HvchainLenLt]".
+    iDestruct "Htoken" as (vchain') "[Hptuple' %HvchainLenLt]".
     case_decide; first iFrame.
-    by iDestruct (vchain_combine (1 / 2) with "Hvchain Hvchain'") as "[Hvchain ->]"; first compute_done.
+    by iDestruct (vchain_combine (1 / 2) with "Hptuple Hptuple'") as "[Hptuple ->]"; first compute_done.
   }
   wp_pures.
   by iApply "HΦ".

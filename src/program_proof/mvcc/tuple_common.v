@@ -109,10 +109,10 @@ Proof.
   - done.
 Qed.
 
-Lemma spec_find_ver_extended vers (tidlast tid1 tid2 : u64) :
-  int.Z tidlast < int.Z tid1 ->
-  int.Z tidlast < int.Z tid2 ->
-  Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers ->
+Lemma spec_find_ver_extensible vers (tidlast tid1 tid2 : u64) :
+  int.Z tidlast ≤ int.Z tid1 ->
+  int.Z tidlast ≤ int.Z tid2 ->
+  Forall (λ ver, int.Z ver.1.1 < int.Z tidlast) vers ->
   spec_find_ver vers tid1 = spec_find_ver vers tid2.
 Proof.
   intros Htid1 Htid2 Hlast.
@@ -124,9 +124,9 @@ Proof.
   assert (H : p ∈ vers).
   { apply elem_of_reverse. rewrite E. apply elem_of_list_here. }
   assert (H1 : int.Z p.1.1 < int.Z tid1).
-  { apply Hlast in H. apply Z.le_lt_trans with (int.Z tidlast); done. }
+  { apply Hlast in H. apply Z.lt_le_trans with (int.Z tidlast); done. }
   assert (H2 : int.Z p.1.1 < int.Z tid2).
-  { apply Hlast in H. apply Z.le_lt_trans with (int.Z tidlast); done. }
+  { apply Hlast in H. apply Z.lt_le_trans with (int.Z tidlast); done. }
   apply Z.lt_gt in H1, H2.
   do 2 (case_decide; last contradiction).
   by do 2 rewrite spec_find_ver_step_Some_noop.
@@ -160,15 +160,15 @@ Proof.
   - rewrite Heq in H. word.
 Qed.
 
-Lemma spec_lookup_extended vers (tidlast tid1 tid2 : u64) :
-  int.Z tidlast < int.Z tid1 ->
-  int.Z tidlast < int.Z tid2 ->
-  Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers ->
+Lemma spec_lookup_extensible vers (tidlast tid1 tid2 : u64) :
+  int.Z tidlast ≤ int.Z tid1 ->
+  int.Z tidlast ≤ int.Z tid2 ->
+  Forall (λ ver, int.Z ver.1.1 < int.Z tidlast) vers ->
   spec_lookup vers tid1 = spec_lookup vers tid2.
 Proof.
   intros Htid1 Htid2 Hlast.
   unfold spec_lookup.
-  by rewrite (spec_find_ver_extended _ _ _ _ Htid1 Htid2); last done.
+  by rewrite (spec_find_ver_extensible _ _ _ _ Htid1 Htid2); last done.
 Qed.
 
 (* Q: Existing tactic does this? *)
@@ -182,7 +182,7 @@ Section def.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 Definition tuple_wellformed (vers : list pver) (tidlast tidgc : u64) : iProp Σ :=
-  "%HtidlastGe" ∷ ⌜Forall (λ ver, int.Z ver.1.1 ≤ int.Z tidlast) vers⌝ ∗
+  "%HtidlastGt" ∷ ⌜Forall (λ ver, int.Z ver.1.1 < int.Z tidlast) vers⌝ ∗
   "%HexistsLt" ∷ ⌜∀ (tid : u64), 0 < int.Z tid ->
                                  int.Z tidgc ≤ int.Z tid ->
                                  Exists (λ ver, int.Z ver.1.1 < int.Z tid) vers⌝ ∗
@@ -198,59 +198,96 @@ Definition own_tuple_phys
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
     "HversS" ∷ slice.is_slice versS (structTy Version) 1 (ver_to_val <$> vers).
 
-Definition own_tuple_abst
-           (key : u64) (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval) γ
+Definition own_tuple_repr
+           (key : u64) (tidlast tidgc : u64) (vers : list pver) (vchain : list dbval) γ
   : iProp Σ :=
-  "Hvchain" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
   "%HtupleAbs" ∷ (∀ tid, ⌜int.Z tidgc ≤ int.Z tid ≤ int.Z tidlast ->
                          vchain !! (int.nat tid) = Some (spec_lookup vers tid)⌝) ∗
+  (* We need this as [HtupleAbs] is not useful when [tidlast < tidgc]. *)
+  "%Hlast" ∷ ⌜last vchain = Some (spec_lookup vers tidlast)⌝ ∗
   "%HvchainLen" ∷ ⌜(Z.of_nat (length vchain)) = ((int.Z tidlast) + 1)%Z⌝ ∗
   "#Hgclb" ∷  min_tid_lb γ (int.nat tidgc) ∗
-  "Hwellformed" ∷ tuple_wellformed vers tidlast tidgc.
+  "#Hwellformed" ∷ tuple_wellformed vers tidlast tidgc.
 
 Definition own_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
   ∃ (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval),
-    "Hphys" ∷ own_tuple_phys tuple tidown tidlast vers ∗
-    "Habst" ∷ own_tuple_abst key tidown tidlast tidgc vers vchain γ.
+    "Hphys"   ∷ own_tuple_phys tuple tidown tidlast vers ∗
+    "Hrepr"   ∷ own_tuple_repr key tidlast tidgc vers vchain γ ∗
+    "Hptuple" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain.
 
-Definition is_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
+Definition own_tuple_read
+           (tuple : loc) (key : u64) (tidown : u64) (vchain : list dbval) γ
+  : iProp Σ :=
+  ∃ (tidlast tidgc : u64) (vers : list pver),
+    "Hphys" ∷ own_tuple_phys tuple tidown tidlast vers ∗
+    "Hrepr" ∷ own_tuple_repr key tidlast tidgc vers vchain γ.
+
+Definition is_tuple_locked tuple (key : u64) γ : iProp Σ :=
   ∃ (latch : loc) (rcond : loc),
     "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
     "#Hlock" ∷ is_lock mvccN #latch (own_tuple tuple key γ) ∗
     "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
     "#HrcondC" ∷ is_cond rcond #latch ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
-    "_" ∷ True.
+    "Hlocked" ∷ locked #latch.
 
-Definition tuple_locked tuple (key : u64) (latch : loc) γ : iProp Σ :=
-  "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
-  "#Hlock" ∷ is_lock mvccN #latch (own_tuple tuple key γ) ∗
-  "Hlocked" ∷ locked #latch.
+Definition own_tuple_locked
+           (tuple : loc) (key : u64) (tid : u64) (vchain vchain' : list dbval) γ
+  : iProp Σ :=
+  ∃ (tidown tidlast tidgc : u64) (vers : list pver),
+    "Hphys"   ∷ own_tuple_phys tuple tidown tidlast vers ∗
+    "Hrepr"   ∷ own_tuple_repr key tidlast tidgc vers vchain γ ∗
+    "Hlock"   ∷ is_tuple_locked tuple key γ ∗
+    "Hptuple" ∷ ptuple_auth γ (1 / 2)%Qp key vchain' ∗
+    "%Hlen"   ∷ ⌜(length vchain ≤ S (int.nat tid))%nat⌝.
+
+Definition is_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
+  ∃ (latch : loc) (rcond : loc) (p : proph_id),
+    "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗
+    "#Hlock" ∷ is_lock mvccN #latch (own_tuple tuple key γ) ∗
+    "#Hrcond" ∷ readonly (tuple ↦[Tuple :: "rcond"] #rcond) ∗
+    "#HrcondC" ∷ is_cond rcond #latch ∗
+    "#Hinvgc" ∷ mvcc_inv_gc γ ∗
+    "#Hinv"   ∷ mvcc_inv_sst γ p ∗
+    "_" ∷ True.
 
 End def.
 
 #[global]
 Hint Extern 1 (environments.envs_entails _ (own_tuple_phys _ _ _ _)) => unfold own_tuple_phys : core.
 #[global]
-Hint Extern 1 (environments.envs_entails _ (own_tuple_abst _ _ _ _ _ _)) => unfold own_tuple_abst : core.
+Hint Extern 1 (environments.envs_entails _ (own_tuple_repr _ _ _ _ _ _)) => unfold own_tuple_repr : core.
+#[global]
+Hint Extern 1 (environments.envs_entails _ (own_tuple_read _ _ _ _ _)) => unfold own_tuple_read : core.
+#[global]
+Hint Extern 1 (environments.envs_entails _ (own_tuple_locked _ _ _ _ _)) => unfold own_tuple_locked : core.
 #[global]
 Hint Extern 1 (environments.envs_entails _ (own_tuple _ _ _)) => unfold own_tuple : core.
 #[global]
 Hint Extern 1 (environments.envs_entails _ (is_tuple _ _ _)) => unfold is_tuple : core.
+#[global]
+Hint Extern 1 (environments.envs_entails _ (is_tuple_locked _ _ _)) => unfold is_tuple_locked : core.
 
 Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
+Lemma is_tuple_invgc tuple key γ :
+  is_tuple tuple key γ -∗
+  mvcc_inv_gc γ.
+Proof. iIntros "Htuple". by iNamed "Htuple". Qed.
+
+(* TODO: move this to [tuple_mk.v]. *)
 (*****************************************************************)
 (* func MkTuple() *Tuple                                         *)
 (*****************************************************************)
-Theorem wp_MkTuple (key : u64) γ :
+Theorem wp_MkTuple (key : u64) γ p :
   mvcc_inv_gc γ -∗
-  {{{ ptuple_auth γ (1/2) key [Nil] }}}
+  mvcc_inv_sst γ p -∗
+  {{{ ptuple_auth γ (1/2) key [Nil; Nil] }}}
     MkTuple #()
   {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ }}}.
 Proof.
-  iIntros "#Hinvgc" (Φ) "!> Hvchain HΦ".
+  iIntros "#Hinvgc #Hinv" (Φ) "!> Hvchain HΦ".
   wp_call.
 
   (***********************************************************)
@@ -317,7 +354,7 @@ Proof.
   { iNext.
     unfold P.
     unfold own_tuple.
-    iExists (U64 0), (U64 0), (U64 0), [(U64 0, true, U64 0)], [Nil].
+    iExists (U64 0), (U64 1), (U64 0), [(U64 0, true, U64 0)], [Nil; Nil].
     iFrame.
     iSplit.
     { iExists (Slice.mk vers 1 16). iFrame. }
@@ -326,21 +363,24 @@ Proof.
       iPureIntro.
       simpl.
       intros tid Htid.
-      replace (int.Z (U64 0)) with 0 in Htid by word.
-      by replace tid with (U64 0) by word.
-      (* word. *)
+      assert (H : int.Z tid = 0 ∨ int.Z tid = 1) by word.
+      destruct H.
+      - by replace tid with (U64 0) by word.
+      - by replace tid with (U64 1) by word.
     }
+    iSplit; first done.
     iSplit.
     { (* Prove [HvchainLen]. *)
-      by rewrite singleton_length.
+      iPureIntro. set_solver.
     }
     iSplit.
     { (* Prove [Hgclb]. *)
       done.
     }
     iSplit.
-    { (* Prove [HtidlastGe]. *)
-      by rewrite Forall_singleton.
+    { (* Prove [HtidlastGt]. *)
+      rewrite Forall_singleton.
+      by simpl.
     }
     iPureIntro.
     split.
@@ -349,10 +389,10 @@ Proof.
       rewrite Exists_cons.
       left. simpl. word.
     }
-    split; [by simpl | auto].
+    split; [by simpl | done].
   }
   iApply "HΦ".
-  iExists latch, rcond.
+  do 3 iExists _.
   iMod (readonly_alloc_1 with "latch") as "$".
   iMod (readonly_alloc_1 with "rcond") as "$".
   by iFrame "#".

@@ -28,13 +28,6 @@ Proof.
   wp_call.
 
   (***********************************************************)
-  (* txn.apply()                                             *)
-  (***********************************************************)
-  wp_apply (wp_txn__apply with "Htxn").
-  iIntros "Htxn".
-  wp_pures.
-
-  (***********************************************************)
   (* proph.ResolveCommit(txn.txnMgr.p, txn.tid, txn.wrbuf)   *)
   (***********************************************************)
   iNamed "Htxn".
@@ -88,10 +81,11 @@ Proof.
     unfold ptuple_past_rel in Hpprel.
     rewrite Forall_forall in Hpprel.
     destruct H as [Helem H].
-    iDestruct (big_sepM_lookup_dom with "Hlocks") as "Htoken".
+    iDestruct (big_sepM_lookup_dom with "Htuples") as "Htuple".
     { by apply elem_of_dom in Helem. }
-    iDestruct "Htoken" as (phys') "[Hptuple' %HlenLe]".
-    iDestruct (ptuple_agree with "Hptuple' Hptuple") as "->".
+    iRename "Hptuple" into "Hptuple'".
+    iNamed "Htuple".
+    iDestruct (ptuple_agree with "Hptuple Hptuple'") as "->".
     destruct H as [H | H].
     - (* Case EvRead. *)
       destruct H as [Hact Hlt].
@@ -100,11 +94,13 @@ Proof.
       (* specialize (Hact eq_refl). *)
       (* specialize (Hact ltac:(auto)). *)
       unshelve epose proof (Hact _); first reflexivity.
+      replace (int.nat _) with tid in Hlen by word.
       lia.
     - (* Case EvCommit. *)
       destruct H as (mods' & Helem' & Hact & Hle).
       apply Hpprel in Hact. simpl in Hact.
       unshelve epose proof (Hact _); first auto.
+      replace (int.nat _) with tid in Hlen by word.
       lia.
   }
   { (* Case FCC. *)
@@ -128,10 +124,10 @@ Proof.
   }
 Qed.
 
+(*
 Definition ltuple_extend_wr_pre γ tmods ts m past tid tuple k v : iProp Σ :=
   per_key_inv_def γ k tmods ts m past ∗
-  mods_token γ k tid ∗
-  tuple_applied tuple tid k v γ.
+  ptuple_auth γ (1 / 2)%Qp .
 
 Definition ltuple_extend_wr_post γ tmods ts m past tid mods tuple k : iProp Σ :=
   per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods]) ∗
@@ -145,6 +141,7 @@ Theorem ltuple_extend_wr γ tmods ts m past tid mods tuple :
   ([∗ map] k ↦ _ ∈ mods, ltuple_extend_wr_post γ tmods ts m past tid mods tuple k).
 Proof.
 Admitted.
+*)
 
 Theorem wp_txn__Commit txn tid view mods γ τ :
   {{{ own_txn_ready txn tid view γ τ ∗ cmt_tmods_frag γ (tid, mods) }}}
@@ -153,13 +150,6 @@ Theorem wp_txn__Commit txn tid view mods γ τ :
 Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
   wp_call.
-
-  (***********************************************************)
-  (* txn.apply()                                             *)
-  (***********************************************************)
-  wp_apply (wp_txn__apply with "Htxn").
-  iIntros "Htxn".
-  wp_pures.
 
   (***********************************************************)
   (* proph.ResolveCommit(txn.txnMgr.p, txn.tid, txn.wrbuf)   *)
@@ -191,15 +181,23 @@ Proof.
   rewrite big_sepS_union; last set_solver.
   iDestruct "Hkeys" as "[Hkeys HkeysFix]".
   rewrite -big_sepM_dom.
-  (* Combine [Hlocks] (the mod tokens), [Hphys] (the tuple state), and [Hkeys] (per-key inv). *)
-  iDestruct (big_sepM_sep_2 with "Hlocks Hphys") as "H".
-  iDestruct (big_sepM_sep_2 with "Hkeys H") as "H".
+  (* Combine [Htuples] (the tuple physical + logical state), and [Hkeys] (per-key inv). *)
+  iDestruct (big_sepM_sep_2 with "Hkeys Htuples") as "H".
 
   (* TODO: Update the abstract part of the tuple RP to match the physical part. *)
 
   (* TODO: Remove [(tid, mods)] from [tmods]. *)
 
   (* TODO: Update the sets of ok/doomed txns to re-establish inv w.r.t. [future']. *)
+
+  (***********************************************************)
+  (* txn.apply()                                             *)
+  (***********************************************************)
+  (*
+  wp_apply (wp_txn__apply with "Htxn").
+  iIntros "Htxn".
+  wp_pures.
+  *)
 
   (***********************************************************)
   (* txn.txnMgr.deactivate(txn.sid, txn.tid)                 *)

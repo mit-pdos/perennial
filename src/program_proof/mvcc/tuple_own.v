@@ -79,9 +79,9 @@ Proof.
   (* tuple.latch.Unlock()                                    *)
   (***********************************************************)
   wp_loadField.
-  iNamed "Habst".
-  iDestruct (vchain_split (1 / 4) (1 / 4) with "Hvchain") as "[Hchain Hvchain']"; first compute_done.
-  wp_apply (release_spec with "[-HΦ Hactive Hvchain']").
+  iNamed "Hrepr".
+  iDestruct (vchain_split (1 / 4) (1 / 4) with "Hptuple") as "[Hptuple Hptuple']"; first compute_done.
+  wp_apply (release_spec with "[-HΦ Hactive Hptuple']").
   { iFrame "Hlock Hlocked".
     iNext.
     iExists tid.

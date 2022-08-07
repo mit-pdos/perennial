@@ -300,7 +300,7 @@ Proof.
   iIntros "[Hlocked Htuple]".
   iNamed "Htuple".
   iNamed "Hphys".
-  iNamed "Habst".
+  iNamed "Hrepr".
   iNamed "Hwellformed".
   wp_pures.
 
@@ -317,7 +317,7 @@ Proof.
     wp_pures.
     wp_loadField.
     iClear "Hgclb'".
-    wp_apply (release_spec with "[-HΦ]"); first eauto 20 with iFrame.
+    wp_apply (release_spec with "[-HΦ]"); first eauto 25 with iFrame.
     wp_pures.
     by iApply "HΦ".
   }
@@ -371,9 +371,20 @@ Proof.
     }
     iPureIntro.
     split.
-    { (* Prove [HtidlastGe]. *)
-      rewrite Hsuffix in HtidlastGe.
-      by apply Forall_app in HtidlastGe as [_ ?].
+    { (* Prove [Hlast]. *)
+      rewrite Hlast.
+      f_equal.
+      apply spec_lookup_suffix with versPrefix; first done.
+      rewrite Exists_exists.
+      exists verHead.
+      split; first done.
+      rewrite Forall_forall in HtidlastGt.
+      apply HtidlastGt. set_solver.
+    }
+    split.
+    { (* Prove [HtidlastGt]. *)
+      rewrite Hsuffix in HtidlastGt.
+      by apply Forall_app in HtidlastGt as [_ ?].
     }
     split.
     { (* Prove [HexistsLt]. *)
