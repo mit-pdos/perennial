@@ -58,9 +58,6 @@ Definition is_accepted_lb γ epoch σ : iProp Σ :=
 Definition is_accepted_ro γ epoch σ : iProp Σ :=
   own γ.(pb_accepted_gn) {[ epoch := ●ML□ (σ : list (leibnizO (EntryType)))]}.
 
-Global Instance is_accepted_ro_pers γ epoch σ : Persistent (is_accepted_ro γ epoch σ).
-Admitted.
-
 (* TODO: if desired, can make these exclusive by adding an exclusive token to each *)
 Definition own_ghost γ σ : iProp Σ :=
   own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).

@@ -53,9 +53,9 @@ Lemma wp_Clerk__FetchAndAppend ck γ γkv key val_sl value Φ:
   is_slice val_sl byteT 1 value -∗
   (|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
     (kv_ptsto γkv key (old_value ++ value) ={↑stateN,⊤∖↑pbN}=∗
-  (∀ reply_sl, is_slice reply_sl byteT 1 old_value -∗
-      Φ (slice_val reply_sl))))
-  -∗
+    (∀ reply_sl, is_slice reply_sl byteT 1 old_value -∗
+      Φ (#(U64 0), slice_val reply_sl)%V ))) ∧
+  (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V ) -∗
   WP state.Clerk__FetchAndAppend #ck #key (slice_val val_sl) {{ Φ }}.
 Proof.
   iIntros "#Hinv #Hck Hval_sl Hupd".
@@ -64,7 +64,7 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_apply (wp_NewSliceWithCap).
-  { admit. }
+  { apply encoding.unsigned_64_nonneg. }
   iIntros (op) "Hop_sl".
   set op_sl:=(Slice.mk _ _ _).
   wp_apply (wp_ref_to).
@@ -95,6 +95,7 @@ Proof.
   wp_apply (wp_Clerk__PrimaryApply with "Hop_sl").
   iSplit.
   { (* case: successful response *)
+    iLeft in "Hupd".
     iMod "Hupd".
     iInv "Hinv" as ">Hown" "Hclose".
     replace (↑_∖_) with (∅:coPset); last set_solver.
@@ -106,18 +107,49 @@ Proof.
     iFrame.
 
     iIntros "Hghost".
-    (* need to update own_kvs; need to fire Hupd *)
-    iMod ("Hclose" with "[Hghost Hkvs]") as "HH".
+    iDestruct "Hkvs" as (m ops) "(%Hσ_ops & Hkvs & %Hstate)".
+    iDestruct (ghost_map_lookup with "Hkvs Hkvptsto") as %Hold_value.
+    iMod (ghost_map_update (old_value ++ value) with "Hkvs Hkvptsto") as "[Hkvs Hkvptsto]".
+
+    iMod ("Hclose" with "[Hghost Hkvs]") as "_".
     {
       iNext.
       iExists _; iFrame "Hghost".
-      admit.
+      iExists _, (ops ++ [(key, value)]).
+      iFrame "Hkvs".
+      iPureIntro.
+      split.
+      {
+        rewrite map_app.
+        f_equal.
+        done.
+      }
+      {
+        rewrite foldl_snoc.
+        simpl.
+        rewrite Hstate.
+        f_equal.
+        rewrite -Hstate.
+        rewrite Hold_value.
+        simpl.
+        done.
+      }
     }
-    iMod ("Hupd" with "[Hkvptsto]") as "Hupd".
-    { admit. } (* FIXME: do the update *)
+    iMod ("Hupd" with "Hkvptsto") as "Hupd".
     iModIntro.
     iIntros (reply_sl) "Hreply_sl".
-    (* FIXME: incorporate errors into spec *)
+    iApply "Hupd".
+    iFrame.
+    iExactEq "Hreply_sl".
+    f_equal.
+    admit. (* FIXME: need to define replyFn *)
+  }
+  {
+    iIntros.
+    iRight in "Hupd".
+    iApply "Hupd".
+    done.
+  }
 Admitted.
 
 End state_proof.
