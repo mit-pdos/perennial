@@ -389,9 +389,6 @@ Proof.
     rewrite mono_list_auth_dfrac_op_valid_L in Hvalid.
     destruct Hvalid as [_ ->].
     iCombine "Hghost Hσ" as "Hσ".
-    rewrite -mono_list_auth_dfrac_op.
-    rewrite dfrac_op_own.
-    rewrite Qp_half_half.
     iMod (own_update with "Hσ") as "Hσ".
     {
       apply (mono_list_update (σ ++ [op] : list (leibnizO EntryType))).
