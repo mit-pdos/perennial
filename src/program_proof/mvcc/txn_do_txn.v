@@ -250,7 +250,8 @@ Proof.
     wp_apply (wp_txn__Commit_false with "[$Htxn HfciFrag]"); first eauto 10.
     by iIntros (ok) "contra".
   }
-  destruct (decide (Q r (mods ∪ r))); last first.
+  (* We also need the subseteq relation to know which keys we're extending in CMT. *)
+  destruct (decide (Q r (mods ∪ r) ∧ dom mods ⊆ dom r)); last first.
   { (* Case FCC, [Q r w] not holds. *)
     iMod ("HAUC" $! false with "Hdbps") as "HΦ".
     (* Add [(ts, mods)] to [tmods_fcc] and get a piece of evidence. *)
@@ -317,9 +318,11 @@ Proof.
     }
     by iIntros (ok) "contra".
   }
-  { (* Case FCC, [Q r w] holds. *)
+  { (* Case CMT, i.e. FCC and [Q r w] holds. *)
     (* Update [dbmap_ptstos γ r] to [dbmap_ptstos γ (mods ∪ r)]. *)
-    iMod (per_key_inv_dbmap_ptstos_update r mods with "Hdbps Hkeys") as "[Hdbps Hkeys]".
+    destruct a as [HQ Hdom].
+    iMod (per_key_inv_dbmap_ptstos_update (ts + n)%nat r mods with "Hm Hdbps Hkeys") as "(Hm & Hdbps & Hkeys)".
+    { done. } { lia. }
     iMod ("HAUC" $! true with "[Hdbps]") as "HΦ".
     { iExists _. by iFrame. }
     (* Add [(ts, mods)] to [tmods] and get a piece of evidence. *)

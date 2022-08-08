@@ -17,7 +17,7 @@ Definition commit_false_cases tid r γ τ : iProp Σ :=
   (fa_tids_frag γ tid)  ∨
   (∃ mods, fci_tmods_frag γ (tid, mods)) ∨
   (∃ mods w Q, fcc_tmods_frag γ (tid, mods) ∗ txnmap_ptstos τ w ∗
-               ⌜Q r w ∧ ¬ Q r (mods ∪ r) ∧ dom w = dom r⌝).
+               ⌜Q r w ∧ ¬ (Q r (mods ∪ r) ∧ dom mods ⊆ dom r) ∧ dom w = dom r⌝).
 
 Theorem wp_txn__Commit_false txn tid view γ τ :
   {{{ own_txn_ready txn tid view γ τ ∗ commit_false_cases tid view γ τ }}}
@@ -105,7 +105,7 @@ Proof.
   }
   { (* Case FCC. *)
     iNamed "Hfcc".
-    iDestruct "HfccFrag" as (mods' w Q) "(HfccFrag & Htxnps & %HQ & %HnotQ & %Hdom)".
+    iDestruct "HfccFrag" as (mods' w Q) "(HfccFrag & Htxnps & %HQ & %contra & %Hdom)".
     iDestruct (fcc_tmods_lookup with "HfccFrag HfccAuth") as "%Helem".
     apply Hfcc in Helem. simpl in Helem.
     (* Obtain equality between [mods] (in proph) and [mods'] (in evidence). *)
@@ -120,7 +120,8 @@ Proof.
     rewrite Hviewdom in Hdom.
     symmetry in Hdom.
     pose proof (Map.map_subset_dom_eq _ _ _ _ Hdom Hw) as H.
-    by subst w.
+    rewrite not_and_r in contra.
+    destruct contra; [by subst w | done].
   }
 Qed.
 
@@ -132,7 +133,8 @@ Definition ptuple_extend_wr_post γ tmods ts m past (tid : nat) mods k v : iProp
   per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods]) ∗
   ∃ tuple phys, own_tuple_locked tuple k tid phys (extend (S tid) phys ++ [v]) γ.
 
-Local Lemma per_key_inv_bigS_disj {γ keys tmods ts m past} tid mods :
+#[local]
+Lemma per_key_inv_bigS_disj {γ keys tmods ts m past} tid mods :
   keys ## dom mods ->
   ([∗ set] k ∈ keys, per_key_inv_def γ k tmods ts m past) -∗
   ([∗ set] k ∈ keys, per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods])).
@@ -144,7 +146,8 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   by iApply per_key_inv_tmods_minus_disj; first set_solver.
 Qed.
 
-Theorem ptuple_extend_wr γ tmods ts m past tid mods k v :
+#[local]
+Lemma ptuple_extend_wr γ tmods ts m past tid mods k v :
   (tid, mods) ∈ tmods ->
   le_tids_mods tid (per_tuple_mods tmods k) ->
   mods !! k = Some v ->
@@ -185,7 +188,8 @@ Proof.
   iFrame "∗ %".
 Qed.
 
-Theorem ptuples_extend_wr {γ} tmods ts m past tid mods :
+#[local]
+Lemma ptuples_extend_wr {γ} tmods ts m past tid mods :
   (tid, mods) ∈ tmods ->
   set_Forall (λ key : u64, le_tids_mods tid (per_tuple_mods tmods key)) (dom mods) ->
   ([∗ map] k ↦ _ ∈ mods, ptuple_extend_wr_pre γ tmods ts m past tid k) ==∗
@@ -246,13 +250,12 @@ Proof.
   iMod (ptuples_extend_wr with "H") as "H"; [done | done |].
   iDestruct (big_sepM_sep with "H") as "[Hkeys Htuples]".
   rewrite big_sepM_dom.
-  (* Update [HkeysFix] w.r.t. to [tmods ∖ {[ (tid, mods) ]}] and [past ++ [EvCommit tid mods]]. *)
+  (* Update [HkeysDisj] w.r.t. [tmods ∖ {[ (tid, mods) ]}] and [past ++ [EvCommit tid mods]]. *)
   iDestruct (per_key_inv_bigS_disj tid mods with "HkeysDisj") as "HkeysDisj"; first set_solver.
   iDestruct (big_sepS_union_2 with "Hkeys HkeysDisj") as "Hkeys".
-  replace (_ ∪ _ ∖ _) with keys_all; last first.
-  { apply union_difference_L. set_solver. }
+  rewrite -union_difference_L; last set_solver.
 
-  (* TODO: Update [Hnca Hfa Hfci Hfcc] to re-establish inv w.r.t. [future']. *)
+  (* Update [Hnca Hfa Hfci Hfcc] to re-establish inv w.r.t. [future']. *)
   iDestruct (nca_inv_any_action with "Hnca") as "Hnca"; first apply Hfuture.
   iDestruct (fa_inv_diff_action with "Hfa") as "Hfa"; [apply Hfuture | done | ].
   iDestruct (fci_inv_diff_action with "Hfci") as "Hfci"; [apply Hfuture | | ].

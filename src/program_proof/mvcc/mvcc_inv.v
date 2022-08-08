@@ -42,7 +42,7 @@ Definition per_key_inv_def
     "%Htmrel" ∷ ⌜tuple_mods_rel phys logi (per_tuple_mods tmods key)⌝ ∗
     "%Hpprel" ∷ ⌜ptuple_past_rel key phys past⌝ ∗
     "%Hlmrel" ∷ ⌜last logi = m !! key⌝ ∗
-    "%Htsge"  ∷ ⌜length logi ≤ S ts⌝.
+    "%Htsge"  ∷ ⌜(length logi ≤ S ts)%nat⌝.
 
 Definition fc_tids_unique (tmods_fci tmods_fcc tmods : gset (nat * dbmap)) :=
   NoDup ((elements tmods_fci).*1 ++ (elements tmods_fcc).*1 ++ (elements tmods).*1).
@@ -342,12 +342,75 @@ Proof.
   by iFrame.
 Qed.
 
-Theorem per_key_inv_dbmap_ptstos_update {γ tmods tid m past} r mods :
+Lemma per_tuple_mods_union_None
+      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} :
+  mods !! k = None ->
+  per_tuple_mods ({[ (tid, mods) ]} ∪ tmods) k = per_tuple_mods tmods k.
+Proof.
+Admitted.
+
+Lemma per_tuple_mods_union_Some
+      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} (v : dbval) :
+  mods !! k = Some v ->
+  per_tuple_mods ({[ (tid, mods) ]} ∪ tmods) k = {[ (tid, v) ]} ∪ (per_tuple_mods tmods k).
+Proof.
+Admitted.
+
+Theorem per_key_inv_dbmap_ptstos_update {γ tmods tid} ts {m : dbmap} {past} r mods :
+  dom mods ⊆ dom r ->
+  (tid < ts)%nat ->
+  dbmap_auth γ m -∗
   dbmap_ptstos γ r -∗
   ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods tid m past) ==∗
+  dbmap_auth γ (mods ∪ m) ∗
   dbmap_ptstos γ (mods ∪ r) ∗
-  ([∗ set] k ∈ keys_all, per_key_inv_def γ k ({[ (tid, mods) ]} ∪ tmods) tid m past).
-Admitted.
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k ({[ (tid, mods) ]} ∪ tmods) ts (mods ∪ m) past).
+Proof using heapGS0 mvcc_ghostG0 Σ.
+  iIntros "%Hdom %Htid Hdb Hdbpts Hkeys".
+  iDestruct (dbmap_lookup_big with "Hdb Hdbpts") as "%Hsubseteq".
+  iMod (dbmap_update_big _ (mods ∪ r) with "Hdb Hdbpts") as "[Hdb Hdbpts]"; first set_solver.
+  rewrite -map_union_assoc.
+  rewrite (map_subseteq_union r m); last done.
+  iFrame.
+  iApply big_sepS_bupd.
+  iApply (big_sepS_mono with "Hkeys").
+  iIntros (key) "%Helem Hkey".
+  iNamed "Hkey".
+  destruct (decide (key ∈ dom mods)); last first.
+  { (* Case [key ∉ dom mods]. *)
+    do 2 iExists _.
+    iFrame "∗ %".
+    iPureIntro.
+    rewrite not_elem_of_dom in n.
+    split.
+    - rewrite per_tuple_mods_union_None; done.
+    - rewrite lookup_union_r; last done.
+      split; [done | lia].
+  }
+  (* Case [key ∈ dom mods]. *)
+  rewrite elem_of_dom in e. destruct e as [v Hlookup].
+  iMod (ltuple_update (extend (S tid) logi ++ [v]) with "Hltuple") as "Hltuple".
+  { apply prefix_app_r, extend_prefix. }
+  iModIntro.
+  do 2 iExists _.
+  iFrame "∗ %".
+  iPureIntro.
+  split.
+  { (* Prove [tuple_mods_rel]. *)
+    rewrite (per_tuple_mods_union_Some v); last done.
+    apply tuplext_linearize_changed; [lia | done].
+  }
+  split.
+  { (* Prove last in logical tuple is latest value. *)
+    rewrite lookup_union_l'; last done.
+    by rewrite last_snoc.
+  }
+  { (* Prove an upper bound of the length of logical tuple. *)
+    rewrite app_length. simpl.
+    rewrite extend_length; first lia.
+    by eapply tuple_mods_rel_last_logi.
+  }
+Qed.
 
 Theorem ltuple_ptuple_ptsto_eq γ k v1 v2 ts:
   tuple_auth_prefix γ k -∗

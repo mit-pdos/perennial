@@ -390,6 +390,14 @@ Lemma dbmap_lookup_big {γ m} m' :
   ⌜m' ⊆ m⌝.
 Admitted.
 
+Lemma dbmap_update_big {γ m} m0 m1 :
+  dom m0 = dom m1 →
+  dbmap_auth γ m -∗
+  dbmap_ptstos γ m0 ==∗
+  dbmap_auth γ (m1 ∪ m) ∗
+  dbmap_ptstos γ m1.
+Admitted.
+
 Lemma txnmap_lookup τ m k v :
   txnmap_auth τ m -∗
   txnmap_ptsto τ k v -∗
