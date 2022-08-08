@@ -44,6 +44,9 @@ Definition per_key_inv_def
     "%Hlmrel" ∷ ⌜last logi = m !! key⌝ ∗
     "%Htsge"  ∷ ⌜length logi ≤ S ts⌝.
 
+Definition fc_tids_unique (tmods_fci tmods_fcc tmods : gset (nat * dbmap)) :=
+  NoDup ((elements tmods_fci).*1 ++ (elements tmods_fcc).*1 ++ (elements tmods).*1).
+
 Definition cmt_inv_def
            (γ : mvcc_names) (tmods : gset (nat * dbmap)) (future : list action) (ts : nat)
   : iProp Σ :=
@@ -86,18 +89,20 @@ Definition mvcc_inv_sst_def γ p : iProp Σ :=
     (* Prophecy. *)
     "Hproph" ∷ mvcc_proph γ p future ∗
     (* Current timestamp. *)
-    "Hts" ∷ ts_auth γ ts ∗
+    "Hts"    ∷ ts_auth γ ts ∗
     (* Global database map, i.e., auth element of the global ptsto. *)
-    "Hm" ∷ dbmap_auth γ m ∗
+    "Hm"     ∷ dbmap_auth γ m ∗
     (* Per-key invariants. *)
-    "Hkeys" ∷ ([∗ set] key ∈ keys_all, per_key_inv_def γ key tmods ts m past) ∗
+    "Hkeys"  ∷ ([∗ set] key ∈ keys_all, per_key_inv_def γ key tmods ts m past) ∗
     (* Ok txns. *)
-    "Hcmt"  ∷ cmt_inv_def γ tmods future ts ∗
+    "Hcmt"   ∷ cmt_inv_def γ tmods future ts ∗
     (* Doomed txns. *)
-    "Hnca"  ∷ nca_inv_def γ tids_nca future ts ∗
-    "Hfa"   ∷ fa_inv_def  γ tids_fa future ts ∗
-    "Hfci"  ∷ fci_inv_def γ tmods_fci past future ts ∗
-    "Hfcc"  ∷ fcc_inv_def γ tmods_fcc future ts.
+    "Hnca"   ∷ nca_inv_def γ tids_nca future ts ∗
+    "Hfa"    ∷ fa_inv_def  γ tids_fa future ts ∗
+    "Hfci"   ∷ fci_inv_def γ tmods_fci past future ts ∗
+    "Hfcc"   ∷ fcc_inv_def γ tmods_fcc future ts ∗
+    (* TIDs are unique among FC sets. *)
+    "%Hfcnd" ∷ ⌜fc_tids_unique tmods_fci tmods_fcc tmods⌝.
 
 Instance mvcc_inv_sst_timeless γ p :
   Timeless (mvcc_inv_sst_def γ p).
@@ -543,6 +548,55 @@ Lemma per_key_inv_past_commit_disj γ k tmods ts m past tid mods :
   k ∉ dom mods ->
   per_key_inv_def γ k tmods ts m past -∗
   per_key_inv_def γ k tmods ts m (past ++ [EvCommit tid mods]).
+Admitted.
+
+Lemma fc_tids_unique_cmt fci fcc cmt :
+  fc_tids_unique fci fcc cmt ->
+  NoDup (elements cmt).*1.
+Admitted.
+
+Lemma fc_tids_unique_notin_fci fci fcc cmt tid mods :
+  (tid, mods) ∈ cmt ->
+  fc_tids_unique fci fcc cmt ->
+  ∀ m, (tid, m) ∉ fci.
+Admitted.
+
+Lemma fc_tids_unique_notin_fcc fci fcc cmt tid mods :
+  (tid, mods) ∈ cmt ->
+  fc_tids_unique fci fcc cmt ->
+  ∀ m, (tid, m) ∉ fcc.
+Admitted.
+
+Lemma fc_tids_unique_minus_cmt {fci fcc cmt} tid mods :
+  fc_tids_unique fci fcc cmt ->
+  fc_tids_unique fci fcc (cmt ∖ {[ (tid, mods) ]}).
+Admitted.
+
+Lemma fc_tids_unique_insert_fci {fci fcc cmt} tid mods :
+  set_Forall (λ x, x.1 < tid)%nat (fci ∪ fcc ∪ cmt) ->
+  fc_tids_unique fci fcc cmt ->
+  fc_tids_unique ({[ (tid, mods) ]} ∪ fci) fcc cmt.
+Admitted.
+
+Lemma fc_tids_unique_insert_fcc {fci fcc cmt} tid mods :
+  set_Forall (λ x, x.1 < tid)%nat (fci ∪ fcc ∪ cmt) ->
+  fc_tids_unique fci fcc cmt ->
+  fc_tids_unique fci ({[ (tid, mods) ]} ∪ fcc) cmt.
+Admitted.
+
+Lemma fc_tids_unique_insert_cmt {fci fcc cmt} tid mods :
+  set_Forall (λ x, x.1 < tid)%nat (fci ∪ fcc ∪ cmt) ->
+  fc_tids_unique fci fcc cmt ->
+  fc_tids_unique fci fcc ({[ (tid, mods) ]} ∪ cmt).
+Admitted.
+
+Lemma fc_inv_fc_tids_lt_ts
+      (γ : mvcc_names) (fci fcc cmt : gset (nat * dbmap))
+      (past future : list action) (ts : nat) :
+  fci_inv_def γ fci past future ts -∗
+  fcc_inv_def γ fcc future ts -∗
+  cmt_inv_def γ cmt future ts -∗
+  ⌜set_Forall (λ x, x.1 < ts)%nat (fci ∪ fcc ∪ cmt)⌝.
 Admitted.
 
 (**

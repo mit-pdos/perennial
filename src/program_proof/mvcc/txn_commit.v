@@ -254,10 +254,14 @@ Proof.
 
   (* TODO: Update [Hnca Hfa Hfci Hfcc] to re-establish inv w.r.t. [future']. *)
   iDestruct (nca_inv_any_action with "Hnca") as "Hnca"; first apply Hfuture.
-  iDestruct (fa_inv_diff_action with "Hfa") as "Hfa"; [apply Hfuture | done |].
-  iDestruct (fci_inv_diff_action with "Hfci") as "Hfci"; [apply Hfuture | admit |].
-  iDestruct (fcc_inv_diff_action with "Hfcc") as "Hfcc"; [apply Hfuture | admit |].
-  iMod (cmt_inv_same_action with "Hfrag [$HcmtAuth]") as "Hcmt"; [apply Hfuture | admit | done |].
+  iDestruct (fa_inv_diff_action with "Hfa") as "Hfa"; [apply Hfuture | done | ].
+  iDestruct (fci_inv_diff_action with "Hfci") as "Hfci"; [apply Hfuture | | ].
+  { simpl. by eapply fc_tids_unique_notin_fci. }
+  iDestruct (fcc_inv_diff_action with "Hfcc") as "Hfcc"; [apply Hfuture | | ].
+  { simpl. by eapply fc_tids_unique_notin_fcc. }
+  iMod (cmt_inv_same_action with "Hfrag [$HcmtAuth]") as "Hcmt"; [apply Hfuture | | done | ].
+  { by eapply fc_tids_unique_cmt. }
+  apply (fc_tids_unique_minus_cmt tid mods) in Hfcnd.
   (* Close the invariant. *)
   iMod "Hclose" as "_".
   iMod ("HinvC" with "[Hproph Hts Hm Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
@@ -288,7 +292,7 @@ Proof.
   wp_pures.
   iApply "HΦ".
   eauto 20 with iFrame.
-Admitted.
+Qed.
 
 End program.
 

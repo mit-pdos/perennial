@@ -163,7 +163,7 @@ Proof.
     iDestruct (fci_inv_diff_action with "Hfci") as "Hfci"; [apply Hhead | done |].
     iDestruct (fcc_inv_diff_action with "Hfcc") as "Hfcc"; [apply Hhead | done |].
     iDestruct (cmt_inv_diff_action with "Hcmt") as "Hcmt"; [apply Hhead | done |].
-    iFrame.
+    by iFrame.
   }
   iModIntro.
   iIntros "_".

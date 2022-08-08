@@ -58,6 +58,7 @@ Proof.
   iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first auto.
   (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
   iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
+  iDestruct (fc_inv_fc_tids_lt_ts with "Hfci Hfcc Hcmt") as "%Hfctids".
   (* Do case distinction on the form of [future]. *)
   pose proof (spec_peek future ts).
   destruct (peek future ts).
@@ -195,6 +196,7 @@ Proof.
     { (* Prove [ts ∉ tmods_fci]. *)
       intros contra. apply HfciLt in contra. simpl in contra. lia.
     }
+    apply (fc_tids_unique_insert_fci ts mods) in Hfcnd; last done.
     iAssert (fci_inv_def _ _ _ _ _)%I with "[HfciAuth]" as "Hfci".
     { unfold fci_inv_def. iFrame. iPureIntro.
       split.
@@ -257,6 +259,7 @@ Proof.
     { (* Prove [ts ∉ tmods_fcc]. *)
       intros contra. apply HfccLt in contra. simpl in contra. lia.
     }
+    apply (fc_tids_unique_insert_fcc ts mods) in Hfcnd; last done.
     iAssert (fcc_inv_def _ _ _ _)%I with "[HfccAuth]" as "Hfcc".
     { unfold fcc_inv_def. iFrame. iPureIntro.
       split.
@@ -325,6 +328,7 @@ Proof.
     { (* Prove [ts ∉ tmods_cmt]. *)
       intros contra. apply HcmtLt in contra. simpl in contra. lia.
     }
+    apply (fc_tids_unique_insert_cmt ts mods) in Hfcnd; last done.
     iAssert (cmt_inv_def _ _ _ _)%I with "[HcmtAuth]" as "Hcmt".
     { unfold cmt_inv_def. iFrame. iPureIntro.
       split.
