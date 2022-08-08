@@ -101,8 +101,7 @@ Section fmcounter_map_props.
     rewrite -own_op.
     rewrite singleton_op.
     by rewrite -mono_nat_auth_dfrac_op.
-  - iIntros "(Hm1&Hm2)". iCombine "Hm1 Hm2" as "Hm".
-    by rewrite -mono_nat_auth_dfrac_op.
+  - iIntros "(Hm1&Hm2)". iCombine "Hm1 Hm2" as "Hm". done.
   Qed.
 
   Global Instance fmcounter_map_fractional γ k n :
