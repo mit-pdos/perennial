@@ -7,31 +7,31 @@ From iris.base_logic Require Import ghost_map.
 Section state_proof.
 Context `{!heapGS Σ}.
 
-Program Definition op_record : OpRecord :=
+Definition compute_state ops : (gmap u64 (list u8)) :=
+  foldl (λ m' op, <[op.1 := (default [] (m' !! op.1)) ++ op.2 ]>m') ∅ ops.
+
+Program Definition pb_record : PBRecord :=
   {|
-    or_OpType := (u64 * list u8) ;
-    or_has_op_encoding := λ op op_bytes, (u64_le op.1 ++ op.2) = op_bytes ;
+    pb_OpType := (u64 * list u8) ;
+    pb_has_op_encoding := λ op op_bytes, (u64_le op.1 ++ op.2) = op_bytes ;
+    pb_compute_reply :=  λ ops op, default [] ((compute_state ops) !! op.1) ;
   |}.
 Obligation 1.
 Admitted.
 
-Notation OpType := (or_OpType op_record).
-Notation has_op_encoding := (or_has_op_encoding op_record).
-Notation has_op_encoding_injective := (or_has_op_encoding_injective op_record).
-Notation pbG := (pbG (op_record:=op_record)).
+Notation OpType := (pb_OpType pb_record).
+Notation has_op_encoding := (pb_has_op_encoding pb_record).
+Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
+Notation compute_reply := (pb_compute_reply pb_record).
+Notation pbG := (pbG (pb_record:=pb_record)).
 
 Implicit Type σ : list (list u8).
 
 Context `{!pbG Σ}.
 Context `{!ghost_mapG Σ u64 (list u8)}.
 
-Definition compute_state ops : (gmap u64 (list u8)) :=
-  foldl (λ m' op, <[op.1 := (default [] (m' !! op.1)) ++ op.2 ]>m') ∅ ops.
-
 Definition own_kvs (γkv:gname) ops : iProp Σ :=
-  ∃ m ,
-  ghost_map_auth γkv 1 m ∗
-  ⌜m = foldl (λ m' op, <[op.1 := (default [] (m' !! op.1)) ++ op.2 ]>m') ∅ ops⌝
+  ghost_map_auth γkv 1 (compute_state ops)
 .
 
 Definition stateN := nroot .@ "state".
@@ -54,7 +54,7 @@ has_op_encoding op op_bytes →
 is_slice op_sl byteT 1 op_bytes -∗
 (|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
   (own_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, is_slice reply_sl byteT 1 (replyFn ops op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
+     (∀ reply_sl, is_slice reply_sl byteT 1 (compute_reply ops op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
 ∧
 (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V ) -∗
 WP Clerk__PrimaryApply #ck (slice_val op_sl) {{ Φ }}.
@@ -122,7 +122,6 @@ Proof.
     iFrame.
 
     iIntros "Hghost".
-    iDestruct "Hkvs" as (m) "(Hkvs & %Hstate)".
     iDestruct (ghost_map_lookup with "Hkvs Hkvptsto") as %Hold_value.
     iMod (ghost_map_update (old_value ++ value) with "Hkvs Hkvptsto") as "[Hkvs Hkvptsto]".
 
@@ -130,18 +129,17 @@ Proof.
     {
       iNext.
       iExists _; iFrame "Hghost".
-      iExists _; iFrame "Hkvs".
-      iPureIntro.
-      {
-        rewrite foldl_snoc.
-        simpl.
-        rewrite Hstate.
-        f_equal.
-        rewrite -Hstate.
-        rewrite Hold_value.
-        simpl.
-        done.
-      }
+      iExactEq "Hkvs".
+      unfold own_kvs.
+      f_equal.
+      unfold compute_state.
+
+      rewrite foldl_snoc.
+      simpl.
+      f_equal.
+      rewrite Hold_value.
+      simpl.
+      done.
     }
     iMod ("Hupd" with "Hkvptsto") as "Hupd".
     iModIntro.
@@ -150,7 +148,10 @@ Proof.
     iFrame.
     iExactEq "Hreply_sl".
     f_equal.
-    admit. (* FIXME: need to define replyFn *)
+    unfold compute_reply.
+    simpl.
+    rewrite Hold_value.
+    done.
   }
   {
     iIntros.
@@ -158,6 +159,6 @@ Proof.
     iApply "Hupd".
     done.
   }
-Admitted.
+Qed.
 
 End state_proof.

@@ -10,17 +10,19 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 
 Section pb_definitions.
 
-Record OpRecord :=
+Record PBRecord :=
   {
-    or_OpType:Type ;
-    or_has_op_encoding : or_OpType → list u8 → Prop ;
-    or_has_op_encoding_injective : ∀ o1 o2 l, or_has_op_encoding o1 l → or_has_op_encoding o2 l → o1 = o2 ;
+    pb_OpType:Type ;
+    pb_has_op_encoding : pb_OpType → list u8 → Prop ;
+    pb_has_op_encoding_injective : ∀ o1 o2 l, pb_has_op_encoding o1 l → pb_has_op_encoding o2 l → o1 = o2 ;
+    pb_compute_reply : list pb_OpType → pb_OpType → list u8 ;
   }.
 
-Context {op_record:OpRecord}.
-Notation OpType := (or_OpType op_record).
-Notation has_op_encoding := (or_has_op_encoding op_record).
-Notation has_op_encoding_injective := (or_has_op_encoding_injective op_record).
+Context {pb_record:PBRecord}.
+Notation OpType := (pb_OpType pb_record).
+Notation has_op_encoding := (pb_has_op_encoding pb_record).
+Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
+Notation compute_reply := (pb_compute_reply pb_record).
 
 Definition client_logR := mono_listR (leibnizO OpType).
 
@@ -97,9 +99,6 @@ Admitted.
 
 (* Server-side definitions *)
 
-Definition replyFn (σ:list OpType) (op:OpType) : (list u8).
-Admitted.
-
 Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
   ∀ op_sl (epoch:u64) σ op ghost_op Q,
   {{{
@@ -119,7 +118,7 @@ Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
           ∃ epoch' σ',
           (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
         ) ∗
-        is_slice reply_sl byteT 1 (replyFn ((λ x, x.1) <$> σ) ghost_op.1) ∗
+        is_slice reply_sl byteT 1 (compute_reply ((λ x, x.1) <$> σ) ghost_op.1) ∗
         Q
   }}}
 .

@@ -11,12 +11,13 @@ From Perennial.program_proof.simplepb Require Import pb_definitions.
 Section pb_apply_proof.
 
 Context `{!heapGS Σ, !stagedG Σ}.
-Context {op_record:OpRecord}.
+Context {pb_record:PBRecord}.
 
-Notation OpType := (or_OpType op_record).
-Notation has_op_encoding := (or_has_op_encoding op_record).
-Notation has_op_encoding_injective := (or_has_op_encoding_injective op_record).
-Notation pbG := (pbG (op_record:=op_record)).
+Notation OpType := (pb_OpType pb_record).
+Notation has_op_encoding := (pb_has_op_encoding pb_record).
+Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
+Notation compute_reply := (pb_compute_reply pb_record).
+Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
@@ -39,7 +40,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
         if (decide (err = 0%Z)) then
           ∃ σ,
             let σphys := (λ x, x.1) <$> σ in
-            is_slice reply_sl byteT 1 (replyFn σphys ghost_op.1) ∗
+            is_slice reply_sl byteT 1 (compute_reply σphys ghost_op.1) ∗
             is_ghost_lb γ (σ ++ [ghost_op])
         else
           True
@@ -468,7 +469,7 @@ Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (op_bytes:list u8) (Φ: v
      mask. *)
   (|={⊤∖↑pbN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
         ∀ (reply_sl:Slice.t),
-            is_slice reply_sl byteT 1 (replyFn σ op) -∗
+            is_slice reply_sl byteT 1 (compute_reply σ op) -∗
             Φ (#(U64 0), (slice_val reply_sl))%V
   )) -∗
   (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V ) -∗
@@ -480,7 +481,7 @@ Proof using Type*.
   iApply wp_fupd.
   wp_apply (wp_Server__Apply_internal _ _ _ _ _
       (op, (λ σ, inv escrowN (
-          (∀ reply_sl : Slice.t, is_slice reply_sl byteT 1 (replyFn σ op) -∗
+          (∀ reply_sl : Slice.t, is_slice reply_sl byteT 1 (compute_reply σ op) -∗
                 Φ (#(U64 0), slice_val reply_sl)%V) ∨
           ghost_var γtok 1 ()
         ))%I)
@@ -518,7 +519,7 @@ Proof using Type*.
     iDestruct "Hlog" as "[Hlog Hlog2]".
     iMod ("Hupd" with "Hlog2") as "Hupd".
 
-    iAssert (|={↑escrowN}=> inv escrowN ((∀ reply_sl : Slice.t, is_slice reply_sl byteT 1 (replyFn σ.*1 op) -∗ Φ (#0, slice_val reply_sl)%V) ∨ ghost_var γtok 1 ()))%I
+    iAssert (|={↑escrowN}=> inv escrowN ((∀ reply_sl : Slice.t, is_slice reply_sl byteT 1 (compute_reply σ.*1 op) -∗ Φ (#0, slice_val reply_sl)%V) ∨ ghost_var γtok 1 ()))%I
             with "[Hupd]" as "Hinv2".
     {
       iMod (inv_alloc with "[-]") as "$"; last done.
