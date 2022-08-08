@@ -75,39 +75,34 @@ Proof.
   done.
 Qed.
 
-Definition neg P : iProp Σ := (P -∗ False).
+Definition neg P : iProp Σ := (P ={⊤}=∗ False).
 
 Definition A γ : iProp Σ := ∃ (P:iProp Σ), □(neg P) ∧ sprop γ P.
 
 Lemma lemma_2_a γ :
   bi_entails
-  (sprop γ (A γ)) (□(neg (A γ))).
+  (£ 1 ∗ sprop γ (A γ)) ((neg (A γ))).
 Proof.
-  iIntros "#HsA".
-  iModIntro.
+  iIntros "[Hlc #HsA]".
   iIntros "#HA".
   iAssert (_) with "HA" as "HA2".
   iDestruct "HA2" as (P) "[HnotP HsP]".
-  iDestruct (lemma_4_a with "[HsP HsA HA]") as "HH".
+  iMod (lemma_4_a _ (A γ) P with "[HsP HsA HA Hlc]") as "#HP".
   {
-    iFrame "".
+    iFrame "# Hlc".
   }
+  iApply ("HnotP" with "HP").
 Qed.
 
 Lemma lemma_2_b γ :
   bi_entails
   (sprop γ (A γ)) (A γ).
 Proof.
+  iIntros "#HsA".
+  iExists (A γ).
+  iFrame "HsA".
+  iModIntro.
+  iApply lemma_2_a.
 Admitted.
-
-Lemma paradox :
-  {{{
-        £ 1 ∗
-        £ 1 ∗
-  }}}
-    () #()
-  {{{
-        RET #(); True
-  }}}.
 
 End paradox_proof.

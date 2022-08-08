@@ -11,15 +11,26 @@ From Perennial.program_proof.simplepb Require Import pb_definitions.
 Section pb_apply_proof.
 
 Context `{!heapGS Σ, !stagedG Σ}.
-Context `{!pbG  Σ}.
+Context {op_record:OpRecord}.
+
+Notation OpType := (or_OpType op_record).
+Notation has_op_encoding := (or_has_op_encoding op_record).
+Notation has_op_encoding_injective := (or_has_op_encoding_injective op_record).
+Notation pbG := (pbG (op_record:=op_record)).
+
 Context `{!waitgroupG Σ}.
+Context `{!pbG Σ}.
 
 Opaque crash_borrow.
+
+Definition is_pb_host γ γsrv (host:chan) :=
+  handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv).
+
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   {{{
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op) ∗
-        ⌜ghost_op.1 = op⌝ ∗
+        ⌜has_op_encoding ghost_op.1 op⌝ ∗
         (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
@@ -28,7 +39,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
         if (decide (err = 0%Z)) then
           ∃ σ,
             let σphys := (λ x, x.1) <$> σ in
-            is_slice reply_sl byteT 1 (replyFn σphys op) ∗
+            is_slice reply_sl byteT 1 (replyFn σphys ghost_op.1) ∗
             is_ghost_lb γ (σ ++ [ghost_op])
         else
           True
@@ -83,6 +94,7 @@ Proof using waitgroupG0.
 
   wp_apply ("HapplySpec" with "[$Hstate $Hsl]").
   {
+    iSplitL ""; first done.
     iIntros "Hghost".
     iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
     { apply app_length. }
@@ -443,12 +455,13 @@ Lemma prefix_app_cases {A} (σ σ':list A) e:
 Proof.
 Admitted.
 
-Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (Φ: val → iProp Σ) :
+Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (op_bytes:list u8) (Φ: val → iProp Σ) :
+  has_op_encoding op op_bytes →
   £ 1 -∗ (* FIXME: can generate this inside of Server__Apply, but need to put it postcond *)
   £ 1 -∗
   is_inv γlog γ -∗
   is_Server s γ γsrv -∗
-  readonly (is_slice_small op_sl byteT 1 op) -∗
+  readonly (is_slice_small op_sl byteT 1 op_bytes) -∗
   (* the fupd needs to be fired while some internal pb invariants are open
      (those invariants contain (fupd ∨ Q) currently, so it will be annoying to
      close them while we fire it), so we need to exclude pbN from the outer
@@ -462,7 +475,7 @@ Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (Φ: val → iProp Σ) :
   WP (pb.Server__Apply #s (slice_val op_sl)) {{ Φ }}
 .
 Proof using Type*.
-  iIntros "Hcred Hcred2 #Hinv #Hsrv #Hop_sl Hupd Hfail_Φ".
+  iIntros "%Hop_enc Hcred Hcred2 #Hinv #Hsrv #Hop_sl Hupd Hfail_Φ".
   iMod (ghost_var_alloc (())) as (γtok) "Htok".
   iApply wp_fupd.
   wp_apply (wp_Server__Apply_internal _ _ _ _ _

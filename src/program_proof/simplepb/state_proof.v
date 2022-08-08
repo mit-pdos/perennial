@@ -5,20 +5,31 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From iris.base_logic Require Import ghost_map.
 
 Section state_proof.
+Context `{!heapGS Σ}.
 
-Context `{!heapGS Σ, !pbG Σ}.
+Program Definition op_record : OpRecord :=
+  {|
+    or_OpType := (u64 * list u8) ;
+    or_has_op_encoding := λ op op_bytes, (u64_le op.1 ++ op.2) = op_bytes ;
+  |}.
+Obligation 1.
+Admitted.
+
+Notation OpType := (or_OpType op_record).
+Notation has_op_encoding := (or_has_op_encoding op_record).
+Notation has_op_encoding_injective := (or_has_op_encoding_injective op_record).
+Notation pbG := (pbG (op_record:=op_record)).
 
 Implicit Type σ : list (list u8).
 
 Context `{!pbG Σ}.
 Context `{!ghost_mapG Σ u64 (list u8)}.
 
-Definition compute_state σ : (gmap u64 (list u8)) :=
+Definition compute_state ops : (gmap u64 (list u8)) :=
   foldl (λ m' op, <[op.1 := (default [] (m' !! op.1)) ++ op.2 ]>m') ∅ ops.
 
-Definition own_kvs (γkv:gname) σ : iProp Σ :=
-  ∃ m (ops:list (u64 * (list u8))),
-  ⌜σ = map (λ op, (u64_le op.1) ++ op.2) ops⌝ ∗
+Definition own_kvs (γkv:gname) ops : iProp Σ :=
+  ∃ m ,
   ghost_map_auth γkv 1 m ∗
   ⌜m = foldl (λ m' op, <[op.1 := (default [] (m' !! op.1)) ++ op.2 ]>m') ∅ ops⌝
 .
@@ -26,7 +37,7 @@ Definition own_kvs (γkv:gname) σ : iProp Σ :=
 Definition stateN := nroot .@ "state".
 
 Definition sys_inv γ γkv : iProp Σ :=
-  inv stateN ( ∃ ops, own_log γ σ ∗ own_kvs γkv σ).
+  inv stateN ( ∃ ops, own_log γ ops ∗ own_kvs γkv ops).
 
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
   k ↪[γkv] v.
@@ -38,11 +49,12 @@ Definition is_Clerk ck : iProp Σ :=
 (* FIXME: this belongs in pb *)
 Context `{!urpc_proof.urpcregG Σ}.
 Context `{!stagedG Σ}.
-Lemma wp_Clerk__PrimaryApply γ ck op_sl op (Φ:val → iProp Σ) :
-is_slice op_sl byteT 1 op -∗
-(|={⊤∖↑pbN,∅}=> ∃ σ, own_log γ σ ∗
-  (own_log γ (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, is_slice reply_sl byteT 1 (replyFn σ op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
+Lemma wp_Clerk__PrimaryApply γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+has_op_encoding op op_bytes →
+is_slice op_sl byteT 1 op_bytes -∗
+(|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
+  (own_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
+     (∀ reply_sl, is_slice reply_sl byteT 1 (replyFn ops op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
 ∧
 (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V ) -∗
 WP Clerk__PrimaryApply #ck (slice_val op_sl) {{ Φ }}.
@@ -95,6 +107,7 @@ Proof.
   wp_loadField.
 
   wp_apply (wp_Clerk__PrimaryApply with "Hop_sl").
+  { instantiate (1:=(key,value)). done. }
   iSplit.
   { (* case: successful response *)
     iLeft in "Hupd".
@@ -109,7 +122,7 @@ Proof.
     iFrame.
 
     iIntros "Hghost".
-    iDestruct "Hkvs" as (m ops) "(%Hσ_ops & Hkvs & %Hstate)".
+    iDestruct "Hkvs" as (m) "(Hkvs & %Hstate)".
     iDestruct (ghost_map_lookup with "Hkvs Hkvptsto") as %Hold_value.
     iMod (ghost_map_update (old_value ++ value) with "Hkvs Hkvptsto") as "[Hkvs Hkvptsto]".
 
@@ -117,15 +130,8 @@ Proof.
     {
       iNext.
       iExists _; iFrame "Hghost".
-      iExists _, (ops ++ [(key, value)]).
-      iFrame "Hkvs".
+      iExists _; iFrame "Hkvs".
       iPureIntro.
-      split.
-      {
-        rewrite map_app.
-        f_equal.
-        done.
-      }
       {
         rewrite foldl_snoc.
         simpl.

@@ -10,10 +10,22 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 
 Section pb_definitions.
 
-Definition client_logR := mono_listR (leibnizO (list u8)).
+Record OpRecord :=
+  {
+    or_OpType:Type ;
+    or_has_op_encoding : or_OpType → list u8 → Prop ;
+    or_has_op_encoding_injective : ∀ o1 o2 l, or_has_op_encoding o1 l → or_has_op_encoding o2 l → o1 = o2 ;
+  }.
+
+Context {op_record:OpRecord}.
+Notation OpType := (or_OpType op_record).
+Notation has_op_encoding := (or_has_op_encoding op_record).
+Notation has_op_encoding_injective := (or_has_op_encoding_injective op_record).
+
+Definition client_logR := mono_listR (leibnizO OpType).
 
 Class pbG Σ := {
-    pb_ghostG :> pb_ghostG (EntryType:=((list u8) * (list (list u8) → iProp Σ))%type) Σ ;
+    pb_ghostG :> pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
     pb_urpcG :> urpcregG Σ ;
     (* pb_wgG :> waitgroupG Σ ; *)
     pb_logG :> inG Σ client_logR;
@@ -21,18 +33,19 @@ Class pbG Σ := {
 }.
 
 Context `{!heapGS Σ, !stagedG Σ}.
-Context `{!pbG  Σ}.
+Context `{!pbG Σ}.
 
-Definition own_log γ σ := own γ (●ML{#1/2} (σ : list (leibnizO (list u8)))).
+Definition own_log γ σ := own γ (●ML{#1/2} (σ : list (leibnizO OpType))).
 
 (* RPC specs *)
 
 Program Definition ApplyAsBackup_spec γ γsrv :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ args σ Q,
+  (∃ args σ op Q,
     ⌜ApplyArgs.has_encoding encoded_args args⌝ ∗
     ⌜length σ = int.nat args.(ApplyArgs.index)⌝ ∗
-    ⌜last σ = Some (args.(ApplyArgs.op), Q) ⌝ ∗
+    ⌜has_op_encoding op args.(ApplyArgs.op)⌝∗
+    ⌜last σ = Some (op, Q) ⌝ ∗
     is_proposal_lb γ args.(ApplyArgs.epoch) σ ∗
     is_proposal_facts γ args.(ApplyArgs.epoch) σ ∗
     (∀ error (reply:list u8),
@@ -64,7 +77,7 @@ Lemma wp_Clerk__Apply γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl o
         "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
         "%Hghost_op_σ" ∷ ⌜last σ = Some ghost_op⌝ ∗
-        "%Hghost_op_op" ∷ ⌜ghost_op.1 = op⌝ ∗
+        "%Hghost_op_op" ∷ ⌜has_op_encoding ghost_op.1 op⌝ ∗
         "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
         "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
 
@@ -84,28 +97,29 @@ Admitted.
 
 (* Server-side definitions *)
 
-Definition replyFn (σ:list (list u8))  (op:list u8) : (list u8).
+Definition replyFn (σ:list OpType) (op:OpType) : (list u8).
 Admitted.
 
 Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
-  ∀ op_sl (epoch:u64) σ entry Q,
+  ∀ op_sl (epoch:u64) σ op ghost_op Q,
   {{{
-        (own_Server_ghost γ γsrv epoch σ ={⊤}=∗ own_Server_ghost γ γsrv epoch (σ++[entry]) ∗ Q) ∗
+        ⌜has_op_encoding ghost_op.1 op⌝ ∗
+        (own_Server_ghost γ γsrv epoch σ ={⊤}=∗ own_Server_ghost γ γsrv epoch (σ++[ghost_op]) ∗ Q) ∗
         crash_borrow (own_Server_ghost γ γsrv epoch σ ∗ P epoch σ) (
           ∃ epoch' σ', (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
         )
         ∗
-        readonly (is_slice_small op_sl byteT 1 entry.1)
+        readonly (is_slice_small op_sl byteT 1 op)
   }}}
     applyFn (slice_val op_sl)
   {{{
         reply_sl,
         RET (slice_val reply_sl);
-        crash_borrow (own_Server_ghost γ γsrv epoch (σ ++ [entry]) ∗ P epoch (σ ++ [entry])) (
+        crash_borrow (own_Server_ghost γ γsrv epoch (σ ++ [ghost_op]) ∗ P epoch (σ ++ [ghost_op])) (
           ∃ epoch' σ',
           (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
         ) ∗
-        is_slice reply_sl byteT 1 (replyFn ((λ x, x.1) <$> σ) entry.1) ∗
+        is_slice reply_sl byteT 1 (replyFn ((λ x, x.1) <$> σ) ghost_op.1) ∗
         Q
   }}}
 .
