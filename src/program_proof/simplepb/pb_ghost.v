@@ -27,14 +27,14 @@ Context `{EntryType:Type}.
 
 Local Definition logR := mono_listR (leibnizO EntryType).
 
-Class pbG Σ := {
-    pb_epochG :> mono_natG Σ ;
-    pb_proposalG :> inG Σ (gmapR (u64) logR) ;
-    pb_commitG :> inG Σ logR ;
-    pb_configG :> inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
+Class pb_ghostG Σ := {
+    pb_ghost_epochG :> mono_natG Σ ;
+    pb_ghost_proposalG :> inG Σ (gmapR (u64) logR) ;
+    pb_ghost_commitG :> inG Σ logR ;
+    pb_ghost_configG :> inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
 }.
 
-Context `{!pbG Σ}.
+Context `{!pb_ghostG Σ}.
 
 Implicit Type γsrv : pb_server_names.
 Implicit Type γsys : pb_system_names.
@@ -57,9 +57,6 @@ Definition is_accepted_lb γ epoch σ : iProp Σ :=
   own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
 Definition is_accepted_ro γ epoch σ : iProp Σ :=
   own γ.(pb_accepted_gn) {[ epoch := ●ML□ (σ : list (leibnizO (EntryType)))]}.
-
-Global Instance is_accepted_ro_pers γ epoch σ : Persistent (is_accepted_ro γ epoch σ).
-Admitted.
 
 (* TODO: if desired, can make these exclusive by adding an exclusive token to each *)
 Definition own_ghost γ σ : iProp Σ :=
@@ -91,13 +88,20 @@ Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
    committed_by γsys epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition pbN := nroot .@ "pb".
-Definition sysN := pbN .@ "sys".
-Definition opN := pbN .@ "op".
+Definition ghostN := pbN .@ "ghost".
 
+Definition sysN := ghostN .@ "sys".
+Definition opN := ghostN .@ "op".
+
+(* XXX(namespaces):
+   The update for the ghost state is fired while the sys_inv is open.
+   Additionally, the update is fired while the is_valid_inv is open, so we need
+   the initial mask to exclude those invariants.
+*)
 Definition is_valid_inv γsys σ op : iProp Σ :=
   inv opN (
     £ 1 ∗
-    (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True)) ∨
+    (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True)) ∨
     is_ghost_lb γsys (σ ++ [op])
   )
 .
@@ -274,7 +278,7 @@ Lemma ghost_propose γsys epoch σ op :
   own_proposal γsys epoch σ -∗
   is_proposal_facts γsys epoch σ -∗
   £ 1 -∗
-  (|={⊤∖↑pbN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑pbN}=∗ True))
+  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
   ={⊤}=∗
   own_proposal γsys epoch (σ ++ [op]) ∗
   (is_proposal_facts γsys epoch (σ ++ [op])).
@@ -371,11 +375,11 @@ Proof.
     }
     iDestruct "Hupd" as "[>Hlc Hupd]".
     iMod (lc_fupd_elim_later with "Hlc Hupd" ) as "Hupd".
-    iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
+    iMod (fupd_mask_subseteq (⊤∖↑ghostN)) as "Hmask".
     {
-      assert ((↑sysN:coPset) ⊆ (↑pbN:coPset)).
+      assert ((↑sysN:coPset) ⊆ (↑ghostN:coPset)).
       { apply nclose_subseteq. }
-      assert ((↑opN:coPset) ⊆ (↑pbN:coPset)).
+      assert ((↑opN:coPset) ⊆ (↑ghostN:coPset)).
       { apply nclose_subseteq. }
       set_solver.
     }
@@ -436,7 +440,7 @@ Lemma ghost_commit γsys epoch σ :
   committed_by γsys epoch σ -∗
   is_proposal_lb γsys epoch σ -∗
   is_proposal_facts γsys epoch σ
-  ={⊤}=∗
+  ={⊤}=∗ (* XXX: this is ⊤ because the user-provided fupd is fired, and it is allowed to know about ⊤ *)
   is_ghost_lb γsys σ.
 Proof.
   iIntros "#Hinv #Hcom #Hprop_lb #Hprop_facts".

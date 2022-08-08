@@ -1,0 +1,6 @@
+pb:
+[ ] clean up namespaces
+[ ] move apply proof to its own file
+[ ] pure admits
+[ ] marshalling admits
+[ ] specs for getstate/setstate
