@@ -61,7 +61,7 @@ Proof.
   (* Deduce [tslast < ts] with [Hts] and [Htslb]. *)
   iDestruct (ts_auth_lb_le with "Hts Htslb") as "%HltN".
   iFrame "Hts".
-  iIntros "[%n [Hts %Hgz]]".
+  iIntros "[%ts' [Hts %Hgz]]".
   (* Before we close the invariant, obtain a witness of a LB of timestamp. *)
   iAssert (ts_lb γ (S ts))%I as "#Htslb'".
   { iDestruct (ts_witness with "Hts") as "#H".
@@ -72,13 +72,13 @@ Proof.
   { iNext.
     iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
     { iIntros (k) "%Helem Hkeys".
-      iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+      iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
     }
-    iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
-    iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
-    iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
-    iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
-    iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+    iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
+    iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
+    iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
+    iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
+    iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
     eauto 20 with iFrame.
   }
   iIntros "!>" (tidnew) "%Etidnew".

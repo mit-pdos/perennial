@@ -50,7 +50,7 @@ Proof.
   iNamed "HinvO".
   iExists ts.
   iFrame "Hts".
-  iIntros "(%n & Hts & %Hn)".
+  iIntros "(%ts' & Hts & %Hn)".
   (* Obtain [ltuple_ptsto] over [m]. *)
   iMod (per_key_inv_ltuple_ptstos with "Hkeys") as "[Hkeys Hltuples]".
   iDestruct (dbmap_lookup_big with "Hm Hdbps") as "%Hrm". 
@@ -79,7 +79,7 @@ Proof.
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts + n)%nat) by lia.
+          assert (Hts : (ts < ts')%nat) by lia.
           apply Hts.
         }
         apply (set_Forall_impl _ _ _ HncaLt). lia.
@@ -89,12 +89,12 @@ Proof.
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
       }
-      iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
-      iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
-      iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
-      iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+      iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
@@ -139,7 +139,7 @@ Proof.
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts + n)%nat) by lia.
+          assert (Hts : (ts < ts')%nat) by lia.
           apply Hts.
         }
         apply (set_Forall_impl _ _ _ HfaLt). lia.
@@ -149,12 +149,12 @@ Proof.
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
       }
-      iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
-      iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
-      iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
-      iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+      iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
+      iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
@@ -207,7 +207,7 @@ Proof.
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts + n)%nat) by lia.
+          assert (Hts : (ts < ts')%nat) by lia.
           apply Hts.
         }
         apply (set_Forall_impl _ _ _ HfciLt). lia.
@@ -217,12 +217,12 @@ Proof.
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
       }
-      iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
-      iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
-      iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
-      iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+      iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
+      iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
@@ -270,7 +270,7 @@ Proof.
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts + n)%nat) by lia.
+          assert (Hts : (ts < ts')%nat) by lia.
           apply Hts.
         }
         apply (set_Forall_impl _ _ _ HfccLt). lia.
@@ -280,12 +280,12 @@ Proof.
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
       }
-      iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
-      iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
-      iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
-      iDestruct (cmt_inv_weaken_ts (ts + n)%nat with "Hcmt") as "Hcmt"; first lia.
+      iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
+      iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".
@@ -321,7 +321,7 @@ Proof.
   { (* Case CMT, i.e. FCC and [Q r w] holds. *)
     (* Update [dbmap_ptstos γ r] to [dbmap_ptstos γ (mods ∪ r)]. *)
     destruct a as [HQ Hdom].
-    iMod (per_key_inv_dbmap_ptstos_update (ts + n)%nat r mods with "Hm Hdbps Hkeys") as "(Hm & Hdbps & Hkeys)".
+    iMod (per_key_inv_dbmap_ptstos_update ts' r mods with "Hm Hdbps Hkeys") as "(Hm & Hdbps & Hkeys)".
     { done. } { lia. }
     iMod ("HAUC" $! true with "[Hdbps]") as "HΦ".
     { iExists _. by iFrame. }
@@ -341,7 +341,7 @@ Proof.
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts + n)%nat) by lia.
+          assert (Hts : (ts < ts')%nat) by lia.
           apply Hts.
         }
         apply (set_Forall_impl _ _ _ HcmtLt). lia.
@@ -351,12 +351,12 @@ Proof.
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts (ts + n)%nat with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
       }
-      iDestruct (nca_inv_weaken_ts (ts + n)%nat with "Hnca") as "Hnca"; first lia.
-      iDestruct (fa_inv_weaken_ts (ts + n)%nat with "Hfa") as "Hfa"; first lia.
-      iDestruct (fci_inv_weaken_ts (ts + n)%nat with "Hfci") as "Hfci"; first lia.
-      iDestruct (fcc_inv_weaken_ts (ts + n)%nat with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid) "[Htxn _]".

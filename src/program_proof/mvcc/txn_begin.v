@@ -10,7 +10,7 @@ Theorem wp_txn__Begin txn γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
       Txn__Begin #txn @ ∅
-    <<< ∃ n, ts_auth γ (ts + n)%nat ∗ ⌜0 < n⌝ >>>
+    <<< ∃ ts', ts_auth γ ts' ∗ ⌜ts < ts'⌝ >>>
     {{{ (tid : u64), RET #(); own_txn_impl txn ts ∅ γ ∧ ⌜int.nat tid = ts⌝ }}}.
 Proof.
   iIntros "!>" (Φ) "Htxn HAU".

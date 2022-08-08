@@ -11,7 +11,7 @@ Theorem wp_txnMgr__activate (txnmgr : loc) (sid : u64) γ :
     {{{ ⌜(int.Z sid) < N_TXN_SITES⌝ }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
       TxnMgr__activate #txnmgr #sid @ ∅
-    <<< ∃ n, ts_auth γ (ts + n)%nat ∗ ⌜0 < n⌝ >>>
+    <<< ∃ ts', ts_auth γ ts' ∗ ⌜ts < ts'⌝ >>>
     {{{ (tid : u64), RET #tid; active_tid γ tid sid ∧ ⌜int.nat tid = ts⌝ }}}.
 Proof.
   iIntros "#Htxnmgr !>" (Φ) "%HsitesBound HAU".
