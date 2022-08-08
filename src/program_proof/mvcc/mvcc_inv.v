@@ -174,7 +174,7 @@ Lemma cmt_inv_weaken_ts {γ tmods l ts} ts' :
   cmt_inv_def γ tmods l ts'.
 Admitted.
 
-Lemma ptuple_past_rel_diff_key key keyr tid phys past :
+Lemma ptuple_past_rel_read_diff_key key keyr tid phys past :
   key ≠ keyr ->
   ptuple_past_rel key phys past ->
   ptuple_past_rel key phys (past ++ [EvRead tid keyr]).
@@ -187,7 +187,7 @@ Proof.
   by simpl.
 Qed.
 
-Lemma ptuple_past_rel_lt_len key tid phys past :
+Lemma ptuple_past_rel_read_lt_len key tid phys past :
   (tid < length phys)%nat ->
   ptuple_past_rel key phys past ->
   ptuple_past_rel key phys (past ++ [EvRead tid key]).
@@ -227,6 +227,19 @@ Proof.
   by apply prefix_length.
 Qed.
 
+Lemma ptuple_past_rel_commit_lt_len key tid mods phys past :
+  (S tid < length phys)%nat ->
+  ptuple_past_rel key phys past ->
+  ptuple_past_rel key phys (past ++ [EvCommit tid mods]).
+Proof.
+  intros Hlt Hrel.
+  unfold ptuple_past_rel.
+  rewrite Forall_app.
+  split; first done.
+  rewrite Forall_singleton.
+  by simpl.
+Qed.
+
 Definition tuple_auth_prefix (γ : mvcc_names) (key : u64) : iProp Σ :=
   ∃ (phys logi : list dbval),
     "Hptuple" ∷ ptuple_auth γ (1 / 2) key phys ∗
@@ -254,7 +267,7 @@ Proof.
   iNamed "Hkey".
   do 2 iExists _.
   iFrame "∗ %".
-  iPureIntro. apply ptuple_past_rel_diff_key; done.
+  iPureIntro. apply ptuple_past_rel_read_diff_key; done.
 Qed.
 
 Lemma per_key_inv_ltuple_ptsto γ tmods ts m past :
@@ -473,14 +486,14 @@ Proof.
 Qed.
 
 Lemma cmt_inv_same_action γ l l' tid mods tmods ts :
-  NoDup (elements tmods).*1 ->
   l = EvCommit tid mods :: l' ->
+  NoDup (elements tmods).*1 ->
   cmt_tmods_frag γ (tid, mods) -∗
   cmt_inv_def γ tmods l ts ==∗
   cmt_inv_def γ (tmods ∖ {[ (tid, mods) ]}) l' ts.
 Proof using heapGS0 mvcc_ghostG0 Σ.
   (* FIXME *)
-  iIntros "%HND %Hl Hfrag Hcmt".
+  iIntros "%Hl %HND Hfrag Hcmt".
   iNamed "Hcmt".
   iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
   iMod (cmt_tmods_delete with "Hfrag HcmtAuth") as "HcmtAuth".
@@ -519,6 +532,18 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   apply (ptuple_past_rel_abort _ _ _ tid) in Hpprel.
   eauto with iFrame.
 Qed.
+
+Lemma per_key_inv_tmods_minus_disj γ k tmods ts m past tid mods :
+  k ∉ dom mods ->
+  per_key_inv_def γ k tmods ts m past -∗
+  per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m past.
+Admitted.
+
+Lemma per_key_inv_past_commit_disj γ k tmods ts m past tid mods :
+  k ∉ dom mods ->
+  per_key_inv_def γ k tmods ts m past -∗
+  per_key_inv_def γ k tmods ts m (past ++ [EvCommit tid mods]).
+Admitted.
 
 (**
  * The following lemma says that from FCC we know txns must write the same key in

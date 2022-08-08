@@ -375,7 +375,7 @@ Proof.
     }
     (* Commit branch. *)
     wp_apply (wp_txn__Commit with "[$Htxn $HcmtFrag]").
-    iIntros (ok) "Htxn".
+    iIntros "Htxn".
     wp_pures.
     by iApply "HΦ".
   }

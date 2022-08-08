@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import proph_proof txn_common txn_apply.
+From Perennial.program_proof.mvcc Require Import proph_proof txn_common txn_apply txnmgr_deactivate.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -124,29 +124,86 @@ Proof.
   }
 Qed.
 
-(*
-Definition ltuple_extend_wr_pre γ tmods ts m past tid tuple k v : iProp Σ :=
+Definition ptuple_extend_wr_pre γ tmods ts m past (tid : nat) k : iProp Σ :=
   per_key_inv_def γ k tmods ts m past ∗
-  ptuple_auth γ (1 / 2)%Qp .
+  ∃ tuple phys, own_tuple_locked tuple k tid phys phys γ.
 
-Definition ltuple_extend_wr_post γ tmods ts m past tid mods tuple k : iProp Σ :=
+Definition ptuple_extend_wr_post γ tmods ts m past (tid : nat) mods k v : iProp Σ :=
   per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods]) ∗
-  mods_token γ k tid ∗
-  own_tuple tuple k γ.
+  ∃ tuple phys, own_tuple_locked tuple k tid phys (extend (S tid) phys ++ [v]) γ.
 
-Theorem ltuple_extend_wr γ tmods ts m past tid mods tuple :
-  cmt_tmods_auth γ tmods -∗
-  ([∗ map] k ↦ v ∈ mods, ltuple_extend_wr_pre γ tmods ts m past tid tuple k v) ==∗
-  cmt_tmods_auth γ (tmods ∖ {[ (tid, mods) ]}) ∗
-  ([∗ map] k ↦ _ ∈ mods, ltuple_extend_wr_post γ tmods ts m past tid mods tuple k).
+Local Lemma per_key_inv_bigS_disj {γ keys tmods ts m past} tid mods :
+  keys ## dom mods ->
+  ([∗ set] k ∈ keys, per_key_inv_def γ k tmods ts m past) -∗
+  ([∗ set] k ∈ keys, per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods])).
+Proof using heapGS0 mvcc_ghostG0 Σ.
+  iIntros "%Hdisj Hkeys".
+  iApply (big_sepS_mono with "Hkeys").
+  iIntros (k) "%Helem Hkey".
+  iApply per_key_inv_past_commit_disj; first set_solver.
+  by iApply per_key_inv_tmods_minus_disj; first set_solver.
+Qed.
+
+Theorem ptuple_extend_wr γ tmods ts m past tid mods k v :
+  (tid, mods) ∈ tmods ->
+  le_tids_mods tid (per_tuple_mods tmods k) ->
+  mods !! k = Some v ->
+  ptuple_extend_wr_pre γ tmods ts m past tid k ==∗
+  ptuple_extend_wr_post γ tmods ts m past tid mods k v.
 Proof.
-Admitted.
-*)
+  iIntros "%Helem %Hlookup %Hle [Hkey Htuple]".
+  iNamed "Hkey".
+  iRename "Hptuple" into "Hptuple'".
+  iNamed "Htuple".
+  unfold ptuple_extend_wr_post.
+  iDestruct (ptuple_agree with "Hptuple Hptuple'") as %->.
+  set phys' := extend (S tid) phys ++ [v].
+  iMod (vchain_update phys' with "Hptuple Hptuple'") as "[Hptuple Hptuple']".
+  { apply prefix_app_r, extend_prefix. }
+  iModIntro.
+  iSplitL "Hptuple Hltuple".
+  { do 2 iExists _.
+    iFrame "∗ %".
+    iPureIntro.
+    split.
+    { (* Prove [tuple_mods_rel]. *)
+      rewrite (per_tuple_mods_minus v); last done.
+      apply tuplext_write; [done | by apply (mods_global_to_tuple mods) | done].
+    }
+    { (* Prove [ptuple_past_rel]. *)
+      apply ptuple_past_rel_commit_lt_len.
+      { subst phys'.
+        rewrite app_length.
+        rewrite extend_length; last by eapply tuple_mods_rel_last_phys.
+        simpl. lia.
+      }
+      apply ptuple_past_rel_extensible with phys; last done.
+      apply prefix_app_r, extend_prefix.
+    }
+  }
+  do 6 iExists _.
+  iFrame "∗ %".
+Qed.
+
+Theorem ptuples_extend_wr {γ} tmods ts m past tid mods :
+  (tid, mods) ∈ tmods ->
+  set_Forall (λ key : u64, le_tids_mods tid (per_tuple_mods tmods key)) (dom mods) ->
+  ([∗ map] k ↦ _ ∈ mods, ptuple_extend_wr_pre γ tmods ts m past tid k) ==∗
+  ([∗ map] k ↦ v ∈ mods, ptuple_extend_wr_post γ tmods ts m past tid mods k v).
+Proof.
+  iIntros "%Helem %Hleall Hpre".
+  iApply big_sepM_bupd.
+  iApply (big_sepM_mono with "Hpre").
+  iIntros (k v) "%Hlookup Hpre".
+  iApply (ptuple_extend_wr with "Hpre"); [done | | done].
+  apply Hleall.
+  by eapply elem_of_dom_2.
+Qed.
 
 Theorem wp_txn__Commit txn tid view mods γ τ :
   {{{ own_txn_ready txn tid view γ τ ∗ cmt_tmods_frag γ (tid, mods) }}}
     Txn__Commit #txn
-  {{{ (ok : bool), RET #ok; own_txn_uninit txn γ }}}.
+  {{{ RET #(); own_txn_uninit txn γ }}}.
 Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
   wp_call.
@@ -179,29 +236,58 @@ Proof.
   set keys := dom mods.
   rewrite (union_difference_L keys keys_all); last set_solver.
   rewrite big_sepS_union; last set_solver.
-  iDestruct "Hkeys" as "[Hkeys HkeysFix]".
+  iDestruct "Hkeys" as "[Hkeys HkeysDisj]".
   rewrite -big_sepM_dom.
   (* Combine [Htuples] (the tuple physical + logical state), and [Hkeys] (per-key inv). *)
   iDestruct (big_sepM_sep_2 with "Hkeys Htuples") as "H".
+  (* Extend physical tuples. *)
+  iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
+  pose proof (fcc_head_commit_le_all _ _ _ _ Hcmt Hhead) as Hdomle.
+  iMod (ptuples_extend_wr with "H") as "H"; [done | done |].
+  iDestruct (big_sepM_sep with "H") as "[Hkeys Htuples]".
+  rewrite big_sepM_dom.
+  (* Update [HkeysFix] w.r.t. to [tmods ∖ {[ (tid, mods) ]}] and [past ++ [EvCommit tid mods]]. *)
+  iDestruct (per_key_inv_bigS_disj tid mods with "HkeysDisj") as "HkeysDisj"; first set_solver.
+  iDestruct (big_sepS_union_2 with "Hkeys HkeysDisj") as "Hkeys".
+  replace (_ ∪ _ ∖ _) with keys_all; last first.
+  { apply union_difference_L. set_solver. }
 
-  (* TODO: Update the abstract part of the tuple RP to match the physical part. *)
-
-  (* TODO: Remove [(tid, mods)] from [tmods]. *)
-
-  (* TODO: Update the sets of ok/doomed txns to re-establish inv w.r.t. [future']. *)
+  (* TODO: Update [Hnca Hfa Hfci Hfcc] to re-establish inv w.r.t. [future']. *)
+  iDestruct (nca_inv_any_action with "Hnca") as "Hnca"; first apply Hfuture.
+  iDestruct (fa_inv_diff_action with "Hfa") as "Hfa"; [apply Hfuture | done |].
+  iDestruct (fci_inv_diff_action with "Hfci") as "Hfci"; [apply Hfuture | admit |].
+  iDestruct (fcc_inv_diff_action with "Hfcc") as "Hfcc"; [apply Hfuture | admit |].
+  iMod (cmt_inv_same_action with "Hfrag [$HcmtAuth]") as "Hcmt"; [apply Hfuture | admit | done |].
+  (* Close the invariant. *)
+  iMod "Hclose" as "_".
+  iMod ("HinvC" with "[Hproph Hts Hm Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
+  { by eauto 15 with iFrame. }
+  iIntros "!> HwrbufRP".
+  wp_pures.
 
   (***********************************************************)
   (* txn.apply()                                             *)
   (***********************************************************)
-  (*
-  wp_apply (wp_txn__apply with "Htxn").
+  wp_apply (wp_txn__apply with "[- HΦ]").
+  { iExists _.
+    iFrame "∗ #".
+    iSplit; last done.
+    eauto 20 with iFrame.
+  }
   iIntros "Htxn".
   wp_pures.
-  *)
 
   (***********************************************************)
   (* txn.txnMgr.deactivate(txn.sid, txn.tid)                 *)
   (***********************************************************)
+  iClear "#".
+  iNamed "Htxn".
+  iNamed "Himpl".
+  do 3 wp_loadField.
+  wp_apply (wp_txnMgr__deactivate with "HtxnmgrRI Hactive").
+  wp_pures.
+  iApply "HΦ".
+  eauto 20 with iFrame.
 Admitted.
 
 End program.

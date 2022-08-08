@@ -4,7 +4,7 @@ Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 Theorem wp_txn__apply txn tid view γ τ :
-  {{{ own_txn_ready txn tid view γ τ }}}
+  {{{ own_txn_appliable txn tid view γ τ }}}
     Txn__apply #txn
   {{{ RET #(); own_txn txn tid view γ τ }}}.
 Proof.

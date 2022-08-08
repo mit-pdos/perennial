@@ -101,6 +101,13 @@ Definition own_txn (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
     "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
     "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝.
 
+Definition own_tuples_locked (ts : nat) (mods : dbmap) γ : iProp Σ :=
+  [∗ map] k ↦ _ ∈ mods, ∃ tuple phys, own_tuple_locked tuple k ts phys phys γ.
+
+Definition own_tuples_updated (ts : nat) (mods : dbmap) γ : iProp Σ :=
+  [∗ map] k ↦ v ∈ mods, ∃ tuple phys,
+      own_tuple_locked tuple k ts phys (extend (S ts) phys ++ [v]) γ.
+
 Definition own_txn_ready (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
   ∃ (mods : dbmap),
     "Himpl"     ∷ own_txn_impl txn ts mods γ ∗
@@ -108,7 +115,16 @@ Definition own_txn_ready (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ 
     "Htxnmap"   ∷ txnmap_auth τ (mods ∪ view) ∗
     "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
     (* FIXME: make [tuple] below a physical thing. *)
-    "Htuples"   ∷ ([∗ map] k ↦ _ ∈ mods, ∃ tuple phys, own_tuple_locked tuple k ts phys phys γ).
+    "Htuples"   ∷ own_tuples_locked ts mods γ.
+
+Definition own_txn_appliable (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
+  ∃ (mods : dbmap),
+    "Himpl"     ∷ own_txn_impl txn ts mods γ ∗
+    "#Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
+    "Htxnmap"   ∷ txnmap_auth τ (mods ∪ view) ∗
+    "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
+    (* FIXME: make [tuple] below a physical thing. *)
+    "Htuples"   ∷ own_tuples_updated ts mods γ.
 
 (* TODO: Unify [own_txn_impl] and [own_txn_uninit]. *)
 Definition own_txn_uninit (txn : loc) γ : iProp Σ := 

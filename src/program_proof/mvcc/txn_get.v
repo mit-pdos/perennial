@@ -121,7 +121,7 @@ Proof.
         apply fcc_head_read_le_all with future; [done | set_solver].
       }
       { (* Prove [ptuple_past_rel]. *)
-        apply ptuple_past_rel_lt_len.
+        apply ptuple_past_rel_read_lt_len.
         { (* Note: [x < y] is a notation for [S x ≤ y]. *)
           apply extend_length_ge_n.
           by eapply tuple_mods_rel_last_phys.
@@ -144,7 +144,7 @@ Proof.
       do 2 iExists _.
       iFrame "∗ %".
       iPureIntro.
-      apply ptuple_past_rel_lt_len; [lia | done].
+      apply ptuple_past_rel_read_lt_len; [lia | done].
   }
   iDestruct ("Hkeys" with "[] [Hkey]") as "Hkeys"; [ | iAccu | ].
   { (* Adding [EvRead tid k] to [past] where [key ≠ k] preserves [per_key_inv_def]. *)

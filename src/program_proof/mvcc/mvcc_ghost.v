@@ -949,7 +949,7 @@ Proof.
     set_solver.
 Qed.
 
-Theorem mods_tuple_to_global s key tid v :
+Lemma mods_tuple_to_global s key tid v :
   (tid, v) ∈ per_tuple_mods s key ->
   ∃ mods, (tid, mods) ∈ s ∧ mods !! key = Some v.
 Proof.
@@ -958,6 +958,19 @@ Proof.
   apply mods_tuple_to_global_list in H.
   set_solver.
 Qed.
+
+Lemma per_tuple_mods_minus
+      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} (v : dbval) :
+  mods !! k = Some v ->
+  per_tuple_mods (tmods ∖ {[ (tid, mods) ]}) k = (per_tuple_mods tmods k) ∖ {[ (tid, v) ]}.
+Proof.
+Admitted.
+
+Lemma mods_global_to_tuple {s key tid} mods {v} :
+  (tid, mods) ∈ s ∧ mods !! key = Some v ->
+  (tid, v) ∈ per_tuple_mods s key. 
+Proof.
+Admitted.
 
 Definition find_tid_val_step (tid : nat) (x : nat * dbval) (res : (option nat) * dbval)
   : (option nat) * dbval :=
