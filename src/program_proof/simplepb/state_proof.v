@@ -13,8 +13,10 @@ Implicit Type σ : list (list u8).
 Context `{!pbG Σ}.
 Context `{!ghost_mapG Σ u64 (list u8)}.
 
+Definition compute_state σ : (gmap u64 (list u8)) :=
+  foldl (λ m' op, <[op.1 := (default [] (m' !! op.1)) ++ op.2 ]>m') ∅ ops.
+
 Definition own_kvs (γkv:gname) σ : iProp Σ :=
-  (* TODO: m has to agree with σ *)
   ∃ m (ops:list (u64 * (list u8))),
   ⌜σ = map (λ op, (u64_le op.1) ++ op.2) ops⌝ ∗
   ghost_map_auth γkv 1 m ∗
@@ -24,7 +26,7 @@ Definition own_kvs (γkv:gname) σ : iProp Σ :=
 Definition stateN := nroot .@ "state".
 
 Definition sys_inv γ γkv : iProp Σ :=
-  inv stateN ( ∃ σ, own_log γ σ ∗ own_kvs γkv σ).
+  inv stateN ( ∃ ops, own_log γ σ ∗ own_kvs γkv σ).
 
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
   k ↪[γkv] v.
