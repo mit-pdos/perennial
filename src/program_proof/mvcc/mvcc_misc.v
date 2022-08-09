@@ -100,3 +100,54 @@ Proof.
   apply (elem_of_weaken _ _ Y) in Helem; last auto.
   by apply HY in Helem.
 Qed.
+
+#[local]
+Lemma NoDup_app_comm_1 {A : Type} (l m : list A) :
+  NoDup (l ++ m) -> NoDup (m ++ l).
+Proof.
+  intros H.
+  apply NoDup_app in H as (Hl & Hlm & Hm).
+  apply NoDup_app.
+  split; first done.
+  split; last done.
+  intros x Helem Helem'.
+  apply Hlm in Helem'.
+  contradiction.
+Qed.
+
+Lemma NoDup_app_comm {A : Type} (l m : list A) :
+  NoDup (l ++ m) ↔ NoDup (m ++ l).
+Proof. split; by apply NoDup_app_comm_1. Qed.
+
+Lemma NoDup_app_assoc_1 (A : Type) (l m n : list A) :
+  NoDup (l ++ m ++ n) -> NoDup ((l ++ m) ++ n).
+Proof.
+  intros H.
+  apply NoDup_app in H as (Hl & Hlmn & Hmn).
+  apply NoDup_app in Hmn as (Hm & Hmn & Hn).
+  apply NoDup_app.
+  split.
+  { apply NoDup_app.
+    split; first done.
+    split; [set_solver | done].
+  }
+  split; [set_solver | done].
+Qed.
+
+Lemma NoDup_app_assoc_2 (A : Type) (l m n : list A) :
+  NoDup ((l ++ m) ++ n) -> NoDup (l ++ m ++ n).
+Proof.
+  intros H.
+  apply NoDup_app in H as (Hlm & Hlmn & Hn).
+  apply NoDup_app in Hlm as (Hl & Hlm & Hm).
+  apply NoDup_app.
+  split; first done.
+  split; first set_solver.
+  apply NoDup_app.
+  split; first done.
+  split; [set_solver | done].
+Qed.
+
+Lemma NoDup_app_assoc {A : Type} (l m n : list A) :
+  NoDup (l ++ m ++ n) ↔ NoDup ((l ++ m) ++ n).
+Proof. split; [apply NoDup_app_assoc_1 | apply NoDup_app_assoc_2]. Qed.

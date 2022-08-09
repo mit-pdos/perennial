@@ -272,19 +272,6 @@ Proof.
   by apply list_fmap_ext; last done.
 Qed.
 
-Local Lemma NoDup_app_commute (A : Type) (l1 l2 : list A) :
-  NoDup (l1 ++ l2) -> NoDup (l2 ++ l1).
-Proof.
-  intros H.
-  apply NoDup_app in H as (H1 & H2 & H3).
-  apply NoDup_app.
-  split; first done.
-  split; last done.
-  intros x Hl2 Hl1.
-  apply H2 in Hl1.
-  contradiction.
-Qed.
-
 (* TODO: Return values first or others first? Make it consistent. *)
 Definition spec_wrbuf__Lookup (v : u64) (b ok : bool) (key : u64) (m : gmap u64 dbval) :=
   if ok then m !! key = Some (to_dbval b v) else m !! key = None.
@@ -497,7 +484,7 @@ Proof.
   { (* prove [NoDup] *)
     do 2 rewrite fmap_app.
     simpl.
-    apply NoDup_app_commute.
+    apply NoDup_app_comm.
     apply NoDup_app.
     split; first by apply NoDup_singleton.
     split; last done.
@@ -645,7 +632,7 @@ Proof.
   { (* prove [NoDup] *)
     do 2 rewrite fmap_app.
     simpl.
-    apply NoDup_app_commute.
+    apply NoDup_app_comm.
     apply NoDup_app.
     split; first by apply NoDup_singleton.
     split; last done.

@@ -1,12 +1,33 @@
 From Perennial.program_proof.mvcc Require Import txn_common proph_proof tuple_read_version.
 
-Section program.
+Section lemma.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Theorem extend_length_le {X : Type} (n : nat) (l : list X) :
-  (n ≤ length l)%nat ->
-  extend n l = l.
-Admitted.
+#[local]
+Lemma ltuple_ptuple_ptsto_eq {γ key tmods ts m past} tid v1 v2 :
+  per_key_inv_def γ key tmods ts m past -∗
+  ltuple_ptsto γ key v1 tid -∗
+  ptuple_ptsto γ key v2 tid -∗
+  ⌜v1 = v2⌝.
+Proof.
+  iIntros "Hkey Hlpts Hppts".
+  iNamed "Hkey".
+  apply tuple_mods_rel_prefix in Htmrel.
+  iDestruct "Hlpts" as (logi') "[Hllb %Hv1]".
+  iDestruct "Hppts" as (phys') "[Hplb %Hv2]".
+  iDestruct (ltuple_prefix with "Hltuple Hllb") as "%Hl".
+  iDestruct (ptuple_prefix with "Hptuple Hplb") as "%Hp".
+  iPureIntro.
+  unshelve epose proof (prefix_lookup logi' logi tid v1 _ _); [done | done |].
+  unshelve epose proof (prefix_lookup phys' phys tid v2 _ _); [done | done |].
+  unshelve epose proof (prefix_lookup phys logi tid v2 _ _); [done | done |].
+  rewrite H in H1. by inversion H1.
+Qed.
+
+End lemma.
+
+Section program.
+Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (*****************************************************************)
 (* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
@@ -138,7 +159,7 @@ Proof.
       iSplitL "Hptuple'".
       { replace (extend (S tid) phys) with phys; first done.
         symmetry.
-        apply extend_length_le. lia.
+        apply extend_length_same. lia.
       }
       subst Ψ. simpl.
       do 2 iExists _.
@@ -186,17 +207,7 @@ Proof.
   iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup'".
   rewrite lookup_union_r in Hlookup'; last auto.
   iDestruct (big_sepM_lookup with "Hltuples") as "Hlptsto"; first apply Hlookup'.
-  iDestruct (ltuple_ptuple_ptsto_eq with "[Hkey] Hlptsto Hpptsto") as "%Heq".
-  { iNamed "Hkey".
-    unfold tuple_auth_prefix.
-    unfold tuple_mods_rel in Htmrel.
-    destruct Htmrel as (diff & _ & [H _]).
-    do 2 iExists _.
-    iFrame.
-    iPureIntro.
-    by exists diff.
-  }
-  (* Close things. *)
+  iDestruct (ltuple_ptuple_ptsto_eq with "Hkey Hlptsto Hpptsto") as "%Heq".
   iDestruct ("Hkeys" with "Hkey") as "Hkeys".
   iMod ("HinvC" with "[Hproph Hm Hts Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
   { eauto 20 with iFrame. }

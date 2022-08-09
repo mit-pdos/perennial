@@ -148,13 +148,14 @@ Qed.
 
 #[local]
 Lemma ptuple_extend_wr γ tmods ts m past tid mods k v :
+  NoDup (elements tmods).*1 ->
   (tid, mods) ∈ tmods ->
   le_tids_mods tid (per_tuple_mods tmods k) ->
   mods !! k = Some v ->
   ptuple_extend_wr_pre γ tmods ts m past tid k ==∗
   ptuple_extend_wr_post γ tmods ts m past tid mods k v.
 Proof.
-  iIntros "%Helem %Hlookup %Hle [Hkey Htuple]".
+  iIntros "%HND %Helem %Hlookup %Hle [Hkey Htuple]".
   iNamed "Hkey".
   iRename "Hptuple" into "Hptuple'".
   iNamed "Htuple".
@@ -170,7 +171,7 @@ Proof.
     iPureIntro.
     split.
     { (* Prove [tuple_mods_rel]. *)
-      rewrite (per_tuple_mods_minus v); last done.
+      rewrite (per_tuple_mods_minus_Some v); [ | done | done | done].
       apply tuplext_write; [done | by apply (mods_global_to_tuple mods) | done].
     }
     { (* Prove [ptuple_past_rel]. *)
@@ -190,16 +191,17 @@ Qed.
 
 #[local]
 Lemma ptuples_extend_wr {γ} tmods ts m past tid mods :
+  NoDup (elements tmods).*1 ->
   (tid, mods) ∈ tmods ->
   set_Forall (λ key : u64, le_tids_mods tid (per_tuple_mods tmods key)) (dom mods) ->
   ([∗ map] k ↦ _ ∈ mods, ptuple_extend_wr_pre γ tmods ts m past tid k) ==∗
   ([∗ map] k ↦ v ∈ mods, ptuple_extend_wr_post γ tmods ts m past tid mods k v).
 Proof.
-  iIntros "%Helem %Hleall Hpre".
+  iIntros "%HND %Helem %Hleall Hpre".
   iApply big_sepM_bupd.
   iApply (big_sepM_mono with "Hpre").
   iIntros (k v) "%Hlookup Hpre".
-  iApply (ptuple_extend_wr with "Hpre"); [done | | done].
+  iApply (ptuple_extend_wr with "Hpre"); [done | done | | done].
   apply Hleall.
   by eapply elem_of_dom_2.
 Qed.
@@ -247,7 +249,8 @@ Proof.
   (* Extend physical tuples. *)
   iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
   pose proof (fcc_head_commit_le_all _ _ _ _ Hcmt Hhead) as Hdomle.
-  iMod (ptuples_extend_wr with "H") as "H"; [done | done |].
+  iMod (ptuples_extend_wr with "H") as "H"; [| done | done |].
+  { by eapply fc_tids_unique_cmt. }
   iDestruct (big_sepM_sep with "H") as "[Hkeys Htuples]".
   rewrite big_sepM_dom.
   (* Update [HkeysDisj] w.r.t. [tmods ∖ {[ (tid, mods) ]}] and [past ++ [EvCommit tid mods]]. *)

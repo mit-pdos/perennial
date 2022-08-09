@@ -44,8 +44,8 @@ Definition per_key_inv_def
     "%Hlmrel" ∷ ⌜last logi = m !! key⌝ ∗
     "%Htsge"  ∷ ⌜(length logi ≤ S ts)%nat⌝.
 
-Definition fc_tids_unique (tmods_fci tmods_fcc tmods : gset (nat * dbmap)) :=
-  NoDup ((elements tmods_fci).*1 ++ (elements tmods_fcc).*1 ++ (elements tmods).*1).
+Definition fc_tids_unique (fci fcc cmt : gset (nat * dbmap)) :=
+  NoDup ((elements fci).*1 ++ (elements fcc).*1 ++ (elements cmt).*1).
 
 Definition cmt_inv_def
            (γ : mvcc_names) (tmods : gset (nat * dbmap)) (future : list action) (ts : nat)
@@ -159,25 +159,49 @@ Lemma fa_inv_weaken_ts {γ tids l ts} ts' :
   (ts ≤ ts')%nat ->
   fa_inv_def γ tids l ts -∗
   fa_inv_def γ tids l ts'.
-Admitted.
+Proof.
+  iIntros "%Hts Hfa".
+  iNamed "Hfa".
+  iFrame "HfaAuth %".
+  iPureIntro.
+  apply (set_Forall_impl _ _ _ HfaLt). lia.
+Qed.
 
 Lemma fci_inv_weaken_ts {γ tmods l1 l2 ts} ts' :
   (ts ≤ ts')%nat ->
   fci_inv_def γ tmods l1 l2 ts -∗
   fci_inv_def γ tmods l1 l2 ts'.
-Admitted.
+Proof.
+  iIntros "%Hts Hfci".
+  iNamed "Hfci".
+  iFrame "HfciAuth %".
+  iPureIntro.
+  apply (set_Forall_impl _ _ _ HfciLt). lia.
+Qed.
 
 Lemma fcc_inv_weaken_ts {γ tmods l ts} ts' :
   (ts ≤ ts')%nat ->
   fcc_inv_def γ tmods l ts -∗
   fcc_inv_def γ tmods l ts'.
-Admitted.
+Proof.
+  iIntros "%Hts Hfcc".
+  iNamed "Hfcc".
+  iFrame "HfccAuth %".
+  iPureIntro.
+  apply (set_Forall_impl _ _ _ HfccLt). lia.
+Qed.
 
 Lemma cmt_inv_weaken_ts {γ tmods l ts} ts' :
   (ts ≤ ts')%nat ->
   cmt_inv_def γ tmods l ts -∗
   cmt_inv_def γ tmods l ts'.
-Admitted.
+Proof.
+  iIntros "%Hts Hcmt".
+  iNamed "Hcmt".
+  iFrame "HcmtAuth %".
+  iPureIntro.
+  apply (set_Forall_impl _ _ _ HcmtLt). lia.
+Qed.
 
 Lemma ptuple_past_rel_read_diff_key key keyr tid phys past :
   key ≠ keyr ->
@@ -245,23 +269,17 @@ Proof.
   by simpl.
 Qed.
 
-Definition tuple_auth_prefix (γ : mvcc_names) (key : u64) : iProp Σ :=
-  ∃ (phys logi : list dbval),
-    "Hptuple" ∷ ptuple_auth γ (1 / 2) key phys ∗
-    "Hltuple" ∷ ltuple_auth γ key logi ∗
-    "%prefix" ∷ ⌜prefix phys logi⌝.
-
-Lemma per_key_inv_tuple_acc γ key tmods ts m past :
-  per_key_inv_def γ key tmods ts m past -∗
-  tuple_auth_prefix γ key ∗
-  (tuple_auth_prefix γ key -∗ per_key_inv_def γ key tmods ts m past).
-Admitted.
-
 Lemma per_key_inv_weaken_ts {γ key tmods ts} ts' {m past} :
   (ts ≤ ts')%nat ->
   per_key_inv_def γ key tmods ts m past -∗
   per_key_inv_def γ key tmods ts' m past.
-Admitted.
+Proof.
+  iIntros "%Hle Hkey".
+  iNamed "Hkey".
+  do 2 iExists _.
+  iFrame "∗ %".
+  iPureIntro. lia.
+Qed.
 
 Lemma per_key_inv_past_snoc_diff_key {γ key keyr tmods ts} tid {m past} :
   key ≠ keyr ->
@@ -342,20 +360,6 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma per_tuple_mods_union_None
-      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} :
-  mods !! k = None ->
-  per_tuple_mods ({[ (tid, mods) ]} ∪ tmods) k = per_tuple_mods tmods k.
-Proof.
-Admitted.
-
-Lemma per_tuple_mods_union_Some
-      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} (v : dbval) :
-  mods !! k = Some v ->
-  per_tuple_mods ({[ (tid, mods) ]} ∪ tmods) k = {[ (tid, v) ]} ∪ (per_tuple_mods tmods k).
-Proof.
-Admitted.
-
 Theorem per_key_inv_dbmap_ptstos_update {γ tmods tid} ts {m : dbmap} {past} r mods :
   dom mods ⊆ dom r ->
   (tid < ts)%nat ->
@@ -411,13 +415,6 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
     by eapply tuple_mods_rel_last_logi.
   }
 Qed.
-
-Theorem ltuple_ptuple_ptsto_eq γ k v1 v2 ts:
-  tuple_auth_prefix γ k -∗
-  ltuple_ptsto γ k v1 ts -∗
-  ptuple_ptsto γ k v2 ts -∗
-  ⌜v1 = v2⌝.
-Admitted.
 
 (* Theorems to re-establish invariants after prophecy resolution. *)
 Definition diff_abort_action (a : action) (tids : gset nat) :=
@@ -520,22 +517,6 @@ Proof.
   apply (first_commit_compatible_preserved Hl); [set_solver | auto].
 Qed.
 
-Local Lemma NoDup_notin_difference {tmods : gset (nat * dbmap)} {tid mods} :
-  NoDup (elements tmods).*1 ->
-  (tid, mods) ∈ tmods ->
-  ∀ m, (tid, m) ∉ tmods ∖ {[ (tid, mods) ]}.
-Proof.
-  intros HND Helem m Helem'.
-  apply union_difference_singleton_L in Helem.
-  set tmods' := tmods ∖ {[ (tid, mods) ]} in Helem Helem'.
-  rewrite Helem in HND.
-  rewrite fmap_Permutation in HND; last first.
-  { apply elements_union_singleton. set_solver. }
-  simpl in HND.
-  apply NoDup_cons_1_1 in HND.
-  set_solver.
-Qed.
-
 Lemma cmt_inv_diff_action γ l l' a tmods ts :
   l = a :: l' ->
   diff_commit_action a tmods ->
@@ -571,7 +552,7 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   split.
   - set tmods' := tmods ∖ _.
     apply (set_Forall_subseteq _ tmods') in Hcmt; last set_solver.
-    pose proof (NoDup_notin_difference HND Helem) as Hnotin.
+    pose proof (tmods_NoDup_notin_difference HND Helem) as Hnotin.
     intros [t m] Helem'.
     apply Hcmt in Helem' as H.
     simpl in *.
@@ -587,12 +568,18 @@ Proof. iIntros "Hcmt". by iNamed "Hcmt". Qed.
 Lemma ptuple_past_rel_abort key phys past tid :
   ptuple_past_rel key phys past ->
   ptuple_past_rel key phys (past ++ [EvAbort tid]).
-Admitted.
+Proof.
+  unfold ptuple_past_rel.
+  intros H.
+  rewrite Forall_app.
+  split; first done.
+  by rewrite Forall_singleton.
+Qed.
 
 Lemma per_key_inv_past_abort {γ tmods ts m past} tid :
   ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past) -∗
   ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m (past ++ [EvAbort tid])).
-Proof using heapGS0 mvcc_ghostG0 Σ.
+Proof.
   iIntros "Hkeys".
   iApply big_sepS_mono; last eauto.
   iIntros (key) "%Helem Hkey".
@@ -605,53 +592,193 @@ Lemma per_key_inv_tmods_minus_disj γ k tmods ts m past tid mods :
   k ∉ dom mods ->
   per_key_inv_def γ k tmods ts m past -∗
   per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m past.
-Admitted.
+Proof.
+  iIntros "%Hnotin Hkey".
+  iNamed "Hkey".
+  do 2 iExists _.
+  iFrame "∗ %".
+  iPureIntro.
+  rewrite not_elem_of_dom in Hnotin.
+  by rewrite per_tuple_mods_minus_None.
+Qed.
 
 Lemma per_key_inv_past_commit_disj γ k tmods ts m past tid mods :
   k ∉ dom mods ->
   per_key_inv_def γ k tmods ts m past -∗
   per_key_inv_def γ k tmods ts m (past ++ [EvCommit tid mods]).
-Admitted.
+Proof.
+  iIntros "%Hnotin Hkey".
+  iNamed "Hkey".
+  do 2 iExists _.
+  iFrame "∗ %".
+  iPureIntro.
+  apply Forall_app.
+  split; first done.
+  rewrite Forall_singleton.
+  by simpl.
+Qed.
 
 Lemma fc_tids_unique_cmt fci fcc cmt :
   fc_tids_unique fci fcc cmt ->
   NoDup (elements cmt).*1.
-Admitted.
+Proof.
+  unfold fc_tids_unique.
+  intros HNoDup.
+  rewrite NoDup_app_assoc NoDup_app_comm in HNoDup.
+  by apply NoDup_app in HNoDup as [H _].
+Qed.
 
 Lemma fc_tids_unique_notin_fci fci fcc cmt tid mods :
   (tid, mods) ∈ cmt ->
   fc_tids_unique fci fcc cmt ->
   ∀ m, (tid, m) ∉ fci.
-Admitted.
+Proof.
+  unfold fc_tids_unique.
+  intros Helem HNoDup.
+  rewrite NoDup_app_assoc NoDup_app_comm in HNoDup.
+  apply NoDup_app in HNoDup as (_ & HNoDup & _).
+  rewrite -elem_of_elements in Helem.
+  apply (elem_of_list_fmap_1 fst) in Helem. simpl in Helem.
+  apply HNoDup in Helem.
+  intros m Helem'.
+  rewrite -elem_of_elements in Helem'.
+  apply (elem_of_list_fmap_1 fst) in Helem'. simpl in Helem'.
+  set_solver.
+Qed.
 
 Lemma fc_tids_unique_notin_fcc fci fcc cmt tid mods :
   (tid, mods) ∈ cmt ->
   fc_tids_unique fci fcc cmt ->
   ∀ m, (tid, m) ∉ fcc.
-Admitted.
+Proof.
+  unfold fc_tids_unique.
+  intros Helem HNoDup.
+  rewrite NoDup_app_assoc NoDup_app_comm in HNoDup.
+  apply NoDup_app in HNoDup as (_ & HNoDup & _).
+  rewrite -elem_of_elements in Helem.
+  apply (elem_of_list_fmap_1 fst) in Helem. simpl in Helem.
+  apply HNoDup in Helem.
+  intros m Helem'.
+  rewrite -elem_of_elements in Helem'.
+  apply (elem_of_list_fmap_1 fst) in Helem'. simpl in Helem'.
+  set_solver.
+Qed.
 
 Lemma fc_tids_unique_minus_cmt {fci fcc cmt} tid mods :
   fc_tids_unique fci fcc cmt ->
   fc_tids_unique fci fcc (cmt ∖ {[ (tid, mods) ]}).
-Admitted.
+Proof.
+  intros H.
+  apply NoDup_app in H as (Hfci & Hict & Hct).
+  apply NoDup_app in Hct as (Hfcc & Hct & Hcmt).
+  apply NoDup_app.
+  split; first done.
+  split.
+  { intros x Helem.
+    rewrite not_elem_of_app.
+    apply Hict in Helem.
+    split; set_solver.
+  }
+  apply NoDup_app.
+  split; first done.
+  split.
+  { intros x Helem.
+    apply Hct in Helem.
+    set_solver.
+  }
+  destruct (decide ((tid, mods) ∈ cmt)); last first.
+  { rewrite difference_disjoint_L; [done | set_solver]. }
+  rewrite (union_difference_L {[ (tid, mods) ]} cmt) in Hcmt; last set_solver.
+  rewrite NoDup_Permutation_proper in Hcmt; last first.
+  {  set cmt' := _ ∖ _.
+     rewrite elements_union_singleton; last set_solver.
+     rewrite fmap_cons. simpl. reflexivity.
+  }
+  by apply NoDup_cons in Hcmt as [_ H].
+Qed.
+
+(* Really ugly proof... Maybe should have defined TID uniqueness differently? *)
+#[local]
+Lemma fc_tids_unique_insert {A B C} tid mods :
+  set_Forall (λ x, x.1 < tid)%nat (A ∪ B ∪ C) ->
+  fc_tids_unique A B C ->
+  fc_tids_unique ({[ (tid, mods) ]} ∪ A) B C.
+Proof.
+  unfold fc_tids_unique.
+  intros Hltall H.
+  apply (set_Forall_subseteq _ A) in Hltall as HltA; last set_solver.
+  apply (set_Forall_subseteq _ B) in Hltall as HltB; last set_solver.
+  apply (set_Forall_subseteq _ C) in Hltall as HltC; last set_solver.
+  rewrite NoDup_Permutation_proper; last first.
+  { apply Permutation_app; last reflexivity.
+    rewrite elements_union_singleton; last first.
+    { intros Helem.
+      apply HltA in Helem. simpl in Helem. lia.
+    }
+    rewrite fmap_cons. simpl. reflexivity.
+  }
+  replace (λ x, _) with ((λ tidx, (tidx < tid)%nat) ∘ (fst : nat * dbmap -> nat)) in *; last done.
+  apply set_Forall_elements, Forall_fmap in HltA, HltB, HltC.
+  rewrite Forall_forall in HltA.
+  rewrite Forall_forall in HltB.
+  rewrite Forall_forall in HltC.
+  apply NoDup_app in H as (HA & HABC & HBC).
+  apply NoDup_app in HBC as (HB & HBC & HC).
+  apply NoDup_app.
+  split.
+  { rewrite NoDup_cons.
+    split; last done.
+    intros contra.
+    apply HltA in contra. lia.
+  }
+  split.
+  { intros x Helem.
+    rewrite elem_of_cons in Helem.
+    destruct Helem; last by auto.
+    rewrite not_elem_of_app.
+    split.
+    { intros contra. apply HltB in contra. lia. }
+    { intros contra. apply HltC in contra. lia. }
+  }
+  apply NoDup_app.
+  split; first done.
+  split; done.
+Qed.
 
 Lemma fc_tids_unique_insert_fci {fci fcc cmt} tid mods :
   set_Forall (λ x, x.1 < tid)%nat (fci ∪ fcc ∪ cmt) ->
   fc_tids_unique fci fcc cmt ->
   fc_tids_unique ({[ (tid, mods) ]} ∪ fci) fcc cmt.
-Admitted.
+Proof.
+  intros Hltall.
+  by apply fc_tids_unique_insert.
+Qed.
 
 Lemma fc_tids_unique_insert_fcc {fci fcc cmt} tid mods :
   set_Forall (λ x, x.1 < tid)%nat (fci ∪ fcc ∪ cmt) ->
   fc_tids_unique fci fcc cmt ->
   fc_tids_unique fci ({[ (tid, mods) ]} ∪ fcc) cmt.
-Admitted.
+Proof.
+  intros Hltall.
+  unfold fc_tids_unique.
+  do 2 rewrite (NoDup_app_comm (elements fci).*1).
+  do 2 rewrite -NoDup_app_assoc.
+  replace (_ ∪ _ ∪ _) with (fcc ∪ cmt ∪ fci) in Hltall; last by set_solver.
+  by apply fc_tids_unique_insert.
+Qed.
 
 Lemma fc_tids_unique_insert_cmt {fci fcc cmt} tid mods :
   set_Forall (λ x, x.1 < tid)%nat (fci ∪ fcc ∪ cmt) ->
   fc_tids_unique fci fcc cmt ->
   fc_tids_unique fci fcc ({[ (tid, mods) ]} ∪ cmt).
-Admitted.
+Proof.
+  intros Hltall.
+  unfold fc_tids_unique.
+  do 2 rewrite NoDup_app_assoc.
+  do 2 rewrite (NoDup_app_comm ((elements fci).*1 ++ _)).
+  replace (_ ∪ _ ∪ _) with (cmt ∪ fci ∪ fcc) in Hltall; last by set_solver.
+  by apply fc_tids_unique_insert.
+Qed.
 
 Lemma fc_inv_fc_tids_lt_ts
       (γ : mvcc_names) (fci fcc cmt : gset (nat * dbmap))
@@ -660,7 +787,15 @@ Lemma fc_inv_fc_tids_lt_ts
   fcc_inv_def γ fcc future ts -∗
   cmt_inv_def γ cmt future ts -∗
   ⌜set_Forall (λ x, x.1 < ts)%nat (fci ∪ fcc ∪ cmt)⌝.
-Admitted.
+Proof.
+  iIntros "Hfci Hfcc Hcmt".
+  iNamed "Hfci".
+  iNamed "Hfcc".
+  iNamed "Hcmt".
+  iPureIntro.
+  apply set_Forall_union; last done.
+  apply set_Forall_union; done.
+Qed.
 
 (**
  * The following lemma says that from FCC we know txns must write the same key in

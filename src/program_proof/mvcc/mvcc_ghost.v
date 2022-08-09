@@ -252,6 +252,19 @@ Proof.
   apply singleton_mono, mono_list_included.
 Qed.
 
+Lemma ptuple_prefix γ q k l l' :
+  ptuple_auth γ q k l -∗
+  ptuple_lb γ k l' -∗
+  ⌜prefix l' l⌝.
+Proof.
+  iIntros "Hl Hl'".
+  iDestruct (own_valid_2 with "Hl Hl'") as %Hval.
+  iPureIntro. revert Hval.
+  rewrite singleton_op singleton_valid.
+  rewrite mono_list_both_dfrac_valid_L.
+  by intros [_ H].
+Qed.
+
 Lemma vchain_update {γ key vchain} vchain' :
   prefix vchain vchain' →
   ptuple_auth γ (1 / 2) key vchain -∗
@@ -291,7 +304,13 @@ Lemma ltuple_prefix γ k l l' :
   ltuple_auth γ k l -∗
   ltuple_lb γ k l' -∗
   ⌜prefix l' l⌝.
-Admitted.
+Proof.
+  iIntros "Hl Hl'".
+  iDestruct (own_valid_2 with "Hl Hl'") as %Hval.
+  iPureIntro. revert Hval.
+  rewrite singleton_op singleton_valid.
+  by rewrite mono_list_both_valid_L.
+Qed.
 
 Lemma site_active_tids_elem_of γ (sid : u64) tids tid :
   site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ (dom tids)⌝.
@@ -937,6 +956,8 @@ Fixpoint per_tuple_mods_list (l : list (nat * dbmap)) (key : u64) : gset (nat * 
 Definition per_tuple_mods (s : gset (nat * dbmap)) (key : u64) : gset (nat * dbval) :=
   per_tuple_mods_list (elements s) key.
 
+(* TODO: Rename lemma names from [mods] to [tmods], [tuple] to [key]. *)
+
 Lemma mods_tuple_to_global_list l key tid v :
   (tid, v) ∈ per_tuple_mods_list l key ->
   ∃ mods, (tid, mods) ∈ l ∧ mods !! key = Some v.
@@ -962,23 +983,138 @@ Lemma mods_tuple_to_global s key tid v :
   ∃ mods, (tid, mods) ∈ s ∧ mods !! key = Some v.
 Proof.
   intros H.
-  unfold per_tuple_mods in H.
   apply mods_tuple_to_global_list in H.
   set_solver.
 Qed.
 
-Lemma per_tuple_mods_minus
-      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} (v : dbval) :
-  mods !! k = Some v ->
-  per_tuple_mods (tmods ∖ {[ (tid, mods) ]}) k = (per_tuple_mods tmods k) ∖ {[ (tid, v) ]}.
+Lemma mods_global_to_tuple_list l key tid mods v :
+  (tid, mods) ∈ l ∧ mods !! key = Some v ->
+  (tid, v) ∈ per_tuple_mods_list l key.
 Proof.
-Admitted.
+  intros [Helem Hlookup].
+  induction l as [| x l IHl]; first set_solver.
+  rewrite elem_of_cons in Helem.
+  destruct Helem.
+  - subst x. simpl.
+    rewrite Hlookup.
+    set_solver.
+  - specialize (IHl H). simpl.
+    destruct (x.2 !! key); set_solver.
+Qed.
 
 Lemma mods_global_to_tuple {s key tid} mods {v} :
   (tid, mods) ∈ s ∧ mods !! key = Some v ->
   (tid, v) ∈ per_tuple_mods s key. 
 Proof.
-Admitted.
+  intros [Helem Hlookup].
+  rewrite -elem_of_elements in Helem.
+  by apply mods_global_to_tuple_list with mods.
+Qed.
+
+Lemma tmods_NoDup_notin_difference {tmods : gset (nat * dbmap)} {tid mods} :
+  NoDup (elements tmods).*1 ->
+  (tid, mods) ∈ tmods ->
+  ∀ m, (tid, m) ∉ tmods ∖ {[ (tid, mods) ]}.
+Proof.
+  intros HND Helem m Helem'.
+  apply union_difference_singleton_L in Helem.
+  set tmods' := tmods ∖ {[ (tid, mods) ]} in Helem Helem'.
+  rewrite Helem in HND.
+  rewrite fmap_Permutation in HND; last first.
+  { apply elements_union_singleton. set_solver. }
+  simpl in HND.
+  apply NoDup_cons_1_1 in HND.
+  set_solver.
+Qed.
+
+Lemma per_tuple_mods_union_None
+      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} :
+  mods !! k = None ->
+  per_tuple_mods ({[ (tid, mods) ]} ∪ tmods) k = per_tuple_mods tmods k.
+Proof.
+  intros Hlookup.
+  rewrite set_eq.
+  intros [t v].
+  split.
+  - intros Helem.
+    apply mods_tuple_to_global in Helem.
+    destruct Helem as (mods' & Helem & Hlookup').
+    rewrite elem_of_union in Helem.
+    destruct Helem; first set_solver.
+    by apply mods_global_to_tuple with mods'.
+  - intros Helem.
+    apply mods_tuple_to_global in Helem.
+    destruct Helem as (mods' & Helem & Hlookup').
+    apply mods_global_to_tuple with mods'.
+    split; [set_solver | done].
+Qed.
+
+Lemma per_tuple_mods_union_Some
+      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} (v : dbval) :
+  mods !! k = Some v ->
+  per_tuple_mods ({[ (tid, mods) ]} ∪ tmods) k = {[ (tid, v) ]} ∪ (per_tuple_mods tmods k).
+Proof.
+  intros Hlookup.
+  rewrite set_eq.
+  intros [t u].
+  split.
+  - intros Helem.
+    apply mods_tuple_to_global in Helem.
+    destruct Helem as (mods' & Helem & Hlookup').
+    rewrite elem_of_union in Helem.
+    destruct Helem; first set_solver.
+    rewrite elem_of_union. right.
+    by apply mods_global_to_tuple with mods'.
+  - intros Helem.
+    rewrite elem_of_union in Helem.
+    destruct Helem.
+    + rewrite elem_of_singleton in H. rewrite H.
+      apply mods_global_to_tuple with mods.
+      split; [set_solver | done].
+    + apply mods_tuple_to_global in H.
+      destruct H as (mods' & Helem & Hlookup').
+      apply mods_global_to_tuple with mods'.
+      split; [set_solver | done].
+Qed.
+
+Lemma per_tuple_mods_minus_None
+      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} :
+  mods !! k = None ->
+  per_tuple_mods (tmods ∖ {[ (tid, mods) ]}) k = per_tuple_mods tmods k.
+Proof.
+  intros Hlookup.
+  destruct (decide ((tid, mods) ∈ tmods)); last first.
+  { by replace (_ ∖ _) with tmods by set_solver. }
+  rewrite {2} (union_difference_L {[ (tid, mods) ]} tmods); last set_solver.
+  set tmods' := _ ∖ _.
+  symmetry.
+  by apply per_tuple_mods_union_None.
+Qed.
+
+Lemma tmods_global_to_key_notin {tmods : gset (nat * dbmap)} {tid : nat} k v :
+  (∀ mods, (tid, mods) ∉ tmods) ->
+  (tid, v) ∉ per_tuple_mods tmods k.
+Proof.
+  intros Hnotin Helem.
+  apply mods_tuple_to_global in Helem.
+  destruct Helem as (mods & Helem & _).
+  set_solver.
+Qed.
+
+Lemma per_tuple_mods_minus_Some
+      {tmods : gset (nat * dbmap)} {tid : nat} {mods : dbmap} {k : u64} (v : dbval) :
+  NoDup (elements tmods).*1 ->
+  (tid, mods) ∈ tmods ->
+  mods !! k = Some v ->
+  per_tuple_mods (tmods ∖ {[ (tid, mods) ]}) k = (per_tuple_mods tmods k) ∖ {[ (tid, v) ]}.
+Proof.
+  intros HND Helem Hlookup.
+  rewrite {2} (union_difference_L {[ (tid, mods) ]} tmods); last set_solver.
+  set tmods' := _ ∖ _.
+  pose proof (tmods_NoDup_notin_difference HND Helem) as Hnotin.
+  apply (tmods_global_to_key_notin k v) in Hnotin.
+  rewrite (per_tuple_mods_union_Some v); [set_solver | done].
+Qed.
 
 Definition find_tid_val_step (tid : nat) (x : nat * dbval) (res : (option nat) * dbval)
   : (option nat) * dbval :=
@@ -1201,7 +1337,6 @@ Lemma NoDup_elements_fmap_fst_difference (tid : nat) (v : dbval) (s : gset (nat 
   NoDup (elements (s ∖ {[ (tid, v) ]})).*1.
 Proof.
   intros HNoDup.
-
   destruct (decide ((tid, v) ∈ s)); last first.
   { by replace (s ∖ _) with s by set_solver. }
   rewrite (union_difference_singleton_L _ _ e) in HNoDup.
@@ -1552,7 +1687,11 @@ Qed.
 Lemma tuple_mods_rel_last_phys (phys logi : list dbval) (mods : gset (nat * dbval)) :
   tuple_mods_rel phys logi mods ->
   ∃ v, last phys = Some v.
-Admitted.
+Proof.
+  intros Hrel.
+  destruct Hrel as (diff & v & _ & H & _).
+  by eauto.
+Qed.
 
 Lemma tuple_mods_rel_last_logi (phys logi : list dbval) (mods : gset (nat * dbval)) :
   tuple_mods_rel phys logi mods ->
@@ -1563,6 +1702,16 @@ Proof.
   rewrite Hprefix.
   rewrite last_app.
   destruct (last diff); eauto.
+Qed.
+
+Lemma tuple_mods_rel_prefix (phys logi : list dbval) (mods : gset (nat * dbval)) :
+  tuple_mods_rel phys logi mods ->
+  prefix phys logi.
+Proof.
+  intros Hrel.
+  unfold tuple_mods_rel in Hrel.
+  destruct Hrel as (diff & v & H & _). unfold prefix.
+  by eauto.
 Qed.
 
 Theorem tuplext_read (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
@@ -1736,67 +1885,6 @@ Proof.
   split.
   { (* prefix *)
     apply (extend_last_Some (S tid)) in Hlast' as Heq.
-    by rewrite Heq Hprefix -app_assoc.
-  }
-  split.
-  { (* last *) done. }
-  split; first done.
-  split.
-  { (* len *)
-    apply (set_Forall_impl _ _ _ Hlen).
-    intros x Hlt.
-    split; first lia.
-    apply Nat.lt_le_trans with (length logi); [lia | apply extend_length_ge].
-  }
-  { (* diff *)
-    intros i u Hlookup.
-    destruct (decide (i < length diff)%nat).
-    - apply Hdiff. by rewrite lookup_app_l in Hlookup; last auto.
-    - apply not_lt in n.
-      rewrite lookup_app_r in Hlookup; last lia.
-      rewrite lookup_replicate in Hlookup.
-      destruct Hlookup as [Heq Hlt]. subst v'.
-      (* Case [diff = nil] is treated as a special case. *)
-      destruct (decide (diff = [])).
-      { rewrite e app_nil_r in Hprefix.
-        rewrite (tuple_mods_rel_eq_empty phys logi mods); [| auto | done].
-        rewrite diff_val_at_empty. subst logi.
-        rewrite Hlast' in Hlast.
-        by inversion Hlast.
-      }
-      (* Use the last value of [logi] as the reference to apply [diff_val_at_extensible]. *)
-      rewrite last_lookup in Hlast'.
-      rewrite -(diff_val_at_extensible _ (pred (length diff) + length phys)); last first.
-      { lia. }
-      { unfold gt_tids_mods.
-        apply (set_Forall_impl _ _ _ Hlen).
-        intros x [_ H].
-        rewrite Hprefix app_length in H. lia.
-      }
-      apply Hdiff.
-      rewrite -Hlast'.
-      do 2 rewrite -last_lookup.
-      rewrite Hprefix.
-      rewrite last_app.
-      destruct (last diff) eqn:E; [done | by rewrite last_None in E].
-  }
-Qed.
-
-(* XXX: not used *)
-Theorem tuplext_linearize_unchanged' (tid : nat) (phys logi : list dbval) (mods : gset (nat * dbval)) :
-  tuple_mods_rel phys logi mods ->
-  tuple_mods_rel phys (extend (S (S tid)) logi) mods.
-Proof.
-  intros Hrel.
-  pose proof Hrel as (diff & v & Hprefix & Hlast & HNoDup & Hlen & Hdiff).
-  unfold tuple_mods_rel.
-  assert (Hlast' : ∃ v', last logi = Some v').
-  { rewrite Hprefix last_app. destruct (last diff); eauto. }
-  destruct Hlast' as [v' Hlast'].
-  exists (diff ++ replicate (S (S tid) - length logi) v'), v.
-  split.
-  { (* prefix *)
-    apply (extend_last_Some (S (S tid))) in Hlast' as Heq.
     by rewrite Heq Hprefix -app_assoc.
   }
   split.
