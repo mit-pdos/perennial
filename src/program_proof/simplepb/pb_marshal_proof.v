@@ -130,17 +130,19 @@ Module SetStateArgs.
 Record C :=
 {
   epoch : u64 ;
+  nextIndex: u64 ;
   state : list u8 ;
 }.
 
 Definition has_encoding (encoded:list u8) (args:C) : Prop :=
-  encoded = (u64_le args.(epoch)) ++ args.(state).
+  encoded = (u64_le args.(epoch)) ++ (u64_le args.(nextIndex)) ++ args.(state).
 
 Context `{!heapGS Σ}.
 
 Definition own args_ptr args : iProp Σ :=
   ∃ state_sl,
   "Hargs_epoch" ∷ args_ptr ↦[pb.SetStateArgs :: "Epoch"] #args.(epoch) ∗
+  "Hargs_next_index" ∷ args_ptr ↦[pb.SetStateArgs :: "NextIndex"] #args.(nextIndex) ∗
   "Hargs_state" ∷ args_ptr ↦[pb.SetStateArgs :: "State"] (slice_val state_sl) ∗
   "Hargs_state_sl" ∷ is_slice_small state_sl byteT 1 args.(state)
   .
@@ -177,6 +179,13 @@ Proof.
   wp_apply (wp_WriteInt with "Henc_sl").
   iIntros (?) "Henc_sl".
   wp_store.
+
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_store.
+
   wp_loadField.
   wp_load.
   wp_apply (wp_WriteBytes with "[$Henc_sl $Hargs_state_sl]").
@@ -208,7 +217,8 @@ Proof.
 
   wp_pures.
   wp_apply (wp_allocStruct).
-  { naive_solver. }
+  { repeat econstructor. Transparent slice.T. unfold slice.T. repeat econstructor.
+    Opaque slice.T. } (* FIXME: don't want to unfold slice.T *)
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
@@ -217,6 +227,13 @@ Proof.
   wp_load.
   iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   rewrite Henc.
+  wp_apply (wp_ReadInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+
+  wp_load.
   wp_apply (wp_ReadInt with "Henc_sl").
   iIntros (?) "Henc_sl".
   wp_pures.
@@ -315,17 +332,19 @@ Module GetStateReply.
 Record C :=
 {
   err : u64 ;
+  nextIndex : u64 ;
   state : list u8 ;
 }.
 
 Definition has_encoding (encoded:list u8) (reply:C) : Prop :=
-  encoded = (u64_le reply.(err)) ++ reply.(state).
+  encoded = (u64_le reply.(err)) ++ (u64_le reply.(nextIndex)) ++ reply.(state).
 
 Context `{!heapGS Σ}.
 
 Definition own reply_ptr reply : iProp Σ :=
   ∃ state_sl,
   "Hreply_epoch" ∷ reply_ptr ↦[pb.GetStateReply :: "Err"] #reply.(err) ∗
+  "Hreply_next_index" ∷ reply_ptr ↦[pb.GetStateReply :: "NextIndex"] #reply.(nextIndex) ∗
   "Hreply_state" ∷ reply_ptr ↦[pb.GetStateReply :: "State"] (slice_val state_sl) ∗
   "Hreply_state_sl" ∷ is_slice_small state_sl byteT 1 reply.(state)
   .
@@ -356,11 +375,19 @@ Proof.
   { done. }
   iIntros (enc_ptr) "Henc".
   wp_pures.
+
   wp_loadField.
   wp_load.
   wp_apply (wp_WriteInt with "Henc_sl").
   iIntros (?) "Henc_sl".
   wp_store.
+
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_store.
+
   wp_loadField.
   wp_load.
   wp_apply (wp_WriteBytes with "[$Henc_sl $Hreply_state_sl]").
@@ -389,13 +416,22 @@ Proof.
   { done. }
   iIntros (enc_ptr) "Henc".
   wp_apply (wp_allocStruct).
-  { naive_solver. }
+  { repeat econstructor. Transparent slice.T. unfold slice.T. repeat econstructor.
+    Opaque slice.T. } (* FIXME: don't want to unfold slice.T *)
   iIntros (args_ptr) "Hargs".
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
   wp_pures.
   iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   rewrite Henc.
+
+  wp_load.
+  wp_apply (wp_ReadInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+
   wp_load.
   wp_apply (wp_ReadInt with "Henc_sl").
   iIntros (?) "Henc_sl".

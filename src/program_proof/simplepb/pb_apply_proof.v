@@ -23,9 +23,176 @@ Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
 Opaque crash_borrow.
+(* FIXME: this should be in a separate file *)
+Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv (epoch index:u64) σ op_bytes ghost_op (op:list u8) op_sl :
+  is_Server s γ γsrv -∗
+  {{{
+        "%Hhas_encoding" ∷ ⌜has_op_encoding op_bytes ghost_op.1⌝ ∗
+        "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
+        "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
+        "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
+        "%Hghost_op_σ" ∷ ⌜last σ = Some ghost_op⌝ ∗
+        "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
+        "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
 
-Definition is_pb_host γ γsrv (host:chan) :=
-  handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv).
+        "HargEpoch" ∷ args_ptr ↦[pb.ApplyArgs :: "epoch"] #epoch ∗
+        "HargIndex" ∷ args_ptr ↦[pb.ApplyArgs :: "index"] #index ∗
+        "HargOp" ∷ args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val op_sl) ∗
+        "HopSl" ∷ readonly (is_slice_small op_sl byteT 1 op_bytes)
+  }}}
+    pb.Server__ApplyAsBackup #s #args_ptr
+  {{{
+        (err:u64), RET #err;
+        if (decide (err = 0)) then
+          is_accepted_lb γsrv epoch σ
+        else
+          True
+  }}}
+  .
+Proof.
+  iIntros "#HisSrv" (Φ) "!# Hpre HΦ".
+  iNamed "Hpre".
+  iNamed "HisSrv".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_bind (Server__isEpochStale _ _).
+  iApply (wpc_wp _ _ _ _ True).
+  iDestruct (crash_borrow_crash_wand with "Hstate") as "#Hcrash_wand".
+  iApply (wpc_crash_borrow_open with "Hstate").
+  {
+    econstructor.
+  }
+  iSplitL ""; first done.
+  iIntros "[Hghost HP]".
+  iNamed "Hghost".
+  wpc_apply (wpc_Server__isEpochStale with "[$Hepoch $Hepoch_ghost $HepochLb]").
+  iSplit.
+  {
+    iIntros.
+    iSplitL ""; first done.
+    iApply "Hcrash_wand".
+    iFrame "∗#".
+  }
+  iNext.
+  iIntros "(%Hineq & Hepoch & $)".
+  iFrame "Haccepted Haccepted_rest HP Hproposal_lb Hvalid".
+  iIntros "Hstate".
+  iSplitL ""; first done.
+  wp_if_destruct.
+  { (* return error: stale *)
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "∗#%".
+    }
+    wp_pures.
+    iApply "HΦ".
+    done.
+  }
+  replace (epoch0) with (epoch) by word.
+  wp_loadField.
+  wp_if_destruct.
+  { (* return error: stale *)
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "Hepoch HnextIndex ∗ # %".
+    }
+    wp_pures.
+    iApply "HΦ".
+    done.
+  }
+
+  (* FIXME: use uniqueness of γsrv to show that we are not primary, or else have
+     the code set isPrimary := false *)
+  assert (isPrimary = false) as HnotPrimary by admit.
+  wp_loadField.
+  wp_loadField.
+  wp_pures.
+  destruct (bool_decide (_)) as [] eqn:Hindex; last first.
+  { (* return errror: out-of-order *)
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "∗#%".
+    }
+    wp_pures.
+    iApply "HΦ".
+    done.
+  }
+
+  wp_pures.
+  apply bool_decide_eq_true in Hindex.
+
+  wp_loadField.
+  wp_loadField.
+  iNamed "HisSm".
+  wp_loadField.
+
+  wp_apply ("HapplySpec" with "[$Hstate $HopSl]").
+  { (* prove protocol step *)
+    iSplitL ""; first done.
+    assert (index = nextIndex) by naive_solver.
+    iSplitL "".
+    {
+      iIntros "Hghost".
+      iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
+      { rewrite H in Hσ_index. word. }
+      { done. }
+      iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
+      { done. }
+      { rewrite H in Hσ_index. word. }
+      rewrite Happend.
+      iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
+      instantiate (1:=is_accepted_lb γsrv epoch σ).
+      instantiate (1:=own_replica_ghost _ _ _ _ _).
+      iFrame "HH Hlb".
+      by iModIntro.
+    }
+    iModIntro.
+    iIntros. iExists _.
+    iFrame "∗". rewrite fmap_snoc.
+    done.
+  }
+  iIntros (reply) "(Hstate & Hreply & #Hlb)".
+  wp_pures.
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+  {
+    iNext.
+    iExists _, _, _, _, _, _, _.
+    rewrite HnotPrimary.
+    rewrite -fmap_snoc.
+    iFrame "Hstate ∗#".
+    iSplitL "".
+    { iExists _; iFrame "#". }
+    iSplitL ""; last done.
+    iPureIntro.
+    rewrite app_length.
+    rewrite Hσ_nextIndex.
+    simpl.
+    replace (nextIndex) with (index) by naive_solver.
+    word.
+  }
+  wp_pures.
+  iApply "HΦ".
+  iFrame "Hlb".
+  done.
+Admitted.
 
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   {{{
@@ -61,10 +228,10 @@ Proof using waitgroupG0.
   wp_if_destruct.
   { (* return error "not primary" *)
     wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
     {
       iNext.
-      iExists _, _, _, _, _, _.
+      iExists _, _, _, _, _, _, _.
       iFrame "Hstate ∗#".
       iSplitL ""; done.
     }
@@ -96,19 +263,27 @@ Proof using waitgroupG0.
   wp_apply ("HapplySpec" with "[$Hstate $Hsl]").
   {
     iSplitL ""; first done.
-    iIntros "Hghost".
-    iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
-    { apply app_length. }
-    { apply last_snoc. }
-    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts2") as "HH".
-    { done. }
-    { rewrite app_length. word. }
-    iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-    instantiate (2:=own_replica_ghost _ _ _ _).
-    iFrame "HH".
-    iModIntro.
-    instantiate (1:=is_accepted_lb γsrv epoch (σg ++ [ghost_op])).
-    done.
+    iSplitL "".
+    {
+      iIntros "Hghost".
+      iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
+      { apply app_length. }
+      { apply last_snoc. }
+      iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts2") as "HH".
+      { done. }
+      { rewrite app_length. word. }
+      iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
+      instantiate (2:=own_replica_ghost _ _ _ _ sealed).
+      iFrame "HH".
+      iModIntro.
+      instantiate (1:=is_accepted_lb γsrv epoch (σg ++ [ghost_op])).
+      done.
+    }
+    {
+      rewrite -fmap_snoc.
+      iModIntro. iIntros.
+      iExists _; iFrame. done.
+    }
   }
   iIntros (reply) "(Hstate & Hreply & #Hprimary_acc_lb)".
   rewrite -fmap_snoc.
@@ -126,10 +301,10 @@ Proof using waitgroupG0.
   wp_pures.
 
   wp_loadField.
-  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsm Hclerks Hepoch Hstate Hprop Hclerks_sl]").
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate Hprop Hclerks_sl]").
   {
     iNext.
-    iExists _, _, _, _, _, _.
+    iExists _, _, _, _, _, _, _.
     iFrame "Hstate ∗#".
     iSplitL "".
     { iExists _; iFrame "#". }

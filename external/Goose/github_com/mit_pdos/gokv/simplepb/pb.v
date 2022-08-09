@@ -40,6 +40,7 @@ Definition DecodeApplyArgs: val :=
 
 Definition SetStateArgs := struct.decl [
   "Epoch" :: uint64T;
+  "NextIndex" :: uint64T;
   "State" :: slice.T byteT
 ].
 
@@ -47,6 +48,7 @@ Definition EncodeSetStateArgs: val :=
   rec: "EncodeSetStateArgs" "args" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF SetStateArgs "State" "args"))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "Epoch" "args");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "NextIndex" "args");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF SetStateArgs "State" "args");;
     ![slice.T byteT] "enc".
 
@@ -56,6 +58,9 @@ Definition DecodeSetStateArgs: val :=
     let: "args" := struct.alloc SetStateArgs (zero_val (struct.t SetStateArgs)) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     struct.storeF SetStateArgs "Epoch" "args" "0_ret";;
+    "enc" <-[slice.T byteT] "1_ret";;
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+    struct.storeF SetStateArgs "NextIndex" "args" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     struct.storeF SetStateArgs "State" "args" (![slice.T byteT] "enc");;
     "args".
@@ -80,6 +85,7 @@ Definition DecodeGetStateArgs: val :=
 
 Definition GetStateReply := struct.decl [
   "Err" :: uint64T;
+  "NextIndex" :: uint64T;
   "State" :: slice.T byteT
 ].
 
@@ -87,6 +93,7 @@ Definition EncodeGetStateReply: val :=
   rec: "EncodeGetStateReply" "reply" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF GetStateReply "State" "reply"))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "Err" "reply");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "NextIndex" "reply");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF GetStateReply "State" "reply");;
     ![slice.T byteT] "enc".
 
@@ -96,6 +103,9 @@ Definition DecodeGetStateReply: val :=
     let: "reply" := struct.alloc GetStateReply (zero_val (struct.t GetStateReply)) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     struct.storeF GetStateReply "Err" "reply" "0_ret";;
+    "enc" <-[slice.T byteT] "1_ret";;
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+    struct.storeF GetStateReply "NextIndex" "reply" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     struct.storeF GetStateReply "State" "reply" (![slice.T byteT] "enc");;
     "reply".
@@ -203,14 +213,14 @@ Definition Clerk__PrimaryApply: val :=
 
 Definition StateMachine := struct.decl [
   "Apply" :: (Op -> slice.T byteT)%ht;
-  "SetState" :: (slice.T byteT -> unitT)%ht;
-  "GetState" :: (unitT -> slice.T byteT)%ht;
-  "EnterEpoch" :: (uint64T -> unitT)%ht
+  "SetState" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
+  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
 ].
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
   "epoch" :: uint64T;
+  "sealed" :: boolT;
   "sm" :: ptrT;
   "nextIndex" :: uint64T;
   "isPrimary" :: boolT;
@@ -260,16 +270,10 @@ Definition Server__Apply: val :=
       (* log.Println("Apply() returned ", err) *)
       (![uint64T] "err", "ret")).
 
-(* returns true iff stale *)
-Definition Server__epochFence: val :=
-  rec: "Server__epochFence" "s" "epoch" :=
-    (if: struct.loadF Server "epoch" "s" < "epoch"
-    then
-      struct.storeF Server "epoch" "s" "epoch";;
-      struct.loadF StateMachine "EnterEpoch" (struct.loadF Server "sm" "s") (struct.loadF Server "epoch" "s");;
-      struct.storeF Server "isPrimary" "s" #false;;
-      struct.storeF Server "nextIndex" "s" #0
-    else #());;
+(* requires that we've already at least entered this epoch
+   returns true iff stale *)
+Definition Server__isEpochStale: val :=
+  rec: "Server__isEpochStale" "s" "epoch" :=
     struct.loadF Server "epoch" "s" > "epoch".
 
 (* called on backup servers to apply an operation so it is replicated and
@@ -277,20 +281,25 @@ Definition Server__epochFence: val :=
 Definition Server__ApplyAsBackup: val :=
   rec: "Server__ApplyAsBackup" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: Server__epochFence "s" (struct.loadF ApplyArgs "epoch" "args")
+    (if: Server__isEpochStale "s" (struct.loadF ApplyArgs "epoch" "args")
     then
       lock.release (struct.loadF Server "mu" "s");;
       e.Stale
     else
-      (if: struct.loadF ApplyArgs "index" "args" ≠ struct.loadF Server "nextIndex" "s"
+      (if: struct.loadF Server "sealed" "s"
       then
         lock.release (struct.loadF Server "mu" "s");;
-        e.OutOfOrder
+        e.Stale
       else
-        struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") (struct.loadF ApplyArgs "op" "args");;
-        struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
-        lock.release (struct.loadF Server "mu" "s");;
-        e.None)).
+        (if: struct.loadF ApplyArgs "index" "args" ≠ struct.loadF Server "nextIndex" "s"
+        then
+          lock.release (struct.loadF Server "mu" "s");;
+          e.OutOfOrder
+        else
+          struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") (struct.loadF ApplyArgs "op" "args");;
+          struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
+          lock.release (struct.loadF Server "mu" "s");;
+          e.None))).
 
 Definition Server__SetState: val :=
   rec: "Server__SetState" "s" "args" :=
@@ -305,14 +314,18 @@ Definition Server__SetState: val :=
         lock.release (struct.loadF Server "mu" "s");;
         e.None
       else
-        struct.loadF StateMachine "SetState" (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args");;
+        struct.storeF Server "isPrimary" "s" #false;;
+        struct.storeF Server "epoch" "s" (struct.loadF SetStateArgs "Epoch" "args");;
+        struct.storeF Server "sealed" "s" #false;;
+        struct.loadF StateMachine "SetState" (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args") (struct.loadF SetStateArgs "Epoch" "args") (struct.loadF SetStateArgs "NextIndex" "args");;
         lock.release (struct.loadF Server "mu" "s");;
         e.None)).
 
+(* XXX: probably should rename to GetStateAndSeal *)
 Definition Server__GetState: val :=
   rec: "Server__GetState" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: Server__epochFence "s" (struct.loadF GetStateArgs "Epoch" "args")
+    (if: Server__isEpochStale "s" (struct.loadF GetStateArgs "Epoch" "args")
     then
       lock.release (struct.loadF Server "mu" "s");;
       struct.new GetStateReply [
@@ -320,17 +333,20 @@ Definition Server__GetState: val :=
         "State" ::= slice.nil
       ]
     else
-      let: "ret" := struct.loadF StateMachine "GetState" (struct.loadF Server "sm" "s") #() in
+      struct.storeF Server "sealed" "s" #true;;
+      let: "ret" := struct.loadF StateMachine "GetStateAndSeal" (struct.loadF Server "sm" "s") #() in
+      let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
       lock.release (struct.loadF Server "mu" "s");;
       struct.new GetStateReply [
         "Err" ::= e.None;
-        "State" ::= "ret"
+        "State" ::= "ret";
+        "NextIndex" ::= "nextIndex"
       ]).
 
 Definition Server__BecomePrimary: val :=
   rec: "Server__BecomePrimary" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: Server__epochFence "s" (struct.loadF BecomePrimaryArgs "Epoch" "args")
+    (if: Server__isEpochStale "s" (struct.loadF BecomePrimaryArgs "Epoch" "args")
     then
       (* log.Println("Stale BecomePrimary request") *)
       lock.release (struct.loadF Server "mu" "s");;

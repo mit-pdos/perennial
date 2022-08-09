@@ -41,7 +41,8 @@ Definition EnterNewConfig: val :=
         let: "i" := "i" in
         Fork (SliceSet uint64T "errs" "i" (pb.Clerk__SetState "clerk" (struct.new pb.SetStateArgs [
                 "Epoch" ::= "epoch";
-                "State" ::= struct.loadF pb.GetStateReply "State" "reply"
+                "State" ::= struct.loadF pb.GetStateReply "State" "reply";
+                "NextIndex" ::= struct.loadF pb.GetStateReply "NextIndex" "reply"
               ]));;
               waitgroup.Done "wg"));;
       waitgroup.Wait "wg";;
