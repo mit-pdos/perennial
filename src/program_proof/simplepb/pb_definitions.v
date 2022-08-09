@@ -13,14 +13,16 @@ Section pb_definitions.
 Record PBRecord :=
   {
     pb_OpType:Type ;
-    pb_has_op_encoding : pb_OpType → list u8 → Prop ;
-    pb_has_op_encoding_injective : ∀ o1 o2 l, pb_has_op_encoding o1 l → pb_has_op_encoding o2 l → o1 = o2 ;
+    pb_has_op_encoding : list u8 → pb_OpType → Prop ;
+    pb_has_state_encoding: list u8 → (list pb_OpType) → Prop ;
+    pb_has_op_encoding_injective : ∀ o1 o2 l, pb_has_op_encoding l o1 → pb_has_op_encoding l o2 → o1 = o2 ;
     pb_compute_reply : list pb_OpType → pb_OpType → list u8 ;
   }.
 
 Context {pb_record:PBRecord}.
 Notation OpType := (pb_OpType pb_record).
 Notation has_op_encoding := (pb_has_op_encoding pb_record).
+Notation has_state_encoding := (pb_has_state_encoding pb_record).
 Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
 Notation compute_reply := (pb_compute_reply pb_record).
 
@@ -46,7 +48,7 @@ Program Definition ApplyAsBackup_spec γ γsrv :=
   (∃ args σ op Q,
     ⌜ApplyArgs.has_encoding encoded_args args⌝ ∗
     ⌜length σ = int.nat args.(ApplyArgs.index)⌝ ∗
-    ⌜has_op_encoding op args.(ApplyArgs.op)⌝∗
+    ⌜has_op_encoding args.(ApplyArgs.op) op⌝∗
     ⌜last σ = Some (op, Q) ⌝ ∗
     is_proposal_lb γ args.(ApplyArgs.epoch) σ ∗
     is_proposal_facts γ args.(ApplyArgs.epoch) σ ∗
@@ -79,7 +81,7 @@ Lemma wp_Clerk__Apply γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl o
         "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
         "%Hghost_op_σ" ∷ ⌜last σ = Some ghost_op⌝ ∗
-        "%Hghost_op_op" ∷ ⌜has_op_encoding ghost_op.1 op⌝ ∗
+        "%Hghost_op_op" ∷ ⌜has_op_encoding op ghost_op.1⌝ ∗
         "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
         "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
 
@@ -99,38 +101,61 @@ Admitted.
 
 (* Server-side definitions *)
 
-Definition is_ApplyFn (applyFn:val) γ γsrv P : iProp Σ :=
-  ∀ op_sl (epoch:u64) σ op ghost_op Q,
+(* Hides the ghost part of the log; this is suitable for exposing as part of
+   interfaces for users of the library. *)
+Definition own_Server_ghost γ γsrv epoch σphys : iProp Σ :=
+  ∃ σ, ⌜σphys = σ.*1⌝ ∗ (own_replica_ghost γ γsrv epoch σ)
+.
+
+(* StateMachine *)
+Definition is_ApplyFn (applyFn:val) (P:u64 → list (OpType) → iProp Σ) Pcrash : iProp Σ :=
+  ∀ op_sl (epoch:u64) (σ:list OpType) (op_bytes:list u8) (op:OpType) Q R1 R2 Rcrash,
   {{{
-        ⌜has_op_encoding ghost_op.1 op⌝ ∗
-        (own_Server_ghost γ γsrv epoch σ ={⊤}=∗ own_Server_ghost γ γsrv epoch (σ++[ghost_op]) ∗ Q) ∗
-        crash_borrow (own_Server_ghost γ γsrv epoch σ ∗ P epoch σ) (
-          ∃ epoch' σ', (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
-        )
-        ∗
-        readonly (is_slice_small op_sl byteT 1 op)
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        (R1 ={⊤}=∗ R2 ∗ Q) ∗
+        crash_borrow (R1 ∗ P epoch σ)
+            (∃ (epoch':u64) (σ':list OpType), (Rcrash epoch' σ' ∗ Pcrash epoch' σ')) ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes)
   }}}
     applyFn (slice_val op_sl)
   {{{
         reply_sl,
         RET (slice_val reply_sl);
-        crash_borrow (own_Server_ghost γ γsrv epoch (σ ++ [ghost_op]) ∗ P epoch (σ ++ [ghost_op])) (
-          ∃ epoch' σ',
-          (own_Server_ghost γ γsrv epoch' σ' ∗ P epoch' σ')
-        ) ∗
-        is_slice reply_sl byteT 1 (compute_reply ((λ x, x.1) <$> σ) ghost_op.1) ∗
+        crash_borrow (R2 ∗ P epoch (σ ++ [op]))
+            (∃ epoch' σ', (Rcrash epoch' σ' ∗ Pcrash epoch' σ')) ∗
+        is_slice reply_sl byteT 1 (compute_reply σ op) ∗
         Q
   }}}
 .
 
-Definition is_StateMachine (sm:loc) γ γsrv P : iProp Σ :=
-  ∃ (applyFn:val),
-  "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "Apply"] applyFn) ∗
-  "#HapplySpec" ∷ is_ApplyFn applyFn γ γsrv P
+Definition is_SetState_fn (set_state_fn:val) γ γsrv P Pcrash : iProp Σ :=
+  ∀ σ_prev (epoch_prev:u64) σ epoch (snap:list u8) snap_sl,
+  {{{
+        ⌜has_state_encoding snap σ⌝ ∗
+        is_slice snap_sl byteT 1 snap ∗
+        (own_Server_ghost γ γsrv epoch_prev σ_prev ==∗
+                                own_Server_ghost γ γsrv epoch σ) ∗
+        crash_borrow (own_Server_ghost γ γsrv epoch σ ∗ P epoch σ) (
+          ∃ epoch' σ', (own_Server_ghost γ γsrv epoch' σ' ∗ Pcrash epoch' σ')
+        )
+  }}}
+    set_state_fn (slice_val snap_sl) #epoch
+  {{{
+        RET #();
+        crash_borrow (own_Server_ghost γ γsrv epoch σ ∗ P epoch σ) (
+          ∃ epoch' σ', (own_Server_ghost γ γsrv epoch' σ' ∗ Pcrash epoch' σ')
+        )
+  }}}
 .
 
-Definition own_Server (s:loc) γ γsrv P : iProp Σ :=
-  ∃ (epoch:u64) σ (nextIndex:u64) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t),
+Definition is_StateMachine (sm:loc) P Pcrash : iProp Σ :=
+  ∃ (applyFn:val),
+  "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "Apply"] applyFn) ∗
+  "#HapplySpec" ∷ is_ApplyFn applyFn P Pcrash
+.
+
+Definition own_Server (s:loc) γ γsrv P Pcrash: iProp Σ :=
+  ∃ (epoch:u64) σg (nextIndex:u64) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t),
   (* physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
@@ -139,13 +164,13 @@ Definition own_Server (s:loc) γ γsrv P : iProp Σ :=
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
 
   (* state-machine *)
-  "#HisSm" ∷ is_StateMachine sm γ γsrv P ∗
+  "#HisSm" ∷ is_StateMachine sm P Pcrash ∗
 
   (* ghost-state *)
-  "Hstate" ∷ crash_borrow (own_Server_ghost γ γsrv epoch σ ∗ P epoch σ) (
-    ∃ epoch σ, own_Server_ghost γ γsrv epoch σ ∗ P epoch σ
+  "Hstate" ∷ crash_borrow (own_replica_ghost γ γsrv epoch σg ∗ P epoch σg.*1) (
+    ∃ epoch σ', own_Server_ghost γ γsrv epoch σ' ∗ Pcrash epoch σ'
   ) ∗
-  "%Hσ_nextIndex" ∷ ⌜length σ = int.nat nextIndex⌝ ∗
+  "%Hσ_nextIndex" ∷ ⌜length σg = int.nat nextIndex⌝ ∗
 
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
@@ -157,16 +182,16 @@ Definition own_Server (s:loc) γ γsrv P : iProp Σ :=
             "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗
                                                                       is_epoch_lb γsrv' epoch
                              ) ∗
-            "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
-            "Hproposal" ∷ own_proposal γ epoch σ
+            "#Hprop_facts" ∷ is_proposal_facts γ epoch σg ∗
+            "Hproposal" ∷ own_proposal γ epoch σg
         )
                    else True
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val) P,
+  ∃ (mu:val) P Pcrash,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv P) ∗
+  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv P Pcrash) ∗
   "#Hsys_inv" ∷ sys_inv γ.
 
 Lemma wpc_Server__epochFence {stk} (s:loc) γ (currEpoch epoch:u64) :

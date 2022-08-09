@@ -13,7 +13,8 @@ Definition compute_state ops : (gmap u64 (list u8)) :=
 Program Definition pb_record : PBRecord :=
   {|
     pb_OpType := (u64 * list u8) ;
-    pb_has_op_encoding := λ op op_bytes, (u64_le op.1 ++ op.2) = op_bytes ;
+    pb_has_op_encoding := λ op_bytes op, (u64_le op.1 ++ op.2) = op_bytes ;
+    pb_has_state_encoding := λ snap_bytes ops, True ;
     pb_compute_reply :=  λ ops op, default [] ((compute_state ops) !! op.1) ;
   |}.
 Obligation 1.
@@ -50,7 +51,7 @@ Definition is_Clerk ck : iProp Σ :=
 Context `{!urpc_proof.urpcregG Σ}.
 Context `{!stagedG Σ}.
 Lemma wp_Clerk__PrimaryApply γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
-has_op_encoding op op_bytes →
+has_op_encoding op_bytes op →
 is_slice op_sl byteT 1 op_bytes -∗
 (|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
   (own_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗

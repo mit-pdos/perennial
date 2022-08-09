@@ -118,7 +118,7 @@ Definition is_proposal_facts γ epoch σ: iProp Σ :=
   old_proposal_max γ epoch σ ∗
   is_proposal_valid γ σ.
 
-Definition own_Server_ghost γsys γsrv epoch σ : iProp Σ :=
+Definition own_replica_ghost γsys γsrv epoch σ : iProp Σ :=
   "Hepoch_ghost" ∷ own_epoch γsrv epoch ∗
   "Haccepted" ∷ own_accepted γsrv epoch σ ∗
   "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat epoch⌝ ∨
@@ -130,11 +130,11 @@ Definition own_Server_ghost γsys γsrv epoch σ : iProp Σ :=
 Lemma ghost_accept γsys γsrv epoch epoch' σ σ' :
   int.nat epoch ≤ int.nat epoch' →
   length σ ≤ length σ' →
-  own_Server_ghost γsys γsrv epoch σ -∗
+  own_replica_ghost γsys γsrv epoch σ -∗
   is_proposal_lb γsys epoch' σ' -∗
   is_proposal_facts γsys epoch' σ'
   ==∗
-  own_Server_ghost γsys γsrv epoch' σ'.
+  own_replica_ghost γsys γsrv epoch' σ'.
 Proof.
   intros Hepoch_ineq Hσlen_ineq.
   iIntros "Hown #Hprop_lb #Hprop_facts".
@@ -208,8 +208,8 @@ Lemma ghost_accept_helper newOp γsys γsrv epoch σ σ_old:
   length σ = length σ_old + 1 →
   last σ = Some newOp →
   is_proposal_lb γsys epoch σ -∗
-  own_Server_ghost γsys γsrv epoch σ_old -∗
-  own_Server_ghost γsys γsrv epoch σ_old ∗
+  own_replica_ghost γsys γsrv epoch σ_old -∗
+  own_replica_ghost γsys γsrv epoch σ_old ∗
   ⌜σ = σ_old ++ [newOp]⌝
 .
 Proof.
@@ -258,7 +258,7 @@ Proof.
 Qed.
 
 Lemma ghost_get_accepted_lb γsys γsrv epoch σ :
-  own_Server_ghost γsys γsrv epoch σ -∗
+  own_replica_ghost γsys γsrv epoch σ -∗
   is_accepted_lb γsrv epoch σ.
 Proof.
   iNamed 1.

@@ -31,7 +31,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   {{{
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op) ∗
-        ⌜has_op_encoding ghost_op.1 op⌝ ∗
+        ⌜has_op_encoding op ghost_op.1⌝ ∗
         (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
@@ -104,12 +104,14 @@ Proof using waitgroupG0.
     { done. }
     { rewrite app_length. word. }
     iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
+    instantiate (2:=own_replica_ghost _ _ _ _).
     iFrame "HH".
     iModIntro.
-    instantiate (1:=is_accepted_lb γsrv epoch (σ ++ [ghost_op])).
+    instantiate (1:=is_accepted_lb γsrv epoch (σg ++ [ghost_op])).
     done.
   }
   iIntros (reply) "(Hstate & Hreply & #Hprimary_acc_lb)".
+  rewrite -fmap_snoc.
 
   wp_pures.
   wp_loadField.
@@ -160,7 +162,7 @@ Proof using waitgroupG0.
                                ⌜backups !! int.nat i = Some γsrv'⌝ ∗
                                readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
                                □ if (decide (err = U64 0)) then
-                                 is_accepted_lb γsrv' epoch (σ ++ [ghost_op])
+                                 is_accepted_lb γsrv' epoch (σg ++ [ghost_op])
                                else
                                  True
                              )%I
@@ -288,7 +290,7 @@ Proof using waitgroupG0.
               "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (σ++[ghost_op]))
+                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (σg++[ghost_op]))
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -457,7 +459,7 @@ Proof.
 Admitted.
 
 Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (op_bytes:list u8) (Φ: val → iProp Σ) :
-  has_op_encoding op op_bytes →
+  has_op_encoding op_bytes op →
   £ 1 -∗ (* FIXME: can generate this inside of Server__Apply, but need to put it postcond *)
   £ 1 -∗
   is_inv γlog γ -∗
