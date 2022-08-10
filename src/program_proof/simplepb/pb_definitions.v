@@ -74,6 +74,8 @@ Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   "#Hsrv" ∷ is_pb_host γ γsrv srv
 .
 
+(* FIXME: these belong in a separate file. These will be proved from the RPC specs. *)
+(* Clerk specs *)
 Lemma wp_Clerk__Apply γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl op :
   {{{
         "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
@@ -98,6 +100,54 @@ Lemma wp_Clerk__Apply γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl o
   }}}.
 Proof.
 Admitted.
+
+(* XXX: GetState doesn't actually *need* to do any epoch comparison.
+   It could simply return the state it has and the epoch for which it is the state.
+   The issue is that an old epoch would then be able to seal future epochs,
+   which might hurt liveness.
+ *)
+(* FIXME: rename to GetStateAndSeal *)
+Print GetStateReply.own.
+Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch:u64) :
+  {{{
+        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
+        "Hargs" ∷ GetStateArgs.own args_ptr (GetStateArgs.mkC epoch)
+  }}}
+    Clerk__GetState #ck #args_ptr
+  {{{
+        (reply:loc) (err:u64), RET #reply;
+        if (decide (err = U64 0)) then
+            ∃ epoch σ enc,
+            is_accepted_ro γsrv epoch σ ∗
+            is_proposal_facts γ epoch σ ∗
+            GetStateReply.own reply (GetStateReply.mkC 0 (length σ) enc) ∗
+            ⌜has_snap_encoding enc epoch (fst <$> σ)⌝
+          else
+            GetStateReply.own reply (GetStateReply.mkC err 0 [])
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
+  {{{
+        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
+        "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
+        "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
+        "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length σ) snap)
+  }}}
+    Clerk__SetState #ck #args_ptr
+  {{{
+        (reply:loc) (err:u64), RET #reply;
+        reply ↦[uint64T] #err ∗
+        if (decide (err = U64 0)) then
+            is_accepted_lb γsrv epoch σ
+          else
+            True
+  }}}.
+Proof.
+Admitted.
+
+(* End clerk specs *)
 
 (* Server-side definitions *)
 

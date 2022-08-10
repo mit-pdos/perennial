@@ -2,9 +2,13 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
+
 Module ApplyArgs.
+Section ApplyArgs.
+Context `{!heapGS Σ}.
+
 Record C :=
-{
+mkC {
   epoch : u64 ;
   index : u64 ;
   op : list u8 ;
@@ -12,8 +16,6 @@ Record C :=
 
 Definition has_encoding (encoded:list u8) (args:C) : Prop :=
   encoded = (u64_le args.(epoch)) ++ (u64_le args.(index)) ++ args.(op).
-
-Context `{!heapGS Σ}.
 
 Definition own args_ptr args : iProp Σ :=
   ∃ op_sl,
@@ -125,10 +127,13 @@ Proof.
   done.
 Qed.
 End ApplyArgs.
+End ApplyArgs.
 
 Module SetStateArgs.
+Section SetStateArgs.
+Context `{!heapGS Σ}.
 Record C :=
-{
+mkC {
   epoch : u64 ;
   nextIndex: u64 ;
   state : list u8 ;
@@ -137,7 +142,6 @@ Record C :=
 Definition has_encoding (encoded:list u8) (args:C) : Prop :=
   encoded = (u64_le args.(epoch)) ++ (u64_le args.(nextIndex)) ++ args.(state).
 
-Context `{!heapGS Σ}.
 
 Definition own args_ptr args : iProp Σ :=
   ∃ state_sl,
@@ -248,17 +252,18 @@ Proof.
 Qed.
 
 End SetStateArgs.
+End SetStateArgs.
 
 Module GetStateArgs.
+Section GetStateArgs.
+Context `{!heapGS Σ}.
 Record C :=
-{
+mkC {
   epoch : u64 ;
 }.
 
 Definition has_encoding (encoded:list u8) (args:C) : Prop :=
   encoded = (u64_le args.(epoch)).
-
-Context `{!heapGS Σ}.
 
 Definition own args_ptr args : iProp Σ :=
   "Hargs_epoch" ∷ args_ptr ↦[pb.GetStateArgs :: "Epoch"] #args.(epoch)
@@ -327,10 +332,13 @@ Proof.
 Qed.
 
 End GetStateArgs.
+End GetStateArgs.
 
 Module GetStateReply.
+Section GetStateReply.
+Context `{!heapGS Σ}.
 Record C :=
-{
+mkC {
   err : u64 ;
   nextIndex : u64 ;
   state : list u8 ;
@@ -338,8 +346,6 @@ Record C :=
 
 Definition has_encoding (encoded:list u8) (reply:C) : Prop :=
   encoded = (u64_le reply.(err)) ++ (u64_le reply.(nextIndex)) ++ reply.(state).
-
-Context `{!heapGS Σ}.
 
 Definition own reply_ptr reply : iProp Σ :=
   ∃ state_sl,
@@ -448,18 +454,19 @@ Proof.
 Qed.
 
 End GetStateReply.
+End GetStateReply.
 
 Module BecomePrimaryArgs.
+Section BecomePrimaryArgs.
+Context `{!heapGS Σ}.
 Record C :=
-{
+mkC {
   epoch : u64 ;
   replicas : list chan ;
 }.
 
 Definition has_encoding (encoded:list u8) (args:C) : Prop :=
   encoded = (u64_le args.(epoch)) ++ (u64_le (length args.(replicas))) ++ (flat_map u64_le args.(replicas)).
-
-Context `{!heapGS Σ}.
 
 Definition own args_ptr args : iProp Σ :=
   ∃ replicas_sl,
@@ -745,6 +752,7 @@ Proof.
   admit.
 Admitted.
 
+End BecomePrimaryArgs.
 End BecomePrimaryArgs.
 
 Section pb_marshal.
