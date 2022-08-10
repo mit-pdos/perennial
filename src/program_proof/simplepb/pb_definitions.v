@@ -119,7 +119,7 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
         (reply:loc) (err:u64), RET #reply;
         if (decide (err = U64 0)) then
             ∃ epoch σ enc,
-            ⌜int.nat epoch_lb ≤ epoch⌝ ∗
+            ⌜int.nat epoch_lb ≤ int.nat epoch⌝ ∗
             is_accepted_ro γsrv epoch σ ∗
             is_proposal_facts γ epoch σ ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length σ) enc) ∗
