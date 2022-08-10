@@ -3,7 +3,7 @@ From Perennial.program_proof.mvcc Require Import mvcc_inv txn_common txn_begin t
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition spec_body (body : val) (txn :loc) tid r P Q γ τ : iProp Σ :=
+Definition spec_body (body : val) (txn : loc) tid r P Q γ τ : iProp Σ :=
   {{{ own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r }}}
     body #txn
   {{{ w (ok : bool), RET #ok;
@@ -11,7 +11,8 @@ Definition spec_body (body : val) (txn :loc) tid r P Q γ τ : iProp Σ :=
       if ok then ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 
-Theorem wp_txn__DoTxn txn (body : val) (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop) γ :
+Theorem wp_txn__DoTxn
+        txn (body : val) (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop) γ :
   (∀ r w, (Decision (Q r w))) ->
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body body txn tid r P Q γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ r >>>

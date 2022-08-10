@@ -50,6 +50,10 @@ Definition MkTxnMgr: val :=
     struct.storeF TxnMgr "gc" "txnMgr" (gc.MkGC (struct.loadF TxnMgr "idx" "txnMgr"));;
     "txnMgr".
 
+Definition TxnMgr__InitializeData: val :=
+  rec: "TxnMgr__InitializeData" "txnMgr" "p" :=
+    #().
+
 Definition TxnMgr__New: val :=
   rec: "TxnMgr__New" "txnMgr" :=
     lock.acquire (struct.loadF TxnMgr "latch" "txnMgr");;

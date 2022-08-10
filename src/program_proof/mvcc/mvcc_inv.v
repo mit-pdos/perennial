@@ -6,6 +6,7 @@ Definition mvccN := nroot.
 Definition mvccNTuple := nroot .@ "tuple".
 Definition mvccNGC := nroot .@ "gc".
 Definition mvccNSST := nroot .@ "sst".
+Definition mvccNDB := nroot .@ "db".
 
 Section def.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -110,6 +111,41 @@ Proof. unfold mvcc_inv_sst_def. apply _. Defined.
 
 Definition mvcc_inv_sst γ p : iProp Σ :=
   inv mvccNSST (mvcc_inv_sst_def γ p).
+
+Definition frac_ptsto (γ : mvcc_names) (q : Qp) (k : u64) (v : dbval) : iProp Σ.
+Admitted.
+
+Lemma frac_ptsto_agree {γ q1 q2 k v1 v2} :
+  frac_ptsto γ q1 k v1 -∗
+  frac_ptsto γ q2 k v2 -∗
+  ⌜v1 = v2⌝.
+Admitted.
+
+Lemma frac_ptsto_update {γ q1 q2 k v1 v2} v :
+  (q1 + q2 = 1)%Qp ->
+  frac_ptsto γ q1 k v1 -∗
+  frac_ptsto γ q2 k v2 ==∗
+  frac_ptsto γ q1 k v ∗ frac_ptsto γ q2 k v.
+Admitted.
+
+Instance mvcc_frac_ptsto γ q k v :
+  Timeless (frac_ptsto γ q k v).
+Admitted.
+
+Definition mvcc_inv_db_def γ : iProp Σ :=
+  ∃ (m : dbmap) (v : dbval),
+    "Hdbpts" ∷ dbmap_ptstos γ m ∗
+    "Hptsto" ∷ frac_ptsto γ (1 / 2)%Qp (U64 0) v ∗
+    "%Hval"  ∷ ⌜m !! (U64 0) = Some v⌝ ∗
+    "%Hdom"  ∷ ⌜dom m = keys_all⌝.
+
+#[global]
+Instance mvcc_inv_db_timeless γ :
+  Timeless (mvcc_inv_db_def γ).
+Proof. unfold mvcc_inv_db_def. apply _. Defined.
+
+Definition mvcc_inv_db γ : iProp Σ :=
+  inv mvccNDB (mvcc_inv_db_def γ).
 
 End def.
 
