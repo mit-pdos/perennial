@@ -101,71 +101,71 @@ Admitted.
 
 (* Server-side definitions *)
 
+Implicit Type (own_StateMachine: u64 → list OpType → bool → (u64 → list OpType → bool → iProp Σ) → iProp Σ).
 (* StateMachine *)
-Definition is_ApplyFn (applyFn:val) (P:u64 → list (OpType) → bool → iProp Σ) Pcrash : iProp Σ :=
-  ∀ op_sl (epoch:u64) (σ:list OpType) sealed (op_bytes:list u8) (op:OpType) Q R1 R2 Rcrash,
+Definition is_ApplyFn own_StateMachine (applyFn:val) (P:u64 → list (OpType) → bool → iProp Σ) : iProp Σ :=
+  ∀ op_sl (epoch:u64) (σ:list OpType) (op_bytes:list u8) (op:OpType) Q,
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
-        (R1 ={↑pbN}=∗ R2 ∗ Q) ∗
-        □(R2 -∗ Rcrash epoch (σ++[op]) sealed) ∗
-        crash_borrow (R1 ∗ P epoch σ sealed)
-            (∃ (epoch':u64) (σ':list OpType) sealed, (Rcrash epoch' σ' sealed ∗ Pcrash epoch' σ' sealed)) ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes)
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        (P epoch σ false ={⊤}=∗ P epoch (σ ++ [op]) false ∗ Q) ∗
+        own_StateMachine epoch σ false P
   }}}
     applyFn (slice_val op_sl)
   {{{
         reply_sl,
         RET (slice_val reply_sl);
-        crash_borrow (R2 ∗ P epoch (σ ++ [op]) sealed)
-            (∃ epoch' σ' sealed, (Rcrash epoch' σ' sealed ∗ Pcrash epoch' σ' sealed)) ∗
         is_slice reply_sl byteT 1 (compute_reply σ op) ∗
+        own_StateMachine epoch (σ ++ [op]) false P ∗
         Q
   }}}
 .
 
-Definition is_SetState_fn (set_state_fn:val) P Pcrash : iProp Σ :=
-  ∀ σ_prev (epoch_prev:u64) σ epoch (snap:list u8) snap_sl R1 R2 Rcrash,
+Definition is_SetState_fn own_StateMachine (set_state_fn:val) P : iProp Σ :=
+  ∀ σ_prev (epoch_prev:u64) σ epoch (snap:list u8) snap_sl sealed Q,
   {{{
         ⌜has_snap_encoding snap epoch σ⌝ ∗
         is_slice snap_sl byteT 1 snap ∗
-        (R1 ={↑pbN}=∗ R2) ∗
-        □(R2 -∗ ∃ epoch σ, Rcrash epoch σ) ∗
-        crash_borrow (R1 ∗ P epoch_prev σ_prev) (
-          ∃ (epoch':u64) (σ':list OpType), (Rcrash epoch' σ' ∗ Pcrash epoch' σ')
-        )
+        (P epoch_prev σ_prev sealed ={⊤}=∗ P epoch σ false ∗ Q) ∗
+        own_StateMachine epoch_prev σ_prev false P
   }}}
     set_state_fn (slice_val snap_sl) #epoch
   {{{
         RET #();
-        crash_borrow (R2 ∗ P epoch σ) (
-          ∃ epoch' σ', (Rcrash epoch' σ' ∗ Pcrash epoch' σ')
-        )
+        own_StateMachine epoch σ false P ∗
+        Q
   }}}
 .
 
-Definition is_GetState_fn (get_state_fn:val) P Pcrash : iProp Σ :=
-  ∀ σ epoch R Rcrash,
+Definition is_GetState_fn own_StateMachine (get_state_fn:val) P : iProp Σ :=
+  ∀ σ epoch sealed,
   {{{
-        crash_borrow (R ∗ P epoch σ) (
-          ∃ (epoch':u64) (σ':list OpType), (Rcrash epoch' σ' ∗ Pcrash epoch' σ')
-        )
+        own_StateMachine epoch σ sealed P
   }}}
     get_state_fn #()
   {{{
         snap_sl snap,
         RET (slice_val snap_sl);
         ⌜has_snap_encoding snap epoch σ⌝ ∗
-        crash_borrow (R ∗ P epoch σ) (
-          ∃ epoch' σ', (Rcrash epoch' σ' ∗ Pcrash epoch' σ')
-        )
+        own_StateMachine epoch σ sealed P
   }}}
 .
 
-Definition is_StateMachine (sm:loc) P Pcrash : iProp Σ :=
+Definition accessP_fact own_StateMachine P : iProp Σ :=
+  □ (∀ Φ E σ epoch sealed,
+  (P epoch σ sealed ={E}=∗ P epoch σ sealed ∗ Φ) -∗
+  own_StateMachine epoch σ sealed P ={E}=∗
+  wpc_nval E (own_StateMachine epoch σ sealed P ∗ Φ))
+  (* FIXME: this wpc_nval is there because P might be in a crash borrow in
+     own_StateMachine. Joe said it imght be possible to get rid of wpc_nval by
+     changing the model of crash_borrows by using later credits. *)
+.
+
+Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
   ∃ (applyFn:val),
   "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "Apply"] applyFn) ∗
-  "#HapplySpec" ∷ is_ApplyFn applyFn P Pcrash
-.
+  "#HapplySpec" ∷ is_ApplyFn own_StateMachine applyFn P ∗
+  "#HaccP" ∷ accessP_fact own_StateMachine P.
 
 (* Hides the ghost part of the log; this is suitable for exposing as part of
    interfaces for users of the library. For now, it's only part of the crash
@@ -174,7 +174,7 @@ Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
   ∃ σ, ⌜σphys = σ.*1⌝ ∗ (own_replica_ghost γ γsrv epoch σ sealed)
 .
 
-Definition own_Server (s:loc) γ γsrv P Pcrash: iProp Σ :=
+Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   ∃ (epoch:u64) σg (nextIndex:u64) (sealed:bool) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t),
   (* physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
@@ -184,13 +184,11 @@ Definition own_Server (s:loc) γ γsrv P Pcrash: iProp Σ :=
   "Hsm" ∷ s ↦[pb.Server :: "sm"] #sm ∗
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
 
-  (* state-machine *)
-  "#HisSm" ∷ is_StateMachine sm P Pcrash ∗
+  (* state-machine callback specs *)
+  "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost γ γsrv) ∗
 
   (* ghost-state *)
-  "Hstate" ∷ crash_borrow (own_replica_ghost γ γsrv epoch σg sealed ∗ P epoch σg.*1 sealed) (
-    ∃ epoch σ' sealed, own_Server_ghost γ γsrv epoch σ' sealed ∗ Pcrash epoch σ' sealed
-  ) ∗
+  "Hstate" ∷ own_StateMachine epoch (fst<$>σg) sealed (own_Server_ghost γ γsrv) ∗
   "%Hσ_nextIndex" ∷ ⌜length σg = int.nat nextIndex⌝ ∗
 
   (* primary-only *)
@@ -210,41 +208,50 @@ Definition own_Server (s:loc) γ γsrv P Pcrash: iProp Σ :=
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val) P Pcrash,
+  ∃ (mu:val) own_StateMachine,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv P Pcrash) ∗
+  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv own_StateMachine) ∗
   "#Hsys_inv" ∷ sys_inv γ.
 
-Lemma wpc_Server__isEpochStale {stk} (s:loc) γ (currEpoch epoch:u64) :
+Lemma wp_Server__isEpochStale {stk} (s:loc) γ γsrv (currEpoch epoch:u64) σ sealed own_StateMachine:
   {{{
-        is_epoch_lb γ epoch ∗
+        is_epoch_lb γsrv epoch ∗
         s ↦[pb.Server :: "epoch"] #currEpoch ∗
-        own_epoch γ currEpoch
+        accessP_fact own_StateMachine (own_Server_ghost γ γsrv) ∗
+        own_StateMachine currEpoch σ sealed (own_Server_ghost γ γsrv)
   }}}
     pb.Server__isEpochStale #s #epoch @ stk
   {{{
         RET #(bool_decide (int.Z epoch < int.Z currEpoch));
         ⌜int.nat currEpoch ≥ int.nat epoch⌝ ∗
-        s ↦[pb.Server :: "epoch"] #currEpoch ∗ own_epoch γ currEpoch
-  }}}
-  {{{
-        own_epoch γ currEpoch
+        s ↦[pb.Server :: "epoch"] #currEpoch ∗
+        own_StateMachine currEpoch σ sealed (own_Server_ghost γ γsrv)
   }}}
 .
 Proof.
-  iIntros (Φ Φc) "(#Hlb & HcurrEpoch & Hepoch) HΦ".
-  wpc_call.
-  { iFrame. }
-  { iFrame. }
-  iCache with "Hepoch HΦ".
-  { iLeft in "HΦ". iApply "HΦ". iFrame. }
-
-  wpc_pures.
+  iIntros (Φ) "(#Hlb & HcurrEpoch & #HaccP & Hstate) HΦ".
+  wp_call.
+  iMod ("HaccP" $! (⌜int.nat currEpoch ≥ int.nat epoch⌝)%I with "[] Hstate") as "HH".
+  {
+    iIntros "H".
+    iDestruct "H" as (?) "[%Hre H]".
+    iNamed "H".
+    iDestruct (mono_nat_lb_own_valid with "Hepoch_ghost Hlb") as %[_ Hineq].
+    iModIntro.
+    iSplitL; last done.
+    iExists _; iFrame "∗#%".
+  }
+  unfold wpc_nval.
+  wp_bind (struct.loadF _ _ _).
+  iApply (wpc_wp _ _ _ _ (True%I)).
+  wpc_apply "HH".
+  { done. }
+  { done. }
+  iCache with "".
+  { done. }
   wpc_loadField.
-  wpc_pures.
-  iDestruct (mono_nat_lb_own_valid with "Hepoch Hlb") as %[_ Hineq].
-
-  iRight in "HΦ".
+  iIntros "[Hstate %Hineq]".
+  wp_pures.
   iModIntro.
   iApply ("HΦ").
   iFrame "∗%".

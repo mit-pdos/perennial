@@ -237,38 +237,43 @@ Definition Server__Apply: val :=
       lock.release (struct.loadF Server "mu" "s");;
       (e.Stale, slice.nil)
     else
-      let: "ret" := struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") "op" in
-      let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
-      struct.storeF Server "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextIndex" "s") #1);;
-      let: "epoch" := struct.loadF Server "epoch" "s" in
-      let: "clerks" := struct.loadF Server "clerks" "s" in
-      lock.release (struct.loadF Server "mu" "s");;
-      let: "wg" := waitgroup.New #() in
-      let: "errs" := NewSlice uint64T (slice.len "clerks") in
-      let: "args" := struct.new ApplyArgs [
-        "epoch" ::= "epoch";
-        "index" ::= "nextIndex";
-        "op" ::= "op"
-      ] in
-      ForSlice ptrT "i" "clerk" "clerks"
-        (let: "clerk" := "clerk" in
-        let: "i" := "i" in
-        waitgroup.Add "wg" #1;;
-        Fork (SliceSet uint64T "errs" "i" (Clerk__Apply "clerk" "args");;
-              waitgroup.Done "wg"));;
-      waitgroup.Wait "wg";;
-      let: "err" := ref_to uint64T e.None in
-      let: "i" := ref_to uint64T #0 in
-      Skip;;
-      (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
-        let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
-        (if: "err2" ≠ e.None
-        then "err" <-[uint64T] "err2"
-        else #());;
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
-        Continue);;
-      (* log.Println("Apply() returned ", err) *)
-      (![uint64T] "err", "ret")).
+      (if: struct.loadF Server "sealed" "s"
+      then
+        lock.release (struct.loadF Server "mu" "s");;
+        (e.Stale, slice.nil)
+      else
+        let: "ret" := struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") "op" in
+        let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
+        struct.storeF Server "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextIndex" "s") #1);;
+        let: "epoch" := struct.loadF Server "epoch" "s" in
+        let: "clerks" := struct.loadF Server "clerks" "s" in
+        lock.release (struct.loadF Server "mu" "s");;
+        let: "wg" := waitgroup.New #() in
+        let: "errs" := NewSlice uint64T (slice.len "clerks") in
+        let: "args" := struct.new ApplyArgs [
+          "epoch" ::= "epoch";
+          "index" ::= "nextIndex";
+          "op" ::= "op"
+        ] in
+        ForSlice ptrT "i" "clerk" "clerks"
+          (let: "clerk" := "clerk" in
+          let: "i" := "i" in
+          waitgroup.Add "wg" #1;;
+          Fork (SliceSet uint64T "errs" "i" (Clerk__Apply "clerk" "args");;
+                waitgroup.Done "wg"));;
+        waitgroup.Wait "wg";;
+        let: "err" := ref_to uint64T e.None in
+        let: "i" := ref_to uint64T #0 in
+        Skip;;
+        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+          let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
+          (if: "err2" ≠ e.None
+          then "err" <-[uint64T] "err2"
+          else #());;
+          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          Continue);;
+        (* log.Println("Apply() returned ", err) *)
+        (![uint64T] "err", "ret"))).
 
 (* requires that we've already at least entered this epoch
    returns true iff stale *)

@@ -67,7 +67,7 @@ Definition is_ghost_lb γ σ : iProp Σ :=
   own γ.(pb_state_gn) (◯ML (σ : list (leibnizO (EntryType)))).
 
 Notation "lhs ⪯ rhs" := (prefix lhs rhs)
-(at level 20, format "lhs ⪯ rhs") : stdpp_scope.
+(at level 20, format "lhs  ⪯  rhs") : stdpp_scope.
 
 Definition is_epoch_config γ epoch (conf:list pb_server_names): iProp Σ :=
   own γ.(pb_config_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (Some conf : (leibnizO _)))]} ∗
@@ -84,7 +84,6 @@ Definition committed_by γsys epoch σ : iProp Σ :=
 Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
   □(∀ epoch_old σ_old,
    ⌜int.nat epoch_old < int.nat epoch⌝ →
-   is_proposal_lb γsys epoch_old σ_old → (* FIXME: remove this *)
    committed_by γsys epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition pbN := nroot .@ "pb".
@@ -105,11 +104,6 @@ Definition is_valid_inv γsys σ op : iProp Σ :=
     is_ghost_lb γsys (σ ++ [op])
   )
 .
-
-Definition is_proposal_valid_old γ σ : iProp Σ :=
-  ∀ σprev op σnext,
-  ⌜σ = σprev ++ [op] ++ σnext⌝ -∗
-  is_valid_inv γ σprev op.
 
 Definition is_proposal_valid γ σ : iProp Σ :=
   □(∀ σ', ⌜σ' ⪯ σ⌝ → own_commit γ σ' ={⊤∖↑sysN}=∗ own_commit γ σ).
@@ -306,7 +300,6 @@ Proof.
       {
         done.
       }
-      { iFrame "#". }
       { iFrame "#". }
     }
     iPureIntro.
@@ -532,14 +525,13 @@ Proof.
   iIntros (epoch_old σ_old).
   iModIntro.
   iIntros (Hepoch).
-  iIntros "#Hprop_lb_old #Hcom_old".
+  iIntros "#Hcom_old".
   assert (int.nat epoch_old < int.nat epoch ∨ int.nat epoch_old = int.nat epoch ∨ int.nat epoch < int.nat epoch_old ) as Hcases.
   { word. }
   destruct Hcases as [Hineq|[HepochEq|Hineq]].
   { (* for old enough epochs, use existing old_prop_max *)
     iApply "Hmax".
     { done. }
-    { iFrame "#". }
     { iFrame "#". }
   }
   {

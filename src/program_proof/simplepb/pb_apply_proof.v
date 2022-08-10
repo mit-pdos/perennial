@@ -48,7 +48,7 @@ Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv (epoch index:u64)
         else
           True
   }}}
-  .
+.
 Proof.
   iIntros "#HisSrv" (Φ) "!# Hpre HΦ".
   iNamed "Hpre".
@@ -61,32 +61,15 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_bind (Server__isEpochStale _ _).
-  iApply (wpc_wp _ _ _ _ True).
-  iDestruct (crash_borrow_crash_wand with "Hstate") as "#Hcrash_wand".
-  iApply (wpc_crash_borrow_open with "Hstate").
+  wp_apply (wp_Server__isEpochStale with "[$Hepoch HisSm $HepochLb Hstate]").
   {
-    econstructor.
+    iNamed "HisSm". iFrame "HaccP Hstate".
   }
-  iSplitL ""; first done.
-  iIntros "[Hghost HP]".
-  iNamed "Hghost".
-  wpc_apply (wpc_Server__isEpochStale with "[$Hepoch $Hepoch_ghost $HepochLb]").
-  iSplit.
-  {
-    iIntros.
-    iSplitL ""; first done.
-    iApply "Hcrash_wand".
-    iFrame "∗#".
-  }
-  iNext.
-  iIntros "(%Hineq & Hepoch & $)".
-  iFrame "Haccepted Haccepted_rest HP Hproposal_lb Hvalid".
-  iIntros "Hstate".
-  iSplitL ""; first done.
+  iIntros "(%Hineq & [Hepoch Hstate])".
   wp_if_destruct.
   { (* return error: stale *)
     wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hstate Hepoch HprimaryOnly]").
     {
       iNext.
       iExists _, _, _, _, _, _, _.
@@ -145,28 +128,32 @@ Proof.
   { (* prove protocol step *)
     iSplitL ""; first done.
     assert (index = nextIndex) by naive_solver.
-    iSplitL "".
-    {
-      iIntros "Hghost".
-      iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
-      { rewrite H in Hσ_index. word. }
-      { done. }
-      iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
-      { done. }
-      { rewrite H in Hσ_index. word. }
-      rewrite Happend.
-      iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-      instantiate (1:=is_accepted_lb γsrv epoch σ).
-      instantiate (1:=own_replica_ghost _ _ _ _ _).
-      iFrame "HH Hlb".
-      by iModIntro.
-    }
+    iIntros "Hghost".
+    iDestruct "Hghost" as (?) "[%Hre Hghost]".
+    rewrite Hre.
+    iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
+    { rewrite H in Hσ_index.
+      apply (f_equal length) in Hre.
+      do 2 (rewrite fmap_length in Hre).
+      word. }
+    { done. }
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
+    { done. }
+    { rewrite H in Hσ_index.
+      apply (f_equal length) in Hre.
+      do 2 (rewrite fmap_length in Hre).
+      word. }
+    rewrite Happend.
+    iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
+    instantiate (1:=is_accepted_lb γsrv epoch σ).
+
     iModIntro.
-    iIntros. iExists _.
-    iFrame "∗". rewrite fmap_snoc.
-    done.
+    iSplitL.
+    { iExists _; iFrame "∗#".
+      by rewrite fmap_snoc. }
+    iFrame "#".
   }
-  iIntros (reply) "(Hstate & Hreply & #Hlb)".
+  iIntros (reply) "(Hreply & Hstate & #Hlb)".
   wp_pures.
   wp_loadField.
   wp_storeField.
@@ -240,8 +227,23 @@ Proof using waitgroupG0.
     done.
   }
   wp_loadField.
-  iNamed "HisSm".
 
+  wp_if_destruct.
+  {
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "Hstate ∗#".
+      iSplitL ""; done.
+    }
+    wp_pures.
+    iApply ("HΦ" $! 1  Slice.nil).
+    done.
+  }
+
+  clear Heqb.
   (* make proposal *)
   iNamed "HprimaryOnly".
   iMod (ghost_propose with "Hproposal Hprop_facts Hcred [Hupd]") as "[Hprop #Hprop_facts2]".
@@ -258,34 +260,34 @@ Proof using waitgroupG0.
 
   iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb".
 
+  iAssert (_) with "HisSm" as "HisSm2".
+  iNamed "HisSm2".
+  wp_loadField.
   wp_loadField.
 
-  wp_apply ("HapplySpec" with "[$Hstate $Hsl]").
+  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl]").
   {
     iSplitL ""; first done.
-    iSplitL "".
+    iIntros "Hghost".
+    iDestruct "Hghost" as (?) "[%Hre Hghost]".
+    rewrite Hre.
+
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts2") as "HH".
+    { done. }
+    { rewrite app_length.
+      apply (f_equal length) in Hre.
+      do 2 (rewrite fmap_length in Hre).
+      word. }
+    iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
+    instantiate (1:=is_accepted_lb γsrv epoch (σg ++ [ghost_op])).
+    iModIntro.
+    iSplitL.
     {
-      iIntros "Hghost".
-      iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
-      { apply app_length. }
-      { apply last_snoc. }
-      iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts2") as "HH".
-      { done. }
-      { rewrite app_length. word. }
-      iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-      instantiate (2:=own_replica_ghost _ _ _ _ sealed).
-      iFrame "HH".
-      iModIntro.
-      instantiate (1:=is_accepted_lb γsrv epoch (σg ++ [ghost_op])).
-      done.
+      iExists _; iFrame. rewrite fmap_snoc. rewrite Hre. done.
     }
-    {
-      rewrite -fmap_snoc.
-      iModIntro. iIntros.
-      iExists _; iFrame. done.
-    }
+    iFrame "Hlb".
   }
-  iIntros (reply) "(Hstate & Hreply & #Hprimary_acc_lb)".
+  iIntros (reply) "(Hreply & Hstate & #Hprimary_acc_lb)".
   rewrite -fmap_snoc.
 
   wp_pures.
