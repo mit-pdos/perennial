@@ -118,10 +118,11 @@ Definition KVState__Apply: val :=
     KVState__MakeDurable "s";;
     "ret".
 
-Definition KVState__SetState: val :=
-  rec: "KVState__SetState" "s" "snap_in" "epoch" "nextIndex" :=
+Definition KVState__SetStateAndUnseal: val :=
+  rec: "KVState__SetStateAndUnseal" "s" "snap_in" "epoch" "nextIndex" :=
     KVState__decodeKvs "s" "snap_in";;
     struct.storeF KVState "epoch" "s" "epoch";;
+    struct.storeF KVState "sealed" "s" #false;;
     struct.storeF KVState "nextIndex" "s" "nextIndex";;
     KVState__MakeDurable "s";;
     #().
@@ -143,7 +144,7 @@ Definition MakeKVStateMachine: val :=
   rec: "MakeKVStateMachine" "initState" :=
     struct.new pb.StateMachine [
       "Apply" ::= KVState__Apply "initState";
-      "SetState" ::= KVState__SetState "initState";
+      "SetStateAndUnseal" ::= KVState__SetStateAndUnseal "initState";
       "GetStateAndSeal" ::= KVState__GetStateAndSeal "initState"
     ].
 

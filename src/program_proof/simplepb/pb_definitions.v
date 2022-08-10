@@ -121,7 +121,7 @@ Definition is_ApplyFn own_StateMachine (applyFn:val) (P:u64 → list (OpType) �
   }}}
 .
 
-Definition is_SetState_fn own_StateMachine (set_state_fn:val) P : iProp Σ :=
+Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp Σ :=
   ∀ σ_prev (epoch_prev:u64) σ epoch (snap:list u8) snap_sl sealed Q,
   {{{
         ⌜has_snap_encoding snap epoch σ⌝ ∗
@@ -137,7 +137,7 @@ Definition is_SetState_fn own_StateMachine (set_state_fn:val) P : iProp Σ :=
   }}}
 .
 
-Definition is_GetState_fn own_StateMachine (get_state_fn:val) P : iProp Σ :=
+Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp Σ :=
   ∀ σ epoch sealed,
   {{{
         own_StateMachine epoch σ sealed P
@@ -147,7 +147,7 @@ Definition is_GetState_fn own_StateMachine (get_state_fn:val) P : iProp Σ :=
         snap_sl snap,
         RET (slice_val snap_sl);
         ⌜has_snap_encoding snap epoch σ⌝ ∗
-        own_StateMachine epoch σ sealed P
+        own_StateMachine epoch σ true P
   }}}
 .
 
@@ -162,9 +162,16 @@ Definition accessP_fact own_StateMachine P : iProp Σ :=
 .
 
 Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
-  ∃ (applyFn:val),
+  ∃ (applyFn:val) (getFn:val) (setFn:val),
   "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "Apply"] applyFn) ∗
   "#HapplySpec" ∷ is_ApplyFn own_StateMachine applyFn P ∗
+
+  "#HsetState" ∷ readonly (sm ↦[pb.StateMachine :: "SetStateAndSeal"] setFn) ∗
+  "#HsetStateSpec" ∷ is_SetStateAndUnseal_fn own_StateMachine setFn P ∗
+
+  "#HgetState" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getFn) ∗
+  "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P ∗
+
   "#HaccP" ∷ accessP_fact own_StateMachine P.
 
 (* Hides the ghost part of the log; this is suitable for exposing as part of
