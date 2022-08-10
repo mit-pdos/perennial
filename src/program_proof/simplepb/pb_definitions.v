@@ -108,9 +108,10 @@ Admitted.
  *)
 (* FIXME: rename to GetStateAndSeal *)
 Print GetStateReply.own.
-Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch:u64) :
+Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
         "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
+        "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv epoch_lb ∗
         "Hargs" ∷ GetStateArgs.own args_ptr (GetStateArgs.mkC epoch)
   }}}
     Clerk__GetState #ck #args_ptr
@@ -118,6 +119,7 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch:u64) :
         (reply:loc) (err:u64), RET #reply;
         if (decide (err = U64 0)) then
             ∃ epoch σ enc,
+            ⌜int.nat epoch_lb ≤ epoch⌝ ∗
             is_accepted_ro γsrv epoch σ ∗
             is_proposal_facts γ epoch σ ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length σ) enc) ∗
