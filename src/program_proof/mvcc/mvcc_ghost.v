@@ -417,6 +417,13 @@ Lemma dbmap_update_big {γ q m} m0 m1 :
   dbmap_ptstos γ q m1.
 Admitted.
 
+Lemma dbmap_elem_split {γ k q} q1 q2 v :
+  (q1 + q2 = q)%Qp ->
+  dbmap_ptsto γ k q v -∗
+  dbmap_ptsto γ k q1 v ∗
+  dbmap_ptsto γ k q2 v.
+Admitted.
+
 Lemma dbmap_elem_combine {γ k} q1 q2 v1 v2 :
   dbmap_ptsto γ k q1 v1 -∗
   dbmap_ptsto γ k q2 v2 -∗

@@ -22,32 +22,32 @@ Definition mvcc_inv_app γ : iProp Σ :=
   inv mvccNApp (mvcc_inv_app_def γ).
 
 Definition P_WriteReservedKey (r : dbmap) := dom r = {[ (U64 0) ]}.
-Definition Q_WriteReservedKey (r w: dbmap) :=
-  w !! (U64 0) = Some (Value (U64 2)).
+Definition Q_WriteReservedKey (v : u64) (r w : dbmap) :=
+  w !! (U64 0) = Some (Value v).
 
-Theorem wp_WriteReservedKeySeq txn tid r γ τ :
+Theorem wp_WriteReservedKeySeq txn (v : u64) tid r γ τ :
   {{{ own_txn txn tid r γ τ ∗ ⌜P_WriteReservedKey r⌝ ∗ txnmap_ptstos τ r }}}
-    WriteReservedKeySeq #txn
+    WriteReservedKeySeq #txn #v
   {{{ w (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
-      if ok then ⌜Q_WriteReservedKey r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
+      if ok then ⌜Q_WriteReservedKey v r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %Hdom & Hpts) HΦ".
   wp_call.
 
   (***********************************************************)
-  (* txn.Put(0, 2)                                           *) 
+  (* txn.Put(0, v)                                           *) 
   (* return true                                             *) 
   (***********************************************************)
   assert (Helem : (U64 0) ∈ dom r) by set_solver.
-  rewrite elem_of_dom in Helem. destruct Helem as [v Hlookup].
+  rewrite elem_of_dom in Helem. destruct Helem as [u Hlookup].
   wp_apply (wp_txn__Put with "[$Htxn Hpts]").
   { iDestruct (big_sepM_lookup with "Hpts") as "Hpts"; [apply Hlookup | iFrame]. }
   iIntros "[Htxn Hpts]".
   wp_pures.
   iModIntro.
-  iApply ("HΦ" $! ({[ (U64 0) := (Value (U64 2)) ]})).
+  iApply ("HΦ" $! ({[ (U64 0) := (Value v) ]})).
   iFrame "Htxn".
   iSplit.
   { iPureIntro. unfold Q_WriteReservedKey. split; [by rewrite lookup_singleton | set_solver]. }
@@ -56,11 +56,11 @@ Proof.
   done.
 Qed.
 
-Theorem wp_WriteReservedKey (txn : loc) γ :
+Theorem wp_WriteReservedKey (txn : loc) (v : u64) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_WriteReservedKey r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      WriteReservedKey #txn @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteReservedKey r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
+      WriteReservedKey #txn #v @ ↑mvccNSST
+    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteReservedKey v r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -68,44 +68,48 @@ Proof.
   wp_call.
 
   (***********************************************************)
-  (* return txn.DoTxn(WriteReservedKeySeq)                   *)
+  (* body := func(txn *txn.Txn) bool {                       *) 
+  (*     return WriteReservedKeySeq(txn, v)                  *) 
+  (* }                                                       *) 
+  (* return t.DoTxn(body)                                    *) 
   (***********************************************************)
-  wp_apply (wp_txn__DoTxn _ _ _ Q_WriteReservedKey with "[$Htxn]").
+  wp_apply (wp_txn__DoTxn _ _ _ (Q_WriteReservedKey v) with "[$Htxn]").
   { unfold Q_WriteReservedKey. apply _. }
   { unfold spec_body.
     iIntros (tid r τ Φ') "!> HP HΦ'".
+    wp_pures.
     iApply (wp_WriteReservedKeySeq with "HP HΦ'").
   }
   done.
 Qed.
 
 Definition P_WriteFreeKey (r : dbmap) := dom r = {[ (U64 1) ]}.
-Definition Q_WriteFreeKey (r w: dbmap) :=
-  w !! (U64 1) = Some (Value (U64 3)).
+Definition Q_WriteFreeKey (v : u64) (r w : dbmap) :=
+  w !! (U64 1) = Some (Value v).
 
-Theorem wp_WriteFreeKeySeq txn tid r γ τ :
+Theorem wp_WriteFreeKeySeq txn (v : u64) tid r γ τ :
   {{{ own_txn txn tid r γ τ ∗ ⌜P_WriteFreeKey r⌝ ∗ txnmap_ptstos τ r }}}
-    WriteFreeKeySeq #txn
+    WriteFreeKeySeq #txn #v
   {{{ w (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
-      if ok then ⌜Q_WriteFreeKey r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
+      if ok then ⌜Q_WriteFreeKey v r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %Hdom & Hpts) HΦ".
   wp_call.
 
   (***********************************************************)
-  (* txn.Put(1, 3)                                           *) 
+  (* txn.Put(1, v)                                           *) 
   (* return true                                             *) 
   (***********************************************************)
   assert (Helem : (U64 1) ∈ dom r) by set_solver.
-  rewrite elem_of_dom in Helem. destruct Helem as [v Hlookup].
+  rewrite elem_of_dom in Helem. destruct Helem as [u Hlookup].
   wp_apply (wp_txn__Put with "[$Htxn Hpts]").
   { iDestruct (big_sepM_lookup with "Hpts") as "Hpts"; [apply Hlookup | iFrame]. }
   iIntros "[Htxn Hpts]".
   wp_pures.
   iModIntro.
-  iApply ("HΦ" $! ({[ (U64 1) := (Value (U64 3)) ]})).
+  iApply ("HΦ" $! ({[ (U64 1) := (Value v) ]})).
   iFrame "Htxn".
   iSplit.
   { iPureIntro. unfold Q_WriteFreeKey. split; [by rewrite lookup_singleton | set_solver]. }
@@ -114,11 +118,11 @@ Proof.
   done.
 Qed.
 
-Theorem wp_WriteFreeKey (txn : loc) γ :
+Theorem wp_WriteFreeKey (txn : loc) (v : u64) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_WriteFreeKey r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      WriteFreeKey #txn @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteFreeKey r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
+      WriteFreeKey #txn #v @ ↑mvccNSST
+    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteFreeKey v r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -126,12 +130,16 @@ Proof.
   wp_call.
 
   (***********************************************************)
-  (* return txn.DoTxn(WriteFreeKeySeq)                       *)
+  (* body := func(txn *txn.Txn) bool {                       *)
+  (*     return WriteFreeKeySeq(txn, v)                      *)
+  (* }                                                       *)
+  (* return t.DoTxn(body)                                    *)
   (***********************************************************)
-  wp_apply (wp_txn__DoTxn _ _ _ Q_WriteFreeKey with "[$Htxn]").
+  wp_apply (wp_txn__DoTxn _ _ _ (Q_WriteFreeKey v) with "[$Htxn]").
   { unfold Q_WriteFreeKey. apply _. }
   { unfold spec_body.
     iIntros (tid r τ Φ') "!> HP HΦ'".
+    wp_pures.
     iApply (wp_WriteFreeKeySeq with "HP HΦ'").
   }
   done.
@@ -145,7 +153,28 @@ Theorem wp_InitializeData (txnmgr : loc) γ :
   {{{ dbmap_ptstos γ 1 (gset_to_gmap Nil keys_all) }}}
     InitializeData #txnmgr
   {{{ (v : dbval), RET #(); dbmap_ptsto γ (U64 0) (1 / 2)%Qp v ∗ mvcc_inv_app γ }}}.
-Admitted.
+Proof.
+  iIntros "#Htxn" (Φ) "!> Hdbpts HΦ".
+  wp_call.
+  iApply "HΦ".
+  unfold dbmap_ptstos.
+  iDestruct (big_sepM_delete _ _ (U64 0) with "Hdbpts") as "[Hdbpt Hdbpts]".
+  { rewrite lookup_gset_to_gmap_Some. split; [set_solver | done]. }
+  iDestruct (dbmap_elem_split (1 / 2) (1 / 2) with "Hdbpt") as "[H Hdbpt0]".
+  { compute_done. }
+  iFrame "H".
+  iMod (inv_alloc mvccNApp _ (mvcc_inv_app_def γ) with "[-]") as "#Hinv".
+  { iNext.
+    do 2 iExists _.
+    iDestruct (big_sepM_delete _ _ (U64 1) with "Hdbpts") as "[Hdbpt1 Hdbpts]".
+    { rewrite lookup_delete_Some.
+      split; first done.
+      rewrite lookup_gset_to_gmap_Some. split; [set_solver | done].
+    }
+    iFrame.
+  }
+  done.
+Qed.
 
 Theorem wp_InitExample :
   {{{ True }}}
@@ -173,25 +202,13 @@ Proof.
   iFrame "∗ #".
 Qed.
 
-(* FIXME: move this to mvcc_ghost *)
-Lemma dbmap_elem_split {γ k q} q1 q2 v :
-  (q1 + q2 = q)%Qp ->
-  dbmap_ptsto γ k q v -∗
-  dbmap_ptsto γ k q1 v ∗
-  dbmap_ptsto γ k q2 v.
-Admitted.
-
-(**
- * This method should specify the new value, but currently we don't
- * have support for txn arguments, so we always set the value to 2.
- *)
-Theorem wp_WriteReservedKeyExample (mgr : loc) (v : dbval) γ :
+Theorem wp_WriteReservedKeyExample (mgr : loc) (u : u64) (v : dbval) γ :
   mvcc_inv_app γ -∗
   is_txnmgr mgr γ -∗
   {{{ dbmap_ptsto γ (U64 0) (1 / 2)%Qp v }}}
-    WriteReservedKeyExample #mgr
+    WriteReservedKeyExample #mgr #u
   {{{ (ok : bool), RET #ok;
-      dbmap_ptsto γ (U64 0) (1 / 2)%Qp (if ok then (Value (U64 2)) else v)
+      dbmap_ptsto γ (U64 0) (1 / 2)%Qp (if ok then (Value u) else v)
   }}}.
 Proof.
   iIntros "#Hinv #Hmgr" (Φ) "!> Hdbpt HΦ".
@@ -259,11 +276,11 @@ Qed.
  * The purpose of this example is to show that writing to the reserved
  * key required the [dbmap_ptsto].
 *)
-Theorem wp_WriteReservedKeyNonexample (mgr : loc) γ :
+Theorem wp_WriteReservedKeyNonexample (mgr : loc) (u : u64) γ :
   mvcc_inv_app γ -∗
   is_txnmgr mgr γ -∗
   {{{ True }}}
-    WriteReservedKeyExample #mgr
+    WriteReservedKeyExample #mgr #u
   {{{ (ok : bool), RET #ok; True }}}.
 Proof.
   iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
@@ -298,11 +315,11 @@ Abort.
  * The point of this example is to demonstrate that [frac_ptsto] is
  * not required to update free keys.
  *)
-Theorem wp_WriteFreeKeyExample (mgr : loc) γ :
+Theorem wp_WriteFreeKeyExample (mgr : loc) (u : u64) γ :
   mvcc_inv_app γ -∗
   is_txnmgr mgr γ -∗
   {{{ True }}}
-    WriteFreeKeyExample #mgr
+    WriteFreeKeyExample #mgr #u
   {{{ (ok : bool), RET #ok; True }}}.
 Proof using heapGS0 mvcc_ghostG0 Σ.
   iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".

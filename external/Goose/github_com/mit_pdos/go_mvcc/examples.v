@@ -5,22 +5,28 @@ From Goose Require github_com.mit_pdos.go_mvcc.txn.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition WriteReservedKeySeq: val :=
-  rec: "WriteReservedKeySeq" "txn" :=
-    txn.Txn__Put "txn" #0 #2;;
+  rec: "WriteReservedKeySeq" "txn" "v" :=
+    txn.Txn__Put "txn" #0 "v";;
     #true.
 
 Definition WriteReservedKey: val :=
-  rec: "WriteReservedKey" "txn" :=
-    txn.Txn__DoTxn "txn" WriteReservedKeySeq.
+  rec: "WriteReservedKey" "t" "v" :=
+    let: "body" := (λ: "txn",
+      WriteReservedKeySeq "txn" "v"
+      ) in
+    txn.Txn__DoTxn "t" "body".
 
 Definition WriteFreeKeySeq: val :=
-  rec: "WriteFreeKeySeq" "txn" :=
-    txn.Txn__Put "txn" #1 #3;;
+  rec: "WriteFreeKeySeq" "txn" "v" :=
+    txn.Txn__Put "txn" #1 "v";;
     #true.
 
 Definition WriteFreeKey: val :=
-  rec: "WriteFreeKey" "txn" :=
-    txn.Txn__DoTxn "txn" WriteFreeKeySeq.
+  rec: "WriteFreeKey" "t" "v" :=
+    let: "body" := (λ: "txn",
+      WriteFreeKeySeq "txn" "v"
+      ) in
+    txn.Txn__DoTxn "t" "body".
 
 Definition InitializeData: val :=
   rec: "InitializeData" "mgr" :=
@@ -33,13 +39,13 @@ Definition InitExample: val :=
     "mgr".
 
 Definition WriteReservedKeyExample: val :=
-  rec: "WriteReservedKeyExample" "mgr" :=
+  rec: "WriteReservedKeyExample" "mgr" "v" :=
     let: "txn" := txn.TxnMgr__New "mgr" in
-    let: "ok" := WriteReservedKey "txn" in
+    let: "ok" := WriteReservedKey "txn" "v" in
     "ok".
 
 Definition WriteFreeKeyExample: val :=
-  rec: "WriteFreeKeyExample" "mgr" :=
+  rec: "WriteFreeKeyExample" "mgr" "v" :=
     let: "txn" := txn.TxnMgr__New "mgr" in
-    let: "ok" := WriteFreeKey "txn" in
+    let: "ok" := WriteFreeKey "txn" "v" in
     "ok".
