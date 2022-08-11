@@ -284,7 +284,7 @@ Proof.
       do 2 (iModIntro; iModIntro; iNext).
       iMod ("Hclo'").
       rewrite /wpc_crash_modality.
-      iApply step_fupd2N_inner_plus.
+      iApply step_fupd2N_inner_add.
       iSpecialize ("Hwpc" with "[$] [$]").
       iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
       iIntros "(Hg&(HΦc&Hwpc))".
@@ -539,7 +539,7 @@ Proof.
     do 2 (iModIntro; iModIntro; iNext).
     iMod ("Hclo'").
     rewrite /wpc_crash_modality.
-    iApply step_fupd2N_inner_plus.
+    iApply step_fupd2N_inner_add.
     iSpecialize ("Hwpc" with "[$] [$]").
     iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
     iIntros "(Hg&(HΦc&Hwpc))".

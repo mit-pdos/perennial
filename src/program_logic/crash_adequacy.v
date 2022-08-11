@@ -126,7 +126,7 @@ Proof.
   rewrite -(assoc_L (++)).
   rewrite -Nat.add_succ_l lc_split.
   iDestruct "Hlc" as "[Hlc1 Hlc2]".
-  iApply step_fupd2N_inner_plus.
+  iApply step_fupd2N_inner_add.
   iMod (wptp_step with "Hσ Hg He Ht HNC Hlc1") as (e1' t1'' ?) ">H"; first eauto; simplify_eq.
   iApply (step_fupd2N_wand with "H"). iIntros "!> H".
   iMod "H".
@@ -235,7 +235,7 @@ Proof.
   (* We are not even using Hlc2, but it is probably better to keep the credits and laters
      in sync in the lemma statement. *)
   iDestruct (wptp_steps with "Hσ Hg He Ht HNC Hlc1") as "Hwp"; first done.
-  iApply step_fupd2N_inner_plus.
+  iApply step_fupd2N_inner_add.
   iApply (step_fupd2N_inner_wand with "Hwp"); auto.
   iDestruct 1 as (e2' t2' ?) "(Hσ & Hg & Hwp & Ht & HNC)"; simplify_eq/=.
   iMod (fupd2_mask_subseteq ⊤ (⊤ ∖ D)) as "Hclo"; try set_solver+.

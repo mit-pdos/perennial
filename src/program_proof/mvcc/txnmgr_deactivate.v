@@ -382,8 +382,7 @@ Proof.
     split.
     { (* Prove [HtidOrder] *)
       apply Forall_cons_2; first by apply Forall_inv in HtidOrder.
-      apply Forall_inv_tail in HtidOrder.
-      apply (Forall_Permutation _ _ _ Hperm).
+      apply Forall_inv_tail in HtidOrder. rewrite Hperm.
       by apply Forall_delete.
     }
     split; last done.

@@ -160,7 +160,7 @@ Section cfupd.
     iIntros (Hle ?) "Hfupd HQ".
     (* rearrange theorem to an addition rather than a subtraction *)
     destruct (ineq_to_diff _ _ Hle) as (k&kd&->&?&?); subst; clear Hle.
-    iApply step_fupdN_inner_plus.
+    iApply step_fupdN_inner_add.
     iMod "Hfupd". iModIntro.
     iApply (elim_modal_step_fupdN_mono with "Hfupd").
     iIntros "HP".

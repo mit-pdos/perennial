@@ -411,7 +411,7 @@ Proof.
   iEval (simpl).
   do 2 (iModIntro; iModIntro; iNext).
   iMod "Hclo'".
-  iApply step_fupd2N_inner_plus.
+  iApply step_fupd2N_inner_add.
   iSpecialize ("H1" with "[$] [$]").
   iApply (step_fupd2N_inner_wand with "H1"); auto.
   iIntros "(Hg&HP1)".

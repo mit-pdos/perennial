@@ -449,9 +449,9 @@ Proof.
     iMod "H". iMod ("H" with "Hlc") as "H". iModIntro.
     rewrite fresh_later_count_nil.
     replace (0 + S k) with (k + 1) by lia.
-    rewrite -!assoc -step_fupd2N_plus.
+    rewrite -!assoc -step_fupd2N_add.
     iApply (step_fupd2N_wand with "H"). iIntros "H".
-    rewrite -step_fupd2N_plus.
+    rewrite -step_fupd2N_add.
     iMod "H". iApply (fupd2_mask_intro); [done..|]. iIntros "_".
     done.
   - iMod NC_alloc as (Hc') "HNC".
@@ -461,12 +461,12 @@ Proof.
     iEval (rewrite !lc_split -assoc) in "Hlc".
     iDestruct "Hlc" as "[[[Hlc1 _] Hlc2] Hlck]".
     iMod ("H" with "Hlc1") as "H". iModIntro.
-    rewrite -!assoc -step_fupd2N_plus.
+    rewrite -!assoc -step_fupd2N_add.
     iApply (step_fupd2N_wand with "H"). iIntros "H".
     iApply step_fupd2_fupd2N; first lia.
     do 2 iMod "H". iModIntro.
-    rewrite -step_fupd2N_plus. replace 3 with (2+1) by lia.
-    rewrite -step_fupd2N_plus.
+    rewrite -step_fupd2N_add. replace 3 with (2+1) by lia.
+    rewrite -step_fupd2N_add.
     iApply (step_fupd2N_wand with "H"). iIntros "H".
     iMod "H".
     iMod "H" as (HG') "H".

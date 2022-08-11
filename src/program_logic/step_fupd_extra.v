@@ -206,7 +206,7 @@ Proof using HAff.
   iApply step_fupdN_inner_fupd.
 Qed.
 
-Lemma step_fupdN_inner_plus E1 E2 k1 k2 (P: PROP):
+Lemma step_fupdN_inner_add E1 E2 k1 k2 (P: PROP):
   (|={E1,∅}=> |={∅}▷=>^k1 |={∅, E1}=> |={E1,∅}=> |={∅}▷=>^k2 |={∅,E2}=> P)
   ⊢ |={E1,∅}=> |={∅}▷=>^(k1 + k2) |={∅,E2}=> P.
 Proof using HAff.
@@ -218,7 +218,7 @@ Proof using HAff.
   * rewrite Nat_iter_S. iMod "H". iMod "H". eauto.
 Qed.
 
-Lemma step_fupdN_inner_plus' E1 k1 k2 (P: PROP):
+Lemma step_fupdN_inner_add' E1 k1 k2 (P: PROP):
   (|={E1,∅}_k1=> |={∅,∅}_k2=> P)
   ⊢ |={E1,∅}_(k1+k2)=> P.
 Proof using HAff.
@@ -275,7 +275,7 @@ Proof using HAff.
     rewrite step_fupdN_inner_fupd.
     iMod (step_fupdN_inner_plain' with "H") as "H".
     iModIntro. replace (S n * S k) with (S k + (n * S k)) by lia.
-    rewrite laterN_plus; eauto.
+    rewrite laterN_add; eauto.
 Qed.
 
 End step_fupdN.
@@ -388,13 +388,13 @@ Proof.
   iMod "HP". iModIntro. iApply step_fupd2N_le; try eassumption. auto.
 Qed.
 
-Lemma step_fupd2N_plus k1 k2 P :
+Lemma step_fupd2N_add k1 k2 P :
  (||▷=>^k1 ||▷=>^k2 P) ⊣⊢ ||▷=>^(k1 + k2) P.
 Proof.
   rewrite Nat_iter_add. done.
 Qed.
 
-Lemma step_fupd2N_inner_plus E1a E1b E2a E2b k1 k2 P :
+Lemma step_fupd2N_inner_add E1a E1b E2a E2b k1 k2 P :
  (||={E1a|E1b,∅|∅}=> ||▷=>^k1 ||={∅|∅, E1a|E1b}=> ||={E1a|E1b,∅|∅}=> ||▷=>^k2 ||={∅|∅,E2a|E2b}=> P)
   ⊢||={E1a|E1b,∅|∅}=> ||▷=>^(k1 + k2) ||={∅|∅,E2a|E2b}=> P.
 Proof.

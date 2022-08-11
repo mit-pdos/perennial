@@ -117,7 +117,7 @@ Proof using PRI.
     do 2 (iModIntro; iModIntro; iNext).
     iMod ("Hclo'").
     rewrite /wpc_crash_modality.
-    iApply step_fupd2N_inner_plus.
+    iApply step_fupd2N_inner_add.
     iSpecialize ("Hwp" with "[$] [$]").
     iApply step_fupd2N_inner_fupd.
     iApply (step_fupd2N_inner_wand with "Hwp"); auto.
@@ -185,7 +185,7 @@ Proof.
     iMod ("Hclo" with "[-Hg HPc Hwpc]").
     { iNext. iEval (rewrite staged_inv_inner_unfold). iExists _, _, _, _, _. iFrame "∗ #". iRight. iFrame. }
     iApply step_fupd2N_inner_fupd.
-    iApply (step_fupd2N_inner_plus).
+    iApply (step_fupd2N_inner_add).
     rewrite /wpc_crash_modality.
     iSpecialize ("Hwpc" with "[$] [$]").
     iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
@@ -208,7 +208,7 @@ Proof.
     iDestruct "Hs" as (Hle') "(HPs&Hitok&#Hwand')".
     iDestruct ("Hwand'" with "[$]") as "HPcr".
     rewrite /wpc_crash_modality.
-    iApply step_fupd2N_inner_plus.
+    iApply step_fupd2N_inner_add.
     iDestruct (pri_inv_tok_global_le_acc _ _ _ q1 with "[] Hg") as "(Hg&Hg_clo)".
     { iPureIntro. split; first naive_solver.
       transitivity mj0; first naive_solver.
@@ -268,7 +268,7 @@ Proof.
     iMod ("Hclo" with "[HPr Hown1 Hitok_ishare H Hstat]").
     { iNext. iEval (rewrite staged_inv_inner_unfold).
       iExists _, _, idle, _, _. iFrame "∗ #". iRight. iFrame. }
-    iApply step_fupd2N_inner_plus.
+    iApply step_fupd2N_inner_add.
     iSpecialize ("Hwpc" with "[$] [$]").
     iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
     iIntros "(Hg&HQc)".
@@ -360,7 +360,7 @@ Proof.
       iDestruct "Hs" as (Hle') "(HPs&Hitok&#Hwand')".
       iDestruct ("Hwand'" with "[$]") as "HPcr".
       rewrite /wpc_crash_modality.
-      iApply step_fupd2N_inner_plus.
+      iApply step_fupd2N_inner_add.
       iDestruct (pri_inv_tok_global_le_acc _ _ _ q1 with "[] Hg") as "(Hg&Hg_clo)".
       { iPureIntro. split; first naive_solver.
         transitivity mj0; first naive_solver.
@@ -420,7 +420,7 @@ Proof.
       iMod ("Hclo" with "[HPr Hown1 Hitok_ishare H Hstat]").
       { iNext. iEval (rewrite staged_inv_inner_unfold).
         iExists _, _, idle, _, _. iFrame "∗ #". iRight. iFrame. }
-      iApply step_fupd2N_inner_plus.
+      iApply step_fupd2N_inner_add.
       iApply step_fupd2N_inner_later; auto. iNext.
       iSpecialize ("Hwp" with "[$] [$]").
       iApply step_fupd2N_inner_fupd.
