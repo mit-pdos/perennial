@@ -165,9 +165,9 @@ Proof.
     rewrite HnotPrimary.
     rewrite -fmap_snoc.
     iFrame "Hstate ∗#".
-    iSplitL "".
-    { iExists _; iFrame "#". }
-    iSplitL ""; last done.
+    iSplitR.
+    { iExists _; iFrame "#". admit. }
+    iSplitR; last done.
     iPureIntro.
     rewrite app_length.
     rewrite Hσ_nextIndex.
@@ -309,7 +309,7 @@ Proof using waitgroupG0.
     iExists _, _, _, _, _, _, _.
     iFrame "Hstate ∗#".
     iSplitL "".
-    { iExists _; iFrame "#". }
+    { iExists _; iFrame "#". admit. }
     iSplitL "".
     {
       iPureIntro.
@@ -616,7 +616,7 @@ Proof using waitgroupG0.
     iFrame "Hreply".
     by iModIntro.
   }
-Qed.
+Admitted.
 
 Definition appN := pbN .@ "app".
 Definition escrowN := pbN .@ "escrow".

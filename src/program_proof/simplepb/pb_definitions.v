@@ -107,7 +107,6 @@ Admitted.
    which might hurt liveness.
  *)
 (* FIXME: rename to GetStateAndSeal *)
-Print GetStateReply.own.
 Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
         "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
