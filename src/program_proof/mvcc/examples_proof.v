@@ -5,6 +5,22 @@ From Perennial.program_proof.mvcc Require Import txn_proof.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
+#[local]
+Definition mvcc_inv_app_def γ : iProp Σ :=
+  ∃ (v0 v1 : dbval),
+    "Hdbpt0" ∷ dbmap_ptsto γ (U64 0) (1 / 2)%Qp v0 ∗
+    "Hdbpt1" ∷ dbmap_ptsto γ (U64 1) 1%Qp v1.
+
+Instance mvcc_inv_app_timeless γ :
+  Timeless (mvcc_inv_app_def γ).
+Proof. unfold mvcc_inv_app_def. apply _. Defined.
+
+#[local]
+Definition mvccNApp := nroot .@ "app".
+#[local]
+Definition mvcc_inv_app γ : iProp Σ :=
+  inv mvccNApp (mvcc_inv_app_def γ).
+
 Definition P_WriteReservedKey (r : dbmap) := dom r = {[ (U64 0) ]}.
 Definition Q_WriteReservedKey (r w: dbmap) :=
   w !! (U64 0) = Some (Value (U64 2)).
@@ -42,9 +58,9 @@ Qed.
 
 Theorem wp_WriteReservedKey (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (r : dbmap), ⌜P_WriteReservedKey r⌝ ∗ dbmap_ptstos γ r >>>
+    <<< ∀∀ (r : dbmap), ⌜P_WriteReservedKey r⌝ ∗ dbmap_ptstos γ 1 r >>>
       WriteReservedKey #txn @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteReservedKey r w⌝ ∗ dbmap_ptstos γ w) else dbmap_ptstos γ r >>>
+    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteReservedKey r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -100,9 +116,9 @@ Qed.
 
 Theorem wp_WriteFreeKey (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (r : dbmap), ⌜P_WriteFreeKey r⌝ ∗ dbmap_ptstos γ r >>>
+    <<< ∀∀ (r : dbmap), ⌜P_WriteFreeKey r⌝ ∗ dbmap_ptstos γ 1 r >>>
       WriteFreeKey #txn @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteFreeKey r w⌝ ∗ dbmap_ptstos γ w) else dbmap_ptstos γ r >>>
+    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteFreeKey r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -121,14 +137,21 @@ Proof.
   done.
 Qed.
 
-Theorem wp_WriteReservedKeyExample :
+(*****************************************************************)
+(* func InitializeData(txnmgr *txn.TxnMgr)                       *)
+(*****************************************************************)
+Theorem wp_InitializeData (txnmgr : loc) γ :
+  is_txnmgr txnmgr γ -∗
+  {{{ dbmap_ptstos γ 1 (gset_to_gmap Nil keys_all) }}}
+    InitializeData #txnmgr
+  {{{ (v : dbval), RET #(); dbmap_ptsto γ (U64 0) (1 / 2)%Qp v ∗ mvcc_inv_app γ }}}.
+Admitted.
+
+Theorem wp_InitExample :
   {{{ True }}}
-    WriteReservedKeyExample #()
-  {{{ γ (p : loc) (ok : bool), RET (#p, #ok);
-      if ok
-      then frac_ptsto γ (1 / 2)%Qp (U64 0) (Value (U64 2)) ∗ p ↦[uint64T] #(U64 2)
-      (* Still give the res above, but not set to the specified value (2). *)
-      else ∃ (v : u64), frac_ptsto γ (1 / 2)%Qp (U64 0) (Value v) ∗ p ↦[uint64T] #v
+    InitExample #()
+  {{{ γ (v : dbval) (mgr : loc), RET #mgr;
+      dbmap_ptsto γ (U64 0) (1 / 2)%Qp v ∗ is_txnmgr mgr γ ∗ mvcc_inv_app γ
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -136,195 +159,202 @@ Proof.
 
   (***********************************************************)
   (* mgr := txn.MkTxnMgr()                                   *)
-  (* p := new(uint64)                                        *)
-  (* mgr.InitializeData(p)                                   *)
-  (* txn := mgr.New()                                        *)
-  (* ok := WriteReservedKey(txn)                             *)
-  (* if ok {                                                 *)
-  (*     *p = 2                                              *)
-  (* }                                                       *)
-  (* return p, ok                                            *)
+  (* InitializeData(mgr)                                     *)
+  (* return mgr                                              *)
   (***********************************************************)
   wp_apply wp_MkTxnMgr.
-  iIntros (γ mgr) "[Hmgr Hdbpts]".
+  iIntros (γ mgr) "[#Hmgr Hdbpts]".
   wp_pures.
-  wp_apply wp_ref_of_zero; first done.
-  iIntros (p) "HpRef".
+  wp_apply (wp_InitializeData with "Hmgr [$Hdbpts]").
+  iIntros (v) "[Hdbpt #Hinv]".
   wp_pures.
-  wp_apply (wp_txnMgr__InitializeData with "Hmgr [$Hdbpts $HpRef]").
-  iIntros (u) "(#Hmgr & Hptsto' & HpRef)".
-  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  iFrame "∗ #".
+Qed.
+
+(* FIXME: move this to mvcc_ghost *)
+Lemma dbmap_elem_split {γ k q} q1 q2 v :
+  (q1 + q2 = q)%Qp ->
+  dbmap_ptsto γ k q v -∗
+  dbmap_ptsto γ k q1 v ∗
+  dbmap_ptsto γ k q2 v.
+Admitted.
+
+(**
+ * This method should specify the new value, but currently we don't
+ * have support for txn arguments, so we always set the value to 2.
+ *)
+Theorem wp_WriteReservedKeyExample (mgr : loc) (v : dbval) γ :
+  mvcc_inv_app γ -∗
+  is_txnmgr mgr γ -∗
+  {{{ dbmap_ptsto γ (U64 0) (1 / 2)%Qp v }}}
+    WriteReservedKeyExample #mgr
+  {{{ (ok : bool), RET #ok;
+      dbmap_ptsto γ (U64 0) (1 / 2)%Qp (if ok then (Value (U64 2)) else v)
+  }}}.
+Proof.
+  iIntros "#Hinv #Hmgr" (Φ) "!> Hdbpt HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* txn := mgr.New()                                        *)
+  (***********************************************************)
   wp_apply (wp_txnMgr__New with "Hmgr").
   iNamed "Hmgr".
   iIntros (txn) "Htxn".
   wp_pures.
+
+  (***********************************************************)
+  (* ok := WriteReservedKey(txn)                             *)
+  (***********************************************************)
   wp_apply (wp_WriteReservedKey with "Htxn").
-  iInv "Hinvdb" as "> HinvdbO" "HinvdbC".
+  iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
-  iNamed "HinvdbO".
-  iExists {[ (U64 0) := v ]}.
-  iDestruct (big_sepM_delete with "Hdbpts") as "[Hdbpt Hdbpts]".
-  { apply Hval. }
-  iSplitL "Hdbpt".
-  { unfold dbmap_ptstos. rewrite big_sepM_singleton.
-    iFrame.
-    iPureIntro. unfold P_WriteReservedKey.
-    set_solver.
-  }
-  iIntros (ok) "Hdbpt".
+  iNamed "HinvO".
+  (* Give atomic precondition. *)
+  iExists {[ (U64 0) := v0 ]}.
+  unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
+  iDestruct (dbmap_elem_combine with "Hdbpt Hdbpt0") as "[Hdbpt0 ->]".
+  rewrite Qp_half_half.
+  iFrame.
+  iSplit.
+  { iPureIntro. unfold P_WriteReservedKey. set_solver. }
+  (* Take atomic postcondition. *)
+  iIntros (ok) "H".
   iMod "Hclose" as "_".
+
+  (***********************************************************)
+  (* return p, ok                                            *)
+  (***********************************************************)
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    set v' := Value (U64 2).
-    iMod (frac_ptsto_update v' with "Hptsto Hptsto'") as "[Hptsto Hptsto']"; first apply Qp_half_half.
-    iMod ("HinvdbC" with "[- HΦ Hptsto' HpRef]") as "_".
-    { (* Close the invariant. *)
-      iNext.
-      iDestruct "Hdbpt" as (w) "[%HQ Hdbpt]".
-      unfold Q_WriteReservedKey in HQ.
-      unfold dbmap_ptstos.
-      unfold mvcc_inv_db_def.
-      set m' := <[(U64 0) := v']> m.
-      iExists m', v'.
-      iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt".
-      { apply HQ. }
-      (* Q: Can we directly iDestruct the LHS of an iff? *)
-      iAssert (dbmap_ptstos γ m')%I with "[Hdbpt Hdbpts]" as "Hdbpts".
-      { unfold dbmap_ptstos. rewrite big_sepM_insert_delete. iFrame. }
-      iFrame.
-      iPureIntro.
-      subst m'. rewrite lookup_insert.
-      split; [done | set_solver].
-    }
+    iDestruct "H" as (w) "[%HQ Hdbpt0]".
+    unfold Q_WriteReservedKey in HQ.
+    iDestruct (big_sepM_lookup with "Hdbpt0") as "Hdbpt0"; first apply HQ.
+    iDestruct (dbmap_elem_split (1 / 2) (1 / 2) with "Hdbpt0") as "[Hdbpt Hdbpt0]"; first compute_done.
+    iMod ("HinvC" with "[- HΦ Hdbpt]") as "_".
+    { (* Close the invariant. *) do 2 iExists _. iFrame. }
     iModIntro.
     iIntros "Htxn".
-    wp_pures.
-    wp_store.
     wp_pures.
     iApply "HΦ".
     by iFrame.
   }
   { (* Case ABORT. *)
-    iMod ("HinvdbC" with "[- HΦ Hptsto' HpRef]") as "_".
-    { (* Close the invariant. *)
-      iNext.
-      unfold dbmap_ptstos.
-      rewrite big_sepM_singleton.
-      unfold mvcc_inv_db_def.
-      iExists m, v.
-      iAssert (dbmap_ptstos γ m)%I with "[Hdbpt Hdbpts]" as "Hdbpts".
-      { unfold dbmap_ptstos.
-        iApply big_sepM_delete; first apply Hval.
-        iFrame.
-      }
-      iFrame.
-      iPureIntro.
-      split; [done | set_solver].
-    }
+    unfold dbmap_ptstos. rewrite big_sepM_singleton.
+    iDestruct (dbmap_elem_split (1 / 2) (1 / 2) with "H") as "[Hdbpt Hdbpt0]"; first compute_done.
+    iMod ("HinvC" with "[- HΦ Hdbpt]") as "_".
+    { (* Close the invariant. *) do 2 iExists _. iFrame. }
     iModIntro.
     iIntros "Htxn".
     wp_pures.
     iApply "HΦ".
-    eauto with iFrame.
+    by iFrame.
   }
 Qed.
 
-Theorem wp_WriteFreeKeyExample :
+(**
+ * The purpose of this example is to show that writing to the reserved
+ * key required the [dbmap_ptsto].
+*)
+Theorem wp_WriteReservedKeyNonexample (mgr : loc) γ :
+  mvcc_inv_app γ -∗
+  is_txnmgr mgr γ -∗
   {{{ True }}}
-    WriteFreeKeyExample #()
+    WriteReservedKeyExample #mgr
   {{{ (ok : bool), RET #ok; True }}}.
-Proof using heapGS0 mvcc_ghostG0 Σ.
-  iIntros (Φ) "_ HΦ".
+Proof.
+  iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
   wp_call.
 
   (***********************************************************)
-  (* mgr := txn.MkTxnMgr()                                   *)
-  (* p := new(uint64)                                        *)
-  (* mgr.InitializeData(p)                                   *)
   (* txn := mgr.New()                                        *)
-  (* ok := WriteFreeKey(txn)                                 *)
-  (* return ok                                               *)
   (***********************************************************)
-  wp_apply wp_MkTxnMgr.
-  iIntros (γ mgr) "[Hmgr Hdbpts]".
+  wp_apply (wp_txnMgr__New with "Hmgr").
+  iNamed "Hmgr".
+  iIntros (txn) "Htxn".
   wp_pures.
-  wp_apply wp_ref_of_zero; first done.
-  iIntros (p) "HpRef".
-  wp_pures.
-  wp_apply (wp_txnMgr__InitializeData with "Hmgr [$Hdbpts $HpRef]").
-  iIntros (u) "(#Hmgr & Hptsto' & HpRef)".
-  (* Delete the [Hptsto'] to show that [WriteFreeKey] does not require that. *)
-  iClear "Hptsto'".
+
+  (***********************************************************)
+  (* ok := WriteReservedKey(txn)                             *)
+  (***********************************************************)
+  wp_apply (wp_WriteReservedKey with "Htxn").
+  iInv "Hinv" as "> HinvO" "HinvC".
+  iApply ncfupd_mask_intro; first set_solver.
+  iIntros "Hclose".
+  iNamed "HinvO".
+  (* Give atomic precondition *)
+  iExists {[ (U64 0) := v0 ]}.
+  unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
+  (**
+   * However, we only have one half of the ownership of key 0 (see
+   * [Hdbpt0]), so we get stuck.
+   *)
+Abort.
+
+(**
+ * The point of this example is to demonstrate that [frac_ptsto] is
+ * not required to update free keys.
+ *)
+Theorem wp_WriteFreeKeyExample (mgr : loc) γ :
+  mvcc_inv_app γ -∗
+  is_txnmgr mgr γ -∗
+  {{{ True }}}
+    WriteFreeKeyExample #mgr
+  {{{ (ok : bool), RET #ok; True }}}.
+Proof using heapGS0 mvcc_ghostG0 Σ.
+  iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* txn := mgr.New()                                        *)
+  (***********************************************************)
   wp_pures.
   wp_apply (wp_txnMgr__New with "Hmgr").
   iNamed "Hmgr".
   iIntros (txn) "Htxn".
   wp_pures.
+
+  (***********************************************************)
+  (* ok := WriteFreeKey(txn)                                 *)
+  (***********************************************************)
   wp_apply (wp_WriteFreeKey with "Htxn").
-  iInv "Hinvdb" as "> HinvdbO" "HinvdbC".
+  iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
-  iNamed "HinvdbO".
-  assert (Hlookup : ∃ y, m !! (U64 1) = Some y).
-  { apply elem_of_dom. set_solver. }
-  destruct Hlookup as [y Hlookup].
-  iExists {[ (U64 1) := y ]}.
-  iDestruct (big_sepM_delete with "Hdbpts") as "[Hdbpt Hdbpts]".
-  { apply Hlookup. }
-  iSplitL "Hdbpt".
-  { unfold dbmap_ptstos. rewrite big_sepM_singleton.
-    iFrame.
-    iPureIntro. unfold P_WriteFreeKey.
-    set_solver.
-  }
-  iIntros (ok) "Hdbpt".
+  iNamed "HinvO".
+  iExists {[ (U64 1) := v1 ]}.
+  (* Give atomic precondition *)
+  unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
+  iFrame.
+  iSplit.
+  { iPureIntro. unfold P_WriteFreeKey. set_solver. }
+  (* Take atomic precondition *)
+  iIntros (ok) "H".
   iMod "Hclose" as "_".
+
+  (***********************************************************)
+  (* return ok                                               *)
+  (***********************************************************)
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    iMod ("HinvdbC" with "[- HΦ]") as "_".
-    { (* Close the invariant. *)
-      iNext.
-      iDestruct "Hdbpt" as (w) "[%HQ Hdbpt]".
-      unfold Q_WriteFreeKey in HQ.
-      unfold dbmap_ptstos.
-      unfold mvcc_inv_db_def.
-      set v' := Value (U64 3).
-      set m' := <[(U64 1) := v']> m.
-      iExists m', v.
-      iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt".
-      { apply HQ. }
-      (* Q: Can we directly iDestruct the LHS of an iff? *)
-      iAssert (dbmap_ptstos γ m')%I with "[Hdbpt Hdbpts]" as "Hdbpts".
-      { unfold dbmap_ptstos. rewrite big_sepM_insert_delete. iFrame. }
-      iFrame.
-      iPureIntro.
-      subst m'.
-      split; last set_solver.
-      { rewrite -Hval. by apply lookup_insert_ne. }
-    }
+    iDestruct "H" as (w) "[%HQ Hdbpt1]".
+    (* iDestruct "H" as (w) "[%HQ Hdbpt0]". This typo produces weird behavior. *)
+    unfold Q_WriteFreeKey in HQ.
+    iDestruct (big_sepM_lookup with "Hdbpt1") as "Hdbpt1"; first apply HQ.
+    iMod ("HinvC" with "[- HΦ]") as "_".
+    { (* Close the invariant. *) do 2 iExists _. iFrame. }
     iModIntro.
     iIntros "Htxn".
     wp_pures.
     by iApply "HΦ".
   }
   { (* Case ABORT. *)
-    iMod ("HinvdbC" with "[- HΦ]") as "_".
-    { (* Close the invariant. *)
-      iNext.
-      unfold dbmap_ptstos.
-      rewrite big_sepM_singleton.
-      unfold mvcc_inv_db_def.
-      iExists m, v.
-      iAssert (dbmap_ptstos γ m)%I with "[Hdbpt Hdbpts]" as "Hdbpts".
-      { unfold dbmap_ptstos.
-        iApply big_sepM_delete; first apply Hlookup.
-        iFrame.
-      }
-      iFrame.
-      iPureIntro.
-      split; [done | set_solver].
-    }
+    rewrite big_sepM_singleton.
+    iMod ("HinvC" with "[- HΦ]") as "_".
+    { (* Close the invariant. *) do 2 iExists _. iFrame. }
     iModIntro.
     iIntros "Htxn".
     wp_pures.

@@ -38,23 +38,6 @@ Definition own_txnmgr (txnmgr : loc) : iProp Σ :=
     "%HsidcurB" ∷ ⌜(int.Z sidcur) < N_TXN_SITES⌝ ∗
     "_" ∷ True.
 
-Definition is_txnmgr_uninit (txnmgr : loc) γ : iProp Σ := 
-  ∃ (latch : loc) (sites : Slice.t) (idx gc : loc)
-    (sitesL : list loc) (p : proph_id),
-    "#Hlatch" ∷ readonly (txnmgr ↦[TxnMgr :: "latch"] #latch) ∗
-    "#Hlock" ∷ is_lock mvccN #latch (own_txnmgr txnmgr) ∗
-    "#Hidx" ∷ readonly (txnmgr ↦[TxnMgr :: "idx"] #idx) ∗
-    "#HidxRI" ∷ is_index idx γ ∗
-    "#Hgc" ∷ readonly (txnmgr ↦[TxnMgr :: "gc"] #gc) ∗
-    "#Hsites" ∷ readonly (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
-    "#HsitesS" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
-    "%HsitesLen" ∷ ⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝ ∗
-    "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ sitesL, is_txnsite site sid γ) ∗
-    "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
-    "#Hinvgc" ∷ mvcc_inv_gc γ ∗
-    "#Hinvsst" ∷ mvcc_inv_sst γ p ∗
-    "_" ∷ True.
-
 Definition is_txnmgr (txnmgr : loc) γ : iProp Σ := 
   ∃ (latch : loc) (sites : Slice.t) (idx gc : loc)
     (sitesL : list loc) (p : proph_id),
@@ -70,8 +53,6 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
     "#Hinvsst" ∷ mvcc_inv_sst γ p ∗
-    (* Here's the only difference from [is_txnmgr_uninit]. *)
-    "#Hinvdb" ∷ mvcc_inv_db γ ∗
     "_" ∷ True.
 
 (**

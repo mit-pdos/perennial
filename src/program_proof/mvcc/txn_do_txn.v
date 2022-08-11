@@ -15,9 +15,9 @@ Theorem wp_txn__DoTxn
         txn (body : val) (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop) γ :
   (∀ r w, (Decision (Q r w))) ->
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body body txn tid r P Q γ τ) }}}
-    <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ r >>>
+    <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
       Txn__DoTxn #txn body @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q r w⌝ ∗ dbmap_ptstos γ w) else dbmap_ptstos γ r >>>
+    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros (Hdec) "!>".
@@ -320,7 +320,7 @@ Proof.
     by iIntros (ok) "contra".
   }
   { (* Case CMT, i.e. FCC and [Q r w] holds. *)
-    (* Update [dbmap_ptstos γ r] to [dbmap_ptstos γ (mods ∪ r)]. *)
+    (* Update [dbmap_ptstos γ 1 r] to [dbmap_ptstos γ 1 (mods ∪ r)]. *)
     destruct a as [HQ Hdom].
     iMod (per_key_inv_dbmap_ptstos_update ts' r mods with "Hm Hdbps Hkeys") as "(Hm & Hdbps & Hkeys)".
     { done. } { lia. }
@@ -409,9 +409,9 @@ Admitted.
 
 Theorem wp_Swap (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (r : dbmap), ⌜pre_Swap r⌝ ∗ dbmap_ptstos γ r >>>
+    <<< ∀∀ (r : dbmap), ⌜pre_Swap r⌝ ∗ dbmap_ptstos γ 1 r >>>
       Swap #txn @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜post_Swap r w⌝ ∗ dbmap_ptstos γ w) else dbmap_ptstos γ r >>>
+    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜post_Swap r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".

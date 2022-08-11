@@ -22,23 +22,24 @@ Definition WriteFreeKey: val :=
   rec: "WriteFreeKey" "txn" :=
     txn.Txn__DoTxn "txn" WriteFreeKeySeq.
 
-Definition WriteReservedKeyExample: val :=
-  rec: "WriteReservedKeyExample" <> :=
+Definition InitializeData: val :=
+  rec: "InitializeData" "mgr" :=
+    #().
+
+Definition InitExample: val :=
+  rec: "InitExample" <> :=
     let: "mgr" := txn.MkTxnMgr #() in
-    let: "p" := ref (zero_val uint64T) in
-    txn.TxnMgr__InitializeData "mgr" "p";;
+    InitializeData "mgr";;
+    "mgr".
+
+Definition WriteReservedKeyExample: val :=
+  rec: "WriteReservedKeyExample" "mgr" :=
     let: "txn" := txn.TxnMgr__New "mgr" in
     let: "ok" := WriteReservedKey "txn" in
-    (if: "ok"
-    then "p" <-[uint64T] #2
-    else #());;
-    ("p", "ok").
+    "ok".
 
 Definition WriteFreeKeyExample: val :=
-  rec: "WriteFreeKeyExample" <> :=
-    let: "mgr" := txn.MkTxnMgr #() in
-    let: "p" := ref (zero_val uint64T) in
-    txn.TxnMgr__InitializeData "mgr" "p";;
+  rec: "WriteFreeKeyExample" "mgr" :=
     let: "txn" := txn.TxnMgr__New "mgr" in
     let: "ok" := WriteFreeKey "txn" in
     "ok".

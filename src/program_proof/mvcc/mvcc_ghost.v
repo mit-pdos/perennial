@@ -196,11 +196,11 @@ Definition cmt_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
 Definition dbmap_auth γ m : iProp Σ :=
   own γ.(mvcc_dbmap) (gmap_view_auth (DfracOwn 1) m).
 
-Definition dbmap_ptsto γ k v : iProp Σ :=
-  own γ.(mvcc_dbmap) (gmap_view_frag k (DfracOwn 1) v).
+Definition dbmap_ptsto γ k q v : iProp Σ :=
+  own γ.(mvcc_dbmap) (gmap_view_frag k (DfracOwn q) v).
 
-Definition dbmap_ptstos γ (m : dbmap) : iProp Σ :=
-  [∗ map] k ↦ v ∈ m, dbmap_ptsto γ k v.
+Definition dbmap_ptstos γ q (m : dbmap) : iProp Σ :=
+  [∗ map] k ↦ v ∈ m, dbmap_ptsto γ k q v.
 
 (* Definitions about per-txn resources. *)
 Definition txnmap_auth τ m : iProp Σ :=
@@ -403,18 +403,25 @@ Lemma mvcc_ghost_init :
               ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
 Admitted.
 
-Lemma dbmap_lookup_big {γ m} m' :
+Lemma dbmap_lookup_big {γ q m} m' :
   dbmap_auth γ m -∗
-  dbmap_ptstos γ m' -∗
+  dbmap_ptstos γ q m' -∗
   ⌜m' ⊆ m⌝.
 Admitted.
 
-Lemma dbmap_update_big {γ m} m0 m1 :
+Lemma dbmap_update_big {γ q m} m0 m1 :
   dom m0 = dom m1 →
   dbmap_auth γ m -∗
-  dbmap_ptstos γ m0 ==∗
+  dbmap_ptstos γ q m0 ==∗
   dbmap_auth γ (m1 ∪ m) ∗
-  dbmap_ptstos γ m1.
+  dbmap_ptstos γ q m1.
+Admitted.
+
+Lemma dbmap_elem_combine {γ k} q1 q2 v1 v2 :
+  dbmap_ptsto γ k q1 v1 -∗
+  dbmap_ptsto γ k q2 v2 -∗
+  dbmap_ptsto γ k (q2 + q2) v1 ∗
+  ⌜v1 = v2⌝.
 Admitted.
 
 Lemma txnmap_lookup τ m k v :

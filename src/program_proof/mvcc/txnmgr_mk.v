@@ -10,8 +10,8 @@ Theorem wp_MkTxnMgr :
   {{{ True }}}
     MkTxnMgr #()
   {{{ (γ : mvcc_names) (txnmgr : loc), RET #txnmgr;
-      is_txnmgr_uninit txnmgr γ ∗
-      dbmap_ptstos γ (gset_to_gmap (Value (U64 0)) keys_all)
+      is_txnmgr txnmgr γ ∗
+      dbmap_ptstos γ 1 (gset_to_gmap Nil keys_all)
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -198,23 +198,6 @@ Proof.
   rewrite firstn_all.
   (* do 6 iExists _. *)
   (* by iFrame "# %". *)
-Admitted.
-
-
-(*****************************************************************)
-(* func (txnMgr *TxnMgr) InitializeData(p *uint64)               *)
-(*****************************************************************)
-Theorem wp_txnMgr__InitializeData (txnmgr : loc) (p : loc) (v : u64) γ :
-  is_txnmgr_uninit txnmgr γ -∗
-  {{{ dbmap_ptstos γ (gset_to_gmap (Value (U64 0)) keys_all) ∗
-      p ↦[uint64T] #v
-  }}}
-    TxnMgr__InitializeData #txnmgr #p
-  {{{ (w : u64), RET #();
-      is_txnmgr txnmgr γ ∗
-      frac_ptsto γ (1 / 2)%Qp (U64 0) (Value w) ∗
-      p ↦[uint64T] #w
-  }}}.
 Admitted.
 
 End program.
