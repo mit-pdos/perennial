@@ -285,7 +285,7 @@ Proof.
     { eapply map_disjoint_Some_l; eauto.
       simpl. apply lookup_insert. }
     replace (word.add (size mdone) 1) with (int.Z (size mdone) + 1:u64) by word.
-    rewrite Z.u64; last first.
+    rewrite Z_u64; last first.
     { split; first lia.
       word_cleanup.
       rewrite Hsize in H1.

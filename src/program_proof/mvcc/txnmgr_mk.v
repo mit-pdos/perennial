@@ -17,7 +17,7 @@ Proof.
   (***********************************************************)
   (* txnMgr := new(TxnMgr)                                   *)
   (* txnMgr.latch = new(sync.Mutex)                          *)
-  (* txnMgr.sites = make([]*TxnSite, config.N.TXN_SITES)     *)
+  (* txnMgr.sites = make([]*TxnSite, config.N_TXN_SITES)     *)
   (***********************************************************)
   wp_apply (wp_allocStruct); first auto 10.
   iIntros (txnmgr) "Htxnmgr".
@@ -44,7 +44,7 @@ Proof.
   }
 
   (***********************************************************)
-  (* for i := uint64(0); i < config.N.TXN_SITES; i++ {       *)
+  (* for i := uint64(0); i < config.N_TXN_SITES; i++ {       *)
   (*     site := new(TxnSite)                                *)
   (*     site.latch = new(sync.Mutex)                        *)
   (*     site.tidsActive = make([]uint64, 0, 8)              *)
@@ -57,12 +57,12 @@ Proof.
   iDestruct (is_slice_to_small with "HsitesL") as "HsitesS".
   set P := λ (n : u64), (∃ sitesL,
     "HsitesS" ∷ is_slice_small sites ptrT 1 (to_val <$> sitesL) ∗
-    "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N.TXN_SITES⌝) ∗
+    "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (int.nat n) sitesL), is_txnsite site sid γ) ∗
     "Hsites" ∷ (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
     "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
     "HminAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_min_tid_half_auth γ sid 0))%I.
-  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N.TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuths HminAuths]"); first done.
+  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuths HminAuths]"); first done.
   { clear Φ latch.
     iIntros (i Φ) "!> (Hloop & HiRef & %Hbound) HΦ".
     iNamed "Hloop".
@@ -83,7 +83,7 @@ Proof.
     wp_load.
     wp_loadField.
     replace (int.Z 64) with (Z.of_nat (length sitesL)) in Hbound.
-    unfold N.TXN_SITES in *.
+    unfold N_TXN_SITES in *.
     wp_apply (wp_SliceSet with "[$HsitesS]").
     { iPureIntro.
       split; last auto.
@@ -100,7 +100,7 @@ Proof.
     iFrame.
     
     rewrite (drop_S _ i); last first.
-    { unfold sids_all, N.TXN_SITES.
+    { unfold sids_all, N_TXN_SITES.
       rewrite list_lookup_fmap.
       rewrite lookup_seqZ_lt; last word.
       simpl. f_equal. word.
@@ -190,8 +190,8 @@ Proof.
   iMod (readonly_alloc_1 with "p") as "#Hp".
   iMod (readonly_alloc_1 with "Hsites") as "#Hsites".
   iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".
-  replace (int.nat (U64 N.TXN_SITES)) with (length sitesL); last first.
-  { unfold N.TXN_SITES in *. word. }
+  replace (int.nat (U64 N_TXN_SITES)) with (length sitesL); last first.
+  { unfold N_TXN_SITES in *. word. }
   rewrite firstn_all.
   do 6 iExists _.
   (* by iFrame "# %". *)

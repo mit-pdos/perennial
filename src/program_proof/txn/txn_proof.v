@@ -1724,7 +1724,7 @@ Proof.
   trivial.
 Qed.
 
-Lemma Z.mod_pos_bound_weak a b bound :
+Lemma Z_mod_pos_bound_weak a b bound :
   (0 < b)%Z → (b ≤ bound)%Z → (0 ≤ a `mod` b)%Z ∧ (a `mod` b < bound)%Z.
 Proof.
   intros Hb Hbound.
@@ -1791,7 +1791,7 @@ Proof.
     rewrite word.unsigned_modu; last by word.
     rewrite (unsigned_U64 8) (wrap_small 8); last by lia.
     rewrite wrap_small;
-      last by (apply Z.mod_pos_bound_weak; lia).
+      last by (apply Z_mod_pos_bound_weak; lia).
     rewrite /get_bit -bool_decide_decide.
     unshelve (erewrite bool_decide_ext).
     4: {
@@ -1811,18 +1811,18 @@ Proof.
       rewrite unsigned_U64 (wrap_small 8); last by lia.
       unfold word.wrap at 2.
       rewrite (Z.mod_small _ (2^64));
-        last by (apply Z.mod_pos_bound_weak; lia).
+        last by (apply Z_mod_pos_bound_weak; lia).
       rewrite unsigned_U8 wrap_small; last by lia.
       rewrite word.unsigned_sru.
       2: {
         rewrite unsigned_U8 wrap_small;
-          last by (apply Z.mod_pos_bound_weak; lia).
+          last by (apply Z_mod_pos_bound_weak; lia).
         apply Z.mod_pos_bound.
         lia.
       }
       rewrite !unsigned_U8.
       rewrite (wrap_small (_ `mod` _));
-        last by (apply Z.mod_pos_bound_weak; lia).
+        last by (apply Z_mod_pos_bound_weak; lia).
       apply Logic.iff_refl.
     }
     1: refine _.

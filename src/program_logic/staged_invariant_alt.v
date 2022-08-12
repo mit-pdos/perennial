@@ -441,7 +441,7 @@ Proof using stagedG0.
   }
   iIntros (Hlt) "Hltok Hltok2 H".
   iIntros "Hg".
-  destruct (Qp.plus_split_alt mj1 mj2) as (qa&qb&Hle1&Hlt2&Hle3); auto.
+  destruct (Qp_plus_split_alt mj1 mj2) as (qa&qb&Hle1&Hlt2&Hle3); auto.
   rewrite -Hle1.
   iDestruct (pri_inv_tok_split with "H") as "(Hqa&Hqb)".
   iDestruct (pri_inv_tok_split with "Hqa") as "(Hqa1&Hqa2)".

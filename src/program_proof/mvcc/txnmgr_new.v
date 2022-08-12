@@ -60,7 +60,7 @@ Proof.
   
   (***********************************************************)
   (* txnMgr.sidCur = sid + 1                                 *)
-  (* if txnMgr.sidCur == config.N.TXN_SITES {                *)
+  (* if txnMgr.sidCur == config.N_TXN_SITES {                *)
   (*     txnMgr.sidCur = 0                                   *)
   (* }                                                       *)
   (***********************************************************)
@@ -99,7 +99,7 @@ Proof.
     iSplit; last done.
     iPureIntro.
     case_bool_decide; first done.
-    unfold N.TXN_SITES in *.
+    unfold N_TXN_SITES in *.
     apply Znot_le_gt in H.
     by apply Z.gt_lt.
   }

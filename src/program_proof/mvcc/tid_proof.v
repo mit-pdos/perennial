@@ -45,7 +45,7 @@ Proof.
   iIntros "_".
 
   (************************************************************************)
-  (* tid = ((tid + config.N.TXN_SITES) & ^(config.N.TXN_SITES - 1)) + sid *)
+  (* tid = ((tid + config.N_TXN_SITES) & ^(config.N_TXN_SITES - 1)) + sid *)
   (************************************************************************)
   wp_store.
   wp_load.

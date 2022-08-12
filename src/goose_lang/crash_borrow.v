@@ -366,7 +366,7 @@ Proof.
   { apply auth_both_valid_2; [econstructor | reflexivity]. }
 
   iDestruct (pri_inv_tok_infinite with "Hitok") as %Hinf.
-  destruct (Qp.plus_inv_2_gt_1_split mj) as (mj_ikeep&mj_ishare&Heq_mj&Hinvalid); first auto.
+  destruct (Qp_plus_inv_2_gt_1_split mj) as (mj_ikeep&mj_ishare&Heq_mj&Hinvalid); first auto.
   iEval (rewrite -Qp.inv_half_half) in "Hitok".
   iDestruct (pri_inv_tok_split with "Hitok") as "(Hitok_u&Hitok_i)".
   iEval (rewrite -Heq_mj) in "Hitok_i".
@@ -666,8 +666,8 @@ Proof.
     - iApply "Hw2'". eauto. }
   assert (∃ mj0, /2 < mj0 ∧ mj0 < mj_wp1 `min` mj_wp2)%Qp as (mj0&Hmj0).
   {
-    apply Qp.lt_densely_ordered.
-    apply Qp.min_glb1_lt; auto.
+    apply Qp_lt_densely_ordered.
+    apply Qp_min_glb1_lt; auto.
   }
 
   iMod (staged_inv_create _ _ P Pc ⊤ _ mj0 with "[$] [$] Hitok_new [$] [$]") as "(Hval&Hcancel)".
@@ -690,7 +690,7 @@ Proof.
   { iApply (wpc_crash_modality_strong_wand with "Hcancel2"); auto; last first.
     { iIntros. iModIntro. iApply "Hw3'". iFrame. }
     split.
-    - apply Qp.min_glb1_lt; auto.
+    - apply Qp_min_glb1_lt; auto.
     - apply Qp.le_min_r.
   }
 
@@ -706,7 +706,7 @@ Proof.
     iSplitR; first eauto.
     iApply (wpc_crash_modality_strong_wand with "Hcancel1"); auto.
     { split.
-      - apply Qp.min_glb1_lt; auto.
+      - apply Qp_min_glb1_lt; auto.
       - apply Qp.le_min_l.
     }
     { iIntros. iModIntro. iApply "Hw3". iFrame. }
@@ -715,7 +715,7 @@ Proof.
   iSplitL "Hcancel1 Hw3".
   { iApply (wpc_crash_modality_strong_wand with "Hcancel1"); auto.
     { split.
-      - apply Qp.min_glb1_lt; auto.
+      - apply Qp_min_glb1_lt; auto.
       - apply Qp.le_min_l.
     }
     { iIntros. iModIntro. iApply "Hw3". iFrame. }

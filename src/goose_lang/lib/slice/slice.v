@@ -1356,7 +1356,7 @@ Proof.
     rewrite array_nil. iPureIntro. word.
   }
   { word. }
-  { eapply (Qextra.Qp.div_2_lt 1). }
+  { eapply (Qextra.Qp_div_2_lt 1). }
   iIntros (s') "(_ & Hs & _)".
   rewrite /slice_skip.
   replace (word.sub (Slice.sz s') 0) with (Slice.sz s') by word.
@@ -1430,8 +1430,8 @@ End goose_lang.
 Hint Resolve slice_val_ty : core.
 
 Arguments wp_forSlice {_ _ _ _ _ _ _}
-          _%bi_scope _ _ _ _%heap_type _%Qp.scope _%list_scope _%val_scope.
+          _%bi_scope _ _ _ _%heap_type _%Qp_scope _%list_scope _%val_scope.
 Arguments wp_forSliceEach {_ _ _ _ _ _ _}
-          (_ _ _)%bi_scope _ _ _ _%heap_type _%Qp.scope _%list_scope _%val_scope.
+          (_ _ _)%bi_scope _ _ _ _%heap_type _%Qp_scope _%list_scope _%val_scope.
 
 Typeclasses Opaque is_slice_small is_slice_cap.

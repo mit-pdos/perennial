@@ -341,13 +341,13 @@ Proof.
   iSpecialize ("Hwp" with "[$]").
 
   iDestruct (pri_inv_tok_global_valid with "Hg") as %(Hmin&Hvalid).
-  destruct (Qp.plus_inv_2_gt_1_split mj) as (mj_ukeep&mj_ushare&Heq_mj&Hinvalid); first auto.
+  destruct (Qp_plus_inv_2_gt_1_split mj) as (mj_ukeep&mj_ushare&Heq_mj&Hinvalid); first auto.
   set (mj_wp := (mj_wp_init `min` mj `min` (/2 + mj_ishare) `min` (/2 + mj_ushare))%Qp).
   assert (/ 2 < mj_wp)%Qp.
   {
-    - rewrite /mj_wp. apply Qp.min_glb1_lt; auto.
-      * apply Qp.min_glb1_lt; auto.
-        ** apply Qp.min_glb1_lt; auto.
+    - rewrite /mj_wp. apply Qp_min_glb1_lt; auto.
+      * apply Qp_min_glb1_lt; auto.
+        ** apply Qp_min_glb1_lt; auto.
         ** apply Qp.lt_add_l.
       * apply Qp.lt_add_l.
   }

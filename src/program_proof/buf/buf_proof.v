@@ -655,7 +655,7 @@ Definition get_inode (blk: Block) (off: nat) : inode_buf :=
   let start_byte := (off `div` 8)%nat in
   list_to_inode_buf (subslice start_byte (start_byte+inode_bytes) (vec_to_list blk)).
 
-Lemma Nat.div_inode_bits (off:nat) :
+Lemma Nat_div_inode_bits (off:nat) :
   off `mod` 1024 = 0 →
   (off `div` (inode_bytes * 8) * inode_bytes =
    off `div` 8)%nat.
@@ -678,13 +678,13 @@ Proof. intros x1 x2 x3. lia. Qed.
 Global Instance Z.mul_assoc : Assoc eq Z.mul.
 Proof. intros x1 x2 x3. lia. Qed.
 
-Lemma Nat.div_exact_2 : ∀ a b : nat, (b ≠ 0 → a `mod` b = 0 → a = b * a `div` b)%nat.
+Lemma Nat_div_exact_2 : ∀ a b : nat, (b ≠ 0 → a `mod` b = 0 → a = b * a `div` b)%nat.
 Proof.
   intros.
   apply Nat.div_exact; auto.
 Qed.
 
-Lemma Z.mod_1024_to_div_8 (z:Z) :
+Lemma Z_mod_1024_to_div_8 (z:Z) :
   z `mod` 1024 = 0 →
   z `div` 8 = 128 * (z `div` 1024).
 Proof. lia. Qed.
@@ -707,7 +707,7 @@ Proof.
   - intros [Hvalid Heq].
     rewrite PeanoNat.Nat.mul_succ_l in Heq.
     rewrite /valid_off /= in Hvalid.
-    rewrite -> Nat.div_inode_bits in Heq by word.
+    rewrite -> Nat_div_inode_bits in Heq by word.
     rewrite /subslice.
     rewrite /inode_to_vals in Heq.
     apply (inj (fmap b2val)) in Heq.
@@ -726,12 +726,12 @@ Proof.
     rewrite /inode_to_vals.
     f_equal.
     rewrite PeanoNat.Nat.mul_succ_l.
-    rewrite -> !Nat.div_inode_bits by word.
+    rewrite -> !Nat_div_inode_bits by word.
     rewrite list_to_inode_buf_to_list; last first.
     { rewrite /subslice /inode_bytes; len.
       change (Z.to_nat 128) with 128%nat.
       change (Z.of_nat 1024) with 1024 in Hvalid.
-      pose proof (Z.mod_1024_to_div_8 (int.Z off) Hvalid) as Hdiv8.
+      pose proof (Z_mod_1024_to_div_8 (int.Z off) Hvalid) as Hdiv8.
       assert (int.nat off `div` 8 = 128 * int.nat off `div` 1024)%nat.
       { apply Nat2Z.inj. word. }
       word. }
@@ -1131,12 +1131,12 @@ Proof.
     rewrite inserts_length; lia.
 Qed.
 
-Lemma Nat.mod_1024_to_div_8 (n:nat) :
+Lemma Nat_mod_1024_to_div_8 (n:nat) :
   Z.of_nat n `mod` 1024 = 0 →
   (n `div` 8 = 128 * (n `div` 1024))%nat.
 Proof.
   intros Hn_mod.
-  pose proof (Z.mod_1024_to_div_8 (Z.of_nat n) Hn_mod).
+  pose proof (Z_mod_1024_to_div_8 (Z.of_nat n) Hn_mod).
   apply (f_equal Z.to_nat) in H.
   rewrite Z2Nat.inj_div in H; try lia.
   apply (inj Z.of_nat).
@@ -1194,8 +1194,8 @@ Proof.
       word. }
     replace (Z.to_nat (int.Z off `div` 8)) with (int.nat off `div` 8)%nat; last first.
     { rewrite Z2Nat.inj_div //; word. }
-    rewrite -> !Nat.mod_1024_to_div_8 by lia.
-    rewrite -> !Z.mod_1024_to_div_8 in H by lia.
+    rewrite -> !Nat_mod_1024_to_div_8 by lia.
+    rewrite -> !Z_mod_1024_to_div_8 in H by lia.
     rewrite /inode_bytes.
     rewrite subslice_list_inserts_ne; eauto;
       rewrite vec_to_list_length.
@@ -1309,7 +1309,7 @@ Proof.
       change (int.Z 1024%nat `div` 8) with 128.
       destruct H as [Hvalid H].
       destruct Hvalid.
-      rewrite Z.mod_1024_to_div_8 //.
+      rewrite Z_mod_1024_to_div_8 //.
       word. }
     iIntros "[Hbufdata Hblk]".
     wp_pures. wp_apply wp_DPrintf.

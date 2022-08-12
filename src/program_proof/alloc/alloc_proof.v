@@ -5,7 +5,7 @@ From Goose.github_com.mit_pdos.go_journal Require Import alloc.
 
 (* TODO: this file isn't using typed_slice, should fix that *)
 
-Lemma Z.u8_to_u64 x : int.Z (u8_to_u64 x) = int.Z x.
+Lemma Z_u8_to_u64 x : int.Z (u8_to_u64 x) = int.Z x.
 Proof.
   rewrite /u8_to_u64 /U64.
   rewrite /U64.
@@ -378,7 +378,7 @@ Proof.
     iExists _, _; iFrame.
     iPureIntro.
     word_cleanup.
-    rewrite Z.u8_to_u64.
+    rewrite Z_u8_to_u64.
     pose proof (and_1_u8 x).
     rewrite wrap_small; lia.
   - iExists _, _; iFrame.

@@ -14,7 +14,7 @@ Section bi.
     (q1 ≤ q2)%Qp ->
     Φ q2 -∗ Φ q1.
   Proof.
-    iIntros ([Hlt%Qp.split_lt|<-]%Qp.le_lteq) "H".
+    iIntros ([Hlt%Qp_split_lt|<-]%Qp.le_lteq) "H".
     - destruct Hlt as [? <-].
       rewrite fractional.
       iDestruct "H" as "[$ _]".

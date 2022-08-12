@@ -27,13 +27,13 @@ Section proof.
   Context `{!stagedG Σ}.
 
   Definition rfrac: Qp :=
-    (Qp.inv (Qp.of_Z (2^64)))%Qp.
+    (Qp.inv (Qp_of_Z (2^64)))%Qp.
 
   Definition num_readers (n : u64) := 0 `max` int.Z (word.sub n 1).
   Definition remaining_readers (n : u64) : Z :=
     (2^64 - num_readers n).
   Definition remaining_frac (n: u64) :=
-    ((Qp.of_Z (remaining_readers n)) * rfrac)%Qp.
+    ((Qp_of_Z (remaining_readers n)) * rfrac)%Qp.
 
   Lemma remaining_frac_read_acquire n :
     1 ≤ int.Z n →
@@ -42,7 +42,7 @@ Section proof.
   Proof.
     intros Hle1 Hle2.
     intros.
-    rewrite -Qp.to_Qc_inj_iff/Qp.of_Z//=.
+    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
     { f_equal. rewrite /remaining_readers.
       rewrite Z.max_r //. rewrite /num_readers.
@@ -73,7 +73,7 @@ Section proof.
     Qp.add (remaining_frac n) rfrac = remaining_frac (word.sub n 1).
   Proof.
     intros Hlt.
-    rewrite -Qp.to_Qc_inj_iff/Qp.of_Z//=.
+    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
     { f_equal. rewrite /remaining_readers.
       rewrite Z.max_r //. rewrite /num_readers.
@@ -98,7 +98,7 @@ Section proof.
   Lemma remaining_free :
     remaining_frac 1 = 1%Qp.
   Proof.
-    rewrite -Qp.to_Qc_inj_iff/Qp.of_Z//=.
+    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers 1) = Qc_of_Z (remaining_readers 1)).
     { f_equal. }
     rewrite Heq1 //=.

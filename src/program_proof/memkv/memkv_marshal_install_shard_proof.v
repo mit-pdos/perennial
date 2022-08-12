@@ -721,7 +721,7 @@ Proof.
     { eapply map_disjoint_Some_l; eauto.
       simpl. apply lookup_insert. }
     replace (word.add (size mdone') 1) with (int.Z (size mdone') + 1:u64) by word.
-    rewrite Z.u64; last first.
+    rewrite Z_u64; last first.
     { split; first lia.
       word_cleanup.
       rewrite Hsize in Heqb.
@@ -767,7 +767,7 @@ Proof.
     exfalso.
     set (mtodo:=(list_to_map (p :: l'))) in *.
     assert (size m <= size mdone').
-    { rewrite ?Z.u64 in Heqb; try word. }
+    { rewrite ?Z_u64 in Heqb; try word. }
     rewrite -Hunion in Heqb.
     rewrite map_size_disj_union in Heqb; eauto.
     assert (size mtodo > 0).

@@ -91,7 +91,7 @@ Context `{PRI: !pri_invG IRISG}.
     apply Qp.le_lteq in Hle2.
     destruct Hle2 as [Hlt|Heq]; last first.
     { subst. iFrame. eauto. }
-    apply Qp.split_lt in Hlt as (q'&Hplus).
+    apply Qp_split_lt in Hlt as (q'&Hplus).
     rewrite Qp.add_comm in Hplus.
     rewrite -Hplus.
     iDestruct (pri_inv_tok_global_split with "[] Hg") as "(Hg&Hitok)"; eauto.
@@ -142,7 +142,7 @@ Context `{PRI: !pri_invG IRISG}.
     pri_inv_tok q2 E -∗ pri_inv_tok q1 E ∗ (pri_inv_tok q1 E -∗ pri_inv_tok q2 E).
   Proof.
     intros [Hlt|Heq]%Qp.le_lteq.
-    - iIntros "Hp". apply Qp.split_lt in Hlt as (q'&Hplus).
+    - iIntros "Hp". apply Qp_split_lt in Hlt as (q'&Hplus).
       rewrite -Hplus. iDestruct (pri_inv_tok_split with "Hp") as "(Hp1&Hp2)".
       iFrame. iIntros. iApply (pri_inv_tok_join with "[$] [$]").
     - subst. iIntros "$". auto.
