@@ -625,7 +625,7 @@ Proof.
   unfold word.wrap. split.
   - apply Z.mod_pos. apply Z.pow_pos_nonneg; [lia|].
     apply Z.lt_le_incl, word.width_pos.
-  - apply Z.mod_lt. apply Z.lt_gt.
+  - apply Z_mod_lt. apply Z.lt_gt.
     apply Z.pow_pos_nonneg; [lia|].
     apply Z.lt_le_incl, word.width_pos.
 Qed.

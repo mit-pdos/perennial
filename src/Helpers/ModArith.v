@@ -52,7 +52,7 @@ Lemma sum_nooverflow_l (x y : u64) :
 Proof.
   intros. word_cleanup. rewrite wrap_small //.
   split; first word.
-  destruct (Z.lt_ge_dec (int.Z x + int.Z y) (2 ^ 64)) as [Hlt|Hge]; first done.
+  destruct (Z_lt_ge_dec (int.Z x + int.Z y) (2 ^ 64)) as [Hlt|Hge]; first done.
   apply sum_overflow_check in Hge.
   lia.
 Qed.

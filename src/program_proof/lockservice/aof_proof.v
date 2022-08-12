@@ -445,7 +445,7 @@ Proof.
       {
         word_cleanup.
         unfold word.wrap.
-        by apply Z.mod_lt.
+        by apply Z_mod_lt.
       }
       {
         word_cleanup.

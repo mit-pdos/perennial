@@ -409,7 +409,7 @@ Proof.
       iDestruct "HvI" as "(HvI&_)". simpl.
       iRewrite -"HvI" in "HI". rewrite -pair_op agree_idemp prod_equivI //=.
       iDestruct "HI" as "(_&Hi)".
-      rewrite /inv_mut_unfold option_equivI ?prod_equivI; iSplit => //=.
+      rewrite /inv_mut_unfold [(Some (q, _) ≡ _)%I]option_equivI ?prod_equivI; iSplit => //=.
       destruct Qmut' as [(?&?)|]; last first.
       { iEval (rewrite right_id) in "Hi".
         rewrite option_equivI prod_equivI; iDestruct "Hi" as "(_&$)". }

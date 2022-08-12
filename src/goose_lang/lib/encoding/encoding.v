@@ -394,7 +394,7 @@ Lemma word_wrap_lt_8 (x : Z) n :
   word.wrap (width:=8) x < 2^n.
 Proof.
   rewrite /word.wrap; intros.
-  assert (x `mod` 2^8 < 2^8) by (apply Z.mod_lt; lia).
+  assert (x `mod` 2^8 < 2^8) by (apply Z_mod_lt; lia).
   assert (2 ^ 8 ≤ 2 ^ n); try lia.
   eapply Z.pow_le_mono_r; lia.
 Qed.

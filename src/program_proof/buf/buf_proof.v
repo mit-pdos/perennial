@@ -666,16 +666,16 @@ Proof.
   repeat rewrite !Nat2Z.inj_div !Nat2Z.inj_mul !Z2Nat.id //; try word.
 Qed.
 
-Global Instance Nat.mul_comm : Comm eq Nat.mul.
+Global Instance Nat_mul_comm : Comm eq Nat.mul.
 Proof. intros x1 x2. lia. Qed.
 
-Global Instance Z.mul_comm : Comm eq Z.mul.
+Global Instance Z_mul_comm : Comm eq Z.mul.
 Proof. intros x1 x2. lia. Qed.
 
-Global Instance Nat.mul_assoc : Assoc eq Nat.mul.
+Global Instance Nat_mul_assoc : Assoc eq Nat.mul.
 Proof. intros x1 x2 x3. lia. Qed.
 
-Global Instance Z.mul_assoc : Assoc eq Z.mul.
+Global Instance Z_mul_assoc : Assoc eq Z.mul.
 Proof. intros x1 x2 x3. lia. Qed.
 
 Lemma Nat_div_exact_2 : ∀ a b : nat, (b ≠ 0 → a `mod` b = 0 → a = b * a `div` b)%nat.
