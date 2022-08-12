@@ -4,6 +4,78 @@ From Goose Require github_com.mit_pdos.go_mvcc.txn.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+(* counter.go *)
+
+Definition IncrementSeq: val :=
+  rec: "IncrementSeq" "txn" "p" :=
+    let: ("v", <>) := txn.Txn__Get "txn" #0 in
+    (if: ("v" = #18446744073709551615)
+    then #false
+    else
+      txn.Txn__Put "txn" #0 ("v" + #1);;
+      #true).
+
+Definition Increment: val :=
+  rec: "Increment" "t" "p" :=
+    let: "body" := (λ: "txn",
+      IncrementSeq "txn" "p"
+      ) in
+    txn.Txn__DoTxn "t" "body".
+
+Definition DecrementSeq: val :=
+  rec: "DecrementSeq" "txn" "p" :=
+    let: ("v", <>) := txn.Txn__Get "txn" #0 in
+    (if: ("v" = #0)
+    then #false
+    else
+      txn.Txn__Put "txn" #0 ("v" - #1);;
+      #true).
+
+Definition Decrement: val :=
+  rec: "Decrement" "t" "p" :=
+    let: "body" := (λ: "txn",
+      DecrementSeq "txn" "p"
+      ) in
+    txn.Txn__DoTxn "t" "body".
+
+Definition InitializeCounterData: val :=
+  rec: "InitializeCounterData" "mgr" :=
+    #().
+
+Definition InitCounter: val :=
+  rec: "InitCounter" <> :=
+    let: "mgr" := txn.MkTxnMgr #() in
+    InitializeCounterData "mgr";;
+    "mgr".
+
+Definition CallIncrement: val :=
+  rec: "CallIncrement" "mgr" :=
+    let: "txn" := txn.TxnMgr__New "mgr" in
+    let: "n" := ref (zero_val uint64T) in
+    let: "ok" := Increment "txn" "n" in
+    (![uint64T] "n", "ok").
+
+Definition CallIncrementTwice: val :=
+  rec: "CallIncrementTwice" "mgr" :=
+    let: "txn" := txn.TxnMgr__New "mgr" in
+    let: "n1" := ref (zero_val uint64T) in
+    let: "ok1" := Increment "txn" "n1" in
+    (if: ~ "ok1"
+    then (#0, #0, #false)
+    else
+      let: "n2" := ref (zero_val uint64T) in
+      let: "ok2" := Increment "txn" "n2" in
+      (![uint64T] "n1", ![uint64T] "n2", "ok2")).
+
+Definition CallDecrement: val :=
+  rec: "CallDecrement" "mgr" :=
+    let: "txn" := txn.TxnMgr__New "mgr" in
+    let: "n" := ref (zero_val uint64T) in
+    let: "ok" := Decrement "txn" "n" in
+    (![uint64T] "n", "ok").
+
+(* rsvkey.go *)
+
 Definition WriteReservedKeySeq: val :=
   rec: "WriteReservedKeySeq" "txn" "v" :=
     txn.Txn__Put "txn" #0 "v";;

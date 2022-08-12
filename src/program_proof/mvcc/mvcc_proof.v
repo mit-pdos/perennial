@@ -4,4 +4,5 @@ From Perennial.program_proof.mvcc Require Export
      txn_proof
      index_proof
      gc_proof
-     tuple_proof.
+     tuple_proof
+     examples_proof.

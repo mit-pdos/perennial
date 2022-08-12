@@ -6,9 +6,9 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Definition spec_body (body : val) (txn : loc) tid r P Q γ τ : iProp Σ :=
   {{{ own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r }}}
     body #txn
-  {{{ w (ok : bool), RET #ok;
+  {{{ (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
-      if ok then ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
+      if ok then ∃ w, ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
 
 Theorem wp_txn__DoTxn
@@ -104,7 +104,7 @@ Proof.
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
-    iIntros (w ok) "[Htxn Hpost]".
+    iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
@@ -164,7 +164,7 @@ Proof.
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
-    iIntros (w ok) "[Htxn Hpost]".
+    iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
@@ -232,7 +232,7 @@ Proof.
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
-    iIntros (w ok) "[Htxn Hpost]".
+    iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
@@ -295,7 +295,7 @@ Proof.
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
-    iIntros (w ok) "[Htxn Hpost]".
+    iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
@@ -311,7 +311,7 @@ Proof.
       by iIntros "contra".
     }
     (* Commit branch. *)
-    iDestruct "Hpost" as "[[%HQ %Hdom] Htxnps]".
+    iDestruct "Hpost" as (w) "[[%HQ %Hdom] Htxnps]".
     wp_apply (wp_txn__Commit_false with "[$Htxn HfccFrag Htxnps]").
     { unfold commit_false_cases. do 3 iRight.
       iExists mods, w, Q.
@@ -366,7 +366,7 @@ Proof.
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
-    iIntros (w ok) "[Htxn Hpost]".
+    iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
@@ -387,42 +387,6 @@ Proof.
     wp_pures.
     by iApply "HΦ".
   }
-Qed.
-
-
-Definition pre_Swap (r : dbmap) : Prop.
-Admitted.
-Definition post_Swap (r w : dbmap) : Prop.
-Admitted.
-
-Theorem wp_SwapSeq txn tid r γ τ :
-  {{{ own_txn txn tid r γ τ ∗ ⌜pre_Swap r⌝ ∗ txnmap_ptstos τ r }}}
-    SwapSeq #txn
-  {{{ w (ok : bool), RET #ok;
-      own_txn txn tid r γ τ ∗
-      if ok then ⌜post_Swap r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
-  }}}.
-Admitted.
-
-Instance post_Swap_dec : (∀ r w, (Decision (post_Swap r w))).
-Admitted.
-
-Theorem wp_Swap (txn : loc) γ :
-  ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (r : dbmap), ⌜pre_Swap r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      Swap #txn @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜post_Swap r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
-    {{{ RET #ok; own_txn_uninit txn γ }}}.
-Proof.
-  iIntros "!>".
-  iIntros (Φ) "Htxn HAU".
-  wp_call.
-  wp_apply (wp_txn__DoTxn _ _ _ post_Swap with "[$Htxn]").
-  { unfold spec_body.
-    iIntros (tid r τ Φ') "!> Hpre HΦ'".
-    iApply (wp_SwapSeq with "Hpre HΦ'").
-  }
-  done.
 Qed.
 
 End program.
