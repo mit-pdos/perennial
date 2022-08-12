@@ -548,7 +548,7 @@ Ltac word_cleanup :=
 
 Ltac word := solve [ word_cleanup ].
 
-Theorem Z_u32 z :
+Theorem Z.u32 z :
   0 <= z < 2 ^ 32 ->
   int.Z (U32 z) = z.
 Proof.
@@ -564,7 +564,7 @@ Proof.
   unfold U32. apply word.of_Z_unsigned.
 Qed.
 
-Theorem Z_u64 z :
+Theorem Z.u64 z :
   0 <= z < 2 ^ 64 ->
   int.Z (U64 z) = z.
 Proof.
@@ -589,7 +589,7 @@ Proof.
   { apply NoDup_seqZ. }
   Set Printing Coercions. (* This is impossible to work on otherwise... *)
   clear- Hlb Hub. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
-  rewrite <-(Z_u64 x), <-(Z_u64 y).
+  rewrite <-(Z.u64 x), <-(Z.u64 y).
   - by rewrite Heq.
   - word.
   - word.
@@ -623,9 +623,9 @@ Lemma word_wrap_bounds (width : Z) (word : Interface.word width) (word_ok : word
   0 ≤ @word.wrap width word word_ok x < 2^width.
 Proof.
   unfold word.wrap. split.
-  - apply Z_mod_pos. apply Z.pow_pos_nonneg; [lia|].
+  - apply Z.mod_pos. apply Z.pow_pos_nonneg; [lia|].
     apply Z.lt_le_incl, word.width_pos.
-  - apply Z_mod_lt. apply Z.lt_gt.
+  - apply Z.mod_lt. apply Z.lt_gt.
     apply Z.pow_pos_nonneg; [lia|].
     apply Z.lt_le_incl, word.width_pos.
 Qed.

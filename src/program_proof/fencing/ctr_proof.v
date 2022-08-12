@@ -164,8 +164,8 @@ Proof.
   rewrite dfrac_op_own in Hbad.
   rewrite dfrac_valid_own in Hbad.
   assert (1 < q + 1)%Qp.
-  { apply Qp_lt_add_r. }
-  apply (Qp_lt_le_trans _ _ _ H) in Hbad.
+  { apply Qp.lt_add_r. }
+  apply (Qp.lt_le_trans _ _ _ H) in Hbad.
   clear H.
   by exfalso. (* Why does "by" work but not anything else I tried? E.g.
                  naive_solver, done, eauto. *)
@@ -850,13 +850,13 @@ Proof.
         iDestruct "Hupd" as "(Hlatest2 & Hunused & Hupd)".
         iDestruct (own_latest_epoch_combine with "HghostLatestEpoch Hlatest2") as "[Hlatest %Heq]".
         rewrite Heq.
-        rewrite (Qp_half_half).
+        rewrite (Qp.half_half).
         iMod (own_latest_epoch_update e with "Hlatest") as "Hlatest".
         { word. }
-        iEval (rewrite -Qp_half_half) in "Hlatest".
+        iEval (rewrite -Qp.half_half) in "Hlatest".
         iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
         iMod (activate_unused_epoch v with "HunusedInv Hunused") as "HghostV2".
-        iEval (rewrite -Qp_half_half) in "HghostV2".
+        iEval (rewrite -Qp.half_half) in "HghostV2".
         iDestruct (own_val_split with "HghostV2") as "[HghostV21 HghostV22]".
         iSpecialize ("Hupd" $! v with "HghostV22 HghostV Hlatest2").
         iMod "Hupd".
@@ -1137,14 +1137,14 @@ Proof.
       { (* case: first time seeing client's epoch number *)
         iDestruct "Hupd" as "(Hlatest2 & Hunused & Hupd)".
         iMod (activate_unused_epoch v0 with "HunusedInv Hunused") as "Hval".
-        iEval (rewrite -Qp_half_half) in "Hval".
+        iEval (rewrite -Qp.half_half) in "Hval".
         iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
         iDestruct (own_latest_epoch_combine with "Hlatest2 HghostLatestEpoch") as "[Hlatest %Heq]".
         rewrite Heq.
-        rewrite (Qp_half_half).
+        rewrite (Qp.half_half).
         iMod (own_latest_epoch_update e with "Hlatest") as "Hlatest".
         { word. }
-        iEval (rewrite -Qp_half_half) in "Hlatest".
+        iEval (rewrite -Qp.half_half) in "Hlatest".
         iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
         iMod ("Hupd" with "Hval2 HghostV Hlatest2") as "Hupd".
         iFrame.
@@ -1179,9 +1179,9 @@ Proof.
     iDestruct "Hupd" as (vold) "[Hval2 Hupd]".
     iDestruct (own_val_combine with "Hval Hval2") as "[Hval %Hveq]".
     rewrite Hveq.
-    rewrite Qp_half_half.
+    rewrite Qp.half_half.
     iMod (own_val_update v with "Hval") as "Hval".
-    iEval (rewrite -Qp_half_half) in "Hval".
+    iEval (rewrite -Qp.half_half) in "Hval".
     iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
     iMod ("Hupd" with "Hval2") as "Hupd".
     iMod ("Hupd" with "Hlatest2") as "Hupd".

@@ -689,12 +689,12 @@ Proof using Type*.
     {
       rewrite -mono_list_auth_dfrac_op.
       rewrite dfrac_op_own.
-      rewrite Qp_half_half.
+      rewrite Qp.half_half.
       apply mono_list_update.
       instantiate (1:=σ.*1 ++ [op]).
       by apply prefix_app_r.
     }
-    iEval (rewrite -Qp_half_half -dfrac_op_own mono_list_auth_dfrac_op) in "Hlog".
+    iEval (rewrite -Qp.half_half -dfrac_op_own mono_list_auth_dfrac_op) in "Hlog".
     iDestruct "Hlog" as "[Hlog Hlog2]".
     iMod ("Hupd" with "Hlog2") as "Hupd".
 

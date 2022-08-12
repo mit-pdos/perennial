@@ -100,7 +100,7 @@ Proof.
   iApply (big_sepM_mono with "Hmvals").
   iIntros (k x Hlookup) "H".
   iDestruct "H" as (q vsl Heq) "Hslice".
-  rewrite -(Qp_div_2 q).
+  rewrite -(Qp.div_2 q).
   iDestruct (fractional.fractional_split_1 with "Hslice") as "[Hl1 Hl2]".
   iSplitL "Hl1".
   { iExists _, _. iFrame. eauto. }
@@ -496,7 +496,7 @@ Proof.
   iIntros (x Hin) "H". iDestruct "H" as "[%Hl|Hr]".
   { iFrame "%". }
   iDestruct "Hr" as (q vsl Heq) "Hslice".
-  rewrite -(Qp_div_2 q).
+  rewrite -(Qp.div_2 q).
   iDestruct (fractional.fractional_split_1 with "Hslice") as "[Hl1 Hl2]".
   iSplitL "Hl1".
   { iRight. iExists _, _. iFrame. eauto. }
@@ -721,7 +721,7 @@ Proof.
     { eapply map_disjoint_Some_l; eauto.
       simpl. apply lookup_insert. }
     replace (word.add (size mdone') 1) with (int.Z (size mdone') + 1:u64) by word.
-    rewrite Z_u64; last first.
+    rewrite Z.u64; last first.
     { split; first lia.
       word_cleanup.
       rewrite Hsize in Heqb.
@@ -767,7 +767,7 @@ Proof.
     exfalso.
     set (mtodo:=(list_to_map (p :: l'))) in *.
     assert (size m <= size mdone').
-    { rewrite ?Z_u64 in Heqb; try word. }
+    { rewrite ?Z.u64 in Heqb; try word. }
     rewrite -Hunion in Heqb.
     rewrite map_size_disj_union in Heqb; eauto.
     assert (size mtodo > 0).

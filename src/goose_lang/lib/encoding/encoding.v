@@ -333,13 +333,13 @@ Ltac eval_term t :=
 Ltac eval_u32 :=
   match goal with
   | |- context[int.Z (U32 ?z)] =>
-    rewrite  (Z_u32 z ltac:(lia))
+    rewrite  (Z.u32 z ltac:(lia))
   end.
 
 Ltac eval_u64 :=
   match goal with
   | |- context[int.Z (U64 ?z)] =>
-    rewrite  (Z_u64 z ltac:(lia))
+    rewrite  (Z.u64 z ltac:(lia))
   end.
 
 Theorem u8_to_from_u32 x :
@@ -394,7 +394,7 @@ Lemma word_wrap_lt_8 (x : Z) n :
   word.wrap (width:=8) x < 2^n.
 Proof.
   rewrite /word.wrap; intros.
-  assert (x `mod` 2^8 < 2^8) by (apply Z_mod_lt; lia).
+  assert (x `mod` 2^8 < 2^8) by (apply Z.mod_lt; lia).
   assert (2 ^ 8 ≤ 2 ^ n); try lia.
   eapply Z.pow_le_mono_r; lia.
 Qed.

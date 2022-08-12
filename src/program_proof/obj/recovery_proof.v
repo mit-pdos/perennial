@@ -291,7 +291,7 @@ Proof.
   cut (int.nat off `div` 1024 < 32)%nat; try lia.
   change (8*4096)%nat with (Z.to_nat 32768) in H1.
   apply Nat2Z.inj_lt.
-  rewrite Nat2Z_inj_div.
+  rewrite Nat2Z.inj_div.
   lia.
 Qed.
 
@@ -326,7 +326,7 @@ Proof.
       apply Z.div_lt_upper_bound in H1; [ | lia ].
       rewrite -> Z2Nat.id in H1 by lia.
       replace (Nat.div i 8) with (Z.to_nat $ Z.div (Z.of_nat i) 8); try lia.
-      rewrite Z2Nat_inj_div; try lia.
+      rewrite Z2Nat.inj_div; try lia.
       change (Z.to_nat 8) with 8%nat.
       rewrite Nat2Z.id.
       lia.
@@ -445,7 +445,7 @@ Proof.
   { simpl. apply map_disjoint_empty_r. }
   iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
           with "crashstates") as "H".
-  iEval (rewrite -Qp_quarter_three_quarter) in "H".
+  iEval (rewrite -Qp.quarter_three_quarter) in "H".
   iDestruct (fractional.fractional_split with "H") as "[crashstates1 crashstates2]".
 
   iMod (alloc_metamap _ (kind_heap0 kinds) with "metaheap") as (metamap) "(metaheap & Hmetas1 & Hmetas2)".
@@ -798,7 +798,7 @@ Proof.
   iSplitL ""; first eauto.
 
 
-  iEval (rewrite -Qp_quarter_three_quarter) in "crashstates".
+  iEval (rewrite -Qp.quarter_three_quarter) in "crashstates".
   iDestruct (fractional.fractional_split_1 with "crashstates") as
       "[crashstates1 crashstates2]".
   iDestruct (heapspec_durable_exchanger_dup with "[$]")

@@ -107,7 +107,7 @@ Proof.
   iIntros "Hprep1 [Hprep2 Hundec]".
   iCombine "Hprep1 Hprep2" as "Hprep".
   rewrite -Cinl_op.
-  rewrite frac_op. rewrite Qp_half_half.
+  rewrite frac_op. rewrite Qp.half_half.
   iFrame "Hundec".
   iMod (own_update _ _ _ with "Hprep") as "$".
   {
@@ -240,7 +240,7 @@ Lemma do_commit γtpc tid :
 Proof.
   iIntros "[Hdodec Hunabort] [Hundec $]".
   iCombine "Hdodec Hundec" as "Hdec".
-  rewrite -Cinl_op frac_op Qp_half_half.
+  rewrite -Cinl_op frac_op Qp.half_half.
   iSplitL "Hdec".
   {
     iApply (own_update with "Hdec").
@@ -1198,7 +1198,7 @@ Proof.
     iDestruct (ptsto_agree_frac_value with "Hptsto2 Hacc2") as %[-> _].
     iCombine "Hptsto1 Hacc1" as "Hacc1".
     iCombine "Hptsto2 Hacc2" as "Hacc2".
-    rewrite Qp_three_quarter_quarter.
+    rewrite Qp.three_quarter_quarter.
 
     (***************************)
     (* COMMIT POINT *)
@@ -1208,10 +1208,10 @@ Proof.
     iMod (map_update _ _ (word.sub v2 amount) with "[] Hacc2") as "[_ Hacc2]".
     { admit. }
 
-    rewrite -Qp_three_quarter_quarter.
+    rewrite -Qp.three_quarter_quarter.
     iDestruct (fractional_split_1 with "Hacc1") as "[Hptsto1 Hacc1]".
     iDestruct (fractional_split_1 with "Hacc2") as "[Hptsto2 Hacc2]".
-    rewrite Qp_three_quarter_quarter.
+    rewrite Qp.three_quarter_quarter.
     iMod ("Hacc_close" with "[$Hacc1 $Hacc2]").
     iMod "Hmask_close".
 

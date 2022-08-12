@@ -54,7 +54,7 @@ Proof.
   iApply (own_update_2 with "H1 H2").
   rewrite !singleton_op. apply singleton_update.
   apply frac_agree_update_2.
-  rewrite Qp_half_half. done.
+  rewrite Qp.half_half. done.
 Qed.
 
 Definition own_shard γkv sid (m:gmap u64 (list u8)) : iProp Σ :=
@@ -84,7 +84,7 @@ Proof.
     iIntros "!#" (k x). subst m.
     rewrite lookup_gset_to_gmap_Some.
     iIntros ([_ [= <-]]).
-    rewrite /kvptsto /kvptsto_frac -own_op singleton_op -frac_agree_op Qp_half_half.
+    rewrite /kvptsto /kvptsto_frac -own_op singleton_op -frac_agree_op Qp.half_half.
     auto. }
   rewrite big_sepS_sep.
   iDestruct "Hown" as "[Hown $]".

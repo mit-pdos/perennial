@@ -81,7 +81,7 @@ Proof.
   { apply (num_laters_per_step_exp ns'). lia. }
   iApply (step_fupd2N_le ((S (num_laters_per_step ns')) + S (num_laters_per_step ns'))).
   { lia. }
-  simpl. rewrite Nat_iter_add.
+  simpl. rewrite Nat.iter_add.
   iMod "Hclo'" as "_".
   iMod (fupd2_mask_subseteq E (⊤ ∖ D)) as "Hclo'"; try set_solver.
   iMod ("H" with "[$] [$]") as "H".

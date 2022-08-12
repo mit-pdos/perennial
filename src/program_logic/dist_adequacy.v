@@ -133,7 +133,7 @@ Proof.
     iDestruct (big_sepL_insert_acc with "Hnodes") as "(Hdn&Hnodes)"; first eassumption.
     iDestruct "Hdn" as (ct) "Hdn".
     iDestruct (stwpnode_crash with "[$] [$] Hlc") as "H"; first eassumption.
-    rewrite Nat_iter_S_r.
+    rewrite Nat.iter_succ_r.
     iMod "H". iModIntro. iApply (step_fupd2N_wand with "H"). iIntros "H".
     iMod "H". iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; auto.
     iModIntro. iNext. iModIntro. iMod "Hclo".
@@ -165,7 +165,7 @@ Proof.
   induction ns => start.
   - rewrite //=; lia.
   - rewrite steps_sum_S IHns. simpl.
-    rewrite -Nat_iter_S_r /=. lia.
+    rewrite -Nat.iter_succ_r /=. lia.
 Qed.
 
 Lemma stwpnodes_steps n dns1 g1 ns D dns2 g2 κs κs' :
@@ -183,13 +183,13 @@ Proof.
     iFrame. by iApply fupd2_mask_subseteq. }
   simpl.
   iIntros (Hsteps) "Hσ He [Hlc1 Hlc2]". inversion_clear Hsteps as [|?? [t1' σ1']].
-  rewrite -(assoc_L (++)) (comm_L Nat.add) Nat_iter_add.
+  rewrite -(assoc_L (++)) (comm_L Nat.add) Nat.iter_add.
   iMod (stwpnodes_step with "Hσ He Hlc2") as "H"; first eauto; simplify_eq.
   iModIntro. iApply step_fupd2N_S_fupd2. iApply (step_fupd2N_wand with "H").
   iIntros ">(Hσ & He)". iMod (IH with "Hσ He Hlc1") as "IH"; first done. iModIntro.
   iApply (step_fupd2N_wand with "IH"). iIntros ">IH".
   iDestruct "IH" as "[??]".
-  rewrite -Nat_iter_S_r //=.
+  rewrite -Nat.iter_succ_r //=.
   iFrame. eauto.
 Qed.
 
@@ -272,7 +272,7 @@ Proof.
           (steps_sum f1 f2 nsinit n + S (S (f1 (Nat.iter n f2 nsinit))))
           (steps_sum f1 f2 nsinit n)).
   iIntros (Hinv) "Hlc".
-  rewrite Nat_iter_add.
+  rewrite Nat.iter_add.
   iMod Hwp as (global_stateI fork_post) "Hwp".
   iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
   set (HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b).
@@ -318,7 +318,7 @@ Proof.
           (steps_sum f1 f2 nsinit n + (f1 (Nat.iter n f2 nsinit) + 1))
           (steps_sum f1 f2 nsinit (S n))).
   iIntros (Hinv) "Hlc".
-  rewrite Nat_iter_add.
+  rewrite Nat.iter_add.
   iMod Hwp as (global_stateI fork_post) "Hwp".
   iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
   set (HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b).

@@ -159,7 +159,7 @@ Proof.
   rewrite {1}/step_fupdN_fresh -/step_fupdN_fresh.
   destruct ρ2 as (?&[σ2_pre_crash g2_pre_crash]).
   rewrite -assoc wpr_unfold /wpr_pre.
-  rewrite Nat_iter_S.
+  rewrite Nat.iter_succ.
   iIntros "Hlc".
   iPoseProof (@wptp_strong_crash_adequacy with "[$] [$] [$] [$] [$] [$]") as "H"; eauto.
   iMod "H". iModIntro.
@@ -189,22 +189,22 @@ Proof.
     iIntros (HG'') "H Hlc".
     iSpecialize ("H" with "[Hlc]").
     { iExactEq "Hlc". f_equal.
-      rewrite {1}Nat.add_comm ?Nat_iter_add.
-      f_equal. rewrite -Nat_iter_S -Nat_iter_S_r //. }
+      rewrite {1}Nat.add_comm ?Nat.iter_add.
+      f_equal. rewrite -Nat.iter_succ -Nat.iter_succ_r //. }
     iMod "H". iModIntro.
-    iEval rewrite -Nat_iter_S Nat_iter_S_r.
+    iEval rewrite -Nat.iter_succ Nat.iter_succ_r.
     iApply step_fupd2N_le; last iApply (step_fupd2N_wand with "H").
     { apply Nat.eq_le_incl. f_equal.
-      rewrite {1}Nat.add_comm ?Nat_iter_add.
-      f_equal. rewrite -Nat_iter_S -Nat_iter_S_r //. }
+      rewrite {1}Nat.add_comm ?Nat.iter_add.
+      f_equal. rewrite -Nat.iter_succ -Nat.iter_succ_r //. }
     iIntros ">H".
-    rewrite {1}Nat.add_comm ?Nat_iter_add.
+    rewrite {1}Nat.add_comm ?Nat.iter_add.
     iDestruct "H" as (?? Heq) "(H1&Hg&?&?)".
     iExists _, _. iFrame "∗".
     iSplitL ""; first eauto.
     iMod (global_state_interp_le with "Hg") as "$".
     { apply Nat.eq_le_incl.
-      rewrite -?Nat_iter_S_r -?Nat_iter_add Nat.add_assoc.
+      rewrite -?Nat.iter_succ_r -?Nat.iter_add Nat.add_assoc.
       f_equal. lia. }
     iModIntro; done.
   - iMod "H" as (HG') "(HNC&Hσ&Hg&Hr)".
@@ -229,8 +229,8 @@ Proof.
     { rewrite Nat.add_0_r. auto. }
     iIntros "H".
     iFrame "Hinv'". rewrite Nat.add_0_r.
-    rewrite -Nat_iter_S Nat_iter_S_r.
-    rewrite Nat_iter_add Nat_iter_S_r.
+    rewrite -Nat.iter_succ Nat.iter_succ_r.
+    rewrite Nat.iter_add Nat.iter_succ_r.
     eauto.
 Qed.
 
@@ -265,7 +265,7 @@ Proof.
   rewrite {1}/step_fupdN_fresh -/step_fupdN_fresh.
   destruct ρ2 as (?&[σ2_pre_crash g2_pre_crash]).
   rewrite -assoc wpr_unfold /wpr_pre.
-  rewrite Nat_iter_S.
+  rewrite Nat.iter_succ.
   iIntros "Hlc".
   iPoseProof (@wptp_strong_crash_adequacy with "[$] [$] [$] [$] [$] [$]") as "H"; eauto.
   iMod "H". iModIntro.
@@ -295,21 +295,21 @@ Proof.
     iIntros (HG'') "H Hlc".
     iSpecialize ("H" with "[Hlc]").
     { iExactEq "Hlc". f_equal. f_equal. f_equal.
-      - rewrite {1}Nat.add_comm ?Nat_iter_add.
-        f_equal. rewrite -Nat_iter_S -Nat_iter_S_r //.
-      - rewrite -?Nat_iter_S_r -?Nat_iter_add.
+      - rewrite {1}Nat.add_comm ?Nat.iter_add.
+        f_equal. rewrite -Nat.iter_succ -Nat.iter_succ_r //.
+      - rewrite -?Nat.iter_succ_r -?Nat.iter_add.
         f_equal. f_equal. lia. }
     iMod "H". iModIntro.
-    iEval rewrite -Nat_iter_S Nat_iter_S_r.
+    iEval rewrite -Nat.iter_succ Nat.iter_succ_r.
     iApply step_fupd2N_le; last iApply (step_fupd2N_wand with "H").
     { apply Nat.eq_le_incl. f_equal.
-      rewrite {1}Nat.add_comm ?Nat_iter_add.
-      f_equal. rewrite -Nat_iter_S -Nat_iter_S_r //. }
+      rewrite {1}Nat.add_comm ?Nat.iter_add.
+      f_equal. rewrite -Nat.iter_succ -Nat.iter_succ_r //. }
     iIntros ">H".
-    rewrite {1}[n + _]Nat.add_comm ?Nat_iter_add.
+    rewrite {1}[n + _]Nat.add_comm ?Nat.iter_add.
     iModIntro. iApply (step_fupd2N_le with "H"); auto.
     apply Nat.eq_le_incl. f_equal.
-    rewrite -?Nat_iter_S_r -?Nat_iter_add Nat.add_assoc.
+    rewrite -?Nat.iter_succ_r -?Nat.iter_add Nat.add_assoc.
     f_equal. lia.
   - iMod "H" as (HG') "(HNC&Hσ&Hg&Hr)".
     iExists HG'.
@@ -332,16 +332,16 @@ Proof.
     { simpl. rewrite Nat.add_0_r. iExactEq "Hlc". f_equal.
       rewrite -assoc. f_equal.
       rewrite ![_ + 1]comm. f_equal.
-      rewrite -Nat_iter_S Nat_iter_S_r.
-      rewrite Nat_iter_add Nat_iter_S_r. done. }
+      rewrite -Nat.iter_succ Nat.iter_succ_r.
+      rewrite Nat.iter_add Nat.iter_succ_r. done. }
     simpl. iMod "H".
     iApply (step_fupd2N_inner_wand with "H"); try set_solver+.
     { rewrite Nat.add_0_r. auto. }
     iIntros "H".
     rewrite Nat.add_0_r.
-    rewrite -Nat_iter_S Nat_iter_S_r.
+    rewrite -Nat.iter_succ Nat.iter_succ_r.
     rewrite ![_ + 1]comm. simpl.
-    rewrite Nat_iter_add Nat_iter_S_r.
+    rewrite Nat.iter_add Nat.iter_succ_r.
     eauto.
 Qed.
 

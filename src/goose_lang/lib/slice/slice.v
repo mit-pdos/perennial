@@ -1254,7 +1254,7 @@ Proof.
     wp_call.
 
     iDestruct (as_fractional_weaken q with "Hptr") as "Hptr".
-    { apply Qp_lt_le_incl. eauto. }
+    { apply Qp.lt_le_incl. eauto. }
 
     iDestruct (array_app with "[Hprefix Hptr]") as "Hptr".
     { rewrite /slice_take /slice_skip /=.
@@ -1287,7 +1287,7 @@ Proof.
     rewrite array_app.
     iDestruct "Hvs" as "[Hprefix Hvs]".
     iDestruct (as_fractional_weaken q with "Hprefix") as "Hprefix".
-    { eapply Qp_lt_le_incl. eauto. }
+    { eapply Qp.lt_le_incl. eauto. }
 
     iFrame "Hprefix".
     iSplitR.
@@ -1356,7 +1356,7 @@ Proof.
     rewrite array_nil. iPureIntro. word.
   }
   { word. }
-  { eapply (Qextra.Qp_div_2_lt 1). }
+  { eapply (Qextra.Qp.div_2_lt 1). }
   iIntros (s') "(_ & Hs & _)".
   rewrite /slice_skip.
   replace (word.sub (Slice.sz s') 0) with (Slice.sz s') by word.
@@ -1430,8 +1430,8 @@ End goose_lang.
 Hint Resolve slice_val_ty : core.
 
 Arguments wp_forSlice {_ _ _ _ _ _ _}
-          _%bi_scope _ _ _ _%heap_type _%Qp_scope _%list_scope _%val_scope.
+          _%bi_scope _ _ _ _%heap_type _%Qp.scope _%list_scope _%val_scope.
 Arguments wp_forSliceEach {_ _ _ _ _ _ _}
-          (_ _ _)%bi_scope _ _ _ _%heap_type _%Qp_scope _%list_scope _%val_scope.
+          (_ _ _)%bi_scope _ _ _ _%heap_type _%Qp.scope _%list_scope _%val_scope.
 
 Typeclasses Opaque is_slice_small is_slice_cap.

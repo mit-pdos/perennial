@@ -168,7 +168,7 @@ Proof.
         - split.
           * apply encoding.unsigned_64_nonneg.
           * apply lookup_lt_Some in Hlookup.
-            rewrite Z_u64.
+            rewrite Z.u64.
             ** lia.
             ** split; try lia. rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping. lia.
       }
@@ -178,7 +178,7 @@ Proof.
         rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping.
         word_cleanup.
         rewrite -Hlen_shardMapping in Hle.
-        rewrite Z_u64 ?Nat2Z.id in Hle; word_cleanup.
+        rewrite Z.u64 ?Nat2Z.id in Hle; word_cleanup.
       }
       iDestruct "H" as (??) "H". iExists _.
       assert (host = hid) as ->.

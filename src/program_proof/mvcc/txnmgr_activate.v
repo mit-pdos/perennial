@@ -8,7 +8,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 Theorem wp_txnMgr__activate (txnmgr : loc) (sid : u64) γ :
   ⊢ is_txnmgr txnmgr γ -∗
-    {{{ ⌜(int.Z sid) < N_TXN_SITES⌝ }}}
+    {{{ ⌜(int.Z sid) < N.TXN_SITES⌝ }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
       TxnMgr__activate #txnmgr #sid @ ∅
     <<< ∃ ts', ts_auth γ ts' ∗ ⌜ts < ts'⌝ >>>

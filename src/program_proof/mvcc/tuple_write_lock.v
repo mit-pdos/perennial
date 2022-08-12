@@ -39,7 +39,7 @@ Proof.
   }
   
   iDestruct (vchain_combine with "Hptuple Hptuple'") as "[Hptuple <-]"; first done.
-  rewrite Qp_quarter_quarter.
+  rewrite Qp.quarter_quarter.
   iModIntro.
   iApply "HΦ".
   do 4 iExists _.

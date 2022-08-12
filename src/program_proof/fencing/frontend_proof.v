@@ -153,7 +153,7 @@ Proof.
           iDestruct (own_val_combine with "Hval HprevEpochVal") as "[_ %Hagree]".
           rewrite Hagree.
           iMod "Hmask" as "_".
-          iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+          iEval (rewrite -Qp.quarter_quarter) in "HnewVal".
           iDestruct (own_val_split with "HnewVal") as "[HnewVal HnewVal2]".
           iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
           iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
@@ -255,13 +255,13 @@ Proof.
           replace (latestEpoch) with (epoch) by naive_solver.
           iDestruct (own_val_combine with "Hval2 Hval") as "[Hval %Hveq]".
           iModIntro.
-          rewrite (Qp_quarter_quarter).
+          rewrite (Qp.quarter_quarter).
           iExists _; iFrame "Hval".
           iIntros "Hval".
           iModIntro.
           iIntros "Hlatest".
           iMod "Hmask".
-          iEval (rewrite -Qp_quarter_quarter) in "Hval".
+          iEval (rewrite -Qp.quarter_quarter) in "Hval".
           iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
           iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
           iMod ("Hclose" with "[Hkv Hval2 Hlatest]").
@@ -361,7 +361,7 @@ Proof.
       unfold ctr.Put_core_spec.
       replace (latestEpoch) with (epoch) by word.
       iDestruct (own_val_combine with "Hval HepochVal") as "[Hval %Hveq]".
-      rewrite Qp_quarter_quarter.
+      rewrite Qp.quarter_quarter.
       rewrite Hveq.
       iExists _; iFrame.
       iModIntro.
@@ -382,7 +382,7 @@ Proof.
         word.
       }
       iMod ("Hkvfupd" with "Hkv2") as "Hkvfupd".
-      iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+      iEval (rewrite -Qp.quarter_quarter) in "HnewVal".
       iDestruct (own_val_split with "HnewVal") as "[Hval Hval2]".
       iMod ("Hclose" with "[Hkv Hlatest Hval2]") as "_".
       {
@@ -475,7 +475,7 @@ Proof.
           iDestruct (own_val_combine with "Hval HprevEpochVal") as "[_ %Hagree]".
           rewrite Hagree.
           iMod "Hmask" as "_".
-          iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+          iEval (rewrite -Qp.quarter_quarter) in "HnewVal".
           iDestruct (own_val_split with "HnewVal") as "[HnewVal HnewVal2]".
           iDestruct (mono_nat_lb_own_get with "HlatestEpoch") as "#Hlb". (* for doing the put *)
           iMod ("Hclose" with "[HlatestEpoch HnewVal Hkv]") as "_".
@@ -577,13 +577,13 @@ Proof.
           replace (latestEpoch) with (epoch) by naive_solver.
           iDestruct (own_val_combine with "Hval2 Hval") as "[Hval %Hveq]".
           iModIntro.
-          rewrite (Qp_quarter_quarter).
+          rewrite (Qp.quarter_quarter).
           iExists _; iFrame "Hval".
           iIntros "Hval".
           iModIntro.
           iIntros "Hlatest".
           iMod "Hmask".
-          iEval (rewrite -Qp_quarter_quarter) in "Hval".
+          iEval (rewrite -Qp.quarter_quarter) in "Hval".
           iDestruct (own_val_split with "Hval") as "[Hval Hval2]".
           iDestruct (own_latest_epoch_get_lb with "Hlatest") as "#Hlb".
           iMod ("Hclose" with "[Hkv Hval2 Hlatest]").
@@ -684,7 +684,7 @@ Proof.
       unfold ctr.Put_core_spec.
       replace (latestEpoch) with (epoch) by word.
       iDestruct (own_val_combine with "Hval HepochVal") as "[Hval %Hveq]".
-      rewrite Qp_quarter_quarter.
+      rewrite Qp.quarter_quarter.
       rewrite Hveq.
       iExists _; iFrame.
       iModIntro.
@@ -703,7 +703,7 @@ Proof.
       iSpecialize ("Hkvfupd" with "[]").
       { iPureIntro. word. }
       iMod ("Hkvfupd" with "Hkv2") as "Hkvfupd".
-      iEval (rewrite -Qp_quarter_quarter) in "HnewVal".
+      iEval (rewrite -Qp.quarter_quarter) in "HnewVal".
       iDestruct (own_val_split with "HnewVal") as "[Hval Hval2]".
       iMod ("Hclose" with "[Hkv Hlatest Hval2]") as "_".
       {

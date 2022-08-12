@@ -28,7 +28,7 @@ Section proof.
   Context `{!stagedG Σ}.
 
   Definition rfrac: Qp :=
-    (Qp_inv (Qp_of_Z (2^64)))%Qp.
+    (Qp.inv (Qp.of_Z (2^64)))%Qp.
 
   Definition is_crash_rwlock lk R Rc :=
     is_rwlock N lk (λ q, crash_borrow (R q) (Rc q)).

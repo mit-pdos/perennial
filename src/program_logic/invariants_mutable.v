@@ -61,7 +61,7 @@ Section inv_mut.
     { iIntros. iNext. eauto. }
     rewrite ?vec_to_list_to_vec. iFrame "Hinterp HAE".
     iIntros (Qs') "HP [Hw HE]".
-    iDestruct (ownI_mut_combine  with "[$] [$]") as "Hmut". rewrite Qp_div_2.
+    iDestruct (ownI_mut_combine  with "[$] [$]") as "Hmut". rewrite Qp.div_2.
     iMod (ownI_close_modify k _ _ (list_to_vec Ps) (list_to_vec Qs')
             with "[$Hw $HiP $Hmut $HD HP]") as "($&HE'&Hmut)".
     { rewrite ?vec_to_list_to_vec. iFrame "HP". }

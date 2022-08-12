@@ -63,11 +63,11 @@ Proof. rewrite /NC NC_aux.(seal_eq). apply _. Qed.
 
 Lemma NC_split q:
   NC q ⊢ NC (q/2) ∗ NC (q/2).
-Proof. by rewrite /NC NC_aux.(seal_eq) -own_op -Cinl_op frac_op Qp_div_2. Qed.
+Proof. by rewrite /NC NC_aux.(seal_eq) -own_op -Cinl_op frac_op Qp.div_2. Qed.
 
 Lemma NC_join q:
   NC (q/2) ∗ NC (q/2) ⊢ NC q.
-Proof. by rewrite /NC NC_aux.(seal_eq) -own_op -Cinl_op frac_op Qp_div_2. Qed.
+Proof. by rewrite /NC NC_aux.(seal_eq) -own_op -Cinl_op frac_op Qp.div_2. Qed.
 
 Lemma NC_C q: NC q -∗ C -∗ False.
 Proof.

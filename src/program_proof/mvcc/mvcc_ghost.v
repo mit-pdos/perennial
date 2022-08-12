@@ -11,10 +11,10 @@ Definition to_dbval (b : bool) (v : u64) :=
 
 Definition dbmap := gmap u64 dbval.
 
-Definition N_TXN_SITES : Z := 64.
+Definition N.TXN_SITES : Z := 64.
 
 Definition keys_all : gset u64 := fin_to_set u64.
-Definition sids_all : list u64 := U64 <$> seqZ 0 N_TXN_SITES.
+Definition sids_all : list u64 := U64 <$> seqZ 0 N.TXN_SITES.
 
 (* Tuple-related RAs. *)
 Local Definition vchainR := mono_listR (leibnizO dbval).
@@ -30,7 +30,7 @@ Local Definition ts_modsR := gmap_viewR (nat * dbmap) (leibnizO unit).
 Local Definition dbmapR := gmap_viewR u64 (leibnizO dbval).
 
 Lemma sids_all_lookup (sid : u64) :
-  int.Z sid < N_TXN_SITES ->
+  int.Z sid < N.TXN_SITES ->
   sids_all !! (int.nat sid) = Some sid.
 Proof.
   intros H.
@@ -145,7 +145,7 @@ Definition site_active_tids_frag γ (sid : u64) tid : iProp Σ :=
   own γ.(mvcc_sid_tids) {[sid := (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt)]}.
 
 Definition active_tid γ (tid sid : u64) : iProp Σ :=
-  (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜0 < int.Z tid < 2 ^ 64 - 1⌝ .
+  (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N.TXN_SITES⌝) ∧ ⌜0 < int.Z tid < 2 ^ 64 - 1⌝ .
 
 Definition site_min_tid_half_auth γ (sid : u64) tidN : iProp Σ :=
   own γ.(mvcc_sid_min_tid) {[sid := (●MN{#(1 / 2)} tidN)]}.

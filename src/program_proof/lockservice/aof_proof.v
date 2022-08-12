@@ -445,7 +445,7 @@ Proof.
       {
         word_cleanup.
         unfold word.wrap.
-        by apply Z_mod_lt.
+        by apply Z.mod_lt.
       }
       {
         word_cleanup.
@@ -550,14 +550,14 @@ Proof.
     apply mono_nat_auth_frac_op_valid in Hleneq as [_ <-].
     iCombine "Hlen Hlen2" as "Hlen".
     rewrite mono_nat_auth_frac_op.
-    rewrite Qp_half_half.
+    rewrite Qp.half_half.
     iMod (own_update _ _ (mono_nat_auth 1 (length (predurableC ++ membufC'))) with "Hlen") as "Hlen".
     {
       apply mono_nat_update.
       repeat rewrite app_length.
       lia.
     }
-    iEval (rewrite -Qp_half_half) in "Hlen".
+    iEval (rewrite -Qp.half_half) in "Hlen".
     rewrite -mono_nat_auth_frac_op.
     iDestruct "Hlen" as "[Hlen Hlen2]".
 

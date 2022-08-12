@@ -291,7 +291,7 @@ Proof.
   iDestruct "Hmut" as "(%logSlice_wf&Hmut)"; rewrite /named.
   iMod (readonly_load_lt with "Hread") as (q) "[%Hqlt HreadLog]".
   iModIntro.
-  destruct (Qextra.Qp_split_1 _ Hqlt) as [q' Hqq'].
+  destruct (Qextra.Qp.split_1 _ Hqlt) as [q' Hqq'].
   iDestruct (updates_slice_frag_acc with "Hmut") as "[Hmut Hmut_full]".
   iEval (rewrite -Hqq') in "Hmut".
   iDestruct (fractional.fractional_split_1 with "Hmut") as "[Hmut Hq']".

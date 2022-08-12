@@ -785,7 +785,7 @@ Proof.
       rewrite fmap_length HindBlockLen.
       assert (int.Z offset < 512).
       {
-        rewrite Hoffset. by apply Z_mod_lt.
+        rewrite Hoffset. by apply Z.mod_lt.
       }
       word.
     }

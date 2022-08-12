@@ -35,7 +35,7 @@ Definition is_txnsite (site : loc) (sid : u64) γ : iProp Σ :=
 Definition own_txnmgr (txnmgr : loc) : iProp Σ := 
   ∃ (sidcur : u64),
     "Hsidcur" ∷ txnmgr ↦[TxnMgr :: "sidCur"] #sidcur ∗
-    "%HsidcurB" ∷ ⌜(int.Z sidcur) < N_TXN_SITES⌝ ∗
+    "%HsidcurB" ∷ ⌜(int.Z sidcur) < N.TXN_SITES⌝ ∗
     "_" ∷ True.
 
 Definition is_txnmgr (txnmgr : loc) γ : iProp Σ := 
@@ -48,7 +48,7 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "#Hgc" ∷ readonly (txnmgr ↦[TxnMgr :: "gc"] #gc) ∗
     "#Hsites" ∷ readonly (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
     "#HsitesS" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
-    "%HsitesLen" ∷ ⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝ ∗
+    "%HsitesLen" ∷ ⌜Z.of_nat (length sitesL) = N.TXN_SITES⌝ ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ sitesL, is_txnsite site sid γ) ∗
     "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
@@ -81,7 +81,7 @@ Definition own_txn_impl (txn : loc) (ts : nat) (mods : dbmap) γ : iProp Σ :=
     (* This ensures we do not lose the info that [tid] does not overflow. *)
     "%Etid" ∷ ⌜int.nat tid = ts⌝ ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
-    "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
+    "%HsidB" ∷ ⌜(int.Z sid) < N.TXN_SITES⌝ ∗
     "Hwrbuf" ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
     "HwrbufRP" ∷ own_wrbuf wrbuf mods ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
@@ -131,7 +131,7 @@ Definition own_txn_uninit (txn : loc) γ : iProp Σ :=
   ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id) (mods : dbmap),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
-    "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
+    "%HsidB" ∷ ⌜(int.Z sid) < N.TXN_SITES⌝ ∗
     "Hwrbuf" ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
     "HwrbufRP" ∷ own_wrbuf wrbuf mods ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗

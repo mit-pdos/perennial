@@ -18,7 +18,7 @@ Lemma coPset_suffixes_of_wf p E : coPset_wf E → coPset_wf (coPset_suffixes_of_
 Proof. induction p; simpl; eauto. Qed.
 Definition coPset_suffixes_of (p : positive) (E : coPset) : coPset :=
   coPset_suffixes_of_raw p (`E) ↾ coPset_suffixes_of_wf _ _ (proj2_sig E).
-Lemma elem_coPset_suffixes_of p q E : p ∈ coPset_suffixes_of q E ↔ ∃ q', (p = Papp q' q) ∧ q' ∈ E.
+Lemma elem_coPset_suffixes_of p q E : p ∈ coPset_suffixes_of q E ↔ ∃ q', (p = Pos.app q' q) ∧ q' ∈ E.
 Proof.
   unfold elem_of, coPset_elem_of; simpl; split.
   - revert p; induction q; intros [?|?|]; simpl;
@@ -80,8 +80,8 @@ Proof.
   - rewrite ?elem_coPset_suffixes_of.
     intros (q1'&Heq1&Hin1) (q2'&Heq2&Hin2).
     rewrite Heq1 in Heq2.
-    apply Papp_inj in Heq2; naive_solver.
-  - intros. apply (Hin (Papp x p)); apply elem_coPset_suffixes_of; eauto.
+    apply Pos.app_inj in Heq2; naive_solver.
+  - intros. apply (Hin (Pos.app x p)); apply elem_coPset_suffixes_of; eauto.
 Qed.
 
 Lemma MaybeEn_union E1 E2 : MaybeEn1 (E1 ∪ E2) = MaybeEn1 E1 ∪ MaybeEn1 E2.

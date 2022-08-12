@@ -387,7 +387,7 @@ Proof.
       apply (mono_list_update (σ ++ [op] : list (leibnizO EntryType))).
       by apply prefix_app_r.
     }
-    iEval (rewrite -Qp_half_half) in "Hσ".
+    iEval (rewrite -Qp.half_half) in "Hσ".
     rewrite -dfrac_op_own.
     rewrite mono_list_auth_dfrac_op.
     iDestruct "Hσ" as "[Hσ Hcommit]".

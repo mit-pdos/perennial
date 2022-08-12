@@ -88,11 +88,11 @@ Context `{PRI: !pri_invG IRISG}.
                          (∀ g' ns' κ', global_state_interp g' ns' q2 D κ' -∗ global_state_interp g' ns' q1 D κ').
   Proof using PRI.
     iIntros (g ns q1 q2 D κ [Hle1 Hle2]) "Hg".
-    apply Qp_le_lteq in Hle2.
+    apply Qp.le_lteq in Hle2.
     destruct Hle2 as [Hlt|Heq]; last first.
     { subst. iFrame. eauto. }
-    apply Qp_split_lt in Hlt as (q'&Hplus).
-    rewrite Qp_add_comm in Hplus.
+    apply Qp.split_lt in Hlt as (q'&Hplus).
+    rewrite Qp.add_comm in Hplus.
     rewrite -Hplus.
     iDestruct (pri_inv_tok_global_split with "[] Hg") as "(Hg&Hitok)"; eauto.
     iFrame.
@@ -141,8 +141,8 @@ Context `{PRI: !pri_invG IRISG}.
     (q1 ≤ q2)%Qp →
     pri_inv_tok q2 E -∗ pri_inv_tok q1 E ∗ (pri_inv_tok q1 E -∗ pri_inv_tok q2 E).
   Proof.
-    intros [Hlt|Heq]%Qp_le_lteq.
-    - iIntros "Hp". apply Qp_split_lt in Hlt as (q'&Hplus).
+    intros [Hlt|Heq]%Qp.le_lteq.
+    - iIntros "Hp". apply Qp.split_lt in Hlt as (q'&Hplus).
       rewrite -Hplus. iDestruct (pri_inv_tok_split with "Hp") as "(Hp1&Hp2)".
       iFrame. iIntros. iApply (pri_inv_tok_join with "[$] [$]").
     - subst. iIntros "$". auto.
@@ -157,8 +157,8 @@ Context `{PRI: !pri_invG IRISG}.
     iPureIntro. destruct Hcases as [Hdisj|Hval]; auto.
     revert Hval. rewrite frac_valid => Hval.
     assert (1 < q + / 2)%Qp.
-    { rewrite -Qp_inv_half_half. apply Qp_add_lt_mono_r; auto. }
-    exfalso. apply Qp_le_ngt in Hval; eauto.
+    { rewrite -Qp.inv_half_half. apply Qp.add_lt_mono_r; auto. }
+    exfalso. apply Qp.le_ngt in Hval; eauto.
   Qed.
 
   Lemma pri_inv_alloc E E1 E2 P : set_infinite E → ▷ P -∗ ||={E1|E2, E1|E2}=> pri_inv E P.
@@ -193,9 +193,9 @@ Context `{PRI: !pri_invG IRISG}.
     iDestruct (pri_inv_tok_disj with "[$]") as %Hdisj.
     destruct Hdisj as [Hdisj|Hbad]; last first.
     { exfalso. revert Hbad. rewrite frac_valid.
-      intros Hbad%Qp_le_ngt. apply Hbad.
-      rewrite -Qp_inv_half_half.
-      apply Qp_add_lt_mono; auto. }
+      intros Hbad%Qp.le_ngt. apply Hbad.
+      rewrite -Qp.inv_half_half.
+      apply Qp.add_lt_mono; auto. }
     iMod (pri_inv_tok_disable with "[$]") as "Hg".
     iModIntro; iFrame. iModIntro.
     iIntros (????) "H". iApply (pri_inv_tok_enable with "[$H]").

@@ -301,8 +301,8 @@ Proof.
   split; first by lia.
   split; first by lia.
   rewrite subslice_drop.
-  rewrite -nat_le_plus_minus; last by lia.
-  rewrite -nat_le_plus_minus; last by lia.
+  rewrite -Nat.le_add_sub; last by lia.
+  rewrite -Nat.le_add_sub; last by lia.
   intuition.
 Qed.
 
@@ -468,7 +468,7 @@ Proof.
   rewrite <- (take_drop u_us upds) at 1.
   rewrite insert_app_r_alt take_length; last by lia.
   rewrite Nat.min_l; last by lia.
-  rewrite nat_minus_plus.
+  rewrite Nat.sub_add'.
   rewrite lookup_app_r; last by (rewrite take_length; lia).
   rewrite take_length.
   f_equal.
@@ -1308,12 +1308,12 @@ Proof.
   replace (_ - 2)%nat with (length mwrbs - 1 - 1)%nat in Hb by lia.
   rewrite -Hi /= Nat.sub_0_r Hbndry1 in Hb.
   inversion Hb; subst b; clear Hb.
-  rewrite subslice_take_drop take_plus_app.
+  rewrite subslice_take_drop take_add_app.
   2: rewrite take_length; lia.
   rewrite firstn_all.
   rewrite <- (take_length_le txns bndry1.(mwrb.txn)) at 1; last by lia.
   rewrite drop_app.
-  rewrite subslice_take_drop take_plus_app.
+  rewrite subslice_take_drop take_add_app.
   2: rewrite take_length; lia.
   rewrite firstn_all.
   rewrite <- (take_length_le upds bndry1.(mwrb.upd)) at 1; last by lia.
@@ -1397,7 +1397,7 @@ Proof.
   rewrite subslice_to_end; last by rewrite app_length //=.
   rewrite subslice_drop_take; last by lia.
   rewrite (drop_app_alt (take _ _)); last by (rewrite take_length; lia).
-  rewrite nat_minus_plus.
+  rewrite Nat.sub_add'.
   rewrite firstn_all.
   rewrite drop_app_le; last by lia.
   apply memWrite_generic_0_region.

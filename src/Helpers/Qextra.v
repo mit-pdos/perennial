@@ -5,7 +5,7 @@ Require Import QArith.
 Local Open Scope Q_scope.
 
 (*
-Definition Qp_of_Zp (z : Z) (Hpos : (0 < z)%Z) : Qp.
+Definition Qp.of_Zp (z : Z) (Hpos : (0 < z)%Z) : Qp.
 Proof.
   refine (mk_Qp (Qc_of_Z z) _).
   rewrite -Z2Qc_inj_0.
@@ -14,21 +14,21 @@ Proof.
 Qed.
 *)
 
-Definition Qp_of_Z (z : Z) : Qp.
+Definition Qp.of_Z (z : Z) : Qp.
 Proof.
   refine (mk_Qp (Qc_of_Z (1 `max` z)) _).
   abstract (rewrite -Z2Qc_inj_0 -Z2Qc_inj_lt; lia).
 Defined.
 
-Lemma Qp_of_Z_add (z1 z2 : Z) :
+Lemma Qp.of_Z_add (z1 z2 : Z) :
   (0 < z1)%Z →
   (0 < z2)%Z →
-  Qp_of_Z (z1 + z2)%Z =
-  Qp_add (Qp_of_Z z1) (Qp_of_Z z2).
+  Qp.of_Z (z1 + z2)%Z =
+  Qp.add (Qp.of_Z z1) (Qp.of_Z z2).
 Proof.
   intros Hpos1 Hpos2.
-  rewrite /Qp_of_Z //=.
-  apply Qp_to_Qc_inj_iff => //=.
+  rewrite /Qp.of_Z //=.
+  apply Qp.to_Qc_inj_iff => //=.
   rewrite -Z2Qc_inj_add.
   f_equal. lia.
 Qed.
@@ -39,30 +39,30 @@ Fixpoint Qppower (q: Qp) (n: nat) :=
   | S n' => (q * (Qppower q n'))%Qp
   end.
 
-Lemma Qp_min_glb1_lt (q q1 q2 : Qp) :
+Lemma Qp.min_glb1_lt (q q1 q2 : Qp) :
   (q < q1 → q < q2 → q < q1 `min` q2)%Qp.
 Proof.
   intros Hlt1 Hlt2.
-  destruct (Qp_min_spec_le q1 q2) as [(?&->)|(?&->)]; auto.
+  destruct (Qp.min_spec_le q1 q2) as [(?&->)|(?&->)]; auto.
 Qed.
 
-Lemma Qp_split_lt (q1 q2: Qp) :
+Lemma Qp.split_lt (q1 q2: Qp) :
   (q1<q2)%Qp ->
   ∃ q', (q1 + q' = q2)%Qp.
 Proof.
-  rewrite Qp_lt_sum.
+  rewrite Qp.lt_sum.
   intros [r EQ]. exists r. done.
 Qed.
 
-Lemma Qp_split_1 (q: Qp) :
+Lemma Qp.split_1 (q: Qp) :
   (q<1)%Qp ->
   ∃ q', (q + q' = 1)%Qp.
-Proof. intros. by eapply Qp_split_lt. Qed.
+Proof. intros. by eapply Qp.split_lt. Qed.
 
-Theorem Qp_div_2_lt (q: Qp) : (q/2 < q)%Qp.
+Theorem Qp.div_2_lt (q: Qp) : (q/2 < q)%Qp.
 Proof.
-  apply Qp_lt_sum. exists (q/2)%Qp.
-  rewrite Qp_div_2. done.
+  apply Qp.lt_sum. exists (q/2)%Qp.
+  rewrite Qp.div_2. done.
 Qed.
 
 Require Import Lqa.
@@ -191,7 +191,7 @@ Proof.
       constructor.
 Qed.
 
-Lemma Qp_plus_inv_2_gt_1_split q:
+Lemma Qp.plus_inv_2_gt_1_split q:
   ((/2  < q)%Qp → ∃ q1 q2, q1 + q2 = /2 ∧ 1 < q + q1)%Qp.
 Proof.
   intros. destruct q as (q&Hpos). destruct q as (q&Hcanon).
@@ -209,8 +209,8 @@ Proof.
   }
   rewrite //=.
   split.
-  - rewrite /Qp_add//=.
-    apply Qp_to_Qc_inj_iff.
+  - rewrite /Qp.add//=.
+    apply Qp.to_Qc_inj_iff.
     rewrite /Qcanon.Qcplus//=.
     apply Qcanon.Q2Qc_eq_iff.
     transitivity (Qplus' q1 q2).
@@ -223,17 +223,17 @@ Qed.
 
 Local Open Scope Qp.
 
-Lemma Qp_add_cancel (p q r : Qp) :
+Lemma Qp.add_cancel (p q r : Qp) :
   p + q = p + r →
   q = r.
 Proof.
   intros Heq.
   apply (anti_symm (≤)%Qp).
-  - rewrite (Qp_add_le_mono_l _ _ p). rewrite Heq. eauto.
-  - rewrite (Qp_add_le_mono_l _ _ p). rewrite Heq. eauto.
+  - rewrite (Qp.add_le_mono_l _ _ p). rewrite Heq. eauto.
+  - rewrite (Qp.add_le_mono_l _ _ p). rewrite Heq. eauto.
 Qed.
 
-Lemma Qp_plus_split_alt (q1 q2 : Qp) :
+Lemma Qp.plus_split_alt (q1 q2 : Qp) :
   ((/2 < q1 < q2) →
   (q2 ≤ 1) →
   ∃ qa qb,
@@ -243,39 +243,39 @@ Lemma Qp_plus_split_alt (q1 q2 : Qp) :
 Proof.
   intros Hrange1 Hrange2.
   assert (q1 < 1)%Qp as Hlt1.
-  { eapply Qp_lt_le_trans; try eassumption. naive_solver. }
-  apply (Qp_split_1) in Hlt1 as (qa&Heq).
+  { eapply Qp.lt_le_trans; try eassumption. naive_solver. }
+  apply (Qp.split_1) in Hlt1 as (qa&Heq).
   assert (∃ qb, (qa + qa) + qb = 1) as (qb&Heq_qb).
-  { apply Qp_split_1.
+  { apply Qp.split_1.
     cut (qa < /2).
-    { intros. rewrite -Qp_inv_half_half. apply Qp_add_lt_mono; auto. }
-    apply Qp_lt_nge. intros Hge.
+    { intros. rewrite -Qp.inv_half_half. apply Qp.add_lt_mono; auto. }
+    apply Qp.lt_nge. intros Hge.
     assert (Hfalse: 1 < q1 + qa).
-    { rewrite -Qp_inv_half_half.
+    { rewrite -Qp.inv_half_half.
       destruct Hrange1 as (Hlt1&Hlt2).
-      eapply Qp_lt_le_trans.
-      { apply Qp_add_lt_mono_r; (try eassumption). }
-      apply Qp_add_le_mono_l. auto. }
+      eapply Qp.lt_le_trans.
+      { apply Qp.add_lt_mono_r; (try eassumption). }
+      apply Qp.add_le_mono_l. auto. }
     rewrite Heq in Hfalse.
-    apply Qp_lt_nge in Hfalse. apply Hfalse. eauto.
+    apply Qp.lt_nge in Hfalse. apply Hfalse. eauto.
   }
   exists qa, qb.
   split_and!; try eauto.
-  * rewrite -Heq. apply Qp_add_lt_mono_r. naive_solver.
+  * rewrite -Heq. apply Qp.add_lt_mono_r. naive_solver.
   * rewrite -Heq in Heq_qb.
     rewrite (comm _ q1 qa) in Heq_qb.
     rewrite -assoc in Heq_qb.
-    apply Qp_add_cancel in Heq_qb.
+    apply Qp.add_cancel in Heq_qb.
     rewrite -Heq_qb //.
 Qed.
 
-Lemma Qp_lt_densely_ordered (q1 q2 : Qp) :
+Lemma Qp.lt_densely_ordered (q1 q2 : Qp) :
   q1 < q2 →
   ∃ q, (q1 < q < q2).
 Proof.
-  intros (r&Heq)%Qp_split_lt.
+  intros (r&Heq)%Qp.split_lt.
   exists (q1 + (r/2)). split.
-  - apply Qp_lt_add_l.
+  - apply Qp.lt_add_l.
   - rewrite -Heq.
-    apply Qp_add_lt_mono_l. apply Qp_div_2_lt.
+    apply Qp.add_lt_mono_l. apply Qp.div_2_lt.
 Qed.

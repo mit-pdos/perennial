@@ -8,7 +8,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 Theorem wp_txnMgr__getMinActiveTIDSite txnmgr (sid : u64) γ :
   is_txnmgr txnmgr γ -∗
-  {{{ ⌜int.Z sid < int.Z N_TXN_SITES⌝ }}}
+  {{{ ⌜int.Z sid < int.Z N.TXN_SITES⌝ }}}
     TxnMgr__getMinActiveTIDSite #txnmgr #sid
   {{{ (tid : u64), RET #tid; site_min_tid_lb γ sid (int.nat tid) }}}.
 Proof.
@@ -22,7 +22,7 @@ Proof.
   (***********************************************************)
   wp_loadField.
   list_elem sitesL (int.nat sid) as site.
-  { revert HsitesLen. unfold N_TXN_SITES in *. word. }
+  { revert HsitesLen. unfold N.TXN_SITES in *. word. }
   wp_apply (wp_SliceGet with "[$HsitesS']").
   { iPureIntro.
     rewrite list_lookup_fmap.
@@ -259,7 +259,7 @@ Proof.
   wp_pures.
     
   (***********************************************************)
-  (* for sid := uint64(0); sid < config.N_TXN_SITES; sid++ { *)
+  (* for sid := uint64(0); sid < config.N.TXN_SITES; sid++ { *)
   (*     tid := txnMgr.getMinActiveTIDSite(sid)              *)
   (*     if tid < min {                                      *)
   (*         min = tid                                       *)
@@ -272,7 +272,7 @@ Proof.
   set P := λ (i : u64), (∃ (tidmin : u64),
     "HminRef" ∷ minRef ↦[uint64T] #tidmin ∗
     "Htidlbs" ∷ [∗ list] sid ∈ (take (int.nat i) sids_all), site_min_tid_lb γ sid (int.nat tidmin))%I.
-  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) sidRef with "[] [HminRef HsidRef]"); first done.
+  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N.TXN_SITES) sidRef with "[] [HminRef HsidRef]"); first done.
   { clear Φ.
     iIntros (i Φ) "!> (Hloop & HsidRef & %Hbound) HΦ".
     iNamed "Hloop".

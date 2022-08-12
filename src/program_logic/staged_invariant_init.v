@@ -56,8 +56,8 @@ Proof.
   { apply auth_both_valid_2; [econstructor | reflexivity]. }
 
   iDestruct (pri_inv_tok_infinite with "Hitok") as %Hinf.
-  destruct (Qp_plus_inv_2_gt_1_split mj') as (mj_ikeep&mj_ishare&Heq_mj&Hinvalid); first auto.
-  iEval (rewrite -Qp_inv_half_half) in "Hitok".
+  destruct (Qp.plus_inv_2_gt_1_split mj') as (mj_ikeep&mj_ishare&Heq_mj&Hinvalid); first auto.
+  iEval (rewrite -Qp.inv_half_half) in "Hitok".
   iDestruct (pri_inv_tok_split with "Hitok") as "(Hitok_u&Hitok_i)".
   iEval (rewrite -Heq_mj) in "Hitok_i".
   iDestruct (pri_inv_tok_split with "Hitok_i") as "(Hitok_ikeep&Hitok_ishare)".
@@ -162,9 +162,9 @@ Proof.
   iLöb as "IH" forall (E' Einv mj0 mj_ikeep mj_ishare γ γ' γstatus Hsub' Heq_mj (* Hle_mj *) Hinvalid Hinf Hlt) "Hpri_inv".
   iIntros (g ns D κs) "Hg #HC".
   iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
-  { exfalso. apply Qp_lt_nge in Hinvalid. revert Hval. rewrite frac_valid.
+  { exfalso. apply Qp.lt_nge in Hinvalid. revert Hval. rewrite frac_valid.
     intros Hle'. apply Hinvalid. etransitivity; last eassumption.
-    apply Qp_add_le_mono_r. naive_solver. }
+    apply Qp.add_le_mono_r. naive_solver. }
   iMod (pri_inv_acc with "Hpri_inv") as "(Hinner&Hclo)".
   { set_solver. }
   iEval (rewrite staged_inv_inner_unfold) in "Hinner".
@@ -318,9 +318,9 @@ Proof.
     iLöb as "IH" forall (E' Einv mj0 mj_ikeep mj_ishare γ γ' γstatus Hsub' Heq_mj Hle_mj Hinvalid Hinf Hlt) "Hpri_inv".
     iIntros (g ns D κs) "Hg #HC".
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
-    { exfalso. apply Qp_lt_nge in Hinvalid. revert Hval. rewrite frac_valid.
+    { exfalso. apply Qp.lt_nge in Hinvalid. revert Hval. rewrite frac_valid.
       intros Hle'. apply Hinvalid. etransitivity; last eassumption.
-      apply Qp_add_le_mono_r. destruct Hlt; etransitivity; eassumption. }
+      apply Qp.add_le_mono_r. destruct Hlt; etransitivity; eassumption. }
     iMod (pri_inv_acc with "Hpri_inv") as "(Hinner&Hclo)".
     { set_solver. }
     iEval (rewrite staged_inv_inner_unfold) in "Hinner".
@@ -473,18 +473,18 @@ Proof.
   rewrite wpc_eq /wpc_def. iIntros (mj2).
   iApply (wpc0_mj_valid). iIntros (Hlt2).
   iPoseProof (wpc0_staged_inv_create _ (mj1 `min` mj2)%Qp mj2 _ _ (λ v, wpc_crash_modality ⊤ mj1 Φc' -∗ Φ v)%I ((Pc -∗ Φc)) P Pc) as "H".
-  { apply Qp_min_glb1_lt; intuition eauto. }
+  { apply Qp.min_glb1_lt; intuition eauto. }
   iSpecialize ("H" with "[$HP $Htok1 $Htok2 $Hwand Hwp]").
   { iIntros "(Hval&Hcancel)".
     iApply (wpc0_staged_inv_cancel with "Hcancel"); eauto.
-    { apply Qp_le_min_r. }
+    { apply Qp.le_min_r. }
     iSpecialize ("Hwp" with "[$]"). iSpecialize ("Hwp" $! _).
     iApply (wpc0_strong_mono with "Hwp"); eauto.
     iSplit.
     * iIntros (?) "H !> Hcancel Hcm".
       iApply "H".
       iDestruct (staged_inv_cancel_mono_mj _ _ mj1 with "[$]") as "Hcancel".
-      { apply Qp_le_min_l. }
+      { apply Qp.le_min_l. }
       iApply (staged_inv_cancel_wpc_crash_modality' with "[$] [$]").
     * eauto. }
   iApply (wpc0_strong_mono with "H"); eauto.

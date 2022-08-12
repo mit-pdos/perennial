@@ -102,7 +102,7 @@ Proof.
   induction ns => start.
   - rewrite //=; lia.
   - rewrite steps_sum_S IHns. simpl.
-    rewrite -Nat_iter_S_r /=. lia.
+    rewrite -Nat.iter_succ_r /=. lia.
 Qed.
 
 Lemma wptp_steps s n e1 t1 κs κs' t2 σ1 g1 ns D σ2 g2 Φ Φc :
@@ -132,7 +132,7 @@ Proof.
   iMod "H".
   iDestruct "H" as "(Hσ & Hg & He & Ht & HNC)".
   iMod (IH with "Hσ Hg He Ht HNC Hlc2") as "IH"; first done.
-  rewrite -Nat_iter_S_r.
+  rewrite -Nat.iter_succ_r.
   iModIntro. iModIntro. eauto.
 Qed.
 

@@ -300,7 +300,7 @@ Proof.
   iInv "Hinv" as ">Hpb" "HpbClose".
   iDestruct "Hpb" as "[%cn_comitted [%l_committed (Hcomm & #Hcomm_acc & #Holdconf)]]".
   rewrite /named.
-  destruct (Z_dec (int.Z cn) (int.Z cn_comitted)) as [[Hcn|Hcn]|Hcn].
+  destruct (Z.dec (int.Z cn) (int.Z cn_comitted)) as [[Hcn|Hcn]|Hcn].
   - (* [cn] is older than [cn_comitted]. *)
     iDestruct ("Holdconf" with "[//] Hacc") as %Hlog.
     iDestruct (commit_witness with "Hcomm") as "#Hwit".

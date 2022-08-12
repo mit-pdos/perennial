@@ -41,7 +41,7 @@ Proof.
     rewrite (Z.div_add_l (x `div` k) k (x `mod` k + (k-1))); [|lia].
     assert ((x `mod` k + (k-1)) `div` k = 1) as Hone.
     {
-      pose proof (Z_mod_lt x k H0) as [Hpos Hlt].
+      pose proof (Z.mod_lt x k H0) as [Hpos Hlt].
       assert (1*k <= x `mod` k + (k-1)) as Hlb by lia.
       assert (x `mod` k + (k-1) < 2*k) as Hub by lia.
       assert (0 < k) as Hk by lia.
@@ -1003,7 +1003,7 @@ Proof.
         unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. lia.
       }
       assert (((int.Z off - 500) `div` 512) <= ((length σ.(inode.blocks) - 500) `div` 512)) as Hoff. {
-        apply Z_div_le; lia.
+        apply Z.div_le; lia.
       }
 
       assert (int.Z index < ds.(impl_s.numInd)) as HindexMax. {

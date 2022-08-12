@@ -135,7 +135,7 @@ Section proof.
       wp_pures. iApply ("HΦ" $! false). done.
     - iDestruct "HR" as "[Hl2 HR]".
       iCombine "Hl Hl2" as "Hl".
-      rewrite Qp_quarter_three_quarter.
+      rewrite Qp.quarter_three_quarter.
       iApply (wpc_wp NotStuck _ _ _ True).
       iAssert (▷ □ (R' -∗ Rcrash'))%I with "[HR]" as "#Hwand".
       { iNext. by iApply crash_borrow_crash_wand. }
@@ -150,7 +150,7 @@ Section proof.
       iApply wp_wpc.
       wp_cmpxchg_suc.
       iModIntro.
-      iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+      iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
       iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
       iIntros "(Hc1&Hc2)".
       iSplit; first done. iModIntro.
@@ -230,7 +230,7 @@ Section proof.
     iDestruct (locked_loc with "Hlocked") as "Hl2".
     iDestruct (heap_mapsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
-    rewrite Qp_quarter_three_quarter.
+    rewrite Qp.quarter_three_quarter.
     iApply (wpc_wp NotStuck _ _ _ True).
     iApply (wpc_crash_borrow_combine _ _ _ _ R' Rcrash'
                   with "Hc1 Hc2"); auto.
@@ -241,7 +241,7 @@ Section proof.
     iIntros "Hb". iSplit; first done.
     iModIntro.
     iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
-    iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+    iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
     iNext. iExists false. iFrame.
   Qed.

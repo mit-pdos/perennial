@@ -61,8 +61,8 @@ Lemma ownfCP_disj1 γ q1 D E :
 Proof.
   iIntros. iDestruct (ownfCP_disj with "[$]") as %Hcases. iPureIntro.
   destruct Hcases as [Hdisj|Hbad]; auto. exfalso.
-  move: Hbad. rewrite frac_valid Qp_le_ngt => Hnlt. apply Hnlt.
-  apply Qp_lt_add_r.
+  move: Hbad. rewrite frac_valid Qp.le_ngt => Hnlt. apply Hnlt.
+  apply Qp.lt_add_r.
 Qed.
 
 Lemma ownfCP_disj_gt2 γ q D E :
@@ -71,9 +71,9 @@ Lemma ownfCP_disj_gt2 γ q D E :
 Proof.
   iIntros. iDestruct (ownfCP_disj with "[$]") as %Hcases. iPureIntro.
   destruct Hcases as [Hdisj|Hbad]; auto. exfalso.
-  move: Hbad. rewrite frac_valid Qp_le_ngt => Hnlt. apply Hnlt.
-  rewrite -Qp_inv_half_half.
-  apply Qp_add_lt_mono; auto.
+  move: Hbad. rewrite frac_valid Qp.le_ngt => Hnlt. apply Hnlt.
+  rewrite -Qp.inv_half_half.
+  apply Qp.add_lt_mono; auto.
 Qed.
 
 Global Instance pri_invG_heap : pri_invG (goose_irisGS).
@@ -88,7 +88,7 @@ Proof.
     iDestruct (ownfCP_op_plus with "Hp") as "(Hp1&$)".
     iFrame. iSplit.
     { iPureIntro. split; auto. transitivity (q1 + q2)%Qp; last by naive_solver.
-      apply Qp_le_add_r. }
+      apply Qp.le_add_r. }
     iIntros (???) "Hg". iDestruct "Hg" as "(?&?&?&?&%Hle2'&Hp)".
     iFrame. iSplit; first auto.
     iApply ownfCP_op_plus. iFrame.
@@ -98,7 +98,7 @@ Proof.
     iDestruct (ownfCP_inf_le1 with "[$Hp //]") as %Hle3.
     iFrame. iPureIntro.
     split; auto. transitivity q2; first naive_solver.
-    apply Qp_lt_add_r.
+    apply Qp.lt_add_r.
   - iIntros (g ns q D κ) "Hg".
     iMod (ownfCP_inf_init (coPset_name credit_cr_names)) as (E) "H".
     iDestruct "Hg" as "($&$&$&$&$&Hp)".
@@ -147,7 +147,7 @@ Qed.
 Lemma pre_borrowN_split n1 n2 :
   pre_borrowN (n1 + n2) -∗ pre_borrowN n1 ∗ pre_borrowN n2.
 Proof.
-  rewrite /pre_borrowN Nat_iter_add.
+  rewrite /pre_borrowN Nat.iter_add.
   induction n1 => //=.
   - iIntros "$".
   - iIntros "($&H)". by iApply IHn1.
@@ -366,8 +366,8 @@ Proof.
   { apply auth_both_valid_2; [econstructor | reflexivity]. }
 
   iDestruct (pri_inv_tok_infinite with "Hitok") as %Hinf.
-  destruct (Qp_plus_inv_2_gt_1_split mj) as (mj_ikeep&mj_ishare&Heq_mj&Hinvalid); first auto.
-  iEval (rewrite -Qp_inv_half_half) in "Hitok".
+  destruct (Qp.plus_inv_2_gt_1_split mj) as (mj_ikeep&mj_ishare&Heq_mj&Hinvalid); first auto.
+  iEval (rewrite -Qp.inv_half_half) in "Hitok".
   iDestruct (pri_inv_tok_split with "Hitok") as "(Hitok_u&Hitok_i)".
   iEval (rewrite -Heq_mj) in "Hitok_i".
   iDestruct (pri_inv_tok_split with "Hitok_i") as "(Hitok_ikeep&Hitok_ishare)".
@@ -666,8 +666,8 @@ Proof.
     - iApply "Hw2'". eauto. }
   assert (∃ mj0, /2 < mj0 ∧ mj0 < mj_wp1 `min` mj_wp2)%Qp as (mj0&Hmj0).
   {
-    apply Qp_lt_densely_ordered.
-    apply Qp_min_glb1_lt; auto.
+    apply Qp.lt_densely_ordered.
+    apply Qp.min_glb1_lt; auto.
   }
 
   iMod (staged_inv_create _ _ P Pc ⊤ _ mj0 with "[$] [$] Hitok_new [$] [$]") as "(Hval&Hcancel)".
@@ -690,8 +690,8 @@ Proof.
   { iApply (wpc_crash_modality_strong_wand with "Hcancel2"); auto; last first.
     { iIntros. iModIntro. iApply "Hw3'". iFrame. }
     split.
-    - apply Qp_min_glb1_lt; auto.
-    - apply Qp_le_min_r.
+    - apply Qp.min_glb1_lt; auto.
+    - apply Qp.le_min_r.
   }
 
   iDestruct ("Htok") as "(Htok1&Htok)".
@@ -706,8 +706,8 @@ Proof.
     iSplitR; first eauto.
     iApply (wpc_crash_modality_strong_wand with "Hcancel1"); auto.
     { split.
-      - apply Qp_min_glb1_lt; auto.
-      - apply Qp_le_min_l.
+      - apply Qp.min_glb1_lt; auto.
+      - apply Qp.le_min_l.
     }
     { iIntros. iModIntro. iApply "Hw3". iFrame. }
   }
@@ -715,8 +715,8 @@ Proof.
   iSplitL "Hcancel1 Hw3".
   { iApply (wpc_crash_modality_strong_wand with "Hcancel1"); auto.
     { split.
-      - apply Qp_min_glb1_lt; auto.
-      - apply Qp_le_min_l.
+      - apply Qp.min_glb1_lt; auto.
+      - apply Qp.le_min_l.
     }
     { iIntros. iModIntro. iApply "Hw3". iFrame. }
   }
