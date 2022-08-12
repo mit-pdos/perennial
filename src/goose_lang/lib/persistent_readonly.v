@@ -74,9 +74,9 @@ Section goose_lang.
     iIntros "#Hro".
     iApply (fupd_mask_mono ∅); first solve_ndisj.
     iMod ("Hro") as (q) "HΦ".
-    destruct (Qp_lower_bound q 1) as (qmin & q1' & q2' & [-> Hone]).
+    destruct (Qp.lower_bound q 1) as (qmin & q1' & q2' & [-> Hone]).
     iDestruct "HΦ" as "[HΦ _]". iExists qmin. iFrame. iPureIntro.
-    eapply (Qp_lt_sum _ 1). eauto.
+    eapply (Qp.lt_sum _ 1). eauto.
   Qed.
 
   Theorem readonly_load P `{H: AsMapsTo P Φ} E :
@@ -109,7 +109,7 @@ Section goose_lang.
     iMod "HPinv" as (q1) "HΦ1".
     iMod "HQinv" as (q2) "HΦ2".
 
-    destruct (Qp_lower_bound q1 q2) as (qmin & q1' & q2' & [-> ->]).
+    destruct (Qp.lower_bound q1 q2) as (qmin & q1' & q2' & [-> ->]).
     iDestruct "HΦ1" as "[HΦ1 _]".
     iDestruct "HΦ2" as "[HΦ2 _]".
     iExists _. by iFrame.

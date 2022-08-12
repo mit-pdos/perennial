@@ -205,19 +205,19 @@ Qed.
 
 Lemma pending_split γ:
   staged_pending 1 γ ⊢ staged_pending (1/2)%Qp γ ∗ staged_pending (1/2)%Qp γ.
-Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp_div_2. Qed.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp.div_2. Qed.
 
 Lemma pending_split34 γ:
   staged_pending 1 γ ⊢ staged_pending (3/4)%Qp γ ∗ staged_pending (1/4)%Qp γ.
-Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp_three_quarter_quarter. Qed.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp.three_quarter_quarter. Qed.
 
 Lemma pending_join γ:
  staged_pending (1/2)%Qp γ ∗ staged_pending (1/2)%Qp γ ⊢  staged_pending 1 γ.
-Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp_div_2. Qed.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp.div_2. Qed.
 
 Lemma pending_join34 γ:
  staged_pending (3/4)%Qp γ ∗ staged_pending (1/4)%Qp γ ⊢  staged_pending 1 γ.
-Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp_three_quarter_quarter. Qed.
+Proof. by rewrite /staged_pending -own_op -Cinl_op frac_op Qp.three_quarter_quarter. Qed.
 
 Lemma pending34_pending34 γ:
  staged_pending (3/4)%Qp γ -∗ staged_pending (3/4)%Qp γ -∗ False.
@@ -463,9 +463,9 @@ Proof using stagedG0.
     { apply Nat.le_succ_l. apply (num_laters_per_step_lt). lia. }
     simpl.
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
-    { exfalso. apply Qp_lt_nge in Hlt2. revert Hval. rewrite frac_valid.
+    { exfalso. apply Qp.lt_nge in Hlt2. revert Hval. rewrite frac_valid.
       intros HleX. apply Hlt2. etransitivity; last eassumption.
-      apply Qp_add_le_mono_r. auto. }
+      apply Qp.add_le_mono_r. auto. }
     iMod (pri_inv_acc with "Hinv") as "(Hinner&Hclo)".
     { set_solver. }
     iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
@@ -478,7 +478,7 @@ Proof using stagedG0.
       { auto. }
       iDestruct (pri_inv_tok_global_le_acc _ _ _ mj1 with "[] Hg") as "(Hg&Hg_clo)".
       { iPureIntro. split; first naive_solver.
-        apply Qp_lt_le_incl; naive_solver. }
+        apply Qp.lt_le_incl; naive_solver. }
       iMod (pri_inv_tok_disable with "[$Hg $Hitok]") as "Hg".
       replace (⊤ ∖ D ∖ Einv) with (⊤ ∖ (Einv ∪ D)) by set_solver.
       iSpecialize ("Hunrun" with "[$] [$]").
@@ -517,9 +517,9 @@ Proof using stagedG0.
     { apply Nat.le_succ_l. apply (num_laters_per_step_lt). lia. }
     simpl.
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
-    { exfalso. apply Qp_lt_nge in Hlt2. revert Hval. rewrite frac_valid.
+    { exfalso. apply Qp.lt_nge in Hlt2. revert Hval. rewrite frac_valid.
       intros HleX. apply Hlt2. etransitivity; last eassumption.
-      apply Qp_add_le_mono_r. auto. }
+      apply Qp.add_le_mono_r. auto. }
     iMod (pri_inv_acc with "Hinv") as "(Hinner&Hclo)".
     { set_solver. }
     iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
@@ -532,7 +532,7 @@ Proof using stagedG0.
       { auto. }
       iDestruct (pri_inv_tok_global_le_acc _ _ _ mj1 with "[] Hg") as "(Hg&Hg_clo)".
       { iPureIntro. split; first naive_solver.
-        apply Qp_lt_le_incl; naive_solver. }
+        apply Qp.lt_le_incl; naive_solver. }
       iMod (pri_inv_tok_disable with "[$Hg $Hitok]") as "Hg".
       replace (⊤ ∖ D ∖ Einv) with (⊤ ∖ (Einv ∪ D)) by set_solver.
       iSpecialize ("Hunrun" with "[$] [$]").

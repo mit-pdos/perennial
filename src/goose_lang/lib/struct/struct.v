@@ -41,7 +41,7 @@ Theorem inv_readonly_acc {Σ} `{invGS Σ}
 Proof.
   iIntros (HN) "#Hinv".
   iInv N as (q) ">H" "Hclose".
-  rewrite -(Qp_div_2 q).
+  rewrite -(Qp.div_2 q).
   iDestruct (H0 (q/2)%Qp (q/2)%Qp with "H") as "[H1 H2]".
   iExists _; iFrame.
   iApply "Hclose".
@@ -441,7 +441,7 @@ Lemma struct_mapsto_q l q t v :
   struct_mapsto l (q/2) t v ∗
   struct_mapsto l (q/2) t v.
 Proof.
-  rewrite -typed_mem.struct_mapsto_fractional Qp_div_2. auto.
+  rewrite -typed_mem.struct_mapsto_fractional Qp.div_2. auto.
 Qed.
 
 Global Instance struct_mapsto_as_mapsto d l v :

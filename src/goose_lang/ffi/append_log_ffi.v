@@ -427,7 +427,7 @@ Section log_lemmas.
     rewrite -Cinl_op.
     iMod (own_update _ _ (Log_Opened l) with "Huninit") as "$"; last done.
     { apply: cmra_update_exclusive.
-      { apply Cinl_exclusive. rewrite -pair_op frac_op Qp_half_half.
+      { apply Cinl_exclusive. rewrite -pair_op frac_op Qp.half_half.
         simpl. apply pair_exclusive_l. apply _.
       }
       { econstructor. }
@@ -442,7 +442,7 @@ Section log_lemmas.
     rewrite -Cinl_op.
     iMod (own_update _ _ (Log_Opened l) with "Huninit") as "$"; last done.
     { apply: cmra_update_exclusive.
-      { apply Cinl_exclusive. rewrite -pair_op frac_op Qp_half_half.
+      { apply Cinl_exclusive. rewrite -pair_op frac_op Qp.half_half.
         simpl. apply pair_exclusive_l. apply _.
       }
       { econstructor. }
@@ -481,7 +481,7 @@ Next Obligation.
   { repeat econstructor => //=. }
   iMod (ghost_var_alloc ([]: leibnizO (list disk.Block))) as (γ2) "(H2a&H2b)".
   iExists {| log_names_open := γ1; log_names_state := γ2 |}.
-  iFrame. iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
+  iFrame. iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp.half_half agree_idemp.
 Qed.
 Next Obligation.
   iIntros (Σ σ σ' g Hcrash Hold) "Hinterp _".
@@ -497,7 +497,7 @@ Next Obligation.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
     iFrame. rewrite left_id. rewrite comm -assoc. iSplitR; first eauto.
     rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
-    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp.half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
     inversion H2. subst. inversion H4. subst.
     (* XXX: monad_inv should handle *)
@@ -507,7 +507,7 @@ Next Obligation.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
     iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
-    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp.half_half agree_idemp.
   - inversion Hcrash. subst. inversion H1. subst. inversion H3. subst.
     inversion H2. subst. inversion H4. subst.
     (* XXX: monad_inv should handle *)
@@ -517,7 +517,7 @@ Next Obligation.
     iDestruct "Hinterp" as "(?&?)". rewrite //=/log_restart//=.
     iFrame. rewrite left_id comm -assoc. iSplitL ""; first eauto.
     rewrite /log_uninit_auth/log_uninit_frag/log_frag/log_auth.
-    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp_half_half agree_idemp.
+    iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp.half_half agree_idemp.
 Qed.
 
 From Perennial.program_proof Require Import proof_prelude.

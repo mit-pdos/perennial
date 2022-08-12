@@ -65,22 +65,22 @@ Proof.
     - rewrite /mj_wp. apply Qp_min_glb1_lt; auto.
       * apply Qp_min_glb1_lt; auto.
         ** apply Qp_min_glb1_lt; auto.
-        ** apply Qp_lt_add_l.
-      * apply Qp_lt_add_l.
+        ** apply Qp.lt_add_l.
+      * apply Qp.lt_add_l.
   }
   iDestruct (pri_inv_tok_global_le_acc _ _ _ mj_wp with "[] Hg") as "(Hg_inv&Hg_inv_clo)".
   { iPureIntro; split; auto.
     rewrite /mj_wp.
-    etransitivity; first eapply Qp_le_min_l.
-    etransitivity; first eapply Qp_le_min_l.
-    apply Qp_le_min_r.
+    etransitivity; first eapply Qp.le_min_l.
+    etransitivity; first eapply Qp.le_min_l.
+    apply Qp.le_min_r.
   }
 
   iDestruct (pri_inv_tok_join with "[$Hitok] [$]") as "Hitok".
   iDestruct (pri_inv_tok_le_acc mj_wp with "Hitok") as "(Hitok_wp&Hitok_inv_clo)".
   { rewrite /mj_wp.
-    etransitivity; first eapply Qp_le_min_l.
-    apply Qp_le_min_r. }
+    etransitivity; first eapply Qp.le_min_l.
+    apply Qp.le_min_r. }
 
 
   iMod (pri_inv_tok_disable_reenable with "[$]") as "(Hg&Hreenable)".

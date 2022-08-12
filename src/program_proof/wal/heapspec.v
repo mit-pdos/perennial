@@ -268,7 +268,7 @@ Proof.
        with "wal_heap_txns") as "[wal_heap_txns1 wal_heap_txns2]".
   iMod (ghost_var_update crash_heaps with "wal_heap_crash_heaps")
        as "H".
-  iEval (rewrite -Qp_three_quarter_quarter) in "H".
+  iEval (rewrite -Qp.three_quarter_quarter) in "H".
   iDestruct (fractional.fractional_split with "H") as "[wal_heap_crash_heaps1 wal_heap_crash_heaps2]".
   iDestruct (mono_nat_lb_own_get with "wal_durable_lb") as "#Hlb".
 
@@ -855,7 +855,7 @@ Proof.
   iMod (ghost_var_update (list_to_async (take (S crash_txn) (possible crash_heaps)))
           with "wal_heap_crash_heaps")
     as "H".
-  iEval (rewrite -Qp_quarter_three_quarter) in "H".
+  iEval (rewrite -Qp.quarter_three_quarter) in "H".
   iDestruct (fractional.fractional_split_1 with "H") as "[Hcrash_heaps_own' Hcrash_heaps_own2]".
   iMod (mono_nat_own_update crash_txn with "wal_durable_lb") as "[Hcrash_heaps_lb' Hcrash_heaps_lb_lb]"; first lia.
   iMod (mono_nat_own_update ls.(log_state.installed_lb) with "wal_heap_installed")
@@ -2257,7 +2257,7 @@ Proof using walheapG0.
   iNamed "Hlatest".
 
   iMod (ghost_var_update_parts (async_put (apply_upds_u64 (latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
-  { rewrite Qp_quarter_three_quarter //. }
+  { rewrite Qp.quarter_three_quarter //. }
 
   iSpecialize ("Hfupd" $! (pos')).
 

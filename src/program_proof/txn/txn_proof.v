@@ -1844,7 +1844,7 @@ Proof.
       apply Z.mod_pos_bound.
       lia.
     }
-    rewrite Z_div_same.
+    rewrite Z.div_same.
     2: {
       match goal with
       | |- context[(?a ^ ?b)%Z] =>

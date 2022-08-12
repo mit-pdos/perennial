@@ -409,7 +409,7 @@ Proof.
       iDestruct "HvI" as "(HvI&_)". simpl.
       iRewrite -"HvI" in "HI". rewrite -pair_op agree_idemp prod_equivI //=.
       iDestruct "HI" as "(_&Hi)".
-      rewrite /inv_mut_unfold option_equivI ?prod_equivI; iSplit => //=.
+      rewrite /inv_mut_unfold [(Some (q, _) ≡ _)%I]option_equivI ?prod_equivI; iSplit => //=.
       destruct Qmut' as [(?&?)|]; last first.
       { iEval (rewrite right_id) in "Hi".
         rewrite option_equivI prod_equivI; iDestruct "Hi" as "(_&$)". }
@@ -642,7 +642,7 @@ Proof.
   subst. rewrite ?lookup_singleton /=.
   rewrite -Some_op -pair_op agree_idemp /inv_mut_unfold.
   rewrite -Some_op -pair_op agree_idemp.
-  repeat f_equiv. by rewrite frac_op Qp_div_2.
+  repeat f_equiv. by rewrite frac_op Qp.div_2.
 Qed.
 
 Lemma ownI_full_split_comp γ x y i:
@@ -981,7 +981,7 @@ Proof.
         iModIntro. iIntros. iMod ("Hwand" with "[//]") as "(?&$)"; eauto. }
    }
   iExists _, _. iFrame "#".
-  iDestruct (ownI_mut_combine with "HI_mut [$]") as "H". rewrite Qp_div_2 //=. iFrame. eauto.
+  iDestruct (ownI_mut_combine with "HI_mut [$]") as "H". rewrite Qp.div_2 //=. iFrame. eauto.
 Qed.
 
 Lemma ownI_bupd_factory_open lvl i P:

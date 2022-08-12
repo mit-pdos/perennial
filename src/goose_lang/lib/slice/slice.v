@@ -1254,7 +1254,7 @@ Proof.
     wp_call.
 
     iDestruct (as_fractional_weaken q with "Hptr") as "Hptr".
-    { apply Qp_lt_le_incl. eauto. }
+    { apply Qp.lt_le_incl. eauto. }
 
     iDestruct (array_app with "[Hprefix Hptr]") as "Hptr".
     { rewrite /slice_take /slice_skip /=.
@@ -1287,7 +1287,7 @@ Proof.
     rewrite array_app.
     iDestruct "Hvs" as "[Hprefix Hvs]".
     iDestruct (as_fractional_weaken q with "Hprefix") as "Hprefix".
-    { eapply Qp_lt_le_incl. eauto. }
+    { eapply Qp.lt_le_incl. eauto. }
 
     iFrame "Hprefix".
     iSplitR.

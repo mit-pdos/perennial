@@ -197,7 +197,7 @@ Proof.
   iNamed "Hown".
   iDestruct (ghost_var_agree with "Htotal1 Htotal") as %->.
   iMod (ghost_var_update_2 (word.add total 1) with "Htotal1 Htotal") as "[Htotal1 Htotal]".
-  { by apply Qp_half_half. }
+  { by apply Qp.half_half. }
   wp_load.
   wp_store.
   iDestruct (big_sepS_elem_of_acc_impl total with "Htoks") as "[Htok Htoks]".

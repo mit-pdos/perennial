@@ -57,7 +57,7 @@ Proof.
   wp_pures.
   assert (length xs = length ys) as Hlens.
   { cut (Z.of_nat (length xs) = length ys).
-    { intros ?%Z_of_nat_inj. done. }
+    { intros ?%Nat2Z.inj. done. }
     (* Coq "injection" is silly and applies injection recursively without control... *)
     assert (∀ x y: u64, #(LitInt x) = #(LitInt y) → x = y) as Hinj.
     { clear. intros ?? [= ->]. done. }
@@ -252,7 +252,7 @@ Proof.
     { done. }
     rewrite big_sepL_app big_sepL_singleton.
     rewrite big_sepL_app big_sepL_singleton.
-    rewrite app_length /= Nat.add_0_r set_seq_plus_L.
+    rewrite app_length /= Nat.add_0_r set_seq_add_L.
     change (int.nat 0) with 0%nat. simpl.
     iDestruct "HPs" as "[HPs $]".
     rewrite [_ ∪ ∅]right_id_L -gset_disj_union; last first.

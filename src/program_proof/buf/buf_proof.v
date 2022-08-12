@@ -415,11 +415,11 @@ Opaque PeanoNat.Nat.div.
     replace (S (int.nat a.(addrOff) `div` 8) * 1)%nat with (S (int.nat a.(addrOff) `div` 8))%nat by lia.
     iExactEq "Hs". f_equal.
     f_equal.
-    { rewrite Z2Nat_inj_div; try word.
+    { rewrite Z2Nat.inj_div; try word.
       eauto. }
     f_equal.
     { rewrite Z2Nat.inj_add; try word.
-      rewrite Z2Nat_inj_div; try word.
+      rewrite Z2Nat.inj_div; try word.
       change (Z.to_nat 8) with 8%nat.
       word. }
 
@@ -437,7 +437,7 @@ Opaque PeanoNat.Nat.div.
 
     rewrite -Hatoff /extract_nth.
     f_equal.
-    { rewrite Z2Nat_inj_div; try word.
+    { rewrite Z2Nat.inj_div; try word.
       simpl bufSz in *.
       change (Z.to_nat 8) with 8%nat.
       change (Z.to_nat 128) with 128%nat.
@@ -457,7 +457,7 @@ Opaque PeanoNat.Nat.div.
     {
       simpl bufSz in *.
       rewrite Z2Nat.inj_add; try word.
-      rewrite Z2Nat_inj_div; try word.
+      rewrite Z2Nat.inj_div; try word.
       change (Z.to_nat 1) with 1%nat.
       change (Z.to_nat 8) with 8%nat.
       change (Z.to_nat 128) with 128%nat.
@@ -632,7 +632,7 @@ Proof.
     f_equal.
     rewrite /get_buf_data_bit /get_byte.
     word_cleanup.
-    rewrite Z2Nat_inj_div //.
+    rewrite Z2Nat.inj_div //.
     word.
   - intros [Hbound Hbeq].
     inversion Hbeq; subst; clear Hbeq.
@@ -643,7 +643,7 @@ Proof.
     rewrite -> get_bit_ok by word.
     rewrite /get_buf_data_bit /get_byte.
     word_cleanup.
-    rewrite Z2Nat_inj_div //.
+    rewrite Z2Nat.inj_div //.
     word.
 Qed.
 
@@ -663,7 +663,7 @@ Proof.
   intros.
   word_cleanup.
   apply (inj Z.of_nat).
-  repeat rewrite !Nat2Z_inj_div !Nat2Z.inj_mul !Z2Nat.id //; try word.
+  repeat rewrite !Nat2Z.inj_div !Nat2Z.inj_mul !Z2Nat.id //; try word.
 Qed.
 
 Global Instance Nat_mul_comm : Comm eq Nat.mul.
@@ -689,7 +689,7 @@ Lemma Z_mod_1024_to_div_8 (z:Z) :
   z `div` 8 = 128 * (z `div` 1024).
 Proof. lia. Qed.
 
-Hint Rewrite Nat2Z.inj_mul Nat2Z_inj_div : word.
+Hint Rewrite Nat2Z.inj_mul Nat2Z.inj_div : word.
 
 Theorem is_bufData_inode blk off (d: bufDataT KindInode) :
   is_bufData_at_off blk off d ↔
@@ -1138,7 +1138,7 @@ Proof.
   intros Hn_mod.
   pose proof (Z_mod_1024_to_div_8 (Z.of_nat n) Hn_mod).
   apply (f_equal Z.to_nat) in H.
-  rewrite Z2Nat_inj_div in H; try lia.
+  rewrite Z2Nat.inj_div in H; try lia.
   apply (inj Z.of_nat).
   move: H; word.
 Qed.
@@ -1168,7 +1168,7 @@ Proof.
     rewrite /get_inode.
     rewrite /valid_off /= in Hvalid_off.
     rewrite -> list_to_block_to_list by len.
-    rewrite Z2Nat_inj_div; try word.
+    rewrite Z2Nat.inj_div; try word.
     change (Z.to_nat 8) with 8%nat.
     rewrite subslice_list_inserts_eq; len.
     { rewrite inode_buf_to_list_to_inode_buf //. }
@@ -1178,7 +1178,7 @@ Proof.
       move: H; word_cleanup.
       rewrite -> Z2Nat.inj_le by word.
       rewrite -> Z2Nat.inj_add by word.
-      rewrite -> Z2Nat_inj_div by word.
+      rewrite -> Z2Nat.inj_div by word.
       auto. }
     word.
   - split; first done.
@@ -1193,7 +1193,7 @@ Proof.
       apply n.
       word. }
     replace (Z.to_nat (int.Z off `div` 8)) with (int.nat off `div` 8)%nat; last first.
-    { rewrite Z2Nat_inj_div //; word. }
+    { rewrite Z2Nat.inj_div //; word. }
     rewrite -> !Nat_mod_1024_to_div_8 by lia.
     rewrite -> !Z_mod_1024_to_div_8 in H by lia.
     rewrite /inode_bytes.
@@ -1207,9 +1207,9 @@ Proof.
       eapply Nat.div_lt_upper_bound; lia.
     + destruct (decide (int.nat off' < int.nat off)); [ left | right ].
       * assert ((int.nat off' `div` 1024)%nat < (int.nat off `div` 1024)%nat); last by lia.
-        rewrite !Nat2Z_inj_div; lia.
+        rewrite !Nat2Z.inj_div; lia.
       * assert ((int.nat off' `div` 1024)%nat > (int.nat off `div` 1024)%nat); last by lia.
-        rewrite !Nat2Z_inj_div; lia.
+        rewrite !Nat2Z.inj_div; lia.
 Qed.
 
 Lemma is_installed_block_block (b : Block) (bufDirty : bool) (blk : Block) :

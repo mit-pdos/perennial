@@ -664,7 +664,7 @@ Proof.
     iDestruct (fractional.fractional_merge with
       "HownDiskEndMemTxn_linv HownDiskEndMemTxn_walinv"
     ) as "HownDiskEndMemTxn".
-    rewrite Qp_div_2.
+    rewrite Qp.div_2.
     iMod (mono_nat_own_update_halves (int.nat (circΣ.diskEnd cs)) with
       "HownDiskEndMem_logger HownDiskEndMem"
     ) as "(HownDiskEndMem_logger&HownDiskEndMem&_)";

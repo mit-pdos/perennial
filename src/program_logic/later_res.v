@@ -105,8 +105,8 @@ Proof.
     { assert (Hlt: ns' < ns) by lia.
       apply num_laters_per_step_lt2 in Hlt. lia.
     }
-    rewrite Nat_iter_S. iModIntro. iModIntro. iNext.
-    rewrite Nat_iter_S. iModIntro. iModIntro. iNext.
+    rewrite Nat.iter_succ. iModIntro. iModIntro. iNext.
+    rewrite Nat.iter_succ. iModIntro. iModIntro. iNext.
     iMod "H". iDestruct ("Hwp" $! _) as "(_&Hwp)".
     iMod ("Hwp" with "[$] [$]") as "Hwp".
     iModIntro.
@@ -174,7 +174,7 @@ Proof.
     { assert (Hlt: ns' < ns) by lia.
       apply num_laters_per_step_lt in Hlt. lia.
     }
-    rewrite Nat_iter_S. iModIntro. iModIntro. iNext.
+    rewrite Nat.iter_succ. iModIntro. iModIntro. iNext.
     iMod "H". iDestruct ("Hwp" $! _) as "(_&Hwp)".
     iMod ("Hwp" with "[$] [$]") as "Hwp".
     iModIntro.

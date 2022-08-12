@@ -60,7 +60,7 @@ Proof.
   {
     iIntros (g1 ns D' κs) "Hg #HC".
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
-    { exfalso. apply Qp_lt_nge in Hinvalid. revert Hval. rewrite frac_valid. eauto. }
+    { exfalso. apply Qp.lt_nge in Hinvalid. revert Hval. rewrite frac_valid. eauto. }
     iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
     { set_solver. }
     iEval (rewrite staged_inv_inner_unfold) in "Hinner".
@@ -138,7 +138,7 @@ Proof.
     rewrite Hnval.
     iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
-    { exfalso. apply Qp_lt_nge in Hinvalid. revert Hval. rewrite frac_valid. eauto. }
+    { exfalso. apply Qp.lt_nge in Hinvalid. revert Hval. rewrite frac_valid. eauto. }
     iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
     { set_solver. }
     iEval (rewrite staged_inv_inner_unfold) in "Hinner".
@@ -348,22 +348,22 @@ Proof.
     - rewrite /mj_wp. apply Qp_min_glb1_lt; auto.
       * apply Qp_min_glb1_lt; auto.
         ** apply Qp_min_glb1_lt; auto.
-        ** apply Qp_lt_add_l.
-      * apply Qp_lt_add_l.
+        ** apply Qp.lt_add_l.
+      * apply Qp.lt_add_l.
   }
   iDestruct (pri_inv_tok_global_le_acc _ _ _ mj_wp with "[] Hg") as "(Hg_inv&Hg_inv_clo)".
   { iPureIntro; split; auto.
     rewrite /mj_wp.
-    etransitivity; first eapply Qp_le_min_l.
-    etransitivity; first eapply Qp_le_min_l.
-    apply Qp_le_min_r.
+    etransitivity; first eapply Qp.le_min_l.
+    etransitivity; first eapply Qp.le_min_l.
+    apply Qp.le_min_r.
   }
 
   iDestruct (pri_inv_tok_join with "[$Hitok] [$]") as "Hitok".
   iDestruct (pri_inv_tok_le_acc mj_wp with "Hitok") as "(Hitok_wp&Hitok_inv_clo)".
   { rewrite /mj_wp.
-    etransitivity; first eapply Qp_le_min_l.
-    apply Qp_le_min_r. }
+    etransitivity; first eapply Qp.le_min_l.
+    apply Qp.le_min_r. }
 
 
   iMod (pri_inv_tok_disable_reenable with "[$]") as "(Hg&Hreenable)".
@@ -410,9 +410,9 @@ Proof.
       iLeft. iSplit.
       { iPureIntro. split; first naive_solver.
         transitivity (mj_wp); first naive_solver.
-        etransitivity; first eapply Qp_le_min_l.
-        etransitivity; first eapply Qp_le_min_l.
-        eapply Qp_le_min_l. }
+        etransitivity; first eapply Qp.le_min_l.
+        etransitivity; first eapply Qp.le_min_l.
+        eapply Qp.le_min_l. }
       iExists _, _, _, _, _, _, _. iFrame "∗".
       eauto.
     }
@@ -429,9 +429,9 @@ Proof.
     - iApply (big_sepL_mono with "Hefs").
       iIntros. iApply (wpc0_mj_le); last by iFrame.
       split; auto.
-      etransitivity; first eapply Qp_le_min_l.
-      etransitivity; first eapply Qp_le_min_l.
-      eapply Qp_le_min_r.
+      etransitivity; first eapply Qp.le_min_l.
+      etransitivity; first eapply Qp.le_min_l.
+      eapply Qp.le_min_r.
   }
 
   iFrame "HNC".
@@ -460,11 +460,11 @@ Proof.
     iLeft.
     iSplit.
     { iPureIntro. split_and!; auto.
-      - rewrite /mj_wp. apply Qp_le_min_r.
+      - rewrite /mj_wp. apply Qp.le_min_r.
       - rewrite /mj_wp.
-        etransitivity; first eapply Qp_le_min_l.
-        etransitivity; first eapply Qp_le_min_l.
-        eapply Qp_le_min_l.
+        etransitivity; first eapply Qp.le_min_l.
+        etransitivity; first eapply Qp.le_min_l.
+        eapply Qp.le_min_l.
     }
     iFrame.
     iModIntro. iIntros "Hwpc".
@@ -482,9 +482,9 @@ Proof.
     iIntros. iApply (wpc0_mj_le); last by iFrame.
     split; auto.
       - rewrite /mj_wp.
-        etransitivity; first eapply Qp_le_min_l.
-        etransitivity; first eapply Qp_le_min_l.
-        eapply Qp_le_min_r.
+        etransitivity; first eapply Qp.le_min_l.
+        etransitivity; first eapply Qp.le_min_l.
+        eapply Qp.le_min_r.
   }
   iAssert (staged_value_inuse_cancel e2 ⊤ ⊤ mj mj_wp mj_ukeep Φ Φc P) with "[-]" as "Hsv".
   {
@@ -496,13 +496,13 @@ Proof.
     iSplit; first eauto.
     iSplit.
     { iPureIntro. rewrite /mj_wp.
-      etransitivity; first eapply Qp_le_min_l.
-      etransitivity; first eapply Qp_le_min_l.
-      eapply Qp_le_min_r. }
+      etransitivity; first eapply Qp.le_min_l.
+      etransitivity; first eapply Qp.le_min_l.
+      eapply Qp.le_min_r. }
     iSplit.
     { iPureIntro. rewrite /mj_wp.
-      etransitivity; first eapply Qp_le_min_l.
-      eapply Qp_le_min_r. }
+      etransitivity; first eapply Qp.le_min_l.
+      eapply Qp.le_min_r. }
     iSplit; first eauto.
     iExact "Hinv".
   }

@@ -64,7 +64,7 @@ Proof using HAff.
   iIntros (Hle).
   iInduction k as [| k] "IH".
   - eauto.
-  - iIntros. rewrite Nat_iter_S. iMod (fupd_mask_subseteq E2) as "Hclo".
+  - iIntros. rewrite Nat.iter_succ. iMod (fupd_mask_subseteq E2) as "Hclo".
     { set_solver. }
     iModIntro. iModIntro. iMod "Hclo". iModIntro. by iApply "IH".
 Qed.
@@ -78,7 +78,7 @@ Proof using HAff.
     iApply fupd_mask_intro_subseteq; eauto; first set_solver.
   - iIntros. iMod (fupd_mask_subseteq ∅) as "Hclo".
     { set_solver. }
-    rewrite Nat_iter_S.
+    rewrite Nat.iter_succ.
     iModIntro. iModIntro. iNext. iMod "Hclo". by iApply "IH".
 Qed.
 
@@ -160,11 +160,11 @@ Proof using HAff.
   {
     iInduction n2 as [|n2] "IH".
     { iApply "HPQ". eauto. }
-    rewrite !Nat_iter_S.
+    rewrite !Nat.iter_succ.
     iApply  (step_fupdN_inner_wand with "HP"); auto.
     iIntros. iApply ("IH" with "[$] [$]").
   }
-  rewrite Nat_iter_S.
+  rewrite Nat.iter_succ.
   iApply (step_fupdN_inner_later); first auto.
   iNext. by iApply ("IH" with "[$] [$]").
 Qed.
@@ -201,7 +201,7 @@ Lemma step_fupdN_innerN_S_fupd E k n (P: PROP):
   (|={E}_k=>^(S n) |={E}=> P) -∗
   (|={E}_k=>^(S n) P).
 Proof using HAff.
-  rewrite !Nat_iter_S_r.
+  rewrite !Nat.iter_succ_r.
   iIntros "H". iApply (step_fupdN_innerN_wand' with "H").
   iApply step_fupdN_inner_fupd.
 Qed.
@@ -210,24 +210,24 @@ Lemma step_fupdN_inner_add E1 E2 k1 k2 (P: PROP):
   (|={E1,∅}=> |={∅}▷=>^k1 |={∅, E1}=> |={E1,∅}=> |={∅}▷=>^k2 |={∅,E2}=> P)
   ⊢ |={E1,∅}=> |={∅}▷=>^(k1 + k2) |={∅,E2}=> P.
 Proof using HAff.
-  rewrite Nat_iter_add.
+  rewrite Nat.iter_add.
   iIntros "H". iMod "H". iModIntro.
   iApply (step_fupdN_mono with "H"). iIntros "H".
   destruct k2.
   * simpl. do 3 iMod "H". eauto.
-  * rewrite Nat_iter_S. iMod "H". iMod "H". eauto.
+  * rewrite Nat.iter_succ. iMod "H". iMod "H". eauto.
 Qed.
 
 Lemma step_fupdN_inner_add' E1 k1 k2 (P: PROP):
   (|={E1,∅}_k1=> |={∅,∅}_k2=> P)
   ⊢ |={E1,∅}_(k1+k2)=> P.
 Proof using HAff.
-  rewrite Nat_iter_add.
+  rewrite Nat.iter_add.
   iIntros "H". iMod "H". iModIntro.
   iApply (step_fupdN_mono with "H"). iIntros "H".
   destruct k2.
   * simpl. do 3 iMod "H". eauto.
-  * rewrite Nat_iter_S. iMod "H". iMod "H". eauto.
+  * rewrite Nat.iter_succ. iMod "H". iMod "H". eauto.
 Qed.
 
 Lemma step_fupdN_ne E1 E2 n:
@@ -268,7 +268,7 @@ Proof using HAff.
   iInduction n as [| n] "IH" forall (P HPlain).
   - rewrite //=. eauto.
   - iIntros "H".
-    rewrite Nat_iter_S.
+    rewrite Nat.iter_succ.
     iDestruct (step_fupdN_inner_wand with "H []") as "H";
       [ reflexivity | reflexivity | |].
     { iApply "IH"; eauto. }
@@ -304,7 +304,7 @@ Lemma step_fupd2N_later k P:
 Proof.
   iInduction k as [| k] "IH".
   - eauto.
-  - iIntros. rewrite Nat_iter_S.
+  - iIntros. rewrite Nat.iter_succ.
     iModIntro. iModIntro. iModIntro. by iApply "IH".
 Qed.
 
@@ -318,7 +318,7 @@ Proof.
   - iIntros. iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo".
     { set_solver. }
     { set_solver. }
-    rewrite Nat_iter_S.
+    rewrite Nat.iter_succ.
     iModIntro. iModIntro. iNext. iMod "Hclo". by iApply "IH".
 Qed.
 
@@ -391,25 +391,25 @@ Qed.
 Lemma step_fupd2N_add k1 k2 P :
  (||▷=>^k1 ||▷=>^k2 P) ⊣⊢ ||▷=>^(k1 + k2) P.
 Proof.
-  rewrite Nat_iter_add. done.
+  rewrite Nat.iter_add. done.
 Qed.
 
 Lemma step_fupd2N_inner_add E1a E1b E2a E2b k1 k2 P :
  (||={E1a|E1b,∅|∅}=> ||▷=>^k1 ||={∅|∅, E1a|E1b}=> ||={E1a|E1b,∅|∅}=> ||▷=>^k2 ||={∅|∅,E2a|E2b}=> P)
   ⊢||={E1a|E1b,∅|∅}=> ||▷=>^(k1 + k2) ||={∅|∅,E2a|E2b}=> P.
 Proof.
-  rewrite Nat_iter_add.
+  rewrite Nat.iter_add.
   iIntros "H". iMod "H". iModIntro.
   iApply (step_fupd2N_wand with "H"). iIntros "H".
   destruct k2.
   * simpl. do 3 iMod "H". eauto.
-  * rewrite Nat_iter_S. iMod "H". iMod "H". eauto.
+  * rewrite Nat.iter_succ. iMod "H". iMod "H". eauto.
 Qed.
 
 Lemma step_fupd2N_S_fupd2 n P :
   (||▷=>^(S n) P) ⊣⊢ (||▷=>^(S n) ||={∅|∅,∅|∅}=> P).
 Proof.
-  apply (anti_symm (⊢)); rewrite !Nat_iter_S_r.
+  apply (anti_symm (⊢)); rewrite !Nat.iter_succ_r.
   - iIntros "H". iApply (step_fupd2N_wand with "H").
     iIntros ">H". iModIntro. iNext. iModIntro. auto.
   - iIntros "H". iApply (step_fupd2N_wand with "H").
@@ -430,7 +430,7 @@ Lemma step_fupd2_fupd2N n P :
 Proof.
   intros. destruct n; first lia.
   replace (S n) with (1 + n) by lia.
-  rewrite Nat_iter_add. iIntros "H". iMod "H". done.
+  rewrite Nat.iter_add. iIntros "H". iMod "H". done.
 Qed.
 
 Lemma step_fupd2_fupd2 Eo1 Eo2 Ei1 Ei2 P :

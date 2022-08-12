@@ -169,7 +169,7 @@ Section frac_coPset_cmra_lemmas.
       rewrite /fCoPset//= in Hval.
       repeat (destruct (decide _)); try set_solver; [].
       revert Hval. rewrite -Some_op Some_valid frac_valid => ?.
-      eapply Qp_le_ngt; eauto.
+      eapply Qp.le_ngt; eauto.
     * destruct Hdom as (E&Hdom&Hcofin).
       assert (⊤ ∖ E ⊆ ⊤ ∖ (E1 ∪ E2)).
       { cut (E1 ∪ E2 ⊆ E); first by set_solver.
@@ -337,7 +337,7 @@ Section frac_coPset_prop.
     rewrite frac_valid.
     destruct (decide ((1 < q1 + q2))%Qp) as [Hlt|Hnlt].
     - left. apply fCoPset_valid_op1 in Hval as (?&?); auto; set_solver.
-    - right. apply Qp_le_ngt; auto.
+    - right. apply Qp.le_ngt; auto.
   Qed.
 
   Lemma ownfCP_disj γ q1 q2 D E :

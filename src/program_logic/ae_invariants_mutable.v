@@ -74,7 +74,7 @@ Section ae_inv_mut.
     { destruct k.
       - iMod ("Hshift" with "[$]") as ">(HP&HR)".
         iFrame "HR HAE".
-        iDestruct (ownI_mut_combine  with "[$] [$]") as "Hmut". rewrite Qp_div_2.
+        iDestruct (ownI_mut_combine  with "[$] [$]") as "Hmut". rewrite Qp.div_2.
         iMod (ownI_close_modify O _ _ (list_to_vec Ps) (list_to_vec Qs')
                 with "[$Hw $HiP $Hmut $HD HP]") as "($&HE'&Hmut)".
         { rewrite ?vec_to_list_to_vec. iFrame "HP". }
@@ -86,7 +86,7 @@ Section ae_inv_mut.
         rewrite ownE_op //.
         iMod ("Hshift" with "Hinterp [$Hw $HAE $HE]") as ">(Hw&(HAE&HE)&HP&HR)".
         iFrame "HR HAE ".
-        iDestruct (ownI_mut_combine  with "[$] [$]") as "Hmut". rewrite Qp_div_2.
+        iDestruct (ownI_mut_combine  with "[$] [$]") as "Hmut". rewrite Qp.div_2.
         iDestruct ("Hclo" with "[$]") as "Hw".
         iMod (ownI_close_modify (S k) _ _ (list_to_vec Ps) (list_to_vec Qs')
                 with "[$Hw $HiP $Hmut $HD HP]") as "($&HE'&Hmut)".
@@ -99,7 +99,7 @@ Section ae_inv_mut.
       rewrite ownE_op //.
       iMod ("Hshift" with "Hinterp [$Hw $HAE $HE]") as ">(Hw&(HAE&HE)&HP&HR)".
       iFrame "HR HAE ".
-      iDestruct (ownI_mut_combine  with "[$] [$]") as "Hmut". rewrite Qp_div_2.
+      iDestruct (ownI_mut_combine  with "[$] [$]") as "Hmut". rewrite Qp.div_2.
       iMod (ownI_close_modify k _ _ (list_to_vec Ps) (list_to_vec Qs')
               with "[$Hw $HiP $Hmut $HD HP]") as "($&HE'&Hmut)".
       { rewrite ?vec_to_list_to_vec. iFrame. }

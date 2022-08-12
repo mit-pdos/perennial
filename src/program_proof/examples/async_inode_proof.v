@@ -531,7 +531,7 @@ Proof.
       wp_apply wp_slice_len.
       wp_pures.
       wp_loadField.
-      rewrite -(Qp_div_2 q).
+      rewrite -(Qp.div_2 q).
       iEval (setoid_rewrite is_block_fractional) in "His_blocks".
       iEval (rewrite big_sepL2_sep) in "His_blocks".
       iDestruct "His_blocks" as "(His_blocks1&His_blocks2)".

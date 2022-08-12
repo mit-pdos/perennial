@@ -1068,7 +1068,7 @@ Proof.
         inversion Hin.
       }
       destruct Htxn_id' as (Htxn_id'&Hb&Haddr).
-      rewrite -nat_le_plus_minus in Hsnapshot_txns_are; last by lia.
+      rewrite -Nat.le_add_sub in Hsnapshot_txns_are; last by lia.
       destruct Hsnapshot as [Hhas Hmatch].
       destruct (decide (
         addr ∈ (

@@ -1003,7 +1003,7 @@ Proof.
         unfold roundUpDiv, MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *. lia.
       }
       assert (((int.Z off - 500) `div` 512) <= ((length σ.(inode.blocks) - 500) `div` 512)) as Hoff. {
-        apply Z_div_le; lia.
+        apply Z.div_le; lia.
       }
 
       assert (int.Z index < ds.(impl_s.numInd)) as HindexMax. {

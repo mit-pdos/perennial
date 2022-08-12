@@ -333,7 +333,7 @@ Qed.
 Lemma step_ncfupdN_S_ncfupd n E P:
   (|NC={E}[∅]▷=>^(S n) P) ⊣⊢ (|NC={E}[∅]▷=>^(S n) |NC={E}=> P).
 Proof.
-  apply (anti_symm (⊢)); rewrite !Nat_iter_S_r; apply step_ncfupdN_mono;
+  apply (anti_symm (⊢)); rewrite !Nat.iter_succ_r; apply step_ncfupdN_mono;
     rewrite -step_ncfupd_ncfupd //.
 Qed.
 

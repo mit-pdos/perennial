@@ -43,7 +43,7 @@ Proof.
   intros z ? Hlt.
 
   let t n c :=
-    destruct (Z_eq_dec z n) as [->|?];
+    destruct (Z.eq_dec z n) as [->|?];
     [ refine (eq_rect (U8 n) P c _ _);
       apply inj_u8_eq; vm_compute; reflexivity
     |] in

@@ -27,7 +27,7 @@ Section proof.
   Context `{!stagedG Σ}.
 
   Definition rfrac: Qp :=
-    (Qp_inv (Qp_of_Z (2^64)))%Qp.
+    (Qp.inv (Qp_of_Z (2^64)))%Qp.
 
   Definition num_readers (n : u64) := 0 `max` int.Z (word.sub n 1).
   Definition remaining_readers (n : u64) : Z :=
@@ -38,11 +38,11 @@ Section proof.
   Lemma remaining_frac_read_acquire n :
     1 ≤ int.Z n →
     int.Z n < int.Z (word.add n 1) →
-    remaining_frac n = Qp_add (remaining_frac (word.add n 1)) rfrac.
+    remaining_frac n = Qp.add (remaining_frac (word.add n 1)) rfrac.
   Proof.
     intros Hle1 Hle2.
     intros.
-    rewrite -Qp_to_Qc_inj_iff/Qp_of_Z//=.
+    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
     { f_equal. rewrite /remaining_readers.
       rewrite Z.max_r //. rewrite /num_readers.
@@ -70,10 +70,10 @@ Section proof.
 
   Lemma remaining_frac_read_release n :
     1 < int.Z n →
-    Qp_add (remaining_frac n) rfrac = remaining_frac (word.sub n 1).
+    Qp.add (remaining_frac n) rfrac = remaining_frac (word.sub n 1).
   Proof.
     intros Hlt.
-    rewrite -Qp_to_Qc_inj_iff/Qp_of_Z//=.
+    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
     { f_equal. rewrite /remaining_readers.
       rewrite Z.max_r //. rewrite /num_readers.
@@ -98,7 +98,7 @@ Section proof.
   Lemma remaining_free :
     remaining_frac 1 = 1%Qp.
   Proof.
-    rewrite -Qp_to_Qc_inj_iff/Qp_of_Z//=.
+    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers 1) = Qc_of_Z (remaining_readers 1)).
     { f_equal. }
     rewrite Heq1 //=.
@@ -190,7 +190,7 @@ Section proof.
     iMod (inv_alloc N _ (rwlock_inv l R) with "[Hl HR]") as "#?".
     { iIntros "!>". iExists _. iFrame.
       rewrite /is_free_lock.
-      iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+      iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
       iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
       iFrame.
       rewrite remaining_free. iFrame.
@@ -251,7 +251,7 @@ Section proof.
         { destruct a. intros Hu. subst. auto. }
         iDestruct "HR" as "[>Hl2 HR]".
         iCombine "Hl Hl2" as "Hl".
-        rewrite Qp_quarter_three_quarter.
+        rewrite Qp.quarter_three_quarter.
         iApply (wpc_wp NotStuck _ _ _ True).
         iDestruct ("Hwand1" $! (remaining_frac (word.add u 1)) (rfrac) with "[HR]") as "Hpost".
         { rewrite remaining_frac_read_acquire; try naive_solver. }
@@ -259,7 +259,7 @@ Section proof.
         iApply wp_wpc.
         wp_cmpxchg_suc.
         iModIntro.
-        iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+        iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
         iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
         iIntros "(Hc1&Hc2)".
         iModIntro.
@@ -311,7 +311,7 @@ Section proof.
         {  intros Hu. subst. inversion H.  }
         iDestruct "HR" as "[>Hl2 HR]".
         iCombine "Hl Hl2" as "Hl".
-        rewrite Qp_quarter_three_quarter.
+        rewrite Qp.quarter_three_quarter.
         iApply (wpc_wp NotStuck _ _ _ True).
         iDestruct ("Hwand2" $! (remaining_frac u) (rfrac) with "HR Hborrow") as "Hpost".
         iApply (post_expr_elim with "Hpost"); first set_solver+; auto.
@@ -330,7 +330,7 @@ Section proof.
         iApply wp_wpc.
         wp_cmpxchg_suc.
         iModIntro.
-        iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+        iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
         iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
         iIntros "Hc".
         rewrite remaining_frac_read_release; auto.
@@ -384,10 +384,10 @@ Section proof.
       subst.
       iDestruct "HR" as "(>Hl2&Hb)".
       iCombine "Hl Hl2" as "Hl".
-      rewrite Qp_quarter_three_quarter.
+      rewrite Qp.quarter_three_quarter.
       wp_cmpxchg_suc.
       iModIntro.
-      iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+      iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
       iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
       iSplitL "Hl1"; first (iNext; iExists (U64 0); eauto).
       wp_pures.
@@ -426,11 +426,11 @@ Section proof.
     iDestruct (locked_loc with "Hlocked") as "Hl2".
     iDestruct (heap_mapsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
-    rewrite Qp_quarter_three_quarter.
+    rewrite Qp.quarter_three_quarter.
     wp_cmpxchg_suc.
     iModIntro.
     iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
-    iEval (rewrite -Qp_quarter_three_quarter) in "Hl".
+    iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
     iNext. iExists (U64 1). iFrame.
     rewrite remaining_free. eauto.
