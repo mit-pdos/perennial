@@ -61,7 +61,9 @@ Theorem wp_WriteReservedKey (txn : loc) (v : u64) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_WriteReservedKey r⌝ ∗ dbmap_ptstos γ 1 r >>>
       WriteReservedKey #txn #v @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteReservedKey v r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
+    <<< ∃∃ (ok : bool) (w : dbmap),
+          if ok then ⌜Q_WriteReservedKey v r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r
+    >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -74,7 +76,7 @@ Proof.
   (* }                                                       *) 
   (* return t.DoTxn(body)                                    *) 
   (***********************************************************)
-  wp_apply (wp_txn__DoTxn _ _ _ (Q_WriteReservedKey v) with "[$Htxn]").
+  wp_apply (wp_txn__DoTxn_xres _ _ _ (Q_WriteReservedKey v) with "[$Htxn]").
   { unfold Q_WriteReservedKey. apply _. }
   { unfold spec_body.
     iIntros (tid r τ Φ') "HP HΦ'".
@@ -124,7 +126,9 @@ Theorem wp_WriteFreeKey (txn : loc) (v : u64) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_WriteFreeKey r⌝ ∗ dbmap_ptstos γ 1 r >>>
       WriteFreeKey #txn #v @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_WriteFreeKey v r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
+    <<< ∃∃ (ok : bool) (w : dbmap),
+          if ok then ⌜Q_WriteFreeKey v r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r
+    >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -137,7 +141,7 @@ Proof.
   (* }                                                       *)
   (* return t.DoTxn(body)                                    *)
   (***********************************************************)
-  wp_apply (wp_txn__DoTxn _ _ _ (Q_WriteFreeKey v) with "[$Htxn]").
+  wp_apply (wp_txn__DoTxn_xres _ _ _ (Q_WriteFreeKey v) with "[$Htxn]").
   { unfold Q_WriteFreeKey. apply _. }
   { unfold spec_body.
     iIntros (tid r τ Φ') "HP HΦ'".
@@ -241,7 +245,7 @@ Proof.
   iSplit.
   { iPureIntro. unfold P_WriteReservedKey. set_solver. }
   (* Take atomic postcondition. *)
-  iIntros (ok) "H".
+  iIntros (ok w) "H".
   iMod "Hclose" as "_".
 
   (***********************************************************)
@@ -249,7 +253,7 @@ Proof.
   (***********************************************************)
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    iDestruct "H" as (w) "[%HQ Hdbpt0]".
+    iDestruct "H" as "[%HQ Hdbpt0]".
     unfold Q_WriteReservedKey in HQ.
     iDestruct (big_sepM_lookup with "Hdbpt0") as "Hdbpt0"; first apply HQ.
     iDestruct (dbmap_elem_split (1 / 2) (1 / 2) with "Hdbpt0") as "[Hdbpt Hdbpt0]"; first compute_done.
@@ -351,7 +355,7 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   iSplit.
   { iPureIntro. unfold P_WriteFreeKey. set_solver. }
   (* Take atomic precondition *)
-  iIntros (ok) "H".
+  iIntros (ok w) "H".
   iMod "Hclose" as "_".
 
   (***********************************************************)
@@ -359,7 +363,7 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   (***********************************************************)
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    iDestruct "H" as (w) "[%HQ Hdbpt1]".
+    iDestruct "H" as "[%HQ Hdbpt1]".
     (* iDestruct "H" as (w) "[%HQ Hdbpt0]". This typo produces weird behavior. *)
     unfold Q_WriteFreeKey in HQ.
     iDestruct (big_sepM_lookup with "Hdbpt1") as "Hdbpt1"; first apply HQ.

@@ -19,8 +19,8 @@ Definition commit_false_cases tid r γ τ : iProp Σ :=
   (∃ mods w Q, fcc_tmods_frag γ (tid, mods) ∗ txnmap_ptstos τ w ∗
                ⌜Q r w ∧ ¬ (Q r (mods ∪ r) ∧ dom mods ⊆ dom r) ∧ dom w = dom r⌝).
 
-Theorem wp_txn__Commit_false txn tid view γ τ :
-  {{{ own_txn_ready txn tid view γ τ ∗ commit_false_cases tid view γ τ }}}
+Theorem wp_txn__Commit_false txn tid r γ τ :
+  {{{ own_txn_ready txn tid r γ τ ∗ commit_false_cases tid r γ τ }}}
     Txn__Commit #txn
   {{{ (ok : bool), RET #ok; False }}}.
 Proof.
@@ -116,8 +116,8 @@ Proof.
     subst mods'.
     (* Obtain contradiction from [Q r w] and [¬ Q r w]. *)
     iDestruct (txnmap_lookup_big with "Htxnmap Htxnps") as "%Hw".
-    assert (Hviewdom : dom view = dom (mods ∪ view)) by set_solver.
-    rewrite Hviewdom in Hdom.
+    assert (Hrdom : dom r = dom (mods ∪ r)) by set_solver.
+    rewrite Hrdom in Hdom.
     symmetry in Hdom.
     pose proof (Map.map_subset_dom_eq _ _ _ _ Hdom Hw) as H.
     rewrite not_and_r in contra.
@@ -206,12 +206,16 @@ Proof.
   by eapply elem_of_dom_2.
 Qed.
 
-Theorem wp_txn__Commit txn tid view mods γ τ :
-  {{{ own_txn_ready txn tid view γ τ ∗ cmt_tmods_frag γ (tid, mods) }}}
+Definition commit_actual_case tid (r w mods : dbmap) γ τ : iProp Σ :=
+  cmt_tmods_frag γ (tid, mods) ∗ txnmap_ptstos τ w ∗ ⌜dom w = dom r⌝.
+
+Theorem wp_txn__Commit txn tid r w mods γ τ :
+  {{{ own_txn_ready txn tid r γ τ ∗ commit_actual_case tid r w mods γ τ }}}
     Txn__Commit #txn
-  {{{ RET #(); own_txn_uninit txn γ }}}.
+  {{{ RET #(); own_txn_uninit txn γ ∗ ⌜w = mods ∪ r⌝ }}}.
 Proof.
-  iIntros (Φ) "[Htxn Hfrag] HΦ".
+  iIntros (Φ) "[Htxn H] HΦ".
+  iDestruct "H" as "(Hfrag & Htxnps & %Hdom)".
   wp_call.
 
   (***********************************************************)
@@ -274,6 +278,12 @@ Proof.
   { by eauto 15 with iFrame. }
   iIntros "!> HwrbufRP".
   wp_pures.
+  (* Obtain [w = mods ∪ view]. *)
+  iDestruct (txnmap_lookup_big with "Htxnmap Htxnps") as "%Hw".
+  assert (Hrdom : dom r = dom (mods ∪ r)) by set_solver.
+  rewrite Hrdom in Hdom.
+  symmetry in Hdom.
+  pose proof (Map.map_subset_dom_eq _ _ _ _ Hdom Hw) as Heq.
 
   (***********************************************************)
   (* txn.apply()                                             *)

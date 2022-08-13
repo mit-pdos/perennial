@@ -13,22 +13,31 @@ Definition spec_body (body : val) (txn : loc) tid r P Q γ τ : iProp Σ :=
   }}}.
 *)
 
-Definition spec_body (body : val) (txn : loc) tid r P Q γ τ : iProp Σ :=
+Definition spec_body
+           (body : val) (txn : loc) tid r
+           (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop)
+           (Rc : dbmap -> dbmap -> iProp Σ) (Ra : dbmap -> iProp Σ)
+           γ τ : iProp Σ :=
   ∀ Φ,
   own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r -∗
   (∀ ok : bool,
      (own_txn txn tid r γ τ ∗
-      if ok then ∃ w, ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True) -∗ Φ #ok) -∗
+      if ok
+      then ∃ w, ⌜Q r w ∧ dom r = dom w⌝ ∗ (Rc r w ∧ Ra r) ∗ txnmap_ptstos τ w
+      else Ra r) -∗ Φ #ok) -∗
   WP body #txn {{ v, Φ v }}.
 
 Theorem wp_txn__DoTxn
-        txn (body : val) (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop) γ :
+        txn (body : val)
+        (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop)
+        (Rc : dbmap -> dbmap -> iProp Σ) (Ra : dbmap -> iProp Σ)
+        γ :
   (∀ r w, (Decision (Q r w))) ->
-  ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body body txn tid r P Q γ τ) }}}
+  ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body body txn tid r P Q Rc Ra γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
       Txn__DoTxn #txn body @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
-    {{{ RET #ok; own_txn_uninit txn γ }}}.
+    <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
+    {{{ RET #ok; own_txn_uninit txn γ ∗ if ok then Rc r w else Ra r }}}.
 Proof.
   iIntros (Hdec) "!>".
   iIntros (Φ) "[Htxn Hbody] HAU".
@@ -66,7 +75,7 @@ Proof.
   iMod (per_key_inv_ltuple_ptstos with "Hkeys") as "[Hkeys Hltuples]".
   iDestruct (dbmap_lookup_big with "Hm Hdbps") as "%Hrm". 
   (* Obtain [ltuple_ptsto] over [r]. *)
-  iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first auto.
+  iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first done.
   (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
   iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
   iDestruct (fc_inv_fc_tids_lt_ts with "Hfci Hfcc Hcmt") as "%Hfctids".
@@ -74,7 +83,8 @@ Proof.
   pose proof (spec_peek future ts).
   destruct (peek future ts).
   { (* Case NCA. *)
-    iMod ("HAUC" $! false with "Hdbps") as "HΦ".
+    (* Choose the will-abort branch. Use [∅] as placeholder. *)
+    iMod ("HAUC" $! false ∅ with "Hdbps") as "HΦ".
     (* Add [ts] to [tids_nca] and get a piece of evidence. *)
     iNamed "Hnca".
     iMod (nca_tids_insert ts with "HncaAuth") as "[HncaAuth HncaFrag]".
@@ -113,12 +123,12 @@ Proof.
     { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
-    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
     iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HncaFrag]"); first eauto.
+      wp_apply (wp_txn__Abort_false with "[$Htxn HncaFrag]"); first by eauto.
       by iIntros "contra".
     }
     wp_apply (wp_txn__acquire with "Htxn").
@@ -126,15 +136,16 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* System-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HncaFrag]"); first eauto.
+      wp_apply (wp_txn__Abort_false with "[$Htxn HncaFrag]"); first by eauto.
       by iIntros "contra".
     }
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit_false with "[$Htxn HncaFrag]"); first eauto.
+    wp_apply (wp_txn__Commit_false with "[$Htxn HncaFrag]"); first by eauto.
     by iIntros (ok) "contra".
   }
   { (* Case FA. *)
-    iMod ("HAUC" $! false with "Hdbps") as "HΦ".
+    (* Choose the will-abort branch. Use [∅] as placeholder. *)
+    iMod ("HAUC" $! false ∅ with "Hdbps") as "HΦ".
     (* Add [s] to [tids_fa] and get a piece of evidence. *)
     iNamed "Hfa".
     iMod (fa_tids_insert ts with "HfaAuth") as "[HfaAuth HfaFrag]".
@@ -173,7 +184,7 @@ Proof.
     { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
-    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
     iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
@@ -182,7 +193,8 @@ Proof.
       iIntros "Htxn".
       wp_pures.
       (* We'll return something meaningful once [res] is added. *)
-      by iApply "HΦ".
+      iApply "HΦ".
+      by iFrame.
     }
     wp_apply (wp_txn__acquire with "Htxn").
     iIntros (ok) "Htxn".
@@ -193,14 +205,18 @@ Proof.
       iIntros "Htxn".
       wp_pures.
       (* We'll return something meaningful once [res] is added. *)
-      by iApply "HΦ".
+      iApply "HΦ".
+      (* Txn body gives both [Rc] and [Ra], and we choose the latter here. *)
+      iDestruct "Hpost" as (w) "(_ & [_ Ra] & _)".
+      by iFrame.
     }
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit_false with "[$Htxn HfaFrag]"); first eauto.
+    wp_apply (wp_txn__Commit_false with "[$Htxn HfaFrag]"); first by eauto.
     by iIntros (ok) "contra".
   }
   { (* Case FCI. *)
-    iMod ("HAUC" $! false with "Hdbps") as "HΦ".
+    (* Choose the will-abort branch. Use [∅] as placeholder. *)
+    iMod ("HAUC" $! false ∅ with "Hdbps") as "HΦ".
     (* Add [(ts, mods)] to [tmods_fci] and get a piece of evidence. *)
     iNamed "Hfci".
     iMod (fci_tmods_insert (ts, mods) with "HfciAuth") as "[HfciAuth HfciFrag]".
@@ -241,7 +257,7 @@ Proof.
     { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
-    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
     iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
@@ -258,13 +274,13 @@ Proof.
       by iIntros "contra".
     }
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit_false with "[$Htxn HfciFrag]"); first eauto 10.
+    wp_apply (wp_txn__Commit_false with "[$Htxn HfciFrag]"); first by eauto 10.
     by iIntros (ok) "contra".
   }
   (* We also need the subseteq relation to know which keys we're extending in CMT. *)
   destruct (decide (Q r (mods ∪ r) ∧ dom mods ⊆ dom r)); last first.
   { (* Case FCC, [Q r w] not holds. *)
-    iMod ("HAUC" $! false with "Hdbps") as "HΦ".
+    iMod ("HAUC" $! false ∅ with "Hdbps") as "HΦ".
     (* Add [(ts, mods)] to [tmods_fcc] and get a piece of evidence. *)
     iNamed "Hfcc".
     iMod (fcc_tmods_insert (ts, mods) with "HfccAuth") as "[HfccAuth HfccFrag]".
@@ -304,7 +320,7 @@ Proof.
     { iExists ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
-    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
     iIntros (ok) "[Htxn Hpost]".
     wp_pures.
     wp_if_destruct.
@@ -321,7 +337,7 @@ Proof.
       by iIntros "contra".
     }
     (* Commit branch. *)
-    iDestruct "Hpost" as (w) "[[%HQ %Hdom] Htxnps]".
+    iDestruct "Hpost" as (w) "([%HQ %Hdom] & HR & Htxnps)".
     wp_apply (wp_txn__Commit_false with "[$Htxn HfccFrag Htxnps]").
     { unfold commit_false_cases. do 3 iRight.
       iExists mods, w, Q.
@@ -334,8 +350,7 @@ Proof.
     destruct a as [HQ Hdom].
     iMod (per_key_inv_dbmap_ptstos_update ts' r mods with "Hm Hdbps Hkeys") as "(Hm & Hdbps & Hkeys)".
     { done. } { lia. }
-    iMod ("HAUC" $! true with "[Hdbps]") as "HΦ".
-    { iExists _. by iFrame. }
+    iMod ("HAUC" $! true (mods ∪ r) with "[Hdbps]") as "HΦ"; first by iFrame.
     (* Add [(ts, mods)] to [tmods] and get a piece of evidence. *)
     iNamed "Hcmt".
     iMod (cmt_tmods_insert (ts, mods) with "HcmtAuth") as "[HcmtAuth HcmtFrag]".
@@ -392,11 +407,64 @@ Proof.
       by iIntros "contra".
     }
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit with "[$Htxn $HcmtFrag]").
-    iIntros "Htxn".
+    (* Txn body gives both [Rc] and [Ra], and we choose the latter here. *)
+    iDestruct "Hpost" as (w) "([_ %Hdom'] & [HRc _] & Htxnps)".
+    wp_apply (wp_txn__Commit with "[$Htxn $HcmtFrag $Htxnps]"); first done.
+    iIntros "[Htxn <-]".
     wp_pures.
-    by iApply "HΦ".
+    iApply "HΦ".
+    by iFrame.
   }
 Qed.
 
+Definition spec_body_xres
+           (body : val) (txn : loc) tid r
+           (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop)
+           γ τ : iProp Σ :=
+  ∀ Φ,
+  own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r -∗
+  (∀ ok : bool,
+     (own_txn txn tid r γ τ ∗
+      if ok then ∃ w, ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True) -∗ Φ #ok) -∗
+  WP body #txn {{ v, Φ v }}.
+
+Theorem wp_txn__DoTxn_xres
+        txn (body : val)
+        (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop)
+        γ :
+  (∀ r w, (Decision (Q r w))) ->
+  ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_xres body txn tid r P Q γ τ) }}}
+    <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
+      Txn__DoTxn #txn body @ ↑mvccNSST
+    <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
+    {{{ RET #ok; own_txn_uninit txn γ }}}.
+Proof.
+  iIntros (Hdec) "!>".
+  iIntros (Φ) "[Htxn Hbody] HAU".
+  set Rc : dbmap -> dbmap -> iProp Σ := (λ (r w : dbmap), True)%I.
+  set Ra : dbmap -> iProp Σ := (λ (r : dbmap), True)%I.
+  wp_apply (wp_txn__DoTxn _ _ P Q Rc Ra with "[$Htxn Hbody]").
+  { clear Φ.
+    iIntros (tid r τ Φ) "(Htxn & %HP & Htxnps) HΦ".
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
+    iIntros (ok) "[Htxn Hpost]".
+    iApply "HΦ".
+    iFrame.
+    destruct ok; last done.
+    iDestruct "Hpost" as (w) "[%Hdom Htxnps]".
+    eauto 20 with iFrame.
+  }
+  iMod "HAU".
+  iModIntro.
+  iDestruct "HAU" as (r) "[[%HP Hdbps] HAU]".
+  iExists r.
+  iFrame.
+  iSplit; first done.
+  iIntros (ok w) "Hpost".
+  iMod ("HAU" with "Hpost") as "HΦ".
+  iIntros "!> [Htxn H]".
+  iApply "HΦ".
+  iFrame.
+Qed.
+  
 End program.

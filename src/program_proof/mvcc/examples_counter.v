@@ -29,6 +29,8 @@ Definition Q_Increment (r w : dbmap) :=
     r !! (U64 0) = Some (Value v) ∧
     w !! (U64 0) = Some (Value u) ∧
     int.Z u = int.Z v + 1.
+Definition Rc_Increment (r w : dbmap) : iProp Σ := True.
+Definition Ra_Increment (r : dbmap) : iProp Σ := True.
 
 (**
  * [p] is not used until [R/R1/R2] are added to [wp_txn__DoTxn].
@@ -38,7 +40,11 @@ Theorem wp_IncrementSeq txn (p : loc) tid r γ τ :
     IncrementSeq #txn #p
   {{{ (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
-      if ok then ∃ w, ⌜Q_Increment r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
+      if ok
+      then ∃ w, ⌜Q_Increment r w ∧ dom r = dom w⌝ ∗
+                (Rc_Increment r w ∧ Ra_Increment r) ∗
+                txnmap_ptstos τ w
+      else Ra_Increment r
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %HP & Hpt) HΦ".
@@ -83,6 +89,7 @@ Proof.
   iFrame "Htxn".
   iExists _. iFrame "Hpt".
   iPureIntro.
+  split; last done.
   split; last set_solver.
   unfold Q_Increment.
   eexists _, _.
@@ -98,8 +105,8 @@ Theorem wp_Increment (txn : loc) (p : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_Increment r⌝ ∗ dbmap_ptstos γ 1 r >>>
       Increment #txn #p @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then ∃ w, ⌜Q_Increment r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
-    {{{ RET #ok; own_txn_uninit txn γ }}}.
+    <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q_Increment r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
+    {{{ RET #ok; own_txn_uninit txn γ ∗ if ok then Rc_Increment r w else Ra_Increment r }}}.
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
@@ -111,10 +118,11 @@ Proof.
   (* }                                                       *) 
   (* return t.DoTxn(body)                                    *) 
   (***********************************************************)
-  wp_apply (wp_txn__DoTxn _ _ _ Q_Increment with "[$Htxn]").
+  wp_apply (wp_txn__DoTxn _ _ _ Q_Increment Rc_Increment Ra_Increment with "[$Htxn]").
   { unfold spec_body.
     iIntros (tid r τ Φ') "HP HΦ'".
     wp_pures.
+    unfold Rc_Increment, Ra_Increment.
     iApply (wp_IncrementSeq with "HP HΦ'").
   }
   done.
@@ -126,6 +134,8 @@ Definition Q_Decrement (r w : dbmap) :=
     r !! (U64 0) = Some (Value v) ∧
     w !! (U64 0) = Some (Value u) ∧
     int.Z u = int.Z v - 1.
+Definition Rc_Decrement (r w : dbmap) : iProp Σ := True.
+Definition Ra_Decrement (r : dbmap) : iProp Σ := True.
 
 (**
  * [p] is not used until [R/R1/R2] are added to [wp_txn__DoTxn].
@@ -135,7 +145,11 @@ Theorem wp_DecrementSeq txn (p : loc) tid r γ τ :
     DecrementSeq #txn #p
   {{{ (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
-      if ok then ∃ w, ⌜Q_Decrement r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
+      if ok
+      then ∃ w, ⌜Q_Decrement r w ∧ dom r = dom w⌝ ∗
+                (Rc_Decrement r w ∧ Ra_Decrement r) ∗
+                txnmap_ptstos τ w
+      else Ra_Decrement r
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & %HP & Hpt) HΦ".
@@ -180,6 +194,7 @@ Proof.
   iFrame "Htxn".
   iExists _. iFrame "Hpt".
   iPureIntro.
+  split; last done.
   split; last set_solver.
   unfold Q_Decrement.
   eexists _, _.
@@ -196,8 +211,8 @@ Theorem wp_Decrement (txn : loc) (p : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_Decrement r⌝ ∗ dbmap_ptstos γ 1 r >>>
       Decrement #txn #p @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then ∃ w, ⌜Q_Decrement r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
-    {{{ RET #ok; own_txn_uninit txn γ }}}.
+    <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q_Decrement r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
+    {{{ RET #ok; own_txn_uninit txn γ ∗ if ok then Rc_Decrement r w else Ra_Decrement r }}}.
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
@@ -291,7 +306,7 @@ Proof.
   iSplit.
   { iPureIntro. unfold P_Increment. by eauto. }
   (* Take atomic postcondition. *)
-  iIntros (ok) "H".
+  iIntros (ok w) "H".
   iMod "Hclose" as "_".
 
   (***********************************************************)
@@ -299,7 +314,7 @@ Proof.
   (***********************************************************)
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    iDestruct "H" as (w) "[%HQ Hdbpt]".
+    iDestruct "H" as "[%HQ Hdbpt]".
     unfold Q_Increment in HQ.
     destruct HQ as (v' & u' & Hlookupr & Hlookupw & Hvu).
     (* Show [v = v']. *)
@@ -364,7 +379,7 @@ Proof.
   iSplit.
   { iPureIntro. unfold P_Decrement. by eauto. }
   (* Take atomic postcondition. *)
-  iIntros (ok) "H".
+  iIntros (ok w) "H".
   iMod "Hclose" as "_".
 
   (***********************************************************)
@@ -372,7 +387,7 @@ Proof.
   (***********************************************************)
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    iDestruct "H" as (w) "[%HQ Hdbpt]".
+    iDestruct "H" as "[%HQ Hdbpt]".
     unfold Q_Increment in HQ.
     destruct HQ as (v' & u' & Hlookupr & Hlookupw & Hvu).
     (* Show [v = v']. *)
