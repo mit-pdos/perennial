@@ -77,7 +77,7 @@ Proof.
   wp_apply (wp_txn__DoTxn _ _ _ (Q_WriteReservedKey v) with "[$Htxn]").
   { unfold Q_WriteReservedKey. apply _. }
   { unfold spec_body.
-    iIntros (tid r τ Φ') "!> HP HΦ'".
+    iIntros (tid r τ Φ') "HP HΦ'".
     wp_pures.
     iApply (wp_WriteReservedKeySeq with "HP HΦ'").
   }
@@ -140,7 +140,7 @@ Proof.
   wp_apply (wp_txn__DoTxn _ _ _ (Q_WriteFreeKey v) with "[$Htxn]").
   { unfold Q_WriteFreeKey. apply _. }
   { unfold spec_body.
-    iIntros (tid r τ Φ') "!> HP HΦ'".
+    iIntros (tid r τ Φ') "HP HΦ'".
     wp_pures.
     iApply (wp_WriteFreeKeySeq with "HP HΦ'").
   }

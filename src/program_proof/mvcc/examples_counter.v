@@ -45,7 +45,7 @@ Proof.
   wp_call.
 
   (***********************************************************)
-  (* v, _ := txn.Get(0)                                      *) 
+  (* v, _ := txn.Get(0)                                      *)
   (***********************************************************)
   destruct HP as [v Hr].
   unfold txnmap_ptstos.
@@ -61,9 +61,9 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* if v == 18446744073709551615 {                          *) 
-  (*     return false                                        *) 
-  (* }                                                       *) 
+  (* if v == 18446744073709551615 {                          *)
+  (*     return false                                        *)
+  (* }                                                       *)
   (***********************************************************)
   wp_if_destruct.
   { iApply "HΦ". by iFrame. }
@@ -98,7 +98,7 @@ Theorem wp_Increment (txn : loc) (p : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_Increment r⌝ ∗ dbmap_ptstos γ 1 r >>>
       Increment #txn #p @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_Increment r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
+    <<< ∃∃ (ok : bool), if ok then ∃ w, ⌜Q_Increment r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -113,7 +113,7 @@ Proof.
   (***********************************************************)
   wp_apply (wp_txn__DoTxn _ _ _ Q_Increment with "[$Htxn]").
   { unfold spec_body.
-    iIntros (tid r τ Φ') "!> HP HΦ'".
+    iIntros (tid r τ Φ') "HP HΦ'".
     wp_pures.
     iApply (wp_IncrementSeq with "HP HΦ'").
   }
@@ -196,7 +196,7 @@ Theorem wp_Decrement (txn : loc) (p : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_Decrement r⌝ ∗ dbmap_ptstos γ 1 r >>>
       Decrement #txn #p @ ↑mvccNSST
-    <<< ∃∃ (ok : bool), if ok then (∃ w, ⌜Q_Decrement r w⌝ ∗ dbmap_ptstos γ 1 w) else dbmap_ptstos γ 1 r >>>
+    <<< ∃∃ (ok : bool), if ok then ∃ w, ⌜Q_Decrement r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -211,7 +211,7 @@ Proof.
   (***********************************************************)
   wp_apply (wp_txn__DoTxn _ _ _ Q_Decrement with "[$Htxn]").
   { unfold spec_body.
-    iIntros (tid r τ Φ') "!> HP HΦ'".
+    iIntros (tid r τ Φ') "HP HΦ'".
     wp_pures.
     iApply (wp_DecrementSeq with "HP HΦ'").
   }

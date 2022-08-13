@@ -3,6 +3,7 @@ From Perennial.program_proof.mvcc Require Import mvcc_inv txn_common txn_begin t
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
+(*
 Definition spec_body (body : val) (txn : loc) tid r P Q γ τ : iProp Σ :=
   {{{ own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r }}}
     body #txn
@@ -10,6 +11,15 @@ Definition spec_body (body : val) (txn : loc) tid r P Q γ τ : iProp Σ :=
       own_txn txn tid r γ τ ∗
       if ok then ∃ w, ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True
   }}}.
+*)
+
+Definition spec_body (body : val) (txn : loc) tid r P Q γ τ : iProp Σ :=
+  ∀ Φ,
+  own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r -∗
+  (∀ ok : bool,
+     (own_txn txn tid r γ τ ∗
+      if ok then ∃ w, ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True) -∗ Φ #ok) -∗
+  WP body #txn {{ v, Φ v }}.
 
 Theorem wp_txn__DoTxn
         txn (body : val) (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop) γ :
@@ -21,7 +31,7 @@ Theorem wp_txn__DoTxn
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
   iIntros (Hdec) "!>".
-  iIntros (Φ) "[Htxn #Hbody] HAU".
+  iIntros (Φ) "[Htxn Hbody] HAU".
   wp_call.
 
   (***********************************************************)
@@ -85,7 +95,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HncaLt). lia.
     }
-    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HncaFrag]") as "_".
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HncaFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
@@ -145,7 +155,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HfaLt). lia.
     }
-    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfaFrag]") as "_".
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfaFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
@@ -213,7 +223,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HfciLt). lia.
     }
-    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfciFrag]") as "_".
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfciFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
@@ -276,7 +286,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HfccLt). lia.
     }
-    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfccFrag]") as "_".
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfccFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
@@ -347,7 +357,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HcmtLt). lia.
     }
-    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HcmtFrag]") as "_".
+    iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HcmtFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
