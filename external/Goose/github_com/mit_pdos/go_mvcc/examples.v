@@ -9,6 +9,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 Definition IncrementSeq: val :=
   rec: "IncrementSeq" "txn" "p" :=
     let: ("v", <>) := txn.Txn__Get "txn" #0 in
+    "p" <-[uint64T] "v";;
     (if: ("v" = #18446744073709551615)
     then #false
     else
@@ -16,15 +17,18 @@ Definition IncrementSeq: val :=
       #true).
 
 Definition Increment: val :=
-  rec: "Increment" "t" "p" :=
+  rec: "Increment" "t" :=
+    let: "n" := ref (zero_val uint64T) in
     let: "body" := (λ: "txn",
-      IncrementSeq "txn" "p"
+      IncrementSeq "txn" "n"
       ) in
-    txn.Txn__DoTxn "t" "body".
+    let: "ok" := txn.Txn__DoTxn "t" "body" in
+    (![uint64T] "n", "ok").
 
 Definition DecrementSeq: val :=
   rec: "DecrementSeq" "txn" "p" :=
     let: ("v", <>) := txn.Txn__Get "txn" #0 in
+    "p" <-[uint64T] "v";;
     (if: ("v" = #0)
     then #false
     else
@@ -32,11 +36,13 @@ Definition DecrementSeq: val :=
       #true).
 
 Definition Decrement: val :=
-  rec: "Decrement" "t" "p" :=
+  rec: "Decrement" "t" :=
+    let: "n" := ref (zero_val uint64T) in
     let: "body" := (λ: "txn",
-      DecrementSeq "txn" "p"
+      DecrementSeq "txn" "n"
       ) in
-    txn.Txn__DoTxn "t" "body".
+    let: "ok" := txn.Txn__DoTxn "t" "body" in
+    (![uint64T] "n", "ok").
 
 Definition InitializeCounterData: val :=
   rec: "InitializeCounterData" "mgr" :=
@@ -51,28 +57,25 @@ Definition InitCounter: val :=
 Definition CallIncrement: val :=
   rec: "CallIncrement" "mgr" :=
     let: "txn" := txn.TxnMgr__New "mgr" in
-    let: "n" := ref (zero_val uint64T) in
-    let: "ok" := Increment "txn" "n" in
-    (![uint64T] "n", "ok").
+    Increment "txn";;
+    #().
 
 Definition CallIncrementTwice: val :=
   rec: "CallIncrementTwice" "mgr" :=
     let: "txn" := txn.TxnMgr__New "mgr" in
-    let: "n1" := ref (zero_val uint64T) in
-    let: "ok1" := Increment "txn" "n1" in
+    let: ("n1", "ok1") := Increment "txn" in
     (if: ~ "ok1"
-    then (#0, #0, #false)
+    then #()
     else
-      let: "n2" := ref (zero_val uint64T) in
-      let: "ok2" := Increment "txn" "n2" in
-      (![uint64T] "n1", ![uint64T] "n2", "ok2")).
+      let: ("n2", <>) := Increment "txn" in
+      control.impl.Assert ("n1" < "n2");;
+      #()).
 
 Definition CallDecrement: val :=
   rec: "CallDecrement" "mgr" :=
     let: "txn" := txn.TxnMgr__New "mgr" in
-    let: "n" := ref (zero_val uint64T) in
-    let: "ok" := Decrement "txn" "n" in
-    (![uint64T] "n", "ok").
+    Decrement "txn";;
+    #().
 
 (* rsvkey.go *)
 

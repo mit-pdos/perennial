@@ -240,7 +240,7 @@ Proof.
   iExists {[ (U64 0) := v0 ]}.
   unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
   iDestruct (dbmap_elem_combine with "Hdbpt Hdbpt0") as "[Hdbpt0 ->]".
-  rewrite Qp_half_half.
+  rewrite Qp.half_half.
   iFrame.
   iSplit.
   { iPureIntro. unfold P_WriteReservedKey. set_solver. }
