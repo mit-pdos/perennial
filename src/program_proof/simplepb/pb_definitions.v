@@ -64,7 +64,7 @@ Defined.
 
 (* End RPC specs *)
 
-Definition is_pb_host γ γsrv (host:chan) :=
+Definition is_pb_host γ γsrv (host:u64) :=
   handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv).
 
 Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
@@ -73,6 +73,16 @@ Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
   "#Hsrv" ∷ is_pb_host γ γsrv srv
 .
+Lemma wp_MakeClerk host γ γsrv :
+  {{{
+        is_pb_host γ γsrv host
+  }}}
+    MakeClerk #host
+  {{{
+        ck, RET #ck; is_Clerk ck γ γsrv
+  }}}.
+Proof.
+Admitted.
 
 (* FIXME: these belong in a separate file. These will be proved from the RPC specs. *)
 (* Clerk specs *)
