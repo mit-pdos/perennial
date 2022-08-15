@@ -166,7 +166,7 @@ Proof.
     rewrite -fmap_snoc.
     iFrame "Hstate ∗#".
     iSplitR.
-    { iExists _; iFrame "#". admit. }
+    { iExists _, _, _; iFrame "#". }
     iSplitR; last done.
     iPureIntro.
     rewrite app_length.
@@ -309,7 +309,7 @@ Proof using waitgroupG0.
     iExists _, _, _, _, _, _, _.
     iFrame "Hstate ∗#".
     iSplitL "".
-    { iExists _; iFrame "#". admit. }
+    { iExists _, _, _; iFrame "#". }
     iSplitL "".
     {
       iPureIntro.
