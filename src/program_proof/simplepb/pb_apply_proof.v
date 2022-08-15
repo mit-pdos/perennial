@@ -616,7 +616,7 @@ Proof using waitgroupG0.
     iFrame "Hreply".
     by iModIntro.
   }
-Admitted.
+Qed.
 
 Definition appN := pbN .@ "app".
 Definition escrowN := pbN .@ "escrow".

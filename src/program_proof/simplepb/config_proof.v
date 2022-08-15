@@ -48,10 +48,10 @@ Admitted.
 
 Lemma wp_Clerk__GetEpochAndConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
-  □ (|={⊤,∅}=> ∃ epoch conf, own_epoch γ epoch ∗
+  □ (£ 1 ={⊤,∅}=∗ ∃ epoch conf, own_epoch γ epoch ∗
                                     own_config γ conf ∗
-    (own_epoch γ (word.add epoch 1) ={∅,⊤}=∗
-      (∀ oldServers_sl, Φ (#(LitInt (word.add epoch 1)), slice_val oldServers_sl)%V)
+    (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗ own_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
+      (∀ conf_sl, is_slice conf_sl uint64T 1 conf -∗ Φ (#(LitInt (word.add epoch (U64 1))), slice_val conf_sl)%V)
                                 )
   ) -∗
   WP config.Clerk__GetEpochAndConfig #ck {{ Φ }}
