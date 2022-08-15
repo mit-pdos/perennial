@@ -43,6 +43,23 @@ Definition is_Clerk2 ck γpb : iProp Σ :=
     "#Hinv" ∷ is_conf_inv γpb γconf ∗
     "#Hck" ∷ is_Clerk ck γconf.
 
+Lemma wp_MakeClerk2 (configHost:u64) γpb γconf :
+  {{{
+        is_conf_inv γpb γconf ∗
+        is_host configHost γconf
+  }}}
+    config.MakeClerk #configHost
+  {{{
+      ck, RET #ck; is_Clerk2 ck γpb
+  }}}.
+Proof.
+  iIntros (Φ) "#[Hinv Hhost] HΦ".
+  wp_apply (wp_MakeClerk with "[$Hhost]").
+  iIntros.
+  iApply "HΦ".
+  iExists  _; iFrame "#".
+Qed.
+
 Lemma wp_Clerk__GetEpochAndConfig2 ck γpb Φ :
   is_Clerk2 ck γpb -∗
   □(∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
@@ -154,8 +171,14 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_call.
-  wp_apply (wp_MakeClerk with "").
+  wp_apply (wp_MakeClerk2 with "").
   { admit. }
+  iIntros (ck) "#Hck".
+  wp_pures.
+  wp_apply (wp_Clerk__GetEpochAndConfig2 with "[$Hck]").
+  iModIntro.
+  iIntros (?????) "Hpost1".
+  wp_pures.
 Admitted.
 
 End admin_proof.
