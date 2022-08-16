@@ -32,7 +32,7 @@ Definition is_conf_inv γpb γconf : iProp Σ :=
       "#His_conf" ∷ is_epoch_config γpb epoch_lb confγs ∗
       "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host γpb γsrv host) ∗
       "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_ghost.is_epoch_lb γsrv epoch_lb) ∗
-      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_unset γpb epoch' ∗ config_unset γpb epoch') ∗
+      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_unset γpb epoch' ∗ config_unset γpb epoch' ∗ own_proposal γpb epoch' []) ∗
       "Hunset" ∷ config_unset γpb epoch ∗
       "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_skip < int.nat epoch⌝ → ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → is_epoch_skipped γpb epoch_skip)
       )
@@ -69,6 +69,7 @@ Lemma wp_Clerk__GetEpochAndConfig2 ck γpb Φ :
   □(∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
   (is_slice config_sl uint64T 1 conf ∗
   config_unset γpb epoch ∗
+  own_proposal γpb epoch [] ∗
   is_epoch_config γpb epoch_lb confγs ∗
   (∀ epoch_skip, ⌜int.nat epoch_skip < int.nat epoch⌝ → ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → is_epoch_skipped γpb epoch_skip) ∗
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host γpb γsrv host) ∗
@@ -105,7 +106,7 @@ Proof.
   iDestruct "Hskip1" as "#Hskip1".
   iSpecialize ("Hunset_new" with "[]").
   { done. }
-  iDestruct "Hunset_new" as "[Hunset_new Hunset_new2]".
+  iDestruct "Hunset_new" as "(Hunset_new & Hunset_new2 & Hprop)".
 
   iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
   {
@@ -198,7 +199,7 @@ Proof.
   wp_pures.
 
   assert (length conf ≠ 0) by admit. (* FIXME: *)
-  iDestruct "Hpost1" as "(Hconf_sl & Hconf_unset & #His_conf & #Hskip & #His_hosts & #Hlb)".
+  iDestruct "Hpost1" as "(Hconf_sl & Hconf_unset & Hprop & #His_conf & #Hskip & #His_hosts & #Hlb)".
   iDestruct (is_slice_to_small with "Hconf_sl") as "Hconf_sl".
   iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_len.
   set (oldNodeId:=word.modu randId config_sl.(Slice.sz)).
@@ -268,31 +269,286 @@ Proof.
   rewrite -Hservers_sz.
   iDestruct (is_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
   iDestruct (is_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
+  rewrite replicate_length in Hclerks_sz.
   simpl.
-  wp_apply (wp_forSlice (λ j,
-                          ∃ clerksComplete clerksLeft,
-                            "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat j⌝ ∗
-                            "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
-                            "Hclerks_sl" ∷ is_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
-                            "Hservers_sl" ∷ is_slice_small servers_sl ptrT 1 servers ∗
-                            "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) server_γs),
-                                               pb_definitions.is_Clerk ck γ γsrv
-                                               )
+  wp_apply (wp_ref_to).
+  { eauto. }
+  iIntros (i_ptr) "Hi".
+  wp_pures.
 
-                        )%I
-             with "[] [$Hclerks_sl]").
+  (* weaken to loop invariant *)
+  iAssert (
+        ∃ (i:u64) clerksComplete clerksLeft,
+          "Hi" ∷ i_ptr ↦[uint64T] #i ∗
+          "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
+          "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
+          "Hclerks_sl" ∷ is_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
+          "Hservers_sl" ∷ is_slice_small servers_sl uint64T 1 servers ∗
+          "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) server_γs),
+                              pb_definitions.is_Clerk ck γ γsrv
+                              )
+          )%I with "[Hclerks_sl Hservers_sl Hi]" as "HH".
   {
-    clear Φ.
-    Search forSlice.
-    clear host Hlookup_conf.
-    iIntros (i host).
-    iIntros (Φ) "!# (Hpre & %Hi_ineq & %Hlookup) HΦ".
-    iNamed "Hpre".
-    wp_pures.
-    wp_apply (wp_SliceGet with "[$Hservers_sl]").
-    { admit. }
-    admit.
+    iExists _, [], _.
+    simpl.
+    iFrame "∗#".
+    iPureIntro.
+    split; first word.
+    apply replicate_length.
   }
-Admitted.
+  wp_forBreak_cond.
+
+  wp_pures.
+  iNamed "HH".
+  wp_load.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  clear host Hlookup_conf.
+  wp_if_destruct.
+  { (* loop not finished *)
+    wp_pures.
+    wp_load.
+    assert (int.nat i < length servers) as Hlookup.
+    { word. }
+    apply list_lookup_lt in Hlookup as [host Hlookup].
+    wp_apply (wp_SliceGet with "[$Hservers_sl]").
+    { done. }
+
+    iIntros "Hserver_sl".
+
+    iDestruct (big_sepL2_lookup_1_some with "Hhost") as %HH.
+    { done. }
+    destruct HH as [γsrv Hserver_γs_lookup].
+    wp_apply (pb_definitions.wp_MakeClerk with "[]").
+    {
+      iDestruct (big_sepL2_lookup_acc with "Hhost") as "[$ _]"; done.
+    }
+    iIntros (pbCk) "#HpbCk".
+    wp_load.
+    wp_apply (wp_SliceSet (V:=loc) with "[Hclerks_sl]").
+    {
+      iFrame "Hclerks_sl".
+      iPureIntro.
+      apply list_lookup_lt.
+      word.
+    }
+    iIntros "Hclerks_sl".
+    wp_load.
+    wp_store.
+    iLeft.
+    iModIntro.
+    iSplitR; first done.
+    iFrame "∗#".
+    iExists _, _, _.
+    iFrame "∗".
+    instantiate (1:=clerksComplete ++ [pbCk]).
+    iSplitR.
+    {
+      iPureIntro.
+      rewrite app_length.
+      simpl.
+      word.
+    }
+    instantiate (2:=tail clerksLeft).
+    destruct clerksLeft.
+    {
+      exfalso.
+      rewrite app_nil_r in Hlen.
+      word.
+    }
+
+    iSplitR.
+    {
+      iPureIntro.
+      rewrite app_length.
+      rewrite app_length.
+      simpl.
+      rewrite -Hlen.
+      rewrite app_length.
+      simpl.
+      word.
+    }
+    iSplitL.
+    {
+      iApply to_named.
+      iExactEq "Hclerks_sl".
+      {
+        f_equal.
+        simpl.
+        rewrite -HcompleteLen.
+        replace (length _) with (length clerksComplete + 0) by lia.
+        rewrite insert_app_r.
+        simpl.
+        rewrite -app_assoc.
+        f_equal.
+      }
+    }
+    rewrite app_length.
+    simpl.
+    assert (length server_γs = length servers) by admit. (* FIXME: pure fact *)
+    rewrite take_more; last first.
+    { lia. }
+
+    iApply (big_sepL2_app with "Hclerks_is []").
+
+    replace (take 1 (drop (_) server_γs)) with ([γsrv]); last first.
+    {
+      apply ListSolver.list_eq_bounded.
+      {
+        simpl.
+        rewrite take_length.
+        rewrite drop_length.
+        word.
+      }
+      intros.
+      rewrite list_lookup_singleton.
+      destruct i0; last first.
+      {
+        exfalso. simpl in H1. word.
+      }
+      rewrite lookup_take; last first.
+      { word. }
+      rewrite lookup_drop.
+      rewrite HcompleteLen.
+      rewrite -Hserver_γs_lookup.
+      f_equal.
+      word.
+      (* TODO: list_solver. *)
+    }
+    iApply big_sepL2_singleton.
+    iFrame "#".
+  }
+  (* done with for loop *)
+  iRight.
+  iSplitR; first done.
+  iModIntro.
+  assert (int.nat i = length servers) as Hi_done.
+  {
+    rewrite Hclerks_sz.
+    rewrite app_length in Hlen.
+    word.
+  }
+
+  wp_pures.
+  replace (clerksLeft) with ([] : list loc) in *; last first.
+  {
+    admit. (* TODO: list_solver. pure fact *)
+  }
+  wp_apply (wp_NewWaitGroup_free).
+  iIntros (wg) "Hwg".
+  wp_pures.
+  wp_apply (wp_slice_len).
+
+  wp_apply (wp_new_slice). (* XXX: untyped *)
+  { done. }
+  clear err e.
+  iIntros (errs_sl) "Herrs_sl".
+  wp_pures.
+  wp_store.
+  wp_pures.
+
+  rewrite app_nil_r.
+  rename clerksComplete into clerks.
+  iApply fupd_wp.
+  iMod (fupd_mask_subseteq (↑adminN)) as "Hmask".
+  { set_solver. }
+  set (P:= (λ i, ∃ (err:u64) γsrv',
+      ⌜server_γs !! int.nat i = Some γsrv'⌝ ∗
+        readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
+        □ if (decide (err = U64 0)) then
+            is_accepted_lb γsrv' epoch0 σ
+          else
+            True
+  )%I : u64 → iProp Σ).
+  iMod (free_WaitGroup_alloc adminN _ P with "Hwg") as (γwg) "Hwg".
+  iMod "Hmask" as "_".
+  iModIntro.
+
+  iMod (readonly_alloc_1 with "Hreply_epoch") as "#Hreply_epoch".
+  iMod (readonly_alloc_1 with "Hreply_state") as "#Hreply_state".
+  iMod (readonly_alloc_1 with "Hreply_next_index") as "#Hreply_next_index".
+  iMod (readonly_alloc_1 with "Hreply_state_sl") as "#Hreply_state_sl".
+
+  (* weaken to loop invariant *)
+  iAssert (
+        ∃ (i:u64),
+          "Hi" ∷ i_ptr ↦[uint64T] #i ∗
+          "%Hi_ineq" ∷ ⌜int.nat i ≤ length clerks⌝ ∗
+          "Herrs" ∷ (errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦∗[uint64T] (replicate (int.nat clerks_sl.(Slice.sz)- int.nat i) #0) ∗
+          "Hwg" ∷ own_WaitGroup adminN wg γwg i P
+          )%I with "[Herrs_sl Hi Hwg]" as "HH".
+  {
+    unfold is_slice.
+    unfold slice.is_slice. unfold slice.is_slice_small.
+    clear Hlen.
+    iDestruct "Herrs_sl" as "[[Herrs_sl %Hlen] _]".
+    destruct Hlen as [Hlen _].
+    iExists _; iFrame.
+    iSplitR; first iPureIntro.
+    { word. }
+    simpl.
+    replace (1 * int.Z _)%Z with (0%Z) by word.
+    rewrite loc_add_0.
+    replace (int.nat _ - int.nat 0) with (int.nat clerks_sl.(Slice.sz)) by word.
+    iFrame "Herrs_sl".
+    iExactEq "Hwg". done.
+  } (* FIXME: copy/pasted from pb_apply_proof *)
+  wp_forBreak_cond.
+
+  clear i HcompleteLen Heqb Hi_done.
+  iNamed "HH".
+  wp_load.
+  wp_apply (wp_slice_len).
+  wp_pures.
+
+  (* FIXME: need to know that epoch_lb is the epoch number for which we get a
+     response from the old server *)
+  (* iMod (ghost_become_leader with "[] Hprop_facts His_conf Hacc_ro [Hskip] Hprop") as "[Hprop #Hprop_facts]". *)
+
+  wp_if_destruct.
+  { (* loop continues *)
+    wp_pures.
+    wp_apply (wp_WaitGroup__Add with "[$Hwg]").
+    { word. }
+    iIntros "[Hwg Hwg_tok]".
+    wp_pures.
+    wp_load.
+
+    assert (int.nat i < int.nat clerks_sl.(Slice.sz)) as Hlookup by word.
+    rewrite -Hclerks_sz in Hlookup.
+    rewrite app_nil_r in Hlen.
+    rewrite -Hlen in Hlookup.
+    apply list_lookup_lt in Hlookup as [pbCk Hlookup].
+    wp_apply (wp_SliceGet with "[$Hclerks_sl]").
+    { done. }
+    iIntros "Hclerks_sl".
+
+    wp_pures.
+
+    replace (int.nat clerks_sl.(Slice.sz) - int.nat i) with (S (int.nat clerks_sl.(Slice.sz) - (int.nat (word.add i 1)))) by word.
+    rewrite replicate_S.
+    iDestruct (array_cons with "Herrs") as "[Herr_ptr Herr_ptrs]".
+    wp_load.
+    wp_pures.
+
+    wp_apply (wp_fork with "[Hwg_tok Herr_ptr]").
+    {
+      iNext.
+      wp_pures.
+      wp_loadField.
+      wp_loadField.
+      wp_apply (wp_allocStruct).
+      { repeat econstructor. done. }
+      iIntros (args_ptr) "Hargs".
+      iDestruct (struct_fields_split with "Hargs") as "HH".
+      iNamed "HH".
+      wp_apply (wp_Clerk__SetState with "[Epoch NextIndex State]").
+      {
+        iFrame "∗#".
+      }
+    }
+  }
+
+
 
 End admin_proof.

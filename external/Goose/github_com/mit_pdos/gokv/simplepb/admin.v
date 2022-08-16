@@ -31,20 +31,28 @@ Definition EnterNewConfig: val :=
     then struct.loadF pb.GetStateReply "Err" "reply"
     else
       let: "clerks" := NewSlice ptrT (slice.len "servers") in
-      ForSlice ptrT "i" <> "clerks"
-        (SliceSet ptrT "clerks" "i" (pb.MakeClerk (SliceGet uint64T "servers" "i")));;
+      let: "i" := ref_to uint64T #0 in
+      Skip;;
+      (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+        SliceSet ptrT "clerks" (![uint64T] "i") (pb.MakeClerk (SliceGet uint64T "servers" (![uint64T] "i")));;
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        Continue);;
       let: "wg" := waitgroup.New #() in
       let: "errs" := NewSlice uint64T (slice.len "clerks") in
-      ForSlice ptrT "i" "clerk" "clerks"
-        (waitgroup.Add "wg" #1;;
-        let: "clerk" := "clerk" in
-        let: "i" := "i" in
-        Fork (SliceSet uint64T "errs" "i" (pb.Clerk__SetState "clerk" (struct.new pb.SetStateArgs [
+      "i" <-[uint64T] #0;;
+      Skip;;
+      (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+        waitgroup.Add "wg" #1;;
+        let: "clerk" := SliceGet ptrT "clerks" (![uint64T] "i") in
+        let: "locali" := ![uint64T] "i" in
+        Fork (SliceSet uint64T "errs" "locali" (pb.Clerk__SetState "clerk" (struct.new pb.SetStateArgs [
                 "Epoch" ::= "epoch";
                 "State" ::= struct.loadF pb.GetStateReply "State" "reply";
                 "NextIndex" ::= struct.loadF pb.GetStateReply "NextIndex" "reply"
               ]));;
-              waitgroup.Done "wg"));;
+              waitgroup.Done "wg");;
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        Continue);;
       waitgroup.Wait "wg";;
       let: "err" := ref_to uint64T e.None in
       ForSlice uint64T <> "err2" "errs"
