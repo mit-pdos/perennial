@@ -11,9 +11,10 @@ Context `{!heapGS Σ}.
 
 Record pb_system_names :=
 {
-  pb_proposal_gn : gname ; (* system-wide *)
-  pb_config_gn : gname; (* system-wide *)
-  pb_state_gn : gname ; (* system-wide *)
+  pb_proposal_gn : gname ;
+  pb_config_gn : gname;
+  pb_config_prop_gn : gname;
+  pb_state_gn : gname ;
 }.
 
 Record pb_server_names :=
@@ -75,7 +76,13 @@ Definition is_epoch_config γ epoch (conf:list pb_server_names): iProp Σ :=
 Definition is_epoch_skipped γ epoch : iProp Σ :=
   own γ.(pb_config_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (None : (leibnizO _)))]}.
 Definition config_unset γ (epoch:u64) : iProp Σ :=
-  own γ.(pb_config_gn) {[epoch := (to_dfrac_agree (DfracOwn (1/2)) (None : (leibnizO _)))]}.
+  own γ.(pb_config_gn) {[epoch := (to_dfrac_agree (DfracOwn 1) (None : (leibnizO _)))]}.
+
+Definition config_proposal_unset γ (epoch:u64) : iProp Σ :=
+  own γ.(pb_config_prop_gn) {[epoch := (to_dfrac_agree (DfracOwn 1) (None : (leibnizO _)))]}.
+Definition is_epoch_config_proposal γ epoch (conf:list pb_server_names): iProp Σ :=
+  own γ.(pb_config_prop_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (Some conf : (leibnizO _)))]} ∗
+  ⌜length conf > 0⌝.
 
 Definition committed_by γsys epoch σ : iProp Σ :=
   ∃ conf, is_epoch_config γsys epoch conf ∗

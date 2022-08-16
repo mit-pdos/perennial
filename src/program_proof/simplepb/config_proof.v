@@ -61,15 +61,14 @@ Admitted.
 
 Lemma wp_Clerk__WriteConfig (ck:loc) new_conf new_conf_sl epoch γ Φ :
   is_Clerk ck γ -∗
-  is_slice new_conf_sl uint64T 1 new_conf ∗
-  is_epoch_lb γ epoch -∗
-  □ (|={⊤,∅}=> ∃ latest_epoch, own_epoch γ latest_epoch ∗
+  is_slice new_conf_sl uint64T 1 new_conf -∗
+  □ (£ 1 -∗ |={⊤,∅}=> ∃ latest_epoch, own_epoch γ latest_epoch ∗
       if (decide (latest_epoch = epoch)) then
         ∃ conf, own_config γ conf ∗ (own_config γ new_conf -∗ own_epoch γ epoch ={∅,⊤}=∗ Φ #0)
       else
         (own_epoch γ latest_epoch ={∅,⊤}=∗ (∀ (err:u64), ⌜err ≠ 0⌝ → Φ #err))
   ) -∗
-  WP config.Clerk__WriteConfig #ck #epoch
+  WP config.Clerk__WriteConfig #ck #epoch (slice_val new_conf_sl)
   {{ Φ }}
 .
 Proof.
