@@ -55,10 +55,15 @@ Definition EnterNewConfig: val :=
         Continue);;
       waitgroup.Wait "wg";;
       let: "err" := ref_to uint64T e.None in
-      ForSlice uint64T <> "err2" "errs"
+      "i" <-[uint64T] #0;;
+      Skip;;
+      (for: (λ: <>, ![uint64T] "i" < slice.len "errs"); (λ: <>, Skip) := λ: <>,
+        let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
         (if: "err2" ≠ e.None
         then "err" <-[uint64T] "err2"
         else #());;
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        Continue);;
       (if: ![uint64T] "err" ≠ e.None
       then ![uint64T] "err"
       else

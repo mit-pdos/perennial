@@ -495,21 +495,22 @@ Proof.
   }
 Qed.
 
-Lemma ghost_become_leader γsys γsrv σ epoch conf epoch_new :
+Lemma ghost_become_leader γsys γsrv σ epochconf epoch conf epoch_new :
   γsrv ∈ conf →
   int.nat epoch < int.nat epoch_new →
+  int.nat epochconf ≤ int.nat epoch →
   is_proposal_lb γsys epoch σ -∗
   is_proposal_facts γsys epoch σ -∗
-  is_epoch_config γsys epoch conf -∗
+  is_epoch_config γsys epochconf conf -∗
   is_accepted_ro γsrv epoch σ -∗
-  (∀ epoch_skip, ⌜int.nat epoch < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch_new⌝ → is_epoch_skipped γsys epoch_skip) -∗
+  (∀ epoch_skip, ⌜int.nat epochconf < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch_new⌝ → is_epoch_skipped γsys epoch_skip) -∗
   own_proposal γsys epoch_new []
   ==∗
   own_proposal γsys epoch_new σ ∗
   is_proposal_facts γsys epoch_new σ
 .
 Proof.
-  intros Hmember Hepoch_new.
+  intros Hmember Hepoch_new Hepoch_recent.
   iIntros "#Hprop_lb #Hprop_facts #His_conf #Hacc_ro #Hskip Hprop".
   iMod (own_update with "Hprop") as "Hprop".
   {
@@ -539,22 +540,38 @@ Proof.
     iDestruct "Hcom_old" as (conf_old) "[Hconf_old Hcom_old]".
     iDestruct "Hconf_old" as "[Hconf_old _]".
     iDestruct "His_conf" as "[His_conf _]".
-    iDestruct (own_valid_2 with "Hconf_old His_conf") as %Hvalid.
-    rewrite singleton_op singleton_valid dfrac_agree_op_valid in Hvalid.
-    destruct Hvalid as [_ Hvalid].
-    replace (conf_old) with (conf) by naive_solver.
-    iSpecialize ("Hcom_old" $! γsrv with "[//]").
-    clear Hvalid.
-    iDestruct (own_valid_2 with "Hacc_ro Hcom_old") as %Hvalid.
-    iPureIntro.
-    rewrite singleton_op singleton_valid in Hvalid.
-    rewrite mono_list_both_dfrac_valid_L in Hvalid.
-    naive_solver.
+    assert (int.nat epochconf = int.nat epoch ∨ int.nat epochconf < int.nat epoch) as [Heq|Hineq] by word.
+    {
+      replace (epochconf) with (epoch) by word.
+
+      iDestruct (own_valid_2 with "Hconf_old His_conf") as %Hvalid.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid in Hvalid.
+      destruct Hvalid as [_ Hvalid].
+      replace (conf_old) with (conf) by naive_solver.
+      iSpecialize ("Hcom_old" $! γsrv with "[//]").
+      clear Hvalid.
+      iDestruct (own_valid_2 with "Hacc_ro Hcom_old") as %Hvalid.
+      iPureIntro.
+      rewrite singleton_op singleton_valid in Hvalid.
+      rewrite mono_list_both_dfrac_valid_L in Hvalid.
+      naive_solver.
+    }
+    {
+      iSpecialize ("Hskip" $! epoch with "[% //] [% //]").
+      iDestruct (own_valid_2 with "Hskip Hconf_old") as %Hbad.
+      exfalso.
+      rewrite singleton_op in Hbad.
+      rewrite singleton_valid in Hbad.
+      rewrite dfrac_agree_op_valid in Hbad.
+      destruct Hbad as [_ Hbad].
+      done.
+    }
   }
   { (* skipped epochs; prove False *)
     unfold committed_by.
     iDestruct "Hcom_old" as (conf_old) "[#Hconf_old _]".
-    iSpecialize ("Hskip" $! epoch_old with "[//] [//]").
+    iSpecialize ("Hskip" $! epoch_old with "[%] [//]").
+    { word. }
     iExFalso.
     (* Hconf_old and Hskip are contradictory *)
     iDestruct "Hconf_old" as "[Hconf_old _]".

@@ -34,7 +34,7 @@ Definition is_conf_inv γpb γconf : iProp Σ :=
       "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_ghost.is_epoch_lb γsrv epoch_lb) ∗
       "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_unset γpb epoch' ∗ config_unset γpb epoch' ∗ own_proposal γpb epoch' []) ∗
       "Hunset" ∷ config_unset γpb epoch ∗
-      "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_skip < int.nat epoch⌝ → ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → is_epoch_skipped γpb epoch_skip)
+      "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γpb epoch_skip)
       )
 .
 
@@ -71,7 +71,7 @@ Lemma wp_Clerk__GetEpochAndConfig2 ck γpb Φ :
   config_unset γpb epoch ∗
   own_proposal γpb epoch [] ∗
   is_epoch_config γpb epoch_lb confγs ∗
-  (∀ epoch_skip, ⌜int.nat epoch_skip < int.nat epoch⌝ → ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → is_epoch_skipped γpb epoch_skip) ∗
+  (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γpb epoch_skip) ∗
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host γpb γsrv host) ∗
   (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_ghost.is_epoch_lb γsrv epoch_lb)) -∗
    Φ (#epoch, slice_val config_sl)%V
@@ -253,7 +253,16 @@ Proof.
   }
   (* err = 0; keep going with reconfig *)
   (* Got the old state now *)
-  iDestruct "Hpost" as (???) "(%Hepoch_ineq & #Hacc_ro & #Hprop_facts & Hreply & %Henc)".
+  iDestruct "Hpost" as (???) "(%Hepoch_lb_ineq & %Hepoch_ub_ineq & #Hacc_ro & #Hprop_facts & #Hprop_lb & Hreply & %Henc)".
+  assert (int.nat epochacc ≠ int.nat epoch) as Hepochacc_ne_epoch.
+  { admit. } (* FIXME: Add witness that config was set for epochacc or some such to
+                prove this. Need this for ghost_become_leader. *)
+
+  iMod (ghost_become_leader with "Hprop_lb Hprop_facts His_conf Hacc_ro Hskip Hprop") as "[Hprop #Hprop_facts2]".
+  { by eapply elem_of_list_lookup_2. }
+  { word. }
+  { word. }
+
   iNamed "Hreply".
   wp_loadField.
   simpl.
@@ -443,6 +452,7 @@ Proof.
   { done. }
   clear err e.
   iIntros (errs_sl) "Herrs_sl".
+  iDestruct (slice.is_slice_sz with "Herrs_sl") as "%Herrs_sz".
   wp_pures.
   wp_store.
   wp_pures.
@@ -456,7 +466,7 @@ Proof.
       ⌜server_γs !! int.nat i = Some γsrv'⌝ ∗
         readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
         □ if (decide (err = U64 0)) then
-            is_accepted_lb γsrv' epoch0 σ
+            is_accepted_lb γsrv' epoch σ
           else
             True
   )%I : u64 → iProp Σ).
@@ -501,10 +511,6 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
 
-  (* FIXME: need to know that epoch_lb is the epoch number for which we get a
-     response from the old server *)
-  (* iMod (ghost_become_leader with "[] Hprop_facts His_conf Hacc_ro [Hskip] Hprop") as "[Hprop #Hprop_facts]". *)
-
   wp_if_destruct.
   { (* loop continues *)
     wp_pures.
@@ -531,6 +537,9 @@ Proof.
     wp_load.
     wp_pures.
 
+    iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb2".
+    iDestruct (own_WaitGroup_to_is_WaitGroup with "[Hwg]") as "#His_wg".
+    { by iExactEq "Hwg". }
     wp_apply (wp_fork with "[Hwg_tok Herr_ptr]").
     {
       iNext.
@@ -542,13 +551,209 @@ Proof.
       iIntros (args_ptr) "Hargs".
       iDestruct (struct_fields_split with "Hargs") as "HH".
       iNamed "HH".
+
+      iDestruct (big_sepL2_lookup_1_some with "Hclerks_is") as %[γsrv Hlookup2].
+      { done. }
+      iDestruct (big_sepL2_lookup_acc with "Hclerks_is") as "[HH _]".
+      { done. }
+      { done. }
       wp_apply (wp_Clerk__SetState with "[Epoch NextIndex State]").
       {
         iFrame "∗#".
+        iExists _.
+        iFrame "∗".
+        simpl.
+        instantiate(1:=enc).
+        admit. (* FIXME: readonly slice should be good enough *)
       }
+      iIntros (err) "#Hpost".
+
+      unfold SliceSet.
+      unfold slice.ptr.
+      wp_pures.
+      wp_store.
+
+      iMod (readonly_alloc_1 with "Herr_ptr") as "#Herr_ptr".
+      wp_apply (wp_WaitGroup__Done with "[$Hwg_tok $His_wg]").
+      {
+        rewrite lookup_take_Some in Hlookup2.
+        destruct Hlookup2 as [Hlookup2 _].
+        iModIntro.
+        unfold P.
+        iExists _, _.
+        iSplitL; first done.
+        iFrame "#".
+      }
+      done.
     }
+    wp_pures.
+    wp_load.
+    wp_store.
+
+    (* re-establish loop invariant *)
+    iModIntro.
+    iLeft.
+    iSplitR; first done.
+    iFrame "∗#".
+    iExists _.
+    iFrame "∗".
+    iSplitR.
+    { iPureIntro. word. }
+    iSplitL "Herr_ptrs".
+    {
+      iApply to_named.
+      iExactEq "Herr_ptrs".
+      f_equal.
+      rewrite loc_add_assoc.
+      f_equal.
+      simpl.
+      replace (int.Z (word.add i 1%Z)) with (int.Z i + 1)%Z by word.
+      word.
+    }
+    by iExactEq "Hwg".
+  }
+  (* loop completed *)
+  iModIntro.
+  iRight.
+  iSplitR; first done.
+
+  wp_pures.
+  wp_apply (wp_WaitGroup__Wait with "[$Hwg]").
+  iIntros "#Hwg_post".
+  wp_pures.
+  replace (int.nat i) with (length clerks); last first.
+  { admit. } (* word reasoning *)
+
+  wp_apply (wp_ref_to).
+  { eauto. }
+  iIntros (err_ptr) "Herr".
+  wp_pures.
+  wp_store.
+  wp_pures.
+
+  (* FIXME: *)
+  (* This was copy/pasted and modified from apply_proof *)
+  iAssert (∃ (i err:u64),
+              "Hj" ∷ i_ptr ↦[uint64T] #i ∗
+              "%Hj_ub" ∷ ⌜int.nat i ≤ length clerks⌝ ∗
+              "Herr" ∷ err_ptr ↦[uint64T] #err ∗
+              "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
+                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ is_accepted_lb γsrv epoch σ)
+              else
+                True
+          )%I with "[Hi Herr]" as "Hloop".
+  {
+    iExists _, _.
+    iFrame "∗".
+    iSplitL.
+    { iPureIntro. word. }
+    iModIntro.
+    destruct (decide (_)); last first.
+    { done. }
+    iIntros.
+    exfalso. replace (int.nat 0%Z) with 0 in H0 by word; word.
   }
 
+  iClear "Herrs".
+  wp_forBreak_cond.
+  iNamed "Hloop".
+  wp_pures.
+  wp_load.
+  wp_apply (wp_slice_len).
 
+  rewrite replicate_length in Herrs_sz.
+  rewrite -Hclerks_sz in Herrs_sz.
+  rewrite app_nil_r in Hlen.
+
+  clear i Hi_ineq Heqb.
+  wp_if_destruct.
+  { (* one loop iteration *)
+    wp_pures.
+    wp_load.
+    unfold SliceGet.
+    wp_call.
+    iDestruct (big_sepS_elem_of_acc _ _ i0 with "Hwg_post") as "[HH _]".
+    { set_solver. }
+
+    assert (int.nat i0 < int.nat errs_sl.(Slice.sz)) by word.
+
+    iDestruct "HH" as "[%Hbad|HH]".
+    { exfalso.
+      rewrite -Herrs_sz in H0.
+      word.
+    }
+    iDestruct "HH" as (??) "(%HbackupLookup & Herr2 & Hpost)".
+    wp_apply (wp_slice_ptr).
+    wp_pure1.
+    iEval (simpl) in "Herr2".
+    iMod (readonly_load with "Herr2") as (?) "Herr3".
+    wp_load.
+    wp_pures.
+    destruct (bool_decide (_)) as [] eqn:Herr; wp_pures.
+    {
+      rewrite bool_decide_eq_true in Herr.
+      replace (err0) with (U64 0%Z) by naive_solver.
+      wp_pures.
+      wp_load; wp_store.
+      iLeft.
+      iModIntro.
+      iSplitL ""; first done.
+      iFrame "∗".
+      iExists _, _.
+      iFrame "Hj Herr".
+      iSplitL "".
+      { iPureIntro. word. }
+      iModIntro.
+      destruct (decide (err = 0%Z)).
+      {
+        iIntros.
+        assert (int.nat k < int.nat i0 ∨ int.nat k = int.nat i0) as [|].
+        {
+          replace (int.nat (word.add i0 1%Z)) with (int.nat i0 + 1) in * by word.
+          word.
+        }
+        {
+          by iApply "Hrest".
+        }
+        {
+          destruct (decide (_)); last by exfalso.
+          replace (γsrv') with (γsrv); last first.
+          {
+            replace (int.nat i0) with (int.nat k) in * by word.
+            naive_solver.
+          }
+          iDestruct "Hpost" as "#$".
+        }
+      }
+      {
+        done.
+      }
+    }
+    {
+      wp_store.
+      wp_pures.
+      wp_load; wp_store.
+      iLeft.
+      iModIntro.
+      iSplitL ""; first done.
+      iFrame "∗".
+      iExists _, _.
+      iFrame "Hj Herr".
+      destruct (decide (err0 = _)).
+      { exfalso. naive_solver. }
+      iPureIntro.
+      split; last done.
+      word.
+    }
+  }
+  iRight.
+  iModIntro.
+  iSplitL ""; first done.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  (* FIXME: *)
+  (* End copy/paste from apply_proof *)
+Admitted.
 
 End admin_proof.

@@ -127,12 +127,14 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
         (reply:loc) (err:u64), RET #reply;
         if (decide (err = U64 0)) then
-            ∃ epoch σ enc,
-            ⌜int.nat epoch_lb ≤ int.nat epoch⌝ ∗
-            is_accepted_ro γsrv epoch σ ∗
-            is_proposal_facts γ epoch σ ∗
+            ∃ epochacc σ enc,
+            ⌜int.nat epoch_lb ≤ int.nat epochacc⌝ ∗
+            ⌜int.nat epochacc ≤ int.nat epoch⌝ ∗
+            is_accepted_ro γsrv epochacc σ ∗
+            is_proposal_facts γ epochacc σ ∗
+            is_proposal_lb γ epochacc σ ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length σ) enc) ∗
-            ⌜has_snap_encoding enc epoch (fst <$> σ)⌝
+            ⌜has_snap_encoding enc epochacc (fst <$> σ)⌝
           else
             GetStateReply.own reply (GetStateReply.mkC err 0 [])
   }}}.
@@ -148,12 +150,11 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
   }}}
     Clerk__SetState #ck #args_ptr
   {{{
-        (reply:loc) (err:u64), RET #reply;
-        reply ↦[uint64T] #err ∗
-        if (decide (err = U64 0)) then
+        (err:u64), RET #err;
+        □(if (decide (err = U64 0)) then
             is_accepted_lb γsrv epoch σ
           else
-            True
+            True)
   }}}.
 Proof.
 Admitted.
