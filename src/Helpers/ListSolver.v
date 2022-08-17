@@ -132,11 +132,11 @@ Ltac find_list_hyps :=
          end.
 
 Ltac learn_feed_as H i :=
-  feed (fun p => let P := type of p in
+  feed_core H using (fun p => let P := type of p in
                   lazymatch goal with
                   | H: P |- _ => fail 1
                   | _ => pose proof p as i
-                  end) H.
+                  end).
 
 Ltac use_list_hyps :=
   repeat match goal with
