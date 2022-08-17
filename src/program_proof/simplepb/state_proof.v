@@ -14,7 +14,7 @@ Program Definition pb_record : PBRecord :=
   {|
     pb_OpType := (u64 * list u8) ;
     pb_has_op_encoding := λ op_bytes op, (u64_le op.1 ++ op.2) = op_bytes ;
-    pb_has_snap_encoding := λ snap_bytes epoch ops , True ;
+    pb_has_snap_encoding := λ snap_bytes ops , True ;
     pb_compute_reply :=  λ ops op, default [] ((compute_state ops) !! op.1) ;
   |}.
 Obligation 1.

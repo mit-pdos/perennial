@@ -14,7 +14,7 @@ Record PBRecord :=
   {
     pb_OpType:Type ;
     pb_has_op_encoding : list u8 → pb_OpType → Prop ;
-    pb_has_snap_encoding: list u8 → u64 → (list pb_OpType) → Prop ;
+    pb_has_snap_encoding: list u8 → (list pb_OpType) → Prop ;
     pb_has_op_encoding_injective : ∀ o1 o2 l, pb_has_op_encoding l o1 → pb_has_op_encoding l o2 → o1 = o2 ;
     pb_compute_reply : list pb_OpType → pb_OpType → list u8 ;
   }.
@@ -134,7 +134,7 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
             is_proposal_facts γ epochacc σ ∗
             is_proposal_lb γ epochacc σ ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length σ) enc) ∗
-            ⌜has_snap_encoding enc epochacc (fst <$> σ)⌝
+            ⌜has_snap_encoding enc (fst <$> σ)⌝
           else
             GetStateReply.own reply (GetStateReply.mkC err 0 [])
   }}}.
@@ -146,6 +146,7 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
         "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
         "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
+        "%Henc" ∷ ⌜has_snap_encoding snap (fst <$> σ)⌝ ∗
         "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length σ) snap)
   }}}
     Clerk__SetState #ck #args_ptr
@@ -155,6 +156,22 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
             is_accepted_lb γsrv epoch σ
           else
             True)
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr (epoch:u64) servers server_γs σ :
+  {{{
+        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
+        "#Hconf" ∷ is_epoch_config γ epoch server_γs ∗
+        "#Hhost" ∷ ([∗ list] γsrv;host ∈ server_γs;servers, is_pb_host γ γsrv host) ∗
+        "#Hacc" ∷ is_accepted_lb γsrv epoch σ ∗
+        "Hprop" ∷ own_proposal γ epoch σ ∗ (* FIXME: escrow this *)
+        "Hargs" ∷ BecomePrimaryArgs.own args_ptr (BecomePrimaryArgs.mkC epoch servers)
+  }}}
+    Clerk__BecomePrimary #ck #args_ptr
+  {{{
+        (err:u64), RET #err; True
   }}}.
 Proof.
 Admitted.
@@ -186,7 +203,7 @@ Definition is_ApplyFn own_StateMachine (applyFn:val) (P:u64 → list (OpType) �
 Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp Σ :=
   ∀ σ_prev (epoch_prev:u64) σ epoch (snap:list u8) snap_sl sealed Q,
   {{{
-        ⌜has_snap_encoding snap epoch σ⌝ ∗
+        ⌜has_snap_encoding snap σ⌝ ∗
         is_slice snap_sl byteT 1 snap ∗
         (P epoch_prev σ_prev sealed ={⊤}=∗ P epoch σ false ∗ Q) ∗
         own_StateMachine epoch_prev σ_prev false P
@@ -208,7 +225,7 @@ Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp �
   {{{
         snap_sl snap,
         RET (slice_val snap_sl);
-        ⌜has_snap_encoding snap epoch σ⌝ ∗
+        ⌜has_snap_encoding snap σ⌝ ∗
         own_StateMachine epoch σ true P
   }}}
 .

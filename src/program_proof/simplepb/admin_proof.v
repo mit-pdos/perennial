@@ -208,7 +208,7 @@ Qed.
 
 Lemma wp_Clerk__WriteConfig2 ck γpb Φ config_sl conf confγ epoch :
   is_Clerk2 ck γpb -∗
-  is_slice config_sl uint64T 1 conf -∗
+  is_slice_small config_sl uint64T 1 conf -∗
   is_epoch_config_proposal γpb epoch confγ -∗
   ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host γpb γsrv host) -∗
   (∀ γsrv, ⌜γsrv ∈ confγ⌝ → pb_ghost.is_epoch_lb γsrv epoch) -∗
@@ -315,7 +315,7 @@ Qed.
 Lemma wp_Reconfig γ (configHost:u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
   {{{
         "Hservers_sl" ∷ is_slice servers_sl uint64T 1 servers ∗
-        "#Hhost" ∷ ([∗ list] host ; γsrv ∈ servers ; server_γs, is_pb_host γ γsrv host) ∗
+        "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host γ γsrv host) ∗
         "#Hconf_host" ∷ is_conf_host configHost γ
   }}}
     EnterNewConfig #configHost (slice_val servers_sl)
@@ -473,7 +473,7 @@ Proof.
 
     iIntros "Hserver_sl".
 
-    iDestruct (big_sepL2_lookup_1_some with "Hhost") as %HH.
+    iDestruct (big_sepL2_lookup_2_some with "Hhost") as %HH.
     { done. }
     destruct HH as [γsrv Hserver_γs_lookup].
     wp_apply (pb_definitions.wp_MakeClerk with "[]").
@@ -708,10 +708,14 @@ Proof.
       wp_apply (wp_Clerk__SetState with "[Epoch NextIndex State]").
       {
         iFrame "∗#".
+        iSplitR.
+        {
+          iPureIntro.
+          done.
+        }
         iExists _.
         iFrame "∗".
         simpl.
-        instantiate(1:=enc).
         admit. (* FIXME: readonly slice should be good enough *)
       }
       iIntros (err) "#Hpost".
@@ -916,6 +920,85 @@ Proof.
 
   destruct (decide (_)); last first.
   { exfalso. done. }
+
+  iMod (own_update with "Hconf_unset") as "Hconf_prop".
+  {
+    apply singleton_update.
+    apply cmra_update_exclusive.
+    instantiate (1:=(to_dfrac_agree (DfracOwn 1) ((Some server_γs) : (leibnizO _)))).
+    done.
+  }
+  iMod (own_update with "Hconf_prop") as "Hconf_prop".
+  {
+    apply singleton_update.
+    apply dfrac_agree_persist.
+  }
+  iDestruct "Hconf_prop" as "#Hconf_prop".
+
+  wp_bind (Clerk__WriteConfig _ _ _).
+  iApply (wp_frame_wand with "[HΦ Hconf_sl Hprop Hclerks_sl]").
+  { iNamedAccu. }
+  wp_apply (wp_Clerk__WriteConfig2 with "Hck Hservers_sl [$Hconf_prop] Hhost").
+  {
+    admit. (* FIXME: require that length servers = length server_γs > 0. *)
+  }
+  {
+    (* FIXME: accumlate these lower bounds via waitgroup *)
+    admit.
+  }
+  iModIntro.
+  iIntros (err) "Hpost".
+  iNamed 1.
+
+  wp_pures.
+  wp_if_destruct.
+  { (* WriteConfig failed *)
+    iApply "HΦ". done.
+  }
+  (* WriteConfig succeeded *)
+  destruct (decide (_)); last first.
+  { exfalso. done. }
+  iDestruct "Hpost" as "#Hconf".
+  wp_apply (wp_allocStruct).
+  { eauto. }
+  clear args.
+  iIntros (args) "Hargs".
+  assert (0 < length clerks) as Hclerk_lookup.
+  { admit. } (* FIXME: assumption/check in code *)
+  apply list_lookup_lt in Hclerk_lookup as [primaryCk Hclerk_lookup].
+
+  wp_apply (wp_SliceGet with "[$Hclerks_sl]").
+  { done. }
+  iIntros "Hclerks_sl".
+  wp_pures.
+
+  iDestruct (big_sepL2_lookup_1_some with "Hclerks_is") as %[γsrv Hlookup2].
+  { done. }
+  iDestruct (big_sepL2_lookup_acc with "Hclerks_is") as "[HprimaryCk _]".
+  { done. }
+  { done. }
+  wp_apply (wp_Clerk__BecomePrimary with "[$HprimaryCk $Hconf $Hprop $Hhost Hargs]").
+  {
+    iSplitR.
+    {
+      iApply "Hrest".
+      { instantiate (1:=0). admit. } (* FIXME: lengtH(clerks) > 0 *)
+      { rewrite lookup_take in Hlookup2.
+        { done. }
+        admit. (* same as above *)
+      }
+    }
+    iDestruct (struct_fields_split with "Hargs") as "HH".
+    iNamed "HH".
+    iExists _.
+    iFrame.
+    simpl.
+    admit. (* keep servers_sl around *)
+  }
+  iIntros.
+  wp_pures.
+  iApply "HΦ".
+  done.
 Admitted.
 
 End admin_proof.
