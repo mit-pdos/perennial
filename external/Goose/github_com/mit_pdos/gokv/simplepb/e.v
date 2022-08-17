@@ -16,6 +16,8 @@ Definition OutOfOrder : expr := #2.
 
 Definition Timeout : expr := #3.
 
+Definition EmptyConfig : expr := #4.
+
 Definition EncodeError: val :=
   rec: "EncodeError" "err" :=
     marshal.WriteInt (NewSliceWithCap byteT #0 #8) "err".

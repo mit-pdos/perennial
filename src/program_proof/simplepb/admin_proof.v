@@ -326,6 +326,15 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_call.
+
+  wp_apply (wp_slice_len).
+  wp_pures.
+  iDestruct (is_slice_sz with "Hservers_sl") as %Hservers_sz.
+  wp_if_destruct.
+  {
+    by iApply "HΦ".
+  }
+
   wp_apply (wp_MakeClerk2 with "Hconf_host").
   iIntros (ck) "#Hck".
   wp_pures.
@@ -346,15 +355,25 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
 
-  assert (length conf ≠ 0) by admit. (* FIXME: *)
   iDestruct "Hpost1" as "(Hconf_sl & Hconf_unset & Hprop & #His_conf & #Hskip & #His_hosts & #Hlb)".
+
+  iAssert (⌜length conf ≠ 0⌝)%I as %Hold_conf_ne.
+  {
+    iDestruct "His_conf" as "[_ %Hconfγ_nz]".
+    iDestruct (big_sepL2_length with "His_hosts") as %Heq.
+    iPureIntro.
+    lia.
+  }
   iDestruct (is_slice_to_small with "Hconf_sl") as "Hconf_sl".
   iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_len.
   set (oldNodeId:=word.modu randId config_sl.(Slice.sz)).
   assert (int.nat oldNodeId < length conf) as Hlookup_conf.
   { rewrite Hconf_len.
     unfold oldNodeId.
-    admit. (* FIXME: word *)
+    enough (int.Z randId `mod` int.Z config_sl.(Slice.sz) < int.Z config_sl.(Slice.sz))%Z.
+    { word. }
+    apply Z.mod_pos_bound.
+    word.
   }
   apply lookup_lt_is_Some_2 in Hlookup_conf as [host Hlookup_conf].
   wp_apply (wp_SliceGet with "[$Hconf_sl]").
@@ -422,7 +441,6 @@ Proof.
   wp_pures.
 
   iDestruct (is_slice_to_small with "Hservers_sl") as "Hservers_sl".
-  iDestruct (is_slice_small_sz with "Hservers_sl") as %Hservers_sz.
   rewrite -Hservers_sz.
   iDestruct (is_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
   iDestruct (is_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
@@ -542,7 +560,7 @@ Proof.
     }
     rewrite app_length.
     simpl.
-    assert (length server_γs = length servers) by admit. (* FIXME: pure fact *)
+    iDestruct (big_sepL2_length with "Hhost") as %Hserver_len_eq.
     rewrite take_more; last first.
     { lia. }
 
@@ -561,7 +579,7 @@ Proof.
       rewrite list_lookup_singleton.
       destruct i0; last first.
       {
-        exfalso. simpl in H1. word.
+        exfalso. simpl in *. word.
       }
       rewrite lookup_take; last first.
       { word. }
@@ -589,7 +607,15 @@ Proof.
   wp_pures.
   replace (clerksLeft) with ([] : list loc) in *; last first.
   {
-    admit. (* TODO: list_solver. pure fact *)
+    (* TODO: list_solver. pure fact *)
+    enough (length clerksLeft = 0).
+    {
+      symmetry.
+      apply nil_length_inv.
+      done.
+    }
+    rewrite app_length in Hlen.
+    word.
   }
   wp_apply (wp_NewWaitGroup_free).
   iIntros (wg) "Hwg".
@@ -653,7 +679,7 @@ Proof.
   } (* FIXME: copy/pasted from pb_apply_proof *)
   wp_forBreak_cond.
 
-  clear i HcompleteLen Heqb Hi_done.
+  clear i HcompleteLen Heqb0 Hi_done.
   iNamed "HH".
   wp_load.
   wp_apply (wp_slice_len).
@@ -774,7 +800,10 @@ Proof.
   iIntros "#Hwg_post".
   wp_pures.
   replace (int.nat i) with (length clerks); last first.
-  { admit. } (* word reasoning *)
+  {
+    rewrite app_nil_r in Hlen.
+    word.
+  }
 
   wp_apply (wp_ref_to).
   { eauto. }
@@ -803,7 +832,8 @@ Proof.
     destruct (decide (_)); last first.
     { done. }
     iIntros.
-    exfalso. replace (int.nat 0%Z) with 0 in H0 by word; word.
+    exfalso. replace (int.nat 0%Z) with 0 in H by word.
+    word.
   }
 
   iClear "Herrs".
@@ -817,7 +847,7 @@ Proof.
   rewrite -Hclerks_sz in Herrs_sz.
   rewrite app_nil_r in Hlen.
 
-  clear i Hi_ineq Heqb.
+  clear i Hi_ineq Heqb0.
   wp_if_destruct.
   { (* one loop iteration *)
     wp_pures.
@@ -831,7 +861,7 @@ Proof.
 
     iDestruct "HH" as "[%Hbad|HH]".
     { exfalso.
-      rewrite -Herrs_sz in H0.
+      rewrite -Herrs_sz in H.
       word.
     }
     iDestruct "HH" as (??) "(%HbackupLookup & Herr2 & Hpost)".
@@ -938,9 +968,25 @@ Proof.
   wp_bind (Clerk__WriteConfig _ _ _).
   iApply (wp_frame_wand with "[HΦ Hconf_sl Hprop Hclerks_sl]").
   { iNamedAccu. }
+  iDestruct (big_sepL2_length with "Hhost") as %Hserver_len_eq.
+
+  assert (length servers > 0) as Hserver_nz.
+  {
+    assert (length servers ≠ 0 ∨ length servers = 0) as [|Hbad] by word.
+    { word. }
+    {
+      exfalso.
+      rewrite Hbad in Hservers_sz.
+      apply u64_nat_0 in Hservers_sz.
+      rewrite Hservers_sz in Heqb.
+      done.
+    }
+  }
+
   wp_apply (wp_Clerk__WriteConfig2 with "Hck Hservers_sl [$Hconf_prop] Hhost").
   {
-    admit. (* FIXME: require that length servers = length server_γs > 0. *)
+    iPureIntro.
+    word.
   }
   {
     (* FIXME: accumlate these lower bounds via waitgroup *)
@@ -964,7 +1010,9 @@ Proof.
   clear args.
   iIntros (args) "Hargs".
   assert (0 < length clerks) as Hclerk_lookup.
-  { admit. } (* FIXME: assumption/check in code *)
+  {
+    word.
+  }
   apply list_lookup_lt in Hclerk_lookup as [primaryCk Hclerk_lookup].
 
   wp_apply (wp_SliceGet with "[$Hclerks_sl]").
@@ -982,10 +1030,10 @@ Proof.
     iSplitR.
     {
       iApply "Hrest".
-      { instantiate (1:=0). admit. } (* FIXME: lengtH(clerks) > 0 *)
+      { instantiate (1:=0). iPureIntro. word. }
       { rewrite lookup_take in Hlookup2.
         { done. }
-        admit. (* same as above *)
+        word.
       }
     }
     iDestruct (struct_fields_split with "Hargs") as "HH".
