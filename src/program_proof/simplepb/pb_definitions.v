@@ -152,6 +152,7 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
     Clerk__SetState #ck #args_ptr
   {{{
         (err:u64), RET #err;
+        is_epoch_lb γsrv epoch ∗
         □(if (decide (err = U64 0)) then
             is_accepted_lb γsrv epoch σ
           else

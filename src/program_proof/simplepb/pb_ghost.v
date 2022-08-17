@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
-From iris.algebra Require Import dfrac_agree mono_list.
+From iris.algebra Require Import dfrac_agree mono_list csum.
 From Perennial.Helpers Require Import ListSolver.
 
 Section pb_protocol.
@@ -30,7 +30,8 @@ Local Definition logR := mono_listR (leibnizO EntryType).
 
 Class pb_ghostG Σ := {
     pb_ghost_epochG :> mono_natG Σ ;
-    pb_ghost_proposalG :> inG Σ (gmapR (u64) logR) ;
+    pb_ghost_proposalG :> inG Σ (gmapR (u64) (csumR (exclR unitO) logR)) ;
+    pb_ghost_acceptedG :> inG Σ (gmapR (u64) logR) ;
     pb_ghost_commitG :> inG Σ logR ;
     pb_ghost_configG :> inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
 }.
@@ -47,10 +48,12 @@ Definition own_epoch γ (epoch:u64) : iProp Σ :=
 Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
   mono_nat_lb_own γ.(pb_epoch_gn) (int.nat epoch).
 
+Definition own_proposal_unused γsys epoch : iProp Σ :=
+  own γsys.(pb_proposal_gn) {[ epoch := Cinl (Excl ()) ]}.
 Definition own_proposal γsys epoch σ : iProp Σ :=
-  own γsys.(pb_proposal_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
+  own γsys.(pb_proposal_gn) {[ epoch := Cinr (●ML (σ : list (leibnizO (EntryType))))]}.
 Definition is_proposal_lb γsys epoch σ : iProp Σ :=
-  own γsys.(pb_proposal_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
+  own γsys.(pb_proposal_gn) {[ epoch := Cinr (◯ML (σ : list (leibnizO (EntryType))))]}.
 
 Definition own_accepted γ epoch σ : iProp Σ :=
   own γ.(pb_accepted_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
@@ -146,6 +149,7 @@ Proof.
     iDestruct (own_valid_2 with "Hprop_lb Hproposal_lb") as %Hσ_ineq.
     rewrite e in Hσ_ineq.
     rewrite singleton_op singleton_valid in Hσ_ineq.
+    rewrite -Cinr_op Cinr_valid in Hσ_ineq.
     rewrite mono_list_lb_op_valid_L in Hσ_ineq.
     assert (σ⪯σ').
     {
@@ -228,14 +232,16 @@ Proof.
   assert (length σ' = length σ_old) by lia.
   iDestruct (own_mono with "Hprop_lb") as "#Hprop'_lb".
   {
-    instantiate (1:={[epoch := ◯ML (σ' : list (leibnizO EntryType))]}).
+    instantiate (1:={[epoch := Cinr (◯ML (σ' : list (leibnizO EntryType)))]}).
     rewrite singleton_included.
     right.
+    apply Cinr_included.
     apply mono_list_lb_mono.
     by exists [newOp].
   }
   iDestruct (own_valid_2 with "Hprop'_lb Hproposal_lb") as %Hσ_ineq.
   rewrite singleton_op singleton_valid in Hσ_ineq.
+  rewrite -Cinr_op Cinr_valid in Hσ_ineq.
   rewrite mono_list_lb_op_valid_L in Hσ_ineq.
   assert (σ' = σ_old).
   {
@@ -289,6 +295,7 @@ Proof.
   {
     iApply (own_update with "Hprop").
     apply singleton_update.
+    apply csum_update_r.
     apply mono_list_update.
     apply prefix_app_r.
     done.
@@ -511,7 +518,7 @@ Lemma ghost_become_leader γsys γsrv σ epochconf epoch conf epoch_new :
   is_epoch_config γsys epochconf conf -∗
   is_accepted_ro γsrv epoch σ -∗
   (∀ epoch_skip, ⌜int.nat epochconf < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch_new⌝ → is_epoch_skipped γsys epoch_skip) -∗
-  own_proposal γsys epoch_new []
+  own_proposal_unused γsys epoch_new
   ==∗
   own_proposal γsys epoch_new σ ∗
   is_proposal_facts γsys epoch_new σ
@@ -522,9 +529,10 @@ Proof.
   iMod (own_update with "Hprop") as "Hprop".
   {
     apply singleton_update.
-    apply mono_list_update.
-    instantiate (1:=σ : list (leibnizO _)).
-    apply prefix_nil.
+    instantiate (1:=Cinr (●ML (σ : list (leibnizO (EntryType))))).
+    apply cmra_update_exclusive.
+    apply Cinr_valid.
+    apply mono_list_auth_valid.
   }
   iFrame "Hprop".
   iDestruct "Hprop_facts" as "[Hmax $]".

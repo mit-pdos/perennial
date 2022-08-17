@@ -148,7 +148,7 @@ Definition own args_ptr args : iProp Σ :=
   "Hargs_epoch" ∷ args_ptr ↦[pb.SetStateArgs :: "Epoch"] #args.(epoch) ∗
   "Hargs_next_index" ∷ args_ptr ↦[pb.SetStateArgs :: "NextIndex"] #args.(nextIndex) ∗
   "Hargs_state" ∷ args_ptr ↦[pb.SetStateArgs :: "State"] (slice_val state_sl) ∗
-  "Hargs_state_sl" ∷ is_slice_small state_sl byteT 1 args.(state)
+  "#Hargs_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -192,15 +192,16 @@ Proof.
 
   wp_loadField.
   wp_load.
-  wp_apply (wp_WriteBytes with "[$Henc_sl $Hargs_state_sl]").
-  iIntros (?) "[Henc_sl Hargs_state_sl]".
+  iMod (readonly_load with "Hargs_state_sl") as (?) "Hsl".
+  wp_apply (wp_WriteBytes with "[$Henc_sl $Hsl]").
+  iIntros (?) "[Henc_sl _]".
   wp_store.
   wp_load.
   iModIntro.
   iApply "HΦ".
   iFrame "Henc_sl".
   iSplitL ""; first done.
-  iExists _; iFrame.
+  iExists _; iFrame "∗#".
 Qed.
 
 Lemma wp_Decode enc enc_sl (args:C) :
@@ -246,9 +247,10 @@ Proof.
 
   wp_load.
   wp_storeField.
-  iModIntro.
   iApply "HΦ".
   iExists _; iFrame.
+  iMod (readonly_alloc_1 with "Henc_sl") as "$".
+  done.
 Qed.
 
 End SetStateArgs.
