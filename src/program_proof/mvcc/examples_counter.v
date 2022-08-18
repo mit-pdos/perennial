@@ -7,21 +7,147 @@ From Perennial.program_proof.mvcc Require Import txn_proof.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ, !mono_natG Σ}.
 
-#[local]
-Definition mvcc_inv_app_def γ α : iProp Σ :=
-  ∃ (v : u64),
-    "Hdbpt" ∷ dbmap_ptsto γ (U64 0) 1 (Value v) ∗
-    "Hmn"   ∷ mono_nat_auth_own α 1 (int.nat v).
+Definition P_Fetch (r : dbmap) := ∃ v, r = {[ (U64 0) := (Value v) ]}.
+Definition Q_Fetch (r w : dbmap) := w !! (U64 0) = r !! (U64 0).
+Definition Ri_Fetch (p : loc) : iProp Σ :=
+  ∃ (v : u64), p ↦[uint64T] #v.
+Definition Rc_Fetch (p : loc) (r w : dbmap) : iProp Σ :=
+  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (U64 0) = Some (Value v)⌝.
+Definition Ra_Fetch (p : loc) (r : dbmap) : iProp Σ :=
+  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (U64 0) = Some (Value v)⌝.
 
-Instance mvcc_inv_app_timeless γ α :
-  Timeless (mvcc_inv_app_def γ α).
-Proof. unfold mvcc_inv_app_def. apply _. Defined.
+Theorem wp_fetch txn (p : loc) tid r γ τ :
+  {{{ Ri_Fetch p ∗ own_txn txn tid r γ τ ∗ ⌜P_Fetch r⌝ ∗ txnmap_ptstos τ r }}}
+    fetch #txn #p
+  {{{ (ok : bool), RET #ok;
+      own_txn txn tid r γ τ ∗
+      if ok
+      then ∃ w, ⌜Q_Fetch r w ∧ dom r = dom w⌝ ∗
+                (Rc_Fetch p r w ∧ Ra_Fetch p r) ∗
+                txnmap_ptstos τ w
+      else Ra_Fetch p r
+  }}}.
+Proof.
+  iIntros (Φ) "(Hp & Htxn & %HP & Hpt) HΦ".
+  wp_call.
 
-#[local]
-Definition mvccNApp := nroot .@ "app".
-#[local]
-Definition mvcc_inv_app γ α : iProp Σ :=
-  inv mvccNApp (mvcc_inv_app_def γ α).
+  (***********************************************************)
+  (* v, _ := txn.Get(0)                                      *)
+  (***********************************************************)
+  destruct HP as [v Hr].
+  unfold txnmap_ptstos.
+  rewrite {2} Hr.
+  rewrite big_sepM_singleton.
+  wp_apply (wp_txn__Get with "[$Htxn $Hpt]").
+  iIntros (v' found).
+  iIntros "(Htxn & Hpt & %Hv)".
+  (* From the precondition we know [found] can only be [true]. *)
+  unfold to_dbval in Hv. destruct found; last done.
+  inversion Hv.
+  subst v'.
+  wp_pures.
+
+  (***********************************************************)
+  (* *p = v                                                  *)
+  (***********************************************************)
+  iDestruct "Hp" as (u) "Hp".
+  wp_store.
+
+  (***********************************************************)
+  (* return true                                             *)
+  (***********************************************************)
+  iModIntro.
+  iApply "HΦ".
+  iFrame "Htxn".
+  rewrite -big_sepM_singleton.
+  iExists _. iFrame "Hpt".
+  iSplit.
+  { iPureIntro. split; last set_solver.
+    unfold Q_Fetch.
+    set_solver.
+  }
+  unfold Rc_Fetch, Ra_Fetch.
+  rewrite Hr lookup_singleton.
+  iSplit; by eauto with iFrame.
+Qed.
+
+Theorem wp_Fetch (txn : loc) γ :
+  ⊢ {{{ own_txn_uninit txn γ }}}
+    <<< ∀∀ (v : u64), dbmap_ptsto γ (U64 0) 1 (Value v) >>>
+      Fetch #txn @ ↑mvccNSST
+    <<< dbmap_ptsto γ (U64 0) 1 (Value v) >>>
+    {{{ RET #v; own_txn_uninit txn γ }}}.
+Proof.
+  iIntros "!>".
+  iIntros (Φ) "Htxn HAU".
+  wp_call.
+
+  (***********************************************************)
+  (* var n uint64                                            *)
+  (***********************************************************)
+  wp_apply wp_ref_of_zero; first done.
+  iIntros (nRef) "HnRef".
+  wp_pures.
+
+  (***********************************************************)
+  (* body := func(txn *txn.Txn) bool {                       *)
+  (*     return fetch(txn, &n)                               *)
+  (* }                                                       *)
+  (* ok := t.DoTxn(body)                                     *)
+  (* return n, ok                                            *)
+  (***********************************************************)
+  (* Move ownership of [n] to [DoTxn]. *)
+  wp_apply (wp_txn__DoTxn
+              _ _ P_Fetch Q_Fetch
+              (Rc_Fetch nRef) (Ra_Fetch nRef) with "[$Htxn HnRef]").
+  { unfold Q_Fetch. apply _. }
+  { unfold spec_body.
+    iIntros (tid r τ Φ') "(Htxn & %HP & Htxnps) HΦ'".
+    wp_pures.
+    iApply (wp_fetch with "[$Htxn $Htxnps HnRef] HΦ'").
+    { iSplit; last done. iExists _. iFrame. }
+  }
+  iMod "HAU".
+  iModIntro.
+  iDestruct "HAU" as (v) "[Hdbpt HAU]".
+  iExists {[ (U64 0) := (Value v) ]}.
+  rewrite {1} /dbmap_ptstos. rewrite big_sepM_singleton.
+  iFrame "Hdbpt".
+  iSplit.
+  { iPureIntro. unfold P_Fetch. by eauto. }
+  iIntros (ok w) "H".
+
+  (* Apply the view shift. *)
+  destruct ok eqn:E.
+  { (* Case COMMIT. *)
+    iDestruct "H" as "[%HQ Hdbpt]".
+    unfold Q_Fetch in HQ.
+    rewrite lookup_singleton in HQ.
+    iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply HQ.
+    iMod ("HAU" with "Hdbpt") as "HΦ".
+    iIntros "!> [Htxn HR]".
+    wp_pures.
+    iDestruct "HR" as (v') "[HnRef %Hlookup]".
+    rewrite lookup_singleton in Hlookup.
+    inversion Hlookup. subst v'.
+    wp_load.
+    iApply "HΦ".
+    by iFrame.
+  }
+  { (* Case ABORT. *)
+    iRename "H" into "Hdbpt".
+    unfold dbmap_ptstos. rewrite big_sepM_singleton.
+    iMod ("HAU" with "Hdbpt") as "HΦ".
+    iIntros "!> [Htxn HR]".
+    wp_pures.
+    iDestruct "HR" as (v') "[HnRef %Hlookup]".
+    rewrite lookup_singleton in Hlookup.
+    inversion Hlookup. subst v'.
+    wp_load.
+    iApply "HΦ".
+    by iFrame.
+  }
+Qed.
 
 Definition P_Increment (r : dbmap) := ∃ v, r = {[ (U64 0) := (Value v) ]}.
 Definition Q_Increment (r w : dbmap) :=
@@ -36,9 +162,9 @@ Definition Rc_Increment (p : loc) (r w : dbmap) : iProp Σ :=
 Definition Ra_Increment (p : loc) (r : dbmap) : iProp Σ :=
   ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (U64 0) = Some (Value v)⌝.
 
-Theorem wp_IncrementSeq txn (p : loc) tid r γ τ :
+Theorem wp_increment txn (p : loc) tid r γ τ :
   {{{ Ri_Increment p ∗ own_txn txn tid r γ τ ∗ ⌜P_Increment r⌝ ∗ txnmap_ptstos τ r }}}
-    IncrementSeq #txn #p
+    increment #txn #p
   {{{ (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
       if ok
@@ -117,12 +243,14 @@ Qed.
 
 Theorem wp_Increment (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (r : dbmap), ⌜P_Increment r⌝ ∗ dbmap_ptstos γ 1 r >>>
+    <<< ∀∀ (v : u64), dbmap_ptsto γ (U64 0) 1 (Value v) >>>
       Increment #txn @ ↑mvccNSST
-    <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q_Increment r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
-    {{{ (v : u64), RET (#v, #ok);
-        own_txn_uninit txn γ ∗ ⌜r !! (U64 0) = Some (Value v)⌝
-    }}}.
+    <<< ∃∃ (ok : bool),
+          if ok
+          then ∃ (u : u64), dbmap_ptsto γ (U64 0) 1 (Value u) ∗ ⌜int.Z u = (int.Z v + 1)%Z⌝
+          else dbmap_ptsto γ (U64 0) 1 (Value v)
+    >>>
+    {{{ RET (#v, #ok); own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
@@ -137,7 +265,7 @@ Proof.
 
   (***********************************************************)
   (* body := func(txn *txn.Txn) bool {                       *)
-  (*     return IncrementSeq(txn, &n)                        *)
+  (*     return increment(txn, &n)                           *)
   (* }                                                       *)
   (* ok := t.DoTxn(body)                                     *)
   (* return n, ok                                            *)
@@ -149,29 +277,48 @@ Proof.
   { unfold spec_body.
     iIntros (tid r τ Φ') "(Htxn & %HP & Htxnps) HΦ'".
     wp_pures.
-    iApply (wp_IncrementSeq with "[$Htxn $Htxnps HnRef] HΦ'").
+    iApply (wp_increment with "[$Htxn $Htxnps HnRef] HΦ'").
     { iSplit; last done. iExists _. iFrame. }
   }
   iMod "HAU".
   iModIntro.
-  iDestruct "HAU" as (r) "[[%HP Hdbpts] HAU]".
-  iExists _.
-  iFrame "Hdbpts".
-  iSplit; first done.
-  iIntros (ok w) "Hpost".
-  iMod ("HAU" with "Hpost") as "HΦ".
-  iIntros "!> [Htxn HR]".
-  wp_pures.
+  iDestruct "HAU" as (v) "[Hdbpt HAU]".
+  iExists {[ (U64 0) := (Value v) ]}.
+  rewrite {1} /dbmap_ptstos. rewrite big_sepM_singleton.
+  iFrame "Hdbpt".
+  iSplit.
+  { iPureIntro. unfold P_Increment. by eauto. }
+  iIntros (ok w) "H".
+
+  (* Apply the view shift. *)
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    unfold Rc_Increment. iDestruct "HR" as (v) "[HnRef %Hlookup]".
+    iDestruct "H" as "[%HQ Hdbpt]".
+    unfold Q_Increment in HQ.
+    destruct HQ as (v' & u & Hlookupr & Hlookupw & Hrel).
+    rewrite lookup_singleton in Hlookupr.
+    inversion Hlookupr. subst v'.
+    iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookupw.
+    iMod ("HAU" $! true with "[Hdbpt]") as "HΦ"; first by eauto with iFrame.
+    iIntros "!> [Htxn HR]".
+    wp_pures.
+    iDestruct "HR" as (v') "[HnRef %Hlookup]".
+    rewrite lookup_singleton in Hlookup.
+    inversion Hlookup. subst v'.
     wp_load.
     wp_pures.
     iApply "HΦ".
     by iFrame.
   }
   { (* Case ABORT. *)
-    unfold Rc_Increment. iDestruct "HR" as (v) "[HnRef %Hlookup]".
+    iRename "H" into "Hdbpt".
+    unfold dbmap_ptstos. rewrite big_sepM_singleton.
+    iMod ("HAU" $! false with "Hdbpt") as "HΦ".
+    iIntros "!> [Htxn HR]".
+    wp_pures.
+    iDestruct "HR" as (v') "[HnRef %Hlookup]".
+    rewrite lookup_singleton in Hlookup.
+    inversion Hlookup. subst v'.
     wp_load.
     wp_pures.
     iApply "HΦ".
@@ -192,12 +339,9 @@ Definition Rc_Decrement (p : loc) (r w : dbmap) : iProp Σ :=
 Definition Ra_Decrement (p : loc) (r : dbmap) : iProp Σ :=
   ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (U64 0) = Some (Value v)⌝.
 
-(**
- * [p] is not used until [R/R1/R2] are added to [wp_txn__DoTxn].
- *)
-Theorem wp_DecrementSeq txn (p : loc) tid r γ τ :
+Theorem wp_decrement txn (p : loc) tid r γ τ :
   {{{ Ri_Decrement p ∗ own_txn txn tid r γ τ ∗ ⌜P_Decrement r⌝ ∗ txnmap_ptstos τ r }}}
-    DecrementSeq #txn #p
+    decrement #txn #p
   {{{ (ok : bool), RET #ok;
       own_txn txn tid r γ τ ∗
       if ok
@@ -260,7 +404,7 @@ Proof.
   iExists _. iFrame "Hpt".
   iSplit.
   { iPureIntro. split; last set_solver.
-    unfold Q_Increment.
+    unfold Q_Decrement.
     eexists _, _.
     split.
     { rewrite Hr. by rewrite lookup_singleton. }
@@ -277,12 +421,14 @@ Qed.
 
 Theorem wp_Decrement (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (r : dbmap), ⌜P_Decrement r⌝ ∗ dbmap_ptstos γ 1 r >>>
+    <<< ∀∀ (v : u64), dbmap_ptsto γ (U64 0) 1 (Value v) >>>
       Decrement #txn @ ↑mvccNSST
-    <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q_Decrement r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
-    {{{ (v : u64), RET (#v, #ok);
-        own_txn_uninit txn γ ∗ ⌜r !! (U64 0) = Some (Value v)⌝
-    }}}.
+    <<< ∃∃ (ok : bool),
+          if ok
+          then ∃ (u : u64), dbmap_ptsto γ (U64 0) 1 (Value u) ∗ ⌜int.Z u = (int.Z v - 1)%Z⌝
+          else dbmap_ptsto γ (U64 0) 1 (Value v)
+    >>>
+    {{{ RET (#v, #ok); own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
   iIntros (Φ) "Htxn HAU".
@@ -297,7 +443,7 @@ Proof.
 
   (***********************************************************)
   (* body := func(txn *txn.Txn) bool {                       *)
-  (*     return IncrementSeq(txn, &n)                        *)
+  (*     return decrement(txn, &n)                           *)
   (* }                                                       *)
   (* ok := t.DoTxn(body)                                     *)
   (* return n, ok                                            *)
@@ -309,29 +455,48 @@ Proof.
   { unfold spec_body.
     iIntros (tid r τ Φ') "(Htxn & %HP & Htxnps) HΦ'".
     wp_pures.
-    iApply (wp_DecrementSeq with "[$Htxn $Htxnps HnRef] HΦ'").
+    iApply (wp_decrement with "[$Htxn $Htxnps HnRef] HΦ'").
     { iSplit; last done. iExists _. iFrame. }
   }
   iMod "HAU".
   iModIntro.
-  iDestruct "HAU" as (r) "[[%HP Hdbpts] HAU]".
-  iExists _.
-  iFrame "Hdbpts".
-  iSplit; first done.
-  iIntros (ok w) "Hpost".
-  iMod ("HAU" with "Hpost") as "HΦ".
-  iIntros "!> [Htxn HR]".
-  wp_pures.
+  iDestruct "HAU" as (v) "[Hdbpt HAU]".
+  iExists {[ (U64 0) := (Value v) ]}.
+  rewrite {1} /dbmap_ptstos. rewrite big_sepM_singleton.
+  iFrame "Hdbpt".
+  iSplit.
+  { iPureIntro. unfold P_Decrement. by eauto. }
+  iIntros (ok w) "H".
+
+  (* Apply the view shift. *)
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    unfold Rc_Decrement. iDestruct "HR" as (v) "[HnRef %Hlookup]".
+    iDestruct "H" as "[%HQ Hdbpt]".
+    unfold Q_Decrement in HQ.
+    destruct HQ as (v' & u & Hlookupr & Hlookupw & Hrel).
+    rewrite lookup_singleton in Hlookupr.
+    inversion Hlookupr. subst v'.
+    iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookupw.
+    iMod ("HAU" $! true with "[Hdbpt]") as "HΦ"; first by eauto with iFrame.
+    iIntros "!> [Htxn HR]".
+    wp_pures.
+    iDestruct "HR" as (v') "[HnRef %Hlookup]".
+    rewrite lookup_singleton in Hlookup.
+    inversion Hlookup. subst v'.
     wp_load.
     wp_pures.
     iApply "HΦ".
     by iFrame.
   }
   { (* Case ABORT. *)
-    unfold Rc_Decrement. iDestruct "HR" as (v) "[HnRef %Hlookup]".
+    iRename "H" into "Hdbpt".
+    unfold dbmap_ptstos. rewrite big_sepM_singleton.
+    iMod ("HAU" $! false with "Hdbpt") as "HΦ".
+    iIntros "!> [Htxn HR]".
+    wp_pures.
+    iDestruct "HR" as (v') "[HnRef %Hlookup]".
+    rewrite lookup_singleton in Hlookup.
+    inversion Hlookup. subst v'.
     wp_load.
     wp_pures.
     iApply "HΦ".
@@ -339,20 +504,37 @@ Proof.
   }
 Qed.
 
+(* Application-specific invariants. *)
+#[local]
+Definition mvcc_inv_app_def γ α : iProp Σ :=
+  ∃ (v : u64),
+    "Hdbpt" ∷ dbmap_ptsto γ (U64 0) 1 (Value v) ∗
+    "Hmn"   ∷ mono_nat_auth_own α 1 (int.nat v).
+
+Instance mvcc_inv_app_timeless γ α :
+  Timeless (mvcc_inv_app_def γ α).
+Proof. unfold mvcc_inv_app_def. apply _. Defined.
+
+#[local]
+Definition mvccNApp := nroot .@ "app".
+#[local]
+Definition mvcc_inv_app γ α : iProp Σ :=
+  inv mvccNApp (mvcc_inv_app_def γ α).
+
 (*****************************************************************)
-(* func InitializeData(txnmgr *txn.TxnMgr)                       *)
+(* func InitializeCounterData(txnmgr *txn.TxnMgr)                *)
 (*****************************************************************)
-Theorem wp_InitializeData (txnmgr : loc) γ :
+Theorem wp_InitializeCounterData (txnmgr : loc) γ :
   is_txnmgr txnmgr γ -∗
   {{{ dbmap_ptstos γ 1 (gset_to_gmap Nil keys_all) }}}
-    InitializeData #txnmgr
+    InitializeCounterData #txnmgr
   {{{ α, RET #(); mvcc_inv_app γ α }}}.
 Proof.
 Admitted.
 
-Theorem wp_InitExample :
+Theorem wp_InitCounter :
   {{{ True }}}
-    InitExample #()
+    InitCounter #()
   {{{ γ α (mgr : loc), RET #mgr; is_txnmgr mgr γ ∗ mvcc_inv_app γ α }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -360,13 +542,13 @@ Proof.
 
   (***********************************************************)
   (* mgr := txn.MkTxnMgr()                                   *)
-  (* InitializeData(mgr)                                     *)
+  (* InitializeCounterData(mgr)                              *)
   (* return mgr                                              *)
   (***********************************************************)
   wp_apply wp_MkTxnMgr.
   iIntros (γ mgr) "[#Hmgr Hdbpts]".
   wp_pures.
-  wp_apply (wp_InitializeData with "Hmgr [$Hdbpts]").
+  wp_apply (wp_InitializeCounterData with "Hmgr [$Hdbpts]").
   iIntros (α) "#Hinv".
   wp_pures.
   iModIntro.
@@ -405,36 +587,27 @@ Proof.
   iIntros "Hclose".
   iNamed "HinvO".
   (* Give atomic precondition. *)
-  iExists {[ (U64 0) := (Some v) ]}.
-  unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
-  iFrame.
-  iSplit.
-  { iPureIntro. unfold P_Increment. by eauto. }
+  iExists _.
+  iFrame "Hdbpt".
   (* Take atomic postcondition. *)
-  iIntros (ok w) "H".
+  iIntros (ok) "H".
   iMod "Hclose" as "_".
 
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    iDestruct "H" as "[%HQ Hdbpt]".
-    unfold Q_Increment in HQ.
-    destruct HQ as (v' & u' & Hlookupr & Hlookupw & Hvu).
-    (* Show [v = v']. *)
-    rewrite lookup_singleton in Hlookupr. inversion_clear Hlookupr.
-    iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookupw.
-    iMod (mono_nat_own_update (int.nat u') with "Hmn") as "[Hmn #Hmnlb]".
+    iDestruct "H" as (u) "[Hdbpt %Huv]".
+    iMod (mono_nat_own_update (int.nat u) with "Hmn") as "[Hmn #Hmnlb]".
     { (* Show [int.nat v' ≤ int.nat u']. *) word. }
     iMod ("HinvC" with "[- HΦ]") as "_".
     { (* Close the invariant. *) iExists _. iFrame. }
-    iIntros "!>" (u) "Htxn".
+    iIntros "!> Htxn".
     wp_pures.
     by iApply "HΦ".
   }
   { (* Case ABORT. *)
-    unfold dbmap_ptstos. rewrite big_sepM_singleton.
     iMod ("HinvC" with "[- HΦ]") as "_".
     { (* Close the invariant. *) iExists _. iFrame. }
-    iIntros "!>" (u) "Htxn".
+    iIntros "!> Htxn".
     wp_pures.
     by iApply "HΦ".
   }
@@ -449,7 +622,7 @@ Theorem wp_CallDecrement (mgr : loc) γ α :
   is_txnmgr mgr γ -∗
   {{{ True }}}
     CallDecrement #mgr
-  {{{RET #(); True }}}.
+  {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
   wp_call.
@@ -471,26 +644,17 @@ Proof.
   iIntros "Hclose".
   iNamed "HinvO".
   (* Give atomic precondition. *)
-  iExists {[ (U64 0) := (Some v) ]}.
-  unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
-  iFrame.
-  iSplit.
-  { iPureIntro. unfold P_Decrement. by eauto. }
+  iExists _.
+  iFrame "Hdbpt".
   (* Take atomic postcondition. *)
-  iIntros (ok w) "H".
+  iIntros (ok) "H".
   iMod "Hclose" as "_".
 
   destruct ok eqn:E.
   { (* Case COMMIT. *)
-    iDestruct "H" as "[%HQ Hdbpt]".
-    unfold Q_Increment in HQ.
-    destruct HQ as (v' & u' & Hlookupr & Hlookupw & Hvu).
-    (* Show [v = v']. *)
-    rewrite lookup_singleton in Hlookupr. inversion_clear Hlookupr.
-    iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookupw.
-    iMod (mono_nat_own_update (int.nat u') with "Hmn") as "[Hmn #Hmnlb]".
-    { (* Cannot show [int.nat v' ≤ int.nat u']. *)
-      Fail word.
+    iDestruct "H" as (u) "[Hdbpt %Huv]".
+    iMod (mono_nat_own_update (int.nat u) with "Hmn") as "[Hmn #Hmnlb]".
+    { (* Show [int.nat v' ≤ int.nat u']. *) Fail word.
 Abort.
 
 (**
@@ -498,11 +662,11 @@ Abort.
  * [mvcc_inv_app], the counter value strictly increases when the txn
  * successfully commits.
  *)
-Theorem wp_CallIncrementTwice (mgr : loc) γ α :
+Theorem wp_CallIncrementFetch (mgr : loc) γ α :
   mvcc_inv_app γ α -∗
   is_txnmgr mgr γ -∗
   {{{ True }}}
-    CallIncrementTwice #mgr
+    CallIncrementFetch #mgr
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
@@ -525,46 +689,33 @@ Proof.
   iIntros "Hclose".
   iNamed "HinvO".
   (* Give atomic precondition. *)
-  iExists {[ (U64 0) := (Some v) ]}.
-  rewrite {1} /dbmap_ptstos. rewrite {1} big_sepM_singleton.
-  iFrame.
-  iSplit.
-  { iPureIntro. unfold P_Increment. by eauto. }
+  iExists _.
+  iFrame "Hdbpt".
   (* Take atomic postcondition. *)
-  iIntros (ok w) "H".
+  iIntros (ok) "H".
   iMod "Hclose" as "_".
   (* Merge. *)
   iAssert (
       |==> mvcc_inv_app_def γ α ∗
            if ok then mono_nat_lb_own α (S (int.nat v)) else True
-    )%I with "[Hmn H]" as "H".
+    )%I with "[Hmn H]" as "> [HinvO Hmnlb]".
   { destruct ok eqn:E.
     { (* Case COMMIT. *)
-      iDestruct "H" as "[%HQ Hdbpt]".
-      unfold Q_Increment in HQ.
-      destruct HQ as (v' & u & Hlookupr & Hlookupw & Hvu).
-      (* Show [v = v']. *)
-      rewrite lookup_singleton in Hlookupr. inversion Hlookupr. subst v'.
-      iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookupw.
+      iDestruct "H" as (u) "[Hdbpt %Huv]".
       iMod (mono_nat_own_update (int.nat u) with "Hmn") as "[Hmn #Hmnlb]".
       { (* Show [int.nat v ≤ int.nat u]. *) word. }
       replace (S (int.nat v)) with (int.nat u) by word.
       iFrame "Hmnlb". iExists _. by iFrame.
     }
     { (* Case ABORT. *)
-      rewrite /dbmap_ptstos big_sepM_singleton.
       iModIntro. iSplit; last done.
-      iExists _. by iFrame.
+      iExists _. iFrame.
     }
   }
-  (* Q: Can we directly introduce [#Hmnlb]? *)
-  iMod "H" as "[HinvO Hmnlb]".
   iMod ("HinvC" with "[- HΦ Hmnlb]") as "_"; first done.
-  iIntros "!>" (n1) "[Htxn %Hlookup]".
+  iIntros "!> Htxn".
   wp_pures.
-  (* Deduce [n1 = v]. *)
-  rewrite lookup_singleton in Hlookup.
-  inversion Hlookup. subst v. clear Hlookup.
+  rename v into n1.
 
   (***********************************************************)
   (* if !ok1 {                                               *)
@@ -576,53 +727,26 @@ Proof.
   iDestruct "Hmnlb" as "#Hmnlb".
 
   (***********************************************************)
-  (* n2, _ := Increment(txn)                                 *)
+  (* n2 := Fetch(txn)                                        *)
   (***********************************************************)
-  wp_apply (wp_Increment with "Htxn").
+  wp_apply (wp_Fetch with "Htxn").
   iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
   iNamed "HinvO".
   (* Deduce [S (int.nat n1) ≤ int.nat v], which we'll need for the assertion below. *)
-  iDestruct (mono_nat_lb_own_valid with "Hmn Hmnlb") as "%H".
-  (* The following will consume [Hmn], so we do a separate [destruct]. *)
-  (* iDestruct (mono_nat_lb_own_valid with "Hmn Hmnlb") as "[_ %H]". *)
-  destruct H as [_ Hle].
+  iDestruct (mono_nat_lb_own_valid with "Hmn Hmnlb") as %[_ Hle].
   (* Give atomic precondition. *)
-  iExists {[ (U64 0) := (Some v) ]}.
-  rewrite {1} /dbmap_ptstos. rewrite {1} big_sepM_singleton.
-  iFrame.
-  iSplit.
-  { iPureIntro. unfold P_Increment. by eauto. }
+  iExists _.
+  iFrame "Hdbpt".
   (* Take atomic postcondition. *)
-  iIntros (ok w') "H".
+  iIntros "Hdbpt".
   iMod "Hclose" as "_".
-  (* Merge. *)
-  iAssert (|==> mvcc_inv_app_def γ α)%I with "[Hmn H]" as "HinvO".
-  { destruct ok eqn:E.
-    { (* Case COMMIT. *)
-      iDestruct "H" as "[%HQ Hdbpt]".
-      unfold Q_Increment in HQ.
-      destruct HQ as (v' & u & Hlookupr & Hlookupw & Hvu).
-      (* Show [v = v']. *)
-      rewrite lookup_singleton in Hlookupr. inversion Hlookupr. subst v'.
-      iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookupw.
-      iMod (mono_nat_own_update (int.nat u) with "Hmn") as "[Hmn _]".
-      { (* Show [int.nat v ≤ int.nat u]. *) word. }
-      iExists _. by iFrame.
-    }
-    { (* Case ABORT. *)
-      rewrite /dbmap_ptstos big_sepM_singleton.
-      iExists _. by iFrame.
-    }
-  }
-  iMod "HinvO" as "HinvO".
-  iMod ("HinvC" with "[- HΦ]") as "_"; first done.
-  iIntros "!>" (n2) "[Htxn %Hlookup]".
+  iMod ("HinvC" with "[- HΦ]") as "_".
+  { unfold mvcc_inv_app_def. eauto with iFrame. }
+  iIntros "!> Htxn".
   wp_pures.
-  (* Deduce [n2 = v]. *)
-  rewrite lookup_singleton in Hlookup.
-  inversion Hlookup. subst v. clear Hlookup.
+  rename v into n2.
 
   (***********************************************************)
   (* machine.Assert(n1 < n2)                                 *)

@@ -6,8 +6,23 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* counter.go *)
 
-Definition IncrementSeq: val :=
-  rec: "IncrementSeq" "txn" "p" :=
+Definition fetch: val :=
+  rec: "fetch" "txn" "p" :=
+    let: ("v", <>) := txn.Txn__Get "txn" #0 in
+    "p" <-[uint64T] "v";;
+    #true.
+
+Definition Fetch: val :=
+  rec: "Fetch" "t" :=
+    let: "n" := ref (zero_val uint64T) in
+    let: "body" := (λ: "txn",
+      fetch "txn" "n"
+      ) in
+    txn.Txn__DoTxn "t" "body";;
+    ![uint64T] "n".
+
+Definition increment: val :=
+  rec: "increment" "txn" "p" :=
     let: ("v", <>) := txn.Txn__Get "txn" #0 in
     "p" <-[uint64T] "v";;
     (if: ("v" = #18446744073709551615)
@@ -20,13 +35,13 @@ Definition Increment: val :=
   rec: "Increment" "t" :=
     let: "n" := ref (zero_val uint64T) in
     let: "body" := (λ: "txn",
-      IncrementSeq "txn" "n"
+      increment "txn" "n"
       ) in
     let: "ok" := txn.Txn__DoTxn "t" "body" in
     (![uint64T] "n", "ok").
 
-Definition DecrementSeq: val :=
-  rec: "DecrementSeq" "txn" "p" :=
+Definition decrement: val :=
+  rec: "decrement" "txn" "p" :=
     let: ("v", <>) := txn.Txn__Get "txn" #0 in
     "p" <-[uint64T] "v";;
     (if: ("v" = #0)
@@ -39,7 +54,7 @@ Definition Decrement: val :=
   rec: "Decrement" "t" :=
     let: "n" := ref (zero_val uint64T) in
     let: "body" := (λ: "txn",
-      DecrementSeq "txn" "n"
+      decrement "txn" "n"
       ) in
     let: "ok" := txn.Txn__DoTxn "t" "body" in
     (![uint64T] "n", "ok").
@@ -60,14 +75,14 @@ Definition CallIncrement: val :=
     Increment "txn";;
     #().
 
-Definition CallIncrementTwice: val :=
-  rec: "CallIncrementTwice" "mgr" :=
+Definition CallIncrementFetch: val :=
+  rec: "CallIncrementFetch" "mgr" :=
     let: "txn" := txn.TxnMgr__New "mgr" in
     let: ("n1", "ok1") := Increment "txn" in
     (if: ~ "ok1"
     then #()
     else
-      let: ("n2", <>) := Increment "txn" in
+      let: "n2" := Fetch "txn" in
       control.impl.Assert ("n1" < "n2");;
       #()).
 
