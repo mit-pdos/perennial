@@ -120,102 +120,99 @@ Proof.
   wp_pures.
   
   (***********************************************************)
-  (* for {                                                   *)
-  (*     if pos >= uint64(len(ents)) {                       *)
-  (*         break                                           *)
-  (*     }                                                   *)
-  (*     if key == ents[pos].key {                           *)
-  (*         break                                           *)
-  (*     }                                                   *)
+  (* for pos < uint64(len(ents)) && key != ents[pos].key {   *)
   (*     pos++                                               *)
   (* }                                                       *)
   (***********************************************************)
   set P := (λ (b : bool), ∃ (pos : u64),
                "HentsS" ∷ (slice.is_slice entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents)) ∗
                "HposR" ∷ posR ↦[uint64T] #pos ∗
-               "%Hpos" ∷ (⌜(int.Z pos) ≤ (int.Z entsS.(Slice.sz))⌝) ∗
                "%Hexit" ∷ (⌜if b then True
                             else (∃ (ent : wrent), ents !! (int.nat pos) = Some ent ∧ ent.1.1 = key) ∨
                                  (int.Z entsS.(Slice.sz)) ≤ (int.Z pos)⌝) ∗
                "%Hnotin" ∷ (⌜key ∉ (take (int.nat pos) ents.*1.*1)⌝))%I.
-  wp_apply (wp_forBreak P with "[] [$HentsS HposR]").
+  wp_apply (wp_forBreak_cond P with "[] [$HentsS HposR]").
   { clear Φ.
     iIntros (Φ) "!> HP HΦ".
     iNamed "HP".
     wp_pures.
+    (* Evaluate the 1st condition: `pos < uint64(len(ents))`. *)
+    wp_load.
     wp_apply (wp_slice_len).
-    wp_load.
-    wp_if_destruct.
-    { iApply "HΦ". unfold P. eauto 10 with iFrame. }
-    wp_load.
+    wp_pures.
+    (* Bind the inner if. *)
+    wp_bind (If #(bool_decide _) _ _).
+    (**
+     * Note on why [wp_and] won't work here:
+     * The proof state evolves as follows:
+     * 1. [wp_and] creates an evar for `key != ents[pos].key`.
+     * 2. after the first condition, i.e. `pos < uint64(len(ents))`,
+     * we know the access to `ents` at index `pos` is safe, and hence
+     * we can get the entry at that index.
+     *
+     * Problem: the evar is created *before* that entry is created.
+     *)
+    wp_if_destruct; last first.
+    { (* Exit the loop due to the first condition. *)
+      wp_if_false.
+      iApply "HΦ".
+      iExists _.
+      iFrame "∗ %".
+      iPureIntro. right.
+      by apply Znot_lt_ge, Z.ge_le in Heqb.
+    }
+    (* Evaluate the 2nd condition: `key != ents[pos].key`. *)
     iDestruct (slice.is_slice_small_acc with "HentsS") as "[HentsS HentsC]".
     iDestruct (slice.is_slice_small_sz with "[$HentsS]") as "%HentsSz".
-    destruct (list_lookup_lt _ (wrent_to_val <$> ents) (int.nat pos)) as [ent HSome].
-    { apply Z.nle_gt in Heqb.
-      word.
-    }
-    wp_apply (slice.wp_SliceGet with "[HentsS]"); first auto.
+    wp_load.
+    destruct (list_lookup_lt _ (wrent_to_val <$> ents) (int.nat pos)) as [ent Hlookup]; first word.
+    wp_apply (slice.wp_SliceGet with "[$HentsS]"); first done.
     iIntros "[HentsS %HentsT]".
     iDestruct ("HentsC" with "HentsS") as "HentsS".
-    destruct (val_to_wrent_with_val_ty _ HentsT) as (k & v & d & Hent).
+    destruct (val_to_wrent_with_val_ty _ HentsT) as (k & v & w & Hent).
     subst ent.
     wp_pures.
-    wp_if_destruct.
-    { iApply "HΦ".
-      iModIntro.
-      unfold P.
-      iExists pos.
-      iFrame.
-      iPureIntro.
-      split; first done.
+    wp_if_destruct; last first.
+    { (* Exit the loop due to the second condition. *)
+      iApply "HΦ".
+      iExists _.
+      iFrame "∗ %".
+      iPureIntro. left.
+      exists (k, v, w).
       split; last done.
-      left.
-      exists (k, v, d).
-      split; last done.
-      rewrite list_lookup_fmap in HSome.
-      apply fmap_Some in HSome as [ent [HSome H]].
-      rewrite HSome.
-      f_equal.
-      inversion H.
+      rewrite list_lookup_fmap in Hlookup.
+      apply fmap_Some in Hlookup as [ent [Hlookup H]].
+      rewrite Hlookup.
+      f_equal. inversion H.
       by rewrite -(surjective_pairing ent.1) -(surjective_pairing ent).
     }
     wp_load.
-    wp_pures.
     wp_store.
-    iModIntro.
     iApply "HΦ".
-    iFrame.
-    iExists (word.add pos 1%Z).
-    iFrame.
+    iExists _.
+    iFrame "∗ %".
     iPureIntro.
-    split; first word.
-    split; first done.
-    replace (int.nat (word.add pos 1)) with (S (int.nat pos)); last word.
-    apply Z.nle_gt in Heqb.
-    rewrite (take_S_r _ _ k); last first.
-    { rewrite list_lookup_fmap in HSome.
-      apply fmap_Some in HSome as [ent [HSome H]].
-      inversion H.
+    (* Show preservation of the loop invariant after one iteration. *)
+    replace (int.nat (word.add pos 1)) with (S (int.nat pos)) by word.
+    intros Helem.
+    rewrite (take_S_r _ _ k) in Helem; last first.
+    { rewrite list_lookup_fmap in Hlookup.
+      apply fmap_Some in Hlookup as [ent [Hlookup H]].
       do 2 rewrite list_lookup_fmap.
-      rewrite HSome.
-      done.
+      rewrite Hlookup.
+      simpl. by inversion H.
     }
-    apply not_elem_of_app.
-    split; first done.
-    simpl.
-    rewrite elem_of_list_singleton.
-    unfold not.
-    intros Eqkey.
-    rewrite Eqkey in Heqb0.
-    contradiction.
+    rewrite elem_of_app in Helem.
+    destruct Helem; first by auto.
+    rewrite elem_of_list_singleton in H. by rewrite H in Heqb0.
   }
-  { iExists (U64 0).
+  { iExists _.
     iFrame.
     iPureIntro.
+    split; first done.
     change (int.nat 0) with 0%nat.
     rewrite take_0.
-    split; first word.
-    split; auto using not_elem_of_nil.
+    set_solver.
   }
   iIntros "HP".
   iNamed "HP".

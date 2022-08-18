@@ -23,15 +23,9 @@ Definition search: val :=
   rec: "search" "ents" "key" :=
     let: "pos" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "pos" ≥ slice.len "ents"
-      then Break
-      else
-        (if: ("key" = struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "pos")))
-        then Break
-        else
-          "pos" <-[uint64T] ![uint64T] "pos" + #1;;
-          Continue)));;
+    (for: (λ: <>, (![uint64T] "pos" < slice.len "ents") && ("key" ≠ struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "pos")))); (λ: <>, Skip) := λ: <>,
+      "pos" <-[uint64T] ![uint64T] "pos" + #1;;
+      Continue);;
     let: "found" := ![uint64T] "pos" < slice.len "ents" in
     (![uint64T] "pos", "found").
 
