@@ -168,10 +168,10 @@ Proof.
   by iFrame.
 Qed.
 
-Definition ptuple_auth_tidown
-           γ (key : u64) (tidown : u64) (vchain : list dbval)
+Definition ptuple_auth_owned
+           γ (key : u64) (owned : bool) (vchain : list dbval)
   : iProp Σ :=
-  ptuple_auth γ (if decide (tidown = (U64 0)) then (1 / 2) else (1 / 4))%Qp key vchain.
+  ptuple_auth γ (if owned then (1 / 4) else (1 / 2))%Qp key vchain.
 
 (*****************************************************************)
 (* func (tuple *Tuple) ReadWait(tid uint64)                      *)
@@ -180,11 +180,11 @@ Theorem wp_tuple__ReadWait tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
   {{{ True }}}
     Tuple__ReadWait #tuple #tid
-  {{{ (tidown : u64) (vchain : list dbval), RET #();
+  {{{ (owned : bool) (vchain : list dbval), RET #();
       is_tuple_locked tuple key γ ∗
-      own_tuple_read tuple key tidown vchain γ ∗
-      ptuple_auth_tidown γ key tidown vchain ∗
-      ⌜int.Z tidown = 0 ∨ (int.nat tid < length vchain)%nat⌝
+      own_tuple_read tuple key owned vchain γ ∗
+      ptuple_auth_owned γ key owned vchain ∗
+      ⌜owned = false ∨ (int.nat tid < length vchain)%nat⌝
   }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> _ HΦ".
@@ -201,85 +201,68 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* for tid > tuple.tidlast && tuple.tidown != 0 {          *)
+  (* for tid > tuple.tidlast && tuple.owned {                *)
   (*     tuple.rcond.Wait()                                  *)
   (* }                                                       *)
   (***********************************************************)
   set P := λ (b : bool),
-             (∃ (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval),
-                 "Hphys" ∷ own_tuple_phys tuple tidown tidlast vers ∗
+             (∃ (owned : bool) (tidlast tidgc : u64) (vers : list pver) (vchain : list dbval),
+                 "Hphys" ∷ own_tuple_phys tuple owned tidlast vers ∗
                  "Habst" ∷ own_tuple_repr key tidlast tidgc vers vchain γ ∗
                  "Hlocked" ∷ locked #latch ∗
-                 "Hptuple" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain ∗
-                 "%Hexit" ∷ if b then ⌜True⌝ else ⌜(int.Z tid) ≤ (int.Z tidlast) ∨ (int.Z tidown) = 0⌝)%I.
+                 "Hptuple" ∷ ptuple_auth γ (if owned then (1 / 4) else (1 / 2))%Qp key vchain ∗
+                 "%Hexit" ∷ if b then ⌜True⌝ else ⌜owned = false ∨ (int.Z tid) ≤ (int.Z tidlast)⌝)%I.
   wp_apply (wp_forBreak_cond P with "[] [-HΦ]").
   { (* Loop body preserves the invariant. *)
     clear Φ.
-    clear tidown tidlast tidgc vers vchain.
+    clear owned tidlast tidgc vers vchain.
     iIntros (Φ) "!> Hloop HΦ".
     iNamed "Hloop".
     iNamed "Hphys".
     wp_pures.
+    (* Evaluate the first condition. *)
     wp_loadField.
     wp_pures.
-    (**
-     * Directly applying [wp_and] seems to bind the wrong [if].
-     * Reason: Goose generate a similar form for loops with conds and
-     * logical ands.
-     * Solution here is using [wp_bind] to focus on the right [if]:
-     * [wp_bind (If #(bool_decide _) _ _)].
-     *)
     wp_bind (If #(bool_decide _) _ _).
-    wp_apply (wp_and with "Htidown").
-    { (* Case: [tid > tidlast]. *)
-      wp_pures. done.
-    }
-    { (* Case: [tuple.tidown ≠ 0]. *)
-      iIntros "_ Htidown".
-      wp_loadField.
-      wp_pures.
-      rewrite -bool_decide_not.
-      eauto with iFrame.
-    }
-    iIntros "Htidown".
-    wp_if_destruct.
-    { (* Loop body. *)
-      wp_pures.
-      wp_loadField.
-      wp_apply (wp_condWait with "[-HΦ]").
-      { eauto 15 with iFrame. }
-      iIntros "[Hlocked HtupleOwn]".
-      iNamed "HtupleOwn".
-      wp_pures.
-      iModIntro.
+    wp_if_destruct; last first.
+    { (* Exit the loop due to the first condition. *)
+      wp_if_false.
       iApply "HΦ".
-      unfold P.
-      eauto 15 with iFrame.
+      do 5 iExists _.
+      iFrame "Hlocked Habst".
+      iFrame "Hptuple".
+      iSplitR ""; first eauto 10 with iFrame.
+      iPureIntro. right. word.
     }
-    (* Exiting loop. *)
+    (* Evaluate the second condition. *)
+    wp_loadField.
+    wp_if_destruct; last first.
+    { (* Exit the loop due to the second condition. *)
+      iApply "HΦ".
+      do 5 iExists _.
+      iFrame "Hlocked Habst".
+      iSplitR "Hptuple"; first eauto 10 with iFrame.
+      iFrame "Hptuple".
+      iPureIntro. by left.
+    }
+    wp_pures.
+    (* Evaluate the loop body. *)
+    wp_loadField.
+    wp_apply (wp_condWait with "[-HΦ]").
+    { eauto 15 with iFrame. }
+    iIntros "[Hlocked HtupleOwn]".
+    iNamed "HtupleOwn".
+    wp_pures.
+    iModIntro.
     iApply "HΦ".
-    apply not_and_l in Heqb.
-    destruct Heqb; (iModIntro; do 5 iExists _; iFrame "Hlocked Habst").
-    { (* Case [verLast.begin ≥ tid]. *)
-      iFrame "Hptuple".
-      iSplitR ""; first eauto 10 with iFrame.
-      iPureIntro.
-      left. word.
-    }
-    { (* Case [tuple.tidown = 0]. *)
-      iFrame "Hptuple".
-      iSplitR ""; first eauto 10 with iFrame.
-      iPureIntro.
-      right.
-      apply dec_stable in H.
-      by inversion H.
-    }
+    unfold P.
+    eauto 15 with iFrame.
   }
   { (* The invariant holds at the start. *)
     unfold P.
     eauto 10 with iFrame.
   }
-  clear tidown tidlast tidgc vers vchain.
+  clear owned tidlast tidgc vers vchain.
   iIntros "Hloop".
   iNamed "Hloop".
   iNamed "Hphys".
@@ -293,7 +276,7 @@ Proof.
   iSplitL "Hlocked"; first by eauto 10 with iFrame.
   iSplit; first by eauto 20 with iFrame.
   iPureIntro.
-  destruct Hexit; word.
+  destruct Hexit; [by left | word].
 Qed.
 
 (**
@@ -302,7 +285,7 @@ Qed.
  * B-2).
  * 2. [own_tuple_read] consists of physical states and their relation to logical
  * state.
- * 3. [ptuple_auth_tidown] consists of extended logical state.
+ * 3. [ptuple_auth_owned] consists of extended logical state.
  * 4. The last one comes from waiting on the CV.
  *
  * Notes (B) about the postcondition [ptuple_ptsto]:
@@ -318,13 +301,13 @@ Qed.
 (* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, uint64)  *)
 (*****************************************************************)
 Theorem wp_tuple__ReadVersion
-        tuple (tid : u64) (key : u64) (sid : u64) (tidown : u64)
+        tuple (tid : u64) (key : u64) (sid : u64) (owned : bool)
         (vchain : list dbval) γ :
   {{{ active_tid γ tid sid ∗
       is_tuple_locked tuple key γ ∗
-      own_tuple_read tuple key tidown vchain γ ∗
-      ptuple_auth_tidown γ key tidown (extend (S (int.nat tid)) vchain) ∧
-      ⌜int.Z tidown = 0 ∨ (int.nat tid < length vchain)%nat⌝
+      own_tuple_read tuple key owned vchain γ ∗
+      ptuple_auth_owned γ key owned (extend (S (int.nat tid)) vchain) ∧
+      ⌜owned = false ∨ (int.nat tid < length vchain)%nat⌝
   }}}
     Tuple__ReadVersion #tuple #tid
   {{{ (val : u64) (found : bool), RET (#val, #found);
@@ -389,8 +372,8 @@ Proof.
 
   set vchain' := extend _ _.
   iDestruct (vchain_witness with "Hptuple") as "#Hlb".
-  unfold ptuple_auth_tidown.
-  set q := if decide (tidown = 0) then _ else _.
+  unfold ptuple_auth_owned.
+  set q := if owned then _ else _.
   repeat rewrite ite_apply.
   set tidlast' := if bool_decide _ then tid else tidlast.
   set P : iProp Σ :=
@@ -401,8 +384,22 @@ Proof.
   iAssert P with "[]" as "HP".
   { unfold P.
     subst q.
-    destruct (decide (tidown = 0)).
-    - (* Case 1. [tidown = 0]. *)
+    destruct owned eqn:E.
+    - (* Case 1. [owned = true]. *)
+      subst vchain'.
+      iPureIntro.
+      destruct Hwait as [Howned | Hlen].
+      { (* Obtain contradiction from [Howned] and [E]. *) done. }
+      replace tidlast' with tidlast; last first.
+      { subst tidlast'.
+        case_bool_decide; last done.
+        (* Obtain contradiction from [Hlen], [H0], and [HvchainLen]. *)
+        word.
+      }
+      replace (extend _ _) with vchain; last first.
+      { symmetry. apply extend_length_same. lia. }
+      done.
+    - (* Case 2. [owned = false]. *)
       subst tidlast'.
       case_bool_decide.
       + (* Case 1a. [tidlast < tid]. Extending the version chain. *)
@@ -458,22 +455,6 @@ Proof.
         iPureIntro.
         do 2 (split; first auto).
         by apply HtupleAbs.
-    - (* Case 2. [tidown ≠ 0]. *)
-      subst vchain'.
-      iPureIntro.
-      destruct Hwait as [Htidown | Hlen].
-      { (* Obtain contradiction from [Htidown] and [H]. *)
-        by assert (contra : tidown = U64 0) by word.
-      }
-      replace tidlast' with tidlast; last first.
-      { subst tidlast'.
-        case_bool_decide; last done.
-        (* Obtain contradiction from [Hlen], [H0], and [HvchainLen]. *)
-        word.
-      }
-      replace (extend _ _) with vchain; last first.
-      { symmetry. apply extend_length_same. lia. }
-      done.
   }
   clear HtupleAbs.
   iNamed "HP".

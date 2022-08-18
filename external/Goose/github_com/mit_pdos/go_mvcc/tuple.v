@@ -16,15 +16,17 @@ Definition Version := struct.decl [
 ].
 
 (* *
-    * `tidown`
-    *		An TID specifying which txn owns the permission to write this tuple.
-    * `tidlast`
-    *		An TID specifying the last txn (in the sense of the largest TID, not
-    *		actual physical time) that reads or writes this tuple. *)
+    * `owned`: A boolean flag indicating whether some txn owns this tuple..
+    *
+    * `tidlast`:
+    * 	An TID specifying the last txn (in the sense of the largest TID, not actual
+    * 	physical time) that reads (TID) or writes (TID + 1) this tuple.
+    *
+    * `vers`: Physical versions. *)
 Definition Tuple := struct.decl [
   "latch" :: ptrT;
   "rcond" :: ptrT;
-  "tidown" :: uint64T;
+  "owned" :: boolT;
   "tidlast" :: uint64T;
   "vers" :: slice.T (struct.t Version)
 ].
@@ -61,12 +63,12 @@ Definition Tuple__Own: val :=
       lock.release (struct.loadF Tuple "latch" "tuple");;
       common.RET_UNSERIALIZABLE
     else
-      (if: struct.loadF Tuple "tidown" "tuple" ≠ #0
+      (if: struct.loadF Tuple "owned" "tuple"
       then
         lock.release (struct.loadF Tuple "latch" "tuple");;
         common.RET_RETRY
       else
-        struct.storeF Tuple "tidown" "tuple" "tid";;
+        struct.storeF Tuple "owned" "tuple" #true;;
         lock.release (struct.loadF Tuple "latch" "tuple");;
         common.RET_SUCCESS)).
 
@@ -83,7 +85,7 @@ Definition Tuple__appendVersion: val :=
       "deleted" ::= #false
     ] in
     struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") "verNew");;
-    struct.storeF Tuple "tidown" "tuple" #0;;
+    struct.storeF Tuple "owned" "tuple" #false;;
     struct.storeF Tuple "tidlast" "tuple" ("tid" + #1);;
     #().
 
@@ -104,7 +106,7 @@ Definition Tuple__killVersion: val :=
       "deleted" ::= #true
     ] in
     struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") "verNew");;
-    struct.storeF Tuple "tidown" "tuple" #0;;
+    struct.storeF Tuple "owned" "tuple" #false;;
     struct.storeF Tuple "tidlast" "tuple" ("tid" + #1);;
     #true.
 
@@ -127,7 +129,7 @@ Definition Tuple__KillVersion: val :=
 Definition Tuple__Free: val :=
   rec: "Tuple__Free" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
-    struct.storeF Tuple "tidown" "tuple" #0;;
+    struct.storeF Tuple "owned" "tuple" #false;;
     lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;
     lock.release (struct.loadF Tuple "latch" "tuple");;
     #().
@@ -136,7 +138,7 @@ Definition Tuple__ReadWait: val :=
   rec: "Tuple__ReadWait" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
     Skip;;
-    (for: (λ: <>, ("tid" > struct.loadF Tuple "tidlast" "tuple") && (struct.loadF Tuple "tidown" "tuple" ≠ #0)); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ("tid" > struct.loadF Tuple "tidlast" "tuple") && (struct.loadF Tuple "owned" "tuple")); (λ: <>, Skip) := λ: <>,
       lock.condWait (struct.loadF Tuple "rcond" "tuple");;
       Continue);;
     #().
@@ -185,7 +187,7 @@ Definition MkTuple: val :=
     let: "tuple" := struct.alloc Tuple (zero_val (struct.t Tuple)) in
     struct.storeF Tuple "latch" "tuple" (lock.new #());;
     struct.storeF Tuple "rcond" "tuple" (lock.newCond (struct.loadF Tuple "latch" "tuple"));;
-    struct.storeF Tuple "tidown" "tuple" #0;;
+    struct.storeF Tuple "owned" "tuple" #false;;
     struct.storeF Tuple "tidlast" "tuple" #1;;
     struct.storeF Tuple "vers" "tuple" (NewSliceWithCap (struct.t Version) #1 #16);;
     SliceSet (struct.t Version) (struct.loadF Tuple "vers" "tuple") #0 (struct.mk Version [

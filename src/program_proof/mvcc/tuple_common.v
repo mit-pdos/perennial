@@ -190,10 +190,10 @@ Definition tuple_wellformed (vers : list pver) (tidlast tidgc : u64) : iProp Σ 
   "%Hnotnil" ∷ ⌜vers ≠ []⌝.
 
 Definition own_tuple_phys
-           (tuple : loc) (tidown tidlast : u64) (vers : list pver)
+           (tuple : loc) (owned : bool) (tidlast : u64) (vers : list pver)
   : iProp Σ :=
   ∃ (versS : Slice.t),
-    "Htidown" ∷ tuple ↦[Tuple :: "tidown"] #tidown ∗
+    "Howned" ∷ tuple ↦[Tuple :: "owned"] #owned ∗
     "Htidlast" ∷ tuple ↦[Tuple :: "tidlast"] #tidlast ∗
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
     "HversS" ∷ slice.is_slice versS (structTy Version) 1 (ver_to_val <$> vers).
@@ -210,16 +210,16 @@ Definition own_tuple_repr
   "#Hwellformed" ∷ tuple_wellformed vers tidlast tidgc.
 
 Definition own_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
-  ∃ (tidown tidlast tidgc : u64) (vers : list pver) (vchain : list dbval),
-    "Hphys"   ∷ own_tuple_phys tuple tidown tidlast vers ∗
+  ∃ (owned : bool) (tidlast tidgc : u64) (vers : list pver) (vchain : list dbval),
+    "Hphys"   ∷ own_tuple_phys tuple owned tidlast vers ∗
     "Hrepr"   ∷ own_tuple_repr key tidlast tidgc vers vchain γ ∗
-    "Hptuple" ∷ ptuple_auth γ (if decide (tidown = (U64 0)) then (1/2) else (1/4))%Qp key vchain.
+    "Hptuple" ∷ ptuple_auth γ (if owned then (1 / 4) else (1 / 2))%Qp key vchain.
 
 Definition own_tuple_read
-           (tuple : loc) (key : u64) (tidown : u64) (vchain : list dbval) γ
+           (tuple : loc) (key : u64) (owned : bool) (vchain : list dbval) γ
   : iProp Σ :=
   ∃ (tidlast tidgc : u64) (vers : list pver),
-    "Hphys" ∷ own_tuple_phys tuple tidown tidlast vers ∗
+    "Hphys" ∷ own_tuple_phys tuple owned tidlast vers ∗
     "Hrepr" ∷ own_tuple_repr key tidlast tidgc vers vchain γ.
 
 Definition is_tuple_locked tuple (key : u64) γ : iProp Σ :=
@@ -234,8 +234,8 @@ Definition is_tuple_locked tuple (key : u64) γ : iProp Σ :=
 Definition own_tuple_locked
            (tuple : loc) (key : u64) (tid : u64) (vchain vchain' : list dbval) γ
   : iProp Σ :=
-  ∃ (tidown tidlast tidgc : u64) (vers : list pver),
-    "Hphys"   ∷ own_tuple_phys tuple tidown tidlast vers ∗
+  ∃ (owned : bool) (tidlast tidgc : u64) (vers : list pver),
+    "Hphys"   ∷ own_tuple_phys tuple owned tidlast vers ∗
     "Hrepr"   ∷ own_tuple_repr key tidlast tidgc vers vchain γ ∗
     "Hlock"   ∷ is_tuple_locked tuple key γ ∗
     "Hptuple" ∷ ptuple_auth γ (1 / 2)%Qp key vchain' ∗
@@ -317,12 +317,13 @@ Proof.
   wp_loadField.
   wp_apply (wp_newCond' with "Hfree").
   iIntros (rcond) "[Hfree #HrcondC]".
+  wp_storeField.
   
   (***********************************************************)
-  (* tuple.tidown = 0                                        *)
+  (* tuple.owned = false                                     *)
   (* tuple.tidlast = 0                                       *)
   (***********************************************************)
-  repeat wp_storeField.
+  do 2 wp_storeField.
   
   (***********************************************************)
   (* tuple.vers = make([]Version, 1, 16)                     *)
@@ -354,7 +355,7 @@ Proof.
   { iNext.
     unfold P.
     unfold own_tuple.
-    iExists (U64 0), (U64 1), (U64 0), [(U64 0, true, U64 0)], [Nil; Nil].
+    iExists false, (U64 1), (U64 0), [(U64 0, true, U64 0)], [Nil; Nil].
     iFrame.
     iSplit.
     { iExists (Slice.mk vers 1 16). iFrame. }

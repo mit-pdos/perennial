@@ -6,10 +6,10 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func (tuple *Tuple) killVersion(tid uint64) bool              *)
 (*****************************************************************)
-Theorem wp_tuple__killVersion tuple (tid : u64) tidown tidlast vers :
-  {{{ own_tuple_phys tuple tidown tidlast vers }}}
+Theorem wp_tuple__killVersion tuple (tid : u64) owned tidlast vers :
+  {{{ own_tuple_phys tuple owned tidlast vers }}}
     Tuple__killVersion #tuple #tid
-  {{{ (ok : bool), RET #ok; own_tuple_phys tuple (U64 0) (int.Z tid + 1) (vers ++ [(tid, true, (U64 0))]) }}}.
+  {{{ (ok : bool), RET #ok; own_tuple_phys tuple false (int.Z tid + 1) (vers ++ [(tid, true, (U64 0))]) }}}.
 Proof.
   iIntros (Φ) "HtuplePhys HΦ".
   iNamed "HtuplePhys".
@@ -28,7 +28,7 @@ Proof.
   wp_storeField.
 
   (***********************************************************)
-  (* tuple.tidown = 0                                        *)
+  (* tuple.owned = false                                     *)
   (* tuple.tidlast = tid + 1                                 *)
   (***********************************************************)
   do 2 wp_storeField.
@@ -128,7 +128,7 @@ Proof.
     erewrite extend_last_Some; last apply Hlast.
     rewrite -app_assoc.
     set phys' := phys ++ _ ++ _.
-    iExists (U64 0), (U64 (int.Z tid + 1)), tidgc, _, phys'.
+    iExists false, (U64 (int.Z tid + 1)), tidgc, _, phys'.
     iFrame "Hphys Hptuple".
     iNamed "Hwellformed".
     iSplit.

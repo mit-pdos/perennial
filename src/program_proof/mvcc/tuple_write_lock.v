@@ -26,8 +26,8 @@ Proof.
 
   iNamed "HtupleOwn".
   iDestruct "Htoken" as (phys) "[Hptuple' %Hlen]".
-  destruct (decide (tidown = 0)).
-  { (* Obtain contradiction for case [tidown = 0]. *)
+  destruct owned; last first.
+  { (* Obtain contradiction for case [owned = false]. *)
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of _ _ key with "Hkeys") as "Hkey"; first set_solver.

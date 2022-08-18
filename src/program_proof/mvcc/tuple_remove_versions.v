@@ -352,7 +352,7 @@ Proof.
     iNext.
     do 2 iExists _.
     iExists tid, vers', vchain.
-    iSplitL "Htidown Htidlast Hvers HversS".
+    iSplitL "Howned Htidlast Hvers HversS".
     { eauto with iFrame. }
     iFrame "% # ∗".
     iSplit.

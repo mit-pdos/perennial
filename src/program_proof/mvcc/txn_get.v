@@ -90,7 +90,7 @@ Proof.
   (***********************************************************)
   wp_loadField.
   wp_apply (wp_tuple__ReadWait with "HtupleRI").
-  iIntros (tidown vchain) "(Htuple & HtupleOwn & Hptuple & %Hwait)".
+  iIntros (owned vchain) "(Htuple & HtupleOwn & Hptuple & %Hwait)".
   wp_pures.
 
   (***********************************************************)
@@ -106,19 +106,18 @@ Proof.
   iFrame "Hproph".
   iIntros "(%future' & %Hhead & Hproph)".
   (* Extend the physical tuple. *)
-  unfold ptuple_auth_tidown.
+  unfold ptuple_auth_owned.
   (* iMod (tuple_read_safe with "Hkeys Hcmt Hread") as "(Hkeys & Hcmt & Htuple & Hptuple)"; first set_solver. *)
   set Ψ := (λ key, per_key_inv_def γ key tmods ts m (past ++ [EvRead tid k]))%I.
   iDestruct (big_sepS_elem_of_acc_impl k with "Hkeys") as "[Hkey Hkeys]"; first set_solver.
   iRename "Hptuple" into "Hptuple'".
   iDestruct (cmt_inv_fcc_tmods with "Hcmt") as "%Hcmtfcc".
-  iAssert (|==> ptuple_auth_tidown γ k tidown (extend (S tid) vchain) ∗ Ψ k)%I
+  iAssert (|==> ptuple_auth_owned γ k owned (extend (S tid) vchain) ∗ Ψ k)%I
     with "[Hptuple' Hkey]" as "> [Hptuple Hkey]".
-  { destruct Hwait as [Htidown | Hlen].
-    - (* Case [tidown = 0]. *)
-      assert (Htidown' : tidown = (U64 0)) by word.
-      unfold ptuple_auth_tidown.
-      case_decide; last done.
+  { destruct Hwait as [Howned | Hlen].
+    - (* Case [owned = 0]. *)
+      unfold ptuple_auth_owned.
+      rewrite Howned.
       iNamed "Hkey".
       iDestruct (ptuple_agree with "Hptuple Hptuple'") as "%Eptuple".
       subst vchain.
@@ -196,7 +195,7 @@ Proof.
   wp_loadField.
   iDestruct (is_tuple_invgc with "HtupleRI") as "#Hinvgc".
   wp_apply (wp_tuple__ReadVersion with "[$Hactive $Htuple $HtupleOwn Hptuple]").
-  { rewrite Etid. iFrame. iPureIntro. word. }
+  { rewrite Etid. iFrame. iPureIntro. destruct Hwait; [by left | word]. }
   iIntros (val found) "[Hactive Hpptsto]".
   rewrite Etid.
   wp_pures.

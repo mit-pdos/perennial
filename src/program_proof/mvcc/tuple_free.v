@@ -28,7 +28,7 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* tuple.tidown = 0                                        *)
+  (* tuple.owned = false                                     *)
   (***********************************************************)
   wp_storeField.
 
@@ -47,13 +47,13 @@ Proof.
   wp_apply (release_spec with "[-HΦ]").
   { iFrame "Hlock Hlocked".
     iNext.
-    iExists (U64 0).
+    iExists false.
     do 4 iExists _.
-    iSplitL "Htidown Htidlast Hvers HversS".
+    iSplitL "Howned Htidlast Hvers HversS".
     { eauto with iFrame. }
     iFrame "% # ∗".
     iDestruct "Htoken" as (vchain') "[Hptuple' %HvchainLenLt]".
-    case_decide; first iFrame.
+    destruct owned; last iFrame.
     by iDestruct (vchain_combine (1 / 2) with "Hptuple Hptuple'") as "[Hptuple ->]"; first compute_done.
   }
   wp_pures.

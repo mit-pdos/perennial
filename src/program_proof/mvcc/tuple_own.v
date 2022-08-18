@@ -55,7 +55,7 @@ Proof.
   }
 
   (***********************************************************)
-  (* if tuple.tidown != 0 {                                  *)
+  (* if tuple.owned {                                        *)
   (*   tuple.latch.Unlock()                                  *)
   (*   return common.RET_RETRY                               *)
   (* }                                                       *)
@@ -71,7 +71,7 @@ Proof.
   }
 
   (***********************************************************)
-  (* tuple.tidown = tid                                      *)
+  (* tuple.owned = true                                      *)
   (***********************************************************)
   wp_storeField.
 
@@ -84,14 +84,12 @@ Proof.
   wp_apply (release_spec with "[-HΦ Hactive Hptuple']").
   { iFrame "Hlock Hlocked".
     iNext.
-    iExists tid.
+    iExists true.
     do 4 iExists _.
-    iSplitL "Htidown Htidlast Hvers HversS".
+    iSplitL "Howned Htidlast Hvers HversS".
     { eauto with iFrame. }
     iFrame "% ∗".
-    case_decide.
-    - by rewrite H in Htid.
-    - iFrame "# ∗".
+    iFrame "∗ #".
   }
   wp_pures.
   iModIntro.

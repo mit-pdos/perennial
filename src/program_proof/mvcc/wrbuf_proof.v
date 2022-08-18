@@ -136,7 +136,7 @@ Proof.
     iIntros (Φ) "!> HP HΦ".
     iNamed "HP".
     wp_pures.
-    (* Evaluate the 1st condition: `pos < uint64(len(ents))`. *)
+    (* Evaluate the first condition: `pos < uint64(len(ents))`. *)
     wp_load.
     wp_apply (wp_slice_len).
     wp_pures.
@@ -161,7 +161,7 @@ Proof.
       iPureIntro. right.
       by apply Znot_lt_ge, Z.ge_le in Heqb.
     }
-    (* Evaluate the 2nd condition: `key != ents[pos].key`. *)
+    (* Evaluate the second condition: `key != ents[pos].key`. *)
     iDestruct (slice.is_slice_small_acc with "HentsS") as "[HentsS HentsC]".
     iDestruct (slice.is_slice_small_sz with "[$HentsS]") as "%HentsSz".
     wp_load.
@@ -186,6 +186,7 @@ Proof.
       f_equal. inversion H.
       by rewrite -(surjective_pairing ent.1) -(surjective_pairing ent).
     }
+    (* Evaluate the loop body. *)
     wp_load.
     wp_store.
     iApply "HΦ".
