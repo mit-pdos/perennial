@@ -127,7 +127,7 @@ Definition Tuple__KillVersion: val :=
 (* *
     * Preconditions: *)
 Definition Tuple__Free: val :=
-  rec: "Tuple__Free" "tuple" "tid" :=
+  rec: "Tuple__Free" "tuple" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
     struct.storeF Tuple "owned" "tuple" #false;;
     lock.condBroadcast (struct.loadF Tuple "rcond" "tuple");;

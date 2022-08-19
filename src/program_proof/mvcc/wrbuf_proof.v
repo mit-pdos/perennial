@@ -10,25 +10,25 @@ Import Perennial.goose_lang.lib.slice.slice.
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition wrent := (u64 * u64 * bool)%type.
+Definition wrent := (u64 * u64 * bool * loc)%type.
 
 Definition wrent_to_val (x : wrent) :=
-  (#x.1.1, (#x.1.2, (#x.2, #())))%V.
+  (#x.1.1.1, (#x.1.1.2, (#x.1.2, (#x.2, #()))))%V.
 
 Local Definition wrent_to_key_dbval (x : wrent) : (u64 * dbval) :=
-  (x.1.1, (to_dbval x.2 x.1.2)).
+  (x.1.1.1, (to_dbval x.1.2 x.1.1.2)).
 
 Definition own_wrbuf (wrbuf : loc) (mods : dbmap) : iProp Σ :=
   ∃ (entsS : Slice.t) (ents : list wrent),
     "Hents"   ∷ wrbuf ↦[WrBuf :: "ents"] (to_val entsS) ∗
     "HentsS"  ∷ slice.is_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
-    "%HNoDup" ∷ ⌜NoDup ents.*1.*1⌝ ∗
+    "%HNoDup" ∷ ⌜NoDup ents.*1.*1.*1⌝ ∗
     "%Hmods"  ∷ ⌜mods = (list_to_map (wrent_to_key_dbval <$> ents))⌝.
 Hint Extern 1 (environments.envs_entails _ (own_wrbuf _ _)) => unfold own_wrbuf : core.
 
 Local Lemma val_to_wrent_with_val_ty (x : val) :
-  val_ty x (uint64T * (uint64T * (boolT * unitT))%ht) ->
-  (∃ (k : u64) (v : u64) (d : bool), x = wrent_to_val (k, v, d)).
+  val_ty x (uint64T * (uint64T * (boolT * (ptrT * unitT))))%ht ->
+  (∃ (k : u64) (v : u64) (w : bool) (t : loc), x = wrent_to_val (k, v, w, t)).
 Proof.
   intros H.
   inversion_clear H. 
@@ -44,8 +44,12 @@ Proof.
   inversion_clear H.
   inversion_clear H0.
   inversion_clear H1.
+  { inversion H. }
   inversion_clear H.
-  exists x0, x1, x2.
+  inversion_clear H1.
+  inversion_clear H0.
+  inversion_clear H.
+  exists x0, x1, x2, x3.
   unfold wrent_to_val.
   reflexivity.
 Qed.
@@ -94,8 +98,8 @@ Qed.
 
 Definition spec_search (key : u64) (ents : list wrent) (pos : u64) (found : bool) :=
   match found with
-  | false => key ∉ ents.*1.*1
-  | true  => (∃ ent, ents !! (int.nat pos) = Some ent ∧ ent.1.1 = key)
+  | false => key ∉ ents.*1.*1.*1
+  | true  => (∃ ent, ents !! (int.nat pos) = Some ent ∧ ent.1.1.1 = key)
   end.
 
 (*****************************************************************)
@@ -128,9 +132,9 @@ Proof.
                "HentsS" ∷ (slice.is_slice entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents)) ∗
                "HposR" ∷ posR ↦[uint64T] #pos ∗
                "%Hexit" ∷ (⌜if b then True
-                            else (∃ (ent : wrent), ents !! (int.nat pos) = Some ent ∧ ent.1.1 = key) ∨
+                            else (∃ (ent : wrent), ents !! (int.nat pos) = Some ent ∧ ent.1.1.1 = key) ∨
                                  (int.Z entsS.(Slice.sz)) ≤ (int.Z pos)⌝) ∗
-               "%Hnotin" ∷ (⌜key ∉ (take (int.nat pos) ents.*1.*1)⌝))%I.
+               "%Hnotin" ∷ (⌜key ∉ (take (int.nat pos) ents.*1.*1.*1)⌝))%I.
   wp_apply (wp_forBreak_cond P with "[] [$HentsS HposR]").
   { clear Φ.
     iIntros (Φ) "!> HP HΦ".
@@ -169,7 +173,8 @@ Proof.
     wp_apply (slice.wp_SliceGet with "[$HentsS]"); first done.
     iIntros "[HentsS %HentsT]".
     iDestruct ("HentsC" with "HentsS") as "HentsS".
-    destruct (val_to_wrent_with_val_ty _ HentsT) as (k & v & w & Hent).
+    simpl in HentsT.
+    destruct (val_to_wrent_with_val_ty _ HentsT) as (k & v & w & t & Hent).
     subst ent.
     wp_pures.
     wp_if_destruct; last first.
@@ -178,13 +183,13 @@ Proof.
       iExists _.
       iFrame "∗ %".
       iPureIntro. left.
-      exists (k, v, w).
+      exists (k, v, w, t).
       split; last done.
       rewrite list_lookup_fmap in Hlookup.
       apply fmap_Some in Hlookup as [ent [Hlookup H]].
       rewrite Hlookup.
       f_equal. inversion H.
-      by rewrite -(surjective_pairing ent.1) -(surjective_pairing ent).
+      by rewrite -(surjective_pairing ent.1.1) -(surjective_pairing ent.1) -(surjective_pairing ent).
     }
     (* Evaluate the loop body. *)
     wp_load.
@@ -199,7 +204,7 @@ Proof.
     rewrite (take_S_r _ _ k) in Helem; last first.
     { rewrite list_lookup_fmap in Hlookup.
       apply fmap_Some in Hlookup as [ent [Hlookup H]].
-      do 2 rewrite list_lookup_fmap.
+      do 3 rewrite list_lookup_fmap.
       rewrite Hlookup.
       simpl. by inversion H.
     }
@@ -236,37 +241,26 @@ Proof.
   { (* Write entry not found. *)
     apply Z.nlt_ge in H.
     rewrite take_ge in Hnotin; first done.
-    do 2 rewrite fmap_length.
+    do 3 rewrite fmap_length.
     rewrite Hsz.
     word.
   }
 Qed.
 
-(* TODO: add meaningful pre/post *)
-Theorem wp_wrent__Key (ent : wrent) :
-  {{{ True }}}
-    WrEnt__Key (wrent_to_val ent)
-  {{{ (key : u64), RET #key; True }}}.
-Proof.
-  iIntros (Φ) "HP HΦ".
-  wp_call.
-  by iApply "HΦ".
-Qed.
-
 Local Lemma NoDup_wrent_to_key_dbval (ents : list wrent) :
-  NoDup ents.*1.*1 ->
+  NoDup ents.*1.*1.*1 ->
   NoDup (wrent_to_key_dbval <$> ents).*1.
 Proof.
   intros H.
-  replace (wrent_to_key_dbval <$> _).*1 with ents.*1.*1; last first.
-  { do 2 rewrite -list_fmap_compose. f_equal. }
+  replace (wrent_to_key_dbval <$> _).*1 with ents.*1.*1.*1; last first.
+  { do 3 rewrite -list_fmap_compose. f_equal. }
   done.
 Qed.
 
 Local Lemma wrent_to_key_dbval_key_fmap (ents : list wrent) :
-  (wrent_to_key_dbval <$> ents).*1 = ents.*1.*1.
+  (wrent_to_key_dbval <$> ents).*1 = ents.*1.*1.*1.
 Proof.
-  do 2 rewrite -list_fmap_compose.
+  do 3 rewrite -list_fmap_compose.
   by apply list_fmap_ext; last done.
 Qed.
 
@@ -414,9 +408,9 @@ Proof.
     iIntros "wr".
     word_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (int.Z pos)).
-    set ent' := (ent.1.1, val, true).
+    set ent' := (ent.1.1.1, val, true, ent.2).
     iDestruct (struct_fields_split entR 1%Qp WrEnt (wrent_to_val ent')
-                with "[key val wr]") as "HentsP".
+                with "[key val wr tpl]") as "HentsP".
     { rewrite /struct_fields. by iFrame. }
     iDestruct ("HentsA" with "HentsP") as "HentsA".
     iDestruct ("HentsC" with "[HentsA]") as "HentsS".
@@ -434,20 +428,20 @@ Proof.
     iPureIntro.
     split.
     { (* prove [NoDup] *)
-      do 2 rewrite list_fmap_insert.
+      do 3 rewrite list_fmap_insert.
       subst ent'.
       simpl.
-      replace (<[ _ := _ ]> ents.*1.*1) with ents.*1.*1; first done.
+      replace (<[ _ := _ ]> ents.*1.*1.*1) with ents.*1.*1.*1; first done.
       symmetry.
       apply list_insert_id.
-      do 2 rewrite list_lookup_fmap.
+      do 3 rewrite list_lookup_fmap.
       by rewrite Hlookup.
     }
     { (* prove insertion to list -> insertion to map representation *)
       rewrite Hmods.
       rewrite list_fmap_insert.
       subst ent' key. unfold wrent_to_key_dbval. simpl.
-      apply list_to_map_insert with (to_dbval ent.2 ent.1.2); first by apply NoDup_wrent_to_key_dbval.
+      apply list_to_map_insert with (to_dbval ent.1.2 ent.1.1.2); first by apply NoDup_wrent_to_key_dbval.
       by rewrite list_lookup_fmap Hlookup.
     }
   }
@@ -463,7 +457,7 @@ Proof.
   wp_pures.
   wp_loadField.
   iDestruct ("HentsC" with "HentsS") as "HentsS".
-  wp_apply (wp_SliceAppend' with "[HentsS]"); [auto 10 | auto 10 | iFrame |].
+  wp_apply (wp_SliceAppend' with "[HentsS]"); [by auto 10 | by auto 10 | iFrame |].
   iIntros (entsS') "HentsS".
   wp_storeField.
   
@@ -471,7 +465,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   unfold spec_search in Hsearch.
-  set ents' := (ents ++ [(key, val, true)]).
+  set ents' := (ents ++ [(key, val, true, null)]).
   unfold own_wrbuf.
 
   iExists _, ents'.
@@ -480,7 +474,7 @@ Proof.
   iPureIntro.
   split.
   { (* prove [NoDup] *)
-    do 2 rewrite fmap_app.
+    do 3 rewrite fmap_app.
     simpl.
     apply NoDup_app_comm.
     apply NoDup_app.
@@ -562,9 +556,9 @@ Proof.
     iIntros "wr".
     word_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (int.Z pos)).
-    set ent' := (ent.1.1, ent.1.2, false).
+    set ent' := (ent.1.1.1, ent.1.1.2, false, ent.2).
     iDestruct (struct_fields_split entR 1%Qp WrEnt (wrent_to_val ent')
-                with "[key val wr]") as "HentsP".
+                with "[key val wr tpl]") as "HentsP".
     { rewrite /struct_fields. by iFrame. }
     iDestruct ("HentsA" with "HentsP") as "HentsA".
     iDestruct ("HentsC" with "[HentsA]") as "HentsS".
@@ -582,20 +576,20 @@ Proof.
     iPureIntro.
     split.
     { (* prove [NoDup] *)
-      do 2 rewrite list_fmap_insert.
+      do 3 rewrite list_fmap_insert.
       subst ent'.
       simpl.
-      replace (<[ _ := _ ]> ents.*1.*1) with ents.*1.*1; first done.
+      replace (<[ _ := _ ]> ents.*1.*1.*1) with ents.*1.*1.*1; first done.
       symmetry.
       apply list_insert_id.
-      do 2 rewrite list_lookup_fmap.
+      do 3 rewrite list_lookup_fmap.
       by rewrite Hlookup.
     }
     { (* prove insertion to list -> insertion to map representation *)
       rewrite Hmods.
       rewrite list_fmap_insert.
       subst ent' key. unfold wrent_to_key_dbval. simpl.
-      apply list_to_map_insert with (to_dbval ent.2 ent.1.2); first by apply NoDup_wrent_to_key_dbval.
+      apply list_to_map_insert with (to_dbval ent.1.2 ent.1.1.2); first by apply NoDup_wrent_to_key_dbval.
       by rewrite list_lookup_fmap Hlookup.
     }
   }
@@ -619,7 +613,7 @@ Proof.
   iApply "HΦ".
   unfold spec_search in Hsearch.
   (* [(U64 0)] is the zero-value of [u64]. *)
-  set ents' := (ents ++ [(key, (U64 0), false)]).
+  set ents' := (ents ++ [(key, (U64 0), false, null)]).
   unfold own_wrbuf.
 
   iExists _, ents'.
@@ -628,7 +622,7 @@ Proof.
   iPureIntro.
   split.
   { (* prove [NoDup] *)
-    do 2 rewrite fmap_app.
+    do 3 rewrite fmap_app.
     simpl.
     apply NoDup_app_comm.
     apply NoDup_app.
