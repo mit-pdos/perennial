@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import tuple_common.
+From Perennial.program_proof.mvcc Require Import tuple_prelude tuple_repr.
 
 Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

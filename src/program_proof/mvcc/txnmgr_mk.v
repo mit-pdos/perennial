@@ -1,5 +1,6 @@
-From Perennial.program_proof.mvcc Require Import proph_proof txn_common.
-(* XXX: Must import in this order because of typed/untyped slices... *)
+From Perennial.program_proof.mvcc Require Import
+     txn_prelude txnmgr_repr
+     proph_proof index_proof gc_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

@@ -1,4 +1,6 @@
-From Perennial.program_proof.mvcc Require Import mvcc_inv txn_common txn_begin txn_abort txn_acquire txn_commit.
+From Perennial.program_proof.mvcc Require Import
+     txn_prelude txn_repr
+     txn_begin txn_abort txn_acquire txn_commit.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

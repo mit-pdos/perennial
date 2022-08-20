@@ -1,4 +1,6 @@
-From Perennial.program_proof.mvcc Require Import txn_common tid_proof.
+From Perennial.program_proof.mvcc Require Import
+     txn_prelude txnmgr_repr
+     tid_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -52,7 +54,7 @@ Proof.
   wp_apply (wp_ref_of_zero); first done.
   iIntros (tidnewRef) "HtidnewRef".
   wp_pures.
-  wp_apply (wp_genTID).
+  wp_apply (wp_GenTID).
   iInv "Hinvsst" as "> HinvO" "HinvC".
   iNamed "HinvO".
   iApply ncfupd_mask_intro; first set_solver.

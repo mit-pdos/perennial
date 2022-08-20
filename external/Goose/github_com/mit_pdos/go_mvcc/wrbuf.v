@@ -86,15 +86,20 @@ Definition WrBuf__OpenTuples: val :=
     (for: (λ: <>, ![uint64T] "pos" < slice.len "ents"); (λ: <>, Skip) := λ: <>,
       let: "ent" := SliceGet (struct.t WrEnt) "ents" (![uint64T] "pos") in
       let: "tpl" := index.Index__GetTuple "idx" (struct.get WrEnt "key" "ent") in
+      SliceSet (struct.t WrEnt) "ents" (![uint64T] "pos") (struct.mk WrEnt [
+        "key" ::= struct.get WrEnt "key" "ent";
+        "val" ::= struct.get WrEnt "val" "ent";
+        "wr" ::= struct.get WrEnt "wr" "ent";
+        "tpl" ::= "tpl"
+      ]);;
       let: "ret" := tuple.Tuple__Own "tpl" "tid" in
       (if: "ret" ≠ common.RET_SUCCESS
       then Break
       else
         "pos" <-[uint64T] ![uint64T] "pos" + #1;;
         Continue));;
-    (if: (![uint64T] "pos" = slice.len "ents")
-    then #true
-    else
+    (if: ![uint64T] "pos" < slice.len "ents"
+    then
       let: "i" := ref_to uint64T #0 in
       Skip;;
       (for: (λ: <>, ![uint64T] "i" < ![uint64T] "pos"); (λ: <>, Skip) := λ: <>,
@@ -102,7 +107,11 @@ Definition WrBuf__OpenTuples: val :=
         tuple.Tuple__Free "tpl";;
         "i" <-[uint64T] ![uint64T] "i" + #1;;
         Continue);;
-      #false).
+      #false
+    else
+      ForSlice (struct.t WrEnt) <> "ent" "ents"
+        (tuple.Tuple__WriteLock (struct.get WrEnt "tpl" "ent"));;
+      #true).
 
 Definition WrBuf__UpdateTuples: val :=
   rec: "WrBuf__UpdateTuples" "wrbuf" "tid" :=

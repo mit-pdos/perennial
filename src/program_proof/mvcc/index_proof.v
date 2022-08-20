@@ -1,10 +1,6 @@
-(* Import definitions/theorems of the Perennial framework with the disk FFI. *)
-From Perennial.program_proof Require Export grove_prelude.
-(* Import Coq model of our Goose program. *)
+From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_ghost mvcc_inv mvcc_misc.
+From Perennial.program_proof.mvcc Require Import tuple_repr tuple_mk.
 From Goose.github_com.mit_pdos.go_mvcc Require Import index.
-From Perennial.program_proof.mvcc Require Import mvcc_ghost tuple_common.
-(* prefer untyped slices *)
-Import Perennial.goose_lang.lib.slice.slice.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
@@ -26,7 +22,9 @@ Definition own_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp �
     "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), ptuple_auth γ (1/2) key [Nil; Nil]) ∗
     "#HtuplesRP" ∷ ([∗ map] key ↦ tuple ∈ lockmM, is_tuple tuple key γ) ∗
     "_" ∷ True.
-Local Hint Extern 1 (environments.envs_entails _ (own_index_bucket _ _ _)) => unfold own_index_bucket : core.
+
+#[local]
+Hint Extern 1 (environments.envs_entails _ (own_index_bucket _ _ _)) => unfold own_index_bucket : core.
   
 Definition is_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp Σ :=
   ∃ (latch : loc),
@@ -123,7 +121,6 @@ Proof.
   clear tuple.
   (* Take [ptuple_auth] from [Hvchains]. *)
   (* iDestruct (big_sepS_delete with "[Hvchains]") as "H". *)
-  (* Q: How to destruct the other way around? *)
   rewrite (big_sepS_delete _ _ key); last first.
   { unfold keys_hashed.
     rewrite -not_elem_of_dom in Hlookup.

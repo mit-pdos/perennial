@@ -1,5 +1,5 @@
-From Perennial.program_proof Require Export grove_prelude.
-From Perennial.program_proof.mvcc Require Import mvcc_ghost mvcc_misc proph_proof.
+From Perennial.program_proof.mvcc Require Import mvcc_prelude.
+From Perennial.program_proof.mvcc Require Import mvcc_ghost mvcc_misc mvcc_action mvcc_tuplext proph_proof.
 
 (* Invariant namespaces. *)
 Definition mvccN := nroot.

@@ -1,8 +1,10 @@
-(* [mono_nat] should go first otherwise the default scope becomes nat. *)
+(* [mono_nat] must go first otherwise the default scope becomes nat. *)
 From iris.base_logic Require Import mono_nat.
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import
+     mvcc_prelude mvcc_ghost mvcc_inv
+     txnmgr_repr txnmgr_mk txnmgr_new
+     txn_repr txn_get txn_put txn_do_txn.
 From Goose.github_com.mit_pdos.go_mvcc Require Import examples.
-From Perennial.program_proof.mvcc Require Import txn_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ, !mono_natG Σ}.

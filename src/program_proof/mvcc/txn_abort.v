@@ -1,4 +1,6 @@
-From Perennial.program_proof.mvcc Require Import proph_proof txn_common txnmgr_deactivate.
+From Perennial.program_proof.mvcc Require Import
+     txn_prelude txn_repr
+     txnmgr_deactivate proph_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

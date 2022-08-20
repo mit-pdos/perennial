@@ -1,6 +1,6 @@
-From Perennial.program_proof Require Export grove_prelude.
+From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_ghost mvcc_action.
+From Perennial.program_proof.mvcc Require Import wrbuf_proof.
 From Goose.github_com.mit_pdos.go_mvcc Require Import proph.
-From Perennial.program_proof.mvcc Require Import mvcc_ghost wrbuf_proof.
 
 Section proph.
 Context `{!heapGS Σ}.

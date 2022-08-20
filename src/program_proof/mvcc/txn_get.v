@@ -1,4 +1,6 @@
-From Perennial.program_proof.mvcc Require Import txn_common proph_proof tuple_read_version.
+From Perennial.program_proof.mvcc Require Import
+     txn_prelude txn_repr tuple_repr
+     wrbuf_proof index_proof tuple_read_version proph_proof.
 
 Section lemma.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

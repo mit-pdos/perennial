@@ -1,5 +1,13 @@
-From Perennial.program_proof Require Export grove_prelude.
-(* TODO: minimize dependency. *)
+From Perennial.program_proof Require Import mvcc_prelude.
+
+(**
+ * This file contains what I wish to have in stdpp.
+ *)
+
+(* Q: Existing tactic does this? *)
+Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
+  (if b then f x else f y) = f (if b then x else y).
+Proof. destruct b; done. Qed.
 
 Lemma list_delete_insert_delete {A} (l : list A) i v :
   (i < length l)%nat ->
@@ -151,3 +159,78 @@ Qed.
 Lemma NoDup_app_assoc {A : Type} (l m n : list A) :
   NoDup (l ++ m ++ n) ↔ NoDup ((l ++ m) ++ n).
 Proof. split; [apply NoDup_app_assoc_1 | apply NoDup_app_assoc_2]. Qed.
+
+(* Definition and lemmas about [extend]. *)
+Definition extend {X : Type} (n : nat) (l : list X) :=
+  match last l with
+  | None => []
+  | Some v => l ++ replicate (n - length l) v
+  end.
+
+Lemma extend_last {X : Type} (n : nat) (l : list X) :
+  last (extend n l) = last l.
+Proof.
+  unfold extend.
+  destruct (last l) eqn:Elast; last done.
+  rewrite last_app.
+  destruct (last (replicate _ _)) eqn:Erep; last auto.
+  apply last_Some_elem_of in Erep.
+  apply elem_of_replicate_inv in Erep.
+  by f_equal.
+Qed.
+
+Lemma extend_length {X : Type} (n : nat) (l : list X) :
+  (∃ x, last l = Some x) ->
+  length (extend n l) = (n - length l + length l)%nat.
+Proof.
+  intros [x Hlast].
+  unfold extend.
+  rewrite Hlast app_length replicate_length.
+  lia.
+Qed.
+
+Lemma extend_length_ge {X : Type} (n : nat) (l : list X) :
+  (length l ≤ length (extend n l))%nat.
+Proof.
+  unfold extend.
+  destruct (last l) eqn:E.
+  - rewrite app_length. lia.
+  - apply last_None in E. by rewrite E.
+Qed.
+
+Lemma extend_length_ge_n {X : Type} (n : nat) (l : list X) :
+  (∃ x, last l = Some x) ->
+  (n ≤ length (extend n l))%nat.
+Proof.
+  intros [x Hlast].
+  unfold extend.
+  rewrite Hlast.
+  rewrite app_length.
+  rewrite replicate_length.
+  lia.
+Qed.
+
+Lemma extend_length_same {X : Type} (n : nat) (l : list X) :
+  (n ≤ length l)%nat ->
+  extend n l = l.
+Proof.
+  intros Hlen.
+  unfold extend.
+  destruct (last l) eqn:E.
+  - replace (n - length l)%nat with 0%nat by lia. simpl. apply app_nil_r.
+  - symmetry. by apply last_None.
+Qed.
+
+Lemma extend_last_Some {X : Type} (n : nat) (l : list X) (x : X) :
+  last l = Some x ->
+  extend n l = l ++ replicate (n - length l) x.
+Proof. intros Hlast. unfold extend. by rewrite Hlast. Qed.
+
+Lemma extend_prefix {X : Type} (n : nat) (l : list X) :
+  prefix l (extend n l).
+Proof.
+  unfold extend.
+  destruct (last l) eqn:E.
+  - unfold prefix. eauto.
+  - rewrite last_None in E. by rewrite E.
+Qed.

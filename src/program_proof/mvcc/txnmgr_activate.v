@@ -1,4 +1,6 @@
-From Perennial.program_proof.mvcc Require Import txn_common tid_proof.
+From Perennial.program_proof.mvcc Require Import
+     txn_prelude txnmgr_repr
+     tid_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -46,13 +48,13 @@ Proof.
   wp_pures.
   
   (***********************************************************)
-  (* var tid uint64                                          *)
-  (* tid = genTID(sid)                                       *)
+  (* var t uint64                                            *)
+  (* t = tid.GenTID(sid)                                     *)
   (***********************************************************)
   wp_apply (wp_ref_of_zero); first done.
   iIntros (tidRef) "HtidRef".
   wp_pures.
-  wp_apply (wp_genTID).
+  wp_apply (wp_GenTID).
   iMod "HAU" as (ts) "[Hts HAUC]".
   iModIntro.
   iExists ts.
@@ -72,7 +74,7 @@ Proof.
   wp_store.
   
   (***********************************************************)
-  (* machine.Assume(tid < 18446744073709551615)              *)
+  (* machine.Assume(t < 18446744073709551615)                *)
   (***********************************************************)
   wp_load.
   wp_apply wp_Assume.
@@ -80,8 +82,8 @@ Proof.
   apply bool_decide_eq_true_1 in Htidmax.
   
   (***********************************************************)
-  (* site.tidLast = tid                                      *)
-  (* site.tidsActive = append(site.tidsActive, tid)          *)
+  (* site.tidLast = t                                        *)
+  (* site.tidsActive = append(site.tidsActive, t)            *)
   (***********************************************************)
   wp_load.
   wp_storeField.
@@ -198,7 +200,7 @@ Proof.
   wp_load.
   
   (***********************************************************)
-  (* return tid                                              *)
+  (* return t                                                *)
   (***********************************************************)
   iApply "HΦ".
   iModIntro.

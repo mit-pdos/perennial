@@ -1,11 +1,5 @@
-(* Import definitions/theorems of the Perennial framework with the disk FFI. *)
-From Perennial.program_proof Require Export grove_prelude.
-(* Import Coq model of our Goose program. *)
+From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_misc.
 From Goose.github_com.mit_pdos.go_mvcc Require Import wrbuf.
-(* Need this for [dbval] and [dbmap], maybe move them out to a separate file? *)
-From Perennial.program_proof.mvcc Require Import mvcc_ghost mvcc_misc.
-(* prefer untyped slices *)
-Import Perennial.goose_lang.lib.slice.slice.
 
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

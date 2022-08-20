@@ -4,6 +4,7 @@ From Goose Require github_com.mit_pdos.go_mvcc.config.
 From Goose Require github_com.mit_pdos.go_mvcc.gc.
 From Goose Require github_com.mit_pdos.go_mvcc.index.
 From Goose Require github_com.mit_pdos.go_mvcc.proph.
+From Goose Require github_com.mit_pdos.go_mvcc.tid.
 From Goose Require github_com.mit_pdos.go_mvcc.wrbuf.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
@@ -65,27 +66,17 @@ Definition TxnMgr__New: val :=
     lock.release (struct.loadF TxnMgr "latch" "txnMgr");;
     "txn".
 
-Definition genTID: val :=
-  rec: "genTID" "sid" :=
-    let: "tid" := ref (zero_val uint64T) in
-    "tid" <-[uint64T] grove_ffi.GetTSC #();;
-    "tid" <-[uint64T] (![uint64T] "tid" + config.N_TXN_SITES `and` ~ (config.N_TXN_SITES - #1)) + "sid";;
-    Skip;;
-    (for: (λ: <>, grove_ffi.GetTSC #() ≤ ![uint64T] "tid"); (λ: <>, Skip) := λ: <>,
-      Continue);;
-    ![uint64T] "tid".
-
 Definition TxnMgr__activate: val :=
   rec: "TxnMgr__activate" "txnMgr" "sid" :=
     let: "site" := SliceGet ptrT (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
     lock.acquire (struct.loadF TxnSite "latch" "site");;
-    let: "tid" := ref (zero_val uint64T) in
-    "tid" <-[uint64T] genTID "sid";;
-    control.impl.Assume (![uint64T] "tid" < #18446744073709551615);;
-    struct.storeF TxnSite "tidLast" "site" (![uint64T] "tid");;
-    struct.storeF TxnSite "tidsActive" "site" (SliceAppend uint64T (struct.loadF TxnSite "tidsActive" "site") (![uint64T] "tid"));;
+    let: "t" := ref (zero_val uint64T) in
+    "t" <-[uint64T] tid.GenTID "sid";;
+    control.impl.Assume (![uint64T] "t" < #18446744073709551615);;
+    struct.storeF TxnSite "tidLast" "site" (![uint64T] "t");;
+    struct.storeF TxnSite "tidsActive" "site" (SliceAppend uint64T (struct.loadF TxnSite "tidsActive" "site") (![uint64T] "t"));;
     lock.release (struct.loadF TxnSite "latch" "site");;
-    ![uint64T] "tid".
+    ![uint64T] "t".
 
 Definition findTID: val :=
   rec: "findTID" "tid" "tids" :=
@@ -130,7 +121,7 @@ Definition TxnMgr__getMinActiveTIDSite: val :=
     let: "site" := SliceGet ptrT (struct.loadF TxnMgr "sites" "txnMgr") "sid" in
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "tidnew" := ref (zero_val uint64T) in
-    "tidnew" <-[uint64T] genTID "sid";;
+    "tidnew" <-[uint64T] tid.GenTID "sid";;
     control.impl.Assume (![uint64T] "tidnew" < #18446744073709551615);;
     struct.storeF TxnSite "tidLast" "site" (![uint64T] "tidnew");;
     let: "tidmin" := ref_to uint64T (![uint64T] "tidnew") in

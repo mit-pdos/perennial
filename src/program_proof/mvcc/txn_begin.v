@@ -1,4 +1,6 @@
-From Perennial.program_proof.mvcc Require Import txn_common txnmgr_activate.
+From Perennial.program_proof.mvcc Require Import
+     txn_prelude txn_repr
+     txnmgr_activate wrbuf_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

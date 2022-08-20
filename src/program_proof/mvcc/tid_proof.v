@@ -1,5 +1,5 @@
-(* XXX: Move TID generation to a separate package. *)
-From Perennial.program_proof.mvcc Require Import txn_common.
+From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_ghost.
+From Goose.github_com.mit_pdos.go_mvcc Require Import tid.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -9,12 +9,12 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
  * It takes around 120 years for TSC to overflow on a 4-GHz CPU.
  *)
 (*****************************************************************)
-(* func genTID(sid uint64) uint64                                *)
+(* func GenTID(sid uint64) uint64                                *)
 (*****************************************************************)
-Theorem wp_genTID (sid : u64) γ :
+Theorem wp_GenTID (sid : u64) γ :
   ⊢ {{{ True }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
-      genTID #sid @ ∅
+      GenTID #sid @ ∅
     <<< ∃ ts', ts_auth γ ts' ∗ ⌜ts < ts'⌝ >>>
     {{{ (tid : u64), RET #tid; ⌜int.nat tid = ts⌝ }}}.
 Proof.

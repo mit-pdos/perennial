@@ -260,6 +260,7 @@ def main():
             "./gc",
             "./tuple",
             "./wrbuf",
+            "./tid",
             "./config",
             "./common",
             "./examples",

@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import txn_common.
+From Perennial.program_proof.mvcc Require Import txn_prelude txn_repr.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import txn_common.
+From Perennial.program_proof.mvcc Require Import txn_prelude txnmgr_repr.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -6,7 +6,8 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func swapWithEnd(xs []uint64, i uint64)                       *)
 (*****************************************************************)
-Local Theorem wp_swapWithEnd (xsS : Slice.t) (xs : list u64) (i : u64) (x : u64) :
+#[local]
+Theorem wp_swapWithEnd (xsS : Slice.t) (xs : list u64) (i : u64) (x : u64) :
   {{{ typed_slice.is_slice xsS uint64T 1 xs ∧ (⌜xs !! (int.nat i) = Some x⌝) }}}
     swapWithEnd (to_val xsS) #i
   {{{ (xs' : list u64), RET #(); typed_slice.is_slice xsS uint64T 1 (xs' ++ [x]) ∧
@@ -113,7 +114,8 @@ Qed.
 (*****************************************************************)
 (* func findTID(tid uint64, tids []uint64) uint64                *)
 (*****************************************************************)
-Local Theorem wp_findTID (tid : u64) (tidsS : Slice.t) (tids : list u64) :
+#[local]
+Theorem wp_findTID (tid : u64) (tidsS : Slice.t) (tids : list u64) :
   {{{ typed_slice.is_slice tidsS uint64T 1 tids ∗ ⌜tid ∈ tids⌝ }}}
     findTID #tid (to_val tidsS)
   {{{ (idx : u64), RET #idx; typed_slice.is_slice tidsS uint64T 1 tids ∧
