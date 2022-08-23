@@ -3,9 +3,9 @@ From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.go_mvcc.config.
 From Goose Require github_com.mit_pdos.go_mvcc.gc.
 From Goose Require github_com.mit_pdos.go_mvcc.index.
-From Goose Require github_com.mit_pdos.go_mvcc.proph.
 From Goose Require github_com.mit_pdos.go_mvcc.tid.
 From Goose Require github_com.mit_pdos.go_mvcc.wrbuf.
+From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.go_mvcc.trusted_proph.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
@@ -200,7 +200,7 @@ Definition Txn__Get: val :=
       let: "idx" := struct.loadF Txn "idx" "txn" in
       let: "tuple" := index.Index__GetTuple "idx" "key" in
       tuple.Tuple__ReadWait "tuple" (struct.loadF Txn "tid" "txn");;
-      proph.ResolveRead (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") "key";;
+      trusted_proph.ResolveRead (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") "key";;
       let: ("val", "found") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
       ("val", "found")).
 
@@ -223,14 +223,14 @@ Definition Txn__apply: val :=
 
 Definition Txn__Commit: val :=
   rec: "Txn__Commit" "txn" :=
-    proph.ResolveCommit (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") (struct.loadF Txn "wrbuf" "txn");;
+    trusted_proph.ResolveCommit (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") (struct.loadF Txn "wrbuf" "txn");;
     Txn__apply "txn";;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
 Definition Txn__Abort: val :=
   rec: "Txn__Abort" "txn" :=
-    proph.ResolveAbort (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn");;
+    trusted_proph.ResolveAbort (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 

@@ -264,7 +264,6 @@ def main():
             "./config",
             "./common",
             "./examples",
-            "./proph", # FIXME we want to make this "trusted"
             # "./cfmutex",
         )
 
