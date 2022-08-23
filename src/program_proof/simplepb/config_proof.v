@@ -30,7 +30,7 @@ Definition own_config γ (conf:list u64) : iProp Σ :=
   own γ.(config_val_gn) (to_dfrac_agree (DfracOwn (1/2)) (conf: (leibnizO _)))
 .
 
-Program Definition GetEpochAndConfig_spec γ γsrv :=
+Program Definition GetEpochAndConfig_spec γ :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   ( (* no args *)
   (£ 1 ={⊤,∅}=∗ ∃ epoch conf, own_epoch γ epoch ∗ own_config γ conf ∗
@@ -41,7 +41,7 @@ Program Definition GetEpochAndConfig_spec γ γsrv :=
         Φ reply%V)
       )
   )
-    )%I
+    )%I.
 Next Obligation.
   solve_proper.
 Defined.
