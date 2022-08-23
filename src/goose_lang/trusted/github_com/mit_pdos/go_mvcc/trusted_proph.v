@@ -8,6 +8,9 @@ Definition EvReadId : Z := 0.
 Definition EvAbortId : Z := 0.
 Definition EvCommitId : Z := 0.
 
+Definition NewProph : val :=
+  λ: <>, NewProph.
+
 Definition ResolveRead : val :=
   λ: "p" "tid" "key", ResolveProph "p" (#EvReadId, ("tid", "key")).
 
