@@ -219,11 +219,11 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iSplitR "Hptsto".
-  { iExists _.
-    iFrame "Hltuples Htxnmap".
+  { iExists _, _.
+    iFrame "Hltuples Htxnmap Hwrbuf HwrbufRP".
     iSplitL; last done.
-    do 6 iExists _.
-    iFrame "Hactive Htid Hsid Hwrbuf HwrbufRP".
+    do 5 iExists _.
+    iFrame "Hactive Htid Hsid".
     iFrame "Hidx HidxRI Htxnmgr HtxnmgrRI Hp Hinv".
     done.
   }

@@ -1,18 +1,18 @@
-From Perennial.program_proof.mvcc Require Import txn_prelude.
-From Perennial.program_proof.mvcc Require Import txnmgr_repr tuple_repr index_proof wrbuf_proof.
+From Perennial.program_proof.mvcc Require Import
+     txn_prelude
+     txnmgr_repr tuple_repr index_proof wrbuf_repr.
 
 Section repr.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition own_txn_impl (txn : loc) (ts : nat) (mods : dbmap) γ : iProp Σ :=
-  ∃ (tid sid : u64) (wrbuf : loc) (idx txnmgr : loc) (p : proph_id),
+Definition own_txn_impl (txn : loc) (wrbuf : loc) (ts : nat) γ : iProp Σ :=
+  ∃ (tid sid : u64) (idx txnmgr : loc) (p : proph_id),
     "Htid" ∷ txn ↦[Txn :: "tid"] #tid ∗
     (* This ensures we do not lose the info that [tid] does not overflow. *)
     "%Etid" ∷ ⌜int.nat tid = ts⌝ ∗
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
-    "Hwrbuf" ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
-    "HwrbufRP" ∷ own_wrbuf wrbuf mods ∗
+    "Hwrbuf"    ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
@@ -24,36 +24,21 @@ Definition own_txn_impl (txn : loc) (ts : nat) (mods : dbmap) γ : iProp Σ :=
 
 (* TODO: Unify [own_txn] and [own_txn_ready]. *)
 Definition own_txn (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
-  ∃ (mods : dbmap),
-    "Himpl"    ∷ own_txn_impl txn ts mods γ ∗
+  ∃ (wrbuf : loc) (mods : dbmap),
+    "Himpl"     ∷ own_txn_impl txn wrbuf ts γ ∗
     "#Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
-    "Htxnmap"  ∷ txnmap_auth τ (mods ∪ view) ∗
-    "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝.
-
-Definition own_tuples_locked (ts : nat) (mods : dbmap) γ : iProp Σ :=
-  [∗ map] k ↦ _ ∈ mods, ∃ tuple phys, own_tuple_locked tuple k ts phys phys γ.
-
-Definition own_tuples_updated (ts : nat) (mods : dbmap) γ : iProp Σ :=
-  [∗ map] k ↦ v ∈ mods, ∃ tuple phys,
-      own_tuple_locked tuple k ts phys (extend (S ts) phys ++ [v]) γ.
+    "Htxnmap"   ∷ txnmap_auth τ (mods ∪ view) ∗
+    "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
+    "HwrbufRP"  ∷ own_wrbuf_xtpls wrbuf mods.
 
 Definition own_txn_ready (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
-  ∃ (mods : dbmap),
-    "Himpl"     ∷ own_txn_impl txn ts mods γ ∗
+  ∃ (wrbuf : loc) (mods : dbmap) (tpls : gmap u64 loc),
+    "Himpl"     ∷ own_txn_impl txn wrbuf ts γ ∗
     "#Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
     "Htxnmap"   ∷ txnmap_auth τ (mods ∪ view) ∗
     "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
-    (* FIXME: make [tuple] below a physical thing. *)
-    "Htuples"   ∷ own_tuples_locked ts mods γ.
-
-Definition own_txn_appliable (txn : loc) (ts : nat) (view : dbmap) γ τ : iProp Σ :=
-  ∃ (mods : dbmap),
-    "Himpl"     ∷ own_txn_impl txn ts mods γ ∗
-    "#Hltuples" ∷ ([∗ map] k ↦ v ∈ view, ltuple_ptsto γ k v ts) ∗
-    "Htxnmap"   ∷ txnmap_auth τ (mods ∪ view) ∗
-    "%Hmodsdom" ∷ ⌜dom mods ⊆ dom view⌝ ∗
-    (* FIXME: make [tuple] below a physical thing. *)
-    "Htuples"   ∷ own_tuples_updated ts mods γ.
+    "HwrbufRP"  ∷ own_wrbuf wrbuf mods tpls ∗
+    "Htuples"   ∷ own_tuples_locked ts tpls γ.
 
 (* TODO: Unify [own_txn_impl] and [own_txn_uninit]. *)
 Definition own_txn_uninit (txn : loc) γ : iProp Σ := 
@@ -62,7 +47,7 @@ Definition own_txn_uninit (txn : loc) γ : iProp Σ :=
     "Hsid" ∷ txn ↦[Txn :: "sid"] #sid ∗
     "%HsidB" ∷ ⌜(int.Z sid) < N_TXN_SITES⌝ ∗
     "Hwrbuf" ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
-    "HwrbufRP" ∷ own_wrbuf wrbuf mods ∗
+    "HwrbufRP" ∷ own_wrbuf_xtpls wrbuf mods ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
@@ -97,8 +82,8 @@ Proof.
   apply elem_of_dom_2 in Hlookup. set_solver.
 Qed.
 
-Lemma own_txn_impl_tid txn ts m γ :
-  own_txn_impl txn ts m γ -∗
+Lemma own_txn_impl_tid txn wrbuf ts γ :
+  own_txn_impl txn wrbuf ts γ -∗
   ∃ (tid : u64), ⌜int.nat tid = ts⌝.
 Proof. iIntros "Htxn". iNamed "Htxn". eauto. Qed.
 

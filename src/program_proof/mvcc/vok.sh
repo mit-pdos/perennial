@@ -11,4 +11,4 @@ fi
 
 echo "Checking:"
 echo "`basename ${files}`"
-make -j4 ${files}
+make --ignore-errors -j4 ${files}

@@ -1,6 +1,7 @@
 From Perennial.program_proof.mvcc Require Import
      txn_prelude txn_repr
-     txnmgr_activate wrbuf_proof.
+     txnmgr_activate
+     wrbuf_repr wrbuf_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -13,7 +14,10 @@ Theorem wp_txn__Begin txn γ :
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
       Txn__Begin #txn @ ∅
     <<< ∃ ts', ts_auth γ ts' ∗ ⌜ts < ts'⌝ >>>
-    {{{ (tid : u64), RET #(); own_txn_impl txn ts ∅ γ ∧ ⌜int.nat tid = ts⌝ }}}.
+    {{{ (tid : u64) (wrbuf : loc), RET #();
+        own_txn_impl txn wrbuf ts γ ∗
+        own_wrbuf_xtpls wrbuf ∅ ∧ ⌜int.nat tid = ts⌝
+    }}}.
 Proof.
   iIntros "!>" (Φ) "Htxn HAU".
   iNamed "Htxn".

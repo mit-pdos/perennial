@@ -1,52 +1,7 @@
-From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_misc.
-From Goose.github_com.mit_pdos.go_mvcc Require Import wrbuf.
+From Perennial.program_proof.mvcc Require Import wrbuf_prelude wrbuf_repr.
 
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
-
-Definition wrent := (u64 * u64 * bool * loc)%type.
-
-Definition wrent_to_val (x : wrent) :=
-  (#x.1.1.1, (#x.1.1.2, (#x.1.2, (#x.2, #()))))%V.
-
-Local Definition wrent_to_key_dbval (x : wrent) : (u64 * dbval) :=
-  (x.1.1.1, (to_dbval x.1.2 x.1.1.2)).
-
-Definition own_wrbuf (wrbuf : loc) (mods : dbmap) : iProp Σ :=
-  ∃ (entsS : Slice.t) (ents : list wrent),
-    "Hents"   ∷ wrbuf ↦[WrBuf :: "ents"] (to_val entsS) ∗
-    "HentsS"  ∷ slice.is_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
-    "%HNoDup" ∷ ⌜NoDup ents.*1.*1.*1⌝ ∗
-    "%Hmods"  ∷ ⌜mods = (list_to_map (wrent_to_key_dbval <$> ents))⌝.
-Hint Extern 1 (environments.envs_entails _ (own_wrbuf _ _)) => unfold own_wrbuf : core.
-
-Local Lemma val_to_wrent_with_val_ty (x : val) :
-  val_ty x (uint64T * (uint64T * (boolT * (ptrT * unitT))))%ht ->
-  (∃ (k : u64) (v : u64) (w : bool) (t : loc), x = wrent_to_val (k, v, w, t)).
-Proof.
-  intros H.
-  inversion_clear H. 
-  { inversion H0. }
-  inversion_clear H0.
-  inversion_clear H.
-  inversion_clear H1.
-  { inversion H. }
-  inversion_clear H.
-  inversion_clear H1.
-  inversion_clear H0.
-  { inversion H. }
-  inversion_clear H.
-  inversion_clear H0.
-  inversion_clear H1.
-  { inversion H. }
-  inversion_clear H.
-  inversion_clear H1.
-  inversion_clear H0.
-  inversion_clear H.
-  exists x0, x1, x2, x3.
-  unfold wrent_to_val.
-  reflexivity.
-Qed.
 
 (*****************************************************************)
 (* func MkWrBuf() *WrBuf                                         *)
@@ -54,7 +9,7 @@ Qed.
 Theorem wp_MkWrBuf :
   {{{ True }}}
     MkWrBuf #()
-  {{{ (wrbuf : loc), RET #wrbuf; own_wrbuf wrbuf ∅ }}}.
+  {{{ (wrbuf : loc), RET #wrbuf; own_wrbuf_xtpls wrbuf ∅ }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
@@ -266,10 +221,10 @@ Definition spec_wrbuf__Lookup (v : u64) (b ok : bool) (key : u64) (m : gmap u64 
 (* func (wrbuf *WrBuf) Lookup(key uint64) (uint64, bool, bool)   *)
 (*****************************************************************)
 Theorem wp_wrbuf__Lookup wrbuf (key : u64) m :
-  {{{ own_wrbuf wrbuf m }}}
+  {{{ own_wrbuf_xtpls wrbuf m }}}
     WrBuf__Lookup #wrbuf #key
   {{{ (v : u64) (b ok : bool), RET (#v, #b, #ok);
-      own_wrbuf wrbuf m ∗ ⌜spec_wrbuf__Lookup v b ok key m⌝
+      own_wrbuf_xtpls wrbuf m ∗ ⌜spec_wrbuf__Lookup v b ok key m⌝
   }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
@@ -334,9 +289,9 @@ Qed.
 (* func (wrbuf *WrBuf) Put(key, val uint64)                      *)
 (*****************************************************************)
 Theorem wp_wrbuf__Put wrbuf (key : u64) (val : u64) m :
-  {{{ own_wrbuf wrbuf m }}}
+  {{{ own_wrbuf_xtpls wrbuf m }}}
     WrBuf__Put #wrbuf #key #val
-  {{{ RET #(); own_wrbuf wrbuf (<[ key := Value val ]> m) }}}.
+  {{{ RET #(); own_wrbuf_xtpls wrbuf (<[ key := Value val ]> m) }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
   wp_call.
@@ -415,7 +370,7 @@ Proof.
     wp_pures.
     iApply "HΦ".
     iModIntro.
-    unfold own_wrbuf.
+    unfold own_wrbuf_xtpls.
     do 2 iExists _.
     iFrame.
     iSplit; first by rewrite -list_fmap_insert.
@@ -460,7 +415,7 @@ Proof.
   iApply "HΦ".
   unfold spec_search in Hsearch.
   set ents' := (ents ++ [(key, val, true, null)]).
-  unfold own_wrbuf.
+  unfold own_wrbuf_xtpls.
 
   iExists _, ents'.
   iFrame.
@@ -492,9 +447,9 @@ Qed.
 (* func (wrbuf *WrBuf) Delete(key uint64)                        *)
 (*****************************************************************)
 Theorem wp_wrbuf__Delete wrbuf (key : u64) m :
-  {{{ own_wrbuf wrbuf m }}}
+  {{{ own_wrbuf_xtpls wrbuf m }}}
     WrBuf__Delete #wrbuf #key
-  {{{ RET #(); own_wrbuf wrbuf (<[ key := Nil ]> m) }}}.
+  {{{ RET #(); own_wrbuf_xtpls wrbuf (<[ key := Nil ]> m) }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
   wp_call.
@@ -563,7 +518,7 @@ Proof.
     wp_pures.
     iApply "HΦ".
     iModIntro.
-    unfold own_wrbuf.
+    unfold own_wrbuf_xtpls.
     do 2 iExists _.
     iFrame.
     iSplit; first by rewrite -list_fmap_insert.
@@ -608,7 +563,7 @@ Proof.
   unfold spec_search in Hsearch.
   (* [(U64 0)] is the zero-value of [u64]. *)
   set ents' := (ents ++ [(key, (U64 0), false, null)]).
-  unfold own_wrbuf.
+  unfold own_wrbuf_xtpls.
 
   iExists _, ents'.
   iFrame.
@@ -640,9 +595,9 @@ Qed.
 (* func (wrbuf *WrBuf) Clear()                                   *)
 (*****************************************************************)
 Theorem wp_wrbuf__Clear wrbuf m :
-  {{{ own_wrbuf wrbuf m }}}
+  {{{ own_wrbuf_xtpls wrbuf m }}}
     WrBuf__Clear #wrbuf
-  {{{ RET #(); own_wrbuf wrbuf ∅ }}}.
+  {{{ RET #(); own_wrbuf_xtpls wrbuf ∅ }}}.
 Proof.
   iIntros (Φ) "Hwrbuf HΦ".
   wp_call.

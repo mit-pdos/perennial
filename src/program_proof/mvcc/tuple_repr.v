@@ -69,6 +69,15 @@ Definition own_tuple_locked
     "Hptuple" ∷ ptuple_auth γ (1 / 2)%Qp key vchain' ∗
     "%Hlen"   ∷ ⌜(length vchain ≤ S (int.nat tid))%nat⌝.
 
+Definition own_tuples_locked (ts : nat) (tpls : gmap u64 loc) γ : iProp Σ :=
+  [∗ map] k ↦ tpl ∈ tpls, ∃ phys, own_tuple_locked tpl k ts phys phys γ.
+
+Definition own_tuples_updated
+           (ts : nat) (mods : dbmap) (tpls : gmap u64 loc) γ
+  : iProp Σ :=
+  [∗ map] k ↦ tpl; v ∈ tpls; mods, ∃ phys,
+      own_tuple_locked tpl k ts phys (extend (S ts) phys ++ [v]) γ.
+
 Definition is_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
   ∃ (latch : loc) (rcond : loc) (p : proph_id),
     "#Hlatch" ∷ readonly (tuple ↦[Tuple :: "latch"] #latch) ∗

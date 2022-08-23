@@ -1,6 +1,8 @@
 From Perennial.program_proof.mvcc Require Import
      txn_prelude txn_repr tuple_repr
-     txn_apply txnmgr_deactivate proph_proof.
+     txnmgr_deactivate
+     wrbuf_repr wrbuf_update_tuples
+     proph_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -34,6 +36,7 @@ Proof.
   (***********************************************************)
   iNamed "Htxn".
   iNamed "Himpl".
+  iDestruct (own_wrbuf_mods_tpls_dom with "HwrbufRP") as "%Hdoms".
   do 4 wp_loadField.
   wp_apply (wp_ResolveCommit with "[$HwrbufRP]"); first eauto.
   iInv "Hinv" as "> HinvO" "HinvC".
@@ -83,8 +86,10 @@ Proof.
     unfold ptuple_past_rel in Hpprel.
     rewrite Forall_forall in Hpprel.
     destruct H as [Helem H].
-    iDestruct (big_sepM_lookup_dom with "Htuples") as "Htuple".
-    { by apply elem_of_dom in Helem. }
+    rewrite Hdoms in Helem.
+    apply elem_of_dom in Helem.
+    destruct Helem as [tpl Hlookup].
+    iDestruct (big_sepM_lookup with "Htuples") as "Htuple"; first apply Hlookup.
     iRename "Hptuple" into "Hptuple'".
     iNamed "Htuple".
     iDestruct (ptuple_agree with "Hptuple Hptuple'") as "->".
@@ -127,13 +132,13 @@ Proof.
   }
 Qed.
 
-Definition ptuple_extend_wr_pre γ tmods ts m past (tid : nat) k : iProp Σ :=
+Definition ptuple_extend_wr_pre γ tmods ts m past (tid : nat) k tpl : iProp Σ :=
   per_key_inv_def γ k tmods ts m past ∗
-  ∃ tuple phys, own_tuple_locked tuple k tid phys phys γ.
+  ∃ phys, own_tuple_locked tpl k tid phys phys γ.
 
-Definition ptuple_extend_wr_post γ tmods ts m past (tid : nat) mods k v : iProp Σ :=
+Definition ptuple_extend_wr_post γ tmods ts m past (tid : nat) mods k tpl v : iProp Σ :=
   per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods]) ∗
-  ∃ tuple phys, own_tuple_locked tuple k tid phys (extend (S tid) phys ++ [v]) γ.
+  ∃ phys, own_tuple_locked tpl k tid phys (extend (S tid) phys ++ [v]) γ.
 
 #[local]
 Lemma per_key_inv_bigS_disj {γ keys tmods ts m past} tid mods :
@@ -149,13 +154,13 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
 Qed.
 
 #[local]
-Lemma ptuple_extend_wr γ tmods ts m past tid mods k v :
+Lemma ptuple_extend_wr γ tmods ts m past tid mods k tpl v :
   NoDup (elements tmods).*1 ->
   (tid, mods) ∈ tmods ->
   le_tids_mods tid (per_tuple_mods tmods k) ->
   mods !! k = Some v ->
-  ptuple_extend_wr_pre γ tmods ts m past tid k ==∗
-  ptuple_extend_wr_post γ tmods ts m past tid mods k v.
+  ptuple_extend_wr_pre γ tmods ts m past tid k tpl ==∗
+  ptuple_extend_wr_post γ tmods ts m past tid mods k tpl v.
 Proof.
   iIntros "%HND %Helem %Hlookup %Hle [Hkey Htuple]".
   iNamed "Hkey".
@@ -187,22 +192,40 @@ Proof.
       apply prefix_app_r, extend_prefix.
     }
   }
-  do 6 iExists _.
+  do 5 iExists _.
   iFrame "∗ %".
 Qed.
 
+Lemma big_sepM2_bupd :
+  ∀ (PROP : bi) (H : BiBUpd PROP) (A B K : Type) (EqDecision0 : EqDecision K) (H0 : Countable K) 
+    (Φ : K → A -> B → PROP) (l1 : gmap K A) (l2 : gmap K B),
+  ([∗ map] k↦x;y ∈ l1;l2, |==> Φ k x y) -∗ |==> [∗ map] k↦x;y ∈ l1;l2, Φ k x y.
+Admitted.
+
+(* [big_sepM2_dom] is used for something else. *)
+Lemma big_sepM2_dom' :
+  ∀ (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K) (A B : Type)
+    (Φ : K → PROP) (m1 : gmap K A) (m2 : gmap K B),
+  ([∗ map] k↦_;_ ∈ m1;m2, Φ k) ⊣⊢ ([∗ set] k ∈ dom m1, Φ k).
+Admitted.
+
 #[local]
-Lemma ptuples_extend_wr {γ} tmods ts m past tid mods :
+Lemma ptuples_extend_wr {γ} tmods ts m past tid mods tpls :
+  dom mods = dom tpls ->
   NoDup (elements tmods).*1 ->
   (tid, mods) ∈ tmods ->
   set_Forall (λ key : u64, le_tids_mods tid (per_tuple_mods tmods key)) (dom mods) ->
-  ([∗ map] k ↦ _ ∈ mods, ptuple_extend_wr_pre γ tmods ts m past tid k) ==∗
-  ([∗ map] k ↦ v ∈ mods, ptuple_extend_wr_post γ tmods ts m past tid mods k v).
+  ([∗ map] k ↦ tpl ∈ tpls, ptuple_extend_wr_pre γ tmods ts m past tid k tpl) ==∗
+  ([∗ map] k ↦ tpl; v ∈ tpls; mods, ptuple_extend_wr_post γ tmods ts m past tid mods k tpl v).
 Proof.
-  iIntros "%HND %Helem %Hleall Hpre".
-  iApply big_sepM_bupd.
-  iApply (big_sepM_mono with "Hpre").
-  iIntros (k v) "%Hlookup Hpre".
+  iIntros "%Hdoms %HND %Helem %Hleall Hpre".
+  iApply big_sepM2_bupd.
+  iDestruct (big_sepM2_sepM_2 _ (λ k y, True)%I _ mods with "Hpre []") as "Hpre".
+  { intros k. do 2 rewrite -elem_of_dom. by rewrite Hdoms. }
+  { done. }
+  iApply (big_sepM2_mono with "Hpre").
+  iIntros (k tpl v) "%Htpls %Hmods Hpre".
+  iDestruct "Hpre" as "[Hpre _]".
   iApply (ptuple_extend_wr with "Hpre"); [done | done | | done].
   apply Hleall.
   by eapply elem_of_dom_2.
@@ -225,6 +248,7 @@ Proof.
   (***********************************************************)
   iNamed "Htxn".
   iNamed "Himpl".
+  iDestruct (own_wrbuf_mods_tpls_dom with "HwrbufRP") as "%Hdoms".
   do 4 wp_loadField.
   wp_apply (wp_ResolveCommit with "[$HwrbufRP]"); first eauto.
   iInv "Hinv" as "> HinvO" "HinvC".
@@ -245,7 +269,7 @@ Proof.
   pose proof (first_commit_eq Hfc Hhead) as Emods.
   subst mods0.
   (* Separate out the per-key invariant for keys modified by this txn. *)
-  set keys := dom mods.
+  set keys := dom tpls.
   rewrite (union_difference_L keys keys_all); last set_solver.
   rewrite big_sepS_union; last set_solver.
   iDestruct "Hkeys" as "[Hkeys HkeysDisj]".
@@ -255,10 +279,11 @@ Proof.
   (* Extend physical tuples. *)
   iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
   pose proof (fcc_head_commit_le_all _ _ _ _ Hcmt Hhead) as Hdomle.
-  iMod (ptuples_extend_wr with "H") as "H"; [| done | done |].
+  iMod (ptuples_extend_wr with "H") as "H"; [done | | done | done |].
   { by eapply fc_tids_unique_cmt. }
-  iDestruct (big_sepM_sep with "H") as "[Hkeys Htuples]".
-  rewrite big_sepM_dom.
+  iDestruct (big_sepM2_sep with "H") as "[Hkeys Htuples]".
+  (* Interesting that [big_sepM_dom] and [big_sepM2_dom] are quite different. *)
+  rewrite big_sepM2_dom'.
   (* Update [HkeysDisj] w.r.t. [tmods ∖ {[ (tid, mods) ]}] and [past ++ [EvCommit tid mods]]. *)
   iDestruct (per_key_inv_bigS_disj tid mods with "HkeysDisj") as "HkeysDisj"; first set_solver.
   iDestruct (big_sepS_union_2 with "Hkeys HkeysDisj") as "Hkeys".
@@ -288,23 +313,17 @@ Proof.
   pose proof (Map.map_subset_dom_eq _ _ _ _ Hdom Hw) as Heq.
 
   (***********************************************************)
-  (* txn.apply()                                             *)
+  (* txn.wrbuf.UpdateTuples(txn.tid)                         *)
   (***********************************************************)
-  wp_apply (wp_txn__apply with "[- HΦ]").
-  { iExists _.
-    iFrame "∗ #".
-    iSplit; last done.
-    eauto 20 with iFrame.
-  }
-  iIntros "Htxn".
+  do 2 wp_loadField.
+  wp_apply (wp_wrbuf__UpdateTuples with "[$HwrbufRP Htuples]").
+  { unfold own_tuples_updated. by rewrite Etid. }
+  iIntros "HwrbufRP".
   wp_pures.
 
   (***********************************************************)
   (* txn.txnMgr.deactivate(txn.sid, txn.tid)                 *)
   (***********************************************************)
-  iClear "#".
-  iNamed "Htxn".
-  iNamed "Himpl".
   do 3 wp_loadField.
   wp_apply (wp_txnMgr__deactivate with "HtxnmgrRI Hactive").
   wp_pures.

@@ -110,9 +110,9 @@ Proof.
       iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
-    iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. by iFrame. }
+    iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn Hwrbuf]" as "Htxn".
+    { iExists _, ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
@@ -171,9 +171,9 @@ Proof.
       iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
-    iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. by iFrame. }
+    iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn Hwrbuf]" as "Htxn".
+    { iExists _, ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
@@ -244,9 +244,9 @@ Proof.
       iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
-    iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. by iFrame. }
+    iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn Hwrbuf]" as "Htxn".
+    { iExists _, ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
@@ -307,9 +307,9 @@ Proof.
       iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
-    iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. by iFrame. }
+    iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn Hwrbuf]" as "Htxn".
+    { iExists _, ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
@@ -377,9 +377,9 @@ Proof.
       iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
       eauto 15 with iFrame.
     }
-    iIntros "!>" (tid) "[Htxn _]".
-    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn]" as "Htxn".
-    { iExists ∅. rewrite map_empty_union. by iFrame. }
+    iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
+    iAssert (own_txn txn ts r γ τ)%I with "[Hltuples Htxnmap Htxn Hwrbuf]" as "Htxn".
+    { iExists _, ∅. rewrite map_empty_union. by iFrame. }
     wp_pures.
     (* Give [own_txn ∗ txnmap_ptstos] to the txn body, and get the updated [txnmap_ptstos] back. *)
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first auto.

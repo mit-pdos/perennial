@@ -38,8 +38,8 @@ Proof.
   { unfold own_txn.
     rewrite insert_union_l.
     set mods' := (<[ _ := _ ]> mods).
-    iExists mods'.
-    iFrame "Hltuples Htxnmap".
+    iExists _, mods'.
+    iFrame "Hltuples Htxnmap Hwrbuf HwrbufRP".
     iSplitL; first eauto 20 with iFrame.
     iPureIntro.
     destruct (mods !! k) eqn:E.

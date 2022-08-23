@@ -1,6 +1,8 @@
 From Perennial.goose_lang.lib Require Import proph.proph.
-From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_ghost mvcc_action.
-From Perennial.program_proof.mvcc Require Import wrbuf_proof.
+From Perennial.program_proof.mvcc Require Import
+     mvcc_prelude mvcc_ghost mvcc_action
+     wrbuf_repr.
+From Goose.github_com.mit_pdos.go_mvcc Require Import proph.
 From Perennial.goose_lang.trusted.github_com.mit_pdos.go_mvcc Require Import trusted_proph.
 
 Section proph.
@@ -99,12 +101,17 @@ Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
   iModIntro. by iApply "HΦ".
 Qed.
 
-Lemma wp_ResolveCommit γ p (tid : u64) (ts : nat) (wrbuf : loc) (m : dbmap) :
-  ⊢ {{{ ⌜int.nat tid = ts⌝ ∗ own_wrbuf wrbuf m }}}
+(**
+ * TO Ralf: Please just ignore [tpls].
+ *)
+Lemma wp_ResolveCommit
+      γ p (tid : u64) (ts : nat) (wrbuf : loc)
+      (m : dbmap) (tpls : gmap u64 loc) :
+  ⊢ {{{ ⌜int.nat tid = ts⌝ ∗ own_wrbuf wrbuf m tpls }}}
     <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveCommit #p #tid #wrbuf @ ∅
     <<< ∃ acs', ⌜acs = EvCommit ts m :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
-    {{{ RET #(); own_wrbuf wrbuf m }}}.
+    {{{ RET #(); own_wrbuf wrbuf m tpls }}}.
 Admitted.
 
 End proph.

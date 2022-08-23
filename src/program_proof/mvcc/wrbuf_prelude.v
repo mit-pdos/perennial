@@ -1,0 +1,41 @@
+From Perennial.program_proof.mvcc Require Export mvcc_prelude mvcc_misc mvcc_ghost.
+From Goose.github_com.mit_pdos.go_mvcc Require Export wrbuf.
+
+Definition wrent := (u64 * u64 * bool * loc)%type.
+
+Definition wrent_to_val (x : wrent) :=
+  (#x.1.1.1, (#x.1.1.2, (#x.1.2, (#x.2, #()))))%V.
+
+Definition wrent_to_key_dbval (x : wrent) : (u64 * dbval) :=
+  (x.1.1.1, (to_dbval x.1.2 x.1.1.2)).
+
+Definition wrent_to_key_tpl (x : wrent) : (u64 * loc) :=
+  (x.1.1.1, x.2).
+
+Lemma val_to_wrent_with_val_ty (x : val) :
+  val_ty x (uint64T * (uint64T * (boolT * (ptrT * unitT))))%ht ->
+  (∃ (k : u64) (v : u64) (w : bool) (t : loc), x = wrent_to_val (k, v, w, t)).
+Proof.
+  intros H.
+  inversion_clear H. 
+  { inversion H0. }
+  inversion_clear H0.
+  inversion_clear H.
+  inversion_clear H1.
+  { inversion H. }
+  inversion_clear H.
+  inversion_clear H1.
+  inversion_clear H0.
+  { inversion H. }
+  inversion_clear H.
+  inversion_clear H0.
+  inversion_clear H1.
+  { inversion H. }
+  inversion_clear H.
+  inversion_clear H1.
+  inversion_clear H0.
+  inversion_clear H.
+  exists x0, x1, x2, x3.
+  unfold wrent_to_val.
+  reflexivity.
+Qed.
