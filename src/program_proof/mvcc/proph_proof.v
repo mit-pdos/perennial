@@ -2,7 +2,6 @@ From Perennial.goose_lang.lib Require Import proph.proph.
 From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_action
      wrbuf_repr.
-From Goose.github_com.mit_pdos.go_mvcc Require Import proph.
 From Perennial.goose_lang.trusted.github_com.mit_pdos.go_mvcc Require Import trusted_proph.
 
 Section proph.
