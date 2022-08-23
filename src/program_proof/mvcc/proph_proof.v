@@ -84,7 +84,20 @@ Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
       ResolveAbort #p #tid @ ∅
     <<< ∃ acs', ⌜acs = EvAbort ts :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
-Admitted.
+  iIntros "!> %Φ %Hts AU". wp_lam. wp_pures.
+  replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
+  iMod "AU" as (acs) "[(%pvs & %Hpvs & Hp) Hclose]".
+  wp_apply (wp_resolve_proph with "Hp").
+  iIntros (pvs') "[-> Hp]". simpl in Hpvs.
+  rewrite bool_decide_false in Hpvs; last done.
+  rewrite bool_decide_true in Hpvs; last done.
+  simpl in Hpvs.
+  iMod ("Hclose" with "[Hp]") as "HΦ".
+  { iExists (decode_actions pvs').
+    rewrite Hts in Hpvs. iSplit; first done.
+    iExists _. by iFrame. }
+  iModIntro. by iApply "HΦ".
+Qed.
 
 Lemma wp_ResolveCommit γ p (tid : u64) (ts : nat) (wrbuf : loc) (m : dbmap) :
   ⊢ {{{ ⌜int.nat tid = ts⌝ ∗ own_wrbuf wrbuf m }}}

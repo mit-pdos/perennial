@@ -5,8 +5,8 @@ Context {ext:ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
 
 Definition EvReadId : Z := 0.
-Definition EvAbortId : Z := 0.
-Definition EvCommitId : Z := 0.
+Definition EvAbortId : Z := 1.
+Definition EvCommitId : Z := 2.
 
 Definition NewProph : val :=
   λ: <>, NewProph.
