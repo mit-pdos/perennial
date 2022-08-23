@@ -19,9 +19,9 @@ Proof.
   wp_apply wp_new_proph. iIntros (pvs v). by iApply "HΦ".
 Qed.
 
-Theorem wp_ResolveProph_list (p : proph_id) pvs v :
+Theorem wp_ResolveProph_list E (p : proph_id) pvs v :
   {{{ proph p pvs }}}
-    ResolveProph (#p) (Val v)
+    ResolveProph (#p) (Val v) @ E
   {{{ pvs', RET (LitV LitUnit); ⌜pvs = v::pvs'⌝ ∗ proph p pvs' }}}.
 Proof.
   iIntros (Φ) "Hp HΦ". wp_lam.

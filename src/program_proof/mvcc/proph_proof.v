@@ -23,11 +23,11 @@ Local Definition decode_ev_commit (v : val) : option action :=
 Local Definition decode_action (v : val) : option action :=
   match v with
   | (#(LitInt id), data)%V =>
-      if decide (id = EvReadId) then
+      if bool_decide (id = EvReadId) then
         decode_ev_read data
-      else if decide (id = EvAbortId) then
+      else if bool_decide (id = EvAbortId) then
         decode_ev_abort data
-      else if decide (id = EvCommitId) then
+      else if bool_decide (id = EvCommitId) then
         decode_ev_commit data
       else
         None
@@ -63,7 +63,20 @@ Lemma wp_ResolveRead γ p (tid key : u64) (ts : nat) :
       ResolveRead #p #tid #key @ ∅
     <<< ∃ acs', ⌜acs = EvRead ts key :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
-Admitted.
+Proof.
+  iIntros "!> %Φ %Hts AU". wp_lam. wp_pures.
+  replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
+  iMod "AU" as (acs) "[(%pvs & %Hpvs & Hp) Hclose]".
+  wp_apply (wp_resolve_proph with "Hp").
+  iIntros (pvs') "[-> Hp]". simpl in Hpvs.
+  rewrite bool_decide_true in Hpvs; last done.
+  simpl in Hpvs.
+  iMod ("Hclose" with "[Hp]") as "HΦ".
+  { iExists (decode_actions pvs').
+    rewrite Hts in Hpvs. iSplit; first done.
+    iExists _. by iFrame. }
+  iModIntro. by iApply "HΦ".
+Qed.
 
 Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
   ⊢ {{{ ⌜int.nat tid = ts⌝ }}}

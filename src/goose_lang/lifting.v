@@ -529,7 +529,7 @@ Proof.
   solve_atomic.
 Qed.
 
-(* PrepareWrite and Store are individually atomic, but the two need to be
+(* PrepareWrite and FinishStore are individually atomic, but the two need to be
 combined to actually write to the heap and that is not atomic. *)
 Global Instance prepare_write_atomic s v : Atomic s (PrepareWrite (Val v)).
 Proof. solve_atomic. Qed.
@@ -544,15 +544,9 @@ Proof. solve_atomic. Qed.
 Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance fork_atomic s e : Atomic s (Fork e).
-Proof. solve_atomic.
-       simpl in H; monad_inv.
-       eexists; eauto.
-Qed.
+Proof. solve_atomic. monad_inv. eauto. Qed.
 Global Instance skip_atomic s  : Atomic s Skip.
-Proof. solve_atomic.
-       simpl in H; monad_inv.
-       eexists; eauto.
-Qed.
+Proof. solve_atomic. simpl in H; monad_inv. eauto. Qed.
 Global Instance linearize_atomic s : Atomic s Linearize.
 Proof. rewrite /Linearize. apply _. Qed.
 Global Instance binop_atomic s op v1 v2 : Atomic s (BinOp op (Val v1) (Val v2)).
@@ -565,6 +559,8 @@ Global Instance input_atomic s v : Atomic s (Input (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance output_atomic s v : Atomic s (Output (Val v)).
 Proof. solve_atomic. Qed.
+Global Instance resolve_atomic s p w : Atomic s (ResolveProph (Val (LitV (LitProphecy p))) (Val w)).
+Proof. solve_atomic. monad_inv. eauto. Qed.
 
 Local Ltac solve_exec_safe := intros; subst; do 4 eexists; constructor 1; cbn; repeat (monad_simpl; simpl).
 Local Ltac solve_exec_puredet :=
