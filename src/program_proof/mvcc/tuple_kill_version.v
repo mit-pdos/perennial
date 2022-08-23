@@ -51,7 +51,7 @@ Theorem wp_tuple__KillVersion
         tuple (tid : u64) (key : u64) (sid : u64)
         (phys : list dbval) γ :
   {{{ active_tid γ tid sid ∗
-      own_tuple_locked tuple key tid phys (extend (S (int.nat tid)) phys ++ [Nil]) γ
+      own_tuple_locked tuple key (int.nat tid) phys (extend (S (int.nat tid)) phys ++ [Nil]) γ
   }}}
     Tuple__KillVersion #tuple #tid
   {{{ (ret : u64), RET #ret; active_tid γ tid sid }}}.

@@ -52,7 +52,7 @@ Theorem wp_tuple__AppendVersion
         tuple (tid : u64) (val : u64) (key : u64) (sid : u64)
         (phys : list dbval) γ :
   {{{ active_tid γ tid sid ∗
-      own_tuple_locked tuple key tid phys (extend (S (int.nat tid)) phys ++ [Value val]) γ
+      own_tuple_locked tuple key (int.nat tid) phys (extend (S (int.nat tid)) phys ++ [Value val]) γ
   }}}
     Tuple__AppendVersion #tuple #tid #val
   {{{ RET #(); active_tid γ tid sid }}}.

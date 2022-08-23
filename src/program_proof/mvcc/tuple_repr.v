@@ -60,23 +60,23 @@ Definition is_tuple_locked tuple (key : u64) γ : iProp Σ :=
     "Hlocked" ∷ locked #latch.
 
 Definition own_tuple_locked
-           (tuple : loc) (key : u64) (tid : u64) (vchain vchain' : list dbval) γ
+           (tuple : loc) (key : u64) (tid : nat) (vchain vchain' : list dbval) γ
   : iProp Σ :=
   ∃ (owned : bool) (tidlast tidgc : u64) (vers : list pver),
     "Hphys"   ∷ own_tuple_phys tuple owned tidlast vers ∗
     "Hrepr"   ∷ own_tuple_repr key tidlast tidgc vers vchain γ ∗
     "Hlock"   ∷ is_tuple_locked tuple key γ ∗
     "Hptuple" ∷ ptuple_auth γ (1 / 2)%Qp key vchain' ∗
-    "%Hlen"   ∷ ⌜(length vchain ≤ S (int.nat tid))%nat⌝.
+    "%Hlen"   ∷ ⌜(length vchain ≤ S tid)%nat⌝.
 
-Definition own_tuples_locked (ts : nat) (tpls : gmap u64 loc) γ : iProp Σ :=
-  [∗ map] k ↦ tpl ∈ tpls, ∃ phys, own_tuple_locked tpl k ts phys phys γ.
+Definition own_tuples_locked (tid : nat) (tpls : gmap u64 loc) γ : iProp Σ :=
+  [∗ map] k ↦ tpl ∈ tpls, ∃ phys, own_tuple_locked tpl k tid phys phys γ.
 
 Definition own_tuples_updated
-           (ts : nat) (mods : dbmap) (tpls : gmap u64 loc) γ
+           (tid : nat) (mods : dbmap) (tpls : gmap u64 loc) γ
   : iProp Σ :=
   [∗ map] k ↦ tpl; v ∈ tpls; mods, ∃ phys,
-      own_tuple_locked tpl k ts phys (extend (S ts) phys ++ [v]) γ.
+      own_tuple_locked tpl k tid phys (extend (S tid) phys ++ [v]) γ.
 
 Definition is_tuple (tuple : loc) (key : u64) γ : iProp Σ :=
   ∃ (latch : loc) (rcond : loc) (p : proph_id),

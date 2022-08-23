@@ -101,13 +101,11 @@ Proof.
       (* specialize (Hact eq_refl). *)
       (* specialize (Hact ltac:(auto)). *)
       unshelve epose proof (Hact _); first reflexivity.
-      replace (int.nat _) with tid in Hlen by word.
       lia.
     - (* Case EvCommit. *)
       destruct H as (mods' & Helem' & Hact & Hle).
       apply Hpprel in Hact. simpl in Hact.
       unshelve epose proof (Hact _); first auto.
-      replace (int.nat _) with tid in Hlen by word.
       lia.
   }
   { (* Case FCC. *)
@@ -316,9 +314,9 @@ Proof.
   (* txn.wrbuf.UpdateTuples(txn.tid)                         *)
   (***********************************************************)
   do 2 wp_loadField.
-  wp_apply (wp_wrbuf__UpdateTuples with "[$HwrbufRP Htuples]").
+  wp_apply (wp_wrbuf__UpdateTuples with "[$HwrbufRP Htuples $Hactive]").
   { unfold own_tuples_updated. by rewrite Etid. }
-  iIntros "HwrbufRP".
+  iIntros "[HwrbufRP Hactive]".
   wp_pures.
 
   (***********************************************************)

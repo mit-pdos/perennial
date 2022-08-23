@@ -39,3 +39,12 @@ Proof.
   unfold wrent_to_val.
   reflexivity.
 Qed.
+
+Lemma wrent_to_val_with_lookup (x : val) (l : list wrent) (i : nat) :
+  (wrent_to_val <$> l) !! i = Some x ->
+  (∃ (k : u64) (v : u64) (w : bool) (t : loc), x = wrent_to_val (k, v, w, t) ∧ l !! i = Some (k, v, w, t)).
+Proof.
+  intros H.
+  apply list_lookup_fmap_inv in H as [[[[k v] w] t] [Heq Hsome]].
+  naive_solver.
+Qed.
