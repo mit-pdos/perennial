@@ -30,6 +30,22 @@ Definition own_config γ (conf:list u64) : iProp Σ :=
   own γ.(config_val_gn) (to_dfrac_agree (DfracOwn (1/2)) (conf: (leibnizO _)))
 .
 
+Program Definition GetEpochAndConfig_spec γ γsrv :=
+  λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  ( (* no args *)
+  (£ 1 ={⊤,∅}=∗ ∃ epoch conf, own_epoch γ epoch ∗ own_config γ conf ∗
+    (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗ own_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
+      (∀ reply_sl reply,
+          ⌜reply = (u64_le (word.add epoch (U64 1))) ++ concat (u64_le <$> conf) ⌝ -∗
+          is_slice reply_sl uint64T 1 reply -∗
+        Φ reply%V)
+      )
+  )
+    )%I
+Next Obligation.
+  solve_proper.
+Defined.
+
 Definition is_host (configHost:u64) γ : iProp Σ := True.
 
 Definition is_Clerk (ck:loc) γ : iProp Σ := True.
