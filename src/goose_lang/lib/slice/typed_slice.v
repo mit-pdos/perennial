@@ -428,7 +428,7 @@ Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
       {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
         body #i (to_val x) @ stk; E
-      {{{ RET #(); I (word.add i (U64 1)) }}}) -∗
+      {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
     {{{ I (U64 0) ∗ is_slice_small s t q vs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) ∗ is_slice_small s t q vs }}}.
@@ -450,7 +450,7 @@ Theorem wp_forSlicePrefix (P: list V -> list V -> iProp Σ) stk E s t q vs (body
       ⌜done ++ x::todo = vs⌝ →
       {{{ P done (x :: todo) }}}
         body #i (to_val x) @ stk; E
-      {{{ RET #(); P (done ++ [x]) todo }}}) -∗
+      {{{ (v : val), RET v; P (done ++ [x]) todo }}}) -∗
     {{{ is_slice_small s t q vs ∗ P nil vs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); is_slice_small s t q vs ∗ P vs nil }}}.
@@ -468,7 +468,7 @@ Proof.
     { rewrite -[vs in _ = vs](take_drop (int.nat i)).
       rewrite Hdrop_S //. }
     { rewrite Hdrop_S; iFrame. }
-    iIntros "HP".
+    iIntros (v) "HP".
     iApply "HΦ0".
     iExactEq "HP". f_equal.
     { apply take_S_r in H0. rewrite -H0. f_equal. word. }

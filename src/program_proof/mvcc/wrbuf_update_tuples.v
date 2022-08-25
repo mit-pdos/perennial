@@ -82,12 +82,8 @@ Proof.
       iDestruct "Htpls" as "[[%phys Htpl] Htpls]".
       wp_apply (wp_tuple__KillVersion with "[$Hactive $Htpl]").
       iIntros (ret) "Hactive".
-      (* [KillVersion] return a [u64], but the loop body should evaluate to unit. *)
-      admit.
-      (*
       iApply "HΦ".
       iFrame.
-      *)
     }
   }
   { subst P. simpl.
@@ -102,6 +98,6 @@ Proof.
   iFrame.
   do 2 iExists _.
   by iFrame "∗ %".
-Admitted.
+Qed.
 
 End heap.

@@ -921,7 +921,7 @@ Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
       {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
         body #i x @ stk; E
-      {{{ RET #(); I (word.add i (U64 1)) }}}) -∗
+      {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
     {{{ I (U64 0) ∗ is_slice_small s t q vs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) ∗ is_slice_small s t q vs }}}.
@@ -950,7 +950,7 @@ Proof.
     wp_apply ("Hind" with "[$Hiz]").
     { iPureIntro; split; eauto.
       replace (int.Z z); eauto. }
-    iIntros "Hiz1".
+    iIntros (v) "Hiz1".
     wp_steps.
     assert (int.Z (z + 1) = int.Z z + 1).
     { rewrite word.unsigned_of_Z.
@@ -971,7 +971,7 @@ Theorem wp_forSlicePrefix (P: list val -> list val -> iProp Σ) stk E s t q vs (
   (∀ (i: u64) (x: val) (vs: list val) (vs': list val),
       {{{ P vs (x :: vs') }}}
         body #i x @ stk; E
-      {{{ RET #(); P (vs ++ [x]) vs' }}}) -∗
+      {{{ (v : val), RET v; P (vs ++ [x]) vs' }}}) -∗
     {{{ is_slice_small s t q vs ∗ P nil vs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); is_slice_small s t q vs ∗ P vs nil }}}.
@@ -985,7 +985,7 @@ Proof.
     iIntros (Φ0) "(HP & % & %) HΦ0".
     wp_apply ("Hind" with "[HP]").
     { eapply drop_S in H0. rewrite H0. iFrame. }
-    iIntros "HP".
+    iIntros (v) "HP".
     iApply "HΦ0".
     iExactEq "HP". f_equal.
     { apply take_S_r in H0. rewrite -H0. f_equal. word. }
@@ -1003,7 +1003,7 @@ Theorem wp_forSliceEach (I: iProp Σ) (P Q: val -> iProp Σ) stk E s t q vs (bod
   (∀ (i: u64) (x: val),
       {{{ I ∗ P x }}}
         body #i x @ stk; E
-      {{{ RET #(); I ∗ Q x }}}) -∗
+      {{{ (v : val), RET v; I ∗ Q x }}}) -∗
     {{{ is_slice_small s t q vs ∗ I ∗ [∗ list] x ∈ vs, P x }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); is_slice_small s t q vs ∗ I ∗ [∗ list] x ∈ vs, Q x }}}.
@@ -1031,7 +1031,7 @@ Proof.
     iDestruct "Hp" as "[Hpx Hp]".
     iApply ("Hind" with "[$Hi $Hpx]").
     iModIntro.
-    iIntros "[Hi Hqx]".
+    iIntros (v) "[Hi Hqx]".
     iApply "HΦ0".
     replace (take (S (int.nat i)) vs) with ((take (int.nat i) vs) ++ [x]).
     2: {
