@@ -261,7 +261,7 @@ Proof.
   rewrite ?wpc0_unfold.
   iSplit; last first.
   { iIntros. iDestruct "Hwpc" as "(_&H)".
-    iSpecialize ("H" with "[$] [$]").
+    iSpecialize ("H" with "[$] [$] [$]").
     iApply (step_fupd2N_inner_wand with "H"); auto. }
   rewrite Hnv.
   iIntros (q σ g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
@@ -335,7 +335,7 @@ Proof.
   { iIntros. iDestruct "Hwpc" as "(H&_)".
     iSpecialize ("H" $! mj).
     rewrite /wpc_crash_modality.
-    iSpecialize ("H" with "[$] [$]").
+    iSpecialize ("H" with "[$] [$] [$]").
     iApply (step_fupd2N_inner_wand with "H"); auto.
     iIntros "($&$)". iApply "Hwand". iFrame.
   }

@@ -232,8 +232,6 @@ Proof.
   iIntros (Hstep) "Hσ Hg He Ht HNC Hlc".
   rewrite steps_sum_S_r.
   iDestruct "Hlc" as "[Hlc1 Hlc2]".
-  (* We are not even using Hlc2, but it is probably better to keep the credits and laters
-     in sync in the lemma statement. *)
   iDestruct (wptp_steps with "Hσ Hg He Ht HNC Hlc1") as "Hwp"; first done.
   iApply step_fupd2N_inner_add.
   iApply (step_fupd2N_inner_wand with "Hwp"); auto.
@@ -242,6 +240,8 @@ Proof.
   iMod (NC_upd_C with "HNC") as "#HC".
   iPoseProof (wpc0_crash with "[$] Hg [$]") as "H".
   iMod "Hclo".
+  iDestruct "Hlc2" as "[_ Hlc2]".
+  iSpecialize ("H" with "[$]").
   iApply (step_fupd2N_inner_wand _ _ _ _ (S _) with "H"); auto.
   iIntros "(Hg&HΦc)". iNext. iExists _, _. iSplitL ""; first done.
   iFrame. eauto.

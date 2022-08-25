@@ -103,6 +103,7 @@ Definition wpc_pre `{!irisGS Λ Σ, !generationGS Λ Σ} (s : stuckness) (mj: fr
    end ∧
   (* Todo introduce notation for this split up cfupd *)
     ((∀ g1 ns D κs, global_state_interp g1 ns mj D κs -∗ C -∗
+     £ (num_laters_per_step ns) -∗
      ||={E1|⊤∖D,∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,E1|⊤∖D}=> global_state_interp g1 ns mj D κs ∗ Φc))))%I.
 
 Local Instance wpc_pre_contractive `{!irisGS Λ Σ, !generationGS Λ Σ} s mj : Contractive (wpc_pre s mj).
@@ -376,8 +377,8 @@ Proof.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H". eauto. iApply ("IH" with "[] H"); auto.
   - iDestruct "H" as "(_&H)". iDestruct "HΦ" as "(_&HΦ)".
-    iIntros.
-    iSpecialize ("H" with "[$] [$]").
+    iIntros (????) "Hg HC Hlc".
+    iSpecialize ("H" with "[$] [$] [$]").
     iMod (fupd2_mask_subseteq E1 (⊤ ∖ _)) as "Hclo"; first done.
     { reflexivity. }
     iApply (step_fupd2N_wand with "H").
@@ -428,8 +429,8 @@ Proof.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H". eauto. iApply ("IH" with "[] H"); auto.
   - iDestruct "H" as "(_&H)". iDestruct "HΦ" as "(_&HΦ)".
-    iIntros.
-    iSpecialize ("H" with "[$] [$]").
+    iIntros (????) "Hg #HC Hlc".
+    iSpecialize ("H" with "[$] [$] [$]").
     iMod (fupd2_mask_subseteq E1 (⊤ ∖ _)) as "Hclo"; first done.
     { reflexivity. }
     iApply (step_fupd2N_wand with "H").
@@ -474,7 +475,7 @@ Proof.
        iIntros "H".  iApply (wpc0_strong_mono with "H []"); eauto.
   - iDestruct "H" as "(_&H)". iDestruct "HΦ" as "(_&HΦ)".
     iIntros.
-    iSpecialize ("H" with "[$] [$]").
+    iSpecialize ("H" with "[$] [$] [$]").
     iMod (fupd2_mask_subseteq E1 (⊤ ∖ _)) as "Hclo"; first done.
     { reflexivity. }
     iApply (step_fupd2N_wand with "H").
@@ -618,7 +619,7 @@ Proof.
     ** iApply (big_sepL_impl with "Hefs"); iIntros "!#" (k ef _).
        iIntros "H". eauto. iApply (wpc0_strong_mono with "H"); eauto.
   - iDestruct "H" as "(_&H)". iIntros.
-    iSpecialize ("H" with "[$] [$]").
+    iSpecialize ("H" with "[$] [$] [$]").
     rewrite /cfupd.
     iSpecialize ("HΦ" with "[$]").
     iMod (fupd2_mask_subseteq E1) as "Hclo"; [ done | reflexivity |].
@@ -849,7 +850,7 @@ Proof.
     * iIntros. iMod "H" as "H". iSpecialize ("H" $! mj). iDestruct "H" as "(H&_)".
       iApply ("H" with "[$] [$] [$] [$]").
   - iIntros. iMod "H" as "H". iSpecialize ("H" $! mj). iDestruct "H" as "(_&H)".
-    iApply ("H" with "[$] [$]").
+    iApply ("H" with "[$] [$] [$]").
 Qed.
 
 Lemma wpc_fupd2 s E1 e Φ Φc:
@@ -878,13 +879,13 @@ Qed.
 
 Lemma wpc0_crash s mj E1 e Φ Φc:
   wpc0 s mj E1 e Φ Φc -∗
-  ((∀ g1 ns D κs, global_state_interp g1 ns mj D κs -∗ C -∗
+  ((∀ g1 ns D κs, global_state_interp g1 ns mj D κs -∗ C -∗ £ (num_laters_per_step ns) -∗
     ||={E1|⊤∖D,∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,E1|⊤∖D}=> global_state_interp g1 ns mj D κs ∗ Φc))%I.
 Proof. rewrite wpc0_unfold /wpc_pre. iIntros "(_&$)". Qed.
 
 Lemma wpc_crash s E1 e Φ Φc:
   WPC e @ s; E1 {{ Φ }} {{ Φc }} -∗
-  ((∀ g1 ns mj D κs, global_state_interp g1 ns mj D κs -∗ C -∗
+  ((∀ g1 ns mj D κs, global_state_interp g1 ns mj D κs -∗ C -∗ £ (num_laters_per_step ns) -∗
     ||={E1|⊤∖D,∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,E1|⊤∖D}=> global_state_interp g1 ns mj D κs ∗ Φc))%I.
 Proof.
   rewrite wpc_unfold /wpc_pre.
@@ -999,7 +1000,7 @@ Proof.
   - iDestruct "H" as "(_&H)".
     iDestruct "HR" as "(_&HR)".
     iIntros.
-    iSpecialize ("H" with "[$] [$]").
+    iSpecialize ("H" with "[$] [$] [$]").
     iDestruct (cfupd_fupd with "HR") as "HR".
     iSpecialize ("HR" with "[$]").
     iApply step_fupd2N_inner_fupd.

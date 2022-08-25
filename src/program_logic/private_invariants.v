@@ -108,9 +108,9 @@ Context `{PRI: !pri_invG IRISG}.
     rewrite !wpc0_unfold /wpc_pre.
     iSplit; last first.
     { iDestruct "Hwpc" as "(_&Hwpc)".
-      iIntros (????) "Hg HC".
+      iIntros (????) "Hg HC Hlc".
       iDestruct (pri_inv_tok_global_le_acc with "[//] [$]") as "(Hg&Hclo)".
-      iSpecialize ("Hwpc" with "[$] [$]").
+      iSpecialize ("Hwpc" with "[$] [$] [$]").
       iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
       iIntros "(Hg&$)". iApply "Hclo". iFrame.
     }
@@ -263,7 +263,7 @@ Context `{PRI: !pri_invG IRISG}.
     iDestruct (pri_inv_tok_global_valid with "[$]") as %(?&?).
     iSpecialize ("H" with "[$Hitok //]").
     rewrite wpc0_unfold/ wpc_pre.
-    iMod "H" as "(_&H)". by iMod ("H" with "[$] [$]") as "$".
+    iMod "H" as "(_&H)". by iMod ("H" with "[$] [$] [$]") as "$".
   Qed.
 
   Lemma wpc_pri_inv_tok_res s E1 e Φ Φc :

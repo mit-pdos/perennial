@@ -92,9 +92,10 @@ Proof.
   rewrite wpr0_unfold/wpr0_pre.
   iPoseProof (@fupd2_mask_subseteq _ _ ⊤ ⊤ ⊤ (⊤ ∖ D)) as "Hclo"; try set_solver+.
   iMod ("Hclo").
-  iMod (wpc0_crash with "Hwpr [Hg] []") as "H".
+  iMod (wpc0_crash with "Hwpr [Hg] [] [Hlc]") as "H".
   { eauto. }
   { iFrame "#". }
+  { iApply (lc_weaken with "Hlc"). lia. }
   iModIntro.
   iApply (step_fupd2N_wand with "H"). iIntros "H".
   iMod "H" as "(Hg&H)". iMod "Hclo".

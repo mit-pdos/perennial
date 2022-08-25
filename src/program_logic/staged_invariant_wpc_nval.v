@@ -38,8 +38,8 @@ Proof.
   {
     iSpecialize ("Hwp" $! mj). rewrite wpc0_unfold /wpc_pre.
     iDestruct "Hwp" as "(_&Hwp)".
-    iIntros (g1 ns D' κs) "Hg #HC".
-    iSpecialize ("Hwp" with "[$] [$]").
+    iIntros (g1 ns D' κs) "Hg #HC Hlc".
+    iSpecialize ("Hwp" with "[$] [$] [$]").
     iApply (step_fupd2N_inner_wand with "Hwp"); auto.
   }
   rewrite Hnval.

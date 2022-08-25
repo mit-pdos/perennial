@@ -47,6 +47,7 @@ Definition wpc_crash_modality `{!irisGS Λ Σ, !crashGS Σ} E1 mj Φc :=
   ((∀ g1 ns D κs,
        let E2 :=  ⊤ ∖ D in
        global_state_interp g1 ns mj D κs -∗ C -∗
+          £ (num_laters_per_step ns) -∗
      ||={E1|E2,∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,E1|E2}=> global_state_interp g1 ns mj D κs ∗ Φc))%I.
 
 Definition wpc_value_modality `{!irisGS Λ Σ, !crashGS Σ} E1 mj Φc :=
@@ -259,7 +260,7 @@ Lemma wpc_crash_modality_intro_C E mj P :
   wpc_crash_modality E mj P.
 Proof.
   iIntros "H". rewrite /wpc_crash_modality.
-  iIntros. iApply ("H" with "[$] [$] [$]").
+  iIntros. iApply ("H" with "[$] [$] [$] [$]").
 Qed.
 
 Lemma wpc_crash_modality_strong_wand E1 E2 mj1 mj2 P Q :
@@ -271,10 +272,10 @@ Lemma wpc_crash_modality_strong_wand E1 E2 mj1 mj2 P Q :
 Proof using PRI.
   iIntros (??) "Hwpc Hwand".
   rewrite /wpc_crash_modality.
-  iIntros (g1 ns D κs) "Hg #C".
+  iIntros (g1 ns D κs) "Hg #C Hlc".
   iApply (step_fupd2N_inner_fupd2).
   iDestruct (pri_inv_tok_global_le_acc with "[//] Hg") as "(Hg&Hg_clo)".
-  iSpecialize ("Hwpc" with "[$] [$]").
+  iSpecialize ("Hwpc" with "[$] [$] [$]").
   iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
   iIntros "(Hg&HP)". iDestruct ("Hg_clo" with "[$Hg]") as "$".
   by iMod ("Hwand" with "[$]") as "$".
@@ -293,8 +294,8 @@ Proof.
     iFrame. iModIntro.
     iSplit.
     { iDestruct "H" as "(_&H)".
-      iIntros (????) "Hg HC".
-      iSpecialize ("H" with "[$] [$]").
+      iIntros (????) "Hg HC Hlc".
+      iSpecialize ("H" with "[$] [$] [$]").
       iApply (step_fupd2N_inner_wand with "H"); auto.
     }
     { iDestruct "H" as "(H&_)".
@@ -321,8 +322,8 @@ Proof.
     iIntros. iModIntro. iFrame.
     iSplit.
     { iDestruct "H" as "(_&H)".
-      iIntros (????) "Hg HC".
-      iSpecialize ("H" with "[$] [$]").
+      iIntros (????) "Hg HC Hlc".
+      iSpecialize ("H" with "[$] [$] [$]").
       iApply (step_fupd2N_inner_wand with "H"); auto.
     }
     { iDestruct "H" as "(H&_)".
@@ -348,8 +349,8 @@ Proof.
     iFrame. iModIntro.
     iSplit.
     { iDestruct "H" as "(_&H)".
-      iIntros (????) "Hg HC".
-      iSpecialize ("H" with "[$] [$]").
+      iIntros (????) "Hg HC Hlc".
+      iSpecialize ("H" with "[$] [$] [$]").
       iApply (step_fupd2N_inner_wand with "H"); auto.
     }
     { iDestruct "H" as "(H&_)".
@@ -375,7 +376,7 @@ Lemma wpc_crash_modality_intro E1 mj P :
 Proof.
   iIntros "H".
   rewrite /wpc_crash_modality.
-  iIntros (g1 ns D κs) "Hg #C".
+  iIntros (g1 ns D κs) "Hg #C Hlc".
   iApply (step_fupd2N_inner_later); auto.
   iNext. iFrame.
 Qed.
@@ -387,22 +388,22 @@ Lemma wpc_crash_modality_wand E1 mj P Q :
 Proof.
   iIntros "Hwpc Hwand".
   rewrite /wpc_crash_modality.
-  iIntros (g1 ns D κs) "Hg #C".
+  iIntros (g1 ns D κs) "Hg #C Hlc".
   iApply (step_fupd2N_inner_fupd2).
-  iSpecialize ("Hwpc" with "[$] [$]").
+  iSpecialize ("Hwpc" with "[$] [$] [$]").
   iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
   iIntros "($&HP)". by iMod ("Hwand" with "[$]") as "$".
 Qed.
 
-Lemma wpc_crash_modality_combine E1 mj P1 P2 :
+Lemma wpc_crash_modality_combine_cred E1 mj P1 P2 :
   later_tok -∗
   ▷ wpc_crash_modality E1 mj P1 -∗
   ▷ wpc_crash_modality E1 mj P2 -∗
-  wpc_crash_modality E1 mj (P1 ∗ P2).
+  wpc_crash_modality E1 mj (£2 ∗ P1 ∗ P2).
 Proof.
   iIntros "Htok H1 H2".
   rewrite /wpc_crash_modality.
-  iIntros (g1 ns D κs) "Hg #C".
+  iIntros (g1 ns D κs) "Hg #C Hlc".
   iMod (later_tok_decr with "[$]") as (ns' Hle) "Hg".
   iApply (step_fupd2N_inner_fupd2).
   iApply (step_fupd2N_inner_le).
@@ -412,13 +413,29 @@ Proof.
   do 2 (iModIntro; iModIntro; iNext).
   iMod "Hclo'".
   iApply step_fupd2N_inner_add.
-  iSpecialize ("H1" with "[$] [$]").
+  iDestruct (lc_weaken with "Hlc") as "Hlc".
+  { apply (num_laters_per_step_exp ns'). lia. }
+  iDestruct "Hlc" as "[[Hlc1 Hlc2] Hlc3]".
+  iSpecialize ("H1" with "[$] [$] [$]").
   iApply (step_fupd2N_inner_wand with "H1"); auto.
   iIntros "(Hg&HP1)".
-  iSpecialize ("H2" with "[$] [$]").
+  iSpecialize ("H2" with "[$] [$] [$]").
   iApply (step_fupd2N_inner_wand with "H2"); auto.
-  iIntros "(Hg&$)".
-  iMod (global_state_interp_le with "[$]") as "$"; auto. lia.
+  iIntros "(Hg&$)". iFrame.
+  iMod (global_state_interp_le with "[$]") as "$"; auto.
+  lia.
+Qed.
+
+Lemma wpc_crash_modality_combine E1 mj P1 P2 :
+  later_tok -∗
+  ▷ wpc_crash_modality E1 mj P1 -∗
+  ▷ wpc_crash_modality E1 mj P2 -∗
+  wpc_crash_modality E1 mj (P1 ∗ P2).
+Proof.
+  iIntros.
+  iApply (wpc_crash_modality_wand with "[-]").
+  { iApply (wpc_crash_modality_combine_cred with "[$] [$] [$]"). }
+  by iIntros "(?&$&$)".
 Qed.
 
 Lemma wpc_crash_modality_split E Einv mj1 mj2 P1 P2 :
@@ -456,7 +473,7 @@ Proof using stagedG0.
   iSplitL "Hltok Hqa1 H1".
   {
     rewrite /wpc_crash_modality.
-    iIntros.
+    iIntros (????) "Hg #HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Hle') "Hg".
     iApply (step_fupd2N_inner_fupd2).
     iApply (step_fupd2N_inner_le _ (S (num_laters_per_step ns'))).
@@ -481,7 +498,12 @@ Proof using stagedG0.
         apply Qp.lt_le_incl; naive_solver. }
       iMod (pri_inv_tok_disable with "[$Hg $Hitok]") as "Hg".
       replace (⊤ ∖ D ∖ Einv) with (⊤ ∖ (Einv ∪ D)) by set_solver.
-      iSpecialize ("Hunrun" with "[$] [$]").
+      iSpecialize ("Hunrun" with "[$] [$] [Hlc]").
+      {
+        iApply (lc_weaken with "Hlc").
+        {  assert (Hlt': ns' < ns) by lia.
+           apply num_laters_per_step_le in Hlt'. lia. }
+      }
       iMod "Hunrun".  iModIntro. iApply (step_fupd2N_wand with "Hunrun").
       iIntros "Hunrun". iMod "Hunrun" as "(Hg&HP1&HP2)".
       iMod (pending_upd_done with "H1") as "Hdone".
@@ -510,7 +532,7 @@ Proof using stagedG0.
   }
   {
     rewrite /wpc_crash_modality.
-    iIntros.
+    iIntros (????) "Hg #HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Hle') "Hg".
     iApply (step_fupd2N_inner_fupd2).
     iApply (step_fupd2N_inner_le _ (S (num_laters_per_step ns'))).
@@ -535,7 +557,12 @@ Proof using stagedG0.
         apply Qp.lt_le_incl; naive_solver. }
       iMod (pri_inv_tok_disable with "[$Hg $Hitok]") as "Hg".
       replace (⊤ ∖ D ∖ Einv) with (⊤ ∖ (Einv ∪ D)) by set_solver.
-      iSpecialize ("Hunrun" with "[$] [$]").
+      iSpecialize ("Hunrun" with "[$] [$] [Hlc]").
+      {
+        iApply (lc_weaken with "Hlc").
+        {  assert (Hlt': ns' < ns) by lia.
+           apply num_laters_per_step_le in Hlt'. lia. }
+      }
       iMod "Hunrun".  iModIntro. iApply (step_fupd2N_wand with "Hunrun").
       iIntros "Hunrun". iMod "Hunrun" as "(Hg&HP1&HP2)".
       iMod (pending_upd_done with "H2") as "Hdone".

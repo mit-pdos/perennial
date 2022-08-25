@@ -61,7 +61,7 @@ Proof.
   iEval (rewrite wpc0_unfold).
   rewrite /wpc_pre. iSplit; last first.
   {
-    iIntros (g1 ns D' κs) "Hg #HC".
+    iIntros (g1 ns D' κs) "Hg #HC Hlc".
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
     { exfalso. apply Qp.lt_nge in Hinvalid. revert Hval. rewrite frac_valid. eauto. }
     iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
@@ -115,7 +115,12 @@ Proof.
 
     rewrite /wpc_crash_modality.
     replace (⊤ ∖ D' ∖ E2) with (⊤ ∖ (E2 ∪ D')) by set_solver.
-    iSpecialize ("HPs" with "[$] [$]").
+    iSpecialize ("HPs" with "[$] [$] [Hlc]").
+    {
+      iApply (lc_weaken with "Hlc").
+      {  assert (Hlt_ns: ns' < ns) by lia.
+         apply num_laters_per_step_le in Hlt_ns. lia. }
+    }
     iMod "HPs".
     iModIntro. iApply (step_fupd2N_wand with "HPs"). iIntros "HPs".
     iMod "HPs" as "(Hg&HPr&HP)".
@@ -269,8 +274,8 @@ Proof.
       iModIntro. iIntros "Hwpc".
       iEval (rewrite wpc0_unfold) in "Hwpc". iDestruct "Hwpc" as "(_&Hwpc)".
       rewrite /wpc_crash_modality.
-      iIntros (????) "Hg HC".
-      iSpecialize ("Hwpc" with "[$] [$]").
+      iIntros (????) "Hg HC Hlc".
+      iSpecialize ("Hwpc" with "[$] [$] [$]").
       iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
     }
     iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
@@ -318,7 +323,7 @@ Proof.
   rewrite /wpc_pre. iSplit; last first.
   {
     iDestruct "Hwp" as "(Hwp&_)".
-    iIntros (g1 ns D' κs) "Hg #HC".
+    iIntros (g1 ns D' κs) "Hg #HC Hlc".
     iApply step_fupd2N_inner_later'.
     iNext; iModIntro; iFrame.
   }
@@ -484,8 +489,8 @@ Proof.
     iIntros "Hwpc".
     iEval (rewrite wpc0_unfold) in "Hwpc". iDestruct "Hwpc" as "(_&Hwpc)".
     rewrite /wpc_crash_modality.
-    iIntros (????) "Hg HC".
-    iSpecialize ("Hwpc" with "[$] [$]").
+    iIntros (????) "Hg HC Hlc".
+    iSpecialize ("Hwpc" with "[$] [$] [$]").
     iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
   }
   iDestruct ("Hg_inv_clo" with "Hg") as "Hg".

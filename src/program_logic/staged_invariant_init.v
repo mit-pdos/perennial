@@ -108,7 +108,7 @@ Proof using PRI.
   iSplit; last first.
   {
     iDestruct "Hwp" as "(_&Hwp)".
-    iIntros.
+    iIntros (????) "Hg #HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Hle) "Hg".
     iApply (step_fupd2N_inner_le).
     { apply (num_laters_per_step_exp ns'). lia. }
@@ -118,13 +118,16 @@ Proof using PRI.
     iMod ("Hclo'").
     rewrite /wpc_crash_modality.
     iApply step_fupd2N_inner_add.
-    iSpecialize ("Hwp" with "[$] [$]").
+    iDestruct (lc_weaken with "Hlc") as "Hlc".
+    { apply (num_laters_per_step_exp ns'). lia. }
+    iDestruct (lc_split with "Hlc") as "([Hlc' Hlc]&Hlc2)".
+    iSpecialize ("Hwp" with "[$] [$] Hlc").
     iApply step_fupd2N_inner_fupd.
     iApply (step_fupd2N_inner_wand with "Hwp"); auto.
     iIntros "(Hg&HΦc)". iModIntro.
     iDestruct (pri_inv_tok_global_le_acc _ _ _ mj' with "[] Hg") as "(Hg&Hg_clo)".
     { auto. }
-    iSpecialize ("Hcm" with "[$] [$]").
+    iSpecialize ("Hcm" with "[$] [$] [$]").
     iApply (step_fupd2N_inner_fupd).
     iApply (step_fupd2N_inner_wand with "Hcm"); auto.
     iIntros "(Hg&HPc)".
@@ -160,7 +163,7 @@ Proof.
   { iExists E1. iSplit; eauto. }
   iClear "Hpri_inv". iDestruct "Hpri_inv'" as (E' Hsub') "#Hpri_inv".
   iLöb as "IH" forall (E' Einv mj0 mj_ikeep mj_ishare γ γ' γstatus Hsub' Heq_mj (* Hle_mj *) Hinvalid Hinf Hlt) "Hpri_inv".
-  iIntros (g ns D κs) "Hg #HC".
+  iIntros (g ns D κs) "Hg #HC Hlc".
   iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
   { exfalso. apply Qp.lt_nge in Hinvalid. revert Hval. rewrite frac_valid.
     intros Hle'. apply Hinvalid. etransitivity; last eassumption.
@@ -182,12 +185,17 @@ Proof.
     do 2 (iModIntro; iModIntro; iNext).
     iMod (pending_upd_done with "H") as "H".
     iMod ("Hclo'").
-    iMod ("Hclo" with "[-Hg HPc Hwpc]").
+    iMod ("Hclo" with "[-Hg HPc Hwpc Hlc]").
     { iNext. iEval (rewrite staged_inv_inner_unfold). iExists _, _, _, _, _. iFrame "∗ #". iRight. iFrame. }
     iApply step_fupd2N_inner_fupd.
     iApply (step_fupd2N_inner_add).
     rewrite /wpc_crash_modality.
-    iSpecialize ("Hwpc" with "[$] [$]").
+    iSpecialize ("Hwpc" with "[$] [$] [Hlc]").
+    {
+      iApply (lc_weaken with "Hlc").
+      {  assert (Hlt': ns' < ns) by lia.
+         apply num_laters_per_step_le in Hlt'. lia. }
+    }
     iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
     iIntros "(Hg&HQc)".
     iApply (step_fupd2N_inner_later); first done.
@@ -220,7 +228,10 @@ Proof.
     { naive_solver. }
     iMod (pri_inv_tok_disable with "[$Hg $Hitok]") as "Hg".
     replace (⊤ ∖ D ∖ Einv) with (⊤ ∖ (Einv ∪ D)) by set_solver.
-    iSpecialize ("HPcr" with "[$] [$]").
+    iDestruct (lc_weaken with "Hlc") as "Hlc".
+    { apply (num_laters_per_step_exp ns'). lia. }
+    iDestruct "Hlc" as "[[_ Hlc1] Hlc2]".
+    iSpecialize ("HPcr" with "[$] [$] [$]").
     iApply (step_fupd2N_inner_wand with "HPcr"); auto.
     iIntros "(Hg&HPr&HPc)".
     replace (⊤ ∖ (Einv ∪ D)) with (⊤ ∖ D ∖ Einv) by set_solver.
@@ -235,7 +246,7 @@ Proof.
     { iNext. iEval (rewrite staged_inv_inner_unfold).
       iExists _, _, (inuse _ _), _, _. iFrame "∗ #". iRight. iFrame. }
     iApply step_fupd2N_inner_fupd.
-    iSpecialize ("Hwpc" with "[$] [$]").
+    iSpecialize ("Hwpc" with "[$] [$] [$]").
     iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
     iIntros "(Hg&HQc)".
     iMod (global_state_interp_le with "[$]") as "$"; first lia.
@@ -250,12 +261,17 @@ Proof.
     iMod ("Hclo" with "[Hown1 Hstat Hitok_ishare Hdone]").
     { iNext. iEval (rewrite staged_inv_inner_unfold).
       iExists _, _, _, _, _. iFrame "∗ #". iLeft. iRight. iFrame. }
-    iSpecialize ("IH" $! E1' _ q _ mj_ishare' with "[] [] [] [] [] [$] [$] [$] [$] [$] [$] [$]"); eauto.
+    iSpecialize ("IH" $! E1' _ q _ mj_ishare' with "[] [] [] [] [] [$] [$] [$] [$] [$] [$] [$] [Hlc]"); eauto.
     { iPureIntro; etransitivity; try eassumption. }
     { iPureIntro.
       split.
       - naive_solver.
       - transitivity (mj0); naive_solver. }
+    {
+      iApply (lc_weaken with "Hlc").
+      {  assert (Hlt': ns' < ns) by lia.
+         apply num_laters_per_step_le in Hlt'. lia. }
+    }
     iApply step_fupd2N_inner_fupd.
     iApply (step_fupd2N_inner_wand with "IH"); auto.
     { lia. }
@@ -269,7 +285,12 @@ Proof.
     { iNext. iEval (rewrite staged_inv_inner_unfold).
       iExists _, _, idle, _, _. iFrame "∗ #". iRight. iFrame. }
     iApply step_fupd2N_inner_add.
-    iSpecialize ("Hwpc" with "[$] [$]").
+    iSpecialize ("Hwpc" with "[$] [$] [Hlc]").
+    {
+      iApply (lc_weaken with "Hlc").
+      {  assert (Hlt': ns' < ns) by lia.
+         apply num_laters_per_step_le in Hlt'. lia. }
+    }
     iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
     iIntros "(Hg&HQc)".
     iApply step_fupd2N_inner_fupd.
@@ -331,6 +352,7 @@ Proof.
       { (* This case is impossible since we have the staged_pending token *)
         iDestruct (pending_done with "[$] [$]") as %[]. }
       iMod (later_tok_decr with "[$]") as (ns' Hle) "Hg".
+      iIntros "Hlc".
       iApply (step_fupd2N_inner_le).
       { apply (num_laters_per_step_exp ns'). lia. }
       iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
@@ -338,9 +360,13 @@ Proof.
       do 2 (iModIntro; iModIntro; iNext).
       iMod (pending_upd_done with "H") as "H".
       iMod ("Hclo'").
-      iMod ("Hclo" with "[-Hg HPc Hwp]").
+      iMod ("Hclo" with "[-Hg HPc Hwp Hlc]").
       { iNext. iEval (rewrite staged_inv_inner_unfold). iExists _, _, _, _, _. iFrame "∗ #". iRight. iFrame. }
-      iSpecialize ("Hwp" with "[$] [$]").
+      iSpecialize ("Hwp" with "[$] [$] [Hlc]").
+      { iApply (lc_weaken with "Hlc").
+        {  assert (Hlt': ns' < ns) by lia.
+           apply num_laters_per_step_le in Hlt'. lia. }
+      }
       iApply step_fupd2N_inner_fupd.
       iApply (step_fupd2N_inner_wand with "Hwp"); auto.
       { lia. }
@@ -349,8 +375,12 @@ Proof.
       lia.
     }
     iMod (later_tok_decr with "[$]") as (ns' Hle) "Hg".
+    iIntros "Hlc".
     iApply (step_fupd2N_inner_le).
     { apply (num_laters_per_step_exp ns'). lia. }
+    iDestruct (lc_weaken with "Hlc") as "Hlc".
+    { apply (num_laters_per_step_exp ns'). lia. }
+    iDestruct "Hlc" as "[[Hlc1 Hlc2] Hlc3]".
     iEval (simpl).
     iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
     do 2 (iModIntro; iModIntro; iNext).
@@ -372,7 +402,7 @@ Proof.
       { naive_solver. }
       iMod (pri_inv_tok_disable with "[$Hg $Hitok]") as "Hg".
       replace (⊤ ∖ D ∖ Einv) with (⊤ ∖ (Einv ∪ D)) by set_solver.
-      iSpecialize ("HPcr" with "[$] [$]").
+      iSpecialize ("HPcr" with "[$] [$] [$]").
       iApply (step_fupd2N_inner_wand with "HPcr"); auto.
       { set_solver. }
       iIntros "(Hg&HPr&HPc)".
@@ -387,7 +417,7 @@ Proof.
       iMod ("Hclo" with "[HPr Hitok2 Hitok1_share Hown1 H Hstat]").
       { iNext. iEval (rewrite staged_inv_inner_unfold).
         iExists _, _, (inuse _ _), _, _. iFrame "∗ #". iRight. iFrame. }
-      iSpecialize ("Hwp" with "[$] [$]").
+      iSpecialize ("Hwp" with "[$] [$] [$]").
       iApply step_fupd2N_inner_fupd.
       iApply (step_fupd2N_inner_wand with "Hwp"); auto. iIntros "(Hg&$)". iFrame.
       iApply (global_state_interp_le with "[$]"); eauto.
@@ -402,7 +432,7 @@ Proof.
       iMod ("Hclo" with "[Hown1 Hstat Hitok_ishare Hdone]").
       { iNext. iEval (rewrite staged_inv_inner_unfold).
         iExists _, _, _, _, _. iFrame "∗ #". iLeft. iRight. iFrame. }
-      iSpecialize ("IH" $! E1' _ q _ mj_ishare' with "[] [] [] [] [] [] [$] [$] [$] Hwp [] [$] [$]"); eauto.
+      iSpecialize ("IH" $! E1' _ q _ mj_ishare' with "[] [] [] [] [] [] [$] [$] [$] Hwp [] [$] [$] [$]"); eauto.
       { iPureIntro; etransitivity; try eassumption. }
       { iPureIntro.
         split.
@@ -422,7 +452,7 @@ Proof.
         iExists _, _, idle, _, _. iFrame "∗ #". iRight. iFrame. }
       iApply step_fupd2N_inner_add.
       iApply step_fupd2N_inner_later; auto. iNext.
-      iSpecialize ("Hwp" with "[$] [$]").
+      iSpecialize ("Hwp" with "[$] [$] [$]").
       iApply step_fupd2N_inner_fupd.
       iApply (step_fupd2N_inner_wand with "Hwp"); auto. iIntros "(Hg&$)". iFrame.
       iApply (global_state_interp_le with "[$]"); eauto.

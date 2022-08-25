@@ -46,6 +46,11 @@ Proof using LT.
   intros ?? ?%num_laters_per_step_exp. lia.
 Qed.
 
+Lemma num_laters_per_step_le : ∀ n1 n2, n1 < n2 → S (num_laters_per_step n1) + 2 <= S (num_laters_per_step n2).
+Proof using LT.
+  intros ?? ?%num_laters_per_step_exp. lia.
+Qed.
+
 Lemma later_tok_incrN n g ns mj D κ :
   global_state_interp g ns mj D κ ==∗
   global_state_interp g (n + ns) mj D κ ∗
@@ -57,10 +62,10 @@ Proof.
     by iMod (later_tok_incr with "[$]") as "($&$)".
 Qed.
 
-Lemma wpc_later_tok_use2 s E e Φ Φc :
+Lemma wpc_later_tok_use2_credits s E e Φ Φc :
   language.to_val e = None →
   later_tok -∗
-  ▷▷ WPC e @ s; E {{ v, later_tok -∗ Φ v }} {{ later_tok -∗ Φc }} -∗
+  (£ 2 -∗ WPC e @ s; E {{ v, later_tok -∗ Φ v }} {{ later_tok -∗ Φc }}) -∗
   WPC e @ s; E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hnval) "Htok Hwp".
@@ -78,11 +83,13 @@ Proof.
     iModIntro. simpl. iModIntro. iNext.
     iModIntro. simpl. iModIntro. iNext.
     iMod "H" as "_".
+    iDestruct (lc_weaken with "Hlc") as "Hlc".
+    {  assert (Hlt: ns' < ns) by lia.
+       apply num_laters_per_step_le in Hlt. apply Hlt. }
+    iDestruct (lc_split with "Hlc") as "(Hlc&Hlc2)".
+    iDestruct ("Hwp" with "Hlc2") as "Hwp".
     iDestruct ("Hwp" $! _) as "(Hwp&_)".
-    iSpecialize ("Hwp" $! _ _ _ _ _ _ _ with "Hσ Hg HNC [Hlc]").
-    { iApply (lc_weaken with "Hlc").
-      assert (Hlt: ns' < ns) by lia.
-      apply num_laters_per_step_lt2 in Hlt. lia. }
+    iSpecialize ("Hwp" $! _ _ _ _ _ _ _ with "Hσ Hg HNC Hlc").
     iMod "Hwp".
     iMod "Hwp". iModIntro. iModIntro.
     iNext.
@@ -98,17 +105,23 @@ Proof.
     iModIntro. iSplit.
     * iIntros (?) "H". iModIntro. iApply "H"; eauto.
     * iIntros "H". iModIntro. iApply "H"; eauto.
-  - iIntros (g ns D κs) "Hg HC".
+  - iIntros (g ns D κs) "Hg HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Heq) "Hg".
     iMod (fupd2_mask_subseteq ∅ ∅) as "H"; [ set_solver+ | set_solver+ |].
+    iDestruct (lc_weaken ((num_laters_per_step ns') + 2) with "Hlc") as "Hlc".
+    {  assert (Hlt: ns' < ns) by lia.
+       apply num_laters_per_step_le in Hlt. lia. }
     iApply (step_fupd_extra.step_fupd2N_le (S (S (num_laters_per_step ns'))) (num_laters_per_step ns)).
     { assert (Hlt: ns' < ns) by lia.
       apply num_laters_per_step_lt2 in Hlt. lia.
     }
     rewrite Nat.iter_succ. iModIntro. iModIntro. iNext.
     rewrite Nat.iter_succ. iModIntro. iModIntro. iNext.
-    iMod "H". iDestruct ("Hwp" $! _) as "(_&Hwp)".
-    iMod ("Hwp" with "[$] [$]") as "Hwp".
+    iMod "H".
+    iDestruct (lc_split with "Hlc") as "(Hlc&Hlc2)".
+    iDestruct ("Hwp" with "Hlc2") as "Hwp".
+    iDestruct ("Hwp" $! _) as "(_&Hwp)".
+    iMod ("Hwp" with "[$] [$] [$]") as "Hwp".
     iModIntro.
     iApply (step_fupd_extra.step_fupd2N_wand with "Hwp"). iIntros "Hwp".
     iMod "Hwp" as "(Hg&HΦc)".
@@ -117,6 +130,21 @@ Proof.
     { lia. }
     iFrame.
     iModIntro. by iApply "HΦc".
+Qed.
+
+Lemma wpc_later_tok_use2 s E e Φ Φc :
+  language.to_val e = None →
+  later_tok -∗
+  ▷▷ WPC e @ s; E {{ v, later_tok -∗ Φ v }} {{ later_tok -∗ Φc }} -∗
+  WPC e @ s; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (?) "Htok Hwp". iApply (wpc_later_tok_use2_credits with "[$]"); auto.
+  iIntros "[Hlc1 Hlc2]".
+  iApply fupd_wpc.
+  iApply (lc_fupd_add_later with "[$]").
+  iApply (lc_fupd_add_later with "[$]").
+  do 2 iNext. iModIntro.
+  iApply "Hwp".
 Qed.
 
 Lemma wpc_later_tok_use s E e Φ Φc :
@@ -167,7 +195,7 @@ Proof.
     iModIntro. iSplit.
     * iIntros (?) "H". iModIntro. iApply "H"; eauto.
     * iIntros "H". iModIntro. iApply "H"; eauto.
-  - iIntros (g ns D κs) "Hg HC".
+  - iIntros (g ns D κs) "Hg HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Heq) "Hg".
     iMod (fupd2_mask_subseteq ∅ ∅) as "H"; [ set_solver+ | set_solver+ |].
     iApply (step_fupd_extra.step_fupd2N_le (S (num_laters_per_step ns')) (num_laters_per_step ns)).
@@ -176,7 +204,10 @@ Proof.
     }
     rewrite Nat.iter_succ. iModIntro. iModIntro. iNext.
     iMod "H". iDestruct ("Hwp" $! _) as "(_&Hwp)".
-    iMod ("Hwp" with "[$] [$]") as "Hwp".
+    iMod ("Hwp" with "[$] [$] [Hlc]") as "Hwp".
+    { iApply (lc_weaken with "Hlc").
+      assert (Hlt: ns' < ns) by lia.
+      apply num_laters_per_step_lt2 in Hlt. lia. }
     iModIntro.
     iApply (step_fupd_extra.step_fupd2N_wand with "Hwp"). iIntros "Hwp".
     iMod "Hwp" as "(Hg&HΦc)".
