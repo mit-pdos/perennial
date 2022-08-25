@@ -6,6 +6,10 @@ Definition wrent := (u64 * u64 * bool * loc)%type.
 Definition wrent_to_val (x : wrent) :=
   (#x.1.1.1, (#x.1.1.2, (#x.1.2, (#x.2, #()))))%V.
 
+Lemma wrent_to_val_unfold (k v : u64) (w : bool) (t : loc) :
+  (#k, (#v, (#w, (#t, #()))))%V = wrent_to_val (k, v, w, t).
+Proof. reflexivity. Qed.
+
 Definition wrent_to_key_dbval (x : wrent) : (u64 * dbval) :=
   (x.1.1.1, (to_dbval x.1.2 x.1.1.2)).
 

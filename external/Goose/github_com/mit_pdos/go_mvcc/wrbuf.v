@@ -86,16 +86,16 @@ Definition WrBuf__OpenTuples: val :=
     (for: (λ: <>, ![uint64T] "pos" < slice.len "ents"); (λ: <>, Skip) := λ: <>,
       let: "ent" := SliceGet (struct.t WrEnt) "ents" (![uint64T] "pos") in
       let: "tpl" := index.Index__GetTuple "idx" (struct.get WrEnt "key" "ent") in
-      SliceSet (struct.t WrEnt) "ents" (![uint64T] "pos") (struct.mk WrEnt [
-        "key" ::= struct.get WrEnt "key" "ent";
-        "val" ::= struct.get WrEnt "val" "ent";
-        "wr" ::= struct.get WrEnt "wr" "ent";
-        "tpl" ::= "tpl"
-      ]);;
       let: "ret" := tuple.Tuple__Own "tpl" "tid" in
       (if: "ret" ≠ common.RET_SUCCESS
       then Break
       else
+        SliceSet (struct.t WrEnt) "ents" (![uint64T] "pos") (struct.mk WrEnt [
+          "key" ::= struct.get WrEnt "key" "ent";
+          "val" ::= struct.get WrEnt "val" "ent";
+          "wr" ::= struct.get WrEnt "wr" "ent";
+          "tpl" ::= "tpl"
+        ]);;
         "pos" <-[uint64T] ![uint64T] "pos" + #1;;
         Continue));;
     (if: ![uint64T] "pos" < slice.len "ents"

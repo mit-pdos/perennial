@@ -6,14 +6,13 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func (tuple *Tuple) Free(tid uint64)                          *)
 (*****************************************************************)
-Theorem wp_tuple__Free tuple (tid : u64) (key : u64) (vers : list (u64 * u64 * u64)) γ :
+Theorem wp_tuple__Free tuple (tid : u64) (key : u64) γ :
   is_tuple tuple key γ -∗
   {{{ mods_token γ key (int.nat tid) }}}
     Tuple__Free #tuple
   {{{ RET #(); True }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Htoken HΦ".
-  rename vers into vers'.
   iNamed "Htuple".
   wp_call.
 
