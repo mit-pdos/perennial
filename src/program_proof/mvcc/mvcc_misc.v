@@ -160,6 +160,15 @@ Lemma NoDup_app_assoc {A : Type} (l m n : list A) :
   NoDup (l ++ m ++ n) ↔ NoDup ((l ++ m) ++ n).
 Proof. split; [apply NoDup_app_assoc_1 | apply NoDup_app_assoc_2]. Qed.
 
+Lemma take_S_insert {A : Type} (l : list A) (i : nat) (x : A) :
+  (i < length l)%nat ->
+  take (S i) (<[i := x]> l) = take i l ++ [x].
+Proof.
+  intros Hlen.
+  rewrite (take_S_r _ _ x); last by apply list_lookup_insert.
+  rewrite take_insert; [done | lia].
+Qed.
+
 (* Definition and lemmas about [extend]. *)
 Definition extend {X : Type} (n : nat) (l : list X) :=
   match last l with

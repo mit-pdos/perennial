@@ -6,12 +6,6 @@ From Perennial.program_proof.mvcc Require Import
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-(* TODO: Move this to mvcc_misc *)
-Lemma take_S_insert {A : Type} (l : list A) (i : nat) (x : A) :
-  (i < length l)%nat ->
-  take (S i) (<[i := x]> l) = take i l ++ [x].
-Admitted.
-
 (*********************************************************************)
 (* func (wrbuf *WrBuf) OpenTuples(tid uint64, idx *index.Index) bool *)
 (*********************************************************************)
