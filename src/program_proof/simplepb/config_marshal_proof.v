@@ -1,6 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export config.
 From Perennial.program_proof Require Import marshal_stateless_proof.
+From coqutil.Datatypes Require Import List.
 
 Module Config.
 Section Config.
@@ -127,6 +128,44 @@ Proof.
   done.
 Qed.
 
+Lemma list_copy_one_more_element {A} (l:list A) i e d:
+  l !! i = Some e →
+  <[i := e]> (take i l ++ replicate (length (l) - i) d)
+    =
+  (take (i + 1) l) ++ replicate (length (l) - i - 1) d.
+Proof.
+  intros Hlookup.
+  apply list_eq.
+  intros j.
+  destruct (decide (j = i)) as [Heq|Hneq].
+  {
+    rewrite Heq.
+    rewrite list_lookup_insert; last first.
+    {
+      rewrite app_length.
+      rewrite replicate_length.
+      apply lookup_lt_Some in Hlookup.
+      rewrite take_length_le.
+      { lia. }
+      lia.
+    }
+    {
+      rewrite lookup_app_l; last first.
+      { rewrite app_length. simpl.
+        unfold chan.
+        word. }
+      rewrite lookup_app_r; last first.
+      {
+        rewrite Hreplicas_len.
+        word.
+      }
+      replace (int.nat i - length replicas_done)%nat with (0%nat) by word.
+      rewrite list_lookup_singleton.
+      done.
+    }
+  }
+Qed.
+
 Lemma wp_Decode enc enc_sl (conf:C) :
   {{{
         ⌜has_encoding enc conf⌝ ∗
@@ -159,13 +198,169 @@ Proof.
   iIntros (conf_sl) "Hconf_sl".
   wp_pures.
 
+  iDestruct (is_slice_small_sz with "Henc_sl") as %Henc_sz.
+  (* prove that conf's length is below U64_MAX *)
+  assert (int.nat (length conf) = length conf) as Hlen_no_overflow.
+  {
+    assert (length (concat (u64_le <$> conf)) ≥ length conf).
+    {
+      rewrite (length_concat_same_length 8).
+      {
+        rewrite fmap_length.
+        word.
+      }
+      rewrite Forall_fmap.
+      apply Forall_true.
+      intros.
+      done.
+    }
+    word.
+  }
+  rewrite Hlen_no_overflow.
+
+  iDestruct (is_slice_to_small with "Hconf_sl") as "Hconf_sl".
   set (P:=(λ (i:u64),
       ∃ enc_sl,
-      "Henc_sl" ∷ is_slice enc_sl byteT 1 (concat (u64_le <$> (drop (int.nat i) conf))) ∗
-      "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl)
+      "Henc_sl" ∷ is_slice_small enc_sl byteT 1 (concat (u64_le <$> (drop (int.nat i) conf))) ∗
+      "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
+      "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 ((take (int.nat i) conf) ++
+                                                replicate (length conf - int.nat i) (U64 0))
     )%I)
   .
-Admitted.
+  wp_apply (wp_ref_to).
+  { repeat econstructor. }
+  iIntros (i_ptr) "Hi".
+  wp_pures.
+
+  iAssert (∃ (i:u64),
+              "Hi" ∷ i_ptr ↦[uint64T] #i ∗
+              "%Hi_bound" ∷  ⌜int.nat i ≤ length conf⌝ ∗
+              P i)%I with "[Henc Henc_sl Hi Hconf_sl]" as "HP".
+  {
+    iExists _.
+    iFrame.
+    iSplitR; first iPureIntro.
+    { word. }
+    iExists _; iFrame.
+    replace (int.nat 0) with 0%nat by word.
+    rewrite Nat.sub_0_r.
+    iFrame.
+  }
+
+  wp_forBreak_cond.
+  iNamed "HP".
+  iNamed "HP".
+
+  wp_pures.
+  wp_load.
+  iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
+
+  (* Show that int.nat conf_sl.(Slice.sz) == int.nat (length conf) *)
+  rewrite app_length in Hconf_sz.
+  rewrite replicate_length in Hconf_sz.
+  rewrite take_length_le in Hconf_sz; last first.
+  { word. }
+  assert (int.nat conf_sl.(Slice.sz) = length conf) as Hconf_sz_eq.
+  { word. }
+
+  wp_apply (wp_slice_len).
+  wp_pures.
+
+  wp_if_destruct.
+  { (* continue with the loop *)
+    assert (int.nat i < length conf) as Hi_bound_lt.
+    {
+      assert (int.nat i < int.nat conf_sl.(Slice.sz)) as Heqb_nat by word.
+      rewrite Hconf_sz_eq in Heqb_nat.
+      done.
+    }
+
+    wp_pures.
+    wp_load.
+    destruct (drop (int.nat i) conf) as [|] eqn:Hdrop.
+    { (* contradiction with i < length *)
+      exfalso.
+      apply (f_equal length) in Hdrop.
+      simpl in Hdrop.
+      rewrite drop_length in Hdrop.
+      word.
+    }
+    rewrite fmap_cons.
+    rewrite concat_cons.
+    wp_apply (wp_ReadInt with "[$Henc_sl]").
+    iIntros (enc_sl1) "Henc_sl".
+    wp_pures.
+    wp_load.
+    wp_apply (wp_SliceSet with "[$Hconf_sl]").
+    {
+      iPureIntro.
+      apply lookup_lt_is_Some_2.
+      rewrite app_length.
+      rewrite take_length_le; last word.
+      rewrite replicate_length.
+      word.
+    }
+    iIntros "Hconf_sl".
+    wp_pures.
+    wp_store.
+    wp_load.
+    wp_store.
+
+    iLeft.
+    iModIntro.
+    iSplitR; first done.
+    iFrame "∗".
+    iExists _; iFrame "∗".
+    iSplitR.
+    {
+      iPureIntro. word.
+    }
+    unfold P.
+    iExists _; iFrame "∗".
+    replace (int.nat (word.add i 1)) with (int.nat i + 1)%nat by word.
+    iSplitL "Henc_sl".
+    {
+      iApply to_named.
+      iExactEq "Henc_sl".
+      f_equal.
+      rewrite -drop_drop.
+      rewrite Hdrop.
+      simpl.
+      done.
+    }
+    {
+      iApply to_named.
+      iExactEq "Hconf_sl".
+      f_equal.
+      rewrite list_copy_one_more_element.
+      {
+        f_equal.
+        f_equal.
+        word.
+      }
+      Check lookup_drop.
+      replace (int.nat i) with (int.nat i + 0)%nat by word.
+      rewrite -(lookup_drop _ _ 0).
+      rewrite Hdrop.
+      done.
+    }
+  }
+  (* done with loop *)
+
+  iRight.
+  iModIntro.
+  iSplitR; first done.
+  wp_pures.
+  iApply "HΦ".
+
+  replace (length conf - int.nat i)%nat with (0)%nat by word.
+  replace (int.nat i) with (length conf) by word.
+  simpl.
+  rewrite app_nil_r.
+  rewrite firstn_all.
+  iFrame.
+  done.
+Qed.
 
 End Config.
 End Config.

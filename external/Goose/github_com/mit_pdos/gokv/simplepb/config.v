@@ -24,10 +24,14 @@ Definition DecodeConfig: val :=
     "configLen" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     let: "config" := NewSlice uint64T (![uint64T] "configLen") in
-    ForSlice uint64T "i" <> "config"
-      (let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-      SliceSet uint64T "config" "i" "0_ret";;
-      "enc" <-[slice.T byteT] "1_ret");;
+    let: "i" := ref_to uint64T #0 in
+    Skip;;
+    (for: (λ: <>, ![uint64T] "i" < slice.len "config"); (λ: <>, Skip) := λ: <>,
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+      SliceSet uint64T "config" (![uint64T] "i") "0_ret";;
+      "enc" <-[slice.T byteT] "1_ret";;
+      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      Continue);;
     "config".
 
 (* client.go *)
