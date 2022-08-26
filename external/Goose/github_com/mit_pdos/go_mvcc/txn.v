@@ -167,11 +167,12 @@ Definition TxnMgr__gc: val :=
       #()
     else #()).
 
-Definition TxnMgr__StartBackgroundGC: val :=
-  rec: "TxnMgr__StartBackgroundGC" "txnMgr" :=
+Definition TxnMgr__ActivateGC: val :=
+  rec: "TxnMgr__ActivateGC" "txnMgr" :=
     Fork (Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             TxnMgr__gc "txnMgr";;
+            grove_ffi.Sleep (#100 * #1000000);;
             Continue));;
     #().
 
