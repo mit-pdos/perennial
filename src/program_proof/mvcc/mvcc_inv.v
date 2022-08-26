@@ -469,8 +469,8 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   (* FIXME *)
   iIntros "%Hl Hfrag Hfa".
   iNamed "Hfa".
-  iDestruct (fa_tids_lookup with "Hfrag HfaAuth") as "%Helem".
-  iMod (fa_tids_delete with "Hfrag HfaAuth") as "HfaAuth".
+  iDestruct (fa_tids_lookup with "HfaAuth Hfrag") as "%Helem".
+  iMod (fa_tids_delete with "HfaAuth Hfrag") as "HfaAuth".
   iModIntro.
   iFrame.
   iPureIntro.
@@ -544,8 +544,8 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   (* FIXME *)
   iIntros "%Hl %HND Hfrag Hcmt".
   iNamed "Hcmt".
-  iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
-  iMod (cmt_tmods_delete with "Hfrag HcmtAuth") as "HcmtAuth".
+  iDestruct (cmt_tmods_lookup with "HcmtAuth Hfrag") as "%Helem".
+  iMod (cmt_tmods_delete with "HcmtAuth Hfrag") as "HcmtAuth".
   iModIntro.
   iFrame.
   iPureIntro.

@@ -36,7 +36,10 @@ Proof.
   iIntros (sites) "HsitesL".
   wp_storeField.
 
-  iMod mvcc_ghost_init as (γ) "(Hvchains & Hvchains' & HactiveAuths & HactiveAuths' & HminAuths & HminAuths')".
+  iMod mvcc_ghost_alloc as (γ) "H".
+  iDestruct "H" as "(Hphys & Hphys' & Hlogi & Hts & H)".
+  iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & H)".
+  iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths & HminAuths')".
   (* TODO: allocate inv sst with Hvchains' *)
   iMod (inv_alloc mvccNGC _ (mvcc_inv_gc_def γ) with "[HactiveAuths' HminAuths']") as "#Hinvgc".
   { iNext. unfold mvcc_inv_gc_def.
@@ -112,7 +115,8 @@ Proof.
     iDestruct (big_sepL_cons with "HactiveAuths") as "[HactiveAuth HactiveAuths]".
     iDestruct (big_sepL_cons with "HminAuths") as "[HminAuth HminAuths]".
     iMod (readonly_alloc_1 with "latch") as "#Hlatch".
-    iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with "[$Hfree] [-HsitesS HsitesRP HactiveAuths HminAuths]") as "#Hlock".
+    iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with
+           "[$Hfree] [-HsitesS HsitesRP HactiveAuths HminAuths]") as "#Hlock".
     { iNext.
       unfold own_txnsite.
       iExists (U64 0), (U64 0), (Slice.mk active 0 8), [], ∅.
@@ -163,7 +167,8 @@ Proof.
   }
   iIntros "p".
   wp_pures.
-  iMod (inv_alloc mvccNSST _ (mvcc_inv_sst_def γ p) with "[Hvchains']") as "#Hinv".
+  iMod (inv_alloc mvccNSST _ (mvcc_inv_sst_def γ p) with
+         "[Hts Hm Hphys Hlogi Hcmt Hnca Hfa Hfci Hfcc]") as "#Hinv".
   { (* Prove [mvcc_inv_sst_def]. *)
     admit.
   }
@@ -171,7 +176,7 @@ Proof.
   (***********************************************************)
   (* txnMgr.idx = index.MkIndex()                            *)
   (***********************************************************)
-  wp_apply (wp_MkIndex γ with "Hinvgc Hinv Hvchains").
+  wp_apply (wp_MkIndex γ with "Hinvgc Hinv Hphys'").
   iIntros (idx) "#HidxRP".
   wp_storeField.
 
@@ -190,7 +195,6 @@ Proof.
   replace (int.nat (U64 N_TXN_SITES)) with (length sitesL); last first.
   { unfold N_TXN_SITES in *. word. }
   rewrite firstn_all.
-  (* do 6 iExists _. *)
   (* by iFrame "# %". *)
 Admitted.
 

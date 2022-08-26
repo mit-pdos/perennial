@@ -1,4 +1,5 @@
 From iris.algebra.lib Require Import mono_nat mono_list gmap_view.
+From Perennial.base_logic Require Import ghost_map mono_nat.
 From Perennial.program_proof.mvcc Require Import mvcc_prelude.
 
 (* Tuple-related RAs. *)
@@ -10,9 +11,12 @@ Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
 (* SST-related RAs. (SST = Strictly Serializable Transactions) *)
 (* TODO: See if we can make [tidsR] used by GC also [tsR]. *)
+(*
 Local Definition tsR := gmap_viewR nat (leibnizO unit).
 Local Definition ts_modsR := gmap_viewR (nat * dbmap) (leibnizO unit).
 Local Definition dbmapR := gmap_viewR u64 (leibnizO dbval).
+ *)
+
 
 Lemma sids_all_lookup (sid : u64) :
   int.Z sid < N_TXN_SITES ->
@@ -28,38 +32,38 @@ Qed.
 (* Global ghost states. *)
 Class mvcc_ghostG Σ :=
   {
-    (* tuple *)
+    (* SST *)
     mvcc_ptupleG :> inG Σ key_vchainR;
     mvcc_ltupleG :> inG Σ key_vchainR;
+    mvcc_tsG :> mono_natG Σ;
+    mvcc_abort_tids_ncaG :> ghost_mapG Σ nat unit;
+    mvcc_abort_tids_faG :> ghost_mapG Σ nat unit;
+    mvcc_abort_tids_fciG :> ghost_mapG Σ (nat * dbmap) unit;
+    mvcc_abort_tids_fccG :> ghost_mapG Σ (nat * dbmap) unit;
+    mvcc_commit_tidsG :> ghost_mapG Σ (nat * dbmap) unit;
+    mvcc_dbmapG :> ghost_mapG Σ u64 dbval;
     (* GC *)
     mvcc_sid_tidsG :> inG Σ sid_tidsR;
     mvcc_sid_min_tidG :> inG Σ sid_min_tidR;
-    (* SST *)
-    mvcc_tsG :> inG Σ mono_natR;
-    mvcc_abort_tids_ncaG :> inG Σ tsR;
-    mvcc_abort_tids_faG :> inG Σ tsR;
-    mvcc_abort_tids_fciG :> inG Σ ts_modsR;
-    mvcc_abort_tids_fccG :> inG Σ ts_modsR;
-    mvcc_commit_tidsG :> inG Σ ts_modsR;
-    mvcc_dbmapG :> inG Σ dbmapR;
   }.
 
 Definition mvcc_ghostΣ :=
   #[
      GFunctor key_vchainR;
      GFunctor key_vchainR;
+     mono_natΣ;
+     ghost_mapΣ nat unit;
+     ghost_mapΣ nat unit;
+     ghost_mapΣ (nat * dbmap) unit;
+     ghost_mapΣ (nat * dbmap) unit;
+     ghost_mapΣ (nat * dbmap) unit;
+     ghost_mapΣ u64 dbval;
      GFunctor sid_tidsR;
-     GFunctor sid_min_tidR;
-     GFunctor mono_natR;
-     GFunctor tsR;
-     GFunctor tsR;
-     GFunctor ts_modsR;
-     GFunctor ts_modsR;
-     GFunctor ts_modsR;
-     GFunctor dbmapR
+     GFunctor sid_min_tidR
    ].
 
-Global Instance subG_mvcc_ghostG {Σ} :
+#[global]
+Instance subG_mvcc_ghostG {Σ} :
   subG mvcc_ghostΣ Σ → mvcc_ghostG Σ.
 Proof. solve_inG. Qed.
 
@@ -67,29 +71,30 @@ Record mvcc_names :=
   {
     mvcc_ptuple : gname;
     mvcc_ltuple : gname;
-    mvcc_sid_tids : gname;
-    mvcc_sid_min_tid : gname;
     mvcc_ts : gname;
     mvcc_abort_tids_nca : gname;
     mvcc_abort_tids_fa : gname;
     mvcc_abort_tmods_fci : gname;
     mvcc_abort_tmods_fcc : gname;
     mvcc_cmt_tmods : gname;
-    mvcc_dbmap : gname
+    mvcc_dbmap : gname;
+    mvcc_sid_tids : gname;
+    mvcc_sid_min_tid : gname
   }.
 
 (* Per-txn ghost state. *)
 Class mvcc_txn_ghostG Σ :=
   {
-    mvcc_txnmapG :> inG Σ dbmapR;
+    mvcc_txnmapG :> ghost_mapG Σ u64 dbval;
   }.
 
 Definition mvcc_txn_ghostΣ :=
   #[
-     GFunctor dbmapR
+     ghost_mapΣ u64 dbval
    ].
 
-Global Instance subG_mvcc_txn_ghostG {Σ} :
+#[global]
+Instance subG_mvcc_txn_ghostG {Σ} :
   subG mvcc_txn_ghostΣ Σ → mvcc_txn_ghostG Σ.
 Proof. solve_inG. Qed.
 
@@ -143,56 +148,56 @@ Definition min_tid_lb γ tidN : iProp Σ :=
 
 (* Definitions about SST-related resources. *)
 Definition ts_auth γ (ts : nat) : iProp Σ :=
-  own γ.(mvcc_ts) (●MN ts).
+  mono_nat_auth_own γ.(mvcc_ts) 1 ts.
 
 Definition ts_lb γ (ts : nat) : iProp Σ :=
-  own γ.(mvcc_ts) (◯MN ts).
+  mono_nat_lb_own γ.(mvcc_ts) ts.
 
 Definition nca_tids_auth γ (tids : gset nat) : iProp Σ :=
-  own γ.(mvcc_abort_tids_nca) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tids)).
+  ghost_map_auth γ.(mvcc_abort_tids_nca) 1 (gset_to_gmap tt tids).
 
 Definition nca_tids_frag γ (tid : nat) : iProp Σ :=
-  own γ.(mvcc_abort_tids_nca) (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt).
+  ghost_map_elem γ.(mvcc_abort_tids_nca) tid (DfracOwn 1) tt.
 
 Definition fa_tids_auth γ (tids : gset nat) : iProp Σ :=
-  own γ.(mvcc_abort_tids_fa) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tids)).
+  ghost_map_auth γ.(mvcc_abort_tids_fa) 1 (gset_to_gmap tt tids).
 
 Definition fa_tids_frag γ (tid : nat) : iProp Σ :=
-  own γ.(mvcc_abort_tids_fa) (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt).
+  ghost_map_elem γ.(mvcc_abort_tids_fa) tid (DfracOwn 1) tt.
 
 Definition fci_tmods_auth γ tmods : iProp Σ :=
-  own γ.(mvcc_abort_tmods_fci) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
+  ghost_map_auth γ.(mvcc_abort_tmods_fci) 1 (gset_to_gmap tt tmods).
 
 Definition fci_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
-  own γ.(mvcc_abort_tmods_fci) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
+  ghost_map_elem γ.(mvcc_abort_tmods_fci) tmod (DfracOwn 1) tt.
 
 Definition fcc_tmods_auth γ tmods : iProp Σ :=
-  own γ.(mvcc_abort_tmods_fcc) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
+  ghost_map_auth γ.(mvcc_abort_tmods_fcc) 1 (gset_to_gmap tt tmods).
 
 Definition fcc_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
-  own γ.(mvcc_abort_tmods_fcc) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
+  ghost_map_elem γ.(mvcc_abort_tmods_fcc) tmod (DfracOwn 1) tt.
 
 Definition cmt_tmods_auth γ tmods : iProp Σ :=
-  own γ.(mvcc_cmt_tmods) (gmap_view_auth (V:=leibnizO unit) (DfracOwn 1) (gset_to_gmap tt tmods)).
+  ghost_map_auth γ.(mvcc_cmt_tmods) 1 (gset_to_gmap tt tmods).
 
 Definition cmt_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
-  own γ.(mvcc_cmt_tmods) (gmap_view_frag (V:=leibnizO unit) tmod (DfracOwn 1) tt).
+  ghost_map_elem γ.(mvcc_cmt_tmods) tmod (DfracOwn 1) tt.
 
 Definition dbmap_auth γ m : iProp Σ :=
-  own γ.(mvcc_dbmap) (gmap_view_auth (DfracOwn 1) m).
+  ghost_map_auth γ.(mvcc_dbmap) 1 m.
 
 Definition dbmap_ptsto γ k q v : iProp Σ :=
-  own γ.(mvcc_dbmap) (gmap_view_frag k (DfracOwn q) v).
+  ghost_map_elem γ.(mvcc_dbmap) k (DfracOwn q) v.
 
 Definition dbmap_ptstos γ q (m : dbmap) : iProp Σ :=
   [∗ map] k ↦ v ∈ m, dbmap_ptsto γ k q v.
 
 (* Definitions about per-txn resources. *)
 Definition txnmap_auth τ m : iProp Σ :=
-  own τ (gmap_view_auth (DfracOwn 1) m).
+  ghost_map_auth τ 1 m.
 
 Definition txnmap_ptsto τ k v : iProp Σ :=
-  own τ (gmap_view_frag k (DfracOwn 1) v).
+  ghost_map_elem τ k (DfracOwn 1) v.
 
 Definition txnmap_ptstos τ (m : dbmap) : iProp Σ :=
   [∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v.
@@ -361,172 +366,294 @@ Admitted.
 Lemma ts_witness {γ ts} :
   ts_auth γ ts -∗
   ts_lb γ ts.
-Admitted.
+Proof. iApply mono_nat_lb_own_get. Qed.
 
 Lemma ts_lb_weaken {γ ts} ts' :
   (ts' ≤ ts)%nat ->
   ts_lb γ ts -∗
   ts_lb γ ts'.
-Admitted.
+Proof. iIntros "%Hle Hlb". iApply mono_nat_lb_own_le; done. Qed.
 
 Lemma ts_auth_lb_le {γ ts ts'} :
   ts_auth γ ts -∗
   ts_lb γ ts' -∗
   ⌜(ts' ≤ ts)%nat⌝.
+Proof.
+  iIntros "Hauth Hlb".
+  iDestruct (mono_nat_lb_own_valid with "Hauth Hlb") as %[_ Hle].
+  done.
+Qed.
+
+Lemma mvcc_ghost_alloc :
+  ⊢ |==> ∃ γ,
+    (* SST-related. *)
+    ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
+    ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
+    ([∗ set] key ∈ keys_all, ltuple_auth γ key [Nil; Nil]) ∗
+    ts_auth γ 0%nat ∗
+    nca_tids_auth γ ∅ ∗
+    fa_tids_auth γ ∅ ∗
+    fci_tmods_auth γ ∅ ∗
+    fcc_tmods_auth γ ∅ ∗
+    cmt_tmods_auth γ ∅ ∗
+    dbmap_auth γ ∅ ∗
+    (* GC-related. *)
+    ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
+    ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
+    ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0) ∗
+    ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
 Admitted.
 
-Lemma ts_lb_zero γ :
-  ⊢ |==> ts_lb γ 0%nat.
-Admitted.
-
-Lemma mvcc_ghost_init :
-  ⊢ |==> ∃ γ, ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
-              ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
-              ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
-              ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
-              ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0) ∗
-              ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
-Admitted.
-
+(**
+ * Lemma [ghost_map_lookup_big] is not helpful here since we want to
+ * specify the fraction of fragmentary elements.
+ *)
 Lemma dbmap_lookup_big {γ q m} m' :
   dbmap_auth γ m -∗
   dbmap_ptstos γ q m' -∗
   ⌜m' ⊆ m⌝.
-Admitted.
+Proof.
+  iIntros "Hauth Hpts". rewrite map_subseteq_spec. iIntros (k v Hm0).
+  iDestruct (ghost_map_lookup with "Hauth [Hpts]") as %->.
+  { rewrite /dbmap_ptstos big_sepM_lookup; done. }
+  done.
+Qed.
 
-Lemma dbmap_update_big {γ q m} m0 m1 :
+Lemma dbmap_update_big {γ m} m0 m1 :
   dom m0 = dom m1 →
   dbmap_auth γ m -∗
-  dbmap_ptstos γ q m0 ==∗
+  dbmap_ptstos γ 1 m0 ==∗
   dbmap_auth γ (m1 ∪ m) ∗
-  dbmap_ptstos γ q m1.
-Admitted.
+  dbmap_ptstos γ 1 m1.
+Proof.
+  iIntros "%Hdom Hauth Hpts".
+  iApply (ghost_map_update_big with "Hauth Hpts").
+  done.
+Qed.
 
 Lemma dbmap_elem_split {γ k q} q1 q2 v :
   (q1 + q2 = q)%Qp ->
   dbmap_ptsto γ k q v -∗
   dbmap_ptsto γ k q1 v ∗
   dbmap_ptsto γ k q2 v.
-Admitted.
+Proof.
+  iIntros "%Hq Hpt". subst q.
+  iDestruct "Hpt" as "[Hpt1 Hpt2]".
+  iFrame.
+Qed.
 
 Lemma dbmap_elem_combine {γ k} q1 q2 v1 v2 :
   dbmap_ptsto γ k q1 v1 -∗
   dbmap_ptsto γ k q2 v2 -∗
-  dbmap_ptsto γ k (q2 + q2) v1 ∗
+  dbmap_ptsto γ k (q1 + q2) v1 ∗
   ⌜v1 = v2⌝.
-Admitted.
+Proof.
+  iIntros "Hpt1 Hpt2".
+  iDestruct (ghost_map_elem_combine with "Hpt1 Hpt2") as "[Hpt %Eqv]".
+  rewrite dfrac_op_own.
+  by iFrame.
+Qed.
 
 Lemma txnmap_lookup τ m k v :
   txnmap_auth τ m -∗
   txnmap_ptsto τ k v -∗
   ⌜m !! k = Some v⌝.
-Admitted.
+Proof. iApply ghost_map_lookup. Qed.
 
 Lemma txnmap_lookup_big τ m m' :
   txnmap_auth τ m -∗
   txnmap_ptstos τ m' -∗
   ⌜m' ⊆ m⌝.
-Admitted.
+Proof. iApply ghost_map_lookup_big. Qed.
 
 Lemma txnmap_update {τ m k v} w :
   txnmap_auth τ m -∗
   txnmap_ptsto τ k v ==∗
   txnmap_auth τ (<[ k := w ]> m) ∗
   txnmap_ptsto τ k w.
-Admitted.
+Proof. iApply ghost_map_update. Qed.
 
 Lemma txnmap_alloc m :
   ⊢ |==> ∃ τ, txnmap_auth τ m ∗ ([∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v).
-Admitted.
+Proof. iApply ghost_map_alloc. Qed.
 
 Lemma nca_tids_insert {γ tids} tid :
   tid ∉ tids ->
   nca_tids_auth γ tids ==∗
   nca_tids_auth γ ({[ tid ]} ∪ tids) ∗ nca_tids_frag γ tid.
-Admitted.
+Proof.
+  iIntros "%Hnotin Hauth".
+  unfold nca_tids_auth.
+  rewrite gset_to_gmap_union_singleton.
+  iApply (ghost_map_insert with "Hauth").
+  rewrite lookup_gset_to_gmap_None.
+  done.
+Qed.
 
 Lemma nca_tids_delete {γ tids} tid :
-  nca_tids_frag γ tid -∗
-  nca_tids_auth γ tids ==∗
+  nca_tids_auth γ tids -∗
+  nca_tids_frag γ tid ==∗
   nca_tids_auth γ (tids ∖ {[ tid ]}).
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  unfold nca_tids_auth.
+  rewrite gset_to_gmap_difference_singleton.
+  iApply (ghost_map_delete with "Hauth Helem").
+Qed.
 
 Lemma nca_tids_lookup {γ tids} tid :
-  nca_tids_frag γ tid -∗
   nca_tids_auth γ tids -∗
+  nca_tids_frag γ tid -∗
   ⌜tid ∈ tids⌝.
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  iDestruct (ghost_map_lookup with "Hauth Helem") as "%Hlookup".
+  apply lookup_gset_to_gmap_Some in Hlookup as [Helem _].
+  done.
+Qed.
 
 Lemma fa_tids_insert {γ tids} tid :
   tid ∉ tids ->
   fa_tids_auth γ tids ==∗
   fa_tids_auth γ ({[ tid ]} ∪ tids) ∗ fa_tids_frag γ tid.
-Admitted.
+Proof.
+  iIntros "%Hnotin Hauth".
+  unfold fa_tids_auth.
+  rewrite gset_to_gmap_union_singleton.
+  iApply (ghost_map_insert with "Hauth").
+  rewrite lookup_gset_to_gmap_None.
+  done.
+Qed.
 
 Lemma fa_tids_delete {γ tids} tid :
-  fa_tids_frag γ tid -∗
-  fa_tids_auth γ tids ==∗
+  fa_tids_auth γ tids -∗
+  fa_tids_frag γ tid ==∗
   fa_tids_auth γ (tids ∖ {[ tid ]}).
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  unfold fa_tids_auth.
+  rewrite gset_to_gmap_difference_singleton.
+  iApply (ghost_map_delete with "Hauth Helem").
+Qed.
 
 Lemma fa_tids_lookup {γ tids} tid :
-  fa_tids_frag γ tid -∗
   fa_tids_auth γ tids -∗
+  fa_tids_frag γ tid -∗
   ⌜tid ∈ tids⌝.
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  iDestruct (ghost_map_lookup with "Hauth Helem") as "%Hlookup".
+  apply lookup_gset_to_gmap_Some in Hlookup as [Helem _].
+  done.
+Qed.
 
 Lemma fci_tmods_insert {γ tmods} tmod :
   tmod ∉ tmods ->
   fci_tmods_auth γ tmods ==∗
   fci_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fci_tmods_frag γ tmod.
-Admitted.
+Proof.
+  iIntros "%Hnotin Hauth".
+  unfold fci_tmods_auth.
+  rewrite gset_to_gmap_union_singleton.
+  iApply (ghost_map_insert with "Hauth").
+  rewrite lookup_gset_to_gmap_None.
+  done.
+Qed.
 
 Lemma fci_tmods_delete {γ tmods} tmod :
-  fci_tmods_frag γ tmod -∗
-  fci_tmods_auth γ tmods ==∗
+  fci_tmods_auth γ tmods -∗
+  fci_tmods_frag γ tmod ==∗
   fci_tmods_auth γ (tmods ∖ {[ tmod ]}).
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  unfold fci_tmods_auth.
+  rewrite gset_to_gmap_difference_singleton.
+  iApply (ghost_map_delete with "Hauth Helem").
+Qed.
 
 Lemma fci_tmods_lookup {γ tmods} tmod :
-  fci_tmods_frag γ tmod -∗
   fci_tmods_auth γ tmods -∗
+  fci_tmods_frag γ tmod -∗
   ⌜tmod ∈ tmods⌝.
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  iDestruct (ghost_map_lookup with "Hauth Helem") as "%Hlookup".
+  apply lookup_gset_to_gmap_Some in Hlookup as [Helem _].
+  done.
+Qed.
 
 Lemma fcc_tmods_insert {γ tmods} tmod :
   tmod ∉ tmods ->
   fcc_tmods_auth γ tmods ==∗
   fcc_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fcc_tmods_frag γ tmod.
-Admitted.
+Proof.
+  iIntros "%Hnotin Hauth".
+  unfold fcc_tmods_auth.
+  rewrite gset_to_gmap_union_singleton.
+  iApply (ghost_map_insert with "Hauth").
+  rewrite lookup_gset_to_gmap_None.
+  done.
+Qed.
 
 Lemma fcc_tmods_delete {γ tmods} tmod :
-  fcc_tmods_frag γ tmod -∗
-  fcc_tmods_auth γ tmods ==∗
+  fcc_tmods_auth γ tmods -∗
+  fcc_tmods_frag γ tmod ==∗
   fcc_tmods_auth γ (tmods ∖ {[ tmod ]}).
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  unfold fcc_tmods_auth.
+  rewrite gset_to_gmap_difference_singleton.
+  iApply (ghost_map_delete with "Hauth Helem").
+Qed.
 
 Lemma fcc_tmods_lookup {γ tmods} tmod :
-  fcc_tmods_frag γ tmod -∗
   fcc_tmods_auth γ tmods -∗
+  fcc_tmods_frag γ tmod -∗
   ⌜tmod ∈ tmods⌝.
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  iDestruct (ghost_map_lookup with "Hauth Helem") as "%Hlookup".
+  apply lookup_gset_to_gmap_Some in Hlookup as [Helem _].
+  done.
+Qed.
 
 Lemma cmt_tmods_insert {γ tmods} tmod :
   tmod ∉ tmods ->
   cmt_tmods_auth γ tmods ==∗
   cmt_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ cmt_tmods_frag γ tmod.
-Admitted.
+Proof.
+  iIntros "%Hnotin Hauth".
+  unfold cmt_tmods_auth.
+  rewrite gset_to_gmap_union_singleton.
+  iApply (ghost_map_insert with "Hauth").
+  rewrite lookup_gset_to_gmap_None.
+  done.
+Qed.
 
 Lemma cmt_tmods_delete {γ tmods} tmod :
-  cmt_tmods_frag γ tmod -∗
-  cmt_tmods_auth γ tmods ==∗
+  cmt_tmods_auth γ tmods -∗
+  cmt_tmods_frag γ tmod ==∗
   cmt_tmods_auth γ (tmods ∖ {[ tmod ]}).
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  unfold cmt_tmods_auth.
+  rewrite gset_to_gmap_difference_singleton.
+  iApply (ghost_map_delete with "Hauth Helem").
+Qed.
 
 Lemma cmt_tmods_lookup {γ tmods} tmod :
-  cmt_tmods_frag γ tmod -∗
   cmt_tmods_auth γ tmods -∗
+  cmt_tmods_frag γ tmod -∗
   ⌜tmod ∈ tmods⌝.
-Admitted.
+Proof.
+  iIntros "Hauth Helem".
+  iDestruct (ghost_map_lookup with "Hauth Helem") as "%Hlookup".
+  apply lookup_gset_to_gmap_Some in Hlookup as [Helem _].
+  done.
+Qed.
 
 End lemmas.
+
+(**
+ * Consider using Typeclass Opaque to improve performance.
+ *)

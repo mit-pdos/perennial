@@ -52,7 +52,7 @@ Proof.
   iDestruct "Hfrag" as "[HncaFrag | Hfrag]".
   { (* Case NCA. *)
     iNamed "Hnca".
-    iDestruct (nca_tids_lookup with "HncaFrag HncaAuth") as "%Helem".
+    iDestruct (nca_tids_lookup with "HncaAuth HncaFrag") as "%Helem".
     apply Hnca in Helem.
     destruct (no_commit_abort_false Helem).
     left.
@@ -61,7 +61,7 @@ Proof.
   iDestruct "Hfrag" as "[HfaFrag | Hfrag]".
   { (* Case FA. *)
     iNamed "Hfa".
-    iDestruct (fa_tids_lookup with "HfaFrag HfaAuth") as "%Helem".
+    iDestruct (fa_tids_lookup with "HfaAuth HfaFrag") as "%Helem".
     apply Hfa in Helem.
     destruct (first_abort_false mods Helem).
     set_solver.
@@ -70,7 +70,7 @@ Proof.
   { (* Case FCI. *)
     iNamed "Hfci".
     iDestruct "HfciFrag" as (mods') "HfciFrag".
-    iDestruct (fci_tmods_lookup with "HfciFrag HfciAuth") as "%Helem".
+    iDestruct (fci_tmods_lookup with "HfciAuth HfciFrag") as "%Helem".
     apply Hfci in Helem. simpl in Helem.
     (* Obtain contradiction by length of physical tuple. *)
     pose proof Helem as Hfci'.
@@ -111,7 +111,7 @@ Proof.
   { (* Case FCC. *)
     iNamed "Hfcc".
     iDestruct "HfccFrag" as (mods' w Q) "(HfccFrag & Htxnps & %HQ & %contra & %Hdom)".
-    iDestruct (fcc_tmods_lookup with "HfccFrag HfccAuth") as "%Helem".
+    iDestruct (fcc_tmods_lookup with "HfccAuth HfccFrag") as "%Helem".
     apply Hfcc in Helem. simpl in Helem.
     (* Obtain equality between [mods] (in proph) and [mods'] (in evidence). *)
     destruct Helem as (lp & ls & Hfc & Hcomp).
@@ -258,7 +258,7 @@ Proof.
   iIntros "(%future' & %Hfuture & Hproph)".
 
   iNamed "Hcmt".
-  iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
+  iDestruct (cmt_tmods_lookup with "HcmtAuth Hfrag") as "%Helem".
   (* Obtain equality between [mods] and [mods0] using [Helem] and [Hhead]. *)
   apply Hcmt in Helem. simpl in Helem.
   destruct Helem as (lp & ls & Hfc & Hcomp).
@@ -275,7 +275,7 @@ Proof.
   (* Combine [Htuples] (the tuple physical + logical state), and [Hkeys] (per-key inv). *)
   iDestruct (big_sepM_sep_2 with "Hkeys Htuples") as "H".
   (* Extend physical tuples. *)
-  iDestruct (cmt_tmods_lookup with "Hfrag HcmtAuth") as "%Helem".
+  iDestruct (cmt_tmods_lookup with "HcmtAuth Hfrag") as "%Helem".
   pose proof (fcc_head_commit_le_all _ _ _ _ Hcmt Hhead) as Hdomle.
   iMod (ptuples_extend_wr with "H") as "H"; [done | | done | done |].
   { by eapply fc_tids_unique_cmt. }

@@ -39,7 +39,7 @@ Proof.
   iDestruct "Hfrag" as "[HncaFrag | Hfrag]".
   { (* Case NCA. *)
     iNamed "Hnca".
-    iDestruct (nca_tids_lookup with "HncaFrag HncaAuth") as "%Helem".
+    iDestruct (nca_tids_lookup with "HncaAuth HncaFrag") as "%Helem".
     apply Hnca in Helem.
     destruct (no_commit_abort_false Helem).
     right.
@@ -49,7 +49,7 @@ Proof.
   { (* Case FCI. *)
     iNamed "Hfci".
     iDestruct "HfciFrag" as (m') "HfciFrag".
-    iDestruct (fci_tmods_lookup with "HfciFrag HfciAuth") as "%Helem".
+    iDestruct (fci_tmods_lookup with "HfciAuth HfciFrag") as "%Helem".
     apply Hfci in Helem. simpl in Helem.
     destruct Helem as (lp & ls & Hfc & _).
     destruct (first_commit_false Hfc).
@@ -59,7 +59,7 @@ Proof.
   { (* Case FCC. *)
     iNamed "Hfcc".
     iDestruct "HfccFrag" as (m') "HfccFrag".
-    iDestruct (fcc_tmods_lookup with "HfccFrag HfccAuth") as "%Helem".
+    iDestruct (fcc_tmods_lookup with "HfccAuth HfccFrag") as "%Helem".
     apply Hfcc in Helem. simpl in Helem.
     destruct Helem as (lp & ls & Hfc & _).
     destruct (first_commit_false Hfc).
@@ -68,7 +68,7 @@ Proof.
   { (* Case CMT. *)
     iNamed "Hcmt".
     iDestruct "HcmtFrag" as (m') "HcmtFrag".
-    iDestruct (cmt_tmods_lookup with "HcmtFrag HcmtAuth") as "%Helem".
+    iDestruct (cmt_tmods_lookup with "HcmtAuth HcmtFrag") as "%Helem".
     apply Hcmt in Helem. simpl in Helem.
     destruct Helem as (lp & ls & Hfc & _).
     destruct (first_commit_false Hfc).
