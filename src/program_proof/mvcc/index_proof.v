@@ -1,5 +1,6 @@
-From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_ghost mvcc_inv mvcc_misc.
-From Perennial.program_proof.mvcc Require Import tuple_repr tuple_mk.
+From Perennial.program_proof.mvcc Require Import
+     mvcc_prelude mvcc_ghost mvcc_inv mvcc_misc
+     tuple_repr tuple_mk tuple_remove_versions.
 From Goose.github_com.mit_pdos.go_mvcc Require Import index.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
@@ -161,7 +162,166 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Local Lemma filter_subseteq_union_S (s : gset u64) (f : u64 -> nat) (n : nat) :
+(*****************************************************************)
+(* func (idx *Index) getKeys() []uint64                          *)
+(*                                                               *)
+(* Notes:                                                        *)
+(* This function is only used by GC, which is a no-op, so we're  *)
+(* simply proving trivial spec for safety here.                  *)
+(*****************************************************************)
+#[local]
+Theorem wp_index__getKeys idx γ :
+  is_index idx γ -∗
+  {{{ True }}}
+    Index__getKeys #idx
+  {{{ (keysS : Slice.t) (keys : list u64), RET (to_val keysS);
+      is_slice keysS uint64T 1 (to_val <$> keys)
+  }}}.
+Proof.
+  iIntros "#Hidx" (Φ) "!> _ HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* var keys []uint64                                       *)
+  (* keys = make([]uint64, 0, 2000)                          *)
+  (***********************************************************)
+  wp_apply wp_ref_of_zero; first done.
+  iIntros (keysR) "HkeysR".
+  wp_pures.
+  wp_apply wp_new_slice_cap; [done | word |].
+  iIntros (ptr) "HkeysS".
+  wp_store.
+
+  (***********************************************************)
+  (* for _, bkt := range idx.buckets {                       *)
+  (*     bkt.latch.Lock()                                    *)
+  (*     for k := range bkt.m {                              *)
+  (*         keys = append(keys, k)                          *)
+  (*     }                                                   *)
+  (*     bkt.latch.Unlock()                                  *)
+  (* }                                                       *)
+  (***********************************************************)
+  iNamed "Hidx".
+  wp_loadField.
+  iMod (readonly_load with "HbktsL") as (q) "HbktsS".
+  iDestruct (is_slice_small_sz with "HbktsS") as "%HbktsSz".
+  rewrite fmap_length in HbktsSz.
+  set P := (λ (_ : u64), ∃ keysS (keys : list u64),
+               "HkeysR" ∷ keysR ↦[slice.T uint64T] (to_val keysS) ∗
+               "HkeysS" ∷ is_slice keysS uint64T 1 (to_val <$> keys))%I.
+  wp_apply (wp_forSlice P _ _ _ _ _ (to_val <$> bktsL) with "[] [HkeysR HkeysS $HbktsS]").
+  { (* Outer loop body. *)
+    clear Φ.
+    iIntros (i x Φ) "!> (HP & %Hbound & %Hlookup) HΦ".
+    subst P. simpl.
+    iNamed "HP".
+    wp_pures.
+    list_elem bktsL (int.nat i) as bkt.
+    iDestruct (big_sepL_lookup with "HbktsRP") as "HbktRP"; first apply Hbkt_lookup.
+    iNamed "HbktRP".
+    rewrite list_lookup_fmap Hbkt_lookup in Hlookup.
+    inversion Hlookup.
+    wp_loadField.
+    wp_apply (acquire_spec with "HlatchRP").
+    iIntros "[Hlocked Hbkt]".
+    wp_pures.
+    iNamed "Hbkt".
+    wp_loadField.
+    set P := (∃ keysS (keys : list u64),
+                 "HkeysR" ∷ keysR ↦[slice.T uint64T] (to_val keysS) ∗
+                 "HkeysS" ∷ is_slice keysS uint64T 1 (to_val <$> keys))%I.
+    wp_apply (wp_MapIter _ _ _ _ _ P (λ _ _, True)%I (λ _ _, True)%I
+               with "HlockmOwn [HkeysR HkeysS]"); [ | done | |].
+    { (* Inner loop entry. *) subst P. eauto with iFrame. }
+    { (* Inner loop body. *)
+      clear Φ.
+      iIntros (k tpl Φ) "!> [HP _] HΦ".
+      clear keysS keys.
+      iNamed "HP".
+      wp_load.
+      wp_apply (wp_SliceAppend with "[$HkeysS]"); [done | by auto |].
+      iIntros (keysS') "HkeysS".
+      wp_store.
+      iApply "HΦ".
+      subst P. simpl.
+      rewrite -fmap_snoc.
+      eauto with iFrame.
+    }
+    iIntros "[HlockmOwn [HP _]]".
+    subst P. simpl.
+    iNamed "HP".
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[- HΦ HkeysR HkeysS]").
+    { (* Re-establish bucket lock invariant. *) eauto 10 with iFrame. }
+    iApply "HΦ".
+    eauto with iFrame.
+  }
+  { (* Outer loop entry. *)
+    subst P. simpl.
+    iExists _, [].
+    iFrame.
+  }
+  iIntros "[HP _]".
+  subst P. simpl. iNamed "HP".
+  wp_pures.
+
+  (***********************************************************)
+  (* return keys                                             *)
+  (***********************************************************)
+  wp_load.
+  by iApply "HΦ".
+Qed.
+
+(*****************************************************************)
+(* func (idx *Index) DoGC(tidMin uint64)                         *)
+(*****************************************************************)
+Theorem wp_index__DoGC idx (tidmin : u64) γ :
+  is_index idx γ -∗
+  min_tid_lb γ (int.nat tidmin) -∗
+  {{{ True }}}
+    Index__DoGC #idx #tidmin
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros "#Hidx #Hminlb" (Φ) "!> _ HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* keys := idx.getKeys()                                   *)
+  (***********************************************************)
+  wp_apply (wp_index__getKeys with "Hidx").
+  iIntros (keysS keys) "HkeysS".
+  wp_pures.
+
+  (***********************************************************)
+  (* for _, k := range keys {                                *)
+  (*     tuple := idx.GetTuple(k)                            *)
+  (*     tuple.RemoveVersions(tidMin)                        *)
+  (* }                                                       *)
+  (***********************************************************)
+  iDestruct (is_slice_to_small with "HkeysS") as "HkeysS".
+  wp_apply (wp_forSlice (λ _, True)%I _ _ _ _ _ (to_val <$> keys) with "[] [HkeysS]").
+  { (* Loop body. *)
+    clear Φ.
+    iIntros (i x Φ) "!> (_ & %Hbound & %Hlookup) HΦ".
+    apply list_lookup_fmap_inv in Hlookup.
+    destruct Hlookup as (k & Hval & Hlookup).
+    subst x.
+    wp_pures.
+    wp_apply (wp_index__GetTuple with "Hidx").
+    iIntros (tpl) "#Htpl".
+    wp_pures.
+    wp_apply (wp_tuple__RemoveVersions with "Htpl Hminlb").
+    by iApply "HΦ".
+  }
+  { (* Loop entry. *) iSplit; done. }
+  iIntros "_".
+  wp_pures.
+  by iApply "HΦ".
+Qed.
+
+#[local]
+Lemma filter_subseteq_union_S (s : gset u64) (f : u64 -> nat) (n : nat) :
   (filter (λ x, S n ≤ f x)%nat s) ∪ (filter (λ x, f x = n)%nat s) ⊆ filter (λ x, n ≤ f x)%nat s.
 Proof.
   apply elem_of_subseteq.
@@ -171,7 +331,8 @@ Proof.
   intros [[Hle Hin] | [Heq Hin]]; auto with lia.
 Qed.
 
-Local Lemma filter_all (P : u64 -> Prop) {H : ∀ x, Decision (P x)} (s : gset u64) :
+#[local]
+Lemma filter_all (P : u64 -> Prop) {H : ∀ x, Decision (P x)} (s : gset u64) :
   (∀ x, P x) ->
   s = filter P s.
 Proof. set_solver. Qed.

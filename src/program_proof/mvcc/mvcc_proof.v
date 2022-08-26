@@ -2,7 +2,6 @@ From Perennial.program_proof.mvcc Require Export
      mvcc_ghost
      proph_proof
      index_proof
-     gc_proof
      tid_proof
      (* txnmgr *)
      txnmgr_mk txnmgr_new txnmgr_get_min_active_tid

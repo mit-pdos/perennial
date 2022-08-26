@@ -56,18 +56,23 @@ Definition Index__GetTuple: val :=
       lock.release (struct.loadF IndexBucket "latch" "bucket");;
       "tupleNew").
 
-Definition Index__GetKeys: val :=
-  rec: "Index__GetKeys" "idx" :=
+Definition Index__getKeys: val :=
+  rec: "Index__getKeys" "idx" :=
     let: "keys" := ref (zero_val (slice.T uint64T)) in
     "keys" <-[slice.T uint64T] NewSliceWithCap uint64T #0 #2000;;
-    let: "b" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "b" < config.N_IDX_BUCKET); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
-      let: "bucket" := SliceGet ptrT (struct.loadF Index "buckets" "idx") (![uint64T] "b") in
-      lock.acquire (struct.loadF IndexBucket "latch" "bucket");;
-      MapIter (struct.loadF IndexBucket "m" "bucket") (λ: "k" <>,
+    ForSlice ptrT <> "bkt" (struct.loadF Index "buckets" "idx")
+      (lock.acquire (struct.loadF IndexBucket "latch" "bkt");;
+      MapIter (struct.loadF IndexBucket "m" "bkt") (λ: "k" <>,
         "keys" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "keys") "k");;
-      lock.release (struct.loadF IndexBucket "latch" "bucket");;
-      Continue);;
+      lock.release (struct.loadF IndexBucket "latch" "bkt"));;
     ![slice.T uint64T] "keys".
+
+Definition Index__DoGC: val :=
+  rec: "Index__DoGC" "idx" "tidMin" :=
+    let: "keys" := Index__getKeys "idx" in
+    ForSlice uint64T <> "k" "keys"
+      (let: "tuple" := Index__GetTuple "idx" "k" in
+      tuple.Tuple__RemoveVersions "tuple" "tidMin");;
+    #().
 
 End code.

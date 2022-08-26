@@ -1,6 +1,6 @@
 From Perennial.program_proof.mvcc Require Import
      txn_prelude txnmgr_repr
-     proph_proof index_proof gc_proof.
+     proph_proof index_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -170,15 +170,9 @@ Proof.
   
   (***********************************************************)
   (* txnMgr.idx = index.MkIndex()                            *)
-  (* txnMgr.gc = gc.MkGC(txnMgr.idx)                         *)
   (***********************************************************)
   wp_apply (wp_MkIndex γ with "Hinvgc Hinv Hvchains").
   iIntros (idx) "#HidxRP".
-  wp_storeField.
-  wp_loadField.
-  wp_apply (wp_MkGC _ γ).
-  (* iIntros (gc) "HgcRP". *)
-  iIntros (gc) "_".
   wp_storeField.
 
   (***********************************************************)
@@ -190,7 +184,6 @@ Proof.
   iMod (alloc_lock mvccN _ latch (own_txnmgr txnmgr) with "[$Hfree] [sidCur]") as "#Hlock".
   { eauto with iFrame. }
   iMod (readonly_alloc_1 with "idx") as "#Hidx".
-  iMod (readonly_alloc_1 with "gc") as "#Hgc".
   iMod (readonly_alloc_1 with "p") as "#Hp".
   iMod (readonly_alloc_1 with "Hsites") as "#Hsites".
   iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".

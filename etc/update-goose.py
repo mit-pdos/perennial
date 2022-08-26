@@ -257,7 +257,6 @@ def main():
             mvcc_dir,
             "./txn",
             "./index",
-            "./gc",
             "./tuple",
             "./wrbuf",
             "./tid",
