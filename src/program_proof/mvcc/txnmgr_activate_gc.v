@@ -27,12 +27,12 @@ Proof.
   iIntros (tid) "#Hminlb".
   wp_pures.
   iNamed "Htxnmgr".
+  (*
+   * The if condition is for performance, not correctness, so it's
+   * completely ignored in the proof.
+   *)
   wp_if_destruct.
   { (* Actually do the GC. *)
-    (*
-     * The loop condition is for performance, not correctness, so it's
-     * ignored in the proof.
-     *)
     wp_loadField.
     wp_apply (wp_index__DoGC with "HidxRI Hminlb").
     wp_pures.
