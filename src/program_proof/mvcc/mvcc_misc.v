@@ -169,6 +169,31 @@ Proof.
   rewrite take_insert; [done | lia].
 Qed.
 
+Lemma big_sepM2_bupd
+      `{BiBUpd PROP} {A B : Type} `{Countable K}
+      (Φ : K → A -> B → PROP) (m1 : gmap K A) (m2 : gmap K B) :
+  ([∗ map] k↦x;y ∈ m1;m2, |==> Φ k x y) -∗ |==> [∗ map] k↦x;y ∈ m1;m2, Φ k x y.
+Proof.
+  (* Q: What does [!] do? *)
+  rewrite !big_sepM2_alt !persistent_and_affinely_sep_l.
+  etrans; [| by apply bupd_frame_l]. apply sep_mono_r. apply big_sepM_bupd.
+Qed.
+
+(* [big_sepM2_dom] is used for something else. *)
+Lemma big_sepM2_dom'
+      `{BiBUpd PROP} {A B : Type} `{Countable K}
+      (Φ : K → PROP) (m1 : gmap K A) (m2 : gmap K B) :
+  ([∗ map] k↦_;_ ∈ m1;m2, Φ k) -∗ ([∗ set] k ∈ dom m1, Φ k).
+Proof.
+  iIntros "Hmap".
+  iDestruct (big_sepM2_dom with "Hmap") as "%Hdom".
+  rewrite big_sepM2_alt big_sepM_dom.
+  iDestruct "Hmap" as "[_ Hmap]".
+  replace (dom (map_zip _ _)) with (dom m1); first done.
+  rewrite dom_map_zip_with_L.
+  set_solver.
+Qed.
+
 (* Definition and lemmas about [extend]. *)
 Definition extend {X : Type} (n : nat) (l : list X) :=
   match last l with

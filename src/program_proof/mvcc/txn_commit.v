@@ -194,19 +194,6 @@ Proof.
   iFrame "∗ %".
 Qed.
 
-Lemma big_sepM2_bupd :
-  ∀ (PROP : bi) (H : BiBUpd PROP) (A B K : Type) (EqDecision0 : EqDecision K) (H0 : Countable K) 
-    (Φ : K → A -> B → PROP) (l1 : gmap K A) (l2 : gmap K B),
-  ([∗ map] k↦x;y ∈ l1;l2, |==> Φ k x y) -∗ |==> [∗ map] k↦x;y ∈ l1;l2, Φ k x y.
-Admitted.
-
-(* [big_sepM2_dom] is used for something else. *)
-Lemma big_sepM2_dom' :
-  ∀ (PROP : bi) (K : Type) (EqDecision0 : EqDecision K) (H : Countable K) (A B : Type)
-    (Φ : K → PROP) (m1 : gmap K A) (m2 : gmap K B),
-  ([∗ map] k↦_;_ ∈ m1;m2, Φ k) ⊣⊢ ([∗ set] k ∈ dom m1, Φ k).
-Admitted.
-
 #[local]
 Lemma ptuples_extend_wr {γ} tmods ts m past tid mods tpls :
   dom mods = dom tpls ->
@@ -280,8 +267,7 @@ Proof.
   iMod (ptuples_extend_wr with "H") as "H"; [done | | done | done |].
   { by eapply fc_tids_unique_cmt. }
   iDestruct (big_sepM2_sep with "H") as "[Hkeys Htuples]".
-  (* Interesting that [big_sepM_dom] and [big_sepM2_dom] are quite different. *)
-  rewrite big_sepM2_dom'.
+  iDestruct (big_sepM2_dom' with "Hkeys") as "Hkeys".
   (* Update [HkeysDisj] w.r.t. [tmods ∖ {[ (tid, mods) ]}] and [past ++ [EvCommit tid mods]]. *)
   iDestruct (per_key_inv_bigS_disj tid mods with "HkeysDisj") as "HkeysDisj"; first set_solver.
   iDestruct (big_sepS_union_2 with "Hkeys HkeysDisj") as "Hkeys".
