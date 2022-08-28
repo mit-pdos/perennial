@@ -36,6 +36,7 @@ Definition MkTxnMgr: val :=
     let: "txnMgr" := struct.alloc TxnMgr (zero_val (struct.t TxnMgr)) in
     struct.storeF TxnMgr "latch" "txnMgr" (lock.new #());;
     struct.storeF TxnMgr "sites" "txnMgr" (NewSlice ptrT config.N_TXN_SITES);;
+    tid.GenTID #0;;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < config.N_TXN_SITES); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       let: "site" := struct.alloc TxnSite (zero_val (struct.t TxnSite)) in

@@ -1,6 +1,6 @@
 From Perennial.program_proof.mvcc Require Import
      txn_prelude txnmgr_repr
-     proph_proof index_proof.
+     proph_proof index_proof tid_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -50,9 +50,23 @@ Proof.
     by iFrame.
   }
 
-  (* FIXME: Call `GenTID` once to get [ts_auth γ 1] and [ts_lb γ 1]. *)
-  iAssert (ts_auth γ 1%nat ∗ ts_lb γ 1%nat)%I with "[Hts]" as "[Hts #Htslb]".
-  { admit. }
+  (***********************************************************)
+  (* tid.GenTID(0)                                           *)
+  (***********************************************************)
+  (**
+   * Call `GenTID` once to get [ts_auth γ 1] and [ts_lb γ 1].
+   * Note that we own [ts_auth] exclusively, not from some invariant.
+   *)
+  wp_apply wp_GenTID.
+  iApply ncfupd_mask_intro; first done.
+  iIntros "Hclose".
+  iExists _. iFrame "Hts".
+  iIntros "(%ts & Hts & %Hgz)".
+  iMod "Hclose". iModIntro.
+  (* Don't care about its return value. *)
+  iIntros (tid) "_".
+  wp_pures.
+  iDestruct (ts_witness with "Hts") as "#Htslb".
 
   (***********************************************************)
   (* for i := uint64(0); i < config.N_TXN_SITES; i++ {       *)
@@ -123,6 +137,8 @@ Proof.
       iExists (U64 0), (U64 0), (Slice.mk active 0 8), [], ∅.
       replace (int.nat (U64 0)) with 0%nat by word.
       iFrame "% # ∗".
+      iSplit.
+      { iApply (ts_lb_weaken with "Htslb"). lia. }
       iPureIntro.
       split; first set_solver.
       split; first apply NoDup_nil_2.
@@ -207,7 +223,7 @@ Proof.
       split; first by unfold ptuple_past_rel.
       split.
       { simpl. symmetry. apply lookup_gset_to_gmap_Some; done. }
-      { done. }
+      { simpl. lia. }
     }
   }
   
