@@ -34,13 +34,12 @@ Definition own_txnmgr (txnmgr : loc) : iProp Σ :=
     "_" ∷ True.
 
 Definition is_txnmgr (txnmgr : loc) γ : iProp Σ := 
-  ∃ (latch : loc) (sites : Slice.t) (idx gc : loc)
+  ∃ (latch : loc) (sites : Slice.t) (idx : loc)
     (sitesL : list loc) (p : proph_id),
     "#Hlatch" ∷ readonly (txnmgr ↦[TxnMgr :: "latch"] #latch) ∗
     "#Hlock" ∷ is_lock mvccN #latch (own_txnmgr txnmgr) ∗
     "#Hidx" ∷ readonly (txnmgr ↦[TxnMgr :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
-    "#Hgc" ∷ readonly (txnmgr ↦[TxnMgr :: "gc"] #gc) ∗
     "#Hsites" ∷ readonly (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
     "#HsitesS" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
     "%HsitesLen" ∷ ⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝ ∗

@@ -626,7 +626,9 @@ Lemma mvcc_ghost_alloc :
     fci_tmods_auth γ ∅ ∗
     fcc_tmods_auth γ ∅ ∗
     cmt_tmods_auth γ ∅ ∗
-    dbmap_auth γ ∅ ∗
+    let dbmap_init := (gset_to_gmap Nil keys_all) in
+    dbmap_auth γ dbmap_init ∗
+    ([∗ map] k ↦ v ∈ dbmap_init, dbmap_ptsto γ k 1 v) ∗
     (* GC-related. *)
     ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
     ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
@@ -641,7 +643,7 @@ Proof.
   iMod (ghost_map_alloc (∅ : gmap (nat * dbmap) unit)) as (γfci) "[Hfci _]".
   iMod (ghost_map_alloc (∅ : gmap (nat * dbmap) unit)) as (γfcc) "[Hfcc _]".
   iMod (ghost_map_alloc (∅ : gmap (nat * dbmap) unit)) as (γcmt) "[Hcmt _]".
-  iMod (ghost_map_alloc ∅) as (γm) "[Hm _]".
+  iMod (ghost_map_alloc (gset_to_gmap Nil keys_all)) as (γm) "[Hm Hpts]".
   iMod site_active_tids_alloc as (γactive) "[Hacts1 Hacts2]".
   iMod site_min_tid_alloc as (γmin) "[Hmin1 Hmin2]".
   set γ :=

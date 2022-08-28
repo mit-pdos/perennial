@@ -38,7 +38,7 @@ Proof.
 
   iMod mvcc_ghost_alloc as (γ) "H".
   iDestruct "H" as "(Hphys & Hphys' & Hlogi & Hts & H)".
-  iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & H)".
+  iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & Hpts & H)".
   iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths & HminAuths')".
   (* TODO: allocate inv sst with Hvchains' *)
   iMod (inv_alloc mvccNGC _ (mvcc_inv_gc_def γ) with "[HactiveAuths' HminAuths']") as "#Hinvgc".
@@ -49,6 +49,10 @@ Proof.
     iExists ∅, (U64 0).
     by iFrame.
   }
+
+  (* FIXME: Call `GenTID` once to get [ts_auth γ 1] and [ts_lb γ 1]. *)
+  iAssert (ts_auth γ 1%nat ∗ ts_lb γ 1%nat)%I with "[Hts]" as "[Hts #Htslb]".
+  { admit. }
 
   (***********************************************************)
   (* for i := uint64(0); i < config.N_TXN_SITES; i++ {       *)
@@ -100,9 +104,6 @@ Proof.
     }
     iIntros "HsitesS".
     wp_pures.
-    (* FIXME: Call `genTID` to get a lower bound. *)
-    iAssert (ts_lb γ 1%nat)%I as "#Htslb".
-    { admit. }
     iApply "HΦ".
     iFrame.
     
@@ -163,14 +164,51 @@ Proof.
   (* FIXME: Cannot use tactic [wp_storeField]. *)
   wp_apply (wp_storeField with "p").
   { (* Prove [val_ty] *)
+    unfold field_ty. simpl.
     admit.
   }
   iIntros "p".
   wp_pures.
   iMod (inv_alloc mvccNSST _ (mvcc_inv_sst_def γ p) with
-         "[Hts Hm Hphys Hlogi Hcmt Hnca Hfa Hfci Hfcc]") as "#Hinv".
-  { (* Prove [mvcc_inv_sst_def]. *)
-    admit.
+         "[Hts Hm Hproph Hphys Hlogi Hcmt Hnca Hfa Hfci Hfcc]") as "#Hinv".
+  { (* Prove global invariants. *)
+    iNext. unfold mvcc_inv_sst_def.
+    do 7 iExists _. iExists [], _.
+    iFrame "Hts Hm Hproph".
+    iSplitL "Hphys Hlogi"; last first.
+    { (* Prove prophecy-related invariants. *)
+      iSplitL "Hcmt"; first by iFrame.
+      iSplitL "Hnca"; first by iFrame.
+      iSplitL "Hfa"; first by iFrame.
+      iSplitL "Hfci"; first by iFrame.
+      iSplitL "Hfcc"; first by iFrame.
+      iPureIntro. unfold fc_tids_unique.
+      rewrite elements_empty. simpl.
+      apply NoDup_nil_2.
+    }
+    { (* Prove per-key invariants. *)
+      iDestruct (big_sepS_sep_2 with "Hphys Hlogi") as "Hpl".
+      iApply (big_sepS_mono with "Hpl").
+      iIntros (k Helem) "[Hphys Hlogi]".
+      do 2 iExists _.
+      iFrame.
+      iPureIntro.
+      split.
+      { (* Prove [tuple_mods_rel]. *)
+        unfold tuple_mods_rel.
+        replace (per_tuple_mods ∅ k) with (∅ : gset (nat * dbval)); last set_solver.
+        exists [], Nil.
+        split; first done.
+        split; first done.
+        split.
+        { rewrite elements_empty. simpl. apply NoDup_nil_2. }
+        split; done.
+      }
+      split; first by unfold ptuple_past_rel.
+      split.
+      { simpl. symmetry. apply lookup_gset_to_gmap_Some; done. }
+      { done. }
+    }
   }
   
   (***********************************************************)
@@ -194,8 +232,10 @@ Proof.
   iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".
   replace (int.nat (U64 N_TXN_SITES)) with (length sitesL); last first.
   { unfold N_TXN_SITES in *. word. }
+  iFrame "Hpts".
   rewrite firstn_all.
-  (* by iFrame "# %". *)
+  do 5 iExists _.
+  by iFrame "# %".
 Admitted.
 
 End program.
