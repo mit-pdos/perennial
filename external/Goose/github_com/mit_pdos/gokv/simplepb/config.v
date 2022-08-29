@@ -125,14 +125,14 @@ Definition Server__WriteConfig: val :=
     let: ("epoch", "enc") := marshal.ReadInt "args" in
     (if: "epoch" ≠ struct.loadF Server "epoch" "s"
     then
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") e.Stale;;
+      "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.Stale;;
       lock.release (struct.loadF Server "mu" "s");;
       (* log.Println("Stale write", s.config) *)
       #()
     else
       struct.storeF Server "config" "s" (DecodeConfig "enc");;
       (* log.Println("New config is:", s.config) *)
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") e.None;;
+      "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.None;;
       lock.release (struct.loadF Server "mu" "s");;
       #()).
 
