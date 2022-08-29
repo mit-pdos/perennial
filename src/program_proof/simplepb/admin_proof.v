@@ -69,7 +69,7 @@ Qed.
 Lemma wp_Clerk__GetEpochAndConfig2 ck γpb Φ :
   is_Clerk2 ck γpb -∗
   □(∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
-  (is_slice config_sl uint64T 1 conf ∗
+  (is_slice_small config_sl uint64T 1 conf ∗
   config_proposal_unset γpb epoch ∗
   own_proposal_unused γpb epoch ∗
   is_epoch_config γpb epoch_lb confγs ∗
@@ -226,7 +226,14 @@ Lemma wp_Clerk__WriteConfig2 ck γpb Φ config_sl conf confγ epoch :
 Proof.
   iIntros "#Hck Hsl #Hconf_prop #Hhosts #Hlbs #HΦ".
   iNamed "Hck".
-  wp_apply (wp_Clerk__WriteConfig with "Hck Hsl").
+  wp_apply (wp_Clerk__WriteConfig with "Hck Hsl"); last first.
+  {
+    iIntros.
+    iApply ("HΦ" with "[] [$]").
+    destruct (decide _).
+    { exfalso. done. }
+    done.
+  }
   iModIntro.
   iIntros "Hlc".
   iInv "Hinv" as "Hi" "Hclose".
@@ -366,7 +373,6 @@ Proof using waitgroupG0.
     iPureIntro.
     lia.
   }
-  iDestruct (is_slice_to_small with "Hconf_sl") as "Hconf_sl".
   iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_len.
   set (oldNodeId:=word.modu randId config_sl.(Slice.sz)).
   assert (int.nat oldNodeId < length conf) as Hlookup_conf.

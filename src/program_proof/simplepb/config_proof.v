@@ -42,6 +42,15 @@ Program Definition GetEpochAndConfig_core_spec γ Φ :=
       )
     )%I.
 
+Program Definition WriteConfig_core_spec γ (epoch:u64) (new_conf:list u64) Φ : iProp Σ :=
+  (£ 1 -∗ |={⊤,∅}=> ∃ latest_epoch, own_epoch γ latest_epoch ∗
+      if (decide (latest_epoch = epoch)) then
+        ∃ conf, own_config γ conf ∗ (own_config γ new_conf -∗ own_epoch γ epoch ={∅,⊤}=∗
+                                            Φ (U64 0))
+      else
+        (own_epoch γ latest_epoch ={∅,⊤}=∗ (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err))
+  ).
+
 Program Definition GetEpochAndConfig_spec γ :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   ( (* no args *)
@@ -56,10 +65,26 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Program Definition WriteConfig_spec γ :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  ( ∃ epoch new_conf enc_new_conf,
+    ⌜enc_args = u64_le epoch ++ enc_new_conf⌝ ∗
+    ⌜Config.has_encoding enc_new_conf new_conf⌝ ∗
+    WriteConfig_core_spec γ epoch new_conf (λ err, ∀ reply,
+                                   ⌜reply = u64_le err⌝ -∗
+                                   Φ reply
+                                  )
+    )%I.
+Next Obligation.
+  unfold WriteConfig_core_spec.
+  solve_proper.
+Defined.
+
 Context `{!urpcregG Σ}.
 
-Definition is_host (host:u64) γ :=
-  handler_spec γ.(urpc_gn) host (U64 0) (GetEpochAndConfig_spec γ).
+Definition is_host (host:u64) γ : iProp Σ :=
+  handler_spec γ.(urpc_gn) host (U64 0) (GetEpochAndConfig_spec γ) ∗
+  handler_spec γ.(urpc_gn) host (U64 2) (WriteConfig_spec γ).
 
 Definition is_Clerk (ck:loc) γ : iProp Σ :=
   ∃ (cl:loc) srv,
@@ -184,6 +209,122 @@ Proof.
   iApply ("Hupd" with "[% //] [% //] Hrep Hrep_sl").
 Qed.
 
+Lemma wp_Server__WriteConfig (server:loc) args_sl (enc_args:list u8) reply_ptr γ Φ :
+  is_Server server γ -∗
+  is_slice_small args_sl byteT 1 enc_args -∗
+  reply_ptr ↦[slice.T byteT] (slice_val Slice.nil) -∗
+  WriteConfig_spec γ enc_args (λ reply, ∀ reply_sl,
+                           reply_ptr ↦[slice.T byteT] (slice_val reply_sl) -∗
+                           is_slice_small reply_sl byteT 1 reply -∗
+                           Φ #()
+                           )%I -∗
+  WP config.Server__WriteConfig #server (slice_val args_sl) #reply_ptr {{ Φ }}
+.
+Proof.
+  iIntros "#His_srv Harg_sl Hrep HΦ".
+  iNamed "His_srv".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "[$His_mu]").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+
+  unfold WriteConfig_spec.
+  iDestruct "HΦ" as (new_epoch new_conf enc_new_conf) "(%Henc & %Henc_conf & HΦ)".
+  rewrite Henc.
+  wp_apply (wp_ReadInt with "Harg_sl").
+  clear args_sl.
+  iIntros (args_sl) "Hargs_sl".
+  wp_pure1_credit "Hlc".
+
+  wp_loadField.
+  wp_if_destruct.
+  {
+    wp_load.
+    wp_apply (wp_WriteInt with "[]").
+    {
+      iApply is_slice_zero.
+    }
+    iIntros (rep_sl) "Hrep_sl".
+    wp_store.
+    wp_loadField.
+
+    iApply fupd_wp.
+    iMod ("HΦ" with "Hlc") as "HΦ".
+    iDestruct "HΦ" as (?) "(Hepoch_ghost2 & HΦ)".
+    iDestruct (mono_nat_auth_own_agree with "Hepoch_ghost Hepoch_ghost2") as %[_ Heq].
+    replace (epoch) with (latest_epoch) in * by word.
+    destruct (decide (_)).
+    {
+      exfalso. rewrite e in Heqb.
+      done.
+    }
+    simpl.
+    iMod ("HΦ" with "Hepoch_ghost2") as "HΦ".
+    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iDestruct ("HΦ" with "[%] [% //] Hrep Hrep_sl") as "HΦ".
+    { eauto. }
+    iModIntro.
+
+    wp_apply (release_spec with "[$Hlocked $His_mu Hepoch Hconf Hconf_sl Hepoch_ghost Hconf_ghost]").
+    {
+      iNext.
+      iExists _,_,_.
+      eauto with iFrame.
+    }
+    wp_pures.
+    iModIntro.
+    done.
+  }
+  {
+    wp_apply (Config.wp_Decode with "[$Hargs_sl]").
+    { done. }
+    iIntros (new_conf_sl) "Hnew_conf_sl".
+    wp_storeField.
+    wp_load.
+    wp_apply (wp_WriteInt with "[]").
+    {
+      iApply is_slice_zero.
+    }
+    iIntros (rep_sl) "Hrep_sl".
+    wp_store.
+
+    iApply fupd_wp.
+    iMod ("HΦ" with "Hlc") as "HΦ".
+    iDestruct "HΦ" as (?) "[Hepoch_ghost2 HΦ]".
+    iDestruct (mono_nat_auth_own_agree with "Hepoch_ghost Hepoch_ghost2") as %[_ Heq].
+    replace (epoch) with (latest_epoch) in * by word.
+    destruct (decide (_)); last first.
+    {
+      exfalso.
+      done.
+    }
+    {
+      iDestruct "HΦ" as (?) "[Hconf_ghost2 HΦ]".
+      iDestruct (ghost_var_agree with "Hconf_ghost Hconf_ghost2") as %->.
+      iCombine "Hconf_ghost Hconf_ghost2" as "Hconf_ghost".
+      iMod (ghost_var_update new_conf with "Hconf_ghost") as "[Hconf_ghost Hconf_ghost2]".
+      iMod ("HΦ" with "Hconf_ghost2 Hepoch_ghost2") as "HΦ".
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iSpecialize ("HΦ" with "[%] Hrep Hrep_sl").
+      { done. }
+      iModIntro.
+
+      wp_loadField.
+      wp_apply (release_spec with "[$Hlocked $His_mu Hepoch Hconf Hnew_conf_sl Hepoch_ghost Hconf_ghost]").
+      {
+        iNext.
+        iExists _,_,_.
+        eauto with iFrame.
+      }
+      wp_pures.
+      iModIntro.
+      done.
+    }
+  }
+Qed.
+
 Lemma wp_Clerk__GetEpochAndConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
   □ (£ 1 ={⊤,∅}=∗ ∃ epoch conf, own_epoch γ epoch ∗
@@ -212,7 +353,7 @@ Proof.
   iDestruct (is_slice_to_small with "Hargs") as "Hargs_sl".
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
   {
-    iDestruct "Hhost" as "$".
+    iDestruct "Hhost" as "[$ _]".
   }
   {
     iModIntro.
@@ -282,10 +423,187 @@ Lemma wp_Clerk__WriteConfig (ck:loc) new_conf new_conf_sl epoch γ Φ :
                                                          is_slice_small new_conf_sl uint64T 1 new_conf -∗
                                                          Φ #err))
   ) -∗
+  (∀ (err:u64) , ⌜err ≠ 0⌝ → is_slice_small new_conf_sl uint64T 1 new_conf -∗ Φ #err) -∗
   WP config.Clerk__WriteConfig #ck #epoch (slice_val new_conf_sl)
   {{ Φ }}
 .
 Proof.
+  iIntros "#Hck Hconf_sl #HΦ Hfail".
+  wp_call.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (reply_ptr) "Hreply".
+  wp_pures.
+
+  wp_pures.
+  iNamed "Hck".
+  wp_apply (wp_slice_len).
+  wp_apply (wp_NewSliceWithCap).
+  { apply encoding.unsigned_64_nonneg. }
+  iIntros (?) "Hargs_sl".
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (args_ptr) "Hargs".
+  wp_pures.
+
+  wp_load.
+  wp_apply (wp_WriteInt with "Hargs_sl").
+  iIntros (args_sl) "Hargs_sl".
+  wp_store.
+  wp_apply (Config.wp_Encode with "Hconf_sl").
+  iIntros (enc_new_conf enc_new_conf_sl) "(%Henc_new_conf & Hconf & Henc_conf_sl)".
+  wp_load.
+  iDestruct (is_slice_to_small with "Henc_conf_sl") as "Henc_conf_sl".
+  wp_apply (wp_WriteBytes with "[$Hargs_sl $Henc_conf_sl]").
+  iIntros (args_sl2) "[Hargs_sl Henc_conf_sl]".
+  replace (int.nat 0%Z) with 0%nat by word.
+  wp_store.
+
+  wp_apply (wp_frame_wand with "Hconf").
+
+  wp_load.
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Hargs_sl") as "Hargs_sl".
+  wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
+  {
+    iDestruct "Hhost" as "[_ $]".
+  }
+  {
+    iModIntro.
+    iNext.
+    iExists _, _, _.
+    iSplitR; first done.
+    iSplitR; first done.
+    iIntros "Hlc".
+    iMod ("HΦ" with "Hlc") as "Hupd".
+    iModIntro.
+    iDestruct "Hupd" as (?) "(H1 & Hupd)".
+    iExists _.
+    iFrame "H1".
+    destruct (decide (_)).
+    {
+      iDestruct "Hupd" as (?) "[H1 Hupd]".
+      iExists _.
+      iFrame "H1".
+      iIntros "H1 H2".
+      iMod ("Hupd" with "H1 H2") as "Hupd".
+      iModIntro.
+      iIntros (?) "%Henc_rep Hargs_sl".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+      rewrite Henc_rep.
+      wp_apply (wp_ReadInt with "Hrep_sl").
+      iIntros (?) "_".
+      wp_pures.
+      iModIntro.
+      iIntros "Hconf".
+      iApply "Hupd".
+      iFrame.
+    }
+    {
+      iIntros "H1".
+      iMod ("Hupd" with "H1") as "Hupd".
+      iModIntro.
+      iIntros (err Herr_nz reply Henc_rep) "Hargs_sl".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+      rewrite Henc_rep.
+      wp_apply (wp_ReadInt with "Hrep_sl").
+      iIntros (?) "_".
+      wp_pures.
+      iModIntro.
+      iIntros.
+      iApply "Hupd".
+      { done. }
+      { iFrame. }
+    }
+  }
+  {
+    iIntros (err) "%Herr_nz Hargssl Hrep".
+    wp_pures.
+    wp_if_destruct.
+    {
+      exfalso. done.
+    }
+    iModIntro.
+    iIntros.
+    iApply "Hfail".
+    { done. }
+    done.
+  }
+Qed.
+
+Lemma wp_MakeServer γ :
+  {{{
+        own_epoch γ 0 ∗
+        own_config γ []
+  }}}
+    config.MakeServer #()
+  {{{
+        (s:loc), RET #s; is_Server s γ
+  }}}.
+Proof.
+  iIntros (Φ) "[Hepoch Hconf] HΦ".
+  wp_call.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. repeat econstructor. Opaque slice.T. }
+  iIntros (s) "Hs".
+  iDestruct (struct_fields_split with "Hs") as "HH".
+  iNamed "HH".
+  simpl.
+  wp_pures.
+  wp_apply (wp_new_free_lock).
+  iIntros (mu) "Hmu_inv".
+  wp_storeField.
+  wp_storeField.
+  wp_apply (wp_NewSlice).
+  iIntros (conf_sl) "Hconf_sl".
+  wp_storeField.
+  iMod (readonly_alloc_1 with "mu") as "#Hmu".
+  iApply "HΦ".
+  iExists _.
+  iMod (alloc_lock with "Hmu_inv [Hepoch Hconf epoch config Hconf_sl]") as "$".
+  {
+    iNext.
+    iExists _, _, _.
+    iFrame.
+    simpl.
+    replace (int.nat 0%Z) with 0%nat by word.
+    simpl.
+    iDestruct (is_slice_to_small with "Hconf_sl") as "$".
+  }
+  iFrame "Hmu".
+  done.
+Qed.
+
+Lemma wp_Server__Serve s γ host :
+  is_host host γ -∗ is_Server s γ -∗
+  {{{
+        True
+  }}}
+    config.Server__Serve #s #host
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+  iIntros "#Hhost #His_srv !#" (Φ) "_ HΦ".
+  wp_call.
+
+  wp_apply (map.wp_NewMap).
+  iIntros (handlers) "Hhandlers".
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
 Admitted.
 
 End config_proof.

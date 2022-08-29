@@ -123,7 +123,7 @@ Definition Server__WriteConfig: val :=
   rec: "Server__WriteConfig" "s" "args" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     let: ("epoch", "enc") := marshal.ReadInt "args" in
-    (if: "epoch" < struct.loadF Server "epoch" "s"
+    (if: "epoch" ≠ struct.loadF Server "epoch" "s"
     then
       "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") e.Stale;;
       lock.release (struct.loadF Server "mu" "s");;
@@ -147,9 +147,18 @@ Definition MakeServer: val :=
 Definition Server__Serve: val :=
   rec: "Server__Serve" "s" "me" :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_GETEPOCH (Server__GetEpochAndConfig "s");;
-    MapInsert "handlers" RPC_GETCONFIG (Server__GetConfig "s");;
-    MapInsert "handlers" RPC_WRITECONFIG (Server__WriteConfig "s");;
+    MapInsert "handlers" RPC_GETEPOCH (λ: "args" "reply",
+      Server__GetEpochAndConfig "s" "args" "reply";;
+      #()
+      );;
+    MapInsert "handlers" RPC_GETCONFIG (λ: "args" "reply",
+      Server__GetConfig "s" "args" "reply";;
+      #()
+      );;
+    MapInsert "handlers" RPC_WRITECONFIG (λ: "args" "reply",
+      Server__WriteConfig "s" "args" "reply";;
+      #()
+      );;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     #().

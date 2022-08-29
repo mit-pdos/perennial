@@ -94,7 +94,7 @@ Proof.
   }
   iNamed "Hrep".
   iDestruct "Hrep" as "(Hrep & Hrep_sl & HPost)".
-  iDestruct "HPost" as (x) ">[[%HencPost %Hlb2] Hlb2]".
+  iDestruct "HPost" as (x) "[[%HencPost %Hlb2] Hlb2]".
   wp_pures.
   wp_load.
   wp_apply (wp_new_dec with "[Hrep_sl]").
