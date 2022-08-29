@@ -154,7 +154,7 @@ Lemma wp_Client__Call_uRPCSpec γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req re
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
           is_slice_small rep_sl byteT 1 repData ∗
-          (▷ spec.(spec_Post) x reqData repData))
+          (spec.(spec_Post) x reqData repData))
   }}}.
 Proof.
   iIntros (->) "#Hhandler !# %Φ Hpre HΦ".
