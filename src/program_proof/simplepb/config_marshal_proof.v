@@ -24,6 +24,7 @@ Lemma wp_Encode conf_sl (conf:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc conf⌝ ∗
+        own conf_sl conf ∗
         is_slice enc_sl byteT 1 enc
   }}}.
 Proof.
@@ -151,20 +152,21 @@ Proof.
     }
     {
       rewrite lookup_app_l; last first.
-      { rewrite app_length. simpl.
-        unfold chan.
-        word. }
-      rewrite lookup_app_r; last first.
       {
-        rewrite Hreplicas_len.
+        rewrite take_length_le.
+        { word. }
+        apply lookup_lt_Some in Hlookup.
         word.
       }
-      replace (int.nat i - length replicas_done)%nat with (0%nat) by word.
-      rewrite list_lookup_singleton.
+      rewrite lookup_take; last word.
       done.
     }
   }
-Qed.
+  {
+    rewrite list_lookup_insert_ne; last done.
+    admit.
+  }
+Admitted.
 
 Lemma wp_Decode enc enc_sl (conf:C) :
   {{{

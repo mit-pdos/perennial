@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export config.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof Require Import marshal_stateless_proof.
+From Perennial.program_proof Require Import marshal_stateless_proof std_proof.
 From Perennial.program_proof.simplepb Require Import config_marshal_proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 
@@ -17,7 +17,7 @@ Record config_names :=
 
 Class configG Σ := {
     config_epochG :> mono_natG Σ ;
-    config_configG :> inG Σ (dfrac_agreeR (leibnizO (list u64)));
+    config_configG :> ghost_varG Σ (list u64) ;
 }.
 
 Implicit Type γ : config_names.
@@ -27,11 +27,12 @@ Context `{!configG Σ}.
 
 Definition own_epoch γ (epoch:u64) : iProp Σ :=
   mono_nat_auth_own γ.(epoch_gn) (1/2) (int.nat epoch).
+
 Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
   mono_nat_lb_own γ.(epoch_gn) (int.nat epoch).
 
 Definition own_config γ (conf:list u64) : iProp Σ :=
-  own γ.(config_val_gn) (to_dfrac_agree (DfracOwn (1/2)) (conf: (leibnizO _)))
+  ghost_var γ.(config_val_gn) (1/2) conf
 .
 
 Program Definition GetEpochAndConfig_core_spec γ Φ :=
@@ -91,6 +92,96 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iExists _, _. iFrame "#".
+Qed.
+
+Definition own_Server (s:loc) γ : iProp Σ :=
+  ∃ (epoch:u64) (conf:list u64) conf_sl,
+  "Hepoch" ∷ s ↦[config.Server :: "epoch"] #epoch ∗
+  "Hconf" ∷ s ↦[config.Server :: "config"] (slice_val conf_sl) ∗
+  "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 conf ∗
+  "Hepoch_ghost" ∷ own_epoch γ epoch ∗
+  "Hconf_ghost" ∷ own_config γ conf
+.
+
+Definition configN := nroot .@ "config".
+
+Definition is_Server (s:loc) γ : iProp Σ :=
+  ∃ mu,
+  "#Hmu" ∷ readonly (s ↦[config.Server :: "mu"] mu) ∗
+  "#His_mu" ∷ is_lock configN mu (own_Server s γ).
+
+Lemma wp_Server__GetEpochAndConfig (server:loc) args reply_ptr dummy_sl γ Φ :
+  is_Server server γ -∗
+  reply_ptr ↦[slice.T byteT] (slice_val dummy_sl) -∗
+  GetEpochAndConfig_spec γ [] (λ reply, ∀ reply_sl,
+                           reply_ptr ↦[slice.T byteT] (slice_val reply_sl) -∗
+                           is_slice_small reply_sl byteT 1 reply -∗
+                           Φ #()
+                           )%I -∗
+  WP config.Server__GetEpochAndConfig #server #args #reply_ptr {{ Φ }}
+.
+Proof.
+  iIntros "#His_srv Hrep HΦ".
+  iNamed "His_srv".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "[$His_mu]").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_SumAssumeNoOverflow).
+  iIntros (Hno_overflow).
+  wp_storeField.
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_apply (wp_NewSliceWithCap).
+  { apply encoding.unsigned_64_nonneg. }
+  iIntros (ptr) "Hsl".
+  wp_pure1_credit "Hlc".
+  wp_store.
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "Hsl").
+  iIntros (enc_sl) "Hrep_sl".
+  wp_store.
+  wp_loadField.
+  wp_apply (Config.wp_Encode with "[Hconf_sl]").
+  { iFrame. }
+  iIntros (enc_conf enc_conf_sl) "(%Hconf_enc & Hconf_sl & Henc_conf_sl)".
+  wp_load.
+  wp_apply (wp_WriteBytes with "[$Hrep_sl Henc_conf_sl]").
+  {
+    iDestruct (is_slice_to_small with "Henc_conf_sl") as "$".
+  }
+  iIntros (rep_sl) "[Hrep_sl Henc_conf_sl]".
+  replace (int.nat 0%Z) with 0%nat by word.
+  wp_store.
+  wp_loadField.
+
+  iApply fupd_wp.
+  iMod ("HΦ" with "Hlc") as "HΦ".
+  iDestruct "HΦ" as (??) "(Hepoch_ghost2 & Hconf_ghost2 & Hupd)".
+  iDestruct (ghost_var_agree with "Hconf_ghost Hconf_ghost2") as %->.
+  iDestruct (mono_nat_auth_own_agree with "Hepoch_ghost Hepoch_ghost2") as %[_ Heq].
+  replace (epoch0) with (epoch) by word.
+  iCombine "Hepoch_ghost Hepoch_ghost2" as "Hepoch_ghost".
+  iMod (mono_nat_own_update (int.nat (word.add epoch 1)) with "Hepoch_ghost") as "[[Hepoch_ghost Hepoch_ghost2] _]".
+  { word. }
+  iSpecialize ("Hupd" with "[%] Hepoch_ghost2 Hconf_ghost2").
+  { word. }
+  iMod "Hupd".
+  iModIntro.
+
+  wp_apply (release_spec with "[$Hlocked $His_mu Hepoch Hconf Hconf_ghost Hconf_sl Hepoch_ghost]").
+  {
+    iNext.
+    iExists _, _, _.
+    eauto with iFrame.
+  }
+  wp_pures.
+  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+  iApply ("Hupd" with "[% //] [% //] Hrep Hrep_sl").
 Qed.
 
 Lemma wp_Clerk__GetEpochAndConfig (ck:loc) γ Φ :
