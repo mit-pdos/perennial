@@ -841,7 +841,7 @@ Lemma wp_Client__CallComplete (cl_ptr cb_ptr:loc) rep_out_ptr
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
           is_slice_small rep_sl byteT 1 repData ∗
-          (▷ Post repData))
+          (Post repData))
   }}}.
 Proof.
   iIntros (Φ) "[Hrep_out_ptr Hcb] HΦ".
@@ -973,7 +973,7 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
           is_slice_small rep_sl byteT 1 repData ∗
-          (▷ Post repData))
+          (Post repData))
   }}}.
 Proof.
   iIntros "#Hhandler !#" (Φ) "H HΦ".
@@ -990,6 +990,44 @@ Proof.
   iIntros ([err|]) "Hcomplete".
   { iApply ("HΦ" $! (Some err)). eauto with iFrame. }
   iApply ("HΦ" $! None). eauto with iFrame.
+Qed.
+
+Lemma wp_Client__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
+  is_uRPCClient cl_ptr host -∗
+  handler_spec γsmap host rpcid Spec -∗
+  is_slice_small req byteT 1 reqData -∗
+  rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
+  □(▷ Spec reqData (λ reply,
+       is_slice_small req byteT 1 reqData -∗
+        ∀ rep_sl,
+          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
+          is_slice_small rep_sl byteT 1 reply -∗
+          Φ #0)
+  ) -∗
+  (
+   ∀ (err:u64), ⌜err ≠ 0⌝ →
+                is_slice_small req byteT 1 reqData -∗
+                rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
+  ) -∗
+  WP Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
+Proof.
+  iIntros "#His_cl #Hhandler Hreq_sl Hrep #Hspec Hfail".
+  wp_apply (wp_Client__Call with "[$Hhandler] [$His_cl $Hreq_sl $Hrep]").
+  { iModIntro.
+    iModIntro.
+    done. }
+  iIntros (err) "Hpost".
+  destruct err.
+  {
+    iDestruct "Hpost" as "(_&Hreq&Hrep)".
+    iApply ("Hfail" with "[%] Hreq Hrep").
+    by destruct c.
+  }
+  simpl.
+  iDestruct "Hpost" as "(_ & Hreq & Hpost)".
+  iDestruct "Hpost" as (??) "(Hrep & Hrep_sl & HΦ)".
+  iApply ("HΦ" with "Hreq Hrep Hrep_sl").
 Qed.
 
 Global Instance impl_handler_spec_pers f Spec : Persistent (impl_handler_spec f Spec).
