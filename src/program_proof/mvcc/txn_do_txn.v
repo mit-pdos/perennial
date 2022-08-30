@@ -27,7 +27,7 @@ Theorem wp_txn__DoTxn
   (∀ r w, (Decision (Q r w))) ->
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body body txn tid r P Q Rc Ra γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      Txn__DoTxn #txn body @ ↑mvccNSST
+      Txn__DoTxn #txn body @ ↑mvccN
     <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ ∗ if ok then Rc r w else Ra r }}}.
 Proof.
@@ -56,7 +56,7 @@ Proof.
   { iNamed "Htxn". eauto with iFrame. }
   wp_apply (wp_txn__Begin with "Htxn").
   iInv "Hinv" as "> HinvO" "HinvC".
-  replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
+  iMod (ncfupd_mask_subseteq (⊤ ∖ ↑mvccN)) as "Hclose"; first solve_ndisj.
   iMod "HAU" as (r) "[[%HP Hdbps] HAUC]".
   iModIntro.
   iNamed "HinvO".
@@ -97,6 +97,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HncaLt). lia.
     }
+    iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HncaFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
@@ -158,6 +159,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HfaLt). lia.
     }
+    iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfaFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
@@ -231,6 +233,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HfciLt). lia.
     }
+    iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfciFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
@@ -294,6 +297,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HfccLt). lia.
     }
+    iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfccFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
@@ -364,6 +368,7 @@ Proof.
         }
         apply (set_Forall_impl _ _ _ HcmtLt). lia.
     }
+    iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HcmtFrag Hbody]") as "_".
     { (* Close the invariant. *)
       iNext.
@@ -427,7 +432,7 @@ Theorem wp_txn__DoTxn_xres
   (∀ r w, (Decision (Q r w))) ->
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_xres body txn tid r P Q γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      Txn__DoTxn #txn body @ ↑mvccNSST
+      Txn__DoTxn #txn body @ ↑mvccN
     <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.

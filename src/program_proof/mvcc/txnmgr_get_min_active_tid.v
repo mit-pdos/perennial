@@ -49,42 +49,81 @@ Proof.
   
   (***********************************************************)
   (* var tidnew uint64                                       *)
-  (* tidnew = genTID(sid)                                    *)
+  (* tidnew = GenTID(sid)                                    *)
   (***********************************************************)
-  wp_apply (wp_ref_of_zero); first done.
-  iIntros (tidnewRef) "HtidnewRef".
+  wp_apply wp_ref_of_zero; first done.
+  iIntros (tidRef) "HtidRef".
   wp_pures.
-  wp_apply (wp_GenTID).
-  iInv "Hinvsst" as "> HinvO" "HinvC".
-  iNamed "HinvO".
+  wp_apply wp_GenTID.
+  (* Open the SST invariant to get [ts_auth]. *)
+  iInv "Hinvsst" as "> HinvsstO" "HinvsstC".
+  iDestruct (mvcc_inv_sst_ts_auth_acc with "HinvsstO") as (ts) "[Hts HinvtsC]".
+  (* Open the GC invariant. *)
+  iInv "Hinvgc" as "> HinvgcO" "HinvgcC".
+  iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvsiteO HinvsiteC]".
+  { by apply sids_all_lookup. }
+  iNamed "HinvsiteO".
+  (* Obtain [tidmax ≤ ts]. *)
+  iDestruct (ts_auth_lb_le with "Hts Htslb") as %Hle.
+  (* Agree on the active TIDs obtained from lock and global invariants. *)
+  iDestruct (site_active_tids_agree with "HactiveA HactiveAuth") as %->.
+  (* Update the minimal TID to the smallest among [{[ ts ]} ∪ tidsactiveM]. *)
+  set tids := {[ ts ]} ∪ tidsactiveM.
+  assert (∃ tidmin', set_Forall (λ tid, (tidmin' ≤ tid)%nat) tids ∧ tidmin' ∈ tids)
+    as (tidmin' & Htidmin' & Helem).
+  { destruct (minimal_exists_L Nat.le tids) as (tidx & Htidx & Hminimal); first set_solver.
+    exists tidx.
+    split; last done.
+    rewrite minimal_anti_symm in Hminimal.
+    intros tidy Htidy.
+    destruct (decide (tidx ≤ tidy)%nat); first done.
+    apply Hminimal in Htidy; lia.
+  }
+  iMod (site_min_tid_update tidmin' with "HminA") as "HminA".
+  { rewrite elem_of_union in Helem.
+    destruct Helem; last by auto.
+    (* Case [tidmin' = ts]. *)
+    rewrite elem_of_singleton in H.
+    rewrite H.
+    apply set_Forall_union_inv_1, set_Forall_singleton in Hmax.
+    lia.
+  }
+  iDestruct (site_min_tid_witness with "HminA") as "#Hminlb".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
-  iExists ts.
-  (* Deduce [tslast < ts] with [Hts] and [Htslb]. *)
-  iDestruct (ts_auth_lb_le with "Hts Htslb") as "%HltN".
-  iFrame "Hts".
-  iIntros "[%ts' [Hts %Hgz]]".
-  (* Before we close the invariant, obtain a witness of a LB of timestamp. *)
-  iAssert (ts_lb γ (S ts))%I as "#Htslb'".
-  { iDestruct (ts_witness with "Hts") as "#H".
-    iApply (ts_lb_weaken with "H"). lia.
-  }
+  (* Give atomic precondition. *)
+  iExists _. iFrame "Hts".
+  iIntros "(%ts' & Hts & %Hlt)".
+  iClear "Htslb".
+  iDestruct (ts_witness with "Hts") as "#Htslb".
   iMod "Hclose" as "_".
-  iMod ("HinvC" with "[Hproph Hts Hm Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
-  { iNext.
-    iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
-    { iIntros (k) "%Helem Hkeys".
-      iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
+  (* Close the GC invariant. *)
+  iDestruct ("HinvsiteC" with "[HactiveA HminA]") as "HinvsiteO".
+  { iExists _, _, ts.
+    iDestruct (ts_lb_weaken (S ts) with "Htslb") as "#Htslb'"; first lia.
+    iFrame "∗ Htslb'".
+    iPureIntro.
+    split.
+    { eapply set_Forall_subseteq; last apply Htidmin'. set_solver. }
+    { (* apply set_Forall_union_inv_1 in Hmax as Hminmax.
+      rewrite set_Forall_singleton in Hminmax. *)
+      apply set_Forall_union.
+      { rewrite set_Forall_singleton.
+        apply set_Forall_union_inv_1 in Htidmin'.
+        by rewrite set_Forall_singleton in Htidmin'.
+      }
+      { apply set_Forall_union_inv_2 in Hmax.
+        eapply set_Forall_impl; first apply Hmax.
+        word.
+      }
     }
-    iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
-    iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
-    iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
-    iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
-    iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
-    eauto 20 with iFrame.
   }
-  iIntros "!>" (tidnew) "%Etidnew".
-  assert (Hlt : int.Z tidlast < int.Z tidnew) by lia.
+  iMod ("HinvgcC" with "HinvsiteO") as "_".
+  iDestruct ("HinvtsC" with "[] Hts") as "HinvsstO".
+  { iPureIntro. lia. }
+  iMod ("HinvsstC" with "HinvsstO") as "_".
+  iModIntro.
+  iIntros (tidnew) "%Etidnew".
   wp_store.
   
   (***********************************************************)
@@ -92,17 +131,14 @@ Proof.
   (***********************************************************)
   wp_load.
   wp_apply wp_Assume.
-  iIntros "%Htidmax".
-  apply bool_decide_eq_true_1 in Htidmax.
+  iIntros (Hoverflow).
+  apply bool_decide_eq_true_1 in Hoverflow.
   
   (***********************************************************)
-  (* site.tidLast = tidnew                                   *)
   (* var tidmin uint64 = tidnew                              *)
   (***********************************************************)
   wp_load.
-  wp_storeField.
-  wp_load.
-  wp_apply (wp_ref_to); first auto.
+  wp_apply (wp_ref_to); first by auto.
   iIntros (tidminRef) "HtidminRef".
   wp_pures.
 
@@ -113,12 +149,13 @@ Proof.
   (*     }                                                   *)
   (* }                                                       *)
   (***********************************************************)
+  set u64_to_nat := (λ x : u64, int.nat x).
   iDestruct (is_slice_small_acc with "HactiveL") as "[HactiveS HactiveC]".
   wp_loadField.
-  set P := λ (i : u64), (∃ (tidmin : u64), let tids := tidnew :: (take (int.nat i) tidsactiveL) in
-    "HtidminRef" ∷ tidminRef ↦[uint64T] #tidmin ∗
-    "%Helem" ∷ ⌜tidmin ∈ tids⌝ ∗
-    "%HtidminLe" ∷ (⌜Forall (λ tid, int.Z tidmin ≤ int.Z tid) tids⌝))%I.
+  set P := λ (i : u64), (∃ (tidloop : u64), let tids := tidnew :: (take (int.nat i) tidsactiveL) in
+    "HtidminRef" ∷ tidminRef ↦[uint64T] #tidloop ∗
+    "%Helem'" ∷ ⌜tidloop ∈ tids⌝ ∗
+    "%Htidloop" ∷ (⌜Forall (λ tid, (int.nat tidloop ≤ tid)%nat) (u64_to_nat <$> tids)⌝))%I.
   wp_apply (typed_slice.wp_forSlice P _ _ _ _ _ tidsactiveL with "[] [HtidminRef $HactiveS]").
   { clear Φ.
     iIntros (i tidx Φ) "!> (Hloop & %Hbound' & %Hlookup) HΦ".
@@ -134,10 +171,10 @@ Proof.
       rewrite (take_S_r _ _ tidx); last done.
       iSplit; iPureIntro.
       { set_solver. }
-      { rewrite app_comm_cons.
+      { rewrite app_comm_cons fmap_app.
         rewrite Forall_app.
         split.
-        { apply (Forall_impl _ _ _ HtidminLe). word. }
+        { apply (Forall_impl _ _ _ Htidloop). word. }
         apply Forall_singleton. done.
       }
     - iApply "HΦ".
@@ -148,11 +185,11 @@ Proof.
       rewrite (take_S_r _ _ tidx); last done.
       iSplit; iPureIntro.
       { set_solver. }
-      { rewrite app_comm_cons.
+      { rewrite app_comm_cons fmap_app.
         rewrite Forall_app.
         split.
-        { apply (Forall_impl _ _ _ HtidminLe). word. }
-        apply Forall_singleton. word.
+        { apply (Forall_impl _ _ _ Htidloop). word. }
+        apply Forall_singleton. subst u64_to_nat. word.
       }
   }
   { iExists _.
@@ -163,79 +200,36 @@ Proof.
     split; set_solver.
   }
   iIntros "[Hloop HactiveS]".
-  iNamed "Hloop".
-  rename tidmin0 into tidmin'.
-  rewrite -HtidsactiveSz in Helem HtidminLe.
-  rewrite firstn_all in Helem HtidminLe.
-
-  (* Prove that we can safely update the local lower bound. *)
-  assert (Hle : int.Z tidmin ≤ int.Z tidmin').
-  { apply elem_of_cons in Helem.
-    destruct Helem.
-    - rewrite H.
-      apply Forall_inv in HtidOrder. word.
-    - apply Forall_inv_tail in HtidOrder.
-      rewrite Forall_forall in HtidOrder.
-      apply HtidOrder. done.
-  }
-  
-  (* Open the global invariant to update [tidmin]. *)
-  wp_apply (fupd_wp).
-  iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
-  iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvgcO HinvgcOAcc]".
-  { by apply sids_all_lookup. }
-  iDestruct "HinvgcO" as (tidsM tidmin'') "(HactiveAuth' & HminAuth' & Hmin)".
-  (* Agree on the set of active tids. *)
-  iDestruct (site_active_tids_agree with "HactiveAuth' HactiveAuth") as %->.
-  (* Update the minimal tid. *)
-  iDestruct (site_min_tid_agree with "HminAuth' HminAuth") as %->.
-  clear tidmin''.
-  iMod (site_min_tid_update (int.nat tidmin') with "HminAuth' HminAuth") as "[HminAuth' HminAuth]"; first word.
-  
-  (* Close the global invariant. *)
-  iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth' Hmin]") as "HinvgcO".
-  { do 2 iExists _.
-    iFrame "HactiveAuth' HminAuth'".
-    iPureIntro.
-    unfold set_Forall.
-    apply Forall_inv_tail in HtidminLe.
-    rewrite Forall_forall in HtidminLe.
-    rewrite -HactiveLM.
-    setoid_rewrite elem_of_list_to_set.
-    intros ? Hx. specialize (HtidminLe _ Hx). word.
-  }
-  iMod ("HinvgcC" with "[HinvgcO]") as "_"; first done.
-  iModIntro.
-
-  (* Obtaining [site_min_tid_lb] for the postcondition. *)
-  iDestruct (site_min_tid_witness with "HminAuth") as "#HminLb".
+  subst P. simpl. iNamed "Hloop".
+  wp_pures.
   
   (***********************************************************)
   (* site.latch.Unlock()                                     *)
-  (* return tidmin                                           *)
   (***********************************************************)
   iDestruct ("HactiveC" with "HactiveS") as "HactiveL".
   wp_loadField.
   wp_apply (release_spec with "[-HΦ HtidminRef]").
-  { iFrame "Hlock Hlocked".
-    iNext.
-    iExists tidnew.
-    rewrite Etidnew.
-    do 4 iExists _.
-    iClear "Htslb".
-    iFrame "% # ∗".
-    iSplit; iPureIntro.
-    { apply Forall_and.
-      split; first done.
-      apply Forall_cons.
-      split; first word.
-      apply Forall_inv_tail, Forall_and in HtidOrder.
-      destruct HtidOrder as [_ HtidOrder].
-      apply (Forall_impl _ _ _ HtidOrder).
-      word.
-    }
-    split; last done.
-    { intros tidx Hlt'. apply HtidFree. word. }
+  { eauto 10 with iFrame. }
+  wp_pures.
+
+  (***********************************************************)
+  (* return tidmin                                           *)
+  (***********************************************************)
+  (* Deduce [tidmin' = tidloop]. *)
+  rewrite -HtidsactiveSz firstn_all in Htidloop Helem'.
+  replace tidmin' with (int.nat tidloop); last first.
+  { subst tids ts tidsactiveM.
+    clear -Helem Htidmin' Helem' Htidloop.
+    rewrite -list_to_set_cons elem_of_list_to_set in Helem.
+    rewrite -list_to_set_cons set_Forall_list_to_set in Htidmin'.
+    replace (int.nat tidnew) with (u64_to_nat tidnew) in Helem, Htidmin'; last done.
+    rewrite -fmap_cons in Helem Htidmin'.
+    apply (elem_of_list_fmap_1 u64_to_nat) in Helem'.
+    rewrite Forall_forall in Htidmin'.
+    rewrite Forall_forall in Htidloop.
+    apply Htidmin' in Helem'.
+    apply Htidloop in Helem.
+    subst u64_to_nat. word.
   }
   wp_load.
   by iApply "HΦ".
@@ -332,7 +326,7 @@ Proof.
   iIntros "[Hloop HsidRef]".
   iNamed "Hloop".
   wp_pures.
-  
+
   (***********************************************************)
   (* return min                                              *)
   (***********************************************************)

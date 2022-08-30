@@ -2,21 +2,28 @@ From Perennial.program_proof.mvcc Require Import mvcc_prelude.
 From Perennial.program_proof.mvcc Require Import mvcc_ghost mvcc_misc mvcc_action mvcc_tuplext proph_proof.
 
 (* Invariant namespaces. *)
-Definition mvccN := nroot.
-Definition mvccNTuple := nroot .@ "tuple".
-Definition mvccNGC := nroot .@ "gc".
-Definition mvccNSST := nroot .@ "sst".
+Definition mvccN := nroot .@ "mvcc".
+Definition mvccNSST := mvccN .@ "sst".
+Definition mvccNGC := mvccN .@ "gc".
 
 Section def.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (* GC invariants. *)
+Definition mvcc_inv_gc_site_def γ (sid : u64) : iProp Σ :=
+  ∃ (tids : gset nat) (tidmin tidmax : nat),
+    "HactiveA" ∷ site_active_tids_half_auth γ sid tids ∗
+    "HminA"    ∷ site_min_tid_auth γ sid tidmin ∗
+    "#Htslb"   ∷ ts_lb γ (S tidmax) ∗
+    "%Hmin"    ∷ ⌜set_Forall (λ tid, tidmin ≤ tid)%nat tids⌝ ∗
+    "%Hmax"    ∷ ⌜set_Forall (λ tid, tid ≤ tidmax)%nat ({[ tidmin ]} ∪ tids)⌝.
+
 Definition mvcc_inv_gc_def γ : iProp Σ :=
-  [∗ list] sid ∈ sids_all,
-    ∃ (tids : gmap u64 unit) (tidmin : u64),
-      site_active_tids_half_auth γ sid tids ∗
-      site_min_tid_half_auth γ sid (int.nat tidmin) ∗
-      ∀ tid, ⌜tid ∈ (dom tids) -> (int.nat tidmin) ≤ (int.nat tid)⌝.
+  [∗ list] sid ∈ sids_all, mvcc_inv_gc_site_def γ sid.
+
+Instance mvcc_inv_gc_timeless γ :
+  Timeless (mvcc_inv_gc_def γ).
+Proof. unfold mvcc_inv_gc_def. apply _. Defined.
 
 Definition mvcc_inv_gc γ : iProp Σ :=
   inv mvccNGC (mvcc_inv_gc_def γ).
@@ -121,26 +128,26 @@ Hint Extern 1 (environments.envs_entails _ (per_key_inv_def _ _ _ _ _ _)) => unf
 Section theorem.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Theorem active_ge_min γ (tid tidlb : u64) (sid : u64) :
+Theorem active_ge_min γ (tid : u64) (tidlb : nat) (sid : u64) :
   mvcc_inv_gc_def γ -∗
   active_tid γ tid sid -∗
-  min_tid_lb γ (int.nat tidlb) -∗
-  ⌜int.Z tidlb ≤ int.Z tid⌝.
-Proof using heapGS0 mvcc_ghostG0 Σ.
-  (* Q: How to remove [using]? *)
+  min_tid_lb γ tidlb -∗
+  ⌜(tidlb ≤ int.nat tid)%nat⌝.
+Proof.
   iIntros "Hinv Hactive Hlb".
   iDestruct "Hactive" as "[[Htid %Hlookup] _]".
   apply sids_all_lookup in Hlookup.
   apply elem_of_list_lookup_2 in Hlookup.
   iDestruct (big_sepL_elem_of with "Hlb") as "Htidlb"; first done.
-  iDestruct (big_sepL_elem_of with "Hinv") as (tids tidmin) "(Htids & Htidmin & %Hle)"; first done.
+  iDestruct (big_sepL_elem_of with "Hinv") as "H"; first done.
+  iNamed "H".
   (* Obtaining [tidmin ≤ tid]. *)
-  iDestruct (site_active_tids_elem_of with "Htids Htid") as "%Helem".
-  apply Hle in Helem.
+  iDestruct (site_active_tids_elem_of with "HactiveA Htid") as "%Helem".
+  apply Hmin in Helem.
   (* Obtaining [tidlb ≤ tidmin]. *)
-  iDestruct (site_min_tid_valid with "Htidmin Htidlb") as "%Hle'".
+  iDestruct (site_min_tid_valid with "HminA Htidlb") as "%Hle".
   iPureIntro.
-  apply Z.le_trans with (int.Z tidmin); word.
+  lia.
 Qed.
 
 Lemma nca_inv_weaken_ts {γ tids l ts} ts' :
@@ -831,6 +838,26 @@ Proof.
   apply Hfcc in Hinmods. simpl in Hinmods.
   apply elem_of_dom_2 in Hlookup.
   eapply safe_extension_rd; [by eauto | by eauto | set_solver].
+Qed.
+
+Lemma mvcc_inv_sst_ts_auth_acc γ p :
+  mvcc_inv_sst_def γ p -∗
+  ∃ ts, ts_auth γ ts ∗ (∀ ts', ⌜(ts ≤ ts')%nat⌝ -∗ ts_auth γ ts' -∗ mvcc_inv_sst_def γ p).
+Proof.
+  iIntros "Hinv".
+  iNamed "Hinv".
+  iExists _. iFrame "Hts".
+  iIntros (ts' Hle) "Hts".
+  iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
+  { iIntros (k) "%Helem Hkeys".
+    iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
+  }
+  iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
+  iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
+  iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
+  iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
+  iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
+  eauto 15 with iFrame.
 Qed.
 
 End theorem.

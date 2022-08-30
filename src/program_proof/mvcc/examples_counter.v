@@ -76,7 +76,7 @@ Qed.
 Theorem wp_Fetch (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (v : u64), dbmap_ptsto γ (U64 0) 1 (Value v) >>>
-      Fetch #txn @ ↑mvccNSST
+      Fetch #txn @ ↑mvccN
     <<< dbmap_ptsto γ (U64 0) 1 (Value v) >>>
     {{{ RET #v; own_txn_uninit txn γ }}}.
 Proof.
@@ -246,7 +246,7 @@ Qed.
 Theorem wp_Increment (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (v : u64), dbmap_ptsto γ (U64 0) 1 (Value v) >>>
-      Increment #txn @ ↑mvccNSST
+      Increment #txn @ ↑mvccN
     <<< ∃∃ (ok : bool),
           if ok
           then ∃ (u : u64), dbmap_ptsto γ (U64 0) 1 (Value u) ∗ ⌜int.Z u = (int.Z v + 1)%Z⌝
@@ -424,7 +424,7 @@ Qed.
 Theorem wp_Decrement (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (v : u64), dbmap_ptsto γ (U64 0) 1 (Value v) >>>
-      Decrement #txn @ ↑mvccNSST
+      Decrement #txn @ ↑mvccN
     <<< ∃∃ (ok : bool),
           if ok
           then ∃ (u : u64), dbmap_ptsto γ (U64 0) 1 (Value u) ∗ ⌜int.Z u = (int.Z v - 1)%Z⌝

@@ -221,6 +221,17 @@ Proof.
   by iFrame.
 Qed.
 
+#[local]
+ Lemma u64_elem_of_fmap (x : u64) (l : list u64) :
+  int.nat x ∈ (λ (w : u64), int.nat w) <$> l ->
+  x ∈ l.
+Proof.
+  intros H.
+  apply elem_of_list_fmap_2 in H as (y & Hxy & Helem).
+  assert (Exy : x = y) by word.
+  by rewrite Exy.
+Qed.
+
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) deactivate(sid uint64, tid uint64)      *)
 (*****************************************************************)
@@ -263,14 +274,15 @@ Proof.
   iDestruct (is_slice_sz with "HactiveL") as "%HactiveSz".
   rewrite fmap_length in HactiveSz.
   wp_pures.
-  
+
   (*****************************************************************)
   (* idx := findTID(tid, site.tidsActive)                          *)
   (*****************************************************************)
   wp_loadField.
-  iDestruct (site_active_tids_elem_of with "HactiveAuth HactiveFrag") as "%Hin".
-  rewrite -HactiveLM elem_of_list_to_set in Hin.
-  wp_apply (wp_findTID tid _ tidsactiveL with "[$HactiveL]"); first auto.
+  iDestruct (site_active_tids_elem_of with "HactiveAuth HactiveFrag") as "%Helem".
+  rewrite -HactiveLM elem_of_list_to_set in Helem.
+  apply u64_elem_of_fmap in Helem.
+  wp_apply (wp_findTID tid _ tidsactiveL with "[$HactiveL]"); first done.
   iIntros (pos) "[HactiveL %Hlookup]".
   wp_pures.
   
@@ -295,22 +307,24 @@ Proof.
   wp_storeField.
   wp_loadField.
 
-  (* Open the global invariant to update the local active TIDs. *)
+  (* Open GC invariant. *)
   iApply fupd_wp.
   iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
-  iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvgcO HinvgcOAcc]".
+  iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvsiteO HinvsiteC]".
   { by apply sids_all_lookup. }
-  iDestruct "HinvgcO" as (tidsM tidmin') "(HactiveAuth' & HminAuth' & %Hmin)".
-  (* Update the set of active tids. *)
-  iDestruct (site_active_tids_agree with "HactiveAuth' HactiveAuth") as %->.
-  iMod (site_active_tids_delete tid with "HactiveFrag HactiveAuth' HactiveAuth") as "[HactiveAuth' HactiveAuth]".
-  (* Close the global invariant. *)
-  iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth']") as "HinvgcO".
-  { do 2 iExists _.
-    iFrame "HactiveAuth' HminAuth'".
+  iNamed "HinvsiteO".
+  (* iDestruct "HinvgcO" as (tidsM tidmin') "(HactiveAuth' & HminAuth' & %Hmin)". *)
+  (* Delete [int.nat tid] form the set of active tids. *)
+  iDestruct (site_active_tids_agree with "HactiveA HactiveAuth") as %->.
+  iMod (site_active_tids_delete (int.nat tid) with "HactiveFrag HactiveA HactiveAuth") as "[HactiveA HactiveAuth]".
+  (* Close GC invariant. *)
+  iDestruct ("HinvsiteC" with "[HactiveA HminA]") as "HinvgcO".
+  { do 3 iExists _.
+    iFrame "∗ Htslb".
     iPureIntro.
-    rewrite dom_delete_L.
-    set_solver.
+    split.
+    { eapply set_Forall_subseteq; last apply Hmin. set_solver. }
+    { eapply set_Forall_subseteq; last apply Hmax. set_solver. }
   }
   iMod ("HinvgcC" with "[HinvgcO]") as "_"; first done.
   iModIntro.
@@ -322,8 +336,7 @@ Proof.
   { iFrame "Hlock Hlocked".
     iNext.
     set idxlast := (word.sub _ _).
-    iExists _, _, _, tids, _.
-    iFrame "Hactive".
+    iExists _, tids, _.
     iFrame "∗ #".
     assert (Hidxlast : int.nat idxlast = length tids).
     { subst idxlast.
@@ -346,31 +359,43 @@ Proof.
       replace (int.nat idxlast) with (length tids).
       apply take_app.
     }
-    iSplit.
+    iPureIntro.
+    split.
     { (* Prove [HactiveLM]. *)
-      iPureIntro.
-      rewrite (list_to_set_perm_L _ (delete (int.nat pos) tidsactiveL)); last done.
-      rewrite dom_delete_L.
+      (* Q: We're able to do this rewrite due to [fmap_Permutation] and [list_to_set_perm_L]? *)
+      rewrite Hperm.
       rewrite -HactiveLM.
+      set f := (λ (tid : u64), int.nat tid).
       rewrite delete_take_drop.
       apply take_drop_middle in Hlookup.
-      rewrite <- Hlookup at 3.
+      rewrite -{3} Hlookup.
+      do 2 rewrite fmap_app.
       do 2 rewrite list_to_set_app_L.
+      set s1 := (list_to_set (f <$> (take _ _))).
       rewrite list_to_set_cons.
-      set s1 := (list_to_set (take _ _)).
-      set s2 := (list_to_set (drop _ _)).
+      set s2 := (list_to_set (f <$> (drop _ _))).
       do 2 rewrite difference_union_distr_l_L.
       rewrite -Hlookup in HactiveND.
       apply NoDup_app in HactiveND as [_ [Hnotins1 Hnotins2]].
       apply NoDup_cons in Hnotins2 as [Hnotins2 _].
-      replace (s1 ∖ {[tid]}) with s1 by set_solver.
-      replace (s2 ∖ {[tid]}) with s2 by set_solver.
+      assert (Hs1 : (int.nat tid) ∉ s1).
+      { intros Helem'.
+        rewrite elem_of_list_to_set in Helem'.
+        apply u64_elem_of_fmap in Helem'.
+        set_solver.
+      }
+      replace (s1 ∖ {[int.nat tid]}) with s1; last set_solver.
+      assert (Hs2 : (int.nat tid) ∉ s2).
+      { intros Helem'.
+        rewrite elem_of_list_to_set in Helem'.
+        apply u64_elem_of_fmap in Helem'.
+        set_solver.
+      }
+      replace (s2 ∖ {[int.nat tid]}) with s2; last set_solver.
       set_solver.
     }
-    iPureIntro.
-    split.
     { (* Prove [HactiveND]. *)
-      apply (NoDup_Permutation_proper _ _ Hperm).
+      rewrite Hperm.
       rewrite delete_take_drop.
       apply take_drop_middle in Hlookup.
       rewrite -Hlookup in HactiveND.
@@ -380,19 +405,6 @@ Proof.
       split; first done.
       split; last done.
       set_solver.
-    }
-    split.
-    { (* Prove [HtidOrder] *)
-      apply Forall_cons_2; first by apply Forall_inv in HtidOrder.
-      apply Forall_inv_tail in HtidOrder. rewrite Hperm.
-      by apply Forall_delete.
-    }
-    split; last done.
-    { (* Prove [HtidFree]. *)
-      simpl.
-      intros tidx Htidx.
-      apply not_elem_of_weaken with (dom tidsactiveM); last set_solver.
-      auto.
     }
   }
   wp_pures.

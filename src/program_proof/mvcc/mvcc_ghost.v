@@ -5,7 +5,7 @@ From Perennial.program_proof.mvcc Require Import mvcc_prelude.
 (* RA definitions. *)
 Local Definition vchainR := mono_listR (leibnizO dbval).
 Local Definition key_vchainR := gmapR u64 vchainR.
-Local Definition tidsR := gmap_viewR u64 (leibnizO unit).
+Local Definition tidsR := gmap_viewR nat (leibnizO unit).
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
 
@@ -125,8 +125,8 @@ Definition ltuple_ptstos γ (m : dbmap) (ts : nat) : iProp Σ :=
   [∗ map] k ↦ v ∈ m, ltuple_ptsto γ k v ts.
 
 (* Definitions about GC-related resources. *)
-Definition site_active_tids_auth_def γ (sid : u64) q tids : iProp Σ :=
-  own γ {[sid := (gmap_view_auth (DfracOwn q) tids)]}.
+Definition site_active_tids_auth_def γ (sid : u64) q (tids : gset nat) : iProp Σ :=
+  own γ {[sid := (gmap_view_auth (DfracOwn q) ((gset_to_gmap tt tids) : gmap nat (leibnizO unit)))]}.
 
 Definition site_active_tids_auth γ sid tids : iProp Σ :=
   site_active_tids_auth_def γ.(mvcc_sid_tids) sid 1 tids.
@@ -141,22 +141,19 @@ Definition site_active_tids_frag γ (sid : u64) tid : iProp Σ :=
   site_active_tids_frag_def γ.(mvcc_sid_tids) sid tid.
 
 Definition active_tid γ (tid sid : u64) : iProp Σ :=
-  (site_active_tids_frag γ sid tid ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜0 < int.Z tid < 2 ^ 64 - 1⌝ .
+  (site_active_tids_frag γ sid (int.nat tid) ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜(0 < int.Z tid < 2 ^ 64 - 1)⌝ .
 
-Definition site_min_tid_auth_def γ (sid : u64) q tidN : iProp Σ :=
-  own γ {[sid := (●MN{# q} tidN)]}.
+Definition site_min_tid_auth_def γ (sid : u64) q tid : iProp Σ :=
+  own γ {[sid := (●MN{# q} tid)]}.
 
-Definition site_min_tid_auth γ (sid : u64) q tidN : iProp Σ :=
-  site_min_tid_auth_def γ.(mvcc_sid_min_tid) sid q tidN.
+Definition site_min_tid_auth γ (sid : u64) tid : iProp Σ :=
+  site_min_tid_auth_def γ.(mvcc_sid_min_tid) sid 1 tid.
 
-Definition site_min_tid_half_auth γ (sid : u64) tidN : iProp Σ :=
-  site_min_tid_auth_def γ.(mvcc_sid_min_tid) sid (1 / 2) tidN.
+Definition site_min_tid_lb γ (sid : u64) tid : iProp Σ :=
+  own γ.(mvcc_sid_min_tid) {[sid := (◯MN tid)]}.
 
-Definition site_min_tid_lb γ (sid : u64) tidN : iProp Σ :=
-  own γ.(mvcc_sid_min_tid) {[sid := (◯MN tidN)]}.
-
-Definition min_tid_lb γ tidN : iProp Σ :=
-  [∗ list] sid ∈ sids_all, site_min_tid_lb γ sid tidN.
+Definition min_tid_lb γ tid : iProp Σ :=
+  [∗ list] sid ∈ sids_all, site_min_tid_lb γ sid tid.
 
 (* Definitions about SST-related resources. *)
 Definition ts_auth γ (ts : nat) : iProp Σ :=
@@ -335,13 +332,14 @@ Proof.
 Qed.
 
 Lemma site_active_tids_elem_of γ (sid : u64) tids tid :
-  site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ (dom tids)⌝.
+  site_active_tids_half_auth γ sid tids -∗ site_active_tids_frag γ sid tid -∗ ⌜tid ∈ tids⌝.
 Proof.
   iIntros "Hauth Helem".
   iDestruct (own_valid_2 with "Hauth Helem") as %Hvalid.
   rewrite singleton_op singleton_valid gmap_view_both_dfrac_valid_L in Hvalid.
   destruct Hvalid as (_ & _ & Hlookup).
   apply elem_of_dom_2 in Hlookup.
+  rewrite dom_gset_to_gmap in Hlookup.
   done.
 Qed.
 
@@ -354,27 +352,29 @@ Proof.
   iDestruct (own_valid_2 with "Hauth1 Hauth2") as %Hvalid.
   rewrite singleton_op singleton_valid gmap_view_auth_dfrac_op_valid_L in Hvalid.
   destruct Hvalid as [_ Etids].
-  done.
+  rewrite -(dom_gset_to_gmap tids ()) -(dom_gset_to_gmap tids' ()).
+  by rewrite Etids.
 Qed.
 
 Lemma site_active_tids_insert {γ sid tids} tid :
-  tid ∉ dom tids ->
+  tid ∉ tids ->
   site_active_tids_half_auth γ sid tids -∗
   site_active_tids_half_auth γ sid tids ==∗
-  site_active_tids_half_auth γ sid (<[tid := tt]>tids) ∗
-  site_active_tids_half_auth γ sid (<[tid := tt]>tids) ∗
+  site_active_tids_half_auth γ sid ({[ tid ]} ∪ tids) ∗
+  site_active_tids_half_auth γ sid ({[ tid ]} ∪ tids) ∗
   site_active_tids_frag γ sid tid.
 Proof.
   iIntros "%Hdom Hauth1 Hauth2".
-  iAssert (site_active_tids_auth γ sid (<[tid := tt]>tids) ∗ site_active_tids_frag γ sid tid)%I
+  iAssert (site_active_tids_auth γ sid ({[ tid ]} ∪ tids) ∗ site_active_tids_frag γ sid tid)%I
     with "[> Hauth1 Hauth2]" as "[[Hauth1 Hauth2] Hfrag]".
   { iCombine "Hauth1 Hauth2" as "Hauth".
     rewrite -own_op singleton_op.
     iApply (own_update with "Hauth").
     apply singleton_update.
+    rewrite gset_to_gmap_union_singleton.
     (* Q: What's the difference between [apply] (which fails here) and [apply:]? *)
     apply: gmap_view_alloc; last done.
-    by apply not_elem_of_dom.
+    by rewrite lookup_gset_to_gmap_None.
   }
   by iFrame.
 Qed.
@@ -383,22 +383,24 @@ Lemma site_active_tids_delete {γ sid tids} tid :
   site_active_tids_frag γ sid tid -∗
   site_active_tids_half_auth γ sid tids -∗
   site_active_tids_half_auth γ sid tids ==∗
-  site_active_tids_half_auth γ sid (delete tid tids) ∗
-  site_active_tids_half_auth γ sid (delete tid tids).
+  site_active_tids_half_auth γ sid (tids ∖ {[ tid ]}) ∗
+  site_active_tids_half_auth γ sid (tids ∖ {[ tid ]}).
 Proof.
   iIntros "Hfrag Hauth1 Hauth2".
-  iAssert (site_active_tids_auth γ sid (delete tid tids))%I
+  iAssert (site_active_tids_auth γ sid (tids ∖ {[ tid ]}))%I
     with "[> Hfrag Hauth1 Hauth2]" as "[Hauth1 Hauth2]".
   { iCombine "Hauth1 Hauth2" as "Hauth".
     iApply (own_update_2 with "Hauth Hfrag").
     rewrite singleton_op.
-    apply singleton_update, gmap_view_delete.
+    rewrite gset_to_gmap_difference_singleton.
+    apply singleton_update.
+    apply: gmap_view_delete.
   }
   by iFrame.
 Qed.
 
 Lemma site_min_tid_valid γ (sid : u64) tidN tidlbN :
-  site_min_tid_half_auth γ sid tidN -∗
+  site_min_tid_auth γ sid tidN -∗
   site_min_tid_lb γ sid tidlbN -∗
   ⌜(tidlbN ≤ tidN)%nat⌝.
 Proof.
@@ -420,44 +422,27 @@ Proof.
   done.
 Qed.
 
-Lemma site_min_tid_agree γ (sid : u64) q tidN tidN' :
-  site_min_tid_auth γ sid q tidN -∗
-  site_min_tid_auth γ sid q tidN' -∗
-  ⌜tidN = tidN'⌝.
+Lemma site_min_tid_update {γ sid tid} tid' :
+  (tid ≤ tid')%nat ->
+  site_min_tid_auth γ sid tid ==∗
+  site_min_tid_auth γ sid tid'.
 Proof.
-  iIntros "Hauth1 Hauth2".
-  iDestruct (own_valid_2 with "Hauth1 Hauth2") as %Hvalid.
-  rewrite singleton_op singleton_valid mono_nat_auth_dfrac_op_valid in Hvalid.
-  destruct Hvalid as [_ Etid].
+  iIntros "%Hle Hauth".
+  iApply (own_update with "Hauth").
+  apply singleton_update, mono_nat_update.
   done.
 Qed.
 
-Lemma site_min_tid_update {γ sid tidN} tidN' :
-  (tidN ≤ tidN')%nat ->
-  site_min_tid_half_auth γ sid tidN -∗
-  site_min_tid_half_auth γ sid tidN ==∗
-  site_min_tid_half_auth γ sid tidN' ∗ site_min_tid_half_auth γ sid tidN'.
-Proof.
-  iIntros "%Hle Hauth1 Hauth2".
-  iAssert (site_min_tid_auth γ sid 1 tidN') with "[> Hauth1 Hauth2]" as "[Hauth1 Hauth2]".
-  { iCombine "Hauth1 Hauth2" as "Hauth".
-    iApply (own_update with "Hauth").
-    apply singleton_update, mono_nat_update.
-    done.
-  }
-  by iFrame.
-Qed.
-
-Lemma site_min_tid_witness {γ sid q tidN} :
-  site_min_tid_auth γ sid q tidN -∗
-  site_min_tid_lb γ sid tidN.
+Lemma site_min_tid_witness {γ sid tid} :
+  site_min_tid_auth γ sid tid -∗
+  site_min_tid_lb γ sid tid.
 Proof.
   iApply own_mono.
   apply singleton_mono, mono_nat_included.
 Qed.
 
-Lemma min_tid_lb_zero γ q :
-  ([∗ list] sid ∈ sids_all, ∃ tid, site_min_tid_auth γ sid q tid) -∗
+Lemma min_tid_lb_zero γ :
+  ([∗ list] sid ∈ sids_all, ∃ tid, site_min_tid_auth γ sid tid) -∗
   min_tid_lb γ 0%nat.
 Proof.
   iApply big_sepL_mono.
@@ -547,7 +532,7 @@ Lemma site_active_tids_alloc :
               ([∗ list] sid ∈ sids_all, site_active_tids_auth_def γ sid (1 / 2) ∅).
 Proof.
   set u64_all : gset u64 := (fin_to_set u64).
-  set m := gset_to_gmap (gmap_view_auth (DfracOwn 1) (∅ : gmap u64 (leibnizO unit))) u64_all.
+  set m := gset_to_gmap (gmap_view_auth (DfracOwn 1) (∅ : gmap nat (leibnizO unit))) u64_all.
   iMod (own_alloc m) as (γ) "Hown".
   { intros k.
     rewrite lookup_gset_to_gmap option_guard_True; last apply elem_of_fin_to_set.
@@ -565,6 +550,9 @@ Proof.
     iIntros "!>" (k v). subst m.
     rewrite lookup_gset_to_gmap_Some.
     iIntros ([_ <-]) "Hown".
+    unfold site_active_tids_auth_def.
+    iFrame.
+    rewrite gset_to_gmap_empty.
     done.
   }
   set sids : gset u64 := list_to_set sids_all.
@@ -579,8 +567,7 @@ Proof.
 Qed.
 
 Lemma site_min_tid_alloc :
-  ⊢ |==> ∃ γ, ([∗ list] sid ∈ sids_all, site_min_tid_auth_def γ sid (1 / 2) 0) ∗
-              ([∗ list] sid ∈ sids_all, site_min_tid_auth_def γ sid (1 / 2) 0).
+  ⊢ |==> ∃ γ, ([∗ list] sid ∈ sids_all, site_min_tid_auth_def γ sid 1 0).
 Proof.
   set u64_all : gset u64 := (fin_to_set u64).
   set m := gset_to_gmap (●MN 0) u64_all.
@@ -591,7 +578,7 @@ Proof.
     apply mono_nat_auth_valid.
   }
   iModIntro. iExists γ.
-  iAssert ([∗ set] sid ∈ u64_all, site_min_tid_auth_def γ sid 1 ∅)%I
+  iAssert ([∗ set] sid ∈ u64_all, site_min_tid_auth_def γ sid 1 0)%I
     with "[Hown]" as "Hown".
   { rewrite -(big_opM_singletons m).
     rewrite big_opM_own_1.
@@ -608,10 +595,7 @@ Proof.
   subst sids.
   rewrite big_sepS_list_to_set; last first.
   { unfold sids_all. unfold N_TXN_SITES. apply seq_U64_NoDup; word. }
-  rewrite -big_sepL_sep.
-  iApply (big_sepL_mono with "Hown").
-  iIntros (sid sidN Helem) "[H1 H2]".
-  iFrame.
+  done.
 Qed.
 
 Lemma mvcc_ghost_alloc :
@@ -632,8 +616,7 @@ Lemma mvcc_ghost_alloc :
     (* GC-related. *)
     ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
     ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
-    ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0) ∗
-    ([∗ list] sid ∈ sids_all, site_min_tid_half_auth γ sid 0).
+    ([∗ list] sid ∈ sids_all, site_min_tid_auth γ sid 0).
 Proof.
   iMod ptuples_alloc as (γptuple) "[Hptpls1 Hptpls2]".
   iMod ltuples_alloc as (γltuple) "Hltpls".
@@ -645,7 +628,7 @@ Proof.
   iMod (ghost_map_alloc (∅ : gmap (nat * dbmap) unit)) as (γcmt) "[Hcmt _]".
   iMod (ghost_map_alloc (gset_to_gmap Nil keys_all)) as (γm) "[Hm Hpts]".
   iMod site_active_tids_alloc as (γactive) "[Hacts1 Hacts2]".
-  iMod site_min_tid_alloc as (γmin) "[Hmin1 Hmin2]".
+  iMod site_min_tid_alloc as (γmin) "Hmin".
   set γ :=
     {|
       mvcc_ptuple := γptuple;

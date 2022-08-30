@@ -18,7 +18,6 @@ Definition Txn := struct.decl [
 
 Definition TxnSite := struct.decl [
   "latch" :: ptrT;
-  "tidLast" :: uint64T;
   "tidsActive" :: slice.T uint64T;
   "padding" :: arrayT uint64T
 ].
@@ -71,7 +70,6 @@ Definition TxnMgr__activate: val :=
     let: "t" := ref (zero_val uint64T) in
     "t" <-[uint64T] tid.GenTID "sid";;
     control.impl.Assume (![uint64T] "t" < #18446744073709551615);;
-    struct.storeF TxnSite "tidLast" "site" (![uint64T] "t");;
     struct.storeF TxnSite "tidsActive" "site" (SliceAppend uint64T (struct.loadF TxnSite "tidsActive" "site") (![uint64T] "t"));;
     lock.release (struct.loadF TxnSite "latch" "site");;
     ![uint64T] "t".
@@ -121,7 +119,6 @@ Definition TxnMgr__getMinActiveTIDSite: val :=
     let: "tidnew" := ref (zero_val uint64T) in
     "tidnew" <-[uint64T] tid.GenTID "sid";;
     control.impl.Assume (![uint64T] "tidnew" < #18446744073709551615);;
-    struct.storeF TxnSite "tidLast" "site" (![uint64T] "tidnew");;
     let: "tidmin" := ref_to uint64T (![uint64T] "tidnew") in
     ForSlice uint64T <> "tid" (struct.loadF TxnSite "tidsActive" "site")
       (if: "tid" < ![uint64T] "tidmin"

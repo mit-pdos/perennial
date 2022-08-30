@@ -4,22 +4,15 @@ From Perennial.program_proof.mvcc Require Import tuple_repr index_proof.
 Section repr.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-(* TODO: [site_active_tids_half_auth γ sid (gset_to_gmap () (list_to_set tidsactiveL))] to remove [tidsactiveM] *)
+(* TODO: Rename [tidsactiveM]. *)
 Definition own_txnsite (txnsite : loc) (sid : u64) γ : iProp Σ := 
-  (* FIXME: don't need [tidlast] anymore. *)
-  ∃ (tidlast tidmin : u64) (tidsactive : Slice.t)
-    (tidsactiveL : list u64) (tidsactiveM : gmap u64 unit),
-    "Htidlast" ∷ txnsite ↦[TxnSite :: "tidLast"] #tidlast ∗
-    "#Htslb" ∷ ts_lb γ (S (int.nat tidlast)) ∗
+  ∃ (tidsactive : Slice.t) (tidsactiveL : list u64) (tidsactiveM : gset nat),
     "Hactive" ∷ txnsite ↦[TxnSite :: "tidsActive"] (to_val tidsactive) ∗
     "HactiveL" ∷ typed_slice.is_slice tidsactive uint64T 1 tidsactiveL ∗
     "HactiveAuth" ∷ site_active_tids_half_auth γ sid tidsactiveM ∗
-    "%HactiveLM" ∷ ⌜(list_to_set tidsactiveL) = dom tidsactiveM⌝ ∗
-    "%HactiveND" ∷ (⌜NoDup tidsactiveL⌝) ∗
-    "HminAuth" ∷ site_min_tid_half_auth γ sid (int.nat tidmin) ∗
-    "%HtidOrder" ∷ (⌜Forall (λ tid, int.Z tidmin ≤ int.Z tid ≤ int.Z tidlast) (tidlast :: tidsactiveL)⌝) ∗
-    "%HtidFree" ∷ (∀ tid, ⌜int.Z tidlast < int.Z tid -> tid ∉ dom tidsactiveM⌝) ∗
-    "_" ∷ True.
+    (* "%HactiveLM" ∷ ⌜(∀ tid, tid ∈ (int.Z <$> tidsactiveL) ↔ tid ∈ (Z.of_nat <$> (elements tidsactiveM)))⌝ ∗ *)
+    "%HactiveLM" ∷ ⌜list_to_set ((λ tid, int.nat tid) <$> tidsactiveL) = tidsactiveM⌝ ∗
+    "%HactiveND" ∷ ⌜NoDup tidsactiveL⌝.
 
 Definition is_txnsite (site : loc) (sid : u64) γ : iProp Σ := 
   ∃ (latch : loc),

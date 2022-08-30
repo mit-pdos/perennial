@@ -204,7 +204,8 @@ Proof.
         destruct vers eqn:Evers; first contradiction.
         simpl.
         apply Forall_app_2; first done.
-        by apply Forall_singleton.
+        rewrite Forall_singleton. simpl.
+        word.
       }
       { (* Prove [Hnotnil]. *)
         apply not_eq_sym.

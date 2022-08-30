@@ -12,8 +12,8 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Theorem wp_txn__Begin txn γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
-      Txn__Begin #txn @ ∅
-    <<< ∃ ts', ts_auth γ ts' ∗ ⌜ts < ts'⌝ >>>
+      Txn__Begin #txn @ ↑mvccNGC
+    <<< ∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
     {{{ (tid : u64) (wrbuf : loc), RET #();
         own_txn_impl txn wrbuf ts γ ∗
         own_wrbuf_xtpls wrbuf ∅ ∧ ⌜int.nat tid = ts⌝

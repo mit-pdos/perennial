@@ -62,7 +62,7 @@ Qed.
 Theorem wp_WriteReservedKey (txn : loc) (v : u64) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_WriteReservedKey r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      WriteReservedKey #txn #v @ ↑mvccNSST
+      WriteReservedKey #txn #v @ ↑mvccN
     <<< ∃∃ (ok : bool) (w : dbmap),
           if ok then ⌜Q_WriteReservedKey v r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r
     >>>
@@ -127,7 +127,7 @@ Qed.
 Theorem wp_WriteFreeKey (txn : loc) (v : u64) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (r : dbmap), ⌜P_WriteFreeKey r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      WriteFreeKey #txn #v @ ↑mvccNSST
+      WriteFreeKey #txn #v @ ↑mvccN
     <<< ∃∃ (ok : bool) (w : dbmap),
           if ok then ⌜Q_WriteFreeKey v r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r
     >>>

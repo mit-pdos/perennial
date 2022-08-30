@@ -12,8 +12,8 @@ Theorem wp_txnMgr__activate (txnmgr : loc) (sid : u64) γ :
   ⊢ is_txnmgr txnmgr γ -∗
     {{{ ⌜(int.Z sid) < N_TXN_SITES⌝ }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
-      TxnMgr__activate #txnmgr #sid @ ∅
-    <<< ∃ ts', ts_auth γ ts' ∗ ⌜ts < ts'⌝ >>>
+      TxnMgr__activate #txnmgr #sid @ ↑mvccNGC
+    <<< ∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
     {{{ (tid : u64), RET #tid; active_tid γ tid sid ∧ ⌜int.nat tid = ts⌝ }}}.
 Proof.
   iIntros "#Htxnmgr !>" (Φ) "%HsitesBound HAU".
@@ -51,28 +51,61 @@ Proof.
   (* var t uint64                                            *)
   (* t = tid.GenTID(sid)                                     *)
   (***********************************************************)
-  wp_apply (wp_ref_of_zero); first done.
+  wp_apply wp_ref_of_zero; first done.
   iIntros (tidRef) "HtidRef".
   wp_pures.
-  wp_apply (wp_GenTID).
+  wp_apply wp_GenTID.
+  iInv "Hinvgc" as "> HinvgcO" "HinvgcC".
+  (* Open GC invariant. *)
+  iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvsiteO HinvsiteC]".
+  { by apply sids_all_lookup. }
+  iNamed "HinvsiteO".
+  (* Obtain [ts_auth] from AU. *)
+  replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
   iMod "HAU" as (ts) "[Hts HAUC]".
+  (* Deduce [S tidmax ≤ ts]. *)
+  iDestruct (ts_auth_lb_le with "Hts Htslb") as %Hle.
   iModIntro.
   iExists ts.
-  (* Deduce [tslast < ts] with [Hts] and [Htslb]. *)
-  iDestruct (ts_auth_lb_le with "Hts Htslb") as "%HltN".
   iFrame "Hts".
-  iIntros "[%n [Hts %Hgz]]".
-  (* Before we close the invariant, obtain a witness of a LB of timestamp. *)
-  iAssert (ts_lb γ (S ts))%I as "#Htslb'".
-  { iDestruct (ts_witness with "Hts") as "#H".
-    iApply (ts_lb_weaken with "H"). lia.
+  iIntros "[%ts' [Hts %Hgz]]".
+  (* Insert [ts] into the set of active tids. *)
+  iDestruct (site_active_tids_agree with "HactiveA HactiveAuth") as %->.
+  iMod (site_active_tids_insert ts with "HactiveA HactiveAuth") as
+    "(HactiveA & HactiveAuth & HactiveFrag)".
+  { intros contra.
+    apply set_Forall_union_inv_2 in Hmax.
+    apply Hmax in contra. lia.
   }
-  iMod ("HAUC" with "[Hts]") as "HΦ"; first eauto with iFrame.
+  (* Obtain a new lower bound on [tidmax]. *)
+  iClear "Htslb".
+  iDestruct (ts_witness with "Hts") as "#Htslb".
+  iMod ("HAUC" with "[Hts]") as "HΦ"; first by eauto with iFrame.
+  (* Close GC invariant. *)
+  iDestruct ("HinvsiteC" with "[HactiveA HminA]") as "Hinvsite".
+  { iExists _, _, ts.
+    iDestruct (ts_lb_weaken (S ts) with "Htslb") as "Htslb'"; first lia.
+    iFrame "∗ Htslb'".
+    iPureIntro.
+    apply set_Forall_union_inv_1 in Hmax as Hminmax.
+    rewrite set_Forall_singleton in Hminmax.
+    apply set_Forall_union_inv_2 in Hmax.
+    split.
+    { apply set_Forall_union; last done.
+      rewrite set_Forall_singleton. lia.
+    }
+    { apply set_Forall_union.
+      { rewrite set_Forall_singleton. lia. }
+      { apply set_Forall_union; first by rewrite set_Forall_singleton.
+        apply (set_Forall_impl _ _ _ Hmax). lia.
+      }
+    }
+  }
+  iMod ("HinvgcC" with "Hinvsite") as "_".
   iModIntro.
-  iIntros (tid) "%Etid".
-  assert (Hlt : int.Z tidlast < int.Z tid) by lia.
+  iIntros (tid Etid).
   wp_store.
-  
+
   (***********************************************************)
   (* machine.Assume(t < 18446744073709551615)                *)
   (***********************************************************)
@@ -80,13 +113,10 @@ Proof.
   wp_apply wp_Assume.
   iIntros "%Htidmax".
   apply bool_decide_eq_true_1 in Htidmax.
-  
+
   (***********************************************************)
-  (* site.tidLast = t                                        *)
   (* site.tidsActive = append(site.tidsActive, t)            *)
   (***********************************************************)
-  wp_load.
-  wp_storeField.
   wp_load.
   wp_loadField.
   wp_apply (typed_slice.wp_SliceAppend (V := u64) with "HactiveL").
@@ -94,109 +124,39 @@ Proof.
   wp_storeField.
   wp_loadField.
 
-  (* The local set of active tids is added with [tid], prove [tid ≥ tidmin]. *)
-
-  (* Open the global invariant. *)
-  iApply fupd_wp.
-  iInv "Hinvgc" as ">HinvgcO" "HinvgcC".
-  (* unfold mvcc_inv_gc_def. *)
-  iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvgcO HinvgcOAcc]".
-  { by apply sids_all_lookup. }
-  iDestruct "HinvgcO" as (tidsM tidmin') "(HactiveAuth' & HminAuth' & %Hmin)".
-  (* Update the set of active tids. *)
-  iDestruct (site_active_tids_agree with "HactiveAuth' HactiveAuth") as %->.
-  iMod (site_active_tids_insert tid with "HactiveAuth' HactiveAuth") as "(HactiveAuth' & HactiveAuth & HactiveFrag)".
-  { apply HtidFree. word. }
-  set tidsactiveM' := <[tid := tt]>tidsactiveM.
-  (* Agree on the minimal tid. *)
-  iDestruct (site_min_tid_agree with "HminAuth' HminAuth") as "%Emin".
-  rewrite Emin. rewrite Emin in Hmin.
-  clear Emin tidmin'.
-  (* Close the global invariant. *)
-  iDestruct ("HinvgcOAcc" with "[HactiveAuth' HminAuth']") as "HinvgcO".
-  { do 2 iExists _.
-    iFrame "HactiveAuth' HminAuth'".
-    subst tidsactiveM'.
-    rewrite dom_insert_L.
-
-    iPureIntro.
-    intros tidx Helem.
-    apply elem_of_union in Helem.
-
-    destruct Helem; last auto.
-    apply elem_of_singleton in H.
-    subst tidx.
-    apply Forall_inv in HtidOrder.
-    trans (int.nat tidlast); word.
-  }
-  iMod ("HinvgcC" with "[HinvgcO]") as "_"; first done.
-  iModIntro.
-    
   (***********************************************************)
   (* site.latch.Unlock()                                     *)
   (***********************************************************)
   wp_apply (release_spec with "[-HΦ HtidRef HactiveFrag]").
   { iFrame "Hlock Hlocked".
     iNext.
-    iExists tid.
-    do 4 iExists _.
-    rewrite Etid.
-    iFrame "∗ # %".
-    iSplit.
-    { (* Prove [HactiveLM]. *)
-      iPureIntro.
-      (* Q: Why can't rewrite list_to_set_snoc? How to rewrite ≡? *)
-      rewrite list_to_set_app_L.
-      simpl.
-      subst tidsactiveM'.
-      rewrite dom_insert_L.
-      set_solver.
-    }
+    do 3 iExists _.
+    iFrame.
     iPureIntro.
     split.
+    { (* Prove [HactiveLM]. *)
+      rewrite fmap_app list_to_set_app_L HactiveLM.
+      simpl.
+      set_solver.
+    }
     { (* Prove [HactiveND]. *)
       apply NoDup_app.
       split; first done.
       split; last apply NoDup_singleton.
-      intros tidx Hin.
-      rewrite -HactiveLM in HtidFree.
-      setoid_rewrite not_elem_of_list_to_set in HtidFree.
-      assert (contra : tid ∉ tidsactiveL).
-      { apply HtidFree. word. }
-      set_solver.
-    }
-    split.
-    { (* Prove [HtidOrder]. *)
-      apply Forall_cons.
-      split.
-      { split; last done.
-        apply Forall_inv in HtidOrder. word.
+      intros tidx Helem contra.
+      rewrite elem_of_list_singleton in contra.
+      apply set_Forall_union_inv_2 in Hmax.
+      assert (Helem' : int.nat tidx ∈ tidsactiveM).
+      { rewrite -HactiveLM.
+        rewrite elem_of_list_to_set.
+        apply (elem_of_list_fmap_1 (λ x : u64, int.nat x)).
+        done.
       }
-      apply Forall_app.
-      split; last first.
-      { apply Forall_singleton.
-        split; last done.
-        apply Forall_inv in HtidOrder. word.
-      }
-      apply Forall_inv_tail in HtidOrder.
-      apply (Forall_impl _ _ _ HtidOrder).
-      word.
-    }
-    split; last done.
-    { (* Prove [HtidlastNotin]. *)
-      simpl.
-      intros tidx Htidx.
-      subst tidsactiveM'.
-      rewrite dom_insert_L.
-      apply not_elem_of_union.
-      split.
-      - unfold not. intros contra.
-        rewrite elem_of_singleton in contra.
-        rewrite contra in Htidx. word.
-      - apply HtidFree. word.
+      apply Hmax in Helem'.
+      rewrite contra Etid in Helem'.
+      lia.
     }
   }
-  wp_pures.
   wp_load.
   
   (***********************************************************)
@@ -204,8 +164,10 @@ Proof.
   (***********************************************************)
   iApply "HΦ".
   iModIntro.
-  iFrame "∗ # %".
-  iPureIntro. word.
+  iSplit; last done.
+  unfold active_tid.
+  rewrite Etid.
+  iFrame. iPureIntro. word.
 Qed.
 
 End program.

@@ -336,7 +336,7 @@ Proof.
   wp_apply (wp_findRightVer with "[$HversS]").
   { iPureIntro.
     setoid_rewrite Exists_exists in HexistsLt.
-    apply HexistsLt; [word | done].
+    apply HexistsLt; word.
   }
   iIntros (ver) "[%Hspec HversS]".
   wp_pures.
@@ -464,8 +464,8 @@ Proof.
   { subst tidlast'.
     iPureIntro.
     case_bool_decide.
-    - by apply HtupleAbs.
-    - apply Znot_lt_ge, Z.ge_le in H. by apply HtupleAbs.
+    - apply HtupleAbs. word.
+    - apply Znot_lt_ge, Z.ge_le in H. apply HtupleAbs. word.
   }
 
   assert (Hlast' : last vchain' = Some (spec_lookup vers tidlast')).

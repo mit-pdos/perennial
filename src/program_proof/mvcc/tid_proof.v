@@ -15,7 +15,7 @@ Theorem wp_GenTID (sid : u64) γ :
   ⊢ {{{ True }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
       GenTID #sid @ ∅
-    <<< ∃ ts', ts_auth γ ts' ∗ ⌜ts < ts'⌝ >>>
+    <<< ∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
     {{{ (tid : u64), RET #tid; ⌜int.nat tid = ts⌝ }}}.
 Proof.
   iIntros "!>" (Φ) "Hpre HAU".

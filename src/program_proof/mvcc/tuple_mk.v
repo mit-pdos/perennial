@@ -78,11 +78,11 @@ Proof.
   
   (* Obtain [min_tid_lb γ 0]. *)
   iInv "Hinvgc" as "> HinvgcO" "HinvgcC".
-  iDestruct (min_tid_lb_zero γ (1 / 2) with "[HinvgcO]") as "#Hlb".
+  iDestruct (min_tid_lb_zero γ with "[HinvgcO]") as "#Hlb".
   { unfold mvcc_inv_gc_def.
     iApply (big_sepL_mono with "HinvgcO").
     iIntros (sidN sid) "%Hlookup H".
-    iDestruct "H" as (tids tidmin) "(_ & H & _)".
+    iNamed "H".
     by eauto.
   }
   iMod ("HinvgcC" with "HinvgcO") as "_".

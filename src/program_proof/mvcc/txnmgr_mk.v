@@ -36,20 +36,12 @@ Proof.
   iIntros (sites) "HsitesL".
   wp_storeField.
 
+  (* Allocate ghost states. *)
   iMod mvcc_ghost_alloc as (γ) "H".
   iDestruct "H" as "(Hphys & Hphys' & Hlogi & Hts & H)".
   iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & Hpts & H)".
-  iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths & HminAuths')".
-  (* TODO: allocate inv sst with Hvchains' *)
-  iMod (inv_alloc mvccNGC _ (mvcc_inv_gc_def γ) with "[HactiveAuths' HminAuths']") as "#Hinvgc".
-  { iNext. unfold mvcc_inv_gc_def.
-    iDestruct (big_sepL_sep_2 with "HactiveAuths' HminAuths'") as "HinvgcO".
-    iApply big_sepL_mono; last iAccu.
-    iIntros (i sid) "%Hlookup [HactiveAuths' HminAuths']".
-    iExists ∅, (U64 0).
-    by iFrame.
-  }
-
+  iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths)".
+  
   (***********************************************************)
   (* tid.GenTID(0)                                           *)
   (***********************************************************)
@@ -68,6 +60,23 @@ Proof.
   wp_pures.
   iDestruct (ts_witness with "Hts") as "#Htslb".
 
+  (* Allocate the GC invariant. *)
+  iMod (inv_alloc mvccNGC _ (mvcc_inv_gc_def γ) with "[HactiveAuths' HminAuths]") as "#Hinvgc".
+  { iNext. unfold mvcc_inv_gc_def.
+    iDestruct (big_sepL_sep_2 with "HactiveAuths' HminAuths") as "HinvgcO".
+    iApply (big_sepL_impl with "HinvgcO").
+    iModIntro.
+    iIntros (i sid) "%Hlookup [HactiveAuths' HminAuths]".
+    iExists _, _, 0%nat.
+    iFrame "∗".
+    iSplit.
+    { iApply (ts_lb_weaken with "Htslb"). lia. }
+    iPureIntro.
+    split; first done.
+    apply set_Forall_union; last done.
+    rewrite set_Forall_singleton. lia.
+  }
+
   (***********************************************************)
   (* for i := uint64(0); i < config.N_TXN_SITES; i++ {       *)
   (*     site := new(TxnSite)                                *)
@@ -85,9 +94,8 @@ Proof.
     "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (int.nat n) sitesL), is_txnsite site sid γ) ∗
     "Hsites" ∷ (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
-    "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
-    "HminAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_min_tid_half_auth γ sid 0))%I.
-  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuths HminAuths]"); first done.
+    "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅))%I.
+  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuths]"); first done.
   { clear Φ latch.
     iIntros (i Φ) "!> (Hloop & HiRef & %Hbound) HΦ".
     iNamed "Hloop".
@@ -128,21 +136,17 @@ Proof.
       simpl. f_equal. word.
     }
     iDestruct (big_sepL_cons with "HactiveAuths") as "[HactiveAuth HactiveAuths]".
-    iDestruct (big_sepL_cons with "HminAuths") as "[HminAuth HminAuths]".
     iMod (readonly_alloc_1 with "latch") as "#Hlatch".
     iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with
-           "[$Hfree] [-HsitesS HsitesRP HactiveAuths HminAuths]") as "#Hlock".
+           "[$Hfree] [-HsitesS HsitesRP HactiveAuths]") as "#Hlock".
     { iNext.
       unfold own_txnsite.
-      iExists (U64 0), (U64 0), (Slice.mk active 0 8), [], ∅.
+      iExists (Slice.mk active 0 8), [], ∅.
       replace (int.nat (U64 0)) with 0%nat by word.
       iFrame "% # ∗".
-      iSplit.
-      { iApply (ts_lb_weaken with "Htslb"). lia. }
       iPureIntro.
-      split; first set_solver.
-      split; first apply NoDup_nil_2.
-      split; [by apply Forall_singleton | set_solver].
+      rewrite fmap_nil.
+      split; [done | apply NoDup_nil_2].
     }
     iModIntro.
     rewrite -list_fmap_insert.
