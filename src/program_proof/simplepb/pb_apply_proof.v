@@ -144,14 +144,16 @@ Proof.
       do 2 (rewrite fmap_length in Hre).
       word. }
     rewrite Happend.
-    iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-    instantiate (1:=is_accepted_lb γsrv epoch σ).
-
+    iDestruct (ghost_get_accepted_lb with "HH") as "#Hacc_lb".
+    iDestruct (ghost_get_epoch_lb with "HH") as "#Hepoch_lb".
+    instantiate (1:=(⌜σ = σg ++ [ghost_op]⌝ ∗ is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch σ)%I).
     iModIntro.
+
     iSplitL.
     { iExists _; iFrame "∗#".
       by rewrite fmap_snoc. }
     iFrame "#".
+    admit. (* FIXME: annoying indirection *)
   }
   iIntros (reply) "(Hreply & Hstate & #Hlb)".
   wp_pures.
@@ -167,7 +169,12 @@ Proof.
     iFrame "Hstate ∗#".
     iSplitR.
     { iExists _, _, _; iFrame "#". }
-    iSplitR; last done.
+    iSplitR; last iFrame "#".
+    2:{
+      iDestruct "Hlb" as "(%Hre & Hlb1 & Hlb2)".
+      rewrite Hre.
+      iFrame "#".
+    }
     iPureIntro.
     rewrite app_length.
     rewrite Hσ_nextIndex.
@@ -177,7 +184,7 @@ Proof.
   }
   wp_pures.
   iApply "HΦ".
-  iFrame "Hlb".
+  iDestruct "Hlb" as "(_ & _ & $)".
   done.
 Admitted.
 
@@ -220,7 +227,7 @@ Proof using waitgroupG0.
       iNext.
       iExists _, _, _, _, _, _, _.
       iFrame "Hstate ∗#".
-      iSplitL ""; done.
+      done.
     }
     wp_pures.
     iApply ("HΦ" $! 1  Slice.nil).
@@ -235,8 +242,10 @@ Proof using waitgroupG0.
     {
       iNext.
       iExists _, _, _, _, _, _, _.
-      iFrame "Hstate ∗#".
-      iSplitL ""; done.
+      iFrame "Hstate HisSm ∗#".
+      iSplitL ""; first done.
+      iNamed "HprimaryOnly".
+      iExists _, _; iFrame "∗#%".
     }
     wp_pures.
     iApply ("HΦ" $! 1  Slice.nil).
