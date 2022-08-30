@@ -652,8 +652,8 @@ Proof using waitgroupG0.
   set (P:= (λ i, ∃ (err:u64) γsrv',
       ⌜server_γs !! int.nat i = Some γsrv'⌝ ∗
         readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
-        pb_ghost.is_epoch_lb γsrv' epoch ∗
         □ if (decide (err = U64 0)) then
+            pb_ghost.is_epoch_lb γsrv' epoch ∗
             is_accepted_lb γsrv' epoch σ
           else
             True
@@ -752,6 +752,11 @@ Proof using waitgroupG0.
           iPureIntro.
           done.
         }
+        iSplitR.
+        {
+          iPureIntro.
+          admit. (* FIXME: prove this from postcondition of GetState() *)
+        }
         iExists _.
         iFrame "∗#".
       }
@@ -826,7 +831,7 @@ Proof using waitgroupG0.
               "%Hj_ub" ∷ ⌜int.nat i ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ is_accepted_lb γsrv epoch σ)
+                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ is_accepted_lb γsrv epoch σ ∗ pb_ghost.is_epoch_lb γsrv epoch)
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -911,7 +916,7 @@ Proof using waitgroupG0.
             replace (int.nat i0) with (int.nat k) in * by word.
             naive_solver.
           }
-          iDestruct "Hpost" as "[_ #$]".
+          iDestruct "Hpost" as "[#$ #$]".
         }
       }
       {
@@ -1016,14 +1021,17 @@ Proof using waitgroupG0.
       word.
     }
     unfold P.
-    iDestruct "HP" as (??) "(%Hlookup2 & _ & Hlb2 & _)".
+    iDestruct "HP" as (??) "(%Hlookup2 & _ & Hpost)".
     replace (γsrv') with (γsrv); last first.
     {
       rewrite Hi in Hlookup2.
       rewrite Hlookup in Hlookup2.
       by inversion Hlookup2.
     }
-    iFrame "Hlb2".
+    iSpecialize ("Hrest" $! i γsrv with "[%] [%]").
+    { word. }
+    { rewrite Hi. done. }
+    iDestruct "Hrest" as "[_ $]".
   }
   iModIntro.
   iIntros (err) "Hpost Hservers_sl".
@@ -1062,8 +1070,8 @@ Proof using waitgroupG0.
   {
     iSplitR.
     {
-      iApply "Hrest".
-      { instantiate (1:=0). iPureIntro. word. }
+      iDestruct ("Hrest" with "[%] [%]") as "[$ _]".
+      { instantiate (1:=0). word. }
       { rewrite lookup_take in Hlookup2.
         { done. }
         word.
@@ -1078,6 +1086,6 @@ Proof using waitgroupG0.
   wp_pures.
   iApply "HΦ".
   done.
-Qed.
+Admitted.
 
 End admin_proof.

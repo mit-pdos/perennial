@@ -7,6 +7,7 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
+From Perennial.program_proof Require Import marshal_stateless_proof.
 
 Section pb_definitions.
 
@@ -62,10 +63,39 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition SetState_core_spec γ γsrv args σ :=
+  λ (Φ : u64 -> iPropO Σ) ,
+  (
+    ⌜has_snap_encoding args.(SetStateArgs.state) (fst <$> σ)⌝ ∗
+    ⌜length σ = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
+    is_proposal_lb γ args.(SetStateArgs.epoch) σ ∗
+    is_proposal_facts γ args.(SetStateArgs.epoch) σ ∗
+    ( is_epoch_lb γsrv args.(SetStateArgs.epoch) -∗ (
+      (is_accepted_lb γsrv args.(SetStateArgs.epoch) σ -∗ Φ 0) ∧
+      (∀ err, ⌜err ≠ U64 0⌝ → Φ err))
+    )
+    )%I
+.
+
+Program Definition SetState_spec γ γsrv :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ args σ,
+    ⌜SetStateArgs.has_encoding enc_args args⌝ ∗
+    SetState_core_spec γ γsrv args σ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
+  )%I
+.
+Next Obligation.
+  unfold SetState_core_spec.
+  solve_proper.
+Defined.
+
 (* End RPC specs *)
 
-Definition is_pb_host γ γsrv (host:u64) :=
-  handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv).
+Definition is_pb_host γ γsrv (host:u64) : iProp Σ :=
+  handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
+  handler_spec γsrv.(urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
+  handlers_dom γsrv.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]}
+.
 
 Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
@@ -143,23 +173,110 @@ Admitted.
 
 Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
   {{{
-        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
+        "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
         "%Henc" ∷ ⌜has_snap_encoding snap (fst <$> σ)⌝ ∗
+        "%Hno_overflow" ∷ ⌜length σ = int.nat (length σ)⌝ ∗
         "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length σ) snap)
   }}}
     Clerk__SetState #ck #args_ptr
   {{{
         (err:u64), RET #err;
-        is_epoch_lb γsrv epoch ∗
         □(if (decide (err = U64 0)) then
+            is_epoch_lb γsrv epoch ∗
             is_accepted_lb γsrv epoch σ
           else
             True)
   }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep) "Hrep".
+  wp_pures.
+  iNamed "Hck".
+  wp_apply (SetStateArgs.wp_Encode with "[$Hargs]").
+  iIntros (enc_args enc_args_sl) "(%Henc_args & Henc_args_sl & Hargs)".
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
+  wp_apply (wp_frame_wand with "HΦ").
+  wp_apply (wp_Client__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
+  {
+    iDestruct "Hsrv" as "[_ [$ _]]".
+  }
+  { (* Successful RPC *)
+    iModIntro.
+    iNext.
+    unfold SetState_spec.
+    iExists _, _.
+    iSplitR; first done.
+    iSplitR; first done.
+    simpl.
+    iSplitR.
+    { iPureIntro. done. }
+    iFrame "Hprop_lb Hprop_facts".
+    iIntros "#Hepoch_lb".
+    iSplit.
+    { (* No error from RPC, state was accepted *)
+      iIntros "#Hacc".
+      iIntros (?) "%Henc_rep Hargs_sl".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+
+      (* FIXME: separate lemma *)
+      wp_call.
+      rewrite Henc_rep.
+      wp_apply (wp_ReadInt with "Hrep_sl").
+      iIntros (?) "_".
+      wp_pures.
+      iModIntro.
+      iIntros "HΦ".
+      iApply "HΦ".
+      iFrame "Hacc Hepoch_lb".
+    }
+    { (* SetState was rejected by the server (e.g. stale epoch number) *)
+      iIntros (err) "%Herr_nz".
+      iIntros.
+      wp_pures.
+      wp_load.
+      wp_call.
+      rewrite H.
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros.
+      wp_pures.
+      iModIntro.
+      iIntros "HΦ".
+      iApply "HΦ".
+      iFrame.
+      iModIntro.
+      destruct (decide _).
+      {
+        exfalso. done.
+      }
+      {
+        done.
+      }
+    }
+  }
+  { (* RPC error *)
+    iIntros.
+    wp_pures.
+    wp_if_destruct.
+    {
+      iModIntro.
+      iIntros "HΦ".
+      iApply "HΦ".
+      destruct (decide (_)).
+      { exfalso. done. }
+      { done. }
+    }
+    { exfalso. done. }
+  }
+Qed.
 
 Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr (epoch:u64) servers server_γs σ :
   {{{
