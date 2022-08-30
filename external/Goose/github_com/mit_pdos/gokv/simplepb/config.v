@@ -147,18 +147,9 @@ Definition MakeServer: val :=
 Definition Server__Serve: val :=
   rec: "Server__Serve" "s" "me" :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_GETEPOCH (λ: "args" "reply",
-      Server__GetEpochAndConfig "s" "args" "reply";;
-      #()
-      );;
-    MapInsert "handlers" RPC_GETCONFIG (λ: "args" "reply",
-      Server__GetConfig "s" "args" "reply";;
-      #()
-      );;
-    MapInsert "handlers" RPC_WRITECONFIG (λ: "args" "reply",
-      Server__WriteConfig "s" "args" "reply";;
-      #()
-      );;
+    MapInsert "handlers" RPC_GETEPOCH (Server__GetEpochAndConfig "s");;
+    MapInsert "handlers" RPC_GETCONFIG (Server__GetConfig "s");;
+    MapInsert "handlers" RPC_WRITECONFIG (Server__WriteConfig "s");;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     #().

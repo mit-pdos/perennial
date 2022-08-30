@@ -1030,14 +1030,57 @@ Proof.
   iApply ("HΦ" with "Hreq Hrep Hrep_sl").
 Qed.
 
+(** Same as impl_handler_spec, but in predicate-transformer style. *)
+Definition impl_handler_spec2 (f:val)
+    (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
+   : iProp Σ :=
+  ∀ (reqData:list u8) Φ req rep dummy_rep_sl dummy,
+    □ (is_slice_small req byteT 1 reqData -∗
+    rep ↦[slice.T byteT] (slice_val dummy_rep_sl) -∗
+    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy -∗
+    ▷ Spec reqData (λ reply, ∀ rep_sl,
+      rep ↦[slice.T byteT] (slice_val rep_sl) -∗
+      is_slice_small rep_sl byteT 1 reply -∗
+      Φ #()
+    )
+    -∗
+    WP f (slice_val req) #rep {{ Φ }}).
+
+Definition Spec_functorial (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ) : iProp Σ :=
+ □(∀ Φ Ψ,
+ (∀ (reply:list u8), Φ reply -∗ Ψ reply) -∗
+ ∀ a, Spec a Φ -∗ Spec a Ψ).
+
+Lemma impl_handler_spec2_to_1 f Spec :
+Spec_functorial Spec -∗
+impl_handler_spec2 f Spec -∗
+impl_handler_spec f Spec.
+Proof.
+  iIntros "#Hfunc #Hhandler2".
+  iIntros (???????) "!# Hpre HΦ".
+  iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+  unfold impl_handler_spec2.
+  wp_apply ("Hhandler2" with "[$Hreq_small] Hrep_ptr Hrep_sl [Hpre HΦ]").
+  {
+    iNext.
+    iApply ("Hfunc" with "[HΦ] [$Hpre]").
+    iIntros.
+    iApply "HΦ".
+    iFrame.
+  }
+Qed.
+
 Global Instance impl_handler_spec_pers f Spec : Persistent (impl_handler_spec f Spec).
 Proof. apply _. Qed.
 
-Global Typeclasses Opaque impl_handler_spec.
+Global Instance impl_handler_spec2_pers f Spec : Persistent (impl_handler_spec2 f Spec).
+Proof. apply _. Qed.
+
+Global Typeclasses Opaque impl_handler_spec impl_handler_spec2.
 
 Global Instance handler_spec_pers Γsrv host rpcid Spec : Persistent (handler_spec Γsrv host rpcid Spec).
 Proof. apply _. Qed.
 
-Global Typeclasses Opaque impl_handler_spec handler_spec.
+Global Typeclasses Opaque handler_spec.
 
 End urpc_proof.

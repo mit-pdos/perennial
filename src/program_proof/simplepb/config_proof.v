@@ -153,20 +153,25 @@ Definition is_Server (s:loc) γ : iProp Σ :=
   "#Hmu" ∷ readonly (s ↦[config.Server :: "mu"] mu) ∗
   "#His_mu" ∷ is_lock configN mu (own_Server s γ).
 
-Lemma wp_Server__GetEpochAndConfig (server:loc) args reply_ptr dummy_sl γ Φ :
-  is_Server server γ -∗
-  reply_ptr ↦[slice.T byteT] (slice_val dummy_sl) -∗
-  GetEpochAndConfig_spec γ [] (λ reply, ∀ reply_sl,
-                           reply_ptr ↦[slice.T byteT] (slice_val reply_sl) -∗
-                           is_slice_small reply_sl byteT 1 reply -∗
-                           Φ #()
-                           )%I -∗
-  WP config.Server__GetEpochAndConfig #server #args #reply_ptr {{ Φ }}
-.
+Lemma wp_Server__GetEpochAndConfig (server:loc) γ :
+  {{{
+        is_Server server γ
+  }}}
+    config.Server__GetEpochAndConfig #server
+  {{{
+        (f:val), RET f; impl_handler_spec2 f (GetEpochAndConfig_spec γ)
+  }}}.
 Proof.
-  iIntros "#His_srv Hrep HΦ".
-  iNamed "His_srv".
+  iIntros (Φ) "#His_srv HΦ".
   wp_call.
+  iApply "HΦ".
+  iModIntro.
+  unfold impl_handler_spec2.
+  clear Φ.
+  iIntros (enc_args Φ req_sl rep_ptr dummy_sl dummy) "!# Harg_sl Hrep _ HΦ".
+  wp_call.
+
+  iNamed "His_srv".
   wp_loadField.
   wp_apply (acquire_spec with "[$His_mu]").
   iIntros "[Hlocked Hown]".
@@ -227,20 +232,25 @@ Proof.
   iApply ("Hupd" with "[% //] [% //] Hrep Hrep_sl").
 Qed.
 
-Lemma wp_Server__GetConfig (server:loc) args reply_ptr dummy_sl γ Φ :
-  is_Server server γ -∗
-  reply_ptr ↦[slice.T byteT] (slice_val dummy_sl) -∗
-  GetConfig_spec γ [] (λ reply, ∀ reply_sl,
-                           reply_ptr ↦[slice.T byteT] (slice_val reply_sl) -∗
-                           is_slice_small reply_sl byteT 1 reply -∗
-                           Φ #()
-                           )%I -∗
-  WP config.Server__GetConfig #server #args #reply_ptr {{ Φ }}
-.
+Lemma wp_Server__GetConfig (server:loc) γ :
+  {{{
+        is_Server server γ
+  }}}
+    config.Server__GetConfig #server
+  {{{
+        (f:val), RET f; impl_handler_spec2 f (GetConfig_spec γ)
+  }}}.
 Proof.
-  iIntros "#His_srv Hrep HΦ".
-  iNamed "His_srv".
+  iIntros (Φ) "#His_srv HΦ".
   wp_call.
+  iApply "HΦ".
+  iModIntro.
+  unfold impl_handler_spec2.
+  clear Φ.
+  iIntros (enc_args Φ req_sl rep_ptr dummy_sl dummy) "!# Harg_sl Hrep _ HΦ".
+  wp_call.
+
+  iNamed "His_srv".
   wp_loadField.
   wp_apply (acquire_spec with "[$His_mu]").
   iIntros "[Hlocked Hown]".
@@ -271,21 +281,24 @@ Proof.
   iApply ("Hupd" with "[%//] Hrep Hrep_sl").
 Qed.
 
-Lemma wp_Server__WriteConfig (server:loc) args_sl (enc_args:list u8) reply_ptr dummy_sl γ Φ :
-  is_Server server γ -∗
-  is_slice_small args_sl byteT 1 enc_args -∗
-  reply_ptr ↦[slice.T byteT] (slice_val dummy_sl) -∗
-  WriteConfig_spec γ enc_args (λ reply, ∀ reply_sl,
-                           reply_ptr ↦[slice.T byteT] (slice_val reply_sl) -∗
-                           is_slice_small reply_sl byteT 1 reply -∗
-                           Φ #()
-                           )%I -∗
-  WP config.Server__WriteConfig #server (slice_val args_sl) #reply_ptr {{ Φ }}
-.
+Lemma wp_Server__WriteConfig (server:loc) γ :
+  {{{
+        is_Server server γ
+  }}}
+    config.Server__WriteConfig #server
+  {{{
+        (f:val), RET f; impl_handler_spec2 f (WriteConfig_spec γ)
+  }}}.
 Proof.
-  iIntros "#His_srv Harg_sl Hrep HΦ".
-  iNamed "His_srv".
+  iIntros (Φ) "#His_srv HΦ".
   wp_call.
+  iApply "HΦ".
+  iModIntro.
+  unfold impl_handler_spec2.
+  clear Φ.
+  iIntros (enc_args Φ req_sl rep_ptr dummy_sl dummy) "!# Harg_sl Hrep _ HΦ".
+  wp_call.
+  iNamed "His_srv".
   wp_loadField.
   wp_apply (acquire_spec with "[$His_mu]").
   iIntros "[Hlocked Hown]".
@@ -296,7 +309,6 @@ Proof.
   iDestruct "HΦ" as (new_epoch new_conf enc_new_conf) "(%Henc & %Henc_conf & HΦ)".
   rewrite Henc.
   wp_apply (wp_ReadInt with "Harg_sl").
-  clear args_sl.
   iIntros (args_sl) "Hargs_sl".
   wp_pure1_credit "Hlc".
 
@@ -726,16 +738,25 @@ Proof.
   iIntros (handlers) "Hhandlers".
 
   wp_pures.
+  wp_apply (wp_Server__GetEpochAndConfig).
+  { done. }
+  iIntros (getEpochFn) "#HgetEpochSpec".
   wp_apply (map.wp_MapInsert with "Hhandlers").
   iIntros "Hhandlers".
   wp_pures.
 
   wp_pures.
+  wp_apply (wp_Server__GetConfig).
+  { done. }
+  iIntros (getFn) "#HgetSpec".
   wp_apply (map.wp_MapInsert with "Hhandlers").
   iIntros "Hhandlers".
   wp_pures.
 
   wp_pures.
+  wp_apply (wp_Server__WriteConfig).
+  { done. }
+  iIntros (writeConfigFn) "#HwriteSpec".
   wp_apply (map.wp_MapInsert with "Hhandlers").
   iIntros "Hhandlers".
   wp_pures.
@@ -762,25 +783,103 @@ Proof.
 
     iApply (big_sepM_insert_2 with "").
     {
-      simpl. iExists _; iFrame "#".
-
-      clear Φ.
-      unfold impl_handler_spec.
-      iIntros (???????) "!# Hpre HΦ".
-      wp_pures.
-      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
-      wp_apply (wp_Server__WriteConfig with "His_srv Hreq_small Hrep_ptr [Hpre HΦ]").
-
-      (* FIXME: proving spec_wand *)
-      iDestruct "Hpre" as (???) "(Ha & Hb & Hpre)".
-      iExists _, _, _; iFrame "Ha Hb".
-      iIntros "Ha".
-      iMod ("Hpre" with "Ha").
-      admit.
+      iExists _; iFrame "#".
+      iApply impl_handler_spec2_to_1.
+      { (* FIXME: functoriality *)
+        iModIntro.
+        clear Φ.
+        iIntros (Φ Ψ) "Hwand".
+        iIntros (a) "HΦ".
+        iDestruct "HΦ" as (???) "HΦ".
+        iExists _, _, _.
+        iDestruct "HΦ" as "($&$&HΦ)".
+        iIntros "?".
+        iMod ("HΦ" with "[$]") as "HΦ".
+        iModIntro.
+        iDestruct "HΦ" as (?) "HΦ".
+        iExists _.
+        iDestruct "HΦ" as "($&HΦ)".
+        destruct (decide _).
+        {
+          iDestruct "HΦ" as (?) "HΦ".
+          iExists _.
+          iDestruct "HΦ" as "($&HΦ)".
+          iIntros.
+          iMod ("HΦ" with "[$] [$]") as "HΦ".
+          iModIntro.
+          iIntros.
+          iApply "Hwand".
+          iApply "HΦ".
+          done.
+        }
+        {
+          iIntros.
+          iMod ("HΦ" with "[$]") as "HΦ".
+          iModIntro.
+          iIntros.
+          iApply "Hwand".
+          iApply "HΦ"; last done.
+          { done. }
+        }
+      }
+      done.
     }
-    admit.
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+      iApply impl_handler_spec2_to_1.
+      {
+        iModIntro.
+        clear Φ.
+        iIntros (Φ Ψ) "Hwand".
+        iIntros (a) "HΦ".
+        unfold GetConfig_spec.
+        iIntros "?".
+        iMod ("HΦ" with "[$]") as "HΦ".
+        iModIntro.
+        iDestruct "HΦ" as (?) "HΦ".
+        iExists _.
+        iDestruct "HΦ" as "($&HΦ)".
+        iIntros.
+        iMod ("HΦ" with "[$]") as "HΦ".
+        iModIntro.
+        iIntros.
+        iApply "Hwand".
+        iApply "HΦ".
+        done.
+      }
+      done.
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+      iApply impl_handler_spec2_to_1.
+      {
+        iModIntro.
+        clear Φ.
+        iIntros (Φ Ψ) "Hwand".
+        iIntros (a) "HΦ".
+        unfold GetConfig_spec.
+        iIntros "?".
+        iMod ("HΦ" with "[$]") as "HΦ".
+        iModIntro.
+        iDestruct "HΦ" as (??) "HΦ".
+        iExists _, _.
+        iDestruct "HΦ" as "($&$&HΦ)".
+        iIntros.
+        iMod ("HΦ" with "[%//] [$] [$]") as "HΦ".
+        iModIntro.
+        iIntros.
+        iApply "Hwand".
+        iApply "HΦ"; last done.
+        done.
+      }
+      done.
+    }
+    by iApply big_sepM_empty.
   }
-  admit.
-Admitted.
+  wp_pures.
+  by iApply "HΦ".
+Qed.
 
 End config_proof.
