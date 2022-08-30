@@ -4,7 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb Require Import pb_definitions config_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions config_proof pb_setstate_proof.
 
 Section admin_proof.
 
@@ -28,7 +28,7 @@ Definition adminN := nroot .@ "admin".
 
 Definition is_conf_inv γpb γconf : iProp Σ :=
   inv adminN (∃ epoch conf (confγs:list pb_server_names) epoch_lb,
-      "Hepoch" ∷ own_epoch γconf epoch ∗
+      "Hepoch" ∷ config_proof.own_epoch γconf epoch ∗
       "Hconf" ∷ own_config γconf conf ∗
       "#His_conf" ∷ is_epoch_config γpb epoch_lb confγs ∗
       "#His_conf_prop" ∷ is_epoch_config_proposal γpb epoch_lb confγs ∗

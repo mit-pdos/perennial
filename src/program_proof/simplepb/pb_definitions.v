@@ -70,10 +70,11 @@ Definition SetState_core_spec γ γsrv args σ :=
     ⌜length σ = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
     is_proposal_lb γ args.(SetStateArgs.epoch) σ ∗
     is_proposal_facts γ args.(SetStateArgs.epoch) σ ∗
-    ( is_epoch_lb γsrv args.(SetStateArgs.epoch) -∗ (
-      (is_accepted_lb γsrv args.(SetStateArgs.epoch) σ -∗ Φ 0) ∧
+    (
+      (is_epoch_lb γsrv args.(SetStateArgs.epoch) -∗
+       is_accepted_lb γsrv args.(SetStateArgs.epoch) σ -∗
+       Φ 0) ∧
       (∀ err, ⌜err ≠ U64 0⌝ → Φ err))
-    )
     )%I
 .
 
@@ -222,7 +223,7 @@ Proof.
   { (* Successful RPC *)
     iModIntro.
     iNext.
-    unfold SetState_spec.
+    unfold GetState_spec.
     iExists _, _.
     iSplitR; first done.
     simpl.
@@ -284,113 +285,6 @@ Proof.
       iFrame.
       iApply is_slice_small_nil.
       done.
-    }
-    { exfalso. done. }
-  }
-Qed.
-
-Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
-  {{{
-        "#Hck" ∷ is_Clerk ck γ γsrv ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
-        "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
-        "%Henc" ∷ ⌜has_snap_encoding snap (fst <$> σ)⌝ ∗
-        "%Hno_overflow" ∷ ⌜length σ = int.nat (length σ)⌝ ∗
-        "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length σ) snap)
-  }}}
-    Clerk__SetState #ck #args_ptr
-  {{{
-        (err:u64), RET #err;
-        □(if (decide (err = U64 0)) then
-            is_epoch_lb γsrv epoch ∗
-            is_accepted_lb γsrv epoch σ
-          else
-            True)
-  }}}.
-Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_call.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (rep) "Hrep".
-  wp_pures.
-  iNamed "Hck".
-  wp_apply (SetStateArgs.wp_Encode with "[$Hargs]").
-  iIntros (enc_args enc_args_sl) "(%Henc_args & Henc_args_sl & Hargs)".
-  wp_loadField.
-  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
-  wp_apply (wp_frame_wand with "HΦ").
-  wp_apply (wp_Client__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
-  {
-    iDestruct "Hsrv" as "[_ [$ _]]".
-  }
-  { (* Successful RPC *)
-    iModIntro.
-    iNext.
-    unfold SetState_spec.
-    iExists _, _.
-    iSplitR; first done.
-    iSplitR; first done.
-    simpl.
-    iSplitR.
-    { iPureIntro. done. }
-    iFrame "Hprop_lb Hprop_facts".
-    iIntros "#Hepoch_lb".
-    iSplit.
-    { (* No error from RPC, state was accepted *)
-      iIntros "#Hacc".
-      iIntros (?) "%Henc_rep Hargs_sl".
-      iIntros (?) "Hrep Hrep_sl".
-      wp_pures.
-      wp_load.
-
-      (* FIXME: separate lemma *)
-      wp_call.
-      rewrite Henc_rep.
-      wp_apply (wp_ReadInt with "Hrep_sl").
-      iIntros (?) "_".
-      wp_pures.
-      iModIntro.
-      iIntros "HΦ".
-      iApply "HΦ".
-      iFrame "Hacc Hepoch_lb".
-    }
-    { (* SetState was rejected by the server (e.g. stale epoch number) *)
-      iIntros (err) "%Herr_nz".
-      iIntros.
-      wp_pures.
-      wp_load.
-      wp_call.
-      rewrite H.
-      wp_apply (wp_ReadInt with "[$]").
-      iIntros.
-      wp_pures.
-      iModIntro.
-      iIntros "HΦ".
-      iApply "HΦ".
-      iFrame.
-      iModIntro.
-      destruct (decide _).
-      {
-        exfalso. done.
-      }
-      {
-        done.
-      }
-    }
-  }
-  { (* RPC error *)
-    iIntros.
-    wp_pures.
-    wp_if_destruct.
-    {
-      iModIntro.
-      iIntros "HΦ".
-      iApply "HΦ".
-      destruct (decide (_)).
-      { exfalso. done. }
-      { done. }
     }
     { exfalso. done. }
   }
@@ -512,6 +406,10 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   (* ghost-state *)
   "Hstate" ∷ own_StateMachine epoch (fst<$>σg) sealed (own_Server_ghost γ γsrv) ∗
   "%Hσ_nextIndex" ∷ ⌜length σg = int.nat nextIndex⌝ ∗
+  (* ghost witnesses for convenience; we could insist on extracting them from own_Server_ghost *)
+  "#Hs_acc_lb" ∷ is_accepted_lb γsrv epoch σg ∗
+  "#Hs_prop_lb" ∷ is_proposal_lb γ epoch σg ∗
+  "#Hs_prop_facts" ∷ is_proposal_facts γ epoch σg ∗
 
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
