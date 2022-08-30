@@ -428,7 +428,7 @@ Proof using waitgroupG0.
   }
   (* err = 0; keep going with reconfig *)
   (* Got the old state now *)
-  iDestruct "Hpost" as (???) "(%Hepoch_lb_ineq & %Hepoch_ub_ineq & #Hacc_ro & #Hprop_facts & #Hprop_lb & Hreply & %Henc)".
+  iDestruct "Hpost" as (???) "(%Hepoch_lb_ineq & %Hepoch_ub_ineq & #Hacc_ro & #Hprop_facts & #Hprop_lb & Hreply & %Henc & %Hlen_no_overflow)".
   destruct (decide (int.nat epochacc = int.nat epoch)) as [Heq|Hepochacc_ne_epoch].
   {
     replace (epochacc) with (epoch) by word.
@@ -755,7 +755,7 @@ Proof using waitgroupG0.
         iSplitR.
         {
           iPureIntro.
-          admit. (* FIXME: prove this from postcondition of GetState() *)
+          done.
         }
         iExists _.
         iFrame "∗#".
@@ -1086,6 +1086,6 @@ Proof using waitgroupG0.
   wp_pures.
   iApply "HΦ".
   done.
-Admitted.
+Qed.
 
 End admin_proof.

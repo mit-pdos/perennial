@@ -89,11 +89,43 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition GetState_core_spec γ γsrv (epoch:u64) ghost_epoch_lb :=
+  λ (Φ : GetStateReply.C -> iPropO Σ) ,
+  (
+    ( is_epoch_lb γsrv ghost_epoch_lb ∗
+      (
+      (∀ epochacc σ snap,
+            ⌜int.nat ghost_epoch_lb ≤ int.nat epochacc⌝ -∗
+            ⌜int.nat epochacc ≤ int.nat epoch⌝ -∗
+            is_accepted_ro γsrv epochacc σ -∗
+            is_proposal_facts γ epochacc σ -∗
+            is_proposal_lb γ epochacc σ -∗
+            ⌜has_snap_encoding snap (fst <$> σ)⌝ -∗
+            ⌜length σ = int.nat (U64 (length σ))⌝ -∗
+                 Φ (GetStateReply.mkC 0 (length σ) snap)) ∧
+      (∀ err, ⌜err ≠ U64 0⌝ → Φ (GetStateReply.mkC err 0 [])))
+    )
+    )%I
+.
+
+Program Definition GetState_spec γ γsrv :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ args epoch_lb,
+    ⌜GetStateArgs.has_encoding enc_args args⌝ ∗
+    GetState_core_spec γ γsrv args.(GetStateArgs.epoch) epoch_lb (λ reply, ∀ enc_reply, ⌜GetStateReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
+  )%I
+.
+Next Obligation.
+  unfold GetState_core_spec.
+  solve_proper.
+Defined.
+
 (* End RPC specs *)
 
 Definition is_pb_host γ γsrv (host:u64) : iProp Σ :=
   handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
   handler_spec γsrv.(urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
+  handler_spec γsrv.(urpc_gn) host (U64 2) (GetState_spec γ γsrv) ∗
   handlers_dom γsrv.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]}
 .
 
@@ -149,7 +181,7 @@ Admitted.
 (* FIXME: rename to GetStateAndSeal *)
 Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
-        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
+        "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv epoch_lb ∗
         "Hargs" ∷ GetStateArgs.own args_ptr (GetStateArgs.mkC epoch)
   }}}
@@ -164,12 +196,98 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
             is_proposal_facts γ epochacc σ ∗
             is_proposal_lb γ epochacc σ ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length σ) enc) ∗
-            ⌜has_snap_encoding enc (fst <$> σ)⌝
+            ⌜has_snap_encoding enc (fst <$> σ)⌝ ∗
+            ⌜length σ = int.nat (U64 (length σ))⌝
           else
             GetStateReply.own reply (GetStateReply.mkC err 0 [])
   }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep) "Hrep".
+  wp_pures.
+  iNamed "Hck".
+  wp_apply (GetStateArgs.wp_Encode with "[$Hargs]").
+  iIntros (enc_args enc_args_sl) "(%Henc_args & Henc_args_sl & Hargs)".
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
+  wp_apply (wp_frame_wand with "HΦ").
+  wp_apply (wp_Client__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
+  {
+    iDestruct "Hsrv" as "[_ [_ [$ _]]]".
+  }
+  { (* Successful RPC *)
+    iModIntro.
+    iNext.
+    unfold SetState_spec.
+    iExists _, _.
+    iSplitR; first done.
+    simpl.
+    unfold GetState_core_spec.
+    iFrame "Hghost_epoch_lb".
+    iSplit.
+    { (* No error from RPC, state was returned *)
+      iIntros (?????) "???".
+      iIntros (??? Henc_reply) "Hargs_sl".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+      wp_apply (GetStateReply.wp_Decode with "[$Hrep_sl]").
+      { done. }
+      iIntros (reply_ptr) "Hreply".
+      iIntros "HΦ".
+      iApply ("HΦ" $! _ 0).
+      iExists _, _, _.
+      iFrame "Hreply".
+      iSplitR; first done.
+      iSplitR; first done.
+      eauto with iFrame.
+    }
+    { (* GetState was rejected by the server (e.g. stale epoch number) *)
+      iIntros (err) "%Herr_nz".
+      iIntros.
+      wp_pures.
+      wp_load.
+      wp_apply (GetStateReply.wp_Decode with "[-] []").
+      { eauto. }
+      iModIntro.
+      iIntros (reply_ptr) "Hreply".
+
+      iIntros "HΦ".
+      iApply ("HΦ" $! _ err).
+      destruct (decide _).
+      {
+        exfalso. done.
+      }
+      {
+        done.
+      }
+    }
+  }
+  { (* RPC error *)
+    iIntros.
+    wp_pures.
+    wp_if_destruct.
+    {
+      wp_apply (wp_allocStruct).
+      { repeat econstructor. apply zero_val_ty'. done. }
+      iIntros (reply_ptr) "Hreply".
+      iDestruct (struct_fields_split with "Hreply") as "HH".
+      iNamed "HH".
+      iIntros "HΦ".
+      iApply ("HΦ" $! _ 3).
+      iExists _. simpl. iFrame.
+      replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done.
+      iFrame.
+      iApply is_slice_small_nil.
+      done.
+    }
+    { exfalso. done. }
+  }
+Qed.
 
 Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
   {{{

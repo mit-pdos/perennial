@@ -279,7 +279,8 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        is_slice enc_sl byteT 1 enc ∗
+        own args_ptr args
   }}}.
 Proof.
   iIntros (?) "H1 HΦ".
@@ -306,7 +307,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        is_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeGetStateArgs (slice_val enc_sl)
   {{{
@@ -319,7 +320,6 @@ Proof.
   { naive_solver. }
   iIntros (args_ptr) "Hargs".
   wp_pures.
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   rewrite Henc.
   wp_apply (wp_ReadInt with "Henc_sl").
   iIntros (?) "Henc_sl".
@@ -411,7 +411,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (reply:C) :
   {{{
         ⌜has_encoding enc reply⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        is_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeGetStateReply (slice_val enc_sl)
   {{{
@@ -430,7 +430,6 @@ Proof.
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
   wp_pures.
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   rewrite Henc.
 
   wp_load.
@@ -595,7 +594,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        is_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeBecomePrimaryArgs (slice_val enc_sl)
   {{{
@@ -613,7 +612,6 @@ Proof.
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
   wp_pures.
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   rewrite Henc.
   wp_load.
   wp_apply (wp_ReadInt with "Henc_sl").
