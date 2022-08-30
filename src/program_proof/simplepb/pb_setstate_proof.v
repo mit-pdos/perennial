@@ -33,8 +33,7 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
   {{{
         (err:u64), RET #err;
         □(if (decide (err = U64 0)) then
-            is_epoch_lb γsrv epoch ∗
-            is_accepted_lb γsrv epoch σ
+            is_epoch_lb γsrv epoch
           else
             True)
   }}}.
@@ -69,7 +68,7 @@ Proof.
     iFrame "Hprop_lb Hprop_facts".
     iSplit.
     { (* No error from RPC, state was accepted *)
-      iIntros "#Hepoch_lb #Hacc".
+      iIntros "#Hepoch_lb".
       iIntros (?) "%Henc_rep Hargs_sl".
       iIntros (?) "Hrep Hrep_sl".
       wp_pures.
@@ -84,7 +83,7 @@ Proof.
       iModIntro.
       iIntros "HΦ".
       iApply "HΦ".
-      iFrame "Hacc Hepoch_lb".
+      iFrame "Hepoch_lb".
     }
     { (* SetState was rejected by the server (e.g. stale epoch number) *)
       iIntros (err) "%Herr_nz".
@@ -168,10 +167,87 @@ Proof.
     { (* state has been set previously. Use is_prop_lb to get agreement. *)
       wp_loadField.
 
-      admit.
+      iDestruct "HΦ" as "(_ & _ & _ & _ & HΦ)".
+      iLeft in "HΦ".
+      wp_apply (release_spec with "[-HΦ]").
+      {
+        iFrame "HmuInv Hlocked".
+        iNext.
+        iExists _, _, _, _, _, _, _.
+        iFrame "∗#%".
+      }
+      wp_pures.
+      iApply "HΦ".
+      { iFrame "#". done. }
     }
-    admit.
+    iAssert (_) with "HisSm" as "#HisSm2".
+    iNamed "HisSm2".
+    wp_storeField.
+    wp_loadField.
+    wp_storeField.
+    wp_storeField.
+    wp_loadField.
+    wp_storeField.
+    wp_loadField.
+    wp_loadField.
+    wp_loadField.
+    wp_loadField.
+    wp_loadField.
+
+    iDestruct "HΦ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & HΦ)".
+    replace (args.(SetStateArgs.nextIndex)) with (U64 (length σ)) by word.
+    replace (length σ) with (length σ.*1); last first.
+    { by rewrite fmap_length. }
+
+    wp_apply ("HsetStateSpec" with "[$Hstate]").
+    {
+      iSplitR; first done.
+      iFrame "Hargs_state_sl".
+      iIntros "Hghost".
+      iDestruct "Hghost" as (?) "[%Heq Hghost]".
+      iMod (ghost_accept_and_unseal with "Hghost Hprop_lb [$]") as "Hstate".
+      {
+        assert (int.nat epoch < int.nat args.(SetStateArgs.epoch) ∨
+        int.nat epoch = int.nat args.(SetStateArgs.epoch) ∨
+        (int.nat epoch > int.nat args.(SetStateArgs.epoch))) as [|[|]] by word.
+        { word. }
+        { exfalso. replace (epoch) with (args.(SetStateArgs.epoch)) in * by word.
+          done. }
+        { word. }
+      }
+      iDestruct (ghost_get_epoch_lb with "Hstate") as "#Hepoch_lb".
+      iDestruct (ghost_get_accepted_lb with "Hstate") as "#Hacc_lb".
+      iSplitL.
+      {
+        iExists _.
+        iFrame.
+        iPureIntro. done.
+      }
+      iModIntro.
+      iCombine "Hepoch_lb Hacc_lb" as "HH".
+      iExact "HH".
+    }
+    iIntros "(Hstate & #Hepoch_lb & #Hacc_lb)".
+    wp_pures.
+    wp_loadField.
+
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "∗ HisSm #%".
+      iPureIntro.
+      rewrite fmap_length.
+      word.
+    }
+    wp_pures.
+    iLeft in "HΦ".
+    iApply "HΦ".
+    {
+      done.
+    }
   }
-Admitted.
+Qed.
 
 End pb_setstate_proof.

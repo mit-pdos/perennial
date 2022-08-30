@@ -208,6 +208,16 @@ Proof.
   }
 Qed.
 
+Lemma ghost_accept_and_unseal γsys γsrv sealed epoch epoch' σ σ' :
+  int.nat epoch < int.nat epoch' →
+  own_replica_ghost γsys γsrv epoch σ sealed -∗
+  is_proposal_lb γsys epoch' σ' -∗
+  is_proposal_facts γsys epoch' σ'
+  ==∗
+  own_replica_ghost γsys γsrv epoch' σ' false.
+Proof.
+Admitted.
+
 (* Used by ApplyAsBackup *)
 Lemma ghost_accept_helper newOp γsys γsrv epoch σ σ_old sealed:
   length σ = length σ_old + 1 →
@@ -273,6 +283,12 @@ Proof.
   (* FIXME: how to get lower bound? *)
   (* rewrite mono_list_auth_lb_op. *)
   admit.
+Admitted.
+
+Lemma ghost_get_epoch_lb γsys γsrv epoch σ sealed :
+  own_replica_ghost γsys γsrv epoch σ sealed -∗
+  is_epoch_lb γsrv epoch.
+Proof.
 Admitted.
 
 Lemma ghost_get_propose_lb γsys epoch σ :

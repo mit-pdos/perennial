@@ -72,7 +72,6 @@ Definition SetState_core_spec γ γsrv args σ :=
     is_proposal_facts γ args.(SetStateArgs.epoch) σ ∗
     (
       (is_epoch_lb γsrv args.(SetStateArgs.epoch) -∗
-       is_accepted_lb γsrv args.(SetStateArgs.epoch) σ -∗
        Φ 0) ∧
       (∀ err, ⌜err ≠ U64 0⌝ → Φ err))
     )%I
@@ -334,11 +333,11 @@ Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp
   ∀ σ_prev (epoch_prev:u64) σ epoch (snap:list u8) snap_sl sealed Q,
   {{{
         ⌜has_snap_encoding snap σ⌝ ∗
-        is_slice snap_sl byteT 1 snap ∗
+        readonly (is_slice_small snap_sl byteT 1 snap) ∗
         (P epoch_prev σ_prev sealed ={⊤}=∗ P epoch σ false ∗ Q) ∗
-        own_StateMachine epoch_prev σ_prev false P
+        own_StateMachine epoch_prev σ_prev sealed P
   }}}
-    set_state_fn (slice_val snap_sl) #epoch
+    set_state_fn (slice_val snap_sl) #epoch #(U64 (length σ))
   {{{
         RET #();
         own_StateMachine epoch σ false P ∗
@@ -375,7 +374,7 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
   "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "Apply"] applyFn) ∗
   "#HapplySpec" ∷ is_ApplyFn own_StateMachine applyFn P ∗
 
-  "#HsetState" ∷ readonly (sm ↦[pb.StateMachine :: "SetStateAndSeal"] setFn) ∗
+  "#HsetState" ∷ readonly (sm ↦[pb.StateMachine :: "SetStateAndUnseal"] setFn) ∗
   "#HsetStateSpec" ∷ is_SetStateAndUnseal_fn own_StateMachine setFn P ∗
 
   "#HgetState" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getFn) ∗
@@ -410,6 +409,7 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   "#Hs_acc_lb" ∷ is_accepted_lb γsrv epoch σg ∗
   "#Hs_prop_lb" ∷ is_proposal_lb γ epoch σg ∗
   "#Hs_prop_facts" ∷ is_proposal_facts γ epoch σg ∗
+  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
 
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (

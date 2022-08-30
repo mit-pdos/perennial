@@ -653,8 +653,7 @@ Proof using waitgroupG0.
       ⌜server_γs !! int.nat i = Some γsrv'⌝ ∗
         readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
         □ if (decide (err = U64 0)) then
-            pb_ghost.is_epoch_lb γsrv' epoch ∗
-            is_accepted_lb γsrv' epoch σ
+            pb_ghost.is_epoch_lb γsrv' epoch
           else
             True
   )%I : u64 → iProp Σ).
@@ -831,7 +830,7 @@ Proof using waitgroupG0.
               "%Hj_ub" ∷ ⌜int.nat i ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ is_accepted_lb γsrv epoch σ ∗ pb_ghost.is_epoch_lb γsrv epoch)
+                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ pb_ghost.is_epoch_lb γsrv epoch)
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -916,7 +915,7 @@ Proof using waitgroupG0.
             replace (int.nat i0) with (int.nat k) in * by word.
             naive_solver.
           }
-          iDestruct "Hpost" as "[#$ #$]".
+          iDestruct "Hpost" as "#$".
         }
       }
       {
@@ -1031,7 +1030,7 @@ Proof using waitgroupG0.
     iSpecialize ("Hrest" $! i γsrv with "[%] [%]").
     { word. }
     { rewrite Hi. done. }
-    iDestruct "Hrest" as "[_ $]".
+    iFrame "Hrest".
   }
   iModIntro.
   iIntros (err) "Hpost Hservers_sl".
@@ -1070,12 +1069,24 @@ Proof using waitgroupG0.
   {
     iSplitR.
     {
-      iDestruct ("Hrest" with "[%] [%]") as "[$ _]".
+      iDestruct ("Hrest" with "[%] [%]") as "H".
       { instantiate (1:=0). word. }
       { rewrite lookup_take in Hlookup2.
         { done. }
         word.
       }
+      admit. (* FIXME: we actually need is_accepted_lb (or something) from
+                SetState() for BecomePrimary.  The new primary needs to know its
+                physical state matches the ghost proposal, and the accepted_lb
+                was our planned way for proving this.
+
+                To achieve is_accepted_lb as postcondition of SetState(), we
+                will need a per-epoch ghost witness for a lower bound on _any_
+                proposal sent out. A slightly different plan is to have each
+                node remember (e.g. in its proposal_facts) that the proposal is
+                bigger than the starting proposal for that epoch. Then, the
+                precondition for BecomePrimary is (escrowed) ownership of the
+                proposal with that initial value. *)
     }
     iDestruct (struct_fields_split with "Hargs") as "HH".
     iNamed "HH".
@@ -1086,6 +1097,6 @@ Proof using waitgroupG0.
   wp_pures.
   iApply "HΦ".
   done.
-Qed.
+Admitted.
 
 End admin_proof.
