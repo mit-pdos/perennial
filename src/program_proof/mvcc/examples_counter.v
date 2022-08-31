@@ -532,7 +532,111 @@ Theorem wp_InitializeCounterData (txnmgr : loc) γ :
     InitializeCounterData #txnmgr
   {{{ α, RET #(); mvcc_inv_app γ α }}}.
 Proof.
-Admitted.
+  iIntros "#Hmgr" (Φ) "!> Hdbpts HΦ".
+  wp_call.
+
+  (***********************************************************)
+  (* body := func(txn *txn.Txn) bool {                       *)
+  (*     txn.Put(0, 0)                                       *)
+  (*     return true                                         *)
+  (* }                                                       *)
+  (* t := mgr.New()                                          *)
+  (* for !t.DoTxn(body) {                                    *)
+  (* }                                                       *)
+  (***********************************************************)
+  wp_apply (wp_txnMgr__New with "Hmgr").
+  iIntros (txn) "Htxn".
+  wp_pures.
+  set P := (λ (b : bool),
+              own_txn_uninit txn γ ∗
+              if b
+              then dbmap_ptsto γ (U64 0) 1 Nil
+              else ∃ v, dbmap_ptsto γ (U64 0) 1 (Value v)
+           )%I.
+  wp_apply (wp_forBreak_cond P with "[] [Htxn Hdbpts]").
+  { clear Φ.
+    iIntros (Φ) "!> HP HΦ".
+    subst P. simpl.
+    iDestruct "HP" as "[Htxn Hdbpt]".
+    wp_pures.
+    set P := (λ r : dbmap, dom r = {[ (U64 0) ]}).
+    set Q := (λ r w : dbmap, ∃ u, w !! (U64 0) = Some (Value u)).
+    wp_apply (wp_txn__DoTxn_xres _ _ P Q with "[$Htxn]").
+    { (* Txn body. *)
+      iIntros (tid r τ).
+      unfold spec_body_xres.
+      clear Φ.
+      iIntros (Φ) "(Htxn & %HP & Htxnpt) HΦ".
+      subst P. simpl in HP. unfold txnmap_ptstos.
+      apply dom_singleton_inv_L in HP as [u Hr]. subst r.
+      rewrite big_sepM_singleton.
+      wp_pures.
+      wp_apply (wp_txn__Put with "[$Htxn $Htxnpt]").
+      iIntros "[Htxn Htxnpt]".
+      wp_pures.
+      iApply "HΦ".
+      iFrame "Htxn".
+      subst Q. simpl.
+      iModIntro.
+      iExists {[ (U64 0) := Value (U64 0) ]}.
+      iSplit; last by rewrite big_sepM_singleton.
+      iPureIntro.
+      split; last set_solver.
+      rewrite lookup_singleton.
+      by eauto.
+    }
+    (* Give [dbmap_ptsto] owned exclusively. *)
+    iApply ncfupd_mask_intro; first set_solver.
+    iIntros "Hclose".
+    iExists {[ (U64 0) := Nil ]}.
+    iSplitL "Hdbpt".
+    { subst P. simpl.
+      unfold dbmap_ptstos.
+      rewrite big_sepM_singleton.
+      iFrame.
+      iPureIntro. set_solver.
+    }
+    iIntros (ok w) "Hpost".
+    iMod "Hclose" as "_".
+    destruct ok eqn:Eok.
+    { (* Case success. *)
+      iIntros "!> Htxn".
+      wp_pures.
+      subst Q. simpl.
+      iDestruct "Hpost" as "[%HQ Hdbpt]".
+      destruct HQ as [u Hlookup].
+      iApply "HΦ".
+      unfold dbmap_ptstos.
+      iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookup.
+      by eauto with iFrame.
+    }
+    { (* Case failure. *)
+      iIntros "!> Htxn".
+      wp_pures.
+      iApply "HΦ".
+      unfold dbmap_ptstos.
+      rewrite big_sepM_singleton.
+      by eauto with iFrame.
+    }
+  }
+  { (* Loop entry. *)
+    subst P. simpl.
+    unfold dbmap_ptstos.
+    iDestruct (big_sepM_lookup _ _ (U64 0) with "Hdbpts") as "Hdbpt".
+    { rewrite lookup_gset_to_gmap_Some. split; [set_solver | reflexivity]. }
+    iFrame.
+  }
+  iIntros "HP".
+  wp_pures.
+  subst P. simpl.
+  iDestruct "HP" as "[Htxn [%v Hdbpt]]".
+  (* Allocate [mono_nat_auth_own]. *)
+  iMod (mono_nat_own_alloc (int.nat v)) as (α) "[Hmn _]".
+  iApply "HΦ".
+  iMod (inv_alloc mvccNApp _ (mvcc_inv_app_def γ α) with "[-]") as "#Hinv".
+  { iExists _. iFrame. }
+  done.
+Qed.
 
 Theorem wp_InitCounter :
   {{{ True }}}

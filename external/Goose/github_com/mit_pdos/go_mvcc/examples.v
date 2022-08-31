@@ -61,6 +61,14 @@ Definition Decrement: val :=
 
 Definition InitializeCounterData: val :=
   rec: "InitializeCounterData" "mgr" :=
+    let: "body" := (λ: "txn",
+      txn.Txn__Put "txn" #0 #0;;
+      #true
+      ) in
+    let: "t" := txn.TxnMgr__New "mgr" in
+    Skip;;
+    (for: (λ: <>, ~ (txn.Txn__DoTxn "t" "body")); (λ: <>, Skip) := λ: <>,
+      Continue);;
     #().
 
 Definition InitCounter: val :=

@@ -242,16 +242,3 @@ Definition Txn__DoTxn: val :=
       else
         Txn__Commit "txn";;
         #true)).
-
-(*  TODO: Move these to examples. *)
-Definition SwapSeq: val :=
-  rec: "SwapSeq" "txn" :=
-    let: ("v1", <>) := Txn__Get "txn" #10 in
-    let: ("v2", <>) := Txn__Get "txn" #20 in
-    Txn__Put "txn" #10 "v2";;
-    Txn__Put "txn" #20 "v1";;
-    #true.
-
-Definition Swap: val :=
-  rec: "Swap" "txn" :=
-    Txn__DoTxn "txn" SwapSeq.
