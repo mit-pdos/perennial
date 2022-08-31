@@ -170,7 +170,7 @@ Definition TxnMgr__ActivateGC: val :=
     Fork (Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             TxnMgr__gc "txnMgr";;
-            grove_ffi.Sleep (#100 * #1000000);;
+            time.Sleep (#100 * #1000000);;
             Continue));;
     #().
 

@@ -42,13 +42,6 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-(* TODO: Move this to the right place. *)
-Theorem wp_Sleep (t : u64) :
-  {{{ True }}}
-    Sleep #t
-  {{{ RET #(); True }}}.
-Admitted.
-
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) ActivateGC()                            *)
 (*****************************************************************)
@@ -65,7 +58,7 @@ Proof.
   (* go func() {                                             *)
   (*     for {                                               *)
   (*         txnMgr.gc()                                     *)
-  (*         grove_ffi.Sleep(uint64(100) * uint64(1000000))  *)
+  (*         machine.Sleep(uint64(100) * uint64(1000000))    *)
   (*     }                                                   *)
   (* }()                                                     *)
   (***********************************************************)
@@ -77,7 +70,6 @@ Proof.
     iIntros (Φ) "!> _ HΦ".
     wp_pures.
     wp_apply (wp_txnMgr__gc with "Htxnmgr").
-    wp_pures.
     wp_apply wp_Sleep.
     wp_pures.
     by iApply "HΦ".
