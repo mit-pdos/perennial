@@ -124,7 +124,8 @@ Definition is_proposal_facts γ epoch σ: iProp Σ :=
 
 Definition own_replica_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
   "Hepoch_ghost" ∷ own_epoch γsrv epoch ∗
-  "Haccepted" ∷ own_accepted γsrv epoch σ ∗
+  "Haccepted" ∷ (if sealed then True else own_accepted γsrv epoch σ) ∗
+  "#Haccepted_ro" ∷ □(if sealed then is_accepted_ro γsrv epoch σ else True) ∗
   "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat epoch⌝ ∨
                                                       own_accepted γsrv e' []) ∗
   "#Hproposal_lb" ∷ is_proposal_lb γsys epoch σ ∗
@@ -162,6 +163,7 @@ Proof.
     iFrame "Haccepted_rest".
     iFrame "Hprop_lb".
     iFrame "Hprop_facts".
+    iSplitL; last done.
     iApply (own_update with "Haccepted").
     apply singleton_update.
     apply mono_list_update.
@@ -195,6 +197,7 @@ Proof.
       apply mono_list_update.
       apply prefix_nil.
     }
+    iSplitR; first done.
     iApply "Haccepted_rest".
     {
       iModIntro.
@@ -208,13 +211,40 @@ Proof.
   }
 Qed.
 
-Lemma ghost_accept_and_unseal γsys γsrv sealed epoch epoch' σ σ' :
+Lemma ghost_accept_and_unseal γsys γsrv sealed epoch epoch' σ' σ :
   int.nat epoch < int.nat epoch' →
   own_replica_ghost γsys γsrv epoch σ sealed -∗
   is_proposal_lb γsys epoch' σ' -∗
   is_proposal_facts γsys epoch' σ'
   ==∗
   own_replica_ghost γsys γsrv epoch' σ' false.
+Proof.
+Admitted.
+
+Lemma ghost_seal γsys γsrv sealed epoch σ :
+  own_replica_ghost γsys γsrv epoch σ sealed -∗
+  own_replica_ghost γsys γsrv epoch σ true.
+Proof.
+Admitted.
+
+Lemma ghost_get_accepted_ro γsys γsrv epoch σ :
+  own_replica_ghost γsys γsrv epoch σ true -∗
+  is_accepted_ro γsrv epoch σ.
+Proof.
+Admitted.
+
+Lemma ghost_helper1 γsys γsrv epoch σ1 σ2 sealed:
+  length σ1 = length σ2 →
+  is_proposal_lb γsys epoch σ1 -∗
+  own_replica_ghost γsys γsrv epoch σ2 sealed -∗
+  ⌜σ1 = σ2⌝.
+Proof.
+Admitted.
+
+Lemma ghost_epoch_lb_ineq γsys γsrv epoch epoch_lb σ sealed:
+  is_epoch_lb γsrv epoch_lb -∗
+  own_replica_ghost γsys γsrv epoch σ sealed -∗
+  ⌜int.nat epoch_lb ≤ int.nat epoch⌝.
 Proof.
 Admitted.
 
