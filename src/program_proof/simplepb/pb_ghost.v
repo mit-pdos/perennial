@@ -156,7 +156,7 @@ Definition own_replica_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
 .
 
-Definition own_primary_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
+Definition own_primary_ghost γsys γsrv epoch σ : iProp Σ :=
   "Htoks" ∷ own_escrow_toks γsrv epoch ∗
   "Hprop" ∷ (own_tok γsrv epoch ∨ is_tok γsrv epoch ∗ own_proposal γsys epoch σ) ∗
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
@@ -430,11 +430,11 @@ Admitted.
 
 Lemma ghost_propose γsys γsrv epoch σ op :
   is_tok γsrv epoch -∗
-  own_primary_ghost γsys γsrv epoch σ false -∗
+  own_primary_ghost γsys γsrv epoch σ -∗
   £ 1 -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
   ={⊤}=∗
-  own_primary_ghost γsys γsrv epoch (σ ++ [op]) false
+  own_primary_ghost γsys γsrv epoch (σ ++ [op])
 .
 Proof.
   iIntros "#His_primary Hown Hlc Hupd".
@@ -798,12 +798,12 @@ Definition become_primary_escrow γsys γsrv epoch σ : iProp Σ :=
   )
 .
 
-Lemma ghost_become_primary γsys γsrv epoch σprop σ sealed:
+Lemma ghost_become_primary γsys γsrv epoch σprop σ :
   £ 1 -∗
   become_primary_escrow γsys γsrv epoch σprop -∗
   is_proposal_lb γsys epoch σ -∗
-  own_primary_ghost γsys γsrv epoch σ sealed ={↑pbN}=∗
-  own_primary_ghost γsys γsrv epoch σ sealed ∗
+  own_primary_ghost γsys γsrv epoch σ ={↑pbN}=∗
+  own_primary_ghost γsys γsrv epoch σ ∗
   is_tok γsrv epoch
 .
 Proof.

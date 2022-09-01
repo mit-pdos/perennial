@@ -149,10 +149,10 @@ Defined.
 (* End RPC specs *)
 
 Definition is_pb_host γ γsrv (host:u64) : iProp Σ :=
-  handler_spec γsrv.(urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
-  handler_spec γsrv.(urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
-  handler_spec γsrv.(urpc_gn) host (U64 2) (GetState_spec γ γsrv) ∗
-  handlers_dom γsrv.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]}
+  handler_spec γsrv.(pb_urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
+  handler_spec γsrv.(pb_urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
+  handler_spec γsrv.(pb_urpc_gn) host (U64 2) (GetState_spec γ γsrv) ∗
+  handlers_dom γsrv.(pb_urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]}
 .
 
 Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
@@ -299,8 +299,8 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
    interfaces for users of the library. For now, it's only part of the crash
    obligation. *)
 Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
-  ∃ σ, ⌜σphys = σ.*1⌝ ∗ (own_replica_ghost γ γsrv epoch σ sealed)
-  "Htok" ∷ own_escrow γsrv epoch ∗
+  ∃ σ, ⌜σphys = σ.*1⌝ ∗ (own_replica_ghost γ γsrv epoch σ sealed) ∗
+      (own_primary_ghost γ γsrv epoch σ)
 .
 
 Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
@@ -324,9 +324,6 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   "#Hs_prop_lb" ∷ is_proposal_lb γ epoch σg ∗
   "#Hs_prop_facts" ∷ is_proposal_facts γ epoch σg ∗
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
-
-  (* escrow token for getting ownership of proposal in case we become leader *)
-  "Hescrow" ∷ own_tok γsrv epoch
 
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
@@ -372,6 +369,7 @@ Proof.
   {
     iIntros "H".
     iDestruct "H" as (?) "[%Hre H]".
+    iDestruct "H" as "[H HQ]".
     iNamed "H".
     iDestruct (mono_nat_lb_own_valid with "Hepoch_ghost Hlb") as %[_ Hineq].
     iModIntro.
