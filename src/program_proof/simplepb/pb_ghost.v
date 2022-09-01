@@ -11,6 +11,7 @@ Context `{!heapGS Σ}.
 
 Record pb_system_names :=
 {
+  pb_init_proposal_gn : gname ;
   pb_proposal_gn : gname ;
   pb_config_gn : gname;
   pb_config_prop_gn : gname;
@@ -31,6 +32,7 @@ Local Definition logR := mono_listR (leibnizO EntryType).
 Class pb_ghostG Σ := {
     pb_ghost_epochG :> mono_natG Σ ;
     pb_ghost_proposalG :> inG Σ (gmapR (u64) (csumR (exclR unitO) logR)) ;
+    pb_ghost_init_proposalG :> inG Σ (gmapR (u64) (csumR (exclR unitO) logR)) ;
     pb_ghost_acceptedG :> inG Σ (gmapR (u64) logR) ;
     pb_ghost_commitG :> inG Σ logR ;
     pb_ghost_configG :> inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
@@ -55,6 +57,18 @@ Definition own_proposal γsys epoch σ : iProp Σ :=
 Definition is_proposal_lb γsys epoch σ : iProp Σ :=
   own γsys.(pb_proposal_gn) {[ epoch := Cinr (◯ML (σ : list (leibnizO (EntryType))))]}.
 
+Notation "lhs ⪯ rhs" := (prefix lhs rhs)
+(at level 20, format "lhs  ⪯  rhs") : stdpp_scope.
+
+Definition own_init_proposal_unused γsys epoch : iProp Σ :=
+  own γsys.(pb_init_proposal_gn) {[ epoch := Cinl (Excl ()) ]}.
+Definition is_init_proposal γsys epoch σ : iProp Σ :=
+  own γsys.(pb_init_proposal_gn) {[ epoch := Cinr (●ML□ (σ : list (leibnizO (EntryType))))]}.
+Definition is_init_proposal_ub γsys epoch σ : iProp Σ :=
+  ∃ σexact,
+  ⌜σexact ⪯ σ⌝ ∗
+  is_init_proposal γsys epoch σexact.
+
 Definition own_accepted γ epoch σ : iProp Σ :=
   own γ.(pb_accepted_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
 Definition is_accepted_lb γ epoch σ : iProp Σ :=
@@ -70,8 +84,6 @@ Definition own_commit γ σ : iProp Σ :=
 Definition is_ghost_lb γ σ : iProp Σ :=
   own γ.(pb_state_gn) (◯ML (σ : list (leibnizO (EntryType)))).
 
-Notation "lhs ⪯ rhs" := (prefix lhs rhs)
-(at level 20, format "lhs  ⪯  rhs") : stdpp_scope.
 
 Definition is_epoch_config γ epoch (conf:list pb_server_names): iProp Σ :=
   own γ.(pb_config_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (Some conf : (leibnizO _)))]} ∗
@@ -119,6 +131,7 @@ Definition is_proposal_valid γ σ : iProp Σ :=
   □(∀ σ', ⌜σ' ⪯ σ⌝ → own_commit γ σ' ={⊤∖↑sysN}=∗ own_commit γ σ).
 
 Definition is_proposal_facts γ epoch σ: iProp Σ :=
+  is_init_proposal_ub γ epoch σ ∗
   old_proposal_max γ epoch σ ∗
   is_proposal_valid γ σ.
 
@@ -410,7 +423,17 @@ Proof.
   unfold is_proposal_facts.
   iSplitL "".
   {
-    iDestruct "Hprop_facts" as "[#Hmax _]".
+    iDestruct "Hprop_facts" as "[H _]".
+    iDestruct "H" as (?) "[%Hineq H]".
+    iExists _.
+    iModIntro.
+    iFrame "H".
+    iPureIntro.
+    list_solver.
+  }
+  iSplitL "".
+  {
+    iDestruct "Hprop_facts" as "[ _ [#Hmax _]]".
     iModIntro.
     unfold old_proposal_max.
     iModIntro.
@@ -427,7 +450,7 @@ Proof.
     apply prefix_app_r.
     done.
   }
-  iDestruct "Hprop_facts" as "[_ #Hvalid]".
+  iDestruct "Hprop_facts" as "[_ [ _ #Hvalid]]".
   unfold is_proposal_valid.
 
   iAssert (|={⊤}=> is_valid_inv γsys σ op)%I with "[Hupd Hlc]" as ">#Hinv".
@@ -557,8 +580,8 @@ Proof.
   iIntros "#Hinv #Hcom #Hprop_lb #Hprop_facts".
   iInv "Hinv" as "Hown" "Hclose".
   iDestruct "Hown" as (σcommit epoch_commit) "(>Hghost & >#Hcom_com & >#Hprop_lb_com & #Hprop_facts_com)".
-  iDestruct "Hprop_facts_com" as "[>Hmax_com Hvalid_com]".
-  iDestruct "Hprop_facts" as "[Hmax Hvalid]".
+  iDestruct "Hprop_facts_com" as "(>Hinit_com & >Hmax_com & Hvalid_com)".
+  iDestruct "Hprop_facts" as "(#Hinit & Hmax & Hvalid)".
   iAssert (⌜σcommit ⪯ σ⌝ ∨ ⌜σ ⪯ σcommit⌝)%I as "%Hlog".
   {
     assert (int.nat epoch < int.nat epoch_commit ∨ int.nat epoch = int.nat epoch_commit ∨ int.nat epoch > int.nat epoch_commit) as [Hepoch|[Hepoch|Hepoch]]by word.
@@ -616,7 +639,7 @@ Proof.
   }
 Qed.
 
-Lemma ghost_become_leader γsys γsrv σ epochconf epoch conf epoch_new :
+Lemma ghost_init_primary γsys γsrv σ epochconf epoch conf epoch_new :
   γsrv ∈ conf →
   int.nat epoch < int.nat epoch_new →
   int.nat epochconf ≤ int.nat epoch →
@@ -625,14 +648,15 @@ Lemma ghost_become_leader γsys γsrv σ epochconf epoch conf epoch_new :
   is_epoch_config γsys epochconf conf -∗
   is_accepted_ro γsrv epoch σ -∗
   (∀ epoch_skip, ⌜int.nat epochconf < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch_new⌝ → is_epoch_skipped γsys epoch_skip) -∗
-  own_proposal_unused γsys epoch_new
+  own_proposal_unused γsys epoch_new -∗
+  own_init_proposal_unused γsys epoch_new
   ==∗
   own_proposal γsys epoch_new σ ∗
   is_proposal_facts γsys epoch_new σ
 .
 Proof.
   intros Hmember Hepoch_new Hepoch_recent.
-  iIntros "#Hprop_lb #Hprop_facts #His_conf #Hacc_ro #Hskip Hprop".
+  iIntros "#Hprop_lb #Hprop_facts #His_conf #Hacc_ro #Hskip Hprop Hinit".
   iMod (own_update with "Hprop") as "Hprop".
   {
     apply singleton_update.
@@ -641,8 +665,24 @@ Proof.
     apply Cinr_valid.
     apply mono_list_auth_valid.
   }
+  iMod (own_update with "Hinit") as "Hinit".
+  {
+    apply singleton_update.
+    instantiate (1:=Cinr (●ML□ (σ : list (leibnizO (EntryType))))).
+    apply cmra_update_exclusive.
+    apply Cinr_valid.
+    apply mono_list_auth_dfrac_valid.
+    done.
+  }
+  iDestruct "Hinit" as "#Hinit".
   iFrame "Hprop".
-  iDestruct "Hprop_facts" as "[Hmax $]".
+  iDestruct "Hprop_facts" as "[_ [Hmax $]]".
+
+  iSplitL "".
+  {
+    iExists _. iFrame "Hinit".
+    done.
+  }
 
   iModIntro.
   iIntros (epoch_old σ_old).
@@ -704,6 +744,33 @@ Proof.
     rewrite dfrac_agree_op_valid in Hbad.
     naive_solver.
   }
+Qed.
+
+Lemma ghost_become_primary γsys γsrv epoch σprop σ sealed:
+  is_init_proposal γsys epoch σprop -∗
+  own_proposal γsys epoch σprop -∗
+  own_replica_ghost γsys γsrv epoch σ sealed -∗
+  ⌜σprop = σ⌝ .
+Proof.
+  iIntros "#Hinit Hprop".
+  iNamed 1.
+  iDestruct "Hvalid" as "[Hinit2 _]".
+  iDestruct "Hinit2" as (?) "[%Hineq Hinit2]".
+  iDestruct (own_valid_2 with "Hinit Hinit2") as %Heq.
+  rewrite singleton_op -Cinr_op in Heq.
+  rewrite singleton_valid Cinr_valid in Heq.
+  apply mono_list_auth_dfrac_op_valid_L in Heq.
+  destruct Heq as [_ Heq].
+  rewrite Heq in Hineq|-*.
+  iDestruct (own_valid_2 with "Hprop Hproposal_lb") as %Hineq2.
+  rewrite singleton_op -Cinr_op in Hineq2.
+  rewrite singleton_valid Cinr_valid in Hineq2.
+  apply mono_list_both_valid_L in Hineq2.
+  iPureIntro.
+  apply list_prefix_eq.
+  { done. }
+  apply prefix_length.
+  done.
 Qed.
 
 End pb_protocol.
