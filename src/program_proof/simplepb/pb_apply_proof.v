@@ -130,18 +130,18 @@ Proof.
     assert (index = nextIndex) by naive_solver.
     iIntros "Hghost".
     iDestruct "Hghost" as (?) "[%Hre Hghost]".
-    rewrite Hre.
+    iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
+    { rewrite -(fmap_length fst). rewrite -(fmap_length fst).
+      by f_equal. }
     iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
     { rewrite H in Hσ_index.
       apply (f_equal length) in Hre.
-      do 2 (rewrite fmap_length in Hre).
-      word. }
+      word.
+    }
     { done. }
     iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
     { done. }
     { rewrite H in Hσ_index.
-      apply (f_equal length) in Hre.
-      do 2 (rewrite fmap_length in Hre).
       word. }
     rewrite Happend.
     iDestruct (ghost_get_accepted_lb with "HH") as "#Hacc_lb".
@@ -153,7 +153,7 @@ Proof.
     { iExists _; iFrame "∗#".
       by rewrite fmap_snoc. }
     iFrame "#".
-    admit. (* FIXME: annoying indirection *)
+    done.
   }
   iIntros (reply) "(Hreply & Hstate & #Hlb)".
   wp_pures.
