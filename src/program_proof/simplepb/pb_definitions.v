@@ -300,6 +300,7 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
    obligation. *)
 Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
   ∃ σ, ⌜σphys = σ.*1⌝ ∗ (own_replica_ghost γ γsrv epoch σ sealed)
+  "Htok" ∷ own_escrow γsrv epoch ∗
 .
 
 Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
@@ -324,9 +325,13 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   "#Hs_prop_facts" ∷ is_proposal_facts γ epoch σg ∗
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
 
+  (* escrow token for getting ownership of proposal in case we become leader *)
+  "Hescrow" ∷ own_tok γsrv epoch
+
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
             ∃ (clerks:list loc) (backups:list pb_server_names),
+            "#Htok_used_witness" ∷ is_tok γsrv epoch ∗
             "%Hconf_clerk_len" ∷ ⌜length clerks = length (γsrv :: backups)⌝ ∗
             "#Hconf" ∷ is_epoch_config γ epoch (γsrv :: backups) ∗
                      (* FIXME: ptrT vs refT (struct.t Clerk) *)
@@ -334,7 +339,6 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
             "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗
                                                                       is_epoch_lb γsrv' epoch
                              ) ∗
-            "#Hprop_facts" ∷ is_proposal_facts γ epoch σg ∗
             "Hproposal" ∷ own_proposal γ epoch σg
         )
                    else True
