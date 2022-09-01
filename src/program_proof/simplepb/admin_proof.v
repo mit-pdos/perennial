@@ -34,7 +34,7 @@ Definition is_conf_inv γpb γconf : iProp Σ :=
       "#His_conf_prop" ∷ is_epoch_config_proposal γpb epoch_lb confγs ∗
       "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host γpb γsrv host) ∗
       "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_ghost.is_epoch_lb γsrv epoch_lb) ∗
-      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γpb epoch' ∗ config_unset γpb epoch' ∗ own_proposal_unused γpb epoch') ∗
+      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γpb epoch' ∗ config_unset γpb epoch' ∗ own_proposal_unused γpb epoch' ∗ own_init_proposal_unused γpb epoch') ∗
       "Hunset_or_set" ∷ (config_unset γpb epoch ∨ ⌜int.nat epoch_lb = int.nat epoch⌝) ∗
       "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γpb epoch_skip)
       )
@@ -72,6 +72,7 @@ Lemma wp_Clerk__GetEpochAndConfig2 ck γpb Φ :
   (is_slice_small config_sl uint64T 1 conf ∗
   config_proposal_unset γpb epoch ∗
   own_proposal_unused γpb epoch ∗
+  own_init_proposal_unused γpb epoch ∗
   is_epoch_config γpb epoch_lb confγs ∗
   (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γpb epoch_skip) ∗
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host γpb γsrv host) ∗
@@ -150,6 +151,7 @@ Proof.
     iModIntro.
     iIntros.
     iApply "HΦ".
+    iDestruct "Hprop" as "[$ $]".
     iFrame "∗#".
 
     (* TODO: repetetive proof *)
@@ -198,6 +200,7 @@ Proof.
     iModIntro.
     iIntros.
     iApply "HΦ".
+    iDestruct "Hprop" as "[$ $]".
     iFrame "∗#".
     iIntros (???).
     exfalso.
@@ -364,7 +367,7 @@ Proof using waitgroupG0.
   wp_apply (wp_slice_len).
   wp_pures.
 
-  iDestruct "Hpost1" as "(Hconf_sl & Hconf_unset & Hprop & #His_conf & #Hskip & #His_hosts & #Hlb)".
+  iDestruct "Hpost1" as "(Hconf_sl & Hconf_unset & Hprop & Hinit & #His_conf & #Hskip & #His_hosts & #Hlb)".
 
   iAssert (⌜length conf ≠ 0⌝)%I as %Hold_conf_ne.
   {
@@ -438,7 +441,7 @@ Proof using waitgroupG0.
     rewrite auth_map.Cinl_Cinr_op in Hvalid.
     done.
   }
-  iMod (ghost_become_leader with "Hprop_lb Hprop_facts His_conf Hacc_ro Hskip Hprop") as "[Hprop #Hprop_facts2]".
+  iMod (ghost_init_primary with "Hprop_lb Hprop_facts His_conf Hacc_ro Hskip Hprop Hinit") as "[Hprop #Hprop_facts2]".
   { by eapply elem_of_list_lookup_2. }
   { word. }
   { word. }

@@ -120,6 +120,32 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition BecomePrimary_core_spec γ γsrv args σ :=
+  λ (Φ : u64 -> iPropO Σ) ,
+  (
+    ⌜has_snap_encoding args.(SetStateArgs.state) (fst <$> σ)⌝ ∗
+    ⌜length σ = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
+    is_proposal_lb γ args.(SetStateArgs.epoch) σ ∗
+    is_proposal_facts γ args.(SetStateArgs.epoch) σ ∗
+    (
+      (is_epoch_lb γsrv args.(SetStateArgs.epoch) -∗
+       Φ 0) ∧
+      (∀ err, ⌜err ≠ U64 0⌝ → Φ err))
+    )%I
+.
+
+Program Definition BecomePrimary_spec γ γsrv :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ args σ,
+    ⌜SetStateArgs.has_encoding enc_args args⌝ ∗
+    SetState_core_spec γ γsrv args σ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
+  )%I
+.
+Next Obligation.
+  unfold SetState_core_spec.
+  solve_proper.
+Defined.
+
 (* End RPC specs *)
 
 Definition is_pb_host γ γsrv (host:u64) : iProp Σ :=
