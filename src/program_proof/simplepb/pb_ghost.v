@@ -132,6 +132,51 @@ Definition own_replica_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
 .
 
+Lemma ghost_accept_and_unseal γsys γsrv sealed epoch epoch' σ' σ :
+  int.nat epoch < int.nat epoch' →
+  own_replica_ghost γsys γsrv epoch σ sealed -∗
+  is_proposal_lb γsys epoch' σ' -∗
+  is_proposal_facts γsys epoch' σ'
+  ==∗
+  own_replica_ghost γsys γsrv epoch' σ' false.
+Proof.
+  intros Hineq.
+  iIntros "Hown #Hprop_lb #Hprop_facts".
+  iNamed "Hown".
+  iSplitL "Hepoch_ghost".
+  {
+    iDestruct (mono_nat_own_update with "Hepoch_ghost") as "[$ _]".
+    word.
+  }
+  iFrame "Hprop_lb Hprop_facts".
+  iDestruct (big_sepS_elem_of_acc_impl epoch' with "Haccepted_rest") as "[HH Haccepted_rest]".
+  { set_solver. }
+  iClear "Haccepted".
+  iDestruct "HH" as "[%Hbad|Haccepted]".
+  {
+    exfalso.
+    word.
+  }
+  iSplitL "Haccepted".
+  {
+    iApply (own_update with "Haccepted").
+    apply singleton_update.
+    apply mono_list_update.
+    apply prefix_nil.
+  }
+  iSplitR; first done.
+  iApply "Haccepted_rest".
+  {
+    iModIntro.
+    iIntros (???) "[%Hineq2|$]".
+    iLeft.
+    iPureIntro.
+    word.
+  }
+  iLeft.
+  done.
+Qed.
+
 Lemma ghost_accept γsys γsrv epoch epoch' σ σ' :
   int.nat epoch ≤ int.nat epoch' →
   length σ ≤ length σ' →
@@ -143,10 +188,10 @@ Lemma ghost_accept γsys γsrv epoch epoch' σ σ' :
 Proof.
   intros Hepoch_ineq Hσlen_ineq.
   iIntros "Hown #Hprop_lb #Hprop_facts".
-  iNamed "Hown".
 
   destruct (decide (epoch = epoch')).
   {
+    iNamed "Hown".
     iDestruct (own_valid_2 with "Hprop_lb Hproposal_lb") as %Hσ_ineq.
     rewrite e in Hσ_ineq.
     rewrite singleton_op singleton_valid in Hσ_ineq.
@@ -170,68 +215,40 @@ Proof.
     done.
   }
   {
-    assert (int.nat epoch < int.nat epoch') as Hepoch_new.
-    {
-      assert (int.nat epoch < int.nat epoch' ∨ int.nat epoch = int.nat epoch') as [|] by word.
-      { done. }
-      { exfalso. assert (epoch = epoch') by word. done. }
-    }
-    iSplitL "Hepoch_ghost".
-    {
-      iDestruct (mono_nat_own_update with "Hepoch_ghost") as "[$ _]".
-      done.
-    }
-    iFrame "Hprop_lb Hprop_facts".
-    iDestruct (big_sepS_elem_of_acc_impl epoch' with "Haccepted_rest") as "[HH Haccepted_rest]".
-    { set_solver. }
-    iClear "Haccepted".
-    iDestruct "HH" as "[%Hbad|Haccepted]".
-    {
-      exfalso.
-      word.
-    }
-    iSplitL "Haccepted".
-    {
-      iApply (own_update with "Haccepted").
-      apply singleton_update.
-      apply mono_list_update.
-      apply prefix_nil.
-    }
-    iSplitR; first done.
-    iApply "Haccepted_rest".
-    {
-      iModIntro.
-      iIntros (???) "[%Hineq|$]".
-      iLeft.
-      iPureIntro.
-      word.
-    }
-    iLeft.
-    done.
+    iApply (ghost_accept_and_unseal with "Hown Hprop_lb Hprop_facts").
+    assert (int.nat epoch < int.nat epoch' ∨ int.nat epoch = int.nat epoch') as [|] by word.
+    { done. }
+    { exfalso. assert (epoch = epoch') by word. done. }
   }
 Qed.
 
-Lemma ghost_accept_and_unseal γsys γsrv sealed epoch epoch' σ' σ :
-  int.nat epoch < int.nat epoch' →
-  own_replica_ghost γsys γsrv epoch σ sealed -∗
-  is_proposal_lb γsys epoch' σ' -∗
-  is_proposal_facts γsys epoch' σ'
-  ==∗
-  own_replica_ghost γsys γsrv epoch' σ' false.
-Proof.
-Admitted.
-
 Lemma ghost_seal γsys γsrv sealed epoch σ :
-  own_replica_ghost γsys γsrv epoch σ sealed -∗
+  own_replica_ghost γsys γsrv epoch σ sealed ==∗
   own_replica_ghost γsys γsrv epoch σ true.
 Proof.
-Admitted.
+  iNamed 1.
+  iFrame "∗#".
+  destruct sealed.
+  {
+    by iFrame "#".
+  }
+  {
+    iMod (own_update with "Haccepted") as "HH".
+    {
+      apply singleton_update.
+      apply mono_list_auth_persist.
+    }
+    iDestruct "HH" as "#$".
+    done.
+  }
+Qed.
 
 Lemma ghost_get_accepted_ro γsys γsrv epoch σ :
   own_replica_ghost γsys γsrv epoch σ true -∗
   is_accepted_ro γsrv epoch σ.
 Proof.
-Admitted.
+  by iNamed 1.
+Qed.
 
 Lemma ghost_helper1 γsys γsrv epoch σ1 σ2 sealed:
   length σ1 = length σ2 →
@@ -239,14 +256,39 @@ Lemma ghost_helper1 γsys γsrv epoch σ1 σ2 sealed:
   own_replica_ghost γsys γsrv epoch σ2 sealed -∗
   ⌜σ1 = σ2⌝.
 Proof.
-Admitted.
+  intros Hlen.
+  iIntros "#Hprop_lb".
+  iNamed 1.
+  iDestruct (own_valid_2 with "Hprop_lb Hproposal_lb") as %Hcomp.
+  iPureIntro.
+  rewrite singleton_op in Hcomp.
+  apply singleton_valid in Hcomp.
+  rewrite -Cinr_op in Hcomp.
+  rewrite Cinr_valid in Hcomp.
+  apply mono_list_lb_op_valid_1_L in Hcomp.
+  destruct Hcomp.
+  {
+    apply list_prefix_eq.
+    { done. }
+    word.
+  }
+  {
+    symmetry.
+    apply list_prefix_eq.
+    { done. }
+    word.
+  }
+Qed.
 
 Lemma ghost_epoch_lb_ineq γsys γsrv epoch epoch_lb σ sealed:
   is_epoch_lb γsrv epoch_lb -∗
   own_replica_ghost γsys γsrv epoch σ sealed -∗
   ⌜int.nat epoch_lb ≤ int.nat epoch⌝.
 Proof.
-Admitted.
+  iIntros "#Hlb".
+  iNamed 1.
+  by iDestruct (mono_nat_lb_own_valid with "Hepoch_ghost Hlb") as %[_ Hineq].
+Qed.
 
 (* Used by ApplyAsBackup *)
 Lemma ghost_accept_helper newOp γsys γsrv epoch σ σ_old sealed:
@@ -309,23 +351,42 @@ Lemma ghost_get_accepted_lb γsys γsrv epoch σ sealed :
   is_accepted_lb γsrv epoch σ.
 Proof.
   iNamed 1.
-  unfold own_accepted.
-  (* FIXME: how to get lower bound? *)
-  (* rewrite mono_list_auth_lb_op. *)
-  admit.
-Admitted.
+  iAssert (∃ dq, own γsrv.(pb_accepted_gn) {[epoch := ●ML{dq} (σ : list (leibnizO (EntryType)))]})%I with "[Haccepted]" as "HH".
+  {
+    destruct sealed.
+    { iExists _; iFrame "∗#". }
+    { iExists _; iFrame "∗#". }
+  }
+  iNamed "HH".
+  iDestruct (own_mono with "HH") as "H".
+  {
+    apply singleton_mono.
+    rewrite mono_list_auth_lb_op.
+    done.
+  }
+  by iDestruct "H" as "[_ $]".
+Qed.
 
 Lemma ghost_get_epoch_lb γsys γsrv epoch σ sealed :
   own_replica_ghost γsys γsrv epoch σ sealed -∗
   is_epoch_lb γsrv epoch.
 Proof.
-Admitted.
+  iNamed 1.
+  by iApply mono_nat_lb_own_get.
+Qed.
 
 Lemma ghost_get_propose_lb γsys epoch σ :
   own_proposal γsys epoch σ -∗
   is_proposal_lb γsys epoch σ.
 Proof.
-Admitted.
+  iIntros "Hprop".
+  iApply (own_mono with "Hprop").
+  {
+    apply singleton_mono.
+    apply Cinr_included.
+    apply mono_list_included.
+  }
+Qed.
 
 Lemma ghost_propose γsys epoch σ op :
   own_proposal γsys epoch σ -∗
