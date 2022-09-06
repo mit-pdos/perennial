@@ -126,7 +126,7 @@ Definition BecomePrimary_core_spec γ γsrv args σ backupγ :=
     is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
     is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
     (* FIXME: want this to be "is_pb_host", but that will require recursion *)
-    ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch)) ∗
+    ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
     become_primary_escrow γ γsrv args.(BecomePrimaryArgs.epoch) σ ∗
     is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
     is_proposal_facts γ args.(BecomePrimaryArgs.epoch) σ ∗

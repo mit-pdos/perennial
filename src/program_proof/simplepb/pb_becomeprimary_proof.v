@@ -29,7 +29,7 @@ Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr args σ backupγ:
         "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
         "#Hconf" ∷ is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
         (* FIXME: want this to be "is_pb_host", but that will require recursion *)
-        "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, True) ∗
+        "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
         "#Hprop_lb" ∷ is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ args.(BecomePrimaryArgs.epoch) σ ∗
         "#Hprim_escrow" ∷ become_primary_escrow γ γsrv args.(BecomePrimaryArgs.epoch) σ ∗
@@ -115,7 +115,7 @@ Proof.
   iNamed "Hargs".
   wp_loadField.
 
-  iDestruct "HΦ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprimary_escrow & #Hprop_facts & #Hprop_lb & HΦ)".
+  iDestruct "HΦ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprimary_escrow & #Hprop_lb & #Hprop_facts & HΦ)".
 
   iAssert (_) with "HisSm" as "HisSm2".
   iNamed "HisSm2".
@@ -187,9 +187,19 @@ Proof.
     wp_if_destruct.
     { (* continue with loop *)
       assert (int.nat i < length backupγ) as Hi.
-      {
+      { (* XXX: annoying proof *)
         rewrite cons_length /= Hreplicas_sz in Hreplicas_backup_len.
-        admit. (* TODO: word *)
+        rewrite replicate_length in Hnew_clerks_sz.
+
+        rewrite app_length in Hlen.
+        rewrite HcompleteLen in Hlen.
+        replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1) by word.
+        rewrite Hreplicas_sz.
+        assert (int.nat i < int.nat new_clerks_sl.(Slice.sz)) by word.
+        rewrite -Hnew_clerks_sz in H.
+        replace (int.nat replicas_sl.(Slice.sz) - 1) with (int.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
+        { done. }
+        word.
       }
       pose proof Hi as Hlookup.
       apply list_lookup_lt in Hlookup as [γsrv' Hlookup].
@@ -305,7 +315,9 @@ Proof.
       iApply (big_sepL2_app with "Hclerks_is").
       simpl.
       iFrame "Hck".
-      admit. (* FIXME: Use Hhosts*)
+      iDestruct (big_sepL2_lookup_acc with "Hhosts") as "[$ _]".
+      { done. }
+      { done. }
     }
     (* done with loop *)
     replace (clerksLeft) with ([]:list loc) in *; last first.
@@ -340,8 +352,9 @@ Proof.
       rewrite Hepoch_eq.
       iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
       { set_solver. }
-      iMod (ghost_become_primary with "Hlc Hprimary_escrow [Hprop_lb] Hprim") as "HH".
-      { admit. } (* FIXME: do we need this? *)
+      iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
+      { do 2 (rewrite -(fmap_length fst)). rewrite -Hre. done. }
+      iMod (ghost_become_primary with "Hlc Hprimary_escrow Hs_prop_lb Hprim") as "HH".
       iDestruct "HH" as "[Hprim #His_tok]".
       instantiate (1:=is_tok γsrv epoch).
       iMod "Hmask".
