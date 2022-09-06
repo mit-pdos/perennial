@@ -51,8 +51,8 @@ From Perennial.program_proof.ctrexample Require
      client server closed.
 
 (* SimplePB *)
-(* From Perennial.program_proof.simplepb Require
-     state_proof. *) (* the currently highest-level proof; includes as dependencies
+From Perennial.program_proof.simplepb Require
+     state_proof. (* the currently highest-level proof; includes as dependencies
                      all the other stuff *)
 
 (* MVCC *)

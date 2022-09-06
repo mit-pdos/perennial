@@ -202,7 +202,7 @@ Proof.
   wp_apply ("HgetStateSpec" with "[$Hstate]").
   {
     iIntros "Hghost".
-    iDestruct "Hghost" as (?) "[%Heq Hghost]".
+    iDestruct "Hghost" as (?) "(%Heq & Hghost & Hprim)".
     iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %Hσeq.
     {
       apply (f_equal length) in Heq.
@@ -212,10 +212,10 @@ Proof.
     }
     rewrite Hσeq.
     iDestruct (ghost_epoch_lb_ineq with "Hepoch_lb Hghost") as "#Hepoch_ineq".
-    iDestruct (ghost_seal with "Hghost") as "Hghost".
+    iMod (ghost_seal with "Hghost") as "Hghost".
     iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
     replace (σ) with (σg).
-    iSplitL "Hghost".
+    iSplitL "Hghost Hprim".
     {
       iExists _.
       iFrame.
