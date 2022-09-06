@@ -129,7 +129,7 @@ Proof.
     iSplitL ""; first done.
     assert (index = nextIndex) by naive_solver.
     iIntros "Hghost".
-    iDestruct "Hghost" as (?) "[%Hre Hghost]".
+    iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
     iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
     { rewrite -(fmap_length fst). rewrite -(fmap_length fst).
       by f_equal. }
@@ -139,18 +139,25 @@ Proof.
       word.
     }
     { done. }
-    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
     { done. }
     { rewrite H in Hσ_index.
       word. }
+    iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
+    {
+      rewrite Hσ_nextIndex. rewrite Hσ_index.
+      replace (index) with (nextIndex) by word.
+      word.
+    }
     rewrite Happend.
-    iDestruct (ghost_get_accepted_lb with "HH") as "#Hacc_lb".
-    iDestruct (ghost_get_epoch_lb with "HH") as "#Hepoch_lb".
+    iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
+    iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb".
     instantiate (1:=(⌜σ = σg ++ [ghost_op]⌝ ∗ is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch σ)%I).
     iModIntro.
 
     iSplitL.
-    { iExists _; iFrame "∗#".
+    { iExists _; iFrame "Hghost".
+      iFrame "Hprim".
       by rewrite fmap_snoc. }
     iFrame "#".
     done.

@@ -162,6 +162,43 @@ Definition own_primary_ghost γsys γsrv epoch σ : iProp Σ :=
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
 .
 
+Lemma ghost_primary_accept_new_epoch γsys γsrv epoch epoch' σ' σ :
+  int.nat epoch ≤ int.nat epoch' →
+  is_proposal_facts γsys epoch' σ' -∗
+  is_proposal_lb γsys epoch' σ' -∗
+  own_primary_ghost γsys γsrv epoch σ'
+  ==∗
+  own_primary_ghost γsys γsrv epoch' σ'.
+Proof.
+Admitted.
+
+Lemma ghost_primary_accept γsys γsrv epoch σ' σ :
+  length σ ≤ length σ' →
+  is_proposal_facts γsys epoch σ' -∗
+  is_proposal_lb γsys epoch σ' -∗
+  own_primary_ghost γsys γsrv epoch σ
+  ==∗
+  own_primary_ghost γsys γsrv epoch σ'.
+Proof.
+  intros Hlength_le.
+  iIntros "#Hprop_facts Hprop_lb".
+  iNamed 1.
+  iFrame "Hprop_facts".
+  iFrame "Htoks".
+  iDestruct "Hprop" as "[$|Hprop]".
+  { done. }
+  iRight.
+  iDestruct "Hprop" as "[$ Hprop]".
+  iDestruct (own_valid_2 with "Hprop Hprop_lb") as %Hvalid.
+  rewrite singleton_op in Hvalid.
+  rewrite -Cinr_op in Hvalid.
+  rewrite singleton_valid Cinr_valid in Hvalid.
+  rewrite mono_list_both_valid_L in Hvalid.
+  apply list_prefix_eq in Hvalid; last done.
+  rewrite Hvalid.
+  by iFrame.
+Qed.
+
 Lemma ghost_accept_and_unseal γsys γsrv sealed epoch epoch' σ' σ :
   int.nat epoch < int.nat epoch' →
   own_replica_ghost γsys γsrv epoch σ sealed -∗
