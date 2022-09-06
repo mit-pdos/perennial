@@ -53,6 +53,7 @@ Proof.
   wp_apply (wp_frame_wand with "HΦ").
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
   {
+    rewrite is_pb_host_unfold.
     iDestruct "Hsrv" as "[_ [$ _]]".
   }
   { (* Successful RPC *)

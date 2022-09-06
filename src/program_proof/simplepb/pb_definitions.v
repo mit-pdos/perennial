@@ -120,13 +120,13 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition BecomePrimary_core_spec γ γsrv args σ backupγ :=
+Definition BecomePrimary_core_spec γ γsrv args σ backupγ (ρ:u64 -d> pb_system_names -d> pb_server_names -d> iPropO Σ) :=
   λ (Φ : u64 -> iPropO Σ) ,
   (
     is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
     is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
     (* FIXME: want this to be "is_pb_host", but that will require recursion *)
-    ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
+    ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, (ρ host γ γsrv') ∗ is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
     become_primary_escrow γ γsrv args.(BecomePrimaryArgs.epoch) σ ∗
     is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
     is_proposal_facts γ args.(BecomePrimaryArgs.epoch) σ ∗
@@ -134,11 +134,11 @@ Definition BecomePrimary_core_spec γ γsrv args σ backupγ :=
     )%I
 .
 
-Program Definition BecomePrimary_spec γ γsrv :=
+Program Definition BecomePrimary_spec_pre γ γsrv ρ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ confγ,
     ⌜BecomePrimaryArgs.has_encoding enc_args args⌝ ∗
-    BecomePrimary_core_spec γ γsrv args σ confγ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
+    BecomePrimary_core_spec γ γsrv args σ confγ ρ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
   )%I
 .
 Next Obligation.
@@ -146,25 +146,55 @@ Next Obligation.
   solve_proper.
 Defined.
 
-(* End RPC specs *)
-
-Definition is_pb_host γ γsrv (host:u64) : iProp Σ :=
+Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> iPropO Σ) :=
+  (λ host γ γsrv,
   handler_spec γsrv.(pb_urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
   handler_spec γsrv.(pb_urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
   handler_spec γsrv.(pb_urpc_gn) host (U64 2) (GetState_spec γ γsrv) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 3) (BecomePrimary_spec γ γsrv) ∗
-  handlers_dom γsrv.(pb_urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]}
+  handler_spec γsrv.(pb_urpc_gn) host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
+  handlers_dom γsrv.(pb_urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]})%I
 .
+
+Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
+Proof.
+  rewrite /is_pb_host_pre=> n is1 is2 Hpre γ γsrv host.
+  do 5 (f_contractive || f_equiv).
+  f_equiv.
+  admit.
+Admitted.
+
+Definition is_pb_host_def :=
+  fixpoint (is_pb_host_pre).
+Definition is_pb_host_aux : seal (is_pb_host_def). by eexists. Qed.
+Definition is_pb_host := is_pb_host_aux.(unseal).
+Definition is_pb_host_eq : is_pb_host = is_pb_host_def := is_pb_host_aux.(seal_eq).
+
+Definition BecomePrimary_spec γ γsrv := BecomePrimary_spec_pre γ γsrv is_pb_host.
+
+Lemma is_pb_host_unfold host γ γsrv:
+  is_pb_host host γ γsrv ⊣⊢ is_pb_host_pre (is_pb_host) host γ γsrv
+.
+Proof.
+  rewrite is_pb_host_eq. apply (fixpoint_unfold (is_pb_host_pre)).
+Qed.
+
+Global Instance is_pb_host_pers host γ γsrv: Persistent (is_pb_host host γ γsrv).
+Proof.
+  rewrite is_pb_host_unfold.
+  apply _.
+Qed.
+
+(* End RPC specs *)
 
 Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[pb.Clerk :: "cl"] #cl) ∗
   "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
-  "#Hsrv" ∷ is_pb_host γ γsrv srv
+  "#Hsrv" ∷ is_pb_host srv γ γsrv 
 .
 Lemma wp_MakeClerk host γ γsrv :
   {{{
-        is_pb_host γ γsrv host
+        is_pb_host host γ γsrv
   }}}
     MakeClerk #host
   {{{
@@ -204,7 +234,7 @@ Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr (epoch:u64) servers server_γ
   {{{
         "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
         "#Hconf" ∷ is_epoch_config γ epoch server_γs ∗
-        "#Hhost" ∷ ([∗ list] γsrv;host ∈ server_γs;servers, is_pb_host γ γsrv host) ∗
+        "#Hhost" ∷ ([∗ list] γsrv;host ∈ server_γs;servers, is_pb_host host γ γsrv) ∗
         "#Hacc" ∷ is_accepted_lb γsrv epoch σ ∗
         "Hprop" ∷ own_proposal γ epoch σ ∗ (* FIXME: escrow this *)
         "Hargs" ∷ BecomePrimaryArgs.own args_ptr (BecomePrimaryArgs.mkC epoch servers)

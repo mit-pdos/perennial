@@ -32,7 +32,7 @@ Definition is_conf_inv γpb γconf : iProp Σ :=
       "Hconf" ∷ own_config γconf conf ∗
       "#His_conf" ∷ is_epoch_config γpb epoch_lb confγs ∗
       "#His_conf_prop" ∷ is_epoch_config_proposal γpb epoch_lb confγs ∗
-      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host γpb γsrv host) ∗
+      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) ∗
       "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_ghost.is_epoch_lb γsrv epoch_lb) ∗
       "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γpb epoch' ∗ config_unset γpb epoch' ∗ own_proposal_unused γpb epoch' ∗ own_init_proposal_unused γpb epoch') ∗
       "Hunset_or_set" ∷ (config_unset γpb epoch ∨ ⌜int.nat epoch_lb = int.nat epoch⌝) ∗
@@ -75,7 +75,7 @@ Lemma wp_Clerk__GetEpochAndConfig2 ck γpb Φ :
   own_init_proposal_unused γpb epoch ∗
   is_epoch_config γpb epoch_lb confγs ∗
   (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γpb epoch_skip) ∗
-  ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host γpb γsrv host) ∗
+  ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) ∗
   (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_ghost.is_epoch_lb γsrv epoch_lb)) -∗
    Φ (#epoch, slice_val config_sl)%V
   ) -∗
@@ -214,7 +214,7 @@ Lemma wp_Clerk__WriteConfig2 ck γpb Φ config_sl conf confγ epoch :
   is_Clerk2 ck γpb -∗
   is_slice_small config_sl uint64T 1 conf -∗
   is_epoch_config_proposal γpb epoch confγ -∗
-  ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host γpb γsrv host) -∗
+  ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host host γpb γsrv) -∗
   (∀ γsrv, ⌜γsrv ∈ confγ⌝ → pb_ghost.is_epoch_lb γsrv epoch) -∗
   □ (∀ (err:u64),
       (if (decide (err = U64 0)) then
@@ -327,7 +327,7 @@ Qed.
 Lemma wp_Reconfig γ (configHost:u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
   {{{
         "Hservers_sl" ∷ is_slice servers_sl uint64T 1 servers ∗
-        "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host γ γsrv host) ∗
+        "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host host γ γsrv) ∗
         "#Hconf_host" ∷ is_conf_host configHost γ
   }}}
     EnterNewConfig #configHost (slice_val servers_sl)

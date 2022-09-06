@@ -29,7 +29,9 @@ Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr args σ backupγ:
         "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
         "#Hconf" ∷ is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
         (* FIXME: want this to be "is_pb_host", but that will require recursion *)
-        "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
+        "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ,
+                       is_pb_host host γ γsrv' ∗
+                       is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
         "#Hprop_lb" ∷ is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ args.(BecomePrimaryArgs.epoch) σ ∗
         "#Hprim_escrow" ∷ become_primary_escrow γ γsrv args.(BecomePrimaryArgs.epoch) σ ∗
@@ -55,6 +57,7 @@ Proof.
   wp_apply (wp_frame_wand with "HΦ").
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
   {
+    rewrite is_pb_host_unfold.
     iDestruct "Hsrv" as "[_ [_ [_ [$ _]]]]".
   }
   { (* Successful RPC *)
@@ -100,7 +103,7 @@ Qed.
 Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ :
   is_Server s γ γsrv -∗
   BecomePrimaryArgs.own args_ptr args -∗
-  BecomePrimary_core_spec γ γsrv args σ backupγ (λ err, Φ #err) -∗
+  BecomePrimary_core_spec γ γsrv args σ backupγ is_pb_host (λ err, Φ #err) -∗
   WP pb.Server__BecomePrimary #s #args_ptr {{ Φ }}
   .
 Proof.
@@ -174,6 +177,7 @@ Proof.
       split; first word.
       rewrite replicate_length.
       rewrite cons_length /= in Hreplicas_backup_len.
+      rewrite Hreplicas_sz in Hreplicas_backup_len.
       word.
     }
 
@@ -233,7 +237,9 @@ Proof.
       {
         instantiate (1:=γsrv').
         instantiate (1:=γ).
-        admit. (* FIXME: recursive is_pb_host *)
+        iDestruct (big_sepL2_lookup_acc with "Hhosts") as "[[$ _] _]".
+        { done. }
+        { done. }
       }
       iIntros (ck) "#Hck".
       wp_load.
@@ -315,7 +321,7 @@ Proof.
       iApply (big_sepL2_app with "Hclerks_is").
       simpl.
       iFrame "Hck".
-      iDestruct (big_sepL2_lookup_acc with "Hhosts") as "[$ _]".
+      iDestruct (big_sepL2_lookup_acc with "Hhosts") as "[[_ $] _]".
       { done. }
       { done. }
     }
@@ -328,13 +334,22 @@ Proof.
       rewrite HcompleteLen in Hlen.
       enough (int.nat i ≥ length backupγ) by word.
       rewrite cons_length in Hreplicas_backup_len.
-      replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1) by word.
+      replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1); last first.
+      { (* FIXME: why doesn't word work on is own? *)
+        rewrite Hreplicas_backup_len.
+        word.
+      }
       rewrite Hreplicas_sz.
       rewrite replicate_length in Hnew_clerks_sz.
       assert (int.nat i ≥ int.nat new_clerks_sl.(Slice.sz)) by word.
       rewrite -Hnew_clerks_sz in H.
       replace (int.nat replicas_sl.(Slice.sz) - 1) with (int.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
       { done. }
+      (* FIXME: why doesn't word work here anymore? *)
+      enough (int.nat (replicas_sl.(Slice.sz)) > 0).
+      { word. }
+      rewrite -Hreplicas_sz.
+      rewrite Hreplicas_backup_len.
       word.
     }
 
@@ -396,6 +411,6 @@ Proof.
     iModIntro.
     iApply "HΦ".
   }
-Admitted.
+Qed.
 
 End pb_becomeprimary_proof.

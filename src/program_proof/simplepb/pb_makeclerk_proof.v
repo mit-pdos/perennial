@@ -19,7 +19,7 @@ Context `{!pbG Σ}.
 
 Lemma wp_MakeClerk γ γsrv host :
 {{{
-      is_pb_host γ γsrv host
+      is_pb_host host γ γsrv
 }}}
   MakeClerk #host
 {{{

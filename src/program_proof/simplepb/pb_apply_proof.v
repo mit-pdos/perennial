@@ -622,12 +622,14 @@ Proof using waitgroupG0.
       epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.
       replace (k) with (int.nat k) in *; last first.
       {
+        rewrite cons_length in HH.
         rewrite -Hconf_clerk_len in HH.
         rewrite Hclerk_sz in HH.
         word.
       }
       iApply ("Hrest" $! k).
       { iPureIntro. rewrite Hconf_clerk_len. unfold conf in HH.
+        rewrite cons_length in HH.
         lia. }
       { done. }
     }
