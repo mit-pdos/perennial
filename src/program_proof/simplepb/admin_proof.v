@@ -4,7 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb Require Import pb_definitions config_proof pb_setstate_proof pb_getstate_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions config_proof pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof.
 
 Section admin_proof.
 

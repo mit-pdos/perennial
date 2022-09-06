@@ -484,7 +484,8 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        is_slice enc_sl byteT 1 enc ∗
+        own args_ptr args
   }}}.
 Proof.
   iIntros (?) "H1 HΦ".
@@ -588,7 +589,9 @@ Proof.
     apply list_prefix_eq; last word.
     done.
   }
-  done.
+  iFrame.
+  iSplitR; first done.
+  iExists _; iFrame.
 Qed.
 
 Lemma wp_Decode enc enc_sl (args:C) :

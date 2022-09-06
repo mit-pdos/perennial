@@ -154,9 +154,9 @@ Definition RPC_SETSTATE : expr := #1.
 
 Definition RPC_GETSTATE : expr := #2.
 
-Definition RPC_BECOMEPRIMARY : expr := #4.
+Definition RPC_BECOMEPRIMARY : expr := #3.
 
-Definition RPC_PRIMARYAPPLY : expr := #5.
+Definition RPC_PRIMARYAPPLY : expr := #4.
 
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
@@ -361,8 +361,12 @@ Definition Server__BecomePrimary: val :=
       (* log.Println("Became Primary") *)
       struct.storeF Server "isPrimary" "s" #true;;
       struct.storeF Server "clerks" "s" (NewSlice ptrT (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args") - #1));;
-      ForSlice ptrT "i" <> (struct.loadF Server "clerks" "s")
-        (SliceSet ptrT (struct.loadF Server "clerks" "s") "i" (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") ("i" + #1))));;
+      let: "i" := ref_to uint64T #0 in
+      Skip;;
+      (for: (λ: <>, ![uint64T] "i" < slice.len (struct.loadF Server "clerks" "s")); (λ: <>, Skip) := λ: <>,
+        SliceSet ptrT (struct.loadF Server "clerks" "s") (![uint64T] "i") (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") (![uint64T] "i" + #1)));;
+        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        Continue);;
       lock.release (struct.loadF Server "mu" "s");;
       e.None).
 

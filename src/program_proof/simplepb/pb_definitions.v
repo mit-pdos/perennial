@@ -120,29 +120,28 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition BecomePrimary_core_spec γ γsrv args σ :=
+Definition BecomePrimary_core_spec γ γsrv args σ backupγ :=
   λ (Φ : u64 -> iPropO Σ) ,
   (
-    ⌜has_snap_encoding args.(SetStateArgs.state) (fst <$> σ)⌝ ∗
-    ⌜length σ = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
-    is_proposal_lb γ args.(SetStateArgs.epoch) σ ∗
-    is_proposal_facts γ args.(SetStateArgs.epoch) σ ∗
-    (
-      (is_epoch_lb γsrv args.(SetStateArgs.epoch) -∗
-       Φ 0) ∧
-      (∀ err, ⌜err ≠ U64 0⌝ → Φ err))
+    is_epoch_config γ args.(BecomePrimaryArgs.epoch) ([γsrv] ++ backupγ) ∗
+    (* FIXME: want this to be "is_pb_host", but that will require recursion *)
+    ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; [γsrv] ++ backupγ , True) ∗
+    become_primary_escrow γ γsrv args.(BecomePrimaryArgs.epoch) σ ∗
+    is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
+    is_proposal_facts γ args.(BecomePrimaryArgs.epoch) σ ∗
+    (∀ err, Φ err)
     )%I
 .
 
 Program Definition BecomePrimary_spec γ γsrv :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ args σ,
-    ⌜SetStateArgs.has_encoding enc_args args⌝ ∗
-    SetState_core_spec γ γsrv args σ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
+  (∃ args σ confγ,
+    ⌜BecomePrimaryArgs.has_encoding enc_args args⌝ ∗
+    BecomePrimary_core_spec γ γsrv args σ confγ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
   )%I
 .
 Next Obligation.
-  unfold SetState_core_spec.
+  unfold BecomePrimary_core_spec.
   solve_proper.
 Defined.
 
@@ -152,6 +151,7 @@ Definition is_pb_host γ γsrv (host:u64) : iProp Σ :=
   handler_spec γsrv.(pb_urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
   handler_spec γsrv.(pb_urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
   handler_spec γsrv.(pb_urpc_gn) host (U64 2) (GetState_spec γ γsrv) ∗
+  handler_spec γsrv.(pb_urpc_gn) host (U64 3) (BecomePrimary_spec γ γsrv) ∗
   handlers_dom γsrv.(pb_urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]}
 .
 
