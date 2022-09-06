@@ -97,7 +97,7 @@ Proof.
 
   (* FIXME: use uniqueness of γsrv to show that we are not primary, or else have
      the code set isPrimary := false *)
-  assert (isPrimary = false) as HnotPrimary by admit.
+  (* assert (isPrimary = false) as HnotPrimary by admit. *)
   wp_loadField.
   wp_loadField.
   wp_pures.
@@ -171,7 +171,6 @@ Proof.
   {
     iNext.
     iExists _, _, _, _, _, _, _.
-    rewrite HnotPrimary.
     rewrite -fmap_snoc.
     iFrame "Hstate ∗#".
     iSplitR.
@@ -193,7 +192,7 @@ Proof.
   iApply "HΦ".
   iDestruct "Hlb" as "(_ & _ & $)".
   done.
-Admitted.
+Qed.
 
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   {{{

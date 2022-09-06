@@ -335,8 +335,7 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
             "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
             "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗
                                                                       is_epoch_lb γsrv' epoch
-                             ) ∗
-            "Hproposal" ∷ own_proposal γ epoch σg
+                             )
         )
                    else True
 .
