@@ -166,7 +166,7 @@ Lemma ghost_primary_accept_new_epoch γsys γsrv epoch epoch' σ' σ :
   int.nat epoch < int.nat epoch' →
   is_proposal_facts γsys epoch' σ' -∗
   is_proposal_lb γsys epoch' σ' -∗
-  own_primary_ghost γsys γsrv epoch σ'
+  own_primary_ghost γsys γsrv epoch σ
   ==∗
   own_primary_ghost γsys γsrv epoch' σ'.
 Proof.

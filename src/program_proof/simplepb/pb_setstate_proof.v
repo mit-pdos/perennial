@@ -204,19 +204,33 @@ Proof.
       iSplitR; first done.
       iFrame "Hargs_state_sl".
       iIntros "Hghost".
-      iDestruct "Hghost" as (?) "[%Heq Hghost]".
-      iMod (ghost_accept_and_unseal with "Hghost Hprop_lb [$]") as "Hstate".
+      iDestruct "Hghost" as (?) "(%Heq & Hghost & Hprim)".
+
+      assert (int.nat epoch < int.nat args.(SetStateArgs.epoch)) as Hepoch_fresh.
       {
-        assert (int.nat epoch < int.nat args.(SetStateArgs.epoch) ∨
-        int.nat epoch = int.nat args.(SetStateArgs.epoch) ∨
-        (int.nat epoch > int.nat args.(SetStateArgs.epoch))) as [|[|]] by word.
-        { word. }
-        { exfalso. replace (epoch) with (args.(SetStateArgs.epoch)) in * by word.
-          done. }
-        { word. }
+        assert (int.nat epoch ≠ int.nat args.(SetStateArgs.epoch)).
+        {
+          assert (int.nat epoch ≠ int.nat args.(SetStateArgs.epoch) ∨
+        (int.nat epoch = int.nat args.(SetStateArgs.epoch))) as [|].
+          { word. }
+          { word. }
+          { exfalso. replace (epoch) with (args.(SetStateArgs.epoch)) in * by word.
+            done. }
+        }
+        word.
       }
-      iDestruct (ghost_get_epoch_lb with "Hstate") as "#Hepoch_lb".
-      iDestruct (ghost_get_accepted_lb with "Hstate") as "#Hacc_lb".
+
+      iMod (ghost_accept_and_unseal with "Hghost Hprop_lb [$]") as "Hghost".
+      {
+        done.
+      }
+
+      iMod (ghost_primary_accept_new_epoch with "Hprop_facts Hprop_lb Hprim") as "Hprim".
+      {
+        done.
+      }
+      iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb".
+      iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
       iSplitL.
       {
         iExists _.
