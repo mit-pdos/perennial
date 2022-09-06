@@ -26,9 +26,10 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr args σ backupγ:
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
-        "#Hconf" ∷ is_epoch_config γ args.(BecomePrimaryArgs.epoch) ([γsrv] ++ backupγ) ∗
+        "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
+        "#Hconf" ∷ is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
         (* FIXME: want this to be "is_pb_host", but that will require recursion *)
-        "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; [γsrv] ++ backupγ, True) ∗
+        "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, True) ∗
         "#Hprop_lb" ∷ is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ args.(BecomePrimaryArgs.epoch) σ ∗
         "#Hprim_escrow" ∷ become_primary_escrow γ γsrv args.(BecomePrimaryArgs.epoch) σ ∗
@@ -61,6 +62,7 @@ Proof.
     iNext.
     unfold BecomePrimary_spec.
     iExists _, _, _.
+    iSplitR; first done.
     iSplitR; first done.
     iSplitR; first done.
     simpl.
@@ -113,10 +115,12 @@ Proof.
   iNamed "Hargs".
   wp_loadField.
 
-  iDestruct "HΦ" as "(#Hconf & #Hhosts & #Hprimary_escrow & Hprimary_facts & Hprimary_lb & HΦ)".
+  iDestruct "HΦ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprimary_escrow & #Hprop_facts & #Hprop_lb & HΦ)".
 
-  wp_call.
-  wp_loadField.
+  iAssert (_) with "HisSm" as "HisSm2".
+  iNamed "HisSm2".
+  wp_apply (wp_Server__isEpochStale with "[$Hepoch_lb $HaccP $Hstate $Hepoch]").
+  iIntros "(%Hepoch_ge & Hepoch & Hstate)".
   wp_if_destruct.
   { (* stale epoch *)
     wp_loadField.
@@ -126,12 +130,14 @@ Proof.
       iFrame "HmuInv Hlocked".
       iNext.
       iExists _, _, _, _, _, _, _.
-      iFrame "∗#%".
+      iFrame "∗ HisSm #%".
     }
     wp_pures.
     iApply "HΦ".
   }
   { (* successfully become primary *)
+    assert (args.(BecomePrimaryArgs.epoch) = epoch) as Hepoch_eq.
+    { word. }
     wp_storeField.
     wp_loadField.
     wp_apply (wp_slice_len).
@@ -144,6 +150,7 @@ Proof.
     iIntros (i_ptr) "Hi".
     wp_pures.
 
+    iDestruct (is_slice_small_sz with "Hnew_clerks_sl") as %Hnew_clerks_sz.
     iDestruct (is_slice_small_sz with "Hargs_replicas_sl") as %Hreplicas_sz.
     iDestruct (big_sepL2_length with "Hhosts") as %Hreplicas_backup_len.
 
@@ -155,7 +162,8 @@ Proof.
             "Hclerks_sl" ∷ is_slice_small new_clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
             "Hreplicas_sl" ∷ is_slice_small replicas_sl uint64T 1 args.(BecomePrimaryArgs.replicas) ∗
             "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) backupγ),
-                                pb_definitions.is_Clerk ck γ γsrv
+                                pb_definitions.is_Clerk ck γ γsrv ∗
+                                is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch)
                                 )
             )%I with "[Hnew_clerks_sl Hargs_replicas_sl Hi]" as "HH".
     {
@@ -165,7 +173,7 @@ Proof.
       iPureIntro.
       split; first word.
       rewrite replicate_length.
-      rewrite app_length /= in Hreplicas_backup_len.
+      rewrite cons_length /= in Hreplicas_backup_len.
       word.
     }
 
@@ -180,7 +188,7 @@ Proof.
     { (* continue with loop *)
       assert (int.nat i < length backupγ) as Hi.
       {
-        rewrite app_length /= Hreplicas_sz in Hreplicas_backup_len.
+        rewrite cons_length /= Hreplicas_sz in Hreplicas_backup_len.
         admit. (* TODO: word *)
       }
       pose proof Hi as Hlookup.
@@ -284,19 +292,97 @@ Proof.
           rewrite HcompleteLen.
           rewrite -H.
           simpl.
+          replace (int.nat i + 1) with (S (int.nat i)) by word.
           rewrite lookup_cons.
-          simpl.
-          destruct (int.nat i + 1).
-          {
-            exfalso.
-            admit.
-          }
-          admit.
+          f_equal. word.
         }
-        admit.
+        simpl.
+        rewrite lookup_nil.
+        rewrite lookup_take_ge.
+        { done. }
+        word.
       }
-      admit.
+      iApply (big_sepL2_app with "Hclerks_is").
+      simpl.
+      iFrame "Hck".
+      admit. (* FIXME: Use Hhosts*)
     }
+    (* done with loop *)
+    replace (clerksLeft) with ([]:list loc) in *; last first.
+    {
+      rewrite app_length in Hlen.
+      symmetry.
+      apply nil_length_inv.
+      rewrite HcompleteLen in Hlen.
+      enough (int.nat i ≥ length backupγ) by word.
+      rewrite cons_length in Hreplicas_backup_len.
+      replace (length backupγ) with (length args.(BecomePrimaryArgs.replicas) - 1) by word.
+      rewrite Hreplicas_sz.
+      rewrite replicate_length in Hnew_clerks_sz.
+      assert (int.nat i ≥ int.nat new_clerks_sl.(Slice.sz)) by word.
+      rewrite -Hnew_clerks_sz in H.
+      replace (int.nat replicas_sl.(Slice.sz) - 1) with (int.nat (word.sub replicas_sl.(Slice.sz) 1%Z)).
+      { done. }
+      word.
+    }
+
+    iRight.
+    iSplitR; first done.
+    iMod (readonly_alloc_1 with "Hclerks_sl") as "Hclerks_sl".
+    iModIntro.
+    wp_pure1_credit "Hlc".
+    wp_pures.
+    iApply fupd_wp.
+    iMod ("HaccP" with "[Hlc] Hstate") as "Hstate".
+    {
+      iIntros "Hghost".
+      iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
+      rewrite Hepoch_eq.
+      iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+      { set_solver. }
+      iMod (ghost_become_primary with "Hlc Hprimary_escrow [Hprop_lb] Hprim") as "HH".
+      { admit. } (* FIXME: do we need this? *)
+      iDestruct "HH" as "[Hprim #His_tok]".
+      instantiate (1:=is_tok γsrv epoch).
+      iMod "Hmask".
+      iModIntro.
+      iSplitL; last iFrame "His_tok".
+      iExists _.
+      iFrame.
+      done.
+    }
+    iModIntro.
+    wp_bind (struct.loadF _ _ _)%I.
+    wp_apply (wpc_nval_elim_wp with "Hstate").
+    { done. }
+    { done. }
+    wp_loadField.
+    iIntros "[Hstate #His_tok]".
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "HisPrimary ∗ HisSm #%".
+      iExists _, _.
+      rewrite Hepoch_eq.
+      iFrame "Hclerks_sl Hconf".
+      iSplitL ""; first done.
+      rewrite app_nil_r.
+      rewrite take_ge; last first.
+      {
+        rewrite app_nil_r in Hlen.
+        word.
+      }
+      iApply (big_sepL2_impl with "Hclerks_is").
+      iModIntro.
+      iIntros.
+      iFrame "#".
+    }
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+  }
 Admitted.
 
 End pb_becomeprimary_proof.
