@@ -261,48 +261,51 @@ Proof using waitgroupG0.
   clear Heqb.
   (* make proposal *)
   iNamed "HprimaryOnly".
-  iMod (ghost_propose with "Hproposal Hprop_facts Hcred [Hupd]") as "[Hprop #Hprop_facts2]".
-  {
-    iMod "Hupd".
-    iModIntro.
-    iDestruct "Hupd" as (?) "[Hghost Hupd]".
-    iExists _; iFrame "Hghost".
-    iIntros (->) "Hghost".
-    iSpecialize ("Hupd" with "Hghost").
-    iMod "Hupd".
-    done.
-  }
-
-  iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb".
-
   iAssert (_) with "HisSm" as "HisSm2".
   iNamed "HisSm2".
   wp_loadField.
   wp_loadField.
 
-  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl]").
+  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl Hcred Hupd]").
   {
     iSplitL ""; first done.
     iIntros "Hghost".
-    iDestruct "Hghost" as (?) "[%Hre Hghost]".
-    rewrite Hre.
+    iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
+    iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
+    { do 2 (rewrite -(fmap_length fst)).
+      rewrite Hre. done. }
 
-    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts2") as "HH".
+    iMod (ghost_propose with "Htok_used_witness Hprim Hcred [Hupd]") as "(Hprim & #Hprop_lb & #Hprop_facts)".
+    {
+      iMod "Hupd".
+      iModIntro.
+      iDestruct "Hupd" as (?) "[Hghost Hupd]".
+      iExists _; iFrame "Hghost".
+      iIntros (->) "Hghost".
+      iSpecialize ("Hupd" with "Hghost").
+      iMod "Hupd".
+      by iModIntro.
+    }
+
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
     { done. }
     { rewrite app_length.
       apply (f_equal length) in Hre.
-      do 2 (rewrite fmap_length in Hre).
-      word. }
+      word.
+    }
     iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-    instantiate (1:=is_accepted_lb γsrv epoch (σg ++ [ghost_op])).
+    instantiate (1:=(is_accepted_lb γsrv epoch (σg ++ [ghost_op]) ∗
+                                   is_proposal_lb γ epoch (σg ++ [ghost_op]) ∗
+                                   is_proposal_facts γ epoch (σg ++ [ghost_op]))%I).
     iModIntro.
     iSplitL.
     {
-      iExists _; iFrame. rewrite fmap_snoc. rewrite Hre. done.
+      iExists _; iFrame. rewrite fmap_snoc. done.
     }
-    iFrame "Hlb".
+    iFrame "Hlb #".
   }
   iIntros (reply) "(Hreply & Hstate & #Hprimary_acc_lb)".
+  iDestruct "Hprimary_acc_lb" as "(Hprimary_acc_lb & Hprop_lb & Hprop_facts)".
   rewrite -fmap_snoc.
 
   wp_pures.
@@ -318,7 +321,7 @@ Proof using waitgroupG0.
   wp_pures.
 
   wp_loadField.
-  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate Hprop Hclerks_sl]").
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate Hclerks_sl]").
   {
     iNext.
     iExists _, _, _, _, _, _, _.
@@ -332,8 +335,8 @@ Proof using waitgroupG0.
       simpl.
       word.
     }
-    iExists _, _; iFrame "∗#".
-    done.
+    iExists _, _.
+    iFrame "#%".
   }
 
   wp_pures.
@@ -420,7 +423,7 @@ Proof using waitgroupG0.
       iDestruct "Hclerk_rpc" as "[[Hclerk_rpc Hepoch_lb] _]".
       wp_apply (wp_Clerk__Apply with "[$Hclerk_rpc $Hepoch_lb]").
       {
-        iFrame "Hprop_lb Hprop_facts2 #".
+        iFrame "Hprop_lb Hprop_facts #".
         iPureIntro.
         rewrite last_app.
         rewrite app_length.
@@ -609,7 +612,7 @@ Proof using waitgroupG0.
   }
   {
     iExists _.
-    iMod (ghost_commit with "Hsys_inv [Hrest] Hprop_lb Hprop_facts2") as "$".
+    iMod (ghost_commit with "Hsys_inv [Hrest] Hprop_lb Hprop_facts") as "$".
     {
       iExists _; iFrame "#".
       iIntros.

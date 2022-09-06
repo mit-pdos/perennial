@@ -445,19 +445,6 @@ Proof.
   by iApply mono_nat_lb_own_get.
 Qed.
 
-Lemma ghost_get_propose_lb γsys epoch σ :
-  own_proposal γsys epoch σ -∗
-  is_proposal_lb γsys epoch σ.
-Proof.
-  iIntros "Hprop".
-  iApply (own_mono with "Hprop").
-  {
-    apply singleton_mono.
-    apply Cinr_included.
-    apply mono_list_included.
-  }
-Qed.
-
 Lemma ghost_proposal_facts_mono γsys epoch σ σ' :
   σ ⪯ σ' →
   is_proposal_facts γsys epoch σ -∗
@@ -471,7 +458,9 @@ Lemma ghost_propose γsys γsrv epoch σ op :
   £ 1 -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
   ={⊤}=∗
-  own_primary_ghost γsys γsrv epoch (σ ++ [op])
+  own_primary_ghost γsys γsrv epoch (σ ++ [op]) ∗
+  is_proposal_lb γsys epoch (σ ++ [op]) ∗
+  is_proposal_facts γsys epoch (σ ++ [op])
 .
 Proof.
   iIntros "#His_primary Hown Hlc Hupd".
@@ -497,150 +486,164 @@ Proof.
     done.
   }
 
+  iDestruct (own_mono _ _
+               {[epoch := Cinr (◯ML _)]}
+              with "Hprop") as "#Hprop_lb".
+  {
+    apply singleton_mono.
+    apply Cinr_included.
+    apply mono_list_included.
+  }
+
   iFrame "∗#".
-  iSplitL "Hprop".
-  { by iFrame. }
 
-  iSplitL "".
+
+  iAssert (|={⊤}=> is_proposal_facts γsys epoch (σ ++ [op]))%I with "[Hupd Hlc]" as ">#Hvalid2".
   {
-    iDestruct "Hvalid" as "[Hvalid _]".
-    iDestruct "Hvalid" as (?) "[%Hineq Hvalid]".
-    iExists _.
-    iFrame "Hvalid".
-    iPureIntro.
-    apply prefix_app_r.
-    done.
-  }
-  iSplitL "".
-  {
-    iDestruct "Hvalid" as "[ _ [#Hmax _]]".
-    iModIntro.
-    unfold old_proposal_max.
-    iModIntro.
-    iIntros.
-    iAssert (⌜σ_old ⪯ σ⌝)%I as "%Hprefix".
+    iSplitL "".
     {
-      iApply "Hmax".
-      {
-        done.
-      }
-      { iFrame "#". }
+      iDestruct "Hvalid" as "[Hvalid _]".
+      iDestruct "Hvalid" as (?) "[%Hineq Hvalid]".
+      iExists _.
+      iFrame "Hvalid".
+      iPureIntro.
+      apply prefix_app_r.
+      done.
     }
-    iPureIntro.
-    apply prefix_app_r.
-    done.
-  }
-  iDestruct "Hvalid" as "[_ [ _ #Hvalid]]".
-  unfold is_proposal_valid.
-
-  iAssert (|={⊤}=> is_valid_inv γsys σ op)%I with "[Hupd Hlc]" as ">#Hinv".
-  {
-    iMod (inv_alloc with "[Hupd Hlc]") as "$".
+    iSplitL "".
     {
-      iNext.
-      iLeft.
+      iDestruct "Hvalid" as "[ _ [#Hmax _]]".
+      iModIntro.
+      unfold old_proposal_max.
+      iModIntro.
+      iIntros.
+      iAssert (⌜σ_old ⪯ σ⌝)%I as "%Hprefix".
+      {
+        iApply "Hmax".
+        {
+          done.
+        }
+        { iFrame "#". }
+      }
+      iPureIntro.
+      apply prefix_app_r.
+      done.
+    }
+    iDestruct "Hvalid" as "[_ [ _ #Hvalid]]".
+    unfold is_proposal_valid.
+
+    iAssert (|={⊤}=> is_valid_inv γsys σ op)%I with "[Hupd Hlc]" as ">#Hinv".
+    {
+      iMod (inv_alloc with "[Hupd Hlc]") as "$".
+      {
+        iNext.
+        iLeft.
+        iFrame.
+      }
+      done.
+    }
+    (* prove is_proposal_valid γ (σ ++ [op]) *)
+    iModIntro.
+    iModIntro.
+    iIntros (σ') "%Hσ' Hσ'".
+    assert (σ' ⪯ σ ∨ σ' = (σ ++ [op])) as [Hprefix_old|Hlatest].
+    { (* TODO: list_solver. *)
+      assert (Hlen := Hσ').
+      apply prefix_length in Hlen.
+      assert (length σ' = length (σ ++ [op]) ∨ length σ' < length (σ ++ [op])) as [|] by word.
+      {
+        right.
+        apply list_prefix_eq; eauto.
+        lia.
+      }
+      {
+        left.
+        rewrite app_length in H.
+        simpl in H.
+        apply list_prefix_bounded.
+        { word. }
+        intros.
+        assert (σ !! i = (σ ++ [op]) !! i).
+        {
+          rewrite lookup_app_l.
+          { done. }
+          { word. }
+        }
+        rewrite H1.
+        apply list_prefix_forall.
+        { done. }
+        { done. }
+      }
+    }
+    {
+      iMod ("Hvalid" $! σ' Hprefix_old with "Hσ'") as "Hσ".
+      iInv "Hinv" as "Hi" "Hclose".
+      iDestruct "Hi" as "[Hupd|#>Hlb]"; last first.
+      {
+        iDestruct (own_valid_2 with "Hσ Hlb") as "%Hvalid".
+        exfalso.
+        rewrite mono_list_both_dfrac_valid_L in Hvalid.
+        destruct Hvalid as [_ Hvalid].
+        apply prefix_length in Hvalid.
+        rewrite app_length in Hvalid.
+        simpl in Hvalid.
+        word.
+      }
+      iDestruct "Hupd" as "[>Hlc Hupd]".
+      iMod (lc_fupd_elim_later with "Hlc Hupd" ) as "Hupd".
+      iMod (fupd_mask_subseteq (⊤∖↑ghostN)) as "Hmask".
+      {
+        assert ((↑sysN:coPset) ⊆ (↑ghostN:coPset)).
+        { apply nclose_subseteq. }
+        assert ((↑opN:coPset) ⊆ (↑ghostN:coPset)).
+        { apply nclose_subseteq. }
+        set_solver.
+      }
+      iMod "Hupd".
+      iDestruct "Hupd" as (?) "[Hghost Hupd]".
+      iDestruct (own_valid_2 with "Hghost Hσ") as %Hvalid.
+      rewrite mono_list_auth_dfrac_op_valid_L in Hvalid.
+      destruct Hvalid as [_ ->].
+      iCombine "Hghost Hσ" as "Hσ".
+      iMod (own_update with "Hσ") as "Hσ".
+      {
+        apply (mono_list_update (σ ++ [op] : list (leibnizO EntryType))).
+        by apply prefix_app_r.
+      }
+      iEval (rewrite -Qp.half_half) in "Hσ".
+      rewrite -dfrac_op_own.
+      rewrite mono_list_auth_dfrac_op.
+      iDestruct "Hσ" as "[Hσ Hcommit]".
+      iSpecialize ("Hupd" with "[] Hσ").
+      { done. }
+      iMod "Hupd".
+
+      rewrite mono_list_auth_lb_op.
+      iDestruct "Hcommit" as "[Hcommit #Hlb]".
+      iMod "Hmask".
+      iMod ("Hclose" with "[]").
+      {
+        iNext.
+        iRight.
+        iFrame "Hlb".
+      }
+      iModIntro.
       iFrame.
     }
-    done.
-  }
-  (* prove is_proposal_valid γ (σ ++ [op]) *)
-  iModIntro.
-  iModIntro.
-  iIntros (σ') "%Hσ' Hσ'".
-  assert (σ' ⪯ σ ∨ σ' = (σ ++ [op])) as [Hprefix_old|Hlatest].
-  { (* TODO: list_solver. *)
-    assert (Hlen := Hσ').
-    apply prefix_length in Hlen.
-    assert (length σ' = length (σ ++ [op]) ∨ length σ' < length (σ ++ [op])) as [|] by word.
     {
-      right.
-      apply list_prefix_eq; eauto.
-      lia.
-    }
-    {
-      left.
-      rewrite app_length in H.
-      simpl in H.
-      apply list_prefix_bounded.
-      { word. }
-      intros.
-      assert (σ !! i = (σ ++ [op]) !! i).
-      {
-        rewrite lookup_app_l.
-        { done. }
-        { word. }
-      }
-      rewrite H1.
-      apply list_prefix_forall.
-      { done. }
-      { done. }
+      rewrite Hlatest.
+      by iFrame.
     }
   }
-  {
-    iMod ("Hvalid" $! σ' Hprefix_old with "Hσ'") as "Hσ".
-    iInv "Hinv" as "Hi" "Hclose".
-    iDestruct "Hi" as "[Hupd|#>Hlb]"; last first.
-    {
-      iDestruct (own_valid_2 with "Hσ Hlb") as "%Hvalid".
-      exfalso.
-      rewrite mono_list_both_dfrac_valid_L in Hvalid.
-      destruct Hvalid as [_ Hvalid].
-      apply prefix_length in Hvalid.
-      rewrite app_length in Hvalid.
-      simpl in Hvalid.
-      word.
-    }
-    iDestruct "Hupd" as "[>Hlc Hupd]".
-    iMod (lc_fupd_elim_later with "Hlc Hupd" ) as "Hupd".
-    iMod (fupd_mask_subseteq (⊤∖↑ghostN)) as "Hmask".
-    {
-      assert ((↑sysN:coPset) ⊆ (↑ghostN:coPset)).
-      { apply nclose_subseteq. }
-      assert ((↑opN:coPset) ⊆ (↑ghostN:coPset)).
-      { apply nclose_subseteq. }
-      set_solver.
-    }
-    iMod "Hupd".
-    iDestruct "Hupd" as (?) "[Hghost Hupd]".
-    iDestruct (own_valid_2 with "Hghost Hσ") as %Hvalid.
-    rewrite mono_list_auth_dfrac_op_valid_L in Hvalid.
-    destruct Hvalid as [_ ->].
-    iCombine "Hghost Hσ" as "Hσ".
-    iMod (own_update with "Hσ") as "Hσ".
-    {
-      apply (mono_list_update (σ ++ [op] : list (leibnizO EntryType))).
-      by apply prefix_app_r.
-    }
-    iEval (rewrite -Qp.half_half) in "Hσ".
-    rewrite -dfrac_op_own.
-    rewrite mono_list_auth_dfrac_op.
-    iDestruct "Hσ" as "[Hσ Hcommit]".
-    iSpecialize ("Hupd" with "[] Hσ").
-    { done. }
-    iMod "Hupd".
-
-    rewrite mono_list_auth_lb_op.
-    iDestruct "Hcommit" as "[Hcommit #Hlb]".
-    iMod "Hmask".
-    iMod ("Hclose" with "[]").
-    {
-      iNext.
-      iRight.
-      iFrame "Hlb".
-    }
-    iModIntro.
-    iFrame.
-  }
-  {
-    rewrite Hlatest.
-    by iFrame.
-  }
+  iFrame "Hprop".
+  iFrame "#".
+  done.
 Qed.
 
 Definition sys_inv γsys := inv sysN
-(
-  ∃ σ epoch,
-  own_commit γsys σ ∗
+                               (
+                                 ∃ σ epoch,
+                                 own_commit γsys σ ∗
   committed_by γsys epoch σ ∗
   is_proposal_lb γsys epoch σ ∗
   is_proposal_facts γsys epoch σ
