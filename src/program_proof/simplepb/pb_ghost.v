@@ -163,14 +163,36 @@ Definition own_primary_ghost γsys γsrv epoch σ : iProp Σ :=
 .
 
 Lemma ghost_primary_accept_new_epoch γsys γsrv epoch epoch' σ' σ :
-  int.nat epoch ≤ int.nat epoch' →
+  int.nat epoch < int.nat epoch' →
   is_proposal_facts γsys epoch' σ' -∗
   is_proposal_lb γsys epoch' σ' -∗
   own_primary_ghost γsys γsrv epoch σ'
   ==∗
   own_primary_ghost γsys γsrv epoch' σ'.
 Proof.
-Admitted.
+  intros Hineq.
+  iIntros "#Hprop_facts #Hprop_lb".
+  iNamed 1.
+  iClear "Hprop".
+  iDestruct (big_sepS_elem_of_acc_impl epoch' with "Htoks") as "[Htok Htoks]".
+  { set_solver. }
+  iDestruct "Htok" as "[%Hbad|Htok]".
+  { exfalso. word. }
+  iFrame "Htok".
+  iFrame "Hprop_facts".
+  iApply "Htoks".
+  {
+    iModIntro.
+    iIntros (???) "[%Hineq2|$]".
+    iLeft.
+    iPureIntro.
+    word.
+  }
+  {
+    iModIntro. iLeft.
+    done.
+  }
+Qed.
 
 Lemma ghost_primary_accept γsys γsrv epoch σ' σ :
   length σ ≤ length σ' →
@@ -641,9 +663,9 @@ Proof.
 Qed.
 
 Definition sys_inv γsys := inv sysN
-                               (
-                                 ∃ σ epoch,
-                                 own_commit γsys σ ∗
+(
+  ∃ σ epoch,
+  own_commit γsys σ ∗
   committed_by γsys epoch σ ∗
   is_proposal_lb γsys epoch σ ∗
   is_proposal_facts γsys epoch σ
