@@ -25,16 +25,23 @@ Definition own args_ptr args : iProp Σ :=
   "Hargs_op_sl" ∷ is_slice_small op_sl byteT 1 args.(op)
   .
 
+Definition own_ro args_ptr args : iProp Σ :=
+  ∃ op_sl,
+  "#Hargs_epoch" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "epoch"] #args.(epoch)) ∗
+  "#Hargs_index" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "index"] #args.(index)) ∗
+  "#Hargs_op" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "op"] (slice_val op_sl)) ∗
+  "#Hargs_op_sl" ∷ readonly (is_slice_small op_sl byteT 1 args.(op))
+.
+
 Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
-        own args_ptr args
+        own_ro args_ptr args
   }}}
     pb.EncodeApplyAsBackupArgs #args_ptr
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc ∗
-        own args_ptr args
+        is_slice enc_sl byteT 1 enc
   }}}.
 Proof.
   iIntros (Φ) "H1 HΦ".
@@ -67,15 +74,14 @@ Proof.
 
   wp_loadField.
   wp_load.
-  wp_apply (wp_WriteBytes with "[$Henc_sl $Hargs_op_sl]").
-  iIntros (?) "[Henc_sl Hargs_op_sl]".
+  iMod (readonly_load with "Hargs_op_sl") as (?) "Hop_sl".
+  wp_apply (wp_WriteBytes with "[$Henc_sl $Hop_sl]").
+  iIntros (?) "[Henc_sl Hargs_op_sl2]".
   wp_store.
 
   wp_load.
   iApply "HΦ".
   iFrame "Henc_sl".
-  iSplitL ""; first done.
-  iExists _; iFrame.
   done.
 Qed.
 

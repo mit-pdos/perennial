@@ -6,6 +6,7 @@ From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof.
+From Perennial.program_proof Require Import marshal_stateless_proof.
 
 Section pb_apply_proof.
 
@@ -24,7 +25,7 @@ Context `{!pbG Σ}.
 (* Clerk specs *)
 Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl op :
   {{{
-        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
+        "#Hck" ∷ is_Clerk ck γ γsrv ∗
 
         "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
         "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
@@ -46,7 +47,101 @@ Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) σ ghost_op
                              else True
   }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep) "Hrep".
+  wp_pures.
+  iNamed "Hck".
+  wp_apply (ApplyAsBackupArgs.wp_Encode with "[]").
+  {
+    instantiate (1:=(ApplyAsBackupArgs.mkC _ _ _)).
+    iExists _; iFrame "#".
+  }
+  iIntros (enc_args enc_args_sl) "(%Henc_args & Henc_args_sl)".
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
+  wp_apply (wp_frame_wand with "HΦ").
+  wp_apply (wp_Client__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
+  {
+    rewrite is_pb_host_unfold.
+    iDestruct "Hsrv" as "[$ _]".
+  }
+  { (* Successful RPC *)
+    iModIntro.
+    iNext.
+    unfold SetState_spec.
+    iExists _, _, _, _.
+    iSplitR; first done.
+    iFrame "#%".
+    iSplitR; first iPureIntro.
+    {
+      instantiate (1:=ghost_op.2).
+      rewrite Hghost_op_σ.
+      destruct ghost_op.
+      done.
+    }
+    iSplit.
+    { (* No error from RPC, Apply was accepted *)
+      iIntros "#Hacc_lb".
+      iIntros (?) "%Henc_rep Hargs_sl".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+
+      (* FIXME: separate lemma *)
+      wp_call.
+      rewrite Henc_rep.
+      wp_apply (wp_ReadInt with "Hrep_sl").
+      iIntros (?) "_".
+      wp_pures.
+      iModIntro.
+      iIntros "HΦ".
+      iApply "HΦ".
+      iModIntro.
+      iFrame "#".
+    }
+    { (* Apply was rejected by the server (e.g. stale epoch number) *)
+      iIntros (err) "%Herr_nz".
+      iIntros.
+      wp_pures.
+      wp_load.
+      wp_call.
+      rewrite H.
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros.
+      wp_pures.
+      iModIntro.
+      iIntros "HΦ".
+      iApply "HΦ".
+      iFrame.
+      iModIntro.
+      destruct (decide _).
+      {
+        exfalso. done.
+      }
+      {
+        done.
+      }
+    }
+  }
+  { (* RPC error *)
+    iIntros.
+    wp_pures.
+    wp_if_destruct.
+    {
+      iModIntro.
+      iIntros "HΦ".
+      iApply "HΦ".
+      destruct (decide (_)).
+      { exfalso. done. }
+      { done. }
+    }
+    { exfalso. done. }
+  }
+Qed.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args σ op Q Φ :
   is_Server s γ γsrv -∗
