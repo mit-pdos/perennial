@@ -467,13 +467,6 @@ Proof.
   by iApply mono_nat_lb_own_get.
 Qed.
 
-Lemma ghost_proposal_facts_mono γsys epoch σ σ' :
-  σ ⪯ σ' →
-  is_proposal_facts γsys epoch σ -∗
-  is_proposal_facts γsys epoch σ'.
-Proof.
-Admitted.
-
 Lemma ghost_propose γsys γsrv epoch σ op :
   is_tok γsrv epoch -∗
   own_primary_ghost γsys γsrv epoch σ -∗
@@ -744,6 +737,20 @@ Proof.
   }
 Qed.
 
+Lemma ghost_get_propose_lb γsys epoch σ :
+  own_proposal γsys epoch σ -∗
+  is_proposal_lb γsys epoch σ.
+Proof.
+  iIntros "Hprop".
+  iApply (own_mono with "Hprop").
+  {
+    apply singleton_mono.
+    apply Cinr_included.
+    apply mono_list_included.
+  }
+Qed.
+
+
 Lemma ghost_init_primary γsys γsrv σ epochconf epoch conf epoch_new :
   γsrv ∈ conf →
   int.nat epoch < int.nat epoch_new →
@@ -757,7 +764,8 @@ Lemma ghost_init_primary γsys γsrv σ epochconf epoch conf epoch_new :
   own_init_proposal_unused γsys epoch_new
   ==∗
   own_proposal γsys epoch_new σ ∗
-  is_proposal_facts γsys epoch_new σ
+  is_proposal_facts γsys epoch_new σ ∗
+  is_init_proposal γsys epoch_new σ
 .
 Proof.
   intros Hmember Hepoch_new Hepoch_recent.
@@ -783,6 +791,7 @@ Proof.
   iFrame "Hprop".
   iDestruct "Hprop_facts" as "[_ [Hmax $]]".
 
+  iFrame "Hinit".
   iSplitL "".
   {
     iExists _. iFrame "Hinit".

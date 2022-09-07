@@ -26,6 +26,21 @@ Lemma wp_MakeClerk γ γsrv host :
       (ck:loc), RET #ck; is_Clerk ck γ γsrv
 }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "#Hpb HΦ".
+  wp_call.
+  wp_apply (wp_MakeClient).
+  iIntros (?) "#His_cl".
+  iApply wp_fupd.
+  wp_apply (wp_allocStruct).
+  { eauto. }
+  iIntros (ck) "Hck".
+  iDestruct (struct_fields_split with "Hck") as "HH".
+  iNamed "HH".
+  iMod (readonly_alloc_1 with "cl") as "#Hcl".
+  iApply "HΦ".
+  iModIntro.
+  iExists _, _.
+  iFrame "#".
+Qed.
 
 End pb_makeclerk_proof.

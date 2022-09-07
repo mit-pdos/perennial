@@ -52,6 +52,7 @@ From Perennial.program_proof.ctrexample Require
 
 (* SimplePB *)
 From Perennial.program_proof.simplepb Require
+     admin_proof
      pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof pb_apply_proof. (* the currently highest-level proof; includes as dependencies
                      all the other stuff *)
 

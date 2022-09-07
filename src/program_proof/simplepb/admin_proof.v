@@ -4,7 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb Require Import pb_definitions config_proof pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions config_proof pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof pb_makeclerk_proof.
 
 Section admin_proof.
 
@@ -395,7 +395,7 @@ Proof using waitgroupG0.
   iDestruct (big_sepL2_lookup_2_some with "His_hosts") as %HH.
   { done. }
   destruct HH as [γsrv_old Hconfγ_lookup].
-  wp_apply (pb_definitions.wp_MakeClerk with "[]").
+  wp_apply (wp_MakeClerk with "[]").
   {
     iDestruct (big_sepL2_lookup_acc with "His_hosts") as "[$ _]"; done.
   }
@@ -441,7 +441,7 @@ Proof using waitgroupG0.
     rewrite auth_map.Cinl_Cinr_op in Hvalid.
     done.
   }
-  iMod (ghost_init_primary with "Hprop_lb Hprop_facts His_conf Hacc_ro Hskip Hprop Hinit") as "[Hprop #Hprop_facts2]".
+  iMod (ghost_init_primary with "Hprop_lb Hprop_facts His_conf Hacc_ro Hskip Hprop Hinit") as "(Hprop & #Hprop_facts2 & #Hinit)".
   { by eapply elem_of_list_lookup_2. }
   { word. }
   { word. }
@@ -510,7 +510,7 @@ Proof using waitgroupG0.
     iDestruct (big_sepL2_lookup_2_some with "Hhost") as %HH.
     { done. }
     destruct HH as [γsrv Hserver_γs_lookup].
-    wp_apply (pb_definitions.wp_MakeClerk with "[]").
+    wp_apply (wp_MakeClerk with "[]").
     {
       iDestruct (big_sepL2_lookup_acc with "Hhost") as "[$ _]"; done.
     }
@@ -700,6 +700,7 @@ Proof using waitgroupG0.
   wp_apply (wp_slice_len).
   wp_pures.
 
+  iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb2".
   wp_if_destruct.
   { (* loop continues *)
     wp_pures.
@@ -726,7 +727,6 @@ Proof using waitgroupG0.
     wp_load.
     wp_pures.
 
-    iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb2".
     iDestruct (own_WaitGroup_to_is_WaitGroup with "[Hwg]") as "#His_wg".
     { by iExactEq "Hwg". }
     wp_apply (wp_fork with "[Hwg_tok Herr_ptr]").
@@ -1068,8 +1068,42 @@ Proof using waitgroupG0.
   iDestruct (big_sepL2_lookup_acc with "Hclerks_is") as "[HprimaryCk _]".
   { done. }
   { done. }
-  wp_apply (wp_Clerk__BecomePrimary with "[$HprimaryCk $Hconf $Hprop $Hhost Hargs Hservers_sl]").
+
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+
+  (* Get a list of γs just for backups *)
+  destruct (server_γs).
   {
+    exfalso.
+    rewrite lookup_take /= in Hlookup2; last first.
+    { word. }
+    done.
+  }
+  replace (p) with (γsrv) in *; last first.
+  {
+    rewrite lookup_take /= in Hlookup2; last first.
+    { word. }
+    naive_solver.
+  }
+  iAssert (|={⊤}=> become_primary_escrow γ γsrv epoch σ)%I with "[Hprop]" as ">#Hprimary_escrow".
+  {
+    iMod (inv_alloc with "[Hprop]") as "$".
+    {
+      iNext.
+      iLeft.
+      iFrame "Hprop Hprop_facts2 Hinit".
+    }
+    done.
+  }
+
+  wp_apply (wp_Clerk__BecomePrimary with "[$HprimaryCk Hconf Hhost Epoch Replicas Hservers_sl]").
+  {
+
+    iFrame.
+    instantiate (1:=(pb_marshal_proof.BecomePrimaryArgs.mkC _ _)).
+    simpl.
+    iFrame "#".
     iSplitR.
     {
       iDestruct ("Hrest" with "[%] [%]") as "H".
@@ -1078,28 +1112,45 @@ Proof using waitgroupG0.
         { done. }
         word.
       }
-      admit. (* FIXME: we actually need is_accepted_lb (or something) from
-                SetState() for BecomePrimary.  The new primary needs to know its
-                physical state matches the ghost proposal, and the accepted_lb
-                was our planned way for proving this.
-
-                To achieve is_accepted_lb as postcondition of SetState(), we
-                will need a per-epoch ghost witness for a lower bound on _any_
-                proposal sent out. A slightly different plan is to have each
-                node remember (e.g. in its proposal_facts) that the proposal is
-                bigger than the starting proposal for that epoch. Then, the
-                precondition for BecomePrimary is (escrowed) ownership of the
-                proposal with that initial value. *)
+      iFrame "H".
     }
-    iDestruct (struct_fields_split with "Hargs") as "HH".
-    iNamed "HH".
-    iExists _.
-    iFrame.
+    iSplitR.
+    {
+      iApply big_sepL2_forall.
+      instantiate (1:=servers).
+      iSplitL; first done.
+      iIntros.
+      iDestruct (big_sepL2_lookup_acc with "Hhost") as "[$ HH]".
+      { done. }
+      { done. }
+      iApply "Hrest"; last first.
+      {
+        iPureIntro.
+        instantiate (1:=k).
+        replace (int.nat k) with (k).
+        { done. }
+        assert (k < length servers).
+        { apply lookup_lt_Some in H. done. }
+        word.
+      }
+      { iPureIntro.
+        apply lookup_lt_Some in H.
+        replace (int.nat k) with (k).
+        { rewrite Hlen. done. }
+        assert (k < length servers). (* FIXME: why do I have to assert this when it's already in context? *)
+        { done. }
+        word.
+      }
+    }
+    {
+      iExists _.
+      iFrame.
+    }
   }
   iIntros.
   wp_pures.
   iApply "HΦ".
   done.
-Admitted.
+Qed.
 
 End admin_proof.
