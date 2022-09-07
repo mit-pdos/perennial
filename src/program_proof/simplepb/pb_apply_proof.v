@@ -26,7 +26,7 @@ Opaque crash_borrow.
 (* FIXME: this should be in a separate file *)
 
 
-Lemma wp_Clerk__PrimaryApply γ γsys γsrv ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_Clerk__Apply γ γsys γsrv ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 is_Clerk ck γsys γsrv -∗
 is_inv γ γsys -∗

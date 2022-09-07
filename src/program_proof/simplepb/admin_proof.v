@@ -60,7 +60,7 @@ Lemma wp_MakeClerk2 (configHost:u64) γpb :
 Proof.
   iIntros (Φ) "#Hhost HΦ".
   iDestruct "Hhost" as (?) "[Hhost Hinv]".
-  wp_apply (wp_MakeClerk with "[$Hhost]").
+  wp_apply (config_proof.wp_MakeClerk with "[$Hhost]").
   iIntros.
   iApply "HΦ".
   iExists  _; iFrame "#".

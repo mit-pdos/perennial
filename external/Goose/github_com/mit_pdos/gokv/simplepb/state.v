@@ -42,7 +42,7 @@ Definition KVState__decodeKvs: val :=
   rec: "KVState__decodeKvs" "s" "snap_in" :=
     (* log.Println("Decoding encoded state of length: ", len(snap_in)) *)
     let: "snap" := ref_to (slice.T byteT) "snap_in" in
-    struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #());;
+    let: "kvs" := NewMap (slice.T byteT) #() in
     let: ("numEntries", "snap") := marshal.ReadInt (![slice.T byteT] "snap") in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "numEntries"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
@@ -57,9 +57,9 @@ Definition KVState__decodeKvs: val :=
       "snap" <-[slice.T byteT] "1_ret";;
       "val" <-[slice.T byteT] SliceTake (![slice.T byteT] "snap") (![uint64T] "valLen");;
       "snap" <-[slice.T byteT] SliceSkip byteT (![slice.T byteT] "snap") (![uint64T] "valLen");;
-      MapInsert (struct.loadF KVState "kvs" "s") (![uint64T] "key") (![slice.T byteT] "val");;
+      MapInsert "kvs" (![uint64T] "key") (![slice.T byteT] "val");;
       Continue);;
-    #().
+    "kvs".
 
 Definition KVState__encodeKvs: val :=
   rec: "KVState__encodeKvs" "s" :=
@@ -89,7 +89,12 @@ Definition RecoverKVState: val :=
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
       struct.storeF KVState "nextIndex" "s" "0_ret";;
       "encState" <-[slice.T byteT] "1_ret";;
-      KVState__decodeKvs "s" (![slice.T byteT] "encState"));;
+      let: "sealedInt" := ref (zero_val uint64T) in
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "encState") in
+      "sealedInt" <-[uint64T] "0_ret";;
+      "encState" <-[slice.T byteT] "1_ret";;
+      struct.storeF KVState "sealed" "s" (![uint64T] "sealedInt" = #0);;
+      struct.storeF KVState "kvs" "s" (KVState__decodeKvs "s" (![slice.T byteT] "encState")));;
     "s".
 
 Definition KVState__getState: val :=
@@ -97,6 +102,9 @@ Definition KVState__getState: val :=
     let: "enc" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "epoch" "s");;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF KVState "nextIndex" "s");;
+    (if: struct.loadF KVState "sealed" "s"
+    then "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") #1
+    else "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") #0);;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (KVState__encodeKvs "s");;
     (* log.Println("Size of encoded state", len(enc)) *)
     ![slice.T byteT] "enc".
@@ -152,10 +160,8 @@ Definition KVServer := struct.decl [
 Definition MakeServer: val :=
   rec: "MakeServer" "fname" :=
     let: "s" := struct.alloc KVServer (zero_val (struct.t KVServer)) in
-    let: "epoch" := ref (zero_val uint64T) in
-    let: "nextIndex" := ref (zero_val uint64T) in
     let: "state" := RecoverKVState "fname" in
-    struct.storeF KVServer "r" "s" (pb.MakeServer (MakeKVStateMachine "state") (![uint64T] "nextIndex") (![uint64T] "epoch"));;
+    struct.storeF KVServer "r" "s" (pb.MakeServer (MakeKVStateMachine "state") (struct.loadF KVState "nextIndex" "state") (struct.loadF KVState "epoch" "state") (struct.loadF KVState "sealed" "state"));;
     "s".
 
 Definition KVServer__Serve: val :=

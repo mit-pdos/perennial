@@ -98,7 +98,7 @@ Proof.
   iNamed "Hck".
   wp_loadField.
 
-  wp_apply (wp_Clerk__PrimaryApply with "[] [] Hop_sl").
+  wp_apply (wp_Clerk__Apply with "[] [] Hop_sl").
   { instantiate (1:=(key,value)). done. }
   { iFrame "#". }
   { iFrame "#". }

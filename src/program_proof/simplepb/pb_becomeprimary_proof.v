@@ -247,7 +247,6 @@ Proof.
       wp_apply (wp_SliceSet (V:=loc) with "[$Hclerks_sl]").
       {
         iPureIntro.
-        Search "lookup".
         apply lookup_lt_is_Some_2.
         word.
       }

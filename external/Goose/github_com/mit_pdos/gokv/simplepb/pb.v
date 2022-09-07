@@ -398,10 +398,11 @@ Definition Server__BecomePrimary: val :=
       e.None).
 
 Definition MakeServer: val :=
-  rec: "MakeServer" "sm" "nextIndex" "epoch" :=
+  rec: "MakeServer" "sm" "nextIndex" "epoch" "sealed" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "epoch" "s" "epoch";;
+    struct.storeF Server "sealed" "s" "sealed";;
     struct.storeF Server "sm" "s" "sm";;
     struct.storeF Server "nextIndex" "s" "nextIndex";;
     struct.storeF Server "isPrimary" "s" #false;;
