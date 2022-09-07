@@ -3,8 +3,8 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
 
-Module ApplyArgs.
-Section ApplyArgs.
+Module ApplyAsBackupArgs.
+Section ApplyAsBackupArgs.
 Context `{!heapGS Σ}.
 
 Record C :=
@@ -19,9 +19,9 @@ Definition has_encoding (encoded:list u8) (args:C) : Prop :=
 
 Definition own args_ptr args : iProp Σ :=
   ∃ op_sl,
-  "Hargs_epoch" ∷ args_ptr ↦[pb.ApplyArgs :: "epoch"] #args.(epoch) ∗
-  "Hargs_index" ∷ args_ptr ↦[pb.ApplyArgs :: "index"] #args.(index) ∗
-  "Hargs_op" ∷ args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val op_sl) ∗
+  "Hargs_epoch" ∷ args_ptr ↦[pb.ApplyAsBackupArgs :: "epoch"] #args.(epoch) ∗
+  "Hargs_index" ∷ args_ptr ↦[pb.ApplyAsBackupArgs :: "index"] #args.(index) ∗
+  "Hargs_op" ∷ args_ptr ↦[pb.ApplyAsBackupArgs :: "op"] (slice_val op_sl) ∗
   "Hargs_op_sl" ∷ is_slice_small op_sl byteT 1 args.(op)
   .
 
@@ -29,7 +29,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         own args_ptr args
   }}}
-    pb.EncodeApplyArgs #args_ptr
+    pb.EncodeApplyAsBackupArgs #args_ptr
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
@@ -84,7 +84,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
         ⌜has_encoding enc args⌝ ∗
         is_slice enc_sl byteT 1 enc
   }}}
-    pb.DecodeApplyArgs (slice_val enc_sl)
+    pb.DecodeApplyAsBackupArgs (slice_val enc_sl)
   {{{
         args_ptr, RET #args_ptr; own args_ptr args
   }}}.
@@ -126,8 +126,8 @@ Proof.
   iExists _; iFrame.
   done.
 Qed.
-End ApplyArgs.
-End ApplyArgs.
+End ApplyAsBackupArgs.
+End ApplyAsBackupArgs.
 
 Module SetStateArgs.
 Section SetStateArgs.
@@ -757,6 +757,116 @@ Admitted.
 
 End BecomePrimaryArgs.
 End BecomePrimaryArgs.
+
+Module ApplyReply.
+Section ApplyReply.
+Context `{!heapGS Σ}.
+
+Record C :=
+mkC {
+  err : u64 ;
+  ret : list u8 ;
+}.
+
+Definition has_encoding (encoded:list u8) (reply:C) : Prop :=
+  encoded = (u64_le reply.(err)) ++ reply.(ret).
+
+Definition own args_ptr args : iProp Σ :=
+  ∃ ret_sl,
+  "Hreply_err" ∷ args_ptr ↦[pb.ApplyReply :: "Err"] #args.(err) ∗
+  "Hreply_ret" ∷ args_ptr ↦[pb.ApplyReply :: "Reply"] (slice_val ret_sl) ∗
+  "Hrepy_ret_sl" ∷ is_slice_small ret_sl byteT 1 args.(ret)
+  .
+
+Lemma wp_Encode (args_ptr:loc) (args:C) :
+  {{{
+        own args_ptr args
+  }}}
+    pb.EncodeApplyReply #args_ptr
+  {{{
+        enc enc_sl, RET (slice_val enc_sl);
+        ⌜has_encoding enc args⌝ ∗
+        is_slice enc_sl byteT 1 enc ∗
+        own args_ptr args
+  }}}.
+Proof.
+  iIntros (Φ) "H1 HΦ".
+  iNamed "H1".
+  wp_call.
+  wp_loadField.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  wp_apply (wp_NewSliceWithCap).
+  { apply encoding.unsigned_64_nonneg. }
+  iIntros (ptr) "Henc_sl".
+  wp_apply (wp_ref_to).
+  { done. }
+  simpl.
+  iIntros (enc_ptr) "Henc".
+  wp_pures.
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "Henc_sl").
+  iIntros (enc_sl) "Henc_sl".
+  wp_store.
+  replace (int.nat 0) with (0%nat) by word.
+  simpl.
+
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteBytes with "[$]").
+  iIntros (?) "[Henc_sl Hreply_ret_sl]".
+  wp_store.
+
+  wp_load.
+  iApply "HΦ".
+  iFrame "Henc_sl".
+  iSplitL ""; first done.
+  iExists _; iFrame.
+  done.
+Qed.
+
+Lemma wp_Decode enc enc_sl (reply:C) :
+  {{{
+        ⌜has_encoding enc reply⌝ ∗
+        is_slice_small enc_sl byteT 1 enc
+  }}}
+    pb.DecodeApplyReply (slice_val enc_sl)
+  {{{
+        args_ptr, RET #args_ptr; own args_ptr reply
+  }}}.
+Proof.
+  iIntros (Φ) "[%Henc Henc_sl] HΦ".
+  wp_call.
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (enc_ptr) "Henc".
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. Transparent slice.T. unfold slice.T. repeat econstructor.
+    Opaque slice.T. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH". simpl.
+  wp_pures.
+
+  rewrite /has_encoding in Henc.
+  rewrite Henc.
+  wp_load.
+  wp_apply (wp_ReadInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+
+  wp_load.
+  wp_storeField.
+  iApply "HΦ".
+  iExists _; iFrame.
+  done.
+Qed.
+End ApplyReply.
+End ApplyReply.
 
 Section pb_marshal.
 

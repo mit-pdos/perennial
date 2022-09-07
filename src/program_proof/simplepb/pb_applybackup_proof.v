@@ -1,0 +1,211 @@
+From Perennial.program_proof Require Import grove_prelude.
+From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
+From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
+From Perennial.program_proof.simplepb Require Import pb_ghost.
+From Perennial.goose_lang.lib Require Import waitgroup.
+From iris.base_logic Require Export lib.ghost_var mono_nat.
+From iris.algebra Require Import dfrac_agree mono_list.
+From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof.
+
+Section pb_apply_proof.
+
+Context `{!heapGS Σ, !stagedG Σ}.
+Context {pb_record:PBRecord}.
+
+Notation OpType := (pb_OpType pb_record).
+Notation has_op_encoding := (pb_has_op_encoding pb_record).
+Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
+Notation compute_reply := (pb_compute_reply pb_record).
+Notation pbG := (pbG (pb_record:=pb_record)).
+
+Context `{!waitgroupG Σ}.
+Context `{!pbG Σ}.
+
+(* Clerk specs *)
+Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl op :
+  {{{
+        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
+
+        "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
+        "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
+        "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
+        "%Hghost_op_σ" ∷ ⌜last σ = Some ghost_op⌝ ∗
+        "%Hghost_op_op" ∷ ⌜has_op_encoding op ghost_op.1⌝ ∗
+        "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
+        "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
+
+        "#HargEpoch" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "epoch"] #epoch) ∗
+        "#HargIndex" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "index"] #index) ∗
+        "#HargOp" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "op"] (slice_val op_sl)) ∗
+        "#HopSl" ∷ readonly (is_slice_small op_sl byteT 1 op)
+  }}}
+    Clerk__ApplyAsBackup #ck #args_ptr
+  {{{
+        (err:u64), RET #err; □ if (decide (err = 0)) then
+                               is_accepted_lb γsrv epoch σ
+                             else True
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args σ op Q Φ :
+  is_Server s γ γsrv -∗
+  ApplyAsBackupArgs.own args_ptr args -∗
+  ApplyAsBackup_core_spec γ γsrv args σ op Q (λ err, Φ #err) -∗
+  WP pb.Server__ApplyAsBackup #s #args_ptr {{ Φ }}
+.
+Proof.
+  iIntros "#HisSrv Hpre HΦ".
+  iNamed "Hpre".
+  iNamed "HisSrv".
+  wp_call.
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_bind (Server__isEpochStale _ _).
+  iNamed "HΦ".
+  wp_apply (wp_Server__isEpochStale with "[$Hepoch HisSm $Hepoch_lb Hstate]").
+  {
+    iNamed "HisSm". iFrame "HaccP Hstate".
+  }
+  iIntros "(%Hineq & [Hepoch Hstate])".
+  wp_if_destruct.
+  { (* return error: stale *)
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hstate Hepoch HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "∗#%".
+    }
+    wp_pures.
+    iRight in "HΦ".
+    iModIntro.
+    iApply "HΦ".
+    done.
+  }
+  replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
+  wp_loadField.
+  wp_if_destruct.
+  { (* return error: stale *)
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "Hepoch HnextIndex ∗ # %".
+    }
+    wp_pures.
+    iApply "HΦ".
+    done.
+  }
+
+  (* FIXME: use uniqueness of γsrv to show that we are not primary, or else have
+     the code set isPrimary := false *)
+  (* assert (isPrimary = false) as HnotPrimary by admit. *)
+  wp_loadField.
+  wp_loadField.
+  wp_pures.
+  destruct (bool_decide (_)) as [] eqn:Hindex; last first.
+  { (* return errror: out-of-order *)
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    {
+      iNext.
+      iExists _, _, _, _, _, _, _.
+      iFrame "∗#%".
+    }
+    wp_pures.
+    iApply "HΦ".
+    done.
+  }
+
+  wp_pures.
+  apply bool_decide_eq_true in Hindex.
+
+  wp_loadField.
+  wp_loadField.
+  iNamed "HisSm".
+  wp_loadField.
+
+  iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
+  wp_apply ("HapplySpec" with "[$Hstate $Hargs_op_sl]").
+  { (* prove protocol step *)
+    iSplitL ""; first done.
+    assert (args.(ApplyAsBackupArgs.index) = nextIndex) as Hindex_eq by naive_solver.
+    iIntros "Hghost".
+    iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
+    iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
+    { rewrite -(fmap_length fst). rewrite -(fmap_length fst).
+      by f_equal. }
+    iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
+    { rewrite Hindex_eq in Hσ_index.
+      apply (f_equal length) in Hre.
+      word.
+    }
+    { done. }
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
+    { done. }
+    { rewrite Hindex_eq in Hσ_index.
+      word. }
+    iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
+    {
+      rewrite Hσ_nextIndex. rewrite Hσ_index.
+      rewrite Hindex_eq.
+      word.
+    }
+    rewrite Happend.
+    iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
+    iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb2".
+    instantiate (1:=(⌜σ = σg ++ [(op, Q)]⌝ ∗ is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch σ)%I).
+    iModIntro.
+
+    iSplitL.
+    { iExists _; iFrame "Hghost".
+      iFrame "Hprim".
+      by rewrite fmap_snoc. }
+    replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
+    iFrame "#".
+    done.
+  }
+  iIntros (reply) "(Hreply & Hstate & #Hlb)".
+  wp_pures.
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+  {
+    iNext.
+    iExists _, _, _, _, _, _, _.
+    replace ([op]) with ([(op, Q).1]) by done.
+    rewrite -fmap_snoc.
+    iFrame "Hstate ∗#".
+    iSplitR.
+    { iExists _, _, _; iFrame "#". }
+    iSplitR; last iFrame "#".
+    2:{
+      iDestruct "Hlb" as "(%Hre & Hlb1 & Hlb2)".
+      rewrite Hre.
+      replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
+      iFrame "#".
+    }
+    iPureIntro.
+    rewrite app_length.
+    rewrite Hσ_nextIndex.
+    simpl.
+    replace (nextIndex) with (args.(ApplyAsBackupArgs.index)) by naive_solver.
+    word.
+  }
+  wp_pures.
+  iLeft in "HΦ".
+  iApply "HΦ".
+  replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
+  iDestruct "Hlb" as "(_ & _ & $)".
+  done.
+Qed.
+
+End pb_apply_proof.

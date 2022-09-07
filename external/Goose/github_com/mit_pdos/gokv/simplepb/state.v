@@ -8,9 +8,6 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* client.go *)
 
-(* XXX: has to be bigger than all pb RPCs *)
-Definition RPC_FAA : expr := #5.
-
 Definition Clerk := struct.decl [
   "cl" :: ptrT
 ].
@@ -26,7 +23,7 @@ Definition Clerk__FetchAndAppend: val :=
     let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "val")) in
     "args" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "args") "key";;
     "args" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "args") "val";;
-    pb.Clerk__PrimaryApply (struct.loadF Clerk "cl" "ck") (![slice.T byteT] "args").
+    pb.Clerk__Apply (struct.loadF Clerk "cl" "ck") (![slice.T byteT] "args").
 
 (* example.go *)
 

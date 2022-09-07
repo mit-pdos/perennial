@@ -43,30 +43,21 @@ Definition sys_inv γ γkv : iProp Σ :=
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
   k ↪[γkv] v.
 
-Definition is_Clerk ck : iProp Σ :=
-  ∃ (cl:loc),
-    "#Hcl" ∷ readonly (ck ↦[state.Clerk :: "cl"] #cl).
+Definition is_Clerk γ ck : iProp Σ :=
+  ∃ (pb_ck:loc) γsys γsrv,
+    "#Hpb_ck" ∷ readonly (ck ↦[state.Clerk :: "cl"] #pb_ck) ∗
+    "#His_ck" ∷ is_Clerk pb_ck γsys γsrv ∗
+    "#His_inv" ∷ is_inv γ γsys
+.
 
-(* FIXME: this belongs in pb *)
 Context `{!urpc_proof.urpcregG Σ}.
 Context `{!stagedG Σ}.
-Lemma wp_Clerk__PrimaryApply γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
-has_op_encoding op_bytes op →
-is_slice op_sl byteT 1 op_bytes -∗
-(|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
-  (own_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, is_slice reply_sl byteT 1 (compute_reply ops op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
-∧
-(∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V ) -∗
-WP Clerk__PrimaryApply #ck (slice_val op_sl) {{ Φ }}.
-Proof.
-Admitted.
 
 Lemma wp_Clerk__FetchAndAppend ck γ γkv key val_sl value Φ:
   sys_inv γ γkv -∗
-  is_Clerk ck -∗
+  is_Clerk γ ck -∗
   is_slice val_sl byteT 1 value -∗
-  (|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
+  □(|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
     (kv_ptsto γkv key (old_value ++ value) ={↑stateN,⊤∖↑pbN}=∗
     (∀ reply_sl, is_slice reply_sl byteT 1 old_value -∗
       Φ (#(U64 0), slice_val reply_sl)%V ))) ∧
@@ -107,8 +98,11 @@ Proof.
   iNamed "Hck".
   wp_loadField.
 
-  wp_apply (wp_Clerk__PrimaryApply with "Hop_sl").
+  wp_apply (wp_Clerk__PrimaryApply with "[] [] Hop_sl").
   { instantiate (1:=(key,value)). done. }
+  { iFrame "#". }
+  { iFrame "#". }
+  iModIntro
   iSplit.
   { (* case: successful response *)
     iLeft in "Hupd".

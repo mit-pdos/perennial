@@ -44,22 +44,28 @@ Definition own_log γ σ := own γ (●ML{#1/2} (σ : list (leibnizO OpType))).
 
 (* RPC specs *)
 
+Definition ApplyAsBackup_core_spec γ γsrv args σ op Q (Φ : u64 -> iProp Σ) : iProp Σ :=
+  ("%Hσ_index" ∷ ⌜length σ = (int.nat args.(ApplyAsBackupArgs.index) + 1)%nat⌝ ∗
+   "%Hhas_encoding" ∷ ⌜has_op_encoding args.(ApplyAsBackupArgs.op) op⌝ ∗
+   "%Hghost_op_σ" ∷ ⌜last σ = Some (op, Q)⌝ ∗
+   "%Hno_overflow" ∷ ⌜int.nat args.(ApplyAsBackupArgs.index) < int.nat (word.add args.(ApplyAsBackupArgs.index) 1)⌝ ∗
+   "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(ApplyAsBackupArgs.epoch) ∗
+   "#Hprop_lb" ∷ is_proposal_lb γ args.(ApplyAsBackupArgs.epoch) σ ∗
+   "#Hprop_facts" ∷ is_proposal_facts γ args.(ApplyAsBackupArgs.epoch) σ ∗
+   "HΦ" ∷ ((is_accepted_lb γsrv args.(ApplyAsBackupArgs.epoch) σ -∗ Φ (U64 0)) ∧
+           (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
+    )%I
+.
+
 Program Definition ApplyAsBackup_spec γ γsrv :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ op Q,
-    ⌜ApplyArgs.has_encoding encoded_args args⌝ ∗
-    ⌜length σ = int.nat args.(ApplyArgs.index)⌝ ∗
-    ⌜has_op_encoding args.(ApplyArgs.op) op⌝∗
-    ⌜last σ = Some (op, Q) ⌝ ∗
-    is_proposal_lb γ args.(ApplyArgs.epoch) σ ∗
-    is_proposal_facts γ args.(ApplyArgs.epoch) σ ∗
-    (∀ error (reply:list u8),
-        ⌜has_encoding_Error reply error⌝ -∗
-        (if (decide (error = (U64 0))) then is_accepted_lb γsrv args.(ApplyArgs.epoch) σ else True) -∗
-        Φ reply)
+    ⌜ApplyAsBackupArgs.has_encoding encoded_args args⌝ ∗
+    ApplyAsBackup_core_spec γ γsrv args σ op Q (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
     )%I
 .
 Next Obligation.
+  unfold ApplyAsBackup_core_spec.
   solve_proper.
 Defined.
 
@@ -146,21 +152,52 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition appN := pbN .@ "app".
+Definition escrowN := pbN .@ "escrow".
+Definition is_inv γlog γsys :=
+  inv appN (∃ σ,
+        own_log γlog (fst <$> σ) ∗
+        own_ghost γsys σ ∗
+        □(
+          ∀ σ' σ'prefix lastEnt, ⌜prefix σ' σ⌝ -∗ ⌜σ' = σ'prefix ++ [lastEnt]⌝ -∗ (lastEnt.2 (fst <$> σ'prefix))
+        )
+      ).
+
+Definition Apply_core_spec γ γlog op enc_op :=
+  λ (Φ : ApplyReply.C -> iPropO Σ) ,
+  (
+  ⌜has_op_encoding enc_op op⌝ ∗
+  is_inv γlog γ ∗
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
+            Φ (ApplyReply.mkC 0 (compute_reply σ op))
+  )) ∗
+  □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
+  )%I
+.
+
+Program Definition Apply_spec γ :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ op γlog, Apply_core_spec γ γlog op enc_args
+                      (λ reply, ∀ enc_reply, ⌜ApplyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
+  )%I
+.
+Next Obligation.
+  unfold Apply_core_spec.
+  solve_proper.
+Defined.
+
 Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
   handler_spec γsrv.(pb_urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
   handler_spec γsrv.(pb_urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
   handler_spec γsrv.(pb_urpc_gn) host (U64 2) (GetState_spec γ γsrv) ∗
   handler_spec γsrv.(pb_urpc_gn) host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
+  handler_spec γsrv.(pb_urpc_gn) host (U64 4) (Apply_spec γ) ∗
   handlers_dom γsrv.(pb_urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]})%I
 .
 
 Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
 Proof.
-  rewrite /is_pb_host_pre=> n is1 is2 Hpre γ γsrv host.
-  do 5 (f_contractive || f_equiv).
-  f_equiv.
-  admit.
 Admitted.
 
 Definition is_pb_host_def :=
@@ -192,59 +229,6 @@ Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
   "#Hsrv" ∷ is_pb_host srv γ γsrv 
 .
-Lemma wp_MakeClerk host γ γsrv :
-  {{{
-        is_pb_host host γ γsrv
-  }}}
-    MakeClerk #host
-  {{{
-        ck, RET #ck; is_Clerk ck γ γsrv
-  }}}.
-Proof.
-Admitted.
-
-(* FIXME: these belong in a separate file. These will be proved from the RPC specs. *)
-(* Clerk specs *)
-Lemma wp_Clerk__Apply γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl op :
-  {{{
-        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
-        "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
-        "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
-        "%Hghost_op_σ" ∷ ⌜last σ = Some ghost_op⌝ ∗
-        "%Hghost_op_op" ∷ ⌜has_op_encoding op ghost_op.1⌝ ∗
-        "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
-        "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
-
-        "#HargEpoch" ∷ readonly (args_ptr ↦[pb.ApplyArgs :: "epoch"] #epoch) ∗
-        "#HargIndex" ∷ readonly (args_ptr ↦[pb.ApplyArgs :: "index"] #index) ∗
-        "#HargOp" ∷ readonly (args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val op_sl)) ∗
-        "#HopSl" ∷ readonly (is_slice_small op_sl byteT 1 op)
-  }}}
-    Clerk__Apply #ck #args_ptr
-  {{{
-        (err:u64), RET #err; □ if (decide (err = 0)) then
-                               is_accepted_lb γsrv epoch σ
-                             else True
-  }}}.
-Proof.
-Admitted.
-
-Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr (epoch:u64) servers server_γs σ :
-  {{{
-        "#HisClerk" ∷ is_Clerk ck γ γsrv ∗
-        "#Hconf" ∷ is_epoch_config γ epoch server_γs ∗
-        "#Hhost" ∷ ([∗ list] γsrv;host ∈ server_γs;servers, is_pb_host host γ γsrv) ∗
-        "#Hacc" ∷ is_accepted_lb γsrv epoch σ ∗
-        "Hprop" ∷ own_proposal γ epoch σ ∗ (* FIXME: escrow this *)
-        "Hargs" ∷ BecomePrimaryArgs.own args_ptr (BecomePrimaryArgs.mkC epoch servers)
-  }}}
-    Clerk__BecomePrimary #ck #args_ptr
-  {{{
-        (err:u64), RET #err; True
-  }}}.
-Proof.
-Admitted.
 
 (* End clerk specs *)
 

@@ -11,31 +11,31 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Op: ty := slice.T byteT.
 
-Definition ApplyArgs := struct.decl [
+Definition ApplyAsBackupArgs := struct.decl [
   "epoch" :: uint64T;
   "index" :: uint64T;
   "op" :: slice.T byteT
 ].
 
-Definition EncodeApplyArgs: val :=
-  rec: "EncodeApplyArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 + slice.len (struct.loadF ApplyArgs "op" "args"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyArgs "epoch" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyArgs "index" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyArgs "op" "args");;
+Definition EncodeApplyAsBackupArgs: val :=
+  rec: "EncodeApplyAsBackupArgs" "args" :=
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 + slice.len (struct.loadF ApplyAsBackupArgs "op" "args"))) in
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "epoch" "args");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "index" "args");;
+    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "op" "args");;
     ![slice.T byteT] "enc".
 
-Definition DecodeApplyArgs: val :=
-  rec: "DecodeApplyArgs" "enc_args" :=
+Definition DecodeApplyAsBackupArgs: val :=
+  rec: "DecodeApplyAsBackupArgs" "enc_args" :=
     let: "enc" := ref_to (slice.T byteT) "enc_args" in
-    let: "args" := struct.alloc ApplyArgs (zero_val (struct.t ApplyArgs)) in
+    let: "args" := struct.alloc ApplyAsBackupArgs (zero_val (struct.t ApplyAsBackupArgs)) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF ApplyArgs "epoch" "args" "0_ret";;
+    struct.storeF ApplyAsBackupArgs "epoch" "args" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF ApplyArgs "index" "args" "0_ret";;
+    struct.storeF ApplyAsBackupArgs "index" "args" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    struct.storeF ApplyArgs "op" "args" (![slice.T byteT] "enc");;
+    struct.storeF ApplyAsBackupArgs "op" "args" (![slice.T byteT] "enc");;
     "args".
 
 Definition SetStateArgs := struct.decl [
@@ -142,13 +142,35 @@ Definition DecodeBecomePrimaryArgs: val :=
       "enc" <-[slice.T byteT] "1_ret");;
     "args".
 
+Definition ApplyReply := struct.decl [
+  "Err" :: uint64T;
+  "Reply" :: slice.T byteT
+].
+
+Definition EncodeApplyReply: val :=
+  rec: "EncodeApplyReply" "reply" :=
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF ApplyReply "Reply" "reply"))) in
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyReply "Err" "reply");;
+    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyReply "Reply" "reply");;
+    ![slice.T byteT] "enc".
+
+Definition DecodeApplyReply: val :=
+  rec: "DecodeApplyReply" "enc_reply" :=
+    let: "enc" := ref_to (slice.T byteT) "enc_reply" in
+    let: "reply" := struct.alloc ApplyReply (zero_val (struct.t ApplyReply)) in
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+    struct.storeF ApplyReply "Err" "reply" "0_ret";;
+    "enc" <-[slice.T byteT] "1_ret";;
+    struct.storeF ApplyReply "Reply" "reply" (![slice.T byteT] "enc");;
+    "reply".
+
 (* clerk.go *)
 
 Definition Clerk := struct.decl [
   "cl" :: ptrT
 ].
 
-Definition RPC_APPLY : expr := #0.
+Definition RPC_APPLYASBACKUP : expr := #0.
 
 Definition RPC_SETSTATE : expr := #1.
 
@@ -164,10 +186,10 @@ Definition MakeClerk: val :=
       "cl" ::= urpc.MakeClient "host"
     ].
 
-Definition Clerk__Apply: val :=
-  rec: "Clerk__Apply" "ck" "args" :=
+Definition Clerk__ApplyAsBackup: val :=
+  rec: "Clerk__ApplyAsBackup" "ck" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_APPLY (EncodeApplyArgs "args") "reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_APPLYASBACKUP (EncodeApplyAsBackupArgs "args") "reply" #100 in
     (if: "err" ≠ #0
     then e.Timeout
     else e.DecodeError (![slice.T byteT] "reply")).
@@ -199,14 +221,14 @@ Definition Clerk__BecomePrimary: val :=
     then e.Timeout
     else e.DecodeError (![slice.T byteT] "reply")).
 
-Definition Clerk__PrimaryApply: val :=
-  rec: "Clerk__PrimaryApply" "ck" "op" :=
+Definition Clerk__Apply: val :=
+  rec: "Clerk__Apply" "ck" "op" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_PRIMARYAPPLY "op" "reply" #200 in
     (if: ("err" = #0)
     then
-      let: ("err", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
-      ("err", SliceSkip byteT (![slice.T byteT] "reply") #8)
+      let: "r" := DecodeApplyReply (![slice.T byteT] "reply") in
+      (struct.loadF ApplyReply "Err" "r", struct.loadF ApplyReply "Reply" "r")
     else ("err", slice.nil)).
 
 (* server.go *)
@@ -230,19 +252,23 @@ Definition Server := struct.decl [
 (* called on the primary server to apply a new operation. *)
 Definition Server__Apply: val :=
   rec: "Server__Apply" "s" "op" :=
+    let: "reply" := struct.alloc ApplyReply (zero_val (struct.t ApplyReply)) in
+    struct.storeF ApplyReply "Reply" "reply" slice.nil;;
     lock.acquire (struct.loadF Server "mu" "s");;
     (if: ~ (struct.loadF Server "isPrimary" "s")
     then
       (* log.Println("Got request while not being primary") *)
       lock.release (struct.loadF Server "mu" "s");;
-      (e.Stale, slice.nil)
+      struct.storeF ApplyReply "Err" "reply" e.Stale;;
+      "reply"
     else
       (if: struct.loadF Server "sealed" "s"
       then
         lock.release (struct.loadF Server "mu" "s");;
-        (e.Stale, slice.nil)
+        struct.storeF ApplyReply "Err" "reply" e.Stale;;
+        "reply"
       else
-        let: "ret" := struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") "op" in
+        struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") "op");;
         let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
         struct.storeF Server "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextIndex" "s") #1);;
         let: "epoch" := struct.loadF Server "epoch" "s" in
@@ -250,7 +276,7 @@ Definition Server__Apply: val :=
         lock.release (struct.loadF Server "mu" "s");;
         let: "wg" := waitgroup.New #() in
         let: "errs" := NewSlice uint64T (slice.len "clerks") in
-        let: "args" := struct.new ApplyArgs [
+        let: "args" := struct.new ApplyAsBackupArgs [
           "epoch" ::= "epoch";
           "index" ::= "nextIndex";
           "op" ::= "op"
@@ -259,7 +285,7 @@ Definition Server__Apply: val :=
           (let: "clerk" := "clerk" in
           let: "i" := "i" in
           waitgroup.Add "wg" #1;;
-          Fork (SliceSet uint64T "errs" "i" (Clerk__Apply "clerk" "args");;
+          Fork (SliceSet uint64T "errs" "i" (Clerk__ApplyAsBackup "clerk" "args");;
                 waitgroup.Done "wg"));;
         waitgroup.Wait "wg";;
         let: "err" := ref_to uint64T e.None in
@@ -272,8 +298,9 @@ Definition Server__Apply: val :=
           else #());;
           "i" <-[uint64T] ![uint64T] "i" + #1;;
           Continue);;
+        struct.storeF ApplyReply "Err" "reply" (![uint64T] "err");;
         (* log.Println("Apply() returned ", err) *)
-        (![uint64T] "err", "ret"))).
+        "reply")).
 
 (* requires that we've already at least entered this epoch
    returns true iff stale *)
@@ -286,7 +313,7 @@ Definition Server__isEpochStale: val :=
 Definition Server__ApplyAsBackup: val :=
   rec: "Server__ApplyAsBackup" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: Server__isEpochStale "s" (struct.loadF ApplyArgs "epoch" "args")
+    (if: Server__isEpochStale "s" (struct.loadF ApplyAsBackupArgs "epoch" "args")
     then
       lock.release (struct.loadF Server "mu" "s");;
       e.Stale
@@ -296,12 +323,12 @@ Definition Server__ApplyAsBackup: val :=
         lock.release (struct.loadF Server "mu" "s");;
         e.Stale
       else
-        (if: struct.loadF ApplyArgs "index" "args" ≠ struct.loadF Server "nextIndex" "s"
+        (if: struct.loadF ApplyAsBackupArgs "index" "args" ≠ struct.loadF Server "nextIndex" "s"
         then
           lock.release (struct.loadF Server "mu" "s");;
           e.OutOfOrder
         else
-          struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") (struct.loadF ApplyArgs "op" "args");;
+          struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args");;
           struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
           lock.release (struct.loadF Server "mu" "s");;
           e.None))).
@@ -383,8 +410,8 @@ Definition MakeServer: val :=
 Definition Server__Serve: val :=
   rec: "Server__Serve" "s" "me" :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_APPLY (λ: "args" "reply",
-      "reply" <-[slice.T byteT] e.EncodeError (Server__ApplyAsBackup "s" (DecodeApplyArgs "args"));;
+    MapInsert "handlers" RPC_APPLYASBACKUP (λ: "args" "reply",
+      "reply" <-[slice.T byteT] e.EncodeError (Server__ApplyAsBackup "s" (DecodeApplyAsBackupArgs "args"));;
       #()
       );;
     MapInsert "handlers" RPC_SETSTATE (λ: "args" "reply",
@@ -400,17 +427,8 @@ Definition Server__Serve: val :=
       #()
       );;
     MapInsert "handlers" RPC_PRIMARYAPPLY (λ: "args" "reply",
-      let: ("err", "ret") := Server__Apply "s" "args" in
-      (if: ("err" = e.None)
-      then
-        "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + slice.len "ret");;
-        "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") "err";;
-        "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") "ret";;
-        #()
-      else
-        "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 #8;;
-        "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") "err";;
-        #())
+      "reply" <-[slice.T byteT] EncodeApplyReply (Server__Apply "s" "args");;
+      #()
       );;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
