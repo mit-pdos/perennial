@@ -25,17 +25,10 @@ Context `{!pbG Σ}.
 Implicit Type (own_StateMachine: u64 → list OpType → bool → (u64 → list OpType → bool → iProp Σ) → iProp Σ).
 Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) σ (sealed:bool) (nextIndex:u64) γ γsrv :
   {{{
-        "Hstate" ∷ own_StateMachine epoch σ.*1 sealed (own_Server_ghost γ γsrv) ∗
+        "Hstate" ∷ own_StateMachine epoch σ sealed (own_Server_ghost γ γsrv) ∗
         "#His_sm" ∷ is_StateMachine sm_ptr own_StateMachine (own_Server_ghost γ γsrv) ∗
         "#Hsys_inv" ∷ sys_inv γ ∗
-        "%HnextIndex" ∷ ⌜int.nat nextIndex = length σ⌝ ∗
-
-        (* FIXME: the pb user shouldn't need to know about these. Wrap this up in something *)
-        (* It should be possible to get rid of these from *)
-        "#Hs_acc_lb" ∷ is_accepted_lb γsrv epoch σ ∗
-        "#Hs_prop_lb" ∷ is_proposal_lb γ epoch σ ∗
-        "#Hs_prop_facts" ∷ is_proposal_facts γ epoch σ ∗
-        "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch
+        "%HnextIndex" ∷ ⌜int.nat nextIndex = length σ⌝
   }}}
     pb.MakeServer #sm_ptr #nextIndex #epoch #sealed
   {{{
@@ -61,7 +54,43 @@ Proof.
   wp_storeField.
   wp_storeField.
   wp_storeField.
+
+  iAssert (_) with "His_sm" as "His_sm2".
+  iNamed "His_sm2".
+  iMod ("HaccP" with "[] Hstate") as "Hstate".
+  {
+    instantiate (1:=
+                   (
+                     ∃ σg,
+        "%Hσ" ∷ ⌜σg.*1 = σ⌝ ∗
+        "#Hs_acc_lb" ∷ is_accepted_lb γsrv epoch σg ∗
+        "#Hs_prop_lb" ∷ is_proposal_lb γ epoch σg ∗
+        "#Hs_prop_facts" ∷ is_proposal_facts γ epoch σg ∗
+        "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch)%I
+    ).
+    iIntros "Hghost".
+    iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
+    iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
+    iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb".
+    iNamed "Hghost".
+    iSplitL.
+    {
+      iModIntro. iExists _.
+      iFrame "∗#%".
+    }
+    iModIntro.
+    iExists _.
+    iFrame "#%".
+    done.
+  }
+  wp_apply (wpc_nval_elim_wp with "Hstate").
+  { done. }
+  { done. }
   wp_storeField.
+  iIntros "[Hstate H1]".
+  iNamed "H1".
+  wp_pures.
+
   iApply "HΦ".
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
   iExists _, _.
@@ -80,6 +109,11 @@ Proof.
   }
   iSplitR; first iExact "His_sm".
   iFrame "#".
+  rewrite Hσ.
+  iFrame "Hstate".
+  iPureIntro.
+  rewrite -(fmap_length fst).
+  rewrite Hσ.
   done.
 Qed.
 
