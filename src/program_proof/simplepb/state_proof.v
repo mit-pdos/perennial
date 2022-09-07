@@ -57,14 +57,14 @@ Lemma wp_Clerk__FetchAndAppend ck γ γkv key val_sl value Φ:
   sys_inv γ γkv -∗
   is_Clerk γ ck -∗
   is_slice val_sl byteT 1 value -∗
-  □(|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
+  □((|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
     (kv_ptsto γkv key (old_value ++ value) ={↑stateN,⊤∖↑pbN}=∗
-    (∀ reply_sl, is_slice reply_sl byteT 1 old_value -∗
-      Φ (#(U64 0), slice_val reply_sl)%V ))) ∧
-  (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V ) -∗
+    (∀ reply_sl, is_slice_small reply_sl byteT 1 old_value -∗
+      Φ (#(U64 0), slice_val reply_sl)%V ))) ∗
+  (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V ))-∗
   WP state.Clerk__FetchAndAppend #ck #key (slice_val val_sl) {{ Φ }}.
 Proof.
-  iIntros "#Hinv #Hck Hval_sl Hupd".
+  iIntros "#Hinv #Hck Hval_sl #Hupd".
   wp_call.
   wp_pures.
   wp_apply (wp_slice_len).
@@ -102,8 +102,8 @@ Proof.
   { instantiate (1:=(key,value)). done. }
   { iFrame "#". }
   { iFrame "#". }
-  iModIntro
-  iSplit.
+  iModIntro.
+  iSplitL.
   { (* case: successful response *)
     iLeft in "Hupd".
     iMod "Hupd".

@@ -669,6 +669,8 @@ Proof.
     rewrite replicate_length in Hreplicas_sz.
     assert (int.nat i < length args.(replicas)).
     {
+      apply lookup_lt_Some in Hlookup.
+      rewrite replicate_length in Hlookup.
       admit.
     }
     destruct replicas_left as [|next_replica replicas_left'].
@@ -691,7 +693,7 @@ Proof.
       simpl.
       rewrite app_length.
       rewrite cons_length.
-      admit.
+      word.
     }
     iIntros "Hreplicas_sl".
     wp_pures.
@@ -725,7 +727,10 @@ Proof.
       rewrite list_lookup_insert; last first.
       {
         rewrite app_length.
-        admit.
+        rewrite app_length.
+        simpl.
+        rewrite replicate_length.
+        word.
       }
       {
         rewrite lookup_app_l; last first.
@@ -743,7 +748,7 @@ Proof.
       }
     }
     {
-      admit.
+      admit. (* FIXME: use lemma from config_marshal_proof *)
     }
   }
   {
