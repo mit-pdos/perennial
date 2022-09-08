@@ -133,11 +133,7 @@ Proof.
   wp_pures.
   
   (***********************************************************)
-  (* for {                                                   *)
-  (*     tidx := tids[idx]                                   *)
-  (*     if tid == tidx {                                    *)
-  (*         break                                           *)
-  (*     }                                                   *)
+  (* for tid != tids[idx] {                                  *)
   (*     idx++                                               *)
   (* }                                                       *)
   (***********************************************************)
@@ -147,7 +143,7 @@ Proof.
     "%Hne" ∷ (⌜Forall (λ tidx, tidx ≠ tid) (take (int.nat idx) tids)⌝) ∗
     "%Hbound" ∷ ⌜(int.Z idx < Z.of_nat (length tids))⌝ ∗
     "%Hexit" ∷ (⌜if b then True else tids !! (int.nat idx) = Some tid⌝))%I.
-  wp_apply (wp_forBreak P with "[] [HidxRef HtidsS]").
+  wp_apply (wp_forBreak_cond P with "[] [HidxRef HtidsS]").
   { clear Φ.
     iIntros (Φ) "!> Hloop HΦ".
     iNamed "Hloop".
@@ -165,7 +161,7 @@ Proof.
     iIntros "[HtidsS %HtidsVT]".
     iDestruct ("HtidsC" with "HtidsS") as "HtidsS".
     wp_pures.
-    wp_if_destruct.
+    wp_if_destruct; last first.
     { iApply "HΦ". unfold P. eauto with iFrame. }
     wp_load.
     wp_store.

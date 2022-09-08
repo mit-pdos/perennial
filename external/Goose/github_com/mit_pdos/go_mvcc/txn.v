@@ -74,17 +74,16 @@ Definition TxnMgr__activate: val :=
     lock.release (struct.loadF TxnSite "latch" "site");;
     ![uint64T] "t".
 
+(* *
+    * Precondition:
+    * 1. `tid` in `tids`. *)
 Definition findTID: val :=
   rec: "findTID" "tid" "tids" :=
     let: "idx" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "tidx" := SliceGet uint64T "tids" (![uint64T] "idx") in
-      (if: ("tid" = "tidx")
-      then Break
-      else
-        "idx" <-[uint64T] ![uint64T] "idx" + #1;;
-        Continue));;
+    (for: (λ: <>, "tid" ≠ SliceGet uint64T "tids" (![uint64T] "idx")); (λ: <>, Skip) := λ: <>,
+      "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+      Continue);;
     ![uint64T] "idx".
 
 (* *

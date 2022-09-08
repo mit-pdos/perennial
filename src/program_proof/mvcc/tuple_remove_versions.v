@@ -87,10 +87,7 @@ Proof.
   (***********************************************************)
   (* var idx uint64                                          *)
   (* idx = uint64(len(tuple.vers)) - 1                       *)
-  (* for {                                                   *)
-  (*     if idx == 0 {                                       *)
-  (*         break                                           *)
-  (*     }                                                   *)
+  (* for idx != 0 {                                          *)
   (*     ver := tuple.vers[idx]                              *)
   (*     if ver.begin < tid {                                *)
   (*         break                                           *)
@@ -117,7 +114,7 @@ Proof.
                               (0 < int.Z idx ∧
                                ∃ ver, ver ∈ (drop (int.nat idx) vers) ∧
                                int.Z ver.1.1 < int.Z tid)⌝)%I.
-  wp_apply (wp_forBreak P with "[] [-HΦ HversS]").
+  wp_apply (wp_forBreak_cond P with "[] [-HΦ HversS]").
   { (* Loop body. *)
     clear Φ.
     iIntros (Φ).
@@ -126,8 +123,8 @@ Proof.
     iNamed "Hloop".
     wp_pures.
     wp_load.
-    wp_if_destruct.
-    { (* [idx = 0]. *)
+    wp_if_destruct; last first.
+    { (* Loop condition. *)
       iApply "HΦ".
       iModIntro.
       unfold P.

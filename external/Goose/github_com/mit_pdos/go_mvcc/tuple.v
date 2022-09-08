@@ -37,16 +37,13 @@ Definition findRightVer: val :=
     let: "length" := slice.len "vers" in
     let: "idx" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "idx" ≥ "length"
+    (for: (λ: <>, ![uint64T] "idx" < "length"); (λ: <>, Skip) := λ: <>,
+      "ver" <-[struct.t Version] SliceGet (struct.t Version) "vers" ("length" - ![uint64T] "idx" - #1);;
+      (if: "tid" > struct.get Version "begin" (![struct.t Version] "ver")
       then Break
       else
-        "ver" <-[struct.t Version] SliceGet (struct.t Version) "vers" ("length" - ![uint64T] "idx" - #1);;
-        (if: "tid" > struct.get Version "begin" (![struct.t Version] "ver")
-        then Break
-        else
-          "idx" <-[uint64T] ![uint64T] "idx" + #1;;
-          Continue)));;
+        "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+        Continue));;
     ![struct.t Version] "ver".
 
 (* *
@@ -159,16 +156,13 @@ Definition Tuple__removeVersions: val :=
     let: "idx" := ref (zero_val uint64T) in
     "idx" <-[uint64T] slice.len (struct.loadF Tuple "vers" "tuple") - #1;;
     Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "idx" = #0)
+    (for: (λ: <>, ![uint64T] "idx" ≠ #0); (λ: <>, Skip) := λ: <>,
+      let: "ver" := SliceGet (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx") in
+      (if: struct.get Version "begin" "ver" < "tid"
       then Break
       else
-        let: "ver" := SliceGet (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx") in
-        (if: struct.get Version "begin" "ver" < "tid"
-        then Break
-        else
-          "idx" <-[uint64T] ![uint64T] "idx" - #1;;
-          Continue)));;
+        "idx" <-[uint64T] ![uint64T] "idx" - #1;;
+        Continue));;
     struct.storeF Tuple "vers" "tuple" (SliceSkip (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx"));;
     #().
 

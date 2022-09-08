@@ -41,11 +41,8 @@ Proof.
   wp_pures.
 
   (***********************************************************)
-  (* for {                                                   *)
-  (*     if idx >= length {                                  *)
-  (*         break                                           *)
-  (*     }                                                   *)
-  (*     ver = vers[length - (1 + idx)]                      *)
+  (* for idx < length {                                      *)
+  (*     ver = vers[length - idx - 1]                        *)
   (*     if tid > ver.begin {                                *)
   (*         break                                           *)
   (*     }                                                   *)
@@ -59,7 +56,7 @@ Proof.
              "%Hspec" ∷ if b
                         then ⌜spec_find_ver_reverse (take (int.nat idx) (reverse vers)) tid = None⌝
                         else ⌜spec_find_ver_reverse (reverse vers) tid = Some ver⌝)%I.
-  wp_apply (wp_forBreak P with "[] [-HΦ HversC]").
+  wp_apply (wp_forBreak_cond P with "[] [-HΦ HversC]").
   { (* Loop body. *)
     clear Φ.
     iIntros (Φ).
@@ -69,8 +66,8 @@ Proof.
     wp_pures.
     wp_load.
     wp_pures.
-    wp_if_destruct.
-    { (* Exceeding the bound. *)
+    wp_if_destruct; last first.
+    { (* Loop condition. *)
       iModIntro.
       iApply "HΦ".
       unfold P.
@@ -88,7 +85,7 @@ Proof.
     wp_load.
     wp_pures.
     
-    apply Znot_le_gt in Heqb.
+    (* apply Znot_le_gt in Heqb. *)
     destruct (list_lookup_lt _ vers (length vers - S (int.nat idx))%nat) as [ver' Hver']; first word.
     wp_apply (wp_SliceGet with "[HversS]").
     { iFrame.
