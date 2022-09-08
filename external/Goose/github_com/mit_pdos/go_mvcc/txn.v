@@ -199,8 +199,8 @@ Definition Txn__Get: val :=
       let: ("val", "found") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
       ("val", "found")).
 
-Definition Txn__Begin: val :=
-  rec: "Txn__Begin" "txn" :=
+Definition Txn__begin: val :=
+  rec: "Txn__begin" "txn" :=
     let: "tid" := TxnMgr__activate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") in
     struct.storeF Txn "tid" "txn" "tid";;
     wrbuf.WrBuf__Clear (struct.loadF Txn "wrbuf" "txn");;
@@ -211,33 +211,33 @@ Definition Txn__acquire: val :=
     let: "ok" := wrbuf.WrBuf__OpenTuples (struct.loadF Txn "wrbuf" "txn") (struct.loadF Txn "tid" "txn") (struct.loadF Txn "idx" "txn") in
     "ok".
 
-Definition Txn__Commit: val :=
-  rec: "Txn__Commit" "txn" :=
+Definition Txn__commit: val :=
+  rec: "Txn__commit" "txn" :=
     trusted_proph.ResolveCommit (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn") (struct.loadF Txn "wrbuf" "txn");;
     wrbuf.WrBuf__UpdateTuples (struct.loadF Txn "wrbuf" "txn") (struct.loadF Txn "tid" "txn");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
-Definition Txn__Abort: val :=
-  rec: "Txn__Abort" "txn" :=
+Definition Txn__abort: val :=
+  rec: "Txn__abort" "txn" :=
     trusted_proph.ResolveAbort (struct.loadF TxnMgr "p" (struct.loadF Txn "txnMgr" "txn")) (struct.loadF Txn "tid" "txn");;
     TxnMgr__deactivate (struct.loadF Txn "txnMgr" "txn") (struct.loadF Txn "sid" "txn") (struct.loadF Txn "tid" "txn");;
     #().
 
 Definition Txn__DoTxn: val :=
   rec: "Txn__DoTxn" "txn" "body" :=
-    Txn__Begin "txn";;
+    Txn__begin "txn";;
     let: "cmt" := "body" "txn" in
     (if: ~ "cmt"
     then
-      Txn__Abort "txn";;
+      Txn__abort "txn";;
       #false
     else
       let: "ok" := Txn__acquire "txn" in
       (if: ~ "ok"
       then
-        Txn__Abort "txn";;
+        Txn__abort "txn";;
         #false
       else
-        Txn__Commit "txn";;
+        Txn__commit "txn";;
         #true)).

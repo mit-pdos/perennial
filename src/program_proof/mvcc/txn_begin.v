@@ -7,12 +7,12 @@ Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (*****************************************************************)
-(* func (txn *Txn) Begin()                                       *)
+(* func (txn *Txn) begin()                                       *)
 (*****************************************************************)
-Theorem wp_txn__Begin txn γ :
+Theorem wp_txn__begin txn γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
-      Txn__Begin #txn @ ↑mvccNGC
+      Txn__begin #txn @ ↑mvccNGC
     <<< ∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
     {{{ (tid : u64) (wrbuf : loc), RET #();
         own_txn_impl txn wrbuf ts γ ∗

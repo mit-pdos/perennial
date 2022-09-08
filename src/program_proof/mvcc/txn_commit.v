@@ -23,9 +23,9 @@ Definition commit_false_cases tid r γ τ : iProp Σ :=
   (∃ mods w Q, fcc_tmods_frag γ (tid, mods) ∗ txnmap_ptstos τ w ∗
                ⌜Q r w ∧ ¬ (Q r (mods ∪ r) ∧ dom mods ⊆ dom r) ∧ dom w = dom r⌝).
 
-Theorem wp_txn__Commit_false txn tid r γ τ :
+Theorem wp_txn__commit_false txn tid r γ τ :
   {{{ own_txn_ready txn tid r γ τ ∗ commit_false_cases tid r γ τ }}}
-    Txn__Commit #txn
+    Txn__commit #txn
   {{{ (ok : bool), RET #ok; False }}}.
 Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
@@ -219,9 +219,9 @@ Qed.
 Definition commit_actual_case tid (r w mods : dbmap) γ τ : iProp Σ :=
   cmt_tmods_frag γ (tid, mods) ∗ txnmap_ptstos τ w ∗ ⌜dom w = dom r⌝.
 
-Theorem wp_txn__Commit txn tid r w mods γ τ :
+Theorem wp_txn__commit txn tid r w mods γ τ :
   {{{ own_txn_ready txn tid r γ τ ∗ commit_actual_case tid r w mods γ τ }}}
-    Txn__Commit #txn
+    Txn__commit #txn
   {{{ RET #(); own_txn_uninit txn γ ∗ ⌜w = mods ∪ r⌝ }}}.
 Proof.
   iIntros (Φ) "[Htxn H] HΦ".

@@ -11,9 +11,9 @@ Definition abort_false_cases tid γ : iProp Σ :=
   (∃ mods, fcc_tmods_frag γ (tid, mods)) ∨
   (∃ mods, cmt_tmods_frag γ (tid, mods)).
 
-Theorem wp_txn__Abort_false txn tid view γ τ :
+Theorem wp_txn__abort_false txn tid view γ τ :
   {{{ own_txn txn tid view γ τ ∗ abort_false_cases tid γ }}}
-    Txn__Abort #txn
+    Txn__abort #txn
   {{{ RET #(); False }}}.
 Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
@@ -76,9 +76,9 @@ Proof.
   }
 Qed.
 
-Theorem wp_txn__Abort txn tid view γ τ :
+Theorem wp_txn__abort txn tid view γ τ :
   {{{ own_txn txn tid view γ τ ∗ fa_tids_frag γ tid }}}
-    Txn__Abort #txn
+    Txn__abort #txn
   {{{ RET #(); own_txn_uninit txn γ }}}.
 Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".

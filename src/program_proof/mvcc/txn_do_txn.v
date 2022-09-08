@@ -36,25 +36,25 @@ Proof.
   wp_call.
 
   (***********************************************************)
-  (* txn.Begin()                                             *)
+  (* txn.begin()                                             *)
   (* cmt := body(txn)                                        *)
   (* if !cmt {                                               *)
-  (*     txn.Abort()                                         *)
+  (*     txn.abort()                                         *)
   (*     return false                                        *)
   (* }                                                       *)
   (*                                                         *)
   (* ok := txn.acquire()                                     *)
   (* if !ok {                                                *)
-  (*     txn.Abort()                                         *)
+  (*     txn.abort()                                         *)
   (*     return false                                        *)
   (* }                                                       *)
   (*                                                         *)
-  (* txn.Commit()                                            *)
+  (* txn.commit()                                            *)
   (* return true                                             *)
   (***********************************************************)
   iAssert (∃ p, mvcc_inv_sst γ p)%I with "[Htxn]" as (p) "#Hinv".
   { iNamed "Htxn". eauto with iFrame. }
-  wp_apply (wp_txn__Begin with "Htxn").
+  wp_apply (wp_txn__begin with "Htxn").
   iInv "Hinv" as "> HinvO" "HinvC".
   iMod (ncfupd_mask_subseteq (⊤ ∖ ↑mvccN)) as "Hclose"; first solve_ndisj.
   iMod "HAU" as (r) "[[%HP Hdbps] HAUC]".
@@ -121,7 +121,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HncaFrag]"); first by eauto.
+      wp_apply (wp_txn__abort_false with "[$Htxn HncaFrag]"); first by eauto.
       by iIntros "contra".
     }
     wp_apply (wp_txn__acquire with "Htxn").
@@ -129,11 +129,11 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* System-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HncaFrag]"); first by eauto.
+      wp_apply (wp_txn__abort_false with "[$Htxn HncaFrag]"); first by eauto.
       by iIntros "contra".
     }
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit_false with "[$Htxn HncaFrag]"); first by eauto.
+    wp_apply (wp_txn__commit_false with "[$Htxn HncaFrag]"); first by eauto.
     by iIntros (ok) "contra".
   }
   { (* Case FA. *)
@@ -183,7 +183,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
-      wp_apply (wp_txn__Abort with "[$Htxn $HfaFrag]").
+      wp_apply (wp_txn__abort with "[$Htxn $HfaFrag]").
       iIntros "Htxn".
       wp_pures.
       (* We'll return something meaningful once [res] is added. *)
@@ -195,7 +195,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* System-abort branch. *)
-      wp_apply (wp_txn__Abort with "[$Htxn $HfaFrag]").
+      wp_apply (wp_txn__abort with "[$Htxn $HfaFrag]").
       iIntros "Htxn".
       wp_pures.
       (* We'll return something meaningful once [res] is added. *)
@@ -205,7 +205,7 @@ Proof.
       by iFrame.
     }
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit_false with "[$Htxn HfaFrag]"); first by eauto.
+    wp_apply (wp_txn__commit_false with "[$Htxn HfaFrag]"); first by eauto.
     by iIntros (ok) "contra".
   }
   { (* Case FCI. *)
@@ -257,7 +257,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HfciFrag]"); first eauto 10.
+      wp_apply (wp_txn__abort_false with "[$Htxn HfciFrag]"); first eauto 10.
       by iIntros "contra".
     }
     wp_apply (wp_txn__acquire with "Htxn").
@@ -265,11 +265,11 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* System-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HfciFrag]"); first eauto 10.
+      wp_apply (wp_txn__abort_false with "[$Htxn HfciFrag]"); first eauto 10.
       by iIntros "contra".
     }
     (* Commit branch. *)
-    wp_apply (wp_txn__Commit_false with "[$Htxn HfciFrag]"); first by eauto 10.
+    wp_apply (wp_txn__commit_false with "[$Htxn HfciFrag]"); first by eauto 10.
     by iIntros (ok) "contra".
   }
   (* We also need the subseteq relation to know which keys we're extending in CMT. *)
@@ -321,7 +321,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HfccFrag]"); first eauto 10.
+      wp_apply (wp_txn__abort_false with "[$Htxn HfccFrag]"); first eauto 10.
       by iIntros "contra".
     }
     wp_apply (wp_txn__acquire with "Htxn").
@@ -329,12 +329,12 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* System-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HfccFrag]"); first eauto 10.
+      wp_apply (wp_txn__abort_false with "[$Htxn HfccFrag]"); first eauto 10.
       by iIntros "contra".
     }
     (* Commit branch. *)
     iDestruct "Hpost" as (w) "([%HQ %Hdom] & HR & Htxnps)".
-    wp_apply (wp_txn__Commit_false with "[$Htxn HfccFrag Htxnps]").
+    wp_apply (wp_txn__commit_false with "[$Htxn HfccFrag Htxnps]").
     { unfold commit_false_cases. do 3 iRight.
       iExists mods, w, Q.
       by iFrame.
@@ -392,7 +392,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* Application-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HcmtFrag]"); first eauto 10.
+      wp_apply (wp_txn__abort_false with "[$Htxn HcmtFrag]"); first eauto 10.
       by iIntros "contra".
     }
     wp_apply (wp_txn__acquire with "Htxn").
@@ -400,13 +400,13 @@ Proof.
     wp_pures.
     wp_if_destruct.
     { (* System-abort branch. *)
-      wp_apply (wp_txn__Abort_false with "[$Htxn HcmtFrag]"); first eauto 10.
+      wp_apply (wp_txn__abort_false with "[$Htxn HcmtFrag]"); first eauto 10.
       by iIntros "contra".
     }
     (* Commit branch. *)
     (* Txn body gives both [Rc] and [Ra], and we choose the latter here. *)
     iDestruct "Hpost" as (w) "([_ %Hdom'] & [HRc _] & Htxnps)".
-    wp_apply (wp_txn__Commit with "[$Htxn $HcmtFrag $Htxnps]"); first done.
+    wp_apply (wp_txn__commit with "[$Htxn $HcmtFrag $Htxnps]"); first done.
     iIntros "[Htxn <-]".
     wp_pures.
     iApply "HΦ".
