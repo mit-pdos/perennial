@@ -38,34 +38,34 @@ Definition KVState := struct.decl [
 Definition Op: ty := slice.T byteT.
 
 (* helper for unmarshalling kvs *)
-Definition KVState__decodeKvs: val :=
-  rec: "KVState__decodeKvs" "s" "snap_in" :=
-    (* log.Println("Decoding encoded state of length: ", len(snap_in)) *)
-    let: "snap" := ref_to (slice.T byteT) "snap_in" in
+Definition decodeKvs: val :=
+  rec: "decodeKvs" "enc_in" :=
+    (* log.Println("Decoding encoded state of length: ", len(enc_in)) *)
+    let: "enc" := ref_to (slice.T byteT) "enc_in" in
     let: "kvs" := NewMap (slice.T byteT) #() in
-    let: ("numEntries", "snap") := marshal.ReadInt (![slice.T byteT] "snap") in
+    let: ("numEntries", "enc") := marshal.ReadInt (![slice.T byteT] "enc") in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "numEntries"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       let: "key" := ref (zero_val uint64T) in
       let: "valLen" := ref (zero_val uint64T) in
       let: "val" := ref (zero_val (slice.T byteT)) in
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "snap") in
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       "key" <-[uint64T] "0_ret";;
-      "snap" <-[slice.T byteT] "1_ret";;
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "snap") in
+      "enc" <-[slice.T byteT] "1_ret";;
+      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       "valLen" <-[uint64T] "0_ret";;
-      "snap" <-[slice.T byteT] "1_ret";;
-      "val" <-[slice.T byteT] SliceTake (![slice.T byteT] "snap") (![uint64T] "valLen");;
-      "snap" <-[slice.T byteT] SliceSkip byteT (![slice.T byteT] "snap") (![uint64T] "valLen");;
+      "enc" <-[slice.T byteT] "1_ret";;
+      "val" <-[slice.T byteT] SliceTake (![slice.T byteT] "enc") (![uint64T] "valLen");;
+      "enc" <-[slice.T byteT] SliceSkip byteT (![slice.T byteT] "enc") (![uint64T] "valLen");;
       MapInsert "kvs" (![uint64T] "key") (![slice.T byteT] "val");;
       Continue);;
     "kvs".
 
-Definition KVState__encodeKvs: val :=
-  rec: "KVState__encodeKvs" "s" :=
+Definition encodeKvs: val :=
+  rec: "encodeKvs" "kvs" :=
     let: "enc" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (MapLen (struct.loadF KVState "kvs" "s"));;
-    MapIter (struct.loadF KVState "kvs" "s") (λ: "k" "v",
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (MapLen "kvs");;
+    MapIter "kvs" (λ: "k" "v",
       "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "k";;
       "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "v");;
       "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "v");;
@@ -94,7 +94,7 @@ Definition RecoverKVState: val :=
       "sealedInt" <-[uint64T] "0_ret";;
       "encState" <-[slice.T byteT] "1_ret";;
       struct.storeF KVState "sealed" "s" (![uint64T] "sealedInt" = #0);;
-      struct.storeF KVState "kvs" "s" (KVState__decodeKvs "s" (![slice.T byteT] "encState")));;
+      struct.storeF KVState "kvs" "s" (decodeKvs (![slice.T byteT] "encState")));;
     "s".
 
 Definition KVState__getState: val :=
@@ -105,7 +105,7 @@ Definition KVState__getState: val :=
     (if: struct.loadF KVState "sealed" "s"
     then "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") #1
     else "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") #0);;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (KVState__encodeKvs "s");;
+    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (encodeKvs (struct.loadF KVState "kvs" "s"));;
     (* log.Println("Size of encoded state", len(enc)) *)
     ![slice.T byteT] "enc".
 
@@ -125,7 +125,7 @@ Definition KVState__Apply: val :=
 
 Definition KVState__SetStateAndUnseal: val :=
   rec: "KVState__SetStateAndUnseal" "s" "snap_in" "epoch" "nextIndex" :=
-    KVState__decodeKvs "s" "snap_in";;
+    struct.storeF KVState "kvs" "s" (decodeKvs "snap_in");;
     struct.storeF KVState "epoch" "s" "epoch";;
     struct.storeF KVState "sealed" "s" #false;;
     struct.storeF KVState "nextIndex" "s" "nextIndex";;
@@ -134,7 +134,7 @@ Definition KVState__SetStateAndUnseal: val :=
 
 Definition KVState__GetStateAndSeal: val :=
   rec: "KVState__GetStateAndSeal" "s" :=
-    let: "ret" := KVState__encodeKvs "s" in
+    let: "ret" := encodeKvs (struct.loadF KVState "kvs" "s") in
     struct.storeF KVState "sealed" "s" #true;;
     KVState__MakeDurable "s";;
     "ret".

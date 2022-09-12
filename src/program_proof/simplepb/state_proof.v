@@ -3,6 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Import state.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_apply_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From iris.base_logic Require Import ghost_map.
+From Perennial.goose_lang Require Import crash_borrow grove_filesys_axioms.
 
 Section state_proof.
 Context `{!heapGS Σ}.
@@ -154,6 +155,182 @@ Proof.
     iApply "Hupd".
     done.
   }
+Qed.
+
+Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop.
+Admitted.
+
+Definition own_byte_map (mptr:loc) (m:gmap u64 (list u8)): iProp Σ :=
+  ∃ (kvs_sl:gmap u64 Slice.t),
+    "Hkvs_map" ∷ is_map mptr 1 kvs_sl ∗
+    "Hkvs_map" ∷ ([∗ map] k ↦ v_sl ; v ∈ kvs_sl ; m,
+                  is_slice v_sl byteT 1 v)
+.
+
+Lemma wp_decodeKvs enc_sl enc m q :
+  {{{
+        ⌜has_byte_map_encoding enc m⌝ ∗
+        is_slice_small enc_sl byteT q enc
+  }}}
+    decodeKvs (slice_val enc_sl)
+  {{{
+        (mptr:loc), RET #mptr; own_byte_map mptr m
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_encodeKvs mptr m :
+  {{{
+        own_byte_map mptr m
+  }}}
+    encodeKvs #mptr
+  {{{
+        enc_sl enc, RET (slice_val enc_sl);
+        ⌜has_byte_map_encoding enc m⌝ ∗
+        is_slice enc_sl byteT 1 enc ∗
+        own_byte_map mptr m
+  }}}.
+Proof.
+Admitted.
+
+Record KVStateC :=
+{
+  epoch:u64 ;
+  nextIndex:u64;
+  sealed:bool;
+  ops:list (u64*(list u8));
+}.
+
+Context `{!filesysG Σ}.
+
+Definition has_kvstate_encoding (enc:list u8) (st:KVStateC) : Prop :=
+  ∃ enc_kvs,
+  has_byte_map_encoding enc_kvs (compute_state st.(ops)) ∧
+  enc = (u64_le st.(epoch)) ++ (u64_le (length st.(ops))) ++ (u64_le (if st.(sealed) then 1 else 0))
+                       ++ enc_kvs
+.
+
+Definition crash_cond fname P : iProp Σ :=
+  |={⊤}=> ∃ enc_kvstate st,
+    ⌜has_kvstate_encoding enc_kvstate st⌝ ∗
+    fname f↦ enc_kvstate ∗
+    P st.
+
+Definition own_KVState_vol (k:loc) st: iProp Σ :=
+  ∃ (kvs_ptr:loc) (kvs_sl:gmap u64 Slice.t),
+    "Hkvs" ∷ k ↦[KVState :: "kvs"] #kvs_ptr ∗
+    "Hepoch" ∷ k ↦[KVState :: "epoch"] #st.(epoch) ∗
+    "HnextIndex" ∷ k ↦[KVState :: "nextIndex"] #(U64 (length st.(ops))) ∗
+    "Hsealed" ∷ k ↦[KVState :: "sealed"] #st.(sealed) ∗
+    "Hmap" ∷ own_byte_map kvs_ptr (compute_state st.(ops))
+.
+
+Definition own_KVState_dur (k:loc) st P fname : iProp Σ :=
+    (* durable resources *)
+    "Hdur" ∷ crash_borrow
+               (∃ enc_kvstate,
+                   ⌜has_kvstate_encoding enc_kvstate st⌝ ∗
+                    fname f↦ enc_kvstate ∗ P st)
+               (crash_cond fname P)
+.
+
+Lemma wp_KVState__getState s st :
+  {{{
+        "Hvol" ∷ own_KVState_vol s st
+  }}}
+    KVState__getState #s
+  {{{
+       enc_sl enc, RET (slice_val enc_sl);
+        ⌜has_kvstate_encoding enc st⌝ ∗
+        is_slice enc_sl byteT 1 enc ∗
+        own_KVState_vol s st
+  }}}
+.
+Proof.
+Admitted.
+
+Opaque crash_borrow.
+Lemma wp_KVState__MakeDurable s old_st st fname P Q :
+  {{{
+        "#Hfname" ∷ readonly (s ↦[KVState :: "filename"] #(LitString fname)) ∗
+        "Hvol" ∷ own_KVState_vol s st ∗
+        "Hdur" ∷ own_KVState_dur s old_st P fname ∗
+        "Hupd" ∷ (P old_st ={⊤}=∗ P st ∗ Q)
+  }}}
+    KVState__MakeDurable #s
+  {{{
+       RET #();
+        own_KVState_vol s st ∗
+        own_KVState_dur s st P fname ∗
+        Q
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  wp_apply (wp_KVState__getState with "Hvol").
+  iIntros (??) "(%Henc & Henc_sl & Hvol)".
+  wp_loadField.
+
+  (* open crash_borrow *)
+  wp_bind (Write #_ _).
+  iApply (wpc_wp _ _ _ _ True).
+
+  wpc_apply (wpc_crash_borrow_open_modify with "Hdur").
+  { done. }
+  iSplit; first done.
+  iIntros "HP".
+  iDestruct "HP" as (?) "(%Hold_enc & Hfile & HP)".
+
+  iApply wpc_fupd.
+  wpc_apply (wpc_Write with "[$Hfile $Henc_sl]").
+  iSplit.
+  { (* if a crash happens during the atomic write *)
+    iIntros "[Hfile|Hfile]".
+    {
+      iSplit; first done.
+      iModIntro.
+      iExists _, _.
+      iFrame "∗%".
+    }
+    {
+      iSplit; first done.
+      iMod ("Hupd" with "HP") as "[HP HQ]".
+      iModIntro.
+
+      iExists _, _.
+      iFrame "∗%".
+    }
+  }
+  iNext.
+  iIntros "[Hfile Henc_sl]".
+  iMod ("Hupd" with "HP") as "[HP HQ]".
+  iModIntro.
+  iExists (_).
+  iSplitL "HP Hfile"; last first.
+  {
+    iSplitL ""; last first.
+    {
+      iIntros "Hdur".
+      iSplit; first done.
+      wp_pures.
+      iApply "HΦ".
+      iFrame "Hvol".
+      iFrame "Hdur".
+      iFrame "HQ".
+      done.
+    }
+    (* prove the crash condition is still met*)
+    iModIntro.
+    iIntros "H".
+    iDestruct "H" as (?) "H".
+    iExists _,_.
+    by iFrame.
+  }
+  (* prove the new resources *)
+  iExists _; iFrame.
+  done.
 Qed.
 
 End state_proof.
