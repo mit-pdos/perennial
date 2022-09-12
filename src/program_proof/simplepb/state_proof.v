@@ -26,6 +26,7 @@ Notation has_op_encoding := (pb_has_op_encoding pb_record).
 Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
 Notation compute_reply := (pb_compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
+Notation is_ApplyFn := (is_ApplyFn (pb_record:=pb_record)).
 
 Implicit Type σ : list (list u8).
 
@@ -194,19 +195,18 @@ Proof.
 Admitted.
 
 Record KVStateC :=
-{
-  epoch:u64 ;
-  nextIndex:u64;
-  sealed:bool;
-  ops:list (u64*(list u8));
+mkKVStateC {
+  kv_epoch:u64 ;
+  kv_sealed:bool;
+  kv_ops:list OpType;
 }.
 
 Context `{!filesysG Σ}.
 
 Definition has_kvstate_encoding (enc:list u8) (st:KVStateC) : Prop :=
   ∃ enc_kvs,
-  has_byte_map_encoding enc_kvs (compute_state st.(ops)) ∧
-  enc = (u64_le st.(epoch)) ++ (u64_le (length st.(ops))) ++ (u64_le (if st.(sealed) then 1 else 0))
+  has_byte_map_encoding enc_kvs (compute_state st.(kv_ops)) ∧
+  enc = (u64_le st.(kv_epoch)) ++ (u64_le (length st.(kv_ops))) ++ (u64_le (if st.(kv_sealed) then 1 else 0))
                        ++ enc_kvs
 .
 
@@ -219,13 +219,13 @@ Definition crash_cond fname P : iProp Σ :=
 Definition own_KVState_vol (k:loc) st: iProp Σ :=
   ∃ (kvs_ptr:loc) (kvs_sl:gmap u64 Slice.t),
     "Hkvs" ∷ k ↦[KVState :: "kvs"] #kvs_ptr ∗
-    "Hepoch" ∷ k ↦[KVState :: "epoch"] #st.(epoch) ∗
-    "HnextIndex" ∷ k ↦[KVState :: "nextIndex"] #(U64 (length st.(ops))) ∗
-    "Hsealed" ∷ k ↦[KVState :: "sealed"] #st.(sealed) ∗
-    "Hmap" ∷ own_byte_map kvs_ptr (compute_state st.(ops))
+    "Hepoch" ∷ k ↦[KVState :: "epoch"] #st.(kv_epoch) ∗
+    "HnextIndex" ∷ k ↦[KVState :: "nextIndex"] #(U64 (length st.(kv_ops))) ∗
+    "Hsealed" ∷ k ↦[KVState :: "sealed"] #st.(kv_sealed) ∗
+    "Hmap" ∷ own_byte_map kvs_ptr (compute_state st.(kv_ops))
 .
 
-Definition own_KVState_dur (k:loc) st P fname : iProp Σ :=
+Definition own_KVState_dur fname st P : iProp Σ :=
     (* durable resources *)
     "Hdur" ∷ crash_borrow
                (∃ enc_kvstate,
@@ -254,14 +254,14 @@ Lemma wp_KVState__MakeDurable s old_st st fname P Q :
   {{{
         "#Hfname" ∷ readonly (s ↦[KVState :: "filename"] #(LitString fname)) ∗
         "Hvol" ∷ own_KVState_vol s st ∗
-        "Hdur" ∷ own_KVState_dur s old_st P fname ∗
+        "Hdur" ∷ own_KVState_dur fname old_st P ∗
         "Hupd" ∷ (P old_st ={⊤}=∗ P st ∗ Q)
   }}}
     KVState__MakeDurable #s
   {{{
        RET #();
         own_KVState_vol s st ∗
-        own_KVState_dur s st P fname ∗
+        own_KVState_dur fname st P ∗
         Q
   }}}
 .
@@ -332,5 +332,48 @@ Proof.
   iExists _; iFrame.
   done.
 Qed.
+
+Definition own_KVState_StateMachine (k:loc) epoch ops sealed P : iProp Σ :=
+  let st := mkKVStateC epoch sealed ops in
+  ∃ fname,
+  "#Hfname" ∷ readonly (k ↦[KVState :: "filename"] #(LitString fname)) ∗
+  "Hvol " ∷ own_KVState_vol k st ∗
+  "Hdur" ∷ own_KVState_dur fname st (λ st, P st.(kv_epoch) st.(kv_ops) st.(kv_sealed))
+.
+
+Lemma wp_KVState__Apply s P :
+  {{{
+        True
+  }}}
+    KVState__Apply #s
+  {{{
+       applyFn, RET applyFn;
+        is_ApplyFn (own_KVState_StateMachine s) applyFn P
+  }}}
+.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  iModIntro.
+  iApply "HΦ".
+  clear Φ.
+
+  unfold is_ApplyFn.
+  iIntros (???????) "!# Hpre HΦ".
+  wp_pures.
+
+  iDestruct "Hpre" as "(%Henc & #Hop_sl & Hupd & Hstate)".
+  iNamed "Hstate".
+  iDestruct (from_named with "Hvol") as "Hvol".
+  rewrite -Henc.
+
+  iMod (readonly_load with "Hop_sl") as (?) "Hop_sl1".
+  wp_apply (wp_ReadInt with "Hop_sl1").
+  iIntros (?) "Hop_sl1".
+  wp_pures.
+
+  iNamed "Hvol".
+  wp_loadField.
+Admitted.
 
 End state_proof.
