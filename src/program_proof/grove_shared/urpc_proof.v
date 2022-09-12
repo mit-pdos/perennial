@@ -1030,6 +1030,44 @@ Proof.
   iApply ("HΦ" with "Hreq Hrep Hrep_sl").
 Qed.
 
+Lemma wp_Client__Call2' γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ Ψ :
+  is_uRPCClient cl_ptr host -∗
+  handler_spec γsmap host rpcid Spec -∗
+  is_slice_small req byteT 1 reqData -∗
+  rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
+  □(▷ Spec reqData Ψ) -∗
+  (∀ reply, Ψ reply -∗
+       is_slice_small req byteT 1 reqData -∗
+        ∀ rep_sl,
+          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
+          is_slice_small rep_sl byteT 1 reply -∗
+          Φ #0) -∗
+  (
+   ∀ (err:u64), ⌜err ≠ 0⌝ →
+                is_slice_small req byteT 1 reqData -∗
+                rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
+  ) -∗
+  WP Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
+Proof.
+  iIntros "#His_cl #Hhandler Hreq_sl Hrep #Hspec HΨ Hfail".
+  wp_apply (wp_Client__Call with "[$Hhandler] [$His_cl $Hreq_sl $Hrep]").
+  { iModIntro.
+    iModIntro.
+    done. }
+  iIntros (err) "Hpost".
+  destruct err.
+  {
+    iDestruct "Hpost" as "(_&Hreq&Hrep)".
+    iApply ("Hfail" with "[%] Hreq Hrep").
+    by destruct c.
+  }
+  simpl.
+  iDestruct "Hpost" as "(_ & Hreq & Hpost)".
+  iDestruct "Hpost" as (??) "(Hrep & Hrep_sl & HΦ)".
+  iApply ("HΨ" with "HΦ Hreq Hrep Hrep_sl").
+Qed.
+
 (** Same as impl_handler_spec, but in predicate-transformer style. *)
 Definition impl_handler_spec2 (f:val)
     (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
@@ -1044,6 +1082,22 @@ Definition impl_handler_spec2 (f:val)
       Φ #()
     )
     -∗
+    WP f (slice_val req) #rep {{ Φ }}).
+
+(** Functorial spec *)
+Definition impl_handler_spec3 (f:val)
+    (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
+   : iProp Σ :=
+  ∀ (reqData:list u8) Ψ Φ req rep dummy_rep_sl dummy,
+    □ (is_slice_small req byteT 1 reqData -∗
+    rep ↦[slice.T byteT] (slice_val dummy_rep_sl) -∗
+    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy -∗
+    ▷ Spec reqData Ψ -∗
+  (∀ reply, Ψ reply -∗ ∀ rep_sl,
+      rep ↦[slice.T byteT] (slice_val rep_sl) -∗
+      is_slice_small rep_sl byteT 1 reply -∗
+      Φ #()
+    ) -∗
     WP f (slice_val req) #rep {{ Φ }}).
 
 Definition Spec_functorial (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ) : iProp Σ :=
@@ -1068,6 +1122,17 @@ Proof.
     iApply "HΦ".
     iFrame.
   }
+Qed.
+
+Lemma impl_handler_spec3_to_2 f Spec :
+impl_handler_spec3 f Spec -∗
+impl_handler_spec2 f Spec.
+Proof.
+  iIntros "#Hhandler3".
+  iIntros (??????) "!# Hreq_small Hrep_ptr Hrep_sl HΦ".
+  unfold impl_handler_spec3.
+  wp_apply ("Hhandler3" with "Hreq_small Hrep_ptr Hrep_sl HΦ").
+  iIntros (?) "$".
 Qed.
 
 Global Instance impl_handler_spec_pers f Spec : Persistent (impl_handler_spec f Spec).

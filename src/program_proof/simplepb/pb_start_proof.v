@@ -117,4 +117,98 @@ Proof.
   done.
 Qed.
 
+Lemma wp_Server__Serve s host γ γsrv :
+  {{{
+        "#Hhost" ∷ is_pb_host host γ γsrv ∗
+        "#Hsrv" ∷ is_Server s γ γsrv
+  }}}
+    pb.Server__Serve #s #host
+  {{{
+        RET #(); True
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+
+  wp_apply (map.wp_NewMap).
+  iIntros (handlers) "Hhandlers".
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_apply (urpc_proof.wp_MakeServer with "Hhandlers").
+  iIntros (r) "Hr".
+  wp_pures.
+
+  wp_apply (wp_StartServer with "[$Hr]").
+  {
+    set_solver.
+  }
+  {
+    rewrite is_pb_host_unfold.
+    iDestruct "Hhost" as "(H1&H2&H3&H4&H5&Hhandlers)".
+    unfold handlers_complete.
+    repeat rewrite dom_insert_L.
+    rewrite dom_empty_L.
+    iSplitL "".
+    {
+      iExactEq "Hhandlers".
+      f_equal.
+      set_solver.
+    }
+
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+      clear Φ.
+      iApply impl_handler_spec2_to_1.
+      { admit. }
+      unfold impl_handler_spec2.
+      iIntros (??????) "!# Hreq_sl Hrep Hrep_sl Hspec".
+      wp_pures.
+      iDestruct "Hspec" as (??) "Hspec".
+      iMod (readonly_alloc_1 with "Hreq_sl") as "#Hreq_sl".
+      wp_apply (wp_Server__Apply with "Hsrv Hreq_sl [-Hspec] Hspec").
+      iIntros (?) "HΦ".
+      iIntros (?) "Hreply".
+      wp_apply (pb_marshal_proof.ApplyReply.wp_Encode with "[$]").
+      iIntros (??) "(%Henc_reply & Henc_rep_sl & Hreply)".
+      iDestruct (is_slice_to_small with "Henc_rep_sl") as "Henc_rep_sl".
+      wp_store.
+      iApply ("HΦ" with "[% //] Hrep Henc_rep_sl").
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      admit.
+    }
+    admit.
+  }
+  wp_pures.
+  by iApply "HΦ".
+Admitted.
+
 End pb_start_proof.

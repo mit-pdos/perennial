@@ -616,21 +616,23 @@ Lemma prefix_app_cases {A} (σ σ':list A) e:
 Proof.
 Admitted.
 
-Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) (Φ: val → iProp Σ) :
+Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
   readonly (is_slice_small op_sl byteT 1 enc_op) -∗
-  Apply_core_spec γ γlog op enc_op (λ reply, ∀ reply_ptr, ApplyReply.own reply_ptr reply -∗ Φ #reply_ptr) -∗
+  (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own reply_ptr reply -∗ Φ #reply_ptr) -∗
+  Apply_core_spec γ γlog op enc_op Ψ -∗
   WP (pb.Server__Apply #s (slice_val op_sl)) {{ Φ }}
 .
 Proof using Type*.
   iIntros "#Hsrv #Hop_sl".
-  iIntros "HΦ".
+  iIntros "HΨ HΦ".
+  iApply (wp_frame_wand with "HΨ").
   iDestruct "HΦ" as "(%Hop_enc & #Hinv & #Hupd & Hfail_Φ)".
   iMod (ghost_var_alloc (())) as (γtok) "Htok".
   iApply wp_fupd.
   wp_apply (wp_Server__Apply_internal _ _ _ _ _
       (op, (λ σ, inv escrowN (
-        (∀ reply_ptr, ApplyReply.own reply_ptr (ApplyReply.mkC 0 (compute_reply σ op))-∗ Φ #reply_ptr) ∨
+        Ψ (ApplyReply.mkC 0 (compute_reply σ op)) ∨
           ghost_var γtok 1 ()
         ))%I)
              with "[$Hsrv $Hop_sl Hupd]").
@@ -667,7 +669,7 @@ Proof using Type*.
     iDestruct "Hlog" as "[Hlog Hlog2]".
     iMod ("Hupd" with "Hlog2") as "Hupd".
 
-    iAssert (|={↑escrowN}=> inv escrowN ((∀ reply_ptr, ApplyReply.own reply_ptr (ApplyReply.mkC 0 (compute_reply σ.*1 op))-∗ Φ #reply_ptr)
+    iAssert (|={↑escrowN}=> inv escrowN ((Ψ (ApplyReply.mkC 0 (compute_reply σ.*1 op)))
                                   ∨ ghost_var γtok 1 ()))%I
             with "[Hupd]" as "Hinv2".
     {
@@ -677,7 +679,6 @@ Proof using Type*.
       iLeft.
       iIntros.
       iApply "Hupd".
-      iFrame.
     }
     iMod "Hmask" as "_".
     iMod (fupd_mask_subseteq (↑escrowN)) as "Hmask".
@@ -763,7 +764,8 @@ Proof using Type*.
       iMod ("Hclose" with "[$Htok]").
       iMod (lc_fupd_elim_later with "Hcred2 HΦ") as "HΦ".
       iModIntro.
-      iApply "HΦ".
+      iIntros "HΨ".
+      iApply ("HΨ" with "HΦ").
       iExists _.
       iFrame.
     }
@@ -771,14 +773,16 @@ Proof using Type*.
   {
     iIntros.
     iNamed "Hreply".
-    iApply "Hfail_Φ"; last first.
+    iModIntro.
+    iIntros "HΨ".
+    iApply ("HΨ" with "[Hfail_Φ]").
     {
-      iModIntro.
-      iExists _.
-      simpl.
-      iFrame.
+      iApply "Hfail_Φ".
+      done.
     }
-    done.
+    iExists _.
+    simpl.
+    iFrame.
   }
 Qed.
 
