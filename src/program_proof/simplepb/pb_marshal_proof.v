@@ -88,7 +88,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        is_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeApplyAsBackupArgs (slice_val enc_sl)
   {{{
@@ -112,7 +112,6 @@ Proof.
   rewrite /has_encoding in Henc.
   rewrite Henc.
   wp_load.
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   wp_apply (wp_ReadInt with "Henc_sl").
   iIntros (?) "Henc_sl".
   wp_pures.
@@ -213,7 +212,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        is_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeSetStateArgs (slice_val enc_sl)
   {{{
@@ -236,7 +235,6 @@ Proof.
 
   wp_pures.
   wp_load.
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   rewrite Henc.
   wp_apply (wp_ReadInt with "Henc_sl").
   iIntros (?) "Henc_sl".

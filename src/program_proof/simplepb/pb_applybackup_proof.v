@@ -143,14 +143,15 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args σ op Q Φ :
+Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args σ op Q Φ Ψ :
   is_Server s γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
-  ApplyAsBackup_core_spec γ γsrv args σ op Q (λ err, Φ #err) -∗
+  (∀ (err:u64), Ψ err -∗ Φ #err) -∗
+  ApplyAsBackup_core_spec γ γsrv args σ op Q Ψ -∗
   WP pb.Server__ApplyAsBackup #s #args_ptr {{ Φ }}
 .
 Proof.
-  iIntros "#HisSrv Hpre HΦ".
+  iIntros "#HisSrv Hpre HΦ HΨ".
   iNamed "Hpre".
   iNamed "HisSrv".
   wp_call.
@@ -161,7 +162,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_bind (Server__isEpochStale _ _).
-  iNamed "HΦ".
+  iNamed "HΨ".
   wp_apply (wp_Server__isEpochStale with "[$Hepoch HisSm $Hepoch_lb Hstate]").
   {
     iNamed "HisSm". iFrame "HaccP Hstate".
@@ -177,9 +178,10 @@ Proof.
       iFrame "∗#%".
     }
     wp_pures.
-    iRight in "HΦ".
+    iRight in "HΨ".
     iModIntro.
     iApply "HΦ".
+    iApply "HΨ".
     done.
   }
   replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
@@ -195,6 +197,8 @@ Proof.
     }
     wp_pures.
     iApply "HΦ".
+    iRight in "HΨ".
+    iApply "HΨ".
     done.
   }
 
@@ -216,6 +220,8 @@ Proof.
     }
     wp_pures.
     iApply "HΦ".
+    iRight in "HΨ".
+    iApply "HΨ".
     done.
   }
 
@@ -296,8 +302,9 @@ Proof.
     word.
   }
   wp_pures.
-  iLeft in "HΦ".
+  iLeft in "HΨ".
   iApply "HΦ".
+  iApply "HΨ".
   replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
   iDestruct "Hlb" as "(_ & _ & $)".
   done.

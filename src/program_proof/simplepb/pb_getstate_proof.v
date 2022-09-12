@@ -137,17 +137,15 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__GetState γ γsrv s args_ptr args epoch_lb Φ :
+Lemma wp_Server__GetState γ γsrv s args_ptr args epoch_lb Φ Ψ :
   is_Server s γ γsrv -∗
   GetStateArgs.own args_ptr args -∗
-  GetState_core_spec γ γsrv args.(GetStateArgs.epoch) epoch_lb (λ reply,
-                                                          ∀ (reply_ptr:loc),
-                                                          GetStateReply.own reply_ptr reply -∗
-                                                          Φ #reply_ptr) -∗
+  (∀ reply, Ψ reply -∗ ∀ (reply_ptr:loc), GetStateReply.own reply_ptr reply -∗ Φ #reply_ptr) -∗
+  GetState_core_spec γ γsrv args.(GetStateArgs.epoch) epoch_lb Ψ -∗
   WP pb.Server__GetState #s #args_ptr {{ Φ }}
   .
 Proof.
-  iIntros "His_srv Hargs HΦ".
+  iIntros "His_srv Hargs HΦ HΨ".
   wp_call.
   iNamed "His_srv".
   wp_loadField.
@@ -164,7 +162,7 @@ Proof.
   wp_if_destruct.
   { (* *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -172,8 +170,8 @@ Proof.
       iFrame "∗#%".
     }
     unfold GetState_core_spec.
-    iDestruct "HΦ" as "[_ HΦ]".
-    iRight in "HΦ".
+    iDestruct "HΨ" as "[_ HΨ]".
+    iRight in "HΨ".
     wp_pures.
     wp_apply (wp_allocStruct).
     { Transparent slice.T. repeat econstructor.
@@ -181,9 +179,10 @@ Proof.
     iIntros (reply_ptr) "Hreply".
     iDestruct (struct_fields_split with "Hreply") as "HH".
     iNamed "HH".
-    iApply "HΦ"; last first.
+    iApply ("HΦ" with "[HΨ]"); last first.
     {
       iExists _. iFrame.
+      instantiate (1:=GetStateReply.mkC _ _ _).
       replace (slice.nil) with (slice_val Slice.nil) by done.
       iFrame.
       simpl.
@@ -191,6 +190,7 @@ Proof.
       done.
     }
     simpl.
+    iApply "HΨ".
     done.
   }
   wp_storeField.
@@ -199,7 +199,7 @@ Proof.
   iAssert (_) with "HisSm" as "HisSm2".
   iNamed "HisSm2".
   wp_loadField.
-  iDestruct "HΦ" as "[#Hepoch_lb HΦ]".
+  iDestruct "HΨ" as "[#Hepoch_lb HΨ]".
   wp_apply ("HgetStateSpec" with "[$Hstate]").
   {
     iIntros "Hghost".
@@ -234,12 +234,12 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  iLeft in "HΦ".
-  iDestruct ("HΦ" with "[% //] [%] Hacc_ro Hs_prop_facts Hs_prop_lb [%//] [%]") as "HΦ".
+  iLeft in "HΨ".
+  iDestruct ("HΨ" with "[% //] [%] Hacc_ro Hs_prop_facts Hs_prop_lb [%//] [%]") as "HΨ".
   { word. }
   { word. }
 
-  wp_apply (release_spec with "[-Hsnap_sl HΦ]").
+  wp_apply (release_spec with "[-Hsnap_sl HΨ HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -252,7 +252,7 @@ Proof.
   iIntros (reply_ptr) "Hreply".
   iDestruct (struct_fields_split with "Hreply") as "HH".
   iNamed "HH".
-  iApply "HΦ".
+  iApply ("HΦ" with "HΨ").
   iExists _.
   iFrame.
   simpl.

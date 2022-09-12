@@ -100,14 +100,15 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ :
+Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ Ψ :
   is_Server s γ γsrv -∗
   BecomePrimaryArgs.own args_ptr args -∗
-  BecomePrimary_core_spec γ γsrv args σ backupγ is_pb_host (λ err, Φ #err) -∗
+  (∀ (err:u64), Ψ err -∗ Φ #err) -∗
+  BecomePrimary_core_spec γ γsrv args σ backupγ is_pb_host Ψ -∗
   WP pb.Server__BecomePrimary #s #args_ptr {{ Φ }}
   .
 Proof.
-  iIntros "#His_srv Hargs HΦ".
+  iIntros "#His_srv Hargs HΦ HΨ".
   iNamed "His_srv".
   wp_call.
   wp_loadField.
@@ -118,7 +119,7 @@ Proof.
   iNamed "Hargs".
   wp_loadField.
 
-  iDestruct "HΦ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprimary_escrow & #Hprop_lb & #Hprop_facts & HΦ)".
+  iDestruct "HΨ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprimary_escrow & #Hprop_lb & #Hprop_facts & HΨ)".
 
   iAssert (_) with "HisSm" as "HisSm2".
   iNamed "HisSm2".
@@ -128,7 +129,7 @@ Proof.
   { (* stale epoch *)
     wp_loadField.
     unfold BecomePrimary_core_spec.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -137,6 +138,7 @@ Proof.
     }
     wp_pures.
     iApply "HΦ".
+    iApply "HΨ".
   }
   { (* successfully become primary *)
     assert (args.(BecomePrimaryArgs.epoch) = epoch) as Hepoch_eq.
@@ -385,7 +387,7 @@ Proof.
     { done. }
     wp_loadField.
     iIntros "[Hstate #His_tok]".
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -409,6 +411,7 @@ Proof.
     wp_pures.
     iModIntro.
     iApply "HΦ".
+    iApply "HΨ".
   }
 Qed.
 

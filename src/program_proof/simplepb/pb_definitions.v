@@ -52,7 +52,7 @@ Definition ApplyAsBackup_core_spec γ γsrv args σ op Q (Φ : u64 -> iProp Σ) 
    "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(ApplyAsBackupArgs.epoch) ∗
    "#Hprop_lb" ∷ is_proposal_lb γ args.(ApplyAsBackupArgs.epoch) σ ∗
    "#Hprop_facts" ∷ is_proposal_facts γ args.(ApplyAsBackupArgs.epoch) σ ∗
-   "HΦ" ∷ ((is_accepted_lb γsrv args.(ApplyAsBackupArgs.epoch) σ -∗ Φ (U64 0)) ∧
+   "HΨ" ∷ ((is_accepted_lb γsrv args.(ApplyAsBackupArgs.epoch) σ -∗ Φ (U64 0)) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
     )%I
 .

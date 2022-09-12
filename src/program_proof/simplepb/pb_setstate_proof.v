@@ -126,14 +126,15 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__SetState γ γsrv s args_ptr args σ Φ :
+Lemma wp_Server__SetState γ γsrv s args_ptr args σ Φ Ψ :
   is_Server s γ γsrv -∗
   SetStateArgs.own args_ptr args -∗
-  SetState_core_spec γ γsrv args σ (λ err, Φ #err) -∗
+  (∀ (err:u64), Ψ err -∗ Φ #err) -∗
+  SetState_core_spec γ γsrv args σ Ψ -∗
   WP pb.Server__SetState #s #args_ptr {{ Φ }}
   .
 Proof.
-  iIntros "#His_srv Hargs HΦ".
+  iIntros "#His_srv Hargs HΦ HΨ".
   iNamed "His_srv".
   wp_call.
   wp_loadField.
@@ -148,9 +149,9 @@ Proof.
   { (* stale epoch *)
     wp_loadField.
     unfold SetState_core_spec.
-    iDestruct "HΦ" as "(_ & _ & _ & _ & HΦ)".
-    iRight in "HΦ".
-    wp_apply (release_spec with "[-HΦ]").
+    iDestruct "HΨ" as "(_ & _ & _ & _ & HΨ)".
+    iRight in "HΨ".
+    wp_apply (release_spec with "[-HΨ HΦ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -159,6 +160,7 @@ Proof.
     }
     wp_pures.
     iApply "HΦ".
+    iApply "HΨ".
     done.
   }
   { (* successfully set the state *)
@@ -168,9 +170,9 @@ Proof.
     { (* state has been set previously. Use is_prop_lb to get agreement. *)
       wp_loadField.
 
-      iDestruct "HΦ" as "(_ & _ & _ & _ & HΦ)".
-      iLeft in "HΦ".
-      wp_apply (release_spec with "[-HΦ]").
+      iDestruct "HΨ" as "(_ & _ & _ & _ & HΨ)".
+      iLeft in "HΨ".
+      wp_apply (release_spec with "[-HΨ HΦ]").
       {
         iFrame "HmuInv Hlocked".
         iNext.
@@ -179,6 +181,7 @@ Proof.
       }
       wp_pures.
       iApply "HΦ".
+      iApply "HΨ".
       { iFrame "#". done. }
     }
     iAssert (_) with "HisSm" as "#HisSm2".
@@ -195,7 +198,7 @@ Proof.
     wp_loadField.
     wp_loadField.
 
-    iDestruct "HΦ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & HΦ)".
+    iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & HΨ)".
     replace (args.(SetStateArgs.nextIndex)) with (U64 (length σ)) by word.
     replace (length σ) with (length σ.*1); last first.
     { by rewrite fmap_length. }
@@ -246,7 +249,7 @@ Proof.
     wp_pures.
     wp_loadField.
 
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (release_spec with "[-HΨ HΦ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -257,8 +260,9 @@ Proof.
       word.
     }
     wp_pures.
-    iLeft in "HΦ".
+    iLeft in "HΨ".
     iApply "HΦ".
+    iApply "HΨ".
     {
       done.
     }
