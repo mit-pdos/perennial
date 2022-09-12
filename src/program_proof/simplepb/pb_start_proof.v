@@ -164,7 +164,7 @@ Proof.
   iIntros (r) "Hr".
   wp_pures.
 
-  wp_apply (wp_StartServer with "[$Hr]").
+  wp_apply (wp_StartServer2 with "[$Hr]").
   {
     set_solver.
   }
@@ -185,37 +185,34 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      iApply impl_handler_spec2_to_1.
-      { admit. }
       unfold impl_handler_spec2.
-      iIntros (??????) "!# Hreq_sl Hrep Hrep_sl Hspec".
+      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (??) "Hspec".
       iMod (readonly_alloc_1 with "Hreq_sl") as "#Hreq_sl".
       wp_apply (wp_Server__Apply with "Hsrv Hreq_sl [-Hspec] Hspec").
-      iIntros (?) "HΦ".
+      iIntros (?) "Hspec".
       iIntros (?) "Hreply".
       wp_apply (ApplyReply.wp_Encode with "[$]").
       iIntros (??) "(%Henc_reply & Henc_rep_sl & Hreply)".
       iDestruct (is_slice_to_small with "Henc_rep_sl") as "Henc_rep_sl".
       wp_store.
-      iApply ("HΦ" with "[% //] Hrep Henc_rep_sl").
+      iApply ("HΦ" with "[Hspec] Hrep Henc_rep_sl").
+      { iApply "Hspec". done. }
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      iApply impl_handler_spec2_to_1.
-      { admit. }
       unfold impl_handler_spec2.
-      iIntros (??????) "!# Hreq_sl Hrep Hrep_sl Hspec".
+      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (???) "[%Henc Hspec]".
       wp_apply (BecomePrimaryArgs.wp_Decode with "[$Hreq_sl //]").
       iIntros (?) "Hargs".
 
       wp_apply (wp_Server__BecomePrimary with "Hsrv Hargs [-Hspec] Hspec").
-      iIntros (?) "HΦ".
+      iIntros (?) "HΨ".
       wp_call.
       wp_apply (wp_NewSliceWithCap).
       { done. }
@@ -228,23 +225,22 @@ Proof.
       replace (int.nat 0%Z) with (0) by word.
       simpl.
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
-      iApply ("HΦ" with "[% //] Hrep Hrep_sl").
+      iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
+      { iApply "HΨ". done. }
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      iApply impl_handler_spec2_to_1.
-      { admit. }
       unfold impl_handler_spec2.
-      iIntros (??????) "!# Hreq_sl Hrep Hrep_sl Hspec".
+      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (??) "[%Henc Hspec]".
       wp_apply (GetStateArgs.wp_Decode with "[$Hreq_sl //]").
       iIntros (?) "Hargs".
 
       wp_apply (wp_Server__GetState with "Hsrv Hargs [-Hspec] Hspec").
-      iIntros (?) "HΦ".
+      iIntros (?) "HΨ".
       iIntros (?) "Hreply".
       wp_apply (GetStateReply.wp_Encode with "Hreply").
       iClear "Hrep_sl".
@@ -252,23 +248,22 @@ Proof.
       wp_store.
       simpl.
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
-      iApply ("HΦ" with "[% //] Hrep Hrep_sl").
+      iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
+      { iApply "HΨ". done. }
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      iApply impl_handler_spec2_to_1.
-      { admit. }
       unfold impl_handler_spec2.
-      iIntros (??????) "!# Hreq_sl Hrep Hrep_sl Hspec".
+      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (??) "[%Henc Hspec]".
       wp_apply (SetStateArgs.wp_Decode with "[$Hreq_sl //]").
       iIntros (?) "Hargs".
 
       wp_apply (wp_Server__SetState with "Hsrv Hargs [-Hspec] Hspec").
-      iIntros (?) "HΦ".
+      iIntros (?) "HΨ".
 
       wp_call.
       wp_apply (wp_NewSliceWithCap).
@@ -282,23 +277,22 @@ Proof.
       replace (int.nat 0%Z) with (0) by word.
       simpl.
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
-      iApply ("HΦ" with "[% //] Hrep Hrep_sl").
+      iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
+      { iApply "HΨ". done. }
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      iApply impl_handler_spec2_to_1.
-      { admit. }
       unfold impl_handler_spec2.
-      iIntros (??????) "!# Hreq_sl Hrep Hrep_sl Hspec".
+      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (????) "[%Henc Hspec]".
       wp_apply (ApplyAsBackupArgs.wp_Decode with "[$Hreq_sl //]").
       iIntros (?) "Hargs".
 
       wp_apply (wp_Server__ApplyAsBackup with "Hsrv Hargs [-Hspec] Hspec").
-      iIntros (?) "HΦ".
+      iIntros (?) "HΨ".
 
       wp_call.
       wp_apply (wp_NewSliceWithCap).
@@ -312,13 +306,14 @@ Proof.
       replace (int.nat 0%Z) with (0) by word.
       simpl.
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
-      iApply ("HΦ" with "[% //] Hrep Hrep_sl").
+      iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
+      { iApply "HΨ". done. }
     }
     iApply big_sepM_empty.
     done.
   }
   wp_pures.
   by iApply "HΦ".
-Admitted.
+Qed.
 
 End pb_start_proof.

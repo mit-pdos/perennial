@@ -10,7 +10,7 @@ From Perennial.program_proof.simplepb Require Import pb_definitions pb_makeclerk
 From Perennial.program_proof.simplepb Require Import config_marshal_proof.
 
 Section pb_becomeprimary_proof.
-Context `{!heapGS Σ, !stagedG Σ}.
+Context `{!heapGS Σ}.
 Context {pb_record:PBRecord}.
 
 Notation OpType := (pb_OpType pb_record).

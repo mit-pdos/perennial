@@ -879,7 +879,7 @@ End ApplyReply.
 
 Section pb_marshal.
 
-Context `{!heapGS Σ, !stagedG Σ}.
+Context `{!heapGS Σ}.
 
 Definition has_encoding_Error (encoded:list u8) (error:u64) : Prop :=
   encoded = (u64_le error).

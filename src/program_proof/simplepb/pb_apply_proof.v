@@ -10,7 +10,7 @@ From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_p
 
 Section pb_apply_proof.
 
-Context `{!heapGS Σ, !stagedG Σ}.
+Context `{!heapGS Σ}.
 Context {pb_record:PBRecord}.
 
 Notation OpType := (pb_OpType pb_record).
@@ -19,7 +19,6 @@ Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
 Notation compute_reply := (pb_compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
-Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
 Opaque crash_borrow.
@@ -148,7 +147,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
           True
   }}}
   .
-Proof using waitgroupG0.
+Proof.
   iIntros (Φ) "[#His Hpre] HΦ".
   iDestruct "Hpre" as "(#Hsl & %Hghostop_op & Hupd)".
   iNamed "His".

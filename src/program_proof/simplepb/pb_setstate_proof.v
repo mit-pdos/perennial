@@ -7,7 +7,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 
 Section pb_setstate_proof.
-Context `{!heapGS Σ, !stagedG Σ}.
+Context `{!heapGS Σ}.
 Context {pb_record:PBRecord}.
 
 Notation OpType := (pb_OpType pb_record).

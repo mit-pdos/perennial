@@ -10,7 +10,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 
 Section pb_apply_proof.
 
-Context `{!heapGS Σ, !stagedG Σ}.
+Context `{!heapGS Σ}.
 Context {pb_record:PBRecord}.
 
 Notation OpType := (pb_OpType pb_record).

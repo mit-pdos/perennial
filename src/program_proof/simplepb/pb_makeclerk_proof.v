@@ -4,7 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 
 Section pb_makeclerk_proof.
-Context `{!heapGS Σ, !stagedG Σ}.
+Context `{!heapGS Σ}.
 Context {pb_record:PBRecord}.
 
 Notation OpType := (pb_OpType pb_record).

@@ -32,12 +32,12 @@ Definition client_logR := mono_listR (leibnizO OpType).
 Class pbG Σ := {
     pb_ghostG :> pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
     pb_urpcG :> urpcregG Σ ;
-    (* pb_wgG :> waitgroupG Σ ; *)
+    pb_wgG :> waitgroupG Σ ; (* for apply proof *)
     pb_logG :> inG Σ client_logR;
     pb_apply_escrow_tok :> ghost_varG Σ unit ;
 }.
 
-Context `{!heapGS Σ, !stagedG Σ}.
+Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
 
 Definition own_log γ σ := own γ (●ML{#1/2} (σ : list (leibnizO OpType))).

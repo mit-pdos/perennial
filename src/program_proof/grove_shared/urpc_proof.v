@@ -131,6 +131,23 @@ Definition impl_handler_spec (f:val)
       Post repData
   }}}.
 
+(** Same as impl_handler_spec, but in predicate-transformer style. *)
+Definition impl_handler_spec2 (f:val)
+    (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
+   : iProp Σ :=
+  ∀ (reqData:list u8) Φ Ψ req rep dummy_rep_sl dummy,
+    □ (is_slice_small req byteT 1 reqData -∗
+    rep ↦[slice.T byteT] (slice_val dummy_rep_sl) -∗
+    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy -∗
+    (∀ reply, Ψ reply -∗ ∀ rep_sl q,
+      rep ↦[slice.T byteT] (slice_val rep_sl) -∗
+      is_slice_small rep_sl byteT q reply -∗
+      Φ #()
+    ) -∗
+    Spec reqData Ψ
+    -∗
+    WP f (slice_val req) #rep {{ Φ }}).
+
 Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
   ∃ pending reqs (estoks extoks : gmap u64 unit) (n : u64),
             "%Hnpos" ∷ ⌜ 0 < int.Z n ⌝%Z ∗
@@ -233,7 +250,7 @@ Qed.
 Definition urpc_handler_mapping (γ : server_chan_gnames) (host : u64) (handlers : gmap u64 val) : iProp Σ :=
   ([∗ map] rpcid↦handler ∈ handlers, ∃ Spec,
       handler_spec γ host rpcid Spec ∗
-      impl_handler_spec handler Spec)%I.
+      impl_handler_spec2 handler Spec)%I.
 
 Lemma non_empty_urpc_handler_mapping_inv γ host handlers :
   dom handlers ≠ ∅ →
@@ -242,7 +259,7 @@ Lemma non_empty_urpc_handler_mapping_inv γ host handlers :
   "#Hhandlers" ∷ ([∗ map] rpcid↦handler ∈ handlers, ∃ Spec γs,
                           ptsto_ro (scmap_name γ) rpcid γs ∗
                           saved_spec_own γs Spec ∗
-                          impl_handler_spec handler Spec)%I.
+                          impl_handler_spec2 handler Spec)%I.
 Proof.
   iIntros (Hdom) "Hmapping".
   iInduction handlers as [| rpcid handler] "IH" using map_ind.
@@ -344,15 +361,19 @@ Proof.
     as "#Hequiv".
   wp_pures.
 
-  rewrite /impl_handler_spec.
-  iSpecialize ("His_urpcHandler" $! args Post r sl'). 
+  rewrite /impl_handler_spec2.
+  iSpecialize ("His_urpcHandler" $! args _ _ r sl' Slice.nil).
 
   rewrite zero_slice_val.
-  wp_apply ("His_urpcHandler" with "[$Hsl $Hsl' HPre]").
-  { iRewrite -"Hequiv". iFrame "HPre".
-    iApply @is_slice_zero.
+  wp_apply ("His_urpcHandler" with "Hsl Hsl' [] [HPre]").
+  { iApply @is_slice_zero. }
+  2: {
+    instantiate (1:=Post).
+    iRewrite -"Hequiv". iFrame "#".
   }
-  iIntros (rep_sl rep_q repData) "(Hsl' & His_slice & HPost)".
+
+  iIntros (repData) "HPost".
+  iIntros (rep_sl rep_q) "Hsl' His_slice".
   iDestruct (is_slice_small_sz with "His_slice") as %Hsz.
   wp_pures.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
@@ -397,13 +418,13 @@ Proof.
   iModIntro. iIntros (err) "[%?]". wp_pures; eauto.
 Qed.
 
-Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) :
+Lemma wp_StartServer2 γ (host : u64) (handlers : gmap u64 val) (s : loc) :
   dom handlers ≠ ∅ →
   {{{
       handlers_complete γ handlers ∗
       own_Server s handlers ∗
       [∗ map] rpcid ↦ handler ∈ handlers,
-      (∃ Spec, handler_spec γ host rpcid Spec ∗ impl_handler_spec handler Spec)
+      (∃ Spec, handler_spec γ host rpcid Spec ∗ impl_handler_spec2 handler Spec)
   }}}
     Server__Serve #s #host
   {{{
@@ -424,6 +445,46 @@ Proof.
   wp_apply (wp_fork).
   { wp_apply (wp_Server__readThread with "[]"); eauto. }
   wp_pures. iModIntro. by iLeft.
+Qed.
+
+Lemma impl_handler_spec1_to_2 f Spec :
+impl_handler_spec f Spec -∗
+impl_handler_spec2 f Spec.
+Proof.
+  iIntros "#Hhandler1".
+  iIntros (???????) "!# Hreq_sl Hrep_ptr Hrep_sl HΦ HΨ".
+  unfold impl_handler_spec.
+  wp_apply ("Hhandler1" with "[$Hreq_sl $Hrep_ptr $Hrep_sl $HΨ]").
+  iIntros (???) "(Hrep & Hrep_sl & HΨ)".
+  iApply ("HΦ" with "HΨ Hrep Hrep_sl").
+Qed.
+
+Lemma wp_StartServer γ (host : u64) (handlers : gmap u64 val) (s : loc) :
+  dom handlers ≠ ∅ →
+  {{{
+      handlers_complete γ handlers ∗
+      own_Server s handlers ∗
+      [∗ map] rpcid ↦ handler ∈ handlers,
+      (∃ Spec, handler_spec γ host rpcid Spec ∗ impl_handler_spec handler Spec)
+  }}}
+    Server__Serve #s #host
+  {{{
+      RET #(); True
+  }}}.
+Proof.
+  iIntros (? Φ) "(#Hcomplete&Hserver&#His_rpc_map) HΦ".
+  wp_apply (wp_StartServer2 with "[$Hserver]").
+  { done. }
+  {
+    iFrame "Hcomplete".
+    iApply (big_sepM_impl with "His_rpc_map").
+    iModIntro.
+    iIntros (???) "H1".
+    iDestruct "H1" as (?) "(H1 & H2)".
+    iExists _; iFrame "H1".
+    iApply (impl_handler_spec1_to_2 with "H2").
+  }
+  by iApply "HΦ".
 Qed.
 
 Lemma wp_Client__replyThread cl :
@@ -1066,73 +1127,6 @@ Proof.
   iDestruct "Hpost" as "(_ & Hreq & Hpost)".
   iDestruct "Hpost" as (??) "(Hrep & Hrep_sl & HΦ)".
   iApply ("HΨ" with "HΦ Hreq Hrep Hrep_sl").
-Qed.
-
-(** Same as impl_handler_spec, but in predicate-transformer style. *)
-Definition impl_handler_spec2 (f:val)
-    (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
-   : iProp Σ :=
-  ∀ (reqData:list u8) Φ req rep dummy_rep_sl dummy,
-    □ (is_slice_small req byteT 1 reqData -∗
-    rep ↦[slice.T byteT] (slice_val dummy_rep_sl) -∗
-    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy -∗
-    ▷ Spec reqData (λ reply, ∀ rep_sl,
-      rep ↦[slice.T byteT] (slice_val rep_sl) -∗
-      is_slice_small rep_sl byteT 1 reply -∗
-      Φ #()
-    )
-    -∗
-    WP f (slice_val req) #rep {{ Φ }}).
-
-(** Functorial spec *)
-Definition impl_handler_spec3 (f:val)
-    (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
-   : iProp Σ :=
-  ∀ (reqData:list u8) Ψ Φ req rep dummy_rep_sl dummy,
-    □ (is_slice_small req byteT 1 reqData -∗
-    rep ↦[slice.T byteT] (slice_val dummy_rep_sl) -∗
-    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy -∗
-    ▷ Spec reqData Ψ -∗
-  (∀ reply, Ψ reply -∗ ∀ rep_sl,
-      rep ↦[slice.T byteT] (slice_val rep_sl) -∗
-      is_slice_small rep_sl byteT 1 reply -∗
-      Φ #()
-    ) -∗
-    WP f (slice_val req) #rep {{ Φ }}).
-
-Definition Spec_functorial (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ) : iProp Σ :=
- □(∀ Φ Ψ,
- (∀ (reply:list u8), Φ reply -∗ Ψ reply) -∗
- ∀ a, Spec a Φ -∗ Spec a Ψ).
-
-Lemma impl_handler_spec2_to_1 f Spec :
-Spec_functorial Spec -∗
-impl_handler_spec2 f Spec -∗
-impl_handler_spec f Spec.
-Proof.
-  iIntros "#Hfunc #Hhandler2".
-  iIntros (???????) "!# Hpre HΦ".
-  iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
-  unfold impl_handler_spec2.
-  wp_apply ("Hhandler2" with "[$Hreq_small] Hrep_ptr Hrep_sl [Hpre HΦ]").
-  {
-    iNext.
-    iApply ("Hfunc" with "[HΦ] [$Hpre]").
-    iIntros.
-    iApply "HΦ".
-    iFrame.
-  }
-Qed.
-
-Lemma impl_handler_spec3_to_2 f Spec :
-impl_handler_spec3 f Spec -∗
-impl_handler_spec2 f Spec.
-Proof.
-  iIntros "#Hhandler3".
-  iIntros (??????) "!# Hreq_small Hrep_ptr Hrep_sl HΦ".
-  unfold impl_handler_spec3.
-  wp_apply ("Hhandler3" with "Hreq_small Hrep_ptr Hrep_sl HΦ").
-  iIntros (?) "$".
 Qed.
 
 Global Instance impl_handler_spec_pers f Spec : Persistent (impl_handler_spec f Spec).
