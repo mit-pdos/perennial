@@ -164,8 +164,14 @@ Admitted.
 Definition own_byte_map (mptr:loc) (m:gmap u64 (list u8)): iProp Σ :=
   ∃ (kvs_sl:gmap u64 Slice.t),
     "Hkvs_map" ∷ is_map mptr 1 kvs_sl ∗
-    "#Hkvs_slices" ∷ ([∗ map] k ↦ v_sl ; v ∈ kvs_sl ; m, readonly (is_slice_small v_sl byteT 1 v)) ∗
-    "Hkvs_slices_caps" ∷ ([∗ map] k ↦ v_sl ∈ kvs_sl, is_slice_cap v_sl byteT)
+    "#Hkvs_slices" ∷ (∀ (k:u64), readonly (is_slice_small (default Slice.nil (kvs_sl !! k))
+                                                          byteT
+                                                          1
+                                                          (default [] (m !! k))
+                                                          )
+                     ) ∗
+    "Hkvs_slices_caps" ∷ ([∗ set] k ∈ (fin_to_set u64),
+                           is_slice_cap (default Slice.nil (kvs_sl !! k)) byteT)
 .
 
 Lemma wp_byteMapGet mptr m (k:u64) :
@@ -186,40 +192,26 @@ Proof.
   iApply "HΦ".
   iSplitR "Hkvs_map Hkvs_slices_caps"; last first.
   { iExists _. eauto with iFrame. }
-  destruct (m !! k) as [] eqn:X.
-  {
-    iModIntro.
-    iDestruct (big_sepM2_lookup_r_some with "Hkvs_slices") as %[? Hlookup2].
-    { done. }
-    iDestruct (big_sepM2_lookup_acc with "Hkvs_slices") as "[H _]".
-    { done. }
-    { done. }
-    rewrite /map_get Hlookup2 /= in Hlookup.
-    replace (x) with (sl) by naive_solver.
-    done.
-  }
-  {
-    simpl.
-    iDestruct (big_sepM2_lookup_r_none with "Hkvs_slices") as %Hlookup2.
-    { done. }
-    rewrite /map_get Hlookup2 /= in Hlookup.
-    replace (sl) with (Slice.nil) by naive_solver.
-    iMod (readonly_alloc_1 with "[]") as "$"; last done.
-    by iApply is_slice_small_nil.
-  }
+  iModIntro.
+  iSpecialize ("Hkvs_slices" $! k).
+  rewrite /map_get in Hlookup.
+  apply (f_equal fst) in Hlookup.
+  simpl in Hlookup.
+  rewrite Hlookup.
+  iFrame "#".
 Qed.
 
-Lemma wp_SliceAppendSlice {V:Type} `{!into_val.IntoVal V} ty sl1 (l1:list V) sl2 l2 q :
+Lemma wp_SliceAppendSlice {V:Type} `{!into_val.IntoVal V} ty sl1 (l1:list V) sl2 l2 q1 q2 :
 {{{
-    is_slice_small sl1 ty q l1 ∗
-    is_slice_small sl2 ty q l2 ∗
+    is_slice_small sl1 ty q1 l1 ∗
+    is_slice_small sl2 ty q2 l2 ∗
     is_slice_cap sl1 ty
 }}}
   SliceAppendSlice ty (slice_val sl1) (slice_val sl2)
 {{{
     sl, RET (slice_val sl);
-      is_slice_small sl2 ty q l2 ∗
-      is_slice_small sl ty q (l1 ++ l2) ∗
+      is_slice_small sl2 ty q2 l2 ∗
+      is_slice_small sl ty q1 (l1 ++ l2) ∗
       is_slice_cap sl ty
 }}}
 .
@@ -244,9 +236,59 @@ Proof.
   wp_apply (wp_MapGet with "Hkvs_map").
   iIntros (sl1 ok) "[%Hlookup Hkvs_map]".
   wp_pures.
-  iDestruct (big_sepM_delete with "Hkvs_slices_caps") as "[Hcap Hkvs_slices_caps]".
-  { admit. }
-Admitted.
+  iDestruct (big_sepS_delete _ _ k with "Hkvs_slices_caps") as "[Hcap Hkvs_slices_caps]".
+  { set_solver. }
+  rewrite /map_get /= in Hlookup.
+  apply (f_equal fst) in Hlookup.
+  simpl in Hlookup.
+  rewrite Hlookup.
+  iAssert (_) with "Hkvs_slices" as "#Hsl1".
+  iSpecialize ("Hsl1" $! k).
+  rewrite Hlookup.
+  iMod (readonly_load with "Hsl1") as (?) "Hsl11".
+  wp_apply (wp_SliceAppendSlice with "[$Hsl11 $Hsl $Hcap]").
+  iIntros (new_sl) "(_ & Hnew_sl & Hcap)".
+  iApply "HΦ".
+  clear Φ.
+  iIntros (Φ) "HΦ".
+  iMod (readonly_alloc _ (H:=is_slice_small_as_mapsto _ _ _) with "Hnew_sl") as "#Hnew_sl".
+  wp_apply (wp_MapInsert with "Hkvs_map").
+  { done. }
+  iIntros "Hkvs_map".
+  iApply "HΦ".
+  iExists _.
+  iFrame "Hkvs_map".
+  rewrite /typed_map.map_insert.
+  iSplitR "Hcap Hkvs_slices_caps".
+  {
+    iIntros (?).
+    destruct (decide (k0 = k)).
+    {
+      rewrite e.
+      repeat rewrite lookup_insert.
+      simpl.
+      done.
+    }
+    {
+      rewrite lookup_insert_ne; last done.
+      rewrite lookup_insert_ne; last done.
+      iApply "Hkvs_slices".
+    }
+  }
+  {
+    iApply (big_sepS_delete _ _ k).
+    { set_solver. }
+    rewrite lookup_insert /=.
+    iFrame "Hcap".
+    iApply (big_sepS_impl with "Hkvs_slices_caps").
+    {
+      iModIntro.
+      iIntros.
+      rewrite lookup_insert_ne; last set_solver.
+      done.
+    }
+  }
+Qed.
 
 Lemma wp_decodeKvs enc_sl enc m q :
   {{{
