@@ -164,9 +164,89 @@ Admitted.
 Definition own_byte_map (mptr:loc) (m:gmap u64 (list u8)): iProp Σ :=
   ∃ (kvs_sl:gmap u64 Slice.t),
     "Hkvs_map" ∷ is_map mptr 1 kvs_sl ∗
-    "Hkvs_map" ∷ ([∗ map] k ↦ v_sl ; v ∈ kvs_sl ; m,
-                  is_slice v_sl byteT 1 v)
+    "#Hkvs_slices" ∷ ([∗ map] k ↦ v_sl ; v ∈ kvs_sl ; m, readonly (is_slice_small v_sl byteT 1 v)) ∗
+    "Hkvs_slices_caps" ∷ ([∗ map] k ↦ v_sl ∈ kvs_sl, is_slice_cap v_sl byteT)
 .
+
+Lemma wp_byteMapGet mptr m (k:u64) :
+  {{{ own_byte_map mptr m }}}
+    Fst (MapGet #mptr #k)
+  {{{
+        sl, RET (slice_val sl);
+        readonly (is_slice_small sl byteT 1 (default [] (m !! k))) ∗
+        own_byte_map mptr m
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hmap HΦ".
+  iNamed "Hmap".
+  wp_apply (wp_MapGet with "Hkvs_map").
+  iIntros (sl ok) "[%Hlookup Hkvs_map]".
+  wp_pures.
+  iApply "HΦ".
+  iSplitR "Hkvs_map Hkvs_slices_caps"; last first.
+  { iExists _. eauto with iFrame. }
+  destruct (m !! k) as [] eqn:X.
+  {
+    iModIntro.
+    iDestruct (big_sepM2_lookup_r_some with "Hkvs_slices") as %[? Hlookup2].
+    { done. }
+    iDestruct (big_sepM2_lookup_acc with "Hkvs_slices") as "[H _]".
+    { done. }
+    { done. }
+    rewrite /map_get Hlookup2 /= in Hlookup.
+    replace (x) with (sl) by naive_solver.
+    done.
+  }
+  {
+    simpl.
+    iDestruct (big_sepM2_lookup_r_none with "Hkvs_slices") as %Hlookup2.
+    { done. }
+    rewrite /map_get Hlookup2 /= in Hlookup.
+    replace (sl) with (Slice.nil) by naive_solver.
+    iMod (readonly_alloc_1 with "[]") as "$"; last done.
+    by iApply is_slice_small_nil.
+  }
+Qed.
+
+Lemma wp_SliceAppendSlice {V:Type} `{!into_val.IntoVal V} ty sl1 (l1:list V) sl2 l2 q :
+{{{
+    is_slice_small sl1 ty q l1 ∗
+    is_slice_small sl2 ty q l2 ∗
+    is_slice_cap sl1 ty
+}}}
+  SliceAppendSlice ty (slice_val sl1) (slice_val sl2)
+{{{
+    sl, RET (slice_val sl);
+      is_slice_small sl2 ty q l2 ∗
+      is_slice_small sl ty q (l1 ++ l2) ∗
+      is_slice_cap sl ty
+}}}
+.
+Proof.
+Admitted.
+
+Lemma wp_byteMapAppend mptr m (k:u64) sl (v:list u8) q :
+{{{
+      own_byte_map mptr m ∗
+      is_slice_small sl byteT q v
+}}}
+  (SliceAppendSlice byteT (Fst (MapGet #mptr #k)) (slice_val sl))
+{{{ sl, RET (slice_val sl);
+    ∀ Ψ,
+    (own_byte_map mptr (<[k := (default [] (m !! k)) ++ v]> m) -∗ Ψ #()) -∗
+    WP MapInsert #mptr #k (slice_val sl) {{ Ψ }}
+}}}
+.
+Proof.
+  iIntros (Φ) "[Hmap Hsl] HΦ".
+  iNamed "Hmap".
+  wp_apply (wp_MapGet with "Hkvs_map").
+  iIntros (sl1 ok) "[%Hlookup Hkvs_map]".
+  wp_pures.
+  iDestruct (big_sepM_delete with "Hkvs_slices_caps") as "[Hcap Hkvs_slices_caps]".
+  { admit. }
+Admitted.
 
 Lemma wp_decodeKvs enc_sl enc m q :
   {{{
@@ -217,7 +297,7 @@ Definition crash_cond fname P : iProp Σ :=
     P st.
 
 Definition own_KVState_vol (k:loc) st: iProp Σ :=
-  ∃ (kvs_ptr:loc) (kvs_sl:gmap u64 Slice.t),
+  ∃ (kvs_ptr:loc),
     "Hkvs" ∷ k ↦[KVState :: "kvs"] #kvs_ptr ∗
     "Hepoch" ∷ k ↦[KVState :: "epoch"] #st.(kv_epoch) ∗
     "HnextIndex" ∷ k ↦[KVState :: "nextIndex"] #(U64 (length st.(kv_ops))) ∗
@@ -374,6 +454,55 @@ Proof.
 
   iNamed "Hvol".
   wp_loadField.
+  wp_apply (wp_byteMapGet with "Hmap").
+  iIntros (vsl) "[#Hvsl Hmap]".
+  wp_pures.
+
+  wp_loadField.
+  wp_storeField.
+  wp_loadField.
+
+  wp_apply (wp_byteMapAppend with "[$Hmap $Hop_sl1]").
+  iIntros (?) "Hmap".
+  Opaque u64_le.
+  simpl.
+  wp_loadField.
+  wp_apply "Hmap".
+  iIntros "Hmap".
+  wp_pures.
+  wp_apply (wp_KVState__MakeDurable with "[$Hfname Hkvs Hepoch HnextIndex Hsealed Hmap Hupd $Hdur]").
+  {
+    simpl.
+    instantiate (2:=mkKVStateC _ _ _).
+    simpl.
+    iFrame "Hupd".
+
+    iExists _; iFrame.
+    simpl.
+    rewrite app_length /=.
+    iSplitL "HnextIndex".
+    {
+      iApply to_named.
+      iExactEq "HnextIndex".
+      f_equal.
+      f_equal.
+      admit. (* FIXME: nextIndex overflow *)
+    }
+    iApply to_named.
+    iExactEq "Hmap".
+    f_equal.
+    unfold compute_state.
+    rewrite foldl_snoc.
+    done.
+  }
+  iIntros "(Hvol & Hdur & HQ)".
+  wp_pures.
+  iApply "HΦ".
+  iSplitL ""; first admit. (* FIXME: a fraction should be good enough *)
+  iModIntro.
+  iFrame "HQ".
+  iExists _.
+  iFrame "∗#".
 Admitted.
 
 End state_proof.
