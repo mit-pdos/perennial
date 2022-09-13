@@ -158,9 +158,6 @@ Proof.
   }
 Qed.
 
-Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop.
-Admitted.
-
 Definition own_byte_map (mptr:loc) (m:gmap u64 (list u8)): iProp Σ :=
   ∃ (kvs_sl:gmap u64 Slice.t),
     "Hkvs_map" ∷ is_map mptr 1 kvs_sl ∗
@@ -289,6 +286,9 @@ Proof.
     }
   }
 Qed.
+
+Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop.
+Admitted.
 
 Lemma wp_decodeKvs enc_sl enc m q :
   {{{
@@ -500,13 +500,16 @@ Proof.
   iIntros (vsl) "[#Hvsl Hmap]".
   wp_pures.
 
+  Opaque u64_le.
+  simpl.
   wp_loadField.
+  wp_apply (std_proof.wp_SumAssumeNoOverflow).
+  iIntros "%Hno_overflow".
   wp_storeField.
   wp_loadField.
 
   wp_apply (wp_byteMapAppend with "[$Hmap $Hop_sl1]").
   iIntros (?) "Hmap".
-  Opaque u64_le.
   simpl.
   wp_loadField.
   wp_apply "Hmap".
@@ -528,6 +531,10 @@ Proof.
       iExactEq "HnextIndex".
       f_equal.
       f_equal.
+      replace (int.Z 1) with (1) in * by word.
+      assert (int.Z (Z.of_nat (length σ)) = Z.of_nat (length σ)) as H2.
+      { admit. }
+      rewrite H2 in Hno_overflow.
       admit. (* FIXME: nextIndex overflow *)
     }
     iApply to_named.
@@ -539,12 +546,13 @@ Proof.
   }
   iIntros "(Hvol & Hdur & HQ)".
   wp_pures.
+  iMod (readonly_load with "Hvsl") as (?) "Hvsl2".
   iApply "HΦ".
-  iSplitL ""; first admit. (* FIXME: a fraction should be good enough *)
-  iModIntro.
   iFrame "HQ".
+  iFrame "Hvsl2".
+  iModIntro.
   iExists _.
   iFrame "∗#".
-Admitted.
+Admitted. (* FIXME: just overflow reasoning left *)
 
 End state_proof.

@@ -246,9 +246,9 @@ Definition is_ApplyFn own_StateMachine (applyFn:val) (P:u64 → list (OpType) �
   }}}
     applyFn (slice_val op_sl)
   {{{
-        reply_sl,
+        reply_sl q,
         RET (slice_val reply_sl);
-        is_slice reply_sl byteT 1 (compute_reply σ op) ∗
+        is_slice_small reply_sl byteT q (compute_reply σ op) ∗
         own_StateMachine epoch (σ ++ [op]) false P ∗
         Q
   }}}

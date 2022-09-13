@@ -137,7 +137,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
-        reply_ptr reply, RET #reply_ptr; £ 1 ∗ £ 1 ∗ ApplyReply.own reply_ptr reply ∗
+        reply_ptr reply, RET #reply_ptr; £ 1 ∗ £ 1 ∗ ApplyReply.own_q reply_ptr reply ∗
         if (decide (reply.(ApplyReply.err) = 0%Z)) then
           ∃ σ,
             let σphys := (λ x, x.1) <$> σ in
@@ -189,6 +189,7 @@ Proof.
       instantiate (1:=(ApplyReply.mkC _ _)).
       iExists _.
       iFrame.
+      iExists 1%Qp.
       iApply is_slice_small_nil.
       done.
     }
@@ -212,7 +213,7 @@ Proof.
     wp_storeField.
     iApply ("HΦ" $! _ (ApplyReply.mkC 1 [])).
     iFrame.
-    iExists _; iFrame.
+    iExists _, 1%Qp; iFrame.
     iApply is_slice_small_nil.
     done.
   }
@@ -263,7 +264,7 @@ Proof.
     }
     iFrame "Hlb #".
   }
-  iIntros (reply_sl) "(Hreply & Hstate & #Hprimary_acc_lb)".
+  iIntros (reply_sl q) "(Hreply & Hstate & #Hprimary_acc_lb)".
   iDestruct "Hprimary_acc_lb" as "(Hprimary_acc_lb & Hprop_lb & Hprop_facts)".
   rewrite -fmap_snoc.
 
@@ -571,16 +572,13 @@ Proof.
   destruct (decide (err = 0%Z)); last first.
   {
     iFrame.
-    iExists _; iFrame.
-    simpl.
-    iDestruct (is_slice_to_small with "Hreply") as "$".
+    iExists _, _; iFrame.
     done.
   }
   {
     iSplitL "Reply Hreply".
     {
-      iExists _; iFrame.
-      iDestruct (is_slice_to_small with "Hreply") as "$".
+      iExists _, _; iFrame.
       done.
     }
     iExists _.
@@ -618,7 +616,7 @@ Admitted.
 Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
   readonly (is_slice_small op_sl byteT 1 enc_op) -∗
-  (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own reply_ptr reply -∗ Φ #reply_ptr) -∗
+  (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
   Apply_core_spec γ γlog op enc_op Ψ -∗
   WP (pb.Server__Apply #s (slice_val op_sl)) {{ Φ }}
 .
@@ -765,7 +763,7 @@ Proof using Type*.
       iModIntro.
       iIntros "HΨ".
       iApply ("HΨ" with "HΦ").
-      iExists _.
+      iExists _, _.
       iFrame.
     }
   }
@@ -779,8 +777,7 @@ Proof using Type*.
       iApply "Hfail_Φ".
       done.
     }
-    iExists _.
-    simpl.
+    iExists _, _.
     iFrame.
   }
 Qed.

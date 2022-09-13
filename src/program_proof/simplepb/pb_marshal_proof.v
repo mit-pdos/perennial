@@ -780,6 +780,13 @@ mkC {
 Definition has_encoding (encoded:list u8) (reply:C) : Prop :=
   encoded = (u64_le reply.(err)) ++ reply.(ret).
 
+Definition own_q args_ptr args : iProp Σ :=
+  ∃ ret_sl q,
+  "Hreply_err" ∷ args_ptr ↦[pb.ApplyReply :: "Err"] #args.(err) ∗
+  "Hreply_ret" ∷ args_ptr ↦[pb.ApplyReply :: "Reply"] (slice_val ret_sl) ∗
+  "Hrepy_ret_sl" ∷ is_slice_small ret_sl byteT q args.(ret)
+  .
+
 Definition own args_ptr args : iProp Σ :=
   ∃ ret_sl,
   "Hreply_err" ∷ args_ptr ↦[pb.ApplyReply :: "Err"] #args.(err) ∗
@@ -789,14 +796,14 @@ Definition own args_ptr args : iProp Σ :=
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
-        own args_ptr args
+        own_q args_ptr args
   }}}
     pb.EncodeApplyReply #args_ptr
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
         is_slice enc_sl byteT 1 enc ∗
-        own args_ptr args
+        own_q args_ptr args
   }}}.
 Proof.
   iIntros (Φ) "H1 HΦ".
@@ -831,7 +838,7 @@ Proof.
   iApply "HΦ".
   iFrame "Henc_sl".
   iSplitL ""; first done.
-  iExists _; iFrame.
+  iExists _, _; iFrame.
   done.
 Qed.
 

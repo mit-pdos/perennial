@@ -273,7 +273,7 @@ Proof.
     iFrame "#".
     done.
   }
-  iIntros (reply) "(Hreply & Hstate & #Hlb)".
+  iIntros (reply q) "(Hreply & Hstate & #Hlb)".
   wp_pures.
   wp_loadField.
   wp_storeField.
