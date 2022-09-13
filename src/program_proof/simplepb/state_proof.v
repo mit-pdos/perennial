@@ -77,7 +77,7 @@ Proof.
   set op_sl:=(Slice.mk _ _ _).
   wp_apply (wp_ref_to).
   { done. }
-  replace (int.nat 0%Z) with (0) by word.
+  replace (int.nat 0%Z) with (0%nat) by word.
   simpl.
   iIntros (op_ptr) "Hop_ptr".
   wp_pures.
