@@ -414,6 +414,10 @@ Proof.
   }
 Qed.
 
+(**
+ * Specification for transactions with no additional resources flowed
+ * in and out.
+ *)
 Definition spec_body_xres
            (body : val) (txn : loc) tid r
            (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop)
@@ -464,4 +468,108 @@ Proof.
   iFrame.
 Qed.
   
+(**
+ * Specification for read-only transactions (i.e., [w = r]).
+ *)
+Definition spec_body_readonly
+           (body : val) (txn : loc) tid r
+           (P : dbmap -> Prop) (Rc Ra : dbmap -> iProp Σ)
+           γ τ : iProp Σ :=
+  ∀ Φ,
+  own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r -∗
+  (∀ ok : bool,
+     own_txn txn tid r γ τ ∗ txnmap_ptstos τ r ∗
+     (if ok then (Rc r ∧ Ra r) else Ra r) -∗ Φ #ok) -∗
+  WP body #txn {{ v, Φ v }}.
+
+Theorem wp_txn__DoTxn_readonly
+        txn (body : val) (P : dbmap -> Prop) (Rc Ra : dbmap -> iProp Σ) γ :
+  ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_readonly body txn tid r P Rc Ra γ τ) }}}
+    <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
+      Txn__DoTxn #txn body @ ↑mvccN
+    <<< dbmap_ptstos γ 1 r >>>
+    {{{ (ok : bool), RET #ok; own_txn_uninit txn γ ∗ if ok then Rc r else Ra r }}}.
+Proof.
+  iIntros (Φ) "!> [Htxn Hbody] HAU".
+  set Q : dbmap -> dbmap -> Prop := λ (r w : dbmap), w = r.
+  set Rc' : dbmap -> dbmap -> iProp Σ := (λ (r _ : dbmap), Rc r)%I.
+  wp_apply (wp_txn__DoTxn _ _ P Q Rc' Ra with "[$Htxn Hbody]").
+  { unfold Q. apply _. }
+  { clear Φ.
+    iIntros (tid r τ Φ) "(Htxn & %HP & Htxnps) HΦ".
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
+    iIntros (ok) "(Htxn & Htxnps & HR)".
+    iApply "HΦ".
+    iFrame.
+    destruct ok; last done.
+    iExists r.
+    by iFrame.
+  }
+  iMod "HAU".
+  iModIntro.
+  iDestruct "HAU" as (r) "[[%HP Hdbps] HAU]".
+  iExists r.
+  iFrame.
+  iSplit; first done.
+  iIntros (ok w) "Hpost".
+  iMod ("HAU" with "[Hpost]") as "HΦ".
+  { destruct ok; last done.
+    iDestruct "Hpost" as "[%HQ Hdbps]".
+    unfold Q in HQ. by subst w.
+  }
+  iIntros "!> [Htxn H]".
+  iApply "HΦ".
+  iFrame.
+Qed.
+
+(**
+ * Specification for read-only transactions (i.e., [w = r]) with
+ * no additional resources flowed in and out.
+ *)
+Definition spec_body_xres_readonly
+           (body : val) (txn : loc) tid r
+           (P : dbmap -> Prop) γ τ : iProp Σ :=
+  ∀ Φ,
+  own_txn txn tid r γ τ ∗ ⌜P r⌝ ∗ txnmap_ptstos τ r -∗
+  (∀ ok : bool,
+     own_txn txn tid r γ τ ∗ txnmap_ptstos τ r -∗ Φ #ok) -∗
+  WP body #txn {{ v, Φ v }}.
+
+Theorem wp_txn__DoTxn_xres_readonly
+        txn (body : val) (P : dbmap -> Prop) γ :
+  ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_xres_readonly body txn tid r P γ τ) }}}
+    <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
+      Txn__DoTxn #txn body @ ↑mvccN
+    <<< dbmap_ptstos γ 1 r >>>
+    {{{ (ok : bool), RET #ok; own_txn_uninit txn γ }}}.
+Proof.
+  iIntros (Φ) "!> [Htxn Hbody] HAU".
+  set Q : dbmap -> dbmap -> Prop := λ (r w : dbmap), w = r.
+  wp_apply (wp_txn__DoTxn_xres _ _ P Q with "[$Htxn Hbody]").
+  { unfold Q. apply _. }
+  { clear Φ.
+    iIntros (tid r τ Φ) "(Htxn & %HP & Htxnps) HΦ".
+    wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
+    iIntros (ok) "[Htxn Htxnps]".
+    iApply "HΦ".
+    iFrame.
+    destruct ok; last done.
+    iExists r.
+    by iFrame.
+  }
+  iMod "HAU".
+  iModIntro.
+  iDestruct "HAU" as (r) "[[%HP Hdbps] HAU]".
+  iExists r.
+  iFrame.
+  iSplit; first done.
+  iIntros (ok w) "Hpost".
+  iMod ("HAU" with "[Hpost]") as "HΦ".
+  { destruct ok; last done.
+    iDestruct "Hpost" as "[%HQ Hdbps]".
+    unfold Q in HQ. by subst w.
+  }
+  done.
+Qed.
+
 End program.

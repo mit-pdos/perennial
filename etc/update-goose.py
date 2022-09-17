@@ -263,6 +263,7 @@ def main():
             "./config",
             "./common",
             "./examples",
+            "./tpcc",
             # "./cfmutex",
         )
 
