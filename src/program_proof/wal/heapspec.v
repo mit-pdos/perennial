@@ -1209,7 +1209,7 @@ Proof.
     rewrite apply_upds_cons.
     destruct (decide (a0.(update.addr) = u.(update.addr))); subst; eauto.
     + rewrite apply_update_eq //.
-    + rewrite apply_update_ne //.
+    + rewrite -> apply_update_ne by auto.
       rewrite IHl.
       rewrite [apply_upds (a0::l) _]apply_upds_cons //.
 Qed.
