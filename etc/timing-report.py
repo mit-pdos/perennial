@@ -19,7 +19,7 @@ def read_db(fname):
     conn.close()
 
     qed_df = pd.DataFrame(qed_timings, columns=["fname", "ident", "time"])
-    qed_sum = qed_df.groupby("fname").sum()
+    qed_sum = qed_df.groupby("fname").sum(numeric_only=True)
     raw_file_df = pd.DataFrame(
         file_timings, columns=["fname", "is_vos", "time"]
     )
