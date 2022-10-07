@@ -38,7 +38,7 @@ Definition Server__readThread: val :=
         let: ("rpcid", "data") := marshal.ReadInt "data" in
         let: ("seqno", "data") := marshal.ReadInt "data" in
         let: "req" := "data" in
-        Server__rpcHandle "srv" "conn" "rpcid" "seqno" "req";;
+        Fork (Server__rpcHandle "srv" "conn" "rpcid" "seqno" "req");;
         Continue));;
     #().
 

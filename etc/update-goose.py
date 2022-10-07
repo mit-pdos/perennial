@@ -239,9 +239,10 @@ def main():
                 "simplepb/admin",
                 "simplepb/config",
                 "simplepb/pb",
-                "simplepb/state",
+                # "simplepb/state",
                 "simplepb/e",
-                "simplepb/client",
+                "simplepb/clerk",
+                "simplepb/simplelog",
                 ]
 
         for pkg in pkgs:

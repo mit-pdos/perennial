@@ -867,6 +867,7 @@ Existing Instance goose_groveGS.
 (* Axiomatized filesystem interface *)
 Axiom Read : goose_lang.val.
 Axiom Write : goose_lang.val.
+Axiom AtomicAppend : goose_lang.val.
 
 Axiom TimeNow: goose_lang.val.
 Axiom Sleep: goose_lang.val.

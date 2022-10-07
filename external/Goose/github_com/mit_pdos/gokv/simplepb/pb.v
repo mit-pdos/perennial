@@ -189,7 +189,7 @@ Definition MakeClerk: val :=
 Definition Clerk__ApplyAsBackup: val :=
   rec: "Clerk__ApplyAsBackup" "ck" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_APPLYASBACKUP (EncodeApplyAsBackupArgs "args") "reply" #100 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_APPLYASBACKUP (EncodeApplyAsBackupArgs "args") "reply" #1000 in
     (if: "err" ≠ #0
     then e.Timeout
     else e.DecodeError (![slice.T byteT] "reply")).
@@ -224,20 +224,14 @@ Definition Clerk__BecomePrimary: val :=
 Definition Clerk__Apply: val :=
   rec: "Clerk__Apply" "ck" "op" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_PRIMARYAPPLY "op" "reply" #200 in
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_PRIMARYAPPLY "op" "reply" #5000 in
     (if: ("err" = #0)
     then
       let: "r" := DecodeApplyReply (![slice.T byteT] "reply") in
       (struct.loadF ApplyReply "Err" "r", struct.loadF ApplyReply "Reply" "r")
-    else ("err", slice.nil)).
+    else (e.Timeout, slice.nil)).
 
 (* server.go *)
-
-Definition StateMachine := struct.decl [
-  "Apply" :: (Op -> slice.T byteT)%ht;
-  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
-  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
-].
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
@@ -268,12 +262,14 @@ Definition Server__Apply: val :=
         struct.storeF ApplyReply "Err" "reply" e.Stale;;
         "reply"
       else
-        struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") "op");;
+        let: ("ret", "waitForDurable") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") "op" in
+        struct.storeF ApplyReply "Reply" "reply" "ret";;
         let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
         struct.storeF Server "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextIndex" "s") #1);;
         let: "epoch" := struct.loadF Server "epoch" "s" in
         let: "clerks" := struct.loadF Server "clerks" "s" in
         lock.release (struct.loadF Server "mu" "s");;
+        "waitForDurable" #();;
         let: "wg" := waitgroup.New #() in
         let: "errs" := NewSlice uint64T (slice.len "clerks") in
         let: "args" := struct.new ApplyAsBackupArgs [
@@ -285,7 +281,14 @@ Definition Server__Apply: val :=
           (let: "clerk" := "clerk" in
           let: "i" := "i" in
           waitgroup.Add "wg" #1;;
-          Fork (SliceSet uint64T "errs" "i" (Clerk__ApplyAsBackup "clerk" "args");;
+          Fork (Skip;;
+                (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+                  let: "err" := Clerk__ApplyAsBackup "clerk" "args" in
+                  (if: ("err" = e.OutOfOrder) || ("err" = e.Timeout)
+                  then Continue
+                  else
+                    SliceSet uint64T "errs" "i" "err";;
+                    Break));;
                 waitgroup.Done "wg"));;
         waitgroup.Wait "wg";;
         let: "err" := ref_to uint64T e.None in
@@ -299,7 +302,6 @@ Definition Server__Apply: val :=
           "i" <-[uint64T] ![uint64T] "i" + #1;;
           Continue);;
         struct.storeF ApplyReply "Err" "reply" (![uint64T] "err");;
-        (* log.Println("Apply() returned ", err) *)
         "reply")).
 
 (* requires that we've already at least entered this epoch
@@ -328,9 +330,10 @@ Definition Server__ApplyAsBackup: val :=
           lock.release (struct.loadF Server "mu" "s");;
           e.OutOfOrder
         else
-          struct.loadF StateMachine "Apply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args");;
+          let: (<>, "waitFn") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args") in
           struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
           lock.release (struct.loadF Server "mu" "s");;
+          "waitFn" #();;
           e.None))).
 
 Definition Server__SetState: val :=
@@ -434,3 +437,17 @@ Definition Server__Serve: val :=
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     #().
+
+(* statemachine.go *)
+
+Definition StateMachine := struct.decl [
+  "StartApply" :: (Op -> (slice.T byteT * (unitT -> unitT)%ht))%ht;
+  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
+  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
+].
+
+Definition SyncStateMachine := struct.decl [
+  "Apply" :: (Op -> slice.T byteT)%ht;
+  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
+  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
+].
