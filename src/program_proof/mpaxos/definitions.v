@@ -13,11 +13,15 @@ Section definitions.
 Record MPRecord :=
   {
     mp_OpType : Type ;
+    mp_has_op_encoding : list u8 → mp_OpType → Prop ;
+    mp_next_state : list u8 → mp_OpType → list u8 ;
     mp_compute_reply : list u8 → mp_OpType → list u8 ;
   }.
 
 Context {mp_record:MPRecord}.
 Notation OpType := (mp_OpType mp_record).
+Notation has_op_encoding := (mp_has_op_encoding mp_record).
+Notation next_state := (mp_next_state mp_record).
 Notation compute_reply := (mp_compute_reply mp_record).
 
 Definition client_logR := mono_listR (leibnizO (list u8)).
@@ -146,7 +150,7 @@ Global Instance is_mpaxos_host_pers host γ γsrv: Persistent (is_mpaxos_host ho
 Proof.
 Admitted.
 
-Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
+Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[mpaxos.Clerk :: "cl"] #cl) ∗
   "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
@@ -160,15 +164,15 @@ Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
 Definition is_applyFn (applyFn:val) : iProp Σ :=
   ∀ op_sl state_sl (state:list u8) (op_bytes:list u8) op,
   {{{
-        (* ⌜has_op_encoding op_bytes op⌝ ∗ *)
+        ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         readonly (is_slice_small state_sl byteT 1 state)
   }}}
     applyFn (slice_val state_sl) (slice_val op_sl)
   {{{
-        newstate_sl (newstate:list u8) reply_sl,
+        newstate_sl reply_sl,
         RET (slice_val newstate_sl, slice_val reply_sl);
-        readonly (is_slice_small newstate_sl byteT 1 newstate) ∗
+        readonly (is_slice_small newstate_sl byteT 1 (next_state state op)) ∗
         readonly (is_slice_small reply_sl byteT 1 (compute_reply state op))
   }}}
 .
@@ -177,9 +181,10 @@ Definition is_applyFn (applyFn:val) : iProp Σ :=
    interfaces for users of the library.
    . *)
 Definition own_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ st (sealed:bool) (isLeader:bool) (sm:loc) (clerks_sl:Slice.t)
-    state_sl (state:list u8) applyFn clerks,
+  ∃ st (isLeader:bool) (clerks_sl:Slice.t)
+    state_sl applyFn clerks,
     let nextIndex := U64 (length st.(mp_log)) in
+    let state := (default [] (last (fst <$> st.(mp_log)))) in
   (* physical *)
   "Hepoch" ∷ s ↦[mpaxos.Server :: "epoch"] #(st.(mp_epoch)) ∗
   "HnextIndex" ∷ s ↦[mpaxos.Server :: "nextIndex"] #nextIndex ∗
@@ -192,7 +197,7 @@ Definition own_Server (s:loc) γ γsrv : iProp Σ :=
   (* clerks *)
   "%Hconf_clerk_len" ∷ ⌜length clerks = length (conf)⌝ ∗
   "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
-  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; conf, is_Clerk ck γ γsrv') ∗
+  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; conf, is_singleClerk ck γ γsrv') ∗
 
   (* applyFn callback spec *)
   "#HisApplyFn" ∷ is_applyFn applyFn ∗
@@ -201,7 +206,8 @@ Definition own_Server (s:loc) γ γsrv : iProp Σ :=
   "Hghost" ∷ own_replica_ghost conf γ γsrv st ∗
 
   (* leader-only *)
-  "HprimaryOnly" ∷ if isLeader then own_leader_ghost conf γ γsrv st else True
+  "HleaderOnly" ∷ (if isLeader then own_leader_ghost conf γ γsrv st else True) ∗
+  "%HaccEpochEq" ∷ ⌜if isLeader then st.(mp_acceptedEpoch) = st.(mp_epoch) else True⌝
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
@@ -210,26 +216,32 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#HmuInv" ∷ is_lock mpN mu (own_Server s γ γsrv)
   (* "#Hsys_inv" ∷ sys_inv γ *).
 
-Lemma wp_Server__apply_internal s γ γsrv (op:list u8) op_sl ghost_op reply_ptr init_reply:
+Lemma wp_Server__apply_internal s γ γsrv (op:OpType) (op_bytes:list u8) op_sl reply_ptr init_reply Q:
   {{{
+        ⌜has_op_encoding op_bytes op⌝ ∗
         is_Server s γ γsrv ∗
-        readonly (is_slice_small op_sl byteT 1 op) ∗
-        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑ghostN}=∗ True)) ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗
+            let oldstate := (default [] (last (fst <$> σ))) in
+            let newstate := (next_state oldstate op) in
+            (own_ghost γ (σ ++ [(newstate, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) ∗
         applyReply.own reply_ptr init_reply 1
   }}}
     mpaxos.Server__apply #s (slice_val op_sl) #reply_ptr
   {{{
-        reply, RET #reply_ptr; £ 1 ∗ £ 1 ∗ applyReply.own reply_ptr reply 1 ∗
+        reply, RET #(); £ 1 ∗ £ 1 ∗ applyReply.own reply_ptr reply 1 ∗
         if (decide (reply.(applyReply.err) = 0%Z)) then
           ∃ σ,
             let σphys := (λ x, x.1) <$> σ in
             (* ⌜reply.(applyReply.ret) = compute_reply σphys ghost_op.1⌝ ∗ *)
-            is_ghost_lb γ (σ ++ [ghost_op])
+            let oldstate := (default [] (last (fst <$> σ))) in
+            let newstate := (next_state oldstate op) in
+            is_ghost_lb γ (σ ++ [(newstate, Q)])
         else
           True
   }}}.
 Proof.
-  iIntros (Φ) "(#Hsrv & #Hop & Hupd & Hreply) HΦ".
+  iIntros (Φ) "(%Hop_enc & #Hsrv & #Hop & Hupd & Hreply) HΦ".
   wp_call.
   iNamed "Hsrv".
 
@@ -250,8 +262,9 @@ Proof.
   wp_apply ("HisApplyFn" with "[]").
   {
     iFrame "#".
+    done.
   }
-  iIntros (???) "[#Hnewstate_sl #Hreply_sl]".
+  iIntros (??) "[#Hnewstate_sl #Hreply_sl]".
   wp_pures.
   wp_storeField.
 
@@ -272,8 +285,201 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  wp_apply (release_spec with "[-HΦ]").
+  iMod (ghost_leader_propose with "HleaderOnly [] [Hupd]") as "(HleaderOnly & #Hprop_lb & #Hprop_facts)".
+  { admit. } (* TODO: get lc *)
   {
+    iMod "Hupd".
+    iModIntro.
+    iDestruct "Hupd" as (?) "[H1 Hupd]".
+    iExists _. iFrame "H1".
+    iIntros "%Heq Hghost".
+    rewrite Heq.
+    iMod ("Hupd" with "Hghost").
+    iModIntro.
+    done.
+  }
+
+  iMod (ghost_replica_accept_same_epoch with "Hghost Hprop_lb Hprop_facts") as "Hghost".
+  { done. }
+
+  wp_apply (release_spec with "[-HΦ Hreply_epoch Hreply_ret Hreply_ret_sl]").
+  {
+    iFrame "HmuInv Hlocked".
+    iNext.
+    iExists _, _, _, _, _, _.
+    instantiate (1:=mkMPaxosState _ _ _).
+    simpl.
+    rewrite HaccEpochEq.
+    iFrame "∗ HleaderOnly".
+    iFrame "#%".
+    iSplitL "HnextIndex".
+    {
+      iApply to_named.
+      iExactEq "HnextIndex".
+      f_equal.
+      f_equal.
+      rewrite app_length.
+      simpl.
+
+      (* TODO: pure overflow proof *)
+      admit.
+    }
+    iSplitL; last done.
+    iApply to_named.
+    replace (default [] (last (st.(mp_log) ++ [(next_state (default [] (last st.(mp_log).*1)) op, Q)]).*1)) with
+      (next_state (default [] (last st.(mp_log).*1)) op).
+    { done. }
+
+    (* pure list+next_state proof*)
+    rewrite fmap_app.
+    rewrite last_snoc.
+    simpl.
+    done.
+  }
+
+  wp_pures.
+  wp_apply (wp_ref_to).
+  { eauto. }
+  iIntros (numReplies_ptr) "HnumReplies".
+  wp_pures.
+
+  iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
+  iDestruct (is_slice_small_sz with "Hclerks_sl2") as "%Hclerks_sz".
+  iClear "Hclerks_sl2".
+  clear q.
+
+  wp_apply (wp_slice_len).
+  wp_apply (wp_NewSlice).
+  rewrite -Hclerks_sz.
+  iIntros (replies_sl) "Hreplies_sl".
+  simpl.
+
+  wp_pures.
+  set (replyInv:=(
+                  ∃ (numReplies:u64) (reply_ptrs:list loc),
+                    "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
+                    "Hreplies_sl" ∷ is_slice replies_sl ptrT 1 reply_ptrs ∗
+                    "Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                    ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply 1) ∗
+                                                   if decide (reply.(applyAsFollowerReply.err) = (U64 0)) then
+                                                     True
+                                                   else
+                                                     True
+                                         ))
+                )%I).
+  wp_apply (newlock_spec _ _ replyInv with "[HnumReplies Hreplies_sl]").
+  {
+    iNext.
+    iExists _, _.
+    iFrame "∗".
+    iDestruct (big_sepL2_length with "Hclerks_rpc") as "%Hlen".
+    iApply big_sepL2_forall.
+    rewrite Hlen.
+    iSplit.
+    { rewrite replicate_length. done. }
+    iIntros.
+    iLeft.
+    iPureIntro.
+    rewrite lookup_replicate in H.
+    naive_solver.
+  }
+  iIntros (replyMu) "#HreplyMuInv".
+  wp_pures.
+  wp_apply (wp_newCond with "HreplyMuInv").
+  iIntros (numReplies_cond) "#HnumReplies_cond".
+  wp_pures.
+  wp_apply (wp_slice_len).
+  wp_pures.
+
+  iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
+  wp_apply (wp_forSlice (λ _, True%I) (V:=loc) with "[] [$Hclerks_sl2]").
+  { (* loop iteration *)
+    clear Φ.
+    iIntros (?? Φ) "!# (_ & %Hi_le & %Hi_lookup) HΦ".
+    wp_call.
+    wp_apply (wp_fork with "[]").
+    { (* make applyAsFollower RPC and put reply in the replies list *)
+      iNext.
+      wp_apply (wp_allocStruct).
+      { repeat econstructor. }
+      clear reply_ptr.
+      iIntros (reply_ptr) "Hreply".
+      wp_pures.
+      (* TODO: establish is_Clerk *)
+      admit.
+    }
+    iApply "HΦ".
+    done.
+  }
+  iIntros "_".
+  wp_pures.
+
+  wp_apply (acquire_spec with "[$HreplyMuInv]").
+  iIntros "[Hlocked Hown]".
+  wp_pures.
+
+  wp_forBreak_cond.
+  wp_pures.
+  iNamed "Hown".
+  wp_load.
+  wp_pures.
+  wp_if_destruct.
+  { (* not enough replies, wait for cond *)
+    wp_pures.
+    wp_apply (wp_condWait with "[-HΦ Hreply_epoch Hreply_ret Hreply_ret_sl]").
+    {
+      iFrame "#∗".
+      iExists _, _.
+      iFrame "∗".
+    }
+    iIntros "[Hlocked Hown]".
+    wp_pures.
+    iLeft.
+    iModIntro.
+    iSplitR; first done.
+    iFrame.
+  }
+  (* got enough replies to stop waiting; now we need to count how many successes *)
+  iRight.
+  iModIntro.
+  iSplitR; first done.
+
+  wp_pures.
+  wp_apply (wp_ref_to).
+  { auto. }
+  iIntros (numSuccesses_ptr) "HnumSuccesses".
+  wp_pures.
+
+  iDestruct (is_slice_to_small with "Hreplies_sl") as "Hreplies_sl".
+  wp_apply (wp_forSlice (V:=loc) with "[] [$Hreplies_sl]").
+  {
+    clear Φ.
+    iIntros (?? Φ) "!# (Hi & %Hi_lt & %Hi_lookup) HΦ".
+    wp_pures.
+    wp_if_destruct.
+    {
+      (* TODO: use Hreplies *)
+      admit.
+    }
+    {
+      admit.
+    }
+  }
+  {
+    admit.
+  }
+
+  iIntros "[Hi Hreplies_sl]".
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_if_destruct.
+  { (* enough acceptances to commit *)
+    admit.
+  }
+  { (* error, too few successful applyAsFollower() RPCs *)
+    wp_storeField.
+    iApply "HΦ".
     admit.
   }
 Admitted.

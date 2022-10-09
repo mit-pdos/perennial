@@ -125,4 +125,27 @@ Admitted.
 Definition own_leader_ghost γsys γsrv (st:MPaxosState): iProp Σ.
 Admitted.
 
+Lemma ghost_leader_propose γsys γsrv st entry :
+  own_leader_ghost γsys γsrv st -∗
+  £ 1 -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗
+      (⌜someσ = st.(mp_log)⌝ -∗ own_ghost γsys (someσ ++ [entry]) ={∅,⊤∖↑ghostN}=∗ True))
+  ={⊤}=∗
+  own_leader_ghost γsys γsrv (mkMPaxosState st.(mp_epoch) st.(mp_acceptedEpoch) (st.(mp_log) ++ [entry]))∗
+  is_proposal_lb γsys st.(mp_epoch) (st.(mp_log) ++ [entry]) ∗
+  is_proposal_facts γsys st.(mp_epoch) (st.(mp_log) ++ [entry])
+.
+Proof.
+Admitted.
+
+Lemma ghost_replica_accept_same_epoch γsys γsrv st epoch' log' :
+  int.nat st.(mp_epoch) = int.nat epoch' →
+  own_replica_ghost γsys γsrv st -∗
+  is_proposal_lb γsys epoch' log' -∗
+  is_proposal_facts γsys epoch' log'
+  ==∗
+  own_replica_ghost γsys γsrv (mkMPaxosState epoch' epoch' log').
+Proof.
+Admitted.
+
 End mpaxos_protocol.
