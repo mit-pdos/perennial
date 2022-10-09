@@ -18,17 +18,17 @@ Definition has_encoding (encoded:list u8) (args:C) : Prop :=
 
 Context `{!heapGS Σ}.
 
-Definition own args_ptr args q : iProp Σ :=
+Definition own args_ptr args : iProp Σ :=
   ∃ state_sl,
-  "Hargs_epoch" ∷ args_ptr ↦[mpaxos.applyAsFollowerArgs :: "epoch"]{q} #args.(epoch) ∗
-  "Hargs_index" ∷ args_ptr ↦[mpaxos.applyAsFollowerArgs :: "nextIndex"]{q} #args.(nextIndex) ∗
-  "Hargs_state" ∷ args_ptr ↦[mpaxos.applyAsFollowerArgs :: "state"]{q} (slice_val state_sl) ∗
-  "Hargs_state_sl" ∷ is_slice_small state_sl byteT q args.(state)
+  "Hargs_epoch" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "epoch"] #args.(epoch)) ∗
+  "Hargs_index" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "nextIndex"] #args.(nextIndex)) ∗
+  "Hargs_state" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "state"] (slice_val state_sl)) ∗
+  "Hargs_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
   .
 
-Lemma wp_Encode (args_ptr:loc) (args:C) q :
+Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
-        own args_ptr args q
+        own args_ptr args
   }}}
     mpaxos.encodeApplyAsFollowerArgs #args_ptr
   {{{
@@ -45,7 +45,7 @@ Lemma wp_Decode enc enc_sl (args:C) :
   }}}
     mpaxos.decodeApplyAsFollowerArgs (slice_val enc_sl)
   {{{
-        args_ptr, RET #args_ptr; own args_ptr args 1
+        args_ptr, RET #args_ptr; own args_ptr args
   }}}.
 Admitted.
 
