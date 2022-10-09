@@ -335,6 +335,14 @@ Proof.
   iIntros (r) "Hsl".
   wp_pures.
 
+  wp_apply (wp_fork with "[-]"); last first.
+  {
+    wp_pures.
+    iLeft.
+    done.
+  }
+  iNext.
+
   wp_lam. wp_pures.
   wp_apply (wp_ref_of_zero); first done.
   iIntros (sl') "Hsl'".

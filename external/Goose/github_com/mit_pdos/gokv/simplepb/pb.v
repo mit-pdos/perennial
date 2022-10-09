@@ -164,6 +164,20 @@ Definition DecodeApplyReply: val :=
     struct.storeF ApplyReply "Reply" "reply" (![slice.T byteT] "enc");;
     "reply".
 
+(* 1_statemachine.go *)
+
+Definition StateMachine := struct.decl [
+  "StartApply" :: (Op -> (slice.T byteT * (unitT -> unitT)%ht))%ht;
+  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
+  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
+].
+
+Definition SyncStateMachine := struct.decl [
+  "Apply" :: (Op -> slice.T byteT)%ht;
+  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
+  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
+].
+
 (* clerk.go *)
 
 Definition Clerk := struct.decl [
@@ -437,17 +451,3 @@ Definition Server__Serve: val :=
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     #().
-
-(* statemachine.go *)
-
-Definition StateMachine := struct.decl [
-  "StartApply" :: (Op -> (slice.T byteT * (unitT -> unitT)%ht))%ht;
-  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
-  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
-].
-
-Definition SyncStateMachine := struct.decl [
-  "Apply" :: (Op -> slice.T byteT)%ht;
-  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
-  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
-].

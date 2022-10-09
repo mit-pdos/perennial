@@ -243,6 +243,8 @@ def main():
                 "simplepb/e",
                 "simplepb/clerk",
                 "simplepb/simplelog",
+                "mpaxos/",
+                "mpaxos/example",
                 ]
 
         for pkg in pkgs:
