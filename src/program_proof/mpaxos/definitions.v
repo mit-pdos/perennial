@@ -45,8 +45,12 @@ Definition own_state γ ς := own γ (to_dfrac_agree (DfracOwn (1/2)) (ς : (lei
 
 Context (conf:list mp_server_names).
 
+Definition get_state (σ:list (list u8 * (list u8 → iProp Σ))) := default [] (last (fst <$> σ)).
+
 Definition applyAsFollower_core_spec γ γsrv args σ Q (Φ : applyAsFollowerReply.C -> iProp Σ) : iProp Σ :=
-  ("%Hσ_index" ∷ ⌜length σ = (int.nat args.(applyAsFollowerArgs.nextIndex) + 1)%nat⌝ ∗
+  (
+   "%Hstate" ∷ ⌜args.(applyAsFollowerArgs.state) = get_state σ⌝ ∗
+   "%Hσ_index" ∷ ⌜length σ = (int.nat args.(applyAsFollowerArgs.nextIndex) + 1)%nat⌝ ∗
    "%Hghost_op_σ" ∷ ⌜last σ = Some (args.(applyAsFollowerArgs.state), Q)⌝ ∗
    "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1)⌝ ∗
    "#Hprop_lb" ∷ is_proposal_lb γ args.(applyAsFollowerArgs.epoch) σ ∗
@@ -72,8 +76,6 @@ Defined.
 (* TODO: copied from pb_definitions.v *)
 Definition appN := mpN .@ "app".
 Definition escrowN := mpN .@ "escrow".
-
-Definition get_state (σ:list (list u8 * (list u8 → iProp Σ))) := default [] (last (fst <$> σ)).
 
 Definition is_inv γlog γsys :=
   inv appN (∃ log,

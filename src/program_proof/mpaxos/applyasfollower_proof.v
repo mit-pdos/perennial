@@ -67,8 +67,10 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_pures.
+  iNamed "HΨ".
   wp_if_destruct.
   { (* case: s.epoch ≤ args.epoch *)
+    wp_storeField.
     wp_loadField.
     wp_loadField.
     wp_pures.
@@ -84,14 +86,79 @@ Proof.
         wp_storeField.
         wp_storeField.
         wp_loadField.
-        admit. (* TODO: use protocol lemma *)
+
+        (* use protocol lemma *)
+        iMod (ghost_replica_accept_same_epoch with "Hghost Hprop_lb Hprop_facts") as "[%Heq Hghost]".
+        { word. }
+        { by rewrite Heqb0. }
+        { rewrite Hσ_index. word. }
+        iDestruct (ghost_replica_get_lb with "Hghost") as "#Hlb".
+        simpl.
+
+        wp_apply (release_spec with "[-HΦ HΨ Hreply]").
+        {
+          iFrame "HmuInv Hlocked".
+          iNext.
+          iExists _,_,_,_,_,_.
+          instantiate (1:=mkMPaxosState _ _ _).
+          simpl.
+          rewrite Heq.
+          rewrite Heqb0.
+          rewrite Hstate.
+          iFrame "∗#%".
+          iSplitL "HnextIndex".
+          {
+            iApply to_named.
+            iExactEq "HnextIndex".
+            f_equal.
+            f_equal.
+            rewrite Hσ_index.
+            admit. (* TODO: nextIndex overflow *)
+          }
+          iPureIntro.
+          split.
+          { word. }
+          done.
+        }
+        wp_pures.
+        iModIntro.
+        iApply ("HΦ" with "[HΨ]").
+        {
+          iLeft in "HΨ".
+          iApply "HΨ".
+          iFrame "#".
+        }
+        iFrame.
       }
       { (* case: args.nextIndex < s.nextIndex len(s.log) *)
         assert (int.Z (length st.(mp_log)) > int.Z args.(applyAsFollowerArgs.nextIndex))%Z as Hineq.
         { word. }
         wp_storeField.
         wp_loadField.
-        admit. (* TODO: use protocol lemma *)
+
+        (* use protocol lemma *)
+        iDestruct (ghost_replica_accept_same_epoch_old with "Hghost Hprop_lb") as "#Hacc_lb".
+        { word. }
+        { rewrite Heqb0. done. }
+        { word. }
+
+        wp_apply (release_spec with "[-HΦ HΨ Hreply]").
+        {
+          iFrame "HmuInv Hlocked".
+          iNext.
+          iExists _,_,_,_,_,_.
+          iFrame "HisLeader∗#%".
+          done.
+        }
+        wp_pures.
+        iModIntro.
+        iApply ("HΦ" with "[HΨ]").
+        {
+          iLeft in "HΨ".
+          iApply "HΨ".
+          iFrame "#".
+        }
+        iFrame.
       }
     }
     { (* case acceptedEpoch ≠ args.epoch, which implies
@@ -103,9 +170,60 @@ Proof.
       wp_storeField.
       wp_loadField.
       wp_storeField.
+      wp_loadField.
+      wp_storeField.
       wp_storeField.
       wp_loadField.
-      admit. (* TODO: use protocol lemma *)
+
+      (* use protocol lemma *)
+      iMod (ghost_replica_accept_new_epoch with "Hghost Hprop_lb Hprop_facts") as "Hghost".
+      { word. }
+      {
+        destruct (decide (int.nat st.(mp_acceptedEpoch) = int.nat args.(applyAsFollowerArgs.epoch))).
+        {
+          exfalso.
+          replace (st.(mp_acceptedEpoch)) with (args.(applyAsFollowerArgs.epoch)) in Heqb0 by word.
+          done.
+        }
+        {
+          done.
+        }
+      }
+      iDestruct (ghost_replica_get_lb with "Hghost") as "#Hlb".
+      simpl.
+
+      wp_apply (release_spec with "[-HΦ HΨ Hreply]").
+      {
+        iFrame "HmuInv Hlocked".
+        iNext.
+        iExists _,_,_,_,_,_.
+        instantiate (1:=mkMPaxosState _ _ _).
+        rewrite Hstate.
+        simpl.
+        iFrame "HisLeader∗#%".
+        iSplitL "HnextIndex".
+        {
+          iApply to_named.
+          iExactEq "HnextIndex".
+          f_equal.
+          f_equal.
+          rewrite Hσ_index.
+          admit. (* TODO: nextIndex overflow *)
+        }
+        iPureIntro.
+        split.
+        { word. }
+        done.
+      }
+      wp_pures.
+      iModIntro.
+      iApply ("HΦ" with "[HΨ]").
+      {
+        iLeft in "HΨ".
+        iApply "HΨ".
+        iFrame "#".
+      }
+      iFrame.
     }
   }
   { (* case: s.epoch > args.epoch *)

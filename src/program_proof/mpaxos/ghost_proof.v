@@ -138,8 +138,38 @@ Lemma ghost_leader_propose γsys γsrv st entry :
 Proof.
 Admitted.
 
+Lemma ghost_replica_get_lb γsys γsrv st :
+  own_replica_ghost γsys γsrv st -∗
+  is_accepted_lb γsrv st.(mp_acceptedEpoch) st.(mp_log).
+Proof.
+Admitted.
+
 Lemma ghost_replica_accept_same_epoch γsys γsrv st epoch' log' :
-  int.nat st.(mp_epoch) = int.nat epoch' →
+  int.nat st.(mp_epoch) ≤ int.nat epoch' →
+  int.nat st.(mp_acceptedEpoch) = int.nat epoch' →
+  length st.(mp_log) ≤ length log' →
+  own_replica_ghost γsys γsrv st -∗
+  is_proposal_lb γsys epoch' log' -∗
+  is_proposal_facts γsys epoch' log'
+  ==∗
+  ⌜st.(mp_epoch) = epoch'⌝ ∗
+  own_replica_ghost γsys γsrv (mkMPaxosState epoch' epoch' log').
+Proof.
+Admitted.
+
+Lemma ghost_replica_accept_same_epoch_old γsys γsrv st epoch' log' :
+  int.nat st.(mp_epoch) ≤ int.nat epoch' →
+  int.nat st.(mp_acceptedEpoch) = int.nat epoch' →
+  length log' ≤ length st.(mp_log) →
+  own_replica_ghost γsys γsrv st -∗
+  is_proposal_lb γsys epoch' log' -∗
+  is_accepted_lb γsrv epoch' log'.
+Proof.
+Admitted.
+
+Lemma ghost_replica_accept_new_epoch γsys γsrv st epoch' log' :
+  int.nat st.(mp_epoch) ≤ int.nat epoch' →
+  int.nat st.(mp_acceptedEpoch) ≠ int.nat epoch' →
   own_replica_ghost γsys γsrv st -∗
   is_proposal_lb γsys epoch' log' -∗
   is_proposal_facts γsys epoch' log'

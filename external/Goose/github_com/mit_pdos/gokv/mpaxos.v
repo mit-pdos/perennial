@@ -312,6 +312,7 @@ Definition Server__applyAsFollower: val :=
     lock.acquire (struct.loadF Server "mu" "s");;
     (if: struct.loadF Server "epoch" "s" ≤ struct.loadF applyAsFollowerArgs "epoch" "args"
     then
+      struct.storeF Server "isLeader" "s" #false;;
       (if: (struct.loadF Server "acceptedEpoch" "s" = struct.loadF applyAsFollowerArgs "epoch" "args")
       then
         (if: struct.loadF Server "nextIndex" "s" ≤ struct.loadF applyAsFollowerArgs "nextIndex" "args"
@@ -321,6 +322,7 @@ Definition Server__applyAsFollower: val :=
           struct.storeF applyAsFollowerReply "err" "reply" ENone
         else struct.storeF applyAsFollowerReply "err" "reply" ENone)
       else
+        struct.storeF Server "acceptedEpoch" "s" (struct.loadF applyAsFollowerArgs "epoch" "args");;
         struct.storeF Server "epoch" "s" (struct.loadF applyAsFollowerArgs "epoch" "args");;
         struct.storeF Server "state" "s" (struct.loadF applyAsFollowerArgs "state" "args");;
         struct.storeF Server "nextIndex" "s" (struct.loadF applyAsFollowerArgs "nextIndex" "args");;

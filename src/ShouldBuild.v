@@ -57,6 +57,9 @@ From Perennial.program_proof.ctrexample Require
      (* state_proof *)
      (* pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof pb_apply_proof. *)
 
+From Perennial.program_proof.mpaxos Require
+     apply_proof.
+
 (* MVCC *)
 From Perennial.program_proof.mvcc Require mvcc_proof.
 
