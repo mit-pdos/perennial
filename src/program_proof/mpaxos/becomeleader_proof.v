@@ -78,16 +78,15 @@ Proof.
   wp_pures.
   rewrite -Hclerks_sz.
 
-  set (newepoch:=word.add st.(mp_epoch) 1).
+  set (newepoch:=word.add st.(mp_epoch) 1%Z).
   set (replyInv:=(
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ is_slice_small replies_sl ptrT 1 reply_ptrs ∗
-                    "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
-                    ⌜reply_ptr = null⌝ ∨ (∃ reply σ, enterNewEpochReply.own reply_ptr reply 1 ∗
+                    "Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                    ⌜reply_ptr = null⌝ ∨ (∃ reply, enterNewEpochReply.own reply_ptr reply 1 ∗
                                               □(if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
-                                                enterNewEpoch_post γsrv reply.(enterNewEpochReply.acceptedEpoch)
-                                                                                newepoch σ
+                                                enterNewEpoch_post γsrv' reply newepoch
                                               else
                                                 True)
                                   ))
@@ -122,9 +121,157 @@ Proof.
   iIntros (muReply) "#HmuReplyInv".
   wp_pures.
   wp_apply (wp_newCond with "HmuReplyInv").
-  iIntros (numReplies_cond) "HnumReplies_cond".
+  iIntros (numReplies_cond) "#HnumReplies_cond".
   wp_pures.
   wp_apply (wp_slice_len).
+  wp_pures.
+
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  iMod (readonly_alloc_1 with "epoch") as "#Hargs_epoch".
+
+  iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
+  wp_apply (wp_forSlice (λ _, True%I) (V:=loc) with "[] [$Hclerks_sl2]").
+  { (* loop iteration *)
+    clear Φ.
+    iIntros (?? Φ) "!# (_ & %Hi_le & %Hi_lookup) HΦ".
+    wp_call.
+    wp_apply (wp_fork with "[]").
+    { (* make applyAsFollower RPC and put reply in the replies list *)
+      iNext.
+      wp_apply (wp_allocStruct).
+      { Transparent slice.T. repeat econstructor. Opaque slice.T. }
+      iIntros (reply_ptr) "Hreply".
+      wp_pures.
+
+      (* establish is_singleClerk *)
+      iDestruct (big_sepL2_lookup_1_some with "Hclerks_rpc") as (?) "%Hi_conf_lookup".
+      { done. }
+      iAssert (_) with "Hclerks_rpc" as "Hclerks_rpc2".
+      iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc2") as "[#His_ck _]".
+      { done. }
+      { done. }
+      iMod (readonly_load with "Hargs_epoch") as (?) "Hargs_epoch2".
+      wp_apply (wp_singleClerk__enterNewEpoch with "[$His_ck Hreply Hargs_epoch2]").
+      {
+        iFrame.
+        instantiate (3:=enterNewEpochArgs.mkC newepoch).
+        iFrame.
+        iDestruct (struct_fields_split with "Hreply") as "HH".
+        iNamed "HH".
+        instantiate (1:=enterNewEpochReply.mkC _ _ _ _).
+        iExists _.
+        iFrame.
+        simpl.
+        instantiate (2:=Slice.nil).
+        iFrame.
+        instantiate (1:=[]).
+        iApply (is_slice_small_nil).
+        done.
+      }
+      iIntros (reply) "Hreply".
+      wp_pures.
+
+      wp_apply (acquire_spec with "HmuReplyInv").
+      iIntros "[Hlocked Hown]".
+      iNamed "Hown".
+      wp_pures.
+      wp_load.
+      wp_store.
+      iDestruct (big_sepL2_lookup_2_some with "Hreplies") as (?) "%Hi_replies_lookup".
+      { done. }
+      wp_apply (wp_SliceSet with "[$Hreplies_sl]").
+      {
+        done.
+      }
+      iIntros "Hreplies_sl".
+      wp_pures.
+      wp_load.
+      iDestruct "Hreply" as "[Hreply #Hpost]".
+      wp_apply (wp_If_optional _ _ (True%I)).
+      {
+        iIntros (?) "_ HΦ'".
+        wp_apply (wp_condSignal with "HnumReplies_cond").
+        wp_pures.
+        by iApply "HΦ'".
+      }
+      wp_apply (release_spec with "[-]").
+      {
+        iFrame "# Hlocked".
+        iNext.
+        iExists _, _.
+        iFrame "∗".
+        iApply to_named.
+        iDestruct (big_sepL2_insert_acc with "Hreplies")  as "[_ Hreplies]".
+        { done. }
+        { done. }
+        iDestruct ("Hreplies" $! reply_ptr x2 with "[Hreply]") as "Hreplies".
+        {
+          iRight.
+          iExists _.
+          iFrame.
+          iModIntro.
+          destruct (decide (_)).
+          {
+            simpl.
+            iFrame "Hpost".
+          }
+          done.
+        }
+
+        replace (<[int.nat i:=x2]> conf) with (conf) ; last first.
+        {
+          symmetry.
+          by apply list_insert_id.
+        }
+        iFrame "Hreplies".
+      }
+      done.
+    }
+    iApply "HΦ".
+    done.
+  }
+  (* done with loop *)
+  iIntros "_".
+  wp_pures.
+
+  wp_apply (acquire_spec with "HmuReplyInv").
+  iIntros "[Hlocked Hown]".
+  wp_pures.
+
+  wp_forBreak_cond.
+  wp_pures.
+  iNamed "Hown".
+  wp_load.
+  wp_if_destruct.
+  { (* continue waiting for there to be enough replies *)
+    wp_pures.
+    wp_apply (wp_condWait with "[$HnumReplies_cond $HmuReplyInv $Hlocked Hreplies_sl Hreplies HnumReplies]").
+    {
+      iExists _, _.
+      iFrame "∗#".
+    }
+    iIntros "[Hlocked Hown]".
+    wp_pures.
+    iLeft.
+    iFrame.
+    iModIntro.
+    done.
+  }
+  (* done waiting, have enough replies now *)
+  iModIntro.
+  iRight.
+  iSplitR; first done.
+
+  wp_pures.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (latestReply_ptr) "HlatestReply".
+  wp_pures.
+
+  wp_apply (wp_ref_to).
+  { eauto. }
+  iIntros (numSuccesses_ptr) "HnumSuccesses".
   wp_pures.
 Admitted.
 

@@ -207,10 +207,10 @@ Context `{!heapGS Σ}.
 
 Definition own args_ptr args q : iProp Σ :=
   ∃ state_sl,
-  "Hargs_epoch" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "err"]{q} #args.(err) ∗
-  "Hargs_epoch" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "err"]{q} #args.(nextIndex) ∗
-  "Hargs_ret" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "state"]{q} (slice_val state_sl) ∗
-  "Hargs_ret_sl" ∷ is_slice_small state_sl byteT q args.(state)
+  "Hreply_err" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "err"]{q} #args.(err) ∗
+  "Hreply_nextIndex" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "nextIndex"]{q} #args.(nextIndex) ∗
+  "Hreply_ret" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "state"]{q} (slice_val state_sl) ∗
+  "Hreply_ret_sl" ∷ is_slice_small state_sl byteT q args.(state)
 .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) q :
