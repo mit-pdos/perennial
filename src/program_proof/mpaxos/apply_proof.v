@@ -245,8 +245,10 @@ Proof.
     done.
   }
 
-  iMod (ghost_replica_accept_same_epoch with "Hghost Hprop_lb Hprop_facts") as "Hghost".
-  { done. }
+  iMod (ghost_replica_accept_same_epoch with "Hghost Hprop_lb Hprop_facts") as "[_ Hghost]".
+  { word. }
+  { rewrite HaccEpochEq. done. }
+  { rewrite app_length. word. }
 
   wp_apply (release_spec with "[-HΦ Hreply_epoch Hreply_ret Hret_sl Hargs]").
   {
@@ -272,6 +274,16 @@ Proof.
       replace (int.Z (U64 1)) with (1)%Z in Hno_overflow by word.
       admit.
     }
+    rewrite -HaccEpochEq.
+    replace (default [] (last (st.(mp_log) ++ [(next_state (default [] (last st.(mp_log).*1)) op, Q)]).*1)) with
+      (next_state (default [] (last st.(mp_log).*1)) op); last first.
+    {
+      (* pure list+next_state proof*)
+      rewrite fmap_app.
+      rewrite last_snoc.
+      simpl.
+      done.
+    }
     iSplitL; last first.
     {
       iSplitL.
@@ -283,15 +295,6 @@ Proof.
       }
       done.
     }
-    iApply to_named.
-    replace (default [] (last (st.(mp_log) ++ [(next_state (default [] (last st.(mp_log).*1)) op, Q)]).*1)) with
-      (next_state (default [] (last st.(mp_log).*1)) op).
-    { done. }
-
-    (* pure list+next_state proof*)
-    rewrite fmap_app.
-    rewrite last_snoc.
-    simpl.
     done.
   }
 
