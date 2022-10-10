@@ -365,26 +365,16 @@ Definition Server__becomeLeader: val :=
       lock.release (struct.loadF Server "mu" "s");;
       #()
     else
-      struct.storeF Server "epoch" "s" (struct.loadF Server "epoch" "s" + #1);;
-      struct.storeF Server "isLeader" "s" #false;;
       let: "clerks" := struct.loadF Server "clerks" "s" in
       let: "args" := struct.new enterNewEpochArgs [
-        "epoch" ::= struct.loadF Server "epoch" "s"
+        "epoch" ::= struct.loadF Server "epoch" "s" + #1
       ] in
       lock.release (struct.loadF Server "mu" "s");;
       let: "numReplies" := ref_to uint64T #0 in
       let: "replies" := NewSlice ptrT (slice.len "clerks") in
-      let: "i" := ref_to uint64T #0 in
-      let: "n" := slice.len "replies" in
-      Skip;;
-      (for: (λ: <>, ![uint64T] "i" < "n"); (λ: <>, Skip) := λ: <>,
-        SliceSet ptrT "replies" (![uint64T] "i") (struct.alloc enterNewEpochReply (zero_val (struct.t enterNewEpochReply)));;
-        struct.storeF enterNewEpochReply "err" (SliceGet ptrT "replies" (![uint64T] "i")) ETimeout;;
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
-        Continue);;
       let: "mu" := lock.new #() in
       let: "numReplies_cond" := lock.newCond "mu" in
-      let: "q" := (slice.len "clerks" + #1) `quot` #2 in
+      let: "n" := slice.len "clerks" in
       ForSlice ptrT "i" "ck" "clerks"
         (let: "ck" := "ck" in
         let: "i" := "i" in
@@ -393,34 +383,38 @@ Definition Server__becomeLeader: val :=
               lock.acquire "mu";;
               "numReplies" <-[uint64T] ![uint64T] "numReplies" + #1;;
               SliceSet ptrT "replies" "i" "reply";;
-              (if: ![uint64T] "numReplies" ≥ "q"
+              (if: #2 * ![uint64T] "numReplies" > "n"
               then lock.condSignal "numReplies_cond"
               else #());;
               lock.release "mu"));;
       lock.acquire "mu";;
       Skip;;
-      (for: (λ: <>, ![uint64T] "numReplies" < "q"); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, #2 * ![uint64T] "numReplies" ≤ "n"); (λ: <>, Skip) := λ: <>,
         lock.condWait "numReplies_cond";;
         Continue);;
       let: "latestReply" := ref (zero_val ptrT) in
       let: "numSuccesses" := ref_to uint64T #0 in
       ForSlice ptrT <> "reply" "replies"
-        (if: (struct.loadF enterNewEpochReply "err" "reply" = ENone)
+        (if: "reply" ≠ #null
         then
-          "numSuccesses" <-[uint64T] ![uint64T] "numSuccesses" + #1;;
-          (if: struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") < struct.loadF enterNewEpochReply "acceptedEpoch" "reply"
-          then "latestReply" <-[ptrT] "reply"
-          else
-            (if: (struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") = struct.loadF enterNewEpochReply "acceptedEpoch" "reply") && (struct.loadF enterNewEpochReply "nextIndex" "reply" > struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply"))
+          (if: (struct.loadF enterNewEpochReply "err" "reply" = ENone)
+          then
+            "numSuccesses" <-[uint64T] ![uint64T] "numSuccesses" + #1;;
+            (if: struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") < struct.loadF enterNewEpochReply "acceptedEpoch" "reply"
             then "latestReply" <-[ptrT] "reply"
-            else #()))
+            else
+              (if: (struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") = struct.loadF enterNewEpochReply "acceptedEpoch" "reply") && (struct.loadF enterNewEpochReply "nextIndex" "reply" > struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply"))
+              then "latestReply" <-[ptrT] "reply"
+              else #()))
+          else #())
         else #());;
-      (if: ![uint64T] "numSuccesses" ≥ "q"
+      (if: #2 * ![uint64T] "numSuccesses" > "n"
       then
         (* log.Printf("succeeded becomeleader in epoch %d\n", args.epoch) *)
         lock.acquire (struct.loadF Server "mu" "s");;
-        (if: (struct.loadF Server "epoch" "s" = struct.loadF enterNewEpochArgs "epoch" "args")
+        (if: struct.loadF Server "epoch" "s" < struct.loadF enterNewEpochArgs "epoch" "args"
         then
+          struct.storeF Server "epoch" "s" (struct.loadF enterNewEpochArgs "epoch" "args");;
           struct.storeF Server "isLeader" "s" #true;;
           struct.storeF Server "acceptedEpoch" "s" (struct.loadF Server "epoch" "s");;
           struct.storeF Server "state" "s" (struct.loadF enterNewEpochReply "state" (![ptrT] "latestReply"))

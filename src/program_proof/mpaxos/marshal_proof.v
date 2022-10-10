@@ -143,3 +143,98 @@ Admitted.
 
 End applyReply.
 End applyReply.
+
+Module enterNewEpochArgs.
+Section enterNewEpochArgs.
+Context `{!heapGS Σ}.
+
+Record C :=
+mkC {
+  epoch: u64 ;
+}.
+
+Definition has_encoding (encoded:list u8) (args:C) : Prop :=
+  encoded = (u64_le args.(epoch)).
+
+Context `{!heapGS Σ}.
+
+Definition own args_ptr args q : iProp Σ :=
+  "Hargs_epoch" ∷ args_ptr ↦[mpaxos.enterNewEpochArgs :: "epoch"]{q} #args.(epoch)
+  .
+
+Lemma wp_Encode (args_ptr:loc) (args:C) q :
+  {{{
+        own args_ptr args q
+  }}}
+    mpaxos.encodeEnterNewEpochArgs #args_ptr
+  {{{
+        enc enc_sl, RET (slice_val enc_sl);
+        ⌜has_encoding enc args⌝ ∗
+        is_slice enc_sl byteT 1 enc
+  }}}.
+Admitted.
+
+Lemma wp_Decode enc enc_sl (args:C) :
+  {{{
+        ⌜has_encoding enc args⌝ ∗
+        is_slice_small enc_sl byteT 1 enc
+  }}}
+    mpaxos.decodeEnterNewEpochArgs (slice_val enc_sl)
+  {{{
+        args_ptr, RET #args_ptr; own args_ptr args 1
+  }}}.
+Admitted.
+
+End enterNewEpochArgs.
+End enterNewEpochArgs.
+
+Module enterNewEpochReply.
+Section enterNewEpochReply.
+Context `{!heapGS Σ}.
+
+Record C :=
+mkC {
+  err: u64 ;
+  acceptedEpoch: u64 ;
+  nextIndex: u64 ;
+  state: list u8;
+}.
+
+Definition has_encoding (encoded:list u8) (args:C) : Prop :=
+  encoded = (u64_le args.(err)) ++ (u64_le args.(acceptedEpoch)) ++ (u64_le args.(nextIndex))  ++ args.(state).
+
+Context `{!heapGS Σ}.
+
+Definition own args_ptr args q : iProp Σ :=
+  ∃ state_sl,
+  "Hargs_epoch" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "err"]{q} #args.(err) ∗
+  "Hargs_epoch" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "err"]{q} #args.(nextIndex) ∗
+  "Hargs_ret" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "state"]{q} (slice_val state_sl) ∗
+  "Hargs_ret_sl" ∷ is_slice_small state_sl byteT q args.(state)
+.
+
+Lemma wp_Encode (args_ptr:loc) (args:C) q :
+  {{{
+        own args_ptr args q
+  }}}
+    mpaxos.encodeApplyReply #args_ptr
+  {{{
+        enc enc_sl, RET (slice_val enc_sl);
+        ⌜has_encoding enc args⌝ ∗
+        is_slice enc_sl byteT 1 enc
+  }}}.
+Admitted.
+
+Lemma wp_Decode enc enc_sl (args:C) :
+  {{{
+        ⌜has_encoding enc args⌝ ∗
+        is_slice_small enc_sl byteT 1 enc
+  }}}
+    mpaxos.decodeApplyReply (slice_val enc_sl)
+  {{{
+        args_ptr, RET #args_ptr; own args_ptr args 1
+  }}}.
+Admitted.
+
+End enterNewEpochReply.
+End enterNewEpochReply.
