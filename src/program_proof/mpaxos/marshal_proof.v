@@ -133,7 +133,7 @@ Admitted.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        is_slice_small enc_sl byteT 1 enc
   }}}
     mpaxos.decodeApplyReply (slice_val enc_sl)
   {{{

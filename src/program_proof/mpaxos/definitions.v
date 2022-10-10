@@ -101,19 +101,57 @@ Definition apply_core_spec γ γlog op enc_op :=
   )%I
 .
 
+Program Definition apply_spec γ :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ op γlog, apply_core_spec γ γlog op enc_args
+                      (λ reply, ∀ enc_reply, ⌜applyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
+  )%I
+.
+Next Obligation.
+  unfold apply_core_spec.
+  solve_proper.
+Defined.
+
 (* End RPC specs *)
 
-Definition is_mpaxos_host : (u64 -> mp_system_names -> mp_server_names -> iPropO Σ).
+Definition is_mpaxos_host (host:u64) (γ:mp_system_names) (γsrv:mp_server_names) : iProp Σ :=
+  "#H1" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ)
+.
+
+Definition is_ReconnectingClient : loc → u64 → iProp Σ.
 Admitted.
 
-Global Instance is_mpaxos_host_pers host γ γsrv: Persistent (is_mpaxos_host host γ γsrv).
+Global Instance is_ReconnectingClient_pers cl host : Persistent (is_ReconnectingClient cl host).
+Admitted.
+
+Lemma wp_ReconnectingClient__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
+  is_ReconnectingClient cl_ptr host -∗
+  handler_spec γsmap host rpcid Spec -∗
+  is_slice_small req byteT 1 reqData -∗
+  rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
+  □(▷ Spec reqData (λ reply,
+       is_slice_small req byteT 1 reqData -∗
+        ∀ rep_sl,
+          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
+          is_slice_small rep_sl byteT 1 reply -∗
+          Φ #0)
+  ) -∗
+  (
+   ∀ (err:u64), ⌜err ≠ 0⌝ →
+                is_slice_small req byteT 1 reqData -∗
+                rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
+  ) -∗
+  WP ReconnectingClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
 Proof.
 Admitted.
 
+Global Instance is_mpaxos_host_pers host γ γsrv: Persistent (is_mpaxos_host host γ γsrv) := _.
+
 Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
-  "#Hcl" ∷ readonly (ck ↦[mpaxos.Clerk :: "cl"] #cl) ∗
-  "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
+  "#Hcl" ∷ readonly (ck ↦[mpaxos.singleClerk :: "cl"] #cl) ∗
+  "#Hcl_rpc"  ∷ is_ReconnectingClient cl srv ∗
   "#Hsrv" ∷ is_mpaxos_host srv γ γsrv
 .
 

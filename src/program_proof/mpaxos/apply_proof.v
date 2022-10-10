@@ -18,9 +18,124 @@ Notation next_state := (mp_next_state mp_record).
 Notation compute_reply := (mp_compute_reply mp_record).
 Notation is_Server := (is_Server (mp_record:=mp_record)).
 Notation apply_core_spec := (apply_core_spec (mp_record:=mp_record)).
+Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
 
 Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
+
+Lemma wp_Clerk__Apply γ γsys γsrv ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+  has_op_encoding op_bytes op →
+  is_singleClerk conf ck γsys γsrv -∗
+  is_inv γ γsys -∗
+  is_slice op_sl byteT 1 op_bytes -∗
+  □((|={⊤∖↑mpN,∅}=> ∃ σ, own_state γ σ ∗
+    (own_state γ (next_state σ op) ={∅,⊤∖↑mpN}=∗
+      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply σ op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
+  ∗
+  (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V )) -∗
+  WP singleClerk__apply #ck (slice_val op_sl) {{ Φ }}.
+Proof.
+  intros Henc.
+  iIntros "#Hck #Hinv Hop_sl".
+  iIntros "#HΦ".
+  wp_call.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep) "Hrep".
+  wp_pures.
+  iNamed "Hck".
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Hop_sl") as "Hop_sl".
+  wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hop_sl Hrep").
+  {
+    iFrame "Hsrv".
+  }
+  { (* Successful RPC *)
+    iModIntro.
+    iNext.
+    unfold apply_spec.
+    iExists _, _.
+    iSplitR; first done.
+    iSplitR; first done.
+    simpl.
+    iSplit.
+    {
+      iModIntro.
+      iLeft in "HΦ".
+      iMod "HΦ".
+      iModIntro.
+      iDestruct "HΦ" as (?) "[Hlog HΦ]".
+      iExists _.
+      iFrame.
+      iIntros "Hlog".
+      iMod ("HΦ" with "Hlog") as "HΦ".
+      iModIntro.
+      iIntros (? Hreply_enc) "Hop".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+      rewrite Hreply_enc.
+      wp_apply (applyReply.wp_Decode with "[Hrep_sl]").
+      { iFrame. iPureIntro. done. }
+      iIntros (reply_ptr) "Hreply".
+      wp_pures.
+      iNamed "Hreply".
+      wp_loadField.
+      simpl.
+      wp_pures.
+      wp_loadField.
+      wp_pures.
+      iModIntro.
+      iApply "HΦ".
+      iFrame.
+    }
+    { (* Apply failed for some reason, e.g. node is not primary *)
+      iIntros (??).
+      iModIntro.
+      iIntros (Herr_nz ? Hreply_enc) "Hop".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      iIntros.
+      wp_pures.
+      wp_load.
+      wp_apply (applyReply.wp_Decode with "[$Hrep_sl]").
+      { done. }
+      iIntros (reply_ptr) "Hreply".
+      iNamed "Hreply".
+      wp_pures.
+      wp_loadField.
+      wp_pures.
+      wp_if_destruct.
+      {
+        wp_loadField.
+        iRight in "HΦ".
+        wp_pures.
+        iModIntro.
+        replace (slice.nil) with (slice_val Slice.nil) by done.
+        iApply "HΦ".
+        done.
+      }
+      exfalso.
+      done.
+    }
+  }
+  { (* RPC error *)
+    iIntros.
+    wp_pures.
+    wp_if_destruct.
+    {
+      iRight in "HΦ".
+      replace (slice.nil) with (slice_val Slice.nil) by done.
+      wp_pures.
+      iApply "HΦ".
+      done.
+    }
+    {
+      wp_load.
+      exfalso. done.
+    }
+  }
+Qed.
 
 Lemma wp_Server__apply_internal s γ γsrv (op:OpType) (op_bytes:list u8) op_sl reply_ptr init_reply Q:
   {{{

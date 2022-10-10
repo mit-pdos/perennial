@@ -248,7 +248,7 @@ Definition singleClerk__apply: val :=
       let: "r" := decodeApplyReply (![slice.T byteT] "reply") in
       (if: struct.loadF applyReply "err" "r" ≠ ENone
       then (struct.loadF applyReply "err" "r", slice.nil)
-      else (ENone, ![slice.T byteT] "reply"))).
+      else (ENone, struct.loadF applyReply "ret" "r"))).
 
 (* clerk.go *)
 
