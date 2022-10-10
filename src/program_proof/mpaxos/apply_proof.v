@@ -295,6 +295,7 @@ Proof.
       }
       done.
     }
+    iFrame "#".
   }
 
   set (newstate:=(next_state (default [] (last st.(mp_log).*1)) op)).

@@ -399,13 +399,16 @@ Definition Server__becomeLeader: val :=
         then
           (if: (struct.loadF enterNewEpochReply "err" "reply" = ENone)
           then
-            "numSuccesses" <-[uint64T] ![uint64T] "numSuccesses" + #1;;
-            (if: struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") < struct.loadF enterNewEpochReply "acceptedEpoch" "reply"
+            (if: (![uint64T] "numSuccesses" = #0)
             then "latestReply" <-[ptrT] "reply"
             else
-              (if: (struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") = struct.loadF enterNewEpochReply "acceptedEpoch" "reply") && (struct.loadF enterNewEpochReply "nextIndex" "reply" > struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply"))
+              (if: struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") < struct.loadF enterNewEpochReply "acceptedEpoch" "reply"
               then "latestReply" <-[ptrT] "reply"
-              else #()))
+              else
+                (if: (struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") = struct.loadF enterNewEpochReply "acceptedEpoch" "reply") && (struct.loadF enterNewEpochReply "nextIndex" "reply" > struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply"))
+                then "latestReply" <-[ptrT] "reply"
+                else #())));;
+            "numSuccesses" <-[uint64T] ![uint64T] "numSuccesses" + #1
           else #())
         else #());;
       (if: #2 * ![uint64T] "numSuccesses" > "n"

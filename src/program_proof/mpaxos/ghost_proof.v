@@ -206,4 +206,61 @@ Lemma ghost_commit γsys epoch σ :
 Proof.
 Admitted.
 
+
+Definition is_accepted_upper_bound γsrv log (acceptedEpoch newEpoch:u64) : iProp Σ :=
+  ∃ logPrefix,
+  ⌜logPrefix ⪯ log⌝ ∗
+  is_accepted_ro γsrv acceptedEpoch logPrefix ∗
+  □ (∀ epoch', ⌜int.nat acceptedEpoch < int.nat epoch'⌝ -∗
+            ⌜int.nat epoch' < int.nat newEpoch⌝ -∗
+            is_accepted_ro γsrv epoch' [])
+.
+
+Lemma is_accepted_upper_bound_mono_epoch γsrv log acceptedEpoch acceptedEpoch' newEpoch :
+  int.nat acceptedEpoch < int.nat acceptedEpoch' →
+  int.nat acceptedEpoch' < int.nat newEpoch →
+  is_accepted_upper_bound γsrv log acceptedEpoch newEpoch -∗
+  is_accepted_upper_bound γsrv [] acceptedEpoch' newEpoch
+.
+Proof.
+  intros Hineq Hineq2.
+  iIntros "#Hub".
+  iExists [].
+  iSplitL; first done.
+  iSplit.
+  {
+    iDestruct "Hub" as (?) "(_ & _ & #Hwand)".
+    iApply "Hwand".
+    { done. }
+    { done. }
+  }
+  {
+    iModIntro.
+    iIntros.
+    iDestruct "Hub" as (?) "(_ & _ & #Hwand)".
+    iApply "Hwand".
+    { iPureIntro.
+      word. }
+    { iPureIntro.
+      word. }
+  }
+Qed.
+
+Lemma is_accepted_upper_bound_mono_log γsrv log log' acceptedEpoch newEpoch :
+  prefix log log' →
+  is_accepted_upper_bound γsrv log acceptedEpoch newEpoch -∗
+  is_accepted_upper_bound γsrv log' acceptedEpoch newEpoch
+.
+Proof.
+Admitted.
+
+Lemma is_proposal_lb_compare γsys log log' epoch :
+  length log' ≤ length log →
+  is_proposal_lb γsys epoch log -∗
+  is_proposal_lb γsys epoch log' -∗
+  ⌜prefix log' log⌝
+.
+Proof.
+Admitted.
+
 End mpaxos_protocol.

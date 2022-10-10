@@ -220,13 +220,14 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#HmuInv" ∷ is_lock mpN mu (own_Server s γ γsrv)
   (* "#Hsys_inv" ∷ sys_inv γ *).
 
-Definition enterNewEpoch_post γsrv reply (epoch:u64) : iProp Σ:=
- ∃ σ,
-  ⌜reply.(enterNewEpochReply.state) = get_state σ⌝ ∗
-  is_accepted_ro γsrv reply.(enterNewEpochReply.acceptedEpoch) σ ∗
-  (∀ epoch', ⌜int.nat reply.(enterNewEpochReply.acceptedEpoch) < int.nat epoch'⌝ -∗
-            ⌜int.nat epoch' ≤ int.nat epoch⌝ -∗
-            is_accepted_ro γsrv epoch' [])
+Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
+ ∃ log,
+  ⌜int.nat reply.(enterNewEpochReply.acceptedEpoch) < int.nat epoch⌝ ∗
+  ⌜reply.(enterNewEpochReply.state) = get_state log⌝ ∗
+  ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
+  is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
+  is_proposal_lb γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
+  is_proposal_facts conf γ reply.(enterNewEpochReply.acceptedEpoch) log
 .
 
 Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q reply_ptr init_reply :
@@ -239,7 +240,7 @@ Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q reply_ptr init_r
   {{{
         reply, RET #(); enterNewEpochReply.own reply_ptr reply 1 ∗
         □if (decide (reply.(enterNewEpochReply.err) = (U64 0))) then
-          enterNewEpoch_post γsrv reply args.(enterNewEpochArgs.epoch)
+          enterNewEpoch_post γ γsrv reply args.(enterNewEpochArgs.epoch)
         else
           True
   }}}.

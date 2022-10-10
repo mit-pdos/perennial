@@ -209,6 +209,7 @@ Definition own args_ptr args q : iProp Σ :=
   ∃ state_sl,
   "Hreply_err" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "err"]{q} #args.(err) ∗
   "Hreply_nextIndex" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "nextIndex"]{q} #args.(nextIndex) ∗
+  "Hreply_acceptedEpoch" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "acceptedEpoch"]{q} #args.(acceptedEpoch) ∗
   "Hreply_ret" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "state"]{q} (slice_val state_sl) ∗
   "Hreply_ret_sl" ∷ is_slice_small state_sl byteT q args.(state)
 .
@@ -217,7 +218,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
   {{{
         own args_ptr args q
   }}}
-    mpaxos.encodeApplyReply #args_ptr
+    mpaxos.encodeEnterNewEpochReply #args_ptr
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
@@ -230,11 +231,37 @@ Lemma wp_Decode enc enc_sl (args:C) :
         ⌜has_encoding enc args⌝ ∗
         is_slice_small enc_sl byteT 1 enc
   }}}
-    mpaxos.decodeApplyReply (slice_val enc_sl)
+    mpaxos.decodeEnterNewEpochReply (slice_val enc_sl)
   {{{
         args_ptr, RET #args_ptr; own args_ptr args 1
   }}}.
 Admitted.
+
+Global Instance enterNewEpochReply_fractional args_ptr args :
+  fractional.Fractional (λ q : Qp, own args_ptr args q).
+Proof.
+  rewrite /own.
+  unfold fractional.Fractional.
+  iIntros.
+  iSplit.
+  {
+    iIntros "H". iDestruct "H" as (?) "H".
+    admit.
+  }
+  admit.
+Admitted.
+
+Global Instance enterNewEpochReply_as_fractional args_ptr args q :
+  fractional.AsFractional (own args_ptr args q) (λ q : Qp, own args_ptr args q) q.
+Proof.
+  split; auto; apply _.
+Qed.
+
+Global Instance enterNewEpochReply_as_mapsto args_ptr args :
+  AsMapsTo (own args_ptr args 1) (λ q : Qp, own args_ptr args q).
+Proof.
+  constructor; auto; intros; apply _.
+  Qed.
 
 End enterNewEpochReply.
 End enterNewEpochReply.
