@@ -221,6 +221,7 @@ Lemma wp_Server__apply_internal s γ γsrv (op:OpType) (op_bytes:list u8) op_sl 
             (* ⌜reply.(applyReply.ret) = compute_reply σphys ghost_op.1⌝ ∗ *)
             let oldstate := (default [] (last (fst <$> σ))) in
             let newstate := (next_state oldstate op) in
+            ⌜reply.(applyReply.ret) = compute_reply (get_state σ) op⌝ ∗
             is_ghost_lb γ (σ ++ [(newstate, Q)])
         else
           True
@@ -772,6 +773,7 @@ Proof.
     {
       iExists _.
       iFrame "Hlb".
+      done.
     }
     {
       done.
@@ -791,5 +793,190 @@ Proof.
     done.
   }
 Admitted.
+
+(* TODO: copied from pb_apply_proof.v *)
+Lemma prefix_app_cases {A} (σ σ':list A) e:
+  σ' `prefix_of` σ ++ [e] →
+  σ' `prefix_of` σ ∨ σ' = (σ++[e]).
+Proof.
+Admitted.
+
+Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) init_reply reply_ptr Ψ (Φ: val → iProp Σ) :
+  is_Server s γ γsrv -∗
+  readonly (is_slice_small op_sl byteT 1 enc_op) -∗
+  applyReply.own reply_ptr init_reply 1 -∗
+  (∀ reply, Ψ reply -∗ applyReply.own reply_ptr reply 1 -∗ Φ #()) -∗
+  apply_core_spec γ γlog op enc_op Ψ -∗
+  WP (mpaxos.Server__apply #s (slice_val op_sl) #reply_ptr) {{ Φ }}
+.
+Proof using Type*.
+  iIntros "#Hsrv #Hop_sl Hreply".
+  iIntros "HΨ HΦ".
+  iApply (wp_frame_wand with "HΨ").
+  iDestruct "HΦ" as "(%Hop_enc & #Hinv & #Hupd & Hfail_Φ)".
+  iMod (ghost_var_alloc (())) as (γtok) "Htok".
+  iApply wp_fupd.
+  wp_apply (wp_Server__apply_internal _ _ _ op _ _ _ _
+      (λ ς, inv escrowN (
+        Ψ (applyReply.mkC 0 (compute_reply ς op)) ∨
+          ghost_var γtok 1 ()
+        )%I)
+             with "[$Hsrv $Hop_sl $Hreply Hupd]").
+  {
+    iSplitL ""; first done.
+    iInv "Hinv" as "HH" "Hclose".
+    iDestruct "HH" as (?) "(>Hstate & >Hghost & #HQs)".
+    iMod (fupd_mask_subseteq (⊤∖↑mpN)) as "Hmask".
+    {
+      assert ((↑ghostN:coPset) ⊆ (↑mpN:coPset)).
+      { apply nclose_subseteq. }
+      assert ((↑appN:coPset) ⊆ (↑mpN:coPset)).
+      { apply nclose_subseteq. }
+      set_solver.
+    }
+    iMod "Hupd".
+    iModIntro.
+    iDestruct "Hupd" as (ς) "[Hstate2 Hupd]".
+    iDestruct (own_valid_2 with "Hstate Hstate2") as %Hvalid.
+    rewrite dfrac_agree_op_valid_L in Hvalid.
+    destruct Hvalid as [_ Heq].
+    rewrite Heq.
+    iExists _; iFrame.
+    iIntros "Hghost".
+
+    iMod (own_update_2 with "Hstate Hstate2") as "Hstate".
+    {
+      apply (dfrac_agree_update_2 _ _ _ _ ((next_state ς op): leibnizO (list u8))).
+      rewrite dfrac_op_own.
+      rewrite Qp.half_half.
+      done.
+    }
+    iDestruct "Hstate" as "[Hstate Hstate2]".
+    iMod ("Hupd" with "Hstate2") as "Hupd".
+
+    iAssert (|={↑escrowN}=> inv escrowN ((Ψ (applyReply.mkC 0 (compute_reply ς op)))
+                                  ∨ ghost_var γtok 1 ()))%I
+            with "[Hupd]" as "Hinv2".
+    {
+      iMod (inv_alloc with "[-]") as "$"; last done.
+      iNext.
+      iIntros.
+      iLeft.
+      iIntros.
+      iApply "Hupd".
+    }
+
+    iMod "Hmask" as "_".
+    iMod (fupd_mask_subseteq (↑escrowN)) as "Hmask".
+    {
+      assert ((↑escrowN:coPset) ## (↑ghostN:coPset)).
+      { by apply ndot_ne_disjoint. }
+      assert ((↑escrowN:coPset) ## (↑appN:coPset)).
+      { by apply ndot_ne_disjoint. }
+      set_solver.
+    }
+    iMod "Hinv2" as "#HΦ_inv".
+    iMod "Hmask".
+
+    iMod ("Hclose" with "[HQs Hghost Hstate]").
+    {
+      iNext.
+      iExists _; iFrame.
+      unfold get_state.
+      rewrite fmap_app.
+      rewrite last_snoc.
+      simpl.
+      rewrite -Heq.
+      iFrame.
+
+      iModIntro.
+      iIntros.
+
+      apply prefix_app_cases in H as [Hprefix_of_old|Hnew].
+      {
+        iApply "HQs".
+        { done. }
+        { done. }
+      }
+      {
+        rewrite Hnew in H0.
+        replace (log'prefix) with (log); last first.
+        { (* TODO: list_solver *)
+          apply (f_equal reverse) in H0.
+          rewrite reverse_snoc in H0.
+          rewrite reverse_snoc in H0.
+          inversion H0.
+          apply (f_equal reverse) in H2.
+          rewrite reverse_involutive in H2.
+          rewrite reverse_involutive in H2.
+          done.
+        }
+
+        eassert (_ = lastEnt) as <-.
+        { eapply (suffix_snoc_inv_1 _ _ _ log'prefix). rewrite -H0.
+          done. }
+        simpl.
+        iFrame "HΦ_inv".
+      }
+    }
+    iModIntro.
+    done.
+  }
+  iIntros (reply).
+  iIntros "(Hcred & Hcred2 & Hreply & Hpost)".
+
+  destruct (decide (reply.(applyReply.err) = U64 0)).
+  { (* no error *)
+    iNamed "Hreply".
+    rewrite e.
+    iDestruct "Hpost" as (?) "[%Hrep #Hghost_lb]".
+    rewrite Hrep.
+    iInv "Hinv" as "HH" "Hclose".
+    {
+      iDestruct "HH" as (?) "(>Hlog & >Hghost & #HQs)".
+      iMod (lc_fupd_elim_later with "Hcred HQs") as "#HQ".
+      iDestruct (own_valid_2 with "Hghost Hghost_lb") as %Hvalid.
+      rewrite mono_list_both_dfrac_valid_L in Hvalid.
+      destruct Hvalid as [_ Hvalid].
+      iSpecialize ("HQ" $! _ σ _ with "[] []").
+      { done. }
+      { done. }
+      simpl.
+      iMod ("Hclose" with "[Hghost Hlog]") as "_".
+      {
+        iNext.
+        iExists _; iFrame "∗#".
+      }
+
+      iInv "HQ" as "Hescrow" "Hclose".
+      iDestruct "Hescrow" as "[HΦ|>Hbad]"; last first.
+      {
+        iDestruct (ghost_var_valid_2 with "Htok Hbad") as %Hbad.
+        exfalso. naive_solver.
+      }
+      iMod ("Hclose" with "[$Htok]").
+      iMod (lc_fupd_elim_later with "Hcred2 HΦ") as "HΦ".
+      iModIntro.
+      iIntros "HΨ".
+      iApply ("HΨ" with "HΦ").
+      iExists _.
+      simpl.
+      iFrame.
+    }
+  }
+  {
+    iIntros.
+    iNamed "Hreply".
+    iModIntro.
+    iIntros "HΨ".
+    iApply ("HΨ" with "[Hfail_Φ]").
+    {
+      iApply "Hfail_Φ".
+      done.
+    }
+    iExists _.
+    iFrame.
+  }
+Qed.
 
 End definitions.
