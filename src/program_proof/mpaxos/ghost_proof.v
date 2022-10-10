@@ -72,13 +72,13 @@ Definition is_ghost_lb γ σ : iProp Σ :=
   own γ.(mp_state_gn) (◯ML (σ : list (leibnizO (EntryType)))).
 
 (* FIXME: this definition needs to only require a quorum *)
-Definition committed_by γsys epoch σ : iProp Σ :=
+Definition committed_by epoch σ : iProp Σ :=
   ∀ γsrv, ⌜γsrv ∈ config⌝ → is_accepted_lb γsrv epoch σ.
 
 Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
   □(∀ epoch_old σ_old,
    ⌜int.nat epoch_old < int.nat epoch⌝ →
-   committed_by γsys epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
+   committed_by epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition mpN := nroot .@ "mp".
 Definition ghostN := mpN .@ "ghost".
@@ -145,6 +145,34 @@ Lemma ghost_replica_accept_same_epoch γsys γsrv st epoch' log' :
   is_proposal_facts γsys epoch' log'
   ==∗
   own_replica_ghost γsys γsrv (mkMPaxosState epoch' epoch' log').
+Proof.
+Admitted.
+
+(* TODO: this is probably just the definition *)
+Lemma establish_committed_by epoch σ (W:gset nat) :
+  (∀ s, s ∈ W → s < length config) →
+  2 * (size W) > length config →
+  ([∗ list] s0↦γsrv' ∈ config, ⌜s0 ∈ W⌝ → is_accepted_lb γsrv' epoch σ) -∗
+  committed_by epoch σ.
+Proof.
+Admitted.
+
+Definition sys_inv γsys := inv sysN
+(
+  ∃ σ epoch,
+  own_commit γsys σ ∗
+  committed_by epoch σ ∗
+  is_proposal_lb γsys epoch σ ∗
+  is_proposal_facts γsys epoch σ
+).
+
+Lemma ghost_commit γsys epoch σ :
+  sys_inv γsys -∗
+  committed_by epoch σ -∗
+  is_proposal_lb γsys epoch σ -∗
+  is_proposal_facts γsys epoch σ
+  ={⊤}=∗ (* XXX: this is ⊤ because the user-provided fupd is fired, and it is allowed to know about ⊤ *)
+  is_ghost_lb γsys σ.
 Proof.
 Admitted.
 

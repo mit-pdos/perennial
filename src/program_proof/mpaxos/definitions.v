@@ -173,7 +173,7 @@ Definition is_applyFn (applyFn:val) : iProp Σ :=
         newstate_sl reply_sl,
         RET (slice_val newstate_sl, slice_val reply_sl);
         readonly (is_slice_small newstate_sl byteT 1 (next_state state op)) ∗
-        readonly (is_slice_small reply_sl byteT 1 (compute_reply state op))
+        is_slice_small reply_sl byteT 1 (compute_reply state op)
   }}}
 .
 
@@ -193,6 +193,7 @@ Definition own_Server (s:loc) γ γsrv : iProp Σ :=
   "Hstate" ∷ s ↦[mpaxos.Server :: "state"] (slice_val state_sl) ∗
   "#Hstate_sl" ∷ readonly (is_slice_small state_sl byteT 1 state) ∗
   "HapplyFn" ∷ s ↦[mpaxos.Server :: "applyFn"] applyFn ∗
+  "%HnextIndex_nooverflow" ∷ ⌜length st.(mp_log) = int.nat (length st.(mp_log))⌝ ∗
 
   (* clerks *)
   "%Hconf_clerk_len" ∷ ⌜length clerks = length (conf)⌝ ∗
@@ -204,6 +205,7 @@ Definition own_Server (s:loc) γ γsrv : iProp Σ :=
 
   (* ghost-state *)
   "Hghost" ∷ own_replica_ghost conf γ γsrv st ∗
+  "#Hinv" ∷ sys_inv conf γ ∗
 
   (* leader-only *)
   "HleaderOnly" ∷ (if isLeader then own_leader_ghost conf γ γsrv st else True) ∗
@@ -287,7 +289,7 @@ Proof.
     iFrame "#".
     done.
   }
-  iIntros (??) "[#Hnewstate_sl #Hreply_sl]".
+  iIntros (??) "[#Hnewstate_sl Hret_sl]".
   wp_pures.
   wp_storeField.
 
@@ -303,6 +305,8 @@ Proof.
 
   wp_pures.
   wp_loadField.
+  wp_apply (std_proof.wp_SumAssumeNoOverflow).
+  iIntros "%Hno_overflow".
   wp_storeField.
   wp_loadField.
   wp_pures.
@@ -325,7 +329,7 @@ Proof.
   iMod (ghost_replica_accept_same_epoch with "Hghost Hprop_lb Hprop_facts") as "Hghost".
   { done. }
 
-  wp_apply (release_spec with "[-HΦ Hreply_epoch Hreply_ret Hreply_ret_sl Hargs]").
+  wp_apply (release_spec with "[-HΦ Hreply_epoch Hreply_ret Hret_sl Hargs]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -345,9 +349,21 @@ Proof.
       simpl.
 
       (* TODO: pure overflow proof *)
+      rewrite HnextIndex_nooverflow in Hno_overflow.
+      replace (int.Z (U64 1)) with (1)%Z in Hno_overflow by word.
       admit.
     }
-    iSplitL; last done.
+    iSplitL; last first.
+    {
+      iSplitL.
+      {
+        iPureIntro.
+        rewrite app_length.
+        simpl.
+        word.
+      }
+      done.
+    }
     iApply to_named.
     replace (default [] (last (st.(mp_log) ++ [(next_state (default [] (last st.(mp_log).*1)) op, Q)]).*1)) with
       (next_state (default [] (last st.(mp_log).*1)) op).
@@ -401,7 +417,7 @@ Proof.
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ is_slice_small replies_sl ptrT 1 reply_ptrs ∗
-                    "Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                    "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
                     ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply 1) ∗
                                                    if decide (reply.(applyAsFollowerReply.err) = (U64 0)) then
                                                      is_accepted_lb γsrv' st.(mp_epoch) (st.(mp_log) ++ [(newstate, Q)])
@@ -409,7 +425,7 @@ Proof.
                                                      True
                                          ))
                 )%I).
-  wp_apply (newlock_spec _ _ replyInv with "[HnumReplies Hreplies_sl]").
+  wp_apply (newlock_spec mpN _ replyInv with "[HnumReplies Hreplies_sl]").
   {
     iNext.
     iExists _, _.
@@ -470,10 +486,6 @@ Proof.
         }
         iFrame "Hprop_lb Hprop_facts".
         iPureIntro.
-        assert ((length st.(mp_log)) = int.nat (length st.(mp_log))).
-        { admit. } (* FIXME: maintain list no overflow fact *)
-        assert (int.nat (length st.(mp_log)) < int.nat (u64_instance.u64.(word.add) (length st.(mp_log)) 1)) as Hno_overflow.
-        { admit. } (* FIXME: overflow check *)
         split.
         { rewrite app_length. simpl. word. }
         split.
@@ -514,10 +526,10 @@ Proof.
         iExists _, _.
         iFrame "∗".
         iApply to_named.
-        iDestruct (big_sepL2_insert_acc with "Hreplies")  as "[_ Hreplies]".
+        iDestruct (big_sepL2_insert_acc with "Hreplies")  as "[_ Hreplies2]".
         { done. }
         { done. }
-        iDestruct ("Hreplies" $! reply_ptr x2 with "[]") as "Hreplies".
+        iDestruct ("Hreplies2" $! reply_ptr x2 with "[]") as "Hreplies3".
         {
           iRight.
           iModIntro.
@@ -530,7 +542,7 @@ Proof.
           symmetry.
           by apply list_insert_id.
         }
-        iFrame "Hreplies".
+        iFrame "Hreplies3".
       }
       done.
     }
@@ -552,11 +564,11 @@ Proof.
   wp_if_destruct.
   { (* not enough replies, wait for cond *)
     wp_pures.
-    wp_apply (wp_condWait with "[-HΦ Hreply_epoch Hreply_ret Hreply_ret_sl]").
+    wp_apply (wp_condWait with "[-HΦ Hreply_epoch Hreply_ret Hret_sl]").
     {
       iFrame "#∗".
       iExists _, _.
-      iFrame "∗".
+      iFrame "∗#".
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
@@ -576,36 +588,227 @@ Proof.
   iIntros (numSuccesses_ptr) "HnumSuccesses".
   wp_pures.
 
-  wp_apply (wp_forSlice (V:=loc) with "[] [$Hreplies_sl]").
+  set (I:=λ (i:u64), (
+                 ∃ (W: gset nat),
+                 "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < int.nat i⌝ ∗
+                 "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
+                 "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(U64 (size W)) ∗
+                 "#Hacc_lbs" ∷ ([∗ list] s ↦ γsrv' ∈ conf, ⌜s ∈ W⌝ → is_accepted_lb γsrv' st.(mp_epoch) (st.(mp_log) ++ [(newstate, Q)]))
+      )%I).
+
+  wp_apply (wp_forSlice (V:=loc) I _ _ _ _ _ reply_ptrs with "[] [HnumSuccesses Hreplies_sl]").
+  2: {
+    iFrame "Hreplies_sl".
+
+    iExists ∅.
+    rewrite size_empty.
+    iFrame.
+    iSplitL.
+    { iPureIntro. done. }
+    iSplitL.
+    { iPureIntro. done. }
+    iApply (big_sepL_forall).
+    iIntros.
+    exfalso.
+    done.
+  }
   {
     clear Φ.
     iIntros (?? Φ) "!# (Hi & %Hi_lt & %Hi_lookup) HΦ".
+    iNamed "Hi".
     wp_pures.
     wp_if_destruct.
     {
-      (* TODO: use Hreplies *)
-      admit.
+      iDestruct (big_sepL2_lookup_1_some with "Hreplies") as (?) "%Hi_conf_lookup".
+      { done. }
+      iDestruct (big_sepL2_lookup_acc with "Hreplies") as "[#Hreply_post _]".
+      { done. }
+      { done. }
+      iDestruct "Hreply_post" as "[%Hbad|#Hreply_post]".
+      {
+        exfalso. rewrite Hbad in Heqb0. done.
+      }
+      iDestruct "Hreply_post" as (?) "[#Hreply Hpost]".
+      iMod (readonly_load with "Hreply") as (?) "Hreplyq".
+      wp_loadField.
+      wp_if_destruct.
+      { (* increase size of W *)
+        wp_load.
+        wp_store.
+        rewrite -Heqb1.
+        iEval (rewrite decide_True) in "Hpost".
+        iApply "HΦ".
+        iModIntro.
+        iExists (W ∪ {[ int.nat i ]}).
+        iSplitR.
+        { (* prove that the new set W is still in range *)
+          replace (int.nat (word.add i (U64 1))) with (int.nat i + 1) by word.
+          iPureIntro.
+          intros ? Hin.
+          rewrite elem_of_union in Hin.
+          destruct Hin as [Hold|Hnew].
+          {
+            specialize (HW_in_range s0 Hold). word.
+          }
+          {
+            rewrite elem_of_singleton in Hnew.
+            rewrite Hnew.
+            word.
+          }
+        }
+
+        rewrite size_union; last first.
+        {
+          apply disjoint_singleton_r.
+          destruct (decide (int.nat i ∈ W)).
+          {
+            exfalso.
+            specialize (HW_in_range (int.nat i) e).
+            word.
+          }
+          done.
+        }
+        rewrite size_singleton.
+
+        iSplitL "".
+        {
+          iPureIntro.
+          word.
+        }
+
+        iSplitL "HnumSuccesses".
+        {
+          iApply to_named.
+          iExactEq "HnumSuccesses".
+          f_equal.
+          f_equal.
+
+          apply lookup_lt_Some in Hi_conf_lookup.
+          rewrite -Hconf_clerk_len Hclerks_sz in Hi_conf_lookup.
+          assert (Z.of_nat (size W) < int.Z clerks_sl.(Slice.sz))%Z by word.
+          (* TODO: overflow proof *)
+          admit.
+        }
+
+        iApply (big_sepL_impl with "Hacc_lbs").
+        iModIntro.
+        iIntros (?? ?) "Hacc_wand".
+        iIntros (Hin).
+        rewrite elem_of_union in Hin.
+        destruct Hin as [Hold|Hnew].
+        {
+          iApply "Hacc_wand".
+          done.
+        }
+        {
+          rewrite elem_of_singleton in Hnew.
+          rewrite Hnew.
+          replace (x0) with (x2).
+          { done. }
+          rewrite Hnew in H.
+          rewrite Hi_conf_lookup in H.
+          by injection H.
+        }
+      }
+      { (* node i didn't accept, don't change W *)
+        iModIntro.
+        iApply "HΦ".
+        iExists W.
+        iFrame "HnumSuccesses".
+        iFrame "Hacc_lbs".
+        iPureIntro.
+        replace (int.nat (word.add i (U64 1))) with (int.nat i + 1) by word.
+        split.
+        {
+          intros.
+          specialize (HW_in_range s0 H).
+          word.
+        }
+        {
+          word.
+        }
+      }
     }
-    {
-      admit.
+    { (* node i didn't reply, don't change W *)
+      iModIntro.
+      iApply "HΦ".
+      iExists W.
+      iFrame "HnumSuccesses".
+      iFrame "Hacc_lbs".
+      iPureIntro.
+      replace (int.nat (word.add i (U64 1))) with (int.nat i + 1) by word.
+      split.
+      {
+        intros.
+        specialize (HW_in_range s0 H).
+        word.
+      }
+      {
+        word.
+      }
     }
-  }
-  {
-    admit.
   }
 
   iIntros "[Hi Hreplies_sl]".
+  iDestruct (is_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
+  iNamed "Hi".
   wp_pures.
   wp_load.
   wp_pures.
   wp_if_destruct.
   { (* enough acceptances to commit *)
-    admit.
+    wp_storeField.
+
+    iDestruct (big_sepL2_length with "Hreplies") as "%Hreplies_len_eq_conf".
+    replace (int.nat replies_sl.(Slice.sz)) with (length conf) in HW_in_range; last first.
+    {
+      word.
+    }
+
+    iDestruct (establish_committed_by with "Hacc_lbs") as "Hcom".
+    { admit. }
+    {
+      done.
+    }
+    {
+      assert (2 * size W > int.Z (u64_instance.u64.(word.mul) 2 (size W)))%Z.
+      { admit. } (* FIXME: check for multiplication overflow *)
+      word.
+    }
+    iMod (ghost_commit with "Hinv Hcom Hprop_lb Hprop_facts") as "Hlb".
+    iApply "HΦ".
+    iModIntro.
+    iSplitL ""; first admit. (* TODO: get lc *)
+    iSplitL ""; first admit. (* TODO: get lc *)
+    instantiate (1:=(applyReply.mkC _ _)).
+    iSplitL "Hreply_epoch Hreply_ret Hret_sl".
+    {
+      iExists _.
+      iFrame.
+    }
+    simpl.
+    destruct (decide _).
+    {
+      iExists _.
+      iFrame "Hlb".
+    }
+    {
+      done.
+    }
   }
   { (* error, too few successful applyAsFollower() RPCs *)
     wp_storeField.
     iApply "HΦ".
-    admit.
+    iModIntro.
+    iSplitL ""; first admit. (* TODO: get lc *)
+    iSplitL ""; first admit. (* TODO: get lc *)
+    instantiate (1:=(applyReply.mkC _ _)).
+    iSplitL "Hreply_epoch Hreply_ret Hret_sl".
+    {
+      iExists _.
+      iFrame.
+    }
+    done.
   }
 Admitted.
 
