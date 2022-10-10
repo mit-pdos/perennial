@@ -24,7 +24,7 @@ Notation has_op_encoding := (mp_has_op_encoding mp_record).
 Notation next_state := (mp_next_state mp_record).
 Notation compute_reply := (mp_compute_reply mp_record).
 
-Definition client_logR := mono_listR (leibnizO (list u8)).
+Definition client_logR := dfrac_agreeR (leibnizO (list u8)).
 
 Class mpG Σ := {
     mp_ghostG :> mp_ghostG (EntryType:=(list u8 * (list u8 → iProp Σ))%type) Σ ;
@@ -37,7 +37,7 @@ Class mpG Σ := {
 Context `{!heapGS Σ}.
 Context `{!mpG Σ}.
 
-Definition own_log γ σ := own γ (●ML{#1/2} (σ : list (leibnizO (list u8)))).
+Definition own_state γ ς := own γ (to_dfrac_agree (DfracOwn (1/2)) (ς : (leibnizO (list u8)))).
 
 (* RPC specs *)
 
@@ -68,78 +68,38 @@ Next Obligation.
   solve_proper.
 Defined.
 
+(* TODO: copied from pb_definitions.v *)
 Definition appN := mpN .@ "app".
 Definition escrowN := mpN .@ "escrow".
+
+Definition get_state (σ:list (list u8 * (list u8 → iProp Σ))) := default [] (last (fst <$> σ)).
+
 Definition is_inv γlog γsys :=
-  inv appN (∃ σ,
-        own_log γlog (fst <$> σ) ∗
-        own_ghost γsys σ ∗
+  inv appN (∃ log,
+        own_state γlog (get_state log) ∗
+        own_ghost γsys log ∗
         □(
-          (* ∀ σ' σ'prefix lastEnt, ⌜prefix σ' σ⌝ -∗ ⌜σ' = σ'prefix ++ [lastEnt]⌝ -∗ (lastEnt.2 (fst <$> σ'prefix))
-             *)
-          True
+          (* XXX: this is a bit different from pb_definitions.v *)
+          (* This says that for all (log'prefix ++ [lastEnt]) ⪯ log,
+             lastEnt.Q (state of log'prefix) is true.
+           *)
+          ∀ log' log'prefix lastEnt, ⌜prefix log' log⌝ -∗
+                ⌜log' = log'prefix ++ [lastEnt]⌝ -∗
+                (lastEnt.2 (get_state log'prefix))
         )
       ).
 
-(*
-Definition Apply_core_spec γ γlog op enc_op :=
-  λ (Φ : ApplyReply.C -> iPropO Σ) ,
+Definition apply_core_spec γ γlog op enc_op :=
+  λ (Φ : applyReply.C -> iPropO Σ) ,
   (
   ⌜has_op_encoding enc_op op⌝ ∗
   is_inv γlog γ ∗
-  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
-            Φ (ApplyReply.mkC 0 (compute_reply σ op))
+  □(|={⊤∖↑mpN,∅}=> ∃ ς, own_state γlog ς ∗ (own_state γlog (next_state ς op) ={∅,⊤∖↑mpN}=∗
+            Φ (applyReply.mkC 0 (compute_reply ς op))
   )) ∗
-  □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
+  □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (applyReply.mkC err ret))
   )%I
 .
-
-Program Definition Apply_spec γ :=
-  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ op γlog, Apply_core_spec γ γlog op enc_args
-                      (λ reply, ∀ enc_reply, ⌜ApplyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
-  )%I
-.
-Next Obligation.
-  unfold Apply_core_spec.
-  solve_proper.
-Defined.
-
-Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> iPropO Σ) :=
-  (λ host γ γsrv,
-  handler_spec γsrv.(pb_urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 2) (GetState_spec γ γsrv) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 4) (Apply_spec γ) ∗
-  handlers_dom γsrv.(pb_urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]})%I
-.
-
-Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
-Proof.
-Admitted.
-
-Definition is_pb_host_def :=
-  fixpoint (is_pb_host_pre).
-Definition is_pb_host_aux : seal (is_pb_host_def). by eexists. Qed.
-Definition is_pb_host := is_pb_host_aux.(unseal).
-Definition is_pb_host_eq : is_pb_host = is_pb_host_def := is_pb_host_aux.(seal_eq).
-
-Definition BecomePrimary_spec γ γsrv := BecomePrimary_spec_pre γ γsrv is_pb_host.
-
-Lemma is_pb_host_unfold host γ γsrv:
-  is_pb_host host γ γsrv ⊣⊢ is_pb_host_pre (is_pb_host) host γ γsrv
-.
-Proof.
-  rewrite is_pb_host_eq. apply (fixpoint_unfold (is_pb_host_pre)).
-Qed.
-
-Global Instance is_pb_host_pers host γ γsrv: Persistent (is_pb_host host γ γsrv).
-Proof.
-  rewrite is_pb_host_unfold.
-  apply _.
-Qed.
- *)
 
 (* End RPC specs *)
 
