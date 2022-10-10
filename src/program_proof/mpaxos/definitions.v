@@ -280,7 +280,30 @@ Proof.
   wp_if_destruct.
   { (* case not leader: return error *)
     wp_loadField.
-    admit.
+    wp_apply (release_spec with "[-HΦ Hreply]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext.
+      iExists _, _, _, _, _, _.
+      iFrame  "∗#%".
+    }
+    wp_pure1_credit "Hcred1".
+    wp_pures.
+    iNamed "Hreply".
+    wp_apply (wp_storeField with "[$Hreply_epoch]").
+    { eauto. }
+    iIntros "Hreply_epoch".
+    wp_pure1_credit "Hcred2".
+    wp_pures.
+    iApply "HΦ".
+    iModIntro.
+    iFrame.
+    instantiate (1:=(applyReply.mkC _ _)).
+    iSplitL.
+    {
+      iExists _. iFrame.
+    }
+    done.
   }
   wp_loadField.
   wp_loadField.
@@ -309,11 +332,10 @@ Proof.
   iIntros "%Hno_overflow".
   wp_storeField.
   wp_loadField.
-  wp_pures.
+  wp_pure1_credit "Hlc".
   wp_loadField.
 
-  iMod (ghost_leader_propose with "HleaderOnly [] [Hupd]") as "(HleaderOnly & #Hprop_lb & #Hprop_facts)".
-  { admit. } (* TODO: get lc *)
+  iMod (ghost_leader_propose with "HleaderOnly Hlc [Hupd]") as "(HleaderOnly & #Hprop_lb & #Hprop_facts)".
   {
     iMod "Hupd".
     iModIntro.
@@ -686,7 +708,7 @@ Proof.
           apply lookup_lt_Some in Hi_conf_lookup.
           rewrite -Hconf_clerk_len Hclerks_sz in Hi_conf_lookup.
           assert (Z.of_nat (size W) < int.Z clerks_sl.(Slice.sz))%Z by word.
-          (* TODO: overflow proof *)
+          (* TODO: overflow of size of W proof *)
           admit.
         }
 
@@ -752,7 +774,8 @@ Proof.
   iIntros "[Hi Hreplies_sl]".
   iDestruct (is_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
   iNamed "Hi".
-  wp_pures.
+  wp_pure1_credit "Hcred1".
+  wp_pure1_credit "Hcred2".
   wp_load.
   wp_pures.
   wp_if_destruct.
@@ -766,7 +789,6 @@ Proof.
     }
 
     iDestruct (establish_committed_by with "Hacc_lbs") as "Hcom".
-    { admit. }
     {
       done.
     }
@@ -778,8 +800,7 @@ Proof.
     iMod (ghost_commit with "Hinv Hcom Hprop_lb Hprop_facts") as "Hlb".
     iApply "HΦ".
     iModIntro.
-    iSplitL ""; first admit. (* TODO: get lc *)
-    iSplitL ""; first admit. (* TODO: get lc *)
+    iFrame.
     instantiate (1:=(applyReply.mkC _ _)).
     iSplitL "Hreply_epoch Hreply_ret Hret_sl".
     {
@@ -800,8 +821,7 @@ Proof.
     wp_storeField.
     iApply "HΦ".
     iModIntro.
-    iSplitL ""; first admit. (* TODO: get lc *)
-    iSplitL ""; first admit. (* TODO: get lc *)
+    iFrame.
     instantiate (1:=(applyReply.mkC _ _)).
     iSplitL "Hreply_epoch Hreply_ret Hret_sl".
     {
