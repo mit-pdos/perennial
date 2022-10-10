@@ -20,10 +20,10 @@ Context `{!heapGS Σ}.
 
 Definition own args_ptr args : iProp Σ :=
   ∃ state_sl,
-  "Hargs_epoch" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "epoch"] #args.(epoch)) ∗
-  "Hargs_index" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "nextIndex"] #args.(nextIndex)) ∗
-  "Hargs_state" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "state"] (slice_val state_sl)) ∗
-  "Hargs_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
+  "#Hargs_epoch" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "epoch"] #args.(epoch)) ∗
+  "#Hargs_index" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "nextIndex"] #args.(nextIndex)) ∗
+  "#Hargs_state" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "state"] (slice_val state_sl)) ∗
+  "#Hargs_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :

@@ -310,25 +310,22 @@ Definition Server := struct.decl [
 Definition Server__applyAsFollower: val :=
   rec: "Server__applyAsFollower" "s" "args" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: (struct.loadF Server "epoch" "s" = struct.loadF applyAsFollowerArgs "epoch" "args")
+    (if: struct.loadF Server "epoch" "s" ≤ struct.loadF applyAsFollowerArgs "epoch" "args"
     then
-      (if: struct.loadF Server "nextIndex" "s" ≤ struct.loadF applyAsFollowerArgs "nextIndex" "args"
+      (if: (struct.loadF Server "acceptedEpoch" "s" = struct.loadF applyAsFollowerArgs "epoch" "args")
       then
-        struct.storeF Server "nextIndex" "s" (struct.loadF applyAsFollowerArgs "nextIndex" "args" + #1);;
-        struct.storeF Server "state" "s" (struct.loadF applyAsFollowerArgs "state" "args");;
-        struct.storeF applyAsFollowerReply "err" "reply" ENone
+        (if: struct.loadF Server "nextIndex" "s" ≤ struct.loadF applyAsFollowerArgs "nextIndex" "args"
+        then
+          struct.storeF Server "nextIndex" "s" (struct.loadF applyAsFollowerArgs "nextIndex" "args" + #1);;
+          struct.storeF Server "state" "s" (struct.loadF applyAsFollowerArgs "state" "args");;
+          struct.storeF applyAsFollowerReply "err" "reply" ENone
+        else struct.storeF applyAsFollowerReply "err" "reply" ENone)
       else
-        (if: struct.loadF Server "nextIndex" "s" < struct.loadF applyAsFollowerArgs "nextIndex" "args"
-        then struct.storeF applyAsFollowerReply "err" "reply" ENone
-        else #()))
-    else
-      (if: struct.loadF Server "epoch" "s" < struct.loadF applyAsFollowerArgs "epoch" "args"
-      then
         struct.storeF Server "epoch" "s" (struct.loadF applyAsFollowerArgs "epoch" "args");;
         struct.storeF Server "state" "s" (struct.loadF applyAsFollowerArgs "state" "args");;
         struct.storeF Server "nextIndex" "s" (struct.loadF applyAsFollowerArgs "nextIndex" "args");;
-        struct.storeF applyAsFollowerReply "err" "reply" ENone
-      else struct.storeF applyAsFollowerReply "err" "reply" EEpochStale));;
+        struct.storeF applyAsFollowerReply "err" "reply" ENone)
+    else struct.storeF applyAsFollowerReply "err" "reply" EEpochStale);;
     lock.release (struct.loadF Server "mu" "s");;
     #().
 

@@ -45,14 +45,14 @@ Definition own_state γ ς := own γ (to_dfrac_agree (DfracOwn (1/2)) (ς : (lei
 
 Context (conf:list mp_server_names).
 
-Definition applyAsFollower_core_spec γ γsrv args σ Q (Φ : u64 -> iProp Σ) : iProp Σ :=
+Definition applyAsFollower_core_spec γ γsrv args σ Q (Φ : applyAsFollowerReply.C -> iProp Σ) : iProp Σ :=
   ("%Hσ_index" ∷ ⌜length σ = (int.nat args.(applyAsFollowerArgs.nextIndex) + 1)%nat⌝ ∗
    "%Hghost_op_σ" ∷ ⌜last σ = Some (args.(applyAsFollowerArgs.state), Q)⌝ ∗
    "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1)⌝ ∗
    "#Hprop_lb" ∷ is_proposal_lb γ args.(applyAsFollowerArgs.epoch) σ ∗
    "#Hprop_facts" ∷ is_proposal_facts conf γ args.(applyAsFollowerArgs.epoch) σ ∗
-   "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (U64 0)) ∧
-           (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
+   "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (U64 0))) ∧
+           (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (applyAsFollowerReply.mkC err)))
     )%I
 .
 
@@ -60,7 +60,8 @@ Program Definition applyAsFollowerSpec_spec γ γsrv :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ Q,
     ⌜applyAsFollowerArgs.has_encoding encoded_args args⌝ ∗
-    applyAsFollower_core_spec γ γsrv args σ Q (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
+    applyAsFollower_core_spec γ γsrv args σ Q (λ reply, ∀ enc_reply,
+                                                ⌜applyAsFollowerReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
     )%I
 .
 Next Obligation.
@@ -185,6 +186,7 @@ Definition own_Server (s:loc) γ γsrv : iProp Σ :=
     let state := (default [] (last (fst <$> st.(mp_log)))) in
   (* physical *)
   "Hepoch" ∷ s ↦[mpaxos.Server :: "epoch"] #(st.(mp_epoch)) ∗
+  "HaccceptedEpoch" ∷ s ↦[mpaxos.Server :: "acceptedEpoch"] #(st.(mp_acceptedEpoch)) ∗
   "HnextIndex" ∷ s ↦[mpaxos.Server :: "nextIndex"] #nextIndex ∗
   "HisLeader" ∷ s ↦[mpaxos.Server :: "isLeader"] #isLeader ∗
   "Hclerks" ∷ s ↦[mpaxos.Server :: "clerks"] (slice_val clerks_sl) ∗
@@ -216,27 +218,5 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#HmuInv" ∷ is_lock mpN mu (own_Server s γ γsrv)
   (* "#Hsys_inv" ∷ sys_inv γ *).
 
-Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ Q args_ptr args reply_ptr init_reply :
-  {{{
-        "#His_ck" ∷ is_singleClerk ck γ γsrv ∗
-        "Hargs" ∷ applyAsFollowerArgs.own args_ptr args ∗
-        "Hargs" ∷ applyAsFollowerReply.own reply_ptr init_reply 1 ∗
-
-        "%Hσ_index" ∷ ⌜length σ = (int.nat args.(applyAsFollowerArgs.nextIndex) + 1)%nat⌝ ∗
-        "%Hghost_op_σ" ∷ ⌜last σ = Some (args.(applyAsFollowerArgs.state), Q)⌝ ∗
-        "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1)⌝ ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ args.(applyAsFollowerArgs.epoch) σ ∗
-        "#Hprop_facts" ∷ is_proposal_facts conf γ args.(applyAsFollowerArgs.epoch) σ
-  }}}
-    singleClerk__applyAsFollower #ck #args_ptr #reply_ptr
-  {{{
-        reply, RET #(); applyAsFollowerReply.own reply_ptr reply 1 ∗
-                                                 □if (decide (reply.(applyAsFollowerReply.err) = (U64 0))) then
-                                                   is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ
-                                                 else
-                                                   True
-  }}}.
-Proof.
-Admitted.
 
 End definitions.

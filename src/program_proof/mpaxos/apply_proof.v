@@ -6,7 +6,7 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.mpaxos Require Export definitions.
+From Perennial.program_proof.mpaxos Require Export definitions applyasfollower_proof.
 
 Section apply_proof.
 
@@ -23,7 +23,7 @@ Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
 Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
 
-Lemma wp_Clerk__Apply γ γsys γsrv ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_singleClerk__Apply γ γsys γsrv ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
   has_op_encoding op_bytes op →
   is_singleClerk conf ck γsys γsrv -∗
   is_inv γ γsys -∗
