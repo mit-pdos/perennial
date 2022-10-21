@@ -90,11 +90,13 @@ Proof.
   rewrite -Hclerks_sz.
 
   set (newepoch:=word.add st.(mp_epoch) 1%Z).
+  iMod (ghost_var_alloc ()) as (γescrow) "HreplyPostEscrow".
   set (replyInv:=(
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
+                    "%HlenEq" ∷ ⌜length reply_ptrs = length conf⌝ ∗
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ is_slice_small replies_sl ptrT 1 reply_ptrs ∗
-                    "Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                    "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
                     ⌜reply_ptr = null⌝ ∨ (∃ reply, readonly (enterNewEpochReply.own reply_ptr reply 1) ∗
                                               (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
                                                 enterNewEpoch_post conf γ γsrv' reply newepoch
@@ -109,6 +111,13 @@ Proof.
     iDestruct (is_slice_to_small with "Hreplies_sl") as "$".
     iFrame "∗".
     iDestruct (big_sepL2_length with "Hclerks_rpc") as "%Hlen".
+    iSplitR.
+    {
+      iPureIntro.
+      rewrite replicate_length.
+      word.
+    }
+    iRight.
     iApply big_sepL2_impl.
     {
       instantiate (1:=(λ _ _ _, True)%I).
@@ -189,8 +198,11 @@ Proof.
       wp_pures.
       wp_load.
       wp_store.
-      iDestruct (big_sepL2_lookup_2_some with "Hreplies") as (?) "%Hi_replies_lookup".
-      { done. }
+      pose proof (lookup_lt_Some _ _ _ Hi_conf_lookup) as Hineq.
+      rewrite -HlenEq in Hineq.
+      apply (list_lookup_lt) in Hineq.
+      destruct Hineq as [? Hi_replies_lookup].
+
       wp_apply (wp_SliceSet with "[$Hreplies_sl]").
       {
         done.
@@ -213,7 +225,15 @@ Proof.
         iNext.
         iExists _, _.
         iFrame "∗".
+        iSplitR.
+        {
+          iPureIntro.
+          rewrite insert_length.
+          word.
+        }
+        iDestruct "Hreplies" as "[$|Hreplies]".
         iApply to_named.
+        iRight.
         iDestruct (big_sepL2_insert_acc with "Hreplies")  as "[_ Hreplies2]".
         { done. }
         { done. }
@@ -260,7 +280,7 @@ Proof.
     wp_apply (wp_condWait with "[$HnumReplies_cond $HmuReplyInv $Hlocked Hreplies_sl Hreplies HnumReplies]").
     {
       iExists _, _.
-      iFrame "∗#".
+      iFrame "∗#%".
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
@@ -284,6 +304,13 @@ Proof.
   { eauto. }
   iIntros (numSuccesses_ptr) "HnumSuccesses".
   wp_pures.
+
+  iDestruct "Hreplies" as "[Hbad|Hreplies]".
+  {
+    iDestruct (ghost_var_valid_2 with "Hbad HreplyPostEscrow") as %Hbad.
+    exfalso.
+    naive_solver.
+  }
 
   set (I:=λ (i:u64), (
                  ∃ (W: gset nat) (latestReply_loc:loc),
@@ -1132,7 +1159,7 @@ Proof.
       { simpl. word. }
       iModIntro.
 
-      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies Hreplies]").
+      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow]").
       {
         iFrame "HmuInv Hlocked2".
         iNext.
@@ -1162,8 +1189,7 @@ Proof.
         iFrame "HmuReplyInv Hlocked".
         iNext.
         iExists _, _.
-        iFrame "∗#".
-        admit. (* FIXME: escrow out Hreplies *)
+        iFrame "∗#%".
       }
       wp_pures.
       iModIntro.
@@ -1172,7 +1198,7 @@ Proof.
     {
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies Hreplies]").
+      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow]").
       {
         iFrame "HmuInv Hlocked2".
         iNext.
@@ -1185,8 +1211,7 @@ Proof.
         iFrame "HmuReplyInv Hlocked".
         iNext.
         iExists _, _.
-        iFrame "∗#".
-        admit. (* FIXME: same as above *)
+        iFrame "∗#%".
       }
       wp_pures.
       iModIntro.
@@ -1199,8 +1224,7 @@ Proof.
       iFrame "HmuReplyInv Hlocked".
       iNext.
       iExists _, _.
-      iFrame "∗#".
-      admit. (* FIXME: same as above *)
+      iFrame "∗#%".
     }
     wp_pures.
     iModIntro.
