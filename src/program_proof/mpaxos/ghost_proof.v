@@ -287,4 +287,16 @@ Lemma ghost_replica_helper1 γsys γsrv st :
 Proof.
 Admitted.
 
+Lemma ghost_replica_enter_new_epoch γsys γsrv st newEpoch :
+  int.nat newEpoch > int.nat st.(mp_epoch) →
+  own_replica_ghost γsys γsrv st ==∗
+  own_replica_ghost γsys γsrv (mkMPaxosState newEpoch st.(mp_acceptedEpoch) st.(mp_log)) ∗
+  own_vote_tok γsrv newEpoch ∗
+  is_accepted_upper_bound γsrv st.(mp_log) st.(mp_acceptedEpoch) newEpoch ∗
+  is_proposal_lb γsys st.(mp_acceptedEpoch) st.(mp_log) ∗
+  is_proposal_facts γsys st.(mp_acceptedEpoch) st.(mp_log)
+.
+Proof.
+Admitted.
+
 End mpaxos_protocol.

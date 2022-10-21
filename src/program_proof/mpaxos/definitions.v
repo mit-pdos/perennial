@@ -73,6 +73,37 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
+ ∃ log,
+  ⌜int.nat reply.(enterNewEpochReply.acceptedEpoch) < int.nat epoch⌝ ∗
+  ⌜reply.(enterNewEpochReply.state) = get_state log⌝ ∗
+  ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
+  is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
+  is_proposal_lb γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
+  is_proposal_facts conf γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
+  own_vote_tok γsrv epoch
+.
+
+Definition enterNewEpoch_core_spec γ γsrv args (Φ : enterNewEpochReply.C -> iProp Σ) : iProp Σ :=
+  (
+   "HΦ" ∷ (∀ reply, enterNewEpoch_post γ γsrv reply args.(enterNewEpochArgs.epoch) -∗ Φ reply) ∧
+           (∀ reply, ⌜reply.(enterNewEpochReply.err) ≠ 0⌝ -∗ Φ reply)
+    )%I
+.
+
+Program Definition enterNewEpoch_spec γ γsrv :=
+  λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ args,
+    ⌜enterNewEpochArgs.has_encoding encoded_args args⌝ ∗
+    enterNewEpoch_core_spec γ γsrv args (λ reply, ∀ enc_reply,
+                                                ⌜enterNewEpochReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
+    )%I
+.
+Next Obligation.
+  rewrite /enterNewEpoch_core_spec.
+  solve_proper.
+Defined.
+
 (* TODO: copied from pb_definitions.v *)
 Definition appN := mpN .@ "app".
 Definition escrowN := mpN .@ "escrow".
@@ -118,7 +149,8 @@ Defined.
 (* End RPC specs *)
 
 Definition is_mpaxos_host (host:u64) (γ:mp_system_names) (γsrv:mp_server_names) : iProp Σ :=
-  "#H1" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ)
+  "#H1" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
+  "#H2" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ)
 .
 
 Definition is_ReconnectingClient : loc → u64 → iProp Σ.
@@ -219,33 +251,5 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#Hmu" ∷ readonly (s ↦[mpaxos.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock mpN mu (own_Server s γ γsrv)
   (* "#Hsys_inv" ∷ sys_inv γ *).
-
-Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
- ∃ log,
-  ⌜int.nat reply.(enterNewEpochReply.acceptedEpoch) < int.nat epoch⌝ ∗
-  ⌜reply.(enterNewEpochReply.state) = get_state log⌝ ∗
-  ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
-  is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
-  is_proposal_lb γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
-  is_proposal_facts conf γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
-  own_vote_tok γsrv epoch
-.
-
-Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q reply_ptr init_reply :
-  {{{
-        "#His_ck" ∷ is_singleClerk ck γ γsrv ∗
-        "Hargs" ∷ enterNewEpochArgs.own args_ptr args q ∗
-        "Hreply" ∷ enterNewEpochReply.own reply_ptr init_reply 1
-  }}}
-    singleClerk__enterNewEpoch #ck #args_ptr #reply_ptr
-  {{{
-        reply, RET #(); enterNewEpochReply.own reply_ptr reply 1 ∗
-        □if (decide (reply.(enterNewEpochReply.err) = (U64 0))) then
-          enterNewEpoch_post γ γsrv reply args.(enterNewEpochArgs.epoch)
-        else
-          True
-  }}}.
-Proof.
-Admitted.
 
 End definitions.

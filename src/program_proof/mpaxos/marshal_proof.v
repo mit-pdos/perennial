@@ -211,7 +211,7 @@ Definition own args_ptr args q : iProp Σ :=
   "Hreply_nextIndex" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "nextIndex"]{q} #args.(nextIndex) ∗
   "Hreply_acceptedEpoch" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "acceptedEpoch"]{q} #args.(acceptedEpoch) ∗
   "Hreply_ret" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "state"]{q} (slice_val state_sl) ∗
-  "Hreply_ret_sl" ∷ is_slice_small state_sl byteT q args.(state)
+  "Hreply_ret_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
 .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) q :
