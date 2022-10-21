@@ -256,6 +256,7 @@ Definition own_Server (s:loc) γ γsrv : iProp Σ :=
   (* ghost-state *)
   "Hghost" ∷ own_replica_ghost conf γ γsrv st ∗
   "#Hinv" ∷ sys_inv conf γ ∗
+  "#Hvote_inv" ∷ vote_inv conf γ ∗
 
   (* leader-only *)
   "HleaderOnly" ∷ (if isLeader then own_leader_ghost conf γ st else True) ∗

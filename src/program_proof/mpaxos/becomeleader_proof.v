@@ -312,6 +312,7 @@ Proof.
                   "%HlatestlogLen" ∷ ⌜int.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
                   "%HlatestEpoch_ineq" ∷ ⌜int.nat latestReply.(enterNewEpochReply.acceptedEpoch) < int.nat newepoch⌝ ∗
                   "#Hlatest_prop_lb" ∷ is_proposal_lb γ latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
+                  "#Hlatest_prop_facts" ∷ is_proposal_facts conf γ latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
                   "#Hacc_lbs" ∷ (□ [∗ list] s ↦ γsrv' ∈ conf, ⌜s ∈ W⌝ →
                                         is_accepted_upper_bound γsrv' latestLog
                                                                 latestReply.(enterNewEpochReply.acceptedEpoch)
@@ -539,6 +540,7 @@ Proof.
             iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
             iExists reply, log.
             iFrame "Hreply Hprop_lb %".
+            iFrame "#".
             iSplitR "Hvotes Hvote"; last first.
             { (* accumulate votes *)
               iDestruct (big_sepL_lookup_acc_impl with "Hvotes") as "[_ Hwand]".
@@ -677,6 +679,7 @@ Proof.
                 iExists reply, log.
                 iFrame "Hreply Hprop_lb %".
 
+                iFrame "#".
                 (* XXX: copy/paste votes *)
                 iSplitR "Hvotes Hvote"; last first.
                 { (* accumulate votes *)
@@ -1123,8 +1126,15 @@ Proof.
       iApply fupd_wp.
       iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
       { set_solver. }
-      iMod (become_leader with "Hacc_lbs Hvotes") as "HghostLeader".
+      iDestruct (is_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
+      iMod (become_leader with "[] Hacc_lbs Hlatest_prop_lb Hlatest_prop_facts Hvotes") as "HghostLeader".
+      {
+        intros ??.
+        apply HW_in_range in H.
+        word.
+      }
       { admit. (* FIXME: word.mul overflow with size W *) }
+      { admit. } (* TODO: use vote_inv from *)
       iMod "Hmask".
       iDestruct (ghost_replica_helper1 with "Hghost") as %Hineq.
       iDestruct (ghost_leader_get_proposal with "HghostLeader") as "#[Hprop_lb Hprop_facts]".
