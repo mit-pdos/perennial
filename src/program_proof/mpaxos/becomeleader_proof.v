@@ -43,7 +43,18 @@ Proof.
   wp_loadField.
   wp_if_destruct.
   { (* already leader, no need to do anything *)
-    admit.
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext.
+      iExists _,_,_,_,_,_.
+      iFrame "∗#%".
+      iFrame "HleaderOnly".
+    }
+    wp_pures.
+    iModIntro.
+    by iApply "HΦ".
   }
   wp_loadField.
   wp_pures.
@@ -337,7 +348,14 @@ Proof.
           wp_store.
           replace (W) with (∅:gset nat); last first.
           {
-            admit. (* TODO: pure proof, size of gset = 0 → gset is ∅ *)
+            destruct (decide (W = ∅)).
+            {
+              done.
+            }
+            assert (size W = 0).
+            { admit. } (* FIXME: overflow reasoning about size W *)
+            apply size_empty_inv in H.
+            by apply leibniz_equiv.
           }
           iModIntro.
           iApply "HΦ".
@@ -777,18 +795,20 @@ Proof.
       }
     }
   }
-  iIntros "[Hi _]".
+  iIntros "[Hi Hreplies_sl]".
   wp_pures.
   iNamed "Hi".
   wp_load.
   wp_if_destruct.
-  {
+  { (* case: got enough replies to become leader *)
     wp_loadField.
     destruct (decide (size W = 0)).
     {
       exfalso.
       rewrite e in Heqb1.
-      admit. (* FIXME: derive contradiction from X < 0 *)
+      replace (int.Z (word.mul 2%Z 0%nat)) with (0)%Z in Heqb1; last first.
+      { eauto. }
+      word.
     }
 
     wp_apply (acquire_spec with "HmuInv").
@@ -798,7 +818,7 @@ Proof.
     wp_loadField.
     wp_loadField.
     wp_if_destruct.
-    {
+    { (* case: server has not advanced past newepoch, we become leader *)
       wp_loadField.
       wp_storeField.
       wp_storeField.
@@ -807,13 +827,107 @@ Proof.
       wp_load.
 
       iNamed "Hi".
-      admit.
+      iMod (readonly_load with "HlatestReply") as (?) "HlatestReply2".
+      iNamed "HlatestReply2".
+      wp_loadField.
+      wp_storeField.
+      wp_load.
+      wp_loadField.
+      wp_storeField.
+      wp_loadField.
+
+      iClear "Hstate_sl Hclerks_sl Hclerks_rpc HisApplyFn Hinv".
+      iNamed "Hown".
+      rewrite Hlatestlog.
+      (* A few protocol steps *)
+      iMod (readonly_alloc (is_slice_small state_sl1 byteT 1 (get_state latestLog))
+                           (Φ:=(λ q, (is_slice_small state_sl1 byteT q (get_state latestLog))))
+                           q0 with "Hreply_ret_sl") as "#Hst_sl".
+      iApply fupd_wp.
+      iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
+      { set_solver. }
+      iMod (become_leader with "Hacc_lbs []") as "HghostLeader".
+      { admit. (* FIXME: word.mul overflow with size W *) }
+      { admit. } (* FIXME: votes *)
+      iMod "Hmask".
+      iDestruct (ghost_replica_helper1 with "Hghost") as %Hineq.
+      iDestruct (ghost_leader_get_proposal with "HghostLeader") as "#[Hprop_lb Hprop_facts]".
+      iMod (ghost_replica_accept_new_epoch with "Hghost Hprop_lb Hprop_facts") as "Hghost".
+      { simpl. word. }
+      { simpl. word. }
+      iModIntro.
+
+      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies]").
+      {
+        iFrame "HmuInv Hlocked2".
+        iNext.
+        iExists _, _, _, _, _, _.
+        instantiate (1:=mkMPaxosState _ _ _).
+        simpl.
+        iFrame "HisLeader ∗".
+        iSplitL "HnextIndex".
+        {
+          iApply to_named.
+          iExactEq "HnextIndex".
+          f_equal.
+          f_equal.
+          f_equal. (* XXX: this looks like it has no effect, but actually strips off a base_lit *)
+          word.
+        }
+        iFrame "#".
+        iSplitR.
+        { iPureIntro. word. }
+        iSplitR.
+        { iPureIntro. word. }
+        done.
+      }
+      wp_pures.
+      wp_apply (release_spec with "[-HΦ]").
+      {
+        iFrame "HmuReplyInv Hlocked".
+        iNext.
+        iExists _, _.
+        iFrame "∗#".
+      }
+      wp_pures.
+      iModIntro.
+      by iApply "HΦ".
     }
     {
       wp_pures.
       wp_loadField.
-      admit.
+      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies]").
+      {
+        iFrame "HmuInv Hlocked2".
+        iNext.
+        iExists _, _, _, _, _, _.
+        iFrame "∗#".
+      }
+      wp_pures.
+      wp_apply (release_spec with "[-HΦ]").
+      {
+        iFrame "HmuReplyInv Hlocked".
+        iNext.
+        iExists _, _.
+        iFrame "∗#".
+      }
+      wp_pures.
+      iModIntro.
+      by iApply "HΦ".
     }
+  }
+  { (* case: not enough replies *)
+    wp_apply (release_spec with "[-HΦ]").
+    {
+      iFrame "HmuReplyInv Hlocked".
+      iNext.
+      iExists _, _.
+      iFrame "∗#".
+    }
+    wp_pures.
+    iModIntro.
+    by iApply "HΦ".
+  }
 Admitted.
 
 End becomeleader_proof.

@@ -420,6 +420,7 @@ Definition Server__becomeLeader: val :=
           struct.storeF Server "epoch" "s" (struct.loadF enterNewEpochArgs "epoch" "args");;
           struct.storeF Server "isLeader" "s" #true;;
           struct.storeF Server "acceptedEpoch" "s" (struct.loadF Server "epoch" "s");;
+          struct.storeF Server "nextIndex" "s" (struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply"));;
           struct.storeF Server "state" "s" (struct.loadF enterNewEpochReply "state" (![ptrT] "latestReply"))
         else #());;
         lock.release (struct.loadF Server "mu" "s");;

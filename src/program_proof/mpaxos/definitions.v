@@ -210,7 +210,7 @@ Definition own_Server (s:loc) γ γsrv : iProp Σ :=
   "#Hinv" ∷ sys_inv conf γ ∗
 
   (* leader-only *)
-  "HleaderOnly" ∷ (if isLeader then own_leader_ghost conf γ γsrv st else True) ∗
+  "HleaderOnly" ∷ (if isLeader then own_leader_ghost conf γ st else True) ∗
   "%HaccEpochEq" ∷ ⌜if isLeader then st.(mp_acceptedEpoch) = st.(mp_epoch) else True⌝
 .
 

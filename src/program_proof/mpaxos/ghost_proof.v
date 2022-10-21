@@ -122,16 +122,16 @@ Record MPaxosState :=
 Definition own_replica_ghost γsys γsrv (st:MPaxosState) : iProp Σ.
 Admitted.
 
-Definition own_leader_ghost γsys γsrv (st:MPaxosState): iProp Σ.
+Definition own_leader_ghost γsys (st:MPaxosState): iProp Σ.
 Admitted.
 
-Lemma ghost_leader_propose γsys γsrv st entry :
-  own_leader_ghost γsys γsrv st -∗
+Lemma ghost_leader_propose γsys st entry :
+  own_leader_ghost γsys st -∗
   £ 1 -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗
       (⌜someσ = st.(mp_log)⌝ -∗ own_ghost γsys (someσ ++ [entry]) ={∅,⊤∖↑ghostN}=∗ True))
   ={⊤}=∗
-  own_leader_ghost γsys γsrv (mkMPaxosState st.(mp_epoch) st.(mp_acceptedEpoch) (st.(mp_log) ++ [entry]))∗
+  own_leader_ghost γsys (mkMPaxosState st.(mp_epoch) st.(mp_acceptedEpoch) (st.(mp_log) ++ [entry]))∗
   is_proposal_lb γsys st.(mp_epoch) (st.(mp_log) ++ [entry]) ∗
   is_proposal_facts γsys st.(mp_epoch) (st.(mp_log) ++ [entry])
 .
@@ -260,6 +260,30 @@ Lemma is_proposal_lb_compare γsys log log' epoch :
   is_proposal_lb γsys epoch log' -∗
   ⌜prefix log' log⌝
 .
+Proof.
+Admitted.
+
+Lemma become_leader γsys (W:gset nat) latestLog acceptedEpoch newEpoch:
+  2 * (size W) > length config →
+  ([∗ list] s↦γsrv ∈ config, ⌜s ∈ W⌝ → is_accepted_upper_bound γsrv latestLog acceptedEpoch newEpoch) -∗
+  True (* FIXME: votes *) ={↑sysN}=∗
+  own_leader_ghost γsys (mkMPaxosState newEpoch newEpoch latestLog)
+.
+Proof.
+Admitted.
+
+
+Lemma ghost_leader_get_proposal γsys st :
+  own_leader_ghost γsys st -∗
+  is_proposal_lb γsys st.(mp_epoch) st.(mp_log) ∗
+  is_proposal_facts γsys st.(mp_epoch) st.(mp_log)
+.
+Proof.
+Admitted.
+
+Lemma ghost_replica_helper1 γsys γsrv st :
+  own_replica_ghost γsys γsrv st -∗
+  ⌜int.nat st.(mp_acceptedEpoch) < int.nat st.(mp_epoch)⌝.
 Proof.
 Admitted.
 
