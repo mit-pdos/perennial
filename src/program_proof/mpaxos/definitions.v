@@ -146,12 +146,27 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition becomeleader_core_spec :=
+  λ (Φ : iPropO Σ), (Φ)%I
+.
+
+Program Definition becomeleader_spec :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  becomeleader_core_spec (∀ enc_reply, Φ enc_reply)%I
+.
+Next Obligation.
+  unfold becomeleader_core_spec.
+  solve_proper.
+Defined.
+
 (* End RPC specs *)
 
 Definition is_mpaxos_host (host:u64) (γ:mp_system_names) (γsrv:mp_server_names) : iProp Σ :=
+  "#Hdom" ∷ handlers_dom γsrv.(mp_urpc_gn) {[ (U64 0); (U64 1); (U64 2); (U64 3)]} ∗
   "#H0" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 0) (applyAsFollower_spec γ γsrv) ∗
   "#H1" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
-  "#H2" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ)
+  "#H2" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ) ∗
+  "#H3" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 3) (becomeleader_spec)
 .
 
 Definition is_ReconnectingClient : loc → u64 → iProp Σ.

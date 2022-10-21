@@ -22,16 +22,14 @@ Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
 Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
 
-Lemma wp_Server__becomeLeader s γ γsrv :
-  {{{
-        is_Server conf s γ γsrv
-  }}}
-    mpaxos.Server__becomeLeader #s
-  {{{
-        RET #(); True
-  }}}.
+Lemma wp_Server__becomeLeader s γ γsrv Ψ Φ :
+  is_Server conf s γ γsrv -∗
+  (Ψ -∗ Φ #()) -∗
+  becomeleader_core_spec Ψ -∗
+  WP mpaxos.Server__becomeLeader #s {{ Φ }}
+.
 Proof.
-  iIntros (Φ) "#Hsrv HΦ".
+  iIntros "#Hsrv HΦ HΨ".
   wp_call.
   iNamed "Hsrv".
   wp_loadField.
@@ -44,7 +42,7 @@ Proof.
   wp_if_destruct.
   { (* already leader, no need to do anything *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -64,7 +62,7 @@ Proof.
   iIntros (args_ptr) "Hargs".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hargs]").
+  wp_apply (release_spec with "[-HΦ Hargs HΨ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -1135,7 +1133,7 @@ Proof.
       { simpl. word. }
       iModIntro.
 
-      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow]").
+      wp_apply (release_spec with "[-HΦ HΨ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow]").
       {
         iFrame "HmuInv Hlocked2".
         iNext.
@@ -1160,7 +1158,7 @@ Proof.
         done.
       }
       wp_pures.
-      wp_apply (release_spec with "[-HΦ]").
+      wp_apply (release_spec with "[-HΦ HΨ]").
       {
         iFrame "HmuReplyInv Hlocked".
         iNext.
@@ -1174,7 +1172,7 @@ Proof.
     {
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow]").
+      wp_apply (release_spec with "[-HΦ HΨ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow]").
       {
         iFrame "HmuInv Hlocked2".
         iNext.
@@ -1182,7 +1180,7 @@ Proof.
         iFrame "∗#".
       }
       wp_pures.
-      wp_apply (release_spec with "[-HΦ]").
+      wp_apply (release_spec with "[-HΦ HΨ]").
       {
         iFrame "HmuReplyInv Hlocked".
         iNext.
@@ -1195,7 +1193,7 @@ Proof.
     }
   }
   { (* case: not enough replies *)
-    wp_apply (release_spec with "[-HΦ]").
+    wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuReplyInv Hlocked".
       iNext.
