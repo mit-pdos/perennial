@@ -196,9 +196,9 @@ Proof.
     wp_loadField.
     wp_storeField.
     wp_loadField.
+    iDestruct (ghost_replica_helper1 with "Hghost") as "%HepochIneq".
     iMod (ghost_replica_enter_new_epoch with "Hghost") as "(Hghost & Htok & #Hrest)".
     { exact Hineq. }
-    iDestruct (ghost_replica_helper1 with "Hghost") as "%HepochIneq".
     simpl in HepochIneq.
 
     wp_apply (release_spec with "[-HΦ HΨ Hreply_err Hreply_acceptedEpoch Hreply_nextIndex Hreply_ret Hreply_ret_sl Htok]").
