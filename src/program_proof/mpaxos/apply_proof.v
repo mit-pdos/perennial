@@ -48,7 +48,8 @@ Proof.
   iDestruct (is_slice_to_small with "Hop_sl") as "Hop_sl".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hop_sl Hrep").
   {
-    iFrame "Hsrv".
+    iNamed "Hsrv".
+    iFrame "#".
   }
   { (* Successful RPC *)
     iModIntro.
@@ -381,10 +382,6 @@ Proof.
     wp_apply (wp_fork with "[]").
     { (* make applyAsFollower RPC and put reply in the replies list *)
       iNext.
-      wp_apply (wp_allocStruct).
-      { repeat econstructor. }
-      clear reply_ptr.
-      iIntros (reply_ptr) "Hreply".
       wp_pures.
 
       (* establish is_singleClerk *)
@@ -394,27 +391,21 @@ Proof.
       iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc2") as "[#His_ck _]".
       { done. }
       { done. }
-      wp_apply (wp_singleClerk__applyAsFollower with "[$His_ck Hreply]").
+      wp_apply (wp_singleClerk__applyAsFollower with "[$His_ck]").
       {
         iFrame.
         iFrame "Hargs".
-        iDestruct (struct_fields_split with "Hreply") as "HH".
-        iNamed "HH".
-        simpl.
-        iSplitL "err".
-        {
-          instantiate (1:=applyAsFollowerReply.mkC _).
-          iFrame.
-        }
         iFrame "Hprop_lb Hprop_facts".
         iPureIntro.
         split.
         { rewrite app_length. simpl. word. }
         split.
         { rewrite last_snoc. done. }
+        simpl.
         word.
       }
-      iIntros (reply) "Hreply".
+      clear reply_ptr.
+      iIntros (reply_ptr reply) "Hreply".
       wp_pures.
 
       wp_apply (acquire_spec with "HreplyMuInv").

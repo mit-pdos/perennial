@@ -217,20 +217,28 @@ Definition makeSingleClerk: val :=
     "ck".
 
 Definition singleClerk__enterNewEpoch: val :=
-  rec: "singleClerk__enterNewEpoch" "s" "args" "reply" :=
+  rec: "singleClerk__enterNewEpoch" "s" "args" :=
     let: "raw_args" := encodeEnterNewEpochArgs "args" in
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
-    ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_ENTER_NEW_EPOCH "raw_args" "raw_reply" #500;;
-    struct.store enterNewEpochReply "reply" (struct.load enterNewEpochReply (decodeEnterNewEpochReply (![slice.T byteT] "raw_reply")));;
-    #().
+    let: "err" := ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_ENTER_NEW_EPOCH "raw_args" "raw_reply" #500 in
+    (if: ("err" = #0)
+    then decodeEnterNewEpochReply (![slice.T byteT] "raw_reply")
+    else
+      struct.new enterNewEpochReply [
+        "err" ::= ETimeout
+      ]).
 
 Definition singleClerk__applyAsFollower: val :=
-  rec: "singleClerk__applyAsFollower" "s" "args" "reply" :=
+  rec: "singleClerk__applyAsFollower" "s" "args" :=
     let: "raw_args" := encodeApplyAsFollowerArgs "args" in
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
-    ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_ENTER_NEW_EPOCH "raw_args" "raw_reply" #500;;
-    struct.store applyAsFollowerReply "reply" (struct.load applyAsFollowerReply (decodeApplyAsFollowerReply (![slice.T byteT] "raw_reply")));;
-    #().
+    let: "err" := ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_ENTER_NEW_EPOCH "raw_args" "raw_reply" #500 in
+    (if: ("err" = #0)
+    then decodeApplyAsFollowerReply (![slice.T byteT] "raw_reply")
+    else
+      struct.new applyAsFollowerReply [
+        "err" ::= ETimeout
+      ]).
 
 Definition singleClerk__becomeLeader: val :=
   rec: "singleClerk__becomeLeader" "s" :=
@@ -378,8 +386,7 @@ Definition Server__becomeLeader: val :=
       ForSlice ptrT "i" "ck" "clerks"
         (let: "ck" := "ck" in
         let: "i" := "i" in
-        Fork (let: "reply" := struct.alloc enterNewEpochReply (zero_val (struct.t enterNewEpochReply)) in
-              singleClerk__enterNewEpoch "ck" "args" "reply";;
+        Fork (let: "reply" := singleClerk__enterNewEpoch "ck" "args" in
               lock.acquire "mu";;
               "numReplies" <-[uint64T] ![uint64T] "numReplies" + #1;;
               SliceSet ptrT "replies" "i" "reply";;
@@ -459,8 +466,7 @@ Definition Server__apply: val :=
       ForSlice ptrT "i" "ck" "clerks"
         (let: "ck" := "ck" in
         let: "i" := "i" in
-        Fork (let: "reply" := struct.alloc applyAsFollowerReply (zero_val (struct.t applyAsFollowerReply)) in
-              singleClerk__applyAsFollower "ck" "args" "reply";;
+        Fork (let: "reply" := singleClerk__applyAsFollower "ck" "args" in
               lock.acquire "mu";;
               "numReplies" <-[uint64T] ![uint64T] "numReplies" + #1;;
               SliceSet ptrT "replies" "i" "reply";;

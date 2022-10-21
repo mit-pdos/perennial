@@ -23,11 +23,10 @@ Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
 Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
 
-Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ Q args_ptr args reply_ptr init_reply :
+Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ Q args_ptr args :
   {{{
         "#His_ck" ∷ is_singleClerk conf ck γ γsrv ∗
         "Hargs" ∷ applyAsFollowerArgs.own args_ptr args ∗
-        "Hreply" ∷ applyAsFollowerReply.own reply_ptr init_reply 1 ∗
 
         "%Hσ_index" ∷ ⌜length σ = (int.nat args.(applyAsFollowerArgs.nextIndex) + 1)%nat⌝ ∗
         "%Hghost_op_σ" ∷ ⌜last σ = Some (args.(applyAsFollowerArgs.state), Q)⌝ ∗
@@ -35,9 +34,9 @@ Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ Q args_ptr args reply_ptr i
         "#Hprop_lb" ∷ is_proposal_lb γ args.(applyAsFollowerArgs.epoch) σ ∗
         "#Hprop_facts" ∷ is_proposal_facts conf γ args.(applyAsFollowerArgs.epoch) σ
   }}}
-    singleClerk__applyAsFollower #ck #args_ptr #reply_ptr
+    singleClerk__applyAsFollower #ck #args_ptr
   {{{
-        reply, RET #(); applyAsFollowerReply.own reply_ptr reply 1 ∗
+        reply_ptr reply, RET #reply_ptr; applyAsFollowerReply.own reply_ptr reply 1 ∗
                                                  □if (decide (reply.(applyAsFollowerReply.err) = (U64 0))) then
                                                    is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ
                                                  else

@@ -6,7 +6,7 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.mpaxos Require Export definitions.
+From Perennial.program_proof.mpaxos Require Export definitions enternewepoch_proof.
 
 Section becomeleader_proof.
 
@@ -159,10 +159,6 @@ Proof.
     wp_apply (wp_fork with "[]").
     { (* make applyAsFollower RPC and put reply in the replies list *)
       iNext.
-      wp_apply (wp_allocStruct).
-      { Transparent slice.T. repeat econstructor. Opaque slice.T. }
-      iIntros (reply_ptr) "Hreply".
-      wp_pures.
 
       (* establish is_singleClerk *)
       iDestruct (big_sepL2_lookup_1_some with "Hclerks_rpc") as (?) "%Hi_conf_lookup".
@@ -172,24 +168,13 @@ Proof.
       { done. }
       { done. }
       iMod (readonly_load with "Hargs_epoch") as (?) "Hargs_epoch2".
-      wp_apply (wp_singleClerk__enterNewEpoch with "[$His_ck Hreply Hargs_epoch2]").
+      wp_apply (wp_singleClerk__enterNewEpoch with "[$His_ck Hargs_epoch2]").
       {
         iFrame.
-        instantiate (3:=enterNewEpochArgs.mkC newepoch).
+        instantiate (2:=enterNewEpochArgs.mkC newepoch).
         iFrame.
-        iDestruct (struct_fields_split with "Hreply") as "HH".
-        iNamed "HH".
-        instantiate (1:=enterNewEpochReply.mkC _ _ _ _).
-        iExists _.
-        iFrame.
-        simpl.
-        instantiate (2:=Slice.nil).
-        iFrame.
-        instantiate (1:=[]).
-        iApply (is_slice_small_nil).
-        done.
       }
-      iIntros (reply) "Hreply".
+      iIntros (reply_ptr reply) "Hreply".
       wp_pures.
 
       wp_apply (acquire_spec with "HmuReplyInv").
@@ -210,7 +195,7 @@ Proof.
       iIntros "Hreplies_sl".
       wp_pures.
       wp_load.
-      iDestruct "Hreply" as "[Hreply #Hpost]".
+      iDestruct "Hreply" as "[Hreply Hpost]".
       wp_apply (wp_If_optional _ _ (True%I)).
       {
         iIntros (?) "_ HΦ'".
@@ -237,17 +222,11 @@ Proof.
         iDestruct (big_sepL2_insert_acc with "Hreplies")  as "[_ Hreplies2]".
         { done. }
         { done. }
-        iDestruct ("Hreplies2" $! reply_ptr x2 with "[Hreply]") as "Hreplies3".
+        iDestruct ("Hreplies2" $! reply_ptr x2 with "[Hreply Hpost]") as "Hreplies3".
         {
           iRight.
           iExists _.
           iFrame.
-          destruct (decide (_)).
-          {
-            simpl.
-            iFrame "Hpost".
-          }
-          done.
         }
 
         replace (<[int.nat i:=x2]> conf) with (conf) ; last first.
@@ -1143,9 +1122,6 @@ Proof.
       iNamed "Hown".
       rewrite Hlatestlog.
       (* A few protocol steps *)
-      iMod (readonly_alloc (is_slice_small state_sl1 byteT 1 (get_state latestLog))
-                           (Φ:=(λ q, (is_slice_small state_sl1 byteT q (get_state latestLog))))
-                           q0 with "Hreply_ret_sl") as "#Hst_sl".
       iApply fupd_wp.
       iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
       { set_solver. }

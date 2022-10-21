@@ -23,16 +23,15 @@ Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
 Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
 
-Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q reply_ptr init_reply :
+Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q :
   {{{
         "#His_ck" ∷ is_singleClerk conf ck γ γsrv ∗
-        "Hargs" ∷ enterNewEpochArgs.own args_ptr args q ∗
-        "Hreply" ∷ enterNewEpochReply.own reply_ptr init_reply 1
+        "Hargs" ∷ enterNewEpochArgs.own args_ptr args q
   }}}
-    singleClerk__enterNewEpoch #ck #args_ptr #reply_ptr
+    singleClerk__enterNewEpoch #ck #args_ptr
   {{{
-        reply, RET #(); enterNewEpochReply.own reply_ptr reply 1 ∗
-        □if (decide (reply.(enterNewEpochReply.err) = (U64 0))) then
+        reply_ptr reply, RET #reply_ptr; enterNewEpochReply.own reply_ptr reply 1 ∗
+        if (decide (reply.(enterNewEpochReply.err) = (U64 0))) then
           enterNewEpoch_post conf γ γsrv reply args.(enterNewEpochArgs.epoch)
         else
           True
@@ -50,10 +49,9 @@ Proof.
   wp_pures.
   iNamed "His_ck".
   wp_loadField.
-  wp_bind (ReconnectingClient__Call _ _ _ _ _).
-  iApply (wp_frame_wand with "[Hreply]").
-  { iNamedAccu. }
   iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iApply (wp_frame_wand with "[HΦ]").
+  { iNamedAccu. }
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hsl Hrep").
   {
     unfold is_mpaxos_host.
@@ -72,28 +70,72 @@ Proof.
       iIntros (?) "Hpost".
       iIntros (?) "%Henc_reply Hsl".
       iIntros (?) "Hrep Hrep_sl".
-      iNamed 1.
       wp_pures.
       wp_load.
-      admit.
+      rewrite Henc_reply.
+      wp_apply (enterNewEpochReply.wp_Decode with "[$Hrep_sl]").
+      { done. }
+      iIntros (reply_ptr) "Hreply".
+      iIntros "HΦ".
+      iApply "HΦ".
+      iFrame "∗".
+      destruct (decide _).
+      { iFrame. }
+      done.
     }
     { (* Apply failed for some reason, e.g. node is not primary *)
-      iIntros (??).
+      iIntros (? Hreply_err).
       iIntros (?) "%Henc_reply Hsl".
       iIntros (?) "Hrep Hrep_sl".
-      iNamed 1.
       wp_pures.
       wp_load.
-      admit.
+      rewrite Henc_reply.
+      wp_apply (enterNewEpochReply.wp_Decode with "[$Hrep_sl]").
+      { done. }
+      iIntros (reply_ptr) "Hreply".
+      iIntros "HΦ".
+      iApply "HΦ".
+      iFrame "∗".
+      destruct (decide _).
+      { exfalso. done. }
+      { done. }
     }
   }
   { (* RPC error *)
     iIntros.
     wp_pures.
-    wp_load.
-    admit.
+    destruct (bool_decide _) as [] eqn:X.
+    {
+      exfalso.
+      apply bool_decide_eq_true in X.
+      naive_solver.
+    }
+    wp_pures.
+
+    iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "Hsl".
+    { done. }
+    iMod (readonly_alloc_1 with "Hsl") as "#Hsl2".
+
+    wp_apply (wp_allocStruct).
+    { repeat econstructor. eauto. }
+    iIntros (reply_ptr) "Hreply".
+    iNamed 1.
+    iApply "HΦ".
+    iDestruct (struct_fields_split with "Hreply") as "HH".
+    iNamed "HH".
+
+    iSplitL.
+    {
+      iExists _.
+      instantiate (1:=enterNewEpochReply.mkC _ _ _ _).
+      simpl.
+      replace (zero_val (slice.T byteT)) with (slice_val (Slice.nil)) by done.
+      iFrame "∗#".
+    }
+    simpl.
+    done.
   }
-Admitted.
+Qed.
 
 Lemma wp_Server__enterNewEpoch (s:loc) (args_ptr reply_ptr:loc) γ γsrv args init_reply Φ Ψ :
   is_Server conf s γ γsrv -∗
