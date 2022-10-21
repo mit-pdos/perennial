@@ -266,7 +266,7 @@ Admitted.
 Lemma become_leader γsys (W:gset nat) latestLog acceptedEpoch newEpoch:
   2 * (size W) > length config →
   ([∗ list] s↦γsrv ∈ config, ⌜s ∈ W⌝ → is_accepted_upper_bound γsrv latestLog acceptedEpoch newEpoch) -∗
-  True (* FIXME: votes *) ={↑sysN}=∗
+  ([∗ list] s↦γsrv ∈ config, ⌜s ∈ W⌝ → own_vote_tok γsrv newEpoch) ={↑sysN}=∗
   own_leader_ghost γsys (mkMPaxosState newEpoch newEpoch latestLog)
 .
 Proof.

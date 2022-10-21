@@ -94,9 +94,9 @@ Proof.
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ is_slice_small replies_sl ptrT 1 reply_ptrs ∗
-                    "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                    "Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
                     ⌜reply_ptr = null⌝ ∨ (∃ reply, readonly (enterNewEpochReply.own reply_ptr reply 1) ∗
-                                              □(if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
+                                              (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
                                                 enterNewEpoch_post conf γ γsrv' reply newepoch
                                               else
                                                 True)
@@ -222,7 +222,6 @@ Proof.
           iRight.
           iExists _.
           iFrame.
-          iModIntro.
           destruct (decide (_)).
           {
             simpl.
@@ -292,6 +291,14 @@ Proof.
                  "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
                  "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(U64 (size W)) ∗
                  "HlatestReply_loc" ∷ latestReply_ptr ↦[ptrT] #latestReply_loc ∗
+                 "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                  ⌜int.nat i ≤ j⌝ →
+                 ⌜reply_ptr = null⌝ ∨ (∃ reply, readonly (enterNewEpochReply.own reply_ptr reply 1) ∗
+                                           (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
+                                             enterNewEpoch_post conf γ γsrv' reply newepoch
+                                           else
+                                             True)
+                               )) ∗
                  if (decide (size W = 0)) then
                    True
                  else
@@ -305,16 +312,22 @@ Proof.
                                         is_accepted_upper_bound γsrv' latestLog
                                                                 latestReply.(enterNewEpochReply.acceptedEpoch)
                                                                 newepoch
-                                )
+                                ) ∗
+                  "Hvotes" ∷ ([∗ list] s ↦ γsrv' ∈ conf, ⌜s ∈ W⌝ → own_vote_tok γsrv' newepoch)
       )%I).
 
-  wp_apply (wp_forSlice (V:=loc) I _ _ _ _ _ reply_ptrs with "[] [HnumSuccesses HlatestReply Hreplies_sl]").
+  wp_apply (wp_forSlice (V:=loc) I _ _ _ _ _ reply_ptrs with "[] [HnumSuccesses HlatestReply Hreplies_sl Hreplies]").
   2: {
     iFrame "Hreplies_sl".
     iExists ∅, null.
     rewrite size_empty.
     simpl.
     iFrame.
+    iSplitR; first done.
+    iSplitR; first done.
+    iDestruct (big_sepL2_impl with "Hreplies []") as "$".
+    iModIntro.
+    iIntros.
     done.
   }
   { (* one iteration of loop *)
@@ -326,10 +339,11 @@ Proof.
     {
       iDestruct (big_sepL2_lookup_1_some with "Hreplies") as (?) "%Hi_conf_lookup".
       { done. }
-      iDestruct (big_sepL2_lookup_acc with "Hreplies") as "[#Hreply_post _]".
+      iDestruct (big_sepL2_lookup_acc_impl with "Hreplies") as "[Hreply_post Hreplies]".
       { done. }
       { done. }
-      iDestruct "Hreply_post" as "[%Hbad|#Hreply_post]".
+      iSpecialize ("Hreply_post" with "[% //]").
+      iDestruct "Hreply_post" as "[%Hbad|Hreply_post]".
       {
         exfalso. rewrite Hbad in Heqb1. done.
       }
@@ -381,13 +395,49 @@ Proof.
           iFrame.
           simpl.
           rewrite Heqb.
-          iDestruct "Hpost" as "#Hpost".
           destruct (decide (_)); last first.
           { exfalso. done. }
-          iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts)".
+          iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
+          iSplitL "Hreplies".
+          {
+            iApply "Hreplies".
+            {
+              iModIntro.
+              iIntros (??????) "Hwand".
+              iIntros (?).
+              iApply "Hwand".
+              iPureIntro.
+              replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+              word.
+            }
+            {
+              iIntros.
+              exfalso.
+              replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+              word.
+            }
+          }
           iExists reply, log.
           iFrame "Hreply".
           iFrame "#%".
+          iSplitR "Hvote"; last first.
+          {
+            iDestruct (big_sepL_lookup_acc_impl with "[]") as "[_ Hwand]".
+            { exact Hi_conf_lookup. }
+            { by iApply big_sepL_emp. }
+            iApply ("Hwand" with "[] [Hvote]").
+            {
+              iModIntro.
+              iIntros.
+              exfalso.
+              rewrite elem_of_singleton in H2.
+              done.
+            }
+            {
+              iIntros.
+              iFrame "Hvote".
+            }
+          }
           iModIntro.
           iApply big_sepL_forall.
           iIntros.
@@ -456,15 +506,62 @@ Proof.
             }
             replace (word.add (size W) 1) with (U64 (size W + 1)%nat) by word.
             iFrame.
+
+            iSplitL "Hreplies".
+            { (* XXX: copy/pasted *)
+              iApply "Hreplies".
+              {
+                iModIntro.
+                iIntros (??????) "Hwand".
+                iIntros (?).
+                iApply "Hwand".
+                iPureIntro.
+                replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+                word.
+              }
+              {
+                iIntros.
+                exfalso.
+                replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+                word.
+              }
+            }
+
             destruct (decide (size W + 1 = 0)).
             { done. }
 
-            iDestruct "Hpost" as "#Hpost".
             destruct (decide (_)); last first.
             { exfalso. done. }
-            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts)".
+            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
             iExists reply, log.
             iFrame "Hreply Hprop_lb %".
+            iSplitR "Hvotes Hvote"; last first.
+            { (* accumulate votes *)
+              iDestruct (big_sepL_lookup_acc_impl with "Hvotes") as "[_ Hwand]".
+              { exact Hi_conf_lookup. }
+              iApply ("Hwand" with "[] [Hvote]").
+              {
+                iModIntro.
+                iIntros (????) "Hwand".
+                iIntros "%Hk".
+                rewrite elem_of_union in Hk.
+                destruct Hk as [Hk|Hbad].
+                {
+                  iApply "Hwand".
+                  done.
+                }
+                {
+                  exfalso.
+                  rewrite elem_of_singleton in Hbad.
+                  done.
+                }
+              }
+              {
+                iIntros.
+                iFrame "Hvote".
+            }
+            }
+
             iModIntro.
             iApply (big_sepL_impl with "Hacc_lbs").
             iModIntro.
@@ -546,15 +643,64 @@ Proof.
                 }
                 replace (word.add (size W) 1) with (U64 (size W + 1)%nat) by word.
                 iFrame.
+
+                iSplitL "Hreplies".
+                { (* XXX: copy/pasted *)
+                  iApply "Hreplies".
+                  {
+                    iModIntro.
+                    iIntros (??????) "Hwand".
+                    iIntros (?).
+                    iApply "Hwand".
+                    iPureIntro.
+                    replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+                    word.
+                  }
+                  {
+                    iIntros.
+                    exfalso.
+                    replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+                    word.
+                  }
+                }
+
                 destruct (decide (size W + 1 = 0)).
                 { done. }
 
-                iDestruct "Hpost" as "#Hpost".
                 destruct (decide (_)); last first.
                 { exfalso. done. }
-                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts)".
+                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
                 iExists reply, log.
                 iFrame "Hreply Hprop_lb %".
+
+                (* XXX: copy/paste votes *)
+                iSplitR "Hvotes Hvote"; last first.
+                { (* accumulate votes *)
+                  iDestruct (big_sepL_lookup_acc_impl with "Hvotes") as "[_ Hwand]".
+                  { exact Hi_conf_lookup. }
+                  iApply ("Hwand" with "[] [Hvote]").
+                  {
+                    iModIntro.
+                    iIntros (????) "Hwand".
+                    iIntros "%Hk".
+                    rewrite elem_of_union in Hk.
+                    destruct Hk as [Hk|Hbad].
+                    {
+                      iApply "Hwand".
+                      done.
+                    }
+                    {
+                      exfalso.
+                      rewrite elem_of_singleton in Hbad.
+                      done.
+                    }
+                  }
+                  {
+                    iIntros.
+                    iFrame "Hvote".
+                  }
+                }
+
                 iModIntro.
                 iApply (big_sepL_impl with "Hacc_lbs").
                 iModIntro.
@@ -626,14 +772,63 @@ Proof.
                 }
                 replace (word.add (size W) 1) with (U64 (size W + 1)%nat) by word.
                 iFrame.
+
+                iSplitL "Hreplies".
+                { (* XXX: copy/pasted *)
+                  iApply "Hreplies".
+                  {
+                    iModIntro.
+                    iIntros (??????) "Hwand".
+                    iIntros (?).
+                    iApply "Hwand".
+                    iPureIntro.
+                    replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+                    word.
+                  }
+                  {
+                    iIntros.
+                    exfalso.
+                    replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+                    word.
+                  }
+                }
+
                 destruct (decide (size W + 1 = 0)).
                 { done. }
                 iExists _, _; iFrame "#%".
 
-                iDestruct "Hpost" as "#Hpost".
                 destruct (decide (_)); last first.
                 { exfalso. done. }
-                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts)".
+                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
+
+                (* XXX: copy/paste votes *)
+                iSplitR "Hvotes Hvote"; last first.
+                { (* accumulate votes *)
+                  iDestruct (big_sepL_lookup_acc_impl with "Hvotes") as "[_ Hwand]".
+                  { exact Hi_conf_lookup. }
+                  iApply ("Hwand" with "[] [Hvote]").
+                  {
+                    iModIntro.
+                    iIntros (????) "Hwand".
+                    iIntros "%Hk".
+                    rewrite elem_of_union in Hk.
+                    destruct Hk as [Hk|Hbad].
+                    {
+                      iApply "Hwand".
+                      done.
+                    }
+                    {
+                      exfalso.
+                      rewrite elem_of_singleton in Hbad.
+                      done.
+                    }
+                  }
+                  {
+                    iIntros.
+                    iFrame "Hvote".
+                  }
+                }
+
                 iModIntro.
                 iApply (big_sepL_impl with "Hacc_lbs").
                 iModIntro.
@@ -709,14 +904,64 @@ Proof.
             }
             replace (word.add (size W) 1) with (U64 (size W + 1)%nat) by word.
             iFrame.
+
+            (* XXX: copy/pasted *)
+            iSplitL "Hreplies".
+            {
+              iApply "Hreplies".
+              {
+                iModIntro.
+                iIntros (??????) "Hwand".
+                iIntros (?).
+                iApply "Hwand".
+                iPureIntro.
+                replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+                word.
+              }
+              {
+                iIntros.
+                exfalso.
+                replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+                word.
+              }
+            }
+
             destruct (decide (size W + 1 = 0)).
             { done. }
             iExists _, _; iFrame "#%".
 
-            iDestruct "Hpost" as "#Hpost".
             destruct (decide (_)); last first.
             { exfalso. done. }
-            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts)".
+            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
+
+            (* XXX: copy/paste votes *)
+            iSplitR "Hvotes Hvote"; last first.
+            { (* accumulate votes *)
+              iDestruct (big_sepL_lookup_acc_impl with "Hvotes") as "[_ Hwand]".
+              { exact Hi_conf_lookup. }
+              iApply ("Hwand" with "[] [Hvote]").
+              {
+                iModIntro.
+                iIntros (????) "Hwand".
+                iIntros "%Hk".
+                rewrite elem_of_union in Hk.
+                destruct Hk as [Hk|Hbad].
+                {
+                  iApply "Hwand".
+                  done.
+                }
+                {
+                  exfalso.
+                  rewrite elem_of_singleton in Hbad.
+                  done.
+                }
+              }
+              {
+                iIntros.
+                iFrame "Hvote".
+              }
+            }
+
             iModIntro.
             iApply (big_sepL_impl with "Hacc_lbs").
             iModIntro.
@@ -764,15 +1009,35 @@ Proof.
         iApply "HΦ".
         iExists W, _.
         iFrame "∗#%".
-        iPureIntro.
         replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) by word.
-        split.
+        iSplitR.
         {
+          iPureIntro.
           intros.
           specialize (HW_in_range s0 H).
           word.
         }
+        iSplitR.
         {
+          iPureIntro.
+          word.
+        }
+
+        (* XXX: copy/pasted *)
+        iApply "Hreplies".
+        {
+          iModIntro.
+          iIntros (??????) "Hwand".
+          iIntros (?).
+          iApply "Hwand".
+          iPureIntro.
+          replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+          word.
+        }
+        {
+          iIntros.
+          exfalso.
+          replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
           word.
         }
       }
@@ -782,15 +1047,26 @@ Proof.
       iApply "HΦ".
       iExists W, _.
       iFrame "∗#%".
-      iPureIntro.
+
       replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) by word.
-      split.
+      iSplitR.
       {
+        iPureIntro.
         intros.
         specialize (HW_in_range s0 H).
         word.
       }
+      iSplitR.
+      { iPureIntro. word. }
+
+      (* XXX: copy/pasted *)
+      iApply (big_sepL2_impl with "Hreplies").
       {
+        iModIntro.
+        iIntros (?????) "Hwand".
+        iIntros (?).
+        iApply "Hwand".
+        iPureIntro.
         word.
       }
     }
@@ -846,9 +1122,8 @@ Proof.
       iApply fupd_wp.
       iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
       { set_solver. }
-      iMod (become_leader with "Hacc_lbs []") as "HghostLeader".
+      iMod (become_leader with "Hacc_lbs Hvotes") as "HghostLeader".
       { admit. (* FIXME: word.mul overflow with size W *) }
-      { admit. } (* FIXME: votes *)
       iMod "Hmask".
       iDestruct (ghost_replica_helper1 with "Hghost") as %Hineq.
       iDestruct (ghost_leader_get_proposal with "HghostLeader") as "#[Hprop_lb Hprop_facts]".
@@ -857,7 +1132,7 @@ Proof.
       { simpl. word. }
       iModIntro.
 
-      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies]").
+      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies Hreplies]").
       {
         iFrame "HmuInv Hlocked2".
         iNext.
@@ -888,6 +1163,7 @@ Proof.
         iNext.
         iExists _, _.
         iFrame "∗#".
+        admit. (* FIXME: escrow out Hreplies *)
       }
       wp_pures.
       iModIntro.
@@ -896,7 +1172,7 @@ Proof.
     {
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies]").
+      wp_apply (release_spec with "[-HΦ Hlocked Hreplies_sl HnumReplies Hreplies]").
       {
         iFrame "HmuInv Hlocked2".
         iNext.
@@ -910,6 +1186,7 @@ Proof.
         iNext.
         iExists _, _.
         iFrame "∗#".
+        admit. (* FIXME: same as above *)
       }
       wp_pures.
       iModIntro.
@@ -923,6 +1200,7 @@ Proof.
       iNext.
       iExists _, _.
       iFrame "∗#".
+      admit. (* FIXME: same as above *)
     }
     wp_pures.
     iModIntro.

@@ -227,7 +227,8 @@ Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
   ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
   is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
   is_proposal_lb γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
-  is_proposal_facts conf γ reply.(enterNewEpochReply.acceptedEpoch) log
+  is_proposal_facts conf γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
+  own_vote_tok γsrv epoch
 .
 
 Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q reply_ptr init_reply :
