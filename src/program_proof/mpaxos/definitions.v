@@ -60,7 +60,7 @@ Definition applyAsFollower_core_spec γ γsrv args σ Q (Φ : applyAsFollowerRep
     )%I
 .
 
-Program Definition applyAsFollowerSpec_spec γ γsrv :=
+Program Definition applyAsFollower_spec γ γsrv :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ Q,
     ⌜applyAsFollowerArgs.has_encoding encoded_args args⌝ ∗
@@ -149,6 +149,7 @@ Defined.
 (* End RPC specs *)
 
 Definition is_mpaxos_host (host:u64) (γ:mp_system_names) (γsrv:mp_server_names) : iProp Σ :=
+  "#H0" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 0) (applyAsFollower_spec γ γsrv) ∗
   "#H1" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
   "#H2" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ)
 .

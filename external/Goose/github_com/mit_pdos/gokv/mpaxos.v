@@ -232,7 +232,7 @@ Definition singleClerk__applyAsFollower: val :=
   rec: "singleClerk__applyAsFollower" "s" "args" :=
     let: "raw_args" := encodeApplyAsFollowerArgs "args" in
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_ENTER_NEW_EPOCH "raw_args" "raw_reply" #500 in
+    let: "err" := ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_APPLY_AS_FOLLOWER "raw_args" "raw_reply" #500 in
     (if: ("err" = #0)
     then decodeApplyAsFollowerReply (![slice.T byteT] "raw_reply")
     else
