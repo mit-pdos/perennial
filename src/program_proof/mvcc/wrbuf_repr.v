@@ -44,4 +44,21 @@ Proof.
   by do 2 rewrite -list_fmap_compose.
 Qed.
 
+Lemma NoDup_wrent_to_key_dbval (ents : list wrent) :
+  NoDup ents.*1.*1.*1 ->
+  NoDup (wrent_to_key_dbval <$> ents).*1.
+Proof.
+  intros H.
+  replace (wrent_to_key_dbval <$> _).*1 with ents.*1.*1.*1; last first.
+  { do 3 rewrite -list_fmap_compose. f_equal. }
+  done.
+Qed.
+
+Lemma wrent_to_key_dbval_key_fmap (ents : list wrent) :
+  (wrent_to_key_dbval <$> ents).*1 = ents.*1.*1.*1.
+Proof.
+  do 3 rewrite -list_fmap_compose.
+  by apply list_fmap_ext; last done.
+Qed.
+
 End lemma.

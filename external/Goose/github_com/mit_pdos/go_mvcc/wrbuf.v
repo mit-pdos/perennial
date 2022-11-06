@@ -25,6 +25,13 @@ Definition search: val :=
     let: "found" := ![uint64T] "pos" < slice.len "ents" in
     (![uint64T] "pos", "found").
 
+Definition swap: val :=
+  rec: "swap" "ents" "i" "j" :=
+    let: "tmp" := SliceGet (struct.t WrEnt) "ents" "i" in
+    SliceSet (struct.t WrEnt) "ents" "i" (SliceGet (struct.t WrEnt) "ents" "j");;
+    SliceSet (struct.t WrEnt) "ents" "j" "tmp";;
+    #().
+
 Definition WrBuf := struct.decl [
   "ents" :: slice.T (struct.t WrEnt)
 ].
@@ -34,6 +41,25 @@ Definition MkWrBuf: val :=
     let: "wrbuf" := struct.alloc WrBuf (zero_val (struct.t WrBuf)) in
     struct.storeF WrBuf "ents" "wrbuf" (NewSliceWithCap (struct.t WrEnt) #0 #16);;
     "wrbuf".
+
+Definition WrBuf__sortEntsByKey: val :=
+  rec: "WrBuf__sortEntsByKey" "wrbuf" :=
+    let: "ents" := struct.loadF WrBuf "ents" "wrbuf" in
+    let: "i" := ref_to uint64T #1 in
+    Skip;;
+    (for: (λ: <>, ![uint64T] "i" < slice.len "ents"); (λ: <>, Skip) := λ: <>,
+      let: "j" := ref_to uint64T (![uint64T] "i") in
+      Skip;;
+      (for: (λ: <>, ![uint64T] "j" > #0); (λ: <>, Skip) := λ: <>,
+        (if: struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "j" - #1)) ≤ struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "j"))
+        then Break
+        else
+          swap "ents" (![uint64T] "j" - #1) (![uint64T] "j");;
+          "j" <-[uint64T] ![uint64T] "j" - #1;;
+          Continue));;
+      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      Continue);;
+    #().
 
 Definition WrBuf__Lookup: val :=
   rec: "WrBuf__Lookup" "wrbuf" "key" :=
@@ -80,6 +106,7 @@ Definition WrBuf__Delete: val :=
 
 Definition WrBuf__OpenTuples: val :=
   rec: "WrBuf__OpenTuples" "wrbuf" "tid" "idx" :=
+    WrBuf__sortEntsByKey "wrbuf";;
     let: "ents" := struct.loadF WrBuf "ents" "wrbuf" in
     let: "pos" := ref_to uint64T #0 in
     Skip;;

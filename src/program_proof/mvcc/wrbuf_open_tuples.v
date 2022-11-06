@@ -1,5 +1,5 @@
 From Perennial.program_proof.mvcc Require Import
-     wrbuf_prelude wrbuf_repr
+     wrbuf_prelude wrbuf_repr wrbuf_sort_ents_by_key
      index_proof
      tuple_repr tuple_own tuple_free tuple_write_lock.
 
@@ -22,6 +22,13 @@ Theorem wp_wrbuf__OpenTuples wrbuf (tid : u64) (idx : loc) sid mods γ :
 Proof.
   iIntros "#Hidx !>" (Φ) "[Hwrbuf Hactive] HΦ".
   wp_call.
+  
+  (***********************************************************)
+  (* wrbuf.sortEntsByKey()                                   *)
+  (***********************************************************)
+  wp_apply (wp_wrbuf__sortEntsByKey with "Hwrbuf").
+  iIntros "Hwrbuf".
+  wp_pures.
   
   (***********************************************************)
   (* ents := wrbuf.ents                                      *)

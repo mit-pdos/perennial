@@ -196,23 +196,6 @@ Proof.
   }
 Qed.
 
-Local Lemma NoDup_wrent_to_key_dbval (ents : list wrent) :
-  NoDup ents.*1.*1.*1 ->
-  NoDup (wrent_to_key_dbval <$> ents).*1.
-Proof.
-  intros H.
-  replace (wrent_to_key_dbval <$> _).*1 with ents.*1.*1.*1; last first.
-  { do 3 rewrite -list_fmap_compose. f_equal. }
-  done.
-Qed.
-
-Local Lemma wrent_to_key_dbval_key_fmap (ents : list wrent) :
-  (wrent_to_key_dbval <$> ents).*1 = ents.*1.*1.*1.
-Proof.
-  do 3 rewrite -list_fmap_compose.
-  by apply list_fmap_ext; last done.
-Qed.
-
 (* TODO: Return values first or others first? Make it consistent. *)
 Definition spec_wrbuf__Lookup (v : u64) (b ok : bool) (key : u64) (m : gmap u64 dbval) :=
   if ok then m !! key = Some (to_dbval b v) else m !! key = None.

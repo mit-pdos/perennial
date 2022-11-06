@@ -98,6 +98,72 @@ Proof.
   by rewrite drop_all.
 Qed.
 
+Lemma list_insert_insert_swap {A} (l : list A) (i j : nat) (x y : A) :
+  l !! i = Some x ->
+  l !! j = Some y ->
+  <[j := x]> (<[i := y]> l) ≡ₚ l.
+Proof.
+  intros Hi Hj.
+  apply lookup_lt_Some in Hi as Hleni.
+  apply lookup_lt_Some in Hj as Hlenj.
+  destruct (decide (i < j)%nat).
+  { (* Case [i < j]. *)
+    (* Rewrite LHS. *)
+    rewrite insert_take_drop; last by rewrite insert_length.
+    rewrite drop_insert_gt; last lia.
+    rewrite take_insert_lt; last lia.
+    rewrite insert_take_drop; last first.
+    { rewrite take_length_le; [done | lia]. }
+    rewrite take_take.
+    replace (i `min` j)%nat with i%nat; last lia.
+    (* Rerwite RHS. *)
+    rewrite -{4}(list_insert_id _ _ _ Hj).
+    rewrite -{4}(list_insert_id _ _ _ Hi).
+    rewrite insert_take_drop; last by rewrite insert_length.
+    rewrite drop_insert_gt; last lia.
+    rewrite take_insert_lt; last lia.
+    rewrite insert_take_drop; last first.
+    { rewrite take_length_le; [done | lia]. }
+    rewrite take_take.
+    replace (i `min` j)%nat with i%nat; last lia.
+    do 2 rewrite -app_assoc -Permutation_middle2.
+    apply perm_swap.
+  }
+  destruct (decide (i = j)%nat).
+  { (* Case [i = j]. *)
+    clear n.
+    subst j.
+    rewrite list_insert_insert.
+    rewrite list_insert_id; last done.
+    done.
+  }
+  { (* Case [j < i]. *)
+    assert (Hlt : (j < i)%nat) by lia.
+    clear n n0.
+    rewrite list_insert_commute; last lia.
+    (* Rewrite LHS. *)
+    rewrite insert_take_drop; last by rewrite insert_length.
+    rewrite drop_insert_gt; last lia.
+    rewrite take_insert_lt; last lia.
+    rewrite insert_take_drop; last first.
+    { rewrite take_length_le; [done | lia]. }
+    rewrite take_take.
+    replace (i `min` j)%nat with j%nat; last lia.
+    (* Rerwite RHS. *)
+    rewrite -{4}(list_insert_id _ _ _ Hi).
+    rewrite -{4}(list_insert_id _ _ _ Hj).
+    rewrite insert_take_drop; last by rewrite insert_length.
+    rewrite drop_insert_gt; last lia.
+    rewrite take_insert_lt; last lia.
+    rewrite insert_take_drop; last first.
+    { rewrite take_length_le; [done | lia]. }
+    rewrite take_take.
+    replace (i `min` j)%nat with j%nat; last lia.
+    do 2 rewrite -app_assoc -Permutation_middle2.
+    apply perm_swap.
+  }
+Qed.
+
 Lemma set_Forall_subseteq {A C : Type} `{SemiSet A C} (P : A -> Prop) (X Y : C) :
   X ⊆ Y ->
   set_Forall P Y ->
