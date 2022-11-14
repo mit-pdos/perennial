@@ -149,7 +149,7 @@ Proof.
     { rewrite take_length_le; [done | lia]. }
     rewrite take_take.
     replace (i `min` j)%nat with j%nat; last lia.
-    (* Rerwite RHS. *)
+    (* Rewrite RHS. *)
     rewrite -{4}(list_insert_id _ _ _ Hi).
     rewrite -{4}(list_insert_id _ _ _ Hj).
     rewrite insert_take_drop; last by rewrite insert_length.

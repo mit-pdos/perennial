@@ -1,33 +1,33 @@
 From Perennial.program_proof.mvcc Require Import mvcc_prelude.
 
 Inductive action :=
-| EvCommit (tid : nat) (mods : dbmap)
-| EvRead   (tid : nat) (key : u64)
-| EvAbort  (tid : nat).
+| ActCommit (tid : nat) (mods : dbmap)
+| ActRead   (tid : nat) (key : u64)
+| ActAbort  (tid : nat).
 
 Definition head_commit (l : list action) (tid : nat) (mods : dbmap) :=
-  head l = Some (EvCommit tid mods).
+  head l = Some (ActCommit tid mods).
 
 Definition head_read (l : list action) (tid : nat) (key : u64) :=
-  head l = Some (EvRead tid key).
+  head l = Some (ActRead tid key).
 
 Definition head_abort (l : list action) (tid : nat) :=
-  head l = Some (EvAbort tid).
+  head l = Some (ActAbort tid).
 
 Definition no_commit_abort (l : list action) (tid : nat) :=
-  (∀ mods, EvCommit tid mods ∉ l) ∧
-  (EvAbort tid ∉ l).
+  (∀ mods, ActCommit tid mods ∉ l) ∧
+  (ActAbort tid ∉ l).
 
 Definition first_abort (l : list action) (tid : nat) :=
   ∃ lp ls,
-    l = lp ++ (EvAbort tid) :: ls ∧
+    l = lp ++ (ActAbort tid) :: ls ∧
     no_commit_abort lp tid.
 
 Definition compatible (tid : nat) (mods : dbmap) (e : action) :=
   match e with
-  | EvCommit tid' mods' => (tid' < tid)%nat ∨ (dom mods) ∩ (dom mods') = ∅
-  | EvRead tid' key => (tid' ≤ tid)%nat ∨ key ∉ (dom mods)
-  | EvAbort tid' => True
+  | ActCommit tid' mods' => (tid' < tid)%nat ∨ (dom mods) ∩ (dom mods') = ∅
+  | ActRead tid' key => (tid' ≤ tid)%nat ∨ key ∉ (dom mods)
+  | ActAbort tid' => True
   end.
 
 #[local]
@@ -47,7 +47,7 @@ Definition incompatible_exists (l : list action) (tid : nat) (mods : dbmap) :=
   Exists (incompatible tid mods) l.
 
 Definition first_commit (l lp ls : list action) (tid : nat) (mods : dbmap) :=
-  l = lp ++ (EvCommit tid mods) :: ls ∧
+  l = lp ++ (ActCommit tid mods) :: ls ∧
   no_commit_abort lp tid.
 
 Definition first_commit_incompatible (l1 l2 : list action) (tid : nat) (mods : dbmap) :=
@@ -62,8 +62,8 @@ Definition first_commit_compatible (l : list action) (tid : nat) (mods : dbmap) 
 
 Definition is_commit_abort_tid (tid : nat) (e : action) : Prop :=
   match e with
-  | EvCommit tid' _ => tid = tid'
-  | EvAbort tid' => tid = tid'
+  | ActCommit tid' _ => tid = tid'
+  | ActAbort tid' => tid = tid'
   | _ => False
   end.
 
@@ -73,7 +73,7 @@ Proof. destruct e; simpl; apply _. Defined.
 
 Lemma is_commit_abort_tid_lor tid e :
   is_commit_abort_tid tid e ->
-  (∃ mods, e = EvCommit tid mods) ∨ e = EvAbort tid.
+  (∃ mods, e = ActCommit tid mods) ∨ e = ActAbort tid.
 Proof. intros. destruct e; set_solver. Qed.
 
 Fixpoint find_max_prefix (tid : nat) (lp ls : list action) : (list action * list action) :=
@@ -122,7 +122,7 @@ Definition peek (l : list action) (tid : nat) : tcform :=
   in match head ls with
      | None => NCA
      | Some e => match e with
-                | EvCommit _ mods => if decide (compatible_all lp tid mods) then FCC mods else FCI mods
+                | ActCommit _ mods => if decide (compatible_all lp tid mods) then FCC mods else FCI mods
                 | _ => FA
                 end
      end.
@@ -235,7 +235,7 @@ Proof.
   inversion Hhead.
   unfold compatible_all in Hcomp.
   rewrite Forall_forall in Hcomp.
-  destruct (Hcomp (EvRead tid' key)); [| done | done].
+  destruct (Hcomp (ActRead tid' key)); [| done | done].
   rewrite H0.
   apply elem_of_list_here.
 Qed.
@@ -254,7 +254,7 @@ Proof.
   inversion Hhead.
   unfold compatible_all in Hcomp.
   rewrite Forall_forall in Hcomp.
-  destruct (Hcomp (EvCommit tid' mods')); [| word | done].
+  destruct (Hcomp (ActCommit tid' mods')); [| word | done].
   rewrite H0.
   apply elem_of_list_here.
 Qed.
@@ -273,8 +273,8 @@ Qed.
 Lemma Exists_incompatible_exists (l : list action) (tid : nat) (mods : dbmap) :
   Exists (incompatible tid mods) l ->
   ∃ key tid', key ∈ dom mods ∧
-    ((EvRead tid' key ∈ l ∧ (tid < tid')%nat) ∨
-     (∃ mods', key ∈ dom mods' ∧ EvCommit tid' mods' ∈ l ∧ (tid ≤ tid')%nat)).
+    ((ActRead tid' key ∈ l ∧ (tid < tid')%nat) ∨
+     (∃ mods', key ∈ dom mods' ∧ ActCommit tid' mods' ∈ l ∧ (tid ≤ tid')%nat)).
 Proof.
   intros H.
   rewrite Exists_exists in H.
@@ -288,7 +288,7 @@ Proof.
     { apply set_choose_L in Hoverlap. set_solver. }
     destruct Hindom as (key & Hindom & Hindom').
     eauto 10 with lia.
-  - (* Case EvRead. *)
+  - (* Case ActRead. *)
     apply Decidable.not_or in Hincomp.
     destruct Hincomp as [Hlt Hindom].
     apply dec_stable in Hindom.
@@ -319,7 +319,7 @@ Qed.
   
 Lemma first_abort_preserved {l l' : list action} {a : action} {tid : nat} :
   l = a :: l' ->
-  a ≠ EvAbort tid ->
+  a ≠ ActAbort tid ->
   first_abort l tid ->
   first_abort l' tid.
 Proof.
@@ -340,7 +340,7 @@ Qed.
 
 Lemma first_commit_incompatible_preserved {p l l' : list action} {a : action} {tid : nat} {mods : dbmap} :
   l = a :: l' ->
-  (∀ mods', a ≠ EvCommit tid mods') ->
+  (∀ mods', a ≠ ActCommit tid mods') ->
   first_commit_incompatible p l tid mods ->
   first_commit_incompatible (p ++ [a]) l' tid mods.
 Proof.
@@ -372,7 +372,7 @@ Qed.
 
 Lemma first_commit_compatible_preserved {l l' : list action} {a : action} {tid : nat} {mods : dbmap} :
   l = a :: l' ->
-  (∀ mods', a ≠ EvCommit tid mods') ->
+  (∀ mods', a ≠ ActCommit tid mods') ->
   first_commit_compatible l tid mods ->
   first_commit_compatible l' tid mods.
 Proof.

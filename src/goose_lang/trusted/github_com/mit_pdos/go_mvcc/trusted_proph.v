@@ -4,18 +4,18 @@ Section goose_lang.
 Context {ext:ffi_syntax}.
 Local Coercion Var' (s:string) : expr := Var s.
 
-Definition EvReadId : Z := 0.
-Definition EvAbortId : Z := 1.
-Definition EvCommitId : Z := 2.
+Definition ActReadId : Z := 0.
+Definition ActAbortId : Z := 1.
+Definition ActCommitId : Z := 2.
 
 Definition NewProph : val :=
   λ: <>, NewProph.
 
 Definition ResolveRead : val :=
-  λ: "p" "tid" "key", ResolveProph "p" (#EvReadId, ("tid", "key")).
+  λ: "p" "tid" "key", ResolveProph "p" (#ActReadId, ("tid", "key")).
 
 Definition ResolveAbort : val :=
-  λ: "p" "tid", ResolveProph "p" (#EvAbortId, "tid").
+  λ: "p" "tid", ResolveProph "p" (#ActAbortId, "tid").
 
 (* FIXME implement this *)
 Definition ResolveCommit : val :=

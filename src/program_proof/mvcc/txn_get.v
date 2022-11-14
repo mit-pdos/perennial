@@ -110,7 +110,7 @@ Proof.
   (* Extend the physical tuple. *)
   unfold ptuple_auth_owned.
   (* iMod (tuple_read_safe with "Hkeys Hcmt Hread") as "(Hkeys & Hcmt & Htuple & Hptuple)"; first set_solver. *)
-  set Ψ := (λ key, per_key_inv_def γ key tmods ts m (past ++ [EvRead tid k]))%I.
+  set Ψ := (λ key, per_key_inv_def γ key tmods ts m (past ++ [ActRead tid k]))%I.
   iDestruct (big_sepS_elem_of_acc_impl k with "Hkeys") as "[Hkey Hkeys]"; first set_solver.
   iRename "Hptuple" into "Hptuple'".
   iDestruct (cmt_inv_fcc_tmods with "Hcmt") as "%Hcmtfcc".
@@ -169,7 +169,7 @@ Proof.
       apply ptuple_past_rel_read_lt_len; [lia | done].
   }
   iDestruct ("Hkeys" with "[] [Hkey]") as "Hkeys"; [ | iAccu | ].
-  { (* Adding [EvRead tid k] to [past] where [key ≠ k] preserves [per_key_inv_def]. *)
+  { (* Adding [ActRead tid k] to [past] where [key ≠ k] preserves [per_key_inv_def]. *)
     iIntros "!>" (key) "%Helem %Hneq Hkey".
     subst Ψ. simpl.
     iApply per_key_inv_past_snoc_diff_key; done.
@@ -179,7 +179,7 @@ Proof.
   { (* Close the inv. *)
     iNext. unfold mvcc_inv_sst_def.
     do 7 iExists _.
-    iExists (past ++ [EvRead tid k]), future'.
+    iExists (past ++ [ActRead tid k]), future'.
     iDestruct (nca_inv_any_action with "Hnca") as "Hnca"; first apply Hhead.
     iDestruct (fa_inv_diff_action  with "Hfa")  as "Hfa";  [apply Hhead | done |].
     iDestruct (fci_inv_diff_action with "Hfci") as "Hfci"; [apply Hhead | done |].

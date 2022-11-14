@@ -94,7 +94,7 @@ Proof.
     iNamed "Htuple".
     iDestruct (ptuple_agree with "Hptuple Hptuple'") as "->".
     destruct H as [H | H].
-    - (* Case EvRead. *)
+    - (* Case ActRead. *)
       destruct H as [Hact Hlt].
       apply Hpprel in Hact. simpl in Hact.
       (* The following also do the work. *)
@@ -102,7 +102,7 @@ Proof.
       (* specialize (Hact ltac:(auto)). *)
       unshelve epose proof (Hact _); first reflexivity.
       lia.
-    - (* Case EvCommit. *)
+    - (* Case ActCommit. *)
       destruct H as (mods' & Helem' & Hact & Hle).
       apply Hpprel in Hact. simpl in Hact.
       unshelve epose proof (Hact _); first auto.
@@ -135,14 +135,14 @@ Definition ptuple_extend_wr_pre γ tmods ts m past (tid : nat) k tpl : iProp Σ 
   ∃ phys, own_tuple_locked tpl k tid phys phys γ.
 
 Definition ptuple_extend_wr_post γ tmods ts m past (tid : nat) mods k tpl v : iProp Σ :=
-  per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods]) ∗
+  per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [ActCommit tid mods]) ∗
   ∃ phys, own_tuple_locked tpl k tid phys (extend (S tid) phys ++ [v]) γ.
 
 #[local]
 Lemma per_key_inv_bigS_disj {γ keys tmods ts m past} tid mods :
   keys ## dom mods ->
   ([∗ set] k ∈ keys, per_key_inv_def γ k tmods ts m past) -∗
-  ([∗ set] k ∈ keys, per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [EvCommit tid mods])).
+  ([∗ set] k ∈ keys, per_key_inv_def γ k (tmods ∖ {[ (tid, mods) ]}) ts m (past ++ [ActCommit tid mods])).
 Proof using heapGS0 mvcc_ghostG0 Σ.
   iIntros "%Hdisj Hkeys".
   iApply (big_sepS_mono with "Hkeys").
@@ -268,7 +268,7 @@ Proof.
   { by eapply fc_tids_unique_cmt. }
   iDestruct (big_sepM2_sep with "H") as "[Hkeys Htuples]".
   iDestruct (big_sepM2_dom' with "Hkeys") as "Hkeys".
-  (* Update [HkeysDisj] w.r.t. [tmods ∖ {[ (tid, mods) ]}] and [past ++ [EvCommit tid mods]]. *)
+  (* Update [HkeysDisj] w.r.t. [tmods ∖ {[ (tid, mods) ]}] and [past ++ [ActCommit tid mods]]. *)
   iDestruct (per_key_inv_bigS_disj tid mods with "HkeysDisj") as "HkeysDisj"; first set_solver.
   iDestruct (big_sepS_union_2 with "Hkeys HkeysDisj") as "Hkeys".
   rewrite -union_difference_L; last set_solver.

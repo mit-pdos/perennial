@@ -31,8 +31,8 @@ Definition mvcc_inv_gc γ : iProp Σ :=
 (* SST invariants. *)
 Definition len_ptuple_pact_rel (key : u64) (len : nat) (act : action) :=
   match act with
-  | EvCommit tid mods => (key ∈ dom mods) -> (S tid < len)%nat
-  | EvRead tid key' => (key = key') -> (tid < len)%nat
+  | ActCommit tid mods => (key ∈ dom mods) -> (S tid < len)%nat
+  | ActRead tid key' => (key = key') -> (tid < len)%nat
   | _ => True
   end.
 
@@ -213,7 +213,7 @@ Qed.
 Lemma ptuple_past_rel_read_diff_key key keyr tid phys past :
   key ≠ keyr ->
   ptuple_past_rel key phys past ->
-  ptuple_past_rel key phys (past ++ [EvRead tid keyr]).
+  ptuple_past_rel key phys (past ++ [ActRead tid keyr]).
 Proof.
   intros Hneq Hrel.
   unfold ptuple_past_rel.
@@ -226,7 +226,7 @@ Qed.
 Lemma ptuple_past_rel_read_lt_len key tid phys past :
   (tid < length phys)%nat ->
   ptuple_past_rel key phys past ->
-  ptuple_past_rel key phys (past ++ [EvRead tid key]).
+  ptuple_past_rel key phys (past ++ [ActRead tid key]).
 Proof.
   intros Hlt Hrel.
   unfold ptuple_past_rel.
@@ -244,9 +244,9 @@ Proof.
   intros Hlen Hrel.
   unfold len_ptuple_pact_rel in *.
   destruct act as [tid mods | tid key' |]; last done.
-  - (* Case [EvCommit]. *)
+  - (* Case [ActCommit]. *)
     intros Helem. apply Hrel in Helem. lia.
-  - (* Case [EvRead]. *)
+  - (* Case [ActRead]. *)
     intros Helem. apply Hrel in Helem. lia.
 Qed.
 
@@ -266,7 +266,7 @@ Qed.
 Lemma ptuple_past_rel_commit_lt_len key tid mods phys past :
   (S tid < length phys)%nat ->
   ptuple_past_rel key phys past ->
-  ptuple_past_rel key phys (past ++ [EvCommit tid mods]).
+  ptuple_past_rel key phys (past ++ [ActCommit tid mods]).
 Proof.
   intros Hlt Hrel.
   unfold ptuple_past_rel.
@@ -291,7 +291,7 @@ Qed.
 Lemma per_key_inv_past_snoc_diff_key {γ key keyr tmods ts} tid {m past} :
   key ≠ keyr ->
   per_key_inv_def γ key tmods ts m past -∗
-  per_key_inv_def γ key tmods ts m (past ++ [EvRead tid keyr]).
+  per_key_inv_def γ key tmods ts m (past ++ [ActRead tid keyr]).
 Proof.
   iIntros "%Hneq Hkey".
   iNamed "Hkey".
@@ -426,13 +426,13 @@ Qed.
 (* Theorems to re-establish invariants after prophecy resolution. *)
 Definition diff_abort_action (a : action) (tids : gset nat) :=
   match a with
-  | EvAbort tid => tid ∉ tids
+  | ActAbort tid => tid ∉ tids
   | _ => True
   end.
 
 Definition diff_commit_action (a : action) (tmods : gset (nat * dbmap)) :=
   match a with
-  | EvCommit tid _ => ∀ mods, (tid, mods) ∉ tmods
+  | ActCommit tid _ => ∀ mods, (tid, mods) ∉ tmods
   | _ => True
   end.
 
@@ -468,7 +468,7 @@ Proof.
 Qed.
 
 Lemma fa_inv_same_action γ l l' tid tids ts :
-  l = EvAbort tid :: l' ->
+  l = ActAbort tid :: l' ->
   fa_tids_frag γ tid -∗
   fa_inv_def γ tids l ts ==∗
   fa_inv_def γ (tids ∖ {[ tid ]}) l' ts.
@@ -542,7 +542,7 @@ Proof.
 Qed.
 
 Lemma cmt_inv_same_action γ l l' tid mods tmods ts :
-  l = EvCommit tid mods :: l' ->
+  l = ActCommit tid mods :: l' ->
   NoDup (elements tmods).*1 ->
   cmt_tmods_frag γ (tid, mods) -∗
   cmt_inv_def γ tmods l ts ==∗
@@ -574,7 +574,7 @@ Proof. iIntros "Hcmt". by iNamed "Hcmt". Qed.
 
 Lemma ptuple_past_rel_abort key phys past tid :
   ptuple_past_rel key phys past ->
-  ptuple_past_rel key phys (past ++ [EvAbort tid]).
+  ptuple_past_rel key phys (past ++ [ActAbort tid]).
 Proof.
   unfold ptuple_past_rel.
   intros H.
@@ -585,7 +585,7 @@ Qed.
 
 Lemma per_key_inv_past_abort {γ tmods ts m past} tid :
   ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m past) -∗
-  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m (past ++ [EvAbort tid])).
+  ([∗ set] k ∈ keys_all, per_key_inv_def γ k tmods ts m (past ++ [ActAbort tid])).
 Proof.
   iIntros "Hkeys".
   iApply big_sepS_mono; last eauto.
@@ -612,7 +612,7 @@ Qed.
 Lemma per_key_inv_past_commit_disj γ k tmods ts m past tid mods :
   k ∉ dom mods ->
   per_key_inv_def γ k tmods ts m past -∗
-  per_key_inv_def γ k tmods ts m (past ++ [EvCommit tid mods]).
+  per_key_inv_def γ k tmods ts m (past ++ [ActCommit tid mods]).
 Proof.
   iIntros "%Hnotin Hkey".
   iNamed "Hkey".

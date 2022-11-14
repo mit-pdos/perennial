@@ -10,12 +10,12 @@ Context `{!heapGS Σ}.
 (* FIXME: define and prove these. *)
 Local Definition decode_ev_read (v : val) : option action :=
   match v with
-  | (#(LitInt tid), #(LitInt key))%V => Some (EvRead (int.nat tid) key)
+  | (#(LitInt tid), #(LitInt key))%V => Some (ActRead (int.nat tid) key)
   | _ => None
   end.
 Local Definition decode_ev_abort (v : val) : option action :=
   match v with
-  | #(LitInt tid) => Some (EvAbort (int.nat tid))
+  | #(LitInt tid) => Some (ActAbort (int.nat tid))
   | _ => None
   end.
 Local Definition decode_ev_commit (v : val) : option action :=
@@ -24,11 +24,11 @@ Local Definition decode_ev_commit (v : val) : option action :=
 Local Definition decode_action (v : val) : option action :=
   match v with
   | (#(LitInt id), data)%V =>
-      if bool_decide (id = EvReadId) then
+      if bool_decide (id = ActReadId) then
         decode_ev_read data
-      else if bool_decide (id = EvAbortId) then
+      else if bool_decide (id = ActAbortId) then
         decode_ev_abort data
-      else if bool_decide (id = EvCommitId) then
+      else if bool_decide (id = ActCommitId) then
         decode_ev_commit data
       else
         None
@@ -62,7 +62,7 @@ Lemma wp_ResolveRead γ p (tid key : u64) (ts : nat) :
   ⊢ {{{ ⌜int.nat tid = ts⌝ }}}
     <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveRead #p #tid #key @ ∅
-    <<< ∃ acs', ⌜acs = EvRead ts key :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
+    <<< ∃ acs', ⌜acs = ActRead ts key :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
 Proof.
   iIntros "!> %Φ %Hts AU". wp_lam. wp_pures.
@@ -83,7 +83,7 @@ Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
   ⊢ {{{ ⌜int.nat tid = ts⌝ }}}
     <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveAbort #p #tid @ ∅
-    <<< ∃ acs', ⌜acs = EvAbort ts :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
+    <<< ∃ acs', ⌜acs = ActAbort ts :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
   iIntros "!> %Φ %Hts AU". wp_lam. wp_pures.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
@@ -109,7 +109,7 @@ Lemma wp_ResolveCommit
   ⊢ {{{ ⌜int.nat tid = ts⌝ ∗ own_wrbuf wrbuf m tpls }}}
     <<< ∀∀ acs, mvcc_proph γ p acs >>>
       ResolveCommit #p #tid #wrbuf @ ∅
-    <<< ∃ acs', ⌜acs = EvCommit ts m :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
+    <<< ∃ acs', ⌜acs = ActCommit ts m :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); own_wrbuf wrbuf m tpls }}}.
 Admitted.
 
