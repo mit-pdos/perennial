@@ -8,7 +8,8 @@ Section proph.
 Context `{!heapGS Σ}.
 
 
-(** Computes a dbmap from its representation as a GooseLang value. *)
+(** Computes a dbmap from its representation as a GooseLang value.
+If decoding fails, returns some arbitrary nonsense value. *)
 Local Definition decode_dbmap (v : val) : dbmap.
 Admitted.
 
