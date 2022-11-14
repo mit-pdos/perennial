@@ -18,8 +18,13 @@ Definition ResolveAbort : val :=
   λ: "p" "tid", ResolveProph "p" (#ActAbortId, "tid").
 
 (* FIXME implement this *)
+Definition WrbufToVal : val :=
+  λ: "w", #().
+
 Definition ResolveCommit : val :=
-  λ: "p" "tid" "wrbuf", #().
+  λ: "p" "tid" "wrbuf",
+  let: "wrbufval" := WrbufToVal "wrbuf" in
+  ResolveProph "p" (#ActCommitId, ("tid", "wrbufval")).
 
 End goose_lang.
 

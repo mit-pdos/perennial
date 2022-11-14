@@ -7,7 +7,11 @@ From Perennial.goose_lang.trusted.github_com.mit_pdos.go_mvcc Require Import tru
 Section proph.
 Context `{!heapGS Σ}.
 
-(* FIXME: define and prove these. *)
+
+(** Computes a dbmap from its representation as a GooseLang value. *)
+Local Definition decode_dbmap (v : val) : dbmap.
+Admitted.
+
 Local Definition decode_ev_read (v : val) : option action :=
   match v with
   | (#(LitInt tid), #(LitInt key))%V => Some (ActRead (int.nat tid) key)
@@ -19,7 +23,10 @@ Local Definition decode_ev_abort (v : val) : option action :=
   | _ => None
   end.
 Local Definition decode_ev_commit (v : val) : option action :=
-  (* FIXME *) None.
+  match v with
+  | (#(LitInt tid), m)%V => Some (ActCommit (int.nat tid) (decode_dbmap m))
+  | _ => None
+  end.
 
 Local Definition decode_action (v : val) : option action :=
   match v with
@@ -85,6 +92,7 @@ Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
       ResolveAbort #p #tid @ ∅
     <<< ∃ acs', ⌜acs = ActAbort ts :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); True }}}.
+Proof.
   iIntros "!> %Φ %Hts AU". wp_lam. wp_pures.
   replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
   iMod "AU" as (acs) "[(%pvs & %Hpvs & Hp) Hclose]".
@@ -100,6 +108,13 @@ Lemma wp_ResolveAbort γ p (tid : u64) (ts : nat) :
   iModIntro. by iApply "HΦ".
 Qed.
 
+Local Lemma wp_WrbufToVal (wrbuf : loc) (m : dbmap) (tpls : gmap u64 loc) :
+  {{{ own_wrbuf wrbuf m tpls }}}
+    WrbufToVal #wrbuf
+  {{{ v, RET v; ⌜decode_dbmap v = m⌝ ∗ own_wrbuf wrbuf m tpls }}}.
+Proof.
+Admitted.
+
 (**
  * TO Ralf: Please just ignore [tpls].
  *)
@@ -111,7 +126,25 @@ Lemma wp_ResolveCommit
       ResolveCommit #p #tid #wrbuf @ ∅
     <<< ∃ acs', ⌜acs = ActCommit ts m :: acs'⌝ ∗ mvcc_proph γ p acs' >>>
     {{{ RET #(); own_wrbuf wrbuf m tpls }}}.
-Admitted.
+Proof.
+  iIntros "!> %Φ [%Hts Hm] AU". wp_lam. wp_pures.
+  replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
+  wp_apply (wp_WrbufToVal with "Hm").
+  iIntros (mval) "[%Hmval Hm]".
+  wp_pures.
+  iMod "AU" as (acs) "[(%pvs & %Hpvs & Hp) Hclose]".
+  wp_apply (wp_resolve_proph with "Hp").
+  iIntros (pvs') "[-> Hp]". simpl in Hpvs.
+  rewrite bool_decide_false in Hpvs; last done.
+  rewrite bool_decide_false in Hpvs; last done.
+  rewrite bool_decide_true in Hpvs; last done.
+  simpl in Hpvs.
+  iMod ("Hclose" with "[Hp]") as "HΦ".
+  { iExists (decode_actions pvs').
+    rewrite Hts in Hpvs. iSplit; first naive_solver.
+    iExists _. by iFrame. }
+  iModIntro. by iApply "HΦ".
+Qed.
 
 End proph.
 
