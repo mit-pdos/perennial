@@ -38,7 +38,7 @@ Definition Clerk__Apply: val :=
       (if: (![uint64T] "err" = e.None)
       then Break
       else
-        (* log.Println("Error during apply(): ", err) *)
+        grove_ffi.Sleep (#100 * #1000000);;
         let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
         struct.storeF Clerk "primaryCk" "ck" (pb.MakeClerk (SliceGet uint64T "config" #0));;
         Continue));;
