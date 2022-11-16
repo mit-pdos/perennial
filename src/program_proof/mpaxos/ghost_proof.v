@@ -718,12 +718,22 @@ Proof.
   { naive_solver. }
 Qed.
 
-(* TODO: THIS IS THE HARD LEMMA *)
 Lemma validSet_size (W:gset nat) :
   validSet W →
   size W ≤ length config.
 Proof.
-Admitted.
+  rewrite /validSet.
+  revert W.
+  induction (length config) as [| n IHn] => W Hvalid.
+  - destruct W as [| x W] using set_ind_L; auto.
+    exfalso. feed pose proof (Hvalid x); first by set_solver. lia.
+  - transitivity (size ({[n]} ∪ (W ∖ {[n]}))).
+    { apply subseteq_size. set_unfold. intros x. destruct (decide (x = n)); auto. }
+    rewrite size_union ?size_singleton; last by set_solver.
+    feed pose proof (IHn (W ∖ {[n]})).
+    { set_unfold. intros x (Hin&?). feed pose proof (Hvalid x); auto. lia. }
+    lia.
+Qed.
 
 Definition vote_inv γsys := inv sysN
 (
