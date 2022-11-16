@@ -8,6 +8,7 @@ Local Definition key_vchainR := gmapR u64 vchainR.
 Local Definition tidsR := gmap_viewR nat (leibnizO unit).
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
+Local Definition sid_ownR := gmapR u64 unitR.
 
 Lemma sids_all_lookup (sid : u64) :
   int.Z sid < N_TXN_SITES ->
@@ -27,6 +28,7 @@ Class mvcc_ghostG Σ :=
     mvcc_ptupleG :> inG Σ key_vchainR;
     mvcc_ltupleG :> inG Σ key_vchainR;
     mvcc_tsG :> mono_natG Σ;
+    mvcc_sidG :> inG Σ sid_ownR;
     mvcc_abort_tids_ncaG :> ghost_mapG Σ nat unit;
     mvcc_abort_tids_faG :> ghost_mapG Σ nat unit;
     mvcc_abort_tids_fciG :> ghost_mapG Σ (nat * dbmap) unit;
@@ -43,6 +45,7 @@ Definition mvcc_ghostΣ :=
      GFunctor key_vchainR;
      GFunctor key_vchainR;
      mono_natΣ;
+     GFunctor sid_ownR;
      ghost_mapΣ nat unit;
      ghost_mapΣ nat unit;
      ghost_mapΣ (nat * dbmap) unit;
@@ -62,6 +65,7 @@ Record mvcc_names :=
   {
     mvcc_ptuple : gname;
     mvcc_ltuple : gname;
+    mvcc_sids : gname;
     mvcc_ts : gname;
     mvcc_abort_tids_nca : gname;
     mvcc_abort_tids_fa : gname;
@@ -161,6 +165,9 @@ Definition ts_auth γ (ts : nat) : iProp Σ :=
 
 Definition ts_lb γ (ts : nat) : iProp Σ :=
   mono_nat_lb_own γ.(mvcc_ts) ts.
+
+Definition sid_own γ (sid : u64) : iProp Σ :=
+  own γ.(mvcc_sids) ({[ sid := () ]}).
 
 Definition nca_tids_auth γ (tids : gset nat) : iProp Σ :=
   ghost_map_auth γ.(mvcc_abort_tids_nca) 1 (gset_to_gmap tt tids).
@@ -605,6 +612,7 @@ Lemma mvcc_ghost_alloc :
     ([∗ set] key ∈ keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
     ([∗ set] key ∈ keys_all, ltuple_auth γ key [Nil; Nil]) ∗
     ts_auth γ 0%nat ∗
+    ([∗ list] sid ∈ sids_all, sid_own γ sid) ∗
     nca_tids_auth γ ∅ ∗
     fa_tids_auth γ ∅ ∗
     fci_tmods_auth γ ∅ ∗
@@ -621,6 +629,11 @@ Proof.
   iMod ptuples_alloc as (γptuple) "[Hptpls1 Hptpls2]".
   iMod ltuples_alloc as (γltuple) "Hltpls".
   iMod (mono_nat_own_alloc 0) as (γts) "[Hts _]".
+  set sids : gset u64 := list_to_set sids_all.
+  iMod (own_alloc (A:=sid_ownR) (gset_to_gmap () sids)) as (γsids) "Hsids".
+  { intros k. rewrite lookup_gset_to_gmap. destruct (decide (k ∈ sids)).
+    - rewrite option_guard_True //.
+    - rewrite option_guard_False //. }
   iMod (ghost_map_alloc (∅ : gmap nat unit)) as (γnca) "[Hnca _]".
   iMod (ghost_map_alloc (∅ : gmap nat unit)) as (γfa) "[Hfa _]".
   iMod (ghost_map_alloc (∅ : gmap (nat * dbmap) unit)) as (γfci) "[Hfci _]".
@@ -634,6 +647,7 @@ Proof.
       mvcc_ptuple := γptuple;
       mvcc_ltuple := γltuple;
       mvcc_ts := γts;
+      mvcc_sids := γsids;
       mvcc_abort_tids_nca := γnca;
       mvcc_abort_tids_fa := γfa;
       mvcc_abort_tmods_fci := γfci;
@@ -642,8 +656,23 @@ Proof.
       mvcc_dbmap := γm;
       mvcc_sid_tids := γactive;
       mvcc_sid_min_tid := γmin
-    |}.
+    |}. 
   iExists γ.
+  iAssert ([∗ list] sid ∈ sids_all, sid_own γ sid)%I with "[Hsids]" as "Hsids".
+  { iEval (rewrite -[gset_to_gmap _ _]big_opM_singletons) in "Hsids".
+    rewrite big_opM_own_1. rewrite big_opM_map_to_list.
+    rewrite Map.gset_to_gmap_to_list. subst sids.
+    rewrite big_sepL_fmap elements_list_to_set.
+    2:{ unfold sids_all. apply NoDup_fmap_2_strong, NoDup_seqZ.
+Set Printing Coercions.
+        clear. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
+        unfold N_TXN_SITES in *.
+        rewrite -(Z_u64 x); last lia.
+        rewrite -(Z_u64 y); last lia.
+        rewrite Heq. done.
+    }
+    iFrame.
+  }
   iFrame.
   unfold nca_tids_auth, fa_tids_auth, fci_tmods_auth, fcc_tmods_auth, cmt_tmods_auth.
   do 2 rewrite gset_to_gmap_empty.

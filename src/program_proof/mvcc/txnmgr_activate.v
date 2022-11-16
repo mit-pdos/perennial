@@ -55,6 +55,8 @@ Proof.
   iIntros (tidRef) "HtidRef".
   wp_pures.
   wp_apply wp_GenTID.
+  { admit. }
+  { admit. }
   iInv "Hinvgc" as "> HinvgcO" "HinvgcC".
   (* Open GC invariant. *)
   iDestruct (big_sepL_lookup_acc with "HinvgcO") as "[HinvsiteO HinvsiteC]".
@@ -103,7 +105,7 @@ Proof.
   }
   iMod ("HinvgcC" with "Hinvsite") as "_".
   iModIntro.
-  iIntros (tid Etid).
+  iIntros (tid) "[%Etid _Hsid]".
   wp_store.
 
   (***********************************************************)
@@ -168,6 +170,6 @@ Proof.
   unfold active_tid.
   rewrite Etid.
   iFrame. iPureIntro. word.
-Qed.
+Admitted.
 
 End program.

@@ -38,7 +38,7 @@ Proof.
 
   (* Allocate ghost states. *)
   iMod mvcc_ghost_alloc as (γ) "H".
-  iDestruct "H" as "(Hphys & Hphys' & Hlogi & Hts & H)".
+  iDestruct "H" as "(Hphys & Hphys' & Hlogi & Hts & Hsids & H)".
   iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & Hpts & H)".
   iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths)".
   
@@ -50,13 +50,15 @@ Proof.
    * Note that we own [ts_auth] exclusively, not from some invariant.
    *)
   wp_apply wp_GenTID.
+  { admit. }
+  { admit. }
   iApply ncfupd_mask_intro; first done.
   iIntros "Hclose".
   iExists _. iFrame "Hts".
   iIntros "(%ts & Hts & %Hgz)".
   iMod "Hclose". iModIntro.
   (* Don't care about its return value. *)
-  iIntros (tid) "_".
+  iIntros (tid) "[_ _Hsid]". iClear "_Hsid". (* FIXME keep this *)
   wp_pures.
   iDestruct (ts_witness with "Hts") as "#Htslb".
 

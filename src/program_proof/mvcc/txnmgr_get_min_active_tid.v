@@ -55,6 +55,8 @@ Proof.
   iIntros (tidRef) "HtidRef".
   wp_pures.
   wp_apply wp_GenTID.
+  { admit. }
+  { admit. }
   (* Open the SST invariant to get [ts_auth]. *)
   iInv "Hinvsst" as "> HinvsstO" "HinvsstC".
   iDestruct (mvcc_inv_sst_ts_auth_acc with "HinvsstO") as (ts) "[Hts HinvtsC]".
@@ -123,7 +125,7 @@ Proof.
   { iPureIntro. lia. }
   iMod ("HinvsstC" with "HinvsstO") as "_".
   iModIntro.
-  iIntros (tidnew) "%Etidnew".
+  iIntros (tidnew) "[%Etidnew _Hsid]".
   wp_store.
   
   (***********************************************************)
@@ -233,7 +235,7 @@ Proof.
   }
   wp_load.
   by iApply "HΦ".
-Qed.
+Admitted.
 
 (*****************************************************************)
 (* func (txnMgr *TxnMgr) getMinActiveTID() uint64                *)

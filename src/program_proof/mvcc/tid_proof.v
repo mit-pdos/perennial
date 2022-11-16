@@ -4,6 +4,16 @@ From Goose.github_com.mit_pdos.go_mvcc Require Import tid.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
+Definition have_gentid (γ : mvcc_names) : iProp Σ.
+Admitted.
+
+Global Instance have_gentid_persistent γ : Persistent (have_gentid γ).
+Proof. Admitted.
+
+Lemma init_GenTID γ E :
+  ⊢ |={E}=> have_gentid γ.
+Proof. Admitted.
+
 (**
  * [int.nat tid = ts] means no overflow, which we would have to assume.
  * It takes around 120 years for TSC to overflow on a 4-GHz CPU.
@@ -12,13 +22,14 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (* func GenTID(sid uint64) uint64                                *)
 (*****************************************************************)
 Theorem wp_GenTID (sid : u64) γ :
-  ⊢ {{{ True }}}
+  ⊢ have_gentid γ -∗
+    {{{ sid_own γ sid }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
       GenTID #sid @ ∅
     <<< ∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
-    {{{ (tid : u64), RET #tid; ⌜int.nat tid = ts⌝ }}}.
+    {{{ (tid : u64), RET #tid; ⌜int.nat tid = ts⌝ ∗ sid_own γ sid }}}.
 Proof.
-  iIntros "!>" (Φ) "Hpre HAU".
+  iIntros "#Hinv !>" (Φ) "Hpre HAU".
   wp_call.
 
   (***********************************************************)

@@ -119,3 +119,18 @@ Lemma map_size_nonzero_lookup `{Countable K} `(m: gmap K A) a v :
 Proof.
   eauto using map_size_nonzero.
 Qed.
+
+Section gset.
+  Context `{Countable K}.
+
+  Lemma gset_to_gmap_to_list {A} (X : gset K) (x : A) :
+    map_to_list (gset_to_gmap x X) ≡ₚ (., x) <$> (elements X).
+  Proof.
+    induction X as [| y X not_in IH] using set_ind_L.
+    - rewrite gset_to_gmap_empty elements_empty map_to_list_empty //.
+    - rewrite gset_to_gmap_union_singleton elements_union_singleton //.
+      rewrite map_to_list_insert.
+      { rewrite lookup_gset_to_gmap_None. done. }
+      rewrite IH. done.
+  Qed.
+End gset.
