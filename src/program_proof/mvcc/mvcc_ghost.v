@@ -661,15 +661,16 @@ Proof.
   iAssert ([∗ list] sid ∈ sids_all, sid_own γ sid)%I with "[Hsids]" as "Hsids".
   { iEval (rewrite -[gset_to_gmap _ _]big_opM_singletons) in "Hsids".
     rewrite big_opM_own_1. rewrite big_opM_map_to_list.
-    rewrite Map.gset_to_gmap_to_list. subst sids.
+    rewrite map_to_list_gset_to_gmap. subst sids.
     rewrite big_sepL_fmap elements_list_to_set.
     2:{ unfold sids_all. apply NoDup_fmap_2_strong, NoDup_seqZ.
-Set Printing Coercions.
+        Set Printing Coercions.
         clear. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
         unfold N_TXN_SITES in *.
         rewrite -(Z_u64 x); last lia.
         rewrite -(Z_u64 y); last lia.
         rewrite Heq. done.
+        Unset Printing Coercions.
     }
     iFrame.
   }

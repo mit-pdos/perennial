@@ -157,7 +157,7 @@ Section lemmas.
   Lemma ghost_async_map_alloc_strong P ma :
     pred_infinite P →
     ⊢ |==> ∃ γ, ⌜P γ⌝ ∗ ghost_async_map_auth γ 1 ma ∗
-           [∗ map] k ↦ v ∈ ma, k ↪[γ][list_to_set (pending v)] (latest v).
+           [∗ map] k ↦ av ∈ ma, k ↪[γ][list_to_set (pending av)] (latest av).
   Proof.
     unseal. intros.
     iMod (own_alloc_strong (gmap_rel_view_auth (VA:=leibnizO (async V)) (V:=leibnizO V) async_rel 1 ∅) P)
@@ -186,7 +186,7 @@ Section lemmas.
     intros. iMod (ghost_async_map_alloc_strong P ∅) as (γ) "(% & Hauth & _)"; eauto.
   Qed.
   Lemma ghost_async_map_alloc ma :
-    ⊢ |==> ∃ γ, ghost_async_map_auth γ 1 ma ∗ [∗ map] k ↦ v ∈ ma, k ↪[γ][list_to_set (pending v)]  (latest v).
+    ⊢ |==> ∃ γ, ghost_async_map_auth γ 1 ma ∗ [∗ map] k ↦ av ∈ ma, k ↪[γ][list_to_set (pending av)]  (latest av).
   Proof.
     iMod (ghost_async_map_alloc_strong (λ _, True) ma) as (γ) "[_ Hmap]".
     - by apply pred_infinite_True.
