@@ -371,9 +371,9 @@ Definition useInts: val :=
     "y2" <-[uint32T] "y" + #(U32 3);;
     (![uint64T] "z", ![uint32T] "y2").
 
-Definition u32: ty := uint32T.
+Definition my_u32: ty := uint32T.
 
-Definition also_u32: ty := u32.
+Definition also_u32: ty := my_u32.
 
 Definition ConstWithAbbrevType : expr := #(U32 3).
 
@@ -1035,11 +1035,11 @@ Definition mkNothing: val :=
 
 (* type_alias.go *)
 
-Definition u64: ty := uint64T.
+Definition my_u64: ty := uint64T.
 
 Definition Timestamp: ty := uint64T.
 
-Definition UseTypeAbbrev: ty := u64.
+Definition UseTypeAbbrev: ty := my_u64.
 
 Definition UseNamedType: ty := Timestamp.
 
