@@ -65,7 +65,7 @@ Local Lemma gentid_reserve γ now sid Φ :
     (* The user can pick a timestamp with the right sid, but only gets something
     out of this if they pick one that is strictly greater than [clock]. *)
     (∀ ts, ⌜sid = sid_of ts⌝ ==∗
-       (if decide (now < int.Z ts) then ∃ γr, tid_reserved γ γr ts Φ else True) ∗
+       (if bool_decide (now < int.Z ts) then ∃ γr, tid_reserved γ γr ts Φ else True) ∗
        gentid_inv γ now).
 Proof. Admitted.
 
@@ -79,7 +79,7 @@ Local Lemma gentid_completed γ γr clock ts Φ :
   gentid_inv γ clock -∗
   tid_reserved γ γr ts Φ -∗
   tsc_lb (int.nat ts) -∗
-  |==> ∃ clock', gentid_inv γ clock' ∗ sid_own γ (sid_of ts) ∗ gentid_au γ (sid_of ts) Φ.
+  |==> ∃ clock', gentid_inv γ clock' ∗ sid_own γ (sid_of ts) ∗ Φ #ts.
 Proof. Admitted.
 
 (**
@@ -156,11 +156,16 @@ Proof.
   wp_store.
   wp_load.
   wp_apply wp_SumAssumeNoOverflow. iIntros (Hoverflow).
+  wp_store.
+  wp_pures.
+
   assert (inbounds = true) as ->.
   { subst inbounds. rewrite bool_decide_true; first done. word. }
   subst clock2_boundsafe.
-  wp_store.
-  wp_pures.
+  rewrite u64_Z_through_nat in Hclock.
+  rewrite bool_decide_true.
+  2:{ subst reserved_ts. word. }
+  iDestruct "Hreserved" as (γr) "Hreserved".
 
   set tid := (word.add _ _).
   assert (tid = reserved_ts) as -> by done.
@@ -169,17 +174,39 @@ Proof.
   (* for GetTSC() <= tid {                                   *)
   (* }                                                       *)
   (***********************************************************)
-  set P := λ (b : bool), (if b then True else tsc_lb (int.nat reserved_ts))%I.
-  wp_apply (wp_forBreak_cond P).
-  { admit. }
-  { done. }
-  iIntros "HP". unfold P. clear P.
-  wp_load.
+  set P := λ (b : bool), (tidRef ↦[uint64T] #(reserved_ts : u64) ∗
+     if b then True else tsc_lb (int.nat reserved_ts))%I.
+  wp_apply (wp_forBreak_cond P with "[] [Htid]").
+  { clear Φ. iIntros "!> %Φ [Htid _] HΦ".
+    wp_apply (wp_GetTSC).
+    iMod tsc_lb_0 as "Htsc".
+    iApply ncfupd_mask_intro.
+    { solve_ndisj. }
+    iIntros "Hclose".
+    iExists _. iFrame "Htsc".
+    iIntros (new_time) "[%Htime Htsc]". iMod "Hclose" as "_".
+    iIntros "!> _". wp_load. wp_pures.
+    case_bool_decide; wp_pures; iApply "HΦ"; unfold P; iFrame "Htid".
+    - done.
+    - iApply tsc_lb_weaken; last done. lia.
+  }
+  { unfold P. iFrame. }
+  iIntros "HP". unfold P. clear P. iDestruct "HP" as "[Htid Htsc]".
+
+  wp_pure1_credit "LC". wp_pures.
+  iApply ncfupd_wp.
+  iInv "Hinv" as "Hgentid" "Hclose".
+  iMod (lc_fupd_elim_later with "LC Hgentid") as (clock3) "Hgentid".
+  iMod (gentid_completed with "Hgentid Hreserved Htsc") as (clock4) "(Hgentid & Hdig & HΦ)".
+  iMod ("Hclose" with "[Hgentid]") as "_".
+  { eauto. }
+  iModIntro.
 
   (***********************************************************)
   (* return tid                                              *) 
   (***********************************************************)
-Admitted.
+  wp_load. iApply "HΦ".
+Qed.
 
 End program.
 

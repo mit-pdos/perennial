@@ -825,6 +825,11 @@ Local Ltac solve_atomic :=
   Lemma tsc_lb_0 :
     ⊢ |==> tsc_lb 0.
   Proof. iApply mono_nat_lb_own_0. Qed.
+
+  Lemma tsc_lb_weaken t1 t2 :
+    (t1 ≤ t2)%nat →
+    tsc_lb t2 -∗ tsc_lb t1.
+  Proof. intros. apply mono_nat_lb_own_le. done. Qed.
 End grove.
 
 From Perennial.goose_lang Require Import adequacy.
