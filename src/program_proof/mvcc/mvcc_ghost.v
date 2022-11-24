@@ -1,5 +1,5 @@
-From iris.algebra.lib Require Import mono_nat mono_list gmap_view.
-From Perennial.base_logic Require Import ghost_map mono_nat.
+From iris.algebra Require Import mono_nat mono_list gmap_view gset.
+From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof.mvcc Require Import mvcc_prelude.
 
 (* RA definitions. *)
@@ -27,14 +27,17 @@ Class mvcc_ghostG Σ :=
     (* SST *)
     mvcc_ptupleG :> inG Σ key_vchainR;
     mvcc_ltupleG :> inG Σ key_vchainR;
-    mvcc_tsG :> mono_natG Σ;
-    mvcc_sidG :> inG Σ sid_ownR;
     mvcc_abort_tids_ncaG :> ghost_mapG Σ nat unit;
     mvcc_abort_tids_faG :> ghost_mapG Σ nat unit;
     mvcc_abort_tids_fciG :> ghost_mapG Σ (nat * dbmap) unit;
     mvcc_abort_tids_fccG :> ghost_mapG Σ (nat * dbmap) unit;
     mvcc_commit_tidsG :> ghost_mapG Σ (nat * dbmap) unit;
     mvcc_dbmapG :> ghost_mapG Σ u64 dbval;
+    (* GenTID *)
+    mvcc_tsG :> mono_natG Σ;
+    mvcc_sidG :> inG Σ sid_ownR;
+    mvcc_gentid_reservedG :> ghost_mapG Σ u64 gname;
+    mvcc_gentid_predG :> savedPredG Σ val;
     (* GC *)
     mvcc_sid_tidsG :> inG Σ sid_tidsR;
     mvcc_sid_min_tidG :> inG Σ sid_min_tidR;
@@ -45,13 +48,15 @@ Definition mvcc_ghostΣ :=
      GFunctor key_vchainR;
      GFunctor key_vchainR;
      mono_natΣ;
-     GFunctor sid_ownR;
      ghost_mapΣ nat unit;
      ghost_mapΣ nat unit;
      ghost_mapΣ (nat * dbmap) unit;
      ghost_mapΣ (nat * dbmap) unit;
      ghost_mapΣ (nat * dbmap) unit;
      ghost_mapΣ u64 dbval;
+     GFunctor sid_ownR;
+     ghost_mapΣ u64 gname;
+     savedPredΣ val;
      GFunctor sid_tidsR;
      GFunctor sid_min_tidR
    ].
@@ -65,14 +70,15 @@ Record mvcc_names :=
   {
     mvcc_ptuple : gname;
     mvcc_ltuple : gname;
-    mvcc_sids : gname;
-    mvcc_ts : gname;
     mvcc_abort_tids_nca : gname;
     mvcc_abort_tids_fa : gname;
     mvcc_abort_tmods_fci : gname;
     mvcc_abort_tmods_fcc : gname;
     mvcc_cmt_tmods : gname;
     mvcc_dbmap : gname;
+    mvcc_sids : gname;
+    mvcc_ts : gname;
+    mvcc_gentid_reserved : gname;
     mvcc_sid_tids : gname;
     mvcc_sid_min_tid : gname
   }.
@@ -161,7 +167,7 @@ Definition min_tid_lb γ tid : iProp Σ :=
 
 (* Definitions about SST-related resources. *)
 Definition ts_auth γ (ts : nat) : iProp Σ :=
-  mono_nat_auth_own γ.(mvcc_ts) 1 ts.
+  mono_nat_auth_own γ.(mvcc_ts) (1/2) ts.
 
 Definition ts_lb γ (ts : nat) : iProp Σ :=
   mono_nat_lb_own γ.(mvcc_ts) ts.
@@ -181,38 +187,38 @@ Definition fa_tids_auth γ (tids : gset nat) : iProp Σ :=
 Definition fa_tids_frag γ (tid : nat) : iProp Σ :=
   ghost_map_elem γ.(mvcc_abort_tids_fa) tid (DfracOwn 1) tt.
 
-Definition fci_tmods_auth γ tmods : iProp Σ :=
+Definition fci_tmods_auth (γ : mvcc_names) (tmods : gset (nat * dbmap)) : iProp Σ :=
   ghost_map_auth γ.(mvcc_abort_tmods_fci) 1 (gset_to_gmap tt tmods).
 
 Definition fci_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
   ghost_map_elem γ.(mvcc_abort_tmods_fci) tmod (DfracOwn 1) tt.
 
-Definition fcc_tmods_auth γ tmods : iProp Σ :=
+Definition fcc_tmods_auth (γ : mvcc_names) (tmods : gset (nat * dbmap)) : iProp Σ :=
   ghost_map_auth γ.(mvcc_abort_tmods_fcc) 1 (gset_to_gmap tt tmods).
 
 Definition fcc_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
   ghost_map_elem γ.(mvcc_abort_tmods_fcc) tmod (DfracOwn 1) tt.
 
-Definition cmt_tmods_auth γ tmods : iProp Σ :=
+Definition cmt_tmods_auth (γ : mvcc_names) (tmods : gset (nat * dbmap)) : iProp Σ :=
   ghost_map_auth γ.(mvcc_cmt_tmods) 1 (gset_to_gmap tt tmods).
 
 Definition cmt_tmods_frag γ (tmod : nat * dbmap) : iProp Σ :=
   ghost_map_elem γ.(mvcc_cmt_tmods) tmod (DfracOwn 1) tt.
 
-Definition dbmap_auth γ m : iProp Σ :=
+Definition dbmap_auth γ (m : dbmap) : iProp Σ :=
   ghost_map_auth γ.(mvcc_dbmap) 1 m.
 
-Definition dbmap_ptsto γ k q v : iProp Σ :=
+Definition dbmap_ptsto γ k q (v : dbval) : iProp Σ :=
   ghost_map_elem γ.(mvcc_dbmap) k (DfracOwn q) v.
 
 Definition dbmap_ptstos γ q (m : dbmap) : iProp Σ :=
   [∗ map] k ↦ v ∈ m, dbmap_ptsto γ k q v.
 
 (* Definitions about per-txn resources. *)
-Definition txnmap_auth τ m : iProp Σ :=
+Definition txnmap_auth τ (m : dbmap) : iProp Σ :=
   ghost_map_auth τ 1 m.
 
-Definition txnmap_ptsto τ k v : iProp Σ :=
+Definition txnmap_ptsto τ k (v : dbval) : iProp Σ :=
   ghost_map_elem τ k (DfracOwn 1) v.
 
 Definition txnmap_ptstos τ (m : dbmap) : iProp Σ :=
@@ -605,6 +611,9 @@ Proof.
   done.
 Qed.
 
+Definition mvcc_gentid_init γ : iProp Σ :=
+  ts_auth γ 0%nat ∗ ghost_map_auth γ.(mvcc_gentid_reserved) 1 (∅ : gmap u64 gname).
+
 Lemma mvcc_ghost_alloc :
   ⊢ |==> ∃ γ,
     (* SST-related. *)
@@ -621,6 +630,7 @@ Lemma mvcc_ghost_alloc :
     let dbmap_init := (gset_to_gmap Nil keys_all) in
     dbmap_auth γ dbmap_init ∗
     ([∗ map] k ↦ v ∈ dbmap_init, dbmap_ptsto γ k 1 v) ∗
+    mvcc_gentid_init γ ∗
     (* GC-related. *)
     ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
     ([∗ list] sid ∈ sids_all, site_active_tids_half_auth γ sid ∅) ∗
@@ -628,7 +638,7 @@ Lemma mvcc_ghost_alloc :
 Proof.
   iMod ptuples_alloc as (γptuple) "[Hptpls1 Hptpls2]".
   iMod ltuples_alloc as (γltuple) "Hltpls".
-  iMod (mono_nat_own_alloc 0) as (γts) "[Hts _]".
+  iMod (mono_nat_own_alloc 0) as (γts) "[[Hts1 Hts2] _]".
   set sids : gset u64 := list_to_set sids_all.
   iMod (own_alloc (A:=sid_ownR) (gset_to_gmap () sids)) as (γsids) "Hsids".
   { intros k. rewrite lookup_gset_to_gmap. destruct (decide (k ∈ sids)).
@@ -640,6 +650,7 @@ Proof.
   iMod (ghost_map_alloc (∅ : gmap (nat * dbmap) unit)) as (γfcc) "[Hfcc _]".
   iMod (ghost_map_alloc (∅ : gmap (nat * dbmap) unit)) as (γcmt) "[Hcmt _]".
   iMod (ghost_map_alloc (gset_to_gmap Nil keys_all)) as (γm) "[Hm Hpts]".
+  iMod (ghost_map_alloc (∅ : gmap u64 gname)) as (γres) "[Hres _]".
   iMod site_active_tids_alloc as (γactive) "[Hacts1 Hacts2]".
   iMod site_min_tid_alloc as (γmin) "Hmin".
   set γ :=
@@ -654,10 +665,11 @@ Proof.
       mvcc_abort_tmods_fcc := γfcc;
       mvcc_cmt_tmods := γcmt;
       mvcc_dbmap := γm;
+      mvcc_gentid_reserved := γres;
       mvcc_sid_tids := γactive;
       mvcc_sid_min_tid := γmin
     |}. 
-  iExists γ.
+  iExists γ. rewrite /mvcc_gentid_init.
   iAssert ([∗ list] sid ∈ sids_all, sid_own γ sid)%I with "[Hsids]" as "Hsids".
   { iEval (rewrite -[gset_to_gmap _ _]big_opM_singletons) in "Hsids".
     rewrite big_opM_own_1. rewrite big_opM_map_to_list.
@@ -734,24 +746,24 @@ Lemma txnmap_lookup τ m k v :
   txnmap_auth τ m -∗
   txnmap_ptsto τ k v -∗
   ⌜m !! k = Some v⌝.
-Proof. iApply ghost_map_lookup. Qed.
+Proof. apply: ghost_map_lookup. Qed.
 
 Lemma txnmap_lookup_big τ m m' :
   txnmap_auth τ m -∗
   txnmap_ptstos τ m' -∗
   ⌜m' ⊆ m⌝.
-Proof. iApply ghost_map_lookup_big. Qed.
+Proof. apply: ghost_map_lookup_big. Qed.
 
 Lemma txnmap_update {τ m k v} w :
   txnmap_auth τ m -∗
   txnmap_ptsto τ k v ==∗
   txnmap_auth τ (<[ k := w ]> m) ∗
   txnmap_ptsto τ k w.
-Proof. iApply ghost_map_update. Qed.
+Proof. apply: ghost_map_update. Qed.
 
 Lemma txnmap_alloc m :
   ⊢ |==> ∃ τ, txnmap_auth τ m ∗ ([∗ map] k ↦ v ∈ m, txnmap_ptsto τ k v).
-Proof. iApply ghost_map_alloc. Qed.
+Proof. apply: ghost_map_alloc. Qed.
 
 Lemma nca_tids_insert {γ tids} tid :
   tid ∉ tids ->
@@ -823,7 +835,7 @@ Proof.
   done.
 Qed.
 
-Lemma fci_tmods_insert {γ tmods} tmod :
+Lemma fci_tmods_insert {γ : mvcc_names} {tmods : gset (nat * dbmap)} tmod :
   tmod ∉ tmods ->
   fci_tmods_auth γ tmods ==∗
   fci_tmods_auth γ ({[ tmod ]} ∪ tmods) ∗ fci_tmods_frag γ tmod.

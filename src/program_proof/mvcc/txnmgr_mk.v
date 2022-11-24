@@ -39,8 +39,10 @@ Proof.
   (* Allocate ghost states. *)
   iMod mvcc_ghost_alloc as (γ) "H".
   iDestruct "H" as "(Hphys & Hphys' & Hlogi & Hts & Hsids & H)".
-  iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & Hpts & H)".
+  iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & Hpts & Hgentid & H)".
   iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths)".
+  iMod (init_GenTID with "Hgentid") as "#Hgentid".
+  (* TODO: remember Hgentid somewhere instead of just throwing it away. *)
   
   (***********************************************************)
   (* tid.GenTID(0)                                           *)
