@@ -186,28 +186,28 @@ Definition StartServer: val :=
     struct.storeF Server "e" "s" (erpc.MakeServer #());;
     struct.storeF Server "v" "s" #0;;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_GET (λ: "raw_args" "raw_reply",
+    MapInsert "handlers" RPC_GET ((λ: "raw_args" "raw_reply",
       let: "dec" := marshal.NewDec "raw_args" in
       let: "epoch" := marshal.Dec__GetInt "dec" in
       let: "reply" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
       Server__Get "s" "epoch" "reply";;
       "raw_reply" <-[slice.T byteT] EncGetReply "reply";;
       #()
-      );;
-    MapInsert "handlers" RPC_PUT (erpc.Server__HandleRequest (struct.loadF Server "e" "s") (λ: "raw_args" "reply",
+      ));;
+    MapInsert "handlers" RPC_PUT (erpc.Server__HandleRequest (struct.loadF Server "e" "s") ((λ: "raw_args" "reply",
       let: "args" := DecPutArgs "raw_args" in
       let: "err" := Server__Put "s" "args" in
       let: "enc" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "enc" "err";;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
-      ));;
-    MapInsert "handlers" RPC_FRESHCID (λ: "raw_args" "reply",
+      )));;
+    MapInsert "handlers" RPC_FRESHCID ((λ: "raw_args" "reply",
       let: "enc" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "enc" (erpc.Server__GetFreshCID (struct.loadF Server "e" "s"));;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
-      );;
+      ));;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().

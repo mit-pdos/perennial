@@ -402,7 +402,7 @@ Definition Server__becomeLeader: val :=
       let: "latestReply" := ref (zero_val ptrT) in
       let: "numSuccesses" := ref_to uint64T #0 in
       ForSlice ptrT <> "reply" "replies"
-        (if: "reply" ≠ #null
+        ((if: "reply" ≠ #null
         then
           (if: (struct.loadF enterNewEpochReply "err" "reply" = ENone)
           then
@@ -412,12 +412,12 @@ Definition Server__becomeLeader: val :=
               (if: struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") < struct.loadF enterNewEpochReply "acceptedEpoch" "reply"
               then "latestReply" <-[ptrT] "reply"
               else
-                (if: (struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") = struct.loadF enterNewEpochReply "acceptedEpoch" "reply") && (struct.loadF enterNewEpochReply "nextIndex" "reply" > struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply"))
+                (if: ((struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") = struct.loadF enterNewEpochReply "acceptedEpoch" "reply")) && (struct.loadF enterNewEpochReply "nextIndex" "reply" > struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply"))
                 then "latestReply" <-[ptrT] "reply"
                 else #())));;
             "numSuccesses" <-[uint64T] ![uint64T] "numSuccesses" + #1
           else #())
-        else #());;
+        else #()));;
       (if: #2 * ![uint64T] "numSuccesses" > "n"
       then
         (* log.Printf("succeeded becomeleader in epoch %d\n", args.epoch) *)
@@ -481,12 +481,12 @@ Definition Server__apply: val :=
         Continue);;
       let: "numSuccesses" := ref_to uint64T #0 in
       ForSlice ptrT <> "reply" "replies"
-        (if: "reply" ≠ #null
+        ((if: "reply" ≠ #null
         then
           (if: (struct.loadF applyAsFollowerReply "err" "reply" = ENone)
           then "numSuccesses" <-[uint64T] ![uint64T] "numSuccesses" + #1
           else #())
-        else #());;
+        else #()));;
       (if: #2 * ![uint64T] "numSuccesses" > "n"
       then
         struct.storeF applyReply "err" "reply" ENone;;
@@ -515,30 +515,30 @@ Definition StartServer: val :=
   rec: "StartServer" "fname" "me" "applyFn" "config" :=
     let: "s" := makeServer "fname" "applyFn" "config" in
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_APPLY_AS_FOLLOWER (λ: "raw_args" "raw_reply",
+    MapInsert "handlers" RPC_APPLY_AS_FOLLOWER ((λ: "raw_args" "raw_reply",
       let: "reply" := struct.alloc applyAsFollowerReply (zero_val (struct.t applyAsFollowerReply)) in
       let: "args" := decodeApplyAsFollowerArgs "raw_args" in
       Server__applyAsFollower "s" "args" "reply";;
       "raw_reply" <-[slice.T byteT] encodeApplyAsFollowerReply "reply";;
       #()
-      );;
-    MapInsert "handlers" RPC_ENTER_NEW_EPOCH (λ: "raw_args" "raw_reply",
+      ));;
+    MapInsert "handlers" RPC_ENTER_NEW_EPOCH ((λ: "raw_args" "raw_reply",
       let: "reply" := struct.alloc enterNewEpochReply (zero_val (struct.t enterNewEpochReply)) in
       let: "args" := decodeEnterNewEpochArgs "raw_args" in
       Server__enterNewEpoch "s" "args" "reply";;
       "raw_reply" <-[slice.T byteT] encodeEnterNewEpochReply "reply";;
       #()
-      );;
-    MapInsert "handlers" RPC_APPLY (λ: "raw_args" "raw_reply",
+      ));;
+    MapInsert "handlers" RPC_APPLY ((λ: "raw_args" "raw_reply",
       let: "reply" := struct.alloc applyReply (zero_val (struct.t applyReply)) in
       Server__apply "s" "raw_args" "reply";;
       "raw_reply" <-[slice.T byteT] encodeApplyReply "reply";;
       #()
-      );;
-    MapInsert "handlers" RPC_BECOME_LEADER (λ: "raw_args" "raw_reply",
+      ));;
+    MapInsert "handlers" RPC_BECOME_LEADER ((λ: "raw_args" "raw_reply",
       Server__becomeLeader "s";;
       #()
-      );;
+      ));;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().

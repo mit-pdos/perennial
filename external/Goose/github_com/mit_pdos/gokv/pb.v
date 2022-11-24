@@ -120,7 +120,7 @@ Definition StartConfServer: val :=
     struct.storeF ConfServer "mu" "s" (lock.new #());;
     struct.storeF ConfServer "kvs" "s" (NewMap (struct.t VersionedValue) #());;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" CONF_PUT (λ: "args" "rep",
+    MapInsert "handlers" CONF_PUT ((λ: "args" "rep",
       (if: ConfServer__PutRPC "s" (DecodePutArgs "args")
       then
         "rep" <-[slice.T byteT] NewSlice byteT #1;;
@@ -128,12 +128,12 @@ Definition StartConfServer: val :=
       else
         "rep" <-[slice.T byteT] NewSlice byteT #0;;
         #())
-      );;
-    MapInsert "handlers" CONF_GET (λ: "args" "rep",
+      ));;
+    MapInsert "handlers" CONF_GET ((λ: "args" "rep",
       let: "v" := struct.alloc VersionedValue (zero_val (struct.t VersionedValue)) in
       ConfServer__GetRPC "s" (UInt64Get "args") "v";;
       #()
-      );;
+      ));;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().
@@ -279,9 +279,9 @@ Definition min: val :=
   rec: "min" "l" :=
     let: "m" := ref_to uint64T #18446744073709551615 in
     ForSlice uint64T <> "v" "l"
-      (if: "v" < ![uint64T] "m"
+      ((if: "v" < ![uint64T] "m"
       then "m" <-[uint64T] "v"
-      else #());;
+      else #()));;
     ![uint64T] "m".
 
 Definition ReplicaServer__postAppendRPC: val :=
@@ -395,7 +395,7 @@ Definition StartReplicaServer: val :=
     struct.storeF ReplicaServer "cn" "s" #0;;
     struct.storeF ReplicaServer "isPrimary" "s" #false;;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" REPLICA_APPEND (λ: "raw_args" "raw_reply",
+    MapInsert "handlers" REPLICA_APPEND ((λ: "raw_args" "raw_reply",
       let: "a" := DecodeAppendArgs "raw_args" in
       (if: ReplicaServer__AppendRPC "s" "a"
       then
@@ -404,15 +404,15 @@ Definition StartReplicaServer: val :=
       else
         "raw_reply" <-[slice.T byteT] NewSlice byteT #0;;
         #())
-      );;
+      ));;
     MapInsert "handlers" REPLICA_GETLOG (ReplicaServer__GetCommitLogRPC "s");;
-    MapInsert "handlers" REPLICA_BECOMEPRIMARY (λ: "raw_args" "raw_reply",
+    MapInsert "handlers" REPLICA_BECOMEPRIMARY ((λ: "raw_args" "raw_reply",
       ReplicaServer__BecomePrimaryRPC "s" (DecodeBecomePrimaryArgs "raw_args");;
       #()
-      );;
-    MapInsert "handlers" REPLICA_HEARTBEAT (λ: <> <>,
+      ));;
+    MapInsert "handlers" REPLICA_HEARTBEAT ((λ: <> <>,
       #()
-      );;
+      ));;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     "s".

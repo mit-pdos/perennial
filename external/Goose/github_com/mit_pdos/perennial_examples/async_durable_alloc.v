@@ -33,7 +33,7 @@ Definition Alloc__MarkUsed: val :=
     lock.acquire (struct.loadF Alloc "mu" "a");;
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
-    SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte" `or` (#(U8 1)) ≪ "bit");;
+    SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `or` ((#(U8 1)) ≪ "bit"));;
     struct.storeF Alloc "dirty" "a" #true;;
     lock.release (struct.loadF Alloc "mu" "a");;
     #().
@@ -57,9 +57,9 @@ Definition Alloc__allocBit: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "bit" := (![uint64T] "num") `rem` #8 in
       let: "byte" := (![uint64T] "num") `quot` #8 in
-      (if: (SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte" `and` (#(U8 1)) ≪ "bit") = #(U8 0)
+      (if: ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `and` ((#(U8 1)) ≪ "bit") = #(U8 0))
       then
-        SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte" `or` (#(U8 1)) ≪ "bit");;
+        SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `or` ((#(U8 1)) ≪ "bit"));;
         struct.storeF Alloc "dirty" "a" #true;;
         Break
       else
@@ -77,7 +77,7 @@ Definition Alloc__freeBit: val :=
     lock.acquire (struct.loadF Alloc "mu" "a");;
     let: "byte" := "bn" `quot` #8 in
     let: "bit" := "bn" `rem` #8 in
-    SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" (SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte" `and` ~ ((#(U8 1)) ≪ "bit"));;
+    SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `and` (~ ((#(U8 1)) ≪ "bit")));;
     struct.storeF Alloc "dirty" "a" #true;;
     lock.release (struct.loadF Alloc "mu" "a");;
     #().
@@ -112,7 +112,7 @@ Definition popCnt: val :=
     let: "x" := ref_to byteT "b" in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < #8); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      "count" <-[uint64T] ![uint64T] "count" + to_u64 (![byteT] "x" `and` #(U8 1));;
+      "count" <-[uint64T] ![uint64T] "count" + to_u64 ((![byteT] "x") `and` (#(U8 1)));;
       "x" <-[byteT] (![byteT] "x") ≫ #1;;
       Continue);;
     ![uint64T] "count".

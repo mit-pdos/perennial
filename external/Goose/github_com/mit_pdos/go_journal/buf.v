@@ -47,11 +47,11 @@ Definition MkBufLoad: val :=
 Definition installOneBit: val :=
   rec: "installOneBit" "src" "dst" "bit" :=
     let: "new" := ref_to byteT "dst" in
-    (if: ("src" `and` (#(U8 1)) ≪ "bit") ≠ ("dst" `and` (#(U8 1)) ≪ "bit")
+    (if: "src" `and` ((#(U8 1)) ≪ "bit") ≠ "dst" `and` ((#(U8 1)) ≪ "bit")
     then
-      (if: ("src" `and` (#(U8 1)) ≪ "bit") = #(U8 0)
-      then "new" <-[byteT] (![byteT] "new" `and` ~ ((#(U8 1)) ≪ "bit"))
-      else "new" <-[byteT] ![byteT] "new" `or` (#(U8 1)) ≪ "bit")
+      (if: ("src" `and` ((#(U8 1)) ≪ "bit") = #(U8 0))
+      then "new" <-[byteT] (![byteT] "new") `and` (~ ((#(U8 1)) ≪ "bit"))
+      else "new" <-[byteT] (![byteT] "new") `or` ((#(U8 1)) ≪ "bit"))
     else #());;
     ![byteT] "new".
 
@@ -77,7 +77,7 @@ Definition Buf__Install: val :=
     (if: (struct.loadF Buf "Sz" "buf" = #1)
     then installBit (struct.loadF Buf "Data" "buf") "blk" (struct.get addr.Addr "Off" (struct.loadF Buf "Addr" "buf"))
     else
-      (if: ((struct.loadF Buf "Sz" "buf") `rem` #8 = #0) && ((struct.get addr.Addr "Off" (struct.loadF Buf "Addr" "buf")) `rem` #8 = #0)
+      (if: (((struct.loadF Buf "Sz" "buf") `rem` #8 = #0)) && (((struct.get addr.Addr "Off" (struct.loadF Buf "Addr" "buf")) `rem` #8 = #0))
       then installBytes (struct.loadF Buf "Data" "buf") "blk" (struct.get addr.Addr "Off" (struct.loadF Buf "Addr" "buf")) (struct.loadF Buf "Sz" "buf")
       else
         Panic ("Install unsupported

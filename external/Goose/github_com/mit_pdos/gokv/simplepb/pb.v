@@ -428,26 +428,26 @@ Definition MakeServer: val :=
 Definition Server__Serve: val :=
   rec: "Server__Serve" "s" "me" :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_APPLYASBACKUP (λ: "args" "reply",
+    MapInsert "handlers" RPC_APPLYASBACKUP ((λ: "args" "reply",
       "reply" <-[slice.T byteT] e.EncodeError (Server__ApplyAsBackup "s" (DecodeApplyAsBackupArgs "args"));;
       #()
-      );;
-    MapInsert "handlers" RPC_SETSTATE (λ: "args" "reply",
+      ));;
+    MapInsert "handlers" RPC_SETSTATE ((λ: "args" "reply",
       "reply" <-[slice.T byteT] e.EncodeError (Server__SetState "s" (DecodeSetStateArgs "args"));;
       #()
-      );;
-    MapInsert "handlers" RPC_GETSTATE (λ: "args" "reply",
+      ));;
+    MapInsert "handlers" RPC_GETSTATE ((λ: "args" "reply",
       "reply" <-[slice.T byteT] EncodeGetStateReply (Server__GetState "s" (DecodeGetStateArgs "args"));;
       #()
-      );;
-    MapInsert "handlers" RPC_BECOMEPRIMARY (λ: "args" "reply",
+      ));;
+    MapInsert "handlers" RPC_BECOMEPRIMARY ((λ: "args" "reply",
       "reply" <-[slice.T byteT] e.EncodeError (Server__BecomePrimary "s" (DecodeBecomePrimaryArgs "args"));;
       #()
-      );;
-    MapInsert "handlers" RPC_PRIMARYAPPLY (λ: "args" "reply",
+      ));;
+    MapInsert "handlers" RPC_PRIMARYAPPLY ((λ: "args" "reply",
       "reply" <-[slice.T byteT] EncodeApplyReply (Server__Apply "s" "args");;
       #()
-      );;
+      ));;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     #().

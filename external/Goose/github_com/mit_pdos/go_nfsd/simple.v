@@ -460,7 +460,7 @@ Definition Nfs__NFSPROC3_ACCESS: val :=
     ")) #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.ACCESS3res)) in
     struct.storeF nfstypes.ACCESS3res "Status" "reply" nfstypes.NFS3_OK;;
-    struct.storeF nfstypes.ACCESS3resok "Access" (struct.fieldRef nfstypes.ACCESS3res "Resok" "reply") (nfstypes.ACCESS3_READ `or` nfstypes.ACCESS3_LOOKUP `or` nfstypes.ACCESS3_MODIFY `or` nfstypes.ACCESS3_EXTEND `or` nfstypes.ACCESS3_DELETE `or` nfstypes.ACCESS3_EXECUTE);;
+    struct.storeF nfstypes.ACCESS3resok "Access" (struct.fieldRef nfstypes.ACCESS3res "Resok" "reply") (((((nfstypes.ACCESS3_READ `or` nfstypes.ACCESS3_LOOKUP) `or` nfstypes.ACCESS3_MODIFY) `or` nfstypes.ACCESS3_EXTEND) `or` nfstypes.ACCESS3_DELETE) `or` nfstypes.ACCESS3_EXECUTE);;
     ![struct.t nfstypes.ACCESS3res] "reply".
 
 Definition NFSPROC3_READ_wp: val :=

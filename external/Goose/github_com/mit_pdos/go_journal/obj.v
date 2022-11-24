@@ -46,7 +46,7 @@ Definition Log__installBufsMap: val :=
   rec: "Log__installBufsMap" "l" "bufs" :=
     let: "blks" := NewMap (slice.T byteT) #() in
     ForSlice ptrT <> "b" "bufs"
-      (if: (struct.loadF buf.Buf "Sz" "b" = common.NBITBLOCK)
+      ((if: (struct.loadF buf.Buf "Sz" "b" = common.NBITBLOCK)
       then MapInsert "blks" (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b")) (struct.loadF buf.Buf "Data" "b")
       else
         let: "blk" := ref (zero_val (slice.T byteT)) in
@@ -56,7 +56,7 @@ Definition Log__installBufsMap: val :=
         else
           "blk" <-[slice.T byteT] wal.Walog__Read (struct.loadF Log "log" "l") (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b"));;
           MapInsert "blks" (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b")) (![slice.T byteT] "blk"));;
-        buf.Buf__Install "b" (![slice.T byteT] "blk"));;
+        buf.Buf__Install "b" (![slice.T byteT] "blk")));;
     "blks".
 
 Definition Log__installBufs: val :=

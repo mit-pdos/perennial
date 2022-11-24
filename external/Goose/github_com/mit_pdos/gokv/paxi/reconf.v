@@ -23,13 +23,13 @@ Definition GetHighestIndexOfQuorum: val :=
     ForSlice uint64T <> "m" (struct.loadF Config "Members" "config")
       (let: "indexToInsert" := Fst (MapGet "indices" "m") in
       ForSlice uint64T "i" <> (![slice.T uint64T] "orderedIndices")
-        (if: SliceGet uint64T (![slice.T uint64T] "orderedIndices") "i" > "indexToInsert"
+        ((if: SliceGet uint64T (![slice.T uint64T] "orderedIndices") "i" > "indexToInsert"
         then
           let: "j" := ref_to uint64T "i" in
           (for: (λ: <>, ![uint64T] "j" < slice.len (![slice.T uint64T] "orderedIndices") - #1); (λ: <>, "j" <-[uint64T] ![uint64T] "j" + #1) := λ: <>,
             SliceSet uint64T (![slice.T uint64T] "orderedIndices") ("i" + #1) (SliceGet uint64T (![slice.T uint64T] "orderedIndices") "i");;
             Continue)
-        else #()));;
+        else #())));;
     let: "ret" := SliceGet uint64T (![slice.T uint64T] "orderedIndices") (slice.len (struct.loadF Config "Members" "config") - #1) in
     (if: (slice.len (struct.loadF Config "NextMembers" "config") = #0)
     then "ret"
@@ -40,9 +40,9 @@ Definition IsQuorum: val :=
   rec: "IsQuorum" "config" "w" :=
     let: "num" := ref (zero_val uint64T) in
     ForSlice uint64T <> "member" (struct.loadF Config "Members" "config")
-      (if: Fst (MapGet "w" "member")
+      ((if: Fst (MapGet "w" "member")
       then "num" <-[uint64T] ![uint64T] "num" + #1
-      else #());;
+      else #()));;
     (if: #2 * ![uint64T] "num" ≤ slice.len (struct.loadF Config "Members" "config")
     then #false
     else
@@ -51,9 +51,9 @@ Definition IsQuorum: val :=
       else
         "num" <-[uint64T] #0;;
         ForSlice uint64T <> "member" (struct.loadF Config "NextMembers" "config")
-          (if: Fst (MapGet "w" "member")
+          ((if: Fst (MapGet "w" "member")
           then "num" <-[uint64T] ![uint64T] "num" + #1
-          else #());;
+          else #()));;
         (if: #2 * ![uint64T] "num" ≤ slice.len (struct.loadF Config "NextMembers" "config")
         then #false
         else #true))).
@@ -70,13 +70,13 @@ Definition Config__Contains: val :=
   rec: "Config__Contains" "c" "m" :=
     let: "ret" := ref_to boolT #false in
     ForSlice uint64T <> "member" (struct.loadF Config "Members" "c")
-      (if: ("member" = "m")
+      ((if: ("member" = "m")
       then "ret" <-[boolT] #true
-      else #());;
+      else #()));;
     ForSlice uint64T <> "member" (struct.loadF Config "NextMembers" "c")
-      (if: ("member" = "m")
+      ((if: ("member" = "m")
       then "ret" <-[boolT] #true
-      else #());;
+      else #()));;
     ![boolT] "ret".
 
 (* 1_marshal.go *)
@@ -339,7 +339,7 @@ Definition Replica__TryBecomeLeader: val :=
     lock.release (struct.loadF Replica "mu" "r");;
     let: "mu" := lock.new #() in
     let: "prepared" := NewMap boolT #() in
-    Config__ForEachMember "conf" (λ: "addr",
+    Config__ForEachMember "conf" ((λ: "addr",
       Fork (let: "reply_ptr" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in
             ClerkPool__PrepareRPC (struct.loadF Replica "clerkPool" "r") "addr" "newTerm" "reply_ptr";;
             (if: (struct.loadF PrepareReply "Err" "reply_ptr" = ENone)
@@ -358,7 +358,7 @@ Definition Replica__TryBecomeLeader: val :=
               lock.release "mu"
             else #()));;
       #()
-      );;
+      ));;
     grove_ffi.Sleep (#50 * #1000000);;
     lock.acquire "mu";;
     (if: IsQuorum (struct.loadF MonotonicValue "conf" (![ptrT] "highestVal")) "prepared"
@@ -398,7 +398,7 @@ Definition Replica__tryCommit: val :=
       lock.release (struct.loadF Replica "mu" "r");;
       let: "mu" := lock.new #() in
       let: "accepted" := NewMap boolT #() in
-      Config__ForEachMember (struct.loadF MonotonicValue "conf" "mval") (λ: "addr",
+      Config__ForEachMember (struct.loadF MonotonicValue "conf" "mval") ((λ: "addr",
         Fork ((if: ClerkPool__ProposeRPC (struct.loadF Replica "clerkPool" "r") "addr" "term" "mval"
               then
                 lock.acquire "mu";;
@@ -406,7 +406,7 @@ Definition Replica__tryCommit: val :=
                 lock.release "mu"
               else #()));;
         #()
-        );;
+        ));;
       grove_ffi.Sleep (#100 * #1000000);;
       lock.acquire "mu";;
       (if: IsQuorum (struct.loadF MonotonicValue "conf" "mval") "accepted"
@@ -425,31 +425,31 @@ Definition Replica__TryCommitVal: val :=
       lock.release (struct.loadF Replica "mu" "r");;
       Replica__TryBecomeLeader "r"
     else lock.release (struct.loadF Replica "mu" "r"));;
-    Replica__tryCommit "r" (λ: "mval",
+    Replica__tryCommit "r" ((λ: "mval",
       struct.storeF MonotonicValue "val" "mval" "v";;
       #()
-      ) "reply";;
+      )) "reply";;
     #().
 
 (* requires that newConfig has overlapping quorums with r.config *)
 Definition Replica__TryEnterNewConfig: val :=
   rec: "Replica__TryEnterNewConfig" "r" "newMembers" :=
     let: "reply" := struct.alloc TryCommitReply (zero_val (struct.t TryCommitReply)) in
-    Replica__tryCommit "r" (λ: "mval",
+    Replica__tryCommit "r" ((λ: "mval",
       (if: (slice.len (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval")) = #0)
       then
         struct.storeF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval") "newMembers";;
         #()
       else #())
-      ) "reply";;
-    Replica__tryCommit "r" (λ: "mval",
+      )) "reply";;
+    Replica__tryCommit "r" ((λ: "mval",
       (if: slice.len (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval")) ≠ #0
       then
         struct.storeF Config "Members" (struct.loadF MonotonicValue "conf" "mval") (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval"));;
         struct.storeF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval") (NewSlice uint64T #0);;
         #()
       else #())
-      ) "reply";;
+      )) "reply";;
     #().
 
 Definition StartReplicaServer: val :=
@@ -463,34 +463,34 @@ Definition StartReplicaServer: val :=
     struct.storeF Replica "clerkPool" "s" (MakeClerkPool #());;
     struct.storeF Replica "isLeader" "s" #false;;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_PREPARE (λ: "args" "raw_reply",
+    MapInsert "handlers" RPC_PREPARE ((λ: "args" "raw_reply",
       let: ("term", <>) := marshal.ReadInt "args" in
       let: "reply" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in
       Replica__PrepareRPC "s" "term" "reply";;
       "raw_reply" <-[slice.T byteT] EncPrepareReply (NewSlice byteT #0) "reply";;
       DecPrepareReply (![slice.T byteT] "raw_reply");;
       #()
-      );;
-    MapInsert "handlers" RPC_PROPOSE (λ: "raw_args" "raw_reply",
+      ));;
+    MapInsert "handlers" RPC_PROPOSE ((λ: "raw_args" "raw_reply",
       let: ("args", <>) := DecProposeArgs "raw_args" in
       let: "reply" := Replica__ProposeRPC "s" (struct.loadF ProposeArgs "Term" "args") (struct.loadF ProposeArgs "Val" "args") in
       "raw_reply" <-[slice.T byteT] marshal.WriteInt (NewSliceWithCap byteT #0 #8) "reply";;
       #()
-      );;
-    MapInsert "handlers" RPC_TRY_COMMIT_VAL (λ: "raw_args" "raw_reply",
+      ));;
+    MapInsert "handlers" RPC_TRY_COMMIT_VAL ((λ: "raw_args" "raw_reply",
       (* log.Println("RPC_TRY_COMMIT_VAL") *)
       let: "val" := "raw_args" in
       let: "reply" := struct.alloc TryCommitReply (zero_val (struct.t TryCommitReply)) in
       Replica__TryCommitVal "s" "val" "reply";;
       "raw_reply" <-[slice.T byteT] marshal.WriteInt (NewSliceWithCap byteT #0 #8) (struct.loadF TryCommitReply "err" "reply");;
       #()
-      );;
-    MapInsert "handlers" RPC_TRY_CONFIG_CHANGE (λ: "raw_args" "raw_reply",
+      ));;
+    MapInsert "handlers" RPC_TRY_CONFIG_CHANGE ((λ: "raw_args" "raw_reply",
       let: ("args", <>) := DecMembers "raw_args" in
       Replica__TryEnterNewConfig "s" "args";;
       "raw_reply" <-[slice.T byteT] NewSlice byteT #0;;
       #()
-      );;
+      ));;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().

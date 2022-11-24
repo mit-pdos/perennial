@@ -70,13 +70,13 @@ Definition StartServer: val :=
     struct.storeF Server "ck1" "s" (ctr.MakeClerk "host1");;
     struct.storeF Server "ck2" "s" (ctr.MakeClerk "host2");;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_FAI (λ: "args" "reply",
+    MapInsert "handlers" RPC_FAI ((λ: "args" "reply",
       let: "dec" := marshal.NewDec "args" in
       let: "enc" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "enc" (Server__FetchAndIncrement "s" (marshal.Dec__GetInt "dec"));;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
-      );;
+      ));;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().

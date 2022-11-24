@@ -503,38 +503,38 @@ Definition KVShardServer__Start: val :=
   rec: "KVShardServer__Start" "mkv" "host" :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     let: "erpc" := struct.loadF KVShardServer "erpc" "mkv" in
-    MapInsert "handlers" KV_FRESHCID (λ: "rawReq" "rawReply",
+    MapInsert "handlers" KV_FRESHCID ((λ: "rawReq" "rawReply",
       "rawReply" <-[slice.T byteT] EncodeUint64 (KVShardServer__GetCIDRPC "mkv");;
       #()
-      );;
-    MapInsert "handlers" KV_PUT (erpc.Server__HandleRequest "erpc" (λ: "rawReq" "rawReply",
+      ));;
+    MapInsert "handlers" KV_PUT (erpc.Server__HandleRequest "erpc" ((λ: "rawReq" "rawReply",
       let: "rep" := struct.alloc PutReply (zero_val (struct.t PutReply)) in
       KVShardServer__PutRPC "mkv" (DecodePutRequest "rawReq") "rep";;
       "rawReply" <-[slice.T byteT] EncodePutReply "rep";;
       #()
-      ));;
-    MapInsert "handlers" KV_GET (erpc.Server__HandleRequest "erpc" (λ: "rawReq" "rawReply",
+      )));;
+    MapInsert "handlers" KV_GET (erpc.Server__HandleRequest "erpc" ((λ: "rawReq" "rawReply",
       let: "rep" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
       KVShardServer__GetRPC "mkv" (DecodeGetRequest "rawReq") "rep";;
       "rawReply" <-[slice.T byteT] EncodeGetReply "rep";;
       #()
-      ));;
-    MapInsert "handlers" KV_CONDITIONAL_PUT (erpc.Server__HandleRequest "erpc" (λ: "rawReq" "rawReply",
+      )));;
+    MapInsert "handlers" KV_CONDITIONAL_PUT (erpc.Server__HandleRequest "erpc" ((λ: "rawReq" "rawReply",
       let: "rep" := struct.alloc ConditionalPutReply (zero_val (struct.t ConditionalPutReply)) in
       KVShardServer__ConditionalPutRPC "mkv" (DecodeConditionalPutRequest "rawReq") "rep";;
       "rawReply" <-[slice.T byteT] EncodeConditionalPutReply "rep";;
       #()
-      ));;
-    MapInsert "handlers" KV_INS_SHARD (erpc.Server__HandleRequest "erpc" (λ: "rawReq" "rawReply",
+      )));;
+    MapInsert "handlers" KV_INS_SHARD (erpc.Server__HandleRequest "erpc" ((λ: "rawReq" "rawReply",
       KVShardServer__InstallShardRPC "mkv" (decodeInstallShardRequest "rawReq");;
       "rawReply" <-[slice.T byteT] NewSlice byteT #0;;
       #()
-      ));;
-    MapInsert "handlers" KV_MOV_SHARD (λ: "rawReq" "rawReply",
+      )));;
+    MapInsert "handlers" KV_MOV_SHARD ((λ: "rawReq" "rawReply",
       KVShardServer__MoveShardRPC "mkv" (decodeMoveShardRequest "rawReq");;
       "rawReply" <-[slice.T byteT] NewSlice byteT #0;;
       #()
-      );;
+      ));;
     let: "s" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "s" "host";;
     #().
@@ -611,11 +611,11 @@ Definition MakeKVCoordServer: val :=
 Definition KVCoord__Start: val :=
   rec: "KVCoord__Start" "c" "host" :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" COORD_ADD (λ: "rawReq" "rawRep",
+    MapInsert "handlers" COORD_ADD ((λ: "rawReq" "rawRep",
       let: "s" := DecodeUint64 "rawReq" in
       KVCoord__AddServerRPC "c" "s";;
       #()
-      );;
+      ));;
     MapInsert "handlers" COORD_GET (KVCoord__GetShardMapRPC "c");;
     let: "s" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "s" "host";;
@@ -780,10 +780,10 @@ Definition KVClerk__Add: val :=
 Definition KVClerk__MGet: val :=
   rec: "KVClerk__MGet" "p" "keys" :=
     let: "vals" := NewSlice (slice.T byteT) (slice.len "keys") in
-    std.Multipar (slice.len "keys") (λ: "i",
+    std.Multipar (slice.len "keys") ((λ: "i",
       SliceSet (slice.T byteT) "vals" "i" (KVClerk__Get "p" (SliceGet uint64T "keys" "i"));;
       #()
-      );;
+      ));;
     "vals".
 
 Definition MakeKVClerk: val :=

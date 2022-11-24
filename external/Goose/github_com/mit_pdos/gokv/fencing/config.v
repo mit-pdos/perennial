@@ -159,20 +159,20 @@ Definition StartServer: val :=
     struct.storeF Server "currHolderActive_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
     Fork (Server__HeartbeatListener "s");;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_ACQUIRE_EPOCH (λ: "args" "reply",
+    MapInsert "handlers" RPC_ACQUIRE_EPOCH ((λ: "args" "reply",
       let: "dec" := marshal.NewDec "args" in
       let: "enc" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "enc" (Server__AcquireEpoch "s" (marshal.Dec__GetInt "dec"));;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
-      );;
-    MapInsert "handlers" RPC_GET (λ: "args" "reply",
+      ));;
+    MapInsert "handlers" RPC_GET ((λ: "args" "reply",
       let: "enc" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "enc" (Server__Get "s");;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
       #()
-      );;
-    MapInsert "handlers" RPC_HB (λ: "args" "reply",
+      ));;
+    MapInsert "handlers" RPC_HB ((λ: "args" "reply",
       let: "dec" := marshal.NewDec "args" in
       (if: Server__Heartbeat "s" (marshal.Dec__GetInt "dec")
       then
@@ -181,7 +181,7 @@ Definition StartServer: val :=
       else
         "reply" <-[slice.T byteT] NewSlice byteT #1;;
         #())
-      );;
+      ));;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().

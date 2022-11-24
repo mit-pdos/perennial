@@ -165,7 +165,7 @@ Definition testCopyDifferentLengths: val :=
     SliceSet byteT "x" #12 (#(U8 2));;
     let: "y" := NewSlice byteT #10 in
     let: "n" := SliceCopy byteT "y" "x" in
-    ("n" = #10) && (SliceGet byteT "y" #3 = #(U8 1)).
+    ("n" = #10) && ((SliceGet byteT "y" #3 = #(U8 1))).
 
 (* data_structures.go *)
 
@@ -664,7 +664,7 @@ Definition ArithmeticShifts: val :=
 
 Definition BitwiseOps: val :=
   rec: "BitwiseOps" "x" "y" :=
-    to_u64 "x" `or` (to_u64 (to_u32 "y") `and` #43).
+    (to_u64 "x") `or` ((to_u64 (to_u32 "y")) `and` #43).
 
 Definition Comparison: val :=
   rec: "Comparison" "x" "y" :=

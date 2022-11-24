@@ -42,13 +42,13 @@ Definition main: val :=
       let: "d" := marshal.NewDec "a" in
       struct.storeF CtrServer "val" "s" (marshal.Dec__GetInt "d"));;
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" #0 (λ: "args" "reply",
+    MapInsert "handlers" #0 ((λ: "args" "reply",
       let: "v" := CtrServer__FetchAndIncrement "s" in
       let: "e" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "e" "v";;
       "reply" <-[slice.T byteT] marshal.Enc__Finish "e";;
       #()
-      );;
+      ));;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     #().
