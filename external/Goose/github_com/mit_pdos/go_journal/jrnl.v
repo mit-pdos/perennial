@@ -68,7 +68,7 @@ Definition Begin: val :=
 Definition Op__ReadBuf: val :=
   rec: "Op__ReadBuf" "op" "addr" "sz" :=
     let: "b" := buf.BufMap__Lookup (struct.loadF Op "bufs" "op") "addr" in
-    (if: ("b" = #null)
+    (if: "b" = #null
     then
       let: "buf" := obj.Log__Load (struct.loadF Op "log" "op") "addr" "sz" in
       buf.BufMap__Insert (struct.loadF Op "bufs" "op") "buf";;
@@ -79,14 +79,14 @@ Definition Op__ReadBuf: val :=
 Definition Op__OverWrite: val :=
   rec: "Op__OverWrite" "op" "addr" "sz" "data" :=
     let: "b" := ref_to ptrT (buf.BufMap__Lookup (struct.loadF Op "bufs" "op") "addr") in
-    (if: (![ptrT] "b" = #null)
+    (if: (![ptrT] "b") = #null
     then
       "b" <-[ptrT] buf.MkBuf "addr" "sz" "data";;
       buf.Buf__SetDirty (![ptrT] "b");;
       buf.BufMap__Insert (struct.loadF Op "bufs" "op") (![ptrT] "b");;
       #()
     else
-      (if: "sz" ≠ struct.loadF buf.Buf "Sz" (![ptrT] "b")
+      (if: "sz" ≠ (struct.loadF buf.Buf "Sz" (![ptrT] "b"))
       then Panic "overwrite"
       else #());;
       struct.storeF buf.Buf "Data" (![ptrT] "b") "data";;

@@ -23,7 +23,7 @@ Definition CtrServer__FetchAndIncrement: val :=
   rec: "CtrServer__FetchAndIncrement" "s" :=
     lock.acquire (struct.loadF CtrServer "mu" "s");;
     let: "ret" := struct.loadF CtrServer "val" "s" in
-    struct.storeF CtrServer "val" "s" (struct.loadF CtrServer "val" "s" + #1);;
+    struct.storeF CtrServer "val" "s" ((struct.loadF CtrServer "val" "s") + #1);;
     CtrServer__MakeDurable "s";;
     lock.release (struct.loadF CtrServer "mu" "s");;
     "ret".
@@ -36,7 +36,7 @@ Definition main: val :=
     struct.storeF CtrServer "mu" "s" (lock.new #());;
     struct.storeF CtrServer "filename" "s" #(str"ctr");;
     let: "a" := grove_ffi.Read (struct.loadF CtrServer "filename" "s") in
-    (if: (slice.len "a" = #0)
+    (if: (slice.len "a") = #0
     then struct.storeF CtrServer "val" "s" #0
     else
       let: "d" := marshal.NewDec "a" in

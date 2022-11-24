@@ -11,7 +11,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition EncodeConfig: val :=
   rec: "EncodeConfig" "config" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 * slice.len "config")) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (#8 * (slice.len "config")))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "config");;
     ForSlice uint64T <> "h" "config"
       ("enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "h");;
@@ -27,11 +27,11 @@ Definition DecodeConfig: val :=
     let: "config" := NewSlice uint64T (![uint64T] "configLen") in
     let: "i" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, ![uint64T] "i" < slice.len "config"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "config")); (λ: <>, Skip) := λ: <>,
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       SliceSet uint64T "config" (![uint64T] "i") "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
-      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      "i" <-[uint64T] (![uint64T] "i") + #1;;
       Continue);;
     "config".
 
@@ -59,7 +59,7 @@ Definition Clerk__GetEpochAndConfig: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETEPOCH (NewSlice byteT #0) "reply" #100 in
-      (if: ("err" = #0)
+      (if: "err" = #0
       then Break
       else Continue));;
     let: "epoch" := ref (zero_val uint64T) in
@@ -75,7 +75,7 @@ Definition Clerk__GetConfig: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETCONFIG (NewSlice byteT #0) "reply" #100 in
-      (if: ("err" = #0)
+      (if: "err" = #0
       then Break
       else Continue));;
     let: "config" := DecodeConfig (![slice.T byteT] "reply") in
@@ -84,11 +84,11 @@ Definition Clerk__GetConfig: val :=
 Definition Clerk__WriteConfig: val :=
   rec: "Clerk__WriteConfig" "ck" "epoch" "config" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 * slice.len "config")) in
+    let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (#8 * (slice.len "config")))) in
     "args" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "args") "epoch";;
     "args" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "args") (EncodeConfig "config");;
     let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_WRITECONFIG (![slice.T byteT] "args") "reply" #100 in
-    (if: ("err" = #0)
+    (if: "err" = #0
     then
       let: ("e", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
       "e"
@@ -106,7 +106,7 @@ Definition Server__GetEpochAndConfig: val :=
   rec: "Server__GetEpochAndConfig" "s" "args" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     struct.storeF Server "epoch" "s" (std.SumAssumeNoOverflow (struct.loadF Server "epoch" "s") #1);;
-    "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 * slice.len (struct.loadF Server "config" "s"));;
+    "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + (#8 * (slice.len (struct.loadF Server "config" "s"))));;
     "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "epoch" "s");;
     "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig (struct.loadF Server "config" "s"));;
     lock.release (struct.loadF Server "mu" "s");;
@@ -123,7 +123,7 @@ Definition Server__WriteConfig: val :=
   rec: "Server__WriteConfig" "s" "args" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     let: ("epoch", "enc") := marshal.ReadInt "args" in
-    (if: "epoch" ≠ struct.loadF Server "epoch" "s"
+    (if: "epoch" ≠ (struct.loadF Server "epoch" "s")
     then
       "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.Stale;;
       lock.release (struct.loadF Server "mu" "s");;

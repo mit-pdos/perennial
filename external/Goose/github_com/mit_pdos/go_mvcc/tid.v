@@ -8,8 +8,8 @@ Definition GenTID: val :=
   rec: "GenTID" "sid" :=
     let: "tid" := ref (zero_val uint64T) in
     "tid" <-[uint64T] grove_ffi.GetTSC #();;
-    "tid" <-[uint64T] (![uint64T] "tid" + config.N_TXN_SITES `and` ~ (config.N_TXN_SITES - #1)) + "sid";;
+    "tid" <-[uint64T] (((![uint64T] "tid") + config.N_TXN_SITES) `and` (~ (config.N_TXN_SITES - #1))) + "sid";;
     Skip;;
-    (for: (λ: <>, grove_ffi.GetTSC #() ≤ ![uint64T] "tid"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (grove_ffi.GetTSC #()) ≤ (![uint64T] "tid")); (λ: <>, Skip) := λ: <>,
       Continue);;
     ![uint64T] "tid".

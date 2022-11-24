@@ -23,7 +23,7 @@ Definition freeRange: val :=
     let: "m" := NewMap (struct.t unit) #() in
     let: "end" := "start" + "sz" in
     let: "i" := ref_to uint64T "start" in
-    (for: (λ: <>, ![uint64T] "i" < "end"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < "end"); (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) := λ: <>,
       MapInsert "m" (![uint64T] "i") (struct.mk unit [
       ]);;
       Continue);;

@@ -11,8 +11,8 @@ Definition LoopOnKey: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "v" := client.Clerk__FetchAndIncrement "ck" "key" in
-      control.impl.Assert ("v" > ![uint64T] "lowerBound");;
-      (if: ("v" `rem` #1000 = #0)
+      control.impl.Assert ("v" > (![uint64T] "lowerBound"));;
+      (if: ("v" `rem` #1000) = #0
       then
         (* log.Printf("reached %d >= %d", key, v) *)
         #()

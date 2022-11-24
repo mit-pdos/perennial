@@ -61,11 +61,11 @@ Definition lockShard__acquire: val :=
         struct.storeF lockState "held" (![ptrT] "state") #true;;
         "acquired" <-[boolT] #true
       else
-        struct.storeF lockState "waiters" (![ptrT] "state") (struct.loadF lockState "waiters" (![ptrT] "state") + #1);;
+        struct.storeF lockState "waiters" (![ptrT] "state") ((struct.loadF lockState "waiters" (![ptrT] "state")) + #1);;
         lock.condWait (struct.loadF lockState "cond" (![ptrT] "state"));;
         let: ("state2", "ok2") := MapGet (struct.loadF lockShard "state" "lmap") "addr" in
         (if: "ok2"
-        then struct.storeF lockState "waiters" "state2" (struct.loadF lockState "waiters" "state2" - #1)
+        then struct.storeF lockState "waiters" "state2" ((struct.loadF lockState "waiters" "state2") - #1)
         else #()));;
       (if: ![boolT] "acquired"
       then Break
@@ -78,7 +78,7 @@ Definition lockShard__release: val :=
     lock.acquire (struct.loadF lockShard "mu" "lmap");;
     let: "state" := Fst (MapGet (struct.loadF lockShard "state" "lmap") "addr") in
     struct.storeF lockState "held" "state" #false;;
-    (if: struct.loadF lockState "waiters" "state" > #0
+    (if: (struct.loadF lockState "waiters" "state") > #0
     then lock.condSignal (struct.loadF lockState "cond" "state")
     else MapDelete (struct.loadF lockShard "state" "lmap") "addr");;
     lock.release (struct.loadF lockShard "mu" "lmap");;
@@ -94,7 +94,7 @@ Definition MkLockMap: val :=
   rec: "MkLockMap" <> :=
     let: "shards" := ref (zero_val (slice.T ptrT)) in
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < NSHARD); (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) := λ: <>,
       "shards" <-[slice.T ptrT] SliceAppend ptrT (![slice.T ptrT] "shards") (mkLockShard #());;
       Continue);;
     let: "a" := struct.new LockMap [

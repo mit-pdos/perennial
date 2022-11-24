@@ -46,7 +46,7 @@ Definition Log__installBufsMap: val :=
   rec: "Log__installBufsMap" "l" "bufs" :=
     let: "blks" := NewMap (slice.T byteT) #() in
     ForSlice ptrT <> "b" "bufs"
-      ((if: (struct.loadF buf.Buf "Sz" "b" = common.NBITBLOCK)
+      ((if: (struct.loadF buf.Buf "Sz" "b") = common.NBITBLOCK
       then MapInsert "blks" (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b")) (struct.loadF buf.Buf "Data" "b")
       else
         let: "blk" := ref (zero_val (slice.T byteT)) in
@@ -84,7 +84,7 @@ Definition Log__doCommit: val :=
 Definition Log__CommitWait: val :=
   rec: "Log__CommitWait" "l" "bufs" "wait" :=
     let: "commit" := ref_to boolT #true in
-    (if: slice.len "bufs" > #0
+    (if: (slice.len "bufs") > #0
     then
       let: ("n", "ok") := Log__doCommit "l" "bufs" in
       (if: ~ "ok"

@@ -58,13 +58,13 @@ Definition ConnMan__CallAtLeastOnce: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := urpc.Client__Call (![ptrT] "cl") "rpcid" "args" "reply" "retryTimeout" in
-      (if: ("err" = urpc.ErrTimeout)
+      (if: "err" = urpc.ErrTimeout
       then Continue
       else
-        (if: ("err" = urpc.ErrDisconnect)
+        (if: "err" = urpc.ErrDisconnect
         then
           lock.acquire (struct.loadF ConnMan "mu" "c");;
-          (if: (![ptrT] "cl" = Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))
+          (if: (![ptrT] "cl") = (Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))
           then MapDelete (struct.loadF ConnMan "rpcCls" "c") "host"
           else #());;
           lock.release (struct.loadF ConnMan "mu" "c");;

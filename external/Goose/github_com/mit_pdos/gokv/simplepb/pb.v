@@ -19,7 +19,7 @@ Definition ApplyAsBackupArgs := struct.decl [
 
 Definition EncodeApplyAsBackupArgs: val :=
   rec: "EncodeApplyAsBackupArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 + slice.len (struct.loadF ApplyAsBackupArgs "op" "args"))) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((#8 + #8) + (slice.len (struct.loadF ApplyAsBackupArgs "op" "args")))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "epoch" "args");;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "index" "args");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "op" "args");;
@@ -46,7 +46,7 @@ Definition SetStateArgs := struct.decl [
 
 Definition EncodeSetStateArgs: val :=
   rec: "EncodeSetStateArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF SetStateArgs "State" "args"))) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len (struct.loadF SetStateArgs "State" "args")))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "Epoch" "args");;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "NextIndex" "args");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF SetStateArgs "State" "args");;
@@ -91,7 +91,7 @@ Definition GetStateReply := struct.decl [
 
 Definition EncodeGetStateReply: val :=
   rec: "EncodeGetStateReply" "reply" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF GetStateReply "State" "reply"))) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len (struct.loadF GetStateReply "State" "reply")))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "Err" "reply");;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "NextIndex" "reply");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF GetStateReply "State" "reply");;
@@ -117,7 +117,7 @@ Definition BecomePrimaryArgs := struct.decl [
 
 Definition EncodeBecomePrimaryArgs: val :=
   rec: "EncodeBecomePrimaryArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 + #8 * slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args"))) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((#8 + #8) + (#8 * (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args"))))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF BecomePrimaryArgs "Epoch" "args");;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args"));;
     ForSlice uint64T <> "h" (struct.loadF BecomePrimaryArgs "Replicas" "args")
@@ -149,7 +149,7 @@ Definition ApplyReply := struct.decl [
 
 Definition EncodeApplyReply: val :=
   rec: "EncodeApplyReply" "reply" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF ApplyReply "Reply" "reply"))) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len (struct.loadF ApplyReply "Reply" "reply")))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyReply "Err" "reply");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyReply "Reply" "reply");;
     ![slice.T byteT] "enc".
@@ -239,7 +239,7 @@ Definition Clerk__Apply: val :=
   rec: "Clerk__Apply" "ck" "op" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_PRIMARYAPPLY "op" "reply" #5000 in
-    (if: ("err" = #0)
+    (if: "err" = #0
     then
       let: "r" := DecodeApplyReply (![slice.T byteT] "reply") in
       (struct.loadF ApplyReply "Err" "r", struct.loadF ApplyReply "Reply" "r")
@@ -308,12 +308,12 @@ Definition Server__Apply: val :=
         let: "err" := ref_to uint64T e.None in
         let: "i" := ref_to uint64T #0 in
         Skip;;
-        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+        (for: (λ: <>, (![uint64T] "i") < (slice.len "clerks")); (λ: <>, Skip) := λ: <>,
           let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
           (if: "err2" ≠ e.None
           then "err" <-[uint64T] "err2"
           else #());;
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          "i" <-[uint64T] (![uint64T] "i") + #1;;
           Continue);;
         struct.storeF ApplyReply "Err" "reply" (![uint64T] "err");;
         "reply")).
@@ -322,7 +322,7 @@ Definition Server__Apply: val :=
    returns true iff stale *)
 Definition Server__isEpochStale: val :=
   rec: "Server__isEpochStale" "s" "epoch" :=
-    struct.loadF Server "epoch" "s" > "epoch".
+    (struct.loadF Server "epoch" "s") > "epoch".
 
 (* called on backup servers to apply an operation so it is replicated and
    can be considered committed by primary. *)
@@ -339,13 +339,13 @@ Definition Server__ApplyAsBackup: val :=
         lock.release (struct.loadF Server "mu" "s");;
         e.Stale
       else
-        (if: struct.loadF ApplyAsBackupArgs "index" "args" ≠ struct.loadF Server "nextIndex" "s"
+        (if: (struct.loadF ApplyAsBackupArgs "index" "args") ≠ (struct.loadF Server "nextIndex" "s")
         then
           lock.release (struct.loadF Server "mu" "s");;
           e.OutOfOrder
         else
           let: (<>, "waitFn") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args") in
-          struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
+          struct.storeF Server "nextIndex" "s" ((struct.loadF Server "nextIndex" "s") + #1);;
           lock.release (struct.loadF Server "mu" "s");;
           "waitFn" #();;
           e.None))).
@@ -353,12 +353,12 @@ Definition Server__ApplyAsBackup: val :=
 Definition Server__SetState: val :=
   rec: "Server__SetState" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF Server "epoch" "s" > struct.loadF SetStateArgs "Epoch" "args"
+    (if: (struct.loadF Server "epoch" "s") > (struct.loadF SetStateArgs "Epoch" "args")
     then
       lock.release (struct.loadF Server "mu" "s");;
       e.Stale
     else
-      (if: (struct.loadF Server "epoch" "s" = struct.loadF SetStateArgs "Epoch" "args")
+      (if: (struct.loadF Server "epoch" "s") = (struct.loadF SetStateArgs "Epoch" "args")
       then
         lock.release (struct.loadF Server "mu" "s");;
         e.None
@@ -404,12 +404,12 @@ Definition Server__BecomePrimary: val :=
     else
       (* log.Println("Became Primary") *)
       struct.storeF Server "isPrimary" "s" #true;;
-      struct.storeF Server "clerks" "s" (NewSlice ptrT (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args") - #1));;
+      struct.storeF Server "clerks" "s" (NewSlice ptrT ((slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args")) - #1));;
       let: "i" := ref_to uint64T #0 in
       Skip;;
-      (for: (λ: <>, ![uint64T] "i" < slice.len (struct.loadF Server "clerks" "s")); (λ: <>, Skip) := λ: <>,
-        SliceSet ptrT (struct.loadF Server "clerks" "s") (![uint64T] "i") (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") (![uint64T] "i" + #1)));;
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+      (for: (λ: <>, (![uint64T] "i") < (slice.len (struct.loadF Server "clerks" "s"))); (λ: <>, Skip) := λ: <>,
+        SliceSet ptrT (struct.loadF Server "clerks" "s") (![uint64T] "i") (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") ((![uint64T] "i") + #1)));;
+        "i" <-[uint64T] (![uint64T] "i") + #1;;
         Continue);;
       lock.release (struct.loadF Server "mu" "s");;
       e.None).

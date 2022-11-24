@@ -18,7 +18,7 @@ Definition Make: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
-      (if: (slice.len "config" = #0)
+      (if: (slice.len "config") = #0
       then Continue
       else
         struct.storeF Clerk "primaryCk" "ck" (pb.MakeClerk (SliceGet uint64T "config" #0));;
@@ -35,7 +35,7 @@ Definition Clerk__Apply: val :=
       let: ("0_ret", "1_ret") := pb.Clerk__Apply (struct.loadF Clerk "primaryCk" "ck") "op" in
       "err" <-[uint64T] "0_ret";;
       "ret" <-[slice.T byteT] "1_ret";;
-      (if: (![uint64T] "err" = e.None)
+      (if: (![uint64T] "err") = e.None
       then Break
       else
         grove_ffi.Sleep (#100 * #1000000);;

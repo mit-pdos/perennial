@@ -19,19 +19,19 @@ Definition Config := struct.decl [
    Even more precisely, it returns the largest such i. *)
 Definition GetHighestIndexOfQuorum: val :=
   rec: "GetHighestIndexOfQuorum" "config" "indices" :=
-    let: "orderedIndices" := ref_to (slice.T uint64T) (NewSlice uint64T ((slice.len (struct.loadF Config "Members" "config") + #1) `quot` #2)) in
+    let: "orderedIndices" := ref_to (slice.T uint64T) (NewSlice uint64T (((slice.len (struct.loadF Config "Members" "config")) + #1) `quot` #2)) in
     ForSlice uint64T <> "m" (struct.loadF Config "Members" "config")
       (let: "indexToInsert" := Fst (MapGet "indices" "m") in
       ForSlice uint64T "i" <> (![slice.T uint64T] "orderedIndices")
-        ((if: SliceGet uint64T (![slice.T uint64T] "orderedIndices") "i" > "indexToInsert"
+        ((if: (SliceGet uint64T (![slice.T uint64T] "orderedIndices") "i") > "indexToInsert"
         then
           let: "j" := ref_to uint64T "i" in
-          (for: (λ: <>, ![uint64T] "j" < slice.len (![slice.T uint64T] "orderedIndices") - #1); (λ: <>, "j" <-[uint64T] ![uint64T] "j" + #1) := λ: <>,
+          (for: (λ: <>, (![uint64T] "j") < ((slice.len (![slice.T uint64T] "orderedIndices")) - #1)); (λ: <>, "j" <-[uint64T] (![uint64T] "j") + #1) := λ: <>,
             SliceSet uint64T (![slice.T uint64T] "orderedIndices") ("i" + #1) (SliceGet uint64T (![slice.T uint64T] "orderedIndices") "i");;
             Continue)
         else #())));;
-    let: "ret" := SliceGet uint64T (![slice.T uint64T] "orderedIndices") (slice.len (struct.loadF Config "Members" "config") - #1) in
-    (if: (slice.len (struct.loadF Config "NextMembers" "config") = #0)
+    let: "ret" := SliceGet uint64T (![slice.T uint64T] "orderedIndices") ((slice.len (struct.loadF Config "Members" "config")) - #1) in
+    (if: (slice.len (struct.loadF Config "NextMembers" "config")) = #0
     then "ret"
     else #0).
 
@@ -41,20 +41,20 @@ Definition IsQuorum: val :=
     let: "num" := ref (zero_val uint64T) in
     ForSlice uint64T <> "member" (struct.loadF Config "Members" "config")
       ((if: Fst (MapGet "w" "member")
-      then "num" <-[uint64T] ![uint64T] "num" + #1
+      then "num" <-[uint64T] (![uint64T] "num") + #1
       else #()));;
-    (if: #2 * ![uint64T] "num" ≤ slice.len (struct.loadF Config "Members" "config")
+    (if: (#2 * (![uint64T] "num")) ≤ (slice.len (struct.loadF Config "Members" "config"))
     then #false
     else
-      (if: (slice.len (struct.loadF Config "NextMembers" "config") = #0)
+      (if: (slice.len (struct.loadF Config "NextMembers" "config")) = #0
       then #true
       else
         "num" <-[uint64T] #0;;
         ForSlice uint64T <> "member" (struct.loadF Config "NextMembers" "config")
           ((if: Fst (MapGet "w" "member")
-          then "num" <-[uint64T] ![uint64T] "num" + #1
+          then "num" <-[uint64T] (![uint64T] "num") + #1
           else #()));;
-        (if: #2 * ![uint64T] "num" ≤ slice.len (struct.loadF Config "NextMembers" "config")
+        (if: (#2 * (![uint64T] "num")) ≤ (slice.len (struct.loadF Config "NextMembers" "config"))
         then #false
         else #true))).
 
@@ -70,11 +70,11 @@ Definition Config__Contains: val :=
   rec: "Config__Contains" "c" "m" :=
     let: "ret" := ref_to boolT #false in
     ForSlice uint64T <> "member" (struct.loadF Config "Members" "c")
-      ((if: ("member" = "m")
+      ((if: "member" = "m"
       then "ret" <-[boolT] #true
       else #()));;
     ForSlice uint64T <> "member" (struct.loadF Config "NextMembers" "c")
-      ((if: ("member" = "m")
+      ((if: "member" = "m"
       then "ret" <-[boolT] #true
       else #()));;
     ![boolT] "ret".
@@ -253,14 +253,14 @@ Definition ClerkPool__ProposeRPC: val :=
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
     connman.ConnMan__CallAtLeastOnce (struct.loadF ClerkPool "cl" "ck") "srv" RPC_PROPOSE (EncProposeArgs "args") "raw_reply" #10;;
     let: ("err", <>) := marshal.ReadInt (![slice.T byteT] "raw_reply") in
-    ("err" = #0).
+    "err" = #0.
 
 Definition ClerkPool__TryCommitVal: val :=
   rec: "ClerkPool__TryCommitVal" "ck" "srv" "v" :=
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
     connman.ConnMan__CallAtLeastOnce (struct.loadF ClerkPool "cl" "ck") "srv" RPC_TRY_COMMIT_VAL "v" "raw_reply" #1000;;
     let: ("err", <>) := marshal.ReadInt (![slice.T byteT] "raw_reply") in
-    ("err" = #0).
+    "err" = #0.
 
 Definition ClerkPool__TryConfigChange: val :=
   rec: "ClerkPool__TryConfigChange" "ck" "srv" "newMembers" :=
@@ -268,13 +268,13 @@ Definition ClerkPool__TryConfigChange: val :=
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
     connman.ConnMan__CallAtLeastOnce (struct.loadF ClerkPool "cl" "ck") "srv" RPC_TRY_CONFIG_CHANGE "raw_args" "raw_reply" #50;;
     let: ("err", <>) := marshal.ReadInt (![slice.T byteT] "raw_reply") in
-    ("err" = #0).
+    "err" = #0.
 
 (* server.go *)
 
 Definition MonotonicValue__GreaterThan: val :=
   rec: "MonotonicValue__GreaterThan" "lhs" "rhs" :=
-    struct.loadF MonotonicValue "version" "lhs" > struct.loadF MonotonicValue "version" "rhs".
+    (struct.loadF MonotonicValue "version" "lhs") > (struct.loadF MonotonicValue "version" "rhs").
 
 Definition Replica := struct.decl [
   "mu" :: ptrT;
@@ -296,7 +296,7 @@ Definition EQuorumFailed : expr := #3.
 Definition Replica__PrepareRPC: val :=
   rec: "Replica__PrepareRPC" "r" "term" "reply" :=
     lock.acquire (struct.loadF Replica "mu" "r");;
-    (if: "term" > struct.loadF Replica "promisedTerm" "r"
+    (if: "term" > (struct.loadF Replica "promisedTerm" "r")
     then
       struct.storeF Replica "promisedTerm" "r" "term";;
       struct.storeF PrepareReply "Term" "reply" (struct.loadF Replica "acceptedTerm" "r");;
@@ -313,7 +313,7 @@ Definition Replica__PrepareRPC: val :=
 Definition Replica__ProposeRPC: val :=
   rec: "Replica__ProposeRPC" "r" "term" "v" :=
     lock.acquire (struct.loadF Replica "mu" "r");;
-    (if: "term" ≥ struct.loadF Replica "promisedTerm" "r"
+    (if: "term" ≥ (struct.loadF Replica "promisedTerm" "r")
     then
       struct.storeF Replica "promisedTerm" "r" "term";;
       struct.storeF Replica "acceptedTerm" "r" "term";;
@@ -329,7 +329,7 @@ Definition Replica__ProposeRPC: val :=
 Definition Replica__TryBecomeLeader: val :=
   rec: "Replica__TryBecomeLeader" "r" :=
     lock.acquire (struct.loadF Replica "mu" "r");;
-    let: "newTerm" := struct.loadF Replica "promisedTerm" "r" + #1 in
+    let: "newTerm" := (struct.loadF Replica "promisedTerm" "r") + #1 in
     struct.storeF Replica "promisedTerm" "r" "newTerm";;
     let: "highestTerm" := ref (zero_val uint64T) in
     "highestTerm" <-[uint64T] #0;;
@@ -342,14 +342,14 @@ Definition Replica__TryBecomeLeader: val :=
     Config__ForEachMember "conf" ((λ: "addr",
       Fork (let: "reply_ptr" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in
             ClerkPool__PrepareRPC (struct.loadF Replica "clerkPool" "r") "addr" "newTerm" "reply_ptr";;
-            (if: (struct.loadF PrepareReply "Err" "reply_ptr" = ENone)
+            (if: (struct.loadF PrepareReply "Err" "reply_ptr") = ENone
             then
               lock.acquire "mu";;
               MapInsert "prepared" "addr" #true;;
-              (if: struct.loadF PrepareReply "Term" "reply_ptr" > ![uint64T] "highestTerm"
+              (if: (struct.loadF PrepareReply "Term" "reply_ptr") > (![uint64T] "highestTerm")
               then "highestVal" <-[ptrT] struct.loadF PrepareReply "Val" "reply_ptr"
               else
-                (if: (struct.loadF PrepareReply "Term" "reply_ptr" = ![uint64T] "highestTerm")
+                (if: (struct.loadF PrepareReply "Term" "reply_ptr") = (![uint64T] "highestTerm")
                 then
                   (if: MonotonicValue__GreaterThan (![ptrT] "highestVal") (struct.loadF PrepareReply "Val" "reply_ptr")
                   then "highestVal" <-[ptrT] struct.loadF PrepareReply "Val" "reply_ptr"
@@ -364,7 +364,7 @@ Definition Replica__TryBecomeLeader: val :=
     (if: IsQuorum (struct.loadF MonotonicValue "conf" (![ptrT] "highestVal")) "prepared"
     then
       lock.acquire (struct.loadF Replica "mu" "r");;
-      (if: (struct.loadF Replica "promisedTerm" "r" = "newTerm")
+      (if: (struct.loadF Replica "promisedTerm" "r") = "newTerm"
       then
         struct.storeF Replica "acceptedMVal" "r" (![ptrT] "highestVal");;
         struct.storeF Replica "isLeader" "r" #true
@@ -392,7 +392,7 @@ Definition Replica__tryCommit: val :=
     else
       "mvalModifier" (struct.loadF Replica "acceptedMVal" "r");;
       (* log.Printf("Trying to commit value; node state: %+v\n", r) *)
-      struct.storeF MonotonicValue "version" (struct.loadF Replica "acceptedMVal" "r") (struct.loadF MonotonicValue "version" (struct.loadF Replica "acceptedMVal" "r") + #1);;
+      struct.storeF MonotonicValue "version" (struct.loadF Replica "acceptedMVal" "r") ((struct.loadF MonotonicValue "version" (struct.loadF Replica "acceptedMVal" "r")) + #1);;
       let: "term" := struct.loadF Replica "promisedTerm" "r" in
       let: "mval" := struct.loadF Replica "acceptedMVal" "r" in
       lock.release (struct.loadF Replica "mu" "r");;
@@ -436,14 +436,14 @@ Definition Replica__TryEnterNewConfig: val :=
   rec: "Replica__TryEnterNewConfig" "r" "newMembers" :=
     let: "reply" := struct.alloc TryCommitReply (zero_val (struct.t TryCommitReply)) in
     Replica__tryCommit "r" ((λ: "mval",
-      (if: (slice.len (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval")) = #0)
+      (if: (slice.len (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval"))) = #0
       then
         struct.storeF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval") "newMembers";;
         #()
       else #())
       )) "reply";;
     Replica__tryCommit "r" ((λ: "mval",
-      (if: slice.len (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval")) ≠ #0
+      (if: (slice.len (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval"))) ≠ #0
       then
         struct.storeF Config "Members" (struct.loadF MonotonicValue "conf" "mval") (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval"));;
         struct.storeF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval") (NewSlice uint64T #0);;

@@ -20,31 +20,31 @@ Definition InitializeSystem: val :=
 
 Definition EnterNewConfig: val :=
   rec: "EnterNewConfig" "configHost" "servers" :=
-    (if: (slice.len "servers" = #0)
+    (if: (slice.len "servers") = #0
     then e.EmptyConfig
     else
       let: "configCk" := config.MakeClerk "configHost" in
       let: ("epoch", "oldServers") := config.Clerk__GetEpochAndConfig "configCk" in
-      let: "id" := (Data.randomUint64 #() + #1) `rem` (slice.len "oldServers") in
+      let: "id" := ((Data.randomUint64 #()) + #1) `rem` (slice.len "oldServers") in
       let: "oldClerk" := pb.MakeClerk (SliceGet uint64T "oldServers" "id") in
       let: "reply" := pb.Clerk__GetState "oldClerk" (struct.new pb.GetStateArgs [
         "Epoch" ::= "epoch"
       ]) in
-      (if: struct.loadF pb.GetStateReply "Err" "reply" ≠ e.None
+      (if: (struct.loadF pb.GetStateReply "Err" "reply") ≠ e.None
       then struct.loadF pb.GetStateReply "Err" "reply"
       else
         let: "clerks" := NewSlice ptrT (slice.len "servers") in
         let: "i" := ref_to uint64T #0 in
         Skip;;
-        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+        (for: (λ: <>, (![uint64T] "i") < (slice.len "clerks")); (λ: <>, Skip) := λ: <>,
           SliceSet ptrT "clerks" (![uint64T] "i") (pb.MakeClerk (SliceGet uint64T "servers" (![uint64T] "i")));;
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          "i" <-[uint64T] (![uint64T] "i") + #1;;
           Continue);;
         let: "wg" := waitgroup.New #() in
         let: "errs" := NewSlice uint64T (slice.len "clerks") in
         "i" <-[uint64T] #0;;
         Skip;;
-        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+        (for: (λ: <>, (![uint64T] "i") < (slice.len "clerks")); (λ: <>, Skip) := λ: <>,
           waitgroup.Add "wg" #1;;
           let: "clerk" := SliceGet ptrT "clerks" (![uint64T] "i") in
           let: "locali" := ![uint64T] "i" in
@@ -54,23 +54,23 @@ Definition EnterNewConfig: val :=
                   "NextIndex" ::= struct.loadF pb.GetStateReply "NextIndex" "reply"
                 ]));;
                 waitgroup.Done "wg");;
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          "i" <-[uint64T] (![uint64T] "i") + #1;;
           Continue);;
         waitgroup.Wait "wg";;
         let: "err" := ref_to uint64T e.None in
         "i" <-[uint64T] #0;;
         Skip;;
-        (for: (λ: <>, ![uint64T] "i" < slice.len "errs"); (λ: <>, Skip) := λ: <>,
+        (for: (λ: <>, (![uint64T] "i") < (slice.len "errs")); (λ: <>, Skip) := λ: <>,
           let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
           (if: "err2" ≠ e.None
           then "err" <-[uint64T] "err2"
           else #());;
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          "i" <-[uint64T] (![uint64T] "i") + #1;;
           Continue);;
-        (if: ![uint64T] "err" ≠ e.None
+        (if: (![uint64T] "err") ≠ e.None
         then ![uint64T] "err"
         else
-          (if: config.Clerk__WriteConfig "configCk" "epoch" "servers" ≠ e.None
+          (if: (config.Clerk__WriteConfig "configCk" "epoch" "servers") ≠ e.None
           then e.Stale
           else
             pb.Clerk__BecomePrimary (SliceGet ptrT "clerks" #0) (struct.new pb.BecomePrimaryArgs [

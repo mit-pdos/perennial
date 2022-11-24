@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
 (* 10 is completely arbitrary *)
 Definition MaxTxnWrites : expr := #10.
 
-Definition logLength : expr := #1 + #2 * MaxTxnWrites.
+Definition logLength : expr := #1 + (#2 * MaxTxnWrites).
 
 Definition Log := struct.decl [
   "d" :: disk.Disk;
@@ -64,7 +64,7 @@ Definition Log__BeginTxn: val :=
   rec: "Log__BeginTxn" "l" :=
     Log__lock "l";;
     let: "length" := ![uint64T] (struct.get Log "length" "l") in
-    (if: ("length" = #0)
+    (if: "length" = #0
     then
       Log__unlock "l";;
       #true
@@ -102,7 +102,7 @@ Definition Log__Write: val :=
     then Panic ("transaction is at capacity")
     else #());;
     let: "aBlock" := intToBlock "a" in
-    let: "nextAddr" := #1 + #2 * "length" in
+    let: "nextAddr" := #1 + (#2 * "length") in
     disk.Write "nextAddr" "aBlock";;
     disk.Write ("nextAddr" + #1) "v";;
     MapInsert (struct.get Log "cache" "l") "a" "v";;
@@ -122,7 +122,7 @@ Definition Log__Commit: val :=
 
 Definition getLogEntry: val :=
   rec: "getLogEntry" "d" "logOffset" :=
-    let: "diskAddr" := #1 + #2 * "logOffset" in
+    let: "diskAddr" := #1 + (#2 * "logOffset") in
     let: "aBlock" := disk.Read "diskAddr" in
     let: "a" := blockToInt "aBlock" in
     let: "v" := disk.Read ("diskAddr" + #1) in
@@ -133,11 +133,11 @@ Definition applyLog: val :=
   rec: "applyLog" "d" "length" :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "i" < "length"
+      (if: (![uint64T] "i") < "length"
       then
         let: ("a", "v") := getLogEntry "d" (![uint64T] "i") in
         disk.Write (logLength + "a") "v";;
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        "i" <-[uint64T] (![uint64T] "i") + #1;;
         Continue
       else Break));;
     #().

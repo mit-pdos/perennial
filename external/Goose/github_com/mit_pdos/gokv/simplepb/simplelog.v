@@ -14,13 +14,13 @@ Definition InMemoryStateMachine := struct.decl [
 
 Definition appendOp: val :=
   rec: "appendOp" "fname" "op" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "op")) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len "op"))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "op");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "op";;
     grove_ffi.AtomicAppend "fname" (![slice.T byteT] "enc");;
     #().
 
-Definition MAX_LOG_SIZE : expr := #64 * #1024 * #1024 * #1024.
+Definition MAX_LOG_SIZE : expr := ((#64 * #1024) * #1024) * #1024.
 
 (* File format:
    [N]u8: snapshot
@@ -41,7 +41,7 @@ Definition StateMachine := struct.decl [
 (* FIXME: better name; this isn't the same as "MakeDurable" *)
 Definition StateMachine__makeDurableWithSnap: val :=
   rec: "StateMachine__makeDurableWithSnap" "s" "snap" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "snap" + #8 + #8)) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (((#8 + (slice.len "snap")) + #8) + #8)) in
     marshal.WriteInt (![slice.T byteT] "enc") (slice.len "snap");;
     marshal.WriteBytes (![slice.T byteT] "enc") "snap";;
     marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "epoch" "s");;
@@ -62,9 +62,9 @@ Definition StateMachine__truncateAndMakeDurable: val :=
 Definition StateMachine__apply: val :=
   rec: "StateMachine__apply" "s" "op" :=
     let: "ret" := struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s") "op" in
-    struct.storeF StateMachine "nextIndex" "s" (struct.loadF StateMachine "nextIndex" "s" + #1);;
-    struct.storeF StateMachine "logsize" "s" (struct.loadF StateMachine "logsize" "s" + slice.len "op");;
-    (if: struct.loadF StateMachine "logsize" "s" > MAX_LOG_SIZE
+    struct.storeF StateMachine "nextIndex" "s" ((struct.loadF StateMachine "nextIndex" "s") + #1);;
+    struct.storeF StateMachine "logsize" "s" ((struct.loadF StateMachine "logsize" "s") + (slice.len "op"));;
+    (if: (struct.loadF StateMachine "logsize" "s") > MAX_LOG_SIZE
     then
       Panic ("unsupported when using aof");;
       #()
@@ -103,7 +103,7 @@ Definition recoverStateMachine: val :=
     ] in
     let: "enc" := ref_to (slice.T byteT) (grove_ffi.Read (struct.loadF StateMachine "fname" "s")) in
     struct.storeF StateMachine "logFile" "s" (aof.CreateAppendOnlyFile "fname");;
-    (if: (slice.len (![slice.T byteT] "enc") = #0)
+    (if: (slice.len (![slice.T byteT] "enc")) = #0
     then "s"
     else
       let: "snapLen" := ref (zero_val uint64T) in
@@ -122,7 +122,7 @@ Definition recoverStateMachine: val :=
       "enc" <-[slice.T byteT] "1_ret";;
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        (if: slice.len (![slice.T byteT] "enc") > #1
+        (if: (slice.len (![slice.T byteT] "enc")) > #1
         then
           let: "opLen" := ref (zero_val uint64T) in
           let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
@@ -133,7 +133,7 @@ Definition recoverStateMachine: val :=
           struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s") "op";;
           Continue
         else Break));;
-      (if: slice.len (![slice.T byteT] "enc") > #0
+      (if: (slice.len (![slice.T byteT] "enc")) > #0
       then struct.storeF StateMachine "sealed" "s" #true
       else #());;
       "s").

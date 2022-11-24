@@ -21,7 +21,7 @@ Definition MkIndex: val :=
     let: "idx" := struct.alloc Index (zero_val (struct.t Index)) in
     struct.storeF Index "buckets" "idx" (NewSlice ptrT config.N_IDX_BUCKET);;
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < config.N_IDX_BUCKET); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < config.N_IDX_BUCKET); (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) := λ: <>,
       let: "b" := struct.alloc IndexBucket (zero_val (struct.t IndexBucket)) in
       struct.storeF IndexBucket "latch" "b" (lock.new #());;
       struct.storeF IndexBucket "m" "b" (NewMap ptrT #());;

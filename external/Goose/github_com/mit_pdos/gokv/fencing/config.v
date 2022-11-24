@@ -27,7 +27,7 @@ Definition Clerk__HeartbeatThread: val :=
       let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
       grove_ffi.Sleep (("TIMEOUT_MS" * "MILLION") `quot` #3);;
       let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_HB "args" "reply_ptr" #100 in
-      (if: ("err" ≠ #0) || (slice.len (![slice.T byteT] "reply_ptr") ≠ #0)
+      (if: ("err" ≠ #0) || ((slice.len (![slice.T byteT] "reply_ptr")) ≠ #0)
       then Break
       else Continue));;
     #().
@@ -89,9 +89,9 @@ Definition Server__AcquireEpoch: val :=
       Continue);;
     struct.storeF Server "currHolderActive" "s" #true;;
     struct.storeF Server "data" "s" "newFrontend";;
-    struct.storeF Server "currentEpoch" "s" (struct.loadF Server "currentEpoch" "s" + #1);;
+    struct.storeF Server "currentEpoch" "s" ((struct.loadF Server "currentEpoch" "s") + #1);;
     let: "now" := grove_ffi.TimeNow #() in
-    struct.storeF Server "heartbeatExpiration" "s" ("now" + TIMEOUT_MS * MILLION);;
+    struct.storeF Server "heartbeatExpiration" "s" ("now" + (TIMEOUT_MS * MILLION));;
     let: "ret" := struct.loadF Server "currentEpoch" "s" in
     lock.release (struct.loadF Server "mu" "s");;
     "ret".
@@ -103,7 +103,7 @@ Definition Server__HeartbeatListener: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       lock.acquire (struct.loadF Server "mu" "s");;
       Skip;;
-      (for: (λ: <>, struct.loadF Server "currentEpoch" "s" < ![uint64T] "epochToWaitFor"); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, (struct.loadF Server "currentEpoch" "s") < (![uint64T] "epochToWaitFor")); (λ: <>, Skip) := λ: <>,
         lock.condWait (struct.loadF Server "epoch_cond" "s");;
         Continue);;
       lock.release (struct.loadF Server "mu" "s");;
@@ -111,16 +111,16 @@ Definition Server__HeartbeatListener: val :=
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         let: "now" := grove_ffi.TimeNow #() in
         lock.acquire (struct.loadF Server "mu" "s");;
-        (if: "now" < struct.loadF Server "heartbeatExpiration" "s"
+        (if: "now" < (struct.loadF Server "heartbeatExpiration" "s")
         then
-          let: "delay" := struct.loadF Server "heartbeatExpiration" "s" - "now" in
+          let: "delay" := (struct.loadF Server "heartbeatExpiration" "s") - "now" in
           lock.release (struct.loadF Server "mu" "s");;
           grove_ffi.Sleep "delay";;
           Continue
         else
           struct.storeF Server "currHolderActive" "s" #false;;
           lock.condSignal (struct.loadF Server "currHolderActive_cond" "s");;
-          "epochToWaitFor" <-[uint64T] struct.loadF Server "currentEpoch" "s" + #1;;
+          "epochToWaitFor" <-[uint64T] (struct.loadF Server "currentEpoch" "s") + #1;;
           lock.release (struct.loadF Server "mu" "s");;
           Break));;
       Continue);;
@@ -131,7 +131,7 @@ Definition Server__Heartbeat: val :=
   rec: "Server__Heartbeat" "s" "epoch" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     let: "ret" := ref_to boolT #false in
-    (if: (struct.loadF Server "currentEpoch" "s" = "epoch")
+    (if: (struct.loadF Server "currentEpoch" "s") = "epoch"
     then
       let: "now" := grove_ffi.TimeNow #() in
       struct.storeF Server "heartbeatExpiration" "s" ("now" + TIMEOUT_MS);;

@@ -19,10 +19,10 @@ Definition search: val :=
   rec: "search" "ents" "key" :=
     let: "pos" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, (![uint64T] "pos" < slice.len "ents") && ("key" ≠ struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "pos")))); (λ: <>, Skip) := λ: <>,
-      "pos" <-[uint64T] ![uint64T] "pos" + #1;;
+    (for: (λ: <>, ((![uint64T] "pos") < (slice.len "ents")) && ("key" ≠ (struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "pos"))))); (λ: <>, Skip) := λ: <>,
+      "pos" <-[uint64T] (![uint64T] "pos") + #1;;
       Continue);;
-    let: "found" := ![uint64T] "pos" < slice.len "ents" in
+    let: "found" := (![uint64T] "pos") < (slice.len "ents") in
     (![uint64T] "pos", "found").
 
 Definition swap: val :=
@@ -47,17 +47,17 @@ Definition WrBuf__sortEntsByKey: val :=
     let: "ents" := struct.loadF WrBuf "ents" "wrbuf" in
     let: "i" := ref_to uint64T #1 in
     Skip;;
-    (for: (λ: <>, ![uint64T] "i" < slice.len "ents"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "ents")); (λ: <>, Skip) := λ: <>,
       let: "j" := ref_to uint64T (![uint64T] "i") in
       Skip;;
-      (for: (λ: <>, ![uint64T] "j" > #0); (λ: <>, Skip) := λ: <>,
-        (if: struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "j" - #1)) ≤ struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "j"))
+      (for: (λ: <>, (![uint64T] "j") > #0); (λ: <>, Skip) := λ: <>,
+        (if: (struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" ((![uint64T] "j") - #1))) ≤ (struct.get WrEnt "key" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "j")))
         then Break
         else
-          swap "ents" (![uint64T] "j" - #1) (![uint64T] "j");;
-          "j" <-[uint64T] ![uint64T] "j" - #1;;
+          swap "ents" ((![uint64T] "j") - #1) (![uint64T] "j");;
+          "j" <-[uint64T] (![uint64T] "j") - #1;;
           Continue));;
-      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      "i" <-[uint64T] (![uint64T] "i") + #1;;
       Continue);;
     #().
 
@@ -110,7 +110,7 @@ Definition WrBuf__OpenTuples: val :=
     let: "ents" := struct.loadF WrBuf "ents" "wrbuf" in
     let: "pos" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, ![uint64T] "pos" < slice.len "ents"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "pos") < (slice.len "ents")); (λ: <>, Skip) := λ: <>,
       let: "ent" := SliceGet (struct.t WrEnt) "ents" (![uint64T] "pos") in
       let: "tpl" := index.Index__GetTuple "idx" (struct.get WrEnt "key" "ent") in
       let: "ret" := tuple.Tuple__Own "tpl" "tid" in
@@ -123,16 +123,16 @@ Definition WrBuf__OpenTuples: val :=
           "wr" ::= struct.get WrEnt "wr" "ent";
           "tpl" ::= "tpl"
         ]);;
-        "pos" <-[uint64T] ![uint64T] "pos" + #1;;
+        "pos" <-[uint64T] (![uint64T] "pos") + #1;;
         Continue));;
-    (if: ![uint64T] "pos" < slice.len "ents"
+    (if: (![uint64T] "pos") < (slice.len "ents")
     then
       let: "i" := ref_to uint64T #0 in
       Skip;;
-      (for: (λ: <>, ![uint64T] "i" < ![uint64T] "pos"); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, (![uint64T] "i") < (![uint64T] "pos")); (λ: <>, Skip) := λ: <>,
         let: "tpl" := struct.get WrEnt "tpl" (SliceGet (struct.t WrEnt) "ents" (![uint64T] "i")) in
         tuple.Tuple__Free "tpl";;
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        "i" <-[uint64T] (![uint64T] "i") + #1;;
         Continue);;
       #false
     else

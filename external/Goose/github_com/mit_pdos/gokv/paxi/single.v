@@ -53,7 +53,7 @@ Definition PrepareReply := struct.decl [
 Definition Replica__PrepareRPC: val :=
   rec: "Replica__PrepareRPC" "r" "pn" "reply" :=
     lock.acquire (struct.loadF Replica "mu" "r");;
-    (if: "pn" > struct.loadF Replica "promisedPN" "r"
+    (if: "pn" > (struct.loadF Replica "promisedPN" "r")
     then
       struct.storeF Replica "promisedPN" "r" "pn";;
       struct.storeF PrepareReply "Pn" "reply" (struct.loadF Replica "acceptedPN" "r");;
@@ -73,7 +73,7 @@ Definition ProposeArgs := struct.decl [
 Definition Replica__ProposeRPC: val :=
   rec: "Replica__ProposeRPC" "r" "pn" "val" :=
     lock.acquire (struct.loadF Replica "mu" "r");;
-    (if: ("pn" ≥ struct.loadF Replica "promisedPN" "r") && ("pn" ≥ struct.loadF Replica "acceptedPN" "r")
+    (if: ("pn" ≥ (struct.loadF Replica "promisedPN" "r")) && ("pn" ≥ (struct.loadF Replica "acceptedPN" "r"))
     then
       struct.storeF Replica "acceptedVal" "r" "val";;
       struct.storeF Replica "acceptedPN" "r" "pn";;
@@ -87,7 +87,7 @@ Definition Replica__ProposeRPC: val :=
 Definition Replica__TryDecide: val :=
   rec: "Replica__TryDecide" "r" "v" "outv" :=
     lock.acquire (struct.loadF Replica "mu" "r");;
-    let: "pn" := struct.loadF Replica "promisedPN" "r" + #1 in
+    let: "pn" := (struct.loadF Replica "promisedPN" "r") + #1 in
     lock.release (struct.loadF Replica "mu" "r");;
     let: "numPrepared" := ref (zero_val uint64T) in
     "numPrepared" <-[uint64T] #0;;
@@ -103,8 +103,8 @@ Definition Replica__TryDecide: val :=
             (if: struct.loadF PrepareReply "Success" "reply_ptr"
             then
               lock.acquire "mu";;
-              "numPrepared" <-[uint64T] ![uint64T] "numPrepared" + #1;;
-              (if: struct.loadF PrepareReply "Pn" "reply_ptr" > ![uint64T] "highestPn"
+              "numPrepared" <-[uint64T] (![uint64T] "numPrepared") + #1;;
+              (if: (struct.loadF PrepareReply "Pn" "reply_ptr") > (![uint64T] "highestPn")
               then
                 "highestVal" <-[uint64T] struct.loadF PrepareReply "Val" "reply_ptr";;
                 "highestPn" <-[uint64T] struct.loadF PrepareReply "Pn" "reply_ptr"
@@ -115,7 +115,7 @@ Definition Replica__TryDecide: val :=
     let: "n" := ![uint64T] "numPrepared" in
     let: "proposeVal" := ![uint64T] "highestVal" in
     lock.release "mu";;
-    (if: #2 * "n" > slice.len (struct.loadF Replica "peers" "r")
+    (if: (#2 * "n") > (slice.len (struct.loadF Replica "peers" "r"))
     then
       let: "mu2" := lock.new #() in
       let: "numAccepted" := ref (zero_val uint64T) in
@@ -126,13 +126,13 @@ Definition Replica__TryDecide: val :=
               (if: "r"
               then
                 lock.acquire "mu2";;
-                "numAccepted" <-[uint64T] ![uint64T] "numAccepted" + #1;;
+                "numAccepted" <-[uint64T] (![uint64T] "numAccepted") + #1;;
                 lock.release "mu2"
               else #())));;
       lock.acquire "mu2";;
       let: "n" := ![uint64T] "numAccepted" in
       lock.release "mu2";;
-      (if: #2 * "n" > slice.len (struct.loadF Replica "peers" "r")
+      (if: (#2 * "n") > (slice.len (struct.loadF Replica "peers" "r"))
       then
         "outv" <-[uint64T] "proposeVal";;
         #false

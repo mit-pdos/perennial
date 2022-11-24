@@ -25,7 +25,7 @@ Definition increment: val :=
   rec: "increment" "txn" "p" :=
     let: ("v", <>) := txn.Txn__Get "txn" #0 in
     "p" <-[uint64T] "v";;
-    (if: ("v" = #18446744073709551615)
+    (if: "v" = #18446744073709551615
     then #false
     else
       txn.Txn__Put "txn" #0 ("v" + #1);;
@@ -44,7 +44,7 @@ Definition decrement: val :=
   rec: "decrement" "txn" "p" :=
     let: ("v", <>) := txn.Txn__Get "txn" #0 in
     "p" <-[uint64T] "v";;
-    (if: ("v" = #0)
+    (if: "v" = #0
     then #false
     else
       txn.Txn__Put "txn" #0 ("v" - #1);;
