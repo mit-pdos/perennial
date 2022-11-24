@@ -47,7 +47,7 @@ Definition BankClerk__transfer_internal: val :=
     (if: "old_amount" ≥ "amount"
     then
       memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_from" (memkv.EncodeUint64 ("old_amount" - "amount"));;
-      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_to" (memkv.EncodeUint64 ((memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "acc_to")) + "amount"))
+      memkv.SeqKVClerk__Put (struct.loadF BankClerk "kvck" "bck") "acc_to" (memkv.EncodeUint64 (memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") "acc_to") + "amount"))
     else #());;
     release_two (struct.loadF BankClerk "lck" "bck") "acc_from" "acc_to";;
     #().
@@ -60,7 +60,7 @@ Definition BankClerk__SimpleTransfer: val :=
 Definition BankClerk__get_total: val :=
   rec: "BankClerk__get_total" "bck" :=
     acquire_two (struct.loadF BankClerk "lck" "bck") (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck");;
-    let: "sum" := (memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc1" "bck"))) + (memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc2" "bck"))) in
+    let: "sum" := memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc1" "bck")) + memkv.DecodeUint64 (memkv.SeqKVClerk__Get (struct.loadF BankClerk "kvck" "bck") (struct.loadF BankClerk "acc2" "bck")) in
     release_two (struct.loadF BankClerk "lck" "bck") (struct.loadF BankClerk "acc1" "bck") (struct.loadF BankClerk "acc2" "bck");;
     "sum".
 
@@ -68,7 +68,7 @@ Definition BankClerk__SimpleAudit: val :=
   rec: "BankClerk__SimpleAudit" "bck" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (BankClerk__get_total "bck") ≠ BAL_TOTAL
+      (if: BankClerk__get_total "bck" ≠ BAL_TOTAL
       then
         Panic ("Balance total invariant violated");;
         Continue

@@ -13,7 +13,7 @@ Definition Configuration := struct.decl [
 
 Definition EncodePBConfiguration: val :=
   rec: "EncodePBConfiguration" "p" :=
-    let: "enc" := marshal.NewEnc ((#8 + #8) + (#8 * (slice.len (struct.loadF Configuration "Replicas" "p")))) in
+    let: "enc" := marshal.NewEnc (#8 + #8 + #8 * slice.len (struct.loadF Configuration "Replicas" "p")) in
     marshal.Enc__PutInt "enc" (slice.len (struct.loadF Configuration "Replicas" "p"));;
     marshal.Enc__PutInts "enc" (struct.loadF Configuration "Replicas" "p");;
     marshal.Enc__Finish "enc".
@@ -50,7 +50,7 @@ Definition PutArgs := struct.decl [
 (* MARSHAL *)
 Definition EncodePutArgs: val :=
   rec: "EncodePutArgs" "args" :=
-    let: "enc" := marshal.NewEnc ((#8 + #8) + (slice.len (struct.loadF PutArgs "newVal" "args"))) in
+    let: "enc" := marshal.NewEnc (#8 + #8 + slice.len (struct.loadF PutArgs "newVal" "args")) in
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "key" "args");;
     marshal.Enc__PutInt "enc" (struct.loadF PutArgs "prevVer" "args");;
     marshal.Enc__PutBytes "enc" (struct.loadF PutArgs "newVal" "args");;
@@ -63,12 +63,12 @@ Definition DecodePutArgs: val :=
     let: "args" := struct.alloc PutArgs (zero_val (struct.t PutArgs)) in
     struct.storeF PutArgs "key" "args" (marshal.Dec__GetInt "dec");;
     struct.storeF PutArgs "prevVer" "args" (marshal.Dec__GetInt "dec");;
-    struct.storeF PutArgs "newVal" "args" (marshal.Dec__GetBytes "dec" ((slice.len "data") - #16));;
+    struct.storeF PutArgs "newVal" "args" (marshal.Dec__GetBytes "dec" (slice.len "data" - #16));;
     "args".
 
 Definition EncodeVersionedValue: val :=
   rec: "EncodeVersionedValue" "v" :=
-    let: "enc" := marshal.NewEnc (#8 + (slice.len (struct.loadF VersionedValue "val" "v"))) in
+    let: "enc" := marshal.NewEnc (#8 + slice.len (struct.loadF VersionedValue "val" "v")) in
     marshal.Enc__PutInt "enc" (struct.loadF VersionedValue "ver" "v");;
     marshal.Enc__PutBytes "enc" (struct.loadF VersionedValue "val" "v");;
     marshal.Enc__Finish "enc".
@@ -78,7 +78,7 @@ Definition DecodeVersionedValue: val :=
     let: "dec" := marshal.NewDec "data" in
     let: "v" := struct.alloc VersionedValue (zero_val (struct.t VersionedValue)) in
     struct.storeF VersionedValue "ver" "v" (marshal.Dec__GetInt "dec");;
-    struct.storeF VersionedValue "val" "v" (marshal.Dec__GetBytes "dec" ((slice.len "data") - #8));;
+    struct.storeF VersionedValue "val" "v" (marshal.Dec__GetBytes "dec" (slice.len "data" - #8));;
     "v".
 
 Definition ConfServer__PutRPC: val :=
@@ -87,16 +87,16 @@ Definition ConfServer__PutRPC: val :=
     let: (<>, "ok") := MapGet (struct.loadF ConfServer "kvs" "s") (struct.loadF PutArgs "key" "args") in
     (if: "ok"
     then
-      (if: (struct.get VersionedValue "ver" (Fst (MapGet (struct.loadF ConfServer "kvs" "s") (struct.loadF PutArgs "key" "args")))) = (struct.loadF PutArgs "prevVer" "args")
+      (if: (struct.get VersionedValue "ver" (Fst (MapGet (struct.loadF ConfServer "kvs" "s") (struct.loadF PutArgs "key" "args"))) = struct.loadF PutArgs "prevVer" "args")
       then
         MapInsert (struct.loadF ConfServer "kvs" "s") (struct.loadF PutArgs "key" "args") (struct.mk VersionedValue [
-          "ver" ::= (struct.loadF PutArgs "prevVer" "args") + #1;
+          "ver" ::= struct.loadF PutArgs "prevVer" "args" + #1;
           "val" ::= struct.loadF PutArgs "newVal" "args"
         ])
       else #())
     else
       MapInsert (struct.loadF ConfServer "kvs" "s") (struct.loadF PutArgs "key" "args") (struct.mk VersionedValue [
-        "ver" ::= (struct.loadF PutArgs "prevVer" "args") + #1;
+        "ver" ::= struct.loadF PutArgs "prevVer" "args" + #1;
         "val" ::= struct.loadF PutArgs "newVal" "args"
       ]));;
     lock.release (struct.loadF ConfServer "mu" "s");;
@@ -151,8 +151,8 @@ Definition ConfClerk__Put: val :=
       "newVal" ::= "newVal"
     ]) in
     let: "err" := urpc.Client__Call (struct.loadF ConfClerk "cl" "c") CONF_PUT "raw_args" "raw_reply" #100 in
-    (if: "err" = #0
-    then (slice.len (![slice.T byteT] "raw_reply")) > #0
+    (if: ("err" = #0)
+    then slice.len (![slice.T byteT] "raw_reply") > #0
     else #false).
 
 Definition ConfClerk__Get: val :=
@@ -161,7 +161,7 @@ Definition ConfClerk__Get: val :=
     let: "raw_args" := NewSlice byteT #8 in
     UInt64Put "raw_args" "key";;
     let: "err" := urpc.Client__Call (struct.loadF ConfClerk "cl" "c") CONF_GET "raw_args" "raw_reply" #100 in
-    (if: "err" = #0
+    (if: ("err" = #0)
     then DecodeVersionedValue (![slice.T byteT] "raw_reply")
     else
       control.impl.Assume #false;;
@@ -191,7 +191,7 @@ Definition AppendArgs := struct.decl [
 
 Definition EncodeAppendArgs: val :=
   rec: "EncodeAppendArgs" "args" :=
-    let: "enc" := marshal.NewEnc (#16 + (slice.len (struct.loadF AppendArgs "log" "args"))) in
+    let: "enc" := marshal.NewEnc (#16 + slice.len (struct.loadF AppendArgs "log" "args")) in
     marshal.Enc__PutInt "enc" (struct.loadF AppendArgs "cn" "args");;
     marshal.Enc__PutInt "enc" (struct.loadF AppendArgs "commitIdx" "args");;
     marshal.Enc__PutBytes "enc" (struct.loadF AppendArgs "log" "args");;
@@ -203,7 +203,7 @@ Definition DecodeAppendArgs: val :=
     let: "dec" := marshal.NewDec "raw_args" in
     struct.storeF AppendArgs "cn" "a" (marshal.Dec__GetInt "dec");;
     struct.storeF AppendArgs "commitIdx" "a" (marshal.Dec__GetInt "dec");;
-    struct.storeF AppendArgs "log" "a" (marshal.Dec__GetBytes "dec" ((slice.len "raw_args") - #16));;
+    struct.storeF AppendArgs "log" "a" (marshal.Dec__GetBytes "dec" (slice.len "raw_args" - #16));;
     "a".
 
 Definition BecomePrimaryArgs := struct.decl [
@@ -214,7 +214,7 @@ Definition BecomePrimaryArgs := struct.decl [
 Definition EncodeBecomePrimaryArgs: val :=
   rec: "EncodeBecomePrimaryArgs" "args" :=
     let: "encodedConf" := EncodePBConfiguration (struct.loadF BecomePrimaryArgs "Conf" "args") in
-    let: "enc" := marshal.NewEnc (#8 + (slice.len "encodedConf")) in
+    let: "enc" := marshal.NewEnc (#8 + slice.len "encodedConf") in
     marshal.Enc__PutInt "enc" (struct.loadF BecomePrimaryArgs "Cn" "args");;
     marshal.Enc__PutBytes "enc" "encodedConf";;
     marshal.Enc__Finish "enc".
@@ -236,7 +236,7 @@ Definition ReplicaClerk__AppendRPC: val :=
     let: "raw_args" := EncodeAppendArgs "args" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_APPEND "raw_args" "reply" #100 in
-    (if: ("err" = #0) && ((slice.len (![slice.T byteT] "reply")) > #0)
+    (if: ("err" = #0) && (slice.len (![slice.T byteT] "reply") > #0)
     then #true
     else #false).
 
@@ -251,7 +251,7 @@ Definition ReplicaClerk__BecomePrimaryRPC: val :=
 Definition ReplicaClerk__HeartbeatRPC: val :=
   rec: "ReplicaClerk__HeartbeatRPC" "ck" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    (urpc.Client__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_HEARTBEAT (NewSlice byteT #0) "reply" #1000) = #0.
+    (urpc.Client__Call (struct.loadF ReplicaClerk "cl" "ck") REPLICA_HEARTBEAT (NewSlice byteT #0) "reply" #1000 = #0).
 
 Definition MakeReplicaClerk: val :=
   rec: "MakeReplicaClerk" "host" :=
@@ -279,7 +279,7 @@ Definition min: val :=
   rec: "min" "l" :=
     let: "m" := ref_to uint64T #18446744073709551615 in
     ForSlice uint64T <> "v" "l"
-      ((if: "v" < (![uint64T] "m")
+      ((if: "v" < ![uint64T] "m"
       then "m" <-[uint64T] "v"
       else #()));;
     ![uint64T] "m".
@@ -287,13 +287,13 @@ Definition min: val :=
 Definition ReplicaServer__postAppendRPC: val :=
   rec: "ReplicaServer__postAppendRPC" "s" "i" "args" :=
     lock.acquire (struct.loadF ReplicaServer "mu" "s");;
-    (if: (struct.loadF ReplicaServer "cn" "s") = (struct.loadF AppendArgs "cn" "args")
+    (if: (struct.loadF ReplicaServer "cn" "s" = struct.loadF AppendArgs "cn" "args")
     then
-      (if: (SliceGet uint64T (struct.loadF ReplicaServer "matchIdx" "s") "i") < (slice.len (struct.loadF AppendArgs "log" "args"))
+      (if: SliceGet uint64T (struct.loadF ReplicaServer "matchIdx" "s") "i" < slice.len (struct.loadF AppendArgs "log" "args")
       then
         SliceSet uint64T (struct.loadF ReplicaServer "matchIdx" "s") "i" (slice.len (struct.loadF AppendArgs "log" "args"));;
         let: "m" := min (struct.loadF ReplicaServer "matchIdx" "s") in
-        (if: "m" > (struct.loadF ReplicaServer "commitIdx" "s")
+        (if: "m" > struct.loadF ReplicaServer "commitIdx" "s"
         then struct.storeF ReplicaServer "commitIdx" "s" "m"
         else #())
       else #())
@@ -337,17 +337,17 @@ Definition ReplicaServer__GetCommittedLog: val :=
 Definition ReplicaServer__AppendRPC: val :=
   rec: "ReplicaServer__AppendRPC" "s" "args" :=
     lock.acquire (struct.loadF ReplicaServer "mu" "s");;
-    (if: (struct.loadF ReplicaServer "cn" "s") > (struct.loadF AppendArgs "cn" "args")
+    (if: struct.loadF ReplicaServer "cn" "s" > struct.loadF AppendArgs "cn" "args"
     then
       lock.release (struct.loadF ReplicaServer "mu" "s");;
       #false
     else
-      (if: ((struct.loadF ReplicaServer "cn" "s") < (struct.loadF AppendArgs "cn" "args")) || ((slice.len (struct.loadF AppendArgs "log" "args")) > (slice.len (struct.loadF ReplicaServer "opLog" "s")))
+      (if: (struct.loadF ReplicaServer "cn" "s" < struct.loadF AppendArgs "cn" "args") || (slice.len (struct.loadF AppendArgs "log" "args") > slice.len (struct.loadF ReplicaServer "opLog" "s"))
       then
         struct.storeF ReplicaServer "opLog" "s" (struct.loadF AppendArgs "log" "args");;
         struct.storeF ReplicaServer "cn" "s" (struct.loadF AppendArgs "cn" "args")
       else #());;
-      (if: (struct.loadF AppendArgs "commitIdx" "args") > (struct.loadF ReplicaServer "commitIdx" "s")
+      (if: struct.loadF AppendArgs "commitIdx" "args" > struct.loadF ReplicaServer "commitIdx" "s"
       then struct.storeF ReplicaServer "commitIdx" "s" (struct.loadF AppendArgs "commitIdx" "args")
       else #());;
       struct.storeF ReplicaServer "isPrimary" "s" #false;;
@@ -359,12 +359,12 @@ Definition ReplicaServer__BecomePrimaryRPC: val :=
   rec: "ReplicaServer__BecomePrimaryRPC" "s" "args" :=
     lock.acquire (struct.loadF ReplicaServer "mu" "s");;
     (* log.Printf("Becoming primary in %d, %+v", args.Cn, args.Conf.Replicas) *)
-    (if: (struct.loadF ReplicaServer "cn" "s") ≥ (struct.loadF BecomePrimaryArgs "Cn" "args")
+    (if: struct.loadF ReplicaServer "cn" "s" ≥ struct.loadF BecomePrimaryArgs "Cn" "args"
     then
       lock.release (struct.loadF ReplicaServer "mu" "s");;
       #()
     else
-      (if: ((struct.loadF BecomePrimaryArgs "Cn" "args") > ((struct.loadF ReplicaServer "cn" "s") + #1)) && ((struct.loadF ReplicaServer "cn" "s") = #0)
+      (if: (struct.loadF BecomePrimaryArgs "Cn" "args" > struct.loadF ReplicaServer "cn" "s" + #1) && (struct.loadF ReplicaServer "cn" "s" = #0)
       then
         control.impl.Assume #false;;
         #()
@@ -372,7 +372,7 @@ Definition ReplicaServer__BecomePrimaryRPC: val :=
         struct.storeF ReplicaServer "isPrimary" "s" #true;;
         struct.storeF ReplicaServer "cn" "s" (struct.loadF BecomePrimaryArgs "Cn" "args");;
         struct.storeF ReplicaServer "matchIdx" "s" (NewSlice uint64T (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args"))));;
-        struct.storeF ReplicaServer "replicaClerks" "s" (NewSlice ptrT ((slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args"))) - #1));;
+        struct.storeF ReplicaServer "replicaClerks" "s" (NewSlice ptrT (slice.len (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) - #1));;
         ForSlice ptrT "i" <> (struct.loadF ReplicaServer "replicaClerks" "s")
           (SliceSet ptrT (struct.loadF ReplicaServer "replicaClerks" "s") "i" (MakeReplicaClerk (SliceGet uint64T (struct.loadF Configuration "Replicas" (struct.loadF BecomePrimaryArgs "Conf" "args")) ("i" + #1))));;
         lock.release (struct.loadF ReplicaServer "mu" "s");;

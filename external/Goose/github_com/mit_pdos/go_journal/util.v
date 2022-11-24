@@ -17,7 +17,7 @@ Definition DPrintf: val :=
 
 Definition RoundUp: val :=
   rec: "RoundUp" "n" "sz" :=
-    (("n" + "sz") - #1) `quot` "sz".
+    ("n" + "sz" - #1) `quot` "sz".
 
 Definition Min: val :=
   rec: "Min" "n" "m" :=
@@ -28,11 +28,11 @@ Definition Min: val :=
 (* returns n+m>=2^64 (if it were computed at infinite precision) *)
 Definition SumOverflows: val :=
   rec: "SumOverflows" "n" "m" :=
-    ("n" + "m") < "n".
+    "n" + "m" < "n".
 
 Definition SumOverflows32: val :=
   rec: "SumOverflows32" "n" "m" :=
-    ("n" + "m") < "n".
+    "n" + "m" < "n".
 
 Definition CloneByteSlice: val :=
   rec: "CloneByteSlice" "s" :=

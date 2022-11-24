@@ -40,8 +40,8 @@ Definition Alloc__MarkUsed: val :=
 
 Definition Alloc__incNext: val :=
   rec: "Alloc__incNext" "a" :=
-    struct.storeF Alloc "next" "a" ((struct.loadF Alloc "next" "a") + #1);;
-    (if: (struct.loadF Alloc "next" "a") ≥ ((slice.len (struct.loadF Alloc "bitmap" "a")) * #8)
+    struct.storeF Alloc "next" "a" (struct.loadF Alloc "next" "a" + #1);;
+    (if: struct.loadF Alloc "next" "a" ≥ slice.len (struct.loadF Alloc "bitmap" "a") * #8
     then struct.storeF Alloc "next" "a" #0
     else #());;
     struct.loadF Alloc "next" "a".
@@ -57,14 +57,14 @@ Definition Alloc__allocBit: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "bit" := (![uint64T] "num") `rem` #8 in
       let: "byte" := (![uint64T] "num") `quot` #8 in
-      (if: ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `and` ((#(U8 1)) ≪ "bit")) = (#(U8 0))
+      (if: ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `and` ((#(U8 1)) ≪ "bit") = #(U8 0))
       then
         SliceSet byteT (struct.loadF Alloc "bitmap" "a") "byte" ((SliceGet byteT (struct.loadF Alloc "bitmap" "a") "byte") `or` ((#(U8 1)) ≪ "bit"));;
         struct.storeF Alloc "dirty" "a" #true;;
         Break
       else
         "num" <-[uint64T] Alloc__incNext "a";;
-        (if: (![uint64T] "num") = "start"
+        (if: (![uint64T] "num" = "start")
         then
           "num" <-[uint64T] #0;;
           Break
@@ -89,7 +89,7 @@ Definition Alloc__AllocNum: val :=
 
 Definition Alloc__FreeNum: val :=
   rec: "Alloc__FreeNum" "a" "num" :=
-    (if: "num" = #0
+    (if: ("num" = #0)
     then Panic "FreeNum"
     else #());;
     Alloc__freeBit "a" "num";;
@@ -111,8 +111,8 @@ Definition popCnt: val :=
     let: "count" := ref (zero_val uint64T) in
     let: "x" := ref_to byteT "b" in
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "i") < #8); (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) := λ: <>,
-      "count" <-[uint64T] (![uint64T] "count") + (to_u64 ((![byteT] "x") `and` (#(U8 1))));;
+    (for: (λ: <>, ![uint64T] "i" < #8); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+      "count" <-[uint64T] ![uint64T] "count" + to_u64 ((![byteT] "x") `and` (#(U8 1)));;
       "x" <-[byteT] (![byteT] "x") ≫ #1;;
       Continue);;
     ![uint64T] "count".
@@ -120,9 +120,9 @@ Definition popCnt: val :=
 Definition Alloc__NumFree: val :=
   rec: "Alloc__NumFree" "a" :=
     lock.acquire (struct.loadF Alloc "mu" "a");;
-    let: "total" := #8 * (slice.len (struct.loadF Alloc "bitmap" "a")) in
+    let: "total" := #8 * slice.len (struct.loadF Alloc "bitmap" "a") in
     let: "count" := ref (zero_val uint64T) in
     ForSlice byteT <> "b" (struct.loadF Alloc "bitmap" "a")
-      ("count" <-[uint64T] (![uint64T] "count") + (popCnt "b"));;
+      ("count" <-[uint64T] ![uint64T] "count" + popCnt "b");;
     lock.release (struct.loadF Alloc "mu" "a");;
-    "total" - (![uint64T] "count").
+    "total" - ![uint64T] "count".

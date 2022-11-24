@@ -18,14 +18,14 @@ Definition FsSuper := struct.decl [
 Definition MkFsSuper: val :=
   rec: "MkFsSuper" "d" :=
     let: "sz" := disk.Size #() in
-    let: "nblockbitmap" := ("sz" `quot` common.NBITBLOCK) + #1 in
+    let: "nblockbitmap" := "sz" `quot` common.NBITBLOCK + #1 in
     struct.new FsSuper [
       "Disk" ::= "d";
       "Size" ::= "sz";
       "nLog" ::= common.LOGSIZE;
       "NBlockBitmap" ::= "nblockbitmap";
       "NInodeBitmap" ::= common.NINODEBITMAP;
-      "nInodeBlk" ::= ((common.NINODEBITMAP * common.NBITBLOCK) * common.INODESZ) `quot` disk.BlockSize;
+      "nInodeBlk" ::= (common.NINODEBITMAP * common.NBITBLOCK * common.INODESZ) `quot` disk.BlockSize;
       "Maxaddr" ::= "sz"
     ].
 
@@ -39,15 +39,15 @@ Definition FsSuper__BitmapBlockStart: val :=
 
 Definition FsSuper__BitmapInodeStart: val :=
   rec: "FsSuper__BitmapInodeStart" "fs" :=
-    (FsSuper__BitmapBlockStart "fs") + (struct.loadF FsSuper "NBlockBitmap" "fs").
+    FsSuper__BitmapBlockStart "fs" + struct.loadF FsSuper "NBlockBitmap" "fs".
 
 Definition FsSuper__InodeStart: val :=
   rec: "FsSuper__InodeStart" "fs" :=
-    (FsSuper__BitmapInodeStart "fs") + (struct.loadF FsSuper "NInodeBitmap" "fs").
+    FsSuper__BitmapInodeStart "fs" + struct.loadF FsSuper "NInodeBitmap" "fs".
 
 Definition FsSuper__DataStart: val :=
   rec: "FsSuper__DataStart" "fs" :=
-    (FsSuper__InodeStart "fs") + (struct.loadF FsSuper "nInodeBlk" "fs").
+    FsSuper__InodeStart "fs" + struct.loadF FsSuper "nInodeBlk" "fs".
 
 Definition FsSuper__Block2addr: val :=
   rec: "FsSuper__Block2addr" "fs" "blkno" :=
@@ -55,8 +55,8 @@ Definition FsSuper__Block2addr: val :=
 
 Definition FsSuper__NInode: val :=
   rec: "FsSuper__NInode" "fs" :=
-    (struct.loadF FsSuper "nInodeBlk" "fs") * common.INODEBLK.
+    struct.loadF FsSuper "nInodeBlk" "fs" * common.INODEBLK.
 
 Definition FsSuper__Inum2Addr: val :=
   rec: "FsSuper__Inum2Addr" "fs" "inum" :=
-    addr.MkAddr ((FsSuper__InodeStart "fs") + ("inum" `quot` common.INODEBLK)) ((("inum" `rem` common.INODEBLK) * common.INODESZ) * #8).
+    addr.MkAddr (FsSuper__InodeStart "fs" + "inum" `quot` common.INODEBLK) ("inum" `rem` common.INODEBLK * common.INODESZ * #8).

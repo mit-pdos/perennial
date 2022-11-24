@@ -103,7 +103,7 @@ Definition Dir__Read: val :=
   rec: "Dir__Read" "d" "ino" "off" :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
-    (if: "i" = #null
+    (if: ("i" = #null)
     then Panic ("invalid inode")
     else #());;
     let: "b" := inode.Inode__Read "i" "off" in
@@ -114,7 +114,7 @@ Definition Dir__Size: val :=
   rec: "Dir__Size" "d" "ino" :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
-    (if: "i" = #null
+    (if: ("i" = #null)
     then Panic ("invalid inode")
     else #());;
     let: "sz" := inode.Inode__Size "i" in
@@ -125,7 +125,7 @@ Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
-    (if: "i" = #null
+    (if: ("i" = #null)
     then Panic ("invalid inode")
     else #());;
     let: "ok" := inode.Inode__Append "i" "b" (struct.loadF Dir "allocator" "d") in

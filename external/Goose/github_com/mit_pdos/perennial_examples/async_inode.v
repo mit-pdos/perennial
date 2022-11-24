@@ -38,14 +38,14 @@ Definition Inode__UsedBlocks: val :=
 
 Definition Inode__read: val :=
   rec: "Inode__read" "i" "off" :=
-    (if: "off" ≥ ((slice.len (struct.loadF Inode "addrs" "i")) + (slice.len (struct.loadF Inode "buffered" "i")))
+    (if: "off" ≥ slice.len (struct.loadF Inode "addrs" "i") + slice.len (struct.loadF Inode "buffered" "i")
     then slice.nil
     else
-      (if: "off" < (slice.len (struct.loadF Inode "addrs" "i"))
+      (if: "off" < slice.len (struct.loadF Inode "addrs" "i")
       then
         let: "a" := SliceGet uint64T (struct.loadF Inode "addrs" "i") "off" in
         disk.Read "a"
-      else SliceGet (slice.T byteT) (struct.loadF Inode "buffered" "i") ("off" - (slice.len (struct.loadF Inode "addrs" "i"))))).
+      else SliceGet (slice.T byteT) (struct.loadF Inode "buffered" "i") ("off" - slice.len (struct.loadF Inode "addrs" "i")))).
 
 Definition Inode__Read: val :=
   rec: "Inode__Read" "i" "off" :=
@@ -57,7 +57,7 @@ Definition Inode__Read: val :=
 Definition Inode__Size: val :=
   rec: "Inode__Size" "i" :=
     lock.acquire (struct.loadF Inode "m" "i");;
-    let: "sz" := (slice.len (struct.loadF Inode "addrs" "i")) + (slice.len (struct.loadF Inode "buffered" "i")) in
+    let: "sz" := slice.len (struct.loadF Inode "addrs" "i") + slice.len (struct.loadF Inode "buffered" "i") in
     lock.release (struct.loadF Inode "m" "i");;
     "sz".
 
@@ -98,12 +98,12 @@ Definition Inode__flushOne: val :=
 Definition Inode__flush: val :=
   rec: "Inode__flush" "i" "allocator" :=
     Skip;;
-    (for: (λ: <>, (slice.len (struct.loadF Inode "buffered" "i")) > #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, slice.len (struct.loadF Inode "buffered" "i") > #0); (λ: <>, Skip) := λ: <>,
       let: "ok" := Inode__flushOne "i" "allocator" in
       (if: ~ "ok"
       then Break
       else Continue));;
-    (if: (slice.len (struct.loadF Inode "buffered" "i")) > #0
+    (if: slice.len (struct.loadF Inode "buffered" "i") > #0
     then #false
     else #true).
 
@@ -120,7 +120,7 @@ Definition Inode__Flush: val :=
 (* assumes lock is held *)
 Definition Inode__append: val :=
   rec: "Inode__append" "i" "b" :=
-    (if: ((slice.len (struct.loadF Inode "addrs" "i")) + (slice.len (struct.loadF Inode "buffered" "i"))) ≥ MaxBlocks
+    (if: slice.len (struct.loadF Inode "addrs" "i") + slice.len (struct.loadF Inode "buffered" "i") ≥ MaxBlocks
     then #false
     else
       struct.storeF Inode "buffered" "i" (SliceAppend (slice.T byteT) (struct.loadF Inode "buffered" "i") "b");;

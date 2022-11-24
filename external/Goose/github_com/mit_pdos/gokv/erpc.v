@@ -62,7 +62,7 @@ Definition Client__NewRequest: val :=
   rec: "Client__NewRequest" "c" "request" :=
     let: "seq" := struct.loadF Client "nextSeq" "c" in
     struct.storeF Client "nextSeq" "c" (std.SumAssumeNoOverflow (struct.loadF Client "nextSeq" "c") #1);;
-    let: "data1" := NewSliceWithCap byteT #0 ((#8 + #8) + (slice.len "request")) in
+    let: "data1" := NewSliceWithCap byteT #0 (#8 + #8 + slice.len "request") in
     let: "data2" := marshal.WriteInt "data1" (struct.loadF Client "cid" "c") in
     let: "data3" := marshal.WriteInt "data2" "seq" in
     let: "data4" := marshal.WriteBytes "data3" "request" in

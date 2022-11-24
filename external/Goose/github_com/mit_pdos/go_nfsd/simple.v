@@ -24,7 +24,7 @@ Definition nInode: val :=
 
 Definition inum2Addr: val :=
   rec: "inum2Addr" "inum" :=
-    addr.MkAddr common.LOGSIZE (("inum" * common.INODESZ) * #8).
+    addr.MkAddr common.LOGSIZE ("inum" * common.INODESZ * #8).
 
 (* fh.go *)
 
@@ -84,12 +84,12 @@ Definition Decode: val :=
 (* Returns number of bytes read and eof *)
 Definition Inode__Read: val :=
   rec: "Inode__Read" "ip" "op" "offset" "bytesToRead" :=
-    (if: "offset" ≥ (struct.loadF Inode "Size" "ip")
+    (if: "offset" ≥ struct.loadF Inode "Size" "ip"
     then (slice.nil, #true)
     else
       let: "count" := ref_to uint64T "bytesToRead" in
-      (if: (![uint64T] "count") > ((struct.loadF Inode "Size" "ip") - "offset")
-      then "count" <-[uint64T] (struct.loadF Inode "Size" "ip") - "offset"
+      (if: ![uint64T] "count" > struct.loadF Inode "Size" "ip" - "offset"
+      then "count" <-[uint64T] struct.loadF Inode "Size" "ip" - "offset"
       else #());;
       util.DPrintf #5 (#(str"Read: off %d cnt %d
       ")) #();;
@@ -97,10 +97,10 @@ Definition Inode__Read: val :=
       let: "buf" := jrnl.Op__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
       let: "countCopy" := ![uint64T] "count" in
       let: "b" := ref_to uint64T #0 in
-      (for: (λ: <>, (![uint64T] "b") < "countCopy"); (λ: <>, "b" <-[uint64T] (![uint64T] "b") + #1) := λ: <>,
-        "data" <-[slice.T byteT] SliceAppend byteT (![slice.T byteT] "data") (SliceGet byteT (struct.loadF buf.Buf "Data" "buf") ("offset" + (![uint64T] "b")));;
+      (for: (λ: <>, ![uint64T] "b" < "countCopy"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
+        "data" <-[slice.T byteT] SliceAppend byteT (![slice.T byteT] "data") (SliceGet byteT (struct.loadF buf.Buf "Data" "buf") ("offset" + ![uint64T] "b"));;
         Continue);;
-      let: "eof" := ("offset" + (![uint64T] "count")) ≥ (struct.loadF Inode "Size" "ip") in
+      let: "eof" := "offset" + ![uint64T] "count" ≥ struct.loadF Inode "Size" "ip" in
       util.DPrintf #10 (#(str"Read: off %d cnt %d -> %v, %v
       ")) #();;
       (![slice.T byteT] "data", "eof")).
@@ -118,27 +118,27 @@ Definition Inode__Write: val :=
   rec: "Inode__Write" "ip" "op" "offset" "count" "dataBuf" :=
     util.DPrintf #5 (#(str"Write: off %d cnt %d
     ")) #();;
-    (if: "count" ≠ (slice.len "dataBuf")
+    (if: "count" ≠ slice.len "dataBuf"
     then (#0, #false)
     else
       (if: util.SumOverflows "offset" "count"
       then (#0, #false)
       else
-        (if: ("offset" + "count") > disk.BlockSize
+        (if: "offset" + "count" > disk.BlockSize
         then (#0, #false)
         else
-          (if: "offset" > (struct.loadF Inode "Size" "ip")
+          (if: "offset" > struct.loadF Inode "Size" "ip"
           then (#0, #false)
           else
             let: "buffer" := jrnl.Op__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
             let: "b" := ref_to uint64T #0 in
-            (for: (λ: <>, (![uint64T] "b") < "count"); (λ: <>, "b" <-[uint64T] (![uint64T] "b") + #1) := λ: <>,
-              SliceSet byteT (struct.loadF buf.Buf "Data" "buffer") ("offset" + (![uint64T] "b")) (SliceGet byteT "dataBuf" (![uint64T] "b"));;
+            (for: (λ: <>, ![uint64T] "b" < "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
+              SliceSet byteT (struct.loadF buf.Buf "Data" "buffer") ("offset" + ![uint64T] "b") (SliceGet byteT "dataBuf" (![uint64T] "b"));;
               Continue);;
             buf.Buf__SetDirty "buffer";;
             util.DPrintf #1 (#(str"Write: off %d cnt %d size %d
             ")) #();;
-            (if: ("offset" + "count") > (struct.loadF Inode "Size" "ip")
+            (if: "offset" + "count" > struct.loadF Inode "Size" "ip"
             then
               struct.storeF Inode "Size" "ip" ("offset" + "count");;
               Inode__WriteInode "ip" "op"
@@ -184,9 +184,9 @@ Definition Inode__MkFattr: val :=
 Definition inodeInit: val :=
   rec: "inodeInit" "op" :=
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "i") < (nInode #())); (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) := λ: <>,
+    (for: (λ: <>, ![uint64T] "i" < nInode #()); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       let: "ip" := ReadInode "op" (![uint64T] "i") in
-      struct.storeF Inode "Data" "ip" ((common.LOGSIZE + #1) + (![uint64T] "i"));;
+      struct.storeF Inode "Data" "ip" (common.LOGSIZE + #1 + ![uint64T] "i");;
       Inode__WriteInode "ip" "op";;
       Continue);;
     #().
@@ -322,13 +322,13 @@ Definition Nfs__NFSPROC3_NULL: val :=
 
 Definition validInum: val :=
   rec: "validInum" "inum" :=
-    (if: "inum" = #0
+    (if: ("inum" = #0)
     then #false
     else
-      (if: "inum" = common.ROOTINUM
+      (if: ("inum" = common.ROOTINUM)
       then #false
       else
-        (if: "inum" ≥ (nInode #())
+        (if: "inum" ≥ nInode #()
         then #false
         else #true))).
 
@@ -357,7 +357,7 @@ Definition Nfs__NFSPROC3_GETATTR: val :=
     ")) #();;
     let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.GETATTR3args "Object" "args") in
-    (if: "inum" = common.ROOTINUM
+    (if: ("inum" = common.ROOTINUM)
     then
       struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3_OK;;
       struct.storeF nfstypes.GETATTR3resok "Obj_attributes" (struct.fieldRef nfstypes.GETATTR3res "Resok" "reply") (rootFattr #());;
@@ -380,11 +380,11 @@ Definition NFSPROC3_SETATTR_wp: val :=
     (if: struct.get nfstypes.Set_size3 "Set_it" (struct.get nfstypes.Sattr3 "Size" (struct.get nfstypes.SETATTR3args "New_attributes" "args"))
     then
       let: "newsize" := struct.get nfstypes.Set_size3 "Size" (struct.get nfstypes.Sattr3 "Size" (struct.get nfstypes.SETATTR3args "New_attributes" "args")) in
-      (if: (struct.loadF Inode "Size" "ip") < "newsize"
+      (if: struct.loadF Inode "Size" "ip" < "newsize"
       then
-        let: "data" := NewSlice byteT ("newsize" - (struct.loadF Inode "Size" "ip")) in
-        Inode__Write "ip" "op" (struct.loadF Inode "Size" "ip") ("newsize" - (struct.loadF Inode "Size" "ip")) "data";;
-        (if: (struct.loadF Inode "Size" "ip") ≠ "newsize"
+        let: "data" := NewSlice byteT ("newsize" - struct.loadF Inode "Size" "ip") in
+        Inode__Write "ip" "op" (struct.loadF Inode "Size" "ip") ("newsize" - struct.loadF Inode "Size" "ip") "data";;
+        (if: struct.loadF Inode "Size" "ip" ≠ "newsize"
         then struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3ERR_NOSPC
         else "ok" <-[boolT] #true)
       else
@@ -436,10 +436,10 @@ Definition Nfs__NFSPROC3_LOOKUP: val :=
     let: "reply" := ref (zero_val (struct.t nfstypes.LOOKUP3res)) in
     let: "fn" := struct.get nfstypes.Diropargs3 "Name" (struct.get nfstypes.LOOKUP3args "What" "args") in
     let: "inum" := ref (zero_val uint64T) in
-    (if: "fn" = #(str"a")
+    (if: ("fn" = #(str"a"))
     then "inum" <-[uint64T] #2
     else #());;
-    (if: "fn" = #(str"b")
+    (if: ("fn" = #(str"b"))
     then "inum" <-[uint64T] #3
     else #());;
     (if: ~ (validInum (![uint64T] "inum"))

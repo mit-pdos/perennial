@@ -12,7 +12,7 @@ Definition consumeEvenBlock: val :=
     SliceSet byteT "b4" #0 (#(U8 4));;
     disk.Write "a" "b4";;
     let: "b" := disk.Read "a" in
-    (if: (SliceGet byteT "b" #0) ≠ (#(U8 4))
+    (if: SliceGet byteT "b" #0 ≠ #(U8 4)
     then
       Panic ("unexpected value on disk");;
       #()

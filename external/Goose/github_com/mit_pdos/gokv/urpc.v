@@ -14,7 +14,7 @@ Definition Server__rpcHandle: val :=
     let: "replyData" := ref (zero_val (slice.T byteT)) in
     let: "f" := Fst (MapGet (struct.loadF Server "handlers" "srv") "rpcid") in
     "f" "data" "replyData";;
-    let: "data1" := NewSliceWithCap byteT #0 (#8 + (slice.len (![slice.T byteT] "replyData"))) in
+    let: "data1" := NewSliceWithCap byteT #0 (#8 + slice.len (![slice.T byteT] "replyData")) in
     let: "data2" := marshal.WriteInt "data1" "seqno" in
     let: "data3" := marshal.WriteBytes "data2" (![slice.T byteT] "replyData") in
     grove_ffi.Send "conn" "data3";;
@@ -133,7 +133,7 @@ Definition Client__CallStart: val :=
     struct.storeF Client "seq" "cl" (std.SumAssumeNoOverflow (struct.loadF Client "seq" "cl") #1);;
     MapInsert (struct.loadF Client "pending" "cl") "seqno" "cb";;
     lock.release (struct.loadF Client "mu" "cl");;
-    let: "data1" := NewSliceWithCap byteT #0 ((#8 + #8) + (slice.len "args")) in
+    let: "data1" := NewSliceWithCap byteT #0 (#8 + #8 + slice.len "args") in
     let: "data2" := marshal.WriteInt "data1" "rpcid" in
     let: "data3" := marshal.WriteInt "data2" "seqno" in
     let: "reqData" := marshal.WriteBytes "data3" "args" in
@@ -146,18 +146,18 @@ Definition Client__CallStart: val :=
 Definition Client__CallComplete: val :=
   rec: "Client__CallComplete" "cl" "cb" "reply" "timeout_ms" :=
     lock.acquire (struct.loadF Client "mu" "cl");;
-    (if: (![uint64T] (struct.loadF Callback "state" "cb")) = callbackStateWaiting
+    (if: (![uint64T] (struct.loadF Callback "state" "cb") = callbackStateWaiting)
     then lock.condWaitTimeout (struct.loadF Callback "cond" "cb") "timeout_ms"
     else #());;
     let: "state" := ![uint64T] (struct.loadF Callback "state" "cb") in
-    (if: "state" = callbackStateDone
+    (if: ("state" = callbackStateDone)
     then
       "reply" <-[slice.T byteT] ![slice.T byteT] (struct.loadF Callback "reply" "cb");;
       lock.release (struct.loadF Client "mu" "cl");;
       #0
     else
       lock.release (struct.loadF Client "mu" "cl");;
-      (if: "state" = callbackStateAborted
+      (if: ("state" = callbackStateAborted)
       then ErrDisconnect
       else ErrTimeout)).
 

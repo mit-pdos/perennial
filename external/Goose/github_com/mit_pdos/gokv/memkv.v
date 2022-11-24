@@ -130,7 +130,7 @@ Definition ConditionalPutReply := struct.decl [
 
 Definition EncodeConditionalPutRequest: val :=
   rec: "EncodeConditionalPutRequest" "req" :=
-    let: "num_bytes" := std.SumAssumeNoOverflow ((#8 + #8) + #8) (std.SumAssumeNoOverflow (slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req")) (slice.len (struct.loadF ConditionalPutRequest "NewValue" "req"))) in
+    let: "num_bytes" := std.SumAssumeNoOverflow (#8 + #8 + #8) (std.SumAssumeNoOverflow (slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req")) (slice.len (struct.loadF ConditionalPutRequest "NewValue" "req"))) in
     let: "e" := marshal.NewEnc "num_bytes" in
     marshal.Enc__PutInt "e" (struct.loadF ConditionalPutRequest "Key" "req");;
     marshal.Enc__PutInt "e" (slice.len (struct.loadF ConditionalPutRequest "ExpectedValue" "req"));;
@@ -193,11 +193,11 @@ Definition DecSliceMap: val :=
     let: "m" := NewMap (slice.T byteT) #() in
     let: "i" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, (![uint64T] "i") < "sz"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ![uint64T] "i" < "sz"); (λ: <>, Skip) := λ: <>,
       let: "k" := marshal.Dec__GetInt "d" in
       let: "v" := marshal.Dec__GetBytes "d" (marshal.Dec__GetInt "d") in
       MapInsert "m" "k" "v";;
-      "i" <-[uint64T] (![uint64T] "i") + #1;;
+      "i" <-[uint64T] ![uint64T] "i" + #1;;
       Continue);;
     "m".
 
@@ -377,7 +377,7 @@ Definition PutArgs := struct.decl [
 Definition KVShardServer__put_inner: val :=
   rec: "KVShardServer__put_inner" "s" "args" "reply" :=
     let: "sid" := shardOf (struct.loadF PutRequest "Key" "args") in
-    (if: (SliceGet boolT (struct.loadF KVShardServer "shardMap" "s") "sid") = #true
+    (if: (SliceGet boolT (struct.loadF KVShardServer "shardMap" "s") "sid" = #true)
     then
       MapInsert (SliceGet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "s") "sid") (struct.loadF PutRequest "Key" "args") (struct.loadF PutRequest "Value" "args");;
       struct.storeF PutReply "Err" "reply" ENone;;
@@ -396,7 +396,7 @@ Definition KVShardServer__PutRPC: val :=
 Definition KVShardServer__get_inner: val :=
   rec: "KVShardServer__get_inner" "s" "args" "reply" :=
     let: "sid" := shardOf (struct.loadF GetRequest "Key" "args") in
-    (if: (SliceGet boolT (struct.loadF KVShardServer "shardMap" "s") "sid") = #true
+    (if: (SliceGet boolT (struct.loadF KVShardServer "shardMap" "s") "sid" = #true)
     then
       struct.storeF GetReply "Value" "reply" (Fst (MapGet (SliceGet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "s") "sid") (struct.loadF GetRequest "Key" "args")));;
       struct.storeF GetReply "Err" "reply" ENone;;
@@ -415,7 +415,7 @@ Definition KVShardServer__GetRPC: val :=
 Definition KVShardServer__conditional_put_inner: val :=
   rec: "KVShardServer__conditional_put_inner" "s" "args" "reply" :=
     let: "sid" := shardOf (struct.loadF ConditionalPutRequest "Key" "args") in
-    (if: (SliceGet boolT (struct.loadF KVShardServer "shardMap" "s") "sid") = #true
+    (if: (SliceGet boolT (struct.loadF KVShardServer "shardMap" "s") "sid" = #true)
     then
       let: "m" := SliceGet (mapT (slice.T byteT)) (struct.loadF KVShardServer "kvss" "s") "sid" in
       let: "equal" := std.BytesEqual (struct.loadF ConditionalPutRequest "ExpectedValue" "args") (Fst (MapGet "m" (struct.loadF ConditionalPutRequest "Key" "args"))) in
@@ -486,7 +486,7 @@ Definition MakeKVShardServer: val :=
     struct.storeF KVShardServer "peers" "srv" (NewMap ptrT #());;
     struct.storeF KVShardServer "cm" "srv" (connman.MakeConnMan #());;
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "i") < NSHARD); (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) := λ: <>,
+    (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       SliceSet boolT (struct.loadF KVShardServer "shardMap" "srv") (![uint64T] "i") "is_init";;
       (if: "is_init"
       then
@@ -559,27 +559,27 @@ Definition KVCoord__AddServerRPC: val :=
     MapInsert (struct.loadF KVCoord "hostShards" "c") "newhost" #0;;
     let: "numHosts" := MapLen (struct.loadF KVCoord "hostShards" "c") in
     let: "numShardFloor" := NSHARD `quot` "numHosts" in
-    let: "numShardCeil" := (NSHARD `quot` "numHosts") + #1 in
+    let: "numShardCeil" := NSHARD `quot` "numHosts" + #1 in
     let: "nf_left" := ref (zero_val uint64T) in
-    "nf_left" <-[uint64T] "numHosts" - (NSHARD - (("numHosts" * NSHARD) `quot` "numHosts"));;
+    "nf_left" <-[uint64T] "numHosts" - NSHARD - ("numHosts" * NSHARD) `quot` "numHosts";;
     ForSlice uint64T "sid" "host" (struct.loadF KVCoord "shardMap" "c")
       (let: "n" := Fst (MapGet (struct.loadF KVCoord "hostShards" "c") "host") in
       (if: "n" > "numShardFloor"
       then
-        (if: "n" = "numShardCeil"
+        (if: ("n" = "numShardCeil")
         then
-          (if: (![uint64T] "nf_left") > #0
+          (if: ![uint64T] "nf_left" > #0
           then
-            "nf_left" <-[uint64T] (![uint64T] "nf_left") - #1;;
+            "nf_left" <-[uint64T] ![uint64T] "nf_left" - #1;;
             KVShardClerk__MoveShard (ShardClerkSet__GetClerk (struct.loadF KVCoord "shardClerks" "c") "host") "sid" "newhost";;
             MapInsert (struct.loadF KVCoord "hostShards" "c") "host" ("n" - #1);;
-            MapInsert (struct.loadF KVCoord "hostShards" "c") "newhost" ((Fst (MapGet (struct.loadF KVCoord "hostShards" "c") "newhost")) + #1);;
+            MapInsert (struct.loadF KVCoord "hostShards" "c") "newhost" (Fst (MapGet (struct.loadF KVCoord "hostShards" "c") "newhost") + #1);;
             SliceSet uint64T (struct.loadF KVCoord "shardMap" "c") "sid" "newhost"
           else #())
         else
           KVShardClerk__MoveShard (ShardClerkSet__GetClerk (struct.loadF KVCoord "shardClerks" "c") "host") "sid" "newhost";;
           MapInsert (struct.loadF KVCoord "hostShards" "c") "host" ("n" - #1);;
-          MapInsert (struct.loadF KVCoord "hostShards" "c") "newhost" ((Fst (MapGet (struct.loadF KVCoord "hostShards" "c") "newhost")) + #1);;
+          MapInsert (struct.loadF KVCoord "hostShards" "c") "newhost" (Fst (MapGet (struct.loadF KVCoord "hostShards" "c") "newhost") + #1);;
           SliceSet uint64T (struct.loadF KVCoord "shardMap" "c") "sid" "newhost")
       else #()));;
     (* log.Println("Done rebalancing") *)
@@ -600,7 +600,7 @@ Definition MakeKVCoordServer: val :=
     struct.storeF KVCoord "mu" "s" (lock.new #());;
     struct.storeF KVCoord "shardMap" "s" (NewSlice HostName NSHARD);;
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "i") < NSHARD); (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) := λ: <>,
+    (for: (λ: <>, ![uint64T] "i" < NSHARD); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       SliceSet uint64T (struct.loadF KVCoord "shardMap" "s") (![uint64T] "i") "initserver";;
       Continue);;
     struct.storeF KVCoord "hostShards" "s" (NewMap uint64T #());;
@@ -659,7 +659,7 @@ Definition SeqKVClerk__Get: val :=
       let: "shardServer" := SliceGet uint64T (struct.loadF SeqKVClerk "shardMap" "ck") "sid" in
       let: "shardCk" := ShardClerkSet__GetClerk (struct.loadF SeqKVClerk "shardClerks" "ck") "shardServer" in
       let: "err" := KVShardClerk__Get "shardCk" "key" "val" in
-      (if: "err" = ENone
+      (if: ("err" = ENone)
       then Break
       else
         struct.storeF SeqKVClerk "shardMap" "ck" (KVCoordClerk__GetShardMap (struct.loadF SeqKVClerk "coordCk" "ck"));;
@@ -674,7 +674,7 @@ Definition SeqKVClerk__Put: val :=
       let: "shardServer" := SliceGet uint64T (struct.loadF SeqKVClerk "shardMap" "ck") "sid" in
       let: "shardCk" := ShardClerkSet__GetClerk (struct.loadF SeqKVClerk "shardClerks" "ck") "shardServer" in
       let: "err" := KVShardClerk__Put "shardCk" "key" "value" in
-      (if: "err" = ENone
+      (if: ("err" = ENone)
       then Break
       else
         struct.storeF SeqKVClerk "shardMap" "ck" (KVCoordClerk__GetShardMap (struct.loadF SeqKVClerk "coordCk" "ck"));;
@@ -690,7 +690,7 @@ Definition SeqKVClerk__ConditionalPut: val :=
       let: "shardServer" := SliceGet uint64T (struct.loadF SeqKVClerk "shardMap" "ck") "sid" in
       let: "shardCk" := ShardClerkSet__GetClerk (struct.loadF SeqKVClerk "shardClerks" "ck") "shardServer" in
       let: "err" := KVShardClerk__ConditionalPut "shardCk" "key" "expectedValue" "newValue" "success" in
-      (if: "err" = ENone
+      (if: ("err" = ENone)
       then Break
       else
         struct.storeF SeqKVClerk "shardMap" "ck" (KVCoordClerk__GetShardMap (struct.loadF SeqKVClerk "coordCk" "ck"));;
@@ -726,7 +726,7 @@ Definition KVClerk__getSeqClerk: val :=
   rec: "KVClerk__getSeqClerk" "p" :=
     lock.acquire (struct.loadF KVClerk "mu" "p");;
     let: "n" := slice.len (struct.loadF KVClerk "freeClerks" "p") in
-    (if: "n" = #0
+    (if: ("n" = #0)
     then
       lock.release (struct.loadF KVClerk "mu" "p");;
       MakeSeqKVClerk (struct.loadF KVClerk "coord" "p") (connman.MakeConnMan #())

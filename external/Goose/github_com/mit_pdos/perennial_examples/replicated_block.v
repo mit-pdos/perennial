@@ -30,7 +30,7 @@ Definition RepBlock__readAddr: val :=
   rec: "RepBlock__readAddr" "rb" "primary" :=
     (if: "primary"
     then struct.loadF RepBlock "addr" "rb"
-    else (struct.loadF RepBlock "addr" "rb") + #1).
+    else struct.loadF RepBlock "addr" "rb" + #1).
 
 Definition RepBlock__Read: val :=
   rec: "RepBlock__Read" "rb" "primary" :=
@@ -42,7 +42,7 @@ Definition RepBlock__Read: val :=
 Definition RepBlock__write: val :=
   rec: "RepBlock__write" "rb" "b" :=
     disk.Write (struct.loadF RepBlock "addr" "rb") "b";;
-    disk.Write ((struct.loadF RepBlock "addr" "rb") + #1) "b";;
+    disk.Write (struct.loadF RepBlock "addr" "rb" + #1) "b";;
     #().
 
 Definition RepBlock__Write: val :=

@@ -96,7 +96,7 @@ Definition Clerk__Get: val :=
       grove_ffi.Exit #1
     else #());;
     let: "r" := DecGetReply (![slice.T byteT] "reply_ptr") in
-    (if: (struct.loadF GetReply "err" "r") ≠ ENone
+    (if: struct.loadF GetReply "err" "r" ≠ ENone
     then
       (* log.Println("ctr: get() stale epoch number") *)
       grove_ffi.Exit #1
@@ -153,7 +153,7 @@ Definition Server := struct.decl [
 Definition Server__Put: val :=
   rec: "Server__Put" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: (struct.loadF PutArgs "epoch" "args") < (struct.loadF Server "lastEpoch" "s")
+    (if: struct.loadF PutArgs "epoch" "args" < struct.loadF Server "lastEpoch" "s"
     then
       lock.release (struct.loadF Server "mu" "s");;
       EStale
@@ -167,7 +167,7 @@ Definition Server__Get: val :=
   rec: "Server__Get" "s" "epoch" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     struct.storeF GetReply "err" "reply" ENone;;
-    (if: "epoch" < (struct.loadF Server "lastEpoch" "s")
+    (if: "epoch" < struct.loadF Server "lastEpoch" "s"
     then
       lock.release (struct.loadF Server "mu" "s");;
       struct.storeF GetReply "err" "reply" EStale;;

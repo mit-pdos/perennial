@@ -5,7 +5,7 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
-Definition MaxBlocks : expr := #500 + (#10 * #512).
+Definition MaxBlocks : expr := #500 + #10 * #512.
 
 Definition maxDirect : expr := #500.
 
@@ -83,7 +83,7 @@ Definition indOff: val :=
 Definition Inode__Read: val :=
   rec: "Inode__Read" "i" "off" :=
     lock.acquire (struct.loadF Inode "m" "i");;
-    (if: "off" ≥ (struct.loadF Inode "size" "i")
+    (if: "off" ≥ struct.loadF Inode "size" "i"
     then
       lock.release (struct.loadF Inode "m" "i");;
       slice.nil
@@ -110,7 +110,7 @@ Definition Inode__Size: val :=
 Definition padInts: val :=
   rec: "padInts" "enc" "num" :=
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "i") < "num"); (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #1) := λ: <>,
+    (for: (λ: <>, ![uint64T] "i" < "num"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       marshal.Enc__PutInt "enc" #0;;
       Continue);;
     #().
@@ -120,9 +120,9 @@ Definition Inode__mkHdr: val :=
     let: "enc" := marshal.NewEnc disk.BlockSize in
     marshal.Enc__PutInt "enc" (struct.loadF Inode "size" "i");;
     marshal.Enc__PutInts "enc" (struct.loadF Inode "direct" "i");;
-    padInts "enc" (maxDirect - (slice.len (struct.loadF Inode "direct" "i")));;
+    padInts "enc" (maxDirect - slice.len (struct.loadF Inode "direct" "i"));;
     marshal.Enc__PutInts "enc" (struct.loadF Inode "indirect" "i");;
-    padInts "enc" (maxIndirect - (slice.len (struct.loadF Inode "indirect" "i")));;
+    padInts "enc" (maxIndirect - slice.len (struct.loadF Inode "indirect" "i"));;
     marshal.Enc__PutInt "enc" (slice.len (struct.loadF Inode "indirect" "i"));;
     let: "hdr" := marshal.Enc__Finish "enc" in
     "hdr".
@@ -138,7 +138,7 @@ Definition Inode__inSize: val :=
    Requires the lock to be held. *)
 Definition Inode__checkTotalSize: val :=
   rec: "Inode__checkTotalSize" "i" :=
-    (if: (struct.loadF Inode "size" "i") ≥ MaxBlocks
+    (if: struct.loadF Inode "size" "i" ≥ MaxBlocks
     then #false
     else #true).
 
@@ -149,10 +149,10 @@ Definition Inode__checkTotalSize: val :=
    Fails when the inode does not have direct block space. *)
 Definition Inode__appendDirect: val :=
   rec: "Inode__appendDirect" "i" "a" :=
-    (if: (struct.loadF Inode "size" "i") < maxDirect
+    (if: struct.loadF Inode "size" "i" < maxDirect
     then
       struct.storeF Inode "direct" "i" (SliceAppend uint64T (struct.loadF Inode "direct" "i") "a");;
-      struct.storeF Inode "size" "i" ((struct.loadF Inode "size" "i") + #1);;
+      struct.storeF Inode "size" "i" (struct.loadF Inode "size" "i" + #1);;
       let: "hdr" := Inode__mkHdr "i" in
       disk.Write (struct.loadF Inode "addr" "i") "hdr";;
       #true
@@ -166,7 +166,7 @@ Definition Inode__writeIndirect: val :=
   rec: "Inode__writeIndirect" "i" "indAddr" "addrs" :=
     let: "diskBlk" := prepIndirect "addrs" in
     disk.Write "indAddr" "diskBlk";;
-    struct.storeF Inode "size" "i" ((struct.loadF Inode "size" "i") + #1);;
+    struct.storeF Inode "size" "i" (struct.loadF Inode "size" "i" + #1);;
     let: "hdr" := Inode__mkHdr "i" in
     disk.Write (struct.loadF Inode "addr" "i") "hdr";;
     #().
@@ -180,7 +180,7 @@ Definition Inode__writeIndirect: val :=
    indirect block is full. *)
 Definition Inode__appendIndirect: val :=
   rec: "Inode__appendIndirect" "i" "a" :=
-    (if: (indNum (struct.loadF Inode "size" "i")) ≥ (slice.len (struct.loadF Inode "indirect" "i"))
+    (if: indNum (struct.loadF Inode "size" "i") ≥ slice.len (struct.loadF Inode "indirect" "i")
     then #false
     else
       let: "indAddr" := SliceGet uint64T (struct.loadF Inode "indirect" "i") (indNum (struct.loadF Inode "size" "i")) in

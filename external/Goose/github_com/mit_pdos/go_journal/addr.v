@@ -16,7 +16,7 @@ Definition Addr := struct.decl [
 
 Definition Addr__Flatid: val :=
   rec: "Addr__Flatid" "a" :=
-    ((struct.get Addr "Blkno" "a") * (disk.BlockSize * #8)) + (struct.get Addr "Off" "a").
+    struct.get Addr "Blkno" "a" * disk.BlockSize * #8 + struct.get Addr "Off" "a".
 
 Definition MkAddr: val :=
   rec: "MkAddr" "blkno" "off" :=
