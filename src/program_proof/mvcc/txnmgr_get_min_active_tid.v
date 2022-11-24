@@ -55,6 +55,7 @@ Proof.
   iIntros (tidRef) "HtidRef".
   wp_pures.
   wp_apply wp_GenTID.
+  { done. }
   { admit. }
   { admit. }
   (* Open the SST invariant to get [ts_auth]. *)

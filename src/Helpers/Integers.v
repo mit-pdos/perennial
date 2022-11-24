@@ -629,3 +629,42 @@ Proof.
     apply Z.pow_pos_nonneg; [lia|].
     apply Z.lt_le_incl, word.width_pos.
 Qed.
+
+Definition u64_round_up (x div : u64) := let x' := word.add x div in word.mul (word.divu x' div) div.
+
+Lemma u64_round_up_spec x div :
+  int.Z x + int.Z div < 2^64 →
+  int.Z div > 0 →
+  int.Z (u64_round_up x div) `mod` (int.Z div) = 0 ∧
+  int.Z x < int.Z (u64_round_up x div) ∧
+  int.Z (u64_round_up x div) < 2^64.
+Proof.
+  intros. unfold u64_round_up.
+  rewrite word.unsigned_mul, word.unsigned_divu. 2:word.
+  rewrite word.unsigned_add.
+  rewrite (wrap_small (_ + _)). 2:word.
+  rewrite (wrap_small (_ `div` _)).
+  2:{
+    split.
+    - apply Z_div_nonneg_nonneg; word.
+    - assert (0 < word.unsigned div) as Hdiv by lia.
+      pose proof (ZLib.Z.div_mul_undo_le (int.Z x + int.Z div) (int.Z div) Hdiv) as Hdivle.
+      lia. }
+  rewrite wrap_small.
+  2:{
+    split.
+    - apply Z.mul_nonneg_nonneg. 2:word. apply Z_div_nonneg_nonneg; word.
+    - apply Z.lt_le_pred. etrans. 1: apply ZLib.Z.div_mul_undo_le. all: word. }
+  split.
+  { rewrite Z.mul_comm. apply ZLib.Z.Z_mod_mult'. }
+  set (x' := int.Z x).
+  set (div' := int.Z div).
+  feed pose proof (Z.div_mod (x' + div') div') as Heq. 1:word.
+  replace ((x' + div') `div` div' * div') with (x' + div' - (x' + div') `mod` div') by lia.
+  assert ((x' + div') `mod` div' < div').
+  { apply Z.mod_pos_bound. lia. }
+  split.
+  { apply Z.le_succ_l. lia. }
+  assert (0 ≤ (x' + div') `mod` div'). 2:lia.
+  apply Z_mod_nonneg_nonneg; word.
+Qed.
