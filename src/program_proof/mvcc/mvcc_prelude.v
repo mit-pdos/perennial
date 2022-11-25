@@ -15,3 +15,9 @@ Definition N_TXN_SITES : Z := 64.
 
 Definition keys_all : gset u64 := fin_to_set u64.
 Definition sids_all : list u64 := U64 <$> seqZ 0 N_TXN_SITES.
+
+(* Invariant namespaces. *)
+Definition mvccN := nroot .@ "mvcc".
+Definition mvccNSST := mvccN .@ "sst".
+Definition mvccNGC := mvccN .@ "gc".
+Definition mvccNTID := mvccN .@ "tid".

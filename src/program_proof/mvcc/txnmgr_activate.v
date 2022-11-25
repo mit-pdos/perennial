@@ -12,9 +12,9 @@ Theorem wp_txnMgr__activate (txnmgr : loc) (sid : u64) γ :
   ⊢ is_txnmgr txnmgr γ -∗
     {{{ ⌜(int.Z sid) < N_TXN_SITES⌝ }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
-      TxnMgr__activate #txnmgr #sid @ ↑mvccNGC
-    <<< ∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
-    {{{ (tid : u64), RET #tid; active_tid γ tid sid ∧ ⌜int.nat tid = ts⌝ }}}.
+      TxnMgr__activate #txnmgr #sid @ ↑mvccNGC ∪ ↑mvccNTID
+    <<< ∃∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
+    {{{ (tid : u64), RET #tid; active_tid γ tid sid ∧ ⌜int.nat tid = ts'⌝ }}}.
 Proof.
   iIntros "#Htxnmgr !>" (Φ) "%HsitesBound HAU".
   iNamed "Htxnmgr".
@@ -64,17 +64,18 @@ Proof.
   { by apply sids_all_lookup. }
   iNamed "HinvsiteO".
   (* Obtain [ts_auth] from AU. *)
-  replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver.
-  iMod "HAU" as (ts) "[Hts HAUC]".
+  iMod ncfupd_mask_subseteq as "Hadjust".
+  2: iMod "HAU" as (ts) "[Hts HAUC]".
+  1: solve_ndisj.
   (* Deduce [S tidmax ≤ ts]. *)
   iDestruct (ts_auth_lb_le with "Hts Htslb") as %Hle.
   iModIntro.
   iExists ts.
   iFrame "Hts".
-  iIntros "[%ts' [Hts %Hgz]]".
-  (* Insert [ts] into the set of active tids. *)
+  iIntros "%ts' [Hts' %Hgz]".
+  (* Insert [ts'] into the set of active tids. *)
   iDestruct (site_active_tids_agree with "HactiveA HactiveAuth") as %->.
-  iMod (site_active_tids_insert ts with "HactiveA HactiveAuth") as
+  iMod (site_active_tids_insert ts' with "HactiveA HactiveAuth") as
     "(HactiveA & HactiveAuth & HactiveFrag)".
   { intros contra.
     apply set_Forall_union_inv_2 in Hmax.
@@ -82,13 +83,12 @@ Proof.
   }
   (* Obtain a new lower bound on [tidmax]. *)
   iClear "Htslb".
-  iDestruct (ts_witness with "Hts") as "#Htslb".
-  iMod ("HAUC" with "[Hts]") as "HΦ"; first by eauto with iFrame.
+  iDestruct (ts_witness with "Hts'") as "#Htslb".
+  iMod ("HAUC" with "[Hts']") as "HΦ"; first by eauto with iFrame.
   (* Close GC invariant. *)
   iDestruct ("HinvsiteC" with "[HactiveA HminA]") as "Hinvsite".
-  { iExists _, _, ts.
-    iDestruct (ts_lb_weaken (S ts) with "Htslb") as "Htslb'"; first lia.
-    iFrame "∗ Htslb'".
+  { iExists _, _, ts'.
+    iFrame "∗ Htslb".
     iPureIntro.
     apply set_Forall_union_inv_1 in Hmax as Hminmax.
     rewrite set_Forall_singleton in Hminmax.
@@ -104,6 +104,7 @@ Proof.
       }
     }
   }
+  iMod "Hadjust" as "_".
   iMod ("HinvgcC" with "Hinvsite") as "_".
   iModIntro.
   iIntros (tid) "[%Etid _Hsid]".

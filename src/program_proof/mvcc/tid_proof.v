@@ -1,4 +1,4 @@
-From Perennial.base_logic Require Import ghost_map saved_prop.
+From Perennial.base_logic Require Import ghost_map saved_prop mono_nat.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_ghost.
 From Goose.github_com.mit_pdos.go_mvcc Require Import tid.
@@ -8,17 +8,15 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition gentid_ns := nroot .@ "gentid".
-
 Local Definition sid_of (ts: u64) : u64 := word.modu ts (U64 N_TXN_SITES).
 
 Local Definition gentid_au (γ : mvcc_names) (sid : u64) (Φ : val → iProp Σ) : iProp Σ :=
-  (|NC={⊤ ∖ ∅,∅}=>
+  (|NC={⊤ ∖ ↑mvccNTID,∅}=>
     ∃ ts : nat, ts_auth γ ts ∗
-       ((∃ ts' : nat, ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝) -∗
-         |NC={∅,⊤ ∖ ∅}=> ∀ tid : u64, ⌜int.nat tid = ts⌝ ∗ sid_own γ sid -∗ Φ #tid)).
+       (∀ ts' : nat, ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ -∗
+         |NC={∅,⊤ ∖ ↑mvccNTID}=> ∀ tid : u64, ⌜int.nat tid = ts'⌝ ∗ sid_own γ sid -∗ Φ #tid)).
 
-Local Definition reserved_inv γ now (ts : u64) γr : iProp Σ :=
+Local Definition reserved_inv γ γr now (ts : u64): iProp Σ :=
   ∃ Φ, let sid := sid_of ts in
     saved_pred_own γr DfracDiscarded Φ ∗
     sid_own γ sid ∗
@@ -31,14 +29,14 @@ Local Definition reserved_inv γ now (ts : u64) γr : iProp Σ :=
     .
 
 Local Definition gentid_inv (γ : mvcc_names) now : iProp Σ :=
-  ∃ (reserved : gmap u64 gname),
-    ts_auth γ now ∗ tsc_lb now ∗
+  ∃ prev (reserved : gmap u64 gname),
+    ⌜prev ≤ now⌝%nat ∗ ts_auth γ prev ∗ tsc_lb now ∗
     ghost_map_auth γ.(mvcc_gentid_reserved) 1 reserved ∗
     [∗ map] ts ↦ 'γr ∈ reserved,
-      reserved_inv γ now ts γr.
+      reserved_inv γ γr now ts.
 
 Definition have_gentid (γ : mvcc_names) : iProp Σ :=
-  inv gentid_ns (∃ now, gentid_inv γ now).
+  inv mvccNTID (∃ now, gentid_inv γ now).
 
 Local Definition tid_reserved γ γr ts (Φ : val → iProp Σ) : iProp Σ :=
   ghost_map_elem γ.(mvcc_gentid_reserved) ts (DfracOwn 1) γr ∗
@@ -53,8 +51,8 @@ Lemma init_GenTID γ E :
 Proof.
   iIntros "[Hts Hres]".
   iMod tsc_lb_0.
-  iApply inv_alloc. iNext. iExists _, ∅.
-  iFrame. rewrite big_sepM_empty. done.
+  iApply inv_alloc. iNext. iExists _, 0%nat, ∅.
+  iFrame. rewrite big_sepM_empty. eauto.
 Qed.
 
 Local Lemma gentid_reserve γ now sid Φ :
@@ -67,20 +65,120 @@ Local Lemma gentid_reserve γ now sid Φ :
     (∀ ts, ⌜sid = sid_of ts⌝ ==∗
        (if bool_decide (now < int.Z ts) then ∃ γr, tid_reserved γ γr ts Φ else True) ∗
        gentid_inv γ now).
-Proof. Admitted.
+Proof.
+  iIntros "(%last & %reserved & %Hlast & Hts & #Htsc & Hreserved_map & Hreserved) Hsid HAU".
+  iFrame "Htsc". iIntros "!> %ts %Hsid".
+  iAssert (⌜reserved !! ts = None⌝)%I as %Hfresh.
+  { destruct (reserved !! ts) as [γr|] eqn:Hts; last done. iExFalso.
+    iDestruct (big_sepM_lookup _ _ _ _ Hts with "Hreserved") as (Φ2) "(_ & Hsid2 & _)".
+    rewrite -Hsid.
+    iDestruct (own_valid_2 with "Hsid Hsid2") as %Hval. iPureIntro. move:Hval.
+    rewrite singleton_op singleton_valid. done. }
+  case_bool_decide; last first.
+  { (* They gave us an outdated timestamp. *)
+    iSplitR; first done. eauto with iFrame. }
+  iMod (saved_pred_alloc Φ DfracDiscarded) as (γr) "#HΦ"; first done.
+  iMod (ghost_map_insert ts γr with "Hreserved_map") as "[Hreserved_map Hreserved_ts]"; first done.
+  iSplitL "Hreserved_ts".
+  { rewrite /tid_reserved. eauto. }
+  iExists last, _. iFrame "Hreserved_map Hts". iSplitR; first done.
+  iApply big_sepM_insert; first done.
+  iFrame. rewrite /reserved_inv. rewrite bool_decide_false; last lia.
+  iExists Φ. iFrame "HΦ". rewrite -Hsid. iFrame. done.
+Qed.
 
-Local Lemma gentid_inc_clock γ now :
-  gentid_inv γ now -∗
-  tsc_lb (now+1) -∗
-  |==> gentid_inv γ (now+1).
-Proof. Admitted.
+Local Lemma reserved_inc_clock γ now reserved :
+  reserved !! (U64 (S now)) = None →
+  ([∗ map] ts↦γr ∈ reserved, reserved_inv γ γr now ts) -∗
+  [∗ map] ts↦γr ∈ reserved, reserved_inv γ γr (S now) ts.
+Proof.
+  intros Hnotnow.
+  iIntros "Hm". iApply (big_sepM_impl with "Hm").
+  iIntros "!> %ts %γr %Hts (%Φ & HΦ & Hsid & HAU)".
+  assert (int.nat ts ≠ S now).
+  { intros Heq. rewrite -Heq in Hnotnow.
+    replace (U64 (int.nat ts)) with ts in Hnotnow by word. congruence. }
+  iExists _. iFrame.
+  case_bool_decide.
+  - rewrite bool_decide_true. 2:lia. done.
+  - rewrite bool_decide_false. 2:lia. done.
+Qed.
+
+Local Lemma gentid_inc_clock γ old now :
+  (old ≤ now)%nat →
+  (now < 2^64) →
+  gentid_inv γ old -∗
+  tsc_lb now -∗
+  |NC={⊤∖↑mvccNTID}=> gentid_inv γ now.
+Proof.
+  induction 1 using le_ind.
+  { eauto. }
+  iIntros (?) "Hgentid #Htsc".
+  iDestruct (IHle with "Hgentid [Htsc]") as ">Hgentid".
+  { lia. }
+  { iApply tsc_lb_weaken; last done. lia. }
+  iDestruct "Hgentid" as "(%last & %reserved & %Hlast & Hts & _ & Hreserved_map & Hreserved)".
+  set ts := S m.
+  destruct (reserved !! (U64 ts)) as [γr|] eqn:Hts; last first.
+  { (* Nothing reserved at this timestamp, not much to do. *)
+    iExists _, _. iFrame. iSplitR; first by eauto with lia.
+    iFrame "Htsc".
+    iApply reserved_inc_clock; done. }
+  (* Bump our timestamp. *)
+  iExists ts, _. iFrame. iFrame "Htsc".
+  iSplitR; first done.
+  rewrite !(big_sepM_delete _ _ _ _ Hts).
+  iDestruct "Hreserved" as "[Hthis Hreserved]".
+  rewrite !assoc. iSplitR "Hreserved"; last first.
+  { iApply reserved_inc_clock; last done.
+    rewrite lookup_delete. done. }
+  iDestruct "Hthis" as (Φ) "(HΦ & Hsid & HAU)".
+  rewrite bool_decide_false. 2:word.
+  iMod "HAU" as (ts') "[Hts' Hclose]".
+  rewrite /ts_auth.
+  iDestruct (mono_nat_auth_own_agree with "Hts Hts'") as %[_ <-].
+  iCombine "Hts Hts'" as "Hts".
+  iMod (mono_nat_own_update ts with "Hts") as "[[Hts $] _]".
+  { lia. }
+  iMod ("Hclose" with "[Hts]") as "Hfin".
+  { iFrame. eauto with lia. }
+  iModIntro. iExists _. iFrame. rewrite bool_decide_true.
+  2:word.
+  iIntros "Hsid". iApply "Hfin". iFrame. iPureIntro. word.
+Qed.
 
 Local Lemma gentid_completed γ γr clock ts Φ :
+  £1 -∗
   gentid_inv γ clock -∗
   tid_reserved γ γr ts Φ -∗
   tsc_lb (int.nat ts) -∗
-  |==> ∃ clock', gentid_inv γ clock' ∗ sid_own γ (sid_of ts) ∗ Φ #ts.
-Proof. Admitted.
+  |NC={⊤∖↑mvccNTID}=> ∃ clock', gentid_inv γ clock' ∗ Φ #ts.
+Proof.
+  iIntros "LC Hgentid Hreserved Htsc".
+  set clock' := max clock (int.nat ts).
+  iAssert (|NC={⊤∖↑mvccNTID}=> gentid_inv γ clock')%I with "[Htsc Hgentid]" as ">Hgentid".
+  { destruct (decide (clock <= int.nat ts)%nat); last first.
+    { replace clock' with clock by lia. done. }
+    iMod (gentid_inc_clock with "Hgentid Htsc") as "Hgentid"; first done.
+    { word. }
+    replace clock' with (int.nat ts) by lia. done.
+  }
+  iDestruct "Hgentid" as "(%last & %reserved & %Hlast & Hts & #Htsc & Hreserved_map & Hreserved_all)".
+  iExists clock'.
+  iDestruct "Hreserved" as "[Hmap HΦ]".
+  iDestruct (ghost_map_lookup with "Hreserved_map Hmap") as %Hts.
+  iMod (ghost_map_delete with "Hreserved_map Hmap") as "Hreserved_map".
+  iDestruct (big_sepM_delete _ _ _ _ Hts with "Hreserved_all") as "[Hreserved Hreserved_all]".
+  iDestruct "Hreserved" as (Φ') "(HΦ' & Hsid & HAU)".
+  iDestruct (saved_pred_agree _ _ _ _ _ (#ts) with "HΦ HΦ'") as "EQ".
+  iMod (lc_fupd_elim_later with "LC EQ") as "EQ".
+  iRewrite "EQ". clear Φ.
+  rewrite bool_decide_true.
+  2:lia.
+  iModIntro. iSplitR "Hsid HAU".
+  - iExists _, _. iFrame. eauto.
+  - iApply "HAU". done.
+Qed.
 
 (**
  * [int.nat tid = ts] means no overflow, which we would have to assume.
@@ -94,9 +192,9 @@ Theorem wp_GenTID (sid : u64) γ :
   ⊢ have_gentid γ -∗
     {{{ sid_own γ sid }}}
     <<< ∀∀ (ts : nat), ts_auth γ ts >>>
-      GenTID #sid @ ∅
-    <<< ∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
-    {{{ (tid : u64), RET #tid; ⌜int.nat tid = ts⌝ ∗ sid_own γ sid }}}.
+      GenTID #sid @ ↑mvccNTID
+    <<< ∃∃ ts', ts_auth γ ts' ∗ ⌜(ts < ts')%nat⌝ >>>
+    {{{ (tid : u64), RET #tid; ⌜int.nat tid = ts'⌝ ∗ sid_own γ sid }}}.
 Proof.
   iIntros "%Hsid #Hinv !>" (Φ) "Hsid HAU".
   wp_call.
@@ -193,11 +291,11 @@ Proof.
   { unfold P. iFrame. }
   iIntros "HP". unfold P. clear P. iDestruct "HP" as "[Htid Htsc]".
 
-  wp_pure1_credit "LC". wp_pures.
+  wp_pure1_credit "LC1". wp_pure1_credit "LC2".
   iApply ncfupd_wp.
   iInv "Hinv" as "Hgentid" "Hclose".
-  iMod (lc_fupd_elim_later with "LC Hgentid") as (clock3) "Hgentid".
-  iMod (gentid_completed with "Hgentid Hreserved Htsc") as (clock4) "(Hgentid & Hdig & HΦ)".
+  iMod (lc_fupd_elim_later with "LC1 Hgentid") as (clock3) "Hgentid".
+  iMod (gentid_completed with "LC2 Hgentid Hreserved Htsc") as (clock4) "(Hgentid & HΦ)".
   iMod ("Hclose" with "[Hgentid]") as "_".
   { eauto. }
   iModIntro.

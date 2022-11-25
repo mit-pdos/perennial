@@ -51,13 +51,12 @@ Proof.
    * Call `GenTID` once to get [ts_auth γ 1] and [ts_lb γ 1].
    * Note that we own [ts_auth] exclusively, not from some invariant.
    *)
-  wp_apply wp_GenTID.
+  wp_apply (wp_GenTID with "Hgentid").
   { admit. }
-  { admit. }
-  iApply ncfupd_mask_intro; first done.
+  iApply ncfupd_mask_intro; first solve_ndisj.
   iIntros "Hclose".
   iExists _. iFrame "Hts".
-  iIntros "(%ts & Hts & %Hgz)".
+  iIntros "%ts (Hts & %Hgz)".
   iMod "Hclose". iModIntro.
   (* Don't care about its return value. *)
   iIntros (tid) "[_ _Hsid]". iClear "_Hsid". (* FIXME keep this *)

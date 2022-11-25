@@ -8,7 +8,7 @@ Local Definition key_vchainR := gmapR u64 vchainR.
 Local Definition tidsR := gmap_viewR nat (leibnizO unit).
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
-Local Definition sid_ownR := gmapR u64 unitR.
+Local Definition sid_ownR := gmapR u64 (exclR unitO).
 
 Lemma sids_all_lookup (sid : u64) :
   int.Z sid < N_TXN_SITES ->
@@ -173,7 +173,7 @@ Definition ts_lb γ (ts : nat) : iProp Σ :=
   mono_nat_lb_own γ.(mvcc_ts) ts.
 
 Definition sid_own γ (sid : u64) : iProp Σ :=
-  own γ.(mvcc_sids) ({[ sid := () ]}).
+  own γ.(mvcc_sids) ({[ sid := Excl () ]}).
 
 Definition nca_tids_auth γ (tids : gset nat) : iProp Σ :=
   ghost_map_auth γ.(mvcc_abort_tids_nca) 1 (gset_to_gmap tt tids).
@@ -640,7 +640,7 @@ Proof.
   iMod ltuples_alloc as (γltuple) "Hltpls".
   iMod (mono_nat_own_alloc 0) as (γts) "[[Hts1 Hts2] _]".
   set sids : gset u64 := list_to_set sids_all.
-  iMod (own_alloc (A:=sid_ownR) (gset_to_gmap () sids)) as (γsids) "Hsids".
+  iMod (own_alloc (A:=sid_ownR) (gset_to_gmap (Excl tt) sids)) as (γsids) "Hsids".
   { intros k. rewrite lookup_gset_to_gmap. destruct (decide (k ∈ sids)).
     - rewrite option_guard_True //.
     - rewrite option_guard_False //. }
