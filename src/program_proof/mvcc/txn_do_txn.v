@@ -64,28 +64,28 @@ Proof.
   iNamed "HinvO".
   iExists ts.
   iFrame "Hts".
-  iIntros "%ts' (Hts & %Hn)".
-  (* FIXME the proof below stopped making sense with the fixed GenTID spec... *)
-Admitted. (*
-  (* Obtain [ltuple_ptsto] over [m]. *)
-  iMod (per_key_inv_ltuple_ptstos with "Hkeys") as "[Hkeys Hltuples]".
-  iDestruct (dbmap_lookup_big with "Hm Hdbps") as "%Hrm". 
-  (* Obtain [ltuple_ptsto] over [r]. *)
-  iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first done.
-  (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
-  iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
-  iDestruct (fc_inv_fc_tids_lt_ts with "Hfci Hfcc Hcmt") as "%Hfctids".
+  (* From now on [ts] refers to the new TS, that is, TID of the transaction. *)
+  rename ts into tsold.
+  iIntros "%ts (Hts & %Hn)".
   (* Do case distinction on the form of [future]. *)
   pose proof (spec_peek future ts).
   destruct (peek future ts).
   { (* Case NCA. *)
+    (* Obtain [ltuple_ptsto] over [m]. *)
+    iMod (per_key_inv_ltuple_ptstos _ _ _ ts with "Hkeys") as "[Hkeys Hltuples]"; first done.
+    iDestruct (dbmap_lookup_big with "Hm Hdbps") as "%Hrm". 
+    (* Obtain [ltuple_ptsto] over [r]. *)
+    iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first done.
+    (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
+    iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
+    iDestruct (fc_inv_fc_tids_lt_ts with "Hfci Hfcc Hcmt") as "%Hfctids".
     (* Choose the will-abort branch. Use [∅] as placeholder. *)
     iMod ("HAUC" $! false ∅ with "Hdbps") as "HΦ".
     (* Add [ts] to [tids_nca] and get a piece of evidence. *)
     iNamed "Hnca".
     iMod (nca_tids_insert ts with "HncaAuth") as "[HncaAuth HncaFrag]".
     { (* Prove [ts ∉ tids_nca]. *)
-      intros contra. apply HncaLt in contra. lia.
+      intros contra. apply HncaLe in contra. lia.
     }
     iAssert (nca_inv_def _ _ _ _)%I with "[HncaAuth]" as "Hnca".
     { unfold nca_inv_def. iFrame. iPureIntro.
@@ -96,10 +96,9 @@ Admitted. (*
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts')%nat) by lia.
-          apply Hts.
+          reflexivity.
         }
-        apply (set_Forall_impl _ _ _ HncaLt). lia.
+        apply (set_Forall_impl _ _ _ HncaLe). lia.
     }
     iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HncaFrag Hbody]") as "_".
@@ -107,12 +106,12 @@ Admitted. (*
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts with "Hkeys"). lia.
       }
-      iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
-      iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
-      iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
-      iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
+      iDestruct (fa_inv_weaken_ts ts with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts ts with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts ts with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts ts with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
@@ -141,13 +140,21 @@ Admitted. (*
     by iIntros (ok) "contra".
   }
   { (* Case FA. *)
+    (* Obtain [ltuple_ptsto] over [m]. *)
+    iMod (per_key_inv_ltuple_ptstos _ _ _ ts with "Hkeys") as "[Hkeys Hltuples]"; first done.
+    iDestruct (dbmap_lookup_big with "Hm Hdbps") as "%Hrm". 
+    (* Obtain [ltuple_ptsto] over [r]. *)
+    iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first done.
+    (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
+    iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
+    iDestruct (fc_inv_fc_tids_lt_ts with "Hfci Hfcc Hcmt") as "%Hfctids".
     (* Choose the will-abort branch. Use [∅] as placeholder. *)
     iMod ("HAUC" $! false ∅ with "Hdbps") as "HΦ".
     (* Add [s] to [tids_fa] and get a piece of evidence. *)
     iNamed "Hfa".
     iMod (fa_tids_insert ts with "HfaAuth") as "[HfaAuth HfaFrag]".
     { (* Prove [ts ∉ tids_fa]. *)
-      intros contra. apply HfaLt in contra. lia.
+      intros contra. apply HfaLe in contra. lia.
     }
     iAssert (fa_inv_def _ _ _ _)%I with "[HfaAuth]" as "Hfa".
     { unfold fa_inv_def. iFrame. iPureIntro.
@@ -158,10 +165,9 @@ Admitted. (*
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts')%nat) by lia.
-          apply Hts.
+          reflexivity.
         }
-        apply (set_Forall_impl _ _ _ HfaLt). lia.
+        apply (set_Forall_impl _ _ _ HfaLe). lia.
     }
     iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfaFrag Hbody]") as "_".
@@ -169,12 +175,12 @@ Admitted. (*
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts with "Hkeys"). lia.
       }
-      iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
-      iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
-      iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
-      iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
+      iDestruct (nca_inv_weaken_ts ts with "Hnca") as "Hnca"; first lia.
+      iDestruct (fci_inv_weaken_ts ts with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts ts with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts ts with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
@@ -213,15 +219,23 @@ Admitted. (*
     by iIntros (ok) "contra".
   }
   { (* Case FCI. *)
+    (* Obtain [ltuple_ptsto] over [m]. *)
+    iMod (per_key_inv_ltuple_ptstos _ _ _ ts with "Hkeys") as "[Hkeys Hltuples]"; first done.
+    iDestruct (dbmap_lookup_big with "Hm Hdbps") as "%Hrm". 
+    (* Obtain [ltuple_ptsto] over [r]. *)
+    iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first done.
+    (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
+    iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
+    iDestruct (fc_inv_fc_tids_lt_ts with "Hfci Hfcc Hcmt") as "%Hfctids".
     (* Choose the will-abort branch. Use [∅] as placeholder. *)
     iMod ("HAUC" $! false ∅ with "Hdbps") as "HΦ".
     (* Add [(ts, mods)] to [tmods_fci] and get a piece of evidence. *)
     iNamed "Hfci".
     iMod (fci_tmods_insert (ts, mods) with "HfciAuth") as "[HfciAuth HfciFrag]".
     { (* Prove [ts ∉ tmods_fci]. *)
-      intros contra. apply HfciLt in contra. simpl in contra. lia.
+      intros contra. apply HfciLe in contra. simpl in contra. lia.
     }
-    apply (fc_tids_unique_insert_fci ts mods) in Hfcnd; last done.
+    apply (fc_tids_unique_insert_fci tsold ts mods) in Hfcnd; [| lia | done].
     iAssert (fci_inv_def _ _ _ _ _)%I with "[HfciAuth]" as "Hfci".
     { unfold fci_inv_def. iFrame. iPureIntro.
       split.
@@ -232,10 +246,9 @@ Admitted. (*
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts')%nat) by lia.
-          apply Hts.
+          reflexivity.
         }
-        apply (set_Forall_impl _ _ _ HfciLt). lia.
+        apply (set_Forall_impl _ _ _ HfciLe). simpl. lia.
     }
     iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfciFrag Hbody]") as "_".
@@ -243,12 +256,12 @@ Admitted. (*
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts with "Hkeys"). lia.
       }
-      iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
-      iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
-      iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
-      iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
+      iDestruct (nca_inv_weaken_ts ts with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts ts with "Hfa") as "Hfa"; first lia.
+      iDestruct (fcc_inv_weaken_ts ts with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (cmt_inv_weaken_ts ts with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
@@ -279,14 +292,22 @@ Admitted. (*
   (* We also need the subseteq relation to know which keys we're extending in CMT. *)
   destruct (decide (Q r (mods ∪ r) ∧ dom mods ⊆ dom r)); last first.
   { (* Case FCC, [Q r w] not holds. *)
+    (* Obtain [ltuple_ptsto] over [m]. *)
+    iMod (per_key_inv_ltuple_ptstos _ _ _ ts with "Hkeys") as "[Hkeys Hltuples]"; first done.
+    iDestruct (dbmap_lookup_big with "Hm Hdbps") as "%Hrm". 
+    (* Obtain [ltuple_ptsto] over [r]. *)
+    iDestruct (big_sepM_subseteq _ _ r with "Hltuples") as "Hltuples"; first done.
+    (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
+    iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
+    iDestruct (fc_inv_fc_tids_lt_ts with "Hfci Hfcc Hcmt") as "%Hfctids".
     iMod ("HAUC" $! false ∅ with "Hdbps") as "HΦ".
     (* Add [(ts, mods)] to [tmods_fcc] and get a piece of evidence. *)
     iNamed "Hfcc".
     iMod (fcc_tmods_insert (ts, mods) with "HfccAuth") as "[HfccAuth HfccFrag]".
     { (* Prove [ts ∉ tmods_fcc]. *)
-      intros contra. apply HfccLt in contra. simpl in contra. lia.
+      intros contra. apply HfccLe in contra. simpl in contra. lia.
     }
-    apply (fc_tids_unique_insert_fcc ts mods) in Hfcnd; last done.
+    apply (fc_tids_unique_insert_fcc tsold ts mods) in Hfcnd; [| lia | done].
     iAssert (fcc_inv_def _ _ _ _)%I with "[HfccAuth]" as "Hfcc".
     { unfold fcc_inv_def. iFrame. iPureIntro.
       split.
@@ -296,10 +317,9 @@ Admitted. (*
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts')%nat) by lia.
-          apply Hts.
+          reflexivity.
         }
-        apply (set_Forall_impl _ _ _ HfccLt). lia.
+        apply (set_Forall_impl _ _ _ HfccLe). simpl. lia.
     }
     iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HfccFrag Hbody]") as "_".
@@ -307,12 +327,12 @@ Admitted. (*
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts with "Hkeys"). lia.
       }
-      iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
-      iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
-      iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
-      iDestruct (cmt_inv_weaken_ts ts' with "Hcmt") as "Hcmt"; first lia.
+      iDestruct (nca_inv_weaken_ts ts with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts ts with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts ts with "Hfci") as "Hfci"; first lia.
+      iDestruct (cmt_inv_weaken_ts ts with "Hcmt") as "Hcmt"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
@@ -346,18 +366,24 @@ Admitted. (*
     by iIntros (ok) "contra".
   }
   { (* Case CMT, i.e. FCC and [Q r w] holds. *)
-    (* Update [dbmap_ptstos γ 1 r] to [dbmap_ptstos γ 1 (mods ∪ r)]. *)
+    (**
+     * Update [dbmap_ptstos γ 1 r] to [dbmap_ptstos γ 1 (mods ∪ r)],
+     * and obtain [ltuple_ptsto] over [r].
+     *)
     destruct a as [HQ Hdom].
-    iMod (per_key_inv_dbmap_ptstos_update ts' r mods with "Hm Hdbps Hkeys") as "(Hm & Hdbps & Hkeys)".
-    { done. } { lia. }
+    iMod (per_key_inv_dbmap_ptstos_update ts r mods with "Hm Hdbps Hkeys") as
+      "(Hm & Hdbps & Hkeys & Hltuples)"; [done | done |].
+    (* Obtain [txnmap_auth] and [txnmap_ptsto]. *)
+    iMod (txnmap_alloc r) as (τ) "[Htxnmap Htxnps]".
+    iDestruct (fc_inv_fc_tids_lt_ts with "Hfci Hfcc Hcmt") as "%Hfctids".
     iMod ("HAUC" $! true (mods ∪ r) with "[Hdbps]") as "HΦ"; first by iFrame.
     (* Add [(ts, mods)] to [tmods] and get a piece of evidence. *)
     iNamed "Hcmt".
     iMod (cmt_tmods_insert (ts, mods) with "HcmtAuth") as "[HcmtAuth HcmtFrag]".
     { (* Prove [ts ∉ tmods_cmt]. *)
-      intros contra. apply HcmtLt in contra. simpl in contra. lia.
+      intros contra. apply HcmtLe in contra. simpl in contra. lia.
     }
-    apply (fc_tids_unique_insert_cmt ts mods) in Hfcnd; last done.
+    apply (fc_tids_unique_insert_cmt tsold ts mods) in Hfcnd; [| lia | done].
     iAssert (cmt_inv_def _ _ _ _)%I with "[HcmtAuth]" as "Hcmt".
     { unfold cmt_inv_def. iFrame. iPureIntro.
       split.
@@ -367,10 +393,9 @@ Admitted. (*
       - (* Prove new TS > every elem of the new set. *)
         apply set_Forall_union.
         { rewrite set_Forall_singleton.
-          assert (Hts : (ts < ts')%nat) by lia.
-          apply Hts.
+          reflexivity.
         }
-        apply (set_Forall_impl _ _ _ HcmtLt). lia.
+        apply (set_Forall_impl _ _ _ HcmtLe). simpl. lia.
     }
     iMod "Hclose" as "_".
     iMod ("HinvC" with "[- HΦ Hltuples Htxnmap Htxnps HcmtFrag Hbody]") as "_".
@@ -378,12 +403,12 @@ Admitted. (*
       iNext.
       iDestruct (big_sepS_mono with "Hkeys") as "Hkeys".
       { iIntros (k) "%Helem Hkeys".
-        iApply (per_key_inv_weaken_ts ts' with "Hkeys"). lia.
+        iApply (per_key_inv_weaken_ts ts with "Hkeys"). lia.
       }
-      iDestruct (nca_inv_weaken_ts ts' with "Hnca") as "Hnca"; first lia.
-      iDestruct (fa_inv_weaken_ts ts' with "Hfa") as "Hfa"; first lia.
-      iDestruct (fci_inv_weaken_ts ts' with "Hfci") as "Hfci"; first lia.
-      iDestruct (fcc_inv_weaken_ts ts' with "Hfcc") as "Hfcc"; first lia.
+      iDestruct (nca_inv_weaken_ts ts with "Hnca") as "Hnca"; first lia.
+      iDestruct (fa_inv_weaken_ts ts with "Hfa") as "Hfa"; first lia.
+      iDestruct (fci_inv_weaken_ts ts with "Hfci") as "Hfci"; first lia.
+      iDestruct (fcc_inv_weaken_ts ts with "Hfcc") as "Hfcc"; first lia.
       eauto 15 with iFrame.
     }
     iIntros "!>" (tid wrbuf) "(Htxn & Hwrbuf & _)".
@@ -416,7 +441,7 @@ Admitted. (*
     iApply "HΦ".
     by iFrame.
   }
-Qed. *)
+Qed.
 
 (**
  * Specification for transactions with no additional resources flowed
