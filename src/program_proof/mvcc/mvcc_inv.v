@@ -9,7 +9,7 @@ Definition mvcc_inv_gc_site_def γ (sid : u64) : iProp Σ :=
   ∃ (tids : gset nat) (tidmin tidmax : nat),
     "HactiveA" ∷ site_active_tids_half_auth γ sid tids ∗
     "HminA"    ∷ site_min_tid_auth γ sid tidmin ∗
-    "#Htslb"   ∷ ts_lb γ tidmax ∗ (* Ralf changed this and had no idea if that makes any sense *)
+    "#Htslb"   ∷ ts_lb γ tidmax ∗
     "%Hmin"    ∷ ⌜set_Forall (λ tid, tidmin ≤ tid)%nat tids⌝ ∗
     "%Hmax"    ∷ ⌜set_Forall (λ tid, tid ≤ tidmax)%nat ({[ tidmin ]} ∪ tids)⌝.
 
