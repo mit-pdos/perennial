@@ -1,5 +1,5 @@
 From Perennial.program_proof.mvcc Require Import txn_prelude.
-From Perennial.program_proof.mvcc Require Import tuple_repr index_proof.
+From Perennial.program_proof.mvcc Require Import tid_proof tuple_repr index_proof.
 
 Section repr.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -12,7 +12,8 @@ Definition own_txnsite (txnsite : loc) (sid : u64) γ : iProp Σ :=
     "HactiveAuth" ∷ site_active_tids_half_auth γ sid tidsactiveM ∗
     (* "%HactiveLM" ∷ ⌜(∀ tid, tid ∈ (int.Z <$> tidsactiveL) ↔ tid ∈ (Z.of_nat <$> (elements tidsactiveM)))⌝ ∗ *)
     "%HactiveLM" ∷ ⌜list_to_set ((λ tid, int.nat tid) <$> tidsactiveL) = tidsactiveM⌝ ∗
-    "%HactiveND" ∷ ⌜NoDup tidsactiveL⌝.
+    "%HactiveND" ∷ ⌜NoDup tidsactiveL⌝ ∗
+    "Hsidtok" ∷ sid_own γ sid.
 
 Definition is_txnsite (site : loc) (sid : u64) γ : iProp Σ := 
   ∃ (latch : loc),
@@ -40,6 +41,7 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
     "#Hinvsst" ∷ mvcc_inv_sst γ p ∗
+    "#Hinvtid" ∷ have_gentid γ ∗
     "_" ∷ True.
 
 End repr.

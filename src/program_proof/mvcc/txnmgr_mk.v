@@ -24,7 +24,6 @@ Proof.
   iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & Hpts & Hgentid & H)".
   iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths)".
   iMod (init_GenTID with "Hgentid") as "#Hgentid".
-  (* TODO: remember Hgentid somewhere instead of just throwing it away. *)
 
   (***********************************************************)
   (* p := machine.NewProph()                                 *)
@@ -57,15 +56,16 @@ Proof.
    * Call `GenTID` once to get [ts_auth γ 1] and [ts_lb γ 1].
    * Note that we own [ts_auth] exclusively, not from some invariant.
    *)
-  wp_apply (wp_GenTID with "Hgentid [Hsids]").
-  { iApply (big_sepL_lookup _ _ 0 with "Hsids"). done. (* FIXME we are throwing away all the other sids here! *) }
+  iDestruct (big_sepL_lookup_acc _ _ 0 with "Hsids") as "[Hsid0 Hsids]".
+  { done. }
+  wp_apply (wp_GenTID with "Hgentid Hsid0").
   iApply ncfupd_mask_intro; first solve_ndisj.
   iIntros "Hclose".
   iExists _. iFrame "Hts".
   iIntros "%ts (Hts & %Hgz)".
   iMod "Hclose". iModIntro.
   (* Don't care about its return value. *)
-  iIntros (tid) "[_ _Hsid]". iClear "_Hsid". (* FIXME keep this *)
+  iIntros (tid) "[_ Hsid0]". iDestruct ("Hsids" with "Hsid0") as "Hsids".
   wp_pures.
   iDestruct (ts_witness with "Hts") as "#Htslb".
 
@@ -103,8 +103,9 @@ Proof.
     "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (int.nat n) sitesL), is_txnsite site sid γ) ∗
     "Hsites" ∷ (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
-    "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅))%I.
-  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuths]"); first done.
+    "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
+    "Hsids" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), sid_own γ sid))%I.
+  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuths Hsids]"); first done.
   { clear Φ latch.
     iIntros (i Φ) "!> (Hloop & HiRef & %Hbound) HΦ".
     iNamed "Hloop".
@@ -145,9 +146,10 @@ Proof.
       simpl. f_equal. word.
     }
     iDestruct (big_sepL_cons with "HactiveAuths") as "[HactiveAuth HactiveAuths]".
+    iDestruct (big_sepL_cons with "Hsids") as "[Hsid Hsids]".
     iMod (readonly_alloc_1 with "latch") as "#Hlatch".
     iMod (alloc_lock mvccN _ latch (own_txnsite site i γ) with
-           "[$Hfree] [-HsitesS HsitesRP HactiveAuths]") as "#Hlock".
+           "[$Hfree] [-HsitesS HsitesRP HactiveAuths Hsids]") as "#Hlock".
     { iNext.
       unfold own_txnsite.
       iExists (Slice.mk active 0 8), [], ∅.
