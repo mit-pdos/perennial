@@ -53,6 +53,7 @@ Section goose_lang.
   | loc_array_ty x t : lit_ty (LitLoc x) (arrayT t)
   | loc_struct_ty x ts : lit_ty (LitLoc x) (structRefT ts)
   | loc_ptr_ty x : lit_ty (LitLoc x) ptrT
+  | proph_ty p : lit_ty (LitProphecy p) prophT
   .
 
   Inductive val_ty : val -> ty -> Prop :=

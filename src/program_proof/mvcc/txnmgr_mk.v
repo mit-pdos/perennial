@@ -18,6 +18,20 @@ Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
 
+  (* Allocate ghost states. *)
+  iMod mvcc_ghost_alloc as (γ) "H".
+  iDestruct "H" as "(Hphys & Hphys' & Hlogi & Hts & Hsids & H)".
+  iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & Hpts & Hgentid & H)".
+  iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths)".
+  iMod (init_GenTID with "Hgentid") as "#Hgentid".
+  (* TODO: remember Hgentid somewhere instead of just throwing it away. *)
+
+  (***********************************************************)
+  (* p := machine.NewProph()                                 *)
+  (***********************************************************)
+  wp_apply (wp_NewProphActions γ).
+  iIntros (p acs) "Hproph".
+
   (***********************************************************)
   (* txnMgr := new(TxnMgr)                                   *)
   (* txnMgr.latch = new(sync.Mutex)                          *)
@@ -27,7 +41,7 @@ Proof.
   iIntros (txnmgr) "Htxnmgr".
   iDestruct (struct_fields_split with "Htxnmgr") as "Htxnmgr".
   iNamed "Htxnmgr".
-  simpl.
+  (*simpl.*)
   wp_pures.
   wp_apply (wp_new_free_lock).
   iIntros (latch) "Hfree".
@@ -35,14 +49,6 @@ Proof.
   wp_apply (wp_new_slice); first done.
   iIntros (sites) "HsitesL".
   wp_storeField.
-
-  (* Allocate ghost states. *)
-  iMod mvcc_ghost_alloc as (γ) "H".
-  iDestruct "H" as "(Hphys & Hphys' & Hlogi & Hts & Hsids & H)".
-  iDestruct "H" as "(Hnca & Hfa & Hfci & Hfcc & Hcmt & Hm & Hpts & Hgentid & H)".
-  iDestruct "H" as "(HactiveAuths & HactiveAuths' & HminAuths)".
-  iMod (init_GenTID with "Hgentid") as "#Hgentid".
-  (* TODO: remember Hgentid somewhere instead of just throwing it away. *)
   
   (***********************************************************)
   (* tid.GenTID(0)                                           *)
@@ -51,8 +57,8 @@ Proof.
    * Call `GenTID` once to get [ts_auth γ 1] and [ts_lb γ 1].
    * Note that we own [ts_auth] exclusively, not from some invariant.
    *)
-  wp_apply (wp_GenTID with "Hgentid").
-  { admit. }
+  wp_apply (wp_GenTID with "Hgentid [Hsids]").
+  { iApply (big_sepL_lookup _ _ 0 with "Hsids"). done. (* FIXME we are throwing away all the other sids here! *) }
   iApply ncfupd_mask_intro; first solve_ndisj.
   iIntros "Hclose".
   iExists _. iFrame "Hts".
@@ -179,18 +185,6 @@ Proof.
   iNamed "Hloop".
   wp_pures.
 
-  (***********************************************************)
-  (* txnMgr.p = machine.NewProph()                           *)
-  (***********************************************************)
-  wp_apply (wp_NewProphActions γ).
-  iIntros (p acs) "Hproph".
-  (* FIXME: Cannot use tactic [wp_storeField]. *)
-  wp_apply (wp_storeField with "p").
-  { (* Prove [val_ty] *)
-    unfold field_ty. simpl.
-    admit.
-  }
-  iIntros "p".
   wp_pures.
   iMod (inv_alloc mvccNSST _ (mvcc_inv_sst_def γ p) with
          "[Hts Hm Hproph Hphys Hlogi Hcmt Hnca Hfa Hfci Hfcc]") as "#Hinv".
@@ -259,6 +253,6 @@ Proof.
   rewrite firstn_all.
   do 5 iExists _.
   by iFrame "# %".
-Admitted.
+Qed.
 
 End program.

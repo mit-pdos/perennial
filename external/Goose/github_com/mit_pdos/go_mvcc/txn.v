@@ -32,7 +32,10 @@ Definition TxnMgr := struct.decl [
 
 Definition MkTxnMgr: val :=
   rec: "MkTxnMgr" <> :=
-    let: "txnMgr" := struct.alloc TxnMgr (zero_val (struct.t TxnMgr)) in
+    let: "p" := NewProph #() in
+    let: "txnMgr" := struct.new TxnMgr [
+      "p" ::= "p"
+    ] in
     struct.storeF TxnMgr "latch" "txnMgr" (lock.new #());;
     struct.storeF TxnMgr "sites" "txnMgr" (NewSlice ptrT config.N_TXN_SITES);;
     tid.GenTID #0;;
@@ -43,7 +46,6 @@ Definition MkTxnMgr: val :=
       struct.storeF TxnSite "tidsActive" "site" (NewSliceWithCap uint64T #0 #8);;
       SliceSet ptrT (struct.loadF TxnMgr "sites" "txnMgr") (![uint64T] "i") "site";;
       Continue);;
-    struct.storeF TxnMgr "p" "txnMgr" (NewProph #());;
     struct.storeF TxnMgr "idx" "txnMgr" (index.MkIndex #());;
     "txnMgr".
 

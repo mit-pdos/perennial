@@ -1,8 +1,6 @@
 From Perennial.goose_lang Require Import lang notation typing.
 
-(** We could use a dedicated opaque type but it's not really worth it...
-and this one does have the right size. *)
-Definition ProphIdT {ext} {ext_ty: ext_types ext} := ptrT.
+Definition ProphIdT {ext} {ext_ty: ext_types ext} := prophT.
 
 Section goose_lang.
 Context {ext: ffi_syntax}.

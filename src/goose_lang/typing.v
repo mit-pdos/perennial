@@ -32,6 +32,8 @@ Section val_types.
   (* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
   | mapValT (vt: ty) (* keys are always uint64, for now *)
   | extT (x: ext_tys)
+  (* propehy variable *)
+  | prophT
   .
   Definition uint64T := baseT uint64BT.
   Definition uint32T := baseT uint32BT.
@@ -106,7 +108,7 @@ Section goose_lang.
     | arrowT t1 t2 => (λ: <>, Val (zero_val t2))%V
     | arrayT t => #null
     | structRefT _ | ptrT => #null
-    | extT x => #() (* dummy value of wrong type *)
+    | extT _ | prophT => #() (* dummy value of wrong type *)
     end.
 
   Lemma zero_prod_val t1 t2 :
@@ -135,6 +137,7 @@ Section goose_lang.
     | structRefT _ => True
     | ptrT => True
     | extT _ => False
+    | prophT => False
     end.
 
   (* TODO: listT size is not well defined, but it shouldn't be going in structs anyway *)

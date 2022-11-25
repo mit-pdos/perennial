@@ -342,6 +342,7 @@ Proof.
     iDestruct "Hval" as (????? (?&?&?&?)) "H1". subst; eauto.
   - iDestruct "Hval" as %[].
   - rewrite /val_interp/=. iDestruct (sty_val_size with "Hval") as "(%&%)"; eauto.
+  - rewrite /val_interp/=. done.
 Qed.
 
 Lemma flatten_well_typed vs v t i vsi vi ti:
@@ -418,6 +419,7 @@ Proof.
       rewrite Heq2 in Hlookup3.
       simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
     }
+  - iDestruct "Hval" as %[].
 Qed.
 
 Scheme expr_typing_ind := Induction for expr_transTy Sort Prop with
