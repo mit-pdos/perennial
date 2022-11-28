@@ -231,9 +231,9 @@ Proof.
     iSplitL ""; first done.
     iIntros "Hghost".
     iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
-    iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
+    (* iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
     { do 2 (rewrite -(fmap_length fst)).
-      rewrite Hre. done. }
+      rewrite Hre. done. } *)
 
     iMod (ghost_propose with "Htok_used_witness Hprim Hcred [Hupd]") as "(Hprim & #Hprop_lb & #Hprop_facts)".
     {
@@ -254,19 +254,18 @@ Proof.
       word.
     }
     iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-    instantiate (1:=(is_accepted_lb γsrv epoch (σg ++ [ghost_op]) ∗
-                                   is_proposal_lb γ epoch (σg ++ [ghost_op]) ∗
-                                   is_proposal_facts γ epoch (σg ++ [ghost_op]))%I).
+    instantiate (1:=(∃ σ, is_accepted_lb γsrv epoch (σ ++ [ghost_op]) ∗
+                                   is_proposal_lb γ epoch (σ ++ [ghost_op]) ∗
+                                   is_proposal_facts γ epoch (σ ++ [ghost_op]))%I).
     iModIntro.
     iSplitL.
     {
-      iExists _; iFrame. rewrite fmap_snoc. done.
+      iExists _; iFrame. rewrite fmap_snoc. rewrite Hre. done.
     }
+    iExists _.
     iFrame "Hlb #".
   }
-  iIntros (reply_sl q) "(Hreply & Hstate & #Hprimary_acc_lb)".
-  iDestruct "Hprimary_acc_lb" as "(Hprimary_acc_lb & Hprop_lb & Hprop_facts)".
-  rewrite -fmap_snoc.
+  iIntros (reply_sl q waitFn) "(Hreply & Hstate & HwaitSpec)".
 
   wp_pures.
   wp_storeField.
@@ -301,6 +300,11 @@ Proof.
   }
 
   wp_pures.
+
+  wp_apply "HwaitSpec".
+  iIntros "Hprimary_acc_lb".
+  iDestruct "Hprimary_acc_lb" as (σ) "(Hprimary_acc_lb & Hprop_lb & Hprop_facts)".
+
   wp_apply (wp_NewWaitGroup_free).
   iIntros (wg) "Hwg".
   wp_pures.
@@ -318,7 +322,7 @@ Proof.
                                ⌜backups !! int.nat i = Some γsrv'⌝ ∗
                                readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
                                □ if (decide (err = U64 0)) then
-                                 is_accepted_lb γsrv' epoch (σg ++ [ghost_op])
+                                 is_accepted_lb γsrv' epoch (σ ++ [ghost_op])
                                else
                                  True
                              )%I
@@ -382,6 +386,9 @@ Proof.
       { done. }
       { done. }
       iDestruct "Hclerk_rpc" as "[[Hclerk_rpc Hepoch_lb] _]".
+
+      (* FIXME: call ApplyAsBackup in a for loop *)
+
       wp_apply (wp_Clerk__ApplyAsBackup with "[$Hclerk_rpc $Hepoch_lb]").
       {
         iFrame "Hprop_lb Hprop_facts #".

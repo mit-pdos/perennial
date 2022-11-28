@@ -159,6 +159,7 @@ Definition own_replica_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
 Definition own_primary_ghost γsys γsrv epoch σ : iProp Σ :=
   "Htoks" ∷ own_escrow_toks γsrv epoch ∗
   "Hprop" ∷ (own_tok γsrv epoch ∨ is_tok γsrv epoch ∗ own_proposal γsys epoch σ) ∗
+  "#Hp_prop_lb" ∷ is_proposal_lb γsys epoch σ ∗
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
 .
 
@@ -178,8 +179,7 @@ Proof.
   { set_solver. }
   iDestruct "Htok" as "[%Hbad|Htok]".
   { exfalso. word. }
-  iFrame "Htok".
-  iFrame "Hprop_facts".
+  iFrame "Htok Hprop_facts Hprop_lb".
   iApply "Htoks".
   {
     iModIntro.
@@ -203,10 +203,10 @@ Lemma ghost_primary_accept γsys γsrv epoch σ' σ :
   own_primary_ghost γsys γsrv epoch σ'.
 Proof.
   intros Hlength_le.
-  iIntros "#Hprop_facts Hprop_lb".
+  iIntros "#Hprop_facts #Hprop_lb".
   iNamed 1.
   iFrame "Hprop_facts".
-  iFrame "Htoks".
+  iFrame "Htoks #".
   iDestruct "Hprop" as "[$|Hprop]".
   { done. }
   iRight.
@@ -872,13 +872,12 @@ Definition become_primary_escrow γsys γsrv epoch σ : iProp Σ :=
 Lemma ghost_become_primary γsys γsrv epoch σprop σ :
   £ 1 -∗
   become_primary_escrow γsys γsrv epoch σprop -∗
-  is_proposal_lb γsys epoch σ -∗
   own_primary_ghost γsys γsrv epoch σ ={↑pbN}=∗
   own_primary_ghost γsys γsrv epoch σ ∗
   is_tok γsrv epoch
 .
 Proof.
-  iIntros "Hlc #Hescrow #Hproposal_lb".
+  iIntros "Hlc #Hescrow".
   iNamed 1.
   iInv "Hescrow" as "Hown" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hown" ) as "Hown".
@@ -919,7 +918,7 @@ Proof.
   apply mono_list_auth_dfrac_op_valid_L in Heq.
   destruct Heq as [_ Heq].
   rewrite Heq in Hineq|-*.
-  iDestruct (own_valid_2 with "Hprop2 Hproposal_lb") as %Hineq2.
+  iDestruct (own_valid_2 with "Hprop2 Hp_prop_lb") as %Hineq2.
   rewrite singleton_op -Cinr_op in Hineq2.
   rewrite singleton_valid Cinr_valid in Hineq2.
   apply mono_list_both_valid_L in Hineq2.

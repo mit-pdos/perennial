@@ -236,7 +236,7 @@ Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
 
 Implicit Type (own_StateMachine: u64 → list OpType → bool → (u64 → list OpType → bool → iProp Σ) → iProp Σ).
 (* StateMachine *)
-Definition is_ApplyFn own_StateMachine (applyFn:val) (P:u64 → list (OpType) → bool → iProp Σ) : iProp Σ :=
+Definition is_ApplyFn own_StateMachine (startApplyFn:val) (P:u64 → list (OpType) → bool → iProp Σ) : iProp Σ :=
   ∀ op_sl (epoch:u64) (σ:list OpType) (op_bytes:list u8) (op:OpType) Q,
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
@@ -244,13 +244,13 @@ Definition is_ApplyFn own_StateMachine (applyFn:val) (P:u64 → list (OpType) �
         (P epoch σ false ={⊤}=∗ P epoch (σ ++ [op]) false ∗ Q) ∗
         own_StateMachine epoch σ false P
   }}}
-    applyFn (slice_val op_sl)
+    startApplyFn (slice_val op_sl)
   {{{
-        reply_sl q,
-        RET (slice_val reply_sl);
+        reply_sl q (waitFn:goose_lang.val),
+        RET (slice_val reply_sl, waitFn);
         is_slice_small reply_sl byteT q (compute_reply σ op) ∗
         own_StateMachine epoch (σ ++ [op]) false P ∗
-        Q
+        (∀ Ψ, (Q -∗ Ψ #()) -∗ WP waitFn #() {{ Ψ }})
   }}}
 .
 
@@ -299,16 +299,16 @@ Definition accessP_fact own_StateMachine P : iProp Σ :=
 
 Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
   ∃ (applyFn:val) (getFn:val) (setFn:val),
-  "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "Apply"] applyFn) ∗
+  "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "StartApply"] applyFn) ∗
   "#HapplySpec" ∷ is_ApplyFn own_StateMachine applyFn P ∗
 
   "#HsetState" ∷ readonly (sm ↦[pb.StateMachine :: "SetStateAndUnseal"] setFn) ∗
   "#HsetStateSpec" ∷ is_SetStateAndUnseal_fn own_StateMachine setFn P ∗
 
   "#HgetState" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getFn) ∗
-  "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P ∗
+  "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P
 
-  "#HaccP" ∷ accessP_fact own_StateMachine P.
+  (* "#HaccP" ∷ accessP_fact own_StateMachine P*).
 
 (* Hides the ghost part of the log; this is suitable for exposing as part of
    interfaces for users of the library. For now, it's only part of the crash
@@ -319,7 +319,7 @@ Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
 .
 
 Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
-  ∃ (epoch:u64) σg (nextIndex:u64) (sealed:bool) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t),
+  ∃ (epoch:u64) σphys (nextIndex:u64) (sealed:bool) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t),
   (* physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
@@ -332,13 +332,8 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost γ γsrv) ∗
 
   (* ghost-state *)
-  "Hstate" ∷ own_StateMachine epoch (fst<$>σg) sealed (own_Server_ghost γ γsrv) ∗
-  "%Hσ_nextIndex" ∷ ⌜length σg = int.nat nextIndex⌝ ∗
-  (* ghost witnesses for convenience; we could insist on extracting them from own_Server_ghost *)
-  "#Hs_acc_lb" ∷ is_accepted_lb γsrv epoch σg ∗
-  "#Hs_prop_lb" ∷ is_proposal_lb γ epoch σg ∗
-  "#Hs_prop_facts" ∷ is_proposal_facts γ epoch σg ∗
-  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
+  "Hstate" ∷ own_StateMachine epoch σphys sealed (own_Server_ghost γ γsrv) ∗
+  "%Hσ_nextIndex" ∷ ⌜length σphys = int.nat nextIndex⌝ ∗
 
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (

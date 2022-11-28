@@ -57,38 +57,7 @@ Proof.
 
   iAssert (_) with "His_sm" as "His_sm2".
   iNamed "His_sm2".
-  iMod ("HaccP" with "[] Hstate") as "Hstate".
-  {
-    instantiate (1:=
-                   (
-                     ∃ σg,
-        "%Hσ" ∷ ⌜σg.*1 = σ⌝ ∗
-        "#Hs_acc_lb" ∷ is_accepted_lb γsrv epoch σg ∗
-        "#Hs_prop_lb" ∷ is_proposal_lb γ epoch σg ∗
-        "#Hs_prop_facts" ∷ is_proposal_facts γ epoch σg ∗
-        "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch)%I
-    ).
-    iIntros "Hghost".
-    iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
-    iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
-    iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb".
-    iNamed "Hghost".
-    iSplitL.
-    {
-      iModIntro. iExists _.
-      iFrame "∗#%".
-    }
-    iModIntro.
-    iExists _.
-    iFrame "#%".
-    done.
-  }
-  wp_apply (wpc_nval_elim_wp with "Hstate").
-  { done. }
-  { done. }
   wp_storeField.
-  iIntros "[Hstate H1]".
-  iNamed "H1".
   wp_pures.
 
   iApply "HΦ".
@@ -108,12 +77,6 @@ Proof.
     iExact "clerks".
   }
   iSplitR; first iExact "His_sm".
-  iFrame "#".
-  rewrite Hσ.
-  iFrame "Hstate".
-  iPureIntro.
-  rewrite -(fmap_length fst).
-  rewrite Hσ.
   done.
 Qed.
 

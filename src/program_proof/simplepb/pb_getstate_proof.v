@@ -204,18 +204,9 @@ Proof.
   {
     iIntros "Hghost".
     iDestruct "Hghost" as (?) "(%Heq & Hghost & Hprim)".
-    iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %Hσeq.
-    {
-      apply (f_equal length) in Heq.
-      rewrite fmap_length in Heq.
-      rewrite fmap_length in Heq.
-      done.
-    }
-    rewrite Hσeq.
     iDestruct (ghost_epoch_lb_ineq with "Hepoch_lb Hghost") as "#Hepoch_ineq".
     iMod (ghost_seal with "Hghost") as "Hghost".
     iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
-    replace (σ) with (σg).
     iSplitL "Hghost Hprim".
     {
       iExists _.
@@ -225,19 +216,29 @@ Proof.
     iModIntro.
 
     iCombine "Hacc_ro Hepoch_ineq" as "HH".
-    iExact "HH".
+    instantiate (1:=(∃ σ, is_accepted_ro γsrv epoch σ ∗
+                                         is_proposal_lb γ epoch σ ∗
+                                         is_proposal_facts γ epoch σ ∗
+                                         ⌜σ.*1 = σphys⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
+    iExists _.
+    iFrame "#".
+    admit. (* TODO: get knowledge of the proposal; should be trivial by
+              unfolding the own_replica_ghost or by adding a lemma *)
   }
   iIntros (??) "(Hsnap_sl & %Hsnap_enc & [Hstate HQ])".
-  iDestruct "HQ" as "[#Hacc_ro %Hineq]".
+  iDestruct "HQ" as (?) "(#Hacc_ro &  #Hprop_lb & #Hprop_facts & %Hσeq_phys & %Hineq)".
   wp_pures.
   wp_loadField.
   wp_pures.
   wp_loadField.
 
   iLeft in "HΨ".
-  iDestruct ("HΨ" with "[% //] [%] Hacc_ro Hs_prop_facts Hs_prop_lb [%//] [%]") as "HΨ".
+  iDestruct ("HΨ" with "[% //] [%] Hacc_ro Hprop_facts Hprop_lb [%] [%]") as "HΨ".
   { word. }
-  { word. }
+  { rewrite Hσeq_phys. done. }
+  { apply (f_equal length) in Hσeq_phys.
+    rewrite fmap_length in Hσeq_phys.
+    word. }
 
   wp_apply (release_spec with "[-Hsnap_sl HΨ HΦ]").
   {
@@ -256,9 +257,13 @@ Proof.
   iExists _.
   iFrame.
   simpl.
+
+  apply (f_equal length) in Hσeq_phys.
+  rewrite fmap_length in Hσeq_phys.
+  rewrite Hσeq_phys.
   rewrite Hσ_nextIndex.
   replace (U64 (int.nat nextIndex)) with (nextIndex) by word.
   iFrame.
-Qed.
+Admitted.
 
 End pb_getstate_proof.

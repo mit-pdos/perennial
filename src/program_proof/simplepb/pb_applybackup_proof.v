@@ -165,7 +165,7 @@ Proof.
   iNamed "HΨ".
   wp_apply (wp_Server__isEpochStale with "[$Hepoch HisSm $Hepoch_lb Hstate]").
   {
-    iNamed "HisSm". iFrame "HaccP Hstate".
+    iNamed "HisSm". admit. iFrame "Hstate".
   }
   iIntros "(%Hineq & [Hepoch Hstate])".
   wp_if_destruct.
@@ -240,40 +240,44 @@ Proof.
     assert (args.(ApplyAsBackupArgs.index) = nextIndex) as Hindex_eq by naive_solver.
     iIntros "Hghost".
     iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
-    iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
-    { rewrite -(fmap_length fst). rewrite -(fmap_length fst).
-      by f_equal. }
     iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
-    { rewrite Hindex_eq in Hσ_index.
+    {
+      rewrite Hindex_eq in Hσ_index.
       apply (f_equal length) in Hre.
+      rewrite Hσ_nextIndex in Hre.
+      rewrite Hre in Hσ_index.
+      rewrite fmap_length in Hσ_index.
       word.
     }
     { done. }
     iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
     { done. }
     { rewrite Hindex_eq in Hσ_index.
-      word. }
+      rewrite Happend.
+      rewrite app_length.
+      word.
+    }
     iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
-    {
-      rewrite Hσ_nextIndex. rewrite Hσ_index.
-      rewrite Hindex_eq.
+    { rewrite Hindex_eq in Hσ_index.
+      rewrite Happend.
+      rewrite app_length.
       word.
     }
     rewrite Happend.
     iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
     iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb2".
-    instantiate (1:=(⌜σ = σg ++ [(op, Q)]⌝ ∗ is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch σ)%I).
+    instantiate (1:=(is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch σ)%I).
     iModIntro.
 
     iSplitL.
     { iExists _; iFrame "Hghost".
       iFrame "Hprim".
-      by rewrite fmap_snoc. }
+      rewrite fmap_snoc.
+      by rewrite Hre. }
     replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
     iFrame "#".
-    done.
   }
-  iIntros (reply q) "(Hreply & Hstate & #Hlb)".
+  iIntros (reply q waitFn) "(Hreply & Hstate & HwaitSpec)".
   wp_pures.
   wp_loadField.
   wp_storeField.
@@ -283,17 +287,9 @@ Proof.
     iNext.
     iExists _, _, _, _, _, _, _.
     replace ([op]) with ([(op, Q).1]) by done.
-    rewrite -fmap_snoc.
     iFrame "Hstate ∗#".
     iSplitR.
     { iExists _, _, _; iFrame "#". }
-    iSplitR; last iFrame "#".
-    2:{
-      iDestruct "Hlb" as "(%Hre & Hlb1 & Hlb2)".
-      rewrite Hre.
-      replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
-      iFrame "#".
-    }
     iPureIntro.
     rewrite app_length.
     rewrite Hσ_nextIndex.
@@ -303,11 +299,14 @@ Proof.
   }
   wp_pures.
   iLeft in "HΨ".
+  admit.
+  (* TODO: apply wait spec *)
+  (*
   iApply "HΦ".
   iApply "HΨ".
   replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
   iDestruct "Hlb" as "(_ & _ & $)".
-  done.
-Qed.
+  done. *)
+Admitted.
 
 End pb_apply_proof.

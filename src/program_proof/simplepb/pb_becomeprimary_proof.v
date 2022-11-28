@@ -362,15 +362,13 @@ Proof.
     wp_pures.
     iApply fupd_wp.
     iMod ("HaccP" with "[Hlc] Hstate") as "Hstate".
-    {
+    { (* get is_tok to establish we're the primary *)
       iIntros "Hghost".
       iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
       rewrite Hepoch_eq.
       iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
       { set_solver. }
-      iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
-      { do 2 (rewrite -(fmap_length fst)). rewrite -Hre. done. }
-      iMod (ghost_become_primary with "Hlc Hprimary_escrow Hs_prop_lb Hprim") as "HH".
+      iMod (ghost_become_primary with "Hlc Hprimary_escrow Hprim") as "HH".
       iDestruct "HH" as "[Hprim #His_tok]".
       instantiate (1:=is_tok γsrv epoch).
       iMod "Hmask".
