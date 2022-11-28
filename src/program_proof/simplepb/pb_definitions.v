@@ -338,7 +338,16 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
             ∃ (clerks:list loc) (backups:list pb_server_names),
-            "#Htok_used_witness" ∷ is_tok γsrv epoch ∗
+            (* Because the state machine is async, we might not have "is_tok"
+               right when we become leader, but we will definitely have a fupd
+               that will tell us is_tok the next time we can access
+               own_primary_ghost. Also need later credit because of the
+               invariants involved here. *)
+            "#Htok_used_witness" ∷ □(∀ σ',
+                                      £ 1 -∗
+                                      own_primary_ghost γ γsrv epoch σ' ={↑pbN}=∗
+                                      own_primary_ghost γ γsrv epoch σ' ∗
+                                      is_tok γsrv epoch) ∗
             "%Hconf_clerk_len" ∷ ⌜length clerks = length (backups)⌝ ∗
             "#Hconf" ∷ is_epoch_config γ epoch (γsrv :: backups) ∗
                      (* FIXME: ptrT vs refT (struct.t Clerk) *)
@@ -356,49 +365,27 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv own_StateMachine) ∗
   "#Hsys_inv" ∷ sys_inv γ.
 
-Lemma wp_Server__isEpochStale {stk} (s:loc) γ γsrv (currEpoch epoch:u64) σ sealed own_StateMachine:
+Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :
   {{{
-        is_epoch_lb γsrv epoch ∗
-        s ↦[pb.Server :: "epoch"] #currEpoch ∗
-        accessP_fact own_StateMachine (own_Server_ghost γ γsrv) ∗
-        own_StateMachine currEpoch σ sealed (own_Server_ghost γ γsrv)
+        s ↦[pb.Server :: "epoch"] #currEpoch
   }}}
     pb.Server__isEpochStale #s #epoch @ stk
   {{{
-        RET #(bool_decide (int.Z epoch < int.Z currEpoch));
-        ⌜int.nat currEpoch ≥ int.nat epoch⌝ ∗
-        s ↦[pb.Server :: "epoch"] #currEpoch ∗
-        own_StateMachine currEpoch σ sealed (own_Server_ghost γ γsrv)
+        RET #(negb (bool_decide (int.Z epoch = int.Z currEpoch)));
+        s ↦[pb.Server :: "epoch"] #currEpoch
   }}}
 .
 Proof.
-  iIntros (Φ) "(#Hlb & HcurrEpoch & #HaccP & Hstate) HΦ".
+  iIntros (Φ) "HcurrEpoch HΦ".
   wp_call.
-  iMod ("HaccP" $! (⌜int.nat currEpoch ≥ int.nat epoch⌝)%I with "[] Hstate") as "HH".
-  {
-    iIntros "H".
-    iDestruct "H" as (?) "[%Hre H]".
-    iDestruct "H" as "[H HQ]".
-    iNamed "H".
-    iDestruct (mono_nat_lb_own_valid with "Hepoch_ghost Hlb") as %[_ Hineq].
-    iModIntro.
-    iSplitL; last done.
-    iExists _; iFrame "∗#%".
-  }
-  unfold wpc_nval.
-  wp_bind (struct.loadF _ _ _).
-  iApply (wpc_wp _ _ _ _ (True%I)).
-  wpc_apply "HH".
-  { done. }
-  { done. }
-  iCache with "".
-  { done. }
-  wpc_loadField.
-  iIntros "[Hstate %Hineq]".
+  wp_loadField.
   wp_pures.
   iModIntro.
-  iApply ("HΦ").
-  iFrame "∗%".
+  iSpecialize ("HΦ" with "HcurrEpoch").
+  iExactEq "HΦ".
+  repeat f_equal.
+  apply bool_decide_ext.
+  naive_solver.
 Qed.
 
 End pb_definitions.

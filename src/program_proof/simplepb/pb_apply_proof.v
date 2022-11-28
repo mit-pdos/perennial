@@ -167,7 +167,8 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
-  wp_pure1_credit "Hcred".
+  wp_pure1_credit "Hcred1".
+  wp_pure1_credit "Hcred2".
   wp_pures.
   wp_loadField.
   wp_if_destruct.
@@ -226,16 +227,17 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl Hcred Hupd]").
+  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl Hcred1 Hcred2 Hupd]").
   {
     iSplitL ""; first done.
     iIntros "Hghost".
     iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
-    (* iDestruct (ghost_helper1 with "Hs_prop_lb Hghost") as %->.
-    { do 2 (rewrite -(fmap_length fst)).
-      rewrite Hre. done. } *)
+    iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+    { set_solver. }
+    iMod ("Htok_used_witness" with "Hcred1 Hprim") as "[Hprim #His_tok]".
+    iMod "Hmask".
 
-    iMod (ghost_propose with "Htok_used_witness Hprim Hcred [Hupd]") as "(Hprim & #Hprop_lb & #Hprop_facts)".
+    iMod (ghost_propose with "His_tok Hprim Hcred2 [Hupd]") as "(Hprim & #Hprop_lb & #Hprop_facts)".
     {
       iMod "Hupd".
       iModIntro.
@@ -287,14 +289,10 @@ Proof.
     iExists _, _, _, _, _, _, _.
     iFrame "Hstate ∗#".
     iSplitL "".
-    { iExists _, _, _; iFrame "#". }
-    iSplitL "".
-    {
-      iPureIntro.
+    { iPureIntro.
       rewrite app_length.
       simpl.
-      word.
-    }
+      word. }
     iExists _, _.
     iFrame "#%".
   }
@@ -303,7 +301,7 @@ Proof.
 
   wp_apply "HwaitSpec".
   iIntros "Hprimary_acc_lb".
-  iDestruct "Hprimary_acc_lb" as (σ) "(Hprimary_acc_lb & Hprop_lb & Hprop_facts)".
+  iDestruct "Hprimary_acc_lb" as (σ) "(#Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
 
   wp_apply (wp_NewWaitGroup_free).
   iIntros (wg) "Hwg".
@@ -388,18 +386,20 @@ Proof.
       iDestruct "Hclerk_rpc" as "[[Hclerk_rpc Hepoch_lb] _]".
 
       (* FIXME: call ApplyAsBackup in a for loop *)
+      wp_pures.
+      wp_forBreak_cond.
+      wp_pures.
 
       wp_apply (wp_Clerk__ApplyAsBackup with "[$Hclerk_rpc $Hepoch_lb]").
       {
         iFrame "Hprop_lb Hprop_facts #".
         iPureIntro.
         rewrite last_app.
-        rewrite app_length.
-        rewrite Hσ_nextIndex.
         simpl.
         split; eauto.
         split; eauto.
-        split; first done.
+        split; eauto.
+        rewrite app_length.
         word.
       }
       iIntros (err) "#Hpost".

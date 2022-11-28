@@ -123,8 +123,8 @@ Proof.
 
   iAssert (_) with "HisSm" as "HisSm2".
   iNamed "HisSm2".
-  wp_apply (wp_Server__isEpochStale with "[$Hepoch_lb $HaccP $Hstate $Hepoch]").
-  iIntros "(%Hepoch_ge & Hepoch & Hstate)".
+  wp_apply (wp_Server__isEpochStale with "Hepoch").
+  iIntros "Hepoch".
   wp_if_destruct.
   { (* stale epoch *)
     wp_loadField.
@@ -358,42 +358,29 @@ Proof.
     iSplitR; first done.
     iMod (readonly_alloc_1 with "Hclerks_sl") as "Hclerks_sl".
     iModIntro.
-    wp_pure1_credit "Hlc".
     wp_pures.
-    iApply fupd_wp.
-    iMod ("HaccP" with "[Hlc] Hstate") as "Hstate".
-    { (* get is_tok to establish we're the primary *)
-      iIntros "Hghost".
-      iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
-      rewrite Hepoch_eq.
-      iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-      { set_solver. }
-      iMod (ghost_become_primary with "Hlc Hprimary_escrow Hprim") as "HH".
-      iDestruct "HH" as "[Hprim #His_tok]".
-      instantiate (1:=is_tok γsrv epoch).
-      iMod "Hmask".
-      iModIntro.
-      iSplitL; last iFrame "His_tok".
-      iExists _.
-      iFrame.
-      done.
-    }
-    iModIntro.
-    wp_bind (struct.loadF _ _ _)%I.
-    wp_apply (wpc_nval_elim_wp with "Hstate").
-    { done. }
-    { done. }
+
     wp_loadField.
-    iIntros "[Hstate #His_tok]".
     wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
       iExists _, _, _, _, _, _, _.
       iFrame "HisPrimary ∗ HisSm #%".
+
+
       iExists _, _.
       rewrite Hepoch_eq.
       iFrame "Hclerks_sl Hconf".
+
+      iSplitL "".
+      {
+        iModIntro.
+        iIntros (?) "Hlc Hprim".
+        iMod (ghost_become_primary with "Hlc Hprimary_escrow Hprim") as "$".
+        by iModIntro.
+      }
+
       iSplitL ""; first done.
       rewrite app_nil_r.
       rewrite take_ge; last first.

@@ -156,11 +156,10 @@ Proof.
   iNamed "Hargs".
   wp_loadField.
 
-  (* FIXME: separate lemma; no-op spec for isEpochStale *)
-  wp_call.
-  wp_loadField.
+  wp_apply (wp_Server__isEpochStale with "Hepoch").
+  iIntros "Hepoch".
   wp_if_destruct.
-  { (* *)
+  { (* reply with error *)
     wp_loadField.
     wp_apply (release_spec with "[-HΦ HΨ]").
     {
@@ -207,6 +206,7 @@ Proof.
     iDestruct (ghost_epoch_lb_ineq with "Hepoch_lb Hghost") as "#Hepoch_ineq".
     iMod (ghost_seal with "Hghost") as "Hghost".
     iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
+    iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hprop_lb Hprop_facts]".
     iSplitL "Hghost Hprim".
     {
       iExists _.
@@ -222,8 +222,7 @@ Proof.
                                          ⌜σ.*1 = σphys⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
     iExists _.
     iFrame "#".
-    admit. (* TODO: get knowledge of the proposal; should be trivial by
-              unfolding the own_replica_ghost or by adding a lemma *)
+    done.
   }
   iIntros (??) "(Hsnap_sl & %Hsnap_enc & [Hstate HQ])".
   iDestruct "HQ" as (?) "(#Hacc_ro &  #Hprop_lb & #Hprop_facts & %Hσeq_phys & %Hineq)".
@@ -264,6 +263,6 @@ Proof.
   rewrite Hσ_nextIndex.
   replace (U64 (int.nat nextIndex)) with (nextIndex) by word.
   iFrame.
-Admitted.
+Qed.
 
 End pb_getstate_proof.

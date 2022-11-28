@@ -163,11 +163,8 @@ Proof.
   wp_loadField.
   wp_bind (Server__isEpochStale _ _).
   iNamed "HΨ".
-  wp_apply (wp_Server__isEpochStale with "[$Hepoch HisSm $Hepoch_lb Hstate]").
-  {
-    iNamed "HisSm". admit. iFrame "Hstate".
-  }
-  iIntros "(%Hineq & [Hepoch Hstate])".
+  wp_apply (wp_Server__isEpochStale with "Hepoch").
+  iIntros "Hepoch".
   wp_if_destruct.
   { (* return error: stale *)
     wp_loadField.
@@ -298,15 +295,16 @@ Proof.
     word.
   }
   wp_pures.
+  wp_apply "HwaitSpec".
+  iIntros "#Hlb".
+  wp_pures.
+
   iLeft in "HΨ".
-  admit.
-  (* TODO: apply wait spec *)
-  (*
   iApply "HΦ".
   iApply "HΨ".
   replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
-  iDestruct "Hlb" as "(_ & _ & $)".
-  done. *)
-Admitted.
+  iDestruct "Hlb" as "(_ & $)".
+  done.
+Qed.
 
 End pb_apply_proof.

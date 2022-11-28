@@ -322,7 +322,7 @@ Definition Server__Apply: val :=
    returns true iff stale *)
 Definition Server__isEpochStale: val :=
   rec: "Server__isEpochStale" "s" "epoch" :=
-    struct.loadF Server "epoch" "s" > "epoch".
+    struct.loadF Server "epoch" "s" ≠ "epoch".
 
 (* called on backup servers to apply an operation so it is replicated and
    can be considered committed by primary. *)
