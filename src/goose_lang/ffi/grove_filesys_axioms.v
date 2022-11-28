@@ -36,19 +36,34 @@ Axiom wpc_Read : ∀ filename (dq:dfrac) content,
       filename f↦{dq} content
   }}}.
 
-Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) dq {stk E},
+Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) q {stk E},
   {{{
       filename f↦ content_old ∗
-      typed_slice.is_slice content_sl byteT dq content
+      typed_slice.is_slice_small content_sl byteT q content
   }}}
     Write #(str filename) (slice_val content_sl) @ stk ; E
   {{{
        RET #(); filename f↦ content ∗
-      typed_slice.is_slice content_sl byteT dq content
+      typed_slice.is_slice_small content_sl byteT q content
   }}}
   {{{
       filename f↦ content_old ∨
       filename f↦ content
+  }}}.
+
+Axiom wpc_AtomicAppend : ∀ filename content_old content (content_sl:Slice.t) q,
+  {{{
+      filename f↦ content_old ∗
+      typed_slice.is_slice_small content_sl byteT q content
+  }}}
+    AtomicAppend #(str filename) (slice_val content_sl) @ ⊤
+  {{{
+       RET #(); filename f↦ (content_old ++ content) ∗
+      typed_slice.is_slice_small content_sl byteT q (content_old ++ content)
+  }}}
+  {{{
+      filename f↦ content_old ∨
+      filename f↦ (content_old ++ content)
   }}}.
 
 End filesys.

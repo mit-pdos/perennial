@@ -1,6 +1,9 @@
-pb:
-[ ] clean up namespaces
-[ ] move apply proof to its own file
-[ ] pure admits
-[ ] marshalling admits
-[ ] specs for getstate/setstate
+[ ] `src/goose_lang/lib/waitgroup/waitgroup.v`; some pure admits, and
+ one admitted proof for WaitGroup.Wait().
+
+[ ] `src/program_proof/simplepb/pb_marshal_proof.v`; admits in
+ wp_DecodePrimaryArgs (revolving around for loop for unmarshaling list of
+ hostnames).
+
+[ ] Axiomatized ffi: `src/goose_lang/ffi/grove_filesys_axioms.v`.
+ 3 operations: Read, Write, AtomicAppend.
