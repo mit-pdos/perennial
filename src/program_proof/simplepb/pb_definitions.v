@@ -307,8 +307,7 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
 
   "#HgetState" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getFn) ∗
   "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P
-
-  (* "#HaccP" ∷ accessP_fact own_StateMachine P*).
+.
 
 (* Hides the ghost part of the log; this is suitable for exposing as part of
    interfaces for users of the library. For now, it's only part of the crash

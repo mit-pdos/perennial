@@ -50,12 +50,9 @@ From Perennial.program_proof.fencing Require
 From Perennial.program_proof.ctrexample Require
      client server closed.
 
-(* FIXME: fix proof to account with separate `StartApply` and `waitForDurable` *)
 (* SimplePB *)
-(* From Perennial.program_proof.simplepb Require *)
-     (* admin_proof *)
-     (* state_proof *)
-     (* pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof pb_apply_proof. *)
+From Perennial.program_proof.simplepb Require
+     admin_proof pb_start_proof.
 
 From Perennial.program_proof.mpaxos Require
      apply_proof.

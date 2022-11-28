@@ -256,9 +256,11 @@ Proof.
       word.
     }
     iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-    instantiate (1:=(∃ σ, is_accepted_lb γsrv epoch (σ ++ [ghost_op]) ∗
-                                   is_proposal_lb γ epoch (σ ++ [ghost_op]) ∗
-                                   is_proposal_facts γ epoch (σ ++ [ghost_op]))%I).
+    instantiate (1:=(∃ σ,
+                        ⌜σ.*1 = σphys⌝ ∗
+                        is_accepted_lb γsrv epoch (σ ++ [ghost_op]) ∗
+                        is_proposal_lb γ epoch (σ ++ [ghost_op]) ∗
+                        is_proposal_facts γ epoch (σ ++ [ghost_op]))%I).
     iModIntro.
     iSplitL.
     {
@@ -266,6 +268,7 @@ Proof.
     }
     iExists _.
     iFrame "Hlb #".
+    done.
   }
   iIntros (reply_sl q waitFn) "(Hreply & Hstate & HwaitSpec)".
 
@@ -301,7 +304,7 @@ Proof.
 
   wp_apply "HwaitSpec".
   iIntros "Hprimary_acc_lb".
-  iDestruct "Hprimary_acc_lb" as (σ) "(#Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
+  iDestruct "Hprimary_acc_lb" as (σ) "(%Hσeq_phys & #Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
 
   wp_apply (wp_NewWaitGroup_free).
   iIntros (wg) "Hwg".
@@ -398,16 +401,40 @@ Proof.
         simpl.
         split; eauto.
         split; eauto.
-        split; eauto.
-        rewrite app_length.
+        split.
+        { rewrite app_length. simpl.
+          erewrite <- fmap_length.
+          erewrite Hσeq_phys.
+          word.
+        }
         word.
       }
       iIntros (err) "#Hpost".
+
+      wp_pures.
+      destruct bool_decide.
+      {
+        wp_pures.
+        iLeft.
+        iFrame "∗".
+        by iPureIntro.
+      }
+      wp_if_destruct.
+      {
+        wp_pures.
+        iLeft.
+        iFrame "∗".
+        by iPureIntro.
+      }
+
       unfold SliceSet.
       wp_pures.
       unfold slice.ptr.
       wp_pures.
       wp_store.
+      iRight.
+      iModIntro.
+      iSplitR; first by iPureIntro.
 
       iMod (readonly_alloc_1 with "Herr_ptr") as "#Herr_ptr".
       wp_apply (wp_WaitGroup__Done with "[$Hwg_tok $His_wg Herr_ptr Hpost]").
@@ -453,7 +480,7 @@ Proof.
               "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (σg++[ghost_op]))
+                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (σ++[ghost_op]))
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -610,6 +637,8 @@ Proof.
         lia. }
       { done. }
     }
+    iModIntro.
+    rewrite Hσeq_phys.
     done.
   }
 Qed.
