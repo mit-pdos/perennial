@@ -91,6 +91,7 @@ Proof.
 
   iDestruct "Hdur" as (old_data) "[Hdur %Hpure]".
   iApply wpc_cfupd.
+  iDestruct (is_slice_to_small with "Hslice") as "Hslice".
   wpc_apply (wpc_Write with "[Hdur Hslice]").
   {
     iFrame.
