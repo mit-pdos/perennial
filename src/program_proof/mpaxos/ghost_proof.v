@@ -718,13 +718,11 @@ Proof.
   { naive_solver. }
 Qed.
 
-Lemma validSet_size (W:gset nat) :
-  validSet W →
-  size W ≤ length config.
+Lemma set_size_all_lt (W : gset nat) n:
+ (∀ s : nat, s ∈ W → s < n) → size W ≤ n.
 Proof.
-  rewrite /validSet.
   revert W.
-  induction (length config) as [| n IHn] => W Hvalid.
+  induction n as [| n IHn] => W Hvalid.
   - destruct W as [| x W] using set_ind_L; auto.
     exfalso. feed pose proof (Hvalid x); first by set_solver. lia.
   - transitivity (size ({[n]} ∪ (W ∖ {[n]}))).
@@ -733,6 +731,13 @@ Proof.
     feed pose proof (IHn (W ∖ {[n]})).
     { set_unfold. intros x (Hin&?). feed pose proof (Hvalid x); auto. lia. }
     lia.
+Qed.
+
+Lemma validSet_size (W:gset nat) :
+  validSet W →
+  size W ≤ length config.
+Proof.
+  rewrite /validSet. apply set_size_all_lt.
 Qed.
 
 Definition vote_inv γsys := inv sysN

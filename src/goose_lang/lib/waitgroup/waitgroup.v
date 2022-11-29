@@ -174,6 +174,28 @@ Qed.
 
 Local Opaque load_ty store_ty.
 
+Lemma u64_set_size_all_lt (W : gset u64) (n : nat) :
+ (∀ s : u64, s ∈ W → int.nat s < n)%Z → (size W ≤ n)%Z.
+Proof.
+  revert W.
+  induction n as [| n IHn] => W Hvalid.
+  - destruct W as [| x W] using set_ind_L; auto.
+    { rewrite size_empty. lia. }
+    exfalso. feed pose proof (Hvalid x); first by set_solver. lia.
+  - transitivity (size ({[U64 n]} ∪ (W ∖ {[U64 n]}))).
+    { apply Nat2Z.inj_le. apply subseteq_size. set_unfold. intros x. destruct (decide (x = U64 n)); auto. }
+    rewrite size_union ?size_singleton; last by set_solver.
+    refine (_ (IHn (W ∖ {[U64 n]}) _)); first lia.
+    { set_unfold. intros x (Hin&Hneq). feed pose proof (Hvalid x); auto.
+      cut (int.nat x ≠ n); first lia.
+      intros Heq.
+      move: Hneq.
+      rewrite -Heq.
+      rewrite Z2Nat.id; last by word.
+      rewrite /U64 word.of_Z_unsigned. auto.
+    }
+Qed.
+
 Lemma wp_WaitGroup__Add wg γ n P :
 int.nat (word.add n 1) > int.nat n →
   {{{
@@ -228,8 +250,10 @@ Proof.
     {
       replace ((word.add 1 (size remaining))) with (U64 (size (remaining ∪ {[total]}))); last first.
       {
-        (* TODO: pure reasoning: remaining has size less than n, and n is smaller than UINT64_MAX *)
-        admit.
+        rewrite size_union; last first.
+        { set_unfold. intros x' Hin Heq. specialize (Hremaining x' Hin). subst. lia. }
+        rewrite size_singleton.
+        apply u64_set_size_all_lt in Hremaining. word.
       }
       done.
     }
@@ -285,7 +309,7 @@ Proof.
   iFrame.
   iExists _, _; iFrame "#∗".
   done.
-Admitted.
+Qed.
 
 Lemma wp_WaitGroup__Done wg γ P n :
   {{{
@@ -326,8 +350,13 @@ Proof.
     }
     iSplitL "Hv".
     {
-      (* Pure reasoning; need to know that (size remaining) is less than UINT64_MAX *)
-      admit.
+      rewrite /named; iExactEq "Hv"; do 3 f_equal.
+      rewrite size_difference ?size_singleton; last by set_solver.
+      eapply u64_set_size_all_lt in Hremaining.
+      cut (size remaining ≠ 0%nat).
+      { intros. word. }
+      intros Heq0.
+      apply size_empty_inv in Heq0. set_solver.
     }
     iSplitL "Htoks Htok".
     {
@@ -359,7 +388,7 @@ Proof.
   iIntros.
   iApply "HΦ".
   done.
-Admitted.
+Qed.
 
 Lemma wp_WaitGroup__Wait wg γ P n :
   {{{
