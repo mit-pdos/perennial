@@ -182,7 +182,7 @@ Proof.
       wp_pures.
       iApply "HΦ".
       iApply "HΨ".
-      { iFrame "#". done. }
+      iFrame "#". done.
     }
     iAssert (_) with "HisSm" as "#HisSm2".
     iNamed "HisSm2".

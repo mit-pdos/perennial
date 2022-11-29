@@ -340,7 +340,6 @@ Proof.
         f_equal.
         word.
       }
-      Check lookup_drop.
       replace (int.nat i) with (int.nat i + 0)%nat by word.
       rewrite -(lookup_drop _ _ 0).
       rewrite Hdrop.

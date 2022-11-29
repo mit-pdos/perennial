@@ -330,6 +330,9 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   (* state-machine callback specs *)
   "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost γ γsrv) ∗
 
+  (* epoch lower bound *)
+  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
+
   (* ghost-state *)
   "Hstate" ∷ own_StateMachine epoch σphys sealed (own_Server_ghost γ γsrv) ∗
   "%Hσ_nextIndex" ∷ ⌜length σphys = int.nat nextIndex⌝ ∗
