@@ -77,8 +77,12 @@ Proof.
     iExact "clerks".
   }
   iSplitR; first iExact "His_sm".
+
+  (* FIXME: need is_epoch_lb γsrv epoch upon initialization. Can put it as a
+     second "synchronous" predicate in own_StateMachine. *)
+  iSplitL; first admit.
   done.
-Qed.
+Admitted.
 
 Lemma wp_Server__Serve s host γ γsrv :
   {{{
