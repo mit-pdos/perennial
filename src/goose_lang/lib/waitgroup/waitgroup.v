@@ -399,7 +399,47 @@ Lemma wp_WaitGroup__Wait wg γ P n :
         RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜int.nat i ≥ int.nat n⌝ ∨ (P i)
   }}}.
 Proof.
-Admitted.
+  iIntros (Φ) "(Htotal'&#Hwg) HΦ".
+  iLöb as "IH".
+  wp_call.
+  iDestruct "Hwg" as (??) "(%HwgPair & Hlk)".
+  rewrite HwgPair.
+  wp_pures.
+
+  wp_apply (acquire_spec with "Hlk").
+  iIntros "[Hlocked Hown]".
+  wp_pures.
+  iNamed "Hown".
+  wp_load.
+  wp_pures.
+
+  iDestruct (ghost_var_agree with "[$] [$]") as %Heq.
+
+  iDestruct "HP" as "#HP".
+
+  wp_apply (release_spec with "[$Hlocked $Hlk Htotal Htoks Hv]").
+  {
+    iNext.
+    iExists _, _. iFrame.  eauto.
+  }
+  wp_pures.
+  wp_if_destruct.
+  { iModIntro. iApply "HΦ". iApply (big_sepS_impl with "[$]").
+    iModIntro. iIntros (x Hin) "[%Hge|[%Hinx|#HPx]]".
+    { auto. }
+    { exfalso.
+      eapply u64_set_size_all_lt in Hremaining.
+      assert (size remaining = 0%nat) as Hzero.
+      { word_cleanup.
+        rewrite /U64 in Heqb.
+        apply word.of_Z_inj_small in Heqb; try lia.
+      }
+      apply size_empty_inv in Hzero. set_solver.
+    }
+    eauto.
+  }
+  wp_apply ("IH" with "[$]"). eauto.
+Qed.
 
 End proof.
 End goose_lang.

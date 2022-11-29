@@ -1,4 +1,4 @@
-[ ] `src/goose_lang/lib/waitgroup/waitgroup.v`; some pure admits, and
+[X] `src/goose_lang/lib/waitgroup/waitgroup.v`; some pure admits, and
  one admitted proof for WaitGroup.Wait().
 
 [X] `src/program_proof/simplepb/pb_marshal_proof.v`; admits in
