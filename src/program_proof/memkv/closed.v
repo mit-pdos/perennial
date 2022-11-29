@@ -41,8 +41,8 @@ Lemma shard_coord_boot (shardId coordId : chan) σshard σcoord σclient (g : go
   ffi_initP σshard.(world) g.(global_world) →
   ffi_initP σcoord.(world) g.(global_world) →
   ffi_initP σclient.(world) g.(global_world) →
-  g.(global_world) !! shardId = Some (∅ : gset message) →
-  g.(global_world) !! coordId = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! shardId = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! coordId = Some (∅ : gset message) →
   dist_adequate_failstop [(shard_boot shardId, σshard);
                           (coord_boot coordId shardId, σcoord);
                           (client_boot coordId, σclient)] g (λ _, True).
@@ -163,10 +163,10 @@ Lemma bank_boot σlockshard σlockcoord σkvshard σkvcoord σclient (g : goose_
   ffi_initP σkvshard.(world) g.(global_world) →
   ffi_initP σkvcoord.(world) g.(global_world) →
   ffi_initP σclient.(world) g.(global_world) →
-  g.(global_world) !! lockshardId = Some (∅ : gset message) →
-  g.(global_world) !! lockcoordId = Some (∅ : gset message) →
-  g.(global_world) !! kvshardId = Some (∅ : gset message) →
-  g.(global_world) !! kvcoordId = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! lockshardId = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! lockcoordId = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! kvshardId = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! kvcoordId = Some (∅ : gset message) →
   dist_adequate_failstop [
                           (shard_boot lockshardId, σlockshard);
                           (coord_boot lockcoordId lockshardId, σlockcoord);

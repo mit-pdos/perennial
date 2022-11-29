@@ -22,6 +22,8 @@ Set Printing Projections.
 Inductive GroveOp :=
   (* Network ops *)
   ListenOp | ConnectOp | AcceptOp | SendOp | RecvOp |
+  (* File ops *)
+  FileReadOp | FileWriteOp | FileAppendOp |
   (* Time ops *)
   GetTscOp
 .
@@ -94,19 +96,27 @@ Qed.
 
 (** The global network state: a map from endpoint names to the set of messages sent to
 those endpoints. *)
-Definition grove_global_state : Type := gmap chan (gset message).
+Record grove_global_state : Type := {
+  grove_net: gmap chan (gset message);
+}.
+
+Global Instance grove_global_state_settable : Settable _ :=
+  settable! Build_grove_global_state <grove_net>.
+
+Global Instance grove_global_state_inhabited : Inhabited grove_global_state :=
+  populate {| grove_net := ∅; |}.
 
 (** The per-node state *)
 Record grove_node_state : Type := {
   grove_node_tsc : u64;
+  grove_node_files: gmap string (list byte);
 }.
 
 Global Instance grove_node_state_settable : Settable _ :=
-  settable! Build_grove_node_state <grove_node_tsc>.
+  settable! Build_grove_node_state <grove_node_tsc; grove_node_files>.
 
 Global Instance grove_node_state_inhabited : Inhabited grove_node_state :=
-  populate {| grove_node_tsc := 0; |}.
-
+  populate {| grove_node_tsc := 0; grove_node_files := ∅ |}.
 
 Definition grove_model : ffi_model.
 Proof.
@@ -115,7 +125,7 @@ Defined.
 
 (** Initial state where the endpoints exist but have not received any messages yet. *)
 Definition init_grove (channels : list chan) : grove_global_state :=
-  gset_to_gmap ∅ (list_to_set channels).
+  {| grove_net := gset_to_gmap ∅ (list_to_set channels) |}.
 
 Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
@@ -127,7 +137,7 @@ Section grove.
   Definition isFreshChan (σg : state * global_state) (c : option chan) : Prop :=
     match c with
     | None => True (* failure (to allocate a channel) is always an option *)
-    | Some c => σg.2.(global_world) !! c = None
+    | Some c => σg.2.(global_world).(grove_net) !! c = None
     end.
 
   Definition gen_isFreshChan σg : isFreshChan σg None.
@@ -147,6 +157,7 @@ Section grove.
 
   Definition ffi_step (op: GroveOp) (v: val): transition (state*global_state) expr :=
     match op, v with
+    (* Network *)
     | ListenOp, LitV (LitInt c) =>
       ret $ Val $ (ExtV (ListenSocketV c))
     | ConnectOp, LitV (LitInt c_r) =>
@@ -154,7 +165,7 @@ Section grove.
       match c_l with
       | None => ret $ Val $ ((*err*)#true, ExtV BadSocketV)%V
       | Some c_l =>
-        modify_g (λ g, <[ c_l := ∅ ]> g);;
+        modify_g (set grove_net $ λ g, <[ c_l := ∅ ]> g);;
         ret $ Val $ ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
       end
     | AcceptOp, ExtV (ListenSocketV c_l) =>
@@ -169,12 +180,12 @@ Section grove.
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
                 end);
-      ms ← reads (λ '(σ,g), g.(global_world) !! c_r) ≫= unwrap;
-      modify_g (λ g, <[ c_r := ms ∪ {[Message c_l data]} ]> g);;
+      ms ← reads (λ '(σ,g), g.(global_world).(grove_net) !! c_r) ≫= unwrap;
+      modify_g (set grove_net $ λ g, <[ c_r := ms ∪ {[Message c_l data]} ]> g);;
       err_late ← any bool;
       ret $ Val $ (*err*)#(err_late : bool)
     | RecvOp, ExtV (ConnectionSocketV c_l c_r) =>
-      ms ← reads (λ '(σ,g), g.(global_world) !! c_l) ≫= unwrap;
+      ms ← reads (λ '(σ,g), g.(global_world).(grove_net) !! c_l) ≫= unwrap;
       m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
             m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ m'.(msg_sender) = c_r);
       match m with
@@ -186,6 +197,34 @@ Section grove.
         modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
         ret $ Val $ ((*err*)#false, (#(l : loc), #(length m.(msg_data))))%V
       end
+    (* File *)
+    | FileReadOp, LitV (LitString name) =>
+      content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
+      l ← allocateN;
+      modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> content) σ, g));;
+      ret $ Val #(l : loc)
+    | FileWriteOp, (LitV (LitString name), (LitV (LitLoc l), LitV (LitInt len)))%V =>
+      new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
+            length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+                match σ.(heap) !! (l +ₗ i) with
+                | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
+                | _ => False
+                end);
+      (* we read the content just to ensure the file exists *)
+      old_content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
+      modify_n (set grove_node_files $ <[ name := new_content ]>);;
+      ret $ Val #()
+    | FileAppendOp, (LitV (LitString name), (LitV (LitLoc l), LitV (LitInt len)))%V =>
+      new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
+            length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+                match σ.(heap) !! (l +ₗ i) with
+                | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
+                | _ => False
+                end);
+      old_content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
+      modify_n (set grove_node_files $ <[ name := old_content ++ new_content ]>);;
+      ret $ Val #()
+    (* Time *)
     | GetTscOp, LitV LitUnit =>
       time_since_last ← any u64;
       modify_n (set grove_node_tsc (λ old_time,
@@ -195,30 +234,33 @@ Section grove.
       ));;
       new_time ← reads (λ '(σ,g), σ.(world).(grove_node_tsc));
       ret $ Val $ (#(new_time: u64))
+    (* Everything else is UB *)
     | _, _ => undefined
     end.
 
   Local Instance grove_semantics : ffi_semantics grove_op grove_model :=
     { ffi_step := ffi_step;
-      ffi_crash_step := eq; }.
+      ffi_crash_step := eq; }. (* TSC and files are preserved on crash *)
 End grove.
 
 (** * Grove semantic interpretation and lifting lemmas *)
 Class groveGS Σ := GroveGS {
-  groveG_gen_heapG :> gen_heap.gen_heapGS chan (gset message) Σ;
-}.
-Class groveNodeGS Σ := GroveNodeGS {
-  groveG_tscG :> mono_natG Σ;
-  grove_tsc_name : gname;
+  groveG_net_heapG :> gen_heap.gen_heapGS chan (gset message) Σ;
 }.
 
 Class groveGpreS Σ := {
-  grove_preG_gen_heapG :> gen_heap.gen_heapGpreS chan (gset message) Σ;
+  grove_preG_net_heapG :> gen_heap.gen_heapGpreS chan (gset message) Σ;
+  grove_preG_files_heapG :> gen_heap.gen_heapGpreS string (list byte) Σ;
   grove_preG_tscG :> mono_natG Σ;
+}.
+Class groveNodeGS Σ := GroveNodeGS {
+  groveG_preS :> groveGpreS Σ;
+  grove_tsc_name : gname;
+  groveG_files_heapG :> gen_heap.gen_heapGS string (list byte) Σ;
 }.
 
 Definition groveΣ : gFunctors :=
-  #[gen_heapΣ chan (gset message); mono_natΣ].
+  #[gen_heapΣ chan (gset message); gen_heapΣ string (list byte); mono_natΣ].
 
 #[global]
 Instance subG_groveGpreS Σ : subG groveΣ Σ → groveGpreS Σ.
@@ -239,13 +281,14 @@ Section grove.
     {| ffiGlobalGS := groveGS;
        ffiLocalGS := groveNodeGS;
        ffi_local_ctx _ _ σ :=
-         (mono_nat_auth_own grove_tsc_name 1 (int.nat σ.(grove_node_tsc)))%I;
+         (mono_nat_auth_own grove_tsc_name 1 (int.nat σ.(grove_node_tsc)) ∗
+          gen_heap_interp σ.(grove_node_files))%I;
        ffi_global_ctx _ _ g :=
-         (gen_heap_interp g ∗ ⌜chan_msg_bounds g⌝)%I;
+         (gen_heap_interp g.(grove_net) ∗ ⌜chan_msg_bounds g.(grove_net)⌝)%I;
        ffi_local_start _ _ σ :=
-         (True)%I;
+         ([∗ map] f↦c ∈ σ.(grove_node_files), (mapsto (L:=string) (V:=list byte) f (DfracOwn 1) c))%I;
        ffi_global_start _ _ g :=
-         ([∗ map] e↦ms ∈ g, (gen_heap.mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
+         ([∗ map] e↦ms ∈ g.(grove_net), (mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
        ffi_restart _ _ _ := True%I;
        ffi_crash_rel Σ hF1 σ1 hF2 σ2 := True%I;
     |}.
@@ -254,6 +297,12 @@ End grove.
 Notation "c c↦ ms" := (mapsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
                        (at level 20, format "c  c↦  ms") : bi_scope.
 
+Notation "s f↦{ q } c" := (mapsto (L:=string) (V:=list byte) s q c)
+                            (at level 20, q at level 50, format "s  f↦{ q } c") : bi_scope.
+
+Notation "s f↦ c" := (s f↦{DfracOwn 1} c)%I
+                       (at level 20, format "s  f↦ c") : bi_scope.
+
 Section lifting.
   Existing Instances grove_op grove_model grove_semantics grove_interp.
   Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
@@ -261,9 +310,9 @@ Section lifting.
   Local Instance goose_groveNodeGS : groveNodeGS Σ := goose_ffiLocalGS.
 
   Definition chan_meta_token (c : chan) (E: coPset) : iProp Σ :=
-    gen_heap.meta_token (hG := groveG_gen_heapG) c E.
+    gen_heap.meta_token (hG := groveG_net_heapG) c E.
   Definition chan_meta `{Countable A} (c : chan) N (x : A) : iProp Σ :=
-    gen_heap.meta (hG := groveG_gen_heapG) c N x.
+    gen_heap.meta (hG := groveG_net_heapG) c N x.
 
   (** "The TSC is at least" *)
   Definition tsc_lb (time : nat) : iProp Σ :=
@@ -543,6 +592,149 @@ lemmas. *)
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
+  Lemma wp_ReadFileOp (f : string) q c E :
+    {{{ f f↦{q} c }}}
+      ExternalOp FileReadOp #(str f) @ E
+    {{{ (l : loc), RET #l; f f↦{q} c ∗ mapsto_vals l 1 (data_vals c) }}}.
+  Proof.
+    iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    iDestruct "Hw" as "(Htsc & Hfiles)".
+    iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
+    iModIntro. iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. econstructor; first by econstructor.
+      monad_simpl. econstructor.
+      { eapply relation.suchThat_gen0. reflexivity. }
+      monad_simpl.
+    }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    rename select (isFresh _ _) into Hfresh.
+    iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals c) ∪ σ1.(heap)) ∗
+      [∗ list] i↦v ∈ data_vals c, na_heap_mapsto (addr_plus_off l i) 1 v)%I
+      with "[> Hσ]" as "[Hσ Hl]".
+    { destruct (decide (length c = 0%nat)) as [Heq%nil_length_inv|Hne].
+      { (* Zero-length file... no actually new memory allocation, so the proof needs
+           to work a bit differently. *)
+        rewrite Heq big_sepL_nil fmap_nil /= left_id. by iFrame. }
+      iMod (na_heap_alloc_list tls (heap σ1) l
+                               (data_vals c)
+                               (Reading O) with "Hσ")
+        as "(Hσ & Hblock & Hl)".
+      { rewrite fmap_length. apply Nat2Z.inj_lt. lia. }
+      { destruct Hfresh as (?&?); eauto. }
+      { destruct Hfresh as (H'&?); eauto. eapply H'. }
+      { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
+          by rewrite (loc_add_0) in Hfresh. }
+      { eauto. }
+      iModIntro. iFrame "Hσ". iApply (big_sepL_impl with "Hl").
+      iIntros "!#" (???) "[$ _]".
+    }
+    iModIntro. iEval simpl. iFrame "Htr Hg Hσ ∗".
+    iSplit; first done.
+    iApply "HΦ". iFrame "Hf".
+    rewrite /mapsto_vals. iApply (big_sepL_mono with "Hl").
+    clear -Hfresh. simpl. iIntros (i v _) "Hmapsto".
+    iApply (na_mapsto_to_heap with "Hmapsto").
+    destruct Hfresh as (Hfresh & _). eapply Hfresh.
+  Qed.
+
+  Lemma wp_WriteFileOp (f : string) old new l q (len : u64) E :
+    length new = int.nat len →
+    {{{ f f↦ old ∗ mapsto_vals l q (data_vals new) }}}
+      ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
+    {{{ RET #(); f f↦ new ∗ mapsto_vals l q (data_vals new) }}}.
+  Proof.
+    iIntros (Hmlen Φ) "[Hf Hl] HΦ".
+    iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    iDestruct "Hw" as "(Htsc & Hfiles)".
+    iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
+    iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
+    iModIntro. iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. econstructor.
+      { econstructor. done. }
+      monad_simpl. econstructor.
+      { constructor. done. }
+      monad_simpl.
+    }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    iFrame.
+    iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
+    assert (data = new) as <-.
+    { apply list_eq=>i.
+      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
+      assert (length new = length data) as Hlen by rewrite Hmlen //.
+      destruct (data !! i) as [v|] eqn:Hm; last first.
+      { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
+      rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
+      feed pose proof (Hl i) as Hl; [lia..|].
+      feed pose proof (Hm0 i) as Hm0; [lia..|].
+      destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
+      destruct v'' as [lit| | | | |]; try done.
+      destruct lit; try done.
+      rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
+    iIntros "!> /=".
+    iSplit; first done.
+    iApply "HΦ".
+    by iFrame.
+  Qed.
+
+  Lemma wp_AppendFileOp (f : string) old new l q (len : u64) E :
+    length new = int.nat len →
+    {{{ f f↦ old ∗ mapsto_vals l q (data_vals new) }}}
+      ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
+    {{{ RET #(); f f↦ (old ++ new) ∗ mapsto_vals l q (data_vals new) }}}.
+  Proof.
+    iIntros (Hmlen Φ) "[Hf Hl] HΦ".
+    iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    iDestruct "Hw" as "(Htsc & Hfiles)".
+    iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
+    iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
+    iModIntro. iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl. econstructor.
+      { econstructor. done. }
+      monad_simpl. econstructor.
+      { constructor. done. }
+      monad_simpl.
+    }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    inv_head_step.
+    iFrame.
+    iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
+    assert (data = new) as <-.
+    { apply list_eq=>i.
+      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
+      assert (length new = length data) as Hlen by rewrite Hmlen //.
+      destruct (data !! i) as [v|] eqn:Hm; last first.
+      { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
+      rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
+      feed pose proof (Hl i) as Hl; [lia..|].
+      feed pose proof (Hm0 i) as Hm0; [lia..|].
+      destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
+      destruct v'' as [lit| | | | |]; try done.
+      destruct lit; try done.
+      rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
+    iIntros "!> /=".
+    iSplit; first done.
+    iApply "HΦ".
+    by iFrame.
+  Qed.
+
   Lemma wp_GetTscOp prev_time s E :
     {{{ tsc_lb prev_time }}}
       ExternalOp GetTscOp #() @ s; E
@@ -551,7 +743,7 @@ lemmas. *)
     }}}.
   Proof.
     iIntros (Φ) "Hprev HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
@@ -563,13 +755,14 @@ lemmas. *)
     { apply step_count_next_incr. }
     inv_head_step. iFrame. simpl.
     iSplitR; first done.
+    iDestruct "Hw" as "[Htsc Hfiles]".
     set old := σ1.(world).(grove_node_tsc).
-    iDestruct (mono_nat_lb_own_valid with "Hd Hprev") as %[_ Hlb].
+    iDestruct (mono_nat_lb_own_valid with "Htsc Hprev") as %[_ Hlb].
     iClear "Hprev".
     evar (new: u64).
     assert (int.nat old <= int.nat new) as Hupd.
-    2: iMod (mono_nat_own_update (int.nat new) with "Hd") as "[Hd Hnew]"; first lia.
-    2: subst new; iFrame "Hd".
+    2: iMod (mono_nat_own_update (int.nat new) with "Htsc") as "[Htsc Hnew]"; first lia.
+    2: subst new; iFrame "Htsc Hfiles".
     { subst new. rewrite word.unsigned_ltu. clear.
       destruct (_ <? _)%Z eqn:Hlt; last by word.
       (* FIXME Why can word not do this? *)
@@ -840,26 +1033,30 @@ Program Instance grove_interp_adequacy:
   {| ffiGpreS := groveGpreS;
      ffiΣ := groveΣ;
      subG_ffiPreG := subG_groveGpreS;
-     ffi_initgP := λ g, chan_msg_bounds g;
+     ffi_initgP := λ g, chan_msg_bounds g.(grove_net);
      ffi_initP := λ _ g, True;
   |}.
 Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
-  iMod (gen_heap_init g) as (names) "(H1&H2&H3)".
+  iMod (gen_heap_init g.(grove_net)) as (names) "(H1&H2&H3)".
   iExists (GroveGS _ names). iFrame. eauto.
 Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ??).
   iMod (mono_nat_own_alloc (int.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
-  iExists (GroveNodeGS _ _ tsc_name). eauto.
+  iMod (gen_heap_init σ.(grove_node_files)) as (names) "(H1&H2&_)".
+  iExists (GroveNodeGS _ _ tsc_name _). eauto with iFrame.
 Qed.
 Next Obligation.
+  (* FIXME why do we have to prove two lemmas that init the same ghost state?
+  We do NOT want new ghost state for each generation, just one used globally, so this feels redundant. *)
   iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
   simpl in Hold.
   iMod (mono_nat_own_alloc (int.nat σ'.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
-  iExists (GroveNodeGS _ _ tsc_name).
-  simpl. iFrame. eauto.
+  iMod (gen_heap_init σ'.(grove_node_files)) as (names) "(H1&H2&_)".
+  iExists (GroveNodeGS _ _ tsc_name _).
+  simpl. eauto with iFrame.
 Qed.
 
 

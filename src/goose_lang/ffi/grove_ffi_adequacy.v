@@ -15,7 +15,7 @@ Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} (ebσs : lis
         g φinv (HINITG: ffi_initgP g.(global_world)) :
   (∀ HG : gooseGlobalGS Σ,
       ⊢@{iPropI Σ}
-        ([∗ map] e↦ms ∈ g.(global_world), e c↦ ms) ={⊤}=∗
+        ([∗ map] e↦ms ∈ g.(global_world).(grove_net), e c↦ ms) ={⊤}=∗
           (([∗ list] ebσ ∈ ebσs,
                 let e := fst ebσ in
                 (* We reason about node running e with an arbitrary generation *)

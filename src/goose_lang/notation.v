@@ -23,7 +23,7 @@ Coercion LitInt : u64 >-> base_lit.
 Coercion LitInt32 : u32 >-> base_lit.
 Coercion LitByte : u8 >-> base_lit.
 Coercion LitProphecy : proph_id >-> base_lit.
-Notation "'str' s" := (LitString s) (at level 30, format "'str' s") : val_scope.
+Notation "'str' s" := (LitString s) (at level 30, format "'str'  s") : val_scope.
 
 Definition b2val {ext: ffi_syntax}: u8 -> val := λ (b:u8), LitV (LitByte b).
 Global Instance b2val_inj {ext: ffi_syntax} : Inj eq eq b2val.
