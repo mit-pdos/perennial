@@ -916,37 +916,48 @@ Proof.
   apply Nat2Z.inj_le; lia.
 Qed.
 
-Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
+Theorem wp_forSlice_mut (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
+  □ (∀ (i: u64),
+        I i -∗ ∃ vs', ⌜ length vs' = length vs ⌝ ∗
+                      ⌜ vs' !! int.nat i = vs !! int.nat i ⌝ ∗
+                      is_slice_small s t q vs' ∗
+                      (is_slice_small s t q vs' -∗ I i)) -∗
   (∀ (i: u64) (x: val),
       {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
         body #i x @ stk; E
       {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
-    {{{ I (U64 0) ∗ is_slice_small s t q vs }}}
+    {{{ I (U64 0) }}}
       forSlice t body (slice_val s) @ stk; E
-    {{{ RET #(); I s.(Slice.sz) ∗ is_slice_small s t q vs }}}.
+    {{{ RET #(); I s.(Slice.sz) }}}.
 Proof.
-  iIntros "#Hind".
-  iIntros (Φ) "!> [Hi0 Hs] HΦ".
+  iIntros "#Hslice_acc #Hind".
+  iIntros (Φ) "!> Hi0 HΦ".
   wp_call.
   wp_apply wp_slice_len.
   wp_steps.
   remember 0 as z.
   assert (0 <= z <= int.Z s.(Slice.sz)) by word.
+  iDestruct ("Hslice_acc" with "[$]") as (vs' Hlen' Hlookup') "(Hs&Hclo)".
   iDestruct (is_slice_small_sz with "Hs") as %Hslen.
   clear Heqz; generalize dependent z.
-  intros z Hzrange.
+  intros z Hzrange Hlookup'.
   pose proof (word.unsigned_range s.(Slice.sz)).
   assert (int.Z (U64 z) = z) by (rewrite /U64; word).
+  iDestruct ("Hclo" with "[$]") as "Hi0".
   iRename "Hi0" into "Hiz".
+  rewrite Hlen' in Hslen.
+  clear vs' Hlen' Hlookup'.
   (iLöb as "IH" forall (z Hzrange H0) "Hiz").
   wp_if_destruct.
   - destruct (list_lookup_Z_lt vs z) as [xz Hlookup]; first word.
+    iDestruct ("Hslice_acc" with "[$]") as (vs' Hlen' Hlookup') "(Hs&Hclo)".
     wp_apply (wp_SliceGet with "[$Hs]").
-    { replace (int.Z z); eauto. }
+    { rewrite Hlookup'. replace (int.Z z); eauto. }
     iIntros "[Hs Hty]".
     iDestruct "Hty" as %Hty.
     wp_steps.
+    iDestruct ("Hclo" with "[$]") as "Hiz".
     wp_apply ("Hind" with "[$Hiz]").
     { iPureIntro; split; eauto.
       replace (int.Z z); eauto. }
@@ -959,12 +970,32 @@ Proof.
     iSpecialize ("IH" $! (z+1) with "[] []").
     { iPureIntro; lia. }
     { iPureIntro; lia. }
-    wp_apply ("IH" with "Hs HΦ Hiz1").
+    wp_apply ("IH" with "HΦ Hiz1").
   - assert (z = int.Z s.(Slice.sz)) by lia; subst z.
     iApply "HΦ"; iFrame.
     replace (U64 (int.Z s.(Slice.sz))) with s.(Slice.sz); auto.
     unfold U64.
     rewrite word.of_Z_unsigned; auto.
+Qed.
+
+Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
+  (∀ (i: u64) (x: val),
+      {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
+                ⌜vs !! int.nat i = Some x⌝ }}}
+        body #i x @ stk; E
+      {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
+    {{{ I (U64 0) ∗ is_slice_small s t q vs }}}
+      forSlice t body (slice_val s) @ stk; E
+    {{{ RET #(); I s.(Slice.sz) ∗ is_slice_small s t q vs }}}.
+Proof.
+  iIntros "#Hind".
+  iApply (wp_forSlice_mut (λ i, I i ∗ is_slice_small s t q vs)%I).
+  { iModIntro. iIntros (?) "(Hi&Hs)".
+    iExists vs. iFrame. eauto. }
+  iIntros.
+  iIntros (Φ) "!> [[Hi0 Hs] %] HΦ".
+  wp_apply ("Hind" with "[$Hi0 //] [HΦ Hs]").
+  { iNext. iIntros. iApply "HΦ". iFrame. }
 Qed.
 
 Theorem wp_forSlicePrefix (P: list val -> list val -> iProp Σ) stk E s t q vs (body: val) :

@@ -423,6 +423,40 @@ Proof.
   eauto.
 Qed.
 
+Theorem wp_forSlice_mut (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
+  □ (∀ (i: u64),
+        I i -∗ ∃ vs', ⌜ length vs' = length vs ⌝ ∗
+                      ⌜ vs' !! int.nat i = vs !! int.nat i ⌝ ∗
+                      is_slice_small s t q vs' ∗
+                      (is_slice_small s t q vs' -∗ I i)) -∗
+  (∀ (i: u64) (x: V),
+      {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
+                ⌜vs !! int.nat i = Some x⌝ }}}
+        body #i (to_val x) @ stk; E
+      {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
+    {{{ I (U64 0) }}}
+      forSlice t body (slice_val s) @ stk; E
+    {{{ RET #(); I s.(Slice.sz) }}}.
+Proof.
+  iIntros "#Hslice_acc #Hbody".
+  iIntros "!>" (Φ) "HI HΦ".
+  wp_apply (slice.wp_forSlice_mut I _ _ _ _ _ (map to_val vs) with "[] [] [$HI]").
+  {
+    iModIntro. iIntros. iDestruct ("Hslice_acc" with "[$]" ) as (vs' Hlen Hlookup) "[Hs Hclo]".
+    iExists (map to_val vs').
+    rewrite ?map_length; iSplit; first auto.
+    rewrite ?list_lookup_fmap Hlookup; iSplit; first auto.
+    iFrame.
+  }
+  { clear.
+    iIntros (i x).
+    iIntros "!>" (Φ) "[HI [% %Hlookup]] HΦ".
+    apply untype_lookup_Some in Hlookup as [v [Hlookup ->]].
+    wp_apply ("Hbody" with "[$HI //]").
+    iApply "HΦ". }
+  iApply "HΦ".
+Qed.
+
 Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
   (∀ (i: u64) (x: V),
       {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
