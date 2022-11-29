@@ -669,7 +669,19 @@ Proof.
     {
       apply lookup_lt_Some in Hlookup.
       rewrite replicate_length in Hlookup.
-      admit.
+
+      (* We case split on whether replicas_left is nil or not (and
+         hence has non-zero length).  If replicas_left is nil, this
+         follows from Hlookup since length replicas cannot
+         overflow. Otherwise, we don't even need to use Hlookup at all
+         *)
+      assert (replicas_left = nil ∨ 0 < length replicas_left)%nat as [Hnil|Hlen0].
+      { destruct replicas_left => /=; auto. right; lia. }
+      { subst. rewrite app_nil_r in Hreplicas_prefix. subst. auto.
+        word_cleanup.
+        rewrite Z_u64 in Hlookup; lia.
+      }
+      rewrite Hreplicas_prefix app_length. lia.
     }
     destruct replicas_left as [|next_replica replicas_left'].
     { exfalso. rewrite -Hreplicas_len in H.
