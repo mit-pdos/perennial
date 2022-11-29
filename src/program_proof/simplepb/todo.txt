@@ -1,7 +1,7 @@
 [ ] `src/goose_lang/lib/waitgroup/waitgroup.v`; some pure admits, and
  one admitted proof for WaitGroup.Wait().
 
-[ ] `src/program_proof/simplepb/pb_marshal_proof.v`; admits in
+[X] `src/program_proof/simplepb/pb_marshal_proof.v`; admits in
  wp_DecodePrimaryArgs (revolving around for loop for unmarshaling list of
  hostnames).
 

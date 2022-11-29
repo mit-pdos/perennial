@@ -598,6 +598,16 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+Lemma flat_map_len_non_nil {A B : Type} (f: A -> list B) (l: list A):
+  (∀ x, f x ≠ nil) →
+  length l <= length (flat_map f l).
+Proof.
+  intros Hnil.
+  induction l as [| a l] => //=.
+  rewrite app_length. specialize (Hnil a). destruct (f a); first congruence.
+  simpl; lia.
+Qed.
+
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
@@ -646,7 +656,7 @@ Proof.
   iDestruct (is_slice_to_small with "Hreplicas_sl") as "Hreplicas_sl".
   iDestruct (is_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz.
   (* FIXME: need to do a forSlice and write to the elements of that slice *)
-  wp_apply (wp_forSlice (V:=u64)
+  wp_apply (wp_forSlice_mut (V:=u64)
               (λ j,
                 ∃ (replicas_done replicas_left:list chan) enc_sl,
   "%Hreplicas_prefix" ∷ ⌜args.(replicas) = replicas_done ++ replicas_left⌝ ∗
@@ -656,8 +666,31 @@ Proof.
   "HReplicas" ∷ args_ptr ↦[BecomePrimaryArgs :: "Replicas"] (slice_val replicas_sl) ∗
   "Hreplicas_sl" ∷ is_slice_small replicas_sl uint64T 1 (replicas_done ++ (replicate (length replicas_left) (U64 0)))
               )%I
-              with "[] [$Hreplicas_sl Henc Henc_sl $Replicas]"
+              _ _ _ _ _ (replicate (int.nat (length args.(replicas))) u64_IntoVal.(IntoVal_def u64))
+              with "[] [] [Hreplicas_sl Henc Henc_sl $Replicas]"
            ).
+  {
+    iModIntro. iIntros (i) "Hi". iNamed "Hi".
+    iDestruct (is_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz'.
+    iExists _. iFrame.
+    iSplit.
+    { iPureIntro. rewrite Hreplicas_sz Hreplicas_sz'. eauto. }
+    iSplit.
+    { iPureIntro.
+      rewrite Hreplicas_prefix.
+      rewrite word.unsigned_of_Z_nowrap; last first.
+      { word_cleanup. rewrite app_length. rewrite app_length replicate_length in Hreplicas_sz'.
+        lia. }
+      rewrite Nat2Z.id.
+      rewrite app_length replicate_add.
+      rewrite lookup_app_r; last first.
+      { rewrite Hreplicas_len. rewrite replicate_length. reflexivity. }
+      rewrite lookup_app_r; last first.
+      { rewrite Hreplicas_len. reflexivity. }
+      simpl. rewrite ?replicate_length //.
+    }
+    iIntros. iExists _, _, _. iFrame. eauto.
+  }
   {
     clear Φ.
     iIntros (???) "!# (Hpre & %Hineq & %Hlookup) HΦ".
@@ -684,7 +717,7 @@ Proof.
       rewrite Hreplicas_prefix app_length. lia.
     }
     destruct replicas_left as [|next_replica replicas_left'].
-    { exfalso. rewrite -Hreplicas_len in H.
+    { exfalso.
       rewrite app_nil_r in Hreplicas_prefix.
       rewrite Hreplicas_prefix in H.
       word.
@@ -758,23 +791,42 @@ Proof.
       }
     }
     {
-      admit. (* FIXME: use lemma from config_marshal_proof *)
+      rewrite list_lookup_insert_ne; last auto.
+      rewrite app_length.
+      rewrite replicate_add -app_assoc.
+      assert (j < length replicas_done ∨ j > length replicas_done) as [Hlt|Hgt] by lia.
+      { rewrite ?lookup_app_l //; lia. }
+      { rewrite ?app_assoc ?lookup_app_r ?app_length //=; lia. }
     }
   }
   {
-    iExists _, _, _.
+    iDestruct (is_slice_small_sz with "Henc_sl") as %Hsz.
+    assert (length (args.(replicas)) <= length (flat_map u64_le args.(replicas))).
+    { apply flat_map_len_non_nil. destruct x => //=. }
+    iExists nil, _, _.
     iFrame "∗".
-    admit.
+    simpl.
+    iSplit; first auto.
+    iSplit; first auto.
+    rewrite word.unsigned_of_Z_nowrap ?Nat2Z.id //.
+    word.
   }
 
-  iIntros "(H1 & _)".
-  iNamed "H1".
+  iNamed 1.
   wp_pures.
   iModIntro.
   iApply "HΦ".
+  iDestruct (is_slice_small_sz with "Hreplicas_sl") as %Hsz.
   iExists _; iFrame.
-  admit.
-Admitted.
+  destruct (replicas_left).
+  { rewrite Hreplicas_prefix app_nil_r //. }
+  { exfalso.
+    rewrite replicate_length /= ?app_length /= in Hreplicas_sz Hsz.
+    rewrite -Hreplicas_len in Hreplicas_sz.
+    rewrite replicate_length in Hsz.
+    word.
+  }
+Qed.
 
 End BecomePrimaryArgs.
 End BecomePrimaryArgs.
