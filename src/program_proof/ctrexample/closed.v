@@ -1,7 +1,6 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Export ffi.grove_prelude.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.goose_lang Require Export ffi.grove_filesys_axioms.
 From Perennial.program_proof.ctrexample Require Import interface server client.
 From Perennial.program_proof Require Import marshal_proof.
 From Goose.github_com.mit_pdos.gokv Require Import ctrexample.client.
@@ -88,6 +87,7 @@ Lemma closed_theorem σserver σclient σglobal :
 Proof.
   intros.
   eapply (goose_dist_adequacy ctrΣ); eauto.
+  { simpl. intros σ Helem. set_unfold. naive_solver. }
   intros.
   iStartProof.
   iIntros "Hnet_init".

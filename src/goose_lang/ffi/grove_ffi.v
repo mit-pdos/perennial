@@ -202,7 +202,7 @@ Section grove.
       content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
       l ← allocateN;
       modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> content) σ, g));;
-      ret $ Val #(l : loc)
+      ret $ Val (#(l : loc), #(length content))%V
     | FileWriteOp, (LitV (LitString name), (LitV (LitLoc l), LitV (LitInt len)))%V =>
       new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
             length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
@@ -277,12 +277,15 @@ Section grove.
   Local Definition chan_msg_bounds (g : gmap chan (gset message)) : Prop :=
     ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
 
+  Local Definition file_content_bounds (g : gmap string (list byte)) : Prop :=
+    ∀ f c, g !! f = Some c → length c < 2^64.
+
   Local Program Instance grove_interp: ffi_interp grove_model :=
     {| ffiGlobalGS := groveGS;
        ffiLocalGS := groveNodeGS;
        ffi_local_ctx _ _ σ :=
          (mono_nat_auth_own grove_tsc_name 1 (int.nat σ.(grove_node_tsc)) ∗
-          gen_heap_interp σ.(grove_node_files))%I;
+          ⌜file_content_bounds σ.(grove_node_files)⌝ ∗ gen_heap_interp σ.(grove_node_files))%I;
        ffi_global_ctx _ _ g :=
          (gen_heap_interp g.(grove_net) ∗ ⌜chan_msg_bounds g.(grove_net)⌝)%I;
        ffi_local_start _ _ σ :=
@@ -583,25 +586,23 @@ lemmas. *)
     do 2 (iSplit; first done).
     iApply ("HΦ" $! false _ _ m'.(msg_data)). iFrame "He".
     iSplit.
-    { iPureIntro. split; first by destruct m'.
-      trans (Z.to_nat (Z.of_nat (length m'.(msg_data)))); first by rewrite Nat2Z.id //.
-      f_equal. word. }
+    { iPureIntro. split; first by destruct m'. word. }
     rewrite /mapsto_vals. iApply (big_sepL_mono with "Hl").
     clear -Hfresh. simpl. iIntros (i v _) "Hmapsto".
     iApply (na_mapsto_to_heap with "Hmapsto").
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
-  Lemma wp_ReadFileOp (f : string) q c E :
+  Lemma wp_FileReadOp (f : string) q c E :
     {{{ f f↦{q} c }}}
       ExternalOp FileReadOp #(str f) @ E
-    {{{ (l : loc), RET #l; f f↦{q} c ∗ mapsto_vals l 1 (data_vals c) }}}.
+    {{{ (l : loc) (len : u64), RET (#l, #len); ⌜length c = int.nat len⌝ ∗ f f↦{q} c ∗ mapsto_vals l 1 (data_vals c) }}}.
   Proof.
     iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    iDestruct "Hw" as "(Htsc & Hfiles)".
+    iDestruct "Hw" as "(Htsc & %Hfilebound & Hfiles)".
     iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
     iModIntro. iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
@@ -613,6 +614,7 @@ lemmas. *)
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
+    move: (Hfilebound _ _ Hf)=>Hlen.
     rename select (isFresh _ _) into Hfresh.
     iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals c) ∪ σ1.(heap)) ∗
       [∗ list] i↦v ∈ data_vals c, na_heap_mapsto (addr_plus_off l i) 1 v)%I
@@ -635,15 +637,17 @@ lemmas. *)
       iIntros "!#" (???) "[$ _]".
     }
     iModIntro. iEval simpl. iFrame "Htr Hg Hσ ∗".
-    iSplit; first done.
+    do 2 (iSplitR; first done).
     iApply "HΦ". iFrame "Hf".
-    rewrite /mapsto_vals. iApply (big_sepL_mono with "Hl").
+    rewrite /mapsto_vals. iSplitR.
+    { iPureIntro. word. }
+    iApply (big_sepL_mono with "Hl").
     clear -Hfresh. simpl. iIntros (i v _) "Hmapsto".
     iApply (na_mapsto_to_heap with "Hmapsto").
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
-  Lemma wp_WriteFileOp (f : string) old new l q (len : u64) E :
+  Lemma wp_FileWriteOp (f : string) old new l q (len : u64) E :
     length new = int.nat len →
     {{{ f f↦ old ∗ mapsto_vals l q (data_vals new) }}}
       ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
@@ -654,7 +658,7 @@ lemmas. *)
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    iDestruct "Hw" as "(Htsc & Hfiles)".
+    iDestruct "Hw" as "(Htsc & %Hfilebound & Hfiles)".
     iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
     iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
     iModIntro. iSplit.
@@ -684,23 +688,28 @@ lemmas. *)
       destruct lit; try done.
       rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
     iIntros "!> /=".
-    iSplit; first done.
+    iSplit; first done. iSplitR.
+    { iPureIntro. clear -Hmlen Hfilebound.
+      intros f' c'. destruct (decide (f = f')) as [<-|Hne].
+      - rewrite lookup_insert=>-[<-]. word.
+      - rewrite lookup_insert_ne //. eapply Hfilebound. } 
     iApply "HΦ".
     by iFrame.
   Qed.
 
-  Lemma wp_AppendFileOp (f : string) old new l q (len : u64) E :
+  Lemma wp_FileAppendOp (f : string) old new l q (len : u64) E :
     length new = int.nat len →
+    length old + length new < 2^64 →
     {{{ f f↦ old ∗ mapsto_vals l q (data_vals new) }}}
       ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
     {{{ RET #(); f f↦ (old ++ new) ∗ mapsto_vals l q (data_vals new) }}}.
   Proof.
-    iIntros (Hmlen Φ) "[Hf Hl] HΦ".
+    iIntros (Hmlen Halen Φ) "[Hf Hl] HΦ".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    iDestruct "Hw" as "(Htsc & Hfiles)".
+    iDestruct "Hw" as "(Htsc & %Hfilebound & Hfiles)".
     iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
     iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
     iModIntro. iSplit.
@@ -730,7 +739,11 @@ lemmas. *)
       destruct lit; try done.
       rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
     iIntros "!> /=".
-    iSplit; first done.
+    iSplit; first done. iSplitR.
+    { iPureIntro. clear -Halen Hfilebound.
+      intros f' c'. destruct (decide (f = f')) as [<-|Hne].
+      - rewrite lookup_insert=>-[<-]. rewrite app_length. word.
+      - rewrite lookup_insert_ne //. eapply Hfilebound. } 
     iApply "HΦ".
     by iFrame.
   Qed.
@@ -779,7 +792,7 @@ Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the grove model *)
   (* FIXME: figure out which of these clients need to set *)
-  Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp goose_groveGS.
+  Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
   Local Coercion Var' (s:string) : expr := Var s.
 
   (** [extT] have size 1 so this fits with them being pointers in Go. *)
@@ -832,6 +845,19 @@ Section grove.
         "Err" ::= "err";
         "Data" ::= ("ptr", "len", "len")
       ].
+
+  Definition FileRead : val :=
+    λ: "f",
+      let: "slice" := ExternalOp FileReadOp "f" in
+      let: "ptr" := Fst "slice" in
+      let: "len" := Snd "slice" in
+      ("ptr", "len", "len").
+
+  Definition FileWrite : val :=
+    λ: "f" "c", ExternalOp FileWriteOp ("f", (slice.ptr "c", slice.len "c")).
+
+  Definition FileAppend : val :=
+    λ: "f" "c", ExternalOp FileAppendOp ("f", (slice.ptr "c", slice.len "c")).
 
   (** Type: func() uint64 *)
   Definition GetTSC : val :=
@@ -915,6 +941,14 @@ Local Ltac solve_atomic :=
     repeat inv_undefined;
     try solve [ apply atomically_is_val in H; auto ]
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
+Local Ltac solve_atomic2 :=
+  solve_atomic;
+  (* TODO(Joe): Cleanup *)
+  repeat match goal with 
+    | [ H: relation.denote _ ?s1 ?s2 ?v |- _ ] => inversion_clear H
+    | _ => progress monad_inv
+    | _ => case_match
+    end; eauto.
 
   Lemma wp_Send c_l c_r (s : Slice.t) (data : list u8) (q : Qp) :
     ⊢ {{{ is_slice_small s byteT q data }}}
@@ -933,15 +967,8 @@ Local Ltac solve_atomic :=
     iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
     iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
     rewrite difference_empty_L.
-    (* TODO(Joe): Cleanup *)
     iMod "HΦ" as (ms) "[Hc HΦ]".
-    { solve_atomic. inversion H.  subst. monad_inv. inversion H0. subst.
-      destruct x0; monad_inv.
-      { econstructor. eauto. }
-      monad_inv.
-      inversion H2. subst. inversion H4. subst. inversion H6. subst. inversion H8.
-      subst. inversion H10. subst. inversion H11. econstructor. eauto.
-    }
+    { solve_atomic2. }
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
     iIntros (err_early err_late) "[Hc Hl]".
@@ -970,13 +997,7 @@ Local Ltac solve_atomic :=
     wp_bind (ExternalOp _ _).
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
-    { solve_atomic. inversion H.  subst. monad_inv. inversion H0. subst.
-      inversion H2. subst.
-      destruct x1.
-      * inversion H4. subst. inversion H6. subst. inversion H8. subst.
-        inversion H9. subst. econstructor. eauto.
-      * inversion H4. subst. inversion H5. subst. econstructor.  eauto.
-    }
+    { solve_atomic2. }
     wp_apply (wp_RecvOp with "Hc").
     iIntros (err l len data) "(%Hm & Hc & Hl)".
     iMod ("HΦ" $! err data with "[Hc]") as "HΦ".
@@ -994,6 +1015,121 @@ Local Ltac solve_atomic :=
       iApply array.array_nil. done.
   Qed.
 
+  Lemma wp_FileRead f :
+    ⊢ <<< ∀∀ c, f f↦ c >>>
+        FileRead #(str f) @ ∅
+      <<< f f↦ c >>>
+      {{{ (s : Slice.t), RET slice_val s; is_slice s byteT 1 c }}}.
+  Proof.
+    iIntros "!#" (Φ) "HΦ". wp_lam. wp_pures.
+    wp_bind (ExternalOp _ _).
+    rewrite difference_empty_L.
+    iMod "HΦ" as (ms) "[Hc HΦ]".
+    { solve_atomic2. }
+    wp_apply (wp_FileReadOp with "Hc").
+    iIntros (l len) "(%Hlen & Hf & Hl)".
+    iMod ("HΦ" with "Hf") as "HΦ".
+    iModIntro. wp_pures. iModIntro.
+    iApply ("HΦ" $! (Slice.mk _ _ _)).
+    rewrite /is_slice.
+    iSplitL.
+    - iApply mapsto_vals_is_slice_small_byte; done.
+    - iExists []. simpl. iSplit; first by eauto with lia.
+      iApply array.array_nil. done.
+  Qed.
+
+  Lemma wp_FileWrite f s q data :
+    ⊢ {{{ is_slice_small s byteT q data }}}
+      <<< ∀∀ old, f f↦ old >>>
+        FileWrite #(str f) (slice_val s) @ ∅
+      <<< f f↦ data >>>
+      {{{ RET #(); is_slice_small s byteT q data }}}.
+  Proof.
+    iIntros "!#" (Φ) "Hs HΦ". wp_call.
+    wp_apply wp_slice_ptr.
+    wp_apply wp_slice_len.
+    wp_pures.
+    iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
+    iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
+    rewrite difference_empty_L.
+    iMod "HΦ" as (ms) "[Hf HΦ]".
+    { solve_atomic2. }
+    wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
+    { iApply is_slice_small_byte_mapsto_vals. done. }
+    iIntros "[Hf Hs]".
+    iMod ("HΦ" with "Hf") as "HΦ".
+    iApply "HΦ". iModIntro.
+    iApply mapsto_vals_is_slice_small_byte; done.
+  Qed.
+
+  Lemma wp_FileAppend f s q data :
+    ⊢ {{{ is_slice_small s byteT q data }}}
+      <<< ∀∀ old, ⌜length old + length data < 2^64⌝ ∗ f f↦ old >>>
+        FileAppend #(str f) (slice_val s) @ ∅
+      <<< f f↦ (old ++ data) >>>
+      {{{ RET #(); is_slice_small s byteT q data }}}.
+  Proof.
+    iIntros "!#" (Φ) "Hs HΦ". wp_call.
+    wp_apply wp_slice_ptr.
+    wp_apply wp_slice_len.
+    wp_pures.
+    iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
+    iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
+    rewrite difference_empty_L.
+    iMod "HΦ" as (ms) "[[%Halen Hf] HΦ]".
+    { solve_atomic2. }
+    wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
+    { iApply is_slice_small_byte_mapsto_vals. done. }
+    iIntros "[Hf Hs]".
+    iMod ("HΦ" with "Hf") as "HΦ".
+    iApply "HΦ". iModIntro.
+    iApply mapsto_vals_is_slice_small_byte; done.
+  Qed.
+
+  (* FIXME figure out how to prove something like these crash triples instead of the above (but in atomic variants) *)
+  Axiom wpc_FileRead : ∀ filename (dq:dfrac) content,
+  {{{
+      filename f↦{dq} content
+  }}}
+    FileRead #(str filename) @ ⊤
+  {{{
+       s, RET slice_val s; typed_slice.is_slice s byteT 1 content ∗
+                           filename f↦{dq} content
+  }}}
+  {{{
+      filename f↦{dq} content
+  }}}.
+
+  Axiom wpc_FileWrite : ∀ filename content_old content (content_sl:Slice.t) q {stk E},
+  {{{
+      filename f↦ content_old ∗
+      typed_slice.is_slice_small content_sl byteT q content
+  }}}
+    FileWrite #(str filename) (slice_val content_sl) @ stk ; E
+  {{{
+       RET #(); filename f↦ content ∗
+      typed_slice.is_slice_small content_sl byteT q content
+  }}}
+  {{{
+      filename f↦ content_old ∨
+      filename f↦ content
+  }}}.
+
+  Axiom wpc_FileAppend : ∀ filename content_old content (content_sl:Slice.t) q,
+  {{{
+      filename f↦ content_old ∗
+      typed_slice.is_slice_small content_sl byteT q content
+  }}}
+    FileAppend #(str filename) (slice_val content_sl) @ ⊤
+  {{{
+       RET #(); filename f↦ (content_old ++ content) ∗
+      typed_slice.is_slice_small content_sl byteT q (content_old ++ content)
+  }}}
+  {{{
+      filename f↦ content_old ∨
+      filename f↦ (content_old ++ content)
+  }}}.
+
   Lemma wp_GetTSC :
   ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>
       GetTSC #() @ ∅
@@ -1003,11 +1139,7 @@ Local Ltac solve_atomic :=
     iIntros "!>" (Φ) "HAU". wp_lam.
     rewrite difference_empty_L.
     iMod "HAU" as (prev_time) "[Hlb HΦ]".
-    { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst.
-      inversion H2. subst.
-      destruct x1.
-      * inversion H4. subst. inversion H6. subst. inversion H7. subst. done.
-    }
+    { solve_atomic2. }
     wp_apply (wp_GetTscOp with "Hlb").
     iIntros (new_time) "[%Hprev Hlb]".
     iMod ("HΦ" with "[Hlb]") as "HΦ".
@@ -1034,7 +1166,7 @@ Program Instance grove_interp_adequacy:
      ffiΣ := groveΣ;
      subG_ffiPreG := subG_groveGpreS;
      ffi_initgP := λ g, chan_msg_bounds g.(grove_net);
-     ffi_initP := λ _ g, True;
+     ffi_initP := λ σ g, file_content_bounds σ.(grove_node_files);
   |}.
 Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
@@ -1051,14 +1183,13 @@ Qed.
 Next Obligation.
   (* FIXME why do we have to prove two lemmas that init the same ghost state?
   We do NOT want new ghost state for each generation, just one used globally, so this feels redundant. *)
-  iIntros (Σ σ σ' Hcrash Hold) "Hinterp".
-  simpl in Hold.
-  iMod (mono_nat_own_alloc (int.nat σ'.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
-  iMod (gen_heap_init σ'.(grove_node_files)) as (names) "(H1&H2&_)".
+  iIntros (Σ σ σ' Hcrash Hold) "(_ & %Hfilebound & _)".
+  simpl in Hold. destruct Hcrash.
+  iMod (mono_nat_own_alloc (int.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
+  iMod (gen_heap_init σ.(grove_node_files)) as (names) "(H1&H2&_)".
   iExists (GroveNodeGS _ _ tsc_name _).
-  simpl. eauto with iFrame.
+  simpl. iFrame. iPureIntro. done.
 Qed.
-
 
 Section filesys.
 
@@ -1066,10 +1197,7 @@ Existing Instances grove_op grove_model grove_ty.
 Existing Instances grove_semantics grove_interp.
 Existing Instance goose_groveGS.
 
-(* Axiomatized filesystem interface *)
-Axiom Read : goose_lang.val.
-Axiom Write : goose_lang.val.
-Axiom AtomicAppend : goose_lang.val.
+(* Axiomatized interfaces *)
 
 Axiom TimeNow: goose_lang.val.
 Axiom Sleep: goose_lang.val.

@@ -12,7 +12,9 @@ Set Default Proof Using "Type".
 Section grove_ffi_adeq.
 
 Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} (ebσs : list (expr * state))
-        g φinv (HINITG: ffi_initgP g.(global_world)) :
+        g φinv
+        (HINITG: ffi_initgP g.(global_world))
+        (HINIT: Forall (λ σ, ffi_initP σ.(world) g.(global_world)) ebσs.*2) :
   (∀ HG : gooseGlobalGS Σ,
       ⊢@{iPropI Σ}
         ([∗ map] e↦ms ∈ g.(global_world).(grove_net), e c↦ ms) ={⊤}=∗
@@ -25,7 +27,7 @@ Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} (ebσs : lis
   dist_adequate_failstop (ffi_sem:=grove_semantics) ebσs g (λ g, φinv g).
 Proof.
   intros. eapply goose_dist_adequacy_failstop; eauto.
-  { simpl. eauto. }
+  { simpl.  intros σ Hσ. eapply Forall_forall in HINIT; last done. eauto. }
   intros. iIntros "Hchan". iMod (H HG with "Hchan") as "(H1&H2)".
   iModIntro. iSplitL "H1".
   { iApply (big_sepL_mono with "H1").

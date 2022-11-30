@@ -1,7 +1,6 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Export ffi.grove_prelude.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.goose_lang Require Export ffi.grove_filesys_axioms.
 From Perennial.program_proof.ctrexample Require Import interface.
 From Perennial.program_proof Require Import marshal_proof.
 From Goose.github_com.mit_pdos.gokv.ctrexample Require Import server.
@@ -13,7 +12,6 @@ From Perennial.goose_lang Require Import persistent_readonly.
 Section server_proof.
 
 Context `{!heapGS Σ}.
-Context `{!filesysG Σ}.
 Context `{!inG Σ mono_natUR}.
 Context `{stagedG Σ}.
 
@@ -92,7 +90,7 @@ Proof.
   iDestruct "Hdur" as (old_data) "[Hdur %Hpure]".
   iApply wpc_cfupd.
   iDestruct (is_slice_to_small with "Hslice") as "Hslice".
-  wpc_apply (wpc_Write with "[Hdur Hslice]").
+  wpc_apply (wpc_FileWrite with "[Hdur Hslice]").
   {
     iFrame.
   }
@@ -308,7 +306,7 @@ Proof using Type*.
   wpc_loadField.
 
   iDestruct "Hdur" as (data) "[Hdur %Hpure]".
-  wpc_apply (wpc_Read with "Hdur").
+  wpc_apply (wpc_FileRead with "Hdur").
   iSplit.
   {
     iIntros.

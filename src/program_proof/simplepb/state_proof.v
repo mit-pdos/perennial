@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Import state.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_apply_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From iris.base_logic Require Import ghost_map.
-From Perennial.goose_lang Require Import crash_borrow grove_filesys_axioms.
+From Perennial.goose_lang Require Import crash_borrow.
 
 Section state_proof.
 Context `{!heapGS Σ}.

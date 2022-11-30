@@ -16,7 +16,7 @@ Definition CtrServer__MakeDurable: val :=
   rec: "CtrServer__MakeDurable" "s" :=
     let: "e" := marshal.NewEnc #8 in
     marshal.Enc__PutInt "e" (struct.loadF CtrServer "val" "s");;
-    grove_ffi.Write (struct.loadF CtrServer "filename" "s") (marshal.Enc__Finish "e");;
+    grove_ffi.FileWrite (struct.loadF CtrServer "filename" "s") (marshal.Enc__Finish "e");;
     #().
 
 Definition CtrServer__FetchAndIncrement: val :=
@@ -35,7 +35,7 @@ Definition main: val :=
     let: "s" := struct.alloc CtrServer (zero_val (struct.t CtrServer)) in
     struct.storeF CtrServer "mu" "s" (lock.new #());;
     struct.storeF CtrServer "filename" "s" #(str"ctr");;
-    let: "a" := grove_ffi.Read (struct.loadF CtrServer "filename" "s") in
+    let: "a" := grove_ffi.FileRead (struct.loadF CtrServer "filename" "s") in
     (if: (slice.len "a" = #0)
     then struct.storeF CtrServer "val" "s" #0
     else

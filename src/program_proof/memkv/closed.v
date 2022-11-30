@@ -50,6 +50,7 @@ Proof.
   intros Hneq Hinitg Hinitshard Hinitcoord Hinitclient Hlookup1 Hlookup2.
   eapply (grove_ffi_dist_adequacy_failstop (shardΣ)).
   { assumption. }
+  { repeat constructor; naive_solver. }
   intros Hheap.
   iIntros "Hchan".
 
@@ -181,6 +182,7 @@ Proof.
          Hinitclient Hlookup1 Hlookup2 Hlookup3 Hlookup4.
   eapply (grove_ffi_dist_adequacy_failstop (shardΣ)).
   { assumption. }
+  { repeat constructor; naive_solver. }
   intros Hheap.
   iIntros "Hchan".
 
