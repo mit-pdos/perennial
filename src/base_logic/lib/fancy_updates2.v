@@ -349,8 +349,8 @@ Local Existing Instance inv_lcPreG.
 Lemma fupd2_soundness `{!invGpreS Σ} n E1 E1' E2 E2' (φ : Prop) :
   (∀ `{Hinv: !invGS Σ}, £ n ⊢ ||={E1|E1',E2|E2'}=> ⌜φ⌝) → φ.
 Proof.
-  iIntros (Hfupd).
-  eapply (lc_soundness (Σ:=Σ) (S n)). intros Hc. rewrite lc_succ.
+  iIntros (Hfupd). eapply pure_soundness.
+  eapply (lc_soundness (Σ:=Σ) (S n)); first tc_solve. intros Hc. rewrite lc_succ.
   iIntros "[Hone Hn]". rewrite -le_upd_trans. iApply bupd_le_upd.
   iMod wsat_alloc as (Hinv ->) "[Hw HE]".
   iAssert (||={⊤|⊤,E2|E2'}=> ⌜φ⌝)%I with "[Hn]" as "H".

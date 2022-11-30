@@ -45,7 +45,7 @@ Proof.
   { apply le_n_S. apply (num_laters_per_step_exp ns'). lia. }
   iApply (step_fupd2N_le (S (S (S (num_laters_per_step ns'))))).
   { lia. }
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
   iModIntro. simpl. iModIntro. iNext.
   simpl.
   iDestruct (saved_prop_agree with "Hsaved1 Hsaved1'") as "Hequiv1".

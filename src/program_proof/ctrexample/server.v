@@ -436,7 +436,7 @@ Proof using Type*.
   }
 
   wp_apply (wp_StartServer with "[$Hsown]").
-  { rewrite ?dom_insert_L; set_solver. }
+  { rewrite ?dom_insert_L. set_solver by idtac. (* FIXME regular set_solver leaves shelved goals *) }
   {
     iSplitL "".
     { rewrite /handlers_complete.

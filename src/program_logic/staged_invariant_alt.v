@@ -408,7 +408,7 @@ Proof.
   iApply (step_fupd2N_inner_fupd2).
   iApply (step_fupd2N_inner_le).
   { apply (num_laters_per_step_exp ns'). lia. }
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
   iEval (simpl).
   do 2 (iModIntro; iModIntro; iNext).
   iMod "Hclo'".
@@ -485,7 +485,7 @@ Proof using stagedG0.
       apply Qp.add_le_mono_r. auto. }
     iMod (pri_inv_acc with "Hinv") as "(Hinner&Hclo)".
     { set_solver. }
-    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
     iModIntro. iModIntro. iNext. iMod "Hclo'".
     iDestruct "Hinner" as "(Htok&Hcases)".
     iDestruct "Hcases" as "[Hunrun|Hrun]".
@@ -544,7 +544,7 @@ Proof using stagedG0.
       apply Qp.add_le_mono_r. auto. }
     iMod (pri_inv_acc with "Hinv") as "(Hinner&Hclo)".
     { set_solver. }
-    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
     iModIntro. iModIntro. iNext. iMod "Hclo'".
     iDestruct "Hinner" as "(Htok&Hcases)".
     iDestruct "Hcases" as "[Hunrun|Hrun]".

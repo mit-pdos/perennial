@@ -74,7 +74,7 @@ Proof.
   iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   iDestruct ("Hwp" $! mj) as "(Hwp&_)".
   iMod (later_tok_decr with "[$]") as (ns' Hle) "Hg".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
   iModIntro.
   simpl. iModIntro. iNext. iModIntro.
   iApply (step_fupd2N_le).

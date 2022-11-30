@@ -301,7 +301,7 @@ Proof.
   iApply (step_fupd2N_wand with "H").
   iIntros "H".
   iApply step_fupd2N_S_fupd2. simpl. iMod "H".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|].
   iModIntro. iNext. iModIntro.
   iApply (step_fupd2N_later); first auto.
   iModIntro. iNext. iModIntro.

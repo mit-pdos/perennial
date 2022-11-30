@@ -460,7 +460,7 @@ Tactic Notation "wp_load" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty _ _ _ _ _ K))
       |fail 1 "wp_load: cannot find 'load_ty' in" e];
-    [iSolveTC
+    [tc_solve
     |solve_mapsto ()
     |wp_finish]
   | _ => fail "wp_load: not a 'wp'"
@@ -477,7 +477,7 @@ Tactic Notation "wp_store" :=
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store_ty _ _ _ _ _ _ K))
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
     [val_ty
-    |iSolveTC
+    |tc_solve
     |solve_mapsto ()
     |pm_reflexivity
     |first [wp_seq|wp_finish]]

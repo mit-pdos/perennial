@@ -37,7 +37,7 @@ Proof.
   iSpecialize ("H" with "[$] [$]").
   rewrite ncfupd_eq.
   iMod ("H" with "[$]") as "(H&HNC)".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|].
   iModIntro. iApply step_fupd_extra.step_fupdN_step_fupd2N.
   iApply (step_fupdN_wand with "H"). iIntros "($&H)".
   iIntros. iMod "Hclo". iMod ("H" with "[//] Hlc [$]") as "(($ & $ & He & Hef)&HNC)".

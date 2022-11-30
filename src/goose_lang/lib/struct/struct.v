@@ -744,7 +744,7 @@ Tactic Notation "wp_loadField" :=
     first
       [eapply tac_wp_loadField
       |fail 2 "wp_loadField: cannot find 'struct.loadF' in" e];
-    [iSolveTC
+    [tc_solve
     |solve_mapsto ()
     |]
   | _ => fail 1 "wp_loadField: not a 'wp'"
@@ -762,7 +762,7 @@ Tactic Notation "wp_storeField" :=
       [eapply tac_wp_storeField
       |fail 1 "wp_storeField: cannot find 'storeField' in" e];
     [val_ty
-    |iSolveTC
+    |tc_solve
     |solve_mapsto ()
     |pm_reflexivity
     |try wp_seq ]

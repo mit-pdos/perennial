@@ -155,9 +155,9 @@ Tactic Notation "wp_pure_later" tactic3(filter) :=
     reshape_expr e ltac:(fun K e' =>
       filter e';
       first [ eapply (tac_wp_pure _ _ _ _ K e');
-      [iSolveTC                       (* PureExec *)
+      [tc_solve                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
-      |iSolveTC                       (* IntoLaters *)
+      |tc_solve                       (* IntoLaters *)
       |wp_finish                      (* new goal *)
       ] | fail 3 "wp_pure: first pattern match is not a redex" ]
           (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
@@ -172,7 +172,7 @@ Tactic Notation "wp_pure_no_later" tactic3(filter) :=
     reshape_expr e ltac:(fun K e' =>
       filter e';
       first [ eapply (tac_wp_pure_no_later _ _ _ K e');
-      [iSolveTC                       (* PureExec *)
+      [tc_solve                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |wp_finish                      (* new goal *)
       ] | fail 3 "wp_pure: first pattern match is not a redex" ]
@@ -216,9 +216,9 @@ Tactic Notation "wp_pure_later_credit" tactic3(filter) "as" constr(credName) :=
     reshape_expr e ltac:(fun K e' =>
       filter e';
       first [ eapply (tac_wp_pure_gen_cred _ _ _ _ K e');
-      [iSolveTC                       (* PureExec *)
+      [tc_solve                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
-      |iSolveTC                       (* IntoLaters *)
+      |tc_solve                       (* IntoLaters *)
       |(iIntros credName || fail 4 "wp_pure: unalbe to introduce hypothesis for credit");
        (* XXX(upamanyu): 4 is chosen to be one more than 3, but I don't know what it really does *)
        wp_finish                      (* new goal *)
@@ -235,7 +235,7 @@ Tactic Notation "wp_pure_no_later_credit" tactic3(filter) "as" constr(credName) 
     reshape_expr e ltac:(fun K e' =>
       filter e';
       first [ eapply (tac_wp_pure_no_later_gen_cred _ _ _ K e');
-      [iSolveTC                       (* PureExec *)
+      [tc_solve                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       | (iIntros credName || fail 4 "wp_pure: unable to introduce hypothesis for credit");
          wp_finish                    (* new goal *)
@@ -490,7 +490,7 @@ Tactic Notation "wp_untyped_load" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load _ _ _ _ _ K))
       |fail 1 "wp_load: cannot find 'Load' in" e];
-    [iSolveTC
+    [tc_solve
     |solve_mapsto ()
     |wp_finish]
   | _ => fail "wp_load: not a 'wp'"
@@ -506,7 +506,7 @@ Tactic Notation "wp_cmpxchg" "as" simple_intropattern(H1) "|" simple_intropatter
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_cmpxchg _ _ _ _ _ _ K))
       |fail 1 "wp_cmpxchg: cannot find 'CmpXchg' in" e];
-    [iSolveTC
+    [tc_solve
     |solve_mapsto ()
     |pm_reflexivity
     |try solve_vals_compare_safe
@@ -525,7 +525,7 @@ Tactic Notation "wp_cmpxchg_fail" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_cmpxchg_fail _ _ _ _ _ K))
       |fail 1 "wp_cmpxchg_fail: cannot find 'CmpXchg' in" e];
-    [iSolveTC
+    [tc_solve
     |solve_mapsto ()
     |try (simpl; congruence) (* value inequality *)
     |try solve_vals_compare_safe
@@ -543,7 +543,7 @@ Tactic Notation "wp_cmpxchg_suc" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_cmpxchg_suc _ _ _ _ _ _ K))
       |fail 1 "wp_cmpxchg_suc: cannot find 'CmpXchg' in" e];
-    [iSolveTC
+    [tc_solve
     |solve_mapsto ()
     |pm_reflexivity
     |try (simpl; congruence) (* value equality *)

@@ -112,7 +112,7 @@ Proof using PRI.
     iMod (later_tok_decr with "[$]") as (ns' Hle) "Hg".
     iApply (step_fupd2N_inner_le).
     { apply (num_laters_per_step_exp ns'). lia. }
-    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
     iEval (simpl).
     do 2 (iModIntro; iModIntro; iNext).
     iMod ("Hclo'").
@@ -180,7 +180,7 @@ Proof.
     iMod (later_tok_decr with "[$]") as (ns' Hle) "Hg".
     iApply (step_fupd2N_inner_le).
     { apply (num_laters_per_step_exp ns'). lia. }
-    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
     iEval (simpl).
     do 2 (iModIntro; iModIntro; iNext).
     iMod (pending_upd_done with "H") as "H".
@@ -208,7 +208,7 @@ Proof.
   iApply (step_fupd2N_inner_le).
   { apply (num_laters_per_step_exp ns'). lia. }
   iEval (simpl).
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
   do 2 (iModIntro; iModIntro; iNext).
   iMod "Hclo'".
   destruct stat as [q1 q2|q|].
@@ -355,7 +355,7 @@ Proof.
       iIntros "Hlc".
       iApply (step_fupd2N_inner_le).
       { apply (num_laters_per_step_exp ns'). lia. }
-      iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+      iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
       iEval (simpl).
       do 2 (iModIntro; iModIntro; iNext).
       iMod (pending_upd_done with "H") as "H".
@@ -382,7 +382,7 @@ Proof.
     { apply (num_laters_per_step_exp ns'). lia. }
     iDestruct "Hlc" as "[[Hlc1 Hlc2] Hlc3]".
     iEval (simpl).
-    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
     do 2 (iModIntro; iModIntro; iNext).
     iMod "Hclo'".
     destruct stat as [q1 q2|q|].

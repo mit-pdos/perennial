@@ -27,7 +27,7 @@ Tactic Notation "iExactEq" constr(H) :=
   [ first [ pm_reflexivity
           | fail 1 "iExactEq:" H "not found" ]
   | (* equality goal *)
-  | pm_reduce; iSolveTC
+  | pm_reduce; tc_solve
   ].
 
 (* TODO: this works, but maybe we can do better *)

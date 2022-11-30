@@ -56,8 +56,6 @@ Proof.
   { iNamed "Htxn". eauto with iFrame. }
   wp_apply (wp_txn__begin with "Htxn").
   iInv "Hinv" as "> HinvO" "HinvC".
-  { (* FIXME: solve_ndisj should do this *)
-    rewrite -difference_difference_l_L. solve_ndisj. }
   iMod (ncfupd_mask_subseteq (⊤ ∖ ↑mvccN)) as "Hclose"; first solve_ndisj.
   iMod "HAU" as (r) "[[%HP Hdbps] HAUC]".
   iModIntro.

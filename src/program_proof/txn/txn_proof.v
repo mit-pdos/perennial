@@ -139,7 +139,7 @@ Proof.
   induction s as [|x s ? IH] using set_ind_L.
   { by rewrite set_map_empty !big_opS_empty. }
   rewrite set_map_union_L set_map_singleton_L.
-  rewrite !big_opS_union; [ | set_solver.. ].
+  rewrite !big_opS_union; [ | set_solver by idtac.. ]. (* FIXME regular set_solver fails *)
   rewrite !big_opS_singleton IH //.
   intros x' y' Hx_in Hy_in Heq.
   apply Hinj; set_solver.

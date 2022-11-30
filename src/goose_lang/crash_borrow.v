@@ -682,7 +682,7 @@ Proof.
   iDestruct (wpc_crash_modality_split _ _ _ (mj_wp1 `min` mj_wp2) with "[$] [$] [$] [$]") as "Hcancel".
   { auto. }
 
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|].
   iMod "Hcancel" as "(Hcancel1&Hcancel2)".
   iMod "Hclo" as "_". iModIntro.
 

@@ -74,7 +74,7 @@ Proof.
     iDestruct "Heq_status" as %[Heq_status%Excl_included%leibniz_equiv _]%auth_both_valid_discrete.
     inversion Heq; subst.
     iMod (later_tok_decr with "[$]") as (ns' Hlt') "Hg".
-    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
     iModIntro. iApply (step_fupd2N_le (S (S (num_laters_per_step ns')))).
     { etransitivity; last eapply (num_laters_per_step_exp ns'); lia. }
     iDestruct (saved_prop_agree with "Hsaved1 Hsaved1'") as "Hequiv1".
@@ -157,7 +157,7 @@ Proof.
     iDestruct "Heq_status" as %[Heq_status%Excl_included%leibniz_equiv _]%auth_both_valid_discrete.
     inversion Heq; subst.
     iMod (later_tok_decr with "[$]") as (ns' Hlt') "Hg".
-    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+    iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
     iModIntro. iApply (step_fupd2N_le (S (S (S (num_laters_per_step ns'))))).
     { assert (ns' < ns) as Hlt by lia. apply num_laters_per_step_exp in Hlt. lia. }
     iDestruct (saved_prop_agree with "Hsaved1 Hsaved1'") as "Hequiv1".
@@ -340,7 +340,7 @@ Proof.
   iDestruct "Heq_status" as %[Heq_status%Excl_included%leibniz_equiv _]%auth_both_valid_discrete.
   inversion Heq; subst.
   iMod (later_tok_decr with "[$]") as (ns' Hlt') "Hg".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo'"; [set_solver+..|].
   iModIntro. simpl. iModIntro. iNext. iModIntro. iApply (step_fupd2N_le (S (S (num_laters_per_step ns')))).
   { etransitivity; last eapply (num_laters_per_step_exp ns'); lia. }
   simpl.

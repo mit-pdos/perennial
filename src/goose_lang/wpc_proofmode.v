@@ -164,9 +164,9 @@ Tactic Notation "wpc_pure_later" tactic3(filter) "as" simple_intropattern(H) :=
     reshape_expr e ltac:(fun K e' =>
       filter e';
       first [ eapply (tac_wpc_pure_ctx _ _ _ _ K e');
-      [iSolveTC                       (* PureExec *)
+      [tc_solve                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
-      |iSolveTC                       (* IntoLaters *)
+      |tc_solve                       (* IntoLaters *)
       | try (apply H)                 (* crash condition, try to re-use existing proof *)
       | first [ intros H || intros _]; wpc_finish H (* new goal *)
       ] | fail 3 "wp_pure: first pattern match is not a redex" ]
@@ -183,7 +183,7 @@ Tactic Notation "wpc_pure_no_later" tactic3(filter) "as" simple_intropattern(H) 
     reshape_expr e ltac:(fun K e' =>
       filter e';
       first [ eapply (tac_wpc_pure_no_later_ctx _ _ _ K e');
-      [iSolveTC                       (* PureExec *)
+      [tc_solve                       (* PureExec *)
       |try solve_vals_compare_safe    (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       | try (apply H)                 (* crash condition, try to re-use existing proof *)
       | first [ intros H || intros _]; wpc_finish H (* new goal *)

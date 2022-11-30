@@ -834,7 +834,7 @@ Proof using Type*.
   iIntros (r) "Hr".
   wp_pures.
   wp_apply (wp_StartServer with "[$Hr]").
-  { set_solver. }
+  { set_solver by idtac. (* FIXME regular set_solver leaves shelved goals *) }
   {
     iDestruct "His_host" as "[H1 H2]".
     unfold handlers_complete.

@@ -35,7 +35,7 @@ Tactic Notation "wp_untyped_store" :=
     first
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ _ _ K))
       |fail 1 "wp_untyped_store: cannot find 'Store' in" e];
-    [iSolveTC
+    [tc_solve
     |solve_mapsto ()
     |pm_reflexivity
     |first [wp_seq|wp_finish]]

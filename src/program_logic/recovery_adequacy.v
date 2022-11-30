@@ -167,14 +167,14 @@ Proof.
             with "H").
   iIntros "H".
   iMod "H".
-  iModIntro. iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
+  iModIntro. iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|].
   iModIntro. iModIntro. iNext.
   iMod ("Hclo") as "_".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|].
   iMod ("Hclo") as "_".
   iDestruct "H" as (e2 t2' ?) "(H&Hσ&Hg&HC)".
   iMod ("H" with "[//] Hσ Hg") as "H".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+. do 2 iModIntro. iNext.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|]. do 2 iModIntro. iNext.
   iModIntro.
   iMod ("Hclo") as "_".
   iModIntro.
@@ -273,14 +273,14 @@ Proof.
             with "H").
   iIntros "H".
   iMod "H".
-  iModIntro. iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
+  iModIntro. iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|].
   iModIntro. iModIntro. iNext.
   iMod ("Hclo") as "_".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|].
   iMod ("Hclo") as "_".
   iDestruct "H" as (e2 t2' ?) "(H&Hσ&Hg&HC)".
   iMod ("H" with "[//] Hσ Hg") as "H".
-  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; try set_solver+. do 2 iModIntro. iNext.
+  iMod (fupd2_mask_subseteq ∅ ∅) as "Hclo"; [set_solver+..|]. do 2 iModIntro. iNext.
   iModIntro.
   iMod ("Hclo") as "_".
   iModIntro.
