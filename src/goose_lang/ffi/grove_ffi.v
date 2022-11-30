@@ -1199,9 +1199,6 @@ Existing Instance goose_groveGS.
 
 (* Axiomatized interfaces *)
 
-Axiom TimeNow: goose_lang.val.
-Axiom Sleep: goose_lang.val.
-
 Axiom Exit: goose_lang.val.
 
 End filesys.

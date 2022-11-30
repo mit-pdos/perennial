@@ -12,8 +12,17 @@ Theorem wp_Sleep (duration : u64) :
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
-  unfold time.Sleep.
-  wp_pures.
+  wp_call.
+  by iApply "HΦ".
+Qed.
+
+Theorem wp_TimeNow :
+  {{{ True }}}
+    time.TimeNow #()
+  {{{ (t : u64), RET #t; True }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
   by iApply "HΦ".
 Qed.
 

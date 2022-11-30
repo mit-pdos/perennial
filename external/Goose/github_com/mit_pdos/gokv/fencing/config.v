@@ -25,7 +25,7 @@ Definition Clerk__HeartbeatThread: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "reply_ptr" := ref (zero_val (slice.T byteT)) in
-      grove_ffi.Sleep (("TIMEOUT_MS" * "MILLION") `quot` #3);;
+      time.Sleep (("TIMEOUT_MS" * "MILLION") `quot` #3);;
       let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_HB "args" "reply_ptr" #100 in
       (if: ("err" ≠ #0) || (slice.len (![slice.T byteT] "reply_ptr") ≠ #0)
       then Break
@@ -90,7 +90,7 @@ Definition Server__AcquireEpoch: val :=
     struct.storeF Server "currHolderActive" "s" #true;;
     struct.storeF Server "data" "s" "newFrontend";;
     struct.storeF Server "currentEpoch" "s" (struct.loadF Server "currentEpoch" "s" + #1);;
-    let: "now" := grove_ffi.TimeNow #() in
+    let: "now" := time.TimeNow #() in
     struct.storeF Server "heartbeatExpiration" "s" ("now" + TIMEOUT_MS * MILLION);;
     let: "ret" := struct.loadF Server "currentEpoch" "s" in
     lock.release (struct.loadF Server "mu" "s");;
@@ -109,13 +109,13 @@ Definition Server__HeartbeatListener: val :=
       lock.release (struct.loadF Server "mu" "s");;
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        let: "now" := grove_ffi.TimeNow #() in
+        let: "now" := time.TimeNow #() in
         lock.acquire (struct.loadF Server "mu" "s");;
         (if: "now" < struct.loadF Server "heartbeatExpiration" "s"
         then
           let: "delay" := struct.loadF Server "heartbeatExpiration" "s" - "now" in
           lock.release (struct.loadF Server "mu" "s");;
-          grove_ffi.Sleep "delay";;
+          time.Sleep "delay";;
           Continue
         else
           struct.storeF Server "currHolderActive" "s" #false;;
@@ -133,7 +133,7 @@ Definition Server__Heartbeat: val :=
     let: "ret" := ref_to boolT #false in
     (if: (struct.loadF Server "currentEpoch" "s" = "epoch")
     then
-      let: "now" := grove_ffi.TimeNow #() in
+      let: "now" := time.TimeNow #() in
       struct.storeF Server "heartbeatExpiration" "s" ("now" + TIMEOUT_MS);;
       "ret" <-[boolT] #true
     else #());;

@@ -359,7 +359,7 @@ Definition Replica__TryBecomeLeader: val :=
             else #()));;
       #()
       ));;
-    grove_ffi.Sleep (#50 * #1000000);;
+    time.Sleep (#50 * #1000000);;
     lock.acquire "mu";;
     (if: IsQuorum (struct.loadF MonotonicValue "conf" (![ptrT] "highestVal")) "prepared"
     then
@@ -407,7 +407,7 @@ Definition Replica__tryCommit: val :=
               else #()));;
         #()
         ));;
-      grove_ffi.Sleep (#100 * #1000000);;
+      time.Sleep (#100 * #1000000);;
       lock.acquire "mu";;
       (if: IsQuorum (struct.loadF MonotonicValue "conf" "mval") "accepted"
       then
