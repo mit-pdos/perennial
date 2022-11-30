@@ -3,7 +3,7 @@
 dir='./src/program_proof/mvcc'
 
 cd ../../../
-files=`find ${dir} -name "${1}*.v" | sed "s/\.v/\.vok/"`
+files=`find ${dir} -name "${1}*.v" ! -name "print_assumptions.v" ! -name "examples*.v" | sed "s/\.v/\.vok/"`
 if [[ -z ${files} ]]; then
     echo "No target files."
     exit 1
@@ -11,4 +11,4 @@ fi
 
 echo "Checking:"
 echo "`basename ${files}`"
-make --ignore-errors -j4 ${files}
+make --ignore-errors -j8 ${files}

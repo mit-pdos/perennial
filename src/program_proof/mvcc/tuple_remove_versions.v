@@ -4,8 +4,8 @@ Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 Lemma val_to_ver_with_val_ty (x : val) :
-  val_ty x (uint64T * (boolT * (uint64T * unitT))%ht) ->
-  (∃ (b : u64)  (e : bool) (v : u64), x = ver_to_val (b, e, v)).
+  val_ty x (uint64T * (boolT * (stringT * unitT))%ht) ->
+  (∃ (b : u64)  (e : bool) (v : string), x = ver_to_val (b, e, v)).
 Proof.
   intros H.
   inversion_clear H. 

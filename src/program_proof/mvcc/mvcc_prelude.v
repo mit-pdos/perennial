@@ -2,11 +2,11 @@ From Perennial.program_proof Require Export grove_prelude.
 (* Prefer untyped slices. *)
 Export Perennial.goose_lang.lib.slice.slice.
 
-Definition dbval := option u64.
+Definition dbval := option string.
 Notation Nil := (None : dbval).
 Notation Value x := (Some x : dbval).
 
-Definition to_dbval (b : bool) (v : u64) :=
+Definition to_dbval (b : bool) (v : string) :=
   if b then Value v else Nil.
 
 Definition dbmap := gmap u64 dbval.

@@ -6,11 +6,11 @@ Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (*****************************************************************)
-(* func (txn *Txn) Put(key, val uint64)                          *)
+(* func (txn *Txn) Put(key uint64, val string)                   *)
 (*****************************************************************)
 Theorem wp_txn__Put txn tid view (k : u64) dbv v γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv }}}
-    Txn__Put #txn #k #v
+    Txn__Put #txn #k #(LitString v)
   {{{ RET #();
       own_txn txn tid view γ τ ∗ txnmap_ptsto τ k (Value v)
   }}}.

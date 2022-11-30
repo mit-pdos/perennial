@@ -4,11 +4,11 @@ Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (*****************************************************************)
-(* func (tuple *Tuple) appendVersion(tid uint64, val uint64)     *)
+(* func (tuple *Tuple) appendVersion(tid uint64, val string)     *)
 (*****************************************************************)
-Theorem wp_tuple__appendVersion tuple (tid : u64) (val : u64) owned tidlast vers :
+Theorem wp_tuple__appendVersion tuple (tid : u64) (val : string) owned tidlast vers :
   {{{ own_tuple_phys tuple owned tidlast vers }}}
-    Tuple__appendVersion #tuple #tid #val
+    Tuple__appendVersion #tuple #tid #(LitString val)
   {{{ RET #(); own_tuple_phys tuple false (U64 (int.Z tid + 1)) (vers ++ [(tid, false, val)]) }}}.
 Proof.
   iIntros (Φ) "Hphys HΦ".
@@ -46,15 +46,15 @@ Proof.
 Qed.
 
 (*****************************************************************)
-(* func (tuple *Tuple) AppendVersion(tid uint64, val uint64)     *)
+(* func (tuple *Tuple) AppendVersion(tid uint64, val string)     *)
 (*****************************************************************)
 Theorem wp_tuple__AppendVersion
-        tuple (tid : u64) (val : u64) (key : u64) (sid : u64)
+        tuple (tid : u64) (val : string) (key : u64) (sid : u64)
         (phys : list dbval) γ :
   {{{ active_tid γ tid sid ∗
       own_tuple_locked tuple key (int.nat tid) phys (extend (S (int.nat tid)) phys ++ [Value val]) γ
   }}}
-    Tuple__AppendVersion #tuple #tid #val
+    Tuple__AppendVersion #tuple #tid #(LitString val)
   {{{ RET #(); active_tid γ tid sid }}}.
 Proof.
   iIntros (Φ) "[Hactive H] HΦ".

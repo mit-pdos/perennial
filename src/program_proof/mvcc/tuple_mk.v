@@ -92,7 +92,7 @@ Proof.
   { iNext.
     unfold P.
     unfold own_tuple.
-    iExists false, (U64 1), (U64 0), [(U64 0, true, U64 0)], [Nil; Nil].
+    iExists false, (U64 1), (U64 0), [(U64 0, true, "")], [Nil; Nil].
     iFrame.
     iSplit.
     { iExists (Slice.mk vers 1 16). iFrame. }

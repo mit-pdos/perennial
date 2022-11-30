@@ -12,7 +12,7 @@ Local Coercion Var' s: expr := Var s.
 Definition Version := struct.decl [
   "begin" :: uint64T;
   "deleted" :: boolT;
-  "val" :: uint64T
+  "val" :: stringT
 ].
 
 (* *

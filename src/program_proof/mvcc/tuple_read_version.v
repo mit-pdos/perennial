@@ -7,7 +7,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (* func findRightVer(tid uint64, vers []Version) Version           *)
 (*******************************************************************)
 Local Theorem wp_findRightVer (tid : u64) (versS : Slice.t)
-                              (vers : list (u64 * bool * u64)) :
+                              (vers : list (u64 * bool * string)) :
   {{{ ⌜∃ (ver : pver), (ver ∈ vers) ∧ (int.Z ver.1.1 < int.Z tid)⌝ ∗
       slice.is_slice versS (structTy Version) 1 (ver_to_val <$> vers)
   }}}
@@ -49,7 +49,7 @@ Proof.
   (*     idx++                                               *)
   (* }                                                       *)
   (***********************************************************)
-  set P := λ (b : bool), (∃ (ver : u64 * bool * u64) (idx : u64),
+  set P := λ (b : bool), (∃ (ver : u64 * bool * string) (idx : u64),
              "HverR" ∷ (verR ↦[struct.t Version] ver_to_val ver) ∗
              "HidxR" ∷ (idxR ↦[uint64T] #idx) ∗
              "HversS" ∷ is_slice_small versS (struct.t Version) 1 (ver_to_val <$> vers) ∗
@@ -144,7 +144,7 @@ Proof.
   }
   { (* Loop entry. *)
     unfold P.
-    iExists (U64 0, false, U64 0).
+    iExists (U64 0, false, "").
     iExists _.
     iFrame.
     iPureIntro.
@@ -295,7 +295,7 @@ Qed.
  * which can be deduced from [active_tid γ sid tid] and [min_tid_lb γ tidlbN].
  *)
 (*****************************************************************)
-(* func (tuple *Tuple) ReadVersion(tid uint64) (uint64, uint64)  *)
+(* func (tuple *Tuple) ReadVersion(tid uint64) (string, bool)    *)
 (*****************************************************************)
 Theorem wp_tuple__ReadVersion
         tuple (tid : u64) (key : u64) (sid : u64) (owned : bool)
@@ -307,7 +307,7 @@ Theorem wp_tuple__ReadVersion
       ⌜owned = false ∨ (int.nat tid < length vchain)%nat⌝
   }}}
     Tuple__ReadVersion #tuple #tid
-  {{{ (val : u64) (found : bool), RET (#val, #found);
+  {{{ (val : string) (found : bool), RET (#(LitString val), #found);
       active_tid γ tid sid ∗ ptuple_ptsto γ key (to_dbval found val) (int.nat tid)
   }}}.
 Proof.

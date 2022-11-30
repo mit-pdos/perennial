@@ -1,11 +1,11 @@
 From Perennial.program_proof.mvcc Require Export mvcc_prelude mvcc_misc mvcc_ghost mvcc_inv.
 From Goose.github_com.mit_pdos.go_mvcc Require Export tuple.
 
-Definition pver := (u64 * bool * u64)%type.
+Definition pver := (u64 * bool * string)%type.
 
 (* TODO: rename to [pver_to_val]. *)
 Definition ver_to_val (x : pver) :=
-  (#x.1.1, (#x.1.2, (#x.2, #())))%V.
+  (#x.1.1, (#x.1.2, (#(LitString x.2), #())))%V.
 
 Definition spec_find_ver_step (tid : u64) (res : option pver) (ver : pver) : option pver :=
   match res with
@@ -25,9 +25,9 @@ Definition spec_lookup (vers : list pver) (tid : u64) : dbval :=
   | None => Nil
   end.
 
-Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * bool * u64)) (i : nat) :
+Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * bool * string)) (i : nat) :
   (ver_to_val <$> l) !! i = Some x ->
-  (∃ (b : u64) (d : bool) (v : u64), x = ver_to_val (b, d, v) ∧ l !! i = Some (b, d, v)).
+  (∃ (b : u64) (d : bool) (v : string), x = ver_to_val (b, d, v) ∧ l !! i = Some (b, d, v)).
 Proof.
   intros H.
   apply list_lookup_fmap_inv in H as [[[y1 y2] y3] [Heq Hsome]].

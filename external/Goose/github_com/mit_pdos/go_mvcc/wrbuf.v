@@ -10,7 +10,7 @@ Local Coercion Var' s: expr := Var s.
 
 Definition WrEnt := struct.decl [
   "key" :: uint64T;
-  "val" :: uint64T;
+  "val" :: stringT;
   "wr" :: boolT;
   "tpl" :: ptrT
 ].
@@ -68,7 +68,7 @@ Definition WrBuf__Lookup: val :=
     then
       let: "ent" := SliceGet (struct.t WrEnt) (struct.loadF WrBuf "ents" "wrbuf") "pos" in
       (struct.get WrEnt "val" "ent", struct.get WrEnt "wr" "ent", #true)
-    else (#0, #false, #false)).
+    else (#(str""), #false, #false)).
 
 Definition WrBuf__Put: val :=
   rec: "WrBuf__Put" "wrbuf" "key" "val" :=

@@ -32,12 +32,12 @@ Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (*****************************************************************)
-(* func (txn *Txn) Get(key uint64) (uint64, bool)                *)
+(* func (txn *Txn) Get(key uint64) (string, bool)                *)
 (*****************************************************************)
 Theorem wp_txn__Get txn tid view (k : u64) dbv γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv }}}
     Txn__Get #txn #k
-  {{{ (v : u64) (found : bool), RET (#v, #found);
+  {{{ (v : string) (found : bool), RET (#(LitString v), #found);
       own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
   }}}.
 Proof.
