@@ -10,7 +10,7 @@ From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
 From Perennial.goose_lang Require Import prelude typing struct lang lifting slice typed_slice proofmode.
-From Perennial.goose_lang Require Import crash_modality.
+From Perennial.goose_lang Require Import wpc_proofmode crash_modality.
 
 Set Default Proof Using "Type".
 (* this is purely cosmetic but it makes printing line up with how the code is
@@ -993,7 +993,7 @@ Local Ltac solve_atomic2 :=
           is_slice s byteT 1 data
       }}}.
   Proof.
-    iIntros "!#" (Φ) "HΦ". wp_lam. wp_pures.
+    iIntros "!#" (Φ) "HΦ". wp_call. wp_pures.
     wp_bind (ExternalOp _ _).
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
@@ -1015,22 +1015,25 @@ Local Ltac solve_atomic2 :=
       iApply array.array_nil. done.
   Qed.
 
-  Lemma wp_FileRead f :
-    ⊢ <<< ∀∀ c, f f↦ c >>>
-        FileRead #(str f) @ ∅
-      <<< f f↦ c >>>
-      {{{ (s : Slice.t), RET slice_val s; is_slice s byteT 1 c }}}.
+  Lemma wpc_FileRead f dq c E :
+    ⊢ {{{ f f↦{dq} c }}}
+        FileRead #(str f) @ E
+      {{{ (s : Slice.t), RET slice_val s; f f↦{dq} c ∗ is_slice s byteT 1 c }}}
+      {{{ f f↦{dq} c }}}.
   Proof.
-    iIntros "!#" (Φ) "HΦ". wp_lam. wp_pures.
-    wp_bind (ExternalOp _ _).
-    rewrite difference_empty_L.
-    iMod "HΦ" as (ms) "[Hc HΦ]".
+    iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done. wpc_pures.
+    wpc_bind (ExternalOp _ _).
+    iApply wpc_atomic.
     { solve_atomic2. }
-    wp_apply (wp_FileReadOp with "Hc").
+    iSplit.
+    { iApply "HΦ". done. }
+    wp_apply (wp_FileReadOp with "Hf").
     iIntros (l len) "(%Hlen & Hf & Hl)".
-    iMod ("HΦ" with "Hf") as "HΦ".
-    iModIntro. wp_pures. iModIntro.
-    iApply ("HΦ" $! (Slice.mk _ _ _)).
+    iSplit; last first.
+    { iApply "HΦ". done. }
+    iModIntro. wpc_pures; first by iApply "HΦ".
+    iDestruct "HΦ" as "[_ HΦ]".
+    iApply ("HΦ" $! (Slice.mk _ _ _)). iFrame. iModIntro.
     rewrite /is_slice.
     iSplitL.
     - iApply mapsto_vals_is_slice_small_byte; done.
@@ -1038,97 +1041,62 @@ Local Ltac solve_atomic2 :=
       iApply array.array_nil. done.
   Qed.
 
-  Lemma wp_FileWrite f s q data :
-    ⊢ {{{ is_slice_small s byteT q data }}}
-      <<< ∀∀ old, f f↦ old >>>
-        FileWrite #(str f) (slice_val s) @ ∅
-      <<< f f↦ data >>>
-      {{{ RET #(); is_slice_small s byteT q data }}}.
+  Lemma wpc_FileWrite f s q old data E :
+    ⊢ {{{ f f↦ old ∗ is_slice_small s byteT q data }}}
+        FileWrite #(str f) (slice_val s) @ E
+      {{{ RET #(); f f↦ data ∗ is_slice_small s byteT q data }}}
+      {{{ f f↦ old ∨ f f↦ data }}}.
   Proof.
-    iIntros "!#" (Φ) "Hs HΦ". wp_call.
-    wp_apply wp_slice_ptr.
-    wp_apply wp_slice_len.
-    wp_pures.
+    iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
+    wpc_call. { by iLeft. } { by iLeft. }
+    iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
+    (* Urgh so much manual work just calling a WP lemma... *)
+    wpc_pures. wpc_bind (slice.ptr _). wpc_frame. wp_apply wp_slice_ptr. iNamed 1.
+    wpc_pures. wpc_bind (slice.len _). wpc_frame. wp_apply wp_slice_len. iNamed 1.
+    wpc_pures.
     iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
     iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
-    rewrite difference_empty_L.
-    iMod "HΦ" as (ms) "[Hf HΦ]".
+    iApply wpc_atomic.
     { solve_atomic2. }
+    iSplit.
+    { iApply "HΦ". by iLeft. }
     wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
     iIntros "[Hf Hs]".
-    iMod ("HΦ" with "Hf") as "HΦ".
-    iApply "HΦ". iModIntro.
+    iSplit; last first.
+    { iApply "HΦ". by iRight. }
+    iApply "HΦ". iModIntro. iFrame.
     iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 
-  Lemma wp_FileAppend f s q data :
-    ⊢ {{{ is_slice_small s byteT q data }}}
-      <<< ∀∀ old, ⌜length old + length data < 2^64⌝ ∗ f f↦ old >>>
-        FileAppend #(str f) (slice_val s) @ ∅
-      <<< f f↦ (old ++ data) >>>
-      {{{ RET #(); is_slice_small s byteT q data }}}.
+  Lemma wpc_FileAppend f s q old data E :
+    length old + length data < 2^64 →
+    ⊢ {{{ f f↦ old ∗ is_slice_small s byteT q data }}}
+        FileAppend #(str f) (slice_val s) @ E
+      {{{ RET #(); f f↦ (old ++ data) ∗ is_slice_small s byteT q data }}}
+      {{{ f f↦ old ∨ f f↦ (old ++ data) }}}.
   Proof.
-    iIntros "!#" (Φ) "Hs HΦ". wp_call.
-    wp_apply wp_slice_ptr.
-    wp_apply wp_slice_len.
-    wp_pures.
+    iIntros "%Halen !#" (Φ Φc) "[Hf Hs] HΦ".
+    wpc_call. { by iLeft. } { by iLeft. }
+    iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
+    (* Urgh so much manual work just calling a WP lemma... *)
+    wpc_pures. wpc_bind (slice.ptr _). wpc_frame. wp_apply wp_slice_ptr. iNamed 1.
+    wpc_pures. wpc_bind (slice.len _). wpc_frame. wp_apply wp_slice_len. iNamed 1.
+    wpc_pures.
     iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
     iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
-    rewrite difference_empty_L.
-    iMod "HΦ" as (ms) "[[%Halen Hf] HΦ]".
+    iApply wpc_atomic.
     { solve_atomic2. }
+    iSplit.
+    { iApply "HΦ". by iLeft. }
     wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
     iIntros "[Hf Hs]".
-    iMod ("HΦ" with "Hf") as "HΦ".
-    iApply "HΦ". iModIntro.
+    iSplit; last first.
+    { iApply "HΦ". by iRight. }
+    iApply "HΦ". iModIntro. iFrame.
     iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
-
-  (* FIXME figure out how to prove something like these crash triples instead of the above (but in atomic variants) *)
-  Axiom wpc_FileRead : ∀ filename (dq:dfrac) content,
-  {{{
-      filename f↦{dq} content
-  }}}
-    FileRead #(str filename) @ ⊤
-  {{{
-       s, RET slice_val s; typed_slice.is_slice s byteT 1 content ∗
-                           filename f↦{dq} content
-  }}}
-  {{{
-      filename f↦{dq} content
-  }}}.
-
-  Axiom wpc_FileWrite : ∀ filename content_old content (content_sl:Slice.t) q {stk E},
-  {{{
-      filename f↦ content_old ∗
-      typed_slice.is_slice_small content_sl byteT q content
-  }}}
-    FileWrite #(str filename) (slice_val content_sl) @ stk ; E
-  {{{
-       RET #(); filename f↦ content ∗
-      typed_slice.is_slice_small content_sl byteT q content
-  }}}
-  {{{
-      filename f↦ content_old ∨
-      filename f↦ content
-  }}}.
-
-  Axiom wpc_FileAppend : ∀ filename content_old content (content_sl:Slice.t) q,
-  {{{
-      filename f↦ content_old ∗
-      typed_slice.is_slice_small content_sl byteT q content
-  }}}
-    FileAppend #(str filename) (slice_val content_sl) @ ⊤
-  {{{
-       RET #(); filename f↦ (content_old ++ content) ∗
-      typed_slice.is_slice_small content_sl byteT q (content_old ++ content)
-  }}}
-  {{{
-      filename f↦ content_old ∨
-      filename f↦ (content_old ++ content)
-  }}}.
 
   Lemma wp_GetTSC :
   ⊢ <<< ∀∀ prev_time, tsc_lb prev_time >>>

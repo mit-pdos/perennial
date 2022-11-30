@@ -226,8 +226,9 @@ Ltac wpc_pures :=
   lazymatch goal with
     | |- envs_entails ?envs (wpc ?s ?E1 (Val _) ?Q ?Qc) => wpc_finish Hcrash
     | |- _ =>
-      wpc_pure1 Hcrash;
-      [try iFromCache .. | repeat (wpc_pure_no_later wp_pure_filter as Hcrash; []); clear Hcrash]
+      try (wpc_pure1 Hcrash;
+        [try iFromCache .. | repeat (wpc_pure_no_later wp_pure_filter as Hcrash; []); clear Hcrash]
+      )
   end.
 
 Lemma tac_wpc_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}

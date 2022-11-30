@@ -45,12 +45,12 @@ Definition is_CtrServer γ (s:loc) : iProp Σ :=
         own_CtrServer_durable c)
 .
 
-Lemma wpc_CtrServer__MakeDurable γ (s:loc) c c' Q {stk E}:
+Lemma wpc_CtrServer__MakeDurable γ (s:loc) c c' Q {E}:
   {{{
        own_CtrServer_ghost γ c ∗ own_CtrServer_durable c ∗ own_CtrServer s c'
                            ∗ (own_CtrServer_ghost γ c ={E}=∗ own_CtrServer_ghost γ c' ∗ Q)
   }}}
-    CtrServer__MakeDurable #s @ stk ; E
+    CtrServer__MakeDurable #s @ E
   {{{
        RET #(); own_CtrServer_ghost γ c' ∗ own_CtrServer_durable c' ∗ own_CtrServer s c' ∗ Q
   }}}
@@ -315,7 +315,7 @@ Proof using Type*.
     done.
   }
   iNext.
-  iIntros (sl) "[Hsl Hdur]".
+  iIntros (sl) "[Hdur Hsl]".
 
   iCache with "Hdur Hghost".
   { iExists _; iFrame. iExists _; iFrame. done. }
