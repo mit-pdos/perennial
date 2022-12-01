@@ -50,6 +50,9 @@ From Perennial.program_proof.fencing Require
 From Perennial.program_proof.ctrexample Require
      client server closed.
 
+(* Append-only file library *)
+From Perennial.program_proof.aof Require proof.
+
 (* SimplePB *)
 From Perennial.program_proof.simplepb Require
      admin_proof pb_start_proof.

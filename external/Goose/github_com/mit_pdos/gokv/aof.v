@@ -5,7 +5,6 @@ From Goose Require github_com.tchajed.marshal.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition AppendOnlyFile := struct.decl [
-  "fname" :: stringT;
   "mu" :: ptrT;
   "durableCond" :: ptrT;
   "lengthCond" :: ptrT;
