@@ -11,27 +11,26 @@ Set Default Proof Using "Type".
 
 Section grove_ffi_adeq.
 
-Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} (ebσs : list (expr * state))
-        g φinv
-        (HINITG: ffi_initgP g.(global_world))
-        (HINIT: Forall (λ σ, ffi_initP σ.(world) g.(global_world)) ebσs.*2) :
+Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} (ebσs : list (expr * state)) g φinv :
+  chan_msg_bounds g.(global_world).(grove_net) →
+  Forall (λ σ, file_content_bounds σ.(world).(grove_node_files)) ebσs.*2 →
   (∀ HG : gooseGlobalGS Σ,
       ⊢@{iPropI Σ}
         ([∗ map] e↦ms ∈ g.(global_world).(grove_net), e c↦ ms) ={⊤}=∗
-          (([∗ list] ebσ ∈ ebσs,
-                let e := fst ebσ in
+          (([∗ list] '(e, σ) ∈ ebσs,
                 (* We reason about node running e with an arbitrary generation *)
                 ∀ HL : gooseLocalGS Σ,
-                  |={⊤}=> ∃ Φ, wp NotStuck ⊤ e Φ) ∗
+                  ([∗ map] f ↦ c ∈ σ.(world).(grove_node_files), f f↦ c)
+                    ={⊤}=∗ ∃ Φ, wp NotStuck ⊤ e Φ) ∗
           (∀ g', ffi_global_ctx goose_ffiGlobalGS g'.(global_world) ={⊤,∅}=∗ ⌜ φinv g' ⌝) )) →
   dist_adequate_failstop (ffi_sem:=grove_semantics) ebσs g (λ g, φinv g).
 Proof.
-  intros. eapply goose_dist_adequacy_failstop; eauto.
+  intros HINITG HINIT H. eapply goose_dist_adequacy_failstop; eauto.
   { simpl.  intros σ Hσ. eapply Forall_forall in HINIT; last done. eauto. }
   intros. iIntros "Hchan". iMod (H HG with "Hchan") as "(H1&H2)".
   iModIntro. iSplitL "H1".
   { iApply (big_sepL_mono with "H1").
-    iIntros (?? Hlookup) "H". iIntros. iApply "H". }
+    iIntros (? [e σ] Hlookup) "H". iIntros. iApply "H". done. }
   { eauto. }
 Qed.
 End grove_ffi_adeq.

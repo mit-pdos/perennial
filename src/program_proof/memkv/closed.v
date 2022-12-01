@@ -70,9 +70,9 @@ Proof.
   iModIntro.
   iSplitR ""; last first.
   { iMod (fupd_mask_subseteq ∅); eauto. }
-  iSplitL "Hserver_shards Herpc_ghost".
+  simpl. iSplitL "Hserver_shards Herpc_ghost".
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
 
     iModIntro. iExists (λ _, True%I).
@@ -89,7 +89,7 @@ Proof.
   }
   iSplitR "Hclients_ptstos".
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /coord_boot. simpl.
@@ -110,7 +110,7 @@ Proof.
   }
   iSplitR ""; last eauto.
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /client_boot. iEval simpl.
@@ -182,7 +182,7 @@ Proof.
          Hinitclient Hlookup1 Hlookup2 Hlookup3 Hlookup4.
   eapply (grove_ffi_dist_adequacy_failstop (shardΣ)).
   { assumption. }
-  { repeat constructor; naive_solver. }
+  { simpl. repeat constructor; naive_solver. }
   intros Hheap.
   iIntros "Hchan".
 
@@ -240,9 +240,9 @@ Proof.
   iModIntro.
 
   (* lockserver shard *)
-  iSplitL "Hserver_lockshards Herpc_ghost".
+  simpl. iSplitL "Hserver_lockshards Herpc_ghost".
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
@@ -260,7 +260,7 @@ Proof.
   (* lockserver coordinator *)
   iSplitL "".
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /coord_boot. simpl.
@@ -282,7 +282,7 @@ Proof.
   (* kv shard *)
   iSplitL "Hserver_kvshards Herpc_ghost_kv".
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /shard_boot. simpl.
@@ -300,7 +300,7 @@ Proof.
   (* kv coordinator *)
   iSplitL "".
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /coord_boot. simpl.
@@ -321,7 +321,7 @@ Proof.
 
   iSplitR "".
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /transferrer_boot. iEval simpl.
@@ -345,7 +345,7 @@ Proof.
 
   iSplitR "".
   {
-    iIntros (HL).
+    iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iModIntro. iExists (λ _, True%I).
     rewrite /auditor_boot. iEval simpl.

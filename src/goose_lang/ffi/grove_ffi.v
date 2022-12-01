@@ -274,10 +274,10 @@ Section grove.
   Local Definition data_vals (data : list u8) : list val :=
     ((λ b, #(LitByte b)) <$> data).
 
-  Local Definition chan_msg_bounds (g : gmap chan (gset message)) : Prop :=
+  Definition chan_msg_bounds (g : gmap chan (gset message)) : Prop :=
     ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
 
-  Local Definition file_content_bounds (g : gmap string (list byte)) : Prop :=
+  Definition file_content_bounds (g : gmap string (list byte)) : Prop :=
     ∀ f c, g !! f = Some c → length c < 2^64.
 
   Local Program Instance grove_interp: ffi_interp grove_model :=
