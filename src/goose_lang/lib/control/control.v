@@ -185,4 +185,11 @@ Proof.
   iApply ("HΦ" with "[//]").
 Qed.
 
+Theorem wp_Exit stk E (code: u64) :
+  {{{ True }}} Exit #code @ stk; E {{{ RET #(); False }}}.
+Proof.
+  iIntros "%Φ _ HΦ". wp_call.
+  iLöb as "IH". wp_pures. wp_apply ("IH" with "[$]").
+Qed.
+
 End goose_lang.

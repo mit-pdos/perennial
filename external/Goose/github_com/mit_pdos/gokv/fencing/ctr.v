@@ -93,13 +93,13 @@ Definition Clerk__Get: val :=
     (if: "err" ≠ #0
     then
       (* log.Println("ctr: urpc get call failed/timed out") *)
-      grove_ffi.Exit #1
+      control.impl.Exit #1
     else #());;
     let: "r" := DecGetReply (![slice.T byteT] "reply_ptr") in
     (if: struct.loadF GetReply "err" "r" ≠ ENone
     then
       (* log.Println("ctr: get() stale epoch number") *)
-      grove_ffi.Exit #1
+      control.impl.Exit #1
     else #());;
     ResolveProph "valProph" (struct.loadF GetReply "val" "r");;
     struct.loadF GetReply "val" "r".
@@ -116,14 +116,14 @@ Definition Clerk__Put: val :=
     (if: "err" ≠ #0
     then
       (* log.Println("ctr: urpc put call failed/timed out") *)
-      grove_ffi.Exit #1
+      control.impl.Exit #1
     else #());;
     let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
     let: "epochErr" := marshal.Dec__GetInt "dec" in
     (if: "epochErr" ≠ ENone
     then
       (* log.Println("ctr: get() stale epoch number") *)
-      grove_ffi.Exit #1
+      control.impl.Exit #1
     else #());;
     #().
 
@@ -136,7 +136,7 @@ Definition MakeClerk: val :=
     (if: "err" ≠ #0
     then
       (* log.Println("ctr: urpc getcid call failed/timed out") *)
-      grove_ffi.Exit #1
+      control.impl.Exit #1
     else #());;
     struct.storeF Clerk "e" "ck" (erpc.MakeClient (marshal.Dec__GetInt (marshal.NewDec (![slice.T byteT] "reply_ptr"))));;
     "ck".

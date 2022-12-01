@@ -41,7 +41,7 @@ Definition Clerk__AcquireEpoch: val :=
     (if: "err" ≠ #0
     then
       (* log.Println("config: client failed to run RPC on config server") *)
-      grove_ffi.Exit #1
+      control.impl.Exit #1
     else #());;
     let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
     marshal.Dec__GetInt "dec".
@@ -53,7 +53,7 @@ Definition Clerk__Get: val :=
     (if: "err" ≠ #0
     then
       (* log.Println("config: client failed to run RPC on config server") *)
-      grove_ffi.Exit #1
+      control.impl.Exit #1
     else #());;
     let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
     marshal.Dec__GetInt "dec".

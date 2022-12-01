@@ -5,7 +5,7 @@ From Perennial.program_proof.grove_shared Require Export erpc_lib urpc_proof urp
 From Perennial.program_proof.fencing Require Export config_proof frontend_proof.
 From Perennial.program_proof Require Export marshal_proof.
 From iris.base_logic Require Import mono_nat.
-From Perennial.goose_lang Require Import prelude ffi.grove_exit_axiom.
+From Perennial.goose_lang Require Import prelude.
 
 Module client.
 Section client_proof.

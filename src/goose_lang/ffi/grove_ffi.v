@@ -1158,15 +1158,3 @@ Next Obligation.
   iExists (GroveNodeGS _ _ tsc_name _).
   simpl. iFrame. iPureIntro. done.
 Qed.
-
-Section filesys.
-
-Existing Instances grove_op grove_model grove_ty.
-Existing Instances grove_semantics grove_interp.
-Existing Instance goose_groveGS.
-
-(* Axiomatized interfaces *)
-
-Axiom Exit: goose_lang.val.
-
-End filesys.

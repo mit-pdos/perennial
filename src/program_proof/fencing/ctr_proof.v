@@ -6,7 +6,7 @@ From Perennial.program_proof Require Export marshal_proof.
 From iris.algebra Require Import cmra.
 From iris.base_logic Require Export mono_nat.
 From Perennial.goose_lang Require Import proph.
-From Perennial.goose_lang Require Import prelude ffi.grove_exit_axiom.
+From Perennial.goose_lang Require Import prelude.
 
 From Perennial.program_proof.fencing Require Export map.
 
