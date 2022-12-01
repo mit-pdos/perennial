@@ -239,6 +239,7 @@ def main():
                 "simplepb/admin",
                 "simplepb/config",
                 "simplepb/pb",
+                "aof",
                 # "simplepb/state",
                 "simplepb/e",
                 "simplepb/clerk",

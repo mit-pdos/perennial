@@ -12,14 +12,6 @@ Definition InMemoryStateMachine := struct.decl [
   "SetState" :: (slice.T byteT -> unitT)%ht
 ].
 
-Definition appendOp: val :=
-  rec: "appendOp" "fname" "op" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "op")) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "op");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "op";;
-    grove_ffi.FileAppend "fname" (![slice.T byteT] "enc");;
-    #().
-
 Definition MAX_LOG_SIZE : expr := #64 * #1024 * #1024 * #1024.
 
 (* File format:
@@ -52,7 +44,8 @@ Definition StateMachine__makeDurableWithSnap: val :=
     grove_ffi.FileWrite (struct.loadF StateMachine "fname" "s") (![slice.T byteT] "enc");;
     #().
 
-(* XXX: this is not safe to run concurrently with apply() *)
+(* XXX: this is not safe to run concurrently with apply()
+   requires that the state machine is not sealed *)
 Definition StateMachine__truncateAndMakeDurable: val :=
   rec: "StateMachine__truncateAndMakeDurable" "s" :=
     let: "snap" := struct.loadF InMemoryStateMachine "GetState" (struct.loadF StateMachine "smMem" "s") #() in
@@ -90,7 +83,8 @@ Definition StateMachine__getStateAndSeal: val :=
     (if: ~ (struct.loadF StateMachine "sealed" "s")
     then
       struct.storeF StateMachine "sealed" "s" #true;;
-      grove_ffi.FileAppend (struct.loadF StateMachine "fname" "s") (NewSlice byteT #1)
+      let: "l" := aof.AppendOnlyFile__Append (struct.loadF StateMachine "logFile" "s") (NewSlice byteT #1) in
+      aof.AppendOnlyFile__WaitAppend (struct.loadF StateMachine "logFile" "s") "l"
     else #());;
     let: "snap" := struct.loadF InMemoryStateMachine "GetState" (struct.loadF StateMachine "smMem" "s") #() in
     "snap".
@@ -102,10 +96,14 @@ Definition recoverStateMachine: val :=
       "smMem" ::= "smMem"
     ] in
     let: "enc" := ref_to (slice.T byteT) (grove_ffi.FileRead (struct.loadF StateMachine "fname" "s")) in
-    struct.storeF StateMachine "logFile" "s" (aof.CreateAppendOnlyFile "fname");;
     (if: (slice.len (![slice.T byteT] "enc") = #0)
-    then "s"
+    then
+      let: "initialContents" := NewSlice byteT (#8 + #8 + #8) in
+      grove_ffi.FileWrite (struct.loadF StateMachine "fname" "s") "initialContents";;
+      struct.storeF StateMachine "logFile" "s" (aof.CreateAppendOnlyFile "fname");;
+      "s"
     else
+      struct.storeF StateMachine "logFile" "s" (aof.CreateAppendOnlyFile "fname");;
       let: "snapLen" := ref (zero_val uint64T) in
       let: "snap" := ref (zero_val (slice.T byteT)) in
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in

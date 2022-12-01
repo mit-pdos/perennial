@@ -40,7 +40,7 @@ Notation "s f↦{ q } c" := (file_mapsto s c q)
 Notation "s f↦ c" := (s f↦{1} c)%I
 (at level 20, format "s  f↦ c") : bi_scope.
 
-Axiom wpc_Read : ∀ {k} filename (q:Qp) content,
+Axiom wpc_Read : ∀ filename (q:Qp) content,
   {{{
       filename f↦{q} content
   }}}
@@ -53,7 +53,7 @@ Axiom wpc_Read : ∀ {k} filename (q:Qp) content,
       filename f↦{q} content
   }}}.
 
-Axiom wpc_Write : ∀ {k} filename content_old content (content_sl:Slice.t) q,
+Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) q,
   {{{
       filename f↦ content_old ∗
       typed_slice.is_slice content_sl byteT q content
@@ -68,7 +68,7 @@ Axiom wpc_Write : ∀ {k} filename content_old content (content_sl:Slice.t) q,
       filename f↦ content
   }}}.
 
-Axiom wpc_AtomicAppend : ∀ {k} filename content_old content (content_sl:Slice.t) q,
+Axiom wpc_AtomicAppend : ∀ filename content_old content (content_sl:Slice.t) q,
   {{{
       filename f↦ content_old ∗
       typed_slice.is_slice content_sl byteT q content
@@ -149,7 +149,7 @@ handler_is host rpcid spec -∗
 .
 *)
 
-Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post k,
+Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post,
   {{{
       is_slice req byteT 1 reqData ∗
       rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
