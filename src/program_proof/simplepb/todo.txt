@@ -5,5 +5,5 @@
  wp_DecodePrimaryArgs (revolving around for loop for unmarshaling list of
  hostnames).
 
-[ ] Axiomatized ffi: `src/goose_lang/ffi/grove_filesys_axioms.v`.
+[x] Axiomatized ffi: `src/goose_lang/ffi/grove_filesys_axioms.v`.
  3 operations: Read, Write, AtomicAppend.
