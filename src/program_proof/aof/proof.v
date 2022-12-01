@@ -4,6 +4,7 @@ From Perennial.algebra Require Import mlist.
 From iris.algebra Require Import mono_nat.
 From Perennial.Helpers Require Import ModArith.
 From Perennial.program_proof.fencing Require Import map.
+From Perennial.goose_lang Require Import crash_borrow.
 
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
@@ -16,6 +17,7 @@ Class aofG Σ := AofG {
   aof_mnatG :> inG Σ mono_natUR ;
   aof_mapG :> mapG Σ u64 unit ;
   aof_tokG :> inG Σ (exclR unitO) ;
+  aof_stagedG :> stagedG Σ ; (* for crash borrows? *)
 }.
 
 Record aof_vol_names := mk_aof_vol_names {
@@ -79,11 +81,11 @@ Definition is_aof aof_ptr γ (P : (list u8) → iProp Σ) : iProp Σ :=
 Definition aof_log_own γ data :=
   fmlist γ.(logdata) (DfracOwn (1/2)) data.
 
-(* TODO: upgrade to WPC *)
+Opaque crash_borrow.
 Lemma wp_CreateAppendOnlyFile (fname:string) data P :
   {{{
-       fname f↦ data ∗
-       P data
+       crash_borrow (fname f↦ data ∗ P data)
+                    (|={⊤}=> ∃ data', fname f↦ data' ∗ P data')
   }}}
     CreateAppendOnlyFile #(str fname)
   {{{
@@ -199,9 +201,12 @@ Proof.
     wp_apply (acquire_spec with "Hmu_inv").
     iIntros "[Hlocked Haof_own]".
     wp_pures.
-    iAssert (∃ data', fname f↦ (γ.(initdata) ++ data') ∗ P (γ.(initdata) ++ data') ∗ fmlist γ.(predurabledata) (DfracOwn (1/2)) (γ.(initdata) ++ data')
-            ∗ l ↦[AppendOnlyFile :: "durableLength"]{1 / 2} #(U64 (length data'))
-            ∗ own γ.(len) (●MN{#1/2} (length (data')))
+    iAssert (∃ data',
+              crash_borrow (fname f↦ (γ.(initdata) ++ data') ∗ P (γ.(initdata) ++ data'))
+                           (|={⊤}=> ∃ data2, fname f↦ data2 ∗ P data2) ∗
+              fmlist γ.(predurabledata) (DfracOwn (1/2)) (γ.(initdata) ++ data') ∗
+              l ↦[AppendOnlyFile :: "durableLength"]{1 / 2} #(U64 (length data')) ∗
+              own γ.(len) (●MN{#1/2} (length (data')))
             )%I with "[Hpre Hpredur HdurLen Hlen]" as "Hfile_ctx".
     { iExists []; iFrame. rewrite app_nil_r. iFrame. }
     wp_forBreak.
@@ -238,7 +243,7 @@ Proof.
     wp_pures.
     wp_loadField.
 
-    iDestruct "Hfile_ctx" as (data') "(Hfile & Hctx & Hpredur & HdurLen & Hlen)".
+    iDestruct "Hfile_ctx" as (data') "(Hfile_ctx & Hpredur & HdurLen & Hlen)".
 
     iDestruct (fmlist_agree_1 with "Hpredur Hpredurable") as %Hpredur.
     apply app_inv_head in Hpredur.
@@ -247,7 +252,7 @@ Proof.
     iMod (fmlist_update (γ.(initdata) ++ predurableC ++ membufC) with "Hpredur") as "[Hpredur _]".
     { rewrite app_assoc. apply prefix_app_r. done. }
     iDestruct "Hpredur" as "[Hpredur Hpredurable]".
-    wp_apply (release_spec with "[-Hfile Hctx Hpredur Hmembuf_fupd Hmembuf_sl HdurLen Hlen]").
+    wp_apply (release_spec with "[-Hfile_ctx Hpredur Hmembuf_fupd Hmembuf_sl HdurLen Hlen]").
     { iFrame "#∗". iNext. iExists _, [], (predurableC ++ membufC), _. iFrame "∗#".
       rewrite app_nil_r.
       iFrame.
@@ -258,9 +263,16 @@ Proof.
     wp_pures.
 
     iDestruct (typed_slice.is_slice_sz with "Hmembuf_sl") as %Hsz.
-    wp_bind (FileAppend _ _).
-    iApply wpc_wp.
     iDestruct (is_slice_to_small with "Hmembuf_sl") as "Hmembuf_sl".
+
+    wp_bind (FileAppend _ _).
+    iApply (wpc_wp _ _ _ _ True).
+    wpc_apply (wpc_crash_borrow_open_modify with "Hfile_ctx").
+    { done. }
+    iSplit; first done.
+    iIntros "[Hfile Hctx]".
+    iApply wpc_fupd.
+
     wpc_apply (wpc_FileAppend with "[$Hfile $Hmembuf_sl]").
     { admit. } (* TODO: list length overflow.
                   This seems a bit tricky. γ.initdata is the initial contents of
@@ -270,12 +282,38 @@ Proof.
                   size of the file.
                 *)
     iSplit.
-    { iIntros. instantiate (1:=(True)%I). done. }
+    { (* This is the case in which the node crashes during the FileAppend. *)
+      iIntros "[Hbefore|Hafter]".
+      {
+        iSplitR; first done.
+        iModIntro. iExists _; iFrame.
+      }
+      {
+        iSplitR; first done.
+        iExists _; iFrame.
+        iMod ("Hmembuf_fupd" with "Hctx") as "[Hctx _]".
+        rewrite app_assoc.
+        iModIntro. iFrame.
+      }
+    }
     iNext.
     iIntros "[Hfile _]".
     iMod ("Hmembuf_fupd" with "Hctx") as "[Hctx Hlen_fupd]".
-    wp_pures.
+    iModIntro.
+    iExists _.
+    iSplitL "Hfile Hctx".
+    { iNamedAccu. }
+    iSplit.
+    {
+      iModIntro. iNamed 1.
+      iExists _. rewrite app_assoc.
+      iModIntro. iFrame.
+    }
 
+    iIntros "Hfile_ctx".
+    iSplit; first done.
+
+    wp_pures.
     wp_loadField.
     wp_apply (acquire_spec with "Hmu_inv").
     iIntros "[Hlocked Haof_own]".
@@ -300,7 +338,7 @@ Proof.
     iFrame.
     iSplitL ""; first done.
     iDestruct "HdurLen" as "[HdurableLength HdurLen]".
-    iSplitR "Hpredur HdurLen Hlen Hfile Hctx".
+    iSplitR "Hpredur HdurLen Hlen Hfile_ctx".
     {
       iExists _, _, _, _; iFrame "∗#".
       unfold aof_length_lb.
