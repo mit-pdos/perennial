@@ -34,10 +34,10 @@ Definition StateMachine := struct.decl [
 Definition StateMachine__makeDurableWithSnap: val :=
   rec: "StateMachine__makeDurableWithSnap" "s" "snap" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "snap" + #8 + #8)) in
-    marshal.WriteInt (![slice.T byteT] "enc") (slice.len "snap");;
-    marshal.WriteBytes (![slice.T byteT] "enc") "snap";;
-    marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "epoch" "s");;
-    marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "nextIndex" "s");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "snap");;
+    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "snap";;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "epoch" "s");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "nextIndex" "s");;
     (if: struct.loadF StateMachine "sealed" "s"
     then marshal.WriteBytes (![slice.T byteT] "enc") (NewSlice byteT #1)
     else #());;
@@ -75,6 +75,7 @@ Definition StateMachine__apply: val :=
         ) in
       ("ret", "waitFn")).
 
+(* TODO: make the nextIndex and epoch argument order consistent with pb.StateMachine *)
 Definition StateMachine__setStateAndUnseal: val :=
   rec: "StateMachine__setStateAndUnseal" "s" "snap" "nextIndex" "epoch" :=
     struct.storeF StateMachine "epoch" "s" "epoch";;
