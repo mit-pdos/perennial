@@ -163,10 +163,20 @@ Proof.
     }
   }
   {
+    apply lookup_lt_Some in Hlookup.
     rewrite list_lookup_insert_ne; last done.
-    admit.
+    destruct (decide (j < i)).
+    {
+      rewrite ?lookup_app_l ?take_length //; try lia; [].
+      rewrite ?lookup_take; auto; lia.
+    }
+    assert (i < j) by lia.
+    rewrite ?lookup_app_r ?take_length //; try lia; [].
+    destruct (decide (j - i `min` length l < length l - i)).
+    { rewrite ?lookup_replicate_2 //; lia. }
+    { transitivity (@None A); [ | symmetry]; apply lookup_replicate_None; lia. }
   }
-Admitted.
+Qed.
 
 Lemma wp_Decode enc enc_sl (conf:C) :
   {{{

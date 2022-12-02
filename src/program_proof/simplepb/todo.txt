@@ -8,7 +8,7 @@
 [x] Axiomatized ffi: `src/goose_lang/ffi/grove_filesys_axioms.v`.
  3 operations: Read, Write, AtomicAppend.
 
-[ ] `src/program_proof/simplepb/config_marshal_proof.v`; admit in pure lemma
+[X] `src/program_proof/simplepb/config_marshal_proof.v`; admit in pure lemma
     `list_copy_one_more_element`. The proof that uses the lemma can probably be
     done without the lemma, basically the same as BecomePrimaryArgs's wp_Decode
     since it has a list of grove_ffi.Addresses.
