@@ -12,3 +12,13 @@
     `list_copy_one_more_element`. The proof that uses the lemma can probably be
     done without the lemma, basically the same as BecomePrimaryArgs's wp_Decode
     since it has a list of grove_ffi.Addresses.
+
+[ ] `src/program_proof/aof/proof.v`; admit with list size overflow during
+    FileAppend. An append-only file writes data to the end of any arbitrary
+    given file, without caring about what the initial beginning of the file is.
+    E.g. a file with 2^64 - 1 bytes might be passed into CreateAppendOnlyFile,
+    and then an Append will actually overflow, and we can't add an assume to the
+    Go code about this because the Go code doesn't even know how big the file is.
+    We could make the Go code read the file to figure this out, but that would
+    actually cause the program to do a bunch of (what I consider) unnecessary
+    reading from disk.
