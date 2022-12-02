@@ -22,3 +22,10 @@
     We could make the Go code read the file to figure this out, but that would
     actually cause the program to do a bunch of (what I consider) unnecessary
     reading from disk.
+
+[ ] `src/program_proof/simplepb/simplelog/proof.v`; admits about encoding of state.
+    The lemmas mentioning "file_encodes_state" shouldn't be too bad.
+    One thing I couldn't figure out is if there's a nicer way to define file_encodes_state,
+    in particular going from the abstract list of ops to the list of byte
+    representations of those ops. Can't just fmap it because the correspondence
+    between abstract op and encoded op is a relation, not a function.
