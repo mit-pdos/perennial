@@ -700,8 +700,6 @@ Definition use_fupd E (Palloc: alloc.t → iProp Σ) (a: u64): iProp Σ :=
 
 Let Ψ (a: u64) := (∃ bd b, int.Z a d↦[bd] b)%I.
 
-Opaque crash_borrow.
-
 (* This does not fit the "atomic triple" pattern because of the possibility to
 return [#false] without actually performing the commit.
 It should be possible to phrase it as a "commit that does not change

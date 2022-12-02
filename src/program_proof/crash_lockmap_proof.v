@@ -10,7 +10,6 @@ From Perennial.Helpers Require Import NamedProps range_set.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode notation crash_borrow.
 
 Local Transparent load_ty store_ty.
-Opaque crash_borrow.
 
 Ltac word := try lazymatch goal with
                  | |- envs_entails _ _ => iPureIntro

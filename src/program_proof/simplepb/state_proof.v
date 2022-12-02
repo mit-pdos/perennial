@@ -371,7 +371,6 @@ Lemma wp_KVState__getState s st :
 Proof.
 Admitted.
 
-Opaque crash_borrow.
 Lemma wp_KVState__MakeDurable s old_st st fname P Q :
   {{{
         "#Hfname" ∷ readonly (s ↦[KVState :: "filename"] #(LitString fname)) ∗

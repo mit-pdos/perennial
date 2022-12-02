@@ -82,8 +82,6 @@ Proof. solve_proper. Qed.
 Global Instance recv_ne l : NonExpansive2 (recv l).
 Proof. solve_proper. Qed.
 
-Opaque crash_borrow.
-
 (** Actual proofs *)
 Lemma newbarrier_spec (P Pc : iProp Σ) :
   {{{ □ (P -∗ Pc) }}} barrier.newbarrier #() {{{ l, RET #l; recv l P Pc ∗ send l P Pc }}}.

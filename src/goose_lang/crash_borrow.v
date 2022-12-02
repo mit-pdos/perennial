@@ -196,11 +196,15 @@ Proof.
     iApply "IH"; eauto.
 Qed.
 
-Definition crash_borrow Ps Pc : iProp Σ :=
+Definition crash_borrow_def Ps Pc : iProp Σ :=
  (∃ Ps' Pc', □ (Ps -∗ Pc) ∗
              ▷ (Ps' -∗ Ps) ∗
              ▷ □ (Pc -∗ Pc') ∗
              staged_value_idle ⊤ Ps' True%I Pc' ∗ later_tok ∗ later_tok).
+Definition crash_borrow_aux : seal (@crash_borrow_def). Proof. by eexists. Qed.
+Definition crash_borrow := crash_borrow_aux.(unseal).
+Definition crash_borrow_eq : @crash_borrow = @crash_borrow_def := crash_borrow_aux.(seal_eq).
+Global Instance: Params (@crash_borrow) 2 := {}.
 
 Lemma crash_borrow_init_cancel P Pc :
   pre_borrow -∗ P -∗ □ (P -∗ Pc) -∗ init_cancel (crash_borrow P Pc) Pc.
@@ -210,7 +214,7 @@ Proof.
   iDestruct "H" as "(Hlt2&Hlt3)".
   iDestruct (staged_value_init_cancel P Pc with "[$]") as "H".
   iApply (init_cancel_wand with "H [-] []").
-  { iIntros "H". iExists _, _. iFrame "# ∗". iSplitL; eauto. }
+  { iIntros "H". rewrite crash_borrow_eq. iExists _, _. iFrame "# ∗". iSplitL; eauto. }
   eauto.
 Qed.
 
@@ -379,6 +383,7 @@ Proof.
 
   iAssert (crash_borrow P Pc)%I with "[Hlt1 Hlt2 Hlt5 H2 Hstat2 Hitok_u]"  as "Hborrow".
   {
+    rewrite crash_borrow_eq.
     iFrame "# ∗". iExists P, Pc.
     iSplitR; first eauto.
     iSplitR; first eauto.
@@ -478,6 +483,7 @@ Lemma crash_borrow_later_conseq P Pc P' Pc' :
 Proof.
   iIntros "#Hw1' Hw2' #Hw3'".
   iIntros "Hborrow".
+  rewrite crash_borrow_eq.
   iDestruct "Hborrow" as (P0 Pc0) "(#Hw1&Hw2&#H3&Hinv&Htok&Htok')".
   rewrite /crash_borrow.
   iExists P0, Pc0. iSplit; first eauto. iFrame "Hinv Htok Htok'".
@@ -494,8 +500,8 @@ Lemma crash_borrow_conseq P Pc P' Pc' :
 Proof.
   iIntros "#Hw1' Hw2' #Hw3'".
   iIntros "Hborrow".
+  rewrite crash_borrow_eq.
   iDestruct "Hborrow" as (P0 Pc0) "(#Hw1&Hw2&#H3&Hinv&Htok&Htok')".
-  rewrite /crash_borrow.
   iExists P0, Pc0. iSplit; first eauto. iFrame "Hinv Htok Htok'".
   iSplitL "Hw2 Hw2'".
   - iNext. iIntros. iApply "Hw2'". iApply "Hw2". done.
@@ -513,6 +519,7 @@ Lemma wpc_crash_borrow_split' E e Φ Φc P Pc P1 P2 Pc1 Pc2 :
   WPC e @ E {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hnval) "Hborrow Hshift #Hwand1 #Hwand2 Hwandc Hwpc".
+  rewrite crash_borrow_eq.
   iDestruct "Hborrow" as (??) "(#Hw1&Hw2&Hw3&Hinv&>Htok&>Htok')".
   iApply (wpc_later_tok_use2 with "[$]"); first done.
   iNext. iNext.
@@ -619,6 +626,7 @@ Lemma wpc_crash_borrow_combine'' E e Φ Φc P Pc P1 P2 Pc1 Pc2 :
 Proof.
   iIntros (Hnval) "Hborrow1 Hborrow2 HwandP Hwpc".
 
+  rewrite crash_borrow_eq.
   iDestruct "Hborrow1" as (??) "(#Hw1&Hw2&Hw3&Hinv1&Htok1&>Htok2)".
   iApply (wpc_later_tok_use2 with "[$]"); first done.
   iNext.
@@ -825,6 +833,7 @@ Lemma wpc_crash_borrow_open_modify E1 e Φ Φc P Pc:
   WPC e @ E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hnv) "H1 Hwp".
+  rewrite crash_borrow_eq.
   iDestruct "H1" as (??) "(#Hw1&Hw2&#Hw3&Hval&Hltok1&Hltok2)".
   iApply (wpc_later_tok_use2 with "[$]"); first done.
   iNext. iNext.
@@ -855,7 +864,7 @@ Qed.
 
 Lemma crash_borrow_crash_wand P Pc:
   crash_borrow P Pc -∗ □ (P -∗ Pc).
-Proof. iDestruct 1 as (??) "($&_)". Qed.
+Proof. rewrite crash_borrow_eq. iDestruct 1 as (??) "($&_)". Qed.
 
 Lemma crash_borrow_wpc_nval' E Pc P P' R :
   crash_borrow P Pc -∗
@@ -863,6 +872,7 @@ Lemma crash_borrow_wpc_nval' E Pc P P' R :
   wpc_nval E (R ∗ crash_borrow P' Pc).
 Proof.
   iIntros "Hborrow Hwand".
+  rewrite crash_borrow_eq.
   iDestruct "Hborrow" as (??) "(#Hw1&Hw2&#Hw3&Hval&Hltok1&Hltok2)".
   iApply (wp_nval_wpc_nval with "[$]"). iNext.
   iApply (wp_nval_strong_mono with "[-Hltok1]").
@@ -903,6 +913,7 @@ Lemma crash_borrow_wp_nval E Pc P P' R :
   wp_nval E (R ∗ crash_borrow P' Pc).
 Proof.
   iIntros "Hborrow Hwand".
+  rewrite crash_borrow_eq.
   iDestruct "Hborrow" as (??) "(#Hw1&Hw2&#Hw3&Hval&Hltok1&Hltok2)".
   iApply (wp_nval_strong_mono with "[-Hltok2 Hltok1]").
   { iApply (staged_inv_wp_nval _ _ _ P' (□ (P' -∗ Pc) ∗ R) with "[$Hval]"); auto.
@@ -1018,6 +1029,7 @@ Lemma wpc_crash_borrow_open_cancel E1 e Φ Φc P Pc:
   WPC e @ E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hnv) "H1 Hwp".
+  rewrite crash_borrow_eq.
   iDestruct "H1" as (??) "(#Hw1&Hw2&#Hw3&Hval&Hltok1&Hltok2)".
   iApply (wpc_later_tok_use2 with "[$]"); first done.
   iNext. iNext.
@@ -1045,7 +1057,6 @@ Proof.
     iIntros "Hltok". iDestruct "HΦ" as "(_&$)". }
 Qed.
 
-Opaque crash_borrow.
 Lemma crash_borrow_wpc_nval_sepM `{Countable A} {B} E (P: A → B → iProp Σ) Q Q' R m:
   ([∗ map] i ↦ x ∈ m, crash_borrow (Q i x) (P i x)) -∗
   (([∗ map] i ↦ x ∈ m, Q i x) -∗
@@ -1081,5 +1092,3 @@ Qed.
 
 
 End crash_borrow_def.
-
-Opaque crash_borrow.

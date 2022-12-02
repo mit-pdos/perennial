@@ -14,7 +14,6 @@ From Perennial.goose_lang.lib Require Export rwlock.rwlock_noncrash.
 Require Import Field.
 Add Field Qcfield : Qcanon.Qcft.
 Set Default Proof Using "Type".
-Opaque crash_borrow.
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.

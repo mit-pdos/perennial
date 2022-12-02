@@ -103,7 +103,6 @@ Definition is_aof aof_ptr γ fname (P : (list u8) → iProp Σ) Pcrash : iProp �
   "#Haof_len_inv" ∷ inv aof_lenN (aof_len_invariant γ)
 .
 
-Opaque crash_borrow.
 Lemma wp_CreateAppendOnlyFile (fname:string) data P Pcrash :
 □(∀ data, P data ={⊤}=∗ Pcrash data) -∗
   {{{

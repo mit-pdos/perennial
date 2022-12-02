@@ -362,7 +362,6 @@ Proof.
   iFrame.
 Admitted.
 
-Opaque crash_borrow.
 Lemma wp_SetStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗

@@ -21,7 +21,6 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
 
-Opaque crash_borrow.
 (* FIXME: this should be in a separate file *)
 
 

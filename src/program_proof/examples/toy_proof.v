@@ -114,8 +114,6 @@ Section goose.
     Unshelve. exact ⊤.
   Qed.
 
-  Opaque crash_borrow.
-
   Theorem wpc_TransferEvenBlock (d_ref: loc) (addr: u64) :
     {{{ EBlk addr }}}
       TransferEvenBlock #d_ref #addr @ ⊤
