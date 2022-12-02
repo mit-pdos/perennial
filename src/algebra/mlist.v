@@ -333,6 +333,9 @@ Global Instance fmlist_into_sep γ n :
   IntoSep (fmlist γ (DfracOwn 1) n) (fmlist γ (DfracOwn (1/2)) n) (fmlist γ (DfracOwn (1/2)) n).
 Proof. apply _. Qed.
 
+Global Instance fmlist_discarded_pers γ l: Persistent (fmlist γ DfracDiscarded l).
+Proof. apply _. Qed.
+
 End fmlist_props.
 
 Typeclasses Opaque fmlist fmlist_lb fmlist_idx.
