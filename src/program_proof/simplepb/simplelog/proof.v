@@ -54,6 +54,36 @@ Lemma file_encodes_state_append op op_bytes data epoch ops :
   file_encodes_state (data ++ (u64_le (length op_bytes)) ++ op_bytes) epoch (ops++[op]) false
 .
 Proof.
+  rewrite /file_encodes_state.
+  intros Hop_enc Hf_enc.
+  destruct Hf_enc as (snap_ops&snap&rest_ops&rest_ops_bytes&Heq_ops&Hsnaop_enc&Hlen&Hrest&Heq_data).
+  do 3 eexists.
+  exists (rest_ops_bytes ++ [op_bytes]).
+  split_and!.
+  { rewrite Heq_ops. rewrite -app_assoc. f_equal. }
+  { eauto. }
+  { rewrite ?app_length /=; lia. }
+  { intros i Hnonneg Hlt.
+    rewrite ?app_length /= in Hlt.
+    destruct (decide (i = length rest_ops)); last first.
+    { edestruct (Hrest i) as (op'&op_bytes'&Hlookup1&Hlookup2&Henc'); eauto.
+      { lia. }
+      do 2 eexists; split_and!; eauto.
+      { rewrite lookup_app_l; auto; lia. }
+      { rewrite lookup_app_l; auto; lia. }
+    }
+    {
+      subst. exists op, op_bytes. split_and!; eauto.
+      { rewrite lookup_app_r ?list_lookup_singleton; auto. rewrite Nat.sub_diag //. }
+      { rewrite lookup_app_r ?list_lookup_singleton; auto; try lia.
+        rewrite Hlen. rewrite Nat.sub_diag //. }
+    }
+  }
+  { rewrite Heq_data. rewrite -?app_assoc.
+    f_equal. f_equal. f_equal.
+    f_equal.
+    { (* BAD *) admit. }
+    { rewrite concat_app. f_equal. (* BAD *) admit. }
 Admitted.
 
 Lemma file_encodes_state_snapshot snap ops epoch :
