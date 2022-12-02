@@ -114,6 +114,11 @@ Definition file_inv γ P (contents:list u8) : iProp Σ :=
   (U64 (length contents)) ⤳[γ.(cur_state)]□ Some (epoch, ops, sealed)
 .
 
+Definition file_crash P (contents:list u8) : iProp Σ :=
+  ∃ epoch ops sealed,
+  ⌜file_encodes_state contents epoch ops sealed⌝ ∗
+  P epoch ops sealed
+.
 
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
   ∃ applyVolatileFn setStateFn,
@@ -135,7 +140,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "Hsealed" ∷ s ↦[StateMachine :: "sealed"] #sealed ∗
 
     "Haof" ∷ aof_log_own γaof data ∗
-    "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv γ P) ∗
+    "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv γ P) (file_crash P) ∗
     "%Henc" ∷ ⌜file_encodes_state data epoch ops sealed⌝ ∗
     "Hmemstate" ∷ own_InMemoryStateMachine ops ∗
     "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine ∗
@@ -437,6 +442,7 @@ Proof.
   iIntros "[Hfile Hinv]".
   iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   iApply wpc_fupd.
+  iDestruct (is_slice_small_sz with "Henc_sl") as %Henc_sz.
   wpc_apply (wpc_FileWrite with "[$Hfile $Henc_sl]").
   iSplit.
   { (* case: crash; *)
@@ -444,13 +450,20 @@ Proof.
     {
       iSplitR; first done.
       iModIntro; iExists _; iFrame.
+      iDestruct "Hinv" as (???) "[H1 [H2 H3]]".
+      iExists _,_,_; iFrame.
     }
     { (* fire update; this is the same as the reasoning in the non-crash case *)
       iSplitR; first done.
 
-      iDestruct "Hinv" as (???) "[%Henc2 HP]".
+      iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
+      iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hghost2") as "%Heq".
+      apply Option.eq_of_eq_Some in Heq.
+      replace (epoch0) with (epoch_prev) by naive_solver.
+      replace (ops0) with (ops_prev) by naive_solver.
+      replace (sealed) with (sealed_prev) by naive_solver.
 
-      (* FIXME: want to change the gname for the γ variable that tracks
+      (* Want to change the gname for the γ variable that tracks
          proposals we've made so far, since we're going to make a new aof. This
          means γ can't show up in the crash condition. So, we need aof to have a
          different P in the crash condition and in the current resources. *)
@@ -464,18 +477,36 @@ Proof.
   }
   iNext.
   iIntros "[Hfile _]".
-  iExists _.
+
+  iMod (ghost_map_alloc_fin None) as (γcur_state2) "Hunused_state".
+  set (γ2:={| cur_state := γcur_state2 |} ).
 
   (* update file_inv *)
-  iDestruct "Hinv" as (???) "[%Henc2 HP]".
-  pose proof (file_encodes_state_inj _ _ _ _ _ _ _ Henc2 Henc) as [-> [-> ->]].
+
+  iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
+  iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hghost2") as "%Heq".
+  apply Option.eq_of_eq_Some in Heq.
+  replace (epoch0) with (epoch_prev) by naive_solver.
+  replace (ops0) with (ops_prev) by naive_solver.
+  replace (sealed) with (sealed_prev) by naive_solver.
+
   iMod ("Hupd" with "HP") as "[HP HQ]".
-  iModIntro.
+
   rewrite -app_assoc.
   set (newdata:=(u64_le (length snap) ++ snap) ++ u64_le epoch ++ u64_le (length ops)).
-  iAssert (file_inv P newdata) with "[HP]" as "HP".
+  iClear "Hunused_vars".
+  iDestruct (big_sepS_elem_of_acc_impl (U64 (length newdata)) with "Hunused_state") as "[Hvar Hunused_vars]".
+  { set_solver. }
+
+  iMod (ghost_map_points_to_update (Some (epoch, ops, false)) with "Hvar") as "Hvar".
+  iMod (ghost_map_points_to_persist with "Hvar") as "#Hvar".
+
+  iModIntro.
+  iExists _.
+
+  iAssert (file_inv γ2 P newdata) with "[HP]" as "HP".
   {
-    iExists _, _, _; iFrame "HP".
+    iExists _, _, _; iFrame "HP Hvar".
     iPureIntro.
     unfold newdata.
     rewrite -app_assoc.
@@ -488,13 +519,21 @@ Proof.
     iModIntro.
     iIntros "[Hfile HP]".
     iModIntro. iExists _; iFrame.
+    iDestruct "HP" as (???) "[H1 [H2 H3]]".
+    iExists _,_,_; iFrame.
   }
   iIntros "Hfile".
   iSplit; first done.
   wp_pures.
   wp_loadField.
 
-  wp_apply (wp_CreateAppendOnlyFile _ _ (file_inv P) with "[$Hfile]").
+  wp_apply (wp_CreateAppendOnlyFile _ _ (file_inv γ2 P) (file_crash P) with "[] [$Hfile]").
+  {
+    iModIntro. iIntros (?) "Hinv".
+    iDestruct "Hinv" as (???) "[H1 [H2 H3]]".
+    iExists _,_,_; iFrame.
+    by iModIntro.
+  }
   iClear "His_aof".
   iIntros (new_aof_ptr γaof2) "[His_aof Haof]".
   wp_storeField.
@@ -505,10 +544,23 @@ Proof.
   iExists fname, new_aof_ptr, γ2, γaof2, _, _, newdata, own_InMemoryStateMachine.
   iFrame "∗".
   iFrame "#".
-  iPureIntro.
-  unfold newdata.
-  rewrite -app_assoc.
-  by apply file_encodes_state_snapshot.
+  iSplitR.
+  {
+    iPureIntro.
+    unfold newdata.
+    rewrite -app_assoc.
+    by apply file_encodes_state_snapshot.
+  }
+  iApply "Hunused_vars".
+  {
+    iModIntro. iIntros (???) "$".
+  }
+  {
+    iLeft. iPureIntro.
+    unfold newdata.
+    repeat rewrite -app_assoc in Henc_sz |-*.
+    word.
+  }
 Qed.
 
 End proof.
