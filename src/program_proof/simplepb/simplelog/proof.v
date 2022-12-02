@@ -178,7 +178,7 @@ Lemma StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops P :
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
-        (P epoch ops false ={⊤}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
+        (P epoch ops false ={⊤∖↑aofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
         own_StateMachine s epoch ops false P
   }}}
     StateMachine__apply #s (slice_val op_sl)
@@ -296,8 +296,8 @@ Proof.
 
   iDestruct "Hvar" as "[%Hbad | [%Hbad | Hvar]]".
   { exfalso.
-    admit. (* TODO: Hbad directly contradicts the assumption that the newdata
-              list doesn't overflow length. *)
+    admit. (* TODO: Hbad directly contradicts the (to-be-added?) assumption that
+              the newdata list doesn't overflow length. *)
   }
   { exfalso.
     admit. (* TODO: pure integer reasoning; have `int.nat X > X` in Hbad (modulo coercions) *)
@@ -589,7 +589,7 @@ Qed.
 Lemma wp_GetStateAndSeal s P epoch ops sealed Q :
   {{{
         own_StateMachine s epoch ops sealed P ∗
-        (P epoch ops sealed ={⊤}=∗ P epoch ops true ∗ Q)
+        (P epoch ops sealed ={⊤∖↑aofN}=∗ P epoch ops true ∗ Q)
   }}}
     StateMachine__getStateAndSeal #s
   {{{
