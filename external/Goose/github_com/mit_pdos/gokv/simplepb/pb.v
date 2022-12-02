@@ -265,7 +265,6 @@ Definition Server__Apply: val :=
     lock.acquire (struct.loadF Server "mu" "s");;
     (if: ~ (struct.loadF Server "isPrimary" "s")
     then
-      (* log.Println("Got request while not being primary") *)
       lock.release (struct.loadF Server "mu" "s");;
       struct.storeF ApplyReply "Err" "reply" e.Stale;;
       "reply"
@@ -396,7 +395,7 @@ Definition Server__GetState: val :=
 Definition Server__BecomePrimary: val :=
   rec: "Server__BecomePrimary" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: Server__isEpochStale "s" (struct.loadF BecomePrimaryArgs "Epoch" "args")
+    (if: struct.loadF BecomePrimaryArgs "Epoch" "args" < struct.loadF Server "epoch" "s"
     then
       (* log.Println("Stale BecomePrimary request") *)
       lock.release (struct.loadF Server "mu" "s");;

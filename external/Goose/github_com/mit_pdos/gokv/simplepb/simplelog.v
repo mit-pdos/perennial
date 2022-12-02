@@ -41,7 +41,9 @@ Definition StateMachine__makeDurableWithSnap: val :=
     (if: struct.loadF StateMachine "sealed" "s"
     then marshal.WriteBytes (![slice.T byteT] "enc") (NewSlice byteT #1)
     else #());;
+    aof.AppendOnlyFile__Close (struct.loadF StateMachine "logFile" "s");;
     grove_ffi.FileWrite (struct.loadF StateMachine "fname" "s") (![slice.T byteT] "enc");;
+    struct.storeF StateMachine "logFile" "s" (aof.CreateAppendOnlyFile (struct.loadF StateMachine "fname" "s"));;
     #().
 
 (* XXX: this is not safe to run concurrently with apply()
@@ -62,9 +64,13 @@ Definition StateMachine__apply: val :=
       Panic ("unsupported when using aof");;
       #()
     else
-      let: "l" := aof.AppendOnlyFile__Append (struct.loadF StateMachine "logFile" "s") "op" in
+      let: "opWithLen" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "op")) in
+      "opWithLen" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "opWithLen") (slice.len "op");;
+      "opWithLen" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "opWithLen") "op";;
+      let: "l" := aof.AppendOnlyFile__Append (struct.loadF StateMachine "logFile" "s") (![slice.T byteT] "opWithLen") in
+      let: "f" := struct.loadF StateMachine "logFile" "s" in
       let: "waitFn" := (λ: <>,
-        aof.AppendOnlyFile__WaitAppend (struct.loadF StateMachine "logFile" "s") "l";;
+        aof.AppendOnlyFile__WaitAppend "f" "l";;
         #()
         ) in
       ("ret", "waitFn")).

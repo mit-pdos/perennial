@@ -57,6 +57,8 @@ From Perennial.program_proof.aof Require proof.
 From Perennial.program_proof.simplepb Require
      admin_proof pb_start_proof.
 
+From Perennial.program_proof.simplepb.simplelog Require proof.
+
 From Perennial.program_proof.mpaxos Require
      apply_proof.
 
