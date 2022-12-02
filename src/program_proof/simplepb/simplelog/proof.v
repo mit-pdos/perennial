@@ -64,6 +64,13 @@ Lemma file_encodes_state_snapshot snap ops epoch :
 Proof.
 Admitted.
 
+Lemma file_encodes_state_seal data ops epoch :
+  file_encodes_state data epoch ops false →
+  file_encodes_state (data ++ [U8 0]) epoch ops true
+.
+Proof.
+Admitted.
+
 Implicit Types (P:u64 → list OpType → bool → iProp Σ).
 
 Implicit Types own_InMemoryStateMachine : list OpType → iProp Σ.
@@ -96,6 +103,19 @@ Definition is_InMemory_setStateFn (setStateFn:val) own_InMemoryStateMachine : iP
   }}}
 .
 
+Definition is_InMemory_getStateFn (getStateFn:val) own_InMemoryStateMachine : iProp Σ :=
+  ∀ ops,
+  {{{
+        own_InMemoryStateMachine ops
+  }}}
+    getStateFn #()
+  {{{
+        snap snap_sl, RET (slice_val snap_sl); own_InMemoryStateMachine ops ∗
+        ⌜has_snap_encoding snap ops⌝ ∗
+        readonly (is_slice_small snap_sl byteT 1 snap)
+  }}}
+.
+
 Record simplelog_names :=
 {
   (* file_encodes_state is not injective, so we use this state to
@@ -121,11 +141,15 @@ Definition file_crash P (contents:list u8) : iProp Σ :=
 .
 
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
-  ∃ applyVolatileFn setStateFn,
+  ∃ applyVolatileFn setStateFn getStateFn,
   "#HapplyVolatile" ∷ readonly (sm ↦[InMemoryStateMachine :: "ApplyVolatile"] applyVolatileFn) ∗
   "#HapplyVolatile_spec" ∷ is_InMemory_applyVolatileFn applyVolatileFn own_InMemoryStateMachine ∗
+
   "#HsetState" ∷ readonly (sm ↦[InMemoryStateMachine :: "SetState"] setStateFn) ∗
-  "#HsetState_spec" ∷ is_InMemory_setStateFn setStateFn own_InMemoryStateMachine
+  "#HsetState_spec" ∷ is_InMemory_setStateFn setStateFn own_InMemoryStateMachine ∗
+
+  "#HgetState" ∷ readonly (sm ↦[InMemoryStateMachine :: "GetState"] getStateFn) ∗
+  "#HgetState_spec" ∷ is_InMemory_getStateFn getStateFn own_InMemoryStateMachine
 .
 
 Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) P : iProp Σ :=
@@ -339,7 +363,7 @@ Proof.
 Admitted.
 
 Opaque crash_borrow.
-Lemma wp_SetStateAndUnseal s (set_state_fn:val) P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
+Lemma wp_SetStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
@@ -562,5 +586,104 @@ Proof.
     word.
   }
 Qed.
+
+Lemma wp_GetStateAndSeal s P epoch ops sealed Q :
+  {{{
+        own_StateMachine s epoch ops sealed P ∗
+        (P epoch ops sealed ={⊤}=∗ P epoch ops true ∗ Q)
+  }}}
+    StateMachine__getStateAndSeal #s
+  {{{
+        snap_sl snap,
+        RET (slice_val snap_sl);
+        readonly (is_slice_small snap_sl byteT 1 snap) ∗
+        ⌜has_snap_encoding snap ops⌝ ∗
+        own_StateMachine s epoch ops true P ∗
+        Q
+  }}}.
+Proof.
+  iIntros (Φ) "(Hown & Hupd) HΦ".
+  wp_lam.
+  wp_pures.
+
+  iNamed "Hown".
+  wp_loadField.
+
+  wp_pures.
+  wp_if_destruct.
+  { (* case: not sealed previously *)
+    wp_storeField.
+    wp_apply (wp_NewSlice).
+    iIntros (seal_sl) "Hseal_sl".
+    wp_loadField.
+    iDestruct (is_slice_to_small with "Hseal_sl") as "Hseal_sl".
+    wp_apply (wp_AppendOnlyFile__Append with "His_aof [$Haof $Hseal_sl Hupd]").
+    { by compute. }
+    { by compute. }
+    {
+      iIntros "Hinv".
+      instantiate (1:=Q).
+
+      iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
+      iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hghost2") as "%Heq".
+      apply Option.eq_of_eq_Some in Heq.
+      replace (epoch0) with (epoch) by naive_solver.
+      replace (ops0) with (ops) by naive_solver.
+      replace (sealed) with (false) by naive_solver.
+
+      iMod ("Hupd" with "HP") as "[HP $]".
+      iModIntro.
+      iExists _, _, _.
+      iFrame "HP".
+      iSplitR; last admit. (* FIXME: freeze var witness, or use an append-only
+                              list in place of the cur_state vars *)
+      iPureIntro.
+      by apply file_encodes_state_seal.
+    }
+    iIntros (l) "[Haof HupdQ]".
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_AppendOnlyFile__WaitAppend with "His_aof").
+    iIntros "Hl".
+    iMod ("HupdQ" with "Hl") as "HQ".
+
+    wp_pures.
+    wp_loadField.
+    iAssert (_) with "HisMemSm" as "#HisMemSm2".
+    iNamed "HisMemSm2".
+    wp_loadField.
+    wp_apply ("HgetState_spec" with "[$Hmemstate]").
+    iIntros (??) "(Hmemstate & %HencSnap & #Hsnap_sl)".
+    wp_pures.
+    iApply "HΦ".
+    iModIntro.
+    iFrame "Hsnap_sl HQ".
+    iSplitR; first done.
+
+    iExists fname, aof_ptr, γ, γaof, _, _, _, _.
+    iFrame "∗#".
+    iSplitL.
+    {
+      iPureIntro.
+      by apply file_encodes_state_seal.
+    }
+    iSplitR; last admit. (* FIXME: take out var *)
+    admit. (* FIXME: get var witness *)
+  }
+  {
+    wp_pures.
+    wp_loadField.
+    iAssert (_) with "HisMemSm" as "#HisMemSm2".
+    iNamed "HisMemSm2".
+    wp_loadField.
+    wp_apply ("HgetState_spec" with "[$Hmemstate]").
+    iIntros (??) "(Hmemstate & %HencSnap & #Hsnap_sl)".
+    wp_pures.
+    iApply "HΦ".
+    iModIntro.
+    iFrame "Hsnap_sl".
+    admit. (* FIXME: get Q *)
+  }
+Admitted.
 
 End proof.
