@@ -3,6 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From coqutil.Datatypes Require Import List.
 From Perennial.goose_lang Require Import crash_borrow.
+From Perennial.program_proof.fencing Require Import map.
 
 From Perennial.program_proof.aof Require Import proof.
 
@@ -30,17 +31,22 @@ Context `{!aofG Σ}.
 
 (* Want to prove *)
 
-Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sealed:bool): Prop.
-Admitted.
+Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sealed:bool): Prop :=
+  ∃ snap_ops snap (rest_ops:list OpType) (rest_ops_bytes:list (list u8)),
+    ops = snap_ops ++ rest_ops ∧
+    has_snap_encoding snap snap_ops ∧
 
-Lemma file_encodes_state_inj data e ops s e' ops' s':
-  file_encodes_state data e ops s →
-  file_encodes_state data e' ops' s' →
-  e = e' ∧
-  ops = ops' ∧
-  s = s'.
-Proof.
-Admitted.
+    length rest_ops = length rest_ops_bytes ∧
+    (∀ (i:nat), 0 ≤ i → i < length rest_ops →
+          ∃ op op_bytes,
+            rest_ops !! i = Some op ∧
+              rest_ops_bytes !! i = Some op_bytes ∧
+              has_op_encoding op_bytes op
+    ) ∧
+
+    data = (u64_le (length snap)) ++ snap ++ (u64_le epoch) ++ (u64_le (length ops)) ++
+                         (concat rest_ops_bytes)
+.
 
 Lemma file_encodes_state_append op op_bytes data epoch ops :
   has_op_encoding op_bytes op →
@@ -59,12 +65,6 @@ Proof.
 Admitted.
 
 Implicit Types (P:u64 → list OpType → bool → iProp Σ).
-
-Definition file_inv P (contents:list u8) : iProp Σ :=
-  ∃ epoch ops sealed,
-  ⌜file_encodes_state contents epoch ops sealed⌝ ∗
-  P epoch ops sealed
-.
 
 Implicit Types own_InMemoryStateMachine : list OpType → iProp Σ.
 
@@ -96,6 +96,25 @@ Definition is_InMemory_setStateFn (setStateFn:val) own_InMemoryStateMachine : iP
   }}}
 .
 
+Record simplelog_names :=
+{
+  (* file_encodes_state is not injective, so we use this state to
+     remember that "for the 5th append, the (epoch, ops, sealed) was X".
+     For each possible length, there's a potential read-only proposal.
+   *)
+  cur_state : gname;
+}.
+
+Context `{!mapG Σ u64 (option (u64 * (list OpType) * bool))}.
+
+Definition file_inv γ P (contents:list u8) : iProp Σ :=
+  ∃ epoch ops sealed,
+  ⌜file_encodes_state contents epoch ops sealed⌝ ∗
+  P epoch ops sealed ∗
+  (U64 (length contents)) ⤳[γ.(cur_state)]□ Some (epoch, ops, sealed)
+.
+
+
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
   ∃ applyVolatileFn setStateFn,
   "#HapplyVolatile" ∷ readonly (sm ↦[InMemoryStateMachine :: "ApplyVolatile"] applyVolatileFn) ∗
@@ -105,7 +124,7 @@ Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ 
 .
 
 Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) P : iProp Σ :=
-  ∃ (fname:string) (aof_ptr:loc) γaof (logsize:u64) (smMem_ptr:loc) data
+  ∃ (fname:string) (aof_ptr:loc) γ γaof (logsize:u64) (smMem_ptr:loc) data
     own_InMemoryStateMachine,
     "Hfname" ∷ s ↦[StateMachine :: "fname"] #(LitString fname) ∗
     "HlogFile" ∷ s ↦[StateMachine :: "logFile"] #aof_ptr ∗
@@ -116,10 +135,13 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "Hsealed" ∷ s ↦[StateMachine :: "sealed"] #sealed ∗
 
     "Haof" ∷ aof_log_own γaof data ∗
-    "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv P) ∗
+    "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv γ P) ∗
     "%Henc" ∷ ⌜file_encodes_state data epoch ops sealed⌝ ∗
     "Hmemstate" ∷ own_InMemoryStateMachine ops ∗
-    "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine
+    "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine ∗
+
+    "#Hcur_state_var" ∷ (U64 (length data)) ⤳[γ.(cur_state)]□ Some (epoch, ops, sealed) ∗
+    "Hunused_vars" ∷ ([∗ set] x ∈ (fin_to_set u64 : gset u64), ⌜int.nat x ≤ length data⌝ ∨ x ⤳[γ.(cur_state)] None)
     (* "HsmMem" ∷ *)
 .
 
@@ -206,18 +228,76 @@ Proof.
   replace (op_sl.(Slice.sz)) with (U64 (length op_bytes)); last first.
   { word. }
 
+  set (newdata:=data ++ (u64_le (length op_bytes)) ++ op_bytes).
+
+  iAssert (([∗ set] x ∈ (fin_to_set u64:gset u64), ⌜int.nat x ≤ length newdata⌝ ∨ x ⤳[γ.(cur_state)] None) ∗
+           ([∗ set] x ∈ (fin_to_set u64:gset u64), ⌜int.nat x ≤ length data⌝ ∨ ⌜int.nat x > length newdata⌝ ∨ x ⤳[γ.(cur_state)] None)
+          )%I with "[Hunused_vars]" as "[Hunused_vars Hvar]".
+  {
+    Search "big_sepS_sep".
+    iDestruct big_sepS_sep as "[Hs _]".
+    iApply ("Hs" with "[Hunused_vars]").
+    iApply (big_sepS_impl with "Hunused_vars").
+    iModIntro.
+    iIntros (??) "[%H1|H2]".
+    {
+      iSplitL.
+      { iLeft. iPureIntro. unfold newdata. rewrite app_length. word. }
+      { iLeft. done. }
+    }
+    {
+      destruct (decide (int.nat x ≤ length newdata)).
+      {
+        iSplitR.
+        { iLeft. done. }
+        { iFrame. }
+      }
+      {
+        iSplitL.
+        { iFrame. }
+        { iRight; iLeft. iPureIntro. word. }
+      }
+    }
+  }
+
+  iDestruct (big_sepS_elem_of_acc _ _ (U64 (length newdata)) with "Hvar") as "[Hvar _]".
+  { set_solver. }
+
+  repeat rewrite app_length. rewrite u64_le_length.
+
+  iDestruct "Hvar" as "[%Hbad | [%Hbad | Hvar]]".
+  { exfalso.
+    admit. (* TODO: Hbad directly contradicts the assumption that the newdata
+              list doesn't overflow length. *)
+  }
+  { exfalso.
+    admit. (* TODO: pure integer reasoning; have `int.nat X > X` in Hbad (modulo coercions) *)
+  }
+
+  iMod (ghost_map_points_to_update (Some (epoch, ops++[op], false)) with "Hvar") as "Hvar".
+  iMod (ghost_map_points_to_persist with "Hvar") as "#Hvar".
+
   wp_apply (wp_AppendOnlyFile__Append with "His_aof [$Haof $HopWithLen_sl Hupd]").
   { rewrite app_length. rewrite u64_le_length. word. }
   { admit. } (* TODO: list size overflow *)
   {
     instantiate (1:=Q).
     iIntros "Hi".
-    iDestruct "Hi" as (???) "[%Henc2 HP]".
-    pose proof (file_encodes_state_inj _ _ _ _ _ _ _ Henc2 Henc) as [-> [-> ->]].
+    iDestruct "Hi" as (???) "(%Henc2 & HP & #Hghost2)".
+    iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hghost2") as "%Heq".
+    apply Option.eq_of_eq_Some in Heq.
+    replace (epoch0) with (epoch) by naive_solver.
+    replace (ops0) with (ops) by naive_solver.
+    replace (sealed) with (false) by naive_solver.
+
     iMod ("Hupd" with "HP") as "[HP $]".
     iModIntro.
     iExists _, (ops ++ [op]), _.
     iFrame "HP".
+    rewrite app_length.
+    rewrite app_length.
+    rewrite u64_le_length.
+    iFrame "Hvar".
     iPureIntro.
     by apply file_encodes_state_append.
   }
@@ -230,14 +310,15 @@ Proof.
   iFrame.
   iSplitR "HupdQ".
   {
-    iExists _, _, _, _, _, _, _.
+    iExists fname, _, γ, _, _, _, _, _.
+    iFrame "∗#".
+    repeat rewrite app_length. rewrite u64_le_length.
     iFrame "∗#".
     iSplitL; last first.
     { iPureIntro. by apply file_encodes_state_append. }
     iApply to_named.
     iExactEq "HnextIndex".
     repeat f_equal.
-    rewrite app_length.
     simpl.
     admit. (* TODO: show that the length of the ops list does not overflow *)
   }
@@ -368,7 +449,11 @@ Proof.
       iSplitR; first done.
 
       iDestruct "Hinv" as (???) "[%Henc2 HP]".
-      pose proof (file_encodes_state_inj _ _ _ _ _ _ _ Henc2 Henc) as [-> [-> ->]].
+
+      (* FIXME: want to change the gname for the γ variable that tracks
+         proposals we've made so far, since we're going to make a new aof. This
+         means γ can't show up in the crash condition. So, we need aof to have a
+         different P in the crash condition and in the current resources. *)
       iMod ("Hupd" with "HP") as "[HP _]".
       iModIntro. iExists _; iFrame.
       iExists _, _, _; iFrame "HP".
@@ -417,7 +502,7 @@ Proof.
   iApply "HΦ".
   iFrame "HQ".
   iModIntro.
-  iExists fname, new_aof_ptr, γaof2, _, _, newdata, own_InMemoryStateMachine.
+  iExists fname, new_aof_ptr, γ2, γaof2, _, _, newdata, own_InMemoryStateMachine.
   iFrame "∗".
   iFrame "#".
   iPureIntro.
