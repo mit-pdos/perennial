@@ -623,11 +623,11 @@ Proof.
   (* Want to prove membuf_fupd, and the postcondition *)
   set (membufC' := membufC ++ newData) in *.
 
-  iAssert (([∗ set] x ∈ fin_to_set u64, x ⤳[γ.(len_toks)] () ∨
+  iAssert (([∗ set] x ∈ (fin_to_set u64 : gset u64), x ⤳[γ.(len_toks)] () ∨
                       ⌜int.nat x <= length (predurableC ++ membufC)⌝ ∨
                       ⌜length (predurableC ++ membufC') < int.nat x⌝
           ) ∗
-          ([∗ set] x ∈ fin_to_set u64, x ⤳[γ.(len_toks)] () ∨
+          ([∗ set] x ∈ (fin_to_set u64 : gset u64), x ⤳[γ.(len_toks)] () ∨
                       ⌜int.nat x ≤ length (predurableC ++ membufC')⌝
           ))%I
     with "[Hlen_toks]"
