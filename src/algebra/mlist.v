@@ -296,6 +296,14 @@ Proof.
   apply auth_update_alloc, mlist_local_update; auto.
 Qed.
 
+Lemma fmlist_freeze γ l q :
+  fmlist γ (DfracOwn q) l ==∗ fmlist γ (DfracDiscarded) l.
+Proof.
+  iIntros "Hm".
+  iMod (own_update with "Hm") as "$"; last done.
+  apply auth_update_auth_persist.
+Qed.
+
 Lemma fmlist_alloc l :
   ⊢ |==> ∃ γ, fmlist γ (DfracOwn 1) l.
 Proof.

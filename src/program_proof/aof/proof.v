@@ -962,4 +962,105 @@ Proof.
   iApply "HΦ".
 Qed.
 
+Lemma wp_AppendOnlyFile__Close aof_ptr γ P fname data :
+is_aof aof_ptr γ fname P -∗
+  {{{
+       aof_log_own γ data
+  }}}
+    AppendOnlyFile__Close #aof_ptr
+  {{{
+       RET #(); crash_borrow (fname f↦ data ∗ P data) (|={⊤}=> ∃ data', fname f↦ data' ∗ P data')
+  }}}.
+Proof.
+  iIntros "#Haof" (Φ) "!# Haof_log HΦ".
+  wp_lam.
+  wp_pures.
+  iNamed "Haof".
+  wp_loadField.
+  wp_apply (acquire_spec with "Hmu_inv").
+  iIntros "[Hlocked Haof_own]".
+  wp_pures.
+  iNamed "Haof_own".
+  iNamed "Hclose".
+  wp_storeField.
+  wp_loadField.
+  wp_apply (wp_condSignal).
+  { iFrame "#". }
+  wp_pures.
+
+  iDestruct "Haof_log" as "[Haof_log Htok]".
+  iMod (fmlist_freeze with "Haof_log") as "#Hexpected".
+
+  iAssert (aof_mu_invariant aof_ptr γ fname P) with "[-Htok HΦ Hlocked]" as "Haof_own".
+  {
+    iExists _, _, _, _.
+    iFrame "∗#%".
+    iExists _, _.
+    iFrame "HcloseRequested ∗%".
+    iDestruct "Hclose" as "[_ $]".
+    iExists _; iFrame "#".
+  }
+
+  wp_forBreak_cond.
+
+  iClear "Hdurlen_lb".
+  iNamed "Haof_own".
+  iNamed "Hclose".
+  wp_loadField.
+  wp_if_destruct.
+  { (* aof not closed yet, keep looping *)
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_condWait with "[-Htok HΦ]").
+    {
+      iFrame "#∗".
+      iExists _, _, _, _.
+      iFrame "∗#%".
+      iExists _, _.
+      iFrame "∗#∗".
+    }
+    iIntros "[Hlocked Haof_own]".
+    wp_pures.
+    iLeft.
+    iSplitR; first done.
+    iModIntro.
+    iFrame.
+  }
+  (* aof closed *)
+  iRight.
+  iModIntro.
+  iSplitR; first done.
+  iDestruct "Hclose" as "[HcloseRest #H]".
+  iNamed "H".
+
+  wp_pure1_credit "Hlc".
+  iApply fupd_wp.
+  iInv "HfileEscrow" as "Hi" "Hiclose".
+  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+  iDestruct "Hi" as (?) "[[Hf #Hdata]|Hbad]"; last first.
+  {
+    iDestruct (ghost_var_valid_2 with "Htok Hbad") as %Hbad.
+    exfalso. naive_solver.
+  }
+  iMod ("Hiclose" with "[$Htok]").
+  { done. }
+  iModIntro.
+
+  iDestruct (fmlist_agree_1 with "Hexpected Hdata") as %->.
+
+  wp_pures.
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ Hf]").
+  {
+    iFrame "#∗".
+    iNext.
+    iExists _, _, _, _. iFrame "∗#%".
+    iExists _, _. iFrame "∗#".
+  }
+  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  iFrame.
+Qed.
+
 End aof_proof.
