@@ -123,8 +123,7 @@ Proof.
 
   iAssert (_) with "HisSm" as "HisSm2".
   iNamed "HisSm2".
-  wp_apply (wp_Server__isEpochStale with "Hepoch").
-  iIntros "Hepoch".
+  wp_loadField.
   wp_if_destruct.
   { (* stale epoch *)
     wp_loadField.
@@ -141,8 +140,10 @@ Proof.
     iApply "HΨ".
   }
   { (* successfully become primary *)
+    (* FIXME: Already know that epoch <= args.epoch .
+       use is_epoch_lb and accessP property to get that args.epoch <= epoch *)
     assert (args.(BecomePrimaryArgs.epoch) = epoch) as Hepoch_eq.
-    { word. }
+    { admit. }
     wp_storeField.
     wp_loadField.
     wp_apply (wp_slice_len).
@@ -398,6 +399,6 @@ Proof.
     iApply "HΦ".
     iApply "HΨ".
   }
-Qed.
+Admitted.
 
 End pb_becomeprimary_proof.
