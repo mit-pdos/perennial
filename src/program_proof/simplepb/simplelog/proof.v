@@ -674,7 +674,7 @@ Proof.
     wp_loadField.
     wp_apply (wp_AppendOnlyFile__WaitAppend with "His_aof").
     iIntros "Hl".
-    iMod ("HupdQ" with "Hl") as "HQ".
+    iMod ("HupdQ" with "Hl") as "[HQ Hlb]".
 
     wp_pures.
     wp_loadField.

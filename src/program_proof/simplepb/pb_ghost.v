@@ -27,8 +27,8 @@ Record pb_server_names :=
 }.
 
 Context `{EntryType:Type}.
-
-Local Definition logR := mono_listR (leibnizO EntryType).
+Local Canonical Structure EntryTypeO := leibnizO EntryType.
+Local Definition logR := mono_listR EntryTypeO.
 
 Class pb_ghostG Σ := {
     pb_ghost_epochG :> mono_natG Σ ;
@@ -55,9 +55,9 @@ Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
 Definition own_proposal_unused γsys epoch : iProp Σ :=
   own γsys.(pb_proposal_gn) {[ epoch := Cinl (Excl ()) ]}.
 Definition own_proposal γsys epoch σ : iProp Σ :=
-  own γsys.(pb_proposal_gn) {[ epoch := Cinr (●ML (σ : list (leibnizO (EntryType))))]}.
+  own γsys.(pb_proposal_gn) {[ epoch := Cinr (●ML σ)]}.
 Definition is_proposal_lb γsys epoch σ : iProp Σ :=
-  own γsys.(pb_proposal_gn) {[ epoch := Cinr (◯ML (σ : list (leibnizO (EntryType))))]}.
+  own γsys.(pb_proposal_gn) {[ epoch := Cinr (◯ML σ)]}.
 
 Notation "lhs ⪯ rhs" := (prefix lhs rhs)
 (at level 20, format "lhs  ⪯  rhs") : stdpp_scope.
@@ -65,7 +65,7 @@ Notation "lhs ⪯ rhs" := (prefix lhs rhs)
 Definition own_init_proposal_unused γsys epoch : iProp Σ :=
   own γsys.(pb_init_proposal_gn) {[ epoch := Cinl (Excl ()) ]}.
 Definition is_init_proposal γsys epoch σ : iProp Σ :=
-  own γsys.(pb_init_proposal_gn) {[ epoch := Cinr (●ML□ (σ : list (leibnizO (EntryType))))]}.
+  own γsys.(pb_init_proposal_gn) {[ epoch := Cinr (●ML□ σ)]}.
 Definition is_init_proposal_ub γsys epoch σ : iProp Σ :=
   ∃ σexact,
   ⌜σexact ⪯ σ⌝ ∗
@@ -78,19 +78,19 @@ Definition is_tok γsrv epoch : iProp Σ :=
   own γsrv.(pb_escrow_gn) {[ epoch := to_dfrac_agree (DfracDiscarded) ()]}.
 
 Definition own_accepted γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
+  own γ.(pb_accepted_gn) {[ epoch := ●ML σ]}.
 Definition is_accepted_lb γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
+  own γ.(pb_accepted_gn) {[ epoch := ◯ML σ]}.
 Definition is_accepted_ro γ epoch σ : iProp Σ :=
-  own γ.(pb_accepted_gn) {[ epoch := ●ML□ (σ : list (leibnizO (EntryType)))]}.
+  own γ.(pb_accepted_gn) {[ epoch := ●ML□ σ]}.
 
 (* TODO: if desired, can make these exclusive by adding an exclusive token to each *)
 Definition own_ghost γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).
+  own γ.(pb_state_gn) (●ML{#1/2} σ).
 Definition own_commit γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).
+  own γ.(pb_state_gn) (●ML{#1/2} σ).
 Definition is_ghost_lb γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (◯ML (σ : list (leibnizO (EntryType)))).
+  own γ.(pb_state_gn) (◯ML σ).
 
 Definition is_epoch_config γ epoch (conf:list pb_server_names): iProp Σ :=
   own γ.(pb_config_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (Some conf : (leibnizO _)))]} ∗
@@ -415,7 +415,7 @@ Proof.
   assert (length σ' = length σ_old) by lia.
   iDestruct (own_mono with "Hprop_lb") as "#Hprop'_lb".
   {
-    instantiate (1:={[epoch := Cinr (◯ML (σ' : list (leibnizO EntryType)))]}).
+    instantiate (1:={[epoch := Cinr (◯ML σ')]}).
     rewrite singleton_included.
     right.
     apply Cinr_included.
@@ -452,7 +452,7 @@ Lemma ghost_get_accepted_lb γsys γsrv epoch σ sealed :
   is_accepted_lb γsrv epoch σ.
 Proof.
   iNamed 1.
-  iAssert (∃ dq, own γsrv.(pb_accepted_gn) {[epoch := ●ML{dq} (σ : list (leibnizO (EntryType)))]})%I with "[Haccepted]" as "HH".
+  iAssert (∃ dq, own γsrv.(pb_accepted_gn) {[epoch := ●ML{dq} σ]})%I with "[Haccepted]" as "HH".
   {
     destruct sealed.
     { iExists _; iFrame "∗#". }
@@ -631,7 +631,7 @@ Proof.
       iCombine "Hghost Hσ" as "Hσ".
       iMod (own_update with "Hσ") as "Hσ".
       {
-        apply (mono_list_update (σ ++ [op] : list (leibnizO EntryType))).
+        apply (mono_list_update (σ ++ [op])).
         by apply prefix_app_r.
       }
       iEval (rewrite -Qp.half_half) in "Hσ".
@@ -782,7 +782,7 @@ Proof.
   iMod (own_update with "Hprop") as "Hprop".
   {
     apply singleton_update.
-    instantiate (1:=Cinr (●ML (σ : list (leibnizO (EntryType))))).
+    instantiate (1:=Cinr (●ML σ)).
     apply cmra_update_exclusive.
     apply Cinr_valid.
     apply mono_list_auth_valid.
@@ -790,7 +790,7 @@ Proof.
   iMod (own_update with "Hinit") as "Hinit".
   {
     apply singleton_update.
-    instantiate (1:=Cinr (●ML□ (σ : list (leibnizO (EntryType))))).
+    instantiate (1:=Cinr (●ML□ σ)).
     apply cmra_update_exclusive.
     apply Cinr_valid.
     apply mono_list_auth_dfrac_valid.

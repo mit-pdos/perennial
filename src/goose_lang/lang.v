@@ -695,6 +695,10 @@ Canonical Structure locO := leibnizO loc.
 Canonical Structure valO := leibnizO val.
 Canonical Structure exprO := leibnizO expr.
 
+Canonical Structure u64O := leibnizO u64.
+Canonical Structure u32O := leibnizO u32.
+Canonical Structure u8O := leibnizO u8.
+
 (** Evaluation contexts *)
 Inductive ectx_item :=
   | AppLCtx (v2 : val)

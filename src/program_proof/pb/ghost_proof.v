@@ -4,8 +4,8 @@ From Perennial.program_proof Require Import grove_prelude.
 (*
   "Gauge-invariant" part of the proof
  *)
-Local Definition configR := gmapR u64 (dfrac_agreeR (leibnizO (list u64))).
-Local Definition logR := mono_listR (leibnizO u8).
+Local Definition configR := gmapR u64 (dfrac_agreeR (listO u64O)).
+Local Definition logR := mono_listR u8O.
 Local Definition cn_logR := gmapR u64 logR.
 Local Definition cn_rep_logR := gmapR (u64*u64) logR.
 Class pb_ghostG Σ :=
@@ -43,29 +43,29 @@ Context `{!gooseGlobalGS Σ, !pb_ghostG Σ}.
 Implicit Type γ : pb_names.
 
 Definition config_ptsto γ (cn:u64) (conf:list u64): iProp Σ :=
-  own γ.(pb_config_gn) {[cn := to_dfrac_agree DfracDiscarded (conf : (leibnizO _))]} ∗
+  own γ.(pb_config_gn) (A:=configR) {[cn := to_dfrac_agree DfracDiscarded conf]} ∗
   ⌜length conf > 0⌝.
 Definition config_unset γ (cn:u64) : iProp Σ :=
-  own γ.(pb_config_gn) {[cn := to_dfrac_agree (DfracOwn 1) ([] : (leibnizO _))]}.
+  own γ.(pb_config_gn) (A:=configR) {[cn := to_dfrac_agree (DfracOwn 1) []]}.
 
 Definition proposal_ptsto γ (cn:u64) (l:Log): iProp Σ :=
-  own γ.(pb_proposal_gn) {[cn := ●ML (l : list (leibnizO u8))]}.
+  own γ.(pb_proposal_gn) (A:=cn_logR) {[cn := ●ML l]}.
 Definition proposal_ptsto_ro γ (cn:u64) (l:Log): iProp Σ :=
-  own γ.(pb_proposal_gn) {[cn := ●ML□ (l : list (leibnizO u8))]}.
+  own γ.(pb_proposal_gn) (A:=cn_logR) {[cn := ●ML□ l]}.
 Definition proposal_lb γ (cn:u64) (l:Log): iProp Σ :=
-  own γ.(pb_proposal_gn) {[cn := ◯ML (l : list (leibnizO u8))]}.
+  own γ.(pb_proposal_gn) (A:=cn_logR) {[cn := ◯ML l]}.
 
 Definition accepted_ptsto γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
-  own γ.(pb_accepted_gn) {[(cn,r) := ●ML (l : list (leibnizO u8))]}.
+  own γ.(pb_accepted_gn) (A:=cn_rep_logR) {[(cn,r) := ●ML l]}.
 Definition accepted_ptsto_ro γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
-  own γ.(pb_accepted_gn) {[(cn,r) := ●ML□ (l : list (leibnizO u8))]}.
+  own γ.(pb_accepted_gn) (A:=cn_rep_logR) {[(cn,r) := ●ML□ l]}.
 Definition accepted_lb γ (cn:u64) (r:u64) (l:Log): iProp Σ :=
-  own γ.(pb_accepted_gn) {[(cn,r) := ◯ML (l : list (leibnizO u8))]}.
+  own γ.(pb_accepted_gn) (A:=cn_rep_logR) {[(cn,r) := ◯ML l]}.
 
 Definition commit_ptsto γ (l:Log): iProp Σ :=
-  own γ.(pb_commit_gn) (●ML (l : list (leibnizO u8))).
+  own γ.(pb_commit_gn) (A:=logR) (●ML l).
 Definition commit_lb γ (l:Log): iProp Σ :=
-  own γ.(pb_commit_gn) (◯ML (l : list (leibnizO u8))).
+  own γ.(pb_commit_gn) (A:=logR) (◯ML l).
 
 Global Instance config_ptsto_pers γ cn conf :
   Persistent (config_ptsto γ cn conf).

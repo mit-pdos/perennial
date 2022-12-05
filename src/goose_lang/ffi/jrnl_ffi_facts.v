@@ -63,7 +63,7 @@ Proof.
     rewrite /val_of_list; destruct data => //=.
 Qed.
 
-Definition openR := csumR (prodR fracR (agreeR (leibnizO unitO))) (agreeR (leibnizO unitO)).
+Definition openR := csumR (prodR fracR (agreeR unitO)) (agreeR unitO).
 Definition jrnl_opened : openR := Cinr (to_agree tt).
 
 Class jrnlG Σ :=
@@ -163,9 +163,9 @@ Definition jrnl_update_pre {Σ} (jG: jrnl_preG Σ) (names: jrnl_names) :=
 Definition jrnl_open {Σ} {lG :jrnlG Σ} :=
   own (jrnlG_open_name) (jrnl_opened).
 Definition jrnl_closed_frag {Σ} {lG :jrnlG Σ} :=
-  own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree (tt : leibnizO unit))).
+  own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree tt)).
 Definition jrnl_closed_auth {Σ} {lG :jrnlG Σ} :=
-  own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree (tt : leibnizO unit))).
+  own (jrnlG_open_name) (Cinl ((1/2)%Qp, to_agree tt)).
 Definition jrnl_kinds {Σ} {lG: jrnlG Σ} σj : iProp Σ :=
  (own (jrnlG_kinds_name) (to_agree (σj : leibnizO (gmap blkno kind)))).
 Definition jrnl_kinds_lb {Σ} {lG: jrnlG Σ} (σj : gmap blkno kind) : iProp Σ :=

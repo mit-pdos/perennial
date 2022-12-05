@@ -3,9 +3,9 @@ From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof.mvcc Require Import mvcc_prelude.
 
 (* RA definitions. *)
-Local Definition vchainR := mono_listR (leibnizO dbval).
+Local Definition vchainR := mono_listR dbvalO.
 Local Definition key_vchainR := gmapR u64 vchainR.
-Local Definition tidsR := gmap_viewR nat (leibnizO unit).
+Local Definition tidsR := gmap_viewR nat unitO.
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
 Local Definition sid_ownR := gmapR u64 (exclR unitO).
@@ -105,22 +105,22 @@ Context `{!mvcc_ghostG Σ}.
 
 (* TODO: Make it [k q phys]. *)
 Definition ptuple_auth_def γ q (k : u64) (phys : list dbval) : iProp Σ :=
-  own γ {[k := ●ML{# q } (phys : list (leibnizO dbval))]}.
+  own γ (A:=key_vchainR) {[k := ●ML{# q } phys]}.
 
 Definition ptuple_auth γ q (k : u64) (phys : list dbval) : iProp Σ :=
   ptuple_auth_def γ.(mvcc_ptuple) q k phys.
 
 Definition ptuple_lb γ (k : u64) (phys : list dbval) : iProp Σ :=
-  own γ.(mvcc_ptuple) {[k := ◯ML (phys : list (leibnizO dbval))]}.
+  own γ.(mvcc_ptuple) {[k := ◯ML phys]}.
 
 Definition ltuple_auth_def γ (k : u64) (logi : list dbval) : iProp Σ :=
-  own γ {[k := ●ML (logi : list (leibnizO dbval))]}.
+  own γ {[k := ●ML logi]}.
 
 Definition ltuple_auth γ (k : u64) (logi : list dbval) : iProp Σ :=
   ltuple_auth_def γ.(mvcc_ltuple) k logi.
 
 Definition ltuple_lb γ (k : u64) (logi : list dbval) : iProp Σ :=
-  own γ.(mvcc_ltuple) {[k := ◯ML (logi : list (leibnizO dbval))]}.
+  own γ.(mvcc_ltuple) {[k := ◯ML logi]}.
 
 Definition ptuple_ptsto γ (k : u64) (v : dbval) (ts : nat) : iProp Σ :=
   ∃ phys, ptuple_lb γ k phys ∗ ⌜phys !! ts = Some v⌝.
@@ -136,7 +136,7 @@ Definition ltuple_ptstos γ (m : dbmap) (ts : nat) : iProp Σ :=
 
 (* Definitions about GC-related resources. *)
 Definition site_active_tids_auth_def γ (sid : u64) q (tids : gset nat) : iProp Σ :=
-  own γ {[sid := (gmap_view_auth (DfracOwn q) ((gset_to_gmap tt tids) : gmap nat (leibnizO unit)))]}.
+  own γ {[sid := (gmap_view_auth (DfracOwn q) (gset_to_gmap tt tids))]}.
 
 Definition site_active_tids_auth γ sid tids : iProp Σ :=
   site_active_tids_auth_def γ.(mvcc_sid_tids) sid 1 tids.
@@ -145,7 +145,7 @@ Definition site_active_tids_half_auth γ sid tids : iProp Σ :=
   site_active_tids_auth_def γ.(mvcc_sid_tids) sid (1 / 2) tids.
 
 Definition site_active_tids_frag_def γ (sid : u64) tid : iProp Σ :=
-  own γ {[sid := (gmap_view_frag (V:=leibnizO unit) tid (DfracOwn 1) tt)]}.
+  own γ {[sid := (gmap_view_frag tid (DfracOwn 1) tt)]}.
 
 Definition site_active_tids_frag γ (sid : u64) tid : iProp Σ :=
   site_active_tids_frag_def γ.(mvcc_sid_tids) sid tid.
@@ -492,7 +492,7 @@ Lemma ptuples_alloc :
   ⊢ |==> ∃ γ, ([∗ set] key ∈ keys_all, ptuple_auth_def γ (1 / 2) key [Nil; Nil]) ∗
               ([∗ set] key ∈ keys_all, ptuple_auth_def γ (1 / 2) key [Nil; Nil]).
 Proof.
-  set m := gset_to_gmap (●ML ([Nil; Nil] : list (leibnizO dbval))) keys_all.
+  set m := gset_to_gmap (●ML ([Nil; Nil])) keys_all.
   iMod (own_alloc m) as (γ) "Htpls".
   { intros k.
     rewrite lookup_gset_to_gmap option_guard_True; last apply elem_of_fin_to_set.
@@ -521,7 +521,7 @@ Qed.
 Lemma ltuples_alloc :
   ⊢ |==> ∃ γ, ([∗ set] key ∈ keys_all, ltuple_auth_def γ key [Nil; Nil]).
 Proof.
-  set m := gset_to_gmap (●ML ([Nil; Nil] : list (leibnizO dbval))) keys_all.
+  set m := gset_to_gmap (●ML ([Nil; Nil])) keys_all.
   iMod (own_alloc m) as (γ) "Htpls".
   { intros k.
     rewrite lookup_gset_to_gmap option_guard_True; last apply elem_of_fin_to_set.
@@ -545,7 +545,7 @@ Lemma site_active_tids_alloc :
               ([∗ list] sid ∈ sids_all, site_active_tids_auth_def γ sid (1 / 2) ∅).
 Proof.
   set u64_all : gset u64 := (fin_to_set u64).
-  set m := gset_to_gmap (gmap_view_auth (DfracOwn 1) (∅ : gmap nat (leibnizO unit))) u64_all.
+  set m := gset_to_gmap (gmap_view_auth (DfracOwn 1) (∅ : gmap nat unit)) u64_all.
   iMod (own_alloc m) as (γ) "Hown".
   { intros k.
     rewrite lookup_gset_to_gmap option_guard_True; last apply elem_of_fin_to_set.

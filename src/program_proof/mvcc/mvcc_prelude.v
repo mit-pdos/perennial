@@ -3,6 +3,7 @@ From Perennial.program_proof Require Export grove_prelude.
 Export Perennial.goose_lang.lib.slice.slice.
 
 Definition dbval := option string.
+Canonical Structure dbvalO := leibnizO dbval.
 Notation Nil := (None : dbval).
 Notation Value x := (Some x : dbval).
 

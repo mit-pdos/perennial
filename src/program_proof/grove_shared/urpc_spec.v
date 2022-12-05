@@ -1,5 +1,6 @@
 (** Pre-postcondition-style specs for uRPCs
 (translated to the predicate transformer style of the underlying lib *)
+From iris.algebra Require Import gset.
 From Perennial.algebra Require Import auth_map.
 From Perennial.base_logic Require Import lib.ghost_map lib.saved_spec.
 From Perennial.program_proof Require Import grove_prelude.
@@ -65,7 +66,7 @@ Lemma handler_is_init_list (host : chan) (specs: uRPCSpecList) (Hwf: uRPCSpecLis
 Proof.
   iIntros "Hchan".
   iMod (map_init (∅ : gmap u64 gname)) as (γmap) "Hmap_ctx".
-  iMod (own_alloc (to_agree (dom_uRPCSpecList specs : leibnizO (gset u64)))) as (γdom) "#Hdom".
+  iMod (own_alloc (to_agree (dom_uRPCSpecList specs : gsetO u64))) as (γdom) "#Hdom".
   { econstructor. }
   set (Γsrv := {| scmap_name := γmap; scset_name := γdom |}).
   iMod (inv_alloc urpc_serverN _ ((server_chan_inner host Γsrv)) with "[Hchan]") as "#Hinv".

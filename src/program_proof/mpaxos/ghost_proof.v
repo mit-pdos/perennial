@@ -24,13 +24,15 @@ Record mp_server_names :=
 
 Context `{EntryType:Type}.
 
-Local Definition logR := mono_listR (leibnizO EntryType).
+Local Canonical Structure EntryTypeO := leibnizO EntryType.
+Local Definition logR := mono_listR EntryTypeO.
+Local Definition proposalR := gmapR (u64) (csumR (exclR unitO) logR).
 
 Context (config: list mp_server_names).
 
 Class mp_ghostG Σ := {
     mp_ghost_epochG :> mono_natG Σ ;
-    mp_ghost_proposalG :> inG Σ (gmapR (u64) (csumR (exclR unitO) logR)) ;
+    mp_ghost_proposalG :> inG Σ proposalR;
     mp_ghost_acceptedG :> inG Σ (gmapR (u64) logR) ;
     mp_ghost_commitG :> inG Σ logR ;
     mp_proposal_escrowG :> inG Σ (gmapR (u64) (dfrac_agreeR unitO)) ;
@@ -46,9 +48,9 @@ Implicit Type epoch : u64.
 Definition own_proposal_unused γsys epoch : iProp Σ :=
   own γsys.(mp_proposal_gn) {[ epoch := Cinl (Excl ()) ]}.
 Definition own_proposal γsys epoch σ : iProp Σ :=
-  own γsys.(mp_proposal_gn) {[ epoch := Cinr (●ML (σ : list (leibnizO (EntryType))))]}.
+  own γsys.(mp_proposal_gn) (A:=proposalR) {[ epoch := Cinr (●ML σ)]}.
 Definition is_proposal_lb γsys epoch σ : iProp Σ :=
-  own γsys.(mp_proposal_gn) {[ epoch := Cinr (◯ML (σ : list (leibnizO (EntryType))))]}.
+  own γsys.(mp_proposal_gn) (A:=proposalR) {[ epoch := Cinr (◯ML σ)]}.
 
 Notation "lhs ⪯ rhs" := (prefix lhs rhs)
 (at level 20, format "lhs  ⪯  rhs") : stdpp_scope.
@@ -57,19 +59,19 @@ Definition own_vote_tok γsrv epoch : iProp Σ :=
   own γsrv.(mp_vote_gn) {[ epoch := to_dfrac_agree (DfracOwn 1) ()]}.
 
 Definition own_accepted γ epoch σ : iProp Σ :=
-  own γ.(mp_accepted_gn) {[ epoch := ●ML (σ : list (leibnizO (EntryType)))]}.
+  own γ.(mp_accepted_gn) {[ epoch := ●ML σ]}.
 Definition is_accepted_lb γ epoch σ : iProp Σ :=
-  own γ.(mp_accepted_gn) {[ epoch := ◯ML (σ : list (leibnizO (EntryType)))]}.
+  own γ.(mp_accepted_gn) {[ epoch := ◯ML σ]}.
 Definition is_accepted_ro γ epoch σ : iProp Σ :=
-  own γ.(mp_accepted_gn) {[ epoch := ●ML□ (σ : list (leibnizO (EntryType)))]}.
+  own γ.(mp_accepted_gn) {[ epoch := ●ML□ σ]}.
 
 (* TODO: if desired, can make these exclusive by adding an exclusive token to each *)
 Definition own_ghost γ σ : iProp Σ :=
-  own γ.(mp_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).
+  own γ.(mp_state_gn) (●ML{#1/2} σ).
 Definition own_commit γ σ : iProp Σ :=
-  own γ.(mp_state_gn) (●ML{#1/2} (σ : list (leibnizO (EntryType)))).
+  own γ.(mp_state_gn) (●ML{#1/2} σ).
 Definition is_ghost_lb γ σ : iProp Σ :=
-  own γ.(mp_state_gn) (◯ML (σ : list (leibnizO (EntryType)))).
+  own γ.(mp_state_gn) (◯ML σ).
 
 (* This definition needs to only require a quorum *)
 Definition committed_by epoch σ : iProp Σ :=
@@ -284,7 +286,7 @@ Proof.
       iCombine "Hghost Hσ" as "Hσ".
       iMod (own_update with "Hσ") as "Hσ".
       {
-        apply (mono_list_update (st.(mp_log) ++ [entry] : list (leibnizO EntryType))).
+        apply (mono_list_update (st.(mp_log) ++ [entry])).
         by apply prefix_app_r.
       }
       iEval (rewrite -Qp.half_half) in "Hσ".

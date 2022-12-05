@@ -1,5 +1,6 @@
 From Perennial.Helpers Require Import ModArith.
 From Goose.github_com.mit_pdos.gokv Require Import urpc.
+From iris.algebra Require Import gset.
 From iris.base_logic.lib Require Import saved_prop.
 From Perennial.program_proof Require Import grove_prelude std_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
@@ -23,12 +24,12 @@ Class urpcregG (Σ : gFunctors) := URpcRegG {
   urpcreg_saved_gname_mapG :> mapG Σ u64 gname;
   urpcreg_saved_handler_specG :> savedSpecG Σ (list u8) (list u8);
   urpcreg_savedG :> savedPredG Σ (list u8);
-  urpcreg_domG :> inG Σ (agreeR (leibnizO (gset u64)));
+  urpcreg_domG :> inG Σ (agreeR (gsetO u64));
 }.
 
 Definition urpcregΣ :=
   #[mono_natΣ; mapΣ u64 urpc_req_desc; mapΣ u64 unit; mapΣ u64 gname; savedSpecΣ (list u8) (list u8); savedPredΣ (list u8);
-   GFunctor (agreeR (leibnizO (gset u64)))].
+   GFunctor (agreeR (gsetO u64))].
 
 Global Instance subG_urpcregG {Σ} :
   subG urpcregΣ Σ → urpcregG Σ.
@@ -104,7 +105,7 @@ Global Instance handler_spec_pers_instance γ host rpcid Spec :
 Proof. apply _. Qed.
 
 Definition handlers_dom Γsrv (d: gset u64) :=
-  own (scset_name Γsrv) (to_agree (d : leibnizO (gset u64))).
+  own (scset_name Γsrv) (to_agree d).
 
 End urpc_global_defs.
 
