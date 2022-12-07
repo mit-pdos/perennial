@@ -342,7 +342,10 @@ Proof.
               the newdata list doesn't overflow length. *)
   }
   { exfalso.
-    admit. (* TODO: pure integer reasoning; have `int.nat X > X` in Hbad (modulo coercions) *)
+    word_cleanup.
+    destruct (decide ((length data + (8 + length op_bytes)) >= 2^64)).
+    { lia. }
+    { rewrite Z_u64 in Hbad; lia. }
   }
 
   iMod (ghost_map_points_to_update (Some (epoch, ops++[op], false)) with "Hvar") as "Hvar".
