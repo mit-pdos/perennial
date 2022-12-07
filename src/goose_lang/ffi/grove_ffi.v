@@ -9,7 +9,7 @@ From Perennial.base_logic Require Import ghost_map mono_nat.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
-From Perennial.goose_lang Require Import prelude typing struct lang lifting slice typed_slice proofmode.
+From Perennial.goose_lang Require Import prelude typing struct lang lifting slice typed_slice proofmode control.
 From Perennial.goose_lang Require Import wpc_proofmode crash_modality.
 
 Set Default Proof Using "Type".
@@ -199,11 +199,15 @@ Section grove.
       end
     (* File *)
     | FileReadOp, LitV (LitString name) =>
+      err ← any bool;
+      if err is true then ret $ Val ((*err*)#true, (#locations.null, #0))%V else
       content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
       l ← allocateN;
       modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> content) σ, g));;
-      ret $ Val (#(l : loc), #(length content))%V
+      ret $ Val ((*err*)#false, (#(l : loc), #(length content)))%V
     | FileWriteOp, (LitV (LitString name), (LitV (LitLoc l), LitV (LitInt len)))%V =>
+      err_early ← any bool;
+      if err_early is true then ret $ Val $ (*err*)#true else
       new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
             length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
@@ -213,8 +217,10 @@ Section grove.
       (* we read the content just to ensure the file exists *)
       old_content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
       modify_n (set grove_node_files $ <[ name := new_content ]>);;
-      ret $ Val #()
+      ret $ Val $ (*err*)#false
     | FileAppendOp, (LitV (LitString name), (LitV (LitLoc l), LitV (LitInt len)))%V =>
+      err_early ← any bool;
+      if err_early is true then ret $ Val $ (*err*)#true else
       new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
             length data = int.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
@@ -222,8 +228,11 @@ Section grove.
                 | _ => False
                 end);
       old_content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
+      (* Files cannot become bigger than 2^64 bytes on real systems, so we also
+      reject that here. *)
+      if bool_decide (length (old_content ++ new_content) >= 2^64) then ret $ Val #true else
       modify_n (set grove_node_files $ <[ name := old_content ++ new_content ]>);;
-      ret $ Val #()
+      ret $ Val $ (*err*)#false
     (* Time *)
     | GetTscOp, LitV LitUnit =>
       time_since_last ← any u64;
@@ -596,7 +605,9 @@ lemmas. *)
   Lemma wp_FileReadOp (f : string) q c E :
     {{{ f f↦{q} c }}}
       ExternalOp FileReadOp #(str f) @ E
-    {{{ (l : loc) (len : u64), RET (#l, #len); ⌜length c = int.nat len⌝ ∗ f f↦{q} c ∗ mapsto_vals l 1 (data_vals c) }}}.
+    {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
+      f f↦{q} c ∗ if err then True else ⌜length c = int.nat len⌝ ∗ mapsto_vals l 1 (data_vals c)
+    }}}.
   Proof.
     iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
@@ -607,13 +618,19 @@ lemmas. *)
     iModIntro. iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
-      monad_simpl. econstructor; first by econstructor.
       monad_simpl. econstructor.
-      { eapply relation.suchThat_gen0. reflexivity. }
+      1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
+      monad_simpl. econstructor.
+      { constructor. done. }
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
+    rename x into err_early.
+    destruct err_early.
+    { monad_inv. iFrame. iModIntro. do 2 (iSplitR; first done).
+      simpl. iApply "HΦ". by iFrame. }
+    inv_head_step. monad_inv.
     move: (Hfilebound _ _ Hf)=>Hlen.
     rename select (isFresh _ _) into Hfresh.
     iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals c) ∪ σ1.(heap)) ∗
@@ -651,7 +668,7 @@ lemmas. *)
     length new = int.nat len →
     {{{ f f↦ old ∗ mapsto_vals l q (data_vals new) }}}
       ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
-    {{{ RET #(); f f↦ new ∗ mapsto_vals l q (data_vals new) }}}.
+    {{{ (err : bool), RET #err; f f↦ (if err then old else new) ∗ mapsto_vals l q (data_vals new) }}}.
   Proof.
     iIntros (Hmlen Φ) "[Hf Hl] HΦ".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -665,13 +682,17 @@ lemmas. *)
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
       monad_simpl. econstructor.
-      { econstructor. done. }
+      1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
       monad_simpl. econstructor.
-      { constructor. done. }
+      { econstructor. done. }
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
+    rename x into err_early.
+    destruct err_early.
+    { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
+    inv_head_step. monad_inv.
     iFrame.
     iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
     assert (data = new) as <-.
@@ -699,12 +720,11 @@ lemmas. *)
 
   Lemma wp_FileAppendOp (f : string) old new l q (len : u64) E :
     length new = int.nat len →
-    length old + length new < 2^64 →
     {{{ f f↦ old ∗ mapsto_vals l q (data_vals new) }}}
       ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
-    {{{ RET #(); f f↦ (old ++ new) ∗ mapsto_vals l q (data_vals new) }}}.
+    {{{ (err : bool), RET #err; f f↦ (if err then old else (old ++ new)) ∗ mapsto_vals l q (data_vals new) }}}.
   Proof.
-    iIntros (Hmlen Halen Φ) "[Hf Hl] HΦ".
+    iIntros (Hmlen Φ) "[Hf Hl] HΦ".
     iApply wp_lift_atomic_head_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
@@ -716,14 +736,22 @@ lemmas. *)
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /head_step/=.
       monad_simpl. econstructor.
-      { econstructor. done. }
+      1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
       monad_simpl. econstructor.
-      { constructor. done. }
+      { econstructor. done. }
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     inv_head_step.
+    rename x into err_early.
+    destruct err_early.
+    { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
+    inv_head_step. monad_inv.
     iFrame.
+    case_bool_decide.
+    { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
+    inv_head_step. monad_inv. iFrame.
+    rename select (¬ length _ >= _) into Halen.
     iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
     assert (data = new) as <-.
     { apply list_eq=>i.
@@ -742,7 +770,7 @@ lemmas. *)
     iSplit; first done. iSplitR.
     { iPureIntro. clear -Halen Hfilebound.
       intros f' c'. destruct (decide (f = f')) as [<-|Hne].
-      - rewrite lookup_insert=>-[<-]. rewrite app_length. word.
+      - rewrite lookup_insert=>-[<-]. word.
       - rewrite lookup_insert_ne //. eapply Hfilebound. } 
     iApply "HΦ".
     by iFrame.
@@ -846,18 +874,33 @@ Section grove.
         "Data" ::= ("ptr", "len", "len")
       ].
 
+  (** FileRead pretends that the operation can never fail.
+      The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileRead : val :=
     λ: "f",
-      let: "slice" := ExternalOp FileReadOp "f" in
+      let: "ret" := ExternalOp FileReadOp "f" in
+      let: "err" := Fst "ret" in
+      let: "slice" := Snd "ret" in
+      if: "err" then control.impl.Exit #() else
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
       ("ptr", "len", "len").
 
+  (** FileWrite pretends that the operation can never fail.
+      The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileWrite : val :=
-    λ: "f" "c", ExternalOp FileWriteOp ("f", (slice.ptr "c", slice.len "c")).
+    λ: "f" "c",
+      let: "err" := ExternalOp FileWriteOp ("f", (slice.ptr "c", slice.len "c")) in
+      if: "err" then control.impl.Exit #() else
+      #().
 
+  (** FileAppend pretends that the operation can never fail.
+      The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileAppend : val :=
-    λ: "f" "c", ExternalOp FileAppendOp ("f", (slice.ptr "c", slice.len "c")).
+    λ: "f" "c", 
+      let: "err" := ExternalOp FileAppendOp ("f", (slice.ptr "c", slice.len "c")) in
+      if: "err" then control.impl.Exit #() else
+      #().
 
   (** Type: func() uint64 *)
   Definition GetTSC : val :=
@@ -1021,17 +1064,23 @@ Local Ltac solve_atomic2 :=
       {{{ (s : Slice.t), RET slice_val s; f f↦{dq} c ∗ is_slice s byteT 1 c }}}
       {{{ f f↦{dq} c }}}.
   Proof.
-    iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done. wpc_pures.
+    iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done.
+    iCache with "HΦ Hf". { iApply "HΦ". done. }
     wpc_bind (ExternalOp _ _).
     iApply wpc_atomic.
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". done. }
     wp_apply (wp_FileReadOp with "Hf").
-    iIntros (l len) "(%Hlen & Hf & Hl)".
+    iIntros (err l len) "(Hf & Hl)".
     iSplit; last first.
     { iApply "HΦ". done. }
-    iModIntro. wpc_pures; first by iApply "HΦ".
+    iModIntro.
+    destruct err.
+    { wpc_pures.
+      wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    iDestruct "Hl" as "[%Hl Hl]".
+    wpc_pures.
     iDestruct "HΦ" as "[_ HΦ]".
     iApply ("HΦ" $! (Slice.mk _ _ _)). iFrame. iModIntro.
     rewrite /is_slice.
@@ -1056,27 +1105,31 @@ Local Ltac solve_atomic2 :=
     wpc_pures.
     iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
     iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
+    wpc_bind (ExternalOp _ _).
     iApply wpc_atomic.
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
     wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
-    iIntros "[Hf Hs]".
+    iIntros (err) "[Hf Hs]".
     iSplit; last first.
-    { iApply "HΦ". by iRight. }
-    iApply "HΦ". iModIntro. iFrame.
+    { iApply "HΦ". destruct err; by eauto. }
+    iModIntro. destruct err.
+    { wpc_pures. wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    wpc_pures.
+    { iApply "HΦ". eauto. }
+    iApply "HΦ". iFrame.
     iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 
   Lemma wpc_FileAppend f s q old data E :
-    length old + length data < 2^64 →
     ⊢ {{{ f f↦ old ∗ is_slice_small s byteT q data }}}
         FileAppend #(str f) (slice_val s) @ E
       {{{ RET #(); f f↦ (old ++ data) ∗ is_slice_small s byteT q data }}}
       {{{ f f↦ old ∨ f f↦ (old ++ data) }}}.
   Proof.
-    iIntros "%Halen !#" (Φ Φc) "[Hf Hs] HΦ".
+    iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
     wpc_call. { by iLeft. } { by iLeft. }
     iCache with "HΦ Hf". { iApply "HΦ". by iLeft. }
     (* Urgh so much manual work just calling a WP lemma... *)
@@ -1085,16 +1138,21 @@ Local Ltac solve_atomic2 :=
     wpc_pures.
     iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
     iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
+    wpc_bind (ExternalOp _ _).
     iApply wpc_atomic.
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
     wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
     { iApply is_slice_small_byte_mapsto_vals. done. }
-    iIntros "[Hf Hs]".
+    iIntros (err) "[Hf Hs]".
     iSplit; last first.
-    { iApply "HΦ". by iRight. }
-    iApply "HΦ". iModIntro. iFrame.
+    { iApply "HΦ". destruct err; eauto. }
+    iModIntro. destruct err.
+    { wpc_pures. wpc_frame. wp_apply wp_Exit. iIntros "?". done. }
+    wpc_pures.
+    { iApply "HΦ". eauto. }
+    iApply "HΦ". iFrame.
     iApply mapsto_vals_is_slice_small_byte; done.
   Qed.
 

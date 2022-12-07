@@ -16,7 +16,7 @@ Definition Assert: val :=
              else Panic "assert failed".
 
 (** [Exit n] is supposed to exit the process. We cannot directly model
-this 9in GooseLang, so we just loop. *)
+this in GooseLang, so we just loop. *)
 Definition Exit: val :=
   λ: <>, (rec: "loop" <> := Var "loop" #()) #().
 

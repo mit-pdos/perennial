@@ -495,13 +495,6 @@ Proof.
 
       iDestruct (is_slice_to_small with "Hmembuf_sl") as "Hmembuf_sl".
       wpc_apply (wpc_FileAppend with "[$Hfile $Hmembuf_sl]").
-      { admit. } (* TODO: list length overflow.
-                  This seems a bit tricky. γ.initdata is the initial contents of
-                  the file, which could be arbitrarily large. So, this could
-                  actually overflow, and we can't even add an
-                  std.AssumeNoOverflow to the code without first reading the
-                  size of the file.
-                  *)
       iSplit.
       { (* This is the case in which the node crashes during the FileAppend. *)
         iIntros "[Hbefore|Hafter]".
@@ -675,13 +668,6 @@ Proof.
     iApply wpc_fupd.
 
     wpc_apply (wpc_FileAppend with "[$Hfile $Hmembuf_sl]").
-    { admit. } (* TODO: list length overflow.
-                  This seems a bit tricky. γ.initdata is the initial contents of
-                  the file, which could be arbitrarily large. So, this could
-                  actually overflow, and we can't even add an
-                  std.AssumeNoOverflow to the code without first reading the
-                  size of the file.
-                *)
     iSplit.
     { (* This is the case in which the node crashes during the FileAppend. *)
       iIntros "[Hbefore|Hafter]".

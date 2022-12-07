@@ -185,8 +185,8 @@ Proof.
   iApply ("HΦ" with "[//]").
 Qed.
 
-Theorem wp_Exit stk E (code: u64) :
-  {{{ True }}} Exit #code @ stk; E {{{ RET #(); False }}}.
+Theorem wp_Exit stk E (v : val) :
+  {{{ True }}} Exit v @ stk; E {{{ RET #(); False }}}.
 Proof.
   iIntros "%Φ _ HΦ". wp_call.
   iLöb as "IH". wp_pures. wp_apply ("IH" with "[$]").
