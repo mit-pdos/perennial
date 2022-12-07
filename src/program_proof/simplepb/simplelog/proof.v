@@ -32,20 +32,21 @@ Context `{!aofG Σ}.
 (* Want to prove *)
 
 Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sealed:bool): Prop :=
-  ∃ snap_ops snap (rest_ops:list OpType) (rest_ops_bytes:list (list u8)),
+  ∃ snap_ops snap (rest_ops:list OpType) (rest_ops_bytes:list (list u8)) sealed_bytes,
     ops = snap_ops ++ rest_ops ∧
     has_snap_encoding snap snap_ops ∧
-
+    sealed_bytes = match sealed with false => [] | true => [U8 0] end /\
     length rest_ops = length rest_ops_bytes ∧
     (∀ (i:nat), 0 ≤ i → i < length rest_ops →
-          ∃ op op_bytes,
+          ∃ op op_len_bytes op_bytes,
             rest_ops !! i = Some op ∧
-              rest_ops_bytes !! i = Some op_bytes ∧
-              has_op_encoding op_bytes op
+              rest_ops_bytes !! i = Some (op_len_bytes ++ op_bytes) ∧
+              has_op_encoding op_bytes op /\
+              op_len_bytes = u64_le (length op_bytes)
     ) ∧
 
-    data = (u64_le (length snap)) ++ snap ++ (u64_le epoch) ++ (u64_le (length ops)) ++
-                         (concat rest_ops_bytes)
+    data = (u64_le (length snap)) ++ snap ++ (u64_le epoch) ++
+                         (concat rest_ops_bytes) ++ sealed_bytes
 .
 
 Lemma file_encodes_state_append op op_bytes data epoch ops :
@@ -56,35 +57,37 @@ Lemma file_encodes_state_append op op_bytes data epoch ops :
 Proof.
   rewrite /file_encodes_state.
   intros Hop_enc Hf_enc.
-  destruct Hf_enc as (snap_ops&snap&rest_ops&rest_ops_bytes&Heq_ops&Hsnaop_enc&Hlen&Hrest&Heq_data).
+  destruct Hf_enc as (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq_ops&Hsnaop_enc&Hsealed&Hlen&Hrest&Heq_data).
   do 3 eexists.
-  exists (rest_ops_bytes ++ [op_bytes]).
+  exists (rest_ops_bytes ++ [u64_le (length op_bytes) ++ op_bytes]).
+  exists [].
   split_and!.
   { rewrite Heq_ops. rewrite -app_assoc. f_equal. }
   { eauto. }
+  { auto. }
   { rewrite ?app_length /=; lia. }
   { intros i Hnonneg Hlt.
     rewrite ?app_length /= in Hlt.
     destruct (decide (i = length rest_ops)); last first.
-    { edestruct (Hrest i) as (op'&op_bytes'&Hlookup1&Hlookup2&Henc'); eauto.
+    { edestruct (Hrest i) as (op'&op_len_bytes'&op_bytes'&Hlookup1&Hlookup2&Henc'&Hlenenc'); eauto.
       { lia. }
-      do 2 eexists; split_and!; eauto.
+      do 3 eexists; split_and!; eauto.
       { rewrite lookup_app_l; auto; lia. }
       { rewrite lookup_app_l; auto; lia. }
     }
     {
-      subst. exists op, op_bytes. split_and!; eauto.
+      subst. exists op, (u64_le (length op_bytes)), op_bytes. split_and!; eauto.
       { rewrite lookup_app_r ?list_lookup_singleton; auto. rewrite Nat.sub_diag //. }
       { rewrite lookup_app_r ?list_lookup_singleton; auto; try lia.
         rewrite Hlen. rewrite Nat.sub_diag //. }
     }
   }
   { rewrite Heq_data. rewrite -?app_assoc.
-    f_equal. f_equal. f_equal.
-    f_equal.
-    { (* BAD *) admit. }
-    { rewrite concat_app. f_equal. (* BAD *) admit. }
-Admitted.
+    rewrite Hsealed.
+    rewrite ?concat_app -?app_assoc. do 4 f_equal.
+    rewrite /concat app_nil_r // app_nil_r //.
+  }
+Qed.
 
 Lemma file_encodes_state_snapshot snap ops epoch :
   has_snap_encoding snap ops →
@@ -92,6 +95,12 @@ Lemma file_encodes_state_snapshot snap ops epoch :
     epoch ops false
 .
 Proof.
+  rewrite /file_encodes_state.
+  intros Henc.
+  exists ops, snap, [], [], [].
+  rewrite ?app_nil_r. split_and!; auto.
+  { simpl. intros. lia. }
+  (* OK but now this lemma is not true the length ops should be omitted. *)
 Admitted.
 
 Lemma file_encodes_state_seal data ops epoch :
@@ -99,7 +108,12 @@ Lemma file_encodes_state_seal data ops epoch :
   file_encodes_state (data ++ [U8 0]) epoch ops true
 .
 Proof.
-Admitted.
+  destruct 1 as
+    (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq_ops&Hsnaop_enc&Hsealed&Hlen&Hrest&Heq_data).
+  exists snap_ops, snap, rest_ops, rest_ops_bytes, [U8 0].
+  split_and!; eauto.
+  rewrite Heq_data Hsealed. rewrite -?app_assoc app_nil_l //.
+Qed.
 
 Implicit Types (P:u64 → list OpType → bool → iProp Σ).
 
