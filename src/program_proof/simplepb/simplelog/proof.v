@@ -45,7 +45,7 @@ Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sea
               op_len_bytes = u64_le (length op_bytes)
     ) ∧
 
-    data = (u64_le (length snap)) ++ snap ++ (u64_le epoch) ++
+    data = (u64_le (length snap)) ++ snap ++ (u64_le epoch) ++ (u64_le (length snap_ops)) ++
                          (concat rest_ops_bytes) ++ sealed_bytes
 .
 
@@ -100,8 +100,7 @@ Proof.
   exists ops, snap, [], [], [].
   rewrite ?app_nil_r. split_and!; auto.
   { simpl. intros. lia. }
-  (* OK but now this lemma is not true the length ops should be omitted. *)
-Admitted.
+Qed.
 
 Lemma file_encodes_state_seal data ops epoch :
   file_encodes_state data epoch ops false →
@@ -307,7 +306,6 @@ Proof.
            ([∗ set] x ∈ (fin_to_set u64:gset u64), ⌜int.nat x ≤ length data⌝ ∨ ⌜int.nat x > length newdata⌝ ∨ x ⤳[γ.(cur_state)] None)
           )%I with "[Hunused_vars]" as "[Hunused_vars Hvar]".
   {
-    Search "big_sepS_sep".
     iDestruct big_sepS_sep as "[Hs _]".
     iApply ("Hs" with "[Hunused_vars]").
     iApply (big_sepS_impl with "Hunused_vars").
