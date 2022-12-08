@@ -31,7 +31,7 @@ Definition MkIndex: val :=
 
 Definition getBucket: val :=
   rec: "getBucket" "key" :=
-    "key" `rem` config.N_IDX_BUCKET.
+    ("key" ≫ #52 + "key") `rem` config.N_IDX_BUCKET.
 
 (* *
     * Note that `GetTuple` will always create a tuple when there is no entry in
@@ -59,7 +59,7 @@ Definition Index__GetTuple: val :=
 Definition Index__getKeys: val :=
   rec: "Index__getKeys" "idx" :=
     let: "keys" := ref (zero_val (slice.T uint64T)) in
-    "keys" <-[slice.T uint64T] NewSliceWithCap uint64T #0 #2000;;
+    "keys" <-[slice.T uint64T] NewSliceWithCap uint64T #0 #200;;
     ForSlice ptrT <> "bkt" (struct.loadF Index "buckets" "idx")
       (lock.acquire (struct.loadF IndexBucket "latch" "bkt");;
       MapIter (struct.loadF IndexBucket "m" "bkt") (λ: "k" <>,

@@ -183,7 +183,7 @@ Definition MkTuple: val :=
     struct.storeF Tuple "rcond" "tuple" (lock.newCond (struct.loadF Tuple "latch" "tuple"));;
     struct.storeF Tuple "owned" "tuple" #false;;
     struct.storeF Tuple "tidlast" "tuple" #1;;
-    struct.storeF Tuple "vers" "tuple" (NewSliceWithCap (struct.t Version) #1 #16);;
+    struct.storeF Tuple "vers" "tuple" (NewSliceWithCap (struct.t Version) #1 #1);;
     SliceSet (struct.t Version) (struct.loadF Tuple "vers" "tuple") #0 (struct.mk Version [
       "deleted" ::= #true
     ]);;

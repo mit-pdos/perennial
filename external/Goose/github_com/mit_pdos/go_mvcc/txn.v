@@ -171,7 +171,7 @@ Definition TxnMgr__ActivateGC: val :=
     Fork (Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             TxnMgr__gc "txnMgr";;
-            time.Sleep (#100 * #1000000);;
+            time.Sleep (#1 * #1000000);;
             Continue));;
     #().
 

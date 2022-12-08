@@ -52,7 +52,7 @@ Proof.
   do 2 wp_storeField.
   
   (***********************************************************)
-  (* tuple.vers = make([]Version, 1, 16)                     *)
+  (* tuple.vers = make([]Version, 1, 1)                      *)
   (* tuple.vers[0] = Version{                                *)
   (*     deleted : true,                                     *)
   (* }                                                       *)
@@ -95,7 +95,7 @@ Proof.
     iExists false, (U64 1), (U64 0), [(U64 0, true, "")], [Nil; Nil].
     iFrame.
     iSplit.
-    { iExists (Slice.mk vers 1 16). iFrame. }
+    { iExists (Slice.mk vers 1 1). iFrame. }
     iSplit.
     { (* Prove [HtupleAbs]. *)
       iPureIntro.

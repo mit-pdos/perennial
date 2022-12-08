@@ -8,10 +8,9 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Section heap.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition N_IDX_BUCKET : nat := 2048.
-
+Definition N_IDX_BUCKET : Z := 8192.
 Definition hash_modu (key : u64) : nat :=
-  int.nat (word.modu key N_IDX_BUCKET).
+  int.nat (word.modu (word.add (word.sru key 52) key) N_IDX_BUCKET).
 
 Definition keys_hashed (hash : nat) :=
   filter (λ x, hash_modu x = hash) keys_all.
@@ -42,7 +41,7 @@ Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
      * So here we use [ptrT] instead of [structTy Index].
      *)
     "#HbktsL" ∷ readonly (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
-    "%HbktsLen" ∷ ⌜length bktsL = N_IDX_BUCKET⌝ ∗
+    "%HbktsLen" ∷ ⌜Z.of_nat (length bktsL) = N_IDX_BUCKET⌝ ∗
     "#HbktsRP" ∷ ([∗ list] i ↦ bkt ∈ bktsL, is_index_bucket bkt i γ) ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
     "#Hinv" ∷ mvcc_inv_sst γ p ∗
@@ -69,8 +68,8 @@ Proof.
   wp_pures.
   wp_loadField.
   iMod (readonly_load with "HbktsL") as (q) "HbktsL'".
-  list_elem bktsL (int.nat (word.modu key 2048)) as bkt.
-  { revert HbktsLen. rewrite /N_IDX_BUCKET. word. }
+  list_elem bktsL (hash_modu key) as bkt.
+  { revert HbktsLen. rewrite /hash_modu /N_IDX_BUCKET. word. }
   wp_apply (wp_SliceGet with "[$HbktsL']").
   { iPureIntro.
     rewrite list_lookup_fmap.
@@ -380,12 +379,12 @@ Proof.
   iDestruct (is_slice_to_small with "HbktsL") as "HbktsS".
   wp_apply (wp_forUpto
               (λ n, (∃ bktsL, (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
-                              (⌜length bktsL = N_IDX_BUCKET⌝) ∗
+                              (⌜Z.of_nat (length bktsL) = N_IDX_BUCKET⌝) ∗
                               ([∗ list] i ↦ bkt ∈ (take (int.nat n) bktsL), is_index_bucket bkt i γ)) ∗
                     (idx ↦[Index :: "buckets"] (to_val bkts)) ∗
                     ([∗ set] key ∈ filter (λ x, (int.nat n) ≤ hash_modu x)%nat keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
                     ⌜True⌝)%I
-              _ _ (U64 0) (U64 2048) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
+              _ _ (U64 0) (U64 N_IDX_BUCKET) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
   { clear Φ.
     iIntros (i Φ) "!> ((HbktsInv & Hidx & Hvchains & _) & HidxRef & %Hbound) HΦ".
     iDestruct "HbktsInv" as (bktsL) "(HbktsS & %Hlength & HbktsRP)".
@@ -411,16 +410,12 @@ Proof.
 
     wp_load.
     wp_loadField.
-    assert (HboundNat : (int.nat i < length bktsL)%nat).
-    { rewrite Hlength.
-      rewrite /N_IDX_BUCKET.
-      word.
-    }
+    unfold N_IDX_BUCKET in *.
     wp_apply (wp_SliceSet with "[$HbktsS]").
     { iPureIntro.
       split; last auto.
       apply lookup_lt_is_Some.
-      by rewrite fmap_length.
+      rewrite fmap_length. word.
     }
     iIntros "HbktsS".
     wp_pures.
@@ -455,7 +450,8 @@ Proof.
     rewrite insert_length.
     iSplit; first done.
     replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
-    rewrite (take_S_r _ _ bkt); last by apply list_lookup_insert.
+    rewrite (take_S_r _ _ bkt); last first.
+    { apply list_lookup_insert. word. }
     iApply (big_sepL_app).
     iSplitL "HbktsRP".
     { by rewrite take_insert; last auto. }
@@ -473,11 +469,12 @@ Proof.
       apply filter_all.
       word.
     }
-    iExists (replicate 2048 null).
+    iExists (replicate (Z.to_nat N_IDX_BUCKET) null).
     auto with iFrame.
   }
   iIntros "[(HbktsInv & Hidx & _) HiRef]".
   iDestruct "HbktsInv" as (bktsL) "(HbktsS & %Hlength & HbktsRP)".
+  unfold N_IDX_BUCKET in Hlength.
   wp_pures.
 
   (***********************************************************)
@@ -491,9 +488,8 @@ Proof.
   iModIntro.
   iSplitL ""; first done.
   iSplit; last iFrame "#".
-  change (int.nat 2048) with 2048%nat.
-  unfold N_IDX_BUCKET in Hlength.
-  rewrite -Hlength.
+  replace (int.nat N_IDX_BUCKET) with (length bktsL); last first.
+  { unfold N_IDX_BUCKET. word. }
   by rewrite firstn_all.
 Qed.
 
