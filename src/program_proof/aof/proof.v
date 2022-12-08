@@ -442,6 +442,7 @@ Proof.
       wp_pures.
       iFrame.
       instantiate (2:=(closeRequested = false)).
+      instantiate (1:=decide_rel eq _ _).
       iPureIntro.
       f_equal.
       destruct closeRequested.
@@ -781,7 +782,7 @@ Proof.
   iApply "HΦ".
   iFrame "∗#".
   done.
-Admitted.
+Qed.
 
 Lemma wp_AppendOnlyFile__Append Q aof_ptr γ data_sl P Pcrash fname (oldData newData:list u8) q :
 length newData > 0 →
