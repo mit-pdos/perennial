@@ -136,6 +136,7 @@ Definition recoverStateMachine: val :=
           let: "op" := SliceTake (![slice.T byteT] "enc") (![uint64T] "opLen") in
           "enc" <-[slice.T byteT] SliceSkip byteT (![slice.T byteT] "enc") (![uint64T] "opLen");;
           struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s") "op";;
+          struct.storeF StateMachine "nextIndex" "s" (struct.loadF StateMachine "nextIndex" "s" + #1);;
           Continue
         else Break));;
       (if: slice.len (![slice.T byteT] "enc") > #0
