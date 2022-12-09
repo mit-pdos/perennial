@@ -330,51 +330,43 @@ Definition Server__isEpochStale: val :=
 Definition Server__ApplyAsBackup: val :=
   rec: "Server__ApplyAsBackup" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: Server__isEpochStale "s" (struct.loadF ApplyAsBackupArgs "epoch" "args")
+    Skip;;
+    (for: (λ: <>, ((struct.loadF ApplyAsBackupArgs "index" "args" > struct.loadF Server "nextIndex" "s") && (struct.loadF Server "epoch" "s" = struct.loadF ApplyAsBackupArgs "epoch" "args")) && (~ (struct.loadF Server "sealed" "s"))); (λ: <>, Skip) := λ: <>,
+      let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF ApplyAsBackupArgs "index" "args") in
+      (if: ~ "ok"
+      then
+        let: "cond" := lock.newCond (struct.loadF Server "mu" "s") in
+        MapInsert (struct.loadF Server "opAppliedConds" "s") (struct.loadF ApplyAsBackupArgs "index" "args") "cond";;
+        Continue
+      else
+        lock.condWait "cond";;
+        Continue));;
+    (if: struct.loadF Server "sealed" "s"
     then
       lock.release (struct.loadF Server "mu" "s");;
       e.Stale
     else
-      (if: struct.loadF Server "sealed" "s"
+      (if: Server__isEpochStale "s" (struct.loadF ApplyAsBackupArgs "epoch" "args")
       then
         lock.release (struct.loadF Server "mu" "s");;
         e.Stale
       else
-        (if: struct.loadF ApplyAsBackupArgs "index" "args" > struct.loadF Server "nextIndex" "s"
-        then
-          let: "cond" := lock.newCond (struct.loadF Server "mu" "s") in
-          MapInsert (struct.loadF Server "opAppliedConds" "s") (struct.loadF ApplyAsBackupArgs "index" "args") "cond";;
-          Skip;;
-          (for: (λ: <>, ((struct.loadF ApplyAsBackupArgs "index" "args" > struct.loadF Server "nextIndex" "s") && (struct.loadF Server "epoch" "s" = struct.loadF ApplyAsBackupArgs "epoch" "args")) && (~ (struct.loadF Server "sealed" "s"))); (λ: <>, Skip) := λ: <>,
-            lock.condWait "cond";;
-            Continue)
-        else #());;
-        (if: struct.loadF Server "sealed" "s"
+        (if: struct.loadF ApplyAsBackupArgs "index" "args" ≠ struct.loadF Server "nextIndex" "s"
         then
           lock.release (struct.loadF Server "mu" "s");;
-          e.Stale
+          e.OutOfOrder
         else
-          (if: Server__isEpochStale "s" (struct.loadF ApplyAsBackupArgs "epoch" "args")
+          let: (<>, "waitFn") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args") in
+          struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
+          let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s") in
+          (if: "ok"
           then
-            lock.release (struct.loadF Server "mu" "s");;
-            e.Stale
-          else
-            (if: struct.loadF ApplyAsBackupArgs "index" "args" < struct.loadF Server "nextIndex" "s"
-            then
-              lock.release (struct.loadF Server "mu" "s");;
-              e.OutOfOrder
-            else
-              let: (<>, "waitFn") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args") in
-              struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
-              let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s") in
-              (if: "ok"
-              then
-                lock.condSignal "cond";;
-                MapDelete (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s")
-              else #());;
-              lock.release (struct.loadF Server "mu" "s");;
-              "waitFn" #();;
-              e.None))))).
+            lock.condSignal "cond";;
+            MapDelete (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s")
+          else #());;
+          lock.release (struct.loadF Server "mu" "s");;
+          "waitFn" #();;
+          e.None))).
 
 Definition Server__SetState: val :=
   rec: "Server__SetState" "s" "args" :=

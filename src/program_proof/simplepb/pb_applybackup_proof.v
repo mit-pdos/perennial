@@ -168,10 +168,11 @@ Proof.
   wp_if_destruct.
   { (* return error: stale *)
     wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hstate Hepoch HprimaryOnly]").
+    wp_apply (release_spec with "[-HΦ HΨ]").
     {
+      iFrame "Hlocked HmuInv".
       iNext.
-      iExists _, _, _, _, _, _, _.
+      do 9 (iExists _).
       iFrame "∗#%".
     }
     wp_pures.
@@ -186,10 +187,11 @@ Proof.
   wp_if_destruct.
   { (* return error: stale *)
     wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    wp_apply (release_spec with "[-HΦ HΨ]").
     {
+      iFrame "Hlocked HmuInv".
       iNext.
-      iExists _, _, _, _, _, _, _.
+      do 9 (iExists _).
       iFrame "Hepoch HnextIndex ∗ # %".
     }
     wp_pures.
@@ -199,13 +201,13 @@ Proof.
     done.
   }
 
-  (* FIXME: use uniqueness of γsrv to show that we are not primary, or else have
-     the code set isPrimary := false *)
-  (* assert (isPrimary = false) as HnotPrimary by admit. *)
   wp_loadField.
   wp_loadField.
   wp_pures.
-  destruct (bool_decide (_)) as [] eqn:Hindex; last first.
+  destruct (bool_decide (_)) as [] eqn:Hindex.
+  {
+    wp_pures.
+  }
   { (* return errror: out-of-order *)
     wp_pures.
     wp_loadField.

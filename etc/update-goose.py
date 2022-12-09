@@ -241,6 +241,7 @@ def main():
                 "simplepb/pb",
                 "aof",
                 # "simplepb/state",
+                "reconnectclient",
                 "simplepb/e",
                 "simplepb/clerk",
                 "simplepb/simplelog",

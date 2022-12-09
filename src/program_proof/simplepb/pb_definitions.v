@@ -1,6 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Export pb_ghost.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
@@ -8,6 +7,7 @@ From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
+From Perennial.program_proof.reconnectclient Require Import proof.
 
 Section pb_definitions.
 
@@ -226,7 +226,7 @@ Qed.
 Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[pb.Clerk :: "cl"] #cl) ∗
-  "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
+  "#Hcl_rpc"  ∷ is_ReconnectingClient cl srv ∗
   "#Hsrv" ∷ is_pb_host srv γ γsrv 
 .
 
@@ -317,8 +317,9 @@ Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
       (own_primary_ghost γ γsrv epoch σ)
 .
 
-Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
-  ∃ (epoch:u64) σphys (nextIndex:u64) (sealed:bool) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t),
+Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
+  ∃ (epoch:u64) σphys (nextIndex:u64) (sealed:bool) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t)
+    (onAppliedConds_loc:loc) (onAppliedConds:gmap u64 loc),
   (* physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
@@ -336,6 +337,11 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
   (* ghost-state *)
   "Hstate" ∷ own_StateMachine epoch σphys sealed (own_Server_ghost γ γsrv) ∗
   "%Hσ_nextIndex" ∷ ⌜length σphys = int.nat nextIndex⌝ ∗
+
+  (* backup sequencer *)
+  "HonAppliedConds" ∷ s ↦[pb.Server :: "onAppliedConds"] #onAppliedConds_loc ∗
+  "HonAppliedConds_map" ∷ is_map onAppliedConds_loc 1 onAppliedConds ∗
+  "#HonAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ onAppliedConds, is_cond cond mu) ∗
 
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
@@ -364,7 +370,7 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine : iProp Σ :=
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   ∃ (mu:val) own_StateMachine,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv own_StateMachine) ∗
+  "#HmuInv" ∷ is_lock pbN mu (own_Server s γ γsrv own_StateMachine mu) ∗
   "#Hsys_inv" ∷ sys_inv γ.
 
 Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :
