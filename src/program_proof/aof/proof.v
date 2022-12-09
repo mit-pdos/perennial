@@ -1328,6 +1328,7 @@ Qed.
 
 Lemma accessP γ P data durablePrefix :
   is_aof_ctx_inv γ P -∗
+  aof_durable_lb γ durablePrefix -∗
   aof_log_own γ data -∗
   (|NC={⊤,⊤∖↑aofN}=> ∃ durableData, ⌜prefix durableData data⌝ ∗
                            ⌜prefix durablePrefix data⌝ ∗
@@ -1335,7 +1336,7 @@ Lemma accessP γ P data durablePrefix :
   )
   .
 Proof.
-  iIntros "#Hinv Hlog".
+  iIntros "#Hinv #Hlb Hlog".
 
   iInv "Hinv" as "Hctx" "Hctx_close".
   iDestruct "Hctx" as "[[>Hbad _]|Hctx]".
@@ -1366,13 +1367,21 @@ Proof.
   iModIntro. iFrame "HNC".
   iExists _. iFrame.
   iSplit; auto.
+  iDestruct (fmlist_agree_2 with "Hl Hlb") as %Hprefix.
   iSplit.
-  { admit. (* but what is durablePrefix?? *) }
+  { iPureIntro.
+    destruct Hprefix as [??].
+    destruct Hpref as [??].
+    eexists _.
+    rewrite H0 H.
+    repeat rewrite -app_assoc.
+    done.
+  }
   iIntros "HP". iIntros (?) "HNC".
   iMod "Hclo".
   iMod ("Hctx_close" with "[-HNC]"); last by eauto.
   iRight. iExists _. iNext. iFrame.
   iRight. iFrame.
-Admitted.
+Qed.
 
 End aof_proof.
