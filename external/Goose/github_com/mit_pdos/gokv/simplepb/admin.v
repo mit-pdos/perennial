@@ -21,7 +21,9 @@ Definition InitializeSystem: val :=
 Definition EnterNewConfig: val :=
   rec: "EnterNewConfig" "configHost" "servers" :=
     (if: (slice.len "servers" = #0)
-    then e.EmptyConfig
+    then
+      (* log.Println("Tried creating empty config") *)
+      e.EmptyConfig
     else
       let: "configCk" := config.MakeClerk "configHost" in
       let: ("epoch", "oldServers") := config.Clerk__GetEpochAndConfig "configCk" in
@@ -31,7 +33,9 @@ Definition EnterNewConfig: val :=
         "Epoch" ::= "epoch"
       ]) in
       (if: struct.loadF pb.GetStateReply "Err" "reply" ≠ e.None
-      then struct.loadF pb.GetStateReply "Err" "reply"
+      then
+        (* log.Printf("Error while getting state and sealing in epoch %d", epoch) *)
+        struct.loadF pb.GetStateReply "Err" "reply"
       else
         let: "clerks" := NewSlice ptrT (slice.len "servers") in
         let: "i" := ref_to uint64T #0 in
@@ -68,10 +72,14 @@ Definition EnterNewConfig: val :=
           "i" <-[uint64T] ![uint64T] "i" + #1;;
           Continue);;
         (if: ![uint64T] "err" ≠ e.None
-        then ![uint64T] "err"
+        then
+          (* log.Println("Error while setting state and entering new epoch") *)
+          ![uint64T] "err"
         else
           (if: config.Clerk__WriteConfig "configCk" "epoch" "servers" ≠ e.None
-          then e.Stale
+          then
+            (* log.Println("Error while writing to config service") *)
+            e.Stale
           else
             pb.Clerk__BecomePrimary (SliceGet ptrT "clerks" #0) (struct.new pb.BecomePrimaryArgs [
               "Epoch" ::= "epoch";
