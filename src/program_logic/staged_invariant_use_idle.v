@@ -31,7 +31,7 @@ Definition staged_value_inuse e E1' E1 mj mj_wp mj_ukeep Φ Φc P :=
       own γstatus (◯ Excl' (inuse mj_wp mj_ushare)) ∗
       saved_prop_own γprop DfracDiscarded (wpc0 NotStuck mj_wp E1 e
                      (λ v : val Λ,
-                        ∃ Qnew : iPropI Σ, Qnew ∗ (Qnew -∗ C ==∗ P) ∗ (staged_value E1' Qnew P -∗ Φc ∧ Φ v))
+                        |={E1, ∅}=> ∃ Qnew : iPropI Σ, Qnew ∗ (Qnew -∗ C ==∗ P) ∗ (staged_value E1' Qnew P ={∅, E1}=∗ Φc ∧ Φ v))
                      (Φc ∗ P)) ∗
       saved_prop_own γprop' DfracDiscarded Φc ∗
       later_tok ∗
@@ -147,8 +147,14 @@ Proof.
     iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
     iDestruct (pri_inv_tok_disj with "[$]") as %[Hdisj|Hval]; last first.
     { exfalso. apply Qp.lt_nge in Hinvalid. revert Hval. rewrite frac_valid. eauto. }
+    iPoseProof (@fupd_mask_weaken _ _ ⊤ ∅) as "Hclo1"; first by set_solver.
+    iMod ("Hclo1" with "[-]") as "Hexact"; last first.
+    { iApply "Hexact". }
+    iClear "Hclo1".
+    iIntros "Hclo1". iModIntro.
     iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
     { set_solver. }
+    iMod "Hclo1".
     iEval (rewrite staged_inv_inner_unfold) in "Hinner".
     iDestruct "Hinner" as (?????) "(>Hown'&#Hsaved1'&#Hsaved2'&>Hstatus'&>Hitok_ishare&Hinner)".
     iDestruct (own_valid_2 with "Hown' Hown") as "#H".
@@ -198,6 +204,7 @@ Proof.
       rewrite Heq_val.
       iMod ("H" with "[$] [$]") as "H".
       iDestruct "H" as "(Hv&Hg&HNC)".
+      iMod "Hv".
       iDestruct "Hv" as (Qnew) "(HQnew&Hwand_new&Hpost)".
       iMod (saved_prop_alloc Qnew) as (γprop_stored') "#Hsaved1''".
       { apply dfrac_valid_discarded. }
@@ -224,18 +231,18 @@ Proof.
       iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
       iMod (global_state_interp_le with "Hg") as "$".
       { apply Nat.le_succ_l, step_count_next_mono; lia. }
-      iModIntro. iFrame.
-      iSplitR "Hefs".
-      - iEval (rewrite wpc0_unfold /wpc_pre).
-        rewrite Heq_val.
-        iSpecialize ("Hpost" with "[-]").
-        {
+      iMod ("Hpost" with "[-Hefs HNC]") as "Hpost".
+      {
           iExists _, _, _, _, _, _. iFrame "∗".
           iFrame "Hsaved1''".
           iFrame "Hsaved2''".
           iExists _, _. iFrame "#". iPureIntro.
           eapply (Qp.lt_le_trans _ mj_wp); naive_solver.
-        }
+      }
+      iModIntro. iFrame.
+      iSplitR "Hefs".
+      - iEval (rewrite wpc0_unfold /wpc_pre).
+        rewrite Heq_val.
         iSplit.
         * iIntros. iModIntro. iFrame. iDestruct "Hpost" as "(_&$)".
         * iIntros. iApply step_fupd2N_inner_later; auto. iModIntro. iFrame. iDestruct "Hpost" as "($&_)".
@@ -246,7 +253,7 @@ Proof.
     iFrame "HNC".
     iMod (saved_prop_alloc
             (wpc0 NotStuck mj_wp ⊤ e2
-              (λ v : val Λ, ∃ Qnew : iPropI Σ, Qnew ∗ (Qnew -∗ C ==∗ P) ∗ (staged_value E1' Qnew P -∗ Φc ∧ Φ v))
+              (λ v : val Λ, |={⊤, ∅}=> ∃ Qnew : iPropI Σ, Qnew ∗ (Qnew -∗ C ==∗ P) ∗ (staged_value E1' Qnew P ={∅, ⊤}=∗ Φc ∧ Φ v))
               (Φc ∗ P))%I) as (γprop_stored') "#Hsaved1''".
     { apply dfrac_valid_discarded. }
     iMod (saved_prop_alloc Φc) as (γprop_remainder') "#Hsaved2''".
@@ -263,6 +270,11 @@ Proof.
     iDestruct (pri_inv_tok_split with "[$Hitok]") as "(Hitok&Hitok_ishare)".
     iEval (rewrite -Heq_mj) in "Hitok".
     iDestruct (pri_inv_tok_split with "[$Hitok]") as "(Hitok_ukeep&Hitok_ushare)".
+    iPoseProof (@fupd_mask_weaken _ _ ⊤ ∅) as "Hclo1'"; first by set_solver.
+    iMod ("Hclo1'" with "[-]") as "Hexact"; last first.
+    { iApply "Hexact". }
+    iClear "Hclo1'".
+    iIntros "Hclo1'". iModIntro.
     iMod ("Hclo" with "[Hown' Hstatus' H Hitok_ishare Hitok_ushare]").
     { iNext.
       iEval (rewrite staged_inv_inner_unfold).
@@ -278,6 +290,7 @@ Proof.
       iSpecialize ("Hwpc" with "[$] [$] [$]").
       iApply (step_fupd2N_inner_wand with "Hwpc"); auto.
     }
+    iMod "Hclo1'".
     iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
     iMod (later_tok_incr with "[$]") as "(Hg&Hltok)".
     iMod (global_state_interp_le with "Hg") as "$".
@@ -305,8 +318,8 @@ Qed.
 Lemma wpc_staged_inv E1 e Φ Φc Qs P :
   to_val e = None →
   staged_value ⊤ Qs P ∗
-  (Φc ∧ (Qs -∗ WPC e @ E1 {{λ v, ∃ Qnew, Qnew ∗ (Qnew -∗ C ==∗ P) ∗
-                                       (staged_value ⊤ Qnew P -∗ Φc ∧ Φ v)}}
+  (Φc ∧ (Qs -∗ WPC e @ E1 {{λ v, |={E1, ∅}=> ∃ Qnew, Qnew ∗ (Qnew -∗ C ==∗ P) ∗
+                                       (staged_value ⊤ Qnew P ={∅, E1}=∗ Φc ∧ Φ v)}}
                                  {{ Φc ∗ P }}))
   ⊢ WPC e @ E1 {{ Φ }} {{ Φc }}.
 Proof.
@@ -330,6 +343,11 @@ Proof.
   rewrite Hnval.
   iIntros (q σ1 g1 ns D κ κs nt) "Hσ Hg HNC Hlc".
   iDestruct (pri_inv_tok_disj_inv_half with "[$]") as %Hdisj.
+  iPoseProof (@fupd_mask_weaken _ _ E1 ∅) as "Hclo1"; first by set_solver.
+  iMod ("Hclo1" with "[-]") as "Hexact"; last first.
+  { iApply "Hexact". }
+  iClear "Hclo1".
+  iIntros "Hclo1". iModIntro.
   iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
   { set_solver. }
   iEval (rewrite staged_inv_inner_unfold) in "Hinner".
@@ -388,6 +406,7 @@ Proof.
   iMod ("Hclo'").
   rewrite Hnval.
   replace (⊤ ∖ D ∖ E2) with (⊤ ∖ (E2 ∪ D)) by set_solver.
+  iMod "Hclo1".
   iMod ("Hwp" with "[$] [$] [$] [Hlc]") as "Hwp".
   { iApply (lc_weaken with "Hlc").
     apply num_laters_per_step_lt in Hlt'. lia. }
@@ -404,6 +423,7 @@ Proof.
     rewrite Heq_val.
     iMod ("H" with "[$] [$]") as "H".
     iDestruct "H" as "(Hv&Hg&HNC)".
+    iMod "Hv".
     iDestruct "Hv" as (Qnew) "(HQnew&Hwand_new&Hpost)".
     iMod (saved_prop_alloc Qnew) as (γprop_stored') "#Hsaved1''".
     { apply dfrac_valid_discarded. }
@@ -429,17 +449,17 @@ Proof.
     iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
     iMod (global_state_interp_le with "Hg") as "$".
     { apply Nat.le_succ_l, step_count_next_mono. lia. }
+    iMod ("Hpost" with "[-Hefs HNC]") as "Hpost".
+    {
+      iExists _, _, _, _, _, _. iFrame "∗".
+      iFrame "Hsaved1''".
+      iFrame "Hsaved2''".
+      iExists _, _. iFrame "#". iPureIntro. auto.
+    }
     iModIntro. iFrame.
     iSplitR "Hefs".
     - iEval (rewrite wpc0_unfold /wpc_pre).
       rewrite Heq_val.
-      iSpecialize ("Hpost" with "[-]").
-      {
-        iExists _, _, _, _, _, _. iFrame "∗".
-        iFrame "Hsaved1''".
-        iFrame "Hsaved2''".
-        iExists _, _. iFrame "#". iPureIntro. auto.
-      }
       iSplit.
       * iIntros. iModIntro. iFrame. iDestruct "Hpost" as "(_&$)".
       * iIntros. iApply step_fupd2N_inner_later; auto. iModIntro. iFrame. iDestruct "Hpost" as "($&_)".
@@ -454,7 +474,8 @@ Proof.
   iFrame "HNC".
   iMod (saved_prop_alloc
           (wpc0 NotStuck mj_wp ⊤ e2
-            (λ v : val Λ, ∃ Qnew : iPropI Σ, Qnew ∗ (Qnew -∗ C ==∗ P) ∗ (staged_value ⊤ Qnew P -∗ Φc ∧ Φ v))
+             (λ v : val Λ, |={⊤, ∅}=> ∃ Qnew : iPropI Σ, Qnew ∗ (Qnew -∗ C ==∗ P) ∗
+                                                         (staged_value ⊤ Qnew P ={∅, ⊤}=∗ Φc ∧ Φ v))
             (Φc ∗ P))%I) as (γprop_stored') "#Hsaved1''".
   { apply dfrac_valid_discarded. }
   iMod (saved_prop_alloc Φc) as (γprop_remainder') "#Hsaved2''".
@@ -471,6 +492,11 @@ Proof.
   iDestruct (pri_inv_tok_split with "[$Hitok]") as "(Hitok&Hitok_ishare)".
   iEval (rewrite -Heq_mj) in "Hitok".
   iDestruct (pri_inv_tok_split with "[$Hitok]") as "(Hitok_ukeep&Hitok_ushare)".
+  iPoseProof (@fupd_mask_weaken _ _ E1 ∅) as "Hclo1'"; first by set_solver.
+  iMod ("Hclo1'" with "[-]") as "Hexact"; last first.
+  { iApply "Hexact". }
+  iClear "Hclo1'".
+  iIntros "Hclo1'". iModIntro.
   iMod ("Hclo" with "[Hown' Hstatus' H Hitok_ishare Hitok_ushare]").
   { iNext.
     iEval (rewrite staged_inv_inner_unfold).
@@ -485,6 +511,15 @@ Proof.
         eapply Qp.le_min_l.
     }
     iFrame.
+    iSplitL "H".
+    {
+      iApply (wpc0_strong_mono with "H"); try auto.
+      iSplit; last eauto.
+      iIntros (?) "Hwand". iModIntro.
+      iMod (fupd_mask_subseteq E1) as "Hclo"; auto.
+       iMod "Hwand" as (Qnew) "(HQNew&HQnew_shift&Hstaged)". iExists Qnew.
+       iModIntro; iFrame. iIntros. iMod ("Hstaged" with "[$]"). iMod "Hclo". eauto.
+    }
     iModIntro.
     iIntros "Hwpc".
     iEval (rewrite wpc0_unfold) in "Hwpc". iDestruct "Hwpc" as "(_&Hwpc)".
@@ -496,6 +531,7 @@ Proof.
   iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
   iMod (global_state_interp_le with "Hg") as "$".
   { apply Nat.le_succ_l, step_count_next_mono; lia. }
+  iMod "Hclo1'".
   iModIntro. iSplitR "Hefs"; last first.
   { iApply (big_sepL_mono with "Hefs").
     iIntros. iApply (wpc0_mj_le); last by iFrame.

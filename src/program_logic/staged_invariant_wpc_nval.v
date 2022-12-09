@@ -71,7 +71,7 @@ Proof.
   rewrite ncfupd_eq /ncfupd_def. iSpecialize ("Hwand" with "[$]").
   iPoseProof (fupd_fupd2 with "Hwand") as "Hwand".
   iMod (fupd2_mask_mono with "Hwand") as "((#Hwand&HQs'&HR)&HNC)"; eauto.
- 
+
   iSpecialize ("Hwp" $! mj). rewrite wpc0_unfold /wpc_pre.
   rewrite Hnval. iDestruct "Hwp" as "(Hwp&_)".
   iMod (saved_prop_alloc Qs') as (γprop_stored') "#Hsaved1''".
