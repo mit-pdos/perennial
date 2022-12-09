@@ -29,6 +29,7 @@ Record aof_vol_names := mk_aof_vol_names {
   len : gname ;
   len_toks : gname ;
   close_tok: gname ;
+  close_req_tok: gname ;
   curdata : gname ;
   crashtok: gname ;
   initdata : list u8 ;
@@ -54,6 +55,7 @@ Definition list_safe_size (l:list u8) := int.nat (length l) = length l.
 
 Definition aof_log_own γ data : iProp Σ :=
   fmlist γ.(logdata) (DfracOwn (1/2)) data ∗
+  ghost_var γ.(close_req_tok) 1 () ∗
   ghost_var γ.(close_tok) 1 ()
 .
 
@@ -62,15 +64,15 @@ Definition aof_durable_lb γ data : iProp Σ :=
 .
 
 Definition aofN := nroot .@ "aof".
-
-Definition is_aof_ctx_inv_bad γcurdata Pcrash :=
-  ncinv aofN (∃ (data:list u8), ghost_var γcurdata (1/2) data ∗ Pcrash data)
-. (* I don't think this will work. *)
+Definition aofN1 := nroot .@ "aof" .@ "1".
+Definition aofN2 := nroot .@ "aof" .@ "2".
+Definition aofNlk := nroot .@ "aof" .@ "aoflk".
 
 Definition is_aof_ctx_inv γ P :=
-  inv aofN (C ∗ ghost_var γ.(crashtok) 1 () ∨ (* either the node has crashed, *)
+  inv aofN1 (C ∗ ghost_var γ.(crashtok) 1 () ∨ (* either the node has crashed, *)
       ∃ (data:list u8),
-      (fmlist γ.(logdata) DfracDiscarded data) ∗ ghost_var γ.(curdata) 1 data ∨ (* or there's a witness that the user closed the file *)
+        (fmlist γ.(logdata) DfracDiscarded data) ∗ ghost_var γ.(curdata) 1 data ∗ ghost_var γ.(close_req_tok) 1 ()
+        ∨ (* or there's a witness that the user closed the file *)
       (* the fmlist_lb and the 1/2 durabledata ownership are to help prove a strong accessP lemma *)
       fmlist_lb γ.(logdata) data ∗ fmlist γ.(durabledata) (DfracOwn (1/2)) data ∗
       ghost_var γ.(curdata) (1/2) data ∗ P data) (* or P is available *)
@@ -79,10 +81,11 @@ Definition is_aof_ctx_inv γ P :=
 Definition aof_close_resources (aof_ptr:loc) γ P Pcrash fname : iProp Σ :=
   ∃ (isClosed closeRequested:bool),
   "HcloseRequested" ∷ aof_ptr ↦[AppendOnlyFile :: "closeRequested"] #closeRequested ∗
-  "Hclosed" ∷ aof_ptr ↦[AppendOnlyFile :: "closed"] #isClosed ∗ (* other half owned by background thread *)
+  "Hclosed" ∷ aof_ptr ↦[AppendOnlyFile :: "closed"]{1/2} #isClosed ∗ (* other half owned by background thread *)
   "#HexpectedData" ∷ (if closeRequested then ∃ expectedData, (fmlist γ.(logdata) (DfracDiscarded) expectedData) else True) ∗
+  "Hreq_tok" ∷ (if closeRequested && negb isClosed then ghost_var γ.(close_req_tok) 1 () else True) ∗
   "HfileEscrow" ∷ (if isClosed then
-              inv aofN (∃ data, crash_borrow (fname f↦ data ∗ P data) (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ Pcrash data') ∗
+              inv aofN2 (∃ data, crash_borrow (fname f↦ data ∗ P data) (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ Pcrash data') ∗
                       fmlist γ.(logdata) DfracDiscarded data ∨
                       ghost_var γ.(close_tok) 1 ()
                      )
@@ -123,7 +126,7 @@ Definition is_aof aof_ptr γ fname (P : (list u8) → iProp Σ) Pcrash : iProp �
   "#HlenCond" ∷ is_cond lenCond_ptr mu_ptr ∗
   "#HdurCond" ∷ is_cond durCond_ptr mu_ptr ∗
   "#HcloCond" ∷ is_cond cloCond_ptr mu_ptr ∗
-  "#Hmu_inv" ∷ is_lock aofN mu_ptr (aof_mu_invariant aof_ptr γ fname P Pcrash) ∗
+  "#Hmu_inv" ∷ is_lock aofNlk mu_ptr (aof_mu_invariant aof_ptr γ fname P Pcrash) ∗
   "#Haof_len_inv" ∷ inv aof_lenN (aof_len_invariant γ) ∗
   "#Hctx_inv" ∷ is_aof_ctx_inv γ P
 .
@@ -141,7 +144,7 @@ Proof.
     exfalso.
     naive_solver. }
   iDestruct "Hctx" as (?) "Hctx".
-  iDestruct "Hctx" as "[[_ >Hbad]|Hctx]".
+  iDestruct "Hctx" as "[[_ [>Hbad _]]|Hctx]".
   { iDestruct (ghost_var_valid_2 with "Hcurdata Hbad") as %Hbad.
     exfalso.
     naive_solver. }
@@ -178,7 +181,7 @@ Proof.
     exfalso.
     naive_solver. }
   iDestruct "Hctx" as (?) "Hctx".
-  iDestruct "Hctx" as "[[_ Hbad]|Hctx]".
+  iDestruct "Hctx" as "[[_ [Hbad _]]|Hctx]".
   { iDestruct (ghost_var_valid_2 with "Hcurdata Hbad") as %Hbad.
     exfalso.
     naive_solver. }
@@ -190,10 +193,13 @@ Proof.
   { done. }
 
   iMod (fmlist_get_lb with "Hdurdata") as "[Hdurdata #Hlog_lb]".
+  iApply (fupd_mask_weaken (⊤ ∖ ↑aofN)); first by solve_ndisj.
+  iIntros "Hfupd_clo".
   iMod ("Hupd" with "Hctx Hlog_lb") as "(Hctx & HQ)".
   iMod (ghost_var_update_2 with "Hcurdata Hcurdata2") as "[Hcurdata Hcurdata2]".
   { by rewrite Qp.half_half. }
 
+  iMod "Hfupd_clo".
   iMod ("Hctx_close" with "[Hctx Hcurdata2 Hdurdata2]").
   {
     iRight. iExists _.
@@ -208,12 +214,13 @@ Lemma ctx_inv_close γ P data :
   £ 1 -∗
   fmlist γ.(logdata) DfracDiscarded data -∗
   ghost_var γ.(curdata) (1 / 2) data -∗
+  ghost_var γ.(close_req_tok) 1 () -∗
   ghost_var γ.(crashtok) 1 ()
   ={⊤}=∗
   P data ∗ ghost_var γ.(crashtok) 1 ()
 .
 Proof.
-  iIntros "#Hinv Hlc Hclosed Hcurdata Hcrashtok".
+  iIntros "#Hinv Hlc Hclosed Hcurdata Hclose_req Hcrashtok".
   iInv "Hinv" as "Hctx" "Hctx_close".
   iMod (lc_fupd_elim_later with "Hlc Hctx") as "Hctx".
   iDestruct "Hctx" as "[[_ Hbad]|Hctx]".
@@ -221,7 +228,7 @@ Proof.
     exfalso.
     naive_solver. }
   iDestruct "Hctx" as (?) "Hctx".
-  iDestruct "Hctx" as "[[_ Hbad]|Hctx]".
+  iDestruct "Hctx" as "[[_ [Hbad _]]|Hctx]".
   { iDestruct (ghost_var_valid_2 with "Hcurdata Hbad") as %Hbad.
     exfalso.
     naive_solver. }
@@ -295,9 +302,10 @@ Proof.
   { apply mono_nat_included. }
   iDestruct "durableLength" as "[HdurableLength HdurableLength2]".
   iMod (ghost_var_alloc ()) as (γclose_tok) "Hclose_tok".
+  iMod (ghost_var_alloc ()) as (γclose_req_tok) "Hclose_req_tok".
   iMod (ghost_var_alloc data) as (γcurdata) "[Hcurdata Hcurdata2]".
   iMod (ghost_var_alloc ()) as (γcrashtok) "Hcrashtok".
-  set (γ:=mk_aof_vol_names γlogdata γpredurabledata γdurabledata γlen γlen_toks γclose_tok γcurdata γcrashtok data).
+  set (γ:=mk_aof_vol_names γlogdata γpredurabledata γdurabledata γlen γlen_toks γclose_tok γclose_req_tok γcurdata γcrashtok data).
 
 
   iDestruct (crash_borrow_wpc_nval _ _ _ (fname f↦data ∗ ghost_var γcurdata (1/2) data ∗ ghost_var γ.(crashtok) 1 ())
@@ -331,6 +339,7 @@ Proof.
   iApply wp_wpc.
   wp_storeField.
   iIntros "[#Hctx_inv Hpre]".
+  iDestruct "closed" as "(closed1&closed2)".
 
   iAssert ((|={⊤}=> is_aof l γ fname P Pcrash ∗
                       fmlist γ.(predurabledata) (DfracOwn (1/2)) γ.(initdata) ∗
@@ -340,7 +349,7 @@ Proof.
                       aof_log_own γ γ.(initdata) ∗
                       ⌜data = γ.(initdata)⌝
                           )
-          )%I with "[-Hpre HΦ]" as ">HH".
+          )%I with "[-Hpre closed2 HΦ]" as ">HH".
   {
     iAssert (
     ([∗ set] x ∈ fin_to_set u64,
@@ -373,7 +382,7 @@ Proof.
     iMod (readonly_alloc_1 with "lengthCond") as "#HlengthCond".
     iMod (readonly_alloc_1 with "closedCond") as "#HclosedCond".
 
-    iMod (alloc_lock _ _ _ (aof_mu_invariant l γ fname P Pcrash) with "Hmu_free [-Hlogdata2 HdurableLength2 Hpredurable2 Hdurabledata Hlen Hclose_tok]") as "#HmuInv".
+    iMod (alloc_lock _ _ _ (aof_mu_invariant l γ fname P Pcrash) with "Hmu_free [-Hlogdata2 HdurableLength2 Hpredurable2 Hdurabledata Hlen Hclose_tok Hclose_req_tok]") as "#HmuInv".
     {
       iNext.
       iExists (Slice.nil), [], [], (U64 0).
@@ -402,6 +411,7 @@ Proof.
   wp_apply (wp_fork with "[-HΦ Hlog_own]").
   {
     iNext.
+    iEval (simpl) in "closed2".
     iClear "HlenCond HdurCond HcloCond Hcrash_wand Hctx_inv".
     iNamed "His_aof".
     wp_loadField.
@@ -454,7 +464,7 @@ Proof.
     wp_if_destruct.
     {
       wp_loadField.
-      wp_apply (wp_condWait with "[- Hfile_ctx]").
+      wp_apply (wp_condWait with "[- closed2 Hfile_ctx]").
       { iFrame "#∗". iExists _, _, _, _; iFrame "∗#". iSplitR; first done.
         iExists _, _; iFrame "∗#".
       }
@@ -550,8 +560,10 @@ Proof.
       iNamed "Hclose".
       iDestruct "HexpectedData" as (?) "HexpectedData".
       iDestruct (fmlist_agree_1 with "HexpectedData Hlogdata") as %->.
+      iDestruct (struct_field_mapsto_agree with "Hclosed closed2") as %Heq.
+      inversion Heq.
 
-      iMod (ctx_inv_close with "Hctx_inv Hlc2 HexpectedData Hcurdata Hcrashtok") as "[HP Hcrashtok]".
+      iMod (ctx_inv_close with "Hctx_inv Hlc2 HexpectedData Hcurdata Hreq_tok Hcrashtok") as "[HP Hcrashtok]".
 
       rewrite -app_assoc.
       iModIntro.
@@ -576,15 +588,17 @@ Proof.
 
       wp_loadField.
 
-      iDestruct (struct_field_mapsto_agree with "HdurLen HdurableLength") as %Heq.
-      rewrite Heq.
+      iDestruct (struct_field_mapsto_agree with "HdurLen HdurableLength") as %Heq'.
+      rewrite Heq'.
       iCombine "HdurLen HdurableLength" as "HdurLen".
       wp_storeField.
       wp_loadField.
       wp_apply (wp_condBroadcast).
       { iFrame "#". }
       wp_pures.
+      iCombine "closed2 Hclosed" as "Hclosed".
       wp_storeField.
+      iDestruct "Hclosed" as "(closed2&Hclosed)".
       wp_loadField.
       wp_apply (wp_condBroadcast).
       { iFrame "#". }
@@ -603,7 +617,7 @@ Proof.
         iFrame "∗#".
       }
 
-      wp_apply (release_spec with "[-Hlen]").
+      wp_apply (release_spec with "[-Hlen closed2]").
       {
         iFrame "#∗".
         iNext.
@@ -644,7 +658,7 @@ Proof.
     wp_pures.
     wp_loadField.
 
-    wp_apply (release_spec with "[-Hfile_ctx Hpredur Hdur Hmembuf_fupd Hmembuf_sl HdurLen Hlen]").
+    wp_apply (release_spec with "[-Hfile_ctx Hpredur Hdur Hmembuf_fupd Hmembuf_sl HdurLen Hlen closed2]").
     { iFrame "#∗". iNext. iExists _, [], (predurableC ++ membufC), _. iFrame "∗#".
       rewrite app_nil_r.
       iFrame.
@@ -1234,7 +1248,7 @@ Proof.
   { iFrame "#". }
   wp_pures.
 
-  iDestruct "Haof_log" as "[Haof_log Htok]".
+  iDestruct "Haof_log" as "[Haof_log [Hreq_tok Htok]]".
   iMod (fmlist_freeze with "Haof_log") as "#Hexpected".
 
   iAssert (aof_mu_invariant aof_ptr γ fname P Pcrash) with "[-Htok HΦ Hlocked]" as "Haof_own".
@@ -1243,8 +1257,10 @@ Proof.
     iFrame "∗#%".
     iExists _, _.
     iFrame "HcloseRequested ∗%".
-    iDestruct "Hclose" as "[_ $]".
-    iExists _; iFrame "#".
+    iDestruct "Hclose" as "[_ [_ $]]".
+    iSplit.
+    { iExists _; iFrame "#". }
+    destruct isClosed; iEval simpl; auto; by iFrame.
   }
 
   wp_forBreak_cond.
@@ -1276,7 +1292,7 @@ Proof.
   iRight.
   iModIntro.
   iSplitR; first done.
-  iDestruct "Hclose" as "[HcloseRest #H]".
+  iDestruct "Hclose" as "[HcloseRest [Hreq #H]]".
   iNamed "H".
 
   wp_pure1_credit "Hlc".
@@ -1302,6 +1318,7 @@ Proof.
     iNext.
     iExists _, _, _, _. iFrame "∗#%".
     iExists _, _. iFrame "∗#".
+    simpl. iFrame.
   }
   wp_pures.
   iModIntro.
@@ -1314,7 +1331,7 @@ Lemma accessP γ P data durablePrefix :
   aof_log_own γ data -∗
   (|NC={⊤,⊤∖↑aofN}=> ∃ durableData, ⌜prefix durableData data⌝ ∗
                            ⌜prefix durablePrefix data⌝ ∗
-                           P durableData ∗ (P durableData -∗ |NC={⊤∖↑aofN,⊤}=> aof_log_own γ data)
+                           ▷ P durableData ∗ (▷ P durableData -∗ |NC={⊤∖↑aofN,⊤}=> aof_log_own γ data)
   )
   .
 Proof.
@@ -1330,20 +1347,32 @@ Proof.
     by exfalso.
   }
   iDestruct "Hctx" as (?) "Hctx".
-  iDestruct "Hctx" as "[[>Hbad _]|Hctx]".
+  iDestruct "Hctx" as "[[>Hbad [_ >Hbad']]|Hctx]".
   {
-    iDestruct "Hlog" as "[Hlog _]".
-    (* FIXME: there should probably be a lemma for this in mlist.v so we don't have to unfold fmlist *)
-    iDestruct (fmlist_agree_1 with "Hlog Hbad") as %->.
-    iDestruct (own_valid_2 with "Hlog Hbad") as %Hbad.
+    iDestruct "Hlog" as "[Hlog [Hlog' Hreq]]".
+    iDestruct (ghost_var_valid_2 with "[$] [$]") as %Hbad.
     exfalso.
-    rewrite -auth_auth_dfrac_op in Hbad.
-    rewrite auth_auth_dfrac_valid in Hbad.
-    destruct Hbad as [Hbad _].
-    admit. (* FIXME: need to add another token *)
+    naive_solver.
   }
-
-  iDestruct "Hctx" as "(_ & _ & >Hcurdata2 & Hctx)".
+  iDestruct "Hctx" as "(>Hlb1 & >Hl & >Hcurdata2 & Hctx)".
+  iDestruct "Hlog" as "(Hl'&?)".
+  iDestruct (fmlist_agree_2 with "Hl' [$]") as %Hpref.
+  rewrite ncfupd_eq.
+  unfold ncfupd_def.
+  iIntros (q) "HNC".
+  iApply (fupd_mask_weaken (⊤ ∖ ↑aofN)).
+  { solve_ndisj. }
+  iIntros "Hclo".
+  iModIntro. iFrame "HNC".
+  iExists _. iFrame.
+  iSplit; auto.
+  iSplit.
+  { admit. (* but what is durablePrefix?? *) }
+  iIntros "HP". iIntros (?) "HNC".
+  iMod "Hclo".
+  iMod ("Hctx_close" with "[-HNC]"); last by eauto.
+  iRight. iExists _. iNext. iFrame.
+  iRight. iFrame.
 Admitted.
 
 End aof_proof.
