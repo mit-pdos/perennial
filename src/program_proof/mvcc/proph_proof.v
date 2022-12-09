@@ -1,17 +1,19 @@
 From Perennial.goose_lang.lib Require Import proph.proph.
 From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_action
-     wrbuf_repr.
+     wrbuf_prelude wrbuf_repr.
 From Perennial.goose_lang.trusted.github_com.mit_pdos.go_mvcc Require Import trusted_proph.
 
 Section proph.
 Context `{!heapGS Σ}.
 
-
 (** Computes a dbmap from its representation as a GooseLang value.
 If decoding fails, returns some arbitrary nonsense value. *)
-Local Definition decode_dbmap (v : val) : dbmap.
-Admitted.
+Local Fixpoint decode_dbmap (v : val) : dbmap :=
+  match v with
+  | (#(LitInt key), #(LitBool present), #(LitString str'), tail)%V => <[key:=to_dbval present str']> (decode_dbmap tail)
+  | _ => ∅
+  end.
 
 Local Definition decode_ev_read (v : val) : option action :=
   match v with
@@ -60,7 +62,7 @@ Lemma wp_NewProphActions γ :
     NewProph #()
   {{{ (p : proph_id) acs, RET #p; mvcc_proph γ p acs }}}.
 Proof.
-  iIntros (Φ) "_ HΦ". wp_lam.
+  iIntros (Φ) "_ HΦ". wp_call.
   wp_apply wp_new_proph. iIntros (pvs p) "Hp".
   iApply ("HΦ" $! p (decode_actions pvs)).
   iExists _. by iFrame.
@@ -109,12 +111,66 @@ Proof.
   iModIntro. by iApply "HΦ".
 Qed.
 
+
+Local Lemma nodup_take (l : list u64) n :
+  NoDup l → NoDup (take n l).
+Proof.
+  rewrite -{1}(take_drop n l). intros Hl%NoDup_app. naive_solver.
+Qed.
+
+Local Lemma wrents_to_key_dbval (ents : list wrent) :
+  ents.*1.*1.*1 = (wrent_to_key_dbval <$> ents).*1.
+Proof.
+  rewrite -!list_fmap_compose. apply list_fmap_ext. intros ? [[[??]?]?]. done.
+Qed.
+
 Local Lemma wp_WrbufToVal (wrbuf : loc) (m : dbmap) (tpls : gmap u64 loc) :
   {{{ own_wrbuf wrbuf m tpls }}}
     WrbufToVal #wrbuf
   {{{ v, RET v; ⌜decode_dbmap v = m⌝ ∗ own_wrbuf wrbuf m tpls }}}.
 Proof.
-Admitted.
+  iIntros "%Φ Hwrbuf HΦ". wp_call.
+  wp_apply wp_alloc_untyped. { done. }
+  iIntros (l) "Hl". wp_apply (wp_store with "Hl"). iIntros "Hl". wp_pures.
+  iNamed "Hwrbuf". wp_loadField. wp_pures.
+  iDestruct (is_slice_split with "HentsS") as "[HentsS HentsC]".
+  wp_apply (wp_forSlice (λ i, ∃ m' v,
+    ⌜decode_dbmap v = m' ∧ m' = list_to_map (wrbuf_prelude.wrent_to_key_dbval <$> (take (int.nat i) ents))⌝ ∗ l ↦ v
+  )%I with "[] [Hl $HentsS]").
+  2:{ iExists ∅, _. iFrame. iPureIntro. split; done. }
+  { clear Φ. iIntros (i ent Φ) "!# (I & %Hi & %Hent) HΦ".
+    iDestruct "I" as (m' v) "([%Hdecode %Hm'] & Hl)".
+    wp_pures. rewrite ->list_lookup_fmap in Hent.
+    destruct (ents !! int.nat i) as [[[[key str'] present] tpl]|] eqn:Hent'.
+    2:{ exfalso. done. }
+    rewrite /= /wrent_to_val /= in Hent. inversion_clear Hent. wp_pures.
+    wp_apply (wp_load with "Hl"). iIntros "Hl".
+    wp_apply (wp_store with "Hl"). iIntros "Hl".
+    iApply "HΦ". iExists (<[key:=to_dbval present str']> m'), _. iFrame "Hl". iPureIntro. split.
+    - simpl. rewrite Hdecode. done.
+    - replace (int.nat (u64_instance.u64.(word.add) i 1)) with (S (int.nat i)) by word.
+      erewrite take_S_r; last done.
+      rewrite fmap_app list_to_map_app -Hm' /=.
+      rewrite [_ m']insert_union_singleton_r //.
+      apply not_elem_of_dom. rewrite Hm'. rewrite dom_list_to_map_L.
+      apply not_elem_of_list_to_set. apply NoDup_app_singleton.
+      rewrite wrents_to_key_dbval in HNoDup.
+      apply (nodup_take _ (S (int.nat i))) in HNoDup.
+      erewrite take_S_r in HNoDup.
+      2:{ rewrite !list_lookup_fmap Hent' //. }
+      rewrite !fmap_take. exact HNoDup. }
+  iIntros "(I & HentsS)".
+  iDestruct "I" as (m' v) "([%Hdecode %Hm'] & Hl)".
+  iDestruct (is_slice_small_sz with "HentsS") as %HentsLen.
+  rewrite -HentsLen in Hm'. clear HentsLen.
+  rewrite take_ge in Hm'.
+  2:{ rewrite fmap_length. done. }
+  rewrite -Hmods in Hm'. subst m'.
+  wp_apply (wp_load with "Hl"). iIntros "Hl".
+  iApply "HΦ".
+  iSplitR; first done.
+  rewrite /own_wrbuf. eauto with iFrame.
+Qed.
 
 (**
  * TO Ralf: Please just ignore [tpls].
