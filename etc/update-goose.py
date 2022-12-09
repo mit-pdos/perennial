@@ -266,7 +266,7 @@ def main():
             "./tid",
             "./config",
             "./common",
-            # "./examples",
+            "./examples",
             # "./tpcc",
             # "./cfmutex",
         )
