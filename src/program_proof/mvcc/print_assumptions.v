@@ -8,3 +8,5 @@ Definition mvcc_theorems := (
 ).
 Print Assumptions mvcc_theorems.
 
+(* Closed proofs *)
+Print Assumptions hello_adequate.

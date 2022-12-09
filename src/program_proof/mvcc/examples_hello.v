@@ -5,6 +5,7 @@ From Perennial.program_proof Require Import
      txnmgr_repr txnmgr_mk txnmgr_new txnmgr_activate_gc
      txn_repr txn_get txn_put txn_delete txn_do_txn.
 From Goose.github_com.mit_pdos.go_mvcc Require Import examples.
+From Perennial.goose_lang Require Import grove_ffi_adequacy.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -153,3 +154,21 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
 Qed.
 
 End program.
+
+Module closed_proof.
+
+  Import adequacy.
+
+  Definition helloΣ := #[heapΣ; mvcc_ghostΣ].
+
+  Lemma hello_adequate σ g :
+    σ.(world).(grove_node_files) = ∅ →
+    g.(global_world).(grove_net) = ∅ →
+    recovery_adequacy.adequate_failstop (CallHello #()) σ g (λ v _ _, v = #()).
+  Proof.
+    intros Hfiles Hnet. eapply (grove_ffi_single_node_adequacy_failstop helloΣ).
+    { rewrite Hnet. done. }
+    { rewrite Hfiles. done. }
+    iIntros (hHeap) "_ _ !>". iApply wp_CallHello; auto.
+  Qed.
+End closed_proof.
