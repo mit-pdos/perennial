@@ -10,9 +10,7 @@ From Perennial.program_proof Require Import grove_prelude.
 
 Set Default Proof Using "Type".
 
-Section grove_ffi_dist_adeq.
-
-  Theorem grove_ffi_dist_adeq Σ `{hPre: !gooseGpreS Σ} ebσs g φinv :
+Theorem grove_ffi_dist_adequacy Σ `{hPre: !gooseGpreS Σ} ebσs g φinv :
   chan_msg_bounds g.(global_world).(grove_net) →
   Forall (λ ρ, file_content_bounds ρ.(init_local_state).(world).(grove_node_files)) ebσs →
   (∀ HG : gooseGlobalGS Σ,
@@ -40,9 +38,6 @@ Proof.
   }
   { eauto. }
 Qed.
-End grove_ffi_dist_adeq.
-
-Section grove_ffi_dist_adeq_failstop.
 
 Theorem grove_ffi_dist_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} (ebσs : list (expr * state)) g φinv :
   chan_msg_bounds g.(global_world).(grove_net) →
@@ -66,5 +61,16 @@ Proof.
     iIntros (? [e σ] Hlookup) "H". iIntros. iApply "H". done. }
   { eauto. }
 Qed.
-End grove_ffi_dist_adeq_failstop.
+
+Theorem grove_ffi_single_node_adequacy_failstop Σ `{hPre: !gooseGpreS Σ} e σ g φ :
+  chan_msg_bounds g.(global_world).(grove_net) →
+  file_content_bounds σ.(world).(grove_node_files) →
+   (∀ `(Hheap : !heapGS Σ),
+    ⊢ ([∗ map] e↦ms ∈ g.(global_world).(grove_net), e c↦ ms) -∗
+      ([∗ map] f ↦ c ∈ σ.(world).(grove_node_files), f f↦ c) ={⊤}=∗
+      WP e @ ⊤ {{ v, ⌜φ v⌝ }}) →
+  adequate_failstop e σ g (λ v _ _, φ v).
+Proof.
+  intros. eapply goose_recv_adequacy_failstop; eauto.
+Qed.
 

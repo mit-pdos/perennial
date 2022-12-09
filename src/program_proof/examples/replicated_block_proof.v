@@ -542,18 +542,17 @@ Theorem OpenRead_adequate σ g addr :
                 σ g (λ v _ _, True) (λ v _ _, True) (λ _ _, True).
 Proof.
   intros.
-  eapply (goose_recv_adequacy (repΣ) _ _ _ _ _ _ _ _ (λ _, True%I)).
+  eapply (goose_recv_adequacy (repΣ)) with (n:=0%nat).
   { simpl. auto. }
   { simpl. auto. }
-  iIntros (?) "Hstart Hgstart _ _ _".
+  intros. exists (λ _, True%I).
+  iIntros "Hstart Hgstart _ _ _".
   iModIntro.
   iSplitL "".
   { iModIntro; iIntros. iMod (fupd_mask_subseteq ∅); eauto. }
   iSplitL "".
   { iModIntro; iIntros. iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
   iApply (ffi_start_OpenRead); eauto.
-Unshelve.
-- exact 0%nat.
 Qed.
 
 (* Trivial example showing we can run OpenRead on two nodes safely.

@@ -265,8 +265,9 @@ Proof using Hrpre Hhpre Hcpre.
       subst. destruct Hexec as (t2s&σ2s&g2s&?&Hexecs&Htrs).
       do 3 eexists; eauto.
   }
-  eapply (goose_recv_adequacy _ _ _ _ _ _ _ _ _ Φinv); auto.
-  iIntros (hG) "???? Hpre".
+  eapply goose_recv_adequacy; (tc_solve || auto).
+  intros hG. exists  Φinv.
+  iIntros "???? Hpre".
   iMod (goose_spec_init2 _ _ _ _ _ _ (P _) with "[$] [$]") as
       (HrG) "(#Hspec&Hpool&Hgs&Hrs&#Htrace&Hcfupd1&Hcfupd3)"; try (by symmetry); eauto.
   iMod (Hwp hG HrG with "[$] [$] [$] [$]") as "(#H1&Hwp)".
