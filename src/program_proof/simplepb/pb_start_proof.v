@@ -60,6 +60,10 @@ Proof.
   wp_storeField.
   wp_pures.
 
+  wp_apply (wp_NewMap).
+  iIntros (?) "Hmap".
+  wp_storeField.
+
   iApply "HΦ".
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
   iExists _, _.
@@ -68,7 +72,7 @@ Proof.
 
   (* now just need to establish lock invariant *)
   iNext.
-  iExists _,_,_,_,_,_,_.
+  do 9 iExists _.
   iFrame "∗".
   iSplitL "clerks".
   {
@@ -81,6 +85,9 @@ Proof.
   (* FIXME: need is_epoch_lb γsrv epoch upon initialization. Can put it as a
      second "synchronous" predicate in own_StateMachine. *)
   iSplitL; first admit.
+  iSplitL; first done.
+  iSplitL; last done.
+  iApply big_sepM_empty.
   done.
 Admitted.
 
