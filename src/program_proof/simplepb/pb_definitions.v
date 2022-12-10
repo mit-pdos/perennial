@@ -317,6 +317,8 @@ Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
       (own_primary_ghost γ γsrv epoch σ)
 .
 
+Definition numClerks : nat := 32.
+
 Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
   ∃ (epoch:u64) σphys (nextIndex:u64) (sealed:bool) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t)
     (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
@@ -345,7 +347,7 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
 
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
-            ∃ (clerks:list loc) (backups:list pb_server_names),
+            ∃ (clerkss:list Slice.t) (backups:list pb_server_names),
             (* Because the state machine is async, we might not have "is_tok"
                right when we become leader, but we will definitely have a fupd
                that will tell us is_tok the next time we can access
@@ -356,12 +358,16 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
                                       own_primary_ghost γ γsrv epoch σ' ={↑pbN}=∗
                                       own_primary_ghost γ γsrv epoch σ' ∗
                                       is_tok γsrv epoch) ∗
-            "%Hconf_clerk_len" ∷ ⌜length clerks = length (backups)⌝ ∗
+            "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
             "#Hconf" ∷ is_epoch_config γ epoch (γsrv :: backups) ∗
                      (* FIXME: ptrT vs refT (struct.t Clerk) *)
-            "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
-            "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗
-                                                                      is_epoch_lb γsrv' epoch
+            "#Hclerkss_sl" ∷ readonly (is_slice_small clerks_sl (slice.T ptrT) 1 clerkss) ∗
+
+            "#Hclerkss_rpc" ∷ ([∗ list] clerks_sl ∈ clerkss,
+                                  ∃ clerks,
+                                  "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
+                                  "Hclerks" ∷ ⌜length clerks = length backups⌝ ∗
+                                  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv' epoch)
                              )
         )
                    else True

@@ -420,7 +420,7 @@ Definition Server__GetState: val :=
 Definition Server__BecomePrimary: val :=
   rec: "Server__BecomePrimary" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF BecomePrimaryArgs "Epoch" "args" < struct.loadF Server "epoch" "s"
+    (if: struct.loadF BecomePrimaryArgs "Epoch" "args" ≠ struct.loadF Server "epoch" "s"
     then
       (* log.Println("Stale BecomePrimary request") *)
       lock.release (struct.loadF Server "mu" "s");;
@@ -429,7 +429,6 @@ Definition Server__BecomePrimary: val :=
       (* log.Println("Became Primary") *)
       struct.storeF Server "isPrimary" "s" #true;;
       let: "numClerks" := #32 in
-      struct.storeF Server "clerks" "s" (NewSlice (slice.T ptrT) "numClerks");;
       struct.storeF Server "clerks" "s" (NewSlice (slice.T ptrT) "numClerks");;
       let: "j" := ref_to uint64T #0 in
       Skip;;
