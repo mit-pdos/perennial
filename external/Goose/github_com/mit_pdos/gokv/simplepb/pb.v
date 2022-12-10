@@ -255,7 +255,7 @@ Definition Server := struct.decl [
   "sm" :: ptrT;
   "nextIndex" :: uint64T;
   "isPrimary" :: boolT;
-  "clerks" :: slice.T ptrT;
+  "clerks" :: slice.T (slice.T ptrT);
   "opAppliedConds" :: mapT ptrT
 ].
 
@@ -292,8 +292,8 @@ Definition Server__Apply: val :=
           "index" ::= "nextIndex";
           "op" ::= "op"
         ] in
-        ForSlice ptrT "i" "clerk" "clerks"
-          (let: "clerk" := "clerk" in
+        ForSlice ptrT "i" <> (SliceGet (slice.T ptrT) "clerks" #0)
+          (let: "clerk" := SliceGet ptrT (SliceGet (slice.T ptrT) "clerks" ((Data.randomUint64 #()) `rem` (slice.len "clerks"))) "i" in
           let: "i" := "i" in
           waitgroup.Add "wg" #1;;
           Fork (Skip;;
@@ -428,12 +428,21 @@ Definition Server__BecomePrimary: val :=
     else
       (* log.Println("Became Primary") *)
       struct.storeF Server "isPrimary" "s" #true;;
-      struct.storeF Server "clerks" "s" (NewSlice ptrT (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args") - #1));;
-      let: "i" := ref_to uint64T #0 in
+      let: "numClerks" := #32 in
+      struct.storeF Server "clerks" "s" (NewSlice (slice.T ptrT) "numClerks");;
+      struct.storeF Server "clerks" "s" (NewSlice (slice.T ptrT) "numClerks");;
+      let: "j" := ref_to uint64T #0 in
       Skip;;
-      (for: (λ: <>, ![uint64T] "i" < slice.len (struct.loadF Server "clerks" "s")); (λ: <>, Skip) := λ: <>,
-        SliceSet ptrT (struct.loadF Server "clerks" "s") (![uint64T] "i") (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") (![uint64T] "i" + #1)));;
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+      (for: (λ: <>, ![uint64T] "j" < "numClerks"); (λ: <>, Skip) := λ: <>,
+        let: "clerks" := NewSlice ptrT (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args") - #1) in
+        let: "i" := ref_to uint64T #0 in
+        Skip;;
+        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+          SliceSet ptrT "clerks" (![uint64T] "i") (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") (![uint64T] "i" + #1)));;
+          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          Continue);;
+        SliceSet (slice.T ptrT) (struct.loadF Server "clerks" "s") (![uint64T] "j") "clerks";;
+        "j" <-[uint64T] ![uint64T] "j" + #1;;
         Continue);;
       lock.release (struct.loadF Server "mu" "s");;
       e.None).

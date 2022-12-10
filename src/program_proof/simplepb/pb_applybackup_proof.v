@@ -1,12 +1,12 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Import pb_ghost.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
+From Perennial.program_proof.reconnectclient Require Import proof.
 
 Section pb_apply_proof.
 
@@ -64,7 +64,7 @@ Proof.
   wp_loadField.
   iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
   wp_apply (wp_frame_wand with "HΦ").
-  wp_apply (wp_Client__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
+  wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
   {
     rewrite is_pb_host_unfold.
     iDestruct "Hsrv" as "[$ _]".
@@ -158,11 +158,147 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
-  iNamed "Hown".
   wp_pures.
+
+  (* for loop to wait for previous op to be applied *)
+  wp_bind (For _ _ _).
+  wp_forBreak_cond.
+  wp_pures.
+
+  iNamed "Hown".
+
   wp_loadField.
-  wp_bind (Server__isEpochStale _ _).
+  wp_bind (If (_ > _) _ _).
+  wp_apply (wp_wand with "[Hargs_index HnextIndex Hargs_epoch Hepoch]").
+  {
+    wp_loadField.
+    wp_pures.
+    wp_if_destruct.
+    {
+      wp_loadField.
+      wp_loadField.
+      wp_pures.
+      iModIntro.
+      instantiate (1:=(λ v, ("%Hisbool" ∷ ⌜v = #true ∨ v = #false⌝ ∗ _))%I).
+      simpl.
+      iSplitR.
+      { iPureIntro. destruct bool_decide; naive_solver. }
+      iNamedAccu.
+    }
+    {
+      iFrame.
+      iPureIntro.
+      by right.
+    }
+  }
+  iIntros (?).
+  iNamed 1.
+  wp_bind (If v _ #false).
+  wp_apply (wp_wand with "[Hsealed]").
+  {
+    wp_pures.
+    destruct Hisbool as [-> | ->].
+    {
+      wp_pures.
+      wp_loadField.
+      wp_pures.
+      instantiate (1:=(λ w, ("%Hisboolw" ∷ ⌜w = #true ∨ w = #false⌝ ∗ _))%I).
+      simpl.
+      iModIntro.
+      iSplitR.
+      { iPureIntro. destruct sealed; naive_solver. }
+      iNamedAccu.
+    }
+    {
+      wp_pures.
+      iSplitR.
+      { iPureIntro. naive_solver. }
+      by iFrame.
+    }
+  }
+
+  iIntros (?).
+  iNamed 1.
+  wp_pures.
+  destruct Hisboolw as [-> | ->].
+  { (* loop again *)
+    wp_pures.
+    wp_loadField.
+    wp_loadField.
+    wp_apply (wp_MapGet with "HopAppliedConds_map").
+    iIntros (cond ok) "[%Hlookup HopAppliedConds_map]".
+    wp_pures.
+    wp_if_destruct.
+    { (* no condvar exists, let's make one *)
+      wp_loadField.
+      wp_apply (wp_newCond with "[$HmuInv]").
+      apply map_get_false in Hlookup as [Hlookup _].
+      clear dependent cond.
+      iIntros (cond) "#Hiscond".
+      wp_pures.
+      wp_loadField.
+      wp_loadField.
+      wp_apply (wp_MapInsert with "HopAppliedConds_map").
+      { done. }
+      iIntros "HopAppliedConds_map".
+      wp_pures.
+      iLeft.
+      iFrame.
+      iSplitR; first done.
+      iModIntro.
+      iApply to_named.
+      do 9 (iExists _).
+      iFrame "∗#%".
+      unfold typed_map.map_insert.
+      iDestruct (big_sepM_insert with "[$HopAppliedConds_conds]") as "$".
+      { done. }
+      { iFrame "#". }
+    }
+    { (* condvar exists, let's wait *)
+      apply map_get_true in Hlookup.
+      iDestruct (big_sepM_lookup_acc with "HopAppliedConds_conds") as "[His_cond _]".
+      { done. }
+      wp_apply (wp_condWait with "[-HΦ HΨ Hargs_op Hargs_op_sl Hargs_index Hargs_epoch]").
+      {
+        iFrame "His_cond".
+        iFrame "HmuInv Hlocked".
+        do 9 (iExists _).
+        iFrame "∗#%".
+      }
+      iIntros "[Hlocked Hown]".
+      wp_pures.
+      iLeft.
+      iModIntro.
+      iSplitR; first done.
+      iFrame.
+    }
+  }
+  (* done looping *)
+  wp_pures.
+  iModIntro.
+  iRight.
+  iSplitR; first done.
+  wp_pures.
+
   iNamed "HΨ".
+  wp_loadField.
+  wp_if_destruct.
+  { (* return error: sealed *)
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ HΨ]").
+    {
+      iFrame "HmuInv Hlocked".
+      do 9 (iExists _).
+      iFrame "∗#%".
+    }
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    iApply "HΨ".
+    done.
+  }
+
+  wp_loadField.
   wp_apply (wp_Server__isEpochStale with "Hepoch").
   iIntros "Hepoch".
   wp_if_destruct.
@@ -184,8 +320,10 @@ Proof.
   }
   replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
   wp_loadField.
+  wp_loadField.
   wp_if_destruct.
-  { (* return error: stale *)
+  { (* return error: out-of-order; TODO: we never actually need to return this
+       error, if something is out of order that means we already applied it *)
     wp_loadField.
     wp_apply (release_spec with "[-HΦ HΨ]").
     {
@@ -204,31 +342,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_pures.
-  destruct (bool_decide (_)) as [] eqn:Hindex.
-  {
-    wp_pures.
-  }
-  { (* return errror: out-of-order *)
-    wp_pures.
-    wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
-    {
-      iNext.
-      iExists _, _, _, _, _, _, _.
-      iFrame "∗#%".
-    }
-    wp_pures.
-    iApply "HΦ".
-    iRight in "HΨ".
-    iApply "HΨ".
-    done.
-  }
 
-  wp_pures.
-  apply bool_decide_eq_true in Hindex.
-
-  wp_loadField.
-  wp_loadField.
   iNamed "HisSm".
   wp_loadField.
 
@@ -236,12 +350,10 @@ Proof.
   wp_apply ("HapplySpec" with "[$Hstate $Hargs_op_sl]").
   { (* prove protocol step *)
     iSplitL ""; first done.
-    assert (args.(ApplyAsBackupArgs.index) = nextIndex) as Hindex_eq by naive_solver.
     iIntros "Hghost".
     iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
     iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
     {
-      rewrite Hindex_eq in Hσ_index.
       apply (f_equal length) in Hre.
       rewrite Hσ_nextIndex in Hre.
       rewrite Hre in Hσ_index.
@@ -251,13 +363,13 @@ Proof.
     { done. }
     iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
     { done. }
-    { rewrite Hindex_eq in Hσ_index.
+    {
       rewrite Happend.
       rewrite app_length.
       word.
     }
     iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
-    { rewrite Hindex_eq in Hσ_index.
+    {
       rewrite Happend.
       rewrite app_length.
       word.
@@ -281,10 +393,66 @@ Proof.
   wp_loadField.
   wp_storeField.
   wp_loadField.
-  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+
+  wp_loadField.
+  wp_apply (wp_MapGet with "HopAppliedConds_map").
+  iIntros (cond ok) "[%Hlookup HopAppliedConds_map]".
+  wp_pures.
+  wp_bind (If _ _ _).
+  wp_apply (wp_wand with "[HopAppliedConds_map HopAppliedConds HnextIndex]").
   {
+    wp_if_destruct.
+    { (* map lookup succeeded, signal the condvar *)
+      apply map_get_true in Hlookup.
+      iDestruct (big_sepM_lookup_acc with "HopAppliedConds_conds") as "[Hiscond _]".
+      { done. }
+      wp_apply (wp_condSignal with "Hiscond").
+      wp_pures.
+      wp_loadField.
+      wp_loadField.
+      wp_apply (wp_MapDelete with "HopAppliedConds_map").
+      iIntros "HopAppliedConds_map".
+      simpl.
+      iAssert (∃ newOpAppliedConds,
+                  is_map opAppliedConds_loc 1 newOpAppliedConds ∗
+                  [∗ map] cond0 ∈ newOpAppliedConds, is_cond cond0 mu
+              )%I with "[HopAppliedConds_map]" as "H".
+      {
+        iExists _; iFrame.
+        unfold map_del.
+        iDestruct (big_sepM_delete with "HopAppliedConds_conds") as "[_ $]".
+        { done. }
+      }
+      (* FIXME: iNamedAccu and iAccu turn the strings into "^@^@^@^@^@..." *)
+      instantiate (1:=(λ _, _)%I).
+      instantiate (1:=
+                  (
+        "HopAppliedConds" ∷ s ↦[Server :: "opAppliedConds"] #opAppliedConds_loc ∗
+        "HnextIndex" ∷ s ↦[Server :: "nextIndex"] #_ ∗
+        "H" ∷ ∃ newOpAppliedConds, (is_map opAppliedConds_loc 1 newOpAppliedConds ∗
+                ([∗ map] cond0 ∈ newOpAppliedConds, is_cond cond0 mu))
+                )%I
+      ).
+      iAccu.
+    }
+    { (* FIXME: What are those weird ^@? *)
+      simpl.
+      iModIntro.
+      iFrame.
+      iExists _; iFrame "∗#".
+    }
+  }
+  iIntros (?).
+  iNamed 1.
+  iDestruct "H" as (?) "[HopAppliedConds_map #HopAppliedConds_conds2]".
+  wp_pures.
+
+  wp_loadField.
+  wp_apply (release_spec with "[-HΨ HΦ HwaitSpec]").
+  {
+    iFrame "Hlocked HmuInv".
     iNext.
-    iExists _, _, _, _, _, _, _.
+    do 9 (iExists _).
     replace ([op]) with ([(op, Q).1]) by done.
     iFrame "Hstate ∗#".
     iSplitR.
@@ -293,7 +461,6 @@ Proof.
     rewrite app_length.
     rewrite Hσ_nextIndex.
     simpl.
-    replace (nextIndex) with (args.(ApplyAsBackupArgs.index)) by naive_solver.
     word.
   }
   wp_pures.

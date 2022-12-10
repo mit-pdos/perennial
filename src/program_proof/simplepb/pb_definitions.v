@@ -319,7 +319,7 @@ Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
 
 Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
   ∃ (epoch:u64) σphys (nextIndex:u64) (sealed:bool) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t)
-    (onAppliedConds_loc:loc) (onAppliedConds:gmap u64 loc),
+    (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
   (* physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
@@ -339,9 +339,9 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
   "%Hσ_nextIndex" ∷ ⌜length σphys = int.nat nextIndex⌝ ∗
 
   (* backup sequencer *)
-  "HonAppliedConds" ∷ s ↦[pb.Server :: "onAppliedConds"] #onAppliedConds_loc ∗
-  "HonAppliedConds_map" ∷ is_map onAppliedConds_loc 1 onAppliedConds ∗
-  "#HonAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ onAppliedConds, is_cond cond mu) ∗
+  "HopAppliedConds" ∷ s ↦[pb.Server :: "opAppliedConds"] #opAppliedConds_loc ∗
+  "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 opAppliedConds ∗
+  "#HopAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ opAppliedConds, is_cond cond mu) ∗
 
   (* primary-only *)
   "HprimaryOnly" ∷ if isPrimary then (
