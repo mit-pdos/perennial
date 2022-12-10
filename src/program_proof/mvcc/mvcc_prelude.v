@@ -12,7 +12,7 @@ Definition to_dbval (b : bool) (v : string) :=
 
 Definition dbmap := gmap u64 dbval.
 
-Definition N_TXN_SITES : Z := 64.
+Definition N_TXN_SITES : Z := 16.
 
 Definition keys_all : gset u64 := fin_to_set u64.
 Definition sids_all : list u64 := U64 <$> seqZ 0 N_TXN_SITES.
