@@ -521,8 +521,7 @@ Proof.
       iSplitR; first done.
 
       iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
-      iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hghost2") as "%Heq".
-      apply Option.eq_of_eq_Some in Heq.
+      iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
       replace (epoch0) with (epoch_prev) by naive_solver.
       replace (ops0) with (ops_prev) by naive_solver.
       replace (sealed) with (sealed_prev) by naive_solver.
@@ -542,14 +541,14 @@ Proof.
   iNext.
   iIntros "[Hfile _]".
 
-  iMod (ghost_map_alloc_fin None) as (γcur_state2) "Hunused_state".
-  set (γ2:={| cur_state := γcur_state2 |} ).
+  iClear "Hallstates".
+  iMod (fmlist_alloc []) as (γcur_state2) "Hallstates".
+  set (γ2:={| sl_state := γcur_state2 |} ).
 
   (* update file_inv *)
 
   iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
-  iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hghost2") as "%Heq".
-  apply Option.eq_of_eq_Some in Heq.
+  iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
   replace (epoch0) with (epoch_prev) by naive_solver.
   replace (ops0) with (ops_prev) by naive_solver.
   replace (sealed) with (sealed_prev) by naive_solver.
@@ -558,24 +557,33 @@ Proof.
 
   rewrite -app_assoc.
   set (newdata:=(u64_le (length snap) ++ snap) ++ u64_le epoch ++ u64_le (length ops)).
-  iClear "Hunused_vars".
-  iDestruct (big_sepS_elem_of_acc_impl (U64 (length newdata)) with "Hunused_state") as "[Hvar Hunused_vars]".
-  { set_solver. }
+  (* set new allstates *)
 
-  iMod (ghost_map_points_to_update (Some (epoch, ops, false)) with "Hvar") as "Hvar".
-  iMod (ghost_map_points_to_persist with "Hvar") as "#Hvar".
+  iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
+  {
+    instantiate (1:=(replicate (length newdata + 1) (epoch, ops, false))).
+    apply prefix_nil.
+  }
 
-  iModIntro.
-  iExists _.
+  iDestruct (fmlist_lb_to_idx _ _ (length newdata) with "Hallstates_lb") as "#Hcurstate".
+  {
+    unfold newdata.
+    rewrite app_length.
+    apply lookup_replicate.
+    split; last lia.
+    done.
+  }
 
   iAssert (file_inv γ2 P newdata) with "[HP]" as "HP".
   {
-    iExists _, _, _; iFrame "HP Hvar".
+    iExists _, _, _; iFrame "HP #".
     iPureIntro.
     unfold newdata.
     rewrite -app_assoc.
     by apply file_encodes_state_snapshot.
   }
+  iModIntro.
+  iExists _.
   iSplitL "Hfile HP".
   { iAccu. }
   iSplit.
@@ -606,6 +614,7 @@ Proof.
   iFrame "HQ".
   iModIntro.
   iExists fname, new_aof_ptr, γ2, γaof2, _, _, newdata, own_InMemoryStateMachine.
+  iExists _.
   iFrame "∗".
   iFrame "#".
   iSplitR; first done.
@@ -616,16 +625,10 @@ Proof.
     rewrite -app_assoc.
     by apply file_encodes_state_snapshot.
   }
-  iApply "Hunused_vars".
-  {
-    iModIntro. iIntros (???) "$".
-  }
-  {
-    iLeft. iPureIntro.
-    unfold newdata.
-    repeat rewrite -app_assoc in Henc_sz |-*.
-    word.
-  }
+  iPureIntro.
+  unfold newdata.
+  rewrite replicate_length.
+  word.
 Qed.
 
 Lemma wp_GetStateAndSeal s P epoch ops sealed Q :
@@ -666,16 +669,18 @@ Proof.
       instantiate (1:=Q).
 
       iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
-      iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hghost2") as "%Heq".
-      apply Option.eq_of_eq_Some in Heq.
+      iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
       replace (epoch0) with (epoch) by naive_solver.
       replace (ops0) with (ops) by naive_solver.
       replace (sealed) with (false) by naive_solver.
+
+      (* FIXME: do update here *)
 
       iMod ("Hupd" with "HP") as "[HP $]".
       iModIntro.
       iExists _, _, _.
       iFrame "HP".
+      iFrame "#".
       iSplitR; last admit. (* FIXME: freeze var witness, or use an append-only
                               list in place of the cur_state vars *)
       iPureIntro.
@@ -702,6 +707,7 @@ Proof.
     iSplitR; first done.
 
     iExists fname, aof_ptr, γ, γaof, _, _, _, _.
+    iExists _.
     iFrame "∗#".
     iSplitR.
     {
@@ -736,8 +742,7 @@ Proof.
     unfold file_inv.
     iDestruct "HP" as (??? HdurPrefixEnc) "[HP #Hcurstate2]".
 
-    iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hcurstate2") as "%Heq".
-    apply Option.eq_of_eq_Some in Heq.
+    iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hcurstate2") as "%Heq".
     replace (epoch0) with (epoch) by naive_solver.
     replace (ops0) with (ops) by naive_solver.
     replace (sealed) with (true) by naive_solver.
@@ -754,6 +759,7 @@ Proof.
     iSplitR; first done.
 
     iExists fname, aof_ptr, γ, γaof, _, _, _, _.
+    iExists _.
     iFrame "∗#".
     done.
   }
