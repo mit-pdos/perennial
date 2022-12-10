@@ -205,6 +205,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "Hlogsize" ∷ s ↦[StateMachine :: "logsize"] #logsize ∗
     "Hepoch" ∷ s ↦[StateMachine :: "epoch"] #epoch ∗
     "Hsealed" ∷ s ↦[StateMachine :: "sealed"] #sealed ∗
+    "#Hdurlb" ∷ □(if sealed then aof_durable_lb γaof data else True) ∗
 
     "Haof" ∷ aof_log_own γaof data ∗
     "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv γ P) (file_crash P) ∗
@@ -612,6 +613,7 @@ Proof.
   iExists fname, new_aof_ptr, γ2, γaof2, _, _, newdata, own_InMemoryStateMachine.
   iFrame "∗".
   iFrame "#".
+  iSplitR; first done.
   iSplitR.
   {
     iPureIntro.
@@ -689,7 +691,7 @@ Proof.
     wp_loadField.
     wp_apply (wp_AppendOnlyFile__WaitAppend with "His_aof").
     iIntros "Hl".
-    iMod ("HupdQ" with "Hl") as "[HQ Hlb]".
+    iMod ("HupdQ" with "Hl") as "[HQ #Hlb]".
 
     wp_pures.
     wp_loadField.
@@ -706,7 +708,7 @@ Proof.
 
     iExists fname, aof_ptr, γ, γaof, _, _, _, _.
     iFrame "∗#".
-    iSplitL.
+    iSplitR.
     {
       iPureIntro.
       by apply file_encodes_state_seal.
@@ -722,11 +724,43 @@ Proof.
     wp_loadField.
     wp_apply ("HgetState_spec" with "[$Hmemstate]").
     iIntros (??) "(Hmemstate & %HencSnap & #Hsnap_sl)".
+    wp_pure1_credit "Hlc".
     wp_pures.
     iApply "HΦ".
-    iModIntro.
     iFrame "Hsnap_sl".
-    admit. (* FIXME: get Q *)
+
+    iDestruct (accessP with "His_aof Hdurlb Haof") as "HH".
+    iMod "HH".
+    iDestruct "HH" as (?) "(%HdurPrefix & %HotherPrefix & HP & HcloseP)".
+    replace (durableData) with (data); last first.
+    {
+      apply list_prefix_eq; first done.
+      apply prefix_length; done.
+    }
+    iMod (lc_fupd_elim_later with "Hlc HP") as "HP".
+    unfold file_inv.
+    iDestruct "HP" as (??? HdurPrefixEnc) "[HP #Hcurstate2]".
+
+    iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hcurstate2") as "%Heq".
+    apply Option.eq_of_eq_Some in Heq.
+    replace (epoch0) with (epoch) by naive_solver.
+    replace (ops0) with (ops) by naive_solver.
+    replace (sealed) with (true) by naive_solver.
+
+    iMod ("Hupd" with "HP") as "[HP HQ]".
+    iMod ("HcloseP" with "[HP]").
+    {
+      iNext.
+      iExists _, _, _.
+      iFrame "∗#%".
+    }
+    iModIntro.
+    iFrame "HQ".
+    iSplitR; first done.
+
+    iExists fname, aof_ptr, γ, γaof, _, _, _, _.
+    iFrame "∗#".
+    done.
   }
 Admitted.
 

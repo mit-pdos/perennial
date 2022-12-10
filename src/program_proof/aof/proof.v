@@ -1326,19 +1326,20 @@ Proof.
   iFrame.
 Qed.
 
-Lemma accessP γ P data durablePrefix :
-  is_aof_ctx_inv γ P -∗
+Lemma accessP aof_ptr fname γ P Pcrash data durablePrefix :
+  is_aof aof_ptr γ fname P Pcrash -∗
   aof_durable_lb γ durablePrefix -∗
   aof_log_own γ data -∗
   (|NC={⊤,⊤∖↑aofN}=> ∃ durableData, ⌜prefix durableData data⌝ ∗
-                           ⌜prefix durablePrefix data⌝ ∗
+                           ⌜prefix durablePrefix durableData⌝ ∗
                            ▷ P durableData ∗ (▷ P durableData -∗ |NC={⊤∖↑aofN,⊤}=> aof_log_own γ data)
   )
   .
 Proof.
   iIntros "#Hinv #Hlb Hlog".
+  iNamed "Hinv".
 
-  iInv "Hinv" as "Hctx" "Hctx_close".
+  iInv "Hctx_inv" as "Hctx" "Hctx_close".
   iDestruct "Hctx" as "[[>Hbad _]|Hctx]".
   {
     rewrite ncfupd_eq.
