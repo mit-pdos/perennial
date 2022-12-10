@@ -40,7 +40,7 @@ Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sea
     has_snap_encoding snap snap_ops ∧
     sealed_bytes = match sealed with false => [] | true => [U8 0] end /\
     length rest_ops = length rest_ops_bytes ∧
-    (∀ (i:nat), 0 ≤ i → i < length rest_ops →
+    (∀ (i:nat), i < length rest_ops →
           ∃ op op_len_bytes op_bytes,
             rest_ops !! i = Some op ∧
               rest_ops_bytes !! i = Some (op_len_bytes ++ op_bytes) ∧
@@ -69,7 +69,7 @@ Proof.
   { eauto. }
   { auto. }
   { rewrite ?app_length /=; lia. }
-  { intros i Hnonneg Hlt.
+  { intros i Hlt.
     rewrite ?app_length /= in Hlt.
     destruct (decide (i = length rest_ops)); last first.
     { edestruct (Hrest i) as (op'&op_len_bytes'&op_bytes'&Hlookup1&Hlookup2&Henc'&Hlenenc'); eauto.
@@ -824,7 +824,7 @@ Proof.
   iMod (fmlist_alloc (replicate (length data + 1) (epoch, ops, sealed))) as (γsl_state) "Hallstates".
   set (γ:={| sl_state := γsl_state |} ).
 
-  iMod (fmlist_to_lb with "Hallstates") as "Hlb".
+  iMod (fmlist_get_lb with "Hallstates") as "[Hallstates #Hlb]".
   iDestruct (fmlist_lb_to_idx _ _ (length data) with "Hlb") as "#Hcurstate".
   {
     apply lookup_replicate.
@@ -904,6 +904,7 @@ Proof.
   wp_pures.
   wp_load.
   iDestruct (is_slice_to_small with "Hdata_sl") as "Hdata_sl".
+  pose proof Henc as Henc2.
   destruct Henc as (snap_ops & snap & rest_ops & rest_ops_bytes & sealed_bytes & Henc).
   destruct Henc as (Hops & Hsnap_enc & Hsealedbytes & Hrest_ops_len & Henc).
   destruct Henc as (Hop_bytes & HdataEnc).
@@ -919,7 +920,7 @@ Proof.
   iDestruct "Hdata_sl" as "[Hdata_sl Hdata_sl2]".
 
   assert (int.nat (length snap) = length snap) as HsnapNoOverflow.
-  { admit. } (* TODO: establish this *)
+  { admit. } (* TODO: pure overflow of snap bytes, establish this *)
   wp_apply (wp_SliceSubslice_small with "Hdata_sl").
   {
     rewrite app_length.
@@ -1009,7 +1010,291 @@ Proof.
   wp_store.
   wp_pures.
 
-  (* Loop over all the `rest_ops` and apply them to memstate *)
+  (* loop invariant *)
+  iAssert (
+      ∃ rest_ops_sl (numOpsApplied:nat) q,
+      "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val rest_ops_sl) ∗
+      "Hdata_sl" ∷ is_slice_small rest_ops_sl byteT q (concat (drop numOpsApplied rest_ops_bytes) ++ sealed_bytes) ∗
+      "Hmemstate" ∷ own_InMemoryStateMachine (snap_ops ++ (take numOpsApplied rest_ops)) ∗
+      "HnextIndex" ∷ s ↦[StateMachine :: "nextIndex"] #(length snap_ops + numOpsApplied)%nat ∗
+      "%HnumOpsApplied_le" ∷ ⌜numOpsApplied <= length rest_ops⌝
+    )%I with "[Henc Hdata_sl Hmemstate nextIndex]" as "HH".
+  {
+    iExists _, 0%nat, _.
+    iFrame.
+    rewrite take_0.
+    rewrite app_nil_r.
+    rewrite Nat.add_0_r.
+    iFrame.
+    iPureIntro.
+    word.
+  }
+
+  wp_forBreak.
+  iNamed "HH".
+  wp_pures.
+
+  wp_load.
+  iDestruct (is_slice_small_sz with "Hdata_sl") as %Hrest_data_sz.
+  wp_apply (wp_slice_len).
+  wp_if_destruct.
+  { (* there's enough bytes to make up an entire operation *)
+    wp_apply (wp_ref_of_zero).
+    { done. }
+    iIntros (opLen) "HopLen".
+    wp_pures.
+    wp_load.
+
+    destruct (drop numOpsApplied rest_ops_bytes) as [ | nextOp_bytes new_rest_ops_bytes] eqn:X.
+    {
+      exfalso.
+      simpl in Hrest_data_sz.
+      assert (1 < length sealed_bytes) by word.
+      rewrite Hsealedbytes in H.
+      by destruct sealed.
+    }
+    assert (length rest_ops_bytes <= numOpsApplied ∨ numOpsApplied < length rest_ops) as [Hbad | HappliedLength] by word.
+    {
+      exfalso.
+      rewrite -X in Hrest_data_sz.
+      assert (length rest_ops_bytes ≤ numOpsApplied)%nat by word.
+      rewrite drop_ge /= in Hrest_data_sz; last done.
+      assert (1 < length sealed_bytes) by word.
+      rewrite Hsealedbytes in H0.
+      by destruct sealed.
+    }
+
+    specialize (Hop_bytes numOpsApplied HappliedLength).
+    destruct Hop_bytes as (op & op_len_bytes & op_bytes & Hop_bytes).
+    destruct Hop_bytes as (Hrest_ops_lookup & Hrest_ops_bytes_lookup & Henc & Hoplenbytes).
+
+    replace (nextOp_bytes) with (u64_le (length op_bytes) ++ op_bytes); last first.
+    {
+      admit. (* TODO: pure reasoning; match up first element of drop N l with N'th element of l *)
+    }
+    iEval (rewrite concat_cons) in "Hdata_sl".
+    rewrite -app_assoc.
+    rewrite -app_assoc.
+    wp_apply (wp_ReadInt with "[$Hdata_sl]").
+    iIntros (rest_ops_sl2) "Hdata_sl".
+    wp_pures.
+    wp_store.
+    wp_store.
+    wp_load.
+    wp_load.
+
+    (* split the slice into two parts; copy/pasted from above *)
+    iDestruct "Hdata_sl" as "[Hdata_sl Hdata_sl2]".
+    assert (int.nat (length op_bytes) = length op_bytes).
+    { admit. } (* TODO: pure list size overflow, just like earlier in this lemma *)
+    wp_apply (wp_SliceSubslice_small with "Hdata_sl").
+    {
+      rewrite app_length.
+      split.
+      { word. }
+      { word. }
+    }
+    iIntros (op_sl) "Hop_sl".
+    rewrite -> subslice_drop_take by word.
+    rewrite drop_0.
+    rewrite Nat.sub_0_r.
+    replace (int.nat (length op_bytes)) with (length op_bytes).
+    rewrite take_app.
+
+    wp_pures.
+    wp_load.
+    wp_apply (wp_slice_len).
+    wp_pures.
+    wp_load.
+    wp_load.
+
+    clear Hdata_sl2_sz.
+    iDestruct (is_slice_small_sz with "Hdata_sl2") as %Hdata_sl2_sz.
+    wp_apply (wp_SliceSubslice_small with "Hdata_sl2").
+    {
+      rewrite -Hdata_sl2_sz.
+      split.
+      {
+        rewrite app_length.
+        word.
+      }
+      { word. }
+    }
+    iIntros (rest_ops_sl3) "Hdata_sl".
+    wp_store.
+    wp_loadField.
+    wp_loadField.
+
+    rewrite -Hdata_sl2_sz.
+    rewrite -> subslice_drop_take; last first.
+    {
+      rewrite app_length; word.
+    }
+    replace (int.nat (length op_bytes)) with (length op_bytes).
+    rewrite drop_app.
+    iEval (rewrite app_length) in "Hdata_sl".
+    replace ((length op_bytes + length (concat new_rest_ops_bytes ++ sealed_bytes) -
+                     length op_bytes))%nat with
+      (length (concat new_rest_ops_bytes ++ sealed_bytes)) by word.
+    iEval (rewrite take_ge) in "Hdata_sl"; last first.
+    (* done splitting slices into two parts *)
+
+    iMod (readonly_alloc (is_slice_small op_sl byteT 1 op_bytes) with "[Hop_sl]") as "#Hop_sl".
+    {
+      simpl.
+      iFrame.
+    }
+    wp_apply ("HapplyVolatile_spec" with "[$Hmemstate $Hop_sl]").
+    { done. }
+    iIntros (? ?) "[Hmemstate _]".
+    wp_pures.
+    wp_loadField.
+    wp_apply (std_proof.wp_SumAssumeNoOverflow).
+    iIntros (HnextIndexOverflow).
+    wp_storeField.
+    iModIntro.
+    iLeft.
+    iSplitR; first done.
+    iFrame "∗#%".
+    iExists _, (numOpsApplied + 1)%nat, (q/2)%Qp.
+    iFrame.
+    iSplitL "Hdata_sl".
+    {
+      iApply to_named.
+      iExactEq "Hdata_sl".
+      f_equal.
+      f_equal.
+      rewrite -drop_drop.
+      rewrite X.
+      rewrite skipn_cons.
+      rewrite drop_0.
+      done.
+    }
+    iSplitL "Hmemstate".
+    {
+      iApply to_named.
+      iExactEq "Hmemstate".
+      f_equal.
+      rewrite -app_assoc.
+      f_equal.
+      rewrite (take_more); last first.
+      { word. }
+      f_equal.
+      apply list_eq.
+      intros.
+      destruct i.
+      {
+        simpl.
+        rewrite lookup_take; last lia.
+        rewrite lookup_drop.
+        rewrite Nat.add_0_r.
+        done.
+      }
+      {
+        simpl.
+        rewrite lookup_take_ge; last lia.
+        done.
+      }
+    }
+    iApply to_named.
+    iExactEq "HnextIndex".
+    repeat f_equal.
+    admit. (* TODO: nextIndex overflow *)
+  }
+  (* done with loop *)
+  assert (numOpsApplied = length rest_ops_bytes ∨ numOpsApplied < length rest_ops) as [ | Hbad] by word.
+  2:{
+    exfalso.
+    admit. (* TODO: prove that there's another operation leftover, so the list size is too small *)
+  }
+
+  iDestruct (is_slice_small_sz with "Hdata_sl") as %Hdata_sl_sz.
+  iRight.
+  iModIntro.
+  iSplitR; first done.
+  wp_pures.
+  wp_load.
+  wp_apply (wp_slice_len).
+  wp_if_destruct.
+  { (* sealed = true *)
+    wp_storeField.
+    destruct sealed.
+    2:{
+      exfalso.
+      admit. (* TODO: pure reasoning about size of sealed_bytes vs size of u64_le X *)
+    }
+    iApply "HΦ".
+    iModIntro.
+    do 9 iExists _.
+    iFrame "∗#%".
+    rewrite take_ge; last word.
+    iEval (rewrite H) in "HnextIndex".
+    rewrite -Hrest_ops_len.
+    iSplitL "HnextIndex".
+    { repeat rewrite app_length. iFrame. }
+    iSplitR; first admit. (* TODO: get this from aof *)
+    iSplitR.
+    {
+      iPureIntro.
+      rewrite -HdataEnc.
+      rewrite -Hops.
+      done.
+    }
+    iSplitR.
+    {
+      iPureIntro.
+      rewrite -Hops.
+      admit. (* TODO: establish that length of ops doesn't overflow *)
+    }
+    rewrite -Hops.
+    iFrame "Hcurstate".
+    rewrite replicate_length.
+    iPureIntro.
+    done.
+  }
+  (* sealed = false *)
+  wp_pures.
+  destruct sealed.
+  {
+    exfalso.
+    assert (int.nat rest_ops_sl.(Slice.sz) = 0%nat).
+    {
+      admit. (* TODO: should follow trivially from ¬ 0 < rest_ops_sl.sz in Heqb1 *)
+    }
+    rewrite -Hdata_sl_sz in H0.
+    rewrite app_length in H0.
+    rewrite Hsealedbytes /= in H0.
+    word.
+  }
+
+  iModIntro.
+  iApply "HΦ".
+  do 9 iExists _.
+  iFrame "∗#%".
+  rewrite take_ge; last word.
+  iEval (rewrite H) in "HnextIndex".
+  rewrite -Hrest_ops_len.
+  iSplitL "HnextIndex".
+  { repeat rewrite app_length. iFrame. }
+  iSplitR; first admit. (* TODO: get this from aof *)
+  iSplitR.
+  {
+    iPureIntro.
+    rewrite -HdataEnc.
+    rewrite -Hops.
+    done.
+  }
+  iSplitR.
+  {
+    iPureIntro.
+    rewrite -Hops.
+    admit. (* TODO: establish that length of ops doesn't overflow *)
+  }
+  rewrite -Hops.
+  iFrame "Hcurstate".
+  rewrite replicate_length.
+  iPureIntro.
+  done.
 Admitted.
 
 

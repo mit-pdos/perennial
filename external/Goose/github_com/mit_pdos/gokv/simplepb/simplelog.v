@@ -130,10 +130,11 @@ Definition recoverStateMachine: val :=
           let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
           "opLen" <-[uint64T] "0_ret";;
           "enc" <-[slice.T byteT] "1_ret";;
-          let: "op" := SliceTake (![slice.T byteT] "enc") (![uint64T] "opLen") in
-          "enc" <-[slice.T byteT] SliceSkip byteT (![slice.T byteT] "enc") (![uint64T] "opLen");;
+          let: "op" := SliceSubslice byteT (![slice.T byteT] "enc") #0 (![uint64T] "opLen") in
+          let: "n" := slice.len (![slice.T byteT] "enc") in
+          "enc" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") (![uint64T] "opLen") "n";;
           struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s") "op";;
-          struct.storeF StateMachine "nextIndex" "s" (struct.loadF StateMachine "nextIndex" "s" + #1);;
+          struct.storeF StateMachine "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF StateMachine "nextIndex" "s") #1);;
           Continue
         else Break));;
       (if: slice.len (![slice.T byteT] "enc") > #0
