@@ -35,4 +35,15 @@ Lemma wp_ReconnectingClient__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) re
 Proof.
 Admitted.
 
+Lemma wp_MakeReconnectingClient (srv:u64):
+  {{{
+       True
+  }}}
+    MakeReconnectingClient #srv
+  {{{
+       (cl_ptr:loc), RET #cl_ptr; is_ReconnectingClient cl_ptr srv
+  }}}.
+Proof.
+Admitted.
+
 End proof.

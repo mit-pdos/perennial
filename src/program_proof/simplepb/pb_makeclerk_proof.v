@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
+From Perennial.program_proof.reconnectclient Require Import proof.
 
 Section pb_makeclerk_proof.
 Context `{!heapGS Σ}.
@@ -28,7 +28,7 @@ Lemma wp_MakeClerk γ γsrv host :
 Proof.
   iIntros (Φ) "#Hpb HΦ".
   wp_call.
-  wp_apply (wp_MakeClient).
+  wp_apply (wp_MakeReconnectingClient).
   iIntros (?) "#His_cl".
   iApply wp_fupd.
   wp_apply (wp_allocStruct).
