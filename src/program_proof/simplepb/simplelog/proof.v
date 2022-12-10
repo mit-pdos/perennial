@@ -4,6 +4,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From coqutil.Datatypes Require Import List.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.fencing Require Import map.
+From Perennial.algebra Require Import mlist.
 
 From Perennial.program_proof.aof Require Import proof.
 
@@ -13,6 +14,7 @@ Section proof.
 Record SMRecord :=
   {
     sm_OpType:Type ;
+    sm_OpType_EqDecision:EqDecision sm_OpType;
     sm_has_op_encoding : list u8 → sm_OpType → Prop ;
     sm_has_snap_encoding: list u8 → (list sm_OpType) → Prop ;
     sm_has_op_encoding_injective : ∀ o1 o2 l, sm_has_op_encoding l o1 → sm_has_op_encoding l o2 → o1 = o2 ;
@@ -25,6 +27,7 @@ Notation has_op_encoding := (sm_has_op_encoding sm_record).
 Notation has_snap_encoding := (sm_has_snap_encoding sm_record).
 Notation has_op_encoding_injective := (sm_has_op_encoding_injective sm_record).
 Notation compute_reply := (sm_compute_reply sm_record).
+Instance e : EqDecision OpType := (sm_OpType_EqDecision sm_record).
 
 Context `{!heapGS Σ}.
 Context `{!aofG Σ}.
@@ -165,16 +168,16 @@ Record simplelog_names :=
      remember that "for the 5th append, the (epoch, ops, sealed) was X".
      For each possible length, there's a potential read-only proposal.
    *)
-  cur_state : gname;
+  sl_state : gname;
 }.
 
-Context `{!mapG Σ u64 (option (u64 * (list OpType) * bool))}.
+Context `{!fmlistG (u64 * (list OpType) * bool) Σ}.
 
 Definition file_inv γ P (contents:list u8) : iProp Σ :=
   ∃ epoch ops sealed,
   ⌜file_encodes_state contents epoch ops sealed⌝ ∗
   P epoch ops sealed ∗
-  (U64 (length contents)) ⤳[γ.(cur_state)]□ Some (epoch, ops, sealed)
+  fmlist_idx γ.(sl_state) (length contents) (epoch, ops, sealed)
 .
 
 Definition file_crash P (contents:list u8) : iProp Σ :=
@@ -197,7 +200,7 @@ Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ 
 
 Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) P : iProp Σ :=
   ∃ (fname:string) (aof_ptr:loc) γ γaof (logsize:u64) (smMem_ptr:loc) data
-    own_InMemoryStateMachine,
+    own_InMemoryStateMachine allstates,
     "Hfname" ∷ s ↦[StateMachine :: "fname"] #(LitString fname) ∗
     "HlogFile" ∷ s ↦[StateMachine :: "logFile"] #aof_ptr ∗
     "HsmMem" ∷ s ↦[StateMachine :: "smMem"] #smMem_ptr ∗
@@ -213,9 +216,9 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "Hmemstate" ∷ own_InMemoryStateMachine ops ∗
     "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine ∗
 
-    "#Hcur_state_var" ∷ (U64 (length data)) ⤳[γ.(cur_state)]□ Some (epoch, ops, sealed) ∗
-    "Hunused_vars" ∷ ([∗ set] x ∈ (fin_to_set u64 : gset u64), ⌜int.nat x ≤ length data⌝ ∨ x ⤳[γ.(cur_state)] None)
-    (* "HsmMem" ∷ *)
+    "#Hcur_state_var" ∷ fmlist_idx γ.(sl_state) (length data) (epoch, ops, sealed) ∗
+    "Hallstates" ∷ fmlist γ.(sl_state) (DfracOwn 1) allstates ∗
+    "%Hallstates_len" ∷ ⌜length allstates = (length data + 1)%nat⌝
 .
 
 Lemma StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops P :
@@ -301,66 +304,50 @@ Proof.
   replace (op_sl.(Slice.sz)) with (U64 (length op_bytes)); last first.
   { word. }
 
-  set (newdata:=data ++ (u64_le (length op_bytes)) ++ op_bytes).
+  set (newsuffix:=u64_le (length op_bytes) ++ op_bytes).
+  set (newdata:=data ++ newsuffix).
 
-  iAssert (([∗ set] x ∈ (fin_to_set u64:gset u64), ⌜int.nat x ≤ length newdata⌝ ∨ x ⤳[γ.(cur_state)] None) ∗
-           ([∗ set] x ∈ (fin_to_set u64:gset u64), ⌜int.nat x ≤ length data⌝ ∨ ⌜int.nat x > length newdata⌝ ∨ x ⤳[γ.(cur_state)] None)
-          )%I with "[Hunused_vars]" as "[Hunused_vars Hvar]".
+  (* make proposal *)
+  iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
   {
-    iDestruct big_sepS_sep as "[Hs _]".
-    iApply ("Hs" with "[Hunused_vars]").
-    iApply (big_sepS_impl with "Hunused_vars").
-    iModIntro.
-    iIntros (??) "[%H1|H2]".
+    instantiate (1:=allstates ++ (replicate (length newsuffix) (epoch, ops ++ [op], false))).
+    apply prefix_app_r.
+    done.
+  }
+
+  iDestruct (fmlist_lb_to_idx _ _ (length newdata) with "Hallstates_lb") as "#Hcurstate".
+  {
+    unfold newdata.
+    rewrite app_length.
+    assert (1 <= length newsuffix).
     {
-      iSplitL.
-      { iLeft. iPureIntro. unfold newdata. rewrite app_length. word. }
-      { iLeft. done. }
+      unfold newsuffix.
+      rewrite app_length.
+      rewrite u64_le_length.
+      word.
     }
-    {
-      destruct (decide (int.nat x ≤ length newdata)).
-      {
-        iSplitR.
-        { iLeft. done. }
-        { iFrame. }
-      }
-      {
-        iSplitL.
-        { iFrame. }
-        { iRight; iLeft. iPureIntro. word. }
-      }
-    }
+    rewrite lookup_app_r; last first.
+    { word. }
+    rewrite Hallstates_len.
+    replace (length data + length newsuffix - (length data + 1))%nat with
+      (length newsuffix - 1)%nat by word.
+    apply lookup_replicate.
+    split; last lia.
+    done.
   }
 
-  iDestruct (big_sepS_elem_of_acc _ _ (U64 (length newdata)) with "Hvar") as "[Hvar _]".
-  { set_solver. }
-
-  repeat rewrite app_length. rewrite u64_le_length.
-
-  iDestruct "Hvar" as "[%Hbad | [%Hbad | Hvar]]".
-  { exfalso.
-    admit. (* TODO: Hbad directly contradicts the (to-be-added?) assumption that
-              the newdata list doesn't overflow length. *)
-  }
-  { exfalso.
-    word_cleanup.
-    destruct (decide ((length data + (8 + length op_bytes)) >= 2^64)).
-    { lia. }
-    { rewrite Z_u64 in Hbad; lia. }
-  }
-
-  iMod (ghost_map_points_to_update (Some (epoch, ops++[op], false)) with "Hvar") as "Hvar".
-  iMod (ghost_map_points_to_persist with "Hvar") as "#Hvar".
-
+  iDestruct (is_slice_small_sz with "HopWithLen_sl") as %HopWithLen_sz.
   wp_apply (wp_AppendOnlyFile__Append with "His_aof [$Haof $HopWithLen_sl Hupd]").
   { rewrite app_length. rewrite u64_le_length. word. }
-  { admit. } (* TODO: list size overflow *)
+  {
+    unfold list_safe_size.
+    word.
+  }
   {
     instantiate (1:=Q).
     iIntros "Hi".
     iDestruct "Hi" as (???) "(%Henc2 & HP & #Hghost2)".
-    iDestruct (ghost_map_points_to_agree with "Hcur_state_var Hghost2") as "%Heq".
-    apply Option.eq_of_eq_Some in Heq.
+    iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
     replace (epoch0) with (epoch) by naive_solver.
     replace (ops0) with (ops) by naive_solver.
     replace (sealed) with (false) by naive_solver.
@@ -372,7 +359,7 @@ Proof.
     rewrite app_length.
     rewrite app_length.
     rewrite u64_le_length.
-    iFrame "Hvar".
+    iFrame "#".
     iPureIntro.
     by apply file_encodes_state_append.
   }
@@ -386,16 +373,24 @@ Proof.
   iSplitR "HupdQ".
   {
     iExists fname, _, γ, _, _, _, _, _.
+    iExists _.
     iFrame "∗#".
     repeat rewrite app_length. rewrite u64_le_length.
     iFrame "∗#".
     iSplitL; last first.
-    { iPureIntro. by apply file_encodes_state_append. }
+    { iPureIntro.
+      split.
+      { by apply file_encodes_state_append.}
+      { rewrite Hallstates_len.
+        rewrite replicate_length.
+        word. }
+    }
     iApply to_named.
     iExactEq "HnextIndex".
     repeat f_equal.
     simpl.
     admit. (* TODO: show that the length of the ops list does not overflow *)
+    (* FIXME: add SumAssumeNoOverflow for nextIndex not overflowing *)
   }
   iIntros (Ψ) "HΨ".
   wp_call.
