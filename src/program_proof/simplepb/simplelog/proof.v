@@ -216,6 +216,8 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "Hmemstate" ∷ own_InMemoryStateMachine ops ∗
     "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine ∗
 
+    "%Hopssafe" ∷ ⌜length ops = int.nat (length ops)⌝ ∗
+
     "#Hcur_state_var" ∷ fmlist_idx γ.(sl_state) (length data) (epoch, ops, sealed) ∗
     "Hallstates" ∷ fmlist γ.(sl_state) (DfracOwn 1) allstates ∗
     "%Hallstates_len" ∷ ⌜length allstates = (length data + 1)%nat⌝
@@ -258,16 +260,13 @@ Proof.
   wp_pures.
 
   wp_loadField.
+  wp_apply (std_proof.wp_SumAssumeNoOverflow).
+  iIntros (HnextIndexOverflow).
+
   wp_storeField.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_storeField.
-
-  wp_loadField.
-  wp_if_destruct.
-  {
-    admit. (* TODO: get rid of this panic *)
-  }
 
   (* make opWithLen *)
   iMod (readonly_load with "Hop_sl") as (?) "Hop_sl2".
@@ -380,28 +379,28 @@ Proof.
     iSplitL; last first.
     { iPureIntro.
       split.
-      { by apply file_encodes_state_append.}
+      { by apply file_encodes_state_append. }
       { rewrite Hallstates_len.
         rewrite replicate_length.
+        simpl.
         word. }
     }
     iApply to_named.
     iExactEq "HnextIndex".
     repeat f_equal.
     simpl.
-    admit. (* TODO: show that the length of the ops list does not overflow *)
-    (* FIXME: add SumAssumeNoOverflow for nextIndex not overflowing *)
+    word.
   }
   iIntros (Ψ) "HΨ".
   wp_call.
   wp_apply (wp_AppendOnlyFile__WaitAppend with "[$His_aof]").
   iIntros "Haof_len".
-  iMod ("HupdQ" with "Haof_len") as "HQ".
+  iMod ("HupdQ" with "Haof_len") as "[HQ _]".
   wp_pures.
   iModIntro.
   iApply "HΨ".
   iFrame.
-Admitted.
+Qed.
 
 Lemma wp_SetStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
   {{{
@@ -628,8 +627,10 @@ Proof.
   iPureIntro.
   unfold newdata.
   rewrite replicate_length.
+  split.
+  { admit. } (* FIXME: need to know that ops list length fits in u64 *)
   word.
-Qed.
+Admitted.
 
 Lemma wp_GetStateAndSeal s P epoch ops sealed Q :
   {{{
@@ -661,6 +662,25 @@ Proof.
     iIntros (seal_sl) "Hseal_sl".
     wp_loadField.
     iDestruct (is_slice_to_small with "Hseal_sl") as "Hseal_sl".
+
+    iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
+    {
+      instantiate (1:=(allstates ++ [(epoch, ops, true)])).
+      apply prefix_app_r.
+      done.
+    }
+
+    iDestruct (fmlist_lb_to_idx _ _ (length (data ++ [U8 0])) with "Hallstates_lb") as "#Hcurstate".
+    {
+      rewrite app_length.
+      simpl.
+      rewrite lookup_app_r; last first.
+      { word. }
+      rewrite Hallstates_len.
+      rewrite Nat.sub_diag.
+      done.
+    }
+
     wp_apply (wp_AppendOnlyFile__Append with "His_aof [$Haof $Hseal_sl Hupd]").
     { by compute. }
     { by compute. }
@@ -674,15 +694,11 @@ Proof.
       replace (ops0) with (ops) by naive_solver.
       replace (sealed) with (false) by naive_solver.
 
-      (* FIXME: do update here *)
-
       iMod ("Hupd" with "HP") as "[HP $]".
       iModIntro.
       iExists _, _, _.
       iFrame "HP".
       iFrame "#".
-      iSplitR; last admit. (* FIXME: freeze var witness, or use an append-only
-                              list in place of the cur_state vars *)
       iPureIntro.
       by apply file_encodes_state_seal.
     }
@@ -714,8 +730,12 @@ Proof.
       iPureIntro.
       by apply file_encodes_state_seal.
     }
-    iSplitR; last admit. (* FIXME: take out var *)
-    admit. (* FIXME: get var witness *)
+    iPureIntro.
+    rewrite app_length.
+    rewrite app_length.
+    rewrite replicate_length.
+    simpl.
+    word.
   }
   {
     wp_pures.
@@ -763,6 +783,6 @@ Proof.
     iFrame "∗#".
     done.
   }
-Admitted.
+Qed.
 
 End proof.
