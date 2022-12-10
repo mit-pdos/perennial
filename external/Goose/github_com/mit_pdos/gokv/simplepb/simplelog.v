@@ -112,8 +112,9 @@ Definition recoverStateMachine: val :=
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       "snapLen" <-[uint64T] "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
-      "snap" <-[slice.T byteT] SliceTake (![slice.T byteT] "enc") (![uint64T] "snapLen");;
-      "enc" <-[slice.T byteT] SliceSkip byteT (![slice.T byteT] "enc") (![uint64T] "snapLen");;
+      "snap" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") #0 (![uint64T] "snapLen");;
+      let: "n" := slice.len (![slice.T byteT] "enc") in
+      "enc" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") (![uint64T] "snapLen") "n";;
       struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") (![slice.T byteT] "snap");;
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       struct.storeF StateMachine "epoch" "s" "0_ret";;

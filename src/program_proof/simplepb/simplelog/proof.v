@@ -785,4 +785,232 @@ Proof.
   }
 Qed.
 
+Lemma wp_recoverStateMachine data P fname smMem own_InMemoryStateMachine :
+  {{{
+       "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
+                    (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
+        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
+        "Hmemstate" ∷ own_InMemoryStateMachine []
+  }}}
+    recoverStateMachine #smMem #(LitString fname)
+  {{{
+        s epoch ops sealed, RET #s; own_StateMachine s epoch ops sealed P
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  wp_pures.
+
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+
+  iIntros (s) "Hs".
+  wp_pures.
+  iDestruct (struct_fields_split with "Hs") as "HH".
+  iNamed "HH".
+
+  wp_loadField.
+
+  wp_bind (FileRead _).
+  iApply wpc_wp.
+  instantiate (1:=True%I).
+  wpc_apply (wpc_crash_borrow_open_modify with "Hfile_ctx").
+  { done. }
+  iSplit; first done.
+  iIntros "[Hfile Hfilecrash]".
+  iDestruct "Hfilecrash" as (???) "[%Henc HP]".
+
+  iMod (fmlist_alloc (replicate (length data + 1) (epoch, ops, sealed))) as (γsl_state) "Hallstates".
+  set (γ:={| sl_state := γsl_state |} ).
+
+  iMod (fmlist_to_lb with "Hallstates") as "Hlb".
+  iDestruct (fmlist_lb_to_idx _ _ (length data) with "Hlb") as "#Hcurstate".
+  {
+    apply lookup_replicate.
+    split; last lia.
+    done.
+  }
+
+  wpc_apply (wpc_FileRead with "[$Hfile]").
+  iSplit.
+  { (* case: crash while reading *)
+    iIntros "Hfile".
+    iSplitR; first done.
+    iModIntro.
+    iExists _; iFrame.
+    iNext.
+    iExists _, _, _; iFrame "∗%".
+  }
+  (* otherwise, no crash and we keep going *)
+  iNext.
+  iIntros (data_sl) "[Hfile Hdata_sl]".
+  iExists (fname f↦data ∗ file_inv γ P data)%I.
+  iSplitL "Hfile HP".
+  {
+    iFrame.
+    iExists _, _, _.
+    iFrame "∗#%".
+  }
+  iSplit.
+  {
+    iModIntro.
+    iIntros "[? Hinv]".
+    iModIntro.
+    iExists _; iFrame.
+    iNext.
+    iDestruct "Hinv" as (???) "(H1 & H2 & _)".
+    iExists _, _, _.
+    iFrame.
+  }
+  iIntros "Hfile_ctx".
+  iSplit; first done.
+
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (enc_ptr) "Henc".
+  wp_pures.
+  wp_load.
+
+  iDestruct (is_slice_sz with "Hdata_sl") as %Hdata_sz.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  wp_if_destruct.
+  { (* case: empty file, meaning no durable state; in this case epoch = 0, ops = [], sealed = false *)
+    admit.
+  }
+  (* otherwise, the file has contents and we recovery from them *)
+
+  wp_apply (wp_CreateAppendOnlyFile with "[] [$Hfile_ctx]").
+  {
+    iModIntro.
+    iIntros (?) "Hinv".
+    iModIntro.
+    iNext.
+    iDestruct "Hinv" as (???) "(H1 & H2 & _)".
+    iExists _, _, _.
+    iFrame.
+  }
+  iIntros (aof_ptr γaof) "[His_aof Haof]".
+  wp_storeField.
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (snapLen_ptr) "HsnapLen".
+  wp_pures.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (snap_ptr) "Hsnap".
+  wp_pures.
+  wp_load.
+  iDestruct (is_slice_to_small with "Hdata_sl") as "Hdata_sl".
+  destruct Henc as (snap_ops & snap & rest_ops & rest_ops_bytes & sealed_bytes & Henc).
+  destruct Henc as (Hops & Hsnap_enc & Hsealedbytes & Hrest_ops_len & Henc).
+  destruct Henc as (Hop_bytes & HdataEnc).
+  rewrite HdataEnc.
+
+  wp_apply (wp_ReadInt with "[$Hdata_sl]").
+  iIntros (data_sl2) "Hdata_sl".
+  wp_pures.
+  wp_store.
+  wp_store.
+  wp_load.
+  wp_load.
+  iDestruct "Hdata_sl" as "[Hdata_sl Hdata_sl2]".
+
+  assert (int.nat (length snap) = length snap) as HsnapNoOverflow.
+  { admit. } (* TODO: establish this *)
+  wp_apply (wp_SliceSubslice_small with "Hdata_sl").
+  {
+    rewrite app_length.
+    split.
+    { word. }
+    { word. }
+  }
+  iIntros (snap_sl) "Hsnap_sl".
+  rewrite -> subslice_drop_take by word.
+  rewrite drop_0.
+  rewrite Nat.sub_0_r.
+  replace (int.nat (length snap)) with (length snap).
+  rewrite take_app.
+  wp_store.
+
+  wp_load.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  iDestruct (is_slice_small_sz with "Hdata_sl2") as %Hdata_sl2_sz.
+  wp_load.
+  wp_load.
+
+  wp_apply (wp_SliceSubslice_small with "Hdata_sl2").
+  {
+    rewrite -Hdata_sl2_sz.
+    split.
+    {
+      rewrite app_length.
+      word.
+    }
+    { word. }
+  }
+  iIntros (data_sl3) "Hdata_sl".
+
+  rewrite -Hdata_sl2_sz.
+  rewrite -> subslice_drop_take; last first.
+  {
+    rewrite app_length; word.
+  }
+  replace (int.nat (length snap)) with (length snap).
+  rewrite drop_app.
+  iEval (rewrite app_length) in "Hdata_sl".
+  replace (length snap +
+                     length
+                       (u64_le epoch ++
+                        u64_le (length snap_ops) ++ concat rest_ops_bytes ++ sealed_bytes) - length snap)%nat with (
+                     length
+                       (u64_le epoch ++
+                        u64_le (length snap_ops) ++ concat rest_ops_bytes ++ sealed_bytes))
+    by word.
+  rewrite take_ge; last first.
+  {
+    done.
+  }
+  wp_store.
+
+  iAssert (_) with "HisMemSm" as "#HisMemSm2".
+  iNamed "HisMemSm2".
+  wp_load.
+  wp_loadField.
+  wp_loadField.
+
+  iMod (readonly_alloc (is_slice_small snap_sl byteT 1 snap) with "[Hsnap_sl]") as "#Hsnap_sl".
+  {
+    simpl.
+    iFrame.
+  }
+  wp_apply ("HsetState_spec" with "[$Hmemstate $Hsnap_sl]").
+  {
+    done.
+  }
+  iIntros "Hmemstate".
+  wp_pures.
+
+  wp_load.
+  wp_apply (wp_ReadInt with "Hdata_sl").
+  iIntros (data_sl4) "Hdata_sl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+
+  wp_load.
+  wp_apply (wp_ReadInt with "Hdata_sl").
+  iIntros (data_sl5) "Hdata_sl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+  wp_pures.
+
+  (* Loop over all the `rest_ops` and apply them to memstate *)
+Admitted.
+
+
 End proof.
