@@ -366,7 +366,7 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
             "#Hclerkss_rpc" ∷ ([∗ list] clerks_sl ∈ clerkss,
                                   ∃ clerks,
                                   "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
-                                  "Hclerks" ∷ ⌜length clerks = length backups⌝ ∗
+                                  "%Hclerks_conf" ∷ ⌜length clerks = length backups⌝ ∗
                                   "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv' epoch)
                              )
         )

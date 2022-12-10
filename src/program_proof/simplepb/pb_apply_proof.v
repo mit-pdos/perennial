@@ -1,12 +1,12 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Import pb_ghost.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof pb_applybackup_proof.
+From Perennial.program_proof.reconnectclient Require Import proof.
 
 Section pb_apply_proof.
 
@@ -47,7 +47,7 @@ Proof.
   iNamed "Hck".
   wp_loadField.
   iDestruct (is_slice_to_small with "Hop_sl") as "Hop_sl".
-  wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hop_sl Hrep").
+  wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hop_sl Hrep").
   {
     rewrite is_pb_host_unfold.
     iDestruct "Hsrv" as "[_ [_ [_ [_ [$ _]]]]]".
@@ -127,6 +127,13 @@ Proof.
   }
 Qed.
 
+Lemma wp_random :
+{{{ True }}}
+  prelude.Data.randomUint64 #()
+{{{ (n:u64), RET #n; True }}}.
+Proof.
+Admitted.
+
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   {{{
         is_Server s γ γsrv ∗
@@ -173,12 +180,12 @@ Proof.
   wp_if_destruct.
   { (* return error "not primary" *)
     wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2]").
     {
+      iFrame "HmuInv Hlocked".
       iNext.
-      iExists _, _, _, _, _, _, _.
-      iFrame "Hstate ∗#".
-      done.
+      do 9 (iExists _).
+      iFrame "Hstate ∗#%".
     }
     wp_pures.
     wp_storeField.
@@ -198,14 +205,14 @@ Proof.
   wp_loadField.
 
   wp_if_destruct.
-  {
+  { (* return ESealed *)
     wp_loadField.
-    wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate HprimaryOnly]").
+    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2]").
     {
+      iFrame "HmuInv Hlocked".
       iNext.
-      iExists _, _, _, _, _, _, _.
-      iFrame "Hstate HisSm ∗#".
-      iSplitL ""; first done.
+      do 9 (iExists _).
+      iFrame "∗#%".
       iNamed "HprimaryOnly".
       iExists _, _; iFrame "∗#%".
     }
@@ -285,11 +292,12 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (release_spec with "[$Hlocked $HmuInv HnextIndex HisPrimary Hsealed Hsm Hclerks Hepoch Hstate Hclerks_sl]").
+  wp_apply (release_spec with "[-HΦ Hreply Err Reply Hlc1 Hlc2 HwaitSpec]").
   {
+    iFrame "HmuInv Hlocked".
     iNext.
-    iExists _, _, _, _, _, _, _.
-    iFrame "Hstate ∗#".
+    do 9 (iExists _).
+    iFrame "Hstate ∗#%".
     iSplitL "".
     { iPureIntro.
       rewrite app_length.
@@ -308,6 +316,54 @@ Proof.
   wp_apply (wp_NewWaitGroup_free).
   iIntros (wg) "Hwg".
   wp_pures.
+
+  wp_apply (wp_allocStruct).
+  { econstructor; eauto. }
+  iIntros (Hargs) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  iMod (readonly_alloc_1 with "epoch") as "#Hargs_epoch".
+  iMod (readonly_alloc_1 with "index") as "#Hargs_index".
+  iMod (readonly_alloc_1 with "op") as "#Hargs_op".
+  wp_pures.
+  iMod (readonly_load with "Hclerkss_sl") as (?) "Hclerkss_sl2".
+
+  iDestruct (is_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
+
+  wp_apply (wp_random).
+  iIntros (randint) "_".
+  wp_apply (wp_slice_len).
+  wp_pures.
+  set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
+
+  assert (int.nat clerkIdx < length clerkss) as Hlookup_clerks.
+  {
+    rewrite Hclerkss_sz.
+    unfold clerkIdx.
+    rewrite Hclerkss_len in Hclerkss_sz.
+    replace (clerks_sl.(Slice.sz)) with (U64 (32)); last first.
+    {
+      unfold numClerks in Hclerkss_sz.
+      word.
+    }
+    enough (int.Z randint `mod` 32 < int.Z 32)%Z.
+    { word. }
+    apply Z.mod_pos_bound.
+    word.
+  }
+
+  assert (∃ clerks_sl_inner, clerkss !! int.nat clerkIdx%Z = Some clerks_sl_inner) as [clerks_sl_inner Hclerkss_lookup].
+  {
+    apply list_lookup_lt.
+    rewrite Hclerkss_len.
+    word.
+  }
+
+  wp_apply (wp_SliceGet with "[$Hclerkss_sl2]").
+  { done. }
+  iIntros "Hclerkss_sl2".
+  wp_pures.
+
   wp_apply (wp_slice_len).
   wp_apply (wp_new_slice).
   { done. }
@@ -330,18 +386,13 @@ Proof.
   iMod "Hmask".
   iModIntro.
 
-  wp_apply (wp_allocStruct).
-  { econstructor; eauto. }
-  iIntros (Hargs) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  iMod (readonly_alloc_1 with "epoch") as "#Hargs_epoch".
-  iMod (readonly_alloc_1 with "index") as "#Hargs_index".
-  iMod (readonly_alloc_1 with "op") as "#Hargs_op".
-  wp_pures.
+  iDestruct (big_sepL_lookup_acc with "Hclerkss_rpc") as "[Hclerks_rpc _]".
+  { done. }
+  iNamed "Hclerks_rpc".
+
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
   wp_apply (wp_forSlice (λ j, (own_WaitGroup pbN wg γwg j _) ∗
-                              (errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z j)↦∗[uint64T] (replicate (int.nat clerks_sl.(Slice.sz) - int.nat j) #0)
+                              (errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z j)↦∗[uint64T] (replicate (int.nat clerks_sl_inner.(Slice.sz) - int.nat j) #0)
                         )%I with "[] [Hwg Herrs_sl $Hclerks_sl2]").
   2: {
     iSplitR "Herrs_sl".
@@ -369,7 +420,8 @@ Proof.
     { word. }
     iIntros "[Hwg Hwg_tok]".
     wp_pures.
-    replace (int.nat clerks_sl.(Slice.sz) - int.nat i) with (S (int.nat clerks_sl.(Slice.sz) - (int.nat (word.add i 1)))) by word.
+    replace (int.nat clerks_sl_inner.(Slice.sz) - int.nat i) with (S (int.nat clerks_sl_inner.(Slice.sz) - (int.nat (word.add i 1)))); last first.
+    { word. }
     rewrite replicate_S.
     iDestruct (array_cons with "Herr_ptrs") as "[Herr_ptr Herr_ptrs]".
     (* use wgTok to set errs_sl *)
@@ -626,12 +678,11 @@ Proof.
       replace (k) with (int.nat k) in *; last first.
       {
         rewrite cons_length in HH.
-        rewrite -Hconf_clerk_len in HH.
-        rewrite Hclerk_sz in HH.
         word.
       }
       iApply ("Hrest" $! k).
-      { iPureIntro. rewrite Hconf_clerk_len. unfold conf in HH.
+      { iPureIntro.
+        unfold conf in HH.
         rewrite cons_length in HH.
         lia. }
       { done. }

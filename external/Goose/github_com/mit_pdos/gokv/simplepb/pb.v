@@ -286,14 +286,15 @@ Definition Server__Apply: val :=
         lock.release (struct.loadF Server "mu" "s");;
         "waitForDurable" #();;
         let: "wg" := waitgroup.New #() in
-        let: "errs" := NewSlice uint64T (slice.len "clerks") in
         let: "args" := struct.new ApplyAsBackupArgs [
           "epoch" ::= "epoch";
           "index" ::= "nextIndex";
           "op" ::= "op"
         ] in
-        ForSlice ptrT "i" <> (SliceGet (slice.T ptrT) "clerks" #0)
-          (let: "clerk" := SliceGet ptrT (SliceGet (slice.T ptrT) "clerks" ((Data.randomUint64 #()) `rem` (slice.len "clerks"))) "i" in
+        let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((Data.randomUint64 #()) `rem` (slice.len "clerks")) in
+        let: "errs" := NewSlice uint64T (slice.len "clerks_inner") in
+        ForSlice ptrT "i" "clerk" "clerks_inner"
+          (let: "clerk" := "clerk" in
           let: "i" := "i" in
           waitgroup.Add "wg" #1;;
           Fork (Skip;;
@@ -309,7 +310,7 @@ Definition Server__Apply: val :=
         let: "err" := ref_to uint64T e.None in
         let: "i" := ref_to uint64T #0 in
         Skip;;
-        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks_inner"); (λ: <>, Skip) := λ: <>,
           let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
           (if: "err2" ≠ e.None
           then "err" <-[uint64T] "err2"
