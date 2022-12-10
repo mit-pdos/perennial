@@ -1,10 +1,10 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Export pb_ghost.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
+From Perennial.program_proof.reconnectclient Require Import proof.
 
 Section pb_setstate_proof.
 Context `{!heapGS Σ}.
@@ -51,7 +51,7 @@ Proof.
   wp_loadField.
   iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
   wp_apply (wp_frame_wand with "HΦ").
-  wp_apply (wp_Client__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
+  wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Henc_args_sl Hrep").
   {
     rewrite is_pb_host_unfold.
     iDestruct "Hsrv" as "[_ [$ _]]".
@@ -155,7 +155,7 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      iExists _, _, _, _, _, _, _.
+      do 9 (iExists _).
       iFrame "∗#%".
     }
     wp_pures.
@@ -176,7 +176,7 @@ Proof.
       {
         iFrame "HmuInv Hlocked".
         iNext.
-        iExists _, _, _, _, _, _, _.
+        do 9 (iExists _).
         iFrame "∗#%".
       }
       wp_pures.
@@ -249,15 +249,41 @@ Proof.
     wp_pures.
     wp_loadField.
 
+    (* signal all opApplied condvars *)
+    wp_apply (wp_MapIter with "HopAppliedConds_map HopAppliedConds_conds").
+    { iFrame "HopAppliedConds_conds". }
+    { (* prove one iteration of the map for loop *)
+      iIntros.
+      iIntros (?) "!# [_ #Hpre] HΦ".
+      wp_pures.
+      wp_apply (wp_condSignal with "Hpre").
+      iApply "HΦ".
+      iFrame "#".
+      instantiate (1:=(λ _ _, True)%I).
+      done.
+    }
+    iIntros "(HopAppliedConds_map & _ & _)".
+
+    wp_pures.
+    wp_apply (wp_NewMap).
+    iIntros (opAppliedConds_loc_new) "Hmapnew".
+    wp_storeField.
+
+    wp_loadField.
     wp_apply (release_spec with "[-HΨ HΦ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      iExists _, _, _, _, _, _, _.
+      do 9 (iExists _).
       iFrame "∗ HisSm #%".
-      iPureIntro.
-      rewrite fmap_length.
-      word.
+      iSplit.
+      {
+        iPureIntro.
+        rewrite fmap_length.
+        word.
+      }
+      iSplitL; last done.
+      by iApply big_sepM_empty.
     }
     wp_pures.
     iLeft in "HΨ".
