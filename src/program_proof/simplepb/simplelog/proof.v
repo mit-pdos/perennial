@@ -1613,7 +1613,6 @@ Proof.
       iIntros.
       iApply "HΦ".
       iFrame.
-      admit. (* Match returned fraction between pb and simplelog *)
     }
   }
   done.

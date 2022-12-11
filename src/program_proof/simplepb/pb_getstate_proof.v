@@ -171,6 +171,9 @@ Proof.
     iDestruct "HΨ" as "[_ HΨ]".
     iRight in "HΨ".
     wp_pures.
+    iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "#Hsl_nil".
+    { done. }
+    iMod (readonly_alloc_1 with "Hsl_nil") as "Hsl_nil2".
     wp_apply (wp_allocStruct).
     { Transparent slice.T. repeat econstructor.
       Opaque slice.T. }
@@ -183,9 +186,6 @@ Proof.
       instantiate (1:=GetStateReply.mkC _ _ _).
       replace (slice.nil) with (slice_val Slice.nil) by done.
       iFrame.
-      simpl.
-      iApply is_slice_small_nil.
-      done.
     }
     simpl.
     iApply "HΨ".
@@ -223,7 +223,7 @@ Proof.
     iFrame "#".
     done.
   }
-  iIntros (??) "(Hsnap_sl & %Hsnap_enc & [Hstate HQ])".
+  iIntros (??) "(#Hsnap_sl & %Hsnap_enc & [Hstate HQ])".
   iDestruct "HQ" as (?) "(#Hacc_ro &  #Hprop_lb & #Hprop_facts & %Hσeq_phys & %Hineq)".
   wp_pures.
   wp_loadField.
@@ -282,7 +282,7 @@ Proof.
   rewrite Hσeq_phys.
   rewrite Hσ_nextIndex.
   replace (U64 (int.nat nextIndex)) with (nextIndex) by word.
-  iFrame.
+  iFrame "∗#".
 Qed.
 
 End pb_getstate_proof.

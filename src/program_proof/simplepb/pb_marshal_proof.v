@@ -358,7 +358,7 @@ Definition own reply_ptr reply : iProp Σ :=
   "Hreply_epoch" ∷ reply_ptr ↦[pb.GetStateReply :: "Err"] #reply.(err) ∗
   "Hreply_next_index" ∷ reply_ptr ↦[pb.GetStateReply :: "NextIndex"] #reply.(nextIndex) ∗
   "Hreply_state" ∷ reply_ptr ↦[pb.GetStateReply :: "State"] (slice_val state_sl) ∗
-  "Hreply_state_sl" ∷ is_slice_small state_sl byteT 1 reply.(state)
+  "Hreply_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 reply.(state))
   .
 
 Lemma wp_Encode (reply_ptr:loc) (reply:C) :

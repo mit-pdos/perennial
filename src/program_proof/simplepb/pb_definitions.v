@@ -280,7 +280,7 @@ Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp �
   {{{
         snap_sl snap,
         RET (slice_val snap_sl);
-        is_slice_small snap_sl byteT 1 snap ∗
+        readonly (is_slice_small snap_sl byteT 1 snap) ∗
         ⌜has_snap_encoding snap σ⌝ ∗
         own_StateMachine epoch σ true P ∗
         Q
