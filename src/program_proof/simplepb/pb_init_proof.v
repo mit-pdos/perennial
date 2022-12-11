@@ -22,8 +22,14 @@ Lemma pb_server_init γsys :
   ∃ γsrv,
   own_Server_ghost γsys γsrv (U64 0) [] false.
 Proof.
-  (* Use pb_ghost_server_init from pb_ghost.v *)
-Admitted.
+  iIntros "#H1 #H2".
+  iMod (pb_ghost_server_init with "H1 H2") as (?) "[Hrep Hprim]".
+  iExists γsrv.
+  iExists [].
+  iModIntro.
+  iSplitR; first done.
+  iFrame.
+Qed.
 
 Definition pb_spec_list γsys γsrv :=
   [ (U64 0, ApplyAsBackup_spec γsys γsrv) ;
