@@ -1240,8 +1240,10 @@ Proof.
       exfalso.
       simpl in Hrest_data_sz.
       assert (1 < length sealed_bytes) by word.
-      rewrite Hsealedbytes in H.
-      by destruct sealed.
+      rewrite Hsealedbytes /= in H.
+      destruct sealed.
+      { simpl in H. lia. }
+      { simpl in H. lia. }
     }
     assert (length rest_ops_bytes <= numOpsApplied ∨ numOpsApplied < length rest_ops) as [Hbad | HappliedLength] by word.
     {
