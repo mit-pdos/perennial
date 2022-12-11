@@ -119,6 +119,9 @@ Proof.
     wp_pures.
     wp_if_destruct.
     {
+      iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "#Hsl_nil".
+      { done. }
+      iMod (readonly_alloc_1 with "Hsl_nil") as "Hsl_nil2".
       wp_apply (wp_allocStruct).
       { repeat econstructor. apply zero_val_ty'. done. }
       iIntros (reply_ptr) "Hreply".
@@ -129,8 +132,6 @@ Proof.
       iExists _. simpl. iFrame.
       replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done.
       iFrame.
-      iApply is_slice_small_nil.
-      done.
     }
     { exfalso. done. }
   }
