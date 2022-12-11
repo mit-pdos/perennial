@@ -202,6 +202,76 @@ Lemma wp_KVState__apply s :
   }}}
 .
 Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_lam.
+  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  clear Φ.
+  iIntros (???? Φ) "!# Hpre HΦ".
+  iDestruct "Hpre" as "(%Henc & #Hsl & Hown)".
+  iNamed "Hown".
+  wp_pures.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (ret) "Hret".
+  wp_pures.
+  wp_apply (wp_slice_len).
+  iMod (readonly_load with "Hsl") as (?) "Hsl2".
+  iDestruct (is_slice_small_sz with "Hsl2") as %Hsl_sz.
+  destruct op.
+  { (* case: put op *)
+    rewrite -Henc.
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+    wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
+    { rewrite -Hsl_sz.
+      rewrite -Henc.
+      split; last done.
+      rewrite app_length.
+      simpl.
+      word.
+    }
+    iIntros (putOp_sl) "Hop_sl".
+    rewrite -Hsl_sz -Henc.
+    rewrite -> subslice_drop_take; last first.
+    { rewrite app_length. simpl. word. }
+    rewrite app_length.
+    rewrite singleton_length.
+    unfold encode_op.
+    replace (1 + length (u64_le u ++ l) - int.nat 1%Z) with (length (u64_le u ++ l)) by word.
+    replace (int.nat (U64 1)) with (length [U8 0]) by done.
+    rewrite drop_app.
+    rewrite take_ge; last word.
+
+    (* TODO: separate lemma *)
+    wp_call.
+    wp_apply (wp_ref_to).
+    { done. }
+    iIntros (enc_ptr) "Henc".
+    wp_pures.
+    wp_apply (wp_allocStruct).
+    { Transparent slice.T. repeat econstructor. Opaque slice.T. }
+    iIntros (args_ptr) "Hargs".
+    iDestruct (struct_fields_split with "Hargs") as "HH".
+    iNamed "HH".
+    wp_pures.
+    wp_load.
+    wp_apply (wp_ReadInt with "[$Hop_sl]").
+    iIntros (val_sl) "Hval_sl".
+    wp_pures.
+    wp_storeField.
+    wp_storeField.
+    (* TODO: end of separate lemma? *)
+
+    wp_call.
+    wp_loadField.
+    wp_loadField.
+    wp_loadField.
+    admit.
+  }
 Admitted.
 
 End proof.

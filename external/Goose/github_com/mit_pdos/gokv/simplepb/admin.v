@@ -9,11 +9,10 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 Definition InitializeSystem: val :=
   rec: "InitializeSystem" "configHost" "servers" :=
     let: "configCk" := config.MakeClerk "configHost" in
-    let: ("epoch", <>) := config.Clerk__GetEpochAndConfig "configCk" in
-    config.Clerk__WriteConfig "configCk" "epoch" "servers";;
+    config.Clerk__WriteConfig "configCk" #0 "servers";;
     let: "clerk" := pb.MakeClerk (SliceGet uint64T "servers" #0) in
     pb.Clerk__BecomePrimary "clerk" (struct.new pb.BecomePrimaryArgs [
-      "Epoch" ::= "epoch";
+      "Epoch" ::= #0;
       "Replicas" ::= "servers"
     ]);;
     e.None.

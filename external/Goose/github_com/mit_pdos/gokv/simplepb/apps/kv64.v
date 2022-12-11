@@ -66,11 +66,12 @@ Definition KVState__get: val :=
 Definition KVState__apply: val :=
   rec: "KVState__apply" "s" "args" :=
     let: "ret" := ref (zero_val (slice.T byteT)) in
+    let: "n" := slice.len "args" in
     (if: (SliceGet byteT "args" #0 = OP_PUT)
-    then "ret" <-[slice.T byteT] KVState__put "s" (DecodePutArgs (SliceSkip byteT "args" #1))
+    then "ret" <-[slice.T byteT] KVState__put "s" (DecodePutArgs (SliceSubslice byteT "args" #1 "n"))
     else
       (if: (SliceGet byteT "args" #0 = OP_GET)
-      then "ret" <-[slice.T byteT] KVState__get "s" (DecodeGetArgs (SliceSkip byteT "args" #1))
+      then "ret" <-[slice.T byteT] KVState__get "s" (DecodeGetArgs (SliceSubslice byteT "args" #1 "n"))
       else Panic ("unexpected op type")));;
     ![slice.T byteT] "ret".
 

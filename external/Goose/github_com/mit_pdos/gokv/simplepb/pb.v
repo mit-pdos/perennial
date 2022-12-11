@@ -423,7 +423,7 @@ Definition Server__BecomePrimary: val :=
     lock.acquire (struct.loadF Server "mu" "s");;
     (if: struct.loadF BecomePrimaryArgs "Epoch" "args" ≠ struct.loadF Server "epoch" "s"
     then
-      (* log.Println("Stale BecomePrimary request") *)
+      (* log.Printf("Stale BecomePrimary request (in %d, got %d)", s.epoch, args.Epoch) *)
       lock.release (struct.loadF Server "mu" "s");;
       e.Stale
     else
