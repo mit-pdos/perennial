@@ -367,8 +367,25 @@ Proof.
   iDestruct "Hpre" as "(%Hsnap & #Hsnap_sl & Hown)".
   wp_pures.
 
-  wp_apply (wp_slice_len).
-
+  iNamed "Hown".
+  iMod (readonly_load with "Hsnap_sl") as (?) "Hsnap_sl2".
+  wp_apply (wp_DecodeMapU64ToBytes with "[Hsnap_sl2]").
+  {
+    rewrite /pb_record.(pb_has_snap_encoding) /= in Hsnap.
+    iSplitR; first done.
+    iApply to_named.
+    iExactEq "Hsnap_sl2".
+    f_equal.
+    instantiate (1:=[]).
+    rewrite app_nil_r.
+    done.
+  }
+  iIntros (?? mptr) "(Hmap & _)".
+  wp_pures.
+  wp_storeField.
+  wp_pures.
+  iApply "HΦ".
+  iModIntro. iExists _; iFrame.
 Qed.
 
 Lemma wp_KVState__getState s :
