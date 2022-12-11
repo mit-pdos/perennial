@@ -199,12 +199,13 @@ Defined.
 
 Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
-  handler_spec γsrv.(pb_urpc_gn) host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 1) (SetState_spec γ γsrv) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 2) (GetState_spec γ γsrv) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
-  handler_spec γsrv.(pb_urpc_gn) host (U64 4) (Apply_spec γ) ∗
-  handlers_dom γsrv.(pb_urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]})%I
+  ∃ γrpc,
+  handler_spec γrpc host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
+  handler_spec γrpc host (U64 1) (SetState_spec γ γsrv) ∗
+  handler_spec γrpc host (U64 2) (GetState_spec γ γsrv) ∗
+  handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
+  handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
+  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]})%I
 .
 
 Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
@@ -233,6 +234,14 @@ Proof.
 Qed.
 
 (* End RPC specs *)
+
+(* Hides the ghost part of the log; this is suitable for exposing as part of
+   interfaces for users of the library. For now, it's only part of the crash
+   obligation. *)
+Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
+  ∃ σ, ⌜σphys = σ.*1⌝ ∗ (own_replica_ghost γ γsrv epoch σ sealed) ∗
+      (own_primary_ghost γ γsrv epoch σ)
+.
 
 End pb_global_definitions.
 
@@ -339,14 +348,6 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
 
   "#HgetState" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getFn) ∗
   "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P
-.
-
-(* Hides the ghost part of the log; this is suitable for exposing as part of
-   interfaces for users of the library. For now, it's only part of the crash
-   obligation. *)
-Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
-  ∃ σ, ⌜σphys = σ.*1⌝ ∗ (own_replica_ghost γ γsrv epoch σ sealed) ∗
-      (own_primary_ghost γ γsrv epoch σ)
 .
 
 Definition numClerks : nat := 32.

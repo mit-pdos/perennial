@@ -137,12 +137,13 @@ Proof.
   iIntros (r) "Hr".
   wp_pures.
 
+  rewrite is_pb_host_unfold.
+  iNamed "Hhost".
   wp_apply (wp_StartServer2 with "[$Hr]").
   {
     set_solver.
   }
   {
-    rewrite is_pb_host_unfold.
     iDestruct "Hhost" as "(H1&H2&H3&H4&H5&Hhandlers)".
     unfold handlers_complete.
     repeat rewrite dom_insert_L.

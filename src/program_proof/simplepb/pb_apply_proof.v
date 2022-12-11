@@ -48,9 +48,10 @@ Proof.
   iNamed "Hck".
   wp_loadField.
   iDestruct (is_slice_to_small with "Hop_sl") as "Hop_sl".
+  rewrite is_pb_host_unfold.
+  iNamed "Hsrv".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hop_sl Hrep").
   {
-    rewrite is_pb_host_unfold.
     iDestruct "Hsrv" as "[_ [_ [_ [_ [$ _]]]]]".
   }
   { (* Successful RPC *)

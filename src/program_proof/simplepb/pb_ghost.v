@@ -1,6 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list csum.
 From Perennial.Helpers Require Import ListSolver.
@@ -20,7 +19,6 @@ Record pb_system_names :=
 
 Record pb_server_names :=
 {
-  pb_urpc_gn : urpc_proof.server_chan_gnames ;
   pb_epoch_gn: gname ;
   pb_accepted_gn : gname ;
   pb_escrow_gn : gname ; (* escrow for getting ownership of proposal *)
@@ -940,5 +938,42 @@ Proof.
   }
   iFrame "∗#".
 Qed.
+
+Definition pb_init_config γsys : iProp Σ :=
+    ([∗ set] epoch ∈ (fin_to_set u64),
+     (own_proposal_unused γsys epoch ∗
+      own_init_proposal_unused γsys epoch ∗
+      config_unset γsys epoch ∗
+      config_proposal_unset γsys epoch)).
+
+Lemma pb_system_init :
+  ⊢ |={⊤}=> ∃ γsys,
+    sys_inv γsys ∗
+    own_ghost γsys [] ∗
+    pb_init_config γsys.
+Proof.
+  (* allocate ghost state, and establish sys_inv *)
+Admitted.
+
+Lemma pb_system_pick_initial_config γsys initγsrvs :
+  pb_init_config γsys ==∗
+  is_epoch_config γsys (U64 0) initγsrvs ∗
+  is_epoch_config_proposal γsys (U64 0) initγsrvs ∗
+  ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat (U64 0) < int.nat epoch'⌝ → config_proposal_unset γsys epoch' ∗ config_unset γsys epoch' ∗ own_proposal_unused γsys epoch' ∗ own_init_proposal_unused γsys epoch')
+.
+Proof.
+  (* update ghost state *)
+Admitted.
+
+Lemma pb_ghost_server_init γsys :
+  is_proposal_lb γsys (U64 0) [] -∗
+  is_proposal_facts γsys (U64 0) [] ={⊤}=∗
+  ∃ γsrv,
+  own_replica_ghost γsys γsrv (U64 0) [] false ∗
+  own_primary_ghost γsys γsrv (U64 0) []
+.
+Proof.
+  (* allocate ghost state and split it up appropriately *)
+Admitted.
 
 End pb_protocol.
