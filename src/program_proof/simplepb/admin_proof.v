@@ -666,7 +666,7 @@ Proof using waitgroupG0.
   (* iMod (readonly_alloc_1 with "Hreply_epoch") as "#Hreply_epoch". *)
   iMod (readonly_alloc_1 with "Hreply_state") as "#Hreply_state".
   iMod (readonly_alloc_1 with "Hreply_next_index") as "#Hreply_next_index".
-  iMod (readonly_alloc_1 with "Hreply_state_sl") as "#Hreply_state_sl".
+  iDestruct "Hreply_state_sl" as "#Hreply_state_sl".
 
   (* weaken to loop invariant *)
   iAssert (
