@@ -49,8 +49,8 @@ Definition EncodeGetArgs: val :=
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "args";;
     ![slice.T byteT] "enc".
 
-Definition decodeGetArgs: val :=
-  rec: "decodeGetArgs" "raw_args" :=
+Definition DecodeGetArgs: val :=
+  rec: "DecodeGetArgs" "raw_args" :=
     let: ("key", <>) := marshal.ReadInt "raw_args" in
     "key".
 
@@ -70,7 +70,7 @@ Definition KVState__apply: val :=
     then "ret" <-[slice.T byteT] KVState__put "s" (DecodePutArgs (SliceSkip byteT "args" #1))
     else
       (if: (SliceGet byteT "args" #0 = OP_GET)
-      then "ret" <-[slice.T byteT] KVState__get "s" (decodeGetArgs (SliceSkip byteT "args" #1))
+      then "ret" <-[slice.T byteT] KVState__get "s" (DecodeGetArgs (SliceSkip byteT "args" #1))
       else Panic ("unexpected op type")));;
     ![slice.T byteT] "ret".
 
