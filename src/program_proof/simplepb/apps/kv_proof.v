@@ -5,7 +5,7 @@ From iris.base_logic Require Import ghost_map.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
-From Perennial.program_proof.simplepb Require Import pb_apply_proof.
+From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 
 Section proof.
 
@@ -108,10 +108,12 @@ Definition sys_inv γ γkv : iProp Σ :=
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
   k ↪[γkv] v.
 
-Definition is_Clerk γ ck : iProp Σ :=
-  ∃ (pb_ck:loc) γsys γsrv,
+Context `{!config_proof.configG Σ}.
+
+Definition own_Clerk γ ck : iProp Σ :=
+  ∃ (pb_ck:loc) γsys,
+    "Hown_ck" ∷ own_Clerk pb_ck γsys ∗
     "#Hpb_ck" ∷ readonly (ck ↦[kv64.Clerk :: "cl"] #pb_ck) ∗
-    "#His_ck" ∷ is_Clerk pb_ck γsys γsrv ∗
     "#His_inv" ∷ is_inv γ γsys
 .
 
@@ -120,16 +122,14 @@ Context `{!stagedG Σ}.
 
 Lemma wp_Clerk__Put ck γ γkv key val_sl value Φ:
   sys_inv γ γkv -∗
-  is_Clerk γ ck -∗
+  own_Clerk γ ck -∗
   is_slice val_sl byteT 1 value -∗
-  □((|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
+  □(|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
     (kv_ptsto γkv key (value) ={↑stateN,⊤∖↑pbN}=∗
-    (∀ reply_sl, is_slice_small reply_sl byteT 1 old_value -∗
-      Φ (#(U64 0), slice_val reply_sl)%V ))) ∗
-  (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V ))-∗
+    (own_Clerk γ ck -∗ Φ #()))) -∗
   WP Clerk__Put #ck #key (slice_val val_sl) {{ Φ }}.
 Proof.
-  iIntros "#Hinv #Hck Hval_sl #Hupd".
+  iIntros "#Hinv Hck Hval_sl #Hupd".
   wp_call.
   wp_pures.
   wp_apply (wp_allocStruct).
@@ -144,8 +144,44 @@ Proof.
   iIntros (putEncoded put_sl) "[%Henc Henc_sl]".
   wp_loadField.
 
-  wp_apply (wp_Clerk__Apply with "[] [] Henc_sl").
-Admitted.
+  wp_apply (wp_Clerk__Apply with "Hown_ck His_inv Henc_sl").
+  { done. }
+
+  (* make this a separate lemma? *)
+  iModIntro.
+  iMod "Hupd".
+
+  iInv "Hinv" as ">Hown" "Hclose".
+  replace (↑_∖_) with (∅:coPset); last set_solver.
+  iModIntro.
+
+  iDestruct "Hown" as (?) "[Hlog Hkvs]".
+  iDestruct ("Hupd") as (?) "[Hkvptsto Hkvclose]".
+  iExists _; iFrame "Hlog".
+  iIntros "Hlog".
+
+  iMod (ghost_map_update (value) with "Hkvs Hkvptsto") as "[Hkvs Hkvptsto]".
+
+  iMod ("Hclose" with "[Hlog Hkvs]") as "_".
+  {
+    iExists _; iFrame.
+    iNext.
+    unfold own_kvs.
+    unfold compute_state.
+    rewrite foldl_snoc.
+    simpl.
+    iFrame.
+  }
+  iMod ("Hkvclose" with "Hkvptsto") as "HH".
+  iModIntro.
+  iIntros (?) "Hsl Hck".
+  wp_pures.
+  iApply "HH".
+  iExists _, _.
+  iFrame "∗#".
+  iModIntro.
+  done.
+Qed.
 
 (* FIXME: copy/paste from old state_proof. *)
 
