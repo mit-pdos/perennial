@@ -239,6 +239,9 @@ def main():
                 "simplepb/admin",
                 "simplepb/config",
                 "simplepb/pb",
+                "simplepb/apps/kv64",
+                "simplepb/apps/eesm",
+                "simplepb/apps/kvee",
                 "aof",
                 # "simplepb/state",
                 "reconnectclient",
@@ -247,6 +250,7 @@ def main():
                 "simplepb/simplelog",
                 "mpaxos/",
                 "mpaxos/example",
+                "map_marshal",
                 ]
 
         for pkg in pkgs:
