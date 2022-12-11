@@ -606,7 +606,7 @@ Proof.
     by iModIntro.
   }
   iClear "His_aof".
-  iIntros (new_aof_ptr γaof2) "[His_aof Haof]".
+  iIntros (new_aof_ptr γaof2) "(His_aof & Haof & #HdurableLb)".
   wp_storeField.
   wp_pures.
   iApply "HΦ".
@@ -891,7 +891,7 @@ Proof.
     iExists _, _, _.
     iFrame.
   }
-  iIntros (aof_ptr γaof) "[His_aof Haof]".
+  iIntros (aof_ptr γaof) "(His_aof & Haof & #Hdurablelb)".
   wp_storeField.
 
   wp_apply (wp_ref_of_zero).
@@ -1196,10 +1196,15 @@ Proof.
         done.
       }
     }
-    iApply to_named.
-    iExactEq "HnextIndex".
-    repeat f_equal.
-    admit. (* TODO: nextIndex overflow *)
+    iSplitL "HnextIndex".
+    {
+      iApply to_named.
+      iExactEq "HnextIndex".
+      repeat f_equal.
+      admit. (* TODO: nextIndex overflow *)
+    }
+    iPureIntro.
+    word.
   }
   (* done with loop *)
   assert (numOpsApplied = length rest_ops_bytes ∨ numOpsApplied < length rest_ops) as [ | Hbad] by word.
@@ -1232,7 +1237,6 @@ Proof.
     rewrite -Hrest_ops_len.
     iSplitL "HnextIndex".
     { repeat rewrite app_length. iFrame. }
-    iSplitR; first admit. (* TODO: get this from aof *)
     iSplitR.
     {
       iPureIntro.
@@ -1276,7 +1280,7 @@ Proof.
   rewrite -Hrest_ops_len.
   iSplitL "HnextIndex".
   { repeat rewrite app_length. iFrame. }
-  iSplitR; first admit. (* TODO: get this from aof *)
+  iSplitR; first done.
   iSplitR.
   {
     iPureIntro.

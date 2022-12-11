@@ -256,7 +256,7 @@ Lemma wp_CreateAppendOnlyFile (fname:string) data P Pcrash :
   }}}
     CreateAppendOnlyFile #(str fname)
   {{{
-       aof_ptr γ, RET #aof_ptr; is_aof aof_ptr γ fname P Pcrash ∗ aof_log_own γ data
+       aof_ptr γ, RET #aof_ptr; is_aof aof_ptr γ fname P Pcrash ∗ aof_log_own γ data ∗ aof_durable_lb γ data
   }}}.
 Proof.
   iIntros "#Hcrash_wand !#" (Φ) "Hpre HΦ".
@@ -294,6 +294,7 @@ Proof.
   iMod (fmlist_get_lb with "Hlogdata2") as "[Hlogdata2 #Hlog_lb]".
   iMod (fmlist_alloc data) as (γpredurabledata) "[Hpredurable Hpredurable2]".
   iMod (fmlist_alloc data) as (γdurabledata) "[Hdurabledata Hdurabledata2]".
+  iMod (fmlist_get_lb with "Hdurabledata") as "[Hdurabledata #Hdurable_lb]".
   iMod (ghost_map_alloc_fin ()) as (γlen_toks) "Hlen_toks".
   iMod (own_alloc (●MN 0)) as (γlen) "[Hlen Hlen2]".
   { apply mono_nat_auth_valid. }
