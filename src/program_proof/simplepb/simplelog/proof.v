@@ -1253,7 +1253,9 @@ Proof.
       rewrite drop_ge /= in Hrest_data_sz; last done.
       assert (1 < length sealed_bytes) by word.
       rewrite Hsealedbytes in H0.
-      by destruct sealed.
+      destruct sealed.
+      { simpl in H0; lia. }
+      { simpl in H0; lia. }
     }
 
     specialize (Hop_bytes numOpsApplied HappliedLength).
