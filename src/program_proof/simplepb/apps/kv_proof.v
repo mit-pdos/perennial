@@ -270,8 +270,81 @@ Proof.
     wp_loadField.
     wp_loadField.
     wp_loadField.
-    admit.
+    wp_apply (wp_byteMapPut with "[$Hkvs_map $Hval_sl]").
+    iIntros "Hkvs_map".
+    wp_pures.
+    wp_apply (wp_NewSlice).
+    iIntros (rep_sl) "Hrep_sl".
+    wp_store.
+    wp_load.
+    iApply "HΦ".
+    iModIntro.
+    iSplitL "Hkvs Hkvs_map".
+    {
+      iExists _; iFrame.
+      unfold compute_state.
+      rewrite foldl_snoc.
+      done.
+    }
+    simpl.
+    iDestruct (is_slice_to_small with "Hrep_sl") as "$".
   }
-Admitted.
+  { (* case: get op *)
+    wp_pures.
+    rewrite -Henc.
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+
+    wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
+    { rewrite -Hsl_sz.
+      rewrite -Henc.
+      split; last done.
+      rewrite app_length.
+      simpl.
+      word.
+    }
+    iIntros (getOp_sl) "Hop_sl".
+    rewrite -Hsl_sz -Henc.
+    rewrite -> subslice_drop_take; last first.
+    { rewrite app_length. simpl. word. }
+    rewrite app_length.
+    rewrite singleton_length.
+    unfold encode_op.
+    replace (1 + length (u64_le u) - int.nat 1%Z) with (length (u64_le u)) by word.
+    replace (int.nat (U64 1)) with (length [U8 1]) by done.
+    rewrite drop_app.
+    rewrite take_ge; last word.
+
+    (* TODO: separate lemma *)
+    wp_call.
+    wp_pures.
+    wp_apply (wp_ReadInt with "Hop_sl").
+    iIntros (?) "_".
+    wp_pures.
+    (* end separate lemma *)
+
+    (* TODO: separate lemma *)
+    wp_call.
+    wp_loadField.
+    wp_apply (wp_byteMapGet with "Hkvs_map").
+    iIntros (rep_sl) "[#Hrep_sl Hkvs_map]".
+    iMod (readonly_load with "Hrep_sl") as (?) "Hrep_sl2".
+    wp_store.
+    wp_load.
+    iApply "HΦ".
+    iModIntro.
+    iFrame.
+    iExists _ ; iFrame.
+    unfold compute_state.
+    rewrite foldl_snoc.
+    done.
+  }
+Qed.
 
 End proof.
