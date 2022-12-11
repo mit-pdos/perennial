@@ -119,6 +119,7 @@ Lemma wp_EncodeMapU64ToBytes mptr m :
     EncodeMapU64ToBytes #mptr
   {{{
         enc_sl enc, RET (slice_val enc_sl);
+        own_byte_map mptr m ∗
         is_slice enc_sl byteT 1 enc ∗
         ⌜has_byte_map_encoding enc m⌝
   }}}.

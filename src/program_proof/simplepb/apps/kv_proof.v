@@ -198,6 +198,7 @@ Lemma wp_KVState__apply s :
     KVState__apply #s
   {{{
         applyFn, RET applyFn;
+        ⌜val_ty applyFn (slice.T byteT -> slice.T byteT)⌝ ∗
         is_InMemory_applyVolatileFn applyFn (own_KVState s)
   }}}
 .
@@ -208,6 +209,10 @@ Proof.
   iModIntro.
   iApply "HΦ".
   clear Φ.
+  iSplit.
+  {
+    iPureIntro. econstructor.
+  }
   iIntros (???? Φ) "!# Hpre HΦ".
   iDestruct "Hpre" as "(%Henc & #Hsl & Hown)".
   iNamed "Hown".
@@ -354,6 +359,7 @@ Lemma wp_KVState__setState s :
     KVState__setState #s
   {{{
         setFn, RET setFn;
+        ⌜val_ty setFn (slice.T byteT -> unitT)⌝ ∗
         is_InMemory_setStateFn setFn (own_KVState s)
   }}}
 .
@@ -363,6 +369,11 @@ Proof.
   iModIntro.
   iApply "HΦ".
   clear Φ.
+  iSplit.
+  {
+    iPureIntro. econstructor.
+  }
+
   iIntros (???? Φ) "!# Hpre HΦ".
   iDestruct "Hpre" as "(%Hsnap & #Hsnap_sl & Hown)".
   wp_pures.
@@ -388,18 +399,26 @@ Proof.
   iModIntro. iExists _; iFrame.
 Qed.
 
-Lemma wp_KVState__getState s :
-  {{{
-        True
-  }}}
-    KVState__getState #s
-  {{{
-        getFn, RET getFn;
-        is_InMemory_getStateFn getFn (own_KVState s)
-  }}}
-.
+Lemma wp_KVState__getState (s:loc) :
+  ⊢ is_InMemory_getStateFn (λ: <>, KVState__getState #s) (own_KVState s).
 Proof.
-Admitted.
+  iIntros (? Φ) "!# Hpre HΦ".
+  iDestruct "Hpre" as "Hown".
+  wp_pures.
+  wp_call.
+  iNamed "Hown".
+  wp_loadField.
+  iApply wp_fupd.
+  wp_apply (wp_EncodeMapU64ToBytes with "Hkvs_map").
+  iIntros (??) "(Hmap & Henc & %Henc)".
+  iDestruct (is_slice_to_small with "Henc") as "Henc_sl".
+  iMod (readonly_alloc_1 with "Henc_sl") as "#Henc_sl".
+  iApply "HΦ".
+  iModIntro.
+  iFrame "#".
+  iSplitL; last done.
+  iExists _; iFrame.
+Qed.
 
 Notation is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=pb_record)).
 
@@ -427,15 +446,13 @@ Proof.
   iIntros (?) "Hmap".
   wp_storeField.
   wp_apply (wp_KVState__apply).
-  iIntros (?) "#His_apply".
-  wp_apply (wp_KVState__getState).
-  iIntros (?) "#His_getstate".
+  iIntros (?) "[% #His_apply]".
   wp_apply (wp_KVState__setState).
-  iIntros (?) "#His_setstate".
+  iIntros (?) "[% #His_setstate]".
   iApply wp_fupd.
   wp_apply (wp_allocStruct).
-  { (* repeat econstructor. *)
-    admit. (* could make these val_ty postcondition of the wp_KVState__apply *)
+  {
+    repeat econstructor; done.
   }
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
@@ -449,10 +466,11 @@ Proof.
     iExists _, _, _.
     iModIntro.
     iFrame "#".
+    iApply wp_KVState__getState.
   }
   iModIntro.
   iExists _.
   iFrame.
-Admitted.
+Qed.
 
 End proof.

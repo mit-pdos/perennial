@@ -92,7 +92,9 @@ Definition MakeKVStateMachine: val :=
     struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #());;
     struct.new simplelog.InMemoryStateMachine [
       "ApplyVolatile" ::= KVState__apply "s";
-      "GetState" ::= KVState__getState "s";
+      "GetState" ::= (λ: <>,
+        KVState__getState "s"
+        );
       "SetState" ::= KVState__setState "s"
     ].
 
