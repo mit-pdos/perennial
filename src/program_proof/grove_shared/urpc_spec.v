@@ -100,6 +100,68 @@ Proof.
 Qed.
 
 
+(* More general version of above initialization lemma *)
+Implicit Type (l:list (u64 * savedSpecO Σ (list u8) (list u8))).
+Fixpoint handler_spec_list γ host l :=
+  match l with
+  | [] => True%I
+  | x :: l =>
+    (handler_spec γ host x.1 x.2 ∗ handler_spec_list γ host l)%I
+  end.
+
+Fixpoint dom_spec_list l : gset u64 :=
+  match l with
+  | [] => ∅
+  | x :: l => {[ x.1 ]} ∪ dom_spec_list l
+  end.
+
+Fixpoint spec_list_wf l : Prop :=
+  match l with
+  | [] => True
+  | x :: l =>
+    (x.1 ∉ dom_spec_list l) ∧ spec_list_wf l
+  end.
+
+Lemma handler_is_init_list2 (host : chan) specs (Hwf: spec_list_wf specs) :
+   host c↦ ∅ ={⊤}=∗ ∃ γ,
+   handlers_dom γ (dom_spec_list specs) ∗
+   handler_spec_list γ host specs.
+Proof.
+  iIntros "Hchan".
+  iMod (map_init (∅ : gmap u64 gname)) as (γmap) "Hmap_ctx".
+  iMod (own_alloc (to_agree (dom_spec_list specs : gsetO u64))) as (γdom) "#Hdom".
+  { econstructor. }
+  set (Γsrv := {| scmap_name := γmap; scset_name := γdom |}).
+  iMod (inv_alloc urpc_serverN _ ((server_chan_inner host Γsrv)) with "[Hchan]") as "#Hinv".
+  { iNext. iExists _. iFrame.
+    rewrite big_sepS_empty //. }
+  iExists Γsrv.
+  iAssert (∀ specs', ⌜ spec_list_wf specs' ⌝ ∗ ⌜ dom_spec_list specs' ⊆  dom_spec_list specs ⌝ →
+           |==> ∃ gnames : gmap u64 gname, ⌜ dom gnames = dom_spec_list specs' ⌝ ∗
+           map_ctx (scmap_name Γsrv) 1 gnames ∗
+           handler_spec_list Γsrv host specs')%I with "[Hmap_ctx]" as "H"; last first.
+  { iMod ("H" with "[]") as (?) "(_&_&$)"; eauto. }
+  iIntros (specs').
+  iInduction specs' as [| hd spec] "IH".
+  { iIntros (?). iModIntro. iExists ∅. iFrame.
+    rewrite ?dom_empty_L //. }
+  { iIntros ((Hwf'&Hdom')).
+    iMod ("IH" with "[$] []") as (gnames Hdom) "(Hmap_ctx&Hmap)".
+    { iPureIntro. split.
+      - destruct Hwf' as (_&?); eauto.
+      - etransitivity; last eassumption. set_solver. }
+    iMod (saved_spec_alloc hd.2) as (γsave) "#Hsaved".
+    iMod (map_alloc_ro (hd.1) γsave
+            with "Hmap_ctx") as "(Hmap_ctx&#Hsaved_name)"; auto.
+    { apply not_elem_of_dom. destruct (Hwf') as (?&?). rewrite Hdom. eauto. }
+    iExists _; iFrame. iModIntro.
+    iSplit.
+    { iPureIntro. rewrite ?dom_insert_L Hdom. set_solver. }
+    iExists _, _. iFrame "#".
+    { iPureIntro. simpl in Hdom'. set_solver. }
+  }
+Qed.
+
 End rpc_global_defs.
 
 Section urpc_spec_impl.

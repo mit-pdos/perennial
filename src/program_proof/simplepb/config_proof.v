@@ -4,13 +4,12 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof Require Import marshal_stateless_proof std_proof.
 From Perennial.program_proof.simplepb Require Import config_marshal_proof.
-From Perennial.program_proof.grove_shared Require Import urpc_proof.
+From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 
-Section config_proof.
+Section config_global.
 
 Record config_names :=
 {
-  urpc_gn:server_chan_gnames;
   epoch_gn:gname ;
   config_val_gn:gname;
 }.
@@ -18,11 +17,12 @@ Record config_names :=
 Class configG Σ := {
     config_epochG :> mono_natG Σ ;
     config_configG :> ghost_varG Σ (list u64) ;
+    config_urpcG :> urpcregG Σ ;
 }.
 
 Implicit Type γ : config_names.
 
-Context `{!heapGS Σ}.
+Context `{!gooseGlobalGS Σ}.
 Context `{!configG Σ}.
 
 Definition own_epoch γ (epoch:u64) : iProp Σ :=
@@ -95,14 +95,20 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Context `{!urpcregG Σ}.
-
 Definition is_host (host:u64) γ : iProp Σ :=
-  handler_spec γ.(urpc_gn) host (U64 0) (GetEpochAndConfig_spec γ) ∗
-  handler_spec γ.(urpc_gn) host (U64 1) (GetConfig_spec γ) ∗
-  handler_spec γ.(urpc_gn) host (U64 2) (WriteConfig_spec γ) ∗
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
+  ∃ γrpc,
+  handler_spec γrpc host (U64 0) (GetEpochAndConfig_spec γ) ∗
+  handler_spec γrpc host (U64 1) (GetConfig_spec γ) ∗
+  handler_spec γrpc host (U64 2) (WriteConfig_spec γ) ∗
+  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
+
+End config_global.
+
+Section config_proof.
+
+Context `{!heapGS Σ}.
+Context `{!configG Σ}.
 
 Definition is_Clerk (ck:loc) γ : iProp Σ :=
   ∃ (cl:loc) srv,
@@ -428,6 +434,7 @@ Proof.
   iIntros (dummy_args) "Hargs".
   wp_loadField.
   iDestruct (is_slice_to_small with "Hargs") as "Hargs_sl".
+  iNamed "Hhost".
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
   {
     iDestruct "Hhost" as "[$ _]".
@@ -511,6 +518,7 @@ Proof.
   iIntros (dummy_args) "Hargs".
   wp_loadField.
   iDestruct (is_slice_to_small with "Hargs") as "Hargs_sl".
+  iNamed "Hhost".
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
   {
     iDestruct "Hhost" as "[_ [$ _]]".
@@ -611,6 +619,7 @@ Proof.
   wp_load.
   wp_loadField.
   iDestruct (is_slice_to_small with "Hargs_sl") as "Hargs_sl".
+  iNamed "Hhost".
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
   {
     iDestruct "Hhost" as "[_ [_ [$ _]]]".
@@ -769,6 +778,7 @@ Proof.
   iIntros (r) "Hr".
   wp_pures.
 
+  iNamed "Hhost".
   wp_apply (wp_StartServer2 with "[$Hr]").
   {
     set_solver.
@@ -804,3 +814,45 @@ Proof.
 Qed.
 
 End config_proof.
+
+(*
+  handler_spec γ.(urpc_gn) host (U64 0) (GetEpochAndConfig_spec γ) ∗
+  handler_spec γ.(urpc_gn) host (U64 1) (GetConfig_spec γ) ∗
+  handler_spec γ.(urpc_gn) host (U64 2) (WriteConfig_spec γ) ∗
+  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
+*)
+
+Section config_init.
+
+Context `{!configG Σ}.
+Context `{!gooseGlobalGS Σ}.
+
+Definition config_spec_list γ :=
+  [ (U64 0, GetEpochAndConfig_spec γ) ;
+    (U64 1, GetConfig_spec γ) ;
+    (U64 2, WriteConfig_spec γ)].
+
+Lemma config_ghost_init :
+  ⊢ |==> ∃ γ,
+    own_epoch γ 0 ∗ own_config γ [] ∗
+    own_epoch γ 0 ∗ own_config γ [].
+Proof.
+Admitted.
+
+Lemma config_server_init host γ :
+  host c↦ ∅ ={⊤}=∗
+  is_host host γ.
+Proof.
+  iIntros "Hchan".
+  iMod (handler_is_init_list2 host (config_spec_list γ) with "Hchan") as (γrpc) "H".
+  { simpl. set_solver. }
+  iModIntro.
+  iExists γrpc.
+  simpl.
+  iDestruct "H" as "(H1 & $ & $ & $ & _)".
+  iExactEq "H1".
+  f_equal.
+  set_solver.
+Qed.
+
+End config_init.
