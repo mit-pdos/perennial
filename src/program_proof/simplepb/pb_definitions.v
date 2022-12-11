@@ -1,3 +1,4 @@
+From Perennial.base_logic Require Import lib.saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.simplepb Require Export pb_ghost.
@@ -29,7 +30,11 @@ Notation compute_reply := (pb_compute_reply pb_record).
 Definition client_logR := mono_listR (leibnizO OpType).
 
 Class pbG Σ := {
+    (*
     pb_ghostG :> pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
+     *)
+    pb_ghostG :> pb_ghostG (EntryType:=(OpType * gname)) Σ ;
+    pb_savedG :> savedPredG Σ (list OpType);
     pb_urpcG :> urpcregG Σ ;
     pb_wgG :> waitgroupG Σ ; (* for apply proof *)
     pb_logG :> inG Σ client_logR;
@@ -153,10 +158,17 @@ Defined.
 
 Definition appN := pbN .@ "app".
 Definition escrowN := pbN .@ "escrow".
+
+Definition own_ghost' γsys (σ : list (OpType * (list OpType → iProp Σ))) : iProp Σ :=
+  ∃ σgnames : list (OpType * gname),
+    own_ghost γsys σgnames ∗
+    ⌜ σ.*1 = σgnames.*1 ⌝ ∗
+    [∗ list] k↦Φ;γ ∈ snd <$> σ; snd <$> σgnames, saved_pred_own γ DfracDiscarded Φ.
+
 Definition is_inv γlog γsys :=
   inv appN (∃ σ,
         own_log γlog (fst <$> σ) ∗
-        own_ghost γsys σ ∗
+        own_ghost' γsys σ ∗
         □(
           ∀ σ' σ'prefix lastEnt, ⌜prefix σ' σ⌝ -∗ ⌜σ' = σ'prefix ++ [lastEnt]⌝ -∗ (lastEnt.2 (fst <$> σ'prefix))
         )

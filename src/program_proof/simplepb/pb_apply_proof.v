@@ -1,3 +1,4 @@
+From Perennial.base_logic Require Import lib.saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.simplepb Require Import pb_ghost.
@@ -140,6 +141,14 @@ Transparent prelude.Data.randomUint64.
 Opaque prelude.Data.randomUint64.
 Qed.
 
+Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
+  (σgnames : list (OpType * gname)) : iProp Σ :=
+    ⌜ σ.*1 = σgnames.*1 ⌝ ∗
+    [∗ list] k↦Φ;γ ∈ snd <$> σ; snd <$> σgnames, saved_pred_own γ DfracDiscarded Φ.
+
+Definition is_ghost_lb' γ σ : iProp Σ :=
+  ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames.
+
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   {{{
         is_Server s γ γsrv ∗
@@ -149,7 +158,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
-        reply_ptr reply, RET #reply_ptr; £ 1 ∗ £ 1 ∗ ApplyReply.own_q reply_ptr reply ∗
+        reply_ptr reply, RET #reply_ptr; £ 1 ∗ £ 1 ∗ £ 1 ∗ ApplyReply.own_q reply_ptr reply ∗
         if (decide (reply.(ApplyReply.err) = 0%Z)) then
           ∃ σ,
             let σphys := (λ x, x.1) <$> σ in
@@ -163,7 +172,8 @@ Proof.
   iIntros (Φ) "[#His Hpre] HΦ".
   iDestruct "Hpre" as "(#Hsl & %Hghostop_op & Hupd)".
   iNamed "His".
-  wp_call.
+  rewrite /Server__Apply.
+  wp_pure1_credit "Hcred3".
   wp_apply (wp_allocStruct).
   { eauto. }
   iIntros (reply_ptr) "Hreply".
@@ -186,7 +196,7 @@ Proof.
   wp_if_destruct.
   { (* return error "not primary" *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2]").
+    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2 Hcred3]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -213,7 +223,7 @@ Proof.
   wp_if_destruct.
   { (* return ESealed *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2]").
+    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2 Hcred3]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -254,11 +264,8 @@ Proof.
       iMod "Hupd".
       iModIntro.
       iDestruct "Hupd" as (?) "[Hghost Hupd]".
-      iExists _; iFrame "Hghost".
-      iIntros (->) "Hghost".
-      iSpecialize ("Hupd" with "Hghost").
-      iMod "Hupd".
-      by iModIntro.
+      iExists _; iFrame.
+      iIntros (->); auto.
     }
 
     iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
@@ -268,11 +275,13 @@ Proof.
       word.
     }
     iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
+
     instantiate (1:=(∃ σ,
                         ⌜σ.*1 = σphys⌝ ∗
                         is_accepted_lb γsrv epoch (σ ++ [ghost_op]) ∗
                         is_proposal_lb γ epoch (σ ++ [ghost_op]) ∗
-                        is_proposal_facts γ epoch (σ ++ [ghost_op]))%I).
+                        is_proposal_facts γ epoch (σ ++ [ghost_op])
+                    )%I).
     iModIntro.
     iSplitL.
     {
@@ -384,7 +393,7 @@ Proof.
                                ⌜backups !! int.nat i = Some γsrv'⌝ ∗
                                readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
                                □ if (decide (err = U64 0)) then
-                                 is_accepted_lb γsrv' epoch (σ ++ [ghost_op])
+                                 is_accepted_lb γsrv' epoch (σ ++ [_])
                                else
                                  True
                              )%I
@@ -537,7 +546,7 @@ Proof.
               "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (σ++[ghost_op]))
+                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (σ++[_]))
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -652,7 +661,7 @@ Proof.
   iRight.
   iModIntro.
   iSplitL ""; first done.
-  wp_pures.
+  wp_pure1_credit "Hlc3".
   wp_load.
   wp_pures.
 
@@ -725,17 +734,22 @@ Proof using Type*.
   iApply (wp_frame_wand with "HΨ").
   iDestruct "HΦ" as "(%Hop_enc & #Hinv & #Hupd & Hfail_Φ)".
   iMod (ghost_var_alloc (())) as (γtok) "Htok".
-  iApply wp_fupd.
-  wp_apply (wp_Server__Apply_internal _ _ _ _ _
-      (op, (λ σ, inv escrowN (
+  set (OpPred := 
+(λ σ, inv escrowN (
         Ψ (ApplyReply.mkC 0 (compute_reply σ op)) ∨
           ghost_var γtok 1 ()
-        ))%I)
+        ))).
+
+  iMod (saved_pred_alloc OpPred DfracDiscarded) as (γghost_op) "#Hsaved"; first done.
+  iApply wp_fupd.
+  wp_apply (wp_Server__Apply_internal _ _ _ _ _
+      (op, γghost_op)
              with "[$Hsrv $Hop_sl Hupd]").
   {
     iSplitL ""; first done.
     iInv "Hinv" as "HH" "Hclose".
-    iDestruct "HH" as (?) "(>Hlog & >Hghost & #HQs)".
+    iDestruct "HH" as (?) "(>Hlog & Hghost & #HQs)".
+    iDestruct "Hghost" as (σgnames) "(>Hghost&>%Hfst_eq&#Hsaved')".
     iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
     {
       assert ((↑ghostN:coPset) ⊆ (↑pbN:coPset)).
@@ -791,10 +805,18 @@ Proof using Type*.
     iMod ("Hclose" with "[HQs Hghost Hlog]").
     {
       iNext.
-      iExists _; iFrame.
+      iExists (σ ++ [(op, OpPred)]); iFrame.
       rewrite fmap_app.
       simpl.
       iFrame.
+      iSplitL.
+      { iExists _. iFrame.
+        iSplitL.
+        { iPureIntro. rewrite ?fmap_app /=. congruence. }
+        rewrite ?fmap_app. iApply big_sepL2_app.
+        { iFrame "Hsaved'". }
+        iApply big_sepL2_singleton. iFrame "Hsaved".
+      }
       iModIntro.
       iIntros.
 
@@ -827,7 +849,7 @@ Proof using Type*.
     done.
   }
   iIntros (err reply).
-  iIntros "(Hcred & Hcred2 & Hreply & Hpost)".
+  iIntros "(Hcred & Hcred2 & Hcred3 & Hreply & Hpost)".
   destruct (decide (reply.(ApplyReply.err) = U64 0)).
   { (* no error *)
     iNamed "Hreply".
@@ -836,20 +858,55 @@ Proof using Type*.
     rewrite Hrep.
     iInv "Hinv" as "HH" "Hclose".
     {
-      iDestruct "HH" as (?) "(>Hlog & >Hghost & #HQs)".
-      iMod (lc_fupd_elim_later with "Hcred HQs") as "#HQ".
+      iDestruct "HH" as (?) "(>Hlog & Hghost & #HQs)".
+      iDestruct "Hghost" as (σgnames) "(>Hghost&>%Hfst_eq&#Hsaved')".
+      iApply (lc_fupd_add_later with "Hcred").
+      iNext.
       iDestruct (own_valid_2 with "Hghost Hghost_lb") as %Hvalid.
       rewrite mono_list_both_dfrac_valid_L in Hvalid.
       destruct Hvalid as [_ Hvalid].
-      iSpecialize ("HQ" $! _ σ _ with "[] []").
-      { done. }
-      { done. }
+
+      destruct Hvalid as (σtail&Hvalid').
+      subst.
+      iDestruct (big_sepL2_length with "Hsaved'") as %Hlen.
+      rewrite ?fmap_length in Hlen.
+      assert (∃ σ0a op' Q' σ0b,
+                 σ0 = σ0a ++ [(op', Q')] ++ σ0b ∧
+                 length σ0a = length σ ∧
+                 length σ0b = length σtail) as (σ0a&op'&Q'&σ0b&Heq0&Hlena&Hlenb).
+      {
+
+        destruct (nth_error σ0 (length σ)) as [(op', Q')|] eqn:Hnth; last first.
+        { apply nth_error_None in Hnth. rewrite ?app_length /= in Hlen. lia. }
+        edestruct (nth_error_split σ0 (length σ)) as (l1&l2&Heq&Hlen'); eauto.
+        eexists l1, _, _, l2. rewrite Heq /=; split_and!; eauto.
+        rewrite Heq ?app_length /= in Hlen. rewrite Hlen' in Hlen. clear -Hlen.
+        (* weird, lia fails directly but if you replace lengths with a nat then it works... *)
+        remember (length l2) as k.
+        remember (length σtail) as k'. rewrite Heqk in Hlen. rewrite -Heqk' in Hlen. lia.
+      }
+
+      iDestruct ("HQs" $! (σ0a ++ [(op', Q')]) _ (_, _) with "[] []") as "#HQ".
+      { rewrite Heq0. iPureIntro; eexists; eauto. rewrite app_assoc.  done. }
+      { done. } 
       simpl.
       iMod ("Hclose" with "[Hghost Hlog]") as "_".
       {
         iNext.
         iExists _; iFrame "∗#".
+        iExists _. iFrame.
+        iSplit.
+        { iPureIntro. auto. }
+        iApply "Hsaved'".
       }
+
+      rewrite Heq0. rewrite ?fmap_app -app_assoc. iDestruct (big_sepL2_app_inv with "Hsaved'") as "(H1&H2)".
+      { left. rewrite ?fmap_length //. }
+
+      iEval (simpl) in "H2". iDestruct "H2" as "(HsavedQ'&?)".
+      iDestruct (saved_pred_agree _ _ _ _  _ (σ0a.*1) with "Hsaved [$]") as "HQequiv".
+      iApply (lc_fupd_add_later with "[$]"). iNext.
+      iRewrite -"HQequiv" in "HQ".
 
       iInv "HQ" as "Hescrow" "Hclose".
       iDestruct "Hescrow" as "[HΦ|>Hbad]"; last first.
@@ -864,6 +921,14 @@ Proof using Type*.
       iApply ("HΨ" with "HΦ").
       iExists _, _.
       iFrame.
+      simpl.
+      rewrite /named.
+      iExactEq "Hrepy_ret_sl".
+      { repeat f_equal.
+        rewrite Heq0 in Hfst_eq. rewrite ?fmap_app -app_assoc in Hfst_eq.
+        apply app_inj_1 in Hfst_eq; last (rewrite ?fmap_length //).
+        destruct Hfst_eq as (->&_). rewrite //=.
+      }
     }
   }
   {
