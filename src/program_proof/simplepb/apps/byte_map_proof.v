@@ -15,6 +15,31 @@ Definition own_byte_map (mptr:loc) (m:gmap u64 (list u8)): iProp Σ :=
                      )
 .
 
+Lemma wp_byteMapNew :
+  {{{
+        True
+  }}}
+    NewMap (slice.T byteT) #()
+  {{{
+        mptr, RET #mptr; own_byte_map mptr ∅
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+
+  iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "HH".
+  { done. }
+  iMod (readonly_alloc_1 with "HH") as "Hsl".
+  wp_apply (wp_NewMap).
+  iIntros (?) "Hmap".
+  iApply "HΦ".
+  iExists _; iFrame.
+  iIntros (?).
+  rewrite lookup_empty.
+  rewrite lookup_empty.
+  simpl.
+  iFrame "Hsl".
+Qed.
+
 Lemma wp_byteMapGet mptr m (k:u64) :
   {{{ own_byte_map mptr m }}}
     Fst (MapGet #mptr #k)
