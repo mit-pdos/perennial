@@ -6,6 +6,8 @@ From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
+From Perennial.program_proof.simplepb.apps Require Import byte_map_proof.
+
 
 Section proof.
 
@@ -183,6 +185,23 @@ Proof.
   done.
 Qed.
 
-(* FIXME: copy/paste from old state_proof. *)
+Definition own_KVState (s:loc) (ops:list OpType) : iProp Σ :=
+  ∃ (kvs_loc:loc),
+  "Hkvs" ∷ s ↦[KVState :: "kvs"] #kvs_loc ∗
+  "Hkvs_map" ∷ own_byte_map kvs_loc (compute_state ops)
+.
+
+Lemma wp_KVState__apply s :
+  {{{
+        True
+  }}}
+    KVState__apply #s
+  {{{
+        applyFn, RET applyFn;
+        is_InMemory_applyVolatileFn applyFn (own_KVState s)
+  }}}
+.
+Proof.
+Admitted.
 
 End proof.
