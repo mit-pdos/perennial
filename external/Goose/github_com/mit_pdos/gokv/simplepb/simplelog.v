@@ -151,8 +151,15 @@ Definition MakePbServer: val :=
   rec: "MakePbServer" "smMem" "fname" :=
     let: "s" := recoverStateMachine "smMem" "fname" in
     let: "sm" := struct.new pb.StateMachine [
-      "StartApply" ::= StateMachine__apply "s";
-      "SetStateAndUnseal" ::= StateMachine__setStateAndUnseal "s";
-      "GetStateAndSeal" ::= StateMachine__getStateAndSeal "s"
+      "StartApply" ::= (λ: "op",
+        StateMachine__apply "s" "op"
+        );
+      "SetStateAndUnseal" ::= (λ: "snap" "nextIndex" "epoch",
+        StateMachine__setStateAndUnseal "s" "snap" "nextIndex" "epoch";;
+        #()
+        );
+      "GetStateAndSeal" ::= (λ: <>,
+        StateMachine__getStateAndSeal "s"
+        )
     ] in
     pb.MakeServer "sm" (struct.loadF StateMachine "nextIndex" "s") (struct.loadF StateMachine "epoch" "s") (struct.loadF StateMachine "sealed" "s").

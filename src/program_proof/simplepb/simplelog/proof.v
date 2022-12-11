@@ -1,5 +1,4 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From coqutil.Datatypes Require Import List.
 From Perennial.goose_lang Require Import crash_borrow.
@@ -7,6 +6,8 @@ From Perennial.program_proof.fencing Require Import map.
 From Perennial.algebra Require Import mlist.
 
 From Perennial.program_proof.aof Require Import proof.
+From Perennial.program_proof.simplepb Require Import pb_start_proof pb_definitions.
+From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 
 Section proof.
 
@@ -237,7 +238,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "%Hallstates_len" ∷ ⌜length allstates = (length data + 1)%nat⌝
 .
 
-Lemma StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops P :
+Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops P :
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
@@ -416,7 +417,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_SetStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
+Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
@@ -650,7 +651,7 @@ Proof.
   word.
 Admitted.
 
-Lemma wp_GetStateAndSeal s P epoch ops sealed Q :
+Lemma wp_getStateAndSeal s P epoch ops sealed Q :
   {{{
         own_StateMachine s epoch ops sealed P ∗
         (P epoch ops sealed ={⊤∖↑aofN}=∗ P epoch ops true ∗ Q)
@@ -1502,5 +1503,120 @@ Proof.
   done.
 Admitted.
 
+Definition pb_record :=
+  {|
+    pb_OpType := OpType ;
+    pb_has_op_encoding:= has_op_encoding ;
+    pb_has_snap_encoding:= has_snap_encoding ;
+    pb_has_op_encoding_injective := has_op_encoding_injective ;
+    pb_compute_reply := compute_reply ;
+  |}.
+
+Notation own_Server_ghost := (own_Server_ghost (pb_record:=pb_record)).
+Notation pbG := (pbG (pb_record:=pb_record)).
+Notation wp_MakeServer := (wp_MakeServer (pb_record:=pb_record)).
+
+Context `{!pbG Σ}.
+Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname data γ γsrv :
+  let P := (own_Server_ghost γ γsrv) in
+  {{{
+       "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
+                    (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
+        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
+        "Hmemstate" ∷ own_InMemoryStateMachine []
+  }}}
+    MakePbServer #smMem #(LitString fname)
+  {{{
+        s, RET #s; pb_definitions.is_Server s γ γsrv
+  }}}.
+Proof.
+  iIntros (? Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_pures.
+  wp_apply (wp_recoverStateMachine with "[-HΦ]").
+  { iFrame "∗#". }
+  iIntros (????) "Hsm".
+  wp_pures.
+
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (sm) "HpbSm".
+  iDestruct (struct_fields_split with "HpbSm") as "HH".
+  iNamed "HH".
+  iMod (readonly_alloc_1 with "StartApply") as "#HstartApply".
+  iMod (readonly_alloc_1 with "GetStateAndSeal") as "#HgetState".
+  iMod (readonly_alloc_1 with "SetStateAndUnseal") as "#HsetState".
+
+  iNamed "Hsm".
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+
+  iAssert (own_StateMachine s epoch ops sealed P) with "[-HΦ]" as "Hsm".
+  {
+    do 9 iExists _.
+    iFrame "∗#%".
+  }
+
+  wp_apply (wp_MakeServer _ (own_StateMachine s)  with "[Hsm]").
+  {
+    iFrame.
+    iSplitR; last admit. (* FIXME: get sys_inv and ops list overflow fact *)
+    iExists _, _, _.
+    iFrame "#".
+    iSplitL.
+    { (* apply spec *)
+      clear Φ.
+      iIntros (?????? Φ) "!#".
+      iIntros "(%HopEncoding & #Hop_sl & Hupd & Hsm) HΦ".
+      wp_lam.
+      wp_apply (wp_StateMachine__apply with "[$Hsm $Hop_sl Hupd]").
+      {
+        iFrame "%".
+        instantiate (1:=Q).
+        admit. (* FIXME: masks in pb are stronger than what we have here. *)
+      }
+      iFrame.
+    }
+    iSplitL.
+    { (* set state spec *)
+      clear Φ.
+      iIntros (???????? Φ) "!#".
+      iIntros "(%HopEncoding & #Hop_sl & Hupd & Hsm) HΦ".
+      wp_lam.
+      wp_pures.
+      wp_apply (wp_setStateAndUnseal with "[$Hsm $Hop_sl Hupd]").
+      {
+        iFrame "%".
+        instantiate (1:=Q).
+        admit. (* FIXME: masks in pb are stronger than what we have here. *)
+      }
+      iIntros.
+      wp_pures.
+      iModIntro.
+      iApply "HΦ".
+      iFrame.
+    }
+    { (* get state spec *)
+      clear Φ.
+      iIntros (???? Φ) "!#".
+      iIntros "(Hsm & Hupd) HΦ".
+      wp_lam.
+      wp_pures.
+      wp_apply (wp_getStateAndSeal with "[$Hsm Hupd]").
+      {
+        iFrame "%".
+        instantiate (1:=Q).
+        admit. (* FIXME: masks in pb are stronger than what we have here. *)
+      }
+      iIntros.
+      iApply "HΦ".
+      iFrame.
+      admit. (* Match returned fraction between pb and simplelog *)
+    }
+  }
+  done.
+Admitted.
 
 End proof.

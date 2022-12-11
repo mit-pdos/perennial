@@ -262,7 +262,7 @@ Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp
         (P epoch_prev σ_prev sealed ={⊤}=∗ P epoch σ false ∗ Q) ∗
         own_StateMachine epoch_prev σ_prev sealed P
   }}}
-    set_state_fn (slice_val snap_sl) #epoch #(U64 (length σ))
+    set_state_fn (slice_val snap_sl) #(U64 (length σ)) #epoch
   {{{
         RET #();
         own_StateMachine epoch σ false P ∗
