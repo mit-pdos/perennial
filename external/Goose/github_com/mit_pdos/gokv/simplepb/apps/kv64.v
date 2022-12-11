@@ -81,15 +81,10 @@ Definition KVState__getState: val :=
 
 Definition KVState__setState: val :=
   rec: "KVState__setState" "s" "snap" :=
-    (if: (slice.len "snap" = #0)
-    then
-      struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #());;
-      #()
-    else
-      let: ("0_ret", "1_ret") := map_marshal.DecodeMapU64ToBytes "snap" in
-      struct.storeF KVState "kvs" "s" "0_ret";;
-      "1_ret";;
-      #()).
+    let: ("0_ret", "1_ret") := map_marshal.DecodeMapU64ToBytes "snap" in
+    struct.storeF KVState "kvs" "s" "0_ret";;
+    "1_ret";;
+    #().
 
 Definition MakeKVStateMachine: val :=
   rec: "MakeKVStateMachine" <> :=
