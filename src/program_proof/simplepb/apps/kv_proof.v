@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
-From Perennial.program_proof.simplepb.apps Require Import byte_map_proof.
+From Perennial.program_proof Require Import map_marshal_proof.
 
 
 Section proof.

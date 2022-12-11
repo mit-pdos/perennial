@@ -1,7 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.goose_lang.lib Require Import typed_map map.impl.
+From Goose.github_com.mit_pdos.gokv Require Import map_marshal.
 
-Section proof.
+Section map_marshal_proof.
 
 Context `{!heapGS Σ}.
 Definition own_byte_map (mptr:loc) (m:gmap u64 (list u8)): iProp Σ :=
@@ -106,4 +107,61 @@ Qed.
 Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop.
 Admitted.
 
-End proof.
+Lemma wp_EncodeMapU64ToBytes mptr m :
+  {{{
+        "Hmap" ∷ own_byte_map mptr m
+  }}}
+    EncodeMapU64ToBytes #mptr
+  {{{
+        enc_sl enc, RET (slice_val enc_sl);
+        is_slice enc_sl byteT 1 enc ∗
+        ⌜has_byte_map_encoding enc m⌝
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_DecodeMapU64ToBytes m enc_sl enc enc_rest q :
+  {{{
+        "%Henc" ∷ ⌜has_byte_map_encoding enc m⌝ ∗
+        "Henc_sl" ∷ is_slice_small enc_sl byteT q (enc ++ enc_rest)
+  }}}
+    DecodeMapU64ToBytes (slice_val enc_sl)
+  {{{
+        rest_enc_sl q' mptr, RET (#mptr, slice_val enc_sl);
+        own_byte_map mptr m ∗
+        is_slice_small rest_enc_sl byteT q' enc_rest
+  }}}.
+Proof.
+Admitted.
+
+Definition has_u64_map_encoding (enc:list u8) (m:gmap u64 u64) : Prop.
+Admitted.
+
+Lemma wp_EncodeMapU64ToU64 mptr m :
+  {{{
+        "Hmap" ∷ is_map mptr 1 m
+  }}}
+    EncodeMapU64ToU64 #mptr
+  {{{
+        enc_sl enc, RET (slice_val enc_sl);
+        is_slice enc_sl byteT 1 enc ∗
+        ⌜has_u64_map_encoding enc m⌝
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_DecodeMapU64ToU64 m enc_sl enc enc_rest q :
+  {{{
+        "%Henc" ∷ ⌜has_u64_map_encoding enc m⌝ ∗
+        "Henc_sl" ∷ is_slice_small enc_sl byteT q (enc ++ enc_rest)
+  }}}
+    DecodeMapU64ToU64 (slice_val enc_sl)
+  {{{
+        rest_enc_sl q' mptr, RET (#mptr, slice_val enc_sl);
+        is_map mptr 1 m ∗
+        is_slice_small rest_enc_sl byteT q' enc_rest
+  }}}.
+Proof.
+Admitted.
+
+End map_marshal_proof.
