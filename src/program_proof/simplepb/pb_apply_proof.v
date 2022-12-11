@@ -126,12 +126,18 @@ Proof.
   }
 Qed.
 
+(* TODO: move me *)
 Lemma wp_random :
 {{{ True }}}
   prelude.Data.randomUint64 #()
 {{{ (n:u64), RET #n; True }}}.
 Proof.
-Admitted.
+#[local]
+Transparent prelude.Data.randomUint64.
+  rewrite /prelude.Data.randomUint64.
+  iIntros (?) "_ HΦ". wp_pures. iModIntro. by iApply "HΦ".
+Opaque prelude.Data.randomUint64.
+Qed.
 
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
   {{{
@@ -696,7 +702,14 @@ Lemma prefix_app_cases {A} (σ σ':list A) e:
   σ' `prefix_of` σ ++ [e] →
   σ' `prefix_of` σ ∨ σ' = (σ++[e]).
 Proof.
-Admitted.
+  intros [σ0 Heq].
+  induction σ0 using rev_ind.
+  { rewrite app_nil_r in Heq. right; congruence. }
+  { rewrite app_assoc in Heq.
+    apply app_inj_2 in Heq as [-> ?]; last auto.
+    left. eexists; eauto.
+  }
+Qed.
 
 Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗

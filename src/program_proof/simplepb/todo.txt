@@ -6,9 +6,9 @@
 
 [ ] `src/program_proof/simplepb/pb_definitions.v`; contractiveness of is_pb_host_pre
 
-[ ] `src/program_proof/simplepb/pb_apply_proof.v`;
-    [ ] wp_random
-    [ ] prefix_app_cases; it's only used once and in that file, so we can also
+[x] `src/program_proof/simplepb/pb_apply_proof.v`;
+    [x] wp_random
+    [x] prefix_app_cases; it's only used once and in that file, so we can also
     get rid of that lemma and change the proof where it's used.
 
 --------------------------------------------------------------------------------
