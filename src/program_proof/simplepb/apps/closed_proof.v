@@ -53,6 +53,15 @@ Proof.
   { iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
 
   (* TODO: initialize ghost state, including RPC stuff *)
+  (*
+    Here's the order stuff gets allocated in.
+    - pb global state (includes config and epoch points tos)
+    - config server state, and the is_conf_inv invariant
+    - is_host for config server
+    - each replica server's ghost state
+    - each replica server's ghost state
+    - is_host for each pb server
+  *)
 
   iMod (config_ghost_init) as (γconf) "HconfInit".
   iMod (config_server_init configHost γconf with "[]") as "#HisConf".
@@ -71,11 +80,8 @@ Proof.
       simpl.
       iApply wp_wpc.
       wp_call.
-      iDestruct "HconfInit" as "(H1 & H2 & _)".
-      wp_apply (config_proof.wp_MakeServer with "[H1 H2]").
-      {
-        iFrame.
-      }
+      iDestruct "HconfInit" as "(H1 & _)".
+      wp_apply (config_proof.wp_MakeServer with "[$H1]").
       iIntros (?) "#Hisconf_server".
       wp_apply (config_proof.wp_Server__Serve with "[$]").
       { iFrame "#". }
