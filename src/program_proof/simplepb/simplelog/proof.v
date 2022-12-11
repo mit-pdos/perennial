@@ -41,13 +41,6 @@ Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sea
                          (concat rest_ops_bytes) ++ sealed_bytes
 .
 
-Lemma file_encodes_state_initial :
-  file_encodes_state
-    (replicate 24 (U8 0))
-    0 [] false.
-Proof.
-Admitted.
-
 Lemma file_encodes_state_nonempty data epoch ops sealed :
   file_encodes_state data epoch ops sealed → length data > 0.
 Proof.
@@ -888,12 +881,46 @@ Proof.
       replace (data_sl.(Slice.sz)) with (U64 0) in * by word.
       done.
     }
-    wp_apply (wp_NewSlice).
-    iIntros (initial_sl) "Hinitial_sl".
-    simpl.
+
+    iAssert (_) with "HisMemSm" as "#HisMemSm2".
+    iNamed "HisMemSm2".
+    wp_loadField.
+    wp_apply ("HgetState_spec" with "[$Hmemstate]").
+    iIntros (??) "(Hmemstate & %Hsnapenc & #Hsnap_sl)".
     wp_pures.
+    iMod (readonly_load with "Hsnap_sl") as (?) "Hsnap_sl2".
+    iDestruct (is_slice_small_sz with "Hsnap_sl2") as %Hsnap_sz.
+    wp_apply (wp_slice_len).
+    wp_apply (wp_NewSliceWithCap).
+    { apply encoding.unsigned_64_nonneg. }
+    iIntros (?) "Henc_sl".
+    wp_apply (wp_ref_to).
+    { done. }
+    iIntros (initialContents_ptr) "HinitialContents".
+    wp_pures.
+    wp_apply (wp_slice_len).
+    wp_load.
+    wp_apply (wp_WriteInt with "Henc_sl").
+    iIntros (enc_sl) "Henc_sl".
+    wp_store.
+    wp_load.
+    wp_apply (wp_WriteBytes with "[$Henc_sl $Hsnap_sl2]").
+    iIntros (enc_sl2) "[Henc_sl _]".
+    rewrite replicate_0.
+    wp_store.
+    wp_load.
+    wp_apply (wp_WriteInt with "Henc_sl").
+    iIntros (enc_sl3) "Henc_sl".
+    wp_store.
+    wp_load.
+    wp_apply (wp_WriteInt with "Henc_sl").
+    iIntros (enc_sl4) "Henc_sl".
+    wp_store.
+    wp_load.
+
     wp_loadField.
 
+    iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
     wp_bind (FileWrite _ _).
     iApply (wpc_wp).
     instantiate (1:=True%I).
@@ -901,9 +928,8 @@ Proof.
     { done. }
     iSplit; first done.
     iIntros "[Hfile HP]".
-    iDestruct (is_slice_to_small with "Hinitial_sl") as "Hinitial_sl".
     iApply wpc_fupd.
-    wpc_apply (wpc_FileWrite with "[$Hfile $Hinitial_sl]").
+    wpc_apply (wpc_FileWrite with "[$Hfile $Henc_sl]").
     iSplit.
     { (* case: crash while writing *)
       iIntros "[Hbefore|Hafter]".
@@ -926,20 +952,28 @@ Proof.
         iExists (U64 0), [], false.
         iFrame.
         iPureIntro.
-        apply file_encodes_state_initial.
+        replace (snap_sl.(Slice.sz)) with (U64 (length snap)); last first.
+        { word. }
+        rewrite app_nil_l.
+        rewrite -app_assoc.
+        pose proof (file_encodes_state_snapshot snap [] 0 Hsnapenc)  as H.
+        done.
       }
     }
     iNext.
     iIntros "[Hfile _]".
 
+    set (n:=(length (((([] ++ u64_le snap_sl.(Slice.sz)) ++ snap) ++ u64_le 0%Z) ++ u64_le 0%Z))).
     iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
     {
-      instantiate (1:=([(U64 0, [], false)] ++ (replicate 24 (U64 0, [], false)))).
-      apply prefix_app_r.
-      done.
+      instantiate (1:=((replicate (n+1) (U64 0, [], false)))).
+      rewrite replicate_S.
+      simpl.
+      apply prefix_cons.
+      apply prefix_nil.
     }
 
-    iDestruct (fmlist_lb_to_idx _ _ 24 with "Hallstates_lb") as "#Hcurstate2".
+    iDestruct (fmlist_lb_to_idx _ _ n with "Hallstates_lb") as "#Hcurstate2".
     {
       apply lookup_replicate.
       split; last lia.
@@ -947,15 +981,21 @@ Proof.
     }
 
     iModIntro.
-    iExists (fname f↦ _ ∗ file_inv γ P (replicate 24 (U8 0)))%I.
+    evar (c:list u8).
+    iExists (fname f↦ ?c ∗ file_inv γ P ?c)%I.
     iSplitL "Hfile HP".
     {
       iFrame "Hfile".
       iExists _, _, _.
-      rewrite replicate_length.
       iFrame "∗#".
       iPureIntro.
-      apply file_encodes_state_initial.
+
+      replace (snap_sl.(Slice.sz)) with (U64 (length snap)); last first.
+      { word. }
+      rewrite app_nil_l.
+      rewrite -app_assoc.
+      pose proof (file_encodes_state_snapshot snap [] 0 Hsnapenc)  as H.
+      done.
     }
     iSplit.
     {
@@ -990,15 +1030,20 @@ Proof.
     iModIntro.
     do 9 iExists _.
     iFrame "∗#%".
-    iSplitL "nextIndex".
-    {
-      simpl; iFrame.
-    }
     iSplitR; first done.
     iSplitR; first iPureIntro.
-    { apply file_encodes_state_initial. }
+    {
+      replace (snap_sl.(Slice.sz)) with (U64 (length snap)); last first.
+      { word. }
+      rewrite app_nil_l.
+      rewrite -app_assoc.
+      pose proof (file_encodes_state_snapshot snap [] 0 Hsnapenc)  as H.
+      done.
+    }
     iSplitL; first done.
-    simpl.
+    iPureIntro.
+    rewrite replicate_length.
+    unfold n.
     done.
   }
 

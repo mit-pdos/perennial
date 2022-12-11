@@ -47,7 +47,7 @@ Definition pb_record : PBRecord :=
   {|
     pb_OpType := kv64Op ;
     pb_has_op_encoding := λ op_bytes op, encode_op op = op_bytes ;
-    pb_has_snap_encoding := λ snap_bytes ops , True ;
+    pb_has_snap_encoding := λ snap_bytes ops, has_byte_map_encoding snap_bytes (compute_state ops) ;
     pb_compute_reply :=  compute_reply ;
   |}.
 
@@ -358,7 +358,18 @@ Lemma wp_KVState__setState s :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  iModIntro.
+  iApply "HΦ".
+  clear Φ.
+  iIntros (???? Φ) "!# Hpre HΦ".
+  iDestruct "Hpre" as "(%Hsnap & #Hsnap_sl & Hown)".
+  wp_pures.
+
+  wp_apply (wp_slice_len).
+
+Qed.
 
 Lemma wp_KVState__getState s :
   {{{

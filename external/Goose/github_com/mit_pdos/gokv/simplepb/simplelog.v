@@ -101,8 +101,13 @@ Definition recoverStateMachine: val :=
     let: "enc" := ref_to (slice.T byteT) (grove_ffi.FileRead (struct.loadF StateMachine "fname" "s")) in
     (if: (slice.len (![slice.T byteT] "enc") = #0)
     then
-      let: "initialContents" := NewSlice byteT (#8 + #8 + #8) in
-      grove_ffi.FileWrite (struct.loadF StateMachine "fname" "s") "initialContents";;
+      let: "initState" := struct.loadF InMemoryStateMachine "GetState" "smMem" #() in
+      let: "initialContents" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "initState" + #8 + #8)) in
+      "initialContents" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "initialContents") (slice.len "initState");;
+      "initialContents" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "initialContents") "initState";;
+      "initialContents" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "initialContents") #0;;
+      "initialContents" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "initialContents") #0;;
+      grove_ffi.FileWrite (struct.loadF StateMachine "fname" "s") (![slice.T byteT] "initialContents");;
       struct.storeF StateMachine "logFile" "s" (aof.CreateAppendOnlyFile "fname");;
       "s"
     else

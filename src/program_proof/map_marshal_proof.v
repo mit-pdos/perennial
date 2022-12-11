@@ -104,8 +104,13 @@ Proof.
   }
 Qed.
 
-Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop.
-Admitted.
+Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop :=
+  ∃ l,
+  (int.Z (size m) = size m) ∧
+  NoDup l.*1 ∧
+  (list_to_map l) = m ∧
+  enc = (u64_le (size m)) ++
+      (flat_map (λ u, (u64_le u.1) ++ (u64_le (int.Z (length (u.2)))) ++ u.2) l).
 
 Lemma wp_EncodeMapU64ToBytes mptr m :
   {{{
@@ -134,8 +139,13 @@ Lemma wp_DecodeMapU64ToBytes m enc_sl enc enc_rest q :
 Proof.
 Admitted.
 
-Definition has_u64_map_encoding (enc:list u8) (m:gmap u64 u64) : Prop.
-Admitted.
+Definition has_u64_map_encoding (enc:list u8) (m:gmap u64 u64) : Prop :=
+  ∃ l,
+  (int.Z (size m) = size m) ∧
+  NoDup l.*1 ∧
+  (list_to_map l) = m ∧
+  enc = (u64_le (size m)) ++
+      (flat_map (λ u, (u64_le u.1) ++ (u64_le u.2)) l).
 
 Lemma wp_EncodeMapU64ToU64 mptr m :
   {{{
