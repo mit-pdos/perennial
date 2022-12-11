@@ -16,9 +16,6 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!configG Σ}.
 Context `{!pbG Σ}.
 
-(* FIXME: remove this after fixing is_pb_host *)
-Context `{!heapGS Σ}.
-
 Definition adminN := nroot .@ "admin".
 
 Definition is_conf_inv γpb γconf : iProp Σ :=

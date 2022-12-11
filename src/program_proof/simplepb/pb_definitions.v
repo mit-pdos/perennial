@@ -10,8 +10,6 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 
-Section pb_definitions.
-
 Record PBRecord :=
   {
     pb_OpType:Type ;
@@ -20,6 +18,8 @@ Record PBRecord :=
     pb_has_snap_encoding: list u8 → (list pb_OpType) → Prop ;
     pb_compute_reply : list pb_OpType → pb_OpType → list u8 ;
   }.
+
+Section pb_global_definitions.
 
 Context {pb_record:PBRecord}.
 Notation OpType := (pb_OpType pb_record).
@@ -41,7 +41,7 @@ Class pbG Σ := {
     pb_apply_escrow_tok :> ghost_varG Σ unit ;
 }.
 
-Context `{!heapGS Σ}.
+Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
 Definition own_log γ σ := own γ (●ML{#1/2} (σ : list (leibnizO OpType))).
@@ -234,6 +234,21 @@ Qed.
 
 (* End RPC specs *)
 
+End pb_global_definitions.
+
+Section pb_local_definitions.
+(* definitions that refer to a particular node *)
+
+Context {pb_record:PBRecord}.
+Notation OpType := (pb_OpType pb_record).
+Notation has_op_encoding := (pb_has_op_encoding pb_record).
+Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
+Notation compute_reply := (pb_compute_reply pb_record).
+Notation pbG := (pbG (pb_record:=pb_record)).
+
+Context `{!heapGS Σ}.
+Context `{!pbG Σ}.
+
 Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[pb.Clerk :: "cl"] #cl) ∗
@@ -419,4 +434,4 @@ Proof.
   naive_solver.
 Qed.
 
-End pb_definitions.
+End pb_local_definitions.

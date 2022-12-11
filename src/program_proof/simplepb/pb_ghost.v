@@ -7,7 +7,7 @@ From Perennial.Helpers Require Import ListSolver.
 
 Section pb_protocol.
 
-Context `{!heapGS Σ}.
+Context `{!gooseGlobalGS Σ}.
 
 Record pb_system_names :=
 {
