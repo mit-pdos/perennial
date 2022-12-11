@@ -52,6 +52,18 @@ Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sea
                          (concat rest_ops_bytes) ++ sealed_bytes
 .
 
+Lemma file_encodes_state_initial :
+  file_encodes_state
+    (replicate 24 (U8 0))
+    0 [] false.
+Proof.
+Admitted.
+
+Lemma file_encodes_state_nonempty data epoch ops sealed :
+  file_encodes_state data epoch ops sealed → length data > 0.
+Proof.
+Admitted.
+
 Lemma file_encodes_state_append op op_bytes data epoch ops :
   has_op_encoding op_bytes op →
   file_encodes_state data epoch ops false →
@@ -181,9 +193,11 @@ Definition file_inv γ P (contents:list u8) : iProp Σ :=
 .
 
 Definition file_crash P (contents:list u8) : iProp Σ :=
+  ⌜contents = []⌝ ∗ P 0 [] false
+  ∨
   ∃ epoch ops sealed,
-  ⌜file_encodes_state contents epoch ops sealed⌝ ∗
-  P epoch ops sealed
+    ⌜file_encodes_state contents epoch ops sealed⌝ ∗
+    P epoch ops sealed
 .
 
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
@@ -514,6 +528,7 @@ Proof.
       iSplitR; first done.
       iModIntro; iExists _; iFrame.
       iDestruct "Hinv" as (???) "[H1 [H2 H3]]".
+      iRight.
       iExists _,_,_; iFrame.
     }
     { (* fire update; this is the same as the reasoning in the non-crash case *)
@@ -531,6 +546,7 @@ Proof.
          different P in the crash condition and in the current resources. *)
       iMod ("Hupd" with "HP") as "[HP _]".
       iModIntro. iExists _; iFrame.
+      iRight.
       iExists _, _, _; iFrame "HP".
       iPureIntro.
       rewrite -app_assoc.
@@ -591,6 +607,7 @@ Proof.
     iIntros "[Hfile HP]".
     iModIntro. iExists _; iFrame.
     iDestruct "HP" as (???) "[H1 [H2 H3]]".
+    iRight.
     iExists _,_,_; iFrame.
   }
   iIntros "Hfile".
@@ -602,6 +619,7 @@ Proof.
   {
     iModIntro. iIntros (?) "Hinv".
     iDestruct "Hinv" as (???) "[H1 [H2 H3]]".
+    iRight.
     iExists _,_,_; iFrame.
     by iModIntro.
   }
@@ -819,7 +837,184 @@ Proof.
   { done. }
   iSplit; first done.
   iIntros "[Hfile Hfilecrash]".
-  iDestruct "Hfilecrash" as (???) "[%Henc HP]".
+  iDestruct "Hfilecrash" as "[Hempty|Hnonempty]".
+  { (* case: empty *)
+    iDestruct "Hempty" as "[%HdataEmpty HP]".
+    iMod (fmlist_alloc (replicate (1) (U64 0, [], false))) as (γsl_state) "Hallstates".
+    set (γ:={| sl_state := γsl_state |} ).
+    iMod (fmlist_get_lb with "Hallstates") as "[Hallstates #Hlb]".
+    iDestruct (fmlist_lb_to_idx _ _ (length data) with "Hlb") as "#Hcurstate".
+    {
+      apply lookup_replicate.
+      rewrite HdataEmpty.
+      split; last (simpl; lia).
+      done.
+    }
+
+    wpc_apply (wpc_FileRead with "[$Hfile]").
+    iSplit.
+    { (* case: crash while reading *)
+      iIntros "Hfile".
+      iSplitR; first done.
+      iModIntro.
+      iExists _; iFrame.
+      iNext.
+      iLeft.
+      iFrame "∗%".
+    }
+    (* otherwise, no crash and we keep going *)
+    iNext.
+    iIntros (data_sl) "[Hfile Hdata_sl]".
+    iExists (fname f↦data ∗ P 0 [] false)%I.
+    iSplitL "Hfile HP".
+    {
+      iFrame.
+    }
+    iSplit.
+    {
+      iModIntro.
+      iIntros "[? Hinv]".
+      iModIntro.
+      iExists _; iFrame.
+      iNext.
+      iLeft.
+      iFrame "∗%".
+    }
+    iIntros "Hfile_ctx".
+    iSplit; first done.
+
+    wp_apply (wp_ref_to).
+    { done. }
+    iIntros (enc_ptr) "Henc".
+    wp_pures.
+    wp_load.
+
+    iDestruct (is_slice_sz with "Hdata_sl") as %Hdata_sz.
+    wp_apply (wp_slice_len).
+    wp_pures.
+    wp_if_destruct.
+    2:{ (* bad case *)
+      exfalso.
+      rewrite HdataEmpty /= in Hdata_sz.
+      replace (data_sl.(Slice.sz)) with (U64 0) in * by word.
+      done.
+    }
+    wp_apply (wp_NewSlice).
+    iIntros (initial_sl) "Hinitial_sl".
+    simpl.
+    wp_pures.
+    wp_loadField.
+
+    wp_bind (FileWrite _ _).
+    iApply (wpc_wp).
+    instantiate (1:=True%I).
+    wpc_apply (wpc_crash_borrow_open_modify with "Hfile_ctx").
+    { done. }
+    iSplit; first done.
+    iIntros "[Hfile HP]".
+    iDestruct (is_slice_to_small with "Hinitial_sl") as "Hinitial_sl".
+    iApply wpc_fupd.
+    wpc_apply (wpc_FileWrite with "[$Hfile $Hinitial_sl]").
+    iSplit.
+    { (* case: crash while writing *)
+      iIntros "[Hbefore|Hafter]".
+      {
+        iSplitR; first done.
+        iModIntro.
+        iExists _.
+        iFrame.
+        iNext.
+        iLeft.
+        iFrame. done.
+      }
+      {
+        iSplitR; first done.
+        iModIntro.
+        iExists _.
+        iFrame.
+        iNext.
+        iRight.
+        iExists (U64 0), [], false.
+        iFrame.
+        iPureIntro.
+        apply file_encodes_state_initial.
+      }
+    }
+    iNext.
+    iIntros "[Hfile _]".
+
+    iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
+    {
+      instantiate (1:=([(U64 0, [], false)] ++ (replicate 24 (U64 0, [], false)))).
+      apply prefix_app_r.
+      done.
+    }
+
+    iDestruct (fmlist_lb_to_idx _ _ 24 with "Hallstates_lb") as "#Hcurstate2".
+    {
+      apply lookup_replicate.
+      split; last lia.
+      done.
+    }
+
+    iModIntro.
+    iExists (fname f↦ _ ∗ file_inv γ P (replicate 24 (U8 0)))%I.
+    iSplitL "Hfile HP".
+    {
+      iFrame "Hfile".
+      iExists _, _, _.
+      rewrite replicate_length.
+      iFrame "∗#".
+      iPureIntro.
+      apply file_encodes_state_initial.
+    }
+    iSplit.
+    {
+      iModIntro.
+      iIntros "[Hfile Hinv]".
+      iModIntro.
+      iExists _.
+      iFrame.
+      iNext.
+      iRight.
+      iDestruct "Hinv" as (???) "[H1 [H2 _]]".
+      iExists _, _, _.
+      iFrame.
+    }
+    iIntros "Hfile_ctx".
+    iSplit; first done.
+    wp_pures.
+    wp_apply (wp_CreateAppendOnlyFile with "[] [$Hfile_ctx]").
+    {
+      iModIntro.
+      iIntros (?) "Hinv".
+      iModIntro.
+      iNext.
+      iDestruct "Hinv" as (???) "(H1 & H2 & _)".
+      iRight. iExists _, _, _.
+      iFrame.
+    }
+    iIntros (aof_ptr γaof) "(His_aof & Haof & #Hdurablelb)".
+    wp_storeField.
+
+    iApply "HΦ".
+    iModIntro.
+    do 9 iExists _.
+    iFrame "∗#%".
+    iSplitL "nextIndex".
+    {
+      simpl; iFrame.
+    }
+    iSplitR; first done.
+    iSplitR; first iPureIntro.
+    { apply file_encodes_state_initial. }
+    iSplitL; first done.
+    simpl.
+    done.
+  }
+
+  (* case: file is non-empty, so we have to recovery from it *)
+  iDestruct "Hnonempty" as (???) "[%Henc HP]".
 
   iMod (fmlist_alloc (replicate (length data + 1) (epoch, ops, sealed))) as (γsl_state) "Hallstates".
   set (γ:={| sl_state := γsl_state |} ).
@@ -840,6 +1035,7 @@ Proof.
     iModIntro.
     iExists _; iFrame.
     iNext.
+    iRight.
     iExists _, _, _; iFrame "∗%".
   }
   (* otherwise, no crash and we keep going *)
@@ -860,6 +1056,7 @@ Proof.
     iExists _; iFrame.
     iNext.
     iDestruct "Hinv" as (???) "(H1 & H2 & _)".
+    iRight.
     iExists _, _, _.
     iFrame.
   }
@@ -876,10 +1073,13 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_if_destruct.
-  { (* case: empty file, meaning no durable state; in this case epoch = 0, ops = [], sealed = false *)
-    admit.
+  { (* bad case *)
+    exfalso.
+    apply file_encodes_state_nonempty in Henc.
+    rewrite Heqb in Hdata_sz.
+    assert (length data = 0%nat) by done.
+    word.
   }
-  (* otherwise, the file has contents and we recovery from them *)
 
   wp_apply (wp_CreateAppendOnlyFile with "[] [$Hfile_ctx]").
   {
@@ -888,6 +1088,7 @@ Proof.
     iModIntro.
     iNext.
     iDestruct "Hinv" as (???) "(H1 & H2 & _)".
+    iRight.
     iExists _, _, _.
     iFrame.
   }
