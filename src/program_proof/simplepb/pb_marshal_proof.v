@@ -402,6 +402,7 @@ Proof.
 
   wp_loadField.
   wp_load.
+  iMod (readonly_load with "Hreply_state_sl") as (?) "Hreply_state_sl".
   wp_apply (wp_WriteBytes with "[$Henc_sl $Hreply_state_sl]").
   iIntros (?) "[Henc_sl Hreply_state_sl]".
   wp_store.
@@ -453,9 +454,10 @@ Proof.
   wp_load.
   wp_storeField.
 
+  iMod (readonly_alloc_1 with "Henc_sl") as "#Henc_sl".
   iModIntro.
   iApply "HΦ".
-  iExists _; iFrame.
+  iExists _; iFrame "∗#".
 Qed.
 
 End GetStateReply.

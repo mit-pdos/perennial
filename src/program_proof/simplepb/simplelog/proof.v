@@ -1545,7 +1545,7 @@ Proof.
     iFrame "Hsm Hsys".
     iSplitL; last first.
     {
-      iPureIntro. admit. (* Maybe add this as part of the crash condition? *)
+      iPureIntro. admit. (* TODO: overflow fact; maybe maintain this as part of the crash condition? *)
     }
     iExists _, _, _.
     iFrame "#".
