@@ -1,31 +1,16 @@
-[X] `src/goose_lang/lib/waitgroup/waitgroup.v`; some pure admits, and
- one admitted proof for WaitGroup.Wait().
+[ ] `src/program_proof/simplepb/simplelog/proof.v`;
+    Added some unproven lemma about file_encodes_state.
+    Bunch of pure admits about overflow.
+    Most of them show up in the recovery function, which is where we decode
+    state.
 
-[X] `src/program_proof/simplepb/pb_marshal_proof.v`; admits in
- wp_DecodePrimaryArgs (revolving around for loop for unmarshaling list of
- hostnames).
+[ ] `src/program_proof/simplepb/pb_definitions.v`; contractiveness of is_pb_host_pre
 
-[x] Axiomatized ffi: `src/goose_lang/ffi/grove_filesys_axioms.v`.
- 3 operations: Read, Write, AtomicAppend.
+[ ] `src/program_proof/simplepb/pb_apply_proof.v`;
+    [ ] wp_random
+    [ ] prefix_app_cases; it's only used once and in that file, so we can also
+    get rid of that lemma and change the proof where it's used.
 
-[X] `src/program_proof/simplepb/config_marshal_proof.v`; admit in pure lemma
-    `list_copy_one_more_element`. The proof that uses the lemma can probably be
-    done without the lemma, basically the same as BecomePrimaryArgs's wp_Decode
-    since it has a list of grove_ffi.Addresses.
-
-[ ] `src/program_proof/aof/proof.v`; admit with list size overflow during
-    FileAppend. An append-only file writes data to the end of any arbitrary
-    given file, without caring about what the initial beginning of the file is.
-    E.g. a file with 2^64 - 1 bytes might be passed into CreateAppendOnlyFile,
-    and then an Append will actually overflow, and we can't add an assume to the
-    Go code about this because the Go code doesn't even know how big the file is.
-    We could make the Go code read the file to figure this out, but that would
-    actually cause the program to do a bunch of (what I consider) unnecessary
-    reading from disk.
-
-[ ] `src/program_proof/simplepb/simplelog/proof.v`; admits about encoding of state.
-    The lemmas mentioning "file_encodes_state" shouldn't be too bad.
-    One thing I couldn't figure out is if there's a nicer way to define file_encodes_state,
-    in particular going from the abstract list of ops to the list of byte
-    representations of those ops. Can't just fmap it because the correspondence
-    between abstract op and encoded op is a relation, not a function.
+--------------------------------------------------------------------------------
+Don't look at state_proof.v. state_proof is an old app-level proof, and I'm
+currently copying stuff in it and changing it as part of simplepb/app/kv_proof.v
