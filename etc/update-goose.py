@@ -248,6 +248,7 @@ def main():
                 "simplepb/e",
                 "simplepb/clerk",
                 "simplepb/simplelog",
+                "simplepb/apps/closed",
                 "mpaxos/",
                 "mpaxos/example",
                 "map_marshal",
