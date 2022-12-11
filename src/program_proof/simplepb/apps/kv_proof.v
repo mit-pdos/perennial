@@ -5,6 +5,7 @@ From iris.base_logic Require Import ghost_map.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
+From Perennial.program_proof.simplepb Require Import pb_apply_proof.
 
 Section proof.
 
@@ -55,6 +56,43 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Notation is_ApplyFn := (is_ApplyFn (pb_record:=pb_record)).
 
 Context `{!heapGS Σ}.
+
+Lemma wp_EncodePutArgs (args_ptr:loc) (key:u64) val val_sl :
+  {{{
+      "Hargs_key" ∷ args_ptr ↦[kv64.PutArgs :: "Key"] #key ∗
+      "Hargs_val" ∷ args_ptr ↦[kv64.PutArgs :: "Val"] (slice_val val_sl) ∗
+      "Hargs_val_sl" ∷ is_slice_small val_sl byteT 1 (val)
+  }}}
+    kv64.EncodePutArgs #args_ptr
+  {{{
+        enc enc_sl, RET (slice_val enc_sl);
+        ⌜has_op_encoding enc (putOp key val)⌝ ∗
+        is_slice enc_sl byteT 1 enc
+  }}}.
+Proof.
+  iIntros (Φ) "H1 HΦ".
+  iNamed "H1".
+  wp_call.
+  wp_loadField.
+  wp_apply (wp_slice_len).
+Admitted.
+
+Lemma wp_EncodeGetArgs (key:u64) :
+  {{{
+        True
+  }}}
+    kv64.EncodeGetArgs #key
+  {{{
+        enc enc_sl, RET (slice_val enc_sl);
+        ⌜has_op_encoding enc (getOp key)⌝ ∗
+        is_slice enc_sl byteT 1 enc
+  }}}.
+Proof.
+  iIntros (Φ) "H1 HΦ".
+  iNamed "H1".
+  wp_call.
+Admitted.
+
 Context `{!pbG Σ}.
 Context `{!ghost_mapG Σ u64 (list u8)}.
 
@@ -72,7 +110,7 @@ Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
 
 Definition is_Clerk γ ck : iProp Σ :=
   ∃ (pb_ck:loc) γsys γsrv,
-    "#Hpb_ck" ∷ readonly (ck ↦[Clerk :: "cl"] #pb_ck) ∗
+    "#Hpb_ck" ∷ readonly (ck ↦[kv64.Clerk :: "cl"] #pb_ck) ∗
     "#His_ck" ∷ is_Clerk pb_ck γsys γsrv ∗
     "#His_inv" ∷ is_inv γ γsys
 .
@@ -80,7 +118,7 @@ Definition is_Clerk γ ck : iProp Σ :=
 Context `{!urpc_proof.urpcregG Σ}.
 Context `{!stagedG Σ}.
 
-Lemma wp_Clerk__FetchAndAppend ck γ γkv key val_sl value Φ:
+Lemma wp_Clerk__Put ck γ γkv key val_sl value Φ:
   sys_inv γ γkv -∗
   is_Clerk γ ck -∗
   is_slice val_sl byteT 1 value -∗
@@ -94,6 +132,19 @@ Proof.
   iIntros "#Hinv #Hck Hval_sl #Hupd".
   wp_call.
   wp_pures.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. repeat econstructor. Opaque slice.T. }
+  iIntros (args) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  iNamed "Hck".
+  iDestruct (is_slice_to_small with "Hval_sl") as "Hval_sl".
+  wp_apply (wp_EncodePutArgs with "[$Key $Val $Hval_sl]").
+  iIntros (putEncoded put_sl) "[%Henc Henc_sl]".
+  wp_loadField.
+
+  wp_apply (wp_Clerk__Apply with "[] [] Henc_sl").
 Admitted.
 
 (* FIXME: copy/paste from old state_proof. *)
