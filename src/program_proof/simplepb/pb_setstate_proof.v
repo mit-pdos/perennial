@@ -13,7 +13,6 @@ Context {pb_record:PBRecord}.
 Notation OpType := (pb_OpType pb_record).
 Notation has_op_encoding := (pb_has_op_encoding pb_record).
 Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
 Notation compute_reply := (pb_compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 

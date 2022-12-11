@@ -14,9 +14,9 @@ Section pb_definitions.
 Record PBRecord :=
   {
     pb_OpType:Type ;
+    pb_OpType_EqDecision:EqDecision pb_OpType;
     pb_has_op_encoding : list u8 → pb_OpType → Prop ;
     pb_has_snap_encoding: list u8 → (list pb_OpType) → Prop ;
-    pb_has_op_encoding_injective : ∀ o1 o2 l, pb_has_op_encoding l o1 → pb_has_op_encoding l o2 → o1 = o2 ;
     pb_compute_reply : list pb_OpType → pb_OpType → list u8 ;
   }.
 
@@ -24,7 +24,6 @@ Context {pb_record:PBRecord}.
 Notation OpType := (pb_OpType pb_record).
 Notation has_op_encoding := (pb_has_op_encoding pb_record).
 Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation has_op_encoding_injective := (pb_has_op_encoding_injective pb_record).
 Notation compute_reply := (pb_compute_reply pb_record).
 
 Definition client_logR := mono_listR (leibnizO OpType).

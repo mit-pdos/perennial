@@ -11,24 +11,12 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 
 Section proof.
 
-(* State machine definition *)
-Record SMRecord :=
-  {
-    sm_OpType:Type ;
-    sm_OpType_EqDecision:EqDecision sm_OpType;
-    sm_has_op_encoding : list u8 → sm_OpType → Prop ;
-    sm_has_snap_encoding: list u8 → (list sm_OpType) → Prop ;
-    sm_has_op_encoding_injective : ∀ o1 o2 l, sm_has_op_encoding l o1 → sm_has_op_encoding l o2 → o1 = o2 ;
-    sm_compute_reply : list sm_OpType → sm_OpType → list u8 ;
-  }.
-
-Context {sm_record:SMRecord}.
-Notation OpType := (sm_OpType sm_record).
-Notation has_op_encoding := (sm_has_op_encoding sm_record).
-Notation has_snap_encoding := (sm_has_snap_encoding sm_record).
-Notation has_op_encoding_injective := (sm_has_op_encoding_injective sm_record).
-Notation compute_reply := (sm_compute_reply sm_record).
-Instance e : EqDecision OpType := (sm_OpType_EqDecision sm_record).
+Context {sm_record:PBRecord}.
+Notation OpType := (pb_OpType sm_record).
+Notation has_op_encoding := (pb_has_op_encoding sm_record).
+Notation has_snap_encoding := (pb_has_snap_encoding sm_record).
+Notation compute_reply := (pb_compute_reply sm_record).
+Instance e : EqDecision OpType := (pb_OpType_EqDecision sm_record).
 
 Context `{!heapGS Σ}.
 Context `{!aofG Σ}.
@@ -1503,18 +1491,9 @@ Proof.
   done.
 Admitted.
 
-Definition pb_record :=
-  {|
-    pb_OpType := OpType ;
-    pb_has_op_encoding:= has_op_encoding ;
-    pb_has_snap_encoding:= has_snap_encoding ;
-    pb_has_op_encoding_injective := has_op_encoding_injective ;
-    pb_compute_reply := compute_reply ;
-  |}.
-
-Notation own_Server_ghost := (own_Server_ghost (pb_record:=pb_record)).
-Notation pbG := (pbG (pb_record:=pb_record)).
-Notation wp_MakeServer := (wp_MakeServer (pb_record:=pb_record)).
+Notation own_Server_ghost := (own_Server_ghost (pb_record:=sm_record)).
+Notation pbG := (pbG (pb_record:=sm_record)).
+Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 
 Context `{!pbG Σ}.
 Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname data γ γsrv :
