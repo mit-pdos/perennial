@@ -63,10 +63,11 @@ Definition aof_durable_lb γ data : iProp Σ :=
   fmlist_lb γ.(durabledata) data
 .
 
+(* TODO: make make this a parameter to the library? *)
 Definition aofN := nroot .@ "aof".
-Definition aofN1 := nroot .@ "aof" .@ "1".
-Definition aofN2 := nroot .@ "aof" .@ "2".
-Definition aofNlk := nroot .@ "aof" .@ "aoflk".
+Definition aofN1 := aofN .@ "1".
+Definition aofN2 := aofN .@ "2".
+Definition aofNlk := aofN .@ "aoflk".
 
 Definition is_aof_ctx_inv γ P :=
   inv aofN1 (C ∗ ghost_var γ.(crashtok) 1 () ∨ (* either the node has crashed, *)

@@ -481,7 +481,7 @@ Lemma ghost_propose γsys γsrv epoch σ op :
   own_primary_ghost γsys γsrv epoch σ -∗
   £ 1 -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
-  ={⊤}=∗
+  ={↑pbN}=∗
   own_primary_ghost γsys γsrv epoch (σ ++ [op]) ∗
   is_proposal_lb γsys epoch (σ ++ [op]) ∗
   is_proposal_facts γsys epoch (σ ++ [op])
@@ -522,7 +522,7 @@ Proof.
   iFrame "∗#".
 
 
-  iAssert (|={⊤}=> is_proposal_facts γsys epoch (σ ++ [op]))%I with "[Hupd Hlc]" as ">#Hvalid2".
+  iAssert (|={↑pbN}=> is_proposal_facts γsys epoch (σ ++ [op]))%I with "[Hupd Hlc]" as ">#Hvalid2".
   {
     iSplitL "".
     {
@@ -556,7 +556,7 @@ Proof.
     iDestruct "Hvalid" as "[_ [ _ #Hvalid]]".
     unfold is_proposal_valid.
 
-    iAssert (|={⊤}=> is_valid_inv γsys σ op)%I with "[Hupd Hlc]" as ">#Hinv".
+    iAssert (|={↑pbN}=> is_valid_inv γsys σ op)%I with "[Hupd Hlc]" as ">#Hinv".
     {
       iMod (inv_alloc with "[Hupd Hlc]") as "$".
       {

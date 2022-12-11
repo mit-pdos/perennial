@@ -240,7 +240,13 @@ Definition is_ApplyFn own_StateMachine (startApplyFn:val) (P:u64 → list (OpTyp
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
-        (P epoch σ false ={⊤}=∗ P epoch (σ ++ [op]) false ∗ Q) ∗
+        (* XXX: This is the weakest mask that the pb library is compatible with.
+           By making the mask weak, we allow for more possible implementations
+           of startApplyFn, so we give a stronger spec to the client. The chain
+           of callbacks had made it confusing which way is weaker and which way
+           stronger.
+         *)
+        (P epoch σ false ={↑pbN}=∗ P epoch (σ ++ [op]) false ∗ Q) ∗
         own_StateMachine epoch σ false P
   }}}
     startApplyFn (slice_val op_sl)
@@ -258,7 +264,7 @@ Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp
   {{{
         ⌜has_snap_encoding snap σ⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
-        (P epoch_prev σ_prev sealed ={⊤}=∗ P epoch σ false ∗ Q) ∗
+        (P epoch_prev σ_prev sealed ={↑pbN}=∗ P epoch σ false ∗ Q) ∗
         own_StateMachine epoch_prev σ_prev sealed P
   }}}
     set_state_fn (slice_val snap_sl) #(U64 (length σ)) #epoch
@@ -273,7 +279,7 @@ Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp �
   ∀ σ epoch sealed Q,
   {{{
         own_StateMachine epoch σ sealed P ∗
-        (P epoch σ sealed ={⊤}=∗ P epoch σ true ∗ Q)
+        (P epoch σ sealed ={↑pbN}=∗ P epoch σ true ∗ Q)
   }}}
     get_state_fn #()
   {{{

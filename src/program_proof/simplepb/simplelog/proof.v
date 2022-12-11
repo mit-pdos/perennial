@@ -1498,18 +1498,20 @@ Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 Context `{!pbG Σ}.
 Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname data γ γsrv :
   let P := (own_Server_ghost γ γsrv) in
+  sys_inv γ -∗
   {{{
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
-        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
-        "Hmemstate" ∷ own_InMemoryStateMachine []
+       "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
+       "Hmemstate" ∷ own_InMemoryStateMachine []
   }}}
     MakePbServer #smMem #(LitString fname)
   {{{
         s, RET #s; pb_definitions.is_Server s γ γsrv
   }}}.
 Proof.
-  iIntros (? Φ) "Hpre HΦ".
+  iIntros (?) "#Hsys".
+  iIntros (Φ) "!# Hpre HΦ".
   iNamed "Hpre".
   wp_lam.
   wp_pures.
@@ -1540,8 +1542,11 @@ Proof.
 
   wp_apply (wp_MakeServer _ (own_StateMachine s)  with "[Hsm]").
   {
-    iFrame.
-    iSplitR; last admit. (* FIXME: get sys_inv and ops list overflow fact *)
+    iFrame "Hsm Hsys".
+    iSplitL; last first.
+    {
+      iPureIntro. admit. (* Maybe add this as part of the crash condition? *)
+    }
     iExists _, _, _.
     iFrame "#".
     iSplitL.
@@ -1554,7 +1559,16 @@ Proof.
       {
         iFrame "%".
         instantiate (1:=Q).
-        admit. (* FIXME: masks in pb are stronger than what we have here. *)
+        iIntros "H1".
+        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+        {
+          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
+          by apply ndot_ne_disjoint.
+        }
+        iMod ("Hupd" with "H1").
+        iMod "Hmask".
+        iModIntro.
+        iFrame.
       }
       iFrame.
     }
@@ -1568,8 +1582,17 @@ Proof.
       wp_apply (wp_setStateAndUnseal with "[$Hsm $Hop_sl Hupd]").
       {
         iFrame "%".
+        iIntros "H1".
         instantiate (1:=Q).
-        admit. (* FIXME: masks in pb are stronger than what we have here. *)
+        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+        {
+          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
+          by apply ndot_ne_disjoint.
+        }
+        iMod ("Hupd" with "H1").
+        iMod "Hmask".
+        iModIntro.
+        iFrame.
       }
       iIntros.
       wp_pures.
@@ -1587,7 +1610,16 @@ Proof.
       {
         iFrame "%".
         instantiate (1:=Q).
-        admit. (* FIXME: masks in pb are stronger than what we have here. *)
+        iIntros "H1".
+        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+        {
+          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
+          by apply ndot_ne_disjoint.
+        }
+        iMod ("Hupd" with "H1").
+        iMod "Hmask".
+        iModIntro.
+        iFrame.
       }
       iIntros.
       iApply "HΦ".
