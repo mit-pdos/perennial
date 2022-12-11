@@ -6,22 +6,18 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof.simplepb Require Import pb_definitions config_proof pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof pb_makeclerk_proof.
 
-Section admin_proof.
+Section config_global.
 
 Context {pb_record:PBRecord}.
 Notation pbG := (pbG (pb_record:=pb_record)).
 Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
 
-Notation wp_Clerk__GetState := (wp_Clerk__GetState (pb_record:=pb_record)).
-Notation wp_Clerk__SetState := (wp_Clerk__SetState (pb_record:=pb_record)).
-
-Context `{!heapGS Σ}.
-Context `{!pbG Σ}.
+Context `{!gooseGlobalGS Σ}.
 Context `{!configG Σ}.
-Context `{!waitgroupG Σ}.
+Context `{!pbG Σ}.
+
+(* FIXME: remove this after fixing is_pb_host *)
+Context `{!heapGS Σ}.
 
 Definition adminN := nroot .@ "admin".
 
@@ -38,6 +34,49 @@ Definition is_conf_inv γpb γconf : iProp Σ :=
       "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γpb epoch_skip)
       )
 .
+
+(* before calling this lemma, have to already allocate pb ghost state *)
+Lemma config_ghost_init_2 γpb :
+  ⊢ |={⊤}=> ∃ γconf, is_conf_inv γpb γconf ∗ makeConfigServer_pre γconf.
+Proof.
+  iMod (config_ghost_init) as (γconf) "(Hconfpre & Hepoch & Hconf)".
+  iExists _; iFrame "Hconfpre".
+  iMod (inv_alloc with "[-]") as "$"; last done.
+  iNext.
+  iExists (U64 0), [], [], (U64 0).
+  iFrame.
+
+  (* get ghost state and facts from pb *)
+  iSplitR; first admit.
+  iSplitR; first admit.
+  iSplitR; first admit.
+  iSplitR; first admit.
+  iSplitR; first admit.
+  iSplitR.
+  { iRight. done. }
+  iIntros (???).
+  exfalso.
+  word.
+Admitted.
+
+End config_global.
+
+Section admin_proof.
+
+Context {pb_record:PBRecord}.
+Notation pbG := (pbG (pb_record:=pb_record)).
+Notation OpType := (pb_OpType pb_record).
+Notation has_op_encoding := (pb_has_op_encoding pb_record).
+Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
+Notation compute_reply := (pb_compute_reply pb_record).
+
+Notation wp_Clerk__GetState := (wp_Clerk__GetState (pb_record:=pb_record)).
+Notation wp_Clerk__SetState := (wp_Clerk__SetState (pb_record:=pb_record)).
+
+Context `{!heapGS Σ}.
+Context `{!pbG Σ}.
+Context `{!configG Σ}.
+Context `{!waitgroupG Σ}.
 
 Definition is_conf_host confHost γpb : iProp Σ :=
   ∃ γconf,

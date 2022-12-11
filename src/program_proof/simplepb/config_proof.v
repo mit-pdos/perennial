@@ -691,10 +691,11 @@ Proof.
   }
 Qed.
 
+Definition makeConfigServer_pre γ : iProp Σ := own_epoch γ 0 ∗ own_config γ [].
+
 Lemma wp_MakeServer γ :
   {{{
-        own_epoch γ 0 ∗
-        own_config γ []
+        makeConfigServer_pre γ
   }}}
     config.MakeServer #()
   {{{
@@ -834,7 +835,7 @@ Definition config_spec_list γ :=
 
 Lemma config_ghost_init :
   ⊢ |==> ∃ γ,
-    own_epoch γ 0 ∗ own_config γ [] ∗
+    makeConfigServer_pre γ ∗
     own_epoch γ 0 ∗ own_config γ [].
 Proof.
 Admitted.
