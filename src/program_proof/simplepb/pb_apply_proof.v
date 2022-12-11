@@ -30,7 +30,8 @@ is_inv γ γsys -∗
 is_slice op_sl byteT 1 op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
   (own_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
+     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                Φ (#(U64 0), slice_val reply_sl)%V)))
 ∗
 (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V )) -∗
 WP Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.

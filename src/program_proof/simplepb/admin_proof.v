@@ -65,6 +65,42 @@ Proof.
   iExists  _; iFrame "#".
 Qed.
 
+Lemma wp_Clerk__GetConfig2 ck γpb Φ :
+  is_Clerk2 ck γpb -∗
+  □(∀ confγs (conf:list u64) config_sl,
+  (is_slice_small config_sl uint64T 1 conf ∗
+  ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) -∗
+   Φ (slice_val config_sl)%V
+  )) -∗
+  WP config.Clerk__GetConfig #ck {{ Φ }}
+.
+Proof.
+  iIntros "#Hck #HΦ".
+  iNamed "Hck".
+  wp_apply (wp_Clerk__GetConfig with "[$Hck]").
+  iModIntro.
+  iIntros "Hlc".
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iNamed "Hi".
+  iExists _.
+  iFrame.
+  iIntros "Hconfig".
+  iMod "Hmask".
+  iMod ("Hclose" with "[-]").
+  {
+    iNext. iExists _, _, _, _.
+    iFrame "∗#%".
+  }
+  iModIntro.
+  iIntros (?) "Hconf".
+  iApply "HΦ".
+  iFrame "∗#".
+Qed.
+
 Lemma wp_Clerk__GetEpochAndConfig2 ck γpb Φ :
   is_Clerk2 ck γpb -∗
   □(∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,

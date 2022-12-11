@@ -1,9 +1,9 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export clerk.
-From Perennial.program_proof.simplepb Require Import pb_definitions pb_apply_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions pb_apply_proof pb_makeclerk_proof.
 From Perennial.program_proof.simplepb Require Import admin_proof.
 
-Section pb_makeclerk_proof.
+Section clerk_proof.
 Context `{!heapGS Σ}.
 Context {pb_record:PBRecord}.
 
@@ -44,8 +44,14 @@ Proof.
   { done. }
   iIntros (ret) "Hret".
   wp_pures.
-  wp_forBreak.
 
+  iAssert (
+      ∃ some_sl,
+        "Hret" ∷ ret ↦[slice.T byteT] (slice_val some_sl)
+    )%I with "[Hret]" as "HH".
+  { replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done. iExists _; iFrame. }
+  wp_forBreak.
+  iNamed "HH".
   wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -123,6 +129,68 @@ Proof.
     wp_apply (wp_Sleep).
     wp_pures.
     wp_loadField.
-    admit. (* need a spec for GetConfig2 *)
+    wp_bind (config.Clerk__GetConfig _).
+    wp_apply (wp_frame_wand with "[-]").
+    { iNamedAccu. }
+    wp_apply (wp_Clerk__GetConfig2 with "HisConfCk").
+    iModIntro.
+    iIntros (???) "[Hconf_sl #Hhosts]".
+    iNamed 1.
+    wp_pures.
+    iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
+    wp_apply (wp_slice_len).
+    wp_pures.
+    wp_if_destruct.
+    {
+      iDestruct (big_sepL2_length with "Hhosts") as %Hlen.
+      assert (0 < length conf) as HconfNe by word.
+      destruct conf.
+      {
+        exfalso. simpl in HconfNe. word.
+      }
+      destruct confγs.
+      {
+        exfalso. rewrite -Hlen in HconfNe. simpl in HconfNe. word.
+      }
+      iDestruct big_sepL2_cons  as "[Hcons _]".
+      iDestruct ("Hcons" with "Hhosts") as "[His_newPrimary HH]".
+      wp_apply (wp_SliceGet with "[$Hconf_sl]").
+      {
+        rewrite lookup_cons.
+        done.
+      }
+      iIntros "Hconf_sl".
+      simpl.
+      wp_apply (wp_MakeClerk with "[$His_newPrimary]").
+      iIntros (newCk) "#HnewIsPrimaryCk".
+      wp_storeField.
+      iLeft.
+      iModIntro.
+      iSplitR; first done.
+      iSplitL "HprimaryCk".
+      {
+        iExists _, _, _.
+        iFrame "∗#".
+      }
+      iSplitR; first admit. (* FIXME: retain ownership of this in pb_apply_proof *)
+      iExists _.
+      iFrame.
+    }
+    {
+      wp_pures.
+      iLeft.
+      iModIntro.
+      iSplitR; first done.
+      iSplitL "HprimaryCk".
+      {
+        iExists _, _, _.
+        iFrame "∗#".
+      }
+      iSplitR; first admit. (* FIXME: retain ownership of this in pb_apply_proof *)
+      iExists _.
+      iFrame.
+    }
   }
 Admitted.
+
+End clerk_proof.

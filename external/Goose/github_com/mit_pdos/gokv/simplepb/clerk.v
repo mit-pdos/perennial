@@ -40,6 +40,8 @@ Definition Clerk__Apply: val :=
       else
         time.Sleep (#100 * #1000000);;
         let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
-        struct.storeF Clerk "primaryCk" "ck" (pb.MakeClerk (SliceGet uint64T "config" #0));;
+        (if: slice.len "config" > #0
+        then struct.storeF Clerk "primaryCk" "ck" (pb.MakeClerk (SliceGet uint64T "config" #0))
+        else #());;
         Continue));;
     ![slice.T byteT] "ret".
