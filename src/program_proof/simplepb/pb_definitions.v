@@ -341,10 +341,10 @@ Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp �
 .
 
 Definition accessP_fact own_StateMachine P : iProp Σ :=
-  □ (∀ Φ E σ epoch sealed,
-  (P epoch σ sealed ={E}=∗ P epoch σ sealed ∗ Φ) -∗
-  own_StateMachine epoch σ sealed P ={E}=∗
-  wpc_nval E (own_StateMachine epoch σ sealed P ∗ Φ))
+  □ (£ 1 -∗ (∀ Φ σ epoch sealed,
+     (∀ σold sealedold E, P epoch σold sealedold ={E}=∗ P epoch σold sealedold ∗ Φ) -∗
+  own_StateMachine epoch σ sealed P -∗ |NC={⊤}=>
+  wpc_nval ⊤ (own_StateMachine epoch σ sealed P ∗ Φ)))
   (* FIXME: this wpc_nval is there because P might be in a crash borrow in
      own_StateMachine. Joe said it imght be possible to get rid of wpc_nval by
      changing the model of crash_borrows by using later credits. *)
@@ -359,7 +359,8 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
   "#HsetStateSpec" ∷ is_SetStateAndUnseal_fn own_StateMachine setFn P ∗
 
   "#HgetState" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getFn) ∗
-  "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P
+  "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P ∗
+  "#HaccP" ∷ accessP_fact own_StateMachine P
 .
 
 Definition numClerks : nat := 32.
@@ -377,6 +378,9 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
 
   (* state-machine callback specs *)
   "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost γ γsrv) ∗
+
+  (* epoch lower bound *)
+  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
 
   (* ghost-state *)
   "Hstate" ∷ own_StateMachine epoch σphys sealed (own_Server_ghost γ γsrv) ∗

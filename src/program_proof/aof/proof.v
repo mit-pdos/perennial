@@ -1400,4 +1400,52 @@ Proof.
   iRight. iFrame.
 Qed.
 
+Lemma accessP_weak aof_ptr fname γ P Pcrash data :
+  is_aof aof_ptr γ fname P Pcrash -∗
+  aof_log_own γ data -∗
+  (|NC={⊤,⊤∖↑aofN}=> ∃ durableData, ⌜prefix durableData data⌝ ∗
+                           ▷ P durableData ∗ (▷ P durableData -∗ |NC={⊤∖↑aofN,⊤}=> aof_log_own γ data)
+  )
+  .
+Proof.
+  iIntros "#Hinv Hlog".
+  iNamed "Hinv".
+
+  iInv "Hctx_inv" as "Hctx" "Hctx_close".
+  iDestruct "Hctx" as "[[>Hbad _]|Hctx]".
+  {
+    rewrite ncfupd_eq.
+    unfold ncfupd_def.
+    iIntros (?) "Hnc".
+    iDestruct (NC_C with "Hnc Hbad") as %Hbad.
+    by exfalso.
+  }
+  iDestruct "Hctx" as (?) "Hctx".
+  iDestruct "Hctx" as "[[>Hbad [_ >Hbad']]|Hctx]".
+  {
+    iDestruct "Hlog" as "[Hlog [Hlog' Hreq]]".
+    iDestruct (ghost_var_valid_2 with "[$] [$]") as %Hbad.
+    exfalso.
+    naive_solver.
+  }
+  iDestruct "Hctx" as "(>Hlb1 & >Hl & >Hcurdata2 & Hctx)".
+  iDestruct "Hlog" as "(Hl'&?)".
+  iDestruct (fmlist_agree_2 with "Hl' [$]") as %Hpref.
+  rewrite ncfupd_eq.
+  unfold ncfupd_def.
+  iIntros (q) "HNC".
+  iApply (fupd_mask_weaken (⊤ ∖ ↑aofN)).
+  { solve_ndisj. }
+  iIntros "Hclo".
+  iModIntro. iFrame "HNC".
+  iExists _. iFrame.
+  iSplit; auto.
+  iIntros "HP". iIntros (?) "HNC".
+  iMod "Hclo".
+  iMod ("Hctx_close" with "[-HNC]"); last by eauto.
+  iRight. iExists _. iNext. iFrame.
+  iRight. iFrame.
+Qed.
+
+
 End aof_proof.

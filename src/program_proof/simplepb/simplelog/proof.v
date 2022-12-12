@@ -211,8 +211,8 @@ Record simplelog_names :=
   sl_state : gname;
 }.
 
-Definition file_inv γ P (contents:list u8) : iProp Σ :=
-  ∃ epoch ops sealed,
+Definition file_inv γ P epoch (contents:list u8) : iProp Σ :=
+  ∃ ops sealed,
   ⌜file_encodes_state contents epoch ops sealed⌝ ∗
   P epoch ops sealed ∗
   fmlist_idx γ.(sl_state) (length contents) (epoch, ops, sealed)
@@ -243,7 +243,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "#Hdurlb" ∷ □(if sealed then aof_durable_lb γaof data else True) ∗
 
     "Haof" ∷ aof_log_own γaof data ∗
-    "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv γ P) (file_crash P) ∗
+    "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv γ P epoch) (file_crash P) ∗
     "%Henc" ∷ ⌜file_encodes_state data epoch ops sealed⌝ ∗
     "Hmemstate" ∷ own_InMemoryStateMachine ops ∗
     "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine ∗
@@ -377,15 +377,14 @@ Proof.
   {
     instantiate (1:=Q).
     iIntros "Hi".
-    iDestruct "Hi" as (???) "(%Henc2 & HP & #Hghost2)".
+    iDestruct "Hi" as (??) "(%Henc2 & HP & #Hghost2)".
     iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
-    replace (epoch0) with (epoch) by naive_solver.
     replace (ops0) with (ops) by naive_solver.
     replace (sealed) with (false) by naive_solver.
 
     iMod ("Hupd" with "HP") as "[HP $]".
     iModIntro.
-    iExists _, (ops ++ [op]), _.
+    iExists (ops ++ [op]), _.
     iFrame "HP".
     rewrite app_length.
     rewrite app_length.
@@ -547,16 +546,15 @@ Proof.
     {
       iSplitR; first done.
       iModIntro; iExists _; iFrame.
-      iDestruct "Hinv" as (???) "[H1 [H2 H3]]".
+      iDestruct "Hinv" as (??) "[H1 [H2 H3]]".
       iRight.
       iExists _,_,_; iFrame.
     }
     { (* fire update; this is the same as the reasoning in the non-crash case *)
       iSplitR; first done.
 
-      iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
+      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
       iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
-      replace (epoch0) with (epoch_prev) by naive_solver.
       replace (ops0) with (ops_prev) by naive_solver.
       replace (sealed) with (sealed_prev) by naive_solver.
 
@@ -582,9 +580,8 @@ Proof.
 
   (* update file_inv *)
 
-  iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
+  iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
   iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
-  replace (epoch0) with (epoch_prev) by naive_solver.
   replace (ops0) with (ops_prev) by naive_solver.
   replace (sealed) with (sealed_prev) by naive_solver.
 
@@ -609,9 +606,9 @@ Proof.
     done.
   }
 
-  iAssert (file_inv γ2 P newdata) with "[HP]" as "HP".
+  iAssert (file_inv γ2 P epoch newdata) with "[HP]" as "HP".
   {
-    iExists _, _, _; iFrame "HP #".
+    iExists _, _; iFrame "HP #".
     iPureIntro.
     unfold newdata.
     rewrite -app_assoc.
@@ -625,8 +622,8 @@ Proof.
   {
     iModIntro.
     iIntros "[Hfile HP]".
-    iModIntro. iExists _; iFrame.
-    iDestruct "HP" as (???) "[H1 [H2 H3]]".
+    iModIntro. iExists _; iFrame "Hfile".
+    iDestruct "HP" as (??) "[H1 [H2 H3]]".
     iRight.
     iExists _,_,_; iFrame.
   }
@@ -635,10 +632,10 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  wp_apply (wp_CreateAppendOnlyFile _ _ (file_inv γ2 P) (file_crash P) with "[] [$Hfile]").
+  wp_apply (wp_CreateAppendOnlyFile _ _ (file_inv γ2 P epoch) (file_crash P) with "[] [$Hfile]").
   {
     iModIntro. iIntros (?) "Hinv".
-    iDestruct "Hinv" as (???) "[H1 [H2 H3]]".
+    iDestruct "Hinv" as (??) "[H1 [H2 H3]]".
     iRight.
     iExists _,_,_; iFrame.
     by iModIntro.
@@ -726,15 +723,14 @@ Proof.
       iIntros "Hinv".
       instantiate (1:=Q).
 
-      iDestruct "Hinv" as (???) "(%Henc2 & HP & #Hghost2)".
+      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
       iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
-      replace (epoch0) with (epoch) by naive_solver.
       replace (ops0) with (ops) by naive_solver.
       replace (sealed) with (false) by naive_solver.
 
       iMod ("Hupd" with "HP") as "[HP $]".
       iModIntro.
-      iExists _, _, _.
+      iExists _, _.
       iFrame "HP".
       iFrame "#".
       iPureIntro.
@@ -798,10 +794,9 @@ Proof.
     }
     iMod (lc_fupd_elim_later with "Hlc HP") as "HP".
     unfold file_inv.
-    iDestruct "HP" as (??? HdurPrefixEnc) "[HP #Hcurstate2]".
+    iDestruct "HP" as (?? HdurPrefixEnc) "[HP #Hcurstate2]".
 
     iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hcurstate2") as "%Heq".
-    replace (epoch0) with (epoch) by naive_solver.
     replace (ops0) with (ops) by naive_solver.
     replace (sealed) with (true) by naive_solver.
 
@@ -809,7 +804,7 @@ Proof.
     iMod ("HcloseP" with "[HP]").
     {
       iNext.
-      iExists _, _, _.
+      iExists _, _.
       iFrame "∗#%".
     }
     iModIntro.
@@ -1020,11 +1015,11 @@ Proof.
 
     iModIntro.
     evar (c:list u8).
-    iExists (fname f↦ ?c ∗ file_inv γ P ?c)%I.
+    iExists (fname f↦ ?c ∗ file_inv γ P 0 ?c)%I.
     iSplitL "Hfile HP".
     {
       iFrame "Hfile".
-      iExists _, _, _.
+      iExists _, _.
       iFrame "∗#".
       iPureIntro.
 
@@ -1041,10 +1036,10 @@ Proof.
       iIntros "[Hfile Hinv]".
       iModIntro.
       iExists _.
-      iFrame.
+      iFrame "Hfile".
       iNext.
       iRight.
-      iDestruct "Hinv" as (???) "[H1 [H2 _]]".
+      iDestruct "Hinv" as (??) "[H1 [H2 _]]".
       iExists _, _, _.
       iFrame.
     }
@@ -1057,7 +1052,7 @@ Proof.
       iIntros (?) "Hinv".
       iModIntro.
       iNext.
-      iDestruct "Hinv" as (???) "(H1 & H2 & _)".
+      iDestruct "Hinv" as (??) "(H1 & H2 & _)".
       iRight. iExists _, _, _.
       iFrame.
     }
@@ -1113,21 +1108,21 @@ Proof.
   (* otherwise, no crash and we keep going *)
   iNext.
   iIntros (data_sl) "[Hfile Hdata_sl]".
-  iExists (fname f↦data ∗ file_inv γ P data)%I.
+  iExists (fname f↦data ∗ file_inv γ P epoch data)%I.
   iSplitL "Hfile HP".
   {
     iFrame.
-    iExists _, _, _.
+    iExists _, _.
     iFrame "∗#%".
   }
   iSplit.
   {
     iModIntro.
-    iIntros "[? Hinv]".
+    iIntros "[Hfile Hinv]".
     iModIntro.
-    iExists _; iFrame.
+    iExists _; iFrame "Hfile".
     iNext.
-    iDestruct "Hinv" as (???) "(H1 & H2 & _)".
+    iDestruct "Hinv" as (??) "(H1 & H2 & _)".
     iRight.
     iExists _, _, _.
     iFrame.
@@ -1159,7 +1154,7 @@ Proof.
     iIntros (?) "Hinv".
     iModIntro.
     iNext.
-    iDestruct "Hinv" as (???) "(H1 & H2 & _)".
+    iDestruct "Hinv" as (??) "(H1 & H2 & _)".
     iRight.
     iExists _, _, _.
     iFrame.
@@ -1609,6 +1604,34 @@ Proof.
   done.
 Qed.
 
+Lemma simplelog_accessP s P :
+  ⊢ accessP_fact (own_StateMachine s) P
+.
+Proof.
+  iModIntro.
+  iIntros "Hlc" (????) "Hupd".
+  iIntros "Hown".
+  iNamed "Hown".
+  iMod (accessP_weak with "His_aof Haof") as "HH".
+  iDestruct "HH" as (?) "(_ & Hinv & Hclose)".
+  iMod (lc_fupd_elim_later with "Hlc Hinv") as "Hinv".
+  iDestruct "Hinv" as (??) "(% & HP & #?)".
+  iMod ("Hupd" with "HP") as "[HP Φ]".
+  iMod ("Hclose" with "[HP]").
+  {
+    iNext. iExists _, _. iFrame "∗#%".
+  }
+  iModIntro.
+  iApply wpc_nval_intro.
+  iNext.
+  iFrame "Φ".
+
+  iExists fname, _, γ, _, _, _, _, own_InMemoryStateMachine.
+  iExists _.
+  iFrame "HisMemSm".
+  iFrame "∗#%".
+Qed.
+
 Notation own_Server_ghost := (own_Server_ghost (pb_record:=sm_record)).
 Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 
@@ -1637,6 +1660,7 @@ Proof.
   iNamed "Hpre".
 
   wp_lam.
+
   wp_pures.
   wp_apply (wp_recoverStateMachine with "[-HΦ]").
   { iFrame "∗#". }
@@ -1724,6 +1748,7 @@ Proof.
       iApply "HΦ".
       iFrame.
     }
+    iSplitL.
     { (* get state spec *)
       clear Φ.
       iIntros (???? Φ) "!#".
@@ -1748,6 +1773,9 @@ Proof.
       iIntros.
       iApply "HΦ".
       iFrame.
+    }
+    {
+      iApply simplelog_accessP.
     }
   }
   done.

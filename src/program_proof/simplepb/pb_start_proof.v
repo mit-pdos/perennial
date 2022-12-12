@@ -45,7 +45,7 @@ Proof.
   iDestruct (struct_fields_split with "Hs") as "HH".
   iNamed "HH".
   simpl.
-  wp_pures.
+  wp_pure1_credit "Hlc".
   wp_apply (wp_new_free_lock).
   iIntros (mu) "HmuInv".
   wp_storeField.
@@ -56,7 +56,25 @@ Proof.
 
   iAssert (_) with "His_sm" as "His_sm2".
   iNamed "His_sm2".
+
+  iMod ("HaccP" with "Hlc [] Hstate") as "Hstate".
+  {
+    instantiate (1:=is_epoch_lb γsrv epoch).
+    iIntros(???). iIntros "(% & % & H1 & H2)".
+    iDestruct (ghost_get_epoch_lb with "H1") as "#Hlb".
+    iFrame "Hlb".
+    iExists _; iFrame "∗#%".
+    by iModIntro.
+  }
+  iApply (wpc_wp _ _ _ _ True%I).
+  wpc_apply (wpc_nval_elim with "Hstate").
+  { done. }
+  { done. }
+  iApply wp_wpc.
   wp_storeField.
+  iIntros "[Hstate #Hepochlb]".
+  iApply wp_wpc.
+
   wp_pures.
 
   wp_apply (wp_NewMap).
@@ -81,14 +99,12 @@ Proof.
   }
   iSplitR; first iExact "His_sm".
 
-  (* FIXME: need is_epoch_lb γsrv epoch upon initialization. Can put it as a
-     second "synchronous" predicate in own_StateMachine. *)
-  iSplitL; first admit.
+  iFrame "#".
   iSplitL; first done.
   iSplitL; last done.
   iApply big_sepM_empty.
   done.
-Admitted.
+Qed.
 
 Lemma wp_Server__Serve s host γ γsrv :
   {{{
