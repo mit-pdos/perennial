@@ -110,6 +110,24 @@ Proof.
   setoid_rewrite <- elem_of_dom. rewrite H0. eauto.
 Qed.
 
+Section map_zip_with.
+  Context `{Countable K}.
+  Context {A B C: Type}.
+
+  Lemma map_zip_with_empty_l (f : A → B → C) m2 :
+    map_zip_with f ∅ m2 =@{gmap K C} ∅.
+  Proof.
+    unfold map_zip_with. apply map_eq; intros i.
+    rewrite lookup_merge !lookup_empty. destruct (m2 !! i); done.
+  Qed.
+  Lemma map_zip_with_empty_r (f : A → B → C) m1 :
+    map_zip_with f m1 ∅ =@{gmap K C} ∅.
+  Proof.
+    unfold map_zip_with. apply map_eq; intros i.
+    rewrite lookup_merge !lookup_empty. destruct (m1 !! i); done.
+  Qed.
+End map_zip_with.
+
 (*! map_zip *)
 Section map_zip.
   Context `{Countable K}.
@@ -117,23 +135,10 @@ Section map_zip.
 
   Theorem map_zip_empty_l (m2 : gmap K B) :
     map_zip (∅ : gmap K A) m2 = ∅.
-  Proof.
-    apply map_eq; intros.
-    rewrite /map_zip.
-    erewrite lookup_merge by reflexivity.
-    rewrite !lookup_empty /=.
-    destruct (m2 !! i); done.
-  Qed.
-
+  Proof. apply map_zip_with_empty_l. Qed.
   Theorem map_zip_empty_r (m1 : gmap K A) :
     map_zip m1 (∅ : gmap K B) = ∅.
-  Proof.
-    apply map_eq; intros.
-    rewrite /map_zip.
-    erewrite lookup_merge by reflexivity.
-    rewrite !lookup_empty /=.
-    destruct (m1 !! i); done.
-  Qed.
+  Proof. apply map_zip_with_empty_r. Qed.
 
   Theorem map_zip_insert (m1 : gmap K A) (m2 : gmap K B) i v1 v2 :
     map_zip (<[i:=v1]> m1) (<[i:=v2]> m2) =

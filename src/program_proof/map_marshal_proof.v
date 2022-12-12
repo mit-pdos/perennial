@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import grove_prelude marshal_stateless_proof.
 From Perennial.goose_lang.lib Require Import typed_map map.impl.
 From Goose.github_com.mit_pdos.gokv Require Import map_marshal.
 
@@ -8,12 +8,14 @@ Context `{!heapGS Σ}.
 Definition own_byte_map (mptr:loc) (m:gmap u64 (list u8)): iProp Σ :=
   ∃ (kvs_sl:gmap u64 Slice.t),
     "Hkvs_map" ∷ is_map mptr 1 kvs_sl ∗
-    "#Hkvs_slices" ∷ (∀ (k:u64), readonly (is_slice_small (default Slice.nil (kvs_sl !! k))
-                                                          byteT
-                                                          1
-                                                          (default [] (m !! k))
-                                                          )
-                     )
+    "%Hkvs_dom" ∷ ⌜dom kvs_sl = dom m⌝ ∗
+    "#Hkvs_slices" ∷ (∀ (k:u64),
+        readonly (is_slice_small (default Slice.nil (kvs_sl !! k))
+                    byteT
+                    1
+                    (default [] (m !! k))
+                 )
+      )
 .
 
 Lemma wp_byteMapNew :
@@ -34,6 +36,8 @@ Proof.
   iIntros (?) "Hmap".
   iApply "HΦ".
   iExists _; iFrame.
+  iSplitR.
+  { rewrite !dom_empty_L. done. }
   iIntros (?).
   rewrite lookup_empty.
   rewrite lookup_empty.
@@ -89,6 +93,8 @@ Proof.
   iExists _.
   iFrame "Hkvs_map".
   rewrite /typed_map.map_insert.
+  iSplitR.
+  { rewrite !dom_insert_L Hkvs_dom. done. }
   iIntros (?).
   destruct (decide (k0 = k)).
   {
@@ -104,13 +110,15 @@ Proof.
   }
 Qed.
 
-Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop :=
+
+Local Definition has_partial_byte_map_encoding (enc:list u8) (fullsize: u64) (m:gmap u64 (list u8)) : Prop :=
   ∃ l,
-  (int.Z (size m) = size m) ∧
   NoDup l.*1 ∧
   (list_to_map l) = m ∧
-  enc = (u64_le (size m)) ++
-      (flat_map (λ u, (u64_le u.1) ++ (u64_le (int.Z (length (u.2)))) ++ u.2) l).
+  enc = (u64_le fullsize) ++ flat_map (λ u, (u64_le u.1) ++ (u64_le (int.Z (length (u.2)))) ++ u.2) l.
+
+Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop :=
+  int.Z (size m) = size m ∧ has_partial_byte_map_encoding enc (size m) m.
 
 Lemma wp_EncodeMapU64ToBytes mptr m :
   {{{
@@ -124,7 +132,73 @@ Lemma wp_EncodeMapU64ToBytes mptr m :
         ⌜has_byte_map_encoding enc m⌝
   }}}.
 Proof.
-Admitted.
+  iIntros "%Φ H HΦ". iNamed "H". iNamed "Hmap". wp_call.
+  wp_apply wp_NewSlice. iIntros (s) "Hs".
+  wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
+  wp_apply (wp_MapLen with "Hkvs_map"). iIntros "[%Hmsize Hkvs_map]".
+  wp_load.
+  wp_apply (wp_WriteInt with "Hs"). iIntros (s') "Hs".
+  rewrite replicate_0 /=. wp_store. clear s.
+  wp_apply (wp_MapIter_2 _ _ _ _ _
+    (λ kvs_todo kvs_done, ∃ (s : Slice.t) enc,
+      "%Hm" ∷ ⌜kvs_sl = kvs_todo ∪ kvs_done⌝ ∗
+      "%Hdisk" ∷ ⌜dom kvs_todo ## dom kvs_done⌝ ∗
+      "%Henc" ∷ ⌜has_partial_byte_map_encoding enc (size m) (map_zip_with (λ v _, v) m kvs_done)⌝ ∗
+      "Hl" ∷ l ↦[slice.T byteT] (slice_val s) ∗
+      "Hs" ∷ is_slice s byteT 1 enc
+    )%I with "Hkvs_map [Hl Hs]").
+  { iExists _, _. iFrame. iPureIntro.
+    rewrite right_id_L. split; first done.
+    rewrite /has_partial_byte_map_encoding.
+    split; first set_solver.
+    exists [].
+    split; first by apply NoDup_nil_2.
+    rewrite map_zip_with_empty_r.
+    split; first by apply list_to_map_nil.
+    rewrite -size_dom -Hkvs_dom size_dom. done. }
+  { (* core loop *)
+     clear Φ s' mptr. iIntros (k v kvs_todo kvs_done Φ) "!# [HI %Hk] HΦ". iNamed "HI". wp_pures.
+     wp_load. wp_apply (wp_WriteInt with "Hs"). iIntros (s') "Hs". wp_store. clear s.
+     wp_apply wp_slice_len.
+     wp_load. wp_apply (wp_WriteInt with "Hs"). iIntros (s) "Hs". wp_store. clear s'.
+     iSpecialize ("Hkvs_slices" $! k).
+     iMod (readonly_load with "Hkvs_slices") as (q) "Hk".
+     iDestruct (is_slice_small_sz with "Hk") as %Hsz.
+     iEval (rewrite Hm) in "Hk".
+     erewrite lookup_union_Some_l by done. simpl.
+     wp_load. wp_apply (wp_WriteBytes with "[$Hs $Hk]"). iIntros (s') "[Hs _]". wp_store. clear s.
+     iApply "HΦ". iModIntro. iExists _, _. iFrame. iPureIntro.
+     split.
+     { rewrite union_delete_insert //. }
+     assert (kvs_done !! k = None).
+     { apply not_elem_of_dom. apply elem_of_dom_2 in Hk. set_solver. }
+     split; first set_solver.
+     assert (is_Some (m !! k)) as [data Hdata].
+     { apply elem_of_dom. rewrite -Hkvs_dom Hm dom_union. apply elem_of_dom_2 in Hk. set_solver. }
+     destruct Henc as (ls & Hnodup & Hls & Henc). exists (ls ++ [(k, data)]).
+     assert (k ∉ ls.*1).
+     { intros Hin. eapply (not_elem_of_list_to_map ls). 2:by apply Hin.
+       rewrite Hls. apply map_lookup_zip_with_None. auto. }
+     split; last split.
+     - rewrite fmap_app. apply NoDup_app. split; first done.
+       simpl. split; last by apply NoDup_singleton.
+       intros k' Hk' ->%elem_of_list_singleton. done.
+     - rewrite list_to_map_snoc //. rewrite Hls.
+       change data with ((λ v _, v) data v).
+       rewrite map_insert_zip_with. rewrite insert_id //.
+     - rewrite Hdata Henc. cbn. rewrite -!app_assoc. repeat f_equal.
+       rewrite flat_map_app. f_equal. cbn. rewrite -!app_assoc app_nil_r. repeat f_equal.
+       move:Hsz. rewrite Hdata Hm. erewrite lookup_union_Some_l by done. cbn. intros. word.
+  }
+  iIntros "[Hkvs_map HI]". iNamed "HI".
+  wp_load. iApply "HΦ". iFrame. iSplitL.
+  { iExists _. iFrame. eauto. }
+  iPureIntro. split.
+  - rewrite -size_dom -Hkvs_dom size_dom. rewrite Hmsize. word.
+  - replace m with (map_zip_with (λ (v : list u8) (_ : Slice.t), v) m kvs_sl) at 2. 1:done.
+    clear Henc. rewrite -[map_zip_with _ _ _]map_fmap_id. rewrite map_fmap_zip_with_l; auto.
+    intros k. rewrite -!elem_of_dom. set_solver.
+Qed.
 
 Lemma wp_DecodeMapU64ToBytes m enc_sl enc enc_rest q :
   {{{

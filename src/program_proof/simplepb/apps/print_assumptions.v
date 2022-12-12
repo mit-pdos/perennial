@@ -1,5 +1,5 @@
-From Perennial.program_proof.simplepb Require Import config_proof admin_proof.
-From Perennial.program_proof.simplepb.apps Require Import kv_proof.
+From Perennial.program_proof.simplepb Require config_proof admin_proof.
+From Perennial.program_proof.simplepb.apps Require kv_proof.
 
 (* FIXME this list is probably incomplete *)
 Definition lemmas :=
