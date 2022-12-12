@@ -7,6 +7,7 @@ From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 From Perennial.program_proof Require Import map_marshal_proof.
+From Perennial.program_proof.aof Require Import proof.
 
 Section proof.
 
@@ -58,6 +59,9 @@ Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
 Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
 Context `{!heapGS Σ}.
+Context `{!urpc_proof.urpcregG Σ}.
+Context `{!simplelogG (sm_record:=kv_record) Σ}.
+Context `{!ghost_mapG Σ u64 (list u8)}.
 
 Lemma wp_EncodePutArgs (args_ptr:loc) (key:u64) val val_sl :
   {{{
@@ -95,9 +99,6 @@ Proof.
   wp_call.
 Admitted.
 
-Context `{!pbG Σ}.
-Context `{!ghost_mapG Σ u64 (list u8)}.
-
 Definition own_kvs (γkv:gname) ops : iProp Σ :=
   ghost_map_auth γkv 1 (compute_state ops)
 .
@@ -119,9 +120,6 @@ Definition own_Clerk ck γkv : iProp Σ :=
     "#His_inv" ∷ is_inv γlog γsys ∗
     "#Hkvinv" ∷ kv_inv γlog γkv
 .
-
-Context `{!urpc_proof.urpcregG Σ}.
-Context `{stagedG Σ}.
 
 Lemma wp_Clerk__Put ck γkv key val_sl value Φ:
   own_Clerk ck γkv -∗
@@ -179,7 +177,7 @@ Proof.
   iIntros (?) "Hsl Hck".
   wp_pures.
   iApply "HH".
-  iExists _, _.
+  iExists _, _, _.
   iFrame "∗#".
   iModIntro.
   done.
@@ -491,18 +489,12 @@ Proof.
   wp_call.
   wp_apply (wp_MakeKVStateMachine).
   iIntros (??) "[#HisSmMem Hmemstate]".
-  wp_apply (wp_MakePbServer with "Hinv [$HisSmMem $Hmemstate Hfile_ctx]").
-  {
-    iApply to_named.
-    iExactEq "Hfile_ctx".
-    f_equal.
-    admit. (* TODO: ??? *)
-  }
+  wp_apply (wp_MakePbServer with "Hinv [$HisSmMem $Hmemstate $Hfile_ctx]").
   iIntros (?) "#Hsrv".
   wp_pures.
   wp_apply (pb_start_proof.wp_Server__Serve with "[$]").
   wp_pures.
   by iApply "HΦ".
-Admitted.
+Qed.
 
 End proof.

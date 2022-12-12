@@ -9,8 +9,6 @@ From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
 Section aof_proof.
-Context `{!heapGS Σ}.
-Context `{!filesysG Σ}.
 
 Class aofG Σ := AofG {
   aof_flistG :> fmlistG u8 Σ ;
@@ -21,6 +19,21 @@ Class aofG Σ := AofG {
   aof_ghostG :> ghost_varG Σ unit ;
   aof_curdataG :> ghost_varG Σ (list u8) ;
 }.
+
+Definition aofΣ := #[
+  fmlistΣ u8 ; GFunctor (mono_natUR) ;
+  mapΣ u64 unit ;
+  GFunctor (exclR unitO) ;
+  stagedΣ ;
+  ghost_varΣ unit ;
+  ghost_varΣ (list u8)
+].
+
+Global Instance subG_aofΣ {Σ} : subG aofΣ Σ → aofG Σ.
+Proof. solve_inG. Qed.
+
+Context `{!heapGS Σ}.
+Context `{!filesysG Σ}.
 
 Record aof_vol_names := mk_aof_vol_names {
   logdata : gname ;

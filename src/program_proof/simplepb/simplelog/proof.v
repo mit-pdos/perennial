@@ -17,9 +17,26 @@ Notation has_op_encoding := (pb_has_op_encoding sm_record).
 Notation has_snap_encoding := (pb_has_snap_encoding sm_record).
 Notation compute_reply := (pb_compute_reply sm_record).
 Instance e : EqDecision OpType := (pb_OpType_EqDecision sm_record).
+Notation pbG := (pbG (pb_record:=sm_record)).
+Notation pbΣ := (pbΣ (pb_record:=sm_record)).
+
+Class simplelogG Σ := SimplelogG {
+  simplelog_fmlistG :> fmlistG (u64 * (list OpType) * bool) Σ;
+  simplelog_aofG :> aofG Σ ;
+  simplelog_pbG :> pbG Σ ;
+}.
+
+Definition simplelogΣ := #[
+  fmlistΣ (u64 * list (OpType) * bool) ;
+  aofΣ ;
+  pbΣ
+].
+
+Global Instance subG_simplelogΣ {Σ} : subG simplelogΣ Σ → simplelogG Σ.
+Proof. solve_inG. Qed.
 
 Context `{!heapGS Σ}.
-Context `{aofG Σ}.
+Context `{!simplelogG Σ}.
 
 (* Want to prove *)
 
@@ -164,8 +181,6 @@ Record simplelog_names :=
    *)
   sl_state : gname;
 }.
-
-Context `{!fmlistG (u64 * (list OpType) * bool) Σ}.
 
 Definition file_inv γ P (contents:list u8) : iProp Σ :=
   ∃ epoch ops sealed,
@@ -1541,10 +1556,7 @@ Proof.
 Admitted.
 
 Notation own_Server_ghost := (own_Server_ghost (pb_record:=sm_record)).
-Notation pbG := (pbG (pb_record:=sm_record)).
 Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
-
-Context `{!pbG Σ}.
 
 Definition simplelog_pre γ γsrv fname :=
   (|C={⊤}=> ∃ data, fname f↦ data ∗ ▷ file_crash (own_Server_ghost γ γsrv) data)%I.
