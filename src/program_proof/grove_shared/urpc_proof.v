@@ -100,9 +100,13 @@ Definition handler_spec Γsrv (host:chan) (rpcid:u64) Spec : iProp Σ :=
   "#Hserver_inv" ∷ inv urpc_serverN (server_chan_inner host Γsrv)
 )%I.
 
-Global Instance handler_spec_pers_instance γ host rpcid Spec :
+Global Instance handler_spec_pers γ host rpcid Spec :
   Persistent (handler_spec γ host rpcid Spec).
 Proof. apply _. Qed.
+
+Global Instance handler_spec_contractive γ host rpcid :
+  Contractive (handler_spec γ host rpcid).
+Proof. solve_contractive. Qed.
 
 Definition handlers_dom Γsrv (d: gset u64) :=
   own (scset_name Γsrv) (to_agree d).
@@ -1145,10 +1149,6 @@ Global Instance impl_handler_spec2_pers f Spec : Persistent (impl_handler_spec2 
 Proof. apply _. Qed.
 
 Global Typeclasses Opaque impl_handler_spec impl_handler_spec2.
-
-Global Instance handler_spec_pers Γsrv host rpcid Spec : Persistent (handler_spec Γsrv host rpcid Spec).
-Proof. apply _. Qed.
-
 Global Typeclasses Opaque handler_spec.
 
 End urpc_proof.

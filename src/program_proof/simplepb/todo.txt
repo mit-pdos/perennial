@@ -4,7 +4,7 @@
     Most of them show up in the recovery function, which is where we decode
     state.
 
-[ ] `src/program_proof/simplepb/pb_definitions.v`; contractiveness of is_pb_host_pre
+[x] `src/program_proof/simplepb/pb_definitions.v`; contractiveness of is_pb_host_pre
 
 [x] `src/program_proof/simplepb/pb_apply_proof.v`;
     [x] wp_random

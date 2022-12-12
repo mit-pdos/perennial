@@ -216,7 +216,12 @@ Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> 
 
 Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
 Proof.
-Admitted.
+  intros n ?? Hρ. rewrite /is_pb_host_pre.
+  intros ???. f_equiv. intros ?.
+  do 5 (f_contractive || f_equiv).
+  rewrite /BecomePrimary_spec_pre /BecomePrimary_core_spec.
+  intros args Φ. simpl. repeat f_equiv. apply Hρ.
+Qed.
 
 Definition is_pb_host_def :=
   fixpoint (is_pb_host_pre).

@@ -119,13 +119,10 @@ Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
-  f_equiv. rewrite /handler_urpc_spec /handler_spec. (* FIXME unfolding other abstractions *)
-  do 9 f_equiv.
-  apply saved_spec.saved_spec_own_contractive.
-  rewrite /dist_later. destruct n; auto.
-  intros => ?.
+  f_equiv. rewrite /handler_urpc_spec /=. (* FIXME unfolding other abstractions (uRPCSpec is not an OFE) *)
+  f_contractive.
   rewrite /uRPCSpec_Spec /is_shard_server_moveSpec_pre /=.
-  intros Φ. simpl.
+  intros args Φ. simpl.
   repeat f_equiv.
 Qed.
 
