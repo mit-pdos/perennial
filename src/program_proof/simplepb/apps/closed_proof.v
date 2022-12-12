@@ -53,6 +53,15 @@ Proof.
   iIntros "$". iIntros; eauto.
 Qed.
 
+#[global]
+Instance file_crash_into_crash `{hG0: !heapGS Σ} SMRecord `{!pbG Σ} γsys γsrv1 data:
+  IntoCrash (file_crash (own_Server_ghost γsys γsrv1 ) data)
+    (λ hG, (file_crash (sm_record := SMRecord) (own_Server_ghost γsys γsrv1 ) data)).
+Proof.
+  rewrite /IntoCrash /file_crash.
+  iIntros "$". iIntros; eauto.
+Qed.
+
 Definition kv_replica_main1_crash_cond `{kv64G Σ} γsys replica_fname γsrv1:=
 (λ hG : heapGS Σ, ∃ data', (replica_fname f↦ data') ∗ ▷ file_crash (own_Server_ghost γsys γsrv1) data')%I.
 
@@ -90,10 +99,8 @@ Proof.
      iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
      simpl.
      set (hG' := HeapGS _ _ hL').
-     iRevert "Hsys". iIntros "Hsys".
-     rewrite intuitionistically_elim.
-     iRevert "Hsrvhost1". iIntros "Hsrvhost1".
-     rewrite intuitionistically_elim.
+     iDestruct "Hsys" as "-#Hsys".
+     iDestruct "Hsrvhost1" as "-#Hsrvhost1".
      iCrash.
      iIntros "_".
      destruct hL as [HG'' ?].
@@ -112,9 +119,8 @@ Proof.
        iFrame.
      }
      iExists _. iFrame.
-     admit.
    }
-Admitted.
+Qed.
 
 Local Instance subG_kv64Σ {Σ} : subG kv_pbΣ Σ → kv64G Σ.
 Proof. intros. solve_inG. Qed.
