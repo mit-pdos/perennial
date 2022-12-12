@@ -1598,8 +1598,10 @@ Admitted.
 Notation own_Server_ghost := (own_Server_ghost (pb_record:=sm_record)).
 Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 
+Definition simplelog_P γ γsrv := file_crash (own_Server_ghost γ γsrv).
+
 Definition simplelog_pre γ γsrv fname :=
-  (|C={⊤}=> ∃ data, fname f↦ data ∗ ▷ file_crash (own_Server_ghost γ γsrv) data)%I.
+  (|C={⊤}=> ∃ data, fname f↦ data ∗ ▷ simplelog_P γ γsrv data)%I.
 
 Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv :
   let P := (own_Server_ghost γ γsrv) in

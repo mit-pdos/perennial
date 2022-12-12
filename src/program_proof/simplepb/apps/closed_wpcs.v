@@ -15,9 +15,7 @@ Section closed_wpcs.
 
 (* FIXME: kv64G *)
 Context `{!heapGS Σ}.
-Context `{!urpc_proof.urpcregG Σ}.
-Context `{!simplelogG (sm_record:=kv_record) Σ}.
-Context `{!ghost_mapG Σ u64 (list u8)}.
+Context `{!kv64G Σ}.
 
 Definition replica_fname := "kv.data".
 

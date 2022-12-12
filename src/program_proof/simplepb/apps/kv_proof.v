@@ -8,8 +8,9 @@ From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 From Perennial.program_proof Require Import map_marshal_proof.
 From Perennial.program_proof.aof Require Import proof.
+From Perennial.program_proof.simplepb Require Import config_proof.
 
-Section proof.
+Section global_proof.
 
 Inductive kv64Op :=
   | putOp : u64 → list u8 → kv64Op
@@ -58,10 +59,57 @@ Notation pbG := (pbG (pb_record:=kv_record)).
 Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
 Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
+Class kv64G Σ := Kv64G {
+  kv64_simplelogG :> simplelogG (sm_record:=kv_record) Σ ;
+  kv64_ghostMapG :> ghost_mapG Σ u64 (list u8) ;
+  kv64_configG :> configG Σ
+}.
+Definition kv64Σ := #[simplelogΣ (sm_record:=kv_record); configΣ; ghost_mapΣ u64 (list u8)].
+Global Instance subG_kv64Σ {Σ} : subG kv64Σ Σ → kv64G Σ.
+Proof. intros. solve_inG. Qed.
+
+Context `{!gooseGlobalGS Σ}.
+Context `{!kv64G Σ}.
+
+Definition own_kvs (γkv:gname) ops : iProp Σ :=
+  ghost_map_auth γkv 1 (compute_state ops)
+.
+
+Definition stateN := nroot .@ "state".
+
+Definition kv_inv γ γkv : iProp Σ :=
+  inv stateN ( ∃ ops, own_log γ ops ∗ own_kvs γkv ops).
+
+Lemma kv_system_init :
+  ⊢ |={⊤}=>
+  ∃ γsys γlog γkv ,
+    pb_init_config γsys ∗
+    is_inv γlog γsys ∗
+    sys_inv γsys ∗
+    kv_inv γlog γkv ∗
+    is_proposal_lb γsys (U64 0) [] ∗
+    is_proposal_facts γsys (U64 0) []
+.
+Proof.
+Admitted.
+
+Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
+  k ↪[γkv] v.
+
+End global_proof.
+
+Section local_proof.
+
+Notation OpType := (pb_OpType kv_record).
+Notation has_op_encoding := (pb_has_op_encoding kv_record).
+(* Notation compute_reply := (pb_compute_reply pb_record). *)
+Notation pbG := (pbG (pb_record:=kv_record)).
+Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
+Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
+
+
 Context `{!heapGS Σ}.
-Context `{!urpc_proof.urpcregG Σ}.
-Context `{!simplelogG (sm_record:=kv_record) Σ}.
-Context `{!ghost_mapG Σ u64 (list u8)}.
+Context `{!kv64G Σ}.
 
 Lemma wp_EncodePutArgs (args_ptr:loc) (key:u64) val val_sl :
   {{{
@@ -98,20 +146,6 @@ Proof.
   iNamed "H1".
   wp_call.
 Admitted.
-
-Definition own_kvs (γkv:gname) ops : iProp Σ :=
-  ghost_map_auth γkv 1 (compute_state ops)
-.
-
-Definition stateN := nroot .@ "state".
-
-Definition kv_inv γ γkv : iProp Σ :=
-  inv stateN ( ∃ ops, own_log γ ops ∗ own_kvs γkv ops).
-
-Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
-  k ↪[γkv] v.
-
-Context `{!config_proof.configG Σ}.
 
 Definition own_Clerk ck γkv : iProp Σ :=
   ∃ (pb_ck:loc) γlog γsys,
@@ -497,4 +531,20 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-End proof.
+End local_proof.
+
+Section local_init_proof.
+
+Context `{!gooseGlobalGS Σ}.
+Context `{!gooseLocalGS Σ}.
+Context `{!kv64G Σ}.
+
+Lemma kv_server_init fname γsys γsrv :
+  fname f↦ [] ∗
+  own_Server_ghost γsys γsrv (U64 0) [] false ={⊤}=∗
+  fname f↦ [] ∗
+  file_crash (own_Server_ghost γsys γsrv) [].
+Proof.
+Admitted.
+
+End local_init_proof.

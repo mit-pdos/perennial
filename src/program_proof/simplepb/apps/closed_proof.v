@@ -6,7 +6,7 @@ From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 From Perennial.program_logic Require dist_lang.
 
 From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_ghost pb_init_proof.
-From Perennial.program_proof.simplepb Require Import kv_proof.
+From Perennial.program_proof.simplepb Require Import kv_proof admin_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.program_proof.simplepb.apps Require Import closed_wpcs.
@@ -26,14 +26,17 @@ Definition grove_dist_adequate
                ebσs in
   dist_adequacy.dist_adequate (CS := goose_crash_lang) (enonidempσs ++ ρs) g.
 
-Definition kv_pbΣ := #[heapΣ; simplelogΣ (sm_record:=kv_record); pbΣ (pb_record:=kv_record); ghost_varΣ (list u64); urpcregΣ].
+Definition kv_pbΣ := #[heapΣ; kv64Σ].
 
 Definition configHost : chan := U64 10.
+Definition r1Host: chan := U64 1.
+Definition r2Host: chan := U64 2.
 
-Local Instance subG_kvΣ {Σ} : subG kv_pbΣ Σ → pbG (pb_record:=kv_record) Σ.
-Proof. intros. apply subG_pbΣ. solve_inG. Qed.
+Local Instance subG_kv64Σ {Σ} : subG kv_pbΣ Σ → kv64G Σ.
+Proof. intros. solve_inG. Qed.
 
 Definition replica_fname := "kv.data".
+
 
 Lemma kv_pb_boot :
   ∀ σconfig σsrv1 σsrv2 (g : goose_lang.global_state),
@@ -43,15 +46,17 @@ Lemma kv_pb_boot :
   ffi_initP σconfig.(world) g.(global_world) →
   ffi_initP σsrv1.(world) g.(global_world) →
   ffi_initP σsrv2.(world) g.(global_world) →
-  (*
-  g.(global_world).(grove_net) !! shardId = Some (∅ : gset message) →
-  g.(global_world).(grove_net) !! coordId = Some (∅ : gset message) → *)
+
+  σsrv1.(world).(grove_node_files) !! replica_fname = Some [] →
+  g.(global_world).(grove_net) !! configHost = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! r1Host = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! r2Host = Some (∅ : gset message) →
   grove_dist_adequate
     [ {| init_thread := config_main #() ; init_restart := of_val #(); init_local_state := σconfig |}]
     [(kv_replica_main1 #(), σsrv1); (kv_replica_main2 #(), σsrv2)] g (λ _, True).
 Proof.
   intros ????.
-  intros Hinitg Hinitconfig Hinitr1 Hinitr2.
+  intros Hinitg Hinitconfig Hinitr1 Hinitr2 Hinitr1file HconfChan Hr1Chan Hr2Chan.
   eapply (grove_ffi_dist_adequacy (kv_pbΣ)).
   { assumption. }
   { repeat constructor; naive_solver. }
@@ -71,19 +76,20 @@ Proof.
     - is_host for each pb server
     - config server state, and the is_conf_inv invariant
   *)
-  (*
-  eassert (pb_ghostG (EntryType:=(kv_record.(pb_OpType) * gname)) kv_pbΣ) as HghostG.
-  { apply _. }
-   *)
+  iMod (kv_system_init) as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hprop_lb & #Hprop_facts)".
+  iMod (config_ghost_init_2 γsys with "Hconfinit") as (γconf) "[#Hconf HconfInit]".
 
-  iMod (pb_system_init) as "HH".
-  iMod (pb_system_init) as (γsys) "(#Hsys & Hghost & Hpbsysinit)".
+  iDestruct (big_sepM_delete with "Hchan") as "[HconfChan Hchan]".
+  { apply HconfChan. }
 
-  iMod (pb_init_log γsys with "[$Hghost]") as (γlog) "[Hlog #Hloginv]".
+  iMod (config_server_init configHost γconf with "HconfChan") as "#Hconfhost".
 
-  iMod (config_ghost_init) as (γconf) "HconfInit".
-  iMod (config_server_init configHost γconf with "[]") as "#HisConf".
-  { admit. }
+  iMod (pb_server_init with "Hprop_lb Hprop_facts") as (γsrv1) "Hsrv1".
+  iMod (pb_server_init with "Hprop_lb Hprop_facts") as (γsrv2) "Hsrv2".
+
+  iDestruct (big_sepM_delete with "Hchan") as "[Hr1Chan Hchan]".
+  { rewrite lookup_delete_Some. split; last apply Hr1Chan. done. }
+  iMod (pb_host_init r1Host with "Hr1Chan") as "#Hsrvhost1".
 
   iModIntro.
   simpl. iSplitL "HconfInit".
@@ -98,8 +104,7 @@ Proof.
       simpl.
       iApply wp_wpc.
       wp_call.
-      iDestruct "HconfInit" as "(H1 & _)".
-      wp_apply (config_proof.wp_MakeServer with "[$H1]").
+      wp_apply (config_proof.wp_MakeServer with "HconfInit").
       iIntros (?) "#Hisconf_server".
       wp_apply (config_proof.wp_Server__Serve with "[$]").
       { iFrame "#". }
@@ -110,33 +115,56 @@ Proof.
       iModIntro.
       iIntros.
       iModIntro.
-      admit.
-    }
-  }
-  iSplitR.
-  {
-    iIntros (HL) "Hfiles".
-    iModIntro.
-    iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
-    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
-    evar (γsrv:pb_server_names).
-    iApply (idempotence_wpr with "[] []").
-    { (* initialization *)
-      instantiate (1:=(λ (_:heapGS kv_pbΣ), ∃ data', replica_fname f↦ data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data')%I).
-      simpl.
-      wpc_apply (wpc_kv_replica_main1 γsys γsrv with "[] [Hsys] []"); admit.
-    }
-    { (* recovery *)
-      iModIntro.
-      iIntros.
-      iNext.
       rewrite /post_crash.
       iIntros. iModIntro.
       iSplit; first done. iIntros. iSplit; first done.
       set (hG2' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
-      wpc_apply (wpc_kv_replica_main1 γsys γsrv with "[] [Hsys] []"); admit.
+      wpc_pures.
+      { done. }
+      done.
     }
   }
+  iSplitL "Hsrv1".
+  {
+    iIntros (HL) "Hfiles".
+    iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
+    { done. }
+    iMod (kv_server_init with "[$Hsrv1 $HH]") as "Hinit".
+    iModIntro.
+    iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+    iApply (idempotence_wpr with "[Hinit] []").
+    { (* initialization *)
+      instantiate (1:=(λ hG, ∃ data', (replica_fname f↦ data') ∗ ▷ file_crash (own_Server_ghost γsys γsrv1) data')%I).
+      simpl.
+      wpc_apply (wpc_kv_replica_main1 γsys γsrv1 with "[] [$Hsrvhost1] [$Hsys]").
+      { iIntros "$". }
+      iExists _. iFrame.
+    }
+    { (* recovery *)
+      iModIntro.
+      iIntros (????) "Hcrash".
+      iNext.
+      iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
+      iDestruct (into_crash with "Hfile") as "Hfile".
+      rewrite /post_crash.
+      iIntros. iModIntro.
+      iSplit; first done. iIntros. iSplit; first done.
+      iMod ("Hfile" $! _ _ _ _) as "[_ Hfile]".
+      set (hG2' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+      wpc_apply (wpc_kv_replica_main1 (heapGS0:=hG2') γsys γsrv1 with "[] [$Hsrvhost1] [$Hsys]").
+      { iIntros "H".
+        iDestruct "H" as (?) "[Hfile Hcrash]".
+        iExists _.
+        iFrame.
+        iExactEq "Hfile".
+        (* FIXME: these should be the same across crashes *)
+        admit.
+      }
+      iExists _. iFrame.
+    }
+  }
+  (* TODO: repeat the exact same thing for server 2 *)
   (* other servers remain *)
 Admitted.
 

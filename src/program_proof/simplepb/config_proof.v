@@ -20,6 +20,11 @@ Class configG Σ := {
     config_urpcG :> urpcregG Σ ;
 }.
 
+Definition configΣ := #[mono_natΣ ; ghost_varΣ (list u64) ; urpcregΣ].
+
+Global Instance subG_configΣ {Σ} : subG configΣ Σ → configG Σ.
+Proof. intros. solve_inG. Qed.
+
 Implicit Type γ : config_names.
 
 Context `{!gooseGlobalGS Σ}.

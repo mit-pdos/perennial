@@ -33,9 +33,10 @@ Definition is_conf_inv γpb γconf : iProp Σ :=
 .
 
 (* before calling this lemma, have to already allocate pb ghost state *)
-Lemma config_ghost_init_2 γpb :
-  ⊢ |={⊤}=> ∃ γconf, is_conf_inv γpb γconf ∗ makeConfigServer_pre γconf.
+Lemma config_ghost_init_2 γsys :
+  pb_init_config γsys ={⊤}=∗ ∃ γconf, is_conf_inv γsys γconf ∗ makeConfigServer_pre γconf.
 Proof.
+  iIntros "Hinitconf".
   iMod (config_ghost_init) as (γconf) "(Hconfpre & Hepoch & Hconf)".
   iExists _; iFrame "Hconfpre".
   iMod (inv_alloc with "[-]") as "$"; last done.

@@ -1216,3 +1216,24 @@ Next Obligation.
   iExists (GroveNodeGS _ _ tsc_name _).
   simpl. iFrame. iPureIntro. done.
 Qed.
+
+Section crash.
+  Existing Instances grove_op grove_model grove_ty.
+  Existing Instances grove_semantics grove_interp.
+  Existing Instance goose_groveNodeGS.
+
+  Lemma file_pointsto_post_crash `{!heapGS Σ} f q v:
+    f f↦{q} v -∗ post_crash (λ _, f f↦{q} v).
+  Proof.
+    iIntros "H". iIntros (???) "#Hrel".
+    rewrite /ffi_crash_rel. (* FIXME: change ffi_crash_rel to make this true *)
+    rewrite /goose_groveNodeGS.
+  Admitted.
+
+  Global Instance file_pointsto_crash `{!heapGS Σ} fname data q:
+    IntoCrash (fname f↦{q} data)%I (λ hG, fname f↦{q} data)%I.
+  Proof.
+    apply file_pointsto_post_crash.
+  Qed.
+
+End crash.
