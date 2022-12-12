@@ -7,6 +7,10 @@ Section definitions.
 Class mapG Σ K V `{Countable K} :=
   { map_inG:> inG Σ (gmapR K (dfrac_agreeR (leibnizO V)))} .
 
+Definition mapΣ K V `{Countable K} := #[GFunctor (gmapR K (dfrac_agreeR (leibnizO V)))].
+Global Instance subG_mapΣ K V `{Countable K} {Σ} : subG (mapΣ K V) Σ → (mapG Σ K V).
+Proof. solve_inG. Qed.
+
 Context `{mapG Σ K V}.
 
 Definition ghost_map_points_to_def (γ : gname) (k : K) (dq : dfrac) (v : V) : iProp Σ :=

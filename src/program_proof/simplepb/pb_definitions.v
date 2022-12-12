@@ -41,6 +41,12 @@ Class pbG Σ := {
     pb_apply_escrow_tok :> ghost_varG Σ unit ;
 }.
 
+Definition pbΣ :=
+  #[pb_ghostΣ (EntryType:=(OpType * gname)); savedPredΣ (list OpType) ; urpcregΣ ; waitgroupΣ ;
+    GFunctor (client_logR) ; ghost_varΣ unit].
+Global Instance subG_pbΣ {Σ} : subG (pbΣ) Σ → (pbG Σ).
+Proof. solve_inG. Qed.
+
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 

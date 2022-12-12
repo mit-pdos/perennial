@@ -43,7 +43,7 @@ Definition encode_op op : list u8 :=
 Instance op_eqdec : EqDecision kv64Op.
 Admitted.
 
-Definition pb_record : PBRecord :=
+Definition kv_record : PBRecord :=
   {|
     pb_OpType := kv64Op ;
     pb_has_op_encoding := λ op_bytes op, encode_op op = op_bytes ;
@@ -51,11 +51,11 @@ Definition pb_record : PBRecord :=
     pb_compute_reply :=  compute_reply ;
   |}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
+Notation OpType := (pb_OpType kv_record).
+Notation has_op_encoding := (pb_has_op_encoding kv_record).
 (* Notation compute_reply := (pb_compute_reply pb_record). *)
-Notation pbG := (pbG (pb_record:=pb_record)).
-Notation is_ApplyFn := (is_ApplyFn (pb_record:=pb_record)).
+Notation pbG := (pbG (pb_record:=kv_record)).
+Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
 
 Context `{!heapGS Σ}.
 
@@ -420,7 +420,7 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Notation is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=pb_record)).
+Notation is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=kv_record)).
 
 Lemma wp_MakeKVStateMachine :
   {{{

@@ -5,7 +5,8 @@ From Perennial.goose_lang Require adequacy dist_adequacy.
 From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 From Perennial.program_logic Require dist_lang.
 
-From Perennial.program_proof.simplepb Require Import config_proof.
+From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_ghost pb_init_proof.
+From Perennial.program_proof.simplepb Require Import kv_proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 
 Module closed.
@@ -22,7 +23,7 @@ Definition grove_dist_adequate
                ebσs in
   dist_adequacy.dist_adequate (CS := goose_crash_lang) (enonidempσs ++ ρs) g.
 
-Definition kv_pbΣ := #[heapΣ; mono_natΣ; ghost_varΣ (list u64); urpcregΣ].
+Definition kv_pbΣ := #[heapΣ; pbΣ (pb_record:=kv_record); ghost_varΣ (list u64); urpcregΣ].
 
 Definition configHost : chan := U64 10.
 
@@ -56,12 +57,21 @@ Proof.
   (*
     Here's the order stuff gets allocated in.
     - pb global state (includes config and epoch points tos)
-    - config server state, and the is_conf_inv invariant
     - is_host for config server
     - each replica server's ghost state
     - each replica server's ghost state
     - is_host for each pb server
+    - config server state, and the is_conf_inv invariant
   *)
+  eassert (pb_ghostG (EntryType:=(kv_record.(pb_OpType) * gname)) kv_pbΣ) as HghostG.
+  { apply _. }
+
+  iMod (pb_system_init) as "HH".
+  iMod (pb_system_init) as (γsys) "(#Hsys & Hghost & Hpbsysinit)".
+  iMod (pb_init_log γsys) as "HH".
+
+  iMod (pb_init_log γsys with "[Hghost]") as (γlog) "[Hlog #Hloginv]".
+  Set Printing All.
 
   iMod (config_ghost_init) as (γconf) "HconfInit".
   iMod (config_server_init configHost γconf with "[]") as "#HisConf".
@@ -88,7 +98,7 @@ Proof.
       wp_pures.
       by iModIntro.
     }
-    { (* crash; there should actually be no crashes *)
+    { (* crash; there should actually be no crashes of the config server *)
       iModIntro.
       iIntros.
       iModIntro.

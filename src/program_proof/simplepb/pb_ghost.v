@@ -6,8 +6,6 @@ From Perennial.Helpers Require Import ListSolver.
 
 Section pb_protocol.
 
-Context `{!gooseGlobalGS Σ}.
-
 Record pb_system_names :=
 {
   pb_init_proposal_gn : gname ;
@@ -38,6 +36,18 @@ Class pb_ghostG Σ := {
     pb_proposal_escrowG :> inG Σ (gmapR (u64) (dfrac_agreeR unitO)) ;
 }.
 
+Definition pb_ghostΣ :=
+  #[mono_natΣ ; GFunctor (gmapR (u64) (csumR (exclR unitO) logR)) ;
+    GFunctor (gmapR (u64) (csumR (exclR unitO) logR)) ;
+    GFunctor (gmapR (u64) logR) ;
+    GFunctor logR ;
+    GFunctor (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
+    GFunctor (gmapR (u64) (dfrac_agreeR unitO))
+    ].
+Global Instance subG_pb_ghostΣ {Σ} : subG (pb_ghostΣ) Σ → (pb_ghostG Σ).
+Proof. solve_inG. Qed.
+
+Context `{!gooseGlobalGS Σ}.
 Context `{!pb_ghostG Σ}.
 
 Implicit Type γsrv : pb_server_names.
