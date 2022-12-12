@@ -7,7 +7,10 @@ From Perennial.program_logic Require dist_lang.
 
 From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_ghost pb_init_proof.
 From Perennial.program_proof.simplepb Require Import kv_proof.
+From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
+From Perennial.program_proof.simplepb.apps Require Import closed_wpcs.
+From Perennial.goose_lang Require Import crash_borrow crash_modality.
 
 Module closed.
 
@@ -23,12 +26,14 @@ Definition grove_dist_adequate
                ebσs in
   dist_adequacy.dist_adequate (CS := goose_crash_lang) (enonidempσs ++ ρs) g.
 
-Definition kv_pbΣ := #[heapΣ; pbΣ (pb_record:=kv_record); ghost_varΣ (list u64); urpcregΣ].
+Definition kv_pbΣ := #[heapΣ; simplelogΣ (sm_record:=kv_record); pbΣ (pb_record:=kv_record); ghost_varΣ (list u64); urpcregΣ].
 
 Definition configHost : chan := U64 10.
 
 Local Instance subG_kvΣ {Σ} : subG kv_pbΣ Σ → pbG (pb_record:=kv_record) Σ.
 Proof. intros. apply subG_pbΣ. solve_inG. Qed.
+
+Definition replica_fname := "kv.data".
 
 Lemma kv_pb_boot :
   ∀ σconfig σsrv1 σsrv2 (g : goose_lang.global_state),
@@ -106,6 +111,44 @@ Proof.
       iIntros.
       iModIntro.
       admit.
+    }
+  }
+  iSplitR.
+  {
+    iIntros (HL) "Hfiles".
+    iModIntro.
+    iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
+    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+    evar (γsrv:pb_server_names).
+    iApply (idempotence_wpr with "[] []").
+    { (* initialization *)
+      instantiate (1:=(λ (_:heapGS kv_pbΣ), ∃ data', replica_fname f↦ data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data')%I).
+      simpl.
+      iDestruct (wpc_kv_replica_main1 with "[] [Hsys]") as "HH".
+      { admit. }
+      { admit. }
+      { admit. }
+    }
+    { (* recovery *)
+      iModIntro.
+      iIntros.
+      iNext.
+      rewrite /post_crash.
+      iIntros.
+      iModIntro.
+      iSplit; first done.
+      iIntros.
+      iSplit; first done.
+      iDestruct (wpc_kv_replica_main1 γsys γsrv with "[] [Hsys] []") as "HH".
+      { admit. }
+      { admit. }
+      { admit. }
+      iExactEq "HH".
+      f_equal.
+      { admit. }
+      f_equal.
+      unfold closed_wpcs.replica_fname.
+      unfold replica_fname.
     }
   }
   (* other servers remain *)

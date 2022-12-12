@@ -19,6 +19,8 @@ Definition config_main: val :=
 
 Definition kv_replica_main1: val :=
   rec: "kv_replica_main1" <> :=
+    let: "x" := ref (zero_val uint64T) in
+    "x" <-[uint64T] #1;;
     kv64.Start #(str"kv.data") r1;;
     #().
 
