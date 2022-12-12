@@ -1028,7 +1028,6 @@ Proof.
   iMod (own_update with "Hprop") as "Hprop".
   {
     apply singleton_update.
-    Print own_proposal.
     instantiate (1:=(Cinr (●ML []))).
     apply cmra_update_exclusive.
     apply Cinr_valid.
@@ -1047,7 +1046,6 @@ Proof.
   iMod (own_update with "Hinitprop") as "Hinitprop".
   {
     apply singleton_update.
-    Print own_proposal.
     instantiate (1:=(Cinr (●ML□ []))).
     apply cmra_update_exclusive.
     apply Cinr_valid.

@@ -1,5 +1,5 @@
 From Perennial.program_proof.simplepb Require config_proof admin_proof.
-From Perennial.program_proof.simplepb.apps Require kv_proof.
+From Perennial.program_proof.simplepb.apps Require kv_proof closed_proof.
 
 (* FIXME this list is probably incomplete *)
 Definition lemmas :=
@@ -7,3 +7,5 @@ Definition lemmas :=
   @admin_proof.wp_Reconfig,
   @kv_proof.wp_Start).
 Print Assumptions lemmas.
+
+Print Assumptions closed_proof.closed.kv_pb_boot.

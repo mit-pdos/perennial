@@ -175,11 +175,11 @@ Definition replica_fname := "kv.data".
 Lemma kv_pb_boot :
   ∀ σconfig σsrv1 σsrv2 (g : goose_lang.global_state),
   (* *)
-  ffi_initgP g.(global_world) →
+  chan_msg_bounds g.(global_world).(grove_net) →
 
-  ffi_initP σconfig.(world) g.(global_world) →
-  ffi_initP σsrv1.(world) g.(global_world) →
-  ffi_initP σsrv2.(world) g.(global_world) →
+  file_content_bounds σconfig.(world).(grove_node_files) →
+  file_content_bounds σsrv1.(world).(grove_node_files) →
+  file_content_bounds σsrv2.(world).(grove_node_files) →
 
   σsrv1.(world).(grove_node_files) !! replica_fname = Some [] →
   σsrv2.(world).(grove_node_files) !! replica_fname = Some [] →
@@ -297,7 +297,5 @@ Proof.
   }
   done.
 Qed.
-
-Print Assumptions kv_pb_boot.
 
 End closed.
