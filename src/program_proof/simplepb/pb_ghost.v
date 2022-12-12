@@ -1048,7 +1048,7 @@ Lemma pb_ghost_server_pre_init :
   ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0)
 .
 Proof.
-Admitted.
+Qed.
 
 (* Right order of allocation:
   Allocate the purely local state of each server.

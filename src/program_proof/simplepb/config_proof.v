@@ -696,18 +696,19 @@ Proof.
   }
 Qed.
 
-Definition makeConfigServer_pre γ : iProp Σ := own_epoch γ 0 ∗ own_config γ [].
+Definition makeConfigServer_pre γ conf : iProp Σ := own_epoch γ 0 ∗ own_config γ conf.
 
-Lemma wp_MakeServer γ :
+Lemma wp_MakeServer γ conf_sl conf :
   {{{
-        makeConfigServer_pre γ
+        makeConfigServer_pre γ conf ∗
+        is_slice_small conf_sl uint64T 1 conf
   }}}
-    config.MakeServer #()
+    config.MakeServer (slice_val conf_sl)
   {{{
         (s:loc), RET #s; is_Server s γ
   }}}.
 Proof.
-  iIntros (Φ) "[Hepoch Hconf] HΦ".
+  iIntros (Φ) "([Hepoch Hconf] & Hconf_sl) HΦ".
   wp_call.
   wp_apply (wp_allocStruct).
   { Transparent slice.T. repeat econstructor. Opaque slice.T. }
@@ -720,8 +721,6 @@ Proof.
   iIntros (mu) "Hmu_inv".
   wp_storeField.
   wp_storeField.
-  wp_apply (wp_NewSlice).
-  iIntros (conf_sl) "Hconf_sl".
   wp_storeField.
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
   iApply "HΦ".
@@ -731,10 +730,6 @@ Proof.
     iNext.
     iExists _, _, _.
     iFrame.
-    simpl.
-    replace (int.nat 0%Z) with 0%nat by word.
-    simpl.
-    iDestruct (is_slice_to_small with "Hconf_sl") as "$".
   }
   iFrame "Hmu".
   done.
@@ -840,10 +835,15 @@ Definition config_spec_list γ :=
 
 Lemma config_ghost_init conf :
   ⊢ |==> ∃ γ,
-    makeConfigServer_pre γ ∗
+    makeConfigServer_pre γ conf ∗
     own_epoch γ 0 ∗ own_config γ conf.
 Proof.
-Admitted.
+  iMod (mono_nat_own_alloc 0) as (γepoch) "[[Hepoch Hepoch2] _]".
+  iMod (ghost_var_alloc conf) as (γconf) "[Hconf Hconf2]".
+  iExists {| epoch_gn := _ ; config_val_gn:= _ |}.
+  iModIntro.
+  iFrame.
+Qed.
 
 Lemma config_server_init host γ :
   host c↦ ∅ ={⊤}=∗

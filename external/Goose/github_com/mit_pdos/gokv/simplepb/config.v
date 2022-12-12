@@ -137,11 +137,11 @@ Definition Server__WriteConfig: val :=
       #()).
 
 Definition MakeServer: val :=
-  rec: "MakeServer" <> :=
+  rec: "MakeServer" "initconfig" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "epoch" "s" #0;;
-    struct.storeF Server "config" "s" (NewSlice uint64T #0);;
+    struct.storeF Server "config" "s" "initconfig";;
     "s".
 
 Definition Server__Serve: val :=
