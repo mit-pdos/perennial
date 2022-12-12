@@ -1632,39 +1632,6 @@ Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv :
   }}}
 .
 Proof.
-  (*
-  iIntros (?) "#Hsys".
-  iIntros (Φ Φc) "!# Hpre HΦ".
-  iApply wpc_cfupd.
-
-  iNamed "Hpre".
-  iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
-  wpc_apply (wpc_crash_borrow_inits with "[] [Hfile Hcrash] []").
-  { admit. }
-  { iAccu. }
-  {
-    iModIntro.
-    instantiate (1:=(|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data')).
-    iIntros "[H1 H2]".
-    iModIntro.
-    iExists _.
-    iFrame.
-  }
-  iIntros "Hfile_ctx".
-
-  Search wpc.
-  wpc_apply (wpc_crash_mono _ _ _ _ _ (True%I) with "[HΦ]").
-  {
-    iLeft in "HΦ".
-    iIntros "_ Hupd".
-    iMod "Hupd" as (?) "[H1 H2]".
-    iModIntro.
-    iApply "HΦ".
-    iExists _.
-    iFrame.
-  }
-  iApply wp_wpc.
- *)
   iIntros (?) "#Hsys".
   iIntros (Φ) "!# Hpre HΦ".
   iNamed "Hpre".
