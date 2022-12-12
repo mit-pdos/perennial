@@ -1049,7 +1049,7 @@ Lemma pb_ghost_server_pre_init γsys :
   ⊢ ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) []
 .
 Proof.
-Admitted
+Admitted.
 
 (* FIXME: need to fix system initialization *)
 
