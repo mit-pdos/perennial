@@ -13,6 +13,14 @@ Section map.
   Notation gmap := (gmap K V).
   Implicit Types (m:gmap).
 
+Lemma size_list_to_map (l : list (K * V)) :
+  NoDup l.*1 →
+  size (list_to_map l : gmap) = length l.
+Proof.
+  intros Hnodup. rewrite <-size_dom, dom_list_to_map.
+  rewrite size_list_to_set //. rewrite fmap_length. done.
+Qed.
+
 Lemma dom_map_to_list m :
   dom m = list_to_set (map_to_list m).*1.
 Proof.

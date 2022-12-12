@@ -149,6 +149,18 @@ Definition ReadInt: val :=
     let: "i" := UInt64Get "b" in
     ("i", SliceSkip byteT "b" #8).
 
+Definition ReadBytes: val :=
+  rec: "ReadBytes" "b" "l" :=
+    let: "s" := SliceTake "b" "l" in
+    ("s", SliceSkip byteT "b" "l").
+
+(* Like ReadBytes, but avoids keeping the source slice [b] alive. *)
+Definition ReadBytesCopy: val :=
+  rec: "ReadBytesCopy" "b" "l" :=
+    let: "s" := NewSlice byteT "l" in
+    SliceCopy byteT "s" (SliceTake "b" "l");;
+    ("s", SliceSkip byteT "b" "l").
+
 (* Functions for the stateless encoder API *)
 Definition WriteInt: val :=
   rec: "WriteInt" "b" "i" :=

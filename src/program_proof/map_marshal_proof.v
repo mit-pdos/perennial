@@ -110,12 +110,18 @@ Proof.
   }
 Qed.
 
+Local Definition encode_maplist (l:list (u64 *list u8)) : list u8 :=
+  flat_map (λ u, (u64_le u.1) ++ (u64_le (int.Z (length (u.2)))) ++ u.2) l.
+
+Local Lemma encode_maplist_cons k data l :
+  encode_maplist ((k, data)::l) = (u64_le k) ++ (u64_le (int.Z (length data))) ++ data ++ encode_maplist l.
+Proof. done. Qed.
 
 Local Definition has_partial_byte_map_encoding (enc:list u8) (fullsize: u64) (m:gmap u64 (list u8)) : Prop :=
   ∃ l,
   NoDup l.*1 ∧
   (list_to_map l) = m ∧
-  enc = (u64_le fullsize) ++ flat_map (λ u, (u64_le u.1) ++ (u64_le (int.Z (length (u.2)))) ++ u.2) l.
+  enc = (u64_le fullsize) ++ encode_maplist l.
 
 Definition has_byte_map_encoding (enc:list u8) (m:gmap u64 (list u8)) : Prop :=
   int.Z (size m) = size m ∧ has_partial_byte_map_encoding enc (size m) m.
@@ -187,7 +193,7 @@ Proof.
        change data with ((λ v _, v) data v).
        rewrite map_insert_zip_with. rewrite insert_id //.
      - rewrite Hdata Henc. cbn. rewrite -!app_assoc. repeat f_equal.
-       rewrite flat_map_app. f_equal. cbn. rewrite -!app_assoc app_nil_r. repeat f_equal.
+       rewrite /encode_maplist flat_map_app. f_equal. cbn. rewrite -!app_assoc app_nil_r. repeat f_equal.
        move:Hsz. rewrite Hdata Hm. erewrite lookup_union_Some_l by done. cbn. intros. word.
   }
   iIntros "[Hkvs_map HI]". iNamed "HI".
@@ -207,12 +213,64 @@ Lemma wp_DecodeMapU64ToBytes m enc_sl enc enc_rest q :
   }}}
     DecodeMapU64ToBytes (slice_val enc_sl)
   {{{
-        rest_enc_sl q' mptr, RET (#mptr, slice_val enc_sl);
+        rest_enc_sl q' mptr, RET (#mptr, slice_val rest_enc_sl);
         own_byte_map mptr m ∗
         is_slice_small rest_enc_sl byteT q' enc_rest
   }}}.
 Proof.
-Admitted.
+  iIntros "%Φ H HΦ". iNamed "H". wp_call.
+  wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
+  wp_apply wp_byteMapNew. iIntros (mptr) "Hm".
+  wp_load.
+  destruct Henc as [Hsz (ls & Hnodup & Hls & Henc)]. subst enc.
+  rewrite -!app_assoc.
+  wp_apply (wp_ReadInt with "Henc_sl"). iIntros (s') "Hs". wp_store. clear enc_sl.
+  wp_apply wp_ref_to; first by val_ty. iIntros (li) "Hli". wp_pures.
+  wp_apply (wp_forUpto (λ i, ∃ s,
+              "Hm" ∷ own_byte_map mptr (list_to_map (take (int.nat i) ls)) ∗
+              "Hl" ∷ l ↦[slice.T byteT] (slice_val s) ∗
+              "Hs" ∷ is_slice_small s byteT q (encode_maplist (drop (int.nat i) ls) ++ enc_rest)
+  )%I with "[] [$Hli Hm Hl Hs]"); first word.
+  2:{ iExists _. iFrame. }
+  { (* core loop *)
+    clear s' Φ. iIntros (i Φ) " !#(I & Hli & %Hi) HΦ". iNamed "I". wp_lam.
+    replace (int.nat (u64_instance.u64.(word.add) i 1)) with (1 + int.nat i)%nat by word.
+    assert (is_Some (ls !! (int.nat i))) as [[k data] Hk].
+    { apply lookup_lt_is_Some_2. rewrite -Map.size_list_to_map //.
+      rewrite Hls. word. }
+    rewrite -(take_drop_middle _ _ _ Hk) in Hls Hnodup.
+    move:Hnodup. clear Hls.
+    erewrite take_S_r by done.
+    rewrite (drop_S _ _ _ Hk).
+    set ls_head := take (int.nat i) ls.
+    set ls_tail := drop (1+int.nat i) ls.
+    intros Hnodup.
+    rewrite encode_maplist_cons -!app_assoc.
+    wp_load.
+    wp_apply (wp_ReadInt with "Hs"). iIntros (s') "Hs".
+    wp_apply (wp_ReadInt with "Hs"). iIntros (s'') "Hs".
+    iDestruct (is_slice_small_sz with "Hs") as %Hdatasz.
+    wp_apply (wp_ReadBytesCopy with "Hs").
+    { rewrite !app_length in Hdatasz. word. }
+    iIntros (sl s''') "[Hval Hs]". wp_store. clear s s' s'' Hdatasz.
+    wp_apply (wp_byteMapPut with "[$Hm Hval]").
+    { iDestruct (is_slice_to_small with "Hval") as "$". }
+    iIntros "Hm". wp_pures. iApply "HΦ". iModIntro.
+    iFrame "Hli". iExists _. iFrame. iExactEq "Hm". rewrite /named. f_equal.
+    rewrite list_to_map_snoc //.
+    rewrite fmap_app NoDup_app in Hnodup.
+    destruct Hnodup as (_ & Hnin & _). intros Hin. eapply Hnin; first done.
+    eapply elem_of_list_fmap_1_alt.
+    - apply elem_of_list_here.
+    - done. }
+  iIntros "(I & Hli)". iNamed "I". wp_load. wp_pures. iApply "HΦ". iModIntro.
+  rewrite take_ge.
+  2:{ rewrite -Map.size_list_to_map // Hls. word. }
+  rewrite Hls. iFrame "Hm".
+  rewrite drop_ge.
+  2:{ rewrite -Map.size_list_to_map // Hls. word. }
+  done.
+Qed.
 
 Definition has_u64_map_encoding (enc:list u8) (m:gmap u64 u64) : Prop :=
   ∃ l,

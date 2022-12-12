@@ -25,6 +25,53 @@ Proof.
   iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
 Qed.
 
+Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
+  length head = int.nat len →
+  {{{ is_slice_small s byteT q (head ++ tail) }}}
+    ReadBytes (slice_val s) #len
+  {{{ b s' q', RET (slice_val b, slice_val s'); is_slice_small b byteT q' head ∗ is_slice_small s' byteT q' tail }}}.
+Proof.
+  iIntros (Hlen Φ) "[Hs1 Hs2] HΦ". wp_call.
+  wp_apply (wp_SliceTake_small with "Hs1").
+  { rewrite /list.untype fmap_app app_length !fmap_length. word. }
+  iIntros "Hs1".
+  wp_apply (wp_SliceSkip_small with "Hs2").
+  { rewrite /list.untype fmap_length app_length /=. word. }
+  iIntros (s') "Hs'". wp_pures. iApply "HΦ".
+  { rewrite /list.untype -fmap_take -fmap_drop.
+    rewrite take_app_alt // drop_app_alt //. iFrame. done. }
+Qed.
+
+Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
+  length head = int.nat len →
+  {{{ is_slice_small s byteT q (head ++ tail) }}}
+    ReadBytesCopy (slice_val s) #len
+  {{{ b s', RET (slice_val b, slice_val s'); is_slice b byteT 1 head ∗ is_slice_small s' byteT q tail }}}.
+Proof.
+  iIntros (Hlen Φ) "Hs HΦ". wp_call.
+  wp_apply wp_NewSlice. iIntros (b) "Hb".
+  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (is_slice_small_wf with "Hs") as %Hwf.
+  rewrite app_length in Hsz.
+  wp_apply wp_SliceTake.
+  { word. }
+  iDestruct (slice_small_split _ len with "Hs") as "[Hs Hsclose]".
+  { rewrite app_length. word. }
+  iDestruct (is_slice_small_acc with "Hb") as "[Hb Hbclose]".
+  wp_apply (wp_SliceCopy_full with "[$Hs $Hb]").
+  { iPureIntro. rewrite !list_untype_length replicate_length take_length app_length. word. }
+  iIntros "[Hs Hb]".
+  iDestruct (is_slice_combine with "Hs Hsclose") as "Hs".
+  { word. }
+  rewrite take_drop.
+  wp_apply (wp_SliceSkip_small with "Hs").
+  { rewrite list_untype_length app_length. word. }
+  iIntros (s') "Hs'".
+  wp_pures. iApply "HΦ". iModIntro. iSplitR "Hs'".
+  - iApply "Hbclose". rewrite take_app_alt //.
+  - rewrite /list.untype -fmap_drop drop_app_alt //.
+Qed.
+
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
     compute_new_cap #old_cap #min_cap

@@ -19,7 +19,8 @@ Definition DecodeMapU64ToU64: val :=
   rec: "DecodeMapU64ToU64" "enc_in" :=
     let: "enc" := ref_to (slice.T byteT) "enc_in" in
     let: "kvs" := NewMap uint64T #() in
-    let: ("numEntries", "enc") := marshal.ReadInt (![slice.T byteT] "enc") in
+    let: ("numEntries", "enc2") := marshal.ReadInt (![slice.T byteT] "enc") in
+    "enc" <-[slice.T byteT] "enc2";;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "numEntries"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       let: "key" := ref (zero_val uint64T) in
@@ -48,21 +49,15 @@ Definition DecodeMapU64ToBytes: val :=
   rec: "DecodeMapU64ToBytes" "enc_in" :=
     let: "enc" := ref_to (slice.T byteT) "enc_in" in
     let: "kvs" := NewMap (slice.T byteT) #() in
-    let: ("numEntries", "enc") := marshal.ReadInt (![slice.T byteT] "enc") in
+    let: ("numEntries", "enc2") := marshal.ReadInt (![slice.T byteT] "enc") in
+    "enc" <-[slice.T byteT] "enc2";;
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "numEntries"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      let: "key" := ref (zero_val uint64T) in
-      let: "valLen" := ref (zero_val uint64T) in
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-      "key" <-[uint64T] "0_ret";;
-      "enc" <-[slice.T byteT] "1_ret";;
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-      "valLen" <-[uint64T] "0_ret";;
-      "enc" <-[slice.T byteT] "1_ret";;
-      let: "val" := NewSlice byteT (![uint64T] "valLen") in
-      SliceCopy byteT "val" (SliceTake (![slice.T byteT] "enc") (![uint64T] "valLen"));;
-      "enc" <-[slice.T byteT] SliceSkip byteT (![slice.T byteT] "enc") (![uint64T] "valLen");;
-      MapInsert "kvs" (![uint64T] "key") "val";;
+      let: ("key", "enc3") := marshal.ReadInt (![slice.T byteT] "enc") in
+      let: ("valLen", "enc4") := marshal.ReadInt "enc3" in
+      let: ("val", "enc5") := marshal.ReadBytesCopy "enc4" "valLen" in
+      "enc" <-[slice.T byteT] "enc5";;
+      MapInsert "kvs" "key" "val";;
       Continue);;
     ("kvs", ![slice.T byteT] "enc").
 
