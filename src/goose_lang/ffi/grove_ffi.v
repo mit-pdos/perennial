@@ -302,7 +302,9 @@ Section grove.
        ffi_global_start _ _ g :=
          ([∗ map] e↦ms ∈ g.(grove_net), (mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
        ffi_restart _ _ _ := True%I;
-       ffi_crash_rel Σ hF1 σ1 hF2 σ2 := True%I;
+      ffi_crash_rel Σ hF1 σ1 hF2 σ2 :=
+        (* TODO: you could also assume the tsc is non-decreasing across a crash *)
+       ⌜ hF1 = hF2 ∧ σ1.(grove_node_files) = σ2.(grove_node_files) ⌝%I;
     |}.
 End grove.
 
@@ -1207,14 +1209,9 @@ Next Obligation.
   iExists (GroveNodeGS _ _ tsc_name _). eauto with iFrame.
 Qed.
 Next Obligation.
-  (* FIXME why do we have to prove two lemmas that init the same ghost state?
-  We do NOT want new ghost state for each generation, just one used globally, so this feels redundant. *)
-  iIntros (Σ σ σ' Hcrash Hold) "(_ & %Hfilebound & _)".
+  iIntros (Σ σ σ' Hcrash Hold) "(Htsc_old & %Hfilebound & Hfiles_old)".
   simpl in Hold. destruct Hcrash.
-  iMod (mono_nat_own_alloc (int.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
-  iMod (gen_heap_init σ.(grove_node_files)) as (names) "(H1&H2&_)".
-  iExists (GroveNodeGS _ _ tsc_name _).
-  simpl. iFrame. iPureIntro. done.
+  iExists Hold. iFrame. iPureIntro. done.
 Qed.
 
 Section crash.
@@ -1226,9 +1223,10 @@ Section crash.
     f f↦{q} v -∗ post_crash (λ _, f f↦{q} v).
   Proof.
     iIntros "H". iIntros (???) "#Hrel".
-    rewrite /ffi_crash_rel. (* FIXME: change ffi_crash_rel to make this true *)
+    iDestruct "Hrel" as %(Heq1&Heq2).
     rewrite /goose_groveNodeGS.
-  Admitted.
+    rewrite Heq1. eauto.
+  Qed.
 
   Global Instance file_pointsto_crash `{!heapGS Σ} fname data q:
     IntoCrash (fname f↦{q} data)%I (λ hG, fname f↦{q} data)%I.
