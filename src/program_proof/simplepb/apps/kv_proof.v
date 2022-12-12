@@ -9,6 +9,7 @@ From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 From Perennial.program_proof Require Import map_marshal_proof.
 From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.simplepb Require Import config_proof.
+From Perennial.program_proof.simplepb Require Import pb_init_proof.
 
 Section global_proof.
 
@@ -25,7 +26,7 @@ Definition apply_op (state:gmap u64 (list u8)) (op:kv64Op) :=
 .
 
 Definition compute_state ops : gmap u64 (list u8) :=
-  foldl apply_op ∅ ops.
+  foldl apply_op (gset_to_gmap [] (fin_to_set u64)) ops.
 
 Definition compute_reply ops op : (list u8) :=
   match op with
@@ -91,7 +92,17 @@ Lemma kv_system_init :
     is_proposal_facts γsys (U64 0) []
 .
 Proof.
-Admitted.
+  iMod (pb_system_init) as (γsys) "(#Hsys & Hghost & Hpb_init)".
+  iExists γsys.
+  iMod (pb_init_log with "Hghost") as (γlog) "[Hlog #Hisinv]".
+  iExists γlog.
+  iMod (ghost_map_alloc (gset_to_gmap [] (fin_to_set u64))) as (γkv) "[Hkvs Hkvptsto]".
+  iExists _.
+  iFrame "#".
+  iMod (inv_alloc with "[Hkvs Hlog]") as "$".
+  { iNext. iExists _; iFrame. }
+  by iFrame.
+Qed.
 
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
   k ↪[γkv] v.
@@ -414,7 +425,7 @@ Proof.
   iMod (readonly_load with "Hsnap_sl") as (?) "Hsnap_sl2".
   wp_apply (wp_DecodeMapU64ToBytes with "[Hsnap_sl2]").
   {
-    rewrite /pb_record.(pb_has_snap_encoding) /= in Hsnap.
+    rewrite /kv_record.(pb_has_snap_encoding) /= in Hsnap.
     iSplitR; first done.
     iApply to_named.
     iExactEq "Hsnap_sl2".
@@ -503,6 +514,20 @@ Proof.
   iModIntro.
   iExists _.
   iFrame.
+
+  iNamed "Hmap".
+  iExists _.
+  iFrame.
+  iIntros (?).
+  unfold compute_state.
+  simpl.
+  rewrite lookup_gset_to_gmap.
+  simpl.
+  rewrite option_guard_True; last set_solver.
+  simpl.
+  iSpecialize ("Hkvs_slices" $! k).
+  rewrite lookup_empty /=.
+  iFrame "#".
 Qed.
 
 Lemma wp_Start fname host γsys γsrv data :
@@ -545,6 +570,11 @@ Lemma kv_server_init fname γsys γsrv :
   fname f↦ [] ∗
   file_crash (own_Server_ghost γsys γsrv) [].
 Proof.
-Admitted.
+  iIntros "[Hfile HP]".
+  iFrame "Hfile".
+  iLeft.
+  iFrame.
+  done.
+Qed.
 
 End local_init_proof.

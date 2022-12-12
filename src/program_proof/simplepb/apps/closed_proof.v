@@ -37,6 +37,14 @@ Proof. intros. solve_inG. Qed.
 
 Definition replica_fname := "kv.data".
 
+#[global]
+Instance sys_inv_into_crash `{!heapGS Σ} EntryType `{!pb_ghostG Σ} γsys :
+  IntoCrash (sys_inv γsys) (λ _, sys_inv (EntryType:=EntryType) γsys)
+.
+Proof.
+  rewrite /IntoCrash /sys_inv.
+  iIntros "$". done.
+Qed.
 
 Lemma kv_pb_boot :
   ∀ σconfig σsrv1 σsrv2 (g : goose_lang.global_state),
@@ -147,6 +155,8 @@ Proof.
       iNext.
       iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
       iDestruct (into_crash with "Hfile") as "Hfile".
+      iDestruct (into_crash with "Hsys") as "Hsys2".
+      (* iCrash. *)
       rewrite /post_crash.
       iIntros. iModIntro.
       iSplit; first done. iIntros. iSplit; first done.

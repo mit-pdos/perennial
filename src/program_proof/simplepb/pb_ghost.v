@@ -960,7 +960,10 @@ Lemma pb_system_init :
   ⊢ |={⊤}=> ∃ γsys,
     sys_inv γsys ∗
     own_ghost γsys [] ∗
-    pb_init_config γsys.
+    pb_init_config γsys ∗
+    is_proposal_lb γsys (U64 0) [] ∗
+    is_proposal_facts γsys (U64 0) []
+.
 Proof.
   (* allocate ghost state, and establish sys_inv *)
 Admitted.
