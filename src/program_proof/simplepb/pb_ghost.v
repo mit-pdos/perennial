@@ -1048,6 +1048,47 @@ Lemma pb_ghost_server_pre_init :
   ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0)
 .
 Proof.
+  iMod (alloc_const_gmap (●ML [])) as (γacc) "Hacc".
+  { apply mono_list_auth_valid. }
+  iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1) ())) as (γtok) "Htoks".
+  { done. }
+  iMod (mono_nat_own_alloc 0) as (γepoch) "[Hepoch Hepoch_lb]".
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hacc") as "[Hacc Haccrest]".
+  { set_solver. }
+  iDestruct (own_mono with "Hacc") as "H".
+  {
+    apply singleton_mono.
+    rewrite mono_list_auth_lb_op.
+    done.
+  }
+  iDestruct "H" as "[Hacc #Hacc_lb]".
+
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Htoks") as "[Htok Htoksrest]".
+  { set_solver. }
+  iExists {| pb_epoch_gn := _ ; pb_accepted_gn := _ ; pb_escrow_gn := _ |}.
+  iModIntro.
+  iFrame "∗#".
+  iSplitL "Haccrest".
+  {
+    iApply "Haccrest".
+    {
+      iModIntro.
+      iIntros.
+      iFrame.
+    }
+    {
+      iLeft. done.
+    }
+  }
+  iApply "Htoksrest".
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  {
+    iLeft. done.
+  }
 Qed.
 
 (* Right order of allocation:
