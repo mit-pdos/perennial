@@ -1484,7 +1484,17 @@ Proof.
   assert (numOpsApplied = length rest_ops_bytes ∨ numOpsApplied < length rest_ops) as [ | Hbad] by word.
   2:{
     exfalso.
-    admit. (* TODO: prove that there's another operation leftover, so the list size is too small *)
+    Search drop.
+    assert (length (drop numOpsApplied rest_ops_bytes) > 0).
+    { rewrite drop_length. lia. }
+    edestruct (Hop_bytes (numOpsApplied)) as (op&op_len_bytes&op_bytes&Hlookup1&Hlookup2&Henc&Hlen_bytes).
+    { lia. }
+    erewrite drop_S in Hrest_data_sz; eauto.
+    rewrite /= ?app_length in Hrest_data_sz.
+    rewrite Hlen_bytes u64_le_length in Hrest_data_sz.
+    assert (int.nat (rest_ops_sl.(Slice.sz)) <= 1).
+    { word. }
+    lia.
   }
 
   iDestruct (is_slice_small_sz with "Hdata_sl") as %Hdata_sl_sz.
@@ -1500,7 +1510,8 @@ Proof.
     destruct sealed.
     2:{
       exfalso.
-      admit. (* TODO: pure reasoning about size of sealed_bytes vs size of u64_le X *)
+      rewrite List.skipn_all /= ?Hsealedbytes /= in Hdata_sl_sz; last by lia.
+      word.
     }
     iApply "HΦ".
     iModIntro.
@@ -1536,8 +1547,8 @@ Proof.
   {
     exfalso.
     assert (int.nat rest_ops_sl.(Slice.sz) = 0%nat).
-    {
-      admit. (* TODO: should follow trivially from ¬ 0 < rest_ops_sl.sz in Heqb1 *)
+    { assert (int.Z 0 = 0%Z) as Heq_Z0 by auto.
+      rewrite Heq_Z0 in Heqb1. word.
     }
     rewrite -Hdata_sl_sz in H0.
     rewrite app_length in H0.
