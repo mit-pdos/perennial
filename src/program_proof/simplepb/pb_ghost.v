@@ -986,7 +986,7 @@ Definition pb_init_config γsys : iProp Σ :=
       config_unset γsys epoch ∗
       config_proposal_unset γsys epoch)).
 
-Lemma pb_system_init :
+Lemma pb_system_init (confγs:list pb_server_names) :
   ⊢ |={⊤}=> ∃ γsys,
     sys_inv γsys ∗
     own_ghost γsys [] ∗
@@ -1037,8 +1037,23 @@ Proof.
   }
 Admitted.
 
+Definition own_server_pre γsrv : iProp Σ :=
+  "Hepoch" ∷ own_epoch γsrv 0 ∗
+  "Haccepted" ∷ own_accepted γsrv 0 [] ∗
+  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat 0⌝ ∨
+                                                      own_accepted γsrv e' []) ∗
+  "Hescrow_toks" ∷ own_escrow_toks γsrv 0
+.
+
+Lemma pb_ghost_server_pre_init γsys :
+  ⊢ ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) []
+.
+Proof.
+Admitted
+
 (* FIXME: need to fix system initialization *)
-(*
+
+(* Right order of allocation:
   Allocate the purely local state of each server.
   Use that to pick the config for epoch 0.
   Set up system state and sys_inv.
