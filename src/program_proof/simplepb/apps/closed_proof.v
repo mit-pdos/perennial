@@ -11,6 +11,7 @@ From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.program_proof.simplepb.apps Require Import closed_wpcs.
 From Perennial.goose_lang Require Import crash_borrow crash_modality.
+From Perennial.goose_lang Require Import typed_slice.
 
 Module closed.
 
@@ -171,11 +172,60 @@ Proof.
    }
 Qed.
 
+Lemma wp_config_main γconf {Σ} {HKV: kv64G Σ} {HG} {HL}:
+  let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
+  "HconfInit" ∷ makeConfigServer_pre γconf [U64 1; U64 2] ∗
+  "#Hhost" ∷ is_host configHost γconf -∗
+  WP config_main #() {{ _, True }}
+.
+Proof.
+  intros ?.
+  iNamed 1.
+  wp_call.
+  wp_apply (wp_NewSlice).
+  iIntros (?) "Hsl".
+  wp_apply wp_ref_to.
+  { done. }
+  iIntros (servers_ptr) "Hservers".
+  wp_pures.
+
+  wp_apply (wp_LoadAt with "[$Hservers]").
+  iIntros "Hservers".
+  wp_apply (wp_SliceAppend with "Hsl").
+  iIntros (?) "Hsl".
+  wp_apply (wp_StoreAt with "[$Hservers]").
+  { done. }
+  iIntros "Hservers".
+
+  wp_apply (wp_LoadAt with "[$Hservers]").
+  iIntros "Hservers".
+  wp_apply (wp_SliceAppend with "Hsl").
+  iIntros (?) "Hsl".
+  wp_apply (wp_StoreAt with "[$Hservers]").
+  { done. }
+  iIntros "Hservers".
+
+  wp_apply (wp_LoadAt with "[$Hservers]").
+  iIntros "Hservers".
+  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  rewrite replicate_0.
+  simpl.
+  wp_apply (config_proof.wp_MakeServer with "[$HconfInit $Hsl]").
+  iIntros (?) "#Hissrv".
+  wp_apply (wp_Server__Serve with "[$]").
+  {
+    iFrame "Hissrv".
+  }
+  wp_pures.
+  done.
+Qed.
+
+
+
 Local Instance subG_kv64Σ {Σ} : subG kv_pbΣ Σ → kv64G Σ.
 Proof. intros. solve_inG. Qed.
 
 Definition replica_fname := "kv.data".
-
 
 Lemma kv_pb_boot :
   ∀ σconfig σsrv1 σsrv2 (g : goose_lang.global_state),
@@ -258,13 +308,7 @@ Proof.
       instantiate (1:=λ _, True%I).
       simpl.
       iApply wp_wpc.
-      wp_call.
-      wp_apply (config_proof.wp_MakeServer with "HconfInit").
-      iIntros (?) "#Hisconf_server".
-      wp_apply (config_proof.wp_Server__Serve with "[$]").
-      { iFrame "#". }
-      wp_pures.
-      by iModIntro.
+      iApply (wp_config_main _ with "[$]").
     }
     { (* crash; there should actually be no crashes of the config server *)
       iModIntro.

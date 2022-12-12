@@ -36,7 +36,7 @@ Definition is_conf_inv γpb γconf : iProp Σ :=
 Lemma config_ghost_init_2 γsys conf confγs :
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γsys γsrv) -∗
   pb_init_config γsys confγs
-  ={⊤}=∗ ∃ γconf, is_conf_inv γsys γconf ∗ makeConfigServer_pre γconf.
+  ={⊤}=∗ ∃ γconf, is_conf_inv γsys γconf ∗ makeConfigServer_pre γconf conf.
 Proof.
   iIntros "#Hhosts Hinitconf".
   iMod (config_ghost_init conf) as (γconf) "(Hconfpre & Hepoch & Hconf)".
