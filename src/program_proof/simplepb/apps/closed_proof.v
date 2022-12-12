@@ -68,10 +68,16 @@ Proof.
 
   iMod (pb_system_init) as "HH".
   iMod (pb_system_init) as (γsys) "(#Hsys & Hghost & Hpbsysinit)".
-  iMod (pb_init_log γsys) as "HH".
+
+  eassert (pbG (pb_record:=kv_record) kv_pbΣ) as HpbG.
+  { apply _. }
+  iMod (pb_init_log γsys with "[Hghost]") as "HH2".
+  {
+    iExactEq "Hghost".
+    f_equal.
+  }
 
   iMod (pb_init_log γsys with "[Hghost]") as (γlog) "[Hlog #Hloginv]".
-  Set Printing All.
 
   iMod (config_ghost_init) as (γconf) "HconfInit".
   iMod (config_server_init configHost γconf with "[]") as "#HisConf".
