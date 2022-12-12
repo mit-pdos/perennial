@@ -838,10 +838,10 @@ Definition config_spec_list γ :=
     (U64 1, GetConfig_spec γ) ;
     (U64 2, WriteConfig_spec γ)].
 
-Lemma config_ghost_init :
+Lemma config_ghost_init conf :
   ⊢ |==> ∃ γ,
     makeConfigServer_pre γ ∗
-    own_epoch γ 0 ∗ own_config γ [].
+    own_epoch γ 0 ∗ own_config γ conf.
 Proof.
 Admitted.
 

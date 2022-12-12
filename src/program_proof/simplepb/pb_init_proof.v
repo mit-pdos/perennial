@@ -17,17 +17,14 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
-Lemma pb_server_init γsys :
-  is_proposal_lb γsys (U64 0) [] -∗
-  is_proposal_facts γsys (U64 0) [] ={⊤}=∗
-  ∃ γsrv,
+Lemma pb_server_init γsys γsrv :
+  is_sys_init_witness γsys -∗
+  own_server_pre γsrv -∗
   own_Server_ghost γsys γsrv (U64 0) [] false.
 Proof.
-  iIntros "#H1 #H2".
-  iMod (pb_ghost_server_init with "H1 H2") as (?) "[Hrep Hprim]".
-  iExists γsrv.
+  iIntros "#H1 Hpre".
+  iDestruct (pb_ghost_server_init with "H1 Hpre") as "[Hrep Hprim]".
   iExists [].
-  iModIntro.
   iSplitR; first done.
   iFrame.
 Qed.

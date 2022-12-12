@@ -81,10 +81,25 @@ Definition stateN := nroot .@ "state".
 Definition kv_inv γ γkv : iProp Σ :=
   inv stateN ( ∃ ops, own_log γ ops ∗ own_kvs γkv ops).
 
-Lemma kv_system_init :
-  ⊢ |={⊤}=>
+Definition own_kv_server_pre_init γsrv := own_server_pre γsrv.
+Definition is_kv_server_pre_init_witness γsrv : iProp Σ :=
+  is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0).
+
+Lemma kv_server_pre_initialize :
+  ⊢ |==> ∃ γsrv,
+      own_kv_server_pre_init γsrv ∗ is_kv_server_pre_init_witness γsrv
+.
+Proof.
+  iMod (pb_ghost_server_pre_init) as (γsrv) "HH".
+  iModIntro.
+  iExists _; iFrame.
+Qed.
+
+Lemma kv_system_init confγs :
+  (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_kv_server_pre_init_witness γsrv)
+           ={⊤}=∗
   ∃ γsys γlog γkv ,
-    pb_init_config γsys ∗
+    pb_init_config γsys confγs ∗
     is_inv γlog γsys ∗
     sys_inv γsys ∗
     kv_inv γlog γkv ∗
@@ -92,7 +107,13 @@ Lemma kv_system_init :
     is_proposal_facts γsys (U64 0) []
 .
 Proof.
-  iMod (pb_system_init) as (γsys) "(#Hsys & Hghost & Hpb_init)".
+  iIntros "#Hpre".
+  iMod (pb_system_init confγs with "[Hpre]") as (γsys) "(#Hsys & Hghost & Hpb_init)".
+  {
+    iIntros.
+    iApply "Hpre".
+    done.
+  }
   iExists γsys.
   iMod (pb_init_log with "Hghost") as (γlog) "[Hlog #Hisinv]".
   iExists γlog.
@@ -102,6 +123,16 @@ Proof.
   iMod (inv_alloc with "[Hkvs Hlog]") as "$".
   { iNext. iExists _; iFrame. }
   by iFrame.
+Qed.
+
+Lemma kv_server_pre_init :
+  ⊢ |==> ∃ γsrv,
+      own_kv_server_pre_init γsrv ∗ is_kv_server_pre_init_witness γsrv
+.
+Proof.
+  iMod (pb_ghost_server_pre_init) as (γsrv) "HH".
+  iModIntro.
+  iExists _; iFrame.
 Qed.
 
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
@@ -565,13 +596,15 @@ Context `{!gooseLocalGS Σ}.
 Context `{!kv64G Σ}.
 
 Lemma kv_server_init fname γsys γsrv :
-  fname f↦ [] ∗
-  own_Server_ghost γsys γsrv (U64 0) [] false ={⊤}=∗
+  fname f↦ [] -∗
+  is_sys_init_witness γsys -∗
+  own_kv_server_pre_init γsrv ={⊤}=∗
   fname f↦ [] ∗
   file_crash (own_Server_ghost γsys γsrv) [].
 Proof.
-  iIntros "[Hfile HP]".
+  iIntros "Hfile #Hwit Hpre".
   iFrame "Hfile".
+  iDestruct (pb_server_init with "Hwit Hpre") as "HH".
   iLeft.
   iFrame.
   done.

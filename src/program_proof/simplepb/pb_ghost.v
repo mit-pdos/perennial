@@ -979,22 +979,27 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Definition pb_init_config γsys : iProp Σ :=
-    ([∗ set] epoch ∈ (fin_to_set u64),
-     (own_proposal_unused γsys epoch ∗
-      own_init_proposal_unused γsys epoch ∗
-      config_unset γsys epoch ∗
-      config_proposal_unset γsys epoch)).
+Definition pb_init_config γsys confγs : iProp Σ :=
+  "#His_conf" ∷ is_epoch_config γsys 0 confγs ∗
+  "#His_conf_prop" ∷ is_epoch_config_proposal γsys 0 confγs ∗
+  (* "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) ∗ *)
+  "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_epoch_lb γsrv 0) ∗
+  "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat epoch'⌝ → config_proposal_unset γsys epoch' ∗ config_unset γsys epoch' ∗ own_proposal_unused γsys epoch' ∗ own_init_proposal_unused γsys epoch')
+.
+
+Definition is_sys_init_witness γsys : iProp Σ :=
+  is_proposal_lb γsys (U64 0) [] ∗ is_proposal_facts γsys (U64 0) [].
 
 Lemma pb_system_init (confγs:list pb_server_names) :
-  ⊢ |={⊤}=> ∃ γsys,
+(∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv 0) ={⊤}=∗
+    ∃ γsys,
     sys_inv γsys ∗
     own_ghost γsys [] ∗
-    pb_init_config γsys ∗
-    is_proposal_lb γsys (U64 0) [] ∗
-    is_proposal_facts γsys (U64 0) []
+    pb_init_config γsys confγs ∗
+    is_sys_init_witness γsys
 .
 Proof.
+  iIntros "#Hacc".
   (* allocate ghost state, and establish sys_inv *)
   iMod (own_alloc (●ML [])) as "Hghost".
   { apply mono_list_auth_valid. }
@@ -1028,13 +1033,6 @@ Proof.
   iDestruct (big_sepS_elem_of_acc with "Hproposal") as "[Hprop Hproposal]".
   { instantiate (1:=0). set_solver. }
   iSpecialize ("Hproposal" with "Hprop").
-  iSplitL.
-  {
-    rewrite big_sepS_sep.
-    rewrite big_sepS_sep.
-    rewrite big_sepS_sep.
-    iFrame.
-  }
 Admitted.
 
 Definition own_server_pre γsrv : iProp Σ :=
@@ -1042,16 +1040,15 @@ Definition own_server_pre γsrv : iProp Σ :=
   "Haccepted" ∷ own_accepted γsrv 0 [] ∗
   "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat e' ≤ int.nat 0⌝ ∨
                                                       own_accepted γsrv e' []) ∗
-  "Hescrow_toks" ∷ own_escrow_toks γsrv 0
+  "Hescrow_toks" ∷ own_escrow_toks γsrv 0 ∗
+  "Hescrow_toks0" ∷ own_tok γsrv 0
 .
 
-Lemma pb_ghost_server_pre_init γsys :
-  ⊢ ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) []
+Lemma pb_ghost_server_pre_init :
+  ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0)
 .
 Proof.
 Admitted.
-
-(* FIXME: need to fix system initialization *)
 
 (* Right order of allocation:
   Allocate the purely local state of each server.
@@ -1060,25 +1057,23 @@ Admitted.
   Finish setting up local state, how that sys_inv is available.
 *)
 
-Lemma pb_system_pick_initial_config γsys initγsrvs :
-  pb_init_config γsys ==∗
-  is_epoch_config γsys (U64 0) initγsrvs ∗
-  is_epoch_config_proposal γsys (U64 0) initγsrvs ∗
-  ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat (U64 0) < int.nat epoch'⌝ → config_proposal_unset γsys epoch' ∗ config_unset γsys epoch' ∗ own_proposal_unused γsys epoch' ∗ own_init_proposal_unused γsys epoch')
-.
-Proof.
-  (* update ghost state *)
-Admitted.
-
-Lemma pb_ghost_server_init γsys :
-  is_proposal_lb γsys (U64 0) [] -∗
-  is_proposal_facts γsys (U64 0) [] ={⊤}=∗
-  ∃ γsrv,
+Lemma pb_ghost_server_init γsys γsrv :
+  is_sys_init_witness γsys -∗
+  own_server_pre γsrv
+  -∗
   own_replica_ghost γsys γsrv (U64 0) [] false ∗
   own_primary_ghost γsys γsrv (U64 0) []
 .
 Proof.
-  (* allocate ghost state and split it up appropriately *)
-Admitted.
+  iIntros "[#Hprop_lb #Hfacts] Hown".
+  iNamed "Hown".
+  iSplitL "Hepoch Haccepted Haccepted_rest".
+  {
+    iFrame "∗#%".
+    done.
+  }
+  iFrame.
+  iFrame "#".
+Qed.
 
 End pb_protocol.

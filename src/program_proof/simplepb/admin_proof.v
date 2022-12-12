@@ -33,29 +33,26 @@ Definition is_conf_inv γpb γconf : iProp Σ :=
 .
 
 (* before calling this lemma, have to already allocate pb ghost state *)
-Lemma config_ghost_init_2 γsys :
-  pb_init_config γsys ={⊤}=∗ ∃ γconf, is_conf_inv γsys γconf ∗ makeConfigServer_pre γconf.
+Lemma config_ghost_init_2 γsys conf confγs :
+  ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γsys γsrv) -∗
+  pb_init_config γsys confγs
+  ={⊤}=∗ ∃ γconf, is_conf_inv γsys γconf ∗ makeConfigServer_pre γconf.
 Proof.
-  iIntros "Hinitconf".
-  iMod (config_ghost_init) as (γconf) "(Hconfpre & Hepoch & Hconf)".
+  iIntros "#Hhosts Hinitconf".
+  iMod (config_ghost_init conf) as (γconf) "(Hconfpre & Hepoch & Hconf)".
   iExists _; iFrame "Hconfpre".
   iMod (inv_alloc with "[-]") as "$"; last done.
   iNext.
-  iExists (U64 0), [], [], (U64 0).
+  iExists (U64 0), conf, confγs, (U64 0).
   iFrame.
-
-  (* get ghost state and facts from pb *)
-  iSplitR; first admit.
-  iSplitR; first admit.
-  iSplitR; first admit.
-  iSplitR; first admit.
-  iSplitR; first admit.
+  iNamed "Hinitconf".
+  iFrame "∗#%".
   iSplitR.
   { iRight. done. }
   iIntros (???).
   exfalso.
   word.
-Admitted.
+Qed.
 
 End config_global.
 

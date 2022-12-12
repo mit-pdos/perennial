@@ -65,16 +65,12 @@ Qed.
 Definition kv_replica_main1_crash_cond `{kv64G Σ} γsys replica_fname γsrv1:=
 (λ hG : heapGS Σ, ∃ data', (replica_fname f↦ data') ∗ ▷ file_crash (own_Server_ghost γsys γsrv1) data')%I.
 
-Lemma wpr_kv_replica_main1 γsys γlog γsrv1 γconf γkv {Σ} {HKV: kv64G Σ}
+Lemma wpr_kv_replica_main1 γsys γlog γsrv1 γkv {Σ} {HKV: kv64G Σ}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   "Hinv" ∷ is_inv γlog γsys -∗
   "Hsys" ∷ sys_inv γsys -∗
   "Hkvinv" ∷ kv_inv γlog γkv -∗
-  "Hprop_lb" ∷ is_proposal_lb γsys 0%Z [] -∗
-  "Hprop_facts" ∷ is_proposal_facts γsys 0%Z [] -∗
-  "Hconf" ∷ is_conf_inv γsys γconf -∗
-  "Hconfhost" ∷ is_host configHost γconf -∗
   "Hsrvhost1" ∷ is_pb_host r1Host γsys γsrv1 -∗
   "Hinit" ∷ replica_fname f↦[] -∗
   "Hfile_crash" ∷ file_crash (own_Server_ghost γsys γsrv1) [] -∗
@@ -122,16 +118,12 @@ Proof.
    }
 Qed.
 
-Lemma wpr_kv_replica_main2 γsys γlog γsrv1 γconf γkv {Σ} {HKV: kv64G Σ}
+Lemma wpr_kv_replica_main2 γsys γlog γsrv1 γkv {Σ} {HKV: kv64G Σ}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   "Hinv" ∷ is_inv γlog γsys -∗
   "Hsys" ∷ sys_inv γsys -∗
   "Hkvinv" ∷ kv_inv γlog γkv -∗
-  "Hprop_lb" ∷ is_proposal_lb γsys 0%Z [] -∗
-  "Hprop_facts" ∷ is_proposal_facts γsys 0%Z [] -∗
-  "Hconf" ∷ is_conf_inv γsys γconf -∗
-  "Hconfhost" ∷ is_host configHost γconf -∗
   "Hsrvhost2" ∷ is_pb_host r2Host γsys γsrv1 -∗
   "Hinit" ∷ replica_fname f↦[] -∗
   "Hfile_crash" ∷ file_crash (own_Server_ghost γsys γsrv1) [] -∗
@@ -215,26 +207,24 @@ Proof.
   iSplitR ""; last first.
   { iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
 
-  (* TODO: initialize ghost state, including RPC stuff *)
-  (*
-    Here's the order stuff gets allocated in.
-    - pb global state (includes config and epoch points tos)
-    - is_host for config server
-    - each replica server's ghost state
-    - each replica server's ghost state
-    - is_host for each pb server
-    - config server state, and the is_conf_inv invariant
-  *)
-  iMod (kv_system_init) as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hprop_lb & #Hprop_facts)".
-  iMod (config_ghost_init_2 γsys with "Hconfinit") as (γconf) "[#Hconf HconfInit]".
+  (* First, pre-set up the two KV replica servers *)
+  iMod (kv_server_pre_initialize) as (γsrv1) "[Hsrv1 #Hsrv1wit]".
+  iMod (kv_server_pre_initialize) as (γsrv2) "[Hsrv2 #Hsrv2wit]".
 
+  (* Then, set up the KV system *)
+  set (confγs:=[γsrv1 ; γsrv2]).
+  iMod (kv_system_init confγs with "[]") as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hsyswit)".
+  {
+    iIntros.
+    unfold confγs in H.
+    rewrite elem_of_list_In in H.
+    simpl in H.
+    naive_solver.
+  }
+
+  (* Now, set up all the hosts *)
   iDestruct (big_sepM_delete with "Hchan") as "[HconfChan Hchan]".
-  { apply HconfChan. }
-
-  iMod (config_server_init configHost γconf with "HconfChan") as "#Hconfhost".
-
-  iMod (pb_server_init with "Hprop_lb Hprop_facts") as (γsrv1) "Hsrv1".
-  iMod (pb_server_init with "Hprop_lb Hprop_facts") as (γsrv2) "Hsrv2".
+  { apply HconfChan. } (* get out conf chan pointts-to for later *)
 
   iDestruct (big_sepM_delete with "Hchan") as "[Hr1Chan Hchan]".
   { rewrite lookup_delete_Some. split; last apply Hr1Chan. done. }
@@ -245,6 +235,16 @@ Proof.
     rewrite lookup_delete_Some.
     split; last (split ; last apply Hr2Chan); done. }
   iMod (pb_host_init r2Host with "Hr2Chan") as "#Hsrvhost2".
+
+  set (conf:=[r1Host ; r2Host]).
+  iMod (config_ghost_init_2 γsys conf confγs with "[] Hconfinit") as (γconf) "[#Hconf HconfInit]".
+  {
+    iFrame "#".
+    by iApply big_sepL2_nil.
+  }
+
+  iMod (config_server_init configHost γconf with "HconfChan") as "#Hconfhost".
+
 
   iModIntro.
   simpl. iSplitL "HconfInit".
@@ -284,12 +284,12 @@ Proof.
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iMod (kv_server_init with "[$Hsrv1 $HH]") as "Hinit".
+    iMod (kv_server_init with "HH Hsyswit Hsrv1") as "Hinit".
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     iDestruct "Hinit" as "(?&?)".
-    iApply (@wpr_kv_replica_main1 with "[$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
+    iApply (@wpr_kv_replica_main1 with "[$] [$] [$] [$] [$] [$]").
   }
   (* TODO: do like above for replica main1 as separate lemma *)
   iSplitL "Hsrv2".
@@ -297,12 +297,12 @@ Proof.
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iMod (kv_server_init with "[$Hsrv2 $HH]") as "Hinit".
+    iMod (kv_server_init with "HH Hsyswit Hsrv2") as "Hinit".
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     iDestruct "Hinit" as "(?&?)".
-    iApply (@wpr_kv_replica_main2 with "[$] [$] [$] [$] [$] [$] [$] [$] [$] [$]").
+    iApply (@wpr_kv_replica_main2 with "[$] [$] [$] [$] [$] [$]").
   }
   done.
 Qed.
