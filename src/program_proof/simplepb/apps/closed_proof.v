@@ -27,6 +27,9 @@ Definition kv_pbΣ := #[heapΣ; pbΣ (pb_record:=kv_record); ghost_varΣ (list u
 
 Definition configHost : chan := U64 10.
 
+Local Instance subG_kvΣ {Σ} : subG kv_pbΣ Σ → pbG (pb_record:=kv_record) Σ.
+Proof. intros. apply subG_pbΣ. solve_inG. Qed.
+
 Lemma kv_pb_boot :
   ∀ σconfig σsrv1 σsrv2 (g : goose_lang.global_state),
   (* *)
@@ -63,21 +66,15 @@ Proof.
     - is_host for each pb server
     - config server state, and the is_conf_inv invariant
   *)
+  (*
   eassert (pb_ghostG (EntryType:=(kv_record.(pb_OpType) * gname)) kv_pbΣ) as HghostG.
   { apply _. }
+   *)
 
   iMod (pb_system_init) as "HH".
   iMod (pb_system_init) as (γsys) "(#Hsys & Hghost & Hpbsysinit)".
 
-  eassert (pbG (pb_record:=kv_record) kv_pbΣ) as HpbG.
-  { apply _. }
-  iMod (pb_init_log γsys with "[Hghost]") as "HH2".
-  {
-    iExactEq "Hghost".
-    f_equal.
-  }
-
-  iMod (pb_init_log γsys with "[Hghost]") as (γlog) "[Hlog #Hloginv]".
+  iMod (pb_init_log γsys with "[$Hghost]") as (γlog) "[Hlog #Hloginv]".
 
   iMod (config_ghost_init) as (γconf) "HconfInit".
   iMod (config_server_init configHost γconf with "[]") as "#HisConf".
