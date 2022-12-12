@@ -43,7 +43,7 @@ Definition encode_op op : list u8 :=
 .
 
 Instance op_eqdec : EqDecision kv64Op.
-Admitted.
+Proof. solve_decision. Qed.
 
 Definition kv_record : PBRecord :=
   {|
