@@ -63,27 +63,27 @@ Proof.
   iIntros "$". iIntros; eauto.
 Qed.
 
-Definition kv_replica_main1_crash_cond `{kv64G Σ} γsys replica_fname γsrv1:=
-(λ hG : heapGS Σ, ∃ data', (replica_fname f↦ data') ∗ ▷ file_crash (own_Server_ghost γsys γsrv1) data')%I.
+Definition kv_replica_main_crash_cond `{kv64G Σ} γsys fname γsrv1:=
+(λ hG : heapGS Σ, ∃ data', (fname f↦ data') ∗ ▷ file_crash (own_Server_ghost γsys γsrv1) data')%I.
 
-Lemma wpr_kv_replica_main1 γsys γlog γsrv1 γkv {Σ} {HKV: kv64G Σ}
+Lemma wpr_kv_replica_main fname me γsys γlog γsrv γkv {Σ} {HKV: kv64G Σ}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   "Hinv" ∷ is_inv γlog γsys -∗
   "Hsys" ∷ sys_inv γsys -∗
   "Hkvinv" ∷ kv_inv γlog γkv -∗
-  "Hsrvhost1" ∷ is_pb_host r1Host γsys γsrv1 -∗
-  "Hinit" ∷ replica_fname f↦[] -∗
-  "Hfile_crash" ∷ file_crash (own_Server_ghost γsys γsrv1) [] -∗
-  wpr NotStuck ⊤ (kv_replica_main1 #()) (kv_replica_main1 #()) (λ _ : goose_lang.val, True)
+  "Hsrvhost1" ∷ is_pb_host me γsys γsrv -∗
+  "Hinit" ∷ fname f↦[] -∗
+  "Hfile_crash" ∷ file_crash (own_Server_ghost γsys γsrv) [] -∗
+  wpr NotStuck ⊤ (kv_replica_main #(LitString fname) #me) (kv_replica_main #(LitString fname) #me) (λ _ : goose_lang.val, True)
     (λ _ , True) (λ _ _, True).
 Proof.
    iIntros. iNamed.
    iApply (idempotence_wpr with "[Hinit Hfile_crash] []").
    {
-     instantiate (1:=kv_replica_main1_crash_cond γsys replica_fname γsrv1).
+     instantiate (1:=kv_replica_main_crash_cond γsys fname γsrv).
      simpl.
-     wpc_apply (wpc_kv_replica_main1 γsys γsrv1 with "[] [$Hsrvhost1] [$Hsys]").
+     wpc_apply (wpc_kv_replica_main γsys γsrv with "[] [$Hsrvhost1] [$Hsys]").
      { iIntros "$". }
      iExists _. iFrame.
    }
@@ -109,60 +109,7 @@ Proof.
      (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
      set (hG2' := HeapGS _ _ goose_localGS).
      simpl.
-     wpc_apply (wpc_kv_replica_main1 (heapGS0:=hG2') γsys γsrv1 with "[] [$Hsrvhost1] [$Hsys]").
-     { iIntros "H".
-       iDestruct "H" as (?) "[Hfile Hcrash]".
-       iExists _.
-       iFrame.
-     }
-     iExists _. iFrame.
-   }
-Qed.
-
-Lemma wpr_kv_replica_main2 γsys γlog γsrv1 γkv {Σ} {HKV: kv64G Σ}
-                               {HG} {HL}:
-  let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
-  "Hinv" ∷ is_inv γlog γsys -∗
-  "Hsys" ∷ sys_inv γsys -∗
-  "Hkvinv" ∷ kv_inv γlog γkv -∗
-  "Hsrvhost2" ∷ is_pb_host r2Host γsys γsrv1 -∗
-  "Hinit" ∷ replica_fname f↦[] -∗
-  "Hfile_crash" ∷ file_crash (own_Server_ghost γsys γsrv1) [] -∗
-  wpr NotStuck ⊤ (kv_replica_main2 #()) (kv_replica_main2 #()) (λ _ : goose_lang.val, True)
-    (λ _ , True) (λ _ _, True).
-Proof.
-   iIntros. iNamed.
-   iApply (idempotence_wpr with "[Hinit Hfile_crash] []").
-   {
-     instantiate (1:=kv_replica_main1_crash_cond γsys replica_fname γsrv1).
-     simpl.
-     wpc_apply (wpc_kv_replica_main2 γsys γsrv1 with "[] [$Hsrvhost2] [$Hsys]").
-     { iIntros "$". }
-     iExists _. iFrame.
-   }
-   { (* recovery *)
-     rewrite /hG.
-     clear hG.
-     iModIntro.
-     iIntros (????) "Hcrash".
-     iNext.
-     iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
-     simpl.
-     set (hG' := HeapGS _ _ hL').
-     iDestruct "Hsys" as "-#Hsys".
-     iDestruct "Hsrvhost2" as "-#Hsrvhost2".
-     iCrash.
-     iIntros "_".
-     destruct hL as [HG'' ?].
-     iSplit; first done.
-     iDestruct "Hsrvhost2" as "(%Heq&Hsrvhost2)".
-     subst.
-     clear hG'.
-     clear hL'.
-     (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
-     set (hG2' := HeapGS _ _ goose_localGS).
-     simpl.
-     wpc_apply (wpc_kv_replica_main2 (heapGS0:=hG2') γsys γsrv1 with "[] [$Hsrvhost2] [$Hsys]").
+     wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') γsys γsrv with "[] [$Hsrvhost1] [$Hsys]").
      { iIntros "H".
        iDestruct "H" as (?) "[Hfile Hcrash]".
        iExists _.
@@ -220,8 +167,6 @@ Proof.
   done.
 Qed.
 
-
-
 Local Instance subG_kv64Σ {Σ} : subG kv_pbΣ Σ → kv64G Σ.
 Proof. intros. solve_inG. Qed.
 
@@ -244,7 +189,8 @@ Lemma kv_pb_boot :
   g.(global_world).(grove_net) !! r2Host = Some (∅ : gset message) →
   grove_dist_adequate
     [ {| init_thread := config_main #() ; init_restart := of_val #(); init_local_state := σconfig |}]
-    [(kv_replica_main1 #(), σsrv1); (kv_replica_main2 #(), σsrv2)] g (λ _, True).
+    [(kv_replica_main #(LitString replica_fname) #(r1Host:u64), σsrv1);
+     (kv_replica_main #(LitString replica_fname) #(r2Host:u64), σsrv2)] g (λ _, True).
 Proof.
   intros ????.
   intros Hinitg Hinitconfig Hinitr1 Hinitr2 Hinitr1file Hinitr2file HconfChan Hr1Chan Hr2Chan.
@@ -333,7 +279,7 @@ Proof.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     iDestruct "Hinit" as "(?&?)".
-    iApply (@wpr_kv_replica_main1 with "[$] [$] [$] [$] [$] [$]").
+    iApply (@wpr_kv_replica_main _ _ _ _ γsrv1 with "[$] [$] [$] [$] [$] [$]").
   }
   (* TODO: do like above for replica main1 as separate lemma *)
   iSplitL "Hsrv2".
@@ -346,7 +292,7 @@ Proof.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     iDestruct "Hinit" as "(?&?)".
-    iApply (@wpr_kv_replica_main2 with "[$] [$] [$] [$] [$] [$]").
+    iApply (@wpr_kv_replica_main _ _ _ _ γsrv2 with "[$] [$] [$] [$] [$] [$]").
   }
   done.
 Qed.
