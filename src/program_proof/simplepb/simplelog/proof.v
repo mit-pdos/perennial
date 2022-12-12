@@ -1593,7 +1593,7 @@ Proof.
   rewrite replicate_length.
   iPureIntro.
   done.
-Admitted.
+Qed.
 
 Notation own_Server_ghost := (own_Server_ghost (pb_record:=sm_record)).
 Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
