@@ -313,7 +313,7 @@ Proof.
     iFrame "HmuInv Hlocked".
     iNext.
     do 9 (iExists _).
-    iFrame "Hstate ∗#%".
+    iFrame "HisSm Hstate ∗#%".
     iSplitL "".
     { iPureIntro.
       rewrite app_length.

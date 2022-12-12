@@ -96,6 +96,7 @@ Proof.
 Qed.
 
 Lemma kv_system_init confγs :
+  length confγs > 0 →
   (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_kv_server_pre_init_witness γsrv)
            ={⊤}=∗
   ∃ γsys γlog γkv ,
@@ -107,8 +108,10 @@ Lemma kv_system_init confγs :
     is_proposal_facts γsys (U64 0) []
 .
 Proof.
+  intros ?.
   iIntros "#Hpre".
   iMod (pb_system_init confγs with "[Hpre]") as (γsys) "(#Hsys & Hghost & Hpb_init)".
+  { done. }
   {
     iIntros.
     iApply "Hpre".

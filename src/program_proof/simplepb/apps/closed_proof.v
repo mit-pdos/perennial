@@ -210,6 +210,7 @@ Proof.
   (* Then, set up the KV system *)
   set (confγs:=[γsrv1 ; γsrv2]).
   iMod (kv_system_init confγs with "[]") as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hsyswit)".
+  { simpl. lia. }
   {
     iIntros.
     unfold confγs in H.

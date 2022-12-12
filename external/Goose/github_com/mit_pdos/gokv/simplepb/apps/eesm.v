@@ -18,14 +18,22 @@ Definition EEStateMachine__applyVolatile: val :=
     let: "ret" := ref (zero_val (slice.T byteT)) in
     (if: (SliceGet byteT "op" #0 = #(U8 1))
     then
-      struct.storeF EEStateMachine "nextCID" "s" (struct.loadF EEStateMachine "nextCID" "s" + #1);;
       "ret" <-[slice.T byteT] NewSliceWithCap byteT #0 #8;;
-      "ret" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "ret") (struct.loadF EEStateMachine "nextCID" "s")
+      "ret" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "ret") (struct.loadF EEStateMachine "nextCID" "s");;
+      struct.storeF EEStateMachine "nextCID" "s" (struct.loadF EEStateMachine "nextCID" "s" + #1)
     else
       (if: (SliceGet byteT "op" #0 = #(U8 0))
       then
         let: "n" := slice.len "op" in
-        "ret" <-[slice.T byteT] struct.loadF simplelog.InMemoryStateMachine "ApplyVolatile" (struct.loadF EEStateMachine "sm" "s") (SliceSubslice byteT "op" #1 "n")
+        let: "enc" := SliceSubslice byteT "op" #1 "n" in
+        let: ("cid", "enc2") := marshal.ReadInt "enc" in
+        let: ("seq", "realOp") := marshal.ReadInt "enc2" in
+        (if: Fst (MapGet (struct.loadF EEStateMachine "lastSeq" "s") "cid") ≥ "seq"
+        then "ret" <-[slice.T byteT] Fst (MapGet (struct.loadF EEStateMachine "lastReply" "s") "cid")
+        else
+          "ret" <-[slice.T byteT] struct.loadF simplelog.InMemoryStateMachine "ApplyVolatile" (struct.loadF EEStateMachine "sm" "s") "realOp";;
+          MapInsert (struct.loadF EEStateMachine "lastReply" "s") "cid" (![slice.T byteT] "ret");;
+          MapInsert (struct.loadF EEStateMachine "lastSeq" "s") "cid" "seq")
       else Panic ("unexpected ee op type")));;
     ![slice.T byteT] "ret".
 
