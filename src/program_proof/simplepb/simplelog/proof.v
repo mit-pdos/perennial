@@ -9,7 +9,7 @@ From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_start_proof pb_definitions.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 
-Section proof.
+Section global_proof.
 
 Context {sm_record:PBRecord}.
 Notation OpType := (pb_OpType sm_record).
@@ -35,7 +35,7 @@ Definition simplelogΣ := #[
 Global Instance subG_simplelogΣ {Σ} : subG simplelogΣ Σ → simplelogG Σ.
 Proof. solve_inG. Qed.
 
-Context `{!heapGS Σ}.
+Context `{!gooseGlobalGS Σ}.
 Context `{!simplelogG Σ}.
 
 (* Want to prove *)
@@ -137,7 +137,29 @@ Qed.
 
 Implicit Types (P:u64 → list OpType → bool → iProp Σ).
 
+Definition file_crash P (contents:list u8) : iProp Σ :=
+  ⌜contents = []⌝ ∗ P 0 [] false
+  ∨
+  ∃ epoch ops sealed,
+    ⌜file_encodes_state contents epoch ops sealed⌝ ∗
+    P epoch ops sealed
+.
+
 Implicit Types own_InMemoryStateMachine : list OpType → iProp Σ.
+
+End global_proof.
+
+Section local_proof.
+
+Context `{!heapGS Σ}.
+
+Context {sm_record:PBRecord}.
+Notation OpType := (pb_OpType sm_record).
+Notation has_op_encoding := (pb_has_op_encoding sm_record).
+Notation has_snap_encoding := (pb_has_snap_encoding sm_record).
+Notation compute_reply := (pb_compute_reply sm_record).
+
+Context `{!simplelogG (sm_record:=sm_record) Σ}.
 
 Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMachine : iProp Σ :=
   ∀ ops op op_sl op_bytes,
@@ -194,14 +216,6 @@ Definition file_inv γ P (contents:list u8) : iProp Σ :=
   ⌜file_encodes_state contents epoch ops sealed⌝ ∗
   P epoch ops sealed ∗
   fmlist_idx γ.(sl_state) (length contents) (epoch, ops, sealed)
-.
-
-Definition file_crash P (contents:list u8) : iProp Σ :=
-  ⌜contents = []⌝ ∗ P 0 [] false
-  ∨
-  ∃ epoch ops sealed,
-    ⌜file_encodes_state contents epoch ops sealed⌝ ∗
-    P epoch ops sealed
 .
 
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
@@ -1772,4 +1786,4 @@ Proof.
   done.
 Qed.
 
-End proof.
+End local_proof.
