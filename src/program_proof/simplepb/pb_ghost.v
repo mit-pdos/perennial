@@ -984,13 +984,16 @@ Definition pb_init_config γsys confγs : iProp Σ :=
   "#His_conf_prop" ∷ is_epoch_config_proposal γsys 0 confγs ∗
   (* "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) ∗ *)
   "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_epoch_lb γsrv 0) ∗
-  "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat epoch'⌝ → config_proposal_unset γsys epoch' ∗ config_unset γsys epoch' ∗ own_proposal_unused γsys epoch' ∗ own_init_proposal_unused γsys epoch')
+  "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat epoch'⌝ →
+              config_proposal_unset γsys epoch' ∗ config_unset γsys epoch' ∗
+              own_proposal_unused γsys epoch' ∗ own_init_proposal_unused γsys epoch')
 .
 
 Definition is_sys_init_witness γsys : iProp Σ :=
   is_proposal_lb γsys (U64 0) [] ∗ is_proposal_facts γsys (U64 0) [].
 
 Lemma pb_system_init (confγs:list pb_server_names) :
+length confγs > 0 →
 (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv 0) ={⊤}=∗
     ∃ γsys,
     sys_inv γsys ∗
@@ -999,6 +1002,7 @@ Lemma pb_system_init (confγs:list pb_server_names) :
     is_sys_init_witness γsys
 .
 Proof.
+  intros Hlen.
   iIntros "#Hacc".
   (* allocate ghost state, and establish sys_inv *)
   iMod (own_alloc (●ML [])) as "Hghost".
@@ -1017,23 +1021,171 @@ Proof.
                                          (None : leibnizO (option (list pb_server_names)))
        )) as (γconfig_proposal) "Hconfig_prop".
   { done. }
-  iExists {|
+
+  (* set up proposal for epoch 0 *)
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hproposal") as "[Hprop Hprop_rest]".
+  { set_solver. }
+  iMod (own_update with "Hprop") as "Hprop".
+  {
+    apply singleton_update.
+    Print own_proposal.
+    instantiate (1:=(Cinr (●ML []))).
+    apply cmra_update_exclusive.
+    apply Cinr_valid.
+    apply mono_list_auth_valid.
+  }
+  iDestruct (own_mono _ _ {[U64 0 := Cinr (◯ML [])]} with "Hprop") as "#Hprop_lb".
+  {
+    apply singleton_mono.
+    apply Cinr_included.
+    apply mono_list_included.
+  }
+
+  (* set up initproposal for epoch 0 *)
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hinitproposal") as "[Hinitprop Hinitprop_rest]".
+  { set_solver. }
+  iMod (own_update with "Hinitprop") as "Hinitprop".
+  {
+    apply singleton_update.
+    Print own_proposal.
+    instantiate (1:=(Cinr (●ML□ []))).
+    apply cmra_update_exclusive.
+    apply Cinr_valid.
+    apply mono_list_auth_dfrac_valid.
+    done.
+  }
+  iDestruct "Hinitprop" as "#Hinitprop".
+
+  (* set up initial config proposal *)
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig_prop") as "[Hconfig_prop Hconfig_prop_rest]".
+  { set_solver. }
+  iMod (own_update with "Hconfig_prop") as "Hconf_prop".
+  {
+    apply singleton_update.
+    instantiate (1:=(to_dfrac_agree (DfracDiscarded) (Some confγs : leibnizO _))).
+    apply cmra_update_exclusive.
+    done.
+  }
+  iDestruct "Hconf_prop" as "#Hconf_prop".
+
+  (* set up initial config *)
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig") as "[Hconfig Hconfig_rest]".
+  { set_solver. }
+  iMod (own_update with "Hconfig") as "Hconf".
+  {
+    apply singleton_update.
+    instantiate (1:=(to_dfrac_agree (DfracDiscarded) (Some confγs : leibnizO _))).
+    apply cmra_update_exclusive.
+    done.
+  }
+  iDestruct "Hconf" as "#Hconf".
+
+  set  (γsys:= {|
       pb_init_proposal_gn := γinitproposal ;
       pb_proposal_gn := γproposal ;
       pb_config_gn := γconfig ;
       pb_config_prop_gn := γconfig_proposal ;
       pb_state_gn := γstate ;
-    |}.
+    |}).
+  iExists γsys.
   simpl.
+
+  iAssert (is_proposal_facts
+    {|
+      pb_init_proposal_gn := γinitproposal;
+      pb_proposal_gn := γproposal;
+      pb_config_gn := γconfig;
+      pb_config_prop_gn := γconfig_proposal;
+      pb_state_gn := γstate
+    |} 0%Z []) with "[]" as "#Hprop_facts".
+  {
+    iSplitL.
+    {
+      iExists _; iFrame "#".
+      done.
+    }
+    iSplit.
+    {
+      iIntros (???).
+      exfalso.
+      replace (int.nat (U64 0)) with (0) in H by word.
+      lia.
+    }
+    iModIntro.
+    iIntros (??).
+    iIntros "Hcom".
+    apply prefix_nil_inv in H.
+    rewrite H.
+    iFrame.
+    done.
+  }
+
+  iMod (inv_alloc with "[Hghost2]") as "$".
+  { (* establish sys_inv *)
+    iNext.
+    iExists [], (U64 0).
+    simpl.
+    iFrame "∗#".
+    iExists _; iFrame "#".
+    iSplitL; first done.
+    iIntros (??).
+    iDestruct ("Hacc" $! _ H) as "[$ _]".
+  }
   iModIntro.
-  iFrame.
+  iFrame "∗#".
+  iSplitR; first done.
+  iSplitR; first done.
   iSplitR.
-  { admit. } (* TODO: establish sys_inv *)
+  {
+    iIntros (??).
+    iDestruct ("Hacc" $! γsrv H) as "[_ $]".
+  }
+
   rewrite /own_proposal_unused /own_init_proposal_unused /config_unset /config_proposal_unset /=.
-  iDestruct (big_sepS_elem_of_acc with "Hproposal") as "[Hprop Hproposal]".
-  { instantiate (1:=0). set_solver. }
-  iSpecialize ("Hproposal" with "Hprop").
-Admitted.
+  iSpecialize ("Hprop_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → own_proposal_unused γsys epoch)%I with "[] []").
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+
+  iSpecialize ("Hinitprop_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → own_init_proposal_unused γsys epoch)%I with "[] []").
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+
+  iSpecialize ("Hconfig_prop_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → config_proposal_unset γsys epoch)%I with "[] []").
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+
+  iSpecialize ("Hconfig_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → config_unset γsys epoch)%I with "[] []").
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+
+  iDestruct (big_sepS_sep_2 with "Hprop_rest Hinitprop_rest") as "HH".
+  iDestruct (big_sepS_sep_2 with "HH Hconfig_prop_rest") as "HH".
+  iDestruct (big_sepS_sep_2 with "HH Hconfig_rest") as "HH".
+  iApply (big_sepS_impl with "HH").
+  iModIntro.
+  iIntros (??) "[[[H1 H2] H3] H4]".
+  iIntros (Hineq).
+  iDestruct ("H1" $! Hineq) as "$".
+  iDestruct ("H2" $! Hineq) as "$".
+  iDestruct ("H3" $! Hineq) as "$".
+  iDestruct ("H4" $! Hineq) as "$".
+Qed.
 
 Definition own_server_pre γsrv : iProp Σ :=
   "Hepoch" ∷ own_epoch γsrv 0 ∗
