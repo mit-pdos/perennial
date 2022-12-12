@@ -8,7 +8,6 @@ From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 From Perennial.program_proof Require Import map_marshal_proof.
 
-
 Section proof.
 
 Inductive kv64Op :=
@@ -56,6 +55,7 @@ Notation has_op_encoding := (pb_has_op_encoding kv_record).
 (* Notation compute_reply := (pb_compute_reply pb_record). *)
 Notation pbG := (pbG (pb_record:=kv_record)).
 Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
+Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
 Context `{!heapGS Σ}.
 
@@ -104,7 +104,7 @@ Definition own_kvs (γkv:gname) ops : iProp Σ :=
 
 Definition stateN := nroot .@ "state".
 
-Definition sys_inv γ γkv : iProp Σ :=
+Definition kv_inv γ γkv : iProp Σ :=
   inv stateN ( ∃ ops, own_log γ ops ∗ own_kvs γkv ops).
 
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
@@ -112,26 +112,26 @@ Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
 
 Context `{!config_proof.configG Σ}.
 
-Definition own_Clerk γ ck : iProp Σ :=
-  ∃ (pb_ck:loc) γsys,
+Definition own_Clerk ck γkv : iProp Σ :=
+  ∃ (pb_ck:loc) γlog γsys,
     "Hown_ck" ∷ own_Clerk pb_ck γsys ∗
     "#Hpb_ck" ∷ readonly (ck ↦[kv64.Clerk :: "cl"] #pb_ck) ∗
-    "#His_inv" ∷ is_inv γ γsys
+    "#His_inv" ∷ is_inv γlog γsys ∗
+    "#Hkvinv" ∷ kv_inv γlog γkv
 .
 
 Context `{!urpc_proof.urpcregG Σ}.
-Context `{!stagedG Σ}.
+Context `{stagedG Σ}.
 
-Lemma wp_Clerk__Put ck γ γkv key val_sl value Φ:
-  sys_inv γ γkv -∗
-  own_Clerk γ ck -∗
+Lemma wp_Clerk__Put ck γkv key val_sl value Φ:
+  own_Clerk ck γkv -∗
   is_slice val_sl byteT 1 value -∗
   □(|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
     (kv_ptsto γkv key (value) ={↑stateN,⊤∖↑pbN}=∗
-    (own_Clerk γ ck -∗ Φ #()))) -∗
+    (own_Clerk ck γkv -∗ Φ #()))) -∗
   WP Clerk__Put #ck #key (slice_val val_sl) {{ Φ }}.
 Proof.
-  iIntros "#Hinv Hck Hval_sl #Hupd".
+  iIntros "Hck Hval_sl #Hupd".
   wp_call.
   wp_pures.
   wp_apply (wp_allocStruct).
@@ -153,7 +153,7 @@ Proof.
   iModIntro.
   iMod "Hupd".
 
-  iInv "Hinv" as ">Hown" "Hclose".
+  iInv "Hkvinv" as ">Hown" "Hclose".
   replace (↑_∖_) with (∅:coPset); last set_solver.
   iModIntro.
 
@@ -472,5 +472,37 @@ Proof.
   iExists _.
   iFrame.
 Qed.
+
+Lemma wp_Start fname host γsys γsrv data :
+  {{{
+      "#Hhost" ∷ is_pb_host host γsys γsrv ∗
+      "#Hinv" ∷ sys_inv γsys ∗
+      "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash (own_Server_ghost γsys γsrv) data)
+                    (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data')
+  }}}
+    Start #(LitString fname) #host
+  {{{
+        RET #(); True
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  wp_apply (wp_MakeKVStateMachine).
+  iIntros (??) "[#HisSmMem Hmemstate]".
+  wp_apply (wp_MakePbServer with "Hinv [$HisSmMem $Hmemstate Hfile_ctx]").
+  {
+    iApply to_named.
+    iExactEq "Hfile_ctx".
+    f_equal.
+    admit. (* TODO: ??? *)
+  }
+  iIntros (?) "#Hsrv".
+  wp_pures.
+  wp_apply (pb_start_proof.wp_Server__Serve with "[$]").
+  wp_pures.
+  by iApply "HΦ".
+Admitted.
 
 End proof.

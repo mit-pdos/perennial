@@ -35,7 +35,7 @@ Record aof_vol_names := mk_aof_vol_names {
   initdata : list u8 ;
 }.
 
-Context `{!aofG Σ}.
+Context `{aofG Σ}.
 
 Implicit Types γ : aof_vol_names.
 Implicit Types P: (list u8) → iProp Σ.

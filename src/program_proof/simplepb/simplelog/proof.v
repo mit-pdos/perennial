@@ -19,7 +19,7 @@ Notation compute_reply := (pb_compute_reply sm_record).
 Instance e : EqDecision OpType := (pb_OpType_EqDecision sm_record).
 
 Context `{!heapGS Σ}.
-Context `{!aofG Σ}.
+Context `{aofG Σ}.
 
 (* Want to prove *)
 
@@ -1545,7 +1545,11 @@ Notation pbG := (pbG (pb_record:=sm_record)).
 Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 
 Context `{!pbG Σ}.
-Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname data γ γsrv :
+
+Definition simplelog_pre γ γsrv fname :=
+  (|C={⊤}=> ∃ data, fname f↦ data ∗ ▷ file_crash (own_Server_ghost γ γsrv) data)%I.
+
+Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv :
   let P := (own_Server_ghost γ γsrv) in
   sys_inv γ -∗
   {{{
@@ -1557,11 +1561,46 @@ Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname data γ γsrv :
     MakePbServer #smMem #(LitString fname)
   {{{
         s, RET #s; pb_definitions.is_Server s γ γsrv
-  }}}.
+  }}}
+.
 Proof.
+  (*
+  iIntros (?) "#Hsys".
+  iIntros (Φ Φc) "!# Hpre HΦ".
+  iApply wpc_cfupd.
+
+  iNamed "Hpre".
+  iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
+  wpc_apply (wpc_crash_borrow_inits with "[] [Hfile Hcrash] []").
+  { admit. }
+  { iAccu. }
+  {
+    iModIntro.
+    instantiate (1:=(|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data')).
+    iIntros "[H1 H2]".
+    iModIntro.
+    iExists _.
+    iFrame.
+  }
+  iIntros "Hfile_ctx".
+
+  Search wpc.
+  wpc_apply (wpc_crash_mono _ _ _ _ _ (True%I) with "[HΦ]").
+  {
+    iLeft in "HΦ".
+    iIntros "_ Hupd".
+    iMod "Hupd" as (?) "[H1 H2]".
+    iModIntro.
+    iApply "HΦ".
+    iExists _.
+    iFrame.
+  }
+  iApply wp_wpc.
+ *)
   iIntros (?) "#Hsys".
   iIntros (Φ) "!# Hpre HΦ".
   iNamed "Hpre".
+
   wp_lam.
   wp_pures.
   wp_apply (wp_recoverStateMachine with "[-HΦ]").
