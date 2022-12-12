@@ -1389,7 +1389,7 @@ Proof.
     destruct Hprefix as [??].
     destruct Hpref as [??].
     eexists _.
-    rewrite H0 H.
+    rewrite H0.
     repeat rewrite -app_assoc.
     done.
   }
