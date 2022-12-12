@@ -26,7 +26,7 @@ Definition apply_op (state:gmap u64 (list u8)) (op:kv64Op) :=
 .
 
 Definition compute_state ops : gmap u64 (list u8) :=
-  foldl apply_op (gset_to_gmap [] (fin_to_set u64)) ops.
+  foldl apply_op ∅ ops.
 
 Definition compute_reply ops op : (list u8) :=
   match op with
@@ -120,7 +120,7 @@ Proof.
   iExists γsys.
   iMod (pb_init_log with "Hghost") as (γlog) "[Hlog #Hisinv]".
   iExists γlog.
-  iMod (ghost_map_alloc (gset_to_gmap [] (fin_to_set u64))) as (γkv) "[Hkvs Hkvptsto]".
+  iMod (ghost_map_alloc ∅) as (γkv) "[Hkvs Hkvptsto]".
   iExists _.
   iFrame "#".
   iMod (inv_alloc with "[Hkvs Hlog]") as "$".
@@ -548,20 +548,6 @@ Proof.
   iModIntro.
   iExists _.
   iFrame.
-
-  iNamed "Hmap".
-  iExists _.
-  iFrame.
-  iIntros (?).
-  unfold compute_state.
-  simpl.
-  rewrite lookup_gset_to_gmap.
-  simpl.
-  rewrite option_guard_True; last set_solver.
-  simpl.
-  iSpecialize ("Hkvs_slices" $! k).
-  rewrite lookup_empty /=.
-  iFrame "#".
 Qed.
 
 Lemma wp_Start fname host γsys γsrv data :
