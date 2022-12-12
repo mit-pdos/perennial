@@ -54,6 +54,7 @@ Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sea
               op_len_bytes = u64_le (length op_bytes)
     ) ∧
 
+    (length ops < 2^64)%Z ∧
     data = (u64_le (length snap)) ++ snap ++ (u64_le epoch) ++ (u64_le (length snap_ops)) ++
                          (concat rest_ops_bytes) ++ sealed_bytes
 .
@@ -61,20 +62,21 @@ Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sea
 Lemma file_encodes_state_nonempty data epoch ops sealed :
   file_encodes_state data epoch ops sealed → length data > 0.
 Proof.
-  destruct 1 as (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq&Henc&Hsealed&Hlen&Henc'&Hdata).
+  destruct 1 as (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq&Henc&Hsealed&Hlen&Henc'&?&Hdata).
   rewrite Hdata. rewrite ?app_length.
   rewrite u64_le_length; lia.
 Qed.
 
 Lemma file_encodes_state_append op op_bytes data epoch ops :
+  (length ops + 1 < 2 ^ 64)%Z →
   has_op_encoding op_bytes op →
   file_encodes_state data epoch ops false →
   file_encodes_state (data ++ (u64_le (length op_bytes)) ++ op_bytes) epoch (ops++[op]) false
 .
 Proof.
   rewrite /file_encodes_state.
-  intros Hop_enc Hf_enc.
-  destruct Hf_enc as (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq_ops&Hsnaop_enc&Hsealed&Hlen&Hrest&Heq_data).
+  intros Hoverflow Hop_enc Hf_enc.
+  destruct Hf_enc as (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq_ops&Hsnaop_enc&Hsealed&Hlen&Hrest&?&Heq_data).
   do 3 eexists.
   exists (rest_ops_bytes ++ [u64_le (length op_bytes) ++ op_bytes]).
   exists [].
@@ -99,6 +101,7 @@ Proof.
         rewrite Hlen. rewrite Nat.sub_diag //. }
     }
   }
+  { rewrite ?app_length /=. lia. }
   { rewrite Heq_data. rewrite -?app_assoc.
     rewrite Hsealed.
     rewrite ?concat_app -?app_assoc. do 4 f_equal.
@@ -107,6 +110,7 @@ Proof.
 Qed.
 
 Lemma file_encodes_state_snapshot snap ops epoch :
+  (length ops < 2 ^ 64)%Z →
   has_snap_encoding snap ops →
   file_encodes_state ((u64_le (length snap) ++ snap) ++ u64_le epoch ++ u64_le (length ops))
     epoch ops false
@@ -125,7 +129,7 @@ Lemma file_encodes_state_seal data ops epoch :
 .
 Proof.
   destruct 1 as
-    (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq_ops&Hsnaop_enc&Hsealed&Hlen&Hrest&Heq_data).
+    (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq_ops&Hsnaop_enc&Hsealed&Hlen&Hrest&?&Heq_data).
   exists snap_ops, snap, rest_ops, rest_ops_bytes, [U8 0].
   split_and!; eauto.
   rewrite Heq_data Hsealed. rewrite -?app_assoc app_nil_l //.
@@ -374,7 +378,8 @@ Proof.
     rewrite u64_le_length.
     iFrame "#".
     iPureIntro.
-    by apply file_encodes_state_append.
+    apply file_encodes_state_append; auto.
+    word.
   }
   iIntros (l) "[Haof HupdQ]".
   wp_pures.
@@ -393,7 +398,7 @@ Proof.
     iSplitL; last first.
     { iPureIntro.
       split.
-      { by apply file_encodes_state_append. }
+      { apply file_encodes_state_append; auto. word. }
       { rewrite Hallstates_len.
         rewrite replicate_length.
         simpl.
@@ -418,6 +423,7 @@ Qed.
 
 Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
   {{{
+        ⌜ (length ops < 2 ^ 64)%Z ⌝ ∗
         ⌜has_snap_encoding snap ops⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
         (P epoch_prev ops_prev sealed_prev ={⊤}=∗ P epoch ops false ∗ Q) ∗
@@ -430,7 +436,7 @@ Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (
   }}}
 .
 Proof.
-  iIntros (Φ) "(%HsnapEnc & #Hsnap_sl & Hupd & Hown) HΦ".
+  iIntros (Φ) "(%HsnapLen & %HsnapEnc & #Hsnap_sl & Hupd & Hown) HΦ".
   wp_lam.
   wp_pures.
   iNamed "Hown".
@@ -646,9 +652,9 @@ Proof.
   unfold newdata.
   rewrite replicate_length.
   split.
-  { admit. } (* FIXME: need to know that ops list length fits in u64 *)
+  { word. }
   word.
-Admitted.
+Qed.
 
 Lemma wp_getStateAndSeal s P epoch ops sealed Q :
   {{{
@@ -974,8 +980,8 @@ Proof.
         { word. }
         rewrite app_nil_l.
         rewrite -app_assoc.
-        pose proof (file_encodes_state_snapshot snap [] 0 Hsnapenc)  as H.
-        done.
+        unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
+        simpl. lia.
       }
     }
     iNext.
@@ -1012,8 +1018,8 @@ Proof.
       { word. }
       rewrite app_nil_l.
       rewrite -app_assoc.
-      pose proof (file_encodes_state_snapshot snap [] 0 Hsnapenc)  as H.
-      done.
+      unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
+      simpl; lia.
     }
     iSplit.
     {
@@ -1055,8 +1061,8 @@ Proof.
       { word. }
       rewrite app_nil_l.
       rewrite -app_assoc.
-      pose proof (file_encodes_state_snapshot snap [] 0 Hsnapenc)  as H.
-      done.
+      unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
+      simpl; lia.
     }
     iSplitL; first done.
     iPureIntro.
@@ -1160,7 +1166,7 @@ Proof.
   pose proof Henc as Henc2.
   destruct Henc as (snap_ops & snap & rest_ops & rest_ops_bytes & sealed_bytes & Henc).
   destruct Henc as (Hops & Hsnap_enc & Hsealedbytes & Hrest_ops_len & Henc).
-  destruct Henc as (Hop_bytes & HdataEnc).
+  destruct Henc as (Hop_bytes & Hops_len & HdataEnc).
   rewrite HdataEnc.
 
   wp_apply (wp_ReadInt with "[$Hdata_sl]").
@@ -1173,7 +1179,7 @@ Proof.
   iDestruct "Hdata_sl" as "[Hdata_sl Hdata_sl2]".
 
   assert (int.nat (length snap) = length snap) as HsnapNoOverflow.
-  { admit. } (* TODO: pure overflow of snap bytes, establish this *)
+  { rewrite HdataEnc in Hdata_sz. rewrite ?app_length in Hdata_sz. word. }
   wp_apply (wp_SliceSubslice_small with "Hdata_sl").
   {
     rewrite app_length.
@@ -1484,7 +1490,6 @@ Proof.
   assert (numOpsApplied = length rest_ops_bytes ∨ numOpsApplied < length rest_ops) as [ | Hbad] by word.
   2:{
     exfalso.
-    Search drop.
     assert (length (drop numOpsApplied rest_ops_bytes) > 0).
     { rewrite drop_length. lia. }
     edestruct (Hop_bytes (numOpsApplied)) as (op&op_len_bytes&op_bytes&Hlookup1&Hlookup2&Henc&Hlen_bytes).
@@ -1533,7 +1538,7 @@ Proof.
     {
       iPureIntro.
       rewrite -Hops.
-      admit. (* TODO: establish that length of ops doesn't overflow *)
+      word.
     }
     rewrite -Hops.
     iFrame "Hcurstate".
@@ -1577,7 +1582,7 @@ Proof.
   {
     iPureIntro.
     rewrite -Hops.
-    admit. (* TODO: establish that length of ops doesn't overflow *)
+    word.
   }
   rewrite -Hops.
   iFrame "Hcurstate".
@@ -1676,7 +1681,8 @@ Proof.
     iFrame "Hsm Hsys".
     iSplitL; last first.
     {
-      iPureIntro. admit. (* TODO: overflow fact; maybe maintain this as part of the crash condition? *)
+      iPureIntro.
+      destruct Henc as (?&?&?&?&?&?). word.
     }
     iExists _, _, _.
     iFrame "#".
@@ -1713,6 +1719,8 @@ Proof.
       wp_apply (wp_setStateAndUnseal with "[$Hsm $Hop_sl Hupd]").
       {
         iFrame "%".
+        iSplit.
+        { iPureIntro. admit. (* Must assume snap encoding enforces this bound? *) }
         iIntros "H1".
         instantiate (1:=Q).
         iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
