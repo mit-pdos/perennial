@@ -1350,7 +1350,11 @@ Proof.
     (* split the slice into two parts; copy/pasted from above *)
     iDestruct "Hdata_sl" as "[Hdata_sl Hdata_sl2]".
     assert (int.nat (length op_bytes) = length op_bytes).
-    { admit. } (* TODO: pure list size overflow, just like earlier in this lemma *)
+    { apply (take_drop_middle) in Hrest_ops_bytes_lookup.
+      rewrite -Hrest_ops_bytes_lookup ?concat_app in HdataEnc.
+      rewrite HdataEnc in Hdata_sz. clear -Hdata_sz. rewrite ?app_length in Hdata_sz.
+      word.
+    }
     wp_apply (wp_SliceSubslice_small with "Hdata_sl").
     {
       rewrite app_length.
