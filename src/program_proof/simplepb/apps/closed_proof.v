@@ -124,31 +124,17 @@ Proof.
     { (* initialization *)
       instantiate (1:=(λ (_:heapGS kv_pbΣ), ∃ data', replica_fname f↦ data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data')%I).
       simpl.
-      iDestruct (wpc_kv_replica_main1 with "[] [Hsys]") as "HH".
-      { admit. }
-      { admit. }
-      { admit. }
+      wpc_apply (wpc_kv_replica_main1 γsys γsrv with "[] [Hsys] []"); admit.
     }
     { (* recovery *)
       iModIntro.
       iIntros.
       iNext.
       rewrite /post_crash.
-      iIntros.
-      iModIntro.
-      iSplit; first done.
-      iIntros.
-      iSplit; first done.
-      iDestruct (wpc_kv_replica_main1 γsys γsrv with "[] [Hsys] []") as "HH".
-      { admit. }
-      { admit. }
-      { admit. }
-      iExactEq "HH".
-      f_equal.
-      { admit. }
-      f_equal.
-      unfold closed_wpcs.replica_fname.
-      unfold replica_fname.
+      iIntros. iModIntro.
+      iSplit; first done. iIntros. iSplit; first done.
+      set (hG2' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+      wpc_apply (wpc_kv_replica_main1 γsys γsrv with "[] [Hsys] []"); admit.
     }
   }
   (* other servers remain *)

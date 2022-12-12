@@ -21,23 +21,25 @@ Context `{!ghost_mapG Σ u64 (list u8)}.
 
 Definition replica_fname := "kv.data".
 
-Lemma wpc_kv_replica_main1 γsys γsrv :
+Lemma wpc_kv_replica_main1 γsys γsrv Φc:
+  ((∃ data' : list u8, replica_fname f↦data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data') -∗
+    Φc) -∗
   is_pb_host 1%Z γsys γsrv -∗ sys_inv γsys -∗
   (∃ data : list u8, replica_fname f↦data ∗ file_crash (own_Server_ghost γsys γsrv) data) -∗
   WPC kv_replica_main1 #() @ ⊤
   {{ _, True }}
-  {{ ∃ data' : list u8, replica_fname f↦data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data' }}
+  {{ Φc }}
 .
 Proof.
-  iIntros "#Hpbhots #Hsys Hpre".
+  iIntros "HΦc #Hpbhost #Hsys Hpre".
   iDestruct "Hpre" as (?) "[Hfile Hcrash]".
 
   unfold kv_replica_main1.
   wpc_call.
-  { iExists _. iFrame. }
+  { iApply "HΦc". iExists _. iFrame. }
 
-  iCache with "Hfile Hcrash".
-  { iExists _. iFrame. }
+  iCache with "HΦc Hfile Hcrash".
+  { iApply "HΦc". iExists _. iFrame. }
   wpc_bind (Primitive2 _ _ _).
   wpc_frame.
   iApply wp_crash_borrow_generate_pre.
@@ -66,9 +68,13 @@ Proof.
     iFrame.
   }
   iIntros "Hfile_ctx".
-  wpc_apply (wpc_crash_mono _ _ _ _ _ (True%I) with "[]").
+  wpc_apply (wpc_crash_mono _ _ _ _ _ (True%I) with "[HΦc]").
   { iIntros "_".
-    iIntros "$". }
+    iIntros "H".
+    iMod "H".
+    iModIntro.
+    iApply "HΦc".
+    done. }
   iApply wp_wpc.
   wp_pures.
 
