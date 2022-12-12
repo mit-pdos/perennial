@@ -172,9 +172,28 @@ Proof.
   iIntros (Φ) "H1 HΦ".
   iNamed "H1".
   wp_call.
-  wp_loadField.
-  wp_apply (wp_slice_len).
-Admitted.
+  wp_apply (wp_NewSliceWithCap (V:=u8)).
+  { done. }
+  iIntros (ptr) "Hbuf".
+  wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
+  wp_load.
+  iDestruct (is_slice_small_acc with "Hbuf") as "[Hbuf Hbufclose]".
+  wp_apply (wp_SliceSet with "[$Hbuf]").
+  { iPureIntro. done. }
+  iEval simpl.
+  change (<[int.nat 0%Z:=U8 0]> (replicate (int.nat 1%Z) (U8 0))) with [U8 0].
+  iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
+  wp_loadField. wp_load.
+  wp_apply (wp_WriteInt with "Hbuf"). iIntros (sl) "Hbuf". wp_store. clear ptr.
+  wp_loadField. wp_load.
+  wp_apply (wp_WriteBytes with "[$Hbuf $Hargs_val_sl]").
+  iIntros (sl') "[Hbuf _]". (* FIXME we are throwing away the args_val_sl here? *)
+  wp_store. clear sl.
+  wp_load.
+  iApply "HΦ". iModIntro. iFrame.
+  iPureIntro.
+  done.
+Qed.
 
 Lemma wp_EncodeGetArgs (key:u64) :
   {{{
@@ -190,7 +209,24 @@ Proof.
   iIntros (Φ) "H1 HΦ".
   iNamed "H1".
   wp_call.
-Admitted.
+  wp_apply (wp_NewSliceWithCap (V:=u8)).
+  { done. }
+  iIntros (ptr) "Hbuf".
+  wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
+  wp_load.
+  iDestruct (is_slice_small_acc with "Hbuf") as "[Hbuf Hbufclose]".
+  wp_apply (wp_SliceSet with "[$Hbuf]").
+  { iPureIntro. done. }
+  iEval simpl.
+  change (<[int.nat 0%Z:=U8 1]> (replicate (int.nat 1%Z) (U8 0))) with [U8 1].
+  iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
+  wp_load.
+  wp_apply (wp_WriteInt with "Hbuf"). iIntros (sl) "Hbuf". wp_store. clear ptr.
+  wp_load.
+  iApply "HΦ". iModIntro. iFrame.
+  iPureIntro.
+  done.
+Qed.
 
 Definition own_Clerk ck γkv : iProp Σ :=
   ∃ (pb_ck:loc) γlog γsys,

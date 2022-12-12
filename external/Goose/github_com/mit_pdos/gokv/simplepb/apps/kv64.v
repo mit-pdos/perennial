@@ -25,7 +25,7 @@ Definition PutArgs := struct.decl [
 
 Definition EncodePutArgs: val :=
   rec: "EncodePutArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 (#8 + slice.len (struct.loadF PutArgs "Val" "args"))) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #9) in
     SliceSet byteT (![slice.T byteT] "enc") #0 OP_PUT;;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF PutArgs "Key" "args");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF PutArgs "Val" "args");;
@@ -44,7 +44,7 @@ Definition getArgs: ty := uint64T.
 
 Definition EncodeGetArgs: val :=
   rec: "EncodeGetArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #8) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #9) in
     SliceSet byteT (![slice.T byteT] "enc") #0 OP_GET;;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "args";;
     ![slice.T byteT] "enc".
