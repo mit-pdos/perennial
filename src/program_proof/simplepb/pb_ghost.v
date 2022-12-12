@@ -949,6 +949,36 @@ Proof.
   iFrame "∗#".
 Qed.
 
+Lemma alloc_const_gmap {A:cmra} (a:A) `{H:inG Σ (gmapR u64 A)} :
+  (✓a) →
+    ⊢ |==> ∃ γ, [∗ set] epoch ∈ (fin_to_set u64), own γ {[ epoch := a ]}
+.
+Proof.
+  intros Havalid.
+  set (m:=(gset_to_gmap a (fin_to_set u64))).
+  iMod (own_alloc m) as (γ) "H".
+  { intros k. rewrite lookup_gset_to_gmap option_guard_True; last by apply elem_of_fin_to_set.
+    rewrite Some_valid. done. }
+
+  iAssert ([∗ set] epoch ∈ fin_to_set u64,
+            own γ {[ epoch := a ]}
+          )%I with "[H]" as "H".
+  {
+    rewrite -(big_opM_singletons m).
+    rewrite big_opM_own_1.
+    replace (fin_to_set u64) with (dom m); last first.
+    { rewrite dom_gset_to_gmap. done. }
+    iApply big_sepM_dom.
+    iApply (big_sepM_impl with "H").
+    iIntros "!#" (k x). subst m.
+    rewrite lookup_gset_to_gmap_Some.
+    iIntros ([_ [= <-]]).
+    iIntros "$".
+  }
+  iModIntro.
+  iExists _; iFrame.
+Qed.
+
 Definition pb_init_config γsys : iProp Σ :=
     ([∗ set] epoch ∈ (fin_to_set u64),
      (own_proposal_unused γsys epoch ∗
@@ -966,7 +996,54 @@ Lemma pb_system_init :
 .
 Proof.
   (* allocate ghost state, and establish sys_inv *)
+  iMod (own_alloc (●ML [])) as "Hghost".
+  { apply mono_list_auth_valid. }
+  iDestruct "Hghost" as (γstate) "[Hghost Hghost2]".
+  unfold pb_init_config.
+  iMod (alloc_const_gmap (Cinl (Excl ()))) as (γproposal) "Hproposal".
+  { done. }
+  iMod (alloc_const_gmap (Cinl (Excl ()))) as (γinitproposal) "Hinitproposal".
+  { done. }
+  iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1)
+                                         (None : leibnizO (option (list pb_server_names)))
+       )) as (γconfig) "Hconfig".
+  { done. }
+  iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1)
+                                         (None : leibnizO (option (list pb_server_names)))
+       )) as (γconfig_proposal) "Hconfig_prop".
+  { done. }
+  iExists {|
+      pb_init_proposal_gn := γinitproposal ;
+      pb_proposal_gn := γproposal ;
+      pb_config_gn := γconfig ;
+      pb_config_prop_gn := γconfig_proposal ;
+      pb_state_gn := γstate ;
+    |}.
+  simpl.
+  iModIntro.
+  iFrame.
+  iSplitR.
+  { admit. } (* TODO: establish sys_inv *)
+  rewrite /own_proposal_unused /own_init_proposal_unused /config_unset /config_proposal_unset /=.
+  iDestruct (big_sepS_elem_of_acc with "Hproposal") as "[Hprop Hproposal]".
+  { instantiate (1:=0). set_solver. }
+  iSpecialize ("Hproposal" with "Hprop").
+  iSplitL.
+  {
+    rewrite big_sepS_sep.
+    rewrite big_sepS_sep.
+    rewrite big_sepS_sep.
+    iFrame.
+  }
 Admitted.
+
+(* FIXME: need to fix system initialization *)
+(*
+  Allocate the purely local state of each server.
+  Use that to pick the config for epoch 0.
+  Set up system state and sys_inv.
+  Finish setting up local state, how that sys_inv is available.
+*)
 
 Lemma pb_system_pick_initial_config γsys initγsrvs :
   pb_init_config γsys ==∗
