@@ -1719,14 +1719,12 @@ Proof.
     { (* set state spec *)
       clear Φ.
       iIntros (???????? Φ) "!#".
-      iIntros "(%HopEncoding & #Hop_sl & Hupd & Hsm) HΦ".
+      iIntros "(%HsnapLen & %HopEncoding & #Hop_sl & Hupd & Hsm) HΦ".
       wp_lam.
       wp_pures.
       wp_apply (wp_setStateAndUnseal with "[$Hsm $Hop_sl Hupd]").
       {
         iFrame "%".
-        iSplit.
-        { iPureIntro. admit. (* Must assume snap encoding enforces this bound? *) }
         iIntros "H1".
         instantiate (1:=Q).
         iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
@@ -1772,6 +1770,6 @@ Proof.
     }
   }
   done.
-Admitted.
+Qed.
 
 End proof.

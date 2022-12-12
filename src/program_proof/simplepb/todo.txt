@@ -1,4 +1,4 @@
-[ ] `src/program_proof/simplepb/simplelog/proof.v`;
+[x] `src/program_proof/simplepb/simplelog/proof.v`;
     Added some unproven lemma about file_encodes_state.
     Bunch of pure admits about overflow.
     Most of them show up in the recovery function, which is where we decode

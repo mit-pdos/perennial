@@ -205,6 +205,8 @@ Proof.
 
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
+      iSplitR.
+      { iPureIntro. rewrite fmap_length. word. }
       iSplitR; first done.
       iFrame "Hargs_state_sl".
       iIntros "Hghost".

@@ -309,6 +309,7 @@ Definition is_ApplyFn own_StateMachine (startApplyFn:val) (P:u64 → list (OpTyp
 Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp Σ :=
   ∀ σ_prev (epoch_prev:u64) σ epoch (snap:list u8) snap_sl sealed Q,
   {{{
+        ⌜ (length σ < 2 ^ 64)%Z ⌝ ∗
         ⌜has_snap_encoding snap σ⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
         (P epoch_prev σ_prev sealed ={↑pbN}=∗ P epoch σ false ∗ Q) ∗
