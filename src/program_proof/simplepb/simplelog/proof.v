@@ -61,7 +61,10 @@ Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sea
 Lemma file_encodes_state_nonempty data epoch ops sealed :
   file_encodes_state data epoch ops sealed → length data > 0.
 Proof.
-Admitted.
+  destruct 1 as (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq&Henc&Hsealed&Hlen&Henc'&Hdata).
+  rewrite Hdata. rewrite ?app_length.
+  rewrite u64_le_length; lia.
+Qed.
 
 Lemma file_encodes_state_append op op_bytes data epoch ops :
   has_op_encoding op_bytes op →
@@ -1324,7 +1327,8 @@ Proof.
 
     replace (nextOp_bytes) with (u64_le (length op_bytes) ++ op_bytes); last first.
     {
-      admit. (* TODO: pure reasoning; match up first element of drop N l with N'th element of l *)
+      erewrite drop_S  in X; eauto.
+      inversion X; subst; auto.
     }
     iEval (rewrite concat_cons) in "Hdata_sl".
     rewrite -app_assoc.
@@ -1454,8 +1458,24 @@ Proof.
     {
       iApply to_named.
       iExactEq "HnextIndex".
+
       repeat f_equal.
-      admit. (* TODO: nextIndex overflow *)
+      apply word.unsigned_inj; auto.
+      rewrite ?word.unsigned_add /=.
+      rewrite -[a in a = _]unsigned_U64.
+      f_equal.
+      replace (Z.of_nat (length snap_ops + (numOpsApplied + 1)))%Z with
+        (Z.of_nat (length snap_ops + numOpsApplied) + int.Z (U64 1))%Z; last first.
+      { replace (int.Z 1%Z) with 1%Z.
+        { clear. f_equal. lia. }
+        rewrite //=.
+      }
+      clear.
+      remember (Z.of_nat (length snap_ops + numOpsApplied)) as x.
+      { rewrite /U64.
+        rewrite ?word.ring_morph_add. f_equal.
+        rewrite word.of_Z_unsigned. auto.
+      }
     }
     iPureIntro.
     word.
