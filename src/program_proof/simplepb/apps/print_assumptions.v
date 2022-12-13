@@ -6,6 +6,7 @@ Definition lemmas :=
   (@config_proof.wp_MakeServer, @config_proof.wp_Server__Serve,
   @admin_proof.wp_Reconfig,
   @kv_proof.wp_Start,
+  @kv_proof.wp_MakeClerk,
   @kv_proof.wp_Clerk__Put,
   @kv_proof.wp_Clerk__Get).
 

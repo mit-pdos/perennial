@@ -240,9 +240,36 @@ Qed.
 Definition own_Clerk ck γkv : iProp Σ :=
   ∃ (pb_ck:loc) γlog,
     "Hown_ck" ∷ own_Clerk pb_ck γlog ∗
-    "#Hpb_ck" ∷ readonly (ck ↦[kv64.Clerk :: "cl"] #pb_ck) ∗
+    "Hpb_ck" ∷ ck ↦[kv64.Clerk :: "cl"] #pb_ck ∗
     "#Hkvinv" ∷ kv_inv γlog γkv
 .
+
+Lemma wp_MakeClerk γpblog γsys γkv confHost :
+  {{{
+    "#His_inv" ∷ is_inv γpblog γsys ∗
+    "#Hee_inv" ∷ kv_inv γpblog γkv ∗
+    "#Hconf" ∷ admin_proof.is_conf_host confHost γsys
+  }}}
+    kv64.MakeClerk #confHost
+  {{{
+        ck, RET #ck; own_Clerk ck γkv
+  }}}
+.
+Proof.
+  iIntros (?) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_apply (clerk_proof.wp_MakeClerk with "[$His_inv $Hconf]").
+  iIntros (?) "Hownck".
+  wp_apply (wp_allocStruct).
+  { repeat constructor. }
+  iIntros (?) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "HH".
+  iNamed "HH".
+  iApply "HΦ".
+  repeat iExists _.
+  iFrame "∗#".
+Qed.
 
 Lemma wp_Clerk__Put ck γkv key val_sl value Φ:
   own_Clerk ck γkv -∗
@@ -266,6 +293,8 @@ Proof.
   iIntros (putEncoded put_sl) "[%Henc Henc_sl]".
   wp_loadField.
   iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  wp_apply (wp_frame_wand with "[Hpb_ck]").
+  { iNamedAccu. }
   wp_apply (wp_Clerk__Apply with "Hown_ck Henc_sl").
   { done. }
 
@@ -298,8 +327,9 @@ Proof.
   iModIntro.
   iIntros (?) "Hsl Hopsl Hck".
   wp_pures.
-  iApply "HH".
   iModIntro.
+  iNamed 1.
+  iApply "HH".
   repeat iExists _.
   iFrame "∗#".
 Qed.
@@ -320,6 +350,8 @@ Proof.
   iIntros (getEncoded get_sl) "[%Henc Henc_sl]".
   wp_loadField.
   iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  wp_apply (wp_frame_wand with "[Hpb_ck]").
+  { iNamedAccu. }
   wp_apply (wp_Clerk__Apply with "Hown_ck Henc_sl").
   { done. }
 
@@ -351,7 +383,8 @@ Proof.
   iMod ("Hkvclose" with "Hkvptsto") as "HH".
   iModIntro.
   iIntros (?) "Hsl Hopsl Hck".
-  iApply ("HH" with "[Hck]").
+  iNamed 1.
+  iApply ("HH" with "[Hck Hpb_ck]").
   { repeat iExists _. iFrame "∗#". }
   { rewrite /kv_record//=. move:Hlook.
     rewrite lookup_union.
