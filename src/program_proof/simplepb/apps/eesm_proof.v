@@ -878,8 +878,7 @@ Proof.
     iFrame "Hislow ∗#".
   }
   iPureIntro.
-  Opaque app.
-  simpl.
+  cbn.
   unfold ee_has_snap_encoding.
   replace (compute_state ops) with (st) by done.
   rewrite X.

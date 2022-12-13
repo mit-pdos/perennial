@@ -59,7 +59,7 @@ From Perennial.program_proof.simplepb Require
 
 From Perennial.program_proof.simplepb.simplelog Require proof.
 
-From Perennial.program_proof.simplepb.apps Require closed_proof kv_proof (* kvee_proof *).
+From Perennial.program_proof.simplepb.apps Require closed_proof kv_proof kvee_proof.
 
 From Perennial.program_proof.mpaxos Require
      apply_proof.
