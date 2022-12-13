@@ -65,6 +65,40 @@ Definition own_Clerk ck γkv : iProp Σ :=
     "Hownck" ∷ eesm_proof.own_Clerk eeCk γlog
 .
 
+Definition is_kv_config confHost γkv : iProp Σ :=
+  ∃ γpblog γsys γerpc γlog,
+    "#His_inv" ∷ is_inv γpblog γsys ∗
+    "#Hee_inv" ∷ is_ee_inv γpblog γlog γerpc ∗
+    "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
+    "#Hkv_inv" ∷ kv_inv γlog γkv ∗
+    "#Hconf" ∷ admin_proof.is_conf_host confHost γsys
+.
+
+Lemma wp_MakeClerk γkv confHost :
+  {{{
+      is_kv_config confHost γkv
+  }}}
+    kvee.MakeClerk #confHost
+  {{{
+        ck, RET #ck; own_Clerk ck γkv
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_call.
+  wp_apply (eesm_proof.wp_MakeClerk with "[$]").
+  iIntros (?) "Hck".
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (?) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "Hl".
+  iNamed "Hl".
+  iApply "HΦ".
+  repeat iExists _.
+  iFrame "∗#".
+Qed.
+
 Lemma wp_Clerk__Put ck γkv key val_sl value Φ:
   own_Clerk ck γkv -∗
   is_slice_small val_sl byteT 1 value -∗

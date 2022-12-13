@@ -1,5 +1,5 @@
 From Perennial.program_proof.simplepb Require config_proof admin_proof.
-From Perennial.program_proof.simplepb.apps Require kv_proof closed_proof.
+From Perennial.program_proof.simplepb.apps Require kv_proof kvee_proof closed_proof.
 
 (* FIXME this list is probably incomplete *)
 Definition lemmas :=
@@ -8,7 +8,11 @@ Definition lemmas :=
   @kv_proof.wp_Start,
   @kv_proof.wp_MakeClerk,
   @kv_proof.wp_Clerk__Put,
-  @kv_proof.wp_Clerk__Get).
+  @kv_proof.wp_Clerk__Get,
+  @kvee_proof.wp_Start,
+  @kvee_proof.wp_MakeClerk,
+  @kvee_proof.wp_Clerk__Put,
+  @kvee_proof.wp_Clerk__Get).
 
 Print Assumptions lemmas.
 
