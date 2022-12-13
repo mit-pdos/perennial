@@ -295,6 +295,58 @@ Proof.
   iFrame "∗#".
 Qed.
 
+Lemma wp_Clerk__Get ck γkv key Φ:
+  own_Clerk ck γkv -∗
+  □(|={⊤∖↑pbN,↑stateN}=> ∃ value, kv_ptsto γkv key value ∗
+    (kv_ptsto γkv key (value) ={↑stateN,⊤∖↑pbN}=∗
+    (own_Clerk ck γkv -∗
+     ∀ reply_sl, is_slice_small reply_sl byteT 1 value -∗ Φ (slice_val reply_sl)))) -∗
+  WP Clerk__Get #ck #key {{ Φ }}.
+Proof.
+  iIntros "Hck #Hupd".
+  wp_call.
+  wp_pures.
+  iNamed "Hck".
+  wp_apply (wp_EncodeGetArgs with "[//]").
+  iIntros (getEncoded get_sl) "[%Henc Henc_sl]".
+  wp_loadField.
+  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  wp_apply (wp_Clerk__Apply with "Hown_ck Henc_sl").
+  { done. }
+
+  (* make this a separate lemma? *)
+  iModIntro.
+  iMod "Hupd".
+
+  iInv "Hkvinv" as ">Hown" "Hclose".
+  replace (↑_∖_) with (∅:coPset); last set_solver.
+  iModIntro.
+
+  iDestruct "Hown" as (?) "[Hlog Hkvs]".
+  iDestruct ("Hupd") as (?) "[Hkvptsto Hkvclose]".
+  iExists _; iFrame "Hlog".
+  iIntros "Hlog".
+
+  iDestruct (ghost_map_lookup with "[$] [$]") as %Hlook.
+
+  iMod ("Hclose" with "[Hlog Hkvs]") as "_".
+  {
+    iExists _; iFrame "Hlog".
+    iNext.
+    unfold own_kvs.
+    unfold compute_state.
+    rewrite foldl_snoc.
+    simpl.
+    iFrame.
+  }
+  iMod ("Hkvclose" with "Hkvptsto") as "HH".
+  iModIntro.
+  iIntros (?) "Hsl Hopsl Hck".
+  iApply ("HH" with "[Hck]").
+  { repeat iExists _. iFrame "∗#". }
+  { rewrite /kv_record//= Hlook /=. iFrame. }
+Qed.
+
 Definition own_KVState (s:loc) (ops:list OpType) : iProp Σ :=
   ∃ (kvs_loc:loc),
   "Hkvs" ∷ s ↦[KVState :: "kvs"] #kvs_loc ∗
