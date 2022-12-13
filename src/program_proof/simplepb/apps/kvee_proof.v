@@ -68,6 +68,7 @@ Definition own_Clerk ck γkv : iProp Σ :=
 Lemma wp_Clerk__Put ck γkv key val_sl value Φ:
   own_Clerk ck γkv -∗
   is_slice_small val_sl byteT 1 value -∗
+  (* FIXME: move stateN to the LHS, so the RHS mask is ∅ and we can use the logatom syntax *)
   (|={⊤∖↑pbN∖↑eeN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
     (kv_ptsto γkv key (value) ={↑stateN,⊤∖↑pbN∖↑eeN}=∗
     (own_Clerk ck γkv -∗ Φ #()))) -∗
@@ -110,7 +111,7 @@ Proof.
     unfold own_kvs.
     unfold compute_state.
     rewrite foldl_snoc.
-    simpl.
+    simpl. rewrite insert_union_l.
     iFrame.
   }
   iMod ("Hkvclose" with "Hkvptsto") as "HH".
