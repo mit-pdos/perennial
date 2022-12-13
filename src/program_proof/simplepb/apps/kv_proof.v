@@ -72,8 +72,10 @@ Proof. intros. solve_inG. Qed.
 Context `{!gooseGlobalGS Σ}.
 Context `{!kv64G Σ}.
 
+(* The abstract state applies the operation to an all-nil map,
+so that each key already exists from the start. This is coherent with [getOp] doing [default []]. *)
 Definition own_kvs (γkv:gname) ops : iProp Σ :=
-  ghost_map_auth γkv 1 (compute_state ops)
+  ghost_map_auth γkv 1 (compute_state ops ∪ gset_to_gmap [] (fin_to_set u64))
 .
 
 Definition stateN := nroot .@ "state".
@@ -84,6 +86,9 @@ Definition kv_inv γ γkv : iProp Σ :=
 Definition own_kv_server_pre_init γsrv := own_server_pre γsrv.
 Definition is_kv_server_pre_init_witness γsrv : iProp Σ :=
   is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0).
+
+Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
+  k ↪[γkv] v.
 
 Lemma kv_server_pre_initialize :
   ⊢ |==> ∃ γsrv,
@@ -105,12 +110,13 @@ Lemma kv_system_init confγs :
     sys_inv γsys ∗
     kv_inv γlog γkv ∗
     is_proposal_lb γsys (U64 0) [] ∗
-    is_proposal_facts γsys (U64 0) []
+    is_proposal_facts γsys (U64 0) [] ∗
+    [∗ set] k ∈ fin_to_set u64, kv_ptsto γkv k []
 .
 Proof.
   intros ?.
   iIntros "#Hpre".
-  iMod (pb_system_init confγs with "[Hpre]") as (γsys) "(#Hsys & Hghost & Hpb_init)".
+  iMod (pb_system_init confγs with "[Hpre]") as (γsys) "(#Hsys & Hghost & Hpb_init & [Haccepted_lb Hepoch_lb])".
   { done. }
   {
     iIntros.
@@ -120,12 +126,18 @@ Proof.
   iExists γsys.
   iMod (pb_init_log with "Hghost") as (γlog) "[Hlog #Hisinv]".
   iExists γlog.
-  iMod (ghost_map_alloc ∅) as (γkv) "[Hkvs Hkvptsto]".
+  iMod (ghost_map_alloc (gset_to_gmap [] (fin_to_set u64))) as (γkv) "[Hkvs Hkvptsto]".
   iExists _.
   iFrame "#".
   iMod (inv_alloc with "[Hkvs Hlog]") as "$".
-  { iNext. iExists _; iFrame. }
-  by iFrame.
+  { iNext. iExists _; iFrame. rewrite /own_kvs /compute_state /= left_id_L. done. }
+  iFrame. iModIntro.
+  replace (fin_to_set u64) with (dom (gset_to_gmap (A:=list u8) [] (fin_to_set u64))) at 2.
+  2:{ rewrite dom_gset_to_gmap. done. }
+  iApply big_sepM_dom. iApply (big_sepM_impl with "Hkvptsto").
+  iIntros "!# %k %x". rewrite lookup_gset_to_gmap option_guard_True.
+  2:{ apply elem_of_fin_to_set. }
+  iIntros ([= <-]). auto.
 Qed.
 
 Lemma kv_server_pre_init :
@@ -137,9 +149,6 @@ Proof.
   iModIntro.
   iExists _; iFrame.
 Qed.
-
-Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
-  k ↪[γkv] v.
 
 End global_proof.
 
@@ -282,7 +291,7 @@ Proof.
     unfold own_kvs.
     unfold compute_state.
     rewrite foldl_snoc.
-    simpl.
+    simpl. rewrite insert_union_l.
     iFrame.
   }
   iMod ("Hkvclose" with "Hkvptsto") as "HH".
@@ -344,7 +353,13 @@ Proof.
   iIntros (?) "Hsl Hopsl Hck".
   iApply ("HH" with "[Hck]").
   { repeat iExists _. iFrame "∗#". }
-  { rewrite /kv_record//= Hlook /=. iFrame. }
+  { rewrite /kv_record//=. move:Hlook.
+    rewrite lookup_union.
+    destruct (compute_state ops !! key) as [x|]; simpl.
+    - rewrite map.union_with_Some_l. intros [= ->]. done.
+    - rewrite map.union_with_Some_r lookup_gset_to_gmap option_guard_True.
+      2:{ apply elem_of_fin_to_set. }
+      intros [= ->]. done. }
 Qed.
 
 Definition own_KVState (s:loc) (ops:list OpType) : iProp Σ :=

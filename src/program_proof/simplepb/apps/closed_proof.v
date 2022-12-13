@@ -209,7 +209,7 @@ Proof.
 
   (* Then, set up the KV system *)
   set (confγs:=[γsrv1 ; γsrv2]).
-  iMod (kv_system_init confγs with "[]") as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hsyswit)".
+  iMod (kv_system_init confγs with "[]") as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hproposal_lb & #Hproposal & _Hkvptstos)".
   { simpl. lia. }
   {
     iIntros.
@@ -275,7 +275,7 @@ Proof.
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iMod (kv_server_init with "HH Hsyswit Hsrv1") as "Hinit".
+    iMod (kv_server_init with "HH [] Hsrv1") as "Hinit". { iFrame "#". }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
@@ -288,7 +288,7 @@ Proof.
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iMod (kv_server_init with "HH Hsyswit Hsrv2") as "Hinit".
+    iMod (kv_server_init with "HH [] Hsrv2") as "Hinit". { iFrame "#". }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
