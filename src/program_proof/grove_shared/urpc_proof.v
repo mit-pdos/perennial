@@ -787,17 +787,17 @@ Definition own_uRPC_Callback (cl_ptr cb_ptr : loc) Post : iProp Σ :=
   "Hextracted" ∷ n [[Γ.(ccextracted_name)]]↦ ().
 
 Lemma wp_Client__CallStart γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req
-      (reqData:list u8) Spec Post :
+      (reqData:list u8) Spec Post q :
   handler_spec γsmap host rpcid Spec -∗
   {{{
-      is_slice_small req byteT 1 reqData ∗
+      is_slice_small req byteT q reqData ∗
       is_uRPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
   }}}
     Client__CallStart #cl_ptr #rpcid (slice_val req)
   {{{
        (err : option call_err) (cb_ptr : loc), RET (#(call_errno err), #cb_ptr);
-       is_slice_small req byteT 1 reqData ∗
+       is_slice_small req byteT q reqData ∗
        (if err is Some _ then True else own_uRPC_Callback cl_ptr cb_ptr Post)
   }}}.
 Proof.
@@ -1070,10 +1070,10 @@ Proof.
 Qed.
 
 Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
-      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post :
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post q :
   handler_spec γsmap host rpcid Spec -∗
   {{{
-      is_slice_small req byteT 1 reqData ∗
+      is_slice_small req byteT q reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       is_uRPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
@@ -1082,7 +1082,7 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
   {{{
        (err : option call_err), RET #(call_errno err);
        is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
-       is_slice_small req byteT 1 reqData ∗
+       is_slice_small req byteT q reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
@@ -1107,13 +1107,13 @@ Proof.
 Qed.
 
 Lemma wp_Client__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
-      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ q :
   is_uRPCClient cl_ptr host -∗
   handler_spec γsmap host rpcid Spec -∗
-  is_slice_small req byteT 1 reqData -∗
+  is_slice_small req byteT q reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData (λ reply,
-       is_slice_small req byteT 1 reqData -∗
+       is_slice_small req byteT q reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
           is_slice_small rep_sl byteT 1 reply -∗
@@ -1121,7 +1121,7 @@ Lemma wp_Client__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_pt
   ) -∗
   (
    ∀ (err:u64), ⌜err ≠ 0⌝ →
-                is_slice_small req byteT 1 reqData -∗
+                is_slice_small req byteT q reqData -∗
                 rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
   ) -∗
   WP Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
@@ -1145,21 +1145,21 @@ Proof.
 Qed.
 
 Lemma wp_Client__Call2' γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
-      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ Ψ :
+      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ Ψ q :
   is_uRPCClient cl_ptr host -∗
   handler_spec γsmap host rpcid Spec -∗
-  is_slice_small req byteT 1 reqData -∗
+  is_slice_small req byteT q reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData Ψ) -∗
   (∀ reply, Ψ reply -∗
-       is_slice_small req byteT 1 reqData -∗
+       is_slice_small req byteT q reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
           is_slice_small rep_sl byteT 1 reply -∗
           Φ #0) -∗
   (
    ∀ (err:u64), ⌜err ≠ 0⌝ →
-                is_slice_small req byteT 1 reqData -∗
+                is_slice_small req byteT q reqData -∗
                 rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
   ) -∗
   WP Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.

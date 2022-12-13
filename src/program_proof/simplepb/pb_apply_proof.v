@@ -24,17 +24,19 @@ Context `{!pbG Σ}.
 (* FIXME: this should be in a separate file *)
 
 
-Lemma wp_Clerk__Apply γ γsys γsrv ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_Clerk__Apply γ γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 is_Clerk ck γsys γsrv -∗
 is_inv γ γsys -∗
-is_slice op_sl byteT 1 op_bytes -∗
+is_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
   (own_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+            is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
 ∗
-(∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V )) -∗
+(∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ is_slice_small op_sl byteT q op_bytes -∗
+                                     Φ (#err, (slice_val unused_sl))%V )) -∗
 WP Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   intros Henc.
@@ -47,7 +49,6 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hop_sl") as "Hop_sl".
   rewrite is_pb_host_unfold.
   iNamed "Hsrv".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hop_sl Hrep").
@@ -88,8 +89,7 @@ Proof.
       wp_loadField.
       wp_pures.
       iModIntro.
-      iApply "HΦ".
-      iFrame.
+      iApply ("HΦ" with "Hrepy_ret_sl Hop").
     }
     { (* Apply failed for some reason, e.g. node is not primary *)
       iIntros (??).
@@ -109,7 +109,7 @@ Proof.
       wp_loadField.
       iRight in "HΦ".
       wp_pures.
-      iApply "HΦ".
+      iApply ("HΦ" with "[] Hop").
       done.
     }
   }
@@ -124,7 +124,7 @@ Proof.
     iRight in "HΦ".
     replace (slice.nil) with (slice_val Slice.nil) by done.
     wp_pures.
-    iApply "HΦ".
+    iApply ("HΦ" with "[] [$]").
     done.
   }
 Qed.

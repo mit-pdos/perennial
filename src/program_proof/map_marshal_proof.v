@@ -287,6 +287,7 @@ Lemma wp_EncodeMapU64ToU64 mptr m :
     EncodeMapU64ToU64 #mptr
   {{{
         enc_sl enc, RET (slice_val enc_sl);
+        is_map mptr 1 m ∗
         is_slice enc_sl byteT 1 enc ∗
         ⌜has_u64_map_encoding enc m⌝
   }}}.

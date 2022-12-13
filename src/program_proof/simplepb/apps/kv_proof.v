@@ -229,16 +229,15 @@ Proof.
 Qed.
 
 Definition own_Clerk ck γkv : iProp Σ :=
-  ∃ (pb_ck:loc) γlog γsys,
-    "Hown_ck" ∷ own_Clerk pb_ck γsys ∗
+  ∃ (pb_ck:loc) γlog,
+    "Hown_ck" ∷ own_Clerk pb_ck γlog ∗
     "#Hpb_ck" ∷ readonly (ck ↦[kv64.Clerk :: "cl"] #pb_ck) ∗
-    "#His_inv" ∷ is_inv γlog γsys ∗
     "#Hkvinv" ∷ kv_inv γlog γkv
 .
 
 Lemma wp_Clerk__Put ck γkv key val_sl value Φ:
   own_Clerk ck γkv -∗
-  is_slice val_sl byteT 1 value -∗
+  is_slice_small val_sl byteT 1 value -∗
   □(|={⊤∖↑pbN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
     (kv_ptsto γkv key (value) ={↑stateN,⊤∖↑pbN}=∗
     (own_Clerk ck γkv -∗ Φ #()))) -∗
@@ -254,12 +253,11 @@ Proof.
   iNamed "HH".
   wp_pures.
   iNamed "Hck".
-  iDestruct (is_slice_to_small with "Hval_sl") as "Hval_sl".
   wp_apply (wp_EncodePutArgs with "[$Key $Val $Hval_sl]").
   iIntros (putEncoded put_sl) "[%Henc Henc_sl]".
   wp_loadField.
 
-  wp_apply (wp_Clerk__Apply with "Hown_ck His_inv Henc_sl").
+  wp_apply (wp_Clerk__Apply with "Hown_ck Henc_sl").
   { done. }
 
   (* make this a separate lemma? *)
@@ -292,10 +290,9 @@ Proof.
   iIntros (?) "Hsl Hck".
   wp_pures.
   iApply "HH".
-  iExists _, _, _.
-  iFrame "∗#".
   iModIntro.
-  done.
+  repeat iExists _.
+  iFrame "∗#".
 Qed.
 
 Definition own_KVState (s:loc) (ops:list OpType) : iProp Σ :=

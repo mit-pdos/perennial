@@ -131,14 +131,14 @@ Proof.
   }
 Qed.
 
-Lemma wp_ReconnectingClient__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
+Lemma wp_ReconnectingClient__Call2 γsmap q (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
   is_ReconnectingClient cl_ptr host -∗
   handler_spec γsmap host rpcid Spec -∗
-  is_slice_small req byteT 1 reqData -∗
+  is_slice_small req byteT q reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData (λ reply,
-       is_slice_small req byteT 1 reqData -∗
+       is_slice_small req byteT q reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
           is_slice_small rep_sl byteT 1 reply -∗
@@ -146,7 +146,7 @@ Lemma wp_ReconnectingClient__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) re
   ) -∗
   (
    ∀ (err:u64), ⌜err ≠ 0⌝ →
-                is_slice_small req byteT 1 reqData -∗
+                is_slice_small req byteT q reqData -∗
                 rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
   ) -∗
   WP ReconnectingClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
