@@ -124,4 +124,60 @@ Proof.
   iFrame "∗#".
 Qed.
 
+Lemma wp_Clerk__Get ck γkv key Φ:
+  own_Clerk ck γkv -∗
+  (* FIXME: move stateN to the LHS, so the RHS mask is ∅ and we can use the logatom syntax *)
+  (|={⊤∖↑pbN∖↑eeN,↑stateN}=> ∃ value, kv_ptsto γkv key value ∗
+    (kv_ptsto γkv key value ={↑stateN,⊤∖↑pbN∖↑eeN}=∗
+    (own_Clerk ck γkv -∗ ∀ reply_sl, is_slice_small reply_sl byteT 1 value -∗ Φ (slice_val reply_sl)))) -∗
+  WP Clerk__Get #ck #key {{ Φ }}.
+Proof.
+  iIntros "Hck Hupd".
+  wp_lam.
+  wp_pures.
+  iNamed "Hck".
+  wp_apply (wp_EncodeGetArgs with "[//]").
+  iIntros (getEncoded get_sl) "[%Henc Henc_sl]".
+  wp_loadField.
+  wp_apply (wp_Clerk__ApplyExactlyOnce with "Hownck Henc_sl").
+  { done. }
+
+  (* make this a separate lemma? *)
+  iMod "Hupd".
+
+  iInv "Hkvinv" as ">Hown" "Hclose".
+  replace (↑_∖_) with (∅:coPset); last set_solver.
+  iModIntro.
+
+  iDestruct "Hown" as (?) "[Hlog Hkvs]".
+  iDestruct ("Hupd") as (?) "[Hkvptsto Hkvclose]".
+  iExists _; iFrame "Hlog".
+  iIntros "Hlog".
+
+  iDestruct (ghost_map_lookup with "[$] [$]") as %Hlook.
+
+  iMod ("Hclose" with "[Hlog Hkvs]") as "_".
+  {
+    iExists _; iFrame "Hlog".
+    iNext.
+    unfold own_kvs.
+    unfold compute_state.
+    rewrite foldl_snoc.
+    simpl.
+    iFrame.
+  }
+  iMod ("Hkvclose" with "Hkvptsto") as "HH".
+  iModIntro.
+  iIntros (?) "Hsl Hck".
+  iApply ("HH" with "[-Hck]").
+  { repeat iExists _. iFrame "∗#". }
+  { rewrite /kv_record//=. move:Hlook.
+    rewrite lookup_union.
+    destruct (compute_state ops !! key) as [x|]; simpl.
+    - rewrite map.union_with_Some_l. intros [= ->]. done.
+    - rewrite map.union_with_Some_r lookup_gset_to_gmap option_guard_True.
+      2:{ apply elem_of_fin_to_set. }
+      intros [= ->]. done. }
+Qed.
+
 End global_proof.
