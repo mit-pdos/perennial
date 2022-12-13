@@ -946,6 +946,11 @@ Proof.
   iFrame "∗#".
 Qed.
 
+(* The state machine will overflow after 2^64 CIDs have been generated.
+This cannot happen in a real execution, so we ignore it for the proof. *)
+Local Axiom SumAssumeNoOverflow_admitted : ∀ (i : u64),
+  (int.Z (word.add i 1) = (int.Z i) + 1)%Z.
+
 Lemma wp_MakeClerk confHost γpblog γsys γoplog γerpc :
   {{{
     "#His_inv" ∷ is_inv γpblog γsys ∗
@@ -1027,11 +1032,13 @@ Proof.
       iModIntro.
       iIntros (???) "[%Hineq|$]".
       iLeft. iPureIntro.
-      admit. (* FIXME: overflow inside the statemachine... *)
+      rewrite SumAssumeNoOverflow_admitted.
+      word.
     }
     {
-      iLeft.
-      admit. (* FIXME: overflow inside the statemachine... *)
+      iLeft. iPureIntro.
+      rewrite SumAssumeNoOverflow_admitted.
+      word.
     }
   }
   iModIntro.
@@ -1059,6 +1066,6 @@ Proof.
   iFrame "∗#%".
   iPureIntro.
   word.
-Admitted.
+Qed.
 
 End local_proof.
