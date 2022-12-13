@@ -2,7 +2,6 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.gokv.simplepb.apps.eesm.
 From Goose Require github_com.mit_pdos.gokv.simplepb.apps.kv64.
-From Goose Require github_com.mit_pdos.gokv.simplepb.clerk.
 From Goose Require github_com.mit_pdos.gokv.simplepb.simplelog.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
@@ -16,7 +15,7 @@ Definition Clerk := struct.decl [
 Definition MakeClerk: val :=
   rec: "MakeClerk" "confHost" :=
     struct.new Clerk [
-      "cl" ::= clerk.Make "confHost"
+      "cl" ::= eesm.MakeClerk "confHost"
     ].
 
 Definition Clerk__Put: val :=
@@ -25,12 +24,12 @@ Definition Clerk__Put: val :=
       "Key" ::= "key";
       "Val" ::= "val"
     ] in
-    clerk.Clerk__Apply (struct.loadF Clerk "cl" "ck") (kv64.EncodePutArgs "putArgs");;
+    eesm.Clerk__ApplyExactlyOnce (struct.loadF Clerk "cl" "ck") (kv64.EncodePutArgs "putArgs");;
     #().
 
 Definition Clerk__Get: val :=
   rec: "Clerk__Get" "ck" "key" :=
-    clerk.Clerk__Apply (struct.loadF Clerk "cl" "ck") (eesm.MakeRequest (kv64.EncodeGetArgs "key")).
+    eesm.Clerk__ApplyExactlyOnce (struct.loadF Clerk "cl" "ck") (kv64.EncodeGetArgs "key").
 
 (* server.go *)
 

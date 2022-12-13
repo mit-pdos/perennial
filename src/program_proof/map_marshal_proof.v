@@ -300,7 +300,7 @@ Lemma wp_DecodeMapU64ToU64 m enc_sl enc enc_rest q :
   }}}
     DecodeMapU64ToU64 (slice_val enc_sl)
   {{{
-        rest_enc_sl q' mptr, RET (#mptr, slice_val enc_sl);
+        rest_enc_sl q' mptr, RET (#mptr, slice_val rest_enc_sl);
         is_map mptr 1 m ∗
         is_slice_small rest_enc_sl byteT q' enc_rest
   }}}.
