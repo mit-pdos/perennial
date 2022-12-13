@@ -209,7 +209,7 @@ Proof.
 
   (* Then, set up the KV system *)
   set (confγs:=[γsrv1 ; γsrv2]).
-  iMod (kv_system_init confγs with "[]") as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hproposal_lb & #Hproposal & _Hkvptstos)".
+  iMod (kv_system_init confγs with "[]") as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hproposal_lb & #Hproposal & Hkvptstos)".
   { simpl. lia. }
   {
     iIntros.
