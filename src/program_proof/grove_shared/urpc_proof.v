@@ -661,13 +661,17 @@ Proof.
     exfalso. apply map.map_get_true in Hget. congruence. }
 Qed.
 
-Lemma wp_MakeClient (srv:u64):
+Lemma wp_TryMakeClient (srv:u64):
   {{{
        True
   }}}
-    MakeClient #srv
+    TryMakeClient #srv
   {{{
-       (cl_ptr:loc), RET #cl_ptr; is_uRPCClient cl_ptr srv
+       (err:u64) (cl_ptr:loc), RET (#err, #cl_ptr);
+        if (decide (err = 0)) then
+          is_uRPCClient cl_ptr srv
+        else
+          True
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -675,8 +679,18 @@ Proof.
   wp_apply (wp_Connect).
   iIntros (err client) "Hr".
   wp_pures.
-  wp_apply (wp_Assume).
-  iIntros (Herr). destruct err; first by (simpl in Herr; first congruence).
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (?) "Hnil".
+  wp_pures.
+  wp_if_destruct.
+  {
+    wp_pures.
+    wp_load.
+    wp_pures.
+    iModIntro.
+    by iApply "HΦ".
+  }
 
   wp_apply (wp_new_free_lock). iIntros (lk) "Hfree".
   wp_pures.
@@ -718,6 +732,32 @@ Proof.
     iSplit; done. }
   iNext. wp_pures. iModIntro. iApply "HΦ".
   iExists _, _, _, _. iSplit; first by iFrame "#". iSplit; done.
+Qed.
+
+
+Lemma wp_MakeClient (srv:u64):
+  {{{
+       True
+  }}}
+    MakeClient #srv
+  {{{
+       (cl_ptr:loc), RET #cl_ptr; is_uRPCClient cl_ptr srv
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_lam.
+  wp_apply (wp_TryMakeClient).
+  iIntros (err client) "Hr".
+  wp_pures.
+  wp_apply (wp_Assume).
+  iIntros (Herr).
+  apply bool_decide_eq_true in Herr.
+  replace (err) with (U64 0) by naive_solver.
+  destruct (decide _); last first.
+  { exfalso. done. }
+  wp_pures.
+  iApply "HΦ".
+  by iFrame.
 Qed.
 
 Inductive call_err := CallErrTimeout | CallErrDisconnect.

@@ -6,16 +6,7 @@ From Goose Require github_com.mit_pdos.gokv.simplepb.pb.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-Definition InitializeSystem: val :=
-  rec: "InitializeSystem" "configHost" "servers" :=
-    let: "configCk" := config.MakeClerk "configHost" in
-    config.Clerk__WriteConfig "configCk" #0 "servers";;
-    let: "clerk" := pb.MakeClerk (SliceGet uint64T "servers" #0) in
-    pb.Clerk__BecomePrimary "clerk" (struct.new pb.BecomePrimaryArgs [
-      "Epoch" ::= #0;
-      "Replicas" ::= "servers"
-    ]);;
-    e.None.
+(* admin.go *)
 
 Definition EnterNewConfig: val :=
   rec: "EnterNewConfig" "configHost" "servers" :=
@@ -85,3 +76,16 @@ Definition EnterNewConfig: val :=
               "Replicas" ::= "servers"
             ]);;
             e.None)))).
+
+(* init.go *)
+
+Definition InitializeSystem: val :=
+  rec: "InitializeSystem" "configHost" "servers" :=
+    let: "configCk" := config.MakeClerk "configHost" in
+    config.Clerk__WriteConfig "configCk" #0 "servers";;
+    let: "clerk" := pb.MakeClerk (SliceGet uint64T "servers" #0) in
+    pb.Clerk__BecomePrimary "clerk" (struct.new pb.BecomePrimaryArgs [
+      "Epoch" ::= #0;
+      "Replicas" ::= "servers"
+    ]);;
+    e.None.

@@ -101,26 +101,13 @@ Definition Client__replyThread: val :=
         Continue));;
     #().
 
-Definition MakeClient: val :=
-  rec: "MakeClient" "host_name" :=
-    let: "host" := "host_name" in
-    let: "a" := grove_ffi.Connect "host" in
-    control.impl.Assume (~ (struct.get grove_ffi.ConnectRet "Err" "a"));;
-    let: "cl" := struct.new Client [
-      "conn" ::= struct.get grove_ffi.ConnectRet "Connection" "a";
-      "mu" ::= lock.new #();
-      "seq" ::= #1;
-      "pending" ::= NewMap ptrT #()
-    ] in
-    Fork (Client__replyThread "cl");;
-    "cl".
-
 Definition TryMakeClient: val :=
   rec: "TryMakeClient" "host_name" :=
     let: "host" := "host_name" in
     let: "a" := grove_ffi.Connect "host" in
+    let: "nilClient" := ref (zero_val ptrT) in
     (if: struct.get grove_ffi.ConnectRet "Err" "a"
-    then (#1, slice.nil)
+    then (#1, ![ptrT] "nilClient")
     else
       let: "cl" := struct.new Client [
         "conn" ::= struct.get grove_ffi.ConnectRet "Connection" "a";
@@ -130,6 +117,12 @@ Definition TryMakeClient: val :=
       ] in
       Fork (Client__replyThread "cl");;
       (#0, "cl")).
+
+Definition MakeClient: val :=
+  rec: "MakeClient" "host_name" :=
+    let: ("err", "cl") := TryMakeClient "host_name" in
+    control.impl.Assume ("err" = #0);;
+    "cl".
 
 Definition ErrTimeout : expr := #1.
 
