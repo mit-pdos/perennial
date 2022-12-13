@@ -256,7 +256,7 @@ Proof.
   wp_apply (wp_EncodePutArgs with "[$Key $Val $Hval_sl]").
   iIntros (putEncoded put_sl) "[%Henc Henc_sl]".
   wp_loadField.
-
+  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
   wp_apply (wp_Clerk__Apply with "Hown_ck Henc_sl").
   { done. }
 
@@ -287,7 +287,7 @@ Proof.
   }
   iMod ("Hkvclose" with "Hkvptsto") as "HH".
   iModIntro.
-  iIntros (?) "Hsl Hck".
+  iIntros (?) "Hsl Hopsl Hck".
   wp_pures.
   iApply "HH".
   iModIntro.
