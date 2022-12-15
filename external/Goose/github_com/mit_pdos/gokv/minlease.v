@@ -69,3 +69,9 @@ Definition client: val :=
     let: "v2" := Server__Get "s" in
     control.impl.Assert ("v2" = "newv");;
     #().
+
+Definition main: val :=
+  rec: "main" <> :=
+    let: "s" := StartServer #() in
+    client "s";;
+    #().

@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Export ffi.grove_prelude.
-From Perennial.base_logic Require Import mono_nat.
+From Perennial.base_logic Require Export mono_nat.
 From Perennial.program_proof Require Import proof_prelude.
 
 
