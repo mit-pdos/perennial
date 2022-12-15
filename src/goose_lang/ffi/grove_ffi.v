@@ -825,6 +825,8 @@ Section grove.
   Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
   Local Coercion Var' (s:string) : expr := Var s.
 
+  Axiom GetTimeRange : goose_lang.val.
+
   (** [extT] have size 1 so this fits with them being pointers in Go. *)
   Definition Listener : ty := extT GroveListenTy.
   Definition Connection : ty := extT GroveConnectionTy.

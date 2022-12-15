@@ -252,6 +252,7 @@ def main():
                 "mpaxos/",
                 "mpaxos/example",
                 "map_marshal",
+                "minlease",
                 ]
 
         for pkg in pkgs:
