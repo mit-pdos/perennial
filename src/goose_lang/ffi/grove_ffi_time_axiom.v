@@ -14,7 +14,7 @@ Definition own_time γ (t:u64) := mono_nat_auth_own γ 1 (int.nat t).
 Lemma wp_GetTimeRange γ :
   ∀ (Φ:goose_lang.val → iProp Σ),
   (∀ (l h t:u64), ⌜int.nat t < int.nat h⌝ -∗ ⌜int.nat l < int.nat t⌝ -∗
-                  own_time γ t -∗ (own_time γ t ∗ Φ (#l, #h)%V)) -∗
+                  own_time γ t ={⊤}=∗ (own_time γ t ∗ Φ (#l, #h)%V)) -∗
   WP GetTimeRange #() {{ Φ }}
 .
 Admitted.

@@ -93,3 +93,6 @@ From Perennial.goose_lang.interpreter Require
 (* ensures this file itself works for Coq's CI and catches any oversight where
 something in the lite build isn't listed here *)
 From Perennial Require LiteBuild.
+
+(* lease examples *)
+From Perennial.program_proof.minlease Require proof.
