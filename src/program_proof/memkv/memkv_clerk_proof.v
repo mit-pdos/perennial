@@ -1,6 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-From Perennial.program_logic Require Import atomic_fupd.
 From Perennial.program_proof.memkv Require Export common_proof memkv_coord_definitions memkv_seq_clerk_proof.
 
 Section memkv_concurrent_clerk_proof.

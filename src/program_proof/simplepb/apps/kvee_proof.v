@@ -99,16 +99,14 @@ Proof.
   iFrame "∗#".
 Qed.
 
-Lemma wp_Clerk__Put ck γkv key val_sl value Φ:
-  own_Clerk ck γkv -∗
-  is_slice_small val_sl byteT 1 value -∗
-  (* FIXME: move stateN to the LHS, so the RHS mask is ∅ and we can use the logatom syntax *)
-  (|={⊤∖↑pbN∖↑eeN,↑stateN}=> ∃ old_value, kv_ptsto γkv key old_value ∗
-    (kv_ptsto γkv key (value) ={↑stateN,⊤∖↑pbN∖↑eeN}=∗
-    (own_Clerk ck γkv -∗ Φ #()))) -∗
-  WP Clerk__Put #ck #key (slice_val val_sl) {{ Φ }}.
+Lemma wp_Clerk__Put ck γkv key val_sl value :
+⊢ {{{ own_Clerk ck γkv ∗ is_slice_small val_sl byteT 1 value }}}
+  <<< ∀∀ old_value, kv_ptsto γkv key old_value >>>
+    Clerk__Put #ck #key (slice_val val_sl) @ (↑pbN ∪ ↑eeN ∪ ↑stateN)
+  <<< kv_ptsto γkv key value >>>
+  {{{ RET #(); own_Clerk ck γkv }}}.
 Proof.
-  iIntros "Hck Hval_sl Hupd".
+  iIntros "%Φ !# [Hck Hval_sl] Hupd".
   wp_lam.
   wp_pures.
   wp_apply (wp_allocStruct).
@@ -123,12 +121,13 @@ Proof.
   wp_loadField.
   wp_apply (wp_Clerk__ApplyExactlyOnce with "Hownck Henc_sl").
   { done. }
+  iInv "Hkvinv" as ">Hown" "Hclose".
 
   (* make this a separate lemma? *)
-  iMod "Hupd".
+  iMod (fupd_mask_subseteq _) as "Hmaskclose".
+  2: iMod "Hupd".
+  1:{ solve_ndisj. }
 
-  iInv "Hkvinv" as ">Hown" "Hclose".
-  replace (↑_∖_) with (∅:coPset); last set_solver.
   iModIntro.
 
   iDestruct "Hown" as (?) "[Hlog Hkvs]".
@@ -138,6 +137,8 @@ Proof.
 
   iMod (ghost_map_update (value) with "Hkvs Hkvptsto") as "[Hkvs Hkvptsto]".
 
+  iMod ("Hkvclose" with "Hkvptsto") as "HH".
+  iMod "Hmaskclose" as "_".
   iMod ("Hclose" with "[Hlog Hkvs]") as "_".
   {
     iExists _; iFrame.
@@ -148,7 +149,6 @@ Proof.
     simpl. rewrite insert_union_l.
     iFrame.
   }
-  iMod ("Hkvclose" with "Hkvptsto") as "HH".
   iModIntro.
   iIntros (?) "Hsl Hck".
   wp_pures.
@@ -158,15 +158,14 @@ Proof.
   iFrame "∗#".
 Qed.
 
-Lemma wp_Clerk__Get ck γkv key Φ:
-  own_Clerk ck γkv -∗
-  (* FIXME: move stateN to the LHS, so the RHS mask is ∅ and we can use the logatom syntax *)
-  (|={⊤∖↑pbN∖↑eeN,↑stateN}=> ∃ value, kv_ptsto γkv key value ∗
-    (kv_ptsto γkv key value ={↑stateN,⊤∖↑pbN∖↑eeN}=∗
-    (own_Clerk ck γkv -∗ ∀ reply_sl, is_slice_small reply_sl byteT 1 value -∗ Φ (slice_val reply_sl)))) -∗
-  WP Clerk__Get #ck #key {{ Φ }}.
+Lemma wp_Clerk__Get ck γkv key :
+⊢ {{{ own_Clerk ck γkv }}}
+  <<< ∀∀ value, kv_ptsto γkv key value >>>
+    Clerk__Get #ck #key @ (↑pbN ∪ ↑eeN ∪ ↑stateN)
+  <<< kv_ptsto γkv key value >>>
+  {{{ reply_sl, RET (slice_val reply_sl); own_Clerk ck γkv ∗ is_slice_small reply_sl byteT 1 value }}}.
 Proof.
-  iIntros "Hck Hupd".
+  iIntros "%Φ !# Hck Hupd".
   wp_lam.
   wp_pures.
   iNamed "Hck".
@@ -175,12 +174,13 @@ Proof.
   wp_loadField.
   wp_apply (wp_Clerk__ApplyExactlyOnce with "Hownck Henc_sl").
   { done. }
+  iInv "Hkvinv" as ">Hown" "Hclose".
 
   (* make this a separate lemma? *)
-  iMod "Hupd".
+  iMod (fupd_mask_subseteq _) as "Hmaskclose".
+  2: iMod "Hupd".
+  1:{ solve_ndisj. }
 
-  iInv "Hkvinv" as ">Hown" "Hclose".
-  replace (↑_∖_) with (∅:coPset); last set_solver.
   iModIntro.
 
   iDestruct "Hown" as (?) "[Hlog Hkvs]".
@@ -190,6 +190,8 @@ Proof.
 
   iDestruct (ghost_map_lookup with "[$] [$]") as %Hlook.
 
+  iMod ("Hkvclose" with "Hkvptsto") as "HH".
+  iMod "Hmaskclose" as "_".
   iMod ("Hclose" with "[Hlog Hkvs]") as "_".
   {
     iExists _; iFrame "Hlog".
@@ -200,10 +202,10 @@ Proof.
     simpl.
     iFrame.
   }
-  iMod ("Hkvclose" with "Hkvptsto") as "HH".
   iModIntro.
   iIntros (?) "Hsl Hck".
-  iApply ("HH" with "[-Hck]").
+  iApply "HH".
+  iSplitR "Hck".
   { repeat iExists _. iFrame "∗#". }
   { rewrite /kv_record//=. move:Hlook.
     rewrite lookup_union.
