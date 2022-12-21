@@ -1,4 +1,4 @@
-From Perennial.program_logic Require Export crash_weakestpre.
+From Perennial.program_logic Require Import crash_weakestpre.
 Set Default Proof Using "Type".
 
 (* Note regarding the use of [Eo%I%I%I%I] below:

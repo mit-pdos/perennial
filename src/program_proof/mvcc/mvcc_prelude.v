@@ -1,4 +1,5 @@
 From Perennial.program_proof Require Export grove_prelude.
+From Perennial.program_logic Require Export atomic. (* prefer the ncfupd atomics *)
 (* Prefer untyped slices. *)
 Export Perennial.goose_lang.lib.slice.slice.
 

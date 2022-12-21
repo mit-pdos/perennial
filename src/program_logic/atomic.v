@@ -1,4 +1,4 @@
-From Perennial.program_logic Require Export crash_weakestpre.
+From Perennial.program_logic Require Import crash_weakestpre.
 Set Default Proof Using "Type".
 
 (** Sugar for TaDA-style logically atomic non-crash specs. We only have the variants we need. *)
