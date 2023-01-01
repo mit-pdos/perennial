@@ -749,6 +749,17 @@ Proof.
   wp_apply (wp_TryMakeClient).
   iIntros (err client) "Hr".
   wp_pures.
+  wp_apply wp_If_optional.
+  {
+    iIntros (?) "H HΦ".
+    instantiate (1:=True%I).
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    done.
+  }
+  { done. }
+  iIntros "_".
   wp_apply (wp_Assume).
   iIntros (Herr).
   apply bool_decide_eq_true in Herr.

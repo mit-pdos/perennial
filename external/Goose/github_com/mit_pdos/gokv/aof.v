@@ -46,11 +46,13 @@ Definition CreateAppendOnlyFile: val :=
                 let: "l" := struct.loadF AppendOnlyFile "membuf" "a" in
                 let: "newLength" := struct.loadF AppendOnlyFile "length" "a" in
                 struct.storeF AppendOnlyFile "membuf" "a" (NewSlice byteT #0);;
+                let: "cond" := struct.loadF AppendOnlyFile "durableCond" "a" in
+                struct.storeF AppendOnlyFile "durableCond" "a" (lock.newCond (struct.loadF AppendOnlyFile "mu" "a"));;
                 lock.release (struct.loadF AppendOnlyFile "mu" "a");;
                 grove_ffi.FileAppend "fname" "l";;
                 lock.acquire (struct.loadF AppendOnlyFile "mu" "a");;
                 struct.storeF AppendOnlyFile "durableLength" "a" "newLength";;
-                lock.condBroadcast (struct.loadF AppendOnlyFile "durableCond" "a");;
+                lock.condBroadcast "cond";;
                 Continue))));;
     "a".
 
