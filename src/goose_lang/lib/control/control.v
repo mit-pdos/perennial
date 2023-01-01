@@ -12,7 +12,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 does something irrelevant to the proof using resources R. Allows to re-use the
 proof for both branches, carrying on with resources R. *)
 Theorem wp_If_optional stk E (R: iProp Σ) (b: bool) e :
-  (∀ (Φ': val → iProp Σ), R -∗ ▷ (R -∗ Φ' #()) -∗ WP e @ stk; E {{ Φ' }}) -∗
+  (∀ (Φ': val → iProp Σ), R -∗ (R -∗ Φ' #()) -∗ WP e @ stk; E {{ Φ' }}) -∗
   ∀ Φ, R -∗ ▷ (R -∗ Φ #()) -∗ WP If #b e #() @ stk; E {{ Φ }}.
 Proof.
   iIntros "Hwp" (Φ) "HR HΦ".
