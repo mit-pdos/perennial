@@ -24,12 +24,14 @@ Definition Clerk__Put: val :=
       "Key" ::= "key";
       "Val" ::= "val"
     ] in
+    (* log.Print("Running PUT RW") *)
     eesm.Clerk__ApplyExactlyOnce (struct.loadF Clerk "cl" "ck") (kv64.EncodePutArgs "putArgs");;
     #().
 
 Definition Clerk__Get: val :=
   rec: "Clerk__Get" "ck" "key" :=
-    eesm.Clerk__ApplyExactlyOnce (struct.loadF Clerk "cl" "ck") (kv64.EncodeGetArgs "key").
+    (* log.Print("Running GET RO") *)
+    eesm.Clerk__ApplyReadonly (struct.loadF Clerk "cl" "ck") (kv64.EncodeGetArgs "key").
 
 (* server.go *)
 

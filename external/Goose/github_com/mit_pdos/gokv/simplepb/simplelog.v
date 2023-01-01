@@ -71,6 +71,10 @@ Definition StateMachine__apply: val :=
       ) in
     ("ret", "waitFn").
 
+Definition StateMachine__applyReadonly: val :=
+  rec: "StateMachine__applyReadonly" "s" "op" :=
+    struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s") "op".
+
 (* TODO: make the nextIndex and epoch argument order consistent with pb.StateMachine *)
 Definition StateMachine__setStateAndUnseal: val :=
   rec: "StateMachine__setStateAndUnseal" "s" "snap" "nextIndex" "epoch" :=
@@ -158,6 +162,9 @@ Definition MakePbServer: val :=
     let: "sm" := struct.new pb.StateMachine [
       "StartApply" ::= (λ: "op",
         StateMachine__apply "s" "op"
+        );
+      "ApplyReadonly" ::= (λ: "op",
+        StateMachine__applyReadonly "s" "op"
         );
       "SetStateAndUnseal" ::= (λ: "snap" "nextIndex" "epoch",
         StateMachine__setStateAndUnseal "s" "snap" "nextIndex" "epoch";;
