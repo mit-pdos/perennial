@@ -7,10 +7,7 @@ Existing Instances async_disk_proph.disk_semantics async_disk_proph.disk_interp.
 #[global]
 Existing Instance goose_diskGS.
 (* Now that the TC parameter is fixed, we can make this a coercion. *)
-Section coerce.
-  Context {ext: ffi_syntax}.
-  Coercion Var' (s: string) : (@expr ext) := Var s.
-End coerce.
+Coercion Var' (s: string) := Var s.
 
 
 Module disk.
