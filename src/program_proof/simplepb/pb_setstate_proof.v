@@ -19,14 +19,14 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) σ snap :
+Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) opsfull snap :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
-        "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
-        "%Henc" ∷ ⌜has_snap_encoding snap (fst <$> σ)⌝ ∗
-        "%Hno_overflow" ∷ ⌜length σ = int.nat (length σ)⌝ ∗
-        "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length σ) snap)
+        "#Hprop_lb" ∷ is_proposal_lb γ epoch opsfull ∗
+        "#Hprop_facts" ∷ is_proposal_facts γ epoch opsfull ∗
+        "%Henc" ∷ ⌜has_snap_encoding snap (get_rwops opsfull)⌝ ∗
+        "%Hno_overflow" ∷ ⌜length (get_rwops opsfull) = int.nat (length (get_rwops opsfull))⌝ ∗
+        "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length (get_rwops opsfull)) snap)
   }}}
     Clerk__SetState #ck #args_ptr
   {{{
@@ -126,11 +126,11 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__SetState γ γsrv s args_ptr args σ Φ Ψ :
+Lemma wp_Server__SetState γ γsrv s args_ptr args opsfull Φ Ψ :
   is_Server s γ γsrv -∗
   SetStateArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
-  SetState_core_spec γ γsrv args σ Ψ -∗
+  SetState_core_spec γ γsrv args opsfull Ψ -∗
   WP pb.Server__SetState #s #args_ptr {{ Φ }}
   .
 Proof.
@@ -155,7 +155,7 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "∗#%".
     }
     wp_pures.
@@ -176,7 +176,7 @@ Proof.
       {
         iFrame "HmuInv Hlocked".
         iNext.
-        do 9 (iExists _).
+        repeat (iExists _).
         iFrame "∗#%".
       }
       wp_pures.
@@ -193,20 +193,20 @@ Proof.
     wp_loadField.
     wp_storeField.
     wp_loadField.
+    wp_storeField.
+    wp_loadField.
     wp_loadField.
     wp_loadField.
     wp_loadField.
     wp_loadField.
 
     iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & HΨ)".
-    replace (args.(SetStateArgs.nextIndex)) with (U64 (length σ)) by word.
-    replace (length σ) with (length σ.*1); last first.
-    { by rewrite fmap_length. }
+    replace (args.(SetStateArgs.nextIndex)) with (U64 (length (get_rwops opsfull))) by word.
 
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
       iSplitR.
-      { iPureIntro. rewrite fmap_length. word. }
+      { iPureIntro. word. }
       iSplitR; first done.
       iFrame "Hargs_state_sl".
       iIntros "Hghost".
@@ -276,12 +276,16 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      do 9 (iExists _).
-      iFrame "∗ HisSm #%".
+      repeat (iExists _).
+      iFrame "∗ HisSm Hacc_lb #%".
       iSplit.
       {
         iPureIntro.
-        rewrite fmap_length.
+        word.
+      }
+      iSplit.
+      {
+        iPureIntro.
         word.
       }
       iSplitL; last done.
