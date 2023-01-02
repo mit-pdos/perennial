@@ -17,6 +17,7 @@ Notation OpType := (pb_OpType pb_record).
 Notation has_op_encoding := (pb_has_op_encoding pb_record).
 Notation compute_reply := (pb_compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
+Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
@@ -135,6 +136,16 @@ Proof.
     { exfalso. done. }
   }
 Qed.
+
+
+Lemma accept_helper opsfull opsfull_old op (γ:gname) :
+  (prefix opsfull opsfull_old ∨ prefix opsfull_old opsfull) →
+  last opsfull = Some (rw_op op, γ) →
+  length (get_rwops opsfull) = length (get_rwops opsfull_old) + 1 →
+  get_rwops opsfull_old ++ [op] = get_rwops opsfull ∧
+  prefix opsfull_old opsfull.
+Proof.
+Admitted.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args opsfull op Q Φ Ψ :
   is_Server s γ γsrv -∗
@@ -347,42 +358,37 @@ Proof.
     iIntros "Hghost".
     iDestruct "Hghost" as (opsfull_old) "(%Hre & Hghost & Hprim)".
 
-    (* FIXME: need to deal with implicitly accepting RO ops here *)
-
-    iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
+    (* deal with implicitly accepting RO ops here *)
+    rewrite Hre.
+    iDestruct (ghost_accept_helper2 with "Hprop_lb Hghost") as "[Hghost %Hcomp]".
+    epose proof (accept_helper _ _ _ _ Hcomp Hghost_op_σ) as H.
+    eassert _ as H2; last apply H in H2.
     {
-      apply (f_equal length) in Hre.
-      rewrite Hσ_nextIndex in Hre.
-      rewrite Hre in Hσ_index.
-      unfold get_rwops in Hσ_index.
-      rewrite fmap_length in Hσ_index.
+      rewrite Hσ_index.
+      rewrite -Hre.
+      rewrite Hσ_nextIndex.
       word.
     }
-    { done. }
+    destruct H2 as [HnewOp Hprefix].
+    clear H.
+
     iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
     { done. }
-    {
-      rewrite Happend.
-      rewrite app_length.
-      word.
-    }
+    { by apply prefix_length. }
     iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
-    {
-      rewrite Happend.
-      rewrite app_length.
-      word.
-    }
-    rewrite Happend.
+    { by apply prefix_length. }
+
     iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
     iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb2".
-    instantiate (1:=(is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch σ)%I).
+    instantiate (1:=(is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch opsfull)%I).
     iModIntro.
 
     iSplitL.
     { iExists _; iFrame "Hghost".
       iFrame "Hprim".
-      rewrite fmap_snoc.
-      by rewrite Hre. }
+      done.
+    }
+
     replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
     iFrame "#".
   }
@@ -465,6 +471,8 @@ Proof.
   wp_apply "HwaitSpec".
   iIntros "#Hlb".
   wp_pures.
+
+  (* FIXME: trigger durableCond *)
 
   iLeft in "HΨ".
   iApply "HΦ".

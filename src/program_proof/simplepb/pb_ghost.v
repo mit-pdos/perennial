@@ -400,6 +400,22 @@ Proof.
 Qed.
 
 (* Used by ApplyAsBackup *)
+Lemma ghost_accept_helper2 γsys γsrv epoch σ σ_old sealed:
+  is_proposal_lb γsys epoch σ -∗
+  own_replica_ghost γsys γsrv epoch σ_old sealed -∗
+  own_replica_ghost γsys γsrv epoch σ_old sealed ∗
+  ⌜σ ⪯ σ_old ∨ σ_old ⪯ σ⌝
+.
+Proof.
+  iIntros "#Hprop Hghost".
+  iNamed "Hghost".
+  iDestruct (own_valid_2 with "Hprop Hproposal_lb") as %Hσ_ineq.
+  rewrite singleton_op singleton_valid in Hσ_ineq.
+  rewrite -Cinr_op Cinr_valid in Hσ_ineq.
+  rewrite mono_list_lb_op_valid_L in Hσ_ineq.
+  iFrame "∗#%".
+Qed.
+
 Lemma ghost_accept_helper newOp γsys γsrv epoch σ σ_old sealed:
   length σ = length σ_old + 1 →
   last σ = Some newOp →
