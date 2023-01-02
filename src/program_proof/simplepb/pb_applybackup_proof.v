@@ -22,27 +22,26 @@ Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
 (* Clerk specs *)
-Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) σ ghost_op op_sl op :
+Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op op_sl op_bytes :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
-
         "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ epoch σ ∗
-        "#Hprop_facts" ∷ is_proposal_facts γ epoch σ ∗
-        "%Hghost_op_σ" ∷ ⌜last σ = Some ghost_op⌝ ∗
-        "%Hghost_op_op" ∷ ⌜has_op_encoding op ghost_op.1⌝ ∗
-        "%Hσ_index" ∷ ⌜length σ = ((int.nat index) + 1)%nat⌝ ∗
+        "#Hprop_lb" ∷ is_proposal_lb γ epoch opsfull ∗
+        "#Hprop_facts" ∷ is_proposal_facts γ epoch opsfull ∗
+        "%Hghost_op_σ" ∷ ⌜∃ γ, last opsfull = Some (rw_op op, γ)⌝ ∗
+        "%Hghost_op_op" ∷ ⌜has_op_encoding op_bytes op⌝ ∗
+        "%Hσ_index" ∷ ⌜length (get_rwops opsfull) = ((int.nat index) + 1)%nat⌝ ∗
         "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
 
         "#HargEpoch" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "epoch"] #epoch) ∗
         "#HargIndex" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "index"] #index) ∗
         "#HargOp" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "op"] (slice_val op_sl)) ∗
-        "#HopSl" ∷ readonly (is_slice_small op_sl byteT 1 op)
+        "#HopSl" ∷ readonly (is_slice_small op_sl byteT 1 op_bytes)
   }}}
     Clerk__ApplyAsBackup #ck #args_ptr
   {{{
         (err:u64), RET #err; □ if (decide (err = 0)) then
-                               is_accepted_lb γsrv epoch σ
+                               is_accepted_lb γsrv epoch opsfull
                              else True
   }}}.
 Proof.
@@ -73,16 +72,10 @@ Proof.
     iModIntro.
     iNext.
     unfold SetState_spec.
+    destruct Hghost_op_σ as [? Hghost_op_σ].
     iExists _, _, _, _.
     iSplitR; first done.
     iFrame "#%".
-    iSplitR; first iPureIntro.
-    {
-      instantiate (1:=ghost_op.2).
-      rewrite Hghost_op_σ.
-      destruct ghost_op.
-      done.
-    }
     iSplit.
     { (* No error from RPC, Apply was accepted *)
       iIntros "#Hacc_lb".
@@ -143,11 +136,11 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args σ op Q Φ Ψ :
+Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args opsfull op Q Φ Ψ :
   is_Server s γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
-  ApplyAsBackup_core_spec γ γsrv args σ op Q Ψ -∗
+  ApplyAsBackup_core_spec γ γsrv args opsfull op Q Ψ -∗
   WP pb.Server__ApplyAsBackup #s #args_ptr {{ Φ }}
 .
 Proof.
@@ -345,18 +338,23 @@ Proof.
 
   iNamed "HisSm".
   wp_loadField.
+  wp_loadField.
 
   iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
   wp_apply ("HapplySpec" with "[$Hstate $Hargs_op_sl]").
   { (* prove protocol step *)
     iSplitL ""; first done.
     iIntros "Hghost".
-    iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
+    iDestruct "Hghost" as (opsfull_old) "(%Hre & Hghost & Hprim)".
+
+    (* FIXME: need to deal with implicitly accepting RO ops here *)
+
     iDestruct (ghost_accept_helper with "Hprop_lb Hghost") as "[Hghost %Happend]".
     {
       apply (f_equal length) in Hre.
       rewrite Hσ_nextIndex in Hre.
       rewrite Hre in Hσ_index.
+      unfold get_rwops in Hσ_index.
       rewrite fmap_length in Hσ_index.
       word.
     }
