@@ -35,15 +35,15 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
         (reply:loc) (err:u64), RET #reply;
         if (decide (err = U64 0)) then
-            ∃ epochacc σ enc,
+            ∃ epochacc opsfull enc,
             ⌜int.nat epoch_lb ≤ int.nat epochacc⌝ ∗
             ⌜int.nat epochacc ≤ int.nat epoch⌝ ∗
-            is_accepted_ro γsrv epochacc σ ∗
-            is_proposal_facts γ epochacc σ ∗
-            is_proposal_lb γ epochacc σ ∗
-            GetStateReply.own reply (GetStateReply.mkC 0 (length σ) enc) ∗
-            ⌜has_snap_encoding enc (fst <$> σ)⌝ ∗
-            ⌜length σ = int.nat (U64 (length σ))⌝
+            is_accepted_ro γsrv epochacc opsfull ∗
+            is_proposal_facts γ epochacc opsfull ∗
+            is_proposal_lb γ epochacc opsfull ∗
+            GetStateReply.own reply (GetStateReply.mkC 0 (length (get_rwops opsfull)) enc) ∗
+            ⌜has_snap_encoding enc (get_rwops opsfull)⌝ ∗
+            ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝
           else
             GetStateReply.own reply (GetStateReply.mkC err 0 [])
   }}}.
@@ -165,7 +165,7 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "∗#%".
     }
     unfold GetState_core_spec.
@@ -216,10 +216,10 @@ Proof.
     iModIntro.
 
     iCombine "Hacc_ro Hepoch_ineq" as "HH".
-    instantiate (1:=(∃ σ, is_accepted_ro γsrv epoch σ ∗
-                                         is_proposal_lb γ epoch σ ∗
-                                         is_proposal_facts γ epoch σ ∗
-                                         ⌜σ.*1 = σphys⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
+    instantiate (1:=(∃ opsfull, is_accepted_ro γsrv epoch opsfull ∗
+                                         is_proposal_lb γ epoch opsfull ∗
+                                         is_proposal_facts γ epoch opsfull ∗
+                                         ⌜get_rwops opsfull = ops⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
     iExists _.
     iFrame "#".
     done.
@@ -236,7 +236,6 @@ Proof.
   { word. }
   { rewrite Hσeq_phys. done. }
   { apply (f_equal length) in Hσeq_phys.
-    rewrite fmap_length in Hσeq_phys.
     word. }
 
   (* signal all opApplied condvars *)
@@ -263,7 +262,7 @@ Proof.
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    do 9 (iExists _).
+    repeat (iExists _).
     iFrame "∗ HisSm #%".
     by iApply big_sepM_empty.
   }
@@ -279,7 +278,6 @@ Proof.
   simpl.
 
   apply (f_equal length) in Hσeq_phys.
-  rewrite fmap_length in Hσeq_phys.
   rewrite Hσeq_phys.
   rewrite Hσ_nextIndex.
   replace (U64 (int.nat nextIndex)) with (nextIndex) by word.
