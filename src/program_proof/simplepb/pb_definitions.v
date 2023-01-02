@@ -27,13 +27,28 @@ Notation has_op_encoding := (pb_has_op_encoding pb_record).
 Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
 Notation compute_reply := (pb_compute_reply pb_record).
 
+Inductive GhostOpType :=
+  | rw_op : OpType → GhostOpType
+  | ro_op : OpType → GhostOpType.
+
+(* opsfull has all the ghost ops (RO and RW) in it as well as the gname for the
+   Q for that op. get_rwops returns the RW ops only with the gnames removed.
+   Generalizing it to an arbitrary extra type A instead of gname
+   specifically, because sometimes we want to use get_rwops on a list that has
+   an iProp predicate instead of the gname (see is_inv). *)
+Definition get_rwops {A} (opsfull:list (GhostOpType * A)) : list OpType :=
+  concat (map (λ opfull, match opfull with
+                         | (rw_op op, γ) => [op]
+                         | (ro_op _, _) => []
+                         end) opsfull).
+
 Definition client_logR := mono_listR (leibnizO OpType).
 
 Class pbG Σ := {
     (*
     pb_ghostG :> pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
      *)
-    pb_ghostG :> pb_ghostG (EntryType:=(OpType * gname)) Σ ;
+    pb_ghostG :> pb_ghostG (EntryType:=(GhostOpType * gname)) Σ ;
     pb_savedG :> savedPredG Σ (list OpType);
     pb_urpcG :> urpcregG Σ ;
     pb_wgG :> waitgroupG Σ ; (* for apply proof *)
@@ -54,15 +69,15 @@ Definition own_log γ σ := own γ (●ML{#1/2} (σ : list (leibnizO OpType))).
 
 (* RPC specs *)
 
-Definition ApplyAsBackup_core_spec γ γsrv args σ op Q (Φ : u64 -> iProp Σ) : iProp Σ :=
-  ("%Hσ_index" ∷ ⌜length σ = (int.nat args.(ApplyAsBackupArgs.index) + 1)%nat⌝ ∗
+Definition ApplyAsBackup_core_spec γ γsrv args opsfull op Q (Φ : u64 -> iProp Σ) : iProp Σ :=
+  ("%Hσ_index" ∷ ⌜length (get_rwops opsfull) = (int.nat args.(ApplyAsBackupArgs.index) + 1)%nat⌝ ∗
    "%Hhas_encoding" ∷ ⌜has_op_encoding args.(ApplyAsBackupArgs.op) op⌝ ∗
-   "%Hghost_op_σ" ∷ ⌜last σ = Some (op, Q)⌝ ∗
+   "%Hghost_op_σ" ∷ ⌜last opsfull = Some (rw_op op, Q)⌝ ∗
    "%Hno_overflow" ∷ ⌜int.nat args.(ApplyAsBackupArgs.index) < int.nat (word.add args.(ApplyAsBackupArgs.index) 1)⌝ ∗
    "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(ApplyAsBackupArgs.epoch) ∗
-   "#Hprop_lb" ∷ is_proposal_lb γ args.(ApplyAsBackupArgs.epoch) σ ∗
-   "#Hprop_facts" ∷ is_proposal_facts γ args.(ApplyAsBackupArgs.epoch) σ ∗
-   "HΨ" ∷ ((is_accepted_lb γsrv args.(ApplyAsBackupArgs.epoch) σ -∗ Φ (U64 0)) ∧
+   "#Hprop_lb" ∷ is_proposal_lb γ args.(ApplyAsBackupArgs.epoch) opsfull ∗
+   "#Hprop_facts" ∷ is_proposal_facts γ args.(ApplyAsBackupArgs.epoch) opsfull ∗
+   "HΨ" ∷ ((is_accepted_lb γsrv args.(ApplyAsBackupArgs.epoch) opsfull -∗ Φ (U64 0)) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
     )%I
 .
@@ -79,13 +94,13 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition SetState_core_spec γ γsrv args σ :=
+Definition SetState_core_spec γ γsrv args opsfull :=
   λ (Φ : u64 -> iPropO Σ) ,
   (
-    ⌜has_snap_encoding args.(SetStateArgs.state) (fst <$> σ)⌝ ∗
-    ⌜length σ = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
-    is_proposal_lb γ args.(SetStateArgs.epoch) σ ∗
-    is_proposal_facts γ args.(SetStateArgs.epoch) σ ∗
+    ⌜has_snap_encoding args.(SetStateArgs.state) (get_rwops opsfull)⌝ ∗
+    ⌜length (get_rwops opsfull) = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
+    is_proposal_lb γ args.(SetStateArgs.epoch) opsfull ∗
+    is_proposal_facts γ args.(SetStateArgs.epoch) opsfull ∗
     (
       (is_epoch_lb γsrv args.(SetStateArgs.epoch) -∗
        Φ 0) ∧
@@ -108,17 +123,17 @@ Defined.
 Definition GetState_core_spec γ γsrv (epoch:u64) ghost_epoch_lb :=
   λ (Φ : GetStateReply.C -> iPropO Σ) ,
   (
-    ( is_epoch_lb γsrv ghost_epoch_lb ∗
+    (is_epoch_lb γsrv ghost_epoch_lb ∗
       (
-      (∀ epochacc σ snap,
+      (∀ epochacc opsfull snap,
             ⌜int.nat ghost_epoch_lb ≤ int.nat epochacc⌝ -∗
             ⌜int.nat epochacc ≤ int.nat epoch⌝ -∗
-            is_accepted_ro γsrv epochacc σ -∗
-            is_proposal_facts γ epochacc σ -∗
-            is_proposal_lb γ epochacc σ -∗
-            ⌜has_snap_encoding snap (fst <$> σ)⌝ -∗
-            ⌜length σ = int.nat (U64 (length σ))⌝ -∗
-                 Φ (GetStateReply.mkC 0 (length σ) snap)) ∧
+            is_accepted_ro γsrv epochacc opsfull -∗
+            is_proposal_facts γ epochacc opsfull -∗
+            is_proposal_lb γ epochacc opsfull -∗
+            ⌜has_snap_encoding snap (get_rwops opsfull)⌝ -∗
+            ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝ -∗
+                 Φ (GetStateReply.mkC 0 (length (get_rwops opsfull)) snap)) ∧
       (∀ err, ⌜err ≠ U64 0⌝ → Φ (GetStateReply.mkC err 0 [])))
     )
     )%I
@@ -165,19 +180,21 @@ Defined.
 Definition appN := pbN .@ "app".
 Definition escrowN := pbN .@ "escrow".
 
-Definition own_ghost' γsys (σ : list (OpType * (list OpType → iProp Σ))) : iProp Σ :=
-  ∃ σgnames : list (OpType * gname),
-    own_ghost γsys σgnames ∗
-    ⌜ σ.*1 = σgnames.*1 ⌝ ∗
-    [∗ list] k↦Φ;γ ∈ snd <$> σ; snd <$> σgnames, saved_pred_own γ DfracDiscarded Φ.
+Definition own_ghost' γsys (opsfullQ : list (GhostOpType * (list OpType → iProp Σ))) : iProp Σ :=
+  ∃ ops_gnames: list (GhostOpType * gname),
+    own_ghost γsys ops_gnames ∗
+    ⌜opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
+    [∗ list] k↦Φ;γ ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_pred_own γ DfracDiscarded Φ.
 
 Definition is_inv γlog γsys :=
-  inv appN (∃ σ,
-        own_log γlog (fst <$> σ) ∗
-        own_ghost' γsys σ ∗
-        □(
-          ∀ σ' σ'prefix lastEnt, ⌜prefix σ' σ⌝ -∗ ⌜σ' = σ'prefix ++ [lastEnt]⌝ -∗ (lastEnt.2 (fst <$> σ'prefix))
-        )
+  inv appN (∃ opsfullQ,
+      own_ghost' γsys opsfullQ ∗
+      own_log γlog (get_rwops opsfullQ) ∗
+      □(
+        ∀ opsPre opsPrePre lastEnt,
+        ⌜prefix opsPre opsfullQ⌝ -∗ ⌜opsPre = opsPrePre ++ [lastEnt]⌝ -∗
+        (lastEnt.2 (get_rwops opsPre))
+      )
       ).
 
 Definition Apply_core_spec γ γlog op enc_op :=
@@ -249,9 +266,10 @@ Qed.
 (* Hides the ghost part of the log; this is suitable for exposing as part of
    interfaces for users of the library. For now, it's only part of the crash
    obligation. *)
-Definition own_Server_ghost γ γsrv epoch σphys sealed : iProp Σ :=
-  ∃ σ, ⌜σphys = σ.*1⌝ ∗ (own_replica_ghost γ γsrv epoch σ sealed) ∗
-      (own_primary_ghost γ γsrv epoch σ)
+Definition own_Server_ghost γ γsrv epoch ops sealed : iProp Σ :=
+  ∃ opsfull, ⌜ops = get_rwops opsfull⌝ ∗
+      (own_replica_ghost γ γsrv epoch opsfull sealed) ∗
+      (own_primary_ghost γ γsrv epoch opsfull)
 .
 
 End pb_global_definitions.
