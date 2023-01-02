@@ -21,9 +21,6 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
 
-(* FIXME: this should be in a separate file *)
-
-
 Lemma wp_Clerk__Apply γ γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 is_Clerk ck γsys γsrv -∗
@@ -142,29 +139,30 @@ Transparent prelude.Data.randomUint64.
 Opaque prelude.Data.randomUint64.
 Qed.
 
+(*
 Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
   (σgnames : list (OpType * gname)) : iProp Σ :=
     ⌜ σ.*1 = σgnames.*1 ⌝ ∗
     [∗ list] k↦Φ;γ ∈ snd <$> σ; snd <$> σgnames, saved_pred_own γ DfracDiscarded Φ.
 
 Definition is_ghost_lb' γ σ : iProp Σ :=
-  ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames.
+  ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
-Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op ghost_op :
+Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
-        readonly (is_slice_small op_sl byteT 1 op) ∗
-        ⌜has_op_encoding op ghost_op.1⌝ ∗
-        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [ghost_op]) ={∅,⊤∖↑ghostN}=∗ True))
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(rw_op op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
         reply_ptr reply, RET #reply_ptr; £ 1 ∗ £ 1 ∗ £ 1 ∗ ApplyReply.own_q reply_ptr reply ∗
         if (decide (reply.(ApplyReply.err) = 0%Z)) then
-          ∃ σ,
-            let σphys := (λ x, x.1) <$> σ in
-            ⌜reply.(ApplyReply.ret) = compute_reply σphys ghost_op.1⌝ ∗
-            is_ghost_lb γ (σ ++ [ghost_op])
+          ∃ opsfull,
+            let ops := (get_rwops opsfull) in
+            ⌜reply.(ApplyReply.ret) = compute_reply ops op⌝ ∗
+            is_ghost_lb γ (opsfull ++ [(rw_op op, Q)])
         else
           True
   }}}
@@ -201,7 +199,7 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "Hstate ∗#%".
     }
     wp_pures.
@@ -228,7 +226,7 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "∗#%".
       iNamed "HprimaryOnly".
       iExists _, _; iFrame "∗#%".
@@ -277,16 +275,22 @@ Proof.
     }
     iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
 
-    instantiate (1:=(∃ σ,
-                        ⌜σ.*1 = σphys⌝ ∗
-                        is_accepted_lb γsrv epoch (σ ++ [ghost_op]) ∗
-                        is_proposal_lb γ epoch (σ ++ [ghost_op]) ∗
-                        is_proposal_facts γ epoch (σ ++ [ghost_op])
+    instantiate (1:=(∃ opsfull,
+                        ⌜get_rwops opsfull = ops⌝ ∗
+                        is_accepted_lb γsrv epoch (opsfull ++ [(rw_op op, Q)]) ∗
+                        is_proposal_lb γ epoch (opsfull ++ [(rw_op op, Q)]) ∗
+                        is_proposal_facts γ epoch (opsfull ++ [(rw_op op, Q)])
                     )%I).
     iModIntro.
     iSplitL.
     {
-      iExists _; iFrame. rewrite fmap_snoc. rewrite Hre. done.
+      iExists _; iFrame.
+      unfold get_rwops.
+      rewrite map_app. rewrite Hre.
+      simpl.
+      rewrite concat_app.
+      simpl.
+      done.
     }
     iExists _.
     iFrame "Hlb #".
@@ -307,12 +311,14 @@ Proof.
   wp_loadField.
   wp_pures.
 
+  (* FIXME: updating nextRoIndex here *)
+
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hreply Err Reply Hlc1 Hlc2 HwaitSpec]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    do 9 (iExists _).
+    repeat (iExists _).
     iFrame "HisSm Hstate ∗#%".
     iSplitL "".
     { iPureIntro.
