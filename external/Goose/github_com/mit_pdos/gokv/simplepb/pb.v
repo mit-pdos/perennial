@@ -561,9 +561,9 @@ Definition Server__ApplyAsBackup: val :=
           lock.release (struct.loadF Server "mu" "s");;
           e.OutOfOrder
         else
-          let: "opNextIndex" := struct.loadF Server "nextIndex" "s" in
           let: (<>, "waitFn") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args") in
           struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
+          let: "opNextIndex" := struct.loadF Server "nextIndex" "s" in
           let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s") in
           (if: "ok"
           then
@@ -573,7 +573,7 @@ Definition Server__ApplyAsBackup: val :=
           lock.release (struct.loadF Server "mu" "s");;
           "waitFn" #();;
           lock.acquire (struct.loadF Server "mu" "s");;
-          (if: "opNextIndex" > struct.loadF Server "durableNextIndex" "s"
+          (if: (struct.loadF ApplyAsBackupArgs "epoch" "args" = struct.loadF Server "epoch" "s") && ("opNextIndex" > struct.loadF Server "durableNextIndex" "s")
           then
             struct.storeF Server "durableNextIndex" "s" "opNextIndex";;
             lock.condBroadcast (struct.loadF Server "durableNextIndex_cond" "s");;

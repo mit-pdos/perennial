@@ -251,7 +251,7 @@ Proof.
       iSplitR; first done.
       iModIntro.
       iApply to_named.
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "∗#%".
       unfold typed_map.map_insert.
       iDestruct (big_sepM_insert with "[$HopAppliedConds_conds]") as "$".
@@ -266,7 +266,7 @@ Proof.
       {
         iFrame "His_cond".
         iFrame "HmuInv Hlocked".
-        do 9 (iExists _).
+        repeat (iExists _).
         iFrame "∗#%".
       }
       iIntros "[Hlocked Hown]".
@@ -292,7 +292,7 @@ Proof.
     wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "∗#%".
     }
     wp_pures.
@@ -312,7 +312,7 @@ Proof.
     {
       iFrame "Hlocked HmuInv".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "∗#%".
     }
     wp_pures.
@@ -333,7 +333,7 @@ Proof.
     {
       iFrame "Hlocked HmuInv".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "Hepoch HnextIndex ∗ # %".
     }
     wp_pures.
@@ -348,7 +348,6 @@ Proof.
   wp_pures.
 
   iNamed "HisSm".
-  wp_loadField.
   wp_loadField.
 
   iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
@@ -398,6 +397,7 @@ Proof.
   wp_storeField.
   wp_loadField.
 
+  wp_loadField.
   wp_loadField.
   wp_apply (wp_MapGet with "HopAppliedConds_map").
   iIntros (cond ok) "[%Hlookup HopAppliedConds_map]".
@@ -452,11 +452,11 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  wp_apply (release_spec with "[-HΨ HΦ HwaitSpec]").
+  wp_apply (release_spec with "[-HΨ HΦ HwaitSpec Hargs_epoch]").
   {
     iFrame "Hlocked HmuInv".
     iNext.
-    do 9 (iExists _).
+    repeat (iExists _).
     replace ([op]) with ([(op, Q).1]) by done.
     iFrame "Hstate ∗#".
     iSplitR.
@@ -472,7 +472,84 @@ Proof.
   iIntros "#Hlb".
   wp_pures.
 
-  (* FIXME: trigger durableCond *)
+  (* possibly update durableNextIndex *)
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+  iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
+  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb".
+  (* FIXME: why doesn't Hdurable_lb get automatically get destructed into Hdurable_lb2? *)
+
+  wp_pures.
+  wp_bind  ((if: (if: _ then _ else _) then _ else _)%E).
+  wp_apply (wp_wand with "[Hown Hargs_epoch]").
+  {
+    instantiate (1:= λ _, pb_definitions.own_Server s γ γsrv own_StateMachine mu).
+    iNamed "Hown".
+    wp_bind (if: struct.loadF _ _ _ = _ then _ else _)%E.
+    wp_loadField.
+    wp_loadField.
+    wp_if_destruct.
+    {
+      wp_loadField.
+      wp_if_destruct.
+      { (* case: increase durableNextIndex *)
+        iDestruct "Hlb" as "[_ Hlb]".
+        replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
+        wp_storeField.
+        wp_loadField.
+        wp_apply (wp_condBroadcast with "[]"); first iFrame "#".
+        wp_pures.
+        wp_loadField.
+        wp_loadField.
+        wp_bind ((if: #_ = #_ then _ else _)%E).
+        wp_if_destruct.
+        {
+          wp_loadField.
+          wp_loadField.
+          wp_pures.
+          wp_if_destruct.
+          {
+            wp_loadField.
+            wp_apply (wp_condSignal with "[]"); first iFrame "#".
+            repeat iExists _. 
+            iFrame "∗ Hlb #%".
+            iPureIntro.
+            word.
+          }
+          {
+            repeat iExists _.
+            iFrame "∗ Hlb #%".
+            iPureIntro.
+            word.
+          }
+        }
+        wp_pures.
+        repeat iExists _.
+        iFrame "∗ Hlb #%".
+        iPureIntro.
+        word.
+      }
+      {
+        repeat iExists _.
+        iFrame "∗ #%".
+        iPureIntro.
+        word.
+      }
+    }
+    wp_pures.
+    {
+      iModIntro.
+      repeat iExists _.
+      iFrame "∗#%".
+    }
+  }
+
+  iIntros (?) "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_apply (release_spec with "[$HmuInv $Hlocked $Hown]").
+  wp_pures.
 
   iLeft in "HΨ".
   iApply "HΦ".

@@ -384,8 +384,13 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
 Definition numClerks : nat := 32.
 
 Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
-  ∃ (epoch:u64) σphys (nextIndex:u64) (sealed:bool) (isPrimary:bool) (sm:loc) (clerks_sl:Slice.t)
-    (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
+  ∃ (epoch:u64) ops (nextIndex durableNextIndex:u64) ops_durable_full (sealed:bool) (isPrimary:bool)
+    (sm:loc) (clerks_sl:Slice.t) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc)
+    (durableNextIndex_cond:loc)
+    (* read-only operation state: *)
+    (committedNextIndex nextRoIndex committedNextRoIndex:u64)
+    (roOpsToPropose_cond committedNextRoIndex_cond:loc)
+  ,
   (* physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
@@ -394,6 +399,21 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
   "Hsm" ∷ s ↦[pb.Server :: "sm"] #sm ∗
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
 
+  "HdurableNextIndex" ∷ s ↦[pb.Server :: "durableNextIndex"] #durableNextIndex ∗
+  "HdurableNextIndex_cond" ∷ s ↦[pb.Server :: "durableNextIndex_cond"] #durableNextIndex_cond ∗
+  "#HdurableNextIndex_is_cond" ∷ is_cond durableNextIndex_cond mu ∗
+
+  "HcommittedNextIndex" ∷ s ↦[pb.Server :: "committedNextIndex"] #committedNextIndex ∗
+  "HnextRoIndex" ∷ s ↦[pb.Server :: "nextRoIndex"] #nextRoIndex ∗
+  "HcommittedNextRoIndex" ∷ s ↦[pb.Server :: "committedNextRoIndex"] #committedNextRoIndex ∗
+
+  "HroOpsToPropose_cond" ∷ s ↦[pb.Server :: "roOpsToPropose_cond"] #roOpsToPropose_cond ∗
+  "#HroOpsToPropose_is_cond" ∷ is_cond roOpsToPropose_cond mu ∗
+
+  "HcommittedNextRoIndex_cond" ∷ s ↦[pb.Server :: "committedNextRoIndex_cond"] #committedNextRoIndex_cond ∗
+  "#HcommittedNextRoIndex_is_cond" ∷ is_cond committedNextRoIndex_cond mu ∗
+
+
   (* state-machine callback specs *)
   "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost γ γsrv) ∗
 
@@ -401,8 +421,12 @@ Definition own_Server (s:loc) γ γsrv own_StateMachine mu : iProp Σ :=
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
 
   (* ghost-state *)
-  "Hstate" ∷ own_StateMachine epoch σphys sealed (own_Server_ghost γ γsrv) ∗
-  "%Hσ_nextIndex" ∷ ⌜length σphys = int.nat nextIndex⌝ ∗
+  "Hstate" ∷ own_StateMachine epoch ops sealed (own_Server_ghost γ γsrv) ∗
+  "%Hσ_nextIndex" ∷ ⌜length ops = int.nat nextIndex⌝ ∗
+
+  (* accepted witness for durable state *)
+  "#Hdurable_lb" ∷ is_accepted_lb γsrv epoch ops_durable_full ∗
+  "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
 
   (* backup sequencer *)
   "HopAppliedConds" ∷ s ↦[pb.Server :: "opAppliedConds"] #opAppliedConds_loc ∗
