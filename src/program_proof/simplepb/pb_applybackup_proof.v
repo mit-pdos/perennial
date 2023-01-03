@@ -349,53 +349,81 @@ Proof.
 
   iNamed "HisSm".
 
+  iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
+  iAssert ((|NC={⊤,⊤}=> ∃ (new_opsfull_ephemeral:list (GhostOpType * gname)),
+           wpc_nval ⊤
+             (own_StateMachine args.(ApplyAsBackupArgs.epoch) ops false
+                (own_Server_ghost γ γsrv γeph) ∗
+                ((own_ephemeral_proposal γeph args.(ApplyAsBackupArgs.epoch) new_opsfull_ephemeral ∗
+                is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull)) )
+
+           )%I) with "[Heph Hstate Hlc]" as "HH".
+  {
   (* Want to establish:
      is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull
      This requires us to know that opsfull_ephemeral ⪯ opsfull.
-     Now, the proof will establish this using accP.
+     We will establish this using accP.
    *)
-  iDestruct ("HaccP" with "Hlc [Heph] Hstate") as "HH".
-  {
-    iIntros (opsold ??) "Hghost".
-    iNamed "Hghost".
-    rewrite Hre.
-    iDestruct (ghost_accept_helper2 with "Hprop_lb Hghost") as "[Hghost %Hcomp]".
-    destruct Hcomp as [Hprefix|Hprefix].
-    { (* case: opsfull ⪯ opsfull0; no need to do any update at all *)
-      instantiate (1:=
-                  (∃ new_opsfull_ephemeral,
-                  own_ephemeral_proposal γeph args.(ApplyAsBackupArgs.epoch) new_opsfull_ephemeral ∗
-                  is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull)%I).
+    destruct isPrimary.
+    { (* case: is primary. *)
+      iExists opsfull_ephemeral.
+      iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last done.
+      iIntros (???) "Hghost".
+      iNamed "Hghost".
+      assert (prefix opsfull opsfull0).
+      { admit. } (* FIXME: use the fact that server is primary *)
+      iSplitL "Hghost Hprim".
+      { iModIntro. iExists _. iFrame "∗#%". }
       iModIntro.
-      iSplitR "Heph".
-      {
-        iExists _. iFrame "∗#". done.
-      }
-      iExists _.
-      iFrame.
+      iFrame "Heph".
       iApply (own_mono with "Heph_lb").
       apply singleton_mono.
       apply mono_list_lb_mono.
       done.
     }
-    {
-      iSplitR "Heph".
-      {
-        iExists _. iFrame "∗#". done.
-      }
-      iExists opsfull.
-      iDestruct (own_valid_2 with "Heph Heph_lb") as %Hephpre.
-      rewrite singleton_op singleton_valid in Hephpre.
-      apply mono_list_both_valid_L in Hephpre.
-      iMod (own_update with "Heph") as "$".
-      {
-        apply singleton_update.
-        apply mono_list_update.
+    { (* case: not primary *)
+      iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hcomp.
+      rewrite singleton_op singleton_valid in Hcomp.
+      rewrite csum.Cinr_valid in Hcomp.
+      apply mono_list_lb_op_valid_L in Hcomp.
+      destruct Hcomp as [Hprefix|Hprefix].
+      2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
+        iExists _.
+        iDestruct (own_mono _ _ {[ args.(ApplyAsBackupArgs.epoch) := ◯ML (opsfull_ephemeral: list (leibnizO _)) ]} with "Heph") as "#Heph_lb2".
+        { apply singleton_mono.
+          apply mono_list_included.
+        }
+        iFrame.
+        iApply wpc_nval_intro.
+        iModIntro. iNext.
+        iFrame.
+        iApply (own_mono with "Heph_lb2").
+        apply singleton_mono.
+        apply mono_list_lb_mono.
         done.
+      }
+      {
+        iExists opsfull.
+        iMod (own_update with "Heph") as "Heph".
+        {
+          apply singleton_update.
+          apply mono_list_update.
+          exact Hprefix.
+        }
+        iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Heph_lb".
+        {
+          apply singleton_mono.
+          apply mono_list_included.
+        }
+        iModIntro.
+        iApply wpc_nval_intro.
+        iNext.
+        iFrame "∗#".
       }
     }
   }
 
+  (* FIXME: end of iAssert *)
 
   wp_loadField.
 

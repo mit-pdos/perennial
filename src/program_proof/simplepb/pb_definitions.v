@@ -440,7 +440,7 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
   (* ghost-state *)
   "Heph" ∷ own_ephemeral_proposal γeph epoch opsfull_ephemeral ∗
   "Heph_unused" ∷ own_unused_ephemeral_proposals γeph epoch ∗
-  "Heph_prop_lb" ∷ (if isPrimary then True else is_proposal_lb γ epoch opsfull_ephemeral) ∗
+  "#Heph_prop_lb" ∷ □(if isPrimary then True else is_proposal_lb γ epoch opsfull_ephemeral) ∗
   "Hstate" ∷ own_StateMachine epoch ops sealed (own_Server_ghost γ γsrv γeph) ∗
   "%Hσ_nextIndex" ∷ ⌜length ops = int.nat nextIndex⌝ ∗
   "%Heph_proposal" ∷ ⌜ True ⌝ (* opsfull_eph has `nextRoIndex` RO ops as its tail. *) ∗
@@ -459,7 +459,7 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
   "#HopAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ opAppliedConds, is_cond cond mu) ∗
 
   (* primary-only *)
-  "HprimaryOnly" ∷ if isPrimary then (
+  "#HprimaryOnly" ∷ □ if isPrimary then (
             ∃ (clerkss:list Slice.t) (backups:list pb_server_names),
             (* Because the state machine is async, we might not have "is_tok"
                right when we become leader, but we will definitely have a fupd
