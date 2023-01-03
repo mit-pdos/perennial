@@ -325,6 +325,7 @@ Proof.
   replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
   wp_loadField.
   wp_loadField.
+  wp_pure1_credit "Hlc".
   wp_if_destruct.
   { (* return error: out-of-order; TODO: we never actually need to return this
        error, if something is out of order that means we already applied it *)
@@ -345,17 +346,66 @@ Proof.
 
   wp_loadField.
   wp_loadField.
-  wp_pures.
 
   iNamed "HisSm".
+
+  (* Want to establish:
+     is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull
+     This requires us to know that opsfull_ephemeral ⪯ opsfull.
+     Now, the proof will establish this using accP.
+   *)
+  iDestruct ("HaccP" with "Hlc [Heph] Hstate") as "HH".
+  {
+    iIntros (opsold ??) "Hghost".
+    iNamed "Hghost".
+    rewrite Hre.
+    iDestruct (ghost_accept_helper2 with "Hprop_lb Hghost") as "[Hghost %Hcomp]".
+    destruct Hcomp as [Hprefix|Hprefix].
+    { (* case: opsfull ⪯ opsfull0; no need to do any update at all *)
+      instantiate (1:=
+                  (∃ new_opsfull_ephemeral,
+                  own_ephemeral_proposal γeph args.(ApplyAsBackupArgs.epoch) new_opsfull_ephemeral ∗
+                  is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull)%I).
+      iModIntro.
+      iSplitR "Heph".
+      {
+        iExists _. iFrame "∗#". done.
+      }
+      iExists _.
+      iFrame.
+      iApply (own_mono with "Heph_lb").
+      apply singleton_mono.
+      apply mono_list_lb_mono.
+      done.
+    }
+    {
+      iSplitR "Heph".
+      {
+        iExists _. iFrame "∗#". done.
+      }
+      iExists opsfull.
+      iDestruct (own_valid_2 with "Heph Heph_lb") as %Hephpre.
+      rewrite singleton_op singleton_valid in Hephpre.
+      apply mono_list_both_valid_L in Hephpre.
+      iMod (own_update with "Heph") as "$".
+      {
+        apply singleton_update.
+        apply mono_list_update.
+        done.
+      }
+    }
+  }
+
+
   wp_loadField.
 
   iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
+
   wp_apply ("HapplySpec" with "[$Hstate $Hargs_op_sl]").
   { (* prove protocol step *)
     iSplitL ""; first done.
     iIntros "Hghost".
-    iDestruct "Hghost" as (opsfull_old) "(%Hre & Hghost & Hprim)".
+    iNamed "Hghost".
 
     (* deal with implicitly accepting RO ops here *)
     rewrite Hre.
