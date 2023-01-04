@@ -461,16 +461,7 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
   (* primary-only *)
   "#HprimaryOnly" ∷ □ if isPrimary then (
             ∃ (clerkss:list Slice.t) (backups:list pb_server_names),
-            (* Because the state machine is async, we might not have "is_tok"
-               right when we become leader, but we will definitely have a fupd
-               that will tell us is_tok the next time we can access
-               own_primary_ghost. Also need later credit because of the
-               invariants involved here. *)
-            "#Htok_used_witness" ∷ □(∀ σ',
-                                      £ 1 -∗
-                                      own_primary_ghost γ γsrv epoch σ' ={↑pbN}=∗
-                                      own_primary_ghost γ γsrv epoch σ' ∗
-                                      is_tok γsrv epoch) ∗
+            "#Htok_used_witness" ∷ is_tok γsrv epoch ∗
             "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
             "#Hconf" ∷ is_epoch_config γ epoch (γsrv :: backups) ∗
                      (* FIXME: ptrT vs refT (struct.t Clerk) *)

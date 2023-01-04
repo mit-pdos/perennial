@@ -335,7 +335,7 @@ Proof.
       iFrame "Hlocked HmuInv".
       iNext.
       repeat (iExists _).
-      iFrame "Hepoch HnextIndex ∗ # %".
+      iFrame "Hepoch HnextIndex ∗#%".
     }
     wp_pures.
     iApply "HΦ".
@@ -351,6 +351,7 @@ Proof.
 
   iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
   iAssert ((|NC={⊤,⊤}=> ∃ (new_opsfull_ephemeral:list (GhostOpType * gname)),
+           ⌜new_opsfull_ephemeral = opsfull ∨ new_opsfull_ephemeral = opsfull_ephemeral⌝ ∗
            wpc_nval ⊤
              (own_StateMachine args.(ApplyAsBackupArgs.epoch) ops false
                 (own_Server_ghost γ γsrv γeph) ∗
@@ -367,11 +368,13 @@ Proof.
     destruct isPrimary.
     { (* case: is primary. *)
       iExists opsfull_ephemeral.
+      iSplitR.
+      { iPureIntro. by right. }
       iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last done.
       iIntros (???) "Hghost".
       iNamed "Hghost".
-      assert (prefix opsfull opsfull0).
-      { admit. } (* FIXME: use the fact that server is primary *)
+      iNamed "HprimaryOnly".
+      iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
       iSplitL "Hghost Hprim".
       { iModIntro. iExists _. iFrame "∗#%". }
       iModIntro.
@@ -389,6 +392,8 @@ Proof.
       destruct Hcomp as [Hprefix|Hprefix].
       2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
         iExists _.
+        iSplitR.
+        { iPureIntro. by right. }
         iDestruct (own_mono _ _ {[ args.(ApplyAsBackupArgs.epoch) := ◯ML (opsfull_ephemeral: list (leibnizO _)) ]} with "Heph") as "#Heph_lb2".
         { apply singleton_mono.
           apply mono_list_included.
@@ -416,6 +421,8 @@ Proof.
           apply mono_list_included.
         }
         iModIntro.
+        iSplitR.
+        { iPureIntro. by left.  }
         iApply wpc_nval_intro.
         iNext.
         iFrame "∗#".
@@ -423,9 +430,14 @@ Proof.
     }
   }
 
-  (* FIXME: end of iAssert *)
-
+  iMod "HH" as (?) "[%Hnew_eph HH]".
+  wp_bind (struct.loadF _ _ _).
+  wp_apply (wpc_nval_elim_wp with "HH").
+  { done. }
+  { done. }
   wp_loadField.
+  wp_pures.
+  iIntros "(Hstate & Heph & #Heph_lb2)".
 
   iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
 
@@ -463,6 +475,7 @@ Proof.
     iSplitL.
     { iExists _; iFrame "Hghost".
       iFrame "Hprim".
+      iFrame "#".
       done.
     }
 
@@ -539,6 +552,15 @@ Proof.
     iFrame "Hstate ∗#".
     iSplitR.
     { iExists _, _, _; iFrame "#". }
+    iSplitR.
+    {
+      iModIntro.
+      destruct isPrimary.
+      { done. }
+      destruct Hnew_eph as [-> | ->].
+      { iFrame "#". }
+      { iFrame "#". }
+    }
     iPureIntro.
     rewrite app_length.
     rewrite Hσ_nextIndex.
@@ -555,14 +577,14 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb".
+  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly".
   (* FIXME: why doesn't Hdurable_lb get automatically get destructed into Hdurable_lb2? *)
 
   wp_pures.
   wp_bind  ((if: (if: _ then _ else _) then _ else _)%E).
   wp_apply (wp_wand with "[Hown Hargs_epoch]").
   {
-    instantiate (1:= λ _, pb_definitions.own_Server s γ γsrv own_StateMachine mu).
+    instantiate (1:= λ _, pb_definitions.own_Server s γ γsrv γeph own_StateMachine mu).
     iNamed "Hown".
     wp_bind (if: struct.loadF _ _ _ = _ then _ else _)%E.
     wp_loadField.
@@ -591,7 +613,7 @@ Proof.
             wp_loadField.
             wp_apply (wp_condSignal with "[]"); first iFrame "#".
             repeat iExists _. 
-            iFrame "∗ Hlb #%".
+            iFrame "Hlb ∗ #%".
             iPureIntro.
             word.
           }

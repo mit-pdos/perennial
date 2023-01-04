@@ -545,7 +545,6 @@ Proof.
 
   iFrame "∗#".
 
-
   iAssert (|={↑pbN}=> is_proposal_facts γsys epoch (σ ++ [op]))%I with "[Hupd Hlc]" as ">#Hvalid2".
   {
     iSplitL "".
@@ -685,6 +684,30 @@ Proof.
   }
   iFrame "Hprop".
   iFrame "#".
+  done.
+Qed.
+
+Lemma ghost_propose_lb_valid γsys γsrv epoch σ σ' :
+  is_tok γsrv epoch -∗
+  own_primary_ghost γsys γsrv epoch σ -∗
+  is_proposal_lb γsys epoch σ' -∗
+  ⌜σ' ⪯ σ⌝
+.
+Proof.
+  iIntros "#Htok Hprim Hprop_lb".
+  iNamed "Hprim".
+  iDestruct "Hprop" as "[Hbad|[_ Hprop]]".
+  {
+    iDestruct (own_valid_2 with "Hbad Htok") as %Hbad.
+    exfalso.
+    rewrite singleton_op singleton_valid in Hbad.
+    rewrite dfrac_agree_op_valid in Hbad.
+    destruct Hbad as [Hbad _].
+    done.
+  }
+  iDestruct (own_valid_2 with "Hprop Hprop_lb") as %Hvalid.
+  rewrite singleton_op singleton_valid -Cinr_op Cinr_valid in Hvalid.
+  apply mono_list_both_valid_L in Hvalid.
   done.
 Qed.
 
