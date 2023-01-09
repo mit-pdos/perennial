@@ -247,12 +247,20 @@ Proof.
       iIntros "HopAppliedConds_map".
       wp_pures.
       iLeft.
-      iFrame.
+
+      (* PERF *)
+      (* iFrame. is much slower than listing the specific hypotheses to frame *)
+      iFrame "Hargs_op Hargs_op_sl Hargs_epoch Hargs_index HΨ HΦ Hlocked".
       iSplitR; first done.
       iModIntro.
       iApply to_named.
       repeat (iExists _).
-      iFrame "∗#%".
+
+      (* Q: what about a tactic that looks for names in the goal, and iFrames those in order? *)
+      (* PERF. The three iFrames is faster than one. *)
+      (* time iFrame "∗#%". *)
+      time (iFrame "∗"; iFrame "#"; iFrame "%").
+
       unfold typed_map.map_insert.
       iDestruct (big_sepM_insert with "[$HopAppliedConds_conds]") as "$".
       { done. }
@@ -267,7 +275,8 @@ Proof.
         iFrame "His_cond".
         iFrame "HmuInv Hlocked".
         repeat (iExists _).
-        iFrame "∗#%".
+        (* time iFrame "∗#%". *)
+        time (iFrame "∗"; iFrame "#"; iFrame "%").
       }
       iIntros "[Hlocked Hown]".
       wp_pures.
@@ -293,7 +302,9 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       repeat (iExists _).
-      iFrame "∗#%".
+      iNext.
+      (* time iFrame "∗#%". *)
+      time (iFrame "∗"; iFrame "#"; iFrame "%").
     }
     wp_pures.
     iModIntro.
@@ -313,7 +324,8 @@ Proof.
       iFrame "Hlocked HmuInv".
       iNext.
       repeat (iExists _).
-      iFrame "∗#%".
+      (* time iFrame "∗ # %". *)
+      time (iFrame "∗"; iFrame "#"; iFrame "%").
     }
     wp_pures.
     iRight in "HΨ".
@@ -335,7 +347,8 @@ Proof.
       iFrame "Hlocked HmuInv".
       iNext.
       repeat (iExists _).
-      iFrame "Hepoch HnextIndex ∗#%".
+      time (iFrame "∗"; iFrame "#"; iFrame "%").
+      (* time iFrame "∗ # %". *)
     }
     wp_pures.
     iApply "HΦ".
@@ -347,7 +360,9 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  iNamed "HisSm".
+  iAssert (_) with "HisSm" as "HisSm2".
+  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
+  iNamed "HisSm2".
 
   iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
   iAssert ((|NC={⊤,⊤}=> ∃ (new_opsfull_ephemeral:list (GhostOpType * gname)),
@@ -367,13 +382,20 @@ Proof.
    *)
     destruct isPrimary.
     { (* case: is primary. *)
+      iAssert (_) with "HprimaryOnly" as "Hprim2".
+      iEval (rewrite /is_possible_Primary /tc_opaque) in "Hprim2".
       iExists opsfull_ephemeral.
       iSplitR.
       { iPureIntro. by right. }
-      iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last done.
+      iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
+      {
+        (* PERF *)
+        (* time done. *) (* takes 5 seconds*)
+        (* time (iModIntro; done). *) (* takes 0.2 seconds, still a lot longer than below *)
+        time (iModIntro; iApply True_intro; iAccu). }.
       iIntros (???) "Hghost".
       iNamed "Hghost".
-      iNamed "HprimaryOnly".
+      iNamed "Hprim2".
       iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
       iSplitL "Hghost Hprim".
       { iModIntro. iExists _. iFrame "∗#%". }
@@ -549,9 +571,8 @@ Proof.
     iNext.
     repeat (iExists _).
     replace ([op]) with ([(op, Q).1]) by done.
-    iFrame "Hstate ∗#".
-    iSplitR.
-    { iExists _, _, _; iFrame "#". }
+    time iFrame "∗#".
+    (* time (iFrame "∗"; iFrame "#"). *) (* PERF Not a big difference here because no % *)
     iSplitR.
     {
       iModIntro.
@@ -577,7 +598,7 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly".
+  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm".
   (* FIXME: why doesn't Hdurable_lb get automatically get destructed into Hdurable_lb2? *)
 
   wp_pures.
@@ -612,27 +633,29 @@ Proof.
           {
             wp_loadField.
             wp_apply (wp_condSignal with "[]"); first iFrame "#".
-            repeat iExists _. 
-            iFrame "Hlb ∗ #%".
-            iPureIntro.
-            word.
+            repeat iExists _.
+            (* time iFrame "Hlb ∗ #%". *) (* 11.484 secs *)
+            time (iFrame "Hlb ∗ #"; iFrame "%"). (* 8.154 secs *)
+            iPureIntro. word.
           }
           {
             repeat iExists _.
-            iFrame "∗ Hlb #%".
+            iFrame "∗ Hlb #"; iFrame "%".
             iPureIntro.
             word.
           }
         }
         wp_pures.
         repeat iExists _.
-        iFrame "∗ Hlb #%".
+        iFrame "∗ Hlb #"; iFrame "%".
         iPureIntro.
         word.
       }
       {
         repeat iExists _.
-        iFrame "∗ #%".
+        (* time (iFrame "∗#%"). *) (* 11.501 secs *)
+        time (iFrame "∗#"; iFrame "%"). (* 7.514 secs*)
+        (* time (iFrame "∗"; iFrame "#"; iFrame "%"). *) (* secs *)
         iPureIntro.
         word.
       }
@@ -641,7 +664,7 @@ Proof.
     {
       iModIntro.
       repeat iExists _.
-      iFrame "∗#%".
+      iFrame "∗#"; iFrame "%".
     }
   }
 

@@ -386,6 +386,7 @@ Definition accessP_fact own_StateMachine P : iProp Σ :=
 .
 
 Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
+  tc_opaque (
   ∃ (applyFn:val) (getFn:val) (setFn:val),
   "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "StartApply"] applyFn) ∗
   "#HapplySpec" ∷ is_ApplyFn own_StateMachine applyFn P ∗
@@ -395,71 +396,19 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
 
   "#HgetState" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getFn) ∗
   "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P ∗
-  "#HaccP" ∷ accessP_fact own_StateMachine P
+  "#HaccP" ∷ accessP_fact own_StateMachine P)%I
 .
+
+Global Instance is_StateMachine_pers sm own_StateMachine P :
+  Persistent (is_StateMachine sm own_StateMachine P).
+Proof.
+unfold is_StateMachine. unfold tc_opaque. apply _.
+Qed.
 
 Definition numClerks : nat := 32.
 
-Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
-  ∃ (epoch:u64) ops (nextIndex durableNextIndex:u64) ops_durable_full (sealed:bool) (isPrimary:bool)
-    (sm:loc) (clerks_sl:Slice.t) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc)
-    (durableNextIndex_cond:loc)
-    (* read-only operation state: *)
-    (committedNextIndex nextRoIndex committedNextRoIndex:u64)
-    (roOpsToPropose_cond committedNextRoIndex_cond:loc)
-    opsfull_ephemeral ops_commit_full
-  ,
-  (* physical *)
-  "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
-  "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
-  "HisPrimary" ∷ s ↦[pb.Server :: "isPrimary"] #isPrimary ∗
-  "Hsealed" ∷ s ↦[pb.Server :: "sealed"] #sealed ∗
-  "Hsm" ∷ s ↦[pb.Server :: "sm"] #sm ∗
-  "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
-
-  "HdurableNextIndex" ∷ s ↦[pb.Server :: "durableNextIndex"] #durableNextIndex ∗
-  "HdurableNextIndex_cond" ∷ s ↦[pb.Server :: "durableNextIndex_cond"] #durableNextIndex_cond ∗
-  "#HdurableNextIndex_is_cond" ∷ is_cond durableNextIndex_cond mu ∗
-
-  "HcommittedNextIndex" ∷ s ↦[pb.Server :: "committedNextIndex"] #committedNextIndex ∗
-  "HnextRoIndex" ∷ s ↦[pb.Server :: "nextRoIndex"] #nextRoIndex ∗
-  "HcommittedNextRoIndex" ∷ s ↦[pb.Server :: "committedNextRoIndex"] #committedNextRoIndex ∗
-
-  "HroOpsToPropose_cond" ∷ s ↦[pb.Server :: "roOpsToPropose_cond"] #roOpsToPropose_cond ∗
-  "#HroOpsToPropose_is_cond" ∷ is_cond roOpsToPropose_cond mu ∗
-
-  "HcommittedNextRoIndex_cond" ∷ s ↦[pb.Server :: "committedNextRoIndex_cond"] #committedNextRoIndex_cond ∗
-  "#HcommittedNextRoIndex_is_cond" ∷ is_cond committedNextRoIndex_cond mu ∗
-
-  (* state-machine callback specs *)
-  "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost γ γsrv γeph) ∗
-
-  (* epoch lower bound *)
-  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
-
-  (* ghost-state *)
-  "Heph" ∷ own_ephemeral_proposal γeph epoch opsfull_ephemeral ∗
-  "Heph_unused" ∷ own_unused_ephemeral_proposals γeph epoch ∗
-  "#Heph_prop_lb" ∷ □(if isPrimary then True else is_proposal_lb γ epoch opsfull_ephemeral) ∗
-  "Hstate" ∷ own_StateMachine epoch ops sealed (own_Server_ghost γ γsrv γeph) ∗
-  "%Hσ_nextIndex" ∷ ⌜length ops = int.nat nextIndex⌝ ∗
-  "%Heph_proposal" ∷ ⌜ True ⌝ (* opsfull_eph has `nextRoIndex` RO ops as its tail. *) ∗
-  (* accepted witness for durable state *)
-  "#Hdurable_lb" ∷ is_accepted_lb γsrv epoch ops_durable_full ∗
-  "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
-  (* committed witness for committed state *)
-  "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
-  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
-  "%HcommitRoLen" ∷ ⌜ True ⌝ ∗ (* TODO: ops *)
-
-
-  (* backup sequencer *)
-  "HopAppliedConds" ∷ s ↦[pb.Server :: "opAppliedConds"] #opAppliedConds_loc ∗
-  "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 opAppliedConds ∗
-  "#HopAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ opAppliedConds, is_cond cond mu) ∗
-
-  (* primary-only *)
-  "#HprimaryOnly" ∷ □ if isPrimary then (
+Definition is_possible_Primary (isPrimary:bool) γ γsrv clerks_sl epoch : iProp Σ:=
+  tc_opaque (if isPrimary then (
             ∃ (clerkss:list Slice.t) (backups:list pb_server_names),
             "#Htok_used_witness" ∷ is_tok γsrv epoch ∗
             "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
@@ -473,8 +422,75 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
                                   "%Hclerks_conf" ∷ ⌜length clerks = length backups⌝ ∗
                                   "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv' epoch)
                              )
-        )
-                   else True
+      )%I
+      else True%I)
+.
+
+Global Instance is_possible_Primary_pers isPrimary clerks_sl γ γsrv epoch :
+  Persistent (is_possible_Primary isPrimary clerks_sl γ γsrv epoch).
+Proof.
+unfold is_possible_Primary. unfold tc_opaque. destruct isPrimary; apply _.
+Qed.
+
+Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
+  ∃ (epoch:u64) ops (nextIndex durableNextIndex:u64) ops_durable_full (sealed:bool) (isPrimary:bool)
+    (sm:loc) (clerks_sl:Slice.t) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc)
+    (durableNextIndex_cond:loc)
+    (* read-only operation state: *)
+    (committedNextIndex nextRoIndex committedNextRoIndex:u64)
+    (roOpsToPropose_cond committedNextRoIndex_cond:loc)
+    opsfull_ephemeral ops_commit_full
+  ,
+  (* non-persistent physical *)
+  "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
+  "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
+  "HisPrimary" ∷ s ↦[pb.Server :: "isPrimary"] #isPrimary ∗
+  "Hsealed" ∷ s ↦[pb.Server :: "sealed"] #sealed ∗
+  "Hsm" ∷ s ↦[pb.Server :: "sm"] #sm ∗
+  "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
+  "HdurableNextIndex" ∷ s ↦[pb.Server :: "durableNextIndex"] #durableNextIndex ∗
+  "HdurableNextIndex_cond" ∷ s ↦[pb.Server :: "durableNextIndex_cond"] #durableNextIndex_cond ∗
+  "HcommittedNextIndex" ∷ s ↦[pb.Server :: "committedNextIndex"] #committedNextIndex ∗
+  "HnextRoIndex" ∷ s ↦[pb.Server :: "nextRoIndex"] #nextRoIndex ∗
+  "HcommittedNextRoIndex" ∷ s ↦[pb.Server :: "committedNextRoIndex"] #committedNextRoIndex ∗
+  "HroOpsToPropose_cond" ∷ s ↦[pb.Server :: "roOpsToPropose_cond"] #roOpsToPropose_cond ∗
+  "HcommittedNextRoIndex_cond" ∷ s ↦[pb.Server :: "committedNextRoIndex_cond"] #committedNextRoIndex_cond ∗
+  (* backup sequencer *)
+  "HopAppliedConds" ∷ s ↦[pb.Server :: "opAppliedConds"] #opAppliedConds_loc ∗
+  "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 opAppliedConds ∗
+
+  (* non-persistent ghost state *)
+  "Heph" ∷ own_ephemeral_proposal γeph epoch opsfull_ephemeral ∗
+  "Heph_unused" ∷ own_unused_ephemeral_proposals γeph epoch ∗
+  "Hstate" ∷ own_StateMachine epoch ops sealed (own_Server_ghost γ γsrv γeph) ∗
+
+  (* persistent physical state *)
+  "#HopAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ opAppliedConds, is_cond cond mu) ∗
+  "#HdurableNextIndex_is_cond" ∷ is_cond durableNextIndex_cond mu ∗
+  "#HroOpsToPropose_is_cond" ∷ is_cond roOpsToPropose_cond mu ∗
+  "#HcommittedNextRoIndex_is_cond" ∷ is_cond committedNextRoIndex_cond mu ∗
+
+  (* state-machine callback specs *)
+  "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost γ γsrv γeph) ∗
+
+  (* epoch lower bound *)
+  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv epoch ∗
+
+  (* persistent ghost-state *)
+  "#Heph_prop_lb" ∷ □(if isPrimary then True else is_proposal_lb γ epoch opsfull_ephemeral) ∗
+  (* accepted witness for durable state *)
+  "#Hdurable_lb" ∷ is_accepted_lb γsrv epoch ops_durable_full ∗
+  (* committed witness for committed state *)
+  "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
+
+  "%Hσ_nextIndex" ∷ ⌜length ops = int.nat nextIndex⌝ ∗
+  "%Heph_proposal" ∷ ⌜ True ⌝ (* opsfull_eph has `nextRoIndex` RO ops as its tail. *) ∗
+  "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
+  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
+  "%HcommitRoLen" ∷ ⌜ True ⌝ ∗ (* TODO: ops *)
+
+  (* primary-only *)
+  "#HprimaryOnly" ∷ is_possible_Primary isPrimary γ γsrv clerks_sl epoch
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
