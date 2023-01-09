@@ -482,12 +482,21 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
   "#Hdurable_lb" ∷ is_accepted_lb γsrv epoch ops_durable_full ∗
   (* committed witness for committed state *)
   "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
+  "#Heph_commit_lb" ∷ is_ephemeral_proposal_lb γeph epoch ops_commit_full ∗
 
   "%Hσ_nextIndex" ∷ ⌜length ops = int.nat nextIndex⌝ ∗
-  "%Heph_proposal" ∷ ⌜ True ⌝ (* opsfull_eph has `nextRoIndex` RO ops as its tail. *) ∗
+  "%Heph_proposal" ∷ ⌜∃ opsfull_eph_ro,
+                      suffix opsfull_eph_ro opsfull_ephemeral ∧
+                      length opsfull_eph_ro = int.nat nextRoIndex ∧
+                      get_rwops opsfull_eph_ro = []⌝ ∗
+  (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
   "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
-  "%HcommitRoLen" ∷ ⌜ True ⌝ ∗ (* TODO: ops *)
+  "%HcommitRoLen" ∷ ⌜ ∃ ops_commit_ro,
+                      suffix ops_commit_ro ops_commit_full ∧
+                      length ops_commit_ro = int.nat committedNextRoIndex ∧
+                      get_rwops ops_commit_ro = []⌝ ∗
+  (* `committedRoNextIndex` read-only ops have been committed *)
 
   (* primary-only *)
   "#HprimaryOnly" ∷ is_possible_Primary isPrimary γ γsrv clerks_sl epoch
