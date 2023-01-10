@@ -392,7 +392,7 @@ Proof.
         (* PERF *)
         (* time done. *) (* takes 5 seconds*)
         (* time (iModIntro; done). *) (* takes 0.2 seconds, still a lot longer than below *)
-        time (iModIntro; iApply True_intro; iAccu). }.
+        time (iModIntro; iApply True_intro; iAccu). }
       iIntros (???) "Hghost".
       iNamed "Hghost".
       iNamed "Hprim2".

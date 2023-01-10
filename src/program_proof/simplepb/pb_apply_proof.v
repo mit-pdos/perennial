@@ -200,7 +200,7 @@ Proof.
       iFrame "HmuInv Hlocked".
       iNext.
       repeat (iExists _).
-      iFrame "Hstate ∗#%".
+      iFrame "Hstate ∗#"; iFrame "%".
     }
     wp_pures.
     wp_storeField.
@@ -227,9 +227,7 @@ Proof.
       iFrame "HmuInv Hlocked".
       iNext.
       repeat (iExists _).
-      iFrame "∗#%".
-      iNamed "HprimaryOnly".
-      iExists _, _; iFrame "∗#%".
+      iFrame "∗#"; iFrame "%".
     }
     wp_pures.
     wp_storeField.
@@ -242,8 +240,11 @@ Proof.
 
   clear Heqb.
   (* make proposal *)
-  iNamed "HprimaryOnly".
+  iAssert (_) with "HprimaryOnly" as "HprimaryOnly2".
+  iEval (rewrite /is_possible_Primary /tc_opaque) in "HprimaryOnly2".
+  iNamed "HprimaryOnly2".
   iAssert (_) with "HisSm" as "HisSm2".
+  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
   iNamed "HisSm2".
   wp_loadField.
   wp_loadField.
@@ -252,13 +253,12 @@ Proof.
   {
     iSplitL ""; first done.
     iIntros "Hghost".
-    iDestruct "Hghost" as (?) "(%Hre & Hghost & Hprim)".
+    iNamed "Hghost".
     iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
     { set_solver. }
-    iMod ("Htok_used_witness" with "Hcred1 Hprim") as "[Hprim #His_tok]".
     iMod "Hmask".
 
-    iMod (ghost_propose with "His_tok Hprim Hcred2 [Hupd]") as "(Hprim & #Hprop_lb & #Hprop_facts)".
+    iMod (ghost_propose with "Htok_used_witness Hprim Hcred2 [Hupd]") as "(Hprim & #Hprop_lb & #Hprop_facts)".
     {
       iMod "Hupd".
       iModIntro.
@@ -266,6 +266,24 @@ Proof.
       iExists _; iFrame.
       iIntros (->); auto.
     }
+    (* Problem: what if opsfull_ephemeral contains a bunch of stuff that we
+       don't actually want to propose?
+       Indeed, the current invariant allows for there to be RW ops in
+       opsfull_ephemeral that no one actually proposed. The fix (TODO):
+       opsfull_ephemeral only keeps RO ops past the most recently
+       applied-in-memory RW op. i.e. (get_rwops opsfull = ops = get_rwops opseph).
+       Compare opseph+[rw_op op] with opsfull (by compatible ephemeral_lb's).
+       Then, if opseph+[rw_op op] ⪯ opsfull, we would get a contradiction since
+       the RW ops are the same between opseph and opsfull.
+     *)
+    (* Problem: to do ghost_propose, we need to have a fupd to establish proposal_valid.
+       But, now we're proposing multiple operations at once, because the Apply()
+       handler might implicitly propose the RO ops preceding it. We can't rely
+       on the background thread committing it because the background thread
+       might not take any more steps. So, the primary will explicitly remember
+       that all ops in ops_eph are "valid", and ghost_propose will demand
+       validity of the whole new list of ops.
+       *)
 
     iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
     { done. }
