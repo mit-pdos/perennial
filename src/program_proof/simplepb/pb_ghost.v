@@ -500,7 +500,7 @@ Proof.
   by iApply mono_nat_lb_own_get.
 Qed.
 
-Lemma valid_add γsys epoch σ op :
+Lemma valid_add γsys σ op :
   £ 1 -∗
   is_proposal_valid γsys σ -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))

@@ -484,6 +484,7 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
   (* committed witness for committed state *)
   "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
   "#Heph_commit_lb" ∷ is_ephemeral_proposal_lb γeph epoch ops_commit_full ∗
+  "#Heph_valid" ∷ is_proposal_valid γ opsfull_ephemeral ∗
 
   "%Hσ_nextIndex" ∷ ⌜length ops = int.nat nextIndex⌝ ∗
   "%Heph_proposal" ∷ ⌜∃ opsfull_eph_ro,

@@ -513,15 +513,18 @@ Definition Server__Apply: val :=
           "i" <-[uint64T] ![uint64T] "i" + #1;;
           Continue);;
         struct.storeF ApplyReply "Err" "reply" (![uint64T] "err");;
-        lock.acquire (struct.loadF Server "mu" "s");;
-        (if: "nextIndex" > struct.loadF Server "committedNextIndex" "s"
+        (if: (![uint64T] "err" = e.None)
         then
-          struct.storeF Server "committedNextIndex" "s" "nextIndex";;
-          struct.storeF Server "nextRoIndex" "s" #0;;
-          struct.storeF Server "committedNextRoIndex" "s" #0;;
-          lock.condBroadcast (struct.loadF Server "committedNextRoIndex_cond" "s")
+          lock.acquire (struct.loadF Server "mu" "s");;
+          (if: "nextIndex" > struct.loadF Server "committedNextIndex" "s"
+          then
+            struct.storeF Server "committedNextIndex" "s" "nextIndex";;
+            struct.storeF Server "nextRoIndex" "s" #0;;
+            struct.storeF Server "committedNextRoIndex" "s" #0;;
+            lock.condBroadcast (struct.loadF Server "committedNextRoIndex_cond" "s")
+          else #());;
+          lock.release (struct.loadF Server "mu" "s")
         else #());;
-        lock.release (struct.loadF Server "mu" "s");;
         "reply")).
 
 (* requires that we've already at least entered this epoch

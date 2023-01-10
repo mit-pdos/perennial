@@ -148,6 +148,24 @@ Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
 Definition is_ghost_lb' γ σ : iProp Σ :=
   ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
+Lemma get_rwops_app opsfull newops :
+  get_rwops (A:=gname) (pb_record:=pb_record) (opsfull ++ newops) = (get_rwops opsfull) ++ (get_rwops newops).
+Proof.
+  unfold get_rwops.
+  by rewrite map_app concat_app.
+Qed.
+
+Lemma get_rwops_prefix a b :
+  prefix a b →
+  prefix (get_rwops (A:=gname) (pb_record:=pb_record) a)
+  (get_rwops (A:=gname) (pb_record:=pb_record) b).
+Proof.
+  intros Hprefix.
+  destruct Hprefix as [c ->].
+  rewrite get_rwops_app.
+  by apply prefix_app_r.
+Qed.
+
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
@@ -249,7 +267,34 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl Hcred1 Hcred2 Hupd]").
+  (* make ephemeral proposal first *)
+  iMod (own_update with "Heph") as "Heph".
+  {
+    apply singleton_update.
+    apply mono_list_update.
+    instantiate (1:=opsfull_ephemeral ++ [(rw_op op, Q)]).
+    by apply prefix_app_r.
+  }
+  iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Hnew_eph_lb".
+  {
+    apply singleton_mono.
+    apply mono_list_included.
+  }
+
+  iApply fupd_wp.
+  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+  { set_solver. }
+  iMod (valid_add with "Hcred2 Heph_valid [Hupd]") as "#Hnew_eph_valid".
+  {
+    iMod "Hupd" as (?) "[Hghost Hupd]".
+    iModIntro.
+    iExists _; iFrame.
+    iIntros. done.
+  }
+  iMod "Hmask".
+  iModIntro.
+
+  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl Hcred1]").
   {
     iSplitL ""; first done.
     iIntros "Hghost".
@@ -257,60 +302,46 @@ Proof.
     iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
     { set_solver. }
     iMod "Hmask".
-
-    iMod (ghost_propose with "Htok_used_witness Hprim Hcred2 [Hupd]") as "(Hprim & #Hprop_lb & #Hprop_facts)".
+    iDestruct (own_valid_2 with "Heph_lb Hnew_eph_lb") as %Hvalid.
+    rewrite singleton_op singleton_valid in Hvalid.
+    apply mono_list_lb_op_valid_L in Hvalid.
+    destruct Hvalid as [Hprefix|Hbad]; last first.
     {
-      iMod "Hupd".
-      iModIntro.
-      iDestruct "Hupd" as (?) "[Hghost Hupd]".
-      iExists _; iFrame.
-      iIntros (->); auto.
+      exfalso.
+      apply get_rwops_prefix in Hbad.
+      apply prefix_length in Hbad.
+      rewrite -Hre in Hbad.
+      rewrite get_rwops_app in Hbad.
+      unfold get_rwops in Hbad.
+      rewrite app_length /= in Hbad.
+      word.
     }
-    (* Problem: what if opsfull_ephemeral contains a bunch of stuff that we
-       don't actually want to propose?
-       Indeed, the current invariant allows for there to be RW ops in
-       opsfull_ephemeral that no one actually proposed. The fix (TODO):
-       opsfull_ephemeral only keeps RO ops past the most recently
-       applied-in-memory RW op. i.e. (get_rwops opsfull = ops = get_rwops opseph).
-       Compare opseph+[rw_op op] with opsfull (by compatible ephemeral_lb's).
-       Then, if opseph+[rw_op op] ⪯ opsfull, we would get a contradiction since
-       the RW ops are the same between opseph and opsfull.
-     *)
-    (* Problem: to do ghost_propose, we need to have a fupd to establish proposal_valid.
-       But, now we're proposing multiple operations at once, because the Apply()
-       handler might implicitly propose the RO ops preceding it. We can't rely
-       on the background thread committing it because the background thread
-       might not take any more steps. So, the primary will explicitly remember
-       that all ops in ops_eph are "valid", and ghost_propose will demand
-       validity of the whole new list of ops.
-       *)
-
+    iMod (ghost_propose with "Htok_used_witness Hprim Hnew_eph_valid") as "(Hprim & #Hprop_lb & #Hprop_facts)".
+    { done. }
     iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
     { done. }
     { rewrite app_length.
       apply (f_equal length) in Hre.
-      word.
+      apply prefix_length in Hprefix.
+      rewrite app_length in Hprefix.
+      done.
     }
     iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-
-    instantiate (1:=(∃ opsfull,
-                        ⌜get_rwops opsfull = ops⌝ ∗
-                        is_accepted_lb γsrv epoch (opsfull ++ [(rw_op op, Q)]) ∗
-                        is_proposal_lb γ epoch (opsfull ++ [(rw_op op, Q)]) ∗
-                        is_proposal_facts γ epoch (opsfull ++ [(rw_op op, Q)])
+    instantiate (1:=(⌜get_rwops (opsfull_ephemeral ++ _) = get_rwops (opsfull_ephemeral ++ [(rw_op op, Q)])⌝ ∗
+                      is_accepted_lb γsrv epoch (opsfull_ephemeral ++ [(rw_op op, Q)]) ∗
+                      is_proposal_lb γ epoch (opsfull_ephemeral ++ [(rw_op op, Q)]) ∗
+                      is_proposal_facts γ epoch (opsfull_ephemeral ++ [(rw_op op, Q)])
                     )%I).
     iModIntro.
     iSplitL.
     {
-      iExists _; iFrame.
+      iExists _; iFrame "∗#".
+      iPureIntro.
       unfold get_rwops.
-      rewrite map_app. rewrite Hre.
-      simpl.
+      rewrite map_app.
       rewrite concat_app.
-      simpl.
       done.
     }
-    iExists _.
     iFrame "Hlb #".
     done.
   }
@@ -329,29 +360,56 @@ Proof.
   wp_loadField.
   wp_pures.
 
-  (* FIXME: updating nextRoIndex here *)
-
+  (* reset nextRoIndex *)
+  wp_storeField.
+  wp_storeField.
   wp_loadField.
+  replace (get_rwops opsfull_ephemeral ++ [op]) with (get_rwops (opsfull_ephemeral ++ [(rw_op op, Q)])); last first.
+  {
+    unfold get_rwops. rewrite map_app. rewrite concat_app.
+    done.
+  }
   wp_apply (release_spec with "[-HΦ Hreply Err Reply Hlc1 Hlc2 HwaitSpec]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
     repeat (iExists _).
-    iFrame "HisSm Hstate ∗#%".
-    iSplitL "".
+    iClear "Hnew_eph_lb".
+    iFrame "HisSm Hstate ∗#"; iFrame "%".
+    iSplitR.
     { iPureIntro.
+      rewrite get_rwops_app.
+      simpl.
       rewrite app_length.
+      unfold get_rwops in *.
       simpl.
       word. }
-    iExists _, _.
-    iFrame "#%".
+    iSplitR.
+    {
+      iPureIntro.
+      exists [].
+      split.
+      { apply suffix_nil. }
+      split.
+      { simpl. word. }
+      { by unfold get_rwops. }
+    }
+    {
+      iPureIntro.
+      exists [].
+      split.
+      { apply suffix_nil. }
+      split.
+      { simpl. word. }
+      { by unfold get_rwops. }
+    }
   }
 
   wp_pures.
 
   wp_apply "HwaitSpec".
   iIntros "Hprimary_acc_lb".
-  iDestruct "Hprimary_acc_lb" as (σ) "(%Hσeq_phys & #Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
+  iDestruct "Hprimary_acc_lb" as "(%Hσeq_phys & #Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
 
   wp_apply (wp_NewWaitGroup_free).
   iIntros (wg) "Hwg".
@@ -418,7 +476,7 @@ Proof.
                                ⌜backups !! int.nat i = Some γsrv'⌝ ∗
                                readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
                                □ if (decide (err = U64 0)) then
-                                 is_accepted_lb γsrv' epoch (σ ++ [_])
+                                 is_accepted_lb γsrv' epoch (opsfull_ephemeral ++ [_])
                                else
                                  True
                              )%I
@@ -465,10 +523,7 @@ Proof.
     rewrite replicate_S.
     iDestruct (array_cons with "Herr_ptrs") as "[Herr_ptr Herr_ptrs]".
     (* use wgTok to set errs_sl *)
-    iDestruct (own_WaitGroup_to_is_WaitGroup with "[Hwg]") as "#His_wg".
-    {
-      iExactEq "Hwg". econstructor. (* FIXME: why doesn't framing work? *)
-    }
+    iDestruct (own_WaitGroup_to_is_WaitGroup with "[$Hwg]") as "#His_wg".
     wp_apply (wp_fork with "[Hwg_tok Herr_ptr]").
     {
       iNext.
@@ -479,7 +534,6 @@ Proof.
       { done. }
       iDestruct "Hclerk_rpc" as "[[Hclerk_rpc Hepoch_lb] _]".
 
-      (* FIXME: call ApplyAsBackup in a for loop *)
       wp_pures.
       wp_forBreak_cond.
       wp_pures.
@@ -493,9 +547,7 @@ Proof.
         split; eauto.
         split; eauto.
         split.
-        { rewrite app_length. simpl.
-          erewrite <- fmap_length.
-          erewrite Hσeq_phys.
+        { rewrite get_rwops_app app_length. simpl.
           word.
         }
         word.
@@ -538,10 +590,7 @@ Proof.
       done.
     }
     iApply "HΦ".
-    iSplitL "Hwg".
-    {
-      iExactEq "Hwg". econstructor. (* FIXME: more framing not working *)
-    }
+    iFrame "Hwg".
     iExactEq "Herr_ptrs".
     f_equal.
     rewrite /ty_size //=.
@@ -571,7 +620,7 @@ Proof.
               "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (σ++[_]))
+                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (opsfull_ephemeral ++ [_]))
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -691,6 +740,9 @@ Proof.
   wp_pures.
 
   wp_storeField.
+
+  wp_loadField.
+
   iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
   simpl.
   iFrame.
