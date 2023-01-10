@@ -21,17 +21,6 @@ Proof.
   rewrite size_list_to_set //. rewrite fmap_length. done.
 Qed.
 
-Lemma dom_map_to_list m :
-  dom m = list_to_set (map_to_list m).*1.
-Proof.
-  induction m as [|l v m] using map_ind.
-  - rewrite dom_empty_L map_to_list_empty //.
-  - rewrite map_to_list_insert //.
-    rewrite dom_insert_L.
-    rewrite fmap_cons /=.
-    rewrite -IHm //.
-Qed.
-
 Lemma map_subset_dom_eq m m' :
   dom m = dom m' →
   m' ⊆ m →
