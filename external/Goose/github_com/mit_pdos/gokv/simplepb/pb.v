@@ -472,8 +472,9 @@ Definition Server__Apply: val :=
       else
         let: ("ret", "waitForDurable") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") "op" in
         struct.storeF ApplyReply "Reply" "reply" "ret";;
-        let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
+        let: "opIndex" := struct.loadF Server "nextIndex" "s" in
         struct.storeF Server "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextIndex" "s") #1);;
+        let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
         let: "epoch" := struct.loadF Server "epoch" "s" in
         let: "clerks" := struct.loadF Server "clerks" "s" in
         struct.storeF Server "nextRoIndex" "s" #0;;
@@ -483,7 +484,7 @@ Definition Server__Apply: val :=
         let: "wg" := waitgroup.New #() in
         let: "args" := struct.new ApplyAsBackupArgs [
           "epoch" ::= "epoch";
-          "index" ::= "nextIndex";
+          "index" ::= "opIndex";
           "op" ::= "op"
         ] in
         let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((Data.randomUint64 #()) `rem` (slice.len "clerks")) in
@@ -516,8 +517,7 @@ Definition Server__Apply: val :=
         (if: (![uint64T] "err" = e.None)
         then
           lock.acquire (struct.loadF Server "mu" "s");;
-          let: "sepoch" := struct.loadF Server "epoch" "s" in
-          (if: ("sepoch" = "epoch") && ("nextIndex" > struct.loadF Server "committedNextIndex" "s")
+          (if: (struct.loadF Server "epoch" "s" = "epoch") && ("nextIndex" > struct.loadF Server "committedNextIndex" "s")
           then
             struct.storeF Server "committedNextIndex" "s" "nextIndex";;
             lock.condBroadcast (struct.loadF Server "committedNextRoIndex_cond" "s")

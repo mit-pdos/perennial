@@ -361,6 +361,7 @@ Proof.
   wp_pures.
 
   (* reset nextRoIndex *)
+  wp_loadField.
   wp_storeField.
   wp_storeField.
   wp_loadField.
@@ -741,45 +742,89 @@ Proof.
 
   wp_storeField.
   wp_load.
-  wp_apply (wp_If_join).
+
+  destruct (decide (err = 0%Z)); last first.
   {
-    instantiate (1:=True%I).
-    iSplit; last first.
-    { iIntros. wp_pures. iModIntro. done. }
-    iIntros (Hnoerr).
-    apply bool_decide_eq_true in Hnoerr.
-    injection Hnoerr as ->.
-    destruct (decide (_)); last first.
-    { exfalso. done. }
-    wp_loadField.
-    wp_apply (acquire_spec with "HmuInv").
-    iIntros "[Hlocked Hown]".
     wp_pures.
-    iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-    iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm Heph_commit_lb Heph_valid".
-    iNamed "Hown".
-    wp_loadField.
-    wp_if_destruct.
+    rewrite bool_decide_false; last naive_solver.
+    wp_pures.
+    iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
+    iFrame.
+    simpl.
+    rewrite decide_False; last naive_solver.
+    iModIntro.
+    iSplitL; last done.
+    iExists _, _; iFrame.
+  }
+  (* otherwise, no error *)
+  iMod (ghost_commit with "Hsys_inv [Hrest] Hprop_lb Hprop_facts") as "#Hcommit".
+  {
+    iExists _; iFrame "#".
+    iIntros.
+    apply elem_of_list_lookup_1 in H as [k Hlookup_conf].
+    replace (int.nat j) with (length clerks); last first.
+    { word. }
+    epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.
+    replace (k) with (int.nat k) in *; last first.
     {
-      wp_storeField.
-      wp_loadField.
-      wp_apply (wp_condBroadcast with "[]").
-      { iFrame "#". }
-      wp_pures.
-      wp_loadField.
-      wp_apply (release_spec with "[-]").
+      rewrite cons_length in HH.
+      word.
+    }
+    iApply ("Hrest" $! k).
+    { iPureIntro.
+      unfold conf in HH.
+      rewrite cons_length in HH.
+      lia. }
+    { done. }
+  }
+
+  wp_pures.
+  rewrite bool_decide_true; last naive_solver.
+  wp_pures.
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+  wp_pures.
+  iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
+  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm Heph_commit_lb Heph_valid".
+  iNamed "Hown".
+  wp_loadField.
+  wp_pures.
+  wp_apply (wp_and with "HcommittedNextIndex").
+  { wp_pures. iModIntro. iPureIntro. done. }
+  { iIntros. wp_loadField. wp_pures. iModIntro. iFrame.
+    done.
+  }
+  iIntros "HcommittedNextIndex".
+  wp_if_destruct.
+  {
+    destruct Heqb0 as [HepochEq _].
+    injection HepochEq as H.
+    subst.
+    wp_storeField.
+    wp_loadField.
+    wp_apply (wp_condBroadcast with "[]").
+    { iFrame "#". }
+    wp_pures.
+    wp_loadField.
+    wp_apply (release_spec with "[-]").
+    {
+      iFrame "Hlocked HmuInv".
+      iNext.
+      repeat iExists _.
+      iClear "Heph_commit_lb Hcommit_lb".
+      iFrame "∗ Hnew_eph_lb #"; iFrame "%".
+      iPureIntro.
+      split.
+      { rewrite get_rwops_app app_length. simpl. word. }
       {
-        iFrame "Hlocked HmuInv".
-        iNext.
-        repeat iExists _.
-        iClear "Heph_commit_lb Hcommit_lb".
-        iFrame "∗ Hnew_eph_lb #"; iFrame "%".
-        iPureIntro.
-        word.
+        exists []. split.
+        { apply suffix_nil. }
         split.
-        {
-          done.
-        }
+        { simpl. (* FIXME: op_commit_ro is relative to committedNextIndex,
+                    whereas the code treats it as relavite to nextIndex. *)
+          word. }
+        { by unfold get_rwops. }
       }
     }
   }
