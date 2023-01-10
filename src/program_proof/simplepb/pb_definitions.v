@@ -433,7 +433,7 @@ unfold is_possible_Primary. unfold tc_opaque. destruct isPrimary; apply _.
 Qed.
 
 Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
-  ∃ (epoch:u64) ops (nextIndex durableNextIndex:u64) ops_durable_full (sealed:bool) (isPrimary:bool)
+  ∃ (epoch:u64) (nextIndex durableNextIndex:u64) ops_durable_full (sealed:bool) (isPrimary:bool)
     (sm:loc) (clerks_sl:Slice.t) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc)
     (durableNextIndex_cond:loc)
     (* read-only operation state: *)
@@ -441,6 +441,7 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
     (roOpsToPropose_cond committedNextRoIndex_cond:loc)
     opsfull_ephemeral ops_commit_full
   ,
+  let ops:=(get_rwops opsfull_ephemeral) in
   (* non-persistent physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #epoch ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #nextIndex ∗
@@ -489,7 +490,6 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
                       suffix opsfull_eph_ro opsfull_ephemeral ∧
                       length opsfull_eph_ro = int.nat nextRoIndex ∧
                       get_rwops opsfull_eph_ro = []⌝ ∗
-  "%Heph_rw" ∷ ⌜get_rwops opsfull_ephemeral = ops⌝ ∗
   (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
   "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
