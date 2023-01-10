@@ -489,6 +489,7 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
                       suffix opsfull_eph_ro opsfull_ephemeral ∧
                       length opsfull_eph_ro = int.nat nextRoIndex ∧
                       get_rwops opsfull_eph_ro = []⌝ ∗
+  "%Heph_rw" ∷ ⌜get_rwops opsfull_ephemeral = ops⌝ ∗
   (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
   "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
