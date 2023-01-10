@@ -375,7 +375,7 @@ Proof.
     iNext.
     repeat (iExists _).
     iClear "Hnew_eph_lb".
-    iFrame "HisSm Hstate ∗#"; iFrame "%".
+    iFrame "HisSm Hstate ∗ #"; iFrame "%".
     iSplitR.
     { iPureIntro.
       rewrite get_rwops_app.
@@ -740,6 +740,49 @@ Proof.
   wp_pures.
 
   wp_storeField.
+  wp_load.
+  wp_apply (wp_If_join).
+  {
+    instantiate (1:=True%I).
+    iSplit; last first.
+    { iIntros. wp_pures. iModIntro. done. }
+    iIntros (Hnoerr).
+    apply bool_decide_eq_true in Hnoerr.
+    injection Hnoerr as ->.
+    destruct (decide (_)); last first.
+    { exfalso. done. }
+    wp_loadField.
+    wp_apply (acquire_spec with "HmuInv").
+    iIntros "[Hlocked Hown]".
+    wp_pures.
+    iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
+    iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm Heph_commit_lb Heph_valid".
+    iNamed "Hown".
+    wp_loadField.
+    wp_if_destruct.
+    {
+      wp_storeField.
+      wp_loadField.
+      wp_apply (wp_condBroadcast with "[]").
+      { iFrame "#". }
+      wp_pures.
+      wp_loadField.
+      wp_apply (release_spec with "[-]").
+      {
+        iFrame "Hlocked HmuInv".
+        iNext.
+        repeat iExists _.
+        iClear "Heph_commit_lb Hcommit_lb".
+        iFrame "∗ Hnew_eph_lb #"; iFrame "%".
+        iPureIntro.
+        word.
+        split.
+        {
+          done.
+        }
+      }
+    }
+  }
 
   wp_loadField.
 

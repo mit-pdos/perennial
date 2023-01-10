@@ -516,11 +516,10 @@ Definition Server__Apply: val :=
         (if: (![uint64T] "err" = e.None)
         then
           lock.acquire (struct.loadF Server "mu" "s");;
-          (if: "nextIndex" > struct.loadF Server "committedNextIndex" "s"
+          let: "sepoch" := struct.loadF Server "epoch" "s" in
+          (if: ("sepoch" = "epoch") && ("nextIndex" > struct.loadF Server "committedNextIndex" "s")
           then
             struct.storeF Server "committedNextIndex" "s" "nextIndex";;
-            struct.storeF Server "nextRoIndex" "s" #0;;
-            struct.storeF Server "committedNextRoIndex" "s" #0;;
             lock.condBroadcast (struct.loadF Server "committedNextRoIndex_cond" "s")
           else #());;
           lock.release (struct.loadF Server "mu" "s")
