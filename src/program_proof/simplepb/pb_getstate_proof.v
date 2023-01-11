@@ -196,13 +196,14 @@ Proof.
   wp_loadField.
 
   iAssert (_) with "HisSm" as "HisSm2".
+  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
   iNamed "HisSm2".
   wp_loadField.
   iDestruct "HΨ" as "[#Hepoch_lb HΨ]".
   wp_apply ("HgetStateSpec" with "[$Hstate]").
   {
     iIntros "Hghost".
-    iDestruct "Hghost" as (?) "(%Heq & Hghost & Hprim)".
+    iNamed "Hghost".
     iDestruct (ghost_epoch_lb_ineq with "Hepoch_lb Hghost") as "#Hepoch_ineq".
     iMod (ghost_seal with "Hghost") as "Hghost".
     iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
@@ -210,16 +211,16 @@ Proof.
     iSplitL "Hghost Hprim".
     {
       iExists _.
-      iFrame.
+      iFrame "∗#".
       iPureIntro. done.
     }
     iModIntro.
 
     iCombine "Hacc_ro Hepoch_ineq" as "HH".
     instantiate (1:=(∃ opsfull, is_accepted_ro γsrv epoch opsfull ∗
-                                         is_proposal_lb γ epoch opsfull ∗
-                                         is_proposal_facts γ epoch opsfull ∗
-                                         ⌜get_rwops opsfull = ops⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
+                                is_proposal_lb γ epoch opsfull ∗
+                                is_proposal_facts γ epoch opsfull ∗
+                                ⌜get_rwops opsfull = get_rwops opsfull_ephemeral⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
     iExists _.
     iFrame "#".
     done.
