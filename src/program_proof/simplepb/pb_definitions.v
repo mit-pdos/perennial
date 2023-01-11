@@ -407,9 +407,13 @@ Qed.
 
 Definition numClerks : nat := 32.
 
-Definition is_possible_Primary (isPrimary:bool) γ γsrv clerks_sl epoch : iProp Σ:=
+Notation GhostOpType := (GhostOpType (pb_record:=pb_record)).
+
+Definition is_possible_Primary (isPrimary:bool) γ γeph γsrv clerks_sl epoch
+           (nextIndex committedNextIndex committedNextRoIndex nextRoIndex:u64)
+           (opsfull_ephemeral: list (GhostOpType * gname)): iProp Σ:=
   tc_opaque (if isPrimary then (
-            ∃ (clerkss:list Slice.t) (backups:list pb_server_names),
+            ∃ (clerkss:list Slice.t) (backups:list pb_server_names) (ops_commit_full:list (GhostOpType * gname)),
             "#Htok_used_witness" ∷ is_tok γsrv epoch ∗
             "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
             "#Hconf" ∷ is_epoch_config γ epoch (γsrv :: backups) ∗
@@ -421,13 +425,32 @@ Definition is_possible_Primary (isPrimary:bool) γ γsrv clerks_sl epoch : iProp
                                   "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
                                   "%Hclerks_conf" ∷ ⌜length clerks = length backups⌝ ∗
                                   "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv' epoch)
-                             )
+                             ) ∗
+            (* committed witness for committed state *)
+            "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
+            "#Heph_commit_lb" ∷ is_ephemeral_proposal_lb γeph epoch ops_commit_full ∗
+            "%HcommitLen" ∷ ⌜int.nat committedNextIndex ≤ int.nat nextIndex⌝ ∗
+            "%HcommitRoNz" ∷ ⌜int.nat committedNextIndex < int.nat nextIndex → int.nat committedNextRoIndex = 0⌝ ∗
+            (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
+            "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
+            "%Heph_proposal" ∷ ⌜∃ opsfull_eph_ro,
+                                suffix opsfull_eph_ro opsfull_ephemeral ∧
+                                length opsfull_eph_ro = int.nat nextRoIndex ∧
+                                get_rwops opsfull_eph_ro = []⌝ ∗
+            "%HcommitRoLen" ∷ ⌜ ∃ ops_commit_ro,
+                                suffix ops_commit_ro ops_commit_full ∧
+                                length ops_commit_ro = int.nat committedNextRoIndex ∧
+                                get_rwops ops_commit_ro = []⌝
       )%I
       else True%I)
 .
 
-Global Instance is_possible_Primary_pers isPrimary clerks_sl γ γsrv epoch :
-  Persistent (is_possible_Primary isPrimary clerks_sl γ γsrv epoch).
+Global Instance is_possible_Primary_pers (isPrimary:bool) γ γeph γsrv clerks_sl epoch
+           (nextIndex committedNextIndex committedNextRoIndex nextRoIndex:u64)
+           (opsfull_ephemeral: list (GhostOpType * gname)):
+Persistent (is_possible_Primary isPrimary γ γeph γsrv clerks_sl epoch
+           nextIndex committedNextIndex committedNextRoIndex nextRoIndex
+           opsfull_ephemeral).
 Proof.
 unfold is_possible_Primary. unfold tc_opaque. destruct isPrimary; apply _.
 Qed.
@@ -439,7 +462,7 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
     (* read-only operation state: *)
     (committedNextIndex nextRoIndex committedNextRoIndex:u64)
     (roOpsToPropose_cond committedNextRoIndex_cond:loc)
-    opsfull_ephemeral ops_commit_full
+    opsfull_ephemeral
   ,
   let ops:=(get_rwops opsfull_ephemeral) in
   (* non-persistent physical *)
@@ -481,25 +504,11 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
   "#Heph_prop_lb" ∷ □(if isPrimary then True else is_proposal_lb γ epoch opsfull_ephemeral) ∗
   (* accepted witness for durable state *)
   "#Hdurable_lb" ∷ is_accepted_lb γsrv epoch ops_durable_full ∗
-  (* committed witness for committed state *)
-  "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
-  "#Heph_commit_lb" ∷ is_ephemeral_proposal_lb γeph epoch ops_commit_full ∗
   "#Heph_valid" ∷ is_proposal_valid γ opsfull_ephemeral ∗
 
   "%Hσ_nextIndex" ∷ ⌜length ops = int.nat nextIndex⌝ ∗
-  "%Heph_proposal" ∷ ⌜∃ opsfull_eph_ro,
-                      suffix opsfull_eph_ro opsfull_ephemeral ∧
-                      length opsfull_eph_ro = int.nat nextRoIndex ∧
-                      get_rwops opsfull_eph_ro = []⌝ ∗
-  "%HcommitLen" ∷ ⌜int.nat committedNextIndex ≤ int.nat nextIndex⌝ ∗
-  "%HcommitRoNz" ∷ ⌜int.nat committedNextIndex < int.nat nextIndex → int.nat committedNextRoIndex = 0⌝ ∗
-  (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
-  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
-  "%HcommitRoLen" ∷ ⌜ ∃ ops_commit_ro,
-                      suffix ops_commit_ro ops_commit_full ∧
-                      length ops_commit_ro = int.nat committedNextRoIndex ∧
-                      get_rwops ops_commit_ro = []⌝ ∗
+
   (* `committedRoNextIndex` read-only ops have been committed *)
 
   (* Want to add pure invariant: nextIndex ≠ committedNextIndex → committedNextRoIndex = 0.
@@ -517,7 +526,9 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
    *)
 
   (* primary-only *)
-  "#HprimaryOnly" ∷ is_possible_Primary isPrimary γ γsrv clerks_sl epoch
+  "#HprimaryOnly" ∷ is_possible_Primary isPrimary γ γeph γsrv clerks_sl epoch
+                                        nextIndex committedNextIndex committedNextRoIndex
+                                        nextRoIndex opsfull_ephemeral
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=

@@ -147,6 +147,23 @@ Lemma accept_helper opsfull opsfull_old op (γ:gname) :
 Proof.
 Admitted.
 
+Lemma get_rwops_app {A} (opsfull newops:list (GhostOpType * A)) :
+  get_rwops (opsfull ++ newops) = (get_rwops opsfull) ++ (get_rwops newops).
+Proof.
+  unfold get_rwops.
+  by rewrite map_app concat_app.
+Qed.
+
+Lemma get_rwops_prefix {A} (a b:list (GhostOpType * A)) :
+  prefix a b → prefix (get_rwops a) (get_rwops b).
+Proof.
+  intros Hprefix.
+  destruct Hprefix as [c ->].
+  rewrite get_rwops_app.
+  by apply prefix_app_r.
+Qed.
+
+
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args opsfull op Q Φ Ψ :
   is_Server s γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
@@ -365,13 +382,15 @@ Proof.
   iNamed "HisSm2".
 
   iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
-  iAssert ((|NC={⊤,⊤}=> ∃ (new_opsfull_ephemeral:list (GhostOpType * gname)),
-           ⌜new_opsfull_ephemeral = opsfull ∨ new_opsfull_ephemeral = opsfull_ephemeral⌝ ∗
+  iAssert ((|NC={⊤,⊤}=>
            wpc_nval ⊤
-             (own_StateMachine args.(ApplyAsBackupArgs.epoch) ops false
+             (own_StateMachine args.(ApplyAsBackupArgs.epoch) (get_rwops opsfull_ephemeral) false
                 (own_Server_ghost γ γsrv γeph) ∗
-                ((own_ephemeral_proposal γeph args.(ApplyAsBackupArgs.epoch) new_opsfull_ephemeral ∗
-                is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull)) )
+                ((own_ephemeral_proposal γeph args.(ApplyAsBackupArgs.epoch) opsfull ∗
+                is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull) ∗
+                ⌜prefix opsfull_ephemeral opsfull⌝ ∗
+                ⌜isPrimary = false⌝
+             ) )
 
            )%I) with "[Heph Hstate Hlc]" as "HH".
   {
@@ -384,9 +403,6 @@ Proof.
     { (* case: is primary. *)
       iAssert (_) with "HprimaryOnly" as "Hprim2".
       iEval (rewrite /is_possible_Primary /tc_opaque) in "Hprim2".
-      iExists opsfull_ephemeral.
-      iSplitR.
-      { iPureIntro. by right. }
       iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
       {
         (* PERF *)
@@ -397,14 +413,20 @@ Proof.
       iNamed "Hghost".
       iNamed "Hprim2".
       iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
-      iSplitL "Hghost Hprim".
-      { iModIntro. iExists _. iFrame "∗#%". }
-      iModIntro.
-      iFrame "Heph".
-      iApply (own_mono with "Heph_lb").
-      apply singleton_mono.
-      apply mono_list_lb_mono.
-      done.
+      iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2.
+      exfalso.
+
+      (* FIXME: move lemmas around *)
+      (* apply get_rwops_prefix in Hvalid. *)
+      apply get_rwops_prefix in Hvalid.
+      apply prefix_length in Hvalid.
+      rewrite Hσ_index in Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid2.
+      apply mono_list_both_valid_L in Hvalid2.
+      apply get_rwops_prefix in Hvalid2.
+      apply prefix_length in Hvalid2.
+      rewrite Hσ_nextIndex in Hvalid2.
+      word.
     }
     { (* case: not primary *)
       iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hcomp.
@@ -413,24 +435,11 @@ Proof.
       apply mono_list_lb_op_valid_L in Hcomp.
       destruct Hcomp as [Hprefix|Hprefix].
       2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
-        iExists _.
-        iSplitR.
-        { iPureIntro. by right. }
-        iDestruct (own_mono _ _ {[ args.(ApplyAsBackupArgs.epoch) := ◯ML (opsfull_ephemeral: list (leibnizO _)) ]} with "Heph") as "#Heph_lb2".
-        { apply singleton_mono.
-          apply mono_list_included.
-        }
-        iFrame.
-        iApply wpc_nval_intro.
-        iModIntro. iNext.
-        iFrame.
-        iApply (own_mono with "Heph_lb2").
-        apply singleton_mono.
-        apply mono_list_lb_mono.
-        done.
+        exfalso.
+        apply get_rwops_prefix, prefix_length in Hprefix.
+        word.
       }
       {
-        iExists opsfull.
         iMod (own_update with "Heph") as "Heph".
         {
           apply singleton_update.
@@ -443,23 +452,23 @@ Proof.
           apply mono_list_included.
         }
         iModIntro.
-        iSplitR.
-        { iPureIntro. by left.  }
         iApply wpc_nval_intro.
         iNext.
         iFrame "∗#".
+        done.
       }
     }
   }
 
-  iMod "HH" as (?) "[%Hnew_eph HH]".
+  iMod "HH" as "HH".
   wp_bind (struct.loadF _ _ _).
   wp_apply (wpc_nval_elim_wp with "HH").
   { done. }
   { done. }
   wp_loadField.
   wp_pures.
-  iIntros "(Hstate & Heph & #Heph_lb2)".
+  iIntros "(Hstate & (Heph & #Heph_lb2) & %Heph_prefix & %HnotPrimary)".
+  subst isPrimary.
 
   iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
 
@@ -571,22 +580,49 @@ Proof.
     iNext.
     repeat (iExists _).
     replace ([op]) with ([(op, Q).1]) by done.
+    replace (get_rwops opsfull_ephemeral ++ _) with (get_rwops opsfull); last first.
+    {
+      apply last_Some in Hghost_op_σ.
+      destruct Hghost_op_σ as [opsprev Hghost_op].
+      subst.
+      rewrite get_rwops_app.
+      simpl.
+      apply get_rwops_prefix in Heph_prefix.
+      rewrite get_rwops_app /= in Heph_prefix Hσ_index.
+      eassert ((get_rwops [(_)]) = _) as ->.
+      { unfold get_rwops. simpl. done. }
+      f_equal.
+      assert (length (get_rwops opsprev) = length (get_rwops opsfull_ephemeral)).
+      {
+        eassert ((get_rwops [(rw_op op, Q)]) = _) as H.
+        { unfold get_rwops. simpl. done. }
+        rewrite H app_length /= in Hσ_index.
+        word.
+      }
+      (* length a = length b; a ⪯ b ++ [c] → a = b *)
+      eassert (prefix (get_rwops opsprev) ((get_rwops opsprev) ++ get_rwops [(rw_op op, Q)])).
+      { apply prefix_app_r. done. }
+      pose proof (prefix_weak_total _ _ _ H0 Heph_prefix) as [Hcase|Hcase].
+      { apply list_prefix_eq.
+        { done. }
+        { lia. }
+      }
+      { symmetry. apply list_prefix_eq.
+        { done. }
+        { lia. }
+      }
+    }
+    iClear "Heph_lb2".
     time iFrame "∗#".
     (* time (iFrame "∗"; iFrame "#"). *) (* PERF Not a big difference here because no % *)
     iSplitR.
     {
-      iModIntro.
-      destruct isPrimary.
-      { done. }
-      destruct Hnew_eph as [-> | ->].
-      { iFrame "#". }
-      { iFrame "#". }
+      iDestruct "Hprop_facts" as "(_ & _ & $)".
     }
     iPureIntro.
-    rewrite app_length.
-    rewrite Hσ_nextIndex.
-    simpl.
-    word.
+    split.
+    { word. }
+    done.
   }
   wp_pures.
   wp_apply "HwaitSpec".
@@ -598,7 +634,7 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm".
+  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb HprimaryOnly HisSm Heph_valid".
   (* FIXME: why doesn't Hdurable_lb get automatically get destructed into Hdurable_lb2? *)
 
   wp_pures.
@@ -607,6 +643,10 @@ Proof.
   {
     instantiate (1:= λ _, pb_definitions.own_Server s γ γsrv γeph own_StateMachine mu).
     iNamed "Hown".
+    assert (isPrimary = false).
+    { admit. } (* FIXME: need to re-prove this after letting go of the lock.
+                  Proof will have to be some sort of witness. *)
+    subst isPrimary.
     wp_bind (if: struct.loadF _ _ _ = _ then _ else _)%E.
     wp_loadField.
     wp_loadField.
@@ -680,6 +720,6 @@ Proof.
   replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
   iDestruct "Hlb" as "(_ & $)".
   done.
-Qed.
+Admitted. (* establish !isPrimary *)
 
 End pb_apply_proof.

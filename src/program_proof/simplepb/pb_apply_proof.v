@@ -148,24 +148,6 @@ Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
 Definition is_ghost_lb' γ σ : iProp Σ :=
   ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
-Lemma get_rwops_app {A} opsfull newops :
-  get_rwops (A:=A) (pb_record:=pb_record) (opsfull ++ newops) = (get_rwops opsfull) ++ (get_rwops newops).
-Proof.
-  unfold get_rwops.
-  by rewrite map_app concat_app.
-Qed.
-
-Lemma get_rwops_prefix a b :
-  prefix a b →
-  prefix (get_rwops (A:=gname) (pb_record:=pb_record) a)
-  (get_rwops (A:=gname) (pb_record:=pb_record) b).
-Proof.
-  intros Hprefix.
-  destruct Hprefix as [c ->].
-  rewrite get_rwops_app.
-  by apply prefix_app_r.
-Qed.
-
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
