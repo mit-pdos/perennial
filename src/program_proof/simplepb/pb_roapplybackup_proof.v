@@ -350,7 +350,7 @@ Proof.
                 ((is_accepted_lb γsrv args.(RoApplyAsBackupArgs.epoch) opsfull) ∗
                   (∃ new_opsfull_ephemeral, ⌜get_rwops new_opsfull_ephemeral = get_rwops opsfull_ephemeral⌝ ∗
                   ⌜if isPrimary then new_opsfull_ephemeral = opsfull_ephemeral else True⌝ ∗
-                  is_proposal_lb γ args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral ∗
+                  (if isPrimary then True else is_proposal_lb γ args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral) ∗
                   is_proposal_valid γ new_opsfull_ephemeral ∗
                   own_ephemeral_proposal γeph args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral)
              ))
@@ -375,20 +375,20 @@ Proof.
       iIntros (???) "Hghost".
       iNamed "Hghost".
       iNamed "Hprim2".
-      iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
-      iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2.
-      exfalso.
-
-      apply get_rwops_prefix in Hvalid.
-      apply prefix_length in Hvalid.
-      rewrite Hσ_index in Hvalid.
-      rewrite singleton_op singleton_valid in Hvalid2.
-      apply mono_list_both_valid_L in Hvalid2.
-      apply get_rwops_prefix in Hvalid2.
-      apply prefix_length in Hvalid2.
-      rewrite Hσ_nextIndex in Hvalid2.
-      admit. (* FIXME: this is false because there may be no new ops, since there are no new RW ops. *)
-      (* TODO: is isPrimary, then new_opsfull_ephemeral = opsfull_ephemeral *)
+      iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hprefix.
+      iModIntro.
+      iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
+      iSplitR "Heph".
+      { iExists _; iFrame "∗#%". }
+      iSplitR "Heph".
+      {
+        iApply (own_mono with "Hacc_lb").
+        apply singleton_included. right.
+        by apply mono_list_lb_mono.
+      }
+      iExists _.
+      iFrame "∗#".
+      done.
     }
     { (* case: not primary *)
       (* either increase the accepted ops to be opsfull, or conclude that the
@@ -559,7 +559,7 @@ Proof.
   wp_loadField.
   wp_pures.
   iIntros "(Hstate & #Hacc_lb & HH)".
-  iDestruct "HH" as (?) "(%Hrw_eq & %Hneweph & #Hnew_prop_lb & #Hnew_prop_valid & Heph)".
+  iDestruct "HH" as (?) "(%Hrw_eq & %Hneweph & Hnew_prop_lb & #Hnew_prop_valid & Heph)".
 
   wp_apply (release_spec with "[-HΨ HΦ Hargs_epoch]").
   {
@@ -569,10 +569,11 @@ Proof.
     iFrame "Hsealed Heph ∗ Hdurable_lb #".
     rewrite Hrw_eq.
     iFrame.
-    iSplitR.
+    iSplitL "Hnew_prop_lb".
     {
-      iModIntro.
-      destruct isPrimary; done.
+      destruct isPrimary.
+      { iModIntro. done. }
+      { iDestruct "Hnew_prop_lb" as "#Hnew_prop_lb". iFrame "#". }
     }
     iFrame "%".
     destruct isPrimary.
@@ -590,6 +591,8 @@ Proof.
   iLeft in "HΨ".
   iApply "HΨ".
   iFrame "#".
+  Unshelve.
+  apply _.
 Admitted.
 
 End pb_roapplybackup_proof.
