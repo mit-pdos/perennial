@@ -491,6 +491,9 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
                       suffix opsfull_eph_ro opsfull_ephemeral ∧
                       length opsfull_eph_ro = int.nat nextRoIndex ∧
                       get_rwops opsfull_eph_ro = []⌝ ∗
+  (* FIXME: I think we're going to need to know that the last op before
+     opsfull_eph_ro was an RW op. This problem should show up in ApplyRo()
+     proof. *)
   (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
   "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
@@ -499,6 +502,20 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
                       length ops_commit_ro = int.nat committedNextRoIndex ∧
                       get_rwops ops_commit_ro = []⌝ ∗
   (* `committedRoNextIndex` read-only ops have been committed *)
+
+  (* Want to add pure invariant: nextIndex ≠ committedNextIndex → committedNextRoIndex = 0.
+     Q: Is this invariant true?
+     A: No. ApplyRoThread increases committedNextRoIndex without increasing
+     committedNextIndex (even though it provably could also increase that).
+     Let's suppose we don't change the impl to make this part of the proof
+     easier.
+
+     Here's what *is* true. The first (committedNextRoIndex) ops of the
+     (nextRoIndex) ro ops are committed. To maintain that, need another
+     committed list. This list has an ephemeral_lb (so it agres with
+     opsfull_eph), has all the same RW ops as opsfull_eph, and has
+     committedNextRoIndex RO ops as suffix.
+   *)
 
   (* primary-only *)
   "#HprimaryOnly" ∷ is_possible_Primary isPrimary γ γsrv clerks_sl epoch
