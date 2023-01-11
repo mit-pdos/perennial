@@ -5,6 +5,7 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.reconnectclient Require Import proof.
+From iris.algebra Require Import mono_list.
 
 Section pb_setstate_proof.
 Context `{!heapGS Σ}.
@@ -126,6 +127,33 @@ Proof.
   }
 Qed.
 
+Lemma get_unused_ephemeral_proposal γeph epoch epoch' opsfull :
+  int.nat epoch < int.nat epoch' →
+  own_unused_ephemeral_proposals γeph epoch ==∗
+  own_unused_ephemeral_proposals γeph epoch' ∗
+  own_ephemeral_proposal γeph epoch' opsfull.
+Proof.
+  intros Hineq.
+  iIntros "Hunused".
+  iDestruct (big_sepS_elem_of_acc_impl epoch' with "Hunused") as "[Heph Hunused]".
+  { set_solver. }
+  iDestruct "Heph" as "[%Hbad|Heph]".
+  { exfalso. word. }
+  iMod (own_update with "Heph") as "$".
+  { apply singleton_update. apply mono_list_update. apply prefix_nil. }
+  iModIntro.
+  iApply "Hunused".
+  {
+    iModIntro.
+    iIntros (???) "[%|$]".
+    iLeft. iPureIntro.
+    word.
+  }
+  {
+    iLeft. done.
+  }
+Qed.
+
 Lemma wp_Server__SetState γ γsrv s args_ptr args opsfull Φ Ψ :
   is_Server s γ γsrv -∗
   SetStateArgs.own args_ptr args -∗
@@ -185,6 +213,7 @@ Proof.
       iFrame "#". done.
     }
     iAssert (_) with "HisSm" as "#HisSm2".
+    iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
     iNamed "HisSm2".
     wp_storeField.
     wp_loadField.
@@ -203,6 +232,25 @@ Proof.
     iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & HΨ)".
     replace (args.(SetStateArgs.nextIndex)) with (U64 (length (get_rwops opsfull))) by word.
 
+    iMod (get_unused_ephemeral_proposal _ _ args.(SetStateArgs.epoch) opsfull with "Heph_unused") as "Heph_unused".
+    {
+      destruct (decide (int.nat epoch = int.nat args.(SetStateArgs.epoch))).
+      {
+        exfalso.
+        replace (epoch) with (args.(SetStateArgs.epoch)) in Heqb0 by word.
+        done.
+      }
+      apply Znot_lt_ge in Heqb.
+      word.
+    }
+    iClear "Heph".
+    iDestruct "Heph_unused" as "[Hunused Heph]".
+    iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Hnew_eph_lb".
+    {
+      apply singleton_mono.
+      apply mono_list_included.
+    }
+
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
       iSplitR.
@@ -210,7 +258,7 @@ Proof.
       iSplitR; first done.
       iFrame "Hargs_state_sl".
       iIntros "Hghost".
-      iDestruct "Hghost" as (?) "(%Heq & Hghost & Hprim)".
+      iNamed "Hghost".
 
       assert (int.nat epoch < int.nat args.(SetStateArgs.epoch)) as Hepoch_fresh.
       {
@@ -240,7 +288,7 @@ Proof.
       iSplitL.
       {
         iExists _.
-        iFrame.
+        iFrame "∗#".
         iPureIntro. done.
       }
       iModIntro.
@@ -278,6 +326,10 @@ Proof.
       iNext.
       repeat (iExists _).
       iFrame "∗ HisSm Hacc_lb #%".
+      iSplitR.
+      { iApply big_sepM_empty. done. }
+      iSplitR.
+      { iDestruct "Hprop_facts" as "(_ & _ & $)". }
       iSplit.
       {
         iPureIntro.
@@ -288,8 +340,8 @@ Proof.
         iPureIntro.
         word.
       }
-      iSplitL; last done.
-      by iApply big_sepM_empty.
+      rewrite /is_possible_Primary /tc_opaque.
+      done.
     }
     wp_pures.
     iLeft in "HΨ".

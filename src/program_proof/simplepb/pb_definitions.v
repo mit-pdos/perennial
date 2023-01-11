@@ -270,7 +270,7 @@ Definition is_ephemeral_proposal_lb γeph (epoch:u64) (opsfull:list (GhostOpType
   own γeph {[ epoch := (◯ML (opsfull : list (leibnizO _)))]}.
 
 Definition own_unused_ephemeral_proposals γeph (epoch:u64) : iProp Σ :=
-  [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' < int.nat epoch⌝ ∨ own_ephemeral_proposal γeph epoch' []
+  [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' <= int.nat epoch⌝ ∨ own_ephemeral_proposal γeph epoch' []
 .
 
 (* Encapsulates the protocol-level ghost resources of a replica server; this is
