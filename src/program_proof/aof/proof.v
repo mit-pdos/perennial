@@ -109,8 +109,8 @@ Definition aof_close_resources (aof_ptr:loc) γ P Pcrash fname : iProp Σ :=
 
 (* FIXME: the membuf fupd will need to be run while is_aof_ctx_inv is open, so
    it can't use aofN. Its mask needs adjustment. *)
-Definition aof_mu_invariant (aof_ptr:loc) γ fname P Pcrash : iProp Σ :=
-  ∃ membuf_sl membufC predurableC (durlen:u64),
+Definition aof_mu_invariant (aof_ptr:loc) mu γ fname P Pcrash : iProp Σ :=
+  ∃ membuf_sl membufC predurableC (durlen:u64) (durCond_ptr:loc),
   let memlen := length (predurableC ++ membufC) in
   "#Hcrash_wand" ∷ □ (∀ data, ▷ P data ={⊤}=∗ ▷ Pcrash data) ∗
   "Hmembuf" ∷ aof_ptr ↦[AppendOnlyFile :: "membuf"] (slice_val membuf_sl) ∗
@@ -128,19 +128,19 @@ Definition aof_mu_invariant (aof_ptr:loc) γ fname P Pcrash : iProp Σ :=
        )
   ) ∗
   "#Hdurlen_lb" ∷ aof_length_lb γ durlen ∗
-  "Hclose" ∷ aof_close_resources aof_ptr γ P Pcrash fname
+  "Hclose" ∷ aof_close_resources aof_ptr γ P Pcrash fname ∗
+  "HdurableCond" ∷ aof_ptr ↦[AppendOnlyFile :: "durableCond"] #durCond_ptr ∗
+  "#HdurCond" ∷ is_cond durCond_ptr mu
 .
 
 Definition is_aof aof_ptr γ fname (P : (list u8) → iProp Σ) Pcrash : iProp Σ :=
-  ∃ mu_ptr (lenCond_ptr durCond_ptr cloCond_ptr:loc),
+  ∃ mu_ptr (lenCond_ptr cloCond_ptr:loc),
   "#Hmu" ∷ readonly (aof_ptr ↦[AppendOnlyFile :: "mu"] mu_ptr) ∗
   "#HlengthCond" ∷ readonly (aof_ptr ↦[AppendOnlyFile :: "lengthCond"] #lenCond_ptr) ∗
-  "#HdurableCond" ∷ readonly (aof_ptr ↦[AppendOnlyFile :: "durableCond"] #durCond_ptr) ∗
   "#HclosedCond" ∷ readonly (aof_ptr ↦[AppendOnlyFile :: "closedCond"] #cloCond_ptr) ∗
   "#HlenCond" ∷ is_cond lenCond_ptr mu_ptr ∗
-  "#HdurCond" ∷ is_cond durCond_ptr mu_ptr ∗
   "#HcloCond" ∷ is_cond cloCond_ptr mu_ptr ∗
-  "#Hmu_inv" ∷ is_lock aofNlk mu_ptr (aof_mu_invariant aof_ptr γ fname P Pcrash) ∗
+  "#Hmu_inv" ∷ is_lock aofNlk mu_ptr (aof_mu_invariant aof_ptr mu_ptr γ fname P Pcrash) ∗
   "#Haof_len_inv" ∷ inv aof_lenN (aof_len_invariant γ) ∗
   "#Hctx_inv" ∷ is_aof_ctx_inv γ P
 .
@@ -393,14 +393,13 @@ Proof.
       iFrame.
     }
     iMod (readonly_alloc_1 with "mu") as "#Hmu".
-    iMod (readonly_alloc_1 with "durableCond") as "#HdurableCond".
     iMod (readonly_alloc_1 with "lengthCond") as "#HlengthCond".
     iMod (readonly_alloc_1 with "closedCond") as "#HclosedCond".
 
-    iMod (alloc_lock _ _ _ (aof_mu_invariant l γ fname P Pcrash) with "Hmu_free [-Hlogdata2 HdurableLength2 Hpredurable2 Hdurabledata Hlen Hclose_tok Hclose_req_tok]") as "#HmuInv".
+    iMod (alloc_lock _ _ _ (aof_mu_invariant l (#mu) γ fname P Pcrash) with "Hmu_free [-Hlogdata2 HdurableLength2 Hpredurable2 Hdurabledata Hlen Hclose_tok Hclose_req_tok]") as "#HmuInv".
     {
       iNext.
-      iExists (Slice.nil), [], [], (U64 0).
+      iExists (Slice.nil), [], [], (U64 0), _.
       iDestruct is_slice_zero as "$".
       simpl.
       rewrite app_nil_r.
@@ -415,7 +414,7 @@ Proof.
     iModIntro.
     iFrame.
     iSplitL; last done.
-    iExists _, _, _, _.
+    repeat iExists _.
     iFrame "#".
   }
   iDestruct "HH" as "(#His_aof & Hpredur & Hdur & HdurLen & Hlen & Hlog_own & %Hre)".
@@ -480,7 +479,7 @@ Proof.
     {
       wp_loadField.
       wp_apply (wp_condWait with "[- closed2 Hfile_ctx]").
-      { iFrame "#∗". iExists _, _, _, _; iFrame "∗#". iSplitR; first done.
+      { iFrame "#∗". repeat iExists _; iFrame "∗#". iSplitR; first done.
         iExists _, _; iFrame "∗#".
       }
       iIntros "[Hlocked Haof_own]".
@@ -637,7 +636,7 @@ Proof.
         iFrame "#∗".
         iNext.
         iDestruct "HdurLen" as "[HdurableLength HdurLen]".
-        iExists _, [], _, _.
+        iExists _, [], _, _, _.
         rewrite app_nil_r.
         iFrame "∗#%".
         iSplitR.
@@ -672,9 +671,15 @@ Proof.
 
     wp_pures.
     wp_loadField.
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_newCond with "Hmu_inv").
+    iIntros (newcond) "#Hnewcond".
+    wp_storeField.
+    wp_loadField.
 
     wp_apply (release_spec with "[-Hfile_ctx Hpredur Hdur Hmembuf_fupd Hmembuf_sl HdurLen Hlen closed2]").
-    { iFrame "#∗". iNext. iExists _, [], (predurableC ++ membufC), _. iFrame "∗#".
+    { iFrame "#∗". iNext. iExists _, [], (predurableC ++ membufC),_, _. iFrame "∗#".
       rewrite app_nil_r.
       iFrame.
       iSplitL ""; first done.
@@ -772,6 +777,7 @@ Proof.
     iIntros "[Hlocked Haof_own]".
     iRename "Hdurlen_lb" into "Hdurlen_lb_old".
     iClear "Hcrash_wand".
+    iRename "HdurCond" into "HoldDurCond".
     iNamed "Haof_own".
     wp_pures.
 
@@ -779,8 +785,6 @@ Proof.
     rewrite Heq.
     iCombine "HdurLen HdurableLength" as "HdurLen".
     wp_storeField.
-
-    wp_loadField.
 
     wp_apply (wp_condBroadcast).
     { iFrame "#". }
@@ -791,7 +795,7 @@ Proof.
     iDestruct "HdurLen" as "[HdurableLength HdurLen]".
     iSplitR "Hpredur Hdur HdurLen Hlen Hfile_ctx".
     {
-      iExists _, _, _, _; iFrame "∗#".
+      repeat iExists _; iFrame "∗#".
       unfold aof_length_lb.
       iSplitL ""; first done.
       unfold aof_length_lb.
@@ -1130,7 +1134,7 @@ Proof.
   {
     iFrame "#∗".
     iNext.
-    iExists _, _, _, _.
+    repeat iExists _.
     rewrite -app_assoc.
     iFrame "∗#".
     replace (word.add (length (predurableC ++ membufC)) (length newData)) with
@@ -1201,7 +1205,7 @@ Proof.
     wp_apply (wp_condWait with "[- HΦ]").
     {
       iFrame "#∗".
-      iExists _, _, _, _. iFrame "#∗".
+      repeat iExists _. iFrame "#∗".
       done.
     }
     iIntros "[Hlocked Haof_own]".
@@ -1230,7 +1234,7 @@ Proof.
   wp_apply (release_spec with "[- HΦ]").
   {
     iFrame "#∗".
-    iExists _, _, _, _. iFrame "#∗".
+    repeat iExists _; iFrame "#∗".
     done.
   }
   wp_pures.
@@ -1266,10 +1270,9 @@ Proof.
   iDestruct "Haof_log" as "[Haof_log [Hreq_tok Htok]]".
   iMod (fmlist_freeze with "Haof_log") as "#Hexpected".
 
-  iAssert (aof_mu_invariant aof_ptr γ fname P Pcrash) with "[-Htok HΦ Hlocked]" as "Haof_own".
+  iAssert (aof_mu_invariant aof_ptr mu_ptr γ fname P Pcrash) with "[-Htok HΦ Hlocked]" as "Haof_own".
   {
-    iExists _, _, _, _.
-    iFrame "∗#%".
+    repeat iExists _; iFrame "∗#%".
     iExists _, _.
     iFrame "HcloseRequested ∗%".
     iDestruct "Hclose" as "[_ [_ $]]".
@@ -1280,7 +1283,7 @@ Proof.
 
   wp_forBreak_cond.
 
-  iClear "Hdurlen_lb Hcrash_wand".
+  iClear "Hdurlen_lb Hcrash_wand HdurCond".
   iNamed "Haof_own".
   iNamed "Hclose".
   wp_loadField.
@@ -1291,8 +1294,7 @@ Proof.
     wp_apply (wp_condWait with "[-Htok HΦ]").
     {
       iFrame "#∗".
-      iExists _, _, _, _.
-      iFrame "∗#%".
+      repeat iExists _; iFrame "∗#%".
       iExists _, _.
       iFrame "∗#∗".
     }
@@ -1331,7 +1333,7 @@ Proof.
   {
     iFrame "#∗".
     iNext.
-    iExists _, _, _, _. iFrame "∗#%".
+    repeat iExists _; iFrame "∗#%".
     iExists _, _. iFrame "∗#".
     simpl. iFrame.
   }

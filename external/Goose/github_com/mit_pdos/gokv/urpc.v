@@ -121,6 +121,11 @@ Definition TryMakeClient: val :=
 Definition MakeClient: val :=
   rec: "MakeClient" "host_name" :=
     let: ("err", "cl") := TryMakeClient "host_name" in
+    (if: "err" ≠ #0
+    then
+      (* log.Printf("Unable to connect to %s", grove_ffi.AddressToStr(host_name)) *)
+      #()
+    else #());;
     control.impl.Assume ("err" = #0);;
     "cl".
 
