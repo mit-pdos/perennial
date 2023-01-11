@@ -4,7 +4,7 @@ From Perennial.program_proof.simplepb Require Import pb_ghost.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof pb_applybackup_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 
@@ -327,6 +327,7 @@ Proof.
 
   wp_loadField.
   wp_loadField.
+  wp_pure1_credit "Hlc".
   wp_if_destruct.
   {
     exfalso.
@@ -346,13 +347,14 @@ Proof.
            wpc_nval ⊤
              (own_StateMachine args.(RoApplyAsBackupArgs.epoch) (get_rwops opsfull_ephemeral) false
                 (own_Server_ghost γ γsrv γeph) ∗
-                ((own_ephemeral_proposal γeph args.(RoApplyAsBackupArgs.epoch) opsfull ∗
-                is_ephemeral_proposal_lb γeph args.(RoApplyAsBackupArgs.epoch) opsfull) ∗
-                ⌜prefix opsfull_ephemeral opsfull⌝ ∗
+                (∃ new_opsfull_ephemeral, ⌜get_rwops new_opsfull_ephemeral = get_rwops opsfull_ephemeral⌝ ∗
+                  (own_ephemeral_proposal γeph args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral ∗
+                is_ephemeral_proposal_lb γeph args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral ∗
+                is_accepted_lb γsrv args.(RoApplyAsBackupArgs.epoch) opsfull) ∗
                 ⌜isPrimary = false⌝
              ) )
 
-           )%I) with "[Heph Hstate]" as "HH".
+           )%I) with "[Hlc Heph Hstate]" as "HH".
   {
   (* Want to establish:
      is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull
@@ -376,8 +378,6 @@ Proof.
       iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2.
       exfalso.
 
-      (* FIXME: move lemmas around *)
-      (* apply get_rwops_prefix in Hvalid. *)
       apply get_rwops_prefix in Hvalid.
       apply prefix_length in Hvalid.
       rewrite Hσ_index in Hvalid.
@@ -386,17 +386,36 @@ Proof.
       apply get_rwops_prefix in Hvalid2.
       apply prefix_length in Hvalid2.
       rewrite Hσ_nextIndex in Hvalid2.
-      word.
+      admit. (* FIXME: this is false because there may be no new ops, since there are no new RW ops. *)
+      (* TODO: is isPrimary, then new_opsfull_ephemeral = opsfull_ephemeral *)
     }
     { (* case: not primary *)
-      iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hcomp.
+      iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
+      {
+        (* PERF *)
+        (* time done. *) (* takes 5 seconds*)
+        (* time (iModIntro; done). *) (* takes 0.2 seconds, still a lot longer than below *)
+        time (iModIntro; iApply True_intro; iAccu). }
+      iIntros (opsold ? ?) "Hghost".
+      iNamed "Hghost".
+      (* opsfull0 is comparable to opsfull (by prop_lb). Maybe increase opsfull0
+         to opsfull.
+       *)
+      iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hproposal_lb _]".
+      iDestruct (own_valid_2 with "Hproposal_lb Hprop_lb") as %Hcomp.
       rewrite singleton_op singleton_valid in Hcomp.
       rewrite csum.Cinr_valid in Hcomp.
       apply mono_list_lb_op_valid_L in Hcomp.
       destruct Hcomp as [Hprefix|Hprefix].
+      { (* case: opsfull0 ⪯ opsfull; do an update *)
+        admit. (* FIXME: how do we know sealedold = false? *)
+        iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
+      }
       2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
-        exfalso.
-        apply get_rwops_prefix, prefix_length in Hprefix.
+        iExists opsfull_ephemeral.
+        apply get_rwops_prefix in Hprefix.
+        iSplitR; first by iPureIntro.
+        iModIntro.
         word.
       }
       {

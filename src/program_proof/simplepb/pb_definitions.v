@@ -293,6 +293,9 @@ Definition own_ephemeral_proposal γeph (epoch:u64) (opsfull:list (GhostOpType *
 Definition is_ephemeral_proposal_lb γeph (epoch:u64) (opsfull:list (GhostOpType * gname)) : iProp Σ :=
   own γeph {[ epoch := (◯ML (opsfull : list (leibnizO _)))]}.
 
+Definition is_ephemeral_proposal_sealed γeph (epoch:u64) : iProp Σ :=
+  ∃ opsfull, own γeph {[ epoch := (●ML□ (opsfull : list (leibnizO _)))]}.
+
 Definition own_unused_ephemeral_proposals γeph (epoch:u64) : iProp Σ :=
   [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' <= int.nat epoch⌝ ∨ own_ephemeral_proposal γeph epoch' []
 .
@@ -310,7 +313,8 @@ Definition own_Server_ghost γ γsrv γeph epoch ops sealed : iProp Σ :=
      when it gets an ApplyAsBackup RPC. To avoid that annoyance, the proof keeps
      this everywhere *)
   "Hghost" ∷ (own_replica_ghost γ γsrv epoch opsfull sealed) ∗
-  "Hprim" ∷ (own_primary_ghost γ γsrv epoch opsfull)
+  "Hprim" ∷ (own_primary_ghost γ γsrv epoch opsfull) ∗
+  "#Heph_sealed" ∷ □(if sealed then is_ephemeral_proposal_sealed γeph epoch else True)
 .
 
 End pb_global_definitions.
@@ -508,7 +512,7 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
   "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 opAppliedConds ∗
 
   (* non-persistent ghost state *)
-  "Heph" ∷ own_ephemeral_proposal γeph epoch opsfull_ephemeral ∗
+  "Heph" ∷ (if sealed then True else own_ephemeral_proposal γeph epoch opsfull_ephemeral) ∗
   "Heph_unused" ∷ own_unused_ephemeral_proposals γeph epoch ∗
   "Hstate" ∷ own_StateMachine epoch ops sealed (own_Server_ghost γ γsrv γeph) ∗
 

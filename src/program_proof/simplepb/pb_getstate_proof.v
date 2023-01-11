@@ -200,7 +200,7 @@ Proof.
   iNamed "HisSm2".
   wp_loadField.
   iDestruct "HΨ" as "[#Hepoch_lb HΨ]".
-  wp_apply ("HgetStateSpec" with "[$Hstate]").
+  wp_apply ("HgetStateSpec" with "[$Hstate Heph]").
   {
     iIntros "Hghost".
     iNamed "Hghost".
@@ -208,11 +208,28 @@ Proof.
     iMod (ghost_seal with "Hghost") as "Hghost".
     iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
     iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hprop_lb Hprop_facts]".
-    iSplitL "Hghost Hprim".
+    iSplitL "Hghost Hprim Heph".
     {
       iExists _.
       iFrame "∗#".
-      iPureIntro. done.
+      destruct sealed.
+      {
+        iFrame "Heph_sealed".
+        by iPureIntro.
+      }
+      {
+        iMod (own_update with "Heph") as "Heph_ro".
+        {
+          apply singleton_update.
+          apply mono_list.mono_list_auth_persist.
+        }
+        iDestruct "Heph_ro" as "#Heph_ro".
+        iSplitR; first done.
+        iModIntro.
+        iModIntro.
+        iExists _.
+        iFrame "#".
+      }
     }
     iModIntro.
 
