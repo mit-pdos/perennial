@@ -220,6 +220,29 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition RoApplyAsBackup_core_spec γ γsrv args opsfull (Φ : u64 -> iProp Σ) : iProp Σ :=
+  ("%Hσ_index" ∷ ⌜length (get_rwops opsfull) = (int.nat args.(RoApplyAsBackupArgs.nextIndex))%nat⌝ ∗
+   "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(RoApplyAsBackupArgs.epoch) ∗
+   "#Hprop_lb" ∷ is_proposal_lb γ args.(RoApplyAsBackupArgs.epoch) opsfull ∗
+   "#Hprop_facts" ∷ is_proposal_facts γ args.(RoApplyAsBackupArgs.epoch) opsfull ∗
+   "HΨ" ∷ ((is_accepted_lb γsrv args.(RoApplyAsBackupArgs.epoch) opsfull -∗ Φ (U64 0)) ∧
+           (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
+    )%I
+.
+
+Program Definition RoApplyAsBackup_spec γ γsrv :=
+  λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ args opsfull,
+    ⌜RoApplyAsBackupArgs.has_encoding encoded_args args⌝ ∗
+    RoApplyAsBackup_core_spec γ γsrv args opsfull (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
+    )%I
+.
+Next Obligation.
+  unfold RoApplyAsBackup_core_spec.
+  solve_proper.
+Defined.
+
+
 Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
   ∃ γrpc,
@@ -228,7 +251,8 @@ Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> 
   handler_spec γrpc host (U64 2) (GetState_spec γ γsrv) ∗
   handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
   handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
-  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ]})%I
+  handler_spec γrpc host (U64 5) (RoApplyAsBackup_spec γ γsrv) ∗
+  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 5) ; (U64 6) ]})%I
 .
 
 Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
