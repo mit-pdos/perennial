@@ -491,7 +491,17 @@ Proof.
                 (durable ⪯ cur ⪯ newops) and (length newops ⪯ durable) → durable = newops = cur.
                 Then, (ephemeral ⪯ newops = cur ⪯ ephemeral) → ephemeral = newops.
              *)
-            admit. (* TODO: *)
+            assert (prefix (get_rwops ops_durable_full) (get_rwops opsfull)).
+            {
+              transitivity (get_rwops opsfull0).
+              { apply get_rwops_prefix. done. }
+              { apply get_rwops_prefix. done. }
+            }
+            apply list_prefix_eq in H; last first.
+            { word. }
+            apply get_rwops_prefix in HdurablePrefix, Hprefix, Hephprefix.
+            apply prefix_length in HdurablePrefix, Hprefix, Hephcase, Hephprefix.
+            word.
           }
           {
             iModIntro.
@@ -593,6 +603,6 @@ Proof.
   iFrame "#".
   Unshelve.
   apply _.
-Admitted.
+Qed.
 
 End pb_roapplybackup_proof.
