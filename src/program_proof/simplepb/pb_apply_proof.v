@@ -367,6 +367,13 @@ Proof.
       unfold get_rwops in *.
       simpl.
       word. }
+    unfold is_possible_Primary.
+    repeat iExists _.
+    iFrame "#"; iFrame "%".
+    iSplitR.
+    { iPureIntro. word. }
+    iSplitR.
+    { iPureIntro. intros. word. }
     iSplitR.
     {
       iPureIntro.
@@ -377,10 +384,6 @@ Proof.
       { simpl. word. }
       { by unfold get_rwops. }
     }
-    iSplitR.
-    { iPureIntro. word. }
-    iSplitR.
-    { iPureIntro. intros. word. }
     {
       iPureIntro.
       exists [].
@@ -798,11 +801,18 @@ Proof.
       iFrame "Hlocked HmuInv".
       iNext.
       repeat iExists _.
-      iClear "Heph_commit_lb Hcommit_lb".
       iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hlenineq.
       rewrite singleton_op singleton_valid in Hlenineq.
       apply mono_list_both_valid_L in Hlenineq.
-      iFrame "∗ Hnew_eph_lb #"; iFrame "%".
+      iFrame "∗ #"; iFrame "%".
+      rewrite /is_possible_Primary /tc_opaque.
+      iClear "Htok_used_witness Hconf Hclerkss_sl Hclerkss_rpc".
+      destruct isPrimary; last done.
+      iNamed "HprimaryOnly".
+      repeat iExists _.
+      iClear "Hcommit_lb".
+      time (iFrame "Hcommit #"; iFrame "%").
+
       iPureIntro.
 
       apply get_rwops_prefix in Hlenineq.
