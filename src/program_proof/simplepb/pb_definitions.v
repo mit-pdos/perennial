@@ -57,7 +57,7 @@ Class pbG Σ := {
 }.
 
 Definition pbΣ :=
-  #[pb_ghostΣ (EntryType:=(OpType * gname)); savedPredΣ (list OpType) ; urpcregΣ ; waitgroupΣ ;
+  #[pb_ghostΣ (EntryType:=(GhostOpType * gname)); savedPredΣ (list OpType) ; urpcregΣ ; waitgroupΣ ;
     GFunctor (client_logR) ; ghost_varΣ unit].
 Global Instance subG_pbΣ {Σ} : subG (pbΣ) Σ → (pbG Σ).
 Proof. solve_inG. Qed.
@@ -193,7 +193,7 @@ Definition is_inv γlog γsys :=
       □(
         ∀ opsPre opsPrePre lastEnt,
         ⌜prefix opsPre opsfullQ⌝ -∗ ⌜opsPre = opsPrePre ++ [lastEnt]⌝ -∗
-        (lastEnt.2 (get_rwops opsPre))
+        (lastEnt.2 (get_rwops opsPrePre))
       )
       ).
 
@@ -491,9 +491,8 @@ Definition own_Server (s:loc) γ γsrv γeph own_StateMachine mu : iProp Σ :=
                       suffix opsfull_eph_ro opsfull_ephemeral ∧
                       length opsfull_eph_ro = int.nat nextRoIndex ∧
                       get_rwops opsfull_eph_ro = []⌝ ∗
-  (* FIXME: I think we're going to need to know that the last op before
-     opsfull_eph_ro was an RW op. This problem should show up in ApplyRo()
-     proof. *)
+  "%HcommitLen" ∷ ⌜int.nat committedNextIndex ≤ int.nat nextIndex⌝ ∗
+  "%HcommitRoNz" ∷ ⌜int.nat committedNextIndex < int.nat nextIndex → int.nat committedNextRoIndex = 0⌝ ∗
   (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat durableNextIndex⌝ ∗
   "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝ ∗
