@@ -613,16 +613,14 @@ Proof.
       }
     }
     iClear "Heph_lb2".
-    time iFrame "∗#".
+    time (iFrame "∗#"; iFrame "%").
     (* time (iFrame "∗"; iFrame "#"). *) (* PERF Not a big difference here because no % *)
     iSplitR.
     {
       iDestruct "Hprop_facts" as "(_ & _ & $)".
     }
     iPureIntro.
-    split.
-    { word. }
-    done.
+    word.
   }
   wp_pures.
   wp_apply "HwaitSpec".
@@ -643,10 +641,6 @@ Proof.
   {
     instantiate (1:= λ _, pb_definitions.own_Server s γ γsrv γeph own_StateMachine mu).
     iNamed "Hown".
-    assert (isPrimary = false).
-    { admit. } (* FIXME: need to re-prove this after letting go of the lock.
-                  Proof will have to be some sort of witness. *)
-    subst isPrimary.
     wp_bind (if: struct.loadF _ _ _ = _ then _ else _)%E.
     wp_loadField.
     wp_loadField.
@@ -720,6 +714,6 @@ Proof.
   replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
   iDestruct "Hlb" as "(_ & $)".
   done.
-Admitted. (* establish !isPrimary *)
+Qed.
 
 End pb_apply_proof.
