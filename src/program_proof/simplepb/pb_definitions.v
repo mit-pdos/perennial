@@ -242,7 +242,7 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition RoApply_core_spec γ γlog op enc_op :=
+Definition ApplyRo_core_spec γ γlog op enc_op :=
   λ (Φ : ApplyReply.C -> iPropO Σ) ,
   (
   ⌜has_op_encoding enc_op op⌝ ∗
@@ -254,14 +254,14 @@ Definition RoApply_core_spec γ γlog op enc_op :=
   )%I
 .
 
-Program Definition RoApply_spec γ :=
+Program Definition ApplyRo_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ op γlog, RoApply_core_spec γ γlog op enc_args
+  (∃ op γlog, ApplyRo_core_spec γ γlog op enc_args
                       (λ reply, ∀ enc_reply, ⌜ApplyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
   )%I
 .
 Next Obligation.
-  unfold RoApply_core_spec.
+  unfold ApplyRo_core_spec.
   solve_proper.
 Defined.
 
@@ -276,7 +276,7 @@ Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> 
   handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
   handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
   handler_spec γrpc host (U64 5) (RoApplyAsBackup_spec γ γsrv) ∗
-  handler_spec γrpc host (U64 6) (RoApply_spec γ) ∗
+  handler_spec γrpc host (U64 6) (ApplyRo_spec γ) ∗
   handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 5) ; (U64 6) ]})%I
 .
 
