@@ -446,6 +446,7 @@ Definition Server__ApplyRo: val :=
             Continue));;
         (if: "epoch" ≠ struct.loadF Server "epoch" "s"
         then
+          lock.release (struct.loadF Server "mu" "s");;
           struct.storeF ApplyReply "Err" "reply" e.Stale;;
           "reply"
         else
