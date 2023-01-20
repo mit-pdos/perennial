@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
-From Perennial.program_proof.simplepb Require Import pb_marshal_proof pb_definitions pb_applybackup_proof pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof pb_apply_proof pb_makeclerk_proof.
+From Perennial.program_proof.simplepb Require Import pb_marshal_proof pb_definitions pb_applybackup_proof pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof pb_apply_proof pb_roapply_proof pb_roapplybackup_proof pb_makeclerk_proof.
 From iris.algebra Require Import mono_list.
 
 Section pb_start_proof.
@@ -69,7 +69,8 @@ Proof.
 
   iMod ("HaccP" with "Hlc [] Hstate") as "Hstate".
   {
-    instantiate (1:=(is_epoch_lb γsrv epoch ∗ is_proposal_lb γ epoch opsfull)%I).
+    instantiate (1:=(is_epoch_lb γsrv epoch ∗ is_proposal_lb γ epoch opsfull ∗
+                                 is_proposal_valid γ opsfull)%I).
     iIntros(???). iIntros "Hghost".
     iNamed "Hghost".
     iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hlb".
@@ -94,6 +95,7 @@ Proof.
     iSplitL.
     { iExists _; iFrame "∗#%". iModIntro. done. }
     iModIntro.
+    iSplitL; last admit. (* FIXME: prove that is_proposal_valid is downwards closed. *)
     iApply (own_mono with "Hproposal_lb").
     rewrite singleton_included.
     right.
@@ -101,12 +103,12 @@ Proof.
     apply mono_list_lb_mono.
     done.
   }
-  Search wpc_nval.
+
   wp_apply (wpc_nval_elim_wp with "Hstate").
   { done. }
   { done. }
   wp_storeField.
-  iIntros "(Hstate & #Hepochlb & #Hprop_lb)".
+  iIntros "(Hstate & #Hepochlb & #Hprop_lb & #Hprop_valid)".
 
   wp_pures.
   wp_storeField.
@@ -149,11 +151,11 @@ Proof.
     iExact "clerks".
   }
   iFrame "#".
+  iSplitL.
+  { destruct sealed; done. }
   iSplitR.
   { iApply big_sepM_empty. done. }
   iFrame "%".
-  iSplitR.
-  { admit. } (* FIXME: prove that is_proposal_valid is downwards closed. *)
   iSplitR.
   { iPureIntro. word. }
   { iPureIntro. word. }
@@ -223,7 +225,7 @@ Proof.
     set_solver.
   }
   {
-    iDestruct "Hhost" as "(H1&H2&H3&H4&H5&Hhandlers)".
+    iDestruct "Hhost" as "(H1&H2&H3&H4&H5&H6&H7&Hhandlers)".
     unfold handlers_complete.
     repeat rewrite dom_insert_L.
     rewrite dom_empty_L.
@@ -231,14 +233,57 @@ Proof.
     {
       iExactEq "Hhandlers".
       f_equal.
-      admit. (* FIXME: more RPC specs *)
+      set_solver.
     }
 
     iApply (big_sepM_insert_2 with "").
-    { admit. }
+    {
+      iExists _; iFrame "#".
+      clear Φ.
+      unfold impl_handler_spec2.
+      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
+      wp_pures.
+      iDestruct "Hspec" as (??) "Hspec".
+      iMod (readonly_alloc_1 with "Hreq_sl") as "#Hreq_sl".
+      wp_apply (wp_Server__ApplyRo with "Hsrv Hreq_sl [-Hspec] Hspec").
+      iIntros (?) "Hspec".
+      iIntros (?) "Hreply".
+      wp_apply (ApplyReply.wp_Encode with "[$]").
+      iIntros (??) "(%Henc_reply & Henc_rep_sl & Hreply)".
+      iDestruct (is_slice_to_small with "Henc_rep_sl") as "Henc_rep_sl".
+      wp_store.
+      iApply ("HΦ" with "[Hspec] Hrep Henc_rep_sl").
+      { iApply "Hspec". done. }
+    }
     iApply (big_sepM_insert_2 with "").
-    { admit. }
+    {
+      iExists _; iFrame "#".
+      clear Φ.
+      unfold impl_handler_spec2.
+      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
+      wp_pures.
+      iDestruct "Hspec" as (???) "HH".
+      wp_apply (RoApplyAsBackupArgs.wp_Decode with "[$Hreq_sl //]").
+      iIntros (?) "Hargs".
 
+      wp_apply (wp_Server__RoApplyAsBackup with "Hsrv Hargs [-HH] HH").
+      iIntros (?) "HΨ".
+
+      wp_call.
+      wp_apply (wp_NewSliceWithCap).
+      { done. }
+      iClear "Hrep_sl".
+      iIntros (?) "Hrep_sl".
+      wp_apply (marshal_stateless_proof.wp_WriteInt with "[$]").
+      iIntros (?) "Hrep_sl".
+      wp_store.
+      simpl.
+      replace (int.nat 0%Z) with (0) by word.
+      simpl.
+      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
+      { iApply "HΨ". done. }
+    }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
@@ -372,6 +417,6 @@ Proof.
   }
   wp_pures.
   by iApply "HΦ".
-Admitted.
+Qed.
 
 End pb_start_proof.
