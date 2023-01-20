@@ -439,7 +439,7 @@ Definition Server__ApplyRo: val :=
         else #());;
         Skip;;
         (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-          (if: (("epoch" ≠ struct.loadF Server "epoch" "s") || (struct.loadF Server "committedNextIndex" "s" ≥ "nextIndex")) || (struct.loadF Server "committedNextRoIndex" "s" ≥ "nextRoIndex")
+          (if: (("epoch" ≠ struct.loadF Server "epoch" "s") || (struct.loadF Server "committedNextIndex" "s" > "nextIndex")) || (struct.loadF Server "committedNextRoIndex" "s" ≥ "nextRoIndex")
           then Break
           else
             lock.condWait (struct.loadF Server "committedNextRoIndex_cond" "s");;

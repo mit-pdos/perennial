@@ -126,6 +126,15 @@ Proof.
   }
 Qed.
 
+Lemma get_rwops_single_nil :
+  ∀ A op Q, get_rwops (A:=A) (pb_record:=pb_record) [(ro_op op, Q)] = [].
+Proof.
+  unfold get_rwops.
+  done.
+Qed.
+
+Local Hint Rewrite get_rwops_single_nil.
+
 Lemma wp_Server__RoApply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
@@ -150,16 +159,17 @@ Proof.
   iDestruct "Hpre" as "(#Hsl & %Hghostop_op & Hupd)".
   iNamed "His".
   rewrite /Server__ApplyRo.
-  wp_pure1_credit "Hcred3".
-  wp_pure1_credit "Hcred2".
-  wp_pure1_credit "Hcred1".
+  wp_pure1_credit "Hlc1".
+  wp_pure1_credit "Hlc2".
+  wp_pure1_credit "Hlc3".
+  iCombine "Hlc1 Hlc2 Hlc3" as "Hlcs".
   wp_apply (wp_allocStruct).
   { eauto. }
   iIntros (reply_ptr) "Hreply".
   iDestruct (struct_fields_split with "Hreply") as "HH".
   iNamed "HH".
-  wp_pure1_credit "Hlc1".
-  wp_pure1_credit "Hlc2".
+  wp_pure1_credit "Hlc4".
+  wp_pures.
   simpl.
   replace (slice.nil) with (slice_val (Slice.nil)) by done.
   wp_storeField.
@@ -173,7 +183,7 @@ Proof.
   wp_if_destruct.
   { (* return error "not primary" *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2 Hcred3]").
+    wp_apply (release_spec with "[-HΦ Err Reply Hlcs]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -183,7 +193,7 @@ Proof.
     wp_pures.
     wp_storeField.
     iApply "HΦ".
-    iFrame.
+    iDestruct "Hlcs" as "($ & $ & $)".
     iSplitL "Err Reply".
     {
       instantiate (1:=(ApplyReply.mkC _ _)).
@@ -200,7 +210,7 @@ Proof.
   wp_if_destruct.
   { (* return ESealed *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Err Reply Hcred1 Hcred2 Hcred3]").
+    wp_apply (release_spec with "[-HΦ Err Reply Hlcs]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -210,6 +220,7 @@ Proof.
     wp_pures.
     wp_storeField.
     iApply ("HΦ" $! _ (ApplyReply.mkC 1 [])).
+    iDestruct "Hlcs" as "($ & $ & $)".
     iFrame.
     iExists _, 1%Qp; iFrame.
     iApply is_slice_small_nil.
@@ -245,7 +256,7 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
-  iMod (valid_add with "Hcred2 Heph_valid [Hupd]") as "#Hnew_eph_valid".
+  iMod (valid_add with "Hlc4 Heph_valid [Hupd]") as "#Hnew_eph_valid".
   {
     iMod "Hupd" as (?) "[Hghost Hupd]".
     iModIntro.
@@ -296,7 +307,7 @@ Proof.
   wp_pures.
 
   (* Wait for the background thread to do the committing *)
-  iAssert (pb_definitions.own_Server s γ γsrv γeph _ mu) with "[-HΦ Hlc1 Hlc2 Hlocked]" as "Hown".
+  iAssert (pb_definitions.own_Server s γ γsrv γeph _ mu) with "[-HΦ Hlcs Reply Err Hreply Hlocked]" as "Hown".
   {
     repeat iExists _.
     iFrame "Hsealed Heph".
@@ -353,7 +364,7 @@ Proof.
   {
     instantiate (1:=(λ v,
                   ⌜v = #(bool_decide (epoch ≠ epoch0 ∨
-                                    (int.nat nextIndex ≤ int.nat committedNextIndex) ∨
+                                    (int.nat nextIndex < int.nat committedNextIndex) ∨
                                     (int.nat committedNextRoIndex >= int.nat nextRoIndex + 1)
                                    ))⌝ ∗ _
                 )%I).
@@ -410,7 +421,7 @@ Proof.
   wp_if_destruct; last first.
   { (* keep waiting *)
     wp_loadField.
-    wp_apply (wp_condWait with "[-HΦ Hlc1 Hlc2]").
+    wp_apply (wp_condWait with "[-HΦ Hlcs Reply Err Hreply]").
     {
       iFrame "HmuInv HcommittedNextRoIndex_is_cond".
       iFrame "Hlocked".
@@ -430,575 +441,112 @@ Proof.
   iModIntro.
   iSplitR; first done.
   wp_pures.
-
   wp_loadField.
 
-  (* reset nextRoIndex *)
-  wp_loadField.
-  wp_storeField.
-  wp_storeField.
-  wp_loadField.
-  replace (get_rwops opsfull_ephemeral ++ [op]) with (get_rwops (opsfull_ephemeral ++ [(rw_op op, Q)])); last first.
-  {
-    unfold get_rwops. rewrite map_app. rewrite concat_app.
-    done.
+  wp_if_destruct.
+  { (* epoch has changed, return error *)
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ Hlcs Reply Err Hreply]").
+    {
+      iFrame "HmuInv Hlocked".
+      iNext.
+      repeat iExists _.
+      iFrame "∗#"; iFrame "%".
+    }
+    wp_pures.
+    wp_storeField.
+    iApply "HΦ".
+    iDestruct "Hlcs" as "($ & $ & $)".
+    iSplitL.
+    {
+      instantiate (1:=ApplyReply.mkC _ _).
+      iExists _, q%Qp; iFrame.
+      simpl.
+      iModIntro.
+      done.
+    }
+    simpl.
+    erewrite decide_False.
+    { iModIntro. done. }
+    { naive_solver. }
   }
-  wp_apply (release_spec with "[-HΦ Hreply Err Reply Hlc1 Hlc2 HwaitSpec]").
+
+  wp_loadField.
+
+  (* XXX: need to establish is_ghost_lb with the (ro_op op,Q) at the end of it *)
+  (* FIXME: either check in code or prove in proof that (isPrimary = true) *)
+  destruct isPrimary; last admit.
+
+  (* there are two cases, either a new RW op was committed, or the RO commit
+     index is big enough *)
+  iAssert ((is_ghost_lb γ (opsfull_ephemeral ++ [(ro_op op, Q)])))%I with "[-]" as "#Hnew_commit_lb".
+  {
+    destruct Heqb as [Hbad|Hcases].
+    { by exfalso. }
+
+    iAssert (_) with "HprimaryOnly" as "HprimaryOnly2".
+    iEval (rewrite /is_possible_Primary /tc_opaque) in "HprimaryOnly2".
+    iClear "Htok_used_witness Hconf Hclerkss_sl Hclerkss_rpc".
+    iNamed "HprimaryOnly2".
+
+    iDestruct (own_valid_2 with "Heph_commit_lb Hnew_eph_lb") as %Hvalid.
+    rewrite singleton_op singleton_valid in Hvalid.
+    apply mono_list_lb_op_valid_1_L in Hvalid.
+
+    (* FIXME: in the second case, want to assume HnewRw is false *)
+    destruct Hcases as [HnewRw|HroCommitted].
+    { (* in this case, there are new RW ops past the one the RO was applied on
+         top of. *)
+      destruct Hvalid as [Hbad|Hprefix].
+      { (* this case should be impossible because the committed list should
+           contain an RW op after the eph_proposal_lb *)
+        exfalso.
+        apply get_rwops_prefix, prefix_length in Hbad.
+        rewrite get_rwops_app /= in Hbad.
+        rewrite get_rwops_single_nil app_nil_r in Hbad.
+        rewrite HcommitLen0 Hσ_nextIndex in Hbad.
+        word.
+      }
+      (* extract the lower bound *)
+      iApply (own_mono with "Hcommit_lb").
+      apply mono_list_lb_mono.
+      done.
+    }
+    { (* in this case, the RO op has been explicitly committed *)
+      destruct Hvalid as [Hprefix|Hprefix].
+      { (* in this case *)
+        admit.
+      }
+      admit.
+    }
+  }
+
+  wp_apply (release_spec with "[-HΦ Hlcs Reply Err Hreply]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
     repeat (iExists _).
-    iClear "Hnew_eph_lb".
-    iFrame "HisSm Hstate ∗ #"; iFrame "%".
-    iSplitR.
-    { iPureIntro.
-      rewrite get_rwops_app.
-      simpl.
-      rewrite app_length.
-      unfold get_rwops in *.
-      simpl.
-      word. }
-    unfold is_possible_Primary.
-    repeat iExists _.
-    iFrame "#"; iFrame "%".
-    iSplitR.
-    { iPureIntro. word. }
-    iSplitR.
-    { iPureIntro. intros. word. }
-    iSplitR.
-    {
-      iPureIntro.
-      exists [].
-      split.
-      { apply suffix_nil. }
-      split.
-      { simpl. word. }
-      { by unfold get_rwops. }
-    }
-    {
-      iPureIntro.
-      exists [].
-      split.
-      { apply suffix_nil. }
-      split.
-      { simpl. word. }
-      { by unfold get_rwops. }
-    }
-  }
-
-  wp_pures.
-
-  wp_apply "HwaitSpec".
-  iIntros "Hprimary_acc_lb".
-  iDestruct "Hprimary_acc_lb" as "(%Hσeq_phys & #Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
-
-  wp_apply (wp_NewWaitGroup_free).
-  iIntros (wg) "Hwg".
-  wp_pures.
-
-  wp_apply (wp_allocStruct).
-  { econstructor; eauto. }
-  iIntros (Hargs) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  iMod (readonly_alloc_1 with "epoch") as "#Hargs_epoch".
-  iMod (readonly_alloc_1 with "index") as "#Hargs_index".
-  iMod (readonly_alloc_1 with "op") as "#Hargs_op".
-  wp_pures.
-  iMod (readonly_load with "Hclerkss_sl") as (?) "Hclerkss_sl2".
-
-  iDestruct (is_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
-
-  wp_apply (wp_random).
-  iIntros (randint) "_".
-  wp_apply (wp_slice_len).
-  wp_pures.
-  set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
-
-  assert (int.nat clerkIdx < length clerkss) as Hlookup_clerks.
-  {
-    rewrite Hclerkss_sz.
-    unfold clerkIdx.
-    rewrite Hclerkss_len in Hclerkss_sz.
-    replace (clerks_sl.(Slice.sz)) with (U64 (32)); last first.
-    {
-      unfold numClerks in Hclerkss_sz.
-      word.
-    }
-    enough (int.Z randint `mod` 32 < int.Z 32)%Z.
-    { word. }
-    apply Z.mod_pos_bound.
-    word.
-  }
-
-  assert (∃ clerks_sl_inner, clerkss !! int.nat clerkIdx%Z = Some clerks_sl_inner) as [clerks_sl_inner Hclerkss_lookup].
-  {
-    apply list_lookup_lt.
-    rewrite Hclerkss_len.
-    word.
-  }
-
-  wp_apply (wp_SliceGet with "[$Hclerkss_sl2]").
-  { done. }
-  iIntros "Hclerkss_sl2".
-  wp_pures.
-
-  wp_apply (wp_slice_len).
-  wp_apply (wp_new_slice).
-  { done. }
-  iIntros (errs_sl) "Herrs_sl".
-  wp_pures.
-  iApply fupd_wp.
-  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-  { set_solver. }
-  iMod (free_WaitGroup_alloc pbN _
-                             (λ i,
-                               ∃ (err:u64) γsrv',
-                               ⌜backups !! int.nat i = Some γsrv'⌝ ∗
-                               readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
-                               □ if (decide (err = U64 0)) then
-                                 is_accepted_lb γsrv' epoch (opsfull_ephemeral ++ [_])
-                               else
-                                 True
-                             )%I
-         with "Hwg") as (γwg) "Hwg".
-  iMod "Hmask".
-  iModIntro.
-
-  iDestruct (big_sepL_lookup_acc with "Hclerkss_rpc") as "[Hclerks_rpc _]".
-  { done. }
-  iNamed "Hclerks_rpc".
-
-  iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
-  wp_apply (wp_forSlice (λ j, (own_WaitGroup pbN wg γwg j _) ∗
-                              (errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z j)↦∗[uint64T] (replicate (int.nat clerks_sl_inner.(Slice.sz) - int.nat j) #0)
-                        )%I with "[] [Hwg Herrs_sl $Hclerks_sl2]").
-  2: {
-    iSplitR "Herrs_sl".
-    { iExactEq "Hwg". econstructor. }
-    {
-      unfold slice.is_slice. unfold slice.is_slice_small.
-      iDestruct "Herrs_sl" as "[[Herrs_sl %Hlen] _]".
-      destruct Hlen as [Hlen _].
-      rewrite replicate_length in Hlen.
-      rewrite Hlen.
-      iExactEq "Herrs_sl".
-      simpl.
-      replace (1 * int.Z _)%Z with (0%Z) by word.
-      rewrite loc_add_0.
-      replace (int.nat _ - int.nat 0) with (int.nat errs_sl.(Slice.sz)) by word.
-      done.
-    }
-  }
-  {
-    iIntros (i ck).
-    clear Φ.
-    iIntros (Φ) "!# ([Hwg Herr_ptrs]& %Hi_ineq & %Hlookup) HΦ".
-    wp_pures.
-    wp_apply (wp_WaitGroup__Add with "[$Hwg]").
-    { word. }
-    iIntros "[Hwg Hwg_tok]".
-    wp_pures.
-    replace (int.nat clerks_sl_inner.(Slice.sz) - int.nat i) with (S (int.nat clerks_sl_inner.(Slice.sz) - (int.nat (word.add i 1)))); last first.
-    { word. }
-    rewrite replicate_S.
-    iDestruct (array_cons with "Herr_ptrs") as "[Herr_ptr Herr_ptrs]".
-    (* use wgTok to set errs_sl *)
-    iDestruct (own_WaitGroup_to_is_WaitGroup with "[$Hwg]") as "#His_wg".
-    wp_apply (wp_fork with "[Hwg_tok Herr_ptr]").
-    {
-      iNext.
-      iDestruct (big_sepL2_lookup_1_some with "Hclerks_rpc") as %[γsrv' Hlookupγ].
-      { done. }
-      iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc") as "Hclerk_rpc".
-      { done. }
-      { done. }
-      iDestruct "Hclerk_rpc" as "[[Hclerk_rpc Hepoch_lb] _]".
-
-      wp_pures.
-      wp_forBreak_cond.
-      wp_pures.
-
-      wp_apply (wp_Clerk__ApplyAsBackup with "[$Hclerk_rpc $Hepoch_lb]").
-      {
-        iFrame "Hprop_lb Hprop_facts #".
-        iPureIntro.
-        rewrite last_app.
-        simpl.
-        split; eauto.
-        split; eauto.
-        split.
-        { rewrite get_rwops_app app_length. simpl.
-          word.
-        }
-        word.
-      }
-      iIntros (err) "#Hpost".
-
-      wp_pures.
-      destruct bool_decide.
-      {
-        wp_pures.
-        iLeft.
-        iFrame "∗".
-        by iPureIntro.
-      }
-      wp_if_destruct.
-      {
-        wp_pures.
-        iLeft.
-        iFrame "∗".
-        by iPureIntro.
-      }
-
-      unfold SliceSet.
-      wp_pures.
-      unfold slice.ptr.
-      wp_pures.
-      wp_store.
-      iRight.
-      iModIntro.
-      iSplitR; first by iPureIntro.
-
-      iMod (readonly_alloc_1 with "Herr_ptr") as "#Herr_ptr".
-      wp_apply (wp_WaitGroup__Done with "[$Hwg_tok $His_wg Herr_ptr Hpost]").
-      {
-        iModIntro.
-        iExists _, _.
-        iSplitL ""; first done.
-        iFrame "#".
-      }
-      done.
-    }
-    iApply "HΦ".
-    iFrame "Hwg".
-    iExactEq "Herr_ptrs".
-    f_equal.
-    rewrite /ty_size //=.
-    rewrite loc_add_assoc.
-    f_equal.
-    word.
-  }
-  iIntros "[[Hwg _] _]".
-  wp_pures.
-
-  wp_apply (wp_WaitGroup__Wait with "[$Hwg]").
-  iIntros "#Hwg_post".
-  wp_pures.
-  wp_apply (wp_ref_to).
-  { repeat econstructor. }
-  iIntros (err_ptr) "Herr".
-  wp_pures.
-
-  wp_apply (wp_ref_to).
-  { do 2 econstructor. }
-  iIntros (j_ptr) "Hi".
-  wp_pures.
-
-  set (conf:=(γsrv::backups)).
-  iAssert (∃ (j err:u64),
-              "Hj" ∷ j_ptr ↦[uint64T] #j ∗
-              "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
-              "Herr" ∷ err_ptr ↦[uint64T] #err ∗
-              "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (opsfull_ephemeral ++ [_]))
-              else
-                True
-          )%I with "[Hi Herr]" as "Hloop".
-  {
-    iExists _, _.
-    iFrame.
-    destruct (decide (_)).
-    {
-      iIntros.
-      iSplitL "".
-      { iPureIntro. word. }
-      iModIntro.
-      iIntros.
-      replace (int.nat 0%Z) with (0) in H by word.
-      replace (int.nat k) with (0) in H0 by word.
-      unfold conf in H0.
-      simpl in H0.
-      injection H0 as <-.
-      iFrame "Hprimary_acc_lb".
-    }
-    {
-      done.
-    }
-  }
-  wp_forBreak_cond.
-  wp_pures.
-  iNamed "Hloop".
-  wp_load.
-  wp_apply wp_slice_len.
-
-  iMod (readonly_load with "Hclerks_sl") as (?) "Htemp".
-  iDestruct (is_slice_small_sz with "Htemp") as %Hclerk_sz.
-  iClear "Htemp".
-
-  wp_pures.
-  wp_if_destruct.
-  {
-    wp_pures.
-    wp_load.
-    unfold SliceGet.
-    wp_call.
-    iDestruct (big_sepS_elem_of_acc _ _ j with "Hwg_post") as "[HH _]".
-    { set_solver. }
-    iDestruct "HH" as "[%Hbad|HH]".
-    { exfalso. word. }
-    iDestruct "HH" as (??) "(%HbackupLookup & Herr2 & Hpost)".
-    wp_apply (wp_slice_ptr).
-    wp_pure1.
-    iEval (simpl) in "Herr2".
-    iMod (readonly_load with "Herr2") as (?) "Herr3".
-    wp_load.
-    wp_pures.
-    destruct (bool_decide (_)) as [] eqn:Herr; wp_pures.
-    {
-      rewrite bool_decide_eq_true in Herr.
-      replace (err0) with (U64 0%Z) by naive_solver.
-      wp_pures.
-      wp_load; wp_store.
-      iLeft.
-      iModIntro.
-      iSplitL ""; first done.
-      iFrame "∗".
-      iExists _, _.
-      iFrame "Hj Herr".
-      iSplitL "".
-      { iPureIntro. word. }
-      iModIntro.
-      destruct (decide (err = 0%Z)).
-      {
-        iIntros.
-        assert (int.nat k ≤ int.nat j ∨ int.nat k = int.nat (word.add j 1%Z)) as [|].
-        {
-          replace (int.nat (word.add j 1%Z)) with (int.nat j + 1) in * by word.
-          word.
-        }
-        {
-          by iApply "Hrest".
-        }
-        {
-          destruct (decide (_)); last by exfalso.
-          replace (γsrv'0) with (γsrv'); last first.
-          {
-            rewrite H1 in H0.
-            replace (int.nat (word.add j 1%Z)) with (S (int.nat j)) in H0 by word.
-            unfold conf in H0.
-            rewrite lookup_cons in H0.
-            naive_solver.
-          }
-          iDestruct "Hpost" as "#$".
-        }
-      }
-      {
-        done.
-      }
-    }
-    {
-      wp_store.
-      wp_pures.
-      wp_load; wp_store.
-      iLeft.
-      iModIntro.
-      iSplitL ""; first done.
-      iFrame "∗".
-      iExists _, _.
-      iFrame "Hj Herr".
-      destruct (decide (err0 = _)).
-      { exfalso. naive_solver. }
-      iPureIntro.
-      word.
-    }
-  }
-  iRight.
-  iModIntro.
-  iSplitL ""; first done.
-  wp_pure1_credit "Hlc3".
-  wp_load.
-  wp_pures.
-
-  wp_storeField.
-  wp_load.
-
-  destruct (decide (err = 0%Z)); last first.
-  {
-    wp_pures.
-    rewrite bool_decide_false; last naive_solver.
-    wp_pures.
-    iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
-    iFrame.
-    simpl.
-    rewrite decide_False; last naive_solver.
-    iModIntro.
-    iSplitL; last done.
-    iExists _, _; iFrame.
-  }
-  (* otherwise, no error *)
-  iMod (ghost_commit with "Hsys_inv [Hrest] Hprop_lb Hprop_facts") as "#Hcommit".
-  {
-    iExists _; iFrame "#".
-    iIntros.
-    apply elem_of_list_lookup_1 in H as [k Hlookup_conf].
-    replace (int.nat j) with (length clerks); last first.
-    { word. }
-    epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.
-    replace (k) with (int.nat k) in *; last first.
-    {
-      rewrite cons_length in HH.
-      word.
-    }
-    iApply ("Hrest" $! k).
-    { iPureIntro.
-      unfold conf in HH.
-      rewrite cons_length in HH.
-      lia. }
-    { done. }
-  }
-
-  wp_pures.
-  rewrite bool_decide_true; last naive_solver.
-  wp_pures.
-  wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
-  iIntros "[Hlocked Hown]".
-  wp_pures.
-  iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm Heph_commit_lb Heph_valid".
-  iNamed "Hown".
-  wp_loadField.
-  wp_pures.
-  wp_apply (wp_and with "HcommittedNextIndex").
-  { wp_pures. iModIntro. iPureIntro. done. }
-  { iIntros. wp_loadField. wp_pures. iModIntro. iFrame.
-    done.
-  }
-  iIntros "HcommittedNextIndex".
-  wp_if_destruct.
-  {
-    destruct Heqb0 as [HepochEq HcommittedIneq].
-    injection HepochEq as H.
-    subst.
-    wp_storeField.
-    wp_loadField.
-    wp_apply (wp_condBroadcast with "[]").
-    { iFrame "#". }
-    wp_pures.
-    wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hlc1 Hlc2 Hlc3 Hreply Err Reply]").
-    {
-      iFrame "Hlocked HmuInv".
-      iNext.
-      repeat iExists _.
-      iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hlenineq.
-      rewrite singleton_op singleton_valid in Hlenineq.
-      apply mono_list_both_valid_L in Hlenineq.
-      iFrame "∗ #"; iFrame "%".
-      rewrite /is_possible_Primary /tc_opaque.
-      iClear "Htok_used_witness Hconf Hclerkss_sl Hclerkss_rpc".
-      destruct isPrimary; last done.
-      iNamed "HprimaryOnly".
-      repeat iExists _.
-      iClear "Hcommit_lb".
-      time (iFrame "Hcommit #"; iFrame "%").
-
-      iPureIntro.
-
-      apply get_rwops_prefix in Hlenineq.
-      apply prefix_length in Hlenineq.
-      rewrite get_rwops_app app_length /= in Hlenineq.
-      rewrite Hσ_nextIndex in Hlenineq.
-      rewrite Hσ_nextIndex0 in Hlenineq.
-      split.
-      {
-        (* FIXME: why can't word to do this *)
-        rewrite Hno_overflow.
-        simpl.
-        replace (Z.to_nat (int.Z nextIndex + int.Z 1%Z)) with (int.nat nextIndex + 1).
-        { word. }
-        rewrite Z2Nat.inj_add.
-        { replace (int.nat 1) with (1). { done. }
-          word. } (* FIXME: word slow? *)
-        { word. }
-        { word. }
-      }
-      split.
-      { intros. apply HcommitRoNz0.
-        clear H.
-        time word.
-        (* Argument:
-           s.committedNextIndex < opNextIndex.
-           nextIndex + 1 <= s.nextIndex
-           s.committedNextIndex <= s.nextIndex
-         *)
-        (*
-        revert dependent nextIndex0.
-        revert dependent nextIndex.
-        revert dependent committedNextIndex0.
-        clear.
-        intros.
-        replace (int.Z 1) with (1%Z) in Hno_overflow by word.
-        rewrite Hno_overflow in H.
-        rewrite Z2Nat.inj_add in H; try word.
-        replace (int.nat 1) with (1) in * by word.
-        assert (int.nat nextIndex < int.nat nextIndex + int.nat 1) by word.
-        word.
-        clear -nextIndex0
-        *)
-      }
-      split.
-      { rewrite get_rwops_app app_length. simpl. time word. }
-      {
-        exists []. split.
-        { apply suffix_nil. }
-        split.
-        { simpl. (* FIXME: op_commit_ro is relative to committedNextIndex,
-                    whereas the code treats it as relavite to nextIndex. *)
-          symmetry.
-          apply HcommitRoNz0.
-          clear Hclerkss_len.
-          time word. }
-        { by unfold get_rwops. }
-      }
-    }
-    wp_pures.
-    iModIntro.
-    iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
-    iFrame "Hlc1 Hlc2 Hlc3".
-    iSplitL.
-    { iExists _, _. iFrame. }
-    simpl.
-    destruct (decide _); last first.
-    { exfalso. done. }
-    iExists _; iFrame "Hcommit".
-    done.
-  }
-
-  wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hlc1 Hlc2 Hlc3 Hreply Err Reply]").
-  {
-    iFrame "Hlocked HmuInv".
-    iNext.
-    repeat iExists _.
     iFrame "∗#"; iFrame "%".
   }
   wp_pures.
-  iModIntro.
-  iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
-  simpl.
-  iFrame "Hlc1 Hlc2 Hlc3".
+  wp_storeField.
+  iApply "HΦ".
+  iDestruct "Hlcs" as "($ & $ & $)".
   iSplitL.
   {
+    instantiate (1:=ApplyReply.mkC _ _).
     iExists _, _; iFrame.
+    iModIntro. done.
   }
-  destruct (decide _); last first.
-  { exfalso. done. }
-  iExists _.
-  iFrame "Hcommit".
-  done.
-Qed.
+  simpl.
+  erewrite decide_True.
+  {
+    iModIntro. iExists _.
+    iFrame "Hnew_commit_lb".
+    done.
+  }
+  { done. }
+Admitted.
 
 Lemma prefix_app_cases {A} (σ σ':list A) e:
   σ' `prefix_of` σ ++ [e] →
