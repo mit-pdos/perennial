@@ -296,7 +296,7 @@ Proof.
   wp_pures.
 
   (* Wait for the background thread to do the committing *)
-  iAssert (pb_definitions.own_Server s γ γsrv γeph _ mu) with "[-HΦ Hlc1 Hlc2]" as "Hown".
+  iAssert (pb_definitions.own_Server s γ γsrv γeph _ mu) with "[-HΦ Hlc1 Hlc2 Hlocked]" as "Hown".
   {
     repeat iExists _.
     iFrame "Hsealed Heph".
@@ -342,12 +342,96 @@ Proof.
   wp_pures.
   iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
   iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm Heph_commit_lb Heph_valid".
+  clear dependent committedNextIndex committedNextRoIndex.
   iNamed "Hown".
   wp_loadField.
   wp_pures.
-  (* FIXME: compound condition in if statement... *)
 
+  (* compound condition in if statement *)
+  wp_bind (if: (if: #_ then _ else _) then _ else _)%E.
+  wp_apply (wp_wand with "[HcommittedNextIndex HcommittedNextRoIndex]").
+  {
+    instantiate (1:=(λ v,
+                  ⌜v = #(bool_decide (epoch ≠ epoch0 ∨
+                                    (int.nat nextIndex ≤ int.nat committedNextIndex) ∨
+                                    (int.nat committedNextRoIndex >= int.nat nextRoIndex + 1)
+                                   ))⌝ ∗ _
+                )%I).
+    wp_bind (if: #_ then _ else _)%E.
+    wp_if_destruct.
+    {
+      wp_pures.
+      iSplitR; last first.
+      {
+        iModIntro. iNamedAccu.
+      }
+      iPureIntro.
+      f_equal.
+      rewrite bool_decide_true; first done.
+      left.
+      naive_solver.
+    }
+    wp_loadField.
+    wp_pures.
+    wp_if_destruct.
+    {
+      iFrame.
+      iPureIntro.
+      f_equal.
+      rewrite bool_decide_true; first done.
+      right.
+      left.
+      word.
+    }
+    {
+      wp_loadField.
+      wp_pures.
+      iFrame.
+      iPureIntro.
+      repeat f_equal.
+      apply bool_decide_ext.
+      split.
+      {
+        intros Hineq.
+        right; right.
+        word.
+      }
+      {
+        intros [Hcase|[Hcase|Hcase]].
+        { exfalso. done. }
+        { exfalso. word. }
+        word.
+      }
+    }
+  }
+  iIntros (?) "(%Hre & HH)".
+  iNamed "HH".
+  subst v.
+  wp_if_destruct; last first.
+  { (* keep waiting *)
+    wp_loadField.
+    wp_apply (wp_condWait with "[-HΦ Hlc1 Hlc2]").
+    {
+      iFrame "HmuInv HcommittedNextRoIndex_is_cond".
+      iFrame "Hlocked".
+      repeat iExists _.
+      iFrame "∗#".
+      iFrame "%".
+    }
+    iIntros "[Hlocked Hown]".
+    wp_pures.
+    iLeft.
+    iModIntro.
+    iFrame "∗".
+    done.
+  }
+  (* break, either done with RO op, or have non-retryable error *)
+  iRight.
+  iModIntro.
+  iSplitR; first done.
+  wp_pures.
 
+  wp_loadField.
 
   (* reset nextRoIndex *)
   wp_loadField.

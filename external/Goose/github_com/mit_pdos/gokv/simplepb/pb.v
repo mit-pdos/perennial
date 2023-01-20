@@ -405,6 +405,7 @@ Definition Server__applyRoThread: val :=
           lock.acquire (struct.loadF Server "mu" "s");;
           (if: (struct.loadF Server "epoch" "s" = "epoch") && (struct.loadF Server "nextIndex" "s" = "nextIndex")
           then
+            struct.storeF Server "committedNextIndex" "s" "nextIndex";;
             struct.storeF Server "committedNextRoIndex" "s" "nextRoIndex";;
             lock.condBroadcast (struct.loadF Server "committedNextRoIndex_cond" "s");;
             Continue
@@ -443,12 +444,12 @@ Definition Server__ApplyRo: val :=
           else
             lock.condWait (struct.loadF Server "committedNextRoIndex_cond" "s");;
             Continue));;
-        lock.release (struct.loadF Server "mu" "s");;
         (if: "epoch" ≠ struct.loadF Server "epoch" "s"
         then
           struct.storeF ApplyReply "Err" "reply" e.Stale;;
           "reply"
         else
+          lock.release (struct.loadF Server "mu" "s");;
           struct.storeF ApplyReply "Err" "reply" e.None;;
           "reply"))).
 
