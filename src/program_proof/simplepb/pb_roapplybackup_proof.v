@@ -23,7 +23,7 @@ Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
 (* Clerk specs *)
-Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch nextIndex:u64) opsfull :
+Lemma wp_Clerk__RoApplyAsBackup γ γsrv ck args_ptr (epoch nextIndex:u64) opsfull :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗

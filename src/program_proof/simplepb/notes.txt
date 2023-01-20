@@ -1,0 +1,5 @@
+Would be nice to improve:
+* slice library, specifically splitting ownership of a slice across threads
+* if statements with && and ||
+* when locking and unlocking multiple times in a single function, the context
+  gets polluted and the proofs do big `iClear`s.

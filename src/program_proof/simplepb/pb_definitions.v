@@ -242,6 +242,30 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition RoApply_core_spec γ γlog op enc_op :=
+  λ (Φ : ApplyReply.C -> iPropO Σ) ,
+  (
+  ⌜has_op_encoding enc_op op⌝ ∗
+  is_inv γlog γ ∗
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤∖↑pbN}=∗
+            Φ (ApplyReply.mkC 0 (compute_reply σ op))
+  )) ∗
+  □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
+  )%I
+.
+
+Program Definition RoApply_spec γ :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ op γlog, RoApply_core_spec γ γlog op enc_args
+                      (λ reply, ∀ enc_reply, ⌜ApplyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
+  )%I
+.
+Next Obligation.
+  unfold RoApply_core_spec.
+  solve_proper.
+Defined.
+
+
 
 Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
@@ -252,6 +276,7 @@ Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> 
   handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
   handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
   handler_spec γrpc host (U64 5) (RoApplyAsBackup_spec γ γsrv) ∗
+  handler_spec γrpc host (U64 6) (RoApply_spec γ) ∗
   handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 5) ; (U64 6) ]})%I
 .
 
@@ -403,6 +428,22 @@ Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp �
   }}}
 .
 
+Definition is_ApplyReadonlyFn own_StateMachine (startApplyFn:val) (P:u64 → list (OpType) → bool → iProp Σ) : iProp Σ :=
+  ∀ op_sl (epoch:u64) (σ:list OpType) (op_bytes:list u8) (op:OpType),
+  {{{
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        own_StateMachine epoch σ false P
+  }}}
+    startApplyFn (slice_val op_sl)
+  {{{
+        reply_sl q,
+        RET (slice_val reply_sl);
+        is_slice_small reply_sl byteT q (compute_reply σ op) ∗
+        own_StateMachine epoch σ false P
+  }}}
+.
+
 Definition accessP_fact own_StateMachine P : iProp Σ :=
   □ (£ 1 -∗ (∀ Φ σ epoch sealed,
      (∀ σold sealedold E, P epoch σold sealedold ={E}=∗ P epoch σold sealedold ∗ Φ) -∗
@@ -415,7 +456,7 @@ Definition accessP_fact own_StateMachine P : iProp Σ :=
 
 Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
   tc_opaque (
-  ∃ (applyFn:val) (getFn:val) (setFn:val),
+  ∃ (applyFn:val) (applyRoFn:val) (getFn:val) (setFn:val),
   "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "StartApply"] applyFn) ∗
   "#HapplySpec" ∷ is_ApplyFn own_StateMachine applyFn P ∗
 
@@ -424,6 +465,10 @@ Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
 
   "#HgetState" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getFn) ∗
   "#HgetStateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getFn P ∗
+
+  "#HapplyReadonly" ∷ readonly (sm ↦[pb.StateMachine :: "ApplyReadonly"] applyRoFn) ∗
+  "#HapplyReadonlySpec" ∷ is_ApplyReadonlyFn own_StateMachine applyRoFn P ∗
+
   "#HaccP" ∷ accessP_fact own_StateMachine P)%I
 .
 
