@@ -34,7 +34,7 @@ Section proof.
   Qed.
 
   Theorem is_lock_ty lk R :
-    is_lock lk R -∗ ⌜val_ty lk lockRefT⌝.
+    is_lock lk R -∗ ⌜val_ty lk ptrT⌝.
   Proof.
     iIntros "Hlk".
     iDestruct (is_lock_flat with "Hlk") as (l) "->".
@@ -80,7 +80,7 @@ Section proof.
   Definition is_free_lock (l: loc): iProp Σ := l ↦ #false.
 
   Theorem is_free_lock_ty lk :
-    is_free_lock lk -∗ ⌜val_ty #lk lockRefT⌝.
+    is_free_lock lk -∗ ⌜val_ty #lk ptrT⌝.
   Proof.
     iIntros "Hlk".
     iPureIntro.

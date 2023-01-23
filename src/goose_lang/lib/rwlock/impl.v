@@ -1,7 +1,5 @@
 From Perennial.goose_lang Require Export notation typing.
 
-Definition rwlockRefT {ext} {ext_ty: ext_types ext} := refT uint64T.
-
 Module rwlock.
   Section goose_lang.
     Context {ext:ffi_syntax}.

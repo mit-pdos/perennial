@@ -39,7 +39,7 @@ Section proof.
   Definition is_free_lock (l: loc): iProp Σ := l ↦ #1 ∗ later_tok ∗ later_tok ∗ later_tok ∗ later_tok.
 
   Theorem is_free_lock_ty lk :
-    is_free_lock lk -∗ ⌜val_ty #lk rwlockRefT⌝.
+    is_free_lock lk -∗ ⌜val_ty #lk ptrT⌝.
   Proof.
     iIntros "Hlk".
     iPureIntro.

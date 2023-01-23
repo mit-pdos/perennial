@@ -125,7 +125,7 @@ Section proof.
   Qed.
 
   Theorem is_rwlock_ty lk R  :
-    is_rwlock lk R -∗ ⌜val_ty lk rwlockRefT⌝.
+    is_rwlock lk R -∗ ⌜val_ty lk ptrT⌝.
   Proof.
     iIntros "Hlk".
     iDestruct (is_rwlock_flat with "Hlk") as (l) "->".
@@ -173,7 +173,7 @@ Section proof.
   Definition is_free_lock (l: loc): iProp Σ := l ↦ #1 ∗ later_tok ∗ later_tok ∗ later_tok ∗ later_tok.
 
   Theorem is_free_lock_ty lk :
-    is_free_lock lk -∗ ⌜val_ty #lk rwlockRefT⌝.
+    is_free_lock lk -∗ ⌜val_ty #lk ptrT⌝.
   Proof.
     iIntros "Hlk".
     iPureIntro.

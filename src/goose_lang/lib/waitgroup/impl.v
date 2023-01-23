@@ -2,8 +2,6 @@ From Perennial.goose_lang Require Import notation typing.
 From Perennial.goose_lang.lib.lock Require Import impl.
 From Perennial.goose_lang.lib.typed_mem Require Import impl.
 
-Definition waitgroupRefT {ext} {ext_ty: ext_types ext} := refT (lockRefT * uint64T).
-
 Module waitgroup.
   Section goose_lang.
     Context {ext:ffi_syntax}.
