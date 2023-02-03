@@ -249,6 +249,7 @@ def main():
                 "simplepb/clerk",
                 "simplepb/simplelog",
                 "simplepb/apps/closed",
+                "tutorial", # atomic commit
                 "mpaxos/",
                 "mpaxos/example",
                 "map_marshal",
