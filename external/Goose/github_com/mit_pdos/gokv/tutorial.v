@@ -52,16 +52,24 @@ Definition No : expr := #false.
 
 Definition GetPreferenceId : expr := #0.
 
+Definition prefToByte: val :=
+  rec: "prefToByte" "pref" :=
+    (if: "pref"
+    then #(U8 1)
+    else #(U8 0)).
+
+Definition byteToPref: val :=
+  rec: "byteToPref" "b" :=
+    ("b" = #(U8 1)).
+
 Definition ParticipantClerk__GetPreference: val :=
   rec: "ParticipantClerk__GetPreference" "ck" :=
     let: "req" := NewSlice byteT #0 in
-    let: "reply" := ref_to (slice.T byteT) (NewSlice byteT #1) in
+    let: "reply" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     let: "err" := urpc.Client__Call (struct.loadF ParticipantClerk "client" "ck") GetPreferenceId "req" "reply" #1000 in
     control.impl.Assume ("err" = #0);;
     let: "b" := SliceGet byteT (![slice.T byteT] "reply") #0 in
-    (if: ("b" = #(U8 0))
-    then #false
-    else #true).
+    byteToPref "b".
 
 (* make a decision once we have all the preferences
 
@@ -79,16 +87,18 @@ Definition CoordinatorServer__makeDecision: val :=
     lock.release (struct.loadF CoordinatorServer "m" "s");;
     #().
 
+Definition prefToDecision: val :=
+  rec: "prefToDecision" "pref" :=
+    (if: "pref"
+    then Commit
+    else Abort).
+
 Definition CoordinatorServer__backgroundLoop: val :=
   rec: "CoordinatorServer__backgroundLoop" "s" :=
     ForSlice ptrT "i" "h" (struct.loadF CoordinatorServer "participants" "s")
       (let: "pref" := ParticipantClerk__GetPreference "h" in
-      let: "decision" := ref (zero_val byteT) in
-      (if: "pref"
-      then "decision" <-[byteT] Commit
-      else "decision" <-[byteT] Abort);;
       lock.acquire (struct.loadF CoordinatorServer "m" "s");;
-      SliceSet byteT (struct.loadF CoordinatorServer "preferences" "s") "i" (![byteT] "decision");;
+      SliceSet byteT (struct.loadF CoordinatorServer "preferences" "s") "i" (prefToDecision "pref");;
       lock.release (struct.loadF CoordinatorServer "m" "s"));;
     CoordinatorServer__makeDecision "s";;
     #().
@@ -151,9 +161,7 @@ Definition ParticipantMain: val :=
     MapInsert "handlers" GetPreferenceId ((λ: "_req" "reply",
       let: "pref" := ParticipantServer__GetPreference "participant" in
       let: "replyData" := NewSlice byteT #1 in
-      (if: "pref"
-      then SliceSet byteT "replyData" #0 (#(U8 1))
-      else SliceSet byteT "replyData" #0 (#(U8 0)));;
+      SliceSet byteT "replyData" #0 (prefToByte "pref");;
       "reply" <-[slice.T byteT] "replyData";;
       #()
       ));;
