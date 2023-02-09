@@ -495,6 +495,9 @@ Proof.
     apply mono_list_lb_op_valid_1_L in Hvalid.
 
     (* FIXME: in the second case, want to assume HnewRw is false *)
+
+    iApply (own_mono with "Hcommit_lb").
+    apply mono_list_lb_mono.
     destruct Hcases as [HnewRw|HroCommitted].
     { (* in this case, there are new RW ops past the one the RO was applied on
          top of. *)
@@ -509,8 +512,6 @@ Proof.
         word.
       }
       (* extract the lower bound *)
-      iApply (own_mono with "Hcommit_lb").
-      apply mono_list_lb_mono.
       done.
     }
     { (* in this case, the RO op has been explicitly committed *)
@@ -518,7 +519,7 @@ Proof.
       destruct Hvalid as [Hprefix|Hprefix].
       { (* in this case, the commit_full list is prefix of the opsfull_eph +
            ro_op op, and needs to be updated. *)
-        exfalso. (* not actually false, just clearing out Iris context for convenience *)
+
         (* Argument:
            len(get_rws ops_commit_full0) = len(get_rws opsfull_ephemeral)
            ops_commit_full0 has committedNextRoIndex many RO ops as suffix
@@ -545,11 +546,12 @@ Proof.
           apply prefix_length in HroPrefix.
           word.
         }
-        admit. (* should be done in this case. *)
+        rewrite Hgood.
+        done.
       }
       {
         (* in this case, the committed list already contains what we're looking for (ro_op op). *)
-        admit. (* should be done in this case *)
+        done.
       }
     }
   }
