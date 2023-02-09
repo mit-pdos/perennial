@@ -514,11 +514,43 @@ Proof.
       done.
     }
     { (* in this case, the RO op has been explicitly committed *)
+      assert (int.nat nextIndex >= int.nat committedNextIndex) as HnoNewRw by admit.
       destruct Hvalid as [Hprefix|Hprefix].
-      { (* in this case *)
-        admit.
+      { (* in this case, the commit_full list is prefix of the opsfull_eph +
+           ro_op op, and needs to be updated. *)
+        exfalso. (* not actually false, just clearing out Iris context for convenience *)
+        (* Argument:
+           len(get_rws ops_commit_full0) = len(get_rws opsfull_ephemeral)
+           ops_commit_full0 has committedNextRoIndex many RO ops as suffix
+           ops_ephemeral has nextRoIndex many RO ops as suffix
+         *)
+
+        destruct HcommitRoLen as (ops_commit_ro & HcommitRoSuffix & HcommitRoLen & HisRoCommit).
+        destruct Heph_proposal as (ops_eph_ro & HephRoSuffix & HephRoLen & HisRoEph).
+
+        (* FIXME: this fact says that ops_eph_ro is the FULL suffix of ro ops,
+           not missing anything *)
+        assert (∀ r' l', prefix l' opsfull_ephemeral →
+                      (get_rwops l') = (get_rwops opsfull_ephemeral) →
+                      r' `suffix_of` l' →
+                      get_rwops r' = [] →
+                      r' `prefix_of` ops_eph_ro
+               ) as HfullSuffixEph by admit.
+        apply prefix_app_cases in Hprefix.
+        destruct Hprefix as [HprefixBad|Hgood].
+        {
+          exfalso.
+          specialize (HfullSuffixEph ops_commit_ro ops_commit_full0 HprefixBad).
+          epose proof (HfullSuffixEph _ HcommitRoSuffix HisRoCommit) as HroPrefix.
+          apply prefix_length in HroPrefix.
+          word.
+        }
+        admit. (* should be done in this case. *)
       }
-      admit.
+      {
+        (* in this case, the committed list already contains what we're looking for (ro_op op). *)
+        admit. (* should be done in this case *)
+      }
     }
   }
 
