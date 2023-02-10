@@ -254,6 +254,13 @@ def main():
                 "mpaxos/example",
                 "map_marshal",
                 "minlease",
+
+                "dmvcc/txn",
+                "dmvcc/index",
+                "dmvcc/prophname",
+                "dmvcc/txncoordinator",
+                "dmvcc/txnmgr",
+                "dmvcc/example",
                 ]
 
         for pkg in pkgs:
