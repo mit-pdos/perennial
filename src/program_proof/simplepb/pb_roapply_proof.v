@@ -329,7 +329,7 @@ Proof.
     iFrame "Hcommit_lb #".
     iFrame "%".
     iPureIntro.
-    destruct Heph_proposal as (opsfull_eph_ro & Hsuffix & HnextRoIndex & HroOnly).
+    destruct Heph_proposal as (opsfull_eph_ro & Hsuffix & HnextRoIndex & HroOnly & Hfull).
     exists (opsfull_eph_ro ++ [(ro_op op, Q)]).
     split.
     {
@@ -342,11 +342,15 @@ Proof.
       simpl.
       word.
     }
-    rewrite get_rwops_app.
-    rewrite HroOnly.
-    simpl.
-    unfold get_rwops.
-    done.
+    split.
+    {
+      rewrite get_rwops_app.
+      rewrite HroOnly.
+      simpl.
+      unfold get_rwops.
+      done.
+    }
+    { by apply contains_app. }
   }
 
   wp_forBreak.
@@ -498,7 +502,10 @@ Proof.
 
     iApply (own_mono with "Hcommit_lb").
     apply mono_list_lb_mono.
-    destruct Hcases as [HnewRw|HroCommitted].
+    destruct (decide (int.nat nextIndex < int.nat committedNextIndex)) as [HnewRw|HnoNewRw].
+    (* destruct Hcases as [HnewRw|HroCommitted]. *)
+    (* can't just destruct Hcases because want to know that the first is
+       definitely false when in the second case *)
     { (* in this case, there are new RW ops past the one the RO was applied on
          top of. *)
       destruct Hvalid as [Hbad|Hprefix].
@@ -515,7 +522,8 @@ Proof.
       done.
     }
     { (* in this case, the RO op has been explicitly committed *)
-      assert (int.nat nextIndex >= int.nat committedNextIndex) as HnoNewRw by admit.
+      destruct Hcases as [|].
+      { exfalso. word. }
       destruct Hvalid as [Hprefix|Hprefix].
       { (* in this case, the commit_full list is prefix of the opsfull_eph +
            ro_op op, and needs to be updated. *)
@@ -526,24 +534,24 @@ Proof.
            ops_ephemeral has nextRoIndex many RO ops as suffix
          *)
 
-        destruct HcommitRoLen as (ops_commit_ro & HcommitRoSuffix & HcommitRoLen & HisRoCommit).
-        destruct Heph_proposal as (ops_eph_ro & HephRoSuffix & HephRoLen & HisRoEph).
+        destruct HcommitRoLen as (ops_commit_ro & HcommitRoSuffix & HcommitRoLen & HisRoCommit & HfullSuffixCommit).
+        destruct Heph_proposal as (ops_eph_ro & HephRoSuffix & HephRoLen & HisRoEph & HfullSuffix).
 
-        (* FIXME: this fact says that ops_eph_ro is the FULL suffix of ro ops,
-           not missing anything *)
-        assert (∀ r' l', prefix l' opsfull_ephemeral →
-                      (get_rwops l') = (get_rwops opsfull_ephemeral) →
-                      r' `suffix_of` l' →
-                      get_rwops r' = [] →
-                      r' `prefix_of` ops_eph_ro
-               ) as HfullSuffixEph by admit.
         apply prefix_app_cases in Hprefix.
         destruct Hprefix as [HprefixBad|Hgood].
         {
           exfalso.
-          specialize (HfullSuffixEph ops_commit_ro ops_commit_full0 HprefixBad).
-          epose proof (HfullSuffixEph _ HcommitRoSuffix HisRoCommit) as HroPrefix.
+          epose proof (roapply_helper _ _ _ _ HfullSuffix HfullSuffixCommit HprefixBad _ HcommitRoSuffix HisRoCommit) as HroPrefix.
           apply prefix_length in HroPrefix.
+          Unshelve.
+          2:{
+            apply list_prefix_eq.
+            { by apply get_rwops_prefix. }
+            { rewrite Hσ_nextIndex. rewrite HcommitLen0.
+              admit. (* FIXME: use opsfull_ephemeral ⪯ opsfull_ephemeral0 *)
+            }
+          }
+
           word.
         }
         rewrite Hgood.

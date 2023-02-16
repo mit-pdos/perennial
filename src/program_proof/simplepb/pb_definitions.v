@@ -483,13 +483,11 @@ Definition numClerks : nat := 32.
 Notation GhostOpType := (GhostOpType (pb_record:=pb_record)).
 Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
-Definition contains_full_ro_suffix {A:Type} r (l:list (GhostOpType * A)) :=
-  (∀ r' l', prefix l' l →
-            (get_rwops l') = (get_rwops l) →
-            r' `suffix_of` l' →
-            get_rwops r' = [] →
-            r' `prefix_of` r
-          ).
+Definition is_full_ro_suffix {A:Type} r (l:list (GhostOpType * A)) :=
+  ∀ r',
+  get_rwops r' = [] →
+  suffix r' l →
+  suffix r' r.
 
 Lemma suffix_app_r {A} a (s l:list A) :
   length s > 0 →
@@ -498,36 +496,48 @@ Lemma suffix_app_r {A} a (s l:list A) :
 Proof.
 Admitted.
 
-
 Lemma contains_app {A} r l op a :
-      contains_full_ro_suffix (A:=A) r l →
-      contains_full_ro_suffix (A:=A) (r ++ [(ro_op op, a)]) (l ++ [(ro_op op, a)]).
+      is_full_ro_suffix (A:=A) r l →
+      is_full_ro_suffix (A:=A) (r ++ [(ro_op op, a)]) (l ++ [(ro_op op, a)]).
 Proof.
   intros Hcontains.
-  intros r' l' Hprefix Hrws Hsuffix' Hros.
-  destruct (decide (length l' = length l + 1)).
-  { (* case: l' = l *)
-    apply list_prefix_eq in Hprefix; last first.
-    { rewrite app_length /=. lia. }
+  intros r' Hros Hsuffix'.
+  destruct (decide (length r' = 0)).
+  {
+    apply nil_length_inv in e.
     subst.
-    (* FIXME: is there a better way of doing this proof *)
-    destruct (decide (length r' = 0)).
-    {
-      apply nil_length_inv in e0.
-      subst.
-      apply prefix_nil.
-    }
-    {
-      apply suffix_app_r in Hsuffix'; last first.
-      { lia. }
-      destruct Hsuffix' as (r'' & Hr' & Hr''suffix).
-      subst.
-      Search (prefix (_ ++ _) (_ ++ _)).
-      apply prefix_app_alt; last done.
-      unfold contains_full_ro_suffix in Hcontains.
-      admit.
-    }
+    apply suffix_nil.
   }
+  {
+    apply suffix_app_r in Hsuffix'; last first.
+    { lia. }
+    destruct Hsuffix' as (r'' & Hr' & Hr''suffix).
+    subst.
+    apply suffix_app.
+    apply Hcontains.
+    { admit. } (* FIXME: need to refactor proof to use get_rwops_app lemma *)
+    done.
+  }
+Admitted.
+
+(* Situation in roapply proof:
+   lcommit ≺ leph + [ro_op op]; i.e. lcommit ⪯ leph
+   Same number of RW ops in lcommit and leph
+   lcommit ends with 6 RO ops
+   leph ends with 5 RO ops.
+   Want to derive contradiction.
+ *)
+Lemma roapply_helper {A} r l r' (l':list (GhostOpType * A)) :
+  is_full_ro_suffix r l →
+  is_full_ro_suffix r' l' →
+  prefix l' l →
+  (get_rwops l') = (get_rwops l) →
+  r' `suffix_of` l' →
+  get_rwops r' = [] →
+  r' `prefix_of` r
+.
+Proof.
+  intros Hcontains Hcontains' Hprefix' Hrws Hsuffix' Hros.
 Admitted.
 
 Definition is_possible_Primary (isPrimary:bool) γ γeph γsrv clerks_sl epoch
@@ -558,11 +568,12 @@ Definition is_possible_Primary (isPrimary:bool) γ γeph γsrv clerks_sl epoch
                                 suffix opsfull_eph_ro opsfull_ephemeral ∧
                                 length opsfull_eph_ro = int.nat nextRoIndex ∧
                                 get_rwops opsfull_eph_ro = [] ∧
-                                contains_full_ro_suffix opsfull_eph_ro opsfull_ephemeral⌝ ∗
+                                is_full_ro_suffix opsfull_eph_ro opsfull_ephemeral⌝ ∗
             "%HcommitRoLen" ∷ ⌜ ∃ ops_commit_ro,
                                 suffix ops_commit_ro ops_commit_full ∧
                                 length ops_commit_ro = int.nat committedNextRoIndex ∧
-                                get_rwops ops_commit_ro = []⌝
+                                get_rwops ops_commit_ro = [] ∧
+                                is_full_ro_suffix ops_commit_ro ops_commit_full⌝
       )%I
       else True%I)
 .
