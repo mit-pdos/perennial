@@ -132,7 +132,7 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
       iFrame "∗ HisSm #%".
     }
     wp_pures.
@@ -140,8 +140,7 @@ Proof.
     iApply "HΨ".
   }
   { (* successfully become primary *)
-    (* FIXME: Already know that epoch <= args.epoch .
-       use is_epoch_lb and accessP property to get that args.epoch <= epoch *)
+    (* use is_epoch_lb and accessP property to get that args.epoch <= epoch *)
     wp_storeField.
     wp_pures.
 
@@ -492,16 +491,42 @@ Proof.
 
     wp_pures.
 
+    wp_storeField.
+    wp_storeField.
+    wp_storeField.
+
     wp_loadField.
     wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
+
+      (* FIXME:
+         Add invariants related to Heph_unused that cover the cases:
+         * server has already become primary
+         * server is becoming primary for the first time
+         Need to hold the own_ephemeral_proposal for the current epoch in some
+         sort of "escrow".
+       *)
       iFrame "HisPrimary ∗ HisSm #%".
 
-      iExists _, _.
+      iSplitR; first done.
+      iExists _, _, _.
       iFrame "Hclerkss_sl Hconf".
+
+      (* FIXME: the Heph_proposal invariant is false. It's possible that there
+         are outstanding RO ops at the end of the log. But, those ops are from a
+         previous epoch, so it's effectively as though there's no ephemeral
+         proposal right now.
+
+         However, this complicates the meaning of nextRoIndex. It's not an
+         offset from the "start of epoch" proposal. So, the proof might need a
+         frozen ghost variable for the starting ephemeral proposal for an epoch.
+         That, in turn, would complicate all the list length arithmetic.
+       *)
+
+      iFrame "#".
 
       iSplitL "".
       {
