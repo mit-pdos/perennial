@@ -481,6 +481,54 @@ Qed.
 Definition numClerks : nat := 32.
 
 Notation GhostOpType := (GhostOpType (pb_record:=pb_record)).
+Notation get_rwops := (get_rwops (pb_record:=pb_record)).
+
+Definition contains_full_ro_suffix {A:Type} r (l:list (GhostOpType * A)) :=
+  (∀ r' l', prefix l' l →
+            (get_rwops l') = (get_rwops l) →
+            r' `suffix_of` l' →
+            get_rwops r' = [] →
+            r' `prefix_of` r
+          ).
+
+Lemma suffix_app_r {A} a (s l:list A) :
+  length s > 0 →
+  suffix s (l ++ [a]) →
+  ∃ s', s = s' ++ [a] ∧ suffix s' l.
+Proof.
+Admitted.
+
+
+Lemma contains_app {A} r l op a :
+      contains_full_ro_suffix (A:=A) r l →
+      contains_full_ro_suffix (A:=A) (r ++ [(ro_op op, a)]) (l ++ [(ro_op op, a)]).
+Proof.
+  intros Hcontains.
+  intros r' l' Hprefix Hrws Hsuffix' Hros.
+  destruct (decide (length l' = length l + 1)).
+  { (* case: l' = l *)
+    apply list_prefix_eq in Hprefix; last first.
+    { rewrite app_length /=. lia. }
+    subst.
+    (* FIXME: is there a better way of doing this proof *)
+    destruct (decide (length r' = 0)).
+    {
+      apply nil_length_inv in e0.
+      subst.
+      apply prefix_nil.
+    }
+    {
+      apply suffix_app_r in Hsuffix'; last first.
+      { lia. }
+      destruct Hsuffix' as (r'' & Hr' & Hr''suffix).
+      subst.
+      Search (prefix (_ ++ _) (_ ++ _)).
+      apply prefix_app_alt; last done.
+      unfold contains_full_ro_suffix in Hcontains.
+      admit.
+    }
+  }
+Admitted.
 
 Definition is_possible_Primary (isPrimary:bool) γ γeph γsrv clerks_sl epoch
            (nextIndex committedNextIndex committedNextRoIndex nextRoIndex:u64)
@@ -509,7 +557,8 @@ Definition is_possible_Primary (isPrimary:bool) γ γeph γsrv clerks_sl epoch
             "%Heph_proposal" ∷ ⌜∃ opsfull_eph_ro,
                                 suffix opsfull_eph_ro opsfull_ephemeral ∧
                                 length opsfull_eph_ro = int.nat nextRoIndex ∧
-                                get_rwops opsfull_eph_ro = []⌝ ∗
+                                get_rwops opsfull_eph_ro = [] ∧
+                                contains_full_ro_suffix opsfull_eph_ro opsfull_ephemeral⌝ ∗
             "%HcommitRoLen" ∷ ⌜ ∃ ops_commit_ro,
                                 suffix ops_commit_ro ops_commit_full ∧
                                 length ops_commit_ro = int.nat committedNextRoIndex ∧
