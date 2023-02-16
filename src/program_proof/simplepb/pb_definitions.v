@@ -42,6 +42,22 @@ Definition get_rwops {A} (opsfull:list (GhostOpType * A)) : list OpType :=
                          | (ro_op _, _) => []
                          end) opsfull).
 
+Lemma get_rwops_app {A} (opsfull newops:list (GhostOpType * A)) :
+  get_rwops (opsfull ++ newops) = (get_rwops opsfull) ++ (get_rwops newops).
+Proof.
+  unfold get_rwops.
+  by rewrite map_app concat_app.
+Qed.
+
+Lemma get_rwops_prefix {A} (a b:list (GhostOpType * A)) :
+  prefix a b → prefix (get_rwops a) (get_rwops b).
+Proof.
+  intros Hprefix.
+  destruct Hprefix as [c ->].
+  rewrite get_rwops_app.
+  by apply prefix_app_r.
+Qed.
+
 Definition client_logR := mono_listR (leibnizO OpType).
 
 Class pbG Σ := {
@@ -156,7 +172,6 @@ Definition BecomePrimary_core_spec γ γsrv args σ backupγ (ρ:u64 -d> pb_syst
   (
     is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
     is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
-    (* FIXME: want this to be "is_pb_host", but that will require recursion *)
     ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ, (ρ host γ γsrv') ∗ is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
     become_primary_escrow γ γsrv args.(BecomePrimaryArgs.epoch) σ ∗
     is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
@@ -449,9 +464,6 @@ Definition accessP_fact own_StateMachine P : iProp Σ :=
      (∀ σold sealedold E, P epoch σold sealedold ={E}=∗ P epoch σold sealedold ∗ Φ) -∗
   own_StateMachine epoch σ sealed P -∗ |NC={⊤}=>
   wpc_nval ⊤ (own_StateMachine epoch σ sealed P ∗ Φ)))
-  (* FIXME: this wpc_nval is there because P might be in a crash borrow in
-     own_StateMachine. Joe said it imght be possible to get rid of wpc_nval by
-     changing the model of crash_borrows by using later credits. *)
 .
 
 Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=
@@ -496,7 +508,26 @@ Lemma suffix_app_r {A} a (s l:list A) :
 Proof.
 Admitted.
 
-Lemma contains_app {A} r l op a :
+Lemma is_full_ro_suffix_nil {A} l op a:
+      is_full_ro_suffix (A:=A) [] (l ++ [(rw_op op, a)]).
+Proof.
+  intros r Hros Hsuffix.
+  destruct (decide (length r = 0)).
+  {
+    apply nil_length_inv in e.
+    subst.
+    apply suffix_nil.
+  }
+  exfalso.
+  apply suffix_app_r in Hsuffix; last lia.
+  destruct Hsuffix as (? & H & _).
+  subst.
+  rewrite get_rwops_app /get_rwops /= in Hros.
+  apply app_eq_nil in Hros.
+  naive_solver.
+Qed.
+
+Lemma is_full_ro_suffix_app {A} r l op a :
       is_full_ro_suffix (A:=A) r l →
       is_full_ro_suffix (A:=A) (r ++ [(ro_op op, a)]) (l ++ [(ro_op op, a)]).
 Proof.
@@ -515,10 +546,12 @@ Proof.
     subst.
     apply suffix_app.
     apply Hcontains.
-    { admit. } (* FIXME: need to refactor proof to use get_rwops_app lemma *)
+    { rewrite get_rwops_app in Hros.
+      apply app_eq_nil in Hros.
+      naive_solver. }
     done.
   }
-Admitted.
+Qed.
 
 (* Situation in roapply proof:
    lcommit ≺ leph + [ro_op op]; i.e. lcommit ⪯ leph
@@ -571,7 +604,7 @@ Definition is_possible_Primary (isPrimary:bool) γ γeph γsrv clerks_sl epoch
                                 is_full_ro_suffix opsfull_eph_ro opsfull_ephemeral⌝ ∗
             "%HcommitRoLen" ∷ ⌜ ∃ ops_commit_ro,
                                 suffix ops_commit_ro ops_commit_full ∧
-                                length ops_commit_ro = int.nat committedNextRoIndex ∧
+                                length ops_commit_ro >= int.nat committedNextRoIndex ∧
                                 get_rwops ops_commit_ro = [] ∧
                                 is_full_ro_suffix ops_commit_ro ops_commit_full⌝
       )%I

@@ -137,7 +137,6 @@ Proof.
   }
 Qed.
 
-
 Lemma accept_helper opsfull opsfull_old op (γ:gname) :
   (prefix opsfull opsfull_old ∨ prefix opsfull_old opsfull) →
   last opsfull = Some (rw_op op, γ) →
@@ -146,23 +145,6 @@ Lemma accept_helper opsfull opsfull_old op (γ:gname) :
   prefix opsfull_old opsfull.
 Proof.
 Admitted.
-
-Lemma get_rwops_app {A} (opsfull newops:list (GhostOpType * A)) :
-  get_rwops (opsfull ++ newops) = (get_rwops opsfull) ++ (get_rwops newops).
-Proof.
-  unfold get_rwops.
-  by rewrite map_app concat_app.
-Qed.
-
-Lemma get_rwops_prefix {A} (a b:list (GhostOpType * A)) :
-  prefix a b → prefix (get_rwops a) (get_rwops b).
-Proof.
-  intros Hprefix.
-  destruct Hprefix as [c ->].
-  rewrite get_rwops_app.
-  by apply prefix_app_r.
-Qed.
-
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args opsfull op Q Φ Ψ :
   is_Server s γ γsrv -∗

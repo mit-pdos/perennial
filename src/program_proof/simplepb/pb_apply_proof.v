@@ -382,16 +382,21 @@ Proof.
       { apply suffix_nil. }
       split.
       { simpl. word. }
+      split.
       { by unfold get_rwops. }
+      { apply is_full_ro_suffix_nil. }
     }
     {
       iPureIntro.
-      exists [].
+      destruct HcommitRoLen as (? & ? & ? & ? & ?).
+      eexists _.
       split.
-      { apply suffix_nil. }
+      { done. }
       split.
-      { simpl. word. }
-      { by unfold get_rwops. }
+      { word. }
+      split.
+      { done. }
+      { done. }
     }
   }
 
