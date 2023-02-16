@@ -350,7 +350,7 @@ Proof.
       unfold get_rwops.
       done.
     }
-    { by apply contains_app. }
+    { by apply is_full_ro_suffix_app. }
   }
 
   wp_forBreak.
@@ -494,11 +494,29 @@ Proof.
     iClear "Htok_used_witness Hconf Hclerkss_sl Hclerkss_rpc".
     iNamed "HprimaryOnly2".
 
+    iAssert (⌜prefix opsfull_ephemeral opsfull_ephemeral0⌝)%I with "[-]" as %Hpre.
+    {
+      destruct sealed0.
+      {
+        iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hvalid.
+        iPureIntro.
+        rewrite singleton_op singleton_valid in Hvalid.
+        apply mono_list_both_dfrac_valid_L in Hvalid.
+        eapply prefix_app_l.
+        naive_solver.
+      }
+      {
+        iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hvalid.
+        iPureIntro.
+        rewrite singleton_op singleton_valid in Hvalid.
+        apply mono_list_both_dfrac_valid_L in Hvalid.
+        eapply prefix_app_l.
+        naive_solver.
+      }
+    }
     iDestruct (own_valid_2 with "Heph_commit_lb Hnew_eph_lb") as %Hvalid.
     rewrite singleton_op singleton_valid in Hvalid.
     apply mono_list_lb_op_valid_1_L in Hvalid.
-
-    (* FIXME: in the second case, want to assume HnewRw is false *)
 
     iApply (own_mono with "Hcommit_lb").
     apply mono_list_lb_mono.
@@ -548,7 +566,8 @@ Proof.
             apply list_prefix_eq.
             { by apply get_rwops_prefix. }
             { rewrite Hσ_nextIndex. rewrite HcommitLen0.
-              admit. (* FIXME: use opsfull_ephemeral ⪯ opsfull_ephemeral0 *)
+              apply get_rwops_prefix, prefix_length in Hpre.
+              word.
             }
           }
 

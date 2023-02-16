@@ -8,7 +8,7 @@ From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_p
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 
-Section pb_apply_proof.
+Section pb_applybackup_proof.
 
 Context `{!heapGS Σ}.
 Context {pb_record:PBRecord}.
@@ -698,4 +698,4 @@ Proof.
   done.
 Qed.
 
-End pb_apply_proof.
+End pb_applybackup_proof.

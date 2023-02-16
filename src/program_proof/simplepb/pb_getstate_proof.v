@@ -208,42 +208,49 @@ Proof.
     iMod (ghost_seal with "Hghost") as "Hghost".
     iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
     iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hprop_lb Hprop_facts]".
-    iSplitL "Hghost Hprim Heph".
-    {
-      iExists _.
-      iFrame "∗#".
-      destruct sealed.
-      {
-        iFrame "Heph_sealed".
-        by iPureIntro.
-      }
-      {
-        iMod (own_update with "Heph") as "Heph_ro".
-        {
-          apply singleton_update.
-          apply mono_list.mono_list_auth_persist.
-        }
-        iDestruct "Heph_ro" as "#Heph_ro".
-        iSplitR; first done.
-        iModIntro.
-        iModIntro.
-        iExists _.
-        iFrame "#".
-      }
-    }
-    iModIntro.
 
-    iCombine "Hacc_ro Hepoch_ineq" as "HH".
-    instantiate (1:=(∃ opsfull, is_accepted_ro γsrv epoch opsfull ∗
-                                is_proposal_lb γ epoch opsfull ∗
-                                is_proposal_facts γ epoch opsfull ∗
-                                ⌜get_rwops opsfull = get_rwops opsfull_ephemeral⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
-    iExists _.
-    iFrame "#".
-    done.
+    destruct sealed.
+    {
+      iDestruct "Heph" as "#Heph".
+      iSplitL "Hghost Hprim".
+      {
+        iExists _.
+        iFrame "∗#".
+        iPureIntro. done.
+      }
+      instantiate (1:=(∃ opsfull, is_accepted_ro γsrv epoch opsfull ∗
+                                                 is_proposal_lb γ epoch opsfull ∗
+                                                 is_proposal_facts γ epoch opsfull ∗
+                                                 is_ephemeral_proposal_sealed γeph epoch opsfull_ephemeral ∗
+                                                 ⌜get_rwops opsfull = get_rwops opsfull_ephemeral⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
+      iExists _.
+      iFrame "#".
+      iPureIntro. done.
+    }
+    {
+      iMod (own_update with "Heph") as "Heph_ro".
+      {
+        apply singleton_update.
+        apply mono_list.mono_list_auth_persist.
+      }
+      iDestruct "Heph_ro" as "#Heph_ro".
+      iSplitL "Hghost Hprim".
+      {
+        iExists _.
+        iFrame "∗#".
+        iSplitR; first by iPureIntro.
+        repeat iModIntro.
+        iExists _; iFrame "#".
+      }
+      iCombine "Hacc_ro Hepoch_ineq" as "HH".
+      iExists _.
+      iFrame "#".
+      iPureIntro.
+      done.
+    }
   }
   iIntros (??) "(#Hsnap_sl & %Hsnap_enc & [Hstate HQ])".
-  iDestruct "HQ" as (?) "(#Hacc_ro &  #Hprop_lb & #Hprop_facts & %Hσeq_phys & %Hineq)".
+  iDestruct "HQ" as (?) "(#Hacc_ro &  #Hprop_lb & #Hprop_facts & #Hepoch_seal & %Hσeq_phys & %Hineq)".
   wp_pures.
   wp_loadField.
   wp_pures.

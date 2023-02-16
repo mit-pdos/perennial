@@ -805,10 +805,28 @@ Proof.
     {
       iFrame "Hlocked HmuInv".
       iNext.
+
+      (* TODO: manual proof merging *)
+      iAssert (⌜opsfull_ephemeral ++ [(rw_op op, Q)] `prefix_of` opsfull_ephemeral0⌝)%I
+              with "[Heph Hnew_eph_lb]" as "%Hlenineq".
+      {
+        destruct sealed0.
+        {
+          iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hlenineq.
+          iPureIntro.
+          rewrite singleton_op singleton_valid in Hlenineq.
+          apply mono_list_both_dfrac_valid_L in Hlenineq.
+          naive_solver.
+        }
+        {
+          iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hlenineq.
+          iPureIntro.
+          rewrite singleton_op singleton_valid in Hlenineq.
+          apply mono_list_both_valid_L in Hlenineq.
+          done.
+        }
+      }
       repeat iExists _.
-      iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hlenineq.
-      rewrite singleton_op singleton_valid in Hlenineq.
-      apply mono_list_both_valid_L in Hlenineq.
       iFrame "∗ #"; iFrame "%".
       rewrite /is_possible_Primary /tc_opaque.
       iClear "Htok_used_witness Hconf Hclerkss_sl Hclerkss_rpc".
@@ -870,11 +888,12 @@ Proof.
         split.
         { simpl. (* FIXME: op_commit_ro is relative to committedNextIndex,
                     whereas the code treats it as relavite to nextIndex. *)
-          symmetry.
-          apply HcommitRoNz0.
-          clear Hclerkss_len.
-          time word. }
+          (* FIXME: word slow *)
+          time word.
+        }
+        split.
         { by unfold get_rwops. }
+        { apply is_full_ro_suffix_nil. }
       }
     }
     wp_pures.
