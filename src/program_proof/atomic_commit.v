@@ -79,6 +79,26 @@ Section iris.
       "#Hhost" ∷ is_participant_host γ host ∗
       "#His_cl" ∷ is_uRPCClient cl host.
 
+  Lemma wp_byteToPref (n: u8) :
+    {{{ True }}}
+      byteToPref #n
+    {{{ (pref: bool), RET #pref; ⌜if decide (int.Z n = 1)%Z then pref = true else pref = false⌝ }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ".
+    wp_lam.
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    iPureIntro.
+    destruct (decide _); subst.
+    - rewrite bool_decide_eq_true //.
+      f_equal.
+      f_equal.
+      admit.
+    - rewrite bool_decide_eq_false //.
+      admit.
+  Admitted.
+
   Lemma wp_ParticipantClerk_GetPreference ck γ :
     is_participant_clerk ck γ -∗
     {{{ True }}}
@@ -90,9 +110,10 @@ Section iris.
     iIntros "#Hclerk".
     iIntros (Φ) "!> _ HΦ".
 
+    wp_lam.
+
     wp_apply (wp_frame_wand with "HΦ").
 
-    wp_lam.
     wp_apply wp_NewSlice. iIntros (req_s) "Hreq".
     wp_pures.
     wp_apply wp_NewSlice. iIntros (reply_s) "Hreply".
@@ -108,11 +129,36 @@ Section iris.
     { iFrame "#". }
     { iNamed "Hhost".
       iFrame "#". }
-    { admit. (* get is_slice_small *) }
-
+    { iApply (is_slice_to_small with "Hreq"). }
     - iIntros "!> !>".
       cbn.
       iIntros (pref) "#Hpref _".
+      iIntros (?) "reply_l Hrep_s".
+      wp_step.
+      wp_apply wp_Assume.
+      iIntros "_". (* already true? *)
+      wp_step.
+      wp_load.
+      wp_apply (wp_SliceGet _ _ _ _ _ _ _ (U8 (if pref then 1 else 0)%Z) with "[$Hrep_s]").
+      { iPureIntro.
+        destruct pref; reflexivity. }
+      iIntros "Hrep_s".
+      wp_pures.
+
+      wp_apply wp_byteToPref.
+      iIntros (pref').
+      iIntros (Hpref').
+      iIntros "HΦ".
+      iApply "HΦ".
+
+      assert (pref = pref').
+      { (* U8/word nonsense *)
+        revert Hpref'. destruct (decide _), pref; auto; exfalso.
+        - admit. (* word failure; contradiction with e (after compute) *)
+        - admit. (* word failure; contradiction with e (after compute) *)
+      }
+
+      subst; iFrame "#".
   Admitted.
 
   Definition is_coord_clerk (ck: loc) (γ: coordinator_names.t) : iProp Σ := True.
