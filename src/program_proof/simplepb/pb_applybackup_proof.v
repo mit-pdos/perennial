@@ -146,21 +146,40 @@ Lemma accept_helper opsfull opsfull_old op (γ:gname) :
 Proof.
 Admitted.
 
+Lemma primary_lb st γ γeph γsrv opsfull opsfull' sealed:
+  is_proposal_lb γ st.(server.epoch) opsfull' -∗
+  is_Primary_ghost_f γ γeph γsrv st opsfull -∗
+  own_Server_ghost_f γ γsrv γeph st.(server.epoch) (get_rwops opsfull) sealed -∗
+  ⌜prefix (get_rwops opsfull') (get_rwops opsfull)⌝.
+Proof.
+  iIntros "#Hprop_lb #Hprim2 Hghost".
+  iNamed "Hghost".
+  iEval (rewrite /is_Primary_ghost_f /tc_opaque) in "Hprim2".
+  iNamed "Hprim2".
+  iNamed "Hghost".
+  iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
+  (* iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2. *)
+Admitted.
+
 (* increase epheeral proposal on backup servers when getting new ops *)
-Lemma backup_make_ephemeral_proposal sm st γ γsrv γeph opsfull_ephemeral opsfull epoch {own_StateMachine} :
+Lemma backup_make_ephemeral_proposal sm st γ γsrv γeph opsfull_ephemeral opsfull {own_StateMachine} :
+  st.(server.sealed) = false →
+  length (get_rwops opsfull_ephemeral) < length (get_rwops opsfull) →
   is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph) -∗
+  is_proposal_lb γ st.(server.epoch) opsfull -∗
   £ 1 -∗
   own_Server_ghost_eph_f st γ γsrv γeph opsfull_ephemeral -∗
-  own_StateMachine epoch (get_rwops opsfull_ephemeral) false (own_Server_ghost_f γ γsrv γeph)
+  own_StateMachine st.(server.epoch) (get_rwops opsfull_ephemeral) false (own_Server_ghost_f γ γsrv γeph)
   -∗
-  |NC={⊤,⊤}=> wpc_nval ⊤ (own_StateMachine epoch (get_rwops opsfull_ephemeral) false
+  |NC={⊤,⊤}=> wpc_nval ⊤ (own_StateMachine st.(server.epoch) (get_rwops opsfull_ephemeral) false
                 (own_Server_ghost_f γ γsrv γeph) ∗
                 (own_Server_ghost_eph_f st γ γsrv γeph opsfull ∗
                 ⌜ prefix opsfull_ephemeral opsfull ⌝ ∗
                 ⌜ st.(server.isPrimary) = false ⌝))
 .
 Proof.
-  iIntros "#HisSm Hlc HghostEph Hstate".
+  intros Hunsealed Hlen.
+  iIntros "#HisSm #Hprop_lb Hlc HghostEph Hstate".
   iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm".
   iNamed "HisSm".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "HghostEph".
@@ -172,19 +191,17 @@ Proof.
      This requires us to know that opsfull_ephemeral ⪯ opsfull.
      We will establish this using accP.
    *)
+  rewrite Hunsealed.
   destruct st.(server.isPrimary).
   { (* case: is primary. *)
     iAssert (_) with "HprimaryOnly" as "Hprim2".
-    (* iEval (rewrite /is_possible_Primary /tc_opaque) in "Hprim2". *)
     iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
-    {
-      (* PERF *)
-      (* time done. *) (* takes 5 seconds*)
-      (* time (iModIntro; done). *) (* takes 0.2 seconds, still a lot longer than below *)
-      time (iModIntro; iApply True_intro; iAccu).
-    }
+    { done. }
     iIntros (???) "Hghost".
     iNamed "Hghost".
+    iNamed "Hghost".
+    iEval (rewrite /is_Primary_ghost_f /tc_opaque) in "Hprim2".
+    iDestruct "Hprim2" as "[%Hbad|Hprim2]"; first by exfalso.
     iNamed "Hprim2".
     iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
     iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2.
@@ -192,43 +209,47 @@ Proof.
 
     apply get_rwops_prefix in Hvalid.
     apply prefix_length in Hvalid.
-    rewrite Hσ_index in Hvalid.
     rewrite singleton_op singleton_valid in Hvalid2.
-    apply mono_list_both_valid_L in Hvalid2.
+    apply mono_list_both_dfrac_valid_L in Hvalid2.
+    destruct Hvalid2 as [_ Hvalid2].
     apply get_rwops_prefix in Hvalid2.
     apply prefix_length in Hvalid2.
     rewrite Hσ_nextIndex in Hvalid2.
     word.
   }
-    { (* case: not primary *)
-      iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hcomp.
-      rewrite singleton_op singleton_valid in Hcomp.
-      rewrite csum.Cinr_valid in Hcomp.
-      apply mono_list_lb_op_valid_L in Hcomp.
-      destruct Hcomp as [Hprefix|Hprefix].
-      2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
-        exfalso.
-        apply get_rwops_prefix, prefix_length in Hprefix.
-        word.
-      }
+  { (* case: not primary *)
+    iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hcomp.
+    rewrite singleton_op singleton_valid in Hcomp.
+    rewrite csum.Cinr_valid in Hcomp.
+    apply mono_list_lb_op_valid_L in Hcomp.
+    destruct Hcomp as [Hprefix|Hprefix].
+    2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
+      exfalso.
+      apply get_rwops_prefix, prefix_length in Hprefix.
+      word.
+    }
+    {
+      iMod (own_update with "Heph") as "Heph".
       {
-        iMod (own_update with "Heph") as "Heph".
-        {
-          apply singleton_update.
-          apply mono_list_update.
-          exact Hprefix.
-        }
-        iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Heph_lb".
-        {
-          apply singleton_mono.
-          apply mono_list_included.
-        }
-        iModIntro.
-        iApply wpc_nval_intro.
-        iNext.
-        iFrame "∗#".
-        done.
+        apply singleton_update.
+        apply mono_list_update.
+        exact Hprefix.
       }
+      iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Heph_lb".
+      {
+        apply singleton_mono.
+        apply mono_list_included.
+      }
+      iModIntro.
+      iApply wpc_nval_intro.
+      iNext.
+      iFrame "Hstate".
+      iSplitL; last done.
+      repeat iExists _.
+      rewrite Hunsealed.
+      iFrame "∗#".
+      (* FIXME: *)
+      done.
     }
   }
 Qed.
