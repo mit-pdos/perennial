@@ -169,6 +169,8 @@ Proof.
   wp_pures.
 
   iNamed "Hown".
+  (* FIXME: can't tell why iNamed didn't work *)
+  iNamed "Hvol".
 
   wp_loadField.
   wp_bind (If (_ > _) _ _).
