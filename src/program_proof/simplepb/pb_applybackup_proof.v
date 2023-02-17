@@ -146,6 +146,93 @@ Lemma accept_helper opsfull opsfull_old op (γ:gname) :
 Proof.
 Admitted.
 
+(* increase epheeral proposal on backup servers when getting new ops *)
+Lemma backup_make_ephemeral_proposal sm st γ γsrv γeph opsfull_ephemeral opsfull epoch {own_StateMachine} :
+  is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph) -∗
+  £ 1 -∗
+  own_Server_ghost_eph_f st γ γsrv γeph opsfull_ephemeral -∗
+  own_StateMachine epoch (get_rwops opsfull_ephemeral) false (own_Server_ghost_f γ γsrv γeph)
+  -∗
+  |NC={⊤,⊤}=> wpc_nval ⊤ (own_StateMachine epoch (get_rwops opsfull_ephemeral) false
+                (own_Server_ghost_f γ γsrv γeph) ∗
+                (own_Server_ghost_eph_f st γ γsrv γeph opsfull ∗
+                ⌜ prefix opsfull_ephemeral opsfull ⌝ ∗
+                ⌜ st.(server.isPrimary) = false ⌝))
+.
+Proof.
+  iIntros "#HisSm Hlc HghostEph Hstate".
+  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm".
+  iNamed "HisSm".
+  iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "HghostEph".
+  iNamed "HghostEph".
+
+  iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
+  (* Want to establish:
+     is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull
+     This requires us to know that opsfull_ephemeral ⪯ opsfull.
+     We will establish this using accP.
+   *)
+  destruct st.(server.isPrimary).
+  { (* case: is primary. *)
+    iAssert (_) with "HprimaryOnly" as "Hprim2".
+    (* iEval (rewrite /is_possible_Primary /tc_opaque) in "Hprim2". *)
+    iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
+    {
+      (* PERF *)
+      (* time done. *) (* takes 5 seconds*)
+      (* time (iModIntro; done). *) (* takes 0.2 seconds, still a lot longer than below *)
+      time (iModIntro; iApply True_intro; iAccu).
+    }
+    iIntros (???) "Hghost".
+    iNamed "Hghost".
+    iNamed "Hprim2".
+    iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
+    iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2.
+    exfalso.
+
+    apply get_rwops_prefix in Hvalid.
+    apply prefix_length in Hvalid.
+    rewrite Hσ_index in Hvalid.
+    rewrite singleton_op singleton_valid in Hvalid2.
+    apply mono_list_both_valid_L in Hvalid2.
+    apply get_rwops_prefix in Hvalid2.
+    apply prefix_length in Hvalid2.
+    rewrite Hσ_nextIndex in Hvalid2.
+    word.
+  }
+    { (* case: not primary *)
+      iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hcomp.
+      rewrite singleton_op singleton_valid in Hcomp.
+      rewrite csum.Cinr_valid in Hcomp.
+      apply mono_list_lb_op_valid_L in Hcomp.
+      destruct Hcomp as [Hprefix|Hprefix].
+      2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
+        exfalso.
+        apply get_rwops_prefix, prefix_length in Hprefix.
+        word.
+      }
+      {
+        iMod (own_update with "Heph") as "Heph".
+        {
+          apply singleton_update.
+          apply mono_list_update.
+          exact Hprefix.
+        }
+        iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Heph_lb".
+        {
+          apply singleton_mono.
+          apply mono_list_included.
+        }
+        iModIntro.
+        iApply wpc_nval_intro.
+        iNext.
+        iFrame "∗#".
+        done.
+      }
+    }
+  }
+Qed.
+
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args opsfull op Q Φ Ψ :
   is_Server s γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
@@ -169,7 +256,6 @@ Proof.
   wp_pures.
 
   iNamed "Hown".
-  (* FIXME: can't tell why iNamed didn't work *)
   iNamed "Hvol".
 
   wp_loadField.
@@ -211,7 +297,7 @@ Proof.
       simpl.
       iModIntro.
       iSplitR.
-      { iPureIntro. destruct sealed; naive_solver. }
+      { iPureIntro. destruct st.(server.sealed); naive_solver. }
       iNamedAccu.
     }
     {
@@ -255,11 +341,15 @@ Proof.
       iSplitR; first done.
       iModIntro.
       iApply to_named.
-      repeat (iExists _).
+      repeat iExists _.
 
       (* Q: what about a tactic that looks for names in the goal, and iFrames those in order? *)
       (* PERF. The three iFrames is faster than one. *)
       (* time iFrame "∗#%". *)
+      iFrame "HghostEph".
+
+      (* establish own_Server *)
+      repeat iExists _.
       time (iFrame "∗"; iFrame "#"; iFrame "%").
 
       unfold typed_map.map_insert.
@@ -276,7 +366,9 @@ Proof.
         iFrame "His_cond".
         iFrame "HmuInv Hlocked".
         repeat (iExists _).
+        iSplitR "HghostEph"; last iFrame "HghostEph".
         (* time iFrame "∗#%". *)
+        repeat (iExists _).
         time (iFrame "∗"; iFrame "#"; iFrame "%").
       }
       iIntros "[Hlocked Hown]".
@@ -302,9 +394,12 @@ Proof.
     wp_apply (release_spec with "[-HΦ HΨ]").
     {
       iFrame "HmuInv Hlocked".
-      repeat (iExists _).
       iNext.
+      repeat (iExists _).
+      iSplitR "HghostEph"; last iFrame "HghostEph".
       (* time iFrame "∗#%". *)
+      repeat (iExists _).
+      rewrite Heqb.
       time (iFrame "∗"; iFrame "#"; iFrame "%").
     }
     wp_pures.
@@ -325,7 +420,10 @@ Proof.
       iFrame "Hlocked HmuInv".
       iNext.
       repeat (iExists _).
-      (* time iFrame "∗ # %". *)
+      iSplitR "HghostEph"; last iFrame "HghostEph".
+      (* time iFrame "∗#%". *)
+      repeat (iExists _).
+      rewrite Heqb.
       time (iFrame "∗"; iFrame "#"; iFrame "%").
     }
     wp_pures.
@@ -335,7 +433,7 @@ Proof.
     iApply "HΨ".
     done.
   }
-  replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
+  replace (args.(ApplyAsBackupArgs.epoch)) with st.(server.epoch) by word.
   wp_loadField.
   wp_loadField.
   wp_pure1_credit "Hlc".
@@ -348,8 +446,12 @@ Proof.
       iFrame "Hlocked HmuInv".
       iNext.
       repeat (iExists _).
+      iSplitR "HghostEph"; last iFrame "HghostEph".
+      (* time iFrame "∗#%". *)
+      repeat (iExists _).
+      rewrite Heqb.
+      iFrame "∗".
       time (iFrame "∗"; iFrame "#"; iFrame "%").
-      (* time iFrame "∗ # %". *)
     }
     wp_pures.
     iApply "HΦ".
@@ -360,89 +462,6 @@ Proof.
 
   wp_loadField.
   wp_loadField.
-
-  iAssert (_) with "HisSm" as "HisSm2".
-  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
-  iNamed "HisSm2".
-
-  iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
-  iAssert ((|NC={⊤,⊤}=>
-           wpc_nval ⊤
-             (own_StateMachine args.(ApplyAsBackupArgs.epoch) (get_rwops opsfull_ephemeral) false
-                (own_Server_ghost γ γsrv γeph) ∗
-                ((own_ephemeral_proposal γeph args.(ApplyAsBackupArgs.epoch) opsfull ∗
-                is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull) ∗
-                ⌜prefix opsfull_ephemeral opsfull⌝ ∗
-                ⌜isPrimary = false⌝
-             ) )
-
-           )%I) with "[Heph Hstate Hlc]" as "HH".
-  {
-  (* Want to establish:
-     is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull
-     This requires us to know that opsfull_ephemeral ⪯ opsfull.
-     We will establish this using accP.
-   *)
-    destruct isPrimary.
-    { (* case: is primary. *)
-      iAssert (_) with "HprimaryOnly" as "Hprim2".
-      iEval (rewrite /is_possible_Primary /tc_opaque) in "Hprim2".
-      iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
-      {
-        (* PERF *)
-        (* time done. *) (* takes 5 seconds*)
-        (* time (iModIntro; done). *) (* takes 0.2 seconds, still a lot longer than below *)
-        time (iModIntro; iApply True_intro; iAccu). }
-      iIntros (???) "Hghost".
-      iNamed "Hghost".
-      iNamed "Hprim2".
-      iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
-      iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2.
-      exfalso.
-
-      (* FIXME: move lemmas around *)
-      (* apply get_rwops_prefix in Hvalid. *)
-      apply get_rwops_prefix in Hvalid.
-      apply prefix_length in Hvalid.
-      rewrite Hσ_index in Hvalid.
-      rewrite singleton_op singleton_valid in Hvalid2.
-      apply mono_list_both_valid_L in Hvalid2.
-      apply get_rwops_prefix in Hvalid2.
-      apply prefix_length in Hvalid2.
-      rewrite Hσ_nextIndex in Hvalid2.
-      word.
-    }
-    { (* case: not primary *)
-      iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hcomp.
-      rewrite singleton_op singleton_valid in Hcomp.
-      rewrite csum.Cinr_valid in Hcomp.
-      apply mono_list_lb_op_valid_L in Hcomp.
-      destruct Hcomp as [Hprefix|Hprefix].
-      2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
-        exfalso.
-        apply get_rwops_prefix, prefix_length in Hprefix.
-        word.
-      }
-      {
-        iMod (own_update with "Heph") as "Heph".
-        {
-          apply singleton_update.
-          apply mono_list_update.
-          exact Hprefix.
-        }
-        iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Heph_lb".
-        {
-          apply singleton_mono.
-          apply mono_list_included.
-        }
-        iModIntro.
-        iApply wpc_nval_intro.
-        iNext.
-        iFrame "∗#".
-        done.
-      }
-    }
-  }
 
   iMod "HH" as "HH".
   wp_bind (struct.loadF _ _ _).

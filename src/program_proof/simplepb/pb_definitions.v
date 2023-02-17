@@ -672,14 +672,15 @@ Definition own_Server (s:loc) (st:server.t (pb_record:=pb_record)) γ γsrv mu �
   "#HcommittedNextRoIndex_is_cond" ∷ is_cond committedNextRoIndex_cond mu ∗
 
   (* witnesses for primary; the exclusive state is in own_Server_ghost *)
-  "#Hprimary" ∷ ⌜st.(server.isPrimary) = false⌝ ∨ is_Primary γ γsrv st clerks_sl ∗
+  "#Hprimary" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary γ γsrv st clerks_sl) ∗
 
   (* state-machine callback specs *)
   "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph)
 .
 
 (* should not be unfolded in proof *)
-Definition own_Server_ghost_eph_f (s:loc) (st:server.t (pb_record:=pb_record)) γ γsrv γeph opsfull_ephemeral : iProp Σ :=
+Definition own_Server_ghost_eph_f (st:server.t (pb_record:=pb_record)) γ γsrv γeph opsfull_ephemeral : iProp Σ :=
+  tc_opaque (
   let ops:=(get_rwops opsfull_ephemeral) in
   ∃ ops_durable_full,
   (* non-persistent ghost state *)
@@ -718,13 +719,14 @@ Definition own_Server_ghost_eph_f (s:loc) (st:server.t (pb_record:=pb_record)) �
    *)
 
   (* primary-only *)
-  "#HprimaryOnly" ∷ ⌜st.(server.isPrimary) = false⌝ ∨ is_Primary_ghost_f γ γeph γsrv st opsfull_ephemeral
+  "#HprimaryOnly" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary_ghost_f γ γeph γsrv st opsfull_ephemeral)
+  )%I
 .
 
 Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
   ∃ st γeph opsfull_ephemeral,
   "Hvol" ∷ own_Server s st γ γsrv mu γeph ∗
-  "HghostEph" ∷ own_Server_ghost_eph_f s st γ γsrv γeph opsfull_ephemeral
+  "HghostEph" ∷ own_Server_ghost_eph_f st γ γsrv γeph opsfull_ephemeral
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
