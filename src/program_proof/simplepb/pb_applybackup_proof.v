@@ -7,15 +7,18 @@ From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Section pb_applybackup_proof.
 
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
-
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Context {pb_record:Sm.t}.
+Notation OpType := (pb_record.(Sm.OpType)).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
+Notation "server.t" := (server.t (pb_record:=pb_record)).
 Notation pbG := (pbG (pb_record:=pb_record)).
 Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
@@ -162,24 +165,25 @@ Proof.
 Admitted.
 
 (* increase epheeral proposal on backup servers when getting new ops *)
-Lemma backup_make_ephemeral_proposal sm st γ γsrv γeph opsfull_ephemeral opsfull {own_StateMachine} :
+Lemma backup_make_ephemeral_proposal sm st γ γsrv γeph ops_full_eph ops_full_eph' {own_StateMachine} :
   st.(server.sealed) = false →
-  length (get_rwops opsfull_ephemeral) < length (get_rwops opsfull) →
+  length (get_rwops ops_full_eph) < length (get_rwops ops_full_eph') →
   is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph) -∗
-  is_proposal_lb γ st.(server.epoch) opsfull -∗
+  is_proposal_lb γ st.(server.epoch) ops_full_eph' -∗
+  is_proposal_facts γ st.(server.epoch) ops_full_eph' -∗
   £ 1 -∗
-  own_Server_ghost_eph_f st γ γsrv γeph opsfull_ephemeral -∗
-  own_StateMachine st.(server.epoch) (get_rwops opsfull_ephemeral) false (own_Server_ghost_f γ γsrv γeph)
+  own_Server_ghost_eph_f st γ γsrv γeph ops_full_eph -∗
+  own_StateMachine st.(server.epoch) (get_rwops ops_full_eph) false (own_Server_ghost_f γ γsrv γeph)
   -∗
-  |NC={⊤,⊤}=> wpc_nval ⊤ (own_StateMachine st.(server.epoch) (get_rwops opsfull_ephemeral) false
+  |NC={⊤,⊤}=> wpc_nval ⊤ (own_StateMachine st.(server.epoch) (get_rwops ops_full_eph) false
                 (own_Server_ghost_f γ γsrv γeph) ∗
-                (own_Server_ghost_eph_f st γ γsrv γeph opsfull ∗
-                ⌜ prefix opsfull_ephemeral opsfull ⌝ ∗
+                (own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv γeph ops_full_eph' ∗
+                ⌜ prefix ops_full_eph ops_full_eph' ⌝ ∗
                 ⌜ st.(server.isPrimary) = false ⌝))
 .
 Proof.
   intros Hunsealed Hlen.
-  iIntros "#HisSm #Hprop_lb Hlc HghostEph Hstate".
+  iIntros "#HisSm #Hprop_lb #Hprop_facts Hlc HghostEph Hstate".
   iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm".
   iNamed "HisSm".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "HghostEph".
@@ -192,7 +196,7 @@ Proof.
      We will establish this using accP.
    *)
   rewrite Hunsealed.
-  destruct st.(server.isPrimary).
+  destruct st.(server.isPrimary) as [] eqn:HisPrimary.
   { (* case: is primary. *)
     iAssert (_) with "HprimaryOnly" as "Hprim2".
     iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
@@ -214,7 +218,6 @@ Proof.
     destruct Hvalid2 as [_ Hvalid2].
     apply get_rwops_prefix in Hvalid2.
     apply prefix_length in Hvalid2.
-    rewrite Hσ_nextIndex in Hvalid2.
     word.
   }
   { (* case: not primary *)
@@ -248,8 +251,14 @@ Proof.
       repeat iExists _.
       rewrite Hunsealed.
       iFrame "∗#".
-      (* FIXME: *)
-      done.
+      rewrite HisPrimary.
+      simpl.
+      iSplitR.
+      { iModIntro; iFrame "#". }
+      iSplitR.
+      { iDestruct "Hprop_facts" as "(?&?&?)". iFrame "#". }
+      iFrame "%".
+      by iLeft.
     }
   }
 Qed.

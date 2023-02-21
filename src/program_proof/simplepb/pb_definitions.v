@@ -9,23 +9,28 @@ From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
+From RecordUpdate Require Import RecordSet.
 
-Record PBRecord :=
+(* State-machine record. An instance of Sm.t defines how to compute the reply
+   for an op applied to some state and how to encode ops into bytes. *)
+Module Sm.
+Record t :=
   {
-    pb_OpType:Type ;
-    pb_OpType_EqDecision:EqDecision pb_OpType;
-    pb_has_op_encoding : list u8 → pb_OpType → Prop ;
-    pb_has_snap_encoding: list u8 → (list pb_OpType) → Prop ;
-    pb_compute_reply : list pb_OpType → pb_OpType → list u8 ;
+    OpType:Type ;
+    OpType_EqDecision:EqDecision OpType;
+    has_op_encoding : list u8 → OpType → Prop ;
+    has_snap_encoding: list u8 → (list OpType) → Prop ;
+    compute_reply : list OpType → OpType → list u8 ;
   }.
+End Sm.
 
 Section pb_global_definitions.
 
-Context {pb_record:PBRecord}.
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Context {pb_record:Sm.t}.
+Notation OpType := (pb_record.(Sm.OpType)).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 
 Inductive GhostOpType :=
   | rw_op : OpType → GhostOpType
@@ -361,12 +366,11 @@ Definition own_Server_ghost_f γ γsrv γeph epoch ops sealed : iProp Σ :=
 End pb_global_definitions.
 
 Module server.
-Record t {pb_record:PBRecord} :=
-  {
+Record t {pb_record:Sm.t} :=
+  mkC {
     epoch : u64 ;
     sealed : bool ;
-    ops : list pb_record.(pb_OpType) ;
-    nextIndex : u64 ;
+    ops_full_eph: list (GhostOpType (pb_record:=pb_record) * gname) ;
     isPrimary : bool ;
     durableNextIndex : u64 ;
 
@@ -375,17 +379,23 @@ Record t {pb_record:PBRecord} :=
     nextRoIndex : u64 ;
     committedNextRoIndex : u64 ;
   }.
+
+Global Instance etaServer {pb_record:Sm.t} : Settable _ :=
+  settable! (mkC pb_record) <epoch; sealed; ops_full_eph; isPrimary; durableNextIndex;
+committedNextIndex; nextRoIndex; committedNextRoIndex>.
 End server.
 
 Section pb_local_definitions.
 (* definitions that refer to a particular node *)
 
-Context {pb_record:PBRecord}.
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Context {pb_record:Sm.t}.
+Notation OpType := (pb_record.(Sm.OpType)).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
+
 Notation pbG := (pbG (pb_record:=pb_record)).
+Notation "server.t" := (server.t (pb_record:=pb_record)).
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
@@ -592,7 +602,7 @@ Proof.
 Admitted.
 
 (* this is meant to be unfolded in the code proof *)
-Definition is_Primary γ γsrv (s:server.t (pb_record:=pb_record)) clerks_sl : iProp Σ:=
+Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
   ∃ (clerkss:list Slice.t) (backups:list pb_server_names),
   "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
   "#Hconf" ∷ is_epoch_config γ s.(server.epoch) (γsrv :: backups) ∗
@@ -607,7 +617,7 @@ Definition is_Primary γ γsrv (s:server.t (pb_record:=pb_record)) clerks_sl : i
 .
 
 (* this should never be unfolded in the proof of code *)
-Definition is_Primary_ghost_f γ γeph γsrv (s:server.t (pb_record:=pb_record)) (opsfull_ephemeral: list (GhostOpType * gname)): iProp Σ:=
+Definition is_Primary_ghost_f γ γeph γsrv (s:server.t) (opsfull_ephemeral: list (GhostOpType * gname)): iProp Σ:=
   tc_opaque (
             ∃ (ops_commit_full:list (GhostOpType * gname)),
             "#Htok_used_witness" ∷ is_tok γsrv s.(server.epoch) ∗
@@ -615,8 +625,8 @@ Definition is_Primary_ghost_f γ γeph γsrv (s:server.t (pb_record:=pb_record))
             (* committed witness for committed state *)
             "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
             "#Heph_commit_lb" ∷ is_ephemeral_proposal_lb γeph s.(server.epoch) ops_commit_full ∗
-            "%HcommitLen" ∷ ⌜int.nat s.(server.committedNextIndex) ≤ int.nat s.(server.nextIndex)⌝ ∗
-            "%HcommitRoNz" ∷ ⌜int.nat s.(server.committedNextIndex) < int.nat s.(server.nextIndex) → int.nat s.(server.committedNextRoIndex) = 0⌝ ∗
+            "%HcommitLen" ∷ ⌜int.nat s.(server.committedNextIndex) ≤ int.nat (length (get_rwops s.(server.ops_full_eph)))⌝ ∗
+            "%HcommitRoNz" ∷ ⌜int.nat s.(server.committedNextIndex) < int.nat (length (get_rwops s.(server.ops_full_eph))) → int.nat s.(server.committedNextRoIndex) = 0⌝ ∗
 
             (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
             "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat s.(server.committedNextIndex)⌝ ∗
@@ -640,13 +650,13 @@ unfold is_Primary_ghost_f. unfold tc_opaque. apply _.
 Qed.
 
 (* physical (volatile) state; meant to be unfolded in code proof *)
-Definition own_Server (s:loc) (st:server.t (pb_record:=pb_record)) γ γsrv mu γeph: iProp Σ :=
+Definition own_Server (s:loc) (st:server.t) γ γsrv mu γeph: iProp Σ :=
   ∃ own_StateMachine (sm:loc) clerks_sl
     (roOpsToPropose_cond committedNextRoIndex_cond durableNextIndex_cond:loc)
     (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
   (* non-persistent physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #st.(server.epoch) ∗
-  "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #st.(server.nextIndex) ∗
+  "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #(U64 (length (get_rwops st.(server.ops_full_eph)))) ∗
   "HisPrimary" ∷ s ↦[pb.Server :: "isPrimary"] #st.(server.isPrimary) ∗
   "Hsealed" ∷ s ↦[pb.Server :: "sealed"] #st.(server.sealed) ∗
   "Hsm" ∷ s ↦[pb.Server :: "sm"] #sm ∗
@@ -663,7 +673,7 @@ Definition own_Server (s:loc) (st:server.t (pb_record:=pb_record)) γ γsrv mu �
   "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 opAppliedConds ∗
 
   (* ownership of the statemachine *)
-  "Hstate" ∷ own_StateMachine st.(server.epoch) st.(server.ops) st.(server.sealed) (own_Server_ghost_f γ γsrv γeph) ∗
+  "Hstate" ∷ own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv γeph) ∗
 
   (* persistent physical state *)
   "#HopAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ opAppliedConds, is_cond cond mu) ∗
@@ -679,7 +689,7 @@ Definition own_Server (s:loc) (st:server.t (pb_record:=pb_record)) γ γsrv mu �
 .
 
 (* should not be unfolded in proof *)
-Definition own_Server_ghost_eph_f (st:server.t (pb_record:=pb_record)) γ γsrv γeph opsfull_ephemeral : iProp Σ :=
+Definition own_Server_ghost_eph_f (st:server.t) γ γsrv γeph opsfull_ephemeral : iProp Σ :=
   tc_opaque (
   let ops:=(get_rwops opsfull_ephemeral) in
   ∃ ops_durable_full,
@@ -699,7 +709,6 @@ Definition own_Server_ghost_eph_f (st:server.t (pb_record:=pb_record)) γ γsrv 
   "#Hdurable_lb" ∷ is_accepted_lb γsrv st.(server.epoch) ops_durable_full ∗
   "#Heph_valid" ∷ is_proposal_valid γ opsfull_ephemeral ∗
 
-  "%Hσ_nextIndex" ∷ ⌜length ops = int.nat st.(server.nextIndex)⌝ ∗
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat st.(server.durableNextIndex)⌝ ∗
 
   (* `committedRoNextIndex` read-only ops have been committed *)
@@ -724,9 +733,9 @@ Definition own_Server_ghost_eph_f (st:server.t (pb_record:=pb_record)) γ γsrv 
 .
 
 Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
-  ∃ st γeph opsfull_ephemeral,
+  ∃ st γeph,
   "Hvol" ∷ own_Server s st γ γsrv mu γeph ∗
-  "HghostEph" ∷ own_Server_ghost_eph_f st γ γsrv γeph opsfull_ephemeral
+  "HghostEph" ∷ own_Server_ghost_eph_f st γ γsrv γeph st.(server.ops_full_eph)
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
