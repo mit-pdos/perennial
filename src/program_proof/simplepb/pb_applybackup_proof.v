@@ -152,11 +152,11 @@ Proof.
   }
 Qed.
 
-Lemma primary_lb st γ γeph γsrv opsfull opsfull' sealed:
+Lemma primary_lb st γ γeph γsrv opsfull' sealed:
   is_proposal_lb γ st.(server.epoch) opsfull' -∗
-  is_Primary_ghost_f γ γeph γsrv st opsfull -∗
-  own_Server_ghost_f γ γsrv γeph st.(server.epoch) (get_rwops opsfull) sealed -∗
-  ⌜prefix (get_rwops opsfull') (get_rwops opsfull)⌝.
+  is_Primary_ghost_f γ γeph γsrv st -∗
+  own_Server_ghost_f γ γsrv γeph st.(server.epoch) (get_rwops st.(server.ops_full_eph)) sealed -∗
+  ⌜prefix (get_rwops opsfull') (get_rwops st.(server.ops_full_eph))⌝.
 Proof.
   iIntros "#Hprop_lb #Hprim2 Hghost".
   iNamed "Hghost".
@@ -164,26 +164,26 @@ Proof.
   iNamed "Hprim2".
   iNamed "Hghost".
   iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
-  (* iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2. *)
-Admitted.
+  rewrite Hre. iPureIntro. by apply get_rwops_prefix.
+Qed.
 
 (* increase epheeral proposal on backup servers when getting new ops *)
 (* The important part of this lemma is
    own_Server_ghost_eph_f st -∗ own_Server_ghost_eph_f st' *)
-Lemma applybackup_eph sm st γ γsrv γeph ops_full_eph ops_full_eph' {own_StateMachine} :
+Lemma applybackup_eph sm st γ γsrv γeph ops_full_eph' {own_StateMachine} :
   st.(server.sealed) = false →
-  length (get_rwops ops_full_eph) < length (get_rwops ops_full_eph') →
+  length (get_rwops st.(server.ops_full_eph)) < length (get_rwops ops_full_eph') →
   is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph) -∗
   is_proposal_lb γ st.(server.epoch) ops_full_eph' -∗
   is_proposal_facts γ st.(server.epoch) ops_full_eph' -∗
   £ 1 -∗
-  own_Server_ghost_eph_f st γ γsrv γeph ops_full_eph -∗
-  own_StateMachine st.(server.epoch) (get_rwops ops_full_eph) false (own_Server_ghost_f γ γsrv γeph)
+  own_Server_ghost_eph_f st γ γsrv γeph -∗
+  own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) false (own_Server_ghost_f γ γsrv γeph)
   -∗
-  |NC={⊤,⊤}=> wpc_nval ⊤ (own_StateMachine st.(server.epoch) (get_rwops ops_full_eph) false
+  |NC={⊤,⊤}=> wpc_nval ⊤ (own_StateMachine st.(server.epoch) (get_rwops (st.(server.ops_full_eph))) false
                 (own_Server_ghost_f γ γsrv γeph) ∗
-                (own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv γeph ops_full_eph' ∗
-                ⌜ prefix ops_full_eph ops_full_eph' ⌝ ∗
+                (own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv γeph ∗
+                ⌜ prefix st.(server.ops_full_eph) ops_full_eph' ⌝ ∗
                 ⌜ st.(server.isPrimary) = false ⌝))
 .
 Proof.
@@ -280,17 +280,28 @@ Proof.
   lia.
 Qed.
 
-Lemma applybackup_step γ γsrv γeph epoch ops ops_full' :
+
+Lemma applybackup_step_helper2 (ops_full ops_full':list (GhostOpType * gname)) op a :
+  last ops_full' = Some (rw_op op, a) →
+  length (get_rwops ops_full') = length (get_rwops ops_full) + 1 →
+  ops_full `prefix_of` ops_full' →
+  get_rwops ops_full' = get_rwops ops_full ++ [op].
+Proof.
+Admitted.
+
+Lemma applybackup_step γ γsrv γeph epoch ops ops_full' op a:
+  last ops_full' = Some (rw_op op, a) →
   length (get_rwops ops_full') = length ops + 1 →
   is_proposal_lb γ epoch ops_full' -∗
   is_proposal_facts γ epoch ops_full' -∗
   is_ephemeral_proposal_lb γeph epoch ops_full' -∗
   own_Server_ghost_f γ γsrv γeph epoch ops false ={↑pbN}=∗
-  own_Server_ghost_f γ γsrv γeph epoch (get_rwops ops_full') false
-  ∗ (is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch ops_full')
+  own_Server_ghost_f γ γsrv γeph epoch (get_rwops ops_full') false ∗
+  ⌜get_rwops ops_full' = ops ++ [op]⌝ ∗
+  (is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch ops_full')
 .
 Proof.
-  intros Hlen.
+  intros Hlast Hlen.
   iIntros "#Hprop_lb #Hprop_facts #Heph_prop_lb Hown".
   iNamed "Hown".
   rename opsfull into ops_full.
@@ -308,7 +319,21 @@ Proof.
 
   iDestruct (ghost_get_accepted_lb with "Hghost") as "#$".
   iDestruct (ghost_get_epoch_lb with "Hghost") as "#$".
+  iSplitL.
+  2:{ iPureIntro. by eapply applybackup_step_helper2. }
   iExists _; iFrame "Hghost Hprim #". done.
+Qed.
+
+Lemma increase_durableNextIndex st γ γsrv γeph ops_durable_full newDurableNextIndex:
+  length (get_rwops ops_durable_full) = int.nat newDurableNextIndex →
+  is_accepted_lb γsrv st.(server.epoch) ops_durable_full -∗
+  own_Server_ghost_eph_f st γ γsrv γeph -∗
+  own_Server_ghost_eph_f (st <| server.durableNextIndex:= newDurableNextIndex |>) γ γsrv γeph
+.
+Proof.
+  intros. iIntros "?".
+  rewrite /own_Server_ghost_eph_f /tc_opaque.
+  iNamed 1. iExists _; iFrame "∗#"; done.
 Qed.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
@@ -571,14 +596,23 @@ Proof.
     iSplitL; first done.
     iIntros "Hghost".
     iMod (applybackup_step with "Hprop_lb Hprop_facts [] Hghost") as "Hghost".
+    { done. }
     { admit. }
     { admit. } (* FIXME: get eph_lb *)
     iModIntro.
-    iDestruct "Hghost" as "[$ H]".
+    iDestruct "Hghost" as "(Hghost & %Hre & H)".
+    rewrite Hre.
     iFrame "Hghost".
+    iAccu.
   }
 
   iIntros (reply q waitFn) "(Hreply & Hstate & HwaitSpec)".
+  epose proof (applybackup_step_helper2 _ _ _ _ Hghost_op_σ _ Heph_prefix) as Hre.
+  Unshelve.
+  2:{ rewrite Hσ_index. unfold no_overflow in HnextIndexNoOverflow.
+      rewrite Heqb1. word. }
+  rewrite -Hre.
+
   wp_pures.
   wp_loadField.
   wp_storeField.
@@ -616,6 +650,8 @@ Proof.
       }
       (* FIXME: iNamedAccu and iAccu turn the strings into "^@^@^@^@^@..." *)
       instantiate (1:=(λ _, _)%I).
+      (* iAccu. *)
+      (* iNamedAccu. *)
       instantiate (1:=
                   (
         "HopAppliedConds" ∷ s ↦[Server :: "opAppliedConds"] #opAppliedConds_loc ∗
@@ -644,6 +680,30 @@ Proof.
     iFrame "Hlocked HmuInv".
     iNext.
     repeat (iExists _).
+    iSplitR "HghostEph"; last iFrame.
+
+    repeat iExists _.
+    simpl.
+    rewrite HnotPrimary Heqb.
+    iFrame "∗".
+    iSplitL "HnextIndex".
+    {
+      rewrite Hre.
+      rewrite app_length /=.
+      iApply to_named.
+      iExactEq "HnextIndex".
+      repeat f_equal.
+      unfold no_overflow in HnextIndexNoOverflow.
+      rewrite -Heqb1.
+      admit. (* TODO: overflow reasoning *)
+    }
+    iFrame "#".
+    iPureIntro.
+    unfold no_overflow.
+    word.
+  }
+
+  (*
     replace ([op]) with ([(op, Q).1]) by done.
     replace (get_rwops opsfull_ephemeral ++ _) with (get_rwops opsfull); last first.
     {
@@ -686,7 +746,7 @@ Proof.
     }
     iPureIntro.
     word.
-  }
+  } *)
   wp_pures.
   wp_apply "HwaitSpec".
   iIntros "#Hlb".
@@ -696,16 +756,17 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
-  iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb HprimaryOnly HisSm Heph_valid".
+  iClear "HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
+  iClear "HcommittedNextRoIndex_is_cond HisSm".
   (* FIXME: why doesn't Hdurable_lb get automatically get destructed into Hdurable_lb2? *)
 
   wp_pures.
   wp_bind  ((if: (if: _ then _ else _) then _ else _)%E).
   wp_apply (wp_wand with "[Hown Hargs_epoch]").
   {
-    instantiate (1:= λ _, pb_definitions.own_Server s γ γsrv γeph own_StateMachine mu).
+    instantiate (1:= λ _, mu_inv s γ γsrv mu).
     iNamed "Hown".
+    iNamed "Hvol".
     wp_bind (if: struct.loadF _ _ _ = _ then _ else _)%E.
     wp_loadField.
     wp_loadField.
@@ -715,8 +776,15 @@ Proof.
       wp_if_destruct.
       { (* case: increase durableNextIndex *)
         iDestruct "Hlb" as "[_ Hlb]".
-        replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
+        replace (st.(server.epoch)) with (args.(ApplyAsBackupArgs.epoch)) by word.
+
+        replace (args.(ApplyAsBackupArgs.epoch)) with (st0.(server.epoch)); last first.
+        { rewrite -Heqb2. word. } (* FIXME: why do we need to manually rewrite? *)
+        iDestruct (increase_durableNextIndex with "Hlb HghostEph") as "HghostEph".
+        { instantiate (1:=(word.add args.(ApplyAsBackupArgs.index) 1)). word. }
+
         wp_storeField.
+        rewrite Heqb1. (* to match up ApplyArgs.index and (length (rws ops_full_eph)) *)
         wp_loadField.
         wp_apply (wp_condBroadcast with "[]"); first iFrame "#".
         wp_pures.
@@ -732,38 +800,31 @@ Proof.
           {
             wp_loadField.
             wp_apply (wp_condSignal with "[]"); first iFrame "#".
-            repeat iExists _.
-            (* time iFrame "Hlb ∗ #%". *) (* 11.484 secs *)
-            time (iFrame "Hlb ∗ #"; iFrame "%"). (* 8.154 secs *)
-            iPureIntro. word.
+            repeat iExists _. iFrame "HghostEph".
+            repeat iExists _. time (iFrame "∗ #"; iFrame "%").
           }
           {
-            repeat iExists _.
-            iFrame "∗ Hlb #"; iFrame "%".
-            iPureIntro.
-            word.
+            iModIntro.
+            repeat iExists _. iFrame "HghostEph".
+            repeat iExists _. time (iFrame "∗ #"; iFrame "%").
           }
         }
         wp_pures.
-        repeat iExists _.
-        iFrame "∗ Hlb #"; iFrame "%".
-        iPureIntro.
-        word.
+        iModIntro.
+        repeat iExists _. iFrame "HghostEph".
+        repeat iExists _. time (iFrame "∗ #"; iFrame "%").
       }
       {
-        repeat iExists _.
-        (* time (iFrame "∗#%"). *) (* 11.501 secs *)
-        time (iFrame "∗#"; iFrame "%"). (* 7.514 secs*)
-        (* time (iFrame "∗"; iFrame "#"; iFrame "%"). *) (* secs *)
-        iPureIntro.
-        word.
+        iModIntro.
+        repeat iExists _. iFrame "HghostEph".
+        repeat iExists _. time (iFrame "∗#"; iFrame "%").
       }
     }
     wp_pures.
     {
       iModIntro.
-      repeat iExists _.
-      iFrame "∗#"; iFrame "%".
+      repeat iExists _. iFrame "HghostEph".
+      repeat iExists _. time (iFrame "∗#"; iFrame "%").
     }
   }
 
@@ -776,9 +837,8 @@ Proof.
   iLeft in "HΨ".
   iApply "HΦ".
   iApply "HΨ".
-  replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
   iDestruct "Hlb" as "(_ & $)".
   done.
-Qed.
+Admitted.
 
 End pb_applybackup_proof.
