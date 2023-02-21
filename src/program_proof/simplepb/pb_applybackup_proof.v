@@ -703,50 +703,6 @@ Proof.
     word.
   }
 
-  (*
-    replace ([op]) with ([(op, Q).1]) by done.
-    replace (get_rwops opsfull_ephemeral ++ _) with (get_rwops opsfull); last first.
-    {
-      apply last_Some in Hghost_op_σ.
-      destruct Hghost_op_σ as [opsprev Hghost_op].
-      subst.
-      rewrite get_rwops_app.
-      simpl.
-      apply get_rwops_prefix in Heph_prefix.
-      rewrite get_rwops_app /= in Heph_prefix Hσ_index.
-      eassert ((get_rwops [(_)]) = _) as ->.
-      { unfold get_rwops. simpl. done. }
-      f_equal.
-      assert (length (get_rwops opsprev) = length (get_rwops opsfull_ephemeral)).
-      {
-        eassert ((get_rwops [(rw_op op, Q)]) = _) as H.
-        { unfold get_rwops. simpl. done. }
-        rewrite H app_length /= in Hσ_index.
-        word.
-      }
-      (* length a = length b; a ⪯ b ++ [c] → a = b *)
-      eassert (prefix (get_rwops opsprev) ((get_rwops opsprev) ++ get_rwops [(rw_op op, Q)])).
-      { apply prefix_app_r. done. }
-      pose proof (prefix_weak_total _ _ _ H0 Heph_prefix) as [Hcase|Hcase].
-      { apply list_prefix_eq.
-        { done. }
-        { lia. }
-      }
-      { symmetry. apply list_prefix_eq.
-        { done. }
-        { lia. }
-      }
-    }
-    iClear "Heph_lb2".
-    time (iFrame "∗#"; iFrame "%").
-    (* time (iFrame "∗"; iFrame "#"). *) (* PERF Not a big difference here because no % *)
-    iSplitR.
-    {
-      iDestruct "Hprop_facts" as "(_ & _ & $)".
-    }
-    iPureIntro.
-    word.
-  } *)
   wp_pures.
   wp_apply "HwaitSpec".
   iIntros "#Hlb".
