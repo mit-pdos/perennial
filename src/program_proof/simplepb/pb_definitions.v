@@ -617,7 +617,7 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
 .
 
 (* this should never be unfolded in the proof of code *)
-Definition is_Primary_ghost_f γ γeph γsrv (s:server.t) (opsfull_ephemeral: list (GhostOpType * gname)): iProp Σ:=
+Definition is_Primary_ghost_f γ γeph γsrv (s:server.t) (ops_full_eph: list (GhostOpType * gname)): iProp Σ:=
   tc_opaque (
             ∃ (ops_commit_full:list (GhostOpType * gname)),
             "#Htok_used_witness" ∷ is_tok γsrv s.(server.epoch) ∗
@@ -631,10 +631,10 @@ Definition is_Primary_ghost_f γ γeph γsrv (s:server.t) (opsfull_ephemeral: li
             (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
             "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat s.(server.committedNextIndex)⌝ ∗
             "%Heph_proposal" ∷ ⌜∃ opsfull_eph_ro,
-                                suffix opsfull_eph_ro opsfull_ephemeral ∧
+                                suffix opsfull_eph_ro ops_full_eph ∧
                                 length opsfull_eph_ro = int.nat s.(server.nextRoIndex) ∧
                                 get_rwops opsfull_eph_ro = [] ∧
-                                is_full_ro_suffix opsfull_eph_ro opsfull_ephemeral⌝ ∗
+                                is_full_ro_suffix opsfull_eph_ro ops_full_eph⌝ ∗
             "%HcommitRoLen" ∷ ⌜ ∃ ops_commit_ro,
                                 suffix ops_commit_ro ops_commit_full ∧
                                 length ops_commit_ro >= int.nat s.(server.committedNextRoIndex) ∧
@@ -643,11 +643,14 @@ Definition is_Primary_ghost_f γ γeph γsrv (s:server.t) (opsfull_ephemeral: li
       )%I
 .
 
-Global Instance is_Primary_ghost_pers γ γeph γsrv s (opsfull_ephemeral: list (GhostOpType * gname)):
-Persistent (is_Primary_ghost_f γ γeph γsrv s opsfull_ephemeral).
+Global Instance is_Primary_ghost_pers γ γeph γsrv s (ops_full_eph: list (GhostOpType * gname)):
+Persistent (is_Primary_ghost_f γ γeph γsrv s ops_full_eph).
 Proof.
 unfold is_Primary_ghost_f. unfold tc_opaque. apply _.
 Qed.
+
+Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
+Hint Unfold no_overflow : arith.
 
 (* physical (volatile) state; meant to be unfolded in code proof *)
 Definition own_Server (s:loc) (st:server.t) γ γsrv mu γeph: iProp Σ :=
@@ -685,29 +688,33 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu γeph: iProp Σ :=
   "#Hprimary" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary γ γsrv st clerks_sl) ∗
 
   (* state-machine callback specs *)
-  "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph)
+  "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph) ∗
+
+  (* overflow *)
+  "%HnextIndexNoOverflow" ∷ ⌜no_overflow (length (get_rwops (st.(server.ops_full_eph))))⌝
 .
 
+
 (* should not be unfolded in proof *)
-Definition own_Server_ghost_eph_f (st:server.t) γ γsrv γeph opsfull_ephemeral : iProp Σ :=
+Definition own_Server_ghost_eph_f (st:server.t) γ γsrv γeph ops_full_eph : iProp Σ :=
   tc_opaque (
-  let ops:=(get_rwops opsfull_ephemeral) in
+  let ops:=(get_rwops ops_full_eph) in
   ∃ ops_durable_full,
   (* non-persistent ghost state *)
   "Heph" ∷ (if st.(server.sealed) then
-              is_ephemeral_proposal_sealed γeph st.(server.epoch) opsfull_ephemeral
+              is_ephemeral_proposal_sealed γeph st.(server.epoch) ops_full_eph
             else
-              own_ephemeral_proposal γeph st.(server.epoch) opsfull_ephemeral) ∗
+              own_ephemeral_proposal γeph st.(server.epoch) ops_full_eph) ∗
   "Heph_unused" ∷ own_unused_ephemeral_proposals γeph st.(server.epoch) ∗
 
   (* epoch lower bound *)
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv st.(server.epoch) ∗
 
   (* persistent ghost-state *)
-  "#Heph_prop_lb" ∷ □(if st.(server.isPrimary) then True else is_proposal_lb γ st.(server.epoch) opsfull_ephemeral) ∗
+  "#Heph_prop_lb" ∷ □(if st.(server.isPrimary) then True else is_proposal_lb γ st.(server.epoch) ops_full_eph) ∗
   (* accepted witness for durable state *)
   "#Hdurable_lb" ∷ is_accepted_lb γsrv st.(server.epoch) ops_durable_full ∗
-  "#Heph_valid" ∷ is_proposal_valid γ opsfull_ephemeral ∗
+  "#Heph_valid" ∷ is_proposal_valid γ ops_full_eph ∗
 
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat st.(server.durableNextIndex)⌝ ∗
 
@@ -728,7 +735,7 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv γeph opsfull_ephemeral
    *)
 
   (* primary-only *)
-  "#HprimaryOnly" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary_ghost_f γ γeph γsrv st opsfull_ephemeral)
+  "#HprimaryOnly" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary_ghost_f γ γeph γsrv st ops_full_eph)
   )%I
 .
 

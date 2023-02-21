@@ -25,6 +25,18 @@ Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
+Lemma is_StateMachine_acc_apply sm own_StateMachine P :
+  is_StateMachine sm own_StateMachine P -∗
+  (∃ applyFn,
+    "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "StartApply"] applyFn) ∗
+    "#HapplySpec" ∷ is_ApplyFn (pb_record:=pb_record) own_StateMachine applyFn P
+  )
+.
+Proof.
+  rewrite /is_StateMachine /tc_opaque.
+  iNamed 1. iExists _; iFrame "#".
+Qed.
+
 (* Clerk specs *)
 Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op op_sl op_bytes :
   {{{
@@ -140,15 +152,6 @@ Proof.
   }
 Qed.
 
-Lemma accept_helper opsfull opsfull_old op (γ:gname) :
-  (prefix opsfull opsfull_old ∨ prefix opsfull_old opsfull) →
-  last opsfull = Some (rw_op op, γ) →
-  length (get_rwops opsfull) = length (get_rwops opsfull_old) + 1 →
-  get_rwops opsfull_old ++ [op] = get_rwops opsfull ∧
-  prefix opsfull_old opsfull.
-Proof.
-Admitted.
-
 Lemma primary_lb st γ γeph γsrv opsfull opsfull' sealed:
   is_proposal_lb γ st.(server.epoch) opsfull' -∗
   is_Primary_ghost_f γ γeph γsrv st opsfull -∗
@@ -165,7 +168,9 @@ Proof.
 Admitted.
 
 (* increase epheeral proposal on backup servers when getting new ops *)
-Lemma backup_make_ephemeral_proposal sm st γ γsrv γeph ops_full_eph ops_full_eph' {own_StateMachine} :
+(* The important part of this lemma is
+   own_Server_ghost_eph_f st -∗ own_Server_ghost_eph_f st' *)
+Lemma applybackup_eph sm st γ γsrv γeph ops_full_eph ops_full_eph' {own_StateMachine} :
   st.(server.sealed) = false →
   length (get_rwops ops_full_eph) < length (get_rwops ops_full_eph') →
   is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph) -∗
@@ -263,11 +268,54 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args opsfull op Q Φ Ψ :
+Lemma applybackup_step_helper (opsfull opsfull_old: list (GhostOpType * gname)) :
+  (prefix opsfull opsfull_old ∨ prefix opsfull_old opsfull) →
+  length (get_rwops opsfull) = length (get_rwops opsfull_old) + 1 →
+  prefix opsfull_old opsfull.
+Proof.
+  intros [Hbad|Hgood]; last done.
+  intros Hlen.
+  exfalso.
+  apply get_rwops_prefix, prefix_length in Hbad.
+  lia.
+Qed.
+
+Lemma applybackup_step γ γsrv γeph epoch ops ops_full' :
+  length (get_rwops ops_full') = length ops + 1 →
+  is_proposal_lb γ epoch ops_full' -∗
+  is_proposal_facts γ epoch ops_full' -∗
+  is_ephemeral_proposal_lb γeph epoch ops_full' -∗
+  own_Server_ghost_f γ γsrv γeph epoch ops false ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv γeph epoch (get_rwops ops_full') false
+  ∗ (is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch ops_full')
+.
+Proof.
+  intros Hlen.
+  iIntros "#Hprop_lb #Hprop_facts #Heph_prop_lb Hown".
+  iNamed "Hown".
+  rename opsfull into ops_full.
+  subst.
+
+  (* deal with implicitly accepting RO ops *)
+  iDestruct (ghost_accept_helper2 with "Hprop_lb Hghost") as "[Hghost %Hcomp]".
+  epose proof (applybackup_step_helper _ _ Hcomp Hlen) as H.
+  iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
+  { done. }
+  { by apply prefix_length. }
+  iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
+  { by apply prefix_length. }
+  iModIntro.
+
+  iDestruct (ghost_get_accepted_lb with "Hghost") as "#$".
+  iDestruct (ghost_get_epoch_lb with "Hghost") as "#$".
+  iExists _; iFrame "Hghost Hprim #". done.
+Qed.
+
+Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
   is_Server s γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
-  ApplyAsBackup_core_spec γ γsrv args opsfull op Q Ψ -∗
+  ApplyAsBackup_core_spec γ γsrv args ops_full' op Q Ψ -∗
   WP pb.Server__ApplyAsBackup #s #args_ptr {{ Φ }}
 .
 Proof.
@@ -493,59 +541,43 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  iMod "HH" as "HH".
+  iMod (applybackup_eph with "HisSm Hprop_lb Hprop_facts Hlc HghostEph Hstate") as "HH".
+  { done. }
+  {
+    rewrite Hσ_index.
+    rewrite Heqb1.
+    (* FIXME: why do I need to rewrite these? *)
+    word_cleanup.
+    (* FIXME: don't want to manually unfold this *)
+    unfold no_overflow in HnextIndexNoOverflow.
+    word.
+  }
+
   wp_bind (struct.loadF _ _ _).
   wp_apply (wpc_nval_elim_wp with "HH").
   { done. }
   { done. }
+
+  iDestruct (is_StateMachine_acc_apply with "HisSm") as "HH".
+  iNamed "HH".
   wp_loadField.
   wp_pures.
-  iIntros "(Hstate & (Heph & #Heph_lb2) & %Heph_prefix & %HnotPrimary)".
-  subst isPrimary.
+  iIntros "(Hstate & HghostEph & %Heph_prefix & %HnotPrimary)".
+  rewrite HnotPrimary.
 
   iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
-
   wp_apply ("HapplySpec" with "[$Hstate $Hargs_op_sl]").
-  { (* prove protocol step *)
-    iSplitL ""; first done.
+  {
+    iSplitL; first done.
     iIntros "Hghost".
-    iNamed "Hghost".
-
-    (* deal with implicitly accepting RO ops here *)
-    rewrite Hre.
-    iDestruct (ghost_accept_helper2 with "Hprop_lb Hghost") as "[Hghost %Hcomp]".
-    epose proof (accept_helper _ _ _ _ Hcomp Hghost_op_σ) as H.
-    eassert _ as H2; last apply H in H2.
-    {
-      rewrite Hσ_index.
-      rewrite -Hre.
-      rewrite Hσ_nextIndex.
-      word.
-    }
-    destruct H2 as [HnewOp Hprefix].
-    clear H.
-
-    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
-    { done. }
-    { by apply prefix_length. }
-    iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
-    { by apply prefix_length. }
-
-    iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
-    iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb2".
-    instantiate (1:=(is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch opsfull)%I).
+    iMod (applybackup_step with "Hprop_lb Hprop_facts [] Hghost") as "Hghost".
+    { admit. }
+    { admit. } (* FIXME: get eph_lb *)
     iModIntro.
-
-    iSplitL.
-    { iExists _; iFrame "Hghost".
-      iFrame "Hprim".
-      iFrame "#".
-      done.
-    }
-
-    replace (epoch) with (args.(ApplyAsBackupArgs.epoch)) by word.
-    iFrame "#".
+    iDestruct "Hghost" as "[$ H]".
+    iFrame "Hghost".
   }
+
   iIntros (reply q waitFn) "(Hreply & Hstate & HwaitSpec)".
   wp_pures.
   wp_loadField.
