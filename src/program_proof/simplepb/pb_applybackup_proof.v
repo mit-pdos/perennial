@@ -180,11 +180,12 @@ Lemma applybackup_eph sm st γ γsrv γeph ops_full_eph' {own_StateMachine} :
   own_Server_ghost_eph_f st γ γsrv γeph -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) false (own_Server_ghost_f γ γsrv γeph)
   -∗
-  |NC={⊤,⊤}=> wpc_nval ⊤ (own_StateMachine st.(server.epoch) (get_rwops (st.(server.ops_full_eph))) false
-                (own_Server_ghost_f γ γsrv γeph) ∗
-                (own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv γeph ∗
+  |NC={⊤,⊤}=> wpc_nval ⊤ (
+                (own_StateMachine st.(server.epoch) (get_rwops (st.(server.ops_full_eph))) false (own_Server_ghost_f γ γsrv γeph)) ∗
+                is_ephemeral_proposal_lb γeph st.(server.epoch) ops_full_eph' ∗
+                own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv γeph ∗
                 ⌜ prefix st.(server.ops_full_eph) ops_full_eph' ⌝ ∗
-                ⌜ st.(server.isPrimary) = false ⌝))
+                ⌜ st.(server.isPrimary) = false ⌝)
 .
 Proof.
   intros Hunsealed Hlen.
