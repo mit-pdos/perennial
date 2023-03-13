@@ -8,12 +8,12 @@ From Perennial.program_proof.reconnectclient Require Import proof.
 
 Section pb_getstate_proof.
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
@@ -138,6 +138,19 @@ Proof.
   }
 Qed.
 
+(** Helper lemmas for GetState() server-side proof *)
+Lemma is_StateMachine_acc_getstate sm own_StateMachine P :
+  is_StateMachine sm own_StateMachine P -∗
+  (∃ getstateFn,
+    "#Hgetstate" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getstateFn) ∗
+    "#HgetstateSpec" ∷ is_GetStateAndSeal_fn (pb_record:=pb_record) own_StateMachine getstateFn P
+  )
+.
+Proof.
+  rewrite /is_StateMachine /tc_opaque.
+  iNamed 1. iExists _; iFrame "#".
+Qed.
+
 Lemma wp_Server__GetState γ γsrv s args_ptr args epoch_lb Φ Ψ :
   is_Server s γ γsrv -∗
   GetStateArgs.own args_ptr args -∗
@@ -156,7 +169,7 @@ Proof.
   wp_pures.
   iNamed "Hargs".
   wp_loadField.
-
+  iNamed "Hvol".
   wp_loadField.
   wp_if_destruct.
   { (* reply with error *)
@@ -165,6 +178,8 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
+      repeat (iExists _).
+      iSplitR "HghostEph"; last iFrame.
       repeat (iExists _).
       iFrame "∗#%".
     }
@@ -195,12 +210,11 @@ Proof.
   wp_storeField.
   wp_loadField.
 
-  iAssert (_) with "HisSm" as "HisSm2".
-  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
-  iNamed "HisSm2".
+  iDestruct (is_StateMachine_acc_getstate with "HisSm") as "HH".
+  iNamed "HH".
   wp_loadField.
   iDestruct "HΨ" as "[#Hepoch_lb HΨ]".
-  wp_apply ("HgetStateSpec" with "[$Hstate Heph]").
+  wp_apply ("HgetstateSpec" with "[$Hstate HghostEph]").
   {
     iIntros "Hghost".
     iNamed "Hghost".
