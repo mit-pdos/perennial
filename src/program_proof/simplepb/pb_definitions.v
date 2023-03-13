@@ -6,7 +6,7 @@ From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
-From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
+From Perennial.program_proof.simplepb Require Import pb_marshal_proof fmlist_map.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
@@ -332,14 +332,17 @@ Qed.
 
 (* End RPC specs *)
 
+(* FIXME: this should be in pbG *)
+Context `{fmlist_mapG Σ u64 (GhostOpType * gname)}.
+
 Definition own_ephemeral_proposal γeph (epoch:u64) (opsfull:list (GhostOpType * gname)) : iProp Σ :=
-  own γeph {[ epoch := (●ML (opsfull : list (leibnizO _)))]}.
+  epoch ⤳l[γeph] opsfull.
 
 Definition is_ephemeral_proposal_lb γeph (epoch:u64) (opsfull:list (GhostOpType * gname)) : iProp Σ :=
-  own γeph {[ epoch := (◯ML (opsfull : list (leibnizO _)))]}.
+  epoch ⤳l[γeph]⪰ opsfull.
 
-Definition is_ephemeral_proposal_sealed γeph (epoch:u64) opsfull : iProp Σ :=
-  own γeph {[ epoch := (●ML□ (opsfull : list (leibnizO _)))]}.
+Definition is_ephemeral_proposal_sealed γeph (epoch:u64) (opsfull:list (GhostOpType * gname)) : iProp Σ :=
+  epoch ⤳l[γeph]□ opsfull.
 
 Definition own_unused_ephemeral_proposals γeph (epoch:u64) : iProp Σ :=
   [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' <= int.nat epoch⌝ ∨ own_ephemeral_proposal γeph epoch' []
@@ -536,6 +539,7 @@ Lemma suffix_app_r {A} a (s l:list A) :
 Proof.
 Admitted.
 
+(* FIXME: move these lemmas *)
 Lemma is_full_ro_suffix_nil {A} l op a:
       is_full_ro_suffix (A:=A) [] (l ++ [(rw_op op, a)]).
 Proof.

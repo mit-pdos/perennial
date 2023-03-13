@@ -22,7 +22,7 @@ Definition fmlist_ptsto_aux : seal (@fmlist_ptsto_def). Proof. by eexists. Qed.
 Definition fmlist_ptsto := fmlist_ptsto_aux.(unseal).
 Definition fmlist_ptsto_eq : @fmlist_ptsto = @fmlist_ptsto_def := fmlist_ptsto_aux.(seal_eq).
 
-Definition fmlist_ptsto_lb_def `{fmlist_mapG Σ K V} γ (k:K) v :=
+Definition fmlist_ptsto_lb_def γ (k:K) v :=
   own γ {[ k := ◯ML v ]}.
 Definition fmlist_ptsto_lb_aux : seal (@fmlist_ptsto_lb_def). Proof. by eexists. Qed.
 Definition fmlist_ptsto_lb := fmlist_ptsto_lb_aux.(unseal).
@@ -50,18 +50,23 @@ Section lemmas.
   Context `{fmlist_mapG Σ K V}.
   Implicit Types (k : K) (l : list V) (dq : dfrac) (q : Qp).
 
-  (** * Lemmas about the fmlist_ptsto and fmlist_ptsto_lb *)
+  (** * Instances about the fmlist_ptsto and fmlist_ptsto_lb *)
   Global Instance fmlist_ptsto_timeless k γ dq l : Timeless (k ⤳l[γ]{dq} l).
   Proof. unseal. apply _. Qed.
   Global Instance fmlist_ptsto_persistent k γ l : Persistent (k ⤳l[γ]□ l).
   Proof. unseal. apply _. Qed.
   Global Instance fmlist_ptsto_fractional k γ l : Fractional (λ q, k ⤳l[γ]{#q} l)%I.
   Proof. unseal. intros p q. rewrite -own_op singleton_op -mono_list_auth_dfrac_op. done. Qed.
-
   Global Instance fmlist_ptsto_as_fractional k γ q v :
     AsFractional (k ⤳l[γ]{#q} v) (λ q, k ⤳l[γ]{#q} v)%I q.
   Proof. split; first done. apply _. Qed.
 
+  Global Instance fmlist_ptsto_lb_timeless k γ l : Timeless (k ⤳l[γ]⪰ l).
+  Proof. unseal. apply _. Qed.
+  Global Instance fmlist_ptsto_lb_persistent k γ l : Persistent (k ⤳l[γ]⪰ l).
+  Proof. unseal. apply _. Qed.
+
+  (** * Lemmas about the fmlist_ptsto and fmlist_ptsto_lb *)
   Lemma fmlist_ptsto_valid k γ dq v : k ⤳l[γ]{dq} v -∗ ⌜✓ dq⌝.
   Proof.
     unseal. iIntros "Hpoints_to".
@@ -171,6 +176,74 @@ Section lemmas.
     apply singleton_update.
     apply mono_list_update.
     done.
+  Qed.
+
+  Lemma fmlist_ptsto_lb_agree dq γ k l l' :
+    k ⤳l[γ]{dq} l -∗
+    k ⤳l[γ]⪰ l' -∗
+    ⌜prefix l' l⌝.
+  Proof.
+    unseal.
+    iIntros "Hptsto Hlb".
+    iDestruct (own_valid_2 with "Hptsto Hlb") as %Hvalid.
+    rewrite singleton_op singleton_valid mono_list_both_dfrac_valid_L in Hvalid.
+    naive_solver.
+  Qed.
+
+  Lemma fmlist_ptsto_lb_comparable γ k l l' :
+    k ⤳l[γ]⪰ l -∗
+    k ⤳l[γ]⪰ l' -∗
+    ⌜prefix l l' ∨ prefix l' l⌝.
+  Proof.
+    unseal.
+    iIntros "Hlb1 Hlb2".
+    iDestruct (own_valid_2 with "Hlb1 Hlb2") as %Hvalid.
+    by rewrite singleton_op singleton_valid mono_list_lb_op_valid_L in Hvalid.
+  Qed.
+
+  Lemma fmlist_ptsto_lb_longer γ k l l' :
+    (length l ≤ length l')%nat →
+    k ⤳l[γ]⪰ l -∗
+    k ⤳l[γ]⪰ l' -∗
+    ⌜prefix l l'⌝.
+  Proof.
+    iIntros (?) "Hlb1 Hlb2".
+    iDestruct (fmlist_ptsto_lb_comparable with "Hlb1 Hlb2") as "%Hcases".
+    destruct Hcases as [Hbad|Hσ_ineq]; first done.
+    enough (l'=l) by naive_solver.
+    by apply list_prefix_eq.
+  Qed.
+
+  Lemma fmlist_ptsto_lb_len_eq γ k l l' :
+    (length l = length l')%nat →
+    k ⤳l[γ]⪰ l -∗
+    k ⤳l[γ]⪰ l' -∗
+    ⌜l = l'⌝.
+  Proof.
+    iIntros (?) "Hlb1 Hlb2".
+    iDestruct (fmlist_ptsto_lb_longer with "Hlb1 Hlb2") as "%Hcases".
+    { lia. }
+    apply list_prefix_eq in Hcases.
+    { done. } lia.
+  Qed.
+
+  Lemma fmlist_ptsto_get_lb γ k l dq :
+    k ⤳l[γ]{dq} l -∗
+    k ⤳l[γ]⪰ l.
+  Proof.
+    unseal. iApply (own_mono).
+    rewrite singleton_included. right.
+    apply mono_list_included.
+  Qed.
+
+  Lemma fmlist_ptsto_lb_mono γ k l l' :
+    prefix l' l →
+    k ⤳l[γ]⪰ l -∗
+    k ⤳l[γ]⪰ l'.
+  Proof.
+    intros. unseal. iApply (own_mono).
+    rewrite singleton_included. right.
+    by apply mono_list_lb_mono.
   Qed.
 
 End lemmas.

@@ -933,19 +933,6 @@ Proof.
   done.
 Qed.
 
-Lemma prefix_app_cases {A} (σ σ':list A) e:
-  σ' `prefix_of` σ ++ [e] →
-  σ' `prefix_of` σ ∨ σ' = (σ++[e]).
-Proof.
-  intros [σ0 Heq].
-  induction σ0 using rev_ind.
-  { rewrite app_nil_r in Heq. right; congruence. }
-  { rewrite app_assoc in Heq.
-    apply app_inj_2 in Heq as [-> ?]; last auto.
-    left. eexists; eauto.
-  }
-Qed.
-
 Lemma get_rwops_fst {A B} ops1 ops2 :
   ops1.*1 = ops2.*1 →
   get_rwops (A:=A) (pb_record:=pb_record) ops1 = get_rwops (A:=B) (pb_record:=pb_record) ops2.
