@@ -118,7 +118,7 @@ Section lemmas.
          apply mono_list_auth_persist. Qed.
 
   (** * Lemmas about [ghost_map_auth] *)
-  Lemma ghost_map_alloc_strong P (m:gmap K (list V)) :
+  Lemma fmlist_map_alloc_strong P (m:gmap K (list V)) :
     pred_infinite P →
     ⊢ |==> ∃ γ, ⌜P γ⌝ ∗ [∗ map] k ↦ v ∈ m, k ⤳l[γ] v.
   Proof.
@@ -146,7 +146,7 @@ Section lemmas.
     iFrame.
   Qed.
 
-  Lemma ghost_map_alloc_fin (l:list V) `{!finite.Finite K} :
+  Lemma fmlist_map_alloc_fin (l:list V) `{!finite.Finite K} :
     ⊢ |==> ∃ γ, [∗ set] k ∈ (fin_to_set K), k ⤳l[γ] l.
   Proof.
     set (m:=gset_to_gmap (K:=K) (A:=(list V)) l (fin_to_set K)).

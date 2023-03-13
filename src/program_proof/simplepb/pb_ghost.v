@@ -873,10 +873,8 @@ Proof.
   { apply mono_list_auth_valid. }
   iDestruct "Hghost" as (γstate) "[Hghost Hghost2]".
   unfold pb_init_config.
-  iMod (alloc_const_gmap (Cinl (Excl ()))) as (γproposal) "Hproposal".
-  { done. }
-  iMod (alloc_const_gmap (Cinl (Excl ()))) as (γinitproposal) "Hinitproposal".
-  { done. }
+  iMod (fmlist_map_alloc_fin []) as (γproposal) "Hproposal".
+  iMod (fmlist_map_alloc_fin []) as (γinitproposal) "Hinitproposal".
   iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1)
                                          (None : leibnizO (option (list pb_server_names)))
        )) as (γconfig) "Hconfig".
@@ -889,34 +887,12 @@ Proof.
   (* set up proposal for epoch 0 *)
   iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hproposal") as "[Hprop Hprop_rest]".
   { set_solver. }
-  iMod (fmlist_ptsto_update with "Hprop") as "Hprop".
-  {
-    apply singleton_update.
-    instantiate (1:=(Cinr (●ML []))).
-    apply cmra_update_exclusive.
-    apply Cinr_valid.
-    apply mono_list_auth_valid.
-  }
-  iDestruct (own_mono _ _ {[U64 0 := Cinr (◯ML [])]} with "Hprop") as "#Hprop_lb".
-  {
-    apply singleton_mono.
-    apply Cinr_included.
-    apply mono_list_included.
-  }
+  iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb".
 
   (* set up initproposal for epoch 0 *)
   iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hinitproposal") as "[Hinitprop Hinitprop_rest]".
   { set_solver. }
-  iMod (own_update with "Hinitprop") as "Hinitprop".
-  {
-    apply singleton_update.
-    instantiate (1:=(Cinr (●ML□ []))).
-    apply cmra_update_exclusive.
-    apply Cinr_valid.
-    apply mono_list_auth_dfrac_valid.
-    done.
-  }
-  iDestruct "Hinitprop" as "#Hinitprop".
+  iMod (fmlist_ptsto_persist with "Hinitprop") as "#Hinitprop".
 
   (* set up initial config proposal *)
   iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig_prop") as "[Hconfig_prop Hconfig_prop_rest]".
@@ -1062,20 +1038,13 @@ Lemma pb_ghost_server_pre_init :
   ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0)
 .
 Proof.
-  iMod (alloc_const_gmap (●ML [])) as (γacc) "Hacc".
-  { apply mono_list_auth_valid. }
+  iMod (fmlist_map_alloc_fin []) as (γacc) "Hacc".
   iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1) ())) as (γtok) "Htoks".
   { done. }
   iMod (mono_nat_own_alloc 0) as (γepoch) "[Hepoch Hepoch_lb]".
   iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hacc") as "[Hacc Haccrest]".
   { set_solver. }
-  iDestruct (own_mono with "Hacc") as "H".
-  {
-    apply singleton_mono.
-    rewrite mono_list_auth_lb_op.
-    done.
-  }
-  iDestruct "H" as "[Hacc #Hacc_lb]".
+  iDestruct (fmlist_ptsto_get_lb with "Hacc") as "#Hacc_lb".
 
   iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Htoks") as "[Htok Htoksrest]".
   { set_solver. }
