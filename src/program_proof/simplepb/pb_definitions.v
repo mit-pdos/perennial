@@ -332,9 +332,6 @@ Qed.
 
 (* End RPC specs *)
 
-(* FIXME: this should be in pbG *)
-Context `{fmlist_mapG Σ u64 (GhostOpType * gname)}.
-
 Definition own_ephemeral_proposal γeph (epoch:u64) (opsfull:list (GhostOpType * gname)) : iProp Σ :=
   epoch ⤳l[γeph] opsfull.
 

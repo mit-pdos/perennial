@@ -214,45 +214,28 @@ Proof.
     iDestruct "Hprim2" as "[%Hbad|Hprim2]"; first by exfalso.
     iNamed "Hprim2".
     iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
-    iDestruct (own_valid_2 with "Heph Heph_lb") as %Hvalid2.
+    iDestruct (fmlist_ptsto_lb_agree with "Heph Heph_lb") as %Hvalid2.
     exfalso.
 
-    apply get_rwops_prefix in Hvalid.
-    apply prefix_length in Hvalid.
-    rewrite singleton_op singleton_valid in Hvalid2.
-    apply mono_list_both_dfrac_valid_L in Hvalid2.
-    destruct Hvalid2 as [_ Hvalid2].
-    apply get_rwops_prefix in Hvalid2.
-    apply prefix_length in Hvalid2.
+    apply get_rwops_prefix, prefix_length in Hvalid.
+    apply get_rwops_prefix, prefix_length in Hvalid2.
     word.
   }
   { (* case: not primary *)
-    iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hcomp.
-    rewrite singleton_op singleton_valid in Hcomp.
-    rewrite csum.Cinr_valid in Hcomp.
-    apply mono_list_lb_op_valid_L in Hcomp.
-    destruct Hcomp as [Hprefix|Hprefix].
+    iDestruct (fmlist_ptsto_lb_comparable with "Heph_prop_lb Hprop_lb") as %[Hprefix|Hprefix].
     2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
       exfalso.
       apply get_rwops_prefix, prefix_length in Hprefix.
       word.
     }
     {
-      iMod (own_update with "Heph") as "Heph".
-      {
-        apply singleton_update.
-        apply mono_list_update.
-        exact Hprefix.
-      }
-      iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Heph_lb".
-      {
-        apply singleton_mono.
-        apply mono_list_included.
-      }
+      iMod (fmlist_ptsto_update with "Heph") as "Heph".
+      { done. }
+      iDestruct (fmlist_ptsto_get_lb with "Heph") as "#Heph_lb".
       iModIntro.
       iApply wpc_nval_intro.
       iNext.
-      iFrame "Hstate".
+      iFrame "Hstate #".
       iSplitL; last done.
       repeat iExists _.
       rewrite Hunsealed.
@@ -280,7 +263,6 @@ Proof.
   apply get_rwops_prefix, prefix_length in Hbad.
   lia.
 Qed.
-
 
 Lemma applybackup_step_helper2 (ops_full ops_full':list (GhostOpType * gname)) op a :
   last ops_full' = Some (rw_op op, a) →
@@ -588,7 +570,7 @@ Proof.
   iNamed "HH".
   wp_loadField.
   wp_pures.
-  iIntros "(Hstate & HghostEph & %Heph_prefix & %HnotPrimary)".
+  iIntros "(Hstate & #Heph_lb & HghostEph & %Heph_prefix & %HnotPrimary)".
   rewrite HnotPrimary.
 
   iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
@@ -598,8 +580,11 @@ Proof.
     iIntros "Hghost".
     iMod (applybackup_step with "Hprop_lb Hprop_facts [] Hghost") as "Hghost".
     { done. }
-    { admit. }
-    { admit. } (* FIXME: get eph_lb *)
+    {
+      rewrite Hσ_index.
+      f_equal.
+      admit. } (* FIXME: overflow of list length *)
+    { iFrame "#".}
     iModIntro.
     iDestruct "Hghost" as "(Hghost & %Hre & H)".
     rewrite Hre.
@@ -696,7 +681,7 @@ Proof.
       repeat f_equal.
       unfold no_overflow in HnextIndexNoOverflow.
       rewrite -Heqb1.
-      admit. (* TODO: overflow reasoning *)
+      admit. (* FIXME: overflow reasoning *)
     }
     iFrame "#".
     iPureIntro.
