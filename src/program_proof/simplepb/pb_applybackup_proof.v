@@ -319,28 +319,6 @@ Proof.
   iNamed 1. iExists _; iFrame "∗#"; done.
 Qed.
 
-(* No short circuting *)
-Lemma wp_and' e1 e2 Φ H P1 P2 {Hp1:Decision P1} {Hp2:Decision P2} :
-  H -∗
-  (H -∗ WP e1 {{ v, H ∗ ⌜v = #(bool_decide P1)⌝ }}) -∗
-  (H -∗ WP e2 {{ v, H ∗ ⌜v = #(bool_decide P2)⌝ }}) -∗
-  (H -∗ Φ #(bool_decide (P1 ∧ P2))) -∗
-  WP (if: e1 then e2 else #false) {{ Φ }}
-.
-Proof.
-Admitted.
-
-Lemma wp_and2 e1 e2 e3 Φ H P1 P2 P3 {Hp1:Decision P1} {Hp2:Decision P2} {Hp3:Decision P3}:
-  H -∗
-  (H -∗ WP e1 {{ v, H ∗ ⌜v = #(bool_decide P1)⌝ }}) -∗
-  (H -∗ WP e2 {{ v, H ∗ ⌜v = #(bool_decide P2)⌝ }}) -∗
-  (H -∗ WP e3 {{ v, H ∗ ⌜v = #(bool_decide P3)⌝ }}) -∗
-  (H -∗ Φ #(bool_decide (P1 ∧ P2 ∧ P3))) -∗
-  WP (if: if: e1 then e2 else #false then e3 else #false) {{ Φ }}
-.
-Proof.
-Admitted.
-
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
   is_Server s γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
@@ -367,13 +345,11 @@ Proof.
   iNamed "Hvol".
 
   wp_loadField.
-  wp_bind (If (If (_ > _) _ _) _ _).
+  wp_bind ((_ > _) && _ && _)%E.
   wp_apply (wp_and2 with "[Hsealed Hargs_index HnextIndex Hargs_epoch Hepoch]"); first iNamedAccu; iNamed 1.
   { wp_loadField. wp_pures. iFrame. done. }
   { wp_loadField. wp_loadField. wp_pures. iFrame. done. }
   { wp_loadField. wp_pures. iFrame.
-    iPureIntro.
-    f_equal.
     instantiate (2:=(st.(server.sealed) = false)).
     admit.
   }
