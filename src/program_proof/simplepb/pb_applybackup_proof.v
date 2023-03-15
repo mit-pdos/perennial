@@ -569,55 +569,41 @@ Proof.
   wp_apply (wp_MapGet with "HopAppliedConds_map").
   iIntros (cond ok) "[%Hlookup HopAppliedConds_map]".
   wp_pures.
-  wp_bind (If _ _ _).
-  wp_apply (wp_wand with "[HopAppliedConds_map HopAppliedConds HnextIndex]").
+
+  wp_apply (wp_If_join with "[HopAppliedConds HopAppliedConds_map HnextIndex]").
   {
-    wp_if_destruct.
-    { (* map lookup succeeded, signal the condvar *)
-      apply map_get_true in Hlookup.
-      iDestruct (big_sepM_lookup_acc with "HopAppliedConds_conds") as "[Hiscond _]".
-      { done. }
-      wp_apply (wp_condSignal with "Hiscond").
-      wp_pures.
-      wp_loadField.
-      wp_loadField.
-      wp_apply (wp_MapDelete with "HopAppliedConds_map").
-      iIntros "HopAppliedConds_map".
-      simpl.
-      iAssert (∃ newOpAppliedConds,
-                  is_map opAppliedConds_loc 1 newOpAppliedConds ∗
-                  [∗ map] cond0 ∈ newOpAppliedConds, is_cond cond0 mu
-              )%I with "[HopAppliedConds_map]" as "H".
-      {
-        iExists _; iFrame.
-        unfold map_del.
-        iDestruct (big_sepM_delete with "HopAppliedConds_conds") as "[_ $]".
-        { done. }
-      }
-      (* FIXME: iNamedAccu and iAccu turn the strings into "^@^@^@^@^@..." *)
-      instantiate (1:=(λ _, _)%I).
-      (* iAccu. *)
-      (* iNamedAccu. *)
-      instantiate (1:=
-                  (
-        "HopAppliedConds" ∷ s ↦[Server :: "opAppliedConds"] #opAppliedConds_loc ∗
-        "HnextIndex" ∷ s ↦[Server :: "nextIndex"] #_ ∗
-        "H" ∷ ∃ newOpAppliedConds, (is_map opAppliedConds_loc 1 newOpAppliedConds ∗
-                ([∗ map] cond0 ∈ newOpAppliedConds, is_cond cond0 mu))
-                )%I
-      ).
-      iAccu.
+    instantiate (1:=(∃ newOpAppliedConds,
+                "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 newOpAppliedConds ∗
+                "#HopAppliedConds_conds" ∷ ([∗ map] cond0 ∈ newOpAppliedConds, is_cond cond0 mu) ∗
+                "HopAppliedConds" ∷ s ↦[Server :: "opAppliedConds"] #opAppliedConds_loc ∗
+                "HnextIndex" ∷ s ↦[Server :: "nextIndex"] #(_)
+            )%I).
+    (* FIXME: why can't I leave HopAppliedConds and HnextIndex as an evar
+       without messing up the strings? *)
+    iSplit.
+    2:{
+      iIntros (?). subst. wp_pures.
+      iModIntro. iSplitR; first done.
+      iExists _. iFrame "∗#".
     }
-    { (* FIXME: What are those weird ^@? *)
-      simpl.
-      iModIntro.
-      iFrame.
-      iExists _; iFrame "∗#".
-    }
+    iIntros (->).
+    apply map_get_true in Hlookup.
+    iDestruct (big_sepM_lookup_acc with "HopAppliedConds_conds") as "[Hiscond _]".
+    { done. }
+    wp_apply (wp_condSignal with "Hiscond").
+    wp_pures.
+    wp_loadField.
+    wp_loadField.
+    wp_apply (wp_MapDelete with "HopAppliedConds_map").
+    iIntros "HopAppliedConds_map".
+    iSplitR; first done.
+    iExists _; iFrame "∗#".
+    unfold map_del.
+    iDestruct (big_sepM_delete with "HopAppliedConds_conds") as "[_ $]".
+    { done. }
   }
-  iIntros (?).
+  iClear "HopAppliedConds_conds".
   iNamed 1.
-  iDestruct "H" as (?) "[HopAppliedConds_map #HopAppliedConds_conds2]".
   wp_pures.
 
   wp_loadField.
