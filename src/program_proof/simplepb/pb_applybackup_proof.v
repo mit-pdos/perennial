@@ -649,84 +649,85 @@ Proof.
   (* FIXME: why doesn't Hdurable_lb get automatically get destructed into Hdurable_lb2? *)
 
   wp_pures.
-  wp_bind  ((if: (if: _ then _ else _) then _ else _)%E).
-  wp_apply (wp_wand with "[Hown Hargs_epoch]").
+  iNamed "Hown".
+  iNamed "Hvol".
+  wp_bind (_ && _)%E.
+  wp_apply (wp_and' with "[Hepoch Hargs_epoch HdurableNextIndex]"); first iNamedAccu; iNamed 1.
+  { do 2 wp_loadField. wp_pures. iFrame. by iModIntro. }
+  { iNamed 1. wp_loadField. wp_pures. iFrame. by iModIntro. }
+
+  wp_apply (wp_If_join with "[HdurableNextIndex HdurableNextIndex_cond HnextRoIndex HnextIndex
+                              HcommittedNextRoIndex HroOpsToPropose_cond HghostEph]").
   {
-    instantiate (1:= λ _, mu_inv s γ γsrv mu).
-    iNamed "Hown".
-    iNamed "Hvol".
-    wp_bind (if: struct.loadF _ _ _ = _ then _ else _)%E.
-    wp_loadField.
-    wp_loadField.
-    wp_if_destruct.
+    iSplit.
     {
+      (* case: increase durableNextIndex *)
+      rewrite bool_decide_eq_true.
+      iIntros "[%HepochEq %Heqb3]".
+      iDestruct "Hlb" as "[_ Hlb]".
+      replace (st.(server.epoch)) with (args.(ApplyAsBackupArgs.epoch)) by word.
+
+      replace (args.(ApplyAsBackupArgs.epoch)) with (st0.(server.epoch)); last first.
+      { apply inv_litv in HepochEq.
+        injection HepochEq as <-.
+        word. }
+      iDestruct (increase_durableNextIndex with "Hlb HghostEph") as "HghostEph".
+      { instantiate (1:=(word.add args.(ApplyAsBackupArgs.index) 1)). word. }
+
+      wp_storeField.
+      rewrite Heqb2. (* to match up ApplyArgs.index and (length (rws ops_full_eph)) *)
       wp_loadField.
-      wp_if_destruct.
-      { (* case: increase durableNextIndex *)
-        iDestruct "Hlb" as "[_ Hlb]".
-        replace (st.(server.epoch)) with (args.(ApplyAsBackupArgs.epoch)) by word.
-
-        replace (args.(ApplyAsBackupArgs.epoch)) with (st0.(server.epoch)); last first.
-        { rewrite -Heqb3. word. } (* FIXME: why do we need to manually rewrite? *)
-        iDestruct (increase_durableNextIndex with "Hlb HghostEph") as "HghostEph".
-        { instantiate (1:=(word.add args.(ApplyAsBackupArgs.index) 1)). word. }
-
-        wp_storeField.
-        rewrite Heqb2. (* to match up ApplyArgs.index and (length (rws ops_full_eph)) *)
+      wp_apply (wp_condBroadcast with "[]"); first iFrame "#".
+      wp_pures.
+      wp_loadField.
+      wp_loadField.
+      wp_bind (_ && _)%E.
+      wp_apply (wp_and' with "[HnextRoIndex HcommittedNextRoIndex]"); first iNamedAccu; iNamed 1.
+      { wp_pures. iFrame. by iModIntro. }
+      { iIntros (_). do 2 wp_loadField. wp_pures. iFrame.
+        rewrite -bool_decide_not. by iModIntro. }
+      wp_apply (wp_If_optional' with "[HroOpsToPropose_cond]"); first iNamedAccu; iNamed 1.
+      { (* trigger roOpsToPropose cond *)
+        iNamed 1.
         wp_loadField.
-        wp_apply (wp_condBroadcast with "[]"); first iFrame "#".
-        wp_pures.
-        wp_loadField.
-        wp_loadField.
-        wp_bind ((if: #_ = #_ then _ else _)%E).
-        wp_if_destruct.
-        {
-          wp_loadField.
-          wp_loadField.
-          wp_pures.
-          wp_if_destruct.
-          {
-            wp_loadField.
-            wp_apply (wp_condSignal with "[]"); first iFrame "#".
-            repeat iExists _. iFrame "HghostEph".
-            repeat iExists _. time (iFrame "∗ #"; iFrame "%").
-          }
-          {
-            iModIntro.
-            repeat iExists _. iFrame "HghostEph".
-            repeat iExists _. time (iFrame "∗ #"; iFrame "%").
-          }
-        }
-        wp_pures.
-        iModIntro.
-        repeat iExists _. iFrame "HghostEph".
-        repeat iExists _. time (iFrame "∗ #"; iFrame "%").
+        wp_apply (wp_condSignal with "[]"); first iFrame "#".
+        iFrame.
       }
-      {
-        iModIntro.
-        repeat iExists _. iFrame "HghostEph".
-        repeat iExists _. time (iFrame "∗#"; iFrame "%").
-      }
+      iSplitR; first done.
+      iAssert (∃ (newDurableNextIndex:u64),
+          "HdurableNextIndex" ∷ s ↦[Server :: "durableNextIndex"] #newDurableNextIndex ∗
+          "HghostEph" ∷ own_Server_ghost_eph_f
+                          (st0 <| server.durableNextIndex := newDurableNextIndex |>) γ γsrv γeph0
+                          )%I with "[HdurableNextIndex HghostEph]" as "HH".
+      { iExists _; iFrame. }
+      iNamedAccu.
     }
+    iIntros (_).
     wp_pures.
-    {
-      iModIntro.
-      repeat iExists _. iFrame "HghostEph".
-      repeat iExists _. time (iFrame "∗#"; iFrame "%").
-    }
+    iModIntro; iSplitR; first done.
+    iFrame.
+    iExists _; iFrame.
   }
-
-  iIntros (?) "Hown".
+  iNamed 1.
+  iNamed "HH".
   wp_pures.
   wp_loadField.
-  wp_apply (release_spec with "[$HmuInv $Hlocked $Hown]").
+  wp_apply (release_spec with "[-HΦ HΨ]").
+  {
+    iFrame "HmuInv Hlocked".
+    iNext.
+    repeat iExists _.
+    iSplitR "HghostEph"; last iFrame.
+    repeat iExists _.
+    iFrame "∗ #".
+  }
   wp_pures.
 
   iLeft in "HΨ".
   iApply "HΦ".
   iApply "HΨ".
   iDestruct "Hlb" as "(_ & $)".
-  done.
+  by iModIntro.
 Admitted.
 
 End pb_applybackup_proof.
