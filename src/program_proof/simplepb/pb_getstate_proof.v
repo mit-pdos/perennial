@@ -233,10 +233,10 @@ Proof.
         iPureIntro. done.
       }
       instantiate (1:=(∃ opsfull, is_accepted_ro γsrv epoch opsfull ∗
-                                                 is_proposal_lb γ epoch opsfull ∗
-                                                 is_proposal_facts γ epoch opsfull ∗
-                                                 is_ephemeral_proposal_sealed γeph epoch opsfull_ephemeral ∗
-                                                 ⌜get_rwops opsfull = get_rwops opsfull_ephemeral⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
+                                  is_proposal_lb γ epoch opsfull ∗
+                                  is_proposal_facts γ epoch opsfull ∗
+                                  is_ephemeral_proposal_sealed γeph epoch opsfull_ephemeral ∗
+                                  ⌜get_rwops opsfull = get_rwops opsfull_ephemeral⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
       iExists _.
       iFrame "#".
       iPureIntro. done.

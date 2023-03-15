@@ -361,6 +361,10 @@ Definition own_Server_ghost_f γ γsrv γeph epoch ops sealed : iProp Σ :=
   "Hghost" ∷ (own_replica_ghost γ γsrv epoch opsfull sealed) ∗
   "Hprim" ∷ (own_primary_ghost γ γsrv epoch opsfull) ∗
   "#Heph_sealed" ∷ □(if sealed then (∃ opsfull_ephemeral, is_ephemeral_proposal_sealed γeph epoch opsfull_ephemeral) else True)
+  (* XXX: keeping sealed ephemeral proposal so that:
+     when the primary is NOT sealed, it will have own_proposal, which tells it
+     that the server cannot be sealed.
+   *)
 .
 
 End pb_global_definitions.

@@ -319,6 +319,28 @@ Proof.
   iNamed 1. iExists _; iFrame "∗#"; done.
 Qed.
 
+(* No short circuting *)
+Lemma wp_and' e1 e2 Φ H P1 P2 {Hp1:Decision P1} {Hp2:Decision P2} :
+  H -∗
+  (H -∗ WP e1 {{ v, H ∗ ⌜v = #(bool_decide P1)⌝ }}) -∗
+  (H -∗ WP e2 {{ v, H ∗ ⌜v = #(bool_decide P2)⌝ }}) -∗
+  (H -∗ Φ #(bool_decide (P1 ∧ P2))) -∗
+  WP (if: e1 then e2 else #false) {{ Φ }}
+.
+Proof.
+Admitted.
+
+Lemma wp_and2 e1 e2 e3 Φ H P1 P2 P3 {Hp1:Decision P1} {Hp2:Decision P2} {Hp3:Decision P3}:
+  H -∗
+  (H -∗ WP e1 {{ v, H ∗ ⌜v = #(bool_decide P1)⌝ }}) -∗
+  (H -∗ WP e2 {{ v, H ∗ ⌜v = #(bool_decide P2)⌝ }}) -∗
+  (H -∗ WP e3 {{ v, H ∗ ⌜v = #(bool_decide P3)⌝ }}) -∗
+  (H -∗ Φ #(bool_decide (P1 ∧ P2 ∧ P3))) -∗
+  WP (if: if: e1 then e2 else #false then e3 else #false) {{ Φ }}
+.
+Proof.
+Admitted.
+
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
   is_Server s γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
@@ -345,59 +367,21 @@ Proof.
   iNamed "Hvol".
 
   wp_loadField.
-  wp_bind (If (_ > _) _ _).
-  wp_apply (wp_wand with "[Hargs_index HnextIndex Hargs_epoch Hepoch]").
-  {
-    wp_loadField.
-    wp_pures.
-    wp_if_destruct.
-    {
-      wp_loadField.
-      wp_loadField.
-      wp_pures.
-      iModIntro.
-      instantiate (1:=(λ v, ("%Hisbool" ∷ ⌜v = #true ∨ v = #false⌝ ∗ _))%I).
-      simpl.
-      iSplitR.
-      { iPureIntro. destruct bool_decide; naive_solver. }
-      iNamedAccu.
-    }
-    {
-      iFrame.
-      iPureIntro.
-      by right.
-    }
+  wp_bind (If (If (_ > _) _ _) _ _).
+  wp_apply (wp_and2 with "[Hsealed Hargs_index HnextIndex Hargs_epoch Hepoch]"); first iNamedAccu; iNamed 1.
+  { wp_loadField. wp_pures. iFrame. done. }
+  { wp_loadField. wp_loadField. wp_pures. iFrame. done. }
+  { wp_loadField. wp_pures. iFrame.
+    iPureIntro.
+    f_equal.
+    instantiate (2:=(st.(server.sealed) = false)).
+    admit.
   }
-  iIntros (?).
-  iNamed 1.
-  wp_bind (If v _ #false).
-  wp_apply (wp_wand with "[Hsealed]").
-  {
-    wp_pures.
-    destruct Hisbool as [-> | ->].
-    {
-      wp_pures.
-      wp_loadField.
-      wp_pures.
-      instantiate (1:=(λ w, ("%Hisboolw" ∷ ⌜w = #true ∨ w = #false⌝ ∗ _))%I).
-      simpl.
-      iModIntro.
-      iSplitR.
-      { iPureIntro. destruct st.(server.sealed); naive_solver. }
-      iNamedAccu.
-    }
-    {
-      wp_pures.
-      iSplitR.
-      { iPureIntro. naive_solver. }
-      by iFrame.
-    }
+  Unshelve.
+  2:{
+    admit.
   }
-
-  iIntros (?).
-  iNamed 1.
-  wp_pures.
-  destruct Hisboolw as [-> | ->].
+  wp_if_destruct.
   { (* loop again *)
     wp_pures.
     wp_loadField.
@@ -485,7 +469,7 @@ Proof.
       iSplitR "HghostEph"; last iFrame "HghostEph".
       (* time iFrame "∗#%". *)
       repeat (iExists _).
-      rewrite Heqb.
+      rewrite Heqb0.
       time (iFrame "∗"; iFrame "#"; iFrame "%").
     }
     wp_pures.
@@ -509,7 +493,7 @@ Proof.
       iSplitR "HghostEph"; last iFrame "HghostEph".
       (* time iFrame "∗#%". *)
       repeat (iExists _).
-      rewrite Heqb.
+      rewrite Heqb0.
       time (iFrame "∗"; iFrame "#"; iFrame "%").
     }
     wp_pures.
@@ -535,7 +519,7 @@ Proof.
       iSplitR "HghostEph"; last iFrame "HghostEph".
       (* time iFrame "∗#%". *)
       repeat (iExists _).
-      rewrite Heqb.
+      rewrite Heqb0.
       iFrame "∗".
       time (iFrame "∗"; iFrame "#"; iFrame "%").
     }
@@ -553,7 +537,7 @@ Proof.
   { done. }
   {
     rewrite Hσ_index.
-    rewrite Heqb1.
+    rewrite Heqb2.
     (* FIXME: why do I need to rewrite these? *)
     word_cleanup.
     (* FIXME: don't want to manually unfold this *)
@@ -596,7 +580,7 @@ Proof.
   epose proof (applybackup_step_helper2 _ _ _ _ Hghost_op_σ _ Heph_prefix) as Hre.
   Unshelve.
   2:{ rewrite Hσ_index. unfold no_overflow in HnextIndexNoOverflow.
-      rewrite Heqb1. word. }
+      rewrite Heqb2. word. }
   rewrite -Hre.
 
   wp_pures.
@@ -670,7 +654,7 @@ Proof.
 
     repeat iExists _.
     simpl.
-    rewrite HnotPrimary Heqb.
+    rewrite HnotPrimary Heqb0.
     iFrame "∗".
     iSplitL "HnextIndex".
     {
@@ -680,7 +664,7 @@ Proof.
       iExactEq "HnextIndex".
       repeat f_equal.
       unfold no_overflow in HnextIndexNoOverflow.
-      rewrite -Heqb1.
+      rewrite -Heqb2.
       admit. (* FIXME: overflow reasoning *)
     }
     iFrame "#".
@@ -721,12 +705,12 @@ Proof.
         replace (st.(server.epoch)) with (args.(ApplyAsBackupArgs.epoch)) by word.
 
         replace (args.(ApplyAsBackupArgs.epoch)) with (st0.(server.epoch)); last first.
-        { rewrite -Heqb2. word. } (* FIXME: why do we need to manually rewrite? *)
+        { rewrite -Heqb3. word. } (* FIXME: why do we need to manually rewrite? *)
         iDestruct (increase_durableNextIndex with "Hlb HghostEph") as "HghostEph".
         { instantiate (1:=(word.add args.(ApplyAsBackupArgs.index) 1)). word. }
 
         wp_storeField.
-        rewrite Heqb1. (* to match up ApplyArgs.index and (length (rws ops_full_eph)) *)
+        rewrite Heqb2. (* to match up ApplyArgs.index and (length (rws ops_full_eph)) *)
         wp_loadField.
         wp_apply (wp_condBroadcast with "[]"); first iFrame "#".
         wp_pures.
