@@ -5,6 +5,8 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.reconnectclient Require Import proof.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Section pb_getstate_proof.
 Context `{!heapGS Σ}.
@@ -15,6 +17,7 @@ Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
+Notation own_Server_ghost_f := (own_Server_ghost_f (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
@@ -150,6 +153,24 @@ Proof.
   rewrite /is_StateMachine /tc_opaque.
   iNamed 1. iExists _; iFrame "#".
 Qed.
+
+(* GetState step for ephemeral ghost state *)
+Lemma getstate_eph st γ γsrv γeph :
+  own_Server_ghost_eph_f st γ γsrv γeph -∗
+  own_Server_ghost_eph_f (st <| server.sealed := true |>) γ γsrv γeph ∗
+  is_ephemeral_proposal_sealed γeph st.(server.epoch) st.(server.ops_full_eph)
+.
+Proof.
+Admitted.
+
+(* GetState step for ghost state *)
+Lemma getstate_step γ γsrv γeph epoch ops sealed :
+  is_ephemeral_proposal_sealed γeph epoch ops -∗
+  own_Server_ghost_f γ γsrv γeph epoch (get_rwops ops) sealed -∗
+  own_Server_ghost_f γ γsrv γeph epoch (get_rwops ops) true ∗
+  is_accepted_ro γsrv epoch ops.
+Proof.
+Admitted.
 
 Lemma wp_Server__GetState γ γsrv s args_ptr args epoch_lb Φ Ψ :
   is_Server s γ γsrv -∗
