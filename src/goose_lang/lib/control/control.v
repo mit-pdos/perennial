@@ -24,10 +24,17 @@ Qed.
 
 Theorem wp_If_optional' stk E (R: iProp Σ) (b: bool) e Φ :
   R -∗
-  (R -∗ ⌜b = true⌝ -∗ WP e @ stk; E {{ _, R }}) -∗
+  (R -∗ ⌜b = true⌝ -∗ WP e @ stk; E {{ v, ⌜v = #()⌝ ∗ R }}) -∗
   (R -∗ Φ #()) -∗ WP If #b e #() @ stk; E {{ Φ }}.
 Proof.
-Admitted.
+  iIntros "HR He HΦ".
+  wp_if_destruct.
+  - wp_apply (wp_wand with "[He HR]").
+    { by wp_apply ("He" with "HR"). }
+    iIntros (?) "[% HR]". subst.
+    by iApply "HΦ".
+  - by iApply "HΦ".
+Qed.
 
 Theorem wp_If_join (R: iProp Σ) (b: bool) stk E e1 e2 :
   ∀ Φ, (⌜ b = true ⌝ -∗ WP e1 @ stk; E {{ v, ⌜v = #()⌝ ∗ R }}) ∧

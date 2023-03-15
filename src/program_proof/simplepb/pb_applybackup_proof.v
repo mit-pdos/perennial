@@ -692,6 +692,7 @@ Proof.
         wp_loadField.
         wp_apply (wp_condSignal with "[]"); first iFrame "#".
         iFrame.
+        done.
       }
       iSplitR; first done.
       iAssert (∃ (newDurableNextIndex:u64),
