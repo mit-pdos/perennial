@@ -6,15 +6,17 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From iris.algebra Require Import mono_list.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Section pb_setstate_proof.
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
@@ -139,8 +141,8 @@ Proof.
   { set_solver. }
   iDestruct "Heph" as "[%Hbad|Heph]".
   { exfalso. word. }
-  iMod (own_update with "Heph") as "$".
-  { apply singleton_update. apply mono_list_update. apply prefix_nil. }
+  iMod (fmlist_ptsto_update with "Heph") as "$".
+  { apply prefix_nil. }
   iModIntro.
   iApply "Hunused".
   {
@@ -154,13 +156,85 @@ Proof.
   }
 Qed.
 
+Lemma get_epoch_eph γ γsrv γeph st :
+  own_Server_ghost_eph_f st γ γsrv γeph -∗
+  is_epoch_lb γsrv st.(server.epoch)
+.
+Proof.
+  rewrite /own_Server_ghost_eph_f /tc_opaque. by iNamed 1.
+Qed.
+
+Lemma setstate_eph_step γ γsrv γeph st epoch' ops' :
+int.nat st.(server.epoch) < int.nat epoch' →
+is_proposal_lb γ epoch' ops' -∗
+is_proposal_valid γ ops' -∗
+own_Server_ghost_eph_f st γ γsrv γeph ==∗
+(is_epoch_lb γsrv epoch' -∗
+ is_accepted_lb γsrv epoch' ops' -∗
+ own_Server_ghost_eph_f (st <| server.ops_full_eph := ops' |> <| server.epoch := epoch' |>
+                            <| server.sealed := false |> <| server.isPrimary := false |>
+                            <| server.durableNextIndex := length (get_rwops ops') |>
+                       ) γ γsrv γeph) ∗
+is_ephemeral_proposal_lb γeph epoch' ops'.
+Proof.
+  intros HnewEpoch.
+  iIntros "#Hprop_lb #Hprop_valid Hghost".
+  iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "Hghost".
+  iNamed "Hghost".
+  iMod (get_unused_ephemeral_proposal _ _ epoch' ops' with "Heph_unused") as "Heph_unused".
+  { done. }
+  iClear "Heph".
+  iDestruct "Heph_unused" as "[Hunused Heph]".
+  iDestruct (fmlist_ptsto_get_lb with "Heph") as "#$".
+  iModIntro. iIntros. repeat iExists _.
+  iClear "Hdurable_lb".
+  iFrame "∗#".
+  simpl.
+  iSplitR; last by iLeft.
+  iPureIntro.
+  (* FIXME: list length overflow... *)
+Admitted.
+
+Lemma setstate_step γ γsrv γeph epoch ops sealed epoch' opsfull':
+  int.nat epoch < int.nat epoch' →
+  is_ephemeral_proposal_lb γeph epoch' opsfull' -∗
+  is_proposal_lb γ epoch' opsfull' -∗
+  is_proposal_facts γ epoch' opsfull' -∗
+  own_Server_ghost_f γ γsrv γeph epoch ops sealed ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv γeph epoch' (get_rwops opsfull') false ∗
+  is_epoch_lb γsrv epoch' ∗
+  is_accepted_lb γsrv epoch' opsfull'
+.
+Proof.
+  intros HnewEpoch.
+  iIntros "#Hnew_eph_lb #? #? Hghost".
+  iNamed "Hghost".
+  iClear "Heph_lb".
+  iMod (ghost_accept_and_unseal with "Hghost [$] [$]") as "Hghost".
+  { done. }
+
+  iMod (ghost_primary_accept_new_epoch with "[$] [$] Hprim") as "Hprim".
+  { done. }
+  iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb".
+  iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
+  iSplitL.
+  {
+    iExists _.
+    iFrame "∗#".
+    iPureIntro. done.
+  }
+  iModIntro.
+  iCombine "Hepoch_lb Hacc_lb" as "HH".
+  iExact "HH".
+Qed.
+
 Lemma wp_Server__SetState γ γsrv s args_ptr args opsfull Φ Ψ :
   is_Server s γ γsrv -∗
   SetStateArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
   SetState_core_spec γ γsrv args opsfull Ψ -∗
   WP pb.Server__SetState #s #args_ptr {{ Φ }}
-  .
+.
 Proof.
   iIntros "#His_srv Hargs HΦ HΨ".
   iNamed "His_srv".
@@ -171,6 +245,7 @@ Proof.
   wp_pures.
   iNamed "Hown".
   iNamed "Hargs".
+  iNamed "Hvol".
   wp_loadField.
   wp_loadField.
   wp_if_destruct.
@@ -184,7 +259,9 @@ Proof.
       iFrame "HmuInv Hlocked".
       iNext.
       repeat (iExists _).
-      iFrame "∗#%".
+      iSplitR "HghostEph"; last iFrame.
+      repeat (iExists _).
+      by iFrame "∗#".
     }
     wp_pures.
     iApply "HΦ".
@@ -197,7 +274,7 @@ Proof.
     wp_if_destruct.
     { (* state has been set previously. Use is_prop_lb to get agreement. *)
       wp_loadField.
-
+      iDestruct (get_epoch_eph with "HghostEph") as "#Heph_lb".
       iDestruct "HΨ" as "(_ & _ & _ & _ & HΨ)".
       iLeft in "HΨ".
       wp_apply (release_spec with "[-HΨ HΦ]").
@@ -205,12 +282,14 @@ Proof.
         iFrame "HmuInv Hlocked".
         iNext.
         repeat (iExists _).
-        iFrame "∗#%".
+        iSplitR "HghostEph"; last iFrame.
+        repeat (iExists _).
+        by iFrame "∗#".
       }
       wp_pures.
       iApply "HΦ".
       iApply "HΨ".
-      iFrame "#". done.
+      by rewrite Heqb0.
     }
     iAssert (_) with "HisSm" as "#HisSm2".
     iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
@@ -231,26 +310,9 @@ Proof.
 
     iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & HΨ)".
     replace (args.(SetStateArgs.nextIndex)) with (U64 (length (get_rwops opsfull))) by word.
-
-    iMod (get_unused_ephemeral_proposal _ _ args.(SetStateArgs.epoch) opsfull with "Heph_unused") as "Heph_unused".
-    {
-      destruct (decide (int.nat epoch = int.nat args.(SetStateArgs.epoch))).
-      {
-        exfalso.
-        replace (epoch) with (args.(SetStateArgs.epoch)) in Heqb0 by word.
-        done.
-      }
-      apply Znot_lt_ge in Heqb.
-      word.
-    }
-    iClear "Heph".
-    iDestruct "Heph_unused" as "[Hunused Heph]".
-    iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Hnew_eph_lb".
-    {
-      apply singleton_mono.
-      apply mono_list_included.
-    }
-
+    iMod (setstate_eph_step with "Hprop_lb [Hprop_facts] HghostEph") as "[HghostEph #Hnew_eph]".
+    { admit. } (* FIXME: should be trivial, almost `word` proof. Have (a ≠ b) and ¬(a < b) *)
+    { iDestruct "Hprop_facts" as "[_ [_ $]]". }
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
       iSplitR.
@@ -258,47 +320,15 @@ Proof.
       iSplitR; first done.
       iFrame "Hargs_state_sl".
       iIntros "Hghost".
-      iNamed "Hghost".
-
-      assert (int.nat epoch < int.nat args.(SetStateArgs.epoch)) as Hepoch_fresh.
-      {
-        assert (int.nat epoch ≠ int.nat args.(SetStateArgs.epoch)).
-        {
-          assert (int.nat epoch ≠ int.nat args.(SetStateArgs.epoch) ∨
-        (int.nat epoch = int.nat args.(SetStateArgs.epoch))) as [|].
-          { word. }
-          { word. }
-          { exfalso. replace (epoch) with (args.(SetStateArgs.epoch)) in * by word.
-            done. }
-        }
-        word.
-      }
-
-      iMod (ghost_accept_and_unseal with "Hghost Hprop_lb [$]") as "Hghost".
-      {
-        done.
-      }
-
-      iMod (ghost_primary_accept_new_epoch with "Hprop_facts Hprop_lb Hprim") as "Hprim".
-      {
-        done.
-      }
-      iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb".
-      iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
-      iSplitL.
-      {
-        iExists _.
-        iFrame "∗#".
-        iPureIntro. done.
-      }
-      iModIntro.
-      iCombine "Hepoch_lb Hacc_lb" as "HH".
-      iExact "HH".
+      iMod (setstate_step with "[$] [$] [$] Hghost") as "[$ H]".
+      { admit. } (* FIXME: the same `word` proof as above *)
+      iExact "H".
     }
     iIntros "(Hstate & #Hepoch_lb & #Hacc_lb)".
     wp_pures.
     wp_loadField.
 
+    iDestruct ("HghostEph" with "Hepoch_lb Hacc_lb") as "HghostEph".
     (* signal all opApplied condvars *)
     wp_apply (wp_MapIter with "HopAppliedConds_map HopAppliedConds_conds").
     { iFrame "HopAppliedConds_conds". }
@@ -325,23 +355,16 @@ Proof.
       iFrame "HmuInv Hlocked".
       iNext.
       repeat (iExists _).
-      iFrame "∗ HisSm Hacc_lb #%".
+      iSplitR "HghostEph"; last iFrame.
+      repeat (iExists _).
+      iFrame "∗ HisSm #%".
+      simpl.
       iSplitR.
       { iApply big_sepM_empty. done. }
-      iSplitR.
-      { iDestruct "Hprop_facts" as "(_ & _ & $)". }
-      iSplit.
-      {
-        iPureIntro.
-        word.
-      }
-      iSplit.
-      {
-        iPureIntro.
-        word.
-      }
-      rewrite /is_possible_Primary /tc_opaque.
-      done.
+      iSplitR; first by iLeft.
+      iPureIntro.
+      unfold no_overflow.
+      word. (* FIXME: how to avoid needing to unfold? *)
     }
     wp_pures.
     iLeft in "HΨ".
@@ -351,6 +374,6 @@ Proof.
       done.
     }
   }
-Qed.
+Admitted.
 
 End pb_setstate_proof.
