@@ -133,14 +133,28 @@ Proof.
   }
 Qed.
 
-Lemma ghost_unsealed γ γsrv γeph st epoch ops sealed :
+Local Ltac unseal := rewrite /own_Server_ghost_eph_f /own_Server_ghost_f /tc_opaque.
+
+Lemma ghost_unsealed γ γsrv γeph st ops sealed :
   st.(server.sealed) = false →
   own_Server_ghost_eph_f st γ γsrv γeph -∗
-  own_Server_ghost_f γ γsrv γeph epoch ops sealed →
+  own_Server_ghost_f γ γsrv γeph st.(server.epoch) ops sealed -∗
   ⌜sealed = false⌝.
 Proof.
-Admitted.
+  intros Hunsealed.
+  unseal.
+  iNamed 1.
+  iNamed 1.
+  rewrite Hunsealed.
+  destruct sealed.
+  {
+    iExFalso. iNamed "Heph_sealed".
+    by iDestruct (fmlist_ptsto_valid_2 with "Heph Heph_sealed") as %[Hbad _].
+  }
+  done.
+Qed.
 
+(* possibly update ephemeral points-to to later update accepted points to *)
 Lemma roapplybackup_backup_eph_step γ γsrv γeph st ops_full' :
   st.(server.isPrimary) = false →
   st.(server.sealed) = false →
@@ -150,7 +164,7 @@ Lemma roapplybackup_backup_eph_step γ γsrv γeph st ops_full' :
   own_Server_ghost_eph_f st γ γsrv γeph ==∗
   ∃ new_ops_full durable_ops_full,
   ⌜get_rwops new_ops_full = get_rwops st.(server.ops_full_eph)⌝ ∗
-  ⌜get_rwops ops_full' = get_rwops durable_ops_full⌝ ∗
+  ⌜length (get_rwops ops_full') <= length (get_rwops durable_ops_full)⌝ ∗
   is_accepted_lb γsrv st.(server.epoch) durable_ops_full ∗
   own_Server_ghost_eph_f (st <| server.ops_full_eph := new_ops_full |>) γ γsrv γeph ∗
   is_ephemeral_proposal_lb γeph st.(server.epoch) ops_full'
@@ -162,10 +176,61 @@ Proof.
      In the second case, we can get the ephemeral_lb from the current
      own_ephemeral.
    *)
-Admitted.
+  intros Hbackup Hunsealed Hlen.
+  iIntros "#Hprop_lb #Hprop_facts HghostEph".
+  iEval (unseal) in "HghostEph".
+  iNamed "HghostEph".
+  rewrite Hbackup.
+  rewrite Hunsealed.
+  iDestruct (fmlist_ptsto_lb_comparable with "Hprop_lb Heph_prop_lb") as %[Hprefix|Hprefix].
+  { (* case: ephemeral_proposal already has ops_full' in it *)
+    iDestruct (fmlist_ptsto_get_lb with "Heph") as "#Heph_lb".
+    iModIntro.
+    iExists _, _; iFrame "∗#".
+    iSplit; first done.
+    iSplit; first iPureIntro.
+    { word. }
+    iSplitL.
+    { repeat (iExists _). simpl. rewrite Hunsealed Hbackup. iFrame "∗#%". }
+    by iApply fmlist_ptsto_lb_mono.
+  }
+  { (* case: need to grow ephemeral_proposal *)
+    iDestruct (fmlist_ptsto_lb_agree with "Heph Hdurable_eph_lb") as %HdurablePrefix.
+    iMod (fmlist_ptsto_update with "Heph") as "Heph".
+    { done. }
+    iDestruct (fmlist_ptsto_get_lb with "Heph") as "#Heph_lb".
+    iModIntro.
+    iExists _, _; iFrame "∗#".
+    iSplitR; first iPureIntro.
+    {
+      (*
+        durable ⪯ server.ops_eph ⪯ ops_full'
+          and
+        get_rwops ops_full' ⪯ get_rwops durable
+       *)
+      apply get_rwops_prefix in HdurablePrefix, Hprefix.
+      symmetry. apply list_prefix_eq.
+      { exact Hprefix. }
+      assert (prefix (get_rwops ops_durable_full) (get_rwops ops_full')) as HdurableFull'.
+      { by transitivity (get_rwops st.(server.ops_full_eph)). }
+      apply list_prefix_eq in HdurableFull'; last first.
+      { word. }
+      apply prefix_length in HdurablePrefix, Hprefix.
+      word.
+    }
+    iSplitR.
+    { iPureIntro. word. }
+    repeat iExists _.
+    rewrite Hbackup Hunsealed.
+    iDestruct "Hprop_facts" as "(_ & _ & $)".
+    iFrame "∗#%".
+    by iLeft.
+  }
+Qed.
 
+(* possibly update accepted points-to *)
 Lemma roapplybackup_ghost_step γ γsrv γeph epoch ops durable_ops ops_full' :
-  get_rwops durable_ops = get_rwops ops_full' →
+  length $ get_rwops durable_ops >= length $ get_rwops ops_full' →
   is_proposal_lb γ epoch ops_full' -∗
   is_proposal_facts γ epoch ops_full' -∗
   is_accepted_lb γsrv epoch durable_ops -∗
@@ -175,7 +240,46 @@ Lemma roapplybackup_ghost_step γ γsrv γeph epoch ops durable_ops ops_full' :
   is_accepted_lb γsrv epoch ops_full'
 .
 Proof.
-Admitted.
+  intros HdurableLength.
+  iIntros "#Hprop_lb #Hprop_facts #Hdur_acc_lb #Hnew_eph_lb Hghost".
+  iEval unseal in "Hghost".
+  iNamed "Hghost".
+  subst.
+  iDestruct (fmlist_ptsto_lb_comparable with "Hnew_eph_lb Heph_lb") as %[Hprefix|Hprefix].
+  { (* case: already accepted ops_full' *)
+    iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
+    iModIntro.
+    iSplitL.
+    { repeat iExists _; iFrame "∗#%". done. }
+    by iApply fmlist_ptsto_lb_mono.
+  }
+  { (* case: need to update accepted points-to, but show that the RWs are the same *)
+    iDestruct (ghost_accept_lb_ineq with "Hdur_acc_lb Hghost") as %HdurablePrefix.
+    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
+    { done. }
+    { by apply prefix_length. }
+    iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
+    { by apply prefix_length. }
+    iDestruct (ghost_get_accepted_lb with "Hghost") as "#$".
+    iModIntro. repeat iExists _; iFrame "∗#".
+    iPureIntro.
+    apply get_rwops_prefix in HdurablePrefix, Hprefix.
+    apply list_prefix_eq.
+    { done. }
+    apply prefix_length in HdurablePrefix, Hprefix.
+    word.
+  }
+Qed.
+
+Lemma get_primary_witness γ γeph γsrv st :
+  st.(server.isPrimary) = true →
+  is_Primary_ghost_f γ γeph γsrv st -∗
+  is_tok γsrv st.(server.epoch).
+Proof.
+  intros Hprim.
+  rewrite /is_Primary_ghost_f /tc_opaque.
+  by iNamed 1.
+Qed.
 
 Lemma roapplybackup_primary_step γ γsrv γeph ops_full' ops_old st :
 st.(server.isPrimary) = true →
@@ -184,7 +288,18 @@ own_Server_ghost_eph_f st γ γsrv γeph -∗
 own_Server_ghost_f γ γsrv γeph st.(server.epoch) ops_old false -∗
 is_accepted_lb γsrv st.(server.epoch) ops_full'.
 Proof.
-Admitted.
+  intros Hprim.
+  iIntros "Hprop_lb HghostEph Hghost".
+  unseal. iNamed "HghostEph". iNamed "Hghost".
+  rewrite Hprim.
+  subst.
+  iDestruct "HprimaryOnly" as "[%Hbad|Hprimary]"; first by exfalso.
+  iDestruct (get_primary_witness with "Hprimary") as "#Hwitness".
+  { done. }
+  iDestruct (ghost_propose_lb_valid with "Hwitness Hprim Hprop_lb") as %Hprefix.
+  iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc".
+  by iApply fmlist_ptsto_lb_mono.
+Qed.
 
 Lemma roapplybackup_step γ γsrv γeph st ops_full' sm own_StateMachine :
   int.nat st.(server.durableNextIndex) >= length (get_rwops ops_full') →
@@ -233,229 +348,6 @@ Proof.
     iFrame "∗#%".
   }
 Qed.
-
-(*
-  iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
-  iAssert ((|NC={⊤,⊤}=>
-           wpc_nval ⊤
-             (own_StateMachine args.(RoApplyAsBackupArgs.epoch) (get_rwops opsfull_ephemeral) false
-                (own_Server_ghost γ γsrv γeph) ∗
-                ((is_accepted_lb γsrv args.(RoApplyAsBackupArgs.epoch) opsfull) ∗
-                  (∃ new_opsfull_ephemeral, ⌜get_rwops new_opsfull_ephemeral = get_rwops opsfull_ephemeral⌝ ∗
-                  ⌜if isPrimary then new_opsfull_ephemeral = opsfull_ephemeral else True⌝ ∗
-                  (if isPrimary then True else is_proposal_lb γ args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral) ∗
-                  is_proposal_valid γ new_opsfull_ephemeral ∗
-                  own_ephemeral_proposal γeph args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral)
-             ))
-
-           )%I) with "[Hlc Heph Hstate]" as "HH".
-  {
-  (* Want to establish:
-     is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull
-     This requires us to know that opsfull_ephemeral ⪯ opsfull.
-     We will establish this using accP.
-   *)
-    destruct isPrimary.
-    { (* case: is primary. *)
-      iAssert (_) with "HprimaryOnly" as "Hprim2".
-      iEval (rewrite /is_possible_Primary /tc_opaque) in "Hprim2".
-      iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
-      {
-        (* PERF *)
-        (* time done. *) (* takes 5 seconds*)
-        (* time (iModIntro; done). *) (* takes 0.2 seconds, still a lot longer than below *)
-        time (iModIntro; iApply True_intro; iAccu). }
-      iIntros (???) "Hghost".
-      iNamed "Hghost".
-      iNamed "Hprim2".
-      iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hprefix.
-      iModIntro.
-      iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
-      iSplitR "Heph".
-      { iExists _; iFrame "∗#%". }
-      iSplitR "Heph".
-      {
-        iApply (own_mono with "Hacc_lb").
-        apply singleton_included. right.
-        by apply mono_list_lb_mono.
-      }
-      iExists _.
-      iFrame "∗#".
-      done.
-    }
-    { (* case: not primary *)
-      (* either increase the accepted ops to be opsfull, or conclude that the
-         current accepted list already includes opsfull *)
-      iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
-      {
-        (* PERF *)
-        (* time done. *) (* takes 5 seconds*)
-        (* time (iModIntro; done). *) (* takes 0.2 seconds, still a lot longer than below *)
-        time (iModIntro; iApply True_intro; iAccu). }
-      iIntros (opsold ? ?) "Hghost".
-      iNamed "Hghost".
-
-      destruct sealedold.
-      { (* epoch can't be sealed because of own_ephemeral_proposal *)
-        iNamed "Heph_sealed".
-        iDestruct (own_valid_2 with "Heph Heph_sealed") as %Hbad.
-        exfalso.
-        rewrite singleton_op singleton_valid in Hbad.
-        rewrite mono_list_auth_dfrac_op_valid_L in Hbad.
-        destruct Hbad as [Hbad _].
-        done.
-      }
-
-      iAssert (⌜prefix ops_durable_full opsfull0⌝)%I with "[-]" as %HdurablePrefix.
-      { (* TODO: make this a separate lemma *)
-        iNamed "Hghost".
-        iDestruct (own_valid_2 with "Haccepted Hdurable_lb") as %H.
-        iPureIntro.
-        by rewrite singleton_op singleton_valid mono_list_both_valid_L in H.
-      }
-
-      (* opsfull0 is comparable to opsfull (by prop_lb). Maybe increase opsfull0
-         to opsfull.
-       *)
-      iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hproposal_lb _]".
-      iDestruct (own_valid_2 with "Hproposal_lb Hprop_lb") as %Hcomp.
-      rewrite singleton_op singleton_valid in Hcomp.
-      rewrite csum.Cinr_valid in Hcomp.
-      apply mono_list_lb_op_valid_L in Hcomp.
-
-      destruct Hcomp as [Hprefix|Hprefix].
-      { (* case: opsfull0 ⪯ opsfull; do an update of accepted list.
-           May or may not need to update ephemeral proposal.
-         *)
-        iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
-        { done. }
-        { by apply prefix_length. }
-        iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
-        { by apply prefix_length. }
-
-        iDestruct (own_valid_2 with "Heph_prop_lb Hprop_lb") as %Hephcases.
-        rewrite singleton_op singleton_valid -csum.Cinr_op csum.Cinr_valid in Hephcases.
-        rewrite mono_list_lb_op_valid_L in Hephcases.
-
-        iDestruct (own_valid_2 with "Heph Heph_lb") as %Hephprefix.
-        rewrite singleton_op singleton_valid in Hephprefix.
-        rewrite mono_list_both_valid_L in Hephprefix.
-
-        (* maybe update ephemeral proposal, maybe not. *)
-        iAssert (
-          |==> (∃ new_opsfull_ephemeral : list (GhostOpType * gname),
-            ⌜get_rwops new_opsfull_ephemeral = get_rwops opsfull_ephemeral⌝ ∗ True ∗
-            is_proposal_lb γ args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral ∗
-            is_proposal_valid γ new_opsfull_ephemeral ∗
-            own_ephemeral_proposal γeph args.(RoApplyAsBackupArgs.epoch) new_opsfull_ephemeral) ∗
-            is_ephemeral_proposal_lb γeph args.(RoApplyAsBackupArgs.epoch) opsfull
-          )%I with "[Heph]" as ">Heph".
-        {
-          destruct Hephcases as [Hephcase|Hephcase].
-          {
-            iMod (own_update with "Heph") as "Heph".
-            { apply singleton_update. apply mono_list_update. apply Hephcase. }
-            iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Hnew_eph_lb".
-            {
-              apply singleton_mono.
-              apply mono_list_included.
-            }
-            iModIntro.
-            iFrame "#".
-            iExists _.
-            iFrame "∗#".
-            iDestruct "Hprop_facts" as "(_ & _ & $)".
-            iPureIntro.
-            (* prove that the new opsfull_ephemeral (which is equal to opsfull) has the
-               same rwops as the previous one. This makes use of the durable prefix. *)
-            apply get_rwops_prefix in Hephcase.
-            symmetry. apply list_prefix_eq.
-            { done. }
-            (* Given:
-                ephemeral ⪯ newops,
-                durable ⪯ cur,
-                cur ⪯ newops,
-                cur ⪯ ephemeral
-                length newops ≤ length durable
-               WTS:
-                newops = ephemeral.
-               Proof sketch:
-                By squeezing.
-                (durable ⪯ cur ⪯ newops) and (length newops ⪯ durable) → durable = newops = cur.
-                Then, (ephemeral ⪯ newops = cur ⪯ ephemeral) → ephemeral = newops.
-             *)
-            assert (prefix (get_rwops ops_durable_full) (get_rwops opsfull)).
-            {
-              transitivity (get_rwops opsfull0).
-              { apply get_rwops_prefix. done. }
-              { apply get_rwops_prefix. done. }
-            }
-            apply list_prefix_eq in H; last first.
-            { word. }
-            apply get_rwops_prefix in HdurablePrefix, Hprefix, Hephprefix.
-            apply prefix_length in HdurablePrefix, Hprefix, Hephcase, Hephprefix.
-            word.
-          }
-          {
-            iModIntro.
-            iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Htmp_eph_lb".
-            {
-              apply singleton_mono.
-              apply mono_list_included.
-            }
-            iSplitL.
-            {
-              iExists _; iFrame "∗#".
-              done.
-            }
-            iApply (own_mono with "Htmp_eph_lb").
-            apply singleton_included.
-            right.
-            apply mono_list_lb_mono.
-            done.
-          }
-        }
-        iDestruct "Heph" as "[$ #Hnew_eph_lb]".
-        iModIntro.
-        iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
-        iFrame "Hacc_lb".
-        iExists _.
-        iFrame.
-        iFrame "#".
-        subst.
-        iPureIntro.
-        (* Want to prove that opsfull.rws ⪯ opsfull0.rws
-           Make use of durableNexftIndex.
-         *)
-        apply get_rwops_prefix in Hprefix.
-        apply list_prefix_eq.
-        { done. }
-        apply prefix_length in Hprefix.
-        rewrite Hσ_index.
-        apply get_rwops_prefix, prefix_length in HdurablePrefix.
-        word.
-      }
-      { (* case: opsfull ⪯ opsfull0; no need to do any update at all *)
-        iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
-        iModIntro.
-        iSplitR "Heph".
-        { iExists _; iFrame "∗#%". }
-        iSplitR.
-        {
-          iApply (own_mono with "Hacc_lb").
-          apply singleton_included. right. apply mono_list_lb_mono.
-          done.
-        }
-        iExists opsfull_ephemeral.
-        iFrame "∗#".
-        done.
-      }
-    }
-  }
-
-  iMod "HH" as "HH".
-
-Admitted. *)
 
 Lemma wp_Server__RoApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args opsfull Φ Ψ :
   is_Server s γ γsrv -∗
@@ -572,7 +464,7 @@ Proof.
   }
 
   rewrite -Heqb0.
-  iMod (roapplybackup_step with "Hprop_lb Hprop_facts HisSm Hstate HghostEph") as "HH".
+  iMod (roapplybackup_step with "Hprop_lb Hprop_facts HisSm Hstate HghostEph Hlc") as "HH".
   { word. }
   { done. }
 
@@ -583,8 +475,8 @@ Proof.
   { done. }
   wp_loadField.
   wp_pures.
-  iIntros "HH".
-  iDestruct "HH" as (?) "(%Hnewops & Hstate & HghostEph & #Hacc_lb)".
+  iIntros "[Hstate HH]".
+  iDestruct "HH" as (?) "(%Hnewops & HghostEph & #Hacc_lb)".
 
   wp_apply (release_spec with "[-HΨ HΦ Hargs_epoch]").
   {

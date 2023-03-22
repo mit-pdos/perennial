@@ -271,6 +271,14 @@ Lemma ghost_get_proposal_facts γsys γsrv epoch σ sealed :
   is_proposal_facts γsys epoch σ.
 Proof. iNamed 1. iFrame "#". Qed.
 
+Lemma ghost_accept_lb_ineq γsys γsrv epoch σ σ' :
+  is_accepted_lb γsrv epoch σ' -∗
+  own_replica_ghost γsys γsrv epoch σ false -∗
+  ⌜σ' ⪯ σ⌝.
+Proof.
+  iIntros "#?". iNamed 1. by iApply (fmlist_ptsto_lb_agree with "Haccepted").
+Qed.
+
 Lemma ghost_accept γsys γsrv epoch epoch' σ σ' :
   int.nat epoch ≤ int.nat epoch' →
   length σ ≤ length σ' →

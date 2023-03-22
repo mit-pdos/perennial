@@ -718,6 +718,7 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv γeph : iProp Σ :=
   "#Heph_prop_lb" ∷ □(if st.(server.isPrimary) then True else is_proposal_lb γ st.(server.epoch) st.(server.ops_full_eph)) ∗
   (* accepted witness for durable state *)
   "#Hdurable_lb" ∷ is_accepted_lb γsrv st.(server.epoch) ops_durable_full ∗
+  "#Hdurable_eph_lb" ∷ is_ephemeral_proposal_lb γeph st.(server.epoch) ops_durable_full ∗
   "#Heph_valid" ∷ is_proposal_valid γ st.(server.ops_full_eph) ∗
 
   "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat st.(server.durableNextIndex)⌝ ∗

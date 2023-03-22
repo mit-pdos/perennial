@@ -151,7 +151,7 @@ Section lemmas.
   Proof.
     set (m:=gset_to_gmap (K:=K) (A:=(list V)) l (fin_to_set K)).
     iStartProof.
-    iMod (ghost_map_alloc_strong (λ _, True) m) as (?) "[_ H]".
+    iMod (fmlist_map_alloc_strong (λ _, True) m) as (?) "[_ H]".
     { apply pred_infinite_True. }
     iModIntro.
     iExists γ.
