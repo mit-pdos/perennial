@@ -744,16 +744,16 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv γeph : iProp Σ :=
   )%I
 .
 
-Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
-  ∃ st γeph,
+Definition mu_inv (s:loc) γ γsrv γeph mu: iProp Σ :=
+  ∃ st,
   "Hvol" ∷ own_Server s st γ γsrv mu γeph ∗
   "HghostEph" ∷ own_Server_ghost_eph_f st γ γsrv γeph
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val),
+  ∃ (mu:val) γeph,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
+  "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv γeph mu) ∗
   "#Hsys_inv" ∷ sys_inv γ.
 
 Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :

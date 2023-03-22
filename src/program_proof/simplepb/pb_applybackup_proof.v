@@ -239,7 +239,7 @@ Proof.
       iSplitL; last done.
       repeat iExists _.
       rewrite Hunsealed.
-      iFrame "∗#".
+      iFrame "∗ Hdurable_lb #".
       rewrite HisPrimary.
       simpl.
       iSplitR.
@@ -310,13 +310,14 @@ Qed.
 Lemma increase_durableNextIndex st γ γsrv γeph ops_durable_full newDurableNextIndex:
   length (get_rwops ops_durable_full) = int.nat newDurableNextIndex →
   is_accepted_lb γsrv st.(server.epoch) ops_durable_full -∗
+  is_ephemeral_proposal_lb γeph st.(server.epoch) ops_durable_full -∗
   own_Server_ghost_eph_f st γ γsrv γeph -∗
   own_Server_ghost_eph_f (st <| server.durableNextIndex:= newDurableNextIndex |>) γ γsrv γeph
 .
 Proof.
-  intros. iIntros "?".
+  intros. iIntros "??".
   rewrite /own_Server_ghost_eph_f /tc_opaque.
-  iNamed 1. iExists _; iFrame "∗#"; done.
+  iNamed 1. iExists _; iFrame "∗#". done.
 Qed.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
@@ -671,9 +672,8 @@ Proof.
       { apply inv_litv in HepochEq.
         injection HepochEq as <-.
         word. }
-      iDestruct (increase_durableNextIndex with "Hlb HghostEph") as "HghostEph".
+      iDestruct (increase_durableNextIndex with "Hlb Heph_lb HghostEph") as "HghostEph".
       { instantiate (1:=(word.add args.(ApplyAsBackupArgs.index) 1)). word. }
-
       wp_storeField.
       rewrite Heqb2. (* to match up ApplyArgs.index and (length (rws ops_full_eph)) *)
       wp_loadField.
@@ -698,7 +698,7 @@ Proof.
       iAssert (∃ (newDurableNextIndex:u64),
           "HdurableNextIndex" ∷ s ↦[Server :: "durableNextIndex"] #newDurableNextIndex ∗
           "HghostEph" ∷ own_Server_ghost_eph_f
-                          (st0 <| server.durableNextIndex := newDurableNextIndex |>) γ γsrv γeph0
+                          (st0 <| server.durableNextIndex := newDurableNextIndex |>) γ γsrv γeph
                           )%I with "[HdurableNextIndex HghostEph]" as "HH".
       { iExists _; iFrame. }
       iNamedAccu.
