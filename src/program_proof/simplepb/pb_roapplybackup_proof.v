@@ -133,6 +133,14 @@ Proof.
   }
 Qed.
 
+Lemma ghost_unsealed γ γsrv γeph st epoch ops sealed :
+  st.(server.sealed) = false →
+  own_Server_ghost_eph_f st γ γsrv γeph -∗
+  own_Server_ghost_f γ γsrv γeph epoch ops sealed →
+  ⌜sealed = false⌝.
+Proof.
+Admitted.
+
 Lemma roapplybackup_backup_eph_step γ γsrv γeph st ops_full' :
   st.(server.isPrimary) = false →
   st.(server.sealed) = false →
@@ -140,8 +148,10 @@ Lemma roapplybackup_backup_eph_step γ γsrv γeph st ops_full' :
   is_proposal_lb γ st.(server.epoch) ops_full' -∗
   is_proposal_facts γ st.(server.epoch) ops_full' -∗
   own_Server_ghost_eph_f st γ γsrv γeph ==∗
-  ∃ new_ops_full,
+  ∃ new_ops_full durable_ops_full,
   ⌜get_rwops new_ops_full = get_rwops st.(server.ops_full_eph)⌝ ∗
+  ⌜get_rwops ops_full' = get_rwops durable_ops_full⌝ ∗
+  is_accepted_lb γsrv st.(server.epoch) durable_ops_full ∗
   own_Server_ghost_eph_f (st <| server.ops_full_eph := new_ops_full |>) γ γsrv γeph ∗
   is_ephemeral_proposal_lb γeph st.(server.epoch) ops_full'
 .
@@ -152,6 +162,28 @@ Proof.
      In the second case, we can get the ephemeral_lb from the current
      own_ephemeral.
    *)
+Admitted.
+
+Lemma roapplybackup_ghost_step γ γsrv γeph epoch ops durable_ops ops_full' :
+  get_rwops durable_ops = get_rwops ops_full' →
+  is_proposal_lb γ epoch ops_full' -∗
+  is_proposal_facts γ epoch ops_full' -∗
+  is_accepted_lb γsrv epoch durable_ops -∗
+  is_ephemeral_proposal_lb γeph epoch ops_full' -∗
+  own_Server_ghost_f γ γsrv γeph epoch ops false ==∗
+  own_Server_ghost_f γ γsrv γeph epoch ops false ∗
+  is_accepted_lb γsrv epoch ops_full'
+.
+Proof.
+Admitted.
+
+Lemma roapplybackup_primary_step γ γsrv γeph ops_full' ops_old st :
+st.(server.isPrimary) = true →
+is_proposal_lb γ st.(server.epoch) ops_full' -∗
+own_Server_ghost_eph_f st γ γsrv γeph -∗
+own_Server_ghost_f γ γsrv γeph st.(server.epoch) ops_old false -∗
+is_accepted_lb γsrv st.(server.epoch) ops_full'.
+Proof.
 Admitted.
 
 Lemma roapplybackup_step γ γsrv γeph st ops_full' sm own_StateMachine :
@@ -180,17 +212,29 @@ Proof.
   iNamed "HisSm".
   iApply ("HaccP" with "Hlc [-Hstate] Hstate").
   iIntros (ops_old ??) "Hghost".
+  iDestruct (ghost_unsealed with "HghostEph Hghost") as "%Hunsealed2".
+  { done. }
+  subst.
   destruct (st.(server.isPrimary)) as [] eqn:HisPrimary.
   {
-    admit.
+    iDestruct (roapplybackup_primary_step with "Hprop_lb HghostEph Hghost") as "#Hacc_lb".
+    { done. }
+    iFrame.
+    iExists _; iFrame "∗#".
+    by iPureIntro.
   }
   {
-    iMod (roapplybackup_backup_eph_step with "Hprop_lb Hprop_facts HghostEph") as (?) "(%Hrws & HghostEph & #Heph_lb)".
+    iMod (roapplybackup_backup_eph_step with "Hprop_lb Hprop_facts HghostEph") as (??) "(%Hrws & %Hdurable & #Hacc_dur_lb & HghostEph & #Heph_lb)".
+    1-3:done.
+    iMod (roapplybackup_ghost_step with "Hprop_lb Hprop_facts Hacc_dur_lb Heph_lb Hghost") as "[Hghost #Hac_lb]".
     { done. }
-    { done. }
-    { done. }
+    iFrame. iModIntro.
+    iExists _.
+    iFrame "∗#%".
   }
+Qed.
 
+(*
   iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
   iAssert ((|NC={⊤,⊤}=>
            wpc_nval ⊤
@@ -411,7 +455,7 @@ Proof.
 
   iMod "HH" as "HH".
 
-Admitted.
+Admitted. *)
 
 Lemma wp_Server__RoApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args opsfull Φ Ψ :
   is_Server s γ γsrv -∗
