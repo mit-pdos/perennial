@@ -7,15 +7,17 @@ From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof pb_applybackup_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Section pb_roapplybackup_proof.
 
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
@@ -154,111 +156,14 @@ Proof.
   wp_pures.
 
   iNamed "Hown".
+  iNamed "Hvol".
 
-  wp_loadField.
-  wp_bind (If (_ > _) _ _).
-  wp_apply (wp_wand with "[Hargs_index HnextIndex Hargs_epoch Hepoch]").
-  {
-    wp_loadField.
-    wp_pures.
-    wp_if_destruct.
-    {
-      wp_loadField.
-      wp_loadField.
-      wp_pures.
-      iModIntro.
-      (* FIXME: this is a very tedious proof *)
-      instantiate (1:=(λ v, ("%Hisbool" ∷ ⌜v =
-                        #(bool_decide (int.nat durableNextIndex < int.nat args.(RoApplyAsBackupArgs.nextIndex) ∧
-                                      int.nat epoch = int.nat args.(RoApplyAsBackupArgs.epoch)))⌝) ∗ _)%I).
-      simpl.
-      iSplitR; last iNamedAccu.
-      iPureIntro.
-      destruct (bool_decide (epoch = args.(RoApplyAsBackupArgs.epoch))) eqn:X.
-      {
-        apply bool_decide_eq_true in X.
-        rewrite X.
-        rewrite bool_decide_true; last done.
-        rewrite bool_decide_true; first done.
-        split; last done.
-        word.
-      }
-      {
-        apply bool_decide_eq_false in X.
-        rewrite bool_decide_false; last first.
-        { naive_solver. }
-        rewrite bool_decide_false; first done.
-        rewrite not_and_r.
-        right.
-        destruct (decide (int.nat epoch = int.nat args.(RoApplyAsBackupArgs.epoch))).
-        { exfalso. replace (epoch) with (args.(RoApplyAsBackupArgs.epoch)) in X by word.
-          done. }
-        naive_solver.
-      }
-    }
-    {
-      iFrame.
-      iPureIntro.
-      rewrite bool_decide_false; first done.
-      rewrite not_and_r.
-      left.
-      word.
-    }
-  }
-  iIntros (?).
-  iNamed 1.
-  wp_bind (If v _ #false).
-  subst v.
-  wp_apply (wp_wand with "[Hsealed]").
-  {
-    wp_pures.
-    wp_if_destruct.
-    {
-      wp_pures.
-      wp_loadField.
-      wp_pures.
-      instantiate (1:=(λ w, ("%Hisboolw" ∷ ⌜w = #(bool_decide (_))⌝ ∗ _)%I)).
-      instantiate (3:=((int.nat durableNextIndex < int.nat args.(RoApplyAsBackupArgs.nextIndex))%Z
-                       ∧ int.nat epoch = int.nat args.(RoApplyAsBackupArgs.epoch)
-                       ∧ sealed = false)).
-      simpl.
-      iModIntro.
-      iSplitR; last iNamedAccu.
-      iPureIntro.
-      destruct (bool_decide (sealed = false)) eqn:X.
-      {
-        apply bool_decide_eq_true in X.
-        subst.
-        rewrite bool_decide_true; last done.
-        rewrite bool_decide_true; first done.
-        destruct Heqb.
-        split; done.
-      }
-      {
-        apply bool_decide_eq_false in X.
-        rewrite bool_decide_false; last first.
-        { by destruct sealed. }
-        rewrite bool_decide_false; first done.
-        rewrite not_and_r.
-        rewrite not_and_r.
-        right. right.
-        done.
-      }
-    }
-    {
-      wp_pures.
-      iSplitR.
-      { iPureIntro.
-        rewrite bool_decide_false; first done.
-        naive_solver. }
-      by iFrame.
-    }
-  }
+  wp_bind ((_ > _) && _ && _)%E.
+  wp_apply (wp_and2' with "[Hargs_index Hsealed HdurableNextIndex HnextIndex Hargs_epoch Hepoch]"); first iNamedAccu; iNamed 1.
+  { do 2 wp_loadField. wp_pures. iModIntro. iFrame. done. }
+  { iIntros (_). do 2 wp_loadField. wp_pures. iModIntro. iFrame. done. }
+  { iIntros (_ _). wp_loadField. wp_pures. iModIntro. iFrame. done. }
 
-  iIntros (?).
-  iNamed 1.
-  wp_pures.
-  rewrite Hisboolw.
   wp_if_destruct.
   { (* loop again *)
     wp_pures.
@@ -267,6 +172,8 @@ Proof.
     {
       iFrame "#".
       iFrame "Hlocked".
+      repeat (iExists _).
+      iSplitR "HghostEph"; last iFrame.
       repeat (iExists _).
       (* time iFrame "∗#%". *)
       time (iFrame "∗"; iFrame "#"; iFrame "%").

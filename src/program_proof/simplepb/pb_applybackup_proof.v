@@ -544,7 +544,7 @@ Proof.
       rewrite Hσ_index.
       f_equal.
       admit. } (* FIXME: overflow of list length *)
-    { iFrame "#".}
+    { iFrame "#". }
     iModIntro.
     iDestruct "Hghost" as "(Hghost & %Hre & H)".
     rewrite Hre.
