@@ -477,6 +477,9 @@ Proof.
   iMod (readonly_alloc_1 with "index") as "#Hargs_index".
   iMod (readonly_alloc_1 with "op") as "#Hargs_op".
   wp_pures.
+  rewrite Heqb.
+  iDestruct "Hprimary" as "[%Hbad|Hprimary]"; first by exfalso.
+  iNamed "Hprimary".
   iMod (readonly_load with "Hclerkss_sl") as (?) "Hclerkss_sl2".
 
   iDestruct (is_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
@@ -488,7 +491,7 @@ Proof.
   set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
 
   assert (int.nat clerkIdx < length clerkss) as Hlookup_clerks.
-  {
+  { (* FIXME: better lemmas about mod? *)
     rewrite Hclerkss_sz.
     unfold clerkIdx.
     rewrite Hclerkss_len in Hclerkss_sz.
@@ -529,7 +532,7 @@ Proof.
             ⌜backups !! int.nat i = Some γsrv'⌝ ∗
             readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
             □ if (decide (err = U64 0)) then
-              is_accepted_lb γsrv' epoch (opsfull_ephemeral ++ [_])
+              is_accepted_lb γsrv' st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
             else
               True
           )%I
@@ -546,21 +549,19 @@ Proof.
                               (errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z j)↦∗[uint64T] (replicate (int.nat clerks_sl_inner.(Slice.sz) - int.nat j) #0)
                         )%I with "[] [Hwg Herrs_sl $Hclerks_sl2]").
   2: {
-    iSplitR "Herrs_sl".
-    { iExactEq "Hwg". econstructor. }
-    {
-      unfold slice.is_slice. unfold slice.is_slice_small.
-      iDestruct "Herrs_sl" as "[[Herrs_sl %Hlen] _]".
-      destruct Hlen as [Hlen _].
-      rewrite replicate_length in Hlen.
-      rewrite Hlen.
-      iExactEq "Herrs_sl".
-      simpl.
-      replace (1 * int.Z _)%Z with (0%Z) by word.
-      rewrite loc_add_0.
-      replace (int.nat _ - int.nat 0) with (int.nat errs_sl.(Slice.sz)) by word.
-      done.
-    }
+    iFrame "Hwg".
+    (* FIXME: slice unfolding; want a subslice library or something *)
+    unfold slice.is_slice. unfold slice.is_slice_small.
+    iDestruct "Herrs_sl" as "[[Herrs_sl %Hlen] _]".
+    destruct Hlen as [Hlen _].
+    rewrite replicate_length in Hlen.
+    rewrite Hlen.
+    iExactEq "Herrs_sl".
+    simpl.
+    replace (1 * int.Z _)%Z with (0%Z) by word.
+    rewrite loc_add_0.
+    replace (int.nat _ - int.nat 0) with (int.nat errs_sl.(Slice.sz)) by word.
+    done.
   }
   {
     iIntros (i ck).
@@ -599,6 +600,7 @@ Proof.
         simpl.
         split; eauto.
         split; eauto.
+        rewrite /no_overflow in Hno_overflow HnextIndexNoOverflow.
         split.
         { rewrite get_rwops_app app_length. simpl.
           word.
@@ -608,13 +610,11 @@ Proof.
       iIntros (err) "#Hpost".
 
       wp_pures.
-      destruct bool_decide.
-      {
-        wp_pures.
-        iLeft.
-        iFrame "∗".
-        by iPureIntro.
-      }
+      wp_bind (#(bool_decide _) || _)%E.
+      wp_apply (wp_or with "[]"); first iAccu.
+      { wp_pures. by iModIntro. }
+      { iIntros (_) "_". wp_pures. by iModIntro. }
+      iIntros "_".
       wp_if_destruct.
       {
         wp_pures.
@@ -623,6 +623,7 @@ Proof.
         by iPureIntro.
       }
 
+      (* FIXME: slice unfolding *)
       unfold SliceSet.
       wp_pures.
       unfold slice.ptr.
@@ -654,7 +655,7 @@ Proof.
   iIntros "[[Hwg _] _]".
   wp_pures.
 
-  wp_apply (wp_WaitGroup__Wait with "[$Hwg]").
+  wp_apply (wp_WaitGroup__Wait with "Hwg").
   iIntros "#Hwg_post".
   wp_pures.
   wp_apply (wp_ref_to).
@@ -1180,7 +1181,6 @@ Proof using Type*.
                  length σ0a = length opsfull ∧
                  length σ0b = length σtail) as (σ0a&op'&Q'&σ0b&Heq0&Hlena&Hlenb).
       {
-
         destruct (nth_error opsfullQ (length opsfull)) as [(op', Q')|] eqn:Hnth; last first.
         { apply nth_error_None in Hnth. rewrite ?app_length /= in Hlen. lia. }
         edestruct (nth_error_split opsfullQ (length opsfull)) as (l1&l2&Heq&Hlen'); eauto.
