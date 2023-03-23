@@ -191,21 +191,31 @@ Proof.
   }
 Qed.
 
+Lemma get_primary_witness γ γeph γsrv st :
+  st.(server.isPrimary) = true →
+  is_Primary_ghost_f γ γeph γsrv st -∗
+  is_tok γsrv st.(server.epoch).
+Proof.
+  intros Hprim.
+  rewrite /is_Primary_ghost_f /tc_opaque.
+  by iNamed 1.
+Qed.
+
 Lemma apply_eph_step γ γsrv γeph st op Q :
   st.(server.isPrimary) = true →
   st.(server.sealed) = false →
   no_overflow (length (get_rwops st.(server.ops_full_eph))) →
-  no_overflow (length (get_rwops st.(server.ops_full_eph)) + 1) →
   (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(rw_op op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
   own_Server_ghost_eph_f st γ γsrv γeph -∗
   £ 1 ={↑pbN}=∗
+  (⌜no_overflow (length (get_rwops st.(server.ops_full_eph)) + 1)⌝ -∗
   own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(rw_op op, Q)] |>
                              <| server.nextRoIndex := 0 |>
-                             <| server.committedNextRoIndex := 0 |>) γ γsrv γeph ∗
+                             <| server.committedNextRoIndex := 0 |>) γ γsrv γeph) ∗
   is_tok γsrv st.(server.epoch)
 .
 Proof.
-  intros Hprim Hunsealed ??.
+  intros Hprim Hunsealed ?.
   iIntros "Hupd H Hlc".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "H".
   iNamed "H".
@@ -213,10 +223,6 @@ Proof.
   iMod (fmlist_ptsto_update with "Heph") as "Heph".
   { apply prefix_app_r. done. }
   iDestruct "HprimaryOnly" as "[%Hbad|Hprimary]"; first by exfalso.
-  iDestruct (apply_eph_primary_step with "Hprimary") as "[HnewPrimary #Hwitness]".
-  1-2: done.
-  iClear "Hprimary".
-
   iMod (valid_add with "Hlc Heph_valid [Hupd]") as "#Hnew_eph_valid".
   {
     iMod "Hupd" as (?) "[Hghost Hupd]".
@@ -224,9 +230,13 @@ Proof.
     iExists _; iFrame.
     iIntros. done.
   }
-
   iModIntro.
-  iFrame "Hwitness".
+  iDestruct (get_primary_witness with "Hprimary") as "#$".
+  { done. }
+  iIntros (?).
+  iDestruct (apply_eph_primary_step with "Hprimary") as "[HnewPrimary #Hwitness]".
+  1-2: done.
+  iClear "Hprimary".
   repeat iExists _.
   rewrite Hunsealed Hprim.
   simpl.
@@ -330,43 +340,21 @@ Proof.
     done.
   }
 
-  clear Heqb.
-  (* make proposal *)
-  iAssert (_) with "HprimaryOnly" as "HprimaryOnly2".
-  iEval (rewrite /is_possible_Primary /tc_opaque) in "HprimaryOnly2".
-  iNamed "HprimaryOnly2".
-  iAssert (_) with "HisSm" as "HisSm2".
-  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
-  iNamed "HisSm2".
-  wp_loadField.
-  wp_loadField.
-
-  (* make ephemeral proposal first *)
-  iMod (own_update with "Heph") as "Heph".
-  {
-    apply singleton_update.
-    apply mono_list_update.
-    instantiate (1:=opsfull_ephemeral ++ [(rw_op op, Q)]).
-    by apply prefix_app_r.
-  }
-  iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Hnew_eph_lb".
-  {
-    apply singleton_mono.
-    apply mono_list_included.
-  }
-
+  (* make ephemeral proposal *)
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
-  iMod (valid_add with "Hcred2 Heph_valid [Hupd]") as "#Hnew_eph_valid".
-  {
-    iMod "Hupd" as (?) "[Hghost Hupd]".
-    iModIntro.
-    iExists _; iFrame.
-    iIntros. done.
-  }
-  iMod "Hmask".
+  iMod (apply_eph_step with "Hupd HghostEph Hcred2") as "[HghostEph Htok]".
+  { done. }
+  { done. }
+  { done. }
+  iMod "Hmask" as "_".
   iModIntro.
+
+  iDestruct (is_StateMachine_acc_apply with "HisSm") as "HH".
+  iNamed "HH".
+  wp_loadField.
+  wp_loadField.
 
   wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl Hcred1]").
   {
