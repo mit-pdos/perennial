@@ -212,7 +212,9 @@ Lemma apply_eph_step γ γsrv γeph st op Q :
   own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(rw_op op, Q)] |>
                              <| server.nextRoIndex := 0 |>
                              <| server.committedNextRoIndex := 0 |>) γ γsrv γeph) ∗
-  is_tok γsrv st.(server.epoch)
+  is_ephemeral_proposal_lb γeph st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) ∗
+  is_tok γsrv st.(server.epoch) ∗
+  is_proposal_valid γ (st.(server.ops_full_eph) ++ [(rw_op op, Q)])
 .
 Proof.
   intros Hprim Hunsealed ?.
@@ -233,6 +235,8 @@ Proof.
   iModIntro.
   iDestruct (get_primary_witness with "Hprimary") as "#$".
   { done. }
+  iDestruct (fmlist_ptsto_get_lb with "Heph") as "#Hnew_eph".
+  iFrame "#"; iClear "Hnew_eph".
   iIntros (?).
   iDestruct (apply_eph_primary_step with "Hprimary") as "[HnewPrimary #Hwitness]".
   1-2: done.
@@ -242,6 +246,57 @@ Proof.
   simpl.
   iFrame "∗#".
   done.
+Qed.
+
+Lemma apply_step γ γsrv γeph st op Q :
+  is_tok γsrv st.(server.epoch) -∗
+  is_ephemeral_proposal_lb γeph st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) -∗
+  is_proposal_valid γ (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) -∗
+  own_Server_ghost_f γ γsrv γeph st.(server.epoch) (get_rwops st.(server.ops_full_eph)) false ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv γeph st.(server.epoch) (get_rwops st.(server.ops_full_eph) ++ [op])
+    false ∗
+  (* ⌜get_rwops (st.(server.ops_full_eph) ++ [op]) = get_rwops (st.(server.ops_full_eph) ++ [(rw_op op, Q)])⌝ ∗ *)
+  (is_accepted_lb γsrv st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) ∗
+  is_proposal_lb γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) ∗
+  is_proposal_facts γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]))
+.
+Proof.
+  iIntros "#Htok_used_witness #Hnew_eph_lb #Hnew_eph_valid Hghost".
+  iNamed "Hghost".
+  iDestruct (fmlist_ptsto_lb_comparable with "Heph_lb Hnew_eph_lb") as %[Hprefix|Hbad]; last first.
+  {
+    exfalso.
+    apply get_rwops_prefix in Hbad.
+    apply prefix_length in Hbad.
+    rewrite -Hre in Hbad.
+    rewrite get_rwops_app in Hbad.
+    unfold get_rwops in Hbad.
+    rewrite app_length /= in Hbad.
+    word.
+  }
+  iMod (ghost_propose with "Htok_used_witness Hprim Hnew_eph_valid") as "(Hprim & #Hprop_lb & #Hprop_facts)".
+  { done. }
+  iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
+  { done. }
+  { rewrite app_length.
+    apply (f_equal length) in Hre.
+    apply prefix_length in Hprefix.
+    rewrite app_length in Hprefix.
+    done.
+  }
+  iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
+
+  iModIntro.
+  iSplitL.
+  {
+    iExists _; iFrame "∗#".
+    iPureIntro.
+    unfold get_rwops.
+    rewrite map_app.
+    rewrite concat_app.
+    done.
+  }
+  iFrame "Hlb #".
 Qed.
 
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
@@ -344,7 +399,7 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
-  iMod (apply_eph_step with "Hupd HghostEph Hcred2") as "[HghostEph Htok]".
+  iMod (apply_eph_step with "Hupd HghostEph Hcred2") as "[HghostEph #(Hnew_eph_lb & Htok & Hnew_eph_valid)]".
   { done. }
   { done. }
   { done. }
@@ -356,56 +411,12 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl Hcred1]").
+  wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl]").
   {
     iSplitL ""; first done.
     iIntros "Hghost".
-    iNamed "Hghost".
-    iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-    { set_solver. }
-    iMod "Hmask".
-    iDestruct (own_valid_2 with "Heph_lb Hnew_eph_lb") as %Hvalid.
-    rewrite singleton_op singleton_valid in Hvalid.
-    apply mono_list_lb_op_valid_L in Hvalid.
-    destruct Hvalid as [Hprefix|Hbad]; last first.
-    {
-      exfalso.
-      apply get_rwops_prefix in Hbad.
-      apply prefix_length in Hbad.
-      rewrite -Hre in Hbad.
-      rewrite get_rwops_app in Hbad.
-      unfold get_rwops in Hbad.
-      rewrite app_length /= in Hbad.
-      word.
-    }
-    iMod (ghost_propose with "Htok_used_witness Hprim Hnew_eph_valid") as "(Hprim & #Hprop_lb & #Hprop_facts)".
-    { done. }
-    iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
-    { done. }
-    { rewrite app_length.
-      apply (f_equal length) in Hre.
-      apply prefix_length in Hprefix.
-      rewrite app_length in Hprefix.
-      done.
-    }
-    iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-    instantiate (1:=(⌜get_rwops (opsfull_ephemeral ++ _) = get_rwops (opsfull_ephemeral ++ [(rw_op op, Q)])⌝ ∗
-                      is_accepted_lb γsrv epoch (opsfull_ephemeral ++ [(rw_op op, Q)]) ∗
-                      is_proposal_lb γ epoch (opsfull_ephemeral ++ [(rw_op op, Q)]) ∗
-                      is_proposal_facts γ epoch (opsfull_ephemeral ++ [(rw_op op, Q)])
-                    )%I).
-    iModIntro.
-    iSplitL.
-    {
-      iExists _; iFrame "∗#".
-      iPureIntro.
-      unfold get_rwops.
-      rewrite map_app.
-      rewrite concat_app.
-      done.
-    }
-    iFrame "Hlb #".
-    done.
+    iMod (apply_step with "Htok Hnew_eph_lb Hnew_eph_valid Hghost") as "$".
+    by iModIntro.
   }
   iIntros (reply_sl q waitFn) "(Hreply & Hstate & HwaitSpec)".
 
@@ -427,64 +438,31 @@ Proof.
   wp_storeField.
   wp_storeField.
   wp_loadField.
-  replace (get_rwops opsfull_ephemeral ++ [op]) with (get_rwops (opsfull_ephemeral ++ [(rw_op op, Q)])); last first.
-  {
-    unfold get_rwops. rewrite map_app. rewrite concat_app.
-    done.
-  }
+  iSpecialize ("HghostEph" with "[]").
+  { iPureIntro. unfold no_overflow in HnextIndexNoOverflow |- *. word. }
   wp_apply (release_spec with "[-HΦ Hreply Err Reply Hlc1 Hlc2 HwaitSpec]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
     repeat (iExists _).
+    iSplitR "HghostEph"; last iFrame.
+    repeat (iExists _).
+    rewrite /= Heqb Heqb0 /=.
+    replace (get_rwops (st.(server.ops_full_eph) ++ [(rw_op op, Q)])) with (get_rwops st.(server.ops_full_eph) ++ [op]); last first.
+    {
+      unfold get_rwops. rewrite map_app. rewrite concat_app.
+      done.
+    }
+    rewrite app_length /=.
     iClear "Hnew_eph_lb".
-    iFrame "HisSm Hstate ∗ #"; iFrame "%".
-    iSplitR.
-    { iPureIntro.
-      rewrite get_rwops_app.
-      simpl.
-      rewrite app_length.
-      unfold get_rwops in *.
-      simpl.
-      word. }
-    unfold is_possible_Primary.
-    repeat iExists _.
-    iFrame "#"; iFrame "%".
-    iSplitR.
-    { iPureIntro. word. }
-    iSplitR.
-    { iPureIntro. intros. word. }
-    iSplitR.
-    {
-      iPureIntro.
-      exists [].
-      split.
-      { apply suffix_nil. }
-      split.
-      { simpl. word. }
-      split.
-      { by unfold get_rwops. }
-      { apply is_full_ro_suffix_nil. }
-    }
-    {
-      iPureIntro.
-      destruct HcommitRoLen as (? & ? & ? & ? & ?).
-      eexists _.
-      split.
-      { done. }
-      split.
-      { word. }
-      split.
-      { done. }
-      { done. }
-    }
+    iFrame "∗#".
+    admit. (* FIXME: overflow reasoning *)
   }
 
   wp_pures.
-
   wp_apply "HwaitSpec".
   iIntros "Hprimary_acc_lb".
-  iDestruct "Hprimary_acc_lb" as "(%Hσeq_phys & #Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
+  iDestruct "Hprimary_acc_lb" as "(#Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
 
   wp_apply (wp_NewWaitGroup_free).
   iIntros (wg) "Hwg".
