@@ -191,15 +191,15 @@ Proof.
   }
 Qed.
 
-Lemma apply_eph_step γ γsrv γeph st op' :
+Lemma apply_eph_step γ γsrv γeph st op Q :
   st.(server.isPrimary) = true →
   st.(server.sealed) = false →
   no_overflow (length (get_rwops st.(server.ops_full_eph))) →
   no_overflow (length (get_rwops st.(server.ops_full_eph)) + 1) →
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [op']) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(rw_op op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
   own_Server_ghost_eph_f st γ γsrv γeph -∗
   £ 1 ={↑pbN}=∗
-  own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [op'] |>
+  own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(rw_op op, Q)] |>
                              <| server.nextRoIndex := 0 |>
                              <| server.committedNextRoIndex := 0 |>) γ γsrv γeph ∗
   is_tok γsrv st.(server.epoch)
@@ -230,12 +230,9 @@ Proof.
   repeat iExists _.
   rewrite Hunsealed Hprim.
   simpl.
-  iFrame "∗".
-  iFrame "Hs_epoch_lb Heph_prop_lb Hdurable_lb Hdurable_eph_lb".
-  iSplitR; first admit.
-  iFrame "%".
-  iFrame "#". (* FIXME: why is this so slow? It should quickly do nothing. *)
-Admitted.
+  iFrame "∗#".
+  done.
+Qed.
 
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
