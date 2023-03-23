@@ -8,15 +8,17 @@ From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof pb_applybackup_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Section pb_apply_proof.
 
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
@@ -148,6 +150,93 @@ Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
 Definition is_ghost_lb' γ σ : iProp Σ :=
   ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
+Lemma apply_eph_primary_step γ γsrv γeph st op Q :
+  no_overflow (length $ get_rwops st.(server.ops_full_eph)) →
+  no_overflow ((length $ get_rwops st.(server.ops_full_eph)) + 1) →
+  is_Primary_ghost_f γ γeph γsrv st -∗
+  is_Primary_ghost_f γ γeph γsrv (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(rw_op op, Q)] |>
+                                     <| server.nextRoIndex := 0 |>
+                                     <| server.committedNextRoIndex := 0 |>
+                                 ) ∗
+  is_tok γsrv st.(server.epoch)
+.
+Proof.
+  iIntros (Hno1 Hno2) "Hprim".
+  iEval (rewrite /is_Primary_ghost_f /tc_opaque) in "Hprim".
+  iNamed "Hprim".
+  iFrame "#".
+  repeat iExists _.
+  iFrame "#%".
+  simpl.
+  unfold no_overflow in Hno1,Hno2.
+  rewrite get_rwops_app app_length /=.
+  iPureIntro; split.
+  { word. }
+  split.
+  { intros. word. }
+  split.
+  { exists [].
+    split. { apply suffix_nil. }
+    split. { done. }
+    split. { done. }
+    apply is_full_ro_suffix_nil.
+  }
+  destruct HcommitRoLen as (ops_commit_ro & ? & ? & ? & ?).
+  {
+    eexists ops_commit_ro.
+    split. { done. }
+    split. { word. }
+    split. { done. }
+    { done. }
+  }
+Qed.
+
+Lemma apply_eph_step γ γsrv γeph st op' :
+  st.(server.isPrimary) = true →
+  st.(server.sealed) = false →
+  no_overflow (length (get_rwops st.(server.ops_full_eph))) →
+  no_overflow (length (get_rwops st.(server.ops_full_eph)) + 1) →
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [op']) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  own_Server_ghost_eph_f st γ γsrv γeph -∗
+  £ 1 ={↑pbN}=∗
+  own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [op'] |>
+                             <| server.nextRoIndex := 0 |>
+                             <| server.committedNextRoIndex := 0 |>) γ γsrv γeph ∗
+  is_tok γsrv st.(server.epoch)
+.
+Proof.
+  intros Hprim Hunsealed ??.
+  iIntros "Hupd H Hlc".
+  iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "H".
+  iNamed "H".
+  rewrite Hprim Hunsealed.
+  iMod (fmlist_ptsto_update with "Heph") as "Heph".
+  { apply prefix_app_r. done. }
+  iDestruct "HprimaryOnly" as "[%Hbad|Hprimary]"; first by exfalso.
+  iDestruct (apply_eph_primary_step with "Hprimary") as "[HnewPrimary #Hwitness]".
+  1-2: done.
+  iClear "Hprimary".
+
+  iMod (valid_add with "Hlc Heph_valid [Hupd]") as "#Hnew_eph_valid".
+  {
+    iMod "Hupd" as (?) "[Hghost Hupd]".
+    iModIntro.
+    iExists _; iFrame.
+    iIntros. done.
+  }
+
+  iModIntro.
+  iFrame "Hwitness".
+  repeat iExists _.
+  rewrite Hunsealed Hprim.
+  simpl.
+  iFrame "∗".
+  iFrame "Hs_epoch_lb Heph_prop_lb Hdurable_lb Hdurable_eph_lb".
+  iSplitR; first admit.
+  iFrame "%".
+  iFrame "#". (* FIXME: why is this so slow? It should quickly do nothing. *)
+Admitted.
+
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
@@ -166,7 +255,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
         else
           True
   }}}
-  .
+.
 Proof.
   iIntros (Φ) "[#His Hpre] HΦ".
   iDestruct "Hpre" as "(#Hsl & %Hghostop_op & Hupd)".
@@ -188,6 +277,7 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
+  iNamed "Hvol".
   wp_pure1_credit "Hcred1".
   wp_pure1_credit "Hcred2".
   wp_pures.
@@ -199,6 +289,8 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
+      repeat (iExists _).
+      iSplitR "HghostEph"; last iFrame.
       repeat (iExists _).
       iFrame "Hstate ∗#"; iFrame "%".
     }
@@ -227,6 +319,9 @@ Proof.
       iFrame "HmuInv Hlocked".
       iNext.
       repeat (iExists _).
+      iSplitR "HghostEph"; last iFrame.
+      repeat (iExists _).
+      rewrite Heqb0 Heqb.
       iFrame "∗#"; iFrame "%".
     }
     wp_pures.
@@ -466,15 +561,15 @@ Proof.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
   iMod (free_WaitGroup_alloc pbN _
-                             (λ i,
-                               ∃ (err:u64) γsrv',
-                               ⌜backups !! int.nat i = Some γsrv'⌝ ∗
-                               readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
-                               □ if (decide (err = U64 0)) then
-                                 is_accepted_lb γsrv' epoch (opsfull_ephemeral ++ [_])
-                               else
-                                 True
-                             )%I
+          (λ i,
+            ∃ (err:u64) γsrv',
+            ⌜backups !! int.nat i = Some γsrv'⌝ ∗
+            readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
+            □ if (decide (err = U64 0)) then
+              is_accepted_lb γsrv' epoch (opsfull_ephemeral ++ [_])
+            else
+              True
+          )%I
          with "Hwg") as (γwg) "Hwg".
   iMod "Hmask".
   iModIntro.
