@@ -674,7 +674,8 @@ Proof.
               "%Hj_ub" ∷ ⌜int.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗ is_accepted_lb γsrv' epoch (opsfull_ephemeral ++ [_]))
+                (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗
+                  is_accepted_lb γsrv' st.(server.epoch) (st.(server.ops_full_eph) ++ [_]))
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -838,9 +839,10 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   wp_pures.
-  iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm Heph_commit_lb Heph_valid".
+  iClear "HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
+  iClear "HcommittedNextRoIndex_is_cond HisSm".
   iNamed "Hown".
+  iNamed "Hvol".
   wp_loadField.
   wp_pures.
   wp_apply (wp_and with "HcommittedNextIndex").
@@ -851,8 +853,8 @@ Proof.
   iIntros "HcommittedNextIndex".
   wp_if_destruct.
   {
-    destruct Heqb0 as [HepochEq HcommittedIneq].
-    injection HepochEq as H.
+    destruct Heqb2 as [HepochEq HcommittedIneq].
+    injection HepochEq as HepochEq.
     subst.
     wp_storeField.
     wp_loadField.
