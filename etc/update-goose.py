@@ -263,6 +263,9 @@ def main():
             "simplepb/simplelog",
             "simplepb/apps/closed",
             "tutorial",  # atomic commit
+            "tutorial/objectstore/dir",
+            "tutorial/objectstore/chunk",
+            "tutorial/objectstore/client",
             "mpaxos/",
             "mpaxos/example",
             "map_marshal",
