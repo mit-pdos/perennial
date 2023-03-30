@@ -6,6 +6,7 @@ From Perennial.Helpers Require Import iris.
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import lifting.
 From Perennial.goose_lang Require Import proofmode.
+From Perennial.base_logic.lib Require Import ghost_map.
 
 Set Default Proof Using "Type".
 
@@ -131,6 +132,13 @@ End goose_lang.
 Instance heap_mapsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapGS loc val Σ}
          (l: loc) (v: val) :
   AsMapsTo (l ↦ v) (λ q, l ↦{q} v)%I.
+Proof.
+  split; [done|apply _|apply _].
+Qed.
+
+#[global]
+Instance ghost_map_auth_AsMapsTo `{ghost_mapG Σ K V} γ (m:gmap K V) :
+  AsMapsTo (ghost_map_auth γ 1 m) (λ q, ghost_map_auth γ q m)%I.
 Proof.
   split; [done|apply _|apply _].
 Qed.
