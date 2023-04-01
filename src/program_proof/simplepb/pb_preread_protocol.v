@@ -4,7 +4,7 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import auth dfrac_agree mono_list csum gset.
 From Perennial.program_proof.simplepb Require Import pb_ghost.
 
-Section pb_lease_protocol.
+Section pb_preread_protocol.
 (* Use (authR gsetR) for monotonic sets. *)
 
 Context `{EntryType:Type}.
@@ -16,10 +16,11 @@ Context `{invGS Σ}.
    instead of gset, and ignore the ordering.
  *)
 Context `{Countable (list EntryType → iProp Σ)}.
-(*
- *)
 
+(* This is the key ghost state, keeping track of RO ops that have been
+   pre-applied before state is committed. *)
 Implicit Types ros:list (gset (list EntryType → iProp Σ)).
+
 Definition own_proposed_reads (γ:gname) (ros:list (gset (list EntryType → iProp Σ))) : iProp Σ.
 Admitted.
 
@@ -29,15 +30,21 @@ Admitted.
 Definition own_log (γlog:gname) (σ:list EntryType) : iProp Σ.
 Admitted.
 
+Definition is_log_lb (γlog:gname) (σ:list EntryType) : iProp Σ.
+Admitted.
+
+(* Maybe make the fupds non-persistent, and track things more carefully in the
+   proof. *)
 Definition have_proposed_reads_fupds γlog ros : iProp Σ :=
   [∗ list] idx ↦ rosAtIdx ∈ ros, [∗ set] Q ∈ rosAtIdx,
     □(|={⊤,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤}=∗ □ Q σ))
 .
 
+(* Maybe make Q not persistent, and escrow it back to the caller *)
 Definition have_completed_reads_Qs ros σ : iProp Σ :=
   let completed_ros := take (length σ) ros in
   [∗ list] idx ↦ rosAtIdx ∈ completed_ros, [∗ set] Q ∈ rosAtIdx,
-    Q (take (idx + 1) σ)
+    □ Q (take idx σ)
 .
 
 Definition prereadN := nroot .@ "preread".
@@ -55,7 +62,7 @@ Definition preread_inv γ γlog γreads : iProp Σ :=
   )
 .
 
-Lemma prepare_read Q γ γlog γreads idx σ :
+Lemma start_read_step Q γ γlog γreads idx σ :
   idx < length σ →
   preread_inv γ γlog γreads -∗
   □(|={⊤,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤}=∗ □ Q σ)) -∗
@@ -66,4 +73,15 @@ Lemma prepare_read Q γ γlog γreads idx σ :
 Proof.
 Admitted.
 
-End pb_lease_protocol.
+Lemma finish_read_step Q γ γlog γreads idx σ :
+  length σ = idx →
+  preread_inv γ γlog γreads -∗
+  is_log_lb γlog σ -∗
+  is_proposed_read γreads idx Q
+  ={↑prereadN}=∗
+  □ Q σ
+.
+Proof.
+Admitted.
+
+End pb_preread_protocol.
