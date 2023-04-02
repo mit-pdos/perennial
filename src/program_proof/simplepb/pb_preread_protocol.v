@@ -109,7 +109,6 @@ Proof.
   iIntros "H1 H2".
   iDestruct (own_valid_2 with "H1 H2") as %Hvalid.
   iPureIntro.
-  Search mono_list_auth.
   rewrite mono_list_both_dfrac_valid_L in Hvalid.
   by destruct Hvalid as [_ ?].
 Qed.

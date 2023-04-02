@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.reconnectclient.
+From Goose Require github_com.mit_pdos.gokv.simplepb.config.
 From Goose Require github_com.mit_pdos.gokv.simplepb.e.
 From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
@@ -221,8 +222,6 @@ Definition RPC_BECOMEPRIMARY : expr := #3.
 
 Definition RPC_PRIMARYAPPLY : expr := #4.
 
-Definition RPC_ROAPPLYASBACKUP : expr := #5.
-
 Definition RPC_ROPRIMARYAPPLY : expr := #6.
 
 Definition MakeClerk: val :=
@@ -276,14 +275,6 @@ Definition Clerk__Apply: val :=
       (struct.loadF ApplyReply "Err" "r", struct.loadF ApplyReply "Reply" "r")
     else (e.Timeout, slice.nil)).
 
-Definition Clerk__RoApplyAsBackup: val :=
-  rec: "Clerk__RoApplyAsBackup" "ck" "args" :=
-    let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "cl" "ck") RPC_ROAPPLYASBACKUP (EncodeRoApplyAsBackupArgs "args") "reply" #1000 in
-    (if: "err" ≠ #0
-    then e.Timeout
-    else e.DecodeError (![slice.T byteT] "reply")).
-
 Definition Clerk__ApplyRo: val :=
   rec: "Clerk__ApplyRo" "ck" "op" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
@@ -305,153 +296,63 @@ Definition Server := struct.decl [
   "isPrimary" :: boolT;
   "clerks" :: slice.T (slice.T ptrT);
   "opAppliedConds" :: mapT ptrT;
-  "durableNextIndex" :: uint64T;
-  "durableNextIndex_cond" :: ptrT;
+  "leaseExpiration" :: uint64T;
   "committedNextIndex" :: uint64T;
-  "nextRoIndex" :: uint64T;
-  "roOpsToPropose_cond" :: ptrT;
-  "committedNextRoIndex" :: uint64T;
-  "committedNextRoIndex_cond" :: ptrT
+  "committedNextIndex_cond" :: ptrT;
+  "confCk" :: ptrT
 ].
 
-Definition Server__RoApplyAsBackup: val :=
-  rec: "Server__RoApplyAsBackup" "s" "args" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ((struct.loadF RoApplyAsBackupArgs "nextIndex" "args" > struct.loadF Server "durableNextIndex" "s") && (struct.loadF Server "epoch" "s" = struct.loadF RoApplyAsBackupArgs "epoch" "args")) && (struct.loadF Server "sealed" "s" = #false)
-      then
-        lock.condWait (struct.loadF Server "durableNextIndex_cond" "s");;
-        Continue
-      else Break));;
-    (if: struct.loadF Server "epoch" "s" ≠ struct.loadF RoApplyAsBackupArgs "epoch" "args"
-    then
-      lock.release (struct.loadF Server "mu" "s");;
-      e.Stale
-    else
-      (if: struct.loadF Server "sealed" "s"
-      then
-        lock.release (struct.loadF Server "mu" "s");;
-        e.Sealed
-      else
-        (if: struct.loadF RoApplyAsBackupArgs "nextIndex" "args" > struct.loadF Server "durableNextIndex" "s"
-        then control.impl.Assert #false
-        else #());;
-        lock.release (struct.loadF Server "mu" "s");;
-        e.None)).
-
-(* This commits read-only operations. This is only necessary if RW operations
-   are not being applied. If RW ops are being applied, they will implicitly
-   commit RO ops. *)
-Definition Server__applyRoThread: val :=
-  rec: "Server__applyRoThread" "s" "epoch" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      Skip;;
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        (if: (struct.loadF Server "epoch" "s" ≠ "epoch") || ((struct.loadF Server "nextRoIndex" "s" ≠ struct.loadF Server "committedNextRoIndex" "s") && (struct.loadF Server "nextIndex" "s" = struct.loadF Server "durableNextIndex" "s"))
-        then Break
-        else
-          lock.condWait (struct.loadF Server "roOpsToPropose_cond" "s");;
-          Continue));;
-      (if: struct.loadF Server "epoch" "s" ≠ "epoch"
-      then
-        lock.release (struct.loadF Server "mu" "s");;
-        Break
-      else
-        let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
-        let: "nextRoIndex" := struct.loadF Server "nextRoIndex" "s" in
-        let: "clerks" := SliceGet (slice.T ptrT) (struct.loadF Server "clerks" "s") ((Data.randomUint64 #()) `rem` (slice.len (struct.loadF Server "clerks" "s"))) in
-        lock.release (struct.loadF Server "mu" "s");;
-        let: "wg" := waitgroup.New #() in
-        let: "args" := struct.new RoApplyAsBackupArgs [
-          "epoch" ::= "epoch";
-          "nextIndex" ::= "nextIndex"
-        ] in
-        let: "errs" := NewSlice uint64T (slice.len "clerks") in
-        ForSlice ptrT "i" "clerk" "clerks"
-          (let: "i" := "i" in
-          let: "clerk" := "clerk" in
-          waitgroup.Add "wg" #1;;
-          Fork (Skip;;
-                (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-                  let: "err" := Clerk__RoApplyAsBackup "clerk" "args" in
-                  (if: ("err" = e.OutOfOrder) || ("err" = e.Timeout)
-                  then Continue
-                  else
-                    SliceSet uint64T "errs" "i" "err";;
-                    Break));;
-                waitgroup.Done "wg"));;
-        waitgroup.Wait "wg";;
-        let: "err" := ref_to uint64T e.None in
-        let: "i" := ref_to uint64T #0 in
-        Skip;;
-        (for: (λ: <>, ![uint64T] "i" < slice.len "errs"); (λ: <>, Skip) := λ: <>,
-          let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
-          (if: "err2" ≠ e.None
-          then "err" <-[uint64T] "err2"
-          else #());;
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
-          Continue);;
-        (if: ![uint64T] "err" ≠ e.None
-        then
-          lock.acquire (struct.loadF Server "mu" "s");;
-          (* log.Printf("applyRoThread() exited because of non-retryable RPC error") *)
-          control.impl.Assume #false;;
-          lock.release (struct.loadF Server "mu" "s");;
-          Break
-        else
-          lock.acquire (struct.loadF Server "mu" "s");;
-          (if: (struct.loadF Server "epoch" "s" = "epoch") && (struct.loadF Server "nextIndex" "s" = "nextIndex")
-          then
-            struct.storeF Server "committedNextIndex" "s" "nextIndex";;
-            struct.storeF Server "committedNextRoIndex" "s" "nextRoIndex";;
-            lock.condBroadcast (struct.loadF Server "committedNextRoIndex_cond" "s");;
-            Continue
-          else Continue))));;
-    #().
-
-Definition Server__ApplyRo: val :=
-  rec: "Server__ApplyRo" "s" "op" :=
+(* FIXME: incorrect, but suitable for benchmarking
+   Applies the RO op immediately, but then waits for it to be committed before
+   replying to client. *)
+Definition Server__ApplyRoWaitForCommit: val :=
+  rec: "Server__ApplyRoWaitForCommit" "s" "op" :=
     let: "reply" := struct.alloc ApplyReply (zero_val (struct.t ApplyReply)) in
     struct.storeF ApplyReply "Reply" "reply" slice.nil;;
+    struct.storeF ApplyReply "Err" "reply" e.None;;
     lock.acquire (struct.loadF Server "mu" "s");;
     (if: ~ (struct.loadF Server "isPrimary" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
-      struct.storeF ApplyReply "Err" "reply" e.Stale;;
+      struct.storeF ApplyReply "Err" "reply" e.NotLeader;;
       "reply"
     else
       (if: struct.loadF Server "sealed" "s"
       then
         lock.release (struct.loadF Server "mu" "s");;
-        struct.storeF ApplyReply "Err" "reply" e.Stale;;
+        struct.storeF ApplyReply "Err" "reply" e.Sealed;;
         "reply"
       else
-        struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op");;
-        struct.storeF Server "nextRoIndex" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextRoIndex" "s") #1);;
-        let: "nextRoIndex" := struct.loadF Server "nextRoIndex" "s" in
-        let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
-        let: "epoch" := struct.loadF Server "epoch" "s" in
-        (if: (struct.loadF Server "nextIndex" "s" = struct.loadF Server "durableNextIndex" "s")
-        then lock.condSignal (struct.loadF Server "roOpsToPropose_cond" "s")
-        else #());;
-        Skip;;
-        (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-          (if: (("epoch" ≠ struct.loadF Server "epoch" "s") || (struct.loadF Server "committedNextIndex" "s" > "nextIndex")) || (struct.loadF Server "committedNextRoIndex" "s" ≥ "nextRoIndex")
-          then Break
-          else
-            lock.condWait (struct.loadF Server "committedNextRoIndex_cond" "s");;
-            Continue));;
-        (if: "epoch" ≠ struct.loadF Server "epoch" "s"
+        let: (<>, "h") := grove_ffi.GetTimeRange #() in
+        (if: struct.loadF Server "leaseExpiration" "s" < "h"
         then
           lock.release (struct.loadF Server "mu" "s");;
-          struct.storeF ApplyReply "Err" "reply" e.Stale;;
+          struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
           "reply"
         else
+          struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op");;
+          let: "readNextIndex" := struct.loadF Server "nextIndex" "s" in
+          let: "epoch" := struct.loadF Server "epoch" "s" in
+          Skip;;
+          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+            (if: struct.loadF Server "epoch" "s" ≠ "epoch"
+            then
+              struct.storeF ApplyReply "Err" "reply" e.Stale;;
+              Break
+            else
+              (if: "readNextIndex" ≤ struct.loadF Server "committedNextIndex" "s"
+              then
+                struct.storeF ApplyReply "Err" "reply" e.None;;
+                Break
+              else
+                (if: struct.loadF Server "sealed" "s"
+                then
+                  struct.storeF ApplyReply "Err" "reply" e.Sealed;;
+                  Break
+                else
+                  lock.condWait (struct.loadF Server "committedNextIndex_cond" "s");;
+                  Continue))));;
           lock.release (struct.loadF Server "mu" "s");;
-          struct.storeF ApplyReply "Err" "reply" e.None;;
           "reply"))).
 
 (* called on the primary server to apply a new operation. *)
@@ -479,10 +380,10 @@ Definition Server__Apply: val :=
         let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
         let: "epoch" := struct.loadF Server "epoch" "s" in
         let: "clerks" := struct.loadF Server "clerks" "s" in
-        struct.storeF Server "nextRoIndex" "s" #0;;
-        struct.storeF Server "committedNextRoIndex" "s" #0;;
         lock.release (struct.loadF Server "mu" "s");;
+        (* log.Printf("wait durable: %d", nextIndex) *)
         "waitForDurable" #();;
+        (* log.Printf("done durable: %d", nextIndex) *)
         let: "wg" := waitgroup.New #() in
         let: "args" := struct.new ApplyAsBackupArgs [
           "epoch" ::= "epoch";
@@ -522,11 +423,25 @@ Definition Server__Apply: val :=
           (if: (struct.loadF Server "epoch" "s" = "epoch") && ("nextIndex" > struct.loadF Server "committedNextIndex" "s")
           then
             struct.storeF Server "committedNextIndex" "s" "nextIndex";;
-            lock.condBroadcast (struct.loadF Server "committedNextRoIndex_cond" "s")
+            lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s")
           else #());;
           lock.release (struct.loadF Server "mu" "s")
         else #());;
         "reply")).
+
+Definition Server__leaseRenewalThread: val :=
+  rec: "Server__leaseRenewalThread" "s" "epoch" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("gotLease", "leaseExpiration") := config.Clerk__GetLease (struct.loadF Server "confCk" "s") "epoch" in
+      (if: ~ "gotLease"
+      then Break
+      else
+        lock.acquire (struct.loadF Server "mu" "s");;
+        struct.storeF Server "leaseExpiration" "s" "leaseExpiration";;
+        lock.release (struct.loadF Server "mu" "s");;
+        Continue));;
+    #().
 
 (* requires that we've already at least entered this epoch
    returns true iff stale *)
@@ -567,7 +482,6 @@ Definition Server__ApplyAsBackup: val :=
         else
           let: (<>, "waitFn") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args") in
           struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
-          let: "opNextIndex" := struct.loadF Server "nextIndex" "s" in
           let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s") in
           (if: "ok"
           then
@@ -576,16 +490,6 @@ Definition Server__ApplyAsBackup: val :=
           else #());;
           lock.release (struct.loadF Server "mu" "s");;
           "waitFn" #();;
-          lock.acquire (struct.loadF Server "mu" "s");;
-          (if: (struct.loadF ApplyAsBackupArgs "epoch" "args" = struct.loadF Server "epoch" "s") && ("opNextIndex" > struct.loadF Server "durableNextIndex" "s")
-          then
-            struct.storeF Server "durableNextIndex" "s" "opNextIndex";;
-            lock.condBroadcast (struct.loadF Server "durableNextIndex_cond" "s");;
-            (if: (struct.loadF Server "durableNextIndex" "s" = struct.loadF Server "nextIndex" "s") && (struct.loadF Server "nextRoIndex" "s" ≠ struct.loadF Server "committedNextRoIndex" "s")
-            then lock.condSignal (struct.loadF Server "roOpsToPropose_cond" "s")
-            else #())
-          else #());;
-          lock.release (struct.loadF Server "mu" "s");;
           e.None))).
 
 Definition Server__SetState: val :=
@@ -605,10 +509,10 @@ Definition Server__SetState: val :=
         struct.storeF Server "epoch" "s" (struct.loadF SetStateArgs "Epoch" "args");;
         struct.storeF Server "sealed" "s" #false;;
         struct.storeF Server "nextIndex" "s" (struct.loadF SetStateArgs "NextIndex" "args");;
-        struct.storeF Server "durableNextIndex" "s" (struct.loadF Server "nextIndex" "s");;
         struct.loadF StateMachine "SetStateAndUnseal" (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args") (struct.loadF SetStateArgs "NextIndex" "args") (struct.loadF SetStateArgs "Epoch" "args");;
         MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
           lock.condSignal "cond");;
+        lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s");;
         struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
         lock.release (struct.loadF Server "mu" "s");;
         e.None)).
@@ -631,6 +535,7 @@ Definition Server__GetState: val :=
       MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
         lock.condSignal "cond");;
       struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
+      lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s");;
       lock.release (struct.loadF Server "mu" "s");;
       struct.new GetStateReply [
         "Err" ::= e.None;
@@ -664,12 +569,10 @@ Definition Server__BecomePrimary: val :=
         SliceSet (slice.T ptrT) (struct.loadF Server "clerks" "s") (![uint64T] "j") "clerks";;
         "j" <-[uint64T] ![uint64T] "j" + #1;;
         Continue);;
-      struct.storeF Server "nextRoIndex" "s" #0;;
-      struct.storeF Server "committedNextRoIndex" "s" #0;;
       struct.storeF Server "committedNextIndex" "s" #0;;
       lock.release (struct.loadF Server "mu" "s");;
       let: "epoch" := struct.loadF BecomePrimaryArgs "Epoch" "args" in
-      Fork (Server__applyRoThread "s" "epoch");;
+      Fork (Server__leaseRenewalThread "s" "epoch");;
       e.None).
 
 Definition MakeServer: val :=
@@ -680,12 +583,8 @@ Definition MakeServer: val :=
     struct.storeF Server "sealed" "s" "sealed";;
     struct.storeF Server "sm" "s" "sm";;
     struct.storeF Server "nextIndex" "s" "nextIndex";;
-    struct.storeF Server "durableNextIndex" "s" "nextIndex";;
     struct.storeF Server "isPrimary" "s" #false;;
     struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
-    struct.storeF Server "durableNextIndex_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
-    struct.storeF Server "roOpsToPropose_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
-    struct.storeF Server "committedNextRoIndex_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
     "s".
 
 Definition Server__Serve: val :=
@@ -711,12 +610,8 @@ Definition Server__Serve: val :=
       "reply" <-[slice.T byteT] EncodeApplyReply (Server__Apply "s" "args");;
       #()
       ));;
-    MapInsert "handlers" RPC_ROAPPLYASBACKUP ((λ: "args" "reply",
-      "reply" <-[slice.T byteT] e.EncodeError (Server__RoApplyAsBackup "s" (DecodeRoApplyAsBackupArgs "args"));;
-      #()
-      ));;
     MapInsert "handlers" RPC_ROPRIMARYAPPLY ((λ: "args" "reply",
-      "reply" <-[slice.T byteT] EncodeApplyReply (Server__ApplyRo "s" "args");;
+      "reply" <-[slice.T byteT] EncodeApplyReply (Server__ApplyRoWaitForCommit "s" "args");;
       #()
       ));;
     let: "rs" := urpc.MakeServer "handlers" in

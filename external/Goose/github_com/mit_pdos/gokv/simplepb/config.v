@@ -94,6 +94,13 @@ Definition Clerk__WriteConfig: val :=
       "e"
     else "err").
 
+(* returns true if the lease was granted for the given epoch, and a conservative
+   guess on when the lease expires. *)
+Definition Clerk__GetLease: val :=
+  rec: "Clerk__GetLease" "ck" "epoch" :=
+    Panic "impl";;
+    #().
+
 (* server.go *)
 
 Definition Server := struct.decl [
