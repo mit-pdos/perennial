@@ -3,6 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import auth dfrac_agree mono_list csum gset.
 From Perennial.program_proof.simplepb Require Import pb_ghost.
+From Perennial.Helpers Require Import ListSolver.
 
 Section pb_preread_protocol.
 (* Use (authR gsetR) for monotonic sets. *)
@@ -34,8 +35,8 @@ Admitted.
 Definition own_log (γlog:gname) (σ:list EntryType) : iProp Σ :=
   own γlog (●ML{#1/2} (σ : list (leibnizO EntryType))).
 
-Definition is_log_lb (γlog:gname) (σ:list EntryType) : iProp Σ.
-Admitted.
+Definition is_log_lb (γlog:gname) (σ:list EntryType) : iProp Σ :=
+  own γlog (◯ML (σ : list (leibnizO EntryType))).
 
 (* Maybe make the fupds non-persistent, and track things more carefully in the
    proof. *)
@@ -46,7 +47,7 @@ Definition have_proposed_reads_fupds γlog ros : iProp Σ :=
 
 (* Maybe make Q not persistent, and escrow it back to the caller *)
 Definition have_completed_reads_Qs ros σ : iProp Σ :=
-  [∗ map] idx ↦ rosAtIdx ∈ (filter (λ '(idx, _), idx < length σ) ros), [∗ set] Q ∈ rosAtIdx,
+  [∗ map] idx ↦ rosAtIdx ∈ ros, ⌜idx <= length σ⌝ → [∗ set] Q ∈ rosAtIdx,
     □ Q (take idx σ)
 .
 
@@ -80,6 +81,14 @@ Lemma map_fmset_get_elem idx Q ros γreads :
 Proof.
 Admitted.
 
+Lemma map_fmset_elem_lookup idx Q ros γreads :
+  own_proposed_reads γreads ros -∗
+  is_proposed_read γreads idx Q -∗
+  ⌜Q ∈ default ∅ (ros !! idx)⌝
+.
+Proof.
+Admitted.
+
 Lemma own_log_agree γlog σ σ' :
   own_log γlog σ -∗
   own_log γlog σ' -∗
@@ -92,12 +101,26 @@ Proof.
   by destruct Hvalid as [_ ?].
 Qed.
 
+Lemma own_log_lb_ineq γlog σ σ' :
+  own_log γlog σ' -∗
+  is_log_lb γlog σ -∗
+  ⌜prefix σ σ'⌝.
+Proof.
+  iIntros "H1 H2".
+  iDestruct (own_valid_2 with "H1 H2") as %Hvalid.
+  iPureIntro.
+  Search mono_list_auth.
+  rewrite mono_list_both_dfrac_valid_L in Hvalid.
+  by destruct Hvalid as [_ ?].
+Qed.
+
 Lemma start_read_step Q γ γlog γreads idx σ :
   idx > length σ →
   £ 1 -∗
   preread_inv γ γlog γreads -∗
   □(|={⊤,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤}=∗ □ Q σ)) -∗
-  own_log γlog σ
+  own_log γlog σ (* FIXME: maybe own_commit instead of own_log? Whatever this
+                    resource is will come from the own_lease. *)
   ={↑prereadN}=∗
   is_proposed_read γreads idx Q ∗ own_log γlog σ
 .
@@ -120,23 +143,19 @@ Proof.
   iSplit.
   {
     iApply (big_sepM_insert_2 with "[] HreadUpds").
-    Search "big_sepS_insert".
     iApply (big_sepS_insert_2 with "[] []").
     { done. }
-    (* the rest of these fupds follow straightforwardly old have_proposed_reads_fupds *)
+    (* the rest of these fupds follow straightforwardly from old have_proposed_reads_fupds *)
     destruct (ros !! idx) as [] eqn:Hlookup.
     {
       iDestruct (big_sepM_lookup with "HreadUpds") as "Hupds".
       { done. }
       iFrame "Hupds".
     }
-    by iApply big_sepS_empty.
+    { by iApply big_sepS_empty. }
   }
-  (* FIXME: there's no point in using filter... *)
-  iApply big_sepM_filter.
-  iDestruct (big_sepM_filter with "HcompletedRead") as "HcompletedRead2".
   simpl.
-  iApply (big_sepM_insert_2 with "[] HcompletedRead2").
+  iApply (big_sepM_insert_2 with "[] HcompletedRead").
   iIntros (?).
   exfalso.
   lia.
@@ -144,6 +163,7 @@ Qed.
 
 Lemma finish_read_step Q γ γlog γreads idx σ :
   length σ = idx →
+  £ 1 -∗
   preread_inv γ γlog γreads -∗
   is_log_lb γlog σ -∗
   is_proposed_read γreads idx Q
@@ -151,6 +171,27 @@ Lemma finish_read_step Q γ γlog γreads idx σ :
   □ Q σ
 .
 Proof.
+  iIntros (Hlen) "Hlc #Hinv #Hlb #Hro".
+  iInv "Hinv" as "Hown" "Hclose".
+  iMod (lc_fupd_elim_later with "Hlc Hown") as "Hown".
+  iNamed "Hown".
+  iDestruct (own_log_lb_ineq with "Hlog Hlb")as %Hprefix.
+  iDestruct (map_fmset_elem_lookup with "HownRos Hro") as %HQelem.
+  destruct (ros !! idx) as [] eqn:Hlookup; last by exfalso.
+  simpl in HQelem.
+  iDestruct (big_sepM_lookup with "HcompletedRead") as "H".
+  { done. }
+  iSpecialize ("H" with "[%]").
+  { subst. by apply prefix_length. }
+  iDestruct (big_sepS_elem_of with "H") as "H2".
+  { done. }
+  iMod ("Hclose" with "[-]").
+  { iExists _, _; iFrame "∗#". }
+  iModIntro.
+  iExactEq "H2".
+  repeat f_equal.
+  (* TODO: list_solver *)
+  admit.
 Admitted.
 
 End pb_preread_protocol.
