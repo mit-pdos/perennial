@@ -44,7 +44,7 @@ Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op 
         "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
         "#Hprop_lb" ∷ is_proposal_lb γ epoch opsfull ∗
         "#Hprop_facts" ∷ is_proposal_facts γ epoch opsfull ∗
-        "%Hghost_op_σ" ∷ ⌜∃ γ, last opsfull = Some (rw_op op, γ)⌝ ∗
+        "%Hghost_op_σ" ∷ ⌜∃ γ, last opsfull = Some (op, γ)⌝ ∗
         "%Hghost_op_op" ∷ ⌜has_op_encoding op_bytes op⌝ ∗
         "%Hσ_index" ∷ ⌜length (get_rwops opsfull) = ((int.nat index) + 1)%nat⌝ ∗
         "%HnoOverflow" ∷ ⌜int.nat index < int.nat (word.add index 1)⌝ ∗
@@ -152,107 +152,37 @@ Proof.
   }
 Qed.
 
-Lemma primary_lb st γ γeph γsrv opsfull' sealed:
-  is_proposal_lb γ st.(server.epoch) opsfull' -∗
-  is_Primary_ghost_f γ γeph γsrv st -∗
-  own_Server_ghost_f γ γsrv γeph st.(server.epoch) (get_rwops st.(server.ops_full_eph)) sealed -∗
-  ⌜prefix (get_rwops opsfull') (get_rwops st.(server.ops_full_eph))⌝.
-Proof.
-  iIntros "#Hprop_lb #Hprim2 Hghost".
-  iNamed "Hghost".
-  iEval (rewrite /is_Primary_ghost_f /tc_opaque) in "Hprim2".
-  iNamed "Hprim2".
-  iNamed "Hghost".
-  iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
-  rewrite Hre. iPureIntro. by apply get_rwops_prefix.
-Qed.
-
-(* increase epheeral proposal on backup servers when getting new ops *)
 (* The important part of this lemma is
    own_Server_ghost_eph_f st -∗ own_Server_ghost_eph_f st' *)
-Lemma applybackup_eph sm st γ γsrv γeph ops_full_eph' {own_StateMachine} :
-  st.(server.sealed) = false →
-  length (get_rwops st.(server.ops_full_eph)) < length (get_rwops ops_full_eph') →
-  is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph) -∗
-  is_proposal_lb γ st.(server.epoch) ops_full_eph' -∗
-  is_proposal_facts γ st.(server.epoch) ops_full_eph' -∗
-  £ 1 -∗
-  own_Server_ghost_eph_f st γ γsrv γeph -∗
-  own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) false (own_Server_ghost_f γ γsrv γeph)
-  -∗
-  |NC={⊤,⊤}=> wpc_nval ⊤ (
-                (own_StateMachine st.(server.epoch) (get_rwops (st.(server.ops_full_eph))) false (own_Server_ghost_f γ γsrv γeph)) ∗
-                is_ephemeral_proposal_lb γeph st.(server.epoch) ops_full_eph' ∗
-                own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv γeph ∗
-                ⌜ prefix st.(server.ops_full_eph) ops_full_eph' ⌝ ∗
-                ⌜ st.(server.isPrimary) = false ⌝)
+Lemma applybackup_eph st γ γsrv ops_full_eph' :
+  int.nat (length (get_rwops st.(server.ops_full_eph))) <= int.nat (length (get_rwops ops_full_eph')) →
+  own_Server_ghost_eph_f st γ γsrv -∗
+  own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv
 .
 Proof.
-  intros Hunsealed Hlen.
-  iIntros "#HisSm #Hprop_lb #Hprop_facts Hlc HghostEph Hstate".
-  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm".
-  iNamed "HisSm".
+  intros Hlen.
+  iIntros "HghostEph".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "HghostEph".
   iNamed "HghostEph".
-
-  iDestruct "Heph_prop_lb" as "#Heph_prop_lb".
-  (* Want to establish:
-     is_ephemeral_proposal_lb γeph args.(ApplyAsBackupArgs.epoch) opsfull
-     This requires us to know that opsfull_ephemeral ⪯ opsfull.
-     We will establish this using accP.
-   *)
-  rewrite Hunsealed.
-  destruct st.(server.isPrimary) as [] eqn:HisPrimary.
+  rewrite /own_Server_ghost_eph_f /tc_opaque.
+  iFrame "#".
+  simpl.
+  destruct st.(server.isPrimary) as [] eqn:Hprimary.
   { (* case: is primary. *)
-    iAssert (_) with "HprimaryOnly" as "Hprim2".
-    iMod ("HaccP" with "Hlc [Heph] Hstate") as "$"; last first.
-    { done. }
-    iIntros (???) "Hghost".
-    iNamed "Hghost".
-    iNamed "Hghost".
-    iEval (rewrite /is_Primary_ghost_f /tc_opaque) in "Hprim2".
-    iDestruct "Hprim2" as "[%Hbad|Hprim2]"; first by exfalso.
-    iNamed "Hprim2".
-    iDestruct (ghost_propose_lb_valid with "Htok_used_witness Hprim Hprop_lb") as %Hvalid.
-    iDestruct (fmlist_ptsto_lb_agree with "Heph Heph_lb") as %Hvalid2.
-    exfalso.
-
-    apply get_rwops_prefix, prefix_length in Hvalid.
-    apply get_rwops_prefix, prefix_length in Hvalid2.
-    word.
+    iDestruct "HprimaryOnly" as "[%Hbad|Hprimary]"; first by exfalso.
+    iRight.
+    rewrite /is_Primary_ghost_f /tc_opaque.
+    iNamed "Hprimary".
+    iExists _; iFrame "#%".
+    iPureIntro.
+    lia.
   }
   { (* case: not primary *)
-    iDestruct (fmlist_ptsto_lb_comparable with "Heph_prop_lb Hprop_lb") as %[Hprefix|Hprefix].
-    2:{ (* case: opsfull_ephemeral ⪯ opsfull; no need to do any update at all *)
-      exfalso.
-      apply get_rwops_prefix, prefix_length in Hprefix.
-      word.
-    }
-    {
-      iMod (fmlist_ptsto_update with "Heph") as "Heph".
-      { done. }
-      iDestruct (fmlist_ptsto_get_lb with "Heph") as "#Heph_lb".
-      iModIntro.
-      iApply wpc_nval_intro.
-      iNext.
-      iFrame "Hstate #".
-      iSplitL; last done.
-      repeat iExists _.
-      rewrite Hunsealed.
-      iFrame "∗ Hdurable_lb #".
-      rewrite HisPrimary.
-      simpl.
-      iSplitR.
-      { iModIntro; iFrame "#". }
-      iSplitR.
-      { iDestruct "Hprop_facts" as "(?&?&?)". iFrame "#". }
-      iFrame "%".
-      by iLeft.
-    }
+    by iLeft.
   }
 Qed.
 
-Lemma applybackup_step_helper (opsfull opsfull_old: list (GhostOpType * gname)) :
+Lemma applybackup_step_helper (opsfull opsfull_old: list (OpType * gname)) :
   (prefix opsfull opsfull_old ∨ prefix opsfull_old opsfull) →
   length (get_rwops opsfull) = length (get_rwops opsfull_old) + 1 →
   prefix opsfull_old opsfull.
@@ -260,32 +190,32 @@ Proof.
   intros [Hbad|Hgood]; last done.
   intros Hlen.
   exfalso.
-  apply get_rwops_prefix, prefix_length in Hbad.
+  apply prefix_length in Hbad.
+  do 2 rewrite fmap_length in Hlen.
   lia.
 Qed.
 
-Lemma applybackup_step_helper2 (ops_full ops_full':list (GhostOpType * gname)) op a :
-  last ops_full' = Some (rw_op op, a) →
+Lemma applybackup_step_helper2 (ops_full ops_full':list (OpType * gname)) op a :
+  last ops_full' = Some (op, a) →
   length (get_rwops ops_full') = length (get_rwops ops_full) + 1 →
   ops_full `prefix_of` ops_full' →
   get_rwops ops_full' = get_rwops ops_full ++ [op].
 Proof.
 Admitted.
 
-Lemma applybackup_step γ γsrv γeph epoch ops ops_full' op a:
-  last ops_full' = Some (rw_op op, a) →
+Lemma applybackup_step γ γsrv epoch ops ops_full' op a:
+  last ops_full' = Some (op, a) →
   length (get_rwops ops_full') = length ops + 1 →
   is_proposal_lb γ epoch ops_full' -∗
   is_proposal_facts γ epoch ops_full' -∗
-  is_ephemeral_proposal_lb γeph epoch ops_full' -∗
-  own_Server_ghost_f γ γsrv γeph epoch ops false ={↑pbN}=∗
-  own_Server_ghost_f γ γsrv γeph epoch (get_rwops ops_full') false ∗
+  own_Server_ghost_f γ γsrv epoch ops false ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv epoch (get_rwops ops_full') false ∗
   ⌜get_rwops ops_full' = ops ++ [op]⌝ ∗
   (is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch ops_full')
 .
 Proof.
   intros Hlast Hlen.
-  iIntros "#Hprop_lb #Hprop_facts #Heph_prop_lb Hown".
+  iIntros "#Hprop_lb #Hprop_facts Hown".
   iNamed "Hown".
   rename opsfull into ops_full.
   subst.
@@ -305,19 +235,6 @@ Proof.
   iSplitL.
   2:{ iPureIntro. by eapply applybackup_step_helper2. }
   iExists _; iFrame "Hghost Hprim #". done.
-Qed.
-
-Lemma increase_durableNextIndex st γ γsrv γeph ops_durable_full newDurableNextIndex:
-  length (get_rwops ops_durable_full) = int.nat newDurableNextIndex →
-  is_accepted_lb γsrv st.(server.epoch) ops_durable_full -∗
-  is_ephemeral_proposal_lb γeph st.(server.epoch) ops_durable_full -∗
-  own_Server_ghost_eph_f st γ γsrv γeph -∗
-  own_Server_ghost_eph_f (st <| server.durableNextIndex:= newDurableNextIndex |>) γ γsrv γeph
-.
-Proof.
-  intros. iIntros "??".
-  rewrite /own_Server_ghost_eph_f /tc_opaque.
-  iNamed 1. iExists _; iFrame "∗#". done.
 Qed.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
@@ -352,11 +269,15 @@ Proof.
   { wp_loadField. wp_loadField. wp_pures. iFrame. done. }
   { wp_loadField. wp_pures. iFrame.
     instantiate (2:=(st.(server.sealed) = false)).
+    iPureIntro.
+    f_equal.
+    (* FIXME: need Decision (<b> = false) *)
+    (* destruct (st.(server.sealed)). *)
     admit.
   }
   Unshelve.
   2:{
-    admit.
+    apply _.
   }
   wp_if_destruct.
   { (* loop again *)
@@ -510,42 +431,35 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  iMod (applybackup_eph with "HisSm Hprop_lb Hprop_facts Hlc HghostEph Hstate") as "HH".
-  { done. }
-  {
+  iDestruct (applybackup_eph with "HghostEph") as "HghostEph".
+  { instantiate (1:= ops_full').
     rewrite Hσ_index.
-    rewrite Heqb2.
-    (* FIXME: why do I need to rewrite these? *)
-    word_cleanup.
-    (* FIXME: don't want to manually unfold this *)
+    rewrite -Heqb2.
     unfold no_overflow in HnextIndexNoOverflow.
     word.
   }
 
   wp_bind (struct.loadF _ _ _).
-  wp_apply (wpc_nval_elim_wp with "HH").
-  { done. }
-  { done. }
 
   iDestruct (is_StateMachine_acc_apply with "HisSm") as "HH".
   iNamed "HH".
   wp_loadField.
   wp_pures.
-  iIntros "(Hstate & #Heph_lb & HghostEph & %Heph_prefix & %HnotPrimary)".
-  rewrite HnotPrimary.
 
   iMod (readonly_alloc_1 with "Hargs_op_sl") as "Hargs_op_sl".
   wp_apply ("HapplySpec" with "[$Hstate $Hargs_op_sl]").
   {
     iSplitL; first done.
     iIntros "Hghost".
-    iMod (applybackup_step with "Hprop_lb Hprop_facts [] Hghost") as "Hghost".
+    iMod (applybackup_step with "Hprop_lb Hprop_facts Hghost") as "Hghost".
     { done. }
     {
       rewrite Hσ_index.
       f_equal.
-      admit. } (* FIXME: overflow of list length *)
-    { iFrame "#". }
+      unfold no_overflow in HnextIndexNoOverflow.
+      rewrite -HnextIndexNoOverflow.
+      by rewrite Heqb2.
+    } (* FIXME: why doesn't `word` work? *)
     iModIntro.
     iDestruct "Hghost" as "(Hghost & %Hre & H)".
     rewrite Hre.
@@ -554,18 +468,12 @@ Proof.
   }
 
   iIntros (reply q waitFn) "(Hreply & Hstate & HwaitSpec)".
-  epose proof (applybackup_step_helper2 _ _ _ _ Hghost_op_σ _ Heph_prefix) as Hre.
-  Unshelve.
-  2:{ rewrite Hσ_index. unfold no_overflow in HnextIndexNoOverflow.
-      rewrite Heqb2. word. }
-  rewrite -Hre.
 
   wp_pures.
   wp_loadField.
   wp_storeField.
   wp_loadField.
 
-  wp_loadField.
   wp_loadField.
   wp_apply (wp_MapGet with "HopAppliedConds_map").
   iIntros (cond ok) "[%Hlookup HopAppliedConds_map]".
@@ -617,20 +525,22 @@ Proof.
 
     repeat iExists _.
     simpl.
-    rewrite HnotPrimary Heqb0.
+    rewrite Heqb0.
     iFrame "∗".
     iSplitL "HnextIndex".
     {
-      rewrite Hre.
-      rewrite app_length /=.
+      rewrite Hσ_index.
+      rewrite Heqb2.
       iApply to_named.
       iExactEq "HnextIndex".
       repeat f_equal.
       unfold no_overflow in HnextIndexNoOverflow.
       rewrite -Heqb2.
-      admit. (* FIXME: overflow reasoning *)
+      word.
     }
-    iFrame "#".
+    iSplitL "Hstate".
+    { admit. (* FIXME: show that ops_full' = opsfull ++ [op] *) }
+    iFrame "HisSm #".
     iPureIntro.
     unfold no_overflow.
     word.
@@ -639,89 +549,6 @@ Proof.
   wp_pures.
   wp_apply "HwaitSpec".
   iIntros "#Hlb".
-  wp_pures.
-
-  (* possibly update durableNextIndex *)
-  wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
-  iIntros "[Hlocked Hown]".
-  iClear "HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond HisSm".
-  (* FIXME: why doesn't Hdurable_lb get automatically get destructed into Hdurable_lb2? *)
-
-  wp_pures.
-  iNamed "Hown".
-  iNamed "Hvol".
-  wp_bind (_ && _)%E.
-  wp_apply (wp_and' with "[Hepoch Hargs_epoch HdurableNextIndex]"); first iNamedAccu; iNamed 1.
-  { do 2 wp_loadField. wp_pures. iFrame. by iModIntro. }
-  { iNamed 1. wp_loadField. wp_pures. iFrame. by iModIntro. }
-
-  wp_apply (wp_If_join with "[HdurableNextIndex HdurableNextIndex_cond HnextRoIndex HnextIndex
-                              HcommittedNextRoIndex HroOpsToPropose_cond HghostEph]").
-  {
-    iSplit.
-    {
-      (* case: increase durableNextIndex *)
-      rewrite bool_decide_eq_true.
-      iIntros "[%HepochEq %Heqb3]".
-      iDestruct "Hlb" as "[_ Hlb]".
-      replace (st.(server.epoch)) with (args.(ApplyAsBackupArgs.epoch)) by word.
-
-      replace (args.(ApplyAsBackupArgs.epoch)) with (st0.(server.epoch)); last first.
-      { apply inv_litv in HepochEq.
-        injection HepochEq as <-.
-        word. }
-      iDestruct (increase_durableNextIndex with "Hlb Heph_lb HghostEph") as "HghostEph".
-      { instantiate (1:=(word.add args.(ApplyAsBackupArgs.index) 1)). word. }
-      wp_storeField.
-      rewrite Heqb2. (* to match up ApplyArgs.index and (length (rws ops_full_eph)) *)
-      wp_loadField.
-      wp_apply (wp_condBroadcast with "[]"); first iFrame "#".
-      wp_pures.
-      wp_loadField.
-      wp_loadField.
-      wp_bind (_ && _)%E.
-      wp_apply (wp_and' with "[HnextRoIndex HcommittedNextRoIndex]"); first iNamedAccu; iNamed 1.
-      { wp_pures. iFrame. by iModIntro. }
-      { iIntros (_). do 2 wp_loadField. wp_pures. iFrame.
-        rewrite -bool_decide_not. by iModIntro. }
-      wp_apply (wp_If_optional' with "[HroOpsToPropose_cond]"); first iNamedAccu; iNamed 1.
-      { (* trigger roOpsToPropose cond *)
-        iNamed 1.
-        wp_loadField.
-        wp_apply (wp_condSignal with "[]"); first iFrame "#".
-        iFrame.
-        done.
-      }
-      iSplitR; first done.
-      iAssert (∃ (newDurableNextIndex:u64),
-          "HdurableNextIndex" ∷ s ↦[Server :: "durableNextIndex"] #newDurableNextIndex ∗
-          "HghostEph" ∷ own_Server_ghost_eph_f
-                          (st0 <| server.durableNextIndex := newDurableNextIndex |>) γ γsrv γeph
-                          )%I with "[HdurableNextIndex HghostEph]" as "HH".
-      { iExists _; iFrame. }
-      iNamedAccu.
-    }
-    iIntros (_).
-    wp_pures.
-    iModIntro; iSplitR; first done.
-    iFrame.
-    iExists _; iFrame.
-  }
-  iNamed 1.
-  iNamed "HH".
-  wp_pures.
-  wp_loadField.
-  wp_apply (release_spec with "[-HΦ HΨ]").
-  {
-    iFrame "HmuInv Hlocked".
-    iNext.
-    repeat iExists _.
-    iSplitR "HghostEph"; last iFrame.
-    repeat iExists _.
-    iFrame "∗ #".
-  }
   wp_pures.
 
   iLeft in "HΨ".

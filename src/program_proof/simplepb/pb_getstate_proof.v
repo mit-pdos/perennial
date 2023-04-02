@@ -154,44 +154,30 @@ Proof.
   iNamed 1. iExists _; iFrame "#".
 Qed.
 
-(* GetState step for ephemeral ghost state *)
-Lemma getstate_eph st γ γsrv γeph :
-  own_Server_ghost_eph_f st γ γsrv γeph ==∗
-  own_Server_ghost_eph_f (st <| server.sealed := true |>) γ γsrv γeph ∗
-  is_ephemeral_proposal_sealed γeph st.(server.epoch) st.(server.ops_full_eph)
+(* (trivial) GetState step for ephemeral ghost state *)
+Lemma getstate_eph st γ γsrv :
+  own_Server_ghost_eph_f st γ γsrv ==∗
+  own_Server_ghost_eph_f (st <| server.sealed := true |>) γ γsrv
 .
 Proof.
   iIntros "HH".
-  iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "HH".
-  iNamed "HH".
-  destruct (st.(server.sealed)) as [] eqn:Hsealed.
-  {
-    iDestruct "Heph" as "#$".
-    iExists _. iModIntro.
-    iFrame "∗#%".
-  }
-  {
-    iMod (fmlist_ptsto_persist with "Heph") as "#$".
-    iExists _. iModIntro.
-    iFrame "∗#%".
-  }
+  by rewrite /own_Server_ghost_eph_f /tc_opaque.
 Qed.
 
 (* GetState step for ghost state *)
-Lemma getstate_step γ γsrv γeph epoch_lb epoch ops sealed :
+Lemma getstate_step γ γsrv epoch_lb epoch ops sealed :
   is_epoch_lb γsrv epoch_lb -∗
-  is_ephemeral_proposal_sealed γeph epoch ops -∗
-  own_Server_ghost_f γ γsrv γeph epoch (get_rwops ops) sealed ={↑pbN}=∗
-  own_Server_ghost_f γ γsrv γeph epoch (get_rwops ops) true ∗
+  own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv epoch ops true ∗
   ∃ opsfull,
-  ⌜get_rwops ops = get_rwops opsfull⌝ ∗
+  ⌜ops = get_rwops opsfull⌝ ∗
   is_accepted_ro γsrv epoch opsfull ∗
   is_proposal_lb γ epoch opsfull ∗
   is_proposal_facts γ epoch opsfull ∗
   ⌜int.nat epoch_lb ≤ int.nat epoch⌝
 .
 Proof.
-  iIntros "#Hepoch_lb #Heph_sealed1 Hghost".
+  iIntros "#Hepoch_lb Hghost".
   iNamed "Hghost".
   iMod (ghost_seal with "Hghost") as "Hghost".
   iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
@@ -201,9 +187,7 @@ Proof.
   {
     iExists _.
     iFrame "∗#".
-    iSplitR; first done.
-    iModIntro.
-    iExists _; iFrame "#".
+    done.
   }
   iExists _.
   iFrame "#".
@@ -273,11 +257,11 @@ Proof.
   iNamed "HH".
   wp_loadField.
   iDestruct "HΨ" as "[#Hepoch_lb HΨ]".
-  iMod (getstate_eph with "HghostEph") as "[HghostEph #Heph_sealed]".
+  iMod (getstate_eph with "HghostEph") as "HghostEph".
   wp_apply ("HgetstateSpec" with "[$Hstate]").
   {
     iIntros "Hghost".
-    iMod (getstate_step with "Hepoch_lb Heph_sealed Hghost") as "[Hghost HH]".
+    iMod (getstate_step with "Hepoch_lb Hghost") as "[Hghost HH]".
     iFrame "Hghost".
     iModIntro.
     iExact "HH".
@@ -316,6 +300,9 @@ Proof.
   wp_apply (wp_NewMap).
   iIntros (opAppliedConds_loc_new) "Hmapnew".
   wp_storeField.
+  wp_loadField.
+  wp_apply (wp_condBroadcast with "[]").
+  { done. }
   wp_loadField.
   wp_apply (release_spec with "[-Hsnap_sl HΨ HΦ]").
   {

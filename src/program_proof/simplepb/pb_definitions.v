@@ -32,36 +32,13 @@ Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 
-Inductive GhostOpType :=
-  | rw_op : OpType → GhostOpType
-  | ro_op : OpType → GhostOpType.
-
 (* opsfull has all the ghost ops (RO and RW) in it as well as the gname for the
    Q for that op. get_rwops returns the RW ops only with the gnames removed.
    Generalizing it to an arbitrary extra type A instead of gname
    specifically, because sometimes we want to use get_rwops on a list that has
    an iProp predicate instead of the gname (see is_inv). *)
-Definition get_rwops {A} (opsfull:list (GhostOpType * A)) : list OpType :=
-  concat (map (λ opfull, match opfull with
-                         | (rw_op op, γ) => [op]
-                         | (ro_op _, _) => []
-                         end) opsfull).
-
-Lemma get_rwops_app {A} (opsfull newops:list (GhostOpType * A)) :
-  get_rwops (opsfull ++ newops) = (get_rwops opsfull) ++ (get_rwops newops).
-Proof.
-  unfold get_rwops.
-  by rewrite map_app concat_app.
-Qed.
-
-Lemma get_rwops_prefix {A} (a b:list (GhostOpType * A)) :
-  prefix a b → prefix (get_rwops a) (get_rwops b).
-Proof.
-  intros Hprefix.
-  destruct Hprefix as [c ->].
-  rewrite get_rwops_app.
-  by apply prefix_app_r.
-Qed.
+Definition get_rwops {A} (opsfull:list (OpType * A)) : list OpType :=
+  fst <$> opsfull.
 
 Definition client_logR := mono_listR (leibnizO OpType).
 
@@ -69,7 +46,7 @@ Class pbG Σ := {
     (*
     pb_ghostG :> pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
      *)
-    pb_ghostG :> pb_ghostG (EntryType:=(GhostOpType * gname)) Σ ;
+    pb_ghostG :> pb_ghostG (EntryType:=(OpType * gname)) Σ ;
     pb_savedG :> savedPredG Σ (list OpType);
     pb_urpcG :> urpcregG Σ ;
     pb_wgG :> waitgroupG Σ ; (* for apply proof *)
@@ -78,7 +55,7 @@ Class pbG Σ := {
 }.
 
 Definition pbΣ :=
-  #[pb_ghostΣ (EntryType:=(GhostOpType * gname)); savedPredΣ (list OpType) ; urpcregΣ ; waitgroupΣ ;
+  #[pb_ghostΣ (EntryType:=(OpType * gname)); savedPredΣ (list OpType) ; urpcregΣ ; waitgroupΣ ;
     GFunctor (client_logR) ; ghost_varΣ unit].
 Global Instance subG_pbΣ {Σ} : subG (pbΣ) Σ → (pbG Σ).
 Proof. solve_inG. Qed.
@@ -93,7 +70,7 @@ Definition own_log γ σ := own γ (●ML{#1/2} (σ : list (leibnizO OpType))).
 Definition ApplyAsBackup_core_spec γ γsrv args opsfull op Q (Φ : u64 -> iProp Σ) : iProp Σ :=
   ("%Hσ_index" ∷ ⌜length (get_rwops opsfull) = (int.nat args.(ApplyAsBackupArgs.index) + 1)%nat⌝ ∗
    "%Hhas_encoding" ∷ ⌜has_op_encoding args.(ApplyAsBackupArgs.op) op⌝ ∗
-   "%Hghost_op_σ" ∷ ⌜last opsfull = Some (rw_op op, Q)⌝ ∗
+   "%Hghost_op_σ" ∷ ⌜last opsfull = Some (op, Q)⌝ ∗
    "%Hno_overflow" ∷ ⌜int.nat args.(ApplyAsBackupArgs.index) < int.nat (word.add args.(ApplyAsBackupArgs.index) 1)⌝ ∗
    "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(ApplyAsBackupArgs.epoch) ∗
    "#Hprop_lb" ∷ is_proposal_lb γ args.(ApplyAsBackupArgs.epoch) opsfull ∗
@@ -200,8 +177,8 @@ Defined.
 Definition appN := pbN .@ "app".
 Definition escrowN := pbN .@ "escrow".
 
-Definition own_ghost' γsys (opsfullQ : list (GhostOpType * (list OpType → iProp Σ))) : iProp Σ :=
-  ∃ ops_gnames: list (GhostOpType * gname),
+Definition own_ghost' γsys (opsfullQ : list (OpType * (list OpType → iProp Σ))) : iProp Σ :=
+  ∃ ops_gnames: list (OpType * gname),
     own_ghost γsys ops_gnames ∗
     ⌜opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
     [∗ list] k↦Φ;γ ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_pred_own γ DfracDiscarded Φ.
@@ -240,28 +217,6 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition RoApplyAsBackup_core_spec γ γsrv args opsfull (Φ : u64 -> iProp Σ) : iProp Σ :=
-  ("%Hσ_index" ∷ ⌜length (get_rwops opsfull) = (int.nat args.(RoApplyAsBackupArgs.nextIndex))%nat⌝ ∗
-   "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(RoApplyAsBackupArgs.epoch) ∗
-   "#Hprop_lb" ∷ is_proposal_lb γ args.(RoApplyAsBackupArgs.epoch) opsfull ∗
-   "#Hprop_facts" ∷ is_proposal_facts γ args.(RoApplyAsBackupArgs.epoch) opsfull ∗
-   "HΨ" ∷ ((is_accepted_lb γsrv args.(RoApplyAsBackupArgs.epoch) opsfull -∗ Φ (U64 0)) ∧
-           (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
-    )%I
-.
-
-Program Definition RoApplyAsBackup_spec γ γsrv :=
-  λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ args opsfull,
-    ⌜RoApplyAsBackupArgs.has_encoding encoded_args args⌝ ∗
-    RoApplyAsBackup_core_spec γ γsrv args opsfull (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
-    )%I
-.
-Next Obligation.
-  unfold RoApplyAsBackup_core_spec.
-  solve_proper.
-Defined.
-
 Definition ApplyRo_core_spec γ γlog op enc_op :=
   λ (Φ : ApplyReply.C -> iPropO Σ) ,
   (
@@ -286,7 +241,6 @@ Next Obligation.
 Defined.
 
 
-
 Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
   ∃ γrpc,
@@ -295,9 +249,8 @@ Definition is_pb_host_pre ρ : (u64 -d> pb_system_names -d> pb_server_names -d> 
   handler_spec γrpc host (U64 2) (GetState_spec γ γsrv) ∗
   handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
   handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
-  handler_spec γrpc host (U64 5) (RoApplyAsBackup_spec γ γsrv) ∗
   handler_spec γrpc host (U64 6) (ApplyRo_spec γ) ∗
-  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 5) ; (U64 6) ]})%I
+  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ]})%I
 .
 
 Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
@@ -332,39 +285,15 @@ Qed.
 
 (* End RPC specs *)
 
-Definition own_ephemeral_proposal γeph (epoch:u64) (opsfull:list (GhostOpType * gname)) : iProp Σ :=
-  epoch ⤳l[γeph] opsfull.
-
-Definition is_ephemeral_proposal_lb γeph (epoch:u64) (opsfull:list (GhostOpType * gname)) : iProp Σ :=
-  epoch ⤳l[γeph]⪰ opsfull.
-
-Definition is_ephemeral_proposal_sealed γeph (epoch:u64) (opsfull:list (GhostOpType * gname)) : iProp Σ :=
-  epoch ⤳l[γeph]□ opsfull.
-
-Definition own_unused_ephemeral_proposals γeph (epoch:u64) : iProp Σ :=
-  [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' <= int.nat epoch⌝ ∨ own_ephemeral_proposal γeph epoch' []
-.
-
 (* Encapsulates the protocol-level ghost resources of a replica server; this is
    suitable for exposing as part of interfaces for users of the library. For
    now, it's only part of the crash obligation. *)
 (* should not be unfolded in proof *)
-Definition own_Server_ghost_f γ γsrv γeph epoch ops sealed : iProp Σ :=
+Definition own_Server_ghost_f γ γsrv epoch ops sealed : iProp Σ :=
   ∃ opsfull,
   "%Hre" ∷ ⌜ops = get_rwops opsfull⌝ ∗
-  "#Heph_lb" ∷ is_ephemeral_proposal_lb γeph epoch opsfull ∗
-  (* XXX: this ephemeral_proposal is really only used on the primary. The
-     invariant could maintain this only in the case that the server is primary,
-     but then we would need to prove that a server is definitely not primary
-     when it gets an ApplyAsBackup RPC. To avoid that annoyance, the proof keeps
-     this everywhere *)
   "Hghost" ∷ (own_replica_ghost γ γsrv epoch opsfull sealed) ∗
-  "Hprim" ∷ (own_primary_ghost γ γsrv epoch opsfull) ∗
-  "#Heph_sealed" ∷ □(if sealed then (∃ opsfull_ephemeral, is_ephemeral_proposal_sealed γeph epoch opsfull_ephemeral) else True)
-  (* XXX: keeping sealed ephemeral proposal so that:
-     when the primary is NOT sealed, it will have own_proposal, which tells it
-     that the server cannot be sealed.
-   *)
+  "Hprim" ∷ (own_primary_ghost γ γsrv epoch opsfull)
 .
 
 End pb_global_definitions.
@@ -374,19 +303,15 @@ Record t {pb_record:Sm.t} :=
   mkC {
     epoch : u64 ;
     sealed : bool ;
-    ops_full_eph: list (GhostOpType (pb_record:=pb_record) * gname) ;
+    ops_full_eph: list (pb_record.(Sm.OpType) * gname) ;
     isPrimary : bool ;
-    durableNextIndex : u64 ;
 
     (* read-only optimization-related *)
     committedNextIndex : u64 ;
-    nextRoIndex : u64 ;
-    committedNextRoIndex : u64 ;
   }.
 
 Global Instance etaServer {pb_record:Sm.t} : Settable _ :=
-  settable! (mkC pb_record) <epoch; sealed; ops_full_eph; isPrimary; durableNextIndex;
-committedNextIndex; nextRoIndex; committedNextRoIndex>.
+  settable! (mkC pb_record) <epoch; sealed; ops_full_eph; isPrimary; committedNextIndex>.
 End server.
 
 Section pb_local_definitions.
@@ -524,10 +449,10 @@ Qed.
 
 Definition numClerks : nat := 32.
 
-Notation GhostOpType := (GhostOpType (pb_record:=pb_record)).
 Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
-Definition is_full_ro_suffix {A:Type} r (l:list (GhostOpType * A)) :=
+(*
+Definition is_full_ro_suffix {A:Type} r (l:list (OpType * A)) :=
   ∀ r',
   get_rwops r' = [] →
   suffix r' l →
@@ -542,7 +467,7 @@ Admitted.
 
 (* FIXME: move these lemmas *)
 Lemma is_full_ro_suffix_nil {A} l op a:
-      is_full_ro_suffix (A:=A) [] (l ++ [(rw_op op, a)]).
+      is_full_ro_suffix (A:=A) [] (l ++ [(op, a)]).
 Proof.
   intros r Hros Hsuffix.
   destruct (decide (length r = 0)).
@@ -593,7 +518,7 @@ Qed.
    leph ends with 5 RO ops.
    Want to derive contradiction.
  *)
-Lemma roapply_helper {A} r l r' (l':list (GhostOpType * A)) :
+Lemma roapply_helper {A} r l r' (l':list (OpType * A)) :
   is_full_ro_suffix r l →
   is_full_ro_suffix r' l' →
   prefix l' l →
@@ -604,7 +529,7 @@ Lemma roapply_helper {A} r l r' (l':list (GhostOpType * A)) :
 .
 Proof.
   intros Hcontains Hcontains' Hprefix' Hrws Hsuffix' Hros.
-Admitted.
+Admitted. *)
 
 (* this is meant to be unfolded in the code proof *)
 Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
@@ -622,34 +547,21 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
 .
 
 (* this should never be unfolded in the proof of code *)
-Definition is_Primary_ghost_f γ γeph γsrv (st:server.t): iProp Σ:=
+Definition is_Primary_ghost_f γ γsrv epoch (committedNextIndex nextIndex:u64) : iProp Σ:=
   tc_opaque (
-            ∃ (ops_commit_full:list (GhostOpType * gname)),
-            "#Htok_used_witness" ∷ is_tok γsrv st.(server.epoch) ∗
+            ∃ (ops_commit_full:list (OpType * gname)),
+            "#Htok_used_witness" ∷ is_tok γsrv epoch ∗
 
             (* committed witness for committed state *)
             "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
-            "#Heph_commit_lb" ∷ is_ephemeral_proposal_lb γeph st.(server.epoch) ops_commit_full ∗
-            "%HcommitLen" ∷ ⌜int.nat st.(server.committedNextIndex) ≤ int.nat (length (get_rwops st.(server.ops_full_eph)))⌝ ∗
-            "%HcommitRoNz" ∷ ⌜int.nat st.(server.committedNextIndex) < int.nat (length (get_rwops st.(server.ops_full_eph))) → int.nat st.(server.committedNextRoIndex) = 0⌝ ∗
+            "%HcommitLen" ∷ ⌜int.nat committedNextIndex ≤ int.nat nextIndex⌝ ∗
 
-            (* opsfull_eph has `nextRoIndex` RO ops as its tail. *)
-            "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat st.(server.committedNextIndex)⌝ ∗
-            "%Heph_proposal" ∷ ⌜∃ opsfull_eph_ro,
-                                suffix opsfull_eph_ro st.(server.ops_full_eph) ∧
-                                length opsfull_eph_ro = int.nat st.(server.nextRoIndex) ∧
-                                get_rwops opsfull_eph_ro = [] ∧
-                                is_full_ro_suffix opsfull_eph_ro st.(server.ops_full_eph)⌝ ∗
-            "%HcommitRoLen" ∷ ⌜ ∃ ops_commit_ro,
-                                suffix ops_commit_ro ops_commit_full ∧
-                                length ops_commit_ro >= int.nat st.(server.committedNextRoIndex) ∧
-                                get_rwops ops_commit_ro = [] ∧
-                                is_full_ro_suffix ops_commit_ro ops_commit_full⌝
+            "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
       )%I
 .
 
-Global Instance is_Primary_ghost_pers γ γeph γsrv st:
-  Persistent (is_Primary_ghost_f γ γeph γsrv st).
+Global Instance is_Primary_ghost_pers γ γsrv epoch committedNextIndex nextIndex:
+  Persistent (is_Primary_ghost_f γ γsrv epoch committedNextIndex nextIndex).
 Proof.
 unfold is_Primary_ghost_f. unfold tc_opaque. apply _.
 Qed.
@@ -658,10 +570,9 @@ Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
 Hint Unfold no_overflow : arith.
 
 (* physical (volatile) state; meant to be unfolded in code proof *)
-Definition own_Server (s:loc) (st:server.t) γ γsrv mu γeph: iProp Σ :=
+Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   ∃ own_StateMachine (sm:loc) clerks_sl
-    (roOpsToPropose_cond committedNextRoIndex_cond durableNextIndex_cond:loc)
-    (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
+    (committedNextIndex_cond:loc) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
   (* non-persistent physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #st.(server.epoch) ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #(U64 (length (get_rwops st.(server.ops_full_eph)))) ∗
@@ -669,91 +580,51 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu γeph: iProp Σ :=
   "Hsealed" ∷ s ↦[pb.Server :: "sealed"] #st.(server.sealed) ∗
   "Hsm" ∷ s ↦[pb.Server :: "sm"] #sm ∗
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
-  "HdurableNextIndex" ∷ s ↦[pb.Server :: "durableNextIndex"] #st.(server.durableNextIndex) ∗
-  "HdurableNextIndex_cond" ∷ s ↦[pb.Server :: "durableNextIndex_cond"] #durableNextIndex_cond ∗
   "HcommittedNextIndex" ∷ s ↦[pb.Server :: "committedNextIndex"] #st.(server.committedNextIndex) ∗
-  "HnextRoIndex" ∷ s ↦[pb.Server :: "nextRoIndex"] #st.(server.nextRoIndex) ∗
-  "HcommittedNextRoIndex" ∷ s ↦[pb.Server :: "committedNextRoIndex"] #st.(server.committedNextRoIndex) ∗
-  "HroOpsToPropose_cond" ∷ s ↦[pb.Server :: "roOpsToPropose_cond"] #roOpsToPropose_cond ∗
-  "HcommittedNextRoIndex_cond" ∷ s ↦[pb.Server :: "committedNextRoIndex_cond"] #committedNextRoIndex_cond ∗
+  "HcommittedNextIndex_cond" ∷ s ↦[pb.Server :: "committedNextIndex_cond"] #committedNextIndex_cond ∗
   (* backup sequencer *)
   "HopAppliedConds" ∷ s ↦[pb.Server :: "opAppliedConds"] #opAppliedConds_loc ∗
   "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 opAppliedConds ∗
 
   (* ownership of the statemachine *)
-  "Hstate" ∷ own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv γeph) ∗
+  "Hstate" ∷ own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
 
   (* persistent physical state *)
   "#HopAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ opAppliedConds, is_cond cond mu) ∗
-  "#HdurableNextIndex_is_cond" ∷ is_cond durableNextIndex_cond mu ∗
-  "#HroOpsToPropose_is_cond" ∷ is_cond roOpsToPropose_cond mu ∗
-  "#HcommittedNextRoIndex_is_cond" ∷ is_cond committedNextRoIndex_cond mu ∗
+  "#HcommittedNextRoIndex_is_cond" ∷ is_cond committedNextIndex_cond mu ∗
 
   (* witnesses for primary; the exclusive state is in own_Server_ghost *)
   "#Hprimary" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary γ γsrv st clerks_sl) ∗
 
   (* state-machine callback specs *)
-  "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv γeph) ∗
+  "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv) ∗
 
   (* overflow *)
   "%HnextIndexNoOverflow" ∷ ⌜no_overflow (length (get_rwops (st.(server.ops_full_eph))))⌝
 .
 
 (* should not be unfolded in proof *)
-Definition own_Server_ghost_eph_f (st:server.t) γ γsrv γeph : iProp Σ :=
+Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   tc_opaque (
   let ops:=(get_rwops st.(server.ops_full_eph)) in
-  ∃ ops_durable_full,
-  (* non-persistent ghost state *)
-  "Heph" ∷ (if st.(server.sealed) then
-              is_ephemeral_proposal_sealed γeph st.(server.epoch) st.(server.ops_full_eph)
-            else
-              own_ephemeral_proposal γeph st.(server.epoch) st.(server.ops_full_eph)) ∗
-  "Heph_unused" ∷ own_unused_ephemeral_proposals γeph st.(server.epoch) ∗
-
   (* epoch lower bound *)
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv st.(server.epoch) ∗
 
-  (* persistent ghost-state *)
-  "#Heph_prop_lb" ∷ □(if st.(server.isPrimary) then True else is_proposal_lb γ st.(server.epoch) st.(server.ops_full_eph)) ∗
-  (* accepted witness for durable state *)
-  "#Hdurable_lb" ∷ is_accepted_lb γsrv st.(server.epoch) ops_durable_full ∗
-  "#Hdurable_eph_lb" ∷ is_ephemeral_proposal_lb γeph st.(server.epoch) ops_durable_full ∗
-  "#Heph_valid" ∷ is_proposal_valid γ st.(server.ops_full_eph) ∗
-
-  "%HdurableLen" ∷ ⌜length (get_rwops ops_durable_full) = int.nat st.(server.durableNextIndex)⌝ ∗
-
-  (* `committedRoNextIndex` read-only ops have been committed *)
-
-  (* Want to add pure invariant: nextIndex ≠ committedNextIndex → committedNextRoIndex = 0.
-     Q: Is this invariant true?
-     A: No. ApplyRoThread increases committedNextRoIndex without increasing
-     committedNextIndex (even though it provably could also increase that).
-     Let's suppose we don't change the impl to make this part of the proof
-     easier.
-
-     Here's what *is* true. The first (committedNextRoIndex) ops of the
-     (nextRoIndex) ro ops are committed. To maintain that, need another
-     committed list. This list has an ephemeral_lb (so it agres with
-     opsfull_eph), has all the same RW ops as opsfull_eph, and has
-     committedNextRoIndex RO ops as suffix.
-   *)
-
   (* primary-only *)
-  "#HprimaryOnly" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary_ghost_f γ γeph γsrv st)
+  "#HprimaryOnly" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary_ghost_f γ γsrv st.(server.epoch) st.(server.committedNextIndex) (U64 (length $ get_rwops st.(server.ops_full_eph))))
   )%I
 .
 
-Definition mu_inv (s:loc) γ γsrv γeph mu: iProp Σ :=
+Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
   ∃ st,
-  "Hvol" ∷ own_Server s st γ γsrv mu γeph ∗
-  "HghostEph" ∷ own_Server_ghost_eph_f st γ γsrv γeph
+  "Hvol" ∷ own_Server s st γ γsrv mu ∗
+  "HghostEph" ∷ own_Server_ghost_eph_f st γ γsrv
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val) γeph,
+  ∃ (mu:val),
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv γeph mu) ∗
+  "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
   "#Hsys_inv" ∷ sys_inv γ.
 
 Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :

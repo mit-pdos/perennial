@@ -150,14 +150,12 @@ Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
 Definition is_ghost_lb' γ σ : iProp Σ :=
   ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
-Lemma apply_eph_primary_step γ γsrv γeph st op Q :
+(* FIXME: the rest of this is broken. *)
+Lemma apply_eph_primary_step γ γsrv st op Q :
   no_overflow (length $ get_rwops st.(server.ops_full_eph)) →
   no_overflow ((length $ get_rwops st.(server.ops_full_eph)) + 1) →
-  is_Primary_ghost_f γ γeph γsrv st -∗
-  is_Primary_ghost_f γ γeph γsrv (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(rw_op op, Q)] |>
-                                     <| server.nextRoIndex := 0 |>
-                                     <| server.committedNextRoIndex := 0 |>
-                                 ) ∗
+  is_Primary_ghost_f γ γsrv -∗
+  is_Primary_ghost_f γ γsrv  ∗
   is_tok γsrv st.(server.epoch)
 .
 Proof.
