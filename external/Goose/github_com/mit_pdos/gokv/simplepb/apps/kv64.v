@@ -99,8 +99,8 @@ Definition MakeKVStateMachine: val :=
     ].
 
 Definition Start: val :=
-  rec: "Start" "fname" "me" :=
-    let: "r" := simplelog.MakePbServer (MakeKVStateMachine #()) "fname" in
+  rec: "Start" "fname" "me" "confHost" :=
+    let: "r" := simplelog.MakePbServer (MakeKVStateMachine #()) "fname" "confHost" in
     pb.Server__Serve "r" "me";;
     #().
 

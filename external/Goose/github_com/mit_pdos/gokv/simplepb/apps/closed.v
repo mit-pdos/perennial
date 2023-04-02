@@ -23,5 +23,5 @@ Definition kv_replica_main: val :=
   rec: "kv_replica_main" "fname" "me" :=
     let: "x" := ref (zero_val uint64T) in
     "x" <-[uint64T] #1;;
-    kv64.Start "fname" "me";;
+    kv64.Start "fname" "me" configHost;;
     #().

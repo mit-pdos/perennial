@@ -47,6 +47,8 @@ Definition RPC_GETCONFIG : expr := #1.
 
 Definition RPC_WRITECONFIG : expr := #2.
 
+Definition RPC_GETLEASE : expr := #3.
+
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
     struct.new Clerk [
@@ -63,11 +65,15 @@ Definition Clerk__GetEpochAndConfig: val :=
       then Break
       else Continue));;
     let: "epoch" := ref (zero_val uint64T) in
+    let: "err" := ref (zero_val uint64T) in
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "reply") in
+    "err" <-[uint64T] "0_ret";;
+    "reply" <-[slice.T byteT] "1_ret";;
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "reply") in
     "epoch" <-[uint64T] "0_ret";;
     "reply" <-[slice.T byteT] "1_ret";;
     let: "config" := DecodeConfig (![slice.T byteT] "reply") in
-    (![uint64T] "epoch", "config").
+    (![uint64T] "err", ![uint64T] "epoch", "config").
 
 Definition Clerk__GetConfig: val :=
   rec: "Clerk__GetConfig" "ck" :=
@@ -98,26 +104,49 @@ Definition Clerk__WriteConfig: val :=
    guess on when the lease expires. *)
 Definition Clerk__GetLease: val :=
   rec: "Clerk__GetLease" "ck" "epoch" :=
-    Panic "impl";;
-    #().
+    let: "reply" := ref (zero_val (slice.T byteT)) in
+    let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #8) in
+    "args" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "args") "epoch";;
+    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETLEASE (![slice.T byteT] "args") "reply" #100 in
+    (if: ("err" = #0)
+    then
+      let: ("err2", "enc") := marshal.ReadInt (![slice.T byteT] "reply") in
+      let: ("leaseExpiration", <>) := marshal.ReadInt "enc" in
+      (("err2" = #0), "leaseExpiration")
+    else (("err" = #0), #0)).
 
 (* server.go *)
+
+(* 1 second *)
+Definition LeaseInterval : expr := #1000000000.
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
   "epoch" :: uint64T;
+  "leaseExpiration" :: uint64T;
   "config" :: slice.T uint64T
 ].
 
 Definition Server__GetEpochAndConfig: val :=
   rec: "Server__GetEpochAndConfig" "s" "args" "reply" :=
+    let: (<>, "h") := grove_ffi.GetTimeRange #() in
     lock.acquire (struct.loadF Server "mu" "s");;
-    struct.storeF Server "epoch" "s" (std.SumAssumeNoOverflow (struct.loadF Server "epoch" "s") #1);;
-    "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 * slice.len (struct.loadF Server "config" "s"));;
-    "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "epoch" "s");;
-    "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig (struct.loadF Server "config" "s"));;
-    lock.release (struct.loadF Server "mu" "s");;
-    #().
+    (if: "h" < struct.loadF Server "leaseExpiration" "s"
+    then
+      lock.release (struct.loadF Server "mu" "s");;
+      "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 + #8);;
+      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") e.Leased;;
+      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") #0;;
+      "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig slice.nil);;
+      #()
+    else
+      struct.storeF Server "epoch" "s" (std.SumAssumeNoOverflow (struct.loadF Server "epoch" "s") #1);;
+      "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 + #8 * slice.len (struct.loadF Server "config" "s"));;
+      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") #0;;
+      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "epoch" "s");;
+      "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig (struct.loadF Server "config" "s"));;
+      lock.release (struct.loadF Server "mu" "s");;
+      #()).
 
 Definition Server__GetConfig: val :=
   rec: "Server__GetConfig" "s" "args" "reply" :=
@@ -143,6 +172,24 @@ Definition Server__WriteConfig: val :=
       lock.release (struct.loadF Server "mu" "s");;
       #()).
 
+Definition Server__GetLease: val :=
+  rec: "Server__GetLease" "s" "args" "reply" :=
+    let: ("epoch", <>) := marshal.ReadInt "args" in
+    lock.acquire (struct.loadF Server "mu" "s");;
+    (if: struct.loadF Server "epoch" "s" ≠ "epoch"
+    then
+      lock.release (struct.loadF Server "mu" "s");;
+      "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.Stale;;
+      (* log.Println("Stale lease request", s.config) *)
+      #()
+    else
+      let: ("l", <>) := grove_ffi.GetTimeRange #() in
+      struct.storeF Server "leaseExpiration" "s" ("l" + LeaseInterval);;
+      "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.None;;
+      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "leaseExpiration" "s");;
+      lock.release (struct.loadF Server "mu" "s");;
+      #()).
+
 Definition MakeServer: val :=
   rec: "MakeServer" "initconfig" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
@@ -157,6 +204,7 @@ Definition Server__Serve: val :=
     MapInsert "handlers" RPC_GETEPOCH (Server__GetEpochAndConfig "s");;
     MapInsert "handlers" RPC_GETCONFIG (Server__GetConfig "s");;
     MapInsert "handlers" RPC_WRITECONFIG (Server__WriteConfig "s");;
+    MapInsert "handlers" RPC_GETLEASE (Server__GetLease "s");;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     #().

@@ -157,7 +157,7 @@ Definition recoverStateMachine: val :=
 
    Maybe we should make those be a part of pb.StateMachine *)
 Definition MakePbServer: val :=
-  rec: "MakePbServer" "smMem" "fname" :=
+  rec: "MakePbServer" "smMem" "fname" "confHost" :=
     let: "s" := recoverStateMachine "smMem" "fname" in
     let: "sm" := struct.new pb.StateMachine [
       "StartApply" ::= (λ: "op",
@@ -174,4 +174,4 @@ Definition MakePbServer: val :=
         StateMachine__getStateAndSeal "s"
         )
     ] in
-    pb.MakeServer "sm" (struct.loadF StateMachine "nextIndex" "s") (struct.loadF StateMachine "epoch" "s") (struct.loadF StateMachine "sealed" "s").
+    pb.MakeServer "sm" "confHost" (struct.loadF StateMachine "nextIndex" "s") (struct.loadF StateMachine "epoch" "s") (struct.loadF StateMachine "sealed" "s").

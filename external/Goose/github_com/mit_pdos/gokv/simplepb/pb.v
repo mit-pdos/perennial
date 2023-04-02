@@ -293,6 +293,7 @@ Definition Server := struct.decl [
   "sealed" :: boolT;
   "sm" :: ptrT;
   "nextIndex" :: uint64T;
+  "canBecomePrimary" :: boolT;
   "isPrimary" :: boolT;
   "clerks" :: slice.T (slice.T ptrT);
   "opAppliedConds" :: mapT ptrT;
@@ -327,6 +328,7 @@ Definition Server__ApplyRoWaitForCommit: val :=
         (if: struct.loadF Server "leaseExpiration" "s" < "h"
         then
           lock.release (struct.loadF Server "mu" "s");;
+          (* log.Printf("Lease expired because %d < %d", s.leaseExpiration, h) *)
           struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
           "reply"
         else
@@ -381,9 +383,6 @@ Definition Server__Apply: val :=
         let: "epoch" := struct.loadF Server "epoch" "s" in
         let: "clerks" := struct.loadF Server "clerks" "s" in
         lock.release (struct.loadF Server "mu" "s");;
-        (* log.Printf("wait durable: %d", nextIndex) *)
-        "waitForDurable" #();;
-        (* log.Printf("done durable: %d", nextIndex) *)
         let: "wg" := waitgroup.New #() in
         let: "args" := struct.new ApplyAsBackupArgs [
           "epoch" ::= "epoch";
@@ -406,6 +405,7 @@ Definition Server__Apply: val :=
                     Break));;
                 waitgroup.Done "wg"));;
         waitgroup.Wait "wg";;
+        "waitForDurable" #();;
         let: "err" := ref_to uint64T e.None in
         let: "i" := ref_to uint64T #0 in
         Skip;;
@@ -435,11 +435,12 @@ Definition Server__leaseRenewalThread: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: ("gotLease", "leaseExpiration") := config.Clerk__GetLease (struct.loadF Server "confCk" "s") "epoch" in
       (if: ~ "gotLease"
-      then Break
+      then Continue
       else
         lock.acquire (struct.loadF Server "mu" "s");;
         struct.storeF Server "leaseExpiration" "s" "leaseExpiration";;
         lock.release (struct.loadF Server "mu" "s");;
+        time.Sleep (#250 * #1000000);;
         Continue));;
     #().
 
@@ -506,6 +507,7 @@ Definition Server__SetState: val :=
         e.None
       else
         struct.storeF Server "isPrimary" "s" #false;;
+        struct.storeF Server "canBecomePrimary" "s" #true;;
         struct.storeF Server "epoch" "s" (struct.loadF SetStateArgs "Epoch" "args");;
         struct.storeF Server "sealed" "s" #false;;
         struct.storeF Server "nextIndex" "s" (struct.loadF SetStateArgs "NextIndex" "args");;
@@ -546,14 +548,15 @@ Definition Server__GetState: val :=
 Definition Server__BecomePrimary: val :=
   rec: "Server__BecomePrimary" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF BecomePrimaryArgs "Epoch" "args" ≠ struct.loadF Server "epoch" "s"
+    (if: (struct.loadF BecomePrimaryArgs "Epoch" "args" ≠ struct.loadF Server "epoch" "s") || (~ (struct.loadF Server "canBecomePrimary" "s"))
     then
-      (* log.Printf("Stale BecomePrimary request (in %d, got %d)", s.epoch, args.Epoch) *)
+      (* log.Printf("Wrong epoch in BecomePrimary request (in %d, got %d)", s.epoch, args.Epoch) *)
       lock.release (struct.loadF Server "mu" "s");;
       e.Stale
     else
       (* log.Println("Became Primary") *)
       struct.storeF Server "isPrimary" "s" #true;;
+      struct.storeF Server "canBecomePrimary" "s" #false;;
       let: "numClerks" := #32 in
       struct.storeF Server "clerks" "s" (NewSlice (slice.T ptrT) "numClerks");;
       let: "j" := ref_to uint64T #0 in
@@ -576,7 +579,7 @@ Definition Server__BecomePrimary: val :=
       e.None).
 
 Definition MakeServer: val :=
-  rec: "MakeServer" "sm" "nextIndex" "epoch" "sealed" :=
+  rec: "MakeServer" "sm" "confHost" "nextIndex" "epoch" "sealed" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "epoch" "s" "epoch";;
@@ -584,7 +587,11 @@ Definition MakeServer: val :=
     struct.storeF Server "sm" "s" "sm";;
     struct.storeF Server "nextIndex" "s" "nextIndex";;
     struct.storeF Server "isPrimary" "s" #false;;
+    struct.storeF Server "canBecomePrimary" "s" #false;;
+    struct.storeF Server "canBecomePrimary" "s" #true;;
     struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
+    struct.storeF Server "confCk" "s" (config.MakeClerk "confHost");;
+    struct.storeF Server "committedNextIndex_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
     "s".
 
 Definition Server__Serve: val :=

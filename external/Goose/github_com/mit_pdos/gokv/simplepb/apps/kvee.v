@@ -36,6 +36,6 @@ Definition Clerk__Get: val :=
 (* server.go *)
 
 Definition Start: val :=
-  rec: "Start" "host" "fname" :=
-    pb.Server__Serve (simplelog.MakePbServer (eesm.MakeEEKVStateMachine (kv64.MakeKVStateMachine #())) "fname") "host";;
+  rec: "Start" "host" "fname" "confHost" :=
+    pb.Server__Serve (simplelog.MakePbServer (eesm.MakeEEKVStateMachine (kv64.MakeKVStateMachine #())) "fname" "confHost") "host";;
     #().

@@ -24,6 +24,8 @@ Definition Sealed : expr := #6.
 
 Definition LeaseExpired : expr := #7.
 
+Definition Leased : expr := #8.
+
 Definition EncodeError: val :=
   rec: "EncodeError" "err" :=
     marshal.WriteInt (NewSliceWithCap byteT #0 #8) "err".
