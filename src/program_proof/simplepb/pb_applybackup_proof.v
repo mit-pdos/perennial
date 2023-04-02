@@ -152,34 +152,45 @@ Proof.
   }
 Qed.
 
+Lemma applybackup_primary_eph γ γsrv isPrimary epoch committedNextIndex opsfull ops_full_eph' :
+  int.nat (length (get_rwops opsfull)) <= int.nat (length (get_rwops ops_full_eph')) →
+  is_proposal_lb γ epoch ops_full_eph' -∗
+  is_proposal_facts γ epoch ops_full_eph' -∗
+  own_Primary_ghost_f γ γsrv isPrimary epoch committedNextIndex opsfull -∗
+  own_Primary_ghost_f γ γsrv isPrimary epoch committedNextIndex ops_full_eph'
+.
+Proof.
+  intros Hineq.
+  rewrite /own_Primary_ghost_f /tc_opaque.
+  iIntros "#Hprop_lb #Hprop_facts".
+  iNamed 1.
+  iDestruct (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
+  { do 2 rewrite fmap_length in Hineq.
+    admit. (* FIXME: list length overflow *)
+  }
+  iFrame.
+Admitted.
+
 (* The important part of this lemma is
    own_Server_ghost_eph_f st -∗ own_Server_ghost_eph_f st' *)
 Lemma applybackup_eph st γ γsrv ops_full_eph' :
-  int.nat (length (get_rwops st.(server.ops_full_eph))) <= int.nat (length (get_rwops ops_full_eph')) →
+  int.nat (length (get_rwops st.(server.ops_full_eph))) < int.nat (length (get_rwops ops_full_eph')) →
+  is_proposal_lb γ st.(server.epoch) ops_full_eph' -∗
+  is_proposal_facts γ st.(server.epoch) ops_full_eph' -∗
   own_Server_ghost_eph_f st γ γsrv -∗
-  own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv
+  own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv ∗
+  ⌜prefix st.(server.ops_full_eph) ops_full_eph'⌝
 .
 Proof.
   intros Hlen.
-  iIntros "HghostEph".
+  iIntros "#Hprop_lb #Hprop_facts HghostEph".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "HghostEph".
   iNamed "HghostEph".
   rewrite /own_Server_ghost_eph_f /tc_opaque.
   iFrame "#".
   simpl.
-  destruct st.(server.isPrimary) as [] eqn:Hprimary.
-  { (* case: is primary. *)
-    iDestruct "HprimaryOnly" as "[%Hbad|Hprimary]"; first by exfalso.
-    iRight.
-    rewrite /is_Primary_ghost_f /tc_opaque.
-    iNamed "Hprimary".
-    iExists _; iFrame "#%".
-    iPureIntro.
-    lia.
-  }
-  { (* case: not primary *)
-    by iLeft.
-  }
+  iDestruct (applybackup_primary_eph with "[$] [$] Hprimary") as "$".
+  { lia. }
 Qed.
 
 Lemma applybackup_step_helper (opsfull opsfull_old: list (OpType * gname)) :
@@ -226,15 +237,13 @@ Proof.
   iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "Hghost".
   { done. }
   { by apply prefix_length. }
-  iMod (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
-  { by apply prefix_length. }
   iModIntro.
 
   iDestruct (ghost_get_accepted_lb with "Hghost") as "#$".
   iDestruct (ghost_get_epoch_lb with "Hghost") as "#$".
   iSplitL.
   2:{ iPureIntro. by eapply applybackup_step_helper2. }
-  iExists _; iFrame "Hghost Hprim #". done.
+  iExists _; iFrame "Hghost". done.
 Qed.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
@@ -431,9 +440,8 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  iDestruct (applybackup_eph with "HghostEph") as "HghostEph".
-  { instantiate (1:= ops_full').
-    rewrite Hσ_index.
+  iDestruct (applybackup_eph with "Hprop_lb Hprop_facts HghostEph") as "HghostEph".
+  { rewrite Hσ_index.
     rewrite -Heqb2.
     unfold no_overflow in HnextIndexNoOverflow.
     word.

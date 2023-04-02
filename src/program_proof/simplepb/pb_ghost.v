@@ -68,6 +68,8 @@ Definition is_proposal_lb γsys epoch σ : iProp Σ :=
 Notation "lhs ⪯ rhs" := (prefix lhs rhs)
 (at level 20, format "lhs  ⪯  rhs") : stdpp_scope.
 
+(* FIXME: ideally, this init proposal stuff and the escrow tokens should be a
+   separate higher-level protocol *)
 Definition own_init_proposal_unused γsys epoch : iProp Σ :=
   epoch ⤳l[γsys.(pb_init_proposal_gn)] [].
 Definition is_init_proposal γsys epoch σ : iProp Σ :=
@@ -205,7 +207,7 @@ Lemma ghost_primary_accept γsys γsrv epoch σ' σ :
   is_proposal_facts γsys epoch σ' -∗
   is_proposal_lb γsys epoch σ' -∗
   own_primary_ghost γsys γsrv epoch σ
-  ==∗
+  -∗
   own_primary_ghost γsys γsrv epoch σ'.
 Proof.
   intros Hlength_le.

@@ -292,8 +292,7 @@ Qed.
 Definition own_Server_ghost_f γ γsrv epoch ops sealed : iProp Σ :=
   ∃ opsfull,
   "%Hre" ∷ ⌜ops = get_rwops opsfull⌝ ∗
-  "Hghost" ∷ (own_replica_ghost γ γsrv epoch opsfull sealed) ∗
-  "Hprim" ∷ (own_primary_ghost γ γsrv epoch opsfull)
+  "Hghost" ∷ (own_replica_ghost γ γsrv epoch opsfull sealed)
 .
 
 End pb_global_definitions.
@@ -547,24 +546,22 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
 .
 
 (* this should never be unfolded in the proof of code *)
-Definition is_Primary_ghost_f γ γsrv epoch (committedNextIndex nextIndex:u64) : iProp Σ:=
+Definition own_Primary_ghost_f γ γsrv (isPrimary:bool) epoch (committedNextIndex:u64) opsfull : iProp Σ:=
   tc_opaque (
-            ∃ (ops_commit_full:list (OpType * gname)),
-            "#Htok_used_witness" ∷ is_tok γsrv epoch ∗
+            "Hprim" ∷ own_primary_ghost γ γsrv epoch opsfull ∗
 
-            (* committed witness for committed state *)
-            "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
-            "%HcommitLen" ∷ ⌜int.nat committedNextIndex ≤ int.nat nextIndex⌝ ∗
+            if isPrimary then
+              ∃ (ops_commit_full:list (OpType * gname)),
+              "#Htok_used_witness" ∷ is_tok γsrv epoch ∗
 
-            "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
+              (* committed witness for committed state *)
+              "#Hcommit_lb" ∷ is_ghost_lb γ ops_commit_full ∗
+              "#Hcommit_prop_lb" ∷ is_proposal_lb γ epoch ops_commit_full ∗
+              "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
+            else
+              True
       )%I
 .
-
-Global Instance is_Primary_ghost_pers γ γsrv epoch committedNextIndex nextIndex:
-  Persistent (is_Primary_ghost_f γ γsrv epoch committedNextIndex nextIndex).
-Proof.
-unfold is_Primary_ghost_f. unfold tc_opaque. apply _.
-Qed.
 
 Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
 Hint Unfold no_overflow : arith.
@@ -607,11 +604,9 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
 Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   tc_opaque (
   let ops:=(get_rwops st.(server.ops_full_eph)) in
+  "Hprimary" ∷ own_Primary_ghost_f γ γsrv st.(server.isPrimary) st.(server.epoch) st.(server.committedNextIndex) st.(server.ops_full_eph) ∗
   (* epoch lower bound *)
-  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv st.(server.epoch) ∗
-
-  (* primary-only *)
-  "#HprimaryOnly" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary_ghost_f γ γsrv st.(server.epoch) st.(server.committedNextIndex) (U64 (length $ get_rwops st.(server.ops_full_eph))))
+  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv st.(server.epoch)
   )%I
 .
 
