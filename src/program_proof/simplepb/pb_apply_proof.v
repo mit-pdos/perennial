@@ -150,159 +150,47 @@ Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
 Definition is_ghost_lb' γ σ : iProp Σ :=
   ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
-(* FIXME: the rest of this is broken. *)
-Lemma apply_eph_primary_step γ γsrv st op Q :
-  no_overflow (length $ get_rwops st.(server.ops_full_eph)) →
-  no_overflow ((length $ get_rwops st.(server.ops_full_eph)) + 1) →
-  is_Primary_ghost_f γ γsrv -∗
-  is_Primary_ghost_f γ γsrv  ∗
-  is_tok γsrv st.(server.epoch)
+Lemma apply_eph_primary_step γp γpsrv γ γsrv ops canBecomePrimary epoch committedNextIndex op Q :
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  own_Primary_ghost_f γp γpsrv γ γsrv canBecomePrimary true epoch committedNextIndex ops
+  ={↑pbN}=∗
+  own_Primary_ghost_f γp γpsrv γ γsrv canBecomePrimary true epoch committedNextIndex (ops ++ [(op, Q)]) ∗
+  is_proposal_lb γ epoch (ops ++ [(op, Q)]) ∗
+  is_proposal_facts γ epoch (ops ++ [(op, Q)]) ∗
+  is_proposal_facts_prim γp epoch (ops ++ [(op, Q)])
 .
 Proof.
-  iIntros (Hno1 Hno2) "Hprim".
-  iEval (rewrite /is_Primary_ghost_f /tc_opaque) in "Hprim".
-  iNamed "Hprim".
-  iFrame "#".
-  repeat iExists _.
-  iFrame "#%".
-  simpl.
-  unfold no_overflow in Hno1,Hno2.
-  rewrite get_rwops_app app_length /=.
-  iPureIntro; split.
-  { word. }
-  split.
-  { intros. word. }
-  split.
-  { exists [].
-    split. { apply suffix_nil. }
-    split. { done. }
-    split. { done. }
-    apply is_full_ro_suffix_nil.
-  }
-  destruct HcommitRoLen as (ops_commit_ro & ? & ? & ? & ?).
-  {
-    eexists ops_commit_ro.
-    split. { done. }
-    split. { word. }
-    split. { done. }
-    { done. }
-  }
-Qed.
+Admitted.
 
-Lemma get_primary_witness γ γeph γsrv st :
-  st.(server.isPrimary) = true →
-  is_Primary_ghost_f γ γeph γsrv st -∗
-  is_tok γsrv st.(server.epoch).
-Proof.
-  intros Hprim.
-  rewrite /is_Primary_ghost_f /tc_opaque.
-  by iNamed 1.
-Qed.
-
-Lemma apply_eph_step γ γsrv γeph st op Q :
+Lemma apply_eph_step γp γpsrv γ γsrv st op Q :
   st.(server.isPrimary) = true →
   st.(server.sealed) = false →
-  no_overflow (length (get_rwops st.(server.ops_full_eph))) →
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(rw_op op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
-  own_Server_ghost_eph_f st γ γsrv γeph -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  own_Server_ghost_eph_f st γp γpsrv γ γsrv -∗
   £ 1 ={↑pbN}=∗
-  (⌜no_overflow (length (get_rwops st.(server.ops_full_eph)) + 1)⌝ -∗
-  own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(rw_op op, Q)] |>
-                             <| server.nextRoIndex := 0 |>
-                             <| server.committedNextRoIndex := 0 |>) γ γsrv γeph) ∗
-  is_ephemeral_proposal_lb γeph st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) ∗
-  is_tok γsrv st.(server.epoch) ∗
-  is_proposal_valid γ (st.(server.ops_full_eph) ++ [(rw_op op, Q)])
+  own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(op, Q)] |>)
+                              γp γpsrv γ γsrv ∗
+  is_proposal_lb γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
+  is_proposal_facts γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
+  is_proposal_facts_prim γp st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)])
 .
 Proof.
-  intros Hprim Hunsealed ?.
-  iIntros "Hupd H Hlc".
-  iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "H".
-  iNamed "H".
-  rewrite Hprim Hunsealed.
-  iMod (fmlist_ptsto_update with "Heph") as "Heph".
-  { apply prefix_app_r. done. }
-  iDestruct "HprimaryOnly" as "[%Hbad|Hprimary]"; first by exfalso.
-  iMod (valid_add with "Hlc Heph_valid [Hupd]") as "#Hnew_eph_valid".
-  {
-    iMod "Hupd" as (?) "[Hghost Hupd]".
-    iModIntro.
-    iExists _; iFrame.
-    iIntros. done.
-  }
-  iModIntro.
-  iDestruct (get_primary_witness with "Hprimary") as "#$".
-  { done. }
-  iDestruct (fmlist_ptsto_get_lb with "Heph") as "#Hnew_eph".
-  iFrame "#"; iClear "Hnew_eph".
-  iIntros (?).
-  iDestruct (apply_eph_primary_step with "Hprimary") as "[HnewPrimary #Hwitness]".
-  1-2: done.
-  iClear "Hprimary".
-  repeat iExists _.
-  rewrite Hunsealed Hprim.
-  simpl.
-  iFrame "∗#".
-  done.
-Qed.
-
-Lemma apply_step γ γsrv γeph st op Q :
-  is_tok γsrv st.(server.epoch) -∗
-  is_ephemeral_proposal_lb γeph st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) -∗
-  is_proposal_valid γ (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) -∗
-  own_Server_ghost_f γ γsrv γeph st.(server.epoch) (get_rwops st.(server.ops_full_eph)) false ={↑pbN}=∗
-  own_Server_ghost_f γ γsrv γeph st.(server.epoch) (get_rwops st.(server.ops_full_eph) ++ [op])
-    false ∗
-  (* ⌜get_rwops (st.(server.ops_full_eph) ++ [op]) = get_rwops (st.(server.ops_full_eph) ++ [(rw_op op, Q)])⌝ ∗ *)
-  (is_accepted_lb γsrv st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) ∗
-  is_proposal_lb γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]) ∗
-  is_proposal_facts γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(rw_op op, Q)]))
-.
-Proof.
-  iIntros "#Htok_used_witness #Hnew_eph_lb #Hnew_eph_valid Hghost".
+  intros Hprim Hunsealed.
+  iIntros "Hupd Hghost Hlc".
   iNamed "Hghost".
-  iDestruct (fmlist_ptsto_lb_comparable with "Heph_lb Hnew_eph_lb") as %[Hprefix|Hbad]; last first.
-  {
-    exfalso.
-    apply get_rwops_prefix in Hbad.
-    apply prefix_length in Hbad.
-    rewrite -Hre in Hbad.
-    rewrite get_rwops_app in Hbad.
-    unfold get_rwops in Hbad.
-    rewrite app_length /= in Hbad.
-    word.
-  }
-  iMod (ghost_propose with "Htok_used_witness Hprim Hnew_eph_valid") as "(Hprim & #Hprop_lb & #Hprop_facts)".
-  { done. }
-  iMod (ghost_accept with "Hghost Hprop_lb Hprop_facts") as "HH".
-  { done. }
-  { rewrite app_length.
-    apply (f_equal length) in Hre.
-    apply prefix_length in Hprefix.
-    rewrite app_length in Hprefix.
-    done.
-  }
-  iDestruct (ghost_get_accepted_lb with "HH") as "#Hlb".
-
-  iModIntro.
-  iSplitL.
-  {
-    iExists _; iFrame "∗#".
-    iPureIntro.
-    unfold get_rwops.
-    rewrite map_app.
-    rewrite concat_app.
-    done.
-  }
-  iFrame "Hlb #".
+  rewrite /own_Server_ghost_eph_f /tc_opaque /=.
+  iNamed "Hghost".
+  rewrite Hprim.
+  iMod (apply_eph_primary_step with "Hupd Hprimary") as "(Hprimary & #? & #?)".
+  by iFrame "∗#".
 Qed.
 
-Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
+Lemma wp_Server__Apply_internal (s:loc) γp γpsrv γ γsrv op_sl op_bytes op Q :
   {{{
-        is_Server s γ γsrv ∗
+        is_Server s γp γpsrv γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
-        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(rw_op op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
+        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
@@ -311,7 +199,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
           ∃ opsfull,
             let ops := (get_rwops opsfull) in
             ⌜reply.(ApplyReply.ret) = compute_reply ops op⌝ ∗
-            is_ghost_lb γ (opsfull ++ [(rw_op op, Q)])
+            is_ghost_lb γ (opsfull ++ [(op, Q)])
         else
           True
   }}}
@@ -397,8 +285,7 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
-  iMod (apply_eph_step with "Hupd HghostEph Hcred2") as "[HghostEph #(Hnew_eph_lb & Htok & Hnew_eph_valid)]".
-  { done. }
+  iMod (apply_eph_step with "Hupd HghostEph Hcred2") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts)".
   { done. }
   { done. }
   iMod "Hmask" as "_".
@@ -413,8 +300,12 @@ Proof.
   {
     iSplitL ""; first done.
     iIntros "Hghost".
-    iMod (apply_step with "Htok Hnew_eph_lb Hnew_eph_valid Hghost") as "$".
-    by iModIntro.
+    iMod (applybackup_step with "Hprop_lb Hprop_facts Hprim_facts Hghost") as "Hghost".
+    { by rewrite last_snoc. }
+    { unfold get_rwops. rewrite fmap_app. rewrite app_length. done. }
+    iModIntro.
+    rewrite /get_rwops fmap_app /=.
+    iExact "Hghost".
   }
   iIntros (reply_sl q waitFn) "(Hreply & Hstate & HwaitSpec)".
 
@@ -430,14 +321,10 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_pures.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
 
-  (* reset nextRoIndex *)
-  wp_loadField.
-  wp_storeField.
-  wp_storeField.
-  wp_loadField.
-  iSpecialize ("HghostEph" with "[]").
-  { iPureIntro. unfold no_overflow in HnextIndexNoOverflow |- *. word. }
   wp_apply (release_spec with "[-HΦ Hreply Err Reply Hlc1 Hlc2 HwaitSpec]").
   {
     iFrame "HmuInv Hlocked".
@@ -446,21 +333,16 @@ Proof.
     iSplitR "HghostEph"; last iFrame.
     repeat (iExists _).
     rewrite /= Heqb Heqb0 /=.
-    replace (get_rwops (st.(server.ops_full_eph) ++ [(rw_op op, Q)])) with (get_rwops st.(server.ops_full_eph) ++ [op]); last first.
+    replace (get_rwops (st.(server.ops_full_eph) ++ [(op, Q)])) with (get_rwops st.(server.ops_full_eph) ++ [op]); last first.
     {
-      unfold get_rwops. rewrite map_app. rewrite concat_app.
-      done.
+      unfold get_rwops. rewrite fmap_app. done.
     }
-    rewrite app_length /=.
-    iClear "Hnew_eph_lb".
     iFrame "∗#".
+    rewrite app_length /=.
     admit. (* FIXME: overflow reasoning *)
   }
 
   wp_pures.
-  wp_apply "HwaitSpec".
-  iIntros "Hprimary_acc_lb".
-  iDestruct "Hprimary_acc_lb" as "(#Hprimary_acc_lb & #Hprop_lb & #Hprop_facts)".
 
   wp_apply (wp_NewWaitGroup_free).
   iIntros (wg) "Hwg".
@@ -600,7 +482,8 @@ Proof.
         split; eauto.
         rewrite /no_overflow in Hno_overflow HnextIndexNoOverflow.
         split.
-        { rewrite get_rwops_app app_length. simpl.
+        { rewrite /get_rwops fmap_app app_length. simpl.
+          rewrite HnextIndexNoOverflow /get_rwops.
           word.
         }
         word.
@@ -656,6 +539,11 @@ Proof.
   wp_apply (wp_WaitGroup__Wait with "Hwg").
   iIntros "#Hwg_post".
   wp_pures.
+
+  wp_apply "HwaitSpec".
+  iIntros "Hprimary_acc_lb".
+  iDestruct "Hprimary_acc_lb" as "(_ & _ & #Hprimary_acc_lb)".
+
   wp_apply (wp_ref_to).
   { repeat econstructor. }
   iIntros (err_ptr) "Herr".
@@ -837,8 +725,7 @@ Proof.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   wp_pures.
-  iClear "HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond HisSm".
+  iClear "HopAppliedConds_conds HisSm".
   iNamed "Hown".
   iNamed "Hvol".
   wp_loadField.
@@ -857,13 +744,18 @@ Proof.
     wp_storeField.
     wp_loadField.
     wp_apply (wp_condBroadcast with "[]").
-    { iFrame "#". }
+    { admit. (* iFrame "#". *) }
     wp_pures.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hlc1 Hlc2 Hlc3 Hreply Err Reply]").
     {
       iFrame "Hlocked HmuInv".
       iNext.
+
+      repeat iExists _.
+      iSplitR "HghostEph"; last iFrame.
+      repeat iExists _.
+      iFrame "HcommittedNextIndex ∗ #".
 
       (* TODO: manual proof merging *)
       iAssert (⌜opsfull_ephemeral ++ [(rw_op op, Q)] `prefix_of` opsfull_ephemeral0⌝)%I
