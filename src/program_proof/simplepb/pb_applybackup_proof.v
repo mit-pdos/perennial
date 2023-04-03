@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.simplepb Require Import pb_ghost.
+From Perennial.program_proof.simplepb Require Import pb_protocol.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
@@ -152,33 +152,50 @@ Proof.
   }
 Qed.
 
-Lemma applybackup_primary_eph γ γsrv isPrimary epoch committedNextIndex opsfull ops_full_eph' :
-  int.nat (length (get_rwops opsfull)) <= int.nat (length (get_rwops ops_full_eph')) →
+Lemma applybackup_primary_eph γp γpsrv γ γsrv isPrimary canBecomePrimary epoch committedNextIndex opsfull ops_full_eph' :
+  (length (get_rwops opsfull)) < (length (get_rwops ops_full_eph')) →
   is_proposal_lb γ epoch ops_full_eph' -∗
   is_proposal_facts γ epoch ops_full_eph' -∗
-  own_Primary_ghost_f γ γsrv isPrimary epoch committedNextIndex opsfull -∗
-  own_Primary_ghost_f γ γsrv isPrimary epoch committedNextIndex ops_full_eph'
+  own_Primary_ghost_f γp γpsrv γ γsrv canBecomePrimary isPrimary epoch committedNextIndex opsfull -∗
+  ⌜prefix opsfull ops_full_eph'⌝ ∗
+  own_Primary_ghost_f γp γpsrv γ γsrv canBecomePrimary isPrimary epoch committedNextIndex ops_full_eph'
+
 .
 Proof.
   intros Hineq.
   rewrite /own_Primary_ghost_f /tc_opaque.
   iIntros "#Hprop_lb #Hprop_facts".
   iNamed 1.
-  iDestruct (ghost_primary_accept with "Hprop_facts Hprop_lb Hprim") as "Hprim".
-  { do 2 rewrite fmap_length in Hineq.
-    admit. (* FIXME: list length overflow *)
-  }
   iFrame.
-Admitted.
+  destruct isPrimary.
+  {
+    iNamed "Hprim".
+    iDestruct (ghost_propose_lb_valid with "Hprim Hprop_lb") as %Hbad.
+    exfalso.
+    apply prefix_length in Hbad.
+    do 2 rewrite fmap_length in Hineq.
+    lia.
+  }
+
+  iDestruct (fmlist_ptsto_lb_comparable with "Hprop_lb Hs_prop_lb") as %[Hbad|?].
+  {
+    exfalso.
+    do 2 rewrite fmap_length in Hineq.
+    apply prefix_length in Hbad.
+    lia.
+  }
+  iFrame "%#".
+  by iApply is_proposal_facts_prim_mono.
+Qed.
 
 (* The important part of this lemma is
    own_Server_ghost_eph_f st -∗ own_Server_ghost_eph_f st' *)
-Lemma applybackup_eph st γ γsrv ops_full_eph' :
-  int.nat (length (get_rwops st.(server.ops_full_eph))) < int.nat (length (get_rwops ops_full_eph')) →
+Lemma applybackup_eph st γp γpsrv γ γsrv ops_full_eph' :
+  (length (get_rwops st.(server.ops_full_eph))) < (length (get_rwops ops_full_eph')) →
   is_proposal_lb γ st.(server.epoch) ops_full_eph' -∗
   is_proposal_facts γ st.(server.epoch) ops_full_eph' -∗
-  own_Server_ghost_eph_f st γ γsrv -∗
-  own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv ∗
+  own_Server_ghost_eph_f st γp γpsrv γ γsrv -∗
+  own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γp γpsrv γ γsrv ∗
   ⌜prefix st.(server.ops_full_eph) ops_full_eph'⌝
 .
 Proof.
@@ -189,8 +206,9 @@ Proof.
   rewrite /own_Server_ghost_eph_f /tc_opaque.
   iFrame "#".
   simpl.
-  iDestruct (applybackup_primary_eph with "[$] [$] Hprimary") as "$".
+  iDestruct (applybackup_primary_eph with "[$] [$] Hprimary") as "[% $]".
   { lia. }
+  done.
 Qed.
 
 Lemma applybackup_step_helper (opsfull opsfull_old: list (OpType * gname)) :
@@ -247,7 +265,7 @@ Proof.
 Qed.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
-  is_Server s γ γsrv -∗
+  is_Server s γp γpsrv γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
   ApplyAsBackup_core_spec γ γsrv args ops_full' op Q Ψ -∗
@@ -440,9 +458,9 @@ Proof.
   wp_loadField.
   wp_loadField.
 
-  iDestruct (applybackup_eph with "Hprop_lb Hprop_facts HghostEph") as "HghostEph".
+  iDestruct (applybackup_eph with "Hprop_lb Hprop_facts HghostEph") as "[HghostEph %Hprefix]".
   { rewrite Hσ_index.
-    rewrite -Heqb2.
+    rewrite Heqb2.
     unfold no_overflow in HnextIndexNoOverflow.
     word.
   }
@@ -546,8 +564,17 @@ Proof.
       rewrite -Heqb2.
       word.
     }
-    iSplitL "Hstate".
-    { admit. (* FIXME: show that ops_full' = opsfull ++ [op] *) }
+    epose proof (applybackup_step_helper2 _ _ _ _ Hghost_op_σ _ Hprefix) as H.
+    Unshelve.
+    3: {
+      unfold no_overflow in HnextIndexNoOverflow.
+      rewrite Hσ_index.
+      rewrite Heqb2.
+      word. (* FIXME: why do I need to manually rewrite? *)
+    }
+    2: { shelve. }
+    rewrite -H.
+    iFrame.
     iFrame "HisSm #".
     iPureIntro.
     unfold no_overflow.

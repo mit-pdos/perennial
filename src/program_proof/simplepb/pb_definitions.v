@@ -549,10 +549,11 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
 (* this should never be unfolded in the proof of code *)
 Definition own_Primary_ghost_f γp γpsrv γ γsrv (canBecomePrimary isPrimary:bool) epoch (committedNextIndex:u64) opsfull : iProp Σ:=
   tc_opaque (
-            "Hprim" ∷ own_primary_escrow_ghost γp γpsrv canBecomePrimary epoch ∗
+            "Hprim_escrow" ∷ own_primary_escrow_ghost γp γpsrv canBecomePrimary epoch ∗
             "#Hprim_facts" ∷ is_proposal_facts_prim γp epoch opsfull  ∗
+            "#Hs_prop_lb" ∷ is_proposal_lb γ epoch opsfull ∗
 
-            if isPrimary then
+            "Hprim" ∷ if isPrimary then
               ∃ (ops_commit_full:list (OpType * gname)),
               "Hprim" ∷ own_primary_ghost γ γsrv epoch opsfull ∗
 

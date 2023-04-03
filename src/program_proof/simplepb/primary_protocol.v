@@ -163,4 +163,16 @@ Proof.
   iFrame.
 Qed.
 
+Lemma is_proposal_facts_prim_mono γ epoch σ σ' :
+  σ ⪯ σ' →
+  is_proposal_facts_prim γ epoch σ -∗
+  is_proposal_facts_prim γ epoch σ'
+.
+Proof.
+  intros.
+  iIntros "(% & % & Hlb)".
+  iExists _; iFrame.
+  iPureIntro. by transitivity σ.
+Qed.
+
 End primary_protocol.
