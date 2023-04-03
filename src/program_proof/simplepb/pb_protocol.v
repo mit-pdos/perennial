@@ -1,7 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
-From iris.algebra Require Import dfrac_agree mono_list csum.
+From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.Helpers Require Import ListSolver.
 From Perennial.program_proof.simplepb Require Export fmlist_map.
 
@@ -20,7 +19,6 @@ Record pb_server_names :=
 {
   pb_epoch_gn: gname ;
   pb_accepted_gn : gname ;
-  pb_escrow_gn : gname ; (* escrow for getting ownership of proposal *)
 }.
 
 Context `{EntryType:Type}.
@@ -32,15 +30,13 @@ Class pb_ghostG Σ := {
     pb_ghost_map_logG :> fmlist_mapG Σ u64 EntryType;
     pb_ghost_commitG :> inG Σ logR ;
     pb_ghost_configG :> inG Σ (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
-    pb_proposal_escrowG :> inG Σ (gmapR (u64) (dfrac_agreeR unitO)) ;
 }.
 
 Definition pb_ghostΣ :=
   #[mono_natΣ ; fmlist_mapΣ u64 EntryType ;
     GFunctor (gmapR (u64) logR) ;
     GFunctor logR ;
-    GFunctor (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names))))) ;
-    GFunctor (gmapR (u64) (dfrac_agreeR unitO))
+    GFunctor (gmapR u64 (dfrac_agreeR (leibnizO (option (list pb_server_names)))))
     ].
 Global Instance subG_pb_ghostΣ {Σ} : subG (pb_ghostΣ) Σ → (pb_ghostG Σ).
 Proof. solve_inG. Qed.
@@ -67,23 +63,6 @@ Definition is_proposal_lb γsys epoch σ : iProp Σ :=
 
 Notation "lhs ⪯ rhs" := (prefix lhs rhs)
 (at level 20, format "lhs  ⪯  rhs") : stdpp_scope.
-
-(* FIXME: ideally, this init proposal stuff and the escrow tokens should be a
-   separate higher-level protocol *)
-Definition own_init_proposal_unused γsys epoch : iProp Σ :=
-  epoch ⤳l[γsys.(pb_init_proposal_gn)] [].
-Definition is_init_proposal γsys epoch σ : iProp Σ :=
-  epoch ⤳l[γsys.(pb_init_proposal_gn)]□ σ.
-Definition is_init_proposal_ub γsys epoch σ : iProp Σ :=
-  ∃ σexact,
-  ⌜σexact ⪯ σ⌝ ∗
-  is_init_proposal γsys epoch σexact.
-
-Definition own_tok γsrv epoch : iProp Σ :=
-  own γsrv.(pb_escrow_gn) {[ epoch := to_dfrac_agree (DfracOwn 1) ()]}.
-
-Definition is_tok γsrv epoch : iProp Σ :=
-  own γsrv.(pb_escrow_gn) {[ epoch := to_dfrac_agree (DfracDiscarded) ()]}.
 
 Definition own_accepted γ epoch σ : iProp Σ :=
   epoch ⤳l[γ.(pb_accepted_gn)] σ.
@@ -146,13 +125,8 @@ Definition is_proposal_valid γ σ : iProp Σ :=
   □(∀ σ', ⌜σ' ⪯ σ⌝ → own_commit γ σ' ={⊤∖↑sysN}=∗ own_commit γ σ).
 
 Definition is_proposal_facts γ epoch σ: iProp Σ :=
-  is_init_proposal_ub γ epoch σ ∗
   old_proposal_max γ epoch σ ∗
   is_proposal_valid γ σ.
-
-Definition own_escrow_toks γsrv epoch : iProp Σ :=
-  [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' ≤ int.nat epoch⌝ ∨ own_tok γsrv epoch'
-.
 
 Definition own_replica_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
   "Hepoch_ghost" ∷ own_epoch γsrv epoch ∗
@@ -165,64 +139,9 @@ Definition own_replica_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
 .
 
 Definition own_primary_ghost γsys γsrv epoch σ : iProp Σ :=
-  "Htoks" ∷ own_escrow_toks γsrv epoch ∗
-  "Hprop" ∷ (own_tok γsrv epoch ∨ is_tok γsrv epoch ∗ own_proposal γsys epoch σ) ∗
-  "#Hp_prop_lb" ∷ is_proposal_lb γsys epoch σ ∗
+  "Hprop" ∷ own_proposal γsys epoch σ ∗
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
 .
-
-Lemma ghost_primary_accept_new_epoch γsys γsrv epoch epoch' σ' σ :
-  int.nat epoch < int.nat epoch' →
-  is_proposal_facts γsys epoch' σ' -∗
-  is_proposal_lb γsys epoch' σ' -∗
-  own_primary_ghost γsys γsrv epoch σ
-  ==∗
-  own_primary_ghost γsys γsrv epoch' σ'.
-Proof.
-  intros Hineq.
-  iIntros "#Hprop_facts #Hprop_lb".
-  iNamed 1.
-  iClear "Hprop".
-  iDestruct (big_sepS_elem_of_acc_impl epoch' with "Htoks") as "[Htok Htoks]".
-  { set_solver. }
-  iDestruct "Htok" as "[%Hbad|Htok]".
-  { exfalso. word. }
-  iFrame "Htok Hprop_facts Hprop_lb".
-  iApply "Htoks".
-  {
-    iModIntro.
-    iIntros (???) "[%Hineq2|$]".
-    iLeft.
-    iPureIntro.
-    word.
-  }
-  {
-    iModIntro. iLeft.
-    done.
-  }
-Qed.
-
-Lemma ghost_primary_accept γsys γsrv epoch σ' σ :
-  length σ ≤ length σ' →
-  is_proposal_facts γsys epoch σ' -∗
-  is_proposal_lb γsys epoch σ' -∗
-  own_primary_ghost γsys γsrv epoch σ
-  -∗
-  own_primary_ghost γsys γsrv epoch σ'.
-Proof.
-  intros Hlength_le.
-  iIntros "#Hprop_facts #Hprop_lb".
-  iNamed 1.
-  iFrame "Hprop_facts".
-  iFrame "Htoks #".
-  iDestruct "Hprop" as "[$|Hprop]".
-  { done. }
-  iRight.
-  iDestruct "Hprop" as "[$ Hprop]".
-  iDestruct (fmlist_ptsto_lb_agree with "Hprop Hprop_lb") as %Hlb.
-  apply list_prefix_eq in Hlb; last done.
-  by subst.
-Qed.
 
 Lemma ghost_accept_and_unseal γsys γsrv sealed epoch epoch' σ' σ :
   int.nat epoch < int.nat epoch' →
@@ -514,20 +433,8 @@ Proof.
   }
 Qed.
 
-Lemma own_tok_is_tok_false γ epoch :
-  own_tok γ epoch -∗
-  is_tok γ epoch -∗
-  False.
-Proof.
-  iIntros "Htok His".
-  iDestruct (own_valid_2 with "His Htok") as %Hbad.
-  rewrite singleton_op singleton_valid dfrac_agree_op_valid in Hbad.
-  naive_solver.
-Qed.
-
 Lemma ghost_propose γsys γsrv epoch σ σ' :
   σ ⪯ σ' →
-  is_tok γsrv epoch -∗
   own_primary_ghost γsys γsrv epoch σ -∗
   is_proposal_valid γsys σ'
   ={↑pbN}=∗
@@ -537,30 +444,19 @@ Lemma ghost_propose γsys γsrv epoch σ σ' :
 .
 Proof.
   intros Hprefix.
-  iIntros "#His_primary Hown #Hvalid_in".
+  iIntros "Hown #Hvalid_in".
   iNamed "Hown".
-  iDestruct "Hprop" as "[Hbad|[_ Hprop]]".
-  { by iDestruct (own_tok_is_tok_false with "Hbad His_primary") as "?". }
 
   iMod (fmlist_ptsto_update with "Hprop") as "Hprop".
   { apply Hprefix. }
 
   iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb".
-  iFrame "∗ Hprop_lb His_primary Hprop".
+  iFrame "Hprop".
   iAssert (|={↑pbN}=> is_proposal_facts γsys epoch (σ'))%I with "[]" as ">#Hvalid2".
   {
     iSplitL "".
     {
-      iDestruct "Hvalid" as "[Hvalid _]".
-      iDestruct "Hvalid" as (?) "[%Hineq Hvalid]".
-      iExists _.
-      iFrame "Hvalid".
-      iPureIntro.
-      by transitivity σ.
-    }
-    iSplitL "".
-    {
-      iDestruct "Hvalid" as "[ _ [#Hmax _]]".
+      iDestruct "Hvalid" as "[#Hmax _]".
       iModIntro.
       unfold old_proposal_max.
       iModIntro.
@@ -585,16 +481,13 @@ Proof.
 Qed.
 
 Lemma ghost_propose_lb_valid γsys γsrv epoch σ σ' :
-  is_tok γsrv epoch -∗
   own_primary_ghost γsys γsrv epoch σ -∗
   is_proposal_lb γsys epoch σ' -∗
   ⌜σ' ⪯ σ⌝
 .
 Proof.
-  iIntros "#Htok Hprim Hprop_lb".
+  iIntros "Hprim Hprop_lb".
   iNamed "Hprim".
-  iDestruct "Hprop" as "[Hbad|[_ Hprop]]".
-  { by iDestruct (own_tok_is_tok_false with "Hbad Htok") as "?". }
   iApply (fmlist_ptsto_lb_agree with "Hprop Hprop_lb").
 Qed.
 
@@ -621,8 +514,8 @@ Proof.
   iIntros "#Hinv #Hcom #Hprop_lb #Hprop_facts".
   iInv "Hinv" as "Hown" "Hclose".
   iDestruct "Hown" as (σcommit epoch_commit) "(>Hghost & >#Hcom_com & >#Hprop_lb_com & #Hprop_facts_com)".
-  iDestruct "Hprop_facts_com" as "(>Hinit_com & >Hmax_com & Hvalid_com)".
-  iDestruct "Hprop_facts" as "(#Hinit & Hmax & Hvalid)".
+  iDestruct "Hprop_facts_com" as "(>Hmax_com & Hvalid_com)".
+  iDestruct "Hprop_facts" as "(Hmax & Hvalid)".
   iAssert (⌜σcommit ⪯ σ⌝ ∨ ⌜σ ⪯ σcommit⌝)%I as "%Hlog".
   {
     assert (int.nat epoch < int.nat epoch_commit ∨ int.nat epoch = int.nat epoch_commit ∨ int.nat epoch > int.nat epoch_commit) as [Hepoch|[Hepoch|Hepoch]]by word.
@@ -686,30 +579,18 @@ Lemma ghost_init_primary γsys γsrv σ epochconf epoch conf epoch_new :
   is_epoch_config γsys epochconf conf -∗
   is_accepted_ro γsrv epoch σ -∗
   (∀ epoch_skip, ⌜int.nat epochconf < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch_new⌝ → is_epoch_skipped γsys epoch_skip) -∗
-  own_proposal_unused γsys epoch_new -∗
-  own_init_proposal_unused γsys epoch_new
+  own_proposal_unused γsys epoch_new
   ==∗
   own_proposal γsys epoch_new σ ∗
-  is_proposal_facts γsys epoch_new σ ∗
-  is_init_proposal γsys epoch_new σ
+  is_proposal_facts γsys epoch_new σ
 .
 Proof.
   intros Hmember Hepoch_new Hepoch_recent.
-  iIntros "#Hprop_lb #Hprop_facts #His_conf #Hacc_ro #Hskip Hprop Hinit".
+  iIntros "#Hprop_lb #Hprop_facts #His_conf #Hacc_ro #Hskip Hprop".
   iMod (fmlist_ptsto_update σ with "Hprop") as "Hprop".
   { apply prefix_nil. }
-  iMod (fmlist_ptsto_update σ with "Hinit") as "Hinit".
-  { apply prefix_nil. }
-  iMod (fmlist_ptsto_persist with "Hinit") as "#Hinit".
   iFrame "Hprop".
-  iDestruct "Hprop_facts" as "[_ [Hmax $]]".
-
-  iFrame "Hinit".
-  iSplitL "".
-  {
-    iExists _. iFrame "Hinit".
-    done.
-  }
+  iDestruct "Hprop_facts" as "[Hmax $]".
 
   iModIntro.
   iIntros (epoch_old σ_old).
@@ -768,61 +649,6 @@ Proof.
   }
 Qed.
 
-Definition become_primary_escrow γsys γsrv epoch σ : iProp Σ :=
-  inv pbN (
-        (own_proposal γsys epoch σ ∗
-        is_proposal_facts γsys epoch σ) ∗
-        is_init_proposal γsys epoch σ ∨
-        is_tok γsrv epoch
-  )
-.
-
-Lemma ghost_become_primary γsys γsrv epoch σprop σ :
-  £ 1 -∗
-  become_primary_escrow γsys γsrv epoch σprop -∗
-  own_primary_ghost γsys γsrv epoch σ ={↑pbN}=∗
-  own_primary_ghost γsys γsrv epoch σ ∗
-  is_tok γsrv epoch
-.
-Proof.
-  iIntros "Hlc #Hescrow".
-  iNamed 1.
-  iInv "Hescrow" as "Hown" "Hclose".
-  iMod (lc_fupd_elim_later with "Hlc Hown" ) as "Hown".
-  iDestruct "Hown" as "[[[Hprop2 Hprop_facts] #Hinit]|#His_primary]"; last first.
-  { (* we become primary in the past (i.e. before a crash), nothing to do but
-       remember that we are already primary *)
-    iMod ("Hclose" with "[$His_primary]").
-    iFrame "∗#".
-    done.
-  }
-  (* else, we need to move stuff out of the escrow *)
-
-  iDestruct "Hprop" as "[Htok|[_ Hbad]]"; last first.
-  {
-    by iDestruct (fmlist_ptsto_ne with "Hprop2 Hbad") as %Hbad.
-  }
-  iMod (own_update with "Htok") as "His_primary".
-  {
-    apply singleton_update.
-    apply dfrac_agree_persist.
-  }
-  iDestruct "His_primary" as "#His_primary".
-  iMod ("Hclose" with "[$His_primary]").
-  iModIntro.
-  iFrame "His_primary".
-
-  iDestruct "Hvalid" as "[Hinit2 _]".
-  iDestruct "Hinit2" as (?) "[%Hineq Hinit2]".
-  iDestruct (fmlist_ptsto_agree with "Hinit Hinit2") as %Heq.
-  subst.
-  iDestruct (fmlist_ptsto_lb_agree with "Hprop2 Hp_prop_lb") as %Hineq2.
-  apply list_prefix_eq in Hineq2; last first.
-  { by apply prefix_length. }
-  subst.
-  iFrame "∗#".
-Qed.
-
 Lemma alloc_const_gmap {A:cmra} (a:A) `{H:inG Σ (gmapR u64 A)} :
   (✓a) →
     ⊢ |==> ∃ γ, [∗ set] epoch ∈ (fin_to_set u64), own γ {[ epoch := a ]}
@@ -853,6 +679,8 @@ Proof.
   iExists _; iFrame.
 Qed.
 
+(* FIXME: fix these initialization proofs *)
+(*
 Definition pb_init_config γsys confγs : iProp Σ :=
   "#His_conf" ∷ is_epoch_config γsys 0 confγs ∗
   "#His_conf_prop" ∷ is_epoch_config_proposal γsys 0 confγs ∗
@@ -1108,6 +936,6 @@ Proof.
   }
   iFrame.
   iFrame "#".
-Qed.
+Qed. *)
 
 End pb_protocol.
