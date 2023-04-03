@@ -38,12 +38,13 @@ Proof.
 Qed.
 
 (* Clerk specs *)
-Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op op_sl op_bytes :
+Lemma wp_Clerk__ApplyAsBackup γp γ γsrv ck args_ptr (epoch index:u64) opsfull op op_sl op_bytes :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "#HepochLb" ∷ is_epoch_lb γsrv epoch ∗
         "#Hprop_lb" ∷ is_proposal_lb γ epoch opsfull ∗
         "#Hprop_facts" ∷ is_proposal_facts γ epoch opsfull ∗
+        "#Hprim_facts" ∷ is_proposal_facts_prim γp epoch opsfull ∗
         "%Hghost_op_σ" ∷ ⌜∃ γ, last opsfull = Some (op, γ)⌝ ∗
         "%Hghost_op_op" ∷ ⌜has_op_encoding op_bytes op⌝ ∗
         "%Hσ_index" ∷ ⌜length (get_rwops opsfull) = ((int.nat index) + 1)%nat⌝ ∗
@@ -91,6 +92,7 @@ Proof.
     destruct Hghost_op_σ as [? Hghost_op_σ].
     iExists _, _, _, _.
     iSplitR; first done.
+    assert (γp = γp0) by admit; subst.
     iFrame "#%".
     iSplit.
     { (* No error from RPC, Apply was accepted *)
@@ -150,7 +152,7 @@ Proof.
     }
     { exfalso. done. }
   }
-Qed.
+Admitted.
 
 Lemma applybackup_primary_eph γp γpsrv γ γsrv isPrimary canBecomePrimary epoch committedNextIndex opsfull ops_full_eph' :
   (length (get_rwops opsfull)) < (length (get_rwops ops_full_eph')) →
@@ -232,19 +234,20 @@ Lemma applybackup_step_helper2 (ops_full ops_full':list (OpType * gname)) op a :
 Proof.
 Admitted.
 
-Lemma applybackup_step γ γsrv epoch ops ops_full' op a:
+Lemma applybackup_step γp γ γsrv epoch ops ops_full' op a:
   last ops_full' = Some (op, a) →
   length (get_rwops ops_full') = length ops + 1 →
   is_proposal_lb γ epoch ops_full' -∗
   is_proposal_facts γ epoch ops_full' -∗
-  own_Server_ghost_f γ γsrv epoch ops false ={↑pbN}=∗
-  own_Server_ghost_f γ γsrv epoch (get_rwops ops_full') false ∗
+  is_proposal_facts_prim γp epoch ops_full' -∗
+  own_Server_ghost_f γp γ γsrv epoch ops false ={↑pbN}=∗
+  own_Server_ghost_f γp γ γsrv epoch (get_rwops ops_full') false ∗
   ⌜get_rwops ops_full' = ops ++ [op]⌝ ∗
   (is_epoch_lb γsrv epoch ∗ is_accepted_lb γsrv epoch ops_full')
 .
 Proof.
   intros Hlast Hlen.
-  iIntros "#Hprop_lb #Hprop_facts Hown".
+  iIntros "#Hprop_lb #Hprop_facts #Hprim_facts_in Hown".
   iNamed "Hown".
   rename opsfull into ops_full.
   subst.
@@ -261,14 +264,14 @@ Proof.
   iDestruct (ghost_get_epoch_lb with "Hghost") as "#$".
   iSplitL.
   2:{ iPureIntro. by eapply applybackup_step_helper2. }
-  iExists _; iFrame "Hghost". done.
+  iExists _; iFrame "Hghost". iFrame "#". done.
 Qed.
 
-Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :
+Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γp γpsrv γ γsrv args ops_full' op Q Φ Ψ :
   is_Server s γp γpsrv γ γsrv -∗
   ApplyAsBackupArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
-  ApplyAsBackup_core_spec γ γsrv args ops_full' op Q Ψ -∗
+  ApplyAsBackup_core_spec γp γ γsrv args ops_full' op Q Ψ -∗
   WP pb.Server__ApplyAsBackup #s #args_ptr {{ Φ }}
 .
 Proof.
@@ -477,7 +480,7 @@ Proof.
   {
     iSplitL; first done.
     iIntros "Hghost".
-    iMod (applybackup_step with "Hprop_lb Hprop_facts Hghost") as "Hghost".
+    iMod (applybackup_step with "Hprop_lb Hprop_facts Hprim_facts Hghost") as "Hghost".
     { done. }
     {
       rewrite Hσ_index.

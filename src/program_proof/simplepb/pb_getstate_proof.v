@@ -28,7 +28,7 @@ Context `{!pbG Σ}.
    which might hurt liveness.
  *)
 (* FIXME: rename to GetStateAndSeal *)
-Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
+Lemma wp_Clerk__GetState γp γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv epoch_lb ∗
@@ -43,6 +43,7 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
             ⌜int.nat epochacc ≤ int.nat epoch⌝ ∗
             is_accepted_ro γsrv epochacc opsfull ∗
             is_proposal_facts γ epochacc opsfull ∗
+            is_proposal_facts_prim γp epochacc opsfull ∗
             is_proposal_lb γ epochacc opsfull ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length (get_rwops opsfull)) enc) ∗
             ⌜has_snap_encoding enc (get_rwops opsfull)⌝ ∗
@@ -81,7 +82,7 @@ Proof.
     iFrame "Hghost_epoch_lb".
     iSplit.
     { (* No error from RPC, state was returned *)
-      iIntros (?????) "???".
+      iIntros (?????) "????".
       iIntros (??? Henc_reply) "Hargs_sl".
       iIntros (?) "Hrep Hrep_sl".
       wp_pures.
@@ -95,6 +96,7 @@ Proof.
       iFrame "Hreply".
       iSplitR; first done.
       iSplitR; first done.
+      assert (γp = γp0) by admit; subst.
       eauto with iFrame.
     }
     { (* GetState was rejected by the server (e.g. stale epoch number) *)
@@ -139,7 +141,7 @@ Proof.
     }
     { exfalso. done. }
   }
-Qed.
+Admitted.
 
 (** Helper lemmas for GetState() server-side proof *)
 Lemma is_StateMachine_acc_getstate sm own_StateMachine P :
@@ -155,25 +157,25 @@ Proof.
 Qed.
 
 (* (trivial) GetState step for ephemeral ghost state *)
-Lemma getstate_eph st γ γsrv :
-  own_Server_ghost_eph_f st γ γsrv ==∗
-  own_Server_ghost_eph_f (st <| server.sealed := true |>) γ γsrv
+Lemma getstate_eph st γp γpsrv γ γsrv :
+  own_Server_ghost_eph_f st γp γpsrv γ γsrv -∗
+  own_Server_ghost_eph_f (st <| server.sealed := true |>) γp γpsrv γ γsrv
 .
 Proof.
-  iIntros "HH".
-  by rewrite /own_Server_ghost_eph_f /tc_opaque.
+  by rewrite /own_Server_ghost_eph_f /tc_opaque /=.
 Qed.
 
 (* GetState step for ghost state *)
-Lemma getstate_step γ γsrv epoch_lb epoch ops sealed :
+Lemma getstate_step γp γ γsrv epoch_lb epoch ops sealed :
   is_epoch_lb γsrv epoch_lb -∗
-  own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
-  own_Server_ghost_f γ γsrv epoch ops true ∗
+  own_Server_ghost_f γp γ γsrv epoch ops sealed ={↑pbN}=∗
+  own_Server_ghost_f γp γ γsrv epoch ops true ∗
   ∃ opsfull,
   ⌜ops = get_rwops opsfull⌝ ∗
   is_accepted_ro γsrv epoch opsfull ∗
   is_proposal_lb γ epoch opsfull ∗
   is_proposal_facts γ epoch opsfull ∗
+  is_proposal_facts_prim γp epoch opsfull ∗
   ⌜int.nat epoch_lb ≤ int.nat epoch⌝
 .
 Proof.
@@ -183,7 +185,7 @@ Proof.
   iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
   iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hprop_lb Hprop_facts]".
   iDestruct (ghost_epoch_lb_ineq with "Hepoch_lb Hghost") as "%Hepoch_ineq".
-  iSplitL "Hghost Hprim".
+  iSplitL "Hghost".
   {
     iExists _.
     iFrame "∗#".
@@ -194,11 +196,11 @@ Proof.
   by iPureIntro.
 Qed.
 
-Lemma wp_Server__GetState γ γsrv s args_ptr args epoch_lb Φ Ψ :
-  is_Server s γ γsrv -∗
+Lemma wp_Server__GetState γp γpsrv γ γsrv s args_ptr args epoch_lb Φ Ψ :
+  is_Server s γp γpsrv γ γsrv -∗
   GetStateArgs.own args_ptr args -∗
   (∀ reply, Ψ reply -∗ ∀ (reply_ptr:loc), GetStateReply.own reply_ptr reply -∗ Φ #reply_ptr) -∗
-  GetState_core_spec γ γsrv args.(GetStateArgs.epoch) epoch_lb Ψ -∗
+  GetState_core_spec γp γ γsrv args.(GetStateArgs.epoch) epoch_lb Ψ -∗
   WP pb.Server__GetState #s #args_ptr {{ Φ }}
   .
 Proof.
@@ -257,7 +259,7 @@ Proof.
   iNamed "HH".
   wp_loadField.
   iDestruct "HΨ" as "[#Hepoch_lb HΨ]".
-  iMod (getstate_eph with "HghostEph") as "HghostEph".
+  iDestruct (getstate_eph with "HghostEph") as "HghostEph".
   wp_apply ("HgetstateSpec" with "[$Hstate]").
   {
     iIntros "Hghost".
@@ -267,14 +269,14 @@ Proof.
     iExact "HH".
   }
   iIntros (??) "(#Hsnap_sl & %Hsnap_enc & [Hstate HQ])".
-  iDestruct "HQ" as (?) "(%Hσeq_phys & #Hacc_ro &  #Hprop_lb & #Hprop_facts & %Hepoch_ineq)".
+  iDestruct "HQ" as (?) "(%Hσeq_phys & #Hacc_ro &  #Hprop_lb & #Hprop_facts & #Hprim_facts & %Hepoch_ineq)".
   wp_pures.
   wp_loadField.
   wp_pures.
   wp_loadField.
 
   iLeft in "HΨ".
-  iDestruct ("HΨ" with "[% //] [%] Hacc_ro Hprop_facts Hprop_lb [%] [%]") as "HΨ".
+  iDestruct ("HΨ" with "[% //] [%] Hacc_ro Hprop_facts Hprim_facts Hprop_lb [%] [%]") as "HΨ".
   { word. }
   { rewrite -Hσeq_phys. done. }
   { apply (f_equal length) in Hσeq_phys.

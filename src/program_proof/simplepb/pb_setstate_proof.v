@@ -179,18 +179,19 @@ Proof.
   done.
 Qed.
 
-Lemma setstate_step γ γsrv epoch ops sealed epoch' opsfull':
+Lemma setstate_step γp γ γsrv epoch ops sealed epoch' opsfull':
   int.nat epoch < int.nat epoch' →
   is_proposal_lb γ epoch' opsfull' -∗
   is_proposal_facts γ epoch' opsfull' -∗
-  own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
-  own_Server_ghost_f γ γsrv epoch' (get_rwops opsfull') false ∗
+  is_proposal_facts_prim γp epoch' opsfull' -∗
+  own_Server_ghost_f γp γ γsrv epoch ops sealed ={↑pbN}=∗
+  own_Server_ghost_f γp γ γsrv epoch' (get_rwops opsfull') false ∗
   is_epoch_lb γsrv epoch' ∗
   is_accepted_lb γsrv epoch' opsfull'
 .
 Proof.
   intros HnewEpoch.
-  iIntros "#? #? Hghost".
+  iIntros "#? #? #? Hghost".
   iNamed "Hghost".
   iMod (ghost_accept_and_unseal with "Hghost [$] [$]") as "Hghost".
   { done. }
@@ -287,7 +288,7 @@ Proof.
     wp_loadField.
     wp_loadField.
 
-    iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & #Hprop_facts_prim & HΨ)".
+    iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & #Hprim_facts & HΨ)".
     replace (args.(SetStateArgs.nextIndex)) with (U64 (length (get_rwops opsfull))) by word.
 
     assert (int.nat st.(server.epoch) < int.nat args.(SetStateArgs.epoch)) as HepochIneq.
@@ -298,7 +299,7 @@ Proof.
         repeat f_equal. word. }
       word.
     }
-    iMod (setstate_eph_step with "Hprop_lb Hprop_facts_prim HghostEph") as "HghostEph".
+    iMod (setstate_eph_step with "Hprop_lb Hprim_facts HghostEph") as "HghostEph".
     { done. }
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
@@ -307,7 +308,7 @@ Proof.
       iSplitR; first done.
       iFrame "Hargs_state_sl".
       iIntros "Hghost".
-      iMod (setstate_step with "[$] [$] Hghost") as "[$ H]".
+      iMod (setstate_step with "[$] [$] [$] Hghost") as "[$ H]".
       { done. }
       iExact "H".
     }
