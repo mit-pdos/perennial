@@ -5,20 +5,20 @@ From Perennial.program_proof.reconnectclient Require Import proof.
 
 Section pb_makeclerk_proof.
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
-Lemma wp_MakeClerk γ γsrv host :
+Lemma wp_MakeClerk γp γpsrv γ γsrv host :
 {{{
-      is_pb_host host γ γsrv
+      is_pb_host host γp γpsrv γ γsrv
 }}}
   MakeClerk #host
 {{{
@@ -38,7 +38,7 @@ Proof.
   iMod (readonly_alloc_1 with "cl") as "#Hcl".
   iApply "HΦ".
   iModIntro.
-  iExists _, _.
+  repeat iExists _.
   iFrame "#".
 Qed.
 
