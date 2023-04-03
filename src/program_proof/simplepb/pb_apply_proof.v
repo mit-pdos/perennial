@@ -166,8 +166,8 @@ Lemma apply_eph_step γp γpsrv γ γsrv st op Q :
   st.(server.isPrimary) = true →
   st.(server.sealed) = false →
   (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
-  own_Server_ghost_eph_f st γp γpsrv γ γsrv -∗
-  £ 1 ={↑pbN}=∗
+  own_Server_ghost_eph_f st γp γpsrv γ γsrv
+  ={↑pbN}=∗
   own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(op, Q)] |>)
                               γp γpsrv γ γsrv ∗
   is_proposal_lb γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
@@ -176,7 +176,7 @@ Lemma apply_eph_step γp γpsrv γ γsrv st op Q :
 .
 Proof.
   intros Hprim Hunsealed.
-  iIntros "Hupd Hghost Hlc".
+  iIntros "Hupd Hghost".
   iNamed "Hghost".
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed "Hghost".
@@ -184,6 +184,32 @@ Proof.
   iMod (apply_eph_primary_step with "Hupd Hprimary") as "(Hprimary & #? & #?)".
   by iFrame "∗#".
 Qed.
+
+Lemma apply_commit_step γp γpsrv γ γsrv st opsfull op Q :
+  is_ghost_lb γ (opsfull ++ [(op, Q)]) -∗
+  is_proposal_lb γ st.(server.epoch) (opsfull ++ [(op, Q)]) -∗
+  own_Server_ghost_eph_f st γp γpsrv γ γsrv
+  ={↑pbN}=∗
+  own_Server_ghost_eph_f (st <| server.committedNextIndex := length (opsfull) + 1 |> ) γp γpsrv γ γsrv
+.
+Proof.
+  iIntros "#Hghost_lb #Hprop_lb".
+  rewrite /own_Server_ghost_eph_f /tc_opaque /=.
+  iNamed 1.
+  rewrite /own_Primary_ghost_f /tc_opaque /=.
+  iNamed "Hprimary".
+  destruct st.(server.isPrimary) as [] eqn:Hprim.
+  {
+    iNamed "Hprim".
+    (* iDestruct (ghost_propose_lb_valid with "Hprim Hprop_lb") as %Hprefix. *)
+    iFrame "∗#".
+    iExists _; iFrame "Hghost_lb #".
+    iPureIntro.
+    rewrite /get_rwops fmap_app app_length fmap_length /=.
+    admit. (* FIXME: list length overflow *)
+  }
+  { by iFrame "∗#". }
+Admitted.
 
 Lemma wp_Server__Apply_internal (s:loc) γp γpsrv γ γsrv op_sl op_bytes op Q :
   {{{
@@ -285,7 +311,7 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
-  iMod (apply_eph_step with "Hupd HghostEph Hcred2") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts)".
+  iMod (apply_eph_step with "Hupd HghostEph") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts)".
   { done. }
   { done. }
   iMod "Hmask" as "_".
@@ -747,6 +773,14 @@ Proof.
     { admit. (* iFrame "#". *) }
     wp_pures.
     wp_loadField.
+
+    iApply fupd_wp.
+    iClear "Hmask".
+    iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+    { set_solver. }
+    rewrite -HepochEq.
+    iMod (apply_commit_step with "Hcommit Hprop_lb HghostEph") as "HghostEph".
+    iMod "Hmask" as "_". iModIntro.
     wp_apply (release_spec with "[-HΦ Hlc1 Hlc2 Hlc3 Hreply Err Reply]").
     {
       iFrame "Hlocked HmuInv".
@@ -755,109 +789,19 @@ Proof.
       repeat iExists _.
       iSplitR "HghostEph"; last iFrame.
       repeat iExists _.
-      iFrame "HcommittedNextIndex ∗ #".
-
-      (* TODO: manual proof merging *)
-      iAssert (⌜opsfull_ephemeral ++ [(rw_op op, Q)] `prefix_of` opsfull_ephemeral0⌝)%I
-              with "[Heph Hnew_eph_lb]" as "%Hlenineq".
-      {
-        destruct sealed0.
-        {
-          iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hlenineq.
-          iPureIntro.
-          rewrite singleton_op singleton_valid in Hlenineq.
-          apply mono_list_both_dfrac_valid_L in Hlenineq.
-          naive_solver.
-        }
-        {
-          iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hlenineq.
-          iPureIntro.
-          rewrite singleton_op singleton_valid in Hlenineq.
-          apply mono_list_both_valid_L in Hlenineq.
-          done.
-        }
-      }
-      repeat iExists _.
-      iFrame "∗ #"; iFrame "%".
-      rewrite /is_possible_Primary /tc_opaque.
-      iClear "Htok_used_witness Hconf Hclerkss_sl Hclerkss_rpc".
-      destruct isPrimary; last done.
-      iNamed "HprimaryOnly".
-      repeat iExists _.
-      iClear "Hcommit_lb".
-      time (iFrame "Hcommit #"; iFrame "%").
-
-      iPureIntro.
-
-      apply get_rwops_prefix in Hlenineq.
-      apply prefix_length in Hlenineq.
-      rewrite get_rwops_app app_length /= in Hlenineq.
-      rewrite Hσ_nextIndex in Hlenineq.
-      rewrite Hσ_nextIndex0 in Hlenineq.
-      split.
-      {
-        (* FIXME: why can't word to do this *)
-        rewrite Hno_overflow.
-        simpl.
-        replace (Z.to_nat (int.Z nextIndex + int.Z 1%Z)) with (int.nat nextIndex + 1).
-        { word. }
-        rewrite Z2Nat.inj_add.
-        { replace (int.nat 1) with (1). { done. }
-          word. } (* FIXME: word slow? *)
-        { word. }
-        { word. }
-      }
-      split.
-      { intros. apply HcommitRoNz0.
-        clear H.
-        time word.
-        (* Argument:
-           s.committedNextIndex < opNextIndex.
-           nextIndex + 1 <= s.nextIndex
-           s.committedNextIndex <= s.nextIndex
-         *)
-        (*
-        revert dependent nextIndex0.
-        revert dependent nextIndex.
-        revert dependent committedNextIndex0.
-        clear.
-        intros.
-        replace (int.Z 1) with (1%Z) in Hno_overflow by word.
-        rewrite Hno_overflow in H.
-        rewrite Z2Nat.inj_add in H; try word.
-        replace (int.nat 1) with (1) in * by word.
-        assert (int.nat nextIndex < int.nat nextIndex + int.nat 1) by word.
-        word.
-        clear -nextIndex0
-        *)
-      }
-      split.
-      { rewrite get_rwops_app app_length. simpl. time word. }
-      {
-        exists []. split.
-        { apply suffix_nil. }
-        split.
-        { simpl. (* FIXME: op_commit_ro is relative to committedNextIndex,
-                    whereas the code treats it as relavite to nextIndex. *)
-          (* FIXME: word slow *)
-          time word.
-        }
-        split.
-        { by unfold get_rwops. }
-        { apply is_full_ro_suffix_nil. }
-      }
+      iFrame "∗ #".
+      simpl.
+      iApply to_named.
+      iExactEq "HcommittedNextIndex".
+      repeat f_equal.
+      unfold no_overflow in HnextIndexNoOverflow.
+      admit. (* FIXME: list length overflow *)
     }
     wp_pures.
-    iModIntro.
-    iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
-    iFrame "Hlc1 Hlc2 Hlc3".
-    iSplitL.
-    { iExists _, _. iFrame. }
-    simpl.
-    destruct (decide _); last first.
-    { exfalso. done. }
-    iExists _; iFrame "Hcommit".
-    done.
+    iApply "HΦ".
+    iFrame.
+    (* FIXME: continue *)
+    admit.
   }
 
   wp_loadField.
