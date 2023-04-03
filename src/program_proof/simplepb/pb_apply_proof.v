@@ -798,10 +798,16 @@ Proof.
       admit. (* FIXME: list length overflow *)
     }
     wp_pures.
-    iApply "HΦ".
-    iFrame.
-    (* FIXME: continue *)
-    admit.
+    iModIntro.
+    iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
+    iFrame "Hlc1 Hlc2 Hlc3".
+    iSplitL.
+    { iExists _, _. iFrame. }
+    simpl.
+    destruct (decide _); last first.
+    { exfalso. done. }
+    iExists _; iFrame "Hcommit".
+    done.
   }
 
   wp_loadField.
@@ -809,6 +815,8 @@ Proof.
   {
     iFrame "Hlocked HmuInv".
     iNext.
+    repeat iExists _.
+    iSplitR "HghostEph"; last iFrame.
     repeat iExists _.
     iFrame "∗#"; iFrame "%".
   }
@@ -826,45 +834,10 @@ Proof.
   iExists _.
   iFrame "Hcommit".
   done.
-Qed.
+Admitted.
 
-Lemma get_rwops_fst {A B} ops1 ops2 :
-  ops1.*1 = ops2.*1 →
-  get_rwops (A:=A) (pb_record:=pb_record) ops1 = get_rwops (A:=B) (pb_record:=pb_record) ops2.
-Proof.
-  intros.
-  revert dependent ops2.
-  induction ops1.
-  {
-    intros.
-    simpl.
-    destruct ops2.
-    { done. }
-    by exfalso.
-  }
-  intros.
-  revert dependent IHops1.
-  induction ops2; intros.
-  { by exfalso. }
-  replace (a :: ops1) with ([a] ++ ops1) in * by done.
-  replace (a0 :: ops2) with ([a0] ++ ops2) in * by done.
-  repeat rewrite get_rwops_app.
-  repeat rewrite fmap_app in H.
-  apply app_inj_1 in H; last done.
-  destruct H as [Hfirst Hrest].
-  injection Hfirst as Hfirst.
-  erewrite IHops1; last done.
-  f_equal.
-  destruct a, a0.
-  simpl in *.
-  unfold get_rwops.
-  simpl.
-  subst.
-  done.
-Qed.
-
-Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
-  is_Server s γ γsrv -∗
+Lemma wp_Server__Apply (s:loc) γlog γp γpsrv γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
+  is_Server s γp γpsrv γ γsrv -∗
   readonly (is_slice_small op_sl byteT 1 enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
   Apply_core_spec γ γlog op enc_op Ψ -∗
@@ -885,7 +858,7 @@ Proof using Type*.
   iMod (saved_pred_alloc OpPred DfracDiscarded) as (γghost_op) "#Hsaved"; first done.
   iApply wp_fupd.
   wp_apply (wp_Server__Apply_internal _ _ _ _ _
-      op γghost_op
+      _ _ op γghost_op
              with "[$Hsrv $Hop_sl Hupd]").
   {
     iSplitL ""; first done.
@@ -947,7 +920,7 @@ Proof using Type*.
     iMod ("Hclose" with "[HQs Hghost Hlog]").
     {
       iNext.
-      iExists (opsfullQ ++ [(rw_op op, OpPred)]); iFrame.
+      iExists (opsfullQ ++ [(op, OpPred)]); iFrame.
       iSplitL "Hghost".
       { iExists _. iFrame.
         iSplitL.
@@ -956,7 +929,7 @@ Proof using Type*.
         { iFrame "Hsaved'". }
         iApply big_sepL2_singleton. iFrame "Hsaved".
       }
-      rewrite get_rwops_app.
+      rewrite /get_rwops fmap_app.
       iFrame.
 
       iModIntro.
@@ -1069,7 +1042,6 @@ Proof using Type*.
         rewrite Heq0 in Hfst_eq. rewrite ?fmap_app -app_assoc in Hfst_eq.
         apply app_inj_1 in Hfst_eq; last (rewrite ?fmap_length //).
         destruct Hfst_eq as (Hfst_eq&_).
-        apply (get_rwops_fst σ0a opsfull) in Hfst_eq as ->.
         done.
       }
     }
