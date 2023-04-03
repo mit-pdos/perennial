@@ -65,20 +65,17 @@ Definition own_primary_escrow_ghost γsys γsrv (canBecomePrimary:bool) epoch : 
 
 Lemma ghost_primary_accept_new_epoch γsys γsrv epoch canBecomePrimary epoch' :
   int.nat epoch < int.nat epoch' →
-  own_primary_escrow_ghost γsys γsrv canBecomePrimary epoch
-  ==∗
+  own_primary_escrow_ghost γsys γsrv canBecomePrimary epoch -∗
   own_primary_escrow_ghost γsys γsrv true epoch'.
 Proof.
-  (*
   intros Hineq.
-  iIntros "#Hprop_facts #Hprop_lb".
   iNamed 1.
-  iClear "Hprop".
+  iClear "Htok".
   iDestruct (big_sepS_elem_of_acc_impl epoch' with "Htoks") as "[Htok Htoks]".
   { set_solver. }
   iDestruct "Htok" as "[%Hbad|Htok]".
   { exfalso. word. }
-  iFrame "Htok Hprop_facts Hprop_lb".
+  iFrame "Htok".
   iApply "Htoks".
   {
     iModIntro.
@@ -87,11 +84,8 @@ Proof.
     iPureIntro.
     word.
   }
-  {
-    iModIntro. iLeft.
-    done.
-  } *)
-Admitted.
+  { by iLeft. }
+Qed.
 
 Lemma own_tok_is_tok_false γ epoch :
   own_tok γ epoch -∗

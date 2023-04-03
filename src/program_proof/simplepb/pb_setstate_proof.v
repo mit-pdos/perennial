@@ -22,11 +22,12 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) opsfull snap :
+Lemma wp_Clerk__SetState γp γ γsrv ck args_ptr (epoch:u64) opsfull snap :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "#Hprop_lb" ∷ is_proposal_lb γ epoch opsfull ∗
         "#Hprop_facts" ∷ is_proposal_facts γ epoch opsfull ∗
+        "#Hprop_facts_prim" ∷ is_proposal_facts_prim γp epoch opsfull ∗
         "%Henc" ∷ ⌜has_snap_encoding snap (get_rwops opsfull)⌝ ∗
         "%Hno_overflow" ∷ ⌜length (get_rwops opsfull) = int.nat (length (get_rwops opsfull))⌝ ∗
         "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length (get_rwops opsfull)) snap)
@@ -69,7 +70,9 @@ Proof.
     simpl.
     iSplitR.
     { iPureIntro. done. }
-    iFrame "Hprop_lb Hprop_facts".
+    assert (γp = γp0) by admit. (* FIXME: *)
+    subst.
+    iFrame "Hprop_lb Hprop_facts Hprop_facts_prim".
     iSplit.
     { (* No error from RPC, state was accepted *)
       iIntros "#Hepoch_lb".
@@ -127,26 +130,43 @@ Proof.
     }
     { exfalso. done. }
   }
-Qed.
+Admitted.
 
-Lemma get_epoch_eph γ γsrv st :
-  own_Server_ghost_eph_f st γ γsrv -∗
+Lemma get_epoch_eph γp γpsrv γ γsrv st :
+  own_Server_ghost_eph_f st γp γpsrv γ γsrv -∗
   is_epoch_lb γsrv st.(server.epoch)
 .
 Proof.
   rewrite /own_Server_ghost_eph_f /tc_opaque. by iNamed 1.
 Qed.
 
-Lemma setstate_eph_step γ γsrv st epoch' ops' :
-int.nat st.(server.epoch) < int.nat epoch' →
-is_proposal_lb γ epoch' ops' -∗
-is_proposal_valid γ ops' -∗
-own_Server_ghost_eph_f st γ γsrv ==∗
-(is_epoch_lb γsrv epoch' -∗
- is_accepted_lb γsrv epoch' ops' -∗
- own_Server_ghost_eph_f (st <| server.ops_full_eph := ops' |> <| server.epoch := epoch' |>
-                            <| server.sealed := false |> <| server.isPrimary := false |>
-                       ) γ γsrv)
+Lemma setstate_primary_eph_step γp γpsrv γ γsrv epoch isPrimary canBecomePrimary committedNextIndex epoch' ops ops' :
+  int.nat epoch < int.nat epoch' →
+  is_proposal_lb γ epoch' ops' -∗
+  is_proposal_facts_prim γp epoch' ops' -∗
+  own_Primary_ghost_f γp γpsrv γ γsrv isPrimary canBecomePrimary epoch committedNextIndex ops -∗
+  own_Primary_ghost_f γp γpsrv γ γsrv true false epoch' committedNextIndex ops'
+.
+Proof.
+  iIntros (Hepoch) "#Hprop_lb #Hprim_facts".
+  rewrite /own_Primary_ghost_f /tc_opaque.
+  iNamed 1.
+  iDestruct (ghost_primary_accept_new_epoch with "Hprim_escrow") as "$".
+  { done. }
+  iFrame "#".
+Qed.
+
+Lemma setstate_eph_step γp γpsrv γ γsrv st epoch' ops' :
+  int.nat st.(server.epoch) < int.nat epoch' →
+  is_proposal_lb γ epoch' ops' -∗
+  is_proposal_facts_prim γp epoch' ops' -∗
+  own_Server_ghost_eph_f st γp γpsrv γ γsrv ==∗
+  (is_epoch_lb γsrv epoch' -∗
+   is_accepted_lb γsrv epoch' ops' -∗
+   own_Server_ghost_eph_f (st <| server.ops_full_eph := ops' |> <| server.epoch := epoch' |>
+                              <| server.sealed := false |> <| server.isPrimary := false |>
+                              <| server.canBecomePrimary := true |>
+                         ) γp γpsrv γ γsrv)
 .
 Proof.
   intros HnewEpoch.
@@ -155,7 +175,8 @@ Proof.
   iNamed "Hghost".
   iModIntro. iIntros. repeat iExists _.
   iFrame "∗#".
-  simpl. by iLeft.
+  simpl. iApply (setstate_primary_eph_step with "Hprop_lb Hprop_valid Hprimary").
+  done.
 Qed.
 
 Lemma setstate_step γ γsrv epoch ops sealed epoch' opsfull':
@@ -174,8 +195,6 @@ Proof.
   iMod (ghost_accept_and_unseal with "Hghost [$] [$]") as "Hghost".
   { done. }
 
-  iMod (ghost_primary_accept_new_epoch with "[$] [$] Hprim") as "Hprim".
-  { done. }
   iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb".
   iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
   iSplitL.
@@ -189,11 +208,11 @@ Proof.
   iExact "HH".
 Qed.
 
-Lemma wp_Server__SetState γ γsrv s args_ptr args opsfull Φ Ψ :
-  is_Server s γ γsrv -∗
+Lemma wp_Server__SetState γp γpsrv γ γsrv s args_ptr args opsfull Φ Ψ :
+  is_Server s γp γpsrv γ γsrv -∗
   SetStateArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
-  SetState_core_spec γ γsrv args opsfull Ψ -∗
+  SetState_core_spec γp γ γsrv args opsfull Ψ -∗
   WP pb.Server__SetState #s #args_ptr {{ Φ }}
 .
 Proof.
@@ -236,7 +255,7 @@ Proof.
     { (* state has been set previously. Use is_prop_lb to get agreement. *)
       wp_loadField.
       iDestruct (get_epoch_eph with "HghostEph") as "#Heph_lb".
-      iDestruct "HΨ" as "(_ & _ & _ & _ & HΨ)".
+      iDestruct "HΨ" as "(_ & _ & _ & _ & _ & HΨ)".
       iLeft in "HΨ".
       wp_apply (release_spec with "[-HΨ HΦ]").
       {
@@ -256,6 +275,7 @@ Proof.
     iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
     iNamed "HisSm2".
     wp_storeField.
+    wp_storeField.
     wp_loadField.
     wp_storeField.
     wp_storeField.
@@ -267,7 +287,7 @@ Proof.
     wp_loadField.
     wp_loadField.
 
-    iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & HΨ)".
+    iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & #Hprop_facts_prim & HΨ)".
     replace (args.(SetStateArgs.nextIndex)) with (U64 (length (get_rwops opsfull))) by word.
 
     assert (int.nat st.(server.epoch) < int.nat args.(SetStateArgs.epoch)) as HepochIneq.
@@ -278,9 +298,8 @@ Proof.
         repeat f_equal. word. }
       word.
     }
-    iMod (setstate_eph_step with "Hprop_lb [Hprop_facts] HghostEph") as "HghostEph".
+    iMod (setstate_eph_step with "Hprop_lb Hprop_facts_prim HghostEph") as "HghostEph".
     { done. }
-    { iDestruct "Hprop_facts" as "[_ [_ $]]". }
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
       iSplitR.

@@ -93,13 +93,14 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition SetState_core_spec γ γsrv args opsfull :=
+Definition SetState_core_spec γp γ γsrv args opsfull :=
   λ (Φ : u64 -> iPropO Σ) ,
   (
     ⌜has_snap_encoding args.(SetStateArgs.state) (get_rwops opsfull)⌝ ∗
     ⌜length (get_rwops opsfull) = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
     is_proposal_lb γ args.(SetStateArgs.epoch) opsfull ∗
     is_proposal_facts γ args.(SetStateArgs.epoch) opsfull ∗
+    is_proposal_facts_prim γp args.(SetStateArgs.epoch) opsfull ∗
     (
       (is_epoch_lb γsrv args.(SetStateArgs.epoch) -∗
        Φ 0) ∧
@@ -107,11 +108,11 @@ Definition SetState_core_spec γ γsrv args opsfull :=
     )%I
 .
 
-Program Definition SetState_spec γ γsrv :=
+Program Definition SetState_spec γp γ γsrv :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ,
     ⌜SetStateArgs.has_encoding enc_args args⌝ ∗
-    SetState_core_spec γ γsrv args σ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
+    SetState_core_spec γp γ γsrv args σ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
   )%I
 .
 Next Obligation.
@@ -245,7 +246,7 @@ Definition is_pb_host_pre ρ : (u64 -d> primary_system_names -d> primary_server_
   (λ host γp γpsrv γ γsrv,
   ∃ γrpc,
   handler_spec γrpc host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
-  handler_spec γrpc host (U64 1) (SetState_spec γ γsrv) ∗
+  handler_spec γrpc host (U64 1) (SetState_spec γp γ γsrv) ∗
   handler_spec γrpc host (U64 2) (GetState_spec γ γsrv) ∗
   handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γp γpsrv γ γsrv ρ) ∗
   handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
@@ -577,6 +578,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #st.(server.epoch) ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #(U64 (length (get_rwops st.(server.ops_full_eph)))) ∗
   "HisPrimary" ∷ s ↦[pb.Server :: "isPrimary"] #st.(server.isPrimary) ∗
+  "HcanBecomePrimary" ∷ s ↦[pb.Server :: "canBecomePrimary"] #st.(server.canBecomePrimary) ∗
   "Hsealed" ∷ s ↦[pb.Server :: "sealed"] #st.(server.sealed) ∗
   "Hsm" ∷ s ↦[pb.Server :: "sm"] #sm ∗
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
