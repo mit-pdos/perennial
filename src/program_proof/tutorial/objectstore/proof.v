@@ -72,11 +72,44 @@ Module FinishWriteArgs.
     }.
 End FinishWriteArgs.
 
+Module ChunkHandle.
+  Record t :=
+    mk { addr: chan;
+         content_hash: string;
+      }.
+
+  #[global]
+  Instance into_val : IntoVal t.
+  Proof.
+    refine {| to_val x := (#(LitInt x.(addr)),
+                            (#(LitString x.(content_hash)),
+                              #()))%V;
+             from_val v :=
+               match v with
+               | (#(LitInt a), (#(LitString s), #()))%V => Some (mk a s)
+               | _ => None
+               end;
+             IntoVal_def := mk (U64 0) ""
+           |}.
+    move => [] //=.
+  Defined.
+End ChunkHandle.
+
+Module DirServer.
+  Record t :=
+    mk { ongoing: gmap u64 (gmap u64 ChunkHandle.t);
+         data: gmap u64 (list ChunkHandle.t);
+         nextWriteId: u64;
+      }
+  .
+End DirServer.
+
 Section proof.
 
 Context `{!heapGS Σ}.
 Context `{ghost_mapG Σ nat (chan * list u8)}.
 Context `{ghost_mapG Σ (u64 * nat) unit}.
+Context `{ghost_mapG Σ u64 gname}.
 
 Record dir_names :=
   {
@@ -96,11 +129,35 @@ Implicit Type γd : dir_names.
 
 (* This owned by the client, and is used to decide what the data for this WriteID will be *)
 Definition own_WriteId γd (id:u64) (chunkhandles:list (chan * (list u8) )) : iProp Σ :=
-  (* id + γ should determine the γid *)
-  ∃ γid, ghost_map_auth γid 1 (map_seq 0 chunkhandles)
-  (* [∗ list] index ↦ v ∈ chunkhandles, index ↪[γ] v *)
+  ∃ γid,
+    "#Hγid" ∷ id ↪[γd.(writeId_gn)]□ γid ∗
+    "Hauth" ∷ ghost_map_auth γid 1 (map_seq 0 chunkhandles)
   (* [∗ list] index ↦ '(addr, _) ∈ chunkhandles, is_chunk_host γchunk? addr *)
 .
+
+Definition own_PartialValue (v: val) (x: Map.t ChunkHandle.t) : iProp Σ :=
+  ∃ (l: loc), ⌜v = (#l, #())%V⌝ ∗ is_map l 1 x.
+
+Definition own_Value (v: val) (x: list ChunkHandle.t) : iProp Σ :=
+  ∃ sl, ⌜v = slice_val sl⌝ ∗
+  is_slice sl (struct.t ChunkHandle) 1 x.
+
+Definition own_Server_mem (s: loc) (st: DirServer.t) : iProp Σ :=
+    ∃ (ongoing_l: loc) (ongoing_vals: gmap u64 val),
+    "ongoing" ∷ s ↦[dir.Server :: "ongoing"] #ongoing_l ∗
+    "Hongoing" ∷ map.is_map ongoing_l 1 (ongoing_vals, zero_val (struct.t PartialValue)) ∗
+    "Hpartial" ∷ ([∗ map] writeId ↦ v; handle ∈ ongoing_vals; st.(DirServer.ongoing),
+                          own_PartialValue v handle) ∗
+    "nextWriteId" ∷ s ↦[dir.Server :: "nextWriteId"] #st.(DirServer.nextWriteId)
+.
+
+Definition own_Server (s:loc) γd : iProp Σ :=
+  ∃ (names: gmap u64 gname) (st: DirServer.t)
+    (ongoing_l: loc) (ongoing_vals: gmap u64 val),
+    "Hnames" ∷ ghost_map_auth γd.(writeId_gn) 1 names ∗
+    "Hmem" ∷ own_Server_mem s st ∗
+    "_" ∷ True.
+
 
 Definition is_Clerk (ck:loc) γd : iProp Σ := True.
 

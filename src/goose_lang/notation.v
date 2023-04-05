@@ -17,6 +17,8 @@ Coercion U64 : Z >-> u64.
 
 Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.
+(* TODO: this should be added *)
+(* Coercion LitString : string >-> base_lit. *)
 (* Coercion LitInt' (x:u64_class) : base_lit := LitInt x.
 Coercion LitInt32' (x:u32_class) : base_lit := LitInt32 x. *)
 Coercion LitInt : u64 >-> base_lit.
