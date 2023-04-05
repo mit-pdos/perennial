@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.simplepb Require Export pb_ghost.
+From Perennial.program_proof.simplepb Require Export pb_protocol primary_protocol.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_makeclerk_proof.
@@ -11,29 +11,31 @@ From Perennial.program_proof.simplepb Require Import config_marshal_proof.
 
 Section pb_becomeprimary_proof.
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr args σ backupγ:
+Lemma wp_Clerk__BecomePrimary γp γpsrv γ γsrv ck args_ptr args σ backupγ:
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
         "#Hconf" ∷ is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
         (* FIXME: want this to be "is_pb_host", but that will require recursion *)
         "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ,
-                       is_pb_host host γ γsrv' ∗
+                       is_pb_host host γp γpsrv γ γsrv' ∗
                        is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
         "#Hprop_lb" ∷ is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
         "#Hprop_facts" ∷ is_proposal_facts γ args.(BecomePrimaryArgs.epoch) σ ∗
-        "#Hprim_escrow" ∷ become_primary_escrow γ γsrv args.(BecomePrimaryArgs.epoch) σ ∗
+        "#Hprim_escrow" ∷ become_primary_escrow γp γpsrv args.(BecomePrimaryArgs.epoch) σ
+                          (own_primary_ghost γ γsrv args.(BecomePrimaryArgs.epoch) σ)
+                                                                                        ∗
         "Hargs" ∷ BecomePrimaryArgs.own args_ptr args
   }}}
     Clerk__BecomePrimary #ck #args_ptr
@@ -69,8 +71,10 @@ Proof.
     iSplitR; first done.
     iSplitR; first done.
     simpl.
+    assert (γpsrv = γpsrv0) by admit; subst.
+    assert (γp = γp0) by admit; subst.
     iFrame "Hhosts".
-    iFrame "Hprop_lb Hprop_facts Hprim_escrow".
+    iFrame "Hprim_escrow".
     (* BecomePrimary was rejected by the server (e.g. stale epoch number) *)
     iIntros (err) "%Herr_nz".
     iIntros.
@@ -98,13 +102,13 @@ Proof.
     }
     { exfalso. done. }
   }
-Qed.
+Admitted.
 
-Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ Ψ :
-  is_Server s γ γsrv -∗
+Lemma wp_Server__BecomePrimary γp γpsrv γ γsrv s args_ptr args σ backupγ Φ Ψ :
+  is_Server s γp γpsrv γ γsrv -∗
   BecomePrimaryArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
-  BecomePrimary_core_spec γ γsrv args σ backupγ is_pb_host Ψ -∗
+  BecomePrimary_core_spec γp γpsrv γ γsrv args σ backupγ is_pb_host Ψ -∗
   WP pb.Server__BecomePrimary #s #args_ptr {{ Φ }}
   .
 Proof.
@@ -116,16 +120,27 @@ Proof.
   iIntros "[Hlocked Hown]".
   wp_pures.
   iNamed "Hown".
+  iNamed "Hvol".
   iNamed "Hargs".
   wp_loadField.
 
-  iDestruct "HΨ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprimary_escrow & #Hprop_lb & #Hprop_facts & HΨ)".
+  iDestruct "HΨ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprimary_escrow & HΨ)".
 
   iAssert (_) with "HisSm" as "HisSm2".
   iNamed "HisSm2".
   wp_loadField.
+  wp_apply (wp_or with "[HcanBecomePrimary]").
+  { iNamedAccu. }
+  { wp_pures. by rewrite -bool_decide_not. }
+  { iIntros (_). iNamed 1. wp_loadField. wp_pures. iFrame.
+    iPureIntro.
+    repeat f_equal.
+    instantiate (2:=(st.(server.canBecomePrimary) = false)).
+    admit.
+  }
+  iNamed 1.
   wp_if_destruct.
-  { (* stale epoch *)
+  { (* stale epoch or unable to become primary *)
     wp_loadField.
     unfold BecomePrimary_core_spec.
     wp_apply (release_spec with "[-HΦ HΨ]").
@@ -133,7 +148,9 @@ Proof.
       iFrame "HmuInv Hlocked".
       iNext.
       repeat (iExists _).
-      iFrame "∗ HisSm #%".
+      iFrame "HghostEph".
+      repeat (iExists _).
+      iFrame "∗#%".
     }
     wp_pures.
     iApply "HΦ".
@@ -146,7 +163,7 @@ Proof.
 
     (* Double for loop to make slice of slices of clerks *)
     replace (#32) with (#numClerks); last done.
-
+    wp_storeField.
     wp_apply (wp_NewSlice).
     iIntros (new_clerkss_sl) "Hnew_clerkss_sl".
     iDestruct (is_slice_to_small with "Hnew_clerkss_sl") as "Hnew_clerkss_sl".
@@ -232,6 +249,7 @@ Proof.
       wp_pures.
       wp_load.
       wp_apply (wp_slice_len).
+      (* FIXME: this is quite complicated*)
       wp_if_destruct.
       { (* continue with loop *)
         assert (int.nat i < length backupγ) as Hi.
@@ -394,6 +412,7 @@ Proof.
         rewrite Hreplicas_backup_len.
         word.
       }
+      (* FIXME: the list/for loop reasoning above here should a helper lemma *)
 
       iRight.
       iSplitR; first done.
