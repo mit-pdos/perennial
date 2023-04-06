@@ -109,7 +109,7 @@ Qed.
 
 Lemma renew_lease e' γl e t N R :
   int.nat t < int.nat e →
-  int.nat e < int.nat e' →
+  int.nat e <= int.nat e' →
   is_lease N γl R -∗
   own_lease_expiration γl e -∗
   own_time t ={↑N}=∗

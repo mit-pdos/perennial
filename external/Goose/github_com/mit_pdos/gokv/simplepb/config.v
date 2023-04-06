@@ -180,6 +180,7 @@ Definition Server__GetLease: val :=
     then
       lock.release (struct.loadF Server "mu" "s");;
       "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.Stale;;
+      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") #0;;
       (* log.Println("Stale lease request", s.config) *)
       #()
     else
