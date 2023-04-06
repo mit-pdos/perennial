@@ -11,6 +11,11 @@ Class renewable_leaseG Σ :=
     mono_natG :> mono_natG Σ ;
   }.
 
+Definition renewable_leaseΣ := #[ghost_varΣ () ; mono_natΣ ].
+
+Global Instance subG_renewable_leaseΣ {Σ} : subG renewable_leaseΣ Σ → renewable_leaseG Σ.
+Proof. intros. solve_inG. Qed.
+
 Context `{!gooseGlobalGS Σ}.
 Context `{!renewable_leaseG Σ}.
 
@@ -142,5 +147,11 @@ Lemma lease_get_lb γl e :
   own_lease_expiration γl e -∗
   is_lease_valid_lb γl e.
 Proof. iApply mono_nat_lb_own_get. Qed.
+
+Lemma lease_lb_mono γl e e' :
+  int.nat e' <= int.nat e →
+  is_lease_valid_lb γl e -∗
+  is_lease_valid_lb γl e'.
+Proof. intros. by iApply mono_nat_lb_own_le. Qed.
 
 End renewable_lease_protocol.
