@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export config.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof Require Import marshal_stateless_proof std_proof.
-From Perennial.program_proof.simplepb Require Import config_marshal_proof.
+From Perennial.program_proof.simplepb Require Import config_marshal_proof renewable_lease.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 
 Section config_global.
@@ -59,6 +59,15 @@ Program Definition WriteConfig_core_spec γ (epoch:u64) (new_conf:list u64) Φ :
         (own_epoch γ latest_epoch ={∅,⊤}=∗ (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err))
   ).
 
+Definition epochLeaseN := nroot .@ "epochLeaseN".
+
+Program Definition GetLease_core_spec γ (epoch:u64) (new_conf:list u64) Φ : iProp Σ :=
+  (∀ leaseExpiration γl,
+    is_lease epochLeaseN γl (own_epoch γ epoch) -∗ Φ leaseExpiration
+  ) ∧
+  (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err)
+.
+
 Program Definition GetEpochAndConfig_spec γ :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   ( (* no args *)
@@ -90,6 +99,20 @@ Program Definition WriteConfig_spec γ :=
   ( ∃ epoch new_conf enc_new_conf,
     ⌜enc_args = u64_le epoch ++ enc_new_conf⌝ ∗
     ⌜Config.has_encoding enc_new_conf new_conf⌝ ∗
+    WriteConfig_core_spec γ epoch new_conf (λ err, ∀ reply,
+                                   ⌜reply = u64_le err⌝ -∗
+                                   Φ reply
+                                  )
+    )%I.
+Next Obligation.
+  unfold WriteConfig_core_spec.
+  solve_proper.
+Defined.
+
+Program Definition GetLease_spec γ :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  ( ∃ epoch ,
+    ⌜enc_args = u64_le epoch⌝ ∗
     WriteConfig_core_spec γ epoch new_conf (λ err, ∀ reply,
                                    ⌜reply = u64_le err⌝ -∗
                                    Φ reply
