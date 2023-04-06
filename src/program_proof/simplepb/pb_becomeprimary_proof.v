@@ -5,9 +5,8 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_makeclerk_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
-
-(* FIXME: for `list_copy_one_more_element` *)
-From Perennial.program_proof.simplepb Require Import config_marshal_proof.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Section pb_becomeprimary_proof.
 Context `{!heapGS Σ}.
@@ -25,17 +24,14 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__BecomePrimary γp γpsrv γ γsrv ck args_ptr args σ backupγ:
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
+        (* FIXME: is this epoch_lb needed? *)
         "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
         "#Hconf" ∷ is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
-        (* FIXME: want this to be "is_pb_host", but that will require recursion *)
         "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ,
                        is_pb_host host γp γpsrv γ γsrv' ∗
                        is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ args.(BecomePrimaryArgs.epoch) σ ∗
-        "#Hprop_facts" ∷ is_proposal_facts γ args.(BecomePrimaryArgs.epoch) σ ∗
         "#Hprim_escrow" ∷ become_primary_escrow γp γpsrv args.(BecomePrimaryArgs.epoch) σ
-                          (own_primary_ghost γ γsrv args.(BecomePrimaryArgs.epoch) σ)
-                                                                                        ∗
+                          (own_primary_ghost γ γsrv args.(BecomePrimaryArgs.epoch) σ) ∗
         "Hargs" ∷ BecomePrimaryArgs.own args_ptr args
   }}}
     Clerk__BecomePrimary #ck #args_ptr
@@ -102,6 +98,54 @@ Proof.
     }
     { exfalso. done. }
   }
+Admitted.
+
+Lemma become_primary_eph_step γp γpsrv γ γsrv st σ backupγ replicaHosts:
+  st.(server.canBecomePrimary) = true →
+  £ 1 -∗
+  is_proposal_facts_prim γp st.(server.epoch) st.(server.ops_full_eph) -∗
+  is_epoch_config γ st.(server.epoch) (γsrv :: backupγ) -∗
+  ([∗ list] host ; γsrv' ∈ replicaHosts ; γsrv :: backupγ,
+                  is_pb_host host γp γpsrv γ γsrv' ∗
+                  is_epoch_lb γsrv' st.(server.epoch)) -∗
+  become_primary_escrow γp γpsrv st.(server.epoch) σ
+                    (own_primary_ghost γ γsrv st.(server.epoch) σ) -∗
+  own_Server_ghost_eph_f st γp γpsrv γ γsrv ={↑pbN}=∗
+  own_Server_ghost_eph_f (st <| server.isPrimary := true|> <|server.canBecomePrimary := false |>
+                             <| server.committedNextIndex := 0 |>
+                         ) γp γpsrv γ γsrv.
+Proof.
+  intros HcanBecome.
+  iIntros "Hlc #Hprim_facts_in #Hconf #Hhosts #Hescrow_inv".
+  rewrite /own_Server_ghost_eph_f /tc_opaque.
+  iNamed 1.
+  rewrite /own_Primary_ghost_f /tc_opaque.
+  iNamed "Hprimary".
+  destruct (st.(server.isPrimary)).
+  {
+    iFrame "∗#%".
+    simpl.
+    rewrite HcanBecome.
+    iMod (ghost_become_primary with "Hlc Hescrow_inv Hprim_facts Hprim_escrow") as "(_ & $ & _)".
+    iModIntro. iExists [].
+    iNamed "Hprim".
+    iFrame "∗#".
+    rewrite nil_length.
+    admit. (* FIXME: this is a bogus proof, could prove these obligations or
+              else show that it's bogus. *)
+  }
+  rewrite HcanBecome.
+  iMod (ghost_become_primary with "Hlc Hescrow_inv Hprim_facts Hprim_escrow") as "HH".
+  simpl.
+  iClear "Hprim".
+  iDestruct "HH" as "(%Hprefix1 & Hescrow & Hprim)".
+  iDestruct (ghost_propose_lb_valid with "Hprim Hs_prop_lb") as "%Hprefix2".
+  assert (σ = st.(server.ops_full_eph)).
+  { apply list_prefix_eq; first done. by apply prefix_length. }
+  subst.
+  iFrame "∗#%".
+  iExists [].
+  admit. (* FIXME: need empty commit_lb *)
 Admitted.
 
 Lemma wp_Server__BecomePrimary γp γpsrv γ γsrv s args_ptr args σ backupγ Φ Ψ :
@@ -504,67 +548,53 @@ Proof.
       word.
     }
     iRight.
+    rewrite app_nil_r.
     iMod (readonly_alloc_1 with "Hclerkss_sl") as "Hclerkss_sl".
     iModIntro.
     iSplitR; first done.
 
-    wp_pures.
+    wp_pure1_credit "Hlc".
+
+    apply Decidable.not_or in Heqb.
+    destruct Heqb as [HepochEq Hcan].
+    apply Decidable.not_not in HepochEq.
+    2: { admit. }
+    injection HepochEq as HepochEq.
+    rewrite HepochEq.
+    iApply fupd_wp.
+    iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+    { set_solver. }
+    iMod (become_primary_eph_step with "Hlc [] Hconf Hhosts Hprimary_escrow HghostEph") as "HghostEph".
+    { by destruct st.(server.canBecomePrimary). }
+    { admit. } (* FIXME: precondition *)
+    iMod "Hmask".
+    iModIntro.
 
     wp_storeField.
-    wp_storeField.
-    wp_storeField.
-
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ]").
+    wp_apply (release_spec with "[-HΦ HΨ Hargs_epoch]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
       repeat (iExists _).
-
-      (* FIXME:
-         Add invariants related to Heph_unused that cover the cases:
-         * server has already become primary
-         * server is becoming primary for the first time
-         Need to hold the own_ephemeral_proposal for the current epoch in some
-         sort of "escrow".
-       *)
-      iFrame "HisPrimary ∗ HisSm #%".
-
-      iSplitR; first done.
-      iExists _, _, _.
-      iFrame "Hclerkss_sl Hconf".
-
-      (* FIXME: the Heph_proposal invariant is false. It's possible that there
-         are outstanding RO ops at the end of the log. But, those ops are from a
-         previous epoch, so it's effectively as though there's no ephemeral
-         proposal right now.
-
-         However, this complicates the meaning of nextRoIndex. It's not an
-         offset from the "start of epoch" proposal. So, the proof might need a
-         frozen ghost variable for the starting ephemeral proposal for an epoch.
-         That, in turn, would complicate all the list length arithmetic.
-       *)
-
-      iFrame "#".
-
-      iSplitL "".
-      {
-        iModIntro.
-        iIntros (?) "Hlc Hprim".
-        iMod (ghost_become_primary with "Hlc Hprimary_escrow Hprim") as "$".
-        by iModIntro.
-      }
-
-      iSplitL ""; first done.
-      iFrame "#".
-      iApply big_sepL_nil.
-      done.
+      iSplitR "HghostEph"; last iFrame.
+      repeat (iExists _).
+      iFrame "∗#%".
+      simpl.
+      iRight.
+      repeat iExists _.
+      iFrame "∗#%".
+      iPureIntro. rewrite -Hlens. by rewrite app_nil_r.
     }
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_fork).
+    { admit. } (* TODO: spec for lease renewal thread *)
     wp_pures.
     iModIntro.
     iApply "HΦ".
     iApply "HΨ".
   }
-Qed.
+Admitted.
 
 End pb_becomeprimary_proof.

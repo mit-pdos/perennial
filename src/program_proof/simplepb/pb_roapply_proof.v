@@ -1,7 +1,7 @@
 From Perennial.base_logic Require Import lib.saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.simplepb Require Import pb_ghost.
+From Perennial.program_proof.simplepb Require Import pb_protocol.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
