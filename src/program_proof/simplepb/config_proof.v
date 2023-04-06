@@ -42,10 +42,12 @@ Definition own_config γ (conf:list u64) : iProp Σ :=
 .
 
 Program Definition GetEpochAndConfig_core_spec γ Φ :=
-  (£ 1 ={⊤,∅}=∗ ∃ epoch conf, own_epoch γ epoch ∗ own_config γ conf ∗
+  (
+    (£ 1 ={⊤,∅}=∗ ∃ epoch conf, own_epoch γ epoch ∗ own_config γ conf ∗
     (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗ own_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
-      Φ (word.add epoch 1) conf
-      )
+      Φ (U64 0) (word.add epoch 1) conf
+      )) ∧
+      (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err (U64 0) [])
     )%I.
 
 Program Definition GetConfig_core_spec γ Φ :=
@@ -73,10 +75,10 @@ Program Definition GetLease_core_spec γ (epoch:u64) Φ : iProp Σ :=
 Program Definition GetEpochAndConfig_spec γ :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   ( (* no args *)
-    GetEpochAndConfig_core_spec γ (λ newEpoch conf,
+    GetEpochAndConfig_core_spec γ (λ err newEpoch conf,
                                   ∀ reply enc_conf,
                                    ⌜Config.has_encoding enc_conf conf⌝ -∗
-                                   ⌜reply = u64_le newEpoch ++ enc_conf⌝ -∗
+                                   ⌜reply = u64_le err ++ u64_le newEpoch ++ enc_conf⌝ -∗
                                    Φ reply
                                   )
     )%I.
@@ -175,11 +177,16 @@ Proof.
 Qed.
 
 Definition own_Server (s:loc) γ : iProp Σ :=
-  ∃ (epoch:u64) (conf:list u64) conf_sl,
+  ∃ (epoch leaseExpiration:u64) (conf:list u64) conf_sl,
   "Hepoch" ∷ s ↦[config.Server :: "epoch"] #epoch ∗
+  "HleaseExpiration" ∷ s ↦[config.Server :: "leaseExpiration"] #leaseExpiration ∗
   "Hconf" ∷ s ↦[config.Server :: "config"] (slice_val conf_sl) ∗
   "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 conf ∗
-  "Hepoch_ghost" ∷ own_epoch γ epoch ∗
+  "Hepoch_lease" ∷ (∃ γl, is_lease epochLeaseN γl (own_epoch γ epoch) ∗
+                          is_lease_valid_lb γl leaseExpiration ∗
+                          post_lease epochLeaseN γl (own_epoch γ epoch) ∨
+                          own_epoch γ epoch
+                   ) ∗
   "Hconf_ghost" ∷ own_config γ conf
 .
 
@@ -209,11 +216,60 @@ Proof.
   wp_call.
 
   iNamed "His_srv".
+  wp_apply wp_GetTimeRange.
+  iIntros (?????) "Htime".
+  rewrite /GetEpochAndConfig_spec /GetEpochAndConfig_core_spec.
+  iDestruct (own_time_get_lb with "Htime") as "#Htime_lb".
+  iFrame "Htime".
+  iModIntro.
+
   wp_loadField.
   wp_apply (acquire_spec with "[$His_mu]").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
   wp_pures.
+  wp_loadField.
+  wp_if_destruct.
+  { (* lock service *)
+    wp_loadField.
+    wp_apply (release_spec with "[- HΨ HΦ Hrep]").
+    {
+      iFrame "His_mu Hlocked".
+      iNext.
+      repeat iExists _.
+      iFrame.
+    }
+    wp_pures.
+    wp_apply wp_NewSliceWithCap.
+    { word. }
+    (* marshalling reply *)
+    iIntros (?) "Hrep_sl".
+    wp_store.
+    wp_load.
+    wp_apply (wp_WriteInt with "Hrep_sl").
+    iIntros (?) "Hrep_sl".
+    clear.
+    wp_store.
+    wp_load.
+    wp_apply (wp_WriteInt with "Hrep_sl").
+    iIntros (?) "Hrep_sl".
+    wp_store.
+    replace slice.nil with (slice_val Slice.nil) by done.
+    wp_apply (Config.wp_Encode with "[]").
+    { by iApply is_slice_small_nil. }
+    iIntros (??) "(%Henc & ? & Hsl)".
+    wp_load.
+    iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+    wp_apply (wp_WriteBytes with "[$Hrep_sl $Hsl]").
+    iIntros (?) "[Hrep_sl _]".
+    wp_store.
+    iRight in "HΨ".
+    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iApply ("HΦ" with "[HΨ] [$Hrep] [$Hrep_sl]").
+    rewrite replicate_0 app_nil_l -app_assoc.
+    iApply "HΨ"; iPureIntro; last done; done.
+  }
+
   wp_loadField.
   wp_apply (wp_SumAssumeNoOverflow).
   iIntros (Hno_overflow).
@@ -225,9 +281,13 @@ Proof.
   iIntros (ptr) "Hsl".
   wp_pure1_credit "Hlc".
   wp_store.
-  wp_loadField.
   wp_load.
   wp_apply (wp_WriteInt with "Hsl").
+  iIntros (?) "Hrep_sl".
+  wp_store.
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "Hrep_sl").
   iIntros (enc_sl) "Hrep_sl".
   wp_store.
   wp_loadField.

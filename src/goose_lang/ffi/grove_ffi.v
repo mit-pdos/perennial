@@ -350,6 +350,13 @@ Section lifting.
   Definition is_time_lb (t:u64) := @mono_nat_lb_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name (int.nat t).
   Definition own_time (t:u64) := @mono_nat_auth_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name 1 (int.nat t).
 
+  Lemma own_time_get_lb t :
+    own_time t -∗ is_time_lb t.
+  Proof.
+    rewrite /own_time /is_time_lb. destruct goose_groveGS.
+    iApply mono_nat_lb_own_get.
+  Qed.
+
   Definition connection_socket (c_l : chan) (c_r : chan) : val :=
     ExtV (ConnectionSocketV c_l c_r).
   Definition listen_socket (c : chan) : val :=
