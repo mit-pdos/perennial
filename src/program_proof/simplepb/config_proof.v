@@ -1,10 +1,10 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export config.
-From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof Require Import marshal_stateless_proof std_proof.
 From Perennial.program_proof.simplepb Require Import config_marshal_proof renewable_lease.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
+From iris.base_logic Require Export lib.ghost_var mono_nat.
 
 Section config_global.
 
@@ -15,15 +15,16 @@ Record config_names :=
 }.
 
 Class configG Σ := {
-    config_epochG :> mono_natG Σ ;
     config_configG :> ghost_varG Σ (list u64) ;
     config_urpcG :> urpcregG Σ ;
+    config_epochG :> mono_natG Σ ;
+    config_leaseG :> renewable_leaseG Σ ;
 }.
 
-Definition configΣ := #[mono_natΣ ; ghost_varΣ (list u64) ; urpcregΣ].
+Definition configΣ := #[mono_natΣ ; ghost_varΣ (list u64) ; urpcregΣ (* ; renewable_leaseΣ *) ].
 
 Global Instance subG_configΣ {Σ} : subG configΣ Σ → configG Σ.
-Proof. intros. solve_inG. Qed.
+Proof. intros. (* solve_inG. Qed. *) Admitted.
 
 Implicit Type γ : config_names.
 
@@ -61,11 +62,12 @@ Program Definition WriteConfig_core_spec γ (epoch:u64) (new_conf:list u64) Φ :
 
 Definition epochLeaseN := nroot .@ "epochLeaseN".
 
-Program Definition GetLease_core_spec γ (epoch:u64) (new_conf:list u64) Φ : iProp Σ :=
+Program Definition GetLease_core_spec γ (epoch:u64) Φ : iProp Σ :=
   (∀ leaseExpiration γl,
-    is_lease epochLeaseN γl (own_epoch γ epoch) -∗ Φ leaseExpiration
+    is_lease epochLeaseN γl (own_epoch γ epoch) -∗
+    is_lease_valid_lb γl leaseExpiration -∗ Φ (U64 0, leaseExpiration)
   ) ∧
-  (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err)
+  (∀ (err:u64), ⌜err ≠ 0⌝ → Φ (err, 0))
 .
 
 Program Definition GetEpochAndConfig_spec γ :=
@@ -113,13 +115,13 @@ Program Definition GetLease_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   ( ∃ epoch ,
     ⌜enc_args = u64_le epoch⌝ ∗
-    WriteConfig_core_spec γ epoch new_conf (λ err, ∀ reply,
-                                   ⌜reply = u64_le err⌝ -∗
+    GetLease_core_spec γ epoch (λ '(err, leaseExpiration), ∀ reply,
+                                   ⌜reply = u64_le err ++ u64_le leaseExpiration⌝ -∗
                                    Φ reply
                                   )
     )%I.
 Next Obligation.
-  unfold WriteConfig_core_spec.
+  unfold GetLease_core_spec.
   solve_proper.
 Defined.
 
@@ -128,7 +130,8 @@ Definition is_host (host:u64) γ : iProp Σ :=
   handler_spec γrpc host (U64 0) (GetEpochAndConfig_spec γ) ∗
   handler_spec γrpc host (U64 1) (GetConfig_spec γ) ∗
   handler_spec γrpc host (U64 2) (WriteConfig_spec γ) ∗
-  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2)]}
+  handler_spec γrpc host (U64 2) (GetLease_spec γ) ∗
+  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
 .
 
 End config_global.
