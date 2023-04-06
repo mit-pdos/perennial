@@ -1311,7 +1311,8 @@ Program Instance grove_interp_adequacy:
 Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
   iMod (gen_heap_init g.(grove_net)) as (names) "(H1&H2&H3)".
-  iExists (GroveGS _ names). iFrame. eauto.
+  iMod (mono_nat_own_alloc (int.nat g.(grove_global_time))) as (?) "[Ht _]".
+  iExists (GroveGS _ names _ _). iFrame. eauto.
 Qed.
 Next Obligation.
   rewrite //=.

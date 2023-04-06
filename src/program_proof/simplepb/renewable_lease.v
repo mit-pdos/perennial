@@ -1,7 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import auth dfrac_agree mono_list csum gset.
-From Perennial.goose_lang.ffi Require Export grove_ffi_time_axiom.
 From iris.base_logic.lib Require Import mono_nat.
 
 Section renewable_lease_protocol.
@@ -10,15 +9,10 @@ Class renewable_leaseG Σ :=
   {
     escrowG :> ghost_varG Σ () ;
     mono_natG :> mono_natG Σ ;
-    inv_natG :> invGS Σ ;
   }.
 
-Context `{γtime:gname}.
-
-Notation is_time_lb := (is_time_lb γtime).
-Notation own_time := (own_time γtime).
-
-Context `{renewable_leaseG Σ}.
+Context `{!gooseGlobalGS Σ}.
+Context `{!renewable_leaseG Σ}.
 
 Definition is_lease_valid_lb γl (t:u64) :=
   mono_nat_lb_own γl (int.nat t)
