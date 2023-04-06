@@ -1627,6 +1627,39 @@ Lemma wp_wand_r s E e Φ Ψ :
 Proof. iIntros "[Hwp H]". iApply (wp_wand with "Hwp H"). Qed.
 *)
 
+(** Access the state interpretation resources temporarily. This only gives the
+    global resources because the very next step might be a crash. *)
+Lemma wpc_acc_global_state_interp s E e Φ Φc :
+  TCEq (to_val e) None →
+  (∀ g ns mj D κs, global_state_interp g ns mj D κs ={E}=∗
+    (global_state_interp g ns mj D κs ∗
+     WPC e @ s; E {{ Φ }} {{ Φc }})) -∗
+  WPC e @ s; E {{ Φ }} {{ Φc }}.
+Proof.
+  iIntros (HnotVal) "H".
+  setoid_rewrite wpc_unfold. rewrite /wpc_pre.
+  rewrite HnotVal.
+  iIntros (mj).
+  iSplit.
+  {
+    iIntros (????????).
+    iIntros "? Hg ? ?".
+    iMod ("H" with "Hg") as "H".
+    iDestruct "H" as "[Hg H]".
+    iSpecialize ("H" $! mj).
+    iDestruct "H" as "[H _]".
+    iApply ("H" with "[$] [$] [$] [$]").
+  }
+  {
+    iIntros (????) "Hg ? ?".
+    iMod ("H" with "Hg") as "H".
+    iDestruct "H" as "[Hg H]".
+    iSpecialize ("H" $! mj).
+    iDestruct "H" as "[_ H]".
+    iApply ("H" with "[$] [$] [$]").
+  }
+Qed.
+
 End wpc.
 
 (** Proofmode class instances *)

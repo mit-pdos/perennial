@@ -299,6 +299,14 @@ Proof.
   iIntros "HR HWP". iApply (wp_wand with "HWP").
   iIntros (v) "HΦ". by iApply "HΦ".
 Qed.
+
+Lemma wp_acc_global_state_interp s E e Φ Φc :
+  TCEq (to_val e) None →
+  (∀ g ns mj D κs, global_state_interp g ns mj D κs ={E}=∗
+    (global_state_interp g ns mj D κs ∗
+     WPC e @ s; E {{ Φ }} {{ Φc }})) -∗
+  WPC e @ s; E {{ Φ }} {{ Φc }}.
+
 End wp.
 
 (** Proofmode class instances *)

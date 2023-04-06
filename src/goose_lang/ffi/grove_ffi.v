@@ -899,6 +899,14 @@ lemmas. *)
     by iFrame.
   Qed.
 
+  Lemma wp_time_acc e s E Φ:
+   (∀ t, own_time t ={E}=∗ own_time t ∗ WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}) -∗
+   WP e @ s; E {{ Φ }}.
+  Proof.
+    iIntros "Hacc_wp".
+    iApply wp_lift_atomic_head_step_no_fork.
+  Qed.
+
 End lifting.
 
 (** * Grove user-facing operations and their specs *)
