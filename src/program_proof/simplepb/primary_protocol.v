@@ -98,23 +98,30 @@ Proof.
   naive_solver.
 Qed.
 
-Lemma primary_ghost_init_primary γsys γsrv σ epoch_new :
-  own_init_proposal_unused γsys epoch_new
-  ==∗
-  is_init_proposal γsys epoch_new σ
-.
-Proof.
-  iIntros "Hinit".
-  iMod (fmlist_ptsto_update σ with "Hinit") as "Hinit".
-  { apply prefix_nil. }
-  iMod (fmlist_ptsto_persist with "Hinit") as "#Hinit".
-  done.
-Qed.
-
 Definition become_primary_escrow γsys γsrv epoch σ R : iProp Σ :=
   is_init_proposal γsys epoch σ ∗
   inv pbN (R ∨ is_tok γsrv epoch)
 .
+
+Lemma primary_ghost_init_primary R γsys γsrv σ epoch :
+  own_init_proposal_unused γsys epoch -∗
+  R
+  ={↑pbN}=∗
+  become_primary_escrow γsys γsrv epoch σ R ∗
+  is_proposal_facts_prim γsys epoch σ
+.
+Proof.
+  iIntros "Hinit HR".
+  iMod (fmlist_ptsto_update σ with "Hinit") as "Hinit".
+  { apply prefix_nil. }
+  iMod (fmlist_ptsto_persist with "Hinit") as "#Hinit".
+  iMod (inv_alloc with "[HR]") as "$".
+  { iLeft. iFrame. }
+  iModIntro.
+  iFrame "#".
+  iExists _; iFrame "#".
+  done.
+Qed.
 
 Lemma ghost_become_primary γsys γsrv epoch σprop σ R :
   £ 1 -∗
