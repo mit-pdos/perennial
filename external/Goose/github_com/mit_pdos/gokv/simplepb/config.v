@@ -100,7 +100,7 @@ Definition Clerk__WriteConfig: val :=
       "e"
     else "err").
 
-(* returns true if the lease was granted for the given epoch, and a conservative
+(* returns e.None if the lease was granted for the given epoch, and a conservative
    guess on when the lease expires. *)
 Definition Clerk__GetLease: val :=
   rec: "Clerk__GetLease" "ck" "epoch" :=
@@ -112,8 +112,8 @@ Definition Clerk__GetLease: val :=
     then
       let: ("err2", "enc") := marshal.ReadInt (![slice.T byteT] "reply") in
       let: ("leaseExpiration", <>) := marshal.ReadInt "enc" in
-      (("err2" = #0), "leaseExpiration")
-    else (("err" = #0), #0)).
+      ("err2", "leaseExpiration")
+    else ("err", #0)).
 
 (* server.go *)
 
@@ -185,10 +185,13 @@ Definition Server__GetLease: val :=
       #()
     else
       let: ("l", <>) := grove_ffi.GetTimeRange #() in
-      struct.storeF Server "leaseExpiration" "s" ("l" + LeaseInterval);;
-      "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.None;;
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "leaseExpiration" "s");;
+      let: "newLeaseExpiration" := "l" + LeaseInterval in
+      (if: "newLeaseExpiration" > struct.loadF Server "leaseExpiration" "s"
+      then struct.storeF Server "leaseExpiration" "s" "newLeaseExpiration"
+      else #());;
       lock.release (struct.loadF Server "mu" "s");;
+      "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.None;;
+      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") "newLeaseExpiration";;
       #()).
 
 Definition MakeServer: val :=

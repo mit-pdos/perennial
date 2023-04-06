@@ -433,8 +433,8 @@ Definition Server__leaseRenewalThread: val :=
   rec: "Server__leaseRenewalThread" "s" "epoch" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("gotLease", "leaseExpiration") := config.Clerk__GetLease (struct.loadF Server "confCk" "s") "epoch" in
-      (if: ~ "gotLease"
+      let: ("leaseErr", "leaseExpiration") := config.Clerk__GetLease (struct.loadF Server "confCk" "s") "epoch" in
+      (if: "leaseErr" ≠ e.None
       then Continue
       else
         lock.acquire (struct.loadF Server "mu" "s");;
