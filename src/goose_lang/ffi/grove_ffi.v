@@ -900,11 +900,17 @@ lemmas. *)
   Qed.
 
   Lemma wp_time_acc e s E Φ:
-   (∀ t, own_time t ={E}=∗ own_time t ∗ WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}) -∗
+  goose_lang.(language.to_val) e = None →
+   (∀ t, own_time t ={E}=∗ own_time t ∗ WP e @ s; E {{ Φ }}) -∗
    WP e @ s; E {{ Φ }}.
   Proof.
-    iIntros "Hacc_wp".
-    iApply wp_lift_atomic_head_step_no_fork.
+    iIntros (?) "Hacc_wp".
+    wp_apply wp_acc_global_state_interp.
+    { rewrite H. done. }
+    iIntros (?????) "[(? & ? & Ht) ?]".
+    unfold own_time.
+    iMod ("Hacc_wp" with "Ht") as "[Ht Hacc_wp]".
+    by iFrame.
   Qed.
 
 End lifting.
