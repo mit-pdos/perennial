@@ -39,18 +39,16 @@ Lemma lease_acc N e R γl t :
   int.nat t < int.nat e →
   is_lease_valid_lb γl e -∗
   is_lease N γl R -∗
-  £ 1 -∗
   own_time t ={↑N,∅}=∗
-  R ∗ (R ={∅,↑N}=∗ own_time t)
+  ▷ R ∗ (▷ R ={∅,↑N}=∗ own_time t)
 .
 Proof.
-  iIntros (HnotExpired) "#Hlease_lb #Hlease Hlc Htime".
+  iIntros (HnotExpired) "#Hlease_lb #Hlease Htime".
   iDestruct "Hlease" as (γtok) "#Hinv".
   iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
-  iDestruct "Hi" as (?) "[Hexpiration Hi]".
+  iDestruct "Hi" as (?) "[>Hexpiration Hi]".
   iDestruct (mono_nat_lb_own_valid with "Hexpiration Hlease_lb") as %[_ Hineq].
-  iDestruct "Hi" as "[HR | [Hbad _]]"; last first.
+  iDestruct "Hi" as "[HR | [>Hbad _]]"; last first.
   {
     iDestruct (mono_nat_lb_own_valid with "Htime Hbad") as %[_ Hbad].
     exfalso. lia.

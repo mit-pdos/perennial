@@ -357,6 +357,16 @@ Section lifting.
     iApply mono_nat_lb_own_get.
   Qed.
 
+  Lemma is_time_lb_mono t t':
+    int.nat t <= int.nat t' →
+    is_time_lb t' -∗ is_time_lb t.
+  Proof.
+    rewrite /own_time /is_time_lb. destruct goose_groveGS.
+    intros.
+    iApply mono_nat_lb_own_le.
+    word.
+  Qed.
+
   Definition connection_socket (c_l : chan) (c_r : chan) : val :=
     ExtV (ConnectionSocketV c_l c_r).
   Definition listen_socket (c : chan) : val :=

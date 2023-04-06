@@ -129,9 +129,9 @@ Definition Server := struct.decl [
 
 Definition Server__GetEpochAndConfig: val :=
   rec: "Server__GetEpochAndConfig" "s" "args" "reply" :=
-    let: (<>, "h") := grove_ffi.GetTimeRange #() in
+    let: ("l", <>) := grove_ffi.GetTimeRange #() in
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: "h" < struct.loadF Server "leaseExpiration" "s"
+    (if: "l" < struct.loadF Server "leaseExpiration" "s"
     then
       lock.release (struct.loadF Server "mu" "s");;
       "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 + #8);;
