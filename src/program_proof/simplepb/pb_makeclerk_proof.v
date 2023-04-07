@@ -16,9 +16,9 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
-Lemma wp_MakeClerk γp γpsrv γ γsrv host :
+Lemma wp_MakeClerk γ γsrv host :
 {{{
-      is_pb_host host γp γpsrv γ γsrv
+      is_pb_host host γ γsrv
 }}}
   MakeClerk #host
 {{{

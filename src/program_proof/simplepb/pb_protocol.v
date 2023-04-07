@@ -137,7 +137,7 @@ Definition own_replica_ghost γsys γsrv epoch σ (sealed:bool) : iProp Σ :=
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
 .
 
-Definition own_primary_ghost γsys γsrv epoch σ : iProp Σ :=
+Definition own_primary_ghost γsys epoch σ : iProp Σ :=
   "Hprop" ∷ own_proposal γsys epoch σ ∗
   "#Hvalid" ∷ is_proposal_facts γsys epoch σ
 .
@@ -432,12 +432,12 @@ Proof.
   }
 Qed.
 
-Lemma ghost_propose γsys γsrv epoch σ σ' :
+Lemma ghost_propose γsys epoch σ σ' :
   σ ⪯ σ' →
-  own_primary_ghost γsys γsrv epoch σ -∗
+  own_primary_ghost γsys epoch σ -∗
   is_proposal_valid γsys σ'
   ={↑pbN}=∗
-  own_primary_ghost γsys γsrv epoch σ' ∗
+  own_primary_ghost γsys epoch σ' ∗
   is_proposal_lb γsys epoch σ' ∗
   is_proposal_facts γsys epoch σ'
 .
@@ -479,8 +479,8 @@ Proof.
   iFrame "#".
 Qed.
 
-Lemma ghost_propose_lb_valid γsys γsrv epoch σ σ' :
-  own_primary_ghost γsys γsrv epoch σ -∗
+Lemma ghost_propose_lb_valid γsys epoch σ σ' :
+  own_primary_ghost γsys epoch σ -∗
   is_proposal_lb γsys epoch σ' -∗
   ⌜σ' ⪯ σ⌝
 .

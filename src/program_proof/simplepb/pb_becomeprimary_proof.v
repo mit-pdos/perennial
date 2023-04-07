@@ -21,17 +21,18 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__BecomePrimary γp γpsrv γ γsrv ck args_ptr args σ backupγ:
+Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr args σ backupγ:
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         (* FIXME: is this epoch_lb needed? *)
-        "#Hepoch_lb" ∷ is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch) ∗
-        "#Hconf" ∷ is_epoch_config γ args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ) ∗
+        "#Hepoch_lb" ∷ is_epoch_lb γsrv.1 args.(BecomePrimaryArgs.epoch) ∗
+        "#Hconf" ∷ is_epoch_config γ.1 args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ).*1 ∗
         "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ,
-                       is_pb_host host γp γpsrv γ γsrv' ∗
-                       is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch)) ∗
-        "#Hprim_escrow" ∷ become_primary_escrow γp γpsrv args.(BecomePrimaryArgs.epoch) σ
-                          (own_primary_ghost γ γsrv args.(BecomePrimaryArgs.epoch) σ) ∗
+                       is_pb_host host γ γsrv' ∗
+                       is_epoch_lb γsrv'.1 args.(BecomePrimaryArgs.epoch)) ∗
+        "#Hprim_escrow" ∷ become_primary_escrow γ.2 γsrv.2 args.(BecomePrimaryArgs.epoch) σ
+                          (own_primary_ghost γ.1 args.(BecomePrimaryArgs.epoch) σ) ∗
+        "#Hprim_facts" ∷ is_proposal_facts_prim γ.2 args.(BecomePrimaryArgs.epoch) σ ∗
         "Hargs" ∷ BecomePrimaryArgs.own args_ptr args
   }}}
     Clerk__BecomePrimary #ck #args_ptr
@@ -67,10 +68,7 @@ Proof.
     iSplitR; first done.
     iSplitR; first done.
     simpl.
-    assert (γpsrv = γpsrv0) by admit; subst.
-    assert (γp = γp0) by admit; subst.
-    iFrame "Hhosts".
-    iFrame "Hprim_escrow".
+    iFrame "#".
     (* BecomePrimary was rejected by the server (e.g. stale epoch number) *)
     iIntros (err) "%Herr_nz".
     iIntros.
@@ -98,22 +96,22 @@ Proof.
     }
     { exfalso. done. }
   }
-Admitted.
+Qed.
 
-Lemma become_primary_eph_step γp γpsrv γ γsrv st σ backupγ replicaHosts:
+Lemma become_primary_eph_step γ γsrv st σ backupγ replicaHosts:
   st.(server.canBecomePrimary) = true →
   £ 1 -∗
-  is_proposal_facts_prim γp st.(server.epoch) st.(server.ops_full_eph) -∗
-  is_epoch_config γ st.(server.epoch) (γsrv :: backupγ) -∗
+  is_proposal_facts_prim γ.2 st.(server.epoch) σ -∗
+  is_epoch_config γ.1 st.(server.epoch) (γsrv :: backupγ).*1 -∗
   ([∗ list] host ; γsrv' ∈ replicaHosts ; γsrv :: backupγ,
-                  is_pb_host host γp γpsrv γ γsrv' ∗
-                  is_epoch_lb γsrv' st.(server.epoch)) -∗
-  become_primary_escrow γp γpsrv st.(server.epoch) σ
-                    (own_primary_ghost γ γsrv st.(server.epoch) σ) -∗
-  own_Server_ghost_eph_f st γp γpsrv γ γsrv ={↑pbN}=∗
+                  is_pb_host host γ γsrv' ∗
+                  is_epoch_lb γsrv'.1 st.(server.epoch)) -∗
+  become_primary_escrow γ.2 γsrv.2 st.(server.epoch) σ
+                    (own_primary_ghost γ.1 st.(server.epoch) σ) -∗
+  own_Server_ghost_eph_f st γ γsrv ={↑pbN}=∗
   own_Server_ghost_eph_f (st <| server.isPrimary := true|> <|server.canBecomePrimary := false |>
                              <| server.committedNextIndex := 0 |>
-                         ) γp γpsrv γ γsrv.
+                         ) γ γsrv.
 Proof.
   intros HcanBecome.
   iIntros "Hlc #Hprim_facts_in #Hconf #Hhosts #Hescrow_inv".
@@ -127,10 +125,11 @@ Proof.
     simpl.
     rewrite HcanBecome.
     iMod (ghost_become_primary with "Hlc Hescrow_inv Hprim_facts Hprim_escrow") as "(_ & $ & _)".
-    iModIntro. iExists [].
+    iExists [].
     iNamed "Hprim".
     iFrame "∗#".
     rewrite nil_length.
+    (* FIXME: maybe use unital algebra to get own_unit? *)
     admit. (* FIXME: this is a bogus proof, could prove these obligations or
               else show that it's bogus. *)
   }
@@ -148,11 +147,11 @@ Proof.
   admit. (* FIXME: need empty commit_lb *)
 Admitted.
 
-Lemma wp_Server__BecomePrimary γp γpsrv γ γsrv s args_ptr args σ backupγ Φ Ψ :
-  is_Server s γp γpsrv γ γsrv -∗
+Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ Ψ :
+  is_Server s γ γsrv -∗
   BecomePrimaryArgs.own args_ptr args -∗
   (∀ (err:u64), Ψ err -∗ Φ #err) -∗
-  BecomePrimary_core_spec γp γpsrv γ γsrv args σ backupγ is_pb_host Ψ -∗
+  BecomePrimary_core_spec γ γsrv args σ backupγ is_pb_host Ψ -∗
   WP pb.Server__BecomePrimary #s #args_ptr {{ Φ }}
   .
 Proof.
@@ -168,7 +167,7 @@ Proof.
   iNamed "Hargs".
   wp_loadField.
 
-  iDestruct "HΨ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprimary_escrow & HΨ)".
+  iDestruct "HΨ" as "(#Hepoch_lb & #Hconf & #Hhosts & #Hprim_facts & #Hprimary_escrow & HΨ)".
 
   iAssert (_) with "HisSm" as "HisSm2".
   iNamed "HisSm2".
@@ -180,7 +179,7 @@ Proof.
     iPureIntro.
     repeat f_equal.
     instantiate (2:=(st.(server.canBecomePrimary) = false)).
-    admit.
+    admit. (* FIXME: negb b = bool_decide (b = false) *)
   }
   iNamed 1.
   wp_if_destruct.
@@ -229,7 +228,7 @@ Proof.
                                   (∃ clerks,
                                   "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
                                   "Hclerks" ∷ ⌜length clerks = length backupγ⌝ ∗
-                                  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backupγ, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv' args.(BecomePrimaryArgs.epoch))
+                                  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backupγ, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.1 args.(BecomePrimaryArgs.epoch))
                                   )
                                 )
             )%I with "[Hnew_clerkss_sl Hj]" as "HH".
@@ -272,7 +271,7 @@ Proof.
               "Hclerks_sl" ∷ is_slice_small new_clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
               "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) backupγ),
                                   pb_definitions.is_Clerk ck γ γsrv ∗
-                                  is_epoch_lb γsrv args.(BecomePrimaryArgs.epoch)
+                                  is_epoch_lb γsrv.1 args.(BecomePrimaryArgs.epoch)
                                   )
               )%I with "[Hnew_clerks_sl Hi]" as "HH".
       {
@@ -293,7 +292,7 @@ Proof.
       wp_pures.
       wp_load.
       wp_apply (wp_slice_len).
-      (* FIXME: this is quite complicated*)
+      (* FIXME: this is quite complicated *)
       wp_if_destruct.
       { (* continue with loop *)
         assert (int.nat i < length backupγ) as Hi.
@@ -564,9 +563,8 @@ Proof.
     iApply fupd_wp.
     iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
     { set_solver. }
-    iMod (become_primary_eph_step with "Hlc [] Hconf Hhosts Hprimary_escrow HghostEph") as "HghostEph".
+    iMod (become_primary_eph_step with "Hlc Hprim_facts Hconf Hhosts Hprimary_escrow HghostEph") as "HghostEph".
     { by destruct st.(server.canBecomePrimary). }
-    { admit. } (* FIXME: precondition *)
     iMod "Hmask".
     iModIntro.
 

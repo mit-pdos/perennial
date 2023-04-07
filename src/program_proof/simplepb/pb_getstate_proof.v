@@ -28,10 +28,10 @@ Context `{!pbG Σ}.
    which might hurt liveness.
  *)
 (* FIXME: rename to GetStateAndSeal *)
-Lemma wp_Clerk__GetState γp γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
+Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
-        "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv epoch_lb ∗
+        "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv.1 epoch_lb ∗
         "Hargs" ∷ GetStateArgs.own args_ptr (GetStateArgs.mkC epoch)
   }}}
     Clerk__GetState #ck #args_ptr
@@ -41,10 +41,10 @@ Lemma wp_Clerk__GetState γp γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
             ∃ epochacc opsfull enc,
             ⌜int.nat epoch_lb ≤ int.nat epochacc⌝ ∗
             ⌜int.nat epochacc ≤ int.nat epoch⌝ ∗
-            is_accepted_ro γsrv epochacc opsfull ∗
-            is_proposal_facts γ epochacc opsfull ∗
-            is_proposal_facts_prim γp epochacc opsfull ∗
-            is_proposal_lb γ epochacc opsfull ∗
+            is_accepted_ro γsrv.1 epochacc opsfull ∗
+            is_proposal_facts γ.1 epochacc opsfull ∗
+            is_proposal_facts_prim γ.2 epochacc opsfull ∗
+            is_proposal_lb γ.1 epochacc opsfull ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length (get_rwops opsfull)) enc) ∗
             ⌜has_snap_encoding enc (get_rwops opsfull)⌝ ∗
             ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝
@@ -96,7 +96,6 @@ Proof.
       iFrame "Hreply".
       iSplitR; first done.
       iSplitR; first done.
-      assert (γp = γp0) by admit; subst.
       eauto with iFrame.
     }
     { (* GetState was rejected by the server (e.g. stale epoch number) *)
@@ -141,7 +140,7 @@ Proof.
     }
     { exfalso. done. }
   }
-Admitted.
+Qed.
 
 (** Helper lemmas for GetState() server-side proof *)
 Lemma is_StateMachine_acc_getstate sm own_StateMachine P :
@@ -157,25 +156,25 @@ Proof.
 Qed.
 
 (* (trivial) GetState step for ephemeral ghost state *)
-Lemma getstate_eph st γp γpsrv γ γsrv :
-  own_Server_ghost_eph_f st γp γpsrv γ γsrv -∗
-  own_Server_ghost_eph_f (st <| server.sealed := true |>) γp γpsrv γ γsrv
+Lemma getstate_eph st γ γsrv :
+  own_Server_ghost_eph_f st γ γsrv -∗
+  own_Server_ghost_eph_f (st <| server.sealed := true |>) γ γsrv
 .
 Proof.
   by rewrite /own_Server_ghost_eph_f /tc_opaque /=.
 Qed.
 
 (* GetState step for ghost state *)
-Lemma getstate_step γp γ γsrv epoch_lb epoch ops sealed :
-  is_epoch_lb γsrv epoch_lb -∗
-  own_Server_ghost_f γp γ γsrv epoch ops sealed ={↑pbN}=∗
-  own_Server_ghost_f γp γ γsrv epoch ops true ∗
+Lemma getstate_step γ γsrv epoch_lb epoch ops sealed :
+  is_epoch_lb γsrv.1 epoch_lb -∗
+  own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv epoch ops true ∗
   ∃ opsfull,
   ⌜ops = get_rwops opsfull⌝ ∗
-  is_accepted_ro γsrv epoch opsfull ∗
-  is_proposal_lb γ epoch opsfull ∗
-  is_proposal_facts γ epoch opsfull ∗
-  is_proposal_facts_prim γp epoch opsfull ∗
+  is_accepted_ro γsrv.1 epoch opsfull ∗
+  is_proposal_lb γ.1 epoch opsfull ∗
+  is_proposal_facts γ.1 epoch opsfull ∗
+  is_proposal_facts_prim γ.2 epoch opsfull ∗
   ⌜int.nat epoch_lb ≤ int.nat epoch⌝
 .
 Proof.
@@ -196,11 +195,11 @@ Proof.
   by iPureIntro.
 Qed.
 
-Lemma wp_Server__GetState γp γpsrv γ γsrv s args_ptr args epoch_lb Φ Ψ :
-  is_Server s γp γpsrv γ γsrv -∗
+Lemma wp_Server__GetState γ γsrv s args_ptr args epoch_lb Φ Ψ :
+  is_Server s γ γsrv -∗
   GetStateArgs.own args_ptr args -∗
   (∀ reply, Ψ reply -∗ ∀ (reply_ptr:loc), GetStateReply.own reply_ptr reply -∗ Φ #reply_ptr) -∗
-  GetState_core_spec γp γ γsrv args.(GetStateArgs.epoch) epoch_lb Ψ -∗
+  GetState_core_spec γ γsrv args.(GetStateArgs.epoch) epoch_lb Ψ -∗
   WP pb.Server__GetState #s #args_ptr {{ Φ }}
   .
 Proof.
