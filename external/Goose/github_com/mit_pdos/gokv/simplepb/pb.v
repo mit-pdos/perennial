@@ -298,6 +298,7 @@ Definition Server := struct.decl [
   "clerks" :: slice.T (slice.T ptrT);
   "opAppliedConds" :: mapT ptrT;
   "leaseExpiration" :: uint64T;
+  "leaseValid" :: boolT;
   "committedNextIndex" :: uint64T;
   "committedNextIndex_cond" :: ptrT;
   "confCk" :: ptrT
@@ -324,38 +325,44 @@ Definition Server__ApplyRoWaitForCommit: val :=
         struct.storeF ApplyReply "Err" "reply" e.Sealed;;
         "reply"
       else
-        let: (<>, "h") := grove_ffi.GetTimeRange #() in
-        (if: struct.loadF Server "leaseExpiration" "s" < "h"
+        (if: ~ (struct.loadF Server "leaseValid" "s")
         then
           lock.release (struct.loadF Server "mu" "s");;
-          (* log.Printf("Lease expired because %d < %d", s.leaseExpiration, h) *)
           struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
           "reply"
         else
-          struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op");;
-          let: "readNextIndex" := struct.loadF Server "nextIndex" "s" in
-          let: "epoch" := struct.loadF Server "epoch" "s" in
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            (if: struct.loadF Server "epoch" "s" ≠ "epoch"
-            then
-              struct.storeF ApplyReply "Err" "reply" e.Stale;;
-              Break
-            else
-              (if: "readNextIndex" ≤ struct.loadF Server "committedNextIndex" "s"
+          let: (<>, "h") := grove_ffi.GetTimeRange #() in
+          (if: struct.loadF Server "leaseExpiration" "s" < "h"
+          then
+            lock.release (struct.loadF Server "mu" "s");;
+            (* log.Printf("Lease expired because %d < %d", s.leaseExpiration, h) *)
+            struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
+            "reply"
+          else
+            struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op");;
+            let: "readNextIndex" := struct.loadF Server "nextIndex" "s" in
+            let: "epoch" := struct.loadF Server "epoch" "s" in
+            Skip;;
+            (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+              (if: struct.loadF Server "epoch" "s" ≠ "epoch"
               then
-                struct.storeF ApplyReply "Err" "reply" e.None;;
+                struct.storeF ApplyReply "Err" "reply" e.Stale;;
                 Break
               else
-                (if: struct.loadF Server "sealed" "s"
+                (if: "readNextIndex" ≤ struct.loadF Server "committedNextIndex" "s"
                 then
-                  struct.storeF ApplyReply "Err" "reply" e.Sealed;;
+                  struct.storeF ApplyReply "Err" "reply" e.None;;
                   Break
                 else
-                  lock.condWait (struct.loadF Server "committedNextIndex_cond" "s");;
-                  Continue))));;
-          lock.release (struct.loadF Server "mu" "s");;
-          "reply"))).
+                  (if: struct.loadF Server "sealed" "s"
+                  then
+                    struct.storeF ApplyReply "Err" "reply" e.Sealed;;
+                    Break
+                  else
+                    lock.condWait (struct.loadF Server "committedNextIndex_cond" "s");;
+                    Continue))));;
+            lock.release (struct.loadF Server "mu" "s");;
+            "reply")))).
 
 (* called on the primary server to apply a new operation. *)
 Definition Server__Apply: val :=
@@ -438,10 +445,16 @@ Definition Server__leaseRenewalThread: val :=
       then Continue
       else
         lock.acquire (struct.loadF Server "mu" "s");;
-        struct.storeF Server "leaseExpiration" "s" "leaseExpiration";;
-        lock.release (struct.loadF Server "mu" "s");;
-        time.Sleep (#250 * #1000000);;
-        Continue));;
+        (if: (struct.loadF Server "epoch" "s" = "epoch")
+        then
+          struct.storeF Server "leaseExpiration" "s" "leaseExpiration";;
+          struct.storeF Server "leaseValid" "s" #true;;
+          lock.release (struct.loadF Server "mu" "s");;
+          time.Sleep (#250 * #1000000);;
+          Continue
+        else
+          lock.release (struct.loadF Server "mu" "s");;
+          Break)));;
     #().
 
 (* requires that we've already at least entered this epoch
@@ -509,6 +522,7 @@ Definition Server__SetState: val :=
         struct.storeF Server "isPrimary" "s" #false;;
         struct.storeF Server "canBecomePrimary" "s" #true;;
         struct.storeF Server "epoch" "s" (struct.loadF SetStateArgs "Epoch" "args");;
+        struct.storeF Server "leaseValid" "s" #false;;
         struct.storeF Server "sealed" "s" #false;;
         struct.storeF Server "nextIndex" "s" (struct.loadF SetStateArgs "NextIndex" "args");;
         struct.loadF StateMachine "SetStateAndUnseal" (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args") (struct.loadF SetStateArgs "NextIndex" "args") (struct.loadF SetStateArgs "Epoch" "args");;
@@ -588,6 +602,7 @@ Definition MakeServer: val :=
     struct.storeF Server "nextIndex" "s" "nextIndex";;
     struct.storeF Server "isPrimary" "s" #false;;
     struct.storeF Server "canBecomePrimary" "s" #false;;
+    struct.storeF Server "leaseValid" "s" #false;;
     struct.storeF Server "canBecomePrimary" "s" #true;;
     struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
     struct.storeF Server "confCk" "s" (config.MakeClerk "confHost");;

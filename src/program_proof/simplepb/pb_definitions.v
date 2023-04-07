@@ -319,6 +319,8 @@ Record t {pb_record:Sm.t} :=
 
     (* read-only optimization-related *)
     committedNextIndex : u64 ;
+    leaseExpiration:u64 ;
+    leaseValid:u64 ;
   }.
 
 Global Instance etaServer {pb_record:Sm.t} : Settable _ :=
@@ -544,6 +546,11 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv.1 st.(server.epoch)
   )%I
 .
+
+Definition is_Server_lease_resource (leaseExpiration:u64) : iProp Σ :=
+  "#HprereadInv" ∷
+.
+
 
 Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
   ∃ st,
