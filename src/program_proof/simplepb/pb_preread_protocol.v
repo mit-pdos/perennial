@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import auth dfrac_agree mono_list csum gset.
-From Perennial.program_proof.simplepb Require Import pb_ghost.
+From Perennial.program_proof.simplepb Require Import pb_protocol.
 From Perennial.Helpers Require Import ListSolver.
 
 Section pb_preread_protocol.
@@ -58,8 +58,7 @@ Definition preread_inv γ γlog γreads : iProp Σ :=
   ∃ σ ros,
   "HpbLog" ∷ own_ghost γ σ ∗
   "Hlog" ∷ own_log γlog σ ∗
-  (* For all i < length(σ), the read-op fupds for
-   *)
+  (* For all i < length(σ), the read-op fupds for *)
   "HownRos" ∷ own_proposed_reads γreads ros ∗
   "#HreadUpds" ∷ have_proposed_reads_fupds γlog ros ∗
   "#HcompletedRead" ∷ have_completed_reads_Qs ros σ

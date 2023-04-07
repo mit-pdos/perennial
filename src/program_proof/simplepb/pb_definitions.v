@@ -1,7 +1,7 @@
 From Perennial.base_logic Require Import lib.saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.simplepb Require Export pb_protocol primary_protocol.
+From Perennial.program_proof.simplepb Require Export pb_protocol primary_protocol pb_preread_protocol renewable_lease.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
@@ -10,6 +10,7 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof fmlist_map
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
+From Perennial.program_proof.simplepb Require config_proof.
 
 (* State-machine record. An instance of Sm.t defines how to compute the reply
    for an op applied to some state and how to encode ops into bytes. *)
@@ -319,12 +320,13 @@ Record t {pb_record:Sm.t} :=
 
     (* read-only optimization-related *)
     committedNextIndex : u64 ;
-    leaseExpiration:u64 ;
-    leaseValid:u64 ;
+    leaseValid : bool;
+    leaseExpiration : u64 ;
   }.
 
 Global Instance etaServer {pb_record:Sm.t} : Settable _ :=
-  settable! (mkC pb_record) <epoch; sealed; ops_full_eph; isPrimary; canBecomePrimary; committedNextIndex>.
+  settable! (mkC pb_record) <epoch; sealed; ops_full_eph; isPrimary;
+        canBecomePrimary; committedNextIndex; leaseValid; leaseExpiration>.
 End server.
 
 Section pb_local_definitions.
@@ -516,6 +518,8 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
   "HcommittedNextIndex" ∷ s ↦[pb.Server :: "committedNextIndex"] #st.(server.committedNextIndex) ∗
   "HcommittedNextIndex_cond" ∷ s ↦[pb.Server :: "committedNextIndex_cond"] #committedNextIndex_cond ∗
+  "HleaseValid" ∷ s ↦[pb.Server :: "leaseValid"] #st.(server.leaseValid) ∗
+  "HleaseExpiration" ∷ s ↦[pb.Server :: "leaseExpiration"] #st.(server.leaseExpiration) ∗
   (* backup sequencer *)
   "HopAppliedConds" ∷ s ↦[pb.Server :: "opAppliedConds"] #opAppliedConds_loc ∗
   "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 opAppliedConds ∗
@@ -537,18 +541,29 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "%HnextIndexNoOverflow" ∷ ⌜no_overflow (length (get_rwops (st.(server.ops_full_eph))))⌝
 .
 
+(* FIXME: get rid of this *)
+Context `{Countable (list (OpType * gname) → iProp Σ)}.
+Context `{config_proof.configG Σ}.
+Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
+  (* FIXME: want a separate client-side config protocol. Want admin_proof.is_conf_inv γ γconf. *)
+  ∃ γreads γlog γl γconf,
+  "#HprereadInv" ∷ preread_inv γ.1 γlog γreads ∗
+  "#Hlease" ∷ □(if leaseValid then
+                is_lease config_proof.epochLeaseN γl (config_proof.own_epoch γconf epoch) ∗
+                is_lease_valid_lb γl leaseExpiration
+              else
+                True)
+.
+
 (* should not be unfolded in proof *)
 Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   tc_opaque (
   let ops:=(get_rwops st.(server.ops_full_eph)) in
   "Hprimary" ∷ own_Primary_ghost_f γ γsrv st.(server.canBecomePrimary) st.(server.isPrimary) st.(server.epoch) st.(server.committedNextIndex) st.(server.ops_full_eph) ∗
   (* epoch lower bound *)
-  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv.1 st.(server.epoch)
+  "#Hs_epoch_lb" ∷ is_epoch_lb γsrv.1 st.(server.epoch) ∗
+  "#Hlease" ∷ is_Server_lease_resource γ st.(server.epoch) st.(server.leaseValid) st.(server.leaseExpiration)
   )%I
-.
-
-Definition is_Server_lease_resource (leaseExpiration:u64) : iProp Σ :=
-  "#HprereadInv" ∷
 .
 
 
@@ -559,10 +574,13 @@ Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val),
+  ∃ (mu:val) (confCk:loc) γconf,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
-  "#Hsys_inv" ∷ sys_inv γ.1.
+  "#Hsys_inv" ∷ sys_inv γ.1 ∗
+  "#HconfCk" ∷ readonly (s ↦[pb.Server :: "confCk"] #confCk) ∗
+  "#HconfCk_is" ∷ config_proof.is_Clerk confCk γconf
+.
 
 Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :
   {{{
