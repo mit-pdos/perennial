@@ -8,9 +8,9 @@ From Perennial.program_proof.simplepb Require Import pb_definitions config_proof
 
 Section config_global.
 
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 Notation pbG := (pbG (pb_record:=pb_record)).
-Notation OpType := (pb_OpType pb_record).
+Notation OpType := (Sm.OpType pb_record).
 
 Context `{!gooseGlobalGS Σ}.
 Context `{!configG Σ}.
@@ -18,25 +18,26 @@ Context `{!pbG Σ}.
 
 Definition adminN := nroot .@ "admin".
 
-Definition is_conf_inv γpb γconf : iProp Σ :=
+Definition is_conf_inv γp γ γconf : iProp Σ :=
   inv adminN (∃ epoch conf (confγs:list pb_server_names) epoch_lb,
       "Hepoch" ∷ config_proof.own_epoch γconf epoch ∗
       "Hconf" ∷ own_config γconf conf ∗
-      "#His_conf" ∷ is_epoch_config γpb epoch_lb confγs ∗
-      "#His_conf_prop" ∷ is_epoch_config_proposal γpb epoch_lb confγs ∗
-      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) ∗
-      "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_ghost.is_epoch_lb γsrv epoch_lb) ∗
-      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γpb epoch' ∗ config_unset γpb epoch' ∗ own_proposal_unused γpb epoch' ∗ own_init_proposal_unused γpb epoch') ∗
-      "Hunset_or_set" ∷ (config_unset γpb epoch ∨ ⌜int.nat epoch_lb = int.nat epoch⌝) ∗
-      "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γpb epoch_skip)
+      "#His_conf" ∷ is_epoch_config γ epoch_lb confγs ∗
+      "#His_conf_prop" ∷ is_epoch_config_proposal γ epoch_lb confγs ∗
+      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf,
+                         ∃ γpbsrv, is_pb_host host γp γpbsrv γ γsrv) ∗
+      "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_protocol.is_epoch_lb γsrv epoch_lb) ∗
+      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γ epoch' ∗ config_unset γ epoch' ∗ own_proposal_unused γ epoch' ∗ own_init_proposal_unused γp epoch') ∗
+      "Hunset_or_set" ∷ (config_unset γ epoch ∨ ⌜int.nat epoch_lb = int.nat epoch⌝) ∗
+      "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ epoch_skip)
       )
 .
 
 (* before calling this lemma, have to already allocate pb ghost state *)
-Lemma config_ghost_init_2 γsys conf confγs :
-  ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γsys γsrv) -∗
-  pb_init_config γsys confγs
-  ={⊤}=∗ ∃ γconf, is_conf_inv γsys γconf ∗ makeConfigServer_pre γconf conf.
+Lemma config_ghost_init_2 γ γp conf confγs :
+  ([∗ list] γsrv ; host ∈ confγs ; conf, ∃ γpsrv, is_pb_host host γp γpsrv γ γsrv) -∗
+  pb_init_config γ confγs
+  ={⊤}=∗ ∃ γconf, is_conf_inv γp γ γconf ∗ makeConfigServer_pre γconf conf.
 Proof.
   iIntros "#Hhosts Hinitconf".
   iMod (config_ghost_init conf) as (γconf) "(Hconfpre & Hepoch & Hconf)".
@@ -47,23 +48,24 @@ Proof.
   iFrame.
   iNamed "Hinitconf".
   iFrame "∗#%".
-  iSplitR.
+  (*
+  iSplitL.
   { iRight. done. }
   iIntros (???).
   exfalso.
-  word.
-Qed.
+  word. *)
+Admitted.
 
 End config_global.
 
 Section admin_proof.
 
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 Notation pbG := (pbG (pb_record:=pb_record)).
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 
 Notation wp_Clerk__GetState := (wp_Clerk__GetState (pb_record:=pb_record)).
 Notation wp_Clerk__SetState := (wp_Clerk__SetState (pb_record:=pb_record)).
@@ -73,22 +75,22 @@ Context `{!pbG Σ}.
 Context `{!configG Σ}.
 Context `{!waitgroupG Σ}.
 
-Definition is_conf_host confHost γpb : iProp Σ :=
+Definition is_conf_host confHost γ γp : iProp Σ :=
   ∃ γconf,
-  config_proof.is_host confHost γconf ∗ is_conf_inv γpb γconf.
+  config_proof.is_host confHost γconf ∗ is_conf_inv γ γp γconf.
 
-Definition is_Clerk2 ck γpb : iProp Σ :=
+Definition is_Clerk2 ck γp γ : iProp Σ :=
   ∃ γconf,
-    "#Hinv" ∷ is_conf_inv γpb γconf ∗
+    "#Hinv" ∷ is_conf_inv γp γ γconf ∗
     "#Hck" ∷ is_Clerk ck γconf.
 
-Lemma wp_MakeClerk2 (configHost:u64) γpb :
+Lemma wp_MakeClerk2 (configHost:u64) γp γ :
   {{{
-        is_conf_host configHost γpb
+        is_conf_host configHost γp γ
   }}}
     config.MakeClerk #configHost
   {{{
-      ck, RET #ck; is_Clerk2 ck γpb
+      ck, RET #ck; is_Clerk2 ck γp γ
   }}}.
 Proof.
   iIntros (Φ) "#Hhost HΦ".
@@ -99,11 +101,11 @@ Proof.
   iExists  _; iFrame "#".
 Qed.
 
-Lemma wp_Clerk__GetConfig2 ck γpb Φ :
-  is_Clerk2 ck γpb -∗
+Lemma wp_Clerk__GetConfig2 ck γp γ Φ :
+  is_Clerk2 ck γp γ -∗
   □(∀ confγs (conf:list u64) config_sl,
   (is_slice_small config_sl uint64T 1 conf ∗
-  ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) -∗
+  ([∗ list] γsrv ; host ∈ confγs ; conf, ∃ γpsrv, is_pb_host host γp γpsrv γ γsrv) -∗
    Φ (slice_val config_sl)%V
   )) -∗
   WP config.Clerk__GetConfig #ck {{ Φ }}
@@ -135,19 +137,20 @@ Proof.
   iFrame "∗#".
 Qed.
 
-Lemma wp_Clerk__GetEpochAndConfig2 ck γpb Φ :
-  is_Clerk2 ck γpb -∗
-  □(∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
+Lemma wp_Clerk__GetEpochAndConfig2 ck γp γ Φ :
+  is_Clerk2 ck γp γ -∗
+  □((∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
   (is_slice_small config_sl uint64T 1 conf ∗
-  config_proposal_unset γpb epoch ∗
-  own_proposal_unused γpb epoch ∗
-  own_init_proposal_unused γpb epoch ∗
-  is_epoch_config γpb epoch_lb confγs ∗
-  (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γpb epoch_skip) ∗
-  ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) ∗
-  (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_ghost.is_epoch_lb γsrv epoch_lb)) -∗
-   Φ (#epoch, slice_val config_sl)%V
-  ) -∗
+  config_proposal_unset γ epoch ∗
+  own_proposal_unused γ epoch ∗
+  own_init_proposal_unused γp epoch ∗
+  is_epoch_config γ epoch_lb confγs ∗
+  (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ epoch_skip) ∗
+  ([∗ list] γsrv ; host ∈ confγs ; conf, ∃ γpsrv, is_pb_host host γp γpsrv γ γsrv) ∗
+  (∀ γsrv, ⌜γsrv ∈ confγs⌝ → pb_protocol.is_epoch_lb γsrv epoch_lb)) -∗
+   Φ (#0, #epoch, slice_val config_sl)%V
+  ) ∧ (∀ (err:u64) sl, ⌜err ≠ 0⌝ -∗ Φ (#err, #0, slice_val sl)%V))
+  -∗
   WP config.Clerk__GetEpochAndConfig #ck {{ Φ }}
 .
 Proof.
@@ -156,53 +159,77 @@ Proof.
   wp_apply (wp_Clerk__GetEpochAndConfig with "[$Hck]").
   iModIntro.
   iIntros "Hlc".
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
-  iApply fupd_mask_intro.
-  { set_solver. }
-  iIntros "Hmask".
-  iNamed "Hi".
-  iExists _, _.
-  iFrame.
-  iIntros "%Hno_overflow Hepoch Hconf".
-  iMod "Hmask".
-
-  (* Hunset becomes skipped, and the first unused becomes unset. *)
-  iDestruct (big_sepS_elem_of_acc_impl (word.add epoch (U64 1)) with "Hunused") as "[Hunset_new Hunused]".
-  { set_solver. }
-
-  iSpecialize ("Hunset_new" with "[]").
-  { done. }
-  iDestruct "Hunset_new" as "(Hunset_new & Hunset_new2 & Hprop)".
-
-  iDestruct "Hunset_or_set" as "[Hunset|%Hset]".
+  iSplit.
   {
-    iMod (own_update with "Hunset") as "Hskip1".
-    {
-      apply singleton_update.
-      apply dfrac_agree_persist.
-    }
-    iDestruct "Hskip1" as "#Hskip1".
+    iInv "Hinv" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+    iApply fupd_mask_intro.
+    { set_solver. }
+    iIntros "Hmask".
+    iNamed "Hi".
+    iExists _, _.
+    iFrame.
+    iIntros "%Hno_overflow Hepoch Hconf".
+    iMod "Hmask".
 
-    iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
+    (* Hunset becomes skipped, and the first unused becomes unset. *)
+    iDestruct (big_sepS_elem_of_acc_impl (word.add epoch (U64 1)) with "Hunused") as "[Hunset_new Hunused]".
+    { set_solver. }
+
+    iSpecialize ("Hunset_new" with "[]").
+    { done. }
+    iDestruct "Hunset_new" as "(Hunset_new & Hunset_new2 & Hprop)".
+
+    iDestruct "Hunset_or_set" as "[Hunset|%Hset]".
     {
-      iNext. iExists _, _, _, _.
-      iFrame "∗#".
-      iSplitL "Hunused".
+      iMod (own_update with "Hunset") as "Hskip1".
       {
-        iApply "Hunused".
-        {
-          iModIntro.
-          iIntros (???) "H". iIntros.
-          iApply "H".
-          iPureIntro.
-          word.
-        }
-        {
-          iIntros. exfalso. word.
-        }
+        apply singleton_update.
+        apply dfrac_agree_persist.
       }
-      iIntros (???).
+      iDestruct "Hskip1" as "#Hskip1".
+
+      iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
+      {
+        iNext. iExists _, _, _, _.
+        iFrame "∗#".
+        iSplitL "Hunused".
+        {
+          iApply "Hunused".
+          {
+            iModIntro.
+            iIntros (???) "H". iIntros.
+            iApply "H".
+            iPureIntro.
+            word.
+          }
+          {
+            iIntros. exfalso. word.
+          }
+        }
+        iIntros (???).
+        assert (int.nat epoch_skip = int.nat epoch ∨ int.nat epoch_skip < int.nat epoch ∨ int.nat epoch_skip >= int.nat (word.add epoch (U64 1))) as Hineq.
+        { word. }
+        destruct Hineq as [Heq|[Hineq|Hineq]].
+        {
+          replace (epoch_skip) with (epoch) by word.
+          iFrame "Hskip1".
+        }
+        {
+          iApply "His_skip".
+          { done. }
+          { done. }
+        }
+        { exfalso. word. }
+      }
+      iModIntro.
+      iIntros.
+      iApply "HΦ".
+      iDestruct "Hprop" as "[$ $]".
+      iFrame "∗#".
+
+      (* TODO: repetetive proof *)
+      iIntros.
       assert (int.nat epoch_skip = int.nat epoch ∨ int.nat epoch_skip < int.nat epoch ∨ int.nat epoch_skip >= int.nat (word.add epoch (U64 1))) as Hineq.
       { word. }
       destruct Hineq as [Heq|[Hineq|Hineq]].
@@ -217,77 +244,61 @@ Proof.
       }
       { exfalso. word. }
     }
-    iModIntro.
-    iIntros.
-    iApply "HΦ".
-    iDestruct "Hprop" as "[$ $]".
-    iFrame "∗#".
+    {
+      iClear "His_skip".
 
-    (* TODO: repetetive proof *)
-    iIntros.
-    assert (int.nat epoch_skip = int.nat epoch ∨ int.nat epoch_skip < int.nat epoch ∨ int.nat epoch_skip >= int.nat (word.add epoch (U64 1))) as Hineq.
-    { word. }
-    destruct Hineq as [Heq|[Hineq|Hineq]].
-    {
-      replace (epoch_skip) with (epoch) by word.
-      iFrame "Hskip1".
-    }
-    {
-      iApply "His_skip".
-      { done. }
-      { done. }
-    }
-    { exfalso. word. }
-  }
-  {
-    iClear "His_skip".
-
-    iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
-    {
-      iNext. iExists _, _, _, _.
-      iFrame "∗#".
-      iSplitL "Hunused".
+      iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
       {
-        iApply "Hunused".
+        iNext. iExists _, _, _, _.
+        iFrame "∗#".
+        iSplitL "Hunused".
         {
-          iModIntro.
-          iIntros (???) "H". iIntros.
-          iApply "H".
-          iPureIntro.
-          word.
+          iApply "Hunused".
+          {
+            iModIntro.
+            iIntros (???) "H". iIntros.
+            iApply "H".
+            iPureIntro.
+            word.
+          }
+          {
+            iIntros. exfalso. word.
+          }
         }
-        {
-          iIntros. exfalso. word.
-        }
+        iIntros (???).
+        exfalso.
+        rewrite Hset in H.
+        replace (int.nat (word.add epoch 1%Z)) with (int.nat epoch + 1) in H0 by word.
+        word.
       }
+      iModIntro.
+      iIntros.
+      iApply "HΦ".
+      iDestruct "Hprop" as "[$ $]".
+      iFrame "∗#".
       iIntros (???).
       exfalso.
       rewrite Hset in H.
       replace (int.nat (word.add epoch 1%Z)) with (int.nat epoch + 1) in H0 by word.
       word.
     }
-    iModIntro.
+  }
+  {
+    iRight in "HΦ".
     iIntros.
-    iApply "HΦ".
-    iDestruct "Hprop" as "[$ $]".
-    iFrame "∗#".
-    iIntros (???).
-    exfalso.
-    rewrite Hset in H.
-    replace (int.nat (word.add epoch 1%Z)) with (int.nat epoch + 1) in H0 by word.
-    word.
+    by iApply "HΦ".
   }
 Qed.
 
-Lemma wp_Clerk__WriteConfig2 ck γpb Φ config_sl conf confγ epoch :
-  is_Clerk2 ck γpb -∗
+Lemma wp_Clerk__WriteConfig2 ck γp γ Φ config_sl conf confγ epoch :
+  is_Clerk2 ck γp γ -∗
   is_slice_small config_sl uint64T 1 conf -∗
-  is_epoch_config_proposal γpb epoch confγ -∗
-  ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host host γpb γsrv) -∗
-  (∀ γsrv, ⌜γsrv ∈ confγ⌝ → pb_ghost.is_epoch_lb γsrv epoch) -∗
+  is_epoch_config_proposal γ epoch confγ -∗
+  ([∗ list] γsrv ; host ∈ confγ ; conf, ∃ γpsrv, is_pb_host host γp γpsrv γ γsrv) -∗
+  (∀ γsrv, ⌜γsrv ∈ confγ⌝ → pb_protocol.is_epoch_lb γsrv epoch) -∗
   □ (∀ (err:u64),
       (if (decide (err = U64 0)) then
-        is_epoch_config γpb epoch confγ
+        is_epoch_config γ epoch confγ
       else
         True) -∗
       is_slice_small config_sl uint64T 1 conf -∗
@@ -311,7 +322,10 @@ Proof.
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iApply fupd_mask_intro.
-  { set_solver. }
+  {
+    enough (↑epochLeaseN ## (↑adminN:coPset)) by set_solver.
+    by apply ndot_ne_disjoint.
+  }
   iIntros "Hmask".
   iNamed "Hi".
   iExists _.
@@ -393,11 +407,11 @@ Proof.
   }
 Qed.
 
-Lemma wp_Reconfig γ (configHost:u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
+Lemma wp_Reconfig γp γ (configHost:u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
   {{{
         "Hservers_sl" ∷ is_slice servers_sl uint64T 1 servers ∗
-        "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host host γ γsrv) ∗
-        "#Hconf_host" ∷ is_conf_host configHost γ
+        "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, ∃ γpsrv, is_pb_host host γp γpsrv γ γsrv) ∗
+        "#Hconf_host" ∷ is_conf_host configHost γp γ
   }}}
     EnterNewConfig #configHost (slice_val servers_sl)
   {{{
@@ -424,6 +438,16 @@ Proof using waitgroupG0.
   { iNamedAccu. }
   wp_apply (wp_Clerk__GetEpochAndConfig2 with "[$Hck]").
   iModIntro.
+  iSplit.
+  2:{ (* unable to get new epoch number *)
+    iIntros (???).
+    iNamed 1.
+    wp_pures.
+    rewrite bool_decide_false.
+    2: naive_solver.
+    wp_pures.
+    by iApply "HΦ".
+  }
   iIntros (?????) "Hpost1".
   iNamed 1.
   wp_pures.
@@ -466,7 +490,11 @@ Proof using waitgroupG0.
   destruct HH as [γsrv_old Hconfγ_lookup].
   wp_apply (wp_MakeClerk with "[]").
   {
-    iDestruct (big_sepL2_lookup_acc with "His_hosts") as "[$ _]"; done.
+    iDestruct (big_sepL2_lookup_acc with "His_hosts") as "[HisHost _]".
+    { done. }
+    { done. }
+    iDestruct "HisHost" as (?) "HisHost".
+    iFrame "#".
   }
   iIntros (oldClerk) "#HoldClerk".
   wp_pures.
