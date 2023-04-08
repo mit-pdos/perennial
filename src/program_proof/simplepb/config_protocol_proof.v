@@ -13,24 +13,9 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Notation OpType := (Sm.OpType pb_record).
 
 Context `{!gooseGlobalGS Σ}.
-Context `{!configG Σ}.
 Context `{!pbG Σ}.
 
 Definition configN := nroot .@ "config".
-
-Definition is_conf_inv γ γconf : iProp Σ :=
-  inv configN (∃ epoch conf confγs epoch_lb,
-      "Hepoch" ∷ own_latest_epoch γconf epoch ∗
-      "Hconf" ∷ own_config γconf conf ∗
-      "#His_conf" ∷ is_epoch_config γ.1 epoch_lb confγs.*1 ∗
-      "#His_conf_prop" ∷ is_epoch_config_proposal γ.1 epoch_lb confγs.*1 ∗
-      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
-      "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs.*1⌝ → pb_protocol.is_epoch_lb γsrv epoch_lb) ∗
-      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γ.1 epoch' ∗ config_unset γ.1 epoch' ∗ own_proposal_unused γ.1 epoch' ∗ own_init_proposal_unused γ.2 epoch') ∗
-      "Hunset_or_set" ∷ (config_unset γ.1 epoch ∨ ⌜int.nat epoch_lb = int.nat epoch⌝) ∗
-      "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ.1 epoch_skip)
-      )
-.
 
 (* before calling this lemma, have to already allocate pb ghost state *)
 Lemma config_ghost_init_2 γ conf confγs :
@@ -68,7 +53,6 @@ Notation compute_reply := (Sm.compute_reply pb_record).
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
-Context `{!configG Σ}.
 
 Definition is_conf_host confHost γ : iProp Σ :=
   ∃ γconf,

@@ -297,6 +297,22 @@ Qed.
 
 (* End RPC specs *)
 
+(* Begin config client-side protocol. *)
+Definition is_conf_inv γ γconf : iProp Σ :=
+  inv configN (∃ epoch conf confγs epoch_lb,
+      "Hepoch" ∷ own_latest_epoch γconf epoch ∗
+      "Hconf" ∷ own_config γconf conf ∗
+      "#His_conf" ∷ is_epoch_config γ.1 epoch_lb confγs.*1 ∗
+      "#His_conf_prop" ∷ is_epoch_config_proposal γ.1 epoch_lb confγs.*1 ∗
+      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
+      "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ confγs.*1⌝ → is_epoch_lb γsrv epoch_lb) ∗
+      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γ.1 epoch' ∗ config_unset γ.1 epoch' ∗ own_proposal_unused γ.1 epoch' ∗ own_init_proposal_unused γ.2 epoch') ∗
+      "Hunset_or_set" ∷ (config_unset γ.1 epoch ∨ ⌜int.nat epoch_lb = int.nat epoch⌝) ∗
+      "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ.1 epoch_skip)
+      )
+.
+(* End config client-side protocol. *)
+
 (* Encapsulates the protocol-level ghost resources of a replica server; this is
    suitable for exposing as part of interfaces for users of the library. For
    now, it's only part of the crash obligation. *)
@@ -544,9 +560,11 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
 
 Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
   (* FIXME: want a separate client-side config protocol. Want admin_proof.is_conf_inv γ γconf. *)
-  ∃ γreads γlog γl γconf,
+  ∃ γreads γlog,
   "#HprereadInv" ∷ preread_inv γ.1 γlog γreads ∗
   "#Hlease" ∷ □(if leaseValid then
+                ∃ γl γconf,
+                is_conf_inv γ γconf ∗
                 is_lease config_proof.epochLeaseN γl (own_latest_epoch γconf epoch) ∗
                 is_lease_valid_lb γl leaseExpiration
               else
@@ -577,6 +595,7 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
   "#Hsys_inv" ∷ sys_inv γ.1 ∗
   "#HconfCk" ∷ readonly (s ↦[pb.Server :: "confCk"] #confCk) ∗
+  "#Hconf_inv" ∷ is_conf_inv γ γconf ∗
   "#HconfCk_is" ∷ config_proof.is_Clerk confCk γconf
 .
 

@@ -154,6 +154,16 @@ Proof.
   iFrame "#".
 Qed.
 
+Lemma lease_invalid γ epoch leaseValid leaseExpiration :
+  is_Server_lease_resource γ epoch leaseValid leaseExpiration -∗
+  is_Server_lease_resource γ epoch false leaseExpiration
+.
+Proof.
+  iNamed 1.
+  repeat iExists _.
+  by iFrame "#".
+Qed.
+
 Lemma setstate_eph_step γ γsrv st epoch' ops' :
   int.nat st.(server.epoch) < int.nat epoch' →
   is_proposal_lb γ.1 epoch' ops' -∗
@@ -164,6 +174,7 @@ Lemma setstate_eph_step γ γsrv st epoch' ops' :
    own_Server_ghost_eph_f (st <| server.ops_full_eph := ops' |> <| server.epoch := epoch' |>
                               <| server.sealed := false |> <| server.isPrimary := false |>
                               <| server.canBecomePrimary := true |>
+                              <| server.leaseValid := false |>
                          ) γ γsrv)
 .
 Proof.
@@ -173,7 +184,9 @@ Proof.
   iNamed "Hghost".
   iModIntro. iIntros. repeat iExists _.
   iFrame "∗#".
-  simpl. iApply (setstate_primary_eph_step with "Hprop_lb Hprop_valid Hprimary").
+  simpl.
+  iDestruct (lease_invalid with "[$]") as "$".
+  iApply (setstate_primary_eph_step with "Hprop_lb Hprop_valid Hprimary").
   done.
 Qed.
 
@@ -276,6 +289,7 @@ Proof.
     wp_storeField.
     wp_storeField.
     wp_loadField.
+    wp_storeField.
     wp_storeField.
     wp_storeField.
     wp_loadField.

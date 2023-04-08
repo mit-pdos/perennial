@@ -27,13 +27,14 @@ Context `{!pbG Σ}.
 Lemma lease_renewal_step γ γsrv γconf γl newLeaseExpiration st :
   is_lease config_proof.epochLeaseN γl (own_latest_epoch γconf st.(server.epoch)) -∗
   is_lease_valid_lb γl newLeaseExpiration -∗
+  is_conf_inv γ γconf -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   own_Server_ghost_eph_f (st <| server.leaseValid := true |>
                             <| server.leaseExpiration := newLeaseExpiration |>)
           γ γsrv
 .
 Proof.
-  iIntros "#Hnew_lease #Hlb".
+  iIntros "#Hnew_lease #Hlb #Hconf".
   rewrite /own_Server_ghost_eph_f /tc_opaque.
   iNamed 1.
   iFrame "∗#%".
@@ -41,6 +42,8 @@ Proof.
   iClear "Hlease".
   repeat iExists _.
   iFrame "#".
+  simpl.
+  repeat iExists _; iFrame "#".
 Qed.
 
 Lemma wp_Server__leaseRenewalThread (s:loc) γ γsrv (epoch:u64) :
@@ -108,7 +111,7 @@ Proof.
   (* case: got lease and the epoch is still the server's epoch *)
   wp_storeField.
   wp_storeField.
-  iDestruct (lease_renewal_step with "[$] [$] HghostEph") as "HghostEph".
+  iDestruct (lease_renewal_step with "[$] [$] [$] HghostEph") as "HghostEph".
   wp_loadField.
   wp_apply (release_spec with "[-]").
   {
