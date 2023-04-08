@@ -432,6 +432,10 @@ Proof.
   }
 Qed.
 
+(* FIXME: *)
+This could take the fupd from σ to σ ++ [op] as input, and
+establish is_proposal_valid internally.
+
 Lemma ghost_propose γsys epoch σ σ' :
   σ ⪯ σ' →
   own_primary_ghost γsys epoch σ -∗

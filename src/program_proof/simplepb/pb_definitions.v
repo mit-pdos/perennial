@@ -52,10 +52,12 @@ Class pbG Σ := {
     (*
     pb_ghostG :> pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
      *)
-    pb_ghostG :> pb_ghostG (EntryType:=(OpType * gname)) Σ ;
+    (* pb_ghostG :> pb_ghostG (EntryType:=(OpType * gname)) Σ ; *)
+    pb_prereadG :> pb_prereadG (EntryType:=(OpType * gname)) Σ ;
     pb_primaryG :> primary_ghostG (EntryType:=(OpType * gname)) Σ ;
     pb_savedG :> savedPredG Σ (list OpType);
-    pb_urpcG :> urpcregG Σ ;
+    pb_configG :> configG Σ ;
+    (* pb_urpcG :> urpcregG Σ ; *)
     pb_wgG :> waitgroupG Σ ; (* for apply proof *)
     pb_logG :> inG Σ client_logR;
     pb_apply_escrow_tok :> ghost_varG Σ unit ;
@@ -539,10 +541,6 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   (* overflow *)
   "%HnextIndexNoOverflow" ∷ ⌜no_overflow (length (get_rwops (st.(server.ops_full_eph))))⌝
 .
-
-(* FIXME: get rid of this *)
-Context `{Countable (list (OpType * gname) → iProp Σ)}.
-Context `{config_proof.configG Σ}.
 
 Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
   (* FIXME: want a separate client-side config protocol. Want admin_proof.is_conf_inv γ γconf. *)

@@ -1,5 +1,5 @@
 [ ] inG's for every library
-[ ] fix higher order ghost state in preread
+[ ] deal with multiple urpcG instances polluting proof
 [ ] use valid_add in apply_proof
 [ ] state prove "propose_rw_op_valid" in preread
 [ ] clean up the gnames and definitions for the (now) 3 different "centralized"
@@ -7,3 +7,5 @@
 [ ] verify ApplyRoRPC
 [ ] fix admin proof to avoid allocating become_primary_escrow too early
 [ ] (list length) overflow reasoning
+[ ] fix higher order ghost state in preread
+[ ] ghost state allocation lemmas

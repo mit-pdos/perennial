@@ -26,7 +26,7 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__Apply γ γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 is_Clerk ck γsys γsrv -∗
-is_inv γ γsys -∗
+is_inv γ γsys.1 -∗
 is_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
   (own_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
@@ -150,17 +150,26 @@ Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
 Definition is_ghost_lb' γ σ : iProp Σ :=
   ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
-Lemma apply_eph_primary_step γp γpsrv γ γsrv ops canBecomePrimary epoch committedNextIndex op Q :
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
-  own_Primary_ghost_f γp γpsrv γ γsrv canBecomePrimary true epoch committedNextIndex ops
+Lemma apply_eph_primary_step γ γsrv ops canBecomePrimary epoch committedNextIndex op Q :
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ.1 σ ∗ (own_ghost γ.1 (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  £ 1 -∗
+  own_Primary_ghost_f γ γsrv canBecomePrimary true epoch committedNextIndex ops
   ={↑pbN}=∗
-  own_Primary_ghost_f γp γpsrv γ γsrv canBecomePrimary true epoch committedNextIndex (ops ++ [(op, Q)]) ∗
-  is_proposal_lb γ epoch (ops ++ [(op, Q)]) ∗
-  is_proposal_facts γ epoch (ops ++ [(op, Q)]) ∗
-  is_proposal_facts_prim γp epoch (ops ++ [(op, Q)])
+  own_Primary_ghost_f γ γsrv canBecomePrimary true epoch committedNextIndex (ops ++ [(op, Q)]) ∗
+  is_proposal_lb γ.1 epoch (ops ++ [(op, Q)]) ∗
+  is_proposal_facts γ.1 epoch (ops ++ [(op, Q)]) ∗
+  is_proposal_facts_prim γ.2 epoch (ops ++ [(op, Q)])
 .
 Proof.
+  iIntros "Hupd Hlc Hprim".
+  rewrite /own_Primary_ghost_f /tc_opaque.
+  iNamed "Hprim".
+  iNamed "Hprim".
+  iMod (valid_add with "Hlc [] [Hupd]").
+  { iDestruct "Hs_prop_facts" as "[_ $]".
 
+  }
+Qed.
 
 Lemma apply_eph_step γp γpsrv γ γsrv st op Q :
   st.(server.isPrimary) = true →
