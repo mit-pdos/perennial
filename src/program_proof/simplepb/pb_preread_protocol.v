@@ -28,7 +28,7 @@ Implicit Types ros:gmap nat (list (list EntryType → iProp Σ)).
 
 Definition own_proposed_reads (γ:gname) (ros:gmap nat (list (list EntryType → iProp Σ))) : iProp Σ :=
   ∃ (rosγ:gmap nat (list gname)),
-  own γ (●((λ rosγAtIdx, ●ML rosγAtIdx) <$> rosγ) : auth (gmap nat (mono_listR (leibnizO gname)))) ∗
+  own γ (●((λ (rosγAtIdx:list gname), ●ML rosγAtIdx) <$> rosγ) : auth (gmap nat (_))) ∗
   ([∗ map] idx ↦ rosAtIdx ; rosγAtIdx ∈ ros ; rosγ,
     [∗ list] _ ↦ γprop ; Q ∈ rosγAtIdx ; rosAtIdx, saved_pred_own γprop DfracDiscarded Q)
 .
@@ -92,23 +92,28 @@ Proof.
   {
     instantiate (1:=<[idx:=default [] (ros !! idx) ++ [γpred]]> rosγ ).
     rewrite fmap_insert.
-    About auth_update.
+    eapply auth_update_auth.
 
-    (* FIXME *)
-    Need to fix the resource algebra monotonic map of sets of iPredicates.
-    Maybe take inspiration from how mono_listR works, by using auth but
-    making the mono_list_auth contain an auth and a frag.
-    (* ***** *)
-
-    apply auth_update.
-    Search gmap_view_auth.
-    Search gmapR.
-    apply insert_update.
-  }
-Qed.
+    destruct (rosγ !! idx) as [] eqn:Hlookup.
+    {
+      eapply insert_alloc_local_update.
+      { rewrite lookup_fmap /=.
+        by rewrite Hlookup.
+      }
+      { done. }
+      intros ?. intros.
+      simpl in *.
+      split.
+      { apply mono_list_auth_validN. }
+      edestruct ((ros:gmap _ _) !! idx) as [] eqn:Hlookup2.
+      { simpl.
+        (* This is too deep a rabbit hole. If this is the only way to do this
+           using the resources set up, will switch to another gname indirection
+           instead. *)
+Admitted.
 
 Lemma map_fmset_get_elem idx Q ros γreads :
-  Q ∈ default ∅ (ros !! idx) →
+  Q ∈ default [] (ros !! idx) →
   own_proposed_reads γreads ros -∗
   is_proposed_read γreads idx Q
 .
@@ -118,7 +123,7 @@ Admitted.
 Lemma map_fmset_elem_lookup idx Q ros γreads :
   own_proposed_reads γreads ros -∗
   is_proposed_read γreads idx Q -∗
-  ⌜Q ∈ default ∅ (ros !! idx)⌝
+  ⌜Q ∈ default [] (ros !! idx)⌝
 .
 Proof.
 Admitted.
@@ -174,7 +179,7 @@ Proof.
   subst.
   iMod ("Hupd2" with "Hlog2") as "#?".
 
-  iMod (update_map_fmset idx Q with "HownRos") as "HownRos".
+  iMod (update_map_mset_ipred idx Q with "HownRos") as "HownRos".
   iDestruct (map_fmset_get_elem idx Q with "HownRos") as "#His_read".
   { rewrite lookup_insert. set_solver. }
   iMod ("Hclose" with "[-]"); last done.
@@ -184,8 +189,9 @@ Proof.
   iSplit.
   {
     iApply (big_sepM_insert_2 with "[] HreadUpds").
-    iApply (big_sepS_insert_2 with "[] []").
-    { done. }
+    iApply (big_sepL_app with "[]").
+    iSplit.
+    2: { iApply big_sepL_singleton. done. }
     (* the rest of these fupds follow straightforwardly from old have_proposed_reads_fupds *)
     destruct (ros !! idx) as [] eqn:Hlookup.
     {
@@ -193,7 +199,7 @@ Proof.
       { done. }
       iFrame "Hupds".
     }
-    { by iApply big_sepS_empty. }
+    { by iApply big_sepL_nil. }
   }
   simpl.
   iApply (big_sepM_insert_2 with "[] HcompletedRead").
@@ -201,9 +207,10 @@ Proof.
   destruct (decide (idx = length σ0)).
   {
     subst.
-    iApply big_sepS_union_2.
-    {
-      iApply big_sepS_singleton.
+    iApply big_sepL_app.
+    iSplit.
+    2: {
+      iApply big_sepL_singleton.
       iModIntro.
       by rewrite firstn_all.
     }
@@ -214,7 +221,7 @@ Proof.
       { done. }
       by iApply "Hupds".
     }
-    by iApply big_sepS_empty.
+    by iApply big_sepL_nil.
   }
   exfalso.
   lia.
@@ -236,13 +243,14 @@ Proof.
   iNamed "Hown".
   iDestruct (own_log_lb_ineq with "Hlog Hlb")as %Hprefix.
   iDestruct (map_fmset_elem_lookup with "HownRos Hro") as %HQelem.
-  destruct (ros !! idx) as [] eqn:Hlookup; last by exfalso.
+  destruct (ros !! idx) as [] eqn:Hlookup.
+  2:{ exfalso. by apply elem_of_nil in HQelem. }
   simpl in HQelem.
   iDestruct (big_sepM_lookup with "HcompletedRead") as "H".
   { done. }
   iSpecialize ("H" with "[%]").
   { subst. by apply prefix_length. }
-  iDestruct (big_sepS_elem_of with "H") as "H2".
+  iDestruct (big_sepL_elem_of with "H") as "H2".
   { done. }
   iMod ("Hclose" with "[-]").
   { iExists _, _; iFrame "∗#". }
