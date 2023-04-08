@@ -31,10 +31,10 @@ Implicit Type γ : config_names.
 Context `{!gooseGlobalGS Σ}.
 Context `{!configG Σ}.
 
-Definition own_epoch γ (epoch:u64) : iProp Σ :=
+Definition own_latest_epoch γ (epoch:u64) : iProp Σ :=
   mono_nat_auth_own γ.(epoch_gn) (1/2) (int.nat epoch).
 
-Definition is_epoch_lb γ (epoch:u64) : iProp Σ :=
+Definition is_latest_epoch_lb γ (epoch:u64) : iProp Σ :=
   mono_nat_lb_own γ.(epoch_gn) (int.nat epoch).
 
 Definition own_config γ (conf:list u64) : iProp Σ :=
@@ -46,8 +46,8 @@ Definition epochLeaseN := nroot .@ "epochLeaseN".
 Program Definition GetEpochAndConfig_core_spec γ Φ :=
   (
     £ 1 -∗
-    (|={⊤,∅}=> ∃ epoch conf, own_epoch γ epoch ∗ own_config γ conf ∗
-    (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗ own_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
+    (|={⊤,∅}=> ∃ epoch conf, own_latest_epoch γ epoch ∗ own_config γ conf ∗
+    (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗ own_latest_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
       Φ (U64 0) (word.add epoch 1) conf
       )) ∧
       (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err (U64 0) [])
@@ -57,17 +57,17 @@ Program Definition GetConfig_core_spec γ Φ :=
   (£ 1 ={⊤,∅}=∗ ∃ conf, own_config γ conf ∗ (own_config γ conf ={∅,⊤}=∗ Φ conf))%I.
 
 Program Definition WriteConfig_core_spec γ (epoch:u64) (new_conf:list u64) Φ : iProp Σ :=
-  (£ 1 -∗ |={⊤,↑epochLeaseN}=> ∃ latest_epoch, own_epoch γ latest_epoch ∗
+  (£ 1 -∗ |={⊤,↑epochLeaseN}=> ∃ latest_epoch, own_latest_epoch γ latest_epoch ∗
       if (decide (latest_epoch = epoch)) then
-        ∃ conf, own_config γ conf ∗ (own_config γ new_conf -∗ own_epoch γ epoch ={↑epochLeaseN,⊤}=∗
+        ∃ conf, own_config γ conf ∗ (own_config γ new_conf -∗ own_latest_epoch γ epoch ={↑epochLeaseN,⊤}=∗
                                             Φ (U64 0))
       else
-        (own_epoch γ latest_epoch ={↑epochLeaseN,⊤}=∗ (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err))
+        (own_latest_epoch γ latest_epoch ={↑epochLeaseN,⊤}=∗ (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err))
   ).
 
 Program Definition GetLease_core_spec γ (epoch:u64) Φ : iProp Σ :=
   (∀ (leaseExpiration:u64) γl,
-    is_lease epochLeaseN γl (own_epoch γ epoch) -∗
+    is_lease epochLeaseN γl (own_latest_epoch γ epoch) -∗
     is_lease_valid_lb γl leaseExpiration -∗ Φ (U64 0) leaseExpiration
   ) ∧
   (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err (U64 0))
@@ -177,18 +177,18 @@ Proof.
   iExists _, _. iFrame "#".
 Qed.
 
-Definition own_ghost γ leaseExpiration epoch : iProp Σ :=
-  "Hepoch_lease" ∷ ((∃ γl, is_lease epochLeaseN γl (own_epoch γ epoch) ∗
+Definition own_Config_ghost γ leaseExpiration epoch : iProp Σ :=
+  "Hepoch_lease" ∷ ((∃ γl, is_lease epochLeaseN γl (own_latest_epoch γ epoch) ∗
                           own_lease_expiration γl leaseExpiration ∗
-                          post_lease epochLeaseN γl (own_epoch γ epoch)) ∨
-                          own_epoch γ epoch
+                          post_lease epochLeaseN γl (own_latest_epoch γ epoch)) ∨
+                          own_latest_epoch γ epoch
                    )
 .
 
 Lemma lease_expired_get_epoch γ leaseExpiration epoch :
   is_time_lb leaseExpiration -∗
-  own_ghost γ leaseExpiration epoch ={↑epochLeaseN}=∗
-  own_epoch γ epoch
+  own_Config_ghost γ leaseExpiration epoch ={↑epochLeaseN}=∗
+  own_latest_epoch γ epoch
 .
 Proof.
   iIntros "Htime_lb Hghost".
@@ -199,10 +199,10 @@ Qed.
 
 Lemma lease_acc_epoch γ t leaseExpiration epoch :
   own_time t -∗
-  own_ghost γ leaseExpiration epoch ={↑epochLeaseN, ∅}=∗
-  own_epoch γ epoch ∗ (own_epoch γ epoch ={∅,↑epochLeaseN}=∗
+  own_Config_ghost γ leaseExpiration epoch ={↑epochLeaseN, ∅}=∗
+  own_latest_epoch γ epoch ∗ (own_latest_epoch γ epoch ={∅,↑epochLeaseN}=∗
                        own_time t ∗
-                       own_ghost γ leaseExpiration epoch
+                       own_Config_ghost γ leaseExpiration epoch
                       ).
 Proof.
   iIntros "Ht Hghost".
@@ -220,7 +220,7 @@ Proof.
   {
     iDestruct "H" as (?) "(#Hlease & Hexp & Hpost)".
     destruct (decide (int.nat t < int.nat leaseExpiration)) eqn:Hineq.
-    { (* case: lease is unexpired. Access own_epoch from the lease. *)
+    { (* case: lease is unexpired. Access own_latest_epoch from the lease. *)
       iDestruct (lease_get_lb with "Hexp") as "#Hvalid".
       iMod (lease_acc with "Hvalid Hlease Ht") as "[>$ HH]".
       { done. }
@@ -252,7 +252,7 @@ Definition own_Server (s:loc) γ : iProp Σ :=
   "HleaseExpiration" ∷ s ↦[config.Server :: "leaseExpiration"] #leaseExpiration ∗
   "Hconf" ∷ s ↦[config.Server :: "config"] (slice_val conf_sl) ∗
   "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 conf ∗
-  "Hepoch_lease" ∷ own_ghost γ leaseExpiration epoch ∗
+  "Hepoch_lease" ∷ own_Config_ghost γ leaseExpiration epoch ∗
   "Hconf_ghost" ∷ own_config γ conf
 .
 
@@ -602,7 +602,7 @@ Qed.
 
 (* NOTE: There's a lot of case distinction with this lease stuff. Some of it
    feels redundant. In particular, there are two cases in which we'll have
-   direct ownership of own_epoch: either the mutex inv just has it, or the lease
+   direct ownership of own_latest_epoch: either the mutex inv just has it, or the lease
    is expired and we can get it immediately from post_lease.  This corresponds
    to the two places that R shows up in renewable_lease: either pre-expiration,
    or post-expiration but prior to escrow claiming it.
@@ -610,17 +610,17 @@ Qed.
   Here's a "cleanup" lemma to avoid this distinction.
   It says that either you own the epoch number, or you have a valid lease.
  *)
-Lemma own_ghost_normalize t γ epoch leaseExpiration :
+Lemma own_Config_ghost_normalize t γ epoch leaseExpiration :
   own_time t -∗
-  own_ghost γ leaseExpiration epoch
+  own_Config_ghost γ leaseExpiration epoch
   ={↑epochLeaseN}=∗
   own_time t ∗
-  (own_epoch γ epoch ∨
+  (own_latest_epoch γ epoch ∨
    ∃ γl,
     ⌜int.nat t < int.nat leaseExpiration⌝ ∗
     own_lease_expiration γl leaseExpiration ∗
-    is_lease epochLeaseN γl (own_epoch γ epoch) ∗
-    post_lease epochLeaseN γl (own_epoch γ epoch)
+    is_lease epochLeaseN γl (own_latest_epoch γ epoch) ∗
+    post_lease epochLeaseN γl (own_latest_epoch γ epoch)
   )
 .
 Proof.
@@ -647,17 +647,17 @@ Qed.
 Lemma get_lease_step newLeaseExpiration t γ epoch leaseExpiration :
   int.nat leaseExpiration <= int.nat newLeaseExpiration →
   own_time t -∗
-  own_ghost γ leaseExpiration epoch
+  own_Config_ghost γ leaseExpiration epoch
   ={↑epochLeaseN}=∗
   ∃ γl,
   own_time t ∗
-  is_lease epochLeaseN γl (own_epoch γ epoch) ∗
+  is_lease epochLeaseN γl (own_latest_epoch γ epoch) ∗
   is_lease_valid_lb γl newLeaseExpiration ∗
-  own_ghost γ newLeaseExpiration epoch
+  own_Config_ghost γ newLeaseExpiration epoch
 .
 Proof.
   iIntros (?) "Htime Hghost".
-  iMod (own_ghost_normalize with "Htime Hghost") as "[Htime Hghost]".
+  iMod (own_Config_ghost_normalize with "Htime Hghost") as "[Htime Hghost]".
   iDestruct "Hghost" as "[Hepoch|Hlease]".
   { (* create a new lease *)
     iMod (lease_alloc newLeaseExpiration with "Hepoch") as (?) "(#Hlease & Hpost & Hexp)".
@@ -681,17 +681,17 @@ Qed.
 Lemma get_lease_step_old oldLeaseExpiration t γ epoch leaseExpiration :
   int.nat oldLeaseExpiration <= int.nat leaseExpiration →
   own_time t -∗
-  own_ghost γ leaseExpiration epoch
+  own_Config_ghost γ leaseExpiration epoch
   ={↑epochLeaseN}=∗
   ∃ γl,
   own_time t ∗
-  is_lease epochLeaseN γl (own_epoch γ epoch) ∗
+  is_lease epochLeaseN γl (own_latest_epoch γ epoch) ∗
   is_lease_valid_lb γl oldLeaseExpiration ∗
-  own_ghost γ leaseExpiration epoch
+  own_Config_ghost γ leaseExpiration epoch
 .
 Proof.
   iIntros (?) "Htime Hghost".
-  iMod (own_ghost_normalize with "Htime Hghost") as "[Htime Hghost]".
+  iMod (own_Config_ghost_normalize with "Htime Hghost") as "[Htime Hghost]".
   iDestruct "Hghost" as "[Hepoch|Hlease]".
   { (* create a new lease *)
     iMod (lease_alloc leaseExpiration with "Hepoch") as (?) "(#Hlease & Hpost & Hexp)".
@@ -771,7 +771,7 @@ Proof.
   (* case: can give out lease *)
   (* There are two logical subcases.
      If the lease is still valid, we extend it.
-     Otherwise, we have direct ownership of own_epoch and we create a new lease
+     Otherwise, we have direct ownership of own_latest_epoch and we create a new lease
      around it.
    *)
   wp_apply wp_GetTimeRange.
@@ -854,9 +854,9 @@ Qed.
 Lemma wp_Clerk__GetEpochAndConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
   □ (£ 1 -∗
-      (|={⊤,∅}=> ∃ epoch conf, own_epoch γ epoch ∗ own_config γ conf ∗
+      (|={⊤,∅}=> ∃ epoch conf, own_latest_epoch γ epoch ∗ own_config γ conf ∗
        (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗
-        own_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
+        own_latest_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
          (∀ conf_sl, is_slice_small conf_sl uint64T 1 conf -∗
            Φ (#(U64 0), #(LitInt $ word.add epoch (U64 1)), slice_val conf_sl)%V)))
       ∧
@@ -1071,13 +1071,13 @@ Qed.
 Lemma wp_Clerk__WriteConfig (ck:loc) new_conf new_conf_sl epoch γ Φ :
   is_Clerk ck γ -∗
   is_slice_small new_conf_sl uint64T 1 new_conf -∗
-  □ (£ 1 -∗ |={⊤,↑epochLeaseN}=> ∃ latest_epoch, own_epoch γ latest_epoch ∗
+  □ (£ 1 -∗ |={⊤,↑epochLeaseN}=> ∃ latest_epoch, own_latest_epoch γ latest_epoch ∗
       if (decide (latest_epoch = epoch)) then
-        ∃ conf, own_config γ conf ∗ (own_config γ new_conf -∗ own_epoch γ epoch ={↑epochLeaseN,⊤}=∗
+        ∃ conf, own_config γ conf ∗ (own_config γ new_conf -∗ own_latest_epoch γ epoch ={↑epochLeaseN,⊤}=∗
                                       is_slice_small new_conf_sl uint64T 1 new_conf -∗
                                             Φ #0)
       else
-        (own_epoch γ latest_epoch ={↑epochLeaseN,⊤}=∗ (∀ (err:u64), ⌜err ≠ 0⌝ →
+        (own_latest_epoch γ latest_epoch ={↑epochLeaseN,⊤}=∗ (∀ (err:u64), ⌜err ≠ 0⌝ →
                                                          is_slice_small new_conf_sl uint64T 1 new_conf -∗
                                                          Φ #err))
   ) -∗
@@ -1197,7 +1197,7 @@ Qed.
 Lemma wp_Clerk__GetLease (ck:loc) γ epoch Φ :
   is_Clerk ck γ -∗
   □ ((∀ (leaseExpiration:u64) γl,
-      is_lease epochLeaseN γl (own_epoch γ epoch) -∗
+      is_lease epochLeaseN γl (own_latest_epoch γ epoch) -∗
       is_lease_valid_lb γl leaseExpiration -∗ Φ (#0, #leaseExpiration)%V) ∧
     (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (#err, #0)%V)
   ) -∗
@@ -1282,7 +1282,7 @@ Proof.
   }
 Qed.
 
-Definition makeConfigServer_pre γ conf : iProp Σ := own_epoch γ 0 ∗ own_config γ conf.
+Definition makeConfigServer_pre γ conf : iProp Σ := own_latest_epoch γ 0 ∗ own_config γ conf.
 
 Lemma wp_MakeServer γ conf_sl conf :
   {{{
@@ -1435,7 +1435,7 @@ Definition config_spec_list γ :=
 Lemma config_ghost_init conf :
   ⊢ |==> ∃ γ,
     makeConfigServer_pre γ conf ∗
-    own_epoch γ 0 ∗ own_config γ conf.
+    own_latest_epoch γ 0 ∗ own_config γ conf.
 Proof.
   iMod (mono_nat_own_alloc 0) as (γepoch) "[[Hepoch Hepoch2] _]".
   iMod (ghost_var_alloc conf) as (γconf) "[Hconf Hconf2]".

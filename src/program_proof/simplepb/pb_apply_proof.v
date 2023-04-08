@@ -160,7 +160,7 @@ Lemma apply_eph_primary_step γp γpsrv γ γsrv ops canBecomePrimary epoch comm
   is_proposal_facts_prim γp epoch (ops ++ [(op, Q)])
 .
 Proof.
-Admitted.
+
 
 Lemma apply_eph_step γp γpsrv γ γsrv st op Q :
   st.(server.isPrimary) = true →

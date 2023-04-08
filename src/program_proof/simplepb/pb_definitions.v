@@ -10,7 +10,7 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof fmlist_map
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
-From Perennial.program_proof.simplepb Require config_proof.
+From Perennial.program_proof.simplepb Require Import config_proof.
 
 (* State-machine record. An instance of Sm.t defines how to compute the reply
    for an op applied to some state and how to encode ops into bytes. *)
@@ -159,7 +159,6 @@ Next Obligation.
   solve_proper.
 Defined.
 
-(* FIXME: don't want to carry the four gname records around everywhere *)
 Definition BecomePrimary_core_spec γ γsrv args σ backupγ (ρ:u64 -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
   λ (Φ : u64 -> iPropO Σ) ,
   (
@@ -544,12 +543,13 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
 (* FIXME: get rid of this *)
 Context `{Countable (list (OpType * gname) → iProp Σ)}.
 Context `{config_proof.configG Σ}.
+
 Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
   (* FIXME: want a separate client-side config protocol. Want admin_proof.is_conf_inv γ γconf. *)
   ∃ γreads γlog γl γconf,
   "#HprereadInv" ∷ preread_inv γ.1 γlog γreads ∗
   "#Hlease" ∷ □(if leaseValid then
-                is_lease config_proof.epochLeaseN γl (config_proof.own_epoch γconf epoch) ∗
+                is_lease config_proof.epochLeaseN γl (own_latest_epoch γconf epoch) ∗
                 is_lease_valid_lb γl leaseExpiration
               else
                 True)
