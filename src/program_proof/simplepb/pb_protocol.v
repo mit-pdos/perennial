@@ -120,6 +120,11 @@ Definition is_valid_inv γsys σ op : iProp Σ :=
   )
 .
 
+(* XXX: this definition of is_proposal_valid allows for the committed state to
+   be partially updated to any intermediate op. So, we have to be able to fire
+   one update at a time with is_valid_inv and ghost_propose has to append one
+   operation at a time.
+ *)
 Definition is_proposal_valid γ σ : iProp Σ :=
   □(∀ σ', ⌜σ' ⪯ σ⌝ → own_commit γ σ' ={⊤∖↑sysN}=∗ own_commit γ σ).
 
@@ -350,9 +355,9 @@ Qed.
 Lemma valid_add γsys σ op :
   £ 1 -∗
   is_proposal_valid γsys σ -∗
-  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
+  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ++[op]) ={∅,⊤∖↑ghostN}=∗ True))
   ={↑pbN}=∗
-  is_proposal_valid γsys (σ ++ [op]).
+  is_proposal_valid γsys (σ++[op]).
 Proof.
   iIntros "Hlc #Hvalid Hupd".
   unfold is_proposal_valid.
@@ -432,34 +437,29 @@ Proof.
   }
 Qed.
 
-(* FIXME: *)
-This could take the fupd from σ to σ ++ [op] as input, and
-establish is_proposal_valid internally.
-
-Lemma ghost_propose γsys epoch σ σ' :
-  σ ⪯ σ' →
+Lemma ghost_propose γsys epoch σ op :
+  £ 1 -∗
   own_primary_ghost γsys epoch σ -∗
-  is_proposal_valid γsys σ'
+  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ++[op]) ={∅,⊤∖↑ghostN}=∗ True))
   ={↑pbN}=∗
-  own_primary_ghost γsys epoch σ' ∗
-  is_proposal_lb γsys epoch σ' ∗
-  is_proposal_facts γsys epoch σ'
+  own_primary_ghost γsys epoch (σ++[op]) ∗
+  is_proposal_lb γsys epoch (σ++[op]) ∗
+  is_proposal_facts γsys epoch (σ++[op])
 .
 Proof.
-  intros Hprefix.
-  iIntros "Hown #Hvalid_in".
+  iIntros "Hlc Hown Hupd".
   iNamed "Hown".
 
-  iMod (fmlist_ptsto_update with "Hprop") as "Hprop".
-  { apply Hprefix. }
+  iMod (fmlist_ptsto_update (σ++[op]) with "Hprop") as "Hprop".
+  { by apply prefix_app_r. }
 
   iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb".
   iFrame "Hprop".
-  iAssert (|={↑pbN}=> is_proposal_facts γsys epoch (σ'))%I with "[]" as ">#Hvalid2".
+  iAssert (|={↑pbN}=> is_proposal_facts γsys epoch (σ++[op]))%I with "[Hupd Hlc]" as ">#Hvalid2".
   {
-    iSplitL "".
+    iDestruct "Hvalid" as "[#Hmax #Hvalid]".
+    iSplitR.
     {
-      iDestruct "Hvalid" as "[#Hmax _]".
       iModIntro.
       unfold old_proposal_max.
       iModIntro.
@@ -473,11 +473,13 @@ Proof.
         { iFrame "#". }
       }
       iPureIntro.
-      by transitivity σ.
+      transitivity σ.
+      { done. }
+      by apply prefix_app_r.
     }
-    iFrame "#".
-    iModIntro.
-    done.
+    {
+      by iMod (valid_add with "Hlc Hvalid Hupd") as "#$".
+    }
   }
   iModIntro.
   iFrame "#".

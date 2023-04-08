@@ -530,7 +530,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
 
   (* persistent physical state *)
   "#HopAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ opAppliedConds, is_cond cond mu) ∗
-  "#HcommittedNextRoIndex_is_cond" ∷ is_cond committedNextIndex_cond mu ∗
+  "#HcommittedNextIndex_is_cond" ∷ is_cond committedNextIndex_cond mu ∗
 
   (* witnesses for primary; the exclusive state is in own_Server_ghost *)
   "#Hprimary" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary γ γsrv st clerks_sl) ∗

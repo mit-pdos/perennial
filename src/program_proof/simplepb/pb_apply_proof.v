@@ -165,44 +165,56 @@ Proof.
   rewrite /own_Primary_ghost_f /tc_opaque.
   iNamed "Hprim".
   iNamed "Hprim".
-  iMod (valid_add with "Hlc [] [Hupd]").
-  { iDestruct "Hs_prop_facts" as "[_ $]".
-
+  iMod (ghost_propose with "Hlc Hprim [Hupd]") as "(Hprim & #? & #?)".
+  {
+    iMod "Hupd" as (?) "[? Hupd]".
+    iModIntro.
+    iExists _; iFrame.
+    (* XXX: what's the point of having σ = ops? Seems unused. *)
+    done.
   }
+  iDestruct (is_proposal_facts_prim_mono with "Hprim_facts") as "#$".
+  { by apply prefix_app_r. }
+  iFrame "∗#".
+  iModIntro.
+  iExists _; iFrame "Hcommit_lb #".
+  done.
 Qed.
 
-Lemma apply_eph_step γp γpsrv γ γsrv st op Q :
+Lemma apply_eph_step γ γsrv st op Q :
   st.(server.isPrimary) = true →
   st.(server.sealed) = false →
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
-  own_Server_ghost_eph_f st γp γpsrv γ γsrv
+  £ 1 -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ.1 σ ∗ (own_ghost γ.1 (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  own_Server_ghost_eph_f st γ γsrv
   ={↑pbN}=∗
   own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(op, Q)] |>)
-                              γp γpsrv γ γsrv ∗
-  is_proposal_lb γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
-  is_proposal_facts γ st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
-  is_proposal_facts_prim γp st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)])
+                              γ γsrv ∗
+  is_proposal_lb γ.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
+  is_proposal_facts γ.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
+  is_proposal_facts_prim γ.2 st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)])
 .
 Proof.
   intros Hprim Hunsealed.
-  iIntros "Hupd Hghost".
+  iIntros "Hlc Hupd Hghost".
   iNamed "Hghost".
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed "Hghost".
   rewrite Hprim.
-  iMod (apply_eph_primary_step with "Hupd Hprimary") as "(Hprimary & #? & #?)".
+  iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #?)".
   by iFrame "∗#".
 Qed.
 
-Lemma apply_commit_step γp γpsrv γ γsrv st opsfull op Q :
-  is_ghost_lb γ (opsfull ++ [(op, Q)]) -∗
-  is_proposal_lb γ st.(server.epoch) (opsfull ++ [(op, Q)]) -∗
-  own_Server_ghost_eph_f st γp γpsrv γ γsrv
+Lemma apply_commit_step γ γsrv st opsfull op Q :
+  no_overflow (length opsfull + 1) →
+  is_ghost_lb γ.1 (opsfull ++ [(op, Q)]) -∗
+  is_proposal_lb γ.1 st.(server.epoch) (opsfull ++ [(op, Q)]) -∗
+  own_Server_ghost_eph_f st γ γsrv
   ={↑pbN}=∗
-  own_Server_ghost_eph_f (st <| server.committedNextIndex := length (opsfull) + 1 |> ) γp γpsrv γ γsrv
+  own_Server_ghost_eph_f (st <| server.committedNextIndex := length (opsfull) + 1 |> ) γ γsrv
 .
 Proof.
-  iIntros "#Hghost_lb #Hprop_lb".
+  iIntros (?) "#Hghost_lb #Hprop_lb".
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed 1.
   rewrite /own_Primary_ghost_f /tc_opaque /=.
@@ -215,17 +227,17 @@ Proof.
     iExists _; iFrame "Hghost_lb #".
     iPureIntro.
     rewrite /get_rwops fmap_app app_length fmap_length /=.
-    admit. (* FIXME: list length overflow *)
+    by unfold no_overflow in H.
   }
   { by iFrame "∗#". }
-Admitted.
+Qed.
 
-Lemma wp_Server__Apply_internal (s:loc) γp γpsrv γ γsrv op_sl op_bytes op Q :
+Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
-        is_Server s γp γpsrv γ γsrv ∗
+        is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
-        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
+        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ.1 σ ∗ (own_ghost γ.1 (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
@@ -234,7 +246,7 @@ Lemma wp_Server__Apply_internal (s:loc) γp γpsrv γ γsrv op_sl op_bytes op Q 
           ∃ opsfull,
             let ops := (get_rwops opsfull) in
             ⌜reply.(ApplyReply.ret) = compute_reply ops op⌝ ∗
-            is_ghost_lb γ (opsfull ++ [(op, Q)])
+            is_ghost_lb γ.1 (opsfull ++ [(op, Q)])
         else
           True
   }}}
@@ -263,8 +275,8 @@ Proof.
   iNamed "Hvol".
   wp_pure1_credit "Hcred1".
   wp_pure1_credit "Hcred2".
-  wp_pures.
   wp_loadField.
+  wp_pure1_credit "Hlc".
   wp_if_destruct.
   { (* return error "not primary" *)
     wp_loadField.
@@ -320,7 +332,7 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
-  iMod (apply_eph_step with "Hupd HghostEph") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts)".
+  iMod (apply_eph_step with "Hlc Hupd HghostEph") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts)".
   { done. }
   { done. }
   iMod "Hmask" as "_".
@@ -374,7 +386,19 @@ Proof.
     }
     iFrame "∗#".
     rewrite app_length /=.
-    admit. (* FIXME: overflow reasoning *)
+    iSplitL.
+    {
+      iApply to_named.
+      iExactEq "HnextIndex".
+      repeat f_equal.
+      unfold no_overflow in HnextIndexNoOverflow.
+      word.
+    }
+    iPureIntro.
+    {
+      unfold no_overflow in HnextIndexNoOverflow |- *.
+      word.
+    }
   }
 
   wp_pures.
@@ -447,7 +471,7 @@ Proof.
             ⌜backups !! int.nat i = Some γsrv'⌝ ∗
             readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
             □ if (decide (err = U64 0)) then
-              is_accepted_lb γsrv' st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
+              is_accepted_lb γsrv'.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
             else
               True
           )%I
@@ -596,7 +620,7 @@ Proof.
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
                 (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗
-                  is_accepted_lb γsrv' st.(server.epoch) (st.(server.ops_full_eph) ++ [_]))
+                  is_accepted_lb γsrv'.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [_]))
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -683,6 +707,7 @@ Proof.
             replace (int.nat (word.add j 1%Z)) with (S (int.nat j)) in H0 by word.
             unfold conf in H0.
             rewrite lookup_cons in H0.
+            rewrite H0 in HbackupLookup.
             naive_solver.
           }
           iDestruct "Hpost" as "#$".
@@ -736,19 +761,27 @@ Proof.
   {
     iExists _; iFrame "#".
     iIntros.
+    rewrite elem_of_list_fmap in H.
+    destruct H as (? & ? & H).
+    subst.
     apply elem_of_list_lookup_1 in H as [k Hlookup_conf].
     replace (int.nat j) with (length clerks); last first.
     { word. }
     epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.
     replace (k) with (int.nat k) in *; last first.
     {
-      rewrite cons_length in HH.
+      rewrite cons_length /= in HH.
+      rewrite -Hclerks_conf in HH.
+      (* FIXME: why manually rewrite? *)
       word.
     }
-    iApply ("Hrest" $! k).
+    iApply ("Hrest" $! k _).
     { iPureIntro.
       unfold conf in HH.
       rewrite cons_length in HH.
+      rewrite Hclerks_conf.
+      clear -HH.
+      unfold simplepb_server_names.
       lia. }
     { done. }
   }
@@ -762,6 +795,7 @@ Proof.
   wp_pures.
   iClear "HopAppliedConds_conds HisSm".
   iNamed "Hown".
+  iClear "HcommittedNextIndex_is_cond".
   iNamed "Hvol".
   wp_loadField.
   wp_pures.
@@ -779,7 +813,7 @@ Proof.
     wp_storeField.
     wp_loadField.
     wp_apply (wp_condBroadcast with "[]").
-    { admit. (* iFrame "#". *) }
+    { iFrame "#". }
     wp_pures.
     wp_loadField.
 
@@ -789,6 +823,9 @@ Proof.
     { set_solver. }
     rewrite -HepochEq.
     iMod (apply_commit_step with "Hcommit Hprop_lb HghostEph") as "HghostEph".
+    { unfold no_overflow in HnextIndexNoOverflow |- *.
+      rewrite fmap_length in Hno_overflow HnextIndexNoOverflow.
+      word. }
     iMod "Hmask" as "_". iModIntro.
     wp_apply (release_spec with "[-HΦ Hlc1 Hlc2 Hlc3 Hreply Err Reply]").
     {
@@ -798,13 +835,16 @@ Proof.
       repeat iExists _.
       iSplitR "HghostEph"; last iFrame.
       repeat iExists _.
-      iFrame "∗ #".
+      iFrame "∗ # %".
       simpl.
       iApply to_named.
       iExactEq "HcommittedNextIndex".
       repeat f_equal.
       unfold no_overflow in HnextIndexNoOverflow.
-      admit. (* FIXME: list length overflow *)
+
+      unfold no_overflow in HnextIndexNoOverflow |- *.
+      rewrite fmap_length in HnextIndexNoOverflow, Hno_overflow |- *.
+      word.
     }
     wp_pures.
     iModIntro.
@@ -843,10 +883,10 @@ Proof.
   iExists _.
   iFrame "Hcommit".
   done.
-Admitted.
+Qed.
 
-Lemma wp_Server__Apply (s:loc) γlog γp γpsrv γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
-  is_Server s γp γpsrv γ γsrv -∗
+Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
+  is_Server s γ γsrv -∗
   readonly (is_slice_small op_sl byteT 1 enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
   Apply_core_spec γ γlog op enc_op Ψ -∗
@@ -866,8 +906,7 @@ Proof using Type*.
 
   iMod (saved_pred_alloc OpPred DfracDiscarded) as (γghost_op) "#Hsaved"; first done.
   iApply wp_fupd.
-  wp_apply (wp_Server__Apply_internal _ _ _ _ _
-      _ _ op γghost_op
+  wp_apply (wp_Server__Apply_internal _ _ _ _ _ op γghost_op
              with "[$Hsrv $Hop_sl Hupd]").
   {
     iSplitL ""; first done.
