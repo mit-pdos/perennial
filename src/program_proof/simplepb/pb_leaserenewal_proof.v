@@ -4,7 +4,7 @@ From Perennial.program_proof.simplepb Require Import pb_protocol.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof.
+From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
@@ -24,11 +24,8 @@ Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
 
-Context `{Countable (list (OpType * gname) → iProp Σ)}.
-Context `{config_proof.configG Σ}.
-
 Lemma lease_renewal_step γ γsrv γconf γl newLeaseExpiration st :
-  is_lease config_proof.epochLeaseN γl (config_proof.own_epoch γconf st.(server.epoch)) -∗
+  is_lease config_proof.epochLeaseN γl (own_latest_epoch γconf st.(server.epoch)) -∗
   is_lease_valid_lb γl newLeaseExpiration -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   own_Server_ghost_eph_f (st <| server.leaseValid := true |>

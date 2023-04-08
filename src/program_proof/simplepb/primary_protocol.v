@@ -103,23 +103,30 @@ Definition become_primary_escrow γsys γsrv epoch σ R : iProp Σ :=
   inv pbN (R ∨ is_tok γsrv epoch)
 .
 
-Lemma primary_ghost_init_primary R γsys γsrv σ epoch :
-  own_init_proposal_unused γsys epoch -∗
-  R
-  ={↑pbN}=∗
-  become_primary_escrow γsys γsrv epoch σ R ∗
+Lemma primary_ghost_init_primary γsys σ epoch :
+  own_init_proposal_unused γsys epoch ==∗
+  is_init_proposal γsys epoch σ ∗
   is_proposal_facts_prim γsys epoch σ
 .
 Proof.
-  iIntros "Hinit HR".
+  iIntros "Hinit".
   iMod (fmlist_ptsto_update σ with "Hinit") as "Hinit".
   { apply prefix_nil. }
-  iMod (fmlist_ptsto_persist with "Hinit") as "#Hinit".
+  iMod (fmlist_ptsto_persist with "Hinit") as "#$".
+  iExists _; iFrame "#".
+  done.
+Qed.
+
+Lemma primary_ghost_init_primary_escrow R γsys γsrv σ epoch :
+  is_init_proposal γsys epoch σ -∗
+  R
+  ={↑pbN}=∗
+  become_primary_escrow γsys γsrv epoch σ R
+.
+Proof.
+  iIntros "$ HR".
   iMod (inv_alloc with "[HR]") as "$".
   { iLeft. iFrame. }
-  iModIntro.
-  iFrame "#".
-  iExists _; iFrame "#".
   done.
 Qed.
 
@@ -174,6 +181,17 @@ Proof.
   iIntros "(% & % & Hlb)".
   iExists _; iFrame.
   iPureIntro. by transitivity σ.
+Qed.
+
+Lemma own_unused_facts_false γ epoch σ :
+  own_init_proposal_unused γ epoch -∗
+  is_proposal_facts_prim γ epoch σ -∗
+  False.
+Proof.
+  iIntros "? (% & (% & H))".
+  iDestruct (fmlist_ptsto_valid_2 with "[$] [$]") as "[% _]".
+  exfalso.
+  done.
 Qed.
 
 End primary_protocol.

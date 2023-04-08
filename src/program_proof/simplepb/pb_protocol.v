@@ -569,11 +569,14 @@ Proof.
   }
 Qed.
 
-Lemma ghost_get_propose_lb γsys epoch σ :
-  own_proposal γsys epoch σ -∗
-  is_proposal_lb γsys epoch σ.
-Proof. iApply fmlist_ptsto_get_lb. Qed.
-
+Lemma ghost_get_propose_lb_facts γsys epoch σ :
+  own_primary_ghost γsys epoch σ -∗
+  is_proposal_lb γsys epoch σ ∗
+  is_proposal_facts γsys epoch σ.
+Proof.
+  iNamed 1. iFrame "#".
+  by iApply fmlist_ptsto_get_lb.
+Qed.
 
 Lemma ghost_init_primary γsys γsrv σ epochconf epoch conf epoch_new :
   γsrv ∈ conf →
@@ -586,8 +589,7 @@ Lemma ghost_init_primary γsys γsrv σ epochconf epoch conf epoch_new :
   (∀ epoch_skip, ⌜int.nat epochconf < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch_new⌝ → is_epoch_skipped γsys epoch_skip) -∗
   own_proposal_unused γsys epoch_new
   ==∗
-  own_proposal γsys epoch_new σ ∗
-  is_proposal_facts γsys epoch_new σ
+  own_primary_ghost γsys epoch_new σ
 .
 Proof.
   intros Hmember Hepoch_new Hepoch_recent.

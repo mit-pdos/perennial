@@ -4,7 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb Require Import config_protocol_proof pb_getstate_proof pb_setstate_proof.
+From Perennial.program_proof.simplepb Require Import config_protocol_proof pb_getstate_proof pb_setstate_proof pb_makeclerk_proof pb_becomeprimary_proof.
 
 Section admin_proof.
 
@@ -17,6 +17,12 @@ Notation compute_reply := (Sm.compute_reply pb_record).
 
 Notation wp_Clerk__GetState := (wp_Clerk__GetState (pb_record:=pb_record)).
 Notation wp_Clerk__SetState := (wp_Clerk__SetState (pb_record:=pb_record)).
+
+Context `{!heapGS Σ}.
+Context `{!pbG Σ}.
+Context `{!waitgroupG Σ}.
+
+Definition adminN := nroot .@ "admin".
 
 Lemma wp_Reconfig γ (configHost:u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
   {{{
@@ -102,7 +108,7 @@ Proof using waitgroupG0.
   iDestruct (big_sepL2_lookup_2_some with "His_hosts") as %HH.
   { done. }
   destruct HH as [γsrv_old Hconfγ_lookup].
-  wp_apply (wp_MakeClerk with "[]").
+  wp_apply (pb_makeclerk_proof.wp_MakeClerk with "[]").
   {
     iDestruct (big_sepL2_lookup_acc with "His_hosts") as "[HisHost _]".
     { done. }
@@ -147,24 +153,27 @@ Proof using waitgroupG0.
   destruct (decide (int.nat epochacc = int.nat epoch)) as [Heq|Hepochacc_ne_epoch].
   {
     replace (epochacc) with (epoch) by word.
-    admit. (* FIXME: own_init_prop_unused ∗ prim_facts -∗ False *)
+    iExFalso.
+    iApply (own_unused_facts_false with "[$] [$]").
   }
-  iMod (ghost_init_primary with "Hprop_lb Hprop_facts His_conf Hacc_ro Hskip Hprop") as "(Hprop & #Hprop_facts2)".
+  iMod (ghost_init_primary with "Hprop_lb Hprop_facts His_conf Hacc_ro Hskip Hprop") as "Hprim".
   {
     apply elem_of_list_fmap_1.
     by eapply elem_of_list_lookup_2. }
   { word. }
   { word. }
+  iClear "Hprim_facts".
+  iMod (primary_ghost_init_primary with "Hinit") as "[#Hinit #Hprim_facts]".
+  (*
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
   iClear "Hprim_facts".
-
   iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb2".
   iMod (primary_ghost_init_primary (own_primary_ghost γ.1 epoch opsfull)
          with "Hinit [Hprop]") as "#[Hescrow Hprim_facts]".
   { iFrame "∗#". }
-  iMod "Hmask". iModIntro.
+  iMod "Hmask". iModIntro. *)
 
   iNamed "Hreply".
   wp_loadField.
@@ -370,7 +379,6 @@ Proof using waitgroupG0.
   rewrite app_nil_r.
   rename clerksComplete into clerks.
   iApply fupd_wp.
-  iClear "Hmask".
   iMod (fupd_mask_subseteq (↑adminN)) as "Hmask".
   { set_solver. }
   set (P:= (λ i, ∃ (err:u64) γsrv',
@@ -413,6 +421,7 @@ Proof using waitgroupG0.
     replace (int.nat _ - int.nat 0) with (int.nat clerks_sl.(Slice.sz)) by word.
     iFrame "Herrs_sl".
   } (* FIXME: copy/pasted from pb_apply_proof *)
+  (* FIXME: have a lemma for this kind of loop that makes use of big_sepL's and big_sepL2's. *)
   wp_forBreak_cond.
 
   clear i HcompleteLen Heqb0 Hi_done.
@@ -449,6 +458,7 @@ Proof using waitgroupG0.
 
     iDestruct (own_WaitGroup_to_is_WaitGroup with "[Hwg]") as "#His_wg".
     { by iExactEq "Hwg". }
+    iDestruct (ghost_get_propose_lb_facts with "Hprim") as "#[? ?]".
     wp_apply (wp_fork with "[Hwg_tok Herr_ptr]").
     {
       iNext.
@@ -700,7 +710,7 @@ Proof using waitgroupG0.
   iDestruct "Hconf_prop" as "#Hconf_prop".
 
   wp_bind (Clerk__WriteConfig _ _ _).
-  iApply (wp_frame_wand with "[HΦ Hconf_sl Hclerks_sl]").
+  iApply (wp_frame_wand with "[HΦ Hconf_sl Hclerks_sl Hprim]").
   { iNamedAccu. }
   iDestruct (big_sepL2_length with "Hhost") as %Hserver_len_eq.
 
@@ -813,6 +823,15 @@ Proof using waitgroupG0.
     naive_solver.
   }
 
+  (* set up escrow for primary *)
+
+  iApply fupd_wp.
+  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+  { set_solver. }
+  iMod (primary_ghost_init_primary_escrow (own_primary_ghost γ.1 epoch opsfull)
+         with "Hinit Hprim") as "#Hescrow".
+  iMod "Hmask". iModIntro.
+
   wp_apply (wp_Clerk__BecomePrimary with "[$HprimaryCk Hconf Hhost Epoch Replicas Hservers_sl]").
   {
 
@@ -859,14 +878,13 @@ Proof using waitgroupG0.
       }
     }
     {
-      (* FIXME: allocated become_primary_escrow too early. Do it after getting γsrv in context. *)
-      admit.
+      iExists _; iFrame.
     }
   }
   iIntros.
   wp_pures.
   iApply "HΦ".
   done.
-Admitted.
+Qed.
 
 End admin_proof.
