@@ -232,6 +232,104 @@ Proof.
   { by iFrame "∗#". }
 Qed.
 
+Definition own_slice_elt {V} {H:IntoVal V} (sl:Slice.t) (idx:u64) typ q (v:V) : iProp Σ :=
+  (sl.(Slice.ptr) +ₗ[typ] (int.Z idx)) ↦[typ]{q} (to_val v).
+
+Lemma slice_elements_split {V} {H:IntoVal V} sl typ q (l:list V):
+  is_slice_small sl typ q l -∗
+  [∗ list] i ↦ v ∈ l, own_slice_elt sl i typ q v.
+Proof.
+  iIntros "Hsl".
+  rewrite /is_slice_small /slice.is_slice_small.
+  unfold own_slice_elt.
+  destruct sl. simpl.
+  iDestruct "Hsl" as "(Hsl & #Hsz & #Hcap)".
+  iAssert (⌜int.Z sz <= 2^64⌝%Z)%I with "[]" as "#Hsz2".
+  { iPureIntro. word. }
+  iClear "Hcap".
+  iRevert "Hsz2".
+  iInduction l as [|] "IH" forall (ptr sz).
+  { iIntros. by iApply big_sepL_nil. }
+  iIntros.
+  unfold list.untype.
+  rewrite fmap_cons.
+  iDestruct (array_cons with "Hsl") as "[Helt Hsl]".
+
+  iSplitL "Helt".
+  {
+    unfold own_slice_elt.
+    replace (ty_size typ * int.Z 0%nat)%Z with (0%Z) by word.
+    rewrite loc_add_0.
+    iFrame.
+  }
+  iDestruct "Hsz" as "%".
+  iSpecialize ("IH" $! (ptr +ₗ[typ] 1) with "[] [Hsl] []").
+  {
+    iPureIntro.
+    rewrite cons_length in H1.
+    instantiate (1:=(word.sub sz 1)).
+    word.
+  }
+  { iExactEq "Hsl"; repeat f_equal; word. }
+  {
+    iPureIntro. generalize (word.sub sz 1).
+    intros. word.
+  }
+  iApply (big_sepL_impl with "[$]").
+  iModIntro. iIntros (???) "H".
+  iExactEq "H". f_equal.
+  rewrite loc_add_assoc.
+  repeat f_equal.
+  replace (int.Z (S k)) with (1 + int.Z k)%Z.
+  { word. }
+  { rewrite cons_length fmap_length in H1.
+    apply lookup_lt_Some in H2. word.
+  }
+Qed.
+
+Lemma wp_SliceSet_elt {V typ} `{!IntoVal V} `{!IntoValForType V typ} (sl:Slice.t) (i:u64) (v v':V) :
+  {{{
+        own_slice_elt sl i typ 1 v
+  }}}
+      SliceSet typ (slice_val sl) #i (to_val v')
+  {{{
+        RET #(); own_slice_elt sl i typ 1 v'
+  }}}.
+Proof.
+  iIntros (?) "Hown HΦ".
+  unfold SliceSet.
+  wp_pures.
+  unfold own_slice_elt.
+  wp_apply (wp_slice_ptr).
+  wp_pures.
+  wp_apply (wp_StoreAt with "[$Hown]").
+  { apply to_val_ty. }
+  iFrame.
+Qed.
+
+Lemma wp_forSlice' {V} {H:IntoVal V} ϕ I sl ty q (l:list V) (body:expr) :
+  (∀ (i:u64) (v:V),
+    {{{
+          ⌜int.nat i < length l⌝ ∗ ⌜l !! (int.nat i) = Some v⌝ ∗ ϕ (int.nat i) v ∗ I i
+    }}}
+      body #i (to_val v)
+    {{{
+          RET #(); I (word.add i 1)
+    }}}
+  ) -∗
+  {{{
+        is_slice_small sl ty q l ∗
+        ([∗ list] i ↦ v ∈ l, ϕ i v) ∗
+        I 0
+  }}}
+    forSlice ty body (slice_val sl)
+  {{{
+        RET #(); I (length l)
+  }}}
+.
+Proof.
+Admitted.
+
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
@@ -458,8 +556,7 @@ Proof.
   wp_pures.
 
   wp_apply (wp_slice_len).
-  wp_apply (wp_new_slice).
-  { done. }
+  wp_apply (wp_NewSlice).
   iIntros (errs_sl) "Herrs_sl".
   wp_pures.
   iApply fupd_wp.
@@ -469,7 +566,7 @@ Proof.
           (λ i,
             ∃ (err:u64) γsrv',
             ⌜backups !! int.nat i = Some γsrv'⌝ ∗
-            readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
+            readonly (own_slice_elt errs_sl i uint64T 1 err) ∗
             □ if (decide (err = U64 0)) then
               is_accepted_lb γsrv'.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
             else
@@ -483,55 +580,40 @@ Proof.
   { done. }
   iNamed "Hclerks_rpc".
 
+  iDestruct (is_slice_to_small with "Herrs_sl") as "Herrs_sl".
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
-  wp_apply (wp_forSlice (λ j, (own_WaitGroup pbN wg γwg j _) ∗
-                              (errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z j)↦∗[uint64T] (replicate (int.nat clerks_sl_inner.(Slice.sz) - int.nat j) #0)
-                        )%I with "[] [Hwg Herrs_sl $Hclerks_sl2]").
+  iDestruct (is_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
+
+  wp_apply (wp_forSlice' _ (λ j, (own_WaitGroup pbN wg γwg j _))%I with "[] [$Hwg Herrs_sl $Hclerks_sl2]").
   2: {
-    iFrame "Hwg".
-    (* FIXME: slice unfolding; want a subslice library or something *)
-    unfold slice.is_slice. unfold slice.is_slice_small.
-    iDestruct "Herrs_sl" as "[[Herrs_sl %Hlen] _]".
-    destruct Hlen as [Hlen _].
-    rewrite replicate_length in Hlen.
-    rewrite Hlen.
-    iExactEq "Herrs_sl".
-    simpl.
-    replace (1 * int.Z _)%Z with (0%Z) by word.
-    rewrite loc_add_0.
-    replace (int.nat _ - int.nat 0) with (int.nat errs_sl.(Slice.sz)) by word.
-    done.
+    iDestruct (slice_elements_split with "Herrs_sl") as "Herrs".
+    iDestruct (big_sepL2_const_sepL_r _ clerks with "[$Herrs]") as "Herrs".
+    { iPureIntro. by rewrite replicate_length. }
+    rewrite big_sepL2_replicate_r; last done.
+    iDestruct (big_sepL2_to_sepL_1 with "Hclerks_rpc") as "H2".
+    iDestruct (big_sepL_sep with "[$Herrs]") as "$".
+    { iFrame "H2". }
   }
   {
     iIntros (i ck).
+    simpl.
     clear Φ.
-    iIntros (Φ) "!# ([Hwg Herr_ptrs]& %Hi_ineq & %Hlookup) HΦ".
+    iIntros (Φ) "!# (% & %Hlookup & Hϕ & Hwg) HΦ".
+    iDestruct "Hϕ" as "(Herr & (% & (% & #Hck & #Hepoch_lb)))".
     wp_pures.
     wp_apply (wp_WaitGroup__Add with "[$Hwg]").
-    { word. }
+    { rewrite Hclerks_sz in H. word. }
     iIntros "[Hwg Hwg_tok]".
     wp_pures.
-    replace (int.nat clerks_sl_inner.(Slice.sz) - int.nat i) with (S (int.nat clerks_sl_inner.(Slice.sz) - (int.nat (word.add i 1)))); last first.
-    { word. }
-    rewrite replicate_S.
-    iDestruct (array_cons with "Herr_ptrs") as "[Herr_ptr Herr_ptrs]".
-    (* use wgTok to set errs_sl *)
     iDestruct (own_WaitGroup_to_is_WaitGroup with "[$Hwg]") as "#His_wg".
-    wp_apply (wp_fork with "[Hwg_tok Herr_ptr]").
+    wp_apply (wp_fork with "[Hwg_tok Herr]").
     {
       iNext.
-      iDestruct (big_sepL2_lookup_1_some with "Hclerks_rpc") as %[γsrv' Hlookupγ].
-      { done. }
-      iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc") as "Hclerk_rpc".
-      { done. }
-      { done. }
-      iDestruct "Hclerk_rpc" as "[[Hclerk_rpc Hepoch_lb] _]".
-
       wp_pures.
       wp_forBreak_cond.
       wp_pures.
 
-      wp_apply (wp_Clerk__ApplyAsBackup with "[$Hclerk_rpc $Hepoch_lb]").
+      wp_apply (wp_Clerk__ApplyAsBackup with "[$Hck $Hepoch_lb]").
       {
         iFrame "Hprop_lb Hprop_facts #".
         iPureIntro.
@@ -563,17 +645,16 @@ Proof.
         by iPureIntro.
       }
 
-      (* FIXME: slice unfolding *)
-      unfold SliceSet.
+      iEval (replace (#err) with (to_val err) by done).
+      replace (U64 (int.nat i)) with (i) by word.
+      wp_apply (wp_SliceSet_elt with "Herr").
+      iIntros "Herr".
       wp_pures.
-      unfold slice.ptr.
-      wp_pures.
-      wp_store.
       iRight.
       iModIntro.
       iSplitR; first by iPureIntro.
 
-      iMod (readonly_alloc_1 with "Herr_ptr") as "#Herr_ptr".
+      iMod (readonly_alloc_1 with "Herr") as "#Herr_ptr".
       wp_apply (wp_WaitGroup__Done with "[$Hwg_tok $His_wg Herr_ptr Hpost]").
       {
         iModIntro.
@@ -585,14 +666,8 @@ Proof.
     }
     iApply "HΦ".
     iFrame "Hwg".
-    iExactEq "Herr_ptrs".
-    f_equal.
-    rewrite /ty_size //=.
-    rewrite loc_add_assoc.
-    f_equal.
-    word.
   }
-  iIntros "[[Hwg _] _]".
+  iIntros "Hwg".
   wp_pures.
 
   wp_apply (wp_WaitGroup__Wait with "Hwg").
@@ -665,7 +740,14 @@ Proof.
     iDestruct (big_sepS_elem_of_acc _ _ j with "Hwg_post") as "[HH _]".
     { set_solver. }
     iDestruct "HH" as "[%Hbad|HH]".
-    { exfalso. word. }
+    { exfalso.
+      rewrite Hclerks_sz in Hbad.
+      revert Hbad.
+      eassert (int.nat (int.nat (_:u64)) = int.nat (_:u64)) as ->.
+      { instantiate (1:=clerks_sl_inner.(Slice.sz)).
+        word. }
+      word.
+    }
     iDestruct "HH" as (??) "(%HbackupLookup & Herr2 & Hpost)".
     wp_apply (wp_slice_ptr).
     wp_pure1.
