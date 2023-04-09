@@ -42,10 +42,10 @@ Instance is_proposed_read_pers γ idx Q : Persistent (is_proposed_read γ idx Q)
 Proof. apply _. Qed.
 
 (* This is a 1/2 fraction *)
-Definition own_log (γlog:gname) (σ:list EntryType) : iProp Σ :=
+Definition own_pre_log (γlog:gname) (σ:list EntryType) : iProp Σ :=
   own γlog (●ML{#1/2} (σ : list (leibnizO EntryType))).
 
-Definition is_log_lb (γlog:gname) (σ:list EntryType) : iProp Σ :=
+Definition is_pre_log_lb (γlog:gname) (σ:list EntryType) : iProp Σ :=
   own γlog (◯ML (σ : list (leibnizO EntryType))).
 
 (* Maybe make the fupds non-persistent, and track things more carefully in the
@@ -55,7 +55,7 @@ Definition prereadN := pbN .@ "preread".
 
 Definition have_proposed_reads_fupds γlog ros : iProp Σ :=
   [∗ map] idx ↦ rosAtIdx ∈ ros, [∗ list] Q ∈ rosAtIdx,
-    □(|={⊤∖↑prereadN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤∖↑prereadN}=∗ □ Q σ))
+    □(|={⊤∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog σ ={∅,⊤∖↑prereadN}=∗ □ Q σ))
 .
 
 (* Maybe make Q not persistent, and escrow it back to the caller *)
@@ -67,8 +67,8 @@ Definition have_completed_reads_Qs ros σ : iProp Σ :=
 Definition preread_inv γ γlog γreads : iProp Σ :=
   inv prereadN (
   ∃ σ ros,
-  "HpbLog" ∷ own_ghost γ σ ∗
-  "Hlog" ∷ own_log γlog σ ∗
+  "HpbLog" ∷ own_pb_log γ σ ∗
+  "Hlog" ∷ own_pre_log γlog σ ∗
   (* For all i < length(σ), the read-op fupds for *)
   "HownRos" ∷ own_proposed_reads γreads ros ∗
   "#HreadUpds" ∷ have_proposed_reads_fupds γlog ros ∗
@@ -127,8 +127,8 @@ Proof.
 Admitted.
 
 Lemma own_log_agree γlog σ σ' :
-  own_log γlog σ -∗
-  own_log γlog σ' -∗
+  own_pre_log γlog σ -∗
+  own_pre_log γlog σ' -∗
   ⌜σ = σ'⌝.
 Proof.
   iIntros "H1 H2".
@@ -139,8 +139,8 @@ Proof.
 Qed.
 
 Lemma own_log_lb_ineq γlog σ σ' :
-  own_log γlog σ' -∗
-  is_log_lb γlog σ -∗
+  own_pre_log γlog σ' -∗
+  is_pre_log_lb γlog σ -∗
   ⌜prefix σ σ'⌝.
 Proof.
   iIntros "H1 H2".
@@ -155,10 +155,10 @@ Lemma start_read_step Q γ γlog γreads idx σ E :
   idx >= length σ →
   £ 1 -∗
   preread_inv γ γlog γreads -∗
-  □(|={E∖↑prereadN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,E∖↑prereadN}=∗ □ Q σ)) -∗
-  own_commit γ σ
+  □(|={E∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog σ ={∅,E∖↑prereadN}=∗ □ Q σ)) -∗
+  own_pb_log γ σ
   ={E}=∗
-  is_proposed_read γreads idx Q ∗ own_commit γ σ
+  is_proposed_read γreads idx Q ∗ own_pb_log γ σ
 .
 Proof.
   intros ? Hidx.
@@ -239,7 +239,7 @@ Lemma finish_read_step Q γ γlog γreads idx σ :
   length σ = idx →
   £ 1 -∗
   preread_inv γ γlog γreads -∗
-  is_log_lb γlog σ -∗
+  is_pb_log_lb γ σ -∗
   is_proposed_read γreads idx Q
   ={↑prereadN}=∗
   □ Q σ
@@ -249,7 +249,7 @@ Proof.
   iInv "Hinv" as "Hown" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hown") as "Hown".
   iNamed "Hown".
-  iDestruct (own_log_lb_ineq with "Hlog Hlb")as %Hprefix.
+  iDestruct (own_log_lb_ineq with "HpbLog Hlb")as %Hprefix.
   iDestruct (map_fmset_elem_lookup with "HownRos Hro") as %HQelem.
   destruct (ros !! idx) as [] eqn:Hlookup.
   2:{ exfalso. by apply elem_of_nil in HQelem. }

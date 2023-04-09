@@ -71,11 +71,9 @@ Definition is_accepted_ro γ epoch σ : iProp Σ :=
   epoch ⤳l[γ.(pb_accepted_gn)]□ σ.
 
 (* NOTE: if desired, can make these exclusive by adding an exclusive token to each *)
-Definition own_ghost γ σ : iProp Σ :=
+Definition own_pb_log γ σ : iProp Σ :=
   own γ.(pb_state_gn) (●ML{#1/2} σ).
-Definition own_commit γ σ : iProp Σ :=
-  own γ.(pb_state_gn) (●ML{#1/2} σ).
-Definition is_ghost_lb γ σ : iProp Σ :=
+Definition is_pb_log_lb γ σ : iProp Σ :=
   own γ.(pb_state_gn) (◯ML σ).
 
 Definition config_proposal_unset γ (epoch:u64) : iProp Σ :=
@@ -116,8 +114,8 @@ Definition opN := ghostN .@ "op".
 Definition is_valid_inv γsys σ op : iProp Σ :=
   inv opN (
     £ 1 ∗
-    (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True)) ∨
-    is_ghost_lb γsys (σ ++ [op])
+    (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_pb_log γsys (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True)) ∨
+    is_pb_log_lb γsys (σ ++ [op])
   )
 .
 
@@ -127,7 +125,7 @@ Definition is_valid_inv γsys σ op : iProp Σ :=
    operation at a time.
  *)
 Definition is_proposal_valid γ σ : iProp Σ :=
-  □(∀ σ', ⌜σ' ⪯ σ⌝ → own_commit γ σ' ={⊤∖↑sysN}=∗ own_commit γ σ).
+  □(∀ σ', ⌜σ' ⪯ σ⌝ → own_pb_log γ σ' ={⊤∖↑sysN}=∗ own_pb_log γ σ).
 
 Definition is_proposal_facts γ epoch σ: iProp Σ :=
   old_proposal_max γ epoch σ ∗
@@ -359,7 +357,7 @@ Qed.
 Lemma valid_add γsys σ op :
   £ 1 -∗
   is_proposal_valid γsys σ -∗
-  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ++[op]) ={∅,⊤∖↑ghostN}=∗ True))
+  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_pb_log γsys (someσ++[op]) ={∅,⊤∖↑ghostN}=∗ True))
   ={↑pbN}=∗
   is_proposal_valid γsys (σ++[op]).
 Proof.
@@ -444,7 +442,7 @@ Qed.
 Lemma ghost_propose γsys epoch σ op :
   £ 1 -∗
   own_primary_ghost γsys epoch σ -∗
-  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γsys (someσ++[op]) ={∅,⊤∖↑ghostN}=∗ True))
+  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_pb_log γsys (someσ++[op]) ={∅,⊤∖↑ghostN}=∗ True))
   ={↑pbN}=∗
   own_primary_ghost γsys epoch (σ++[op]) ∗
   is_proposal_lb γsys epoch (σ++[op]) ∗
@@ -503,7 +501,7 @@ Qed.
 Definition sys_inv γsys := inv sysN
 (
   ∃ σ epoch,
-  own_commit γsys σ ∗
+  own_pb_log γsys σ ∗
   committed_by γsys epoch σ ∗
   is_proposal_lb γsys epoch σ ∗
   is_proposal_facts γsys epoch σ
@@ -518,7 +516,7 @@ Lemma ghost_commit γsys epoch σ :
   is_proposal_lb γsys epoch σ -∗
   is_proposal_facts γsys epoch σ
   ={⊤}=∗ (* XXX: this is ⊤ because the user-provided fupd is fired, and it is allowed to know about ⊤ *)
-  is_ghost_lb γsys σ.
+  is_pb_log_lb γsys σ.
 Proof.
   iIntros "#Hinv #Hcom #Hprop_lb #Hprop_facts".
   iInv "Hinv" as "Hown" "Hclose".
@@ -550,7 +548,7 @@ Proof.
     iDestruct ("Hvalid" $! σcommit with "[] Hghost") as "Hghost".
     { done. }
     iMod "Hghost".
-    unfold own_commit.
+    unfold own_pb_log.
     iEval (rewrite mono_list_auth_lb_op) in "Hghost".
     iDestruct "Hghost" as "[Hghost $]".
     iMod ("Hclose" with "[-]").
@@ -560,7 +558,7 @@ Proof.
     done.
   }
   {
-    unfold own_commit.
+    unfold own_pb_log.
     iEval (rewrite mono_list_auth_lb_op) in "Hghost".
     iDestruct "Hghost" as "[Hghost #Hlb]".
     iDestruct (own_mono with "Hlb") as "$".
@@ -721,7 +719,7 @@ length confγs > 0 →
 (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv 0) ={⊤}=∗
     ∃ γsys,
     sys_inv γsys ∗
-    own_ghost γsys [] ∗
+    own_pb_log γsys [] ∗
     pb_init_config γsys confγs ∗
     is_sys_init_witness γsys
 .

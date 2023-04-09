@@ -26,8 +26,21 @@ Record t :=
   }.
 End Sm.
 
-Definition simplepb_system_names : Type := pb_system_names * primary_system_names.
-Definition simplepb_server_names : Type := pb_server_names * primary_server_names.
+(* FIXME: is there really no better way than prefixing all of the projections
+   with something to make them unique?  *)
+Record simplepb_system_names :=
+  {
+    s_pb : pb_system_names ;
+    s_prim : primary_system_names ;
+    s_prelog : gname ;
+    s_reads : gname ;
+  }.
+
+Record simplepb_server_names :=
+  {
+    r_pb : pb_server_names ;
+    r_prim :primary_server_names ;
+  }.
 
 Implicit Type (γ : simplepb_system_names) (γsrv:simplepb_server_names).
 
@@ -73,7 +86,8 @@ Proof. Admitted. (* solve_inG. Qed. *)
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
-Definition own_log γlog σ := own γlog (●ML{#1/2} (σ : list (leibnizO OpType))).
+(* This is the log of RW operations, exposed to the client of this library. *)
+Definition own_op_log γlog σ := own γlog (●ML{#1/2} (σ : list (leibnizO OpType))).
 
 (* RPC specs *)
 
@@ -82,11 +96,11 @@ Definition ApplyAsBackup_core_spec γ γsrv args opsfull op Q (Φ : u64 -> iProp
    "%Hhas_encoding" ∷ ⌜has_op_encoding args.(ApplyAsBackupArgs.op) op⌝ ∗
    "%Hghost_op_σ" ∷ ⌜last opsfull = Some (op, Q)⌝ ∗
    "%Hno_overflow" ∷ ⌜int.nat args.(ApplyAsBackupArgs.index) < int.nat (word.add args.(ApplyAsBackupArgs.index) 1)⌝ ∗
-   "#Hepoch_lb" ∷ is_epoch_lb γsrv.1 args.(ApplyAsBackupArgs.epoch) ∗
-   "#Hprop_lb" ∷ is_proposal_lb γ.1 args.(ApplyAsBackupArgs.epoch) opsfull ∗
-   "#Hprop_facts" ∷ is_proposal_facts γ.1 args.(ApplyAsBackupArgs.epoch) opsfull ∗
-   "#Hprim_facts" ∷ is_proposal_facts_prim γ.2 args.(ApplyAsBackupArgs.epoch) opsfull ∗
-   "HΨ" ∷ ((is_accepted_lb γsrv.1 args.(ApplyAsBackupArgs.epoch) opsfull -∗ Φ (U64 0)) ∧
+   "#Hepoch_lb" ∷ is_epoch_lb γsrv.(r_pb) args.(ApplyAsBackupArgs.epoch) ∗
+   "#Hprop_lb" ∷ is_proposal_lb γ.(s_pb) args.(ApplyAsBackupArgs.epoch) opsfull ∗
+   "#Hprop_facts" ∷ is_proposal_facts γ.(s_pb) args.(ApplyAsBackupArgs.epoch) opsfull ∗
+   "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) args.(ApplyAsBackupArgs.epoch) opsfull ∗
+   "HΨ" ∷ ((is_accepted_lb γsrv.(r_pb) args.(ApplyAsBackupArgs.epoch) opsfull -∗ Φ (U64 0)) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
     )%I
 .
@@ -104,7 +118,7 @@ Next Obligation.
 Defined.
 
 Definition is_in_config γ γsrv epoch : iProp Σ :=
-  ∃ confγ, is_epoch_config_proposal γ.1 epoch confγ ∗ ⌜γsrv.1 ∈ confγ⌝
+  ∃ confγ, is_epoch_config_proposal γ.(s_pb) epoch confγ ∗ ⌜γsrv.1 ∈ confγ⌝
 .
 
 Definition SetState_core_spec γ γsrv args opsfull :=
@@ -167,24 +181,24 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition BecomePrimary_core_spec γ γsrv args σ backupγ (ρ:u64 -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
+Definition BecomePrimary_core_spec γlog γ γsrv args σ backupγ (ρ:u64 -d> gname -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
   λ (Φ : u64 -> iPropO Σ) ,
   (
     is_epoch_lb γsrv.1 args.(BecomePrimaryArgs.epoch) ∗
     is_epoch_config γ.1 args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ).*1 ∗
     ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ,
-     (ρ host γ γsrv') ∗ is_epoch_lb γsrv'.1 args.(BecomePrimaryArgs.epoch)) ∗
+     (ρ host γlog γ γsrv') ∗ is_epoch_lb γsrv'.1 args.(BecomePrimaryArgs.epoch)) ∗
     is_proposal_facts_prim γ.2 args.(BecomePrimaryArgs.epoch) σ ∗
     become_primary_escrow γ.2 γsrv.2 args.(BecomePrimaryArgs.epoch) σ (own_primary_ghost γ.1 args.(BecomePrimaryArgs.epoch) σ) ∗
     (∀ err, Φ err)
     )%I
 .
 
-Program Definition BecomePrimary_spec_pre γ γsrv ρ :=
+Program Definition BecomePrimary_spec_pre γlog γ γsrv ρ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ confγ,
     ⌜BecomePrimaryArgs.has_encoding enc_args args⌝ ∗
-    BecomePrimary_core_spec γ γsrv args σ confγ ρ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
+    BecomePrimary_core_spec γlog γ γsrv args σ confγ ρ (λ err, ∀ reply, ⌜reply = u64_le err⌝ -∗ Φ reply)
   )%I
 .
 Next Obligation.
@@ -192,41 +206,21 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition appN := pbN .@ "app".
-Definition escrowN := pbN .@ "escrow".
-
-Definition own_ghost' γsys (opsfullQ : list (OpType * (list OpType → iProp Σ))) : iProp Σ :=
-  ∃ ops_gnames: list (OpType * gname),
-    own_ghost γsys ops_gnames ∗
-    ⌜opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
-    [∗ list] k↦Φ;γprop ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_pred_own γprop DfracDiscarded Φ.
-
-Definition is_inv γlog γsys :=
-  inv appN (∃ opsfullQ,
-      own_ghost' γsys opsfullQ ∗
-      own_log γlog (get_rwops opsfullQ) ∗
-      □(
-        ∀ opsPre opsPrePre lastEnt,
-        ⌜prefix opsPre opsfullQ⌝ -∗ ⌜opsPre = opsPrePre ++ [lastEnt]⌝ -∗
-        (lastEnt.2 (get_rwops opsPrePre))
-      )
-      ).
-
 Definition Apply_core_spec γ γlog op enc_op :=
   λ (Φ : ApplyReply.C -> iPropO Σ) ,
   (
   ⌜has_op_encoding enc_op op⌝ ∗
-  is_inv γlog γ.1 ∗
-  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
+  (* is_inv γlog γ.2 ∗ *)
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_op_log γlog σ ∗ (own_op_log γlog (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
             Φ (ApplyReply.mkC 0 (compute_reply σ op))
   )) ∗
   □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
   )%I
 .
 
-Program Definition Apply_spec γ :=
+Program Definition Apply_spec γ γlog :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ op γlog, Apply_core_spec γ γlog op enc_args
+  (∃ op, Apply_core_spec γ γlog op enc_args
                       (λ reply, ∀ enc_reply, ⌜ApplyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
   )%I
 .
@@ -239,17 +233,19 @@ Definition ApplyRo_core_spec γ γlog op enc_op :=
   λ (Φ : ApplyReply.C -> iPropO Σ) ,
   (
   ⌜has_op_encoding enc_op op⌝ ∗
-  is_inv γlog γ.1 ∗
-  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤∖↑pbN}=∗
-            Φ (ApplyReply.mkC 0 (compute_reply σ op))
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_op_log γlog σ ∗ (own_op_log γlog σ ={∅,⊤∖↑pbN}=∗
+            □ Φ (ApplyReply.mkC 0 (compute_reply σ op))
+   (* XXX: the □Φ is OK because this is read-only. Technically, we could prove
+      a stronger spec without the box, but we'll end up using prophecy anyways
+      so it won't likely matter. *)
   )) ∗
   □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
   )%I
 .
 
-Program Definition ApplyRo_spec γ :=
+Program Definition ApplyRo_spec γ γlog :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ op γlog, ApplyRo_core_spec γ γlog op enc_args
+  (∃ op, ApplyRo_core_spec γ γlog op enc_args
                       (λ reply, ∀ enc_reply, ⌜ApplyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
   )%I
 .
@@ -259,22 +255,22 @@ Next Obligation.
 Defined.
 
 
-Definition is_pb_host_pre ρ : (u64 -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
-  (λ host γ γsrv,
+Definition is_pb_host_pre ρ : (u64 -d> gname -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
+  (λ host γlog γ γsrv,
   ∃ γrpc,
   handler_spec γrpc host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
   handler_spec γrpc host (U64 1) (SetState_spec γ γsrv) ∗
   handler_spec γrpc host (U64 2) (GetState_spec γ γsrv) ∗
-  handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
-  handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
-  handler_spec γrpc host (U64 6) (ApplyRo_spec γ) ∗
+  handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γlog γ γsrv ρ) ∗
+  handler_spec γrpc host (U64 4) (Apply_spec γ γlog) ∗
+  handler_spec γrpc host (U64 6) (ApplyRo_spec γ γlog) ∗
   handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ]})%I
 .
 
 Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
 Proof.
   intros n ?? Hρ. rewrite /is_pb_host_pre.
-  intros ???. f_equiv. intros ?.
+  intros ????. f_equiv. intros ?.
   do 5 (f_contractive || f_equiv).
   rewrite /BecomePrimary_spec_pre /BecomePrimary_core_spec.
   intros args Φ. simpl. repeat f_equiv. apply Hρ.
@@ -286,16 +282,16 @@ Definition is_pb_host_aux : seal (is_pb_host_def). by eexists. Qed.
 Definition is_pb_host := is_pb_host_aux.(unseal).
 Definition is_pb_host_eq : is_pb_host = is_pb_host_def := is_pb_host_aux.(seal_eq).
 
-Definition BecomePrimary_spec γ γsrv := BecomePrimary_spec_pre γ γsrv is_pb_host.
+Definition BecomePrimary_spec γlog γ γsrv := BecomePrimary_spec_pre γlog γ γsrv is_pb_host.
 
-Lemma is_pb_host_unfold host γ γsrv:
-  is_pb_host host γ γsrv ⊣⊢ is_pb_host_pre (is_pb_host) host γ γsrv
+Lemma is_pb_host_unfold host γlog γ γsrv:
+  is_pb_host host γlog γ γsrv ⊣⊢ is_pb_host_pre (is_pb_host) host γlog γ γsrv
 .
 Proof.
   rewrite is_pb_host_eq. apply (fixpoint_unfold (is_pb_host_pre)).
 Qed.
 
-Global Instance is_pb_host_pers host γ γsrv: Persistent (is_pb_host host γ γsrv).
+Global Instance is_pb_host_pers host γlog γ γsrv: Persistent (is_pb_host host γlog γ γsrv).
 Proof.
   rewrite is_pb_host_unfold.
   apply _.
@@ -304,13 +300,13 @@ Qed.
 (* End RPC specs *)
 
 (* Begin config client-side protocol. *)
-Definition is_conf_inv γ γconf : iProp Σ :=
+Definition is_conf_inv γlog γ γconf : iProp Σ :=
   inv configN (∃ epoch conf confγs epoch_lb,
       "Hepoch" ∷ own_latest_epoch γconf epoch ∗
       "Hconf" ∷ own_config γconf conf ∗
       "#His_conf" ∷ is_epoch_config γ.1 epoch_lb confγs.*1 ∗
       "#His_conf_prop" ∷ is_epoch_config_proposal γ.1 epoch_lb confγs.*1 ∗
-      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
+      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γlog γ γsrv) ∗
       "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ confγs.*1⌝ → is_epoch_lb γsrv epoch_lb) ∗
       "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γ.1 epoch' ∗ config_unset γ.1 epoch' ∗ own_proposal_unused γ.1 epoch' ∗ own_init_proposal_unused γ.2 epoch') ∗
       "Hunset_or_set" ∷ (config_unset γ.1 epoch ∨ ⌜int.nat epoch_lb = int.nat epoch⌝) ∗
@@ -367,11 +363,11 @@ Notation "server.t" := (server.t (pb_record:=pb_record)).
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
 
-Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
+Definition is_Clerk (ck:loc) γlog γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[pb.Clerk :: "cl"] #cl) ∗
   "#Hcl_rpc"  ∷ is_ReconnectingClient cl srv ∗
-  "#Hsrv" ∷ is_pb_host srv γ γsrv
+  "#Hsrv" ∷ is_pb_host srv γlog γ γsrv
 .
 
 (* End clerk specs *)
@@ -493,7 +489,7 @@ Definition numClerks : nat := 32.
 Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
 (* this is meant to be unfolded in the code proof *)
-Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
+Definition is_Primary γlog γ γsrv (s:server.t) clerks_sl : iProp Σ:=
   ∃ (clerkss:list Slice.t) backups,
   "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
   "#Hconf" ∷ is_epoch_config γ.1 s.(server.epoch) (γsrv :: backups).*1 ∗
@@ -503,7 +499,7 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
                         ∃ clerks,
                         "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
                         "%Hclerks_conf" ∷ ⌜length clerks = length backups⌝ ∗
-                        "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.1 s.(server.epoch))
+                        "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γlog γ γsrv' ∗ is_epoch_lb γsrv'.1 s.(server.epoch))
                     )
 .
 
@@ -511,7 +507,7 @@ Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
 Hint Unfold no_overflow : arith.
 
 (* physical (volatile) state; meant to be unfolded in code proof *)
-Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
+Definition own_Server (s:loc) (st:server.t) γlog γ γsrv mu : iProp Σ :=
   ∃ own_StateMachine (sm:loc) clerks_sl
     (committedNextIndex_cond:loc) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
   (* non-persistent physical *)
@@ -538,7 +534,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "#HcommittedNextIndex_is_cond" ∷ is_cond committedNextIndex_cond mu ∗
 
   (* witnesses for primary; the exclusive state is in own_Server_ghost *)
-  "#Hprimary" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary γ γsrv st clerks_sl) ∗
+  "#Hprimary" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary γlog γ γsrv st clerks_sl) ∗
 
   (* state-machine callback specs *)
   "#HisSm" ∷ is_StateMachine sm own_StateMachine (own_Server_ghost_f γ γsrv) ∗
@@ -547,13 +543,11 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "%HnextIndexNoOverflow" ∷ ⌜no_overflow (length (get_rwops (st.(server.ops_full_eph))))⌝
 .
 
-Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
-  (* FIXME: want a separate client-side config protocol. Want admin_proof.is_conf_inv γ γconf. *)
-  ∃ γreads γlog,
-  "#HprereadInv" ∷ preread_inv γ.1 γlog γreads ∗
+Definition is_Server_lease_resource γlog γprelog γreads γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
+  "#HprereadInv" ∷ preread_inv γ.1 γprelog γreads ∗
   "#Hlease" ∷ □(if leaseValid then
                 ∃ γl γconf,
-                is_conf_inv γ γconf ∗
+                is_conf_inv γlog γ γconf ∗
                 is_lease config_proof.epochLeaseN γl (own_latest_epoch γconf epoch) ∗
                 is_lease_valid_lb γl leaseExpiration
               else
@@ -571,7 +565,7 @@ Definition own_Primary_ghost_f γ γsrv (canBecomePrimary isPrimary:bool) epoch 
               "Hprim" ∷ own_primary_ghost γ.1 epoch opsfull ∗
 
               (* committed witness for committed state *)
-              "#Hcommit_lb" ∷ is_ghost_lb γ.1 ops_commit_full ∗
+              "#Hcommit_lb" ∷ is_pb_log_lb γ.1 ops_commit_full ∗
               "#Hcommit_prop_lb" ∷ is_proposal_lb γ.1 epoch ops_commit_full ∗
               "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
             else
@@ -580,7 +574,7 @@ Definition own_Primary_ghost_f γ γsrv (canBecomePrimary isPrimary:bool) epoch 
 .
 
 (* should not be unfolded in proof *)
-Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
+Definition own_Server_ghost_eph_f (st:server.t) γlog γprelog γreads γ γsrv: iProp Σ :=
   tc_opaque (
   let ops:=(get_rwops st.(server.ops_full_eph)) in
   "Hprimary" ∷ own_Primary_ghost_f γ γsrv st.(server.canBecomePrimary) st.(server.isPrimary) st.(server.epoch) st.(server.committedNextIndex) st.(server.ops_full_eph) ∗
@@ -589,26 +583,49 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
 
   "#Hs_prop_lb" ∷ is_proposal_lb γ.1 st.(server.epoch) st.(server.ops_full_eph) ∗
   "#Hs_prop_facts" ∷ is_proposal_facts γ.1 st.(server.epoch) st.(server.ops_full_eph) ∗
-  "#Hlease" ∷ is_Server_lease_resource γ st.(server.epoch) st.(server.leaseValid) st.(server.leaseExpiration) ∗
+  "#Hlease" ∷ is_Server_lease_resource γlog γprelog γreads γ st.(server.epoch) st.(server.leaseValid) st.(server.leaseExpiration) ∗
 
   "#Hin_conf" ∷ is_in_config γ γsrv st.(server.epoch)
   )%I
 .
 
-Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
+Definition mu_inv (s:loc) γlog γprelog γreads γ γsrv mu: iProp Σ :=
   ∃ st,
-  "Hvol" ∷ own_Server s st γ γsrv mu ∗
-  "HghostEph" ∷ own_Server_ghost_eph_f st γ γsrv
+  "Hvol" ∷ own_Server s st γlog γ γsrv mu ∗
+  "HghostEph" ∷ own_Server_ghost_eph_f st γlog γprelog γreads γ γsrv
 .
 
-Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val) (confCk:loc) γconf,
+Definition appN := pbN .@ "app".
+Definition escrowN := pbN .@ "escrow".
+
+Definition own_ghost_log' γprelog (opsfullQ : list (OpType * (list OpType → iProp Σ))) : iProp Σ :=
+  ∃ ops_gnames: list (OpType * gname),
+    own_pre_log γprelog ops_gnames ∗
+    ⌜opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
+    [∗ list] k↦Φ;γprop ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_pred_own γprop DfracDiscarded Φ.
+
+Definition is_inv γlog γprelog :=
+  inv appN (∃ opsfullQ,
+      own_ghost_log' γprelog opsfullQ ∗
+      own_op_log γlog (get_rwops opsfullQ) ∗
+      □(
+        ∀ opsPre opsPrePre lastEnt,
+        ⌜prefix opsPre opsfullQ⌝ -∗ ⌜opsPre = opsPrePre ++ [lastEnt]⌝ -∗
+        (lastEnt.2 (get_rwops opsPrePre))
+      )
+      ).
+
+Definition is_Server (s:loc) γlog γ γsrv : iProp Σ :=
+  ∃ (mu:val) (confCk:loc) γconf γprelog γreads,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
+  "#HmuInv" ∷ is_lock pbN mu (mu_inv s γlog γprelog γreads γ γsrv mu) ∗
   "#Hsys_inv" ∷ sys_inv γ.1 ∗
   "#HconfCk" ∷ readonly (s ↦[pb.Server :: "confCk"] #confCk) ∗
-  "#Hconf_inv" ∷ is_conf_inv γ γconf ∗
-  "#HconfCk_is" ∷ config_proof.is_Clerk confCk γconf
+  "#Hconf_inv" ∷ is_conf_inv γlog γ γconf ∗
+  "#HconfCk_is" ∷ config_proof.is_Clerk confCk γconf ∗
+  "#HhelpingInv" ∷ is_inv γlog γprelog ∗
+  "#HhelpingInv" ∷ is_inv γlog γprelog ∗
+  "#HprereadInv" ∷ preread_inv γ.1 γlog γreads
 .
 
 Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :

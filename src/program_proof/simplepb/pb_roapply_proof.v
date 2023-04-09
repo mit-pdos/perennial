@@ -274,29 +274,19 @@ Proof.
   repeat iExists _; iFrame "∗#%".
 Admitted. (* FIXME: various γlog's *)
 
-Lemma wp_Server__ApplyRo_internal (s:loc) γlog γ γsrv op_sl op_bytes op Q :
-  {{{
-        is_Server s γ γsrv ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
-        ⌜has_op_encoding op_bytes op⌝ ∗
-        □(|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γlog σ ∗ (own_ghost γlog σ) ={∅,⊤∖↑ghostN}=∗ Q σ))
-  }}}
-    pb.Server__ApplyRoWaitForCommit #s (slice_val op_sl)
-  {{{
-        reply_ptr reply, RET #reply_ptr; £ 1 ∗ £ 1 ∗ £ 1 ∗ ApplyReply.own_q reply_ptr reply ∗
-        if (decide (reply.(ApplyReply.err) = 0%Z)) then
-          ∃ opsfull,
-            let ops := (get_rwops opsfull) in
-            ⌜reply.(ApplyReply.ret) = compute_reply ops op⌝ ∗
-            is_ghost_lb γlog (opsfull ++ [(op, Q)])
-        else
-          True
-  }}}
-  .
+Lemma wp_Server__ApplyRo (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
+  is_Server s γ γsrv -∗
+  readonly (is_slice_small op_sl byteT 1 enc_op) -∗
+  (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
+  ApplyRo_core_spec γ γlog op enc_op Ψ -∗
+  WP (pb.Server__ApplyRoWaitForCommit #s (slice_val op_sl)) {{ Φ }}
+.
 Proof.
-  iIntros (Φ) "[#His Hpre] HΦ".
-  iDestruct "Hpre" as "(#Hsl & %Hghostop_op & Hupd)".
-  iNamed "His".
+  iIntros "#Hsrv #Hop_sl".
+  iIntros "HΨ HΦ".
+  iApply (wp_frame_wand with "HΨ").
+  iDestruct "HΦ" as "(%Hop_enc & #Hinv & #Hupd & #Hfail_Φ)".
+  iNamed "Hsrv".
   rewrite /Server__ApplyRoWaitForCommit.
   wp_pure1_credit "Hlc1".
   wp_pure1_credit "Hlc2".
@@ -336,7 +326,7 @@ Proof.
   wp_if_destruct.
   { (* lease invalid *)
     wp_loadField.
-    wp_apply (release_spec with "[-Hlc1 Hlc2 Hlc3 HΦ Hupd Err Reply]").
+    wp_apply (release_spec with "[-Hlc1 Hlc2 Hlc3 Hupd Err Reply]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -347,16 +337,19 @@ Proof.
     }
     wp_pures.
     wp_storeField.
-    iApply ("HΦ" $! _ (ApplyReply.mkC _ _)).
     iModIntro.
-    iFrame.
-    iExists _, _; iFrame.
-    by iApply is_slice_small_nil.
+    iIntros "HΨ".
+    iApply ("HΨ" $! (ApplyReply.mkC _ _)).
+    2:{
+      iExists _, _; iFrame.
+      by iApply is_slice_small_nil.
+    }
+    { by iApply "Hfail_Φ". }
   }
 
   wp_apply wp_GetTimeRange.
   iIntros (?????) "Htime".
-  destruct (decide (int.nat h <= int.nat st.(server.leaseExpiration))).
+  destruct (decide (int.nat h < int.nat st.(server.leaseExpiration))).
   { (* case: got lease is not expired *)
 
     (* proof steps here:
@@ -366,9 +359,11 @@ Proof.
      *)
     iDestruct (preread_step with "Hlc1 Hlc2 Hlc3 Htime [] HghostEph [] [Hstate] [$]") as (?) ">HH".
     { done. }
-    { admit. }
+    { word. }
     {
-
+      iModIntro.
+      iExactEq "Hupd".
+      (* FIXME: need to straighten out γlogs. *)
     }
 
     iModIntro. iFrame "Htime".

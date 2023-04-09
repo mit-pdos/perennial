@@ -38,9 +38,9 @@ Proof.
 Qed.
 
 (* Clerk specs *)
-Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op op_sl op_bytes :
+Lemma wp_Clerk__ApplyAsBackup γlog γ γsrv ck args_ptr (epoch index:u64) opsfull op op_sl op_bytes :
   {{{
-        "#Hck" ∷ is_Clerk ck γ γsrv ∗
+        "#Hck" ∷ is_Clerk ck γlog γ γsrv ∗
         "#HepochLb" ∷ is_epoch_lb γsrv.1 epoch ∗
         "#Hprop_lb" ∷ is_proposal_lb γ.1 epoch opsfull ∗
         "#Hprop_facts" ∷ is_proposal_facts γ.1 epoch opsfull ∗
@@ -155,6 +155,7 @@ Qed.
 
 Lemma applybackup_primary_eph γ γsrv isPrimary canBecomePrimary epoch committedNextIndex opsfull ops_full_eph' :
   (length (get_rwops opsfull)) < (length (get_rwops ops_full_eph')) →
+  is_proposal_lb γ.1 epoch opsfull -∗
   is_proposal_lb γ.1 epoch ops_full_eph' -∗
   is_proposal_facts γ.1 epoch ops_full_eph' -∗
   own_Primary_ghost_f γ γsrv canBecomePrimary isPrimary epoch committedNextIndex opsfull -∗
@@ -165,7 +166,7 @@ Lemma applybackup_primary_eph γ γsrv isPrimary canBecomePrimary epoch committe
 Proof.
   intros Hineq.
   rewrite /own_Primary_ghost_f /tc_opaque.
-  iIntros "#Hprop_lb #Hprop_facts".
+  iIntros "#Hs_prop_lb #Hprop_lb #Hprop_facts".
   iNamed 1.
   iFrame.
   destruct isPrimary.
@@ -186,6 +187,7 @@ Proof.
     lia.
   }
   iFrame "%#".
+  iSplitR; last done.
   by iApply is_proposal_facts_prim_mono.
 Qed.
 
@@ -195,7 +197,7 @@ Lemma applybackup_eph st γ γsrv ops_full_eph' :
   (length (get_rwops st.(server.ops_full_eph))) < (length (get_rwops ops_full_eph')) →
   is_proposal_lb γ.1 st.(server.epoch) ops_full_eph' -∗
   is_proposal_facts γ.1 st.(server.epoch) ops_full_eph' -∗
-  own_Server_ghost_eph_f st γ γsrv -∗
+  own_Server_ghost_eph_f st γprelog γreads γ γsrv -∗
   own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv ∗
   ⌜prefix st.(server.ops_full_eph) ops_full_eph'⌝
 .
