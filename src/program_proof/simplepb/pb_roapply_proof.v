@@ -144,11 +144,13 @@ Lemma preread_step st γ γsrv (γlog:gname) γreads t (readIndex:nat) Q {own_St
   st.(server.leaseValid) = true →
   int.nat t < int.nat st.(server.leaseExpiration) →
   £ 1 -∗
+  £ 1 -∗
   own_time t -∗
   (|={⊤∖↑ghostN,∅}=> ∃ σ, pb_preread_protocol.own_log γlog σ ∗ (pb_preread_protocol.own_log γlog σ ={∅,⊤∖↑ghostN}=∗ Q σ)) -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
+  sys_inv γ.1 -∗
   (* XXX: I think the ncfupd is redundant with the wpc_nval *)
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
@@ -161,24 +163,52 @@ Proof.
 
       Combine with
     *)
-  iIntros (??) "Hlc Htime Hupd Hghost #HaccP Hstate".
+  iIntros (??) "Hlc Hlc2 Htime Hupd Hghost #HaccP Hstate #HpbInv".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "Hghost".
   iNamed "Hghost".
   iNamed "Hlease".
   rewrite H.
-  iDestruct "Hlease" as (??) "(#Hconf & #Hlease & #Hlease_lb)".
+  iDestruct "Hlease" as (??) "(#HconfInv & #Hlease & #Hlease_lb)".
 
   (* Step 1. use accessP_fact to get ownership of locally accepted state *)
   iMod ("HaccP" with "Hlc [-Hstate] Hstate") as "$"; last done.
   iIntros (???) "Hghost".
   iNamed "Hghost".
 
-  (* Show that st.(server.ops_full_eph) ⪰ opsfull_old. *)
-  (* TODO: strengthen accessP lemma to automatically imply this. *)
+  iInv "HpbInv" as "Hown" "HclosePb".
+  iDestruct "Hown" as (??) "(Hcommit & #Haccs & #? & #?)".
+  destruct (decide (int.nat st.(server.epoch) < int.nat epoch)).
+  { (* case: something has been committed in a higher epoch than the
+       server's.
+       Will use the lease that we have on the epoch number together with the
+       fact that configurations for higher epochs are undecided (according to
+       is_conf_inv) to derive a contradiction.
+     *)
+    iMod (lease_acc with "Hlease_lb Hlease Htime") as "[>HleasedEpoch _]".
+    { admit. } (* FIXME: put all masks within pbN *)
+    { done. }
+    iInv "HconfInv" as "Hown" "_".
+    { admit. } (* FIXME: put all masks inside of pbN *)
+    iMod (lc_fupd_elim_later with "Hlc2 Hown") as "Hown".
+    iNamed "Hown".
+    iDestruct (mono_nat_auth_own_agree with "Hepoch HleasedEpoch") as %HepochEq.
+    subst.
+    iDestruct "Haccs" as (?) "[#>HsomeConf _]".
+    iDestruct (big_sepS_elem_of_acc _ _ epoch with "Hunused") as "[HH _]".
+    { set_solver. }
+    iSpecialize ("HH" with "[%]").
+    { word. }
+    iDestruct "HH" as "(_ & Hunset & _)".
+    unfold is_epoch_config.
+    iDestruct "HsomeConf" as "[HsomeConf _]".
+    iDestruct (own_valid_2 with "Hunset HsomeConf") as %Hbad.
+    exfalso.
+    rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hbad.
+    by destruct Hbad as [Hbad _].
+  }
 
   (* Use ownership of accepted state to show that. *)
 
-  iMod (lease_acc with "Hlease_lb Hlease Htime") as "H".
   { set_solver. }
   { done. }
   iMod (start_read_step with "[]").
