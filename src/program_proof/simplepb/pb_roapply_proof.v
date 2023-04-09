@@ -291,7 +291,7 @@ Lemma wp_Server__ApplyRo_internal (s:loc) γlog γ γsrv op_sl op_bytes op Q :
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
-        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γlog σ ∗ (own_ghost γlog (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
+        □(|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γlog σ ∗ (own_ghost γlog σ) ={∅,⊤∖↑ghostN}=∗ Q σ))
   }}}
     pb.Server__ApplyRoWaitForCommit #s (slice_val op_sl)
   {{{
@@ -377,6 +377,11 @@ Proof.
        Combine with
      *)
     iDestruct (preread_step with "Hlc1 Hlc2 Hlc3 Htime [] HghostEph [] [Hstate] [$]") as (?) ">HH".
+    { done. }
+    { admit. }
+    {
+
+    }
 
     iModIntro. iFrame "Htime".
     wp_pures.

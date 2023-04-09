@@ -51,7 +51,7 @@ Definition is_log_lb (γlog:gname) (σ:list EntryType) : iProp Σ :=
 (* Maybe make the fupds non-persistent, and track things more carefully in the
    proof. *)
 
-Definition prereadN := nroot .@ "preread".
+Definition prereadN := pbN .@ "preread".
 
 Definition have_proposed_reads_fupds γlog ros : iProp Σ :=
   [∗ map] idx ↦ rosAtIdx ∈ ros, [∗ list] Q ∈ rosAtIdx,

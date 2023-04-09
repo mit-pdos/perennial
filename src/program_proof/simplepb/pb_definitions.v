@@ -240,7 +240,7 @@ Definition ApplyRo_core_spec γ γlog op enc_op :=
   (
   ⌜has_op_encoding enc_op op⌝ ∗
   is_inv γlog γ.1 ∗
-  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤∖↑pbN}=∗
+  □(|={⊤∖↑pbN∖↑proof.aofN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤∖↑pbN∖↑proof.aofN}=∗
             Φ (ApplyReply.mkC 0 (compute_reply σ op))
   )) ∗
   □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))

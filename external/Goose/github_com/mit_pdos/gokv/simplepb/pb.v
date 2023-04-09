@@ -332,7 +332,7 @@ Definition Server__ApplyRoWaitForCommit: val :=
           "reply"
         else
           let: (<>, "h") := grove_ffi.GetTimeRange #() in
-          (if: struct.loadF Server "leaseExpiration" "s" < "h"
+          (if: struct.loadF Server "leaseExpiration" "s" ≤ "h"
           then
             lock.release (struct.loadF Server "mu" "s");;
             (* log.Printf("Lease expired because %d < %d", s.leaseExpiration, h) *)
