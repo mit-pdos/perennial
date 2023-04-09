@@ -147,9 +147,9 @@ Lemma preread_step st γ γsrv (γlog:gname) t Q {own_StateMachine} :
   £ 1 -∗
   £ 1 -∗
   own_time t -∗
-  □(|={⊤ ∖ ↑proof.aofN ∖ ↑sysN ∖ ↑prereadN,∅}=>
+  □(|={⊤ ∖ ↑pbN,∅}=>
     ∃ σ, pb_preread_protocol.own_log γlog σ ∗
-      (pb_preread_protocol.own_log γlog σ ={∅,⊤∖↑proof.aofN ∖↑sysN ∖ ↑prereadN}=∗ □ Q σ)) -∗
+      (pb_preread_protocol.own_log γlog σ ={∅,⊤ ∖ ↑pbN}=∗ □ Q σ)) -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
@@ -187,20 +187,7 @@ Proof.
        is_conf_inv) to derive a contradiction.
      *)
     iMod (lease_acc with "Hlease_lb Hlease Htime") as "[>HleasedEpoch _]".
-    {
-      enough (↑epochLeaseN ## (↑proof.aofN ∪ ↑sysN:coPset)) by set_solver.
-      apply disjoint_union_r.
-      split.
-      { by apply ndot_ne_disjoint. }
-      {
-        symmetry.
-        eapply disjoint_subseteq.
-        { by apply nclose_subseteq'. }
-        eapply disjoint_subseteq.
-        { by apply nclose_subseteq'. }
-        by apply ndot_ne_disjoint.
-      }
-    }
+    { solve_ndisj. }
     { done. }
     iInv "HconfInv" as "Hown" "_".
     iMod (lc_fupd_elim_later with "Hlc2 Hown") as "Hown".
@@ -261,17 +248,18 @@ Proof.
   (* FIXME: straighten out all the various γlog's. There are 3 of them now I
      think. *)
   replace (γlog) with (γlog0) by admit.
-  iMod (start_read_step with "Hlc2 [$] Hupd Hcommit") as "[$ Hcommit]".
-  { enough (↑prereadN ## (↑proof.aofN ∪ ↑sysN:coPset)) by set_solver.
-    apply disjoint_union_r.
-    split.
-    { by apply ndot_ne_disjoint. }
-    { symmetry.
-      eapply disjoint_subseteq; first by apply nclose_subseteq'.
-      eapply disjoint_subseteq; first by apply nclose_subseteq'.
-      by apply ndot_ne_disjoint. }
-  }
+  iMod (start_read_step with "Hlc2 [$] [Hupd] Hcommit") as "[$ Hcommit]".
+  { solve_ndisj. }
   { by apply prefix_length. }
+  {
+    iModIntro.
+    iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
+    { solve_ndisj. }
+    iMod "Hupd" as (?) "[? Hupd]".
+    iModIntro. iExists _; iFrame.
+    iIntros "?". iMod ("Hupd" with "[$]").
+    by iMod "Hmask".
+  }
   iMod ("HclosePb" with "[-Htime Hprimary Hghost]").
   { iNext; repeat iExists _; iFrame "∗#". }
   iModIntro.

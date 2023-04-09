@@ -240,7 +240,7 @@ Definition ApplyRo_core_spec γ γlog op enc_op :=
   (
   ⌜has_op_encoding enc_op op⌝ ∗
   is_inv γlog γ.1 ∗
-  □(|={⊤∖↑pbN∖↑proof.aofN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤∖↑pbN∖↑proof.aofN}=∗
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤∖↑pbN}=∗
             Φ (ApplyReply.mkC 0 (compute_reply σ op))
   )) ∗
   □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
@@ -454,10 +454,12 @@ Definition is_ApplyReadonlyFn own_StateMachine (startApplyFn:val) (P:u64 → lis
   }}}
 .
 
+Definition pbAofN := pbN .@ "pbAofN".
+
 Definition accessP_fact own_StateMachine P : iProp Σ :=
   □ (£ 1 -∗ (∀ Φ σ epoch sealed,
      (∀ σold sealedold,
-       ⌜prefix σold σ⌝ -∗ P epoch σold sealedold ={⊤∖↑aofN}=∗ P epoch σold sealedold ∗ Φ) -∗
+       ⌜prefix σold σ⌝ -∗ P epoch σold sealedold ={⊤∖↑pbAofN}=∗ P epoch σold sealedold ∗ Φ) -∗
   own_StateMachine epoch σ sealed P -∗ |NC={⊤}=>
   own_StateMachine epoch σ sealed P ∗ Φ))
 .

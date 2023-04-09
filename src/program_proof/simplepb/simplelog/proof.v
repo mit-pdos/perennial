@@ -247,7 +247,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "#Hdurlb" ∷ □(if sealed then aof_durable_lb γaof data else True) ∗
 
     "Haof" ∷ aof_log_own γaof data ∗
-    "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv γ P epoch) (file_crash P) ∗
+    "#His_aof" ∷ is_aof pbAofN aof_ptr γaof fname (file_inv γ P epoch) (file_crash P) ∗
     "%Henc" ∷ ⌜file_encodes_state data epoch ops sealed⌝ ∗
     "Hmemstate" ∷ own_InMemoryStateMachine ops ∗
     "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine ∗
@@ -264,7 +264,7 @@ Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops 
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
-        (P epoch ops false ={⊤∖↑aofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
+        (P epoch ops false ={⊤∖↑pbAofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
         own_StateMachine s epoch ops false P
   }}}
     StateMachine__apply #s (slice_val op_sl)
@@ -650,7 +650,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  wp_apply (wp_CreateAppendOnlyFile _ _ (file_inv γ2 P epoch) (file_crash P) with "[] [$Hfile]").
+  wp_apply (wp_CreateAppendOnlyFile pbAofN _ _ (file_inv γ2 P epoch) (file_crash P) with "[] [$Hfile]").
   {
     iModIntro. iIntros (?) "Hinv".
     iDestruct "Hinv" as (??) "[H1 [H2 H3]]".
@@ -688,7 +688,7 @@ Qed.
 Lemma wp_getStateAndSeal s P epoch ops sealed Q :
   {{{
         own_StateMachine s epoch ops sealed P ∗
-        (P epoch ops sealed ={⊤∖↑aofN}=∗ P epoch ops true ∗ Q)
+        (P epoch ops sealed ={⊤∖↑pbAofN}=∗ P epoch ops true ∗ Q)
   }}}
     StateMachine__getStateAndSeal #s
   {{{
@@ -1734,7 +1734,7 @@ Proof.
         iIntros "H1".
         iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
         {
-          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
+          enough ((↑pbAofN:coPset) ## ↑pbN) by set_solver.
           by apply ndot_ne_disjoint.
         }
         iMod ("Hupd" with "H1").
@@ -1758,7 +1758,7 @@ Proof.
         instantiate (1:=Q).
         iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
         {
-          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
+          enough ((↑pbAofN:coPset) ## ↑pbN) by set_solver.
           by apply ndot_ne_disjoint.
         }
         iMod ("Hupd" with "H1").
@@ -1786,7 +1786,7 @@ Proof.
         iIntros "H1".
         iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
         {
-          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
+          enough ((↑pbAofN:coPset) ## ↑pbN) by set_solver.
           by apply ndot_ne_disjoint.
         }
         iMod ("Hupd" with "H1").
