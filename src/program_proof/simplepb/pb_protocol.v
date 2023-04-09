@@ -78,19 +78,20 @@ Definition own_commit γ σ : iProp Σ :=
 Definition is_ghost_lb γ σ : iProp Σ :=
   own γ.(pb_state_gn) (◯ML σ).
 
-Definition is_epoch_config γ epoch (conf:list pb_server_names): iProp Σ :=
-  own γ.(pb_config_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (Some conf : (leibnizO _)))]} ∗
-  ⌜length conf > 0⌝.
-Definition is_epoch_skipped γ epoch : iProp Σ :=
-  own γ.(pb_config_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (None : (leibnizO _)))]}.
-Definition config_unset γ (epoch:u64) : iProp Σ :=
-  own γ.(pb_config_gn) {[epoch := (to_dfrac_agree (DfracOwn 1) (None : (leibnizO _)))]}.
-
 Definition config_proposal_unset γ (epoch:u64) : iProp Σ :=
   own γ.(pb_config_prop_gn) {[epoch := (to_dfrac_agree (DfracOwn 1) (None : (leibnizO _)))]}.
 Definition is_epoch_config_proposal γ epoch (conf:list pb_server_names): iProp Σ :=
   own γ.(pb_config_prop_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (Some conf : (leibnizO _)))]} ∗
   ⌜length conf > 0⌝.
+
+Definition is_epoch_config γ epoch (conf:list pb_server_names): iProp Σ :=
+  own γ.(pb_config_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (Some conf : (leibnizO _)))]} ∗
+  is_epoch_config_proposal γ epoch conf.
+Definition is_epoch_skipped γ epoch : iProp Σ :=
+  own γ.(pb_config_gn) {[ epoch := (to_dfrac_agree DfracDiscarded (None : (leibnizO _)))]}.
+Definition config_unset γ (epoch:u64) : iProp Σ :=
+  own γ.(pb_config_gn) {[epoch := (to_dfrac_agree (DfracOwn 1) (None : (leibnizO _)))]}.
+
 
 Definition committed_by γsys epoch σ : iProp Σ :=
   ∃ conf, is_epoch_config γsys epoch conf ∗
@@ -196,12 +197,15 @@ Lemma ghost_get_proposal_facts γsys γsrv epoch σ sealed :
   is_proposal_facts γsys epoch σ.
 Proof. iNamed 1. iFrame "#". Qed.
 
-Lemma ghost_accept_lb_ineq γsys γsrv epoch σ σ' :
+Lemma ghost_accept_lb_ineq γsys γsrv epoch sealed σ σ' :
   is_accepted_lb γsrv epoch σ' -∗
-  own_replica_ghost γsys γsrv epoch σ false -∗
+  own_replica_ghost γsys γsrv epoch σ sealed -∗
   ⌜σ' ⪯ σ⌝.
 Proof.
-  iIntros "#?". iNamed 1. by iApply (fmlist_ptsto_lb_agree with "Haccepted").
+  iIntros "#?". iNamed 1.
+  destruct sealed.
+  { by iApply (fmlist_ptsto_lb_agree with "Haccepted_ro"). }
+  { by iApply (fmlist_ptsto_lb_agree with "Haccepted"). }
 Qed.
 
 Lemma ghost_accept γsys γsrv epoch epoch' σ σ' :
@@ -654,6 +658,19 @@ Proof.
     rewrite dfrac_agree_op_valid in Hbad.
     naive_solver.
   }
+Qed.
+
+Lemma is_epoch_conf_agree γsys epoch conf1 conf2 :
+  is_epoch_config γsys epoch conf1 -∗
+  is_epoch_config_proposal γsys epoch conf2 -∗
+  ⌜conf1 = conf2⌝
+.
+Proof.
+  iIntros "(_ & H & _) (? & _)".
+  iDestruct (own_valid_2 with "[$] [$]") as %?.
+  iPureIntro.
+  rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in H.
+  destruct H as [_ H]; naive_solver.
 Qed.
 
 Lemma alloc_const_gmap {A:cmra} (a:A) `{H:inG Σ (gmapR u64 A)} :

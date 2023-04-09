@@ -587,7 +587,6 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
 
   "#Hs_prop_lb" ∷ is_proposal_lb γ.1 st.(server.epoch) st.(server.ops_full_eph) ∗
   "#Hs_prop_facts" ∷ is_proposal_facts γ.1 st.(server.epoch) st.(server.ops_full_eph) ∗
-  "#Hs_prop_facts" ∷ is_proposal_facts γ.1 st.(server.epoch) st.(server.ops_full_eph) ∗
   "#Hlease" ∷ is_Server_lease_resource γ st.(server.epoch) st.(server.leaseValid) st.(server.leaseExpiration) ∗
 
   "#Hin_conf" ∷ is_in_config γ γsrv st.(server.epoch)

@@ -851,7 +851,7 @@ lemmas. *)
 
   Lemma wp_GetTimeRangeOp s E :
    ∀ Φ, (∀ (l h t:u64), ⌜int.nat t <= int.nat h⌝ -∗ ⌜int.nat l <= int.nat t⌝ -∗
-                  own_time t ={E}=∗ (own_time t ∗ Φ (#l, #h)%V)) -∗
+                  own_time t -∗ |NC={E}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
    WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}.
   Proof.
     iIntros (Φ) "HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
@@ -1297,7 +1297,7 @@ Local Ltac solve_atomic2 :=
   Lemma wp_GetTimeRange :
     ⊢ ∀ (Φ:goose_lang.val → iProp Σ),
     (∀ (l h t:u64), ⌜int.nat t <= int.nat h⌝ -∗ ⌜int.nat l <= int.nat t⌝ -∗
-                    own_time t ={⊤}=∗ (own_time t ∗ Φ (#l, #h)%V)) -∗
+                    own_time t -∗ |NC={⊤,⊤}=∗ (own_time t ∗ Φ (#l, #h)%V)) -∗
   WP GetTimeRange #() {{ Φ }}.
   Proof.
     iIntros (?) "HΦ".

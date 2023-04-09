@@ -140,37 +140,37 @@ Proof.
   iNamed 1. iExists _; iFrame "#".
 Qed.
 
-Lemma preread_step st γ γsrv (γlog:gname) γreads t Q {own_StateMachine} :
+Lemma preread_step st γ γsrv (γlog:gname) t Q {own_StateMachine} :
   st.(server.leaseValid) = true →
   int.nat t < int.nat st.(server.leaseExpiration) →
   £ 1 -∗
   £ 1 -∗
   £ 1 -∗
   own_time t -∗
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, pb_preread_protocol.own_log γlog σ ∗ (pb_preread_protocol.own_log γlog σ ={∅,⊤∖↑ghostN}=∗ Q σ)) -∗
+  □(|={⊤ ∖ ↑proof.aofN ∖ ↑sysN ∖ ↑prereadN,∅}=>
+    ∃ σ, pb_preread_protocol.own_log γlog σ ∗
+      (pb_preread_protocol.own_log γlog σ ={∅,⊤∖↑proof.aofN ∖↑sysN ∖ ↑prereadN}=∗ □ Q σ)) -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
   sys_inv γ.1 -∗
+  ∃ γreads,
   (* XXX: I think the ncfupd is redundant with the wpc_nval *)
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
   preread_inv γ.1 γlog γreads ∗
   is_proposed_read γreads (length st.(server.ops_full_eph)) Q ∗
+  own_time t ∗
   own_Server_ghost_eph_f st γ γsrv.
 Proof.
-  (* proof steps here:
-      use accessP to get accepted ↦ σ, with (σ ⪯ ops).
-
-      Combine with
-    *)
-  iIntros (??) "Hlc Hlc2 Hlc3 Htime Hupd Hghost #HaccP Hstate #HpbInv".
+  iIntros (??) "Hlc Hlc2 Hlc3 Htime #Hupd Hghost #HaccP Hstate #HpbInv".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "Hghost".
   iNamed "Hghost".
   iNamed "Hlease".
   rewrite H.
   iDestruct "Hlease" as (??) "(#HconfInv & #Hlease & #Hlease_lb)".
 
+  iExists γreads.
   (* Step 1. use accessP_fact to get ownership of locally accepted state *)
   iMod ("HaccP" with "Hlc [-Hstate] Hstate") as "$"; last done.
   iIntros (???) "Hghost".
@@ -189,7 +189,6 @@ Proof.
     iMod (lease_acc with "Hlease_lb Hlease Htime") as "[>HleasedEpoch _]".
     {
       enough (↑epochLeaseN ## (↑proof.aofN ∪ ↑sysN:coPset)) by set_solver.
-      Search (_ ## (_ ∪ _)).
       apply disjoint_union_r.
       split.
       { by apply ndot_ne_disjoint. }
@@ -223,7 +222,10 @@ Proof.
   }
 
   (* Given that last committed epoch <= server.epoch, prove that this server has
-     all the ops that are committed. *)
+     all the ops that are committed.
+     This involves using ownership of accepted state and knowledge that we are
+     in the configuration.
+   *)
   iAssert (⌜prefix σ st.(server.ops_full_eph)⌝)%I with "[-]" as "%".
   {
     destruct (decide (int.nat epoch < int.nat st.(server.epoch))).
@@ -235,21 +237,54 @@ Proof.
       iFrame "#".
     }
     { (* case: something committed in epoch. We are in that configuration, so we
-         accepted that something.
-         FIXME: either keep track being in the configuration in the mu_inv, or
-         require it as precondition from the client. If the latter, the client
-         would also have to provide an epoch number. *)
+         accepted that something. *)
+      iDestruct "Hin_conf" as (?) "[#Hconf %Hin]".
+      iDestruct "Haccs" as (?) "[#Hconf2 Haccs]".
       assert (epoch = st.(server.epoch)) by word; subst.
-      iAssert (∃ conf, is_epoch_config_proposal γ.1 st.(server.epoch) conf).
+      iDestruct (is_epoch_conf_agree with "Hconf2 Hconf") as "%"; subst.
+      iSpecialize ("Haccs" $! γsrv.1 with "[//]").
+      iDestruct (ghost_accept_lb_ineq with "Haccs Hghost") as "%".
+      iDestruct (ghost_get_proposal_facts with "Hghost") as "[#Hprop_lb _]".
+      iDestruct (fmlist_ptsto_lb_comparable with "Hs_prop_lb Hprop_lb") as %[|].
+      2: { iPureIntro. by transitivity opsfull. }
+      { iPureIntro.
+        apply list_prefix_eq in H3.
+        2:{
+          apply prefix_length in H1.
+          by do 2 rewrite fmap_length in H1.
+        }
+        by subst.
+      }
     }
-
   }
-  (* Use ownership of accepted state to show that. *)
 
-  { set_solver. }
-  { done. }
-  iMod (start_read_step with "[]").
-Qed.
+  (* FIXME: straighten out all the various γlog's. There are 3 of them now I
+     think. *)
+  replace (γlog) with (γlog0) by admit.
+  iMod (start_read_step with "Hlc2 [$] Hupd Hcommit") as "[$ Hcommit]".
+  { enough (↑prereadN ## (↑proof.aofN ∪ ↑sysN:coPset)) by set_solver.
+    apply disjoint_union_r.
+    split.
+    { by apply ndot_ne_disjoint. }
+    { symmetry.
+      eapply disjoint_subseteq; first by apply nclose_subseteq'.
+      eapply disjoint_subseteq; first by apply nclose_subseteq'.
+      by apply ndot_ne_disjoint. }
+  }
+  { by apply prefix_length. }
+  iMod ("HclosePb" with "[-Htime Hprimary Hghost]").
+  { iNext; repeat iExists _; iFrame "∗#". }
+  iModIntro.
+  iFrame.
+  iSplitL "Hghost".
+  { repeat iExists _; iFrame "∗#%". }
+  iFrame "#".
+  iEval (rewrite /own_Server_ghost_eph_f /tc_opaque).
+  iFrame "∗#%".
+  repeat iExists _; iFrame "∗#%".
+  rewrite H.
+  repeat iExists _; iFrame "∗#%".
+Admitted. (* FIXME: various γlog's *)
 
 Lemma wp_Server__ApplyRo_internal (s:loc) γlog γ γsrv op_sl op_bytes op Q :
   {{{
@@ -278,7 +313,6 @@ Proof.
   wp_pure1_credit "Hlc1".
   wp_pure1_credit "Hlc2".
   wp_pure1_credit "Hlc3".
-  iCombine "Hlc1 Hlc2 Hlc3" as "Hlcs".
   wp_apply (wp_allocStruct).
   { eauto. }
   iIntros (reply_ptr) "Hreply".
@@ -314,7 +348,7 @@ Proof.
   wp_if_destruct.
   { (* lease invalid *)
     wp_loadField.
-    wp_apply (release_spec with "[-Hlcs HΦ Hupd Err Reply]").
+    wp_apply (release_spec with "[-Hlc1 Hlc2 Hlc3 HΦ Hupd Err Reply]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -326,16 +360,10 @@ Proof.
     wp_pures.
     wp_storeField.
     iApply ("HΦ" $! _ (ApplyReply.mkC _ _)).
-    iDestruct "Hlcs" as "($ & $ & $)".
     iModIntro.
-    iSplitL.
-    { iExists _, _; iFrame.
-      by iApply is_slice_small_nil.
-    }
-    simpl.
-    destruct decide.
-    { by exfalso. }
-    done.
+    iFrame.
+    iExists _, _; iFrame.
+    by iApply is_slice_small_nil.
   }
 
   wp_apply wp_GetTimeRange.
@@ -348,7 +376,7 @@ Proof.
        a
        Combine with
      *)
-    iMod (start_read_step with "[]").
+    iDestruct (preread_step with "Hlc1 Hlc2 Hlc3 Htime [] HghostEph [] [Hstate] [$]") as (?) ">HH".
 
     iModIntro. iFrame "Htime".
     wp_pures.

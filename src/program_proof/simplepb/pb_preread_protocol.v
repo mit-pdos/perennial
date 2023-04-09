@@ -150,17 +150,18 @@ Proof.
   by destruct Hvalid as [_ ?].
 Qed.
 
-Lemma start_read_step Q γ γlog γreads idx σ :
+Lemma start_read_step Q γ γlog γreads idx σ E :
+  ↑prereadN ⊆ E →
   idx >= length σ →
   £ 1 -∗
   preread_inv γ γlog γreads -∗
-  □(|={⊤∖↑prereadN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,⊤∖↑prereadN}=∗ □ Q σ)) -∗
+  □(|={E∖↑prereadN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog σ ={∅,E∖↑prereadN}=∗ □ Q σ)) -∗
   own_commit γ σ
-  ={⊤}=∗
+  ={E}=∗
   is_proposed_read γreads idx Q ∗ own_commit γ σ
 .
 Proof.
-  intros Hidx.
+  intros ? Hidx.
   iIntros "Hlc #Hinv #Hupd Hlog_in".
   iInv "Hinv" as "Hown" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hown") as "Hown".
@@ -189,7 +190,16 @@ Proof.
     iApply (big_sepM_insert_2 with "[] HreadUpds").
     iApply (big_sepL_app with "[]").
     iSplit.
-    2: { iApply big_sepL_singleton. done. }
+    2: { iApply big_sepL_singleton.
+         iModIntro.
+         iMod (fupd_mask_subseteq (E∖↑prereadN)) as "Hmask".
+         { set_solver. }
+         iMod "Hupd" as (?) "[? Hupd]".
+         iModIntro. iExists _; iFrame.
+         iIntros "?".
+         iMod ("Hupd" with "[$]").
+         iMod "Hmask".
+         done. }
     (* the rest of these fupds follow straightforwardly from old have_proposed_reads_fupds *)
     destruct (ros !! idx) as [] eqn:Hlookup.
     {
