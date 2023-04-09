@@ -854,7 +854,7 @@ lemmas. *)
                   own_time t -∗ |NC={E}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
    WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}.
   Proof.
-    iIntros (Φ) "HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Φ) "HΦ". iApply wp_lift_atomic_head_step_no_fork_nc; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
@@ -1297,7 +1297,7 @@ Local Ltac solve_atomic2 :=
   Lemma wp_GetTimeRange :
     ⊢ ∀ (Φ:goose_lang.val → iProp Σ),
     (∀ (l h t:u64), ⌜int.nat t <= int.nat h⌝ -∗ ⌜int.nat l <= int.nat t⌝ -∗
-                    own_time t -∗ |NC={⊤,⊤}=∗ (own_time t ∗ Φ (#l, #h)%V)) -∗
+                    own_time t -∗ |NC={⊤}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
   WP GetTimeRange #() {{ Φ }}.
   Proof.
     iIntros (?) "HΦ".
