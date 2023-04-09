@@ -450,9 +450,10 @@ Definition is_ApplyReadonlyFn own_StateMachine (startApplyFn:val) (P:u64 → lis
 
 Definition accessP_fact own_StateMachine P : iProp Σ :=
   □ (£ 1 -∗ (∀ Φ σ epoch sealed,
-     (∀ σold sealedold E, P epoch σold sealedold ={E}=∗ P epoch σold sealedold ∗ Φ) -∗
+     (∀ σold sealedold,
+       ⌜prefix σold σ⌝ -∗ P epoch σold sealedold ={↑pbN}=∗ P epoch σold sealedold ∗ Φ) -∗
   own_StateMachine epoch σ sealed P -∗ |NC={⊤}=>
-  wpc_nval ⊤ (own_StateMachine epoch σ sealed P ∗ Φ)))
+  own_StateMachine epoch σ sealed P ∗ Φ))
 .
 
 Definition is_StateMachine (sm:loc) own_StateMachine P : iProp Σ :=

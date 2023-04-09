@@ -6,28 +6,30 @@ From Perennial.program_proof.fencing Require Import map.
 From Perennial.algebra Require Import mlist.
 
 From Perennial.program_proof.aof Require Import proof.
-From Perennial.program_proof.simplepb Require Import pb_start_proof pb_definitions.
+From Perennial.program_proof.simplepb Require Import (* pb_start_proof *) pb_definitions.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 
 Section global_proof.
 
-Context {sm_record:PBRecord}.
-Notation OpType := (pb_OpType sm_record).
-Notation has_op_encoding := (pb_has_op_encoding sm_record).
-Notation has_snap_encoding := (pb_has_snap_encoding sm_record).
-Notation compute_reply := (pb_compute_reply sm_record).
-Instance e : EqDecision OpType := (pb_OpType_EqDecision sm_record).
+Context {sm_record:Sm.t}.
+Notation OpType := (Sm.OpType sm_record).
+Notation has_op_encoding := (Sm.has_op_encoding sm_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
+Notation compute_reply := (Sm.compute_reply sm_record).
+Instance e : EqDecision OpType := (Sm.OpType_EqDecision sm_record).
 Notation pbG := (pbG (pb_record:=sm_record)).
 Notation pbΣ := (pbΣ (pb_record:=sm_record)).
 
 Class simplelogG Σ := SimplelogG {
-  simplelog_fmlistG :> fmlistG (u64 * (list OpType) * bool) Σ;
+  simplelog_fmlistG :> fmlistG ((list OpType) * bool) Σ;
+  simplelog_propose_fmlistG :> fmlistG OpType Σ;
   simplelog_aofG :> aofG Σ ;
   simplelog_pbG :> pbG Σ ;
 }.
 
 Definition simplelogΣ := #[
-  fmlistΣ (u64 * list (OpType) * bool) ;
+  fmlistΣ (list (OpType) * bool) ;
+  fmlistΣ OpType ;
   aofΣ ;
   pbΣ
 ].
@@ -153,11 +155,11 @@ Section local_proof.
 
 Context `{!heapGS Σ}.
 
-Context {sm_record:PBRecord}.
-Notation OpType := (pb_OpType sm_record).
-Notation has_op_encoding := (pb_has_op_encoding sm_record).
-Notation has_snap_encoding := (pb_has_snap_encoding sm_record).
-Notation compute_reply := (pb_compute_reply sm_record).
+Context {sm_record:Sm.t}.
+Notation OpType := (Sm.OpType sm_record).
+Notation has_op_encoding := (Sm.has_op_encoding sm_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
+Notation compute_reply := (Sm.compute_reply sm_record).
 
 Context `{!simplelogG (sm_record:=sm_record) Σ}.
 
@@ -209,13 +211,15 @@ Record simplelog_names :=
      For each possible length, there's a potential read-only proposal.
    *)
   sl_state : gname;
+  proposed_gn: gname;
 }.
 
 Definition file_inv γ P epoch (contents:list u8) : iProp Σ :=
   ∃ ops sealed,
   ⌜file_encodes_state contents epoch ops sealed⌝ ∗
   P epoch ops sealed ∗
-  fmlist_idx γ.(sl_state) (length contents) (epoch, ops, sealed)
+  fmlist_idx γ.(sl_state) (length contents) (ops, sealed) ∗
+  fmlist_lb γ.(proposed_gn) ops
 .
 
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
@@ -232,7 +236,7 @@ Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ 
 
 Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) P : iProp Σ :=
   ∃ (fname:string) (aof_ptr:loc) γ γaof (logsize:u64) (smMem_ptr:loc) data
-    own_InMemoryStateMachine allstates,
+    own_InMemoryStateMachine (allstates:list (list OpType * bool)),
     "Hfname" ∷ s ↦[StateMachine :: "fname"] #(LitString fname) ∗
     "HlogFile" ∷ s ↦[StateMachine :: "logFile"] #aof_ptr ∗
     "HsmMem" ∷ s ↦[StateMachine :: "smMem"] #smMem_ptr ∗
@@ -250,9 +254,10 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
 
     "%Hopssafe" ∷ ⌜length ops = int.nat (length ops)⌝ ∗
 
-    "#Hcur_state_var" ∷ fmlist_idx γ.(sl_state) (length data) (epoch, ops, sealed) ∗
+    "#Hcur_state_var" ∷ fmlist_idx γ.(sl_state) (length data) (ops, sealed) ∗
     "Hallstates" ∷ fmlist γ.(sl_state) (DfracOwn 1) allstates ∗
-    "%Hallstates_len" ∷ ⌜length allstates = (length data + 1)%nat⌝
+    "%Hallstates_len" ∷ ⌜length allstates = (length data + 1)%nat⌝ ∗
+    "Hops_proposed" ∷ fmlist γ.(proposed_gn) (DfracOwn 1) ops
 .
 
 Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops P :
@@ -339,9 +344,15 @@ Proof.
   set (newdata:=data ++ newsuffix).
 
   (* make proposal *)
+  iMod (fmlist_update with "Hops_proposed") as "[Hops_proposed #Hprop_lb]".
+  {
+    instantiate (1:=ops ++ [op]).
+    apply prefix_app_r.
+    done.
+  }
   iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
   {
-    instantiate (1:=allstates ++ (replicate (length newsuffix) (epoch, ops ++ [op], false))).
+    instantiate (1:=allstates ++ (replicate (length newsuffix) (ops ++ [op], false))).
     apply prefix_app_r.
     done.
   }
@@ -377,7 +388,7 @@ Proof.
   {
     instantiate (1:=Q).
     iIntros "Hi".
-    iDestruct "Hi" as (??) "(%Henc2 & HP & #Hghost2)".
+    iDestruct "Hi" as (??) "(%Henc2 & HP & #Hghost2 & _)".
     iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
     replace (ops0) with (ops) by naive_solver.
     replace (sealed) with (false) by naive_solver.
@@ -405,7 +416,7 @@ Proof.
   {
     iExists fname, _, γ, _, _, _, _, _.
     iExists _.
-    iFrame "∗#".
+    iFrame "HisMemSm ∗#".
     repeat rewrite app_length. rewrite u64_le_length.
     iFrame "∗#".
     iSplitL; last first.
@@ -553,7 +564,7 @@ Proof.
     { (* fire update; this is the same as the reasoning in the non-crash case *)
       iSplitR; first done.
 
-      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
+      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2 & _)".
       iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
       replace (ops0) with (ops_prev) by naive_solver.
       replace (sealed) with (sealed_prev) by naive_solver.
@@ -574,13 +585,14 @@ Proof.
   iNext.
   iIntros "[Hfile _]".
 
-  iClear "Hallstates".
-  iMod (fmlist_alloc []) as (γcur_state2) "Hallstates".
-  set (γ2:={| sl_state := γcur_state2 |} ).
+  iClear "Hallstates Hops_proposed".
+  iMod (fmlist_alloc ([]: list (list OpType * bool))) as (γcur_state2) "Hallstates".
+  iMod (fmlist_alloc ([] : list OpType)) as (γproposed2) "Hops_proposed".
+  set (γ2:={| sl_state := γcur_state2 ; proposed_gn := γproposed2|} ).
 
   (* update file_inv *)
 
-  iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
+  iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2 & _)".
   iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
   replace (ops0) with (ops_prev) by naive_solver.
   replace (sealed) with (sealed_prev) by naive_solver.
@@ -593,7 +605,13 @@ Proof.
 
   iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
   {
-    instantiate (1:=(replicate (length newdata + 1) (epoch, ops, false))).
+    instantiate (1:=(replicate (length newdata + 1) (ops, false))).
+    apply prefix_nil.
+  }
+
+  iMod (fmlist_update with "Hops_proposed") as "[Hops_proposed #Hprop_lb]".
+  {
+    instantiate (1:=ops).
     apply prefix_nil.
   }
 
@@ -700,7 +718,7 @@ Proof.
 
     iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
     {
-      instantiate (1:=(allstates ++ [(epoch, ops, true)])).
+      instantiate (1:=(allstates ++ [(ops, true)])).
       apply prefix_app_r.
       done.
     }
@@ -723,7 +741,7 @@ Proof.
       iIntros "Hinv".
       instantiate (1:=Q).
 
-      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
+      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2 & #?)".
       iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
       replace (ops0) with (ops) by naive_solver.
       replace (sealed) with (false) by naive_solver.
@@ -794,7 +812,7 @@ Proof.
     }
     iMod (lc_fupd_elim_later with "Hlc HP") as "HP".
     unfold file_inv.
-    iDestruct "HP" as (?? HdurPrefixEnc) "[HP #Hcurstate2]".
+    iDestruct "HP" as (?? HdurPrefixEnc) "(HP & #Hcurstate2 & #?)".
 
     iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hcurstate2") as "%Heq".
     replace (ops0) with (ops) by naive_solver.
@@ -855,9 +873,11 @@ Proof.
   iDestruct "Hfilecrash" as "[Hempty|Hnonempty]".
   { (* case: empty *)
     iDestruct "Hempty" as "[%HdataEmpty HP]".
-    iMod (fmlist_alloc (replicate (1) (U64 0, [], false))) as (γsl_state) "Hallstates".
-    set (γ:={| sl_state := γsl_state |} ).
+    iMod (fmlist_alloc (replicate (1) ([], false))) as (γsl_state) "Hallstates".
+    iMod (fmlist_alloc ([]:list OpType)) as (γproposed) "Hops_proposed".
+    set (γ:={| sl_state := γsl_state ; proposed_gn := γproposed |} ).
     iMod (fmlist_get_lb with "Hallstates") as "[Hallstates #Hlb]".
+    iMod (fmlist_get_lb with "Hops_proposed") as "[Hops_proposed #Hprop_lb]".
     iDestruct (fmlist_lb_to_idx _ _ (length data) with "Hlb") as "#Hcurstate".
     {
       apply lookup_replicate.
@@ -999,7 +1019,7 @@ Proof.
     set (n:=(length (((([] ++ u64_le snap_sl.(Slice.sz)) ++ snap) ++ u64_le 0%Z) ++ u64_le 0%Z))).
     iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
     {
-      instantiate (1:=((replicate (n+1) (U64 0, [], false)))).
+      instantiate (1:=((replicate (n+1) ([]:list OpType, false)))).
       rewrite replicate_S.
       simpl.
       apply prefix_cons.
@@ -1083,10 +1103,12 @@ Proof.
   (* case: file is non-empty, so we have to recovery from it *)
   iDestruct "Hnonempty" as (???) "[%Henc HP]".
 
-  iMod (fmlist_alloc (replicate (length data + 1) (epoch, ops, sealed))) as (γsl_state) "Hallstates".
-  set (γ:={| sl_state := γsl_state |} ).
+  iMod (fmlist_alloc (replicate (length data + 1) (ops, sealed))) as (γsl_state) "Hallstates".
+  iMod (fmlist_alloc ops) as (γproposed) "Hops_proposed".
+  set (γ:={| sl_state := γsl_state ; proposed_gn := γproposed |} ).
 
   iMod (fmlist_get_lb with "Hallstates") as "[Hallstates #Hlb]".
+  iMod (fmlist_get_lb with "Hops_proposed") as "[Hops_proposed #Hprop_lb]".
   iDestruct (fmlist_lb_to_idx _ _ (length data) with "Hlb") as "#Hcurstate".
   {
     apply lookup_replicate.
@@ -1554,7 +1576,7 @@ Proof.
       word.
     }
     rewrite -Hops.
-    iFrame "Hcurstate".
+    iFrame "∗#".
     rewrite replicate_length.
     iPureIntro.
     done.
@@ -1598,7 +1620,7 @@ Proof.
     word.
   }
   rewrite -Hops.
-  iFrame "Hcurstate".
+  iFrame "∗#".
   rewrite replicate_length.
   iPureIntro.
   done.
@@ -1615,15 +1637,18 @@ Proof.
   iMod (accessP_weak with "His_aof Haof") as "HH".
   iDestruct "HH" as (?) "(_ & Hinv & Hclose)".
   iMod (lc_fupd_elim_later with "Hlc Hinv") as "Hinv".
-  iDestruct "Hinv" as (??) "(% & HP & #?)".
-  iMod ("Hupd" with "HP") as "[HP Φ]".
+  iDestruct "Hinv" as (??) "(% & HP & #? & #?)".
+  iDestruct (fmlist_agree_2 with "Hops_proposed [$]") as %?.
+  iMod (ncfupd_mask_subseteq (↑pbN)) as "Hmask".
+  { enough (↑pbN ## (↑aofN : coPset)) by set_solver.
+    by apply ndot_ne_disjoint. }
+  iMod ("Hupd" with "[//] HP") as "[HP Φ]".
+  iMod "Hmask".
   iMod ("Hclose" with "[HP]").
   {
     iNext. iExists _, _. iFrame "∗#%".
   }
   iModIntro.
-  iApply wpc_nval_intro.
-  iNext.
   iFrame "Φ".
 
   iExists fname, _, γ, _, _, _, _, own_InMemoryStateMachine.
@@ -1632,7 +1657,10 @@ Proof.
   iFrame "∗#%".
 Qed.
 
-Notation own_Server_ghost := (own_Server_ghost (pb_record:=sm_record)).
+Notation own_Server_ghost_f := (own_Server_ghost_f (pb_record:=sm_record)).
+
+FIXME: the rest of this depends on start_proof.
+
 Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 
 Definition simplelog_P γ γsrv := file_crash (own_Server_ghost γ γsrv).

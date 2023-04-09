@@ -150,11 +150,11 @@ Lemma preread_step st γ γsrv (γlog:gname) γreads t (readIndex:nat) Q {own_St
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
   (* XXX: I think the ncfupd is redundant with the wpc_nval *)
-  |NC={⊤}=> wpc_nval ⊤ (
+  |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
   preread_inv γ.1 γlog γreads ∗
   is_proposed_read γreads readIndex Q ∗
-  own_Server_ghost_eph_f st γ γsrv).
+  own_Server_ghost_eph_f st γ γsrv.
 Proof.
   (* proof steps here:
       use accessP to get accepted ↦ σ, with (σ ⪯ ops).
