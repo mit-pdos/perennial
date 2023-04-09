@@ -11,6 +11,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
 From Perennial.program_proof.simplepb Require Import config_proof.
+From Perennial.program_proof.aof Require Import proof.
 
 (* State-machine record. An instance of Sm.t defines how to compute the reply
    for an op applied to some state and how to encode ops into bytes. *)
@@ -102,6 +103,10 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition is_in_config γ γsrv epoch : iProp Σ :=
+  ∃ confγ, is_epoch_config_proposal γ.1 epoch confγ ∗ ⌜γsrv.1 ∈ confγ⌝
+.
+
 Definition SetState_core_spec γ γsrv args opsfull :=
   λ (Φ : u64 -> iPropO Σ) ,
   (
@@ -110,6 +115,7 @@ Definition SetState_core_spec γ γsrv args opsfull :=
     is_proposal_lb γ.1 args.(SetStateArgs.epoch) opsfull ∗
     is_proposal_facts γ.1 args.(SetStateArgs.epoch) opsfull ∗
     is_proposal_facts_prim γ.2 args.(SetStateArgs.epoch) opsfull ∗
+    is_in_config γ γsrv args.(SetStateArgs.epoch) ∗
     (
       (is_epoch_lb γsrv.1 args.(SetStateArgs.epoch) -∗
        Φ 0) ∧
@@ -451,7 +457,7 @@ Definition is_ApplyReadonlyFn own_StateMachine (startApplyFn:val) (P:u64 → lis
 Definition accessP_fact own_StateMachine P : iProp Σ :=
   □ (£ 1 -∗ (∀ Φ σ epoch sealed,
      (∀ σold sealedold,
-       ⌜prefix σold σ⌝ -∗ P epoch σold sealedold ={↑pbN}=∗ P epoch σold sealedold ∗ Φ) -∗
+       ⌜prefix σold σ⌝ -∗ P epoch σold sealedold ={⊤∖↑aofN}=∗ P epoch σold sealedold ∗ Φ) -∗
   own_StateMachine epoch σ sealed P -∗ |NC={⊤}=>
   own_StateMachine epoch σ sealed P ∗ Φ))
 .
@@ -497,26 +503,6 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
                         "%Hclerks_conf" ∷ ⌜length clerks = length backups⌝ ∗
                         "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.1 s.(server.epoch))
                     )
-.
-
-(* this should never be unfolded in the proof of code *)
-Definition own_Primary_ghost_f γ γsrv (canBecomePrimary isPrimary:bool) epoch (committedNextIndex:u64) opsfull : iProp Σ:=
-  tc_opaque (
-            "Hprim_escrow" ∷ own_primary_escrow_ghost γ.2 γsrv.2 canBecomePrimary epoch ∗
-            "#Hprim_facts" ∷ is_proposal_facts_prim γ.2 epoch opsfull  ∗
-            "#Hs_prop_lb" ∷ is_proposal_lb γ.1 epoch opsfull ∗
-
-            "Hprim" ∷ if isPrimary then
-              ∃ (ops_commit_full:list (OpType * gname)),
-              "Hprim" ∷ own_primary_ghost γ.1 epoch opsfull ∗
-
-              (* committed witness for committed state *)
-              "#Hcommit_lb" ∷ is_ghost_lb γ.1 ops_commit_full ∗
-              "#Hcommit_prop_lb" ∷ is_proposal_lb γ.1 epoch ops_commit_full ∗
-              "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
-            else
-              True
-      )%I
 .
 
 Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
@@ -572,6 +558,25 @@ Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpir
                 True)
 .
 
+(* this should never be unfolded in the proof of code *)
+Definition own_Primary_ghost_f γ γsrv (canBecomePrimary isPrimary:bool) epoch (committedNextIndex:u64) opsfull : iProp Σ:=
+  tc_opaque (
+            "Hprim_escrow" ∷ own_primary_escrow_ghost γ.2 γsrv.2 canBecomePrimary epoch ∗
+            "#Hprim_facts" ∷ is_proposal_facts_prim γ.2 epoch opsfull  ∗
+
+            "Hprim" ∷ if isPrimary then
+              ∃ (ops_commit_full:list (OpType * gname)),
+              "Hprim" ∷ own_primary_ghost γ.1 epoch opsfull ∗
+
+              (* committed witness for committed state *)
+              "#Hcommit_lb" ∷ is_ghost_lb γ.1 ops_commit_full ∗
+              "#Hcommit_prop_lb" ∷ is_proposal_lb γ.1 epoch ops_commit_full ∗
+              "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
+            else
+              True
+      )%I
+.
+
 (* should not be unfolded in proof *)
 Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   tc_opaque (
@@ -579,10 +584,15 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   "Hprimary" ∷ own_Primary_ghost_f γ γsrv st.(server.canBecomePrimary) st.(server.isPrimary) st.(server.epoch) st.(server.committedNextIndex) st.(server.ops_full_eph) ∗
   (* epoch lower bound *)
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv.1 st.(server.epoch) ∗
-  "#Hlease" ∷ is_Server_lease_resource γ st.(server.epoch) st.(server.leaseValid) st.(server.leaseExpiration)
+
+  "#Hs_prop_lb" ∷ is_proposal_lb γ.1 st.(server.epoch) st.(server.ops_full_eph) ∗
+  "#Hs_prop_facts" ∷ is_proposal_facts γ.1 st.(server.epoch) st.(server.ops_full_eph) ∗
+  "#Hs_prop_facts" ∷ is_proposal_facts γ.1 st.(server.epoch) st.(server.ops_full_eph) ∗
+  "#Hlease" ∷ is_Server_lease_resource γ st.(server.epoch) st.(server.leaseValid) st.(server.leaseExpiration) ∗
+
+  "#Hin_conf" ∷ is_in_config γ γsrv st.(server.epoch)
   )%I
 .
-
 
 Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
   ∃ st,

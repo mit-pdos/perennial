@@ -1639,11 +1639,7 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc Hinv") as "Hinv".
   iDestruct "Hinv" as (??) "(% & HP & #? & #?)".
   iDestruct (fmlist_agree_2 with "Hops_proposed [$]") as %?.
-  iMod (ncfupd_mask_subseteq (↑pbN)) as "Hmask".
-  { enough (↑pbN ## (↑aofN : coPset)) by set_solver.
-    by apply ndot_ne_disjoint. }
   iMod ("Hupd" with "[//] HP") as "[HP Φ]".
-  iMod "Hmask".
   iMod ("Hclose" with "[HP]").
   {
     iNext. iExists _, _. iFrame "∗#%".

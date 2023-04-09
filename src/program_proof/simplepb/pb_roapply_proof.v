@@ -6,7 +6,7 @@ From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
-From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof pb_applybackup_proof pb_apply_proof.
+From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_marshal_proof pb_applybackup_proof pb_apply_proof.
 (* FIXME: importing apply_proof for some lemmas *)
 From Perennial.program_proof.reconnectclient Require Import proof.
 
@@ -140,9 +140,10 @@ Proof.
   iNamed 1. iExists _; iFrame "#".
 Qed.
 
-Lemma preread_step st γ γsrv (γlog:gname) γreads t (readIndex:nat) Q {own_StateMachine} :
+Lemma preread_step st γ γsrv (γlog:gname) γreads t Q {own_StateMachine} :
   st.(server.leaseValid) = true →
   int.nat t < int.nat st.(server.leaseExpiration) →
+  £ 1 -∗
   £ 1 -∗
   £ 1 -∗
   own_time t -∗
@@ -155,7 +156,7 @@ Lemma preread_step st γ γsrv (γlog:gname) γreads t (readIndex:nat) Q {own_St
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
   preread_inv γ.1 γlog γreads ∗
-  is_proposed_read γreads readIndex Q ∗
+  is_proposed_read γreads (length st.(server.ops_full_eph)) Q ∗
   own_Server_ghost_eph_f st γ γsrv.
 Proof.
   (* proof steps here:
@@ -163,7 +164,7 @@ Proof.
 
       Combine with
     *)
-  iIntros (??) "Hlc Hlc2 Htime Hupd Hghost #HaccP Hstate #HpbInv".
+  iIntros (??) "Hlc Hlc2 Hlc3 Htime Hupd Hghost #HaccP Hstate #HpbInv".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "Hghost".
   iNamed "Hghost".
   iNamed "Hlease".
@@ -176,6 +177,7 @@ Proof.
   iNamed "Hghost".
 
   iInv "HpbInv" as "Hown" "HclosePb".
+  iMod (lc_fupd_elim_later with "Hlc3 Hown") as "Hown".
   iDestruct "Hown" as (??) "(Hcommit & #Haccs & #? & #?)".
   destruct (decide (int.nat st.(server.epoch) < int.nat epoch)).
   { (* case: something has been committed in a higher epoch than the
@@ -185,15 +187,28 @@ Proof.
        is_conf_inv) to derive a contradiction.
      *)
     iMod (lease_acc with "Hlease_lb Hlease Htime") as "[>HleasedEpoch _]".
-    { admit. } (* FIXME: put all masks within pbN *)
+    {
+      enough (↑epochLeaseN ## (↑proof.aofN ∪ ↑sysN:coPset)) by set_solver.
+      Search (_ ## (_ ∪ _)).
+      apply disjoint_union_r.
+      split.
+      { by apply ndot_ne_disjoint. }
+      {
+        symmetry.
+        eapply disjoint_subseteq.
+        { by apply nclose_subseteq'. }
+        eapply disjoint_subseteq.
+        { by apply nclose_subseteq'. }
+        by apply ndot_ne_disjoint.
+      }
+    }
     { done. }
     iInv "HconfInv" as "Hown" "_".
-    { admit. } (* FIXME: put all masks inside of pbN *)
     iMod (lc_fupd_elim_later with "Hlc2 Hown") as "Hown".
     iNamed "Hown".
     iDestruct (mono_nat_auth_own_agree with "Hepoch HleasedEpoch") as %HepochEq.
     subst.
-    iDestruct "Haccs" as (?) "[#>HsomeConf _]".
+    iDestruct "Haccs" as (?) "[#HsomeConf _]".
     iDestruct (big_sepS_elem_of_acc _ _ epoch with "Hunused") as "[HH _]".
     { set_solver. }
     iSpecialize ("HH" with "[%]").
@@ -207,6 +222,28 @@ Proof.
     by destruct Hbad as [Hbad _].
   }
 
+  (* Given that last committed epoch <= server.epoch, prove that this server has
+     all the ops that are committed. *)
+  iAssert (⌜prefix σ st.(server.ops_full_eph)⌝)%I with "[-]" as "%".
+  {
+    destruct (decide (int.nat epoch < int.nat st.(server.epoch))).
+    { (* case: nothing is committed in st.(server.epoch). In this case, we use
+         old_prop_max. To conclude that the server has all the committed ops. *)
+      iDestruct "Hs_prop_facts" as "[Hmax _]".
+      iApply "Hmax".
+      { iPureIntro; done. }
+      iFrame "#".
+    }
+    { (* case: something committed in epoch. We are in that configuration, so we
+         accepted that something.
+         FIXME: either keep track being in the configuration in the mu_inv, or
+         require it as precondition from the client. If the latter, the client
+         would also have to provide an epoch number. *)
+      assert (epoch = st.(server.epoch)) by word; subst.
+      iAssert (∃ conf, is_epoch_config_proposal γ.1 st.(server.epoch) conf).
+    }
+
+  }
   (* Use ownership of accepted state to show that. *)
 
   { set_solver. }
