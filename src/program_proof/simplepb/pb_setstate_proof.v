@@ -25,9 +25,9 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) opsfull snap :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ.1 epoch opsfull ∗
-        "#Hprop_facts" ∷ is_proposal_facts γ.1 epoch opsfull ∗
-        "#Hprop_facts_prim" ∷ is_proposal_facts_prim γ.2 epoch opsfull ∗
+        "#Hprop_lb" ∷ is_proposal_lb γ.(s_pb) epoch opsfull ∗
+        "#Hprop_facts" ∷ is_proposal_facts γ.(s_pb) epoch opsfull ∗
+        "#Hprop_facts_prim" ∷ is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
         "%Henc" ∷ ⌜has_snap_encoding snap (get_rwops opsfull)⌝ ∗
         "%Hno_overflow" ∷ ⌜length (get_rwops opsfull) = int.nat (length (get_rwops opsfull))⌝ ∗
         "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length (get_rwops opsfull)) snap)
@@ -36,7 +36,7 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) opsfull snap :
   {{{
         (err:u64), RET #err;
         □(if (decide (err = U64 0)) then
-            is_epoch_lb γsrv.1 epoch
+            is_epoch_lb γsrv.(r_pb) epoch
           else
             True)
   }}}.
@@ -132,7 +132,7 @@ Qed.
 
 Lemma get_epoch_eph γ γsrv st :
   own_Server_ghost_eph_f st γ γsrv -∗
-  is_epoch_lb γsrv.1 st.(server.epoch)
+  is_epoch_lb γsrv.(r_pb) st.(server.epoch)
 .
 Proof.
   rewrite /own_Server_ghost_eph_f /tc_opaque. by iNamed 1.
@@ -140,8 +140,8 @@ Qed.
 
 Lemma setstate_primary_eph_step γ γsrv epoch isPrimary canBecomePrimary committedNextIndex epoch' ops ops' :
   int.nat epoch < int.nat epoch' →
-  is_proposal_lb γ.1 epoch' ops' -∗
-  is_proposal_facts_prim γ.2 epoch' ops' -∗
+  is_proposal_lb γ.(s_pb) epoch' ops' -∗
+  is_proposal_facts_prim γ.(s_prim) epoch' ops' -∗
   own_Primary_ghost_f γ γsrv isPrimary canBecomePrimary epoch committedNextIndex ops -∗
   own_Primary_ghost_f γ γsrv true false epoch' committedNextIndex ops'
 .
@@ -166,11 +166,11 @@ Qed.
 
 Lemma setstate_eph_step γ γsrv st epoch' ops' :
   int.nat st.(server.epoch) < int.nat epoch' →
-  is_proposal_lb γ.1 epoch' ops' -∗
-  is_proposal_facts_prim γ.2 epoch' ops' -∗
+  is_proposal_lb γ.(s_pb) epoch' ops' -∗
+  is_proposal_facts_prim γ.(s_prim) epoch' ops' -∗
   own_Server_ghost_eph_f st γ γsrv ==∗
-  (is_epoch_lb γsrv.1 epoch' -∗
-   is_accepted_lb γsrv.1 epoch' ops' -∗
+  (is_epoch_lb γsrv.(r_pb) epoch' -∗
+   is_accepted_lb γsrv.(r_pb) epoch' ops' -∗
    own_Server_ghost_eph_f (st <| server.ops_full_eph := ops' |> <| server.epoch := epoch' |>
                               <| server.sealed := false |> <| server.isPrimary := false |>
                               <| server.canBecomePrimary := true |>
@@ -192,13 +192,13 @@ Qed.
 
 Lemma setstate_step γ γsrv epoch ops sealed epoch' opsfull':
   int.nat epoch < int.nat epoch' →
-  is_proposal_lb γ.1 epoch' opsfull' -∗
-  is_proposal_facts γ.1 epoch' opsfull' -∗
-  is_proposal_facts_prim γ.2 epoch' opsfull' -∗
+  is_proposal_lb γ.(s_pb) epoch' opsfull' -∗
+  is_proposal_facts γ.(s_pb) epoch' opsfull' -∗
+  is_proposal_facts_prim γ.(s_prim) epoch' opsfull' -∗
   own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
   own_Server_ghost_f γ γsrv epoch' (get_rwops opsfull') false ∗
-  is_epoch_lb γsrv.1 epoch' ∗
-  is_accepted_lb γsrv.1 epoch' opsfull'
+  is_epoch_lb γsrv.(r_pb) epoch' ∗
+  is_accepted_lb γsrv.(r_pb) epoch' opsfull'
 .
 Proof.
   intros HnewEpoch.

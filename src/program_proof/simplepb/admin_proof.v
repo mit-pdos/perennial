@@ -170,7 +170,7 @@ Proof using waitgroupG0.
   { set_solver. }
   iClear "Hprim_facts".
   iDestruct (ghost_get_propose_lb with "Hprop") as "#Hprop_lb2".
-  iMod (primary_ghost_init_primary (own_primary_ghost γ.1 epoch opsfull)
+  iMod (primary_ghost_init_primary (own_primary_ghost γ.(s_pb) epoch opsfull)
          with "Hinit [Hprop]") as "#[Hescrow Hprim_facts]".
   { iFrame "∗#". }
   iMod "Hmask". iModIntro. *)
@@ -563,7 +563,7 @@ Proof using waitgroupG0.
               "%Hj_ub" ∷ ⌜int.nat i ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ pb_protocol.is_epoch_lb γsrv.1 epoch)
+                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ pb_protocol.is_epoch_lb γsrv.(r_pb) epoch)
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -828,7 +828,7 @@ Proof using waitgroupG0.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
-  iMod (primary_ghost_init_primary_escrow (own_primary_ghost γ.1 epoch opsfull)
+  iMod (primary_ghost_init_primary_escrow (own_primary_ghost γ.(s_pb) epoch opsfull)
          with "Hinit Hprim") as "#Hescrow".
   iMod "Hmask". iModIntro.
 

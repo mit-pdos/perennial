@@ -23,13 +23,13 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Print pb_definitions.pbG.
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__ApplyRo γlog γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_Clerk__ApplyRo γ.(s_log) γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 is_Clerk ck γsys γsrv -∗
-is_inv γlog γsys.1 -∗
+is_inv γ.(s_log) γsys.1 -∗
 is_slice_small op_sl byteT q op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γlog ops ∗
-  (own_log γlog ops ={∅,⊤∖↑pbN}=∗
+□((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ.(s_log) ops ∗
+  (own_log γ.(s_log) ops ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
@@ -140,7 +140,7 @@ Proof.
   iNamed 1. iExists _; iFrame "#".
 Qed.
 
-Lemma preread_step st γ γsrv (γlog:gname) t Q {own_StateMachine} :
+Lemma preread_step st γ γsrv (γ.(s_log):gname) t Q {own_StateMachine} :
   st.(server.leaseValid) = true →
   int.nat t < int.nat st.(server.leaseExpiration) →
   £ 1 -∗
@@ -148,18 +148,18 @@ Lemma preread_step st γ γsrv (γlog:gname) t Q {own_StateMachine} :
   £ 1 -∗
   own_time t -∗
   □(|={⊤ ∖ ↑pbN,∅}=>
-    ∃ σ, pb_preread_protocol.own_log γlog σ ∗
-      (pb_preread_protocol.own_log γlog σ ={∅,⊤ ∖ ↑pbN}=∗ □ Q σ)) -∗
+    ∃ σ, pb_preread_protocol.own_log γ.(s_log) σ ∗
+      (pb_preread_protocol.own_log γ.(s_log) σ ={∅,⊤ ∖ ↑pbN}=∗ □ Q σ)) -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
-  sys_inv γ.1 -∗
-  ∃ γreads,
+  sys_inv γ.(s_pb) -∗
+  ∃ γ.(s_reads),
   (* XXX: I think the ncfupd is redundant with the wpc_nval *)
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
-  preread_inv γ.1 γlog γreads ∗
-  is_proposed_read γreads (length st.(server.ops_full_eph)) Q ∗
+  preread_inv γ.(s_pb) γ.(s_log) γ.(s_reads) ∗
+  is_proposed_read γ.(s_reads) (length st.(server.ops_full_eph)) Q ∗
   own_time t ∗
   own_Server_ghost_eph_f st γ γsrv.
 Proof.
@@ -170,7 +170,7 @@ Proof.
   rewrite H.
   iDestruct "Hlease" as (??) "(#HconfInv & #Hlease & #Hlease_lb)".
 
-  iExists γreads.
+  iExists γ.(s_reads).
   (* Step 1. use accessP_fact to get ownership of locally accepted state *)
   iMod ("HaccP" with "Hlc [-Hstate] Hstate") as "$"; last done.
   iIntros (???) "Hghost".
@@ -229,7 +229,7 @@ Proof.
       iDestruct "Haccs" as (?) "[#Hconf2 Haccs]".
       assert (epoch = st.(server.epoch)) by word; subst.
       iDestruct (is_epoch_conf_agree with "Hconf2 Hconf") as "%"; subst.
-      iSpecialize ("Haccs" $! γsrv.1 with "[//]").
+      iSpecialize ("Haccs" $! γsrv.(r_pb) with "[//]").
       iDestruct (ghost_accept_lb_ineq with "Haccs Hghost") as "%".
       iDestruct (ghost_get_proposal_facts with "Hghost") as "[#Hprop_lb _]".
       iDestruct (fmlist_ptsto_lb_comparable with "Hs_prop_lb Hprop_lb") as %[|].
@@ -245,9 +245,9 @@ Proof.
     }
   }
 
-  (* FIXME: straighten out all the various γlog's. There are 3 of them now I
+  (* FIXME: straighten out all the various γ.(s_log)'s. There are 3 of them now I
      think. *)
-  replace (γlog) with (γlog0) by admit.
+  replace (γ.(s_log)) with (γ.(s_log)0) by admit.
   iMod (start_read_step with "Hlc2 [$] [Hupd] Hcommit") as "[$ Hcommit]".
   { solve_ndisj. }
   { by apply prefix_length. }
@@ -272,13 +272,13 @@ Proof.
   repeat iExists _; iFrame "∗#%".
   rewrite H.
   repeat iExists _; iFrame "∗#%".
-Admitted. (* FIXME: various γlog's *)
+Admitted. (* FIXME: various γ.(s_log)'s *)
 
-Lemma wp_Server__ApplyRo (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
+Lemma wp_Server__ApplyRo (s:loc) γ.(s_log) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
   readonly (is_slice_small op_sl byteT 1 enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
-  ApplyRo_core_spec γ γlog op enc_op Ψ -∗
+  ApplyRo_core_spec γ γ.(s_log) op enc_op Ψ -∗
   WP (pb.Server__ApplyRoWaitForCommit #s (slice_val op_sl)) {{ Φ }}
 .
 Proof.
@@ -363,7 +363,7 @@ Proof.
     {
       iModIntro.
       iExactEq "Hupd".
-      (* FIXME: need to straighten out γlogs. *)
+      (* FIXME: need to straighten out γ.(s_log)s. *)
     }
 
     iModIntro. iFrame "Htime".
@@ -393,11 +393,11 @@ Proof.
 
 Qed.
 
-Lemma wp_Server__ApplyRo (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
+Lemma wp_Server__ApplyRo (s:loc) γ.(s_log) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
   readonly (is_slice_small op_sl byteT 1 enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
-  ApplyRo_core_spec γ γlog op enc_op Ψ -∗
+  ApplyRo_core_spec γ γ.(s_log) op enc_op Ψ -∗
   WP (pb.Server__ApplyRo #s (slice_val op_sl)) {{ Φ }}
 .
 Proof using Type*.

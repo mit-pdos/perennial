@@ -31,7 +31,7 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
-        "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv.1 epoch_lb ∗
+        "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv.(r_pb) epoch_lb ∗
         "Hargs" ∷ GetStateArgs.own args_ptr (GetStateArgs.mkC epoch)
   }}}
     Clerk__GetState #ck #args_ptr
@@ -41,10 +41,10 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
             ∃ epochacc opsfull enc,
             ⌜int.nat epoch_lb ≤ int.nat epochacc⌝ ∗
             ⌜int.nat epochacc ≤ int.nat epoch⌝ ∗
-            is_accepted_ro γsrv.1 epochacc opsfull ∗
-            is_proposal_facts γ.1 epochacc opsfull ∗
-            is_proposal_facts_prim γ.2 epochacc opsfull ∗
-            is_proposal_lb γ.1 epochacc opsfull ∗
+            is_accepted_ro γsrv.(r_pb) epochacc opsfull ∗
+            is_proposal_facts γ.(s_pb) epochacc opsfull ∗
+            is_proposal_facts_prim γ.(s_prim) epochacc opsfull ∗
+            is_proposal_lb γ.(s_pb) epochacc opsfull ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length (get_rwops opsfull)) enc) ∗
             ⌜has_snap_encoding enc (get_rwops opsfull)⌝ ∗
             ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝
@@ -166,15 +166,15 @@ Qed.
 
 (* GetState step for ghost state *)
 Lemma getstate_step γ γsrv epoch_lb epoch ops sealed :
-  is_epoch_lb γsrv.1 epoch_lb -∗
+  is_epoch_lb γsrv.(r_pb) epoch_lb -∗
   own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
   own_Server_ghost_f γ γsrv epoch ops true ∗
   ∃ opsfull,
   ⌜ops = get_rwops opsfull⌝ ∗
-  is_accepted_ro γsrv.1 epoch opsfull ∗
-  is_proposal_lb γ.1 epoch opsfull ∗
-  is_proposal_facts γ.1 epoch opsfull ∗
-  is_proposal_facts_prim γ.2 epoch opsfull ∗
+  is_accepted_ro γsrv.(r_pb) epoch opsfull ∗
+  is_proposal_lb γ.(s_pb) epoch opsfull ∗
+  is_proposal_facts γ.(s_pb) epoch opsfull ∗
+  is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
   ⌜int.nat epoch_lb ≤ int.nat epoch⌝
 .
 Proof.

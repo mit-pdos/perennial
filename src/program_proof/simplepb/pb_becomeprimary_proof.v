@@ -25,14 +25,14 @@ Lemma wp_Clerk__BecomePrimary γ γsrv ck args_ptr args σ backupγ:
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         (* FIXME: is this epoch_lb needed? *)
-        "#Hepoch_lb" ∷ is_epoch_lb γsrv.1 args.(BecomePrimaryArgs.epoch) ∗
-        "#Hconf" ∷ is_epoch_config γ.1 args.(BecomePrimaryArgs.epoch) (γsrv :: backupγ).*1 ∗
+        "#Hepoch_lb" ∷ is_epoch_lb γsrv.(r_pb) args.(BecomePrimaryArgs.epoch) ∗
+        "#Hconf" ∷ is_epoch_config γ.(s_pb) args.(BecomePrimaryArgs.epoch) (r_pb <$> γsrv :: backupγ) ∗
         "#Hhosts" ∷ ([∗ list] host ; γsrv' ∈ args.(BecomePrimaryArgs.replicas) ; γsrv :: backupγ,
                        is_pb_host host γ γsrv' ∗
-                       is_epoch_lb γsrv'.1 args.(BecomePrimaryArgs.epoch)) ∗
-        "#Hprim_escrow" ∷ become_primary_escrow γ.2 γsrv.2 args.(BecomePrimaryArgs.epoch) σ
-                          (own_primary_ghost γ.1 args.(BecomePrimaryArgs.epoch) σ) ∗
-        "#Hprim_facts" ∷ is_proposal_facts_prim γ.2 args.(BecomePrimaryArgs.epoch) σ ∗
+                       is_epoch_lb γsrv'.(r_pb) args.(BecomePrimaryArgs.epoch)) ∗
+        "#Hprim_escrow" ∷ become_primary_escrow γ.(s_prim) γsrv.(r_prim) args.(BecomePrimaryArgs.epoch) σ
+                          (own_primary_ghost γ.(s_pb) args.(BecomePrimaryArgs.epoch) σ) ∗
+        "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) args.(BecomePrimaryArgs.epoch) σ ∗
         "Hargs" ∷ BecomePrimaryArgs.own args_ptr args
   }}}
     Clerk__BecomePrimary #ck #args_ptr
@@ -101,13 +101,13 @@ Qed.
 Lemma become_primary_eph_step γ γsrv st σ backupγ replicaHosts:
   st.(server.canBecomePrimary) = true →
   £ 1 -∗
-  is_proposal_facts_prim γ.2 st.(server.epoch) σ -∗
-  is_epoch_config γ.1 st.(server.epoch) (γsrv :: backupγ).*1 -∗
+  is_proposal_facts_prim γ.(s_prim) st.(server.epoch) σ -∗
+  is_epoch_config γ.(s_pb) st.(server.epoch) (r_pb <$> γsrv :: backupγ) -∗
   ([∗ list] host ; γsrv' ∈ replicaHosts ; γsrv :: backupγ,
                   is_pb_host host γ γsrv' ∗
-                  is_epoch_lb γsrv'.1 st.(server.epoch)) -∗
-  become_primary_escrow γ.2 γsrv.2 st.(server.epoch) σ
-                    (own_primary_ghost γ.1 st.(server.epoch) σ) -∗
+                  is_epoch_lb γsrv'.(r_pb) st.(server.epoch)) -∗
+  become_primary_escrow γ.(s_prim) γsrv.(r_prim) st.(server.epoch) σ
+                    (own_primary_ghost γ.(s_pb) st.(server.epoch) σ) -∗
   own_Server_ghost_eph_f st γ γsrv ={↑pbN}=∗
   own_Server_ghost_eph_f (st <| server.isPrimary := true|> <|server.canBecomePrimary := false |>
                              <| server.committedNextIndex := 0 |>
@@ -228,7 +228,7 @@ Proof.
                                   (∃ clerks,
                                   "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
                                   "Hclerks" ∷ ⌜length clerks = length backupγ⌝ ∗
-                                  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backupγ, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.1 args.(BecomePrimaryArgs.epoch))
+                                  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backupγ, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.(r_pb) args.(BecomePrimaryArgs.epoch))
                                   )
                                 )
             )%I with "[Hnew_clerkss_sl Hj]" as "HH".
@@ -271,7 +271,7 @@ Proof.
               "Hclerks_sl" ∷ is_slice_small new_clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
               "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) backupγ),
                                   pb_definitions.is_Clerk ck γ γsrv ∗
-                                  is_epoch_lb γsrv.1 args.(BecomePrimaryArgs.epoch)
+                                  is_epoch_lb γsrv.(r_pb) args.(BecomePrimaryArgs.epoch)
                                   )
               )%I with "[Hnew_clerks_sl Hi]" as "HH".
       {

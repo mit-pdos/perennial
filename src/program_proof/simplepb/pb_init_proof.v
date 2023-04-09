@@ -55,11 +55,11 @@ Qed.
 
 Lemma pb_init_log γsys :
   own_ghost γsys [] ={⊤}=∗
-  ∃ γlog, own_log γlog [] ∗ is_inv γlog γsys
+  ∃ γ.(s_log), own_log γ.(s_log) [] ∗ is_inv γ.(s_log) γsys
 .
 Proof.
   iIntros "Hghost".
-  iMod (own_alloc (●ML [])) as (γlog) "[Hlog1 Hlog2]".
+  iMod (own_alloc (●ML [])) as (γ.(s_log)) "[Hlog1 Hlog2]".
   { apply mono_list_auth_valid. }
   iExists _; iFrame "Hlog2".
   iMod (inv_alloc with "[-]") as "$"; last done.

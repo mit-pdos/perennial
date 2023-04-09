@@ -23,13 +23,13 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__Apply γ γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_Clerk__Apply γ γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
-is_Clerk ck γsys γsrv -∗
-is_inv γ γsys.1 -∗
+is_Clerk ck γ γsrv -∗
+is_inv γ -∗
 is_slice_small op_sl byteT q op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
-  (own_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
+□((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
+  (own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
@@ -58,8 +58,7 @@ Proof.
     iModIntro.
     iNext.
     unfold Apply_spec.
-    iExists _, _.
-    iSplitR; first done.
+    iExists _.
     iSplitR; first done.
     simpl.
     iSplit.
@@ -151,14 +150,14 @@ Definition is_ghost_lb' γ σ : iProp Σ :=
   ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
 Lemma apply_eph_primary_step γ γsrv ops canBecomePrimary epoch committedNextIndex op Q :
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ.1 σ ∗ (own_ghost γ.1 (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
   £ 1 -∗
   own_Primary_ghost_f γ γsrv canBecomePrimary true epoch committedNextIndex ops
   ={↑pbN}=∗
   own_Primary_ghost_f γ γsrv canBecomePrimary true epoch committedNextIndex (ops ++ [(op, Q)]) ∗
-  is_proposal_lb γ.1 epoch (ops ++ [(op, Q)]) ∗
-  is_proposal_facts γ.1 epoch (ops ++ [(op, Q)]) ∗
-  is_proposal_facts_prim γ.2 epoch (ops ++ [(op, Q)])
+  is_proposal_lb γ.(s_pb) epoch (ops ++ [(op, Q)]) ∗
+  is_proposal_facts γ.(s_pb) epoch (ops ++ [(op, Q)]) ∗
+  is_proposal_facts_prim γ.(s_prim) epoch (ops ++ [(op, Q)])
 .
 Proof.
   iIntros "Hupd Hlc Hprim".
@@ -185,14 +184,14 @@ Lemma apply_eph_step γ γsrv st op Q :
   st.(server.isPrimary) = true →
   st.(server.sealed) = false →
   £ 1 -∗
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ.1 σ ∗ (own_ghost γ.1 (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
   own_Server_ghost_eph_f st γ γsrv
   ={↑pbN}=∗
   own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(op, Q)] |>)
                               γ γsrv ∗
-  is_proposal_lb γ.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
-  is_proposal_facts γ.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
-  is_proposal_facts_prim γ.2 st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)])
+  is_proposal_lb γ.(s_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
+  is_proposal_facts γ.(s_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
+  is_proposal_facts_prim γ.(s_prim) st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)])
 .
 Proof.
   intros Hprim Hunsealed.
@@ -201,14 +200,14 @@ Proof.
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed "Hghost".
   rewrite Hprim.
-  iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #?)".
+  iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #? & #?)".
   by iFrame "∗#".
 Qed.
 
 Lemma apply_commit_step γ γsrv st opsfull op Q :
   no_overflow (length opsfull + 1) →
-  is_ghost_lb γ.1 (opsfull ++ [(op, Q)]) -∗
-  is_proposal_lb γ.1 st.(server.epoch) (opsfull ++ [(op, Q)]) -∗
+  is_pb_log_lb γ.(s_pb) (opsfull ++ [(op, Q)]) -∗
+  is_proposal_lb γ.(s_pb) st.(server.epoch) (opsfull ++ [(op, Q)]) -∗
   own_Server_ghost_eph_f st γ γsrv
   ={↑pbN}=∗
   own_Server_ghost_eph_f (st <| server.committedNextIndex := length (opsfull) + 1 |> ) γ γsrv
@@ -335,7 +334,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
-        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ.1 σ ∗ (own_ghost γ.1 (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
+        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
@@ -344,7 +343,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
           ∃ opsfull,
             let ops := (get_rwops opsfull) in
             ⌜reply.(ApplyReply.ret) = compute_reply ops op⌝ ∗
-            is_ghost_lb γ.1 (opsfull ++ [(op, Q)])
+            is_pb_log_lb γ.(s_pb) (opsfull ++ [(op, Q)])
         else
           True
   }}}
@@ -568,7 +567,7 @@ Proof.
             ⌜backups !! int.nat i = Some γsrv'⌝ ∗
             readonly (own_slice_elt errs_sl i uint64T 1 err) ∗
             □ if (decide (err = U64 0)) then
-              is_accepted_lb γsrv'.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
+              is_accepted_lb γsrv'.(r_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
             else
               True
           )%I
@@ -695,7 +694,7 @@ Proof.
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
                 (∀ (k:u64) γsrv', ⌜int.nat k ≤ int.nat j⌝ -∗ ⌜conf !! (int.nat k) = Some γsrv'⌝ -∗
-                  is_accepted_lb γsrv'.1 st.(server.epoch) (st.(server.ops_full_eph) ++ [_]))
+                  is_accepted_lb γsrv'.(r_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [_]))
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -863,7 +862,6 @@ Proof.
       rewrite cons_length in HH.
       rewrite Hclerks_conf.
       clear -HH.
-      unfold simplepb_server_names.
       lia. }
     { done. }
   }
@@ -967,18 +965,18 @@ Proof.
   done.
 Qed.
 
-Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
+Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
   readonly (is_slice_small op_sl byteT 1 enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
-  Apply_core_spec γ γlog op enc_op Ψ -∗
+  Apply_core_spec γ op enc_op Ψ -∗
   WP (pb.Server__Apply #s (slice_val op_sl)) {{ Φ }}
 .
 Proof using Type*.
   iIntros "#Hsrv #Hop_sl".
   iIntros "HΨ HΦ".
   iApply (wp_frame_wand with "HΨ").
-  iDestruct "HΦ" as "(%Hop_enc & #Hinv & #Hupd & Hfail_Φ)".
+  iDestruct "HΦ" as "(%Hop_enc & #Hupd & Hfail_Φ)".
   iMod (ghost_var_alloc (())) as (γtok) "Htok".
   set (OpPred := 
 (λ ops, inv escrowN (
@@ -992,7 +990,8 @@ Proof using Type*.
              with "[$Hsrv $Hop_sl Hupd]").
   {
     iSplitL ""; first done.
-    iInv "Hinv" as "HH" "Hclose".
+    iNamed "Hsrv".
+    iInv "HhelpingInv" as "HH" "Hclose".
     iDestruct "HH" as (?) "(Hghost & >Hlog & #HQs)".
     iDestruct "Hghost" as (σgnames) "(>Hghost&>%Hfst_eq&#Hsaved')".
     iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".

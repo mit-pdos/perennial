@@ -20,7 +20,7 @@ Definition configN := nroot .@ "config".
 (* before calling this lemma, have to already allocate pb ghost state *)
 Lemma config_ghost_init_2 γ conf confγs :
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) -∗
-  pb_init_config γ.1 confγs.*1
+  pb_init_config γ.(s_pb) confγs.*1
   ={⊤}=∗ ∃ γconf, is_conf_inv γ γconf ∗ makeConfigServer_pre γconf conf.
 Proof.
   iIntros "#Hhosts Hinitconf".
@@ -120,11 +120,11 @@ Lemma wp_Clerk__GetEpochAndConfig2 ck γ Φ :
   is_Clerk2 ck γ -∗
   □((∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
   (is_slice_small config_sl uint64T 1 conf ∗
-  config_proposal_unset γ.1 epoch ∗
-  own_proposal_unused γ.1 epoch ∗
-  own_init_proposal_unused γ.2 epoch ∗
-  is_epoch_config γ.1 epoch_lb confγs.*1 ∗
-  (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ.1 epoch_skip) ∗
+  config_proposal_unset γ.(s_pb) epoch ∗
+  own_proposal_unused γ.(s_pb) epoch ∗
+  own_init_proposal_unused γ.(s_prim) epoch ∗
+  is_epoch_config γ.(s_pb) epoch_lb confγs.*1 ∗
+  (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip) ∗
   ([∗ list] γsrv ; host ∈ confγs; conf, is_pb_host host γ γsrv) ∗
   (∀ γsrv, ⌜γsrv ∈ confγs.*1⌝ → is_epoch_lb γsrv epoch_lb)) -∗
    Φ (#0, #epoch, slice_val config_sl)%V
@@ -272,12 +272,12 @@ Qed.
 Lemma wp_Clerk__WriteConfig2 ck γ Φ config_sl conf confγ epoch :
   is_Clerk2 ck γ -∗
   is_slice_small config_sl uint64T 1 conf -∗
-  is_epoch_config_proposal γ.1 epoch confγ.*1 -∗
+  is_epoch_config_proposal γ.(s_pb) epoch confγ.*1 -∗
   ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host host γ γsrv) -∗
   (∀ γsrv, ⌜γsrv ∈ confγ.*1⌝ → is_epoch_lb γsrv epoch) -∗
   □ (∀ (err:u64),
       (if (decide (err = U64 0)) then
-        is_epoch_config γ.1 epoch confγ.*1
+        is_epoch_config γ.(s_pb) epoch confγ.*1
       else
         True) -∗
       is_slice_small config_sl uint64T 1 conf -∗

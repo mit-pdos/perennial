@@ -38,13 +38,13 @@ Proof.
 Qed.
 
 (* Clerk specs *)
-Lemma wp_Clerk__ApplyAsBackup γlog γ γsrv ck args_ptr (epoch index:u64) opsfull op op_sl op_bytes :
+Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op op_sl op_bytes :
   {{{
-        "#Hck" ∷ is_Clerk ck γlog γ γsrv ∗
-        "#HepochLb" ∷ is_epoch_lb γsrv.1 epoch ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ.1 epoch opsfull ∗
-        "#Hprop_facts" ∷ is_proposal_facts γ.1 epoch opsfull ∗
-        "#Hprim_facts" ∷ is_proposal_facts_prim γ.2 epoch opsfull ∗
+        "#Hck" ∷ is_Clerk ck γ γsrv ∗
+        "#HepochLb" ∷ is_epoch_lb γsrv.(r_pb) epoch ∗
+        "#Hprop_lb" ∷ is_proposal_lb γ.(s_pb) epoch opsfull ∗
+        "#Hprop_facts" ∷ is_proposal_facts γ.(s_pb) epoch opsfull ∗
+        "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
         "%Hghost_op_σ" ∷ ⌜∃ γ, last opsfull = Some (op, γ)⌝ ∗
         "%Hghost_op_op" ∷ ⌜has_op_encoding op_bytes op⌝ ∗
         "%Hσ_index" ∷ ⌜length (get_rwops opsfull) = ((int.nat index) + 1)%nat⌝ ∗
@@ -58,7 +58,7 @@ Lemma wp_Clerk__ApplyAsBackup γlog γ γsrv ck args_ptr (epoch index:u64) opsfu
     Clerk__ApplyAsBackup #ck #args_ptr
   {{{
         (err:u64), RET #err; □ if (decide (err = 0)) then
-                               is_accepted_lb γsrv.1 epoch opsfull
+                               is_accepted_lb γsrv.(r_pb) epoch opsfull
                              else True
   }}}.
 Proof.
@@ -155,9 +155,9 @@ Qed.
 
 Lemma applybackup_primary_eph γ γsrv isPrimary canBecomePrimary epoch committedNextIndex opsfull ops_full_eph' :
   (length (get_rwops opsfull)) < (length (get_rwops ops_full_eph')) →
-  is_proposal_lb γ.1 epoch opsfull -∗
-  is_proposal_lb γ.1 epoch ops_full_eph' -∗
-  is_proposal_facts γ.1 epoch ops_full_eph' -∗
+  is_proposal_lb γ.(s_pb) epoch opsfull -∗
+  is_proposal_lb γ.(s_pb) epoch ops_full_eph' -∗
+  is_proposal_facts γ.(s_pb) epoch ops_full_eph' -∗
   own_Primary_ghost_f γ γsrv canBecomePrimary isPrimary epoch committedNextIndex opsfull -∗
   ⌜prefix opsfull ops_full_eph'⌝ ∗
   own_Primary_ghost_f γ γsrv canBecomePrimary isPrimary epoch committedNextIndex ops_full_eph'
@@ -195,9 +195,9 @@ Qed.
    own_Server_ghost_eph_f st -∗ own_Server_ghost_eph_f st' *)
 Lemma applybackup_eph st γ γsrv ops_full_eph' :
   (length (get_rwops st.(server.ops_full_eph))) < (length (get_rwops ops_full_eph')) →
-  is_proposal_lb γ.1 st.(server.epoch) ops_full_eph' -∗
-  is_proposal_facts γ.1 st.(server.epoch) ops_full_eph' -∗
-  own_Server_ghost_eph_f st γprelog γreads γ γsrv -∗
+  is_proposal_lb γ.(s_pb) st.(server.epoch) ops_full_eph' -∗
+  is_proposal_facts γ.(s_pb) st.(server.epoch) ops_full_eph' -∗
+  own_Server_ghost_eph_f st γ γsrv -∗
   own_Server_ghost_eph_f (st <|server.ops_full_eph := ops_full_eph'|>) γ γsrv ∗
   ⌜prefix st.(server.ops_full_eph) ops_full_eph'⌝
 .
@@ -209,7 +209,7 @@ Proof.
   rewrite /own_Server_ghost_eph_f /tc_opaque.
   iFrame "#".
   simpl.
-  iDestruct (applybackup_primary_eph with "[$] [$] Hprimary") as "[% $]".
+  iDestruct (applybackup_primary_eph with "Hs_prop_lb Hprop_lb [$] Hprimary") as "[% $]".
   { lia. }
   done.
 Qed.
@@ -238,13 +238,13 @@ Admitted.
 Lemma applybackup_step γ γsrv epoch ops ops_full' op a:
   last ops_full' = Some (op, a) →
   length (get_rwops ops_full') = length ops + 1 →
-  is_proposal_lb γ.1 epoch ops_full' -∗
-  is_proposal_facts γ.1 epoch ops_full' -∗
-  is_proposal_facts_prim γ.2 epoch ops_full' -∗
+  is_proposal_lb γ.(s_pb) epoch ops_full' -∗
+  is_proposal_facts γ.(s_pb) epoch ops_full' -∗
+  is_proposal_facts_prim γ.(s_prim) epoch ops_full' -∗
   own_Server_ghost_f γ γsrv epoch ops false ={↑pbN}=∗
   own_Server_ghost_f γ γsrv epoch (get_rwops ops_full') false ∗
   ⌜get_rwops ops_full' = ops ++ [op]⌝ ∗
-  (is_epoch_lb γsrv.1 epoch ∗ is_accepted_lb γsrv.1 epoch ops_full')
+  (is_epoch_lb γsrv.(r_pb) epoch ∗ is_accepted_lb γsrv.(r_pb) epoch ops_full')
 .
 Proof.
   intros Hlast Hlen.
