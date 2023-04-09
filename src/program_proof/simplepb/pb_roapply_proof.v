@@ -20,6 +20,7 @@ Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
+Print pb_definitions.pbG.
 Context `{!pbG Σ}.
 
 Lemma wp_Clerk__ApplyRo γlog γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
@@ -127,6 +128,62 @@ Proof.
   }
 Qed.
 
+Lemma is_StateMachine_acc_applyReadonly sm own_StateMachine P :
+  is_StateMachine sm own_StateMachine P -∗
+  (∃ applyFn,
+    "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "ApplyReadonly"] applyFn) ∗
+    "#HapplySpec" ∷ is_ApplyReadonlyFn (pb_record:=pb_record) own_StateMachine applyFn P
+  )
+.
+Proof.
+  rewrite /is_StateMachine /tc_opaque.
+  iNamed 1. iExists _; iFrame "#".
+Qed.
+
+Lemma preread_step st γ γsrv (γlog:gname) γreads t (readIndex:nat) Q {own_StateMachine} :
+  st.(server.leaseValid) = true →
+  int.nat t < int.nat st.(server.leaseExpiration) →
+  £ 1 -∗
+  own_time t -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, pb_preread_protocol.own_log γlog σ ∗ (pb_preread_protocol.own_log γlog σ ={∅,⊤∖↑ghostN}=∗ Q σ)) -∗
+  own_Server_ghost_eph_f st γ γsrv -∗
+  accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
+  own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
+  (* XXX: I think the ncfupd is redundant with the wpc_nval *)
+  |NC={⊤}=> wpc_nval ⊤ (
+  own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
+  preread_inv γ.1 γlog γreads ∗
+  is_proposed_read γreads readIndex Q ∗
+  own_Server_ghost_eph_f st γ γsrv).
+Proof.
+  (* proof steps here:
+      use accessP to get accepted ↦ σ, with (σ ⪯ ops).
+
+      Combine with
+    *)
+  iIntros (??) "Hlc Htime Hupd Hghost #HaccP Hstate".
+  iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "Hghost".
+  iNamed "Hghost".
+  iNamed "Hlease".
+  rewrite H.
+  iDestruct "Hlease" as (??) "(#Hconf & #Hlease & #Hlease_lb)".
+
+  (* Step 1. use accessP_fact to get ownership of locally accepted state *)
+  iMod ("HaccP" with "Hlc [-Hstate] Hstate") as "$"; last done.
+  iIntros (???) "Hghost".
+  iNamed "Hghost".
+
+  (* Show that st.(server.ops_full_eph) ⪰ opsfull_old. *)
+  (* TODO: strengthen accessP lemma to automatically imply this. *)
+
+  (* Use ownership of accepted state to show that. *)
+
+  iMod (lease_acc with "Hlease_lb Hlease Htime") as "H".
+  { set_solver. }
+  { done. }
+  iMod (start_read_step with "[]").
+Qed.
+
 Lemma wp_Server__ApplyRo_internal (s:loc) γlog γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
@@ -218,13 +275,36 @@ Proof.
   iIntros (?????) "Htime".
   destruct (decide (int.nat h <= int.nat st.(server.leaseExpiration))).
   { (* case: got lease is not expired *)
+
+    (* proof steps here:
+       use accessP to get accepted ↦ σ, with (σ ⪯ ops).
+       a
+       Combine with
+     *)
+    iMod (start_read_step with "[]").
+
     iModIntro. iFrame "Htime".
     wp_pures.
     wp_loadField.
     wp_if_destruct.
     { exfalso. word. }
     wp_loadField.
+    iDestruct (is_StateMachine_acc_applyReadonly with "HisSm") as "H".
+    iNamed "H".
+    wp_loadField.
+    wp_apply ("HapplySpec" with "[$Hstate]").
+    {
+      iSplitL; first done.
+      iFrame "#".
+    }
+    iIntros (??) "[Hrep_sl Hstate]".
     wp_storeField.
+    wp_loadField.
+    wp_loadField.
+    wp_pures.
+
+    iAssert (mu_inv s γ γsrv mu) with "[-Err Reply Hlcs HΦ]" as "Hown".
+    wp_forBreak_cond.
   }
   (* *)
 

@@ -40,15 +40,16 @@ Definition post_lease N γl (R:iProp Σ) : iProp Σ :=
   ▷ R
 .
 
-Lemma lease_acc N e R γl t :
+Lemma lease_acc N e R γl t {E} :
+  ↑N ⊆ E →
   int.nat t < int.nat e →
   is_lease_valid_lb γl e -∗
   is_lease N γl R -∗
-  own_time t ={↑N,∅}=∗
-  ▷ R ∗ (▷ R ={∅,↑N}=∗ own_time t)
+  own_time t ={E,E∖↑N}=∗
+  ▷ R ∗ (▷ R ={E∖↑N,E}=∗ own_time t)
 .
 Proof.
-  iIntros (HnotExpired) "#Hlease_lb #Hlease Htime".
+  iIntros (? HnotExpired) "#Hlease_lb #Hlease Htime".
   iDestruct "Hlease" as (γtok) "#Hinv".
   iInv "Hinv" as "Hi" "Hclose".
   iDestruct "Hi" as (?) "[>Hexpiration Hi]".
@@ -59,7 +60,6 @@ Proof.
     exfalso. lia.
   }
   iFrame "HR".
-  replace (↑N ∖ ↑N) with (∅:coPset) by set_solver.
   iModIntro.
   iIntros "HR".
   iFrame "Htime".

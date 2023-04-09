@@ -224,6 +224,8 @@ Proof.
       iDestruct (lease_get_lb with "Hexp") as "#Hvalid".
       iMod (lease_acc with "Hvalid Hlease Ht") as "[>$ HH]".
       { done. }
+      { done. }
+      replace (↑epochLeaseN ∖ ↑epochLeaseN) with (∅:coPset) by set_solver.
       iModIntro.
       iIntros "Hepoch".
       iMod ("HH" with "Hepoch") as "$".
