@@ -13,22 +13,22 @@ From Perennial.program_proof.reconnectclient Require Import proof.
 Section pb_roapply_proof.
 
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__ApplyRo γ γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_Clerk__ApplyRo γlog γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 is_Clerk ck γsys γsrv -∗
-is_inv γ γsys -∗
+is_inv γlog γsys.1 -∗
 is_slice_small op_sl byteT q op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ ops ∗
-  (own_log γ ops ={∅,⊤∖↑pbN}=∗
+□((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γlog ops ∗
+  (own_log γlog ops ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
@@ -51,7 +51,7 @@ Proof.
   iNamed "Hsrv".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hop_sl Hrep").
   {
-    iDestruct "Hsrv" as "(_ & _ & _ & _ & _ & _ & $ & _)".
+    iDestruct "Hsrv" as "(_ & _ & _ & _ & _ & $ & _)".
   }
   { (* Successful RPC *)
     iModIntro.
@@ -127,30 +127,21 @@ Proof.
   }
 Qed.
 
-Lemma get_rwops_single_nil :
-  ∀ A op Q, get_rwops (A:=A) (pb_record:=pb_record) [(ro_op op, Q)] = [].
-Proof.
-  unfold get_rwops.
-  done.
-Qed.
-
-Local Hint Rewrite get_rwops_single_nil.
-
-Lemma wp_Server__ApplyRo_internal (s:loc) γ γsrv op_sl op_bytes op Q :
+Lemma wp_Server__ApplyRo_internal (s:loc) γlog γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
-        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗ (own_ghost γ (σ ++ [(ro_op op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
+        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γlog σ ∗ (own_ghost γlog (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
-    pb.Server__ApplyRo #s (slice_val op_sl)
+    pb.Server__ApplyRoWaitForCommit #s (slice_val op_sl)
   {{{
         reply_ptr reply, RET #reply_ptr; £ 1 ∗ £ 1 ∗ £ 1 ∗ ApplyReply.own_q reply_ptr reply ∗
         if (decide (reply.(ApplyReply.err) = 0%Z)) then
           ∃ opsfull,
             let ops := (get_rwops opsfull) in
             ⌜reply.(ApplyReply.ret) = compute_reply ops op⌝ ∗
-            is_ghost_lb γ (opsfull ++ [(ro_op op, Q)])
+            is_ghost_lb γlog (opsfull ++ [(op, Q)])
         else
           True
   }}}
@@ -159,7 +150,7 @@ Proof.
   iIntros (Φ) "[#His Hpre] HΦ".
   iDestruct "Hpre" as "(#Hsl & %Hghostop_op & Hupd)".
   iNamed "His".
-  rewrite /Server__ApplyRo.
+  rewrite /Server__ApplyRoWaitForCommit.
   wp_pure1_credit "Hlc1".
   wp_pure1_credit "Hlc2".
   wp_pure1_credit "Hlc3".
@@ -174,441 +165,70 @@ Proof.
   simpl.
   replace (slice.nil) with (slice_val (Slice.nil)) by done.
   wp_storeField.
+  wp_storeField.
 
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
+  iNamed "Hvol".
   wp_pures.
   wp_loadField.
   wp_if_destruct.
-  { (* return error "not primary" *)
-    wp_loadField.
-    wp_apply (release_spec with "[-HΦ Err Reply Hlcs]").
-    {
-      iFrame "HmuInv Hlocked".
-      iNext.
-      repeat (iExists _).
-      iFrame "Hstate ∗#"; iFrame "%".
-    }
-    wp_pures.
-    wp_storeField.
-    iApply "HΦ".
-    iDestruct "Hlcs" as "($ & $ & $)".
-    iSplitL "Err Reply".
-    {
-      instantiate (1:=(ApplyReply.mkC _ _)).
-      iExists _.
-      iFrame.
-      iExists 1%Qp.
-      iApply is_slice_small_nil.
-      done.
-    }
-    done.
+  { (* not primary *)
+    (* FIXME: remove this unnecessary check *)
+    admit.
   }
   wp_loadField.
-
+  wp_pures.
   wp_if_destruct.
-  { (* return ESealed *)
+  { (* sealed *)
+    (* FIXME: remove this unnecessary check *)
+    admit.
+  }
+  wp_loadField.
+  wp_if_destruct.
+  { (* lease invalid *)
     wp_loadField.
-    wp_apply (release_spec with "[-HΦ Err Reply Hlcs]").
+    wp_apply (release_spec with "[-Hlcs HΦ Hupd Err Reply]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      repeat (iExists _).
-      iFrame "∗#"; iFrame "%".
-    }
-    wp_pures.
-    wp_storeField.
-    iApply ("HΦ" $! _ (ApplyReply.mkC 1 [])).
-    iDestruct "Hlcs" as "($ & $ & $)".
-    iFrame.
-    iExists _, 1%Qp; iFrame.
-    iApply is_slice_small_nil.
-    done.
-  }
-
-  clear Heqb.
-
-  (* make proposal *)
-  iAssert (_) with "HprimaryOnly" as "HprimaryOnly2".
-  iEval (rewrite /is_possible_Primary /tc_opaque) in "HprimaryOnly2".
-  iNamed "HprimaryOnly2".
-  iAssert (_) with "HisSm" as "HisSm2".
-  iEval (rewrite /is_StateMachine /tc_opaque) in "HisSm2".
-  iNamed "HisSm2".
-  wp_loadField.
-  wp_loadField.
-
-  (* make ephemeral proposal first *)
-  iMod (own_update with "Heph") as "Heph".
-  {
-    apply singleton_update.
-    apply mono_list_update.
-    instantiate (1:=opsfull_ephemeral ++ [(ro_op op, Q)]).
-    by apply prefix_app_r.
-  }
-  iDestruct (own_mono _ _ {[ _ := ◯ML _ ]} with "Heph") as "#Hnew_eph_lb".
-  {
-    apply singleton_mono.
-    apply mono_list_included.
-  }
-
-  iApply fupd_wp.
-  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-  { set_solver. }
-  iMod (valid_add with "Hlc4 Heph_valid [Hupd]") as "#Hnew_eph_valid".
-  {
-    iMod "Hupd" as (?) "[Hghost Hupd]".
-    iModIntro.
-    iExists _; iFrame.
-    iIntros. done.
-  }
-  iMod "Hmask".
-  iModIntro.
-
-  (* NOTE: unlike Apply(), don't (and actually *can't* ) need to add to own_proposal. It is enough to
-     add to ephemeral_proposal. The applyRoThread() will handle appending to
-     own_proposal.
-   *)
-  wp_apply ("HapplyReadonlySpec" with "[HisSm $Hstate $Hsl]").
-  { done. }
-  iIntros (reply_sl q) "(Hreply & Hstate)".
-
-  wp_storeField.
-  wp_loadField.
-  wp_apply (std_proof.wp_SumAssumeNoOverflow).
-  iIntros "%Hno_overflow".
-  wp_storeField.
-  wp_loadField.
-  wp_pures.
-  wp_loadField.
-  wp_pures.
-  wp_loadField.
-  wp_pures.
-  wp_loadField.
-  wp_loadField.
-  wp_pures.
-  (* Possibly wake up the applyRoThread background goroutine, only if the
-     current nextIndex is durable *)
-  wp_apply (wp_If_optional with "[] [HroOpsToPropose_cond]").
-  2:{
-    iNamedAccu.
-  }
-  {
-    iIntros (?).
-    iNamed 1. iIntros "HΦ".
-    wp_loadField.
-    wp_apply (wp_condSignal with "[]").
-    { iFrame "#". }
-    by iApply "HΦ".
-  }
-  iNamed 1.
-
-  wp_pures.
-
-  (* Wait for the background thread to do the committing *)
-  iAssert (pb_definitions.own_Server s γ γsrv γeph _ mu) with "[-HΦ Hlcs Reply Err Hreply Hlocked]" as "Hown".
-  {
-    repeat iExists _.
-    iFrame "Hsealed Heph".
-    replace (get_rwops (opsfull_ephemeral ++ [(ro_op op, Q)])) with (get_rwops (opsfull_ephemeral)); last first.
-    {
-      rewrite get_rwops_app.
-      unfold get_rwops.
-      simpl.
-      rewrite app_nil_r.
-      done.
-    }
-    iFrame "∗".
-    iFrame "#".
-    iFrame "%".
-
-    (* establish new is_possible_Primary, because we increased nextRoIndex *)
-    repeat iExists _.
-    iFrame "Hcommit_lb #".
-    iFrame "%".
-    iPureIntro.
-    destruct Heph_proposal as (opsfull_eph_ro & Hsuffix & HnextRoIndex & HroOnly & Hfull).
-    exists (opsfull_eph_ro ++ [(ro_op op, Q)]).
-    split.
-    {
-      apply suffix_app.
-      { done. }
-    }
-    split.
-    {
-      rewrite app_length.
-      simpl.
-      word.
-    }
-    split.
-    {
-      rewrite get_rwops_app.
-      rewrite HroOnly.
-      simpl.
-      unfold get_rwops.
-      done.
-    }
-    { by apply is_full_ro_suffix_app. }
-  }
-
-  wp_forBreak.
-
-  wp_pures.
-  iClear "Hs_epoch_lb HopAppliedConds_conds HdurableNextIndex_is_cond HroOpsToPropose_is_cond".
-  iClear "HcommittedNextRoIndex_is_cond Hdurable_lb Heph_prop_lb Hcommit_lb HprimaryOnly HisSm Heph_commit_lb Heph_valid".
-  clear dependent committedNextIndex committedNextRoIndex.
-  iNamed "Hown".
-  wp_loadField.
-  wp_pures.
-
-  (* compound condition in if statement *)
-  wp_bind (if: (if: #_ then _ else _) then _ else _)%E.
-  wp_apply (wp_wand with "[HcommittedNextIndex HcommittedNextRoIndex]").
-  {
-    instantiate (1:=(λ v,
-                  ⌜v = #(bool_decide (epoch ≠ epoch0 ∨
-                                    (int.nat nextIndex < int.nat committedNextIndex) ∨
-                                    (int.nat committedNextRoIndex >= int.nat nextRoIndex + 1)
-                                   ))⌝ ∗ _
-                )%I).
-    wp_bind (if: #_ then _ else _)%E.
-    wp_if_destruct.
-    {
-      wp_pures.
-      iSplitR; last first.
-      {
-        iModIntro. iNamedAccu.
-      }
-      iPureIntro.
-      f_equal.
-      rewrite bool_decide_true; first done.
-      left.
-      naive_solver.
-    }
-    wp_loadField.
-    wp_pures.
-    wp_if_destruct.
-    {
-      iFrame.
-      iPureIntro.
-      f_equal.
-      rewrite bool_decide_true; first done.
-      right.
-      left.
-      word.
-    }
-    {
-      wp_loadField.
-      wp_pures.
-      iFrame.
-      iPureIntro.
-      repeat f_equal.
-      apply bool_decide_ext.
-      split.
-      {
-        intros Hineq.
-        right; right.
-        word.
-      }
-      {
-        intros [Hcase|[Hcase|Hcase]].
-        { exfalso. done. }
-        { exfalso. word. }
-        word.
-      }
-    }
-  }
-  iIntros (?) "(%Hre & HH)".
-  iNamed "HH".
-  subst v.
-  wp_if_destruct; last first.
-  { (* keep waiting *)
-    wp_loadField.
-    wp_apply (wp_condWait with "[-HΦ Hlcs Reply Err Hreply]").
-    {
-      iFrame "HmuInv HcommittedNextRoIndex_is_cond".
-      iFrame "Hlocked".
+      repeat iExists _; iFrame "HghostEph".
       repeat iExists _.
-      iFrame "∗#".
-      iFrame "%".
-    }
-    iIntros "[Hlocked Hown]".
-    wp_pures.
-    iLeft.
-    iModIntro.
-    iFrame "∗".
-    done.
-  }
-  (* break, either done with RO op, or have non-retryable error *)
-  iRight.
-  iModIntro.
-  iSplitR; first done.
-  wp_pures.
-  wp_loadField.
-
-  wp_if_destruct.
-  { (* epoch has changed, return error *)
-    wp_loadField.
-    wp_apply (release_spec with "[-HΦ Hlcs Reply Err Hreply]").
-    {
-      iFrame "HmuInv Hlocked".
-      iNext.
-      repeat iExists _.
-      iFrame "∗#"; iFrame "%".
+      rewrite Heqb0 Heqb.
+      iFrame "∗#%".
     }
     wp_pures.
     wp_storeField.
-    iApply "HΦ".
+    iApply ("HΦ" $! _ (ApplyReply.mkC _ _)).
     iDestruct "Hlcs" as "($ & $ & $)".
+    iModIntro.
     iSplitL.
-    {
-      instantiate (1:=ApplyReply.mkC _ _).
-      iExists _, q%Qp; iFrame.
-      simpl.
-      iModIntro.
-      done.
+    { iExists _, _; iFrame.
+      by iApply is_slice_small_nil.
     }
     simpl.
-    erewrite decide_False.
-    { iModIntro. done. }
-    { naive_solver. }
-  }
-
-  wp_loadField.
-
-  (* XXX: need to establish is_ghost_lb with the (ro_op op,Q) at the end of it *)
-  (* FIXME: either check in code or prove in proof that (isPrimary = true) *)
-  destruct isPrimary; last admit.
-
-  (* there are two cases, either a new RW op was committed, or the RO commit
-     index is big enough *)
-  iAssert ((is_ghost_lb γ (opsfull_ephemeral ++ [(ro_op op, Q)])))%I with "[-]" as "#Hnew_commit_lb".
-  {
-    destruct Heqb as [Hbad|Hcases].
+    destruct decide.
     { by exfalso. }
-
-    iAssert (_) with "HprimaryOnly" as "HprimaryOnly2".
-    iEval (rewrite /is_possible_Primary /tc_opaque) in "HprimaryOnly2".
-    iClear "Htok_used_witness Hconf Hclerkss_sl Hclerkss_rpc".
-    iNamed "HprimaryOnly2".
-
-    iAssert (⌜prefix opsfull_ephemeral opsfull_ephemeral0⌝)%I with "[-]" as %Hpre.
-    {
-      destruct sealed0.
-      {
-        iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hvalid.
-        iPureIntro.
-        rewrite singleton_op singleton_valid in Hvalid.
-        apply mono_list_both_dfrac_valid_L in Hvalid.
-        eapply prefix_app_l.
-        naive_solver.
-      }
-      {
-        iDestruct (own_valid_2 with "Heph Hnew_eph_lb") as %Hvalid.
-        iPureIntro.
-        rewrite singleton_op singleton_valid in Hvalid.
-        apply mono_list_both_dfrac_valid_L in Hvalid.
-        eapply prefix_app_l.
-        naive_solver.
-      }
-    }
-    iDestruct (own_valid_2 with "Heph_commit_lb Hnew_eph_lb") as %Hvalid.
-    rewrite singleton_op singleton_valid in Hvalid.
-    apply mono_list_lb_op_valid_1_L in Hvalid.
-
-    iApply (own_mono with "Hcommit_lb").
-    apply mono_list_lb_mono.
-    destruct (decide (int.nat nextIndex < int.nat committedNextIndex)) as [HnewRw|HnoNewRw].
-    (* destruct Hcases as [HnewRw|HroCommitted]. *)
-    (* can't just destruct Hcases because want to know that the first is
-       definitely false when in the second case *)
-    { (* in this case, there are new RW ops past the one the RO was applied on
-         top of. *)
-      destruct Hvalid as [Hbad|Hprefix].
-      { (* this case should be impossible because the committed list should
-           contain an RW op after the eph_proposal_lb *)
-        exfalso.
-        apply get_rwops_prefix, prefix_length in Hbad.
-        rewrite get_rwops_app /= in Hbad.
-        rewrite get_rwops_single_nil app_nil_r in Hbad.
-        rewrite HcommitLen0 Hσ_nextIndex in Hbad.
-        word.
-      }
-      (* extract the lower bound *)
-      done.
-    }
-    { (* in this case, the RO op has been explicitly committed *)
-      destruct Hcases as [|].
-      { exfalso. word. }
-      destruct Hvalid as [Hprefix|Hprefix].
-      { (* in this case, the commit_full list is prefix of the opsfull_eph +
-           ro_op op, and needs to be updated. *)
-
-        (* Argument:
-           len(get_rws ops_commit_full0) = len(get_rws opsfull_ephemeral)
-           ops_commit_full0 has committedNextRoIndex many RO ops as suffix
-           ops_ephemeral has nextRoIndex many RO ops as suffix
-         *)
-
-        destruct HcommitRoLen as (ops_commit_ro & HcommitRoSuffix & HcommitRoLen & HisRoCommit & HfullSuffixCommit).
-        destruct Heph_proposal as (ops_eph_ro & HephRoSuffix & HephRoLen & HisRoEph & HfullSuffix).
-
-        apply prefix_app_cases in Hprefix.
-        destruct Hprefix as [HprefixBad|Hgood].
-        {
-          exfalso.
-          epose proof (roapply_helper _ _ _ _ HfullSuffix HfullSuffixCommit HprefixBad _ HcommitRoSuffix HisRoCommit) as HroPrefix.
-          apply prefix_length in HroPrefix.
-          Unshelve.
-          2:{
-            apply list_prefix_eq.
-            { by apply get_rwops_prefix. }
-            { rewrite Hσ_nextIndex. rewrite HcommitLen0.
-              apply get_rwops_prefix, prefix_length in Hpre.
-              word.
-            }
-          }
-
-          word.
-        }
-        rewrite Hgood.
-        done.
-      }
-      {
-        (* in this case, the committed list already contains what we're looking for (ro_op op). *)
-        done.
-      }
-    }
-  }
-
-  wp_apply (release_spec with "[-HΦ Hlcs Reply Err Hreply]").
-  {
-    iFrame "HmuInv Hlocked".
-    iNext.
-    repeat (iExists _).
-    iFrame "∗#"; iFrame "%".
-  }
-  wp_pures.
-  wp_storeField.
-  iApply "HΦ".
-  iDestruct "Hlcs" as "($ & $ & $)".
-  iSplitL.
-  {
-    instantiate (1:=ApplyReply.mkC _ _).
-    iExists _, _; iFrame.
-    iModIntro. done.
-  }
-  simpl.
-  erewrite decide_True.
-  {
-    iModIntro. iExists _.
-    iFrame "Hnew_commit_lb".
     done.
   }
-  { done. }
-Admitted.
+
+  wp_apply wp_GetTimeRange.
+  iIntros (?????) "Htime".
+  destruct (decide (int.nat h <= int.nat st.(server.leaseExpiration))).
+  { (* case: got lease is not expired *)
+    iModIntro. iFrame "Htime".
+    wp_pures.
+    wp_loadField.
+    wp_if_destruct.
+    { exfalso. word. }
+    wp_loadField.
+    wp_storeField.
+  }
+  (* *)
+
+Qed.
 
 Lemma wp_Server__ApplyRo (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
