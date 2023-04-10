@@ -2,16 +2,17 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof pb_definitions pb_applybackup_proof pb_setstate_proof pb_getstate_proof pb_becomeprimary_proof pb_apply_proof pb_roapply_proof pb_makeclerk_proof.
+From Perennial.program_proof.simplepb Require Import config_protocol_proof.
 From iris.algebra Require Import mono_list.
 
 Section pb_start_proof.
 
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 Notation pbG := (pbG (pb_record:=pb_record)).
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 
 Notation wp_Clerk__ApplyAsBackup := (wp_Clerk__ApplyAsBackup (pb_record:=pb_record)).
 Notation wp_Clerk__SetState := (wp_Clerk__SetState (pb_record:=pb_record)).
@@ -23,22 +24,25 @@ Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
 
 Implicit Type (own_StateMachine: u64 → list OpType → bool → (u64 → list OpType → bool → iProp Σ) → iProp Σ).
-Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) opsfull (sealed:bool) (nextIndex:u64) γ γsrv γeph :
+Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHost:u64) opsfull (sealed:bool) (nextIndex:u64) γ γsrv :
   {{{
-        "Hstate" ∷ own_StateMachine epoch (get_rwops opsfull) sealed (own_Server_ghost γ γsrv γeph) ∗
-        "#His_sm" ∷ is_StateMachine sm_ptr own_StateMachine (own_Server_ghost γ γsrv γeph) ∗
-        "#Hsys_inv" ∷ sys_inv γ ∗
+        "Hstate" ∷ own_StateMachine epoch (get_rwops opsfull) sealed (own_Server_ghost_f γ γsrv) ∗
+        "#His_sm" ∷ is_StateMachine sm_ptr own_StateMachine (own_Server_ghost_f γ γsrv) ∗
+
+        "#Hsys_inv" ∷ sys_inv γ.(s_pb) ∗
+        "#HhelpingInv" ∷ is_inv γ ∗
+        "#HprereadInv" ∷ preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
+
+        "#Hconf_host" ∷ is_conf_host confHost γ ∗
         "%HnextIndex" ∷ ⌜int.nat nextIndex = length (get_rwops opsfull)⌝ ∗
-        "Heph" ∷ own_ephemeral_proposal γeph epoch opsfull ∗
-        "Heph_unused" ∷ own_unused_ephemeral_proposals γeph epoch ∗
         (* XXX: this is basically a guarantee that the list of ops being
            implicitly passed in via own_StateMachine has been made durable. It
            would now be buggy to buffer an op in memory before passing a
            StateMachine into MakeServer because the Server tracks the
            durableNextIndex and initializes it here to be nextIndex. *)
-        "#Hacc_lb" ∷ is_accepted_lb γsrv epoch opsfull
+        "#Hacc_lb" ∷ is_accepted_lb γsrv.(r_pb) epoch opsfull
   }}}
-    pb.MakeServer #sm_ptr #nextIndex #epoch #sealed
+    pb.MakeServer #sm_ptr #confHost #nextIndex #epoch #sealed
   {{{
         s, RET #s; is_Server s γ γsrv
   }}}
@@ -57,11 +61,7 @@ Proof.
   wp_pure1_credit "Hlc".
   wp_apply (wp_new_free_lock).
   iIntros (mu) "HmuInv".
-  wp_storeField.
-  wp_storeField.
-  wp_storeField.
-  wp_storeField.
-  wp_storeField.
+  repeat wp_storeField.
 
   iAssert (_) with "His_sm" as "His_sm2".
   iEval (rewrite /is_StateMachine /tc_opaque) in "His_sm2".
@@ -69,8 +69,8 @@ Proof.
 
   iMod ("HaccP" with "Hlc [] Hstate") as "Hstate".
   {
-    instantiate (1:=(is_epoch_lb γsrv epoch ∗ is_proposal_lb γ epoch opsfull ∗
-                                 is_proposal_valid γ opsfull)%I).
+    instantiate (1:=(is_epoch_lb γsrv.(r_pb) epoch ∗ is_proposal_lb γ.(s_pb) epoch opsfull ∗
+                                 is_proposal_facts γ.(s_pb) epoch opsfull)%I).
     iIntros(???). iIntros "Hghost".
     iNamed "Hghost".
     iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hlb".
@@ -78,53 +78,31 @@ Proof.
     iAssert (⌜prefix opsfull opsfull0⌝)%I with "[-]" as %Hdone.
     {
       destruct sealedold.
-      {
-        iDestruct (own_valid_2 with "Haccepted_ro Hacc_lb") as %Hvalid.
-        iPureIntro.
-        rewrite singleton_op singleton_valid mono_list_both_dfrac_valid_L in Hvalid.
-        destruct Hvalid as [_ H]. done.
-      }
-      {
-        iDestruct (own_valid_2 with "Haccepted Hacc_lb") as %Hvalid.
-        iPureIntro.
-        rewrite singleton_op singleton_valid mono_list_both_dfrac_valid_L in Hvalid.
-        destruct Hvalid as [_ H]. done.
-      }
+      { by iDestruct (fmlist_ptsto_lb_agree with "Haccepted_ro Hacc_lb") as %?. }
+      { by iDestruct (fmlist_ptsto_lb_agree with "Haccepted Hacc_lb") as %?. }
     }
-    iFrame "Hlb".
-    iSplitL.
-    { iExists _; iFrame "∗#%". iModIntro. done. }
-    iModIntro.
-    iSplitL; last admit. (* FIXME: prove that is_proposal_valid is downwards closed. *)
-    iApply (own_mono with "Hproposal_lb").
-    rewrite singleton_included.
-    right.
-    rewrite csum.Cinr_included.
-    apply mono_list_lb_mono.
-    done.
+    apply list_prefix_eq in Hdone.
+    2:{
+      apply prefix_length in H, Hdone.
+      apply (f_equal length) in Hre.
+      rewrite fmap_length in H, Hre.
+      rewrite fmap_length in H, Hre.
+      word.
+    }
+    subst.
+    iFrame "#".
+    iExists _; iFrame "∗#%". iModIntro. done.
   }
 
-  wp_apply (wpc_nval_elim_wp with "Hstate").
-  { done. }
-  { done. }
-  wp_storeField.
-  iIntros "(Hstate & #Hepochlb & #Hprop_lb & #Hprop_valid)".
-
-  wp_pures.
-  wp_storeField.
+  iDestruct "Hstate" as "(Hstate & #Hepochlb & #Hprop_lb & #Hprop_facts)".
 
   wp_apply (wp_NewMap).
   iIntros (?) "Hmap".
   wp_storeField.
 
-  wp_loadField.
-  wp_apply (wp_newCond' with "HmuInv").
-  iIntros (durableCond) "[HmuInv #Hdurcond]".
-  wp_storeField.
-
-  wp_loadField.
-  wp_apply (wp_newCond' with "HmuInv").
-  iIntros (roCond) "[HmuInv #Hrocond]".
+  iDestruct "Hconf_host" as (?) "[#Hconf_host1 #Hconf_inv]".
+  wp_apply (config_proof.wp_MakeClerk with "[$]").
+  iIntros (confCk) "#HconfCk".
   wp_storeField.
 
   wp_loadField.
@@ -136,29 +114,53 @@ Proof.
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
   iExists _, _.
   iFrame "Hmu Hsys_inv".
-  iExists γeph.
+  iMod (readonly_alloc_1 with "confCk") as "#confCk".
   iMod (alloc_lock with "HmuInv [-]") as "$"; last first.
-  { time done. } (* PERF: why is this slow? *)
+  { repeat iExists _.
+    iModIntro. iFrame "#".
+  }
 
   (* now just need to establish lock invariant *)
   iNext.
   repeat iExists _.
-  iFrame "∗".
-  iSplitL "clerks".
-  {
-    iApply to_named.
-    instantiate (1:=Slice.nil).
-    iExact "clerks".
-  }
-  iFrame "#".
   iSplitL.
-  { destruct sealed; done. }
-  iSplitR.
-  { iApply big_sepM_empty. done. }
-  iFrame "%".
-  iSplitR.
-  { iPureIntro. word. }
-  { iPureIntro. word. }
+  {
+    repeat iExists _.
+    instantiate (1:=(server.mkC pb_record _ _ _ _ _ _ _ _)).
+    simpl.
+    iFrame "∗".
+    iSplitL "nextIndex".
+    {
+      iApply to_named. iExactEq "nextIndex".
+      repeat f_equal. word.
+    }
+    iSplitL "clerks".
+    {
+      iApply to_named.
+      instantiate (1:=Slice.nil).
+      iExact "clerks".
+    }
+    iFrame "#".
+    iSplitL.
+    { iApply big_sepM_empty. done. }
+    iSplitL.
+    { by iLeft. }
+    iPureIntro. unfold no_overflow. word.
+  }
+  rewrite /own_Server_ghost_eph_f /tc_opaque /=.
+  repeat iExists _; iFrame.
+  iSplitL.
+  { admit. } (* FIXME: the later-epoch escrow tokens need to be in
+                own_Server_ghost so it remains after a crash *)
+  iFrame "#".
+  iSplitR; first by iModIntro.
+
+  (* FIXME: maintain is_in_config in crash condition *)
+  iSplitR; first admit.
+
+  (* FIXME: provide is_pb_log_lb γ.(s_pb) [] as input *)
+  (* FIXME: weaken to committed_by ∨ opscommitted = [] *)
+  admit.
 Admitted.
 
 Lemma wp_Server__Serve s host γ γsrv :
@@ -209,11 +211,6 @@ Proof.
   iIntros "Hhandlers".
   wp_pures.
 
-  wp_pures.
-  wp_apply (map.wp_MapInsert with "Hhandlers").
-  iIntros "Hhandlers".
-  wp_pures.
-
   wp_apply (urpc_proof.wp_MakeServer with "Hhandlers").
   iIntros (r) "Hr".
   wp_pures.
@@ -225,7 +222,7 @@ Proof.
     set_solver.
   }
   {
-    iDestruct "Hhost" as "(H1&H2&H3&H4&H5&H6&H7&Hhandlers)".
+    iDestruct "Hhost" as "(H1&H2&H3&H4&H5&H6&Hhandlers)".
     unfold handlers_complete.
     repeat rewrite dom_insert_L.
     rewrite dom_empty_L.
@@ -243,7 +240,7 @@ Proof.
       unfold impl_handler_spec2.
       iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
-      iDestruct "Hspec" as (??) "Hspec".
+      iDestruct "Hspec" as (?) "Hspec".
       iMod (readonly_alloc_1 with "Hreq_sl") as "#Hreq_sl".
       wp_apply (wp_Server__ApplyRo with "Hsrv Hreq_sl [-Hspec] Hspec").
       iIntros (?) "Hspec".
@@ -262,36 +259,7 @@ Proof.
       unfold impl_handler_spec2.
       iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
-      iDestruct "Hspec" as (???) "HH".
-      wp_apply (RoApplyAsBackupArgs.wp_Decode with "[$Hreq_sl //]").
-      iIntros (?) "Hargs".
-
-      wp_apply (wp_Server__RoApplyAsBackup with "Hsrv Hargs [-HH] HH").
-      iIntros (?) "HΨ".
-
-      wp_call.
-      wp_apply (wp_NewSliceWithCap).
-      { done. }
-      iClear "Hrep_sl".
-      iIntros (?) "Hrep_sl".
-      wp_apply (marshal_stateless_proof.wp_WriteInt with "[$]").
-      iIntros (?) "Hrep_sl".
-      wp_store.
-      simpl.
-      replace (int.nat 0%Z) with (0) by word.
-      simpl.
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
-      iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
-      { iApply "HΨ". done. }
-    }
-    iApply (big_sepM_insert_2 with "").
-    {
-      iExists _; iFrame "#".
-      clear Φ.
-      unfold impl_handler_spec2.
-      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
-      wp_pures.
-      iDestruct "Hspec" as (??) "Hspec".
+      iDestruct "Hspec" as (?) "Hspec".
       iMod (readonly_alloc_1 with "Hreq_sl") as "#Hreq_sl".
       wp_apply (wp_Server__Apply with "Hsrv Hreq_sl [-Hspec] Hspec").
       iIntros (?) "Hspec".

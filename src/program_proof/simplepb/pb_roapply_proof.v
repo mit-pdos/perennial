@@ -328,7 +328,7 @@ Lemma finish_read_step st γ γsrv Q priorOps :
   £ 1 -∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) priorOps -∗
   is_proposed_read γ.(s_reads) (length priorOps) Q -∗
-  preread_inv γ.(s_pb) γ.(s_log) γ.(s_reads) -∗
+  preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) -∗
   own_Server_ghost_eph_f st γ γsrv ={⊤}=∗
   own_Server_ghost_eph_f st γ γsrv ∗
   Q priorOps

@@ -20,7 +20,7 @@ Definition configN := nroot .@ "config".
 (* before calling this lemma, have to already allocate pb ghost state *)
 Lemma config_ghost_init_2 γ conf confγs :
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) -∗
-  pb_init_config γ.(s_pb) confγs.*1
+  pb_init_config γ.(s_pb) (r_pb <$> confγs)
   ={⊤}=∗ ∃ γconf, is_conf_inv γ γconf ∗ makeConfigServer_pre γconf conf.
 Proof.
   iIntros "#Hhosts Hinitconf".
@@ -123,10 +123,10 @@ Lemma wp_Clerk__GetEpochAndConfig2 ck γ Φ :
   config_proposal_unset γ.(s_pb) epoch ∗
   own_proposal_unused γ.(s_pb) epoch ∗
   own_init_proposal_unused γ.(s_prim) epoch ∗
-  is_epoch_config γ.(s_pb) epoch_lb confγs.*1 ∗
+  is_epoch_config γ.(s_pb) epoch_lb (r_pb <$> confγs) ∗
   (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip) ∗
   ([∗ list] γsrv ; host ∈ confγs; conf, is_pb_host host γ γsrv) ∗
-  (∀ γsrv, ⌜γsrv ∈ confγs.*1⌝ → is_epoch_lb γsrv epoch_lb)) -∗
+  (∀ γsrv, ⌜γsrv ∈ (r_pb <$> confγs)⌝ → is_epoch_lb γsrv epoch_lb)) -∗
    Φ (#0, #epoch, slice_val config_sl)%V
   ) ∧ (∀ (err:u64) sl, ⌜err ≠ 0⌝ -∗ Φ (#err, #0, slice_val sl)%V))
   -∗
@@ -171,7 +171,7 @@ Proof.
       iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
       {
         iNext. iExists _, _, _, _.
-        iFrame "∗#".
+        iFrame "Hepoch Hconf His_conf His_conf_prop ∗#".
         iSplitL "Hunused".
         {
           iApply "Hunused".
@@ -205,7 +205,7 @@ Proof.
       iIntros.
       iApply "HΦ".
       iDestruct "Hprop" as "[$ $]".
-      iFrame "∗#".
+      iFrame "∗ His_conf #".
 
       (* TODO: repetetive proof *)
       iIntros.
@@ -229,7 +229,7 @@ Proof.
       iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
       {
         iNext. iExists _, _, _, _.
-        iFrame "∗#".
+        iFrame "∗ His_conf #".
         iSplitL "Hunused".
         {
           iApply "Hunused".
@@ -254,7 +254,7 @@ Proof.
       iIntros.
       iApply "HΦ".
       iDestruct "Hprop" as "[$ $]".
-      iFrame "∗#".
+      iFrame "∗ His_conf #".
       iIntros (???).
       exfalso.
       rewrite Hset in H.
@@ -272,12 +272,12 @@ Qed.
 Lemma wp_Clerk__WriteConfig2 ck γ Φ config_sl conf confγ epoch :
   is_Clerk2 ck γ -∗
   is_slice_small config_sl uint64T 1 conf -∗
-  is_epoch_config_proposal γ.(s_pb) epoch confγ.*1 -∗
+  is_epoch_config_proposal γ.(s_pb) epoch (r_pb <$> confγ) -∗
   ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host host γ γsrv) -∗
-  (∀ γsrv, ⌜γsrv ∈ confγ.*1⌝ → is_epoch_lb γsrv epoch) -∗
+  (∀ γsrv, ⌜γsrv ∈ (r_pb <$> confγ)⌝ → is_epoch_lb γsrv epoch) -∗
   □ (∀ (err:u64),
       (if (decide (err = U64 0)) then
-        is_epoch_config γ.(s_pb) epoch confγ.*1
+        is_epoch_config γ.(s_pb) epoch (r_pb <$> confγ)
       else
         True) -∗
       is_slice_small config_sl uint64T 1 conf -∗
@@ -316,7 +316,7 @@ Proof.
     iMod ("Hclose" with "[Hepoch Hconf Hunused Hunset_or_set]").
     {
       iNext.  iExists _, _, _, _.
-      iFrame "∗#".
+      iFrame "∗ His_conf #".
     }
     iModIntro.
     iIntros (??) "Hsl".
@@ -342,25 +342,25 @@ Proof.
       rewrite singleton_op in Hvalid.
       rewrite singleton_valid in Hvalid.
       rewrite dfrac_agree_op_valid in Hvalid.
-      replace confγs.*1 with confγ.*1 in * by naive_solver.
+      replace (r_pb <$> confγs) with (r_pb <$> confγ) in * by naive_solver.
 
       iMod ("Hclose" with "[Hepoch Hconf Hunused]").
       {
         iNext.  iExists _, _, _, _.
-        iFrame "Hhosts ∗#".
+        iFrame "Hhosts ∗ His_conf #".
         iSplitL; first done.
         by iRight.
       }
       iApply "HΦ".
       iModIntro.
-      iFrame "#".
+      iFrame "His_conf".
     }
     { (* config is being set for the first time *)
       iMod (own_update with "Hunset") as "Hset".
       {
         apply singleton_update.
         apply cmra_update_exclusive.
-        instantiate (1:=(to_dfrac_agree (DfracOwn 1) ((Some confγ.*1) : (leibnizO _)))).
+        instantiate (1:=(to_dfrac_agree (DfracOwn 1) ((Some (r_pb <$> confγ)) : (leibnizO _)))).
         done.
       }
       iMod (own_update with "Hset") as "Hset".
@@ -369,9 +369,8 @@ Proof.
       iMod ("Hclose" with "[Hconf Hepoch Hunused]").
       {
         iNext. iExists _, _, _, _.
-        iFrame "∗#".
+        iFrame "∗ Hset #".
         iDestruct "Hconf_prop" as "[_ %Hineq]".
-        iSplitR; first done.
         iSplitL.
         { by iRight. }
         iIntros (???).
@@ -379,9 +378,7 @@ Proof.
         word.
       }
       iApply "HΦ".
-      iDestruct "Hconf_prop" as "[_ %Hineq]".
-      iFrame "#".
-      done.
+      by iFrame "Hconf_prop Hset".
     }
   }
 Qed.
