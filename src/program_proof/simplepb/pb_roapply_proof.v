@@ -138,6 +138,54 @@ Proof.
   iNamed 1. iExists _; iFrame "#".
 Qed.
 
+Lemma own_op_log_agree γ ops ops' :
+  own_op_log γ ops -∗
+  own_op_log γ ops' -∗
+  ⌜ops = ops'⌝.
+Proof.
+  iIntros "H1 H2".
+  iDestruct (own_valid_2 with "H1 H2") as %?.
+  iPureIntro.
+  rewrite mono_list_auth_dfrac_op_valid_L in H.
+  naive_solver.
+Qed.
+
+Lemma generate_read_fupd γ Φ :
+  is_inv γ -∗
+  £ 1 -∗
+  (|={⊤ ∖ ↑pbN,∅}=>
+    ∃ ops, own_op_log γ ops ∗
+      (own_op_log γ ops ={∅,⊤ ∖ ↑pbN}=∗ □ Φ ops)) -∗
+  (|={⊤ ∖ ↑pbN ∪ ↑appN,∅}=>
+    ∃ σ, own_pre_log γ.(s_prelog) σ ∗
+      (own_pre_log γ.(s_prelog) σ ={∅,⊤ ∖ ↑pbN ∪ ↑appN}=∗ □ Φ σ.*1))
+.
+Proof.
+  iIntros "#Hinv Hlc Hupd".
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+  iDestruct "Hi" as (?) "(Hghost & Hlog & #HrwQs)".
+  iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
+  { solve_ndisj. }
+  iMod "Hupd" as (?) "[Hlog2 Hupd]".
+  iModIntro.
+  iDestruct (own_op_log_agree with "Hlog Hlog2") as %?; subst.
+  iDestruct "Hghost" as (?) "(Hghost & % & Hprops)".
+  iExists _; iFrame.
+  iIntros "Hghost".
+  iMod ("Hupd" with "Hlog2") as "#Hupd".
+  unfold get_rwops.
+  rewrite H.
+  iFrame "#".
+  iMod "Hmask".
+  iMod ("Hclose" with "[-]"); last done.
+  iNext.
+  iExists _.
+  iFrame "∗#".
+  rewrite H. iFrame.
+  iExists _; iFrame "∗#%".
+Qed.
+
 Lemma preread_step st γ γsrv t Q {own_StateMachine} :
   st.(server.leaseValid) = true →
   int.nat t < int.nat st.(server.leaseExpiration) →
@@ -145,9 +193,9 @@ Lemma preread_step st γ γsrv t Q {own_StateMachine} :
   £ 1 -∗
   £ 1 -∗
   own_time t -∗
-  □(|={⊤ ∖ ↑pbN,∅}=>
+  □(|={⊤ ∖ ↑pbN ∪ ↑appN,∅}=>
     ∃ σ, own_pre_log γ.(s_prelog) σ ∗
-      (own_pre_log γ.(s_prelog) σ ={∅,⊤ ∖ ↑pbN}=∗ □ Q σ)) -∗
+      (own_pre_log γ.(s_prelog) σ ={∅,⊤ ∖ ↑pbN ∪ ↑appN}=∗ □ Q σ)) -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
@@ -245,7 +293,7 @@ Proof.
   { by apply prefix_length. }
   {
     iModIntro.
-    iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
+    iMod (fupd_mask_subseteq (⊤∖↑pbN ∪ ↑appN)) as "Hmask".
     { solve [eauto 20 with ndisj]. } (* FIXME: increase search depth? *)
     iMod "Hupd" as (?) "[? Hupd]".
     iModIntro. iExists _; iFrame.
@@ -266,18 +314,18 @@ Proof.
   repeat iExists _; iFrame "∗#%".
 Qed.
 
-Lemma wp_Server__ApplyRo (s:loc) γ.(s_log) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
+Lemma wp_Server__ApplyRo (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
   readonly (is_slice_small op_sl byteT 1 enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
-  ApplyRo_core_spec γ γ.(s_log) op enc_op Ψ -∗
+  ApplyRo_core_spec γ op enc_op Ψ -∗
   WP (pb.Server__ApplyRoWaitForCommit #s (slice_val op_sl)) {{ Φ }}
 .
 Proof.
   iIntros "#Hsrv #Hop_sl".
   iIntros "HΨ HΦ".
   iApply (wp_frame_wand with "HΨ").
-  iDestruct "HΦ" as "(%Hop_enc & #Hinv & #Hupd & #Hfail_Φ)".
+  iDestruct "HΦ" as "(%Hop_enc & #Hupd & #Hfail_Φ)".
   iNamed "Hsrv".
   rewrite /Server__ApplyRoWaitForCommit.
   wp_pure1_credit "Hlc1".
