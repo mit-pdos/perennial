@@ -23,13 +23,12 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Print pb_definitions.pbG.
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__ApplyRo γ.(s_log) γsys γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_Clerk__ApplyRo γ γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
-is_Clerk ck γsys γsrv -∗
-is_inv γ.(s_log) γsys.1 -∗
+is_Clerk ck γ γsrv -∗
 is_slice_small op_sl byteT q op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_log γ.(s_log) ops ∗
-  (own_log γ.(s_log) ops ={∅,⊤∖↑pbN}=∗
+□((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
+  (own_op_log γ ops ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
@@ -39,7 +38,7 @@ is_slice_small op_sl byteT q op_bytes -∗
 WP Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   intros Henc.
-  iIntros "#Hck #Hinv Hop_sl".
+  iIntros "#Hck Hop_sl".
   iIntros "#HΦ".
   wp_call.
   wp_apply (wp_ref_of_zero).
@@ -58,10 +57,8 @@ Proof.
     iModIntro.
     iNext.
     unfold Apply_spec.
-    iExists _, _.
+    iExists _.
     iSplitR; first done.
-    iSplitR; first done.
-    simpl.
     iSplit.
     {
       iModIntro.
@@ -73,6 +70,7 @@ Proof.
       iFrame.
       iIntros "Hlog".
       iMod ("HΦ" with "Hlog") as "HΦ".
+      iModIntro.
       iModIntro.
       iIntros (? Hreply_enc) "Hop".
       iIntros (?) "Hrep Hrep_sl".
@@ -140,7 +138,7 @@ Proof.
   iNamed 1. iExists _; iFrame "#".
 Qed.
 
-Lemma preread_step st γ γsrv (γ.(s_log):gname) t Q {own_StateMachine} :
+Lemma preread_step st γ γsrv t Q {own_StateMachine} :
   st.(server.leaseValid) = true →
   int.nat t < int.nat st.(server.leaseExpiration) →
   £ 1 -∗
@@ -148,14 +146,12 @@ Lemma preread_step st γ γsrv (γ.(s_log):gname) t Q {own_StateMachine} :
   £ 1 -∗
   own_time t -∗
   □(|={⊤ ∖ ↑pbN,∅}=>
-    ∃ σ, pb_preread_protocol.own_log γ.(s_log) σ ∗
-      (pb_preread_protocol.own_log γ.(s_log) σ ={∅,⊤ ∖ ↑pbN}=∗ □ Q σ)) -∗
+    ∃ σ, own_pre_log γ.(s_log) σ ∗
+      (own_pre_log γ.(s_log) σ ={∅,⊤ ∖ ↑pbN}=∗ □ Q σ)) -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
   sys_inv γ.(s_pb) -∗
-  ∃ γ.(s_reads),
-  (* XXX: I think the ncfupd is redundant with the wpc_nval *)
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
   preread_inv γ.(s_pb) γ.(s_log) γ.(s_reads) ∗
@@ -170,7 +166,6 @@ Proof.
   rewrite H.
   iDestruct "Hlease" as (??) "(#HconfInv & #Hlease & #Hlease_lb)".
 
-  iExists γ.(s_reads).
   (* Step 1. use accessP_fact to get ownership of locally accepted state *)
   iMod ("HaccP" with "Hlc [-Hstate] Hstate") as "$"; last done.
   iIntros (???) "Hghost".
@@ -245,9 +240,6 @@ Proof.
     }
   }
 
-  (* FIXME: straighten out all the various γ.(s_log)'s. There are 3 of them now I
-     think. *)
-  replace (γ.(s_log)) with (γ.(s_log)0) by admit.
   iMod (start_read_step with "Hlc2 [$] [Hupd] Hcommit") as "[$ Hcommit]".
   { solve_ndisj. }
   { by apply prefix_length. }

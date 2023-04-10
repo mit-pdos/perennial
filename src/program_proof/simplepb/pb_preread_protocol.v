@@ -53,9 +53,19 @@ Definition is_pre_log_lb (γlog:gname) (σ:list EntryType) : iProp Σ :=
 
 Definition prereadN := pbN .@ "preread".
 
+(*
 Definition have_proposed_reads_fupds γlog ros : iProp Σ :=
   [∗ map] idx ↦ rosAtIdx ∈ ros, [∗ list] Q ∈ rosAtIdx,
     □(|={⊤∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog σ ={∅,⊤∖↑prereadN}=∗ □ Q σ))
+. *)
+
+Definition have_proposed_reads_fupds_parallel γlog ros : iProp Σ :=
+  (* rather than having a set of fupds at each readIndex (one for each read done
+     at that index), this has one big fupds that does all the reads at once.
+     Intended to be a bit more convenient in the proof. *)
+  [∗ map] idx ↦ rosAtIdx ∈ ros,
+    □(|={⊤∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog σ ={∅,⊤∖↑prereadN}=∗
+       [∗ list] Q ∈ rosAtIdx, □ Q σ))
 .
 
 (* Maybe make Q not persistent, and escrow it back to the caller *)
@@ -71,7 +81,7 @@ Definition preread_inv γ γlog γreads : iProp Σ :=
   "Hlog" ∷ own_pre_log γlog σ ∗
   (* For all i < length(σ), the read-op fupds for *)
   "HownRos" ∷ own_proposed_reads γreads ros ∗
-  "#HreadUpds" ∷ have_proposed_reads_fupds γlog ros ∗
+  "#HreadUpds" ∷ have_proposed_reads_fupds_parallel γlog ros ∗
   "#HcompletedRead" ∷ have_completed_reads_Qs ros σ
   )
 .
@@ -138,6 +148,24 @@ Proof.
   by destruct Hvalid as [_ ?].
 Qed.
 
+Lemma own_log_update_2 γlog σ σ' :
+  prefix σ σ' →
+  own_pre_log γlog σ -∗
+  own_pre_log γlog σ ==∗
+  own_pre_log γlog σ' ∗
+  own_pre_log γlog σ'
+.
+Proof.
+  iIntros (?) "H1 H2".
+  iCombine "H1 H2" as "H".
+  iMod (own_update with "H") as "H".
+  {
+    apply mono_list_update.
+    done.
+  }
+  by iDestruct "H" as "[$ $]".
+Qed.
+
 Lemma own_log_lb_ineq γlog σ σ' :
   own_pre_log γlog σ' -∗
   is_pre_log_lb γlog σ -∗
@@ -188,6 +216,16 @@ Proof.
   iSplit.
   {
     iApply (big_sepM_insert_2 with "[] HreadUpds").
+    iModIntro.
+    destruct (ros !! idx) as [] eqn:Hlookup.
+    {
+      iDestruct (big_sepM_lookup with "HreadUpds") as "#Hupds".
+      { done. }
+      iMod "Hupds".
+      iModIntro.
+      iDestruct "Hupds" as (?) "[Hlog Hupds]".
+      iMod ("Hupd" with )
+
     iApply (big_sepL_app with "[]").
     iSplit.
     2: { iApply big_sepL_singleton.
@@ -271,14 +309,34 @@ Proof.
   apply take_app.
 Qed.
 
-(*
+(* XXX: for this lemma, want prereadN ∩ pbN = ∅ *)
 Lemma propose_rw_op_valid op γ γlog γreads :
   £ 1 -∗
   preread_inv γ γlog γreads -∗
-  □(|={⊤∖↑prereadN,∅}=> ∃ σ, own_log γlog σ ∗ (own_log γlog (σ ++ [op]) ={∅,⊤∖↑prereadN}=∗ True))
-  ={↑prereadN}=∗
-  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γ someσ ∗ (⌜someσ = σ⌝ -∗ own_ghost γ (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
+  (|={⊤∖↑pbN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog (σ ++ [op]) ={∅,⊤∖↑pbN}=∗ True))
+  -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γ someσ ∗ (own_pb_log γ (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
 .
-Proof. *)
+Proof.
+  iIntros "Hlc #Hinv Hupd".
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+  iNamed "Hi".
+  iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
+  { solve_ndisj. }
+  iMod "Hupd" as (?) "[Hlog2 Hupd]".
+  iDestruct (own_log_agree with "Hlog Hlog2") as "%".
+  subst.
+  iModIntro.
+  iExists _.
+  iFrame.
+  iIntros "HpbLog".
+  iMod (own_log_update_2 _ _ (σ0++[op]) with "Hlog Hlog2") as "[Hlog Hlog2]".
+  { by apply prefix_app_r. }
+  iMod ("Hupd" with "Hlog2").
+  iMod "Hmask".
+  iMod ("Hclose" with "[-]"); last done.
+  repeat iExists _; iFrame "∗#%".
+Qed.
 
 End pb_preread_protocol.

@@ -986,10 +986,16 @@ Proof using Type*.
 
   iMod (saved_pred_alloc OpPred DfracDiscarded) as (γghost_op) "#Hsaved"; first done.
   iApply wp_fupd.
+  iAssert (|={⊤}=> _)%I with "[Hupd]" as ">Hupd2".
+  { shelve. }
   wp_apply (wp_Server__Apply_internal _ _ _ _ _ op γghost_op
-             with "[$Hsrv $Hop_sl Hupd]").
+             with "[$Hsrv $Hop_sl Hupd Hupd2]").
   {
-    iSplitL ""; first done.
+    iSplitR; first by iPureIntro.
+    done.
+  }
+  Unshelve.
+  2: {
     iNamed "Hsrv".
     iInv "HhelpingInv" as "HH" "Hclose".
     iDestruct "HH" as (?) "(Hghost & >Hlog & #HQs)".
