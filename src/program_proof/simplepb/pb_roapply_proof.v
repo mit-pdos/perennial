@@ -152,7 +152,6 @@ Qed.
 
 Lemma generate_read_fupd γ Φ :
   is_inv γ -∗
-  £ 1 -∗
   (|={⊤ ∖ ↑pbN,∅}=>
     ∃ ops, own_op_log γ ops ∗
       (own_op_log γ ops ={∅,⊤ ∖ ↑pbN}=∗ □ Φ ops)) -∗
@@ -161,21 +160,20 @@ Lemma generate_read_fupd γ Φ :
       (own_pre_log γ.(s_prelog) σ ={∅,⊤ ∖ ↑pbN ∪ ↑appN}=∗ □ Φ σ.*1))
 .
 Proof.
-  iIntros "#Hinv Hlc Hupd".
+  iIntros "#Hinv Hupd".
   iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
-  iDestruct "Hi" as (?) "(Hghost & Hlog & #HrwQs)".
+  iDestruct "Hi" as (?) "(Hghost & >Hlog & #HrwQs)".
   iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
   { solve_ndisj. }
   iMod "Hupd" as (?) "[Hlog2 Hupd]".
-  iModIntro.
   iDestruct (own_op_log_agree with "Hlog Hlog2") as %?; subst.
-  iDestruct "Hghost" as (?) "(Hghost & % & Hprops)".
+  iDestruct "Hghost" as (?) "(>Hghost & >% & Hprops)".
+  iModIntro.
   iExists _; iFrame.
   iIntros "Hghost".
   iMod ("Hupd" with "Hlog2") as "#Hupd".
+  rewrite -H.
   unfold get_rwops.
-  rewrite H.
   iFrame "#".
   iMod "Hmask".
   iMod ("Hclose" with "[-]"); last done.
@@ -398,19 +396,6 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_if_destruct.
-  { (* not primary *)
-    (* FIXME: remove this unnecessary check *)
-    admit.
-  }
-  wp_loadField.
-  wp_pures.
-  wp_if_destruct.
-  { (* sealed *)
-    (* FIXME: remove this unnecessary check *)
-    admit.
-  }
-  wp_loadField.
-  wp_if_destruct.
   { (* lease invalid *)
     wp_loadField.
     wp_apply (release_spec with "[-Hlc1 Hlc2 Hlc3 Hupd Err Reply]").
@@ -419,21 +404,17 @@ Proof.
       iNext.
       repeat iExists _; iFrame "HghostEph".
       repeat iExists _.
-      rewrite Heqb0 Heqb.
       iFrame "∗#%".
     }
-    wp_pures.
-    wp_storeField.
-    iModIntro.
-    iIntros "HΨ".
-    iApply ("HΨ" $! (ApplyReply.mkC _ _)).
+    wp_pures. wp_storeField.
+    iModIntro. iIntros "HΦ".
+    iApply ("HΦ" $! (ApplyReply.mkC _ _)).
     2:{
-      iExists _, _; iFrame.
+      iExists _, 1%Qp; iFrame.
       by iApply is_slice_small_nil.
     }
-    { by iApply "Hfail_Φ". }
+    by iApply "Hfail_Φ".
   }
-
   wp_apply wp_GetTimeRange.
   iIntros (?????) "Htime".
   destruct (decide (int.nat h < int.nat st.(server.leaseExpiration))).
@@ -451,14 +432,13 @@ Proof.
       iModIntro.
       iApply generate_read_fupd.
       { iFrame "#". }
-      { admit. } (* FIXME: lc *)
-      iFrame "#".
+      { iFrame "#". }
     }
     {
       rewrite /is_StateMachine /tc_opaque.
       by iNamed "HisSm".
     }
-    { rewrite Heqb0. iFrame "Hstate". }
+    { iFrame. }
     iDestruct "HH" as "(Hstate & #Hpre_inv & #Hprop_read & #Hprop_lb & Htime & HghostEph)".
     iModIntro.
     iFrame "Htime".
@@ -470,7 +450,6 @@ Proof.
     iDestruct (is_StateMachine_acc_applyReadonly with "HisSm") as "H".
     iNamed "H".
     wp_loadField.
-    rewrite Heqb0.
     wp_apply ("HapplySpec" with "[$Hstate]").
     {
       iSplitL; first done.
@@ -486,8 +465,6 @@ Proof.
     {
       repeat iExists _; iSplitR "HghostEph"; last by iFrame.
       repeat iExists _; iFrame "∗#%".
-      rewrite Heqb0.
-      iFrame.
     }
     wp_forBreak_cond.
 
@@ -499,7 +476,24 @@ Proof.
     {
       wp_storeField.
       iRight.
-      admit. (* TODO: return error *)
+      iModIntro. iSplitR; first done.
+      wp_pures.
+      wp_loadField.
+      wp_apply (release_spec with "[-Err Reply Hrep_sl]").
+      {
+        iFrame "HmuInv Hlocked".
+        iNext.
+        repeat iExists _; iSplitR "HghostEph"; last by iFrame.
+        repeat iExists _; iFrame "∗#%".
+      }
+      wp_pures.
+      iModIntro.
+      iIntros "HΦ".
+      iApply ("HΦ" $! (ApplyReply.mkC _ _) with "[]").
+      2:{
+        iExists _, _. iFrame.
+      }
+      by iApply "Hfail_Φ".
     }
     wp_loadField.
     wp_pure1_credit "Hlc".
@@ -509,9 +503,9 @@ Proof.
       wp_storeField.
       iRight.
       iMod (finish_read_step with "Hlc [] Hprop_read [$] HghostEph") as "H".
-      { rewrite fmap_length /no_overflow in Heqb4 HnextIndexNoOverflow.
+      { rewrite fmap_length /no_overflow in Heqb2 HnextIndexNoOverflow.
         word. }
-      { rewrite -Heqb3. iFrame "Hprop_lb". }
+      { rewrite -Heqb1. iFrame "Hprop_lb". }
       iDestruct "H" as "[HghostEph HΨ]".
       iModIntro. iSplitR; first done.
       wp_pures.
@@ -530,13 +524,20 @@ Proof.
       repeat iExists _; iFrame.
     }
     wp_loadField.
-    wp_if_destruct.
-    { (* FIXME: get rid of this error *)
-      admit.
+    iClear "HopAppliedConds_conds HcommittedNextIndex_is_cond".
+    iNamed "Hvol".
+    wp_apply (wp_condWait with "[-Err Reply Hrep_sl]").
+    {
+      iFrame "#".
+      iFrame "Hlocked".
+      repeat iExists _; iSplitR "HghostEph"; last by iFrame.
+      repeat iExists _; iFrame "∗#%".
     }
-    wp_loadField.
-    (* loop *)
-    admit.
+    iIntros "[Hlocked Hown]".
+    wp_pures.
+    iModIntro. iLeft.
+    iSplitR; first done.
+    iFrame.
   }
   { (* case: lease is expired *)
     iModIntro.
@@ -553,8 +554,6 @@ Proof.
       iNext.
       repeat iExists _; iSplitR "HghostEph"; last by iFrame.
       repeat iExists _; iFrame "∗#%".
-      rewrite Heqb0.
-      iFrame.
     }
     wp_pures.
     wp_storeField.
@@ -567,6 +566,6 @@ Proof.
     }
     { by iApply "Hfail_Φ". }
   }
-Admitted.
+Qed.
 
 End pb_roapply_proof.

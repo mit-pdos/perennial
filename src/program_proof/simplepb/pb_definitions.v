@@ -436,18 +436,18 @@ Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp �
 .
 
 Definition is_ApplyReadonlyFn own_StateMachine (startApplyFn:val) (P:u64 → list (OpType) → bool → iProp Σ) : iProp Σ :=
-  ∀ op_sl (epoch:u64) (σ:list OpType) (op_bytes:list u8) (op:OpType),
+  ∀ op_sl (epoch:u64) (σ:list OpType) (op_bytes:list u8) (op:OpType) (sealed:bool),
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
-        own_StateMachine epoch σ false P
+        own_StateMachine epoch σ sealed P
   }}}
     startApplyFn (slice_val op_sl)
   {{{
         reply_sl q,
         RET (slice_val reply_sl);
         is_slice_small reply_sl byteT q (compute_reply σ op) ∗
-        own_StateMachine epoch σ false P
+        own_StateMachine epoch σ sealed P
   }}}
 .
 
