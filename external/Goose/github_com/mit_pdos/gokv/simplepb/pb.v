@@ -313,56 +313,39 @@ Definition Server__ApplyRoWaitForCommit: val :=
     struct.storeF ApplyReply "Reply" "reply" slice.nil;;
     struct.storeF ApplyReply "Err" "reply" e.None;;
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: ~ (struct.loadF Server "isPrimary" "s")
+    (if: ~ (struct.loadF Server "leaseValid" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
-      struct.storeF ApplyReply "Err" "reply" e.NotLeader;;
+      struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
       "reply"
     else
-      (if: struct.loadF Server "sealed" "s"
+      let: (<>, "h") := grove_ffi.GetTimeRange #() in
+      (if: struct.loadF Server "leaseExpiration" "s" ≤ "h"
       then
         lock.release (struct.loadF Server "mu" "s");;
-        struct.storeF ApplyReply "Err" "reply" e.Sealed;;
+        (* log.Printf("Lease expired because %d < %d", s.leaseExpiration, h) *)
+        struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
         "reply"
       else
-        (if: ~ (struct.loadF Server "leaseValid" "s")
-        then
-          lock.release (struct.loadF Server "mu" "s");;
-          struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
-          "reply"
-        else
-          let: (<>, "h") := grove_ffi.GetTimeRange #() in
-          (if: struct.loadF Server "leaseExpiration" "s" ≤ "h"
+        struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op");;
+        let: "readNextIndex" := struct.loadF Server "nextIndex" "s" in
+        let: "epoch" := struct.loadF Server "epoch" "s" in
+        Skip;;
+        (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+          (if: struct.loadF Server "epoch" "s" ≠ "epoch"
           then
-            lock.release (struct.loadF Server "mu" "s");;
-            (* log.Printf("Lease expired because %d < %d", s.leaseExpiration, h) *)
-            struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
-            "reply"
+            struct.storeF ApplyReply "Err" "reply" e.Stale;;
+            Break
           else
-            struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op");;
-            let: "readNextIndex" := struct.loadF Server "nextIndex" "s" in
-            let: "epoch" := struct.loadF Server "epoch" "s" in
-            Skip;;
-            (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-              (if: struct.loadF Server "epoch" "s" ≠ "epoch"
-              then
-                struct.storeF ApplyReply "Err" "reply" e.Stale;;
-                Break
-              else
-                (if: "readNextIndex" ≤ struct.loadF Server "committedNextIndex" "s"
-                then
-                  struct.storeF ApplyReply "Err" "reply" e.None;;
-                  Break
-                else
-                  (if: struct.loadF Server "sealed" "s"
-                  then
-                    struct.storeF ApplyReply "Err" "reply" e.Sealed;;
-                    Break
-                  else
-                    lock.condWait (struct.loadF Server "committedNextIndex_cond" "s");;
-                    Continue))));;
-            lock.release (struct.loadF Server "mu" "s");;
-            "reply")))).
+            (if: "readNextIndex" ≤ struct.loadF Server "committedNextIndex" "s"
+            then
+              struct.storeF ApplyReply "Err" "reply" e.None;;
+              Break
+            else
+              lock.condWait (struct.loadF Server "committedNextIndex_cond" "s");;
+              Continue)));;
+        lock.release (struct.loadF Server "mu" "s");;
+        "reply")).
 
 (* called on the primary server to apply a new operation. *)
 Definition Server__Apply: val :=
