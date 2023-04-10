@@ -312,7 +312,7 @@ Qed.
 Lemma propose_rw_op_valid op γ γlog γreads :
   £ 1 -∗
   preread_inv γ γlog γreads -∗
-  (|={⊤∖↑pbN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog (σ ++ [op]) ={∅,⊤∖↑pbN}=∗ True))
+  (|={⊤∖↑ghostN∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog (σ ++ [op]) ={∅,⊤∖↑ghostN∖↑prereadN}=∗ True))
   -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γ someσ ∗ (own_pb_log γ (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
 .
@@ -321,9 +321,6 @@ Proof.
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iNamed "Hi".
-
-  iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
-  { solve_ndisj. }
   iMod "Hupd" as (?) "[Hlog2 Hupd]".
   iDestruct (own_log_agree with "Hlog Hlog2") as "%".
   subst.
@@ -335,7 +332,6 @@ Proof.
   { by apply prefix_app_r. }
 
   iMod ("Hupd" with "Hlog2").
-  iMod "Hmask" as "_".
 
   destruct (ros !! (length σ0 + 1)) as [] eqn:Hlookup.
   {
@@ -380,6 +376,26 @@ Proof.
     iApply "H".
     iPureIntro. word.
   }
+Qed.
+
+Lemma own_pre_log_get_ineq γ γlog γreads σ σ' E :
+  ↑prereadN ⊆ E →
+  preread_inv γ γlog γreads -∗
+  own_pre_log γlog σ -∗
+  is_pb_log_lb γ σ' ={E}=∗
+  own_pre_log γlog σ ∗
+  ⌜prefix σ' σ⌝.
+Proof.
+  iIntros (?) "#Hinv Hlog #Hlb".
+  iInv "Hinv" as "Hi" "Hclose".
+  iDestruct "Hi" as (??) "(>HpbLog & >Hlog2 & Hi)".
+  iDestruct (own_log_agree with "Hlog Hlog2") as "%"; subst.
+  iDestruct (own_valid_2 with "HpbLog Hlb") as "%Hvalid".
+  rewrite mono_list_both_dfrac_valid_L in Hvalid.
+  destruct Hvalid as [_ Hvalid].
+  iFrame "∗%".
+  iMod ("Hclose" with "[-]"); last done.
+  repeat iExists _; iFrame.
 Qed.
 
 End pb_preread_protocol.

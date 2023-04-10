@@ -627,7 +627,7 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#Hconf_inv" ∷ is_conf_inv γ γconf ∗
   "#HconfCk_is" ∷ config_proof.is_Clerk confCk γconf ∗
   "#HhelpingInv" ∷ is_inv γ ∗
-  "#HprereadInv" ∷ preread_inv γ.(s_pb) γ.(s_log) γ.(s_reads)
+  "#HprereadInv" ∷ preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads)
 .
 
 Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :

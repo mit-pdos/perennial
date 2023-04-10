@@ -41,7 +41,7 @@ Proof.
   iNamed "Hlease".
   iClear "Hlease".
   repeat iExists _.
-  iFrame "#".
+  iFrame "#%".
   simpl.
   repeat iExists _; iFrame "#".
 Qed.

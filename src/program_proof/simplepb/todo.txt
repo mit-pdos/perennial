@@ -1,7 +1,3 @@
-[ ] clean up the gnames and definitions for the (now) 3 different "centralized"
-    logs.
-[ ] state prove "propose_rw_op_valid" in preread
-[ ] verify ApplyRoRPC
 [ ] (list length) overflow reasoning
 [ ] fix higher order ghost state in preread
 [ ] inG's for every library

@@ -190,7 +190,14 @@ Proof.
   simpl.
   iDestruct (lease_invalid with "[$]") as "$".
   iFrame "#".
-  iApply (setstate_primary_eph_step with "Hprop_lb Hprim_facts Hprimary").
+  iSplitL.
+  { iApply (setstate_primary_eph_step with "Hprop_lb Hprim_facts Hprimary"). done. }
+  iSplitL.
+  2:{ iFrame "%". iPureIntro. word. }
+  iDestruct "Hprop_facts" as "[#Hmax _]".
+  iDestruct ("Hmax" with "[] Hcommit_before_epoch") as "%".
+  { iPureIntro. word. }
+  iApply (fmlist_ptsto_lb_mono with "Hprop_lb").
   done.
 Qed.
 

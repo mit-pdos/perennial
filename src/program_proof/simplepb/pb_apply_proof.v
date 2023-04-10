@@ -163,7 +163,6 @@ Proof.
   iIntros "Hupd Hlc Hprim".
   rewrite /own_Primary_ghost_f /tc_opaque.
   iNamed "Hprim".
-  iNamed "Hprim".
   iMod (ghost_propose with "Hlc Hprim [Hupd]") as "(Hprim & #? & #?)".
   {
     iMod "Hupd" as (?) "[? Hupd]".
@@ -174,10 +173,7 @@ Proof.
   }
   iDestruct (is_proposal_facts_prim_mono with "Hprim_facts") as "#$".
   { by apply prefix_app_r. }
-  iFrame "∗#".
-  iModIntro.
-  iExists _; iFrame "Hcommit_lb #".
-  done.
+  by iFrame "∗#".
 Qed.
 
 Lemma apply_eph_step γ γsrv st op Q :
@@ -201,34 +197,31 @@ Proof.
   iNamed "Hghost".
   rewrite Hprim.
   iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #? & #?)".
-  by iFrame "∗#".
+  iFrame "∗#".
+  repeat iExists _. by iFrame "#%".
 Qed.
 
-Lemma apply_commit_step γ γsrv st opsfull op Q :
-  no_overflow (length opsfull + 1) →
-  is_pb_log_lb γ.(s_pb) (opsfull ++ [(op, Q)]) -∗
-  is_proposal_lb γ.(s_pb) st.(server.epoch) (opsfull ++ [(op, Q)]) -∗
+(* XXX: this will later be used by backup servers. *)
+Lemma increase_commitIndex_step γ γsrv st committedOps :
+  no_overflow (length committedOps) →
+  is_pb_log_lb γ.(s_pb) committedOps -∗
+  is_proposal_lb γ.(s_pb) st.(server.epoch) committedOps -∗
+  committed_by γ.(s_pb) st.(server.epoch) committedOps -∗
   own_Server_ghost_eph_f st γ γsrv
   ={↑pbN}=∗
-  own_Server_ghost_eph_f (st <| server.committedNextIndex := length (opsfull) + 1 |> ) γ γsrv
+  own_Server_ghost_eph_f (st <| server.committedNextIndex := length committedOps |> ) γ γsrv
 .
 Proof.
-  iIntros (?) "#Hghost_lb #Hprop_lb".
+  iIntros (?) "#Hghost_lb #Hprop_lb #Hcomm_by".
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed 1.
   rewrite /own_Primary_ghost_f /tc_opaque /=.
   iNamed "Hprimary".
-  destruct st.(server.isPrimary) as [] eqn:Hprim.
-  {
-    iNamed "Hprim".
-    (* iDestruct (ghost_propose_lb_valid with "Hprim Hprop_lb") as %Hprefix. *)
-    iFrame "∗#".
-    iExists _; iFrame "Hghost_lb #".
-    iPureIntro.
-    rewrite /get_rwops fmap_app app_length fmap_length /=.
-    by unfold no_overflow in H.
-  }
-  { by iFrame "∗#". }
+  repeat iExists _; iFrame "Hghost_lb ∗ #".
+  iPureIntro.
+  split; first done.
+  rewrite /get_rwops fmap_length /=.
+  by unfold no_overflow in H.
 Qed.
 
 Definition own_slice_elt {V} {H:IntoVal V} (sl:Slice.t) (idx:u64) typ q (v:V) : iProp Σ :=
@@ -334,7 +327,7 @@ Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
-        (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
+        (£ 1 -∗ £ 1 -∗ |={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
@@ -372,6 +365,7 @@ Proof.
   iNamed "Hvol".
   wp_pure1_credit "Hcred1".
   wp_pure1_credit "Hcred2".
+  iSpecialize ("Hupd" with "Hlc1 Hlc2").
   wp_loadField.
   wp_pure1_credit "Hlc".
   wp_if_destruct.
@@ -469,7 +463,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  wp_apply (release_spec with "[-HΦ Hreply Err Reply Hlc1 Hlc2 HwaitSpec]").
+  wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3 HwaitSpec]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -838,7 +832,7 @@ Proof.
     iExists _, _; iFrame.
   }
   (* otherwise, no error *)
-  iMod (ghost_commit with "Hsys_inv [Hrest] Hprop_lb Hprop_facts") as "#Hcommit".
+  iAssert (committed_by γ.(s_pb) st.(server.epoch) _) with "[]" as "#HcommitBy".
   {
     iExists _; iFrame "#".
     iIntros.
@@ -865,6 +859,7 @@ Proof.
       lia. }
     { done. }
   }
+  iMod (ghost_commit with "Hsys_inv HcommitBy Hprop_lb Hprop_facts") as "#Hcommit".
 
   wp_pures.
   rewrite bool_decide_true; last naive_solver.
@@ -902,12 +897,13 @@ Proof.
     iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
     { set_solver. }
     rewrite -HepochEq.
-    iMod (apply_commit_step with "Hcommit Hprop_lb HghostEph") as "HghostEph".
+    iMod (increase_commitIndex_step with "Hcommit Hprop_lb HcommitBy HghostEph") as "HghostEph".
     { unfold no_overflow in HnextIndexNoOverflow |- *.
       rewrite fmap_length in Hno_overflow HnextIndexNoOverflow.
+      rewrite app_length /=.
       word. }
     iMod "Hmask" as "_". iModIntro.
-    wp_apply (release_spec with "[-HΦ Hlc1 Hlc2 Hlc3 Hreply Err Reply]").
+    wp_apply (release_spec with "[-HΦ Hcred1 Hcred2 Hcred3 Hreply Err Reply]").
     {
       iFrame "Hlocked HmuInv".
       iNext.
@@ -923,13 +919,13 @@ Proof.
       unfold no_overflow in HnextIndexNoOverflow.
 
       unfold no_overflow in HnextIndexNoOverflow |- *.
-      rewrite fmap_length in HnextIndexNoOverflow, Hno_overflow |- *.
+      rewrite fmap_length app_length /= in HnextIndexNoOverflow, Hno_overflow |- *.
       word.
     }
     wp_pures.
     iModIntro.
     iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
-    iFrame "Hlc1 Hlc2 Hlc3".
+    iFrame.
     iSplitL.
     { iExists _, _. iFrame. }
     simpl.
@@ -940,7 +936,7 @@ Proof.
   }
 
   wp_loadField.
-  wp_apply (release_spec with "[-HΦ Hlc1 Hlc2 Hlc3 Hreply Err Reply]").
+  wp_apply (release_spec with "[-HΦ Hcred1 Hcred2 Hcred3 Hreply Err Reply]").
   {
     iFrame "Hlocked HmuInv".
     iNext.
@@ -953,7 +949,7 @@ Proof.
   iModIntro.
   iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
   simpl.
-  iFrame "Hlc1 Hlc2 Hlc3".
+  iFrame "Hcred1 Hcred2 Hcred3".
   iSplitL.
   {
     iExists _, _; iFrame.
@@ -986,28 +982,18 @@ Proof using Type*.
 
   iMod (saved_pred_alloc OpPred DfracDiscarded) as (γghost_op) "#Hsaved"; first done.
   iApply wp_fupd.
-  iAssert (|={⊤}=> _)%I with "[Hupd]" as ">Hupd2".
-  { shelve. }
   wp_apply (wp_Server__Apply_internal _ _ _ _ _ op γghost_op
-             with "[$Hsrv $Hop_sl Hupd Hupd2]").
+             with "[$Hsrv $Hop_sl Hupd]").
   {
     iSplitR; first by iPureIntro.
-    done.
-  }
-  Unshelve.
-  2: {
+    iIntros "Hlc Hlc2".
     iNamed "Hsrv".
+    iDestruct (propose_rw_op_valid with "Hlc [$] [Hupd]") as "$".
     iInv "HhelpingInv" as "HH" "Hclose".
     iDestruct "HH" as (?) "(Hghost & >Hlog & #HQs)".
     iDestruct "Hghost" as (σgnames) "(>Hghost&>%Hfst_eq&#Hsaved')".
     iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
-    {
-      assert ((↑ghostN:coPset) ⊆ (↑pbN:coPset)).
-      { apply nclose_subseteq. }
-      assert ((↑appN:coPset) ⊆ (↑pbN:coPset)).
-      { apply nclose_subseteq. }
-      set_solver.
-    }
+    { solve_ndisj. }
     iMod "Hupd".
     iModIntro.
     iDestruct "Hupd" as (σ0) "[Hlog2 Hupd]".
@@ -1042,13 +1028,7 @@ Proof using Type*.
     }
     iMod "Hmask" as "_".
     iMod (fupd_mask_subseteq (↑escrowN)) as "Hmask".
-    {
-      assert ((↑escrowN:coPset) ## (↑ghostN:coPset)).
-      { by apply ndot_ne_disjoint. }
-      assert ((↑escrowN:coPset) ## (↑appN:coPset)).
-      { by apply ndot_ne_disjoint. }
-      set_solver.
-    }
+    { solve_ndisj. }
     iMod "Hinv2" as "#HΦ_inv".
     iMod "Hmask".
 
@@ -1106,15 +1086,15 @@ Proof using Type*.
     rewrite e.
     iDestruct "Hpost" as (?) "[%Hrep #Hghost_lb]".
     rewrite Hrep.
-    iInv "Hinv" as "HH" "Hclose".
+    iNamed "Hsrv".
+    iInv "HhelpingInv" as "HH" "Hclose".
     {
       iDestruct "HH" as (?) "(Hghost & >Hlog & #HQs)".
       iDestruct "Hghost" as (σgnames) "(>Hghost&>%Hfst_eq&#Hsaved')".
       iApply (lc_fupd_add_later with "Hcred").
       iNext.
-      iDestruct (own_valid_2 with "Hghost Hghost_lb") as %Hvalid.
-      rewrite mono_list_both_dfrac_valid_L in Hvalid.
-      destruct Hvalid as [_ Hvalid].
+      iMod (own_pre_log_get_ineq with "[$] Hghost Hghost_lb") as "[Hghost %Hvalid]".
+      { solve_ndisj. }
 
       destruct Hvalid as (σtail&Hvalid').
       subst.
@@ -1132,7 +1112,7 @@ Proof using Type*.
         rewrite Heq ?app_length /= in Hlen. rewrite Hlen' in Hlen. clear -Hlen.
         (* weird, lia fails directly but if you replace lengths with a nat then it works... *)
         remember (length l2) as k.
-        remember (length σtail) as k'. rewrite Heqk in Hlen. rewrite -Heqk' in Hlen. lia.
+        remember (length σtail) as k'. rewrite Heqk in Hlen. lia.
       }
 
       iDestruct ("HQs" $! (σ0a ++ [(op', Q')]) _ (_, _) with "[] []") as "#HQ".

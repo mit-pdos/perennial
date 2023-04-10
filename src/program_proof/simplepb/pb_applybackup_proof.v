@@ -171,7 +171,6 @@ Proof.
   iFrame.
   destruct isPrimary.
   {
-    iNamed "Hprim".
     iDestruct (ghost_propose_lb_valid with "Hprim Hprop_lb") as %Hbad.
     exfalso.
     apply prefix_length in Hbad.
@@ -211,7 +210,9 @@ Proof.
   simpl.
   iDestruct (applybackup_primary_eph with "Hs_prop_lb Hprop_lb [$] Hprimary") as "[% $]".
   { lia. }
-  done.
+  iSplitR; last done.
+  repeat iExists _.
+  iFrame "#%".
 Qed.
 
 Lemma applybackup_step_helper (opsfull opsfull_old: list (OpType * gname)) :
