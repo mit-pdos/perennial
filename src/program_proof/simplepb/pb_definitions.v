@@ -562,13 +562,7 @@ Definition own_Primary_ghost_f γ γsrv (canBecomePrimary isPrimary:bool) epoch 
             "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) epoch opsfull  ∗
 
             "Hprim" ∷ if isPrimary then
-              ∃ (ops_commit_full:list (OpType * gname)),
-              "Hprim" ∷ own_primary_ghost γ.(s_pb) epoch opsfull ∗
-
-              (* committed witness for committed state *)
-              "#Hcommit_lb" ∷ is_pb_log_lb γ.(s_pb) ops_commit_full ∗
-              "#Hcommit_prop_lb" ∷ is_proposal_lb γ.(s_pb) epoch ops_commit_full ∗
-              "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
+              own_primary_ghost γ.(s_pb) epoch opsfull
             else
               True
       )%I
@@ -578,6 +572,7 @@ Definition own_Primary_ghost_f γ γsrv (canBecomePrimary isPrimary:bool) epoch 
 Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   tc_opaque (
   let ops:=(get_rwops st.(server.ops_full_eph)) in
+   ∃ (ops_commit_full:list (OpType * gname)) commitEpoch,
   "Hprimary" ∷ own_Primary_ghost_f γ γsrv st.(server.canBecomePrimary) st.(server.isPrimary) st.(server.epoch) st.(server.committedNextIndex) st.(server.ops_full_eph) ∗
   (* epoch lower bound *)
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv.(r_pb) st.(server.epoch) ∗
@@ -586,7 +581,14 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   "#Hs_prop_facts" ∷ is_proposal_facts γ.(s_pb) st.(server.epoch) st.(server.ops_full_eph) ∗
   "#Hlease" ∷ is_Server_lease_resource γ st.(server.epoch) st.(server.leaseValid) st.(server.leaseExpiration) ∗
 
-  "#Hin_conf" ∷ is_in_config γ γsrv st.(server.epoch)
+  "#Hin_conf" ∷ is_in_config γ γsrv st.(server.epoch) ∗
+
+  (* witness for committed state *)
+  "#Hcommit_lb" ∷ is_pb_log_lb γ.(s_pb) ops_commit_full ∗
+  "#Hcommit_before_epoch" ∷ committed_by γ.(s_pb) commitEpoch ops_commit_full ∗
+  "#Hcommit_prop_lb" ∷ is_proposal_lb γ.(s_pb) st.(server.epoch) ops_commit_full ∗
+  "%HcommitEpoch" ∷ ⌜int.nat commitEpoch <= int.nat st.(server.epoch)⌝ ∗
+  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat st.(server.committedNextIndex)⌝
   )%I
 .
 
