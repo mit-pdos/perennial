@@ -64,8 +64,7 @@ Definition have_proposed_reads_fupds_parallel γlog ros : iProp Σ :=
      at that index), this has one big fupds that does all the reads at once.
      Intended to be a bit more convenient in the proof. *)
   [∗ map] idx ↦ rosAtIdx ∈ ros,
-    □(|={⊤∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog σ ={∅,⊤∖↑prereadN}=∗
-       [∗ list] Q ∈ rosAtIdx, □ Q σ))
+    □(∀ σ, own_pre_log γlog σ ={⊤∖↑prereadN∖↑ghostN}=∗ own_pre_log γlog σ ∗ [∗ list] Q ∈ rosAtIdx, □ Q σ)
 .
 
 (* Maybe make Q not persistent, and escrow it back to the caller *)
@@ -183,7 +182,7 @@ Lemma start_read_step Q γ γlog γreads idx σ E :
   idx >= length σ →
   £ 1 -∗
   preread_inv γ γlog γreads -∗
-  □(|={E∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog σ ={∅,E∖↑prereadN}=∗ □ Q σ)) -∗
+  □(|={E∖↑prereadN∖↑ghostN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog σ ={∅,E∖↑prereadN∖↑ghostN}=∗ □ Q σ)) -∗
   own_pb_log γ σ
   ={E}=∗
   is_proposed_read γreads idx Q ∗ own_pb_log γ σ
@@ -200,11 +199,15 @@ Proof.
 
   (* we'll fire the fupd here for the case that idx = length σ, and later might
      decide to throw away the Q *)
+  iMod (fupd_mask_subseteq _) as "Hmask".
+  { shelve. }
   iAssert (_) with "Hupd" as "Hupd2".
   iMod "Hupd2" as (?) "[Hlog2 Hupd2]".
   iDestruct (own_log_agree with "Hlog2 Hlog") as %?.
   subst.
   iMod ("Hupd2" with "Hlog2") as "#?".
+  iMod "Hmask".
+  Unshelve. 2: solve_ndisj.
 
   iMod (update_map_mset_ipred idx Q with "HownRos") as "HownRos".
   iDestruct (map_fmset_get_elem idx Q with "HownRos") as "#His_read".
@@ -217,35 +220,31 @@ Proof.
   {
     iApply (big_sepM_insert_2 with "[] HreadUpds").
     iModIntro.
+
+    iIntros (?) "Hlog".
+
+    (* fire the new fupd *)
+    iMod (fupd_mask_subseteq (E∖↑prereadN∖↑ghostN)) as "Hmask".
+    { solve_ndisj. }
+    iMod "Hupd" as (?) "[Hlog2 Hupd]".
+    iDestruct (own_log_agree with "Hlog Hlog2") as %?; subst.
+    iMod ("Hupd" with "Hlog2") as "#HQ".
+    iMod "Hmask" as "_".
     destruct (ros !! idx) as [] eqn:Hlookup.
-    {
+    { (* have some previous fupds *)
       iDestruct (big_sepM_lookup with "HreadUpds") as "#Hupds".
       { done. }
-      iMod "Hupds".
-      iModIntro.
-      iDestruct "Hupds" as (?) "[Hlog Hupds]".
-      iMod ("Hupd" with )
 
-    iApply (big_sepL_app with "[]").
-    iSplit.
-    2: { iApply big_sepL_singleton.
-         iModIntro.
-         iMod (fupd_mask_subseteq (E∖↑prereadN)) as "Hmask".
-         { set_solver. }
-         iMod "Hupd" as (?) "[? Hupd]".
-         iModIntro. iExists _; iFrame.
-         iIntros "?".
-         iMod ("Hupd" with "[$]").
-         iMod "Hmask".
-         done. }
-    (* the rest of these fupds follow straightforwardly from old have_proposed_reads_fupds *)
-    destruct (ros !! idx) as [] eqn:Hlookup.
-    {
-      iDestruct (big_sepM_lookup with "HreadUpds") as "Hupds".
-      { done. }
-      iFrame "Hupds".
+      (* fire the old fupds *)
+      iMod ("Hupds" with "Hlog") as "[Hlog #HQs]".
+      iModIntro.
+      iFrame.
+      simpl.
+      iSplitL.
+      { iFrame "#". }
+      { by iFrame "#". }
     }
-    { by iApply big_sepL_nil. }
+    { iModIntro; simpl; iFrame "∗#". }
   }
   simpl.
   iApply (big_sepM_insert_2 with "[] HcompletedRead").
@@ -322,6 +321,7 @@ Proof.
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iNamed "Hi".
+
   iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
   { solve_ndisj. }
   iMod "Hupd" as (?) "[Hlog2 Hupd]".
@@ -333,10 +333,53 @@ Proof.
   iIntros "HpbLog".
   iMod (own_log_update_2 _ _ (σ0++[op]) with "Hlog Hlog2") as "[Hlog Hlog2]".
   { by apply prefix_app_r. }
+
   iMod ("Hupd" with "Hlog2").
-  iMod "Hmask".
-  iMod ("Hclose" with "[-]"); last done.
-  repeat iExists _; iFrame "∗#%".
+  iMod "Hmask" as "_".
+
+  destruct (ros !! (length σ0 + 1)) as [] eqn:Hlookup.
+  {
+    iDestruct (big_sepM_lookup with "HreadUpds") as "#Hupds".
+    { done. }
+    iMod (fupd_mask_subseteq _) as "Hmask".
+    { shelve. }
+    iMod ("Hupds" with "Hlog") as "[Hlog #HQ]".
+    iMod "Hmask" as "_".
+    Unshelve. 2: solve_ndisj.
+
+    iMod ("Hclose" with "[-]"); last done.
+    repeat iExists _; iFrame "∗#%".
+    iNext.
+    iApply (big_sepM_impl with "HcompletedRead").
+    iModIntro. iIntros (???) "H %".
+    rewrite app_length /= in H1.
+    destruct (decide (k = length σ0 + 1)).
+    {
+      subst.
+      replace (length σ0 + 1) with (length (σ0 ++ [op])).
+      2: by rewrite app_length.
+      rewrite firstn_all.
+      rewrite Hlookup in H0.
+      injection H0 as ->.
+      iFrame "#".
+    }
+    rewrite take_app_le; last word.
+    iApply "H".
+    iPureIntro. word.
+  }
+  {
+    iMod ("Hclose" with "[-]"); last done.
+    repeat iExists _; iFrame "∗#%".
+    iNext.
+    iApply (big_sepM_impl with "HcompletedRead").
+    iModIntro. iIntros (???) "H %".
+    rewrite app_length /= in H1.
+    destruct (decide (k = length σ0 + 1)).
+    { exfalso. subst. by rewrite Hlookup in H0. }
+    rewrite take_app_le; last word.
+    iApply "H".
+    iPureIntro. word.
+  }
 Qed.
 
 End pb_preread_protocol.

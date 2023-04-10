@@ -6,7 +6,7 @@ From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
-From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_marshal_proof pb_applybackup_proof pb_apply_proof.
+From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_marshal_proof.
 (* FIXME: importing apply_proof for some lemmas *)
 From Perennial.program_proof.reconnectclient Require Import proof.
 
@@ -29,7 +29,7 @@ is_Clerk ck γ γsrv -∗
 is_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
   (own_op_log γ ops ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+     □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
 ∗
@@ -69,7 +69,7 @@ Proof.
       iExists _.
       iFrame.
       iIntros "Hlog".
-      iMod ("HΦ" with "Hlog") as "HΦ".
+      iMod ("HΦ" with "Hlog") as "#HΦ".
       iModIntro.
       iModIntro.
       iIntros (? Hreply_enc) "Hop".
@@ -146,15 +146,15 @@ Lemma preread_step st γ γsrv t Q {own_StateMachine} :
   £ 1 -∗
   own_time t -∗
   □(|={⊤ ∖ ↑pbN,∅}=>
-    ∃ σ, own_pre_log γ.(s_log) σ ∗
-      (own_pre_log γ.(s_log) σ ={∅,⊤ ∖ ↑pbN}=∗ □ Q σ)) -∗
+    ∃ σ, own_pre_log γ.(s_prelog) σ ∗
+      (own_pre_log γ.(s_prelog) σ ={∅,⊤ ∖ ↑pbN}=∗ □ Q σ)) -∗
   own_Server_ghost_eph_f st γ γsrv -∗
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
   sys_inv γ.(s_pb) -∗
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
-  preread_inv γ.(s_pb) γ.(s_log) γ.(s_reads) ∗
+  preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
   is_proposed_read γ.(s_reads) (length st.(server.ops_full_eph)) Q ∗
   own_time t ∗
   own_Server_ghost_eph_f st γ γsrv.
@@ -246,7 +246,7 @@ Proof.
   {
     iModIntro.
     iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
-    { solve_ndisj. }
+    { solve [eauto 20 with ndisj]. } (* FIXME: increase search depth? *)
     iMod "Hupd" as (?) "[? Hupd]".
     iModIntro. iExists _; iFrame.
     iIntros "?". iMod ("Hupd" with "[$]").
@@ -264,7 +264,7 @@ Proof.
   repeat iExists _; iFrame "∗#%".
   rewrite H.
   repeat iExists _; iFrame "∗#%".
-Admitted. (* FIXME: various γ.(s_log)'s *)
+Qed.
 
 Lemma wp_Server__ApplyRo (s:loc) γ.(s_log) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
