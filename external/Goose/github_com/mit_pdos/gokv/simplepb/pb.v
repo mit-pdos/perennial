@@ -569,7 +569,6 @@ Definition Server__BecomePrimary: val :=
         SliceSet (slice.T ptrT) (struct.loadF Server "clerks" "s") (![uint64T] "j") "clerks";;
         "j" <-[uint64T] ![uint64T] "j" + #1;;
         Continue);;
-      struct.storeF Server "committedNextIndex" "s" #0;;
       lock.release (struct.loadF Server "mu" "s");;
       let: "epoch" := struct.loadF BecomePrimaryArgs "Epoch" "args" in
       Fork (Server__leaseRenewalThread "s" "epoch");;

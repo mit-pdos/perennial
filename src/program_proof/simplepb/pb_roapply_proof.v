@@ -20,7 +20,6 @@ Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
-Print pb_definitions.pbG.
 Context `{!pbG Σ}.
 
 Lemma wp_Clerk__ApplyRo γ γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :

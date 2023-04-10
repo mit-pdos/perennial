@@ -110,7 +110,6 @@ Lemma become_primary_eph_step γ γsrv st σ backupγ replicaHosts:
                     (own_primary_ghost γ.(s_pb) st.(server.epoch) σ) -∗
   own_Server_ghost_eph_f st γ γsrv ={↑pbN}=∗
   own_Server_ghost_eph_f (st <| server.isPrimary := true|> <|server.canBecomePrimary := false |>
-                             <| server.committedNextIndex := 0 |>
                          ) γ γsrv.
 Proof.
   intros HcanBecome.
@@ -125,13 +124,10 @@ Proof.
     simpl.
     rewrite HcanBecome.
     iMod (ghost_become_primary with "Hlc Hescrow_inv Hprim_facts Hprim_escrow") as "(_ & $ & _)".
-    iExists [].
-    iNamed "Hprim".
+    iExists _, _.
     iFrame "∗#".
-    rewrite nil_length.
-    (* FIXME: maybe use unital algebra to get own_unit? *)
-    admit. (* FIXME: this is a bogus proof, could prove these obligations or
-              else show that it's bogus. *)
+    iPureIntro.
+    split; word.
   }
   rewrite HcanBecome.
   iMod (ghost_become_primary with "Hlc Hescrow_inv Hprim_facts Hprim_escrow") as "HH".
@@ -142,10 +138,9 @@ Proof.
   assert (σ = st.(server.ops_full_eph)).
   { apply list_prefix_eq; first done. by apply prefix_length. }
   subst.
-  iFrame "∗#%".
-  iExists [].
-  admit. (* FIXME: need empty commit_lb *)
-Admitted.
+  iExists _, _.
+  by iFrame "∗ Hcommit_before_epoch #%".
+Qed.
 
 Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ Ψ :
   is_Server s γ γsrv -∗
@@ -568,7 +563,6 @@ Proof.
     iMod "Hmask".
     iModIntro.
 
-    wp_storeField.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ HΨ Hargs_epoch]").
     {
