@@ -26,7 +26,9 @@ Implicit Types ros:gmap nat (list (list EntryType → iProp Σ)).
 
 Definition own_proposed_reads (γ:gname) (ros:gmap nat (list (list EntryType → iProp Σ))) : iProp Σ :=
   ∃ (rosγ:gmap nat (list gname)),
-  own γ (●((λ (rosγAtIdx:list gname), ●ML rosγAtIdx) <$> rosγ) : auth (gmap nat (_))) ∗
+  own γ ((●((λ (rosγAtIdx:list gname), ●ML rosγAtIdx) <$> rosγ) : auth (gmap nat (_))) ⋅
+              (◯((λ (rosγAtIdx:list gname), ●ML rosγAtIdx) <$> rosγ))
+        ) ∗
   ([∗ map] idx ↦ rosAtIdx ; rosγAtIdx ∈ ros ; rosγ,
     [∗ list] _ ↦ γprop ; Q ∈ rosγAtIdx ; rosAtIdx, saved_pred_own γprop DfracDiscarded Q)
 .
@@ -85,39 +87,79 @@ Definition preread_inv γ γlog γreads : iProp Σ :=
   )
 .
 
+(* FIXME: this should be in mono_list.v *)
+Lemma mono_list_local_update (l1 l2:list gname) :
+  l1 `prefix_of` l2 →
+  (●ML l1, ●ML l1) ~l~>
+  (●ML l2, ●ML l2).
+Proof.
+  intros [? ->].
+  unfold mono_list_auth.
+  apply auth_local_update.
+  2:{ apply to_max_prefix_list_included. exists []. by rewrite app_nil_r. }
+  2:{ apply to_max_prefix_list_valid. }
+  apply max_prefix_list_local_update.
+  by apply prefix_app_r.
+Qed.
+
 Lemma update_map_mset_ipred idx Q ros γreads :
   own_proposed_reads γreads ros ==∗
   own_proposed_reads γreads (<[ idx := (default [] (ros !! idx)) ++ [Q] ]> ros)
 .
 Proof.
   iIntros "Hown".
-  iDestruct "Hown" as (?) "[Hown Hrest]".
+  iDestruct "Hown" as (?) "[Hown #Hrest]".
   iMod (saved_pred_alloc Q DfracDiscarded) as (γpred) "#Hpred".
   { done. }
   iExists _.
+
   iMod (own_update with "Hown") as "$".
   {
-    instantiate (1:=<[idx:=default [] (ros !! idx) ++ [γpred]]> rosγ ).
+    instantiate (1:=<[idx:=default [] (rosγ !! idx) ++ [γpred]]> rosγ ).
     rewrite fmap_insert.
-    eapply auth_update_auth.
+    eapply auth_update.
 
     destruct (rosγ !! idx) as [] eqn:Hlookup.
-    {
-      eapply insert_alloc_local_update.
+    2:{
+      apply alloc_local_update.
       { rewrite lookup_fmap /=.
         by rewrite Hlookup.
       }
-      { done. }
-      intros ?. intros.
-      simpl in *.
-      split.
-      { apply mono_list_auth_validN. }
-      edestruct ((ros:gmap _ _) !! idx) as [] eqn:Hlookup2.
-      { simpl.
-        (* This is too deep a rabbit hole. If this is the only way to do this
-           using the resources set up, will switch to another gname indirection
-           instead. *)
-Admitted.
+      { apply mono_list_auth_valid. }
+    }
+    {
+      eapply insert_local_update.
+      { rewrite lookup_fmap /=.
+        by rewrite Hlookup.
+      }
+      { rewrite lookup_fmap /=.
+        by rewrite Hlookup.
+      }
+      apply mono_list_local_update.
+      simpl.
+      by apply prefix_app_r.
+    }
+  }
+  iModIntro.
+  iApply (big_sepM2_insert_2 with "[] Hrest").
+  iFrame "Hpred".
+  simpl.
+  Search big_sepM2.
+  destruct (rosγ !! idx) eqn:Hlookup.
+  {
+    iDestruct (big_sepM2_lookup_r_some with "Hrest") as %[? ?].
+    { done. }
+    iDestruct (big_sepM2_lookup_acc with "Hrest") as "[HH _]".
+    1-2: done.
+    simpl. rewrite H0. iFrame "HH".
+  }
+  {
+    simpl.
+    iDestruct (big_sepM2_lookup_r_none with "Hrest") as %->.
+    { done. }
+    by simpl.
+  }
+Qed.
 
 Lemma map_fmset_get_elem idx Q ros γreads :
   Q ∈ default [] (ros !! idx) →
