@@ -163,7 +163,8 @@ Proof.
     iPureIntro.
     repeat f_equal.
     instantiate (2:=(st.(server.canBecomePrimary) = false)).
-    admit. (* FIXME: negb b = bool_decide (b = false) *)
+    Unshelve. 2: apply _.
+    by destruct (st.(server.canBecomePrimary)).
   }
   iNamed 1.
   wp_if_destruct.
@@ -190,6 +191,8 @@ Proof.
 
     (* Double for loop to make slice of slices of clerks *)
     replace (#32) with (#numClerks); last done.
+    wp_loadField.
+    wp_apply (wp_condSignal with "[$]").
     wp_storeField.
     wp_apply (wp_NewSlice).
     iIntros (new_clerkss_sl) "Hnew_clerkss_sl".
@@ -540,8 +543,7 @@ Proof.
 
     apply Decidable.not_or in Heqb.
     destruct Heqb as [HepochEq Hcan].
-    apply Decidable.not_not in HepochEq.
-    2: { admit. }
+    apply dec_stable in HepochEq.
     injection HepochEq as HepochEq.
     rewrite HepochEq.
     iApply fupd_wp.
@@ -580,6 +582,6 @@ Proof.
     iApply "HΦ".
     iApply "HΨ".
   }
-Admitted.
+Qed.
 
 End pb_becomeprimary_proof.

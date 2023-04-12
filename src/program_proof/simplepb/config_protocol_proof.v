@@ -127,9 +127,8 @@ Lemma wp_Clerk__GetEpochAndConfig2 ck γ Φ :
   (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip) ∗
   ([∗ list] γsrv ; host ∈ confγs; conf, is_pb_host host γ γsrv) ∗
   (∀ γsrv, ⌜γsrv ∈ (r_pb <$> confγs)⌝ → is_epoch_lb γsrv epoch_lb)) -∗
-   Φ (#0, #epoch, slice_val config_sl)%V
-  ) ∧ (∀ (err:u64) sl, ⌜err ≠ 0⌝ -∗ Φ (#err, #0, slice_val sl)%V))
-  -∗
+   Φ (#epoch, slice_val config_sl)%V
+  )) -∗
   WP config.Clerk__GetEpochAndConfig #ck {{ Φ }}
 .
 Proof.
@@ -138,77 +137,53 @@ Proof.
   wp_apply (wp_Clerk__GetEpochAndConfig with "[$Hck]").
   iModIntro.
   iIntros "Hlc".
-  iSplit.
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iNamed "Hi".
+  iExists _, _.
+  iFrame.
+  iIntros "%Hno_overflow Hepoch Hconf".
+  iMod "Hmask".
+
+  (* Hunset becomes skipped, and the first unused becomes unset. *)
+  iDestruct (big_sepS_elem_of_acc_impl (word.add epoch (U64 1)) with "Hunused") as "[Hunset_new Hunused]".
+  { set_solver. }
+
+  iSpecialize ("Hunset_new" with "[]").
+  { done. }
+  iDestruct "Hunset_new" as "(Hunset_new & Hunset_new2 & Hprop)".
+
+  iDestruct "Hunset_or_set" as "[Hunset|%Hset]".
   {
-    iInv "Hinv" as "Hi" "Hclose".
-    iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
-    iApply fupd_mask_intro.
-    { set_solver. }
-    iIntros "Hmask".
-    iNamed "Hi".
-    iExists _, _.
-    iFrame.
-    iIntros "%Hno_overflow Hepoch Hconf".
-    iMod "Hmask".
-
-    (* Hunset becomes skipped, and the first unused becomes unset. *)
-    iDestruct (big_sepS_elem_of_acc_impl (word.add epoch (U64 1)) with "Hunused") as "[Hunset_new Hunused]".
-    { set_solver. }
-
-    iSpecialize ("Hunset_new" with "[]").
-    { done. }
-    iDestruct "Hunset_new" as "(Hunset_new & Hunset_new2 & Hprop)".
-
-    iDestruct "Hunset_or_set" as "[Hunset|%Hset]".
+    iMod (own_update with "Hunset") as "Hskip1".
     {
-      iMod (own_update with "Hunset") as "Hskip1".
-      {
-        apply singleton_update.
-        apply dfrac_agree_persist.
-      }
-      iDestruct "Hskip1" as "#Hskip1".
+      apply singleton_update.
+      apply dfrac_agree_persist.
+    }
+    iDestruct "Hskip1" as "#Hskip1".
 
-      iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
+    iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
+    {
+      iNext. iExists _, _, _, _.
+      iFrame "Hepoch Hconf His_conf ∗#".
+      iSplitL "Hunused".
       {
-        iNext. iExists _, _, _, _.
-        iFrame "Hepoch Hconf His_conf ∗#".
-        iSplitL "Hunused".
+        iApply "Hunused".
         {
-          iApply "Hunused".
-          {
-            iModIntro.
-            iIntros (???) "H". iIntros.
-            iApply "H".
-            iPureIntro.
-            word.
-          }
-          {
-            iIntros. exfalso. word.
-          }
-        }
-        iIntros (???).
-        assert (int.nat epoch_skip = int.nat epoch ∨ int.nat epoch_skip < int.nat epoch ∨ int.nat epoch_skip >= int.nat (word.add epoch (U64 1))) as Hineq.
-        { word. }
-        destruct Hineq as [Heq|[Hineq|Hineq]].
-        {
-          replace (epoch_skip) with (epoch) by word.
-          iFrame "Hskip1".
+          iModIntro.
+          iIntros (???) "H". iIntros.
+          iApply "H".
+          iPureIntro.
+          word.
         }
         {
-          iApply "His_skip".
-          { done. }
-          { done. }
+          iIntros. exfalso. word.
         }
-        { exfalso. word. }
       }
-      iModIntro.
-      iIntros.
-      iApply "HΦ".
-      iDestruct "Hprop" as "[$ $]".
-      iFrame "∗ His_conf #".
-
-      (* TODO: repetetive proof *)
-      iIntros.
+      iIntros (???).
       assert (int.nat epoch_skip = int.nat epoch ∨ int.nat epoch_skip < int.nat epoch ∨ int.nat epoch_skip >= int.nat (word.add epoch (U64 1))) as Hineq.
       { word. }
       destruct Hineq as [Heq|[Hineq|Hineq]].
@@ -223,49 +198,65 @@ Proof.
       }
       { exfalso. word. }
     }
-    {
-      iClear "His_skip".
+    iModIntro.
+    iIntros.
+    iApply "HΦ".
+    iDestruct "Hprop" as "[$ $]".
+    iFrame "∗ His_conf #".
 
-      iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
-      {
-        iNext. iExists _, _, _, _.
-        iFrame "∗ His_conf #".
-        iSplitL "Hunused".
-        {
-          iApply "Hunused".
-          {
-            iModIntro.
-            iIntros (???) "H". iIntros.
-            iApply "H".
-            iPureIntro.
-            word.
-          }
-          {
-            iIntros. exfalso. word.
-          }
-        }
-        iIntros (???).
-        exfalso.
-        rewrite Hset in H.
-        replace (int.nat (word.add epoch 1%Z)) with (int.nat epoch + 1) in H0 by word.
-        word.
-      }
-      iModIntro.
-      iIntros.
-      iApply "HΦ".
-      iDestruct "Hprop" as "[$ $]".
+    (* TODO: repetetive proof *)
+    iIntros.
+    assert (int.nat epoch_skip = int.nat epoch ∨ int.nat epoch_skip < int.nat epoch ∨ int.nat epoch_skip >= int.nat (word.add epoch (U64 1))) as Hineq.
+    { word. }
+    destruct Hineq as [Heq|[Hineq|Hineq]].
+    {
+      replace (epoch_skip) with (epoch) by word.
+      iFrame "Hskip1".
+    }
+    {
+      iApply "His_skip".
+      { done. }
+      { done. }
+    }
+    { exfalso. word. }
+  }
+  {
+    iClear "His_skip".
+
+    iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
+    {
+      iNext. iExists _, _, _, _.
       iFrame "∗ His_conf #".
+      iSplitL "Hunused".
+      {
+        iApply "Hunused".
+        {
+          iModIntro.
+          iIntros (???) "H". iIntros.
+          iApply "H".
+          iPureIntro.
+          word.
+        }
+        {
+          iIntros. exfalso. word.
+        }
+      }
       iIntros (???).
       exfalso.
       rewrite Hset in H.
       replace (int.nat (word.add epoch 1%Z)) with (int.nat epoch + 1) in H0 by word.
       word.
     }
-  }
-  {
-    iRight in "HΦ".
+    iModIntro.
     iIntros.
-    by iApply "HΦ".
+    iApply "HΦ".
+    iDestruct "Hprop" as "[$ $]".
+    iFrame "∗ His_conf #".
+    iIntros (???).
+    exfalso.
+    rewrite Hset in H.
+    replace (int.nat (word.add epoch 1%Z)) with (int.nat epoch + 1) in H0 by word.
+    word.
   }
 Qed.
 
