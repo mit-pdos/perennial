@@ -166,29 +166,16 @@ Definition DecodeApplyReply: val :=
     struct.storeF ApplyReply "Reply" "reply" (![slice.T byteT] "enc");;
     "reply".
 
-Definition RoApplyAsBackupArgs := struct.decl [
-  "epoch" :: uint64T;
-  "nextIndex" :: uint64T
-].
+Definition IncreaseCommitArgs: ty := uint64T.
 
-Definition EncodeRoApplyAsBackupArgs: val :=
-  rec: "EncodeRoApplyAsBackupArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8)) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF RoApplyAsBackupArgs "epoch" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF RoApplyAsBackupArgs "nextIndex" "args");;
-    ![slice.T byteT] "enc".
+Definition EncodeIncreaseCommitArgs: val :=
+  rec: "EncodeIncreaseCommitArgs" "args" :=
+    marshal.WriteInt slice.nil "args".
 
-Definition DecodeRoApplyAsBackupArgs: val :=
-  rec: "DecodeRoApplyAsBackupArgs" "enc_reply" :=
-    let: "enc" := ref_to (slice.T byteT) "enc_reply" in
-    let: "args" := struct.alloc RoApplyAsBackupArgs (zero_val (struct.t RoApplyAsBackupArgs)) in
-    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF RoApplyAsBackupArgs "epoch" "args" "0_ret";;
-    "enc" <-[slice.T byteT] "1_ret";;
-    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
-    struct.storeF RoApplyAsBackupArgs "nextIndex" "args" "0_ret";;
-    "enc" <-[slice.T byteT] "1_ret";;
-    "args".
+Definition DecodeIncreaseCommitArgs: val :=
+  rec: "DecodeIncreaseCommitArgs" "args" :=
+    let: ("a", <>) := marshal.ReadInt "args" in
+    "a".
 
 (* 1_statemachine.go *)
 
@@ -223,6 +210,8 @@ Definition RPC_BECOMEPRIMARY : expr := #3.
 Definition RPC_PRIMARYAPPLY : expr := #4.
 
 Definition RPC_ROPRIMARYAPPLY : expr := #6.
+
+Definition RPC_INCREASECOMMIT : expr := #7.
 
 Definition MakeClerk: val :=
   rec: "MakeClerk" "host" :=
@@ -285,6 +274,10 @@ Definition Clerk__ApplyRo: val :=
       (struct.loadF ApplyReply "Err" "r", struct.loadF ApplyReply "Reply" "r")
     else (e.Timeout, slice.nil)).
 
+Definition Clerk__IncreaseCommitIndex: val :=
+  rec: "Clerk__IncreaseCommitIndex" "ck" "n" :=
+    reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "cl" "ck") RPC_INCREASECOMMIT (EncodeIncreaseCommitArgs "n") (ref (zero_val (slice.T byteT))) #100.
+
 (* server.go *)
 
 Definition Server := struct.decl [
@@ -296,6 +289,7 @@ Definition Server := struct.decl [
   "canBecomePrimary" :: boolT;
   "isPrimary" :: boolT;
   "clerks" :: slice.T (slice.T ptrT);
+  "isPrimary_cond" :: ptrT;
   "opAppliedConds" :: mapT ptrT;
   "leaseExpiration" :: uint64T;
   "leaseValid" :: boolT;
@@ -304,8 +298,7 @@ Definition Server := struct.decl [
   "confCk" :: ptrT
 ].
 
-(* FIXME: incorrect, but suitable for benchmarking
-   Applies the RO op immediately, but then waits for it to be committed before
+(* Applies the RO op immediately, but then waits for it to be committed before
    replying to client. *)
 Definition Server__ApplyRoWaitForCommit: val :=
   rec: "Server__ApplyRoWaitForCommit" "s" "op" :=
@@ -346,6 +339,19 @@ Definition Server__ApplyRoWaitForCommit: val :=
               Continue)));;
         lock.release (struct.loadF Server "mu" "s");;
         "reply")).
+
+(* precondition:
+   is_epoch_lb epoch ∗ committed_by epoch log ∗ is_pb_log_lb log *)
+Definition Server__IncreaseCommitIndex: val :=
+  rec: "Server__IncreaseCommitIndex" "s" "newCommittedNextIndex" :=
+    lock.acquire (struct.loadF Server "mu" "s");;
+    (if: "newCommittedNextIndex" > struct.loadF Server "committedNextIndex" "s"
+    then
+      struct.storeF Server "committedNextIndex" "s" "newCommittedNextIndex";;
+      lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s")
+    else #());;
+    lock.release (struct.loadF Server "mu" "s");;
+    #().
 
 (* called on the primary server to apply a new operation. *)
 Definition Server__Apply: val :=
@@ -408,36 +414,63 @@ Definition Server__Apply: val :=
           Continue);;
         struct.storeF ApplyReply "Err" "reply" (![uint64T] "err");;
         (if: (![uint64T] "err" = e.None)
-        then
-          lock.acquire (struct.loadF Server "mu" "s");;
-          (if: (struct.loadF Server "epoch" "s" = "epoch") && ("nextIndex" > struct.loadF Server "committedNextIndex" "s")
-          then
-            struct.storeF Server "committedNextIndex" "s" "nextIndex";;
-            lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s")
-          else #());;
-          lock.release (struct.loadF Server "mu" "s")
+        then Server__IncreaseCommitIndex "s" "nextIndex"
         else #());;
         "reply")).
 
 Definition Server__leaseRenewalThread: val :=
-  rec: "Server__leaseRenewalThread" "s" "epoch" :=
+  rec: "Server__leaseRenewalThread" "s" :=
+    let: "latestEpoch" := ref (zero_val uint64T) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("leaseErr", "leaseExpiration") := config.Clerk__GetLease (struct.loadF Server "confCk" "s") "epoch" in
-      (if: "leaseErr" ≠ e.None
-      then Continue
+      let: ("leaseErr", "leaseExpiration") := config.Clerk__GetLease (struct.loadF Server "confCk" "s") (![uint64T] "latestEpoch") in
+      lock.acquire (struct.loadF Server "mu" "s");;
+      (if: (struct.loadF Server "epoch" "s" = ![uint64T] "latestEpoch") && ("leaseErr" = e.None)
+      then
+        struct.storeF Server "leaseExpiration" "s" "leaseExpiration";;
+        struct.storeF Server "leaseValid" "s" #true;;
+        lock.release (struct.loadF Server "mu" "s");;
+        time.Sleep (#250 * #1000000);;
+        Continue
       else
-        lock.acquire (struct.loadF Server "mu" "s");;
-        (if: (struct.loadF Server "epoch" "s" = "epoch")
+        (if: ![uint64T] "latestEpoch" ≠ struct.loadF Server "epoch" "s"
         then
-          struct.storeF Server "leaseExpiration" "s" "leaseExpiration";;
-          struct.storeF Server "leaseValid" "s" #true;;
+          "latestEpoch" <-[uint64T] struct.loadF Server "epoch" "s";;
           lock.release (struct.loadF Server "mu" "s");;
-          time.Sleep (#250 * #1000000);;
           Continue
         else
           lock.release (struct.loadF Server "mu" "s");;
-          Break)));;
+          time.Sleep (#100 * #1000000);;
+          Continue)));;
+    #().
+
+Definition Server__sendIncreaseCommitThread: val :=
+  rec: "Server__sendIncreaseCommitThread" "s" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      lock.acquire (struct.loadF Server "mu" "s");;
+      Skip;;
+      (for: (λ: <>, ~ (struct.loadF Server "isPrimary" "s")); (λ: <>, Skip) := λ: <>,
+        lock.condWait (struct.loadF Server "isPrimary_cond" "s");;
+        Continue);;
+      let: "newCommittedNextIndex" := struct.loadF Server "committedNextIndex" "s" in
+      let: "clerks" := struct.loadF Server "clerks" "s" in
+      lock.release (struct.loadF Server "mu" "s");;
+      let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((Data.randomUint64 #()) `rem` (slice.len "clerks")) in
+      let: "wg" := waitgroup.New #() in
+      ForSlice ptrT <> "clerk" "clerks_inner"
+        (let: "clerk" := "clerk" in
+        waitgroup.Add "wg" #1;;
+        Fork (Skip;;
+              (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+                let: "err" := Clerk__IncreaseCommitIndex "clerk" "newCommittedNextIndex" in
+                (if: ("err" = e.None)
+                then Break
+                else Continue));;
+              waitgroup.Done "wg"));;
+      waitgroup.Wait "wg";;
+      time.Sleep #1000000;;
+      Continue);;
     #().
 
 (* requires that we've already at least entered this epoch
@@ -553,6 +586,7 @@ Definition Server__BecomePrimary: val :=
     else
       (* log.Println("Became Primary") *)
       struct.storeF Server "isPrimary" "s" #true;;
+      lock.condSignal (struct.loadF Server "isPrimary_cond" "s");;
       struct.storeF Server "canBecomePrimary" "s" #false;;
       let: "numClerks" := #32 in
       struct.storeF Server "clerks" "s" (NewSlice (slice.T ptrT) "numClerks");;
@@ -570,8 +604,6 @@ Definition Server__BecomePrimary: val :=
         "j" <-[uint64T] ![uint64T] "j" + #1;;
         Continue);;
       lock.release (struct.loadF Server "mu" "s");;
-      let: "epoch" := struct.loadF BecomePrimaryArgs "Epoch" "args" in
-      Fork (Server__leaseRenewalThread "s" "epoch");;
       e.None).
 
 Definition MakeServer: val :=
@@ -589,6 +621,7 @@ Definition MakeServer: val :=
     struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
     struct.storeF Server "confCk" "s" (config.MakeClerk "confHost");;
     struct.storeF Server "committedNextIndex_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
+    struct.storeF Server "isPrimary_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
     "s".
 
 Definition Server__Serve: val :=
@@ -618,6 +651,12 @@ Definition Server__Serve: val :=
       "reply" <-[slice.T byteT] EncodeApplyReply (Server__ApplyRoWaitForCommit "s" "args");;
       #()
       ));;
+    MapInsert "handlers" RPC_INCREASECOMMIT ((λ: "args" "reply",
+      Server__IncreaseCommitIndex "s" (DecodeIncreaseCommitArgs "args");;
+      #()
+      ));;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
+    Fork (Server__leaseRenewalThread "s");;
+    Fork (Server__sendIncreaseCommitThread "s");;
     #().

@@ -60,20 +60,16 @@ Definition Clerk__GetEpochAndConfig: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETEPOCH (NewSlice byteT #0) "reply" #100 in
+      let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETEPOCH (NewSlice byteT #0) "reply" #2000 in
       (if: ("err" = #0)
       then Break
       else Continue));;
     let: "epoch" := ref (zero_val uint64T) in
-    let: "err" := ref (zero_val uint64T) in
-    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "reply") in
-    "err" <-[uint64T] "0_ret";;
-    "reply" <-[slice.T byteT] "1_ret";;
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "reply") in
     "epoch" <-[uint64T] "0_ret";;
     "reply" <-[slice.T byteT] "1_ret";;
     let: "config" := DecodeConfig (![slice.T byteT] "reply") in
-    (![uint64T] "err", ![uint64T] "epoch", "config").
+    (![uint64T] "epoch", "config").
 
 Definition Clerk__GetConfig: val :=
   rec: "Clerk__GetConfig" "ck" :=
@@ -124,29 +120,30 @@ Definition Server := struct.decl [
   "mu" :: ptrT;
   "epoch" :: uint64T;
   "leaseExpiration" :: uint64T;
+  "wantLeaseToExpire" :: boolT;
   "config" :: slice.T uint64T
 ].
 
 Definition Server__GetEpochAndConfig: val :=
   rec: "Server__GetEpochAndConfig" "s" "args" "reply" :=
-    let: ("l", <>) := grove_ffi.GetTimeRange #() in
-    lock.acquire (struct.loadF Server "mu" "s");;
-    (if: "l" < struct.loadF Server "leaseExpiration" "s"
-    then
-      lock.release (struct.loadF Server "mu" "s");;
-      "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 + #8);;
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") e.Leased;;
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") #0;;
-      "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig slice.nil);;
-      #()
-    else
-      struct.storeF Server "epoch" "s" (std.SumAssumeNoOverflow (struct.loadF Server "epoch" "s") #1);;
-      "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 + #8 * slice.len (struct.loadF Server "config" "s"));;
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") #0;;
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "epoch" "s");;
-      "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig (struct.loadF Server "config" "s"));;
-      lock.release (struct.loadF Server "mu" "s");;
-      #()).
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("l", <>) := grove_ffi.GetTimeRange #() in
+      lock.acquire (struct.loadF Server "mu" "s");;
+      (if: "l" ≥ struct.loadF Server "leaseExpiration" "s"
+      then Break
+      else
+        struct.storeF Server "wantLeaseToExpire" "s" #true;;
+        lock.release (struct.loadF Server "mu" "s");;
+        time.Sleep (struct.loadF Server "leaseExpiration" "s" - "l");;
+        Continue));;
+    struct.storeF Server "wantLeaseToExpire" "s" #false;;
+    struct.storeF Server "epoch" "s" (std.SumAssumeNoOverflow (struct.loadF Server "epoch" "s") #1);;
+    "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 + #8 * slice.len (struct.loadF Server "config" "s"));;
+    "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "epoch" "s");;
+    "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig (struct.loadF Server "config" "s"));;
+    lock.release (struct.loadF Server "mu" "s");;
+    #().
 
 Definition Server__GetConfig: val :=
   rec: "Server__GetConfig" "s" "args" "reply" :=
@@ -176,12 +173,12 @@ Definition Server__GetLease: val :=
   rec: "Server__GetLease" "s" "args" "reply" :=
     let: ("epoch", <>) := marshal.ReadInt "args" in
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF Server "epoch" "s" ≠ "epoch"
+    (if: (struct.loadF Server "epoch" "s" ≠ "epoch") || (struct.loadF Server "wantLeaseToExpire" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
       "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.Stale;;
       "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") #0;;
-      (* log.Println("Stale lease request", s.config) *)
+      (* log.Println("Rejected lease request", epoch, s.epoch, s.wantLeaseToExpire) *)
       #()
     else
       let: ("l", <>) := grove_ffi.GetTimeRange #() in
