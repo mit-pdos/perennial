@@ -1255,7 +1255,7 @@ Proof.
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
   iApply "HΦ".
   iExists _.
-  iMod (alloc_lock with "Hmu_inv [Hepoch Hconf epoch config leaseExpiration Hconf_sl]") as "$".
+  iMod (alloc_lock with "Hmu_inv [Hepoch Hconf epoch config leaseExpiration wantLeaseToExpire Hconf_sl]") as "$".
   {
     iNext.
     repeat iExists _.

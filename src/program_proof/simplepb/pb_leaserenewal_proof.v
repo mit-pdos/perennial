@@ -50,82 +50,145 @@ Lemma wp_Server__leaseRenewalThread (s:loc) γ γsrv (epoch:u64) :
   {{{
         "#Hsrv" ∷ is_Server s γ γsrv
   }}}
-    pb.Server__leaseRenewalThread #s #epoch
+    pb.Server__leaseRenewalThread #s
   {{{
         RET #(); True
   }}}
 .
 Proof.
-  iIntros (?) "H HΦ".
+  iIntros (?) "H _".
   iNamed "H".
   iNamed "Hsrv".
   wp_lam.
-  iApply (wp_frame_wand with "[HΦ]").
-  { iNamedAccu. }
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (latestEpoch_ptr) "HlatestEpoch".
+  iAssert (∃ (latestEpoch:u64), "HlatestEpoch" ∷ latestEpoch_ptr ↦[uint64T] #latestEpoch)%I with "[-]" as "HH".
+  { iExists _; iFrame. }
   wp_pures.
   wp_forBreak.
-
+  iNamed "HH".
   wp_pures.
+  wp_load.
   wp_loadField.
+  wp_bind (Clerk__GetLease _ _).
+  wp_apply (wp_frame_wand with "[-]"); first iNamedAccu.
   wp_apply (config_proof.wp_Clerk__GetLease with "[$HconfCk_is]").
   iModIntro.
   iSplit.
-  2: { (* case: got error *)
-    iIntros.
+  {
+    (* got a lease *)
+    iIntros (??) "#? #?".
+    iNamed 1.
     wp_pures.
-    wp_if_destruct.
-    2: by exfalso.
-    iModIntro.
-    by iLeft.
-  }
-  (* otherwise, got a lease *)
-  iIntros.
-  wp_pures.
-  wp_loadField.
-  wp_apply (acquire_spec with "[$]").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  iNamed "Hvol".
-  wp_loadField.
-  wp_if_destruct.
-  2:{ (* case: epoch mismatch *)
     wp_loadField.
-    wp_apply (release_spec with "[-]").
+    wp_apply (acquire_spec with "[$]").
+    iIntros "[Hlocked Hown]".
+    iNamed "Hown".
+    iNamed "Hvol".
+    wp_loadField.
+    wp_apply (wp_and' with "[HlatestEpoch] [] []"); first iNamedAccu.
+    { iNamed 1. wp_load. wp_pures. iFrame. done. }
+    { iIntros. wp_pures. iFrame. done. }
+    iNamed 1.
+    wp_if_destruct.
+    { (* case: got lease in current epoch *)
+      wp_storeField.
+      wp_storeField.
+      wp_loadField.
+      destruct Heqb as [Heqb _].
+      injection Heqb as Heqb.
+      subst.
+      iDestruct (lease_renewal_step with "[$] [$] [$] HghostEph") as "HghostEph".
+      wp_apply (release_spec with "[- HlatestEpoch]").
+      {
+        iFrame "# Hlocked".
+        iNext.
+        repeat iExists _.
+        iFrame "HghostEph".
+        repeat iExists _.
+        iFrame "∗#%".
+      }
+      wp_apply (wp_Sleep).
+      wp_pures.
+      iLeft.
+      eauto with iFrame.
+    }
+    (* case: either got an RPC error or wrong epoch number *)
+    wp_load.
+    wp_loadField.
+    wp_if_destruct.
+    { (* have a new epoch to try getting a lease for *)
+      wp_loadField.
+      wp_store.
+      wp_loadField.
+      wp_apply (release_spec with "[- HlatestEpoch]").
+      {
+        iFrame "# Hlocked".
+        iNext. repeat iExists _. iFrame "HghostEph".
+        repeat iExists _. iFrame "∗#%".
+      }
+      wp_pures.
+      iLeft. eauto with iFrame.
+    }
+    (* no new epoch. Sleep a bit and try again later. *)
+    wp_loadField.
+    wp_apply (release_spec with "[- HlatestEpoch]").
     {
       iFrame "# Hlocked".
-      iNext.
-      repeat iExists _.
-      iFrame "HghostEph".
-      repeat iExists _.
-      iFrame "∗#%".
+      iNext. repeat iExists _. iFrame "HghostEph".
+      repeat iExists _. iFrame "∗#%".
     }
+    wp_apply wp_Sleep.
     wp_pures.
-    iRight.
-    iModIntro.
-    iSplitR; first done.
+    iLeft. eauto with iFrame.
+  }
+  { (* the spec we wrote down for GetLease was a bit bad because it forces these
+       two cases to be two different branches too early. There's really nothing
+       going on here. *)
+    iIntros (??). iNamed 1.
     wp_pures.
-    iModIntro.
-    iNamed 1.
-    by iApply "HΦ".
+    wp_loadField.
+    wp_apply (acquire_spec with "[$]").
+    iIntros "[Hlocked Hown]".
+    iNamed "Hown".
+    iNamed "Hvol".
+    wp_loadField.
+    wp_load.
+    wp_apply (wp_and' with "[] [] []"); first iNamedAccu.
+    { iNamed 1. wp_pures. iFrame. done. }
+    { iIntros. wp_pures. iFrame. done. }
+    iIntros "_".
+    wp_if_destruct.
+    { exfalso. destruct Heqb as [? Heqb]. by injection Heqb. }
+    wp_load.
+    wp_loadField.
+    wp_if_destruct.
+    { (* have a new epoch to try getting a lease for *)
+      wp_loadField.
+      wp_store.
+      wp_loadField.
+      wp_apply (release_spec with "[- HlatestEpoch]").
+      {
+        iFrame "# Hlocked".
+        iNext. repeat iExists _. iFrame "HghostEph".
+        repeat iExists _. iFrame "∗#%".
+      }
+      wp_pures.
+      iLeft. eauto with iFrame.
+    }
+    (* no new epoch. Sleep a bit and try again later. *)
+    wp_loadField.
+    wp_apply (release_spec with "[- HlatestEpoch]").
+    {
+      iFrame "# Hlocked".
+      iNext. repeat iExists _. iFrame "HghostEph".
+      repeat iExists _. iFrame "∗#%".
+    }
+    wp_apply wp_Sleep.
+    wp_pures.
+    iLeft. eauto with iFrame.
   }
-  (* case: got lease and the epoch is still the server's epoch *)
-  wp_storeField.
-  wp_storeField.
-  iDestruct (lease_renewal_step with "[$] [$] [$] HghostEph") as "HghostEph".
-  wp_loadField.
-  wp_apply (release_spec with "[-]").
-  {
-    iFrame "# Hlocked".
-    iNext.
-    repeat iExists _.
-    iFrame "HghostEph".
-    repeat iExists _.
-    iFrame "∗#%".
-  }
-  wp_pures.
-  wp_apply (wp_Sleep).
-  wp_pures.
-  by iLeft.
 Qed.
 
 End pb_leaserenewal_proof.
