@@ -255,6 +255,28 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition IncreaseCommit_core_spec γ γsrv (newCommitIndex:u64)  :=
+  λ (Φ : iPropO Σ) ,
+  ( ∃ σ epoch,
+    ⌜int.nat newCommitIndex = length σ⌝ ∗
+    is_epoch_lb γsrv.(r_pb) epoch ∗
+    is_pb_log_lb γ.(s_pb) σ ∗
+    committed_by γ.(s_pb) epoch σ ∗
+    Φ
+  )%I
+.
+
+Program Definition IncreaseCommit_spec γ γsrv :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ newCommitIndex,
+    ⌜enc_args = u64_le newCommitIndex⌝ ∗
+    IncreaseCommit_core_spec γ γsrv newCommitIndex (Φ [])
+  )%I
+.
+Next Obligation.
+  unfold IncreaseCommit_core_spec.
+  solve_proper.
+Defined.
 
 Definition is_pb_host_pre ρ : (u64 -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
@@ -265,7 +287,8 @@ Definition is_pb_host_pre ρ : (u64 -d> simplepb_system_names -d> simplepb_serve
   handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
   handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
   handler_spec γrpc host (U64 6) (ApplyRo_spec γ) ∗
-  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ]})%I
+  handler_spec γrpc host (U64 7) (IncreaseCommit_spec γ γsrv) ∗
+  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ; (U64 7) ]})%I
 .
 
 Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.

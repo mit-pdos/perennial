@@ -570,14 +570,6 @@ Proof.
       iPureIntro. rewrite -Hlens. by rewrite app_nil_r.
     }
     wp_pures.
-    wp_loadField.
-    wp_apply (wp_fork).
-    {
-      wp_apply (wp_Server__leaseRenewalThread with "[]").
-      { repeat iExists _; iFrame "#". }
-      done.
-    }
-    wp_pures.
     iModIntro.
     iApply "HΦ".
     iApply "HΨ".
