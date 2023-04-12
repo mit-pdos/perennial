@@ -910,4 +910,20 @@ Proof.
   by iFrame "∗#%".
 Qed.
 
+Lemma pb_log_get_nil_lb γsys :
+  sys_inv γsys ={↑pbN}=∗
+  is_pb_log_lb γsys [].
+Proof.
+  iIntros "#Hinv".
+  iInv "Hinv" as "Hi" "Hclose".
+  iDestruct "Hi" as (??) "[>Hlog ?]".
+  unfold own_pb_log.
+  iEval (rewrite mono_list_auth_lb_op) in "Hlog".
+  iDestruct "Hlog" as "[Hlog #Hlb]".
+  iDestruct (own_mono with "Hlb") as "$".
+  { apply mono_list_lb_mono. apply prefix_nil. }
+  iMod ("Hclose" with "[-]"); last done.
+  { eauto with iFrame. }
+Qed.
+
 End pb_protocol.

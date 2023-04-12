@@ -70,7 +70,9 @@ Proof.
   iMod ("HaccP" with "Hlc [] Hstate") as "Hstate".
   {
     instantiate (1:=(is_epoch_lb γsrv.(r_pb) epoch ∗ is_proposal_lb γ.(s_pb) epoch opsfull ∗
-                                 is_proposal_facts γ.(s_pb) epoch opsfull)%I).
+                     is_proposal_facts γ.(s_pb) epoch opsfull ∗
+                     is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
+                     is_in_config γ γsrv epoch)%I).
     iIntros(???). iIntros "Hghost".
     iNamed "Hghost".
     iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hlb".
@@ -94,7 +96,7 @@ Proof.
     iExists _; iFrame "∗#%". iModIntro. done.
   }
 
-  iDestruct "Hstate" as "(Hstate & #Hepochlb & #Hprop_lb & #Hprop_facts)".
+  iDestruct "Hstate" as "(Hstate & #Hepochlb & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hin_conf)".
 
   wp_apply (wp_NewMap).
   iIntros (?) "Hmap".
@@ -104,6 +106,13 @@ Proof.
   wp_apply (config_proof.wp_MakeClerk with "[$]").
   iIntros (confCk) "#HconfCk".
   wp_storeField.
+
+  iApply fupd_wp.
+  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+  { set_solver. }
+  iMod (pb_log_get_nil_lb with "Hsys_inv") as "#Hcommit_nil_lb".
+  iMod "Hmask".
+  iModIntro.
 
   wp_loadField.
   wp_apply (wp_newCond' with "HmuInv").
@@ -149,19 +158,23 @@ Proof.
   }
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   repeat iExists _; iFrame.
+  instantiate (1:=[]). instantiate (2:=0).
   iSplitL.
-  { admit. } (* FIXME: the later-epoch escrow tokens need to be in
-                own_Server_ghost so it remains after a crash *)
+  {
+    rewrite /own_Primary_ghost_f /tc_opaque.
+    by iFrame "#".
+  }
   iFrame "#".
   iSplitR; first by iModIntro.
-
-  (* FIXME: maintain is_in_config in crash condition *)
-  iSplitR; first admit.
-
-  (* FIXME: provide is_pb_log_lb γ.(s_pb) [] as input *)
-  (* FIXME: weaken to committed_by ∨ opscommitted = [] *)
-  admit.
-Admitted.
+  iSplitR; first by iRight.
+  iSplitR.
+  { iDestruct (fmlist_ptsto_lb_mono with "Hprop_lb") as "$".
+    apply prefix_nil.
+  }
+  iPureIntro; split.
+  { word. }
+  { done. }
+Qed.
 
 Lemma wp_Server__Serve s host γ γsrv :
   {{{

@@ -585,7 +585,7 @@ Definition MakeServer: val :=
     struct.storeF Server "isPrimary" "s" #false;;
     struct.storeF Server "canBecomePrimary" "s" #false;;
     struct.storeF Server "leaseValid" "s" #false;;
-    struct.storeF Server "canBecomePrimary" "s" #true;;
+    struct.storeF Server "canBecomePrimary" "s" #false;;
     struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
     struct.storeF Server "confCk" "s" (config.MakeClerk "confHost");;
     struct.storeF Server "committedNextIndex_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
