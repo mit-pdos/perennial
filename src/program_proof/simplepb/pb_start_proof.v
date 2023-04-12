@@ -5,7 +5,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof
      pb_definitions pb_applybackup_proof pb_setstate_proof pb_getstate_proof
      pb_becomeprimary_proof pb_apply_proof pb_roapply_proof pb_makeclerk_proof
-     pb_increasecommit_proof pb_leaserenewal_proof.
+     pb_increasecommit_proof pb_leaserenewal_proof pb_sendcommitthread_proof.
 From Perennial.program_proof.simplepb Require Import config_protocol_proof.
 From iris.algebra Require Import mono_list.
 
@@ -435,7 +435,13 @@ Proof.
   }
   wp_pures.
 
-  (* FIXME: lemma for sendIncreaseCommitThread *)
+  wp_apply wp_fork.
+  {
+    wp_apply wp_Server__increaseCommitThread.
+    { iFrame "#". }
+    done.
+  }
+  wp_pures.
   by iApply "HΦ".
 Qed.
 
