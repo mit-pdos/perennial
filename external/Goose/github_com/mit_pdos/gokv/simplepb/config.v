@@ -134,8 +134,9 @@ Definition Server__GetEpochAndConfig: val :=
       then Break
       else
         struct.storeF Server "wantLeaseToExpire" "s" #true;;
+        let: "timeToSleep" := struct.loadF Server "leaseExpiration" "s" - "l" in
         lock.release (struct.loadF Server "mu" "s");;
-        time.Sleep (struct.loadF Server "leaseExpiration" "s" - "l");;
+        time.Sleep "timeToSleep";;
         Continue));;
     struct.storeF Server "wantLeaseToExpire" "s" #false;;
     struct.storeF Server "epoch" "s" (std.SumAssumeNoOverflow (struct.loadF Server "epoch" "s") #1);;

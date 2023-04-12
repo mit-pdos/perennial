@@ -48,9 +48,8 @@ Program Definition GetEpochAndConfig_core_spec γ Φ :=
     £ 1 -∗
     (|={⊤,∅}=> ∃ epoch conf, own_latest_epoch γ epoch ∗ own_config γ conf ∗
     (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗ own_latest_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
-      Φ (U64 0) (word.add epoch 1) conf
-      )) ∧
-      (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err (U64 0) [])
+      Φ (word.add epoch 1) conf
+      ))
     )%I.
 
 Program Definition GetConfig_core_spec γ Φ :=
@@ -76,10 +75,10 @@ Program Definition GetLease_core_spec γ (epoch:u64) Φ : iProp Σ :=
 Program Definition GetEpochAndConfig_spec γ :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   ( (* no args *)
-    GetEpochAndConfig_core_spec γ (λ err newEpoch conf,
+    GetEpochAndConfig_core_spec γ (λ newEpoch conf,
                                   ∀ reply enc_conf,
                                    ⌜Config.has_encoding enc_conf conf⌝ -∗
-                                   ⌜reply = u64_le err ++ u64_le newEpoch ++ enc_conf⌝ -∗
+                                   ⌜reply = u64_le newEpoch ++ enc_conf⌝ -∗
                                    Φ reply
                                   )
     )%I.
@@ -249,9 +248,10 @@ Proof.
 Qed.
 
 Definition own_Server (s:loc) γ : iProp Σ :=
-  ∃ (epoch leaseExpiration:u64) (conf:list u64) conf_sl,
+  ∃ (epoch leaseExpiration:u64) (conf:list u64) conf_sl (wantLeaseToExpire:bool),
   "Hepoch" ∷ s ↦[config.Server :: "epoch"] #epoch ∗
   "HleaseExpiration" ∷ s ↦[config.Server :: "leaseExpiration"] #leaseExpiration ∗
+  "HwantLeaseToExpire" ∷ s ↦[config.Server :: "wantLeaseToExpire"] #wantLeaseToExpire ∗
   "Hconf" ∷ s ↦[config.Server :: "config"] (slice_val conf_sl) ∗
   "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 conf ∗
   "Hepoch_lease" ∷ own_Config_ghost γ leaseExpiration epoch ∗
@@ -284,6 +284,8 @@ Proof.
   wp_call.
 
   iNamed "His_srv".
+  wp_forBreak.
+  wp_pures.
   wp_apply wp_GetTimeRange.
   iIntros (?????) "Htime".
   rewrite /GetEpochAndConfig_spec /GetEpochAndConfig_core_spec.
@@ -298,47 +300,23 @@ Proof.
   wp_pure1_credit "Hlc".
   wp_loadField.
   wp_if_destruct.
-  { (* lock service *)
+  2:{
+    wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[- HΨ HΦ Hrep Hlc]").
-    {
-      iFrame "His_mu Hlocked".
-      iNext.
-      repeat iExists _.
-      iFrame.
-    }
+    wp_loadField.
+    wp_apply (release_spec with "[-HΨ HΦ Hrep Harg_sl Hlc]").
+    { iFrame "#∗". repeat iExists _; iFrame "∗#". }
     wp_pures.
-    wp_apply wp_NewSliceWithCap.
-    { word. }
-    (* marshalling reply *)
-    iIntros (?) "Hrep_sl".
-    wp_store.
-    wp_load.
-    wp_apply (wp_WriteInt with "Hrep_sl").
-    iIntros (?) "Hrep_sl".
-    clear.
-    wp_store.
-    wp_load.
-    wp_apply (wp_WriteInt with "Hrep_sl").
-    iIntros (?) "Hrep_sl".
-    wp_store.
-    replace slice.nil with (slice_val Slice.nil) by done.
-    wp_apply (Config.wp_Encode with "[]").
-    { by iApply is_slice_small_nil. }
-    iIntros (??) "(%Henc & ? & Hsl)".
-    wp_load.
-    iDestruct (is_slice_to_small with "Hsl") as "Hsl".
-    wp_apply (wp_WriteBytes with "[$Hrep_sl $Hsl]").
-    iIntros (?) "[Hrep_sl _]".
-    wp_store.
-    iSpecialize ("HΨ" with "Hlc").
-    iRight in "HΨ".
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
-    iApply ("HΦ" with "[HΨ] [$Hrep] [$Hrep_sl]").
-    rewrite replicate_0 app_nil_l -app_assoc.
-    iApply "HΨ"; iPureIntro; last done; done.
+    wp_apply wp_Sleep.
+    wp_pures.
+    iLeft.
+    iModIntro. iSplitR; first done.
+    iFrame.
   }
-
+  (* eventually, lease expired *)
+  iModIntro. iRight.
+  iSplitR; first done.
+  wp_storeField.
   wp_loadField.
   wp_apply (wp_SumAssumeNoOverflow).
   iIntros (Hno_overflow).
@@ -349,13 +327,9 @@ Proof.
   { apply encoding.unsigned_64_nonneg. }
   iIntros (ptr) "Hsl".
   wp_store.
-  wp_load.
-  wp_apply (wp_WriteInt with "Hsl").
-  iIntros (?) "Hrep_sl".
-  wp_store.
   wp_loadField.
   wp_load.
-  wp_apply (wp_WriteInt with "Hrep_sl").
+  wp_apply (wp_WriteInt with "[$]").
   iIntros (enc_sl) "Hrep_sl".
   wp_store.
   wp_loadField.
@@ -379,7 +353,6 @@ Proof.
   { iApply is_time_lb_mono; last done. word. }
   iMod "Hmask".
   iSpecialize ("HΨ" with "Hlc").
-  iLeft in "HΨ".
   iMod "HΨ".
   iDestruct "HΨ" as (??) "(Hepoch_ghost2 & Hconf_ghost2 & Hupd)".
   iDestruct (ghost_var_agree with "Hconf_ghost Hconf_ghost2") as %->.
@@ -395,9 +368,9 @@ Proof.
   iMod "Hupd".
   iModIntro.
 
-  wp_apply (release_spec with "[$Hlocked $His_mu Hepoch Hconf Hconf_ghost Hconf_sl Hepoch_ghost HleaseExpiration]").
+  wp_apply (release_spec with "[- Hrep Hrep_sl Hupd HΦ]").
   {
-    iNext.
+    iFrame "His_mu Hlocked". iNext.
     repeat iExists _.
     iFrame "∗#%".
   }
@@ -445,11 +418,11 @@ Proof.
   iMod ("Hupd" with "Hconf_ghost2") as "Hupd".
   iModIntro.
 
-  wp_apply (release_spec with "[$Hlocked $His_mu Hepoch Hconf Hconf_ghost Hconf_sl Hepoch_lease HleaseExpiration]").
+  wp_apply (release_spec with "[- Hrep Hrep_sl Hupd HΦ]").
   {
-    iNext.
+    iFrame "His_mu Hlocked". iNext.
     repeat iExists _.
-    iFrame.
+    iFrame "∗#%".
   }
   wp_pures.
   iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
@@ -530,11 +503,11 @@ Proof.
     iDestruct ("HΦ" with "HΨ Hrep Hrep_sl") as "HΦ".
     iModIntro.
     iFrame.
-    wp_apply (release_spec with "[$Hlocked $His_mu Hepoch Hconf Hconf_sl Hepoch_lease Hconf_ghost HleaseExpiration]").
+    wp_apply (release_spec with "[-HΦ]").
     {
-      iNext.
-      iExists _,_,_.
-      eauto with iFrame.
+      iFrame "His_mu Hlocked". iNext.
+      repeat iExists _.
+      iFrame "∗#%".
     }
     wp_pures.
     iModIntro.
@@ -589,11 +562,12 @@ Proof.
       iModIntro.
 
       wp_loadField.
-      wp_apply (release_spec with "[$Hlocked $His_mu Hepoch Hconf Hnew_conf_sl Hepoch_lease HleaseExpiration Hconf_ghost]").
+
+      wp_apply (release_spec with "[-HΦ]").
       {
-        iNext.
-        iExists _,_,_.
-        eauto with iFrame.
+        iFrame "His_mu Hlocked". iNext.
+        repeat iExists _.
+        iFrame "∗#%".
       }
       wp_pures.
       iModIntro.
@@ -715,6 +689,14 @@ Proof.
   }
 Qed.
 
+(* FIXME: move this somewhere else *)
+Global Instance bool_eqdec : EqDecision bool.
+Proof. solve_decision. Defined.
+
+(* FIXME: move this somewhere else *)
+Global Instance bool_eq_dec (b1 b2:bool) : Decision (b1 = b2).
+Proof. solve_decision. Defined.
+
 Lemma wp_Server__GetLease (server:loc) γ :
   {{{
         is_Server server γ
@@ -743,8 +725,18 @@ Proof.
   iNamed "Hown".
   wp_pures.
   wp_loadField.
+  wp_apply (wp_or with "[HwantLeaseToExpire]").
+  { iNamedAccu. }
+  { wp_pures. iPureIntro. by rewrite -bool_decide_not. }
+  { iIntros. wp_loadField. iFrame. iPureIntro.
+    repeat f_equal.
+    instantiate (2:=(wantLeaseToExpire = true)).
+    Unshelve. 2:{ apply _. }
+    by destruct wantLeaseToExpire.
+  }
+  iNamed 1.
   wp_if_destruct.
-  { (* case: epoch number that the caller wants is not the latest epoch *)
+  { (* case: epoch number that the caller wants is not the latest epoch, or wantToExpireLease *)
     wp_loadField.
     wp_apply (release_spec with "[-HΦ HΨ Hrep]").
     {
@@ -781,6 +773,13 @@ Proof.
   iMod (fupd_mask_subseteq (↑epochLeaseN)) as "Hmask".
   { set_solver. }
   set (newLeaseExpiration:=(word.add l (U64 1000000000))).
+  assert (epoch0 = epoch); last subst.
+  {
+    apply Decidable.not_or in Heqb.
+    destruct Heqb as [? ?].
+    apply dec_stable in H1.
+    by injection H1.
+  }
   destruct (decide (int.nat leaseExpiration < int.nat newLeaseExpiration)).
   { (* the newLeaseExpiration time is actually bigger *)
     iMod (get_lease_step newLeaseExpiration with "Htime Hepoch_lease") as (?) "($ & #? & #? & Hghost)".
@@ -860,10 +859,7 @@ Lemma wp_Clerk__GetEpochAndConfig (ck:loc) γ Φ :
        (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗
         own_latest_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
          (∀ conf_sl, is_slice_small conf_sl uint64T 1 conf -∗
-           Φ (#(U64 0), #(LitInt $ word.add epoch (U64 1)), slice_val conf_sl)%V)))
-      ∧
-      (∀ (err:u64) conf_sl, ⌜err ≠ 0⌝ -∗
-           Φ (#err, #0, slice_val conf_sl)%V)
+           Φ (#(LitInt $ word.add epoch (U64 1)), slice_val conf_sl)%V)))
   ) -∗
   WP config.Clerk__GetEpochAndConfig #ck {{ Φ }}
 .
@@ -893,97 +889,43 @@ Proof.
     iNext.
     iIntros "Hlc".
     iDestruct ("HΦ" with "Hlc") as "Hupd".
-    iSplit.
-    { (* case: got a new epoch, no error *)
-      iLeft in "Hupd".
-      iMod "Hupd".
-      iModIntro.
-      iDestruct "Hupd" as (??) "(H1&H2&Hupd)".
-      iExists _, _.
-      iFrame "H1 H2".
-      iIntros.
-      iMod ("Hupd" with "[% //] [$] [$]") as "Hupd".
-      iModIntro.
-      iIntros (??) "%Hconf_enc %Henc Hargs_sl".
-      iIntros (?) "Hrep Hrep_sl".
-      wp_pures.
-      iRight.
-      iModIntro.
-      iSplitR; first done.
-      wp_pures.
-      wp_apply (wp_ref_of_zero).
-      { done. }
-      iIntros (epoch_ptr) "Hepoch".
-      wp_pures.
-      wp_apply (wp_ref_of_zero).
-      { done. }
-      iIntros (err_ptr) "Herr_ptr".
-      wp_load.
-      rewrite Henc.
-      wp_apply (wp_ReadInt with "Hrep_sl").
-      iIntros (rep_sl1) "Hrep_sl".
-      wp_pures.
-      wp_store.
-      wp_store.
-      wp_load.
-      wp_apply (wp_ReadInt with "Hrep_sl").
-      iIntros (?) "Hrep_sl".
-      wp_pures.
-      wp_store.
-      wp_store.
-      wp_load.
-      wp_apply (Config.wp_Decode with "[$Hrep_sl]").
-      { done. }
-      iIntros (?) "Hconf_own".
-      wp_pures.
-      wp_load.
-      wp_load.
-      wp_pures.
-      iModIntro.
-      iApply "Hupd".
-      iFrame.
-    }
-    { (* case: got an error from the server; (i.e. lease is unexpired) *)
-      iRight in "Hupd".
-      iIntros (? Herr ? ? ? ?) "_".
-      iIntros (?) "Hreply Hrep_sl".
-      wp_pures.
-      iRight.
-      iModIntro.
-      iSplitR; first done.
-      wp_pures.
-      wp_apply (wp_ref_of_zero).
-      { done. }
-      iIntros (epoch_ptr) "Hepoch".
-      wp_pures.
-      wp_apply (wp_ref_of_zero).
-      { done. }
-      iIntros (err_ptr) "Herr_ptr".
-      wp_load.
-      subst.
-      wp_apply (wp_ReadInt with "Hrep_sl").
-      iIntros (rep_sl1) "Hrep_sl".
-      wp_pures.
-      wp_store.
-      wp_store.
-      wp_load.
-      wp_apply (wp_ReadInt with "Hrep_sl").
-      iIntros (?) "Hrep_sl".
-      wp_pures.
-      wp_store.
-      wp_store.
-      wp_load.
-      wp_apply (Config.wp_Decode with "[$Hrep_sl]").
-      { done. }
-      iIntros (?) "Hconf_own".
-      wp_pures.
-      wp_load.
-      wp_load.
-      wp_pures.
-      iModIntro.
-      iApply "Hupd".
-      done.
-    }
+    (* case: got a new epoch, no error *)
+    iMod "Hupd".
+    iModIntro.
+    iDestruct "Hupd" as (??) "(H1&H2&Hupd)".
+    iExists _, _.
+    iFrame "H1 H2".
+    iIntros.
+    iMod ("Hupd" with "[% //] [$] [$]") as "Hupd".
+    iModIntro.
+    iIntros (??) "%Hconf_enc %Henc Hargs_sl".
+    iIntros (?) "Hrep Hrep_sl".
+    wp_pures.
+    iRight.
+    iModIntro.
+    iSplitR; first done.
+    wp_pures.
+    wp_apply (wp_ref_of_zero).
+    { done. }
+    iIntros (epoch_ptr) "Hepoch".
+    wp_pures.
+    wp_load.
+    rewrite Henc.
+    wp_apply (wp_ReadInt with "Hrep_sl").
+    iIntros (rep_sl1) "Hrep_sl".
+    wp_pures.
+    wp_store.
+    wp_store.
+    wp_load.
+    wp_apply (Config.wp_Decode with "[$Hrep_sl]").
+    { done. }
+    iIntros (?) "Hconf_own".
+    wp_pures.
+    wp_load.
+    wp_pures.
+    iModIntro.
+    iApply "Hupd".
+    iFrame.
   }
   {
     iIntros (err) "%Herr Hargs_sl Hrep".

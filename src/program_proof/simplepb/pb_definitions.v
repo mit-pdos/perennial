@@ -511,7 +511,7 @@ Hint Unfold no_overflow : arith.
 (* physical (volatile) state; meant to be unfolded in code proof *)
 Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   ∃ own_StateMachine (sm:loc) clerks_sl
-    (committedNextIndex_cond:loc) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
+    (committedNextIndex_cond isPrimary_cond:loc) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
   (* non-persistent physical *)
   "Hepoch" ∷ s ↦[pb.Server :: "epoch"] #st.(server.epoch) ∗
   "HnextIndex" ∷ s ↦[pb.Server :: "nextIndex"] #(U64 (length (get_rwops st.(server.ops_full_eph)))) ∗
@@ -522,6 +522,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "Hclerks" ∷ s ↦[pb.Server :: "clerks"] (slice_val clerks_sl) ∗
   "HcommittedNextIndex" ∷ s ↦[pb.Server :: "committedNextIndex"] #st.(server.committedNextIndex) ∗
   "HcommittedNextIndex_cond" ∷ s ↦[pb.Server :: "committedNextIndex_cond"] #committedNextIndex_cond ∗
+  "HisPrimary_cond" ∷ s ↦[pb.Server :: "isPrimary_cond"] #isPrimary_cond ∗
   "HleaseValid" ∷ s ↦[pb.Server :: "leaseValid"] #st.(server.leaseValid) ∗
   "HleaseExpiration" ∷ s ↦[pb.Server :: "leaseExpiration"] #st.(server.leaseExpiration) ∗
   (* backup sequencer *)
@@ -534,6 +535,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   (* persistent physical state *)
   "#HopAppliedConds_conds" ∷ ([∗ map] i ↦ cond ∈ opAppliedConds, is_cond cond mu) ∗
   "#HcommittedNextIndex_is_cond" ∷ is_cond committedNextIndex_cond mu ∗
+  "#HisPrimary_is_cond" ∷ is_cond isPrimary_cond mu ∗
 
   (* witnesses for primary; the exclusive state is in own_Server_ghost *)
   "#Hprimary" ∷ (⌜st.(server.isPrimary) = false⌝ ∨ is_Primary γ γsrv st clerks_sl) ∗
