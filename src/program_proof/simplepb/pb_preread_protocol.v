@@ -102,6 +102,15 @@ Proof.
   by apply prefix_app_r.
 Qed.
 
+(* FIXME: this should be in mono_list.v *)
+Lemma mono_list_included_prefix (l1 l2:list gname) :
+  ◯ML l1 ≼ ●ML l2 → prefix l1 l2.
+Proof.
+  rewrite /mono_list_auth /mono_list_lb.
+  rewrite auth_frag_included.
+  by rewrite to_max_prefix_list_included_L.
+Qed.
+
 Lemma update_map_mset_ipred idx Q ros γreads :
   own_proposed_reads γreads ros ==∗
   own_proposed_reads γreads (<[ idx := (default [] (ros !! idx)) ++ [Q] ]> ros)
@@ -144,7 +153,6 @@ Proof.
   iApply (big_sepM2_insert_2 with "[] Hrest").
   iFrame "Hpred".
   simpl.
-  Search big_sepM2.
   destruct (rosγ !! idx) eqn:Hlookup.
   {
     iDestruct (big_sepM2_lookup_r_some with "Hrest") as %[? ?].
@@ -167,15 +175,73 @@ Lemma map_fmset_get_elem idx Q ros γreads :
   is_proposed_read γreads idx Q
 .
 Proof.
-Admitted.
+  intros.
+  iIntros "(% & Hown & #Hmap)".
+  unfold is_proposed_read.
+  destruct (ros !! idx) eqn:?.
+  2:{ by apply elem_of_nil in H0. }
+  iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? ?].
+  { done. }
+  iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH _]".
+  1-2: done.
+  simpl in H0.
+  apply elem_of_list_lookup_1 in H0 as [? ?].
+  iDestruct (big_sepL2_lookup_2_some with "HH") as %[? ?].
+  { done. }
+  iDestruct (big_sepL2_lookup_acc with "HH") as "[H _]".
+  1-2: done.
+  repeat iExists _; iFrame "H".
+  instantiate (1:=x).
+  iSplit.
+  2:{ iPureIntro. by eapply elem_of_list_lookup_2. }
+  iApply (own_mono with "Hown").
+  etransitivity; last apply cmra_included_r.
+  apply auth_frag_mono.
+  setoid_rewrite singleton_included_l.
+  eexists _. split.
+  { rewrite lookup_fmap. rewrite H1. simpl. done. }
+  apply Some_included. right.
+  apply mono_list_included.
+Qed.
 
 Lemma map_fmset_elem_lookup idx Q ros γreads :
   own_proposed_reads γreads ros -∗
   is_proposed_read γreads idx Q -∗
-  ⌜Q ∈ default [] (ros !! idx)⌝
+  ∃ Q2, ⌜Q2 ∈ default [] (ros !! idx)⌝ ∗
+  □(∀ x, ▷ (Q x ≡ Q2 x))
 .
 Proof.
-Admitted.
+  iIntros "(% & Hown & #Hmap) (% & % & #Hin & % & #Hpred)".
+  apply elem_of_list_lookup_1 in H0 as [? ?].
+  iDestruct (own_valid_2 with "Hown Hin") as %Hvalid.
+  rewrite comm assoc in Hvalid.
+  apply cmra_valid_op_l in Hvalid.
+  rewrite comm auth_both_valid_discrete in Hvalid.
+  destruct Hvalid as [Hinc _].
+  rewrite singleton_included_l in Hinc. destruct Hinc as (? & ? & ?).
+  rewrite lookup_fmap in H1. simpl.
+  destruct (rosγ !! idx) eqn:Hlookup.
+  2:{ exfalso. simpl in *. symmetry in H1.
+      by rewrite None_equiv_eq in H1. }
+  iDestruct (big_sepM2_lookup_r_some with "Hmap") as %[? ?]; first done.
+  iDestruct (big_sepM2_lookup_acc with "Hmap") as "[Hlist _]".
+  1-2: done.
+  simpl in *.
+  rewrite -H1 in H2.
+  rewrite Some_included_total in H2.
+  apply mono_list_included_prefix in H2.
+  iDestruct (big_sepL2_lookup_1_some with "Hlist") as %[? ?].
+  { by eapply prefix_lookup. }
+  iDestruct (big_sepL2_lookup_acc with "Hlist") as "[HH _]".
+  { by eapply prefix_lookup. }
+  { done. }
+  iExists x2.
+  iSplit.
+  { iPureIntro. rewrite H3 /=.
+    by eapply elem_of_list_lookup_2. }
+  iModIntro. iIntros.
+  iDestruct (saved_pred_agree with "Hpred HH") as "$".
+Qed.
 
 Lemma own_log_agree γlog σ σ' :
   own_pre_log γlog σ -∗
@@ -317,6 +383,7 @@ Qed.
 Lemma finish_read_step Q γ γlog γreads idx σ :
   length σ = idx →
   £ 1 -∗
+  £ 1 -∗
   preread_inv γ γlog γreads -∗
   is_pb_log_lb γ σ -∗
   is_proposed_read γreads idx Q
@@ -324,12 +391,12 @@ Lemma finish_read_step Q γ γlog γreads idx σ :
   □ Q σ
 .
 Proof.
-  iIntros (Hlen) "Hlc #Hinv #Hlb #Hro".
+  iIntros (Hlen) "Hlc Hlc2 #Hinv #Hlb #Hro".
   iInv "Hinv" as "Hown" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hown") as "Hown".
   iNamed "Hown".
   iDestruct (own_log_lb_ineq with "HpbLog Hlb")as %Hprefix.
-  iDestruct (map_fmset_elem_lookup with "HownRos Hro") as %HQelem.
+  iDestruct (map_fmset_elem_lookup with "HownRos Hro") as "(% & %HQelem & #HQequiv)".
   destruct (ros !! idx) as [] eqn:Hlookup.
   2:{ exfalso. by apply elem_of_nil in HQelem. }
   simpl in HQelem.
@@ -337,11 +404,14 @@ Proof.
   { done. }
   iSpecialize ("H" with "[%]").
   { subst. by apply prefix_length. }
-  iDestruct (big_sepL_elem_of with "H") as "H2".
+  iDestruct (big_sepL_elem_of with "H") as "#H2".
   { done. }
+  iSpecialize ("HQequiv" $! σ).
+  iMod (lc_fupd_elim_later with "Hlc2 HQequiv") as "#HQequiv2".
   iMod ("Hclose" with "[-]").
   { iExists _, _; iFrame "∗#". }
   iModIntro.
+  iRewrite "HQequiv2".
   iExactEq "H2".
   repeat f_equal.
   (* TODO: list_solver *)
