@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.simplepb Require Export pb_protocol primary_protocol.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.simplepb Require Import pb_definitions pb_makeclerk_proof pb_leaserenewal_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions pb_makeclerk_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.

@@ -46,7 +46,7 @@ Proof.
   repeat iExists _; iFrame "#".
 Qed.
 
-Lemma wp_Server__leaseRenewalThread (s:loc) γ γsrv (epoch:u64) :
+Lemma wp_Server__leaseRenewalThread (s:loc) γ γsrv :
   {{{
         "#Hsrv" ∷ is_Server s γ γsrv
   }}}

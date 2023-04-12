@@ -280,7 +280,7 @@ Proof.
   iModIntro.
   unfold impl_handler_spec2.
   clear Φ.
-  iIntros (enc_args Φ Ψ req_sl rep_ptr dummy_sl dummy) "!# Harg_sl Hrep _ HΦ HΨ".
+  iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
   wp_call.
 
   iNamed "His_srv".
@@ -395,7 +395,7 @@ Proof.
   iModIntro.
   unfold impl_handler_spec2.
   clear Φ.
-  iIntros (enc_args Φ Ψ req_sl rep_ptr dummy_sl dummy) "!# Harg_sl Hrep _ HΦ HΨ".
+  iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
   wp_call.
 
   iNamed "His_srv".
@@ -445,7 +445,7 @@ Proof.
   iModIntro.
   unfold impl_handler_spec2.
   clear Φ.
-  iIntros (enc_args Φ Ψ req_sl rep_ptr dummy_sl dummy) "!# Harg_sl Hrep _ HΦ HΨ".
+  iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
   wp_call.
   iNamed "His_srv".
   wp_loadField.
@@ -712,7 +712,7 @@ Proof.
   iModIntro.
   unfold impl_handler_spec2.
   clear Φ.
-  iIntros (enc_args Φ Ψ req_sl rep_ptr dummy_sl dummy) "!# Harg_sl Hrep _ HΦ HΨ".
+  iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
   wp_call.
   iNamed "His_srv".
   iDestruct "HΨ" as (?) "[% HΨ]".
