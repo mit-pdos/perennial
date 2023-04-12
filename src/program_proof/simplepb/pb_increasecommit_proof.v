@@ -28,7 +28,8 @@ Lemma wp_Clerk__IncreaseCommit γ γsrv ck (epoch:u64) (newCommitIndex:u64) σ :
         "%HcommitLen" ∷ ⌜int.nat newCommitIndex = length σ⌝ ∗
         "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv.(r_pb) epoch ∗
         "#Hcommit_by" ∷ committed_by γ.(s_pb) epoch σ ∗
-        "#Hlog_lb" ∷ is_pb_log_lb γ.(s_pb) σ
+        "#Hlog_lb" ∷ is_pb_log_lb γ.(s_pb) σ ∗
+        "#Hprop_lb" ∷ is_proposal_lb γ.(s_pb) epoch σ
   }}}
     Clerk__IncreaseCommitIndex #ck #newCommitIndex
   {{{ (err:u64), RET #err; True }}}.
@@ -63,6 +64,7 @@ Proof.
     iSplitR; first done.
     simpl.
     unfold IncreaseCommit_core_spec.
+    iExists _, _.
     iFrame "#%".
     iIntros "_ %_ _ _ H".
     by iApply "H".
@@ -74,49 +76,109 @@ Proof.
 Qed.
 
 (** Helper lemmas for GetState() server-side proof *)
-Lemma increase_commitIndex_step γ γsrv st committedOps :
+
+Lemma getEpoch_ineq γ γsrv st epoch {own_StateMachine} :
+  is_epoch_lb γsrv.(r_pb) epoch -∗
+  £ 1 -∗
+  accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
+  own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
+  |NC={⊤}=>
+  own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
+  ⌜int.nat epoch <= int.nat st.(server.epoch)⌝
+.
+Proof.
+  iIntros "#? Hlc HaccP Hstate".
+  iMod ("HaccP" with "Hlc [] Hstate") as "$"; last done.
+  iIntros (???).
+  iNamed 1.
+  iDestruct (ghost_epoch_lb_ineq with "[$] Hghost") as %?.
+  iModIntro.
+  iFrame "%". repeat iExists _; iFrame "∗#%".
+Qed.
+
+Lemma have_all_ops γ old_epoch epoch σ σ' :
+  int.nat old_epoch <= int.nat epoch →
+  committed_by γ.(s_pb) old_epoch σ' -∗
+  is_proposal_facts γ.(s_pb) epoch σ -∗
+  is_proposal_lb γ.(s_pb) epoch σ -∗
+  is_proposal_lb γ.(s_pb) old_epoch σ' -∗
+  is_proposal_lb γ.(s_pb) epoch σ'
+.
+Proof.
+  iIntros (?) "#Hcomm #Hprop_facts #Hlb1 #Hlb2".
+  destruct (decide (int.nat old_epoch = int.nat epoch)).
+  {
+    replace epoch with old_epoch.
+    2:{ apply word.unsigned_inj. word. }
+    iFrame "#".
+  }
+  iDestruct "Hprop_facts" as "[Hmax _]".
+  iDestruct ("Hmax" with "[%] [$]") as "%".
+  { word. }
+  by iDestruct (fmlist_ptsto_lb_mono with "Hlb1") as "$".
+Qed.
+
+Lemma increase_commitIndex_step γ γsrv st epoch committedOps :
+  int.nat (length committedOps) > int.nat st.(server.committedNextIndex) →
+  int.nat epoch <= int.nat st.(server.epoch) →
   no_overflow (length committedOps) →
   is_pb_log_lb γ.(s_pb) committedOps -∗
-  is_proposal_lb γ.(s_pb) st.(server.epoch) committedOps -∗
-  committed_by γ.(s_pb) st.(server.epoch) committedOps -∗
+  is_proposal_lb γ.(s_pb) epoch committedOps -∗
+  committed_by γ.(s_pb) epoch committedOps -∗
   own_Server_ghost_eph_f st γ γsrv
-  ={↑pbN}=∗
+  -∗
   own_Server_ghost_eph_f (st <| server.committedNextIndex := length committedOps |> ) γ γsrv
 .
 Proof.
-  iIntros (?) "#Hghost_lb #Hprop_lb #Hcomm_by".
+  iIntros (???) "#Hghost_lb #Hprop_lb #Hcomm_by".
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed 1.
   rewrite /own_Primary_ghost_f /tc_opaque /=.
   iNamed "Hprimary".
-  repeat iExists _; iFrame "Hghost_lb ∗ #".
-  iPureIntro.
-  split; first done.
-  rewrite /get_rwops fmap_length /=.
-  by unfold no_overflow in H.
+  repeat iExists committedOps, epoch; iFrame "Hghost_lb ∗ #".
+  iSplitL.
+  2:{ iPureIntro.
+      split; first done.
+      rewrite /get_rwops fmap_length /=.
+      by unfold no_overflow in H.
+  }
+  iDestruct (have_all_ops with "[$] [$] [$] [$]") as "$".
+  { done. }
 Qed.
 
-Lemma wp_Server__IncreaseCommit γ γsrv s args newCommitIndex Φ Ψ :
+Lemma wp_Server__IncreaseCommit γ γsrv s newCommitIndex Φ Ψ :
   is_Server s γ γsrv -∗
-  (∀ reply, Ψ reply -∗ ∀ (reply_ptr:loc), GetStateReply.own reply_ptr reply -∗ Φ #reply_ptr) -∗
-  IncreaseCommit_core_spec γ γsrv args.(GetStateArgs.epoch) epoch_lb Ψ -∗
+  (Ψ -∗ Φ #()) -∗
+  IncreaseCommit_core_spec γ γsrv newCommitIndex Ψ -∗
   WP pb.Server__IncreaseCommitIndex #s #newCommitIndex {{ Φ }}
   .
 Proof.
-  iIntros "His_srv Hargs HΦ HΨ".
+  iIntros "His_srv HΦ HΨ".
   wp_call.
   iNamed "His_srv".
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".
   iNamed "Hown".
-  wp_pures.
-  iNamed "Hargs".
-  wp_loadField.
+  wp_pure1_credit "Hlc".
   iNamed "Hvol".
   wp_loadField.
+  iDestruct "HΨ" as (??) "(% & #? & #? & #? & #? & HΨ)".
+  iMod (getEpoch_ineq with "[$] Hlc [] Hstate") as "(Hstate & %)".
+  {
+    rewrite /is_StateMachine /tc_opaque.
+    by iNamed "HisSm".
+  }
   wp_if_destruct.
-  { (* reply with error *)
+  { (* increase commit index *)
+    iDestruct (increase_commitIndex_step with "[$] [$] [$] HghostEph") as "HghostEph".
+    { word. }
+    { word. }
+    { unfold no_overflow. word. }
+    wp_storeField.
+    wp_loadField.
+    wp_apply (wp_condBroadcast with "[]").
+    { iFrame "#". }
     wp_loadField.
     wp_apply (release_spec with "[-HΦ HΨ]").
     {
@@ -126,110 +188,27 @@ Proof.
       iSplitR "HghostEph"; last iFrame.
       repeat (iExists _).
       iFrame "∗#%".
+      simpl.
+      rewrite -H.
+      iApply to_named.
+      iExactEq "HcommittedNextIndex".
+      repeat f_equal. word.
     }
-    unfold GetState_core_spec.
-    iDestruct "HΨ" as "[_ HΨ]".
-    iRight in "HΨ".
     wp_pures.
-    iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "#Hsl_nil".
-    { done. }
-    iMod (readonly_alloc_1 with "Hsl_nil") as "Hsl_nil2".
-    wp_apply (wp_allocStruct).
-    { Transparent slice.T. repeat econstructor.
-      Opaque slice.T. }
-    iIntros (reply_ptr) "Hreply".
-    iDestruct (struct_fields_split with "Hreply") as "HH".
-    iNamed "HH".
-    iApply ("HΦ" with "[HΨ]"); last first.
+    by iApply "HΦ".
+  }
+  {
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ HΨ]").
     {
-      iExists _. iFrame.
-      instantiate (1:=GetStateReply.mkC _ _ _).
-      replace (slice.nil) with (slice_val Slice.nil) by done.
-      iFrame.
+      iFrame "HmuInv Hlocked".
+      iNext. repeat (iExists _).
+      iSplitR "HghostEph"; last iFrame.
+      repeat (iExists _). iFrame "∗#%".
     }
-    simpl.
-    iApply "HΨ".
-    done.
-  }
-  wp_storeField.
-  wp_loadField.
-
-  iDestruct (is_StateMachine_acc_getstate with "HisSm") as "HH".
-  iNamed "HH".
-  wp_loadField.
-  iDestruct "HΨ" as "[#Hepoch_lb HΨ]".
-  iDestruct (getstate_eph with "HghostEph") as "HghostEph".
-  wp_apply ("HgetstateSpec" with "[$Hstate]").
-  {
-    iIntros "Hghost".
-    iMod (getstate_step with "Hepoch_lb Hghost") as "[Hghost HH]".
-    iFrame "Hghost".
-    iModIntro.
-    iExact "HH".
-  }
-  iIntros (??) "(#Hsnap_sl & %Hsnap_enc & [Hstate HQ])".
-  iDestruct "HQ" as (?) "(%Hσeq_phys & #Hacc_ro &  #Hprop_lb & #Hprop_facts & #Hprim_facts & %Hepoch_ineq)".
-  wp_pures.
-  wp_loadField.
-  wp_pures.
-  wp_loadField.
-
-  iLeft in "HΨ".
-  iDestruct ("HΨ" with "[% //] [%] Hacc_ro Hprop_facts Hprim_facts Hprop_lb [%] [%]") as "HΨ".
-  { word. }
-  { rewrite -Hσeq_phys. done. }
-  { apply (f_equal length) in Hσeq_phys.
-    unfold no_overflow in HnextIndexNoOverflow. (* FIXME: why manually unfold? *)
-    word. }
-
-  (* signal all opApplied condvars *)
-  wp_apply (wp_MapIter with "HopAppliedConds_map HopAppliedConds_conds").
-  { iFrame "HopAppliedConds_conds". }
-  { (* prove one iteration of the map for loop *)
-    iIntros.
-    iIntros (?) "!# [_ #Hpre] HΦ".
     wp_pures.
-    wp_apply (wp_condSignal with "Hpre").
-    iApply "HΦ".
-    iFrame "#".
-    instantiate (1:=(λ _ _, True)%I).
-    done.
+    by iApply "HΦ".
   }
-  iIntros "(HopAppliedConds_map & _ & _)".
-
-  wp_pures.
-  wp_apply (wp_NewMap).
-  iIntros (opAppliedConds_loc_new) "Hmapnew".
-  wp_storeField.
-  wp_loadField.
-  wp_apply (wp_condBroadcast with "[]").
-  { done. }
-  wp_loadField.
-  wp_apply (release_spec with "[-Hsnap_sl HΨ HΦ]").
-  {
-    iFrame "HmuInv Hlocked".
-    iNext.
-    repeat (iExists _).
-    iFrame "HghostEph".
-    repeat (iExists _).
-    iFrame "∗ HisSm #".
-    iFrame "%".
-    by iApply big_sepM_empty.
-  }
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. repeat econstructor.
-    Opaque slice.T. }
-  iIntros (reply_ptr) "Hreply".
-  iDestruct (struct_fields_split with "Hreply") as "HH".
-  iNamed "HH".
-  iApply ("HΦ" with "HΨ").
-  iExists _.
-  iFrame.
-  simpl.
-
-  apply (f_equal length) in Hσeq_phys.
-  rewrite Hσeq_phys.
-  iFrame "∗#".
 Qed.
 
 End pb_increasecommit_proof.

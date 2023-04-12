@@ -261,6 +261,7 @@ Definition IncreaseCommit_core_spec γ γsrv (newCommitIndex:u64)  :=
     ⌜int.nat newCommitIndex = length σ⌝ ∗
     is_epoch_lb γsrv.(r_pb) epoch ∗
     is_pb_log_lb γ.(s_pb) σ ∗
+    is_proposal_lb γ.(s_pb) epoch σ ∗
     committed_by γ.(s_pb) epoch σ ∗
     Φ
   )%I
