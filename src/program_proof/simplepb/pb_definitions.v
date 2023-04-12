@@ -306,7 +306,6 @@ Definition is_conf_inv γ γconf : iProp Σ :=
       "Hepoch" ∷ own_latest_epoch γconf epoch ∗
       "Hconf" ∷ own_config γconf conf ∗
       "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch_lb (r_pb <$> confγs) ∗
-      "#His_conf_prop" ∷ is_epoch_config_proposal γ.(s_pb) epoch_lb (r_pb <$> confγs) ∗
       "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
       "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch_lb) ∗
       "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γ.(s_pb) epoch' ∗ config_unset γ.(s_pb) epoch' ∗ own_proposal_unused γ.(s_pb) epoch' ∗ own_init_proposal_unused γ.(s_prim) epoch') ∗

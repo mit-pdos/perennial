@@ -323,8 +323,9 @@ Proof.
   by apply mono_list_lb_mono.
 Qed.
 
-Lemma finish_read_step st γ γsrv Q priorOps :
+Lemma roapply_finish_step st γ γsrv Q priorOps :
   int.nat st.(server.committedNextIndex) >= length priorOps →
+  £ 1 -∗
   £ 1 -∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) priorOps -∗
   is_proposed_read γ.(s_reads) (length priorOps) Q -∗
@@ -335,7 +336,7 @@ Lemma finish_read_step st γ γsrv Q priorOps :
 .
 Proof.
   intros HcommitIndex.
-  iIntros "Hlc #Hprop_lb #Hprop_read #HpreInv HghostEph".
+  iIntros "Hlc Hlc2 #Hprop_lb #Hprop_read #HpreInv HghostEph".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque) in "HghostEph".
   iNamed "HghostEph".
   iAssert (is_pb_log_lb γ.(s_pb) priorOps) with "[-]" as "#Hprior_commit_lb".
@@ -351,7 +352,7 @@ Proof.
   }
   iMod (fupd_mask_subseteq (↑prereadN)) as "Hmask".
   { set_solver. }
-  iMod (finish_read_step with "Hlc [$] [$] [$]") as "#H".
+  iMod (finish_read_step with "Hlc Hlc2 [$] [$] [$]") as "#H".
   { done. }
   iFrame "H".
   iMod "Hmask". iModIntro.
@@ -471,6 +472,7 @@ Proof.
     iNamed "Hown".
     iNamed "Hvol".
     wp_loadField.
+    wp_pure1_credit "Hlc".
     wp_if_destruct.
     {
       wp_storeField.
@@ -495,13 +497,13 @@ Proof.
       by iApply "Hfail_Φ".
     }
     wp_loadField.
-    wp_pure1_credit "Hlc".
+    wp_pure1_credit "Hlc2".
     wp_pures.
     wp_if_destruct.
     { (* the read is finished! *)
       wp_storeField.
       iRight.
-      iMod (finish_read_step with "Hlc [] Hprop_read [$] HghostEph") as "H".
+      iMod (roapply_finish_step with "Hlc Hlc2 [] Hprop_read [$] HghostEph") as "H".
       { rewrite fmap_length /no_overflow in Heqb2 HnextIndexNoOverflow.
         word. }
       { rewrite -Heqb1. iFrame "Hprop_lb". }

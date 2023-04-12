@@ -171,7 +171,7 @@ Proof.
       iMod ("Hclose" with "[Hunset_new2 Hunused Hepoch Hconf]").
       {
         iNext. iExists _, _, _, _.
-        iFrame "Hepoch Hconf His_conf His_conf_prop ∗#".
+        iFrame "Hepoch Hconf His_conf ∗#".
         iSplitL "Hunused".
         {
           iApply "Hunused".
@@ -337,7 +337,7 @@ Proof.
     { (* config was already set before *)
       replace (epoch) with (epoch_lb) by word.
       iDestruct "Hconf_prop" as "[Hconf_prop %Hle]".
-      iDestruct "His_conf_prop" as "[His_conf_prop _]".
+      iDestruct "His_conf" as "(? & His_conf_prop & ?)".
       iDestruct (own_valid_2 with "His_conf_prop Hconf_prop") as %Hvalid.
       rewrite singleton_op in Hvalid.
       rewrite singleton_valid in Hvalid.
@@ -347,13 +347,12 @@ Proof.
       iMod ("Hclose" with "[Hepoch Hconf Hunused]").
       {
         iNext.  iExists _, _, _, _.
-        iFrame "Hhosts ∗ His_conf #".
-        iSplitL; first done.
+        iFrame "Hhosts ∗#".
         by iRight.
       }
       iApply "HΦ".
       iModIntro.
-      iFrame "His_conf".
+      iFrame "#".
     }
     { (* config is being set for the first time *)
       iMod (own_update with "Hunset") as "Hset".
