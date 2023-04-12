@@ -118,22 +118,11 @@ Proof.
   iNamed 1.
   rewrite /own_Primary_ghost_f /tc_opaque.
   iNamed "Hprimary".
-  destruct (st.(server.isPrimary)).
-  {
-    iFrame "∗#%".
-    simpl.
-    rewrite HcanBecome.
-    iMod (ghost_become_primary with "Hlc Hescrow_inv Hprim_facts Hprim_escrow") as "(_ & $ & _)".
-    iExists _, _.
-    iFrame "∗#".
-    iPureIntro.
-    split; word.
-  }
   rewrite HcanBecome.
-  iMod (ghost_become_primary with "Hlc Hescrow_inv Hprim_facts Hprim_escrow") as "HH".
+  iMod (ghost_become_primary with "Hlc Hescrow_inv Hprim_facts Htok") as "HH".
   simpl.
   iClear "Hprim".
-  iDestruct "HH" as "(%Hprefix1 & Hescrow & Hprim)".
+  iDestruct "HH" as "(%Hprefix1 & Hprim)".
   iDestruct (ghost_propose_lb_valid with "Hprim Hs_prop_lb") as "%Hprefix2".
   assert (σ = st.(server.ops_full_eph)).
   { apply list_prefix_eq; first done. by apply prefix_length. }

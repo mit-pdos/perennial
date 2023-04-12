@@ -143,16 +143,14 @@ Lemma setstate_primary_eph_step γ γsrv epoch isPrimary canBecomePrimary commit
   int.nat epoch < int.nat epoch' →
   is_proposal_lb γ.(s_pb) epoch' ops' -∗
   is_proposal_facts_prim γ.(s_prim) epoch' ops' -∗
+  own_tok γsrv.(r_prim) epoch' -∗
   own_Primary_ghost_f γ γsrv isPrimary canBecomePrimary epoch committedNextIndex ops -∗
   own_Primary_ghost_f γ γsrv true false epoch' committedNextIndex ops'
 .
 Proof.
-  iIntros (Hepoch) "#Hprop_lb #Hprim_facts".
+  iIntros (Hepoch) "#Hprop_lb #Hprim_facts Htok_in".
   rewrite /own_Primary_ghost_f /tc_opaque.
-  iNamed 1.
-  iDestruct (ghost_primary_accept_new_epoch with "Hprim_escrow") as "$".
-  { done. }
-  iFrame "#".
+  iNamed 1. iFrame "∗#".
 Qed.
 
 Lemma lease_invalid γ epoch leaseValid leaseExpiration :
@@ -160,9 +158,7 @@ Lemma lease_invalid γ epoch leaseValid leaseExpiration :
   is_Server_lease_resource γ epoch false leaseExpiration
 .
 Proof.
-  iNamed 1.
-  repeat iExists _.
-  by iFrame "#".
+  iNamed 1. repeat iExists _. by iFrame "#".
 Qed.
 
 Lemma setstate_eph_step γ γsrv st epoch' ops' :
@@ -171,6 +167,7 @@ Lemma setstate_eph_step γ γsrv st epoch' ops' :
   is_proposal_facts γ.(s_pb) epoch' ops' -∗
   is_proposal_facts_prim γ.(s_prim) epoch' ops' -∗
   is_in_config γ γsrv epoch' -∗
+  own_tok γsrv.(r_prim) epoch' -∗
   own_Server_ghost_eph_f st γ γsrv ==∗
   (is_epoch_lb γsrv.(r_pb) epoch' -∗
    is_accepted_lb γsrv.(r_pb) epoch' ops' -∗
@@ -182,7 +179,7 @@ Lemma setstate_eph_step γ γsrv st epoch' ops' :
 .
 Proof.
   intros HnewEpoch.
-  iIntros "#Hprop_lb #Hprop_facts #Hprim_facts #Hin_conf' Hghost".
+  iIntros "#Hprop_lb #Hprop_facts #Hprim_facts #Hin_conf' Htok Hghost".
   rewrite /own_Server_ghost_eph_f /tc_opaque.
   iNamed "Hghost".
   iModIntro. iIntros. repeat iExists _.
@@ -191,14 +188,21 @@ Proof.
   iDestruct (lease_invalid with "[$]") as "$".
   iFrame "#".
   iSplitL.
-  { iApply (setstate_primary_eph_step with "Hprop_lb Hprim_facts Hprimary"). done. }
+  { iApply (setstate_primary_eph_step with "Hprop_lb Hprim_facts Htok Hprimary"). done. }
   iSplitL.
   2:{ iFrame "%". iPureIntro. word. }
   iDestruct "Hprop_facts" as "[#Hmax _]".
-  iDestruct ("Hmax" with "[] Hcommit_before_epoch") as "%".
-  { iPureIntro. word. }
-  iApply (fmlist_ptsto_lb_mono with "Hprop_lb").
-  done.
+  iDestruct "Hcommit_before_epoch" as "[Hcommit_before_epoch|%]".
+  {
+    iDestruct ("Hmax" with "[] Hcommit_before_epoch") as "%".
+    { iPureIntro. word. }
+    iApply (fmlist_ptsto_lb_mono with "Hprop_lb").
+    done.
+  }
+  {
+    subst. iApply (fmlist_ptsto_lb_mono with "Hprop_lb").
+    by apply prefix_nil.
+  }
 Qed.
 
 Lemma setstate_step γ γsrv epoch ops sealed epoch' opsfull':
@@ -206,20 +210,24 @@ Lemma setstate_step γ γsrv epoch ops sealed epoch' opsfull':
   is_proposal_lb γ.(s_pb) epoch' opsfull' -∗
   is_proposal_facts γ.(s_pb) epoch' opsfull' -∗
   is_proposal_facts_prim γ.(s_prim) epoch' opsfull' -∗
+  is_in_config γ γsrv epoch' -∗
   own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
   own_Server_ghost_f γ γsrv epoch' (get_rwops opsfull') false ∗
   is_epoch_lb γsrv.(r_pb) epoch' ∗
-  is_accepted_lb γsrv.(r_pb) epoch' opsfull'
+  is_accepted_lb γsrv.(r_pb) epoch' opsfull' ∗
+  own_tok γsrv.(r_prim) epoch'
 .
 Proof.
   intros HnewEpoch.
-  iIntros "#? #? #? Hghost".
+  iIntros "#? #? #? #? Hghost".
   iNamed "Hghost".
   iMod (ghost_accept_and_unseal with "Hghost [$] [$]") as "Hghost".
   { done. }
 
   iDestruct (ghost_get_epoch_lb with "Hghost") as "#Hepoch_lb".
   iDestruct (ghost_get_accepted_lb with "Hghost") as "#Hacc_lb".
+  iDestruct (ghost_primary_accept_new_epoch with "Hprim_escrow") as "[Hprim_escrow $]".
+  { done. }
   iSplitL.
   {
     iExists _.
@@ -323,8 +331,7 @@ Proof.
         repeat f_equal. word. }
       word.
     }
-    iMod (setstate_eph_step with "Hprop_lb Hprop_facts Hprim_facts Hin_conf HghostEph") as "HghostEph".
-    { done. }
+
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
       iSplitR.
@@ -332,11 +339,14 @@ Proof.
       iSplitR; first done.
       iFrame "Hargs_state_sl".
       iIntros "Hghost".
-      iMod (setstate_step with "[$] [$] [$] Hghost") as "[$ H]".
+      iMod (setstate_step with "[$] [$] [$] [$] Hghost") as "[$ H]".
       { done. }
       iExact "H".
     }
-    iIntros "(Hstate & #Hepoch_lb & #Hacc_lb)".
+    iIntros "(Hstate & #Hepoch_lb & #Hacc_lb & Htok)".
+    iMod (setstate_eph_step with "Hprop_lb Hprop_facts Hprim_facts Hin_conf Htok HghostEph") as "HghostEph".
+    { done. }
+
     wp_pures.
     wp_loadField.
 

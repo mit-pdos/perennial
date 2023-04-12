@@ -215,6 +215,7 @@ Proof.
   (* Step 1. use accessP_fact to get ownership of locally accepted state *)
   iMod ("HaccP" with "Hlc [-Hstate] Hstate") as "$"; last done.
   iIntros (???) "Hghost".
+  iClear "Hin_conf".
   iNamed "Hghost".
 
   iInv "HpbInv" as "Hown" "HclosePb".
@@ -298,11 +299,11 @@ Proof.
     iIntros "?". iMod ("Hupd" with "[$]").
     by iMod "Hmask".
   }
-  iMod ("HclosePb" with "[-Htime Hprimary Hghost]").
+  iMod ("HclosePb" with "[-Htime Hprimary Hghost Hprim_escrow]").
   { iNext; repeat iExists _; iFrame "∗#". }
   iModIntro.
   iFrame.
-  iSplitL "Hghost".
+  iSplitR "Hprimary".
   { repeat iExists _; iFrame "∗#%". }
   iFrame "#".
   iEval (rewrite /own_Server_ghost_eph_f /tc_opaque).

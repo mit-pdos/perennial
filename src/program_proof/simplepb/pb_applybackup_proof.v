@@ -266,7 +266,7 @@ Proof.
   iDestruct (ghost_get_epoch_lb with "Hghost") as "#$".
   iSplitL.
   2:{ iPureIntro. by eapply applybackup_step_helper2. }
-  iExists _; iFrame "Hghost". iFrame "#". done.
+  iExists _; iFrame "Hghost ∗". iFrame "#". done.
 Qed.
 
 Lemma wp_Server__ApplyAsBackup (s:loc) (args_ptr:loc) γ γsrv args ops_full' op Q Φ Ψ :

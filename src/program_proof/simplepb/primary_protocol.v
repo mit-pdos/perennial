@@ -58,19 +58,18 @@ Definition own_escrow_toks γsrv epoch : iProp Σ :=
   [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' ≤ int.nat epoch⌝ ∨ own_tok γsrv epoch'
 .
 
-Definition own_primary_escrow_ghost γsys γsrv (canBecomePrimary:bool) epoch : iProp Σ :=
-  "Htoks" ∷ own_escrow_toks γsrv epoch ∗
-  "Htok" ∷ (if canBecomePrimary then own_tok γsrv epoch else True)
+Definition own_primary_escrow_ghost γsys γsrv epoch : iProp Σ :=
+  "Htoks" ∷ own_escrow_toks γsrv epoch
+  (* "Htok" ∷ (if canBecomePrimary then own_tok γsrv epoch else True) *)
 .
 
-Lemma ghost_primary_accept_new_epoch γsys γsrv epoch canBecomePrimary epoch' :
+Lemma ghost_primary_accept_new_epoch γsys γsrv epoch epoch' :
   int.nat epoch < int.nat epoch' →
-  own_primary_escrow_ghost γsys γsrv canBecomePrimary epoch -∗
-  own_primary_escrow_ghost γsys γsrv true epoch'.
+  own_primary_escrow_ghost γsys γsrv epoch -∗
+  own_primary_escrow_ghost γsys γsrv epoch' ∗ own_tok γsrv epoch'.
 Proof.
   intros Hineq.
-  iNamed 1.
-  iClear "Htok".
+  iIntros "Htoks".
   iDestruct (big_sepS_elem_of_acc_impl epoch' with "Htoks") as "[Htok Htoks]".
   { set_solver. }
   iDestruct "Htok" as "[%Hbad|Htok]".
@@ -134,14 +133,12 @@ Lemma ghost_become_primary γsys γsrv epoch σprop σ R :
   £ 1 -∗
   become_primary_escrow γsys γsrv epoch σprop R -∗
   is_proposal_facts_prim γsys epoch σ -∗
-  own_primary_escrow_ghost γsys γsrv true epoch ={↑pbN}=∗
+  own_tok γsrv epoch ={↑pbN}=∗
   ⌜σprop ⪯ σ⌝ ∗
-  own_primary_escrow_ghost γsys γsrv false epoch ∗
   R
 .
 Proof.
-  iIntros "Hlc #Hescrow #Hinit_ub".
-  iNamed 1.
+  iIntros "Hlc #Hescrow #Hinit_ub Htok".
   iDestruct "Hescrow" as "[#Hinit Hescrow]".
   iInv "Hescrow" as "Hown" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hown" ) as "Hown".
@@ -166,9 +163,7 @@ Proof.
 
   iDestruct "Hinit_ub" as (?) "[%Hineq Hinit2]".
   iDestruct (fmlist_ptsto_agree with "Hinit Hinit2") as %Heq.
-  subst.
-  iSplitR; first done.
-  iFrame.
+  by subst.
 Qed.
 
 Lemma is_proposal_facts_prim_mono γ epoch σ σ' :

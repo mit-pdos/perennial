@@ -184,12 +184,8 @@ Proof.
   iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
   iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hprop_lb Hprop_facts]".
   iDestruct (ghost_epoch_lb_ineq with "Hepoch_lb Hghost") as "%Hepoch_ineq".
-  iSplitL "Hghost".
-  {
-    iExists _.
-    iFrame "∗#".
-    done.
-  }
+  iSplitR "".
+  { iExists _. by iFrame "∗#". }
   iExists _.
   iFrame "#".
   by iPureIntro.

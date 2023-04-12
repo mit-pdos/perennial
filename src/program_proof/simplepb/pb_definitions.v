@@ -322,8 +322,10 @@ Definition is_conf_inv γ γconf : iProp Σ :=
 Definition own_Server_ghost_f γ γsrv epoch ops sealed : iProp Σ :=
   ∃ opsfull,
   "%Hre" ∷ ⌜ops = get_rwops opsfull⌝ ∗
+  "Hghost" ∷ (own_replica_ghost γ.(s_pb) γsrv.(r_pb) epoch opsfull sealed) ∗
+  "Hprim_escrow" ∷ own_primary_escrow_ghost γ.(s_prim) γsrv.(r_prim) epoch ∗
   "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
-  "Hghost" ∷ (own_replica_ghost γ.(s_pb) γsrv.(r_pb) epoch opsfull sealed)
+  "#Hin_conf" ∷ is_in_config γ γsrv epoch
 .
 
 End pb_global_definitions.
@@ -557,7 +559,7 @@ Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpir
 (* this should never be unfolded in the proof of code *)
 Definition own_Primary_ghost_f γ γsrv (canBecomePrimary isPrimary:bool) epoch (committedNextIndex:u64) opsfull : iProp Σ:=
   tc_opaque (
-            "Hprim_escrow" ∷ own_primary_escrow_ghost γ.(s_prim) γsrv.(r_prim) canBecomePrimary epoch ∗
+            "Htok" ∷ (if canBecomePrimary then own_tok γsrv.(r_prim) epoch else True) ∗
             "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) epoch opsfull  ∗
 
             "Hprim" ∷ if isPrimary then
@@ -576,6 +578,7 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   (* epoch lower bound *)
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv.(r_pb) st.(server.epoch) ∗
 
+
   "#Hs_prop_lb" ∷ is_proposal_lb γ.(s_pb) st.(server.epoch) st.(server.ops_full_eph) ∗
   "#Hs_prop_facts" ∷ is_proposal_facts γ.(s_pb) st.(server.epoch) st.(server.ops_full_eph) ∗
   "#Hlease" ∷ is_Server_lease_resource γ st.(server.epoch) st.(server.leaseValid) st.(server.leaseExpiration) ∗
@@ -584,7 +587,7 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
 
   (* witness for committed state *)
   "#Hcommit_lb" ∷ is_pb_log_lb γ.(s_pb) ops_commit_full ∗
-  "#Hcommit_before_epoch" ∷ committed_by γ.(s_pb) commitEpoch ops_commit_full ∗
+  "#Hcommit_before_epoch" ∷ (committed_by γ.(s_pb) commitEpoch ops_commit_full ∨ ⌜ops_commit_full = []⌝) ∗
   "#Hcommit_prop_lb" ∷ is_proposal_lb γ.(s_pb) st.(server.epoch) ops_commit_full ∗
   "%HcommitEpoch" ∷ ⌜int.nat commitEpoch <= int.nat st.(server.epoch)⌝ ∗
   "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat st.(server.committedNextIndex)⌝
