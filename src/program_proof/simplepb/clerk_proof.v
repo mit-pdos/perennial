@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export clerk.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_apply_proof pb_makeclerk_proof.
-From Perennial.program_proof.simplepb Require Import config_protocol_proof.
+From Perennial.program_proof.simplepb Require Import config_protocol_proof pb_roapply_proof.
 
 Section clerk_proof.
 Context `{!heapGS Σ}.
@@ -422,5 +422,171 @@ Proof.
     }
   }
 Qed.
+
+Lemma wp_Clerk__ApplyReadonly γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+has_op_encoding op_bytes op →
+own_Clerk ck γ -∗
+is_slice_small op_sl byteT 1 op_bytes -∗
+□((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
+  (own_op_log γ ops ={∅,⊤∖↑pbN}=∗
+     □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                  is_slice_small op_sl byteT 1 op_bytes -∗
+                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
+WP clerk.Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
+Proof.
+  iIntros (?) "Hck Hop_sl #Hupd".
+  wp_call.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (ret) "Hret".
+  wp_pures.
+
+  iAssert (
+      ∃ some_sl,
+        "Hret" ∷ ret ↦[slice.T byteT] (slice_val some_sl)
+    )%I with "[Hret]" as "HH".
+  { replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done. iExists _; iFrame. }
+  wp_forBreak.
+  iNamed "HH".
+  wp_pures.
+
+  wp_apply (wp_random).
+  iIntros (randint) "_".
+  iNamed "Hck".
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_pures.
+  set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
+  iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
+  iDestruct (is_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
+  assert (int.nat clerkIdx < length clerks) as Hlookup_clerks.
+  { (* FIXME: better lemmas about mod? *)
+    admit.
+  }
+
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (err) "Herr".
+  wp_pures.
+  wp_loadField.
+
+  wp_bind (Clerk__ApplyRo _ _).
+  wp_apply (wp_frame_wand with "[HreplicaClerks]"); first iNamedAccu.
+  wp_apply (wp_wand with "[Hop_sl]").
+  { (* apply *)
+    apply list_lookup_lt in Hlookup_clerks as [? Hlookup].
+    iDestruct (big_sepL2_lookup_1_some with "Hclerks_rpc") as %[? ?].
+    { done. }
+    iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks".
+    wp_apply (wp_SliceGet with "[$Hclerks]").
+    { iPureIntro. done. }
+    iIntros "_".
+    wp_apply (pb_roapply_proof.wp_Clerk__ApplyRo with "[] Hop_sl").
+    { done. }
+    { iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc") as "[$ _]"; done. }
+    iModIntro.
+    iSplitL.
+    { (* successful case *)
+      iMod "Hupd" as (?) "[Hown Hupd2]".
+      iModIntro.
+      iExists _.
+      iFrame "Hown".
+      iIntros "Hown".
+      iMod ("Hupd2" with "Hown") as "#Hupd2".
+      iModIntro.
+      iModIntro.
+      iIntros (?) "Hsl Hsl2".
+      iDestruct ("Hupd2" with "Hsl") as "HΦ".
+      instantiate (1:=(λ (v:goose_lang.val),
+        (∃ (reply_sl:Slice.t),
+        ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_Clerk ck γ -∗ Φ (slice_val reply_sl))) ∨
+        (∃ (err:u64) unused_sl, is_slice_small op_sl byteT 1 op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
+      simpl.
+      iLeft.
+      iExists _.
+      iSpecialize ("HΦ" with "Hsl2").
+      iSplitR; first done.
+      iFrame.
+    }
+    { (* error case *)
+      iIntros (?? Herr).
+      iIntros "Hop_sl".
+      iRight.
+      iExists err0, _.
+      iSplitL; first done.
+      done.
+    }
+  }
+  iIntros (v) "H1".
+  iNamed 1.
+  iDestruct "H1" as "[Hsuccess|Herror]".
+  {
+    iDestruct "Hsuccess" as (?) "[-> HΦ]".
+    wp_pures.
+    wp_store.
+    wp_store.
+    wp_load.
+    wp_pures.
+    iRight.
+    iModIntro.
+    iSplitR; first done.
+    wp_pures.
+    wp_load.
+    iApply "HΦ".
+    iModIntro.
+    repeat iExists _.
+    iFrame "∗#%".
+  }
+  { (* retry *)
+    iDestruct "Herror" as (??) "[Hop_sl Herror]".
+    iDestruct "Herror" as "[%Herr ->]".
+    wp_pures.
+    wp_store.
+    wp_store.
+    wp_load.
+    wp_pures.
+    wp_if_destruct.
+    {
+      exfalso.
+      done.
+    }
+    wp_apply (wp_Sleep).
+    wp_pures.
+    wp_loadField.
+    wp_bind (config.Clerk__GetConfig _).
+    wp_apply (wp_frame_wand with "[-]").
+    { iNamedAccu. }
+    wp_apply (wp_Clerk__GetConfig2 with "HisConfCk").
+    iModIntro.
+    iIntros (???) "[Hconf_sl #Hhosts]".
+    iNamed 1.
+    wp_pures.
+    iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
+    wp_apply (wp_slice_len).
+    wp_pures.
+    iDestruct (big_sepL2_length with "Hhosts") as %?.
+    wp_if_destruct.
+    {
+      wp_apply (wp_makeClerks with "[$]").
+      iIntros (??) "[? ?]".
+      wp_storeField.
+      iLeft. iModIntro.
+      iSplitR; first done.
+      iFrame.
+      iSplitR "Hret".
+      { repeat iExists _. iFrame "∗#%".
+        iPureIntro. word. }
+      iExists _. iFrame.
+    }
+    {
+      wp_pures.
+      iLeft.
+      iFrame. iSplitR; first done.
+      iModIntro. iSplitR "Hret".
+      2: eauto with iFrame.
+      repeat iExists _; iFrame "∗#%".
+    }
+  }
+Admitted.
 
 End clerk_proof.
