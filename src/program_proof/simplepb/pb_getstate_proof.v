@@ -167,7 +167,7 @@ Qed.
 (* GetState step for ghost state *)
 Lemma getstate_step γ γsrv epoch_lb epoch ops sealed :
   is_epoch_lb γsrv.(r_pb) epoch_lb -∗
-  own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv epoch ops sealed ={⊤∖↑pbAofN}=∗
   own_Server_ghost_f γ γsrv epoch ops true ∗
   ∃ opsfull,
   ⌜ops = get_rwops opsfull⌝ ∗

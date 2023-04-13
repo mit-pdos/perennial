@@ -6,7 +6,7 @@ From Perennial.program_proof.fencing Require Import map.
 From Perennial.algebra Require Import mlist.
 
 From Perennial.program_proof.aof Require Import proof.
-From Perennial.program_proof.simplepb Require Import (* pb_start_proof *) pb_definitions.
+From Perennial.program_proof.simplepb Require Import pb_start_proof pb_definitions.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 
 Section global_proof.
@@ -204,6 +204,22 @@ Definition is_InMemory_getStateFn (getStateFn:val) own_InMemoryStateMachine : iP
   }}}
 .
 
+Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMachine : iProp Σ :=
+  ∀ ops op op_sl op_bytes,
+  {{{
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        own_InMemoryStateMachine ops
+  }}}
+    applyReadonlyFn (slice_val op_sl)
+  {{{
+        reply_sl q, RET (slice_val reply_sl);
+        own_InMemoryStateMachine ops ∗
+        is_slice_small reply_sl byteT q (compute_reply ops op)
+  }}}
+.
+
+
 Record simplelog_names :=
 {
   (* file_encodes_state is not injective, so we use this state to
@@ -223,7 +239,7 @@ Definition file_inv γ P epoch (contents:list u8) : iProp Σ :=
 .
 
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
-  ∃ applyVolatileFn setStateFn getStateFn,
+  ∃ applyVolatileFn setStateFn getStateFn applyReadonlyFn,
   "#HapplyVolatile" ∷ readonly (sm ↦[InMemoryStateMachine :: "ApplyVolatile"] applyVolatileFn) ∗
   "#HapplyVolatile_spec" ∷ is_InMemory_applyVolatileFn applyVolatileFn own_InMemoryStateMachine ∗
 
@@ -231,7 +247,10 @@ Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ 
   "#HsetState_spec" ∷ is_InMemory_setStateFn setStateFn own_InMemoryStateMachine ∗
 
   "#HgetState" ∷ readonly (sm ↦[InMemoryStateMachine :: "GetState"] getStateFn) ∗
-  "#HgetState_spec" ∷ is_InMemory_getStateFn getStateFn own_InMemoryStateMachine
+  "#HgetState_spec" ∷ is_InMemory_getStateFn getStateFn own_InMemoryStateMachine ∗
+
+  "#HapplyReadonly" ∷ readonly (sm ↦[InMemoryStateMachine :: "ApplyReadonly"] applyReadonlyFn) ∗
+  "#HapplyReadonly_spec" ∷ is_InMemory_applyReadonlyFn applyReadonlyFn own_InMemoryStateMachine
 .
 
 Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) P : iProp Σ :=
@@ -836,16 +855,41 @@ Proof.
   }
 Qed.
 
-Lemma wp_recoverStateMachine data P fname smMem own_InMemoryStateMachine :
+Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoch ops sealed P :
+  {{{
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        own_StateMachine s epoch ops sealed P
+  }}}
+    StateMachine__applyReadonly #s (slice_val op_sl)
+  {{{
+        reply_sl q, RET (slice_val reply_sl);
+        is_slice_small reply_sl byteT q (compute_reply ops op) ∗
+        own_StateMachine s epoch ops false P
+  }}}
+.
+Proof.
+  iIntros (Φ) "(% & #? & Hstate) HΦ".
+  wp_lam.
+  iNamed "Hstate".
+  wp_pures.
+  wp_loadField.
+  iNamed "HisMemSm".
+  wp_loadField.
+  wp_apply ("HapplyReadonly_spec" with "[]").
+Qed.
+
+Lemma wp_recoverStateMachine data P fname smMem own_InMemoryStateMachine Q :
   {{{
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
-        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
-        "Hmemstate" ∷ own_InMemoryStateMachine []
+       "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
+       "Hmemstate" ∷ own_InMemoryStateMachine [] ∗
+       "Hinit_upd" ∷ (∀ epoch ops sealed, P epoch ops sealed -∗ □ Q epoch ops sealed )
   }}}
     recoverStateMachine #smMem #(LitString fname)
   {{{
-        s epoch ops sealed, RET #s; own_StateMachine s epoch ops sealed P
+        s epoch ops sealed, RET #s; own_StateMachine s epoch ops sealed P ∗ Q epoch ops sealed
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -1033,6 +1077,7 @@ Proof.
       done.
     }
 
+    iDestruct ("Hinit_upd" with "HP") as "#HQ".
     iModIntro.
     evar (c:list u8).
     iExists (fname f↦ ?c ∗ file_inv γ P 0 ?c)%I.
@@ -1081,7 +1126,8 @@ Proof.
 
     iApply "HΦ".
     iModIntro.
-    do 9 iExists _.
+    iFrame "HQ".
+    repeat iExists _.
     iFrame "∗#%".
     iSplitR; first done.
     iSplitR; first iPureIntro.
@@ -1128,6 +1174,7 @@ Proof.
     iExists _, _, _; iFrame "∗%".
   }
   (* otherwise, no crash and we keep going *)
+  iDestruct ("Hinit_upd" with "HP") as "#HQ".
   iNext.
   iIntros (data_sl) "[Hfile Hdata_sl]".
   iExists (fname f↦data ∗ file_inv γ P epoch data)%I.
@@ -1555,13 +1602,74 @@ Proof.
     }
     iApply "HΦ".
     iModIntro.
-    do 9 iExists _.
-    iFrame "∗#%".
+    iSplitL.
+    {
+      iClear "HQ".
+      repeat iExists _.
+      iSplitL "fname".
+      { iFrame. }
+      iFrame "∗".
+      iFrame "#".
+      rewrite take_ge; last word.
+      iEval (rewrite H) in "HnextIndex".
+      rewrite -Hrest_ops_len.
+      iSplitL "HnextIndex".
+      { repeat rewrite app_length. iFrame. }
+      iSplitR.
+      {
+        iPureIntro.
+        rewrite -HdataEnc.
+        rewrite -Hops.
+        done.
+      }
+      iSplitR.
+      {
+        iPureIntro.
+        rewrite -Hops.
+        word.
+      }
+      rewrite -Hops.
+      iFrame "∗#".
+      rewrite replicate_length.
+      iPureIntro.
+      done.
+    }
+    { iExactEq "HQ".
+      subst.
+      repeat f_equal.
+      rewrite firstn_all2.
+      { done. }
+      { word. }
+    }
+  }
+  (* sealed = false *)
+  wp_pures.
+  destruct sealed.
+  {
+    exfalso.
+    assert (int.nat rest_ops_sl.(Slice.sz) = 0%nat).
+    { assert (int.Z 0 = 0%Z) as Heq_Z0 by auto.
+      rewrite Heq_Z0 in Heqb1. word.
+    }
+    rewrite -Hdata_sl_sz in H0.
+    rewrite app_length in H0.
+    rewrite Hsealedbytes /= in H0.
+    word.
+  }
+
+  iModIntro.
+  iApply "HΦ".
+  iSplitL.
+  {
+    repeat iExists _.
+    iClear "HQ".
+    iFrame "∗". iFrame "#".
     rewrite take_ge; last word.
     iEval (rewrite H) in "HnextIndex".
     rewrite -Hrest_ops_len.
     iSplitL "HnextIndex".
     { repeat rewrite app_length. iFrame. }
+    iSplitR; first done.
     iSplitR.
     {
       iPureIntro.
@@ -1581,49 +1689,13 @@ Proof.
     iPureIntro.
     done.
   }
-  (* sealed = false *)
-  wp_pures.
-  destruct sealed.
-  {
-    exfalso.
-    assert (int.nat rest_ops_sl.(Slice.sz) = 0%nat).
-    { assert (int.Z 0 = 0%Z) as Heq_Z0 by auto.
-      rewrite Heq_Z0 in Heqb1. word.
-    }
-    rewrite -Hdata_sl_sz in H0.
-    rewrite app_length in H0.
-    rewrite Hsealedbytes /= in H0.
-    word.
+  { iExactEq "HQ".
+    subst.
+    repeat f_equal.
+    rewrite firstn_all2.
+    { done. }
+    { word. }
   }
-
-  iModIntro.
-  iApply "HΦ".
-  do 9 iExists _.
-  iFrame "∗#%".
-  rewrite take_ge; last word.
-  iEval (rewrite H) in "HnextIndex".
-  rewrite -Hrest_ops_len.
-  iSplitL "HnextIndex".
-  { repeat rewrite app_length. iFrame. }
-  iSplitR; first done.
-  iSplitR.
-  {
-    iPureIntro.
-    rewrite -HdataEnc.
-    rewrite -Hops.
-    done.
-  }
-  iSplitR.
-  {
-    iPureIntro.
-    rewrite -Hops.
-    word.
-  }
-  rewrite -Hops.
-  iFrame "∗#".
-  rewrite replicate_length.
-  iPureIntro.
-  done.
 Qed.
 
 Lemma simplelog_accessP s P :
@@ -1655,41 +1727,51 @@ Qed.
 
 Notation own_Server_ghost_f := (own_Server_ghost_f (pb_record:=sm_record)).
 
-FIXME: the rest of this depends on start_proof.
-
 Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 
-Definition simplelog_P γ γsrv := file_crash (own_Server_ghost γ γsrv).
+Definition simplelog_P γ γsrv := file_crash (own_Server_ghost_f γ γsrv).
 
 Definition simplelog_pre γ γsrv fname :=
   (|C={⊤}=> ∃ data, fname f↦ data ∗ ▷ simplelog_P γ γsrv data)%I.
 
-Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv :
-  let P := (own_Server_ghost γ γsrv) in
-  sys_inv γ -∗
+Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHost :
+  let P := (own_Server_ghost_f γ γsrv) in
   {{{
+       "#Hsys" ∷ sys_inv γ.(s_pb) ∗
+       "#Hhelping" ∷ is_inv γ ∗
+       "#HpreInv" ∷ preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
+       "#HisConfHost" ∷ config_protocol_proof.is_conf_host confHost γ ∗
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
        "Hmemstate" ∷ own_InMemoryStateMachine []
   }}}
-    MakePbServer #smMem #(LitString fname)
+    MakePbServer #smMem #(LitString fname) #(confHost)
   {{{
         s, RET #s; pb_definitions.is_Server s γ γsrv
   }}}
 .
 Proof.
-  iIntros (?) "#Hsys".
-  iIntros (Φ) "!# Hpre HΦ".
+  iIntros (?).
+  iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
 
   wp_lam.
-
-  wp_pures.
   wp_apply (wp_recoverStateMachine with "[-HΦ]").
-  { iFrame "∗#". }
-  iIntros (????) "Hsm".
+  { iFrame "∗#".
+    iIntros (???) "HP".
+    subst.
+    iNamed "HP".
+    iDestruct (ghost_get_accepted_lb with "Hghost") as "#H".
+    iModIntro.
+    instantiate (1:=(λ epoch ops _, ∃ opsfull, ⌜ops = get_rwops opsfull⌝ ∗ is_accepted_lb γsrv.(r_pb) epoch opsfull)%I).
+    simpl.
+    iExists _; iFrame "#%".
+  }
+  iIntros (????) "[Hsm HQ]".
   wp_pures.
+  iDestruct "HQ" as (?) "[% #Hacc_lb]".
+  subst.
 
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
@@ -1699,27 +1781,28 @@ Proof.
   iMod (readonly_alloc_1 with "StartApply") as "#HstartApply".
   iMod (readonly_alloc_1 with "GetStateAndSeal") as "#HgetState".
   iMod (readonly_alloc_1 with "SetStateAndUnseal") as "#HsetState".
+  iMod (readonly_alloc_1 with "ApplyReadonly") as "#HapplyReadonly".
 
   iNamed "Hsm".
   wp_loadField.
   wp_loadField.
   wp_loadField.
 
-  iAssert (own_StateMachine s epoch ops sealed P) with "[-HΦ]" as "Hsm".
+  iAssert (own_StateMachine s epoch (get_rwops opsfull) sealed P) with "[-HΦ]" as "Hsm".
   {
-    do 9 iExists _.
+    repeat iExists _.
     iFrame "∗#%".
   }
 
-  wp_apply (wp_MakeServer _ (own_StateMachine s)  with "[Hsm]").
+  wp_apply (wp_MakeServer _ (own_StateMachine s)  with "[$Hsm]").
   {
-    iFrame "Hsm Hsys".
+    iFrame "#".
     iSplitL; last first.
     {
       iPureIntro.
       destruct Henc as (?&?&?&?&?&?). word.
     }
-    iExists _, _, _.
+    iExists _, _, _, _.
     iFrame "#".
     iSplitL.
     { (* apply spec *)
@@ -1732,15 +1815,8 @@ Proof.
         iFrame "%".
         instantiate (1:=Q).
         iIntros "H1".
-        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-        {
-          enough ((↑pbAofN:coPset) ## ↑pbN) by set_solver.
-          by apply ndot_ne_disjoint.
-        }
         iMod ("Hupd" with "H1").
-        iMod "Hmask".
-        iModIntro.
-        iFrame.
+        iModIntro. iFrame.
       }
       iFrame.
     }
@@ -1756,15 +1832,9 @@ Proof.
         iFrame "%".
         iIntros "H1".
         instantiate (1:=Q).
-        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-        {
-          enough ((↑pbAofN:coPset) ## ↑pbN) by set_solver.
-          by apply ndot_ne_disjoint.
-        }
-        iMod ("Hupd" with "H1").
-        iMod "Hmask".
-        iModIntro.
-        iFrame.
+        iMod (fupd_mask_subseteq _) as "Hmask".
+        2:{ iMod ("Hupd" with "H1"). iMod "Hmask". iModIntro. iFrame. }
+        solve_ndisj.
       }
       iIntros.
       wp_pures.
@@ -1784,19 +1854,16 @@ Proof.
         iFrame "%".
         instantiate (1:=Q).
         iIntros "H1".
-        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-        {
-          enough ((↑pbAofN:coPset) ## ↑pbN) by set_solver.
-          by apply ndot_ne_disjoint.
-        }
         iMod ("Hupd" with "H1").
-        iMod "Hmask".
-        iModIntro.
-        iFrame.
+        iModIntro. iFrame.
       }
       iIntros.
       iApply "HΦ".
       iFrame.
+    }
+    iSplitL.
+    {
+      admit. (* FIXME: is_ApplyReadonly spec *)
     }
     {
       iApply simplelog_accessP.
