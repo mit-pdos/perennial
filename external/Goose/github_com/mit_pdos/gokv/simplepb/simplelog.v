@@ -8,6 +8,7 @@ From Goose Require github_com.tchajed.marshal.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition InMemoryStateMachine := struct.decl [
+  "ApplyReadonly" :: (slice.T byteT -> slice.T byteT)%ht;
   "ApplyVolatile" :: (slice.T byteT -> slice.T byteT)%ht;
   "GetState" :: (unitT -> slice.T byteT)%ht;
   "SetState" :: (slice.T byteT -> unitT)%ht
@@ -73,7 +74,7 @@ Definition StateMachine__apply: val :=
 
 Definition StateMachine__applyReadonly: val :=
   rec: "StateMachine__applyReadonly" "s" "op" :=
-    struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s") "op".
+    struct.loadF InMemoryStateMachine "ApplyReadonly" (struct.loadF StateMachine "smMem" "s") "op".
 
 (* TODO: make the nextIndex and epoch argument order consistent with pb.StateMachine *)
 Definition StateMachine__setStateAndUnseal: val :=

@@ -865,7 +865,7 @@ Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoc
   {{{
         reply_sl q, RET (slice_val reply_sl);
         is_slice_small reply_sl byteT q (compute_reply ops op) ∗
-        own_StateMachine s epoch ops false P
+        own_StateMachine s epoch ops sealed P
   }}}
 .
 Proof.
@@ -873,10 +873,15 @@ Proof.
   wp_lam.
   iNamed "Hstate".
   wp_pures.
+  iAssert (_) with "HisMemSm" as "#HisMemSm2".
+  iNamed "HisMemSm2".
   wp_loadField.
-  iNamed "HisMemSm".
   wp_loadField.
-  wp_apply ("HapplyReadonly_spec" with "[]").
+  wp_apply ("HapplyReadonly_spec" with "[$Hmemstate]").
+  { iSplitR; first done. iFrame "#". }
+  iIntros (??) "[Hmemstate Hreply]".
+  iApply "HΦ". iFrame "Hreply".
+  repeat iExists _; iFrame "∗ HisMemSm #%".
 Qed.
 
 Lemma wp_recoverStateMachine data P fname smMem own_InMemoryStateMachine Q :
@@ -1863,7 +1868,16 @@ Proof.
     }
     iSplitL.
     {
-      admit. (* FIXME: is_ApplyReadonly spec *)
+      clear Φ.
+      iIntros (?????? Φ) "!#".
+      iIntros "(%Hop_enc & #Hop_sl & Hsm)  HΦ".
+      wp_lam.
+      wp_pures.
+      wp_apply (wp_StateMachine__applyReadonly with "[$Hsm]").
+      { iFrame "#%". }
+      iIntros.
+      iApply "HΦ".
+      iFrame.
     }
     {
       iApply simplelog_accessP.

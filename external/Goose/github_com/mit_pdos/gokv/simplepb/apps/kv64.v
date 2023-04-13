@@ -86,12 +86,25 @@ Definition KVState__setState: val :=
     "1_ret";;
     #().
 
+Definition KVState__applyReadonly: val :=
+  rec: "KVState__applyReadonly" "s" "args" :=
+    let: "ret" := ref (zero_val (slice.T byteT)) in
+    let: "n" := slice.len "args" in
+    (if: (SliceGet byteT "args" #0 = OP_PUT)
+    then Panic ("unexpectedly got put as readonly op")
+    else
+      (if: (SliceGet byteT "args" #0 = OP_GET)
+      then "ret" <-[slice.T byteT] KVState__get "s" (DecodeGetArgs (SliceSubslice byteT "args" #1 "n"))
+      else Panic ("unexpected op type")));;
+    ![slice.T byteT] "ret".
+
 Definition MakeKVStateMachine: val :=
   rec: "MakeKVStateMachine" <> :=
     let: "s" := struct.alloc KVState (zero_val (struct.t KVState)) in
     struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #());;
     struct.new simplelog.InMemoryStateMachine [
       "ApplyVolatile" ::= KVState__apply "s";
+      "ApplyReadonly" ::= KVState__applyReadonly "s";
       "GetState" ::= (λ: <>,
         KVState__getState "s"
         );

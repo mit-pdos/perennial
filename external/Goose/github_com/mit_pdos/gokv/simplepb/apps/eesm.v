@@ -51,6 +51,23 @@ Definition EEStateMachine__applyVolatile: val :=
         else Panic ("unexpected ee op type"))));;
     ![slice.T byteT] "ret".
 
+Definition EEStateMachine__applyReadonly: val :=
+  rec: "EEStateMachine__applyReadonly" "s" "op" :=
+    let: "ret" := ref (zero_val (slice.T byteT)) in
+    (if: (SliceGet byteT "op" #0 = OPTYPE_GETFRESHCID)
+    then Panic ("Got GETFRESHCID as a read-only op")
+    else
+      (if: (SliceGet byteT "op" #0 = OPTYPE_RW)
+      then Panic ("Got RW as a read-only op")
+      else
+        (if: (SliceGet byteT "op" #0 = OPTYPE_RO)
+        then
+          let: "n" := slice.len "op" in
+          let: "realOp" := SliceSubslice byteT "op" #1 "n" in
+          "ret" <-[slice.T byteT] struct.loadF simplelog.InMemoryStateMachine "ApplyReadonly" (struct.loadF EEStateMachine "sm" "s") "realOp"
+        else Panic ("unexpected ee op type"))));;
+    ![slice.T byteT] "ret".
+
 Definition EEStateMachine__getState: val :=
   rec: "EEStateMachine__getState" "s" :=
     let: "appState" := struct.loadF simplelog.InMemoryStateMachine "GetState" (struct.loadF EEStateMachine "sm" "s") #() in
