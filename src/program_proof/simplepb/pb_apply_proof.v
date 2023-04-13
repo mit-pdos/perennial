@@ -6,7 +6,8 @@ From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
-From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof pb_applybackup_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions pb_marshal_proof
+     pb_applybackup_proof pb_increasecommit_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
@@ -187,7 +188,8 @@ Lemma apply_eph_step γ γsrv st op Q :
                               γ γsrv ∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
   is_proposal_facts γ.(s_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
-  is_proposal_facts_prim γ.(s_prim) st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)])
+  is_proposal_facts_prim γ.(s_prim) st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
+  is_epoch_lb γsrv.(r_pb) st.(server.epoch)
 .
 Proof.
   intros Hprim Hunsealed.
@@ -199,29 +201,6 @@ Proof.
   iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #? & #?)".
   iFrame "∗#".
   repeat iExists _. by iFrame "#%".
-Qed.
-
-(* XXX: this will later be used by backup servers. *)
-Lemma increase_commitIndex_step γ γsrv st committedOps :
-  no_overflow (length committedOps) →
-  is_pb_log_lb γ.(s_pb) committedOps -∗
-  is_proposal_lb γ.(s_pb) st.(server.epoch) committedOps -∗
-  committed_by γ.(s_pb) st.(server.epoch) committedOps -∗
-  own_Server_ghost_eph_f st γ γsrv
-  ={↑pbN}=∗
-  own_Server_ghost_eph_f (st <| server.committedNextIndex := length committedOps |> ) γ γsrv
-.
-Proof.
-  iIntros (?) "#Hghost_lb #Hprop_lb #Hcomm_by".
-  rewrite /own_Server_ghost_eph_f /tc_opaque /=.
-  iNamed 1.
-  rewrite /own_Primary_ghost_f /tc_opaque /=.
-  iNamed "Hprimary".
-  repeat iExists _; iFrame "Hghost_lb ∗ #".
-  iPureIntro.
-  split; first done.
-  rewrite /get_rwops fmap_length /=.
-  by unfold no_overflow in H.
 Qed.
 
 Definition own_slice_elt {V} {H:IntoVal V} (sl:Slice.t) (idx:u64) typ q (v:V) : iProp Σ :=
@@ -321,6 +300,25 @@ Lemma wp_forSlice' {V} {H:IntoVal V} ϕ I sl ty q (l:list V) (body:expr) :
 .
 Proof.
 Admitted.
+
+Lemma establish_committed_log_fact γ epoch σ :
+  committed_by γ.(s_pb) epoch σ -∗
+  is_proposal_lb γ.(s_pb) epoch σ -∗
+  □ committed_log_fact γ epoch σ.
+Proof.
+  iIntros "#Hcom #Hprop_lb".
+  iModIntro.
+  iIntros (????) "#Hprop_lb2 #Hprop_facts2".
+  destruct (decide (int.nat epoch = int.nat epoch')).
+  { assert (epoch = epoch'); last subst.
+    { apply word.unsigned_inj. word. }
+    subst. destruct H0; last by lia. by iDestruct (fmlist_ptsto_lb_longer with "Hprop_lb Hprop_lb2") as %?.
+  }
+  iDestruct "Hprop_facts2" as "[Hmax _]".
+  iApply "Hmax".
+  2: iFrame "#".
+  iPureIntro. word.
+Qed.
 
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
@@ -423,7 +421,7 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
-  iMod (apply_eph_step with "Hlc Hupd HghostEph") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts)".
+  iMod (apply_eph_step with "Hlc Hupd HghostEph") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hepoch_lb)".
   { done. }
   { done. }
   iMod "Hmask" as "_".
@@ -592,6 +590,7 @@ Proof.
     simpl.
     clear Φ.
     iIntros (Φ) "!# (% & %Hlookup & Hϕ & Hwg) HΦ".
+    iRename "Hepoch_lb" into "Hlocal_epoch_lb".
     iDestruct "Hϕ" as "(Herr & (% & (% & #Hck & #Hepoch_lb)))".
     wp_pures.
     wp_apply (wp_WaitGroup__Add with "[$Hwg]").
@@ -864,6 +863,37 @@ Proof.
   wp_pures.
   rewrite bool_decide_true; last naive_solver.
   wp_pures.
+  wp_apply (wp_Server__IncreaseCommit with "[] [-] []").
+  { repeat iExists _; iFrame "#". }
+  { instantiate (1:=True%I).
+    iIntros "_".
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+    iSplitL.
+    { instantiate (1:=ApplyReply.mkC _ _). repeat iExists _; iFrame. done. }
+    simpl.
+    destruct (decide _); last first.
+    { exfalso. done. }
+    iExists _; iFrame "Hcommit".
+    done.
+  }
+  iExists _, _.
+  iFrame "#".
+  iSplitL.
+  { iPureIntro. rewrite fmap_length app_length /=.
+    unfold no_overflow in *.
+    rewrite fmap_length in Hno_overflow HnextIndexNoOverflow.
+    word.
+  }
+  {
+    iSplitL; last done.
+    iModIntro. iIntros (???) "[Hmax _]".
+    iApply "Hmax".
+    2:{ iFrame "#". }
+    { iPureIntro. word. }
+  }
+
   wp_loadField.
   wp_apply (acquire_spec with "HmuInv").
   iIntros "[Hlocked Hown]".

@@ -127,8 +127,8 @@ Proof.
   assert (σ = st.(server.ops_full_eph)).
   { apply list_prefix_eq; first done. by apply prefix_length. }
   subst.
-  iExists _, _.
-  by iFrame "∗ Hcommit_before_epoch #%".
+  iExists _.
+  by iFrame "∗#%".
 Qed.
 
 Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ Ψ :

@@ -98,6 +98,7 @@ Qed.
 
 Lemma increase_commitIndex_step γ γsrv st epoch committedOps :
   int.nat (length committedOps) > int.nat st.(server.committedNextIndex) →
+  int.nat (length committedOps) <= length st.(server.ops_full_eph) →
   int.nat epoch <= int.nat st.(server.epoch) →
   no_overflow (length committedOps) →
   is_pb_log_lb γ.(s_pb) committedOps -∗
@@ -108,7 +109,7 @@ Lemma increase_commitIndex_step γ γsrv st epoch committedOps :
   own_Server_ghost_eph_f (st <| server.committedNextIndex := length committedOps |> ) γ γsrv
 .
 Proof.
-  iIntros (???) "#Hghost_lb #Hprop_lb #Hcomm_fact_in".
+  iIntros (????) "#Hghost_lb #Hprop_lb #Hcomm_fact_in".
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed 1.
   rewrite /own_Primary_ghost_f /tc_opaque /=.
@@ -120,11 +121,16 @@ Proof.
     iIntros (?). iIntros.
     iApply "Hcomm_fact_in".
     { iPureIntro. instantiate (1:=epoch'). word. }
-    iFrame "#".
+    { iPureIntro. destruct H4; first word.
+      word. }
+    { iFrame "#". }
+    { iFrame "#". }
   }
   iSplitL.
   {
-    iDestruct ("Hcomm_fact_in" with "[//] Hs_prop_facts") as %?.
+    iDestruct ("Hcomm_fact_in" with "[//] [] [] Hs_prop_facts") as %?.
+    { iPureIntro. unfold no_overflow in *. word. }
+    { iFrame "#". }
     by iDestruct (fmlist_ptsto_lb_mono with "Hs_prop_lb") as "$".
   }
   iPureIntro.
@@ -155,11 +161,19 @@ Proof.
     rewrite /is_StateMachine /tc_opaque.
     by iNamed "HisSm".
   }
+  wp_apply (wp_and with "[HnextIndex]").
+  { iNamedAccu. }
+  { wp_pures. done. }
+  { iIntros (?). iNamed 1. wp_loadField. wp_pures. iFrame. done. }
+  iNamed 1.
   wp_if_destruct.
   { (* increase commit index *)
     iDestruct (increase_commitIndex_step with "[$] [$] [$] HghostEph") as "HghostEph".
     { word. }
-    { word. }
+    { unfold no_overflow in *.
+      rewrite fmap_length in HnextIndexNoOverflow Heqb.
+      word. }
+    { unfold no_overflow. word. }
     { unfold no_overflow. word. }
     wp_storeField.
     wp_loadField.

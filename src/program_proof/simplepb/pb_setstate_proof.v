@@ -190,19 +190,18 @@ Proof.
   iSplitL.
   { iApply (setstate_primary_eph_step with "Hprop_lb Hprim_facts Htok Hprimary"). done. }
   iSplitL.
-  2:{ iFrame "%". iPureIntro. word. }
-  iDestruct "Hprop_facts" as "[#Hmax _]".
-  iDestruct "Hcommit_before_epoch" as "[Hcommit_before_epoch|%]".
   {
-    iDestruct ("Hmax" with "[] Hcommit_before_epoch") as "%".
-    { iPureIntro. word. }
-    iApply (fmlist_ptsto_lb_mono with "Hprop_lb").
-    done.
+    iModIntro. iIntros (???) "?". iApply "Hcommit_fact".
+    2: { iPureIntro. right. word. }
+    iPureIntro. word.
   }
-  {
-    subst. iApply (fmlist_ptsto_lb_mono with "Hprop_lb").
-    by apply prefix_nil.
-  }
+  iSplitL.
+  2:{ iFrame "%". }
+  iDestruct ("Hcommit_fact" with "[] [] Hprop_lb Hprop_facts") as "%".
+  { iPureIntro. word. }
+  { iPureIntro. right. done. }
+  iApply (fmlist_ptsto_lb_mono with "Hprop_lb").
+  done.
 Qed.
 
 Lemma setstate_step γ γsrv epoch ops sealed epoch' opsfull':

@@ -257,6 +257,8 @@ Defined.
 
 Definition committed_log_fact γ (epoch:u64) ops_commit_full : iProp Σ :=
   (∀ σ' epoch', ⌜int.nat epoch <= int.nat epoch'⌝ -∗
+                ⌜length ops_commit_full <= length σ' ∨ int.nat epoch < int.nat epoch'⌝ -∗
+                is_proposal_lb γ.(s_pb) epoch' σ' -∗
                 is_proposal_facts γ.(s_pb) epoch' σ' -∗
                 ⌜prefix ops_commit_full σ'⌝)
 .

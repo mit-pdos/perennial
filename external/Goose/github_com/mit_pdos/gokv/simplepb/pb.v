@@ -345,7 +345,7 @@ Definition Server__ApplyRoWaitForCommit: val :=
 Definition Server__IncreaseCommitIndex: val :=
   rec: "Server__IncreaseCommitIndex" "s" "newCommittedNextIndex" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: "newCommittedNextIndex" > struct.loadF Server "committedNextIndex" "s"
+    (if: ("newCommittedNextIndex" > struct.loadF Server "committedNextIndex" "s") && ("newCommittedNextIndex" ≤ struct.loadF Server "nextIndex" "s")
     then
       struct.storeF Server "committedNextIndex" "s" "newCommittedNextIndex";;
       lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s")
@@ -469,7 +469,7 @@ Definition Server__sendIncreaseCommitThread: val :=
                 else Continue));;
               waitgroup.Done "wg"));;
       waitgroup.Wait "wg";;
-      time.Sleep #1000000;;
+      time.Sleep #5000000;;
       Continue);;
     #().
 
