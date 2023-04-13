@@ -168,7 +168,7 @@ Proof.
   }
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   repeat iExists _; iFrame.
-  instantiate (1:=[]). instantiate (2:=0).
+  instantiate (1:=[]).
   iSplitL.
   {
     rewrite /own_Primary_ghost_f /tc_opaque.
@@ -176,14 +176,13 @@ Proof.
   }
   iFrame "#".
   iSplitR; first by iModIntro.
-  iSplitR; first by iRight.
+  iSplitR.
+  { iModIntro. iIntros (???) "_". iPureIntro. apply prefix_nil. }
   iSplitR.
   { iDestruct (fmlist_ptsto_lb_mono with "Hprop_lb") as "$".
     apply prefix_nil.
   }
-  iPureIntro; split.
-  { word. }
-  { done. }
+  by iPureIntro.
 Qed.
 
 Lemma wp_Server__Serve s host γ γsrv :

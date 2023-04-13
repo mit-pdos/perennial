@@ -255,6 +255,13 @@ Next Obligation.
   solve_proper.
 Defined.
 
+Definition committed_log_fact γ (epoch:u64) ops_commit_full : iProp Σ :=
+  (∀ σ' epoch', ⌜int.nat epoch <= int.nat epoch'⌝ -∗
+                is_proposal_facts γ.(s_pb) epoch' σ' -∗
+                ⌜prefix ops_commit_full σ'⌝)
+.
+
+
 Definition IncreaseCommit_core_spec γ γsrv (newCommitIndex:u64)  :=
   λ (Φ : iPropO Σ) ,
   ( ∃ σ epoch,
@@ -262,7 +269,7 @@ Definition IncreaseCommit_core_spec γ γsrv (newCommitIndex:u64)  :=
     is_epoch_lb γsrv.(r_pb) epoch ∗
     is_pb_log_lb γ.(s_pb) σ ∗
     is_proposal_lb γ.(s_pb) epoch σ ∗
-    committed_by γ.(s_pb) epoch σ ∗
+    □ committed_log_fact γ epoch σ ∗
     Φ
   )%I
 .
@@ -599,7 +606,7 @@ Definition own_Primary_ghost_f γ γsrv (canBecomePrimary isPrimary:bool) epoch 
 Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
   tc_opaque (
   let ops:=(get_rwops st.(server.ops_full_eph)) in
-   ∃ (ops_commit_full:list (OpType * gname)) commitEpoch,
+   ∃ (ops_commit_full:list (OpType * gname)),
   "Hprimary" ∷ own_Primary_ghost_f γ γsrv st.(server.canBecomePrimary) st.(server.isPrimary) st.(server.epoch) st.(server.committedNextIndex) st.(server.ops_full_eph) ∗
   (* epoch lower bound *)
   "#Hs_epoch_lb" ∷ is_epoch_lb γsrv.(r_pb) st.(server.epoch) ∗
@@ -613,9 +620,8 @@ Definition own_Server_ghost_eph_f (st:server.t) γ γsrv: iProp Σ :=
 
   (* witness for committed state *)
   "#Hcommit_lb" ∷ is_pb_log_lb γ.(s_pb) ops_commit_full ∗
-  "#Hcommit_before_epoch" ∷ (committed_by γ.(s_pb) commitEpoch ops_commit_full ∨ ⌜ops_commit_full = []⌝) ∗
+  "#Hcommit_fact" ∷ □ committed_log_fact γ st.(server.epoch) ops_commit_full ∗
   "#Hcommit_prop_lb" ∷ is_proposal_lb γ.(s_pb) st.(server.epoch) ops_commit_full ∗
-  "%HcommitEpoch" ∷ ⌜int.nat commitEpoch <= int.nat st.(server.epoch)⌝ ∗
   "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat st.(server.committedNextIndex)⌝
   )%I
 .

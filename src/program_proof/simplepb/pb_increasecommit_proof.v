@@ -27,7 +27,7 @@ Lemma wp_Clerk__IncreaseCommit γ γsrv ck (epoch:u64) (newCommitIndex:u64) σ :
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "%HcommitLen" ∷ ⌜int.nat newCommitIndex = length σ⌝ ∗
         "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv.(r_pb) epoch ∗
-        "#Hcommit_by" ∷ committed_by γ.(s_pb) epoch σ ∗
+        "#Hcomm_fact" ∷ □committed_log_fact γ epoch σ ∗
         "#Hlog_lb" ∷ is_pb_log_lb γ.(s_pb) σ ∗
         "#Hprop_lb" ∷ is_proposal_lb γ.(s_pb) epoch σ
   }}}
@@ -96,54 +96,40 @@ Proof.
   iFrame "%". repeat iExists _; iFrame "∗#%".
 Qed.
 
-Lemma have_all_ops γ old_epoch epoch σ σ' :
-  int.nat old_epoch <= int.nat epoch →
-  committed_by γ.(s_pb) old_epoch σ' -∗
-  is_proposal_facts γ.(s_pb) epoch σ -∗
-  is_proposal_lb γ.(s_pb) epoch σ -∗
-  is_proposal_lb γ.(s_pb) old_epoch σ' -∗
-  is_proposal_lb γ.(s_pb) epoch σ'
-.
-Proof.
-  iIntros (?) "#Hcomm #Hprop_facts #Hlb1 #Hlb2".
-  destruct (decide (int.nat old_epoch = int.nat epoch)).
-  {
-    replace epoch with old_epoch.
-    2:{ apply word.unsigned_inj. word. }
-    iFrame "#".
-  }
-  iDestruct "Hprop_facts" as "[Hmax _]".
-  iDestruct ("Hmax" with "[%] [$]") as "%".
-  { word. }
-  by iDestruct (fmlist_ptsto_lb_mono with "Hlb1") as "$".
-Qed.
-
 Lemma increase_commitIndex_step γ γsrv st epoch committedOps :
   int.nat (length committedOps) > int.nat st.(server.committedNextIndex) →
   int.nat epoch <= int.nat st.(server.epoch) →
   no_overflow (length committedOps) →
   is_pb_log_lb γ.(s_pb) committedOps -∗
   is_proposal_lb γ.(s_pb) epoch committedOps -∗
-  committed_by γ.(s_pb) epoch committedOps -∗
+  □ committed_log_fact γ epoch committedOps -∗
   own_Server_ghost_eph_f st γ γsrv
   -∗
   own_Server_ghost_eph_f (st <| server.committedNextIndex := length committedOps |> ) γ γsrv
 .
 Proof.
-  iIntros (???) "#Hghost_lb #Hprop_lb #Hcomm_by".
+  iIntros (???) "#Hghost_lb #Hprop_lb #Hcomm_fact_in".
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed 1.
   rewrite /own_Primary_ghost_f /tc_opaque /=.
   iNamed "Hprimary".
-  repeat iExists committedOps, epoch; iFrame "Hghost_lb ∗ #".
+  iExists committedOps. iFrame "Hghost_lb ∗ #".
   iSplitL.
-  2:{ iPureIntro.
-      split; first done.
-      rewrite /get_rwops fmap_length /=.
-      by unfold no_overflow in H.
+  {
+    iModIntro.
+    iIntros (?). iIntros.
+    iApply "Hcomm_fact_in".
+    { iPureIntro. instantiate (1:=epoch'). word. }
+    iFrame "#".
   }
-  iDestruct (have_all_ops with "[$] [$] [$] [$]") as "$".
-  { done. }
+  iSplitL.
+  {
+    iDestruct ("Hcomm_fact_in" with "[//] Hs_prop_facts") as %?.
+    by iDestruct (fmlist_ptsto_lb_mono with "Hs_prop_lb") as "$".
+  }
+  iPureIntro.
+  rewrite /get_rwops fmap_length /=.
+  by unfold no_overflow in H.
 Qed.
 
 Lemma wp_Server__IncreaseCommit γ γsrv s newCommitIndex Φ Ψ :
