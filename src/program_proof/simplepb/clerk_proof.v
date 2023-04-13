@@ -1,16 +1,16 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export clerk.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_apply_proof pb_makeclerk_proof.
-From Perennial.program_proof.simplepb Require Import admin_proof.
+From Perennial.program_proof.simplepb Require Import config_protocol_proof.
 
 Section clerk_proof.
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
 
@@ -18,17 +18,16 @@ Context `{!pbG Σ}.
 Context `{!config_proof.configG Σ}.
 
 Definition own_Clerk ck γ : iProp Σ :=
-  ∃ (confCk primaryCk:loc) γprimary γsys,
+  ∃ (confCk primaryCk:loc) γprimary,
     "HprimaryCk" ∷ ck ↦[clerk.Clerk :: "primaryCk"] #primaryCk ∗
     "#HconfCk" ∷ readonly (ck ↦[clerk.Clerk :: "confCk"] #confCk) ∗
-    "#HisConfCk" ∷ is_Clerk2 confCk γsys ∗ (* config clerk *)
-    "#HisPrimaryCk" ∷ pb_definitions.is_Clerk primaryCk γsys γprimary ∗
-    "#Hinv" ∷ is_inv γ γsys
+    "#HisConfCk" ∷ is_Clerk2 confCk γ ∗ (* config clerk *)
+    "#HisPrimaryCk" ∷ pb_definitions.is_Clerk primaryCk γ
 .
 
 Lemma wp_MakeClerk γ γsys configHost:
   {{{
-        "#Hinv" ∷ is_inv γ γsys ∗
+        "#Hinv" ∷ is_inv γ ∗
         "#Hconf" ∷ is_conf_host configHost γsys
   }}}
     Make #configHost
