@@ -177,7 +177,7 @@ Proof.
   iFrame "#".
   iSplitR; first by iModIntro.
   iSplitR.
-  { iModIntro. iIntros (???) "_". iPureIntro. apply prefix_nil. }
+  { iModIntro. iIntros (????) "_ _". iPureIntro. apply prefix_nil. }
   iSplitR.
   { iDestruct (fmlist_ptsto_lb_mono with "Hprop_lb") as "$".
     apply prefix_nil.

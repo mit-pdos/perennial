@@ -27,7 +27,6 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__Apply γ γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 is_Clerk ck γ γsrv -∗
-is_inv γ -∗
 is_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
   (own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
@@ -40,7 +39,7 @@ is_slice_small op_sl byteT q op_bytes -∗
 WP Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   intros Henc.
-  iIntros "#Hck #Hinv Hop_sl".
+  iIntros "#Hck Hop_sl".
   iIntros "#HΦ".
   wp_call.
   wp_apply (wp_ref_of_zero).
