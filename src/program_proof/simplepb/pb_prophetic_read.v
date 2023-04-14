@@ -265,4 +265,43 @@ Proof using H0.
   }
 Qed.
 
+Lemma wp_Clerk__Apply γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+has_op_encoding op_bytes op →
+own_Clerk ck γ -∗
+is_slice_small op_sl byteT 1 op_bytes -∗
+□((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_op_log γ ops ∗
+  (own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN∖↑prophReadN}=∗
+     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                  is_slice_small op_sl byteT 1 op_bytes -∗
+                  own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
+WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
+Proof.
+  iIntros (?) "[#Hinv Hck] ? #Hupd".
+  wp_apply (wp_Clerk__Apply2 with "[$] [$] [-]").
+  { done. }
+  iModIntro.
+  iInv "Hinv" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hoplog Hintlog]".
+  iMod (fupd_mask_subseteq (⊤∖↑pbN∖↑prophReadN)) as "Hmask".
+  { solve_ndisj. }
+  iMod "Hupd".
+  iDestruct "Hupd" as (?) "[Hoplog2 Hupd]".
+  iDestruct (own_valid_2 with "Hoplog Hoplog2") as %Hvalid.
+  assert (σ = ops); last subst.
+  { rewrite mono_list_auth_dfrac_op_valid_L in Hvalid. by destruct Hvalid. }
+  iModIntro.
+  iExists _; iFrame.
+  iIntros "Hintlog2".
+  iCombine "Hoplog Hoplog2" as "Hoplog".
+  iMod (own_update with "Hoplog") as "Hoplog".
+  { apply mono_list_update. instantiate (1:=ops ++ [op]). by apply prefix_app_r. }
+  iDestruct "Hoplog" as "[Hoplog Hoplog2]".
+  iMod ("Hupd" with "[$]") as "Hupd".
+  iMod "Hmask". iMod ("Hclose" with "[Hintlog2 Hoplog]").
+  { iExists _; iFrame. }
+  iModIntro.
+  iIntros.
+  iApply ("Hupd" with "[$] [$] [$]").
+Qed.
+
 End prophetic_read_proof.
