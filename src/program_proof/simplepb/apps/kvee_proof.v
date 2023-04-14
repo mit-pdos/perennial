@@ -210,8 +210,8 @@ Proof.
   { rewrite /kv_record//=. move:Hlook.
     rewrite lookup_union.
     destruct (compute_state ops !! key) as [x|]; simpl.
-    - rewrite map.union_with_Some_l. intros [= ->]. done.
-    - rewrite map.union_with_Some_r lookup_gset_to_gmap option_guard_True.
+    - rewrite union_Some_l. intros [= ->]. done.
+    - rewrite left_id lookup_gset_to_gmap option_guard_True.
       2:{ apply elem_of_fin_to_set. }
       intros [= ->]. done. }
 Qed.
