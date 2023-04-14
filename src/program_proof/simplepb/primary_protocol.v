@@ -22,6 +22,11 @@ Class primary_ghostG Σ := {
     primary_escrowG :> inG Σ (gmapR u64 (dfrac_agreeR unitO))
 }.
 
+Definition primary_ghostΣ :=
+  #[fmlist_mapΣ u64 EntryType; GFunctor (gmapR u64 (dfrac_agreeR unitO)) ].
+Global Instance subG_pbΣ {Σ} : subG (primary_ghostΣ) Σ → (primary_ghostG Σ).
+Proof. solve_inG. Qed.
+
 Context `{!primary_ghostG Σ}.
 Context `{!gooseGlobalGS Σ}.
 

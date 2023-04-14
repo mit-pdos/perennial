@@ -8,15 +8,22 @@ From Perennial.base_logic Require Import lib.saved_prop.
 
 Section pb_preread_protocol.
 
-Class pb_prereadG `{EntryType:Type} Σ :=
+Context `{EntryType}.
+Class pb_prereadG Σ :=
   {
     preread_pb_ghostG :> pb_ghostG (EntryType:=EntryType) Σ ;
     preread_gnameMapG :> inG Σ (authR (gmapUR nat (mono_listR (leibnizO gname)))) ;
     preread_savedG :> savedPredG Σ (list EntryType)
   }.
 
+Definition pb_prereadΣ :=
+  #[pb_ghostΣ (EntryType:=EntryType); savedPredΣ (list EntryType); 
+    GFunctor (authR (gmapUR nat (mono_listR (leibnizO gname)))); ghost_varΣ unit].
+Global Instance subG_pb_prereadΣ {Σ} : subG (pb_prereadΣ) Σ → (pb_prereadG Σ).
+Proof. solve_inG. Qed.
+
 Context `{!gooseGlobalGS Σ}.
-Context `{pb_prereadG EntryType Σ}.
+Context `{pb_prereadG Σ}.
 
 (* This is the key ghost state, keeping track of RO ops that have been
    pre-applied before state is committed. *)

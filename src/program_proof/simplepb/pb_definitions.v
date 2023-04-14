@@ -83,9 +83,13 @@ Class pbG Σ := {
 
 Definition pbΣ :=
   #[pb_ghostΣ (EntryType:=(OpType * gname)); savedPredΣ (list OpType) ; urpcregΣ ; waitgroupΣ ;
-    GFunctor (client_logR) ; ghost_varΣ unit].
+    GFunctor (client_logR) ; ghost_varΣ unit ;
+    pb_prereadΣ (EntryType:=(OpType * gname));
+    primary_ghostΣ (EntryType:=(OpType * gname)) ;
+    configΣ
+    ].
 Global Instance subG_pbΣ {Σ} : subG (pbΣ) Σ → (pbG Σ).
-Proof. Admitted. (* solve_inG. Qed. *)
+Proof. solve_inG. Qed.
 
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
