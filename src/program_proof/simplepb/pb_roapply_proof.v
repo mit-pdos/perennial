@@ -293,7 +293,12 @@ Proof.
   {
     iModIntro.
     iMod (fupd_mask_subseteq (⊤∖↑pbN ∪ ↑appN)) as "Hmask".
-    { solve [eauto 20 with ndisj]. } (* FIXME: increase search depth? *)
+    {
+      apply union_subseteq.
+      split.
+      { solve [eauto 20 with ndisj]. } (* FIXME: increase search depth? *)
+      { solve_ndisj. }
+    }
     iMod "Hupd" as (?) "[? Hupd]".
     iModIntro. iExists _; iFrame.
     iIntros "?". iMod ("Hupd" with "[$]").
