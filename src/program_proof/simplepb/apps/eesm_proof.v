@@ -278,14 +278,10 @@ Proof.
   {
     iModIntro.
     iInv "Hee_inv" as "Hi" "Hclose".
-    iDestruct "Hi" as (?) "[>Hpblog Hee]".
-    set (st:=compute_state ops).
-    destruct st eqn:X.
-    iDestruct "Hee" as ">Hee".
+    iDestruct "Hi" as (?) "[>Hpblog >Hee]".
     iNamed "Hee".
 
-
-    destruct (decide (int.Z (default (U64 0) (g !! cid)) < int.Z seqno)%Z).
+    destruct (decide (int.Z (default (U64 0) ((compute_state ops).(lastSeq) !! cid)) < int.Z seqno)%Z).
     { (* case: first time running request *)
       iMod (server_takes_request with "Hreq HerpcServer") as "HH".
       { solve_ndisj. }
@@ -302,12 +298,12 @@ Proof.
       iIntros "Hpblog".
       iDestruct (own_valid_2 with "Hlog Hoplog2") as %Hvalid.
       rewrite mono_list_auth_dfrac_op_valid_L in Hvalid.
-      destruct Hvalid as [_ ->].
+      destruct Hvalid as [_ ?]. subst.
       iCombine "Hlog Hoplog2" as "Hoplog".
       iMod (own_update with "Hoplog") as "Hoplog".
       {
         apply mono_list_update.
-        instantiate (1:=oldops ++ [lowop]).
+        instantiate (1:=_ ++ [lowop]).
         by apply prefix_app_r.
       }
       iDestruct "Hoplog" as "[Hoplog Hoplog2]".
@@ -322,10 +318,8 @@ Proof.
       iMod ("Hclose" with "[HerpcServer Hpblog Hoplog Hcids]").
       {
         iNext.
-        iExists _; iFrame.
+        iExists _; iFrame "Hpblog".
         rewrite compute_state_snoc.
-        replace (compute_state ops) with (st) by done.
-        rewrite X.
         rewrite /apply_op.
         simpl.
         rewrite decide_False; last first.
@@ -348,20 +342,18 @@ Proof.
       }
       {
         rewrite /compute_reply.
-        replace (compute_state ops) with (st) by done.
-        rewrite X.
         rewrite /apply_op.
-        simpl.
-        rewrite decide_False; last first.
+        simpl. rewrite decide_False; last first.
         { word. }
         done.
       }
     }
     { (* case: request already ran *)
-      assert (int.nat (default (U64 0) (g !! cid)) = int.nat seqno ∨
-                int.nat (default (U64 0) (g !! cid)) > int.nat seqno) as [Hok|HStale] by word.
+      assert (int.nat (default (U64 0) ((compute_state ops).(lastSeq) !! cid)) = int.nat seqno ∨
+              int.nat (default (U64 0) ((compute_state ops).(lastSeq) !! cid)) > int.nat seqno)
+        as [Hok|HStale] by word.
       { (* case: not stale *)
-        destruct (g !! cid) eqn:X2; last first.
+        destruct (_ !! cid) eqn:X2; last first.
         {
           exfalso.
           simpl in Hok.
@@ -383,13 +375,10 @@ Proof.
         iMod ("Hclose" with "[HerpcServer Hpblog Hlog Hcids]").
         {
           iNext.
-          iExists _; iFrame.
+          iExists _; iFrame "Hpblog".
           rewrite compute_state_snoc.
-          replace (compute_state ops) with (st) by done.
-          rewrite X.
           rewrite /apply_op.
-          simpl.
-          rewrite decide_True; last first.
+          simpl. rewrite decide_True; last first.
           { rewrite -Hok. rewrite X2. word. }
           iFrame.
         }
@@ -398,7 +387,7 @@ Proof.
         (* finish up *)
         iIntros (?) "Hrep_sl _ Hpbck".
         iNamed 1.
-        replace (u0) with (seqno); last first.
+        replace (u) with (seqno); last first.
         {
           simpl in Hok.
           word.
@@ -415,18 +404,15 @@ Proof.
         {
           simpl.
           rewrite /compute_reply.
-          replace (compute_state ops) with (st) by done.
-          rewrite X.
           rewrite /apply_op.
-          simpl.
-          rewrite decide_True; last first.
+          simpl. rewrite decide_True; last first.
           { rewrite -Hok. rewrite X2. word. }
           done.
         }
       }
       { (* case: stale *)
 
-        destruct (g !! cid) eqn:X2; last first.
+        destruct (_ !! cid) eqn:X2; last first.
         {
           exfalso.
           simpl in HStale.
@@ -448,13 +434,10 @@ Proof.
         iMod "Hmask".
         iMod ("Hclose" with "[HerpcServer Hpblog Hlog Hcids]").
         {
-          iNext. iExists _; iFrame.
+          iNext. iExists _; iFrame "Hpblog".
           rewrite compute_state_snoc.
-          replace (compute_state ops) with (st) by done.
-          rewrite X.
           rewrite /apply_op.
-          simpl.
-          rewrite decide_True; last first.
+          simpl. rewrite decide_True; last first.
           { rewrite X2. word. }
           iFrame.
         }
@@ -562,7 +545,7 @@ Proof.
     unfold is_state.
     repeat f_equal.
     rewrite app_length /= in H0.
-    admit.
+    admit. (* FIXME: integer overflow *)
   }
   iModIntro.
   iApply (big_sepS_impl with "HlatestVersion").
@@ -577,11 +560,11 @@ Proof.
     {
       rewrite Heq1 Heq2.
       iApply "H".
-      { iPureIntro. admit. } (* FIXME: overflow *)
+      { iPureIntro. admit. } (* FIXME: integer overflow *)
       { iPureIntro. word. }
     }
   }
-Admitted.
+Admitted. (* integer overflows *)
 
 Lemma ghost_low_newop γst ops latestVnum op lowop l :
   (length ops + 1 = int.nat (word.add (length ops) 1))%nat →
@@ -610,9 +593,9 @@ Proof.
     {
       iApply "HfutureVersions".
       { iModIntro. iIntros (???) "H %".
-        iApply "H". iPureIntro. rewrite app_length in H6. word. }
+        iApply "H". iPureIntro. rewrite app_length in H5. word. }
       { iIntros. exfalso.
-        rewrite app_length /= in H4.
+        rewrite app_length /= in H3.
         word. }
     }
     iSplitL "Hversions".
@@ -622,7 +605,7 @@ Proof.
       iApply "Hversions".
       {
         iModIntro. iIntros (???) "H %".
-        rewrite app_length /= in H6.
+        rewrite app_length /= in H5.
         assert (int.nat y <= length ops).
         { admit. } (* FIXME: integer overflow *)
         iDestruct ("H" with "[%]") as "[$|H]".
@@ -641,8 +624,7 @@ Proof.
         iExactEq "HH".
         unfold is_state.
         repeat f_equal.
-        1:{ rewrite app_length /= in H4. admit. } (* FIXME: integer overflow *)
-        { done. }
+        1:{ rewrite app_length /= in H3. admit. } (* FIXME: integer overflow *)
       }
     }
     iApply (big_sepS_impl with "HlatestVersion").
@@ -650,12 +632,11 @@ Proof.
       iModIntro. iIntros (??) "#H".
       iModIntro.
       iIntros.
-      rewrite app_length /= in H6.
+      rewrite app_length /= in H5.
       assert (x = (word.add (length ops) 1)).
-      { rewrite app_length /= in H5.
-        rewrite HnoOverflow.
+      { rewrite app_length /= in H4.
         admit. } (* FIXME: overflow *)
-      subst x. rewrite H2 H3.
+      subst x. rewrite H1 H2.
       iFrame "HH".
     }
   }
@@ -664,20 +645,21 @@ Proof.
     rewrite app_length /=.
     iExactEq "HH".
     unfold is_state.
-    repeat f_equal. rewrite HnoOverflow. done.
+    repeat f_equal. rewrite HnoOverflow. admit. (* FIXME: integer overflow *)
   }
   {
     iIntros.
     iDestruct (big_sepS_elem_of_acc _ _ vnum' with "HlatestVersion") as "[#H _]".
     { set_solver. }
-    rewrite H2.
-    rewrite app_length /= in H5.
-    rewrite -HnoOverflow in H5.
+    rewrite H1.
+    rewrite app_length /= in H4.
+    replace (int.nat (length ops + 1)) with (length ops + 1) in H4.
+    2:{ admit. } (* FIXME: integer overflow *)
     iApply "H".
     { iPureIntro.  word. }
     { iPureIntro.  word. }
   }
-Admitted.
+Admitted. (* integer overflows *)
 
 Lemma wp_EEStateMachine__apply s :
   {{{
@@ -1087,7 +1069,7 @@ Lemma ghost_low_setstate ops :
   is_state γst (length (ops)) (compute_state ops).(lowops)
 .
 Proof.
-Admitted.
+Qed.
 
 Lemma wp_EEStateMachine__setState s :
   {{{
@@ -1181,8 +1163,8 @@ Proof.
   repeat iExists _.
   iFrame "∗ Hislow".
   iPureIntro.
-  admit. (* FIXME: overflow *)
-Admitted.
+  admit. (* FIXME: integer overflow *)
+Admitted. (* integer overflows *)
 
 Lemma wp_EEStatemachine__getState (s:loc) :
   ⊢ ee_is_InMemory_getStateFn (λ: <>, EEStateMachine__getState #s) (own_StateMachine s).
