@@ -234,7 +234,23 @@ Lemma applybackup_step_helper2 (ops_full ops_full':list (OpType * gname)) op a :
   ops_full `prefix_of` ops_full' →
   get_rwops ops_full' = get_rwops ops_full ++ [op].
 Proof.
-Admitted.
+  intros.
+  destruct H1 as [? ->].
+  rewrite /get_rwops fmap_app.
+  assert (length x = 1).
+  {
+    rewrite fmap_length app_length in H0.
+    rewrite fmap_length in H0.
+    lia.
+  }
+  destruct x.
+  { by exfalso. }
+  simpl. destruct x. 2: by exfalso.
+  simpl.
+  rewrite last_app /= in H.
+  injection H as ?. subst.
+  done.
+Qed.
 
 Lemma applybackup_step γ γsrv epoch ops ops_full' op a:
   last ops_full' = Some (op, a) →

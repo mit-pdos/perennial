@@ -1022,7 +1022,7 @@ Proof.
     { simpl. iFrame. }
     wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
     { iFrame "#". done. }
-    iIntros (???) "(Hlow & Hrep_sl & _)".
+    iIntros (???) "(% & Hlow & Hrep_sl & _)".
     wp_pures.
     wp_store.
     wp_load.
@@ -1050,6 +1050,7 @@ Proof.
       { iModIntro. iApply to_named. iExactEq "HeeNextIndex".
         repeat f_equal. rewrite app_length /=. word.
       }
+      simpl.
       iFrame "Hislow".
       iPureIntro. rewrite app_length /=. word.
     }
@@ -1064,11 +1065,63 @@ Proof.
 Qed.
 
 Lemma ghost_low_setstate ops :
+  length ops = int.nat (length ops) →
   ⊢ |==> ∃ γst,
   own_ghost_vnums γst (ops) (length ops) ∗
   is_state γst (length (ops)) (compute_state ops).(lowops)
 .
 Proof.
+  intros HnoOverflow.
+  iMod (ghost_map_alloc_fin []) as (?) "Hmap".
+  iExists _.
+  iDestruct (big_sepS_elem_of_acc_impl (U64 (length ops)) with "Hmap") as "[HH Hmap]".
+  { set_solver. }
+  iMod (ghost_map_points_to_update (compute_state ops).(lowops) with "HH") as "HH".
+  iMod (ghost_map_points_to_persist with "HH") as "#?".
+  iModIntro.
+  iFrame "∗#".
+  unfold own_ghost_vnums.
+  iAssert (
+      [∗ set] vnum ∈ fin_to_set u64, ( (⌜int.nat vnum ≤ length ops⌝
+                                    → vnum ⤳[γ] []
+                                      ∨ is_state γ vnum
+                                (compute_state (take (int.nat vnum) ops)).(lowops)) ∗
+                (⌜int.nat vnum > length ops⌝ → vnum ⤳[γ] [])))%I with "[-]" as "HH".
+  {
+    iApply "Hmap".
+    {
+      iModIntro. iIntros.
+      destruct (decide (int.nat y ≤ length ops)).
+      {
+        iSplitL.
+        { iIntros. iFrame. }
+        iIntros. word.
+      }
+      { iSplitR.
+        { iIntros. word. }
+        { iIntros. iFrame. }
+      }
+    }
+    {
+      iSplitL.
+      {
+        iIntros.
+        iRight. rewrite -HnoOverflow.
+        rewrite firstn_all. iFrame "#".
+      }
+      { iIntros. exfalso. word. }
+    }
+  }
+  iDestruct (big_sepS_sep with "HH") as "[H H2]".
+  iFrame.
+  iApply (big_sepS_impl with "[]").
+  { by iApply big_sepS_emp. }
+  iModIntro. iIntros.
+  iModIntro. iIntros.
+  assert (int.nat x = (length ops)).
+  { rewrite /= in H2. word. }
+  replace (x) with (U64 (length ops)) by word.
+  iFrame "#".
 Qed.
 
 Lemma wp_EEStateMachine__setState s :
@@ -1151,6 +1204,7 @@ Proof.
   unfold is_Versioned_setStateFn.
   iClear "Hghost".
   iMod ghost_low_setstate as (?) "[Hghost2 #Hstate]".
+  { admit. } (* FIXME: integer overflow *)
   wp_apply ("HsetState_spec" with "[$Hlowstate Hsnap_sl2]").
   {
     iSplitR; first done.
@@ -1463,7 +1517,6 @@ Proof.
   }
   iSplitL.
   {
-    Search "big_sepS".
     iApply (big_sepS_impl with "[]").
     { by iApply big_sepS_emp. }
     iModIntro. iIntros.
