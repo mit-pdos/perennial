@@ -28,8 +28,6 @@ Definition prophReadN := nroot .@ "prophread".
 Definition prophReadReqN := prophReadN .@ "req".
 Definition prophReadLogN := prophReadN .@ "log".
 
-Definition own_op_log γ σ := own γ.(s_log) (●ML{#1/2} (σ : list (leibnizO OpType))).
-
 Definition is_proph_read_inv γ : iProp Σ :=
   inv prophReadLogN (∃ σ, own_op_log γ σ ∗ own_int_log γ σ).
 
@@ -273,7 +271,7 @@ is_slice_small op_sl byteT 1 op_bytes -∗
   (own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN∖↑prophReadN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                   is_slice_small op_sl byteT 1 op_bytes -∗
-                  own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
+                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   iIntros (?) "[#Hinv Hck] ? #Hupd".

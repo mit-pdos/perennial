@@ -5,21 +5,21 @@ From iris.base_logic Require Import ghost_map.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
-From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
+From Perennial.program_proof.simplepb Require Import pb_apply_proof pb_prophetic_read.
 From Perennial.program_proof.grove_shared Require Import erpc_lib.
 From Perennial.program_proof Require Import map_marshal_proof.
 From iris.algebra Require Import dfrac_agree mono_list.
 
 Section global_proof.
 
-Context `{low_record:PBRecord}.
+Context `{low_record:Sm.t}.
 
-Notation low_OpType := (pb_OpType low_record).
-Notation low_has_op_encoding := (pb_has_op_encoding low_record).
-Notation low_has_snap_encoding := (pb_has_snap_encoding low_record).
-Notation low_compute_reply := (pb_compute_reply low_record).
-Instance low_op_eqdec : EqDecision low_OpType.
-Proof. apply (pb_OpType_EqDecision low_record). Qed.
+Notation low_OpType := (Sm.OpType low_record).
+Notation low_has_op_encoding := (Sm.has_op_encoding low_record).
+Notation low_has_snap_encoding := (Sm.has_snap_encoding low_record).
+Notation low_compute_reply := (Sm.compute_reply low_record).
+Instance low_op_eqdec : EqDecision (low_OpType).
+Proof. apply (Sm.OpType_EqDecision low_record). Qed.
 
 Inductive eeOp :=
   | getcid : eeOp
@@ -87,10 +87,10 @@ Proof. solve_decision. Qed.
 Definition
   ee_record:=
   {|
-    pb_OpType := eeOp ;
-    pb_has_op_encoding := ee_has_encoding ;
-    pb_has_snap_encoding := ee_has_snap_encoding ;
-    pb_compute_reply :=  compute_reply ;
+    Sm.OpType := eeOp ;
+    Sm.has_op_encoding := ee_has_encoding ;
+    Sm.has_snap_encoding := ee_has_snap_encoding ;
+    Sm.compute_reply :=  compute_reply ;
   |}.
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
@@ -111,8 +111,10 @@ Definition own_eeState st γ γerpc : iProp Σ :=
 
 Definition eeN := nroot .@ "ee".
 
-Notation own_log := (own_log (pb_record:=ee_record)).
+Notation own_log := (own_op_log (pb_record:=ee_record)).
 
+(* This is the invariant maintained by all the servers for the "centralized"
+   ghost state of the system. *)
 Definition is_ee_inv γpblog γ γerpc : iProp Σ :=
   inv eeN (∃ ops,
               own_log γpblog ops ∗
@@ -124,12 +126,12 @@ End global_proof.
 
 Section local_proof.
 
-Context `{low_record:PBRecord}.
-Notation low_OpType := (pb_OpType low_record).
-Notation low_has_op_encoding := (pb_has_op_encoding low_record).
-Notation low_compute_reply := (pb_compute_reply low_record).
+Context {low_record:Sm.t}.
+Notation low_OpType := (Sm.OpType low_record).
+Notation low_has_op_encoding := (Sm.has_op_encoding low_record).
+Notation low_compute_reply := (Sm.compute_reply low_record).
 Instance low_op_dec2 : EqDecision low_OpType.
-Proof. apply (pb_OpType_EqDecision low_record). Qed.
+Proof. apply (Sm.OpType_EqDecision low_record). Qed.
 
 Context `{!heapGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
 
@@ -138,7 +140,7 @@ Notation compute_state := (compute_state (low_record:=low_record)).
 Notation eeOp := (eeOp (low_record:=low_record)).
 Notation ee_is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=ee_record)).
 Notation low_is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=low_record)).
-Notation own_pb_Clerk := (clerk_proof.own_Clerk (pb_record:=ee_record)).
+Notation own_pb_Clerk := (pb_prophetic_read.own_Clerk (pb_record:=ee_record)).
 Notation is_ee_inv := (is_ee_inv (low_record:=low_record)).
 
 Context `{!config_proof.configG Σ}.
@@ -168,8 +170,8 @@ Lemma wp_Clerk__ApplyExactlyOnce ck γoplog lowop op_sl lowop_bytes Φ:
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗
   is_slice op_sl byteT 1 lowop_bytes -∗
-  (|={⊤∖↑pbN∖↑eeN,∅}=> ∃ oldops, own_oplog γoplog oldops ∗
-    (own_oplog γoplog (oldops ++ [lowop]) ={∅,⊤∖↑pbN∖↑eeN}=∗
+  (|={⊤∖↑pbN∖↑prophReadN∖↑eeN,∅}=> ∃ oldops, own_oplog γoplog oldops ∗
+    (own_oplog γoplog (oldops ++ [lowop]) ={∅,⊤∖↑pbN∖↑prophReadN∖↑eeN}=∗
     (∀ reply_sl, own_Clerk ck γoplog -∗ is_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
      -∗ Φ (slice_val reply_sl )))) -∗
   WP Clerk__ApplyExactlyOnce #ck (slice_val op_sl) {{ Φ }}.
@@ -187,6 +189,19 @@ Proof.
   iIntros (enc_ptr) "Henc".
   wp_pure1_credit "Hlc".
   wp_pure1_credit "Hlc2".
+  wp_load.
+  replace (#(U8 0)) with (_.(to_val) (U8 0)).
+  2: { done. }
+  iDestruct (is_slice_split with "Henc_sl") as "[Henc_sl Henc_cap]".
+  wp_apply (wp_SliceSet with "[Henc_sl]").
+  { iFrame. iPureIntro.
+    eexists _.
+    rewrite lookup_replicate.
+    split; first done.
+    word.
+  }
+  iIntros "Henc_sl".
+  iDestruct (is_slice_split with "[$Henc_sl $Henc_cap]") as "Henc_sl".
   wp_loadField.
   wp_load.
   wp_apply (wp_WriteInt with "Henc_sl").
@@ -255,23 +270,7 @@ Proof.
     destruct (decide (int.Z (default (U64 0) (g !! cid)) < int.Z seqno)%Z).
     { (* case: first time running request *)
       iMod (server_takes_request with "Hreq HerpcServer") as "HH".
-      {
-        simpl.
-        assert (↑rpcRequestInvN {| Req_CID := cid; Req_Seq := seqno |} ## (↑pbN:coPset)).
-        {
-          unfold rpcRequestInvN.
-          unfold pbN.
-          simpl.
-          apply ndot_preserve_disjoint_l.
-          by apply ndot_ne_disjoint.
-        }
-        assert (↑rpcRequestInvN {| Req_CID := cid; Req_Seq := seqno |} ## (↑eeN:coPset)).
-        {
-          apply ndot_preserve_disjoint_l.
-          by apply ndot_ne_disjoint.
-        }
-        set_solver.
-      }
+      { solve_ndisj. }
       { simpl. done. }
       iDestruct "HH" as "(Hpre & Hupd & Hproc)".
       iDestruct "Hupd" as "[Hupd >Hlc]".
@@ -297,28 +296,10 @@ Proof.
       iMod ("Hupd" with "Hoplog2") as "Hupd".
 
       iMod (server_completes_request _ _ _ with "Herpc_inv Hreq Hpre [Hupd] Hproc") as "[#Hreceipt HerpcServer]".
-      {
-        apply subseteq_difference_r.
-        { by apply ndot_ne_disjoint. }
-        apply subseteq_difference_r.
-        { by apply ndot_ne_disjoint. }
-        set_solver.
-      }
-      { 
-        apply subseteq_difference_r.
-        {
-          apply ndot_preserve_disjoint_l.
-          by apply ndot_ne_disjoint. }
-        apply subseteq_difference_r.
-        {
-          apply ndot_preserve_disjoint_l.
-          by apply ndot_ne_disjoint. }
-        set_solver.
-      }
+      { solve_ndisj. }
+      { solve_ndisj. }
       { simpl. done. }
-      {
-        done.
-      }
+      { done. }
       simpl.
       iMod ("Hclose" with "[HerpcServer Hpblog Hoplog Hcids]").
       {
@@ -370,13 +351,7 @@ Proof.
           word.
         }
         iMod (server_replies_to_request _ {| Req_CID := cid ; Req_Seq:= _|} with "Herpc_inv HerpcServer") as "HH".
-        {
-          apply subseteq_difference_r.
-          { by apply ndot_ne_disjoint. }
-          apply subseteq_difference_r.
-          { by apply ndot_ne_disjoint. }
-          set_solver.
-        }
+        { solve_ndisj. }
         { simpl. rewrite X2. done. }
         { exists []. done. }
         iDestruct "HH" as "[#Hreceipt HerpcServer]".
@@ -441,13 +416,7 @@ Proof.
           word.
         }
         iMod (smaller_seqno_stale_fact _ {| Req_CID := cid; Req_Seq := seqno |} with "Herpc_inv HerpcServer") as "HH".
-        {
-          apply subseteq_difference_r.
-          { by apply ndot_ne_disjoint. }
-          apply subseteq_difference_r.
-          { by apply ndot_ne_disjoint. }
-          set_solver.
-        }
+        { solve_ndisj. }
         { done. }
         { simpl in HStale.
           simpl.
@@ -674,7 +643,7 @@ Proof.
       wp_pures.
       wp_load.
 
-      iMod (readonly_alloc (is_slice_small reply_sl byteT 1 (low_compute_reply l p)) with "[Hrep_sl]") as "#Hreply_sl".
+      iMod (readonly_alloc (is_slice_small reply_sl byteT 1 (low_compute_reply l o)) with "[Hrep_sl]") as "#Hreply_sl".
       { simpl. iFrame. }
       wp_loadField.
       iMod (readonly_load with "Hreply_sl") as (?) "Hreply_sl2".
@@ -932,10 +901,11 @@ Proof.
   iMod (readonly_alloc_1 with "ApplyVolatile") as "#?".
   iMod (readonly_alloc_1 with "GetState") as "#?".
   iMod (readonly_alloc_1 with "SetState") as "#?".
+  iMod (readonly_alloc_1 with "ApplyReadonly") as "#?".
   iApply "HΦ".
   iSplitR.
   {
-    iExists _, _, _.
+    iExists _, _, _, _.
     iFrame "#".
     iModIntro.
     iApply wp_EEStatemachine__getState.

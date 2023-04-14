@@ -89,6 +89,8 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
 (* This is the log of RW operations, exposed to the client of this library. *)
+Definition own_op_log γ σ := own γ.(s_log) (●ML{#1/2} (σ : list (leibnizO OpType))).
+
 Definition own_int_log γ σ := own γ.(s_internal_log) (●ML{#1/2} (σ : list (leibnizO OpType))).
 
 (* RPC specs *)
