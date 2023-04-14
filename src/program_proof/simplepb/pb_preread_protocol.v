@@ -518,4 +518,36 @@ Proof.
   repeat iExists _; iFrame.
 Qed.
 
+Lemma pb_pre_read_protocol_init γ :
+  own_pb_log γ [] ={↑prereadN}=∗
+  ∃ γlog γreads, preread_inv γ γlog γreads ∗
+                 own_pre_log γlog []
+.
+Proof.
+  iIntros "HpbLog".
+  iMod own_alloc as (γreads) "Hreads".
+  1:shelve.
+  iMod (own_alloc (●ML [])) as (γlog) "[Hlog Hlog2]".
+  { apply mono_list_auth_valid. }
+  iExists γlog, γreads.
+  iMod (inv_alloc with "[- Hlog2]") as "$".
+  {
+    iNext. repeat iExists _.
+    iFrame.
+    instantiate (1:=∅).
+    iSplitL.
+    {
+      iExists _. instantiate (1:=∅).
+      iFrame "Hreads".
+      done.
+    }
+    iSplit.
+    { by iApply big_sepM_empty. }
+    { by iApply big_sepM_empty. }
+  }
+  by iFrame.
+  Unshelve.
+  { by apply auth_both_dfrac_valid_2. }
+Qed.
+
 End pb_preread_protocol.

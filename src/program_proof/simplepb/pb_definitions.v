@@ -60,7 +60,7 @@ Notation is_readonly_op := (Sm.is_readonly_op pb_record).
    Q for that op. get_rwops returns the RW ops only with the gnames removed.
    Generalizing it to an arbitrary extra type A instead of gname
    specifically, because sometimes we want to use get_rwops on a list that has
-   an iProp predicate instead of the gname (see is_inv). *)
+   an iProp predicate instead of the gname (see is_helping_inv). *)
 Definition get_rwops {A} (opsfull:list (OpType * A)) : list OpType :=
   fst <$> opsfull.
 
@@ -658,7 +658,7 @@ Definition own_ghost_log' γ (opsfullQ : list (OpType * (list OpType → iProp �
     ⌜opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
     [∗ list] k↦Φ;γprop ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_pred_own γprop DfracDiscarded Φ.
 
-Definition is_inv γ :=
+Definition is_helping_inv γ :=
   inv appN (∃ opsfullQ,
       own_ghost_log' γ opsfullQ ∗
       own_int_log γ (get_rwops opsfullQ) ∗
@@ -677,7 +677,7 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#HconfCk" ∷ readonly (s ↦[pb.Server :: "confCk"] #confCk) ∗
   "#Hconf_inv" ∷ is_conf_inv γ γconf ∗
   "#HconfCk_is" ∷ config_proof.is_Clerk confCk γconf ∗
-  "#HhelpingInv" ∷ is_inv γ ∗
+  "#HhelpingInv" ∷ is_helping_inv γ ∗
   "#HprereadInv" ∷ preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads)
 .
 

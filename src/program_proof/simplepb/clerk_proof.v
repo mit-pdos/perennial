@@ -27,6 +27,8 @@ Record proph_req_names :=
   finish_gn:gname;
 }.
 
+(* FIXME: sort out the mask situation so this can live under pb, and the atomic
+   fupd has a single namespace. *)
 Definition prophReadN := nroot .@ "prophread".
 Definition prophReadReqN := prophReadN .@ "req".
 Definition prophReadLogN := prophReadN .@ "log".
@@ -40,7 +42,7 @@ Definition own_Clerk ck γ : iProp Σ :=
 Definition is_pb_host host γ : iProp Σ :=
   is_pb_config_host host γ ∗ is_proph_read_inv γ.
 
-Lemma wp_Clerk__ApplyReadonly2' γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Local Lemma wp_Clerk__ApplyReadonly2' γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 is_readonly_op op →
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
