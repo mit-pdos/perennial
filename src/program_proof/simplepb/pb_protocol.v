@@ -702,7 +702,6 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-(* FIXME: fix these initialization proofs *)
 Definition pb_init_config γsys confγs : iProp Σ :=
   "#His_conf" ∷ is_epoch_config γsys 0 confγs ∗
   "#His_conf_prop" ∷ is_epoch_config_proposal γsys 0 confγs ∗
@@ -710,7 +709,8 @@ Definition pb_init_config γsys confγs : iProp Σ :=
   "#His_lbs" ∷ (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_epoch_lb γsrv 0) ∗
   "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat epoch'⌝ →
               config_proposal_unset γsys epoch' ∗ config_unset γsys epoch' ∗
-              own_proposal_unused γsys epoch').
+              own_proposal_unused γsys epoch'
+              ).
 
 Definition is_sys_init_witness γsys : iProp Σ :=
   is_proposal_lb γsys (U64 0) [] ∗ is_proposal_facts γsys (U64 0) [].

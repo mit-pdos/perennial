@@ -518,7 +518,7 @@ Proof.
   repeat iExists _; iFrame.
 Qed.
 
-Lemma pb_pre_read_protocol_init γ :
+Lemma alloc_pb_preread_protocol γ :
   own_pb_log γ [] ={↑prereadN}=∗
   ∃ γlog γreads, preread_inv γ γlog γreads ∗
                  own_pre_log γlog []

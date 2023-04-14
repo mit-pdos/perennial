@@ -18,9 +18,10 @@ Context `{!pbG Σ}.
 Definition configN := nroot .@ "config".
 
 (* before calling this lemma, have to already allocate pb ghost state *)
-Lemma config_ghost_init_2 γ conf confγs :
+Lemma alloc_pb_config_ghost γ conf confγs :
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) -∗
   pb_init_config γ.(s_pb) (r_pb <$> confγs)
+  primary_init_config γ.(s_prim)
   ={⊤}=∗ ∃ γconf, is_conf_inv γ γconf ∗ makeConfigServer_pre γconf conf.
 Proof.
   iIntros "#Hhosts Hinitconf".
@@ -31,14 +32,13 @@ Proof.
   iExists (U64 0), conf, confγs, (U64 0).
   iFrame.
   iNamed "Hinitconf".
-  iFrame "∗#%".
-  (*
+  iFrame "His_conf ∗#%".
   iSplitL.
   { iRight. done. }
   iIntros (???).
   exfalso.
   word. *)
-Admitted.
+Qed.
 
 End config_global.
 

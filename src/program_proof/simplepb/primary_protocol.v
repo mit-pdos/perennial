@@ -194,4 +194,20 @@ Proof.
   done.
 Qed.
 
+Definition primary_init_for_config γ : iProp Σ :=
+  ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat epoch'⌝
+                                  → own_init_proposal_unused γ epoch')
+.
+
+Lemma alloc_primary_protocol :
+  ⊢ |==> ∃ γ, primary_init_for_config γ
+.
+Proof.
+  iMod (fmlist_map_alloc_fin []) as (?) "H".
+  iModIntro.
+  iExists {| prim_init_proposal_gn := γ |}.
+  iApply (big_sepS_impl with "H").
+  iModIntro. iIntros. iFrame.
+Qed.
+
 End primary_protocol.

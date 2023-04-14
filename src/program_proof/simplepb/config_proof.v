@@ -1358,13 +1358,6 @@ Qed.
 
 End config_proof.
 
-(*
-  handler_spec γ.(urpc_gn) host (U64 0) (GetEpochAndConfig_spec γ) ∗
-  handler_spec γ.(urpc_gn) host (U64 1) (GetConfig_spec γ) ∗
-  handler_spec γ.(urpc_gn) host (U64 2) (WriteConfig_spec γ) ∗
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
-*)
-
 Section config_init.
 
 Context `{!configG Σ}.
