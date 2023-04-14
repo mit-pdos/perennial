@@ -5,7 +5,7 @@ From iris.base_logic Require Import ghost_map.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
-From Perennial.program_proof.simplepb Require Import pb_apply_proof pb_prophetic_read.
+From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 From Perennial.program_proof.grove_shared Require Import erpc_lib.
 From Perennial.program_proof Require Import map_marshal_proof.
 From iris.algebra Require Import dfrac_agree mono_list.
@@ -158,7 +158,7 @@ Notation compute_state := (compute_state (low_record:=low_record)).
 Notation eeOp := (eeOp (low_record:=low_record)).
 Notation ee_is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=ee_record)).
 Notation low_is_VersionedStateMachine := (is_VersionedStateMachine (sm_record:=low_record)).
-Notation own_pb_Clerk := (pb_prophetic_read.own_Clerk (pb_record:=ee_record)).
+Notation own_pb_Clerk := (clerk_proof.own_Clerk (pb_record:=ee_record)).
 Notation is_ee_inv := (is_ee_inv (low_record:=low_record)).
 
 Context `{!config_proof.configG Σ}.
@@ -1607,8 +1607,7 @@ Lemma wp_MakeClerk confHost γ γoplog γerpc :
   {{{
     "#Hee_inv" ∷ is_ee_inv γ γoplog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
-    "#Hconf" ∷ config_protocol_proof.is_conf_host confHost γ ∗
-    "#HprophInv" ∷ is_proph_read_inv γ
+    "#Hconf" ∷ is_pb_sys_host confHost γ
   }}}
     eesm.MakeClerk #confHost
   {{{
@@ -1645,8 +1644,6 @@ Proof.
   wp_bind (Clerk__Apply _ _).
   wp_apply (wp_frame_wand with "[-Hsl Hck]").
   { iNamedAccu. }
-  iAssert (pb_prophetic_read.own_Clerk _ _) with "[Hck]" as "Hck".
-  { iFrame "∗#". }
   wp_apply (wp_Clerk__Apply with "Hck [$Hsl]").
   {
     simpl.

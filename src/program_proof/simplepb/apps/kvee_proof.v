@@ -21,10 +21,9 @@ Context `{!simplelogG (sm_record:=eekv_record) Σ}.
 
 Lemma wp_Start fname (host:chan) γsys γsrv data :
   {{{
-      "#Hhost" ∷ is_pb_host host γsys γsrv ∗
-      "#Hinv" ∷ sys_inv γsys ∗
-      "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash (own_Server_ghost γsys γsrv) data)
-                    (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data')
+      "#Hhost" ∷ is_pb_host (pb_record:=eekv_record) host γsys γsrv ∗
+      "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash (own_Server_ghost_f γsys γsrv) data)
+                  (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data')
   }}}
     Start #(host:u64) #(LitString fname)
   {{{

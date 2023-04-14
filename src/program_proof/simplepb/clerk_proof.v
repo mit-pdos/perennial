@@ -39,7 +39,7 @@ Definition is_proph_read_inv γ : iProp Σ :=
 Definition own_Clerk ck γ : iProp Σ :=
   is_proph_read_inv γ ∗ own_Clerk2 ck γ.
 
-Definition is_pb_host host γ : iProp Σ :=
+Definition is_pb_sys_host host γ : iProp Σ :=
   is_pb_config_host host γ ∗ is_proph_read_inv γ.
 
 Local Lemma wp_Clerk__ApplyReadonly2' γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
@@ -311,7 +311,7 @@ Qed.
 
 Lemma wp_MakeClerk γ configHost:
   {{{
-        "#Hconf" ∷ is_pb_host configHost γ
+        "#Hconf" ∷ is_pb_sys_host configHost γ
   }}}
     Make #configHost
   {{{

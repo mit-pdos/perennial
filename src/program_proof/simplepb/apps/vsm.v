@@ -85,8 +85,8 @@ Definition is_Versioned_applyReadonlyFn (applyReadonlyFn:val) own_VersionedState
         own_VersionedStateMachine γst ops latestVnum ∗
         is_slice_small reply_sl byteT q (compute_reply ops op) ∗
         □(∀ (vnum:u64), ⌜int.nat vnum < int.nat latestVnum⌝ → ⌜int.nat lastModifiedVnum <= int.nat vnum⌝ →
-                 ∃ someOps, is_state γst vnum someOps ∗
-                            ⌜compute_reply someOps op = compute_reply ops op⌝)
+            ∃ someOps, is_state γst vnum someOps ∗
+                       ⌜compute_reply someOps op = compute_reply ops op⌝)
   }}}
 .
 
