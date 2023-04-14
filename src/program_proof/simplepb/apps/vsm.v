@@ -32,9 +32,10 @@ Definition is_Versioned_applyVolatileFn (applyVolatileFn:val) own_VersionedState
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         own_VersionedStateMachine γst ops latestVnum ∗
         (∀ (vnum':u64), ⌜int.nat latestVnum <= int.nat vnum'⌝ →
-                  ⌜int.nat vnum' < int.nat vnum⌝ → is_state γst vnum' ops)
+                  ⌜int.nat vnum' < int.nat vnum⌝ → is_state γst vnum' ops) ∗
+        is_state γst vnum (ops ++ [op])
   }}}
-    applyVolatileFn (slice_val op_sl, #vnum)
+    applyVolatileFn (slice_val op_sl) #vnum
   {{{
         reply_sl q, RET (slice_val reply_sl);
         own_VersionedStateMachine γst (ops ++ [op]) vnum ∗

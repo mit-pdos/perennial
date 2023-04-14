@@ -121,13 +121,10 @@ Definition own_oplog γ (lowops:list low_OpType) := own γ (●ML{#1/2} (lowops 
 
 Context `{!gooseGlobalGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
 Definition own_eeState st γ γerpc : iProp Σ :=
-  match st with
-  | ees nextCID lastSeq lastReply lowops =>
-      "Hlog" ∷ own_oplog γ lowops ∗
-      "HerpcServer" ∷ eRPCServer_own_ghost γerpc lastSeq lastReply ∗
-      "Hcids" ∷ ([∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨
-                                                  (is_eRPCClient_ghost γerpc cid 1))
-  end
+  "Hlog" ∷ own_oplog γ st.(lowops) ∗
+  "HerpcServer" ∷ eRPCServer_own_ghost γerpc st.(lastSeq) st.(lastReply) ∗
+  "Hcids" ∷ ([∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z st.(nextCID)⌝%Z ∨
+                                              (is_eRPCClient_ghost γerpc cid 1))
 .
 
 Definition eeN := nroot .@ "ee".
@@ -480,134 +477,41 @@ Definition own_ghost_vnums γst (ops:list eeOp) (latestVnum:u64) : iProp Σ :=
   "HfutureVersions" ∷ ([∗ set] vnum ∈ (fin_to_set u64), ⌜int.nat vnum > length ops⌝ →
                                                        vnum ⤳[γst] []) ∗
   "Hversions" ∷ ([∗ set] vnum ∈ (fin_to_set u64), ⌜int.nat vnum <= length ops⌝ →
-                vnum ⤳[γst] [] ∨ (∃ someLowOps, is_state γst vnum someLowOps ∗
-                                  ⌜match compute_state (take (int.nat vnum) ops) with
-                                    | ees _ _ _ lowOps => lowOps = someLowOps
-                                  end⌝)
+                vnum ⤳[γst] [] ∨ (is_state γst vnum (compute_state (take (int.nat vnum) ops)).(lowops))
                 ) ∗
-  "HlatestVersion" ∷
-  let st := (compute_state ops) in
-  match st with
-  | ees nextCID lastSeq lastReply lowops =>
+  "#HlatestVersion" ∷
   ([∗ set] vnum ∈ (fin_to_set u64), □(⌜int.nat vnum <= length ops⌝ →
                                       ⌜int.nat latestVnum <= int.nat vnum⌝ →
-                                      (is_state γst vnum lowops)))
-  end
+                                      (is_state γst vnum (compute_state ops).(lowops))))
 .
 
 Definition own_StateMachine (s:loc) (ops:list eeOp) : iProp Σ :=
   let st := (compute_state ops) in
-  match st with
-  | ees nextCID lastSeq lastReply lowops =>
       ∃ (lastSeq_ptr lastReply_ptr lowSm:loc) (latestVnum:u64) own_low γst,
-  "HnextCID" ∷ s ↦[EEStateMachine :: "nextCID"] #nextCID ∗
+  "HnextCID" ∷ s ↦[EEStateMachine :: "nextCID"] #st.(nextCID) ∗
   "HlastSeq_ptr" ∷ s ↦[EEStateMachine :: "lastSeq"] #lastSeq_ptr ∗
   "HlastReply_ptr" ∷ s ↦[EEStateMachine :: "lastReply"] #lastReply_ptr ∗
-  "HlastSeq" ∷ is_map lastSeq_ptr 1 lastSeq ∗
-  "HlastReply" ∷ own_byte_map lastReply_ptr lastReply ∗
+  "HlastSeq" ∷ is_map lastSeq_ptr 1 st.(lastSeq) ∗
+  "HlastReply" ∷ own_byte_map lastReply_ptr st.(lastReply) ∗
 
   "HeeNextIndex" ∷ s ↦[EEStateMachine :: "eeNextIndex"] #(U64 (length ops)) ∗
 
   "Hsm" ∷ s ↦[EEStateMachine :: "sm"] #lowSm ∗
   "Hghost" ∷ own_ghost_vnums γst ops latestVnum ∗
   "#Hislow" ∷ low_is_VersionedStateMachine lowSm own_low ∗
-  "Hlowstate" ∷ own_low γst lowops latestVnum ∗
+  "Hlowstate" ∷ own_low γst st.(lowops) latestVnum ∗
+  "%Hle" ∷ ⌜int.nat latestVnum <= length ops⌝ ∗
   "%HnoOverflow" ∷ ⌜length ops = int.nat (length ops)⌝
-end
 .
 
 Notation ee_is_InMemory_applyVolatileFn := (is_InMemory_applyVolatileFn (sm_record:=ee_record)).
 Notation ee_is_InMemory_setStateFn := (is_InMemory_setStateFn (sm_record:=ee_record)).
 Notation ee_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=ee_record)).
 
-Lemma ghost_getcid γst ops latestVnum :
+Lemma ghost_no_low_changes γst ops latestVnum o l :
   (length ops + 1 = int.nat (word.add (length ops) 1))%nat →
-  own_ghost_vnums γst ops latestVnum ==∗
-  own_ghost_vnums γst (ops ++ [getcid]) latestVnum
-.
-Proof.
-  intros HnoOverflow.
-  iNamed 1.
-  iDestruct (big_sepS_elem_of_acc_impl (word.add (length ops) 1) with "HfutureVersions") as "[HH HfutureVersions]".
-  { set_solver. }
-  iSplitL "HfutureVersions".
-  {
-    iApply "HfutureVersions".
-    { iModIntro. iIntros (???) "H %".
-      iApply "H". iPureIntro. rewrite app_length in H2. word. }
-    { iModIntro. iIntros. exfalso.
-      rewrite app_length /= in H0.
-      word. }
-  }
-
-  set (st:=compute_state ops).
-  destruct st eqn:X.
-  iSpecialize ("HH" with "[%]").
-  { word. }
-  iMod (ghost_map_points_to_update l with "HH") as "HH".
-  iMod (ghost_map_points_to_persist with "HH") as "#HH".
-  iSplitL "Hversions".
-  {
-    iDestruct (big_sepS_elem_of_acc_impl (U64 (length ops + 1)) with "Hversions") as "[_ Hversions]".
-    { set_solver. }
-    iApply "Hversions".
-    {
-      iModIntro. iIntros (???) "H %".
-      rewrite app_length /= in H2.
-      assert (int.nat y <= length ops).
-      { admit. } (* FIXME: integer overflow *)
-      iDestruct ("H" with "[%]") as "[$|H]".
-      { done. }
-      iRight.
-      iDestruct "H" as (?) "[? %]".
-      iExists _; iFrame.
-      iPureIntro.
-      rewrite take_app_le.
-      { done. }
-      word.
-    }
-    iModIntro.
-    iIntros.
-    iRight.
-    iExists _; iFrame "#".
-    iSplitL "HH".
-    { iExactEq "HH". unfold is_state. repeat f_equal. admit. } (* FIXME: integer overflow *)
-    rewrite firstn_all2.
-    2:{ rewrite app_length /=. word. }
-    iPureIntro.
-    rewrite compute_state_snoc.
-    replace (compute_state ops) with (st) by done.
-    by rewrite X.
-  }
-  iModIntro.
-  rewrite compute_state_snoc.
-  replace (compute_state ops) with (st) by done.
-  rewrite X.
-  simpl.
-  iApply (big_sepS_impl with "HlatestVersion").
-  {
-    iModIntro. iIntros (??) "#H".
-    iModIntro.
-    iIntros.
-    rewrite app_length /= in H1.
-    destruct (decide (x = (word.add (length ops) 1))).
-    { subst. iFrame "HH". }
-    iApply "H".
-    { iPureIntro. admit. } (* FIXME: overflow *)
-    { iPureIntro. word. }
-  }
-Admitted.
-
-Lemma ghost_no_low_changes γst ops latestVnum o lowops :
-  (length ops + 1 = int.nat (word.add (length ops) 1))%nat →
-  match (compute_state ops) with
-  | ees _ _ _ lowops' => (lowops' = lowops)
-  end →
-
-  match (compute_state (ops ++ [o])) with
-  | ees _ _ _ lowops' => lowops' = lowops
-  end →
-
+  (compute_state ops).(lowops) = l →
+  (compute_state (ops ++ [o])).(lowops) = l →
   own_ghost_vnums γst ops latestVnum ==∗
   own_ghost_vnums γst (ops ++ [o]) latestVnum
 .
@@ -628,7 +532,7 @@ Proof.
 
   iSpecialize ("HH" with "[%]").
   { word. }
-  iMod (ghost_map_points_to_update lowops with "HH") as "HH".
+  iMod (ghost_map_points_to_update l with "HH") as "HH".
   iMod (ghost_map_points_to_persist with "HH") as "#HH".
   iSplitL "Hversions".
   {
@@ -643,9 +547,6 @@ Proof.
       iDestruct ("H" with "[%]") as "[$|H]".
       { done. }
       iRight.
-      iDestruct "H" as (?) "[? %]".
-      iExists _; iFrame.
-      iPureIntro.
       rewrite take_app_le.
       { done. }
       word.
@@ -653,20 +554,16 @@ Proof.
     iModIntro.
     iIntros.
     iRight.
-    iExists _; iFrame "#".
-    iSplitL "HH".
-    { iExactEq "HH". unfold is_state. repeat f_equal. admit. } (* FIXME: integer overflow *)
     rewrite firstn_all2.
     2:{ rewrite app_length /=. word. }
-    iPureIntro.
-    done.
+    rewrite Heq2.
+    iExactEq "HH".
+    unfold is_state.
+    repeat f_equal.
+    rewrite app_length /= in H0.
+    admit.
   }
   iModIntro.
-  rewrite compute_state_snoc.
-  simpl.
-  set (st:=compute_state ops).
-  destruct st eqn:X.
-  simpl.
   iApply (big_sepS_impl with "HlatestVersion").
   {
     iModIntro. iIntros (??) "#H".
@@ -674,12 +571,31 @@ Proof.
     iIntros.
     rewrite app_length /= in H1.
     destruct (decide (x = (word.add (length ops) 1))).
-    { subst. iFrame "HH". }
-    iApply "H".
-    { iPureIntro. admit. } (* FIXME: overflow *)
-    { iPureIntro. word. }
+    { subst x. rewrite Heq1 Heq2.
+      iFrame "HH". }
+    {
+      rewrite Heq1 Heq2.
+      iApply "H".
+      { iPureIntro. admit. } (* FIXME: overflow *)
+      { iPureIntro. word. }
+    }
   }
 Admitted.
+
+Lemma ghost_low_newop γst ops latestVnum op lowop l :
+  (length ops + 1 = int.nat (word.add (length ops) 1))%nat →
+  int.nat latestVnum <= length ops →
+  (compute_state ops).(lowops) = l →
+  (compute_state (ops ++ [op])).(lowops) = l ++ [lowop] →
+  own_ghost_vnums γst ops latestVnum ==∗
+  own_ghost_vnums γst (ops ++ [op]) (length (ops ++ [op])) ∗
+  (∀ (vnum':u64), ⌜int.nat latestVnum <= int.nat vnum'⌝ →
+        ⌜int.nat vnum' < int.nat (length (ops ++ [op]))⌝ → is_state γst vnum' l) ∗
+  is_state γst (length (ops ++ [op])) (l ++ [lowop])
+.
+Proof.
+Admitted.
+
 Lemma wp_EEStateMachine__apply s :
   {{{
         True
@@ -747,12 +663,11 @@ Proof.
     rewrite X.
     simpl.
     iMod (ghost_no_low_changes with "Hghost") as "Hghost".
-    { replace (compute_state ops) with st by done.
-      by rewrite X. }
+    { word. }
+    { done. }
     { instantiate (1:=getcid).
       rewrite compute_state_snoc.
-      replace (compute_state ops) with st by done.
-      by rewrite X.
+      done.
     }
     iModIntro.
     iSplitR "Hrep_sl"; last first.
@@ -800,8 +715,8 @@ Proof.
     rewrite Henc.
     rewrite app_length.
     rewrite singleton_length.
-    replace (1 + length (u64_le u0 ++ u64_le u1 ++ x) - int.nat 1%Z)
-      with (length (u64_le u0 ++ u64_le u1 ++ x)) by word.
+    replace (1 + length (u64_le u ++ u64_le u0 ++ x) - int.nat 1%Z)
+      with (length (u64_le u ++ u64_le u0 ++ x)) by word.
     replace (int.nat (U64 1)) with (length [U8 0]) by done.
     rewrite drop_app.
     rewrite take_ge; last word.
@@ -825,7 +740,7 @@ Proof.
       wp_pures.
       wp_load.
       iMod (readonly_load with "Hrep_sl") as (?) "Hrep_sl2".
-      iModIntro.
+
       iApply "HΦ".
 
       rewrite compute_state_snoc.
@@ -846,11 +761,29 @@ Proof.
       iSplitR "Hrep_sl2"; last first.
       {
         iClear "Hsl".
-        iFrame.
+        iFrame. by iModIntro.
       }
-      simpl.
       repeat iExists _.
-      iFrame "Hlowstate ∗". #".
+
+      iFrame "Hlowstate ∗".
+      iMod (ghost_no_low_changes with "Hghost") as "$".
+      { word. }
+      { done. }
+      { rewrite compute_state_snoc.
+        unfold apply_op.
+        simpl.
+        rewrite decide_True.
+        1: done.
+        simpl.
+        admit. (* from Hlookup *)
+      }
+      iModIntro.
+      iSplitL "HeeNextIndex".
+      { iApply to_named. iExactEq "HeeNextIndex".
+        repeat f_equal. rewrite app_length /=. word.
+      }
+      iFrame "Hislow".
+      iPureIntro. rewrite app_length /=. word.
     }
     {
       wp_loadField.
@@ -860,17 +793,61 @@ Proof.
 
       iMod (readonly_alloc (is_slice_small s'0 byteT 1 eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
       { simpl. iFrame. }
-      wp_apply ("HapplyVolatile_spec" with "[$Hlowstate]").
+      wp_loadField.
+      unfold is_Versioned_applyVolatileFn.
+      iMod (ghost_low_newop  with "Hghost") as "Hghost".
+      { word. }
+      { word. }
+      { done. }
+      { instantiate (1:=o).
+        instantiate (1:=ee u u0 o).
+        rewrite compute_state_snoc.
+        unfold apply_op.
+        simpl.
+        rewrite decide_False.
+        { simpl. done. }
+        injection Hlookup as H1.
+        replace (compute_state ops) with (st) by done.
+        rewrite  X.
+        simpl. rewrite H1. word.
+      }
+      iDestruct "Hghost" as "(Hghost & HprevVers & HnewVer)".
+      wp_apply ("HapplyVolatile_spec" with "[$Hlowstate HprevVers HnewVer]").
       {
-        iSplitL; first done.
-        iFrame "#".
+        iSplitR; first done.
+        iFrame "∗#".
+        iSplitR; first iPureIntro.
+        { word. }
+        simpl.
+        rewrite app_length /=.
+        iSplitL "HprevVers".
+        {
+          iIntros.
+          replace (compute_state ops) with st by done.
+          rewrite X /=.
+          iApply "HprevVers".
+          { iPureIntro; word. }
+          { iPureIntro; word. }
+        }
+        {
+          iExactEq "HnewVer".
+          repeat f_equal.
+          { word. }
+          { replace (compute_state ops) with st by done. rewrite X. done. }
+        }
       }
       iIntros (??) "[Hlowstate Hrep_sl]".
       wp_store.
       wp_pures.
       wp_load.
 
-      iMod (readonly_alloc (is_slice_small reply_sl byteT 1 (low_compute_reply l o)) with "[Hrep_sl]") as "#Hreply_sl".
+      iMod (readonly_alloc (is_slice_small reply_sl byteT 1 (low_compute_reply
+                   {|
+                     nextCID := nextCID0;
+                     lastSeq := lastSeq0;
+                     lastReply := lastReply0;
+                     lowops := lowops0
+                   |}.(lowops) o)) q0 with "[Hrep_sl]") as "#Hreply_sl".
       { simpl. iFrame. }
       wp_loadField.
       iMod (readonly_load with "Hreply_sl") as (?) "Hreply_sl2".
@@ -910,9 +887,23 @@ Proof.
         iFrame.
       }
       simpl.
-      iExists _, _, _, _.
-      iFrame "∗#".
+      repeat iExists _.
+      iFrame "∗".
+      rewrite app_length /=.
+      iSplitL "HeeNextIndex".
+      { iApply to_named. iExactEq "HeeNextIndex".
+        repeat f_equal. word.
+      }
+      iSplitL "Hghost".
+      { iApply to_named. iExactEq "Hghost".
+        repeat f_equal. word.
+      }
+      iFrame "#".
+      iPureIntro. word.
     }
+  }
+  { (* apply a readonly op *)
+    wp_
   }
 Qed.
 
