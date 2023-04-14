@@ -4,7 +4,8 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb Require Export config_proof pb_definitions pb_protocol primary_protocol.
+From Perennial.program_proof.simplepb Require Export config_proof pb_definitions
+     pb_protocol primary_protocol.
 
 Section config_global.
 
@@ -20,11 +21,11 @@ Definition configN := nroot .@ "config".
 (* before calling this lemma, have to already allocate pb ghost state *)
 Lemma alloc_pb_config_ghost γ conf confγs :
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) -∗
-  pb_init_config γ.(s_pb) (r_pb <$> confγs)
-  primary_init_config γ.(s_prim)
+  pb_init_for_config γ.(s_pb) (r_pb <$> confγs) -∗
+  primary_init_for_config γ.(s_prim)
   ={⊤}=∗ ∃ γconf, is_conf_inv γ γconf ∗ makeConfigServer_pre γconf conf.
 Proof.
-  iIntros "#Hhosts Hinitconf".
+  iIntros "#Hhosts Hinitconf HprimInit".
   iMod (config_ghost_init conf) as (γconf) "(Hconfpre & Hepoch & Hconf)".
   iExists _; iFrame "Hconfpre".
   iMod (inv_alloc with "[-]") as "$"; last done.
@@ -33,11 +34,19 @@ Proof.
   iFrame.
   iNamed "Hinitconf".
   iFrame "His_conf ∗#%".
+  unfold primary_init_for_config.
   iSplitL.
-  { iRight. done. }
-  iIntros (???).
-  exfalso.
-  word. *)
+  { iApply (big_sepS_impl with "[Hunused HprimInit]").
+    { iApply (big_sepS_sep with "[$Hunused $HprimInit]"). }
+    iModIntro.
+    iIntros (??) "[H1 H2] %".
+    iSpecialize ("H1" with "[//]").
+    iSpecialize ("H2" with "[//]").
+    iFrame.
+  }
+  iSplitR.
+  { by iRight. }
+  iIntros (???). exfalso. word.
 Qed.
 
 End config_global.

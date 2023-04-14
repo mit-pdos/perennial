@@ -702,7 +702,7 @@ Proof.
   iExists _; iFrame.
 Qed.
 
-Definition pb_init_config γsys confγs : iProp Σ :=
+Definition pb_init_for_config γsys confγs : iProp Σ :=
   "#His_conf" ∷ is_epoch_config γsys 0 confγs ∗
   "#His_conf_prop" ∷ is_epoch_config_proposal γsys 0 confγs ∗
   (* "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γpb γsrv) ∗ *)
@@ -721,7 +721,7 @@ length confγs > 0 →
     ∃ γsys,
     sys_inv γsys ∗
     own_pb_log γsys [] ∗
-    pb_init_config γsys confγs ∗
+    pb_init_for_config γsys confγs ∗
     is_sys_init_witness γsys
 .
 Proof.
@@ -731,7 +731,7 @@ Proof.
   iMod (own_alloc (●ML [])) as "Hghost".
   { apply mono_list_auth_valid. }
   iDestruct "Hghost" as (γstate) "[Hghost Hghost2]".
-  unfold pb_init_config.
+  unfold pb_init_for_config.
   iMod (fmlist_map_alloc_fin []) as (γproposal) "Hproposal".
   iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1)
                                          (None : leibnizO (option (list pb_server_names)))
