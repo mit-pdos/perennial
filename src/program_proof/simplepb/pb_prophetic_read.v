@@ -105,7 +105,7 @@ Proof.
     iIntros "Hmask".
     iRight.
     iIntros (?) "_". iMod "Hmask".
-    iDestruct "Hdone" as "[#>? ?]".
+    iDestruct "Hdone" as "[#>Hreceipt ?]".
     iMod ("Hclose" with "[-]").
     { iRight. iFrame "∗#". }
     iModIntro.
@@ -113,7 +113,28 @@ Proof.
     iIntros (?) "Hrep_sl Hop_sl Hck".
     iNamed 1.
     wp_pures.
-    wp_apply (wp_ResolveBytes with "Hproph").
-Qed.
+    wp_apply (wp_ResolveBytes with "[$Hproph $Hrep_sl]").
+    iIntros "[% ?]".
+    subst.
+    wp_pure1_credit "Hlc".
+    wp_pures.
+    iInv "Hinv" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+    iDestruct "Hi" as "[[Hbad _]| Hi]".
+    { iDestruct (own_valid_2 with "Hbad Hreceipt") as %?.
+      exfalso. done. }
+    iDestruct "Hi" as "[_ [HΦ | Hbad]]".
+    2:{
+      iDestruct (own_valid_2 with "Hbad Hfinish") as %?.
+      exfalso. done. }
+    iMod ("Hclose" with "[Hfinish]").
+    { iRight. iFrame "#". iRight. iFrame. }
+    iModIntro.
+    iApply ("HΦ" with "[$] [$] [$]").
+  }
+  { (* other case: we get to fire the fupd! *)
+    admit.
+  }
+Admitted.
 
 End prophetic_read_proof.
