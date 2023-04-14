@@ -866,6 +866,7 @@ Qed.
 Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoch ops sealed P :
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
+        ⌜is_readonly_op op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         own_StateMachine s epoch ops sealed P
   }}}
@@ -881,7 +882,7 @@ Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoc
   }}}
 .
 Proof.
-  iIntros (Φ) "(% & #? & Hstate) HΦ".
+  iIntros (Φ) "(% & % & #? & Hstate) HΦ".
   wp_lam.
   iNamed "Hstate".
   wp_pures.
@@ -890,7 +891,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_apply ("HapplyReadonly_spec" with "[$Hmemstate]").
-  { iSplitR; first done. iFrame "#". }
+  { iSplitR; first done. iSplitR; first done. iFrame "#". }
   iIntros (???) "(% & % & Hmemstate & Hreply)".
   iApply "HΦ". iFrame "Hreply".
   iSplitR; first done.

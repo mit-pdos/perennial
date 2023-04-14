@@ -552,7 +552,7 @@ Proof.
   iIntros (errs_sl) "Herrs_sl".
   wp_pures.
   iApply fupd_wp.
-  iMod (fupd_mask_subseteq (⊤∖↑pbAofN)) as "Hmask".
+  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
   { set_solver. }
   iMod (free_WaitGroup_alloc pbN _
           (λ i,

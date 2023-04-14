@@ -112,7 +112,7 @@ Proof.
   wp_storeField.
 
   iApply fupd_wp.
-  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+  iMod (fupd_mask_subseteq (↑pb_protocolN)) as "Hmask".
   { set_solver. }
   iMod (pb_log_get_nil_lb with "Hsys_inv") as "#Hcommit_nil_lb".
   iMod "Hmask".

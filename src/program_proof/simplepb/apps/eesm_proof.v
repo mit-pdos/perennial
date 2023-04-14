@@ -1096,7 +1096,7 @@ Lemma wp_EEStateMachine__setState s :
     EEStateMachine__setState #s
   {{{
         setFn, RET setFn;
-        ⌜val_ty setFn (slice.T byteT -> unitT)⌝ ∗
+        ⌜val_ty setFn (slice.T byteT -> (arrowT uint64T unitT))%ht⌝ ∗
         ee_is_InMemory_setStateFn setFn (own_StateMachine s)
   }}}
 .
@@ -1373,9 +1373,9 @@ Lemma wp_EEStateMachine__applyReadonly s :
   }}}
     EEStateMachine__applyReadonly #s
   {{{
-        applyFn, RET applyFn;
-        ⌜val_ty applyFn (slice.T byteT -> unitT)⌝ ∗
-        ee_is_InMemory_applyReadonlyFn applyFn (own_StateMachine s)
+        applyReadonlyFn, RET applyReadonlyFn;
+        ⌜val_ty applyReadonlyFn (slice.T byteT -> (prodT uint64T (slice.T byteT)))⌝ ∗
+        ee_is_InMemory_applyReadonlyFn applyReadonlyFn (own_StateMachine s)
   }}}
 .
 Proof.
@@ -1450,39 +1450,60 @@ Proof.
     { word. }
     done.
   }
-  iSplitR.
+
+  iDestruct (applyreadonly_step with "Hghost Hstates") as "#H".
+  { word. }
+  iFrame "H".
+  iFrame "Hrep_sl".
+  repeat iExists _.
+  iFrame "∗".
+  iFrame "Hislow".
+  iPureIntro; word.
+Qed.
+
+Lemma alloc_own_ghost_vnums :
+  ⊢ |==> ∃ γst, own_ghost_vnums γst [] 0 ∗
+                is_state γst 0 []
+.
+Proof.
+  iMod (ghost_map_alloc_fin []) as (?) "Hmap".
+  iExists _.
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hmap") as "[HH Hmap]".
+  { set_solver. }
+  iMod (ghost_map_points_to_persist with "HH") as "#?".
+  iModIntro.
+  iFrame "∗#".
+  iSplitL.
   {
-
+    iApply "Hmap".
+    { iModIntro. iIntros. iFrame. }
+    { iIntros. exfalso. simpl in H0. replace (int.nat (U64 0)) with (0) in H0; word. }
   }
-  wp_pures.
-  wp_store.
-  wp_load.
-
-  rewrite compute_state_snoc.
-  unfold apply_op.
-  simpl.
-
-    iApply "HΦ".
-    replace (compute_state ops) with st by done.
-    rewrite X.
-    iSplitR "Hrep_sl".
-    {
-      repeat iExists _.
-      iFrame "∗".
-      iFrame.
-      iMod (ghost_no_low_changes with "Hghost") as "$".
-      { word. }
-      { done. }
-      { rewrite compute_state_snoc.
-        unfold apply_op.
-
-
-
+  iSplitL.
+  {
+    Search "big_sepS".
+    iApply (big_sepS_impl with "[]").
+    { by iApply big_sepS_emp. }
+    iModIntro. iIntros.
+    assert (int.nat x = 0).
+    { rewrite /= in H2. word. }
+    replace (x) with (U64 0) by word.
+    iFrame "#".
+  }
+  iApply big_sepS_forall.
+  iIntros. iModIntro.
+  iIntros. rewrite /= in H1.
+  assert (int.nat x = 0).
+  { rewrite /= in H2. word. }
+  replace (x) with (U64 0) by word.
+  iFrame "#".
+Qed.
 
 Lemma wp_MakeEEKVStateMachine own_low lowSm :
   {{{
-      "#Hislow" ∷ low_is_InMemoryStateMachine lowSm own_low ∗
-      "Hlowstate" ∷ own_low []
+      "#Hislow" ∷ low_is_VersionedStateMachine lowSm own_low ∗
+      "Hlowstate" ∷ (∀ γst, is_state γst 0 [] -∗
+                      own_low γst [] 0)
   }}}
     MakeEEKVStateMachine #lowSm
   {{{
@@ -1508,6 +1529,8 @@ Proof.
   wp_storeField.
   wp_storeField.
 
+  wp_apply wp_EEStateMachine__applyReadonly.
+  iIntros (?) "[% #HisapplyReadonly]".
   wp_apply wp_EEStateMachine__apply.
   iIntros (?) "[% #Hisapply]".
   wp_apply wp_EEStateMachine__setState.
@@ -1531,9 +1554,12 @@ Proof.
     iApply wp_EEStatemachine__getState.
   }
   iNamed "Hpre".
+  iMod (alloc_own_ghost_vnums) as (?) "[Hghost #Hstate]".
+  iSpecialize ("Hlowstate" with "Hstate").
   iModIntro.
   repeat iExists _.
   iFrame "∗#".
+  done.
 Qed.
 
 (* The state machine will overflow after 2^64 CIDs have been generated.
@@ -1541,12 +1567,13 @@ This cannot happen in a real execution, so we ignore it for the proof. *)
 Local Axiom SumAssumeNoOverflow_admitted : ∀ (i : u64),
   (int.Z (word.add i 1) = (int.Z i) + 1)%Z.
 
-Lemma wp_MakeClerk confHost γpblog γsys γoplog γerpc :
+(* FIXME: one big collection of these invs *)
+Lemma wp_MakeClerk confHost γ γoplog γerpc :
   {{{
-    "#His_inv" ∷ is_inv γpblog γsys ∗
-    "#Hee_inv" ∷ is_ee_inv γpblog γoplog γerpc ∗
+    "#Hee_inv" ∷ is_ee_inv γ γoplog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
-    "#Hconf" ∷ admin_proof.is_conf_host confHost γsys
+    "#Hconf" ∷ config_protocol_proof.is_conf_host confHost γ ∗
+    "#HprophInv" ∷ is_proph_read_inv γ
   }}}
     eesm.MakeClerk #confHost
   {{{
@@ -1563,7 +1590,7 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
   wp_pures.
-  wp_apply wp_MakeClerk.
+  wp_apply clerk_proof.wp_MakeClerk.
   { iFrame "#". }
   iIntros (?) "Hck".
   wp_storeField.
@@ -1583,6 +1610,8 @@ Proof.
   wp_bind (Clerk__Apply _ _).
   wp_apply (wp_frame_wand with "[-Hsl Hck]").
   { iNamedAccu. }
+  iAssert (pb_prophetic_read.own_Clerk _ _) with "[Hck]" as "Hck".
+  { iFrame "∗#". }
   wp_apply (wp_Clerk__Apply with "Hck [$Hsl]").
   {
     simpl.
@@ -1593,11 +1622,9 @@ Proof.
 
   iInv "Hee_inv" as "Hi" "Hclose".
   iDestruct "Hi" as (?) "[>Hpblog Hee]".
-  set (st:=compute_state ops).
-  destruct st eqn:X.
   iDestruct "Hee" as ">Hee".
   iNamed "Hee".
-  iDestruct (big_sepS_elem_of_acc_impl u with "Hcids") as "[Hcid Hcids]".
+  iDestruct (big_sepS_elem_of_acc_impl (compute_state ops).(nextCID) with "Hcids") as "[Hcid Hcids]".
   { set_solver. }
   iDestruct "Hcid" as "[%Hbad | Hcid]".
   { exfalso. word. }
@@ -1605,16 +1632,13 @@ Proof.
   iApply fupd_mask_intro.
   { set_solver. }
   iIntros "Hmask".
-  iIntros "Hpblog".
+  iIntros "Hoplog".
   iMod "Hmask".
-  iMod ("Hclose" with "[HerpcServer Hpblog Hlog Hcids]").
+  iMod ("Hclose" with "[HerpcServer Hoplog Hlog Hcids]").
   {
     iNext.
-    iExists _; iFrame.
+    iExists _; iFrame "Hoplog".
     rewrite compute_state_snoc.
-    replace (compute_state ops) with (st) by done.
-    rewrite X.
-    rewrite /apply_op.
     simpl.
     iFrame.
     iApply "Hcids".
@@ -1639,9 +1663,6 @@ Proof.
   {
     simpl.
     unfold compute_reply.
-    replace (compute_state ops) with (st) by done.
-    rewrite X.
-    simpl.
     iFrame.
   }
   iIntros (?) "_".
