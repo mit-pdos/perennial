@@ -9,6 +9,7 @@ Context {pb_record:Sm.t}.
 
 Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
@@ -424,6 +425,7 @@ Proof.
 Qed.
 
 Lemma wp_Clerk__ApplyReadonly2 γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+is_readonly_op op →
 has_op_encoding op_bytes op →
 own_Clerk2 ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
@@ -435,7 +437,7 @@ is_slice_small op_sl byteT 1 op_bytes -∗
  -∗
 WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
 Proof.
-  iIntros (?) "Hck Hop_sl #Hupd".
+  iIntros (??) "Hck Hop_sl #Hupd".
   wp_call.
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -483,6 +485,7 @@ Proof.
     { iPureIntro. done. }
     iIntros "_".
     wp_apply (pb_roapply_proof.wp_Clerk__ApplyRo with "[] Hop_sl").
+    { done. }
     { done. }
     { iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc") as "[$ _]"; done. }
     iModIntro.

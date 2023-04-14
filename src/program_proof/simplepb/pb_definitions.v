@@ -23,6 +23,7 @@ Record t :=
     has_op_encoding : list u8 → OpType → Prop ;
     has_snap_encoding: list u8 → (list OpType) → Prop ;
     compute_reply : list OpType → OpType → list u8 ;
+    is_readonly_op : OpType → Prop ;
   }.
 End Sm.
 
@@ -53,6 +54,7 @@ Notation OpType := (pb_record.(Sm.OpType)).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
+Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 
 (* opsfull has all the ghost ops (RO and RW) in it as well as the gname for the
    Q for that op. get_rwops returns the RW ops only with the gnames removed.
@@ -237,6 +239,7 @@ Definition ApplyRo_core_spec γ  op enc_op :=
   λ (Φ : ApplyReply.C -> iPropO Σ) ,
   (
   ⌜has_op_encoding enc_op op⌝ ∗
+  ⌜is_readonly_op op⌝ ∗
   □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗ (own_int_log γ σ ={∅,⊤∖↑pbN}=∗
             □ Φ (ApplyReply.mkC 0 (compute_reply σ op))
    (* XXX: the □Φ is OK because this is read-only. Technically, we could prove
@@ -394,6 +397,7 @@ Notation OpType := (pb_record.(Sm.OpType)).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
+Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 
 Notation pbG := (pbG (pb_record:=pb_record)).
 Notation "server.t" := (server.t (pb_record:=pb_record)).
@@ -474,17 +478,21 @@ Definition is_GetStateAndSeal_fn own_StateMachine (get_state_fn:val) P : iProp �
   }}}
 .
 
-Definition is_ApplyReadonlyFn own_StateMachine (startApplyFn:val) (P:u64 → list (OpType) → bool → iProp Σ) : iProp Σ :=
+Definition is_ApplyReadonlyFn own_StateMachine (applyRoFn:val) (P:u64 → list (OpType) → bool → iProp Σ) : iProp Σ :=
   ∀ op_sl (epoch:u64) (σ:list OpType) (op_bytes:list u8) (op:OpType) (sealed:bool),
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
+        ⌜is_readonly_op op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         own_StateMachine epoch σ sealed P
   }}}
-    startApplyFn (slice_val op_sl)
+    applyRoFn (slice_val op_sl)
   {{{
-        reply_sl q,
-        RET (slice_val reply_sl);
+        reply_sl q (lastModifiedIndex:u64),
+        RET (#lastModifiedIndex, slice_val reply_sl);
+        ⌜int.nat lastModifiedIndex <= length σ ⌝ ∗
+        ⌜∀ σ', prefix σ' σ → int.nat lastModifiedIndex <= length σ' →
+               (compute_reply σ op = compute_reply σ' op)⌝ ∗
         is_slice_small reply_sl byteT q (compute_reply σ op) ∗
         own_StateMachine epoch σ sealed P
   }}}

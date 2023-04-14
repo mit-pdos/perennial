@@ -285,18 +285,21 @@ Proof.
   by destruct Hvalid as [_ ?].
 Qed.
 
-Lemma start_read_step Q γ γlog γreads idx σ E :
+Lemma start_read_step (Q:list u8 → iProp Σ) γ γlog γreads (lastModifiedIndex:u64) f σ E :
   ↑prereadN ⊆ E →
-  idx >= length σ →
+  (* this hypothesis will require a bit of proof on the user of this lemma's
+     side. They will know this property for some log LONGER than σ. *)
+  (∀ σ', prefix σ' σ → int.nat lastModifiedIndex <= length σ' → f σ' = f σ) →
   £ 1 -∗
   preread_inv γ γlog γreads -∗
-  □(|={E∖↑prereadN∖↑ghostN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog σ ={∅,E∖↑prereadN∖↑ghostN}=∗ □ Q σ)) -∗
+  □(|={E∖↑prereadN∖↑ghostN,∅}=> ∃ σ, own_pre_log γlog σ ∗
+        (own_pre_log γlog σ ={∅,E∖↑prereadN∖↑ghostN}=∗ □ Q (f σ))) -∗
   own_pb_log γ σ
   ={E}=∗
-  is_proposed_read γreads idx Q ∗ own_pb_log γ σ
+  is_proposed_read γreads (int.nat lastModifiedIndex) (λ σ', Q (f σ')) ∗ own_pb_log γ σ
 .
 Proof.
-  intros ? Hidx.
+  intros ? HlastModified.
   iIntros "Hlc #Hinv #Hupd Hlog_in".
   iInv "Hinv" as "Hown" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hown") as "Hown".
@@ -317,8 +320,9 @@ Proof.
   iMod "Hmask".
   Unshelve. 2: solve_ndisj.
 
-  iMod (update_map_mset_ipred idx Q with "HownRos") as "HownRos".
-  iDestruct (map_fmset_get_elem idx Q with "HownRos") as "#His_read".
+  set (Q':=λ σ', Q (f σ')).
+  iMod (update_map_mset_ipred (int.nat lastModifiedIndex) Q' with "HownRos") as "HownRos".
+  iDestruct (map_fmset_get_elem (int.nat lastModifiedIndex) Q' with "HownRos") as "#His_read".
   { rewrite lookup_insert. set_solver. }
   iMod ("Hclose" with "[-]"); last done.
   iNext.
@@ -338,7 +342,7 @@ Proof.
     iDestruct (own_log_agree with "Hlog Hlog2") as %?; subst.
     iMod ("Hupd" with "Hlog2") as "#HQ".
     iMod "Hmask" as "_".
-    destruct (ros !! idx) as [] eqn:Hlookup.
+    destruct (ros !! (int.nat lastModifiedIndex)) as [] eqn:Hlookup.
     { (* have some previous fupds *)
       iDestruct (big_sepM_lookup with "HreadUpds") as "#Hupds".
       { done. }
@@ -354,30 +358,27 @@ Proof.
     }
     { iModIntro; simpl; iFrame "∗#". }
   }
-  simpl.
   iApply (big_sepM_insert_2 with "[] HcompletedRead").
   iIntros (?).
-  destruct (decide (idx = length σ0)).
-  {
-    subst.
-    iApply big_sepL_app.
-    iSplit.
-    2: {
-      iApply big_sepL_singleton.
-      iModIntro.
-      by rewrite firstn_all.
-    }
-    (* again, the rest of these follow from the previous Q's. *)
-    destruct (ros !! (length σ0)) as [] eqn:Hlookup.
-    {
-      iDestruct (big_sepM_lookup with "HcompletedRead") as "Hupds".
-      { done. }
-      by iApply "Hupds".
-    }
-    by iApply big_sepL_nil.
+  iApply big_sepL_app.
+  iSplit.
+  2: {
+    iApply big_sepL_singleton.
+    iModIntro.
+    epose proof (HlastModified (take (int.nat lastModifiedIndex) σ0) _ _).
+    by rewrite -H2.
+    Unshelve.
+    { eexists _. by setoid_rewrite take_drop. }
+    { rewrite take_length. word. }
   }
-  exfalso.
-  lia.
+  (* again, the rest of these follow from the previous Q's. *)
+  destruct (ros !! int.nat lastModifiedIndex) as [] eqn:Hlookup.
+  {
+    iDestruct (big_sepM_lookup with "HcompletedRead") as "Hupds".
+    { done. }
+    by iApply "Hupds".
+  }
+  by iApply big_sepL_nil.
 Qed.
 
 Lemma finish_read_step Q γ γlog γreads idx σ :

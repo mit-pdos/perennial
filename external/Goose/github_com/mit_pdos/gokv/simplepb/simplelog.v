@@ -8,10 +8,10 @@ From Goose Require github_com.tchajed.marshal.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition InMemoryStateMachine := struct.decl [
-  "ApplyReadonly" :: (slice.T byteT -> slice.T byteT)%ht;
+  "ApplyReadonly" :: (slice.T byteT -> (uint64T * slice.T byteT))%ht;
   "ApplyVolatile" :: (slice.T byteT -> slice.T byteT)%ht;
   "GetState" :: (unitT -> slice.T byteT)%ht;
-  "SetState" :: (slice.T byteT -> unitT)%ht
+  "SetState" :: (slice.T byteT -> uint64T -> unitT)%ht
 ].
 
 Definition MAX_LOG_SIZE : expr := #64 * #1024 * #1024 * #1024.
@@ -82,7 +82,7 @@ Definition StateMachine__setStateAndUnseal: val :=
     struct.storeF StateMachine "epoch" "s" "epoch";;
     struct.storeF StateMachine "nextIndex" "s" "nextIndex";;
     struct.storeF StateMachine "sealed" "s" #false;;
-    struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") "snap";;
+    struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") "snap" "nextIndex";;
     StateMachine__makeDurableWithSnap "s" "snap";;
     #().
 
@@ -125,13 +125,13 @@ Definition recoverStateMachine: val :=
       "snap" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") #0 (![uint64T] "snapLen");;
       let: "n" := slice.len (![slice.T byteT] "enc") in
       "enc" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") (![uint64T] "snapLen") "n";;
-      struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") (![slice.T byteT] "snap");;
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       struct.storeF StateMachine "epoch" "s" "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       struct.storeF StateMachine "nextIndex" "s" "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
+      struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") (![slice.T byteT] "snap") (struct.loadF StateMachine "nextIndex" "s");;
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         (if: slice.len (![slice.T byteT] "enc") > #1

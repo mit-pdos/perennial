@@ -181,14 +181,14 @@ Definition DecodeIncreaseCommitArgs: val :=
 
 Definition StateMachine := struct.decl [
   "StartApply" :: (Op -> (slice.T byteT * (unitT -> unitT)%ht))%ht;
-  "ApplyReadonly" :: (Op -> slice.T byteT)%ht;
+  "ApplyReadonly" :: (Op -> (uint64T * slice.T byteT))%ht;
   "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
   "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
 ].
 
 Definition SyncStateMachine := struct.decl [
   "Apply" :: (Op -> slice.T byteT)%ht;
-  "ApplyReadonly" :: (Op -> slice.T byteT)%ht;
+  "ApplyReadonly" :: (Op -> (uint64T * slice.T byteT))%ht;
   "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
   "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
 ].
@@ -312,6 +312,11 @@ Definition Server__ApplyRoWaitForCommit: val :=
       struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
       "reply"
     else
+      let: "lastModifiedIndex" := ref (zero_val uint64T) in
+      let: ("0_ret", "1_ret") := struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op" in
+      "lastModifiedIndex" <-[uint64T] "0_ret";;
+      struct.storeF ApplyReply "Reply" "reply" "1_ret";;
+      let: "epoch" := struct.loadF Server "epoch" "s" in
       let: (<>, "h") := grove_ffi.GetTimeRange #() in
       (if: struct.loadF Server "leaseExpiration" "s" ≤ "h"
       then
@@ -320,9 +325,6 @@ Definition Server__ApplyRoWaitForCommit: val :=
         struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
         "reply"
       else
-        struct.storeF ApplyReply "Reply" "reply" (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op");;
-        let: "readNextIndex" := struct.loadF Server "nextIndex" "s" in
-        let: "epoch" := struct.loadF Server "epoch" "s" in
         Skip;;
         (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
           (if: struct.loadF Server "epoch" "s" ≠ "epoch"
@@ -330,7 +332,7 @@ Definition Server__ApplyRoWaitForCommit: val :=
             struct.storeF ApplyReply "Err" "reply" e.Stale;;
             Break
           else
-            (if: "readNextIndex" ≤ struct.loadF Server "committedNextIndex" "s"
+            (if: ![uint64T] "lastModifiedIndex" ≤ struct.loadF Server "committedNextIndex" "s"
             then
               struct.storeF ApplyReply "Err" "reply" e.None;;
               Break

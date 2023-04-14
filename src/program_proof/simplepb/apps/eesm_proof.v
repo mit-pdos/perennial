@@ -18,12 +18,14 @@ Notation low_OpType := (Sm.OpType low_record).
 Notation low_has_op_encoding := (Sm.has_op_encoding low_record).
 Notation low_has_snap_encoding := (Sm.has_snap_encoding low_record).
 Notation low_compute_reply := (Sm.compute_reply low_record).
+Notation low_is_readonly_op := (Sm.is_readonly_op low_record).
 Instance low_op_eqdec : EqDecision (low_OpType).
 Proof. apply (Sm.OpType_EqDecision low_record). Qed.
 
 Inductive eeOp :=
   | getcid : eeOp
   | ee : u64 → u64 -> low_OpType → eeOp
+  | ro_ee : low_OpType → eeOp
 .
 
 Inductive eeState :=
@@ -42,6 +44,7 @@ Definition apply_op_and_get_reply (state:eeState) (op:eeOp) : eeState * list u8 
             let rep:=(low_compute_reply ops op) in
             (ees nextCID (<[cid:=seq]>lastSeq)
                  (<[cid:=rep]>lastReply) (ops ++ [op]), rep)
+      | ro_ee op => (state, (low_compute_reply ops op))
       end
   end
 .
@@ -63,9 +66,12 @@ Definition ee_has_encoding op_bytes op :=
   match op with
   | getcid => op_bytes = [U8 1]
   | ee cid seq lowop =>
+      ∃ lowop_enc, low_has_op_encoding lowop_enc lowop ∧
+      op_bytes = [U8 0] ++ u64_le cid ++ u64_le seq ++ (lowop_enc)
+  | ro_ee lowop =>
       ∃ lowop_enc,
   low_has_op_encoding lowop_enc lowop ∧
-  op_bytes = [U8 0] ++ u64_le cid ++ u64_le seq ++ (lowop_enc)
+  op_bytes = [U8 2] ++ (lowop_enc)
   end
 .
 
@@ -81,6 +87,14 @@ Definition ee_has_snap_encoding snap_bytes ops :=
   end
 .
 
+Definition ee_is_readonly_op op :=
+  match op with
+    | getcid => False
+    | ee _ _ _=> False
+    | ro_ee lowop => low_is_readonly_op lowop
+  end
+.
+
 Instance op_eqdec : EqDecision eeOp.
 Proof. solve_decision. Qed.
 
@@ -91,6 +105,7 @@ Definition
     Sm.has_op_encoding := ee_has_encoding ;
     Sm.has_snap_encoding := ee_has_snap_encoding ;
     Sm.compute_reply :=  compute_reply ;
+    Sm.is_readonly_op := ee_is_readonly_op ;
   |}.
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
@@ -452,6 +467,7 @@ Proof.
   }
 Qed.
 
+(* Now, the server proof. *)
 Definition own_StateMachine (s:loc) (ops:list eeOp) : iProp Σ :=
   let st := (compute_state ops) in
   match st with

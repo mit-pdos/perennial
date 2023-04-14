@@ -10,6 +10,7 @@ Context {pb_record:Sm.t}.
 
 Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
@@ -35,6 +36,7 @@ Definition own_Clerk ck γ : iProp Σ :=
   is_proph_read_inv γ ∗ own_Clerk2 ck γ.
 
 Lemma wp_Clerk__ApplyReadonly2' γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+is_readonly_op op →
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
@@ -51,9 +53,8 @@ is_slice_small op_sl byteT 1 op_bytes -∗
  -∗
 WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
 Proof.
-  iIntros (?) "[#Hinv Hck] ? #Hupd".
-  wp_apply (wp_Clerk__ApplyReadonly2 with "[$] [$] [-]").
-  { done. }
+  iIntros (??) "[#Hinv Hck] ? #Hupd".
+  wp_apply (wp_Clerk__ApplyReadonly2 with "[$] [$] [-]"); try done.
   iModIntro.
   iInv "Hinv" as ">Hi" "Hclose".
   iDestruct "Hi" as (?) "[Hoplog Hintlog]".
@@ -126,6 +127,7 @@ Definition prophetic_read_inv prophV γ γreq readOp Φ : iProp Σ :=
 .
 
 Lemma wp_Clerk__ApplyReadonly γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+is_readonly_op op →
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
@@ -136,7 +138,7 @@ is_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
 Proof using H0.
-  iIntros (?) "Hck Hsl Hupd".
+  iIntros (??) "Hck Hsl Hupd".
   wp_call.
   wp_apply (wp_NewProphBytes).
   iIntros (??) "Hproph".
@@ -160,8 +162,7 @@ Proof using H0.
   wp_bind (Clerk__ApplyRo2 _ _).
   wp_apply (wp_frame_wand with "[Hproph Hfinish]").
   { iNamedAccu. }
-  wp_apply (wp_Clerk__ApplyReadonly2' with "Hck Hsl []").
-  { done. }
+  wp_apply (wp_Clerk__ApplyReadonly2' with "Hck Hsl []"); try done.
   iModIntro.
   iInv "Hinv" as "Hi" "Hclose".
   iIntros (?).
@@ -275,8 +276,7 @@ is_slice_small op_sl byteT 1 op_bytes -∗
 WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   iIntros (?) "[#Hinv Hck] ? #Hupd".
-  wp_apply (wp_Clerk__Apply2 with "[$] [$] [-]").
-  { done. }
+  wp_apply (wp_Clerk__Apply2 with "[$] [$] [-]"); try done.
   iModIntro.
   iInv "Hinv" as ">Hi" "Hclose".
   iDestruct "Hi" as (?) "[Hoplog Hintlog]".
