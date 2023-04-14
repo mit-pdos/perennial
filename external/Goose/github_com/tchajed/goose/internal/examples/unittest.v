@@ -609,6 +609,10 @@ Definition MapTypeAliases: val :=
     MapInsert "m1" #4 (Fst (MapGet "m2" #0));;
     #().
 
+Definition StringMap: val :=
+  rec: "StringMap" "m" :=
+    Fst (MapGet "m" #(str"foo")).
+
 (* multiple.go *)
 
 Definition returnTwo: val :=
