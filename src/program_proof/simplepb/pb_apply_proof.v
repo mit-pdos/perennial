@@ -279,7 +279,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_forSlice' {V} {H:IntoVal V} ϕ I sl ty q (l:list V) (body:expr) :
+Lemma wp_forSlice' {V} {H:IntoVal V} ϕ I sl ty q (l:list V) (body:val) :
   (∀ (i:u64) (v:V),
     {{{
           ⌜int.nat i < length l⌝ ∗ ⌜l !! (int.nat i) = Some v⌝ ∗ ϕ (int.nat i) v ∗ I i
@@ -300,7 +300,51 @@ Lemma wp_forSlice' {V} {H:IntoVal V} ϕ I sl ty q (l:list V) (body:expr) :
   }}}
 .
 Proof.
-Admitted.
+  iIntros "#Hwp".
+  iIntros (?) "!# (Hsl & Hl & HI) HΦ".
+  iDestruct (is_slice_small_sz with "Hsl") as %Hsz.
+  wp_apply (wp_forSlice (λ i, I i ∗ [∗ list] j ↦ v ∈ (drop (int.nat i) l), ϕ (j + int.nat i) v) %I
+             with "[] [$Hsl Hl HI]").
+  2: { rewrite drop_0.
+       replace (int.nat (U64 0)) with (0) by word.
+       setoid_rewrite <- plus_n_O. iFrame. }
+  {
+    clear Φ.
+    iIntros (???Φ) "!# ([HI Hl] & % & %) HΦ".
+    assert ((drop (int.nat i) l) !! 0 = Some x) as ?.
+    {
+      rewrite lookup_drop. rewrite <- H1.
+      f_equal. word.
+    }
+    iDestruct (big_sepL_take_drop _ _ 1 with "Hl") as "[Hϕ Hl]".
+    wp_apply ("Hwp" with "[HI Hϕ]").
+    {
+      iFrame "∗%".
+      iSplit. 1: iPureIntro; word.
+      iDestruct (big_sepL_lookup_acc with "Hϕ") as "[H _]".
+      {
+        rewrite lookup_take.
+        { done. }
+        lia.
+      }
+      iExactEq "H". repeat f_equal.
+    }
+    iIntros "HI".
+    iApply "HΦ".
+    iFrame.
+    rewrite drop_drop.
+    replace (int.nat (u64_instance.u64.(word.add) i 1%Z)) with (int.nat i + 1) by word.
+    iApply (big_sepL_impl with "Hl").
+    iModIntro.
+    iIntros.
+    replace (k + (int.nat i + 1)) with (1 + k + int.nat i) by word.
+    done.
+  }
+  iIntros "[[HI _] _]".
+  iApply "HΦ".
+  rewrite Hsz.
+  iExactEq "HI". f_equal. word.
+Qed.
 
 Lemma establish_committed_log_fact γ epoch σ :
   committed_by γ.(s_pb) epoch σ -∗
