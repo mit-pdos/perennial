@@ -14,6 +14,7 @@ Section global_proof.
 Context {sm_record:Sm.t}.
 Notation OpType := (Sm.OpType sm_record).
 Notation has_op_encoding := (Sm.has_op_encoding sm_record).
+Notation is_readonly_op := (Sm.is_readonly_op sm_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
 Notation compute_reply := (Sm.compute_reply sm_record).
 Instance e : EqDecision OpType := (Sm.OpType_EqDecision sm_record).
@@ -160,6 +161,7 @@ Notation OpType := (Sm.OpType sm_record).
 Notation has_op_encoding := (Sm.has_op_encoding sm_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
 Notation compute_reply := (Sm.compute_reply sm_record).
+Notation is_readonly_op := (Sm.is_readonly_op sm_record).
 
 Context `{!simplelogG (sm_record:=sm_record) Σ}.
 
@@ -208,6 +210,7 @@ Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMa
   ∀ ops op op_sl op_bytes,
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
+        ⌜is_readonly_op op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         own_InMemoryStateMachine ops
   }}}

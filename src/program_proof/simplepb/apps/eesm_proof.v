@@ -507,6 +507,7 @@ Definition own_StateMachine (s:loc) (ops:list eeOp) : iProp Σ :=
 Notation ee_is_InMemory_applyVolatileFn := (is_InMemory_applyVolatileFn (sm_record:=ee_record)).
 Notation ee_is_InMemory_setStateFn := (is_InMemory_setStateFn (sm_record:=ee_record)).
 Notation ee_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=ee_record)).
+Notation ee_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_record:=ee_record)).
 
 Lemma ghost_no_low_changes γst ops latestVnum o l :
   (length ops + 1 = int.nat (word.add (length ops) 1))%nat →
@@ -594,6 +595,88 @@ Lemma ghost_low_newop γst ops latestVnum op lowop l :
   is_state γst (length (ops ++ [op])) (l ++ [lowop])
 .
 Proof.
+  intros HnoOverflow. intros.
+  iNamed 1.
+  iDestruct (big_sepS_elem_of_acc_impl (word.add (length ops) 1) with "HfutureVersions") as "[HH HfutureVersions]".
+  { set_solver. }
+  iSpecialize ("HH" with "[%]").
+  { word. }
+  iMod (ghost_map_points_to_update (l ++ [lowop]) with "HH") as "HH".
+  iMod (ghost_map_points_to_persist with "HH") as "#HH".
+  iModIntro.
+  iSplitL.
+  {
+    iSplitL "HfutureVersions".
+    {
+      iApply "HfutureVersions".
+      { iModIntro. iIntros (???) "H %".
+        iApply "H". iPureIntro. rewrite app_length in H6. word. }
+      { iIntros. exfalso.
+        rewrite app_length /= in H4.
+        word. }
+    }
+    iSplitL "Hversions".
+    {
+      iDestruct (big_sepS_elem_of_acc_impl (U64 (length ops + 1)) with "Hversions") as "[_ Hversions]".
+      { set_solver. }
+      iApply "Hversions".
+      {
+        iModIntro. iIntros (???) "H %".
+        rewrite app_length /= in H6.
+        assert (int.nat y <= length ops).
+        { admit. } (* FIXME: integer overflow *)
+        iDestruct ("H" with "[%]") as "[$|H]".
+        { done. }
+        iRight.
+        rewrite take_app_le.
+        { done. }
+        word.
+      }
+      {
+        iIntros.
+        iRight.
+        rewrite firstn_all2.
+        2:{ rewrite app_length /=. word. }
+        rewrite H2.
+        iExactEq "HH".
+        unfold is_state.
+        repeat f_equal.
+        1:{ rewrite app_length /= in H4. admit. } (* FIXME: integer overflow *)
+        { done. }
+      }
+    }
+    iApply (big_sepS_impl with "HlatestVersion").
+    {
+      iModIntro. iIntros (??) "#H".
+      iModIntro.
+      iIntros.
+      rewrite app_length /= in H6.
+      assert (x = (word.add (length ops) 1)).
+      { rewrite app_length /= in H5.
+        rewrite HnoOverflow.
+        admit. } (* FIXME: overflow *)
+      subst x. rewrite H2 H3.
+      iFrame "HH".
+    }
+  }
+  iSplitL.
+  2:{
+    rewrite app_length /=.
+    iExactEq "HH".
+    unfold is_state.
+    repeat f_equal. rewrite HnoOverflow. done.
+  }
+  {
+    iIntros.
+    iDestruct (big_sepS_elem_of_acc _ _ vnum' with "HlatestVersion") as "[#H _]".
+    { set_solver. }
+    rewrite H2.
+    rewrite app_length /= in H5.
+    rewrite -HnoOverflow in H5.
+    iApply "H".
+    { iPureIntro.  word. }
+    { iPureIntro.  word. }
+  }
 Admitted.
 
 Lemma wp_EEStateMachine__apply s :
@@ -775,7 +858,12 @@ Proof.
         rewrite decide_True.
         1: done.
         simpl.
-        admit. (* from Hlookup *)
+        replace (compute_state ops) with (st) by done.
+        rewrite X.
+        simpl.
+        injection Hlookup as H1.
+        rewrite H1.
+        word.
       }
       iModIntro.
       iSplitL "HeeNextIndex".
@@ -903,9 +991,103 @@ Proof.
     }
   }
   { (* apply a readonly op *)
-    wp_
+    destruct Henc as [? [HlowEnc Henc]].
+    rewrite Henc.
+    iMod (readonly_load with "Hsl") as (?) "Hsl2".
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+    wp_apply (wp_slice_len).
+    wp_pures.
+
+    iDestruct (is_slice_small_sz with "Hsl2") as %Hsl_sz.
+    wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
+    { rewrite -Hsl_sz.
+      split; last done.
+      rewrite app_length.
+      simpl.
+      word.
+    }
+    wp_pures.
+    iIntros (eeop_sl) "Hop_sl".
+    rewrite -Hsl_sz -Henc.
+    rewrite -> subslice_drop_take; last first.
+    { rewrite Henc. rewrite app_length. simpl. word. }
+    rewrite Henc.
+    rewrite app_length.
+    rewrite singleton_length.
+    replace (1 + length x - int.nat 1%Z)
+      with (length (x)) by word.
+    replace (int.nat (U64 1)) with (length [U8 2]) by done.
+    rewrite drop_app.
+    rewrite take_ge; last word.
+    rename x into eeop_bytes.
+    wp_pures.
+    wp_loadField.
+    iAssert (_) with "Hislow" as "#Hislow2".
+    iNamed "Hislow2".
+    wp_loadField.
+    iMod (readonly_alloc (is_slice_small eeop_sl byteT 1 eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
+    { simpl. iFrame. }
+    wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
+    { iFrame "#". done. }
+    iIntros (???) "(Hlow & Hrep_sl & _)".
+    wp_pures.
+    wp_store.
+    wp_load.
+
+    rewrite compute_state_snoc.
+    unfold apply_op.
+    simpl.
+
+    iApply "HΦ".
+    replace (compute_state ops) with st by done.
+    rewrite X.
+    iSplitR "Hrep_sl".
+    {
+      repeat iExists _.
+      iFrame "∗".
+      iFrame.
+      iMod (ghost_no_low_changes with "Hghost") as "$".
+      { word. }
+      { done. }
+      { rewrite compute_state_snoc.
+        unfold apply_op.
+        simpl. done.
+      }
+      iSplitL "HeeNextIndex".
+      { iModIntro. iApply to_named. iExactEq "HeeNextIndex".
+        repeat f_equal. rewrite app_length /=. word.
+      }
+      iFrame "Hislow".
+      iPureIntro. rewrite app_length /=. word.
+    }
+    {
+      unfold compute_reply.
+      simpl.
+      replace (compute_state ops) with (st) by done.
+      rewrite X.
+      iModIntro. iFrame "Hrep_sl".
+    }
   }
 Qed.
+
+Lemma ghost_low_setstate ops :
+  ⊢ |==> ∃ γst,
+  own_ghost_vnums γst (ops) (length ops) ∗
+  is_state γst (length (ops)) (compute_state ops).(lowops)
+.
+Proof.
+Admitted.
 
 Lemma wp_EEStateMachine__setState s :
   {{{
@@ -940,14 +1122,13 @@ Proof.
   iIntros (enc_ptr) "Henc".
   wp_pures.
   wp_load.
+
+
   simpl in Hsnap.
   unfold own_StateMachine.
   rewrite /ee_has_snap_encoding in Hsnap.
   set (st:=compute_state ops) in *.
   set (st_old:=compute_state ops_prev) in *.
-  destruct st.
-  destruct st_old.
-  iNamed "Hown".
   destruct Hsnap as (lowsnap & enc_lastSeq & enc_lastReply & Hencseq  & Hencrep & Hlowsnap & Hsnap).
   rewrite Hsnap.
   wp_apply (wp_ReadInt with "[$Hsnap_sl2]").
@@ -985,18 +1166,23 @@ Proof.
   wp_loadField.
   iMod (readonly_alloc (is_slice_small rest_enc_sl0 byteT 1 lowsnap) with "[Hsnap_sl2]") as "#Hsnap_sl2".
   { simpl. iFrame. }
+  unfold is_Versioned_setStateFn.
+  iClear "Hghost".
+  iMod ghost_low_setstate as (?) "[Hghost2 #Hstate]".
   wp_apply ("HsetState_spec" with "[$Hlowstate Hsnap_sl2]").
   {
-    iSplitL; first done.
+    iSplitR; first done.
     iFrame "#".
   }
   iIntros "Hlowstate".
   wp_pures.
+  wp_storeField.
   iApply "HΦ".
-  iExists _, _, _, _.
+  repeat iExists _.
   iFrame "∗ Hislow".
-  done.
-Qed.
+  iPureIntro.
+  admit. (* FIXME: overflow *)
+Admitted.
 
 Lemma wp_EEStatemachine__getState (s:loc) :
   ⊢ ee_is_InMemory_getStateFn (λ: <>, EEStateMachine__getState #s) (own_StateMachine s).
@@ -1062,7 +1248,10 @@ Proof.
   iSplitL.
   {
     repeat iExists _.
-    iFrame "Hislow ∗#".
+    iFrame "Hghost".
+    simpl.
+    iFrame "Hlowstate ∗".
+    iFrame "Hislow". iFrame "%".
   }
   iPureIntro.
   cbn.
@@ -1077,10 +1266,188 @@ Proof.
   done.
 Qed.
 
+
+Lemma applyreadonly_step γst ops o latestVnum (lastModifiedVnum:u64) :
+  length ops = int.nat (length ops) →
+  own_ghost_vnums γst ops latestVnum -∗
+  (∀ (vnum : u64),
+          ⌜int.nat vnum < int.nat latestVnum⌝
+          → ⌜int.nat lastModifiedVnum ≤ int.nat vnum⌝
+          → ∃ someOps : list low_OpType, is_state γst vnum someOps ∗
+          ⌜low_compute_reply someOps o =
+          low_compute_reply (compute_state ops).(lowops) o⌝) -∗
+  ⌜∀ ops' : list ee_record.(Sm.OpType),
+     ops' `prefix_of` ops
+  → int.nat lastModifiedVnum ≤ length ops'
+  → ee_record.(Sm.compute_reply) ops (ro_ee o) = ee_record.(Sm.compute_reply) ops' (ro_ee o)⌝
+.
+Proof.
+  intros HnoOverflow.
+  iNamed 1.
+  iIntros "#Hstates".
+  iIntros (???).
+  iSpecialize ("Hstates" $! (length a)).
+
+  assert (int.nat (length a) = (length a)) as HaOverflow.
+  {
+    apply prefix_length in a0.
+    rewrite HnoOverflow in a0.
+    word.
+  }
+
+  destruct (decide (int.nat latestVnum <= length a)).
+  { (* use HlatestVersion *)
+    iDestruct (big_sepS_elem_of_acc _ _ (U64 (length a)) with "HlatestVersion") as "[#HH _]".
+    { set_solver. }
+    iSpecialize ("HH" with "[%] [%]").
+    {
+      apply prefix_length in a0.
+      rewrite HaOverflow. done.
+    }
+    { word. }
+
+    iDestruct (big_sepS_elem_of_acc _ _ (U64 (length a)) with "Hversions") as "[H2 _]".
+    { set_solver. }
+    iSpecialize ("H2" with "[%]").
+    { apply prefix_length in a0. rewrite HaOverflow. done. }
+    iDestruct "H2" as "[Hbad|H2]".
+    {
+      unfold is_state.
+      iDestruct (ghost_map_points_to_valid_2 with "Hbad HH") as %[Hbad _].
+      exfalso. done.
+    }
+    iDestruct (ghost_map_points_to_agree with "HH H2") as %?.
+    iPureIntro.
+    replace (take (int.nat (length a)) ops) with a in H0.
+    {
+      unfold ee_record. simpl.
+      unfold compute_reply.
+      unfold apply_op_and_get_reply.
+      rewrite H0 /=.
+      done.
+    }
+    {
+      rewrite firstn_all2.
+    }
+  }
+Qed.
+
+Lemma wp_EEStateMachine__applyReadonly s :
+  {{{
+        True
+  }}}
+    EEStateMachine__applyReadonly #s
+  {{{
+        applyFn, RET applyFn;
+        ⌜val_ty applyFn (slice.T byteT -> unitT)⌝ ∗
+        ee_is_InMemory_applyReadonlyFn applyFn (own_StateMachine s)
+  }}}
+.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  iModIntro.
+  iApply "HΦ".
+  clear Φ.
+  iSplit.
+  {
+    iPureIntro. econstructor.
+  }
+
+  iIntros (???? Φ) "!# Hpre HΦ".
+  iDestruct "Hpre" as "(%Henc & %Hro & #Hsl & Hown)".
+  wp_pures.
+
+  iNamed "Hown".
+  destruct op.
+  { exfalso. done. }
+  { exfalso. done. }
+  destruct Henc as (lowop_bytes & Henc & ?).
+  subst.
+  iMod (readonly_load with "Hsl") as (?) "Hsl2".
+  wp_apply (wp_SliceGet with "[$Hsl2]").
+  { done. }
+  iIntros "Hsl2".
+  wp_pures.
+  wp_apply (wp_SliceGet with "[$Hsl2]").
+  { done. }
+  iIntros "Hsl2".
+  wp_pures.
+  wp_apply (wp_SliceGet with "[$Hsl2]").
+  { done. }
+  iIntros "Hsl2".
+  wp_pures.
+  wp_apply wp_slice_len.
+  wp_pures.
+
+  iDestruct (is_slice_small_sz with  "Hsl2") as %Hsl_sz.
+  wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
+  { rewrite -Hsl_sz.
+    split; last done.
+    rewrite app_length.
+    simpl.
+    word.
+  }
+  iIntros (eeop_sl) "Hop_sl".
+  rewrite -Hsl_sz.
+  rewrite -> subslice_drop_take; last first.
+  { rewrite app_length. simpl. word. }
+  rewrite app_length.
+  rewrite singleton_length.
+  replace (1 + length lowop_bytes - int.nat 1%Z)
+    with (length lowop_bytes) by word.
+  replace (int.nat (U64 1)) with (length [U8 2]) by done.
+  rewrite drop_app.
+  rewrite take_ge; last word.
+  wp_pures.
+  wp_loadField.
+  iAssert (_) with "Hislow" as "#Hislow2".
+  iNamed "Hislow2".
+  wp_loadField.
+  iMod (readonly_alloc (is_slice_small eeop_sl byteT 1 lowop_bytes) with "[Hop_sl]") as "#Hop_sl".
+  { simpl. iFrame. }
+  wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
+  { iFrame "#". done. }
+  iIntros (???) "(%Hlen & Hlow & Hrep_sl & #Hstates)".
+  iApply "HΦ".
+  iSplitR.
+  { iPureIntro. transitivity (int.nat latestVnum).
+    { word. }
+    done.
+  }
+  iSplitR.
+  {
+
+  }
+  wp_pures.
+  wp_store.
+  wp_load.
+
+  rewrite compute_state_snoc.
+  unfold apply_op.
+  simpl.
+
+    iApply "HΦ".
+    replace (compute_state ops) with st by done.
+    rewrite X.
+    iSplitR "Hrep_sl".
+    {
+      repeat iExists _.
+      iFrame "∗".
+      iFrame.
+      iMod (ghost_no_low_changes with "Hghost") as "$".
+      { word. }
+      { done. }
+      { rewrite compute_state_snoc.
+        unfold apply_op.
+
+
+
+
 Lemma wp_MakeEEKVStateMachine own_low lowSm :
   {{{
-        "#Hislow" ∷ low_is_InMemoryStateMachine lowSm own_low ∗
-        "Hlowstate" ∷ own_low []
+      "#Hislow" ∷ low_is_InMemoryStateMachine lowSm own_low ∗
+      "Hlowstate" ∷ own_low []
   }}}
     MakeEEKVStateMachine #lowSm
   {{{

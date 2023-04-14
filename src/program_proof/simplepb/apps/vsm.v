@@ -44,16 +44,16 @@ Definition is_Versioned_applyVolatileFn (applyVolatileFn:val) own_VersionedState
 .
 
 Definition is_Versioned_setStateFn (setStateFn:val) own_VersionedStateMachine : iProp Σ :=
-  ∀ ops_prev ops snap snap_sl (latestVnum:u64) γst γst',
+  ∀ ops_prev ops snap snap_sl (latestVnum:u64) γst γst' vnum,
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
         own_VersionedStateMachine γst ops_prev latestVnum ∗
-        is_state γst (length ops) ops
+        is_state γst' vnum ops
   }}}
-    setStateFn (slice_val snap_sl) #(U64 (length ops))
+    setStateFn (slice_val snap_sl) #vnum
   {{{
-        RET #(); own_VersionedStateMachine γst' (ops) (U64 (length ops))
+        RET #(); own_VersionedStateMachine γst' (ops) vnum
   }}}
 .
 
@@ -81,6 +81,7 @@ Definition is_Versioned_applyReadonlyFn (applyReadonlyFn:val) own_VersionedState
   {{{
         reply_sl q (lastModifiedVnum:u64),
         RET (#lastModifiedVnum, slice_val reply_sl);
+        ⌜int.nat lastModifiedVnum < int.nat latestVnum⌝ ∗
         own_VersionedStateMachine γst ops latestVnum ∗
         is_slice_small reply_sl byteT q (compute_reply ops op) ∗
         □(∀ (vnum:u64), ⌜int.nat vnum < int.nat latestVnum⌝ → ⌜int.nat lastModifiedVnum <= int.nat vnum⌝ →
