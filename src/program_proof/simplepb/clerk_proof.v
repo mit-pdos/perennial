@@ -423,16 +423,22 @@ Proof.
   }
 Qed.
 
-Lemma wp_Clerk__ApplyReadonly γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_Clerk__ApplyReadonly2 γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
-  (own_op_log γ ops ={∅,⊤∖↑pbN}=∗
-     □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+□(|={⊤∖↑pbN,∅}=>
+     ((∃ ops, own_op_log γ ops ∗
+       (own_op_log γ ops ={∅,⊤∖↑pbN}=∗
+       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                    is_slice_small op_sl byteT 1 op_bytes -∗
+                    own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) ∨
+       (∀ ops, True ={∅,⊤∖↑pbN}=∗
+       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                   is_slice_small op_sl byteT 1 op_bytes -∗
-                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
-WP clerk.Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
+                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))
+ -∗
+WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   iIntros (?) "Hck Hop_sl #Hupd".
   wp_call.
