@@ -471,12 +471,11 @@ Proof.
   rewrite !lookup_union.
   destruct (decide (k = k0)); subst.
   - rewrite lookup_insert Hnone Hsome.
-    rewrite union_with_Some_l union_with_Some_r //.
+    rewrite union_Some_l union_Some_r //.
   - rewrite lookup_insert_ne //.
     destruct_with_eqn (m' !! k0).
-    + rewrite !union_with_Some_l //.
-    + rewrite !union_with_Some_r.
-      rewrite lookup_delete_ne //.
+    + rewrite !union_Some_l //.
+    + rewrite lookup_delete_ne //.
 Qed.
 
 Lemma union_delete_insert (m0 m1 : gmap u64 val) a v :
@@ -616,7 +615,7 @@ Proof.
     destruct H as [Hnone Hsome].
     rewrite lookup_union in Hsome.
     rewrite Hnone /= in Hsome.
-    rewrite union_with_Some_r in Hsome.
+    rewrite left_id in Hsome.
     wp_apply ("Hbody" with "[$HI //]").
     iIntros "HI".
     iApply "HΦ".

@@ -20,9 +20,9 @@ Proof.
   iDestruct (ltuple_prefix with "Hltuple Hllb") as "%Hl".
   iDestruct (ptuple_prefix with "Hptuple Hplb") as "%Hp".
   iPureIntro.
-  unshelve epose proof (prefix_lookup logi' logi tid v1 _ _); [done | done |].
-  unshelve epose proof (prefix_lookup phys' phys tid v2 _ _); [done | done |].
-  unshelve epose proof (prefix_lookup phys logi tid v2 _ _); [done | done |].
+  unshelve epose proof (prefix_lookup_Some logi' logi tid v1 _ _); [done | done |].
+  unshelve epose proof (prefix_lookup_Some phys' phys tid v2 _ _); [done | done |].
+  unshelve epose proof (prefix_lookup_Some phys logi tid v2 _ _); [done | done |].
   rewrite H in H1. by inversion H1.
 Qed.
 

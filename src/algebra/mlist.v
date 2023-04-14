@@ -234,7 +234,7 @@ Proof.
   iDestruct 1 as (l2 Hlookup2) "H2".
   iDestruct (fmlist_lb_agree with "H1 H2") as %Hprefix.
   iPureIntro.
-  destruct Hprefix as [Hpre|Hpre]; eapply prefix_lookup in Hpre; eauto; congruence.
+  destruct Hprefix as [Hpre|Hpre]; eapply prefix_lookup_Some in Hpre; eauto; congruence.
 Qed.
 
 Lemma fmlist_idx_agree_2 γ q l i a :
@@ -244,7 +244,7 @@ Proof.
   iDestruct 1 as (l2 Hlookup2) "H2".
   iDestruct (fmlist_agree_2 with "H1 H2") as %Hpre.
   iPureIntro.
-  eapply prefix_lookup in Hpre; eauto; congruence.
+  eapply prefix_lookup_Some in Hpre; eauto; congruence.
 Qed.
 
 Lemma fmlist_lb_mono γ l1 l2:

@@ -82,7 +82,7 @@ Section list.
     intros.
     apply lookup_lt_is_Some_2 in H0 as [x ?].
     rewrite H0.
-    eapply prefix_lookup in H0; eauto.
+    eapply prefix_lookup_Some in H0; eauto.
   Qed.
 
   Lemma list_eq_bounded l1 l2 :
