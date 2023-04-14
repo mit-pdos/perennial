@@ -23,7 +23,7 @@ Global Instance subG_pb_prereadΣ {Σ} : subG (pb_prereadΣ) Σ → (pb_prereadG
 Proof. solve_inG. Qed.
 
 Context `{!gooseGlobalGS Σ}.
-Context `{pb_prereadG Σ}.
+Context `{!pb_prereadG Σ}.
 
 (* This is the key ghost state, keeping track of RO ops that have been
    pre-applied before state is committed. *)

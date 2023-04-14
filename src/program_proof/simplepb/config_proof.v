@@ -127,7 +127,7 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition is_host (host:u64) γ : iProp Σ :=
+Definition is_config_host (host:u64) γ : iProp Σ :=
   ∃ γrpc,
   handler_spec γrpc host (U64 0) (GetEpochAndConfig_spec γ) ∗
   handler_spec γrpc host (U64 1) (GetConfig_spec γ) ∗
@@ -147,12 +147,12 @@ Definition is_Clerk (ck:loc) γ : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[config.Clerk :: "cl"] #cl) ∗
   "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
-  "#Hhost" ∷ is_host srv γ
+  "#Hhost" ∷ is_config_host srv γ
 .
 
 Lemma wp_MakeClerk configHost γ:
   {{{
-      is_host configHost γ
+      is_config_host configHost γ
   }}}
     config.MakeClerk #configHost
   {{{
@@ -1266,7 +1266,7 @@ Proof.
 Qed.
 
 Lemma wp_Server__Serve s γ host :
-  is_host host γ -∗ is_Server s γ -∗
+  is_config_host host γ -∗ is_Server s γ -∗
   {{{
         True
   }}}
@@ -1390,7 +1390,7 @@ Qed.
 
 Lemma config_server_init host γ :
   host c↦ ∅ ={⊤}=∗
-  is_host host γ.
+  is_config_host host γ.
 Proof.
   iIntros "Hchan".
   iMod (handler_is_init_list2 host (config_spec_list γ) with "Hchan") as (γrpc) "H".

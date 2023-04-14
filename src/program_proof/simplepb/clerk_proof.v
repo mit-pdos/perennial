@@ -1,8 +1,11 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export clerk.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_apply_proof pb_makeclerk_proof.
-From Perennial.program_proof.simplepb Require Import config_protocol_proof pb_roapply_proof.
+From Perennial.program_proof.simplepb Require Import clerk_int_proof proph_proof.
+From iris.algebra Require Import mono_list.
 
+(** This library layers exactly-once read operations on top of clerk_int_proof, which
+   has duplicated reads. *)
 Section clerk_proof.
 Context `{!heapGS Σ}.
 Context {pb_record:Sm.t}.
@@ -18,579 +21,306 @@ Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
 Context `{!pbG Σ}.
 Context `{!config_proof.configG Σ}.
 
-Definition own_Clerk2 ck γ : iProp Σ :=
-  ∃ (confCk:loc) clerks_sl clerks γsrvs,
-    "#HconfCk" ∷ readonly (ck ↦[clerk.Clerk :: "confCk"] #confCk) ∗
-    "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] (slice_val clerks_sl) ∗
-    "#HisConfCk" ∷ is_Clerk2 confCk γ ∗ (* config clerk *)
-    "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
-    "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv ∈ clerks ; γsrvs, pb_definitions.is_Clerk ck γ γsrv) ∗
-    "%Hlen" ∷ ⌜length γsrvs > 0⌝
-.
+Record proph_req_names :=
+{
+  op_gn:gname;
+  finish_gn:gname;
+}.
 
-Lemma wp_makeClerks γ config_sl servers γsrvs :
-  {{{
-        "#Hhosts" ∷ ([∗ list] γsrv ; host ∈ γsrvs ; servers, is_pb_host host γ γsrv) ∗
-        "Hservers_sl" ∷ is_slice_small config_sl uint64T 1 servers
-  }}}
-    makeClerks (slice_val config_sl)
-  {{{
-        clerks_sl clerks, RET (slice_val clerks_sl);
-     readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
-    ([∗ list] ck ; γsrv ∈ clerks ; γsrvs, pb_definitions.is_Clerk ck γ γsrv)
-  }}}
-.
+Definition prophReadN := nroot .@ "prophread".
+Definition prophReadReqN := prophReadN .@ "req".
+Definition prophReadLogN := prophReadN .@ "log".
+
+Definition is_proph_read_inv γ : iProp Σ :=
+  inv prophReadLogN (∃ σ, own_op_log γ σ ∗ own_int_log γ σ).
+
+Definition own_Clerk ck γ : iProp Σ :=
+  is_proph_read_inv γ ∗ own_Clerk2 ck γ.
+
+Definition is_pb_host host γ : iProp Σ :=
+  is_pb_config_host host γ ∗ is_proph_read_inv γ.
+
+Lemma wp_Clerk__ApplyReadonly2' γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+is_readonly_op op →
+has_op_encoding op_bytes op →
+own_Clerk ck γ -∗
+is_slice_small op_sl byteT 1 op_bytes -∗
+  □(∀ opsToGet, |={⊤∖↑pbN∖↑prophReadLogN,∅}=>
+     ((∃ ops, own_int_log γ ops ∗
+       (⌜ops = opsToGet⌝ → own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadLogN}=∗
+       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                    is_slice_small op_sl byteT 1 op_bytes -∗
+                    own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) ∨
+       (True ={∅,⊤∖↑pbN∖↑prophReadLogN}=∗
+       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply opsToGet op) -∗
+                  is_slice_small op_sl byteT 1 op_bytes -∗
+                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))
+ -∗
+WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
 Proof.
-  iIntros (Φ).
-  iNamed 1. iIntros "HΦ".
-  wp_lam.
-  wp_apply (wp_slice_len).
-  wp_apply (wp_NewSlice).
-  iIntros (clerks_sl) "Hclerks_sl".
-  wp_pures.
-  iDestruct (is_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
-  iDestruct (is_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
-  iDestruct (is_slice_small_sz with "Hservers_sl") as %Hservers_sz.
-  rewrite replicate_length in Hclerks_sz.
-  simpl.
-  wp_apply (wp_ref_to).
-  { eauto. }
-  iIntros (i_ptr) "Hi".
-  wp_pures.
-
-  (* weaken to loop invariant *)
-  iAssert (
-        ∃ (i:u64) clerksComplete clerksLeft,
-          "Hi" ∷ i_ptr ↦[uint64T] #i ∗
-          "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
-          "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
-          "Hclerks_sl" ∷ is_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
-          "Hservers_sl" ∷ is_slice_small config_sl uint64T 1 servers ∗
-          "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) γsrvs),
-                              pb_definitions.is_Clerk ck γ γsrv
-                              )
-          )%I with "[Hclerks_sl Hservers_sl Hi]" as "HH".
-  {
-    iExists _, [], _.
-    simpl.
-    iFrame "∗#".
-    iPureIntro.
-    split; first word.
-    rewrite replicate_length.
-    word.
-  }
-  wp_forBreak_cond.
-
-  wp_pures.
-  iNamed "HH".
-  wp_load.
-  wp_apply (wp_slice_len).
-  wp_pures.
-  wp_if_destruct.
-  { (* loop not finished *)
-    wp_pures.
-    wp_load.
-    assert (int.nat i < length servers) as Hlookup.
-    { word. }
-    apply list_lookup_lt in Hlookup as [host Hlookup].
-    wp_apply (wp_SliceGet with "[$Hservers_sl]").
-    { done. }
-
-    iIntros "Hserver_sl".
-
-    iDestruct (big_sepL2_lookup_2_some with "Hhosts") as %HH.
-    { done. }
-    destruct HH as [γsrv Hserver_γs_lookup].
-    wp_apply (pb_makeclerk_proof.wp_MakeClerk with "[]").
-    { iDestruct (big_sepL2_lookup_acc with "Hhosts") as "[$ _]"; done. }
-    iIntros (pbCk) "#HpbCk".
-    wp_load.
-    wp_apply (wp_SliceSet (V:=loc) with "[Hclerks_sl]").
-    {
-      iFrame "Hclerks_sl".
-      iPureIntro.
-      apply list_lookup_lt.
-      word.
-    }
-    iIntros "Hclerks_sl".
-    wp_load.
-    wp_store.
-    iLeft.
-    iModIntro.
-    iSplitR; first done.
-    iFrame "∗#".
-    iExists _, _, _.
-    iFrame "∗".
-    instantiate (1:=clerksComplete ++ [pbCk]).
-    iSplitR.
-    { iPureIntro. rewrite app_length /=. word. }
-    instantiate (2:=tail clerksLeft).
-    destruct clerksLeft.
-    { exfalso. rewrite app_nil_r in Hlen. word. }
-
-    iSplitR.
-    {
-      iPureIntro.
-      do 2 rewrite app_length /=.
-      rewrite -Hlen app_length /=.
-      word.
-    }
-    iSplitL.
-    {
-      iApply to_named.
-      iExactEq "Hclerks_sl".
-      {
-        f_equal.
-        simpl.
-        rewrite -HcompleteLen.
-        replace (length _) with (length clerksComplete + 0) by lia.
-        by rewrite insert_app_r /= -app_assoc.
-      }
-    }
-    rewrite app_length.
-    simpl.
-    iDestruct (big_sepL2_length with "Hhosts") as %Hserver_len_eq.
-    rewrite take_more; last first.
-    { lia. }
-
-    iApply (big_sepL2_app with "Hclerks_is []").
-
-    replace (take 1 (drop (_) γsrvs)) with ([γsrv]); last first.
-    {
-      apply ListSolver.list_eq_bounded.
-      {
-        simpl.
-        rewrite take_length.
-        rewrite drop_length.
-        word.
-      }
-      intros.
-      rewrite list_lookup_singleton.
-      destruct i0; last first.
-      {
-        exfalso. simpl in *. word.
-      }
-      rewrite lookup_take; last first.
-      { word. }
-      rewrite lookup_drop.
-      rewrite HcompleteLen.
-      rewrite -Hserver_γs_lookup.
-      f_equal.
-      word.
-      (* TODO: list_solver. *)
-    }
-    iApply big_sepL2_singleton.
-    iFrame "#".
-  }
-  (* done with for loop *)
+  iIntros (??) "[#Hinv Hck] ? #Hupd".
+  wp_apply (wp_Clerk__ApplyReadonly2 with "[$] [$] [-]"); try done.
   iModIntro.
-  iRight.
-  iSplitR; first done.
+  iInv "Hinv" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hoplog Hintlog]".
+  iMod (fupd_mask_subseteq (⊤∖↑pbN∖↑prophReadLogN)) as "Hmask".
+  { solve_ndisj. }
+  iSpecialize ("Hupd" $! σ).
+  iMod "Hupd" as "[Hupd|Htriv]".
+  {
+    iDestruct "Hupd" as (?) "[Hintlog2 Hupd]".
+    iDestruct (own_valid_2 with "Hintlog Hintlog2") as %Hvalid.
+    assert (σ = ops); last subst.
+    { rewrite mono_list_auth_dfrac_op_valid_L in Hvalid. by destruct Hvalid. }
+    iModIntro.
+    iExists _; iFrame.
+    iIntros "Hintlog2".
+    iMod ("Hupd" with "[//] [$]") as "#Hupd".
+    iMod "Hmask". iMod ("Hclose" with "[Hintlog Hoplog]").
+    { iExists _; iFrame. }
+    iModIntro. iModIntro.
+    iIntros.
+    iApply ("Hupd" with "[$] [$] [$]").
+  }
+  {
+    iModIntro.
+    iExists _.
+    iFrame.
+    iIntros "Hintlog".
+    iMod ("Htriv" with "[$]") as "#Hupd".
+    iMod "Hmask". iMod ("Hclose" with "[Hintlog Hoplog]").
+    { iExists _; iFrame. }
+    iModIntro. iIntros. iModIntro.
+    iIntros.
+    iApply ("Hupd" with "[$] [$] [$]").
+  }
+Qed.
+
+Implicit Types γreq : proph_req_names.
+
+Context `{inG Σ dfracR}.
+
+Definition operation_incomplete γreq : iProp Σ := own γreq.(op_gn) (DfracOwn 1).
+Definition operation_receipt γreq : iProp Σ := own γreq.(op_gn) (DfracDiscarded).
+
+Lemma complete_operation γreq :
+  operation_incomplete γreq ==∗ operation_receipt γreq.
+Proof.
+  iIntros "H1".
+  iApply (own_update with "H1").
+  apply (cmra_update_exclusive).
+  done.
+Qed.
+
+Definition result_claimed γreq : iProp Σ := own γreq.(finish_gn) (DfracDiscarded).
+Definition result_unclaimed γreq : iProp Σ := own γreq.(finish_gn) (DfracOwn 1).
+
+Definition read_fupd γ readOp (Q:list u8 → iProp Σ) : iProp Σ :=
+£ 1 ∗ (|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_int_log γ ops ∗
+  (own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗ Q (compute_reply ops readOp))).
+
+Definition prophetic_read_inv prophV γ γreq readOp Φ : iProp Σ :=
+  inv prophReadReqN (
+        (*
+          XXX: This invariant is a bit ad-hoc. A more principled approach would be to
+          give the server a fraction of the ghost resources for the "state" of
+          this protocol at the beginning of time, and for this invariant to have
+          only a fraction of it.
+        *)
+  operation_incomplete γreq ∗ read_fupd γ readOp Φ ∨
+  operation_receipt γreq ∗ ((Φ prophV) ∨ result_claimed γreq))
+.
+
+Lemma wp_Clerk__ApplyReadonly γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+is_readonly_op op →
+has_op_encoding op_bytes op →
+own_Clerk ck γ -∗
+is_slice_small op_sl byteT 1 op_bytes -∗
+((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_int_log γ ops ∗
+  (own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗
+     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                  is_slice_small op_sl byteT 1 op_bytes -∗
+                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
+WP clerk.Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
+Proof using H0.
+  iIntros (??) "Hck Hsl Hupd".
+  wp_call.
+  wp_apply (wp_NewProphBytes).
+  iIntros (??) "Hproph".
+  wp_pure1_credit "Hlc".
+  iAssert (|={⊤}=> ∃ γreq, result_unclaimed γreq ∗ prophetic_read_inv b γ γreq _
+  (λ reply, ∀ reply_sl : Slice.t,
+             is_slice_small reply_sl byteT 1 reply -∗
+             is_slice_small op_sl byteT 1 op_bytes -∗ own_Clerk ck γ -∗ Φ (slice_val reply_sl))
+          )%I with "[Hupd Hlc]" as ">H".
+  {
+    iMod (own_alloc (DfracOwn 1)) as (γop) "Hop".
+    { done. }
+    iMod (own_alloc (DfracOwn 1)) as (γfinish) "Hfinish".
+    { done. }
+    iExists {| op_gn := γop ; finish_gn := γfinish |}.
+    iFrame. iMod (inv_alloc with "[-]") as "$"; last done.
+    iNext. iLeft. iFrame "Hop ∗".
+  }
+  iDestruct "H" as (?) "[Hfinish #Hinv]".
   wp_pures.
-  iApply "HΦ".
-  iMod (readonly_alloc_1 with "Hclerks_sl") as "$".
-  iFrame.
-  destruct clerksLeft.
-  2:{ exfalso. rewrite app_length /= in Hlen. word. }
-  rewrite app_nil_r in Hlen |- *.
-  iDestruct (big_sepL2_length with "Hhosts") as %?.
-  rewrite Hlen -H0.
-  rewrite firstn_all.
-  by iFrame "#".
+  wp_bind (Clerk__ApplyRo2 _ _).
+  wp_apply (wp_frame_wand with "[Hproph Hfinish]").
+  { iNamedAccu. }
+  wp_apply (wp_Clerk__ApplyReadonly2' with "Hck Hsl []"); try done.
+  iModIntro.
+  iInv "Hinv" as "Hi" "Hclose".
+  iIntros (?).
+  iDestruct "Hi" as "[Hnotdone|Hdone]".
+  2:{ (* case: one of the low-level uRPC requests already fired the fupd before. *)
+    iApply fupd_mask_intro.
+    { set_solver. }
+    iIntros "Hmask".
+    iRight.
+    iIntros "_". iMod "Hmask".
+    iDestruct "Hdone" as "[#>Hreceipt ?]".
+    iMod ("Hclose" with "[-]").
+    { iRight. iFrame "∗#". }
+    iModIntro.
+    iModIntro.
+    iIntros (?) "Hrep_sl Hop_sl Hck".
+    iNamed 1.
+    wp_pures.
+    wp_apply (wp_ResolveBytes with "[$Hproph $Hrep_sl]").
+    iIntros "[% ?]".
+    subst.
+    wp_pure1_credit "Hlc".
+    wp_pures.
+    iInv "Hinv" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+    iDestruct "Hi" as "[[Hbad _]| Hi]".
+    { iDestruct (own_valid_2 with "Hbad Hreceipt") as %?.
+      exfalso. done. }
+    iDestruct "Hi" as "[_ [HΦ | Hbad]]".
+    2:{
+      iDestruct (own_valid_2 with "Hbad Hfinish") as %?.
+      exfalso. done. }
+    iMod (own_update with "Hfinish") as "Hfinish".
+    { apply dfrac_discard_update. }
+    iMod ("Hclose" with "[Hfinish]").
+    { iRight. iFrame "#". iRight. iFrame. }
+    iModIntro.
+    iApply ("HΦ" with "[$] [$] [$]").
+  }
+  { (* other case: we get to fire the fupd! *)
+    destruct (decide (compute_reply x op = b)) eqn:X.
+    {
+      subst.
+      iDestruct "Hnotdone" as "[>Hinc Hfupd]".
+      iLeft.
+      iDestruct "Hfupd" as "[>Hlc Hfupd]".
+      iMod (lc_fupd_elim_later with "Hlc Hfupd") as "Hfupd".
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "Hfupd" as "Hupd".
+      { solve_ndisj. }
+      iDestruct "Hupd" as (?) "[Hlog Hupd]".
+      iModIntro. iExists _; iFrame.
+      iIntros "% Hlog"; subst.
+      iMod ("Hupd" with "Hlog") as "HQ".
+      iMod (complete_operation with "Hinc") as "#Hreceipt".
+      iMod "Hmask".
+      iMod ("Hclose" with "[HQ]").
+      { iRight. iFrame "#". iLeft. iNext. iFrame "HQ". }
+      iModIntro.
+      iModIntro.
+      iIntros (?) "Hrep_sl ? ?". iNamed 1.
+      wp_pures.
+      wp_apply (wp_ResolveBytes with "[$Hrep_sl $Hproph]").
+      iIntros "[% ?]".
+      wp_pure1_credit "Hlc".
+      wp_pures.
+      iInv "Hinv" as "Hi" "Hclose".
+      iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+      iDestruct "Hi" as "[[Hbad _]| Hi]".
+      { iDestruct (own_valid_2 with "Hbad Hreceipt") as %?.
+        exfalso. done. }
+      iDestruct "Hi" as "[_ [HΦ | Hbad]]".
+      2:{
+        iDestruct (own_valid_2 with "Hbad Hfinish") as %?.
+        exfalso. done. }
+      iMod (own_update with "Hfinish") as "Hfinish".
+      { apply dfrac_discard_update. }
+      iMod ("Hclose" with "[Hfinish]").
+      { iRight. iFrame "#". iRight. iFrame. }
+      iModIntro.
+      iApply ("HΦ" with "[$] [$] [$]").
+    }
+    {
+      iApply fupd_mask_intro.
+      { set_solver. }
+      iIntros "Hmask".
+      iRight.
+      iIntros "_". iMod "Hmask".
+      iMod ("Hclose" with "[-]").
+      { iFrame "∗#". }
+      iModIntro.
+      iModIntro.
+      iIntros (?) "Hrep_sl Hop_sl Hck".
+      iNamed 1.
+      wp_pures.
+      wp_apply (wp_ResolveBytes with "[$Hproph $Hrep_sl]").
+      iIntros "[% ?]".
+      subst. by exfalso.
+    }
+  }
+Qed.
+
+Lemma wp_Clerk__Apply γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+has_op_encoding op_bytes op →
+own_Clerk ck γ -∗
+is_slice_small op_sl byteT 1 op_bytes -∗
+□((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_op_log γ ops ∗
+  (own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN∖↑prophReadN}=∗
+     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                  is_slice_small op_sl byteT 1 op_bytes -∗
+                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
+WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
+Proof.
+  iIntros (?) "[#Hinv Hck] ? #Hupd".
+  wp_apply (wp_Clerk__Apply2 with "[$] [$] [-]"); try done.
+  iModIntro.
+  iInv "Hinv" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hoplog Hintlog]".
+  iMod (fupd_mask_subseteq (⊤∖↑pbN∖↑prophReadN)) as "Hmask".
+  { solve_ndisj. }
+  iMod "Hupd".
+  iDestruct "Hupd" as (?) "[Hoplog2 Hupd]".
+  iDestruct (own_valid_2 with "Hoplog Hoplog2") as %Hvalid.
+  assert (σ = ops); last subst.
+  { rewrite mono_list_auth_dfrac_op_valid_L in Hvalid. by destruct Hvalid. }
+  iModIntro.
+  iExists _; iFrame.
+  iIntros "Hintlog2".
+  iCombine "Hoplog Hoplog2" as "Hoplog".
+  iMod (own_update with "Hoplog") as "Hoplog".
+  { apply mono_list_update. instantiate (1:=ops ++ [op]). by apply prefix_app_r. }
+  iDestruct "Hoplog" as "[Hoplog Hoplog2]".
+  iMod ("Hupd" with "[$]") as "Hupd".
+  iMod "Hmask". iMod ("Hclose" with "[Hintlog2 Hoplog]").
+  { iExists _; iFrame. }
+  iModIntro.
+  iIntros.
+  iApply ("Hupd" with "[$] [$] [$]").
 Qed.
 
 Lemma wp_MakeClerk γ configHost:
   {{{
-        "#Hconf" ∷ is_conf_host configHost γ
+        "#Hconf" ∷ is_pb_host configHost γ
   }}}
     Make #configHost
   {{{
-        (ck:loc), RET #ck; own_Clerk2 ck γ
+        (ck:loc), RET #ck; own_Clerk ck γ
   }}}
 .
 Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_call.
-  wp_apply (wp_allocStruct).
-  { Transparent slice.T. repeat constructor. Opaque slice.T. }
-  iIntros (?) "Hl".
-  iDestruct (struct_fields_split with "Hl") as "HH".
-  iNamed "HH".
-  wp_pures.
+  iIntros (?) "#[? ?] HΦ".
   wp_apply (wp_MakeClerk2 with "[$]").
-  iIntros (?) "#HconfCk".
-  wp_storeField.
-  wp_pures.
-
-  wp_forBreak.
-  wp_pures.
-  wp_loadField.
-  wp_bind (config.Clerk__GetConfig _).
-  wp_apply (wp_frame_wand with "[-HconfCk]").
-  { iNamedAccu. }
-  wp_apply (wp_Clerk__GetConfig2 with "HconfCk").
-  iModIntro.
-  iIntros (???) "[Hconf_sl #Hhost]".
-  iNamed 1.
-  wp_pures.
-  wp_apply (wp_slice_len).
-  wp_if_destruct.
-  {
-    iLeft.
-    iModIntro.
-    iFrame.
-    done.
-  }
-  iDestruct (is_slice_small_sz with "Hconf_sl") as "%Hlen".
-  iDestruct (big_sepL2_length with "Hhost") as %Hleneq.
-  assert (length conf > 0).
-  {
-    rewrite Hlen.
-    destruct (decide (config_sl.(Slice.sz) = 0)).
-    { exfalso. rewrite e in Heqb. done. }
-
-    destruct (decide (int.nat config_sl.(Slice.sz) = 0)).
-    {
-      exfalso.
-      replace (config_sl.(Slice.sz)) with (U64 0) in * by word.
-      done.
-    }
-    word.
-  }
-
-  wp_apply (wp_makeClerks with "[$]").
-  iIntros (??) "[#Hclerks_sl #Hclerks_rpc]".
-  wp_storeField.
-  iRight.
-  iSplitR; first done.
-  iMod (readonly_alloc_1 with "confCk") as "#?".
-  iModIntro.
-  iDestruct (big_sepL2_length with "[$]") as %?.
-  wp_pures.
-  iApply "HΦ".
-  repeat iExists _.
-  iModIntro. iFrame "∗#%".
-  iPureIntro. lia.
+  iIntros (?) "?". iApply "HΦ".
+  iFrame "∗#".
 Qed.
-
-Lemma wp_Clerk__Apply2 γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
-has_op_encoding op_bytes op →
-own_Clerk2 ck γ -∗
-is_slice_small op_sl byteT 1 op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
-  (own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                  is_slice_small op_sl byteT 1 op_bytes -∗
-                  own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
-WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
-Proof.
-  iIntros (?) "Hck Hop_sl #Hupd".
-  wp_call.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (ret) "Hret".
-  wp_pures.
-
-  iAssert (
-      ∃ some_sl,
-        "Hret" ∷ ret ↦[slice.T byteT] (slice_val some_sl)
-    )%I with "[Hret]" as "HH".
-  { replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done. iExists _; iFrame. }
-  wp_forBreak.
-  iNamed "HH".
-  wp_pures.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (err) "Herr".
-  wp_pures.
-  iNamed "Hck".
-  wp_loadField.
-
-  wp_bind (Clerk__Apply _ _).
-  wp_apply (wp_wand with "[Hop_sl]").
-  { (* apply *)
-    pose proof Hlen as Hlen2.
-    apply list_lookup_lt in Hlen2 as [? Hlookup].
-    iDestruct (big_sepL2_lookup_2_some with "Hclerks_rpc") as %[? ?].
-    { done. }
-    iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks".
-    wp_apply (wp_SliceGet with "[$Hclerks]").
-    { iPureIntro. done. }
-    iIntros "_".
-    wp_apply (pb_apply_proof.wp_Clerk__Apply with "[] Hop_sl").
-    { done. }
-    { iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc") as "[$ _]"; done. }
-    iModIntro.
-    iSplitL.
-    { (* successful case *)
-      iMod "Hupd" as (?) "[Hown Hupd2]".
-      iModIntro.
-      iExists _.
-      iFrame "Hown".
-      iIntros "Hown".
-      iMod ("Hupd2" with "Hown") as "Hupd2".
-      iModIntro.
-      iIntros (?) "Hsl Hsl2".
-      iDestruct ("Hupd2" with "Hsl") as "HΦ".
-      instantiate (1:=(λ (v:goose_lang.val),
-        (∃ (reply_sl:Slice.t),
-        ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_Clerk2 ck γ -∗ Φ (slice_val reply_sl))) ∨
-        (∃ (err:u64) unused_sl, is_slice_small op_sl byteT 1 op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
-      simpl.
-      iLeft.
-      iExists _.
-      iSpecialize ("HΦ" with "Hsl2").
-      iSplitR; first done.
-      iFrame.
-    }
-    { (* error case *)
-      iIntros (?? Herr).
-      iIntros "Hop_sl".
-      iRight.
-      iExists err0, _.
-      iSplitL; first done.
-      done.
-    }
-  }
-  iIntros (v) "H1".
-  iDestruct "H1" as "[Hsuccess|Herror]".
-  {
-    iDestruct "Hsuccess" as (?) "[-> HΦ]".
-    wp_pures.
-    wp_store.
-    wp_store.
-    wp_load.
-    wp_pures.
-    iRight.
-    iModIntro.
-    iSplitR; first done.
-    wp_pures.
-    wp_load.
-    iApply "HΦ".
-    iModIntro.
-    repeat iExists _.
-    iFrame "∗#%".
-  }
-  { (* retry *)
-    iDestruct "Herror" as (??) "[Hop_sl Herror]".
-    iDestruct "Herror" as "[%Herr ->]".
-    wp_pures.
-    wp_store.
-    wp_store.
-    wp_load.
-    wp_pures.
-    wp_if_destruct.
-    {
-      exfalso.
-      done.
-    }
-    wp_apply (wp_Sleep).
-    wp_pures.
-    wp_loadField.
-    wp_bind (config.Clerk__GetConfig _).
-    wp_apply (wp_frame_wand with "[-]").
-    { iNamedAccu. }
-    wp_apply (wp_Clerk__GetConfig2 with "HisConfCk").
-    iModIntro.
-    iIntros (???) "[Hconf_sl #Hhosts]".
-    iNamed 1.
-    wp_pures.
-    iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
-    wp_apply (wp_slice_len).
-    wp_pures.
-    iDestruct (big_sepL2_length with "Hhosts") as %?.
-    wp_if_destruct.
-    {
-      wp_apply (wp_makeClerks with "[$]").
-      iIntros (??) "[? ?]".
-      wp_storeField.
-      iLeft. iModIntro.
-      iSplitR; first done.
-      iFrame.
-      iSplitR "Hret".
-      { repeat iExists _. iFrame "∗#%".
-        iPureIntro. word. }
-      iExists _. iFrame.
-    }
-    {
-      wp_pures.
-      iLeft.
-      iFrame. iSplitR; first done.
-      iModIntro. iSplitR "Hret".
-      2: eauto with iFrame.
-      repeat iExists _; iFrame "∗#%".
-    }
-  }
-Qed.
-
-Lemma wp_Clerk__ApplyReadonly2 γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
-is_readonly_op op →
-has_op_encoding op_bytes op →
-own_Clerk2 ck γ -∗
-is_slice_small op_sl byteT 1 op_bytes -∗
-□(|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
-       (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
-       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                    is_slice_small op_sl byteT 1 op_bytes -∗
-                    own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))
- -∗
-WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
-Proof.
-  iIntros (??) "Hck Hop_sl #Hupd".
-  wp_call.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (ret) "Hret".
-  wp_pures.
-
-  iAssert (
-      ∃ some_sl,
-        "Hret" ∷ ret ↦[slice.T byteT] (slice_val some_sl)
-    )%I with "[Hret]" as "HH".
-  { replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done. iExists _; iFrame. }
-  wp_forBreak.
-  iNamed "HH".
-  wp_pures.
-
-  wp_apply (wp_random).
-  iIntros (randint) "_".
-  iNamed "Hck".
-  wp_loadField.
-  wp_apply wp_slice_len.
-  wp_pures.
-  set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
-  iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
-  iDestruct (is_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
-  assert (int.nat clerkIdx < length clerks) as Hlookup_clerks.
-  { (* FIXME: better lemmas about mod? *)
-    admit.
-  }
-
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (err) "Herr".
-  wp_pures.
-  wp_loadField.
-
-  wp_bind (Clerk__ApplyRo _ _).
-  wp_apply (wp_frame_wand with "[HreplicaClerks]"); first iNamedAccu.
-  wp_apply (wp_wand with "[Hop_sl]").
-  { (* apply *)
-    apply list_lookup_lt in Hlookup_clerks as [? Hlookup].
-    iDestruct (big_sepL2_lookup_1_some with "Hclerks_rpc") as %[? ?].
-    { done. }
-    iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks".
-    wp_apply (wp_SliceGet with "[$Hclerks]").
-    { iPureIntro. done. }
-    iIntros "_".
-    wp_apply (pb_roapply_proof.wp_Clerk__ApplyRo with "[] Hop_sl").
-    { done. }
-    { done. }
-    { iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc") as "[$ _]"; done. }
-    iModIntro.
-    iSplitL.
-    { (* successful case *)
-      iMod "Hupd" as (?) "[Hown Hupd2]".
-      iModIntro.
-      iExists _.
-      iFrame "Hown".
-      iIntros "Hown".
-      iMod ("Hupd2" with "Hown") as "#Hupd2".
-      iModIntro.
-      iModIntro.
-      iIntros (?) "Hsl Hsl2".
-      iDestruct ("Hupd2" with "Hsl") as "HΦ".
-      instantiate (1:=(λ (v:goose_lang.val),
-        (∃ (reply_sl:Slice.t),
-        ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_Clerk2 ck γ -∗ Φ (slice_val reply_sl))) ∨
-        (∃ (err:u64) unused_sl, is_slice_small op_sl byteT 1 op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
-      simpl.
-      iLeft.
-      iExists _.
-      iSpecialize ("HΦ" with "Hsl2").
-      iSplitR; first done.
-      iFrame.
-    }
-    { (* error case *)
-      iIntros (?? Herr).
-      iIntros "Hop_sl".
-      iRight.
-      iExists err0, _.
-      iSplitL; first done.
-      done.
-    }
-  }
-  iIntros (v) "H1".
-  iNamed 1.
-  iDestruct "H1" as "[Hsuccess|Herror]".
-  {
-    iDestruct "Hsuccess" as (?) "[-> HΦ]".
-    wp_pures.
-    wp_store.
-    wp_store.
-    wp_load.
-    wp_pures.
-    iRight.
-    iModIntro.
-    iSplitR; first done.
-    wp_pures.
-    wp_load.
-    iApply "HΦ".
-    iModIntro.
-    repeat iExists _.
-    iFrame "∗#%".
-  }
-  { (* retry *)
-    iDestruct "Herror" as (??) "[Hop_sl Herror]".
-    iDestruct "Herror" as "[%Herr ->]".
-    wp_pures.
-    wp_store.
-    wp_store.
-    wp_load.
-    wp_pures.
-    wp_if_destruct.
-    {
-      exfalso.
-      done.
-    }
-    wp_apply (wp_Sleep).
-    wp_pures.
-    wp_loadField.
-    wp_bind (config.Clerk__GetConfig _).
-    wp_apply (wp_frame_wand with "[-]").
-    { iNamedAccu. }
-    wp_apply (wp_Clerk__GetConfig2 with "HisConfCk").
-    iModIntro.
-    iIntros (???) "[Hconf_sl #Hhosts]".
-    iNamed 1.
-    wp_pures.
-    iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
-    wp_apply (wp_slice_len).
-    wp_pures.
-    iDestruct (big_sepL2_length with "Hhosts") as %?.
-    wp_if_destruct.
-    {
-      wp_apply (wp_makeClerks with "[$]").
-      iIntros (??) "[? ?]".
-      wp_storeField.
-      iLeft. iModIntro.
-      iSplitR; first done.
-      iFrame.
-      iSplitR "Hret".
-      { repeat iExists _. iFrame "∗#%".
-        iPureIntro. word. }
-      iExists _. iFrame.
-    }
-    {
-      wp_pures.
-      iLeft.
-      iFrame. iSplitR; first done.
-      iModIntro. iSplitR "Hret".
-      2: eauto with iFrame.
-      repeat iExists _; iFrame "∗#%".
-    }
-  }
-Admitted.
 
 End clerk_proof.

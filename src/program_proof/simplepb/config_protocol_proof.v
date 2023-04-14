@@ -54,9 +54,9 @@ Notation compute_reply := (Sm.compute_reply pb_record).
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
 
-Definition is_conf_host confHost γ : iProp Σ :=
+Definition is_pb_config_host confHost γ : iProp Σ :=
   ∃ γconf,
-  config_proof.is_host confHost γconf ∗ is_conf_inv γ γconf.
+  is_config_host confHost γconf ∗ is_conf_inv γ γconf.
 
 Definition is_Clerk2 ck γ : iProp Σ :=
   ∃ γconf,
@@ -65,7 +65,7 @@ Definition is_Clerk2 ck γ : iProp Σ :=
 
 Lemma wp_MakeClerk2 (configHost:u64) γ :
   {{{
-        is_conf_host configHost γ
+        is_pb_config_host configHost γ
   }}}
     config.MakeClerk #configHost
   {{{
