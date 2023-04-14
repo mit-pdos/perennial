@@ -2,6 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export clerk.
 From Perennial.program_proof.simplepb Require Import pb_definitions pb_apply_proof pb_makeclerk_proof.
 From Perennial.program_proof.simplepb Require Import clerk_proof proph_proof.
+From iris.algebra Require Import mono_list.
 
 Section prophetic_read_proof.
 Context `{!heapGS Σ}.
@@ -23,6 +24,74 @@ Record proph_req_names :=
   finish_gn:gname;
 }.
 
+Definition prophReadN := nroot .@ "prophread".
+Definition prophReadReqN := prophReadN .@ "req".
+Definition prophReadLogN := prophReadN .@ "log".
+
+Definition own_op_log γ σ := own γ.(s_log) (●ML{#1/2} (σ : list (leibnizO OpType))).
+
+Definition is_proph_read_inv γ : iProp Σ :=
+  inv prophReadLogN (∃ σ, own_op_log γ σ ∗ own_int_log γ σ).
+
+Definition own_Clerk ck γ : iProp Σ :=
+  is_proph_read_inv γ ∗ own_Clerk2 ck γ.
+
+Lemma wp_Clerk__ApplyReadonly2' γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+has_op_encoding op_bytes op →
+own_Clerk ck γ -∗
+is_slice_small op_sl byteT 1 op_bytes -∗
+  □(∀ opsToGet, |={⊤∖↑pbN∖↑prophReadLogN,∅}=>
+     ((∃ ops, own_int_log γ ops ∗
+       (⌜ops = opsToGet⌝ → own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadLogN}=∗
+       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                    is_slice_small op_sl byteT 1 op_bytes -∗
+                    own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) ∨
+       (True ={∅,⊤∖↑pbN∖↑prophReadLogN}=∗
+       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply opsToGet op) -∗
+                  is_slice_small op_sl byteT 1 op_bytes -∗
+                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))
+ -∗
+WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
+Proof.
+  iIntros (?) "[#Hinv Hck] ? #Hupd".
+  wp_apply (wp_Clerk__ApplyReadonly2 with "[$] [$] [-]").
+  { done. }
+  iModIntro.
+  iInv "Hinv" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hoplog Hintlog]".
+  iMod (fupd_mask_subseteq (⊤∖↑pbN∖↑prophReadLogN)) as "Hmask".
+  { solve_ndisj. }
+  iSpecialize ("Hupd" $! σ).
+  iMod "Hupd" as "[Hupd|Htriv]".
+  {
+    iDestruct "Hupd" as (?) "[Hintlog2 Hupd]".
+    iDestruct (own_valid_2 with "Hintlog Hintlog2") as %Hvalid.
+    assert (σ = ops); last subst.
+    { rewrite mono_list_auth_dfrac_op_valid_L in Hvalid. by destruct Hvalid. }
+    iModIntro.
+    iExists _; iFrame.
+    iIntros "Hintlog2".
+    iMod ("Hupd" with "[//] [$]") as "#Hupd".
+    iMod "Hmask". iMod ("Hclose" with "[Hintlog Hoplog]").
+    { iExists _; iFrame. }
+    iModIntro. iModIntro.
+    iIntros.
+    iApply ("Hupd" with "[$] [$] [$]").
+  }
+  {
+    iModIntro.
+    iExists _.
+    iFrame.
+    iIntros "Hintlog".
+    iMod ("Htriv" with "[$]") as "#Hupd".
+    iMod "Hmask". iMod ("Hclose" with "[Hintlog Hoplog]").
+    { iExists _; iFrame. }
+    iModIntro. iIntros. iModIntro.
+    iIntros.
+    iApply ("Hupd" with "[$] [$] [$]").
+  }
+Qed.
+
 Implicit Types γreq : proph_req_names.
 
 Context `{inG Σ dfracR}.
@@ -39,17 +108,15 @@ Proof.
   done.
 Qed.
 
-Definition result_claimed γreq : iProp Σ := own γreq.(finish_gn) (DfracOwn 1).
+Definition result_claimed γreq : iProp Σ := own γreq.(finish_gn) (DfracDiscarded).
 Definition result_unclaimed γreq : iProp Σ := own γreq.(finish_gn) (DfracOwn 1).
 
 Definition read_fupd γ readOp (Q:list u8 → iProp Σ) : iProp Σ :=
-(|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
-  (own_op_log γ ops ={∅,⊤∖↑pbN}=∗ Q (compute_reply ops readOp))).
-
-Definition prophReadN := nroot .@ "prophread".
+£ 1 ∗ (|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_int_log γ ops ∗
+  (own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗ Q (compute_reply ops readOp))).
 
 Definition prophetic_read_inv prophV γ γreq readOp Φ : iProp Σ :=
-  inv prophReadN (
+  inv prophReadReqN (
         (*
           XXX: This invariant is a bit ad-hoc. A more principled approach would be to
           give the server a fraction of the ghost resources for the "state" of
@@ -64,23 +131,23 @@ Lemma wp_Clerk__ApplyReadonly γ ck op_sl op (op_bytes:list u8) (Φ:val → iPro
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
-((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
-  (own_op_log γ ops ={∅,⊤∖↑pbN}=∗
+((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_int_log γ ops ∗
+  (own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                   is_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
-Proof.
+Proof using H0.
   iIntros (?) "Hck Hsl Hupd".
   wp_call.
   wp_apply (wp_NewProphBytes).
   iIntros (??) "Hproph".
-  wp_pures.
+  wp_pure1_credit "Hlc".
   iAssert (|={⊤}=> ∃ γreq, result_unclaimed γreq ∗ prophetic_read_inv b γ γreq _
   (λ reply, ∀ reply_sl : Slice.t,
              is_slice_small reply_sl byteT 1 reply -∗
              is_slice_small op_sl byteT 1 op_bytes -∗ own_Clerk ck γ -∗ Φ (slice_val reply_sl))
-          )%I with "[Hupd]" as ">H".
+          )%I with "[Hupd Hlc]" as ">H".
   {
     iMod (own_alloc (DfracOwn 1)) as (γop) "Hop".
     { done. }
@@ -91,20 +158,22 @@ Proof.
     iNext. iLeft. iFrame "Hop ∗".
   }
   iDestruct "H" as (?) "[Hfinish #Hinv]".
+  wp_pures.
   wp_bind (Clerk__ApplyRo2 _ _).
   wp_apply (wp_frame_wand with "[Hproph Hfinish]").
   { iNamedAccu. }
-  wp_apply (wp_Clerk__ApplyReadonly2 with "Hck Hsl []").
+  wp_apply (wp_Clerk__ApplyReadonly2' with "Hck Hsl []").
   { done. }
   iModIntro.
   iInv "Hinv" as "Hi" "Hclose".
+  iIntros (?).
   iDestruct "Hi" as "[Hnotdone|Hdone]".
   2:{ (* case: one of the low-level uRPC requests already fired the fupd before. *)
     iApply fupd_mask_intro.
     { set_solver. }
     iIntros "Hmask".
     iRight.
-    iIntros (?) "_". iMod "Hmask".
+    iIntros "_". iMod "Hmask".
     iDestruct "Hdone" as "[#>Hreceipt ?]".
     iMod ("Hclose" with "[-]").
     { iRight. iFrame "∗#". }
@@ -127,14 +196,73 @@ Proof.
     2:{
       iDestruct (own_valid_2 with "Hbad Hfinish") as %?.
       exfalso. done. }
+    iMod (own_update with "Hfinish") as "Hfinish".
+    { apply dfrac_discard_update. }
     iMod ("Hclose" with "[Hfinish]").
     { iRight. iFrame "#". iRight. iFrame. }
     iModIntro.
     iApply ("HΦ" with "[$] [$] [$]").
   }
   { (* other case: we get to fire the fupd! *)
-    admit.
+    destruct (decide (compute_reply x op = b)) eqn:X.
+    {
+      subst.
+      iDestruct "Hnotdone" as "[>Hinc Hfupd]".
+      iLeft.
+      iDestruct "Hfupd" as "[>Hlc Hfupd]".
+      iMod (lc_fupd_elim_later with "Hlc Hfupd") as "Hfupd".
+      iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "Hfupd" as "Hupd".
+      { solve_ndisj. }
+      iDestruct "Hupd" as (?) "[Hlog Hupd]".
+      iModIntro. iExists _; iFrame.
+      iIntros "% Hlog"; subst.
+      iMod ("Hupd" with "Hlog") as "HQ".
+      iMod (complete_operation with "Hinc") as "#Hreceipt".
+      iMod "Hmask".
+      iMod ("Hclose" with "[HQ]").
+      { iRight. iFrame "#". iLeft. iNext. iFrame "HQ". }
+      iModIntro.
+      iModIntro.
+      iIntros (?) "Hrep_sl ? ?". iNamed 1.
+      wp_pures.
+      wp_apply (wp_ResolveBytes with "[$Hrep_sl $Hproph]").
+      iIntros "[% ?]".
+      wp_pure1_credit "Hlc".
+      wp_pures.
+      iInv "Hinv" as "Hi" "Hclose".
+      iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+      iDestruct "Hi" as "[[Hbad _]| Hi]".
+      { iDestruct (own_valid_2 with "Hbad Hreceipt") as %?.
+        exfalso. done. }
+      iDestruct "Hi" as "[_ [HΦ | Hbad]]".
+      2:{
+        iDestruct (own_valid_2 with "Hbad Hfinish") as %?.
+        exfalso. done. }
+      iMod (own_update with "Hfinish") as "Hfinish".
+      { apply dfrac_discard_update. }
+      iMod ("Hclose" with "[Hfinish]").
+      { iRight. iFrame "#". iRight. iFrame. }
+      iModIntro.
+      iApply ("HΦ" with "[$] [$] [$]").
+    }
+    {
+      iApply fupd_mask_intro.
+      { set_solver. }
+      iIntros "Hmask".
+      iRight.
+      iIntros "_". iMod "Hmask".
+      iMod ("Hclose" with "[-]").
+      { iFrame "∗#". }
+      iModIntro.
+      iModIntro.
+      iIntros (?) "Hrep_sl Hop_sl Hck".
+      iNamed 1.
+      wp_pures.
+      wp_apply (wp_ResolveBytes with "[$Hproph $Hrep_sl]").
+      iIntros "[% ?]".
+      subst. by exfalso.
+    }
   }
-Admitted.
+Qed.
 
 End prophetic_read_proof.

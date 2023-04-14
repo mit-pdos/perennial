@@ -17,7 +17,7 @@ Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
 Context `{!pbG Σ}.
 Context `{!config_proof.configG Σ}.
 
-Definition own_Clerk ck γ : iProp Σ :=
+Definition own_Clerk2 ck γ : iProp Σ :=
   ∃ (confCk:loc) clerks_sl clerks γsrvs,
     "#HconfCk" ∷ readonly (ck ↦[clerk.Clerk :: "confCk"] #confCk) ∗
     "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] (slice_val clerks_sl) ∗
@@ -204,7 +204,7 @@ Lemma wp_MakeClerk γ configHost:
   }}}
     Make #configHost
   {{{
-        (ck:loc), RET #ck; own_Clerk ck γ
+        (ck:loc), RET #ck; own_Clerk2 ck γ
   }}}
 .
 Proof.
@@ -273,15 +273,15 @@ Proof.
   iPureIntro. lia.
 Qed.
 
-Lemma wp_Clerk__Apply γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
+Lemma wp_Clerk__Apply2 γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
-own_Clerk ck γ -∗
+own_Clerk2 ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
-  (own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
+□((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
+  (own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                   is_slice_small op_sl byteT 1 op_bytes -∗
-                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
+                  own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
   iIntros (?) "Hck Hop_sl #Hupd".
@@ -334,7 +334,7 @@ Proof.
       iDestruct ("Hupd2" with "Hsl") as "HΦ".
       instantiate (1:=(λ (v:goose_lang.val),
         (∃ (reply_sl:Slice.t),
-        ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_Clerk ck γ -∗ Φ (slice_val reply_sl))) ∨
+        ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_Clerk2 ck γ -∗ Φ (slice_val reply_sl))) ∨
         (∃ (err:u64) unused_sl, is_slice_small op_sl byteT 1 op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
       simpl.
       iLeft.
@@ -425,18 +425,13 @@ Qed.
 
 Lemma wp_Clerk__ApplyReadonly2 γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
-own_Clerk ck γ -∗
+own_Clerk2 ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
-□(|={⊤∖↑pbN,∅}=>
-     ((∃ ops, own_op_log γ ops ∗
-       (own_op_log γ ops ={∅,⊤∖↑pbN}=∗
+□(|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
+       (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
        □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                     is_slice_small op_sl byteT 1 op_bytes -∗
-                    own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) ∨
-       (∀ ops, True ={∅,⊤∖↑pbN}=∗
-       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                  is_slice_small op_sl byteT 1 op_bytes -∗
-                  own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))
+                    own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))
  -∗
 WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -505,7 +500,7 @@ Proof.
       iDestruct ("Hupd2" with "Hsl") as "HΦ".
       instantiate (1:=(λ (v:goose_lang.val),
         (∃ (reply_sl:Slice.t),
-        ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_Clerk ck γ -∗ Φ (slice_val reply_sl))) ∨
+        ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_Clerk2 ck γ -∗ Φ (slice_val reply_sl))) ∨
         (∃ (err:u64) unused_sl, is_slice_small op_sl byteT 1 op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
       simpl.
       iLeft.

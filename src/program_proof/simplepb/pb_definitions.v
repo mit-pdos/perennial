@@ -31,6 +31,7 @@ End Sm.
 Record simplepb_system_names :=
   {
     s_log : gname ;
+    s_internal_log : gname ;
     s_pb : pb_system_names ;
     s_prim : primary_system_names ;
     s_prelog : gname ;
@@ -88,7 +89,7 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
 (* This is the log of RW operations, exposed to the client of this library. *)
-Definition own_op_log γ σ := own γ.(s_log) (●ML{#1/2} (σ : list (leibnizO OpType))).
+Definition own_int_log γ σ := own γ.(s_internal_log) (●ML{#1/2} (σ : list (leibnizO OpType))).
 
 (* RPC specs *)
 
@@ -212,7 +213,7 @@ Definition Apply_core_spec γ op enc_op :=
   (
   ⌜has_op_encoding enc_op op⌝ ∗
   (* is_inv γ.(s_log) γ.(s_prim) ∗ *)
-  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_op_log γ σ ∗ (own_op_log γ (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗ (own_int_log γ (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
             Φ (ApplyReply.mkC 0 (compute_reply σ op))
   )) ∗
   □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
@@ -234,7 +235,7 @@ Definition ApplyRo_core_spec γ  op enc_op :=
   λ (Φ : ApplyReply.C -> iPropO Σ) ,
   (
   ⌜has_op_encoding enc_op op⌝ ∗
-  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_op_log γ σ ∗ (own_op_log γ σ ={∅,⊤∖↑pbN}=∗
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗ (own_int_log γ σ ={∅,⊤∖↑pbN}=∗
             □ Φ (ApplyReply.mkC 0 (compute_reply σ op))
    (* XXX: the □Φ is OK because this is read-only. Technically, we could prove
       a stronger spec without the box, but we'll end up using prophecy anyways
@@ -646,7 +647,7 @@ Definition own_ghost_log' γ (opsfullQ : list (OpType * (list OpType → iProp �
 Definition is_inv γ :=
   inv appN (∃ opsfullQ,
       own_ghost_log' γ opsfullQ ∗
-      own_op_log γ (get_rwops opsfullQ) ∗
+      own_int_log γ (get_rwops opsfullQ) ∗
       □(
         ∀ opsPre opsPrePre lastEnt,
         ⌜prefix opsPre opsfullQ⌝ -∗ ⌜opsPre = opsPrePre ++ [lastEnt]⌝ -∗

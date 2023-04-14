@@ -28,8 +28,8 @@ Lemma wp_Clerk__Apply γ γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iPro
 has_op_encoding op_bytes op →
 is_Clerk ck γ γsrv -∗
 is_slice_small op_sl byteT q op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
-  (own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
+□((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
+  (own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))

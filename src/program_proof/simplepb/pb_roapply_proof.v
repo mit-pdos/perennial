@@ -26,8 +26,8 @@ Lemma wp_Clerk__ApplyRo γ γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iP
 has_op_encoding op_bytes op →
 is_Clerk ck γ γsrv -∗
 is_slice_small op_sl byteT q op_bytes -∗
-□((|={⊤∖↑pbN,∅}=> ∃ ops, own_op_log γ ops ∗
-  (own_op_log γ ops ={∅,⊤∖↑pbN}=∗
+□((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
+  (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
      □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
@@ -137,9 +137,9 @@ Proof.
   iNamed 1. iExists _; iFrame "#".
 Qed.
 
-Lemma own_op_log_agree γ ops ops' :
-  own_op_log γ ops -∗
-  own_op_log γ ops' -∗
+Lemma own_int_log_agree γ ops ops' :
+  own_int_log γ ops -∗
+  own_int_log γ ops' -∗
   ⌜ops = ops'⌝.
 Proof.
   iIntros "H1 H2".
@@ -152,8 +152,8 @@ Qed.
 Lemma generate_read_fupd γ Φ :
   is_inv γ -∗
   (|={⊤ ∖ ↑pbN,∅}=>
-    ∃ ops, own_op_log γ ops ∗
-      (own_op_log γ ops ={∅,⊤ ∖ ↑pbN}=∗ □ Φ ops)) -∗
+    ∃ ops, own_int_log γ ops ∗
+      (own_int_log γ ops ={∅,⊤ ∖ ↑pbN}=∗ □ Φ ops)) -∗
   (|={⊤ ∖ ↑pbN ∪ ↑appN,∅}=>
     ∃ σ, own_pre_log γ.(s_prelog) σ ∗
       (own_pre_log γ.(s_prelog) σ ={∅,⊤ ∖ ↑pbN ∪ ↑appN}=∗ □ Φ σ.*1))
@@ -165,7 +165,7 @@ Proof.
   iMod (fupd_mask_subseteq (⊤∖↑pbN)) as "Hmask".
   { solve_ndisj. }
   iMod "Hupd" as (?) "[Hlog2 Hupd]".
-  iDestruct (own_op_log_agree with "Hlog Hlog2") as %?; subst.
+  iDestruct (own_int_log_agree with "Hlog Hlog2") as %?; subst.
   iDestruct "Hghost" as (?) "(>Hghost & >% & Hprops)".
   iModIntro.
   iExists _; iFrame.
