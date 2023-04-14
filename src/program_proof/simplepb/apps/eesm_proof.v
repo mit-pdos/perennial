@@ -1327,7 +1327,42 @@ Proof.
       done.
     }
     {
-      rewrite firstn_all2.
+      rewrite HaOverflow.
+      destruct a0 as [? ->].
+      by rewrite take_app.
+    }
+  }
+  { (* use Hstates *)
+    iSpecialize ("Hstates" with "[%] [%]").
+    { word. }
+    { word. }
+    iDestruct "Hstates" as (?) "[Hstate %]".
+    iDestruct (big_sepS_elem_of_acc _ _ (U64 (length a)) with "Hversions") as "[H2 _]".
+    { set_solver. }
+    iSpecialize ("H2" with "[%]").
+    { apply prefix_length in a0. rewrite HaOverflow. done. }
+    iDestruct "H2" as "[Hbad|H2]".
+    {
+      unfold is_state.
+      iDestruct (ghost_map_points_to_valid_2 with "Hbad Hstate") as %[Hbad _].
+      exfalso. done.
+    }
+    iDestruct (ghost_map_points_to_agree with "Hstate H2") as %?.
+    subst.
+    iPureIntro.
+    replace (take (int.nat (length a)) ops) with a in H0.
+    {
+      unfold ee_record. simpl.
+      unfold compute_reply.
+      unfold apply_op_and_get_reply.
+      simpl.
+      rewrite H0 /=.
+      done.
+    }
+    {
+      rewrite HaOverflow.
+      destruct a0 as [? ->].
+      by rewrite take_app.
     }
   }
 Qed.
