@@ -1,0 +1,106 @@
+From Perennial.program_proof Require Import grove_prelude.
+From Goose.github_com.mit_pdos.gokv.simplepb.apps Require Import eesm.
+From Perennial.program_proof Require Import marshal_stateless_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions.
+From Perennial.program_proof.fencing Require Import map.
+
+Section vsm_definitions.
+
+Context `{sm_record:Sm.t}.
+Notation OpType := (Sm.OpType sm_record).
+Notation has_op_encoding := (Sm.has_op_encoding sm_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
+Notation compute_reply := (Sm.compute_reply sm_record).
+Instance e : EqDecision OpType := (Sm.OpType_EqDecision sm_record).
+Notation pbG := (pbG (pb_record:=sm_record)).
+Notation pbΣ := (pbΣ (pb_record:=sm_record)).
+
+Implicit Type γst:gname.
+
+Context `{mapG Σ u64 (list OpType)}.
+Context `{!gooseGlobalGS Σ, !heapGS Σ}.
+
+Implicit Type own_VersionedStateMachine : gname → (list OpType) → u64 → iProp Σ.
+
+Definition is_state γst vnum ops : iProp Σ := vnum ⤳[γst]□ ops.
+
+Definition is_Versioned_applyVolatileFn (applyVolatileFn:val) own_VersionedStateMachine : iProp Σ :=
+  ∀ ops γst op op_sl op_bytes (latestVnum vnum:u64),
+  {{{
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        ⌜int.nat vnum > int.nat latestVnum⌝ ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        own_VersionedStateMachine γst ops latestVnum ∗
+        (∀ (vnum':u64), ⌜int.nat latestVnum <= int.nat vnum'⌝ →
+                  ⌜int.nat vnum' < int.nat vnum⌝ → is_state γst vnum' ops)
+  }}}
+    applyVolatileFn (slice_val op_sl, #vnum)
+  {{{
+        reply_sl q, RET (slice_val reply_sl);
+        own_VersionedStateMachine γst (ops ++ [op]) vnum ∗
+        is_slice_small reply_sl byteT q (compute_reply ops op)
+  }}}
+.
+
+Definition is_Versioned_setStateFn (setStateFn:val) own_VersionedStateMachine : iProp Σ :=
+  ∀ ops_prev ops snap snap_sl (latestVnum:u64) γst γst',
+  {{{
+        ⌜has_snap_encoding snap ops⌝ ∗
+        readonly (is_slice_small snap_sl byteT 1 snap) ∗
+        own_VersionedStateMachine γst ops_prev latestVnum ∗
+        is_state γst (length ops) ops
+  }}}
+    setStateFn (slice_val snap_sl) #(U64 (length ops))
+  {{{
+        RET #(); own_VersionedStateMachine γst' (ops) (U64 (length ops))
+  }}}
+.
+
+Definition is_Versioned_getStateFn (getStateFn:val) own_VersionedStateMachine : iProp Σ :=
+  ∀ ops γst latestVnum,
+  {{{
+        own_VersionedStateMachine γst ops latestVnum
+  }}}
+    getStateFn #()
+  {{{
+        snap snap_sl, RET (slice_val snap_sl); own_VersionedStateMachine γst ops latestVnum ∗
+        ⌜has_snap_encoding snap ops⌝ ∗
+        readonly (is_slice_small snap_sl byteT 1 snap)
+  }}}
+.
+
+Definition is_Versioned_applyReadonlyFn (applyReadonlyFn:val) own_VersionedStateMachine : iProp Σ :=
+  ∀ ops op op_sl op_bytes γst latestVnum,
+  {{{
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        own_VersionedStateMachine γst ops latestVnum
+  }}}
+    applyReadonlyFn (slice_val op_sl)
+  {{{
+        reply_sl q (lastModifiedVnum:u64),
+        RET (#lastModifiedVnum, slice_val reply_sl);
+        own_VersionedStateMachine γst ops latestVnum ∗
+        is_slice_small reply_sl byteT q (compute_reply ops op) ∗
+        □(∀ (vnum:u64), ⌜int.nat vnum < int.nat latestVnum⌝ → ⌜int.nat lastModifiedVnum <= int.nat vnum⌝ →
+                 ∃ someOps, is_state γst vnum someOps ∗
+                            ⌜compute_reply someOps op = compute_reply ops op⌝)
+  }}}
+.
+
+Definition is_VersionedStateMachine (sm:loc) own_VersionedStateMachine : iProp Σ :=
+  ∃ applyVolatileFn setStateFn getStateFn applyReadonlyFn,
+  "#HapplyVolatile" ∷ readonly (sm ↦[VersionedStateMachine :: "ApplyVolatile"] applyVolatileFn) ∗
+  "#HapplyVolatile_spec" ∷ is_Versioned_applyVolatileFn applyVolatileFn own_VersionedStateMachine ∗
+
+  "#HsetState" ∷ readonly (sm ↦[VersionedStateMachine :: "SetState"] setStateFn) ∗
+  "#HsetState_spec" ∷ is_Versioned_setStateFn setStateFn own_VersionedStateMachine ∗
+
+  "#HgetState" ∷ readonly (sm ↦[VersionedStateMachine :: "GetState"] getStateFn) ∗
+  "#HgetState_spec" ∷ is_Versioned_getStateFn getStateFn own_VersionedStateMachine ∗
+
+  "#HapplyReadonly" ∷ readonly (sm ↦[VersionedStateMachine :: "ApplyReadonly"] applyReadonlyFn) ∗
+  "#HapplyReadonly_spec" ∷ is_Versioned_applyReadonlyFn applyReadonlyFn own_VersionedStateMachine
+.
+
+End vsm_definitions.

@@ -185,7 +185,7 @@ Definition is_InMemory_setStateFn (setStateFn:val) own_InMemoryStateMachine : iP
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
         own_InMemoryStateMachine ops_prev
   }}}
-    setStateFn (slice_val snap_sl)
+    setStateFn (slice_val snap_sl) #(U64 (length ops))
   {{{
         RET #(); own_InMemoryStateMachine ops
   }}}
@@ -213,7 +213,11 @@ Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMa
   }}}
     applyReadonlyFn (slice_val op_sl)
   {{{
-        reply_sl q, RET (slice_val reply_sl);
+        reply_sl q (lastModifiedIndex:u64),
+        RET (#lastModifiedIndex, slice_val reply_sl);
+        ⌜int.nat lastModifiedIndex <= length ops ⌝ ∗
+        ⌜∀ ops', prefix ops' ops → int.nat lastModifiedIndex <= length ops' →
+               (compute_reply ops op = compute_reply ops' op)⌝ ∗
         own_InMemoryStateMachine ops ∗
         is_slice_small reply_sl byteT q (compute_reply ops op)
   }}}
@@ -492,6 +496,7 @@ Proof.
   iNamed "HisMemSm2".
   wp_loadField.
   wp_loadField.
+  unfold is_InMemory_setStateFn.
   wp_apply ("HsetState_spec" with "[$Hsnap_sl $Hmemstate]").
   { done. }
   iIntros "Hmemstate".
@@ -863,7 +868,11 @@ Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoc
   }}}
     StateMachine__applyReadonly #s (slice_val op_sl)
   {{{
-        reply_sl q, RET (slice_val reply_sl);
+        reply_sl q (lastModifiedIndex : u64), RET (#lastModifiedIndex, slice_val reply_sl);
+        ⌜int.nat lastModifiedIndex ≤ length ops⌝ ∗
+        ⌜∀ ops' : list OpType,
+            ops' `prefix_of` ops
+            → int.nat lastModifiedIndex ≤ length ops' → compute_reply ops op = compute_reply ops' op⌝ ∗
         is_slice_small reply_sl byteT q (compute_reply ops op) ∗
         own_StateMachine s epoch ops sealed P
   }}}
@@ -879,8 +888,10 @@ Proof.
   wp_loadField.
   wp_apply ("HapplyReadonly_spec" with "[$Hmemstate]").
   { iSplitR; first done. iFrame "#". }
-  iIntros (??) "[Hmemstate Hreply]".
+  iIntros (???) "(% & % & Hmemstate & Hreply)".
   iApply "HΦ". iFrame "Hreply".
+  iSplitR; first done.
+  iSplitR; first done.
   repeat iExists _; iFrame "∗ HisMemSm #%".
 Qed.
 
@@ -1319,25 +1330,8 @@ Proof.
   }
   wp_store.
 
-  iAssert (_) with "HisMemSm" as "#HisMemSm2".
-  iNamed "HisMemSm2".
   wp_load.
-  wp_loadField.
-  wp_loadField.
 
-  iMod (readonly_alloc (is_slice_small snap_sl byteT 1 snap) with "[Hsnap_sl]") as "#Hsnap_sl".
-  {
-    simpl.
-    iFrame.
-  }
-  wp_apply ("HsetState_spec" with "[$Hmemstate $Hsnap_sl]").
-  {
-    done.
-  }
-  iIntros "Hmemstate".
-  wp_pures.
-
-  wp_load.
   wp_apply (wp_ReadInt with "Hdata_sl").
   iIntros (data_sl4) "Hdata_sl".
   wp_pures.
@@ -1350,6 +1344,22 @@ Proof.
   wp_pures.
   wp_storeField.
   wp_store.
+
+  iMod (readonly_alloc (is_slice_small snap_sl byteT 1 snap) with "[Hsnap_sl]") as "#Hsnap_sl".
+  {
+    simpl.
+    iFrame.
+  }
+
+  iAssert (_) with "HisMemSm" as "#HisMemSm2".
+  iNamed "HisMemSm2".
+  wp_loadField.
+  wp_load.
+  wp_loadField.
+  wp_loadField.
+  wp_apply ("HsetState_spec" with "[$Hmemstate $Hsnap_sl]").
+  { done. }
+  iIntros "Hmemstate".
   wp_pures.
 
   (* loop invariant *)

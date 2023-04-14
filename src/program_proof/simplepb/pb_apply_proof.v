@@ -163,7 +163,9 @@ Proof.
   iIntros "Hupd Hlc Hprim".
   rewrite /own_Primary_ghost_f /tc_opaque.
   iNamed "Hprim".
-  iMod (ghost_propose with "Hlc Hprim [Hupd]") as "(Hprim & #? & #?)".
+  iMod (fupd_mask_subseteq _);
+  last iMod (ghost_propose with "Hlc Hprim [Hupd]") as "(Hprim & #? & #?)".
+  { solve_ndisj. }
   {
     iMod "Hupd" as (?) "[? Hupd]".
     iModIntro.
