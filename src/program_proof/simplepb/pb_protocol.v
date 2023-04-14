@@ -101,7 +101,8 @@ Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
    committed_by γsys epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
 Definition pbN := nroot .@ "pb".
-Definition ghostN := pbN .@ "ghost".
+Definition pb_protocolN := pbN .@ "protocol".
+Definition ghostN := pb_protocolN .@ "ghost".
 
 Definition sysN := ghostN .@ "sys".
 Definition opN := ghostN .@ "op".
@@ -358,12 +359,12 @@ Lemma valid_add γsys σ op :
   £ 1 -∗
   is_proposal_valid γsys σ -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_pb_log γsys (someσ++[op]) ={∅,⊤∖↑ghostN}=∗ True))
-  ={↑pbN}=∗
+  ={↑pb_protocolN}=∗
   is_proposal_valid γsys (σ++[op]).
 Proof.
   iIntros "Hlc #Hvalid Hupd".
   unfold is_proposal_valid.
-  iAssert (|={↑pbN}=> is_valid_inv γsys σ op)%I with "[Hupd Hlc]" as ">#Hinv".
+  iAssert (|={↑pb_protocolN}=> is_valid_inv γsys σ op)%I with "[Hupd Hlc]" as ">#Hinv".
   {
     iMod (inv_alloc with "[Hupd Hlc]") as "$".
     {
@@ -443,7 +444,7 @@ Lemma ghost_propose γsys epoch σ op :
   £ 1 -∗
   own_primary_ghost γsys epoch σ -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γsys someσ ∗ (⌜someσ = σ⌝ -∗ own_pb_log γsys (someσ++[op]) ={∅,⊤∖↑ghostN}=∗ True))
-  ={↑pbN}=∗
+  ={↑pb_protocolN}=∗
   own_primary_ghost γsys epoch (σ++[op]) ∗
   is_proposal_lb γsys epoch (σ++[op]) ∗
   is_proposal_facts γsys epoch (σ++[op])
@@ -457,7 +458,7 @@ Proof.
 
   iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb".
   iFrame "Hprop".
-  iAssert (|={↑pbN}=> is_proposal_facts γsys epoch (σ++[op]))%I with "[Hupd Hlc]" as ">#Hvalid2".
+  iAssert (|={↑pb_protocolN}=> is_proposal_facts γsys epoch (σ++[op]))%I with "[Hupd Hlc]" as ">#Hvalid2".
   {
     iDestruct "Hvalid" as "[#Hmax #Hvalid]".
     iSplitR.
@@ -911,7 +912,7 @@ Proof.
 Qed.
 
 Lemma pb_log_get_nil_lb γsys :
-  sys_inv γsys ={↑pbN}=∗
+  sys_inv γsys ={↑pb_protocolN}=∗
   is_pb_log_lb γsys [].
 Proof.
   iIntros "#Hinv".

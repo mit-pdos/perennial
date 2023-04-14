@@ -3,6 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.gokv.simplepb.config.
 From Goose Require github_com.mit_pdos.gokv.simplepb.e.
 From Goose Require github_com.mit_pdos.gokv.simplepb.pb.
+From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.gokv.trusted_proph.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
@@ -57,8 +58,8 @@ Definition Clerk__Apply: val :=
         Continue));;
     ![slice.T byteT] "ret".
 
-Definition Clerk__ApplyRo: val :=
-  rec: "Clerk__ApplyRo" "ck" "op" :=
+Definition Clerk__ApplyRo2: val :=
+  rec: "Clerk__ApplyRo2" "ck" "op" :=
     let: "ret" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -77,3 +78,10 @@ Definition Clerk__ApplyRo: val :=
         else #());;
         Continue));;
     ![slice.T byteT] "ret".
+
+Definition Clerk__ApplyRo: val :=
+  rec: "Clerk__ApplyRo" "ck" "op" :=
+    let: "p" := trusted_proph.NewProph #() in
+    let: "v" := Clerk__ApplyRo2 "ck" "op" in
+    trusted_proph.ResolveBytes "p" "v";;
+    "v".

@@ -153,7 +153,7 @@ Lemma apply_eph_primary_step γ γsrv ops canBecomePrimary epoch committedNextIn
   (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
   £ 1 -∗
   own_Primary_ghost_f γ γsrv canBecomePrimary true epoch committedNextIndex ops
-  ={↑pbN}=∗
+  ={⊤∖↑pbAofN}=∗
   own_Primary_ghost_f γ γsrv canBecomePrimary true epoch committedNextIndex (ops ++ [(op, Q)]) ∗
   is_proposal_lb γ.(s_pb) epoch (ops ++ [(op, Q)]) ∗
   is_proposal_facts γ.(s_pb) epoch (ops ++ [(op, Q)]) ∗
@@ -182,7 +182,7 @@ Lemma apply_eph_step γ γsrv st op Q :
   £ 1 -∗
   (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
   own_Server_ghost_eph_f st γ γsrv
-  ={↑pbN}=∗
+  ={⊤∖↑pbAofN}=∗
   own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(op, Q)] |>)
                               γ γsrv ∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [(op, Q)]) ∗
@@ -418,7 +418,7 @@ Proof.
 
   (* make ephemeral proposal *)
   iApply fupd_wp.
-  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+  iMod (fupd_mask_subseteq (⊤∖↑pbAofN)) as "Hmask".
   { set_solver. }
   iMod (apply_eph_step with "Hlc Hupd HghostEph") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hepoch_lb)".
   { done. }
@@ -550,7 +550,7 @@ Proof.
   iIntros (errs_sl) "Herrs_sl".
   wp_pures.
   iApply fupd_wp.
-  iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
+  iMod (fupd_mask_subseteq (⊤∖↑pbAofN)) as "Hmask".
   { set_solver. }
   iMod (free_WaitGroup_alloc pbN _
           (λ i,

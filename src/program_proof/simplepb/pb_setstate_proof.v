@@ -210,7 +210,7 @@ Lemma setstate_step γ γsrv epoch ops sealed epoch' opsfull':
   is_proposal_facts γ.(s_pb) epoch' opsfull' -∗
   is_proposal_facts_prim γ.(s_prim) epoch' opsfull' -∗
   is_in_config γ γsrv epoch' -∗
-  own_Server_ghost_f γ γsrv epoch ops sealed ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv epoch ops sealed ={⊤∖↑pbAofN}=∗
   own_Server_ghost_f γ γsrv epoch' (get_rwops opsfull') false ∗
   is_epoch_lb γsrv.(r_pb) epoch' ∗
   is_accepted_lb γsrv.(r_pb) epoch' opsfull' ∗

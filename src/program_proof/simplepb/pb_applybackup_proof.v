@@ -242,7 +242,7 @@ Lemma applybackup_step γ γsrv epoch ops ops_full' op a:
   is_proposal_lb γ.(s_pb) epoch ops_full' -∗
   is_proposal_facts γ.(s_pb) epoch ops_full' -∗
   is_proposal_facts_prim γ.(s_prim) epoch ops_full' -∗
-  own_Server_ghost_f γ γsrv epoch ops false ={↑pbN}=∗
+  own_Server_ghost_f γ γsrv epoch ops false ={⊤∖↑pbAofN}=∗
   own_Server_ghost_f γ γsrv epoch (get_rwops ops_full') false ∗
   ⌜get_rwops ops_full' = ops ++ [op]⌝ ∗
   (is_epoch_lb γsrv.(r_pb) epoch ∗ is_accepted_lb γsrv.(r_pb) epoch ops_full')
