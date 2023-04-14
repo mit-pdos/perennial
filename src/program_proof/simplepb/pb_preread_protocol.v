@@ -82,7 +82,7 @@ Definition have_completed_reads_Qs ros σ : iProp Σ :=
     □ Q (take idx σ)
 .
 
-Definition preread_inv γ γlog γreads : iProp Σ :=
+Definition is_preread_inv γ γlog γreads : iProp Σ :=
   inv prereadN (
   ∃ σ ros,
   "HpbLog" ∷ own_pb_log γ σ ∗
@@ -298,7 +298,7 @@ Lemma start_read_step (Q:list u8 → iProp Σ) γ γlog γreads (lastModifiedInd
      side. They will know this property for some log LONGER than σ. *)
   (∀ σ', prefix σ' σ → int.nat lastModifiedIndex <= length σ' → f σ' = f σ) →
   £ 1 -∗
-  preread_inv γ γlog γreads -∗
+  is_preread_inv γ γlog γreads -∗
   □(|={E∖↑prereadN∖↑ghostN,∅}=> ∃ σ, own_pre_log γlog σ ∗
         (own_pre_log γlog σ ={∅,E∖↑prereadN∖↑ghostN}=∗ □ Q (f σ))) -∗
   own_pb_log γ σ
@@ -392,7 +392,7 @@ Lemma finish_read_step Q γ γlog γreads idx σ :
   length σ = idx →
   £ 1 -∗
   £ 1 -∗
-  preread_inv γ γlog γreads -∗
+  is_preread_inv γ γlog γreads -∗
   is_pb_log_lb γ σ -∗
   is_proposed_read γreads idx Q
   ={↑prereadN}=∗
@@ -431,7 +431,7 @@ Qed.
 (* XXX: for this lemma, want prereadN ∩ pbN = ∅ *)
 Lemma propose_rw_op_valid op γ γlog γreads :
   £ 1 -∗
-  preread_inv γ γlog γreads -∗
+  is_preread_inv γ γlog γreads -∗
   (|={⊤∖↑ghostN∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog (σ ++ [op]) ={∅,⊤∖↑ghostN∖↑prereadN}=∗ True))
   -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γ someσ ∗ (own_pb_log γ (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
@@ -500,7 +500,7 @@ Qed.
 
 Lemma own_pre_log_get_ineq γ γlog γreads σ σ' E :
   ↑prereadN ⊆ E →
-  preread_inv γ γlog γreads -∗
+  is_preread_inv γ γlog γreads -∗
   own_pre_log γlog σ -∗
   is_pb_log_lb γ σ' ={E}=∗
   own_pre_log γlog σ ∗
@@ -520,7 +520,7 @@ Qed.
 
 Lemma alloc_pb_preread_protocol γ :
   own_pb_log γ [] ={↑prereadN}=∗
-  ∃ γlog γreads, preread_inv γ γlog γreads ∗
+  ∃ γlog γreads, is_preread_inv γ γlog γreads ∗
                  own_pre_log γlog []
 .
 Proof.

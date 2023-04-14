@@ -108,7 +108,7 @@ Definition sysN := ghostN .@ "sys".
 Definition opN := ghostN .@ "op".
 
 (* XXX(namespaces):
-   The update for the ghost state is fired while the sys_inv is open.
+   The update for the ghost state is fired while the is_repl_inv is open.
    Additionally, the update is fired while the is_valid_inv is open, so we need
    the initial mask to exclude those invariants.
 *)
@@ -499,7 +499,7 @@ Proof.
   iApply (fmlist_ptsto_lb_agree with "Hprop Hprop_lb").
 Qed.
 
-Definition sys_inv γsys := inv sysN
+Definition is_repl_inv γsys := inv sysN
 (
   ∃ σ epoch,
   own_pb_log γsys σ ∗
@@ -512,7 +512,7 @@ Definition sys_inv γsys := inv sysN
   User will get their (Q) by knowing (is_ghost_lb γ σ) where (op, Q) ∈ σ.
  *)
 Lemma ghost_commit γsys epoch σ :
-  sys_inv γsys -∗
+  is_repl_inv γsys -∗
   committed_by γsys epoch σ -∗
   is_proposal_lb γsys epoch σ -∗
   is_proposal_facts γsys epoch σ
@@ -719,7 +719,7 @@ Lemma pb_system_init (confγs:list pb_server_names) :
 length confγs > 0 →
 (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv 0) ={⊤}=∗
     ∃ γsys,
-    sys_inv γsys ∗
+    is_repl_inv γsys ∗
     own_pb_log γsys [] ∗
     pb_init_for_config γsys confγs ∗
     is_sys_init_witness γsys
@@ -727,7 +727,7 @@ length confγs > 0 →
 Proof.
   intros Hlen.
   iIntros "#Hacc".
-  (* allocate ghost state, and establish sys_inv *)
+  (* allocate ghost state, and establish is_repl_inv *)
   iMod (own_alloc (●ML [])) as "Hghost".
   { apply mono_list_auth_valid. }
   iDestruct "Hghost" as (γstate) "[Hghost Hghost2]".
@@ -805,7 +805,7 @@ Proof.
   }
 
   iMod (inv_alloc with "[Hghost2]") as "$".
-  { (* establish sys_inv *)
+  { (* establish is_repl_inv *)
     iNext.
     iExists [], (U64 0).
     simpl.
@@ -895,8 +895,8 @@ Qed.
 (* Right order of allocation:
   Allocate the purely local state of each server.
   Use that to pick the config for epoch 0.
-  Set up system state and sys_inv.
-  Finish setting up local state, how that sys_inv is available.
+  Set up system state and is_repl_inv.
+  Finish setting up local state, how that is_repl_inv is available.
 *)
 
 Lemma pb_ghost_server_init γsys γsrv :
@@ -912,7 +912,7 @@ Proof.
 Qed.
 
 Lemma pb_log_get_nil_lb γsys :
-  sys_inv γsys ={↑pb_protocolN}=∗
+  is_repl_inv γsys ={↑pb_protocolN}=∗
   is_pb_log_lb γsys [].
 Proof.
   iIntros "#Hinv".

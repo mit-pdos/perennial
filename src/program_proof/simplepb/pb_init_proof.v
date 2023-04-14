@@ -1,40 +1,45 @@
 From Perennial.base_logic Require Import lib.saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.simplepb Require Export pb_ghost.
+From Perennial.program_proof.simplepb Require Export pb_protocol.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.grove_shared Require Import urpc_spec.
 From iris.algebra Require Import mono_list.
 
 Section pb_init_proof.
 
-Context {pb_record:PBRecord}.
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Context {pb_record:Sm.t}.
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
-Lemma pb_server_init γsys γsrv :
-  is_sys_init_witness γsys -∗
-  own_server_pre γsrv -∗
-  own_Server_ghost γsys γsrv (U64 0) [] false.
+Lemma alloc_simplepb_server γ γsrv :
+  is_sys_init_witness γ.(s_pb) -∗
+  own_replica_ghost γ.(s_pb) γsrv.(r_pb) (U64 0) [] false -∗
+  own_primary_escrow_ghost γ.(s_prim) γsrv.(r_prim) 0 -∗
+  is_proposal_facts_prim γ.(s_prim) 0 [] -∗
+  is_in_config γ γsrv (U64 0) -∗
+  own_Server_ghost_f γ γsrv (U64 0) [] false.
 Proof.
-  iIntros "#H1 Hpre".
-  iDestruct (pb_ghost_server_init with "H1 Hpre") as "[Hrep Hprim]".
+  iIntros "#H1 Hpre1 Hpre2 #? #?".
+  (* iDestruct (pb_ghost_server_init with "H1 Hpre") as "[Hrep Hprim]". *)
   iExists [].
   iSplitR; first done.
-  iFrame.
+  iFrame "∗#".
 Qed.
 
-Definition pb_spec_list γsys γsrv :=
-  [ (U64 0, ApplyAsBackup_spec γsys γsrv) ;
-    (U64 1, SetState_spec γsys γsrv) ;
-    (U64 2, GetState_spec γsys γsrv) ;
-    (U64 3, BecomePrimary_spec γsys γsrv);
-    (U64 4, Apply_spec γsys) ].
+Definition pb_spec_list γ γsrv :=
+  [ (U64 0, ApplyAsBackup_spec γ γsrv) ;
+    (U64 1, SetState_spec γ γsrv) ;
+    (U64 2, GetState_spec γ γsrv) ;
+    (U64 3, BecomePrimary_spec γ γsrv);
+    (U64 4, Apply_spec γ);
+    (U64 6, ApplyRo_spec γ);
+    (U64 7, IncreaseCommit_spec γ γsrv)].
 
 Lemma pb_host_init host γsys γsrv :
   host c↦ ∅ ={⊤}=∗
@@ -47,15 +52,29 @@ Proof.
   rewrite is_pb_host_unfold.
   iExists γrpc.
   simpl.
-  iDestruct "H" as "(H1 & $ & $ & $ & $ & $ & _)".
+  iDestruct "H" as "(H1 & $ & $ & $ & $ & $ & $ & $ & _)".
   iExactEq "H1".
   f_equal.
   set_solver.
 Qed.
 
-Lemma pb_init_log γsys :
+(* Invariants:
+   is_repl_inv
+   is_conf_inv
+   is_helping_inv
+   is_preread_inv
+ *)
+
+(* FIXME: *)
+(*
+Lemma alloc_system :
   own_ghost γsys [] ={⊤}=∗
-  ∃ γ.(s_log), own_log γ.(s_log) [] ∗ is_inv γ.(s_log) γsys
+  ∃ γ, own_log γ [] ∗ is_helping_inv γ.(s_log) γsys
+.
+
+Lemma alloc_helping_inv γ :
+  own_ghost γsys [] ={⊤}=∗
+  ∃ γ, own_log γ [] ∗ is_helping_inv γ.(s_log) γsys
 .
 Proof.
   iIntros "Hghost".
@@ -82,6 +101,6 @@ Proof.
   apply (f_equal length) in H.
   rewrite app_length /= in H.
   lia.
-Qed.
+Qed. *)
 
 End pb_init_proof.

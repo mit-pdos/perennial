@@ -220,7 +220,7 @@ Definition Apply_core_spec γ op enc_op :=
   λ (Φ : ApplyReply.C -> iPropO Σ) ,
   (
   ⌜has_op_encoding enc_op op⌝ ∗
-  (* is_inv γ.(s_log) γ.(s_prim) ∗ *)
+  (* is_helping_inv γ.(s_log) γ.(s_prim) ∗ *)
   □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗ (own_int_log γ (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
             Φ (ApplyReply.mkC 0 (compute_reply σ op))
   )) ∗
@@ -596,7 +596,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
 .
 
 Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
-  "#HprereadInv" ∷ preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
+  "#HprereadInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
   "#Hlease" ∷ □(if leaseValid then
                 ∃ γl γconf,
                 is_conf_inv γ γconf ∗
@@ -673,12 +673,12 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   ∃ (mu:val) (confCk:loc) γconf,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
-  "#Hsys_inv" ∷ sys_inv γ.(s_pb) ∗
+  "#His_repl_inv" ∷ is_repl_inv γ.(s_pb) ∗
   "#HconfCk" ∷ readonly (s ↦[pb.Server :: "confCk"] #confCk) ∗
   "#Hconf_inv" ∷ is_conf_inv γ γconf ∗
   "#HconfCk_is" ∷ config_proof.is_Clerk confCk γconf ∗
   "#HhelpingInv" ∷ is_helping_inv γ ∗
-  "#HprereadInv" ∷ preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads)
+  "#HprereadInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads)
 .
 
 Lemma wp_Server__isEpochStale {stk} (s:loc) (currEpoch epoch:u64) :

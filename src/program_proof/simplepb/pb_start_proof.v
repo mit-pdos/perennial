@@ -33,11 +33,11 @@ Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHost:u64) opsfull (
         "Hstate" ∷ own_StateMachine epoch (get_rwops opsfull) sealed (own_Server_ghost_f γ γsrv) ∗
         "#His_sm" ∷ is_StateMachine sm_ptr own_StateMachine (own_Server_ghost_f γ γsrv) ∗
 
-        "#Hsys_inv" ∷ sys_inv γ.(s_pb) ∗
-        "#HhelpingInv" ∷ is_inv γ ∗
-        "#HprereadInv" ∷ preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
+        "#His_repl_inv" ∷ is_repl_inv γ.(s_pb) ∗
+        "#HhelpingInv" ∷ is_helping_inv γ ∗
+        "#HprereadInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
 
-        "#Hconf_host" ∷ is_conf_host confHost γ ∗
+        "#Hconf_host" ∷ is_pb_config_host confHost γ ∗
         "%HnextIndex" ∷ ⌜int.nat nextIndex = length (get_rwops opsfull)⌝ ∗
         (* XXX: this is basically a guarantee that the list of ops being
            implicitly passed in via own_StateMachine has been made durable. It
@@ -114,7 +114,7 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pb_protocolN)) as "Hmask".
   { set_solver. }
-  iMod (pb_log_get_nil_lb with "Hsys_inv") as "#Hcommit_nil_lb".
+  iMod (pb_log_get_nil_lb with "His_repl_inv") as "#Hcommit_nil_lb".
   iMod "Hmask".
   iModIntro.
 
@@ -132,7 +132,7 @@ Proof.
   iApply "HΦ".
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
   iExists _, _.
-  iFrame "Hmu Hsys_inv".
+  iFrame "Hmu His_repl_inv".
   iMod (readonly_alloc_1 with "confCk") as "#confCk".
   iMod (alloc_lock with "HmuInv [-]") as "$"; last first.
   { repeat iExists _.

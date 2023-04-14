@@ -1756,10 +1756,10 @@ Definition simplelog_pre γ γsrv fname :=
 Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHost :
   let P := (own_Server_ghost_f γ γsrv) in
   {{{
-       "#Hsys" ∷ sys_inv γ.(s_pb) ∗
-       "#Hhelping" ∷ is_inv γ ∗
-       "#HpreInv" ∷ preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
-       "#HisConfHost" ∷ config_protocol_proof.is_conf_host confHost γ ∗
+       "#Hsys" ∷ is_repl_inv γ.(s_pb) ∗
+       "#Hhelping" ∷ is_helping_inv γ ∗
+       "#HpreInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
+       "#HisConfHost" ∷ config_protocol_proof.is_pb_config_host confHost γ ∗
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗

@@ -903,7 +903,7 @@ Proof.
       lia. }
     { done. }
   }
-  iMod (ghost_commit with "Hsys_inv HcommitBy Hprop_lb Hprop_facts") as "#Hcommit".
+  iMod (ghost_commit with "His_repl_inv HcommitBy Hprop_lb Hprop_facts") as "#Hcommit".
 
   wp_pures.
   rewrite bool_decide_true; last naive_solver.

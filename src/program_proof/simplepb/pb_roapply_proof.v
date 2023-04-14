@@ -153,7 +153,7 @@ Proof.
 Qed.
 
 Lemma generate_read_fupd γ Φ rop :
-  is_inv γ -∗
+  is_helping_inv γ -∗
   (|={⊤ ∖ ↑pbN,∅}=>
     ∃ ops, own_int_log γ ops ∗
       (own_int_log γ ops ={∅,⊤ ∖ ↑pbN}=∗ □ Φ (compute_reply ops rop))) -∗
@@ -201,10 +201,10 @@ Lemma preread_step st γ γsrv t (lastModifiedIndex:u64) Q rop {own_StateMachine
   own_Server_ghost_eph_f st γ γsrv -∗
   accessP_fact own_StateMachine (own_Server_ghost_f γ γsrv) -∗
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) -∗
-  sys_inv γ.(s_pb) -∗
+  is_repl_inv γ.(s_pb) -∗
   |NC={⊤}=>
   own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗
-  preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
+  is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
   is_proposed_read γ.(s_reads) (int.nat lastModifiedIndex) (λ σ, Q (compute_reply (get_rwops σ) rop)) ∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) st.(server.ops_full_eph) ∗
   own_time t ∗
@@ -352,7 +352,7 @@ Lemma roapply_finish_step st γ γsrv Q priorOps :
   £ 1 -∗
   is_proposal_lb γ.(s_pb) st.(server.epoch) priorOps -∗
   is_proposed_read γ.(s_reads) (length priorOps) Q -∗
-  preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) -∗
+  is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) -∗
   own_Server_ghost_eph_f st γ γsrv ={⊤}=∗
   own_Server_ghost_eph_f st γ γsrv ∗
   Q priorOps

@@ -200,14 +200,22 @@ Definition primary_init_for_config γ : iProp Σ :=
 .
 
 Lemma alloc_primary_protocol :
-  ⊢ |==> ∃ γ, primary_init_for_config γ
+  ⊢ |==> ∃ γ, primary_init_for_config γ ∗
+              is_proposal_facts_prim γ 0 []
 .
 Proof.
   iMod (fmlist_map_alloc_fin []) as (?) "H".
-  iModIntro.
   iExists {| prim_init_proposal_gn := γ |}.
-  iApply (big_sepS_impl with "H").
-  iModIntro. iIntros. iFrame.
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "H") as "[Hprop H]".
+  { set_solver. }
+  iMod (fmlist_ptsto_persist with "Hprop") as "#?".
+  iModIntro.
+  iSplitL.
+  { iApply "H".
+    { iModIntro. iIntros. iFrame. }
+    { iIntros. exfalso. replace (int.nat (U64 0)) with 0 in H0 by word. word. }
+  }
+  by iExists _; iFrame "#".
 Qed.
 
 End primary_protocol.
