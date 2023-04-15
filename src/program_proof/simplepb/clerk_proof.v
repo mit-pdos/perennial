@@ -48,8 +48,8 @@ has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
   □(∀ opsToGet, |={⊤∖↑pbN∖↑prophReadLogN,∅}=>
-     ((∃ ops, own_int_log γ ops ∗
-       (⌜ops = opsToGet⌝ → own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadLogN}=∗
+     ((∃ ops, own_op_log γ ops ∗
+       (⌜ops = opsToGet⌝ → own_op_log γ ops ={∅,⊤∖↑pbN∖↑prophReadLogN}=∗
        □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                     is_slice_small op_sl byteT 1 op_bytes -∗
                     own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) ∨
@@ -70,15 +70,15 @@ Proof.
   iSpecialize ("Hupd" $! σ).
   iMod "Hupd" as "[Hupd|Htriv]".
   {
-    iDestruct "Hupd" as (?) "[Hintlog2 Hupd]".
-    iDestruct (own_valid_2 with "Hintlog Hintlog2") as %Hvalid.
+    iDestruct "Hupd" as (?) "[Hoplog2 Hupd]".
+    iDestruct (own_valid_2 with "Hoplog Hoplog2") as %Hvalid.
     assert (σ = ops); last subst.
     { rewrite mono_list_auth_dfrac_op_valid_L in Hvalid. by destruct Hvalid. }
     iModIntro.
     iExists _; iFrame.
     iIntros "Hintlog2".
     iMod ("Hupd" with "[//] [$]") as "#Hupd".
-    iMod "Hmask". iMod ("Hclose" with "[Hintlog Hoplog]").
+    iMod "Hmask". iMod ("Hclose" with "[Hintlog2 Hoplog]").
     { iExists _; iFrame. }
     iModIntro. iModIntro.
     iIntros.
@@ -100,8 +100,6 @@ Qed.
 
 Implicit Types γreq : proph_req_names.
 
-Context `{inG Σ dfracR}.
-
 Definition operation_incomplete γreq : iProp Σ := own γreq.(op_gn) (DfracOwn 1).
 Definition operation_receipt γreq : iProp Σ := own γreq.(op_gn) (DfracDiscarded).
 
@@ -118,8 +116,8 @@ Definition result_claimed γreq : iProp Σ := own γreq.(finish_gn) (DfracDiscar
 Definition result_unclaimed γreq : iProp Σ := own γreq.(finish_gn) (DfracOwn 1).
 
 Definition read_fupd γ readOp (Q:list u8 → iProp Σ) : iProp Σ :=
-£ 1 ∗ (|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_int_log γ ops ∗
-  (own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗ Q (compute_reply ops readOp))).
+£ 1 ∗ (|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_op_log γ ops ∗
+  (own_op_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗ Q (compute_reply ops readOp))).
 
 Definition prophetic_read_inv prophV γ γreq readOp Φ : iProp Σ :=
   inv prophReadReqN (
@@ -138,13 +136,13 @@ is_readonly_op op →
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
-((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_int_log γ ops ∗
-  (own_int_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗
+((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_op_log γ ops ∗
+  (own_op_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                   is_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
-Proof using H0.
+Proof.
   iIntros (??) "Hck Hsl Hupd".
   wp_call.
   wp_apply (wp_NewProphBytes).

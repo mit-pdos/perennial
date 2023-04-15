@@ -79,6 +79,7 @@ Class pbG Σ := {
     pb_wgG :> waitgroupG Σ ; (* for apply proof *)
     pb_logG :> inG Σ client_logR;
     pb_apply_escrow_tok :> ghost_varG Σ unit ;
+    pb_prophread_escrow :> inG Σ dfracR ;
 }.
 
 Definition pbΣ :=
@@ -86,7 +87,8 @@ Definition pbΣ :=
     GFunctor (client_logR) ; ghost_varΣ unit ;
     pb_prereadΣ (EntryType:=(OpType * gname));
     primary_ghostΣ (EntryType:=(OpType * gname)) ;
-    configΣ
+    configΣ ;
+    GFunctor dfracR
     ].
 Global Instance subG_pbΣ {Σ} : subG (pbΣ) Σ → (pbG Σ).
 Proof. solve_inG. Qed.

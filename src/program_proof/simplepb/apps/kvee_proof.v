@@ -67,12 +67,12 @@ Definition own_Clerk ck γkv : iProp Σ :=
   ∃ (eeCk:loc) γlog,
     "Hcl" ∷ ck ↦[kvee.Clerk :: "cl"] #eeCk ∗
     "#Hkvinv" ∷ kv_inv γlog γkv ∗
-    "Hownck" ∷ eesm_proof.own_Clerk eeCk γlog
+    "Hownck" ∷ eesm_proof.own_Clerk (low_record:=kv_record) eeCk γlog
 .
 
 Definition is_kv_config confHost γkv : iProp Σ :=
   ∃ γpb γerpc γlog,
-    "#Hee_inv" ∷ is_ee_inv γpb γlog γerpc ∗
+    "#Hee_inv" ∷ is_ee_inv (low_record:=kv_record) γpb γlog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
     "#Hkv_inv" ∷ kv_inv γlog γkv ∗
     "#Hconf" ∷ is_pb_sys_host confHost γpb
@@ -138,12 +138,7 @@ Proof.
   iDestruct ("Hupd") as (?) "[Hkvptsto Hkvclose]".
 
   rewrite /kv_record /=.
-  iExists _. iSplitL "Hlog".
-  { iExactEq "Hlog".
-    Set Printing All.
-    Print eekv_inv.
-    repeat f_equal.
-  }
+  iExists _; iFrame.
   iIntros "Hlog".
 
   iMod (ghost_map_update (value) with "Hkvs Hkvptsto") as "[Hkvs Hkvptsto]".
@@ -172,7 +167,7 @@ Qed.
 Lemma wp_Clerk__Get ck γkv key :
 ⊢ {{{ own_Clerk ck γkv }}}
   <<< ∀∀ value, kv_ptsto γkv key value >>>
-    Clerk__Get #ck #key @ (↑pbN ∪ ↑eeN ∪ ↑stateN)
+    Clerk__Get #ck #key @ (↑pbN ∪ ↑prophReadN ∪ ↑eeN ∪ ↑stateN)
   <<< kv_ptsto γkv key value >>>
   {{{ reply_sl, RET (slice_val reply_sl); own_Clerk ck γkv ∗ is_slice_small reply_sl byteT 1 value }}}.
 Proof.
@@ -183,14 +178,15 @@ Proof.
   wp_apply (wp_EncodeGetArgs with "[//]").
   iIntros (getEncoded get_sl) "[%Henc Henc_sl]".
   wp_loadField.
-  wp_apply (wp_Clerk__ApplyExactlyOnce with "Hownck Henc_sl").
+  wp_apply (wp_Clerk__ApplyReadonly with "Hownck Henc_sl").
+  { instantiate (1:=getOp key). done. }
   { done. }
   iInv "Hkvinv" as ">Hown" "Hclose".
 
   (* make this a separate lemma? *)
   iMod (fupd_mask_subseteq _) as "Hmaskclose".
   2: iMod "Hupd".
-  1:{ solve_ndisj. }
+  1:{ eauto 20 with ndisj. }
 
   iModIntro.
 
@@ -204,21 +200,14 @@ Proof.
   iMod ("Hkvclose" with "Hkvptsto") as "HH".
   iMod "Hmaskclose" as "_".
   iMod ("Hclose" with "[Hlog Hkvs]") as "_".
-  {
-    iExists _; iFrame "Hlog".
-    iNext.
-    unfold own_kvs.
-    unfold compute_state.
-    rewrite foldl_snoc.
-    simpl.
-    iFrame.
-  }
+  { iExists _; iFrame. }
   iModIntro.
   iIntros (?) "Hsl Hck".
   iApply "HH".
   iSplitR "Hck".
   { repeat iExists _. iFrame "∗#". }
-  { rewrite /kv_record//=. move:Hlook.
+  { rewrite /kv_record//=.
+    move:Hlook.
     rewrite lookup_union.
     destruct (compute_state ops !! key) as [x|]; simpl.
     - rewrite map.union_with_Some_l. intros [= ->]. done.

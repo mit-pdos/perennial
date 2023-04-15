@@ -146,6 +146,7 @@ Section local_proof.
 Context {low_record:Sm.t}.
 Notation low_OpType := (Sm.OpType low_record).
 Notation low_has_op_encoding := (Sm.has_op_encoding low_record).
+Notation low_is_readonly_op := (Sm.is_readonly_op low_record).
 Notation low_compute_reply := (Sm.compute_reply low_record).
 Instance low_op_dec2 : EqDecision low_OpType.
 Proof. apply (Sm.OpType_EqDecision low_record). Qed.
@@ -450,6 +451,82 @@ Proof.
       }
     }
   }
+Qed.
+
+Lemma wp_Clerk__ApplyReadonly ck γoplog lowop op_sl lowop_bytes Φ:
+  low_is_readonly_op lowop →
+  low_has_op_encoding lowop_bytes lowop →
+  own_Clerk ck γoplog -∗
+  is_slice op_sl byteT 1 lowop_bytes -∗
+  (|={⊤∖↑pbN∖↑prophReadN∖↑eeN,∅}=> ∃ oldops, own_log γoplog oldops ∗
+    (own_log γoplog (oldops) ={∅,⊤∖↑pbN∖↑prophReadN∖↑eeN}=∗
+    (∀ reply_sl, own_Clerk ck γoplog -∗ is_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
+     -∗ Φ (slice_val reply_sl )))) -∗
+  WP Clerk__ApplyReadonly #ck (slice_val op_sl) {{ Φ }}.
+Proof.
+  intros Hro Henc.
+  iIntros "Hclerk Hop Hupd".
+  iNamed "Hclerk".
+
+  wp_call.
+  wp_apply (wp_NewSliceWithCap).
+  { word. }
+  iIntros (?) "Henc_sl".
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (enc_ptr) "Henc".
+  wp_pure1_credit "Hlc".
+  wp_pure1_credit "Hlc2".
+  wp_load.
+  replace (#(U8 2)) with (_.(to_val) (U8 2)).
+  2: { done. }
+  iDestruct (is_slice_split with "Henc_sl") as "[Henc_sl Henc_cap]".
+  wp_apply (wp_SliceSet with "[Henc_sl]").
+  { iFrame. iPureIntro.
+    eexists _.
+    rewrite lookup_replicate.
+    split; first done.
+    word.
+  }
+  iIntros "Henc_sl".
+  iDestruct (is_slice_split with "[$Henc_sl $Henc_cap]") as "Henc_sl".
+
+  wp_load.
+  iDestruct (is_slice_to_small with "Hop") as "Hop".
+  wp_apply (wp_WriteBytes with "[$Henc_sl $Hop]").
+  iIntros (?) "[Henc_sl _]".
+  wp_store.
+  wp_load.
+  wp_loadField.
+
+  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  wp_apply (wp_Clerk__ApplyReadonly with "Hown_ck [$Henc_sl]").
+  {
+    instantiate (1:= ro_ee lowop).
+    by rewrite /ee_record /ee_is_readonly_op /=.
+  }
+  {
+    rewrite /ee_record /=.
+    eexists _; split; done.
+  }
+
+  iInv "Hee_inv" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hpblog Hee]".
+  iNamed "Hee".
+  iMod "Hupd" as (?) "[Hlog2 Hupd]".
+  iDestruct (own_valid_2 with "Hlog Hlog2") as %Hvalid.
+  apply mono_list_auth_dfrac_op_valid_L in Hvalid.
+  destruct Hvalid as [_ ?]; subst.
+  iModIntro. iExists _; iFrame.
+  iIntros "Hpblog".
+  iMod ("Hupd" with "[$]") as "Hupd".
+  iMod ("Hclose" with "[Hpblog HerpcServer Hlog2 Hcids]").
+  { iExists _; iFrame. }
+  iModIntro.
+  iIntros (?) "Hsl Hsl2 Hck".
+  iApply ("Hupd" with "[-Hsl]").
+  { repeat iExists _; iFrame "∗#%". }
+  iFrame.
 Qed.
 
 (* Now, the server proof. *)
