@@ -61,15 +61,52 @@ Proof.
   iNamed "Hvol".
   wp_pures.
   wp_loadField.
-  wp_if_destruct.
-  { (* not the primary; wait and try again later *)
+  iDestruct "Hprimary" as "[%HnotPrim|Hprimary]".
+  { rewrite HnotPrim.
     wp_pures.
     wp_loadField.
     wp_apply (wp_condWait with "[- HΦ]").
     {
       iFrame "# Hlocked".
       repeat iExists _; iSplitR "HghostEph"; last iFrame.
-      repeat iExists _. iFrame "∗#". done.
+      repeat iExists _. iFrame "∗#". rewrite HnotPrim. iFrame "∗#". iSplitL.
+      { by iLeft. } done.
+    }
+    iIntros "[Hlocked Hown]".
+    wp_pures.
+    iLeft. iModIntro.
+    eauto with iFrame.
+  }
+  iNamed "Hprimary".
+  destruct clerkss.
+  { exfalso.  simpl in Hclerkss_len. done. }
+  wp_apply (wp_or with "[Hclerks]").
+  { iNamedAccu. }
+  { wp_pures. iPureIntro.
+    instantiate (2:=(st.(server.isPrimary) = false)).
+    repeat f_equal. symmetry. destruct st. simpl.
+    destruct isPrimary.
+    { by apply bool_decide_false. }
+    { by apply bool_decide_true. }
+  }
+  { iIntros. wp_loadField.
+    iMod (readonly_load with "Hclerkss_sl") as (?) "Hsl2".
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+   { done. }
+   iIntros. wp_apply wp_slice_len.
+   wp_pures. iFrame. iModIntro. done.
+  }
+  iNamed 1.
+  wp_if_destruct.
+  { (* not the primary/no clerks; wait and try again later *)
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_condWait with "[- HΦ]").
+    {
+      iFrame "# Hlocked".
+      repeat iExists _; iSplitR "HghostEph"; last iFrame.
+      repeat iExists _. iFrame "∗#". iFrame "%".
+      iRight. repeat iExists _; iFrame "#%".
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
@@ -95,13 +132,11 @@ Proof.
     iSplitR "HghostEph"; last iFrame.
     repeat (iExists _).
     iFrame "Hstate ∗#"; iFrame "%".
+    iRight; repeat iExists _; iFrame "#%".
   }
   wp_pures.
 
   (* XXX: copy paste from Apply proof *)
-  iDestruct "Hprimary" as "[%Hbad|Hprimary]"; first exfalso.
-  { by rewrite Hbad in Heqb. }
-  iNamed "Hprimary".
   iMod (readonly_load with "Hclerkss_sl") as (?) "Hclerkss_sl2".
 
   iDestruct (is_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
@@ -111,6 +146,8 @@ Proof.
   wp_pures.
   set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
 
+  rename clerkss into clerkss'.
+  set (clerkss := (t :: clerkss')) in *.
   assert (int.nat clerkIdx < length clerkss) as Hlookup_clerks.
   { (* FIXME: better lemmas about mod? *)
     rewrite Hclerkss_sz.
@@ -204,8 +241,8 @@ Proof.
   wp_pures.
   wp_apply wp_Sleep.
   wp_pures.
-  iLeft.
-  by iFrame.
+  iLeft. iModIntro. by iFrame.
+  Unshelve. apply _.
 Qed.
 
 End pb_sendcommitthread_proof.
