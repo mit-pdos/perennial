@@ -2,6 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb.apps Require Import kv64.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From iris.base_logic Require Import ghost_map.
+From iris.algebra Require Import mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
@@ -10,7 +11,7 @@ From Perennial.program_proof Require Import map_marshal_proof.
 From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.simplepb Require Import config_proof.
 From Perennial.program_proof.simplepb Require Import pb_init_proof.
-From Perennial.program_proof.simplepb.apps Require Import vsm.
+From Perennial.program_proof.simplepb.apps Require Import vsm log.
 From Perennial.program_proof.fencing Require Import map.
 
 Section global_proof.
@@ -73,9 +74,14 @@ Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 Class kv64G Σ := Kv64G {
   kv64_simplelogG :> simplelogG (sm_record:=kv_record) Σ ;
   kv64_ghostMapG :> ghost_mapG Σ u64 (list u8) ;
-  kv64_configG :> configG Σ
+  kv64_configG :> configG Σ ;
+  kv64_logG :> inG Σ (mono_listR (leibnizO kv64Op)) ;
+  kv64_vsmG :> vsmG (sm_record:=kv_record) Σ ;
 }.
-Definition kv64Σ := #[simplelogΣ (sm_record:=kv_record); configΣ; ghost_mapΣ u64 (list u8)].
+Definition kv64Σ := #[simplelogΣ (sm_record:=kv_record); configΣ; ghost_mapΣ u64 (list u8);
+                      GFunctor (mono_listR (leibnizO kv64Op));
+                      mapΣ u64 (list kv64Op)
+   ].
 Global Instance subG_kv64Σ {Σ} : subG kv64Σ Σ → kv64G Σ.
 Proof. intros. solve_inG. Qed.
 
@@ -83,15 +89,16 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!kv64G Σ}.
 
 (* The abstract state applies the operation to an all-nil map,
-so that each key already exists from the start. This is coherent with [getOp] doing [default []]. *)
+   so that each key already exists from the start. This is consisent with
+   [getOp] doing [default []]. *)
 Definition own_kvs (γkv:gname) ops : iProp Σ :=
   ghost_map_auth γkv 1 (compute_state ops ∪ gset_to_gmap [] (fin_to_set u64))
 .
 
 Definition stateN := nroot .@ "state".
 
-Definition kv_inv γ γkv : iProp Σ :=
-  inv stateN ( ∃ ops, own_op_log γ ops ∗ own_kvs γkv ops).
+Definition kv_inv γlog γkv : iProp Σ :=
+  inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γkv ops).
 
 Definition own_kv_server_pre_init γsrv := own_server_pre γsrv.
 Definition is_kv_server_pre_init_witness γsrv : iProp Σ :=
@@ -249,7 +256,6 @@ Proof.
 Qed.
 
 Notation is_state := (is_state (sm_record:=kv_record)).
-Context `{mapG Σ u64 (list OpType)}.
 
 Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp Σ :=
   ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap u64 u64) (minVnum:u64),

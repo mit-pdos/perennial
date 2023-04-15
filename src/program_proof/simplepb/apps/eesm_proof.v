@@ -9,7 +9,7 @@ From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 From Perennial.program_proof.grove_shared Require Import erpc_lib.
 From Perennial.program_proof Require Import map_marshal_proof.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb.apps Require Import vsm.
+From Perennial.program_proof.simplepb.apps Require Import vsm log.
 From Perennial.program_proof.fencing Require Import map.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
@@ -80,6 +80,7 @@ Definition ee_has_encoding op_bytes op :=
   | ro_ee lowop =>
       ∃ lowop_enc,
   low_has_op_encoding lowop_enc lowop ∧
+  low_is_readonly_op lowop ∧
   op_bytes = [U8 2] ++ (lowop_enc)
   end
 .
@@ -117,11 +118,9 @@ Definition
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
 Context `{!pbG (pb_record:=ee_record) Σ}.
 
-Definition own_oplog γ (lowops:list low_OpType) := own γ (●ML{#1/2} (lowops : list (leibnizO _))).
-
 Context `{!gooseGlobalGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
 Definition own_eeState st γ γerpc : iProp Σ :=
-  "Hlog" ∷ own_oplog γ st.(lowops) ∗
+  "Hlog" ∷ own_log γ st.(lowops) ∗
   "HerpcServer" ∷ eRPCServer_own_ghost γerpc st.(lastSeq) st.(lastReply) ∗
   "Hcids" ∷ ([∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z st.(nextCID)⌝%Z ∨
                                               (is_eRPCClient_ghost γerpc cid 1))
@@ -129,14 +128,14 @@ Definition own_eeState st γ γerpc : iProp Σ :=
 
 Definition eeN := nroot .@ "ee".
 
-Notation own_log := (own_op_log (pb_record:=ee_record)).
+Notation own_op_log := (own_op_log (pb_record:=ee_record)).
 
 (* This is the invariant maintained by all the servers for the "centralized"
    ghost state of the system. *)
-Definition is_ee_inv γ γerpc : iProp Σ :=
+Definition is_ee_inv γpb γlog γerpc : iProp Σ :=
   inv eeN (∃ ops,
-              own_op_log γ ops ∗
-              own_eeState (compute_state ops) γ γerpc
+              own_op_log γpb ops ∗
+              own_eeState (compute_state ops) γlog γerpc
       )
 .
 
@@ -164,14 +163,15 @@ Notation is_ee_inv := (is_ee_inv (low_record:=low_record)).
 Context `{!config_proof.configG Σ}.
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
 Context `{!pbG (pb_record:=ee_record) Σ}.
+Context `{!vsmG (sm_record:=low_record) Σ}.
 
 Definition own_Clerk ck γoplog : iProp Σ :=
-  ∃ (pb_ck:loc) γpblog γerpc (cid seqno:u64),
+  ∃ (pb_ck:loc) γpb γerpc (cid seqno:u64),
     "Hcid" ∷ ck ↦[eesm.Clerk :: "cid"] #cid ∗
     "Hseq" ∷ ck ↦[eesm.Clerk :: "seq"] #seqno ∗
-    "Hown_ck" ∷ own_pb_Clerk pb_ck γpblog ∗
+    "Hown_ck" ∷ own_pb_Clerk pb_ck γpb ∗
     "#Hpb_ck" ∷ readonly (ck ↦[eesm.Clerk :: "ck"] #pb_ck) ∗
-    "#Hee_inv" ∷ is_ee_inv γpblog γoplog γerpc ∗
+    "#Hee_inv" ∷ is_ee_inv γpb γoplog γerpc ∗
     "Herpc" ∷ is_eRPCClient_ghost γerpc cid seqno ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
     "%Hseqno_pos" ∷ ⌜ int.nat seqno > 0 ⌝
@@ -188,8 +188,8 @@ Lemma wp_Clerk__ApplyExactlyOnce ck γoplog lowop op_sl lowop_bytes Φ:
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗
   is_slice op_sl byteT 1 lowop_bytes -∗
-  (|={⊤∖↑pbN∖↑prophReadN∖↑eeN,∅}=> ∃ oldops, own_oplog γoplog oldops ∗
-    (own_oplog γoplog (oldops ++ [lowop]) ={∅,⊤∖↑pbN∖↑prophReadN∖↑eeN}=∗
+  (|={⊤∖↑pbN∖↑prophReadN∖↑eeN,∅}=> ∃ oldops, own_log γoplog oldops ∗
+    (own_log γoplog (oldops ++ [lowop]) ={∅,⊤∖↑pbN∖↑prophReadN∖↑eeN}=∗
     (∀ reply_sl, own_Clerk ck γoplog -∗ is_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
      -∗ Φ (slice_val reply_sl )))) -∗
   WP Clerk__ApplyExactlyOnce #ck (slice_val op_sl) {{ Φ }}.
@@ -666,7 +666,7 @@ Lemma wp_EEStateMachine__apply s :
         True
   }}}
     EEStateMachine__applyVolatile #s
-    {{{
+  {{{
           applyFn, RET applyFn;
         ⌜val_ty applyFn (slice.T byteT -> slice.T byteT)⌝ ∗
         ee_is_InMemory_applyVolatileFn applyFn (own_StateMachine s)
@@ -973,7 +973,7 @@ Proof.
     }
   }
   { (* apply a readonly op *)
-    destruct Henc as [? [HlowEnc Henc]].
+    destruct Henc as [? (HlowEnc & Hro & Henc)].
     rewrite Henc.
     iMod (readonly_load with "Hsl") as (?) "Hsl2".
     wp_apply (wp_SliceGet with "[$Hsl2]").

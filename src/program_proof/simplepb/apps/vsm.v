@@ -18,8 +18,10 @@ Notation pbΣ := (pbΣ (pb_record:=sm_record)).
 
 Implicit Type γst:gname.
 
-Context `{mapG Σ u64 (list OpType)}.
-Context `{!gooseGlobalGS Σ, !heapGS Σ}.
+Class vsmG Σ := VsmG {
+  vsm_mapG :> mapG Σ u64 (list OpType)
+                 }.
+Context `{!gooseGlobalGS Σ, !heapGS Σ, !vsmG Σ}.
 
 Implicit Type own_VersionedStateMachine : gname → (list OpType) → u64 → iProp Σ.
 
