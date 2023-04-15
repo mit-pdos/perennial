@@ -452,7 +452,7 @@ Definition Server__sendIncreaseCommitThread: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       lock.acquire (struct.loadF Server "mu" "s");;
       Skip;;
-      (for: (λ: <>, ~ (struct.loadF Server "isPrimary" "s")); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, (~ (struct.loadF Server "isPrimary" "s")) || ((slice.len (SliceGet (slice.T ptrT) (struct.loadF Server "clerks" "s") #0) = #0))); (λ: <>, Skip) := λ: <>,
         lock.condWait (struct.loadF Server "isPrimary_cond" "s");;
         Continue);;
       let: "newCommittedNextIndex" := struct.loadF Server "committedNextIndex" "s" in

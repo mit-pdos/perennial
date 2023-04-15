@@ -116,6 +116,7 @@ Definition MakeKVStateMachine: val :=
   rec: "MakeKVStateMachine" <> :=
     let: "s" := struct.alloc KVState (zero_val (struct.t KVState)) in
     struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #());;
+    struct.storeF KVState "vnums" "s" (NewMap uint64T #());;
     struct.new eesm.VersionedStateMachine [
       "ApplyVolatile" ::= KVState__apply "s";
       "ApplyReadonly" ::= KVState__applyReadonly "s";

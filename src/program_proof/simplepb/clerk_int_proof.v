@@ -464,8 +464,8 @@ Proof.
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
   iDestruct (is_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
   assert (int.nat clerkIdx < length clerks) as Hlookup_clerks.
-  { (* FIXME: better lemmas about mod? *)
-    admit.
+  {
+    admit.  (* FIXME: word `mod` inequality *)
   }
 
   wp_apply (wp_ref_of_zero).
@@ -592,6 +592,6 @@ Proof.
       repeat iExists _; iFrame "∗#%".
     }
   }
-Admitted.
+Admitted. (* FIXME: integer reasoning *)
 
 End clerk_proof.

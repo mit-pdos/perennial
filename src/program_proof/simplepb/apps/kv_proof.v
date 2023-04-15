@@ -249,7 +249,7 @@ Proof.
 Qed.
 
 Notation is_state := (is_state (sm_record:=kv_record)).
-Context `{mapG Σ u64 (list kv64Op)}.
+Context `{mapG Σ u64 (list OpType)}.
 
 Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp Σ :=
   ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap u64 u64) (minVnum:u64),
@@ -260,9 +260,10 @@ Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp �
   "Hvnums_map" ∷ is_map vnums_loc 1 vnumsM ∗
   "#Hst" ∷ □ (∀ (k:u64),
               (∀ (vnum':u64), ⌜int.nat vnum' <= int.nat latestVnum⌝ →
-                             ⌜int.nat (default minVnum (vnumsM !! k)) < int.nat vnum'⌝ →
+                             ⌜int.nat (default minVnum (vnumsM !! k)) <= int.nat vnum'⌝ →
               ∃ someOps, is_state γst vnum' someOps ∗
-                      ⌜compute_reply someOps (getOp k) = compute_reply ops (getOp k)⌝))
+                      ⌜compute_reply someOps (getOp k) = compute_reply ops (getOp k)⌝)) ∗
+  "%Hle" ∷ ⌜∀ (k:u64), int.nat (default minVnum (vnumsM !! k)) <= int.nat latestVnum⌝
 .
 
 Implicit Type own_VersionedStateMachine : gname → (list OpType) → u64 → iProp Σ.
@@ -274,7 +275,7 @@ Lemma wp_KVState__apply s :
     KVState__apply #s
   {{{
         applyFn, RET applyFn;
-        ⌜val_ty applyFn (slice.T byteT -> slice.T byteT)⌝ ∗
+        ⌜val_ty applyFn (slice.T byteT -> (arrowT uint64T (slice.T byteT)))⌝ ∗
         is_Versioned_applyVolatileFn applyFn (own_KVState s)
   }}}
 .
@@ -375,36 +376,53 @@ Proof.
       unfold compute_state.
       rewrite foldl_snoc.
       iFrame.
-      iModIntro.
-      iIntros.
-      rewrite /typed_map.map_insert /= in H2.
-      destruct (decide (k = u)).
-      { subst.
-        rewrite lookup_insert /= in H2.
-        exfalso. word. }
-      assert (compute_reply (ops ++ [putOp u l]) (getOp k) =
-                compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+      iSplitL.
       {
-        rewrite /compute_reply /compute_state.
-        rewrite foldl_snoc /=.
-        by rewrite lookup_insert_ne.
-      }
-      rewrite lookup_insert_ne in H2; last done.
-      destruct (decide (int.nat vnum' <= int.nat latestVnum)).
-      { by iApply "Hst". }
-      destruct (decide (int.nat vnum' = int.nat vnum)).
-      { replace (vnum') with (vnum) by word.
-        iExists _.
-        iDestruct "Hintermediate" as "[_ $]".
-        iPureIntro.
-        by rewrite /compute_reply /compute_state foldl_snoc /= lookup_insert_ne.
+        iModIntro.
+        iIntros.
+        rewrite /typed_map.map_insert /= in H2.
+        destruct (decide (k = u)).
+        { subst. rewrite lookup_insert /= in H2.
+          replace (vnum) with (vnum') by word.
+          iExists _. by iDestruct "Hintermediate" as "[_ $]".
+        }
+        assert (compute_reply (ops ++ [putOp u l]) (getOp k) =
+                  compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+        {
+          rewrite /compute_reply /compute_state.
+          rewrite foldl_snoc /=.
+          by rewrite lookup_insert_ne.
+        }
+        rewrite lookup_insert_ne in H2; last done.
+        destruct (decide (int.nat vnum' <= int.nat latestVnum)).
+        { by iApply "Hst". }
+        destruct (decide (int.nat vnum' = int.nat vnum)).
+        { replace (vnum') with (vnum) by word.
+          iExists _.
+          iDestruct "Hintermediate" as "[_ $]".
+          iPureIntro.
+          by rewrite /compute_reply /compute_state foldl_snoc /= lookup_insert_ne.
+        }
+        {
+          iDestruct "Hintermediate" as "[Hint _]".
+          iSpecialize ("Hint" $! vnum' with "[%] [%]").
+          { word. }
+          { word. }
+          iExists _. by iFrame "Hint".
+        }
       }
       {
-        iDestruct "Hintermediate" as "[Hint _]".
-        iSpecialize ("Hint" $! vnum' with "[%] [%]").
-        { word. }
-        { word. }
-        iExists _. by iFrame "Hint".
+        iPureIntro. intros.
+        destruct (decide (k = u)).
+        { subst.
+          by rewrite /typed_map.map_insert lookup_insert /=.
+        }
+        {
+          rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
+          transitivity (int.nat latestVnum).
+          { apply Hle. }
+          word.
+        }
       }
     }
     simpl.
@@ -473,13 +491,25 @@ Proof.
       unfold compute_state.
       rewrite foldl_snoc.
       iFrame.
+      iSplitL.
+      2: {
+        iPureIntro. intros.
+        destruct (decide (k = u)).
+        { subst.
+          by rewrite /typed_map.map_insert lookup_insert /=. }
+        { rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
+          transitivity (int.nat latestVnum).
+          { apply Hle. }
+          word. }
+      }
       iModIntro.
       iIntros.
       rewrite /typed_map.map_insert /= in H2.
       destruct (decide (k = u)).
-      { subst.
-        rewrite lookup_insert /= in H2.
-        exfalso. word. }
+      { subst. rewrite lookup_insert /= in H2.
+        replace (vnum) with (vnum') by word.
+        iExists _. by iDestruct "Hintermediate" as "[_ $]".
+      }
       eassert (compute_reply (ops ++ [_]) (getOp k) =
                 compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
       {
@@ -508,6 +538,120 @@ Proof.
   }
 Qed.
 
+Lemma wp_KVState__applyReadonly s :
+  {{{
+        True
+  }}}
+    KVState__applyReadonly #s
+  {{{
+        applyReadonlyFn, RET applyReadonlyFn;
+        ⌜val_ty applyReadonlyFn (slice.T byteT -> (prodT uint64T (slice.T byteT)))⌝ ∗
+        is_Versioned_applyReadonlyFn applyReadonlyFn (own_KVState s)
+  }}}
+.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  iModIntro.
+  iApply "HΦ".
+  clear Φ.
+  iSplit.
+  {
+    iPureIntro. econstructor.
+  }
+  iIntros (?????? Φ) "!# Hpre HΦ".
+  iDestruct "Hpre" as "(%Hro & %Henc & #Hsl & Hown)".
+  wp_pures.
+  destruct op.
+  { by exfalso. }
+  rewrite /kv_record /= in Henc.
+  rewrite <- Henc.
+  iMod (readonly_load with "Hsl") as (?) "Hsl2".
+  wp_apply (wp_SliceGet with "[$Hsl2]").
+  { done. }
+  iIntros "Hsl2".
+  wp_pures.
+  wp_apply (wp_SliceGet with "[$Hsl2]").
+  { done. }
+  iIntros "Hsl2".
+  wp_pures.
+  wp_apply (wp_slice_len).
+  wp_pures.
+  iDestruct (is_slice_small_sz with "Hsl2") as %Hsl_sz.
+  wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
+  { rewrite -Hsl_sz.
+    split; last done.
+    simpl.
+    word.
+  }
+  iIntros (getOp_sl) "Hop_sl".
+  rewrite -Hsl_sz.
+  rewrite -> subslice_drop_take; last first.
+  { simpl. word. }
+  rewrite cons_length.
+  unfold encode_op.
+  replace (S (length (u64_le u)) - int.nat 1%Z) with (length (u64_le u)) by word.
+  replace (int.nat (U64 1)) with (length [U8 1]) by done.
+  rewrite drop_app.
+  rewrite take_ge; last word.
+
+  (* TODO: separate lemma *)
+  wp_call.
+  wp_pures.
+  wp_apply (wp_ReadInt with "Hop_sl").
+  iIntros (?) "_".
+  wp_pures.
+  (* end separate lemma *)
+
+  iNamed "Hown".
+  wp_call.
+  wp_loadField.
+  wp_apply (wp_byteMapGet with "Hkvs_map").
+  iIntros (rep_sl) "[#Hrep_sl Hkvs_map]".
+  iMod (readonly_load with "Hrep_sl") as (?) "Hrep_sl2".
+  wp_pures.
+  wp_loadField.
+  wp_apply (wp_MapGet with "[$]").
+  iIntros (??) "(%Hlookup & Hvnums_map)".
+  wp_pures.
+  wp_if_destruct.
+  {
+    wp_pures. iApply "HΦ". iModIntro.
+    apply map_get_true in Hlookup.
+    pose proof (Hle u) as Hle2.
+    rewrite Hlookup /= in Hle2.
+    iSplitR. { iPureIntro. word. }
+    iFrame "Hrep_sl2".
+    rewrite /kv_record /compute_reply /compute_state /=.
+    iSplitL.
+    { repeat iExists _; iFrame "∗#%". }
+    iSpecialize ("Hst" $! u).
+    rewrite Hlookup /=.
+    iModIntro. iIntros.
+    iApply "Hst".
+    { iPureIntro. word. }
+    { iPureIntro. word. }
+  }
+  {
+    wp_loadField. wp_pures. iApply "HΦ". iModIntro.
+    apply map_get_false in Hlookup as [Hlookup Hv].
+    subst.
+    pose proof (Hle u) as Hle2.
+    rewrite Hlookup /= in Hle2.
+    iSplitR. { iPureIntro. word. }
+    iFrame "Hrep_sl2".
+    rewrite /kv_record /compute_reply /compute_state /=.
+    iSplitL.
+    { repeat iExists _; iFrame "∗#%". }
+    iSpecialize ("Hst" $! u).
+    rewrite Hlookup /=.
+    iModIntro. iIntros.
+    iApply "Hst".
+    { iPureIntro. word. }
+    { iPureIntro. word. }
+  }
+Qed.
+
 Lemma wp_KVState__setState s :
   {{{
         True
@@ -515,7 +659,7 @@ Lemma wp_KVState__setState s :
     KVState__setState #s
   {{{
         setFn, RET setFn;
-        ⌜val_ty setFn (slice.T byteT -> unitT)⌝ ∗
+        ⌜val_ty setFn ((slice.T byteT) -> (arrowT uint64T unitT))%ht⌝ ∗
         is_Versioned_setStateFn setFn (own_KVState s)
   }}}
 .
@@ -555,18 +699,20 @@ Proof.
   wp_storeField. wp_storeField.
   iApply "HΦ".
   iModIntro. repeat iExists _; iFrame.
-  iModIntro.
-  iIntros.
-  assert (int.nat vnum' = int.nat vnum).
-  { rewrite lookup_empty /= in H2. word. }
-  replace (vnum) with vnum' by word.
-  by iExists _; iFrame "HstNew".
+  iFrame "%".
+  iSplitR.
+  { iModIntro. iIntros.
+    assert (int.nat vnum' = int.nat vnum).
+    { rewrite lookup_empty /= in H2. word. }
+    replace (vnum) with vnum' by word.
+    by iExists _; iFrame "HstNew". }
+  iPureIntro. intros. rewrite lookup_empty /=. word.
 Qed.
 
 Lemma wp_KVState__getState (s:loc) :
   ⊢ is_Versioned_getStateFn (λ: <>, KVState__getState #s) (own_KVState s).
 Proof.
-  iIntros (? Φ) "!# Hpre HΦ".
+  iIntros (??? Φ) "!# Hpre HΦ".
   iDestruct "Hpre" as "Hown".
   wp_pures.
   wp_call.
@@ -581,7 +727,7 @@ Proof.
   iModIntro.
   iFrame "#".
   iSplitL; last done.
-  iExists _; iFrame.
+  repeat iExists _; iFrame "∗#%".
 Qed.
 
 Notation is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=kv_record)).
@@ -593,8 +739,8 @@ Lemma wp_MakeKVStateMachine :
     MakeKVStateMachine #()
   {{{
       sm own_MemStateMachine, RET #sm;
-        is_InMemoryStateMachine sm own_MemStateMachine ∗
-        own_MemStateMachine []
+        is_VersionedStateMachine sm own_MemStateMachine ∗
+        (∀ γst, is_state γst (U64 0) [] -∗ own_MemStateMachine γst [] (U64 0))
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -609,57 +755,44 @@ Proof.
   wp_apply (wp_byteMapNew).
   iIntros (?) "Hmap".
   wp_storeField.
+  wp_apply (wp_NewMap).
+  iIntros (?) "Hvnums_map".
+  wp_storeField.
   wp_apply (wp_KVState__apply).
   iIntros (?) "[% #His_apply]".
+  wp_apply (wp_KVState__applyReadonly).
+  iIntros (?) "[% #His_applyReadonly]".
   wp_apply (wp_KVState__setState).
   iIntros (?) "[% #His_setstate]".
   iApply wp_fupd.
   wp_apply (wp_allocStruct).
   {
-    repeat econstructor; done.
+    repeat econstructor; try done.
   }
   iIntros (?) "Hl".
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
   iMod (readonly_alloc_1 with "ApplyVolatile") as "#Happly".
+  iMod (readonly_alloc_1 with "ApplyReadonly") as "#HapplyReadonly".
   iMod (readonly_alloc_1 with "GetState") as "#Hgetstate".
   iMod (readonly_alloc_1 with "SetState") as "#HsetState".
   iApply "HΦ".
-  iSplitR "kvs Hmap".
+  iSplitR.
   {
-    iExists _, _, _.
-    iModIntro.
-    iFrame "#".
-    iApply wp_KVState__getState.
+    repeat iExists _. iModIntro.
+    iFrame "#". iApply wp_KVState__getState.
   }
   iModIntro.
-  iExists _.
-  iFrame.
-Qed.
-
-Lemma wp_Start fname host γsys γsrv data :
-  {{{
-      "#Hhost" ∷ is_pb_host host γsys γsrv ∗
-      "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash (own_Server_ghost γsys γsrv) data)
-                    (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data')
-  }}}
-    Start #(LitString fname) #host
-  {{{
-        RET #(); True
-  }}}
-.
-Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_call.
-  wp_apply (wp_MakeKVStateMachine).
-  iIntros (??) "[#HisSmMem Hmemstate]".
-  wp_apply (wp_MakePbServer with "Hinv [$HisSmMem $Hmemstate $Hfile_ctx]").
-  iIntros (?) "#Hsrv".
-  wp_pures.
-  wp_apply (pb_start_proof.wp_Server__Serve with "[$]").
-  wp_pures.
-  by iApply "HΦ".
+  iIntros (?) "#?".
+  repeat iExists _; iFrame.
+  iSplitL.
+  { iModIntro. iIntros. rewrite lookup_empty /= in H5.
+    replace (int.nat (U64 0)) with (0) in * by word.
+    assert (int.nat vnum' = int.nat 0) by word.
+    replace (vnum') with (U64 0) by word.
+    iExists _; by iFrame "#".
+  }
+  iPureIntro. intros. rewrite lookup_empty /= //.
 Qed.
 
 End local_proof.
@@ -670,12 +803,13 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!gooseLocalGS Σ}.
 Context `{!kv64G Σ}.
 
+(*
 Lemma kv_server_init fname γsys γsrv :
   fname f↦ [] -∗
   is_sys_init_witness γsys -∗
   own_kv_server_pre_init γsrv ={⊤}=∗
   fname f↦ [] ∗
-  file_crash (own_Server_ghost γsys γsrv) [].
+  file_crash (own_Server_ghost_f γsys γsrv) [].
 Proof.
   iIntros "Hfile #Hwit Hpre".
   iFrame "Hfile".
@@ -683,6 +817,6 @@ Proof.
   iLeft.
   iFrame.
   done.
-Qed.
+Qed. *)
 
 End local_init_proof.

@@ -133,9 +133,9 @@ Notation own_log := (own_op_log (pb_record:=ee_record)).
 
 (* This is the invariant maintained by all the servers for the "centralized"
    ghost state of the system. *)
-Definition is_ee_inv γpblog γ γerpc : iProp Σ :=
+Definition is_ee_inv γ γerpc : iProp Σ :=
   inv eeN (∃ ops,
-              own_log γpblog ops ∗
+              own_op_log γ ops ∗
               own_eeState (compute_state ops) γ γerpc
       )
 .
@@ -1478,7 +1478,7 @@ Proof.
   iMod (readonly_alloc (is_slice_small eeop_sl byteT 1 lowop_bytes) with "[Hop_sl]") as "#Hop_sl".
   { simpl. iFrame. }
   wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
-  { iFrame "#". done. }
+  { iFrame "#". rewrite /ee_record /= in Hro. iPureIntro; split; done. }
   iIntros (???) "(%Hlen & Hlow & Hrep_sl & #Hstates)".
   iApply "HΦ".
   iSplitR.

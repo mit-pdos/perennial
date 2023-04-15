@@ -11,6 +11,7 @@ Notation OpType := (Sm.OpType sm_record).
 Notation has_op_encoding := (Sm.has_op_encoding sm_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
 Notation compute_reply := (Sm.compute_reply sm_record).
+Notation is_readonly_op := (Sm.is_readonly_op sm_record).
 Instance e : EqDecision OpType := (Sm.OpType_EqDecision sm_record).
 Notation pbG := (pbG (pb_record:=sm_record)).
 Notation pbΣ := (pbΣ (pb_record:=sm_record)).
@@ -73,6 +74,7 @@ Definition is_Versioned_getStateFn (getStateFn:val) own_VersionedStateMachine : 
 Definition is_Versioned_applyReadonlyFn (applyReadonlyFn:val) own_VersionedStateMachine : iProp Σ :=
   ∀ ops op op_sl op_bytes γst latestVnum,
   {{{
+        ⌜is_readonly_op op⌝ ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         own_VersionedStateMachine γst ops latestVnum
@@ -81,7 +83,7 @@ Definition is_Versioned_applyReadonlyFn (applyReadonlyFn:val) own_VersionedState
   {{{
         reply_sl q (lastModifiedVnum:u64),
         RET (#lastModifiedVnum, slice_val reply_sl);
-        ⌜int.nat lastModifiedVnum < int.nat latestVnum⌝ ∗
+        ⌜int.nat lastModifiedVnum <= int.nat latestVnum⌝ ∗
         own_VersionedStateMachine γst ops latestVnum ∗
         is_slice_small reply_sl byteT q (compute_reply ops op) ∗
         □(∀ (vnum:u64), ⌜int.nat vnum < int.nat latestVnum⌝ → ⌜int.nat lastModifiedVnum <= int.nat vnum⌝ →
