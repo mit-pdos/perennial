@@ -79,7 +79,7 @@ Class kv64G Σ := Kv64G {
 }.
 Definition kv64Σ := #[configΣ; ghost_mapΣ u64 (list u8);
                       GFunctor (mono_listR (leibnizO kv64Op));
-                      mapΣ u64 (list kv64Op)
+                      vsmΣ (sm_record:=kv_record)
    ].
 Global Instance subG_kv64Σ {Σ} : subG kv64Σ Σ → kv64G Σ.
 Proof. intros. solve_inG. Qed.
@@ -99,58 +99,21 @@ Definition stateN := nroot .@ "state".
 Definition kv_inv γlog γkv : iProp Σ :=
   inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γkv ops).
 
-(*
-Definition own_kv_server_pre_init γsrv := own_server_pre γsrv.
-Definition is_kv_server_pre_init_witness γsrv : iProp Σ :=
-  is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0). *)
-
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
   k ↪[γkv] v.
 
-(* FIXME: do initialization proof *)
-(*
-Lemma kv_server_pre_initialize :
-  ⊢ |==> ∃ γsrv,
-      own_kv_server_pre_init γsrv ∗ is_kv_server_pre_init_witness γsrv
+Lemma alloc_kv γlog :
+  own_log γlog [] ={⊤}=∗
+  ∃ γkv ,
+  kv_inv γlog γkv ∗
+  [∗ set] k ∈ fin_to_set u64, kv_ptsto γkv k []
 .
 Proof.
-  iMod (pb_ghost_server_pre_init) as (γsrv) "HH".
-  iModIntro.
-  iExists _; iFrame.
-Qed.
-
-Lemma kv_system_init confγs :
-  length confγs > 0 →
-  (∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_kv_server_pre_init_witness γsrv)
-           ={⊤}=∗
-  ∃ γsys γlog γkv ,
-    pb_init_config γsys confγs ∗
-    is_inv γlog γsys ∗
-    sys_inv γsys ∗
-    kv_inv γlog γkv ∗
-    is_proposal_lb γsys (U64 0) [] ∗
-    is_proposal_facts γsys (U64 0) [] ∗
-    [∗ set] k ∈ fin_to_set u64, kv_ptsto γkv k []
-.
-Proof.
-  intros ?.
-  iIntros "#Hpre".
-  iMod (pb_system_init confγs with "[Hpre]") as (γsys) "(#Hsys & Hghost & Hpb_init & [Haccepted_lb Hepoch_lb])".
-  { done. }
-  {
-    iIntros.
-    iApply "Hpre".
-    done.
-  }
-  iExists γsys.
-  iMod (pb_init_log with "Hghost") as (γlog) "[Hlog #Hisinv]".
-  iExists γlog.
+  iIntros "Hlog".
   iMod (ghost_map_alloc (gset_to_gmap [] (fin_to_set u64))) as (γkv) "[Hkvs Hkvptsto]".
   iExists _.
-  iFrame "#".
   iMod (inv_alloc with "[Hkvs Hlog]") as "$".
   { iNext. iExists _; iFrame. rewrite /own_kvs /compute_state /= left_id_L. done. }
-  iFrame. iModIntro.
   replace (fin_to_set u64) with (dom (gset_to_gmap (A:=list u8) [] (fin_to_set u64))) at 2.
   2:{ rewrite dom_gset_to_gmap. done. }
   iApply big_sepM_dom. iApply (big_sepM_impl with "Hkvptsto").
@@ -158,16 +121,6 @@ Proof.
   2:{ apply elem_of_fin_to_set. }
   iIntros ([= <-]). auto.
 Qed.
-
-Lemma kv_server_pre_init :
-  ⊢ |==> ∃ γsrv,
-      own_kv_server_pre_init γsrv ∗ is_kv_server_pre_init_witness γsrv
-.
-Proof.
-  iMod (pb_ghost_server_pre_init) as (γsrv) "HH".
-  iModIntro.
-  iExists _; iFrame.
-Qed. *)
 
 End global_proof.
 
@@ -709,7 +662,7 @@ Proof.
   iSplitR.
   { iModIntro. iIntros.
     assert (int.nat vnum' = int.nat vnum).
-    { rewrite lookup_empty /= in H2. word. }
+    { rewrite lookup_empty /= in H0. word. }
     replace (vnum) with vnum' by word.
     by iExists _; iFrame "HstNew". }
   iPureIntro. intros. rewrite lookup_empty /=. word.
@@ -792,7 +745,7 @@ Proof.
   iIntros (?) "#?".
   repeat iExists _; iFrame.
   iSplitL.
-  { iModIntro. iIntros. rewrite lookup_empty /= in H5.
+  { iModIntro. iIntros. rewrite lookup_empty /= in H3.
     replace (int.nat (U64 0)) with (0) in * by word.
     assert (int.nat vnum' = int.nat 0) by word.
     replace (vnum') with (U64 0) by word.
@@ -802,27 +755,3 @@ Proof.
 Qed.
 
 End local_proof.
-
-Section local_init_proof.
-
-Context `{!gooseGlobalGS Σ}.
-Context `{!gooseLocalGS Σ}.
-Context `{!kv64G Σ}.
-
-(*
-Lemma kv_server_init fname γsys γsrv :
-  fname f↦ [] -∗
-  is_sys_init_witness γsys -∗
-  own_kv_server_pre_init γsrv ={⊤}=∗
-  fname f↦ [] ∗
-  file_crash (own_Server_ghost_f γsys γsrv) [].
-Proof.
-  iIntros "Hfile #Hwit Hpre".
-  iFrame "Hfile".
-  iDestruct (pb_server_init with "Hwit Hpre") as "HH".
-  iLeft.
-  iFrame.
-  done.
-Qed. *)
-
-End local_init_proof.

@@ -21,6 +21,10 @@ Implicit Type γst:gname.
 Class vsmG Σ := VsmG {
   vsm_mapG :> mapG Σ u64 (list OpType)
                  }.
+Definition vsmΣ := #[mapΣ u64 (list OpType)].
+Global Instance subG_vsmΣ {Σ} : subG vsmΣ Σ → vsmG Σ.
+Proof. intros. solve_inG. Qed.
+
 Context `{!gooseGlobalGS Σ, !heapGS Σ, !vsmG Σ}.
 
 Implicit Type own_VersionedStateMachine : gname → (list OpType) → u64 → iProp Σ.

@@ -6,6 +6,25 @@ From iris.algebra Require Import mono_list.
 
 (** This library layers exactly-once read operations on top of clerk_int_proof, which
    has duplicated reads. *)
+
+Section global_proof.
+Context `{!gooseGlobalGS Σ}.
+Context {pb_record:Sm.t}.
+
+Definition prophReadN := nroot .@ "prophread".
+Definition prophReadReqN := prophReadN .@ "req".
+Definition prophReadLogN := prophReadN .@ "log".
+Notation pbG := (pbG (pb_record:=pb_record)).
+Context `{!pbG Σ}.
+
+Definition is_proph_read_inv γ : iProp Σ :=
+  inv prophReadLogN (∃ σ, own_op_log γ σ ∗ own_int_log γ σ).
+
+Definition is_pb_sys_host host γ : iProp Σ :=
+  is_pb_config_host host γ ∗ is_proph_read_inv γ.
+
+End global_proof.
+
 Section clerk_proof.
 Context `{!heapGS Σ}.
 Context {pb_record:Sm.t}.
@@ -15,11 +34,10 @@ Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
-Notation pbG := (pbG (pb_record:=pb_record)).
 Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
+Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
-Context `{!config_proof.configG Σ}.
 
 Record proph_req_names :=
 {
@@ -27,20 +45,8 @@ Record proph_req_names :=
   finish_gn:gname;
 }.
 
-(* FIXME: sort out the mask situation so this can live under pb, and the atomic
-   fupd has a single namespace. *)
-Definition prophReadN := nroot .@ "prophread".
-Definition prophReadReqN := prophReadN .@ "req".
-Definition prophReadLogN := prophReadN .@ "log".
-
-Definition is_proph_read_inv γ : iProp Σ :=
-  inv prophReadLogN (∃ σ, own_op_log γ σ ∗ own_int_log γ σ).
-
 Definition own_Clerk ck γ : iProp Σ :=
   is_proph_read_inv γ ∗ own_Clerk2 ck γ.
-
-Definition is_pb_sys_host host γ : iProp Σ :=
-  is_pb_config_host host γ ∗ is_proph_read_inv γ.
 
 Local Lemma wp_Clerk__ApplyReadonly2' γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 is_readonly_op op →

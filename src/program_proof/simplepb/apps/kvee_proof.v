@@ -15,10 +15,50 @@ From Perennial.program_proof.simplepb.apps Require Import eesm_proof kv_proof lo
 
 Section global_proof.
 
-Context `{!heapGS Σ}.
 Definition eekv_record := (ee_record (low_record:=kv_record)).
-Context `{!simplelogG (sm_record:=eekv_record) Σ}.
-Context `{!kv64G Σ}.
+Class ekvG Σ :=
+  {
+    ekv_erpcG :> erpcG Σ (list u8) ;
+    ekv_simplelogG :> simplelogG (sm_record:=eekv_record) Σ;
+    ekv_kvG :> kv64G Σ ;
+  }.
+Context `{!ekvG Σ, !gooseGlobalGS Σ}.
+
+Definition is_ekv_invs γpb γkv : iProp Σ :=
+  ∃ γlog γerpc,
+  is_ee_inv (low_record:=kv_record) γpb γlog γerpc ∗
+  is_eRPCServer γerpc ∗
+  kv_inv γlog γkv
+.
+
+Definition is_kv_config confHost γkv : iProp Σ :=
+  ∃ γpb γerpc γlog,
+    "#Hee_inv" ∷ is_ee_inv (low_record:=kv_record) γpb γlog γerpc ∗
+    "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
+    "#Hkv_inv" ∷ kv_inv γlog γkv ∗
+    "#Hconf" ∷ is_pb_sys_host confHost γpb
+.
+
+Lemma alloc_ekv γpb :
+  own_op_log γpb [] ={⊤}=∗
+  ∃ γkv ,
+  is_ekv_invs γpb γkv ∗
+  [∗ set] k ∈ fin_to_set u64, kv_ptsto γkv k []
+.
+Proof.
+  iIntros "Hoplog".
+  iMod (alloc_ee with "[$]") as (??) "(#? & #? & ?)".
+  iMod (alloc_kv with "[$]") as (?) "(#? & Hkvs)".
+  iExists _. iFrame.
+  iModIntro. repeat iExists _; iFrame "#".
+Qed.
+
+End global_proof.
+
+Section local_proof.
+
+Context `{!heapGS Σ}.
+Context `{!ekvG Σ}.
 
 Lemma wp_Start fname (confHost host:chan) γsys γsrv data :
   {{{
@@ -59,23 +99,11 @@ Proof using Type*.
   by iApply "HΦ".
 Qed.
 
-Context `{!erpcG Σ (list u8)}.
-Definition eekv_inv γ γkv : iProp Σ :=
-  inv stateN (∃ ops, own_log γ ops ∗ own_kvs γkv ops).
-
 Definition own_Clerk ck γkv : iProp Σ :=
   ∃ (eeCk:loc) γlog,
     "Hcl" ∷ ck ↦[kvee.Clerk :: "cl"] #eeCk ∗
     "#Hkvinv" ∷ kv_inv γlog γkv ∗
     "Hownck" ∷ eesm_proof.own_Clerk (low_record:=kv_record) eeCk γlog
-.
-
-Definition is_kv_config confHost γkv : iProp Σ :=
-  ∃ γpb γerpc γlog,
-    "#Hee_inv" ∷ is_ee_inv (low_record:=kv_record) γpb γlog γerpc ∗
-    "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
-    "#Hkv_inv" ∷ kv_inv γlog γkv ∗
-    "#Hconf" ∷ is_pb_sys_host confHost γpb
 .
 
 Lemma wp_MakeClerk γkv confHost :
@@ -206,8 +234,7 @@ Proof.
   iApply "HH".
   iSplitR "Hck".
   { repeat iExists _. iFrame "∗#". }
-  { rewrite /kv_record//=.
-    move:Hlook.
+  { rewrite /kv_record//=. move:Hlook.
     rewrite lookup_union.
     destruct (compute_state ops !! key) as [x|]; simpl.
     - rewrite map.union_with_Some_l. intros [= ->]. done.
@@ -216,4 +243,4 @@ Proof.
       intros [= ->]. done. }
 Qed.
 
-End global_proof.
+End local_proof.

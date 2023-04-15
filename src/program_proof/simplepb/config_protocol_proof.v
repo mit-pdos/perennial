@@ -18,6 +18,10 @@ Context `{!pbG Σ}.
 
 Definition configN := nroot .@ "config".
 
+Definition is_pb_config_host confHost γ : iProp Σ :=
+  ∃ γconf,
+  is_config_host confHost γconf ∗ is_conf_inv γ γconf.
+
 (* before calling this lemma, have to already allocate pb ghost state *)
 Lemma alloc_pb_config_ghost γ conf confγs :
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) -∗
@@ -62,10 +66,6 @@ Notation compute_reply := (Sm.compute_reply pb_record).
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
-
-Definition is_pb_config_host confHost γ : iProp Σ :=
-  ∃ γconf,
-  is_config_host confHost γconf ∗ is_conf_inv γ γconf.
 
 Definition is_Clerk2 ck γ : iProp Σ :=
   ∃ γconf,

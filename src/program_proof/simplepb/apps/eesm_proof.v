@@ -139,6 +139,27 @@ Definition is_ee_inv γpb γlog γerpc : iProp Σ :=
       )
 .
 
+Lemma alloc_ee γpb :
+  own_op_log γpb [] ={⊤}=∗
+  ∃ γlog γerpc,
+  is_ee_inv γpb γlog γerpc ∗
+  is_eRPCServer γerpc ∗
+  own_log γlog ([]:list low_OpType)
+.
+Proof.
+  iIntros "Hpblog".
+  iMod (own_alloc (●ML [])) as (γlog) "[Hlog Hlog2]".
+  { apply mono_list_auth_valid. }
+  iExists γlog.
+  iFrame "Hlog".
+  iMod (make_rpc_server) as (γerpc) "(#? & Herpc & Hcids)".
+  { set_solver. } iExists γerpc. iFrame "#".
+  iMod (inv_alloc with "[-]") as "$"; last done.
+  iExists []; iFrame. iNext.
+  iApply (big_sepS_impl with "Hcids").
+  iModIntro. iIntros. iFrame.
+Qed.
+
 End global_proof.
 
 Section local_proof.
@@ -530,8 +551,6 @@ Proof.
 Qed.
 
 (* Now, the server proof. *)
-Context `{!mapG Σ u64 (list low_OpType)}.
-
 Definition own_ghost_vnums γst (ops:list eeOp) (latestVnum:u64) : iProp Σ :=
   "HfutureVersions" ∷ ([∗ set] vnum ∈ (fin_to_set u64), ⌜int.nat vnum > length ops⌝ →
                                                        vnum ⤳[γst] []) ∗
@@ -1509,7 +1528,7 @@ Proof.
   destruct op.
   { exfalso. done. }
   { exfalso. done. }
-  destruct Henc as (lowop_bytes & Henc & ?).
+  destruct Henc as (lowop_bytes & ? & Henc & ?).
   subst.
   iMod (readonly_load with "Hsl") as (?) "Hsl2".
   wp_apply (wp_SliceGet with "[$Hsl2]").

@@ -13,9 +13,8 @@ From Perennial.goose_lang Require Import crash_borrow crash_modality.
 
 Section closed_wpcs.
 
-(* FIXME: kv64G *)
 Context `{!heapGS Σ}.
-Context `{!kv64G Σ}.
+Context `{!ekvG Σ}.
 
 Lemma wpc_kv_replica_main γsys γsrv Φc fname me :
   ((∃ data' : list u8, fname f↦data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data') -∗

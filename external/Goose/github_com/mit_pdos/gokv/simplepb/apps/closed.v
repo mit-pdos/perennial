@@ -25,3 +25,14 @@ Definition kv_replica_main: val :=
     "x" <-[uint64T] #1;;
     kvee.Start "fname" "me" configHost;;
     #().
+
+Definition kv_client_main: val :=
+  rec: "kv_client_main" "fname" "me" :=
+    let: "ck" := kvee.MakeClerk configHost in
+    kvee.Clerk__Put "ck" #10 (NewSlice byteT #10);;
+    let: "v1" := kvee.Clerk__Get "ck" #10 in
+    control.impl.Assert (slice.len "v1" = #10);;
+    kvee.Clerk__Put "ck" #10 (NewSlice byteT #5);;
+    let: "v2" := kvee.Clerk__Get "ck" #10 in
+    control.impl.Assert (slice.len "v2" = #5);;
+    #().
