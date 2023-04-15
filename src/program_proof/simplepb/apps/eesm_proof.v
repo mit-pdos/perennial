@@ -183,7 +183,6 @@ Proof.
   unfold compute_state. by rewrite foldl_snoc.
 Qed.
 
-
 Lemma wp_Clerk__ApplyExactlyOnce ck γoplog lowop op_sl lowop_bytes Φ:
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗

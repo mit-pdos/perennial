@@ -72,13 +72,12 @@ Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
 Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
 Class kv64G Σ := Kv64G {
-  kv64_simplelogG :> simplelogG (sm_record:=kv_record) Σ ;
   kv64_ghostMapG :> ghost_mapG Σ u64 (list u8) ;
   kv64_configG :> configG Σ ;
   kv64_logG :> inG Σ (mono_listR (leibnizO kv64Op)) ;
   kv64_vsmG :> vsmG (sm_record:=kv_record) Σ ;
 }.
-Definition kv64Σ := #[simplelogΣ (sm_record:=kv_record); configΣ; ghost_mapΣ u64 (list u8);
+Definition kv64Σ := #[configΣ; ghost_mapΣ u64 (list u8);
                       GFunctor (mono_listR (leibnizO kv64Op));
                       mapΣ u64 (list kv64Op)
    ].
@@ -100,9 +99,10 @@ Definition stateN := nroot .@ "state".
 Definition kv_inv γlog γkv : iProp Σ :=
   inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γkv ops).
 
+(*
 Definition own_kv_server_pre_init γsrv := own_server_pre γsrv.
 Definition is_kv_server_pre_init_witness γsrv : iProp Σ :=
-  is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0).
+  is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0). *)
 
 Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
   k ↪[γkv] v.
@@ -386,9 +386,9 @@ Proof.
       {
         iModIntro.
         iIntros.
-        rewrite /typed_map.map_insert /= in H2.
+        rewrite /typed_map.map_insert /= in H0.
         destruct (decide (k = u)).
-        { subst. rewrite lookup_insert /= in H2.
+        { subst. rewrite lookup_insert /= in H0.
           replace (vnum) with (vnum') by word.
           iExists _. by iDestruct "Hintermediate" as "[_ $]".
         }
@@ -399,7 +399,7 @@ Proof.
           rewrite foldl_snoc /=.
           by rewrite lookup_insert_ne.
         }
-        rewrite lookup_insert_ne in H2; last done.
+        rewrite lookup_insert_ne in H0; last done.
         destruct (decide (int.nat vnum' <= int.nat latestVnum)).
         { by iApply "Hst". }
         destruct (decide (int.nat vnum' = int.nat vnum)).
@@ -510,9 +510,9 @@ Proof.
       }
       iModIntro.
       iIntros.
-      rewrite /typed_map.map_insert /= in H2.
+      rewrite /typed_map.map_insert /= in H0.
       destruct (decide (k = u)).
-      { subst. rewrite lookup_insert /= in H2.
+      { subst. rewrite lookup_insert /= in H0.
         replace (vnum) with (vnum') by word.
         iExists _. by iDestruct "Hintermediate" as "[_ $]".
       }
@@ -522,7 +522,7 @@ Proof.
         rewrite /compute_reply /compute_state.
         rewrite foldl_snoc /=. done.
       }
-      rewrite lookup_insert_ne in H2; last done.
+      rewrite lookup_insert_ne in H0; last done.
       destruct (decide (int.nat vnum' <= int.nat latestVnum)).
       { by iApply "Hst". }
       destruct (decide (int.nat vnum' = int.nat vnum)).

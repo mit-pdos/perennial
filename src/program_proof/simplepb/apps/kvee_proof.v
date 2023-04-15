@@ -18,6 +18,7 @@ Section global_proof.
 Context `{!heapGS Σ}.
 Definition eekv_record := (ee_record (low_record:=kv_record)).
 Context `{!simplelogG (sm_record:=eekv_record) Σ}.
+Context `{!kv64G Σ}.
 
 Lemma wp_Start fname (confHost host:chan) γsys γsrv data :
   {{{
@@ -37,7 +38,7 @@ Lemma wp_Start fname (confHost host:chan) γsys γsrv data :
         RET #(); True
   }}}
 .
-Proof.
+Proof using Type*.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_call.
@@ -45,8 +46,8 @@ Proof.
   iIntros (??) "[#His1 Hown]".
   wp_apply (wp_MakeEEKVStateMachine with "[Hown]").
   {
-    iFrame "His1".
     iFrame.
+    iFrame "His1".
   }
   iIntros (??) "[#His2 Hown]".
   wp_apply (wp_MakePbServer (sm_record:=eekv_record) with "[$Hown $Hfile_ctx]").
@@ -58,7 +59,6 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Context `{!kv64G Σ}.
 Context `{!erpcG Σ (list u8)}.
 Definition eekv_inv γ γkv : iProp Σ :=
   inv stateN (∃ ops, own_log γ ops ∗ own_kvs γkv ops).
@@ -140,6 +140,8 @@ Proof.
   rewrite /kv_record /=.
   iExists _. iSplitL "Hlog".
   { iExactEq "Hlog".
+    Set Printing All.
+    Print eekv_inv.
     repeat f_equal.
   }
   iIntros "Hlog".
