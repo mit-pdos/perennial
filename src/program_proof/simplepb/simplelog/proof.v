@@ -1367,7 +1367,9 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_apply ("HsetState_spec" with "[$Hmemstate $Hsnap_sl]").
-  { done. }
+  { iPureIntro; split; try done.
+    subst. rewrite app_length in Hops_len. word.
+  }
   iIntros "Hmemstate".
   wp_pures.
 
