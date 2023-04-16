@@ -368,7 +368,7 @@ Definition own_Server_ghost_f γ γsrv epoch ops sealed : iProp Σ :=
   ∃ opsfull,
   "%Hre" ∷ ⌜ops = get_rwops opsfull⌝ ∗
   "Hghost" ∷ (own_replica_ghost γ.(s_pb) γsrv.(r_pb) epoch opsfull sealed) ∗
-  "Hprim_escrow" ∷ own_primary_escrow_ghost γ.(s_prim) γsrv.(r_prim) epoch ∗
+  "Hprim_escrow" ∷ own_primary_escrow_ghost γsrv.(r_prim) epoch ∗
   "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
   "#Hin_conf" ∷ is_in_config γ γsrv epoch
 .

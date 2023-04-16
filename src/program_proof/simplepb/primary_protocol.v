@@ -2,6 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list csum.
 From Perennial.program_proof.simplepb Require Import pb_protocol.
+From Perennial.program_proof.fencing Require Import map.
 
 Section primary_protocol.
 
@@ -19,11 +20,11 @@ Record primary_server_names :=
 
 Class primary_ghostG Σ := {
     primary_ghost_map_logG :> fmlist_mapG Σ u64 EntryType;
-    primary_escrowG :> inG Σ (gmapR u64 (dfrac_agreeR unitO))
+    primary_escrowG :> mapG Σ u64 unit;
 }.
 
 Definition primary_ghostΣ :=
-  #[fmlist_mapΣ u64 EntryType; GFunctor (gmapR u64 (dfrac_agreeR unitO)) ].
+  #[fmlist_mapΣ u64 EntryType; mapΣ u64 unit].
 Global Instance subG_pbΣ {Σ} : subG (primary_ghostΣ) Σ → (primary_ghostG Σ).
 Proof. solve_inG. Qed.
 
@@ -50,10 +51,10 @@ Definition is_init_proposal_ub γsys epoch σ : iProp Σ :=
   is_init_proposal γsys epoch σexact.
 
 Definition own_tok γsrv epoch : iProp Σ :=
-  own γsrv.(prim_escrow_gn) {[ epoch := to_dfrac_agree (DfracOwn 1) ()]}.
+  epoch ⤳[γsrv.(prim_escrow_gn)] ().
 
 Definition is_tok γsrv epoch : iProp Σ :=
-  own γsrv.(prim_escrow_gn) {[ epoch := to_dfrac_agree (DfracDiscarded) ()]}.
+  epoch ⤳[γsrv.(prim_escrow_gn)]□ ().
 
 Definition is_proposal_facts_prim γ epoch σ: iProp Σ :=
   is_init_proposal_ub γ epoch σ
@@ -63,15 +64,15 @@ Definition own_escrow_toks γsrv epoch : iProp Σ :=
   [∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch' ≤ int.nat epoch⌝ ∨ own_tok γsrv epoch'
 .
 
-Definition own_primary_escrow_ghost γsys γsrv epoch : iProp Σ :=
+Definition own_primary_escrow_ghost γsrv epoch : iProp Σ :=
   "Htoks" ∷ own_escrow_toks γsrv epoch
   (* "Htok" ∷ (if canBecomePrimary then own_tok γsrv epoch else True) *)
 .
 
-Lemma ghost_primary_accept_new_epoch γsys γsrv epoch epoch' :
+Lemma ghost_primary_accept_new_epoch γsrv epoch epoch' :
   int.nat epoch < int.nat epoch' →
-  own_primary_escrow_ghost γsys γsrv epoch -∗
-  own_primary_escrow_ghost γsys γsrv epoch' ∗ own_tok γsrv epoch'.
+  own_primary_escrow_ghost γsrv epoch -∗
+  own_primary_escrow_ghost γsrv epoch' ∗ own_tok γsrv epoch'.
 Proof.
   intros Hineq.
   iIntros "Htoks".
@@ -97,8 +98,7 @@ Lemma own_tok_is_tok_false γ epoch :
   False.
 Proof.
   iIntros "Htok His".
-  iDestruct (own_valid_2 with "His Htok") as %Hbad.
-  rewrite singleton_op singleton_valid dfrac_agree_op_valid in Hbad.
+  iDestruct (ghost_map_points_to_valid_2 with "His Htok") as %Hbad.
   naive_solver.
 Qed.
 
@@ -148,21 +148,10 @@ Proof.
   iInv "Hescrow" as "Hown" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hown" ) as "Hown".
   iDestruct "Hown" as "[HR|#His_primary]"; last first.
-  { (* contradiction, since we still have the token *)
-    iDestruct (own_valid_2 with "Htok His_primary") as %Hbad.
-    exfalso.
-    rewrite singleton_op singleton_valid dfrac_agree_op_valid in Hbad.
-    destruct Hbad as [Hbad _].
-    done.
-  }
+  { by iDestruct (own_tok_is_tok_false with "Htok His_primary") as "?". }
 
   iFrame "HR".
-  iMod (own_update with "Htok") as "His_primary".
-  {
-    apply singleton_update.
-    apply dfrac_agree_persist.
-  }
-  iDestruct "His_primary" as "#His_primary".
+  iMod (ghost_map_points_to_persist with "Htok") as "#His_primary".
   iMod ("Hclose" with "[$His_primary]").
   iModIntro.
 
@@ -216,6 +205,17 @@ Proof.
     { iIntros. exfalso. replace (int.nat (U64 0)) with 0 in H0 by word. word. }
   }
   by iExists _; iFrame "#".
+Qed.
+
+Lemma alloc_primary_protocol_server :
+  ⊢ |==> ∃ γsrv, own_primary_escrow_ghost γsrv (U64 0)
+.
+Proof.
+  iMod (ghost_map_alloc_fin ()) as (?) "H".
+  iExists {| prim_escrow_gn := _ |}.
+  iModIntro.
+  iApply (big_sepS_impl with "H").
+  iModIntro. iIntros. iFrame.
 Qed.
 
 End primary_protocol.

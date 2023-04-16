@@ -519,7 +519,7 @@ Proof.
 Qed.
 
 Lemma alloc_pb_preread_protocol γ :
-  own_pb_log γ [] ={↑prereadN}=∗
+  own_pb_log γ [] ={⊤}=∗
   ∃ γlog γreads, is_preread_inv γ γlog γreads ∗
                  own_pre_log γlog []
 .

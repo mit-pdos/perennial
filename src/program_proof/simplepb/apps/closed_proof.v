@@ -182,8 +182,13 @@ Proof.
   done.
 Qed.
 
+(* There's one of these in kvee_proof.v, so I got rid of this.
+   This is probably a remnant of an older version of the proof in which the subG
+   wasn't proven anywhere else.
+ *)
+(*
 Local Instance subG_ekvΣ {Σ} : subG ekvΣ Σ → ekvG Σ.
-Proof. intros. solve_inG. Qed.
+Proof. intros. solve_inG. Qed. *)
 
 Definition replica_fname := "kv.data".
 
@@ -218,12 +223,30 @@ Proof.
   iSplitR ""; last first.
   { iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
 
+  (* FIXME: what's going on here? Why do I need to manually put this in the context? *)
+  eassert (HekvG:ekvG kv_pbΣ).
+  { (* Set Typeclasses Debug. *)
+    apply subG_ekvΣ.
+    unfold kv_pbΣ.
+    apply subG_app_r.
+    apply subG_app_l.
+    apply subG_refl.
+  }
+
   (* First, pre-set up the two KV replica servers *)
-  iMod (kv_server_pre_initialize) as (γsrv1) "[Hsrv1 #Hsrv1wit]".
-  iMod (kv_server_pre_initialize) as (γsrv2) "[Hsrv2 #Hsrv2wit]".
+  iMod (prealloc_simplepb_server) as (γsrv1) "[#Hsrv1wit Hsrv1]".
+  iMod (prealloc_simplepb_server) as (γsrv2) "[#Hsrv2wit Hsrv2]".
+
+  set (confγs:=[γsrv1 ; γsrv2]).
+  iMod (alloc_simplepb_system confγs with "[]") as (γpb) "H".
+  { simpl. lia. }
+  {
+    iIntros.
+    rewrite /confγs elem_of_list_In /= in H.
+    naive_solver.
+  }
 
   (* Then, set up the KV system *)
-  set (confγs:=[γsrv1 ; γsrv2]).
   iMod (kv_system_init confγs with "[]") as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hproposal_lb & #Hproposal & Hkvptstos)".
   { simpl. lia. }
   {
