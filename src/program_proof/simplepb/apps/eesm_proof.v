@@ -586,6 +586,19 @@ Notation ee_is_InMemory_setStateFn := (is_InMemory_setStateFn (sm_record:=ee_rec
 Notation ee_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=ee_record)).
 Notation ee_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_record:=ee_record)).
 
+Lemma u64_plus_1_le_no_overflow (y: u64) (n : nat) :
+  n + 1 = int.nat (u64_instance.u64.(word.add) n 1) →
+  U64 (n + 1)%Z ≠ y →
+  int.nat y ≤ n + 1 →
+  int.nat y ≤ n.
+Proof.
+  intros ? Hplus_1_neq Hle.
+  cut (int.nat y ≠ n + 1); first by lia.
+  intros Heq.
+  apply Hplus_1_neq.
+  word.
+Qed.
+
 Lemma ghost_no_low_changes γst ops latestVnum o l :
   (length ops + 1 = int.nat (word.add (length ops) 1))%nat →
   (compute_state ops).(lowops) = l →
@@ -621,7 +634,7 @@ Proof.
       iModIntro. iIntros (???) "H %".
       rewrite app_length /= in H1.
       assert (int.nat y <= length ops).
-      { admit. } (* FIXME: integer overflow *)
+      { apply u64_plus_1_le_no_overflow; auto. }
       iDestruct ("H" with "[%]") as "[$|H]".
       { done. }
       iRight.
@@ -639,7 +652,10 @@ Proof.
     unfold is_state.
     repeat f_equal.
     rewrite app_length /= in H.
-    admit. (* FIXME: integer overflow *)
+    replace (Z.of_nat (length ops) + 1)%Z with (Z.of_nat (length ops + 1)) by
+      lia.
+    rewrite HnoOverflow.
+    rewrite u64_Z_through_nat u64_Z //.
   }
   iModIntro.
   iApply (big_sepS_impl with "HlatestVersion").
@@ -654,11 +670,16 @@ Proof.
     {
       rewrite Heq1 Heq2.
       iApply "H".
-      { iPureIntro. admit. } (* FIXME: integer overflow *)
+      { iPureIntro. apply u64_plus_1_le_no_overflow; auto.
+        replace (Z.of_nat (length ops) + 1)%Z with (Z.of_nat (length ops + 1)) by
+          lia.
+        rewrite HnoOverflow.
+        rewrite u64_Z_through_nat u64_Z //.
+      }
       { iPureIntro. word. }
     }
   }
-Admitted. (* integer overflows *)
+Qed.
 
 Lemma ghost_low_newop γst ops latestVnum op lowop l :
   (length ops + 1 = int.nat (word.add (length ops) 1))%nat →
