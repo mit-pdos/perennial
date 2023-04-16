@@ -33,9 +33,7 @@ Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHost:u64) opsfull (
         "Hstate" ∷ own_StateMachine epoch (get_rwops opsfull) sealed (own_Server_ghost_f γ γsrv) ∗
         "#His_sm" ∷ is_StateMachine sm_ptr own_StateMachine (own_Server_ghost_f γ γsrv) ∗
 
-        "#His_repl_inv" ∷ is_repl_inv γ.(s_pb) ∗
-        "#HhelpingInv" ∷ is_helping_inv γ ∗
-        "#HprereadInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
+        "#Hinvs" ∷ is_pb_system_invs γ ∗
 
         "#Hconf_host" ∷ is_pb_config_host confHost γ ∗
         "%HnextIndex" ∷ ⌜int.nat nextIndex = length (get_rwops opsfull)⌝ ∗
@@ -114,7 +112,8 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pb_protocolN)) as "Hmask".
   { set_solver. }
-  iMod (pb_log_get_nil_lb with "His_repl_inv") as "#Hcommit_nil_lb".
+  iDestruct "Hinvs" as "(#? & #? & #?)".
+  iMod (pb_log_get_nil_lb with "[$]") as "#Hcommit_nil_lb".
   iMod "Hmask".
   iModIntro.
 
@@ -131,8 +130,7 @@ Proof.
 
   iApply "HΦ".
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
-  iExists _, _.
-  iFrame "Hmu His_repl_inv".
+  repeat iExists _. iFrame "Hmu #".
   iMod (readonly_alloc_1 with "confCk") as "#confCk".
   iMod (alloc_lock with "HmuInv [-]") as "$"; last first.
   { repeat iExists _.

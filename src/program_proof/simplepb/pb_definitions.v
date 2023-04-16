@@ -373,6 +373,32 @@ Definition own_Server_ghost_f γ γsrv epoch ops sealed : iProp Σ :=
   "#Hin_conf" ∷ is_in_config γ γsrv epoch
 .
 
+Definition escrowN := pbN .@ "escrow".
+Definition appN := pbN .@ "app".
+Definition own_ghost_log' γ (opsfullQ : list (OpType * (list OpType → iProp Σ))) : iProp Σ :=
+  ∃ ops_gnames: list (OpType * gname),
+    own_pre_log γ.(s_prelog) ops_gnames ∗
+    ⌜opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
+    [∗ list] k↦Φ;γprop ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_pred_own γprop DfracDiscarded Φ.
+
+Definition is_helping_inv γ :=
+  inv appN (∃ opsfullQ,
+      own_ghost_log' γ opsfullQ ∗
+      own_int_log γ (get_rwops opsfullQ) ∗
+      □(
+        ∀ opsPre opsPrePre lastEnt,
+        ⌜prefix opsPre opsfullQ⌝ -∗ ⌜opsPre = opsPrePre ++ [lastEnt]⌝ -∗
+        (lastEnt.2 (get_rwops opsPrePre))
+      )
+      ).
+
+(* These are the server-side invs that must be al *)
+Definition is_pb_system_invs γsys : iProp Σ :=
+  "#Hsys" ∷ is_repl_inv γsys.(s_pb) ∗
+  "#Hhelping" ∷ is_helping_inv γsys ∗
+  "#HpreInv" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads)
+.
+
 End pb_global_definitions.
 
 Module server.
@@ -650,26 +676,6 @@ Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
   "Hvol" ∷ own_Server s st γ γsrv mu ∗
   "HghostEph" ∷ own_Server_ghost_eph_f st γ γsrv
 .
-
-Definition appN := pbN .@ "app".
-Definition escrowN := pbN .@ "escrow".
-
-Definition own_ghost_log' γ (opsfullQ : list (OpType * (list OpType → iProp Σ))) : iProp Σ :=
-  ∃ ops_gnames: list (OpType * gname),
-    own_pre_log γ.(s_prelog) ops_gnames ∗
-    ⌜opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
-    [∗ list] k↦Φ;γprop ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_pred_own γprop DfracDiscarded Φ.
-
-Definition is_helping_inv γ :=
-  inv appN (∃ opsfullQ,
-      own_ghost_log' γ opsfullQ ∗
-      own_int_log γ (get_rwops opsfullQ) ∗
-      □(
-        ∀ opsPre opsPrePre lastEnt,
-        ⌜prefix opsPre opsfullQ⌝ -∗ ⌜opsPre = opsPrePre ++ [lastEnt]⌝ -∗
-        (lastEnt.2 (get_rwops opsPrePre))
-      )
-      ).
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   ∃ (mu:val) (confCk:loc) γconf,

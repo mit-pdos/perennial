@@ -34,6 +34,7 @@ Definition configHost : chan := U64 10.
 Definition r1Host: chan := U64 1.
 Definition r2Host: chan := U64 2.
 
+(*
 #[global]
 Instance sys_inv_into_crash `{!heapGS Σ} EntryType `{!pb_ghostG Σ} γsys :
   IntoCrash (sys_inv γsys) (λ hG', @sys_inv EntryType Σ (_ hG') _ γsys)
@@ -41,7 +42,7 @@ Instance sys_inv_into_crash `{!heapGS Σ} EntryType `{!pb_ghostG Σ} γsys :
 Proof.
   rewrite /IntoCrash /sys_inv.
   iIntros "$". iIntros; eauto.
-Qed.
+Qed. *)
 
 (* The globalGS equality should actually always be the case (or more precisely,
  we should be unbundling, but let's include it here in the conclusion as a
@@ -58,25 +59,25 @@ Qed.
 
 #[global]
 Instance file_crash_into_crash `{hG0: !heapGS Σ} SMRecord `{!pbG Σ} γsys γsrv1 data:
-  IntoCrash (file_crash (own_Server_ghost γsys γsrv1 ) data)
-    (λ hG, (file_crash (sm_record := SMRecord) (own_Server_ghost γsys γsrv1 ) data)).
+  IntoCrash (file_crash (own_Server_ghost_f γsys γsrv1) data)
+    (λ hG, (file_crash (sm_record := SMRecord) (own_Server_ghost_f γsys γsrv1 ) data)).
 Proof.
   rewrite /IntoCrash /file_crash.
   iIntros "$". iIntros; eauto.
 Qed.
 
-Definition kv_replica_main_crash_cond `{kv64G Σ} γsys fname γsrv1:=
-(λ hG : heapGS Σ, ∃ data', (fname f↦ data') ∗ ▷ file_crash (own_Server_ghost γsys γsrv1) data')%I.
+Definition kv_replica_main_crash_cond `{ekvG Σ} γsys fname γsrv1:=
+(λ hG : heapGS Σ, ∃ data',
+    (fname f↦ data') ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv1) data')%I.
 
-Lemma wpr_kv_replica_main fname me γsys γlog γsrv γkv {Σ} {HKV: kv64G Σ}
+Lemma wpr_kv_replica_main fname me γsys γsrv {Σ} {HKV: ekvG Σ}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
-  "Hinv" ∷ is_inv γlog γsys -∗
-  "Hsys" ∷ sys_inv γsys -∗
-  "Hkvinv" ∷ kv_inv γlog γkv -∗
+  "Hinv" ∷ is_helping_inv γsys -∗
+  "Hsys" ∷ is_repl_inv γsys.(s_pb) -∗
   "Hsrvhost1" ∷ is_pb_host me γsys γsrv -∗
   "Hinit" ∷ fname f↦[] -∗
-  "Hfile_crash" ∷ file_crash (own_Server_ghost γsys γsrv) [] -∗
+  "Hfile_crash" ∷ file_crash (own_Server_ghost_f γsys γsrv) [] -∗
   wpr NotStuck ⊤ (kv_replica_main #(LitString fname) #me) (kv_replica_main #(LitString fname) #me) (λ _ : goose_lang.val, True)
     (λ _ , True) (λ _ _, True).
 Proof.
@@ -85,8 +86,9 @@ Proof.
    {
      instantiate (1:=kv_replica_main_crash_cond γsys fname γsrv).
      simpl.
-     wpc_apply (wpc_kv_replica_main γsys γsrv with "[] [$Hsrvhost1] [$Hsys]").
+     wpc_apply (wpc_kv_replica_main γsys γsrv with "[] [Hsys] [$Hsrvhost1]").
      { iIntros "$". }
+     { iFrame "#". }
      iExists _. iFrame.
    }
    { (* recovery *)

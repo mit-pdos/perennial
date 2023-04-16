@@ -20,12 +20,9 @@ Definition configHost : u64 := 10.
 Lemma wpc_kv_replica_main γsys γsrv Φc fname me :
   ((∃ data' : list u8, fname f↦data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') -∗
     Φc) -∗
-  (
-   "#Hconf" ∷ config_protocol_proof.is_pb_config_host configHost γsys ∗
-   "#Hrep"  ∷ is_repl_inv γsys.(s_pb) ∗
-   "#Hhelp" ∷ is_helping_inv γsys ∗
-   "#HpreRead" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads)) -∗
+  config_protocol_proof.is_pb_config_host configHost γsys -∗
   is_pb_host me γsys γsrv -∗
+  is_pb_system_invs γsys -∗
   (∃ data : list u8, fname f↦data ∗ file_crash (own_Server_ghost_f γsys γsrv) data) -∗
   WPC kv_replica_main #(LitString fname) #me @ ⊤
   {{ _, True }}
@@ -33,7 +30,7 @@ Lemma wpc_kv_replica_main γsys γsrv Φc fname me :
 .
 Proof.
   (* TODO: all the invs *)
-  iIntros "HΦc #Hinvs #Hpbhost Hpre".
+  iIntros "HΦc #HconfHost #Hpbhost #Hinvs Hpre".
   iNamed "Hinvs".
   iDestruct "Hpre" as (?) "[Hfile Hcrash]".
 

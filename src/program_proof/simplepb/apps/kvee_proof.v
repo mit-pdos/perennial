@@ -30,6 +30,7 @@ Proof. intros. solve_inG. Qed.
 
 Context `{!ekvG Σ, !gooseGlobalGS Σ}.
 
+(* These are the client-side invs *)
 Definition is_ekv_invs γpb γkv : iProp Σ :=
   ∃ γlog γerpc,
   is_ee_inv (low_record:=kv_record) γpb γlog γerpc ∗
@@ -74,9 +75,7 @@ Lemma wp_Start fname (confHost host:chan) γsys γsrv data :
                   (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') ∗
 
       (* FIXME: collect these invariants *)
-      "#Hsys" ∷ is_repl_inv γsys.(s_pb) ∗
-      "#Hhelping" ∷ is_helping_inv γsys ∗
-      "#HpreInv" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads)
+      "#Hinvs" ∷ is_pb_system_invs γsys
   }}}
     Start #(LitString fname) #(host:u64) #(confHost:u64)
   {{{
