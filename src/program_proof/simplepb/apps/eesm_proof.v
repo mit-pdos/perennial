@@ -182,7 +182,6 @@ Notation low_is_VersionedStateMachine := (is_VersionedStateMachine (sm_record:=l
 Notation own_pb_Clerk := (clerk_proof.own_Clerk (pb_record:=ee_record)).
 Notation is_ee_inv := (is_ee_inv (low_record:=low_record)).
 
-Context `{!config_proof.configG Σ}.
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
 Context `{!pbG (pb_record:=ee_record) Σ}.
 Context `{!vsmG (sm_record:=low_record) Σ}.

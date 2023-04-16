@@ -186,12 +186,14 @@ Qed.
    This is probably a remnant of an older version of the proof in which the subG
    wasn't proven anywhere else.
  *)
-(*
-Local Instance subG_ekvΣ {Σ} : subG ekvΣ Σ → ekvG Σ.
-Proof. intros. solve_inG. Qed. *)
+
+Local Instance subG_ekvΣ {Σ} : subG kv_pbΣ Σ → ekvG Σ.
+Proof. intros. solve_inG. Qed.
 
 Definition replica_fname := "kv.data".
 
+(* FIXME: put this in the file that defines ekvΣ? *)
+Opaque ekvΣ.
 Lemma kv_pb_boot :
   ∀ σconfig σsrv1 σsrv2 (g : goose_lang.global_state),
   (* *)
@@ -222,11 +224,6 @@ Proof.
   iIntros "Hchan".
   iSplitR ""; last first.
   { iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
-
-  (* FIXME: what's going on here? Why do I need to manually put this in the context? *)
-  eset (h_ekvG:=subG_ekvΣ
-             (subG_app_r ekvΣ heapΣ _
-                         (subG_app_l ekvΣ ekvΣ gFunctors.nil (subG_refl ekvΣ)))).
 
   (* First, pre-set up the two KV replica servers *)
   iMod (prealloc_simplepb_server) as (γsrv1) "[#Hsrv1wit Hsrv1]".
@@ -269,7 +266,7 @@ Proof.
   iMod (config_server_init configHost γconf with "HconfChan") as "#Hconfhost".
 
   iAssert (is_pb_config_host configHost γpb) with "[]" as "#HbConfHost".
-  { iExists _. iFrame "#". admit. }  (* FIXME: same subG problem as below *)
+  { iExists _. iFrame "#". }
 
   iModIntro.
   simpl. iSplitL "HconfInit".
@@ -283,14 +280,7 @@ Proof.
       instantiate (1:=λ _, True%I).
       simpl.
       iApply wp_wpc.
-      iApply (wp_config_main _ with "[-]").
-      { iFrame.
-        iFrame "#".
-        iApply to_named.
-        iExactEq "Hconfhost".
-        repeat f_equal.
-        admit. (* FIXME: subG *)
-      }
+      iApply (wp_config_main _ with "[$]").
     }
     { (* crash; there should actually be no crashes of the config server *)
       iModIntro.
@@ -335,6 +325,6 @@ Proof.
     iApply (@wpr_kv_replica_main _ _ _ γsrv2 with "[$] [$] [$] [$] [$]").
   }
   done.
-Admitted.
+Qed.
 
 End closed.
