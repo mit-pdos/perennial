@@ -70,8 +70,7 @@ Lemma wp_Start fname (confHost host:chan) γsys γsrv data :
       (* FIXME: collect these invariants *)
       "#Hsys" ∷ is_repl_inv γsys.(s_pb) ∗
       "#Hhelping" ∷ is_helping_inv γsys ∗
-      "#HpreInv" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads) ∗
-      "#HisConfHost" ∷ config_protocol_proof.is_pb_config_host host γsys
+      "#HpreInv" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads)
   }}}
     Start #(LitString fname) #(host:u64) #(confHost:u64)
   {{{

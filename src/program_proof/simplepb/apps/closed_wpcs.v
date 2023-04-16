@@ -5,8 +5,8 @@ From Perennial.goose_lang Require adequacy dist_adequacy.
 From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 From Perennial.program_logic Require dist_lang.
 
-From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_ghost pb_init_proof.
-From Perennial.program_proof.simplepb Require Import kv_proof.
+From Perennial.program_proof.simplepb Require Import pb_init_proof pb_definitions.
+From Perennial.program_proof.simplepb Require Import kvee_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.goose_lang Require Import crash_borrow crash_modality.
@@ -16,17 +16,25 @@ Section closed_wpcs.
 Context `{!heapGS Σ}.
 Context `{!ekvG Σ}.
 
+Definition configHost : u64 := 10.
 Lemma wpc_kv_replica_main γsys γsrv Φc fname me :
-  ((∃ data' : list u8, fname f↦data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data') -∗
+  ((∃ data' : list u8, fname f↦data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') -∗
     Φc) -∗
-  is_pb_host me γsys γsrv -∗ sys_inv γsys -∗
-  (∃ data : list u8, fname f↦data ∗ file_crash (own_Server_ghost γsys γsrv) data) -∗
+  (
+   "#Hconf" ∷ config_protocol_proof.is_pb_config_host configHost γsys ∗
+   "#Hrep"  ∷ is_repl_inv γsys.(s_pb) ∗
+   "#Hhelp" ∷ is_helping_inv γsys ∗
+   "#HpreRead" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads)) -∗
+  is_pb_host me γsys γsrv -∗
+  (∃ data : list u8, fname f↦data ∗ file_crash (own_Server_ghost_f γsys γsrv) data) -∗
   WPC kv_replica_main #(LitString fname) #me @ ⊤
   {{ _, True }}
   {{ Φc }}
 .
 Proof.
-  iIntros "HΦc #Hpbhost #Hsys Hpre".
+  (* TODO: all the invs *)
+  iIntros "HΦc #Hinvs #Hpbhost Hpre".
+  iNamed "Hinvs".
   iDestruct "Hpre" as (?) "[Hfile Hcrash]".
 
   unfold kv_replica_main.
@@ -56,7 +64,7 @@ Proof.
   { iAccu. }
   {
     iModIntro.
-    instantiate (1:=(|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost γsys γsrv) data')).
+    instantiate (1:=(|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data')).
     iIntros "[H1 H2]".
     iModIntro.
     iExists _.
