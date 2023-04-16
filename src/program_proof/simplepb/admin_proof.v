@@ -28,7 +28,7 @@ Lemma wp_Reconfig γ (configHost:u64) (servers:list u64) (servers_sl:Slice.t) se
   {{{
         "Hservers_sl" ∷ is_slice servers_sl uint64T 1 servers ∗
         "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host host γ γsrv) ∗
-        "#Hconf_host" ∷ is_conf_host configHost γ
+        "#Hconf_host" ∷ is_pb_config_host configHost γ
   }}}
     EnterNewConfig #configHost (slice_val servers_sl)
   {{{
@@ -55,16 +55,6 @@ Proof using waitgroupG0.
   { iNamedAccu. }
   wp_apply (wp_Clerk__GetEpochAndConfig2 with "[$Hck]").
   iModIntro.
-  iSplit.
-  2:{ (* unable to get new epoch number *)
-    iIntros (???).
-    iNamed 1.
-    wp_pures.
-    rewrite bool_decide_false.
-    2: naive_solver.
-    wp_pures.
-    by iApply "HΦ".
-  }
   iIntros (?????) "Hpost1".
   iNamed 1.
   wp_pures.
@@ -81,12 +71,10 @@ Proof using waitgroupG0.
 
   iAssert (⌜length conf ≠ 0⌝)%I as %Hold_conf_ne.
   {
-    iDestruct "His_conf" as "[_ %Hconfγ_nz]".
+    iDestruct "His_conf" as "(_ & _ & %Hconfγ_nz)".
     iDestruct (big_sepL2_length with "His_hosts") as %Heq.
     iPureIntro.
     rewrite fmap_length in Hconfγ_nz.
-    (* FIXME: have to manually unfold this... *)
-    unfold simplepb_server_names in *.
     word.
   }
   iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_len.
@@ -385,7 +373,7 @@ Proof using waitgroupG0.
       ⌜server_γs !! int.nat i = Some γsrv'⌝ ∗
         readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
         □ if (decide (err = U64 0)) then
-            pb_protocol.is_epoch_lb γsrv'.1 epoch
+            pb_protocol.is_epoch_lb γsrv'.(r_pb) epoch
           else
             True
   )%I : u64 → iProp Σ).
@@ -421,6 +409,21 @@ Proof using waitgroupG0.
     replace (int.nat _ - int.nat 0) with (int.nat clerks_sl.(Slice.sz)) by word.
     iFrame "Herrs_sl".
   } (* FIXME: copy/pasted from pb_apply_proof *)
+
+  iMod (own_update with "Hconf_unset") as "Hconf_prop".
+  {
+    apply singleton_update.
+    apply cmra_update_exclusive.
+    instantiate (1:=(to_dfrac_agree (DfracOwn 1) ((Some (r_pb <$> server_γs)) : (leibnizO _)))).
+    done.
+  }
+  iMod (own_update with "Hconf_prop") as "Hconf_prop".
+  {
+    apply singleton_update.
+    apply dfrac_agree_persist.
+  }
+  iDestruct "Hconf_prop" as "#Hconf_prop".
+
   (* FIXME: have a lemma for this kind of loop that makes use of big_sepL's and big_sepL2's. *)
   wp_forBreak_cond.
 
@@ -488,6 +491,21 @@ Proof using waitgroupG0.
         {
           iPureIntro.
           done.
+        }
+        iSplitR.
+        {
+          iExists _. iFrame "#".
+          iPureIntro; split.
+          { rewrite fmap_length //. destruct server_γs.
+            { exfalso. rewrite take_nil /= // in Hlookup2. }
+            simpl. lia.
+          }
+          {
+            eapply elem_of_fmap_2.
+            rewrite lookup_take_Some in Hlookup2.
+            eapply elem_of_list_lookup_2.
+            naive_solver.
+          }
         }
         iExists _.
         iFrame "∗#".
@@ -695,20 +713,6 @@ Proof using waitgroupG0.
   destruct (decide (_)); last first.
   { exfalso. done. }
 
-  iMod (own_update with "Hconf_unset") as "Hconf_prop".
-  {
-    apply singleton_update.
-    apply cmra_update_exclusive.
-    instantiate (1:=(to_dfrac_agree (DfracOwn 1) ((Some server_γs.*1) : (leibnizO _)))).
-    done.
-  }
-  iMod (own_update with "Hconf_prop") as "Hconf_prop".
-  {
-    apply singleton_update.
-    apply dfrac_agree_persist.
-  }
-  iDestruct "Hconf_prop" as "#Hconf_prop".
-
   wp_bind (Clerk__WriteConfig _ _ _).
   iApply (wp_frame_wand with "[HΦ Hconf_sl Hclerks_sl Hprim]").
   { iNamedAccu. }
@@ -758,7 +762,7 @@ Proof using waitgroupG0.
     }
     unfold P.
     iDestruct "HP" as (??) "(%Hlookup2 & _ & Hpost)".
-    assert (γsrv = γsrv'.1).
+    assert (γsrv = γsrv'.(r_pb)).
     {
       rewrite Hi in Hlookup2.
       rewrite list_lookup_fmap in Hlookup.

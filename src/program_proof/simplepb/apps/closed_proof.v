@@ -5,8 +5,9 @@ From Perennial.goose_lang Require adequacy dist_adequacy.
 From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 From Perennial.program_logic Require dist_lang.
 
-From Perennial.program_proof.simplepb Require Import config_proof pb_definitions pb_ghost pb_init_proof.
-From Perennial.program_proof.simplepb Require Import kv_proof admin_proof.
+From Perennial.program_proof.simplepb Require Import config_proof pb_definitions
+     pb_protocol pb_init_proof.
+From Perennial.program_proof.simplepb Require Import kvee_proof admin_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.program_proof.simplepb.apps Require Import closed_wpcs.
@@ -42,8 +43,9 @@ Proof.
   iIntros "$". iIntros; eauto.
 Qed.
 
-(* The globalGS equality should actually always be the case (or more precisely, we should be unbundling,
- but let's include it here in the conclusion as a hack *)
+(* The globalGS equality should actually always be the case (or more precisely,
+ we should be unbundling, but let's include it here in the conclusion as a
+ hack *)
 #[global]
 Instance is_pb_host_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} u γ1 γ2 :
   IntoCrash (is_pb_host u γ1 γ2)
