@@ -1345,8 +1345,9 @@ Proof.
   { simpl. iFrame. }
   unfold is_Versioned_setStateFn.
   iClear "Hghost".
-  iMod ghost_low_setstate as (?) "[Hghost2 #Hstate]".
-  { admit. } (* FIXME: integer overflow *)
+  assert (Hlen: length ops = int.nat (length ops)).
+  { (* But how can we prove this, we appear to know nothing about ops?) *) admit. }
+  iMod (ghost_low_setstate _) as (?) "[Hghost2 #Hstate]"; first done.
   wp_apply ("HsetState_spec" with "[$Hlowstate Hsnap_sl2]").
   {
     iSplitR; first done.
@@ -1358,8 +1359,8 @@ Proof.
   iApply "HΦ".
   repeat iExists _.
   iFrame "∗ Hislow".
-  iPureIntro.
-  admit. (* FIXME: integer overflow *)
+  iPureIntro. split; last auto.
+  rewrite -Hlen. reflexivity.
 Admitted. (* integer overflows *)
 
 Lemma wp_EEStatemachine__getState (s:loc) :
