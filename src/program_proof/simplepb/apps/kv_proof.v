@@ -73,7 +73,6 @@ Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
 Class kv64G Σ := Kv64G {
   kv64_ghostMapG :> ghost_mapG Σ u64 (list u8) ;
-  kv64_configG :> configG Σ ;
   kv64_logG :> inG Σ (mono_listR (leibnizO kv64Op)) ;
   kv64_vsmG :> vsmG (sm_record:=kv_record) Σ ;
 }.

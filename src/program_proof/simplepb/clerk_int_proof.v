@@ -17,7 +17,6 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
-Context `{!config_proof.configG Σ}.
 
 Definition own_Clerk2 ck γ : iProp Σ :=
   ∃ (confCk:loc) clerks_sl clerks γsrvs,

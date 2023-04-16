@@ -245,21 +245,14 @@ Proof.
     rewrite /confγs elem_of_list_In /= in H.
     naive_solver.
   }
+  iDestruct "H" as "(#Hinvs & Hlog & #Hwits & Hconf1 & Hconf2 & #Hclient_invs)".
 
-  (* Then, set up the KV system *)
-  iMod (kv_system_init confγs with "[]") as (???) "(Hconfinit & #Hinv & #Hsys & #Hkvinv & #Hproposal_lb & #Hproposal & Hkvptstos)".
-  { simpl. lia. }
-  {
-    iIntros.
-    unfold confγs in H.
-    rewrite elem_of_list_In in H.
-    simpl in H.
-    naive_solver.
-  }
+  (* Now, set up the exactly-once kv system *)
+  iMod (alloc_ekv with "Hlog") as (?) "[#Hclient_invs2 Hkvs]".
 
   (* Now, set up all the hosts *)
   iDestruct (big_sepM_delete with "Hchan") as "[HconfChan Hchan]".
-  { apply HconfChan. } (* get out conf chan pointts-to for later *)
+  { apply HconfChan. } (* get out conf chan points-to for later *)
 
   iDestruct (big_sepM_delete with "Hchan") as "[Hr1Chan Hchan]".
   { rewrite lookup_delete_Some. split; last apply Hr1Chan. done. }
@@ -272,14 +265,13 @@ Proof.
   iMod (pb_host_init r2Host with "Hr2Chan") as "#Hsrvhost2".
 
   set (conf:=[r1Host ; r2Host]).
-  iMod (config_ghost_init_2 γsys conf confγs with "[] Hconfinit") as (γconf) "[#Hconf HconfInit]".
+  iMod (alloc_pb_config_ghost γpb conf confγs with "[] Hconf1 Hconf2") as (γconf) "[#Hconf HconfInit]".
   {
     iFrame "#".
     by iApply big_sepL2_nil.
   }
 
   iMod (config_server_init configHost γconf with "HconfChan") as "#Hconfhost".
-
 
   iModIntro.
   simpl. iSplitL "HconfInit".
@@ -293,7 +285,13 @@ Proof.
       instantiate (1:=λ _, True%I).
       simpl.
       iApply wp_wpc.
-      iApply (wp_config_main _ with "[$]").
+      iApply (wp_config_main _ with "[-]").
+      { iFrame.
+        iFrame "#".
+        iApply to_named.
+        iExactEq "Hconfhost".
+        repeat f_equal.
+        admit.
     }
     { (* crash; there should actually be no crashes of the config server *)
       iModIntro.
