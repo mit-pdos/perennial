@@ -681,6 +681,13 @@ Proof.
   }
 Qed.
 
+Instance int_nat_u64_inj: Inj eq eq (fun z : u64 => Z.to_nat (int.Z z)).
+Proof.
+  intros u1 u2 Heq.
+  apply: int_Z_inj.
+  apply Z2Nat.inj; auto using encoding.unsigned_64_nonneg.
+Qed.
+
 Lemma ghost_low_newop γst ops latestVnum op lowop l :
   (length ops + 1 = int.nat (word.add (length ops) 1))%nat →
   int.nat latestVnum <= length ops →
@@ -722,7 +729,7 @@ Proof.
         iModIntro. iIntros (???) "H %".
         rewrite app_length /= in H4.
         assert (int.nat y <= length ops).
-        { admit. } (* FIXME: integer overflow *)
+        { apply u64_plus_1_le_no_overflow; auto. }
         iDestruct ("H" with "[%]") as "[$|H]".
         { done. }
         iRight.
@@ -739,7 +746,12 @@ Proof.
         iExactEq "HH".
         unfold is_state.
         repeat f_equal.
-        1:{ rewrite app_length /= in H2. admit. } (* FIXME: integer overflow *)
+        1:{ rewrite app_length /= in H2.
+            replace (Z.of_nat (length ops) + 1)%Z with (Z.of_nat (length ops + 1)) by
+              lia.
+            rewrite HnoOverflow.
+            rewrite u64_Z_through_nat u64_Z //.
+        }
       }
     }
     iApply (big_sepS_impl with "HlatestVersion").
@@ -750,7 +762,12 @@ Proof.
       rewrite app_length /= in H4.
       assert (x = (word.add (length ops) 1)).
       { rewrite app_length /= in H3.
-        admit. } (* FIXME: overflow *)
+        apply int_nat_u64_inj.
+        rewrite HnoOverflow in H4.
+        rewrite u64_Z_through_nat in H4.
+        rewrite u64_Z in H4.
+        word.
+      }
       subst x. rewrite H0 H1.
       iFrame "HH".
     }
@@ -760,7 +777,9 @@ Proof.
     rewrite app_length /=.
     iExactEq "HH".
     unfold is_state.
-    repeat f_equal. rewrite HnoOverflow. admit. (* FIXME: integer overflow *)
+    repeat f_equal. rewrite HnoOverflow.
+    rewrite u64_Z_through_nat.
+    rewrite u64_Z //.
   }
   {
     iIntros.
@@ -769,12 +788,20 @@ Proof.
     rewrite H0.
     rewrite app_length /= in H3.
     replace (int.nat (length ops + 1)) with (length ops + 1) in H3.
-    2:{ admit. } (* FIXME: integer overflow *)
+    2:{
+      rewrite word.unsigned_add in HnoOverflow.
+      rewrite HnoOverflow.
+      f_equal.
+      symmetry.
+      rewrite unsigned_U64.
+      rewrite Z2Nat.id; last by lia.
+      rewrite encoding.word_wrap_wrap; auto; lia.
+    }
     iApply "H".
     { iPureIntro.  word. }
     { iPureIntro.  word. }
   }
-Admitted. (* integer overflows *)
+Qed.
 
 Lemma wp_EEStateMachine__apply s :
   {{{
