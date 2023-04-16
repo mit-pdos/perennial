@@ -28,7 +28,7 @@ Definition grove_dist_adequate
                ebσs in
   dist_adequacy.dist_adequate (CS := goose_crash_lang) (enonidempσs ++ ρs) g.
 
-Definition kv_pbΣ := #[heapΣ; kv64Σ].
+Definition kv_pbΣ := #[heapΣ; ekvΣ].
 
 Definition configHost : chan := U64 10.
 Definition r1Host: chan := U64 1.

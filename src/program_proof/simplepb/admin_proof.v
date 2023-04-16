@@ -501,10 +501,11 @@ Proof using waitgroupG0.
             simpl. lia.
           }
           {
-            eapply elem_of_fmap_2.
-            rewrite lookup_take_Some in Hlookup2.
             eapply elem_of_list_lookup_2.
-            naive_solver.
+            rewrite list_lookup_fmap.
+            rewrite lookup_take_Some in Hlookup2.
+            destruct Hlookup2 as [-> _].
+            done.
           }
         }
         iExists _.

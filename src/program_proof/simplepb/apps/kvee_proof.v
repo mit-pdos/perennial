@@ -22,6 +22,12 @@ Class ekvG Σ :=
     ekv_simplelogG :> simplelogG (sm_record:=eekv_record) Σ;
     ekv_kvG :> kv64G Σ ;
   }.
+
+Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ (sm_record:=eekv_record);
+                     kv64Σ].
+Global Instance subG_ekvΣ {Σ} : subG ekvΣ Σ → ekvG Σ.
+Proof. intros. solve_inG. Qed.
+
 Context `{!ekvG Σ, !gooseGlobalGS Σ}.
 
 Definition is_ekv_invs γpb γkv : iProp Σ :=
