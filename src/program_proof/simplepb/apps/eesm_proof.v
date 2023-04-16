@@ -602,9 +602,9 @@ Proof.
   {
     iApply "HfutureVersions".
     { iModIntro. iIntros (???) "H %".
-      iApply "H". iPureIntro. rewrite app_length in H2. word. }
+      iApply "H". iPureIntro. rewrite app_length in H1. word. }
     { iModIntro. iIntros. exfalso.
-      rewrite app_length /= in H0.
+      rewrite app_length /= in H.
       word. }
   }
 
@@ -619,7 +619,7 @@ Proof.
     iApply "Hversions".
     {
       iModIntro. iIntros (???) "H %".
-      rewrite app_length /= in H2.
+      rewrite app_length /= in H1.
       assert (int.nat y <= length ops).
       { admit. } (* FIXME: integer overflow *)
       iDestruct ("H" with "[%]") as "[$|H]".
@@ -638,7 +638,7 @@ Proof.
     iExactEq "HH".
     unfold is_state.
     repeat f_equal.
-    rewrite app_length /= in H0.
+    rewrite app_length /= in H.
     admit. (* FIXME: integer overflow *)
   }
   iModIntro.
@@ -647,7 +647,7 @@ Proof.
     iModIntro. iIntros (??) "#H".
     iModIntro.
     iIntros.
-    rewrite app_length /= in H1.
+    rewrite app_length /= in H0.
     destruct (decide (x = (word.add (length ops) 1))).
     { subst x. rewrite Heq1 Heq2.
       iFrame "HH". }
@@ -687,9 +687,9 @@ Proof.
     {
       iApply "HfutureVersions".
       { iModIntro. iIntros (???) "H %".
-        iApply "H". iPureIntro. rewrite app_length in H5. word. }
+        iApply "H". iPureIntro. rewrite app_length in H4. word. }
       { iIntros. exfalso.
-        rewrite app_length /= in H3.
+        rewrite app_length /= in H2.
         word. }
     }
     iSplitL "Hversions".
@@ -699,7 +699,7 @@ Proof.
       iApply "Hversions".
       {
         iModIntro. iIntros (???) "H %".
-        rewrite app_length /= in H5.
+        rewrite app_length /= in H4.
         assert (int.nat y <= length ops).
         { admit. } (* FIXME: integer overflow *)
         iDestruct ("H" with "[%]") as "[$|H]".
@@ -714,11 +714,11 @@ Proof.
         iRight.
         rewrite firstn_all2.
         2:{ rewrite app_length /=. word. }
-        rewrite H2.
+        rewrite H1.
         iExactEq "HH".
         unfold is_state.
         repeat f_equal.
-        1:{ rewrite app_length /= in H3. admit. } (* FIXME: integer overflow *)
+        1:{ rewrite app_length /= in H2. admit. } (* FIXME: integer overflow *)
       }
     }
     iApply (big_sepS_impl with "HlatestVersion").
@@ -726,11 +726,11 @@ Proof.
       iModIntro. iIntros (??) "#H".
       iModIntro.
       iIntros.
-      rewrite app_length /= in H5.
+      rewrite app_length /= in H4.
       assert (x = (word.add (length ops) 1)).
-      { rewrite app_length /= in H4.
+      { rewrite app_length /= in H3.
         admit. } (* FIXME: overflow *)
-      subst x. rewrite H1 H2.
+      subst x. rewrite H0 H1.
       iFrame "HH".
     }
   }
@@ -745,9 +745,9 @@ Proof.
     iIntros.
     iDestruct (big_sepS_elem_of_acc _ _ vnum' with "HlatestVersion") as "[#H _]".
     { set_solver. }
-    rewrite H1.
-    rewrite app_length /= in H4.
-    replace (int.nat (length ops + 1)) with (length ops + 1) in H4.
+    rewrite H0.
+    rewrite app_length /= in H3.
+    replace (int.nat (length ops + 1)) with (length ops + 1) in H3.
     2:{ admit. } (* FIXME: integer overflow *)
     iApply "H".
     { iPureIntro.  word. }
@@ -1448,12 +1448,12 @@ Proof.
     }
     iDestruct (ghost_map_points_to_agree with "HH H2") as %?.
     iPureIntro.
-    replace (take (int.nat (length a)) ops) with a in H0.
+    replace (take (int.nat (length a)) ops) with a in H.
     {
       unfold ee_record. simpl.
       unfold compute_reply.
       unfold apply_op_and_get_reply.
-      rewrite H0 /=.
+      rewrite H /=.
       done.
     }
     {
@@ -1480,13 +1480,13 @@ Proof.
     iDestruct (ghost_map_points_to_agree with "Hstate H2") as %?.
     subst.
     iPureIntro.
-    replace (take (int.nat (length a)) ops) with a in H0.
+    replace (take (int.nat (length a)) ops) with a in H.
     {
       unfold ee_record. simpl.
       unfold compute_reply.
       unfold apply_op_and_get_reply.
       simpl.
-      rewrite H0 /=.
+      rewrite H /=.
       done.
     }
     {
@@ -1607,7 +1607,7 @@ Proof.
   {
     iApply "Hmap".
     { iModIntro. iIntros. iFrame. }
-    { iIntros. exfalso. simpl in H0. replace (int.nat (U64 0)) with (0) in H0; word. }
+    { iIntros. exfalso. simpl in H. replace (int.nat (U64 0)) with (0) in H; word. }
   }
   iSplitL.
   {
@@ -1615,7 +1615,7 @@ Proof.
     { by iApply big_sepS_emp. }
     iModIntro. iIntros.
     assert (int.nat x = 0).
-    { rewrite /= in H2. word. }
+    { rewrite /= in H1. word. }
     replace (x) with (U64 0) by word.
     iFrame "#".
   }
@@ -1623,7 +1623,7 @@ Proof.
   iIntros. iModIntro.
   iIntros. rewrite /= in H1.
   assert (int.nat x = 0).
-  { rewrite /= in H2. word. }
+  { rewrite /= in H0. word. }
   replace (x) with (U64 0) by word.
   iFrame "#".
 Qed.
