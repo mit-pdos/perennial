@@ -224,14 +224,9 @@ Proof.
   { iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
 
   (* FIXME: what's going on here? Why do I need to manually put this in the context? *)
-  eassert (HekvG:ekvG kv_pbΣ).
-  { (* Set Typeclasses Debug. *)
-    apply subG_ekvΣ.
-    unfold kv_pbΣ.
-    apply subG_app_r.
-    apply subG_app_l.
-    apply subG_refl.
-  }
+  eset (h_ekvG:=subG_ekvΣ
+             (subG_app_r ekvΣ heapΣ _
+                         (subG_app_l ekvΣ ekvΣ gFunctors.nil (subG_refl ekvΣ)))).
 
   (* First, pre-set up the two KV replica servers *)
   iMod (prealloc_simplepb_server) as (γsrv1) "[#Hsrv1wit Hsrv1]".
@@ -273,6 +268,9 @@ Proof.
 
   iMod (config_server_init configHost γconf with "HconfChan") as "#Hconfhost".
 
+  iAssert (is_pb_config_host configHost γpb) with "[]" as "#HbConfHost".
+  { iExists _. iFrame "#". admit. }  (* FIXME: same subG problem as below *)
+
   iModIntro.
   simpl. iSplitL "HconfInit".
   {
@@ -291,7 +289,8 @@ Proof.
         iApply to_named.
         iExactEq "Hconfhost".
         repeat f_equal.
-        admit.
+        admit. (* FIXME: subG *)
+      }
     }
     { (* crash; there should actually be no crashes of the config server *)
       iModIntro.
@@ -311,12 +310,14 @@ Proof.
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iMod (kv_server_init with "HH [] Hsrv1") as "Hinit". { iFrame "#". }
+    iSpecialize ("Hsrv1" $! γpb with "[]").
+    { iApply "Hwits". iPureIntro. rewrite /confγs elem_of_list_In /= //. naive_solver. }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iDestruct "Hinit" as "(?&?)".
-    iApply (@wpr_kv_replica_main _ _ _ _ γsrv1 with "[$] [$] [$] [$] [$] [$]").
+    iAssert (file_crash (own_Server_ghost_f γpb _) []) with "[Hsrv1]" as "HfileCrash".
+    { iLeft. by iFrame. }
+    iApply (@wpr_kv_replica_main _ _ _ γsrv1 with "[$] [$] [$] [$] [$]").
   }
   (* TODO: do like above for replica main1 as separate lemma *)
   iSplitL "Hsrv2".
@@ -324,14 +325,16 @@ Proof.
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iMod (kv_server_init with "HH [] Hsrv2") as "Hinit". { iFrame "#". }
+    iSpecialize ("Hsrv2" $! γpb with "[]").
+    { iApply "Hwits". iPureIntro. rewrite /confγs elem_of_list_In /= //. naive_solver. }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iDestruct "Hinit" as "(?&?)".
-    iApply (@wpr_kv_replica_main _ _ _ _ γsrv2 with "[$] [$] [$] [$] [$] [$]").
+    iAssert (file_crash (own_Server_ghost_f γpb _) []) with "[Hsrv2]" as "HfileCrash".
+    { iLeft. by iFrame. }
+    iApply (@wpr_kv_replica_main _ _ _ γsrv2 with "[$] [$] [$] [$] [$]").
   }
   done.
-Qed.
+Admitted.
 
 End closed.

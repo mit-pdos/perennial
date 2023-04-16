@@ -194,7 +194,7 @@ Proof.
   2:{ exfalso. rewrite app_length /= in Hlen. word. }
   rewrite app_nil_r in Hlen |- *.
   iDestruct (big_sepL2_length with "Hhosts") as %?.
-  rewrite Hlen -H0.
+  rewrite Hlen -H.
   rewrite firstn_all.
   by iFrame "#".
 Qed.
