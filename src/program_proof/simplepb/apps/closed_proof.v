@@ -6,7 +6,7 @@ From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 From Perennial.program_logic Require dist_lang.
 
 From Perennial.program_proof.simplepb Require Import config_proof pb_definitions
-     pb_protocol pb_init_proof.
+     pb_protocol pb_init_proof config_protocol_proof.
 From Perennial.program_proof.simplepb Require Import kvee_proof admin_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
@@ -34,15 +34,15 @@ Definition configHost : chan := U64 10.
 Definition r1Host: chan := U64 1.
 Definition r2Host: chan := U64 2.
 
-(*
+
 #[global]
-Instance sys_inv_into_crash `{!heapGS Σ} EntryType `{!pb_ghostG Σ} γsys :
-  IntoCrash (sys_inv γsys) (λ hG', @sys_inv EntryType Σ (_ hG') _ γsys)
+Instance sys_inv_into_crash `{!heapGS Σ} EntryType `{!pbG Σ} γsys :
+  IntoCrash (is_pb_system_invs γsys) (λ hG', @is_pb_system_invs EntryType Σ (_ hG') _ γsys)
 .
 Proof.
-  rewrite /IntoCrash /sys_inv.
+  rewrite /IntoCrash /is_pb_system_invs.
   iIntros "$". iIntros; eauto.
-Qed. *)
+Qed.
 
 (* The globalGS equality should actually always be the case (or more precisely,
  we should be unbundling, but let's include it here in the conclusion as a
@@ -51,6 +51,16 @@ Qed. *)
 Instance is_pb_host_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} u γ1 γ2 :
   IntoCrash (is_pb_host u γ1 γ2)
     (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_pb_host (pb_record:=PBRecord) u γ1 γ2)%I
+.
+Proof.
+  rewrite /IntoCrash /is_pb_host.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+#[global]
+Instance is_pb_config_host_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} u γ:
+  IntoCrash (is_pb_config_host u γ)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_pb_config_host (pb_record:=PBRecord) u γ)%I
 .
 Proof.
   rewrite /IntoCrash /is_pb_host.
@@ -73,9 +83,9 @@ Definition kv_replica_main_crash_cond `{ekvG Σ} γsys fname γsrv1:=
 Lemma wpr_kv_replica_main fname me γsys γsrv {Σ} {HKV: ekvG Σ}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
-  "Hinv" ∷ is_helping_inv γsys -∗
-  "Hsys" ∷ is_repl_inv γsys.(s_pb) -∗
+  "Hinvs" ∷ is_pb_system_invs γsys -∗
   "Hsrvhost1" ∷ is_pb_host me γsys γsrv -∗
+  "Hconfhost" ∷ is_pb_config_host configHost γsys -∗
   "Hinit" ∷ fname f↦[] -∗
   "Hfile_crash" ∷ file_crash (own_Server_ghost_f γsys γsrv) [] -∗
   wpr NotStuck ⊤ (kv_replica_main #(LitString fname) #me) (kv_replica_main #(LitString fname) #me) (λ _ : goose_lang.val, True)
@@ -86,9 +96,8 @@ Proof.
    {
      instantiate (1:=kv_replica_main_crash_cond γsys fname γsrv).
      simpl.
-     wpc_apply (wpc_kv_replica_main γsys γsrv with "[] [Hsys] [$Hsrvhost1]").
+     wpc_apply (wpc_kv_replica_main γsys γsrv with "[] [$] [$] [$]").
      { iIntros "$". }
-     { iFrame "#". }
      iExists _. iFrame.
    }
    { (* recovery *)
@@ -100,20 +109,22 @@ Proof.
      iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
      simpl.
      set (hG' := HeapGS _ _ hL').
-     iDestruct "Hsys" as "-#Hsys".
+     iDestruct "Hinvs" as "-#Hinvs".
      iDestruct "Hsrvhost1" as "-#Hsrvhost1".
+     iDestruct "Hconfhost" as "-#Hconfhost".
      iCrash.
      iIntros "_".
      destruct hL as [HG'' ?].
      iSplit; first done.
-     iDestruct "Hsrvhost1" as "(%Heq&Hsrvhost1)".
+     iDestruct "Hsrvhost1" as "(%&Hsrvhost1)".
+     iDestruct "Hconfhost" as "(%&Hconfhost)".
      subst.
      clear hG'.
      clear hL'.
      (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
      set (hG2' := HeapGS _ _ goose_localGS).
      simpl.
-     wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') γsys γsrv with "[] [$Hsrvhost1] [$Hsys]").
+     wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') γsys γsrv with "[] [$] [$] [$]").
      { iIntros "H".
        iDestruct "H" as (?) "[Hfile Hcrash]".
        iExists _.
@@ -123,10 +134,10 @@ Proof.
    }
 Qed.
 
-Lemma wp_config_main γconf {Σ} {HKV: kv64G Σ} {HG} {HL}:
+Lemma wp_config_main γconf {Σ} {HKV: ekvG Σ} {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   "HconfInit" ∷ makeConfigServer_pre γconf [U64 1; U64 2] ∗
-  "#Hhost" ∷ is_host configHost γconf -∗
+  "#Hhost" ∷ is_config_host configHost γconf -∗
   WP config_main #() {{ _, True }}
 .
 Proof.
@@ -171,7 +182,7 @@ Proof.
   done.
 Qed.
 
-Local Instance subG_kv64Σ {Σ} : subG kv_pbΣ Σ → kv64G Σ.
+Local Instance subG_ekvΣ {Σ} : subG ekvΣ Σ → ekvG Σ.
 Proof. intros. solve_inG. Qed.
 
 Definition replica_fname := "kv.data".
