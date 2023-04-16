@@ -181,13 +181,14 @@ Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMa
 .
 
 Definition is_InMemory_setStateFn (setStateFn:val) own_InMemoryStateMachine : iProp Σ :=
-  ∀ ops_prev ops snap snap_sl,
+  ∀ ops_prev ops snap snap_sl (nextIndex:u64),
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
+        ⌜int.nat nextIndex = length ops⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
         own_InMemoryStateMachine ops_prev
   }}}
-    setStateFn (slice_val snap_sl) #(U64 (length ops))
+    setStateFn (slice_val snap_sl) #nextIndex
   {{{
         RET #(); own_InMemoryStateMachine ops
   }}}
@@ -471,22 +472,26 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
+Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q
+      (nextIndex:u64)
+  :
   {{{
         ⌜ (length ops < 2 ^ 64)%Z ⌝ ∗
         ⌜has_snap_encoding snap ops⌝ ∗
+        ⌜int.nat nextIndex = length ops⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
         (P epoch_prev ops_prev sealed_prev ={⊤}=∗ P epoch ops false ∗ Q) ∗
         own_StateMachine s epoch_prev ops_prev sealed_prev P
   }}}
-    StateMachine__setStateAndUnseal #s (slice_val snap_sl) #(U64 (length ops)) #epoch
+    StateMachine__setStateAndUnseal #s (slice_val snap_sl) #nextIndex #epoch
   {{{
         RET #();
         own_StateMachine s epoch ops false P ∗ Q
   }}}
 .
 Proof.
-  iIntros (Φ) "(%HsnapLen & %HsnapEnc & #Hsnap_sl & Hupd & Hown) HΦ".
+  iIntros (Φ) "(%HsnapLen & %HsnapEnc & %HnextIndex & #Hsnap_sl & Hupd & Hown) HΦ".
+  assert (nextIndex = U64 (length ops)) by word; subst.
   wp_lam.
   wp_pures.
   iNamed "Hown".
@@ -1847,6 +1852,8 @@ Proof.
       wp_apply (wp_setStateAndUnseal with "[$Hsm $Hop_sl Hupd]").
       {
         iFrame "%".
+        iSplitR.
+        { iPureIntro. word. }
         iIntros "H1".
         instantiate (1:=Q).
         iMod (fupd_mask_subseteq _) as "Hmask".

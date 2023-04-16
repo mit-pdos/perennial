@@ -1288,8 +1288,8 @@ Proof.
     iPureIntro. econstructor.
   }
 
-  iIntros (???? Φ) "!# Hpre HΦ".
-  iDestruct "Hpre" as "(%Hsnap & #Hsnap_sl & Hown)".
+  iIntros (????? Φ) "!# Hpre HΦ".
+  iDestruct "Hpre" as "(%Hsnap & %HnextIndex & #Hsnap_sl & Hown)".
   wp_pures.
 
   iNamed "Hown".
@@ -1345,8 +1345,9 @@ Proof.
   { simpl. iFrame. }
   unfold is_Versioned_setStateFn.
   iClear "Hghost".
+  assert (nextIndex = length ops) by word; subst.
   assert (Hlen: length ops = int.nat (length ops)).
-  { (* But how can we prove this, we appear to know nothing about ops?) *) admit. }
+  { word. }
   iMod (ghost_low_setstate _) as (?) "[Hghost2 #Hstate]"; first done.
   wp_apply ("HsetState_spec" with "[$Hlowstate Hsnap_sl2]").
   {
@@ -1361,7 +1362,7 @@ Proof.
   iFrame "∗ Hislow".
   iPureIntro. split; last auto.
   rewrite -Hlen. reflexivity.
-Admitted. (* integer overflows *)
+Qed.
 
 Lemma wp_EEStatemachine__getState (s:loc) :
   ⊢ ee_is_InMemory_getStateFn (λ: <>, EEStateMachine__getState #s) (own_StateMachine s).

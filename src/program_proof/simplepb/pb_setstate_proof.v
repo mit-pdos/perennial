@@ -331,6 +331,7 @@ Proof.
       word.
     }
 
+    unfold is_SetStateAndUnseal_fn.
     wp_apply ("HsetStateSpec" with "[$Hstate]").
     {
       iSplitR.
