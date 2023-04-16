@@ -461,11 +461,17 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
   set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
+  iDestruct (big_sepL2_length with "Hclerks_rpc") as %Hlen_clerks.
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
   iDestruct (is_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
   assert (int.nat clerkIdx < length clerks) as Hlookup_clerks.
   {
-    admit.  (* FIXME: word `mod` inequality *)
+    rewrite /clerkIdx. rewrite Hclerks_sz.
+     rewrite word.unsigned_modu_nowrap; last lia.
+     { apply Z2Nat.inj_lt; auto using encoding.unsigned_64_nonneg.
+        { apply Z.mod_pos; lia. }
+        { apply Z_mod_lt; lia. }
+     }
   }
 
   wp_apply (wp_ref_of_zero).
@@ -592,6 +598,6 @@ Proof.
       repeat iExists _; iFrame "∗#%".
     }
   }
-Admitted. (* FIXME: integer reasoning *)
+Qed.
 
 End clerk_proof.
