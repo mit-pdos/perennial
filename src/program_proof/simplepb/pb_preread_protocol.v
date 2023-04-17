@@ -429,12 +429,16 @@ Proof.
 Qed.
 
 (* XXX: for this lemma, want prereadN ∩ pbN = ∅ *)
-Lemma propose_rw_op_valid op γ γlog γreads :
+(* XXX: the `f` is here to support `apply_postcond`, which in turn supports
+   SumAssumeNoOverflow *)
+Lemma propose_rw_op_valid op γ γlog γreads f :
   £ 1 -∗
   is_preread_inv γ γlog γreads -∗
-  (|={⊤∖↑ghostN∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗ (own_pre_log γlog (σ ++ [op]) ={∅,⊤∖↑ghostN∖↑prereadN}=∗ True))
+  (|={⊤∖↑ghostN∖↑prereadN,∅}=> ∃ σ, own_pre_log γlog σ ∗
+      (⌜f σ⌝ -∗  own_pre_log γlog (σ ++ [op]) ={∅,⊤∖↑ghostN∖↑prereadN}=∗ True))
   -∗
-  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γ someσ ∗ (own_pb_log γ (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
+  (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_pb_log γ someσ ∗
+      (⌜f someσ⌝ -∗ own_pb_log γ (someσ ++ [op]) ={∅,⊤∖↑ghostN}=∗ True))
 .
 Proof.
   iIntros "Hlc #Hinv Hupd".
@@ -447,11 +451,12 @@ Proof.
   iModIntro.
   iExists _.
   iFrame.
-  iIntros "HpbLog".
+  iIntros "% HpbLog".
   iMod (own_log_update_2 _ _ (σ0++[op]) with "Hlog Hlog2") as "[Hlog Hlog2]".
   { by apply prefix_app_r. }
 
-  iMod ("Hupd" with "Hlog2").
+  iMod ("Hupd" with "[//] Hlog2").
+  clear H0.
 
   destruct (ros !! (length σ0 + 1)) as [] eqn:Hlookup.
   {

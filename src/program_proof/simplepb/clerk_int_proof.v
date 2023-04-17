@@ -13,6 +13,7 @@ Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
+Notation apply_postcond := (Sm.apply_postcond pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
 
@@ -279,7 +280,7 @@ has_op_encoding op_bytes op →
 own_Clerk2 ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
-  (own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
+  (⌜apply_postcond ops op⌝ -∗ own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                   is_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
@@ -328,8 +329,8 @@ Proof.
       iModIntro.
       iExists _.
       iFrame "Hown".
-      iIntros "Hown".
-      iMod ("Hupd2" with "Hown") as "Hupd2".
+      iIntros "H Hown".
+      iMod ("Hupd2" with "H Hown") as "Hupd2".
       iModIntro.
       iIntros (?) "Hsl Hsl2".
       iDestruct ("Hupd2" with "Hsl") as "HΦ".

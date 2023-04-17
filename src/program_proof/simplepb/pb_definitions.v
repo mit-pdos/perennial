@@ -24,6 +24,9 @@ Record t :=
     has_snap_encoding: list u8 → (list OpType) → Prop ;
     compute_reply : list OpType → OpType → list u8 ;
     is_readonly_op : OpType → Prop ;
+    apply_postcond : list OpType → OpType → Prop ;
+    (* need decision because we need to make an early case distinction based on this *)
+    apply_postcond_dec : (∀ ops o, Decision (apply_postcond ops o)) ;
   }.
 End Sm.
 
@@ -55,6 +58,7 @@ Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation is_readonly_op := (Sm.is_readonly_op pb_record).
+Notation apply_postcond := (Sm.apply_postcond pb_record).
 
 (* opsfull has all the ghost ops (RO and RW) in it as well as the gname for the
    Q for that op. get_rwops returns the RW ops only with the gnames removed.
@@ -223,7 +227,8 @@ Definition Apply_core_spec γ op enc_op :=
   (
   ⌜has_op_encoding enc_op op⌝ ∗
   (* is_helping_inv γ.(s_log) γ.(s_prim) ∗ *)
-  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗ (own_int_log γ (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗ (
+    ⌜apply_postcond σ op⌝ → own_int_log γ (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
             Φ (ApplyReply.mkC 0 (compute_reply σ op))
   )) ∗
   □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
@@ -246,7 +251,8 @@ Definition ApplyRo_core_spec γ  op enc_op :=
   (
   ⌜has_op_encoding enc_op op⌝ ∗
   ⌜is_readonly_op op⌝ ∗
-  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗ (own_int_log γ σ ={∅,⊤∖↑pbN}=∗
+  □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗
+                    (own_int_log γ σ ={∅,⊤∖↑pbN}=∗
             □ Φ (ApplyReply.mkC 0 (compute_reply σ op))
    (* XXX: the □Φ is OK because this is read-only. Technically, we could prove
       a stronger spec without the box, but we'll end up using prophecy anyways
@@ -259,7 +265,7 @@ Definition ApplyRo_core_spec γ  op enc_op :=
 Program Definition ApplyRo_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ op, ApplyRo_core_spec γ op enc_args
-                      (λ reply, ∀ enc_reply, ⌜ApplyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
+  (λ reply, ∀ enc_reply, ⌜ApplyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
   )%I
 .
 Next Obligation.
@@ -430,6 +436,7 @@ Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation is_readonly_op := (Sm.is_readonly_op pb_record).
+Notation apply_postcond := (Sm.apply_postcond pb_record).
 
 Notation pbG := (pbG (pb_record:=pb_record)).
 Notation "server.t" := (server.t (pb_record:=pb_record)).
@@ -463,13 +470,14 @@ Definition is_ApplyFn own_StateMachine (startApplyFn:val) (P:u64 → list (OpTyp
            of callbacks had made it confusing which way is weaker and which way
            stronger.
          *)
-        (P epoch σ false ={⊤∖↑pbAofN}=∗ P epoch (σ ++ [op]) false ∗ Q) ∗
+        (⌜apply_postcond σ op⌝ -∗ P epoch σ false ={⊤∖↑pbAofN}=∗ P epoch (σ ++ [op]) false ∗ Q) ∗
         own_StateMachine epoch σ false P
   }}}
     startApplyFn (slice_val op_sl)
   {{{
         reply_sl q (waitFn:goose_lang.val),
         RET (slice_val reply_sl, waitFn);
+        ⌜apply_postcond σ op⌝ ∗
         is_slice_small reply_sl byteT q (compute_reply σ op) ∗
         own_StateMachine epoch (σ ++ [op]) false P ∗
         (∀ Ψ, (Q -∗ Ψ #()) -∗ WP waitFn #() {{ Ψ }})

@@ -62,6 +62,7 @@ Definition kv_record : Sm.t :=
     Sm.has_snap_encoding := λ snap_bytes ops, has_byte_map_encoding snap_bytes (compute_state ops) ;
     Sm.compute_reply :=  compute_reply ;
     Sm.is_readonly_op :=  is_readonly_op ;
+    Sm.apply_postcond :=  λ ops op, True ;
   |}.
 
 Notation OpType := (Sm.OpType kv_record).

@@ -21,6 +21,7 @@ Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
+Notation apply_postcond := (Sm.apply_postcond pb_record).
 
 Context `{!pbG Σ}.
 
@@ -29,7 +30,7 @@ has_op_encoding op_bytes op →
 is_Clerk ck γ γsrv -∗
 is_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
-  (own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
+  (⌜apply_postcond ops op⌝ -∗ own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             is_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
@@ -70,8 +71,8 @@ Proof.
       iDestruct "HΦ" as (?) "[Hlog HΦ]".
       iExists _.
       iFrame.
-      iIntros "Hlog".
-      iMod ("HΦ" with "Hlog") as "HΦ".
+      iIntros "% Hlog".
+      iMod ("HΦ" with "[//] Hlog") as "HΦ".
       iModIntro.
       iIntros (? Hreply_enc) "Hop".
       iIntros (?) "Hrep Hrep_sl".
@@ -150,7 +151,9 @@ Definition is_ghost_lb' γ σ : iProp Σ :=
   ∃ σgnames, is_ghost_lb γ σgnames ∗ entry_pred_conv σ σgnames. *)
 
 Lemma apply_eph_primary_step γ γsrv ops canBecomePrimary epoch committedNextIndex op Q :
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  apply_postcond (get_rwops ops) op →
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗
+    (⌜apply_postcond (get_rwops σ) op⌝ -∗  own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
   £ 1 -∗
   own_Primary_ghost_f γ γsrv canBecomePrimary true epoch committedNextIndex ops
   ={⊤∖↑pbAofN}=∗
@@ -160,7 +163,7 @@ Lemma apply_eph_primary_step γ γsrv ops canBecomePrimary epoch committedNextIn
   is_proposal_facts_prim γ.(s_prim) epoch (ops ++ [(op, Q)])
 .
 Proof.
-  iIntros "Hupd Hlc Hprim".
+  iIntros (?) "Hupd Hlc Hprim".
   rewrite /own_Primary_ghost_f /tc_opaque.
   iNamed "Hprim".
   iMod (fupd_mask_subseteq _);
@@ -170,7 +173,8 @@ Proof.
     iMod "Hupd" as (?) "[? Hupd]".
     iModIntro.
     iExists _; iFrame.
-    (* XXX: what's the point of having σ = ops? Seems unused. *)
+    iIntros (?); subst. (* XXX: This is the point of having σ = ops? *)
+    iApply "Hupd".
     done.
   }
   iDestruct (is_proposal_facts_prim_mono with "Hprim_facts") as "#$".
@@ -179,10 +183,12 @@ Proof.
 Qed.
 
 Lemma apply_eph_step γ γsrv st op Q :
+  apply_postcond (get_rwops st.(server.ops_full_eph)) op →
   st.(server.isPrimary) = true →
   st.(server.sealed) = false →
   £ 1 -∗
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
+  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗
+        (⌜apply_postcond (get_rwops σ) op⌝ -∗ own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True)) -∗
   own_Server_ghost_eph_f st γ γsrv
   ={⊤∖↑pbAofN}=∗
   own_Server_ghost_eph_f (st <| server.ops_full_eph := st.(server.ops_full_eph) ++ [(op, Q)] |>)
@@ -193,13 +199,14 @@ Lemma apply_eph_step γ γsrv st op Q :
   is_epoch_lb γsrv.(r_pb) st.(server.epoch)
 .
 Proof.
-  intros Hprim Hunsealed.
+  intros ? Hprim Hunsealed.
   iIntros "Hlc Hupd Hghost".
   iNamed "Hghost".
   rewrite /own_Server_ghost_eph_f /tc_opaque /=.
   iNamed "Hghost".
   rewrite Hprim.
   iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #? & #?)".
+  { done. }
   iFrame "∗#".
   repeat iExists _. by iFrame "#%".
 Qed.
@@ -365,12 +372,16 @@ Proof.
   iPureIntro. word.
 Qed.
 
+Local Instance a x y : Decision (apply_postcond x y).
+Proof. apply pb_record.(Sm.apply_postcond_dec). Qed.
+
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
-        (£ 1 -∗ £ 1 -∗ |={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗ (own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
+        (£ 1 -∗ £ 1 -∗ |={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗
+          (⌜apply_postcond (get_rwops σ) op⌝ -∗ own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
   }}}
     pb.Server__Apply #s (slice_val op_sl)
   {{{
@@ -462,11 +473,26 @@ Proof.
     done.
   }
 
+  (* XXX: this is ultimately to support the statemachine code making
+     "assumptions" by providing a non-trivial post-condition. E.g. if the state
+     machine apply() function loops forever when integer overflow occurs.
+   *)
+  destruct (decide (apply_postcond (get_rwops st.(server.ops_full_eph)) op)).
+  2: { (* case: doomed proof *)
+    iDestruct (is_StateMachine_acc_apply with "HisSm") as "HH".
+    iNamed "HH". wp_loadField. wp_loadField.
+
+    wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl]").
+    { iSplitL ""; first done. iIntros (?). exfalso. done. }
+    iIntros (???) "(% & _)". exfalso. done.
+  }
+
   (* make ephemeral proposal *)
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (⊤∖↑pbAofN)) as "Hmask".
   { set_solver. }
   iMod (apply_eph_step with "Hlc Hupd HghostEph") as "(HghostEph & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hepoch_lb)".
+  { done. }
   { done. }
   { done. }
   iMod "Hmask" as "_".
@@ -480,7 +506,7 @@ Proof.
   wp_apply ("HapplySpec" with "[HisSm $Hstate $Hsl]").
   {
     iSplitL ""; first done.
-    iIntros "Hghost".
+    iIntros "_ Hghost".
     iMod (applybackup_step with "Hprop_lb Hprop_facts Hprim_facts Hghost") as "Hghost".
     { by rewrite last_snoc. }
     { unfold get_rwops. rewrite fmap_app. rewrite app_length. done. }
@@ -488,7 +514,7 @@ Proof.
     rewrite /get_rwops fmap_app /=.
     iExact "Hghost".
   }
-  iIntros (reply_sl q waitFn) "(Hreply & Hstate & HwaitSpec)".
+  iIntros (reply_sl q waitFn) "(%Hop_post & Hreply & Hstate & HwaitSpec)".
 
   wp_pures.
   wp_storeField.
@@ -936,6 +962,7 @@ Proof.
     iApply establish_committed_log_fact.
     1-2: iFrame "#".
   }
+  Unshelve. exact True%I. (* this is from the "doomed" path in the proof. *)
 Qed.
 
 Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
@@ -965,7 +992,9 @@ Proof using Type*.
     iSplitR; first by iPureIntro.
     iIntros "Hlc Hlc2".
     iNamed "Hsrv".
-    iDestruct (propose_rw_op_valid with "Hlc [$] [Hupd]") as "$".
+    iDestruct (propose_rw_op_valid _ _ _ _
+                                   (λ σ, apply_postcond (get_rwops σ) op)
+                with "Hlc [$] [Hupd]") as "$".
     iInv "HhelpingInv" as "HH" "Hclose".
     iDestruct "HH" as (?) "(Hghost & >Hlog & #HQs)".
     iDestruct "Hghost" as (σgnames) "(>Hghost&>%Hfst_eq&#Hsaved')".
@@ -978,7 +1007,7 @@ Proof using Type*.
     apply mono_list_auth_dfrac_op_valid_L in Hvalid.
     destruct Hvalid as [_ <-].
     iExists _; iFrame.
-    iIntros "Hghost".
+    iIntros "%Hpost Hghost".
     iMod (own_update_2 with "Hlog Hlog2") as "Hlog".
     {
       rewrite -mono_list_auth_dfrac_op.
@@ -990,7 +1019,8 @@ Proof using Type*.
     }
     iEval (rewrite -Qp.half_half -dfrac_op_own mono_list_auth_dfrac_op) in "Hlog".
     iDestruct "Hlog" as "[Hlog Hlog2]".
-    iMod ("Hupd" with "Hlog2") as "Hupd".
+    iMod ("Hupd" with "[%] Hlog2") as "Hupd".
+    { rewrite /get_rwops Hfst_eq. done. }
 
     iAssert (|={↑escrowN}=> inv escrowN ((Ψ (ApplyReply.mkC 0 (compute_reply (get_rwops opsfullQ) op)))
                                   ∨ ghost_var γtok 1 ()))%I
@@ -1061,7 +1091,7 @@ Proof using Type*.
   { (* no error *)
     iNamed "Hreply".
     rewrite e.
-    iDestruct "Hpost" as (?) "[%Hrep #Hghost_lb]".
+    iDestruct "Hpost" as (?) "(%Hrep & #Hghost_lb)".
     rewrite Hrep.
     iNamed "Hsrv".
     iInv "HhelpingInv" as "HH" "Hclose".

@@ -35,6 +35,7 @@ Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
+Notation apply_postcond := (Sm.apply_postcond pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
@@ -280,7 +281,7 @@ has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
 is_slice_small op_sl byteT 1 op_bytes -∗
 □((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_op_log γ ops ∗
-  (own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN∖↑prophReadN}=∗
+  (⌜apply_postcond ops op⌝ -∗ own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN∖↑prophReadN}=∗
      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
                   is_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
@@ -300,12 +301,12 @@ Proof.
   { rewrite mono_list_auth_dfrac_op_valid_L in Hvalid. by destruct Hvalid. }
   iModIntro.
   iExists _; iFrame.
-  iIntros "Hintlog2".
+  iIntros "H Hintlog2".
   iCombine "Hoplog Hoplog2" as "Hoplog".
   iMod (own_update with "Hoplog") as "Hoplog".
   { apply mono_list_update. instantiate (1:=ops ++ [op]). by apply prefix_app_r. }
   iDestruct "Hoplog" as "[Hoplog Hoplog2]".
-  iMod ("Hupd" with "[$]") as "Hupd".
+  iMod ("Hupd" with "H [$]") as "Hupd".
   iMod "Hmask". iMod ("Hclose" with "[Hintlog2 Hoplog]").
   { iExists _; iFrame. }
   iModIntro.

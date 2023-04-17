@@ -162,6 +162,7 @@ Notation has_op_encoding := (Sm.has_op_encoding sm_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
 Notation compute_reply := (Sm.compute_reply sm_record).
 Notation is_readonly_op := (Sm.is_readonly_op sm_record).
+Notation apply_postcond := (Sm.apply_postcond sm_record).
 
 Context `{!simplelogG (sm_record:=sm_record) Σ}.
 
@@ -175,6 +176,7 @@ Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMa
     applyVolatileFn (slice_val op_sl)
   {{{
         reply_sl q, RET (slice_val reply_sl);
+        ⌜apply_postcond  ops op⌝ ∗
         own_InMemoryStateMachine (ops ++ [op]) ∗
         is_slice_small reply_sl byteT q (compute_reply ops op)
   }}}
@@ -291,13 +293,15 @@ Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops 
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
-        (P epoch ops false ={⊤∖↑pbAofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
+        (⌜apply_postcond ops op⌝ -∗ P epoch ops false
+         ={⊤∖↑pbAofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
         own_StateMachine s epoch ops false P
   }}}
     StateMachine__apply #s (slice_val op_sl)
   {{{
         reply_sl q (waitFn:goose_lang.val),
         RET (slice_val reply_sl, waitFn);
+        ⌜apply_postcond ops op⌝ ∗
         is_slice_small reply_sl byteT q (compute_reply ops op) ∗
         own_StateMachine s epoch (ops ++ [op]) false P ∗
         (∀ Ψ, (Q -∗ Ψ #()) -∗ WP waitFn #() {{ Ψ }})
@@ -320,7 +324,7 @@ Proof.
     iFrame "#".
     done.
   }
-  iIntros (??) "[Hmemstate Hreply_sl]".
+  iIntros (??) "(%Hpost & Hmemstate & Hreply_sl)".
   wp_pures.
 
   wp_loadField.
@@ -420,7 +424,7 @@ Proof.
     replace (ops0) with (ops) by naive_solver.
     replace (sealed) with (false) by naive_solver.
 
-    iMod ("Hupd" with "HP") as "[HP $]".
+    iMod ("Hupd" with "[//] HP") as "[HP $]".
     iModIntro.
     iExists (ops ++ [op]), _.
     iFrame "HP".
@@ -439,6 +443,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iFrame.
+  iSplitR; first done.
   iSplitR "HupdQ".
   {
     iExists fname, _, γ, _, _, _, _, _.

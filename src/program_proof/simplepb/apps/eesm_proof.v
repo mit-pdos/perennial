@@ -102,10 +102,19 @@ Definition ee_is_readonly_op op :=
   end
 .
 
+(* TODO: could strengthen this to export the lower-level postcond's *)
+Definition ee_apply_postcond ops op :=
+  match op with
+    | getcid => (int.Z (word.add (compute_state ops).(nextCID) 1) =
+                 (int.Z (compute_state ops).(nextCID)) + 1)%Z
+    | _ => True
+  end
+.
+
 Instance op_eqdec : EqDecision eeOp.
 Proof. solve_decision. Qed.
 
-Definition
+Program Definition
   ee_record:=
   {|
     Sm.OpType := eeOp ;
@@ -113,7 +122,12 @@ Definition
     Sm.has_snap_encoding := ee_has_snap_encoding ;
     Sm.compute_reply :=  compute_reply ;
     Sm.is_readonly_op := ee_is_readonly_op ;
+    Sm.apply_postcond := ee_apply_postcond ;
   |}.
+Obligation 1.
+intros. rewrite /ee_apply_postcond /=.
+destruct o; apply _.
+Qed.
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
 Context `{!pbG (pb_record:=ee_record) Σ}.
@@ -1741,12 +1755,6 @@ Proof.
   done.
 Qed.
 
-(* The state machine will overflow after 2^64 CIDs have been generated.
-This cannot happen in a real execution, so we ignore it for the proof. *)
-Local Axiom SumAssumeNoOverflow_admitted : ∀ (i : u64),
-  (int.Z (word.add i 1) = (int.Z i) + 1)%Z.
-
-(* FIXME: one big collection of these invs *)
 Lemma wp_MakeClerk confHost γ γoplog γerpc :
   {{{
     "#Hee_inv" ∷ is_ee_inv γ γoplog γerpc ∗
@@ -1808,7 +1816,7 @@ Proof.
   iApply fupd_mask_intro.
   { set_solver. }
   iIntros "Hmask".
-  iIntros "Hoplog".
+  iIntros "%Hpost Hoplog".
   iMod "Hmask".
   iMod ("Hclose" with "[HerpcServer Hoplog Hlog Hcids]").
   {
@@ -1822,12 +1830,14 @@ Proof.
       iModIntro.
       iIntros (???) "[%Hineq|$]".
       iLeft. iPureIntro.
-      rewrite SumAssumeNoOverflow_admitted.
+      rewrite /ee_record /= in Hpost.
+      rewrite /apply_op /=.
       word.
     }
     {
       iLeft. iPureIntro.
-      rewrite SumAssumeNoOverflow_admitted.
+      rewrite /ee_record /= in Hpost.
+      rewrite /apply_op /=.
       word.
     }
   }
