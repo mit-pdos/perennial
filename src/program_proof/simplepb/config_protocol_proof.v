@@ -124,7 +124,7 @@ Proof.
   iFrame "∗#".
 Qed.
 
-Lemma wp_Clerk_ReserveEpochAndConfig2 ck γ γconf Φ :
+Lemma wp_Clerk_ReserveEpochAndGetConfig2 ck γ γconf Φ :
   is_Clerk2 ck γ γconf -∗
   □((∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
   (is_slice_small config_sl uint64T 1 conf ∗

@@ -20,10 +20,10 @@ Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
 Context `{!pbG Σ}.
 
 Definition own_Clerk2 ck γ : iProp Σ :=
-  ∃ (confCk:loc) clerks_sl clerks γsrvs,
+  ∃ (confCk:loc) clerks_sl clerks γsrvs γconf,
     "#HconfCk" ∷ readonly (ck ↦[clerk.Clerk :: "confCk"] #confCk) ∗
     "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] (slice_val clerks_sl) ∗
-    "#HisConfCk" ∷ is_Clerk2 confCk γ ∗ (* config clerk *)
+    "#HisConfCk" ∷ is_Clerk2 confCk γ γconf ∗ (* config clerk *)
     "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
     "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv ∈ clerks ; γsrvs, pb_definitions.is_Clerk ck γ γsrv) ∗
     "%Hlen" ∷ ⌜length γsrvs > 0⌝
@@ -220,7 +220,7 @@ Proof.
   iNamed "HH".
   wp_pures.
   wp_apply (wp_MakeClerk2 with "[$]").
-  iIntros (?) "#HconfCk".
+  iIntros (??) "#HconfCk".
   wp_storeField.
   wp_pures.
 

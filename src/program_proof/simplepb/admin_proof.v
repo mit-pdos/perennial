@@ -48,12 +48,12 @@ Proof using waitgroupG0.
   }
 
   wp_apply (wp_MakeClerk2 with "Hconf_host").
-  iIntros (ck) "#Hck".
+  iIntros (ck γconf) "#Hck".
   wp_pures.
-  wp_bind (Clerk__GetEpochAndConfig _).
+  wp_bind (Clerk__ReserveEpochAndGetConfig _).
   iApply (wp_frame_wand with "[HΦ Hservers_sl]").
   { iNamedAccu. }
-  wp_apply (wp_Clerk__GetEpochAndConfig2 with "[$Hck]").
+  wp_apply (wp_Clerk_ReserveEpochAndGetConfig2 with "[$Hck]").
   iModIntro.
   iIntros (?????) "Hpost1".
   iNamed 1.
@@ -67,7 +67,7 @@ Proof using waitgroupG0.
   wp_apply (wp_slice_len).
   wp_pures.
 
-  iDestruct "Hpost1" as "(Hconf_sl & Hconf_unset & Hprop & Hinit & #His_conf & #Hskip & #His_hosts & #Hlb)".
+  iDestruct "Hpost1" as "(Hconf_sl & #Hres & Hconf_unset & Hprop & Hinit & #His_conf & #Hskip & #His_hosts & #Hlb)".
 
   iAssert (⌜length conf ≠ 0⌝)%I as %Hold_conf_ne.
   {
@@ -137,7 +137,7 @@ Proof using waitgroupG0.
   }
   (* err = 0; keep going with reconfig *)
   (* Got the old state now *)
-  iDestruct "Hpost" as (???) "(%Hepoch_lb_ineq & %Hepoch_ub_ineq & #Hacc_ro & #Hprop_facts & #Hprim_facts & #Hprop_lb & Hreply & %Henc & %Hlen_no_overflow)".
+  iDestruct "Hpost" as (????) "(%Hepoch_lb_ineq & %Hepoch_ub_ineq & #Hacc_ro & #Hprop_facts & #Hprim_facts & #Hprop_lb & #HcommitFacts & Hreply & %Henc & %Hlen_no_overflow)".
   destruct (decide (int.nat epochacc = int.nat epoch)) as [Heq|Hepochacc_ne_epoch].
   {
     replace (epochacc) with (epoch) by word.
@@ -384,6 +384,7 @@ Proof using waitgroupG0.
   (* iMod (readonly_alloc_1 with "Hreply_epoch") as "#Hreply_epoch". *)
   iMod (readonly_alloc_1 with "Hreply_state") as "#Hreply_state".
   iMod (readonly_alloc_1 with "Hreply_next_index") as "#Hreply_next_index".
+  iMod (readonly_alloc_1 with "Hreply_committed_next_index") as "#Hreply_committed_next_index".
   iDestruct "Hreply_state_sl" as "#Hreply_state_sl".
 
   (* weaken to loop invariant *)
@@ -468,6 +469,7 @@ Proof using waitgroupG0.
       wp_pures.
       wp_loadField.
       wp_loadField.
+      wp_loadField.
       wp_apply (wp_allocStruct).
       { repeat econstructor. done. }
       iIntros (args_ptr) "Hargs".
@@ -479,7 +481,7 @@ Proof using waitgroupG0.
       iDestruct (big_sepL2_lookup_acc with "Hclerks_is") as "[HH _]".
       { done. }
       { done. }
-      wp_apply (wp_Clerk__SetState with "[Epoch NextIndex State]").
+      wp_apply (wp_Clerk__SetState with "[Epoch NextIndex CommittedNextIndex State]").
       {
         iFrame "∗#".
         iSplitR.
@@ -508,6 +510,8 @@ Proof using waitgroupG0.
             done.
           }
         }
+        iSplitR.
+        { iPureIntro. word. }
         iExists _.
         iFrame "∗#".
       }
@@ -714,7 +718,7 @@ Proof using waitgroupG0.
   destruct (decide (_)); last first.
   { exfalso. done. }
 
-  wp_bind (Clerk__WriteConfig _ _ _).
+  wp_bind (Clerk__TryWriteConfig _ _ _).
   iApply (wp_frame_wand with "[HΦ Hconf_sl Hclerks_sl Hprim]").
   { iNamedAccu. }
   iDestruct (big_sepL2_length with "Hhost") as %Hserver_len_eq.
@@ -732,7 +736,7 @@ Proof using waitgroupG0.
     }
   }
 
-  wp_apply (wp_Clerk__WriteConfig2 with "Hck Hservers_sl [$Hconf_prop] Hhost").
+  wp_apply (wp_Clerk__WriteConfig2 with "Hck Hservers_sl [$Hconf_prop] Hres Hhost").
   {
     iPureIntro.
     rewrite fmap_length.
