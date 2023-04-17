@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.simplepb Require Export pb_protocol.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.simplepb Require Import pb_definitions.
+From Perennial.program_proof.simplepb Require Import pb_definitions pb_increasecommit_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From iris.algebra Require Import mono_list.
 From RecordUpdate Require Import RecordSet.
@@ -22,7 +22,7 @@ Notation pbG := (pbG (pb_record:=pb_record)).
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
 
-Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) opsfull snap :
+Lemma wp_Clerk__SetState γ γsrv ck args_ptr (prevEpoch epoch committedNextIndex:u64) opsfull snap :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
         "#Hprop_lb" ∷ is_proposal_lb γ.(s_pb) epoch opsfull ∗
@@ -31,7 +31,9 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (epoch:u64) opsfull snap :
         "%Henc" ∷ ⌜has_snap_encoding snap (get_rwops opsfull)⌝ ∗
         "%Hno_overflow" ∷ ⌜length (get_rwops opsfull) = int.nat (length (get_rwops opsfull))⌝ ∗
         "#Hin_conf" ∷ is_in_config γ γsrv epoch ∗
-        "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length (get_rwops opsfull)) snap)
+        "%Hle" ∷ ⌜int.nat prevEpoch < int.nat epoch⌝ ∗
+        "#HcommitFacts" ∷ commitIndex_facts γ prevEpoch committedNextIndex ∗
+        "Hargs" ∷ SetStateArgs.own args_ptr (SetStateArgs.mkC epoch (length (get_rwops opsfull)) committedNextIndex snap)
   }}}
     Clerk__SetState #ck #args_ptr
   {{{
@@ -67,10 +69,13 @@ Proof.
     unfold SetState_spec.
     iExists _, _.
     iSplitR; first done.
+    iExists _.
+    iSplitR; first done.
+    iFrame "HcommitFacts".
     iSplitR; first done.
     simpl.
     iSplitR.
-    { iPureIntro. done. }
+    { iPureIntro. word. }
     iFrame "Hprop_lb Hprop_facts Hprop_facts_prim #".
     iSplit.
     { (* No error from RPC, state was accepted *)
@@ -262,7 +267,7 @@ Proof.
   { (* stale epoch *)
     wp_loadField.
     unfold SetState_core_spec.
-    iDestruct "HΨ" as "(_ & _ & _ & _ & HΨ)".
+    iDestruct "HΨ" as (?) "(_ & _ & _ & _ & _ & _ & HΨ)".
     iRight in "HΨ".
     wp_apply (release_spec with "[-HΨ HΦ]").
     {
@@ -286,7 +291,7 @@ Proof.
     { (* state has been set previously. Use is_prop_lb to get agreement. *)
       wp_loadField.
       iDestruct (get_epoch_eph with "HghostEph") as "#Heph_lb".
-      iDestruct "HΨ" as "(_ & _ & _ & _ & _ & _ & HΨ)".
+      iDestruct "HΨ" as (?) "(_ & _ & _ & _ & _ & _ & _ & _ & HΨ)".
       iLeft in "HΨ".
       wp_apply (release_spec with "[-HΨ HΦ]").
       {
@@ -319,7 +324,7 @@ Proof.
     wp_loadField.
     wp_loadField.
 
-    iDestruct "HΨ" as "(%Henc_snap &  %Hlen_nooverflow & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hin_conf & HΨ)".
+    iDestruct "HΨ" as (prevEpoch) "(%Henc_snap &  %Hlen_nooverflow & %Hle & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hin_conf & #HcommitFacts & HΨ)".
     replace (args.(SetStateArgs.nextIndex)) with (U64 (length (get_rwops opsfull))) by word.
 
     assert (int.nat st.(server.epoch) < int.nat args.(SetStateArgs.epoch)) as HepochIneq.
@@ -346,11 +351,11 @@ Proof.
     iIntros "(Hstate & #Hepoch_lb & #Hacc_lb & Htok)".
     iMod (setstate_eph_step with "Hprop_lb Hprop_facts Hprim_facts Hin_conf Htok HghostEph") as "HghostEph".
     { done. }
+    iDestruct ("HghostEph" with "Hepoch_lb Hacc_lb") as "HghostEph".
 
     wp_pures.
     wp_loadField.
 
-    iDestruct ("HghostEph" with "Hepoch_lb Hacc_lb") as "HghostEph".
     (* signal all opApplied condvars *)
     wp_apply (wp_MapIter with "HopAppliedConds_map HopAppliedConds_conds").
     { iFrame "HopAppliedConds_conds". }
@@ -373,7 +378,7 @@ Proof.
     wp_storeField.
 
     wp_loadField.
-    wp_apply (release_spec with "[-HΨ HΦ]").
+    wp_apply (release_spec with "[-HΨ HΦ Hargs_committed_next_index]").
     {
       iFrame "HmuInv Hlocked".
       iNext.
@@ -389,6 +394,21 @@ Proof.
       unfold no_overflow.
       word. (* FIXME: how to avoid needing to unfold? *)
     }
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_Server__IncreaseCommit with "[] [-] []").
+    { repeat iExists _; iFrame "#". }
+    2:{
+      instantiate (1:=True%I).
+      iNamed "HcommitFacts".
+      repeat iExists _; iFrame "Hcommit_fact #".
+      iDestruct (mono_nat_lb_own_le with "Hepoch_lb") as "$".
+      { word. }
+      iPureIntro. rewrite fmap_length in HcommitLen.
+      word.
+    }
+    iIntros "_".
+
     wp_pures.
     iLeft in "HΨ".
     iApply "HΦ".

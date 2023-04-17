@@ -137,15 +137,34 @@ Definition is_in_config γ γsrv epoch : iProp Σ :=
   ∃ confγ, is_epoch_config_proposal γ.(s_pb) epoch confγ ∗ ⌜γsrv.(r_pb) ∈ confγ⌝
 .
 
+Definition committed_log_fact γ (epoch:u64) ops_commit_full : iProp Σ :=
+  (∀ σ' epoch', ⌜int.nat epoch <= int.nat epoch'⌝ -∗
+                ⌜length ops_commit_full <= length σ' ∨ int.nat epoch < int.nat epoch'⌝ -∗
+                is_proposal_lb γ.(s_pb) epoch' σ' -∗
+                is_proposal_facts γ.(s_pb) epoch' σ' -∗
+                ⌜prefix ops_commit_full σ'⌝)
+.
+
+(* used in setstate and getstate RPCs *)
+Definition commitIndex_facts γ (epoch committedNextIndex:u64) : iProp Σ :=
+  ∃ ops_commit_full,
+  "#Hcommit_lb" ∷ is_pb_log_lb γ.(s_pb) ops_commit_full ∗
+  "#Hcommit_fact" ∷ □ committed_log_fact γ epoch ops_commit_full ∗
+  "#Hcommit_prop_lb" ∷ is_proposal_lb γ.(s_pb) epoch ops_commit_full ∗
+  "%HcommitLen" ∷ ⌜length (get_rwops ops_commit_full) = int.nat committedNextIndex⌝
+.
+
 Definition SetState_core_spec γ γsrv args opsfull :=
   λ (Φ : u64 -> iPropO Σ) ,
-  (
+  ( ∃ prevEpoch,
     ⌜has_snap_encoding args.(SetStateArgs.state) (get_rwops opsfull)⌝ ∗
     ⌜length (get_rwops opsfull) = int.nat args.(SetStateArgs.nextIndex)⌝ ∗
+    ⌜int.nat prevEpoch <= int.nat args.(SetStateArgs.epoch) ⌝ ∗
     is_proposal_lb γ.(s_pb) args.(SetStateArgs.epoch) opsfull ∗
     is_proposal_facts γ.(s_pb) args.(SetStateArgs.epoch) opsfull ∗
     is_proposal_facts_prim γ.(s_prim) args.(SetStateArgs.epoch) opsfull ∗
     is_in_config γ γsrv args.(SetStateArgs.epoch) ∗
+    commitIndex_facts γ prevEpoch args.(SetStateArgs.committedNextIndex) ∗
     (
       (is_epoch_lb γsrv.(r_pb) args.(SetStateArgs.epoch) -∗
        Φ 0) ∧
@@ -170,17 +189,18 @@ Definition GetState_core_spec γ γsrv (epoch:u64) ghost_epoch_lb :=
   (
     (is_epoch_lb γsrv.(r_pb) ghost_epoch_lb ∗
       (
-      (∀ epochacc opsfull snap,
+      (∀ epochacc opsfull snap committedNextIndex,
             ⌜int.nat ghost_epoch_lb ≤ int.nat epochacc⌝ -∗
             ⌜int.nat epochacc ≤ int.nat epoch⌝ -∗
             is_accepted_ro γsrv.(r_pb) epochacc opsfull -∗
             is_proposal_facts γ.(s_pb) epochacc opsfull -∗
             is_proposal_facts_prim γ.(s_prim) epochacc opsfull -∗
             is_proposal_lb γ.(s_pb) epochacc opsfull -∗
+            commitIndex_facts γ epochacc committedNextIndex -∗
             ⌜has_snap_encoding snap (get_rwops opsfull)⌝ -∗
             ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝ -∗
-                 Φ (GetStateReply.mkC 0 (length (get_rwops opsfull)) snap)) ∧
-      (∀ err, ⌜err ≠ U64 0⌝ → Φ (GetStateReply.mkC err 0 [])))
+                 Φ (GetStateReply.mkC 0 (length (get_rwops opsfull)) committedNextIndex snap)) ∧
+      (∀ err, ⌜err ≠ U64 0⌝ → Φ (GetStateReply.mkC err 0 0 [])))
     )
     )%I
 .
@@ -272,15 +292,6 @@ Next Obligation.
   unfold ApplyRo_core_spec.
   solve_proper.
 Defined.
-
-Definition committed_log_fact γ (epoch:u64) ops_commit_full : iProp Σ :=
-  (∀ σ' epoch', ⌜int.nat epoch <= int.nat epoch'⌝ -∗
-                ⌜length ops_commit_full <= length σ' ∨ int.nat epoch < int.nat epoch'⌝ -∗
-                is_proposal_lb γ.(s_pb) epoch' σ' -∗
-                is_proposal_facts γ.(s_pb) epoch' σ' -∗
-                ⌜prefix ops_commit_full σ'⌝)
-.
-
 
 Definition IncreaseCommit_core_spec γ γsrv (newCommitIndex:u64)  :=
   λ (Φ : iPropO Σ) ,

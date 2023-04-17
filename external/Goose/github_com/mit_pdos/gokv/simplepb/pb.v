@@ -560,13 +560,13 @@ Definition Server__SetState: val :=
         struct.storeF Server "leaseValid" "s" #false;;
         struct.storeF Server "sealed" "s" #false;;
         struct.storeF Server "nextIndex" "s" (struct.loadF SetStateArgs "NextIndex" "args");;
-        struct.storeF Server "committedNextIndex" "s" (struct.loadF SetStateArgs "CommittedNextIndex" "args");;
         struct.loadF StateMachine "SetStateAndUnseal" (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args") (struct.loadF SetStateArgs "NextIndex" "args") (struct.loadF SetStateArgs "Epoch" "args");;
         MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
           lock.condSignal "cond");;
         lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s");;
         struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
         lock.release (struct.loadF Server "mu" "s");;
+        Server__IncreaseCommitIndex "s" (struct.loadF SetStateArgs "CommittedNextIndex" "args");;
         e.None)).
 
 (* XXX: probably should rename to GetStateAndSeal *)

@@ -97,7 +97,7 @@ Proof.
 Qed.
 
 Lemma increase_commitIndex_step γ γsrv st epoch committedOps :
-  int.nat (length committedOps) > int.nat st.(server.committedNextIndex) →
+  int.nat (length committedOps) >= int.nat st.(server.committedNextIndex) →
   int.nat (length committedOps) <= length st.(server.ops_full_eph) →
   int.nat epoch <= int.nat st.(server.epoch) →
   no_overflow (length committedOps) →
