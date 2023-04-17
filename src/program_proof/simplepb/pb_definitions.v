@@ -353,16 +353,18 @@ Qed.
 
 (* Begin config client-side protocol. *)
 Definition is_conf_inv γ γconf : iProp Σ :=
-  inv configN (∃ epoch conf confγs epoch_lb,
-      "Hepoch" ∷ own_latest_epoch γconf epoch ∗
-      "Hconf" ∷ own_config γconf conf ∗
-      "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch_lb (r_pb <$> confγs) ∗
-      "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
-      "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch_lb) ∗
-      "Hunused" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat epoch < int.nat epoch'⌝ → config_proposal_unset γ.(s_pb) epoch' ∗ config_unset γ.(s_pb) epoch' ∗ own_proposal_unused γ.(s_pb) epoch' ∗ own_init_proposal_unused γ.(s_prim) epoch') ∗
-      "Hunset_or_set" ∷ (config_unset γ.(s_pb) epoch ∨ ⌜int.nat epoch_lb = int.nat epoch⌝) ∗
-      "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch_lb < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat epoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip)
-      )
+  inv configN (∃ reservedEpoch epoch conf confγs,
+  "Hepoch" ∷ own_latest_epoch γconf epoch ∗
+  "Hres" ∷ own_reserved_epoch γconf reservedEpoch ∗
+  "Hconf" ∷ own_config γconf conf ∗
+  "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch (r_pb <$> confγs) ∗
+  "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
+  "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch) ∗
+  "Hunreserved" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat reservedEpoch < int.nat epoch'⌝ →
+        config_proposal_unset γ.(s_pb) epoch' ∗ config_unset γ.(s_pb) epoch' ∗ own_proposal_unused γ.(s_pb) epoch' ∗ own_init_proposal_unused γ.(s_prim) epoch') ∗
+  "Hunset_or_set" ∷ (config_unset γ.(s_pb) reservedEpoch ∨ ⌜int.nat epoch = int.nat reservedEpoch⌝) ∗
+  "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat reservedEpoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip)
+  )
 .
 (* End config client-side protocol. *)
 

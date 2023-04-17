@@ -43,6 +43,7 @@ Definition DecodeApplyAsBackupArgs: val :=
 Definition SetStateArgs := struct.decl [
   "Epoch" :: uint64T;
   "NextIndex" :: uint64T;
+  "CommittedNextIndex" :: uint64T;
   "State" :: slice.T byteT
 ].
 
@@ -51,6 +52,7 @@ Definition EncodeSetStateArgs: val :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF SetStateArgs "State" "args"))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "Epoch" "args");;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "NextIndex" "args");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "CommittedNextIndex" "args");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF SetStateArgs "State" "args");;
     ![slice.T byteT] "enc".
 
@@ -63,6 +65,9 @@ Definition DecodeSetStateArgs: val :=
     "enc" <-[slice.T byteT] "1_ret";;
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     struct.storeF SetStateArgs "NextIndex" "args" "0_ret";;
+    "enc" <-[slice.T byteT] "1_ret";;
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+    struct.storeF SetStateArgs "CommittedNextIndex" "args" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     struct.storeF SetStateArgs "State" "args" (![slice.T byteT] "enc");;
     "args".
@@ -88,6 +93,7 @@ Definition DecodeGetStateArgs: val :=
 Definition GetStateReply := struct.decl [
   "Err" :: uint64T;
   "NextIndex" :: uint64T;
+  "CommittedNextIndex" :: uint64T;
   "State" :: slice.T byteT
 ].
 
@@ -96,6 +102,7 @@ Definition EncodeGetStateReply: val :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF GetStateReply "State" "reply"))) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "Err" "reply");;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "NextIndex" "reply");;
+    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "CommittedNextIndex" "reply");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF GetStateReply "State" "reply");;
     ![slice.T byteT] "enc".
 
@@ -108,6 +115,9 @@ Definition DecodeGetStateReply: val :=
     "enc" <-[slice.T byteT] "1_ret";;
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     struct.storeF GetStateReply "NextIndex" "reply" "0_ret";;
+    "enc" <-[slice.T byteT] "1_ret";;
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
+    struct.storeF GetStateReply "CommittedNextIndex" "reply" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     struct.storeF GetStateReply "State" "reply" (![slice.T byteT] "enc");;
     "reply".
@@ -230,7 +240,7 @@ Definition Clerk__ApplyAsBackup: val :=
 Definition Clerk__SetState: val :=
   rec: "Clerk__SetState" "ck" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "cl" "ck") RPC_SETSTATE (EncodeSetStateArgs "args") "reply" #1000 in
+    let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "cl" "ck") RPC_SETSTATE (EncodeSetStateArgs "args") "reply" #10000 in
     (if: "err" ≠ #0
     then e.Timeout
     else e.DecodeError (![slice.T byteT] "reply")).
@@ -267,7 +277,7 @@ Definition Clerk__Apply: val :=
 Definition Clerk__ApplyRo: val :=
   rec: "Clerk__ApplyRo" "ck" "op" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "cl" "ck") RPC_ROPRIMARYAPPLY "op" "reply" #5000 in
+    let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "cl" "ck") RPC_ROPRIMARYAPPLY "op" "reply" #1000 in
     (if: ("err" = #0)
     then
       let: "r" := DecodeApplyReply (![slice.T byteT] "reply") in
@@ -309,6 +319,7 @@ Definition Server__ApplyRoWaitForCommit: val :=
     (if: ~ (struct.loadF Server "leaseValid" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
+      (* log.Printf("Lease invalid") *)
       struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
       "reply"
     else
@@ -417,7 +428,12 @@ Definition Server__Apply: val :=
         struct.storeF ApplyReply "Err" "reply" (![uint64T] "err");;
         (if: (![uint64T] "err" = e.None)
         then Server__IncreaseCommitIndex "s" "nextIndex"
-        else #());;
+        else
+          lock.acquire (struct.loadF Server "mu" "s");;
+          (if: (struct.loadF Server "epoch" "s" = "epoch")
+          then struct.storeF Server "isPrimary" "s" #false
+          else #());;
+          lock.release (struct.loadF Server "mu" "s"));;
         "reply")).
 
 Definition Server__leaseRenewalThread: val :=
@@ -442,7 +458,7 @@ Definition Server__leaseRenewalThread: val :=
           Continue
         else
           lock.release (struct.loadF Server "mu" "s");;
-          time.Sleep (#100 * #1000000);;
+          time.Sleep (#50 * #1000000);;
           Continue)));;
     #().
 
@@ -537,12 +553,14 @@ Definition Server__SetState: val :=
         lock.release (struct.loadF Server "mu" "s");;
         e.None
       else
+        (* log.Print("Entered new epoch") *)
         struct.storeF Server "isPrimary" "s" #false;;
         struct.storeF Server "canBecomePrimary" "s" #true;;
         struct.storeF Server "epoch" "s" (struct.loadF SetStateArgs "Epoch" "args");;
         struct.storeF Server "leaseValid" "s" #false;;
         struct.storeF Server "sealed" "s" #false;;
         struct.storeF Server "nextIndex" "s" (struct.loadF SetStateArgs "NextIndex" "args");;
+        struct.storeF Server "committedNextIndex" "s" (struct.loadF SetStateArgs "CommittedNextIndex" "args");;
         struct.loadF StateMachine "SetStateAndUnseal" (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args") (struct.loadF SetStateArgs "NextIndex" "args") (struct.loadF SetStateArgs "Epoch" "args");;
         MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
           lock.condSignal "cond");;
@@ -566,6 +584,7 @@ Definition Server__GetState: val :=
       struct.storeF Server "sealed" "s" #true;;
       let: "ret" := struct.loadF StateMachine "GetStateAndSeal" (struct.loadF Server "sm" "s") #() in
       let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
+      let: "committedNextIndex" := struct.loadF Server "committedNextIndex" "s" in
       MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
         lock.condSignal "cond");;
       struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
@@ -574,7 +593,8 @@ Definition Server__GetState: val :=
       struct.new GetStateReply [
         "Err" ::= e.None;
         "State" ::= "ret";
-        "NextIndex" ::= "nextIndex"
+        "NextIndex" ::= "nextIndex";
+        "CommittedNextIndex" ::= "committedNextIndex"
       ]).
 
 Definition Server__BecomePrimary: val :=
