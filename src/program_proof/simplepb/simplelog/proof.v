@@ -1523,7 +1523,7 @@ Proof.
     }
     wp_apply ("HapplyVolatile_spec" with "[$Hmemstate $Hop_sl]").
     { done. }
-    iIntros (? ?) "[Hmemstate _]".
+    iIntros (? ?) "(_ & Hmemstate & _)".
     wp_pures.
     wp_loadField.
     wp_apply (std_proof.wp_SumAssumeNoOverflow).
@@ -1843,8 +1843,8 @@ Proof.
       {
         iFrame "%".
         instantiate (1:=Q).
-        iIntros "H1".
-        iMod ("Hupd" with "H1").
+        iIntros "H1 H2".
+        iMod ("Hupd" with "H1 H2").
         iModIntro. iFrame.
       }
       iFrame.

@@ -500,7 +500,7 @@ Proof.
   wp_apply ("HapplySpec" with "[$Hstate $Hargs_op_sl]").
   {
     iSplitL; first done.
-    iIntros "Hghost".
+    iIntros "_ Hghost".
     iMod (applybackup_step with "Hprop_lb Hprop_facts Hprim_facts Hghost") as "Hghost".
     { done. }
     {
@@ -517,7 +517,7 @@ Proof.
     iAccu.
   }
 
-  iIntros (reply q waitFn) "(Hreply & Hstate & HwaitSpec)".
+  iIntros (reply q waitFn) "(_ & Hreply & Hstate & HwaitSpec)".
 
   wp_pures.
   wp_loadField.
