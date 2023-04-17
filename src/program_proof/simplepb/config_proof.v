@@ -1514,6 +1514,7 @@ Definition config_spec_list γ :=
 Lemma config_ghost_init conf :
   ⊢ |==> ∃ γ,
     makeConfigServer_pre γ conf ∗
+    own_reserved_epoch γ 0 ∗
     own_latest_epoch γ 0 ∗ own_config γ conf.
 Proof.
   iMod (mono_nat_own_alloc 0) as (γepoch) "[[Hepoch Hepoch2] _]".

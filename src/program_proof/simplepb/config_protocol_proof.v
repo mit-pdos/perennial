@@ -30,11 +30,11 @@ Lemma alloc_pb_config_ghost γ conf confγs :
   ={⊤}=∗ ∃ γconf, is_conf_inv γ γconf ∗ makeConfigServer_pre γconf conf.
 Proof.
   iIntros "#Hhosts Hinitconf HprimInit".
-  iMod (config_ghost_init conf) as (γconf) "(Hconfpre & Hepoch & Hconf)".
+  iMod (config_ghost_init conf) as (γconf) "(Hconfpre & Hepoch & Hres & Hconf)".
   iExists _; iFrame "Hconfpre".
   iMod (inv_alloc with "[-]") as "$"; last done.
   iNext.
-  iExists (U64 0), conf, confγs, (U64 0).
+  iExists (U64 0), (U64 0), conf, confγs.
   iFrame.
   iNamed "Hinitconf".
   iFrame "His_conf ∗#%".
