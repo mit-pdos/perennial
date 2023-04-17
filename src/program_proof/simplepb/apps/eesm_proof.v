@@ -329,7 +329,7 @@ Proof.
       iDestruct "Hupd" as (?) "[Hoplog2 Hupd]".
       iExists _.
       iFrame.
-      iIntros "Hpblog".
+      iIntros "_ Hpblog".
       iDestruct (own_valid_2 with "Hlog Hoplog2") as %Hvalid.
       rewrite mono_list_auth_dfrac_op_valid_L in Hvalid.
       destruct Hvalid as [_ ?]. subst.
@@ -403,7 +403,7 @@ Proof.
         iApply fupd_mask_intro.
         { set_solver. }
         iIntros "Hmask".
-        iIntros "Hpblog".
+        iIntros "_ Hpblog".
         iMod "Hmask".
 
         iMod ("Hclose" with "[HerpcServer Hpblog Hlog Hcids]").
@@ -464,7 +464,7 @@ Proof.
         { set_solver. }
         iIntros "Hmask".
         iExists _; iFrame.
-        iIntros "Hpblog".
+        iIntros "_ Hpblog".
         iMod "Hmask".
         iMod ("Hclose" with "[HerpcServer Hpblog Hlog Hcids]").
         {
@@ -873,6 +873,8 @@ Proof.
     iIntros (?) "Hrep_sl".
     wp_store.
     wp_loadField.
+    wp_apply std_proof.wp_SumAssumeNoOverflow.
+    iIntros (HnoOverflow2).
     wp_storeField.
     wp_load.
     iApply "HΦ".
@@ -891,6 +893,8 @@ Proof.
       done.
     }
     iModIntro.
+    iSplitR.
+    { iPureIntro. simpl in *. word. }
     iSplitR "Hrep_sl"; last first.
     {
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
@@ -979,6 +983,8 @@ Proof.
         rewrite Hlookup.
         word.
       }
+      simpl.
+      iSplitR; first done.
       iSplitR "Hrep_sl2"; last first.
       {
         iClear "Hsl".
@@ -1107,6 +1113,8 @@ Proof.
         rewrite Hlookup.
         word.
       }
+      simpl.
+      iSplitR; first done.
       iSplitR "Hreply_sl2"; last first.
       {
         iClear "Hsl".
@@ -1190,6 +1198,7 @@ Proof.
     iApply "HΦ".
     replace (compute_state ops) with st by done.
     rewrite X.
+    iSplitR; first by iPureIntro.
     iSplitR "Hrep_sl".
     {
       repeat iExists _.

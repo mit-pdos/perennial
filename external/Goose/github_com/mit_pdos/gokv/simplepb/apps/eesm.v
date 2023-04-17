@@ -39,7 +39,7 @@ Definition EEStateMachine__applyVolatile: val :=
     then
       "ret" <-[slice.T byteT] NewSliceWithCap byteT #0 #8;;
       "ret" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "ret") (struct.loadF EEStateMachine "nextCID" "s");;
-      struct.storeF EEStateMachine "nextCID" "s" (struct.loadF EEStateMachine "nextCID" "s" + #1)
+      struct.storeF EEStateMachine "nextCID" "s" (std.SumAssumeNoOverflow (struct.loadF EEStateMachine "nextCID" "s") #1)
     else
       (if: (SliceGet byteT "op" #0 = OPTYPE_RW)
       then
