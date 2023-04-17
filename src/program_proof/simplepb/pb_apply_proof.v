@@ -375,6 +375,19 @@ Qed.
 Local Instance a x y : Decision (apply_postcond x y).
 Proof. apply pb_record.(Sm.apply_postcond_dec). Qed.
 
+Lemma become_backup st γ γsrv :
+own_Server_ghost_eph_f st γ γsrv -∗
+own_Server_ghost_eph_f (st <| server.isPrimary := false |>) γ γsrv
+.
+Proof.
+  rewrite /own_Server_ghost_eph_f /tc_opaque.
+  iNamed 1.
+  repeat iExists _; iFrame "∗#%".
+  rewrite /own_Primary_ghost_f /tc_opaque /=.
+  iNamed "Hprimary".
+  iFrame "∗#".
+Qed.
+
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
@@ -892,6 +905,42 @@ Proof.
   {
     wp_pures.
     rewrite bool_decide_false; last naive_solver.
+    wp_pures.
+
+    wp_loadField.
+    wp_apply (acquire_spec with "[$]").
+    iIntros "[Hlocked Hown]".
+    iNamed "Hown".
+    iClear "HopAppliedConds_conds HcommittedNextIndex_is_cond HisSm HisPrimary_is_cond".
+    iNamed "Hvol".
+    wp_loadField.
+    wp_if_destruct.
+    {
+      wp_storeField.
+      wp_loadField.
+      iDestruct (become_backup with "HghostEph") as "HghostEph".
+      wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
+      { iFrame "#∗".
+        repeat iExists _; iSplitR "HghostEph"; last iFrame.
+        repeat iExists _; iFrame "∗#".
+        iFrame "%". by iLeft.
+      }
+      wp_pures.
+      iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
+      iFrame.
+      simpl.
+      rewrite decide_False; last naive_solver.
+      iModIntro.
+      iSplitL; last done.
+      iExists _, _; iFrame.
+    }
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
+    { iFrame "#∗".
+      repeat iExists _; iSplitR "HghostEph"; last iFrame.
+      repeat iExists _; iFrame "∗#".
+      iFrame "%".
+    }
     wp_pures.
     iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
     iFrame.
