@@ -39,6 +39,7 @@ Proof.
   iNamed "Hinitconf".
   iFrame "His_conf ∗#%".
   unfold primary_init_for_config.
+  iSplitR; first done.
   iSplitL.
   { iApply (big_sepS_impl with "[Hunused HprimInit]").
     { iApply (big_sepS_sep with "[$Hunused $HprimInit]"). }
@@ -179,6 +180,8 @@ Proof.
     {
       iNext. iExists _, _, _, _.
       iFrame "Hepoch Hres Hconf His_conf ∗#".
+      iSplitR.
+      { iPureIntro. word. }
       iSplitL "Hunused".
       {
         iApply "Hunused".
@@ -237,6 +240,8 @@ Proof.
     {
       iNext. iExists _, _, _, _.
       iFrame "∗ His_conf #".
+      iSplitR.
+      { iPureIntro. word. }
       iSplitL "Hunused".
       {
         iApply "Hunused".
@@ -319,7 +324,7 @@ Proof.
     iMod ("Hclose" with "[Hepoch Hres Hconf Hunreserved Hunset_or_set]").
     {
       iNext.  iExists _, _, _, _.
-      iFrame "∗ His_conf #".
+      iFrame "∗ His_conf #%".
     }
     iModIntro.
     iIntros (??) "Hsl".
@@ -351,6 +356,7 @@ Proof.
       {
         iNext.  iExists _, _, _, _.
         iFrame "Hhosts ∗#".
+        iSplitR; first done.
         by iRight.
       }
       iApply "HΦ".
@@ -373,6 +379,7 @@ Proof.
         iNext. iExists _, _, _, _.
         iFrame "∗ Hset #".
         iDestruct "Hconf_prop" as "[_ %Hineq]".
+        iSplitR; first done.
         iSplitL.
         { by iRight. }
         iIntros (???).

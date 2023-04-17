@@ -242,17 +242,40 @@ Proof.
     iDestruct (mono_nat_auth_own_agree with "Hepoch HleasedEpoch") as %HepochEq.
     subst.
     iDestruct "Haccs" as (?) "[#HsomeConf _]".
-    iDestruct (big_sepS_elem_of_acc _ _ epoch with "Hunused") as "[HH _]".
-    { set_solver. }
-    iSpecialize ("HH" with "[%]").
-    { word. }
-    iDestruct "HH" as "(_ & Hunset & _)".
+    iDestruct (mono_nat_auth_own_agree with "Hepoch HleasedEpoch") as %[_ Heq].
+    assert (epoch0 = st.(server.epoch)) by word; subst.
     unfold is_epoch_config.
     iDestruct "HsomeConf" as "[HsomeConf _]".
-    iDestruct (own_valid_2 with "Hunset HsomeConf") as %Hbad.
-    exfalso.
-    rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hbad.
-    by destruct Hbad as [Hbad _].
+    destruct (decide (int.nat reservedEpoch < int.nat epoch)).
+    {
+      iDestruct (big_sepS_elem_of_acc _ _ epoch with "Hunreserved") as "[HH _]".
+      { set_solver. }
+      iSpecialize ("HH" with "[%]").
+      { word. }
+      iDestruct "HH" as "(_ & Hunset & _)".
+      iDestruct (own_valid_2 with "Hunset HsomeConf") as %Hbad.
+      exfalso.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hbad.
+      by destruct Hbad as [Hbad _].
+    }
+    assert (int.nat reservedEpoch = int.nat epoch ∨ int.nat epoch < int.nat reservedEpoch) as [|] by word.
+    { replace (reservedEpoch) with epoch by word.
+      iDestruct "Hunset_or_set" as "[Hbad|%Hbad]"; last exfalso.
+      2:{ word. }
+      iDestruct (own_valid_2 with "Hbad HsomeConf") as %Hbad.
+      exfalso.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hbad.
+      by destruct Hbad as [Hbad _].
+    }
+    {
+      iSpecialize ("His_skip" $! epoch with "[%] [%]").
+      { word. }
+      { word. }
+      iDestruct (own_valid_2 with "His_skip HsomeConf") as %Hbad.
+      exfalso.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hbad.
+      by destruct Hbad as [_ Hbad].
+    }
   }
 
   (* Given that last committed epoch <= server.epoch, prove that this server has

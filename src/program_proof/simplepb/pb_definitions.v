@@ -368,6 +368,7 @@ Definition is_conf_inv γ γconf : iProp Σ :=
   "Hepoch" ∷ own_latest_epoch γconf epoch ∗
   "Hres" ∷ own_reserved_epoch γconf reservedEpoch ∗
   "Hconf" ∷ own_config γconf conf ∗
+  "%HepochLe" ∷ ⌜int.nat epoch <= int.nat reservedEpoch⌝ ∗
   "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch (r_pb <$> confγs) ∗
   "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
   "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch) ∗
