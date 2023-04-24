@@ -311,8 +311,8 @@ Proof.
   f_equiv. f_contractive.
   do 12 f_equiv.
   rewrite IH; [done|try lia| |].
-  - intros v. eapply dist_S, HΦ; eauto.
-  - eapply dist_le; eauto.
+  - intros v. eapply dist_le; eauto. lia.
+  - eapply dist_le; eauto. lia.
 Qed.
 
 Global Instance wpc_ne s E1 e n :

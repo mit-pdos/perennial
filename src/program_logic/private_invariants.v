@@ -52,8 +52,14 @@ Global Instance pri_inv_contractive E : Contractive (pri_inv E).
 Proof.
   rewrite pri_inv_eq /pri_inv_def => n ?? Hequiv.
   do 4 (f_contractive || f_equiv).
-  simpl. destruct n => //=.
+  destruct n => //=.
+  (* TODO: why are these [change]s necessary? *)
+  { change (vec (iProp Σ) 1) with (ofe_car (vector.vecO (iPropO Σ) 1)).
+    apply dist_later_0. }
   rewrite //= in Hequiv.
+  move: Hequiv.
+  change (vec (iProp Σ) 1) with (ofe_car (vector.vecO (iPropO Σ) 1)).
+  rewrite -!dist_later_S => Hequiv.
   apply vector.vcons_ne; auto.
   econstructor.
 Qed.

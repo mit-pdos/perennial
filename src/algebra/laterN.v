@@ -5,6 +5,8 @@ Import derived_laws.bi.
 Import derived_laws_later.bi.
 Import base_logic.bi.uPred.
 
+Set Default Proof Using "Type".
+
 Section uPred_laws.
 Context {M: ucmra}.
 Implicit Types φ : Prop.
@@ -29,7 +31,8 @@ Proof.
     replace (S n - S a) with (n - a) by lia.
     intros. eapply IHa; eauto using cmra_validN_S.
     { lia. }
-    move: H. uPred.unseal => //=.
+    move: H.
+    rewrite /uPred_holds /=; uPred.unseal => //=.
 Qed.
 
 Lemma laterN_soundness P k: (⊢ ▷^k P) → ⊢ P.

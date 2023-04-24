@@ -701,8 +701,8 @@ Proof. iNamed 1. eauto. Qed.
 
 Lemma latest_wal_heap_h_mapsto_split (γ: gname) gh :
   ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] hb) ⊣⊢
-  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ]{#1/2} hb) ∗
-  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ]{#1/2} hb).
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] {#1/2} hb) ∗
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] {#1/2} hb).
 Proof.
   rewrite -big_sepM_sep.
   repeat f_equiv.

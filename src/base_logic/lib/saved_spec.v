@@ -18,10 +18,11 @@ Program Definition saved_spec_own {In Out : Type} `{!savedSpecG Σ In Out} (γ :
 Next Obligation.
   intros ????? Spec ?? Φ1 Φ2 HΦ.
   apply Next_contractive.
-  destruct n; first done. simpl.
+  destruct n;
+    [ apply dist_later_0 | apply dist_later_S ].
   eapply ofe_mor_ne.
   intros out.
-  eapply (later_car_anti_contractive (S n)).
+  eapply (later_car_anti_contractive (S n)); [ | lia ].
   eapply (HΦ out).
 Qed.
 

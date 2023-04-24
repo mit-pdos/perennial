@@ -2410,8 +2410,8 @@ Qed.
 Lemma wal_heap_inv_mapsto_in_bounds γ dq walptr wn dinit a v E :
   ↑walN.@"wal" ⊆ E ->
   is_wal (wal_heap_inv γ) walptr wn dinit -∗
-  a ↪[γ.(wal_heap_h)]{dq} v -∗ |NC={E}=>
-  a ↪[γ.(wal_heap_h)]{dq} v ∗
+  a ↪[γ.(wal_heap_h)] {dq} v -∗ |NC={E}=>
+  a ↪[γ.(wal_heap_h)] {dq} v ∗
   in_bounds wn a.
 Proof.
   iIntros (HE) "#Hwal Hmapsto".
@@ -2605,7 +2605,7 @@ Qed.
 Theorem wal_heap_mapsto_latest_helper γ dq lwh (a : u64) (v : heap_block) σ :
   wal_heap_inv γ σ ∗
   is_locked_walheap γ lwh ∗
-  a ↪[γ.(wal_heap_h)]{dq} v -∗
+  a ↪[γ.(wal_heap_h)] {dq} v -∗
   ⌜ locked_wh_disk lwh !! int.Z a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros "(Hheap & Htxnsfrag & Hmapsto)".
