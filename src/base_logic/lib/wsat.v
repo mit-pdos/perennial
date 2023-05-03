@@ -623,7 +623,7 @@ Proof.
     iDestruct "Hval" as (I') "Heq".
     rewrite gmap_equivI. iSpecialize ("Heq" $! i). rewrite lookup_fmap Hlookup //=.
     rewrite lookup_op lookup_singleton option_equivI.
-    case (I' !! i) => //=.
+    case: (I' !! i) => //=.
   }
   iExists QsI, schI, Qs_mutI.
   iMod (own_update_2 with "Hauth Hfrag") as "[$ $]"; last done.
