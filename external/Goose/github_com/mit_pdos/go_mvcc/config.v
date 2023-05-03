@@ -5,7 +5,7 @@ Section code.
 Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
-Definition N_TXN_SITES : expr := #16.
+Definition N_TXN_SITES : expr := #32.
 
 Definition N_IDX_BUCKET : expr := #8192.
 
