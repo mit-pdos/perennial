@@ -58,7 +58,7 @@ Proof.
    *)
   iDestruct (big_sepL_lookup_acc _ _ 0 with "Hsids") as "[Hsid0 Hsids]".
   { done. }
-  wp_apply (wp_GenTID with "Hgentid Hsid0"); first by unfold N_TXN_SITES.
+  wp_apply (wp_GenTID with "Hgentid Hsid0").
   iApply ncfupd_mask_intro; first solve_ndisj.
   iIntros "Hclose".
   iExists _. iFrame "Hts".
@@ -125,7 +125,7 @@ Proof.
     wp_storeField.
     wp_load.
     wp_loadField.
-    replace (int.Z 16) with (Z.of_nat (length sitesL)) in Hbound.
+    replace (int.Z 32) with (Z.of_nat (length sitesL)) in Hbound.
     unfold N_TXN_SITES in *.
     wp_apply (wp_SliceSet with "[$HsitesS]").
     { iPureIntro.
@@ -180,7 +180,7 @@ Proof.
     replace (U64 _) with i by word.
     eauto with iFrame.
   }
-  { iExists (replicate 16 null).
+  { iExists (replicate 32 null).
     auto with iFrame.
   }
   iIntros "[Hloop HiRef]".
