@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import tpcc_prelude.
+From Perennial.program_proof.tpcc Require Import tpcc_prelude.
 
 Section program.
 Context `{!heapGS Σ}.
