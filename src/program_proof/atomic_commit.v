@@ -62,7 +62,7 @@ Section iris.
     own γ.(coordinator_names.globals).(global_names.decision) (to_agree decision).
 
   Program Definition GetPreference_spec (γ: participant_names.t)
-    : list u8 → (list u8 -d> iProp Σ) -d> iProp Σ :=
+    : list u8 → (list u8 -d> iPropO Σ) -n> iPropO Σ :=
     λ reqData, λne (Φ: list u8 -d> iPropO Σ),
       (* ignore request *)
       (∀ (pref: bool), is_preference γ pref -∗

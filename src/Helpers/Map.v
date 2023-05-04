@@ -67,7 +67,7 @@ Proof.
   induction m using map_ind.
   - rewrite map_to_list_empty //.
   - rewrite map_to_list_insert /= //.
-    rewrite map_size_insert_None /= //.
+    rewrite map_size_insert_None /= // IHm //.
 Qed.
 
 Lemma map_size_filter `{Countable K} `(m: gmap K A) P `{∀ x, Decision (P x)} :

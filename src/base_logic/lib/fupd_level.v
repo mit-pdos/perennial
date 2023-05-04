@@ -544,7 +544,7 @@ Lemma fupd_level_mask_frame E E' E1 E2 k P :
 Proof.
   intros ?. rewrite (fupd_level_mask_frame_r _ _ _ (E ∖ E1)); last set_solver.
   rewrite fupd_level_trans.
-  by replace (E1 ∪ E ∖ E1) with E by (by apply union_difference_L).
+  replace (E1 ∪ E ∖ E1) with E by (by apply union_difference_L). auto.
 Qed.
 
 Global Instance into_wand_fupd_level E k p q R P Q :
@@ -665,7 +665,7 @@ Proof.
   by rewrite fupd_level_frame_r left_id.
 Qed.
 
-Lemma step_fupd_level_intro Ei Eo k P : Ei ⊆ Eo → ▷ P -∗ |k={Eo,Ei}=> ▷ |k={Ei,Eo}=> P.
+Lemma step_fupd_level_intro Ei Eo k P : Ei ⊆ Eo → ▷ P ⊢ |k={Eo,Ei}=> ▷ |k={Ei,Eo}=> P.
 Proof. intros. by rewrite -(step_fupd_level_mask_mono Ei _ Ei _) // -!fupd_level_intro. Qed.
 
 End fupd_level.
@@ -716,7 +716,7 @@ Lemma fupd_split_level_sep E k mj P Q : (|k,mj={E}=> P) ∗ (|k,mj={E}=> Q) ⊢ 
 Proof. by rewrite fupd_split_level_frame_r fupd_split_level_frame_l fupd_split_level_trans. Qed.
 Lemma fupd_split_level_mask_frame E E' E1 E2 k mj P :
   E1 ⊆ E →
-  (|k,mj={E1,E2}=> |k,mj={E2 ∪ (E ∖ E1),E'}=> P) -∗ (|k,mj={E,E'}=> P).
+  (|k,mj={E1,E2}=> |k,mj={E2 ∪ (E ∖ E1),E'}=> P) ⊢ (|k,mj={E,E'}=> P).
 Proof.
   intros ?. rewrite (fupd_split_level_mask_frame_r _ _ _ _ (E ∖ E1)); last set_solver.
   rewrite fupd_split_level_trans.

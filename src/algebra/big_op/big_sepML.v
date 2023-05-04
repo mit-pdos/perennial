@@ -289,8 +289,8 @@ Section maplist.
   Qed.
 
   Theorem big_sepML_mono Φ Ψ m l :
-    big_sepML Φ m l -∗
-    ⌜ ∀ k v lv, Φ k v lv -∗ Ψ k v lv ⌝ -∗
+    big_sepML Φ m l ⊢
+    ⌜ ∀ k v lv, Φ k v lv ⊢ Ψ k v lv ⌝ -∗
     big_sepML Ψ m l.
   Proof.
     rewrite big_sepML_eq; iIntros "Hml %".
@@ -731,8 +731,8 @@ Proof.
 Qed.
 
 Theorem big_sepL_impl A (f g: nat -> A -> PROP) (l: list A) :
-  (forall i x, f i x -∗ g i x) ->
-  ([∗ list] i↦x ∈ l, f i x) -∗
+  (forall i x, f i x ⊢ g i x) ->
+  ([∗ list] i↦x ∈ l, f i x) ⊢
   ([∗ list] i↦x ∈ l, g i x).
 Proof.
   intros Himpl.

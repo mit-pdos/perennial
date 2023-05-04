@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import
+From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv
      txnmgr_repr txnmgr_mk txnmgr_new
      txn_repr txn_get txn_put txn_do_txn.

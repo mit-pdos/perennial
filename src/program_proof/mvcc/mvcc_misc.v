@@ -238,7 +238,7 @@ Qed.
 Lemma big_sepM2_bupd
       `{BiBUpd PROP} {A B : Type} `{Countable K}
       (Φ : K → A -> B → PROP) (m1 : gmap K A) (m2 : gmap K B) :
-  ([∗ map] k↦x;y ∈ m1;m2, |==> Φ k x y) -∗ |==> [∗ map] k↦x;y ∈ m1;m2, Φ k x y.
+  ([∗ map] k↦x;y ∈ m1;m2, |==> Φ k x y) ⊢@{_} |==> [∗ map] k↦x;y ∈ m1;m2, Φ k x y.
 Proof.
   (* Q: What does [!] do? *)
   rewrite !big_sepM2_alt !persistent_and_affinely_sep_l.

@@ -104,7 +104,7 @@ Qed.
 
 Theorem txns_ctx_complete γ txns txn_id txn :
   txns !! txn_id = Some txn ->
-  txns_ctx γ txns -∗ txn_val γ txn_id txn.
+  txns_ctx γ txns ⊢@{_} txn_val γ txn_id txn.
 Proof.
   iIntros (Hlookup) "Hctx".
   iDestruct (alist_lookup_el with "Hctx") as "Hel"; eauto.
@@ -112,7 +112,7 @@ Qed.
 
 Theorem txns_ctx_complete' γ txns txn_id txn :
   txns !! txn_id = Some txn ->
-  ▷ txns_ctx γ txns -∗ ▷ txn_val γ txn_id txn ∗ ▷ txns_ctx γ txns.
+  ▷ txns_ctx γ txns ⊢@{_} ▷ txn_val γ txn_id txn ∗ ▷ txns_ctx γ txns.
 Proof.
   iIntros (Hlookup) "Hctx".
   iDestruct (txns_ctx_complete with "Hctx") as "#Hel"; eauto.
@@ -120,7 +120,7 @@ Qed.
 
 Theorem txns_ctx_txn_pos γ txns txn_id pos :
   is_txn txns txn_id pos ->
-  txns_ctx γ txns -∗ txn_pos γ txn_id pos.
+  txns_ctx γ txns ⊢@{_} txn_pos γ txn_id pos.
 Proof.
   intros [txn [Hlookup ->]]%fmap_Some_1.
   rewrite txns_ctx_complete; eauto.

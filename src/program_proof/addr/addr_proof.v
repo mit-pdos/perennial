@@ -419,7 +419,7 @@ Section gmap_addr_by_block.
   Context {PROP : bi}.
 
   Theorem gmap_addr_by_block_big_sepM (m : gmap addr T) (Φ : addr -> T -> PROP) :
-    ( [∗ map] a ↦ v ∈ m, Φ a v ) -∗
+    ( [∗ map] a ↦ v ∈ m, Φ a v ) ⊢@{_}
     ( [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block m,
         [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ).
   Proof.
@@ -448,7 +448,7 @@ Section gmap_addr_by_block.
 
   Theorem gmap_addr_by_block_big_sepM' (m : gmap addr T) (Φ : addr -> T -> PROP) :
     ( [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block m,
-        [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ) -∗
+        [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ) ⊢@{_}
     ( [∗ map] a ↦ v ∈ m, Φ a v ).
   Proof.
     iIntros "Hm".
@@ -689,7 +689,7 @@ Qed.
 Theorem gmap_addr_by_block_big_sepM2
         {PROP: bi} `{BiAffine PROP}
         {T1 T2} (m1 : gmap addr T1) (m2: gmap addr T2) (Φ : addr -> T1 -> T2 -> PROP) :
-  ( [∗ map] a ↦ v1; v2 ∈ m1; m2, Φ a v1 v2 ) -∗
+  ( [∗ map] a ↦ v1; v2 ∈ m1; m2, Φ a v1 v2 ) ⊢@{_}
   ( [∗ map] blkno ↦ offmap1; offmap2 ∈ gmap_addr_by_block m1; gmap_addr_by_block m2,
       [∗ map] off ↦ v1; v2 ∈ offmap1; offmap2, Φ (Build_addr blkno off) v1 v2 ).
 Proof.

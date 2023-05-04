@@ -1222,7 +1222,7 @@ Section crash.
   Existing Instance goose_groveNodeGS.
 
   Lemma file_pointsto_post_crash `{!heapGS Σ} f q v:
-    f f↦{q} v -∗ post_crash (λ _, f f↦{q} v).
+    f f↦{q} v ⊢@{_} post_crash (λ _, f f↦{q} v).
   Proof.
     iIntros "H". iIntros (???) "#Hrel".
     iDestruct "Hrel" as %(Heq1&Heq2).

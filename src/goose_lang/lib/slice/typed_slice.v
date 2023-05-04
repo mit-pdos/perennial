@@ -61,14 +61,14 @@ Proof.
 Qed.
 
 Lemma is_slice_small_sz s t q vs :
-  is_slice_small s t q vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+  is_slice_small s t q vs ⊢@{_} ⌜length vs = int.nat s.(Slice.sz)⌝.
 Proof.
   iIntros "(_&[%%]) !%".
   rewrite fmap_length // in H.
 Qed.
 
 Lemma is_slice_to_small s t q vs :
-  is_slice s t q vs -∗ is_slice_small s t q vs.
+  is_slice s t q vs ⊢@{_} is_slice_small s t q vs.
 Proof.
   rewrite /is_slice /is_slice_small.
   iIntros "Hs".
@@ -77,7 +77,7 @@ Proof.
 Qed.
 
 Lemma is_slice_sz s t q vs :
-  is_slice s t q vs -∗ ⌜length vs = int.nat s.(Slice.sz)⌝.
+  is_slice s t q vs ⊢@{_} ⌜length vs = int.nat s.(Slice.sz)⌝.
 Proof.
   rewrite is_slice_to_small is_slice_small_sz //.
 Qed.
@@ -125,7 +125,7 @@ Qed.
 
 Theorem is_slice_combine s t q n vs1 vs2 :
   (int.nat n ≤ int.nat s.(Slice.sz))%nat →
-  is_slice_small (slice_take s n) t q vs1 -∗
+  is_slice_small (slice_take s n) t q vs1 ⊢@{_}
   is_slice_small (slice_skip s t n) t q vs2 -∗
   is_slice_small s t q (vs1 ++ vs2).
 Proof.

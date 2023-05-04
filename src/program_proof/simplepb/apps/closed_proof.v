@@ -69,7 +69,7 @@ Definition kv_replica_main_crash_cond `{kv64G Σ} γsys fname γsrv1:=
 Lemma wpr_kv_replica_main fname me γsys γlog γsrv γkv {Σ} {HKV: kv64G Σ}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
-  "Hinv" ∷ is_inv γlog γsys -∗
+  "Hinv" ∷ is_inv γlog γsys ⊢@{_}
   "Hsys" ∷ sys_inv γsys -∗
   "Hkvinv" ∷ kv_inv γlog γkv -∗
   "Hsrvhost1" ∷ is_pb_host me γsys γsrv -∗
@@ -122,7 +122,7 @@ Qed.
 Lemma wp_config_main γconf {Σ} {HKV: kv64G Σ} {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   "HconfInit" ∷ makeConfigServer_pre γconf [U64 1; U64 2] ∗
-  "#Hhost" ∷ is_host configHost γconf -∗
+  "#Hhost" ∷ is_host configHost γconf ⊢@{_}
   WP config_main #() {{ _, True }}
 .
 Proof.

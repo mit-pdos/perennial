@@ -323,7 +323,7 @@ Section ghost_step.
   Set Default Proof Using "Hstate_inhabited Hgstate_inhabited".
 
   Lemma source_pool_singleton e:
-    source_pool_map (tpool_to_map [e]) -∗ 0 ⤇ e.
+    source_pool_map (tpool_to_map [e]) ⊢@{_} 0 ⤇ e.
   Proof.
     rewrite /source_pool_map/tpool_to_map/tpool_to_map_aux/tpool_mapsto.
     by rewrite fmap_insert fmap_empty insert_empty.

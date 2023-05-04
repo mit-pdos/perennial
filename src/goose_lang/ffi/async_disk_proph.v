@@ -530,7 +530,7 @@ lemmas. *)
     disk_array 0 (DfracOwn 1) (replicate sz (block0 : Block)).
   Proof.
     induction sz; rewrite /init_disk-/init_disk/disk_array.
-    - rewrite big_sepM_empty big_sepL_nil //=.
+    - rewrite big_sepM_empty big_sepL_nil //=. auto.
     - rewrite replicate_S_end.
       rewrite big_sepL_app.
       rewrite replicate_length big_sepL_cons big_sepL_nil.
@@ -599,7 +599,7 @@ Section crash.
   Existing Instance goose_diskGS.
 
   Lemma disk_mapsto_post_crash `{!heapGS Σ} l a v:
-    l d↦[a] v -∗ post_crash (λ _, l d↦[a] a).
+    l d↦[a] v ⊢@{_} post_crash (λ _, l d↦[a] a).
   Proof.
     iIntros "H". iIntros (???) "Hrel".
     rewrite /ffi_crash_rel. simpl.

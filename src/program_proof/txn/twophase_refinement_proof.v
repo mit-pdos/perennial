@@ -483,7 +483,7 @@ Lemma atomic_convertible_val_interp {Σ} {hG: heapGS Σ} {hRG : refinement_heapG
      {hS: (styG (specTy_model := twophaseTy_model JRNL_KIND_SIZE)) Σ}
     (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_convertible t →
-  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG (twophaseTy_model JRNL_KIND_SIZE) hS t es e -∗
+  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG (twophaseTy_model JRNL_KIND_SIZE) hS t es e ⊢@{_}
   atomically_val_interp (htpG := hS) dinit objs_dom γ γ' tph_val t es e.
 Proof.
   revert es e.
@@ -524,7 +524,7 @@ Qed.
 Lemma atomically_deconvertible_val_interp `{hG: !heapGS Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
       (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_deconvertible t →
-  atomically_val_interp (htpG := (styG_twophaseG _ hS)) dinit objs_dom γ γ' tph_val t es e -∗
+  atomically_val_interp (htpG := (styG_twophaseG _ hS)) dinit objs_dom γ γ' tph_val t es e ⊢@{_}
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG (twophaseTy_model JRNL_KIND_SIZE) hS t es e.
 Proof.
   revert es e.

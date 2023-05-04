@@ -391,7 +391,7 @@ Lemma tac_wp_load Δ Δ' s E i K l q v Φ :
   envs_entails Δ (WP fill K (Load (LitV l)) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ???.
-  rewrite -wp_bind. eapply wand_apply; first exact: wp_load.
+  rewrite -wp_bind. eapply wand_apply; first by apply bi.wand_entails, wp_load.
   rewrite into_laterN_env_sound -later_sep envs_lookup_split //; simpl.
   by apply later_mono, sep_mono_r, wand_mono.
 Qed.
@@ -410,11 +410,11 @@ Proof.
   rewrite envs_entails_unseal=> ???? Hsuc Hfail.
   destruct (decide (v = v1)) as [Heq|Hne].
   - rewrite -wp_bind. eapply wand_apply.
-    { eapply wp_cmpxchg_suc; eauto. }
+    { eapply bi.wand_entails, wp_cmpxchg_suc; eauto. }
     rewrite into_laterN_env_sound -later_sep /= {1}envs_simple_replace_sound //; simpl.
     apply later_mono, sep_mono_r. rewrite right_id. apply wand_mono; auto.
   - rewrite -wp_bind. eapply wand_apply.
-    { eapply wp_cmpxchg_fail; eauto. }
+    { eapply bi.wand_entails, wp_cmpxchg_fail; eauto. }
     rewrite into_laterN_env_sound -later_sep /= {1}envs_lookup_split //; simpl.
     apply later_mono, sep_mono_r. apply wand_mono; auto.
 Qed.
@@ -427,7 +427,7 @@ Lemma tac_wp_cmpxchg_fail Δ Δ' s E i K l q v v1 v2 Φ :
   envs_entails Δ (WP fill K (CmpXchg (LitV l) v1 v2) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ?????.
-  rewrite -wp_bind. eapply wand_apply; first exact: wp_cmpxchg_fail.
+  rewrite -wp_bind. eapply wand_apply; first by apply bi.wand_entails, wp_cmpxchg_fail.
   rewrite into_laterN_env_sound -later_sep envs_lookup_split //; simpl.
   by apply later_mono, sep_mono_r, wand_mono.
 Qed.
@@ -442,7 +442,7 @@ Lemma tac_wp_cmpxchg_suc Δ Δ' Δ'' s E i K l v v1 v2 Φ :
 Proof.
   rewrite envs_entails_unseal=> ??????; subst.
   rewrite -wp_bind. eapply wand_apply.
-  { eapply wp_cmpxchg_suc; eauto. }
+  { eapply bi.wand_entails, wp_cmpxchg_suc; eauto. }
   rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
   rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
 Qed.

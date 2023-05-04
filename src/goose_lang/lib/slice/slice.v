@@ -578,7 +578,7 @@ Qed.
 
 Theorem is_slice_combine s t q n vs1 vs2 :
   (int.nat n ≤ int.nat s.(Slice.sz))%nat →
-  is_slice_small (slice_take s n) t q vs1 -∗
+  is_slice_small (slice_take s n) t q vs1 ⊢@{_}
   is_slice_small (slice_skip s t n) t q vs2 -∗
   is_slice_small s t q (vs1 ++ vs2).
 Proof.

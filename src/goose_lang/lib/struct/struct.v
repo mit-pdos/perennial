@@ -174,7 +174,7 @@ Local Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
   end.
 
 Local Lemma struct_big_sep_ty l q d v :
-  struct_big_sep l q d v -∗ ⌜val_ty v (struct.t d)⌝.
+  struct_big_sep l q d v ⊢@{_} ⌜val_ty v (struct.t d)⌝.
 Proof.
   revert v l.
   induction d as [|[f t] fs]; simpl; intros.
@@ -192,8 +192,8 @@ Local Lemma struct_mapsto_to_big l q d v :
   struct_mapsto l q (struct.t d) v ⊣⊢ struct_big_sep l q d v.
 Proof.
   apply (bient_pure_wlog (val_ty v (struct.t d))).
-  { apply struct_mapsto_ty. }
-  { apply struct_big_sep_ty. }
+  { iApply struct_mapsto_ty. }
+  { iApply struct_big_sep_ty. }
   intros Hty.
   (iInduction (d) as [| [f t] fs] "IH" forall (l v Hty)); simpl.
   - inv_ty Hty.
@@ -294,7 +294,7 @@ Lemma struct_fields_ty l q d {dwf: struct.wf d} v :
   struct_fields l q d v -∗ ⌜val_ty v (struct.t d)⌝.
 Proof.
   rewrite -struct_big_sep_to_fields.
-  apply struct_big_sep_ty.
+  iApply struct_big_sep_ty.
 Qed.
 
 (** This is the big splitting theorem, for converting from a monolithic struct
@@ -351,7 +351,7 @@ Qed.
 
 Lemma struct_mapsto_field_offset_acc l q d f0 (off: Z) t0 v :
   field_offset d f0 = Some (off, t0) ->
-  struct_mapsto l q (struct.t d) v -∗
+  struct_mapsto l q (struct.t d) v ⊢@{_}
   (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
    (∀ fv', struct_mapsto (l +ₗ off) q t0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
 Proof.
@@ -579,7 +579,7 @@ Lemma tac_wp_loadField Δ Δ' s E i l q d f v Φ :
   envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ???.
-  eapply bi.wand_apply; first exact: wp_loadField.
+  eapply bi.wand_apply; first by apply bi.wand_entails, wp_loadField.
   rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
   by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
 Qed.
@@ -612,7 +612,7 @@ Lemma tac_wp_loadField_ro {E} Δ s i l d f v Φ :
   envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ? HΦ.
-  eapply bi.wand_apply; first exact: wp_loadField_ro.
+  eapply bi.wand_apply; first by apply bi.wand_entails, wp_loadField_ro.
   rewrite envs_lookup_split //; simpl.
   iIntros "[#Hro Henvs]".
   iSplitR; auto.
@@ -661,7 +661,7 @@ Lemma tac_wp_storeField Δ Δ' Δ'' stk E i l d f v v' Φ :
 Proof.
   intros Hty.
   rewrite envs_entails_unseal=> ????.
-  eapply bi.wand_apply; first by eapply wp_storeField.
+  eapply bi.wand_apply; first by eapply bi.wand_entails, wp_storeField.
   rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
   rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
 Qed.

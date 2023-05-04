@@ -1642,7 +1642,7 @@ Definition simplelog_pre γ γsrv fname :=
 
 Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv :
   let P := (own_Server_ghost γ γsrv) in
-  sys_inv γ -∗
+  sys_inv γ ⊢@{_}
   {{{
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗

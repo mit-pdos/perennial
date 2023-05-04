@@ -89,7 +89,7 @@ Ltac mod_bound :=
   end.
 
 Lemma split_513_blocks :
-  0 d↦∗ repeat block0 513 -∗
+  0 d↦∗ repeat block0 513 ⊢@{_}
   0 d↦ block0 ∗ 1 d↦ block0 ∗ 2 d↦∗ repeat block0 511.
 Proof. reflexivity. Qed.
 

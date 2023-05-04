@@ -750,7 +750,7 @@ Qed.
 
 Lemma is_base_disk_crash γ γ' d :
   γ'.(base_disk_name) = γ.(base_disk_name) →
-  is_base_disk γ d -∗ is_base_disk γ' d.
+  is_base_disk γ d ⊢@{_} is_base_disk γ' d.
 Proof.
   rewrite /is_base_disk => -> //.
 Qed.

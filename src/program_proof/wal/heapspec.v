@@ -460,7 +460,7 @@ Lemma wal_heap_inv_addr_crash ls a b crash_txn :
   (ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns))%nat →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
-  wal_heap_inv_addr ls a b -∗
+  wal_heap_inv_addr ls a b ⊢@{_}
   ∃ b', ⌜heap_block_blocks_since_install b' `prefix_of` heap_block_blocks_since_install b⌝ ∗
          wal_heap_inv_addr ls' a b'.
 Proof.
@@ -513,7 +513,7 @@ Lemma wal_heap_gh_crash (γ: gname) crash_txn (gh: gmap u64 heap_block) ls :
   (ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns))%nat →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
-  ghost_map_auth γ 1 ∅ -∗
+  ghost_map_auth γ 1 ∅ ⊢@{_}
   ([∗ map] a↦b ∈ gh, wal_heap_inv_addr ls a b) -∗
   |==> ∃ gh',
       ⌜dom gh' = dom gh⌝ ∗

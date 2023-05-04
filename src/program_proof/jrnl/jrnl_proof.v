@@ -101,7 +101,7 @@ Definition is_jrnl (buftx : loc)
   )%I.
 
 Lemma is_jrnl_to_committed_mapsto_txn buftx mT γUnified dinit anydirty :
-  is_jrnl buftx mT γUnified dinit anydirty -∗
+  is_jrnl buftx mT γUnified dinit anydirty ⊢@{_}
   [∗ map] a ↦ v ∈ committed <$> mT, mapsto_txn γUnified a v.
 Proof.
   iNamed 1.

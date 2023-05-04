@@ -133,7 +133,7 @@ Ltac wp_start :=
 
 Lemma big_sepS_set_map `{Countable A, Countable B} (h : A → B) (s : gset A) (f : B → iProp Σ) :
   (∀ x y, x ∈ s → y ∈ s → h x = h y → x = y) →
-  ([∗ set] x ∈ s, f (h x)) -∗ ([∗ set] x ∈ set_map h s, f x).
+  ([∗ set] x ∈ s, f (h x)) ⊢@{_} ([∗ set] x ∈ set_map h s, f x).
 Proof.
   intros Hinj.
   induction s as [|x s ? IH] using set_ind_L.
@@ -214,7 +214,7 @@ Proof.
     big_sepM_mono_ncfupd _ (λ a obj,
       "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
       "%Hkind" ∷ ⌜mapsto_valid γ a obj⌝
-    )%I _ True%I with "[] [Hdurable_mapstos]"
+    )%I mt True%I with "[] [Hdurable_mapstos]"
   ) as "[_ Hmono]".
   2: {
     iSplit; first by trivial.

@@ -246,7 +246,7 @@ Section na_heap.
 
   Lemma na_heap_mapsto_st_agree l st1 st2 q1 q2 v1 v2 :
     na_heap_mapsto_st st1 l q1 v1 ∗
-    na_heap_mapsto_st st2 l q2 v2 -∗
+    na_heap_mapsto_st st2 l q2 v2 ⊢
     ⌜v1 = v2⌝.
   Proof.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
@@ -256,7 +256,7 @@ Section na_heap.
 
   Lemma na_heap_mapsto_st_WSt_agree l st q1 q2 v1 v2 :
     na_heap_mapsto_st WSt l q1 v1 ∗
-    na_heap_mapsto_st st l q2 v2 -∗
+    na_heap_mapsto_st st l q2 v2 ⊢
     ⌜WSt = st⌝.
   Proof.
     destruct st; first eauto.
@@ -680,7 +680,7 @@ Section na_heap.
     ==∗ own (na_heap_name hG) (● to_na_heap tls (<[l:=(lk', v)]> σ))
         ∗ na_heap_mapsto_st (RSt n2) l q v.
   Proof.
-    intros Hσv Hr1 Hr2. apply wand_intro_r. rewrite -!own_op to_na_heap_insert.
+    intros Hσv Hr1 Hr2. apply entails_wand, wand_intro_r. rewrite -!own_op to_na_heap_insert.
     eapply own_update, auth_update. apply: singleton_local_update.
     { by rewrite /to_na_heap lookup_fmap Hσv. }
     rewrite Hr1 Hr2 => //=.
@@ -840,7 +840,7 @@ Section na_heap.
     ==∗ own (na_heap_name hG) (● to_na_heap tls (<[l:=(st2, v')]> σ))
         ∗ na_heap_mapsto_st (tls st2) l 1%Qp v'.
   Proof.
-    intros Hσv. apply wand_intro_r. rewrite -!own_op to_na_heap_insert.
+    intros Hσv. apply entails_wand, wand_intro_r. rewrite -!own_op to_na_heap_insert.
     eapply own_update, auth_update. apply: singleton_local_update.
     { by rewrite /to_na_heap lookup_fmap Hσv. }
     apply exclusive_local_update. by destruct (tls st2).

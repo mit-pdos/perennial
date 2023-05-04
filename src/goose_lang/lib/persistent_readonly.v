@@ -93,7 +93,7 @@ Section goose_lang.
   Proof.
     unseal.
     intros Hequiv.
-    setoid_rewrite Hequiv. done.
+    setoid_rewrite Hequiv. auto.
   Qed.
 
   Global Instance readonly_sep P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :

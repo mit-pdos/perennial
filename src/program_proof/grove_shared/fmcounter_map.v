@@ -49,7 +49,7 @@ Section fmcounter_map_props.
   Qed.
 
   Lemma fmcounter_map_get_lb γ k q n :
-    k fm[[γ]]↦{q} n -∗ k fm[[γ]]≥ n.
+    k fm[[γ]]↦{q} n ⊢@{_} k fm[[γ]]≥ n.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb.
     apply own_mono. apply singleton_included. right.

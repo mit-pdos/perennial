@@ -565,8 +565,6 @@ Proof.
     iIntros ([_ <-]) "Hown".
     unfold site_active_tids_auth_def.
     iFrame.
-    rewrite gset_to_gmap_empty.
-    done.
   }
   set sids : gset u64 := list_to_set sids_all.
   iDestruct (big_sepS_subseteq _ _ sids with "Hown") as "Hown"; first set_solver.
@@ -688,7 +686,6 @@ Proof.
   }
   iFrame.
   unfold nca_tids_auth, fa_tids_auth, fci_tmods_auth, fcc_tmods_auth, cmt_tmods_auth.
-  do 2 rewrite gset_to_gmap_empty.
   by iFrame.
 Qed.
 

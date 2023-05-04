@@ -18,7 +18,7 @@ Definition post_crash {Σ} `{hG: !heapGS Σ} (P: heapGS Σ → iProp Σ) : iProp
                (P (HeapGS _ _ hL'))).
 
 Class IntoCrash {Σ} `{!heapGS Σ} (P: iProp Σ) (Q: heapGS Σ → iProp Σ) :=
-  into_crash : P -∗ post_crash (Σ := Σ) (λ hG', Q hG').
+  into_crash : P ⊢ post_crash (Σ := Σ) (λ hG', Q hG').
 
 Section post_crash_prop.
 Context `{hL: !heapGS Σ}.
@@ -33,8 +33,8 @@ Lemma post_crash_intro Q:
 Proof. iIntros (Hmono). iIntros (???) "Hrel". iModIntro. iFrame "Hrel". iApply Hmono. Qed.
 
 Lemma post_crash_mono P Q:
-  (∀ hL, P hL -∗ Q hL) →
-  post_crash P -∗ post_crash Q.
+  (∀ hL, P hL ⊢ Q hL) →
+  post_crash P ⊢ post_crash Q.
 Proof.
   iIntros (Hmono) "HP". iIntros (???) "Hrel".
   iMod ("HP" with "[$]") as "(H&HP)".
@@ -42,7 +42,7 @@ Proof.
 Qed.
 
 Lemma post_crash_sep P Q:
-  post_crash P ∗ post_crash Q -∗ post_crash (λ hL, P hL ∗ Q hL).
+  post_crash P ∗ post_crash Q ⊢ post_crash (λ hL, P hL ∗ Q hL).
 Proof.
   iIntros "(HP&HQ)". iIntros (???) "Hrel".
   iMod ("HP" with "[$]") as "(H&$)".
@@ -51,7 +51,7 @@ Proof.
 Qed.
 
 Lemma post_crash_or P Q:
-  post_crash P ∨ post_crash Q -∗ post_crash (λ hL, P hL ∨ Q hL).
+  post_crash P ∨ post_crash Q ⊢ post_crash (λ hL, P hL ∨ Q hL).
 Proof.
   iIntros "[HP|HQ]"; iIntros (???) "Hrel".
   - iMod ("HP" with "[$]") as "($&$)". by iModIntro.
@@ -122,7 +122,7 @@ Proof.
 Qed.
 
 Lemma post_crash_named P name:
-  named name (post_crash (λ hL, P hL)) -∗
+  named name (post_crash (λ hL, P hL)) ⊢
   post_crash (λ hL, named name (P hL)).
 Proof. rewrite //=. Qed.
 

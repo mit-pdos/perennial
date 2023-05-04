@@ -525,7 +525,7 @@ lemmas. *)
   Qed.
 
   Lemma disk_array_init_disk sz:
-    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{#1} b) -∗ disk_array 0 (DfracOwn 1) (replicate sz (block0 : Block)).
+    ([∗ map] i↦b ∈ init_disk ∅ sz, i d↦{#1} b) ⊢@{_} disk_array 0 (DfracOwn 1) (replicate sz (block0 : Block)).
   Proof.
     induction sz; rewrite /init_disk-/init_disk/disk_array.
     - rewrite big_sepM_empty big_sepL_nil //=.
@@ -581,7 +581,7 @@ Section crash.
   Existing Instance goose_diskGS.
 
   Lemma disk_mapsto_post_crash `{!heapGS Σ} l q v:
-    l d↦{q} v -∗ post_crash (λ _, l d↦{q} v).
+    l d↦{q} v ⊢@{_} post_crash (λ _, l d↦{q} v).
   Proof.
     iIntros "H". iIntros (???) "#Hrel".
     rewrite /ffi_crash_rel.

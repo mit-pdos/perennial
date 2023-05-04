@@ -188,7 +188,7 @@ Section goose_lang.
 
   (* the subst in this lemma is really where the magic is happening *)
   Lemma is_buf_data_rew K s a obj (H: objKind obj = K) :
-    is_buf_data s (objData obj) a -∗
+    is_buf_data s (objData obj) a ⊢@{_}
     is_buf_data s (rew [bufDataT] H in objData obj) a.
   Proof.
     subst.

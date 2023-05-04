@@ -572,7 +572,7 @@ Proof.
   intros (sj&Heq1&Hsub1&Hsub2).
   rewrite /jrnl_upd.
   destruct s. rewrite /set//=. f_equal.
-  rewrite /= in Heq1. rewrite Heq1. f_equal. destruct sj as [sjd [sjk sja]].
+  rewrite /= in Heq1. rewrite Heq1. f_equal. destruct sj as [sjd sjk sja].
   f_equal => /=. apply map_subseteq_union; auto.
 Qed.
 

@@ -55,7 +55,7 @@ Section goose_lang.
 
   Theorem struct_mapsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
-    l ↦[t]{q} v -∗ l ↦{q} v0.
+    l ↦[t]{q} v ⊢@{_} l ↦{q} v0.
   Proof.
     intros Hv.
     unseal.
@@ -65,7 +65,7 @@ Section goose_lang.
   Qed.
 
   Theorem struct_mapsto_ty q l v t :
-    l ↦[t]{q} v -∗ ⌜val_ty v t⌝.
+    l ↦[t]{q} v ⊢@{_} ⌜val_ty v t⌝.
   Proof.
     unseal. iIntros "[_ %] !%//".
   Qed.
@@ -332,7 +332,7 @@ Section goose_lang.
     envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal=> ???.
-    rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_LoadAt.
+    rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_LoadAt.
     rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
     by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
@@ -436,7 +436,7 @@ Section goose_lang.
   Proof.
     intros Hty.
     rewrite envs_entails_unseal=> ????.
-    rewrite -wp_bind. eapply bi.wand_apply; first by eapply wp_StoreAt.
+    rewrite -wp_bind. eapply bi.wand_apply; first by eapply bi.wand_entails, wp_StoreAt.
     rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.

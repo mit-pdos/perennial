@@ -207,14 +207,14 @@ Definition is_crash_allocator l P Pc :=
 Theorem wpc_newAllocator Φ Φc (mref : loc) (start sz: u64) used P Pc K `{!LanguageCtx K} :
   int.Z start + int.Z sz < 2^64 →
   let σ := (rangeSet (int.Z start) (int.Z sz)) ∖ used in
-  valid_allocPred P Pc -∗
+  valid_allocPred P Pc ⊢@{_}
   P σ -∗
   is_addrset mref used -∗
   Φc ∧ (∀ l, is_crash_allocator l P Pc -∗
      WPC (K (of_val #l)) @ ⊤ {{ Φ }} {{ Φc }}) -∗
   WPC (K (New #start #sz #mref)) @ ⊤ {{ Φ }} {{ Φc ∗ Pc σ }}.
 Proof.
-  iIntros (Hbound) "#Hvalid HP Haddr HK".
+  iIntros (Hbound ?) "#Hvalid HP Haddr HK".
   iApply (wpc_crash_borrow_init_ctx' _ _ _ _ (P _) (Pc _) with "[HP]"); auto.
   { iDestruct "Hvalid" as "(?&?&?&?&Himp)". by iApply "Himp". }
   iSplit.
