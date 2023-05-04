@@ -297,7 +297,7 @@ def main():
             "./config",
             "./common",
             "./examples",
-            # "./tpcc",
+            "./tpcc-deprecated",
             # "./cfmutex",
         )
 
