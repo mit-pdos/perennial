@@ -232,11 +232,11 @@ Lemma wsat_le_acc n1 n2:
   n1 ≤ n2 →
   wsat n2 ⊢ wsat n1 ∗ (wsat n1 -∗ wsat n2).
 Proof.
-  induction 1.
+  induction 1 as [ | n Hle IH].
   - iIntros "$". eauto.
   - rewrite wsat_unfold.
     iIntros "($&Hm)".
-    iDestruct (IHle with "Hm") as "($&Hclo)".
+    iDestruct (IH with "Hm") as "($&Hclo)".
     auto.
 Qed.
 
@@ -259,9 +259,9 @@ Proof.
   rewrite -Heq1 -Heq2.
   clear l1 l2 Heq1 Heq2.
   revert l2' Hlen.
-  induction l1' => l2' Hlen Hd.
+  induction l1' as [|P l1' IHl1'] => l2' Hlen Hd.
   - destruct l2' => //=.
-  - destruct l2'; first by (simpl in Hlen; congruence).
+  - destruct l2' as [|P2 l2']; first by (simpl in Hlen; congruence).
     apply to_agree_ne => //=.
     apply pair_ne; last done. econstructor.
     { destruct n; eauto.
@@ -513,15 +513,17 @@ Proof.
   - iSplit; simpl; iIntros "#H !>"; iApply "IH"; eauto.
   - iSplit; simpl; iIntros "H !>"; iApply "IH"; eauto.
   - iSplit; simpl; iIntros ">H"; iApply "IH"; eauto.
-  - iSpecialize ("HPQ1" $! n). iSplit; rewrite ?list_lookup_fmap;
-    destruct (Qs !! n) as [|] eqn:Heq1; rewrite Heq1 => //=;
-    destruct (Ps !! n) as [|] eqn:Heq2; rewrite Heq2 => //=;
+  - match goal with | |- context [ (bi_later <$> _) !! ?n ] => iSpecialize ("HPQ1" $! n) end.
+    iSplit; rewrite ?list_lookup_fmap;
+    destruct (Qs !! _) as [|] eqn:Heq1; rewrite Heq1 => //=;
+    destruct (Ps !! _) as [|] eqn:Heq2; rewrite Heq2 => //=;
     iIntros; rewrite option_equivI; auto; iNext.
     * by iRewrite -"HPQ1".
     * by iRewrite "HPQ1".
-  - iSpecialize ("HPQ2" $! n). iSplit; rewrite ?list_lookup_fmap;
-    destruct (Qs_mut !! n) as [|] eqn:Heq1; rewrite Heq1 => //=;
-    destruct (Ps_mut !! n) as [|] eqn:Heq2; rewrite Heq2 => //=;
+  - match goal with | |- context [ (bi_later <$> _) !! ?n ] => iSpecialize ("HPQ2" $! n) end.
+    iSplit; rewrite ?list_lookup_fmap;
+    destruct (Qs_mut !! _) as [|] eqn:Heq1; rewrite Heq1 => //=;
+    destruct (Ps_mut !! _) as [|] eqn:Heq2; rewrite Heq2 => //=;
     iIntros; rewrite option_equivI; auto; iNext.
     * by iRewrite -"HPQ2".
     * by iRewrite "HPQ2".

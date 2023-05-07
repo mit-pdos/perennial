@@ -220,7 +220,7 @@ Proof.
   iMod ("H" with "[$] [$]") as "[$ H]".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose". iNext.
-  iIntros. iMod "Hclose". iMod ("H" with "[//]") as "($ & $ & H & ?)".
+  iIntros (e2 ???) "%Hstep Hlater". iMod "Hclose". iMod ("H" with "[//]") as "($ & $ & H & ?)".
   destruct (to_val e2) eqn:?; last by iExFalso.
   iFrame. iModIntro. iApply wp_value; last done. by apply of_to_val.
 Qed.
@@ -243,7 +243,7 @@ Proof.
   iMod ("H" with "[$] [$]") as "[$ H]".
   iApply fupd_mask_intro; first set_solver.
   iIntros "Hclose". iNext.
-  iIntros. iMod "Hclose". iMod ("H" with "[//] [$]") as "($ & $ & H & ?)".
+  iIntros (e2 ???) "%Hstep Hlater". iMod "Hclose". iMod ("H" with "[//] [$]") as "($ & $ & H & ?)".
   destruct (to_val e2) eqn:?; last by iExFalso.
   iFrame. iModIntro. iApply wp_value; last done. by apply of_to_val.
 Qed.

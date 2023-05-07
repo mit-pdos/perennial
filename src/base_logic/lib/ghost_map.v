@@ -32,7 +32,7 @@ Section lemmas.
         rewrite !dom_insert_L. congruence.
       + rewrite big_sepM_insert; [ by iFrame | ].
         apply not_elem_of_dom.
-        apply not_elem_of_dom in H1.
+        match goal with | H: _ = None |- _ => apply not_elem_of_dom in H end.
         congruence.
   Qed.
 

@@ -30,18 +30,18 @@ Proof.
       - econstructor. rewrite Heqa1 comm. by symmetry.
     }
     move: Ha; rewrite !left_id -assoc => Ha.
-    destruct (Hup n (Some (bf1 ⋅ bf2))); simpl.
+    destruct (Hup n (Some (bf1 ⋅ bf2))) as [ ? He ]; simpl.
     { by rewrite Heqa. }
     { simpl. by rewrite Heqa. }
-    simpl in H1.
+    simpl in He.
     exists a0. rewrite -Heqa1 Heqa1'.
     eexists; split_and!; eauto.
     * intros ? Hin.
       inversion Hin; subst; eexists; split_and!; first econstructor; eauto.
-    * intros ? Hin. inversion Hin; subst.
+    * intros ? Hin. inversion Hin as [ | ? ? ? Hin2]; subst.
       ** exists a0; split; auto. repeat econstructor.
-      ** inversion H4.
-    * rewrite -Heqa H1. simpl.
+      ** inversion Hin2.
+    * rewrite -Heqa He. simpl.
       rewrite left_id assoc. econstructor; eauto.
   + split; [done|]. apply to_agree_injN in Eq.
     move: Ha; rewrite !left_id -assoc => Ha.
@@ -52,7 +52,7 @@ Qed.
 
 Lemma auth_frac_update_alloc {A: ucmra} (dq: dfrac) (a b': A):
   (a, ε) ~l~> (a,b') → (●{dq} a ~~> ●{dq} a ⋅ ◯ b').
-Proof. intros. rewrite -{1}(right_id _ _ (●{dq} a)). by eapply auth_frac_update in H. Qed.
+Proof. intros H. rewrite -{1}(right_id _ _ (●{dq} a)). by eapply auth_frac_update in H. Qed.
 
 Lemma auth_frac_update_core_id {A: ucmra} dq (a b: A) `{!CoreId b} :
   b ≼ a → ●{dq} a ~~> ●{dq} a ⋅ ◯ b.

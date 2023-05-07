@@ -107,7 +107,7 @@ Local Instance staged_inv_inner_pre_contractive : Contractive (staged_inv_inner_
 Proof.
   rewrite /staged_inv_inner_pre => n pre1 pre2 Hequiv ????????.
   do 15 (f_contractive || f_equiv).
-  destruct a1.
+  match goal with | a1: staged_inv_status |- _ => destruct a1 end.
   - repeat (f_contractive || f_equiv).
   - do 25 (f_contractive || f_equiv).
     eapply Hequiv.
@@ -314,6 +314,7 @@ Proof.
     iIntros.
     iMod ("H" with "[//]") as "($&$&H&$)".
     iModIntro.
+    match goal with | H : Atomic _ _ |- _ => rename H into Atomic0 end.
     rewrite /Atomic/= in Atomic0.
     edestruct (Atomic0) as (v&Hval); eauto.
     rewrite Hval. rewrite ?wpc0_unfold /wpc_pre.

@@ -104,13 +104,14 @@ Section cmra_mlist.
       + simpl. repeat case_decide; last done; exfalso.
         * feed pose proof (prefix_of_down_total D1 D2 D3); auto.
           intuition.
-        * apply H1. by etrans.
+        * match goal with | H: ¬ _ |- _ => apply H; by etrans end.
       + rewrite mlist_op_l; [by rewrite mlist_op_r|auto].
       + rewrite !mlist_op_r; auto. by etrans.
       + simpl. rewrite !decide_False; auto.
       + simpl. rewrite !decide_False; auto.
       + simpl. case_decide.
-        * exfalso. apply H. by etrans.
+        * exfalso.
+          match goal with | H: ¬ _ |- _ => apply H; by etrans end.
         * case_decide; last done. exfalso.
           feed pose proof (prefix_of_down_total D2 D3 D1); auto.
           intuition.
@@ -174,7 +175,8 @@ Section cmra_mlist.
       + constructor. by apply: anti_symm.
       + by exfalso.
       + constructor. apply : anti_symm; [done|by etrans].
-      + exfalso. apply H2. by etrans.
+      + exfalso.
+        match goal with | H: ¬ _ |- _ => apply H; by etrans end.
   Qed.
 
   Global Instance mlist_core_id (x : mlist) : CoreId x.

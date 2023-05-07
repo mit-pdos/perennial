@@ -19,7 +19,7 @@ Fixpoint ndc (N: namespace) (n: nat) : namespace :=
 
 Lemma ndc_tail N n :
   ndc N (S n) = (ndc N n).@(1%positive).
-Proof. revert N. induction n => N; first done. rewrite -IHn => //=. Qed.
+Proof. revert N. induction n as [|? IHn] => N; first done. rewrite -IHn => //=. Qed.
 
 Definition nomega (N: namespace) (mn: option nat) : coPset :=
   match mn with
@@ -31,7 +31,7 @@ Lemma ndc_anti_mono N n1 n2:
   n1 ≤ n2 →
   (↑(ndc N n2) : coPset) ⊆ ↑(ndc N n1).
 Proof.
-  induction 1.
+  induction 1 as [|m _].
   - reflexivity.
   - transitivity (↑(ndc N m) : coPset); last auto.
     clear. revert N. induction m => N.
@@ -142,7 +142,7 @@ Proof. solve_ndisj. Qed.
 Lemma AE'_disj_AE_full n1 n2 : n1 < n2 → AE' n2 ## AE_full n1.
 Proof.
   revert n2. rewrite AE_full_eq.
-  induction n1 => n2 Hlt.
+  induction n1 as [|n1 IHn1] => n2 Hlt.
   - rewrite //= right_id. apply AE'_disj. lia.
   - rewrite //=.
     feed pose proof (IHn1 n2); first lia.
@@ -216,7 +216,7 @@ Lemma AE_subset_mono n1 n2 mj1 mj2 :
   AE n1 mj1 ⊆ AE n2 mj2.
 Proof.
   intros [Hlt|Heq].
-  - induction Hlt.
+  - induction Hlt as [|m IH].
     * rewrite AE_eq /= -AE_eq. etransitivity; last eapply union_subseteq_r.
       apply AE_subset_AE_full.
     * transitivity (AE_full m).

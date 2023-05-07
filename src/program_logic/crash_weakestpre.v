@@ -889,7 +889,7 @@ Lemma wpc_crash s E1 e Φ Φc:
     ||={E1|⊤∖D,∅|∅}=> ||▷=>^(num_laters_per_step ns) ||={∅|∅,E1|⊤∖D}=> global_state_interp g1 ns mj D κs ∗ Φc))%I.
 Proof.
   rewrite wpc_unfold /wpc_pre.
-  iIntros "H". iIntros (???). iDestruct ("H" $! mj) as "(_&Hc)". eauto.
+  iIntros "H". iIntros (?? mj). iDestruct ("H" $! mj) as "(_&Hc)". eauto.
 Qed.
 
 Lemma ncfupd_wpc s E1 e Φ Φc :
