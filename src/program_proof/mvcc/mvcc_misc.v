@@ -40,9 +40,9 @@ Lemma list_to_map_insert {A} `{FinMap K M} (l : list (K * A)) k v v' i :
   l !! i = Some (k, v) ->
   <[k := v']> (list_to_map l) =@{M A} list_to_map (<[i := (k, v')]> l).
 Proof.
-  intros.
-  apply lookup_lt_Some in H8 as Hlength.
-  apply delete_Permutation in H8 as Hperm.
+  intros Hnodup Hsome.
+  apply lookup_lt_Some in Hsome as Hlength.
+  apply delete_Permutation in Hsome as Hperm.
   apply Permutation_sym in Hperm.
   rewrite -(list_to_map_proper ((k, v) :: (delete i l)) l); last done; last first.
   { apply NoDup_Permutation_proper with l.*1; [by apply fmap_Permutation | done]. }
@@ -57,7 +57,7 @@ Proof.
     simpl.
     rewrite list_insert_id; first done.
     rewrite list_lookup_fmap.
-    by rewrite H8.
+    by rewrite Hsome.
   }
   do 2 rewrite list_to_map_cons.
   rewrite insert_insert.
