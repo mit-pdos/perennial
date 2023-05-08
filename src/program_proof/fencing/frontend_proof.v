@@ -852,9 +852,9 @@ Proof using Type*.
 
       clear Φ.
       rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & HFAISpec)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & HFAISpec)".
       wp_pures.
       iDestruct "HFAISpec" as (k) "(%H01 & %Henc & Hfupd)".
       wp_apply (wp_new_dec with "Hreq_sl").
@@ -875,7 +875,6 @@ Proof using Type*.
       iIntros "Henc".
       wp_pures.
       wp_apply (wp_Enc__Finish with "Henc").
-      iClear "Hrep_sl".
       iIntros (rep_sl rep_data) "(%Hrep_enc & %Hrep_len & Hrep_sl)".
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.

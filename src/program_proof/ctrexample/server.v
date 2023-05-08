@@ -445,9 +445,9 @@ Proof using Type*.
       iFrame "Hhandler".
 
       rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & HFAISpec)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & HFAISpec)".
       wp_pures.
       wp_apply (wp_CtrServer__FetchAndIncrement with "[$HFAISpec $Hsrv]").
       iIntros (x) "HPost".

@@ -314,10 +314,10 @@ Proof.
 
       clear Φ.
       rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
       simpl.
       iDestruct "Hpre" as (_) "[_ Hpost]".
       iNamed "His_memkv".
@@ -355,11 +355,10 @@ Proof.
 
       clear Φ.
       rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & Hpre)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
       simpl.
       iDestruct "Hpre" as (x) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc&Hshard)".
@@ -372,7 +371,10 @@ Proof.
         { rewrite /named. iExactEq "His_memkv". eauto. }
         iFrame "His_shard". eauto.
       }
-      wp_pures. iApply "HΦ". iFrame. iApply "Hpost". eauto.
+      wp_pures. iModIntro. iApply "HΦ". iFrame.
+      iDestruct (is_slice_zero byteT 1%Qp) as "Hnil".
+      rewrite is_slice_to_small. iFrame "Hnil".
+      iApply "Hpost". eauto.
     }
     rewrite big_sepM_empty. eauto.
   }
