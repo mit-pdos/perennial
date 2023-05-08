@@ -162,7 +162,8 @@ Lemma getstate_eph st γ γsrv :
   own_Server_ghost_eph_f (st <| server.sealed := true |>) γ γsrv
 .
 Proof.
-  by rewrite /own_Server_ghost_eph_f /tc_opaque /=.
+  rewrite /own_Server_ghost_eph_f /tc_opaque /=.
+  iNamed 1. iExists _; iFrame "∗#%".
 Qed.
 
 (* GetState step for ghost state *)

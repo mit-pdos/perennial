@@ -238,9 +238,9 @@ Proof.
   rewrite Some_included_total in H2.
   apply mono_list_included_prefix in H2.
   iDestruct (big_sepL2_lookup_1_some with "Hlist") as %[? ?].
-  { by eapply prefix_lookup. }
+  { by eapply prefix_lookup_Some. }
   iDestruct (big_sepL2_lookup_acc with "Hlist") as "[HH _]".
-  { by eapply prefix_lookup. }
+  { by eapply prefix_lookup_Some. }
   { done. }
   iExists x2.
   iSplit.
