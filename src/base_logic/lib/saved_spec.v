@@ -16,9 +16,9 @@ Program Definition saved_spec_own {In Out : Type} `{!savedSpecG Σ In Out} (γ :
   saved_anything_own (F := In -d> (Out -d> ▶ ∙) -n> ▶ ∙) γ dfrac.DfracDiscarded
     (λ in_, (λne Φ : Out -d> laterO (iPropO Σ), Next (Spec in_ (λ out, later_car (Φ out))))).
 Next Obligation.
-  intros ????? Spec ?? Φ1 Φ2 HΦ.
+  intros ????? Spec ? n Φ1 Φ2 HΦ.
   apply Next_contractive.
-  destruct n;
+  destruct n as [|n];
     [ apply dist_later_0 | apply dist_later_S ].
   eapply ofe_mor_ne.
   intros out.

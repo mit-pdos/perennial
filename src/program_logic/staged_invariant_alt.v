@@ -60,7 +60,7 @@ Section def.
 Context `{IRISG: !irisGS Λ Σ, !crashGS Σ}.
 Context `{!pri_invG IRISG}.
 Context `{!later_tokG IRISG}.
-Context `{!stagedG Σ}.
+Context `{stagedG0: !stagedG Σ}.
 
 (*
 Definition staged_inv_cancel_pre E mj Pc : iProp Σ :=
@@ -153,7 +153,7 @@ Section inv.
 Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 Context `{PRI: !pri_invG IRISG}.
 Context `{!later_tokG IRISG}.
-Context `{!stagedG Σ}.
+Context `{stagedG0: !stagedG Σ}.
 Implicit Types i : positive.
 Implicit Types N : namespace.
 Implicit Types P Q R : iProp Σ.
@@ -474,7 +474,7 @@ Proof using stagedG0.
   iSplitL "Hltok Hqa1 H1".
   {
     rewrite /wpc_crash_modality.
-    iIntros (????) "Hg #HC Hlc".
+    iIntros (? ns D ?) "Hg #HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Hle') "Hg".
     iApply (step_fupd2N_inner_fupd2).
     iApply (step_fupd2N_inner_le _ (S (num_laters_per_step ns'))).
@@ -533,7 +533,7 @@ Proof using stagedG0.
   }
   {
     rewrite /wpc_crash_modality.
-    iIntros (????) "Hg #HC Hlc".
+    iIntros (? ns D ?) "Hg #HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Hle') "Hg".
     iApply (step_fupd2N_inner_fupd2).
     iApply (step_fupd2N_inner_le _ (S (num_laters_per_step ns'))).

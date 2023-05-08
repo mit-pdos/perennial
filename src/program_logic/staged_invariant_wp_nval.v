@@ -27,7 +27,7 @@ Proof.
   iIntros "Hstaged Hwand".
   rewrite /wp_nval.
   iIntros (mj q g1 ns D κs) "Hg HNC".
-  iDestruct "Hstaged" as (??????) "(Hown&Hownstat&#Hsaved1&#Hsaved2&Hltok&Hitok&Hinv)".
+  iDestruct "Hstaged" as (E2 ?????) "(Hown&Hownstat&#Hsaved1&#Hsaved2&Hltok&Hitok&Hinv)".
   iDestruct "Hinv" as (mj_wp_init mj_ishare Hlt) "#Hinv".
   rewrite /staged_inv.
   iDestruct (pri_inv_tok_disj_inv_half with "[$]") as %Hdisj.
