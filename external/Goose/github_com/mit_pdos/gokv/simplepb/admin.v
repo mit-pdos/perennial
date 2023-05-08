@@ -16,7 +16,8 @@ Definition EnterNewConfig: val :=
       e.EmptyConfig
     else
       let: "configCk" := config.MakeClerk "configHost" in
-      let: ("epoch", "oldServers") := config.Clerk__GetEpochAndConfig "configCk" in
+      let: ("epoch", "oldServers") := config.Clerk__ReserveEpochAndGetConfig "configCk" in
+      (* log.Printf("Reserved %d", epoch) *)
       let: "id" := (Data.randomUint64 #() + #1) `rem` (slice.len "oldServers") in
       let: "oldClerk" := pb.MakeClerk (SliceGet uint64T "oldServers" "id") in
       let: "reply" := pb.Clerk__GetState "oldClerk" (struct.new pb.GetStateArgs [
@@ -45,7 +46,8 @@ Definition EnterNewConfig: val :=
           Fork (SliceSet uint64T "errs" "locali" (pb.Clerk__SetState "clerk" (struct.new pb.SetStateArgs [
                   "Epoch" ::= "epoch";
                   "State" ::= struct.loadF pb.GetStateReply "State" "reply";
-                  "NextIndex" ::= struct.loadF pb.GetStateReply "NextIndex" "reply"
+                  "NextIndex" ::= struct.loadF pb.GetStateReply "NextIndex" "reply";
+                  "CommittedNextIndex" ::= struct.loadF pb.GetStateReply "CommittedNextIndex" "reply"
                 ]));;
                 waitgroup.Done "wg");;
           "i" <-[uint64T] ![uint64T] "i" + #1;;
@@ -66,7 +68,7 @@ Definition EnterNewConfig: val :=
           (* log.Println("Error while setting state and entering new epoch") *)
           ![uint64T] "err"
         else
-          (if: config.Clerk__WriteConfig "configCk" "epoch" "servers" ≠ e.None
+          (if: config.Clerk__TryWriteConfig "configCk" "epoch" "servers" ≠ e.None
           then
             (* log.Println("Error while writing to config service") *)
             e.Stale
@@ -82,10 +84,5 @@ Definition EnterNewConfig: val :=
 Definition InitializeSystem: val :=
   rec: "InitializeSystem" "configHost" "servers" :=
     let: "configCk" := config.MakeClerk "configHost" in
-    config.Clerk__WriteConfig "configCk" #0 "servers";;
-    let: "clerk" := pb.MakeClerk (SliceGet uint64T "servers" #0) in
-    pb.Clerk__BecomePrimary "clerk" (struct.new pb.BecomePrimaryArgs [
-      "Epoch" ::= #0;
-      "Replicas" ::= "servers"
-    ]);;
-    e.None.
+    config.Clerk__TryWriteConfig "configCk" #0 "servers";;
+    EnterNewConfig "configHost" "servers".

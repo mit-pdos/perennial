@@ -19,7 +19,7 @@ Definition Server__TryLocalIncrement: val :=
   rec: "Server__TryLocalIncrement" "s" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     let: (<>, "h") := grove_ffi.GetTimeRange #() in
-    (if: "h" > struct.loadF Server "leaseExpiration" "s"
+    (if: "h" ≥ struct.loadF Server "leaseExpiration" "s"
     then
       lock.release (struct.loadF Server "mu" "s");;
       #false

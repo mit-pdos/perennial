@@ -8,23 +8,40 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+(* sm.go *)
+
+Definition VersionedStateMachine := struct.decl [
+  "ApplyVolatile" :: (slice.T byteT -> uint64T -> slice.T byteT)%ht;
+  "ApplyReadonly" :: (slice.T byteT -> (uint64T * slice.T byteT))%ht;
+  "SetState" :: (slice.T byteT -> uint64T -> unitT)%ht;
+  "GetState" :: (unitT -> slice.T byteT)%ht
+].
+
 Definition EEStateMachine := struct.decl [
   "lastSeq" :: mapT uint64T;
   "lastReply" :: mapT (slice.T byteT);
   "nextCID" :: uint64T;
-  "sm" :: ptrT
+  "sm" :: ptrT;
+  "eeNextIndex" :: uint64T
 ].
+
+Definition OPTYPE_RW : expr := #(U8 0).
+
+Definition OPTYPE_GETFRESHCID : expr := #(U8 1).
+
+Definition OPTYPE_RO : expr := #(U8 2).
 
 Definition EEStateMachine__applyVolatile: val :=
   rec: "EEStateMachine__applyVolatile" "s" "op" :=
     let: "ret" := ref (zero_val (slice.T byteT)) in
-    (if: (SliceGet byteT "op" #0 = #(U8 1))
+    struct.storeF EEStateMachine "eeNextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF EEStateMachine "eeNextIndex" "s") #1);;
+    (if: (SliceGet byteT "op" #0 = OPTYPE_GETFRESHCID)
     then
       "ret" <-[slice.T byteT] NewSliceWithCap byteT #0 #8;;
       "ret" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "ret") (struct.loadF EEStateMachine "nextCID" "s");;
-      struct.storeF EEStateMachine "nextCID" "s" (struct.loadF EEStateMachine "nextCID" "s" + #1)
+      struct.storeF EEStateMachine "nextCID" "s" (std.SumAssumeNoOverflow (struct.loadF EEStateMachine "nextCID" "s") #1)
     else
-      (if: (SliceGet byteT "op" #0 = #(U8 0))
+      (if: (SliceGet byteT "op" #0 = OPTYPE_RW)
       then
         let: "n" := slice.len "op" in
         let: "enc" := SliceSubslice byteT "op" #1 "n" in
@@ -33,15 +50,38 @@ Definition EEStateMachine__applyVolatile: val :=
         (if: Fst (MapGet (struct.loadF EEStateMachine "lastSeq" "s") "cid") ≥ "seq"
         then "ret" <-[slice.T byteT] Fst (MapGet (struct.loadF EEStateMachine "lastReply" "s") "cid")
         else
-          "ret" <-[slice.T byteT] struct.loadF simplelog.InMemoryStateMachine "ApplyVolatile" (struct.loadF EEStateMachine "sm" "s") "realOp";;
+          "ret" <-[slice.T byteT] struct.loadF VersionedStateMachine "ApplyVolatile" (struct.loadF EEStateMachine "sm" "s") "realOp" (struct.loadF EEStateMachine "eeNextIndex" "s");;
           MapInsert (struct.loadF EEStateMachine "lastReply" "s") "cid" (![slice.T byteT] "ret");;
           MapInsert (struct.loadF EEStateMachine "lastSeq" "s") "cid" "seq")
-      else Panic ("unexpected ee op type")));;
+      else
+        (if: (SliceGet byteT "op" #0 = OPTYPE_RO)
+        then
+          let: "n" := slice.len "op" in
+          let: "realOp" := SliceSubslice byteT "op" #1 "n" in
+          let: ("0_ret", "1_ret") := struct.loadF VersionedStateMachine "ApplyReadonly" (struct.loadF EEStateMachine "sm" "s") "realOp" in
+          "0_ret";;
+          "ret" <-[slice.T byteT] "1_ret"
+        else Panic ("unexpected ee op type"))));;
     ![slice.T byteT] "ret".
+
+Definition EEStateMachine__applyReadonly: val :=
+  rec: "EEStateMachine__applyReadonly" "s" "op" :=
+    (if: (SliceGet byteT "op" #0 = OPTYPE_GETFRESHCID)
+    then Panic ("Got GETFRESHCID as a read-only op")
+    else
+      (if: (SliceGet byteT "op" #0 = OPTYPE_RW)
+      then Panic ("Got RW as a read-only op")
+      else
+        (if: SliceGet byteT "op" #0 ≠ OPTYPE_RO
+        then Panic ("unexpected ee op type")
+        else #())));;
+    let: "n" := slice.len "op" in
+    let: "realOp" := SliceSubslice byteT "op" #1 "n" in
+    struct.loadF VersionedStateMachine "ApplyReadonly" (struct.loadF EEStateMachine "sm" "s") "realOp".
 
 Definition EEStateMachine__getState: val :=
   rec: "EEStateMachine__getState" "s" :=
-    let: "appState" := struct.loadF simplelog.InMemoryStateMachine "GetState" (struct.loadF EEStateMachine "sm" "s") #() in
+    let: "appState" := struct.loadF VersionedStateMachine "GetState" (struct.loadF EEStateMachine "sm" "s") #() in
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #0) in
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF EEStateMachine "nextCID" "s");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (map_marshal.EncodeMapU64ToU64 (struct.loadF EEStateMachine "lastSeq" "s"));;
@@ -50,7 +90,7 @@ Definition EEStateMachine__getState: val :=
     ![slice.T byteT] "enc".
 
 Definition EEStateMachine__setState: val :=
-  rec: "EEStateMachine__setState" "s" "state" :=
+  rec: "EEStateMachine__setState" "s" "state" "nextIndex" :=
     let: "enc" := ref_to (slice.T byteT) "state" in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     struct.storeF EEStateMachine "nextCID" "s" "0_ret";;
@@ -61,7 +101,8 @@ Definition EEStateMachine__setState: val :=
     let: ("0_ret", "1_ret") := map_marshal.DecodeMapU64ToBytes (![slice.T byteT] "enc") in
     struct.storeF EEStateMachine "lastReply" "s" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    struct.loadF simplelog.InMemoryStateMachine "SetState" (struct.loadF EEStateMachine "sm" "s") (![slice.T byteT] "enc");;
+    struct.loadF VersionedStateMachine "SetState" (struct.loadF EEStateMachine "sm" "s") (![slice.T byteT] "enc") "nextIndex";;
+    struct.storeF EEStateMachine "eeNextIndex" "s" "nextIndex";;
     #().
 
 Definition MakeEEKVStateMachine: val :=
@@ -72,6 +113,7 @@ Definition MakeEEKVStateMachine: val :=
     struct.storeF EEStateMachine "nextCID" "s" #0;;
     struct.storeF EEStateMachine "sm" "s" "sm";;
     struct.new simplelog.InMemoryStateMachine [
+      "ApplyReadonly" ::= EEStateMachine__applyReadonly "s";
       "ApplyVolatile" ::= EEStateMachine__applyVolatile "s";
       "GetState" ::= (λ: <>,
         EEStateMachine__getState "s"
@@ -90,7 +132,7 @@ Definition MakeClerk: val :=
     let: "ck" := struct.alloc Clerk (zero_val (struct.t Clerk)) in
     struct.storeF Clerk "ck" "ck" (clerk.Make "confHost");;
     let: "v" := NewSlice byteT #1 in
-    SliceSet byteT "v" #0 (#(U8 1));;
+    SliceSet byteT "v" #0 OPTYPE_GETFRESHCID;;
     let: "cidEnc" := clerk.Clerk__Apply (struct.loadF Clerk "ck" "ck") "v" in
     let: ("0_ret", "1_ret") := marshal.ReadInt "cidEnc" in
     struct.storeF Clerk "cid" "ck" "0_ret";;
@@ -101,8 +143,18 @@ Definition MakeClerk: val :=
 Definition Clerk__ApplyExactlyOnce: val :=
   rec: "Clerk__ApplyExactlyOnce" "ck" "req" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #1) in
+    SliceSet byteT (![slice.T byteT] "enc") #0 OPTYPE_RW;;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF Clerk "cid" "ck");;
     "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF Clerk "seq" "ck");;
     "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "req";;
     struct.storeF Clerk "seq" "ck" (std.SumAssumeNoOverflow (struct.loadF Clerk "seq" "ck") #1);;
     clerk.Clerk__Apply (struct.loadF Clerk "ck" "ck") (![slice.T byteT] "enc").
+
+Definition Clerk__ApplyReadonly: val :=
+  rec: "Clerk__ApplyReadonly" "ck" "req" :=
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #1) in
+    SliceSet byteT (![slice.T byteT] "enc") #0 OPTYPE_RO;;
+    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "req";;
+    clerk.Clerk__ApplyRo (struct.loadF Clerk "ck" "ck") (![slice.T byteT] "enc").
+
+(* vsm.go *)

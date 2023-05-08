@@ -122,11 +122,10 @@ Context `{hReg: !urpcregG Σ}.
 Definition impl_handler_spec (f:val)
     (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
    : iProp Σ :=
-  ∀ (reqData:list u8) Post req rep dummy_rep_sl dummy,
+  ∀ (reqData:list u8) Post req rep,
   {{{
     is_slice_small req byteT 1 reqData ∗
-    rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
-    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
+    rep ↦[slice.T byteT] (slice_val Slice.nil) ∗
     Spec reqData Post
   }}}
     f (slice_val req) #rep
@@ -140,10 +139,9 @@ Definition impl_handler_spec (f:val)
 Definition impl_handler_spec2 (f:val)
     (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
    : iProp Σ :=
-  ∀ (reqData:list u8) Φ Ψ req rep dummy_rep_sl dummy,
+  ∀ (reqData:list u8) Φ Ψ req rep,
     □ (is_slice_small req byteT 1 reqData -∗
-    rep ↦[slice.T byteT] (slice_val dummy_rep_sl) -∗
-    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy -∗
+    rep ↦[slice.T byteT] (slice_val Slice.nil) -∗
     (∀ reply, Ψ reply -∗ ∀ rep_sl q,
       rep ↦[slice.T byteT] (slice_val rep_sl) -∗
       is_slice_small rep_sl byteT q reply -∗
@@ -375,11 +373,10 @@ Proof.
   wp_pures.
 
   rewrite /impl_handler_spec2.
-  iSpecialize ("His_urpcHandler" $! args _ _ r sl' Slice.nil).
+  iSpecialize ("His_urpcHandler" $! args _ _ r sl').
 
   rewrite zero_slice_val.
-  wp_apply ("His_urpcHandler" with "Hsl Hsl' [] [HPre]").
-  { iApply @is_slice_zero. }
+  wp_apply ("His_urpcHandler" with "Hsl Hsl' [HPre]").
   2: {
     instantiate (1:=Post).
     iRewrite -"Hequiv". iFrame "#".
@@ -465,9 +462,9 @@ impl_handler_spec f Spec -∗
 impl_handler_spec2 f Spec.
 Proof.
   iIntros "#Hhandler1".
-  iIntros (???????) "!# Hreq_sl Hrep_ptr Hrep_sl HΦ HΨ".
+  iIntros (?????) "!# Hreq_sl Hrep_ptr HΦ HΨ".
   unfold impl_handler_spec.
-  wp_apply ("Hhandler1" with "[$Hreq_sl $Hrep_ptr $Hrep_sl $HΨ]").
+  wp_apply ("Hhandler1" with "[$Hreq_sl $Hrep_ptr $HΨ]").
   iIntros (???) "(Hrep & Hrep_sl & HΨ)".
   iApply ("HΦ" with "HΨ Hrep Hrep_sl").
 Qed.

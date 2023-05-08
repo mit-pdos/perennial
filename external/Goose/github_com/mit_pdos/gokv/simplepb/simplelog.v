@@ -8,9 +8,10 @@ From Goose Require github_com.tchajed.marshal.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition InMemoryStateMachine := struct.decl [
+  "ApplyReadonly" :: (slice.T byteT -> (uint64T * slice.T byteT))%ht;
   "ApplyVolatile" :: (slice.T byteT -> slice.T byteT)%ht;
   "GetState" :: (unitT -> slice.T byteT)%ht;
-  "SetState" :: (slice.T byteT -> unitT)%ht
+  "SetState" :: (slice.T byteT -> uint64T -> unitT)%ht
 ].
 
 Definition MAX_LOG_SIZE : expr := #64 * #1024 * #1024 * #1024.
@@ -71,13 +72,17 @@ Definition StateMachine__apply: val :=
       ) in
     ("ret", "waitFn").
 
+Definition StateMachine__applyReadonly: val :=
+  rec: "StateMachine__applyReadonly" "s" "op" :=
+    struct.loadF InMemoryStateMachine "ApplyReadonly" (struct.loadF StateMachine "smMem" "s") "op".
+
 (* TODO: make the nextIndex and epoch argument order consistent with pb.StateMachine *)
 Definition StateMachine__setStateAndUnseal: val :=
   rec: "StateMachine__setStateAndUnseal" "s" "snap" "nextIndex" "epoch" :=
     struct.storeF StateMachine "epoch" "s" "epoch";;
     struct.storeF StateMachine "nextIndex" "s" "nextIndex";;
     struct.storeF StateMachine "sealed" "s" #false;;
-    struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") "snap";;
+    struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") "snap" "nextIndex";;
     StateMachine__makeDurableWithSnap "s" "snap";;
     #().
 
@@ -120,13 +125,13 @@ Definition recoverStateMachine: val :=
       "snap" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") #0 (![uint64T] "snapLen");;
       let: "n" := slice.len (![slice.T byteT] "enc") in
       "enc" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") (![uint64T] "snapLen") "n";;
-      struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") (![slice.T byteT] "snap");;
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       struct.storeF StateMachine "epoch" "s" "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       struct.storeF StateMachine "nextIndex" "s" "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
+      struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") (![slice.T byteT] "snap") (struct.loadF StateMachine "nextIndex" "s");;
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         (if: slice.len (![slice.T byteT] "enc") > #1
@@ -153,11 +158,14 @@ Definition recoverStateMachine: val :=
 
    Maybe we should make those be a part of pb.StateMachine *)
 Definition MakePbServer: val :=
-  rec: "MakePbServer" "smMem" "fname" :=
+  rec: "MakePbServer" "smMem" "fname" "confHost" :=
     let: "s" := recoverStateMachine "smMem" "fname" in
     let: "sm" := struct.new pb.StateMachine [
       "StartApply" ::= (λ: "op",
         StateMachine__apply "s" "op"
+        );
+      "ApplyReadonly" ::= (λ: "op",
+        StateMachine__applyReadonly "s" "op"
         );
       "SetStateAndUnseal" ::= (λ: "snap" "nextIndex" "epoch",
         StateMachine__setStateAndUnseal "s" "snap" "nextIndex" "epoch";;
@@ -167,4 +175,4 @@ Definition MakePbServer: val :=
         StateMachine__getStateAndSeal "s"
         )
     ] in
-    pb.MakeServer "sm" (struct.loadF StateMachine "nextIndex" "s") (struct.loadF StateMachine "epoch" "s") (struct.loadF StateMachine "sealed" "s").
+    pb.MakeServer "sm" "confHost" (struct.loadF StateMachine "nextIndex" "s") (struct.loadF StateMachine "epoch" "s") (struct.loadF StateMachine "sealed" "s").

@@ -3,13 +3,25 @@ From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.gokv.simplepb.config.
 From Goose Require github_com.mit_pdos.gokv.simplepb.e.
 From Goose Require github_com.mit_pdos.gokv.simplepb.pb.
+From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.gokv.trusted_proph.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Clerk := struct.decl [
   "confCk" :: ptrT;
-  "primaryCk" :: ptrT
+  "replicaClerks" :: slice.T ptrT
 ].
+
+Definition makeClerks: val :=
+  rec: "makeClerks" "servers" :=
+    let: "clerks" := NewSlice ptrT (slice.len "servers") in
+    let: "i" := ref_to uint64T #0 in
+    Skip;;
+    (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+      SliceSet ptrT "clerks" (![uint64T] "i") (pb.MakeClerk (SliceGet uint64T "servers" (![uint64T] "i")));;
+      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      Continue);;
+    "clerks".
 
 Definition Make: val :=
   rec: "Make" "confHost" :=
@@ -21,7 +33,7 @@ Definition Make: val :=
       (if: (slice.len "config" = #0)
       then Continue
       else
-        struct.storeF Clerk "primaryCk" "ck" (pb.MakeClerk (SliceGet uint64T "config" #0));;
+        struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config");;
         Break));;
     "ck".
 
@@ -32,7 +44,7 @@ Definition Clerk__Apply: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := ref (zero_val uint64T) in
-      let: ("0_ret", "1_ret") := pb.Clerk__Apply (struct.loadF Clerk "primaryCk" "ck") "op" in
+      let: ("0_ret", "1_ret") := pb.Clerk__Apply (SliceGet ptrT (struct.loadF Clerk "replicaClerks" "ck") #0) "op" in
       "err" <-[uint64T] "0_ret";;
       "ret" <-[slice.T byteT] "1_ret";;
       (if: (![uint64T] "err" = e.None)
@@ -41,7 +53,35 @@ Definition Clerk__Apply: val :=
         time.Sleep (#100 * #1000000);;
         let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
         (if: slice.len "config" > #0
-        then struct.storeF Clerk "primaryCk" "ck" (pb.MakeClerk (SliceGet uint64T "config" #0))
+        then struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config")
         else #());;
         Continue));;
     ![slice.T byteT] "ret".
+
+Definition Clerk__ApplyRo2: val :=
+  rec: "Clerk__ApplyRo2" "ck" "op" :=
+    let: "ret" := ref (zero_val (slice.T byteT)) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "j" := (Data.randomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")) in
+      let: "err" := ref (zero_val uint64T) in
+      let: ("0_ret", "1_ret") := pb.Clerk__ApplyRo (SliceGet ptrT (struct.loadF Clerk "replicaClerks" "ck") "j") "op" in
+      "err" <-[uint64T] "0_ret";;
+      "ret" <-[slice.T byteT] "1_ret";;
+      (if: (![uint64T] "err" = e.None)
+      then Break
+      else
+        time.Sleep (#100 * #1000000);;
+        let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
+        (if: slice.len "config" > #0
+        then struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config")
+        else #());;
+        Continue));;
+    ![slice.T byteT] "ret".
+
+Definition Clerk__ApplyRo: val :=
+  rec: "Clerk__ApplyRo" "ck" "op" :=
+    let: "p" := trusted_proph.NewProph #() in
+    let: "v" := Clerk__ApplyRo2 "ck" "op" in
+    trusted_proph.ResolveBytes "p" "v";;
+    "v".

@@ -1,20 +1,23 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
-From Perennial.program_proof.simplepb Require Export pb_ghost.
+From Perennial.program_proof.simplepb Require Export pb_protocol.
 From Perennial.program_proof.simplepb Require Import pb_marshal_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.reconnectclient Require Import proof.
+From RecordUpdate Require Import RecordSet.
+Import RecordSetNotations.
 
 Section pb_getstate_proof.
 Context `{!heapGS Σ}.
-Context {pb_record:PBRecord}.
+Context {pb_record:Sm.t}.
 
-Notation OpType := (pb_OpType pb_record).
-Notation has_op_encoding := (pb_has_op_encoding pb_record).
-Notation has_snap_encoding := (pb_has_snap_encoding pb_record).
-Notation compute_reply := (pb_compute_reply pb_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
 Notation pbG := (pbG (pb_record:=pb_record)).
+Notation own_Server_ghost_f := (own_Server_ghost_f (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
@@ -28,24 +31,26 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
   {{{
         "#Hck" ∷ is_Clerk ck γ γsrv ∗
-        "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv epoch_lb ∗
+        "#Hghost_epoch_lb" ∷ is_epoch_lb γsrv.(r_pb) epoch_lb ∗
         "Hargs" ∷ GetStateArgs.own args_ptr (GetStateArgs.mkC epoch)
   }}}
     Clerk__GetState #ck #args_ptr
   {{{
         (reply:loc) (err:u64), RET #reply;
         if (decide (err = U64 0)) then
-            ∃ epochacc σ enc,
+            ∃ epochacc opsfull enc committedNextIndex,
             ⌜int.nat epoch_lb ≤ int.nat epochacc⌝ ∗
             ⌜int.nat epochacc ≤ int.nat epoch⌝ ∗
-            is_accepted_ro γsrv epochacc σ ∗
-            is_proposal_facts γ epochacc σ ∗
-            is_proposal_lb γ epochacc σ ∗
-            GetStateReply.own reply (GetStateReply.mkC 0 (length σ) enc) ∗
-            ⌜has_snap_encoding enc (fst <$> σ)⌝ ∗
-            ⌜length σ = int.nat (U64 (length σ))⌝
+            is_accepted_ro γsrv.(r_pb) epochacc opsfull ∗
+            is_proposal_facts γ.(s_pb) epochacc opsfull ∗
+            is_proposal_facts_prim γ.(s_prim) epochacc opsfull ∗
+            is_proposal_lb γ.(s_pb) epochacc opsfull ∗
+            commitIndex_facts γ epochacc committedNextIndex ∗
+            GetStateReply.own reply (GetStateReply.mkC 0 (length (get_rwops opsfull)) committedNextIndex enc) ∗
+            ⌜has_snap_encoding enc (get_rwops opsfull)⌝ ∗
+            ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝
           else
-            GetStateReply.own reply (GetStateReply.mkC err 0 [])
+            GetStateReply.own reply (GetStateReply.mkC err 0 0 [])
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -78,7 +83,7 @@ Proof.
     iFrame "Hghost_epoch_lb".
     iSplit.
     { (* No error from RPC, state was returned *)
-      iIntros (?????) "???".
+      iIntros (??????) "?????".
       iIntros (??? Henc_reply) "Hargs_sl".
       iIntros (?) "Hrep Hrep_sl".
       wp_pures.
@@ -88,7 +93,7 @@ Proof.
       iIntros (reply_ptr) "Hreply".
       iIntros "HΦ".
       iApply ("HΦ" $! _ 0).
-      iExists _, _, _.
+      repeat iExists _.
       iFrame "Hreply".
       iSplitR; first done.
       iSplitR; first done.
@@ -138,6 +143,64 @@ Proof.
   }
 Qed.
 
+(** Helper lemmas for GetState() server-side proof *)
+Lemma is_StateMachine_acc_getstate sm own_StateMachine P :
+  is_StateMachine sm own_StateMachine P -∗
+  (∃ getstateFn,
+    "#Hgetstate" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getstateFn) ∗
+    "#HgetstateSpec" ∷ is_GetStateAndSeal_fn (pb_record:=pb_record) own_StateMachine getstateFn P
+  )
+.
+Proof.
+  rewrite /is_StateMachine /tc_opaque.
+  iNamed 1. iExists _; iFrame "#".
+Qed.
+
+(* (trivial) GetState step for ephemeral ghost state *)
+Lemma getstate_eph st γ γsrv :
+  own_Server_ghost_eph_f st γ γsrv -∗
+  own_Server_ghost_eph_f (st <| server.sealed := true |>) γ γsrv
+.
+Proof.
+  by rewrite /own_Server_ghost_eph_f /tc_opaque /=.
+Qed.
+
+(* GetState step for ghost state *)
+Lemma getstate_step γ γsrv epoch_lb epoch ops sealed :
+  is_epoch_lb γsrv.(r_pb) epoch_lb -∗
+  own_Server_ghost_f γ γsrv epoch ops sealed ={⊤∖↑pbAofN}=∗
+  own_Server_ghost_f γ γsrv epoch ops true ∗
+  ∃ opsfull,
+  ⌜ops = get_rwops opsfull⌝ ∗
+  is_accepted_ro γsrv.(r_pb) epoch opsfull ∗
+  is_proposal_lb γ.(s_pb) epoch opsfull ∗
+  is_proposal_facts γ.(s_pb) epoch opsfull ∗
+  is_proposal_facts_prim γ.(s_prim) epoch opsfull ∗
+  ⌜int.nat epoch_lb ≤ int.nat epoch⌝
+.
+Proof.
+  iIntros "#Hepoch_lb Hghost".
+  iNamed "Hghost".
+  iMod (ghost_seal with "Hghost") as "Hghost".
+  iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
+  iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hprop_lb Hprop_facts]".
+  iDestruct (ghost_epoch_lb_ineq with "Hepoch_lb Hghost") as "%Hepoch_ineq".
+  iSplitR "".
+  { iExists _. by iFrame "∗#". }
+  iExists _.
+  iFrame "#".
+  by iPureIntro.
+Qed.
+
+Lemma getstate_commit_facts st γ γsrv :
+  own_Server_ghost_eph_f st γ γsrv -∗
+  commitIndex_facts γ st.(server.epoch) st.(server.committedNextIndex).
+Proof.
+  rewrite /own_Server_ghost_eph_f /tc_opaque.
+  iNamed 1.
+  iExists _; iFrame "#%".
+Qed.
+
 Lemma wp_Server__GetState γ γsrv s args_ptr args epoch_lb Φ Ψ :
   is_Server s γ γsrv -∗
   GetStateArgs.own args_ptr args -∗
@@ -156,7 +219,7 @@ Proof.
   wp_pures.
   iNamed "Hargs".
   wp_loadField.
-
+  iNamed "Hvol".
   wp_loadField.
   wp_if_destruct.
   { (* reply with error *)
@@ -165,7 +228,9 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      do 9 (iExists _).
+      repeat (iExists _).
+      iSplitR "HghostEph"; last iFrame.
+      repeat (iExists _).
       iFrame "∗#%".
     }
     unfold GetState_core_spec.
@@ -184,7 +249,7 @@ Proof.
     iApply ("HΦ" with "[HΨ]"); last first.
     {
       iExists _. iFrame.
-      instantiate (1:=GetStateReply.mkC _ _ _).
+      instantiate (1:=GetStateReply.mkC _ _ _ _).
       replace (slice.nil) with (slice_val Slice.nil) by done.
       iFrame.
     }
@@ -195,50 +260,37 @@ Proof.
   wp_storeField.
   wp_loadField.
 
-  iAssert (_) with "HisSm" as "HisSm2".
-  iNamed "HisSm2".
+  iDestruct (is_StateMachine_acc_getstate with "HisSm") as "HH".
+  iNamed "HH".
   wp_loadField.
   iDestruct "HΨ" as "[#Hepoch_lb HΨ]".
-  wp_apply ("HgetStateSpec" with "[$Hstate]").
+  iDestruct (getstate_commit_facts with "HghostEph") as "#Hfacts".
+  iDestruct (getstate_eph with "HghostEph") as "HghostEph".
+  wp_apply ("HgetstateSpec" with "[$Hstate]").
   {
     iIntros "Hghost".
-    iDestruct "Hghost" as (?) "(%Heq & Hghost & Hprim)".
-    iDestruct (ghost_epoch_lb_ineq with "Hepoch_lb Hghost") as "#Hepoch_ineq".
-    iMod (ghost_seal with "Hghost") as "Hghost".
-    iDestruct (ghost_get_accepted_ro with "Hghost") as "#Hacc_ro".
-    iDestruct (ghost_get_proposal_facts with "Hghost") as "#[Hprop_lb Hprop_facts]".
-    iSplitL "Hghost Hprim".
-    {
-      iExists _.
-      iFrame.
-      iPureIntro. done.
-    }
+    iMod (getstate_step with "Hepoch_lb Hghost") as "[Hghost HH]".
+    iFrame "Hghost".
     iModIntro.
-
-    iCombine "Hacc_ro Hepoch_ineq" as "HH".
-    instantiate (1:=(∃ σ, is_accepted_ro γsrv epoch σ ∗
-                                         is_proposal_lb γ epoch σ ∗
-                                         is_proposal_facts γ epoch σ ∗
-                                         ⌜σ.*1 = σphys⌝ ∗ ⌜int.nat epoch_lb ≤ int.nat epoch⌝)%I).
-    iExists _.
-    iFrame "#".
-    done.
+    iExact "HH".
   }
   iIntros (??) "(#Hsnap_sl & %Hsnap_enc & [Hstate HQ])".
-  iDestruct "HQ" as (?) "(#Hacc_ro &  #Hprop_lb & #Hprop_facts & %Hσeq_phys & %Hineq)".
+  iDestruct "HQ" as (?) "(%Hσeq_phys & #Hacc_ro &  #Hprop_lb & #Hprop_facts & #Hprim_facts & %Hepoch_ineq)".
   wp_pures.
   wp_loadField.
   wp_pures.
   wp_loadField.
 
   iLeft in "HΨ".
-  iDestruct ("HΨ" with "[% //] [%] Hacc_ro Hprop_facts Hprop_lb [%] [%]") as "HΨ".
+  iDestruct ("HΨ" with "[% //] [%] Hacc_ro Hprop_facts Hprim_facts Hprop_lb Hfacts [%] [%]") as "HΨ".
   { word. }
-  { rewrite Hσeq_phys. done. }
+  { rewrite -Hσeq_phys. done. }
   { apply (f_equal length) in Hσeq_phys.
-    rewrite fmap_length in Hσeq_phys.
+    unfold no_overflow in HnextIndexNoOverflow. (* FIXME: why manually unfold? *)
     word. }
 
+  wp_pures.
+  wp_loadField.
   (* signal all opApplied condvars *)
   wp_apply (wp_MapIter with "HopAppliedConds_map HopAppliedConds_conds").
   { iFrame "HopAppliedConds_conds". }
@@ -259,12 +311,18 @@ Proof.
   iIntros (opAppliedConds_loc_new) "Hmapnew".
   wp_storeField.
   wp_loadField.
+  wp_apply (wp_condBroadcast with "[]").
+  { done. }
+  wp_loadField.
   wp_apply (release_spec with "[-Hsnap_sl HΨ HΦ]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    do 9 (iExists _).
-    iFrame "∗ HisSm #%".
+    repeat (iExists _).
+    iFrame "HghostEph".
+    repeat (iExists _).
+    iFrame "∗ HisSm #".
+    iFrame "%".
     by iApply big_sepM_empty.
   }
   wp_apply (wp_allocStruct).
@@ -279,10 +337,7 @@ Proof.
   simpl.
 
   apply (f_equal length) in Hσeq_phys.
-  rewrite fmap_length in Hσeq_phys.
   rewrite Hσeq_phys.
-  rewrite Hσ_nextIndex.
-  replace (U64 (int.nat nextIndex)) with (nextIndex) by word.
   iFrame "∗#".
 Qed.
 

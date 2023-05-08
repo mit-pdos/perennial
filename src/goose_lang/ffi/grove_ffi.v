@@ -8,7 +8,7 @@ From iris.proofmode Require Import tactics.
 From Perennial.base_logic Require Import ghost_map mono_nat.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 
-From Perennial.Helpers Require Import CountableTactics Transitions.
+From Perennial.Helpers Require Import CountableTactics Transitions Integers.
 From Perennial.goose_lang Require Import prelude typing struct lang lifting slice typed_slice proofmode control.
 From Perennial.goose_lang Require Import wpc_proofmode crash_modality.
 
@@ -25,7 +25,8 @@ Inductive GroveOp :=
   (* File ops *)
   FileReadOp | FileWriteOp | FileAppendOp |
   (* Time ops *)
-  GetTscOp
+  GetTscOp |
+  GetTimeRangeOp
 .
 #[global]
 Instance eq_GroveOp : EqDecision GroveOp.
@@ -98,13 +99,14 @@ Qed.
 those endpoints. *)
 Record grove_global_state : Type := {
   grove_net: gmap chan (gset message);
+  grove_global_time: u64;
 }.
 
 Global Instance grove_global_state_settable : Settable _ :=
-  settable! Build_grove_global_state <grove_net>.
+  settable! Build_grove_global_state <grove_net; grove_global_time>.
 
 Global Instance grove_global_state_inhabited : Inhabited grove_global_state :=
-  populate {| grove_net := ∅; |}.
+  populate {| grove_net := ∅; grove_global_time := 0 |}.
 
 (** The per-node state *)
 Record grove_node_state : Type := {
@@ -122,10 +124,6 @@ Definition grove_model : ffi_model.
 Proof.
   refine (mkFfiModel grove_node_state grove_global_state _ _).
 Defined.
-
-(** Initial state where the endpoints exist but have not received any messages yet. *)
-Definition init_grove (channels : list chan) : grove_global_state :=
-  {| grove_net := gset_to_gmap ∅ (list_to_set channels) |}.
 
 Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
@@ -243,6 +241,18 @@ Section grove.
       ));;
       new_time ← reads (λ '(σ,g), σ.(world).(grove_node_tsc));
       ret $ Val $ (#(new_time: u64))
+    | GetTimeRangeOp, LitV LitUnit =>
+      time_since_last ← any u64;
+      modify_g (set grove_global_time (λ old_time,
+        let new_time := word.add old_time time_since_last in
+        (* Make sure we did not overflow *)
+        if Z.leb (word.unsigned old_time) (word.unsigned new_time) then new_time else old_time
+      ));;
+      low_time ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (low_time: u64),
+         Z.leb (word.unsigned low_time) (word.unsigned g.(global_world).(grove_global_time)));
+      high_time ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (high_time: u64),
+         Z.leb (word.unsigned g.(global_world).(grove_global_time)) (word.unsigned high_time));
+      ret $ Val $ PairV #(low_time:u64) #(high_time:u64)
     (* Everything else is UB *)
     | _, _ => undefined
     end.
@@ -255,6 +265,8 @@ End grove.
 (** * Grove semantic interpretation and lifting lemmas *)
 Class groveGS Σ := GroveGS {
   groveG_net_heapG :> gen_heap.gen_heapGS chan (gset message) Σ;
+  grove_time_name : gname;
+  groveG_timeG :> mono_natG Σ;
 }.
 
 Class groveGpreS Σ := {
@@ -296,7 +308,9 @@ Section grove.
          (mono_nat_auth_own grove_tsc_name 1 (int.nat σ.(grove_node_tsc)) ∗
           ⌜file_content_bounds σ.(grove_node_files)⌝ ∗ gen_heap_interp σ.(grove_node_files))%I;
        ffi_global_ctx _ _ g :=
-         (gen_heap_interp g.(grove_net) ∗ ⌜chan_msg_bounds g.(grove_net)⌝)%I;
+         (gen_heap_interp g.(grove_net) ∗ ⌜chan_msg_bounds g.(grove_net)⌝ ∗
+          mono_nat_auth_own grove_time_name 1 (int.nat g.(grove_global_time))
+         )%I;
        ffi_local_start _ _ σ :=
          ([∗ map] f↦c ∈ σ.(grove_node_files), (mapsto (L:=string) (V:=list byte) f (DfracOwn 1) c))%I;
        ffi_global_start _ _ g :=
@@ -332,6 +346,26 @@ Section lifting.
   Definition tsc_lb (time : nat) : iProp Σ :=
     mono_nat_lb_own grove_tsc_name time.
 
+  (* FIXME: have to manually put some of this stuff here because of two mono_natG's in context *)
+  Definition is_time_lb (t:u64) := @mono_nat_lb_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name (int.nat t).
+  Definition own_time (t:u64) := @mono_nat_auth_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name 1 (int.nat t).
+
+  Lemma own_time_get_lb t :
+    own_time t -∗ is_time_lb t.
+  Proof.
+    rewrite /own_time /is_time_lb. destruct goose_groveGS.
+    iApply mono_nat_lb_own_get.
+  Qed.
+
+  Lemma is_time_lb_mono t t':
+    int.nat t <= int.nat t' →
+    is_time_lb t' -∗ is_time_lb t.
+  Proof.
+    rewrite /own_time /is_time_lb. destruct goose_groveGS.
+    intros.
+    iApply mono_nat_lb_own_le.
+    word.
+  Qed.
 
   Definition connection_socket (c_l : chan) (c_r : chan) : val :=
     ExtV (ConnectionSocketV c_l c_r).
@@ -404,7 +438,7 @@ lemmas. *)
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    iDestruct "Hg" as "([Hg %Hg]&?)".
+    iDestruct "Hg" as "((Hg & %Hg & ?)&?)".
     inv_head_step.
     match goal with
     | H : isFreshChan _ ?c |- _ => rename H into Hfresh; rename c into c_l
@@ -479,7 +513,7 @@ lemmas. *)
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    iDestruct "Hg" as "([Hg %Hg]&?)".
+    iDestruct "Hg" as "((Hg & %Hg & ?)&?)".
     iDestruct (@gen_heap_valid with "Hg Hc") as %Hc.
     iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
     iModIntro.
@@ -542,7 +576,7 @@ lemmas. *)
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    iDestruct "Hg" as "([Hg %Hg]&?)".
+    iDestruct "Hg" as "((Hg & %Hg & ?)&?)".
     iModIntro.
     iDestruct (@gen_heap_valid with "Hg He") as %He.
     iSplit.
@@ -815,6 +849,87 @@ lemmas. *)
     iApply "HΦ". iFrame. iPureIntro. lia.
   Qed.
 
+  Lemma wp_GetTimeRangeOp s E :
+   ∀ Φ, (∀ (l h t:u64), ⌜int.nat t <= int.nat h⌝ -∗ ⌜int.nat l <= int.nat t⌝ -∗
+                  own_time t -∗ |NC={E}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
+   WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}.
+  Proof.
+    iIntros (Φ) "HΦ". iApply wp_lift_atomic_head_step_no_fork_nc; first by auto.
+    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iSplit.
+    { iPureIntro. eexists _, _, _, _, _; simpl.
+      econstructor. rewrite /head_step/=.
+      monad_simpl.
+      econstructor.
+      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      monad_simpl.
+      econstructor.
+      1: {
+        eapply (relation.suchThat_runs _ _ (U64 0)).
+        apply Is_true_true_2.
+        word.
+      }
+      monad_simpl.
+      econstructor.
+      {
+        eapply (relation.suchThat_runs _ _ (U64 (2^64-1))).
+        apply Is_true_true_2.
+        word.
+      }
+      monad_simpl.
+    }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    inv_head_step.
+    simpl.
+    iFrame.
+    iSplitR; first done.
+    iDestruct "Hg" as "((? & %Hg & Ht)&?)".
+    iMod (mono_nat_own_update with "Ht") as "[Ht _]".
+    {
+      instantiate (1:=(int.nat ((if
+           int.Z g1.(global_world).(grove_global_time) <=?
+           int.Z (u64_instance.u64.(word.add) g1.(global_world).(grove_global_time) x)
+          then u64_instance.u64.(word.add) g1.(global_world).(grove_global_time) x
+          else g1.(global_world).(grove_global_time))))).
+      destruct (Z.leb (int.Z _) (int.Z (word.add _ _))) eqn:Hlt.
+      {
+        rewrite Z.leb_le in Hlt.
+        apply Z2Nat.inj_le; [try word..|].
+        { apply word.unsigned_range. }
+        done.
+      }
+      { word. }
+    }
+    iMod ("HΦ" $! low_time high_time _ with "[] [] Ht") as "[Ht HΦ]".
+    { iPureIntro.
+      apply Is_true_true_1 in H1. rewrite Z.leb_le in H1.
+      by do 2 rewrite u64_Z_through_nat.
+    }
+    { iPureIntro.
+      apply Is_true_true_1 in H0. rewrite Z.leb_le in H0.
+      by do 2 rewrite u64_Z_through_nat.
+    }
+    iModIntro.
+    iFrame "HΦ".
+    by iFrame.
+  Qed.
+
+  Lemma wp_time_acc e s E Φ:
+  goose_lang.(language.to_val) e = None →
+   (∀ t, own_time t ={E}=∗ own_time t ∗ WP e @ s; E {{ Φ }}) -∗
+   WP e @ s; E {{ Φ }}.
+  Proof.
+    iIntros (?) "Hacc_wp".
+    wp_apply wp_acc_global_state_interp.
+    { rewrite H. done. }
+    iIntros (?????) "[(? & ? & Ht) ?]".
+    unfold own_time.
+    iMod ("Hacc_wp" with "Ht") as "[Ht Hacc_wp]".
+    by iFrame.
+  Qed.
+
 End lifting.
 
 (** * Grove user-facing operations and their specs *)
@@ -824,8 +939,6 @@ Section grove.
   (* FIXME: figure out which of these clients need to set *)
   Existing Instances grove_op grove_model grove_ty grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
   Local Coercion Var' (s:string) : expr := Var s.
-
-  Axiom GetTimeRange : goose_lang.val.
 
   (** [extT] have size 1 so this fits with them being pointers in Go. *)
   Definition Listener : ty := extT GroveListenTy.
@@ -909,6 +1022,10 @@ Section grove.
   (** Type: func() uint64 *)
   Definition GetTSC : val :=
     λ: <>, ExternalOp GetTscOp #().
+
+  (** Type: func() (uint64, uint64) *)
+  Definition GetTimeRange : val :=
+    λ: <>, ExternalOp GetTimeRangeOp #().
 
   Context `{!heapGS Σ}.
 
@@ -1177,6 +1294,16 @@ Local Ltac solve_atomic2 :=
     by iApply "HΦ".
   Qed.
 
+  Lemma wp_GetTimeRange :
+    ⊢ ∀ (Φ:goose_lang.val → iProp Σ),
+    (∀ (l h t:u64), ⌜int.nat t <= int.nat h⌝ -∗ ⌜int.nat l <= int.nat t⌝ -∗
+                    own_time t -∗ |NC={⊤}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
+  WP GetTimeRange #() {{ Φ }}.
+  Proof.
+    iIntros (?) "HΦ".
+    wp_call. wp_apply (wp_GetTimeRangeOp with "HΦ").
+  Qed.
+
   Lemma tsc_lb_0 :
     ⊢ |==> tsc_lb 0.
   Proof. iApply mono_nat_lb_own_0. Qed.
@@ -1201,7 +1328,8 @@ Program Instance grove_interp_adequacy:
 Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
   iMod (gen_heap_init g.(grove_net)) as (names) "(H1&H2&H3)".
-  iExists (GroveGS _ names). iFrame. eauto.
+  iMod (mono_nat_own_alloc (int.nat g.(grove_global_time))) as (?) "[Ht _]".
+  iExists (GroveGS _ names _ _). iFrame. eauto.
 Qed.
 Next Obligation.
   rewrite //=.

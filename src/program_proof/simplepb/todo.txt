@@ -1,16 +1,5 @@
-[x] `src/program_proof/simplepb/simplelog/proof.v`;
-    Added some unproven lemma about file_encodes_state.
-    Bunch of pure admits about overflow.
-    Most of them show up in the recovery function, which is where we decode
-    state.
-
-[x] `src/program_proof/simplepb/pb_definitions.v`; contractiveness of is_pb_host_pre
-
-[x] `src/program_proof/simplepb/pb_apply_proof.v`;
-    [x] wp_random
-    [x] prefix_app_cases; it's only used once and in that file, so we can also
-    get rid of that lemma and change the proof where it's used.
-
---------------------------------------------------------------------------------
-Don't look at state_proof.v. state_proof is an old app-level proof, and I'm
-currently copying stuff in it and changing it as part of simplepb/app/kv_proof.v
+[ ] (list length) overflow reasoning
+[ ] fix higher order ghost state in preread
+[ ] inG's for every library
+[ ] deal with multiple urpcG instances polluting proof
+[ ] ghost state allocation lemmas

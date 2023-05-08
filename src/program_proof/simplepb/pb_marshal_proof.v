@@ -141,17 +141,19 @@ Record C :=
 mkC {
   epoch : u64 ;
   nextIndex: u64 ;
+  committedNextIndex: u64 ;
   state : list u8 ;
 }.
 
 Definition has_encoding (encoded:list u8) (args:C) : Prop :=
-  encoded = (u64_le args.(epoch)) ++ (u64_le args.(nextIndex)) ++ args.(state).
+  encoded = (u64_le args.(epoch)) ++ (u64_le args.(nextIndex)) ++ (u64_le args.(committedNextIndex)) ++ args.(state).
 
 
 Definition own args_ptr args : iProp Σ :=
   ∃ state_sl,
   "Hargs_epoch" ∷ args_ptr ↦[pb.SetStateArgs :: "Epoch"] #args.(epoch) ∗
   "Hargs_next_index" ∷ args_ptr ↦[pb.SetStateArgs :: "NextIndex"] #args.(nextIndex) ∗
+  "Hargs_committed_next_index" ∷ args_ptr ↦[pb.SetStateArgs :: "CommittedNextIndex"] #args.(committedNextIndex) ∗
   "Hargs_state" ∷ args_ptr ↦[pb.SetStateArgs :: "State"] (slice_val state_sl) ∗
   "#Hargs_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
   .
@@ -183,6 +185,12 @@ Proof.
   { done. }
   iIntros (enc_ptr) "Henc".
   wp_pures.
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_store.
+
   wp_loadField.
   wp_load.
   wp_apply (wp_WriteInt with "Henc_sl").
@@ -236,6 +244,13 @@ Proof.
   wp_pures.
   wp_load.
   rewrite Henc.
+  wp_apply (wp_ReadInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+
+  wp_load.
   wp_apply (wp_ReadInt with "Henc_sl").
   iIntros (?) "Henc_sl".
   wp_pures.
@@ -347,16 +362,18 @@ Record C :=
 mkC {
   err : u64 ;
   nextIndex : u64 ;
+  committedNextIndex : u64 ;
   state : list u8 ;
 }.
 
 Definition has_encoding (encoded:list u8) (reply:C) : Prop :=
-  encoded = (u64_le reply.(err)) ++ (u64_le reply.(nextIndex)) ++ reply.(state).
+  encoded = (u64_le reply.(err)) ++ (u64_le reply.(nextIndex)) ++ (u64_le reply.(committedNextIndex)) ++ reply.(state).
 
 Definition own reply_ptr reply : iProp Σ :=
   ∃ state_sl,
   "Hreply_epoch" ∷ reply_ptr ↦[pb.GetStateReply :: "Err"] #reply.(err) ∗
   "Hreply_next_index" ∷ reply_ptr ↦[pb.GetStateReply :: "NextIndex"] #reply.(nextIndex) ∗
+  "Hreply_committed_next_index" ∷ reply_ptr ↦[pb.GetStateReply :: "CommittedNextIndex"] #reply.(committedNextIndex) ∗
   "Hreply_state" ∷ reply_ptr ↦[pb.GetStateReply :: "State"] (slice_val state_sl) ∗
   "Hreply_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 reply.(state))
   .
@@ -387,6 +404,12 @@ Proof.
   { done. }
   iIntros (enc_ptr) "Henc".
   wp_pures.
+
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_store.
 
   wp_loadField.
   wp_load.
@@ -436,6 +459,13 @@ Proof.
   iNamed "HH".
   wp_pures.
   rewrite Henc.
+
+  wp_load.
+  wp_apply (wp_ReadInt with "Henc_sl").
+  iIntros (?) "Henc_sl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
 
   wp_load.
   wp_apply (wp_ReadInt with "Henc_sl").
@@ -949,6 +979,7 @@ Proof.
 Qed.
 End ApplyReply.
 End ApplyReply.
+
 
 Section pb_marshal.
 

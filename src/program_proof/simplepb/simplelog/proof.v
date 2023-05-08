@@ -11,23 +11,26 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 
 Section global_proof.
 
-Context {sm_record:PBRecord}.
-Notation OpType := (pb_OpType sm_record).
-Notation has_op_encoding := (pb_has_op_encoding sm_record).
-Notation has_snap_encoding := (pb_has_snap_encoding sm_record).
-Notation compute_reply := (pb_compute_reply sm_record).
-Instance e : EqDecision OpType := (pb_OpType_EqDecision sm_record).
+Context {sm_record:Sm.t}.
+Notation OpType := (Sm.OpType sm_record).
+Notation has_op_encoding := (Sm.has_op_encoding sm_record).
+Notation is_readonly_op := (Sm.is_readonly_op sm_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
+Notation compute_reply := (Sm.compute_reply sm_record).
+Instance e : EqDecision OpType := (Sm.OpType_EqDecision sm_record).
 Notation pbG := (pbG (pb_record:=sm_record)).
 Notation pbΣ := (pbΣ (pb_record:=sm_record)).
 
 Class simplelogG Σ := SimplelogG {
-  simplelog_fmlistG :> fmlistG (u64 * (list OpType) * bool) Σ;
+  simplelog_fmlistG :> fmlistG ((list OpType) * bool) Σ;
+  simplelog_propose_fmlistG :> fmlistG OpType Σ;
   simplelog_aofG :> aofG Σ ;
   simplelog_pbG :> pbG Σ ;
 }.
 
 Definition simplelogΣ := #[
-  fmlistΣ (u64 * list (OpType) * bool) ;
+  fmlistΣ (list (OpType) * bool) ;
+  fmlistΣ OpType ;
   aofΣ ;
   pbΣ
 ].
@@ -153,11 +156,13 @@ Section local_proof.
 
 Context `{!heapGS Σ}.
 
-Context {sm_record:PBRecord}.
-Notation OpType := (pb_OpType sm_record).
-Notation has_op_encoding := (pb_has_op_encoding sm_record).
-Notation has_snap_encoding := (pb_has_snap_encoding sm_record).
-Notation compute_reply := (pb_compute_reply sm_record).
+Context {sm_record:Sm.t}.
+Notation OpType := (Sm.OpType sm_record).
+Notation has_op_encoding := (Sm.has_op_encoding sm_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
+Notation compute_reply := (Sm.compute_reply sm_record).
+Notation is_readonly_op := (Sm.is_readonly_op sm_record).
+Notation apply_postcond := (Sm.apply_postcond sm_record).
 
 Context `{!simplelogG (sm_record:=sm_record) Σ}.
 
@@ -171,19 +176,21 @@ Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMa
     applyVolatileFn (slice_val op_sl)
   {{{
         reply_sl q, RET (slice_val reply_sl);
+        ⌜apply_postcond  ops op⌝ ∗
         own_InMemoryStateMachine (ops ++ [op]) ∗
         is_slice_small reply_sl byteT q (compute_reply ops op)
   }}}
 .
 
 Definition is_InMemory_setStateFn (setStateFn:val) own_InMemoryStateMachine : iProp Σ :=
-  ∀ ops_prev ops snap snap_sl,
+  ∀ ops_prev ops snap snap_sl (nextIndex:u64),
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
+        ⌜int.nat nextIndex = length ops⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
         own_InMemoryStateMachine ops_prev
   }}}
-    setStateFn (slice_val snap_sl)
+    setStateFn (slice_val snap_sl) #nextIndex
   {{{
         RET #(); own_InMemoryStateMachine ops
   }}}
@@ -202,6 +209,27 @@ Definition is_InMemory_getStateFn (getStateFn:val) own_InMemoryStateMachine : iP
   }}}
 .
 
+Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMachine : iProp Σ :=
+  ∀ ops op op_sl op_bytes,
+  {{{
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        ⌜is_readonly_op op⌝ ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        own_InMemoryStateMachine ops
+  }}}
+    applyReadonlyFn (slice_val op_sl)
+  {{{
+        reply_sl q (lastModifiedIndex:u64),
+        RET (#lastModifiedIndex, slice_val reply_sl);
+        ⌜int.nat lastModifiedIndex <= length ops ⌝ ∗
+        ⌜∀ ops', prefix ops' ops → int.nat lastModifiedIndex <= length ops' →
+               (compute_reply ops op = compute_reply ops' op)⌝ ∗
+        own_InMemoryStateMachine ops ∗
+        is_slice_small reply_sl byteT q (compute_reply ops op)
+  }}}
+.
+
+
 Record simplelog_names :=
 {
   (* file_encodes_state is not injective, so we use this state to
@@ -209,17 +237,19 @@ Record simplelog_names :=
      For each possible length, there's a potential read-only proposal.
    *)
   sl_state : gname;
+  proposed_gn: gname;
 }.
 
 Definition file_inv γ P epoch (contents:list u8) : iProp Σ :=
   ∃ ops sealed,
   ⌜file_encodes_state contents epoch ops sealed⌝ ∗
   P epoch ops sealed ∗
-  fmlist_idx γ.(sl_state) (length contents) (epoch, ops, sealed)
+  fmlist_idx γ.(sl_state) (length contents) (ops, sealed) ∗
+  fmlist_lb γ.(proposed_gn) ops
 .
 
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
-  ∃ applyVolatileFn setStateFn getStateFn,
+  ∃ applyVolatileFn setStateFn getStateFn applyReadonlyFn,
   "#HapplyVolatile" ∷ readonly (sm ↦[InMemoryStateMachine :: "ApplyVolatile"] applyVolatileFn) ∗
   "#HapplyVolatile_spec" ∷ is_InMemory_applyVolatileFn applyVolatileFn own_InMemoryStateMachine ∗
 
@@ -227,12 +257,15 @@ Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ 
   "#HsetState_spec" ∷ is_InMemory_setStateFn setStateFn own_InMemoryStateMachine ∗
 
   "#HgetState" ∷ readonly (sm ↦[InMemoryStateMachine :: "GetState"] getStateFn) ∗
-  "#HgetState_spec" ∷ is_InMemory_getStateFn getStateFn own_InMemoryStateMachine
+  "#HgetState_spec" ∷ is_InMemory_getStateFn getStateFn own_InMemoryStateMachine ∗
+
+  "#HapplyReadonly" ∷ readonly (sm ↦[InMemoryStateMachine :: "ApplyReadonly"] applyReadonlyFn) ∗
+  "#HapplyReadonly_spec" ∷ is_InMemory_applyReadonlyFn applyReadonlyFn own_InMemoryStateMachine
 .
 
 Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) P : iProp Σ :=
   ∃ (fname:string) (aof_ptr:loc) γ γaof (logsize:u64) (smMem_ptr:loc) data
-    own_InMemoryStateMachine allstates,
+    own_InMemoryStateMachine (allstates:list (list OpType * bool)),
     "Hfname" ∷ s ↦[StateMachine :: "fname"] #(LitString fname) ∗
     "HlogFile" ∷ s ↦[StateMachine :: "logFile"] #aof_ptr ∗
     "HsmMem" ∷ s ↦[StateMachine :: "smMem"] #smMem_ptr ∗
@@ -243,29 +276,32 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "#Hdurlb" ∷ □(if sealed then aof_durable_lb γaof data else True) ∗
 
     "Haof" ∷ aof_log_own γaof data ∗
-    "#His_aof" ∷ is_aof aof_ptr γaof fname (file_inv γ P epoch) (file_crash P) ∗
+    "#His_aof" ∷ is_aof pbAofN aof_ptr γaof fname (file_inv γ P epoch) (file_crash P) ∗
     "%Henc" ∷ ⌜file_encodes_state data epoch ops sealed⌝ ∗
     "Hmemstate" ∷ own_InMemoryStateMachine ops ∗
     "#HisMemSm" ∷ is_InMemoryStateMachine smMem_ptr own_InMemoryStateMachine ∗
 
     "%Hopssafe" ∷ ⌜length ops = int.nat (length ops)⌝ ∗
 
-    "#Hcur_state_var" ∷ fmlist_idx γ.(sl_state) (length data) (epoch, ops, sealed) ∗
+    "#Hcur_state_var" ∷ fmlist_idx γ.(sl_state) (length data) (ops, sealed) ∗
     "Hallstates" ∷ fmlist γ.(sl_state) (DfracOwn 1) allstates ∗
-    "%Hallstates_len" ∷ ⌜length allstates = (length data + 1)%nat⌝
+    "%Hallstates_len" ∷ ⌜length allstates = (length data + 1)%nat⌝ ∗
+    "Hops_proposed" ∷ fmlist γ.(proposed_gn) (DfracOwn 1) ops
 .
 
 Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops P :
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
-        (P epoch ops false ={⊤∖↑aofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
+        (⌜apply_postcond ops op⌝ -∗ P epoch ops false
+         ={⊤∖↑pbAofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
         own_StateMachine s epoch ops false P
   }}}
     StateMachine__apply #s (slice_val op_sl)
   {{{
         reply_sl q (waitFn:goose_lang.val),
         RET (slice_val reply_sl, waitFn);
+        ⌜apply_postcond ops op⌝ ∗
         is_slice_small reply_sl byteT q (compute_reply ops op) ∗
         own_StateMachine s epoch (ops ++ [op]) false P ∗
         (∀ Ψ, (Q -∗ Ψ #()) -∗ WP waitFn #() {{ Ψ }})
@@ -288,7 +324,7 @@ Proof.
     iFrame "#".
     done.
   }
-  iIntros (??) "[Hmemstate Hreply_sl]".
+  iIntros (??) "(%Hpost & Hmemstate & Hreply_sl)".
   wp_pures.
 
   wp_loadField.
@@ -339,9 +375,15 @@ Proof.
   set (newdata:=data ++ newsuffix).
 
   (* make proposal *)
+  iMod (fmlist_update with "Hops_proposed") as "[Hops_proposed #Hprop_lb]".
+  {
+    instantiate (1:=ops ++ [op]).
+    apply prefix_app_r.
+    done.
+  }
   iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
   {
-    instantiate (1:=allstates ++ (replicate (length newsuffix) (epoch, ops ++ [op], false))).
+    instantiate (1:=allstates ++ (replicate (length newsuffix) (ops ++ [op], false))).
     apply prefix_app_r.
     done.
   }
@@ -377,12 +419,12 @@ Proof.
   {
     instantiate (1:=Q).
     iIntros "Hi".
-    iDestruct "Hi" as (??) "(%Henc2 & HP & #Hghost2)".
+    iDestruct "Hi" as (??) "(%Henc2 & HP & #Hghost2 & _)".
     iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
     replace (ops0) with (ops) by naive_solver.
     replace (sealed) with (false) by naive_solver.
 
-    iMod ("Hupd" with "HP") as "[HP $]".
+    iMod ("Hupd" with "[//] HP") as "[HP $]".
     iModIntro.
     iExists (ops ++ [op]), _.
     iFrame "HP".
@@ -401,11 +443,12 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iFrame.
+  iSplitR; first done.
   iSplitR "HupdQ".
   {
     iExists fname, _, γ, _, _, _, _, _.
     iExists _.
-    iFrame "∗#".
+    iFrame "HisMemSm ∗#".
     repeat rewrite app_length. rewrite u64_le_length.
     iFrame "∗#".
     iSplitL; last first.
@@ -434,22 +477,26 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q :
+Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (snap:list u8) snap_sl Q
+      (nextIndex:u64)
+  :
   {{{
         ⌜ (length ops < 2 ^ 64)%Z ⌝ ∗
         ⌜has_snap_encoding snap ops⌝ ∗
+        ⌜int.nat nextIndex = length ops⌝ ∗
         readonly (is_slice_small snap_sl byteT 1 snap) ∗
         (P epoch_prev ops_prev sealed_prev ={⊤}=∗ P epoch ops false ∗ Q) ∗
         own_StateMachine s epoch_prev ops_prev sealed_prev P
   }}}
-    StateMachine__setStateAndUnseal #s (slice_val snap_sl) #(U64 (length ops)) #epoch
+    StateMachine__setStateAndUnseal #s (slice_val snap_sl) #nextIndex #epoch
   {{{
         RET #();
         own_StateMachine s epoch ops false P ∗ Q
   }}}
 .
 Proof.
-  iIntros (Φ) "(%HsnapLen & %HsnapEnc & #Hsnap_sl & Hupd & Hown) HΦ".
+  iIntros (Φ) "(%HsnapLen & %HsnapEnc & %HnextIndex & #Hsnap_sl & Hupd & Hown) HΦ".
+  assert (nextIndex = U64 (length ops)) by word; subst.
   wp_lam.
   wp_pures.
   iNamed "Hown".
@@ -462,6 +509,7 @@ Proof.
   iNamed "HisMemSm2".
   wp_loadField.
   wp_loadField.
+  unfold is_InMemory_setStateFn.
   wp_apply ("HsetState_spec" with "[$Hsnap_sl $Hmemstate]").
   { done. }
   iIntros "Hmemstate".
@@ -553,7 +601,7 @@ Proof.
     { (* fire update; this is the same as the reasoning in the non-crash case *)
       iSplitR; first done.
 
-      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
+      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2 & _)".
       iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
       replace (ops0) with (ops_prev) by naive_solver.
       replace (sealed) with (sealed_prev) by naive_solver.
@@ -574,13 +622,14 @@ Proof.
   iNext.
   iIntros "[Hfile _]".
 
-  iClear "Hallstates".
-  iMod (fmlist_alloc []) as (γcur_state2) "Hallstates".
-  set (γ2:={| sl_state := γcur_state2 |} ).
+  iClear "Hallstates Hops_proposed".
+  iMod (fmlist_alloc ([]: list (list OpType * bool))) as (γcur_state2) "Hallstates".
+  iMod (fmlist_alloc ([] : list OpType)) as (γproposed2) "Hops_proposed".
+  set (γ2:={| sl_state := γcur_state2 ; proposed_gn := γproposed2|} ).
 
   (* update file_inv *)
 
-  iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
+  iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2 & _)".
   iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
   replace (ops0) with (ops_prev) by naive_solver.
   replace (sealed) with (sealed_prev) by naive_solver.
@@ -593,7 +642,13 @@ Proof.
 
   iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
   {
-    instantiate (1:=(replicate (length newdata + 1) (epoch, ops, false))).
+    instantiate (1:=(replicate (length newdata + 1) (ops, false))).
+    apply prefix_nil.
+  }
+
+  iMod (fmlist_update with "Hops_proposed") as "[Hops_proposed #Hprop_lb]".
+  {
+    instantiate (1:=ops).
     apply prefix_nil.
   }
 
@@ -632,7 +687,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  wp_apply (wp_CreateAppendOnlyFile _ _ (file_inv γ2 P epoch) (file_crash P) with "[] [$Hfile]").
+  wp_apply (wp_CreateAppendOnlyFile pbAofN _ _ (file_inv γ2 P epoch) (file_crash P) with "[] [$Hfile]").
   {
     iModIntro. iIntros (?) "Hinv".
     iDestruct "Hinv" as (??) "[H1 [H2 H3]]".
@@ -670,7 +725,7 @@ Qed.
 Lemma wp_getStateAndSeal s P epoch ops sealed Q :
   {{{
         own_StateMachine s epoch ops sealed P ∗
-        (P epoch ops sealed ={⊤∖↑aofN}=∗ P epoch ops true ∗ Q)
+        (P epoch ops sealed ={⊤∖↑pbAofN}=∗ P epoch ops true ∗ Q)
   }}}
     StateMachine__getStateAndSeal #s
   {{{
@@ -700,7 +755,7 @@ Proof.
 
     iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
     {
-      instantiate (1:=(allstates ++ [(epoch, ops, true)])).
+      instantiate (1:=(allstates ++ [(ops, true)])).
       apply prefix_app_r.
       done.
     }
@@ -723,7 +778,7 @@ Proof.
       iIntros "Hinv".
       instantiate (1:=Q).
 
-      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2)".
+      iDestruct "Hinv" as (??) "(%Henc2 & HP & #Hghost2 & #?)".
       iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hghost2") as "%Heq".
       replace (ops0) with (ops) by naive_solver.
       replace (sealed) with (false) by naive_solver.
@@ -794,7 +849,7 @@ Proof.
     }
     iMod (lc_fupd_elim_later with "Hlc HP") as "HP".
     unfold file_inv.
-    iDestruct "HP" as (?? HdurPrefixEnc) "[HP #Hcurstate2]".
+    iDestruct "HP" as (?? HdurPrefixEnc) "(HP & #Hcurstate2 & #?)".
 
     iDestruct (fmlist_idx_agree_1 with "Hcur_state_var Hcurstate2") as "%Heq".
     replace (ops0) with (ops) by naive_solver.
@@ -818,16 +873,53 @@ Proof.
   }
 Qed.
 
-Lemma wp_recoverStateMachine data P fname smMem own_InMemoryStateMachine :
+Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoch ops sealed P :
+  {{{
+        ⌜has_op_encoding op_bytes op⌝ ∗
+        ⌜is_readonly_op op⌝ ∗
+        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        own_StateMachine s epoch ops sealed P
+  }}}
+    StateMachine__applyReadonly #s (slice_val op_sl)
+  {{{
+        reply_sl q (lastModifiedIndex : u64), RET (#lastModifiedIndex, slice_val reply_sl);
+        ⌜int.nat lastModifiedIndex ≤ length ops⌝ ∗
+        ⌜∀ ops' : list OpType,
+            ops' `prefix_of` ops
+            → int.nat lastModifiedIndex ≤ length ops' → compute_reply ops op = compute_reply ops' op⌝ ∗
+        is_slice_small reply_sl byteT q (compute_reply ops op) ∗
+        own_StateMachine s epoch ops sealed P
+  }}}
+.
+Proof.
+  iIntros (Φ) "(% & % & #? & Hstate) HΦ".
+  wp_lam.
+  iNamed "Hstate".
+  wp_pures.
+  iAssert (_) with "HisMemSm" as "#HisMemSm2".
+  iNamed "HisMemSm2".
+  wp_loadField.
+  wp_loadField.
+  wp_apply ("HapplyReadonly_spec" with "[$Hmemstate]").
+  { iSplitR; first done. iSplitR; first done. iFrame "#". }
+  iIntros (???) "(% & % & Hmemstate & Hreply)".
+  iApply "HΦ". iFrame "Hreply".
+  iSplitR; first done.
+  iSplitR; first done.
+  repeat iExists _; iFrame "∗ HisMemSm #%".
+Qed.
+
+Lemma wp_recoverStateMachine data P fname smMem own_InMemoryStateMachine Q :
   {{{
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
-        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
-        "Hmemstate" ∷ own_InMemoryStateMachine []
+       "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
+       "Hmemstate" ∷ own_InMemoryStateMachine [] ∗
+       "Hinit_upd" ∷ (∀ epoch ops sealed, P epoch ops sealed -∗ □ Q epoch ops sealed )
   }}}
     recoverStateMachine #smMem #(LitString fname)
   {{{
-        s epoch ops sealed, RET #s; own_StateMachine s epoch ops sealed P
+        s epoch ops sealed, RET #s; own_StateMachine s epoch ops sealed P ∗ Q epoch ops sealed
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -855,9 +947,11 @@ Proof.
   iDestruct "Hfilecrash" as "[Hempty|Hnonempty]".
   { (* case: empty *)
     iDestruct "Hempty" as "[%HdataEmpty HP]".
-    iMod (fmlist_alloc (replicate (1) (U64 0, [], false))) as (γsl_state) "Hallstates".
-    set (γ:={| sl_state := γsl_state |} ).
+    iMod (fmlist_alloc (replicate (1) ([], false))) as (γsl_state) "Hallstates".
+    iMod (fmlist_alloc ([]:list OpType)) as (γproposed) "Hops_proposed".
+    set (γ:={| sl_state := γsl_state ; proposed_gn := γproposed |} ).
     iMod (fmlist_get_lb with "Hallstates") as "[Hallstates #Hlb]".
+    iMod (fmlist_get_lb with "Hops_proposed") as "[Hops_proposed #Hprop_lb]".
     iDestruct (fmlist_lb_to_idx _ _ (length data) with "Hlb") as "#Hcurstate".
     {
       apply lookup_replicate.
@@ -999,7 +1093,7 @@ Proof.
     set (n:=(length (((([] ++ u64_le snap_sl.(Slice.sz)) ++ snap) ++ u64_le 0%Z) ++ u64_le 0%Z))).
     iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
     {
-      instantiate (1:=((replicate (n+1) (U64 0, [], false)))).
+      instantiate (1:=((replicate (n+1) ([]:list OpType, false)))).
       rewrite replicate_S.
       simpl.
       apply prefix_cons.
@@ -1013,6 +1107,7 @@ Proof.
       done.
     }
 
+    iDestruct ("Hinit_upd" with "HP") as "#HQ".
     iModIntro.
     evar (c:list u8).
     iExists (fname f↦ ?c ∗ file_inv γ P 0 ?c)%I.
@@ -1061,7 +1156,8 @@ Proof.
 
     iApply "HΦ".
     iModIntro.
-    do 9 iExists _.
+    iFrame "HQ".
+    repeat iExists _.
     iFrame "∗#%".
     iSplitR; first done.
     iSplitR; first iPureIntro.
@@ -1083,10 +1179,12 @@ Proof.
   (* case: file is non-empty, so we have to recovery from it *)
   iDestruct "Hnonempty" as (???) "[%Henc HP]".
 
-  iMod (fmlist_alloc (replicate (length data + 1) (epoch, ops, sealed))) as (γsl_state) "Hallstates".
-  set (γ:={| sl_state := γsl_state |} ).
+  iMod (fmlist_alloc (replicate (length data + 1) (ops, sealed))) as (γsl_state) "Hallstates".
+  iMod (fmlist_alloc ops) as (γproposed) "Hops_proposed".
+  set (γ:={| sl_state := γsl_state ; proposed_gn := γproposed |} ).
 
   iMod (fmlist_get_lb with "Hallstates") as "[Hallstates #Hlb]".
+  iMod (fmlist_get_lb with "Hops_proposed") as "[Hops_proposed #Hprop_lb]".
   iDestruct (fmlist_lb_to_idx _ _ (length data) with "Hlb") as "#Hcurstate".
   {
     apply lookup_replicate.
@@ -1106,6 +1204,7 @@ Proof.
     iExists _, _, _; iFrame "∗%".
   }
   (* otherwise, no crash and we keep going *)
+  iDestruct ("Hinit_upd" with "HP") as "#HQ".
   iNext.
   iIntros (data_sl) "[Hfile Hdata_sl]".
   iExists (fname f↦data ∗ file_inv γ P epoch data)%I.
@@ -1245,25 +1344,8 @@ Proof.
   }
   wp_store.
 
-  iAssert (_) with "HisMemSm" as "#HisMemSm2".
-  iNamed "HisMemSm2".
   wp_load.
-  wp_loadField.
-  wp_loadField.
 
-  iMod (readonly_alloc (is_slice_small snap_sl byteT 1 snap) with "[Hsnap_sl]") as "#Hsnap_sl".
-  {
-    simpl.
-    iFrame.
-  }
-  wp_apply ("HsetState_spec" with "[$Hmemstate $Hsnap_sl]").
-  {
-    done.
-  }
-  iIntros "Hmemstate".
-  wp_pures.
-
-  wp_load.
   wp_apply (wp_ReadInt with "Hdata_sl").
   iIntros (data_sl4) "Hdata_sl".
   wp_pures.
@@ -1276,6 +1358,24 @@ Proof.
   wp_pures.
   wp_storeField.
   wp_store.
+
+  iMod (readonly_alloc (is_slice_small snap_sl byteT 1 snap) with "[Hsnap_sl]") as "#Hsnap_sl".
+  {
+    simpl.
+    iFrame.
+  }
+
+  iAssert (_) with "HisMemSm" as "#HisMemSm2".
+  iNamed "HisMemSm2".
+  wp_loadField.
+  wp_load.
+  wp_loadField.
+  wp_loadField.
+  wp_apply ("HsetState_spec" with "[$Hmemstate $Hsnap_sl]").
+  { iPureIntro; split; try done.
+    subst. rewrite app_length in Hops_len. word.
+  }
+  iIntros "Hmemstate".
   wp_pures.
 
   (* loop invariant *)
@@ -1423,7 +1523,7 @@ Proof.
     }
     wp_apply ("HapplyVolatile_spec" with "[$Hmemstate $Hop_sl]").
     { done. }
-    iIntros (? ?) "[Hmemstate _]".
+    iIntros (? ?) "(_ & Hmemstate & _)".
     wp_pures.
     wp_loadField.
     wp_apply (std_proof.wp_SumAssumeNoOverflow).
@@ -1533,31 +1633,45 @@ Proof.
     }
     iApply "HΦ".
     iModIntro.
-    do 9 iExists _.
-    iFrame "∗#%".
-    rewrite take_ge; last word.
-    iEval (rewrite H) in "HnextIndex".
-    rewrite -Hrest_ops_len.
-    iSplitL "HnextIndex".
-    { repeat rewrite app_length. iFrame. }
-    iSplitR.
+    iSplitL.
     {
-      iPureIntro.
-      rewrite -HdataEnc.
+      iClear "HQ".
+      repeat iExists _.
+      iSplitL "fname".
+      { iFrame. }
+      iFrame "∗".
+      iFrame "#".
+      rewrite take_ge; last word.
+      iEval (rewrite H) in "HnextIndex".
+      rewrite -Hrest_ops_len.
+      iSplitL "HnextIndex".
+      { repeat rewrite app_length. iFrame. }
+      iSplitR.
+      {
+        iPureIntro.
+        rewrite -HdataEnc.
+        rewrite -Hops.
+        done.
+      }
+      iSplitR.
+      {
+        iPureIntro.
+        rewrite -Hops.
+        word.
+      }
       rewrite -Hops.
+      iFrame "∗#".
+      rewrite replicate_length.
+      iPureIntro.
       done.
     }
-    iSplitR.
-    {
-      iPureIntro.
-      rewrite -Hops.
-      word.
+    { iExactEq "HQ".
+      subst.
+      repeat f_equal.
+      rewrite firstn_all2.
+      { done. }
+      { word. }
     }
-    rewrite -Hops.
-    iFrame "Hcurstate".
-    rewrite replicate_length.
-    iPureIntro.
-    done.
   }
   (* sealed = false *)
   wp_pures.
@@ -1576,32 +1690,43 @@ Proof.
 
   iModIntro.
   iApply "HΦ".
-  do 9 iExists _.
-  iFrame "∗#%".
-  rewrite take_ge; last word.
-  iEval (rewrite H) in "HnextIndex".
-  rewrite -Hrest_ops_len.
-  iSplitL "HnextIndex".
-  { repeat rewrite app_length. iFrame. }
-  iSplitR; first done.
-  iSplitR.
+  iSplitL.
   {
-    iPureIntro.
-    rewrite -HdataEnc.
+    repeat iExists _.
+    iClear "HQ".
+    iFrame "∗". iFrame "#".
+    rewrite take_ge; last word.
+    iEval (rewrite H) in "HnextIndex".
+    rewrite -Hrest_ops_len.
+    iSplitL "HnextIndex".
+    { repeat rewrite app_length. iFrame. }
+    iSplitR; first done.
+    iSplitR.
+    {
+      iPureIntro.
+      rewrite -HdataEnc.
+      rewrite -Hops.
+      done.
+    }
+    iSplitR.
+    {
+      iPureIntro.
+      rewrite -Hops.
+      word.
+    }
     rewrite -Hops.
+    iFrame "∗#".
+    rewrite replicate_length.
+    iPureIntro.
     done.
   }
-  iSplitR.
-  {
-    iPureIntro.
-    rewrite -Hops.
-    word.
+  { iExactEq "HQ".
+    subst.
+    repeat f_equal.
+    rewrite firstn_all2.
+    { done. }
+    { word. }
   }
-  rewrite -Hops.
-  iFrame "Hcurstate".
-  rewrite replicate_length.
-  iPureIntro.
-  done.
 Qed.
 
 Lemma simplelog_accessP s P :
@@ -1615,15 +1740,14 @@ Proof.
   iMod (accessP_weak with "His_aof Haof") as "HH".
   iDestruct "HH" as (?) "(_ & Hinv & Hclose)".
   iMod (lc_fupd_elim_later with "Hlc Hinv") as "Hinv".
-  iDestruct "Hinv" as (??) "(% & HP & #?)".
-  iMod ("Hupd" with "HP") as "[HP Φ]".
+  iDestruct "Hinv" as (??) "(% & HP & #? & #?)".
+  iDestruct (fmlist_agree_2 with "Hops_proposed [$]") as %?.
+  iMod ("Hupd" with "[//] HP") as "[HP Φ]".
   iMod ("Hclose" with "[HP]").
   {
     iNext. iExists _, _. iFrame "∗#%".
   }
   iModIntro.
-  iApply wpc_nval_intro.
-  iNext.
   iFrame "Φ".
 
   iExists fname, _, γ, _, _, _, _, own_InMemoryStateMachine.
@@ -1632,40 +1756,51 @@ Proof.
   iFrame "∗#%".
 Qed.
 
-Notation own_Server_ghost := (own_Server_ghost (pb_record:=sm_record)).
+Notation own_Server_ghost_f := (own_Server_ghost_f (pb_record:=sm_record)).
+
 Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 
-Definition simplelog_P γ γsrv := file_crash (own_Server_ghost γ γsrv).
+Definition simplelog_P γ γsrv := file_crash (own_Server_ghost_f γ γsrv).
 
 Definition simplelog_pre γ γsrv fname :=
   (|C={⊤}=> ∃ data, fname f↦ data ∗ ▷ simplelog_P γ γsrv data)%I.
 
-Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv :
-  let P := (own_Server_ghost γ γsrv) in
-  sys_inv γ ⊢@{_}
+Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHost :
+  let P := (own_Server_ghost_f γ γsrv) in
   {{{
+       "#Hinvs" ∷ is_pb_system_invs γ ∗
+       "#HisConfHost" ∷ config_protocol_proof.is_pb_config_host confHost γ ∗
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
        "Hmemstate" ∷ own_InMemoryStateMachine []
   }}}
-    MakePbServer #smMem #(LitString fname)
+    MakePbServer #smMem #(LitString fname) #(confHost)
   {{{
         s, RET #s; pb_definitions.is_Server s γ γsrv
   }}}
 .
 Proof.
-  iIntros (?) "#Hsys".
-  iIntros (Φ) "!# Hpre HΦ".
+  iIntros (?).
+  iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
 
   wp_lam.
-
-  wp_pures.
   wp_apply (wp_recoverStateMachine with "[-HΦ]").
-  { iFrame "∗#". }
-  iIntros (????) "Hsm".
+  { iFrame "∗#".
+    iIntros (???) "HP".
+    subst.
+    iNamed "HP".
+    iDestruct (ghost_get_accepted_lb with "Hghost") as "#H".
+    iModIntro.
+    instantiate (1:=(λ epoch ops _, ∃ opsfull, ⌜ops = get_rwops opsfull⌝ ∗ is_accepted_lb γsrv.(r_pb) epoch opsfull)%I).
+    simpl.
+    iExists _; iFrame "#%".
+  }
+  iIntros (????) "[Hsm HQ]".
   wp_pures.
+  iDestruct "HQ" as (?) "[% #Hacc_lb]".
+  subst.
 
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
@@ -1675,27 +1810,28 @@ Proof.
   iMod (readonly_alloc_1 with "StartApply") as "#HstartApply".
   iMod (readonly_alloc_1 with "GetStateAndSeal") as "#HgetState".
   iMod (readonly_alloc_1 with "SetStateAndUnseal") as "#HsetState".
+  iMod (readonly_alloc_1 with "ApplyReadonly") as "#HapplyReadonly".
 
   iNamed "Hsm".
   wp_loadField.
   wp_loadField.
   wp_loadField.
 
-  iAssert (own_StateMachine s epoch ops sealed P) with "[-HΦ]" as "Hsm".
+  iAssert (own_StateMachine s epoch (get_rwops opsfull) sealed P) with "[-HΦ]" as "Hsm".
   {
-    do 9 iExists _.
+    repeat iExists _.
     iFrame "∗#%".
   }
 
-  wp_apply (wp_MakeServer _ (own_StateMachine s)  with "[Hsm]").
+  wp_apply (wp_MakeServer _ (own_StateMachine s)  with "[$Hsm]").
   {
-    iFrame "Hsm Hsys".
+    iFrame "#".
     iSplitL; last first.
     {
       iPureIntro.
       destruct Henc as (?&?&?&?&?&?). word.
     }
-    iExists _, _, _.
+    iExists _, _, _, _.
     iFrame "#".
     iSplitL.
     { (* apply spec *)
@@ -1707,16 +1843,9 @@ Proof.
       {
         iFrame "%".
         instantiate (1:=Q).
-        iIntros "H1".
-        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-        {
-          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
-          by apply ndot_ne_disjoint.
-        }
-        iMod ("Hupd" with "H1").
-        iMod "Hmask".
-        iModIntro.
-        iFrame.
+        iIntros "H1 H2".
+        iMod ("Hupd" with "H1 H2").
+        iModIntro. iFrame.
       }
       iFrame.
     }
@@ -1730,17 +1859,13 @@ Proof.
       wp_apply (wp_setStateAndUnseal with "[$Hsm $Hop_sl Hupd]").
       {
         iFrame "%".
+        iSplitR.
+        { iPureIntro. word. }
         iIntros "H1".
         instantiate (1:=Q).
-        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-        {
-          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
-          by apply ndot_ne_disjoint.
-        }
-        iMod ("Hupd" with "H1").
-        iMod "Hmask".
-        iModIntro.
-        iFrame.
+        iMod (fupd_mask_subseteq _) as "Hmask".
+        2:{ iMod ("Hupd" with "H1"). iMod "Hmask". iModIntro. iFrame. }
+        solve_ndisj.
       }
       iIntros.
       wp_pures.
@@ -1760,16 +1885,22 @@ Proof.
         iFrame "%".
         instantiate (1:=Q).
         iIntros "H1".
-        iMod (fupd_mask_subseteq (↑pbN)) as "Hmask".
-        {
-          enough ((↑aofN:coPset) ## ↑pbN) by set_solver.
-          by apply ndot_ne_disjoint.
-        }
         iMod ("Hupd" with "H1").
-        iMod "Hmask".
-        iModIntro.
-        iFrame.
+        iModIntro. iFrame.
       }
+      iIntros.
+      iApply "HΦ".
+      iFrame.
+    }
+    iSplitL.
+    {
+      clear Φ.
+      iIntros (?????? Φ) "!#".
+      iIntros "(%Hop_enc & #Hop_sl & Hsm)  HΦ".
+      wp_lam.
+      wp_pures.
+      wp_apply (wp_StateMachine__applyReadonly with "[$Hsm]").
+      { iFrame "#%". }
       iIntros.
       iApply "HΦ".
       iFrame.
