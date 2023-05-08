@@ -462,6 +462,11 @@ Proof.
     by iApply "Hfail_Φ".
   }
 
+  wp_call.
+  (* XXX it's a bit disconcerting that our model of randomUint64
+     means we don't ever consider what executes if the return value
+     is non-zero... *)
+
   wp_apply wp_ref_of_zero.
   { done. }
   iIntros (lastModified) "HlastModified".

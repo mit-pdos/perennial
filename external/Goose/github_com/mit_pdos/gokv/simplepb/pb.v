@@ -323,6 +323,11 @@ Definition Server__ApplyRoWaitForCommit: val :=
       struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
       "reply"
     else
+      (if: ((Data.randomUint64 #()) `rem` #10000 = #0)
+      then
+        (* log.Printf("Server nextIndex=%d commitIndex=%d", s.nextIndex, s.committedNextIndex) *)
+        #()
+      else #());;
       let: "lastModifiedIndex" := ref (zero_val uint64T) in
       let: ("0_ret", "1_ret") := struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op" in
       "lastModifiedIndex" <-[uint64T] "0_ret";;
