@@ -172,7 +172,7 @@ Section lemmas.
     k ⤳l[γ] v ==∗ k ⤳l[γ] w.
   Proof.
     intros.
-    unseal. apply own_update.
+    unseal. apply bi.entails_wand. apply own_update.
     apply singleton_update.
     apply mono_list_update.
     done.
