@@ -258,7 +258,7 @@ Proof.
       iFrame "HfreshSpec".
 
       clear Φ. rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
       wp_apply (wp_GetCIDRPC with "His_memkv").
@@ -266,7 +266,7 @@ Proof.
       wp_apply (wp_EncodeUint64).
       iIntros (rep_sl repData) "[Hrep_sl %HrepEnc]".
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
       iSimpl in "Hpre". iDestruct "Hpre" as (_) "[_ Hpost]".
       wp_store.
       iApply "HΦ".

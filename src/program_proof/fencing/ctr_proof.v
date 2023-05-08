@@ -1441,9 +1441,9 @@ Proof.
       simpl. iExists _; iFrame "#".
       clear Φ.
       unfold impl_handler_spec.
-      iIntros (???????) "!# Hpre HΦ".
+      iIntros (?????) "!# Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hpre)".
       wp_apply (wp_new_enc).
       iIntros (enc) "Henc".
       wp_pures.
@@ -1457,7 +1457,6 @@ Proof.
       wp_pures.
 
       wp_apply (wp_Enc__Finish with "Henc").
-      iClear "Hrep_sl".
       iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
@@ -1527,9 +1526,9 @@ Proof.
       simpl. iExists _; iFrame "#".
       clear Φ.
       unfold impl_handler_spec.
-      iIntros (???????) "!# Hpre HΦ".
+      iIntros (?????) "!# Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hpre)".
       iDestruct "Hpre" as (????) "[%HreqEnc Hpre]".
 
       wp_apply (wp_new_dec with "[$Hreq_small]").
@@ -1572,7 +1571,6 @@ Proof.
       { done. }
       iIntros "Henc".
       wp_apply (wp_Enc__Finish with "Henc").
-      iClear "Hrep_sl".
       iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
       iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
