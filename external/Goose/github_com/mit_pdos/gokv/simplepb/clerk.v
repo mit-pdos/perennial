@@ -9,7 +9,8 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Clerk := struct.decl [
   "confCk" :: ptrT;
-  "replicaClerks" :: slice.T ptrT
+  "replicaClerks" :: slice.T ptrT;
+  "preferredReplica" :: uint64T
 ].
 
 Definition makeClerks: val :=
@@ -63,18 +64,31 @@ Definition Clerk__ApplyRo2: val :=
     let: "ret" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "j" := (Data.randomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")) in
+      let: "offset" := struct.loadF Clerk "preferredReplica" "ck" in
       let: "err" := ref (zero_val uint64T) in
-      let: ("0_ret", "1_ret") := pb.Clerk__ApplyRo (SliceGet ptrT (struct.loadF Clerk "replicaClerks" "ck") "j") "op" in
-      "err" <-[uint64T] "0_ret";;
-      "ret" <-[slice.T byteT] "1_ret";;
+      let: "i" := ref (zero_val uint64T) in
+      Skip;;
+      (for: (λ: <>, ![uint64T] "i" < slice.len (struct.loadF Clerk "replicaClerks" "ck")); (λ: <>, Skip) := λ: <>,
+        let: "k" := (![uint64T] "i" + "offset") `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")) in
+        let: ("0_ret", "1_ret") := pb.Clerk__ApplyRo (SliceGet ptrT (struct.loadF Clerk "replicaClerks" "ck") "k") "op" in
+        "err" <-[uint64T] "0_ret";;
+        "ret" <-[slice.T byteT] "1_ret";;
+        (if: (![uint64T] "err" = e.None)
+        then
+          struct.storeF Clerk "preferredReplica" "ck" "k";;
+          Break
+        else
+          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          Continue));;
       (if: (![uint64T] "err" = e.None)
       then Break
       else
-        time.Sleep (#100 * #1000000);;
+        time.Sleep (#10 * #1000000);;
         let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
         (if: slice.len "config" > #0
-        then struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config")
+        then
+          struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config");;
+          struct.storeF Clerk "preferredReplica" "ck" ((Data.randomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")))
         else #());;
         Continue));;
     ![slice.T byteT] "ret".
