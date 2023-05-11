@@ -18,7 +18,7 @@ Definition EnterNewConfig: val :=
       let: "configCk" := config.MakeClerk "configHost" in
       let: ("epoch", "oldServers") := config.Clerk__ReserveEpochAndGetConfig "configCk" in
       (* log.Printf("Reserved %d", epoch) *)
-      let: "id" := (Data.randomUint64 #() + #1) `rem` (slice.len "oldServers") in
+      let: "id" := (rand.RandomUint64 #() + #1) `rem` (slice.len "oldServers") in
       let: "oldClerk" := pb.MakeClerk (SliceGet uint64T "oldServers" "id") in
       let: "reply" := pb.Clerk__GetState "oldClerk" (struct.new pb.GetStateArgs [
         "Epoch" ::= "epoch"

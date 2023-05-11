@@ -323,7 +323,7 @@ Definition Server__ApplyRoWaitForCommit: val :=
       struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
       "reply"
     else
-      (if: ((Data.randomUint64 #()) `rem` #10000 = #0)
+      (if: ((rand.RandomUint64 #()) `rem` #10000 = #0)
       then
         (* log.Printf("Server nextIndex=%d commitIndex=%d", s.nextIndex, s.committedNextIndex) *)
         #()
@@ -403,7 +403,7 @@ Definition Server__Apply: val :=
           "index" ::= "opIndex";
           "op" ::= "op"
         ] in
-        let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((Data.randomUint64 #()) `rem` (slice.len "clerks")) in
+        let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((rand.RandomUint64 #()) `rem` (slice.len "clerks")) in
         let: "errs" := NewSlice uint64T (slice.len "clerks_inner") in
         ForSlice ptrT "i" "clerk" "clerks_inner"
           (let: "clerk" := "clerk" in
@@ -479,7 +479,7 @@ Definition Server__sendIncreaseCommitThread: val :=
       let: "newCommittedNextIndex" := struct.loadF Server "committedNextIndex" "s" in
       let: "clerks" := struct.loadF Server "clerks" "s" in
       lock.release (struct.loadF Server "mu" "s");;
-      let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((Data.randomUint64 #()) `rem` (slice.len "clerks")) in
+      let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((rand.RandomUint64 #()) `rem` (slice.len "clerks")) in
       let: "wg" := waitgroup.New #() in
       ForSlice ptrT <> "clerk" "clerks_inner"
         (let: "clerk" := "clerk" in

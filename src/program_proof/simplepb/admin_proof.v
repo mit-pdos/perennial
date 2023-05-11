@@ -58,9 +58,10 @@ Proof using waitgroupG0.
   iIntros (?????) "Hpost1".
   iNamed 1.
   wp_pures.
-  unfold prelude.Data.randomUint64.
+  wp_apply wp_RandomUint64.
+  iIntros (rnd) "_".
   wp_pures.
-  set (s:=(u64_instance.u64.(word.add) (U64 0) (U64 1))).
+  set (s:=(u64_instance.u64.(word.add) rnd (U64 1))).
   generalize s as randId.
   clear s.
   intros randId.

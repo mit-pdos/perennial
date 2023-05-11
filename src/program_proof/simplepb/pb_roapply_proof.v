@@ -462,10 +462,15 @@ Proof.
     by iApply "Hfail_Φ".
   }
 
-  wp_call.
-  (* XXX it's a bit disconcerting that our model of randomUint64
-     means we don't ever consider what executes if the return value
-     is non-zero... *)
+  wp_apply wp_RandomUint64.
+  iIntros (rnd) "_".
+
+  wp_apply (wp_If_join emp).
+  { iSplit.
+    - iIntros "_". wp_pures. done.
+    - iIntros "_". wp_pures. done.
+  }
+  iIntros "_".
 
   wp_apply wp_ref_of_zero.
   { done. }

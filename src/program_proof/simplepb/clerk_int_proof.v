@@ -663,7 +663,7 @@ Proof.
         wp_apply (wp_makeClerks with "[$]").
         iIntros (??) "[? ?]".
         wp_storeField.
-        wp_apply (wp_random). iIntros (?) "_".
+        wp_apply wp_RandomUint64. iIntros (?) "_".
         wp_loadField.
         wp_apply wp_slice_len.
         wp_storeField.

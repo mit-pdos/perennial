@@ -140,7 +140,7 @@ Proof.
   iMod (readonly_load with "Hclerkss_sl") as (?) "Hclerkss_sl2".
 
   iDestruct (is_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
-  wp_apply (wp_random).
+  wp_apply (wp_RandomUint64).
   iIntros (randint) "_".
   wp_apply wp_slice_len.
   wp_pures.

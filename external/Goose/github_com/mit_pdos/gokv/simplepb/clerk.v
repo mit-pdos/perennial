@@ -88,7 +88,7 @@ Definition Clerk__ApplyRo2: val :=
         (if: slice.len "config" > #0
         then
           struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config");;
-          struct.storeF Clerk "preferredReplica" "ck" ((Data.randomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")))
+          struct.storeF Clerk "preferredReplica" "ck" ((rand.RandomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")))
         else #());;
         Continue));;
     ![slice.T byteT] "ret".

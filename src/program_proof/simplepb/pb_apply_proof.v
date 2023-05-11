@@ -128,19 +128,6 @@ Proof.
   }
 Qed.
 
-(* TODO: move me *)
-Lemma wp_random :
-{{{ True }}}
-  prelude.Data.randomUint64 #()
-{{{ (n:u64), RET #n; True }}}.
-Proof.
-#[local]
-Transparent prelude.Data.randomUint64.
-  rewrite /prelude.Data.randomUint64.
-  iIntros (?) "_ HΦ". wp_pures. iModIntro. by iApply "HΦ".
-Opaque prelude.Data.randomUint64.
-Qed.
-
 (*
 Definition entry_pred_conv (σ : list (OpType * (list OpType → iProp Σ)))
   (σgnames : list (OpType * gname)) : iProp Σ :=
@@ -596,7 +583,7 @@ Proof.
 
   iDestruct (is_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
 
-  wp_apply (wp_random).
+  wp_apply (wp_RandomUint64).
   iIntros (randint) "_".
   wp_apply (wp_slice_len).
   wp_pures.

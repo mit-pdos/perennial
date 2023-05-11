@@ -288,7 +288,7 @@ Definition Clerk__Apply: val :=
     let: "err" := ref (zero_val Error) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "i" := (Data.randomUint64 #()) `rem` (slice.len (struct.loadF Clerk "cks" "ck")) in
+      let: "i" := (rand.RandomUint64 #()) `rem` (slice.len (struct.loadF Clerk "cks" "ck")) in
       let: "cl" := SliceGet ptrT (struct.loadF Clerk "cks" "ck") "i" in
       singleClerk__becomeLeader "cl";;
       (* log.Println("became leader") *)

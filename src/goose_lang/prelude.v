@@ -2,7 +2,7 @@ From Perennial.goose_lang Require Export lang notation typing.
 From Perennial.goose_lang.lib Require Export
      typed_mem.impl struct.impl loop.impl
      encoding.impl map.impl slice.impl lock.impl
-     time.impl proph.impl waitgroup.impl.
+     time.impl rand.impl proph.impl waitgroup.impl.
 
 (* We provide stubs here for primitive operations to make the Goose unit tests
    compile. *)
@@ -32,20 +32,8 @@ Module Data.
 
     Axiom stringToBytes_t : ∅ ⊢ stringToBytes : (stringT -> slice.T byteT).
     Axiom bytesToString_t : ∅ ⊢ bytesToString : (slice.T byteT -> stringT).
-    Definition randomUint64: val := λ: <>, #0.
-    Theorem randomUint64_t: ∅ ⊢ randomUint64 : (unitT -> uint64T).
-    Proof.
-      typecheck.
-    Qed.
   End goose_lang.
 End Data.
-
-#[global]
-Hint Resolve Data.stringToBytes_t Data.bytesToString_t : types.
-
-Opaque Data.randomUint64.
-#[global]
-Hint Resolve Data.randomUint64_t : types.
 
 Module FS.
   Section goose_lang.
