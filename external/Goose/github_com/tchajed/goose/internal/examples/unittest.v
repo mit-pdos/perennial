@@ -229,7 +229,7 @@ Definition iterMapKeys: val :=
 
 Definition getRandom: val :=
   rec: "getRandom" <> :=
-    let: "r" := Data.randomUint64 #() in
+    let: "r" := rand.RandomUint64 #() in
     "r".
 
 (* disk.go *)
