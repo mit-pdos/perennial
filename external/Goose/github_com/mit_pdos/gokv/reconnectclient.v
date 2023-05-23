@@ -60,25 +60,3 @@ Definition ReconnectingClient__Call: val :=
         lock.release (struct.loadF ReconnectingClient "mu" "cl")
       else #());;
       "err").
-
-Definition ReconnectingClient__CallStart: val :=
-  rec: "ReconnectingClient__CallStart" "cl" "rpcid" "args" "reply" "timeout_ms" :=
-    let: ("err1", "urpcCl") := ReconnectingClient__getClient "cl" in
-    (if: "err1" ≠ #0
-    then
-      (λ: <>,
-        "err1"
-        )
-    else
-      let: ("err", "cb") := urpc.Client__CallStart "urpcCl" "rpcid" "args" in
-      (if: ("err" = urpc.ErrDisconnect)
-      then
-        lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
-        struct.storeF ReconnectingClient "valid" "cl" #false;;
-        lock.release (struct.loadF ReconnectingClient "mu" "cl")
-      else #());;
-      (λ: <>,
-        (if: ("err" = urpc.ErrDisconnect)
-        then "err"
-        else urpc.Client__CallComplete "urpcCl" "cb" "reply" "timeout_ms")
-        )).

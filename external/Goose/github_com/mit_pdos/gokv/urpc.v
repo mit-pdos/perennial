@@ -129,6 +129,10 @@ Definition MakeClient: val :=
     control.impl.Assume ("err" = #0);;
     "cl".
 
+Definition Error: ty := uint64T.
+
+Definition ErrNone : expr := #0.
+
 Definition ErrTimeout : expr := #1.
 
 Definition ErrDisconnect : expr := #2.
@@ -153,9 +157,9 @@ Definition Client__CallStart: val :=
     let: "reqData" := marshal.WriteBytes "data3" "args" in
     (if: grove_ffi.Send (struct.loadF Client "conn" "cl") "reqData"
     then
-      (ErrDisconnect, struct.new Callback [
-       ])
-    else (#0, "cb")).
+      (struct.new Callback [
+       ], ErrDisconnect)
+    else ("cb", ErrNone)).
 
 Definition Client__CallComplete: val :=
   rec: "Client__CallComplete" "cl" "cb" "reply" "timeout_ms" :=
@@ -177,7 +181,7 @@ Definition Client__CallComplete: val :=
 
 Definition Client__Call: val :=
   rec: "Client__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
-    let: ("err", "cb") := Client__CallStart "cl" "rpcid" "args" in
+    let: ("cb", "err") := Client__CallStart "cl" "rpcid" "args" in
     (if: "err" ≠ #0
     then "err"
     else Client__CallComplete "cl" "cb" "reply" "timeout_ms").
