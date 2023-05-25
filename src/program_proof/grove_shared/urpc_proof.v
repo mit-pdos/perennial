@@ -804,7 +804,7 @@ Lemma wp_Client__CallStart γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req
   }}}
     Client__CallStart #cl_ptr #rpcid (slice_val req)
   {{{
-       (err : option call_err) (cb_ptr : loc), RET (#(call_errno err), #cb_ptr);
+       (err : option call_err) (cb_ptr : loc), RET (#cb_ptr, #(call_errno err));
        is_slice_small req byteT q reqData ∗
        (if err is Some _ then True else own_uRPC_Callback cl_ptr cb_ptr Post)
   }}}.
