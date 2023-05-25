@@ -58,6 +58,34 @@ Admitted.
 
 End rpc_definitions.
 
+Section rpc_server_proofs.
+Context `{!heapGS Σ}.
+Lemma wp_Server__getFreshNum (s:loc) Ψ Φ :
+  getFreshNum_core_spec Ψ -∗
+  (∀ n, Ψ n -∗ Φ #n) -∗
+  WP Server__getFreshNum #s {{ v, Φ v }}
+.
+Proof.
+Admitted.
+
+Lemma wp_Server__tryAcquire (s:loc) (args:u64) Ψ Φ :
+  tryAcquire_core_spec args Ψ -∗
+  (∀ err, Ψ err -∗ Φ #err) -∗
+  WP Server__tryAcquire #s #args {{ v, Φ v }}
+.
+Proof.
+Admitted.
+
+Lemma wp_Server__release (s:loc) (args:u64) Ψ Φ :
+  release_core_spec args Ψ -∗
+  (Ψ -∗ Φ #()) -∗
+  WP Server__release #s #args {{ v, Φ v }}
+.
+Proof.
+Admitted.
+
+End rpc_server_proofs.
+
 Section encoded_rpc_definitions.
 (* This section is boilerplate. *)
 Context `{!gooseGlobalGS Σ}.
@@ -109,32 +137,9 @@ Definition is_lockserver_host host : iProp Σ :=
 End encoded_rpc_definitions.
 
 Section start_server_proof.
+(* This section is boilerplate. *)
 Context `{!heapGS Σ}.
 Context `{!urpcregG Σ}.
-
-Lemma wp_Server__getFreshNum (s:loc) Ψ Φ :
-  getFreshNum_core_spec Ψ -∗
-  (∀ n, Ψ n -∗ Φ #n) -∗
-  WP Server__getFreshNum #s {{ v, Φ v }}
-.
-Proof.
-Admitted.
-
-Lemma wp_Server__tryAcquire (s:loc) (args:u64) Ψ Φ :
-  tryAcquire_core_spec args Ψ -∗
-  (∀ err, Ψ err -∗ Φ #err) -∗
-  WP Server__tryAcquire #s #args {{ v, Φ v }}
-.
-Proof.
-Admitted.
-
-Lemma wp_Server__release (s:loc) (args:u64) Ψ Φ :
-  release_core_spec args Ψ -∗
-  (Ψ -∗ Φ #()) -∗
-  WP Server__release #s #args {{ v, Φ v }}
-.
-Proof.
-Admitted.
 
 Lemma wp_Server__Start (s:loc) (host:u64) :
   {{{
@@ -248,6 +253,7 @@ Qed.
 End start_server_proof.
 
 Section client_proof.
+(* This section is boilerplate. *)
 Context `{!heapGS Σ, !urpcregG Σ}.
 Definition is_Client (cl:loc) : iProp Σ :=
   ∃ (urpcCl:loc) host,
@@ -284,11 +290,45 @@ Proof.
     rewrite /getFreshNum_spec /=.
     iFrame "#".
     (* FIXME: want to know that
-       Ψ -∗ Φ, core_spec Ψ ⊢ core_spec Φ
+       Φ -∗ Ψ, core_spec Ψ ⊢ core_spec Φ,
+       i.e. that core_spec is contravariant.
      *)
     admit.
   }
 Admitted.
 
-
 End client_proof.
+
+Section clerk_proof.
+Context `{!heapGS Σ}.
+Context `{!urpcregG Σ}.
+
+Definition is_Clerk (ck:loc) : iProp Σ :=
+  ∃ (cl:loc),
+  "#Hcl" ∷ readonly (ck ↦[Clerk :: "rpcCl"] #cl) ∗
+  "#HisCl" ∷ is_Client cl
+.
+
+Definition is_Locked (ck:loc) : iProp Σ :=
+  ∃ (cl:loc) (n:u64),
+  "#Hcl" ∷ readonly (ck ↦[Locked :: "rpcCl"] #cl) ∗
+  "#Hid" ∷ readonly (ck ↦[Locked :: "id"] #n)
+.
+
+Lemma wp_Clerk__Acquire (ck:loc) :
+  {{{ is_Clerk ck }}}
+    Clerk__Acquire #ck
+  {{{ (l:loc), RET #l; is_Locked l }}}
+.
+Proof.
+Admitted.
+
+Lemma wp_Locked__Release (l:loc) :
+  {{{ is_Locked l }}}
+    Locked__Release #l
+  {{{ RET #(); True }}}
+.
+Proof.
+Admitted.
+
+End clerk_proof.
