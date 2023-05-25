@@ -112,6 +112,22 @@ Section start_server_proof.
 Context `{!heapGS Σ}.
 Context `{!urpcregG Σ}.
 
+Lemma wp_Server__getFreshNum (s:loc) Ψ Φ :
+  getFreshNum_core_spec Ψ -∗
+  (∀ n, Ψ n -∗ Φ #n) -∗
+  WP Server__getFreshNum #s {{ v, Φ v }}
+.
+Proof.
+Admitted.
+
+Lemma wp_Server__tryAcquire (s:loc) (args:u64) Ψ Φ :
+  tryAcquire_core_spec args Ψ -∗
+  (∀ err, Ψ err -∗ Φ #err) -∗
+  WP Server__tryAcquire #s #args {{ v, Φ v }}
+.
+Proof.
+Admitted.
+
 Lemma wp_Server__release (s:loc) (args:u64) Ψ Φ :
   release_core_spec args Ψ -∗
   (Ψ -∗ Φ #()) -∗
@@ -185,10 +201,48 @@ Proof.
       iIntros "HΨ".
       wp_pures.
       iApply ("HΦ" with "[$] [$]").
-      by iApply is_slice_small_nil.
+      by iApply (is_slice_small_nil _ 1).
     }
-    admit. (* TODO: copy/paste *)
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+      clear Φ.
+      unfold impl_handler_spec2.
+      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      wp_pures.
+      iDestruct "Hspec" as (?) "[%Henc Hspec]". subst.
+      wp_apply (wp_DecodeUint64 with "[$]").
+      iIntros "Hreq_sl".
+      wp_apply (wp_Server__tryAcquire with "[$]").
+      iIntros (?) "HΨ".
+      wp_apply wp_EncodeUint64.
+      iIntros (?) "Henc_req".
+      wp_store.
+      iApply ("HΦ" with "[HΨ] [$]").
+      { iApply "HΨ". done. }
+      by iDestruct (is_slice_to_small _ _ 1 with "Henc_req") as "$".
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+      clear Φ.
+      unfold impl_handler_spec2.
+      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      wp_pures.
+      iEval (rewrite /getFreshNum_spec /=) in "Hspec".
+      wp_apply (wp_Server__getFreshNum with "[$]").
+      iIntros (?) "HΨ".
+      wp_apply wp_EncodeUint64.
+      iIntros (?) "Henc_req".
+      wp_store.
+      iApply ("HΦ" with "[HΨ] [$]").
+      { iApply "HΨ". done. }
+      by iDestruct (is_slice_to_small with "Henc_req") as "$".
+    }
+    by iApply big_sepM_empty.
   }
-Admitted.
+  wp_pures.
+  by iApply "HΦ".
+Qed.
 
 End start_server_proof.
