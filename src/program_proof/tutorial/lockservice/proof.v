@@ -265,7 +265,7 @@ Definition is_Client (cl:loc) : iProp Σ :=
 Lemma wp_Client__getFreshNum cl Φ :
   is_Client cl -∗
   □ getFreshNum_core_spec (λ num, Φ (#num, #0)%V) -∗
-  (∀ (err:u64), Φ (#0, #err)%V ) -∗
+  (∀ (err:u64), ⌜err ≠ U64 0⌝ -∗ Φ (#0, #err)%V ) -∗
   WP Client__getFreshNum #cl {{ Φ }}
 .
 Proof.
@@ -321,6 +321,44 @@ Lemma wp_Clerk__Acquire (ck:loc) :
   {{{ (l:loc), RET #l; is_Locked l }}}
 .
 Proof.
+  iIntros (Φ) "#Hck HΦ".
+  wp_lam.
+  (* symbolic execution *)
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (id_ptr) "Hid".
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (err_ptr) "Herr".
+  wp_pures.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (l) "Hl".
+  wp_pures.
+
+  wp_forBreak.
+  wp_pures.
+  iNamed "Hck".
+  wp_loadField.
+  wp_apply (wp_Client__getFreshNum with "[$]").
+  2:{ (* case: error *)
+    iIntros (err) "%Herr". wp_pures.
+    wp_store.
+    wp_store.
+    wp_load.
+    wp_pures.
+    wp_if_destruct.
+    {
+      iModIntro. iLeft.
+      iSplitR; first done.
+      iFrame.
+      admit. (* TODO: weaken loop inv for err *)
+    }
+    by exfalso.
+  }
+  (* case: successful RPC *)
+  iModIntro.
+  (* TODO: put resources in front of Φ with wp_wand(_frame?) *)
 Admitted.
 
 Lemma wp_Locked__Release (l:loc) :
