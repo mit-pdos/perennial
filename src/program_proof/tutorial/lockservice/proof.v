@@ -1,6 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.tutorial Require Import lockservice.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
+From Perennial.program_proof Require Import marshal_stateless_proof.
 
 Section marshal_proof.
 Context `{!heapGS Σ}.
@@ -34,9 +35,9 @@ Proof.
 Admitted.
 
 Lemma wp_DecodeUint64 sl x q :
-  {{{ is_slice sl byteT q (u64_le x) }}}
-    DecodeBool (slice_val sl)
-  {{{ RET #x; is_slice sl byteT q (u64_le x) }}}
+  {{{ is_slice_small sl byteT q (u64_le x) }}}
+    DecodeUint64 (slice_val sl)
+  {{{ RET #x; is_slice_small sl byteT q (u64_le x) }}}
 .
 Proof.
 Admitted.
@@ -88,7 +89,7 @@ Admitted.
 Program Definition release_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
-   ⌜enc_args = u64_le args⌝ ∗
+   "%Henc" ∷ ⌜enc_args = u64_le args⌝ ∗
    release_core_spec args (Φ [])
   )%I
 .
@@ -111,7 +112,15 @@ Section start_server_proof.
 Context `{!heapGS Σ}.
 Context `{!urpcregG Σ}.
 
-Lemma wp_Server__Start s (host:u64) :
+Lemma wp_Server__release (s:loc) (args:u64) Ψ Φ :
+  release_core_spec args Ψ -∗
+  (Ψ -∗ Φ #()) -∗
+  WP Server__release #s #args {{ v, Φ v }}
+.
+Proof.
+Admitted.
+
+Lemma wp_Server__Start (s:loc) (host:u64) :
   {{{
         "#Hhost" ∷ is_lockserver_host host
   }}}
@@ -165,8 +174,21 @@ Proof.
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
+      clear Φ.
+      unfold impl_handler_spec2.
+      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      wp_pures.
+      iDestruct "Hspec" as (?) "[%Henc Hspec]". subst.
+      wp_apply (wp_DecodeUint64 with "[$]").
+      iIntros "Hreq_sl".
+      wp_apply (wp_Server__release with "[$]").
+      iIntros "HΨ".
+      wp_pures.
+      iApply ("HΦ" with "[$] [$]").
+      by iApply is_slice_small_nil.
     }
+    admit. (* TODO: copy/paste *)
   }
-Qed.
+Admitted.
 
 End start_server_proof.
