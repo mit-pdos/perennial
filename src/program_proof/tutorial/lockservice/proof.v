@@ -246,3 +246,49 @@ Proof.
 Qed.
 
 End start_server_proof.
+
+Section client_proof.
+Context `{!heapGS Σ, !urpcregG Σ}.
+Definition is_Client (cl:loc) : iProp Σ :=
+  ∃ (urpcCl:loc) host,
+  "#Hcl" ∷ readonly (cl ↦[Client :: "cl"] #urpcCl) ∗
+  "#HurpcCl" ∷ is_uRPCClient urpcCl host ∗
+  "#Hhost" ∷ is_lockserver_host host
+.
+
+Lemma wp_Client__getFreshNum cl Φ :
+  is_Client cl -∗
+  □ getFreshNum_core_spec (λ num, Φ (#num, #0)%V) -∗
+  (∀ (err:u64), Φ (#0, #err)%V ) -∗
+  WP Client__getFreshNum #cl {{ Φ }}
+.
+Proof.
+  iIntros "Hcl #Hspec Herr".
+  (* symbolic execution *)
+  wp_lam.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep_ptr) "Hrep".
+  wp_pures.
+  wp_apply (wp_NewSlice).
+  iIntros (?) "Hreq_sl".
+  wp_pures.
+  iNamed "Hcl".
+  wp_loadField.
+  iNamed "Hhost".
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  wp_apply (wp_Client__Call2' with "[$] [$H1] [$] [$] [Hspec]").
+  {
+    iModIntro. iModIntro.
+    rewrite replicate_0.
+    rewrite /getFreshNum_spec /=.
+    iFrame "#".
+    (* FIXME: want to know that
+       Ψ -∗ Φ, core_spec Ψ ⊢ core_spec Φ
+     *)
+    admit.
+  }
+Admitted.
+
+
+End client_proof.
