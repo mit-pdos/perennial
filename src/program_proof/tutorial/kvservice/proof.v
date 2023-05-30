@@ -13,6 +13,28 @@ Fixpoint string_le (s:string): list u8 :=
   end
 .
 
+Axiom wp_stringToBytes :
+  ∀ `{!heapGS Σ} (s:string),
+  {{{
+        True
+  }}}
+    prelude.Data.stringToBytes #(str s)
+  {{{
+        (sl:Slice.t), RET (slice_val sl); is_slice sl byteT 1 (string_le s)
+  }}}
+.
+
+Axiom wp_bytesToString :
+  ∀ `{!heapGS Σ} sl q (s:string),
+  {{{
+        is_slice_small sl byteT q (string_le s)
+  }}}
+    prelude.Data.bytesToString #(str s)
+  {{{
+        RET #(str s); is_slice_small sl byteT q (string_le s)
+  }}}
+.
+
 Module putArgs.
 Record t :=
   mk {
@@ -26,6 +48,7 @@ Definition encodes (x:list u8) (a:t) : Prop :=
       string_le a.(key) ++ string_le a.(val)
 .
 
+Section local_defs.
 Context `{!heapGS Σ}.
 Definition own (a:loc) (args:t) : iProp Σ :=
   "HopId" ∷ a ↦[putArgs :: "opId"] #args.(opId) ∗
@@ -33,6 +56,21 @@ Definition own (a:loc) (args:t) : iProp Σ :=
   "Hval" ∷ a ↦[putArgs :: "val"] #(str args.(val))
 .
 
+Lemma wp_decode  sl enc_args args q :
+  {{{
+        ⌜encodes enc_args args⌝ ∗
+        is_slice_small sl byteT q enc_args
+  }}}
+    decodePutArgs (slice_val sl)
+  {{{
+        (args_ptr:loc), RET #args_ptr; own args_ptr args ∗
+                                       is_slice_small sl byteT q enc_args
+  }}}
+.
+Proof.
+Admitted.
+
+End local_defs.
 End putArgs.
 
 Module conditionalPutArgs.
@@ -49,6 +87,7 @@ Definition encodes (x:list u8) (a:t) : Prop :=
       (u64_le $ length $ string_le a.(expectedVal)) ++ string_le a.(val) ++ string_le a.(val)
 .
 
+Section local_defs.
 Context `{!heapGS Σ}.
 Definition own (a:loc) (args:t) : iProp Σ :=
   "HopId" ∷ a ↦[conditionalPutArgs :: "opId"] #args.(opId) ∗
@@ -56,6 +95,22 @@ Definition own (a:loc) (args:t) : iProp Σ :=
   "HexpectedVal" ∷ a ↦[conditionalPutArgs :: "expectedVal"] #(str args.(expectedVal)) ∗
   "Hval" ∷ a ↦[conditionalPutArgs :: "val"] #(str args.(val))
 .
+
+Lemma wp_decode  sl enc_args args q :
+  {{{
+        ⌜encodes enc_args args⌝ ∗
+        is_slice_small sl byteT q enc_args
+  }}}
+    decodeConditionalPutArgs (slice_val sl)
+  {{{
+        (args_ptr:loc), RET #args_ptr; own args_ptr args ∗
+                                       is_slice_small sl byteT q enc_args
+  }}}
+.
+Proof.
+Admitted.
+
+End local_defs.
 End conditionalPutArgs.
 
 Module getArgs.
@@ -69,11 +124,30 @@ Definition encodes (x:list u8) (a:t) : Prop :=
   x = u64_le a.(opId) ++ string_le a.(key)
 .
 
+Section local_defs.
 Context `{!heapGS Σ}.
-Definition own (a:loc) (args:t) : iProp Σ :=
+Definition own `{!heapGS Σ} (a:loc) (args:t) : iProp Σ :=
   "HopId" ∷ a ↦[getArgs :: "opId"] #args.(opId) ∗
   "Hkey" ∷ a ↦[getArgs :: "key"] #(str args.(key))
 .
+
+Lemma wp_decode  sl enc_args args q :
+  {{{
+        ⌜encodes enc_args args⌝ ∗
+        is_slice_small sl byteT q enc_args
+  }}}
+    decodeGetArgs (slice_val sl)
+  {{{
+        (args_ptr:loc), RET #args_ptr; own args_ptr args ∗
+                                       is_slice_small sl byteT q enc_args
+  }}}
+.
+Proof.
+  Set Printing All.
+Admitted.
+
+End local_defs.
+
 End getArgs.
 
 (********************************************************************************)
@@ -149,7 +223,7 @@ Admitted.
 
 Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ Φ :
   put_core_spec args Ψ -∗
-  putArgs.own args_ptr args ∗
+  putArgs.own args_ptr args -∗
   (Ψ -∗ Φ #()) -∗
   WP Server__put #s #args_ptr {{ v, Φ v }}
 .
@@ -158,7 +232,7 @@ Admitted.
 
 Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ Φ :
   conditionalPut_core_spec args Ψ -∗
-  conditionalPutArgs.own args_ptr args ∗
+  conditionalPutArgs.own args_ptr args -∗
   (∀ r, Ψ r -∗ Φ #(str r)) -∗
   WP Server__conditionalPut #s #args_ptr {{ v, Φ v }}
 .
@@ -167,7 +241,7 @@ Admitted.
 
 Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ Φ :
   get_core_spec args Ψ -∗
-  getArgs.own args_ptr args ∗
+  getArgs.own args_ptr args -∗
   (∀ r, Ψ r -∗ Φ #(str r)) -∗
   WP Server__get #s #args_ptr {{ v, Φ v }}
 .
@@ -307,14 +381,17 @@ Proof.
       unfold impl_handler_spec2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
-      iDestruct "Hspec" as (?) "[%Henc Hspec]". subst.
-      wp_apply (wp_DecodeUint64 with "[$]").
-      iIntros "Hreq_sl".
-      wp_apply (wp_Server__release with "[$]").
-      iIntros "HΨ".
-      wp_pures.
-      iApply ("HΦ" with "[$] [$]").
-      by iApply (is_slice_small_nil _ 1).
+      iDestruct "Hspec" as (?) "[%Henc Hspec]".
+      wp_apply (getArgs.wp_decode with "[$Hreq_sl]").
+      { by iPureIntro. }
+      iIntros (?) "[Hargs Hreq_sl]".
+      wp_apply (wp_Server__get with "[$] [$]").
+      iIntros (?) "HΨ".
+      wp_pures. wp_apply wp_stringToBytes.
+      iIntros (ret_sl) "Hret_sl".
+      iDestruct (is_slice_to_small with "Hret_sl") as "Hret_sl".
+      wp_store.
+      iApply ("HΦ" with "[$] [$] [$]").
     }
     iApply (big_sepM_insert_2 with "").
     {
@@ -323,17 +400,35 @@ Proof.
       unfold impl_handler_spec2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
-      iDestruct "Hspec" as (?) "[%Henc Hspec]". subst.
-      wp_apply (wp_DecodeUint64 with "[$]").
-      iIntros "Hreq_sl".
-      wp_apply (wp_Server__tryAcquire with "[$]").
+      iDestruct "Hspec" as (?) "[%Henc Hspec]".
+      wp_apply (conditionalPutArgs.wp_decode with "[$Hreq_sl]").
+      { done. }
+      iIntros (?) "[Hargs Hreq_sl]".
+      wp_apply (wp_Server__conditionalPut with "[$] [$]").
       iIntros (?) "HΨ".
-      wp_apply wp_EncodeUint64.
+      wp_apply wp_stringToBytes.
       iIntros (?) "Henc_req".
       wp_store.
       iApply ("HΦ" with "[HΨ] [$]").
-      { iApply "HΨ". done. }
-      by iDestruct (is_slice_to_small _ _ 1 with "Henc_req") as "$".
+      { iApply "HΨ". }
+      by iDestruct (is_slice_to_small with "Henc_req") as "$".
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+      clear Φ.
+      unfold impl_handler_spec2.
+      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      wp_pures.
+      iDestruct "Hspec" as (?) "[%Henc Hspec]".
+      wp_apply (putArgs.wp_decode with "[$Hreq_sl]").
+      { done. }
+      iIntros (?) "[Hargs Hreq_sl]".
+      wp_apply (wp_Server__put with "[$] [$]").
+      iIntros "HΨ". wp_pures.
+      iApply ("HΦ" with "[HΨ] [$]").
+      { iApply "HΨ". }
+      by iApply (is_slice_small_nil _ 1).
     }
     iApply (big_sepM_insert_2 with "").
     {
