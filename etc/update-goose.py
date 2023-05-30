@@ -267,6 +267,7 @@ def main():
             "tutorial/objectstore/chunk",
             "tutorial/objectstore/client",
             "tutorial/lockservice",
+            "tutorial/kvservice",
             "mpaxos/",
             "mpaxos/example",
             "map_marshal",
