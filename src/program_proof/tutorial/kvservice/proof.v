@@ -4,6 +4,15 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
 (********************************************************************************)
+
+(* FIXME: move this somewhere else *)
+Fixpoint string_le (s:string): list u8 :=
+  match s with
+  | EmptyString => []
+  | String x srest => [U8 (Ascii.nat_of_ascii x)] ++ (string_le srest)
+  end
+.
+
 Module putArgs.
 Record t :=
   mk {
@@ -12,12 +21,18 @@ Record t :=
       val: string ;
   }.
 
+Definition encodes (x:list u8) (a:t) : Prop :=
+  x = u64_le a.(opId) ++ (u64_le $ length $ string_le a.(key)) ++
+      string_le a.(key) ++ string_le a.(val)
+.
+
 Context `{!heapGS Σ}.
 Definition own (a:loc) (args:t) : iProp Σ :=
   "HopId" ∷ a ↦[putArgs :: "opId"] #args.(opId) ∗
   "Hkey" ∷ a ↦[putArgs :: "key"] #(str args.(key)) ∗
   "Hval" ∷ a ↦[putArgs :: "val"] #(str args.(val))
 .
+
 End putArgs.
 
 Module conditionalPutArgs.
@@ -28,6 +43,11 @@ Record t :=
       expectedVal: string ;
       val: string ;
   }.
+
+Definition encodes (x:list u8) (a:t) : Prop :=
+  x = u64_le a.(opId) ++ (u64_le $ length $ string_le a.(key)) ++ string_le a.(key) ++
+      (u64_le $ length $ string_le a.(expectedVal)) ++ string_le a.(val) ++ string_le a.(val)
+.
 
 Context `{!heapGS Σ}.
 Definition own (a:loc) (args:t) : iProp Σ :=
@@ -44,6 +64,10 @@ Record t :=
       opId: u64 ;
       key: string ;
   }.
+
+Definition encodes (x:list u8) (a:t) : Prop :=
+  x = u64_le a.(opId) ++ string_le a.(key)
+.
 
 Context `{!heapGS Σ}.
 Definition own (a:loc) (args:t) : iProp Σ :=
@@ -168,11 +192,11 @@ Next Obligation.
 Defined. *)
 Admitted.
 
-Program Definition tryAcquire_spec :=
+Program Definition put_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
-   ⌜enc_args = u64_le args⌝ ∗
-   tryAcquire_core_spec args (λ err, ∀ enc_reply, ⌜enc_reply = u64_le err⌝ -∗ Φ enc_reply)
+   "%Henc" ∷ ⌜putArgs.encodes enc_args args⌝ ∗
+   put_core_spec args (∀ enc_reply, Φ enc_reply)
   )%I
 .
 Next Obligation.
@@ -180,11 +204,23 @@ Next Obligation.
 Defined. *)
 Admitted.
 
-Program Definition release_spec :=
+Program Definition conditionalPut_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
-   "%Henc" ∷ ⌜enc_args = u64_le args⌝ ∗
-   release_core_spec args (Φ [])
+   "%Henc" ∷ ⌜conditionalPutArgs.encodes enc_args args⌝ ∗
+   conditionalPut_core_spec args (λ rep, Φ (string_le rep))
+  )%I
+.
+Next Obligation.
+  (* solve_proper.
+Defined. *)
+Admitted.
+
+Program Definition get_spec :=
+  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
+  (∃ args,
+   "%Henc" ∷ ⌜getArgs.encodes enc_args args⌝ ∗
+   get_core_spec args (λ rep, Φ (string_le rep))
   )%I
 .
 Next Obligation.
@@ -194,10 +230,11 @@ Admitted.
 
 Definition is_lockserver_host host : iProp Σ :=
   ∃ γrpc,
-  "#H1" ∷ handler_spec γrpc host (U64 0) getFreshNum_spec ∗
-  "#H2" ∷ handler_spec γrpc host (U64 1) tryAcquire_spec ∗
-  "#H3" ∷ handler_spec γrpc host (U64 2) release_spec ∗
-  "#Hdom" ∷ handlers_dom γrpc {[ U64 0; U64 1; U64 2 ]}
+  "#H0" ∷ handler_spec γrpc host (U64 0) getFreshNum_spec ∗
+  "#H1" ∷ handler_spec γrpc host (U64 1) put_spec ∗
+  "#H2" ∷ handler_spec γrpc host (U64 2) conditionalPut_spec ∗
+  "#H3" ∷ handler_spec γrpc host (U64 3) get_spec ∗
+  "#Hdom" ∷ handlers_dom γrpc {[ U64 0; U64 1; U64 2; U64 3 ]}
   .
 
 End encoded_rpc_definitions.
@@ -224,6 +261,11 @@ Proof.
   wp_pures.
   wp_apply (map.wp_NewMap).
   iIntros (handlers) "Hhandlers".
+
+  wp_pures.
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
 
   wp_pures.
   wp_apply (map.wp_MapInsert with "Hhandlers").

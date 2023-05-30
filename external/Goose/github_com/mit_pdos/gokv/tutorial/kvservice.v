@@ -39,8 +39,9 @@ Definition encodePutArgs: val :=
   rec: "encodePutArgs" "a" :=
     let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (struct.loadF putArgs "opId" "a");;
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (strLen (struct.loadF putArgs "key" "a"));;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF putArgs "key" "a"));;
+    let: "keyBytes" := Data.stringToBytes (struct.loadF putArgs "key" "a") in
+    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (slice.len "keyBytes");;
+    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") "keyBytes";;
     "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF putArgs "val" "a"));;
     ![slice.T byteT] "e".
 
@@ -69,10 +70,12 @@ Definition encodeConditionalPutArgs: val :=
   rec: "encodeConditionalPutArgs" "a" :=
     let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (struct.loadF conditionalPutArgs "opId" "a");;
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (strLen (struct.loadF conditionalPutArgs "key" "a"));;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF conditionalPutArgs "key" "a"));;
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (strLen (struct.loadF conditionalPutArgs "expectedVal" "a"));;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF conditionalPutArgs "expectedVal" "a"));;
+    let: "keyBytes" := Data.stringToBytes (struct.loadF conditionalPutArgs "key" "a") in
+    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (slice.len "keyBytes");;
+    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") "keyBytes";;
+    let: "expectedValBytes" := Data.stringToBytes (struct.loadF conditionalPutArgs "expectedVal" "a") in
+    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (slice.len "expectedValBytes");;
+    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") "expectedValBytes";;
     "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF conditionalPutArgs "newVal" "a"));;
     ![slice.T byteT] "e".
 
