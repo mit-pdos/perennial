@@ -465,11 +465,11 @@ Definition is_Client (cl:loc) : iProp Σ :=
   "#Hhost" ∷ is_lockserver_host host
 .
 
-Lemma wp_Client__getFreshNum cl Φ :
+Lemma wp_Client__getFreshNumRpc cl Φ :
   is_Client cl -∗
   □ getFreshNum_core_spec (λ num, Φ (#num, #0)%V) -∗
   (∀ (err:u64), ⌜err ≠ U64 0⌝ -∗ Φ (#0, #err)%V ) -∗
-  WP Client__getFreshNum #cl {{ Φ }}
+  WP Client__getFreshNumRpc #cl {{ Φ }}
 .
 Proof.
   iIntros "Hcl #Hspec Herr".
@@ -486,15 +486,15 @@ Proof.
   wp_loadField.
   iNamed "Hhost".
   iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_Client__Call2' with "[$] [$H1] [$] [$] [Hspec]").
+  wp_apply (wp_Client__Call2' with "[$] [$H0] [$] [$] [Hspec]").
   {
     iModIntro. iModIntro.
     rewrite replicate_0.
     rewrite /getFreshNum_spec /=.
     iFrame "#".
     (* FIXME: want to know that
-       Φ -∗ Ψ, core_spec Ψ ⊢ core_spec Φ,
-       i.e. that core_spec is contravariant.
+       Φ -∗ Ψ, core_spec Φ ⊢ core_spec Ψ,
+       i.e. that core_spec is covariant.
      *)
     admit.
   }
