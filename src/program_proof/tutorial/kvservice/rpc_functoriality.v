@@ -52,9 +52,20 @@ Qed.
    Example: Get_server_spec (from fencing/ctr_proof).
 
    let latestEpoch | (own_latest_epoch γ latestEpoch (1/2)) &&
-   let v | (own_val γ v) &&
-   own_val γ v;
-   return v
+   if latestEpoch = e then
+     let v | (own_val γ v) &&
+     own_val γ v;
+     return 0, v
+   else
+     return:
+     own_latest,
+     return 1, []
+  ...
 
+  A more restricted version: urpc_spec is already manifestly monotonic. It
+  doesn't really have "sequential composition" though (which is e.g. helpful for
+  marshalling).
+  The other annoying part about urpc_spec is the single "spec_ty" for having
+  existentials.
  *)
 End main.

@@ -213,6 +213,8 @@ End rpc_definitions.
 
 Section rpc_server_proofs.
 Context `{!heapGS Σ}.
+
+(* FIXME: make use of explicit spec montonicity and get rid of Ψ+Φ. *)
 Lemma wp_Server__getFreshNum (s:loc) Ψ Φ :
   getFreshNum_core_spec Ψ -∗
   (∀ n, Ψ n -∗ Φ #n) -∗
@@ -486,17 +488,18 @@ Proof.
   wp_loadField.
   iNamed "Hhost".
   iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_Client__Call2' with "[$] [$H0] [$] [$] [Hspec]").
+  wp_apply (wp_Client__Call2 with "[$] [$H0] [$] [$] [Hspec]").
   {
     iModIntro. iModIntro.
     rewrite replicate_0.
     rewrite /getFreshNum_spec /=.
-    iFrame "#".
     (* FIXME: want to know that
        Φ -∗ Ψ, core_spec Φ ⊢ core_spec Ψ,
        i.e. that core_spec is covariant.
      *)
     admit.
+  }
+  {
   }
 Admitted.
 
