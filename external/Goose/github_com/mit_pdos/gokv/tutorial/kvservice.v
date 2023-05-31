@@ -6,27 +6,36 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-(* 0_kvservice.gb.go *)
+(* client.go *)
 
-(* TODO: these are generic *)
-Definition EncodeBool: val :=
-  rec: "EncodeBool" "a" :=
-    (if: "a"
-    then SliceAppend byteT (NewSlice byteT #0) (#(U8 1))
-    else SliceAppend byteT (NewSlice byteT #0) (#(U8 0))).
+(* kvservice_rpc.gb.go *)
 
-Definition DecodeBool: val :=
-  rec: "DecodeBool" "x" :=
-    (SliceGet byteT "x" #0 = #(U8 1)).
+Definition Client := struct.decl [
+  "cl" :: ptrT
+].
 
-Definition EncodeUint64: val :=
-  rec: "EncodeUint64" "a" :=
-    marshal.WriteInt (NewSlice byteT #0) "a".
+Definition Clerk := struct.decl [
+  "rpcCl" :: ptrT
+].
 
-Definition DecodeUint64: val :=
-  rec: "DecodeUint64" "x" :=
-    let: ("a", <>) := marshal.ReadInt "x" in
-    "a".
+Definition Locked := struct.decl [
+  "rpcCl" :: ptrT;
+  "id" :: uint64T
+].
+
+Definition makeClient: val :=
+  rec: "makeClient" "hostname" :=
+    struct.new Client [
+      "cl" ::= urpc.MakeClient "hostname"
+    ].
+
+Definition MakeClerk: val :=
+  rec: "MakeClerk" "host" :=
+    struct.new Clerk [
+      "rpcCl" ::= makeClient "host"
+    ].
+
+(* kvservice.gb.go *)
 
 (* Put *)
 Definition putArgs := struct.decl [
@@ -45,18 +54,58 @@ Definition encodePutArgs: val :=
     "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF putArgs "val" "a"));;
     ![slice.T byteT] "e".
 
-Definition decodePutArgs: val :=
-  rec: "decodePutArgs" "x" :=
-    let: "e" := ref_to (slice.T byteT) "x" in
-    let: "a" := struct.alloc putArgs (zero_val (struct.t putArgs)) in
-    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
-    struct.storeF putArgs "opId" "a" "0_ret";;
-    "e" <-[slice.T byteT] "1_ret";;
-    let: ("keyLen", "e") := marshal.ReadInt (![slice.T byteT] "e") in
-    let: ("keyBytes", "valBytes") := marshal.ReadBytes (![slice.T byteT] "e") "keyLen" in
-    struct.storeF putArgs "key" "a" (Data.bytesToString "keyBytes");;
-    struct.storeF putArgs "val" "a" (Data.bytesToString "valBytes");;
+Definition rpcIdGetFreshNum : expr := #0.
+
+Definition rpcIdPut : expr := #1.
+
+Definition rpcIdConditionalPut : expr := #2.
+
+Definition rpcIdGet : expr := #3.
+
+Definition Error: ty := uint64T.
+
+Definition Client__putRpc: val :=
+  rec: "Client__putRpc" "cl" "args" :=
+    let: "reply" := ref (zero_val (slice.T byteT)) in
+    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdPut (encodePutArgs "args") "reply" #100 in
+    (if: ("err" = urpc.ErrNone)
+    then "err"
+    else "err").
+
+Definition DecodeUint64: val :=
+  rec: "DecodeUint64" "x" :=
+    let: ("a", <>) := marshal.ReadInt "x" in
     "a".
+
+Definition Client__getFreshNumRpc: val :=
+  rec: "Client__getFreshNumRpc" "cl" :=
+    let: "reply" := ref (zero_val (slice.T byteT)) in
+    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGetFreshNum (NewSlice byteT #0) "reply" #100 in
+    (if: ("err" = urpc.ErrNone)
+    then (DecodeUint64 (![slice.T byteT] "reply"), "err")
+    else (#0, "err")).
+
+Definition Clerk__Put: val :=
+  rec: "Clerk__Put" "ck" "key" "val" :=
+    let: "err" := ref (zero_val uint64T) in
+    let: "opId" := ref (zero_val uint64T) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
+      "opId" <-[uint64T] "0_ret";;
+      "err" <-[uint64T] "1_ret";;
+      (if: (![uint64T] "err" = #0)
+      then Break
+      else Continue));;
+    let: "args" := struct.new putArgs [
+      "opId" ::= ![uint64T] "opId";
+      "key" ::= "key";
+      "val" ::= "val"
+    ] in
+    Skip;;
+    (for: (λ: <>, Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args" ≠ urpc.ErrNone); (λ: <>, Skip) := λ: <>,
+      Continue);;
+    #().
 
 (* ConditionalPut *)
 Definition conditionalPutArgs := struct.decl [
@@ -79,6 +128,123 @@ Definition encodeConditionalPutArgs: val :=
     "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF conditionalPutArgs "newVal" "a"));;
     ![slice.T byteT] "e".
 
+Definition Client__conditionalPutRpc: val :=
+  rec: "Client__conditionalPutRpc" "cl" "args" :=
+    let: "reply" := ref (zero_val (slice.T byteT)) in
+    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdConditionalPut (encodeConditionalPutArgs "args") "reply" #100 in
+    (if: ("err" = urpc.ErrNone)
+    then (Data.bytesToString (![slice.T byteT] "reply"), "err")
+    else (#(str""), "err")).
+
+(* returns true if ConditionalPut was successful, false if current value did not
+   match expected value. *)
+Definition Clerk__ConditionalPut: val :=
+  rec: "Clerk__ConditionalPut" "ck" "key" "expectedVal" "newVal" :=
+    let: "err" := ref (zero_val uint64T) in
+    let: "opId" := ref (zero_val uint64T) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
+      "opId" <-[uint64T] "0_ret";;
+      "err" <-[uint64T] "1_ret";;
+      (if: (![uint64T] "err" = #0)
+      then Break
+      else Continue));;
+    let: "args" := struct.new conditionalPutArgs [
+      "opId" ::= ![uint64T] "opId";
+      "key" ::= "key";
+      "expectedVal" ::= "expectedVal";
+      "newVal" ::= "newVal"
+    ] in
+    let: "ret" := ref (zero_val boolT) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("reply", "err") := Client__conditionalPutRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
+      (if: ("err" = urpc.ErrNone)
+      then
+        "ret" <-[boolT] ("reply" = #(str"ok"));;
+        Break
+      else Continue));;
+    ![boolT] "ret".
+
+(* Get *)
+Definition getArgs := struct.decl [
+  "opId" :: uint64T;
+  "key" :: stringT
+].
+
+Definition encodeGetArgs: val :=
+  rec: "encodeGetArgs" "a" :=
+    let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
+    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (struct.loadF getArgs "opId" "a");;
+    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF getArgs "key" "a"));;
+    ![slice.T byteT] "e".
+
+Definition Client__getRpc: val :=
+  rec: "Client__getRpc" "cl" "args" :=
+    let: "reply" := ref (zero_val (slice.T byteT)) in
+    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGet (encodeGetArgs "args") "reply" #100 in
+    (if: ("err" = urpc.ErrNone)
+    then (Data.bytesToString (![slice.T byteT] "reply"), "err")
+    else (#(str""), "err")).
+
+(* returns true if ConditionalPut was successful, false if current value did not
+   match expected value. *)
+Definition Clerk__Get: val :=
+  rec: "Clerk__Get" "ck" "key" :=
+    let: "err" := ref (zero_val uint64T) in
+    let: "opId" := ref (zero_val uint64T) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
+      "opId" <-[uint64T] "0_ret";;
+      "err" <-[uint64T] "1_ret";;
+      (if: (![uint64T] "err" = #0)
+      then Break
+      else Continue));;
+    let: "args" := struct.new getArgs [
+      "opId" ::= ![uint64T] "opId";
+      "key" ::= "key"
+    ] in
+    let: "ret" := ref (zero_val stringT) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("reply", "err") := Client__getRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
+      (if: ("err" = urpc.ErrNone)
+      then
+        "ret" <-[stringT] "reply";;
+        Break
+      else Continue));;
+    ![stringT] "ret".
+
+(* TODO: these are generic *)
+Definition EncodeBool: val :=
+  rec: "EncodeBool" "a" :=
+    (if: "a"
+    then SliceAppend byteT (NewSlice byteT #0) (#(U8 1))
+    else SliceAppend byteT (NewSlice byteT #0) (#(U8 0))).
+
+Definition DecodeBool: val :=
+  rec: "DecodeBool" "x" :=
+    (SliceGet byteT "x" #0 = #(U8 1)).
+
+Definition EncodeUint64: val :=
+  rec: "EncodeUint64" "a" :=
+    marshal.WriteInt (NewSlice byteT #0) "a".
+
+Definition decodePutArgs: val :=
+  rec: "decodePutArgs" "x" :=
+    let: "e" := ref_to (slice.T byteT) "x" in
+    let: "a" := struct.alloc putArgs (zero_val (struct.t putArgs)) in
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
+    struct.storeF putArgs "opId" "a" "0_ret";;
+    "e" <-[slice.T byteT] "1_ret";;
+    let: ("keyLen", "e") := marshal.ReadInt (![slice.T byteT] "e") in
+    let: ("keyBytes", "valBytes") := marshal.ReadBytes (![slice.T byteT] "e") "keyLen" in
+    struct.storeF putArgs "key" "a" (Data.bytesToString "keyBytes");;
+    struct.storeF putArgs "val" "a" (Data.bytesToString "valBytes");;
+    "a".
+
 Definition decodeConditionalPutArgs: val :=
   rec: "decodeConditionalPutArgs" "x" :=
     let: "e" := ref_to (slice.T byteT) "x" in
@@ -95,19 +261,6 @@ Definition decodeConditionalPutArgs: val :=
     struct.storeF conditionalPutArgs "newVal" "a" (Data.bytesToString "newValBytes");;
     "a".
 
-(* Get *)
-Definition getArgs := struct.decl [
-  "opId" :: uint64T;
-  "key" :: stringT
-].
-
-Definition encodeGetArgs: val :=
-  rec: "encodeGetArgs" "a" :=
-    let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (struct.loadF getArgs "opId" "a");;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF getArgs "key" "a"));;
-    ![slice.T byteT] "e".
-
 Definition decodeGetArgs: val :=
   rec: "decodeGetArgs" "x" :=
     let: "e" := ref_to (slice.T byteT) "x" in
@@ -119,61 +272,9 @@ Definition decodeGetArgs: val :=
     struct.storeF getArgs "key" "a" (Data.bytesToString (![slice.T byteT] "keyBytes"));;
     "a".
 
-(* 1_kvservice_rpc.gb.go *)
+(* kvservice_rpc_server.gb.go *)
 
-Definition rpcIdGetFreshNum : expr := #0.
-
-Definition rpcIdPut : expr := #1.
-
-Definition rpcIdConditionalPut : expr := #2.
-
-Definition rpcIdGet : expr := #3.
-
-Definition Error: ty := uint64T.
-
-Definition Client := struct.decl [
-  "cl" :: ptrT
-].
-
-Definition Client__getFreshNumRpc: val :=
-  rec: "Client__getFreshNumRpc" "cl" :=
-    let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGetFreshNum (NewSlice byteT #0) "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
-    then (DecodeUint64 (![slice.T byteT] "reply"), "err")
-    else (#0, "err")).
-
-Definition Client__putRpc: val :=
-  rec: "Client__putRpc" "cl" "args" :=
-    let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdPut (encodePutArgs "args") "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
-    then "err"
-    else "err").
-
-Definition Client__conditionalPutRpc: val :=
-  rec: "Client__conditionalPutRpc" "cl" "args" :=
-    let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdConditionalPut (encodeConditionalPutArgs "args") "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
-    then (Data.bytesToString (![slice.T byteT] "reply"), "err")
-    else (#(str""), "err")).
-
-Definition Client__getRpc: val :=
-  rec: "Client__getRpc" "cl" "args" :=
-    let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGet (encodeGetArgs "args") "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
-    then (Data.bytesToString (![slice.T byteT] "reply"), "err")
-    else (#(str""), "err")).
-
-Definition makeClient: val :=
-  rec: "makeClient" "hostname" :=
-    struct.new Client [
-      "cl" ::= urpc.MakeClient "hostname"
-    ].
-
-(* 2_server.go *)
+(* server.go *)
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
@@ -181,14 +282,6 @@ Definition Server := struct.decl [
   "lastReplies" :: mapT stringT;
   "kvs" :: mapT stringT
 ].
-
-Definition Server__getFreshNum: val :=
-  rec: "Server__getFreshNum" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
-    let: "n" := struct.loadF Server "nextFreshId" "s" in
-    struct.storeF Server "nextFreshId" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextFreshId" "s") #1);;
-    lock.release (struct.loadF Server "mu" "s");;
-    "n".
 
 Definition Server__put: val :=
   rec: "Server__put" "s" "args" :=
@@ -203,6 +296,14 @@ Definition Server__put: val :=
       MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF putArgs "opId" "args") #(str"");;
       lock.release (struct.loadF Server "mu" "s");;
       #()).
+
+Definition Server__getFreshNum: val :=
+  rec: "Server__getFreshNum" "s" :=
+    lock.acquire (struct.loadF Server "mu" "s");;
+    let: "n" := struct.loadF Server "nextFreshId" "s" in
+    struct.storeF Server "nextFreshId" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextFreshId" "s") #1);;
+    lock.release (struct.loadF Server "mu" "s");;
+    "n".
 
 Definition Server__conditionalPut: val :=
   rec: "Server__conditionalPut" "s" "args" :=
@@ -244,8 +345,6 @@ Definition MakeServer: val :=
     struct.storeF Server "lastReplies" "s" (NewMap stringT #());;
     "s".
 
-(* 3_kvservice_rpc_server.gb.go *)
-
 Definition Server__Start: val :=
   rec: "Server__Start" "s" "me" :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
@@ -268,101 +367,3 @@ Definition Server__Start: val :=
     urpc.Server__Serve (urpc.MakeServer "handlers") "me";;
     #().
 
-(* client.go *)
-
-Definition Clerk := struct.decl [
-  "rpcCl" :: ptrT
-].
-
-Definition Locked := struct.decl [
-  "rpcCl" :: ptrT;
-  "id" :: uint64T
-].
-
-Definition MakeClerk: val :=
-  rec: "MakeClerk" "host" :=
-    struct.new Clerk [
-      "rpcCl" ::= makeClient "host"
-    ].
-
-Definition Clerk__Put: val :=
-  rec: "Clerk__Put" "ck" "key" "val" :=
-    let: "err" := ref (zero_val uint64T) in
-    let: "opId" := ref (zero_val uint64T) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
-      "opId" <-[uint64T] "0_ret";;
-      "err" <-[uint64T] "1_ret";;
-      (if: (![uint64T] "err" = #0)
-      then Break
-      else Continue));;
-    let: "args" := struct.new putArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key";
-      "val" ::= "val"
-    ] in
-    Skip;;
-    (for: (λ: <>, Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args" ≠ urpc.ErrNone); (λ: <>, Skip) := λ: <>,
-      Continue);;
-    #().
-
-(* returns true if ConditionalPut was successful, false if current value did not
-   match expected value. *)
-Definition Clerk__ConditionalPut: val :=
-  rec: "Clerk__ConditionalPut" "ck" "key" "expectedVal" "newVal" :=
-    let: "err" := ref (zero_val uint64T) in
-    let: "opId" := ref (zero_val uint64T) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
-      "opId" <-[uint64T] "0_ret";;
-      "err" <-[uint64T] "1_ret";;
-      (if: (![uint64T] "err" = #0)
-      then Break
-      else Continue));;
-    let: "args" := struct.new conditionalPutArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key";
-      "expectedVal" ::= "expectedVal";
-      "newVal" ::= "newVal"
-    ] in
-    let: "ret" := ref (zero_val boolT) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("reply", "err") := Client__conditionalPutRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
-      (if: ("err" = urpc.ErrNone)
-      then
-        "ret" <-[boolT] ("reply" = #(str"ok"));;
-        Break
-      else Continue));;
-    ![boolT] "ret".
-
-(* returns true if ConditionalPut was successful, false if current value did not
-   match expected value. *)
-Definition Clerk__Get: val :=
-  rec: "Clerk__Get" "ck" "key" :=
-    let: "err" := ref (zero_val uint64T) in
-    let: "opId" := ref (zero_val uint64T) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
-      "opId" <-[uint64T] "0_ret";;
-      "err" <-[uint64T] "1_ret";;
-      (if: (![uint64T] "err" = #0)
-      then Break
-      else Continue));;
-    let: "args" := struct.new getArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key"
-    ] in
-    let: "ret" := ref (zero_val stringT) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("reply", "err") := Client__getRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
-      (if: ("err" = urpc.ErrNone)
-      then
-        "ret" <-[stringT] "reply";;
-        Break
-      else Continue));;
-    ![stringT] "ret".
