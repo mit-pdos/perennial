@@ -375,11 +375,7 @@ Section maplist.
       iDestruct (big_sepM2_dom with "Hlm") as "%Hmlm".
       iApply big_sepM2_sep; iFrame.
       rewrite big_op.big_sepM2_unseal /big_op.big_sepM2_def.
-      iSplit.
-      { iPureIntro. split; intros.
-        { apply elem_of_dom. rewrite -Hmlm. apply elem_of_dom. eauto. }
-        { apply elem_of_dom. rewrite Hmlm. apply elem_of_dom. eauto. }
-      }
+      iSplit; first by done.
       clear H0.
       iInduction m as [|i x m] "IH" using map_ind forall (lm Hmlm).
       { rewrite dom_empty_L in Hmlm.
@@ -457,7 +453,8 @@ Section maplist.
     rewrite fmap_cons /=.
     iDestruct "Hl" as "[Hx Hl]".
     assert (is_Some (m !! i)) as Hmi.
-    { apply H1. rewrite lookup_insert. eauto. }
+    { apply elem_of_dom. rewrite H1. apply elem_of_dom.
+      rewrite lookup_insert. eauto. }
     destruct Hmi.
     replace m with (<[i:=x0]> (delete i m)).
     2: { rewrite insert_delete; eauto. }
@@ -468,15 +465,9 @@ Section maplist.
     iApply "IH"; last by iFrame.
 
     iPureIntro.
-    split; intros.
-    - destruct (decide (i = k)); subst.
-      + rewrite lookup_delete in H3. inversion H3. congruence.
-      + rewrite lookup_delete_ne in H3; eauto.
-        apply H1 in H3. rewrite lookup_insert_ne in H3; eauto.
-    - destruct (decide (i = k)); subst.
-      + inversion H3. congruence.
-      + rewrite lookup_delete_ne; eauto.
-        eapply H1. rewrite lookup_insert_ne; eauto.
+    rewrite dom_delete_L H1 dom_insert_L.
+    apply not_elem_of_dom in H0.
+    set_solver.
   Qed.
 
   Theorem big_sepML_sepL Φ (P : LV -> PROP) m l :
@@ -702,18 +693,13 @@ Proof.
   rewrite big_op.big_sepM2_unseal /big_op.big_sepM2_def.
   iDestruct "H" as "[% H]".
   iSplit.
-  { iPureIntro. intros k. specialize (H0 k).
-    repeat rewrite <- elem_of_dom in H0.
-    repeat rewrite <- elem_of_dom.
-    congruence. }
+  { iPureIntro. congruence. }
   iApply (big_sepM_mono_gen with "[] [] H").
   { iPureIntro. intros k Hk.
-    specialize (H0 k).
-    repeat rewrite <- elem_of_dom in H0.
-    rewrite map_zip_lookup_none_1; eauto.
-    rewrite -not_elem_of_dom. rewrite -Hdom. intro.
+    apply map_zip_lookup_none_1.
+    apply not_elem_of_dom. rewrite -Hdom. intro.
     apply elem_of_dom in H1 as H1'; destruct H1'.
-    apply H0 in H1.
+    rewrite H0 in H1.
     apply elem_of_dom in H1 as H1'; destruct H1'.
     erewrite map_zip_lookup_some in Hk; eauto. congruence.
   }

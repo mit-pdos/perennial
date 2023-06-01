@@ -65,6 +65,20 @@ Section filter.
       { eexists. eapply map_filter_lookup_Some. eauto. }
       eapply map_filter_lookup_Some in H3. intuition eauto.
   Qed.
+
+  Lemma filter_dom (P : K -> Prop) (m : gmap K A) `{Hdk : ∀ k, Decision (P k)} :
+    dom (filter (λ x, P x.1) m) = filter (λ k, P k) (dom m).
+  Proof.
+    erewrite dom_filter_L; first by reflexivity.
+    split; intro He.
+    - apply elem_of_filter in He; destruct He as [Hf He].
+      apply elem_of_dom in He; destruct He.
+      eexists; eauto.
+    - destruct He as [e [He Hf]].
+      apply elem_of_filter; intuition.
+      apply elem_of_dom; eauto.
+  Qed.
+
 End filter.
 
 Lemma filter_same_keys_0 `{Countable K} `(m1 : gmap K A) `(m2 : gmap K B) (P : K -> Prop)
@@ -707,6 +721,7 @@ Section map2.
       iFrame.
   Qed.
 
+
   Lemma big_sepM2_filter Φ (P : K -> Prop) (m1 : gmap K A) (m2 : gmap K B)
                          `{! ∀ k, Decision (P k)} :
     ⊢
@@ -722,22 +737,28 @@ Section map2.
       { eapply map_disjoint_filter_complement. }
       iSplitL "Hmp".
       + iSplit.
-        { iPureIntro; eapply filter_same_keys_0; eauto. }
+        { iPureIntro. apply dom_filter_eq. done. }
         rewrite map_zip_filter. iFrame.
       + iSplit.
         { iPureIntro.
-          eapply (filter_same_keys_0 _ _ (λ k, ¬ P k)). eauto. }
+          eapply (@dom_filter_eq _ _ _ _ _ _ _ (λ k, ¬ P k) (λ k, not_dec (_ k))).
+          done. }
         rewrite (map_zip_filter _ _ (λ k, ¬ P k)). iFrame.
     - iIntros "[[% Hm1] [% Hm2]]".
       iSplit.
-      { iPureIntro. eapply filter_same_keys_1; eauto. }
+      { iPureIntro.
+        repeat rewrite filter_dom in H1.
+        repeat rewrite (@filter_dom _ _ _ _ _ _ (λ k, not_dec (_ k))) in H2.
+        erewrite <- (filter_union_complement_L (λ k, P k) (dom m1)); last by exact ∅.
+        erewrite <- (filter_union_complement_L (λ k, P k) (dom m2)); last by exact ∅.
+        rewrite H1.
+        rewrite H2.
+        done. }
       rewrite map_zip_filter.
       rewrite (map_zip_filter _ _ (λ k, ¬ P k)).
       iDestruct (big_sepM_union with "[$Hm1 $Hm2]") as "Hm".
       { eapply map_disjoint_filter_complement. }
       rewrite map_filter_union_complement. iFrame.
-  Unshelve.
-    all: typeclasses eauto.
   Qed.
 
   Lemma big_sepM2_insert_left_inv Φ (m1 : gmap K A) (m2 : gmap K B) k a :
