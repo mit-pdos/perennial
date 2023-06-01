@@ -8,12 +8,6 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* client.go *)
 
-(* kvservice_rpc.gb.go *)
-
-Definition Client := struct.decl [
-  "cl" :: ptrT
-].
-
 Definition Clerk := struct.decl [
   "rpcCl" :: ptrT
 ].
@@ -21,6 +15,12 @@ Definition Clerk := struct.decl [
 Definition Locked := struct.decl [
   "rpcCl" :: ptrT;
   "id" :: uint64T
+].
+
+(* Client from kvservice_rpc.gb.go *)
+
+Definition Client := struct.decl [
+  "cl" :: ptrT
 ].
 
 Definition makeClient: val :=
@@ -35,7 +35,32 @@ Definition MakeClerk: val :=
       "rpcCl" ::= makeClient "host"
     ].
 
-(* kvservice.gb.go *)
+Definition rpcIdGetFreshNum : expr := #0.
+
+Definition rpcIdPut : expr := #1.
+
+Definition rpcIdConditionalPut : expr := #2.
+
+Definition rpcIdGet : expr := #3.
+
+(* DecodeUint64 from kvservice.gb.go *)
+
+Definition DecodeUint64: val :=
+  rec: "DecodeUint64" "x" :=
+    let: ("a", <>) := marshal.ReadInt "x" in
+    "a".
+
+(* Client__getFreshNumRpc from kvservice_rpc.gb.go *)
+
+Definition Client__getFreshNumRpc: val :=
+  rec: "Client__getFreshNumRpc" "cl" :=
+    let: "reply" := ref (zero_val (slice.T byteT)) in
+    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGetFreshNum (NewSlice byteT #0) "reply" #100 in
+    (if: ("err" = urpc.ErrNone)
+    then (DecodeUint64 (![slice.T byteT] "reply"), "err")
+    else (#0, "err")).
+
+(* putArgs from kvservice.gb.go *)
 
 (* Put *)
 Definition putArgs := struct.decl [
@@ -54,15 +79,7 @@ Definition encodePutArgs: val :=
     "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF putArgs "val" "a"));;
     ![slice.T byteT] "e".
 
-Definition rpcIdGetFreshNum : expr := #0.
-
-Definition rpcIdPut : expr := #1.
-
-Definition rpcIdConditionalPut : expr := #2.
-
-Definition rpcIdGet : expr := #3.
-
-Definition Error: ty := uint64T.
+(* Client__putRpc from kvservice_rpc.gb.go *)
 
 Definition Client__putRpc: val :=
   rec: "Client__putRpc" "cl" "args" :=
@@ -71,19 +88,6 @@ Definition Client__putRpc: val :=
     (if: ("err" = urpc.ErrNone)
     then "err"
     else "err").
-
-Definition DecodeUint64: val :=
-  rec: "DecodeUint64" "x" :=
-    let: ("a", <>) := marshal.ReadInt "x" in
-    "a".
-
-Definition Client__getFreshNumRpc: val :=
-  rec: "Client__getFreshNumRpc" "cl" :=
-    let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGetFreshNum (NewSlice byteT #0) "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
-    then (DecodeUint64 (![slice.T byteT] "reply"), "err")
-    else (#0, "err")).
 
 Definition Clerk__Put: val :=
   rec: "Clerk__Put" "ck" "key" "val" :=
@@ -107,6 +111,8 @@ Definition Clerk__Put: val :=
       Continue);;
     #().
 
+(* conditionalPutArgs from kvservice.gb.go *)
+
 (* ConditionalPut *)
 Definition conditionalPutArgs := struct.decl [
   "opId" :: uint64T;
@@ -127,6 +133,8 @@ Definition encodeConditionalPutArgs: val :=
     "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") "expectedValBytes";;
     "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF conditionalPutArgs "newVal" "a"));;
     ![slice.T byteT] "e".
+
+(* Client__conditionalPutRpc from kvservice_rpc.gb.go *)
 
 Definition Client__conditionalPutRpc: val :=
   rec: "Client__conditionalPutRpc" "cl" "args" :=
@@ -167,6 +175,8 @@ Definition Clerk__ConditionalPut: val :=
       else Continue));;
     ![boolT] "ret".
 
+(* getArgs from kvservice.gb.go *)
+
 (* Get *)
 Definition getArgs := struct.decl [
   "opId" :: uint64T;
@@ -179,6 +189,8 @@ Definition encodeGetArgs: val :=
     "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (struct.loadF getArgs "opId" "a");;
     "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF getArgs "key" "a"));;
     ![slice.T byteT] "e".
+
+(* Client__getRpc from kvservice_rpc.gb.go *)
 
 Definition Client__getRpc: val :=
   rec: "Client__getRpc" "cl" "args" :=
@@ -216,6 +228,8 @@ Definition Clerk__Get: val :=
         Break
       else Continue));;
     ![stringT] "ret".
+
+(* kvservice.gb.go *)
 
 (* TODO: these are generic *)
 Definition EncodeBool: val :=
@@ -272,9 +286,13 @@ Definition decodeGetArgs: val :=
     struct.storeF getArgs "key" "a" (Data.bytesToString (![slice.T byteT] "keyBytes"));;
     "a".
 
+(* kvservice_rpc.gb.go *)
+
+Definition Error: ty := uint64T.
+
 (* kvservice_rpc_server.gb.go *)
 
-(* server.go *)
+(* Server from server.go *)
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
@@ -282,6 +300,14 @@ Definition Server := struct.decl [
   "lastReplies" :: mapT stringT;
   "kvs" :: mapT stringT
 ].
+
+Definition Server__getFreshNum: val :=
+  rec: "Server__getFreshNum" "s" :=
+    lock.acquire (struct.loadF Server "mu" "s");;
+    let: "n" := struct.loadF Server "nextFreshId" "s" in
+    struct.storeF Server "nextFreshId" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextFreshId" "s") #1);;
+    lock.release (struct.loadF Server "mu" "s");;
+    "n".
 
 Definition Server__put: val :=
   rec: "Server__put" "s" "args" :=
@@ -296,14 +322,6 @@ Definition Server__put: val :=
       MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF putArgs "opId" "args") #(str"");;
       lock.release (struct.loadF Server "mu" "s");;
       #()).
-
-Definition Server__getFreshNum: val :=
-  rec: "Server__getFreshNum" "s" :=
-    lock.acquire (struct.loadF Server "mu" "s");;
-    let: "n" := struct.loadF Server "nextFreshId" "s" in
-    struct.storeF Server "nextFreshId" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextFreshId" "s") #1);;
-    lock.release (struct.loadF Server "mu" "s");;
-    "n".
 
 Definition Server__conditionalPut: val :=
   rec: "Server__conditionalPut" "s" "args" :=
@@ -337,14 +355,6 @@ Definition Server__get: val :=
       lock.release (struct.loadF Server "mu" "s");;
       "ret2").
 
-Definition MakeServer: val :=
-  rec: "MakeServer" <> :=
-    let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "mu" "s" (lock.new #());;
-    struct.storeF Server "kvs" "s" (NewMap stringT #());;
-    struct.storeF Server "lastReplies" "s" (NewMap stringT #());;
-    "s".
-
 Definition Server__Start: val :=
   rec: "Server__Start" "s" "me" :=
     let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
@@ -367,3 +377,12 @@ Definition Server__Start: val :=
     urpc.Server__Serve (urpc.MakeServer "handlers") "me";;
     #().
 
+(* server.go *)
+
+Definition MakeServer: val :=
+  rec: "MakeServer" <> :=
+    let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
+    struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "kvs" "s" (NewMap stringT #());;
+    struct.storeF Server "lastReplies" "s" (NewMap stringT #());;
+    "s".
