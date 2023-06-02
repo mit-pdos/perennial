@@ -235,18 +235,66 @@ Admitted.
 
 End marshal_proof.
 
+Section monotonicity.
+(* Q: parameter vs member? *)
+Class MonotonicPred {PROP:bi} (P:PROP → PROP) :=
+  {
+    monotonic_fact: (∀ Φ Ψ, □(Φ -∗ Ψ) -∗ P Φ -∗ P Ψ);
+  }.
+
+Context `{!gooseGlobalGS Σ}.
+Context {A B C : iProp Σ}.
+
+Local Example spec1 Φ : iProp Σ := A ∗ Φ.
+Local Example spec2 Φ : iProp Σ := (C -∗ Φ).
+Local Example spec3 Φ : iProp Σ := A ∗ B ∗ (C -∗ Φ).
+Local Example spec4 Φ : iProp Σ := |={⊤,∅}=> A ∗ Φ.
+Local Example spec5 Φ : iProp Σ := (B -∗ (λ Ψ, |={∅,⊤}=> Ψ)%I Φ).
+Local Example spec5' Φ : iProp Σ := (B -∗ |={∅,⊤}=> Φ).
+Local Example spec6 Φ : iProp Σ := |={⊤,∅}=> A ∗ (B ={∅,⊤}=∗ Φ).
+
+Instance monotonic_id {PROP:bi} : MonotonicPred (PROP:=PROP) (λ Φ, Φ)%I.
+Proof. constructor. iIntros (??) "#$". Qed.
+
+Instance monotonic_sep {PROP:bi} (P:PROP) Q :
+  MonotonicPred Q → MonotonicPred (λ Φ, P ∗ Q Φ)%I.
+Proof.
+  constructor.
+  iIntros (??) "#?[$ ?]".
+  by iDestruct (monotonic_fact with "[] [-]") as "$".
+Qed.
+
+Instance monotonic_wand {PROP:bi} (P:PROP) Q :
+  MonotonicPred Q → MonotonicPred (λ Φ, P -∗ Q Φ)%I.
+Proof.
+  constructor.
+  iIntros (??) "#Hwand HΦ HP".
+  iSpecialize ("HΦ" with "HP").
+  by iDestruct (monotonic_fact with "[] [-]") as "$".
+Qed.
+
+Instance monotonic_fupd Eo Ei (Q:iProp Σ → iProp Σ) :
+  MonotonicPred Q → MonotonicPred (λ Φ, |={Eo,Ei}=> Q Φ)%I.
+Proof.
+  constructor. iIntros (??) "#? >HQ". by iApply monotonic_fact.
+Qed.
+
+Local Instance monotonc_example_1 : MonotonicPred spec1 := _.
+Local Instance monotonc_example_2 : MonotonicPred spec2 := _.
+Local Instance monotonc_example_3 : MonotonicPred spec3 := _.
+Local Instance monotonc_example_4 : MonotonicPred spec4 := _.
+(* FIXME: the old instances are being used to prove the new ones.... *)
+Local Instance monotonc_example_5' : MonotonicPred spec5' := _.
+Local Instance monotonc_example_5 : MonotonicPred spec5 := _.
+
+End monotonicity.
+
 Section rpc_definitions.
 (* NOTE: "global" context because RPC specs are known by multiple machines. *)
 Context `{!gooseGlobalGS Σ}.
 
 Definition getFreshNum_core_spec (Φ:u64 → iPropO Σ): iPropO Σ.
 Admitted.
-
-(* Q: parameter vs member? *)
-Class MonotonicPred {PROP:bi} (P:PROP → PROP) :=
-  {
-    monotonic_fact: (∀ Φ Ψ, (Φ -∗ Ψ) -∗ P Φ -∗ P Ψ);
-  }.
 
 Definition put_core_spec (args:putArgs.t) (Φ:iPropO Σ): iPropO Σ.
 Admitted.
