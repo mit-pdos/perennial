@@ -56,6 +56,20 @@ Definition own (a:loc) (args:t) : iProp Σ :=
   "Hval" ∷ a ↦[putArgs :: "val"] #(str args.(val))
 .
 
+Lemma wp_encode args_ptr args :
+  {{{
+        own args_ptr args
+  }}}
+    encodePutArgs #args_ptr
+  {{{
+        (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
+          ⌜encodes enc_args args⌝ ∗
+          is_slice sl byteT 1 enc_args
+  }}}
+.
+Proof.
+Admitted.
+
 Lemma wp_decode  sl enc_args args q :
   {{{
         ⌜encodes enc_args args⌝ ∗
@@ -96,6 +110,20 @@ Definition own (a:loc) (args:t) : iProp Σ :=
   "Hval" ∷ a ↦[conditionalPutArgs :: "val"] #(str args.(val))
 .
 
+Lemma wp_encode args_ptr args :
+  {{{
+        own args_ptr args
+  }}}
+    encodeConditionalPutArgs #args_ptr
+  {{{
+        (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
+          ⌜encodes enc_args args⌝ ∗
+          is_slice sl byteT 1 enc_args
+  }}}
+.
+Proof.
+Admitted.
+
 Lemma wp_decode  sl enc_args args q :
   {{{
         ⌜encodes enc_args args⌝ ∗
@@ -130,6 +158,20 @@ Definition own `{!heapGS Σ} (a:loc) (args:t) : iProp Σ :=
   "HopId" ∷ a ↦[getArgs :: "opId"] #args.(opId) ∗
   "Hkey" ∷ a ↦[getArgs :: "key"] #(str args.(key))
 .
+
+Lemma wp_encode args_ptr args :
+  {{{
+        own args_ptr args
+  }}}
+    encodeGetArgs #args_ptr
+  {{{
+        (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
+          ⌜encodes enc_args args⌝ ∗
+          is_slice sl byteT 1 enc_args
+  }}}
+.
+Proof.
+Admitted.
 
 Lemma wp_decode  sl enc_args args q :
   {{{
@@ -200,7 +242,16 @@ Context `{!gooseGlobalGS Σ}.
 Definition getFreshNum_core_spec (Φ:u64 → iPropO Σ): iPropO Σ.
 Admitted.
 
+(* Q: parameter vs member? *)
+Class MonotonicPred {PROP:bi} (P:PROP → PROP) :=
+  {
+    monotonic_fact: (∀ Φ Ψ, (Φ -∗ Ψ) -∗ P Φ -∗ P Ψ);
+  }.
+
 Definition put_core_spec (args:putArgs.t) (Φ:iPropO Σ): iPropO Σ.
+Admitted.
+
+Global Instance put_core_MonotonicPred args : MonotonicPred (put_core_spec args).
 Admitted.
 
 Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:string → iPropO Σ): iPropO Σ.
@@ -260,7 +311,7 @@ Context `{!urpcregG Σ}.
 Program Definition getFreshNum_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (
-  getFreshNum_core_spec (λ num, ∀ enc_reply, ⌜enc_reply = u64_le num⌝ -∗ Φ enc_reply)
+  getFreshNum_core_spec (λ (num:u64), ∀ enc_reply, ⌜enc_reply = u64_le num⌝ -∗ Φ enc_reply)
   )%I
 .
 Next Obligation.
@@ -488,8 +539,13 @@ Proof.
   wp_loadField.
   iNamed "Hhost".
   iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_Client__Call2 with "[$] [$H0] [$] [$] [Hspec]").
-  {
+
+  wp_bind (urpc.Client__Call _ _ _ _ _).
+  wp_apply (wp_frame_wand with "[-Hreq_sl Hrep]").
+  { iNamedAccu. }
+
+  wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
+  { (* case: got a reply *)
     iModIntro. iModIntro.
     rewrite replicate_0.
     rewrite /getFreshNum_spec /=.
@@ -499,9 +555,59 @@ Proof.
      *)
     admit.
   }
-  {
+  { (* case: Call returns error *)
+    iIntros (??) "Hreq_sl Hrep". iNamed 1.
+    wp_pures.
+    wp_if_destruct.
+    { by exfalso. }
+    wp_pures.
+    iApply "Herr".
+    done.
   }
 Admitted.
+
+Lemma wp_Client__putRpc cl Φ args args_ptr :
+  is_Client cl -∗
+  putArgs.own args_ptr args -∗
+  □ put_core_spec args (Φ #0) -∗
+  (∀ (err:u64), ⌜err ≠ U64 0⌝ -∗ Φ #err) -∗
+  WP Client__putRpc #cl #args_ptr {{ Φ }}
+.
+Proof.
+  iIntros "Hcl Hargs #Hspec Herr".
+  (* symbolic execution *)
+  wp_lam.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep_ptr) "Hrep".
+  wp_pures.
+  wp_apply (putArgs.wp_encode with "[$]").
+  iIntros (??) "(Hargs & %Henc & Hreq_sl)".
+  wp_pures.
+  iNamed "Hcl".
+  wp_loadField.
+  iNamed "Hhost".
+  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
+  {
+    iModIntro. iModIntro.
+    rewrite /put_spec /=.
+    iExists _; iFrame "%".
+    iApply (monotonic_fact with "[] Hspec").
+    iIntros "HΦ".
+    iIntros (?) "Hreq_sl". iIntros (?) "Hrep Hrep_sl".
+    by wp_pures.
+  }
+  {
+    iIntros (??) "Hreq_sl Hrep".
+    wp_pures.
+    wp_if_destruct.
+    { by exfalso. }
+    wp_pures.
+    iApply "Herr".
+    done.
+  }
+Qed.
 
 End client_proof.
 
