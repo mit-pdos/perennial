@@ -24,7 +24,7 @@ NFSD_COMMIT=master
 GOKV_REPO=https://github.com/mit-pdos/gokv
 GOKV_COMMIT=main
 
-MVCC_REPO=https://github.com/mit-pdos/go-mvcc
+MVCC_REPO=https://github.com/mit-pdos/vmvcc
 MVCC_COMMIT=main
 
 ## Actual test logic
