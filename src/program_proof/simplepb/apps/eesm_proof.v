@@ -221,10 +221,10 @@ Qed.
 Lemma wp_Clerk__ApplyExactlyOnce ck γoplog lowop op_sl lowop_bytes Φ:
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗
-  is_slice op_sl byteT 1 lowop_bytes -∗
+  own_slice op_sl byteT 1 lowop_bytes -∗
   (|={⊤∖↑pbN∖↑prophReadN∖↑eeN,∅}=> ∃ oldops, own_log γoplog oldops ∗
     (own_log γoplog (oldops ++ [lowop]) ={∅,⊤∖↑pbN∖↑prophReadN∖↑eeN}=∗
-    (∀ reply_sl, own_Clerk ck γoplog -∗ is_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
+    (∀ reply_sl, own_Clerk ck γoplog -∗ own_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
      -∗ Φ (slice_val reply_sl )))) -∗
   WP Clerk__ApplyExactlyOnce #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -244,7 +244,7 @@ Proof.
   wp_load.
   replace (#(U8 0)) with (_.(to_val) (U8 0)).
   2: { done. }
-  iDestruct (is_slice_split with "Henc_sl") as "[Henc_sl Henc_cap]".
+  iDestruct (own_slice_split with "Henc_sl") as "[Henc_sl Henc_cap]".
   wp_apply (wp_SliceSet with "[Henc_sl]").
   { iFrame. iPureIntro.
     eexists _.
@@ -253,7 +253,7 @@ Proof.
     word.
   }
   iIntros "Henc_sl".
-  iDestruct (is_slice_split with "[$Henc_sl $Henc_cap]") as "Henc_sl".
+  iDestruct (own_slice_split with "[$Henc_sl $Henc_cap]") as "Henc_sl".
   wp_loadField.
   wp_load.
   wp_apply (wp_WriteInt with "Henc_sl").
@@ -267,7 +267,7 @@ Proof.
   wp_store.
 
   wp_load.
-  iDestruct (is_slice_to_small with "Hop") as "Hop".
+  iDestruct (own_slice_to_small with "Hop") as "Hop".
   wp_apply (wp_WriteBytes with "[$Henc_sl $Hop]").
   iIntros (?) "[Henc_sl _]".
   wp_store.
@@ -289,7 +289,7 @@ Proof.
   instantiate(1:=
           (λ reply, ∀ reply_sl,
             own_Clerk ck γoplog -∗
-            is_slice_small reply_sl byteT 1 reply -∗
+            own_slice_small reply_sl byteT 1 reply -∗
             Φ (slice_val reply_sl))
         %I).
   (* assert that it equals low_compute_reply *)
@@ -299,7 +299,7 @@ Proof.
   iApply (wp_frame_wand with "[Hcid Hseq Herpc Htok Hlc2]").
   { iNamedAccu. }
   simpl.
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  iDestruct (own_slice_to_small with "Henc_sl") as "Henc_sl".
   wp_apply (wp_Clerk__Apply with "Hown_ck [$Henc_sl]").
   {
     simpl.
@@ -491,10 +491,10 @@ Lemma wp_Clerk__ApplyReadonly ck γoplog lowop op_sl lowop_bytes Φ:
   low_is_readonly_op lowop →
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗
-  is_slice op_sl byteT 1 lowop_bytes -∗
+  own_slice op_sl byteT 1 lowop_bytes -∗
   (|={⊤∖↑pbN∖↑prophReadN∖↑eeN,∅}=> ∃ oldops, own_log γoplog oldops ∗
     (own_log γoplog (oldops) ={∅,⊤∖↑pbN∖↑prophReadN∖↑eeN}=∗
-    (∀ reply_sl, own_Clerk ck γoplog -∗ is_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
+    (∀ reply_sl, own_Clerk ck γoplog -∗ own_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
      -∗ Φ (slice_val reply_sl )))) -∗
   WP Clerk__ApplyReadonly #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -514,7 +514,7 @@ Proof.
   wp_load.
   replace (#(U8 2)) with (_.(to_val) (U8 2)).
   2: { done. }
-  iDestruct (is_slice_split with "Henc_sl") as "[Henc_sl Henc_cap]".
+  iDestruct (own_slice_split with "Henc_sl") as "[Henc_sl Henc_cap]".
   wp_apply (wp_SliceSet with "[Henc_sl]").
   { iFrame. iPureIntro.
     eexists _.
@@ -523,17 +523,17 @@ Proof.
     word.
   }
   iIntros "Henc_sl".
-  iDestruct (is_slice_split with "[$Henc_sl $Henc_cap]") as "Henc_sl".
+  iDestruct (own_slice_split with "[$Henc_sl $Henc_cap]") as "Henc_sl".
 
   wp_load.
-  iDestruct (is_slice_to_small with "Hop") as "Hop".
+  iDestruct (own_slice_to_small with "Hop") as "Hop".
   wp_apply (wp_WriteBytes with "[$Henc_sl $Hop]").
   iIntros (?) "[Henc_sl _]".
   wp_store.
   wp_load.
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  iDestruct (own_slice_to_small with "Henc_sl") as "Henc_sl".
   wp_apply (wp_Clerk__ApplyReadonly with "Hown_ck [$Henc_sl]").
   {
     instantiate (1:= ro_ee lowop).
@@ -897,7 +897,7 @@ Proof.
     { iPureIntro. simpl in *. word. }
     iSplitR "Hrep_sl"; last first.
     {
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iFrame.
     }
     repeat iExists _.
@@ -925,7 +925,7 @@ Proof.
     wp_apply (wp_slice_len).
     wp_pures.
 
-    iDestruct (is_slice_small_sz with "Hsl2") as %Hsl_sz.
+    iDestruct (own_slice_small_sz with "Hsl2") as %Hsl_sz.
     wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
     { rewrite -Hsl_sz.
       split; last done.
@@ -1023,7 +1023,7 @@ Proof.
       iNamed "Hislow2".
       wp_loadField.
 
-      iMod (readonly_alloc (is_slice_small s'0 byteT 1 eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
+      iMod (readonly_alloc (own_slice_small s'0 byteT 1 eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
       { simpl. iFrame. }
       wp_loadField.
       unfold is_Versioned_applyVolatileFn.
@@ -1073,7 +1073,7 @@ Proof.
       wp_pures.
       wp_load.
 
-      iMod (readonly_alloc (is_slice_small reply_sl byteT 1 (low_compute_reply
+      iMod (readonly_alloc (own_slice_small reply_sl byteT 1 (low_compute_reply
                    {|
                      nextCID := nextCID0;
                      lastSeq := lastSeq0;
@@ -1155,7 +1155,7 @@ Proof.
     wp_apply (wp_slice_len).
     wp_pures.
 
-    iDestruct (is_slice_small_sz with "Hsl2") as %Hsl_sz.
+    iDestruct (own_slice_small_sz with "Hsl2") as %Hsl_sz.
     wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
     { rewrite -Hsl_sz.
       split; last done.
@@ -1182,7 +1182,7 @@ Proof.
     iAssert (_) with "Hislow" as "#Hislow2".
     iNamed "Hislow2".
     wp_loadField.
-    iMod (readonly_alloc (is_slice_small eeop_sl byteT 1 eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
+    iMod (readonly_alloc (own_slice_small eeop_sl byteT 1 eeop_bytes) with "[Hop_sl]") as "#Hop_sl".
     { simpl. iFrame. }
     wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
     { iFrame "#". done. }
@@ -1364,7 +1364,7 @@ Proof.
   iAssert (_) with "Hislow" as "#Hislow2".
   iNamed "Hislow2".
   wp_loadField.
-  iMod (readonly_alloc (is_slice_small rest_enc_sl0 byteT 1 lowsnap) with "[Hsnap_sl2]") as "#Hsnap_sl2".
+  iMod (readonly_alloc (own_slice_small rest_enc_sl0 byteT 1 lowsnap) with "[Hsnap_sl2]") as "#Hsnap_sl2".
   { simpl. iFrame. }
   unfold is_Versioned_setStateFn.
   iClear "Hghost".
@@ -1424,7 +1424,7 @@ Proof.
   wp_apply (wp_EncodeMapU64ToU64 with "HlastSeq").
   iIntros (??) "(Hmap & HlastSeqEnc & %HlastSeqEnc)".
   wp_load.
-  iDestruct (is_slice_to_small with "HlastSeqEnc") as "HlastSeqEnc".
+  iDestruct (own_slice_to_small with "HlastSeqEnc") as "HlastSeqEnc".
   wp_apply (wp_WriteBytes with "[$Henc_sl $HlastSeqEnc]").
   iIntros (?) "[Henc_sl _]".
   wp_store.
@@ -1433,7 +1433,7 @@ Proof.
   wp_apply (wp_EncodeMapU64ToBytes with "HlastReply").
   iIntros (??) "(Hmap2 & HlastReplyEnc & %HlastReplyEnc)".
   wp_load.
-  iDestruct (is_slice_to_small with "HlastReplyEnc") as "HlastReplyEnc".
+  iDestruct (own_slice_to_small with "HlastReplyEnc") as "HlastReplyEnc".
   wp_apply (wp_WriteBytes with "[$Henc_sl $HlastReplyEnc]").
   iIntros (?) "[Henc_sl _]".
   wp_store.
@@ -1444,7 +1444,7 @@ Proof.
   wp_store.
   wp_load.
   iApply "HΦ".
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  iDestruct (own_slice_to_small with "Henc_sl") as "Henc_sl".
   iMod (readonly_alloc_1 with "Henc_sl") as "Henc_sl".
   iModIntro.
   iFrame "Henc_sl".
@@ -1618,7 +1618,7 @@ Proof.
   wp_apply wp_slice_len.
   wp_pures.
 
-  iDestruct (is_slice_small_sz with  "Hsl2") as %Hsl_sz.
+  iDestruct (own_slice_small_sz with  "Hsl2") as %Hsl_sz.
   wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
   { rewrite -Hsl_sz.
     split; last done.
@@ -1642,7 +1642,7 @@ Proof.
   iAssert (_) with "Hislow" as "#Hislow2".
   iNamed "Hislow2".
   wp_loadField.
-  iMod (readonly_alloc (is_slice_small eeop_sl byteT 1 lowop_bytes) with "[Hop_sl]") as "#Hop_sl".
+  iMod (readonly_alloc (own_slice_small eeop_sl byteT 1 lowop_bytes) with "[Hop_sl]") as "#Hop_sl".
   { simpl. iFrame. }
   wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
   { iFrame "#". rewrite /ee_record /= in Hro. iPureIntro; split; done. }
@@ -1792,7 +1792,7 @@ Proof.
   wp_apply (wp_NewSlice).
   iIntros (?) "Hsl".
   wp_pures.
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_SliceSet with "[$Hsl]").
   {
     simpl.

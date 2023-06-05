@@ -556,7 +556,7 @@ Qed.
 Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (is_slice_small shardslice ptrT 1 shards) ∗
+    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT 1 shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P.
@@ -588,7 +588,7 @@ Proof.
   wp_apply (wp_forUpto (λ (i : u64),
                           ∃ s shardlocs ghs,
                             "Hvar" ∷ shards ↦[slice.T ptrT] (slice_val s) ∗
-                            "Hslice" ∷ is_slice s ptrT 1 shardlocs ∗
+                            "Hslice" ∷ own_slice s ptrT 1 shardlocs ∗
                             "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
                             "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (int.Z i) (NSHARD-int.Z i),
                               [∗ set] a ∈ covered_by_shard (int.Z shardnum) covered, P a ) ∗
@@ -633,7 +633,7 @@ Proof.
     iExists _, nil, nil.
     iFrame "Hvar".
     iSplitR.
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     iSplitR.
     { done. }
     iSplitL "Hcovered".
@@ -651,7 +651,7 @@ Proof.
   iIntros (lm) "Hlm".
   iDestruct (struct_fields_split with "Hlm") as "(Hlm&_)".
   iMod (readonly_alloc_1 with "Hlm") as "Hlm".
-  iDestruct (is_slice_to_small with "Hslice") as "Hslice".
+  iDestruct (own_slice_to_small with "Hslice") as "Hslice".
   iMod (readonly_alloc_1 with "Hslice") as "Hslice".
   wp_pures.
   iApply "HΦ".

@@ -170,9 +170,9 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
     (shardMapping:list bool) (kvs_ptrs:list loc)
     (peersM:gmap u64 loc),
   "HshardMap" ∷ s ↦[KVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ typed_slice.is_slice shardMap_sl boolT 1%Qp shardMapping ∗
+  "HshardMap_sl" ∷ typed_slice.own_slice shardMap_sl boolT 1%Qp shardMapping ∗
   "Hkvss" ∷ s ↦[KVShardServer :: "kvss"] (slice_val kvss_sl) ∗
-  "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
+  "Hkvss_sl" ∷ slice.own_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
   "Hpeers" ∷ s ↦[KVShardServer :: "peers"] #peers_ptr ∗
   "%HshardMapLength" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
   "%HkvssLength" ∷ ⌜Z.of_nat (length kvs_ptrs) = uNSHARD⌝ ∗
@@ -184,7 +184,7 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
                       ⌜dom m = dom mv⌝ ∗
                       map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
-                       ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (m !! k))) )
+                       ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (m !! k))) )
                   )
                  ) ∗
   "HpeersMap" ∷ own_map (V:=loc) peers_ptr 1 peersM ∗

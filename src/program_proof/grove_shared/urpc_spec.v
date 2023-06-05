@@ -171,15 +171,15 @@ Definition impl_urpc_handler_spec (f : val) (spec : uRPCSpec)
    : iProp Σ :=
   ∀ (x : spec.(spec_ty)) (reqData : list u8) req repptr dummy_rep_sl dummy,
   {{{
-    is_slice_small req byteT 1 reqData ∗
+    own_slice_small req byteT 1 reqData ∗
     repptr ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
-    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
+    own_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
     spec.(spec_Pre) x reqData
   }}}
     f (slice_val req) #repptr
   {{{ rep_sl q repData, RET #();
       repptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-      is_slice_small rep_sl byteT q repData ∗
+      own_slice_small rep_sl byteT q repData ∗
       spec.(spec_Post) x reqData repData
   }}}.
 
@@ -194,7 +194,7 @@ Proof.
   iDestruct "Hpre" as "(Hreq & Hrepptr & Hpre)". iSimpl in "Hpre".
   iDestruct "Hpre" as (x) "[Hpre Hcont]".
   wp_apply ("Hf" with "[$Hrepptr $Hpre $Hreq]").
-  { iApply is_slice_zero. }
+  { iApply own_slice_zero. }
   iIntros (???) "(Hrepptr & Hrep & Hpost)".
   iApply "HΦ". iFrame. iApply "Hcont". done.
 Qed.
@@ -204,7 +204,7 @@ Lemma wp_Client__Call_uRPCSpec γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req re
   rpcid = spec.(spec_rpcid) →
   handler_urpc_spec γsmap host spec -∗
   {{{
-      is_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       is_uRPCClient cl_ptr host ∗
       □(spec.(spec_Pre) x reqData)
@@ -213,11 +213,11 @@ Lemma wp_Client__Call_uRPCSpec γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req re
   {{{
        (err : option call_err), RET #(call_errno err);
        is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
-       is_slice_small req byteT 1 reqData ∗
+       own_slice_small req byteT 1 reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          is_slice_small rep_sl byteT 1 repData ∗
+          own_slice_small rep_sl byteT 1 repData ∗
           (spec.(spec_Post) x reqData repData))
   }}}.
 Proof.

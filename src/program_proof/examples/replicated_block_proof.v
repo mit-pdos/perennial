@@ -128,7 +128,7 @@ Section goose.
       (* Cached the wrong thing :( *)
       iApply "HΦ". eauto with iFrame. }
     iIntros (s) "(Hprimary&Hb)".
-    iDestruct (is_slice_to_small with "Hb") as "Hb".
+    iDestruct (own_slice_to_small with "Hb") as "Hb".
     wpc_pures.
     wpc_apply (wpc_Write' with "[$Hbackup $Hb]").
     iSplit; [ | iNext ].
@@ -230,7 +230,7 @@ Section goose.
       iExists _; iFrame.
       iApply rblock_linv_to_cinv; iFrame. iApply "Hlkinv". eauto. }
     iIntros (s) "(Haddr'&Hb)".
-    iDestruct (is_slice_to_small with "Hb") as "Hb".
+    iDestruct (own_slice_to_small with "Hb") as "Hb".
     iSpecialize ("Hlkinv" with "Haddr'"). iModIntro.
     iSplitR "HP Hlkinv"; last by eauto with iFrame.
     (* TODO: why is this the second goal?

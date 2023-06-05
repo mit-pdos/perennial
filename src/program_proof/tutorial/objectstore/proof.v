@@ -121,7 +121,7 @@ Record dir_names :=
 Definition own_PreparedWrite (v:val) (x:PreparedWrite.t) : iProp Σ :=
   ∃ (addrs_sl:Slice.t),
   ⌜v = (#x.(PreparedWrite.Id), (slice_val addrs_sl, #() ))%V⌝ ∗
-  readonly (is_slice_small addrs_sl uint64T 1%Qp x.(PreparedWrite.ChunkAddrs))
+  readonly (own_slice_small addrs_sl uint64T 1%Qp x.(PreparedWrite.ChunkAddrs))
   (* [∗ list] index ↦ '(addr, _) ∈ chunkhandles, is_chunk_host γchunk? addr *)
 .
 
@@ -140,7 +140,7 @@ Definition own_PartialValue (v: val) (x: Map.t ChunkHandle.t) : iProp Σ :=
 
 Definition own_Value (v: val) (x: list ChunkHandle.t) : iProp Σ :=
   ∃ sl, ⌜v = slice_val sl⌝ ∗
-  is_slice sl (struct.t ChunkHandle) 1 x.
+  own_slice sl (struct.t ChunkHandle) 1 x.
 
 Definition own_Server_mem (s: loc) (st: DirServer.t) : iProp Σ :=
     ∃ (ongoing_l: loc) (ongoing_vals: gmap u64 val),

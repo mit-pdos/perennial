@@ -37,7 +37,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_loadField.
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
+  iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
   wp_apply (typed_slice.wp_SliceSet with "[$HshardMap_small]").
   {
     iPureIntro.
@@ -53,7 +53,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_loadField.
-  iDestruct (slice.is_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
+  iDestruct (slice.own_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
   wp_apply (slice.wp_SliceSet with "[$Hkvss_small]").
   {
     iPureIntro.

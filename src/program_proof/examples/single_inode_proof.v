@@ -207,7 +207,7 @@ Section goose.
     (* reconstruct the used set from the inode *)
     wp_apply (wp_Inode__UsedBlocks with "Hused_blocks").
     iIntros (s) "(Haddrs&%Haddr_set&Hused_blocks)".
-    iDestruct (is_slice_small_read with "Haddrs") as "[Haddrs_small Haddrs]".
+    iDestruct (own_slice_small_read with "Haddrs") as "[Haddrs_small Haddrs]".
     wp_apply (wp_SetAdd with "[$Hused $Haddrs_small]").
     iIntros "[Hused Haddrs_small]".
     iSpecialize ("Haddrs" with "Haddrs_small").

@@ -188,7 +188,7 @@ Lemma wp_EncodeShortTermIncrClerk ck cid args (isrv:loc) :
   EncodeShortTermIncrClerk #ck
 {{{
      content data, RET (slice_val content);
-     is_slice content byteT 1 data ∗
+     own_slice content byteT 1 data ∗
      ⌜has_encoding_for_onetime_clerk data cid args⌝
 }}}.
 Proof.
@@ -230,7 +230,7 @@ Qed.
 
 Lemma wp_DecodeShortTermIncrClerk cid args (isrv:loc) (content:Slice.t) data :
 {{{
-     is_slice content byteT 1 data ∗
+     own_slice content byteT 1 data ∗
      ⌜has_encoding_for_onetime_clerk data cid args⌝
 }}}
   DecodeShortTermIncrClerk #isrv (slice_val content)
@@ -702,7 +702,7 @@ Proof.
     iNamed 1.
 
     wpc_pures.
-    iDestruct (slice.is_slice_sz with "Hcontent_slice") as "%Hslice_len".
+    iDestruct (slice.own_slice_sz with "Hcontent_slice") as "%Hslice_len".
     simpl in Hslice_len.
     assert (int.Z content.(Slice.sz) = 0) as -> by word.
     destruct bool_decide eqn:Hs.
@@ -957,7 +957,7 @@ Proof.
     }
     {
       iExFalso.
-      iDestruct (is_slice_sz with "Hcontent_slice") as %Hbad.
+      iDestruct (own_slice_sz with "Hcontent_slice") as %Hbad.
       apply bool_decide_eq_false in Hlen.
       assert (int.Z content.(Slice.sz) = 0)%Z.
       { apply Znot_lt_ge in Hlen.

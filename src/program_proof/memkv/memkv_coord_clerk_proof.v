@@ -17,12 +17,12 @@ Definition own_KVCoordClerk ck γkv : iProp Σ :=
 Lemma wp_decodeShardMap data_sl data (shardMapping : list u64) :
   {{{
        "%Henc" ∷ ⌜ has_encoding_shardMapping data shardMapping ⌝ ∗
-      "Hsl" ∷ typed_slice.is_slice_small (V:=u8) data_sl byteT 1 data
+      "Hsl" ∷ typed_slice.own_slice_small (V:=u8) data_sl byteT 1 data
   }}}
     decodeShardMap (slice_val data_sl)
   {{{  rep_sl , RET (slice_val rep_sl);
        ⌜ length shardMapping = int.nat 65536 ⌝ ∗
-       typed_slice.is_slice rep_sl uint64T 1 shardMapping }}}.
+       typed_slice.own_slice rep_sl uint64T 1 shardMapping }}}.
 Proof.
   wp_pures. iIntros (Φ) "H HΦ".
   iNamed "H".
@@ -69,7 +69,7 @@ Proof.
   iIntros (sl0 d) "(Hsl&%)".
   wp_loadField.
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_addSpec _) dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
   { simpl. iModIntro. iNext. iFrame "%". iExists _. iFrame "#". iPureIntro; congruence. }
   iIntros "(Hreq_sl & Hpost)".
@@ -88,7 +88,7 @@ Lemma wp_KVCoordClerk__GetShardMap (ck:loc) γkv :
   {{{
        shardMap_sl (shardMapping:list u64), RET (slice_val shardMap_sl);
        own_KVCoordClerk ck γkv ∗
-       typed_slice.is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
+       typed_slice.own_slice shardMap_sl uint64T 1%Qp shardMapping ∗
        ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
        all_are_shard_servers shardMapping γkv
   }}}
@@ -114,7 +114,7 @@ Proof.
   iIntros (s) "H".
   wp_loadField.
   wp_loadField.
-  iDestruct (is_slice_to_small with "H") as "H".
+  iDestruct (own_slice_to_small with "H") as "H".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_getSpec _) () with "Hc_own HgetSpec [] [$H $HrawRep //]").
   { done. }
   iIntros "(Hreq_sl & Hpost)".

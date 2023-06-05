@@ -28,10 +28,10 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ :=
   match d with
-  | bufBit b => ∃ (b0 : u8), slice.is_slice_small s u8T 1 (#b0 :: nil) ∗
+  | bufBit b => ∃ (b0 : u8), slice.own_slice_small s u8T 1 (#b0 :: nil) ∗
     ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
-  | bufInode i => slice.is_slice_small s u8T 1 (inode_to_vals i)
-  | bufBlock b => slice.is_slice_small s u8T 1 (Block_to_vals b)
+  | bufInode i => slice.own_slice_small s u8T 1 (inode_to_vals i)
+  | bufBlock b => slice.own_slice_small s u8T 1 (Block_to_vals b)
   end.
 
 Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : Slice.t) : iProp Σ :=
@@ -85,7 +85,7 @@ Definition data_has_obj (data: list byte) (a:addr) (obj: object) : Prop :=
 
 Theorem data_has_obj_to_buf_data s a obj data :
   data_has_obj data a obj →
-  is_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
+  own_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
 Proof.
   rewrite /data_has_obj /is_buf_data.
   iIntros (?) "Hs".
@@ -98,7 +98,7 @@ Proof.
 Qed.
 
 Theorem is_buf_data_has_obj s a obj :
-  is_buf_data s (objData obj) a ⊣⊢ ∃ data, is_slice_small s u8T 1 data ∗
+  is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice_small s u8T 1 data ∗
                                            ⌜data_has_obj data a obj⌝.
 Proof.
   iSplit; intros.
@@ -333,7 +333,7 @@ Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) stk E :
   {{{
-    slice.is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
+    slice.own_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
     ⌜ valid_addr a ⌝
   }}}
@@ -346,7 +346,7 @@ Proof using.
   iIntros (Φ) "(Hs & % & %) HΦ".
   wp_call.
 
-  iDestruct (slice.is_slice_small_sz with "Hs") as "%".
+  iDestruct (slice.own_slice_small_sz with "Hs") as "%".
   destruct H as [Hoff Hatoff].
 
   wp_apply (slice.wp_SliceSubslice_small with "[$Hs]").
@@ -891,14 +891,14 @@ Theorem wp_installBit
         (dst_s: Slice.t)  (dst_bs: list u8) (* destination *)
         (dstoff: u64) (* the offset we're modifying, in bits *) stk E :
   (int.Z dstoff < 8 * Z.of_nat (length dst_bs)) →
-  {{{ is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs  }}}
+  {{{ own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT 1 dst_bs  }}}
     installBit (slice_val src_s) (slice_val dst_s) #dstoff @ stk; E
   {{{ RET #();
       let dst_bs' :=
           alter
             (λ dst, install_one_bit src_b dst (Z.to_nat $ int.Z dstoff `mod` 8))
             (Z.to_nat $ int.Z dstoff `div` 8) dst_bs in
-      is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs' }}}.
+      own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT 1 dst_bs' }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ".
   iDestruct "Hpre" as "[Hsrc Hdst]".
@@ -939,23 +939,23 @@ Theorem wp_installBytes
         (nbit: u64)   (* the number of bits we're modifying *) stk E :
   int.Z nbit `div` 8 ≤ Z.of_nat (length src_bs) →
   int.Z dstoff `div` 8 + int.Z nbit `div` 8 ≤ Z.of_nat (length dst_bs) →
-  {{{ is_slice_small src_s byteT q src_bs ∗
-      is_slice_small dst_s byteT 1 dst_bs
+  {{{ own_slice_small src_s byteT q src_bs ∗
+      own_slice_small dst_s byteT 1 dst_bs
   }}}
     installBytes (slice_val src_s) (slice_val dst_s) #dstoff #nbit @ stk; E
-  {{{ RET #(); is_slice_small src_s byteT q src_bs ∗
+  {{{ RET #(); own_slice_small src_s byteT q src_bs ∗
                let src_bs' := take (Z.to_nat $ int.Z nbit `div` 8) src_bs in
                let dst_bs' := list_inserts (Z.to_nat $ int.Z dstoff `div` 8) src_bs' dst_bs in
-               is_slice_small dst_s byteT 1 dst_bs'
+               own_slice_small dst_s byteT 1 dst_bs'
   }}}.
 Proof.
   intros Hnbound Hdst_has_space.
   iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "[Hsrc Hdst]".
   wp_call.
-  iDestruct (is_slice_small_sz with "Hsrc") as %Hsrc_sz.
-  iDestruct (is_slice_small_wf with "Hsrc") as %Hsrc_wf.
-  iDestruct (is_slice_small_sz with "Hdst") as %Hdst_sz.
-  iDestruct (is_slice_small_wf with "Hdst") as %Hdst_wf.
+  iDestruct (own_slice_small_sz with "Hsrc") as %Hsrc_sz.
+  iDestruct (own_slice_small_wf with "Hsrc") as %Hsrc_wf.
+  iDestruct (own_slice_small_sz with "Hdst") as %Hdst_sz.
+  iDestruct (own_slice_small_wf with "Hdst") as %Hdst_wf.
   wp_apply wp_SliceTake; first by word.
   wp_pures.
   wp_apply wp_SliceSkip; first by word.
@@ -967,9 +967,9 @@ Proof.
   { len. }
   iIntros "[Hsrc1 Hdst2']".
   wp_pures.
-  iDestruct (is_slice_combine with "Hdst1 Hdst2'")
+  iDestruct (own_slice_combine with "Hdst1 Hdst2'")
     as "Hdst"; first by word.
-  iDestruct (is_slice_combine with "Hsrc1 Hsrc2")
+  iDestruct (own_slice_combine with "Hsrc1 Hsrc2")
     as "Hsrc"; first by word.
   rewrite take_drop.
   iApply "HΦ". iModIntro.
@@ -997,9 +997,9 @@ Qed.
 
 Hint Unfold valid_addr block_bytes : word.
 
-Lemma is_slice_to_block s q bs :
+Lemma own_slice_to_block s q bs :
   length bs = block_bytes →
-  is_slice_small s byteT q bs ⊣⊢
+  own_slice_small s byteT q bs ⊣⊢
   is_block s q (list_to_block bs).
 Proof.
   iIntros (Hlen).
@@ -1275,7 +1275,7 @@ Proof.
     iIntros "[Hsrc Hdst]".
     wp_apply wp_DPrintf.
     wp_pures. iApply "HΦ". iModIntro.
-    iDestruct (is_slice_to_block with "Hdst") as "$".
+    iDestruct (own_slice_to_block with "Hdst") as "$".
     { len. }
     iSplitL.
     { iExists _; iFrame "∗%"; simpl.
@@ -1313,7 +1313,7 @@ Proof.
       word. }
     iIntros "[Hbufdata Hblk]".
     wp_pures. wp_apply wp_DPrintf.
-    iDestruct (is_slice_to_block with "Hblk") as "Hblk".
+    iDestruct (own_slice_to_block with "Hblk") as "Hblk".
     { len. }
     wp_pures. iApply "HΦ". iModIntro.
     iFrame "Hblk".
@@ -1345,7 +1345,7 @@ Proof.
     { len. }
     { len. }
     iIntros "[Hsrc Hblk]".
-    iDestruct (is_slice_to_block with "Hblk") as "Hblk".
+    iDestruct (own_slice_to_block with "Hblk") as "Hblk".
     { len. }
     wp_pures. wp_apply wp_DPrintf.
     wp_pures. iModIntro. iApply "HΦ".

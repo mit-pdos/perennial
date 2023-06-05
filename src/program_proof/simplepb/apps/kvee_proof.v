@@ -137,7 +137,7 @@ Proof.
 Qed.
 
 Lemma wp_Clerk__Put ck γkv key val_sl value :
-⊢ {{{ own_Clerk ck γkv ∗ is_slice_small val_sl byteT 1 value }}}
+⊢ {{{ own_Clerk ck γkv ∗ own_slice_small val_sl byteT 1 value }}}
   <<< ∀∀ old_value, kv_ptsto γkv key old_value >>>
     Clerk__Put #ck #key (slice_val val_sl) @ (↑pbN ∪ ↑prophReadN ∪ ↑eeN ∪ ↑stateN)
   <<< kv_ptsto γkv key value >>>
@@ -201,7 +201,7 @@ Lemma wp_Clerk__Get ck γkv key :
   <<< ∀∀ value, kv_ptsto γkv key value >>>
     Clerk__Get #ck #key @ (↑pbN ∪ ↑prophReadN ∪ ↑eeN ∪ ↑stateN)
   <<< kv_ptsto γkv key value >>>
-  {{{ reply_sl, RET (slice_val reply_sl); own_Clerk ck γkv ∗ is_slice_small reply_sl byteT 1 value }}}.
+  {{{ reply_sl, RET (slice_val reply_sl); own_Clerk ck γkv ∗ own_slice_small reply_sl byteT 1 value }}}.
 Proof.
   iIntros "%Φ !# Hck Hupd".
   wp_lam.

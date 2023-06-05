@@ -294,7 +294,7 @@ Theorem wp_rpcReqEncode (req_ptr:loc) (req:RPCRequestID) (args:RPCValsC) :
     rpcReqEncode #req_ptr
   {{{
     s (bs:list u8), RET (slice_val s);
-    is_slice s u8T 1%Qp bs ∗
+    own_slice s u8T 1%Qp bs ∗
     ⌜reqEncoded req args bs⌝
   }}}.
 Proof.
@@ -331,7 +331,7 @@ Qed.
 
 Theorem wp_rpcReqDecode (s:Slice.t) (reqptr:loc) (bs:list u8) (req:RPCRequestID) (args:RPCValsC) q :
   {{{
-    is_slice_small s u8T q bs ∗
+    own_slice_small s u8T q bs ∗
     ⌜reqEncoded req args bs⌝ ∗
     reqptr ↦[struct.t RPCRequest] (#0, (#0, (#0, (#0, #()), #())))
   }}}
@@ -385,7 +385,7 @@ Theorem wp_rpcReplyEncode (reply_ptr:loc) (reply:RPCReply) :
     rpcReplyEncode #reply_ptr
   {{{
     s (bs:list u8), RET (slice_val s);
-    is_slice s u8T 1%Qp bs ∗
+    own_slice s u8T 1%Qp bs ∗
     ⌜replyEncoded reply bs⌝
   }}}.
 Proof.
@@ -413,7 +413,7 @@ Admitted.
 
 Theorem wp_rpcReplyDecode (s:Slice.t) (reply_ptr:loc) (bs:list u8) (reply:RPCReply) q (v0 : bool) (v1 : u64) :
   {{{
-    is_slice_small s u8T q bs ∗
+    own_slice_small s u8T q bs ∗
     ⌜replyEncoded reply bs⌝ ∗
     reply_ptr ↦[struct.t RPCReply] (#v0, (#v1, #()))
   }}}
@@ -513,7 +513,7 @@ Proof.
   iMod (later_exist_except_0 with "Hpost") as (reply1) "Hpost".
   iDestruct "Hpost" as "(>% & >% & Hpost)".
 
-  iDestruct (is_slice_small_acc with "Hrep_sl") as "[Hrep_sl_small Hclose]".
+  iDestruct (own_slice_small_acc with "Hrep_sl") as "[Hrep_sl_small Hclose]".
   wp_pures.
   wp_load.
   wp_apply (wp_rpcReplyDecode with "[Hrep_sl_small Hreply]").
@@ -728,7 +728,7 @@ Proof.
   iIntros (reply_ptr) "Hreply".
   wp_pures.
   iDestruct "Hpre" as "(Hreq_sl & Hrep_sl & Hpre)".
-  iDestruct (is_slice_small_acc with "Hreq_sl") as "[Hreq_sl_small Hreq_close]".
+  iDestruct (own_slice_small_acc with "Hreq_sl") as "[Hreq_sl_small Hreq_close]".
   iDestruct "Hpre" as (???) "[% #His_req]".
   wp_apply (wp_rpcReqDecode with "[$Hreq_sl_small $Hreq]").
   { done. }

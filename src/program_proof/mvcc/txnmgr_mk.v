@@ -97,9 +97,9 @@ Proof.
   wp_apply (wp_ref_to); first auto.
   iIntros (iRef) "HiRef".
   wp_pures.
-  iDestruct (is_slice_to_small with "HsitesL") as "HsitesS".
+  iDestruct (own_slice_to_small with "HsitesL") as "HsitesS".
   set P := λ (n : u64), (∃ sitesL,
-    "HsitesS" ∷ is_slice_small sites ptrT 1 (to_val <$> sitesL) ∗
+    "HsitesS" ∷ own_slice_small sites ptrT 1 (to_val <$> sitesL) ∗
     "%Hlength" ∷ (⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝) ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ (take (int.nat n) sitesL), is_txnsite site sid γ) ∗
     "Hsites" ∷ (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗

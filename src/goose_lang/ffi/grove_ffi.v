@@ -1065,10 +1065,10 @@ Section grove.
   Qed.
 
   (* FIXME move the next 2 lemmas some place more general *)
-  Lemma is_slice_small_byte_mapsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
-    is_slice_small s byteT q data -∗ mapsto_vals (Slice.ptr s) q (data_vals data).
+  Lemma own_slice_small_byte_mapsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
+    own_slice_small s byteT q data -∗ mapsto_vals (Slice.ptr s) q (data_vals data).
   Proof.
-    rewrite /is_slice_small /slice.is_slice_small.
+    rewrite /own_slice_small /slice.own_slice_small.
     iIntros "[Hs _]". rewrite /array.array /mapsto_vals.
     change (list.untype data) with (data_vals data).
     iApply (big_sepL_impl with "Hs"). iIntros "!#" (i v Hv) "Hl".
@@ -1077,13 +1077,13 @@ Section grove.
     rewrite byte_mapsto_untype byte_offset_untype //.
   Qed.
 
-  Lemma mapsto_vals_is_slice_small_byte (s : Slice.t) (data : list u8) (q : Qp) :
+  Lemma mapsto_vals_own_slice_small_byte (s : Slice.t) (data : list u8) (q : Qp) :
     int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap) →
     length data = int.nat (Slice.sz s) →
     mapsto_vals (Slice.ptr s) q (data_vals data) -∗
-    is_slice_small s byteT q data.
+    own_slice_small s byteT q data.
   Proof.
-    iIntros (? Hlen) "Hl". rewrite /is_slice_small /slice.is_slice_small. iSplit; last first.
+    iIntros (? Hlen) "Hl". rewrite /own_slice_small /slice.own_slice_small. iSplit; last first.
     { iPureIntro. rewrite /list.untype fmap_length. auto. }
     rewrite /array.array /mapsto_vals.
     change (list.untype data) with (data_vals data).
@@ -1115,32 +1115,32 @@ Local Ltac solve_atomic2 :=
     end; eauto.
 
   Lemma wp_Send c_l c_r (s : Slice.t) (data : list u8) (q : Qp) :
-    ⊢ {{{ is_slice_small s byteT q data }}}
+    ⊢ {{{ own_slice_small s byteT q data }}}
       <<< ∀∀ ms, c_r c↦ ms >>>
         Send (connection_socket c_l c_r) (slice_val s) @ ∅
       <<< ∃∃ (msg_sent : bool),
         c_r c↦ (if msg_sent then ms ∪ {[Message c_l data]} else ms)
       >>>
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
-        is_slice_small s byteT q data }}}.
+        own_slice_small s byteT q data }}}.
   Proof.
     iIntros "!#" (Φ) "Hs HΦ". wp_lam. wp_let.
     wp_apply wp_slice_ptr.
     wp_apply wp_slice_len.
     wp_pures.
-    iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
-    iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
+    iDestruct (own_slice_small_sz with "Hs") as "%Hlen".
+    iDestruct (own_slice_small_wf with "Hs") as "%Hwf".
     rewrite difference_empty_L.
     iMod "HΦ" as (ms) "[Hc HΦ]".
     { solve_atomic2. }
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
-    { iApply is_slice_small_byte_mapsto_vals. done. }
+    { iApply own_slice_small_byte_mapsto_vals. done. }
     iIntros (err_early err_late) "[Hc Hl]".
     iApply ("HΦ" $! (negb err_early) with "[Hc]").
     { by destruct err_early. }
     iSplit.
     - iPureIntro. by destruct err_early, err_late.
-    - iApply mapsto_vals_is_slice_small_byte; done.
+    - iApply mapsto_vals_own_slice_small_byte; done.
   Qed.
 
   Lemma wp_Receive c_l c_r :
@@ -1154,7 +1154,7 @@ Local Ltac solve_atomic2 :=
               "Err" ::= #err;
               "Data" ::= slice_val s
             ];
-          is_slice s byteT 1 data
+          own_slice s byteT 1 data
       }}}.
   Proof.
     iIntros "!#" (Φ) "HΦ". wp_call. wp_pures.
@@ -1169,12 +1169,12 @@ Local Ltac solve_atomic2 :=
     iModIntro. wp_pures. iModIntro.
     destruct err.
     { iApply ("HΦ" $! (Slice.mk _ _ _)). simpl. destruct Hm as (-> & -> & ->).
-      iApply is_slice_zero. }
+      iApply own_slice_zero. }
     destruct Hm as [Hin Hlen].
     iApply ("HΦ" $! (Slice.mk _ _ _)).
-    rewrite /is_slice.
+    rewrite /own_slice.
     iSplitL.
-    - iApply mapsto_vals_is_slice_small_byte; done.
+    - iApply mapsto_vals_own_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
   Qed.
@@ -1182,7 +1182,7 @@ Local Ltac solve_atomic2 :=
   Lemma wpc_FileRead f dq c E :
     ⊢ {{{ f f↦{dq} c }}}
         FileRead #(str f) @ E
-      {{{ (s : Slice.t), RET slice_val s; f f↦{dq} c ∗ is_slice s byteT 1 c }}}
+      {{{ (s : Slice.t), RET slice_val s; f f↦{dq} c ∗ own_slice s byteT 1 c }}}
       {{{ f f↦{dq} c }}}.
   Proof.
     iIntros "!#" (Φ Φc) "Hf HΦ". wpc_call; first done.
@@ -1204,17 +1204,17 @@ Local Ltac solve_atomic2 :=
     wpc_pures.
     iDestruct "HΦ" as "[_ HΦ]".
     iApply ("HΦ" $! (Slice.mk _ _ _)). iFrame. iModIntro.
-    rewrite /is_slice.
+    rewrite /own_slice.
     iSplitL.
-    - iApply mapsto_vals_is_slice_small_byte; done.
+    - iApply mapsto_vals_own_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
   Qed.
 
   Lemma wpc_FileWrite f s q old data E :
-    ⊢ {{{ f f↦ old ∗ is_slice_small s byteT q data }}}
+    ⊢ {{{ f f↦ old ∗ own_slice_small s byteT q data }}}
         FileWrite #(str f) (slice_val s) @ E
-      {{{ RET #(); f f↦ data ∗ is_slice_small s byteT q data }}}
+      {{{ RET #(); f f↦ data ∗ own_slice_small s byteT q data }}}
       {{{ f f↦ old ∨ f f↦ data }}}.
   Proof.
     iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
@@ -1224,15 +1224,15 @@ Local Ltac solve_atomic2 :=
     wpc_pures. wpc_bind (slice.ptr _). wpc_frame. wp_apply wp_slice_ptr. iNamed 1.
     wpc_pures. wpc_bind (slice.len _). wpc_frame. wp_apply wp_slice_len. iNamed 1.
     wpc_pures.
-    iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
-    iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
+    iDestruct (own_slice_small_sz with "Hs") as "%Hlen".
+    iDestruct (own_slice_small_wf with "Hs") as "%Hwf".
     wpc_bind (ExternalOp _ _).
     iApply wpc_atomic.
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
     wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
-    { iApply is_slice_small_byte_mapsto_vals. done. }
+    { iApply own_slice_small_byte_mapsto_vals. done. }
     iIntros (err) "[Hf Hs]".
     iSplit; last first.
     { iApply "HΦ". destruct err; by eauto. }
@@ -1241,13 +1241,13 @@ Local Ltac solve_atomic2 :=
     wpc_pures.
     { iApply "HΦ". eauto. }
     iApply "HΦ". iFrame.
-    iApply mapsto_vals_is_slice_small_byte; done.
+    iApply mapsto_vals_own_slice_small_byte; done.
   Qed.
 
   Lemma wpc_FileAppend f s q old data E :
-    ⊢ {{{ f f↦ old ∗ is_slice_small s byteT q data }}}
+    ⊢ {{{ f f↦ old ∗ own_slice_small s byteT q data }}}
         FileAppend #(str f) (slice_val s) @ E
-      {{{ RET #(); f f↦ (old ++ data) ∗ is_slice_small s byteT q data }}}
+      {{{ RET #(); f f↦ (old ++ data) ∗ own_slice_small s byteT q data }}}
       {{{ f f↦ old ∨ f f↦ (old ++ data) }}}.
   Proof.
     iIntros "!#" (Φ Φc) "[Hf Hs] HΦ".
@@ -1257,15 +1257,15 @@ Local Ltac solve_atomic2 :=
     wpc_pures. wpc_bind (slice.ptr _). wpc_frame. wp_apply wp_slice_ptr. iNamed 1.
     wpc_pures. wpc_bind (slice.len _). wpc_frame. wp_apply wp_slice_len. iNamed 1.
     wpc_pures.
-    iDestruct (is_slice_small_sz with "Hs") as "%Hlen".
-    iDestruct (is_slice_small_wf with "Hs") as "%Hwf".
+    iDestruct (own_slice_small_sz with "Hs") as "%Hlen".
+    iDestruct (own_slice_small_wf with "Hs") as "%Hwf".
     wpc_bind (ExternalOp _ _).
     iApply wpc_atomic.
     { solve_atomic2. }
     iSplit.
     { iApply "HΦ". by iLeft. }
     wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
-    { iApply is_slice_small_byte_mapsto_vals. done. }
+    { iApply own_slice_small_byte_mapsto_vals. done. }
     iIntros (err) "[Hf Hs]".
     iSplit; last first.
     { iApply "HΦ". destruct err; eauto. }
@@ -1274,7 +1274,7 @@ Local Ltac solve_atomic2 :=
     wpc_pures.
     { iApply "HΦ". eauto. }
     iApply "HΦ". iFrame.
-    iApply mapsto_vals_is_slice_small_byte; done.
+    iApply mapsto_vals_own_slice_small_byte; done.
   Qed.
 
   Lemma wp_GetTSC :

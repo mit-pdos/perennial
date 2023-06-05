@@ -168,16 +168,16 @@ Lemma wp_ConnMan__CallAtLeastOnce (γsmap:server_chan_gnames) (c_ptr:loc) (rpcid
   handler_spec γsmap host rpcid Spec -∗
   □(▷ Spec reqData Post) -∗
   {{{
-      is_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val
   }}}
       ConnMan__CallAtLeastOnce #c_ptr #host #rpcid (slice_val req) #rep_out_ptr #timeout_ms
     {{{
       RET #();
-      is_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT 1 reqData ∗
       ∃ rep_sl (repData:list u8),
         rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-        is_slice_small rep_sl byteT 1 repData ∗
+        own_slice_small rep_sl byteT 1 repData ∗
         (▷ Post repData)
     }}}
     .
@@ -280,16 +280,16 @@ Lemma wp_ConnMan__CallAtLeastOnce_uRPCSpec (spec : uRPCSpec) (x : spec.(spec_ty)
   handler_urpc_spec γsmap host spec -∗
   □(▷ spec.(spec_Pre) x reqData) -∗
   {{{
-      is_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val
   }}}
       ConnMan__CallAtLeastOnce #c_ptr #host #spec.(spec_rpcid) (slice_val req) #rep_out_ptr #timeout_ms
     {{{
       RET #();
-      is_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT 1 reqData ∗
       ∃ rep_sl (repData:list u8),
         rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-        is_slice_small rep_sl byteT 1 repData ∗
+        own_slice_small rep_sl byteT 1 repData ∗
         (▷ spec.(spec_Post) x reqData repData)
     }}}
     .

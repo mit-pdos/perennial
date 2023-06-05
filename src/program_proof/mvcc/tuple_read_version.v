@@ -9,20 +9,20 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Local Theorem wp_findRightVer (tid : u64) (versS : Slice.t)
                               (vers : list (u64 * bool * string)) :
   {{{ ⌜∃ (ver : pver), (ver ∈ vers) ∧ (int.Z ver.1.1 < int.Z tid)⌝ ∗
-      slice.is_slice versS (structTy Version) 1 (ver_to_val <$> vers)
+      slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers)
   }}}
     findRightVer #tid (to_val versS)
   {{{ (ver : pver), RET (ver_to_val ver);
       ⌜spec_find_ver vers tid = Some ver⌝ ∗
-      slice.is_slice versS (structTy Version) 1 (ver_to_val <$> vers)
+      slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers)
   }}}.
 Proof.
   iIntros (Φ) "[%Hlt HversS] HΦ".
   destruct Hlt as [ver'' [Hin Hlt]].
   destruct (nil_or_length_pos vers) as [| Hnonempty].
   { rewrite H in Hin. by destruct (not_elem_of_nil ver''). }
-  iDestruct (slice.is_slice_small_acc with "HversS") as "[HversS HversC]".
-  iDestruct (is_slice_small_sz with "HversS") as "%HversLen".
+  iDestruct (slice.own_slice_small_acc with "HversS") as "[HversS HversC]".
+  iDestruct (own_slice_small_sz with "HversS") as "%HversLen".
   rewrite fmap_length in HversLen.
   wp_call.
   
@@ -52,7 +52,7 @@ Proof.
   set P := λ (b : bool), (∃ (ver : u64 * bool * string) (idx : u64),
              "HverR" ∷ (verR ↦[struct.t Version] ver_to_val ver) ∗
              "HidxR" ∷ (idxR ↦[uint64T] #idx) ∗
-             "HversS" ∷ is_slice_small versS (struct.t Version) 1 (ver_to_val <$> vers) ∗
+             "HversS" ∷ own_slice_small versS (struct.t Version) 1 (ver_to_val <$> vers) ∗
              "%Hspec" ∷ if b
                         then ⌜spec_find_ver_reverse (take (int.nat idx) (reverse vers)) tid = None⌝
                         else ⌜spec_find_ver_reverse (reverse vers) tid = Some ver⌝)%I.

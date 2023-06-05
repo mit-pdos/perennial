@@ -49,7 +49,7 @@ Proof.
   wp_pures.
   iNamed "His_ck".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   iApply (wp_frame_wand with "[HΦ]").
   { iNamedAccu. }
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hsl Hrep").
@@ -112,7 +112,7 @@ Proof.
     }
     wp_pures.
 
-    iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "Hsl".
+    iDestruct (own_slice_small_nil byteT 1 Slice.nil) as "Hsl".
     { done. }
     iMod (readonly_alloc_1 with "Hsl") as "#Hsl2".
 

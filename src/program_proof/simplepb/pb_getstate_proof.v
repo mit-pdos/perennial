@@ -64,7 +64,7 @@ Proof.
   wp_apply (GetStateArgs.wp_Encode with "[$Hargs]").
   iIntros (enc_args enc_args_sl) "(%Henc_args & Henc_args_sl & Hargs)".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
+  iDestruct (own_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
   wp_apply (wp_frame_wand with "HΦ").
   rewrite is_pb_host_unfold.
   iNamed "Hsrv".
@@ -125,7 +125,7 @@ Proof.
     wp_pures.
     wp_if_destruct.
     {
-      iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "#Hsl_nil".
+      iDestruct (own_slice_small_nil byteT 1 Slice.nil) as "#Hsl_nil".
       { done. }
       iMod (readonly_alloc_1 with "Hsl_nil") as "Hsl_nil2".
       wp_apply (wp_allocStruct).
@@ -238,7 +238,7 @@ Proof.
     iDestruct "HΨ" as "[_ HΨ]".
     iRight in "HΨ".
     wp_pures.
-    iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "#Hsl_nil".
+    iDestruct (own_slice_small_nil byteT 1 Slice.nil) as "#Hsl_nil".
     { done. }
     iMod (readonly_alloc_1 with "Hsl_nil") as "Hsl_nil2".
     wp_apply (wp_allocStruct).

@@ -279,7 +279,7 @@ Qed.
 
 (* Links a list of kvpairs to a slice *)
 Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ :=
-  ∃ slice_kvps, is_slice slice_val (struct.t KVPair) 1 (kvpair_val <$> slice_kvps)
+  ∃ slice_kvps, own_slice slice_val (struct.t KVPair) 1 (kvpair_val <$> slice_kvps)
                          ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
   let '(kvpair.mk key bs) := ls_kvp in ∃ (blk: Block),
       ⌜bs = snd slice_kvp⌝ ∗
@@ -404,7 +404,7 @@ Proof.
          {
            iFrame; eauto.
            unfold is_block.
-           iApply is_slice_to_small; auto.
+           iApply own_slice_to_small; auto.
          }
 Qed.
 

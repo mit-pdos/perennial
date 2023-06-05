@@ -69,7 +69,7 @@ Definition own_KVCoordServer (s : loc) γ : iProp Σ :=
   "%Hlen_shardMapping" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝%Z ∗
   "%HshardMapping_dom" ∷ ⌜∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)⌝ ∗
   "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ typed_slice.is_slice (V:=u64) shardMap_sl HostName 1 shardMapping ∗
+  "HshardMap_sl" ∷ typed_slice.own_slice (V:=u64) shardMap_sl HostName 1 shardMapping ∗
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ ∗
   "Hmap" ∷ own_map (V:=u64) hostShards_ptr 1 hostShards ∗
   "HshardClerksSet" ∷ own_ShardClerkSet clset γ.

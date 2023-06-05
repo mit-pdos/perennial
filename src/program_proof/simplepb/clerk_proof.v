@@ -53,16 +53,16 @@ Local Lemma wp_Clerk__ApplyReadonly2' γ ck op_sl op (op_bytes:list u8) (Φ:val 
 is_readonly_op op →
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
-is_slice_small op_sl byteT 1 op_bytes -∗
+own_slice_small op_sl byteT 1 op_bytes -∗
   □(∀ opsToGet, |={⊤∖↑pbN∖↑prophReadLogN,∅}=>
      ((∃ ops, own_op_log γ ops ∗
        (⌜ops = opsToGet⌝ → own_op_log γ ops ={∅,⊤∖↑pbN∖↑prophReadLogN}=∗
-       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                    is_slice_small op_sl byteT 1 op_bytes -∗
+       □(∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                    own_slice_small op_sl byteT 1 op_bytes -∗
                     own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) ∨
        (True ={∅,⊤∖↑pbN∖↑prophReadLogN}=∗
-       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply opsToGet op) -∗
-                  is_slice_small op_sl byteT 1 op_bytes -∗
+       □(∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply opsToGet op) -∗
+                  own_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))
  -∗
 WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
@@ -142,11 +142,11 @@ Lemma wp_Clerk__ApplyReadonly γ ck op_sl op (op_bytes:list u8) (Φ:val → iPro
 is_readonly_op op →
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
-is_slice_small op_sl byteT 1 op_bytes -∗
+own_slice_small op_sl byteT 1 op_bytes -∗
 ((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_op_log γ ops ∗
   (own_op_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗
-     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                  is_slice_small op_sl byteT 1 op_bytes -∗
+     (∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                  own_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -157,8 +157,8 @@ Proof.
   wp_pure1_credit "Hlc".
   iAssert (|={⊤}=> ∃ γreq, result_unclaimed γreq ∗ prophetic_read_inv b γ γreq _
   (λ reply, ∀ reply_sl : Slice.t,
-             is_slice_small reply_sl byteT 1 reply -∗
-             is_slice_small op_sl byteT 1 op_bytes -∗ own_Clerk ck γ -∗ Φ (slice_val reply_sl))
+             own_slice_small reply_sl byteT 1 reply -∗
+             own_slice_small op_sl byteT 1 op_bytes -∗ own_Clerk ck γ -∗ Φ (slice_val reply_sl))
           )%I with "[Hupd Hlc]" as ">H".
   {
     iMod (own_alloc (DfracOwn 1)) as (γop) "Hop".
@@ -279,11 +279,11 @@ Qed.
 Lemma wp_Clerk__Apply γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 own_Clerk ck γ -∗
-is_slice_small op_sl byteT 1 op_bytes -∗
+own_slice_small op_sl byteT 1 op_bytes -∗
 □((|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_op_log γ ops ∗
   (⌜apply_postcond ops op⌝ -∗ own_op_log γ (ops ++ [op]) ={∅,⊤∖↑pbN∖↑prophReadN}=∗
-     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                  is_slice_small op_sl byteT 1 op_bytes -∗
+     (∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                  own_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.

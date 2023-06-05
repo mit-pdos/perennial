@@ -728,7 +728,7 @@ Qed.
 Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P Pc: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (is_slice_small shardslice ptrT 1 shards) ∗
+    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT 1 shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P Pc.
@@ -736,7 +736,7 @@ Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P Pc: u64 
 Definition is_free_lockMap (l: loc) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (is_slice_small shardslice ptrT 1 shards) ∗
+    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT 1 shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "Hfree_shards" ∷ [∗ list] shardnum ↦ shardloc ∈ shards, is_free_lockShard shardloc.
 
@@ -772,7 +772,7 @@ Proof.
   wp_apply (wp_forUpto (λ (i : u64),
                           ∃ s shardlocs,
                             "Hvar" ∷ shards ↦[slice.T ptrT] (slice_val s) ∗
-                            "Hslice" ∷ is_slice s ptrT 1 shardlocs ∗
+                            "Hslice" ∷ own_slice s ptrT 1 shardlocs ∗
                             "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
                             "Hshards" ∷ [∗ list] shardnum ↦ shardloc ∈ shardlocs,
                               is_free_lockShard shardloc)%I
@@ -803,7 +803,7 @@ Proof.
     iExists _, nil.
     iFrame "Hvar".
     iSplitR.
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     iSplitR.
     { done. }
     eauto.
@@ -816,7 +816,7 @@ Proof.
   iIntros (lm) "Hlm".
   iDestruct (struct_fields_split with "Hlm") as "(Hlm&_)".
   iMod (readonly_alloc_1 with "Hlm") as "Hlm".
-  iDestruct (is_slice_to_small with "Hslice") as "Hslice".
+  iDestruct (own_slice_to_small with "Hslice") as "Hslice".
   iMod (readonly_alloc_1 with "Hslice") as "Hslice".
   wp_pures.
   iApply "HΦ".

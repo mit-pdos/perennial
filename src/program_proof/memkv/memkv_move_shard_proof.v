@@ -67,7 +67,7 @@ Proof.
   }
   clear peersM Hlookup.
   iNamed 1.
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
+  iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
 
   assert (∃ b, shardMapping !! int.nat args.(MR_Sid) = Some b) as [? ?].
   {
@@ -101,7 +101,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_loadField.
-  iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
+  iDestruct (own_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
   iDestruct (big_sepS_delete _ _ args.(MR_Sid) with "HownShards") as "[HownShard HownShards]".
   { set_solver. }
   iDestruct "HownShard" as "[%Hbad|HownShard]".

@@ -876,7 +876,7 @@ Proof using Type*.
       wp_pures.
       wp_apply (wp_Enc__Finish with "Henc").
       iIntros (rep_sl rep_data) "(%Hrep_enc & %Hrep_len & Hrep_sl)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
       iApply "HΦ".
       iModIntro.
@@ -959,7 +959,7 @@ Proof.
   iNamed "Hck_is".
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_small".
   wp_apply (wp_Client__Call with "[] [$Hreply_ptr $Hreq_small $Hcl_is]").
   {
     iDestruct "His_host" as "[_ $]".

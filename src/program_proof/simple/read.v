@@ -58,7 +58,7 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
         ⌜ getField_f nfstypes.READ3res "Resok" v = resok ⌝ ∗
         ⌜ getField_f nfstypes.READ3resok "Eof" resok = #eof ⌝ ∗
         ⌜ getField_f nfstypes.READ3resok "Data" resok = slice_val dataslice ⌝ ∗
-        is_slice dataslice u8T 1%Qp databuf ∗
+        own_slice dataslice u8T 1%Qp databuf ∗
         Q (SimpleNFS.OK (eof, databuf)) ) ∨
       ( ∃ (stat : Z),
         ⌜ getField_f nfstypes.READ3res "Status" v = #(U32 stat) ⌝ ∗

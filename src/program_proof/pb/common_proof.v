@@ -7,12 +7,12 @@ Context `{!heapGS Σ}.
 
 Lemma wp_min sl (l:list u64):
   {{{
-       is_slice_small sl uint64T 1%Qp l
+       own_slice_small sl uint64T 1%Qp l
   }}}
     min (slice_val sl)
   {{{
        (m:u64), RET #m; ⌜length l > 0 → m ∈ l⌝ ∗ ⌜∀ n, n ∈ l → int.Z m ≤ int.Z n⌝ ∗
-       is_slice_small sl uint64T 1%Qp l
+       own_slice_small sl uint64T 1%Qp l
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -91,7 +91,7 @@ Proof.
   iApply "HΦ".
   iModIntro.
   iSplitL ""; first admit. (* FIXME: strengthen precond *)
-  iDestruct (is_slice_small_sz with "Hslice") as "%Hsz".
+  iDestruct (own_slice_small_sz with "Hslice") as "%Hsz".
   iFrame.
   rewrite -Hsz in Hmmin.
   rewrite firstn_all in Hmmin.

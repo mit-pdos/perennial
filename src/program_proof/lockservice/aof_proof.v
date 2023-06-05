@@ -44,7 +44,7 @@ Definition aof_mu_invariant (aof_ptr:loc) γ aof_ctx : iProp Σ :=
   ∃ membuf_sl membufC predurableC (durlen genlength:u64),
   "Hmembuf" ∷ aof_ptr ↦[AppendOnlyFile :: "membuf"] (slice_val membuf_sl) ∗
   "HdurableLength" ∷ aof_ptr ↦[AppendOnlyFile :: "durableLength"]{1/2} #durlen ∗
-  "Hmembuf_sl" ∷ typed_slice.is_slice membuf_sl byteT 1 membufC ∗
+  "Hmembuf_sl" ∷ typed_slice.own_slice membuf_sl byteT 1 membufC ∗
   "Hpredurable" ∷ fmlist γ.(predurabledata) (1/2) predurableC ∗
   "Hlogdata" ∷ fmlist γ.(logdata) (1/2)%Qp (predurableC ++ membufC) ∗
   "Hlength" ∷ aof_ptr ↦[AppendOnlyFile :: "length"] #genlength ∗
@@ -184,7 +184,7 @@ Proof.
 
     wp_pures.
 
-    iDestruct (typed_slice.is_slice_sz with "Hmembuf_sl") as %Hsz.
+    iDestruct (typed_slice.own_slice_sz with "Hmembuf_sl") as %Hsz.
     wp_bind (AtomicAppend _ _).
     iApply wpc_wp.
     wpc_apply (wpc_AtomicAppend with "[$Hfile $Hmembuf_sl]").
@@ -246,7 +246,7 @@ length newData > 0 →
 list_safe_size newData →
 is_aof aof_ptr γ aof_ctx -∗
   {{{
-       typed_slice.is_slice data_sl byteT 1 newData ∗ aof_log_own γ oldData ∗
+       typed_slice.own_slice data_sl byteT 1 newData ∗ aof_log_own γ oldData ∗
        (aof_ctx oldData ={⊤}=∗ aof_ctx (oldData ++ newData) ∗ Q)
   }}}
     AppendOnlyFile__Append #aof_ptr (slice_val data_sl)
@@ -269,7 +269,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  iDestruct (is_slice_sz with "HnewData") as %Hsz.
+  iDestruct (own_slice_sz with "HnewData") as %Hsz.
   wp_apply (typed_slice.wp_SliceAppendSlice (V:=u8) with "[$Hmembuf_sl $HnewData]").
   iIntros (membuf_sl') "Hmembuf_sl".
   wp_apply (wp_storeField with "Hmembuf").

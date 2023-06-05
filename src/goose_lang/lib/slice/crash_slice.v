@@ -27,9 +27,9 @@ Proof.
 Qed.
 
 Lemma wpc_SliceGet stk E1 s t q vs (i: u64) v0 :
-  {{{ is_slice_small s t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+  {{{ own_slice_small s t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
     SliceGet t (slice_val s) #i @ stk; E1
-  {{{ RET (to_val v0); is_slice_small s t q vs }}}
+  {{{ RET (to_val v0); own_slice_small s t q vs }}}
   {{{ True }}}.
 Proof.
   iIntros (Φ Φc) "[Hs %] HΦ".
@@ -57,9 +57,9 @@ Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk E1 s t q (vs: list V) (body: 
         body #i (to_val x) @ stk; E1
       {{{ RET #(); I (word.add i (U64 1)) }}}
       {{{ Φc' }}}) -∗
-    {{{ I (U64 0) ∗ is_slice_small s t q vs }}}
+    {{{ I (U64 0) ∗ own_slice_small s t q vs }}}
       forSlice t body (slice_val s) @ stk; E1
-    {{{ RET #(); I s.(Slice.sz) ∗ is_slice_small s t q vs }}}
+    {{{ RET #(); I s.(Slice.sz) ∗ own_slice_small s t q vs }}}
     {{{ Φc' }}}.
 Proof.
   iIntros "#HΦcI #Hind".
@@ -77,7 +77,7 @@ Proof.
   remember 0 as z.
   iRename "Hi0" into "Hiz".
   assert (0 <= z <= int.Z s.(Slice.sz)) by word.
-  iDestruct (is_slice_small_sz with "Hs") as %Hslen.
+  iDestruct (own_slice_small_sz with "Hs") as %Hslen.
   autorewrite with len in Hslen.
   clear Heqz; generalize dependent z.
   intros z Hzrange.

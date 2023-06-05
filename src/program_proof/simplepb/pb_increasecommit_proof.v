@@ -45,10 +45,10 @@ Proof.
   wp_call.
   replace (slice.nil) with (slice_val Slice.nil) by done.
   wp_apply (wp_WriteInt with "[]").
-  { iApply is_slice_zero. }
+  { iApply own_slice_zero. }
   iIntros (enc_args_sl) "Henc_args_sl".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
+  iDestruct (own_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
   wp_apply (wp_frame_wand with "HΦ").
   rewrite is_pb_host_unfold.
   iNamed "Hsrv".

@@ -198,7 +198,7 @@ Proof using Ptimeless.
       wp_loadField. wp_loadField.
 
       wp_apply (wp_Inode__Write with "[$Hjrnl_mem $Hinum $Hisize $Hidata $Hinode_data $Hinode_enc Hzeros]").
-      { iDestruct (is_slice_to_small with "Hzeros") as "$".
+      { iDestruct (own_slice_to_small with "Hzeros") as "$".
         iPureIntro. intuition eauto.
         rewrite replicate_length. done.
       }

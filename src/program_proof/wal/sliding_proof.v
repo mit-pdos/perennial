@@ -144,9 +144,9 @@ Proof.
   iIntros (Hbound) "Hs".
   iDestruct (updates_slice_frag_len with "Hs") as %Hlen.
   iDestruct "Hs" as (bks) "[Hs Hblocks]".
-  iDestruct (is_slice_small_sz with "Hs") as %Hbks_len.
+  iDestruct (own_slice_small_sz with "Hs") as %Hbks_len.
   autorewrite with len in Hbks_len.
-  iDestruct (is_slice_small_take_drop _ _ _ n with "Hs") as "[Hs1 Hs2]"; eauto.
+  iDestruct (own_slice_small_take_drop _ _ _ n with "Hs") as "[Hs1 Hs2]"; eauto.
   rewrite -{1}(take_drop (int.nat n) log) -{1}(take_drop (int.nat n) bks).
   iDestruct (big_sepL2_app_inv with "Hblocks") as "[Hblocks2 Hblocks1]".
   { len. }
@@ -167,11 +167,11 @@ Proof.
   iDestruct (updates_slice_frag_len with "Hs2") as %Hlenlog2.
   iDestruct "Hs1" as (bks1) "[Hs1 Hblocks1]".
   iDestruct "Hs2" as (bks2) "[Hs2 Hblocks2]".
-  iDestruct (is_slice_small_sz with "Hs1") as %Hsz1.
-  iDestruct (is_slice_small_sz with "Hs2") as %Hsz2.
+  iDestruct (own_slice_small_sz with "Hs1") as %Hsz1.
+  iDestruct (own_slice_small_sz with "Hs2") as %Hsz2.
   autorewrite with len in *.
   simpl in *.
-  iDestruct  (is_slice_small_take_drop_1 s _ _ n (update_val <$> bks1 ++ bks2) with "[Hs1 Hs2]") as "Hs".
+  iDestruct  (own_slice_small_take_drop_1 s _ _ n (update_val <$> bks1 ++ bks2) with "[Hs1 Hs2]") as "Hs".
   { word. }
   { rewrite fmap_app.
     rewrite drop_app_ge; len.
@@ -186,7 +186,7 @@ Qed.
 
 Theorem wp_mkSliding s q log (start: u64) :
   int.Z start + length log < 2^64 ->
-  {{{ updates_slice_frag s q log ∗ is_slice_cap s (struct.t Update) }}}
+  {{{ updates_slice_frag s q log ∗ own_slice_cap s (struct.t Update) }}}
     mkSliding (slice_val s) #start
   {{{ (l: loc), RET #l; is_sliding l q (slidingM.mk log start (int.Z start + length log)) }}}.
 Proof.
@@ -252,7 +252,7 @@ Proof.
   { rewrite /named. iExactEq "Hf3". do 3 f_equal.
     word. }
   iSplitL "HfneedFlush"; first by auto.
-  iDestruct (is_slice_cap_wf with "Hcap") as %Hcap.
+  iDestruct (own_slice_cap_wf with "Hcap") as %Hcap.
   iSplitR.
   - rewrite /readonly_log /slidingM.numMutable /=.
     rewrite -> take_ge by word.
@@ -268,11 +268,11 @@ Proof.
               with (U64 (length log)) by word.
       iExists []; simpl.
       rewrite right_id.
-      iApply is_slice_split.
-      iDestruct (is_slice_cap_skip _ _ (U64 (length log)) with "Hcap") as "Hcap";
+      iApply own_slice_split.
+      iDestruct (own_slice_cap_skip _ _ (U64 (length log)) with "Hcap") as "Hcap";
         first by word.
       iFrame.
-      iApply is_slice_small_nil.
+      iApply own_slice_small_nil.
       simpl; word.
 Qed.
 
@@ -819,8 +819,8 @@ Proof.
   { iSplitL.
     - iExists []; simpl.
       rewrite right_id.
-      by iApply is_slice_small_nil.
-    - iApply is_slice_cap_nil. }
+      by iApply own_slice_small_nil.
+    - iApply own_slice_cap_nil. }
   iIntros (l) "Hsliding".
   iDestruct (updates_slice_frag_len with "Hpre") as "%Hbufslen".
   wp_apply (wp_sliding__memWrite with "[$Hsliding $Hpre]").
@@ -872,9 +872,9 @@ Proof.
   fold (slidingM.numMutable σ).
   change (uint64T * (blockT * unitT))%ht with (struct.t Update).
   set (s':=slice_take logSlice (slidingM.numMutable σ)).
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   autorewrite with len in Hsz.
-  iDestruct (is_slice_small_take_drop _ _ _ (word.sub start σ.(slidingM.start)) with "Hs") as "[Hs2 Hs1]".
+  iDestruct (own_slice_small_take_drop _ _ _ (word.sub start σ.(slidingM.start)) with "Hs") as "[Hs2 Hs1]".
   { revert Hbks_len; word. }
   iApply "HΦ".
   iSplitR "Hs2 Hblocks".
@@ -1269,13 +1269,13 @@ Proof.
   word.
 Qed.
 
-Theorem is_slice_small_take_all s t q vs (n: u64) :
+Theorem own_slice_small_take_all s t q vs (n: u64) :
   int.Z n = int.nat s.(Slice.sz) →
-  is_slice_small (slice_take s n) t q vs ⊣⊢
-  is_slice_small s t q vs.
+  own_slice_small (slice_take s n) t q vs ⊣⊢
+  own_slice_small s t q vs.
 Proof.
   intros.
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   simpl.
   f_equiv.
   iPureIntro; intuition idtac; word.
@@ -1320,7 +1320,7 @@ Proof.
         rewrite take_ge; len.
         iDestruct "Hupds" as (bks) "[Hs Hbks]".
         iExists _; iFrame.
-        rewrite -> is_slice_small_take_all by word.
+        rewrite -> own_slice_small_take_all by word.
         iFrame.
       }
       iIntros "Hupds".
@@ -1331,7 +1331,7 @@ Proof.
       iDestruct "Hupds1" as (bks) "[Hs Hbks]".
       iExists _; iFrame.
       rewrite slice_skip_take_commute.
-      rewrite -> is_slice_small_take_all by (simpl; word).
+      rewrite -> own_slice_small_take_all by (simpl; word).
       iFrame.
 
     + rewrite /mutable_log /=.
@@ -1343,8 +1343,8 @@ Proof.
       iSplitR.
       { iExists nil; simpl.
         iSplit; auto.
-        iApply is_slice_small_nil; simpl; word. }
-      iApply (is_slice_cap_skip_more with "log_mutable_cap"); try word.
+        iApply own_slice_small_nil; simpl; word. }
+      iApply (own_slice_cap_skip_more with "log_mutable_cap"); try word.
 Qed.
 
 End goose_lang.

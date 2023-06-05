@@ -28,7 +28,7 @@ Context `{!mpG Σ}.
 Lemma wp_makeServer γ γsrv (fname:string) applyFn conf_sl (hosts:list u64) :
   {{{
         "#HapplyFn" ∷ is_applyFn applyFn ∗
-        "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 hosts ∗
+        "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 hosts ∗
         "#Hhost" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; conf, is_mpaxos_host conf host γ γsrv' ) ∗
         "Hghost" ∷ own_replica_ghost conf γ γsrv (mkMPaxosState 0 0 [])
   }}}
@@ -65,14 +65,14 @@ Proof.
   iIntros "applyFn".
   wp_pures.
 
-  iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
+  iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
   wp_apply (wp_slice_len).
   wp_apply (wp_NewSlice).
   iIntros (clerks_sl) "Hclerks_sl".
   wp_storeField.
   wp_loadField.
   wp_apply (wp_slice_len).
-  iDestruct (is_slice_sz with "Hclerks_sl") as %Hclerks_sz.
+  iDestruct (own_slice_sz with "Hclerks_sl") as %Hclerks_sz.
   wp_pures.
   wp_apply (wp_ref_to).
   { eauto. }
@@ -83,7 +83,7 @@ Admitted.
 Lemma wp_StartServer γ γsrv (me:u64) (fname:string) applyFn conf_sl (hosts:list u64) :
   {{{
         "#HapplyFn" ∷ is_applyFn applyFn ∗
-        "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 hosts ∗
+        "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 hosts ∗
         "#Hhost" ∷ is_mpaxos_host conf me γ γsrv ∗
         "#Hhosts" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; conf, is_mpaxos_host conf host γ γsrv' ) ∗
         "Hghost" ∷ own_replica_ghost conf γ γsrv (mkMPaxosState 0 0 [])
@@ -164,7 +164,7 @@ Proof.
 
       iApply ("HΦ" with "[HΨ] Hrep [Hrep_sl]").
       2:{
-        iDestruct (is_slice_to_small with "Hrep_sl") as "$".
+        iDestruct (own_slice_to_small with "Hrep_sl") as "$".
       }
       { iApply "HΨ". }
     }
@@ -194,7 +194,7 @@ Proof.
         replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done.
         simpl.
         iFrame "∗".
-        iApply (is_slice_small_nil).
+        iApply (own_slice_small_nil).
         done.
       }
 
@@ -205,7 +205,7 @@ Proof.
       wp_store.
       iApply ("HΦ" with "[HΨ] Hrep [Hrep_sl]").
       2:{
-        iDestruct (is_slice_to_small with "Hrep_sl") as "$".
+        iDestruct (own_slice_to_small with "Hrep_sl") as "$".
       }
       { iApply "HΨ". done. }
     }
@@ -232,7 +232,7 @@ Proof.
       wp_pures.
 
 
-      iDestruct (is_slice_small_nil byteT 1 Slice.nil) as "Hsl".
+      iDestruct (own_slice_small_nil byteT 1 Slice.nil) as "Hsl".
       { done. }
       iMod (readonly_alloc_1 with "Hsl") as "#Hsl2".
       wp_apply (wp_Server__enterNewEpoch with "His_srv Hargs [Hreply] [Hrep HΦ] Hspec").
@@ -253,7 +253,7 @@ Proof.
       wp_store.
       iApply ("HΦ" with "[HΨ] Hrep [Hrep_sl]").
       2:{
-        iDestruct (is_slice_to_small with "Hrep_sl") as "$".
+        iDestruct (own_slice_to_small with "Hrep_sl") as "$".
       }
       { iApply "HΨ". done. }
     }
@@ -294,7 +294,7 @@ Proof.
       wp_store.
       iApply ("HΦ" with "[HΨ] Hrep [Hrep_sl]").
       2:{
-        iDestruct (is_slice_to_small with "Hrep_sl") as "$".
+        iDestruct (own_slice_to_small with "Hrep_sl") as "$".
       }
       { iApply "HΨ". done. }
     }

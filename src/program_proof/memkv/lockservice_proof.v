@@ -76,8 +76,8 @@ Proof.
   iIntros (s0) "Hsl0".
   wp_loadField.
   simpl.
-  iDestruct (is_slice_to_small with "Hsl0") as "Hsl0".
-  iDestruct (is_slice_to_small with "Hsl1") as "Hsl1".
+  iDestruct (own_slice_to_small with "Hsl0") as "Hsl0".
+  iDestruct (own_slice_to_small with "Hsl1") as "Hsl1".
   iMod (readonly_alloc_1 with "Hsl0") as "#Hsl0".
   iMod (readonly_alloc_1 with "Hsl1") as "#Hsl1".
   wp_apply (wp_KVClerk__ConditionalPut with "[$Hclerk]").
@@ -125,7 +125,7 @@ Proof.
   wp_apply (typed_slice.wp_NewSlice (V:=u8)).
   iIntros (s0) "Hsl0".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hsl0") as "Hsl0".
+  iDestruct (own_slice_to_small with "Hsl0") as "Hsl0".
   iMod (readonly_alloc_1 with "Hsl0") as "#Hsl0".
   wp_apply (wp_KVClerk__Put with "[$Hclerk]").
   { iFrame "#". }

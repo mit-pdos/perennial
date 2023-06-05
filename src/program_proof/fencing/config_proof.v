@@ -115,7 +115,7 @@ Proof.
   iNamed "Hck".
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_apply (wp_Client__Call with "[] [$Hreq_sl $Hrep $His_cl]").
   { iDestruct "His_host" as "[$ _]". }
   {
@@ -180,7 +180,7 @@ Proof.
   iIntros (dummy_req_sl) "Hreq_sl".
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_apply (wp_Client__Call with "[] [$Hreq_sl $Hrep $His_cl]").
   { iDestruct "His_host" as "[_ [$ _]]". }
   {

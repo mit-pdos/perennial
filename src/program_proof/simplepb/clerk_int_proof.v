@@ -25,7 +25,7 @@ Definition own_Clerk2 ck γ : iProp Σ :=
     "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] (slice_val clerks_sl) ∗
     "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica ∗
     "#HisConfCk" ∷ is_Clerk2 confCk γ γconf ∗ (* config clerk *)
-    "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
+    "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
     "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv ∈ clerks ; γsrvs, pb_definitions.is_Clerk ck γ γsrv) ∗
     "%Hlen" ∷ ⌜length γsrvs > 0⌝
 .
@@ -33,12 +33,12 @@ Definition own_Clerk2 ck γ : iProp Σ :=
 Lemma wp_makeClerks γ config_sl servers γsrvs :
   {{{
         "#Hhosts" ∷ ([∗ list] γsrv ; host ∈ γsrvs ; servers, is_pb_host host γ γsrv) ∗
-        "Hservers_sl" ∷ is_slice_small config_sl uint64T 1 servers
+        "Hservers_sl" ∷ own_slice_small config_sl uint64T 1 servers
   }}}
     makeClerks (slice_val config_sl)
   {{{
         clerks_sl clerks, RET (slice_val clerks_sl);
-     readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
+     readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
     ([∗ list] ck ; γsrv ∈ clerks ; γsrvs, pb_definitions.is_Clerk ck γ γsrv)
   }}}
 .
@@ -50,9 +50,9 @@ Proof.
   wp_apply (wp_NewSlice).
   iIntros (clerks_sl) "Hclerks_sl".
   wp_pures.
-  iDestruct (is_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
-  iDestruct (is_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
-  iDestruct (is_slice_small_sz with "Hservers_sl") as %Hservers_sz.
+  iDestruct (own_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
+  iDestruct (own_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
+  iDestruct (own_slice_small_sz with "Hservers_sl") as %Hservers_sz.
   rewrite replicate_length in Hclerks_sz.
   simpl.
   wp_apply (wp_ref_to).
@@ -66,8 +66,8 @@ Proof.
           "Hi" ∷ i_ptr ↦[uint64T] #i ∗
           "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
           "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
-          "Hclerks_sl" ∷ is_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
-          "Hservers_sl" ∷ is_slice_small config_sl uint64T 1 servers ∗
+          "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
+          "Hservers_sl" ∷ own_slice_small config_sl uint64T 1 servers ∗
           "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) γsrvs),
                               pb_definitions.is_Clerk ck γ γsrv
                               )
@@ -244,7 +244,7 @@ Proof.
     iFrame.
     done.
   }
-  iDestruct (is_slice_small_sz with "Hconf_sl") as "%Hlen".
+  iDestruct (own_slice_small_sz with "Hconf_sl") as "%Hlen".
   iDestruct (big_sepL2_length with "Hhost") as %Hleneq.
   assert (length conf > 0).
   {
@@ -279,11 +279,11 @@ Qed.
 Lemma wp_Clerk__Apply2 γ ck op_sl op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 own_Clerk2 ck γ -∗
-is_slice_small op_sl byteT 1 op_bytes -∗
+own_slice_small op_sl byteT 1 op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
   (⌜apply_postcond ops op⌝ -∗ own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                  is_slice_small op_sl byteT 1 op_bytes -∗
+     (∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                  own_slice_small op_sl byteT 1 op_bytes -∗
                   own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))) -∗
 WP clerk.Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -338,7 +338,7 @@ Proof.
       instantiate (1:=(λ (v:goose_lang.val),
         (∃ (reply_sl:Slice.t),
         ⌜v = (#0, slice_val reply_sl)%V⌝ ∗ (own_Clerk2 ck γ -∗ Φ (slice_val reply_sl))) ∨
-        (∃ (err:u64) unused_sl, is_slice_small op_sl byteT 1 op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
+        (∃ (err:u64) unused_sl, own_slice_small op_sl byteT 1 op_bytes ∗ ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
       simpl.
       iLeft.
       iExists _.
@@ -398,7 +398,7 @@ Proof.
     iIntros (???) "[Hconf_sl #Hhosts]".
     iNamed 1.
     wp_pures.
-    iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
+    iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
     wp_apply (wp_slice_len).
     wp_pures.
     iDestruct (big_sepL2_length with "Hhosts") as %?.
@@ -430,11 +430,11 @@ Lemma wp_Clerk__ApplyReadonly2 γ ck op_sl op (op_bytes:list u8) (Φ:val → iPr
 is_readonly_op op →
 has_op_encoding op_bytes op →
 own_Clerk2 ck γ -∗
-is_slice_small op_sl byteT 1 op_bytes -∗
+own_slice_small op_sl byteT 1 op_bytes -∗
 □(|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
        (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
-       □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-                    is_slice_small op_sl byteT 1 op_bytes -∗
+       □(∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+                    own_slice_small op_sl byteT 1 op_bytes -∗
                     own_Clerk2 ck γ -∗ Φ (slice_val reply_sl)%V)))
  -∗
 WP clerk.Clerk__ApplyRo2 #ck (slice_val op_sl) {{ Φ }}.
@@ -474,7 +474,7 @@ Proof.
     "Hloopcase" ∷ match b with
     | true =>
       ∃ (prefReplica' : u64),
-      "Hop_sl" ∷ is_slice_small op_sl byteT 1 op_bytes ∗
+      "Hop_sl" ∷ own_slice_small op_sl byteT 1 op_bytes ∗
       "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] clerks_sl ∗
       "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica' ∗
       match decide (ival = 0) with
@@ -486,7 +486,7 @@ Proof.
         "HΦ" ∷ Φ (slice_val ret_sl)) ∨
       ( ∃ (prefReplica' : u64),
         "%Herrval" ∷ ⌜errval ≠ 0⌝ ∗
-        "Hop_sl" ∷ is_slice_small op_sl byteT 1 op_bytes ∗
+        "Hop_sl" ∷ own_slice_small op_sl byteT 1 op_bytes ∗
         "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] clerks_sl ∗
         "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica')
     end)%I with "[] [HreplicaClerks HprefReplica Hop_sl Hi Herr Hret] []").
@@ -500,7 +500,7 @@ Proof.
     iNamed "Hloop". iNamed "Hloopcase".
     iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
     iDestruct (big_sepL2_length with "Hclerks_rpc") as %Hlen_clerks.
-    iDestruct (is_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
+    iDestruct (own_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
 
     wp_load.
     wp_loadField.
@@ -568,7 +568,7 @@ Proof.
             ⌜v = (#0, slice_val reply_sl)%V⌝ ∗
             (own_Clerk2 ck γ -∗ Φ (slice_val reply_sl))) ∨
           (∃ (err:u64) unused_sl,
-            is_slice_small op_sl byteT 1 op_bytes ∗
+            own_slice_small op_sl byteT 1 op_bytes ∗
             ⌜err ≠ 0⌝ ∗ ⌜v = (#err, slice_val unused_sl)%V⌝))%I).
         simpl.
         iLeft.
@@ -652,7 +652,7 @@ Proof.
       iIntros (???) "[Hconf_sl #Hhosts]".
       iNamed 1.
       wp_pures.
-      iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
+      iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
       wp_apply (wp_slice_len).
       wp_pures.
       iDestruct (big_sepL2_length with "Hhosts") as %?.

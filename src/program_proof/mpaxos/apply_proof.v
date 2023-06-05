@@ -27,10 +27,10 @@ Lemma wp_singleClerk__Apply γ γsys γsrv ck op_sl op (op_bytes:list u8) (Φ:va
   has_op_encoding op_bytes op →
   is_singleClerk conf ck γsys γsrv -∗
   is_inv γ γsys -∗
-  is_slice op_sl byteT 1 op_bytes -∗
+  own_slice op_sl byteT 1 op_bytes -∗
   □((|={⊤∖↑mpN,∅}=> ∃ σ, own_state γ σ ∗
     (own_state γ (next_state σ op) ={∅,⊤∖↑mpN}=∗
-      (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply σ op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
+      (∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply σ op) -∗ Φ (#(U64 0), slice_val reply_sl)%V)))
   ∗
   (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ Φ (#err, (slice_val unused_sl))%V )) -∗
   WP singleClerk__apply #ck (slice_val op_sl) {{ Φ }}.
@@ -45,7 +45,7 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hop_sl") as "Hop_sl".
+  iDestruct (own_slice_to_small with "Hop_sl") as "Hop_sl".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hop_sl Hrep").
   {
     iNamed "Hsrv".
@@ -142,7 +142,7 @@ Lemma wp_Server__apply_internal s γ γsrv (op:OpType) (op_bytes:list u8) op_sl 
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         is_Server conf s γ γsrv ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
         (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗
             let oldstate := (default [] (last (fst <$> σ))) in
             let newstate := (next_state oldstate op) in
@@ -325,7 +325,7 @@ Proof.
   wp_pures.
 
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
-  iDestruct (is_slice_small_sz with "Hclerks_sl2") as "%Hclerks_sz".
+  iDestruct (own_slice_small_sz with "Hclerks_sl2") as "%Hclerks_sz".
   iClear "Hclerks_sl2".
   clear q.
 
@@ -339,7 +339,7 @@ Proof.
   set (replyInv:=(
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
-                    "Hreplies_sl" ∷ is_slice_small replies_sl ptrT 1 reply_ptrs ∗
+                    "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
                     "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
                     ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply 1) ∗
                                                    if decide (reply.(applyAsFollowerReply.err) = (U64 0)) then
@@ -352,7 +352,7 @@ Proof.
   {
     iNext.
     iExists _, _.
-    iDestruct (is_slice_to_small with "Hreplies_sl") as "$".
+    iDestruct (own_slice_to_small with "Hreplies_sl") as "$".
     iFrame "∗".
     iDestruct (big_sepL2_length with "Hclerks_rpc") as "%Hlen".
     iApply big_sepL2_forall.
@@ -663,7 +663,7 @@ Proof.
   }
 
   iIntros "[Hi Hreplies_sl]".
-  iDestruct (is_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
+  iDestruct (own_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
   iNamed "Hi".
   wp_pure1_credit "Hcred1".
   wp_pure1_credit "Hcred2".
@@ -733,7 +733,7 @@ Admitted.
 
 Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) init_reply reply_ptr Ψ (Φ: val → iProp Σ) :
   is_Server conf s γ γsrv -∗
-  readonly (is_slice_small op_sl byteT 1 enc_op) -∗
+  readonly (own_slice_small op_sl byteT 1 enc_op) -∗
   applyReply.own reply_ptr init_reply 1 -∗
   (∀ reply, Ψ reply -∗ applyReply.own reply_ptr reply 1 -∗ Φ #()) -∗
   apply_core_spec γ γlog op enc_op Ψ -∗

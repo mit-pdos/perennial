@@ -92,7 +92,7 @@ Qed.
 Lemma wp_Clerk__GetConfig2 ck γ γconf Φ :
   is_Clerk2 ck γ γconf -∗
   □(∀ confγs (conf:list u64) config_sl,
-  (is_slice_small config_sl uint64T 1 conf ∗
+  (own_slice_small config_sl uint64T 1 conf ∗
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) -∗
    Φ (slice_val config_sl)%V
   )) -∗
@@ -128,7 +128,7 @@ Qed.
 Lemma wp_Clerk_ReserveEpochAndGetConfig2 ck γ γconf Φ :
   is_Clerk2 ck γ γconf -∗
   □((∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
-  (is_slice_small config_sl uint64T 1 conf ∗
+  (own_slice_small config_sl uint64T 1 conf ∗
   is_reserved_epoch_lb γconf epoch ∗
   config_proposal_unset γ.(s_pb) epoch ∗
   own_proposal_unused γ.(s_pb) epoch ∗
@@ -277,7 +277,7 @@ Qed.
 
 Lemma wp_Clerk__WriteConfig2 ck γ γconf Φ config_sl conf confγ epoch :
   is_Clerk2 ck γ γconf -∗
-  is_slice_small config_sl uint64T 1 conf -∗
+  own_slice_small config_sl uint64T 1 conf -∗
   is_epoch_config_proposal γ.(s_pb) epoch (r_pb <$> confγ) -∗
   is_reserved_epoch_lb γconf epoch -∗
   ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host host γ γsrv) -∗
@@ -287,7 +287,7 @@ Lemma wp_Clerk__WriteConfig2 ck γ γconf Φ config_sl conf confγ epoch :
         is_epoch_config γ.(s_pb) epoch (r_pb <$> confγ)
       else
         True) -∗
-      is_slice_small config_sl uint64T 1 conf -∗
+      own_slice_small config_sl uint64T 1 conf -∗
       Φ #err)
   -∗
   WP config.Clerk__TryWriteConfig #ck #epoch (slice_val config_sl) {{ Φ }}

@@ -8,16 +8,16 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 #[local]
 Theorem wp_swapWithEnd (xsS : Slice.t) (xs : list u64) (i : u64) (x : u64) :
-  {{{ typed_slice.is_slice xsS uint64T 1 xs ∧ (⌜xs !! (int.nat i) = Some x⌝) }}}
+  {{{ typed_slice.own_slice xsS uint64T 1 xs ∧ (⌜xs !! (int.nat i) = Some x⌝) }}}
     swapWithEnd (to_val xsS) #i
-  {{{ (xs' : list u64), RET #(); typed_slice.is_slice xsS uint64T 1 (xs' ++ [x]) ∧
+  {{{ (xs' : list u64), RET #(); typed_slice.own_slice xsS uint64T 1 (xs' ++ [x]) ∧
                                  (⌜xs' ≡ₚ delete (int.nat i) xs⌝)
   }}}.
 Proof.
   iIntros (Φ) "[HtidsS %Hlookup] HΦ".
   wp_call.
-  iDestruct (is_slice_sz with "HtidsS") as "%HtidsSz".
-  iDestruct (typed_slice.is_slice_small_acc with "HtidsS") as "[HtidsS HtidsC]".
+  iDestruct (own_slice_sz with "HtidsS") as "%HtidsSz".
+  iDestruct (typed_slice.own_slice_small_acc with "HtidsS") as "[HtidsS HtidsC]".
   rewrite fmap_length in HtidsSz.
   assert (Hgz : int.Z xsS.(Slice.sz) > 0).
   { apply lookup_lt_Some in Hlookup. word. }
@@ -116,9 +116,9 @@ Qed.
 (*****************************************************************)
 #[local]
 Theorem wp_findTID (tid : u64) (tidsS : Slice.t) (tids : list u64) :
-  {{{ typed_slice.is_slice tidsS uint64T 1 tids ∗ ⌜tid ∈ tids⌝ }}}
+  {{{ typed_slice.own_slice tidsS uint64T 1 tids ∗ ⌜tid ∈ tids⌝ }}}
     findTID #tid (to_val tidsS)
-  {{{ (idx : u64), RET #idx; typed_slice.is_slice tidsS uint64T 1 tids ∧
+  {{{ (idx : u64), RET #idx; typed_slice.own_slice tidsS uint64T 1 tids ∧
                              (⌜tids !! (int.nat idx) = Some tid⌝)
   }}}.
 Proof.
@@ -139,7 +139,7 @@ Proof.
   (***********************************************************)
   set P := λ (b : bool), (∃ (idx : u64),
     "HidxRef" ∷ idxRef ↦[uint64T] #idx ∗
-    "HtidsS" ∷  typed_slice.is_slice tidsS uint64T 1 tids ∗
+    "HtidsS" ∷  typed_slice.own_slice tidsS uint64T 1 tids ∗
     "%Hne" ∷ (⌜Forall (λ tidx, tidx ≠ tid) (take (int.nat idx) tids)⌝) ∗
     "%Hbound" ∷ ⌜(int.Z idx < Z.of_nat (length tids))⌝ ∗
     "%Hexit" ∷ (⌜if b then True else tids !! (int.nat idx) = Some tid⌝))%I.
@@ -151,7 +151,7 @@ Proof.
     wp_load.
     assert (Hlookup : (int.nat idx < length tids)%nat) by word.
     apply list_lookup_lt in Hlookup as [tidx Hlookup].
-    iDestruct (is_slice_small_acc with "HtidsS") as "[HtidsS HtidsC]".
+    iDestruct (own_slice_small_acc with "HtidsS") as "[HtidsS HtidsC]".
     wp_apply (wp_SliceGet with "[HtidsS]").
     { iFrame.
       iPureIntro.
@@ -168,7 +168,7 @@ Proof.
     iApply "HΦ".
     iModIntro.
     iExists _.
-    iDestruct (is_slice_sz with "HtidsS") as "%HtidsSz".
+    iDestruct (own_slice_sz with "HtidsS") as "%HtidsSz".
     rewrite fmap_length in HtidsSz.
     iFrame "% ∗".
     iPureIntro.
@@ -267,7 +267,7 @@ Proof.
   iIntros "[Hlocked HsiteOwn]".
   replace (U64 (Z.of_nat _)) with sid by word. 
   iNamed "HsiteOwn".
-  iDestruct (is_slice_sz with "HactiveL") as "%HactiveSz".
+  iDestruct (own_slice_sz with "HactiveL") as "%HactiveSz".
   rewrite fmap_length in HactiveSz.
   wp_pures.
 
@@ -297,7 +297,7 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_loadField.
-  iDestruct (is_slice_wf with "HactiveL") as "%HtidsactiveCap".
+  iDestruct (own_slice_wf with "HactiveL") as "%HtidsactiveCap".
   wp_apply (wp_SliceTake).
   { apply lookup_lt_Some in Hlookup. word. }
   wp_storeField.
@@ -344,9 +344,9 @@ Proof.
     }
     iSplitL "HactiveL".
     { (* Prove [HactiveL]. *)
-      unfold typed_slice.is_slice.
+      unfold typed_slice.own_slice.
       unfold list.untype.
-      iDestruct (is_slice_take_cap _ _ _ idxlast with "HactiveL") as "H".
+      iDestruct (own_slice_take_cap _ _ _ idxlast with "HactiveL") as "H".
       { rewrite fmap_length. rewrite last_length. word. }
       unfold named.
       iExactEq "H".

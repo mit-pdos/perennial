@@ -74,8 +74,8 @@ Proof.
   }
   iNamed 1.
 
-  iDestruct (is_slice_sz with "HopLog_slice") as %HopLogLen.
-  iDestruct (is_slice_sz with "HAlog_slice") as %HALogLen.
+  iDestruct (own_slice_sz with "HopLog_slice") as %HopLogLen.
+  iDestruct (own_slice_sz with "HAlog_slice") as %HALogLen.
   wp_apply (wp_If_join_evar with "[HopLog HopLog_slice Hcn HAlog HAlog_slice HAcn HrepG]").
   {
     iIntros.
@@ -257,8 +257,8 @@ Proof.
 
   wp_loadField.
   wp_apply (wp_slice_len).
-  iDestruct (is_slice_sz with "HopLog_slice") as %HopLogLen.
-  iDestruct (is_slice_sz with "HAlog_slice") as %HALogLen.
+  iDestruct (own_slice_sz with "HopLog_slice") as %HopLogLen.
+  iDestruct (own_slice_sz with "HAlog_slice") as %HALogLen.
   wp_if_destruct.
   { (* increase matchIdx[i] *)
     wp_loadField.

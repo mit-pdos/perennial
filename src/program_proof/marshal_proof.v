@@ -144,8 +144,8 @@ Definition is_enc (enc_v:val) (sz:Z) (r: Rec) (remaining: Z) : iProp Σ :=
   ∃ (s: Slice.t) (off_l: loc) (data: list u8),
     let off := encoded_length r in
     "->" ∷ ⌜enc_v = (slice_val s, (#off_l, #()))%V⌝ ∗
-    "Hs" ∷ is_slice_small s byteT 1 data ∗
-    "Hs_cap" ∷ is_slice_cap s byteT ∗
+    "Hs" ∷ own_slice_small s byteT 1 data ∗
+    "Hs_cap" ∷ own_slice_cap s byteT ∗
     "%Hsz" ∷ ⌜length data = Z.to_nat sz⌝ ∗
     "%Hremaining" ∷ ⌜(off + remaining)%Z = sz⌝ ∗
     "Hoff" ∷ off_l ↦[uint64T] #off ∗
@@ -154,12 +154,12 @@ Definition is_enc (enc_v:val) (sz:Z) (r: Rec) (remaining: Z) : iProp Σ :=
 .
 
 Theorem wp_new_enc_from_slice stk E s (data: list u8) :
-  {{{ is_slice s byteT 1 data }}}
+  {{{ own_slice s byteT 1 data }}}
     NewEncFromSlice (slice_val s) @ stk; E
   {{{ (enc_v:val), RET enc_v; is_enc enc_v (length data) [] (length data) }}}.
 Proof.
   iIntros (Φ) "Hs HΦ".
-  iDestruct (is_slice_split with "Hs") as "[Hs Hcap]".
+  iDestruct (own_slice_split with "Hs") as "[Hs Hcap]".
   wp_call.
   wp_apply (typed_mem.wp_AllocAt uint64T); eauto.
   iIntros (off_l) "Hoff".
@@ -212,16 +212,16 @@ Proof.
   wp_call.
   wp_load.
   wp_pures.
-  iDestruct (is_slice_small_sz with "Hs") as %Hslice_len.
+  iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
   wp_apply wp_SliceSkip.
   { word. }
-  iDestruct (is_slice_small_take_drop _ _ _ (U64 off) with "Hs") as "[Hs2 Hs1]".
+  iDestruct (own_slice_small_take_drop _ _ _ (U64 off) with "Hs") as "[Hs2 Hs1]".
   { word. }
   replace (int.nat (U64 off)) with off by word.
   wp_apply (wp_UInt64Put with "Hs2").
   { len. }
   iIntros "Hs2".
-  iDestruct (slice.is_slice_combine with "Hs1 Hs2") as "Hs"; first len.
+  iDestruct (slice.own_slice_combine with "Hs1 Hs2") as "Hs"; first len.
   wp_pures.
   wp_load; wp_store.
   rewrite -fmap_drop drop_drop.
@@ -257,16 +257,16 @@ Proof.
   wp_call.
   wp_load.
   wp_pures.
-  iDestruct (is_slice_small_sz with "Hs") as %Hslice_len.
+  iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
   wp_apply wp_SliceSkip.
   { word. }
-  iDestruct (is_slice_small_take_drop _ _ _ (U64 off) with "Hs") as "[Hs2 Hs1]".
+  iDestruct (own_slice_small_take_drop _ _ _ (U64 off) with "Hs") as "[Hs2 Hs1]".
   { word. }
   replace (int.nat (U64 off)) with off by word.
   wp_apply (wp_UInt32Put with "Hs2").
   { len. }
   iIntros "Hs2".
-  iDestruct (slice.is_slice_combine with "Hs1 Hs2") as "Hs"; first len.
+  iDestruct (slice.own_slice_combine with "Hs1 Hs2") as "Hs"; first len.
   wp_pures.
   wp_load; wp_store.
   rewrite -fmap_drop drop_drop.
@@ -311,7 +311,7 @@ Proof.
   wp_call.
   wp_load.
   wp_pures.
-  iDestruct (is_slice_small_sz with "Hs") as %Hslice_len.
+  iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
   wp_pures.
   wp_apply wp_bool2byte.
   set (u:=U8 (if x then 1 else 0)%Z).
@@ -343,10 +343,10 @@ Qed.
 
 Theorem wp_Enc__PutInts stk E enc_v sz r (x_s: Slice.t) q (xs:list u64) remaining :
   8*(Z.of_nat $ length xs) ≤ remaining →
-  {{{ is_enc enc_v sz r remaining ∗ is_slice_small x_s uint64T q xs }}}
+  {{{ is_enc enc_v sz r remaining ∗ own_slice_small x_s uint64T q xs }}}
     Enc__PutInts enc_v (slice_val x_s) @ stk; E
   {{{ RET #(); is_enc enc_v sz (r ++ (EncUInt64 <$> xs)) (remaining - 8*(Z.of_nat $ length xs)) ∗
-               is_slice_small x_s uint64T q xs }}}.
+               own_slice_small x_s uint64T q xs }}}.
 Proof.
   iIntros (Hbound Φ) "[Henc Hxs] HΦ".
   wp_rec; wp_pures.
@@ -380,21 +380,21 @@ Hint Rewrite encoded_length_app1 : len.
 
 Theorem wp_Enc__PutBytes stk E enc_v r sz remaining b_s q bs :
   Z.of_nat (length bs) ≤ remaining →
-  {{{ is_enc enc_v sz r remaining ∗ is_slice_small b_s byteT q bs }}}
+  {{{ is_enc enc_v sz r remaining ∗ own_slice_small b_s byteT q bs }}}
     Enc__PutBytes enc_v (slice_val b_s) @ stk; E
   {{{ RET #(); is_enc enc_v sz (r ++ [EncBytes bs]) (remaining - Z.of_nat (length bs)) ∗
-               is_slice_small b_s byteT q bs }}}.
+               own_slice_small b_s byteT q bs }}}.
 Proof.
   iIntros (Hbound Φ) "[Henc Hbs] HΦ"; iNamed "Henc".
   wp_call.
   wp_load; wp_pures.
-  iDestruct (is_slice_small_sz with "Hs") as %Hs_sz.
+  iDestruct (own_slice_small_sz with "Hs") as %Hs_sz.
   wp_apply wp_SliceSkip.
   { len. }
   iDestruct (slice_small_split _ (U64 (encoded_length r)) with "Hs") as "[Hs1 Hs2]"; first by len.
   wp_apply (wp_SliceCopy (V:=byte) with "[$Hbs $Hs2]"); first by len.
   iIntros "[Hbs Hs2]".
-  iDestruct (is_slice_combine with "Hs1 Hs2") as "Hs"; first by len.
+  iDestruct (own_slice_combine with "Hs1 Hs2") as "Hs"; first by len.
   wp_pures.
   wp_load; wp_store.
   iApply "HΦ".
@@ -431,7 +431,7 @@ Theorem wp_Enc__Finish stk E enc_v r sz remaining :
     Enc__Finish enc_v @ stk; E
   {{{ s data, RET slice_val s; ⌜has_encoding data r⌝ ∗
                                ⌜length data = Z.to_nat sz⌝ ∗
-                               is_slice s byteT 1 data }}}.
+                               own_slice s byteT 1 data }}}.
 Proof.
   iIntros (Φ) "Henc HΦ"; iNamed "Henc"; subst.
   wp_call.
@@ -443,19 +443,19 @@ Definition is_dec (dec_v:val) (r:Rec) (s:Slice.t) (q:Qp) (data: list u8): iProp 
     "->" ∷ ⌜dec_v = (slice_val s, (#off_l, #()))%V⌝ ∗
     "Hoff" ∷ off_l ↦[uint64T] #off ∗
     "%Hoff" ∷ ⌜int.nat off ≤ length data⌝ ∗
-    "Hs" ∷ is_slice_small s byteT q data ∗
+    "Hs" ∷ own_slice_small s byteT q data ∗
     "%Henc" ∷ ⌜has_encoding (drop (int.nat off) data) r⌝.
 
-Lemma is_dec_to_is_slice_small dec_v r s q data :
+Lemma is_dec_to_own_slice_small dec_v r s q data :
   is_dec dec_v r s q data -∗
-  is_slice_small s byteT q data.
+  own_slice_small s byteT q data.
 Proof.
   iIntros "H". iNamed "H". iFrame.
 Qed.
 
 Theorem wp_new_dec stk E s q data r :
   has_encoding data r →
-  {{{ is_slice_small s byteT q data }}}
+  {{{ own_slice_small s byteT q data }}}
     NewDec (slice_val s) @ stk; E
   {{{ dec_v, RET dec_v; is_dec dec_v r s q data }}}.
 Proof.
@@ -485,7 +485,7 @@ Proof.
   wp_call.
   wp_load; wp_pures.
   wp_load; wp_store.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   wp_apply wp_SliceSkip.
   { word. }
   iDestruct (slice.slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
@@ -496,7 +496,7 @@ Proof.
     rewrite Henc.
     reflexivity. }
   iIntros "Hs2".
-  iDestruct (slice.is_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
+  iDestruct (slice.own_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
   iApply "HΦ".
   iExists _, _; iFrame.
   iSplitR; first by auto.
@@ -526,7 +526,7 @@ Proof.
   wp_call.
   wp_load; wp_pures.
   wp_load; wp_store.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   wp_apply wp_SliceSkip.
   { word. }
   iDestruct (slice.slice_small_split _ off with "Hs") as "[Hs1 Hs2]".
@@ -537,7 +537,7 @@ Proof.
     rewrite Henc.
     reflexivity. }
   iIntros "Hs2".
-  iDestruct (slice.is_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
+  iDestruct (slice.own_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
   iApply "HΦ".
   iExists _, _; iFrame.
   iSplitR; first by auto.
@@ -567,7 +567,7 @@ Proof.
   wp_call.
   wp_load; wp_pures.
   wp_load; wp_store.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   pose proof (has_encoding_length Henc).
   autorewrite with len in H.
   rewrite encoded_length_cons in H.
@@ -601,9 +601,9 @@ Qed.
 Theorem wp_Dec__GetBytes' stk E dec_v bs (n: u64) r s data :
   n = U64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s 1 data ∗
-      (∀ vs' : list u8, is_slice_small s byteT 1 vs' -∗ is_slice s byteT 1 vs') }}}
+      (∀ vs' : list u8, own_slice_small s byteT 1 vs' -∗ own_slice s byteT 1 vs') }}}
     Dec__GetBytes dec_v #n @ stk; E
-  {{{ s', RET slice_val s'; is_slice s' byteT 1 bs }}}.
+  {{{ s', RET slice_val s'; own_slice s' byteT 1 bs }}}.
 Proof.
   iIntros (-> Φ) "(Hdec&Hclo) HΦ"; iNamed "Hdec".
   pose proof (has_encoding_length Henc).
@@ -611,7 +611,7 @@ Proof.
   rewrite encoded_length_cons /= in H.
   wp_call.
   wp_load.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   wp_pures.
   iDestruct ("Hclo" with "[$]") as "Hs".
   wp_apply (wp_SliceSubslice_full with "Hs"); first by word.
@@ -633,7 +633,7 @@ Theorem wp_Dec__GetBytes stk E dec_v bs (n: u64) r s q data :
   n = U64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
     Dec__GetBytes dec_v #n @ stk; E
-  {{{ q' s', RET slice_val s'; is_slice_small s' byteT q' bs ∗ is_dec dec_v r s q' data }}}.
+  {{{ q' s', RET slice_val s'; own_slice_small s' byteT q' bs ∗ is_dec dec_v r s q' data }}}.
 Proof.
   iIntros (-> Φ) "Hdec HΦ"; iNamed "Hdec".
   pose proof (has_encoding_length Henc).
@@ -641,7 +641,7 @@ Proof.
   rewrite encoded_length_cons /= in H.
   wp_call.
   wp_load.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   (* we split the decoder state into one half used to serve the client and one
      half to reconstruct the decoder (now with half the fraction) *)
   iDestruct (fractional.fractional_half with "Hs") as "[Hs1 Hs2]".
@@ -675,7 +675,7 @@ Theorem wp_Dec__GetBytes_ro stk E dec_v bs (n: u64) r s q data :
   n = U64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
     Dec__GetBytes dec_v #n @ stk; E
-  {{{ q' s', RET slice_val s'; readonly (is_slice_small s' byteT 1 bs) ∗ is_dec dec_v r s q' data }}}.
+  {{{ q' s', RET slice_val s'; readonly (own_slice_small s' byteT 1 bs) ∗ is_dec dec_v r s q' data }}}.
 Proof.
   iIntros (-> Φ) "Hdec HΦ".
   iApply wp_ncfupd.
@@ -701,7 +701,7 @@ Theorem wp_Dec__GetInts stk E dec_v (xs: list u64) r (n: u64) s q data :
   length xs = int.nat n →
   {{{ is_dec dec_v ((EncUInt64 <$> xs) ++ r) s q data }}}
     Dec__GetInts dec_v #n @ stk; E
-  {{{ (s':Slice.t), RET slice_val s'; is_dec dec_v r s q data ∗ is_slice s' uint64T 1 xs }}}.
+  {{{ (s':Slice.t), RET slice_val s'; is_dec dec_v r s q data ∗ own_slice s' uint64T 1 xs }}}.
 Proof.
   iIntros (Hlen Φ) "Hdec HΦ".
   wp_rec; wp_pures.
@@ -717,7 +717,7 @@ Proof.
                         let todo := drop (int.nat i) xs in
                         "Hdec" ∷ is_dec dec_v ((EncUInt64 <$> todo) ++ r) s q data ∗
                         "*" ∷ ∃ s, "Hsptr" ∷ s_l ↦[slice.T uint64T] (slice_val s) ∗
-                                   "Hdone" ∷ is_slice s uint64T 1 done
+                                   "Hdone" ∷ own_slice s uint64T 1 done
            )%I with "[] [$Hi Hsptr Hdec]").
   - word.
   - clear Φ.
@@ -739,7 +739,7 @@ Proof.
     iExists Slice.nil.
     iFrame.
     rewrite take_0.
-    iApply is_slice_nil; auto.
+    iApply own_slice_nil; auto.
   - iIntros "(HI&Hi)"; iNamed "HI".
     wp_load.
     iApply "HΦ"; iFrame.
@@ -753,7 +753,7 @@ Theorem wp_Dec__GetInts_complete stk E dec_v (xs: list u64) (n: u64) s q data :
   length xs = int.nat n →
   {{{ is_dec dec_v (EncUInt64 <$> xs) s q data }}}
     Dec__GetInts dec_v #n @ stk; E
-  {{{ (s':Slice.t), RET slice_val s'; is_dec dec_v [] s q data ∗ is_slice s' uint64T 1 xs }}}.
+  {{{ (s':Slice.t), RET slice_val s'; is_dec dec_v [] s q data ∗ own_slice s' uint64T 1 xs }}}.
 Proof.
   iIntros (? Φ) "Hpre HΦ".
   wp_apply (wp_Dec__GetInts _ _ _ _ [] with "[Hpre]"); first by eauto.

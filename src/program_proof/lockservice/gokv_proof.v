@@ -144,7 +144,7 @@ Lemma wp_encodeReq_put req_ptr rid args :
     encodeReq #0 #req_ptr
   {{{
        sl (data:list u8), RET (slice_val sl);
-       typed_slice.is_slice sl byteT 1 data ∗
+       typed_slice.own_slice sl byteT 1 data ∗
        ⌜has_req_encoding_put data rid args⌝
   }}}
 .

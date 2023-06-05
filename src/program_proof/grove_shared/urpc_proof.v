@@ -124,14 +124,14 @@ Definition impl_handler_spec (f:val)
    : iProp Σ :=
   ∀ (reqData:list u8) Post req rep,
   {{{
-    is_slice_small req byteT 1 reqData ∗
+    own_slice_small req byteT 1 reqData ∗
     rep ↦[slice.T byteT] (slice_val Slice.nil) ∗
     Spec reqData Post
   }}}
     f (slice_val req) #rep
   {{{ rep_sl q repData, RET #();
       rep ↦[slice.T byteT] (slice_val rep_sl) ∗
-      is_slice_small rep_sl byteT q repData ∗
+      own_slice_small rep_sl byteT q repData ∗
       Post repData
   }}}.
 
@@ -140,11 +140,11 @@ Definition impl_handler_spec2 (f:val)
     (Spec : list u8 → (list u8 → iProp Σ) → iProp Σ)
    : iProp Σ :=
   ∀ (reqData:list u8) Φ Ψ req rep,
-    □ (is_slice_small req byteT 1 reqData -∗
+    □ (own_slice_small req byteT 1 reqData -∗
     rep ↦[slice.T byteT] (slice_val Slice.nil) -∗
     (∀ reply, Ψ reply -∗ ∀ rep_sl q,
       rep ↦[slice.T byteT] (slice_val rep_sl) -∗
-      is_slice_small rep_sl byteT q reply -∗
+      own_slice_small rep_sl byteT q reply -∗
       Φ #()
     ) -∗
     Spec reqData Ψ
@@ -184,7 +184,7 @@ Definition Client_lock_inner Γ  (cl : loc) (lk : loc) mref : iProp Σ :=
                     "%Hpending_cb" ∷ ⌜ pending !! seqno  = None ⌝ ∗
                     "HPost" ∷ (Post reply) ∗
                     "Hrep_ptr" ∷ (urpc_reg_rep_ptr req) ↦[slice.T byteT] (slice_val rep_sl) ∗
-                    "Hrep_data" ∷ is_slice_small rep_sl byteT 1 reply ∗
+                    "Hrep_data" ∷ own_slice_small rep_sl byteT 1 reply ∗
                     "Hstate" ∷ (urpc_reg_done req) ↦[uint64T] #1) ∨
                  (* (3) Caller has extracted ownership *)
                  (⌜ pending !! seqno  = None ⌝ ∗ ptsto_mut (ccextracted_name Γ) seqno 1 tt)).
@@ -330,7 +330,7 @@ Proof.
   { iRight. iModIntro. iSplit; first done. wp_pures. eauto. }
   iNamed "Hmsg".
 
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   cbn in Henc. subst m.
   wp_apply (wp_ReadInt with "Hsl"). clear r.
   iIntros (r) "Hsl".
@@ -383,8 +383,8 @@ Proof.
   }
 
   iIntros (repData) "HPost".
-  iIntros (rep_sl rep_q) "Hsl' His_slice".
-  iDestruct (is_slice_small_sz with "His_slice") as %Hsz.
+  iIntros (rep_sl rep_q) "Hsl' Hown_slice".
+  iDestruct (own_slice_small_sz with "Hown_slice") as %Hsz.
   wp_pures.
   wp_apply (wp_LoadAt with "[$]"). iIntros "Hsl'".
   wp_apply (wp_slice_len).
@@ -396,12 +396,12 @@ Proof.
   wp_apply (wp_WriteInt with "Hmsg"). clear ptr.
   iIntros (msg_sl) "Hmsg".
   wp_load.
-  wp_apply (wp_WriteBytes with "[$Hmsg $His_slice]"). clear msg_sl.
+  wp_apply (wp_WriteBytes with "[$Hmsg $Hown_slice]"). clear msg_sl.
   iIntros (msg_sl) "[Hmsg_slice _]".
   rewrite -!app_assoc app_nil_l.
 
   (* Send *)
-  iDestruct (is_slice_small_read with "Hmsg_slice") as "(Hmsg_slice&_)".
+  iDestruct (own_slice_small_read with "Hmsg_slice") as "(Hmsg_slice&_)".
   wp_apply (wp_Send with "[$Hmsg_slice]").
   iMod (inv_alloc urpc_escrowN _ (Post repData ∨ ptsto_mut (ccescrow_name Γ) seqno 1 tt)
           with "[HPost]") as "#HPost_escrow".
@@ -569,7 +569,7 @@ Proof.
   }
   wp_pures.
   iNamed "Hmsg".
-  iDestruct (typed_slice.is_slice_to_small with "Hs") as "Hsl".
+  iDestruct (typed_slice.own_slice_to_small with "Hs") as "Hsl".
   cbn in Henc. subst m.
   wp_apply (wp_ReadInt with "Hsl"). clear s.
   iIntros (s) "Hsl".
@@ -798,14 +798,14 @@ Lemma wp_Client__CallStart γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req
       (reqData:list u8) Spec Post q :
   handler_spec γsmap host rpcid Spec -∗
   {{{
-      is_slice_small req byteT q reqData ∗
+      own_slice_small req byteT q reqData ∗
       is_uRPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
   }}}
     Client__CallStart #cl_ptr #rpcid (slice_val req)
   {{{
        (err : option call_err) (cb_ptr : loc), RET (#cb_ptr, #(call_errno err));
-       is_slice_small req byteT q reqData ∗
+       own_slice_small req byteT q reqData ∗
        (if err is Some _ then True else own_uRPC_Callback cl_ptr cb_ptr Post)
   }}}.
 Proof.
@@ -914,7 +914,7 @@ Proof.
   rewrite -!app_assoc app_nil_l.
 
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
   iNamed "Hhandler".
   wp_apply (wp_Send with "[$]").
   iInv "Hserver_inv" as "Hserver_inner" "Hclo".
@@ -924,7 +924,7 @@ Proof.
   iExists _. iFrame "Hchan'".
   iIntros (msg_sent) "Hchan'". rewrite /named.
   iMod ("Hclo'") as "_".
-  iDestruct (is_slice_small_sz with "Hslice") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hslice") as %Hsz.
   iMod ("Hclo" with "[Hmessages Hchan']") as "_".
   { iNext. iExists _.
     iFrame.
@@ -962,7 +962,7 @@ Lemma wp_Client__CallComplete (cl_ptr cb_ptr:loc) rep_out_ptr
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          is_slice_small rep_sl byteT 1 repData ∗
+          own_slice_small rep_sl byteT 1 repData ∗
           (Post repData))
   }}}.
 Proof.
@@ -1081,7 +1081,7 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post q :
   handler_spec γsmap host rpcid Spec -∗
   {{{
-      is_slice_small req byteT q reqData ∗
+      own_slice_small req byteT q reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
       is_uRPCClient cl_ptr host ∗
       □(▷ Spec reqData Post)
@@ -1090,11 +1090,11 @@ Lemma wp_Client__Call γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
   {{{
        (err : option call_err), RET #(call_errno err);
        is_uRPCClient cl_ptr host ∗ (* TODO: this is unnecessary *)
-       is_slice_small req byteT q reqData ∗
+       own_slice_small req byteT q reqData ∗
        (if err is Some _ then rep_out_ptr ↦[slice.T byteT] dummy_sl_val else
         ∃ rep_sl (repData:list u8),
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-          is_slice_small rep_sl byteT 1 repData ∗
+          own_slice_small rep_sl byteT 1 repData ∗
           (Post repData))
   }}}.
 Proof.
@@ -1118,18 +1118,18 @@ Lemma wp_Client__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_pt
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ q :
   is_uRPCClient cl_ptr host -∗
   handler_spec γsmap host rpcid Spec -∗
-  is_slice_small req byteT q reqData -∗
+  own_slice_small req byteT q reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData (λ reply,
-       is_slice_small req byteT q reqData -∗
+       own_slice_small req byteT q reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
-          is_slice_small rep_sl byteT 1 reply -∗
+          own_slice_small rep_sl byteT 1 reply -∗
           Φ #0)
   ) -∗
   (
    ∀ (err:u64), ⌜err ≠ 0⌝ →
-                is_slice_small req byteT q reqData -∗
+                own_slice_small req byteT q reqData -∗
                 rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
   ) -∗
   WP Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
@@ -1156,18 +1156,18 @@ Lemma wp_Client__Call2' γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_p
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ Ψ q :
   is_uRPCClient cl_ptr host -∗
   handler_spec γsmap host rpcid Spec -∗
-  is_slice_small req byteT q reqData -∗
+  own_slice_small req byteT q reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData Ψ) -∗
   (∀ reply, Ψ reply -∗
-       is_slice_small req byteT q reqData -∗
+       own_slice_small req byteT q reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
-          is_slice_small rep_sl byteT 1 reply -∗
+          own_slice_small rep_sl byteT 1 reply -∗
           Φ #0) -∗
   (
    ∀ (err:u64), ⌜err ≠ 0⌝ →
-                is_slice_small req byteT q reqData -∗
+                own_slice_small req byteT q reqData -∗
                 rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
   ) -∗
   WP Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.

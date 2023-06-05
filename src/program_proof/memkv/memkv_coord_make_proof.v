@@ -39,7 +39,7 @@ Proof.
   "%Hlen_shardMapping" ∷ ⌜ Z.of_nat (length shardMapping) = uNSHARD ⌝ ∗
   "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)) ⌝ ∗
   "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ @typed_slice.is_slice grove_op grove_model grove_interp Σ _ grove_ty u64
+  "HshardMap_sl" ∷ @typed_slice.own_slice grove_op grove_model grove_interp Σ _ grove_ty u64
                      (@u64_IntoVal grove_op) shardMap_sl HostName 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ rangeSet 0 uNSHARD, ∃ (hid : u64),
                   ⌜ shardMapping !! int.nat sid = Some hid ⌝ ∗
@@ -54,7 +54,7 @@ Proof.
     wp_apply (wp_LoadAt with "[$Hi]").
     iIntros "Hi".
     wp_loadField.
-    iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "(HshardMap_sl&HshardMap_sl_close)".
+    iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "(HshardMap_sl&HshardMap_sl_close)".
     wp_apply (typed_slice.wp_SliceSet (V:=u64) with "[$HshardMap_sl]").
     { eauto. }
     iIntros "HshardMap_sl".

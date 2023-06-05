@@ -170,7 +170,7 @@ Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMa
   ∀ ops op op_sl op_bytes,
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
         own_InMemoryStateMachine ops
   }}}
     applyVolatileFn (slice_val op_sl)
@@ -178,7 +178,7 @@ Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMa
         reply_sl q, RET (slice_val reply_sl);
         ⌜apply_postcond  ops op⌝ ∗
         own_InMemoryStateMachine (ops ++ [op]) ∗
-        is_slice_small reply_sl byteT q (compute_reply ops op)
+        own_slice_small reply_sl byteT q (compute_reply ops op)
   }}}
 .
 
@@ -187,7 +187,7 @@ Definition is_InMemory_setStateFn (setStateFn:val) own_InMemoryStateMachine : iP
   {{{
         ⌜has_snap_encoding snap ops⌝ ∗
         ⌜int.nat nextIndex = length ops⌝ ∗
-        readonly (is_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT 1 snap) ∗
         own_InMemoryStateMachine ops_prev
   }}}
     setStateFn (slice_val snap_sl) #nextIndex
@@ -205,7 +205,7 @@ Definition is_InMemory_getStateFn (getStateFn:val) own_InMemoryStateMachine : iP
   {{{
         snap snap_sl, RET (slice_val snap_sl); own_InMemoryStateMachine ops ∗
         ⌜has_snap_encoding snap ops⌝ ∗
-        readonly (is_slice_small snap_sl byteT 1 snap)
+        readonly (own_slice_small snap_sl byteT 1 snap)
   }}}
 .
 
@@ -214,7 +214,7 @@ Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMa
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         ⌜is_readonly_op op⌝ ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
         own_InMemoryStateMachine ops
   }}}
     applyReadonlyFn (slice_val op_sl)
@@ -225,7 +225,7 @@ Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMa
         ⌜∀ ops', prefix ops' ops → int.nat lastModifiedIndex <= length ops' →
                (compute_reply ops op = compute_reply ops' op)⌝ ∗
         own_InMemoryStateMachine ops ∗
-        is_slice_small reply_sl byteT q (compute_reply ops op)
+        own_slice_small reply_sl byteT q (compute_reply ops op)
   }}}
 .
 
@@ -292,7 +292,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
 Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops P :
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
         (⌜apply_postcond ops op⌝ -∗ P epoch ops false
          ={⊤∖↑pbAofN}=∗ P epoch (ops ++ [op]) false ∗ Q) ∗
         own_StateMachine s epoch ops false P
@@ -302,7 +302,7 @@ Lemma wp_StateMachine__apply s Q (op:OpType) (op_bytes:list u8) op_sl epoch ops 
         reply_sl q (waitFn:goose_lang.val),
         RET (slice_val reply_sl, waitFn);
         ⌜apply_postcond ops op⌝ ∗
-        is_slice_small reply_sl byteT q (compute_reply ops op) ∗
+        own_slice_small reply_sl byteT q (compute_reply ops op) ∗
         own_StateMachine s epoch (ops ++ [op]) false P ∗
         (∀ Ψ, (Q -∗ Ψ #()) -∗ WP waitFn #() {{ Ψ }})
   }}}
@@ -338,7 +338,7 @@ Proof.
 
   (* make opWithLen *)
   iMod (readonly_load with "Hop_sl") as (?) "Hop_sl2".
-  iDestruct (is_slice_small_sz with "Hop_sl2") as %Hop_sz.
+  iDestruct (own_slice_small_sz with "Hop_sl2") as %Hop_sz.
   wp_apply (wp_slice_len).
   wp_apply (wp_NewSliceWithCap).
   { apply encoding.unsigned_64_nonneg. }
@@ -362,7 +362,7 @@ Proof.
   wp_load.
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "HopWithLen_sl") as "HopWithLen_sl".
+  iDestruct (own_slice_to_small with "HopWithLen_sl") as "HopWithLen_sl".
 
   (* simplify marshalled opWithLen list *)
   replace (int.nat 0) with (0%nat) by word.
@@ -409,7 +409,7 @@ Proof.
     done.
   }
 
-  iDestruct (is_slice_small_sz with "HopWithLen_sl") as %HopWithLen_sz.
+  iDestruct (own_slice_small_sz with "HopWithLen_sl") as %HopWithLen_sz.
   wp_apply (wp_AppendOnlyFile__Append with "His_aof [$Haof $HopWithLen_sl Hupd]").
   { rewrite app_length. rewrite u64_le_length. word. }
   {
@@ -484,7 +484,7 @@ Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (
         ⌜ (length ops < 2 ^ 64)%Z ⌝ ∗
         ⌜has_snap_encoding snap ops⌝ ∗
         ⌜int.nat nextIndex = length ops⌝ ∗
-        readonly (is_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT 1 snap) ∗
         (P epoch_prev ops_prev sealed_prev ={⊤}=∗ P epoch ops false ∗ Q) ∗
         own_StateMachine s epoch_prev ops_prev sealed_prev P
   }}}
@@ -540,7 +540,7 @@ Proof.
 
   wp_load.
   iMod (readonly_load with "Hsnap_sl") as (?) "Hsnap_sl2".
-  iDestruct (is_slice_small_sz with "Hsnap_sl2") as "%Hsnap_sz".
+  iDestruct (own_slice_small_sz with "Hsnap_sl2") as "%Hsnap_sz".
   wp_apply (wp_WriteBytes with "[$Henc_sl $Hsnap_sl2]").
   iIntros (enc_sl2) "[Henc_sl _]".
   wp_store.
@@ -584,9 +584,9 @@ Proof.
   { done. }
   iSplit; first done.
   iIntros "[Hfile Hinv]".
-  iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+  iDestruct (own_slice_to_small with "Henc_sl") as "Henc_sl".
   iApply wpc_fupd.
-  iDestruct (is_slice_small_sz with "Henc_sl") as %Henc_sz.
+  iDestruct (own_slice_small_sz with "Henc_sl") as %Henc_sz.
   wpc_apply (wpc_FileWrite with "[$Hfile $Henc_sl]").
   iSplit.
   { (* case: crash; *)
@@ -731,7 +731,7 @@ Lemma wp_getStateAndSeal s P epoch ops sealed Q :
   {{{
         snap_sl snap,
         RET (slice_val snap_sl);
-        readonly (is_slice_small snap_sl byteT 1 snap) ∗
+        readonly (own_slice_small snap_sl byteT 1 snap) ∗
         ⌜has_snap_encoding snap ops⌝ ∗
         own_StateMachine s epoch ops true P ∗
         Q
@@ -751,7 +751,7 @@ Proof.
     wp_apply (wp_NewSlice).
     iIntros (seal_sl) "Hseal_sl".
     wp_loadField.
-    iDestruct (is_slice_to_small with "Hseal_sl") as "Hseal_sl".
+    iDestruct (own_slice_to_small with "Hseal_sl") as "Hseal_sl".
 
     iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
     {
@@ -877,7 +877,7 @@ Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoc
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
         ⌜is_readonly_op op⌝ ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
         own_StateMachine s epoch ops sealed P
   }}}
     StateMachine__applyReadonly #s (slice_val op_sl)
@@ -887,7 +887,7 @@ Lemma wp_StateMachine__applyReadonly s (op:OpType) (op_bytes:list u8) op_sl epoc
         ⌜∀ ops' : list OpType,
             ops' `prefix_of` ops
             → int.nat lastModifiedIndex ≤ length ops' → compute_reply ops op = compute_reply ops' op⌝ ∗
-        is_slice_small reply_sl byteT q (compute_reply ops op) ∗
+        own_slice_small reply_sl byteT q (compute_reply ops op) ∗
         own_StateMachine s epoch ops sealed P
   }}}
 .
@@ -998,7 +998,7 @@ Proof.
     wp_pures.
     wp_load.
 
-    iDestruct (is_slice_sz with "Hdata_sl") as %Hdata_sz.
+    iDestruct (own_slice_sz with "Hdata_sl") as %Hdata_sz.
     wp_apply (wp_slice_len).
     wp_pures.
     wp_if_destruct.
@@ -1016,7 +1016,7 @@ Proof.
     iIntros (??) "(Hmemstate & %Hsnapenc & #Hsnap_sl)".
     wp_pures.
     iMod (readonly_load with "Hsnap_sl") as (?) "Hsnap_sl2".
-    iDestruct (is_slice_small_sz with "Hsnap_sl2") as %Hsnap_sz.
+    iDestruct (own_slice_small_sz with "Hsnap_sl2") as %Hsnap_sz.
     wp_apply (wp_slice_len).
     wp_apply (wp_NewSliceWithCap).
     { apply encoding.unsigned_64_nonneg. }
@@ -1047,7 +1047,7 @@ Proof.
 
     wp_loadField.
 
-    iDestruct (is_slice_to_small with "Henc_sl") as "Henc_sl".
+    iDestruct (own_slice_to_small with "Henc_sl") as "Henc_sl".
     wp_bind (FileWrite _ _).
     iApply (wpc_wp).
     instantiate (1:=True%I).
@@ -1235,7 +1235,7 @@ Proof.
   wp_pures.
   wp_load.
 
-  iDestruct (is_slice_sz with "Hdata_sl") as %Hdata_sz.
+  iDestruct (own_slice_sz with "Hdata_sl") as %Hdata_sz.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_if_destruct.
@@ -1270,7 +1270,7 @@ Proof.
   iIntros (snap_ptr) "Hsnap".
   wp_pures.
   wp_load.
-  iDestruct (is_slice_to_small with "Hdata_sl") as "Hdata_sl".
+  iDestruct (own_slice_to_small with "Hdata_sl") as "Hdata_sl".
   pose proof Henc as Henc2.
   destruct Henc as (snap_ops & snap & rest_ops & rest_ops_bytes & sealed_bytes & Henc).
   destruct Henc as (Hops & Hsnap_enc & Hsealedbytes & Hrest_ops_len & Henc).
@@ -1306,7 +1306,7 @@ Proof.
   wp_load.
   wp_apply (wp_slice_len).
   wp_pures.
-  iDestruct (is_slice_small_sz with "Hdata_sl2") as %Hdata_sl2_sz.
+  iDestruct (own_slice_small_sz with "Hdata_sl2") as %Hdata_sl2_sz.
   wp_load.
   wp_load.
 
@@ -1359,7 +1359,7 @@ Proof.
   wp_storeField.
   wp_store.
 
-  iMod (readonly_alloc (is_slice_small snap_sl byteT 1 snap) with "[Hsnap_sl]") as "#Hsnap_sl".
+  iMod (readonly_alloc (own_slice_small snap_sl byteT 1 snap) with "[Hsnap_sl]") as "#Hsnap_sl".
   {
     simpl.
     iFrame.
@@ -1382,7 +1382,7 @@ Proof.
   iAssert (
       ∃ rest_ops_sl (numOpsApplied:nat) q,
       "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val rest_ops_sl) ∗
-      "Hdata_sl" ∷ is_slice_small rest_ops_sl byteT q (concat (drop numOpsApplied rest_ops_bytes) ++ sealed_bytes) ∗
+      "Hdata_sl" ∷ own_slice_small rest_ops_sl byteT q (concat (drop numOpsApplied rest_ops_bytes) ++ sealed_bytes) ∗
       "Hmemstate" ∷ own_InMemoryStateMachine (snap_ops ++ (take numOpsApplied rest_ops)) ∗
       "HnextIndex" ∷ s ↦[StateMachine :: "nextIndex"] #(length snap_ops + numOpsApplied)%nat ∗
       "%HnumOpsApplied_le" ∷ ⌜numOpsApplied <= length rest_ops⌝
@@ -1403,7 +1403,7 @@ Proof.
   wp_pures.
 
   wp_load.
-  iDestruct (is_slice_small_sz with "Hdata_sl") as %Hrest_data_sz.
+  iDestruct (own_slice_small_sz with "Hdata_sl") as %Hrest_data_sz.
   wp_apply (wp_slice_len).
   wp_if_destruct.
   { (* there's enough bytes to make up an entire operation *)
@@ -1486,7 +1486,7 @@ Proof.
     wp_load.
 
     clear Hdata_sl2_sz.
-    iDestruct (is_slice_small_sz with "Hdata_sl2") as %Hdata_sl2_sz.
+    iDestruct (own_slice_small_sz with "Hdata_sl2") as %Hdata_sl2_sz.
     wp_apply (wp_SliceSubslice_small with "Hdata_sl2").
     {
       rewrite -Hdata_sl2_sz.
@@ -1516,7 +1516,7 @@ Proof.
     iEval (rewrite take_ge) in "Hdata_sl"; last first.
     (* done splitting slices into two parts *)
 
-    iMod (readonly_alloc (is_slice_small op_sl byteT 1 op_bytes) with "[Hop_sl]") as "#Hop_sl".
+    iMod (readonly_alloc (own_slice_small op_sl byteT 1 op_bytes) with "[Hop_sl]") as "#Hop_sl".
     {
       simpl.
       iFrame.
@@ -1615,7 +1615,7 @@ Proof.
     lia.
   }
 
-  iDestruct (is_slice_small_sz with "Hdata_sl") as %Hdata_sl_sz.
+  iDestruct (own_slice_small_sz with "Hdata_sl") as %Hdata_sl_sz.
   iRight.
   iModIntro.
   iSplitR; first done.

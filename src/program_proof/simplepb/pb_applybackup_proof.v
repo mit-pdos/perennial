@@ -53,7 +53,7 @@ Lemma wp_Clerk__ApplyAsBackup γ γsrv ck args_ptr (epoch index:u64) opsfull op 
         "#HargEpoch" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "epoch"] #epoch) ∗
         "#HargIndex" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "index"] #index) ∗
         "#HargOp" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "op"] (slice_val op_sl)) ∗
-        "#HopSl" ∷ readonly (is_slice_small op_sl byteT 1 op_bytes)
+        "#HopSl" ∷ readonly (own_slice_small op_sl byteT 1 op_bytes)
   }}}
     Clerk__ApplyAsBackup #ck #args_ptr
   {{{
@@ -77,7 +77,7 @@ Proof.
   }
   iIntros (enc_args enc_args_sl) "(%Henc_args & Henc_args_sl)".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
+  iDestruct (own_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
   wp_apply (wp_frame_wand with "HΦ").
   rewrite is_pb_host_unfold.
   iNamed "Hsrv".

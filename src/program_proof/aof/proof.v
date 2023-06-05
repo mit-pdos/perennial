@@ -115,7 +115,7 @@ Definition aof_mu_invariant (aof_ptr:loc) mu γ fname P Pcrash : iProp Σ :=
   "Hmembuf" ∷ aof_ptr ↦[AppendOnlyFile :: "membuf"] (slice_val membuf_sl) ∗
   "HdurableLength" ∷ aof_ptr ↦[AppendOnlyFile :: "durableLength"]{1/2} #durlen ∗
   "Hlength" ∷ aof_ptr ↦[AppendOnlyFile :: "length"] #(U64 memlen) ∗
-  "Hmembuf_sl" ∷ typed_slice.is_slice membuf_sl byteT 1 membufC ∗
+  "Hmembuf_sl" ∷ typed_slice.own_slice membuf_sl byteT 1 membufC ∗
 
   "Hpredurable" ∷ fmlist γ.(predurabledata) (DfracOwn (1/2)) (γ.(initdata) ++ predurableC) ∗
   "Hlogdata" ∷ fmlist γ.(logdata) (DfracOwn (1/2)) (γ.(initdata) ++ predurableC ++ membufC) ∗
@@ -406,7 +406,7 @@ Proof.
     {
       iNext.
       iExists (Slice.nil), [], [], (U64 0), _, _.
-      iDestruct is_slice_zero as "$".
+      iDestruct own_slice_zero as "$".
       simpl.
       rewrite app_nil_r.
       iFrame "∗#".
@@ -525,7 +525,7 @@ Proof.
       iIntros "(Hfile & Hcurdata & Hcrashtok)".
       iApply wpc_fupd.
 
-      iDestruct (is_slice_to_small with "Hmembuf_sl") as "Hmembuf_sl".
+      iDestruct (own_slice_to_small with "Hmembuf_sl") as "Hmembuf_sl".
       wpc_apply (wpc_FileAppend with "[$Hfile $Hmembuf_sl]").
       iSplit.
       { (* This is the case in which the node crashes during the FileAppend. *)
@@ -697,8 +697,8 @@ Proof.
     wp_pure1_credit "Hlc".
     wp_pures.
 
-    iDestruct (typed_slice.is_slice_sz with "Hmembuf_sl") as %Hsz.
-    iDestruct (is_slice_to_small with "Hmembuf_sl") as "Hmembuf_sl".
+    iDestruct (typed_slice.own_slice_sz with "Hmembuf_sl") as %Hsz.
+    iDestruct (own_slice_to_small with "Hmembuf_sl") as "Hmembuf_sl".
 
     wp_bind (FileAppend _ _).
     iApply (wpc_wp _ _ _ _ True).
@@ -828,7 +828,7 @@ length newData > 0 →
 list_safe_size newData →
 is_aof aof_ptr γ fname P Pcrash -∗
   {{{
-       typed_slice.is_slice_small data_sl byteT q newData ∗ aof_log_own γ oldData ∗
+       typed_slice.own_slice_small data_sl byteT q newData ∗ aof_log_own γ oldData ∗
        (P oldData ={⊤∖↑aofN}=∗ P (oldData ++ newData) ∗ Q)
   }}}
     AppendOnlyFile__Append #aof_ptr (slice_val data_sl)
@@ -851,7 +851,7 @@ Proof.
   wp_pures.
 
   wp_loadField.
-  iDestruct (is_slice_small_sz with "HnewData") as %Hsz.
+  iDestruct (own_slice_small_sz with "HnewData") as %Hsz.
 
   wp_apply (wp_WriteBytes with "[$Hmembuf_sl $HnewData]").
   iIntros (membuf_sl') "[Hmembuf_sl HnewData]".

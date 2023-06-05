@@ -73,28 +73,28 @@ Definition has_encoding_InstallShardRequest (data:list u8) (args:InstallShardReq
 
 Context `{!heapGS Σ}.
 
-Definition is_slicemap_rep (mv : gmap u64 val) (m : gmap u64 (list u8)) : iProp Σ :=
+Definition own_slicemap_rep (mv : gmap u64 val) (m : gmap u64 (list u8)) : iProp Σ :=
   "%Hmdoms" ∷ ⌜ dom mv = dom m ⌝ ∗
   "Hmvals" ∷ ([∗ map] k ↦ v ∈ mv, (∃ (q : Qp) vsl, ⌜ v = slice_val vsl ⌝ ∗
-              typed_slice.is_slice_small vsl byteT q (default [] (m !! k))))%I.
+              typed_slice.own_slice_small vsl byteT q (default [] (m !! k))))%I.
 
-Lemma is_slicemap_rep_dom  mv m :
-  is_slicemap_rep mv m -∗ ⌜ dom mv = dom m ⌝.
+Lemma own_slicemap_rep_dom  mv m :
+  own_slicemap_rep mv m -∗ ⌜ dom mv = dom m ⌝.
 Proof. iIntros "($&_)". Qed.
 
-Lemma is_slicemap_rep_empty_inv m :
-  is_slicemap_rep ∅ m -∗ ⌜ m = ∅ ⌝.
+Lemma own_slicemap_rep_empty_inv m :
+  own_slicemap_rep ∅ m -∗ ⌜ m = ∅ ⌝.
 Proof.
   iIntros "(%Hdom&_)".
   iPureIntro. rewrite dom_empty_L in Hdom.
   apply dom_empty_inv_L. eauto.
 Qed.
 
-Lemma is_slicemap_rep_dup mv m :
-  is_slicemap_rep mv m -∗ is_slicemap_rep mv m ∗ is_slicemap_rep mv m.
+Lemma own_slicemap_rep_dup mv m :
+  own_slicemap_rep mv m -∗ own_slicemap_rep mv m ∗ own_slicemap_rep mv m.
 Proof.
   iIntros "Hrep".
-  rewrite /is_slicemap_rep.
+  rewrite /own_slicemap_rep.
   iNamed "Hrep". iFrame "%".
   rewrite -big_sepM_sep.
   iApply (big_sepM_mono with "Hmvals").
@@ -107,14 +107,14 @@ Proof.
   { iExists _, _. iFrame. eauto. }
 Qed.
 
-Lemma is_slicemap_rep_move1 m1 m1' m2 m2' k l l':
+Lemma own_slicemap_rep_move1 m1 m1' m2 m2' k l l':
   m2 !! k = None →
   m1 !! k = Some l →
   m1' !! k = Some l' →
-  is_slicemap_rep m1 m1' -∗
-  is_slicemap_rep m2 m2' -∗
-  (is_slicemap_rep (delete k m1) (delete k m1') ∗
-   is_slicemap_rep (<[k := l]> m2) (<[k := l']> m2')).
+  own_slicemap_rep m1 m1' -∗
+  own_slicemap_rep m2 m2' -∗
+  (own_slicemap_rep (delete k m1) (delete k m1') ∗
+   own_slicemap_rep (<[k := l]> m2) (<[k := l']> m2')).
 Proof.
   iIntros (Hnone Hl Hl') "Hs1 Hs2".
   iNamed "Hs1".
@@ -143,15 +143,15 @@ Proof.
   }
 Qed.
 
-Lemma is_slicemap_lookup_l mv m k v :
+Lemma own_slicemap_lookup_l mv m k v :
   mv !! k = Some v →
-  is_slicemap_rep mv m -∗
-  is_slicemap_rep mv m ∗
+  own_slicemap_rep mv m -∗
+  own_slicemap_rep mv m ∗
   ∃ q vsl l, ⌜ v = slice_val vsl ⌝ ∗ ⌜ m !! k = Some l ⌝ ∗
-   typed_slice.is_slice_small vsl byteT q l.
+   typed_slice.own_slice_small vsl byteT q l.
 Proof.
   iIntros (Hlookup) "Hrep".
-  iDestruct (is_slicemap_rep_dup with "Hrep") as "(Hrep&$)".
+  iDestruct (own_slicemap_rep_dup with "Hrep") as "(Hrep&$)".
   iNamed "Hrep".
   iDestruct (big_sepM_lookup with "Hmvals") as (q vsl Heq) "H"; eauto.
   assert (is_Some (m !! k)) as (l&Heq').
@@ -162,8 +162,8 @@ Qed.
 Definition EncSliceMap_invariant m0 enc_v (r:Rec) sz map_sz
            (original_remaining:Z) (mtodo' mdone':gmap u64 val) : iProp Σ :=
   ∃ mtodo mdone (l:list (u64 * (list u8))) (remaining:Z),
-    is_slicemap_rep mtodo' mtodo ∗
-    is_slicemap_rep mdone' mdone ∗
+    own_slicemap_rep mtodo' mtodo ∗
+    own_slicemap_rep mdone' mdone ∗
     ⌜ mtodo ∪ mdone = m0 ⌝ ∗
     ⌜ NoDup l.*1 ⌝ ∗
     ⌜(list_to_map l) = mdone⌝ ∗
@@ -182,7 +182,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   "HKvsMap" ∷ map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
   "%Hdom_install" ∷ ⌜dom args.(IR_Kvs) = dom mv ⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),
-        ⌜shardOfC k ≠ args.(IR_Sid) ∧ mv !! k = None ∧ args.(IR_Kvs) !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (args.(IR_Kvs) !! k))) )
+        ⌜shardOfC k ≠ args.(IR_Sid) ∧ mv !! k = None ∧ args.(IR_Kvs) !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (args.(IR_Kvs) !! k))) )
 .
 
 Lemma wp_EncSliceMap e mref mv m sz r remaining :
@@ -190,14 +190,14 @@ Lemma wp_EncSliceMap e mref mv m sz r remaining :
   {{{
       "HKvsMap" ∷ map.own_map mref 1 (mv, slice_val Slice.nil) ∗
       "Henc" ∷ is_enc e sz r remaining ∗
-      "Hvals" ∷ is_slicemap_rep mv m
+      "Hvals" ∷ own_slicemap_rep mv m
   }}}
     EncSliceMap e #mref
   {{{
        rmap, RET #();
        ⌜has_byte_map_encoding m rmap⌝ ∗
        map.own_map mref 1 (mv, slice_val Slice.nil) ∗
-       is_slicemap_rep mv m ∗
+       own_slicemap_rep mv m ∗
        is_enc e sz (r ++ rmap) (remaining - marshalledMapSize m)
   }}}.
 Proof using Type*.
@@ -205,7 +205,7 @@ Proof using Type*.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_lam. wp_pures.
-    iDestruct (is_slicemap_rep_dom with "[$]") as %Hdom_init.
+    iDestruct (own_slicemap_rep_dom with "[$]") as %Hdom_init.
 
   wp_apply (map.wp_MapLen with "HKvsMap").
   iIntros "[%Hsize Hmap]".
@@ -220,7 +220,7 @@ Proof using Type*.
     iExists m, ∅.
     iExists []. iExists (remaining-8). simpl. iFrame.
     iSplitL "".
-    { rewrite /is_slicemap_rep. rewrite ?dom_empty_L big_sepM_empty //=. }
+    { rewrite /own_slicemap_rep. rewrite ?dom_empty_L big_sepM_empty //=. }
     iSplit.
     { iPureIntro. rewrite right_id_L //. }
     iSplit.
@@ -241,8 +241,8 @@ Proof using Type*.
     iDestruct "Hpre" as (mtodo mdone l rem') "Hpre".
     iDestruct "Hpre" as "(Hrep_todo&Hrep_done&Hpre)".
     iDestruct "Hpre" as (Hunion Hnodup Hl Hrem' Hremeq Hmdisjoint) "Henc".
-    iDestruct (is_slicemap_rep_dom with "Hrep_todo") as %Hdom_todo.
-    iDestruct (is_slicemap_rep_dom with "Hrep_done") as %Hdom_done.
+    iDestruct (own_slicemap_rep_dom with "Hrep_todo") as %Hdom_todo.
+    iDestruct (own_slicemap_rep_dom with "Hrep_done") as %Hdom_done.
     assert (16 <= marshalledMapSize_data mtodo).
     {
       assert (is_Some (mtodo !! k)) as (vl&Heq_vl).
@@ -257,7 +257,7 @@ Proof using Type*.
     iIntros "Henc".
     wp_pures.
 
-    iDestruct (is_slicemap_lookup_l with "Hrep_todo") as "(Hrep_todo&Hval)"; eauto.
+    iDestruct (own_slicemap_lookup_l with "Hrep_todo") as "(Hrep_todo&Hval)"; eauto.
     iDestruct "Hval" as (q vsl l' Heq1 Heq2) "Hslice".
 
     subst. wp_apply (wp_slice_len).
@@ -279,7 +279,7 @@ Proof using Type*.
     assert (k ∉ dom (list_to_map l : gmap u64 (list u8))).
     { intros Hin. apply map_disjoint_dom_1 in Hmdisjoint.
       apply elem_of_dom_2 in Heq2. eauto. }
-    iDestruct (is_slicemap_rep_move1 with "Hrep_todo Hrep_done") as "($&$)".
+    iDestruct (own_slicemap_rep_move1 with "Hrep_todo Hrep_done") as "($&$)".
     { apply not_elem_of_dom. rewrite Hdom_done. set_solver. }
     { eauto. }
     { eauto. }
@@ -321,7 +321,7 @@ Proof using Type*.
       apply map_disjoint_dom_1 in Hmdisjoint.
       rewrite dom_delete_L dom_insert_L. set_solver.
     }
-    iDestruct (typed_slice.is_slice_small_sz with "Hslice") as %Hsz'.
+    iDestruct (typed_slice.own_slice_small_sz with "Hslice") as %Hsz'.
     iExactEq "Henc".
     f_equal.
     simpl.
@@ -338,7 +338,7 @@ Proof using Type*.
   iDestruct "Hinv" as "(?&?&%Hunion&%&%&%&->&%&Henc)".
   iFrame.
   rewrite /marshalledMapSize.
-  iDestruct (is_slicemap_rep_empty_inv with "[$]") as %Hemp.
+  iDestruct (own_slicemap_rep_empty_inv with "[$]") as %Hemp.
   assert (m = mdone) as Hdone.
   { rewrite Hemp left_id_L in Hunion. auto. }
   rewrite Hdone.
@@ -357,8 +357,8 @@ Qed.
 
 Definition SizeOfMarshalledMap_invariant m0 (s : loc) (mtodo' mdone':gmap u64 val) : iProp Σ :=
   (∃ (z : u64) mtodo mdone,
-    is_slicemap_rep mtodo' mtodo ∗
-    is_slicemap_rep mdone' mdone ∗
+    own_slicemap_rep mtodo' mtodo ∗
+    own_slicemap_rep mdone' mdone ∗
     ⌜ mtodo ∪ mdone = m0 ⌝ ∗
     ⌜mtodo ##ₘ mdone ⌝ ∗
     s ↦[uint64T] #z ∗
@@ -367,13 +367,13 @@ Definition SizeOfMarshalledMap_invariant m0 (s : loc) (mtodo' mdone':gmap u64 va
 Lemma wp_SizeOfMarshalledMap mref mv m :
   {{{
       "HKvsMap" ∷ map.own_map mref 1 (mv, slice_val Slice.nil) ∗
-      "Hvals" ∷ is_slicemap_rep mv m
+      "Hvals" ∷ own_slicemap_rep mv m
   }}}
     SizeOfMarshalledMap #mref
   {{{
        (z : u64), RET #z; ⌜ int.nat z = marshalledMapSize m ⌝ ∗
        map.own_map mref 1 (mv, slice_val Slice.nil) ∗
-       is_slicemap_rep mv m
+       own_slicemap_rep mv m
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H".
@@ -392,7 +392,7 @@ Proof.
     iExists (U64 8), m, ∅.
     simpl. iFrame.
     iSplitL "".
-    { rewrite /is_slicemap_rep. rewrite ?dom_empty_L big_sepM_empty //=. }
+    { rewrite /own_slicemap_rep. rewrite ?dom_empty_L big_sepM_empty //=. }
     iSplit.
     { iPureIntro. rewrite right_id_L //. }
     iPureIntro; split.
@@ -405,11 +405,11 @@ Proof.
     wp_pures.
     iDestruct "Hpre" as (z mtodo mdone) "Hpre".
     iDestruct "Hpre" as "(Hrep_todo&Hrep_done&%Hunion&%Hdisj&Hs&%Hsum)".
-    iDestruct (is_slicemap_rep_dom with "Hrep_todo") as %Hdom_todo.
-    iDestruct (is_slicemap_rep_dom with "Hrep_done") as %Hdom_done.
-    iDestruct (is_slicemap_lookup_l with "Hrep_todo") as "(Hrep_todo&Hval)"; eauto.
+    iDestruct (own_slicemap_rep_dom with "Hrep_todo") as %Hdom_todo.
+    iDestruct (own_slicemap_rep_dom with "Hrep_done") as %Hdom_done.
+    iDestruct (own_slicemap_lookup_l with "Hrep_todo") as "(Hrep_todo&Hval)"; eauto.
     iDestruct "Hval" as (q vsl l' Heq1 Heq2) "Hslice".
-    iDestruct (typed_slice.is_slice_small_sz with "Hslice") as %Hsz'.
+    iDestruct (typed_slice.own_slice_small_sz with "Hslice") as %Hsz'.
     subst. wp_apply (wp_slice_len).
     wp_apply (wp_SumAssumeNoOverflow).
     iIntros (Hnooverflow1).
@@ -424,7 +424,7 @@ Proof.
     iApply "HΦ".
     iExists _, (delete k mtodo), (<[k := l']> mdone).
     iFrame.
-    iDestruct (is_slicemap_rep_move1 with "Hrep_todo Hrep_done") as "($&$)".
+    iDestruct (own_slicemap_rep_move1 with "Hrep_todo Hrep_done") as "($&$)".
     { apply not_elem_of_dom. rewrite Hdom_done.
       apply map_disjoint_dom_1 in Hdisj.
       apply elem_of_dom_2 in Heq2.
@@ -457,7 +457,7 @@ Proof.
   wp_pures.
   wp_apply (wp_LoadAt with "[$]").
   iIntros "Hs".
-  iDestruct (is_slicemap_rep_empty_inv with "[$]") as %Hemp.
+  iDestruct (own_slicemap_rep_empty_inv with "[$]") as %Hemp.
   assert (m = mdone) as Hdone.
   { rewrite Hemp left_id_L in Hunion. auto. }
   rewrite Hdone.
@@ -471,7 +471,7 @@ Definition shard_own (mv : gmap u64 val) (m : gmap u64 (list u8)) id : iProp Σ 
   ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
                                ∨ (∃ (q : Qp) (vsl : Slice.t),
                                      ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
-                                             typed_slice.is_slice_small vsl byteT q
+                                             typed_slice.own_slice_small vsl byteT q
                                              (default [] (m !! k)))).
 (*
 Lemma shard_own_shardOfC mv m id :
@@ -503,14 +503,14 @@ Proof.
   { iRight. iExists _, _. iFrame. eauto. }
 Qed.
 
-Lemma shard_to_is_slicemap_rep (mv : gmap u64 val) m id:
+Lemma shard_to_own_slicemap_rep (mv : gmap u64 val) m id:
   dom mv = dom m →
   ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
                                ∨ (∃ (q : Qp) (vsl : Slice.t),
                                      ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
-                                             typed_slice.is_slice_small vsl byteT q
+                                             typed_slice.own_slice_small vsl byteT q
                                              (default [] (m !! k)))) -∗
-  is_slicemap_rep mv m.
+  own_slicemap_rep mv m.
 Proof.
   iIntros (Hdom) "H".
   assert (dom mv ⊆ fin_to_set u64) as Hdomsub.
@@ -555,7 +555,7 @@ Lemma wp_encodeInstallShardRequest args_ptr args :
     encodeInstallShardRequest #args_ptr
   {{{
        (reqData:list u8) req_sl, RET (slice_val req_sl); ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
-                                               typed_slice.is_slice req_sl byteT 1%Qp reqData ∗
+                                               typed_slice.own_slice req_sl byteT 1%Qp reqData ∗
                                                own_InstallShardRequest args_ptr args
   }}}.
 Proof.
@@ -563,7 +563,7 @@ Proof.
   iNamed "Hpre".
   wp_lam.
   iDestruct (shard_own_dup with "Hvals") as "(Hvals&Hex)".
-  iDestruct (shard_to_is_slicemap_rep with "Hex") as "Hslicemap".
+  iDestruct (shard_to_own_slicemap_rep with "Hex") as "Hslicemap".
   { eauto. }
   wp_loadField.
   wp_apply (wp_SizeOfMarshalledMap with "[$Hslicemap $HKvsMap]").
@@ -600,7 +600,7 @@ Definition DecSliceMap_invariant dec_v i_ptr m (r:Rec) mref s data : iProp Σ :=
     ⌜(list_to_map l) ∪ mdone = m⌝ ∗
     i_ptr ↦[uint64T] #(size mdone) ∗
     map.own_map mref 1 (mdone', (slice_val Slice.nil)) ∗
-    is_slicemap_rep mdone' mdone ∗
+    own_slicemap_rep mdone' mdone ∗
     is_dec dec_v
           ((flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l) ++ r)
           s q data
@@ -613,7 +613,7 @@ Proof.
   iNamed 1.
   apply has_encoding_length in Henc.
   rewrite ?encoded_length_cons encode1_bytes_len in Henc.
-  iDestruct (typed_slice.is_slice_small_sz with "Hs") as %Hlen.
+  iDestruct (typed_slice.own_slice_small_sz with "Hs") as %Hlen.
   iPureIntro.
   assert (length (drop (int.nat off) l) <= length l).
   { rewrite drop_length. lia. }
@@ -634,7 +634,7 @@ Lemma wp_DecSliceMap d l m args_sl argsData :
   {{{
        rmap mv, RET #rmap;
        map.own_map rmap 1 (mv, slice_val Slice.nil) ∗
-       is_slicemap_rep mv m
+       own_slicemap_rep mv m
   }}}.
 Proof.
   iIntros (Hnodup Hsize Hlist).
@@ -659,7 +659,7 @@ Proof.
     rewrite right_id.
     iSplit; first done.
     rewrite app_nil_r. iFrame.
-    rewrite /is_slicemap_rep. rewrite ?dom_empty_L. rewrite big_sepM_empty //.
+    rewrite /own_slicemap_rep. rewrite ?dom_empty_L. rewrite big_sepM_empty //.
   }
 
   wp_forBreak_cond.
@@ -733,7 +733,7 @@ Proof.
     }
     replace (Z.of_nat (S (size mdone'))) with (size mdone' + 1)%Z by lia.
     iFrame.
-    rewrite /is_slicemap_rep.
+    rewrite /own_slicemap_rep.
     iNamed "Hslicemap".
     iSplit.
     { rewrite ?dom_insert_L; iPureIntro; congruence. }
@@ -786,12 +786,12 @@ Proof.
   rewrite list_to_map_nil left_id_L in Hunion. subst. iFrame.
 Qed.
 
-Lemma is_slicemap_rep_to_shard (mv : gmap u64 val) m id:
-  is_slicemap_rep mv m -∗
+Lemma own_slicemap_rep_to_shard (mv : gmap u64 val) m id:
+  own_slicemap_rep mv m -∗
   ([∗ set] k ∈ fin_to_set u64, ⌜shardOfC k ≠ id ∧ mv !! k = None ∧ m !! k = None⌝
                                ∨ (∃ (q : Qp) (vsl : Slice.t),
                                      ⌜default (slice_val Slice.nil) (mv !! k) = slice_val vsl⌝ ∗
-                                             typed_slice.is_slice_small vsl byteT q
+                                             typed_slice.own_slice_small vsl byteT q
                                              (default [] (m !! k)))).
 Proof.
   iInduction mv as [| k v mv Hlookup] "IH" using map_ind forall (m).
@@ -801,8 +801,8 @@ Proof.
     { apply dom_empty_inv_L. rewrite dom_empty_L in Hmdoms. congruence. }
     rewrite ?lookup_empty /=.
     iExists 1%Qp, _. iSplit; first eauto.
-    iApply (@typed_slice.is_slice_to_small with "[]").
-    iApply typed_slice.is_slice_zero.
+    iApply (@typed_slice.own_slice_to_small with "[]").
+    iApply typed_slice.own_slice_zero.
   }
   iNamed 1. iDestruct (big_sepM_insert with "Hmvals") as "(Hk&Hmvals)"; auto.
   iDestruct ("IH" $! (delete k m) with "[Hmvals]") as "Hrest".
@@ -829,7 +829,7 @@ Qed.
 
 Lemma wp_decodeInstallShardRequest args args_sl argsData :
   {{{
-       typed_slice.is_slice_small args_sl byteT 1%Qp argsData ∗
+       typed_slice.own_slice_small args_sl byteT 1%Qp argsData ∗
        ⌜has_encoding_InstallShardRequest argsData args ⌝
   }}}
     decodeInstallShardRequest (slice_val args_sl)
@@ -859,9 +859,9 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iExists _, _. iFrame.
-  iDestruct (is_slicemap_rep_dom with "[$]") as "%Hdom".
+  iDestruct (own_slicemap_rep_dom with "[$]") as "%Hdom".
   iSplit; auto.
-  iApply is_slicemap_rep_to_shard. eauto.
+  iApply own_slicemap_rep_to_shard. eauto.
 Qed.
 
 End memkv_marshal_install_shard_proof.

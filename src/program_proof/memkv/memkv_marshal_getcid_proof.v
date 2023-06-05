@@ -16,7 +16,7 @@ Lemma wp_EncodeUint64 cid :
   }}}
     EncodeUint64 #cid
   {{{
-       sl data, RET (slice_val sl); typed_slice.is_slice sl byteT 1%Qp data ∗
+       sl data, RET (slice_val sl); typed_slice.own_slice sl byteT 1%Qp data ∗
                                                          ⌜has_encoding_Uint64 data cid⌝
   }}}
 .
@@ -49,7 +49,7 @@ Qed.
 
 Lemma wp_DecodeUint64' sl data cid q :
   {{{
-       typed_slice.is_slice_small sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
+       typed_slice.own_slice_small sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
   }}}
     DecodeUint64 (slice_val sl)
   {{{
@@ -75,7 +75,7 @@ Qed.
 
 Lemma wp_DecodeUint64 sl data cid q :
   {{{
-       typed_slice.is_slice sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
+       typed_slice.own_slice sl byteT q data ∗ ⌜has_encoding_Uint64 data cid⌝
   }}}
     DecodeUint64 (slice_val sl)
   {{{
@@ -84,7 +84,7 @@ Lemma wp_DecodeUint64 sl data cid q :
 .
 Proof.
   iIntros (Φ) "[Hsl %Henc] HΦ".
-  iDestruct (typed_slice.is_slice_small_acc with "Hsl") as "[Hsl _]".
+  iDestruct (typed_slice.own_slice_small_acc with "Hsl") as "[Hsl _]".
   wp_apply (wp_DecodeUint64' with "[$Hsl //]").
   by iApply "HΦ".
 Qed.

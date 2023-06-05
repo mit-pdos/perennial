@@ -28,14 +28,14 @@ Context `{!pbG Σ}.
 Lemma wp_Clerk__Apply γ γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iProp Σ) :
 has_op_encoding op_bytes op →
 is_Clerk ck γ γsrv -∗
-is_slice_small op_sl byteT q op_bytes -∗
+own_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
   (⌜apply_postcond ops op⌝ -∗ own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
-     (∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-            is_slice_small op_sl byteT q op_bytes -∗
+     (∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+            own_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
 ∗
-(∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ is_slice_small op_sl byteT q op_bytes -∗
+(∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ own_slice_small op_sl byteT q op_bytes -∗
                                      Φ (#err, (slice_val unused_sl))%V )) -∗
 WP Clerk__Apply #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -202,11 +202,11 @@ Definition own_slice_elt {V} {H:IntoVal V} (sl:Slice.t) (idx:u64) typ q (v:V) : 
   (sl.(Slice.ptr) +ₗ[typ] (int.Z idx)) ↦[typ]{q} (to_val v).
 
 Lemma slice_elements_split {V} {H:IntoVal V} sl typ q (l:list V):
-  is_slice_small sl typ q l -∗
+  own_slice_small sl typ q l -∗
   [∗ list] i ↦ v ∈ l, own_slice_elt sl i typ q v.
 Proof.
   iIntros "Hsl".
-  rewrite /is_slice_small /slice.is_slice_small.
+  rewrite /own_slice_small /slice.own_slice_small.
   unfold own_slice_elt.
   destruct sl. simpl.
   iDestruct "Hsl" as "(Hsl & #Hsz & #Hcap)".
@@ -284,7 +284,7 @@ Lemma wp_forSlice' {V} {H:IntoVal V} ϕ I sl ty q (l:list V) (body:val) :
     }}}
   ) -∗
   {{{
-        is_slice_small sl ty q l ∗
+        own_slice_small sl ty q l ∗
         ([∗ list] i ↦ v ∈ l, ϕ i v) ∗
         I 0
   }}}
@@ -296,7 +296,7 @@ Lemma wp_forSlice' {V} {H:IntoVal V} ϕ I sl ty q (l:list V) (body:val) :
 Proof.
   iIntros "#Hwp".
   iIntros (?) "!# (Hsl & Hl & HI) HΦ".
-  iDestruct (is_slice_small_sz with "Hsl") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
   wp_apply (wp_forSlice (λ i, I i ∗ [∗ list] j ↦ v ∈ (drop (int.nat i) l), ϕ (j + int.nat i) v) %I
              with "[] [$Hsl Hl HI]").
   2: { rewrite drop_0.
@@ -378,7 +378,7 @@ Qed.
 Lemma wp_Server__Apply_internal (s:loc) γ γsrv op_sl op_bytes op Q :
   {{{
         is_Server s γ γsrv ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
         ⌜has_op_encoding op_bytes op⌝ ∗
         (£ 1 -∗ £ 1 -∗ |={⊤∖↑ghostN,∅}=> ∃ σ, own_pb_log γ.(s_pb) σ ∗
           (⌜apply_postcond (get_rwops σ) op⌝ -∗ own_pb_log γ.(s_pb) (σ ++ [(op, Q)]) ={∅,⊤∖↑ghostN}=∗ True))
@@ -444,7 +444,7 @@ Proof.
       iExists _.
       iFrame.
       iExists 1%Qp.
-      iApply is_slice_small_nil.
+      iApply own_slice_small_nil.
       done.
     }
     done.
@@ -469,7 +469,7 @@ Proof.
     iApply ("HΦ" $! _ (ApplyReply.mkC 1 [])).
     iFrame.
     iExists _, 1%Qp; iFrame.
-    iApply is_slice_small_nil.
+    iApply own_slice_small_nil.
     done.
   }
 
@@ -581,7 +581,7 @@ Proof.
   iNamed "Hprimary".
   iMod (readonly_load with "Hclerkss_sl") as (?) "Hclerkss_sl2".
 
-  iDestruct (is_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
+  iDestruct (own_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
 
   wp_apply (wp_RandomUint64).
   iIntros (randint) "_".
@@ -642,9 +642,9 @@ Proof.
   { done. }
   iNamed "Hclerks_rpc".
 
-  iDestruct (is_slice_to_small with "Herrs_sl") as "Herrs_sl".
+  iDestruct (own_slice_to_small with "Herrs_sl") as "Herrs_sl".
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
-  iDestruct (is_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
+  iDestruct (own_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
 
   wp_apply (wp_forSlice' _ (λ j, (own_WaitGroup pbN wg γwg j _))%I with "[] [$Hwg Herrs_sl $Hclerks_sl2]").
   2: {
@@ -790,7 +790,7 @@ Proof.
   wp_apply wp_slice_len.
 
   iMod (readonly_load with "Hclerks_sl") as (?) "Htemp".
-  iDestruct (is_slice_small_sz with "Htemp") as %Hclerk_sz.
+  iDestruct (own_slice_small_sz with "Htemp") as %Hclerk_sz.
   iClear "Htemp".
 
   wp_pures.
@@ -1003,7 +1003,7 @@ Qed.
 
 Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
-  readonly (is_slice_small op_sl byteT 1 enc_op) -∗
+  readonly (own_slice_small op_sl byteT 1 enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
   Apply_core_spec γ op enc_op Ψ -∗
   WP (pb.Server__Apply #s (slice_val op_sl)) {{ Φ }}

@@ -46,7 +46,7 @@ Axiom wpc_Read : ∀ filename (q:Qp) content,
   }}}
     grove_ffi.Read #(str filename) @ ⊤
   {{{
-       s, RET slice_val s; typed_slice.is_slice s byteT 1 content ∗
+       s, RET slice_val s; typed_slice.own_slice s byteT 1 content ∗
                            filename f↦{q} content
   }}}
   {{{
@@ -56,12 +56,12 @@ Axiom wpc_Read : ∀ filename (q:Qp) content,
 Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) q,
   {{{
       filename f↦ content_old ∗
-      typed_slice.is_slice content_sl byteT q content
+      typed_slice.own_slice content_sl byteT q content
   }}}
     grove_ffi.Write #(str filename) (slice_val content_sl) @ ⊤
   {{{
        RET #(); filename f↦ content ∗
-      typed_slice.is_slice content_sl byteT q content
+      typed_slice.own_slice content_sl byteT q content
   }}}
   {{{
       filename f↦ content_old ∨
@@ -71,12 +71,12 @@ Axiom wpc_Write : ∀ filename content_old content (content_sl:Slice.t) q,
 Axiom wpc_AtomicAppend : ∀ filename content_old content (content_sl:Slice.t) q,
   {{{
       filename f↦ content_old ∗
-      typed_slice.is_slice content_sl byteT q content
+      typed_slice.own_slice content_sl byteT q content
   }}}
     grove_ffi.AtomicAppend #(str filename) (slice_val content_sl) @ ⊤
   {{{
        RET #(); filename f↦ (content_old ++ content) ∗
-      typed_slice.is_slice content_sl byteT q (content_old ++ content)
+      typed_slice.own_slice content_sl byteT q (content_old ++ content)
   }}}
   {{{
       filename f↦ content_old ∨
@@ -136,14 +136,14 @@ Axiom wp_MakeRPCClient : ∀ (host:u64) ,
 Axiom wp_RPCClient__RemoteProcedureCall : ∀ (cl_ptr:loc) (rpcid:u64) (host:string) req rep_ptr dummy_rep_sl (reqData:list u8) spec,
 handler_is host rpcid spec -∗
 ∀ Φ,
-(is_slice req byteT 1 reqData ∗
+(own_slice req byteT 1 reqData ∗
  rep_ptr ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
  RPCClient_own cl_ptr host) ∗
  (spec reqData (λ repData, ∃ rep_sl,
        rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
        RPCClient_own cl_ptr host ∗
-       is_slice req byteT 1 reqData ∗
-       is_slice rep_sl byteT 1 repData -∗
+       own_slice req byteT 1 reqData ∗
+       own_slice rep_sl byteT 1 repData -∗
             Φ #())) -∗
   WP grove_ffi.RPCClient__RemoteProcedureCall #cl_ptr #rpcid (slice_val req) #rep_ptr {{ Φ }}
 .
@@ -151,7 +151,7 @@ handler_is host rpcid spec -∗
 
 Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ptr dummy_sl_val (reqData:list u8) Pre Post,
   {{{
-      is_slice req byteT 1 reqData ∗
+      own_slice req byteT 1 reqData ∗
       rep_ptr ↦[slice.T byteT] dummy_sl_val ∗
       handler_is X host rpcid Pre Post ∗
       RPCClient_own cl_ptr host ∗
@@ -162,22 +162,22 @@ Axiom wp_RPCClient__Call : ∀ {X:Type} (x:X) (cl_ptr:loc) (rpcid:u64) (host:u64
        (b:bool) rep_sl (repData:list u8), RET #b;
        rep_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
        RPCClient_own cl_ptr host ∗
-       is_slice req byteT 1 reqData ∗
-       is_slice rep_sl byteT 1 repData ∗
+       own_slice req byteT 1 reqData ∗
+       own_slice rep_sl byteT 1 repData ∗
        (⌜b = true⌝ ∨ ⌜b = false⌝ ∗ (▷ Post x reqData repData))
   }}}.
 
 Definition is_rpcHandler {X:Type} (f:val) Pre Post : iProp Σ :=
   ∀ (x:X) req rep dummy_rep_sl (reqData:list u8),
   {{{
-      is_slice req byteT 1 reqData ∗
+      own_slice req byteT 1 reqData ∗
       rep ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
       ▷ Pre x reqData
   }}}
     f (slice_val req) #rep
   {{{
        rep_sl (repData:list u8), RET #(); rep ↦[slice.T byteT] (slice_val rep_sl) ∗
-         is_slice rep_sl byteT 1 repData ∗
+         own_slice rep_sl byteT 1 repData ∗
          ▷ Post x reqData repData
   }}}.
 

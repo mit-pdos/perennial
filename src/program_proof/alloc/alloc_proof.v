@@ -32,7 +32,7 @@ Definition alloc_linv (max: u64) (l: loc) : iProp Σ :=
   "bitmap" ∷ l ↦[Alloc :: "bitmap"] (slice_val bitmap_s) ∗
   "%Hnext_bound" ∷ ⌜int.Z next < int.Z max⌝ ∗
   "%Hbits_len" ∷ ⌜int.Z max = (8 * (Z.of_nat $ length bits))%Z⌝ ∗
-  "Hbits" ∷ is_slice_small bitmap_s byteT 1 (b2val <$> bits).
+  "Hbits" ∷ own_slice_small bitmap_s byteT 1 (b2val <$> bits).
 
 Definition is_alloc (max: u64) (l: loc) : iProp Σ :=
   ∃ (mu_l: loc),
@@ -46,7 +46,7 @@ Proof. apply _. Qed.
 Lemma wp_MkAlloc (bitmap_s: Slice.t) (data: list u8) :
   0 < length data →
   8 * Z.of_nat (length data) < 2^64 →
-  {{{ is_slice_small bitmap_s byteT 1 (b2val <$> data) }}}
+  {{{ own_slice_small bitmap_s byteT 1 (b2val <$> data) }}}
     MkAlloc (slice_val bitmap_s)
   {{{ l, RET #l; is_alloc (U64 (8 * length data)) l }}}.
 Proof.
@@ -145,7 +145,7 @@ Proof.
   wp_apply wp_new_slice; first by auto.
   iIntros (bitmap_s) "Hs".
   wp_pures.
-  iApply is_slice_to_small in "Hs".
+  iApply own_slice_to_small in "Hs".
   replace (replicate (int.nat (word.divu max 8)) (zero_val byteT))
           with (b2val <$> replicate (int.nat (word.divu max 8)) (U8 0));
     last first.
@@ -195,7 +195,7 @@ Proof.
       iFrame "∗%".
   - wp_loadField.
     iApply "HΦ".
-    iDestruct (is_slice_small_sz with "Hbits") as %Hsz_len.
+    iDestruct (own_slice_small_sz with "Hbits") as %Hsz_len.
     rewrite fmap_length in Hsz_len.
     rewrite word.unsigned_mul in Heqb.
     rewrite -> wrap_small in Heqb by word.
@@ -411,7 +411,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  iDestruct (is_slice_small_sz with "Hbits") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hbits") as %Hsz.
   rewrite fmap_length in Hsz.
 
   wp_apply (wp_forSlice (λ i, ∃ (count: u64),

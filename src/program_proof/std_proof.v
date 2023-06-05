@@ -32,18 +32,18 @@ Proof.
 Qed.
 
 Lemma wp_BytesEqual (x y : Slice.t) (xs ys : list byte) qx qy :
-  {{{ is_slice_small x byteT qx xs ∗
-      is_slice_small y byteT qy ys }}}
+  {{{ own_slice_small x byteT qx xs ∗
+      own_slice_small y byteT qy ys }}}
     BytesEqual (slice_val x) (slice_val y)
   {{{ RET #(bool_decide (xs = ys));
-      is_slice_small x byteT qx xs ∗
-      is_slice_small y byteT qy ys }}}.
+      own_slice_small x byteT qx xs ∗
+      own_slice_small y byteT qy ys }}}.
 Proof.
   iIntros (Φ) "[Hx Hy] HΦ". wp_lam. wp_pures.
   do 2 wp_apply wp_slice_len.
   wp_pures.
-  iDestruct (is_slice_small_sz with "Hx") as %Hxlen.
-  iDestruct (is_slice_small_sz with "Hy") as %Hylen.
+  iDestruct (own_slice_small_sz with "Hx") as %Hxlen.
+  iDestruct (own_slice_small_sz with "Hy") as %Hylen.
   assert (#x.(Slice.sz) = #(length xs))%V as ->.
   { rewrite Hxlen. do 2 f_equal. word. }
   assert (#y.(Slice.sz) = #(length ys))%V as ->.

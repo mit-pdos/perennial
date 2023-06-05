@@ -8,7 +8,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 Definition own_txnsite (txnsite : loc) (sid : u64) γ : iProp Σ := 
   ∃ (tidsactive : Slice.t) (tidsactiveL : list u64) (tidsactiveM : gset nat),
     "Hactive" ∷ txnsite ↦[TxnSite :: "tidsActive"] (to_val tidsactive) ∗
-    "HactiveL" ∷ typed_slice.is_slice tidsactive uint64T 1 tidsactiveL ∗
+    "HactiveL" ∷ typed_slice.own_slice tidsactive uint64T 1 tidsactiveL ∗
     "HactiveAuth" ∷ site_active_tids_half_auth γ sid tidsactiveM ∗
     (* "%HactiveLM" ∷ ⌜(∀ tid, tid ∈ (int.Z <$> tidsactiveL) ↔ tid ∈ (Z.of_nat <$> (elements tidsactiveM)))⌝ ∗ *)
     "%HactiveLM" ∷ ⌜list_to_set ((λ tid, int.nat tid) <$> tidsactiveL) = tidsactiveM⌝ ∗
@@ -35,7 +35,7 @@ Definition is_txnmgr (txnmgr : loc) γ : iProp Σ :=
     "#Hidx" ∷ readonly (txnmgr ↦[TxnMgr :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
     "#Hsites" ∷ readonly (txnmgr ↦[TxnMgr :: "sites"] (to_val sites)) ∗
-    "#HsitesS" ∷ readonly (is_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
+    "#HsitesS" ∷ readonly (own_slice_small sites ptrT 1 (to_val <$> sitesL)) ∗
     "%HsitesLen" ∷ ⌜Z.of_nat (length sitesL) = N_TXN_SITES⌝ ∗
     "#HsitesRP" ∷ ([∗ list] sid ↦ site ∈ sitesL, is_txnsite site sid γ) ∗
     "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗

@@ -169,7 +169,7 @@ Proof.
 
   wp_apply (wp_LoadAt with "[$Hservers]").
   iIntros "Hservers".
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   rewrite replicate_0.
   simpl.
   wp_apply (config_proof.wp_MakeServer with "[$HconfInit $Hsl]").

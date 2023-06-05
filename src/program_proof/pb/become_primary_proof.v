@@ -17,7 +17,7 @@ Record BecomePrimaryArgsC :=
 Definition own_Configuration (cptr:loc) (c:ConfigurationC) : iProp Σ :=
   ∃ replicas_sl,
   "Hreplicas" ∷ cptr ↦[Configuration :: "Replicas"] (slice_val replicas_sl) ∗
-  "Hreplicas_sl" ∷ is_slice replicas_sl uint64T 1%Qp c.(C_replicas)
+  "Hreplicas_sl" ∷ own_slice replicas_sl uint64T 1%Qp c.(C_replicas)
 .
 
 Definition own_BecomePrimaryArgs (args_ptr:loc) (args:BecomePrimaryArgsC) : iProp Σ :=

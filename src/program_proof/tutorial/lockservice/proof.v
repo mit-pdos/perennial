@@ -13,13 +13,13 @@ Definition bool_le (b:bool) : list u8 := if b then [U8 1] else [U8 0].
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
     EncodeBool #b
-  {{{ sl, RET (slice_val sl); is_slice sl byteT 1 (bool_le b) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (bool_le b) }}}
 .
 Proof.
 Admitted.
 
 Lemma wp_DecodeBool sl b q :
-  {{{ is_slice sl byteT q (bool_le b) }}}
+  {{{ own_slice sl byteT q (bool_le b) }}}
     DecodeBool (slice_val sl)
   {{{ RET #b; True }}}
 .
@@ -29,15 +29,15 @@ Admitted.
 Lemma wp_EncodeUint64 x:
   {{{ True }}}
     EncodeUint64 #x
-  {{{ sl, RET (slice_val sl); is_slice sl byteT 1 (u64_le x) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (u64_le x) }}}
 .
 Proof.
 Admitted.
 
 Lemma wp_DecodeUint64 sl x q :
-  {{{ is_slice_small sl byteT q (u64_le x) }}}
+  {{{ own_slice_small sl byteT q (u64_le x) }}}
     DecodeUint64 (slice_val sl)
-  {{{ RET #x; is_slice_small sl byteT q (u64_le x) }}}
+  {{{ RET #x; own_slice_small sl byteT q (u64_le x) }}}
 .
 Proof.
 Admitted.
@@ -206,7 +206,7 @@ Proof.
       iIntros "HΨ".
       wp_pures.
       iApply ("HΦ" with "[$] [$]").
-      by iApply (is_slice_small_nil _ 1).
+      by iApply (own_slice_small_nil _ 1).
     }
     iApply (big_sepM_insert_2 with "").
     {
@@ -225,7 +225,7 @@ Proof.
       wp_store.
       iApply ("HΦ" with "[HΨ] [$]").
       { iApply "HΨ". done. }
-      by iDestruct (is_slice_to_small _ _ 1 with "Henc_req") as "$".
+      by iDestruct (own_slice_to_small _ _ 1 with "Henc_req") as "$".
     }
     iApply (big_sepM_insert_2 with "").
     {
@@ -242,7 +242,7 @@ Proof.
       wp_store.
       iApply ("HΦ" with "[HΨ] [$]").
       { iApply "HΨ". done. }
-      by iDestruct (is_slice_to_small with "Henc_req") as "$".
+      by iDestruct (own_slice_to_small with "Henc_req") as "$".
     }
     by iApply big_sepM_empty.
   }
@@ -282,7 +282,7 @@ Proof.
   iNamed "Hcl".
   wp_loadField.
   iNamed "Hhost".
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_apply (wp_Client__Call2' with "[$] [$H1] [$] [$] [Hspec]").
   {
     iModIntro. iModIntro.

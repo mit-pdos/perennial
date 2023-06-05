@@ -285,7 +285,7 @@ Definition is_circular_appender γ (circ: loc) : iProp Σ :=
     ghost_var γ.(addrs_name) (1/2) addrs ∗
     ghost_var γ.(blocks_name) (1/2) blocks ∗
     circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
-    is_slice_small s uint64T 1 addrs.
+    own_slice_small s uint64T 1 addrs.
 
 Definition init_ghost_state γ :=
   ("Haddrs'" ∷ ghost_var γ.(addrs_name) 1 ([] : list u64) ∗
@@ -486,11 +486,11 @@ Qed.
 Theorem wp_hdr1 (circ: loc) (newStart: u64) s (addrs: list u64) :
   length addrs = Z.to_nat LogSz ->
   {{{ circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
-       is_slice_small s uint64T 1 addrs }}}
+       own_slice_small s uint64T 1 addrs }}}
     circularAppender__hdr1 #circ #newStart
   {{{ b_s b, RET slice_val b_s;
       circ ↦[circularAppender :: "diskAddrs"] (slice_val s) ∗
-      is_slice_small s uint64T 1 addrs ∗
+      own_slice_small s uint64T 1 addrs ∗
       is_block b_s 1 b ∗
       ⌜block_encodes b ([EncUInt64 newStart] ++ (EncUInt64 <$> addrs))⌝ }}}.
 Proof.
@@ -823,7 +823,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       start_at_least γ startpos_lb ∗
       diskEnd_is γ (1/2) (int.Z endpos) ∗
       c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      is_slice_small diskaddrslice uint64T 1 addrs ∗
+      own_slice_small diskaddrslice uint64T 1 addrs ∗
       updates_slice_frag bufs q upds
   }}}
     circularAppender__logBlocks #c d #endpos (slice_val bufs)
@@ -833,7 +833,7 @@ Theorem wp_circularAppender__logBlocks γ c (d: val)
       ghost_var γ.(blocks_name) (1/2) blocks' ∗
       diskEnd_is γ (1/2) (int.Z endpos) ∗
       c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
-      is_slice_small diskaddrslice uint64T 1 addrs' ∗
+      own_slice_small diskaddrslice uint64T 1 addrs' ∗
       updates_slice_frag bufs q upds
   }}}.
 Proof.
@@ -842,7 +842,7 @@ Proof.
   iDestruct (updates_slice_frag_len with "Hupdslice") as %Hupdlen.
   iDestruct "Hupdslice" as (bks) "[Hupdslice Hbks]".
 
-  iDestruct (slice.is_slice_small_sz with "Hupdslice") as %Hslen.
+  iDestruct (slice.own_slice_small_sz with "Hupdslice") as %Hslen.
   rewrite fmap_length in Hslen.
   iDestruct (big_sepL2_length with "Hbks") as %Hslen2.
 
@@ -851,7 +851,7 @@ Proof.
     let blocks' := update_blocks blocks (int.Z endpos) (take (int.nat i) upds) in
     ghost_var γ.(blocks_name) (1/2) blocks' ∗
     c ↦[circularAppender :: "diskAddrs"] (slice_val diskaddrslice) ∗
-    is_slice_small diskaddrslice uint64T 1 addrs' ∗
+    own_slice_small diskaddrslice uint64T 1 addrs' ∗
     diskEnd_is γ (1/2) (int.Z endpos) ∗
     ( [∗ list] b_upd;upd ∈ bks;upds, is_update b_upd q upd)
     )%I (* XXX why is %I needed? *)
@@ -958,7 +958,7 @@ Proof.
   { replace (Z.to_nat (int.Z i + 1)) with (S (int.nat i)) by lia.
     erewrite update_addrs_take_S; eauto.
     replace (int.Z (word.add endpos i)) with (int.Z endpos + int.Z i) by word.
-    rewrite /is_slice_small /list.untype.
+    rewrite /own_slice_small /list.untype.
     rewrite list_fmap_insert //.
   }
   iApply "Hbks".
@@ -1134,7 +1134,7 @@ Proof.
   wp_pure1_credit "Hcred".
   wp_pures.
 
-  iDestruct (slice.is_slice_small_sz with "Hb") as %Hslen.
+  iDestruct (slice.own_slice_small_sz with "Hb") as %Hslen.
   wp_apply (wp_Write_atomic with "Hb").  (*   *)
   rewrite fmap_length in Hslen.
 
@@ -1208,7 +1208,7 @@ Theorem wp_decodeHdr1 stk E s (hdr1: Block) (endpos: u64) (addrs: list u64) :
   {{{ is_block s 1 hdr1 }}}
     decodeHdr1 (slice_val s) @ stk; E
   {{{ (a_s:Slice.t), RET (#endpos, slice_val a_s);
-      is_slice a_s uint64T 1 addrs }}}.
+      own_slice a_s uint64T 1 addrs }}}.
 Proof.
   iIntros (Hhdr1 Haddrlen Φ) "Hb HΦ".
   wp_call.
@@ -1280,7 +1280,7 @@ Proof.
   wp_call.
   wp_apply wp_new_slice; first by auto.
   iIntros (zero_s) "Hzero".
-  iDestruct (slice.is_slice_to_small with "Hzero") as "Hzero".
+  iDestruct (slice.own_slice_to_small with "Hzero") as "Hzero".
   wp_pures.
   rewrite replicate_zero_to_block0.
   wp_apply (wp_Write with "[Hd0 $Hzero]").
@@ -1327,7 +1327,7 @@ Proof.
     simpl in Hbkslen.
     apply circ_low_wf_empty; word. }
   iDestruct (struct_fields_split with "Hs") as "($&_)".
-  iDestruct (slice.is_slice_to_small with "Hupd") as "Hupd".
+  iDestruct (slice.own_slice_to_small with "Hupd") as "Hupd".
   rewrite -fmap_replicate.
   iFrame "Hupd".
 Qed.

@@ -233,14 +233,14 @@ Proof.
 
   wpc_bind (decodeHdr1 _).
   wpc_frame.
-  iApply slice.is_slice_to_small in "Hs0".
+  iApply slice.own_slice_to_small in "Hs0".
   wp_apply (wp_decodeHdr1 with "Hs0"); [ eauto | word | ].
   iIntros (addrs) "Hdiskaddrs H". iNamed "H".
   wpc_pures.
 
   wpc_bind (decodeHdr2 _).
   wpc_frame.
-  iApply slice.is_slice_to_small in "Hs1".
+  iApply slice.own_slice_to_small in "Hs1".
   wp_apply (wp_decodeHdr2 with "Hs1"); [ eauto | ].
   iNamed 1.
 
@@ -262,7 +262,7 @@ Proof.
     (∃ bufSlice,
       bufsloc ↦[slice.T (struct.t Update)] (slice_val bufSlice) ∗
       updates_slice bufSlice (take (int.nat i - int.nat σ.(start)) σ.(upds))) ∗
-      is_slice_small addrs uint64T 1 addrs0 ∗
+      own_slice_small addrs uint64T 1 addrs0 ∗
       2 d↦∗ blocks0
     )%I
     (fun i => 2 d↦∗ blocks0)%I with "[] [Hbufsloc $Hposl $Hd2 Hdiskaddrs]").
@@ -336,7 +336,7 @@ Proof.
 
     wpc_frame.
     wp_apply (wp_SliceAppend_updates (uv:=(a, b_s)) with "[$Hupds Hb_s]").
-    { iApply slice.is_slice_to_small in "Hb_s". iFrame. }
+    { iApply slice.own_slice_to_small in "Hb_s". iFrame. }
     iIntros (bufSlice') "Hupds'".
     wp_store. iModIntro.
 
@@ -366,14 +366,14 @@ Proof.
     rewrite Hieq /=.
     congruence.
 
-  - iDestruct (is_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".
+  - iDestruct (own_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".
     iFrame.
     rewrite zero_slice_val.
     iSplit; first by iPureIntro; word.
     iExists _. iFrame.
     iExists nil; simpl.
     iSplitL.
-    { iApply (slice.is_slice_zero). }
+    { iApply (slice.own_slice_zero). }
     replace (int.nat (start σ) - int.nat (start σ))%nat with 0%nat by lia.
     rewrite take_0.
     rewrite big_sepL2_nil.

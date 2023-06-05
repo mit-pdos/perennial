@@ -266,7 +266,7 @@ Definition own_Server (s:loc) γ : iProp Σ :=
   "HleaseExpiration" ∷ s ↦[config.Server :: "leaseExpiration"] #leaseExpiration ∗
   "HwantLeaseToExpire" ∷ s ↦[config.Server :: "wantLeaseToExpire"] #wantLeaseToExpire ∗
   "Hconf" ∷ s ↦[config.Server :: "config"] (slice_val conf_sl) ∗
-  "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 conf ∗
+  "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 conf ∗
   "Hepoch_lease" ∷ own_Config_ghost γ leaseExpiration epoch ∗
   "Hconf_ghost" ∷ own_config γ conf ∗
   "Hreserved_ghost" ∷ own_reserved_epoch γ reservedEpoch ∗
@@ -325,7 +325,7 @@ Proof.
   wp_load.
   wp_apply (wp_WriteBytes with "[$Hrep_sl Henc_conf_sl]").
   {
-    iDestruct (is_slice_to_small with "Henc_conf_sl") as "$".
+    iDestruct (own_slice_to_small with "Henc_conf_sl") as "$".
   }
   iIntros (rep_sl) "[Hrep_sl Henc_conf_sl]".
   replace (int.nat 0%Z) with 0%nat by word.
@@ -355,7 +355,7 @@ Proof.
     iPureIntro. word.
   }
   wp_pures.
-  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+  iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
   iSpecialize ("Hupd" with "[% //] [% //]").
   iApply ("HΦ" with "Hupd Hrep Hrep_sl").
 Qed.
@@ -416,7 +416,7 @@ Qed.
   wp_load.
   wp_apply (wp_WriteBytes with "[$Hrep_sl Henc_conf_sl]").
   {
-    iDestruct (is_slice_to_small with "Henc_conf_sl") as "$".
+    iDestruct (own_slice_to_small with "Henc_conf_sl") as "$".
   }
   iIntros (rep_sl) "[Hrep_sl Henc_conf_sl]".
   replace (int.nat 0%Z) with 0%nat by word.
@@ -452,7 +452,7 @@ Qed.
     iFrame "∗#%".
   }
   wp_pures.
-  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+  iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
   iSpecialize ("Hupd" with "[% //] [% //]").
   iApply ("HΦ" with "Hupd Hrep Hrep_sl"). *)
 
@@ -501,7 +501,7 @@ Proof.
     iFrame "∗#%".
   }
   wp_pures.
-  iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+  iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
   iSpecialize ("Hupd" with "[% //]").
   iApply ("HΦ" with "Hupd Hrep Hrep_sl").
 Qed.
@@ -546,7 +546,7 @@ Proof.
   { (* case: higher epoch is reserved *)
     wp_apply (wp_WriteInt with "[]").
     {
-      iApply is_slice_zero.
+      iApply own_slice_zero.
     }
     iIntros (rep_sl) "Hrep_sl".
     wp_store.
@@ -572,7 +572,7 @@ Proof.
     iDestruct ("HΨ" with "[%] [% //]") as "HΨ".
     { instantiate (1:=1). done. }
     rewrite app_nil_l.
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     iDestruct ("HΦ" with "HΨ Hrep Hrep_sl") as "HΦ".
     done.
   }
@@ -612,7 +612,7 @@ Proof.
     iIntros (new_conf_sl) "Hnew_conf_sl".
     wp_storeField.
     wp_apply (wp_WriteInt with "[]").
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     iIntros (rep_sl) "Hrep_sl".
     wp_store.
     wp_loadField.
@@ -652,7 +652,7 @@ Proof.
     iModIntro; iSplitR; first done.
     wp_pures.
     iSpecialize ("HΨ" $!_ with "[//]").
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     iApply ("HΦ" with "HΨ [$] [$]").
   }
   { (* case: already in epoch *)
@@ -698,14 +698,14 @@ Proof.
       repeat iExists _; iFrame "∗#%".
     }
     wp_apply (wp_WriteInt with "[]").
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     iIntros (rep_sl) "Hrep_sl".
     wp_store.
     iRight.
     iModIntro; iSplitR; first done.
     wp_pures.
     iSpecialize ("HΨ" $!_ with "[//]").
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     iApply ("HΦ" with "HΨ [$] [$]").
   }
 Qed.
@@ -881,7 +881,7 @@ Proof.
     }
     replace (slice.nil) with (slice_val Slice.nil) by done.
     wp_apply (wp_WriteInt with "[]").
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     iIntros (?) "Hsl".
     wp_store.
     wp_load.
@@ -889,7 +889,7 @@ Proof.
     iIntros (?) "Hsl".
     wp_store.
     iRight in "HΨ".
-    iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+    iDestruct (own_slice_to_small with "Hsl") as "Hsl".
     iApply ("HΦ" with "[HΨ] [$] [$]").
     rewrite app_nil_l.
     iApply "HΨ".
@@ -936,7 +936,7 @@ Proof.
 
     replace (slice.nil) with (slice_val Slice.nil) by done.
     wp_apply wp_WriteInt.
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     iIntros (?) "?".
     wp_store.
     wp_load.
@@ -945,7 +945,7 @@ Proof.
     wp_store.
     iModIntro.
     rewrite app_nil_l.
-    iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+    iDestruct (own_slice_to_small with "Hsl") as "Hsl".
     iApply ("HΦ" with "[HΨ] [$] [$]").
     iLeft in "HΨ".
     iApply "HΨ"; done.
@@ -970,7 +970,7 @@ Proof.
 
     replace (slice.nil) with (slice_val Slice.nil) by done.
     wp_apply wp_WriteInt.
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     iIntros (?) "?".
     wp_store.
     wp_load.
@@ -979,7 +979,7 @@ Proof.
     wp_store.
     iModIntro.
     rewrite app_nil_l.
-    iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+    iDestruct (own_slice_to_small with "Hsl") as "Hsl".
     iApply ("HΦ" with "[HΨ] [$] [$]").
     iLeft in "HΨ".
     iApply "HΨ"; done.
@@ -992,7 +992,7 @@ Lemma wp_Clerk__ReserveEpochAndGetConfig (ck:loc) γ Φ :
       (|={⊤,∅}=> ∃ epoch conf, own_reserved_epoch γ epoch ∗ own_config γ conf ∗
        (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗
         own_reserved_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
-         (∀ conf_sl, is_slice_small conf_sl uint64T 1 conf -∗
+         (∀ conf_sl, own_slice_small conf_sl uint64T 1 conf -∗
            Φ (#(LitInt $ word.add epoch (U64 1)), slice_val conf_sl)%V)))
   ) -∗
   WP config.Clerk__ReserveEpochAndGetConfig #ck {{ Φ }}
@@ -1012,7 +1012,7 @@ Proof.
   wp_apply (wp_NewSlice).
   iIntros (dummy_args) "Hargs".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hargs") as "Hargs_sl".
+  iDestruct (own_slice_to_small with "Hargs") as "Hargs_sl".
   iNamed "Hhost".
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
   {
@@ -1078,7 +1078,7 @@ Qed.
 Lemma wp_Clerk__GetConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
   □ (£ 1 ={⊤,∅}=∗ ∃ conf, own_config γ conf ∗ (own_config γ conf ={∅,⊤}=∗
-      (∀ conf_sl, is_slice_small conf_sl uint64T 1 conf -∗ Φ (slice_val conf_sl)%V)
+      (∀ conf_sl, own_slice_small conf_sl uint64T 1 conf -∗ Φ (slice_val conf_sl)%V)
                                 )
   ) -∗
   WP config.Clerk__GetConfig #ck {{ Φ }}
@@ -1098,7 +1098,7 @@ Proof.
   wp_apply (wp_NewSlice).
   iIntros (dummy_args) "Hargs".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hargs") as "Hargs_sl".
+  iDestruct (own_slice_to_small with "Hargs") as "Hargs_sl".
   iNamed "Hhost".
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
   {
@@ -1148,7 +1148,7 @@ Qed.
 
 Lemma wp_Clerk__TryWriteConfig (ck:loc) new_conf new_conf_sl epoch γ Φ :
   is_Clerk ck γ -∗
-  is_slice_small new_conf_sl uint64T 1 new_conf -∗
+  own_slice_small new_conf_sl uint64T 1 new_conf -∗
   is_reserved_epoch_lb γ epoch -∗
   □ (£ 1 -∗ |={⊤,↑epochLeaseN}=> ∃ latest_epoch reserved_epoch,
     own_latest_epoch γ latest_epoch ∗
@@ -1158,15 +1158,15 @@ Lemma wp_Clerk__TryWriteConfig (ck:loc) new_conf new_conf_sl epoch γ Φ :
                                      own_reserved_epoch γ reserved_epoch -∗
                                      own_latest_epoch γ epoch
                                      ={↑epochLeaseN,⊤}=∗
-                                      is_slice_small new_conf_sl uint64T 1 new_conf -∗
+                                      own_slice_small new_conf_sl uint64T 1 new_conf -∗
                                             Φ #0)
       else
         (own_latest_epoch γ latest_epoch -∗
          own_reserved_epoch γ reserved_epoch
          ={↑epochLeaseN,⊤}=∗ (∀ (err:u64), ⌜err ≠ 0⌝ →
-                                is_slice_small new_conf_sl uint64T 1 new_conf -∗ Φ #err))
+                                own_slice_small new_conf_sl uint64T 1 new_conf -∗ Φ #err))
   ) -∗
-  (∀ (err:u64) , ⌜err ≠ 0⌝ → is_slice_small new_conf_sl uint64T 1 new_conf -∗ Φ #err) -∗
+  (∀ (err:u64) , ⌜err ≠ 0⌝ → own_slice_small new_conf_sl uint64T 1 new_conf -∗ Φ #err) -∗
   WP config.Clerk__TryWriteConfig #ck #epoch (slice_val new_conf_sl)
   {{ Φ }}
 .
@@ -1196,7 +1196,7 @@ Proof.
   wp_apply (Config.wp_Encode with "Hconf_sl").
   iIntros (enc_new_conf enc_new_conf_sl) "(%Henc_new_conf & Hconf & Henc_conf_sl)".
   wp_load.
-  iDestruct (is_slice_to_small with "Henc_conf_sl") as "Henc_conf_sl".
+  iDestruct (own_slice_to_small with "Henc_conf_sl") as "Henc_conf_sl".
   wp_apply (wp_WriteBytes with "[$Hargs_sl $Henc_conf_sl]").
   iIntros (args_sl2) "[Hargs_sl Henc_conf_sl]".
   replace (int.nat 0%Z) with 0%nat by word.
@@ -1206,7 +1206,7 @@ Proof.
 
   wp_load.
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hargs_sl") as "Hargs_sl".
+  iDestruct (own_slice_to_small with "Hargs_sl") as "Hargs_sl".
   iNamed "Hhost".
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
   {
@@ -1312,7 +1312,7 @@ Proof.
   wp_store.
   wp_load.
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hargs_sl") as "Hargs_sl".
+  iDestruct (own_slice_to_small with "Hargs_sl") as "Hargs_sl".
   iNamed "Hhost".
   wp_apply (wp_Client__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
   {
@@ -1373,7 +1373,7 @@ Definition makeConfigServer_pre γ conf : iProp Σ :=
 Lemma wp_MakeServer γ conf_sl conf :
   {{{
         makeConfigServer_pre γ conf ∗
-        is_slice_small conf_sl uint64T 1 conf
+        own_slice_small conf_sl uint64T 1 conf
   }}}
     config.MakeServer (slice_val conf_sl)
   {{{

@@ -27,14 +27,14 @@ Lemma wp_Clerk__ApplyRo γ γsrv ck op_sl q op (op_bytes:list u8) (Φ:val → iP
 has_op_encoding op_bytes op →
 is_readonly_op op →
 is_Clerk ck γ γsrv -∗
-is_slice_small op_sl byteT q op_bytes -∗
+own_slice_small op_sl byteT q op_bytes -∗
 □((|={⊤∖↑pbN,∅}=> ∃ ops, own_int_log γ ops ∗
   (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
-     □(∀ reply_sl, is_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
-            is_slice_small op_sl byteT q op_bytes -∗
+     □(∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
+            own_slice_small op_sl byteT q op_bytes -∗
                 Φ (#(U64 0), slice_val reply_sl)%V)))
 ∗
-(∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ is_slice_small op_sl byteT q op_bytes -∗
+(∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ own_slice_small op_sl byteT q op_bytes -∗
                                      Φ (#err, (slice_val unused_sl))%V )) -∗
 WP Clerk__ApplyRo #ck (slice_val op_sl) {{ Φ }}.
 Proof.
@@ -407,7 +407,7 @@ Qed.
 
 Lemma wp_Server__ApplyRo (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
-  readonly (is_slice_small op_sl byteT 1 enc_op) -∗
+  readonly (own_slice_small op_sl byteT 1 enc_op) -∗
   (∀ reply, Ψ reply -∗ ∀ reply_ptr, ApplyReply.own_q reply_ptr reply -∗ Φ #reply_ptr) -∗
   ApplyRo_core_spec γ op enc_op Ψ -∗
   WP (pb.Server__ApplyRoWaitForCommit #s (slice_val op_sl)) {{ Φ }}
@@ -457,7 +457,7 @@ Proof.
     iApply ("HΦ" $! (ApplyReply.mkC _ _)).
     2:{
       iExists _, 1%Qp; iFrame.
-      by iApply is_slice_small_nil.
+      by iApply own_slice_small_nil.
     }
     by iApply "Hfail_Φ".
   }

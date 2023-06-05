@@ -49,7 +49,7 @@ Section goose.
     iIntros (s) "Hslice". iNamed 1.
     wpc_pures.
     wpc_frame_seq.
-    iDestruct (is_slice_small_acc with "Hslice") as "(H1&H2)".
+    iDestruct (own_slice_small_acc with "Hslice") as "(H1&H2)".
     wp_apply (wp_SliceSet with "[$H1]").
     { eauto. }
     iIntros "Hslice"; iNamed 1.
@@ -80,7 +80,7 @@ Section goose.
 
     wpc_frame.
     wp_bind (SliceGet _ _ _).
-    iDestruct (is_slice_small_acc with "Hslice") as "(H1&H2')".
+    iDestruct (own_slice_small_acc with "Hslice") as "(H1&H2')".
     iApply (wp_SliceGet with "[$H1]").
     { iPureIntro. rewrite //=. }
     iNext. iIntros "(H1&%Hval)".

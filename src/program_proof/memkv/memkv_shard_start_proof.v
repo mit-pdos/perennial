@@ -66,7 +66,7 @@ Proof.
     wp_pures.
     wp_apply (wp_EncodePutReply with "Hrep").
     iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
     iApply "HΦ". iFrame.
     iExists _; by iFrame.
@@ -93,8 +93,8 @@ Proof.
     wp_apply (wp_DecodeGetRequest with "[$Hreq_sl]").
     { done. }
     iIntros (args_ptr) "Hargs".
-    iDestruct (typed_slice.is_slice_zero byteT 1%Qp) as "Hzero_sl".
-    iDestruct (typed_slice.is_slice_small_acc with "Hzero_sl") as "{Hzero_sl} [Hzero_sl _]".
+    iDestruct (typed_slice.own_slice_zero byteT 1%Qp) as "Hzero_sl".
+    iDestruct (typed_slice.own_slice_small_acc with "Hzero_sl") as "{Hzero_sl} [Hzero_sl _]".
     iMod (readonly_alloc_1 with "Hzero_sl") as "{Hzero_sl} Hzero_sl".
     wp_apply (wp_GetRPC with "His_memkv [$Hargs Hrep $Hpre Hzero_sl]").
     {
@@ -111,7 +111,7 @@ Proof.
     wp_pures.
     wp_apply (wp_EncodeGetReply with "Hrep").
     iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
     iApply "HΦ". iFrame.
     iExists _; by iFrame.
@@ -150,7 +150,7 @@ Proof.
     wp_pures.
     wp_apply (wp_EncodeConditionalPutReply with "Hrep").
     iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
     iApply "HΦ". iFrame. iSimpl.
     iExists _; by iFrame.
@@ -183,7 +183,7 @@ Proof.
     wp_pures.
     wp_apply (typed_slice.wp_NewSlice (V:=u8)).
     iIntros (reply_sl) "Hrep_sl".
-    iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
     iApply "HΦ".
     iFrame. done.
@@ -227,7 +227,7 @@ Proof.
       wp_pures.
       wp_apply (typed_slice.wp_NewSlice (V:=u8)).
       iIntros (rep_sl) "Hrep_sl".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       wp_store.
       iApply "HΦ".
       by iFrame.
@@ -265,7 +265,7 @@ Proof.
       iIntros (cid) "Hcid".
       wp_apply (wp_EncodeUint64).
       iIntros (rep_sl repData) "[Hrep_sl %HrepEnc]".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
       iSimpl in "Hpre". iDestruct "Hpre" as (_) "[_ Hpost]".
       wp_store.

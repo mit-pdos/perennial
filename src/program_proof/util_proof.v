@@ -59,17 +59,17 @@ Proof.
 Qed.
 
 Theorem wp_CloneByteSlice stk E s q vs :
-  {{{ slice.is_slice_small s u8T q vs }}}
+  {{{ slice.own_slice_small s u8T q vs }}}
     CloneByteSlice (slice_val s) @ stk; E
-  {{{ (s':Slice.t), RET (slice_val s'); slice.is_slice_small s u8T q vs ∗ slice.is_slice s' u8T 1 vs }}}.
+  {{{ (s':Slice.t), RET (slice_val s'); slice.own_slice_small s u8T q vs ∗ slice.own_slice s' u8T 1 vs }}}.
 Proof.
   iIntros (Φ) "Hs HΦ".
   wp_call.
   wp_apply wp_slice_len.
-  iDestruct (slice.is_slice_small_sz with "Hs") as %Hlen.
+  iDestruct (slice.own_slice_small_sz with "Hs") as %Hlen.
   wp_apply wp_new_slice; first by auto.
   iIntros (s') "Hs'".
-  iDestruct (slice.is_slice_small_acc with "Hs'") as "[Hs'_small Hs']".
+  iDestruct (slice.own_slice_small_acc with "Hs'") as "[Hs'_small Hs']".
   wp_pures.
   wp_apply (slice.wp_SliceCopy_full with "[$Hs $Hs'_small]").
   { iPureIntro.

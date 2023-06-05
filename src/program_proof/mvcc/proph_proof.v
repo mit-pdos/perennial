@@ -133,7 +133,7 @@ Proof.
   wp_apply wp_alloc_untyped. { done. }
   iIntros (l) "Hl". wp_apply (wp_store with "Hl"). iIntros "Hl". wp_pures.
   iNamed "Hwrbuf". wp_loadField. wp_pures.
-  iDestruct (is_slice_split with "HentsS") as "[HentsS HentsC]".
+  iDestruct (own_slice_split with "HentsS") as "[HentsS HentsC]".
   wp_apply (wp_forSlice (λ i, ∃ m' v,
     ⌜decode_dbmap v = m' ∧ m' = list_to_map (wrbuf_prelude.wrent_to_key_dbval <$> (take (int.nat i) ents))⌝ ∗ l ↦ v
   )%I with "[] [Hl $HentsS]").
@@ -161,7 +161,7 @@ Proof.
       rewrite !fmap_take. exact HNoDup. }
   iIntros "(I & HentsS)".
   iDestruct "I" as (m' v) "([%Hdecode %Hm'] & Hl)".
-  iDestruct (is_slice_small_sz with "HentsS") as %HentsLen.
+  iDestruct (own_slice_small_sz with "HentsS") as %HentsLen.
   rewrite -HentsLen in Hm'. clear HentsLen.
   rewrite take_ge in Hm'.
   2:{ rewrite fmap_length. done. }

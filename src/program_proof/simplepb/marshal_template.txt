@@ -7,7 +7,7 @@ Definition own args_ptr args : iProp Σ :=
   ∃ state_sl,
   "Hargs_epoch" ∷ args_ptr ↦[pb.ApplyArgs :: "epoch"] #args.(epoch) ∗
   "Hargs_state" ∷ args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val state_sl) ∗
-  "Hargs_state_sl" ∷ is_slice_small state_sl byteT 1 args.(state)
+  "Hargs_state_sl" ∷ own_slice_small state_sl byteT 1 args.(state)
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -18,14 +18,14 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Admitted.
 
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}
     pb.DecodeSetStateArgs (slice_val enc_sl)
   {{{

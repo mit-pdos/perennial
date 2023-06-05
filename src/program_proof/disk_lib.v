@@ -8,17 +8,17 @@ Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
 Definition is_block (s:Slice.t) (q: Qp) (b:Block) :=
-  is_slice_small s byteT q (Block_to_vals b).
+  own_slice_small s byteT q (Block_to_vals b).
 
 Definition is_block_full (s:Slice.t) (b:Block) :=
-  is_slice s byteT 1 (Block_to_vals b).
+  own_slice s byteT 1 (Block_to_vals b).
 
 Global Instance is_block_timeless s q b :
   Timeless (is_block s q b) := _.
 
 Global Instance is_block_fractional s b :
   fractional.Fractional (λ q, is_block s q b).
-Proof. apply is_slice_small_fractional. Qed.
+Proof. apply own_slice_small_fractional. Qed.
 
 Theorem is_block_not_nil s q b :
   is_block s q b -∗
@@ -26,7 +26,7 @@ Theorem is_block_not_nil s q b :
 Proof.
   iIntros "Hb".
   rewrite /is_block.
-  iDestruct (is_slice_small_not_null with "Hb") as "%Hnull"; eauto.
+  iDestruct (own_slice_small_not_null with "Hb") as "%Hnull"; eauto.
   { rewrite /Block_to_vals fmap_length.
     rewrite vec_to_list_length.
     rewrite /block_bytes. lia. }
@@ -115,9 +115,9 @@ Proof.
 Qed.
 
 Lemma slice_to_block_array s q b :
-  is_slice_small s byteT q (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) q b.
+  own_slice_small s byteT q (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) q b.
 Proof.
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   iIntros "[Ha _]".
   by iApply array_to_block_array.
 Qed.
@@ -126,7 +126,7 @@ Lemma block_array_to_slice_raw l q b :
   mapsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = int.nat 4096⌝.
 Proof.
   iIntros "Hm".
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   iSplitL.
   { iApply array_to_block_array. done. }
   iPureIntro.
@@ -150,17 +150,17 @@ Local Ltac solve_atomic :=
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
 
 Theorem wp_Write_atomic (a: u64) s q b :
-  ⊢ {{{ is_slice_small s byteT q (Block_to_vals b) }}}
+  ⊢ {{{ own_slice_small s byteT q (Block_to_vals b) }}}
   <<< ∀∀ b0, int.Z a d↦ b0 >>>
     Write #a (slice_val s) @ ∅
   <<< int.Z a d↦ b >>>
-  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) }}}.
+  {{{ RET #(); own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
   wp_call.
   wp_call.
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  iDestruct (is_slice_small_wf with "Hs") as %Hwf.
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_wf with "Hs") as %Hwf.
   iApply (wp_ncatomic _ _ ∅).
   { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
     inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
@@ -175,17 +175,17 @@ Proof.
   iMod ("Hupd" with "Hda") as "HQ".
   iModIntro.
   iApply "HQ".
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   iFrame.
   iSplitL; auto.
   by iApply array_to_block_array.
 Qed.
 
 Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
-  {{{ is_slice_small s byteT q (Block_to_vals b) ∗
+  {{{ own_slice_small s byteT q (Block_to_vals b) ∗
       (|NC={⊤,E'}=> ∃ b0, int.Z a d↦ b0 ∗ (int.Z a d↦ b -∗ |NC={E',⊤}=> Q)) }}}
     Write #a (slice_val s)
-  {{{ RET #(); is_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
+  {{{ RET #(); own_slice_small s byteT q (Block_to_vals b) ∗ Q }}}.
 Proof.
   iIntros (Φ) "[Hs Hupd] HΦ". iApply (wp_Write_atomic with "Hs").
   rewrite difference_empty_L. iNext.
@@ -197,9 +197,9 @@ Proof.
 Qed.
 
 Theorem wp_Write (a: u64) s q b :
-  {{{ ∃ b0, int.Z a d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
+  {{{ ∃ b0, int.Z a d↦ b0 ∗ own_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s)
-  {{{ RET #(); int.Z a d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
+  {{{ RET #(); int.Z a d↦ b ∗ own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
@@ -211,9 +211,9 @@ Proof.
 Qed.
 
 Theorem wp_Write' (z: Z) (a: u64) s q b :
-  {{{ ⌜int.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ is_slice_small s byteT q (Block_to_vals b) }}}
+  {{{ ⌜int.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ own_slice_small s byteT q (Block_to_vals b) }}}
     Write #a (slice_val s)
-  {{{ RET #(); z d↦ b ∗ is_slice_small s byteT q (Block_to_vals b) }}}.
+  {{{ RET #(); z d↦ b ∗ own_slice_small s byteT q (Block_to_vals b) }}}.
 Proof.
   iIntros (Φ) "[<- >Hpre] HΦ".
   iApply (wp_Write with "[$Hpre]").
@@ -252,8 +252,8 @@ Lemma wp_ReadTo_atomic (a: u64) b0 s q :
 Proof.
   iIntros "!#" (Φ) "Hs Hupd".
   wp_call.
-  iDestruct (is_slice_sz with "Hs") as %Hsz.
-  iDestruct (is_slice_wf with "Hs") as %Hwf.
+  iDestruct (own_slice_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_wf with "Hs") as %Hwf.
   wp_bind (ExternalOp _ _).
   iApply (wp_ncatomic _ _ ∅).
   { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
@@ -267,7 +267,7 @@ Proof.
   wp_pures.
   wp_apply wp_slice_ptr.
   iDestruct "Hs" as "[Hs Hcap]".
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   iDestruct "Hs" as "[Hs _]".
   wp_apply (wp_MemCpy_rec with "[Hs Hl]").
   { iFrame.
@@ -283,7 +283,7 @@ Proof.
     rewrite /block_bytes //. }
   iIntros "[Hs Hl]".
   iApply "HQ".
-  rewrite /is_block_full /is_slice /is_slice_small.
+  rewrite /is_block_full /own_slice /own_slice_small.
   iFrame.
   iPureIntro.
   move: Hsz; rewrite !length_Block_to_vals //.
@@ -348,7 +348,7 @@ Lemma wpc_Read stk E1 (a: u64) q b :
     Read #a @ stk; E1
   {{{ s, RET slice_val s;
       int.Z a d↦{q} b ∗
-      is_slice s byteT 1%Qp (Block_to_vals b) }}}
+      own_slice s byteT 1%Qp (Block_to_vals b) }}}
   {{{ int.Z a d↦{q} b }}}.
 Proof.
   iIntros (Φ Φc) "Hda HΦ".
@@ -389,8 +389,8 @@ Proof.
   rewrite /Write /slice.ptr.
   wpc_pures.
   { iLeft in "Hfupd". iFrame. }
-  iDestruct (is_slice_small_sz with "Hs") as %Hsz.
-  iDestruct (is_slice_small_wf with "Hs") as %Hwf.
+  iDestruct (own_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_small_wf with "Hs") as %Hwf.
   assert (Atomic StronglyAtomic (ExternalOp WriteOp (#a, #s.(Slice.ptr))%V)).
   {
     solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
@@ -413,7 +413,7 @@ Proof.
     destruct s; simpl in Hsz.
     replace sz with (U64 4096).
     + iDestruct (block_array_to_slice_raw with "Hmapsto") as "[? %]".
-      rewrite /is_block /is_slice_small. iFrame.
+      rewrite /is_block /own_slice_small. iFrame.
       iPureIntro. simpl. split; first done. simpl in Hwf. word.
     + rewrite length_Block_to_vals in Hsz.
       change block_bytes with (Z.to_nat 4096) in Hsz.
@@ -495,11 +495,11 @@ Qed.
 
 Theorem slice_to_block s q bs :
   s.(Slice.sz) = 4096 ->
-  is_slice_small s byteT q (b2val <$> bs) -∗
+  own_slice_small s byteT q (b2val <$> bs) -∗
   mapsto_block s.(Slice.ptr) q (list_to_block bs).
 Proof.
   iIntros (Hsz) "Hs".
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   iDestruct "Hs" as "[Hl %]".
   rewrite fmap_length in H.
   iApply (array_to_block with "Hl").

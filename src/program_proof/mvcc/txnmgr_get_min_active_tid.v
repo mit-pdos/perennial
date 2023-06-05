@@ -44,7 +44,7 @@ Proof.
   iIntros "[Hlocked HsiteOwn]".
   replace (U64 (Z.of_nat _)) with sid by word. 
   iNamed "HsiteOwn".
-  iDestruct (typed_slice.is_slice_sz with "HactiveL") as "%HtidsactiveSz".
+  iDestruct (typed_slice.own_slice_sz with "HactiveL") as "%HtidsactiveSz".
   wp_pures.
   
   (***********************************************************)
@@ -151,7 +151,7 @@ Proof.
   (* }                                                       *)
   (***********************************************************)
   set u64_to_nat := (λ x : u64, int.nat x).
-  iDestruct (is_slice_small_acc with "HactiveL") as "[HactiveS HactiveC]".
+  iDestruct (own_slice_small_acc with "HactiveL") as "[HactiveS HactiveC]".
   wp_loadField.
   set P := λ (i : u64), (∃ (tidloop : u64), let tids := tidnew :: (take (int.nat i) tidsactiveL) in
     "HtidminRef" ∷ tidminRef ↦[uint64T] #tidloop ∗

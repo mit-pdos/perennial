@@ -528,7 +528,7 @@ Section proof.
     from ≤ length data →
     length data < 2^64 →
     {{{
-      "Hslice" ∷ is_slice data_s t q data
+      "Hslice" ∷ own_slice data_s t q data
     }}}
       SliceToListFrom t (slice_val data_s) #from
     {{{ RET (val_of_list (drop from data));
@@ -540,7 +540,7 @@ Section proof.
     iNamed "Hpre".
     wp_call.
     wp_apply wp_slice_len.
-    iDestruct (is_slice_sz with "Hslice") as "%Hsz".
+    iDestruct (own_slice_sz with "Hslice") as "%Hsz".
     wp_let.
     wp_if_destruct.
     2: {
@@ -552,7 +552,7 @@ Section proof.
     assert (from < length data)%nat as Hbound' by (revert Heqb; word).
     apply list_lookup_lt in Hbound' as Hacc.
     destruct Hacc as [x Hacc].
-    iDestruct (is_slice_small_read with "Hslice") as "[Hslice Hrestore]".
+    iDestruct (own_slice_small_read with "Hslice") as "[Hslice Hrestore]".
     wp_apply (wp_SliceGet with "[$Hslice]").
     {
       iPureIntro.
@@ -577,7 +577,7 @@ Section proof.
   Lemma wp_SliceToList data_s t q data :
     length data < 2^64 →
     {{{
-      "Hslice" ∷ is_slice data_s t q data
+      "Hslice" ∷ own_slice data_s t q data
     }}}
       SliceToList t (slice_val data_s)
     {{{ RET (val_of_list data);
@@ -598,11 +598,11 @@ Section proof.
     length data1 + length data2 < 2^64 →
     Forall (λ v, val_ty v t) data2 →
     {{{
-      "Hslice" ∷ is_slice data1_s t 1 data1
+      "Hslice" ∷ own_slice data1_s t 1 data1
     }}}
       ListToSliceApp t (val_of_list data2) (slice_val data1_s)
     {{{ data_s, RET (slice_val data_s);
-      "Hslice" ∷ is_slice data_s t 1 (data1 ++ data2)
+      "Hslice" ∷ own_slice data_s t 1 (data1 ++ data2)
     }}}.
   Proof.
     iLöb as "IH" forall (data1_s data1 data2).
@@ -647,7 +647,7 @@ Section proof.
     }}}
       ListToSlice t (val_of_list data)
     {{{ data_s, RET (slice_val data_s);
-      "Hslice" ∷ is_slice data_s t 1 data
+      "Hslice" ∷ own_slice data_s t 1 data
     }}}.
   Proof.
     iIntros (Ht Hwf Hty Φ) "_ HΦ".
@@ -1305,8 +1305,8 @@ Section proof.
     iNamed.
     wp_apply wp_slice_len.
     wp_pures.
-    iDestruct (is_slice_to_small with "Hslice") as "Hslice".
-    iDestruct (is_slice_small_sz with "Hslice") as "%Hsz".
+    iDestruct (own_slice_to_small with "Hslice") as "Hslice".
+    iDestruct (own_slice_small_sz with "Hslice") as "%Hsz".
     rewrite list_untype_length in Hsz.
 
     wp_apply (wp_Txn__OverWrite_raw with "[$Htwophase $Hslice]");

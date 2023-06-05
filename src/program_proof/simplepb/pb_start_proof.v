@@ -274,7 +274,7 @@ Proof.
       wp_pures.
       iApply ("HΦ" with "[$] [$]").
       instantiate (1:=1%Qp).
-      iApply is_slice_small_nil.
+      iApply own_slice_small_nil.
       done.
     }
     iApply (big_sepM_insert_2 with "").
@@ -291,7 +291,7 @@ Proof.
       iIntros (?) "Hreply".
       wp_apply (ApplyReply.wp_Encode with "[$]").
       iIntros (??) "(%Henc_reply & Henc_rep_sl & Hreply)".
-      iDestruct (is_slice_to_small with "Henc_rep_sl") as "Henc_rep_sl".
+      iDestruct (own_slice_to_small with "Henc_rep_sl") as "Henc_rep_sl".
       wp_store.
       iApply ("HΦ" with "[Hspec] Hrep Henc_rep_sl").
       { iApply "Hspec". done. }
@@ -310,7 +310,7 @@ Proof.
       iIntros (?) "Hreply".
       wp_apply (ApplyReply.wp_Encode with "[$]").
       iIntros (??) "(%Henc_reply & Henc_rep_sl & Hreply)".
-      iDestruct (is_slice_to_small with "Henc_rep_sl") as "Henc_rep_sl".
+      iDestruct (own_slice_to_small with "Henc_rep_sl") as "Henc_rep_sl".
       wp_store.
       iApply ("HΦ" with "[Hspec] Hrep Henc_rep_sl").
       { iApply "Hspec". done. }
@@ -338,7 +338,7 @@ Proof.
       simpl.
       replace (int.nat 0%Z) with (0) by word.
       simpl.
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
       { iApply "HΨ". done. }
     }
@@ -360,7 +360,7 @@ Proof.
       iIntros (??) "(%Henc_rep & Hrep_sl)".
       wp_store.
       simpl.
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
       { iApply "HΨ". done. }
     }
@@ -388,7 +388,7 @@ Proof.
       simpl.
       replace (int.nat 0%Z) with (0) by word.
       simpl.
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
       { iApply "HΨ". done. }
     }
@@ -416,7 +416,7 @@ Proof.
       simpl.
       replace (int.nat 0%Z) with (0) by word.
       simpl.
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iApply ("HΦ" with "[HΨ] Hrep Hrep_sl").
       { iApply "HΨ". done. }
     }

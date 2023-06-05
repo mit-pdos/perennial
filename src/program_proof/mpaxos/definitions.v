@@ -179,18 +179,18 @@ Lemma wp_ReconnectingClient__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) re
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
   is_ReconnectingClient cl_ptr host -∗
   handler_spec γsmap host rpcid Spec -∗
-  is_slice_small req byteT 1 reqData -∗
+  own_slice_small req byteT 1 reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData (λ reply,
-       is_slice_small req byteT 1 reqData -∗
+       own_slice_small req byteT 1 reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
-          is_slice_small rep_sl byteT 1 reply -∗
+          own_slice_small rep_sl byteT 1 reply -∗
           Φ #0)
   ) -∗
   (
    ∀ (err:u64), ⌜err ≠ 0⌝ →
-                is_slice_small req byteT 1 reqData -∗
+                own_slice_small req byteT 1 reqData -∗
                 rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
   ) -∗
   WP ReconnectingClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
@@ -214,15 +214,15 @@ Definition is_applyFn (applyFn:val) : iProp Σ :=
   ∀ op_sl state_sl (state:list u8) (op_bytes:list u8) op,
   {{{
         ⌜has_op_encoding op_bytes op⌝ ∗
-        readonly (is_slice_small op_sl byteT 1 op_bytes) ∗
-        readonly (is_slice_small state_sl byteT 1 state)
+        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
+        readonly (own_slice_small state_sl byteT 1 state)
   }}}
     applyFn (slice_val state_sl) (slice_val op_sl)
   {{{
         newstate_sl reply_sl,
         RET (slice_val newstate_sl, slice_val reply_sl);
-        readonly (is_slice_small newstate_sl byteT 1 (next_state state op)) ∗
-        is_slice_small reply_sl byteT 1 (compute_reply state op)
+        readonly (own_slice_small newstate_sl byteT 1 (next_state state op)) ∗
+        own_slice_small reply_sl byteT 1 (compute_reply state op)
   }}}
 .
 
@@ -241,13 +241,13 @@ Definition own_Server (s:loc) γ γsrv : iProp Σ :=
   "HisLeader" ∷ s ↦[mpaxos.Server :: "isLeader"] #isLeader ∗
   "Hclerks" ∷ s ↦[mpaxos.Server :: "clerks"] (slice_val clerks_sl) ∗
   "Hstate" ∷ s ↦[mpaxos.Server :: "state"] (slice_val state_sl) ∗
-  "#Hstate_sl" ∷ readonly (is_slice_small state_sl byteT 1 state) ∗
+  "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT 1 state) ∗
   "HapplyFn" ∷ s ↦[mpaxos.Server :: "applyFn"] applyFn ∗
   "%HnextIndex_nooverflow" ∷ ⌜length st.(mp_log) = int.nat (length st.(mp_log))⌝ ∗
 
   (* clerks *)
   "%Hconf_clerk_len" ∷ ⌜length clerks = length (conf)⌝ ∗
-  "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
+  "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
   "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; conf, is_singleClerk ck γ γsrv') ∗
 
   (* applyFn callback spec *)

@@ -1306,7 +1306,7 @@ Theorem wp_Txn__readBufNoAcquire l γ γ' dinit ex_mapsto objs_dom mt_changed a 
     data_s data, RET (slice_val data_s);
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_mapsto objs_dom mt_changed ∗
-    "Hdata_s" ∷ is_slice data_s byteT 1 data ∗
+    "Hdata_s" ∷ own_slice data_s byteT 1 data ∗
     "%Hdata" ∷ ⌜data_has_obj data a obj⌝
   }}}.
 Proof.
@@ -1364,7 +1364,7 @@ Theorem wp_Txn__ReadBuf_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex_
     data_s data obj mt_changed', RET (slice_val data_s);
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_mapsto objs_dom mt_changed' ∗
-    "Hdata_s" ∷ is_slice data_s byteT 1 data ∗
+    "Hdata_s" ∷ own_slice data_s byteT 1 data ∗
     "%Hdata" ∷ ⌜data_has_obj data a obj⌝ ∗
     "%Hobj" ∷ ⌜modified <$> (mt_changed' !! a) = Some obj⌝ ∗
     "%Hmt_changed'" ∷ ⌜
@@ -1481,7 +1481,7 @@ Proof.
   1: rewrite Hkind //.
   iIntros (????) "Hpost".
   iNamed "Hpost".
-  iDestruct (is_slice_small_read with "Hdata_s")
+  iDestruct (own_slice_small_read with "Hdata_s")
     as "[Hslice Hslice_restore]".
   iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
   apply fmap_Some_1 in Hobj as [vobj [Hacc_vobj ->]].
@@ -1534,7 +1534,7 @@ Theorem wp_Txn__OverWrite_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (e
   {{{
     "Htwophase" ∷ is_twophase_raw
       l γ γ' dinit ex_mapsto objs_dom mt_changed ∗
-    "Hdata_s" ∷ is_slice_small data_s byteT 1 data
+    "Hdata_s" ∷ own_slice_small data_s byteT 1 data
   }}}
     Txn__OverWrite #l (addr2val a) #sz (slice_val data_s)
   {{{
@@ -1760,7 +1760,7 @@ Proof.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (sl) "Hslice".
   rewrite unsigned_U64 /word.wrap Z.mod_small //=.
-  iDestruct (is_slice_small_read with "Hslice")
+  iDestruct (own_slice_small_read with "Hslice")
     as "[Hslice Hslice_restore]".
   wp_apply wp_bitToByte.
   {

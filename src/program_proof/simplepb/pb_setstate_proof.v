@@ -55,7 +55,7 @@ Proof.
   wp_apply (SetStateArgs.wp_Encode with "[$Hargs]").
   iIntros (enc_args enc_args_sl) "(%Henc_args & Henc_args_sl & Hargs)".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
+  iDestruct (own_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
   wp_apply (wp_frame_wand with "HΦ").
   rewrite is_pb_host_unfold.
   iNamed "Hsrv".

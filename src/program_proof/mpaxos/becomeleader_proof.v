@@ -77,7 +77,7 @@ Proof.
   wp_pures.
 
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
-  iDestruct (is_slice_small_sz with "Hclerks_sl2") as "%Hclerks_sz".
+  iDestruct (own_slice_small_sz with "Hclerks_sl2") as "%Hclerks_sz".
   iClear "Hclerks_sl2".
   clear q.
 
@@ -93,7 +93,7 @@ Proof.
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "%HlenEq" ∷ ⌜length reply_ptrs = length conf⌝ ∗
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
-                    "Hreplies_sl" ∷ is_slice_small replies_sl ptrT 1 reply_ptrs ∗
+                    "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
                     "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
                     ⌜reply_ptr = null⌝ ∨ (∃ reply, readonly (enterNewEpochReply.own reply_ptr reply 1) ∗
                                               (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
@@ -106,7 +106,7 @@ Proof.
   {
     iNext.
     iExists _, _.
-    iDestruct (is_slice_to_small with "Hreplies_sl") as "$".
+    iDestruct (own_slice_to_small with "Hreplies_sl") as "$".
     iFrame "∗".
     iDestruct (big_sepL2_length with "Hclerks_rpc") as "%Hlen".
     iSplitR.
@@ -1126,7 +1126,7 @@ Proof.
       iApply fupd_wp.
       iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
       { set_solver. }
-      iDestruct (is_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
+      iDestruct (own_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
       iMod (become_leader with "[] Hacc_lbs Hlatest_prop_lb Hlatest_prop_facts Hvotes") as "HghostLeader".
       {
         intros ??.

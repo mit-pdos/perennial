@@ -554,7 +554,7 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
 
   iMod (own_alloc (DfracOwn 1)) as (γreq_op_gn) "HreqTok".
   { done. }
@@ -1246,7 +1246,7 @@ Proof.
 
   iNamed "Hck".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_small".
   wp_apply (wp_erpc_NewRequest (Put_spec_erpc γ)
       (λ l, ∃ err, ⌜has_PutReply_encoding l err⌝ ∗
       if (decide (err = 0)) then
@@ -1301,7 +1301,7 @@ Proof.
   iIntros (rep_ptr) "Hrep".
   wp_pures.
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_small".
   iDestruct "Hhost" as "(Hhost1 & #Hhost_erpc & Hhost2)".
   wp_apply (wp_Client__Call_uRPCSpec with "Hhost_erpc [$Hrep $Hreq_small $Hcl_is]").
   { done. }
@@ -1458,7 +1458,7 @@ Proof.
 
       wp_apply (wp_Enc__Finish with "Henc").
       iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
       iApply "HΦ".
       iFrame.
@@ -1513,7 +1513,7 @@ Proof.
       wp_apply (wp_Enc__Finish with "Henc").
       iClear "Hrep_sl".
       iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
       iModIntro.
       iApply "HΦ".
@@ -1572,7 +1572,7 @@ Proof.
       iIntros "Henc".
       wp_apply (wp_Enc__Finish with "Henc").
       iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
       iApply "HΦ".
       iModIntro.
@@ -1618,7 +1618,7 @@ Proof.
   wp_pures.
   wp_apply (wp_NewSlice).
   iIntros (dummy_sl) "Hdummy_sl".
-  iDestruct (is_slice_to_small with "Hdummy_sl") as "Hargs_small".
+  iDestruct (own_slice_to_small with "Hdummy_sl") as "Hargs_small".
   wp_loadField.
 
   wp_apply (wp_Client__Call _ _ _ _ _ _ _ _ _ _ (λ l, (∃ cid, erpc_make_client_pre γ.(erpc_gn) cid ∗ ⌜has_encoding l [EncUInt64 cid]⌝))%I with "[] [$His_cl $Hargs_small $Hrep]").

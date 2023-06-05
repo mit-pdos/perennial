@@ -233,10 +233,10 @@ Proof.
 Qed.
 
 Theorem wp_SetAdd mref used addr_s q (addrs: list u64) E :
-  {{{ is_addrset mref used ∗ is_slice_small addr_s uint64T q addrs }}}
+  {{{ is_addrset mref used ∗ own_slice_small addr_s uint64T q addrs }}}
     SetAdd #mref (slice_val addr_s) @ E
   {{{ RET #(); is_addrset mref (used ∪ list_to_set addrs) ∗
-               is_slice_small addr_s uint64T q addrs }}}.
+               own_slice_small addr_s uint64T q addrs }}}.
 Proof.
   iIntros (Φ) "(Hused&Haddrs) HΦ".
   rewrite /SetAdd; wp_pures.

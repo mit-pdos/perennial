@@ -139,7 +139,7 @@ Proof.
   (* XXX: copy paste from Apply proof *)
   iMod (readonly_load with "Hclerkss_sl") as (?) "Hclerkss_sl2".
 
-  iDestruct (is_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
+  iDestruct (own_slice_small_sz with "Hclerkss_sl2") as %Hclerkss_sz.
   wp_apply (wp_RandomUint64).
   iIntros (randint) "_".
   wp_apply wp_slice_len.
@@ -185,7 +185,7 @@ Proof.
   iNamed "Hclerks_rpc".
 
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
-  iDestruct (is_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
+  iDestruct (own_slice_small_sz with "Hclerks_sl2") as %Hclerks_sz.
 
   wp_apply (wp_forSlice' _ (λ j, (own_WaitGroup pbN wg γwg j _))%I with "[] [$Hwg $Hclerks_sl2]").
   2: {

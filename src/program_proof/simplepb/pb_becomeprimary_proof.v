@@ -51,7 +51,7 @@ Proof.
   wp_apply (BecomePrimaryArgs.wp_Encode with "[$Hargs]").
   iIntros (enc_args enc_args_sl) "(%Henc_args & Henc_args_sl & Hargs)".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
+  iDestruct (own_slice_to_small with "Henc_args_sl") as "Henc_args_sl".
   wp_apply (wp_frame_wand with "HΦ").
   rewrite is_pb_host_unfold.
   iNamed "Hsrv".
@@ -196,7 +196,7 @@ Proof.
     wp_storeField.
     wp_apply (wp_NewSlice).
     iIntros (new_clerkss_sl) "Hnew_clerkss_sl".
-    iDestruct (is_slice_to_small with "Hnew_clerkss_sl") as "Hnew_clerkss_sl".
+    iDestruct (own_slice_to_small with "Hnew_clerkss_sl") as "Hnew_clerkss_sl".
 
     wp_storeField.
     wp_apply (wp_ref_to).
@@ -210,10 +210,10 @@ Proof.
             "Hj" ∷ j_ptr ↦[uint64T] #j ∗
             "%HcompleteLens" ∷ ⌜length clerkssComplete = int.nat j⌝ ∗
             "%Hlens" ∷ ⌜length (clerkssComplete ++ clerkssLeft) = numClerks⌝ ∗
-            "Hclerkss_sl" ∷ is_slice_small new_clerkss_sl (slice.T ptrT) 1 (clerkssComplete ++ clerkssLeft) ∗
+            "Hclerkss_sl" ∷ own_slice_small new_clerkss_sl (slice.T ptrT) 1 (clerkssComplete ++ clerkssLeft) ∗
             "#Hclerkss_is" ∷ ([∗ list] clerks_sl ∈ clerkssComplete,
                                   (∃ clerks,
-                                  "#Hclerks_sl" ∷ readonly (is_slice_small clerks_sl ptrT 1 clerks) ∗
+                                  "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
                                   "Hclerks" ∷ ⌜length clerks = length backupγ⌝ ∗
                                   "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backupγ, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.(r_pb) args.(BecomePrimaryArgs.epoch))
                                   )
@@ -239,15 +239,15 @@ Proof.
       wp_apply (wp_slice_len).
       wp_apply (wp_NewSlice).
       iIntros (new_clerks_sl) "Hnew_clerks_sl".
-      iDestruct (is_slice_to_small with "Hnew_clerks_sl") as "Hnew_clerks_sl".
+      iDestruct (own_slice_to_small with "Hnew_clerks_sl") as "Hnew_clerks_sl".
       wp_pures.
       wp_apply (wp_ref_to).
       { eauto. }
       iIntros (i_ptr) "Hi".
       wp_pures.
 
-      iDestruct (is_slice_small_sz with "Hnew_clerks_sl") as %Hnew_clerks_sz.
-      iDestruct (is_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz.
+      iDestruct (own_slice_small_sz with "Hnew_clerks_sl") as %Hnew_clerks_sz.
+      iDestruct (own_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz.
       iDestruct (big_sepL2_length with "Hhosts") as %Hreplicas_backup_len.
 
       iAssert (
@@ -255,7 +255,7 @@ Proof.
               "Hi" ∷ i_ptr ↦[uint64T] #i ∗
               "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
               "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length backupγ⌝ ∗
-              "Hclerks_sl" ∷ is_slice_small new_clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
+              "Hclerks_sl" ∷ own_slice_small new_clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
               "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) backupγ),
                                   pb_definitions.is_Clerk ck γ γsrv ∗
                                   is_epoch_lb γsrv.(r_pb) args.(BecomePrimaryArgs.epoch)

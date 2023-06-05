@@ -106,7 +106,7 @@ Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : g
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
       readonly (l ↦[obj.Log :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
-      is_slice bufs ptrT q buflist ∗
+      own_slice bufs ptrT q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre γ bufptrval a buf
   }}}
@@ -129,7 +129,7 @@ Opaque struct.t.
   wp_apply wp_NewMap.
   iIntros (blks) "Hblks".
 
-  iDestruct (is_slice_to_small with "Hbufs") as "Hbufs".
+  iDestruct (own_slice_to_small with "Hbufs") as "Hbufs".
   wp_apply (wp_forSlicePrefix
       (fun done todo =>
         ∃ bufamap_todo bufamap_done blkmap,
@@ -409,7 +409,7 @@ Theorem wp_txn__installBufs l q walptr γ dinit lwh bufs buflist (bufamap : gmap
       is_wal (wal_heap_inv γ.(txn_walnames)) walptr (wal_heap_walnames γ.(txn_walnames)) dinit ∗
       readonly (l ↦[obj.Log :: "log"] #walptr) ∗
       is_locked_walheap γ.(txn_walnames) lwh ∗
-      is_slice bufs ptrT q buflist ∗
+      own_slice bufs ptrT q buflist ∗
       [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist,
         is_txn_buf_pre γ bufptrval a buf
   }}}
@@ -606,7 +606,7 @@ Qed.
 
 Theorem wp_txn__doCommit l q γ dinit bufs buflist (bufamap : gmap addr _) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
-      is_slice bufs ptrT q buflist ∗
+      own_slice bufs ptrT q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       PreQ ∧ (|NC={⊤ ∖ ↑walN ∖ ↑invN, E}=>
         ∀ CP,
@@ -1212,7 +1212,7 @@ Qed.
 
 Theorem wp_txn_CommitWait l q γ dinit bufs buflist (bufamap : gmap addr _) (wait : bool) E (PreQ: iProp Σ) (Q : nat -> iProp Σ) :
   {{{ is_txn l γ dinit ∗
-      is_slice bufs ptrT q buflist ∗
+      own_slice bufs ptrT q buflist ∗
       ( [∗ maplist] a ↦ buf; bufptrval ∈ bufamap; buflist, is_txn_buf_pre γ bufptrval a buf ) ∗
       PreQ ∧ ( ⌜bufamap ≠ ∅⌝ -∗ |NC={⊤ ∖ ↑walN ∖ ↑invN, E}=>
         ∀ CP,
@@ -1259,7 +1259,7 @@ Proof.
     {
       iIntros (H); subst.
       iDestruct (big_sepML_empty_l with "Hbufpre") as %->.
-      iDestruct (is_slice_sz with "Hbufs") as "%Hlen".
+      iDestruct (own_slice_sz with "Hbufs") as "%Hlen".
       simpl in *; word.
     }
 
@@ -1307,14 +1307,14 @@ Proof.
     iAssert (⌜ bufamap = ∅ ⌝)%I as "%Hempty".
     { destruct buflist.
       { iDestruct (big_sepML_empty_m with "Hbufpre") as %->. done. }
-      iDestruct (is_slice_sz with "Hbufs") as "%Hlen". simpl in *.
+      iDestruct (own_slice_sz with "Hbufs") as "%Hlen". simpl in *.
       replace (int.Z 0) with 0 in n by word. word.
     }
 
     wp_load.
     iApply "HΦ".
 
-    iDestruct (is_slice_sz with "Hbufs") as %Hbuflistlen.
+    iDestruct (own_slice_sz with "Hbufs") as %Hbuflistlen.
     assert (int.Z bufs.(Slice.sz) = 0) by (revert n; word).
     assert (length (list.untype buflist) = 0%nat) by len.
     rewrite fmap_length in H0.

@@ -23,7 +23,7 @@ Definition own args_ptr args : iProp Σ :=
   "#Hargs_epoch" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "epoch"] #args.(epoch)) ∗
   "#Hargs_index" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "nextIndex"] #args.(nextIndex)) ∗
   "#Hargs_state" ∷ readonly (args_ptr ↦[mpaxos.applyAsFollowerArgs :: "state"] (slice_val state_sl)) ∗
-  "#Hargs_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
+  "#Hargs_state_sl" ∷ readonly (own_slice_small state_sl byteT 1 args.(state))
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -34,14 +34,14 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Admitted.
 
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     mpaxos.decodeApplyAsFollowerArgs (slice_val enc_sl)
   {{{
@@ -78,14 +78,14 @@ Lemma wp_Encode (reply_ptr:loc) (reply:C) q :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc reply⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Admitted.
 
 Lemma wp_Decode enc enc_sl (reply:C) :
   {{{
         ⌜has_encoding enc reply⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     mpaxos.decodeApplyAsFollowerReply (slice_val enc_sl)
   {{{
@@ -115,7 +115,7 @@ Definition own args_ptr args q : iProp Σ :=
   ∃ ret_sl,
   "Hreply_epoch" ∷ args_ptr ↦[mpaxos.applyReply :: "err"]{q} #args.(err) ∗
   "Hreply_ret" ∷ args_ptr ↦[mpaxos.applyReply :: "ret"]{q} (slice_val ret_sl) ∗
-  "Hreply_ret_sl" ∷ is_slice_small ret_sl byteT q args.(ret)
+  "Hreply_ret_sl" ∷ own_slice_small ret_sl byteT q args.(ret)
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) q :
@@ -126,14 +126,14 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Admitted.
 
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     mpaxos.decodeApplyReply (slice_val enc_sl)
   {{{
@@ -170,14 +170,14 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Admitted.
 
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     mpaxos.decodeEnterNewEpochArgs (slice_val enc_sl)
   {{{
@@ -211,7 +211,7 @@ Definition own args_ptr args q : iProp Σ :=
   "Hreply_nextIndex" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "nextIndex"]{q} #args.(nextIndex) ∗
   "Hreply_acceptedEpoch" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "acceptedEpoch"]{q} #args.(acceptedEpoch) ∗
   "Hreply_ret" ∷ args_ptr ↦[mpaxos.enterNewEpochReply :: "state"]{q} (slice_val state_sl) ∗
-  "Hreply_ret_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
+  "Hreply_ret_sl" ∷ readonly (own_slice_small state_sl byteT 1 args.(state))
 .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) q :
@@ -222,14 +222,14 @@ Lemma wp_Encode (args_ptr:loc) (args:C) q :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Admitted.
 
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     mpaxos.decodeEnterNewEpochReply (slice_val enc_sl)
   {{{

@@ -50,7 +50,7 @@ Proof.
   wp_apply (wp_NewSlice _ _ byteT).
   iIntros (empty_req) "Hempty_sl".
 
-  iDestruct (is_slice_to_small with "Hempty_sl") as "Hempty_sl".
+  iDestruct (own_slice_to_small with "Hempty_sl") as "Hempty_sl".
   wp_apply (wp_Client__Call with "[] [$Hcl $Hrep $Hempty_sl]").
   { iDestruct "Hsrv" as "[$ _]". }
   {

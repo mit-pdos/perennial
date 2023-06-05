@@ -14,7 +14,7 @@ Definition has_encoding (encoded:list u8) (args:C) : Prop :=
 Context `{!heapGS Σ}.
 
 Definition own conf_sl (conf:list u64) : iProp Σ :=
-  "Hargs_state_sl" ∷ is_slice_small conf_sl uint64T 1 conf.
+  "Hargs_state_sl" ∷ own_slice_small conf_sl uint64T 1 conf.
 
 Lemma wp_Encode conf_sl (conf:C) :
   {{{
@@ -25,12 +25,12 @@ Lemma wp_Encode conf_sl (conf:C) :
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc conf⌝ ∗
         own conf_sl conf ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Proof.
   iIntros (Φ) "Hconf HΦ".
   wp_call.
-  iDestruct (is_slice_small_sz with "Hconf") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hconf") as %Hsz.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_apply (wp_NewSliceWithCap).
@@ -54,7 +54,7 @@ Proof.
   replace (conf_sl.(Slice.sz)) with (U64 (length conf)) by word.
   set (P:=(λ (i:u64),
       ∃ enc_sl,
-      "Henc_sl" ∷ is_slice enc_sl byteT 1 ((u64_le (length conf)) ++ concat (u64_le <$> (take (int.nat i) conf))) ∗
+      "Henc_sl" ∷ own_slice enc_sl byteT 1 ((u64_le (length conf)) ++ concat (u64_le <$> (take (int.nat i) conf))) ∗
       "Henc" ∷ enc ↦[slice.T byteT] (slice_val enc_sl)
     )%I)
   .
@@ -181,7 +181,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (conf:C) :
   {{{
         ⌜has_encoding enc conf⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     config.DecodeConfig (slice_val enc_sl)
   {{{
@@ -210,7 +210,7 @@ Proof.
   iIntros (conf_sl) "Hconf_sl".
   wp_pures.
 
-  iDestruct (is_slice_small_sz with "Henc_sl") as %Henc_sz.
+  iDestruct (own_slice_small_sz with "Henc_sl") as %Henc_sz.
   (* prove that conf's length is below U64_MAX *)
   assert (int.nat (length conf) = length conf) as Hlen_no_overflow.
   {
@@ -230,12 +230,12 @@ Proof.
   }
   rewrite Hlen_no_overflow.
 
-  iDestruct (is_slice_to_small with "Hconf_sl") as "Hconf_sl".
+  iDestruct (own_slice_to_small with "Hconf_sl") as "Hconf_sl".
   set (P:=(λ (i:u64),
       ∃ enc_sl,
-      "Henc_sl" ∷ is_slice_small enc_sl byteT 1 (concat (u64_le <$> (drop (int.nat i) conf))) ∗
+      "Henc_sl" ∷ own_slice_small enc_sl byteT 1 (concat (u64_le <$> (drop (int.nat i) conf))) ∗
       "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
-      "Hconf_sl" ∷ is_slice_small conf_sl uint64T 1 ((take (int.nat i) conf) ++
+      "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 ((take (int.nat i) conf) ++
                                                 replicate (length conf - int.nat i) (U64 0))
     )%I)
   .
@@ -265,7 +265,7 @@ Proof.
 
   wp_pures.
   wp_load.
-  iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_sz.
+  iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
 
   (* Show that int.nat conf_sl.(Slice.sz) == int.nat (length conf) *)
   rewrite app_length in Hconf_sz.

@@ -13,7 +13,7 @@ Definition own_SeqKVClerk (ck:loc) (γ:gname) : iProp Σ :=
   "HcoordCk" ∷ ck ↦[SeqKVClerk :: "coordCk"] #coordCk ∗
   "HcoordCk_own" ∷ own_KVCoordClerk coordCk γ ∗
   "HshardMap" ∷ ck ↦[SeqKVClerk :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
+  "HshardMap_sl" ∷ own_slice shardMap_sl uint64T 1%Qp shardMapping ∗
   "%HshardMap_length" ∷ ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ
 .
@@ -76,7 +76,7 @@ Lemma wp_SeqKVClerk__Get (ck:loc) (γ:gname) (key:u64) :
     SeqKVClerk__Get #ck #key @ ∅
   <<< kvptsto γ key v >>>
   {{{ val_sl q, RET slice_val val_sl;
-      own_SeqKVClerk ck γ ∗ is_slice_small val_sl byteT q%Qp v
+      own_SeqKVClerk ck γ ∗ own_slice_small val_sl byteT q%Qp v
   }}}.
 Proof using Type*.
   iIntros "!#" (Φ) "Hown Hatomic".
@@ -103,7 +103,7 @@ Proof using Type*.
 
   iNamed "Hown".
   wp_loadField.
-  iDestruct (is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
+  iDestruct (own_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
   assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.
@@ -177,7 +177,7 @@ Lemma wp_SeqKVClerk__Get_seq (ck:loc) (γ:gname) (key:u64) (v:list u8) :
   {{{ own_SeqKVClerk ck γ ∗ kvptsto γ key v }}}
     SeqKVClerk__Get #ck #key @ ⊤
   {{{ val_sl q, RET slice_val val_sl;
-      own_SeqKVClerk ck γ ∗ kvptsto γ key v ∗ is_slice_small val_sl byteT q%Qp v
+      own_SeqKVClerk ck γ ∗ kvptsto γ key v ∗ own_slice_small val_sl byteT q%Qp v
   }}}.
 Proof using Type*.
   iIntros (Φ) "(Hclerk & Hkey) HΦ".
@@ -189,7 +189,7 @@ Proof using Type*.
 Qed.
 
 Lemma wp_SeqKVClerk__Put (ck:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8):
-⊢ {{{ own_SeqKVClerk ck γ ∗ readonly (is_slice_small val_sl byteT 1 v) }}}
+⊢ {{{ own_SeqKVClerk ck γ ∗ readonly (own_slice_small val_sl byteT 1 v) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     SeqKVClerk__Put #ck #key (slice_val val_sl) @ ∅
   <<< kvptsto γ key v >>>
@@ -208,7 +208,7 @@ Proof using Type*.
 
   iNamed "Hown".
   wp_loadField.
-  iDestruct (is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
+  iDestruct (own_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
   assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.
@@ -272,8 +272,8 @@ Qed.
 
 Lemma wp_SeqKVClerk__ConditionalPut (ck:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
 ⊢ {{{ own_SeqKVClerk ck γ ∗
-      readonly (is_slice_small expv_sl byteT 1 expv) ∗
-      readonly (is_slice_small newv_sl byteT 1 newv) }}}
+      readonly (own_slice_small expv_sl byteT 1 expv) ∗
+      readonly (own_slice_small newv_sl byteT 1 newv) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     SeqKVClerk__ConditionalPut #ck #key (slice_val expv_sl) (slice_val newv_sl) @ ∅
   <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
@@ -300,7 +300,7 @@ Proof using Type*.
 
   iNamed "Hown".
   wp_loadField.
-  iDestruct (is_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
+  iDestruct (own_slice_small_acc with "HshardMap_sl") as "[Hsmall_sl HslClose]".
 
   assert (int.nat sid < length shardMapping)%nat as HsidLe_nat by word.
   eapply list_lookup_lt in HsidLe_nat.

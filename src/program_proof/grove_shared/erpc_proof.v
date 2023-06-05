@@ -80,7 +80,7 @@ Local Definition own_erpc_server (γ : erpc_names) (s : loc) : iProp Σ :=
   "HlastReplyMap" ∷ map.own_map lastReply_ptr 1 (lastReplyMV, zero_val (slice.T byteT)) ∗ (* TODO: default *)
   "%HlastReplyMVdom" ∷ ⌜dom lastReplyMV = dom lastSeqM⌝ ∗
   "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM,
-    ∃ val_sl q, ⌜v = slice_val val_sl⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep) ∗
+    ∃ val_sl q, ⌜v = slice_val val_sl⌝ ∗ typed_slice.own_slice_small val_sl byteT q rep) ∗
   "HlastSeq" ∷ s ↦[erpc.Server :: "lastSeq"] #lastSeq_ptr ∗
   "HlastSeqMap" ∷ own_map lastSeq_ptr 1 lastSeqM ∗
   "HnextCID" ∷ s ↦[erpc.Server :: "nextCID"] #nextCID ∗
@@ -108,15 +108,15 @@ Definition impl_erpc_handler_spec (f : val) (spec : eRPCSpec)
    : iProp Σ :=
   ∀ (x : spec.(espec_ty)) (reqData : list u8) req repptr dummy_rep_sl dummy,
   {{{
-    is_slice_small req byteT 1 reqData ∗
+    own_slice_small req byteT 1 reqData ∗
     repptr ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
-    is_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
+    own_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
     spec.(espec_Pre) x reqData
   }}}
     f (slice_val req) #repptr
   {{{ rep_sl q repData, RET #();
       repptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-      is_slice_small rep_sl byteT q repData ∗
+      own_slice_small rep_sl byteT q repData ∗
       spec.(espec_Post) x reqData repData
   }}}.
 
@@ -165,7 +165,7 @@ Proof.
       destruct (lastSeqM !! rid.(Req_CID)) eqn:Hlk; rewrite Hlk /=; first naive_solver.
       intros ->. exfalso. naive_solver. }
 
-    (* get a copy of the is_slice for the slice we're giving in reply *)
+    (* get a copy of the own_slice for the slice we're giving in reply *)
     assert (is_Some (lastReplyMV !! rid.(Req_CID))) as [xx HlastReplyMVlookup].
     {
       assert (rid.(Req_CID) ∈ dom lastSeqM).
@@ -392,12 +392,12 @@ Qed.
 Lemma wp_erpc_NewRequest (spec : eRPCSpec) (x : spec.(espec_ty)) c payload payload_sl q γ :
   {{{
     own_erpc_client γ c ∗
-    is_slice_small payload_sl byteT q payload ∗
+    own_slice_small payload_sl byteT q payload ∗
     spec.(espec_Pre) x payload
   }}}
     Client__NewRequest #c (slice_val payload_sl)
   {{{ y req req_sl, RET (slice_val req_sl);
-    is_slice req_sl byteT 1 req ∗
+    own_slice req_sl byteT 1 req ∗
     (* The newly computed request *persistently* satisfies the precondition
        of the underlying uRPC. *)
     □(eRPCSpec_uRPC γ spec).(spec_Pre) y req ∗

@@ -61,7 +61,7 @@ Proof.
   iIntros (vers) "HversS".
   wp_storeField.
   wp_loadField.
-  iDestruct (is_slice_small_acc with "HversS") as "[HversS HversC]".
+  iDestruct (own_slice_small_acc with "HversS") as "[HversS HversC]".
   wp_apply (wp_SliceSet with "[HversS]").
   { iFrame.
     iPureIntro.

@@ -56,9 +56,9 @@ Proof.
   "HghostShards" ∷ (if b then ([∗ set] sid ∈ rangeSet (int.Z i) (uNSHARD - int.Z i), own_shard γ.(kv_gn) sid ∅)
                    else True) ∗
   "kvss" ∷ srv ↦[KVShardServer :: "kvss"] (slice_val kvss_sl) ∗
-  "Hkvss_sl" ∷ slice.is_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
+  "Hkvss_sl" ∷ slice.own_slice kvss_sl (mapT (slice.T byteT)) 1%Qp (fmap (λ x:loc, #x) kvs_ptrs) ∗
   "shardMap" ∷ srv ↦[KVShardServer :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷  typed_slice.is_slice shardMap_sl boolT 1 shardMapping ∗
+  "HshardMap_sl" ∷  typed_slice.own_slice shardMap_sl boolT 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ (fin_to_set u64),
                   ⌜(shardMapping !! (int.nat sid)) ≠ Some true⌝ ∨
                   (∃ (kvs_ptr:loc) (m:gmap u64 (list u8)) (mv:gmap u64 goose_lang.val),
@@ -67,7 +67,7 @@ Proof.
                       ⌜dom m = dom mv ⌝ ∗
                       map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
-                       ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (m !! k))))
+                       ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (m !! k))))
                   )))%I with "[] [$Hi HshardMap_sl shardMap HghostShards kvss Hkvss_sl]").
   { word. }
   { iIntros (i Φ') "!# H HΦ".
@@ -78,7 +78,7 @@ Proof.
     wp_apply (wp_LoadAt with "[$Hi]").
     iIntros "Hi".
     wp_loadField.
-    iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "(HshardMap_sl&HshardMap_sl_close)".
+    iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "(HshardMap_sl&HshardMap_sl_close)".
     wp_apply (typed_slice.wp_SliceSet with "[$HshardMap_sl]").
     { eauto. }
     iIntros "HshardMap_sl".
@@ -91,7 +91,7 @@ Proof.
       wp_apply (wp_LoadAt with "[$Hi]").
       iIntros "Hi".
       wp_loadField.
-      iDestruct (slice.is_slice_small_acc with "Hkvss_sl") as "(Hkvss_sl&Hkvss_sl_close)".
+      iDestruct (slice.own_slice_small_acc with "Hkvss_sl") as "(Hkvss_sl&Hkvss_sl_close)".
       wp_apply (slice.wp_SliceSet with "[$Hkvss_sl]").
       { iPureIntro; split; eauto. }
       iIntros "Hkvss_sl".
@@ -152,8 +152,8 @@ Proof.
           destruct (decide (shardOfC x = i)); last by eauto.
           { iRight. iExists 1%Qp, _. rewrite ?lookup_empty //=.
             iSplit; first eauto.
-            iApply (typed_slice.is_slice_to_small (V:=u8)).
-            iApply typed_slice.is_slice_zero. }
+            iApply (typed_slice.own_slice_to_small (V:=u8)).
+            iApply typed_slice.own_slice_zero. }
         }
         iApply (big_sepS_mono with "HownShards").
         { iIntros (??) "H".

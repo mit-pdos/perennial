@@ -22,7 +22,7 @@ Definition own args_ptr args : iProp Σ :=
   "Hargs_epoch" ∷ args_ptr ↦[pb.ApplyAsBackupArgs :: "epoch"] #args.(epoch) ∗
   "Hargs_index" ∷ args_ptr ↦[pb.ApplyAsBackupArgs :: "index"] #args.(index) ∗
   "Hargs_op" ∷ args_ptr ↦[pb.ApplyAsBackupArgs :: "op"] (slice_val op_sl) ∗
-  "Hargs_op_sl" ∷ is_slice_small op_sl byteT 1 args.(op)
+  "Hargs_op_sl" ∷ own_slice_small op_sl byteT 1 args.(op)
   .
 
 Definition own_ro args_ptr args : iProp Σ :=
@@ -30,7 +30,7 @@ Definition own_ro args_ptr args : iProp Σ :=
   "#Hargs_epoch" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "epoch"] #args.(epoch)) ∗
   "#Hargs_index" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "index"] #args.(index)) ∗
   "#Hargs_op" ∷ readonly (args_ptr ↦[pb.ApplyAsBackupArgs :: "op"] (slice_val op_sl)) ∗
-  "#Hargs_op_sl" ∷ readonly (is_slice_small op_sl byteT 1 args.(op))
+  "#Hargs_op_sl" ∷ readonly (own_slice_small op_sl byteT 1 args.(op))
 .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -41,7 +41,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Proof.
   iIntros (Φ) "H1 HΦ".
@@ -88,7 +88,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeApplyAsBackupArgs (slice_val enc_sl)
   {{{
@@ -155,7 +155,7 @@ Definition own args_ptr args : iProp Σ :=
   "Hargs_next_index" ∷ args_ptr ↦[pb.SetStateArgs :: "NextIndex"] #args.(nextIndex) ∗
   "Hargs_committed_next_index" ∷ args_ptr ↦[pb.SetStateArgs :: "CommittedNextIndex"] #args.(committedNextIndex) ∗
   "Hargs_state" ∷ args_ptr ↦[pb.SetStateArgs :: "State"] (slice_val state_sl) ∗
-  "#Hargs_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 args.(state))
+  "#Hargs_state_sl" ∷ readonly (own_slice_small state_sl byteT 1 args.(state))
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -166,7 +166,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc ∗
+        own_slice enc_sl byteT 1 enc ∗
         own args_ptr args
   }}} .
 Proof.
@@ -220,7 +220,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeSetStateArgs (slice_val enc_sl)
   {{{
@@ -298,7 +298,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc ∗
+        own_slice enc_sl byteT 1 enc ∗
         own args_ptr args
   }}}.
 Proof.
@@ -326,7 +326,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeGetStateArgs (slice_val enc_sl)
   {{{
@@ -375,7 +375,7 @@ Definition own reply_ptr reply : iProp Σ :=
   "Hreply_next_index" ∷ reply_ptr ↦[pb.GetStateReply :: "NextIndex"] #reply.(nextIndex) ∗
   "Hreply_committed_next_index" ∷ reply_ptr ↦[pb.GetStateReply :: "CommittedNextIndex"] #reply.(committedNextIndex) ∗
   "Hreply_state" ∷ reply_ptr ↦[pb.GetStateReply :: "State"] (slice_val state_sl) ∗
-  "Hreply_state_sl" ∷ readonly (is_slice_small state_sl byteT 1 reply.(state))
+  "Hreply_state_sl" ∷ readonly (own_slice_small state_sl byteT 1 reply.(state))
   .
 
 Lemma wp_Encode (reply_ptr:loc) (reply:C) :
@@ -386,7 +386,7 @@ Lemma wp_Encode (reply_ptr:loc) (reply:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc reply⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Proof.
   iIntros (?) "H1 HΦ".
@@ -439,7 +439,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (reply:C) :
   {{{
         ⌜has_encoding enc reply⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeGetStateReply (slice_val enc_sl)
   {{{
@@ -509,7 +509,7 @@ Definition own args_ptr args : iProp Σ :=
   ∃ replicas_sl,
   "Hargs_epoch" ∷ args_ptr ↦[pb.BecomePrimaryArgs :: "Epoch"] #args.(epoch) ∗
   "Hargs_replicas" ∷ args_ptr ↦[pb.BecomePrimaryArgs :: "Replicas"] (slice_val replicas_sl) ∗
-  "Hargs_replicas_sl" ∷ is_slice_small replicas_sl uint64T 1 args.(replicas)
+  "Hargs_replicas_sl" ∷ own_slice_small replicas_sl uint64T 1 args.(replicas)
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -520,7 +520,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc ∗
+        own_slice enc_sl byteT 1 enc ∗
         own args_ptr args
   }}}.
 Proof.
@@ -546,7 +546,7 @@ Proof.
   wp_store.
   wp_loadField.
   wp_apply (wp_slice_len).
-  iDestruct (is_slice_small_sz with "Hargs_replicas_sl") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hargs_replicas_sl") as %Hsz.
   wp_load.
   wp_apply (wp_WriteInt with "Henc_sl").
   iIntros (?) "Henc_sl".
@@ -560,7 +560,7 @@ Proof.
   "%Hreplicas_prefix" ∷ ⌜replicas_so_far `prefix_of` args.(replicas)⌝ ∗
   "%Hreplicas_len" ∷ ⌜length replicas_so_far = int.nat j⌝ ∗
   "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
-  "Henc_sl" ∷ is_slice enc_sl byteT 1 (([] ++ u64_le args.(epoch)) ++ u64_le (length args.(replicas)) ++ (flat_map u64_le replicas_so_far))
+  "Henc_sl" ∷ own_slice enc_sl byteT 1 (([] ++ u64_le args.(epoch)) ++ u64_le (length args.(replicas)) ++ (flat_map u64_le replicas_so_far))
               )%I
               with "[] [$Hargs_replicas_sl Henc Henc_sl]"
            ).
@@ -643,7 +643,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (args:C) :
   {{{
         ⌜has_encoding enc args⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeBecomePrimaryArgs (slice_val enc_sl)
   {{{
@@ -685,8 +685,8 @@ Proof.
   wp_storeField.
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "Hreplicas_sl") as "Hreplicas_sl".
-  iDestruct (is_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz.
+  iDestruct (own_slice_to_small with "Hreplicas_sl") as "Hreplicas_sl".
+  iDestruct (own_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz.
   (* FIXME: need to do a forSlice and write to the elements of that slice *)
   wp_apply (wp_forSlice_mut (V:=u64)
               (λ j,
@@ -694,16 +694,16 @@ Proof.
   "%Hreplicas_prefix" ∷ ⌜args.(replicas) = replicas_done ++ replicas_left⌝ ∗
   "%Hreplicas_len" ∷ ⌜length replicas_done = int.nat j⌝ ∗
   "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
-  "Henc_sl" ∷ is_slice_small enc_sl byteT 1 (flat_map u64_le replicas_left) ∗
+  "Henc_sl" ∷ own_slice_small enc_sl byteT 1 (flat_map u64_le replicas_left) ∗
   "HReplicas" ∷ args_ptr ↦[BecomePrimaryArgs :: "Replicas"] (slice_val replicas_sl) ∗
-  "Hreplicas_sl" ∷ is_slice_small replicas_sl uint64T 1 (replicas_done ++ (replicate (length replicas_left) (U64 0)))
+  "Hreplicas_sl" ∷ own_slice_small replicas_sl uint64T 1 (replicas_done ++ (replicate (length replicas_left) (U64 0)))
               )%I
               _ _ _ _ _ (replicate (int.nat (length args.(replicas))) u64_IntoVal.(IntoVal_def u64))
               with "[] [] [Hreplicas_sl Henc Henc_sl $Replicas]"
            ).
   {
     iModIntro. iIntros (i) "Hi". iNamed "Hi".
-    iDestruct (is_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz'.
+    iDestruct (own_slice_small_sz with "Hreplicas_sl") as %Hreplicas_sz'.
     iExists _. iFrame.
     iSplit.
     { iPureIntro. rewrite Hreplicas_sz Hreplicas_sz'. eauto. }
@@ -832,7 +832,7 @@ Proof.
     }
   }
   {
-    iDestruct (is_slice_small_sz with "Henc_sl") as %Hsz.
+    iDestruct (own_slice_small_sz with "Henc_sl") as %Hsz.
     assert (length (args.(replicas)) <= length (flat_map u64_le args.(replicas))).
     { apply flat_map_len_non_nil. destruct x => //=. }
     iExists nil, _, _.
@@ -848,7 +848,7 @@ Proof.
   wp_pures.
   iModIntro.
   iApply "HΦ".
-  iDestruct (is_slice_small_sz with "Hreplicas_sl") as %Hsz.
+  iDestruct (own_slice_small_sz with "Hreplicas_sl") as %Hsz.
   iExists _; iFrame.
   destruct (replicas_left).
   { rewrite Hreplicas_prefix app_nil_r //. }
@@ -880,14 +880,14 @@ Definition own_q args_ptr args : iProp Σ :=
   ∃ ret_sl q,
   "Hreply_err" ∷ args_ptr ↦[pb.ApplyReply :: "Err"] #args.(err) ∗
   "Hreply_ret" ∷ args_ptr ↦[pb.ApplyReply :: "Reply"] (slice_val ret_sl) ∗
-  "Hrepy_ret_sl" ∷ is_slice_small ret_sl byteT q args.(ret)
+  "Hrepy_ret_sl" ∷ own_slice_small ret_sl byteT q args.(ret)
   .
 
 Definition own args_ptr args : iProp Σ :=
   ∃ ret_sl,
   "Hreply_err" ∷ args_ptr ↦[pb.ApplyReply :: "Err"] #args.(err) ∗
   "Hreply_ret" ∷ args_ptr ↦[pb.ApplyReply :: "Reply"] (slice_val ret_sl) ∗
-  "Hrepy_ret_sl" ∷ is_slice_small ret_sl byteT 1 args.(ret)
+  "Hrepy_ret_sl" ∷ own_slice_small ret_sl byteT 1 args.(ret)
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -898,7 +898,7 @@ Lemma wp_Encode (args_ptr:loc) (args:C) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc args⌝ ∗
-        is_slice enc_sl byteT 1 enc ∗
+        own_slice enc_sl byteT 1 enc ∗
         own_q args_ptr args
   }}}.
 Proof.
@@ -941,7 +941,7 @@ Qed.
 Lemma wp_Decode enc enc_sl (reply:C) :
   {{{
         ⌜has_encoding enc reply⌝ ∗
-        is_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT 1 enc
   }}}
     pb.DecodeApplyReply (slice_val enc_sl)
   {{{

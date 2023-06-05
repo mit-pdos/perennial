@@ -89,7 +89,7 @@ Proof.
 
   iDestruct "Hdur" as (old_data) "[Hdur %Hpure]".
   iApply wpc_cfupd.
-  iDestruct (is_slice_to_small with "Hslice") as "Hslice".
+  iDestruct (own_slice_to_small with "Hslice") as "Hslice".
   wpc_apply (wpc_FileWrite with "[Hdur Hslice]").
   {
     iFrame.
@@ -325,7 +325,7 @@ Proof using Type*.
   wpc_bind (@If _ _ _ _).
   wpc_frame.
 
-  iDestruct (is_slice_sz with "Hsl") as %HslSize.
+  iDestruct (own_slice_sz with "Hsl") as %HslSize.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_apply (wp_If_join ("Hval" ∷ s ↦[CtrServer :: "val"] #c)
@@ -363,7 +363,7 @@ Proof using Type*.
         replace (sl.(Slice.sz)) with (U64 0) in Hslice_nonEmpty by word.
         done.
       }
-      iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+      iDestruct (own_slice_to_small with "Hsl") as "Hsl".
       wp_apply (wp_new_dec with "Hsl").
       { done. }
       iIntros (dec) "Hdec".
@@ -463,7 +463,7 @@ Proof using Type*.
       iIntros (rep_sl data1) "(%Henc & %Hlen & Hsl)".
       wp_store.
       iApply "HΦ".
-      iDestruct (is_slice_to_small with "Hsl") as "$".
+      iDestruct (own_slice_to_small with "Hsl") as "$".
       iFrame.
       iApply "HPost".
       done.

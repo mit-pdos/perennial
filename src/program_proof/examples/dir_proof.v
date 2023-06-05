@@ -167,7 +167,7 @@ Section goose.
       "#d" ∷ readonly (l ↦[Dir :: "d"] (disk_val d)) ∗
       "#allocator" ∷ readonly (l ↦[Dir :: "allocator"] #alloc_l) ∗
       "#inodes" ∷ readonly (l ↦[Dir :: "inodes"] (slice_val inodes_s)) ∗
-      "#inodes_s" ∷ readonly (is_slice_small inodes_s ptrT 1 (inode_refs))
+      "#inodes_s" ∷ readonly (own_slice_small inodes_s ptrT 1 (inode_refs))
   .
 
   (** State of unallocated blocks *)
@@ -480,7 +480,7 @@ Section goose.
       }}}
       openInodes (disk_val d) @ ⊤
     {{{ inode_s inode_refs, RET (slice_val inode_s);
-        is_slice_small inode_s ptrT 1 inode_refs ∗
+        own_slice_small inode_s ptrT 1 inode_refs ∗
         [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
             pre_inode inode_ref (U64 (Z.of_nat i)) s_inode
     }}}
@@ -506,7 +506,7 @@ Section goose.
     wpc_apply (wpc_forUpto
                (λ n, ∃ (inode_s: Slice.t) (inode_refs: list loc),
                    "Hinodes" ∷ ino_l ↦[slice.T ptrT] (slice_val inode_s) ∗
-                   "Hinode_slice" ∷ is_slice inode_s ptrT 1 inode_refs ∗
+                   "Hinode_slice" ∷ own_slice inode_s ptrT 1 inode_refs ∗
                    "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;(take (int.nat n) s_inodes),
                     pre_inode inode_ref i s_inode) ∗
                    "Hinode_cinvs" ∷ ([∗ list] i↦s_inode ∈ (drop (int.nat n) s_inodes),
@@ -575,7 +575,7 @@ Section goose.
     { iExists Slice.nil, [].
       iFrame.
       rewrite big_sepL2_nil.
-      rewrite -is_slice_zero.
+      rewrite -own_slice_zero.
       rewrite /named //. }
     iSplit.
     { (* loop crash condition implies overall crash condition *)
@@ -609,18 +609,18 @@ Section goose.
     iNamed 1.
     iRight in "HΦ"; iApply "HΦ".
     iFrame.
-    iApply (is_slice_to_small with "Hinode_slice").
+    iApply (own_slice_to_small with "Hinode_slice").
   Qed.
 
   Theorem wpc_inodeUsedBlocks inode_s inode_refs s_inodes :
-    {{{ "Hinode_s" ∷ is_slice_small inode_s ptrT 1 inode_refs ∗
+    {{{ "Hinode_s" ∷ own_slice_small inode_s ptrT 1 inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                     pre_inode inode_ref i s_inode }}}
       inodeUsedBlocks (slice_val inode_s) @ ⊤
     {{{ (addrs_ref:loc) used, RET #addrs_ref;
         "Hused_set" ∷ is_addrset addrs_ref used ∗
         "%Hused_eq" ∷ ⌜used = ⋃ (inode.addrs <$> s_inodes)⌝ ∗
-        "Hinode_s" ∷ is_slice_small inode_s ptrT 1 inode_refs ∗
+        "Hinode_s" ∷ own_slice_small inode_s ptrT 1 inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                   pre_inode inode_ref i s_inode }}}
     {{{ [∗ list] i↦s_inode ∈ s_inodes,
@@ -639,7 +639,7 @@ Section goose.
     iApply is_addrset_from_empty in "Hused_set".
     iNamed 1.
     wpc_pures.
-    iDestruct (is_slice_small_sz with "Hinode_s") as %Hinode_ref_len.
+    iDestruct (own_slice_small_sz with "Hinode_s") as %Hinode_ref_len.
     wpc_apply (wpc_forSlice (V:=loc)
                 (λ n, "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                                   pre_inode inode_ref i s_inode) ∗
@@ -687,7 +687,7 @@ Section goose.
         iApply (big_sepL_mono with "Hpre_inodes").
         iIntros (???) "Hcinv".
         iDestruct "Hcinv" as (?) "(_&$)". }
-      iDestruct (is_slice_small_acc with "Hused_addrs") as "(Hused_addrs&Hused_cap)".
+      iDestruct (own_slice_small_acc with "Hused_addrs") as "(Hused_addrs&Hused_cap)".
       wp_apply (wp_SetAdd with "[$Hused_set $Hused_addrs]").
       iIntros "(Hused_set&Hused_addrs)".
       iDestruct ("Hused_cap" with "Hused_addrs") as "Hused_addrs".

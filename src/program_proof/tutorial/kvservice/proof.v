@@ -20,18 +20,18 @@ Axiom wp_stringToBytes :
   }}}
     prelude.Data.stringToBytes #(str s)
   {{{
-        (sl:Slice.t), RET (slice_val sl); is_slice sl byteT 1 (string_le s)
+        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT 1 (string_le s)
   }}}
 .
 
 Axiom wp_bytesToString :
   ∀ `{!heapGS Σ} sl q (s:string),
   {{{
-        is_slice_small sl byteT q (string_le s)
+        own_slice_small sl byteT q (string_le s)
   }}}
     prelude.Data.bytesToString #(str s)
   {{{
-        RET #(str s); is_slice_small sl byteT q (string_le s)
+        RET #(str s); own_slice_small sl byteT q (string_le s)
   }}}
 .
 
@@ -64,7 +64,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          is_slice sl byteT 1 enc_args
+          own_slice sl byteT 1 enc_args
   }}}
 .
 Proof.
@@ -73,12 +73,12 @@ Admitted.
 Lemma wp_decode  sl enc_args args q :
   {{{
         ⌜encodes enc_args args⌝ ∗
-        is_slice_small sl byteT q enc_args
+        own_slice_small sl byteT q enc_args
   }}}
     decodePutArgs (slice_val sl)
   {{{
         (args_ptr:loc), RET #args_ptr; own args_ptr args ∗
-                                       is_slice_small sl byteT q enc_args
+                                       own_slice_small sl byteT q enc_args
   }}}
 .
 Proof.
@@ -118,7 +118,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          is_slice sl byteT 1 enc_args
+          own_slice sl byteT 1 enc_args
   }}}
 .
 Proof.
@@ -127,12 +127,12 @@ Admitted.
 Lemma wp_decode  sl enc_args args q :
   {{{
         ⌜encodes enc_args args⌝ ∗
-        is_slice_small sl byteT q enc_args
+        own_slice_small sl byteT q enc_args
   }}}
     decodeConditionalPutArgs (slice_val sl)
   {{{
         (args_ptr:loc), RET #args_ptr; own args_ptr args ∗
-                                       is_slice_small sl byteT q enc_args
+                                       own_slice_small sl byteT q enc_args
   }}}
 .
 Proof.
@@ -167,7 +167,7 @@ Lemma wp_encode args_ptr args :
   {{{
         (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
           ⌜encodes enc_args args⌝ ∗
-          is_slice sl byteT 1 enc_args
+          own_slice sl byteT 1 enc_args
   }}}
 .
 Proof.
@@ -176,12 +176,12 @@ Admitted.
 Lemma wp_decode  sl enc_args args q :
   {{{
         ⌜encodes enc_args args⌝ ∗
-        is_slice_small sl byteT q enc_args
+        own_slice_small sl byteT q enc_args
   }}}
     decodeGetArgs (slice_val sl)
   {{{
         (args_ptr:loc), RET #args_ptr; own args_ptr args ∗
-                                       is_slice_small sl byteT q enc_args
+                                       own_slice_small sl byteT q enc_args
   }}}
 .
 Proof.
@@ -204,13 +204,13 @@ Definition bool_le (b:bool) : list u8 := if b then [U8 1] else [U8 0].
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
     EncodeBool #b
-  {{{ sl, RET (slice_val sl); is_slice sl byteT 1 (bool_le b) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (bool_le b) }}}
 .
 Proof.
 Admitted.
 
 Lemma wp_DecodeBool sl b q :
-  {{{ is_slice sl byteT q (bool_le b) }}}
+  {{{ own_slice sl byteT q (bool_le b) }}}
     DecodeBool (slice_val sl)
   {{{ RET #b; True }}}
 .
@@ -220,15 +220,15 @@ Admitted.
 Lemma wp_EncodeUint64 x:
   {{{ True }}}
     EncodeUint64 #x
-  {{{ sl, RET (slice_val sl); is_slice sl byteT 1 (u64_le x) }}}
+  {{{ sl, RET (slice_val sl); own_slice sl byteT 1 (u64_le x) }}}
 .
 Proof.
 Admitted.
 
 Lemma wp_DecodeUint64 sl x q :
-  {{{ is_slice_small sl byteT q (u64_le x) }}}
+  {{{ own_slice_small sl byteT q (u64_le x) }}}
     DecodeUint64 (slice_val sl)
-  {{{ RET #x; is_slice_small sl byteT q (u64_le x) }}}
+  {{{ RET #x; own_slice_small sl byteT q (u64_le x) }}}
 .
 Proof.
 Admitted.
@@ -490,7 +490,7 @@ Proof.
       iIntros (?) "HΨ".
       wp_pures. wp_apply wp_stringToBytes.
       iIntros (ret_sl) "Hret_sl".
-      iDestruct (is_slice_to_small with "Hret_sl") as "Hret_sl".
+      iDestruct (own_slice_to_small with "Hret_sl") as "Hret_sl".
       wp_store.
       iApply ("HΦ" with "[$] [$] [$]").
     }
@@ -512,7 +512,7 @@ Proof.
       wp_store.
       iApply ("HΦ" with "[HΨ] [$]").
       { iApply "HΨ". }
-      by iDestruct (is_slice_to_small with "Henc_req") as "$".
+      by iDestruct (own_slice_to_small with "Henc_req") as "$".
     }
     iApply (big_sepM_insert_2 with "").
     {
@@ -529,7 +529,7 @@ Proof.
       iIntros "HΨ". wp_pures.
       iApply ("HΦ" with "[HΨ] [$]").
       { iApply "HΨ". }
-      by iApply (is_slice_small_nil _ 1).
+      by iApply (own_slice_small_nil _ 1).
     }
     iApply (big_sepM_insert_2 with "").
     {
@@ -546,7 +546,7 @@ Proof.
       wp_store.
       iApply ("HΦ" with "[HΨ] [$]").
       { iApply "HΨ". done. }
-      by iDestruct (is_slice_to_small with "Henc_req") as "$".
+      by iDestruct (own_slice_to_small with "Henc_req") as "$".
     }
     by iApply big_sepM_empty.
   }
@@ -586,7 +586,7 @@ Proof.
   iNamed "Hcl".
   wp_loadField.
   iNamed "Hhost".
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
 
   wp_bind (urpc.Client__Call _ _ _ _ _).
   wp_apply (wp_frame_wand with "[-Hreq_sl Hrep]").
@@ -635,7 +635,7 @@ Proof.
   iNamed "Hcl".
   wp_loadField.
   iNamed "Hhost".
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
   {
     iModIntro. iModIntro.

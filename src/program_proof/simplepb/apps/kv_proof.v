@@ -140,13 +140,13 @@ Lemma wp_EncodePutArgs (args_ptr:loc) (key:u64) val val_sl :
   {{{
       "Hargs_key" ∷ args_ptr ↦[kv64.PutArgs :: "Key"] #key ∗
       "Hargs_val" ∷ args_ptr ↦[kv64.PutArgs :: "Val"] (slice_val val_sl) ∗
-      "Hargs_val_sl" ∷ is_slice_small val_sl byteT 1 (val)
+      "Hargs_val_sl" ∷ own_slice_small val_sl byteT 1 (val)
   }}}
     kv64.EncodePutArgs #args_ptr
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_op_encoding enc (putOp key val)⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Proof.
   iIntros (Φ) "H1 HΦ".
@@ -157,7 +157,7 @@ Proof.
   iIntros (ptr) "Hbuf".
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
   wp_load.
-  iDestruct (is_slice_small_acc with "Hbuf") as "[Hbuf Hbufclose]".
+  iDestruct (own_slice_small_acc with "Hbuf") as "[Hbuf Hbufclose]".
   wp_apply (wp_SliceSet with "[$Hbuf]").
   { iPureIntro. done. }
   iEval simpl.
@@ -183,7 +183,7 @@ Lemma wp_EncodeGetArgs (key:u64) :
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_op_encoding enc (getOp key)⌝ ∗
-        is_slice enc_sl byteT 1 enc
+        own_slice enc_sl byteT 1 enc
   }}}.
 Proof.
   iIntros (Φ) "H1 HΦ".
@@ -194,7 +194,7 @@ Proof.
   iIntros (ptr) "Hbuf".
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
   wp_load.
-  iDestruct (is_slice_small_acc with "Hbuf") as "[Hbuf Hbufclose]".
+  iDestruct (own_slice_small_acc with "Hbuf") as "[Hbuf Hbufclose]".
   wp_apply (wp_SliceSet with "[$Hbuf]").
   { iPureIntro. done. }
   iEval simpl.
@@ -259,7 +259,7 @@ Proof.
   wp_pures.
   wp_apply (wp_slice_len).
   iMod (readonly_load with "Hsl") as (?) "Hsl2".
-  iDestruct (is_slice_small_sz with "Hsl2") as %Hsl_sz.
+  iDestruct (own_slice_small_sz with "Hsl2") as %Hsl_sz.
   destruct op.
   { (* case: put op *)
     rewrite -Henc.
@@ -385,7 +385,7 @@ Proof.
       }
     }
     simpl.
-    iDestruct (is_slice_to_small with "Hrep_sl") as "$".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "$".
   }
   { (* case: get op *)
     wp_pures.
@@ -536,7 +536,7 @@ Proof.
   wp_pures.
   wp_apply (wp_slice_len).
   wp_pures.
-  iDestruct (is_slice_small_sz with "Hsl2") as %Hsl_sz.
+  iDestruct (own_slice_small_sz with "Hsl2") as %Hsl_sz.
   wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
   { rewrite -Hsl_sz.
     split; last done.
@@ -680,7 +680,7 @@ Proof.
   iApply wp_fupd.
   wp_apply (wp_EncodeMapU64ToBytes with "Hkvs_map").
   iIntros (??) "(Hmap & Henc & %Henc)".
-  iDestruct (is_slice_to_small with "Henc") as "Henc_sl".
+  iDestruct (own_slice_to_small with "Henc") as "Henc_sl".
   iMod (readonly_alloc_1 with "Henc_sl") as "#Henc_sl".
   iApply "HΦ".
   iModIntro.

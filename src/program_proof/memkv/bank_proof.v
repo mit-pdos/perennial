@@ -186,7 +186,7 @@ Proof.
     wp_apply (wp_EncodeUint64).
     iIntros (v_bal1_g' bytes1') "(Hsl&%)".
     wp_loadField.
-    iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+    iDestruct (own_slice_to_small with "Hsl") as "Hsl".
     iMod (readonly_alloc_1 with "Hsl") as "#Hsl".
     wp_apply (wp_SeqKVClerk__Put with "[$Hkck_own]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
@@ -207,7 +207,7 @@ Proof.
     iIntros (v_bal2_g' bytes2') "(Hsl2&%)".
 
     wp_loadField.
-    iDestruct (is_slice_to_small with "Hsl2") as "Hsl2".
+    iDestruct (own_slice_to_small with "Hsl2") as "Hsl2".
     iMod (readonly_alloc_1 with "Hsl2") as "#Hsl2".
     wp_apply (wp_SeqKVClerk__Put with "[$Hkck_own]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
@@ -396,7 +396,7 @@ Proof.
     iModIntro. iExists _. iFrame. iIntros "Hflag".
     iMod "Hclo'" as "_". iModIntro.
     iIntros (val_sl_flag q). iIntros "(Hkv&Hsl1)".
-    iDestruct (is_slice_to_small with "Hsl0") as "Hsl0".
+    iDestruct (own_slice_to_small with "Hsl0") as "Hsl0".
     wp_apply (wp_BytesEqual with "[Hsl0 Hsl1]").
     { by iFrame. }
     iIntros "(Hsl1&Hsl0)".
@@ -405,7 +405,7 @@ Proof.
     wp_apply (wp_EncodeUint64).
     iIntros (??) "(Hacc1_val_slice&%)".
     wp_loadField.
-    iDestruct (is_slice_to_small with "Hacc1_val_slice") as "Hacc1_val_slice".
+    iDestruct (own_slice_to_small with "Hacc1_val_slice") as "Hacc1_val_slice".
     iMod (readonly_alloc_1 with "Hacc1_val_slice") as "#Hacc1_val_Slice".
     wp_apply (wp_SeqKVClerk__Put with "[$Hkv]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
@@ -416,7 +416,7 @@ Proof.
     wp_apply (wp_EncodeUint64).
     iIntros (??) "(Hacc2_val_slice&%)".
     wp_loadField.
-    iDestruct (is_slice_to_small with "Hacc2_val_slice") as "Hacc2_val_slice".
+    iDestruct (own_slice_to_small with "Hacc2_val_slice") as "Hacc2_val_slice".
     iMod (readonly_alloc_1 with "Hacc2_val_slice") as "#Hacc2_val_Slice".
     wp_apply (wp_SeqKVClerk__Put with "[$Hkv]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
@@ -427,7 +427,7 @@ Proof.
     wp_apply (typed_slice.wp_NewSlice (V:=u8)).
     iIntros (?) "Hflag_val_slice".
     wp_loadField.
-    iDestruct (is_slice_to_small with "Hflag_val_slice") as "Hflag_val_slice".
+    iDestruct (own_slice_to_small with "Hflag_val_slice") as "Hflag_val_slice".
     iMod (readonly_alloc_1 with "Hflag_val_slice") as "#Hflag_val_Slice".
     wp_apply (wp_SeqKVClerk__Put with "[$Hkv]"); first by eauto.
     iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
@@ -464,7 +464,7 @@ Proof.
     iModIntro. iExists _. iFrame. iIntros "Hflag".
     iMod "Hclo'" as "_". iModIntro.
     iIntros (val_sl_flag q). iIntros "(Hkv&Hsl1)".
-    iDestruct (is_slice_to_small with "Hsl0") as "Hsl0".
+    iDestruct (own_slice_to_small with "Hsl0") as "Hsl0".
     wp_apply (wp_BytesEqual with "[Hsl0 Hsl1]").
     { by iFrame. }
     iIntros "(Hsl1&Hsl0)".

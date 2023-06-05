@@ -91,7 +91,7 @@ Proof.
   iIntros "Henc".
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s data) "(%Henc & %Hlen & Hs)".
-  iDestruct (is_slice_to_small with "Hs") as "Hs".
+  iDestruct (own_slice_to_small with "Hs") as "Hs".
   iMod (readonly_alloc_1 with "Hs") as "Hs".
   wp_pures.
   iApply "HΦ".

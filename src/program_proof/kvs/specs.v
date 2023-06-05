@@ -50,7 +50,7 @@ Qed.
 
 (* Links a list of kvpairs to a slice *)
 Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz: iProp Σ :=
-  ∃ slice_kvps, is_slice slice_val (struct.t KVPair) 1 (kvpair_val <$> slice_kvps)
+  ∃ slice_kvps, own_slice slice_val (struct.t KVPair) 1 (kvpair_val <$> slice_kvps)
                          ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
   let '(kvpair.mk key bs) := ls_kvp in ∃ (blk: Block),
       ⌜slice_kvp.(kvpair.key) = key ∧ valid_key key sz⌝ ∗

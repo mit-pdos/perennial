@@ -158,7 +158,7 @@ Proof.
   iIntros "!>" (s) "Hs".
   iApply "HΦ".
   iExists _; iFrame.
-  iDestruct (is_slice_to_small with "Hs") as "$".
+  iDestruct (own_slice_to_small with "Hs") as "$".
 Qed.
 
 Lemma txn_upds_subseteq txns1 txns2 :
@@ -270,7 +270,7 @@ Proof.
   iDestruct "Hbufs_s" as (bks) "(Hbks_s&Hupds)".
   rename bufs into upds.
 
-  iDestruct (slice.is_slice_small_sz with "Hbks_s") as %Hslen.
+  iDestruct (slice.own_slice_small_sz with "Hbks_s") as %Hslen.
   rewrite fmap_length in Hslen.
   iDestruct (big_sepL2_length with "Hupds") as %Hslen2.
 

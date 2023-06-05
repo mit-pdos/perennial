@@ -129,7 +129,7 @@ Section iris.
     { iFrame "#". }
     { iNamed "Hhost".
       iFrame "#". }
-    { iApply (is_slice_to_small with "Hreq"). }
+    { iApply (own_slice_to_small with "Hreq"). }
     - iIntros "!> !>".
       cbn.
       iIntros (pref) "#Hpref _".

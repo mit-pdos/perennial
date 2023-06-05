@@ -26,7 +26,7 @@ Definition adminN := nroot .@ "admin".
 
 Lemma wp_Reconfig γ (configHost:u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
   {{{
-        "Hservers_sl" ∷ is_slice servers_sl uint64T 1 servers ∗
+        "Hservers_sl" ∷ own_slice servers_sl uint64T 1 servers ∗
         "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host host γ γsrv) ∗
         "#Hconf_host" ∷ is_pb_config_host configHost γ
   }}}
@@ -41,7 +41,7 @@ Proof using waitgroupG0.
 
   wp_apply (wp_slice_len).
   wp_pures.
-  iDestruct (is_slice_sz with "Hservers_sl") as %Hservers_sz.
+  iDestruct (own_slice_sz with "Hservers_sl") as %Hservers_sz.
   wp_if_destruct.
   {
     by iApply "HΦ".
@@ -78,7 +78,7 @@ Proof using waitgroupG0.
     rewrite fmap_length in Hconfγ_nz.
     word.
   }
-  iDestruct (is_slice_small_sz with "Hconf_sl") as %Hconf_len.
+  iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_len.
   set (oldNodeId:=word.modu randId config_sl.(Slice.sz)).
   assert (int.nat oldNodeId < length conf) as Hlookup_conf.
   { rewrite Hconf_len.
@@ -174,10 +174,10 @@ Proof using waitgroupG0.
   iIntros (clerks_sl) "Hclerks_sl".
   wp_pures.
 
-  iDestruct (is_slice_to_small with "Hservers_sl") as "Hservers_sl".
+  iDestruct (own_slice_to_small with "Hservers_sl") as "Hservers_sl".
   rewrite -Hservers_sz.
-  iDestruct (is_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
-  iDestruct (is_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
+  iDestruct (own_slice_to_small with "Hclerks_sl") as "Hclerks_sl".
+  iDestruct (own_slice_small_sz with "Hclerks_sl") as %Hclerks_sz.
   rewrite replicate_length in Hclerks_sz.
   simpl.
   wp_apply (wp_ref_to).
@@ -191,8 +191,8 @@ Proof using waitgroupG0.
           "Hi" ∷ i_ptr ↦[uint64T] #i ∗
           "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
           "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
-          "Hclerks_sl" ∷ is_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
-          "Hservers_sl" ∷ is_slice_small servers_sl uint64T 1 servers ∗
+          "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
+          "Hservers_sl" ∷ own_slice_small servers_sl uint64T 1 servers ∗
           "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) server_γs),
                               pb_definitions.is_Clerk ck γ γsrv
                               )
@@ -360,7 +360,7 @@ Proof using waitgroupG0.
   { done. }
   clear err e.
   iIntros (errs_sl) "Herrs_sl".
-  iDestruct (slice.is_slice_sz with "Herrs_sl") as "%Herrs_sz".
+  iDestruct (slice.own_slice_sz with "Herrs_sl") as "%Herrs_sz".
   wp_pures.
   wp_store.
   wp_pures.
@@ -397,8 +397,8 @@ Proof using waitgroupG0.
           "Hwg" ∷ own_WaitGroup adminN wg γwg i P
           )%I with "[Herrs_sl Hi Hwg]" as "HH".
   {
-    unfold is_slice.
-    unfold slice.is_slice. unfold slice.is_slice_small.
+    unfold own_slice.
+    unfold slice.own_slice. unfold slice.own_slice_small.
     clear Hlen.
     iDestruct "Herrs_sl" as "[[Herrs_sl %Hlen] _]".
     destruct Hlen as [Hlen _].

@@ -38,7 +38,7 @@ Proof.
 
   wp_apply (typed_slice.wp_NewSlice (V:=u8)).
   iIntros (req_sl) "Hreq_sl".
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_loadField.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
@@ -70,7 +70,7 @@ Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   "Hmap_phys" ∷ map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
   "%Hdom_phys" ∷ ⌜ dom kvs = dom mv ⌝ ∗
   ([∗ set] k ∈ (fin_to_set u64),
-           (⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ kvs !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (kvs !! k)))))
+           (⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ kvs !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (kvs !! k)))))
 .
 
 (*
@@ -79,7 +79,7 @@ Definition own_shard_phys kvs_ptr sid (kvs:gmap u64 (list u8)) : iProp Σ :=
   "%Hdom_phys" ∷ ⌜ dom mv = dom kvs ⌝ ∗
   "Hmap_phys" ∷ map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
   "%Hdom_sid" ∷ ⌜ (∀ k, shardOfC k = sid → k ∈ dom mv) ⌝ ∗
-  ([∗ map] k ↦ vsl' ∈ mv, ∃ q vsl, ⌜ vsl' = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (kvs !! k))).
+  ([∗ map] k ↦ vsl' ∈ mv, ∃ q vsl, ⌜ vsl' = (slice_val vsl)⌝ ∗ typed_slice.own_slice_small vsl byteT q (default [] (kvs !! k))).
 *)
 
 Lemma wp_KVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γdst:
@@ -129,7 +129,7 @@ Proof.
   iEval (rewrite is_shard_server_unfold) in "His_shard".
   iNamed "His_shard".
   iNamed "HrawRep".
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_moveSpec_pre _ _) with "Hc_own HmoveSpec [] [$Hsl $HrawRep //]").
   { simpl. iModIntro. iNext. iExists _. iFrame "%". iSplit. 
     - iNext => /=. iFrame "Hserver".
@@ -184,7 +184,7 @@ Proof.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_erpc_NewRequest (is_shard_server_installSpec _) () with "[$Herpc $Hsl Hghost]").
   { simpl.
     iExists (mkInstallShardC _ _); iFrame. simpl.
@@ -197,7 +197,7 @@ Proof.
     done.
   }
   clear req_sl. iIntros (y req req_sl) "(Hreq & #Hpre & Htakepost)".
-  iDestruct (is_slice_to_small with "Hreq") as "Hreq".
+  iDestruct (own_slice_to_small with "Hreq") as "Hreq".
 
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -223,7 +223,7 @@ Qed.
 Lemma wp_KVShardClerk__Put γkv (ck:loc) (key:u64) (v:list u8) value_sl Q :
   {{{
        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗ (kvptsto γkv key v -∗ |={∅,⊤}=> Q))) ∗
-       readonly (typed_slice.is_slice_small value_sl byteT 1%Qp v) ∗
+       readonly (typed_slice.own_slice_small value_sl byteT 1%Qp v) ∗
        own_KVShardClerk ck γkv
   }}}
     KVShardClerk__Put #ck #key (slice_val value_sl)
@@ -255,12 +255,12 @@ Proof.
   iIntros (??) "(%Henc & Hsl & Hargs)".
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_loadField.
   wp_apply (wp_erpc_NewRequest (is_shard_server_putSpec _) (_, _) with "[$Herpc $Hsl Hkvptsto]").
   { simpl. auto. }
   clear req_sl. iIntros (y req req_sl) "(Hreq & #Hpre & Htakepost)".
-  iDestruct (is_slice_to_small with "Hreq") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq") as "Hreq_sl".
 
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -318,7 +318,7 @@ Lemma wp_KVShardClerk__Get γkv (ck:loc) (key:u64) (value_ptr:loc) Q :
 
         ⌜e = 0⌝ ∗
               ∃ some_sl v, value_ptr ↦[slice.T byteT] (slice_val some_sl) ∗
-                           readonly (typed_slice.is_slice_small some_sl byteT 1 v) ∗
+                           readonly (typed_slice.own_slice_small some_sl byteT 1 v) ∗
                            Q v
         )
   }}}
@@ -337,12 +337,12 @@ Proof.
 
   wp_apply (wp_EncodeGetRequest _ (mkGetRequestC _) with "Key").
   iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_loadField.
   wp_apply (wp_erpc_NewRequest (is_shard_server_getSpec _) (_, _) with "[$Herpc $Hreq_sl Hkvptsto]").
   { simpl. auto. }
   clear req_sl. iIntros (y req req_sl) "(Hreq_sl & #Hpre & Htakepost)".
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
 
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -396,8 +396,8 @@ Lemma wp_KVShardClerk__ConditionalPut γkv (ck:loc) (key:u64) (expv newv:list u8
   {{{
        (|={⊤,∅}=> (∃ oldv, kvptsto γkv key oldv ∗
          (let succ := bool_decide (expv = oldv) in kvptsto γkv key (if succ then newv else oldv) -∗ |={∅,⊤}=> Q succ))) ∗
-       readonly (typed_slice.is_slice_small expv_sl byteT 1 expv) ∗
-       readonly (typed_slice.is_slice_small newv_sl byteT 1 newv) ∗
+       readonly (typed_slice.own_slice_small expv_sl byteT 1 expv) ∗
+       readonly (typed_slice.own_slice_small newv_sl byteT 1 newv) ∗
        own_KVShardClerk ck γkv ∗
        (∃ b : bool, succ_ptr ↦[boolT] #b)
   }}}
@@ -432,12 +432,12 @@ Proof.
   wp_apply (wp_EncodeConditionalPutRequest _ _ _ (mkConditionalPutRequestC _ _ _) with "[Key ExpectedValue NewValue Hexpv_sl Hnewv_sl]").
   { iFrame. iFrame "#". }
   iIntros (reqData req_sl) "(%HencReq & Hreq_sl & Hreq)".
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
   wp_loadField.
   wp_apply (wp_erpc_NewRequest (is_shard_server_conditionalPutSpec _) (_, _) with "[$Herpc $Hreq_sl Hkvptsto]").
   { simpl. auto. }
   clear req_sl. iIntros (y req req_sl) "(Hreq_sl & #Hpre & Htakepost)".
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
 
   wp_apply (wp_ref_of_zero).
   { done. }

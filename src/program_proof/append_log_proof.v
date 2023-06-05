@@ -60,7 +60,7 @@ Proof.
   wp_apply (wp_Enc__PutInt with "Henc"); [ word | iIntros "Henc" ].
   wp_apply (wp_Enc__Finish with "[$Henc]").
   iIntros (s b) "[%Henc Hs]".
-  iDestruct (slice.is_slice_small_sz with "Hs") as %Hsz.
+  iDestruct (slice.own_slice_small_sz with "Hs") as %Hsz.
   rewrite length_Block_to_vals /block_bytes in Hsz.
   destruct s.
   replace sz0 with (U64 4096).
@@ -248,7 +248,7 @@ Proof.
     iIntros (s) "[Hdi Hs]".
     wp_steps.
     iApply "HΦ". iModIntro.
-    iApply slice.is_slice_to_small in "Hs".
+    iApply slice.own_slice_to_small in "Hs".
     iSplitR "Hsz Hdisk_sz Hupd Hdi"; eauto.
     iExists _; iFrame.
     iExists _; iFrame.
@@ -283,7 +283,7 @@ Proof.
 Abort.
 
 Definition blocks_slice (bk_s: Slice.t) (bks: list Slice.t) (bs: list Block): iProp Σ :=
-  is_slice_small bk_s (slice.T byteT) 1 bks ∗
+  own_slice_small bk_s (slice.T byteT) 1 bks ∗
    [∗ list] _ ↦ b_s;b ∈ bks;bs , is_block b_s 1 b.
 
 Lemma blocks_slice_length bk_s bks bs :
@@ -298,7 +298,7 @@ Lemma blocks_slice_length' bk_s bks bs :
   blocks_slice bk_s bks bs -∗ ⌜length bks = int.nat bk_s.(Slice.sz)⌝.
 Proof.
   iIntros "(Hs&_)".
-  iDestruct (is_slice_small_sz with "Hs") as "%".
+  iDestruct (own_slice_small_sz with "Hs") as "%".
   eauto.
 Qed.
 
@@ -355,9 +355,9 @@ Proof.
 Qed.
 
 Lemma wpc_SliceGet {stk k E1} `{!into_val.IntoVal V} s t q (vs: list V) (i: u64) (v0: V) :
-  {{{ is_slice_small s t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
+  {{{ own_slice_small s t q vs ∗ ⌜ vs !! int.nat i = Some v0 ⌝ }}}
     SliceGet t (slice_val s) #i @ stk; E1
-  {{{ RET into_val.to_val v0; is_slice_small s t q vs }}}
+  {{{ RET into_val.to_val v0; own_slice_small s t q vs }}}
   {{{ True }}}.
 Proof.
   iIntros (Φ Φc) "[Hs %] HΦ".
@@ -832,14 +832,14 @@ Proof.
   wpc_frame "Hd0 HΦ Hlog_rest".
   { iIntros. iLeft in "HΦ". iIntros "!>". iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame. eauto. }
   wp_steps.
-  iDestruct (slice.is_slice_sz with "Hs") as %Hsz.
+  iDestruct (slice.own_slice_sz with "Hs") as %Hsz.
   rewrite length_Block_to_vals in Hsz.
   assert (int.Z s.(Slice.sz) = 4096) as Hlen.
   { change block_bytes with 4096%nat in Hsz; lia. }
   pose proof Hhdr as Hhdr'.
   wp_apply (wp_new_dec with "[Hs]").
   { eauto. }
-  { iApply (slice.is_slice_to_small with "[$]"). }
+  { iApply (slice.own_slice_to_small with "[$]"). }
   iIntros (dec) "Hdec".
   wp_pures.
   wp_apply (wp_Dec__GetInt with "Hdec").
