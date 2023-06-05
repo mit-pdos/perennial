@@ -179,7 +179,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
   ∃ (kvs_ptr:loc) (mv:gmap u64 goose_lang.val),
   "HKey" ∷ args_ptr ↦[InstallShardRequest :: "Sid"] #args.(IR_Sid) ∗
   "HKvs" ∷ args_ptr ↦[InstallShardRequest :: "Kvs"] #kvs_ptr ∗
-  "HKvsMap" ∷ map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
+  "HKvsMap" ∷ map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
   "%Hdom_install" ∷ ⌜dom args.(IR_Kvs) = dom mv ⌝ ∗
   "Hvals" ∷ ([∗ set] k ∈ (fin_to_set u64),
         ⌜shardOfC k ≠ args.(IR_Sid) ∧ mv !! k = None ∧ args.(IR_Kvs) !! k = None⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (args.(IR_Kvs) !! k))) )
@@ -188,7 +188,7 @@ Definition own_InstallShardRequest args_ptr args : iProp Σ :=
 Lemma wp_EncSliceMap e mref mv m sz r remaining :
   marshalledMapSize m <= remaining →
   {{{
-      "HKvsMap" ∷ map.is_map mref 1 (mv, slice_val Slice.nil) ∗
+      "HKvsMap" ∷ map.own_map mref 1 (mv, slice_val Slice.nil) ∗
       "Henc" ∷ is_enc e sz r remaining ∗
       "Hvals" ∷ is_slicemap_rep mv m
   }}}
@@ -196,7 +196,7 @@ Lemma wp_EncSliceMap e mref mv m sz r remaining :
   {{{
        rmap, RET #();
        ⌜has_byte_map_encoding m rmap⌝ ∗
-       map.is_map mref 1 (mv, slice_val Slice.nil) ∗
+       map.own_map mref 1 (mv, slice_val Slice.nil) ∗
        is_slicemap_rep mv m ∗
        is_enc e sz (r ++ rmap) (remaining - marshalledMapSize m)
   }}}.
@@ -366,13 +366,13 @@ Definition SizeOfMarshalledMap_invariant m0 (s : loc) (mtodo' mdone':gmap u64 va
 
 Lemma wp_SizeOfMarshalledMap mref mv m :
   {{{
-      "HKvsMap" ∷ map.is_map mref 1 (mv, slice_val Slice.nil) ∗
+      "HKvsMap" ∷ map.own_map mref 1 (mv, slice_val Slice.nil) ∗
       "Hvals" ∷ is_slicemap_rep mv m
   }}}
     SizeOfMarshalledMap #mref
   {{{
        (z : u64), RET #z; ⌜ int.nat z = marshalledMapSize m ⌝ ∗
-       map.is_map mref 1 (mv, slice_val Slice.nil) ∗
+       map.own_map mref 1 (mv, slice_val Slice.nil) ∗
        is_slicemap_rep mv m
   }}}.
 Proof.
@@ -599,7 +599,7 @@ Definition DecSliceMap_invariant dec_v i_ptr m (r:Rec) mref s data : iProp Σ :=
     ⌜(list_to_map l) ##ₘ mdone⌝ ∗
     ⌜(list_to_map l) ∪ mdone = m⌝ ∗
     i_ptr ↦[uint64T] #(size mdone) ∗
-    map.is_map mref 1 (mdone', (slice_val Slice.nil)) ∗
+    map.own_map mref 1 (mdone', (slice_val Slice.nil)) ∗
     is_slicemap_rep mdone' mdone ∗
     is_dec dec_v
           ((flat_map (λ u : u64 * list u8, [EncUInt64 u.1; EncUInt64 (int.Z (length u.2)); EncBytes u.2]) l) ++ r)
@@ -633,7 +633,7 @@ Lemma wp_DecSliceMap d l m args_sl argsData :
     DecSliceMap d
   {{{
        rmap mv, RET #rmap;
-       map.is_map rmap 1 (mv, slice_val Slice.nil) ∗
+       map.own_map rmap 1 (mv, slice_val Slice.nil) ∗
        is_slicemap_rep mv m
   }}}.
 Proof.

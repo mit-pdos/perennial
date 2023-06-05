@@ -532,7 +532,7 @@ Proof.
   wp_apply (wp_If_join with "[HopAppliedConds HopAppliedConds_map HnextIndex]").
   {
     instantiate (1:=(∃ newOpAppliedConds,
-                "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 newOpAppliedConds ∗
+                "HopAppliedConds_map" ∷ own_map opAppliedConds_loc 1 newOpAppliedConds ∗
                 "#HopAppliedConds_conds" ∷ ([∗ map] cond0 ∈ newOpAppliedConds, is_cond cond0 mu) ∗
                 "HopAppliedConds" ∷ s ↦[Server :: "opAppliedConds"] #opAppliedConds_loc ∗
                 "HnextIndex" ∷ s ↦[Server :: "nextIndex"] #(_)

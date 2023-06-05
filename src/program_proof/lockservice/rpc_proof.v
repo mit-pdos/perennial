@@ -51,8 +51,8 @@ Definition RPCServer_own_vol (sv:loc) (γrpc:rpc_names) (lastSeqM lastReplyM:gma
   ∃ (lastSeq_ptr lastReply_ptr:loc),
       "HlastSeqOwn" ∷ sv ↦[RPCServer :: "lastSeq"] #lastSeq_ptr ∗
       "HlastReplyOwn" ∷ sv ↦[RPCServer :: "lastReply"] #lastReply_ptr ∗
-      "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
-      "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM ∗
+      "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM ∗
+      "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM ∗
       "#Hlinv" ∷ is_RPCServer γrpc
 .
 
@@ -77,8 +77,8 @@ Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γ
 int.nat req.(Req_Seq) > 0 →
 is_RPCServer γrpc -∗
 {{{
-    "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
-    "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM ∗
+    "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM ∗
+    "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM ∗
     "Hreply" ∷ RPCReply_own reply_ptr reply
 }}}
   CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply_ptr
@@ -87,14 +87,14 @@ is_RPCServer γrpc -∗
       "Hcases" ∷ ("%" ∷ ⌜b = false⌝ ∗
            "%" ∷ ⌜(int.Z req.(Req_Seq) > int.Z (map_get lastSeqM req.(Req_CID)).1)%Z⌝ ∗
            "%" ∷ ⌜reply'.(Rep_Stale) = false⌝ ∗
-           "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
+           "HlastSeqMap" ∷ own_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
          ∨ 
          "%" ∷ ⌜b = true⌝ ∗
-           "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
+           "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM ∗
            ((⌜reply'.(Rep_Stale) = true⌝ ∗ (RPCServer_own_ghost γrpc lastSeqM lastReplyM ={⊤}=∗ RPCRequestStale γrpc req ∗ RPCServer_own_ghost γrpc lastSeqM lastReplyM )) ∨
              (RPCServer_own_ghost γrpc lastSeqM lastReplyM ={⊤}=∗ RPCReplyReceipt γrpc req reply'.(Rep_Ret) ∗ RPCServer_own_ghost γrpc lastSeqM lastReplyM ))) ∗
 
-    "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM
 }}}
 .
 Proof.

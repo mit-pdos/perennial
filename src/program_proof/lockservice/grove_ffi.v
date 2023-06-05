@@ -183,7 +183,7 @@ Definition is_rpcHandler {X:Type} (f:val) Pre Post : iProp Σ :=
 
 Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (mref : loc) (def : val) k,
   {{{
-      map.is_map mref (handlers, def) ∗
+      map.own_map mref (handlers, def) ∗
       [∗ map] rpcid ↦ handler ∈ handlers, (∃ X Pre Post, handler_is X host rpcid Pre Post ∗ is_rpcHandler handler Pre Post)
   }}}
     grove_ffi.StartRPCServer #mref @ ⊤

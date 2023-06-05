@@ -18,10 +18,10 @@ Context `{!heapGS Σ}.
 Implicit Types (m: gmap u64 ()) (addrs: gset u64).
 
 Definition is_addrset (m_ref: loc) addrs: iProp Σ :=
-  ∃ m, is_map m_ref 1 m ∗ ⌜dom m = addrs⌝.
+  ∃ m, own_map m_ref 1 m ∗ ⌜dom m = addrs⌝.
 
 Theorem is_addrset_from_empty (m_ref: loc) :
-  is_map m_ref 1 (∅: gmap u64 ()) -∗ is_addrset m_ref ∅.
+  own_map m_ref 1 (∅: gmap u64 ()) -∗ is_addrset m_ref ∅.
 Proof.
   iIntros "Hm".
   iExists _; iFrame.
@@ -44,7 +44,7 @@ Proof.
   iIntros (il) "i".
   wp_pures.
   wp_apply (wp_forUpto (λ i, "%Hilower_bound" ∷ ⌜int.Z start ≤ int.Z i⌝ ∗
-                             "*" ∷ ∃ m, "Hmap" ∷ is_map mref 1 m ∗
+                             "*" ∷ ∃ m, "Hmap" ∷ own_map mref 1 m ∗
                                         "%Hmapdom" ∷ ⌜dom m = rangeSet (int.Z start) (int.Z i - int.Z start)⌝)%I
             with "[] [Hmap $i]").
   - word.
@@ -94,12 +94,12 @@ Qed.
 (* this is superceded by wp_findKey, but that theorem relies in an unproven map
 iteration theorem *)
 Theorem wp_findKey' mref m E :
-  {{{ is_map mref 1 m }}}
+  {{{ own_map mref 1 m }}}
     findKey #mref @ E
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
       ⌜if ok then m !! k = Some tt else True⌝ ∗ (* TODO: easier if this
       promises to find a key if it exists *)
-      is_map mref 1 m
+      own_map mref 1 m
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
@@ -135,7 +135,7 @@ Proof.
       iSplitL; auto.
       iExists _, _; iFrame.
       auto.
-  - iIntros "(His_map&HI&_HQ)"; iNamed "HI".
+  - iIntros "(Hown_map&HI&_HQ)"; iNamed "HI".
     wp_pures.
     wp_load. wp_load.
     wp_pures.

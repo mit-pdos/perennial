@@ -625,7 +625,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "HleaseExpiration" ∷ s ↦[pb.Server :: "leaseExpiration"] #st.(server.leaseExpiration) ∗
   (* backup sequencer *)
   "HopAppliedConds" ∷ s ↦[pb.Server :: "opAppliedConds"] #opAppliedConds_loc ∗
-  "HopAppliedConds_map" ∷ is_map opAppliedConds_loc 1 opAppliedConds ∗
+  "HopAppliedConds_map" ∷ own_map opAppliedConds_loc 1 opAppliedConds ∗
 
   (* ownership of the statemachine *)
   "Hstate" ∷ own_StateMachine st.(server.epoch) (get_rwops st.(server.ops_full_eph)) st.(server.sealed) (own_Server_ghost_f γ γsrv) ∗

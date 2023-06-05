@@ -182,12 +182,12 @@ Definition own_KVShardServer (s:loc) γ : iProp Σ :=
                       own_shard γ.(kv_gn) sid m ∗ (* own shard *)
                       ⌜kvs_ptrs !! (int.nat sid) = Some kvs_ptr⌝ ∗
                       ⌜dom m = dom mv⌝ ∗
-                      map.is_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
+                      map.own_map kvs_ptr 1 (mv, (slice_val Slice.nil)) ∗
                       ([∗ set] k ∈ (fin_to_set u64),
                        ⌜shardOfC k ≠ sid ∧ mv !! k = None ∧ m !! k = None ⌝ ∨ (∃ q vsl, ⌜default (slice_val Slice.nil) (mv !! k) = (slice_val vsl)⌝ ∗ typed_slice.is_slice_small vsl byteT q (default [] (m !! k))) )
                   )
                  ) ∗
-  "HpeersMap" ∷ is_map (V:=loc) peers_ptr 1 peersM ∗
+  "HpeersMap" ∷ own_map (V:=loc) peers_ptr 1 peersM ∗
   "HpeerClerks" ∷ ([∗ map] k ↦ ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn))
 .
 

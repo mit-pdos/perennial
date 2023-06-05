@@ -46,14 +46,14 @@ Definition marshalledMapSize (m:gmap u64 u64) : nat := 8 + 8 * 2 * (size m).
 Lemma wp_EncMap e mref m sz r remaining :
 marshalledMapSize m <= remaining →
 {{{
-    "Hmap" ∷ is_map (V:=u64) mref m ∗
+    "Hmap" ∷ own_map (V:=u64) mref m ∗
     "Henc" ∷ is_enc e sz r remaining
 }}}
   EncMap e #mref
 {{{
      rmap, RET #();
      ⌜has_map_encoding m rmap⌝ ∗
-     is_map (V:=u64) mref m ∗
+     own_map (V:=u64) mref m ∗
      is_enc e sz (r ++ rmap) (remaining - marshalledMapSize m)
 }}}.
 Proof using Type*.
@@ -184,7 +184,7 @@ Definition DecMap_invariant dec_v i_ptr m (r:Rec) mref s q data : iProp Σ :=
     ⌜(list_to_map l) ##ₘ mdone⌝ ∗
     ⌜(list_to_map l) ∪ mdone = m⌝ ∗
     i_ptr ↦[uint64T] #(size mdone) ∗
-    is_map mref mdone ∗
+    own_map mref mdone ∗
     is_dec dec_v ((flat_map (λ u, [EncUInt64 u.1 ; EncUInt64 u.2]) l) ++ r) s q data
 .
 
@@ -202,7 +202,7 @@ Lemma wp_DecMap dec_v m s r rmap data q :
     DecMap dec_v
   {{{
       mref, RET #mref;
-      is_map mref m ∗
+      own_map mref m ∗
       is_dec dec_v r s q data
   }}}.
 Proof.
@@ -341,7 +341,7 @@ Definition KVServer_core_own_durable server rpc_server : iProp Σ :=
 Definition KVServer_core_own_vol (srv:loc) kv_server : iProp Σ :=
   ∃ (kvs_ptr:loc),
   "HkvsOwn" ∷ srv ↦[KVServer :: "kvs"] #kvs_ptr ∗
-  "HkvsMap" ∷ is_map (kvs_ptr) kv_server.(kvsM)
+  "HkvsMap" ∷ own_map (kvs_ptr) kv_server.(kvsM)
 .
 
 Definition KVServer_core_own_ghost γ kv_server : iProp Σ :=
@@ -352,8 +352,8 @@ Definition RPCServer_own_vol (sv:loc) rpc_server : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc),
     "HlastSeqOwn" ∷ sv ↦[RPCServer :: "lastSeq"] #lastSeq_ptr
 ∗ "HlastReplyOwn" ∷ sv ↦[RPCServer :: "lastReply"] #lastReply_ptr
-∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) rpc_server.(lastSeqM)
-∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) rpc_server.(lastReplyM)
+∗ "HlastSeqMap" ∷ own_map (lastSeq_ptr) rpc_server.(lastSeqM)
+∗ "HlastReplyMap" ∷ own_map (lastReply_ptr) rpc_server.(lastReplyM)
 .
 
 Definition RPCServer_own_ghost (sv:loc) γrpc rpc_server : iProp Σ :=

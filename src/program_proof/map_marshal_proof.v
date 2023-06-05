@@ -7,7 +7,7 @@ Section map_marshal_proof.
 Context `{!heapGS Σ}.
 Definition own_byte_map (mptr:loc) (m:gmap u64 (list u8)): iProp Σ :=
   ∃ (kvs_sl:gmap u64 Slice.t),
-    "Hkvs_map" ∷ is_map mptr 1 kvs_sl ∗
+    "Hkvs_map" ∷ own_map mptr 1 kvs_sl ∗
     "%Hkvs_dom" ∷ ⌜dom kvs_sl = dom m⌝ ∗
     "#Hkvs_slices" ∷ (∀ (k:u64),
         readonly (is_slice_small (default Slice.nil (kvs_sl !! k))
@@ -290,12 +290,12 @@ Definition has_u64_map_encoding (enc:list u8) (m:gmap u64 u64) : Prop :=
 
 Lemma wp_EncodeMapU64ToU64 mptr m :
   {{{
-        "Hmap" ∷ is_map mptr 1 m
+        "Hmap" ∷ own_map mptr 1 m
   }}}
     EncodeMapU64ToU64 #mptr
   {{{
         enc_sl enc, RET (slice_val enc_sl);
-        is_map mptr 1 m ∗
+        own_map mptr 1 m ∗
         is_slice enc_sl byteT 1 enc ∗
         ⌜has_u64_map_encoding enc m⌝
   }}}.
@@ -362,7 +362,7 @@ Lemma wp_DecodeMapU64ToU64 m enc_sl enc enc_rest q :
     DecodeMapU64ToU64 (slice_val enc_sl)
   {{{
         rest_enc_sl q' mptr, RET (#mptr, slice_val rest_enc_sl);
-        is_map mptr 1 m ∗
+        own_map mptr 1 m ∗
         is_slice_small rest_enc_sl byteT q' enc_rest
   }}}.
 Proof.
@@ -375,7 +375,7 @@ Proof.
   wp_apply (wp_ReadInt with "Henc_sl"). iIntros (s') "Hs". wp_store. clear enc_sl.
   wp_apply wp_ref_to; first by val_ty. iIntros (li) "Hli". wp_pures.
   wp_apply (wp_forUpto (λ i, ∃ s,
-              "Hm" ∷ is_map mptr 1 (list_to_map (take (int.nat i) ls)) ∗
+              "Hm" ∷ own_map mptr 1 (list_to_map (take (int.nat i) ls)) ∗
               "Hl" ∷ l ↦[slice.T byteT] (slice_val s) ∗
               "Hs" ∷ is_slice_small s byteT q (encode_u64_maplist (drop (int.nat i) ls) ++ enc_rest)
   )%I with "[] [$Hli Hm Hl Hs]"); first word.

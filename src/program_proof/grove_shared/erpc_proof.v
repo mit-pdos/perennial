@@ -77,12 +77,12 @@ Local Definition own_erpc_server (γ : erpc_names) (s : loc) : iProp Σ :=
     (lastReplyM:gmap u64 (list u8)) (lastReplyMV:gmap u64 goose_lang.val)
     (lastSeqM:gmap u64 u64) (nextCID:u64),
   "HlastReply" ∷ s ↦[erpc.Server :: "lastReply"] #lastReply_ptr ∗
-  "HlastReplyMap" ∷ map.is_map lastReply_ptr 1 (lastReplyMV, zero_val (slice.T byteT)) ∗ (* TODO: default *)
+  "HlastReplyMap" ∷ map.own_map lastReply_ptr 1 (lastReplyMV, zero_val (slice.T byteT)) ∗ (* TODO: default *)
   "%HlastReplyMVdom" ∷ ⌜dom lastReplyMV = dom lastSeqM⌝ ∗
   "HlastReply_structs" ∷ ([∗ map] k ↦ v;rep ∈ lastReplyMV ; lastReplyM,
     ∃ val_sl q, ⌜v = slice_val val_sl⌝ ∗ typed_slice.is_slice_small val_sl byteT q rep) ∗
   "HlastSeq" ∷ s ↦[erpc.Server :: "lastSeq"] #lastSeq_ptr ∗
-  "HlastSeqMap" ∷ is_map lastSeq_ptr 1 lastSeqM ∗
+  "HlastSeqMap" ∷ own_map lastSeq_ptr 1 lastSeqM ∗
   "HnextCID" ∷ s ↦[erpc.Server :: "nextCID"] #nextCID ∗
   "Herpc" ∷ eRPCServer_own_ghost γ lastSeqM lastReplyM ∗
   "Hcids" ∷ [∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z nextCID⌝%Z ∨ (is_eRPCClient_ghost γ cid 1)

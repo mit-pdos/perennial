@@ -23,7 +23,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 loc) (am : gmap addr loc),
     bufmap ↦[BufMap :: "addrs"] #mptr ∗
-    is_map mptr 1 m ∗
+    own_map mptr 1 m ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
       is_buf bufptr a buf.

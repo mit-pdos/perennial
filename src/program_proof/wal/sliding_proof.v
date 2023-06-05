@@ -41,7 +41,7 @@ Definition is_sliding (l: loc) (q: Qp) (σ: slidingM.t) : iProp Σ :=
     "needFlush" ∷ (∃ (needFlush: bool), "needFlush" ∷ l ↦[sliding :: "needFlush"] #needFlush) ∗
     "#log_readonly" ∷ readonly_log logSlice σ ∗
     "log_mutable" ∷ mutable_log logSlice q σ ∗
-    "is_addrPos" ∷ is_map addrPosPtr 1 (slidingM.addrPosMap σ).
+    "is_addrPos" ∷ own_map addrPosPtr 1 (slidingM.addrPosMap σ).
 
 Theorem is_sliding_wf l q σ : is_sliding l q σ -∗ ⌜slidingM.wf σ⌝.
 Proof.
@@ -193,17 +193,17 @@ Proof.
   iIntros (Hbound Φ) "[Hs Hcap] HΦ".
   rewrite /mkSliding; wp_pures.
   wp_apply (wp_NewMap).
-  iIntros (addrPosPtr) "His_map".
+  iIntros (addrPosPtr) "Hown_map".
   wp_pures.
   iDestruct (updates_slice_frag_len with "Hs") as %Hlen.
   iDestruct "Hs" as (bks) "[Hs Hblocks]".
 
   wp_apply (wp_forSlice
-              (fun i => "Hm" ∷ is_map addrPosPtr 1
+              (fun i => "Hm" ∷ own_map addrPosPtr 1
                                (compute_memLogMap (take (int.nat i) log) start) ∗
                       "Hblocks" ∷ [∗ list] b_upd;upd ∈ bks;log, is_update b_upd q upd
               )%I
-           with "[] [His_map $Hblocks $Hs]").
+           with "[] [Hown_map $Hblocks $Hs]").
   2: {
     rewrite take_0 compute_memLogMap_nil.
     iFrame.
@@ -1075,7 +1075,7 @@ Proof.
   wp_apply (wp_forSlice (fun i =>
     "start" ∷ l ↦[sliding :: "start"] #σ.(slidingM.start) ∗
     "addrPos" ∷ l ↦[sliding :: "addrPos"] #addrPosPtr ∗
-    "HaddrPos" ∷ is_map addrPosPtr 1 (slidingM.addrPosMap
+    "HaddrPos" ∷ own_map addrPosPtr 1 (slidingM.addrPosMap
       (set slidingM.start (word.add i)
         (set slidingM.log (drop (int.nat i)) σ)
       )

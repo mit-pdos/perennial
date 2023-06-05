@@ -59,7 +59,7 @@ Definition Lockserver_inv γ : iProp Σ :=
 Definition LockServer_own_core γ (srv:loc) : iProp Σ :=
   ∃ (locks_ptr:loc) (locksM:gmap u64 bool),
     "HlocksOwn" ∷ srv ↦[LockServer :: "locks"] #locks_ptr ∗ (* we own the "locks" field *)
-    "Hmap" ∷ is_map (locks_ptr) locksM ∗ (* we control the physical map *)
+    "Hmap" ∷ own_map (locks_ptr) locksM ∗ (* we control the physical map *)
     "HmapDom" ∷ ghost_var γ.(ls_locksMapDomGN) (1/2) (dom locksM) ∗ (* the physical domain ghost variable matches the physical map *)
     "Hlockeds" ∷ [∗ map] ln ↦ locked ∈ locksM, (⌜locked=true⌝ ∨ (Ps ln)) (* we own the invariants of all not-held locks *)
 .

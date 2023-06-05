@@ -18,7 +18,7 @@ Definition keys_hashed (hash : nat) :=
 Definition own_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp Σ :=
   ∃ (lockm : loc) (lockmM : gmap u64 loc),
     "Hlockm" ∷ bkt ↦[IndexBucket :: "m"] #lockm ∗
-    "HlockmOwn" ∷ is_map lockm 1 lockmM ∗
+    "HlockmOwn" ∷ own_map lockm 1 lockmM ∗
     "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), ptuple_auth γ (1/2) key [Nil; Nil]) ∗
     "#HtuplesRP" ∷ ([∗ map] key ↦ tuple ∈ lockmM, is_tuple tuple key γ) ∗
     "_" ∷ True.

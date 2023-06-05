@@ -216,7 +216,7 @@ Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp �
   "Hvnums" ∷ s ↦[KVState :: "vnums"] #vnums_loc ∗
   "HminVnum" ∷ s ↦[KVState :: "minVnum"] #minVnum ∗
   "Hkvs_map" ∷ own_byte_map kvs_loc (compute_state ops) ∗
-  "Hvnums_map" ∷ is_map vnums_loc 1 vnumsM ∗
+  "Hvnums_map" ∷ own_map vnums_loc 1 vnumsM ∗
   "#Hst" ∷ □ (∀ (k:u64),
               (∀ (vnum':u64), ⌜int.nat vnum' <= int.nat latestVnum⌝ →
                              ⌜int.nat (default minVnum (vnumsM !! k)) <= int.nat vnum'⌝ →

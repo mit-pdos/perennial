@@ -40,10 +40,10 @@ Definition gokv_core s gkv : iProp Σ :=
   ∃ (kvs_ptr lastSeq_ptr aof_ptr lastReply_ptr:loc),
    "HlastSeqOwn" ∷ s ↦[GoKVServer :: "lastSeq"] #lastSeq_ptr ∗
    "HlastReplyOwn" ∷ s ↦[GoKVServer :: "lastReply"] #lastReply_ptr ∗
-   "HlastSeqMap" ∷ is_map (lastSeq_ptr) gkv.(lastSeqM) ∗
-   "HlastReplyMap" ∷ is_map (lastReply_ptr) gkv.(lastReplyM) ∗
+   "HlastSeqMap" ∷ own_map (lastSeq_ptr) gkv.(lastSeqM) ∗
+   "HlastReplyMap" ∷ own_map (lastReply_ptr) gkv.(lastReplyM) ∗
    "HkvsOwn" ∷ s ↦[GoKVServer :: "kvs"] #kvs_ptr ∗
-   "HkvsMap" ∷ is_map (kvs_ptr) gkv.(kvsM)
+   "HkvsMap" ∷ own_map (kvs_ptr) gkv.(kvsM)
 .
 
 Definition apply_op_req (gkv:GoKVServerC) (rid:RPCRequestID) (args:RPCValsC) (gkv':GoKVServerC) : iProp Σ :=
@@ -115,8 +115,8 @@ Lemma wp_CheckReplyTable :
     ∀ (reply_ptr:loc) (reply:Reply64) (lastSeq_ptr lastReply_ptr:loc),
 {{{
      "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
-    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
-    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM
+    ∗ "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM
     ∗ "Hreply" ∷ own_reply reply_ptr reply
 }}}
     lockservice.CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply_ptr
@@ -126,13 +126,13 @@ Lemma wp_CheckReplyTable :
     "Hcases" ∷ ("%" ∷ ⌜b = false⌝ ∗
     "%" ∷ ⌜(int.Z req.(Req_Seq) > int.Z (map_get lastSeqM req.(Req_CID)).1)%Z⌝ ∗
     "%" ∷ ⌜reply'.(Rep_Stale) = false⌝ ∗
-    "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM))
+    "HlastSeqMap" ∷ own_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM))
     ∨
     "%" ∷ ⌜b = true⌝ ∗
-    "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
+    "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM ∗
     "Hwand" ∷ (∀ γrpc, RPCServer_own γrpc lastSeqM lastReplyM -∗ reply_res γrpc req reply')
     ) ∗
-    "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM
 }}}
 .
 Admitted.

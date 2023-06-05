@@ -582,7 +582,7 @@ Definition own_StateMachine (s:loc) (ops:list eeOp) : iProp Σ :=
   "HnextCID" ∷ s ↦[EEStateMachine :: "nextCID"] #st.(nextCID) ∗
   "HlastSeq_ptr" ∷ s ↦[EEStateMachine :: "lastSeq"] #lastSeq_ptr ∗
   "HlastReply_ptr" ∷ s ↦[EEStateMachine :: "lastReply"] #lastReply_ptr ∗
-  "HlastSeq" ∷ is_map lastSeq_ptr 1 st.(lastSeq) ∗
+  "HlastSeq" ∷ own_map lastSeq_ptr 1 st.(lastSeq) ∗
   "HlastReply" ∷ own_byte_map lastReply_ptr st.(lastReply) ∗
 
   "HeeNextIndex" ∷ s ↦[EEStateMachine :: "eeNextIndex"] #(U64 (length ops)) ∗

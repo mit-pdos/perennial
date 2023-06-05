@@ -52,7 +52,7 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
            (ghostHeap : gname) (covered : gset u64) (P Pc : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (m: Map.t loc) ghostMap,
-      is_map mptr 1 m ∗
+      own_map mptr 1 m ∗
       ghost_map_auth ghostHeap 1 ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P Pc ) ∗
@@ -74,7 +74,7 @@ Definition is_free_lockShard (ls : loc) : iProp Σ :=
   ( ∃ (shardlock mptr : loc),
       "#Hls_mu" ∷ readonly (ls ↦[lockShard :: "mu"] #shardlock) ∗
       "#Hls_state" ∷ readonly (ls ↦[lockShard :: "state"] #mptr) ∗
-      "Hmap" ∷ is_map mptr 1 (∅ : Map.t loc) ∗
+      "Hmap" ∷ own_map mptr 1 (∅ : Map.t loc) ∗
       "Hfree" ∷ crash_lock.is_free_crash_lock shardlock
   )%I.
 

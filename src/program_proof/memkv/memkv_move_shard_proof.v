@@ -42,7 +42,7 @@ Proof.
                         "HDst" ∷ args_ptr ↦[MoveShardRequest :: "Dst"] #args.(MR_Dst) ∗
                         "Hpeers" ∷ s ↦[KVShardServer :: "peers"] #peers_ptr ∗
                         "HpeerClerks" ∷ ([∗ map] ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn)) ∗
-                        "HpeersMap" ∷ is_map peers_ptr 1 peersM)%I
+                        "HpeersMap" ∷ own_map peers_ptr 1 peersM)%I
               with "[HDst HpeersMap HpeerClerks Hpeers]").
   {
     wp_if_destruct.

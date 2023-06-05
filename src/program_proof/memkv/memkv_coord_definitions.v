@@ -57,7 +57,7 @@ Definition own_ShardClerkSet (s:loc) (γkv:gname) : iProp Σ :=
   ∃ (c:loc) (cls_ptr:loc)  (clsM:gmap u64 loc),
   "Hcls" ∷ s ↦[ShardClerkSet :: "cls"] #cls_ptr ∗
   "Hc" ∷ s ↦[ShardClerkSet :: "c"] #c ∗
-  "HclsMap" ∷ is_map cls_ptr 1 clsM ∗
+  "HclsMap" ∷ own_map cls_ptr 1 clsM ∗
   "HclsOwn" ∷ ([∗ map] host ↦ cl_ptr ∈ clsM, own_KVShardClerk cl_ptr γkv) ∗
   "#Hc_own" ∷ is_ConnMan c
 .
@@ -71,7 +71,7 @@ Definition own_KVCoordServer (s : loc) γ : iProp Σ :=
   "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
   "HshardMap_sl" ∷ typed_slice.is_slice (V:=u64) shardMap_sl HostName 1 shardMapping ∗
   "#HshardServers" ∷ all_are_shard_servers shardMapping γ ∗
-  "Hmap" ∷ is_map (V:=u64) hostShards_ptr 1 hostShards ∗
+  "Hmap" ∷ own_map (V:=u64) hostShards_ptr 1 hostShards ∗
   "HshardClerksSet" ∷ own_ShardClerkSet clset γ.
 
 Definition is_KVCoordServer (s:loc) γ : iProp Σ :=

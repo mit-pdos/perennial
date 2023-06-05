@@ -502,9 +502,9 @@ Definition ps_mu_inv (ps:loc) γ : iProp Σ :=
     "HfinishedTxns" ∷ ps ↦[ParticipantServer :: "finishedTxns"] #finishedTxns_ptr ∗
 
     "HlockMap_ptr" ∷ ps ↦[ParticipantServer :: "lockmap"] #lockMap_ptr ∗
-    "HkvsMap" ∷ is_map (kvs_ptr) kvsM ∗
-    "HtxnsMap" ∷ is_map (txns_ptr) txnsM ∗
-    "HfinishedTxnsMap" ∷ is_map (finishedTxns_ptr) finishedTxnsM ∗
+    "HkvsMap" ∷ own_map (kvs_ptr) kvsM ∗
+    "HtxnsMap" ∷ own_map (txns_ptr) txnsM ∗
+    "HfinishedTxnsMap" ∷ own_map (finishedTxns_ptr) finishedTxnsM ∗
 
     "Hkvs_ctx" ∷ ([∗ set] k ∈ (fin_to_set u64), kv_ctx γ kvsM k) ∗
     "#HlockMap" ∷ is_lockMap lockMap_ptr γ.(ps_ghs) (fin_to_set u64) (λ k, kv_tok γ k) ∗

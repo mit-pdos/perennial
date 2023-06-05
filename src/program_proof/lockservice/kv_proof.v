@@ -42,7 +42,7 @@ Print is_lock.
 Definition KVServer_own_core γ srv kvsM : iProp Σ :=
   ∃ (kvs_ptr:loc),
   "HlocksOwn" ∷ srv ↦[KVServer :: "kvs"] #kvs_ptr ∗
-  "HkvsMap" ∷ is_map (kvs_ptr) kvsM ∗
+  "HkvsMap" ∷ own_map (kvs_ptr) kvsM ∗
   "Hkvctx" ∷ map_ctx γ.(ks_kvMapGN) 1 kvsM (* ghost part *)
 .
 

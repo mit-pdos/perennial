@@ -15,8 +15,8 @@ Local Definition own_ConnMan (c_ptr:loc) (lock: val) : iProp Σ :=
   ∃ (rpcCls making:loc) (rpcClsM makingM:gmap u64 loc),
     "HrpcCls" ∷ c_ptr ↦[ConnMan :: "rpcCls"] #rpcCls ∗
     "Hmaking" ∷ c_ptr ↦[ConnMan :: "making"] #making ∗
-    "Hcls_map" ∷ is_map rpcCls 1 rpcClsM ∗
-    "Hmaking_map" ∷ is_map making 1 makingM ∗
+    "Hcls_map" ∷ own_map rpcCls 1 rpcClsM ∗
+    "Hmaking_map" ∷ own_map making 1 makingM ∗
     "#HownRpcCls" ∷ ([∗ map] host ↦ cl ∈ rpcClsM, is_uRPCClient cl host) ∗
     "#HownMaking" ∷ ([∗ map] host ↦ c ∈ makingM, is_cond c lock)
 .

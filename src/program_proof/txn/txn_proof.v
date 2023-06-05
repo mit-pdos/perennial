@@ -69,7 +69,7 @@ Definition is_twophase_locks l γ γ' ex_mapsto objs_dom_flat (locks_held: gset 
     "Htxn.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
     "Htxn.acquired" ∷
       l ↦[Txn :: "acquired"] #acquired_m ∗
-    "Hacquired_m" ∷ is_map acquired_m 1
+    "Hacquired_m" ∷ own_map acquired_m 1
       (set_to_map (λ k, (k, true)) locks_held) ∗
     "Hlockeds" ∷ ([∗ set] flat_a ∈ locks_held,
       "Hlocked" ∷ Locked ghs flat_a

@@ -136,7 +136,7 @@ Definition own_WriteId γd (id:u64) (chunkhandles:list (chan * (list u8) )) : iP
 .
 
 Definition own_PartialValue (v: val) (x: Map.t ChunkHandle.t) : iProp Σ :=
-  ∃ (l: loc), ⌜v = (#l, #())%V⌝ ∗ is_map l 1 x.
+  ∃ (l: loc), ⌜v = (#l, #())%V⌝ ∗ own_map l 1 x.
 
 Definition own_Value (v: val) (x: list ChunkHandle.t) : iProp Σ :=
   ∃ sl, ⌜v = slice_val sl⌝ ∗
@@ -145,7 +145,7 @@ Definition own_Value (v: val) (x: list ChunkHandle.t) : iProp Σ :=
 Definition own_Server_mem (s: loc) (st: DirServer.t) : iProp Σ :=
     ∃ (ongoing_l: loc) (ongoing_vals: gmap u64 val),
     "ongoing" ∷ s ↦[dir.Server :: "ongoing"] #ongoing_l ∗
-    "Hongoing" ∷ map.is_map ongoing_l 1 (ongoing_vals, zero_val (struct.t PartialValue)) ∗
+    "Hongoing" ∷ map.own_map ongoing_l 1 (ongoing_vals, zero_val (struct.t PartialValue)) ∗
     "Hpartial" ∷ ([∗ map] writeId ↦ v; handle ∈ ongoing_vals; st.(DirServer.ongoing),
                           own_PartialValue v handle) ∗
     "nextWriteId" ∷ s ↦[dir.Server :: "nextWriteId"] #st.(DirServer.nextWriteId)
