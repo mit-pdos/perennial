@@ -135,17 +135,22 @@ Proof.
   by iDestruct (monotonic_fact with "[] [-]") as "$".
 Qed.
 
-(* TODO: instance for bi_impl *)
-Global Instance monotonic_impl P Q :
+(* XXX: technically could have slightly weaker assumption specifically about P and Q *)
+Global Instance monotonic_impl `{BiAffine PROP} P Q :
   MonotonicPred Q → MonotonicPred (λ Φ, P → Q Φ)%I.
 Proof.
   constructor.
   iIntros (??) "Hwand HΦ".
-  iApply (impl_intro_r).
-  2:{
-    iNamedAccu.
-  }
-Abort.
+  iCombine "Hwand HΦ" as "HH".
+  iDestruct (sep_and with "HH") as "HH".
+  iApply (impl_intro_r); last iAccu.
+  iIntros "HH".
+  iDestruct ((assoc _ (Assoc:=bi.and_assoc)) with "HH") as "HH".
+  iDestruct (persistent_and_affinely_sep_l with "HH") as "[Hwand HH]".
+  iDestruct (affinely_elim with "Hwand") as "#Hwand2".
+  iDestruct (impl_elim_l with "HH") as "HH".
+  by iApply monotonic_fact.
+Qed.
 
 Global Instance monotonic_fupd `{BiFUpd PROP} Eo Ei Q :
   MonotonicPred Q → MonotonicPred (λ Φ, |={Eo,Ei}=> Q Φ)%I.
