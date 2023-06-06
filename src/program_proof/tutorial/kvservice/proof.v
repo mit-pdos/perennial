@@ -253,15 +253,20 @@ Local Example spec5 Φ : iProp Σ := (B -∗ (λ Ψ, |={∅,⊤}=> Ψ)%I Φ).
 Local Example spec5' Φ : iProp Σ := (B -∗ |={∅,⊤}=> Φ).
 Local Example spec6 Φ : iProp Σ := |={⊤,∅}=> A ∗ (B ={∅,⊤}=∗ Φ).
 
+Instance monotonic_const {PROP:bi} P : MonotonicPred (PROP:=PROP) (λ _, P)%I.
+Proof. constructor. iIntros (??) "#? $". Qed.
+
 Instance monotonic_id {PROP:bi} : MonotonicPred (PROP:=PROP) (λ Φ, Φ)%I.
 Proof. constructor. iIntros (??) "#$". Qed.
 
-Instance monotonic_sep {PROP:bi} (P:PROP) Q :
-  MonotonicPred Q → MonotonicPred (λ Φ, P ∗ Q Φ)%I.
+Instance monotonic_sep {PROP:bi} (P:PROP → PROP) Q :
+  MonotonicPred P → MonotonicPred Q → MonotonicPred (λ Φ, P Φ ∗ Q Φ)%I.
 Proof.
   constructor.
-  iIntros (??) "#?[$ ?]".
-  by iDestruct (monotonic_fact with "[] [-]") as "$".
+  iIntros (??) "#?[HP ?]".
+  iSplitL "HP".
+  { clear H0. by iDestruct (monotonic_fact with "[] [-]") as "$". }
+  { by iDestruct (monotonic_fact with "[] [-]") as "$". }
 Qed.
 
 Instance monotonic_wand {PROP:bi} (P:PROP) Q :
@@ -279,13 +284,50 @@ Proof.
   constructor. iIntros (??) "#? >HQ". by iApply monotonic_fact.
 Qed.
 
-Local Instance monotonc_example_1 : MonotonicPred spec1 := _.
-Local Instance monotonc_example_2 : MonotonicPred spec2 := _.
-Local Instance monotonc_example_3 : MonotonicPred spec3 := _.
-Local Instance monotonc_example_4 : MonotonicPred spec4 := _.
-(* FIXME: the old instances are being used to prove the new ones.... *)
-Local Instance monotonc_example_5' : MonotonicPred spec5' := _.
-Local Instance monotonc_example_5 : MonotonicPred spec5 := _.
+(* XXX: these instances are for partially applied iProp constructors/functions.
+   These are needed because e.g. when trying to establish monotonicity of:
+     λ Φ, (A ∗ B ∗ Φ),
+   typeclass resolution recognizes that the above is of the form
+     λ Φ (P Φ ∗ Q Φ)
+   where P = (λ _, A), for which monotonic_const is an instance, and where
+   Q = (bi_sep B). Without some "partially applied iProp function" instances,
+   we only have instances for (λ Φ, B ∗ Φ), and it seems that typeclass
+   resolution doesn't see that (bi_sep B) is equal to (λ Φ, B ∗ Φ).
+
+   TODO: This might become a problem with user-defined functions that return an
+   iProp, with the Φ being the last argument.
+   Maybe add a (high cost) hint that rewrites Q → (λ Φ, Q Φ)?
+ *)
+Instance monotonic_sep' {PROP:bi} (P:PROP):
+  MonotonicPred (PROP.(bi_sep) P)%I.
+Proof.
+  constructor.
+  iIntros (??) "#Hwand [$ HΦ]".
+  by iApply "Hwand".
+Qed.
+
+Instance monotonic_wand' {PROP:bi} (P:PROP):
+  MonotonicPred (PROP.(bi_wand) P)%I.
+Proof.
+  constructor.
+  iIntros (??) "#Hwand HΦ HP".
+  iSpecialize ("HΦ" with "HP").
+  by iApply "Hwand".
+Qed.
+
+Instance monotonic_fupd' Eo Ei :
+  MonotonicPred (fupd (PROP:=iProp Σ) Eo Ei)%I.
+Proof.
+  constructor. iIntros (??) "#H >HQ". iModIntro.
+  by iApply "H".
+Qed.
+
+Local Definition monotonc_example_1 : MonotonicPred spec1 := _.
+Local Definition monotonc_example_2 : MonotonicPred spec2 := _.
+Local Definition monotonc_example_3 : MonotonicPred spec3 := _.
+Local Definition monotonc_example_4 : MonotonicPred spec4 := _.
+Local Definition monotonc_example_5 : MonotonicPred spec5 := _.
+Local Definition monotonc_example_5' : MonotonicPred spec5' := _.
 
 End monotonicity.
 
