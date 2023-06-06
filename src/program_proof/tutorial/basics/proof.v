@@ -18,9 +18,9 @@ Definition is_tracker (t : loc) : iProp Σ :=
     "Ht_mu" ∷ t ↦[Tracker :: "mu"] #muptr ∗
     "#Ht_lock" ∷ is_lock nroot #muptr (tracker_inv t).
 
-Lemma wp_lookup_locked (t : loc) (m : gmap u64 u64) (k : u64) :
+Lemma wp_lookupLocked (t : loc) (m : gmap u64 u64) (k : u64) :
   {{{ tracker_state t m }}}
-    Tracker__lookup_locked #t #k
+    Tracker__lookupLocked #t #k
   {{{ (v : u64) (b : bool), RET (#v, #b); tracker_state t m ∗
       ⌜if b then m !! k = Some v else m !! k = None⌝ }}}.
 Proof.
@@ -54,9 +54,9 @@ Proof.
   }
 Qed.
 
-Lemma wp_register_locked (t : loc) (m : gmap u64 u64) (k : u64) (v : u64) :
+Lemma wp_registerLocked (t : loc) (m : gmap u64 u64) (k : u64) (v : u64) :
   {{{ tracker_state t m }}}
-    Tracker__register_locked #t #k #v
+    Tracker__registerLocked #t #k #v
   {{{ (b : bool), RET #b;
       if b then
         tracker_state t (<[k := v]> m)
@@ -65,7 +65,7 @@ Lemma wp_register_locked (t : loc) (m : gmap u64 u64) (k : u64) (v : u64) :
 Proof.
   iIntros (Φ) "Ht HΦ".
   wp_call.
-  wp_apply (wp_lookup_locked with "[Ht]").
+  wp_apply (wp_lookupLocked with "[Ht]").
   { iApply "Ht". }
   iIntros (? b) "[Ht %Hok]".
   wp_pures.
@@ -107,7 +107,7 @@ Proof.
   { iApply "Ht_lock". }
   iIntros "[Hlocked Ht]".
   iNamed "Ht".
-  wp_apply (wp_lookup_locked with "Ht_state").
+  wp_apply (wp_lookupLocked with "Ht_state").
   iIntros (v b) "[Ht_state %Hres]".
 
   wp_pures.
@@ -137,7 +137,7 @@ Proof.
   iIntros "[Hlocked Ht]".
   iNamed "Ht".
   wp_pures.
-  wp_apply (wp_register_locked with "Ht_state").
+  wp_apply (wp_registerLocked with "Ht_state").
   iIntros (b) "Hb".
   wp_pures.
   wp_loadField.

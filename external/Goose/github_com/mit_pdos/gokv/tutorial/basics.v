@@ -10,14 +10,14 @@ Definition Tracker := struct.decl [
   "m" :: mapT uint64T
 ].
 
-Definition Tracker__lookup_locked: val :=
-  rec: "Tracker__lookup_locked" "t" "k" :=
+Definition Tracker__lookupLocked: val :=
+  rec: "Tracker__lookupLocked" "t" "k" :=
     let: ("v", "ok") := MapGet (struct.loadF Tracker "m" "t") "k" in
     ("v", "ok").
 
-Definition Tracker__register_locked: val :=
-  rec: "Tracker__register_locked" "t" "k" "v" :=
-    let: (<>, "ok") := Tracker__lookup_locked "t" "k" in
+Definition Tracker__registerLocked: val :=
+  rec: "Tracker__registerLocked" "t" "k" "v" :=
+    let: (<>, "ok") := Tracker__lookupLocked "t" "k" in
     (if: "ok"
     then #false
     else
@@ -27,14 +27,14 @@ Definition Tracker__register_locked: val :=
 Definition Tracker__Lookup: val :=
   rec: "Tracker__Lookup" "t" "k" :=
     lock.acquire (struct.loadF Tracker "mu" "t");;
-    let: ("v", "ok") := Tracker__lookup_locked "t" "k" in
+    let: ("v", "ok") := Tracker__lookupLocked "t" "k" in
     lock.release (struct.loadF Tracker "mu" "t");;
     ("v", "ok").
 
 Definition Tracker__Register: val :=
   rec: "Tracker__Register" "t" "k" "v" :=
     lock.acquire (struct.loadF Tracker "mu" "t");;
-    let: "r" := Tracker__register_locked "t" "k" "v" in
+    let: "r" := Tracker__registerLocked "t" "k" "v" in
     lock.release (struct.loadF Tracker "mu" "t");;
     "r".
 
