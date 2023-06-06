@@ -140,7 +140,7 @@ Qed.
 
 Lemma wp_Server__IncreaseCommit γ γsrv s newCommitIndex Φ Ψ :
   is_Server s γ γsrv -∗
-  (Ψ -∗ Φ #()) -∗
+  (Ψ () -∗ Φ #()) -∗
   IncreaseCommit_core_spec γ γsrv newCommitIndex Ψ -∗
   WP pb.Server__IncreaseCommitIndex #s #newCommitIndex {{ Φ }}
   .

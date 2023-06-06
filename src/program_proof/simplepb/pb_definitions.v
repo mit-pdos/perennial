@@ -50,6 +50,137 @@ Record simplepb_server_names :=
 
 Implicit Type (γ : simplepb_system_names) (γsrv:simplepb_server_names).
 
+Section monotonicity.
+
+Context `{R:Type, PROP:bi}.
+(* double-dual/continuation monad *)
+Class MonotonicPred (P:(R → PROP) → PROP) :=
+  {
+    monotonic_fact: (∀ Φ Ψ, □(∀ r, Φ r -∗ Ψ r) -∗ P Φ -∗ P Ψ);
+  }.
+
+Global Instance monotonic_const  P : MonotonicPred (λ _, P)%I.
+Proof. constructor. iIntros (??) "#? $". Qed.
+
+(* like `return r` *)
+Global Instance monotonic_return (r:R) : MonotonicPred (λ Φ, Φ r)%I.
+Proof. constructor. iIntros (??) "#H". iApply "H". Qed.
+
+Global Instance monotonic_forall {T:Type} (Q: T → (R → PROP) → PROP) :
+  (∀ x, MonotonicPred (Q x)) →
+  MonotonicPred (λ Φ, ∀ x, Q x Φ)%I.
+Proof. constructor. iIntros (??) "#H HQ %". iApply (monotonic_fact with "[] [HQ]").
+       { done. } iApply "HQ". Qed.
+
+(* XXX: a term of the form (λ Φ, ∀ x, Φ x) might get simplified to (bi_forall),
+   so we need this instance. *)
+Global Instance monotonic_forall' :
+  MonotonicPred (PROP.(bi_forall)).
+Proof. constructor. iIntros (??) "#H HQ %a". iApply "H".
+       by iApply forall_elim. (* FIXME: why doesn't [iApply "HQ".] work? *)
+Qed.
+
+(* This requires that the predicate transformer Q be monotonic for ANY v, not
+   just the existentially quantified v that satisfies some properties that Q
+   might insist.
+   E.g.
+     ∃ (v:nat), ⌜v = 0⌝ ∗
+          (⌜v == 0⌝ ∗ <monotonic in Φ>) ∨
+          <not monotonic in Φ>
+   is technically monotonic in Φ, but not syntactically so. This instance isn't
+   designed to work with such a transformer.
+ *)
+Global Instance monotonic_exists {T:Type} (Q: T → (R → PROP) → PROP) :
+  (∀ v, MonotonicPred (Q v)) →
+  MonotonicPred (λ Φ, ∃ v, Q v Φ)%I.
+Proof. constructor. iIntros (??) "#H (% & HQ)". iExists _.
+       by iApply (monotonic_fact with "[] HQ").
+Qed.
+
+Global Instance monotonic_sep P Q :
+  MonotonicPred P → MonotonicPred Q → MonotonicPred (λ Φ, P Φ ∗ Q Φ)%I.
+Proof.
+  constructor.
+  iIntros (??) "#?[HP ?]".
+  iSplitL "HP".
+  { clear H0. by iDestruct (monotonic_fact with "[] [-]") as "$". }
+  { by iDestruct (monotonic_fact with "[] [-]") as "$". }
+Qed.
+
+Global Instance monotonic_conjunction P Q :
+  MonotonicPred P → MonotonicPred Q → MonotonicPred (λ Φ, P Φ ∧ Q Φ)%I.
+Proof.
+  constructor.
+  iIntros (??) "#? HP".
+  iSplit.
+  { iLeft in "HP". clear H0. by iDestruct (monotonic_fact with "[] [-]") as "$". }
+  { iRight in "HP". by iDestruct (monotonic_fact with "[] [-]") as "$". }
+Qed.
+
+Global Instance monotonic_disjunction P Q :
+  MonotonicPred P → MonotonicPred Q → MonotonicPred (λ Φ, P Φ ∨ Q Φ)%I.
+Proof.
+  constructor.
+  iIntros (??) "#?[HP|HQ]".
+  { clear H0. iLeft. by iDestruct (monotonic_fact with "[] [-]") as "$". }
+  { iRight. by iDestruct (monotonic_fact with "[] [-]") as "$". }
+Qed.
+
+Global Instance monotonic_wand P Q :
+  MonotonicPred Q → MonotonicPred (λ Φ, P -∗ Q Φ)%I.
+Proof.
+  constructor.
+  iIntros (??) "#Hwand HΦ HP".
+  iSpecialize ("HΦ" with "HP").
+  by iDestruct (monotonic_fact with "[] [-]") as "$".
+Qed.
+
+(* TODO: instance for bi_impl *)
+Global Instance monotonic_impl P Q :
+  MonotonicPred Q → MonotonicPred (λ Φ, P → Q Φ)%I.
+Proof.
+  constructor.
+  iIntros (??) "Hwand HΦ".
+  iApply (impl_intro_r).
+  2:{
+    iNamedAccu.
+  }
+Abort.
+
+Global Instance monotonic_fupd `{BiFUpd PROP} Eo Ei Q :
+  MonotonicPred Q → MonotonicPred (λ Φ, |={Eo,Ei}=> Q Φ)%I.
+Proof.
+  constructor. iIntros (??) "#? >HQ". iModIntro.
+  by iApply monotonic_fact.
+Qed.
+
+Global Instance monotonic_intuitionistically P :
+  MonotonicPred P → MonotonicPred (λ Φ, □ P Φ)%I.
+Proof.
+  constructor. iIntros (??) "#? #HP".
+  iModIntro. by iApply monotonic_fact.
+Qed.
+
+End monotonicity.
+
+Section monotonicity_examples.
+Context `{!gooseGlobalGS Σ}.
+Context {A B C : iProp Σ}.
+
+Local Example spec1 Φ : iProp Σ := A ∗ B ∗ (C -∗ Φ 0).
+Local Example spec2 Φ : iProp Σ := |={⊤,∅}=> (A ∨ B) ∗ (B ={∅,⊤}=∗ Φ 0).
+
+(* specs with quantifiers *)
+Local Example qspec1 Φ : iProp Σ := (∀ (x:nat), Φ x).
+Local Example qspec2 Φ : iProp Σ := |={⊤,∅}=> ∀ x, A ∗ (∃ v, ⌜v < x⌝ ∗ B ={∅,⊤}=∗ Φ (x + v)).
+
+Local Definition monotonic_spec_1 : MonotonicPred spec1 := _.
+Local Definition monotonic_spec_2 : MonotonicPred spec2 := _.
+
+Local Definition monotonic_qspec_1 : MonotonicPred qspec1 := _.
+Local Definition monotonic_qspec_2 : MonotonicPred qspec2 := _.
+End monotonicity_examples.
+
 Section pb_global_definitions.
 
 Context {pb_record:Sm.t}.
@@ -121,6 +252,9 @@ Definition ApplyAsBackup_core_spec γ γsrv args opsfull op Q (Φ : u64 -> iProp
     )%I
 .
 
+Global Instance ApplyAsBackup_core_spec_MonotonicPred γ γsrv args opsfull op Q :
+  MonotonicPred (ApplyAsBackup_core_spec γ γsrv args opsfull op Q) := _.
+
 Program Definition ApplyAsBackup_spec γ γsrv :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ op Q,
@@ -168,9 +302,12 @@ Definition SetState_core_spec γ γsrv args opsfull :=
     (
       (is_epoch_lb γsrv.(r_pb) args.(SetStateArgs.epoch) -∗
        Φ 0) ∧
-      (∀ err, ⌜err ≠ U64 0⌝ → Φ err))
+      (∀ err, ⌜err ≠ U64 0⌝ -∗ Φ err))
     )%I
 .
+
+Global Instance SetState_core_spec_MonotonicPred γ γsrv args opsfull :
+  MonotonicPred (SetState_core_spec γ γsrv args opsfull) := _.
 
 Program Definition SetState_spec γ γsrv :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
@@ -200,10 +337,13 @@ Definition GetState_core_spec γ γsrv (epoch:u64) ghost_epoch_lb :=
             ⌜has_snap_encoding snap (get_rwops opsfull)⌝ -∗
             ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝ -∗
                  Φ (GetStateReply.mkC 0 (length (get_rwops opsfull)) committedNextIndex snap)) ∧
-      (∀ err, ⌜err ≠ U64 0⌝ → Φ (GetStateReply.mkC err 0 0 [])))
+      (∀ err, ⌜err ≠ U64 0⌝ -∗ Φ (GetStateReply.mkC err 0 0 [])))
     )
     )%I
 .
+
+Global Instance GetState_core_spec_MonotonicPred γ γsrv epoch ghost_epoch_lb :
+  MonotonicPred (GetState_core_spec γ γsrv epoch ghost_epoch_lb) := _.
 
 Program Definition GetState_spec γ γsrv :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
@@ -230,6 +370,9 @@ Definition BecomePrimary_core_spec γ γsrv args σ backupγ (ρ:u64 -d> simplep
     )%I
 .
 
+Global Instance BecomePrimary_core_spec_MonotonicPred γ γsrv args σ backupγ ρ :
+  MonotonicPred (BecomePrimary_core_spec γ γsrv args σ backupγ ρ) := _.
+
 Program Definition BecomePrimary_spec_pre γ γsrv ρ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args σ confγ,
@@ -248,12 +391,15 @@ Definition Apply_core_spec γ op enc_op :=
   ⌜has_op_encoding enc_op op⌝ ∗
   (* is_helping_inv γ.(s_log) γ.(s_prim) ∗ *)
   □(|={⊤∖↑pbN,∅}=> ∃ σ, own_int_log γ σ ∗ (
-    ⌜apply_postcond σ op⌝ → own_int_log γ (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
+    ⌜apply_postcond σ op⌝ -∗ own_int_log γ (σ ++ [op]) ={∅,⊤∖↑pbN}=∗
             Φ (ApplyReply.mkC 0 (compute_reply σ op))
   )) ∗
   □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (ApplyReply.mkC err ret))
   )%I
 .
+
+Global Instance Apply_core_spec_MonotonicPred γ op enc_op :
+  MonotonicPred (Apply_core_spec γ op enc_op) := _.
 
 Program Definition Apply_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
@@ -266,7 +412,7 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition ApplyRo_core_spec γ  op enc_op :=
+Definition ApplyRo_core_spec γ op enc_op :=
   λ (Φ : ApplyReply.C -> iPropO Σ) ,
   (
   ⌜has_op_encoding enc_op op⌝ ∗
@@ -282,6 +428,9 @@ Definition ApplyRo_core_spec γ  op enc_op :=
   )%I
 .
 
+Global Instance ApplyRo_core_spec_MonotonicPred γ op enc_op :
+  MonotonicPred (ApplyRo_core_spec γ op enc_op) := _.
+
 Program Definition ApplyRo_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ op, ApplyRo_core_spec γ op enc_args
@@ -294,22 +443,25 @@ Next Obligation.
 Defined.
 
 Definition IncreaseCommit_core_spec γ γsrv (newCommitIndex:u64)  :=
-  λ (Φ : iPropO Σ) ,
+  λ (Φ : unit → iPropO Σ) ,
   ( ∃ σ epoch,
     ⌜int.nat newCommitIndex = length σ⌝ ∗
     is_epoch_lb γsrv.(r_pb) epoch ∗
     is_pb_log_lb γ.(s_pb) σ ∗
     is_proposal_lb γ.(s_pb) epoch σ ∗
     □ committed_log_fact γ epoch σ ∗
-    Φ
+    Φ ()
   )%I
 .
+
+Global Instance IncreaseCommit_core_spec_MonotonicPred γ γsrv n :
+  MonotonicPred (IncreaseCommit_core_spec γ γsrv n) := _.
 
 Program Definition IncreaseCommit_spec γ γsrv :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ newCommitIndex,
     ⌜enc_args = u64_le newCommitIndex⌝ ∗
-    IncreaseCommit_core_spec γ γsrv newCommitIndex (Φ [])
+    IncreaseCommit_core_spec γ γsrv newCommitIndex (λ _, Φ [])
   )%I
 .
 Next Obligation.
