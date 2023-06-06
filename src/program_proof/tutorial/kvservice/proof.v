@@ -236,30 +236,45 @@ Admitted.
 End marshal_proof.
 
 Section monotonicity.
-(* Q: parameter vs member? *)
-Class MonotonicPred {PROP:bi} (P:PROP → PROP) :=
+
+Context `{R:Type, PROP:bi}.
+(* double-dual/continuation monad *)
+Class MonotonicPred (P:(R → PROP) → PROP) :=
   {
-    monotonic_fact: (∀ Φ Ψ, □(Φ -∗ Ψ) -∗ P Φ -∗ P Ψ);
+    monotonic_fact: (∀ Φ Ψ, □(∀ r, Φ r -∗ Ψ r) -∗ P Φ -∗ P Ψ);
   }.
 
-Context `{!gooseGlobalGS Σ}.
-Context {A B C : iProp Σ}.
-
-Local Example spec1 Φ : iProp Σ := A ∗ Φ.
-Local Example spec2 Φ : iProp Σ := (C -∗ Φ).
-Local Example spec3 Φ : iProp Σ := A ∗ B ∗ (C -∗ Φ).
-Local Example spec4 Φ : iProp Σ := |={⊤,∅}=> A ∗ Φ.
-Local Example spec5 Φ : iProp Σ := (B -∗ (λ Ψ, |={∅,⊤}=> Ψ)%I Φ).
-Local Example spec5' Φ : iProp Σ := (B -∗ |={∅,⊤}=> Φ).
-Local Example spec6 Φ : iProp Σ := |={⊤,∅}=> A ∗ (B ={∅,⊤}=∗ Φ).
-
-Instance monotonic_const {PROP:bi} P : MonotonicPred (PROP:=PROP) (λ _, P)%I.
+Global Instance monotonic_const  P : MonotonicPred (λ _, P)%I.
 Proof. constructor. iIntros (??) "#? $". Qed.
 
-Instance monotonic_id {PROP:bi} : MonotonicPred (PROP:=PROP) (λ Φ, Φ)%I.
-Proof. constructor. iIntros (??) "#$". Qed.
+(* like `return r` *)
+Global Instance monotonic_return (r:R) : MonotonicPred (λ Φ, Φ r)%I.
+Proof. constructor. iIntros (??) "#H". iApply "H". Qed.
 
-Instance monotonic_sep {PROP:bi} (P:PROP → PROP) Q :
+Global Instance monotonic_forall {T:Type} (Q: T → (R → PROP) → PROP) :
+  (∀ x, MonotonicPred (Q x)) →
+  MonotonicPred (λ Φ, ∀ x, Q x Φ)%I.
+Proof. constructor. iIntros (??) "#H HQ %". iApply (monotonic_fact with "[] [HQ]").
+       { done. } iApply "HQ". Qed.
+
+(* This requires that the predicate transformer Q be monotonic for ANY v, not
+   just the existentially quantified v that satisfies some properties that Q
+   might insist.
+   E.g.
+     ∃ (v:nat), ⌜v = 0⌝ ∗
+          (⌜v == 0⌝ ∗ <monotonic in Φ>) ∨
+          <not monotonic in Φ>
+   is technically monotonic in Φ, but not syntactically so. This instance isn't
+   designed to work with such a transformer.
+ *)
+Global Instance monotonic_exists {T:Type} (Q: T → (R → PROP) → PROP) :
+  (∀ v, MonotonicPred (Q v)) →
+  MonotonicPred (λ Φ, ∃ v, Q v Φ)%I.
+Proof. constructor. iIntros (??) "#H (% & HQ)". iExists _.
+       by iApply (monotonic_fact with "[] HQ").
+Qed.
+
+Global Instance monotonic_sep P Q :
   MonotonicPred P → MonotonicPred Q → MonotonicPred (λ Φ, P Φ ∗ Q Φ)%I.
 Proof.
   constructor.
@@ -269,7 +284,16 @@ Proof.
   { by iDestruct (monotonic_fact with "[] [-]") as "$". }
 Qed.
 
-Instance monotonic_wand {PROP:bi} (P:PROP) Q :
+Global Instance monotonic_disjunction P Q :
+  MonotonicPred P → MonotonicPred Q → MonotonicPred (λ Φ, P Φ ∨ Q Φ)%I.
+Proof.
+  constructor.
+  iIntros (??) "#?[HP|HQ]".
+  { clear H0. iLeft. by iDestruct (monotonic_fact with "[] [-]") as "$". }
+  { iRight. by iDestruct (monotonic_fact with "[] [-]") as "$". }
+Qed.
+
+Global Instance monotonic_wand P Q :
   MonotonicPred Q → MonotonicPred (λ Φ, P -∗ Q Φ)%I.
 Proof.
   constructor.
@@ -278,58 +302,32 @@ Proof.
   by iDestruct (monotonic_fact with "[] [-]") as "$".
 Qed.
 
-Instance monotonic_fupd Eo Ei (Q:iProp Σ → iProp Σ) :
+Global Instance monotonic_fupd `{BiFUpd PROP} Eo Ei Q :
   MonotonicPred Q → MonotonicPred (λ Φ, |={Eo,Ei}=> Q Φ)%I.
 Proof.
-  constructor. iIntros (??) "#? >HQ". by iApply monotonic_fact.
+  constructor. iIntros (??) "#? >HQ". iModIntro.
+  by iApply monotonic_fact.
 Qed.
-
-(* XXX: these instances are for partially applied iProp constructors/functions.
-   These are needed because e.g. when trying to establish monotonicity of:
-     λ Φ, (A ∗ B ∗ Φ),
-   typeclass resolution recognizes that the above is of the form
-     λ Φ (P Φ ∗ Q Φ)
-   where P = (λ _, A), for which monotonic_const is an instance, and where
-   Q = (bi_sep B). Without some "partially applied iProp function" instances,
-   we only have instances for (λ Φ, B ∗ Φ), and it seems that typeclass
-   resolution doesn't see that (bi_sep B) is equal to (λ Φ, B ∗ Φ).
-
-   TODO: This might become a problem with user-defined functions that return an
-   iProp, with the Φ being the last argument.
-   Maybe add a (high cost) hint that rewrites Q → (λ Φ, Q Φ)?
- *)
-Instance monotonic_sep' {PROP:bi} (P:PROP):
-  MonotonicPred (PROP.(bi_sep) P)%I.
-Proof.
-  constructor.
-  iIntros (??) "#Hwand [$ HΦ]".
-  by iApply "Hwand".
-Qed.
-
-Instance monotonic_wand' {PROP:bi} (P:PROP):
-  MonotonicPred (PROP.(bi_wand) P)%I.
-Proof.
-  constructor.
-  iIntros (??) "#Hwand HΦ HP".
-  iSpecialize ("HΦ" with "HP").
-  by iApply "Hwand".
-Qed.
-
-Instance monotonic_fupd' Eo Ei :
-  MonotonicPred (fupd (PROP:=iProp Σ) Eo Ei)%I.
-Proof.
-  constructor. iIntros (??) "#H >HQ". iModIntro.
-  by iApply "H".
-Qed.
-
-Local Definition monotonc_example_1 : MonotonicPred spec1 := _.
-Local Definition monotonc_example_2 : MonotonicPred spec2 := _.
-Local Definition monotonc_example_3 : MonotonicPred spec3 := _.
-Local Definition monotonc_example_4 : MonotonicPred spec4 := _.
-Local Definition monotonc_example_5 : MonotonicPred spec5 := _.
-Local Definition monotonc_example_5' : MonotonicPred spec5' := _.
 
 End monotonicity.
+
+Section monotonicity_examples.
+Context `{!gooseGlobalGS Σ}.
+Context {A B C : iProp Σ}.
+
+Local Example spec1 Φ : iProp Σ := A ∗ B ∗ (C -∗ Φ 0).
+Local Example spec2 Φ : iProp Σ := |={⊤,∅}=> (A ∨ B) ∗ (B ={∅,⊤}=∗ Φ 0).
+
+(* specs with quantifiers *)
+Local Example qspec1 Φ : iProp Σ := (∀ (x:nat), Φ x).
+Local Example qspec2 Φ : iProp Σ := |={⊤,∅}=> ∀ x, A ∗ (∃ v, ⌜v < x⌝ ∗ B ={∅,⊤}=∗ Φ (x + v)).
+
+Local Definition monotonic_spec_1 : MonotonicPred spec1 := _.
+Local Definition monotonic_spec_2 : MonotonicPred spec2 := _.
+
+Local Definition monotonic_qspec_1 : MonotonicPred qspec1 := _.
+Local Definition monotonic_qspec_2 : MonotonicPred qspec2 := _.
+End monotonicity_examples.
 
 Section rpc_definitions.
 (* NOTE: "global" context because RPC specs are known by multiple machines. *)
@@ -338,7 +336,7 @@ Context `{!gooseGlobalGS Σ}.
 Definition getFreshNum_core_spec (Φ:u64 → iPropO Σ): iPropO Σ.
 Admitted.
 
-Definition put_core_spec (args:putArgs.t) (Φ:iPropO Σ): iPropO Σ.
+Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ.
 Admitted.
 
 Global Instance put_core_MonotonicPred args : MonotonicPred (put_core_spec args).
@@ -367,7 +365,7 @@ Admitted.
 Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ Φ :
   put_core_spec args Ψ -∗
   putArgs.own args_ptr args -∗
-  (Ψ -∗ Φ #()) -∗
+  (Ψ () -∗ Φ #()) -∗
   WP Server__put #s #args_ptr {{ v, Φ v }}
 .
 Proof.
@@ -413,7 +411,7 @@ Program Definition put_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜putArgs.encodes enc_args args⌝ ∗
-   put_core_spec args (∀ enc_reply, Φ enc_reply)
+   put_core_spec args (λ _, ∀ enc_reply, Φ enc_reply)
   )%I
 .
 Next Obligation.
@@ -659,7 +657,7 @@ Admitted.
 Lemma wp_Client__putRpc cl Φ args args_ptr :
   is_Client cl -∗
   putArgs.own args_ptr args -∗
-  □ put_core_spec args (Φ #0) -∗
+  □ put_core_spec args (λ _, Φ #0) -∗
   (∀ (err:u64), ⌜err ≠ U64 0⌝ -∗ Φ #err) -∗
   WP Client__putRpc #cl #args_ptr {{ Φ }}
 .
@@ -684,7 +682,8 @@ Proof.
     rewrite /put_spec /=.
     iExists _; iFrame "%".
     iApply (monotonic_fact with "[] Hspec").
-    iIntros "HΦ".
+    iModIntro.
+    iIntros (?) "HΦ".
     iIntros (?) "Hreq_sl". iIntros (?) "Hrep Hrep_sl".
     by wp_pures.
   }
@@ -717,9 +716,10 @@ Definition is_Locked (ck:loc) : iProp Σ :=
   "#Hid" ∷ readonly (ck ↦[Locked :: "id"] #n)
 .
 
+(*
 Lemma wp_Clerk__Acquire (ck:loc) :
   {{{ is_Clerk ck }}}
-    Clerk__Acquire #ck
+    Clerk__Put #ck
   {{{ (l:loc), RET #l; is_Locked l }}}
 .
 Proof.
@@ -769,6 +769,6 @@ Lemma wp_Locked__Release (l:loc) :
   {{{ RET #(); True }}}
 .
 Proof.
-Admitted.
+Admitted. *)
 
 End clerk_proof.
