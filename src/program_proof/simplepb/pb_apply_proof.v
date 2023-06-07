@@ -972,7 +972,7 @@ Proof.
   wp_pures.
   wp_apply (wp_Server__IncreaseCommit with "[] [-] []").
   { repeat iExists _; iFrame "#". }
-  { instantiate (1:=True%I).
+  { instantiate (1:=(λ _, True)%I).
     iIntros "_".
     wp_pures.
     iApply "HΦ".

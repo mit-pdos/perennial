@@ -399,7 +399,7 @@ Proof.
     wp_apply (wp_Server__IncreaseCommit with "[] [-] []").
     { repeat iExists _; iFrame "#". }
     2:{
-      instantiate (1:=True%I).
+      instantiate (1:=(λ _, True)%I).
       iNamed "HcommitFacts".
       repeat iExists _; iFrame "Hcommit_fact #".
       iDestruct (mono_nat_lb_own_le with "Hepoch_lb") as "$".
