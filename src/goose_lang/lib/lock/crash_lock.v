@@ -149,7 +149,7 @@ Section proof.
       wp_cmpxchg_suc.
       iModIntro.
       iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-      iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+      iDestruct "Hl" as "[Hl1 Hl2]".
       iIntros "(Hc1&Hc2)".
       iSplit; first done. iModIntro.
       iSplitL "Hl1".
@@ -240,7 +240,7 @@ Section proof.
     iModIntro.
     iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-    iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+    iDestruct "Hl" as "[Hl1 Hl2]".
     iNext. iExists false. iFrame.
   Qed.
 

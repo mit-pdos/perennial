@@ -294,7 +294,7 @@ Proof.
   destruct (Qextra.Qp_split_1 _ Hqlt) as [q' Hqq'].
   iDestruct (updates_slice_frag_acc with "Hmut") as "[Hmut Hmut_full]".
   iEval (rewrite -Hqq') in "Hmut".
-  iDestruct (fractional.fractional_split_1 with "Hmut") as "[Hmut Hq']".
+  iDestruct "Hmut" as "[Hmut Hq']".
   iDestruct (updates_slice_frag_len with "HreadLog") as %Hlen1.
   iDestruct (updates_slice_frag_len with "Hmut") as %Hlen2.
   autorewrite with len in Hlen1, Hlen2.

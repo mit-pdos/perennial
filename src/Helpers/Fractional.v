@@ -28,6 +28,7 @@ Section bi.
     iIntros (?) "HP".
     iDestruct (as_fractional (Φ:=Φ) with "HP") as "HΦ".
     iApply fractional_weaken; eauto.
+    by destruct H.
   Qed.
 
 End bi.

@@ -134,21 +134,17 @@ Proof.
   rewrite slice.own_slice_combine //.
 Qed.
 
-Global Instance own_slice_small_Fractional s q t vs :
+Global Instance own_slice_small_Fractional s t vs :
+  fractional.Fractional (λ q, own_slice_small s t q vs).
+Proof. apply _. Qed.
+
+Global Instance own_slice_small_AsFractional s q t vs :
   fractional.AsFractional (own_slice_small s t q vs) (λ q, own_slice_small s t q vs) q.
-Proof.
-  split; auto; apply _.
-  Unshelve.
-  exact 1%Qp.
-Qed.
+Proof. split; auto; apply _. Qed.
 
 Global Instance own_slice_small_as_mapsto s t vs :
   AsMapsTo (own_slice_small s t 1 vs) (λ q, own_slice_small s t q vs).
-Proof.
-  constructor; auto; intros; apply _.
-  Unshelve.
-  exact 1%Qp.
-Qed.
+Proof. constructor; auto; intros; apply _. Qed.
 
 Lemma wp_NewSlice stk E t `{!IntoValForType V t} (sz: u64) :
   {{{ True }}}

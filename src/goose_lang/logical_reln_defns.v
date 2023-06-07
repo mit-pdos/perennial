@@ -370,7 +370,7 @@ Global Instance sty_ctx_prop_pers `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ}
       (Γsubst: gmap string subst_tuple) :
       Persistent ([∗ map] t ∈ Γsubst, val_interp (hS := hS) (subst_ty t) (subst_sval t) (subst_ival t))%I.
 Proof.
-  apply big_sepM_persistent => ??. by apply val_interp_pers.
+  apply big_sepM_persistent' => ??. apply val_interp_pers.
 Qed.
 
 End reln_obligations.

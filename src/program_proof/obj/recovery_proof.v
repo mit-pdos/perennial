@@ -446,7 +446,7 @@ Proof.
   iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
           with "crashstates") as "H".
   iEval (rewrite -Qp.quarter_three_quarter) in "H".
-  iDestruct (fractional.fractional_split with "H") as "[crashstates1 crashstates2]".
+  iDestruct "H" as "[crashstates1 crashstates2]".
 
   iMod (alloc_metamap _ (kind_heap0 kinds) with "metaheap") as (metamap) "(metaheap & Hmetas1 & Hmetas2)".
 
@@ -799,7 +799,7 @@ Proof.
 
 
   iEval (rewrite -Qp.quarter_three_quarter) in "crashstates".
-  iDestruct (fractional.fractional_split_1 with "crashstates") as
+  iDestruct "crashstates" as
       "[crashstates1 crashstates2]".
   iDestruct (heapspec_durable_exchanger_dup with "[$]")
             as "(Hheap_lb_exchange1&Hheap_lb_exchange2)".

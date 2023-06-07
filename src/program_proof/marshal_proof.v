@@ -644,7 +644,7 @@ Proof.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
   (* we split the decoder state into one half used to serve the client and one
      half to reconstruct the decoder (now with half the fraction) *)
-  iDestruct (fractional.fractional_half with "Hs") as "[Hs1 Hs2]".
+  iDestruct "Hs" as "[Hs1 Hs2]".
   wp_pures.
   wp_apply (wp_SliceSubslice_small with "Hs1"); first by word.
   iIntros (s') "Hbs".

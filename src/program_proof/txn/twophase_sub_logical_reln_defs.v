@@ -186,7 +186,7 @@ Proof. revert es e. induction t => ?? //=; try apply _. destruct x; apply _. Qed
 Global Instance sty_ctx_prop_pers (Γsubst: gmap string subst_tuple) :
       Persistent ([∗ map] t ∈ Γsubst, atomically_val_interp (subst_ty t) (subst_sval t) (subst_ival t))%I.
 Proof.
-  apply big_sepM_persistent => ??. apply atomically_val_interp_pers.
+  apply big_sepM_persistent' => ??. apply atomically_val_interp_pers.
 Qed.
 
 Lemma atomically_listT_interp_refl_obj v :

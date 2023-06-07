@@ -101,7 +101,7 @@ Proof.
   iIntros (k x Hlookup) "H".
   iDestruct "H" as (q vsl Heq) "Hslice".
   rewrite -(Qp.div_2 q).
-  iDestruct (fractional.fractional_split_1 with "Hslice") as "[Hl1 Hl2]".
+  iDestruct "Hslice" as "[Hl1 Hl2]".
   iSplitL "Hl1".
   { iExists _, _. iFrame. eauto. }
   { iExists _, _. iFrame. eauto. }
@@ -497,7 +497,7 @@ Proof.
   { iFrame "%". }
   iDestruct "Hr" as (q vsl Heq) "Hslice".
   rewrite -(Qp.div_2 q).
-  iDestruct (fractional.fractional_split_1 with "Hslice") as "[Hl1 Hl2]".
+  iDestruct "Hslice" as "[Hl1 Hl2]".
   iSplitL "Hl1".
   { iRight. iExists _, _. iFrame. eauto. }
   { iRight. iExists _, _. iFrame. eauto. }

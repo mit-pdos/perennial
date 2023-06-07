@@ -186,16 +186,15 @@ Proof.
   congruence.
 Qed.
 
-Global Instance updates_slice_frag_fractional bk_s q bs :
-  fractional.AsFractional (updates_slice_frag bk_s q bs) (λ q, updates_slice_frag bk_s q bs) q.
+Global Instance updates_slice_frag_fractional bk_s bs :
+  fractional.Fractional (λ q, updates_slice_frag bk_s q bs).
 Proof.
-  split; auto.
   hnf; intros q1 q2.
   iSplit.
   + iIntros "Hupds".
     iDestruct "Hupds" as (bks) "[Hupds Hbs]".
-    iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
-    iDestruct (fractional.fractional_split_1 with "Hbs") as "[Hbs1 Hbs2]".
+    iDestruct "Hupds" as "[Hupds1 Hupds2]".
+    iDestruct "Hbs" as "[Hbs1 Hbs2]".
     iSplitL "Hupds1 Hbs1".
     * iExists _; iFrame.
     * iExists _; iFrame.
@@ -204,20 +203,18 @@ Proof.
     iDestruct "Hupds2" as (bks') "[Hbs2 Hupds2]".
     iDestruct (own_slice_small_agree with "Hbs1 Hbs2") as %Heq.
     apply (fmap_inj update_val) in Heq; auto using update_val_inj; subst.
-    iDestruct (fractional.fractional_split_2 with "Hbs1 Hbs2") as "Hbs".
-    { apply _. }
-    iDestruct (fractional.fractional_split_2 _ _ _ _ q1 q2 with "Hupds1 Hupds2") as "Hupds".
-    { apply _. }
+    iCombine "Hbs1 Hbs2" as "Hbs".
+    iCombine "Hupds1 Hupds2" as "Hupds".
     iExists _; iFrame.
 Qed.
 
+Global Instance updates_slice_frag_as_fractional bk_s q bs :
+  fractional.AsFractional (updates_slice_frag bk_s q bs) (λ q, updates_slice_frag bk_s q bs) q.
+Proof. split; auto; apply _. Qed.
+
 Global Instance updates_slice_frag_AsMapsTo bk_s bs :
   AsMapsTo (updates_slice_frag bk_s 1 bs) (λ q, updates_slice_frag bk_s q bs).
-Proof.
-  constructor; auto; intros; apply _.
-  Unshelve.
-  exact 1%Qp.
-Qed.
+Proof. constructor; auto; apply _. Qed.
 
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) q (u: update.t) :
   {{{ updates_slice_frag bk_s q bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}

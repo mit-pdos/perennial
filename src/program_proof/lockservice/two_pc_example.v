@@ -1209,8 +1209,8 @@ Proof.
     { admit. }
 
     rewrite -Qp.three_quarter_quarter.
-    iDestruct (fractional_split_1 with "Hacc1") as "[Hptsto1 Hacc1]".
-    iDestruct (fractional_split_1 with "Hacc2") as "[Hptsto2 Hacc2]".
+    iDestruct "Hacc1" as "[Hptsto1 Hacc1]".
+    iDestruct "Hacc2" as "[Hptsto2 Hacc2]".
     rewrite Qp.three_quarter_quarter.
     iMod ("Hacc_close" with "[$Hacc1 $Hacc2]").
     iMod "Hmask_close".

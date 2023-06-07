@@ -658,13 +658,8 @@ Proof.
     iDestruct (ghost_var_agree with
       "HownDiskEndTxn_logger HownDiskEndTxn_walinv"
     ) as %->.
-    iDestruct (fractional.fractional_merge with
-      "HownDiskEndMem_linv HownDiskEndMem_walinv"
-    ) as "HownDiskEndMem".
-    iDestruct (fractional.fractional_merge with
-      "HownDiskEndMemTxn_linv HownDiskEndMemTxn_walinv"
-    ) as "HownDiskEndMemTxn".
-    rewrite Qp.div_2.
+    iCombine "HownDiskEndMem_linv HownDiskEndMem_walinv" as "HownDiskEndMem".
+    iCombine "HownDiskEndMemTxn_linv HownDiskEndMemTxn_walinv" as "HownDiskEndMemTxn".
     iMod (mono_nat_own_update_halves (int.nat (circΣ.diskEnd cs)) with
       "HownDiskEndMem_logger HownDiskEndMem"
     ) as "(HownDiskEndMem_logger&HownDiskEndMem&_)";

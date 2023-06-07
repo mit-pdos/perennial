@@ -214,14 +214,14 @@ Proof.
   rewrite /map.own_map.
   iIntros (p q). iSplit.
   - iDestruct 1 as (mv Heq) "H".
-    iDestruct (fractional.fractional_split with "H") as "(H1&H2)".
+    iDestruct "H" as "(H1&H2)".
     iSplitL "H1"; iExists _; iFrame; eauto.
   - iIntros "(H1&H2)".
     iDestruct "H1" as (hd1 Heq) "H1".
     iDestruct "H2" as (hd2 Heq') "H2".
     iDestruct (heap_mapsto_agree with "[$H1 $H2]") as %Heq''. subst.
     iExists _; iSplit; first done.
-    iApply (fractional.fractional_split). iFrame.
+    by iSplitL "H1".
 Qed.
 
 Definition own_Server (s : loc) (handlers: gmap u64 val) : iProp Σ :=

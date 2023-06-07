@@ -149,23 +149,15 @@ Qed.
 
 Theorem own_slice_small_fractional s t vs :
   fractional.Fractional (λ q, own_slice_small s t q vs).
-Proof. rewrite /own_slice_small. apply _. Unshelve. exact 1%Qp. Qed.
+Proof. apply _. Qed.
 
 Theorem own_slice_small_as_fractional s q t vs :
   fractional.AsFractional (own_slice_small s t q vs) (λ q, own_slice_small s t q vs) q.
-Proof.
-  split; auto; apply _.
-  Unshelve.
-  exact 1%Qp.
-Qed.
+Proof. split; auto; apply _. Qed.
 
 Global Instance own_slice_small_as_mapsto s t vs :
   AsMapsTo (own_slice_small s t 1 vs) (λ q, own_slice_small s t q vs).
-Proof.
-  constructor; auto; intros; apply _.
-  Unshelve.
-  exact 1%Qp.
-Qed.
+Proof. constructor; auto; apply _. Qed.
 
 Theorem own_slice_small_agree s t q1 q2 vs1 vs2 :
   own_slice_small s t q1 vs1 -∗

@@ -102,12 +102,12 @@ Proof.
   iFrame.
 Qed.
 
-Global Instance array_fractional l q t vs :
+Global Instance array_fractional l t vs :
+  fractional.Fractional (λ q, array l q t vs) := _.
+
+Global Instance array_as_fractional l t q vs :
   fractional.AsFractional (array l q t vs) (λ q, array l q t vs) q.
-Proof.
-  constructor; auto.
-  apply _.
-Qed.
+Proof. constructor; auto; apply _. Qed.
 
 Theorem loc_add_stride_Sn l t n :
   l +ₗ[t] S n = (l +ₗ ty_size t) +ₗ[t] n.
