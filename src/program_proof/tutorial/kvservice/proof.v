@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.tutorial Require Import kvservice.
-From Perennial.program_proof.grove_shared Require Import urpc_proof.
+From Perennial.program_proof.grove_shared Require Import urpc_proof monotonic_pred.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
 (********************************************************************************)
