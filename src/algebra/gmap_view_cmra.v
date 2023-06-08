@@ -309,11 +309,12 @@ Section lemmas.
       + rewrite -cmra_discrete_included_iff -discrete_iff -cmra_discrete_valid_iff.
         split_and!; auto.
   Qed.
-  (*
-  Lemma gmap_view_both_dfrac_valid_L `{!LeibnizEquiv V} dp m k dq v :
+
+  Lemma gmap_view_both_dfrac_valid_L `{!CmraDiscrete V} `{!LeibnizEquiv V} dp m k dq v :
     ✓ (gmap_view_auth dp m ⋅ gmap_view_frag k dq v) ↔
-    ✓ dp ∧ ✓ dq ∧ m !! k = Some v.
-  Proof. unfold_leibniz. apply gmap_view_both_dfrac_valid. Qed. *)
+    ✓ dp ∧ ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (v ≼ v' ∨ v = v').
+  Proof. setoid_rewrite <-(leibniz_equiv_iff (A:=V)).
+         apply gmap_view_both_dfrac_valid_discrete. Qed.
   Lemma gmap_view_both_valid `{!CmraDiscrete V} m k dq v :
     ✓ (gmap_view_auth (DfracOwn 1) m ⋅ gmap_view_frag k dq v) ↔
     ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (v ≼ v' ∨ v ≡ v').
