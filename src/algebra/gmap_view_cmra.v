@@ -546,15 +546,20 @@ Section lemmas.
   Proof. rewrite /IsOp' /IsOp /IsOp => -> ->. apply gmap_view_frag_op. Qed.
 End lemmas.
 
+(*
 (** Functor *)
 Program Definition gmap_viewURF (K : Type) `{Countable K} (F : oFunctor) : urFunctor := {|
-  urFunctor_car A _ B _ := gmap_viewUR K (oFunctor_car F A B);
+  urFunctor_car A _ B _ := gmap_viewUR K (agreeR $ oFunctor_car F A B);
   urFunctor_map A1 _ A2 _ B1 _ B2 _ fg :=
-    viewO_map (rel:=gmap_view_rel K (oFunctor_car F A1 B1))
-              (rel':=gmap_view_rel K (oFunctor_car F A2 B2))
+    viewO_map (rel:=gmap_view_rel K (agreeR $ oFunctor_car F A1 B1))
+              (rel':=gmap_view_rel K (agreeR $ oFunctor_car F A2 B2))
               (gmapO_map (K:=K) (oFunctor_map F fg))
               (gmapO_map (K:=K) (prodO_map cid (agreeO_map (oFunctor_map F fg))))
 |}.
+Next Obligation.
+  intros.
+  rewrite /oFunctor_car.
+Qed.
 Next Obligation.
   intros K ?? F A1 ? A2 ? B1 ? B2 ? n f g Hfg.
   apply viewO_map_ne.
@@ -625,6 +630,6 @@ Solve Obligations with apply gmap_viewURF.
 
 Global Instance gmap_viewRF_contractive (K : Type) `{Countable K} F :
   oFunctorContractive F → rFunctorContractive (gmap_viewRF K F).
-Proof. apply gmap_viewURF_contractive. Qed.
+Proof. apply gmap_viewURF_contractive. Qed. *)
 
 Global Typeclasses Opaque gmap_view_auth gmap_view_frag.
