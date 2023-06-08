@@ -6,6 +6,7 @@ From iris.algebra Require Import csum excl auth cmra_big_op numbers lib.gmap_vie
 From iris.bi Require Import fractional.
 From Perennial.base_logic Require Export lib.own.
 From iris.proofmode Require Export tactics.
+From Perennial.algebra Require Import gmap_view_cmra.
 From Perennial.algebra Require Export blocks.
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
@@ -17,12 +18,14 @@ Import uPred.
 
    This is used for the physical heap in GooseLang. *)
 
-Inductive lock_state :=
-  | WSt : lock_state
-  | RSt: nat → lock_state.
+Definition lock_stateR : cmra :=
+  csumR unitR natR.
+
+Definition na_heapValR (V:Type) : cmra :=
+  (prodR lock_stateR (agreeR (leibnizO V))).
 
 Definition na_heapUR (L V: Type) `{Countable L} : ucmra :=
-  gmap_viewR L (leibnizO (V * lock_state)).
+  gmap_viewUR L (na_heapValR V).
 
 Definition na_sizeUR (L: Type) `{Countable L} : ucmra :=
   gmapUR L (agreeR (leibnizO Z)).
@@ -80,6 +83,18 @@ Instance subG_na_heapPreG {Σ L V} `{BlockAddr L} :
   subG (na_heapΣ L V) Σ → na_heapGpreS L V Σ.
 Proof. solve_inG_deep. Qed.
 
+Inductive lock_state :=
+  | WSt : lock_state
+  | RSt: nat → lock_state.
+
+Definition to_lock_stateR (x : lock_state) : lock_stateR :=
+  match x with RSt n => Cinr n | WSt => Cinl (()) end.
+
+Definition to_na_heap {L V LK} `{Countable L} (tls : LK → lock_state) :
+  gmap L (LK * V) → na_heapUR L V :=
+  λ m,
+  gmap_view_auth (DfracOwn 1) (fmap (λ v, (to_lock_stateR (tls (v.1)), to_agree (v.2))) m).
+
 Definition to_na_size {L} `{Countable L} :
   gmap L Z → na_sizeUR L := fmap (λ v, to_agree v).
 
@@ -89,7 +104,7 @@ Section definitions.
 
   Definition na_heap_mapsto_st (st : lock_state)
              (l : L) (dq : dfrac) (v: V) : iProp Σ :=
-    own (na_heap_name hG) (gmap_view_frag l dq ((v, st) : leibnizO _)).
+    own (na_heap_name hG) (gmap_view_frag l dq ((to_lock_stateR st, to_agree (v:leibnizO _)))).
 
   Definition na_heap_mapsto_def (l : L) (dq : dfrac) (v: V) : iProp Σ :=
     na_heap_mapsto_st (RSt 0) l dq v.
@@ -122,10 +137,6 @@ Section definitions.
   Definition block_sizes_wf (σ: gmap L (LK * V)) (sz: gmap Z Z) : Prop :=
     (∀ l z, l ∈ dom σ → sz !! addr_id l = Some z → (0 ≤ addr_offset l < z)%Z) ∧
     (∀ l, l ∈ dom sz → addr_encode (l, 0)%Z ∈ dom σ).
-
-  Definition to_na_heap {L V LK} `{Countable L} (tls : LK → lock_state) :
-    gmap L (LK * V) → na_heapUR L V :=
-    λ m, gmap_view_auth (DfracOwn 1) (fmap (λ v, (v.2, tls (v.1))) m).
 
   Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ m (sz: gmap Z Z),
     ⌜ dom m ⊆ dom σ ⌝ ∧
