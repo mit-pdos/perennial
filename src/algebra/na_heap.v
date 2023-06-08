@@ -17,17 +17,18 @@ Import uPred.
 
    This is used for the physical heap in GooseLang. *)
 
-Definition lock_stateR : cmra :=
-  csumR unitR natR.
+Inductive lock_state :=
+  | WSt : lock_state
+  | RSt: nat → lock_state.
 
 Definition na_heapUR (L V: Type) `{Countable L} : ucmra :=
-  gmapUR L (prodR (prodR fracR lock_stateR) (agreeR (leibnizO V))).
+  gmap_viewR L (leibnizO (V * lock_state)).
 
 Definition na_sizeUR (L: Type) `{Countable L} : ucmra :=
   gmapUR L (agreeR (leibnizO Z)).
 
 Class na_heapGS (L V: Type) Σ `{BlockAddr L} := Na_HeapG {
-  na_heap_inG :> inG Σ (authR (na_heapUR L V));
+  na_heap_inG :> inG Σ (na_heapUR L V);
   na_size_inG :> inG Σ (authR (na_sizeUR Z));
   na_meta_inG :> inG Σ (gmap_viewR L gnameO);
   na_meta_data_inG :> inG Σ (reservation_mapR (agreeR positiveO));
@@ -79,17 +80,6 @@ Instance subG_na_heapPreG {Σ L V} `{BlockAddr L} :
   subG (na_heapΣ L V) Σ → na_heapGpreS L V Σ.
 Proof. solve_inG_deep. Qed.
 
-Inductive lock_state :=
-  | WSt : lock_state
-  | RSt: nat → lock_state.
-
-Definition to_lock_stateR (x : lock_state) : lock_stateR :=
-  match x with RSt n => Cinr n | WSt => Cinl (()) end.
-
-Definition to_na_heap {L V LK} `{Countable L} (tls : LK → lock_state) :
-  gmap L (LK * V) → na_heapUR L V :=
-  fmap (λ v, (1%Qp, to_lock_stateR (tls (v.1)), to_agree (v.2))).
-
 Definition to_na_size {L} `{Countable L} :
   gmap L Z → na_sizeUR L := fmap (λ v, to_agree v).
 
@@ -98,11 +88,11 @@ Section definitions.
   Context `{LK} (tls: LK → lock_state).
 
   Definition na_heap_mapsto_st (st : lock_state)
-             (l : L) (q : Qp) (v: V) : iProp Σ :=
-    own (na_heap_name hG) (◯ {[ l := (q, to_lock_stateR st, to_agree v) ]}).
+             (l : L) (dq : dfrac) (v: V) : iProp Σ :=
+    own (na_heap_name hG) (gmap_view_frag l dq ((v, st) : leibnizO _)).
 
-  Definition na_heap_mapsto_def (l : L) (q : Qp) (v: V) : iProp Σ :=
-    na_heap_mapsto_st (RSt 0) l q v.
+  Definition na_heap_mapsto_def (l : L) (dq : dfrac) (v: V) : iProp Σ :=
+    na_heap_mapsto_st (RSt 0) l dq v.
   Definition na_heap_mapsto_aux : seal (@na_heap_mapsto_def). by eexists. Qed.
   Definition na_heap_mapsto := unseal na_heap_mapsto_aux.
   Definition na_heap_mapsto_eq : @na_heap_mapsto = @na_heap_mapsto_def :=
@@ -133,9 +123,13 @@ Section definitions.
     (∀ l z, l ∈ dom σ → sz !! addr_id l = Some z → (0 ≤ addr_offset l < z)%Z) ∧
     (∀ l, l ∈ dom sz → addr_encode (l, 0)%Z ∈ dom σ).
 
+  Definition to_na_heap {L V LK} `{Countable L} (tls : LK → lock_state) :
+    gmap L (LK * V) → na_heapUR L V :=
+    λ m, gmap_view_auth (DfracOwn 1) (fmap (λ v, (v.2, tls (v.1))) m).
+
   Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ m (sz: gmap Z Z),
     ⌜ dom m ⊆ dom σ ⌝ ∧
-     own (na_heap_name hG) (● to_na_heap tls σ) ∗
+     own (na_heap_name hG) (to_na_heap tls σ) ∗
      own (na_meta_name hG) (gmap_view_auth (DfracOwn 1) m) ∗
      own (na_size_name hG) (● to_na_size sz) ∗
      ⌜ block_sizes_wf σ sz ⌝ )%I.
@@ -159,11 +153,9 @@ Section to_na_heap.
   Implicit Types m : gmap L gname.
 
   Lemma to_na_heap_valid tls σ : ✓ to_na_heap tls σ.
-  Proof.
-    intros l. rewrite lookup_fmap.
-    case (σ !! l) =>//=. intros (lk&v) => //=. destruct (tls lk) => //=.
-  Qed.
+  Proof. apply gmap_view_auth_valid. Qed.
 
+  (*
   Lemma lookup_to_na_heap_None tls σ l : σ !! l = None → to_na_heap tls σ !! l = None.
   Proof. by rewrite /to_na_heap lookup_fmap=> ->. Qed.
 
@@ -173,7 +165,7 @@ Section to_na_heap.
   Proof. by rewrite /to_na_heap fmap_insert. Qed.
 
   Lemma to_na_heap_delete tls σ l : to_na_heap tls (delete l σ) = delete l (to_na_heap tls σ).
-  Proof. by rewrite /to_na_heap fmap_delete. Qed.
+  Proof. by rewrite /to_na_heap fmap_delete. Qed. *)
 End to_na_heap.
 
 Section to_na_size.
@@ -193,6 +185,7 @@ Section to_na_size.
 
 End to_na_size.
 
+(*
 Lemma na_heap_init `{BlockAddr L, !na_heapGpreS L V Σ} {LK} (tls: LK → lock_state) σ :
   ⊢ |==> ∃ _ : na_heapGS L V Σ, na_heap_ctx tls σ.
 Proof.
@@ -207,7 +200,7 @@ Proof.
   iPureIntro; split.
   - set_solver.
   - rewrite /block_sizes_wf. set_solver.
-Qed.
+Qed. *)
 
 Section na_heap.
   Context {L V} {LK: Type} `{BlockAddr L, hG: !na_heapGS L V Σ}.
@@ -225,33 +218,43 @@ Section na_heap.
   Global Instance na_heap_mapsto_timeless l q v : Timeless (l↦{q}v).
   Proof. rewrite na_heap_mapsto_eq /na_heap_mapsto_def. apply _. Qed.
 
-  Global Instance na_heap_mapsto_st_fractional l v: Fractional (λ q, na_heap_mapsto_st WSt l q v)%I.
+  Global Instance na_heap_mapsto_st_fractional l v: Fractional (λ q, na_heap_mapsto_st WSt l (DfracOwn q) v)%I.
   Proof.
     intros p q. rewrite /na_heap_mapsto_st.
-    rewrite -own_op -auth_frag_op singleton_op -?pair_op -Cinl_op ?agree_idemp //=.
+    by rewrite -own_op -gmap_view_frag_op.
   Qed.
 
   Global Instance na_heap_mapsto_st_as_fractional l q v:
-    AsFractional (na_heap_mapsto_st WSt l q v) (λ q, na_heap_mapsto_st WSt l q v)%I q.
+    AsFractional (na_heap_mapsto_st WSt l (DfracOwn q) v) (λ q, na_heap_mapsto_st WSt l (DfracOwn q) v)%I q.
   Proof. split; first done. apply _. Qed.
 
-  Global Instance na_heap_mapsto_fractional l v: Fractional (λ q, l ↦{q} v)%I.
+  Global Instance na_heap_mapsto_fractional l v: Fractional (λ q, l ↦{DfracOwn q} v)%I.
   Proof.
+    (*
     intros p q.
-    by rewrite na_heap_mapsto_eq -own_op -auth_frag_op singleton_op -pair_op agree_idemp.
-  Qed.
+    by rewrite na_heap_mapsto_eq -own_op -auth_frag_op singleton_op -pair_op agree_idemp. *)
+  Admitted.
+
   Global Instance na_heap_mapsto_as_fractional l q v:
-    AsFractional (l ↦{q} v) (λ q, l ↦{q} v)%I q.
+    AsFractional (l ↦{DfracOwn q} v) (λ q, l ↦{DfracOwn q} v)%I q.
   Proof. split; first done. apply _. Qed.
+
+  Lemma na_heap_mapsto_st_persist l st q v :
+    na_heap_mapsto_st st l q v ==∗
+    na_heap_mapsto_st st l DfracDiscarded v.
+  Proof.
+    iApply own_update.
+    apply gmap_view_frag_persist.
+  Qed.
 
   Lemma na_heap_mapsto_st_agree l st1 st2 q1 q2 v1 v2 :
     na_heap_mapsto_st st1 l q1 v1 ∗
     na_heap_mapsto_st st2 l q2 v2 ⊢
     ⌜v1 = v2⌝.
   Proof.
-    rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    eapply pure_elim; [done|]=> /auth_frag_valid /=.
-    rewrite singleton_op -pair_op singleton_valid=> -[? /to_agree_op_inv_L->]; eauto.
+    rewrite -own_op. rewrite own_valid.
+    iIntros (?). iPureIntro.
+    apply gmap_view_frag_op_valid_L in H1. naive_solver.
   Qed.
 
   Lemma na_heap_mapsto_st_WSt_agree l st q1 q2 v1 v2 :
@@ -259,24 +262,30 @@ Section na_heap.
     na_heap_mapsto_st st l q2 v2 ⊢
     ⌜WSt = st⌝.
   Proof.
-    destruct st; first eauto.
-    rewrite -own_op -auth_frag_op own_valid discrete_valid.
-    eapply pure_elim; [done|]=> /auth_frag_valid /=.
-    rewrite singleton_op -?pair_op singleton_valid=> -[[? []] _].
+    rewrite -own_op. rewrite own_valid.
+    iIntros (?). iPureIntro.
+    apply gmap_view_frag_op_valid_L in H1. naive_solver.
   Qed.
 
   Lemma na_heap_mapsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 ∗ l ↦{q2} v2 ⊢ ⌜v1 = v2⌝.
   Proof. by rewrite na_heap_mapsto_eq na_heap_mapsto_st_agree. Qed.
 
-  Lemma na_heap_mapsto_st_frac_valid l q st v : na_heap_mapsto_st st l q v -∗ ⌜(q ≤ 1)%Qp⌝.
+
+  Lemma na_heap_mapsto_st_frac_valid l dq st v : na_heap_mapsto_st st l dq v -∗ ⌜✓ dq⌝.
   Proof.
     rewrite /na_heap_mapsto_st.
-    rewrite own_valid discrete_valid.
-    rewrite auth_frag_valid singleton_valid ?pair_valid frac_valid.
-    iPureIntro. naive_solver.
+    rewrite own_valid discrete_valid. iPureIntro.
+    apply gmap_view_frag_valid.
   Qed.
 
-  Lemma na_heap_mapsto_frac_valid l q v : na_heap_mapsto l q v -∗ ⌜(q ≤ 1)%Qp⌝.
+  Lemma na_heap_mapsto_st_dfrac_valid l q st v : na_heap_mapsto_st st l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
+  Proof.
+    rewrite /na_heap_mapsto_st.
+    rewrite own_valid discrete_valid. iPureIntro.
+    apply gmap_view_frag_valid.
+  Qed.
+
+  Lemma na_heap_mapsto_frac_valid l q v : na_heap_mapsto l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof. by rewrite na_heap_mapsto_eq; apply na_heap_mapsto_st_frac_valid. Qed.
 
   Lemma na_heap_mapsto_st_frac_valid2 l q q' st st' v v' :
