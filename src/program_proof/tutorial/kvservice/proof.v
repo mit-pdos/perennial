@@ -239,8 +239,11 @@ Section rpc_definitions.
 (* NOTE: "global" context because RPC specs are known by multiple machines. *)
 Context `{!gooseGlobalGS Σ}.
 
-Definition getFreshNum_core_spec (Φ:u64 → iPropO Σ): iPropO Σ.
-Admitted.
+Definition getFreshNum_core_spec (Φ:u64 → iPropO Σ): iPropO Σ :=
+  (∀ opId, Φ opId)%I.
+
+Global Instance getFreshNum_core_MonotonicPred : MonotonicPred (getFreshNum_core_spec).
+Proof. apply _. Qed.
 
 Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ.
 Admitted.
@@ -251,7 +254,13 @@ Admitted.
 Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:string → iPropO Σ): iPropO Σ.
 Admitted.
 
+Global Instance conditionalPut_core_MonotonicPred args : MonotonicPred (conditionalPut_core_spec args).
+Admitted.
+
 Definition get_core_spec (args:getArgs.t) (Φ:string → iPropO Σ): iPropO Σ.
+Admitted.
+
+Definition get_core_MonotonicPred args : MonotonicPred (get_core_spec args).
 Admitted.
 
 End rpc_definitions.
@@ -543,11 +552,17 @@ Proof.
     iModIntro. iModIntro.
     rewrite replicate_0.
     rewrite /getFreshNum_spec /=.
-    (* FIXME: want to know that
-       Φ -∗ Ψ, core_spec Φ ⊢ core_spec Ψ,
-       i.e. that core_spec is covariant.
-     *)
-    admit.
+    iApply (monotonic_fact with "[] Hspec").
+    iModIntro.
+    iIntros (?) "HΦ".
+    iIntros (??) "Hreq_sl % Hrep Hrep_sl".
+    iNamed 1.
+    wp_pures.
+    wp_load. subst.
+    wp_apply (wp_DecodeUint64 with "[$]").
+    iIntros "Hrep_sl".
+    wp_pures.
+    by iApply "HΦ".
   }
   { (* case: Call returns error *)
     iIntros (??) "Hreq_sl Hrep". iNamed 1.
@@ -558,7 +573,7 @@ Proof.
     iApply "Herr".
     done.
   }
-Admitted.
+Qed.
 
 Lemma wp_Client__putRpc cl Φ args args_ptr :
   is_Client cl -∗
@@ -622,11 +637,10 @@ Definition is_Locked (ck:loc) : iProp Σ :=
   "#Hid" ∷ readonly (ck ↦[Locked :: "id"] #n)
 .
 
-(*
-Lemma wp_Clerk__Acquire (ck:loc) :
+Lemma wp_Clerk__Acquire (ck:loc) k v :
   {{{ is_Clerk ck }}}
-    Clerk__Put #ck
-  {{{ (l:loc), RET #l; is_Locked l }}}
+    Clerk__Put #ck #(str k) #(str v)
+  {{{ (l:loc), RET #l; True }}}
 .
 Proof.
   iIntros (Φ) "#Hck HΦ".
@@ -639,42 +653,77 @@ Proof.
   { done. }
   iIntros (err_ptr) "Herr".
   wp_pures.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (l) "Hl".
-  wp_pures.
 
+  iAssert (∃ (someErr someOpId:u64), "Hid" ∷ id_ptr ↦[uint64T] #someOpId ∗
+                             "Herr" ∷ err_ptr ↦[uint64T] #someErr
+          )%I with "[Herr Hid]" as "HH".
+  { repeat iExists _; iFrame. }
   wp_forBreak.
+  iNamed "HH".
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  wp_apply (wp_Client__getFreshNum with "[$]").
+  wp_bind (App _ #_)%E.
+  iApply (wp_frame_wand with "[-]"); first iNamedAccu.
+  wp_apply (wp_Client__getFreshNumRpc with "[$]").
   2:{ (* case: error *)
-    iIntros (err) "%Herr". wp_pures.
+    iIntros (err) "%Herr".
+    iNamed 1.
+    wp_pures.
     wp_store.
     wp_store.
     wp_load.
     wp_pures.
     wp_if_destruct.
-    {
-      iModIntro. iLeft.
-      iSplitR; first done.
-      iFrame.
-      admit. (* TODO: weaken loop inv for err *)
-    }
-    by exfalso.
+    { by exfalso. }
+    iModIntro. iLeft.
+    iSplitR; first done.
+    iFrame.
+    repeat iExists _; iFrame.
   }
   (* case: successful RPC *)
   iModIntro.
-  (* TODO: put resources in front of Φ with wp_wand(_frame?) *)
-Admitted.
 
-Lemma wp_Locked__Release (l:loc) :
-  {{{ is_Locked l }}}
-    Locked__Release #l
-  {{{ RET #(); True }}}
-.
-Proof.
-Admitted. *)
+  (* NOTE: ghost *)
+  rewrite /getFreshNum_core_spec.
+  iIntros (?).
+  wp_pures.
+  iNamed 1.
+  wp_store.
+  wp_store.
+  wp_load.
+  wp_pures.
+  iRight.
+  iModIntro; iSplitR; first done.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_forBreak_cond.
+  wp_loadField.
+
+  wp_bind (App _ #_)%E.
+  iApply (wp_frame_wand with "[- opId key val]"); first iNamedAccu.
+  wp_apply (wp_Client__putRpc with "[$] [-]").
+  { instantiate (1:=putArgs.mk _ _ _). iFrame. }
+  2:{ (* case: RPC error *)
+    iIntros (err Herr).
+    iNamed 1.
+    wp_pures.
+    wp_if_destruct.
+    2:{ by exfalso. }
+    wp_pures.
+    iLeft.
+    iFrame.
+    (* FIXME: need fractional ownership of args. *)
+  }
+  iMod
+
+Admitted.
 
 End clerk_proof.
