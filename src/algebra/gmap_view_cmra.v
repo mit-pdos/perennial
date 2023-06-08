@@ -379,7 +379,7 @@ Section lemmas.
     gmap_view_auth (DfracOwn 1) m ⋅ gmap_view_frag k (DfracOwn 1) v ~~>
     gmap_view_auth (DfracOwn 1) (delete k m).
   Proof.
-    apply view_update_dealloc=>n bf Hrel j [df va] Hbf /=.
+    apply view_update_dealloc=>n bf Hrel j [df va] Hbf.
     destruct (decide (j = k)) as [->|Hne].
     - edestruct (Hrel k) as (v' & ? & ? & ? & Hdf).
       { rewrite lookup_op Hbf lookup_singleton -Some_op. done. }
@@ -448,18 +448,59 @@ Section lemmas.
     gmap_view_auth (DfracOwn 1) m ⋅ gmap_view_frag k dq v ~~>
     gmap_view_auth (DfracOwn 1) (<[k := mv']> m) ⋅ gmap_view_frag k dq v'.
   Proof.
-    intros ? Hup. apply view_update=> n bf Hrel j [df va] Hjm.
+    intros Hm Hup. apply view_update=> n bf Hrel j [df va] Hbf.
     destruct (decide (j = k)) as [?|Hne]; first subst.
-    {
-      edestruct (Hrel k) as (mv2 & ? & ? & ? & Hdf).
+    { (* prove the mapForall for k *)
       exists mv'. rewrite lookup_insert. split; first done.
-      rewrite lookup_insert in Hjm.
-      { rewrite lookup_op Hbf lookup_singleton -Some_op. done. }
-      exfalso. apply: dfrac_full_exclusive. apply Hdf.
+      rewrite lookup_op lookup_singleton in Hbf.
+      destruct (bf !! k) as [[? ?]|] eqn:HbfLookup.
+      { (* case: k shows up in frame bf *)
+        rewrite HbfLookup -Some_op /= in Hbf.
+        injection Hbf as <- <-.
+        edestruct (Hrel k) as (mv2 & Hm' & ? & Hincl & Hdf).
+        { by rewrite lookup_op lookup_singleton HbfLookup. }
+        rewrite Hm' in Hm. injection Hm as ->.
+        simpl in *.
+        destruct Hincl as [[bf']|].
+        { (* case: frag val ≼ auth val *)
+          edestruct (Hup n (Some (c0 ⋅ bf'))); first done.
+          { by rewrite /= assoc. }
+          simpl in *.
+          split_and!; auto. left. exists (bf').
+          by rewrite -assoc.
+        }
+        { (* case: frag val ≡ auth val *)
+          edestruct (Hup n (Some c0)); first done.
+          { done. }
+          simpl in *.
+          split_and!; auto.
+        }
+      }
+      { (* case: k does not show up in frame bf *)
+        rewrite HbfLookup /= in Hbf.
+        injection Hbf as -> ->.
+        edestruct (Hrel k) as (mv2 & Hm' & ? & Hincl & Hdf).
+        { by rewrite lookup_op lookup_singleton HbfLookup. }
+        simpl in *.
+        rewrite Hm' in Hm. injection Hm as ->.
+        destruct Hincl as [[bf']|].
+        { (* case: frag val is ≼ auth val *)
+          edestruct (Hup n (Some bf')); auto. simpl in *.
+          split_and!; auto. left. by exists bf'.
+        }
+        { (* case: frag val ≡ auth val *)
+          edestruct (Hup n None); auto.
+        }
+      }
     }
-    destruct (Hup n (Some (bf ⋅ bf'))).
-    simpl in *; [done|by rewrite assoc|].
-    apply
+    { (* prove that other keys are unaffected *)
+      rewrite lookup_op lookup_singleton_ne // in Hbf.
+      rewrite lookup_insert_ne //.
+      edestruct (Hrel j) as (mv2 & Hm' & ? & Hincl & Hdf).
+      { rewrite lookup_op lookup_singleton_ne //. }
+      simpl in *. exists mv2.
+      split_and!; auto.
+    }
   Qed.
 
   Lemma gmap_view_auth_persist dq m :
