@@ -30,8 +30,14 @@ Section rel.
   Implicit Types (f : gmap K (dfrac * V)).
 
   (* FIXME: we should really have a name and theory for the reflexive closure of [≼]... *)
+  (* The dq' makes sure that if dv.2 = DfracOwn 1, then the frag dv.1 is
+     equivalent to the authoritative v. This means that when updating a key in
+     the map (or allocating one), the points-to will have the same value as the
+     auth map.
+   *)
   Local Definition gmap_view_rel_raw n m f : Prop :=
-    map_Forall (λ k dv, ∃ v, m !! k = Some v ∧ ✓{n} v ∧ (dv.2 ≼{n} v ∨ dv.2 ≡{n}≡ v) ∧ ✓ dv.1) f.
+    map_Forall (λ k dv, ∃ v dq', m !! k = Some v ∧ ✓{n} v ∧
+                               (dv.2 ≼{n} v ∧ dv.1 ≼ dq' ∨ dv.2 ≡{n}≡ v) ∧ ✓ dv.1) f.
 
   Local Lemma gmap_view_rel_raw_mono n1 n2 m1 m2 f1 f2 :
     gmap_view_rel_raw n1 m1 f1 →
@@ -46,25 +52,30 @@ Section rel.
     specialize (Hf' k). rewrite Hk in Hf'.
     apply option_includedN in Hf'.
     destruct Hf' as [[=]|(? & [q' va'] & [= <-] & Hf1 & Hincl)].
-    specialize (Hrel _ _ Hf1) as (v & Hm1 & Hvval & Hvincl & Hdval). simpl in *.
+    specialize (Hrel _ _ Hf1) as (v & dq' & Hm1 & Hvval & Hvincl & Hdval). simpl in *.
     specialize (Hm k).
     edestruct (dist_Some_inv_l _ _ _ _ Hm Hm1) as (v' & Hm2 & Hv).
-    eexists. split; first done. split.
+    eexists _, dq'. split; first done. split.
     { rewrite -Hv. eapply cmra_validN_le; done. }
     rewrite -Hv.
     destruct Hincl as [[Heqq Heqva]|[Hinclq Hinclva]%pair_includedN].
     - simpl in *. split.
-      + rewrite Heqva. destruct Hvincl.
-        * left. eapply cmra_includedN_le; last eassumption. done.
+      + rewrite Heqva. destruct Hvincl as [[]|].
+        * left. split. { eapply cmra_includedN_le; last eassumption. done. }
+          by rewrite Heqq.
         * right. eapply dist_le; last eassumption. done.
       + rewrite <-discrete_iff in Heqq; last by apply _.
         fold_leibniz. subst q'. done.
     - split.
-      + left. destruct Hvincl.
-        * etrans; first apply Hinclva.
-          eapply cmra_includedN_le; last eassumption. done.
-        * eapply cmra_includedN_ne; last apply Hinclva; first done.
-          eapply dist_le; done.
+      + destruct Hvincl as [[]|].
+        * left. split.
+          { etrans; first apply Hinclva.
+            eapply cmra_includedN_le; last eassumption. done. }
+          etrans; done.
+        * right. etrans.
+          { eapply cmra_includedN_ne; last apply Hinclva; first done.
+            eapply dist_le; done. }
+          { etrans. { done. }
       + rewrite <-cmra_discrete_included_iff in Hinclq.
         eapply cmra_valid_included; done.
   Qed.
@@ -291,7 +302,7 @@ Section lemmas.
 
   Lemma gmap_view_both_dfrac_valid_discrete `{!CmraDiscrete V} dp m k dq v :
     ✓ (gmap_view_auth dp m ⋅ gmap_view_frag k dq v) ↔
-    ✓ dp ∧ ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (v ≼ v' ∨ v ≡ v').
+    ✓ dp ∧ ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (Some v ≼ Some v').
   Proof.
     rewrite /gmap_view_auth /gmap_view_frag.
     rewrite view_both_dfrac_valid. setoid_rewrite gmap_view_rel_lookup.
@@ -300,25 +311,35 @@ Section lemmas.
       + specialize (Hm 0%nat). naive_solver.
       + destruct (Hm 0%nat) as (? & -> & ? & ? & ?).
         exists x. split; first done.
-        rewrite cmra_discrete_included_iff discrete_iff cmra_discrete_valid_iff.
-        done.
+        rewrite cmra_discrete_included_iff cmra_discrete_valid_iff.
+        split; first done.
+        rewrite Some_includedN.
+        destruct H1 as [?|?].
+        { right. done. }
+        { left. done. }
     - split; first done. intros n.
       destruct Hm as [? (? & ? & ? & ?)].
       exists x. split.
       + done.
-      + rewrite -cmra_discrete_included_iff -discrete_iff -cmra_discrete_valid_iff.
-        split_and!; auto.
+      + rewrite Some_included in H3.
+        rewrite -cmra_discrete_included_iff -discrete_iff -cmra_discrete_valid_iff.
+        split_and!; auto. by rewrite comm.
   Qed.
 
-  Lemma gmap_view_both_dfrac_valid_L `{!CmraDiscrete V} `{!LeibnizEquiv V} dp m k dq v :
-    ✓ (gmap_view_auth dp m ⋅ gmap_view_frag k dq v) ↔
-    ✓ dp ∧ ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (v ≼ v' ∨ v = v').
-  Proof. setoid_rewrite <-(leibniz_equiv_iff (A:=V)).
-         apply gmap_view_both_dfrac_valid_discrete. Qed.
   Lemma gmap_view_both_valid `{!CmraDiscrete V} m k dq v :
     ✓ (gmap_view_auth (DfracOwn 1) m ⋅ gmap_view_frag k dq v) ↔
-    ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (v ≼ v' ∨ v ≡ v').
+    ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (Some v ≼ Some v').
   Proof. rewrite gmap_view_both_dfrac_valid_discrete. naive_solver done. Qed.
+
+  Lemma gmap_view_both_valid1 `{!CmraDiscrete V} m k dp dq v :
+    ✓ (gmap_view_auth (DfracOwn dp) m ⋅ gmap_view_frag k (DfracOwn 1) v) ↔
+    ✓ dq ∧ (m !! k = Some v).
+  Proof.
+    rewrite /gmap_view_auth /gmap_view_frag. rewrite view_both_dfrac_valid.
+    setoid_rewrite gmap_view_rel_lookup.
+    Search Exclusive included.
+  Qed.
+
   (* FIXME: Having a [valid_L] lemma is not consistent with [auth] and [view]; they
      have [inv_L] lemmas instead that just have an equality on the RHS. *)
   (*

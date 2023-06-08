@@ -707,7 +707,22 @@ Section na_heap.
     destruct (σ !! l).
     2:{ simpl in *. by exfalso. }
     injection Hm as <- <-.
-    destruct Hincl as [Hincl|Hequiv].
+    rewrite Some_included in Hincl.
+    destruct Hincl as [Hequiv|Hincl].
+    {
+      destruct p.
+      destruct Hequiv. simpl in *.
+      apply to_agree_equiv_inj in H3; subst.
+      fold_leibniz.
+      rewrite /to_lock_stateR in H2.
+      destruct lk, (tls l0) eqn:Hls.
+      { eexists _, 0; split; done. }
+      { by exfalso. }
+      { by exfalso. }
+      { injection H2 as ->.
+        eexists _, 0; split; first done.
+        by rewrite ?Nat.add_0_r. }
+    }
     {
       destruct p.
       apply pair_included in Hincl as [Hlk Hincl].
@@ -732,20 +747,6 @@ Section na_heap.
         rewrite -Cinr_op in H2.
         by injection H2 as ->. }
     }
-    {
-      destruct p.
-      destruct Hequiv. simpl in *.
-      apply to_agree_equiv_inj in H3; subst.
-      fold_leibniz.
-      rewrite /to_lock_stateR in H2.
-      destruct lk, (tls l0) eqn:Hls.
-      { eexists _, 0; split; done. }
-      { by exfalso. }
-      { by exfalso. }
-      { injection H2 as ->.
-        eexists _, 0; split; first done.
-        by rewrite ?Nat.add_0_r. }
-    }
   Qed.
 
   Lemma na_heap_mapsto_lookup_1 tls σ l lk v :
@@ -754,10 +755,10 @@ Section na_heap.
     ⌜∃ ls', σ !! l = Some (ls', v) ∧ tls ls' = lk⌝.
   Proof.
     iIntros "H● H◯".
-    iDestruct (own_valid_2 with "H● H◯") as %[Hl?]%auth_both_valid_discrete.
-    iPureIntro. move: Hl=> /singleton_included_l [[[q' ls'] dv]].
-    rewrite /to_na_heap lookup_fmap fmap_Some_equiv.
-    move=> [[[ls'' v'] [?[[/=??]->]]] Hincl]; simplify_eq.
+    iDestruct (own_valid_2 with "H● H◯") as %(_ & Hl)%gmap_view_both_valid.
+    iPureIntro. move: Hl=> [[ls' dv]].
+    rewrite /to_na_heap lookup_fmap fmap_Some.
+    move=> [[[ls'' v'] [-> ?]] [? Hincl]]; simplify_eq.
     apply (Some_included_exclusive _ _) in Hincl as [? Hval]; last by destruct (tls ls'') eqn:Hls''.
     apply (inj to_agree) in Hval. fold_leibniz. subst.
     exists ls''. destruct lk, (tls ls''); rewrite ?Nat.add_0_r; naive_solver.
