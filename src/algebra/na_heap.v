@@ -679,6 +679,14 @@ Section na_heap.
   Qed.
    *)
 
+  (* FIXME: is here a better way than this? *)
+  Local Lemma to_agree_equiv_inj v v' :
+    (to_agree v:agreeR (leibnizO V)) ≡ to_agree v' →
+    v = v'.
+  Proof.
+    intros. by apply (to_agree_inj (v:leibnizO V) v') in H1.
+  Qed.
+
   Lemma na_heap_mapsto_lookup tls σ l lk dq v :
     own (na_heap_name hG) (gmap_view_auth (DfracOwn 1) (to_na_heap tls σ)) -∗
     own (na_heap_name hG) (gmap_view_frag l dq (to_lock_stateR lk, to_agree (v: leibnizO _))) -∗
@@ -709,7 +717,7 @@ Section na_heap.
       simpl in *.
       destruct lk as [|n] eqn:Hls, (tls l0) as [|n''] eqn:Hls',
               Hlk; subst.
-      { eexists _, _; done. }
+      { eexists _, 0; done. }
       { rewrite /to_lock_stateR /= in H2.
         apply leibniz_equiv in H2.
         exfalso. by destruct x. }
@@ -722,45 +730,27 @@ Section na_heap.
         eexists _, c.
         split; first done.
         rewrite -Cinr_op in H2.
-        by injection H2 as ->.
-      }
+        by injection H2 as ->. }
     }
     {
       destruct p.
       destruct Hequiv. simpl in *.
-      rewrite to_agree_op_valid in H3.
-      apply to_agree_op_inv_L in H3.
-
+      apply to_agree_equiv_inj in H3; subst.
       fold_leibniz.
-      apply pair_equiv in Hequiv as [Hlk Hincl].
-      rewrite to_agree_included in Hincl.
-      apply leibniz_equiv in Hincl; subst.
-
-      simpl in *.
-      destruct lk as [|n] eqn:Hls, (tls l0) as [|n''] eqn:Hls',
-              Hlk; subst.
-      { eexists _, _; done. }
-      { rewrite /to_lock_stateR /= in H2.
-        apply leibniz_equiv in H2.
-        exfalso. by destruct x. }
-      { rewrite /to_lock_stateR /= in H2.
-        apply leibniz_equiv in H2.
-        exfalso. by destruct x. }
-      { rewrite /to_lock_stateR /= in H2.
-        apply leibniz_equiv in H2.
-        destruct x. 1,3: done.
-        eexists _, c.
-        split; first done.
-        rewrite -Cinr_op in H2.
-        by injection H2 as ->.
-      }
+      rewrite /to_lock_stateR in H2.
+      destruct lk, (tls l0) eqn:Hls.
+      { eexists _, 0; split; done. }
+      { by exfalso. }
+      { by exfalso. }
+      { injection H2 as ->.
+        eexists _, 0; split; first done.
+        by rewrite ?Nat.add_0_r. }
     }
-
   Qed.
 
   Lemma na_heap_mapsto_lookup_1 tls σ l lk v :
-    own (na_heap_name hG) (● to_na_heap tls σ) -∗
-    own (na_heap_name hG) (◯ {[ l := (1%Qp, to_lock_stateR lk, to_agree v) ]}) -∗
+    own (na_heap_name hG) (gmap_view_auth (DfracOwn 1) (to_na_heap tls σ)) -∗
+    own (na_heap_name hG) (gmap_view_frag l (DfracOwn 1) (to_lock_stateR lk, to_agree (v:leibnizO V))) -∗
     ⌜∃ ls', σ !! l = Some (ls', v) ∧ tls ls' = lk⌝.
   Proof.
     iIntros "H● H◯".
