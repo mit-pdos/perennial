@@ -518,8 +518,6 @@ Section lemmas.
         destruct (bf !! k) eqn:Hbf; by rewrite Hbf. }
       rewrite Some_op_opM. intros [= Hbf].
       exists v'. do 2 (split; first done). rewrite /= in Hdf.
-      split.
-      { (* FIXME: finish the rest of this *) done. }
       destruct (bf !! k) as [[df' va']|] eqn:Hbfk; rewrite Hbfk in Hbf; clear Hbfk.
       + simpl in *. rewrite -pair_op in Hbf.
         move:Hbf=>[= <- <-]. split; first done.
@@ -535,16 +533,17 @@ Section lemmas.
   Qed.
 
   (** Typeclass instances *)
-  Global Instance gmap_view_frag_core_id k dq v : CoreId dq → CoreId (gmap_view_frag k dq v).
+  Global Instance gmap_view_frag_core_id k dq v : CoreId v → CoreId dq → CoreId (gmap_view_frag k dq v).
   Proof. apply _. Qed.
 
-  Global Instance gmap_view_cmra_discrete : OfeDiscrete V → CmraDiscrete (gmap_viewR K V).
+  Global Instance gmap_view_cmra_discrete : CmraDiscrete V → CmraDiscrete (gmap_viewR K V).
   Proof. apply _. Qed.
 
-  Global Instance gmap_view_frag_mut_is_op dq dq1 dq2 k v :
+  Global Instance gmap_view_frag_mut_is_op dq dq1 dq2 k v v1 v2 :
     IsOp dq dq1 dq2 →
-    IsOp' (gmap_view_frag k dq v) (gmap_view_frag k dq1 v) (gmap_view_frag k dq2 v).
-  Proof. rewrite /IsOp' /IsOp => ->. apply gmap_view_frag_op. Qed.
+    IsOp v v1 v2 →
+    IsOp' (gmap_view_frag k dq v) (gmap_view_frag k dq1 v1) (gmap_view_frag k dq2 v2).
+  Proof. rewrite /IsOp' /IsOp /IsOp => -> ->. apply gmap_view_frag_op. Qed.
 End lemmas.
 
 (** Functor *)
