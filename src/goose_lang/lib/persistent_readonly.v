@@ -42,9 +42,9 @@ Section goose_lang.
     iApply (ae_inv_acc_bupd with "Hro []").
     iIntros ">Hinner !> !>".
     iDestruct "Hinner" as (q) "HΦ".
-    iDestruct (fractional_half with "HΦ") as "[HΦ1 HΦ2]".
-    { split; auto. eapply as_mapsto_fractional. }
-    { split; auto. eapply as_mapsto_fractional. }
+    (* Import the required instance (which is not registered by default *)
+    pose proof @fractional_as_fractional as fractional_instance.
+    iDestruct "HΦ" as "[HΦ1 HΦ2]".
     iSplitL "HΦ1".
     - iNext. iExists (q/2)%Qp. done.
     - iExists (q/2)%Qp. done.
