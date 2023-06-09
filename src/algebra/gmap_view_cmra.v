@@ -29,9 +29,10 @@ Section rel.
   Implicit Types (m : gmap K V) (k : K) (v : V) (n : nat).
   Implicit Types (f : gmap K (dfrac * V)).
 
+
   (* FIXME: we should really have a name and theory for the reflexive closure of [≼]... *)
   Local Definition gmap_view_rel_raw n m f : Prop :=
-    map_Forall (λ k dv, ∃ v, m !! k = Some v ∧ ✓{n} v ∧ (dv.2 ≼{n} v ∨ dv.2 ≡{n}≡ v) ∧ ✓ dv.1) f.
+    map_Forall (λ k dv, ∃ v, m !! k = Some v ∧ ✓{n} v ∧ (dv ≼{n} ((DfracOwn 1, v):prodR _ _) ∨ dv ≡{n}≡ (DfracOwn 1, v)) ∧ ✓ dv.1) f.
 
   Local Lemma gmap_view_rel_raw_mono n1 n2 m1 m2 f1 f2 :
     gmap_view_rel_raw n1 m1 f1 →
@@ -54,17 +55,22 @@ Section rel.
     rewrite -Hv.
     destruct Hincl as [[Heqq Heqva]|[Hinclq Hinclva]%pair_includedN].
     - simpl in *. split.
-      + rewrite Heqva. destruct Hvincl.
+      + rewrite Heqva Heqq. destruct Hvincl.
         * left. eapply cmra_includedN_le; last eassumption. done.
         * right. eapply dist_le; last eassumption. done.
       + rewrite <-discrete_iff in Heqq; last by apply _.
         fold_leibniz. subst q'. done.
     - split.
       + left. destruct Hvincl.
-        * etrans; first apply Hinclva.
-          eapply cmra_includedN_le; last eassumption. done.
-        * eapply cmra_includedN_ne; last apply Hinclva; first done.
-          eapply dist_le; done.
+        * transitivity (q', va').
+          2:{
+            by eapply cmra_includedN_le; last eassumption.
+          }
+          apply pair_includedN; split; done.
+        * apply pair_includedN; split.
+          { by destruct H0 as [<- ?]; simpl in *. }
+          eapply dist_le in H0; last done.
+          by destruct H0 as [? <-]; simpl in *.
       + rewrite <-cmra_discrete_included_iff in Hinclq.
         eapply cmra_valid_included; done.
   Qed.
@@ -77,8 +83,8 @@ Section rel.
     split; simpl.
     - apply cmra_discrete_valid_iff. done.
     - destruct Hvincl as [?|Hveq].
-      + eapply cmra_validN_includedN; done.
-      + rewrite Hveq. done.
+      + eapply pair_includedN in H0 as [? ?]. eapply cmra_validN_includedN; done.
+      + destruct Hveq as [? ->]. done.
   Qed.
 
   Local Lemma gmap_view_rel_raw_unit n :
@@ -346,6 +352,7 @@ Section lemmas.
       split.
       { clear Hrel. revert n. rewrite -cmra_valid_validN. done. }
       split; last done.
+      left.
       by right.
     - rewrite lookup_singleton_ne; last done.
       rewrite left_id=>Hbf.
