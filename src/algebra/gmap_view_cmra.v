@@ -443,6 +443,19 @@ Section lemmas.
     { rewrite map_Forall_lookup in Hvalid. eapply Hvalid. done. }
   Qed.
 
+  Print local_update.
+  Lemma gmap_view_update_frag m k dq v v' :
+    (∀ va, (va, v) ~l~> (va, v')) →
+    gmap_view_frag k dq v ~~>
+    gmap_view_frag k dq v'.
+  Proof.
+    intros Hup. apply view_update_frag=> a n bf Hrel j [df va] Hbf.
+    destruct (decide (j = k)) as [?|Hne]; first subst.
+    {
+
+    }
+  Qed.
+
   Lemma gmap_view_update_local m k dq mv v mv' v' :
     m !! k = Some mv →
     (mv, v) ~l~> (mv', v') →

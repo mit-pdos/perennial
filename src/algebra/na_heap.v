@@ -22,7 +22,7 @@ Definition lock_stateR : cmra :=
   csumR unitR natR.
 
 Definition na_heapValR (V:Type) : cmra :=
-  (prodR lock_stateR (agreeR (leibnizO V))).
+  (prodR (prodR dfracR lock_stateR) (agreeR (leibnizO V))).
 
 Definition na_heapUR (L V: Type) `{Countable L} : ucmra :=
   gmap_viewUR L (na_heapValR V).
@@ -97,8 +97,8 @@ Definition to_na_heap {L V LK} `{Countable L} (tls : LK → lock_state) :
   gmap_view_auth (DfracOwn 1) (fmap (λ v, (to_lock_stateR (tls (v.1)), to_agree (v.2))) m). *)
 
 Definition to_na_heap {L V LK} `{Countable L} (tls : LK → lock_state) :
-  gmap L (LK * V) → gmap L (prodR lock_stateR (agreeR (leibnizO V))) :=
-  fmap (λ v, (to_lock_stateR (tls (v.1)), to_agree (v.2))).
+  gmap L (LK * V) → gmap L (prodR (prodR dfracR lock_stateR) (agreeR (leibnizO V))) :=
+  fmap (λ v, (DfracOwn 1, to_lock_stateR (tls (v.1)), to_agree (v.2))).
 
 Definition to_na_size {L} `{Countable L} :
   gmap L Z → na_sizeUR L := fmap (λ v, to_agree v).
@@ -107,9 +107,17 @@ Section definitions.
   Context `{BlockAddr L, hG : !na_heapGS L V Σ}.
   Context `{LK} (tls: LK → lock_state).
 
+  (* XXX: the dq is duplicated in the gmap_view_frag and in the value cmra
+     because gmap_viewR doesn't have the following desired property:
+      own gmap_view_auth m -∗
+      own gmap_view_frag l (DfracOwn 1) v -∗
+      ⌜m !! l = v⌝.
+      It only guarantees that (Some v ≼ m !! l), and it might truly be the case
+      that v ≺ m !! l strictly because the view_rel has to be monotonic.
+   *)
   Definition na_heap_mapsto_st (st : lock_state)
              (l : L) (dq : dfrac) (v: V) : iProp Σ :=
-    own (na_heap_name hG) (gmap_view_frag l dq ((to_lock_stateR st, to_agree (v:leibnizO _)))).
+    own (na_heap_name hG) (gmap_view_frag l dq ((dq, to_lock_stateR st, to_agree (v:leibnizO _)))).
 
   Definition na_heap_mapsto_def (l : L) (dq : dfrac) (v: V) : iProp Σ :=
     na_heap_mapsto_st (RSt 0) l dq v.
@@ -179,7 +187,7 @@ Section to_na_heap.
 
   Lemma to_na_heap_insert tls σ l x v :
     to_na_heap tls (<[l:=(x, v)]> σ)
-    = <[l:=(to_lock_stateR (tls x), to_agree v)]> (to_na_heap tls σ).
+    = <[l:=(DfracOwn 1, to_lock_stateR (tls x), to_agree v)]> (to_na_heap tls σ).
   Proof. by rewrite /to_na_heap fmap_insert. Qed.
 
   (*
@@ -242,7 +250,7 @@ Section na_heap.
   Proof.
     intros p q. rewrite /na_heap_mapsto_st.
     rewrite -own_op -gmap_view_frag_op dfrac_op_own.
-    by rewrite -pair_op -Cinl_op agree_idemp /=.
+    by rewrite -pair_op -pair_op dfrac_op_own -Cinl_op agree_idemp /=.
   Qed.
 
   Global Instance na_heap_mapsto_st_as_fractional l q v:
@@ -264,6 +272,10 @@ Section na_heap.
     na_heap_mapsto_st st l DfracDiscarded v.
   Proof.
     iApply own_update.
+    etrans.
+    { (* first, discard the inner dfrac *)
+      apply view_update_frag.
+    }
     apply gmap_view_frag_persist.
   Qed.
 
