@@ -5,7 +5,6 @@ From Perennial.goose_lang.lib Require map.map.
 From Perennial.Helpers Require Import Map.
 Import uPred.
 
-
 Set Default Proof Using "Type".
 
 Module Map.

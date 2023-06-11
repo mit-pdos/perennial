@@ -21,6 +21,16 @@ Proof.
   rewrite !IntoVal_inj' in Heq'. congruence.
 Qed.
 
+(* IntoVal where the value is guaranteed to be comparable, e.g. OK to use as the
+   key type in a map *)
+Class IntoValComparable {ext} V {H: @IntoVal ext V} :=
+  {
+    IntoValComparable_fact (v:V): is_comparable (to_val v);
+  }.
+
+#[global]
+Hint Mode IntoValComparable - ! - : typeclass_instances.
+
 (* IntoVal for a particular GooseLang type *)
 Class IntoValForType {ext} V {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) :=
     { def_is_zero: to_val (IntoVal_def V) = zero_val t;
@@ -92,6 +102,8 @@ Section instances.
   Proof.
     constructor; auto.
   Qed.
+  Global Instance u64_IntoValComparable : IntoValComparable u64.
+  Proof. by constructor. Qed.
 
   Global Instance u8_IntoVal : IntoVal u8.
   Proof.
@@ -103,6 +115,8 @@ Section instances.
   Proof.
     constructor; eauto.
   Qed.
+  Global Instance u8_IntoValComparable : IntoValComparable u8.
+  Proof. by constructor. Qed.
 
   Global Instance loc_IntoVal : IntoVal loc.
   Proof.
@@ -122,6 +136,8 @@ Section instances.
   Proof.
     constructor; auto.
   Qed.
+  Global Instance loc_IntoValComparable : IntoValComparable loc.
+  Proof. by constructor. Qed.
 
   Global Instance slice_IntoVal : IntoVal Slice.t.
     refine
@@ -137,6 +153,8 @@ Section instances.
     intros.
     apply slice_val_ty.
   Qed.
+  Global Instance slice_IntoValComparable : IntoValComparable Slice.t.
+  Proof. by constructor. Qed.
 
 
   Global Instance bool_IntoVal : IntoVal bool.
@@ -147,6 +165,19 @@ Section instances.
   Defined.
   Global Instance bool_IntoVal_boolT : IntoValForType bool boolT.
   Proof. constructor; auto. Qed.
+  Global Instance bool_IntoValComparable : IntoValComparable bool.
+  Proof. by constructor. Qed.
+
+  Global Instance string_IntoVal : IntoVal string.
+  Proof.
+    refine {| into_val.to_val := λ (x: string), #(str x);
+              from_val := λ v, match v with #(LitString x) => Some x | _ => None end;
+              IntoVal_def := ""; |}; done.
+  Defined.
+  Global Instance string_IntoVal_boolT : IntoValForType string stringT.
+  Proof. constructor; auto. Qed.
+  Global Instance string_IntoValComparable : IntoValComparable string.
+  Proof. by constructor. Qed.
 
   Global Instance unit_IntoVal : IntoVal ().
   Proof.
@@ -158,5 +189,7 @@ Section instances.
   Defined.
   Global Instance unit_IntoValForType : IntoValForType () unitT.
   Proof. constructor; auto. Qed.
+  Global Instance unit_IntoValComparable : IntoValComparable unit.
+  Proof. by constructor. Qed.
 
 End instances.
