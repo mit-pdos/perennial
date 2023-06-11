@@ -268,11 +268,11 @@ Definition decodeConditionalPutArgs: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
     struct.storeF conditionalPutArgs "opId" "a" "0_ret";;
     "e" <-[slice.T byteT] "1_ret";;
-    let: ("keyLen", "e") := marshal.ReadInt (![slice.T byteT] "e") in
-    let: ("keyBytes", "e") := marshal.ReadBytes (![slice.T byteT] "e") "keyLen" in
+    let: ("keyLen", "e2") := marshal.ReadInt (![slice.T byteT] "e") in
+    let: ("keyBytes", "e3") := marshal.ReadBytes "e2" "keyLen" in
     struct.storeF conditionalPutArgs "key" "a" (Data.bytesToString "keyBytes");;
-    let: ("expectedValLen", "e") := marshal.ReadInt (![slice.T byteT] "e") in
-    let: ("expectedValBytes", "newValBytes") := marshal.ReadBytes (![slice.T byteT] "e") "expectedValLen" in
+    let: ("expectedValLen", "e4") := marshal.ReadInt "e3" in
+    let: ("expectedValBytes", "newValBytes") := marshal.ReadBytes "e4" "expectedValLen" in
     struct.storeF conditionalPutArgs "expectedVal" "a" (Data.bytesToString "expectedValBytes");;
     struct.storeF conditionalPutArgs "newVal" "a" (Data.bytesToString "newValBytes");;
     "a".
