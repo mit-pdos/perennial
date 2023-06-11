@@ -29,7 +29,7 @@ Axiom wp_bytesToString :
   {{{
         own_slice_small sl byteT q (string_le s)
   }}}
-    prelude.Data.bytesToString #(str s)
+    prelude.Data.bytesToString (slice_val sl)
   {{{
         RET #(str s); own_slice_small sl byteT q (string_le s)
   }}}
@@ -68,21 +68,112 @@ Lemma wp_encode args_ptr args :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ) "Hargs HΦ".
+  iNamed "Hargs".
+  wp_lam.
+  wp_apply wp_NewSlice.
+  iIntros (sl) "Hsl".
+  wp_apply wp_ref_to.
+  { done. }
+  iIntros (e) "He".
+
+  wp_pures.
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "[$]").
+  iIntros (?) "Hsl".
+  rewrite replicate_0 /=.
+  wp_store.
+
+  wp_loadField.
+  wp_apply wp_stringToBytes.
+  iIntros (key_sl) "Hkey_sl".
+  wp_pures.
+
+  wp_apply wp_slice_len.
+  iDestruct (own_slice_sz with "Hkey_sl") as "%Hsz".
+  wp_load.
+  wp_apply (wp_WriteInt with "[$Hsl]").
+  iIntros (?) "Hsl".
+  wp_store.
+
+  wp_load.
+  iDestruct (own_slice_to_small with "Hkey_sl") as "Hkey_sl".
+  wp_apply (wp_WriteBytes with "[$Hsl $Hkey_sl]").
+  iIntros (?) "[Hsl Hkey_sl]".
+  wp_store.
+
+  wp_loadField.
+  wp_apply (wp_stringToBytes).
+  iIntros (?) "Hval_sl".
+  iDestruct (own_slice_to_small with "Hval_sl") as "Hval_sl".
+  wp_load.
+  wp_apply (wp_WriteBytes with "[$Hsl $Hval_sl]").
+  iIntros (?) "[Hsl Hval_sl]".
+  wp_store.
+
+  wp_load.
+  iApply "HΦ".
+  iFrame.
+  iPureIntro.
+  unfold encodes.
+  repeat rewrite -assoc.
+  rewrite Hsz.
+  repeat f_equal.
+  word.
+Qed.
 
 Lemma wp_decode  sl enc_args args q :
   {{{
-        ⌜encodes enc_args args⌝ ∗
-        own_slice_small sl byteT q enc_args
+        "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
+        "Hsl" ∷ own_slice_small sl byteT q enc_args
   }}}
     decodePutArgs (slice_val sl)
   {{{
-        (args_ptr:loc), RET #args_ptr; own args_ptr args ∗
-                                       own_slice_small sl byteT q enc_args
+        (args_ptr:loc), RET #args_ptr; own args_ptr args
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_apply wp_ref_to.
+  { done. }
+  iIntros (e) "He".
+  wp_pures.
+  wp_apply wp_allocStruct.
+  { repeat econstructor. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+
+  wp_pures.
+  wp_load.
+  rewrite Henc; clear dependent enc_args.
+  wp_apply (wp_ReadInt with "[$]").
+  iIntros (?) "Hsl".
+  wp_pures.
+  wp_storeField.
+  wp_store.
+  wp_load.
+  wp_apply (wp_ReadInt with "[$]").
+  iIntros (?) "Hsl".
+  wp_pures.
+  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
+  wp_apply (wp_ReadBytes with "[$]").
+  { rewrite app_length in Hsz. word. }
+  iIntros (???) "[Hkey Hval]".
+  wp_pures.
+  wp_apply (wp_bytesToString with "[$Hkey]").
+  iIntros "Hkey".
+  wp_storeField.
+  wp_apply (wp_bytesToString with "[$Hval]").
+  iIntros "Hval".
+  wp_storeField.
+  iModIntro.
+  iApply "HΦ".
+  iFrame.
+Qed.
 
 End local_defs.
 End putArgs.
@@ -122,7 +213,55 @@ Lemma wp_encode args_ptr args :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ) "Hargs HΦ".
+  iNamed "Hargs".
+  wp_lam.
+  wp_apply wp_NewSlice.
+  iIntros (sl) "Hsl".
+  wp_apply wp_ref_to.
+  { done. }
+  iIntros (e) "He".
+  wp_pures.
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "[$]").
+  iIntros (?) "Hsl".
+  rewrite replicate_0 /=.
+  wp_store.
+  wp_loadField.
+  wp_apply wp_stringToBytes.
+  iIntros (key_sl) "Hkey_sl".
+  wp_pures.
+  wp_apply wp_slice_len.
+  iDestruct (own_slice_sz with "Hkey_sl") as "%Hsz".
+  wp_load.
+  wp_apply (wp_WriteInt with "[$Hsl]").
+  iIntros (?) "Hsl".
+  wp_store.
+  wp_load.
+  iDestruct (own_slice_to_small with "Hkey_sl") as "Hkey_sl".
+  wp_apply (wp_WriteBytes with "[$Hsl $Hkey_sl]").
+  iIntros (?) "[Hsl Hkey_sl]".
+  wp_store.
+  wp_loadField.
+  wp_apply (wp_stringToBytes).
+  iIntros (?) "Hval_sl".
+  iDestruct (own_slice_to_small with "Hval_sl") as "Hval_sl".
+  wp_load.
+  wp_apply (wp_WriteBytes with "[$Hsl $Hval_sl]").
+  iIntros (?) "[Hsl Hval_sl]".
+  wp_store.
+  wp_load.
+  iApply "HΦ".
+  iFrame.
+  iPureIntro.
+  unfold encodes.
+  repeat rewrite -assoc.
+  rewrite Hsz.
+  repeat f_equal.
+  word.
+Qed.
+Qed.
 
 Lemma wp_decode  sl enc_args args q :
   {{{
@@ -131,8 +270,7 @@ Lemma wp_decode  sl enc_args args q :
   }}}
     decodeConditionalPutArgs (slice_val sl)
   {{{
-        (args_ptr:loc), RET #args_ptr; own args_ptr args ∗
-                                       own_slice_small sl byteT q enc_args
+        (args_ptr:loc), RET #args_ptr; own args_ptr args
   }}}
 .
 Proof.

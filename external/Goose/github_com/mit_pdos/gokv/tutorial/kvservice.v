@@ -255,8 +255,8 @@ Definition decodePutArgs: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
     struct.storeF putArgs "opId" "a" "0_ret";;
     "e" <-[slice.T byteT] "1_ret";;
-    let: ("keyLen", "e") := marshal.ReadInt (![slice.T byteT] "e") in
-    let: ("keyBytes", "valBytes") := marshal.ReadBytes (![slice.T byteT] "e") "keyLen" in
+    let: ("keyLen", "e2") := marshal.ReadInt (![slice.T byteT] "e") in
+    let: ("keyBytes", "valBytes") := marshal.ReadBytes "e2" "keyLen" in
     struct.storeF putArgs "key" "a" (Data.bytesToString "keyBytes");;
     struct.storeF putArgs "val" "a" (Data.bytesToString "valBytes");;
     "a".
