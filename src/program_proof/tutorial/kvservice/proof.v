@@ -240,28 +240,32 @@ Section rpc_definitions.
 Context `{!gooseGlobalGS Σ}.
 
 Definition getFreshNum_core_spec (Φ:u64 → iPropO Σ): iPropO Σ :=
+  (* TUTORIAL: write a more useful spec *)
   (∀ opId, Φ opId)%I.
 
 Global Instance getFreshNum_core_MonotonicPred : MonotonicPred (getFreshNum_core_spec).
 Proof. apply _. Qed.
 
-Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ.
-Admitted.
+Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ :=
+  (* TUTORIAL: write a more useful spec *)
+  Φ ().
 
 Global Instance put_core_MonotonicPred args : MonotonicPred (put_core_spec args).
-Admitted.
+Proof. apply _. Qed.
 
-Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:string → iPropO Σ): iPropO Σ.
-Admitted.
+Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:string → iPropO Σ): iPropO Σ :=
+  (* TUTORIAL: write a more useful spec *)
+  (∀ status, Φ status)%I.
 
 Global Instance conditionalPut_core_MonotonicPred args : MonotonicPred (conditionalPut_core_spec args).
-Admitted.
+Proof. apply _. Qed.
 
-Definition get_core_spec (args:getArgs.t) (Φ:string → iPropO Σ): iPropO Σ.
-Admitted.
+Definition get_core_spec (args:getArgs.t) (Φ:string → iPropO Σ): iPropO Σ :=
+  (* TUTORIAL: write a more useful spec *)
+  (∀ ret, Φ ret)%I.
 
 Definition get_core_MonotonicPred args : MonotonicPred (get_core_spec args).
-Admitted.
+Proof. apply _. Qed.
 
 End rpc_definitions.
 
@@ -269,37 +273,47 @@ Section rpc_server_proofs.
 Context `{!heapGS Σ}.
 
 (* FIXME: make use of explicit spec montonicity and get rid of Ψ+Φ. *)
-Lemma wp_Server__getFreshNum (s:loc) Ψ Φ :
-  getFreshNum_core_spec Ψ -∗
-  (∀ n, Ψ n -∗ Φ #n) -∗
-  WP Server__getFreshNum #s {{ v, Φ v }}
+Lemma wp_Server__getFreshNum (s:loc) Ψ :
+  {{{ "Hspec" ∷ getFreshNum_core_spec Ψ }}}
+    Server__getFreshNum #s
+  {{{ (n:u64), RET #n; Ψ n }}}
 .
 Proof.
 Admitted.
 
-Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ Φ :
-  put_core_spec args Ψ -∗
-  putArgs.own args_ptr args -∗
-  (Ψ () -∗ Φ #()) -∗
-  WP Server__put #s #args_ptr {{ v, Φ v }}
+Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
+  {{{
+      "Hspec" ∷ put_core_spec args Ψ ∗
+      "Hargs" ∷ putArgs.own args_ptr args
+  }}}
+  Server__put #s #args_ptr
+  {{{
+        RET #(); Ψ ()
+  }}}
 .
 Proof.
 Admitted.
 
-Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ Φ :
-  conditionalPut_core_spec args Ψ -∗
-  conditionalPutArgs.own args_ptr args -∗
-  (∀ r, Ψ r -∗ Φ #(str r)) -∗
-  WP Server__conditionalPut #s #args_ptr {{ v, Φ v }}
+Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ :
+  {{{
+        "Hspec" ∷ conditionalPut_core_spec args Ψ ∗
+        "Hargs" ∷ conditionalPutArgs.own args_ptr args
+  }}}
+    Server__conditionalPut #s #args_ptr
+  {{{ r, RET #(str r); Ψ r }}}
 .
 Proof.
 Admitted.
 
-Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ Φ :
-  get_core_spec args Ψ -∗
-  getArgs.own args_ptr args -∗
-  (∀ r, Ψ r -∗ Φ #(str r)) -∗
-  WP Server__get #s #args_ptr {{ v, Φ v }}
+Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ :
+  {{{
+        "Hspec" ∷ get_core_spec args Ψ ∗
+        "Hargs" ∷ getArgs.own args_ptr args
+  }}}
+    Server__get #s #args_ptr
+  {{{
+        r, RET #(str r); Ψ r
+  }}}
 .
 Proof.
 Admitted.
@@ -318,9 +332,8 @@ Program Definition getFreshNum_spec :=
   )%I
 .
 Next Obligation.
-  (* solve_proper.
-Defined. *)
-Admitted.
+  solve_proper.
+Defined.
 
 Program Definition put_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
@@ -330,9 +343,8 @@ Program Definition put_spec :=
   )%I
 .
 Next Obligation.
-  (* solve_proper.
-Defined. *)
-Admitted.
+  rewrite /put_core_spec. solve_proper.
+Defined.
 
 Program Definition conditionalPut_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
@@ -342,9 +354,8 @@ Program Definition conditionalPut_spec :=
   )%I
 .
 Next Obligation.
-  (* solve_proper.
-Defined. *)
-Admitted.
+  rewrite /conditionalPut_core_spec. solve_proper.
+Defined.
 
 Program Definition get_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
@@ -354,9 +365,8 @@ Program Definition get_spec :=
   )%I
 .
 Next Obligation.
-  (* solve_proper.
-Defined. *)
-Admitted.
+  solve_proper.
+Defined.
 
 Definition is_lockserver_host host : iProp Σ :=
   ∃ γrpc,
@@ -441,7 +451,7 @@ Proof.
       wp_apply (getArgs.wp_decode with "[$Hreq_sl]").
       { by iPureIntro. }
       iIntros (?) "[Hargs Hreq_sl]".
-      wp_apply (wp_Server__get with "[$] [$]").
+      wp_apply (wp_Server__get with "[$]").
       iIntros (?) "HΨ".
       wp_pures. wp_apply wp_stringToBytes.
       iIntros (ret_sl) "Hret_sl".
@@ -460,7 +470,7 @@ Proof.
       wp_apply (conditionalPutArgs.wp_decode with "[$Hreq_sl]").
       { done. }
       iIntros (?) "[Hargs Hreq_sl]".
-      wp_apply (wp_Server__conditionalPut with "[$] [$]").
+      wp_apply (wp_Server__conditionalPut with "[$]").
       iIntros (?) "HΨ".
       wp_apply wp_stringToBytes.
       iIntros (?) "Henc_req".
@@ -480,7 +490,7 @@ Proof.
       wp_apply (putArgs.wp_decode with "[$Hreq_sl]").
       { done. }
       iIntros (?) "[Hargs Hreq_sl]".
-      wp_apply (wp_Server__put with "[$] [$]").
+      wp_apply (wp_Server__put with "[$Hargs Hspec //]").
       iIntros "HΨ". wp_pures.
       iApply ("HΦ" with "[HΨ] [$]").
       { iApply "HΨ". }
@@ -521,14 +531,19 @@ Definition is_Client (cl:loc) : iProp Σ :=
   "#Hhost" ∷ is_lockserver_host host
 .
 
-Lemma wp_Client__getFreshNumRpc cl Φ :
-  is_Client cl -∗
-  □ getFreshNum_core_spec (λ num, Φ (#num, #0)%V) -∗
-  (∀ (err:u64), ⌜err ≠ U64 0⌝ -∗ Φ (#0, #err)%V ) -∗
-  WP Client__getFreshNumRpc #cl {{ Φ }}
+Lemma wp_Client__getFreshNumRpc Post cl :
+  {{{
+        "#Hcl" ∷ is_Client cl ∗
+        "#Hspec" ∷ □ getFreshNum_core_spec Post
+  }}}
+    Client__getFreshNumRpc #cl
+  {{{
+        (err id:u64), RET (#id, #err); if decide (err = 0) then Post id else True
+  }}}
 .
 Proof.
-  iIntros "Hcl #Hspec Herr".
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
   (* symbolic execution *)
   wp_lam.
   wp_apply (wp_ref_of_zero).
@@ -554,7 +569,7 @@ Proof.
     rewrite /getFreshNum_spec /=.
     iApply (monotonic_fact with "[] Hspec").
     iModIntro.
-    iIntros (?) "HΦ".
+    iIntros (?) "HPost".
     iIntros (??) "Hreq_sl % Hrep Hrep_sl".
     iNamed 1.
     wp_pures.
@@ -570,20 +585,25 @@ Proof.
     wp_if_destruct.
     { by exfalso. }
     wp_pures.
-    iApply "Herr".
-    done.
+    iApply "HΦ".
+    by rewrite decide_False.
   }
 Qed.
 
-Lemma wp_Client__putRpc cl Φ args args_ptr :
-  is_Client cl -∗
-  putArgs.own args_ptr args -∗
-  □ put_core_spec args (λ _, Φ #0) -∗
-  (∀ (err:u64), ⌜err ≠ U64 0⌝ -∗ Φ #err) -∗
-  WP Client__putRpc #cl #args_ptr {{ Φ }}
+Lemma wp_Client__putRpc Post cl args args_ptr :
+  {{{
+        "Hargs" ∷ putArgs.own args_ptr args ∗
+        "#Hcl" ∷ is_Client cl ∗
+        "#Hspec" ∷ □ put_core_spec args Post
+  }}}
+    Client__putRpc #cl #args_ptr
+  {{{
+        (err:u64), RET #err; if decide (err = 0) then Post () else True
+  }}}
 .
 Proof.
-  iIntros "Hcl Hargs #Hspec Herr".
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
   (* symbolic execution *)
   wp_lam.
   wp_apply (wp_ref_of_zero).
@@ -597,6 +617,11 @@ Proof.
   wp_loadField.
   iNamed "Hhost".
   iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
+
+  wp_bind (urpc.Client__Call _ _ _ _ _).
+  wp_apply (wp_frame_wand with "[-Hreq_sl Hrep]").
+  { iNamedAccu. }
+
   wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
   {
     iModIntro. iModIntro.
@@ -604,18 +629,22 @@ Proof.
     iExists _; iFrame "%".
     iApply (monotonic_fact with "[] Hspec").
     iModIntro.
-    iIntros (?) "HΦ".
+    iIntros (?) "HPost".
     iIntros (?) "Hreq_sl". iIntros (?) "Hrep Hrep_sl".
-    by wp_pures.
+    iNamed 1.
+    wp_pures.
+    iModIntro. iApply "HΦ".
+    destruct r. iFrame.
   }
   {
     iIntros (??) "Hreq_sl Hrep".
+    iNamed 1.
     wp_pures.
     wp_if_destruct.
     { by exfalso. }
     wp_pures.
-    iApply "Herr".
-    done.
+    iApply "HΦ".
+    by rewrite decide_False.
   }
 Qed.
 
@@ -631,16 +660,10 @@ Definition is_Clerk (ck:loc) : iProp Σ :=
   "#HisCl" ∷ is_Client cl
 .
 
-Definition is_Locked (ck:loc) : iProp Σ :=
-  ∃ (cl:loc) (n:u64),
-  "#Hcl" ∷ readonly (ck ↦[Locked :: "rpcCl"] #cl) ∗
-  "#Hid" ∷ readonly (ck ↦[Locked :: "id"] #n)
-.
-
-Lemma wp_Clerk__Acquire (ck:loc) k v :
+Lemma wp_Clerk__Put (ck:loc) k v :
   {{{ is_Clerk ck }}}
     Clerk__Put #ck #(str k) #(str v)
-  {{{ (l:loc), RET #l; True }}}
+  {{{ RET #(); True }}}
 .
 Proof.
   iIntros (Φ) "#Hck HΦ".
@@ -648,10 +671,10 @@ Proof.
   (* symbolic execution *)
   wp_apply wp_ref_of_zero.
   { done. }
-  iIntros (id_ptr) "Hid".
+  iIntros (err_ptr) "Herr".
   wp_apply wp_ref_of_zero.
   { done. }
-  iIntros (err_ptr) "Herr".
+  iIntros (id_ptr) "Hid".
   wp_pures.
 
   iAssert (∃ (someErr someOpId:u64), "Hid" ∷ id_ptr ↦[uint64T] #someOpId ∗
@@ -663,38 +686,23 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  wp_bind (App _ #_)%E.
-  iApply (wp_frame_wand with "[-]"); first iNamedAccu.
-  wp_apply (wp_Client__getFreshNumRpc with "[$]").
-  2:{ (* case: error *)
-    iIntros (err) "%Herr".
-    iNamed 1.
-    wp_pures.
-    wp_store.
-    wp_store.
-    wp_load.
-    wp_pures.
-    wp_if_destruct.
-    { by exfalso. }
+  wp_apply (wp_Client__getFreshNumRpc (λ opId, True)%I with "[$HisCl]").
+  { done. } (* TUTORIAL *)
+  iIntros (err opId) "Hpost".
+  wp_pures.
+  wp_store.
+  wp_store.
+  wp_load.
+  wp_if_destruct.
+  2:{ (* case: didn't get a valid ID. *)
     iModIntro. iLeft.
     iSplitR; first done.
     iFrame.
     repeat iExists _; iFrame.
   }
   (* case: successful RPC *)
-  iModIntro.
-
-  (* NOTE: ghost *)
-  rewrite /getFreshNum_core_spec.
-  iIntros (?).
-  wp_pures.
-  iNamed 1.
-  wp_store.
-  wp_store.
-  wp_load.
-  wp_pures.
-  iRight.
-  iModIntro; iSplitR; first done.
+  iModIntro. iRight.
+  iSplitR; first done.
   wp_pures.
   wp_load.
   wp_pures.
@@ -704,26 +712,32 @@ Proof.
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
   wp_pures.
+
+  iAssert (∃ (someErr:u64), "Herr" ∷ err_ptr ↦[uint64T] #someErr
+          )%I with "[Herr]" as "HH".
+  { iExists _; iFrame. }
   wp_forBreak_cond.
   wp_loadField.
 
-  wp_bind (App _ #_)%E.
-  iApply (wp_frame_wand with "[- opId key val]"); first iNamedAccu.
-  wp_apply (wp_Client__putRpc with "[$] [-]").
-  { instantiate (1:=putArgs.mk _ _ _). iFrame. }
-  2:{ (* case: RPC error *)
-    iIntros (err Herr).
-    iNamed 1.
-    wp_pures.
-    wp_if_destruct.
-    2:{ by exfalso. }
+  (* TUTORIAL: *)
+  wp_apply (wp_Client__putRpc (λ _, True)%I with "[Hcl opId key val]").
+  { instantiate (2:=putArgs.mk _ _ _). iFrame "∗#". done. }
+  iClear "Hpost".
+  iIntros (err) "Hpost".
+  wp_pures.
+  wp_if_destruct.
+  { (* case: RPC error *)
     wp_pures.
     iLeft.
+    iModIntro. iSplitR; first done.
     iFrame.
-    (* FIXME: need fractional ownership of args. *)
+    admit. (* FIXME: retain ownership of args points-to *)
   }
-  iMod
-
+  iRight.
+  iModIntro.
+  iSplitR; first done.
+  wp_pures.
+  iModIntro. iApply "HΦ". done.
 Admitted.
 
 End clerk_proof.
