@@ -101,14 +101,16 @@ Definition Clerk__Put: val :=
       (if: (![uint64T] "err" = #0)
       then Break
       else Continue));;
-    let: "args" := struct.new putArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key";
-      "val" ::= "val"
-    ] in
     Skip;;
-    (for: (λ: <>, Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args" ≠ urpc.ErrNone); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "args" := struct.new putArgs [
+        "opId" ::= ![uint64T] "opId";
+        "key" ::= "key";
+        "val" ::= "val"
+      ] in
+      (if: (Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args" = urpc.ErrNone)
+      then Break
+      else Continue));;
     #().
 
 (* conditionalPutArgs from kvservice.gb.go *)
@@ -158,15 +160,15 @@ Definition Clerk__ConditionalPut: val :=
       (if: (![uint64T] "err" = #0)
       then Break
       else Continue));;
-    let: "args" := struct.new conditionalPutArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key";
-      "expectedVal" ::= "expectedVal";
-      "newVal" ::= "newVal"
-    ] in
     let: "ret" := ref (zero_val boolT) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "args" := struct.new conditionalPutArgs [
+        "opId" ::= ![uint64T] "opId";
+        "key" ::= "key";
+        "expectedVal" ::= "expectedVal";
+        "newVal" ::= "newVal"
+      ] in
       let: ("reply", "err") := Client__conditionalPutRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
       (if: ("err" = urpc.ErrNone)
       then
@@ -214,13 +216,13 @@ Definition Clerk__Get: val :=
       (if: (![uint64T] "err" = #0)
       then Break
       else Continue));;
-    let: "args" := struct.new getArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key"
-    ] in
     let: "ret" := ref (zero_val stringT) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "args" := struct.new getArgs [
+        "opId" ::= ![uint64T] "opId";
+        "key" ::= "key"
+      ] in
       let: ("reply", "err") := Client__getRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
       (if: ("err" = urpc.ErrNone)
       then

@@ -704,6 +704,9 @@ Proof.
   iModIntro. iRight.
   iSplitR; first done.
   wp_pures.
+
+  wp_forBreak_cond.
+
   wp_load.
   wp_pures.
   wp_apply (wp_allocStruct).
@@ -712,11 +715,6 @@ Proof.
   iDestruct (struct_fields_split with "Hargs") as "HH".
   iNamed "HH".
   wp_pures.
-
-  iAssert (∃ (someErr:u64), "Herr" ∷ err_ptr ↦[uint64T] #someErr
-          )%I with "[Herr]" as "HH".
-  { iExists _; iFrame. }
-  wp_forBreak_cond.
   wp_loadField.
 
   (* TUTORIAL: *)
@@ -726,18 +724,17 @@ Proof.
   iIntros (err) "Hpost".
   wp_pures.
   wp_if_destruct.
-  { (* case: RPC error *)
+  2:{ (* case: RPC error *)
     wp_pures.
     iLeft.
     iModIntro. iSplitR; first done.
     iFrame.
-    admit. (* FIXME: retain ownership of args points-to *)
   }
   iRight.
   iModIntro.
   iSplitR; first done.
   wp_pures.
   iModIntro. iApply "HΦ". done.
-Admitted.
+Qed.
 
 End clerk_proof.
