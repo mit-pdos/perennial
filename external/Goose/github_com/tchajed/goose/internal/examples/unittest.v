@@ -189,7 +189,7 @@ Definition useSliceIndexing: val :=
 
 Definition useMap: val :=
   rec: "useMap" <> :=
-    let: "m" := NewMap (slice.T byteT) #() in
+    let: "m" := NewMap uint64T (slice.T byteT) #() in
     MapInsert "m" #1 slice.nil;;
     let: ("x", "ok") := MapGet "m" #2 in
     (if: "ok"
@@ -348,7 +348,7 @@ Definition void := struct.decl [
 
 Definition useMapClear: val :=
   rec: "useMapClear" <> :=
-    let: "m" := NewMap (struct.t void) #() in
+    let: "m" := NewMap uint64T (struct.t void) #() in
     MapInsert "m" #1 (struct.mk void [
     ]);;
     generic.MapLen (struct.t void) "m".

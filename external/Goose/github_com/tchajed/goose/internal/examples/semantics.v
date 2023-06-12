@@ -28,7 +28,7 @@ Definition allocate: val :=
 
 Definition freeRange: val :=
   rec: "freeRange" "sz" :=
-    let: "m" := NewMap (struct.t unit) #() in
+    let: "m" := NewMap uint64T (struct.t unit) #() in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, ![uint64T] "i" < "sz"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
       MapInsert "m" (![uint64T] "i") (struct.mk unit [
@@ -701,7 +701,7 @@ Definition IterateMapValues: val :=
 Definition testIterateMap: val :=
   rec: "testIterateMap" <> :=
     let: "ok" := ref_to boolT #true in
-    let: "m" := NewMap uint64T #() in
+    let: "m" := NewMap uint64T uint64T #() in
     MapInsert "m" #0 #1;;
     MapInsert "m" #1 #2;;
     MapInsert "m" #3 #4;;
@@ -712,7 +712,7 @@ Definition testIterateMap: val :=
 Definition testMapSize: val :=
   rec: "testMapSize" <> :=
     let: "ok" := ref_to boolT #true in
-    let: "m" := NewMap uint64T #() in
+    let: "m" := NewMap uint64T uint64T #() in
     "ok" <-[boolT] (![boolT] "ok") && (MapLen "m" = #0);;
     MapInsert "m" #0 #1;;
     MapInsert "m" #1 #2;;
@@ -753,7 +753,7 @@ Definition testAssignThree: val :=
 Definition testMultipleAssignToMap: val :=
   rec: "testMultipleAssignToMap" <> :=
     let: "x" := ref_to uint64T #10 in
-    let: "m" := ref_to (mapT uint64T) (NewMap uint64T #()) in
+    let: "m" := ref_to (mapT uint64T) (NewMap uint64T uint64T #()) in
     let: ("0_ret", "1_ret") := multReturnTwo #() in
     "x" <-[uint64T] "0_ret";;
     MapInsert (![mapT uint64T] "m") #0 "1_ret";;
@@ -1411,7 +1411,7 @@ Definition New: val :=
     (if: "diskSize" ≤ logLength
     then Panic ("disk is too small to host log")
     else #());;
-    let: "cache" := NewMap disk.blockT #() in
+    let: "cache" := NewMap uint64T disk.blockT #() in
     let: "header" := intToBlock #0 in
     disk.Write #0 "header";;
     let: "lengthPtr" := ref (zero_val uint64T) in
@@ -1546,7 +1546,7 @@ Definition Open: val :=
     let: "length" := blockToInt "header" in
     applyLog "d" "length";;
     clearLog "d";;
-    let: "cache" := NewMap disk.blockT #() in
+    let: "cache" := NewMap uint64T disk.blockT #() in
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <-[uint64T] #0;;
     let: "l" := lock.new #() in

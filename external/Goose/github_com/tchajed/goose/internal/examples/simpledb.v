@@ -28,7 +28,7 @@ Definition Table := struct.decl [
 (* CreateTable creates a new, empty table. *)
 Definition CreateTable: val :=
   rec: "CreateTable" "p" :=
-    let: "index" := NewMap uint64T #() in
+    let: "index" := NewMap uint64T uint64T #() in
     let: ("f", <>) := FS.create #(str"db") "p" in
     FS.close "f";;
     let: "f2" := FS.open #(str"db") "p" in
@@ -127,7 +127,7 @@ Definition readTableIndex: val :=
 (* RecoverTable restores a table from disk on startup. *)
 Definition RecoverTable: val :=
   rec: "RecoverTable" "p" :=
-    let: "index" := NewMap uint64T #() in
+    let: "index" := NewMap uint64T uint64T #() in
     let: "f" := FS.open #(str"db") "p" in
     readTableIndex "f" "index";;
     struct.mk Table [
@@ -208,7 +208,7 @@ Definition tableWriter := struct.decl [
 
 Definition newTableWriter: val :=
   rec: "newTableWriter" "p" :=
-    let: "index" := NewMap uint64T #() in
+    let: "index" := NewMap uint64T uint64T #() in
     let: ("f", <>) := FS.create #(str"db") "p" in
     let: "buf" := newBuf "f" in
     let: "off" := ref (zero_val uint64T) in
@@ -273,7 +273,7 @@ Definition Database := struct.decl [
 
 Definition makeValueBuffer: val :=
   rec: "makeValueBuffer" <> :=
-    let: "buf" := NewMap (slice.T byteT) #() in
+    let: "buf" := NewMap uint64T (slice.T byteT) #() in
     let: "bufPtr" := ref (zero_val (mapT (slice.T byteT))) in
     "bufPtr" <-[mapT (slice.T byteT)] "buf";;
     "bufPtr".
@@ -421,7 +421,7 @@ Definition Compact: val :=
     lock.acquire (struct.get Database "compactionL" "db");;
     lock.acquire (struct.get Database "bufferL" "db");;
     let: "buf" := ![mapT (slice.T byteT)] (struct.get Database "wbuffer" "db") in
-    let: "emptyWbuffer" := NewMap (slice.T byteT) #() in
+    let: "emptyWbuffer" := NewMap uint64T (slice.T byteT) #() in
     struct.get Database "wbuffer" "db" <-[mapT (slice.T byteT)] "emptyWbuffer";;
     struct.get Database "rbuffer" "db" <-[mapT (slice.T byteT)] "buf";;
     lock.release (struct.get Database "bufferL" "db");;
