@@ -100,3 +100,8 @@ From Perennial Require LiteBuild.
 
 (* lease examples *)
 From Perennial.program_proof.minlease Require proof.
+
+(* Grove tutorial *)
+From Perennial.program_proof.tutorial Require
+     basics.proof
+     kvservice.proof.

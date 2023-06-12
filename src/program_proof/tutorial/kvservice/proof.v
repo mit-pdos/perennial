@@ -585,9 +585,28 @@ End rpc_definitions.
 Section rpc_server_proofs.
 Context `{!heapGS Σ}.
 
+Definition own_Server (s:loc) : iProp Σ :=
+  ∃ (nextFreshId:u64) (lastReplies:gmap u64 string) (kvs:gmap string string)
+    (lastReplies_loc kvs_loc:loc),
+  "HnextFreshId" ∷ s ↦[Server :: "nextFreshId"] #nextFreshId ∗
+  "HlastReplies" ∷ s ↦[Server :: "lastReplies"] #lastReplies_loc ∗
+  "Hkvs" ∷ s ↦[Server :: "kvs"] #kvs_loc ∗
+  "HlastRepliesM" ∷ own_map lastReplies_loc 1 lastReplies ∗
+  "HkvsM" ∷ own_map kvs_loc 1 kvs
+.
+
+Definition is_Server (s:loc) : iProp Σ :=
+  ∃ mu,
+  "#Hmu" ∷ readonly (s ↦[Server :: "mu"] mu) ∗
+  "#HmuInv" ∷ is_lock nroot mu (own_Server s)
+.
+
 (* FIXME: make use of explicit spec montonicity and get rid of Ψ+Φ. *)
 Lemma wp_Server__getFreshNum (s:loc) Ψ :
-  {{{ "Hspec" ∷ getFreshNum_core_spec Ψ }}}
+  {{{
+        "#Hsrv" ∷ is_Server s ∗
+        "Hspec" ∷ getFreshNum_core_spec Ψ
+  }}}
     Server__getFreshNum #s
   {{{ (n:u64), RET #n; Ψ n }}}
 .
@@ -596,8 +615,9 @@ Admitted.
 
 Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
   {{{
-      "Hspec" ∷ put_core_spec args Ψ ∗
-      "Hargs" ∷ putArgs.own args_ptr args
+        "#Hsrv" ∷ is_Server s ∗
+        "Hspec" ∷ put_core_spec args Ψ ∗
+        "Hargs" ∷ putArgs.own args_ptr args
   }}}
   Server__put #s #args_ptr
   {{{
@@ -605,7 +625,59 @@ Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_pures.
+  iNamed "Hsrv".
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+  iNamed "Hargs".
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_MapGet with "HlastRepliesM").
+  iIntros (??) "[%HlastReply HlastRepliesM]".
+  wp_pures.
+  wp_if_destruct.
+  { (* case: this is a duplicate request *)
+    wp_loadField.
+    wp_apply (release_spec with "[-HΦ Hspec]").
+    {
+      iFrame "#∗". iNext.
+      repeat iExists _.
+      iFrame.
+    }
+    wp_pures.
+    iApply "HΦ".
+    iApply "Hspec".
+  }
+  wp_loadField.
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_MapInsert with "HkvsM").
+  { done. }
+  iIntros "HkvsM".
+  wp_pures.
+  wp_loadField.
+  wp_loadField.
+  wp_apply (wp_MapInsert with "HlastRepliesM").
+  { done. }
+  iIntros "HlastRepliesM".
+  wp_pures.
+  wp_loadField.
+  wp_apply (release_spec with "[-HΦ Hspec]").
+  {
+    iFrame "#∗". iNext.
+    repeat iExists _.
+    iFrame.
+  }
+  wp_pures.
+  iApply "HΦ".
+  iApply "Hspec".
+Qed.
 
 Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ :
   {{{
