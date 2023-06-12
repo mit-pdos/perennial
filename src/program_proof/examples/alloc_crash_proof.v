@@ -1064,7 +1064,7 @@ Proof.
   iIntros "(Hlocked&Hinv)"; iNamed "Hinv".
   wp_loadField.
   iDestruct "Hfreemap" as (m) "[Hfreemap %Hdom]".
-  wp_apply (wp_MapInsert _ _ _ _ () with "Hfreemap"); first by auto.
+  wp_apply (wp_MapInsert _ _ () with "Hfreemap"); first by auto.
   iIntros "Hfreemap".
   do 2 wp_pure1.
   wp_bind (Skip).

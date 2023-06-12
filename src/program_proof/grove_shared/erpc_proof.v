@@ -162,7 +162,7 @@ Proof.
 
     assert (lastSeqM !! rid.(Req_CID) = Some seqno) as HseqGet.
     { move: Hseqno. rewrite /map_get.
-      destruct (lastSeqM !! rid.(Req_CID)) eqn:Hlk; rewrite Hlk /=; first naive_solver.
+      destruct (lastSeqM !! rid.(Req_CID)) eqn:Hlk; rewrite /=; first naive_solver.
       intros ->. exfalso. naive_solver. }
 
     (* get a copy of the own_slice for the slice we're giving in reply *)

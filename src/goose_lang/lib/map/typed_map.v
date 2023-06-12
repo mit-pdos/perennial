@@ -142,7 +142,7 @@ Proof.
   rewrite fmap_delete //.
 Qed.
 
-Theorem wp_MapInsert stk E mref m k v' vv :
+Theorem wp_MapInsert v' stk E mref m k vv :
   vv = to_val v' ->
   {{{ own_map mref 1 m }}}
     MapInsert #mref (to_val k) vv @ stk; E

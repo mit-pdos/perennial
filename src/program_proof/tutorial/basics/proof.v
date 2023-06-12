@@ -31,8 +31,7 @@ Proof.
 
   Search impl.MapGet.
 
-  wp_apply (wp_MapGet with "[Ht_m]").
-  { iApply "Ht_m". }
+  wp_apply (wp_MapGet with "Ht_m").
   iIntros (v ok) "[%Hok Ht_m]".
   wp_pures.
   iModIntro.
@@ -79,7 +78,7 @@ Proof.
 
     Search impl.MapInsert.
 
-    wp_apply (wp_MapInsert u64 with "[Ht_m]").
+    wp_apply (wp_MapInsert u64 u64 with "[Ht_m]").
     { eauto. }
     { iApply "Ht_m". }
     iIntros "Ht_m".

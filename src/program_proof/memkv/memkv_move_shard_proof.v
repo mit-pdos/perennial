@@ -118,7 +118,7 @@ Proof.
   iIntros "[Hkvss_small %Hkvs_ty]".
   wp_pures.
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (empty_ptr) "HemptyMap".
   wp_loadField.
   wp_loadField.

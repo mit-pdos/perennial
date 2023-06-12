@@ -206,7 +206,7 @@ Definition Client_reply_own (cl : loc) : iProp Σ :=
     "#Hlk" ∷ is_lock urpc_lockN #lk (Client_lock_inner Γ cl lk mref).
 
 (* TODO: move this *)
-Global Instance own_map_AsMapsTo mref hd :
+Global Instance own_map_AsMapsTo mref (hd:gmap u64 val * val) :
   AsMapsTo (map.own_map mref 1 hd) (λ q, map.own_map mref q hd).
 Proof.
   split; try apply _; eauto.

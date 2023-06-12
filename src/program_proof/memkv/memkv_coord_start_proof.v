@@ -70,7 +70,7 @@ Proof.
   iIntros "Hmap".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_MapLen (V:=u64) with "[$Hmap]").
+  wp_apply (wp_MapLen with "[$Hmap]").
   remember (size (typed_map.map_insert hostShards x 0)) as num_shards eqn:Heq_num_shards.
   iIntros "(%Hmap_size&Hmap)".
   wp_pures.
@@ -283,7 +283,7 @@ Proof.
   iIntros "#Hdom #His_coord #His_memkv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
-  wp_apply map.wp_NewMap.
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers_ptr) "Hmap".
   wp_pures.
 

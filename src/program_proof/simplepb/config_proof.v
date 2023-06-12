@@ -1420,7 +1420,7 @@ Proof.
   iIntros "#Hhost #His_srv !#" (Φ) "_ HΦ".
   wp_call.
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers) "Hhandlers".
 
   wp_pures.

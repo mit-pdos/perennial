@@ -22,7 +22,7 @@ Proof.
   iIntros "#Hdom #His_shard #His_memkv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
-  wp_apply map.wp_NewMap.
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers_ptr) "Hmap".
   iAssert (∃ erpc, is_erpc_server γ.(erpc_gn) erpc ∗ readonly (s ↦[KVShardServer :: "erpc"] #erpc))%I as (erpc) "[#Herpc ?]".
   { iNamed "His_memkv". eauto. }

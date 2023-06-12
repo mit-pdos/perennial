@@ -120,7 +120,7 @@ Proof.
   wp_apply (wp_newCond with "Hinv").
   iIntros (cond) "#Hcond".
   wp_loadField.
-  wp_apply (wp_MapInsert _ _ _ _ cond with "Hmaking_map"); first done.
+  wp_apply (wp_MapInsert _ _ cond with "Hmaking_map"); first done.
   iIntros "Hmaking_map".
   wp_pures.
   iDestruct (big_sepM_insert_2 with "[Hcond] HownMaking") as "{HownMaking} #HownMaking".
@@ -140,7 +140,7 @@ Proof.
   iNamed "Hown".
   wp_load.
   wp_loadField.
-  wp_apply (wp_MapInsert _ _ _ _ cl_new with "Hcls_map"); first done.
+  wp_apply (wp_MapInsert _ _ cl_new with "Hcls_map"); first done.
   iIntros "Hcls_map".
   iDestruct (big_sepM_insert_2 with "[Hcl_new] HownRpcCls") as "{HownRpcCls} #HownRpcCls".
   { done. }

@@ -751,3 +751,9 @@ Qed.
 End heap.
 
 Typeclasses Opaque own_map.
+
+Arguments wp_NewMap {_ _ _ _ _ _ _} K {_ _ _}.
+Arguments wp_MapGet {_ _ _ _ _ _} K {_ _ _ _}.
+Arguments wp_MapInsert {_ _ _ _ _ _} K {_ _ _}.
+Arguments wp_MapDelete {_ _ _ _ _ _} K {_ _ _ _}.
+Arguments wp_MapLen {_ _ _ _ _ _} K {_ _ _ _}.

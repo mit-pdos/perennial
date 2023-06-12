@@ -823,7 +823,7 @@ Proof using Type*.
     iDestruct "Hunused" as "[$ $]".
   }
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers) "Hhandlers".
 
   wp_pures.

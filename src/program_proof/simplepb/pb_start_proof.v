@@ -100,7 +100,7 @@ Proof.
 
   iDestruct "Hstate" as "(Hstate & #Hepochlb & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hin_conf)".
 
-  wp_apply (wp_NewMap).
+  wp_apply (wp_NewMap u64).
   iIntros (?) "Hmap".
   wp_storeField.
 
@@ -198,7 +198,7 @@ Proof.
   iNamed "Hpre".
   wp_call.
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers) "Hhandlers".
 
   wp_pures.

@@ -130,11 +130,11 @@ Proof.
   }
   iIntros "(Hloop_post&Hi)".
   wp_pures.
-  wp_apply (wp_NewMap).
+  wp_apply (wp_NewMap u64).
 
   iIntros (mref) "Hmap".
   wp_storeField. wp_loadField.
-  wp_apply (wp_MapInsert u64 _ _ _ (U64 65536) with "[$]").
+  wp_apply (wp_MapInsert _ u64 (U64 65536) with "[$]").
   { eauto. }
   iIntros "Hmap".
   wp_pures.
@@ -143,7 +143,7 @@ Proof.
   (* TODO: Pull this out to separate wp? it is called at least twice *)
   wp_bind (MakeShardClerkSet _).
   wp_lam.
-  wp_apply (wp_NewMap).
+  wp_apply (wp_NewMap u64).
   iIntros (mref_set) "Hmap_set".
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (clset) "Hset".

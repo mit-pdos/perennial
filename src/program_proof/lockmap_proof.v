@@ -48,7 +48,7 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
 
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
            (ghostHeap : gname) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
-  ( ∃ (m: Map.t loc) ghostMap,
+  ( ∃ (m: gmap u64 loc) ghostMap,
       own_map mptr 1 m ∗
       ghost_map_auth ghostHeap 1 ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
@@ -76,7 +76,7 @@ Proof.
   rewrite /mkLockShard.
   wp_pures.
 
-  wp_apply (wp_NewMap loc).
+  wp_apply (wp_NewMap _ loc).
   iIntros (mref) "Hmap".
   wp_pures.
 

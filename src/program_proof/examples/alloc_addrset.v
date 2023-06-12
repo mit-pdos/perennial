@@ -54,7 +54,7 @@ Proof.
     iIntros "!>" (Φ) "(HI & i & %Hibound) HΦ"; iNamed "HI".
     wp_pures.
     wp_load.
-    wp_apply (wp_MapInsert _ _ _ _ () with "Hmap"); auto.
+    wp_apply (wp_MapInsert u64 () () with "Hmap"); auto.
     iIntros "Hm".
     wp_pures.
     iApply "HΦ".
@@ -248,7 +248,7 @@ Proof.
     iIntros (Φ) "Hused HΦ".
     wp_pures.
     iDestruct "Hused" as (m) "[Hused %Hdom]".
-    wp_apply (wp_MapInsert _ _ _ _ () with "Hused").
+    wp_apply (wp_MapInsert _ _ () with "Hused").
     { auto. }
     iIntros "Hm".
     iApply "HΦ".

@@ -51,7 +51,7 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
 
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
            (ghostHeap : gname) (covered : gset u64) (P Pc : u64 -> iProp Σ) : iProp Σ :=
-  ( ∃ (m: Map.t loc) ghostMap,
+  ( ∃ (m: gmap u64 loc) ghostMap,
       own_map mptr 1 m ∗
       ghost_map_auth ghostHeap 1 ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
@@ -74,7 +74,7 @@ Definition is_free_lockShard (ls : loc) : iProp Σ :=
   ( ∃ (shardlock mptr : loc),
       "#Hls_mu" ∷ readonly (ls ↦[lockShard :: "mu"] #shardlock) ∗
       "#Hls_state" ∷ readonly (ls ↦[lockShard :: "state"] #mptr) ∗
-      "Hmap" ∷ own_map mptr 1 (∅ : Map.t loc) ∗
+      "Hmap" ∷ own_map mptr 1 (∅ :gmap u64 loc) ∗
       "Hfree" ∷ crash_lock.is_free_crash_lock shardlock
   )%I.
 
@@ -90,7 +90,7 @@ Proof.
   rewrite /mkLockShard.
   wp_pures.
 
-  wp_apply (wp_NewMap loc).
+  wp_apply (wp_NewMap _ loc).
   iIntros (mref) "Hmap".
   wp_pures.
 
@@ -123,8 +123,8 @@ Proof.
   iDestruct "Hfree" as "(Hfree1&Htoks)".
 
   iDestruct (big_sepS_sep with "HP") as "(HP&#Hwand)".
-  iPoseProof (crash_borrow_init_cancel ([∗ set] a ∈ covered, ⌜(∅ : Map.t loc) !! a = None⌝ → P a)
-                                ([∗ set] a ∈ covered, ⌜(∅ : Map.t loc) !! a = None⌝ → Pc a)
+  iPoseProof (crash_borrow_init_cancel ([∗ set] a ∈ covered, ⌜(∅ : gmap u64 loc) !! a = None⌝ → P a)
+                                ([∗ set] a ∈ covered, ⌜(∅ : gmap u64 loc) !! a = None⌝ → Pc a)
                                 with "[$] [HP] []") as "Hcancel".
   { iApply (big_sepS_mono with "HP"). iIntros; eauto. }
   { iIntros "!> Hs".

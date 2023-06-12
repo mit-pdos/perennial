@@ -415,7 +415,7 @@ Proof using Type*.
   }
   iApply wp_wpc.
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers_ptr) "Hmap".
   wp_pures.
 
