@@ -86,11 +86,11 @@ Definition StartServer: val :=
     let: "dir" := dir.MakeClerk "dir_addr" in
     let: "s" := struct.new Server [
       "m" ::= lock.new #();
-      "chunks" ::= NewMap (slice.T byteT) #();
+      "chunks" ::= NewMap stringT (slice.T byteT) #();
       "dir" ::= "dir";
       "me" ::= "me"
     ] in
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" WriteChunkId ((λ: "req" "reply",
       let: "args" := ParseWriteChunkArgs "req" in
       Server__WriteChunk "s" "args";;

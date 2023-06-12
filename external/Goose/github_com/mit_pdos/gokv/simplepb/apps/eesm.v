@@ -108,8 +108,8 @@ Definition EEStateMachine__setState: val :=
 Definition MakeEEKVStateMachine: val :=
   rec: "MakeEEKVStateMachine" "sm" :=
     let: "s" := struct.alloc EEStateMachine (zero_val (struct.t EEStateMachine)) in
-    struct.storeF EEStateMachine "lastSeq" "s" (NewMap uint64T #());;
-    struct.storeF EEStateMachine "lastReply" "s" (NewMap (slice.T byteT) #());;
+    struct.storeF EEStateMachine "lastSeq" "s" (NewMap uint64T uint64T #());;
+    struct.storeF EEStateMachine "lastReply" "s" (NewMap uint64T (slice.T byteT) #());;
     struct.storeF EEStateMachine "nextCID" "s" #0;;
     struct.storeF EEStateMachine "sm" "s" "sm";;
     struct.new simplelog.InMemoryStateMachine [

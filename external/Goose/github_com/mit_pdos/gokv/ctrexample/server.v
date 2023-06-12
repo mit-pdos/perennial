@@ -41,7 +41,7 @@ Definition main: val :=
     else
       let: "d" := marshal.NewDec "a" in
       struct.storeF CtrServer "val" "s" (marshal.Dec__GetInt "d"));;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" #0 ((λ: "args" "reply",
       let: "v" := CtrServer__FetchAndIncrement "s" in
       let: "e" := marshal.NewEnc #8 in

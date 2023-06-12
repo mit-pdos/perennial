@@ -359,7 +359,7 @@ Definition Server__get: val :=
 
 Definition Server__Start: val :=
   rec: "Server__Start" "s" "me" :=
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" rpcIdGetFreshNum ((λ: "enc_args" "enc_reply",
       "enc_reply" <-[slice.T byteT] EncodeUint64 (Server__getFreshNum "s");;
       #()
@@ -385,6 +385,6 @@ Definition MakeServer: val :=
   rec: "MakeServer" <> :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
-    struct.storeF Server "kvs" "s" (NewMap stringT #());;
-    struct.storeF Server "lastReplies" "s" (NewMap stringT #());;
+    struct.storeF Server "kvs" "s" (NewMap stringT stringT #());;
+    struct.storeF Server "lastReplies" "s" (NewMap uint64T stringT #());;
     "s".

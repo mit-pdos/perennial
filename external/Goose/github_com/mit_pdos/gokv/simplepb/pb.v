@@ -569,7 +569,7 @@ Definition Server__SetState: val :=
         MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
           lock.condSignal "cond");;
         lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s");;
-        struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
+        struct.storeF Server "opAppliedConds" "s" (NewMap uint64T ptrT #());;
         lock.release (struct.loadF Server "mu" "s");;
         Server__IncreaseCommitIndex "s" (struct.loadF SetStateArgs "CommittedNextIndex" "args");;
         e.None)).
@@ -592,7 +592,7 @@ Definition Server__GetState: val :=
       let: "committedNextIndex" := struct.loadF Server "committedNextIndex" "s" in
       MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
         lock.condSignal "cond");;
-      struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
+      struct.storeF Server "opAppliedConds" "s" (NewMap uint64T ptrT #());;
       lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s");;
       lock.release (struct.loadF Server "mu" "s");;
       struct.new GetStateReply [
@@ -645,7 +645,7 @@ Definition MakeServer: val :=
     struct.storeF Server "canBecomePrimary" "s" #false;;
     struct.storeF Server "leaseValid" "s" #false;;
     struct.storeF Server "canBecomePrimary" "s" #false;;
-    struct.storeF Server "opAppliedConds" "s" (NewMap ptrT #());;
+    struct.storeF Server "opAppliedConds" "s" (NewMap uint64T ptrT #());;
     struct.storeF Server "confCk" "s" (config.MakeClerk "confHost");;
     struct.storeF Server "committedNextIndex_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
     struct.storeF Server "isPrimary_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
@@ -653,7 +653,7 @@ Definition MakeServer: val :=
 
 Definition Server__Serve: val :=
   rec: "Server__Serve" "s" "me" :=
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" RPC_APPLYASBACKUP ((λ: "args" "reply",
       "reply" <-[slice.T byteT] e.EncodeError (Server__ApplyAsBackup "s" (DecodeApplyAsBackupArgs "args"));;
       #()

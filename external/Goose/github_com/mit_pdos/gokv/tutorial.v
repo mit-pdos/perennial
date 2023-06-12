@@ -141,7 +141,7 @@ Definition GetDecisionId : expr := #1.
 Definition CoordinatorMain: val :=
   rec: "CoordinatorMain" "me" "participants" :=
     let: "coordinator" := MakeCoordinator "participants" in
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" GetDecisionId ((λ: "_req" "reply",
       let: "decision" := CoordinatorServer__GetDecision "coordinator" in
       let: "replyData" := NewSlice byteT #1 in
@@ -157,7 +157,7 @@ Definition CoordinatorMain: val :=
 Definition ParticipantMain: val :=
   rec: "ParticipantMain" "me" "pref" :=
     let: "participant" := MakeParticipant "pref" in
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" GetPreferenceId ((λ: "_req" "reply",
       let: "pref" := ParticipantServer__GetPreference "participant" in
       let: "replyData" := NewSlice byteT #1 in

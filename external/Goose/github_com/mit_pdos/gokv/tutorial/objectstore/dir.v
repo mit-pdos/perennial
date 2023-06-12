@@ -150,7 +150,7 @@ Definition Server__PrepareWrite: val :=
     let: "id" := struct.loadF Server "nextWriteId" "s" in
     struct.storeF Server "nextWriteId" "s" (struct.loadF Server "nextWriteId" "s" + #1);;
     MapInsert (struct.loadF Server "ongoing" "s") "id" (struct.mk PartialValue [
-      "servers" ::= NewMap (struct.t ChunkHandle) #()
+      "servers" ::= NewMap uint64T (struct.t ChunkHandle) #()
     ]);;
     lock.release (struct.loadF Server "m" "s");;
     struct.mk PreparedWrite [
@@ -199,11 +199,11 @@ Definition StartServer: val :=
   rec: "StartServer" "me" :=
     let: "s" := struct.new Server [
       "m" ::= lock.new #();
-      "ongoing" ::= NewMap (struct.t PartialValue) #();
-      "data" ::= NewMap (struct.t Value) #();
+      "ongoing" ::= NewMap WriteID (struct.t PartialValue) #();
+      "data" ::= NewMap stringT (struct.t Value) #();
       "nextWriteId" ::= #1
     ] in
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" PrepareWriteId ((λ: "_req" "reply",
       let: "ret" := Server__PrepareWrite "s" in
       "reply" <-[slice.T byteT] MarshalPreparedWrite "ret";;

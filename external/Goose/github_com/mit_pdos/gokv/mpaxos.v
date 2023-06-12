@@ -514,7 +514,7 @@ Definition makeServer: val :=
 Definition StartServer: val :=
   rec: "StartServer" "fname" "me" "applyFn" "config" :=
     let: "s" := makeServer "fname" "applyFn" "config" in
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" RPC_APPLY_AS_FOLLOWER ((λ: "raw_args" "raw_reply",
       let: "reply" := struct.alloc applyAsFollowerReply (zero_val (struct.t applyAsFollowerReply)) in
       let: "args" := decodeApplyAsFollowerArgs "raw_args" in

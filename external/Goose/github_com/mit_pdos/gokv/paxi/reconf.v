@@ -338,7 +338,7 @@ Definition Replica__TryBecomeLeader: val :=
     let: "conf" := struct.loadF MonotonicValue "conf" (struct.loadF Replica "acceptedMVal" "r") in
     lock.release (struct.loadF Replica "mu" "r");;
     let: "mu" := lock.new #() in
-    let: "prepared" := NewMap boolT #() in
+    let: "prepared" := NewMap uint64T boolT #() in
     Config__ForEachMember "conf" ((λ: "addr",
       Fork (let: "reply_ptr" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in
             ClerkPool__PrepareRPC (struct.loadF Replica "clerkPool" "r") "addr" "newTerm" "reply_ptr";;
@@ -397,7 +397,7 @@ Definition Replica__tryCommit: val :=
       let: "mval" := struct.loadF Replica "acceptedMVal" "r" in
       lock.release (struct.loadF Replica "mu" "r");;
       let: "mu" := lock.new #() in
-      let: "accepted" := NewMap boolT #() in
+      let: "accepted" := NewMap uint64T boolT #() in
       Config__ForEachMember (struct.loadF MonotonicValue "conf" "mval") ((λ: "addr",
         Fork ((if: ClerkPool__ProposeRPC (struct.loadF Replica "clerkPool" "r") "addr" "term" "mval"
               then
@@ -462,7 +462,7 @@ Definition StartReplicaServer: val :=
     struct.storeF MonotonicValue "conf" (struct.loadF Replica "acceptedMVal" "s") "initConfig";;
     struct.storeF Replica "clerkPool" "s" (MakeClerkPool #());;
     struct.storeF Replica "isLeader" "s" #false;;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" RPC_PREPARE ((λ: "args" "raw_reply",
       let: ("term", <>) := marshal.ReadInt "args" in
       let: "reply" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in

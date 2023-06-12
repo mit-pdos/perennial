@@ -92,7 +92,7 @@ Definition KVState__setState: val :=
     let: ("0_ret", "1_ret") := map_marshal.DecodeMapU64ToBytes "snap" in
     struct.storeF KVState "kvs" "s" "0_ret";;
     "1_ret";;
-    struct.storeF KVState "vnums" "s" (NewMap uint64T #());;
+    struct.storeF KVState "vnums" "s" (NewMap uint64T uint64T #());;
     struct.storeF KVState "minVnum" "s" "vnum";;
     #().
 
@@ -115,8 +115,8 @@ Definition KVState__applyReadonly: val :=
 Definition MakeKVStateMachine: val :=
   rec: "MakeKVStateMachine" <> :=
     let: "s" := struct.alloc KVState (zero_val (struct.t KVState)) in
-    struct.storeF KVState "kvs" "s" (NewMap (slice.T byteT) #());;
-    struct.storeF KVState "vnums" "s" (NewMap uint64T #());;
+    struct.storeF KVState "kvs" "s" (NewMap uint64T (slice.T byteT) #());;
+    struct.storeF KVState "vnums" "s" (NewMap uint64T uint64T #());;
     struct.new eesm.VersionedStateMachine [
       "ApplyVolatile" ::= KVState__apply "s";
       "ApplyReadonly" ::= KVState__applyReadonly "s";

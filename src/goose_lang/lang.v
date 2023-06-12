@@ -22,7 +22,6 @@ for our main FFI example.
   because curried functions no longer arise. (BUG(tej): built-in functions and
   operators are left-to-right, but function calls are still left-to-right. This
   should be fixed.)
-- Some support for prophecy variables is retained in case we need it later, but we have no way of inserting these from the source code using Goose and haven't developed reasoning principles
 
 *)
 

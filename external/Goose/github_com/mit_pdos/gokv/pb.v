@@ -118,8 +118,8 @@ Definition StartConfServer: val :=
   rec: "StartConfServer" "me" :=
     let: "s" := struct.alloc ConfServer (zero_val (struct.t ConfServer)) in
     struct.storeF ConfServer "mu" "s" (lock.new #());;
-    struct.storeF ConfServer "kvs" "s" (NewMap (struct.t VersionedValue) #());;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    struct.storeF ConfServer "kvs" "s" (NewMap uint64T (struct.t VersionedValue) #());;
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" CONF_PUT ((λ: "args" "rep",
       (if: ConfServer__PutRPC "s" (DecodePutArgs "args")
       then
@@ -394,7 +394,7 @@ Definition StartReplicaServer: val :=
     struct.storeF ReplicaServer "commitIdx" "s" #0;;
     struct.storeF ReplicaServer "cn" "s" #0;;
     struct.storeF ReplicaServer "isPrimary" "s" #false;;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" REPLICA_APPEND ((λ: "raw_args" "raw_reply",
       let: "a" := DecodeAppendArgs "raw_args" in
       (if: ReplicaServer__AppendRPC "s" "a"

@@ -24,7 +24,7 @@ Definition Begin: val :=
     struct.new Clerk [
       "p" ::= prophname.Get #();
       "tid" ::= txnmgr.Server__New "txnMgrHost";
-      "writes" ::= NewMap stringT #();
+      "writes" ::= NewMap uint64T stringT #();
       "indexCk" ::= index.MakeClerk "indexHost";
       "txnMgrHost" ::= "txnMgrHost";
       "txnCoordCk" ::= txncoordinator.MakeClerk "txnCoordHost"

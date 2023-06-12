@@ -72,7 +72,7 @@ Definition ControllerServer__HeartbeatThread: val :=
       let: "clerks" := NewSlice ptrT (slice.len (struct.loadF pb.Configuration "Replicas" "conf")) in
       ForSlice uint64T "i" "r" (struct.loadF pb.Configuration "Replicas" "conf")
         (SliceSet ptrT "clerks" "i" (pb.MakeReplicaClerk "r"));;
-      struct.storeF ControllerServer "failed" "s" (NewMap boolT #());;
+      struct.storeF ControllerServer "failed" "s" (NewMap uint64T boolT #());;
       ForSlice ptrT "i" <> "clerks"
         (let: "i" := "i" in
         SliceSet ptrT "hbtimers" "i" (time.AfterFunc "HBTIMEOUT" ((λ: <>,
@@ -140,7 +140,7 @@ Definition StartControllerServer: val :=
       "Conf" ::= struct.loadF ControllerServer "conf" "s"
     ]);;
     Fork (ControllerServer__HeartbeatThread "s");;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" CONTROLLER_ADD ((λ: "raw_args" <>,
       let: "dec" := marshal.NewDec "raw_args" in
       let: "newServer" := marshal.Dec__GetInt "dec" in
