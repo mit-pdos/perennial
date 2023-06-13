@@ -354,6 +354,7 @@ Definition Server__get: val :=
       "ret"
     else
       let: "ret2" := Fst (MapGet (struct.loadF Server "kvs" "s") (struct.loadF getArgs "key" "args")) in
+      MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF getArgs "opId" "args") "ret2";;
       lock.release (struct.loadF Server "mu" "s");;
       "ret2").
 
