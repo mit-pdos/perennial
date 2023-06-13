@@ -921,7 +921,7 @@ Context `{!urpcregG Σ}.
 Program Definition getFreshNum_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (
-  getFreshNum_core_spec (λ (num:u64), ∀ enc_reply, ⌜enc_reply = u64_le num⌝ -∗ Φ enc_reply)
+  getFreshNum_core_spec (λ (num:u64), Φ (u64_le num))
   )%I
 .
 Next Obligation.
@@ -961,7 +961,7 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition is_lockserver_host host : iProp Σ :=
+Definition is_kvserver_host host : iProp Σ :=
   ∃ γrpc,
   "#H0" ∷ handler_spec γrpc host (U64 0) getFreshNum_spec ∗
   "#H1" ∷ handler_spec γrpc host (U64 1) put_spec ∗
@@ -980,7 +980,7 @@ Context `{!urpcregG Σ}.
 Lemma wp_Server__Start (s:loc) (host:u64) :
   {{{
         "#Hsrv" ∷ is_Server s ∗
-        "#Hhost" ∷ is_lockserver_host host
+        "#Hhost" ∷ is_kvserver_host host
   }}}
     Server__Start #s #host
   {{{
@@ -1104,7 +1104,7 @@ Proof.
       iIntros (?) "Henc_req".
       wp_store.
       iApply ("HΦ" with "[HΨ] [$]").
-      { iApply "HΨ". done. }
+      { iApply "HΨ". }
       by iDestruct (own_slice_to_small with "Henc_req") as "$".
     }
     by iApply big_sepM_empty.
@@ -1122,8 +1122,35 @@ Definition is_Client (cl:loc) : iProp Σ :=
   ∃ (urpcCl:loc) host,
   "#Hcl" ∷ readonly (cl ↦[Client :: "cl"] #urpcCl) ∗
   "#HurpcCl" ∷ is_uRPCClient urpcCl host ∗
-  "#Hhost" ∷ is_lockserver_host host
+  "#Hhost" ∷ is_kvserver_host host
 .
+
+Lemma wp_makeClient (host:u64) :
+  {{{
+        "#Hhost" ∷ is_kvserver_host host
+  }}}
+    makeClient #host
+  {{{
+        (cl:loc), RET #cl; is_Client cl
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_apply wp_MakeClient.
+  iIntros (?) "#?".
+  iApply wp_fupd.
+  wp_apply wp_allocStruct.
+  { repeat econstructor. }
+  iIntros (?) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "HH".
+  iNamed "HH".
+  iMod (readonly_alloc_1 with "cl") as "#?".
+  iModIntro.
+  iApply "HΦ".
+  repeat iExists _.
+  iFrame "#".
+Qed.
 
 Lemma wp_Client__getFreshNumRpc Post cl :
   {{{
@@ -1164,7 +1191,7 @@ Proof.
     iApply (monotonic_fact with "[] Hspec").
     iModIntro.
     iIntros (?) "HPost".
-    iIntros (??) "Hreq_sl % Hrep Hrep_sl".
+    iIntros "Hreq_sl % Hrep Hrep_sl".
     iNamed 1.
     wp_pures.
     wp_load. subst.
@@ -1240,6 +1267,131 @@ Proof.
     by rewrite decide_False.
   }
 Qed.
+
+Lemma wp_Client__conditionalPutRpc Post cl args args_ptr :
+  {{{
+        "Hargs" ∷ conditionalPutArgs.own args_ptr args ∗
+        "#Hcl" ∷ is_Client cl ∗
+        "#Hspec" ∷ □ conditionalPut_core_spec args Post
+  }}}
+    Client__conditionalPutRpc #cl #args_ptr
+  {{{
+        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  (* symbolic execution *)
+  wp_lam.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep_ptr) "Hrep".
+  wp_pures.
+  wp_apply (conditionalPutArgs.wp_encode with "[$]").
+  iIntros (??) "(Hargs & %Henc & Hreq_sl)".
+  wp_pures.
+  iNamed "Hcl".
+  wp_loadField.
+  iNamed "Hhost".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
+
+  wp_bind (urpc.Client__Call _ _ _ _ _).
+  wp_apply (wp_frame_wand with "[-Hreq_sl Hrep]").
+  { iNamedAccu. }
+
+  wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
+  {
+    iModIntro. iModIntro.
+    rewrite /conditionalPut_spec /=.
+    iExists _; iFrame "%".
+    iApply (monotonic_fact with "[] Hspec").
+    iModIntro.
+    iIntros (?) "HPost".
+    iIntros "Hreq_sl % Hrep Hrep_sl".
+    iNamed 1.
+    wp_pures.
+    wp_load.
+    wp_apply (wp_bytesToString with "[$]").
+    iIntros "_".
+    wp_pures.
+    iModIntro. iApply "HΦ".
+    iFrame.
+  }
+  {
+    iIntros (??) "Hreq_sl Hrep".
+    iNamed 1.
+    wp_pures.
+    wp_if_destruct.
+    { by exfalso. }
+    wp_pures.
+    iApply "HΦ".
+    by rewrite decide_False.
+  }
+Qed.
+
+Lemma wp_Client__getRpc Post cl args args_ptr :
+  {{{
+        "Hargs" ∷ getArgs.own args_ptr args ∗
+        "#Hcl" ∷ is_Client cl ∗
+        "#Hspec" ∷ □ get_core_spec args Post
+  }}}
+    Client__getRpc #cl #args_ptr
+  {{{
+        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then Post s else True
+  }}}
+.
+Proof.
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  (* symbolic execution *)
+  wp_lam.
+  wp_apply (wp_ref_of_zero).
+  { done. }
+  iIntros (rep_ptr) "Hrep".
+  wp_pures.
+  wp_apply (getArgs.wp_encode with "[$]").
+  iIntros (??) "(Hargs & %Henc & Hreq_sl)".
+  wp_pures.
+  iNamed "Hcl".
+  wp_loadField.
+  iNamed "Hhost".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
+
+  wp_bind (urpc.Client__Call _ _ _ _ _).
+  wp_apply (wp_frame_wand with "[-Hreq_sl Hrep]").
+  { iNamedAccu. }
+
+  wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
+  {
+    iModIntro. iModIntro.
+    rewrite /conditionalPut_spec /=.
+    iExists _; iFrame "%".
+    iApply (monotonic_fact with "[] Hspec").
+    iModIntro.
+    iIntros (?) "HPost".
+    iIntros "Hreq_sl % Hrep Hrep_sl".
+    iNamed 1.
+    wp_pures.
+    wp_load.
+    wp_apply (wp_bytesToString with "[$]").
+    iIntros "_".
+    wp_pures.
+    iModIntro. iApply "HΦ".
+    iFrame.
+  }
+  {
+    iIntros (??) "Hreq_sl Hrep".
+    iNamed 1.
+    wp_pures.
+    wp_if_destruct.
+    { by exfalso. }
+    wp_pures.
+    iApply "HΦ".
+    by rewrite decide_False.
+  }
+Qed.
+
 
 End client_proof.
 
@@ -1328,6 +1480,195 @@ Proof.
   iSplitR; first done.
   wp_pures.
   iModIntro. iApply "HΦ". done.
+Qed.
+
+Lemma wp_Clerk__ConditionalPut (ck:loc) k expectV newV :
+  {{{ is_Clerk ck }}}
+    Clerk__ConditionalPut #ck #(str k) #(str expectV) #(str newV)
+  {{{ (ok:bool), RET #ok; True }}}
+.
+Proof.
+  iIntros (Φ) "#Hck HΦ".
+  wp_lam.
+  (* symbolic execution *)
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (err_ptr) "Herr".
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (id_ptr) "Hid".
+  wp_pures.
+
+  iAssert (∃ (someErr someOpId:u64), "Hid" ∷ id_ptr ↦[uint64T] #someOpId ∗
+                             "Herr" ∷ err_ptr ↦[uint64T] #someErr
+          )%I with "[Herr Hid]" as "HH".
+  { repeat iExists _; iFrame. }
+  wp_forBreak.
+  iNamed "HH".
+  wp_pures.
+  iNamed "Hck".
+  wp_loadField.
+  wp_apply (wp_Client__getFreshNumRpc (λ opId, True)%I with "[$HisCl]").
+  { done. } (* TUTORIAL *)
+  iIntros (err opId) "Hpost".
+  wp_pures.
+  wp_store.
+  wp_store.
+  wp_load.
+  wp_if_destruct.
+  2:{ (* case: didn't get a valid ID. *)
+    iModIntro. iLeft.
+    iSplitR; first done.
+    iFrame.
+    repeat iExists _; iFrame.
+  }
+  (* case: successful RPC *)
+  iModIntro. iRight.
+  iSplitR; first done.
+  wp_pures.
+
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (ret_ptr) "Hret".
+  wp_pures.
+  wp_forBreak_cond.
+
+  wp_load.
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_loadField.
+
+  (* TUTORIAL: *)
+  wp_apply (wp_Client__conditionalPutRpc (λ _, True)%I with "[Hcl opId key expectedVal newVal]").
+  { instantiate (2:=conditionalPutArgs.mk _ _ _ _). iFrame "∗#". done. }
+  iClear "Hpost".
+  iIntros (ret err) "Hpost".
+  wp_pures.
+  wp_if_destruct.
+  2:{ (* case: RPC error, so retry *)
+    wp_pures.
+    iLeft.
+    iModIntro. iSplitR; first done.
+    iFrame.
+  }
+  wp_store.
+  iRight.
+  iModIntro.
+  iSplitR; first done.
+  wp_pures.
+  wp_load.
+  iModIntro. iApply "HΦ". done.
+Qed.
+
+Lemma wp_Clerk__Get (ck:loc) k :
+  {{{ is_Clerk ck }}}
+    Clerk__Get #ck #(str k)
+  {{{ v, RET #(str v); True }}}
+.
+Proof.
+  iIntros (Φ) "#Hck HΦ".
+  wp_lam.
+  (* symbolic execution *)
+  wp_pures.
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (err_ptr) "Herr".
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (id_ptr) "Hid".
+  wp_pures.
+
+  iAssert (∃ (someErr someOpId:u64), "Hid" ∷ id_ptr ↦[uint64T] #someOpId ∗
+                             "Herr" ∷ err_ptr ↦[uint64T] #someErr
+          )%I with "[Herr Hid]" as "HH".
+  { repeat iExists _; iFrame. }
+  wp_forBreak.
+  iNamed "HH".
+  wp_pures.
+  iNamed "Hck".
+  wp_loadField.
+  wp_apply (wp_Client__getFreshNumRpc (λ opId, True)%I with "[$HisCl]").
+  { done. } (* TUTORIAL *)
+  iIntros (err opId) "Hpost".
+  wp_pures.
+  wp_store.
+  wp_store.
+  wp_load.
+  wp_if_destruct.
+  2:{ (* case: didn't get a valid ID. *)
+    iModIntro. iLeft.
+    iSplitR; first done.
+    iFrame.
+    repeat iExists _; iFrame.
+  }
+  (* case: successful RPC *)
+  iModIntro. iRight.
+  iSplitR; first done.
+  wp_pures.
+
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (ret_ptr) "Hret".
+  wp_pures.
+  wp_forBreak_cond.
+
+  wp_load.
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { repeat econstructor. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_loadField.
+
+  (* TUTORIAL: *)
+  wp_apply (wp_Client__getRpc (λ _, True)%I with "[Hcl opId key]").
+  { instantiate (2:=getArgs.mk _ _). iFrame "∗#". done. }
+  iClear "Hpost".
+  iIntros (ret err) "Hpost".
+  wp_pures.
+  wp_if_destruct.
+  2:{ (* case: RPC error, so retry *)
+    wp_pures.
+    iLeft.
+    iModIntro. iSplitR; first done.
+    iFrame.
+  }
+  wp_store.
+  iRight.
+  iModIntro.
+  iSplitR; first done.
+  wp_pures.
+  wp_load.
+  iModIntro. iApply "HΦ". done.
+Qed.
+
+Lemma wp_MakeClerk (host:u64) :
+  {{{ is_kvserver_host host }}}
+    MakeClerk #host
+  {{{ ck, RET #ck; is_Clerk ck }}}
+.
+Proof.
+  iIntros (Φ) "#Hhost HΦ".
+  wp_lam.
+  wp_apply (wp_makeClient with "Hhost").
+  iIntros (?) "#?".
+  iApply wp_fupd.
+  wp_apply wp_allocStruct.
+  { repeat econstructor. }
+  iIntros (?) "Hl".
+  iDestruct (struct_fields_split with "Hl") as "HH".
+  iNamed "HH".
+  iApply "HΦ".
+  iMod (readonly_alloc_1 with "rpcCl") as "#?".
+  iModIntro.
+  iExists _; iFrame "#".
 Qed.
 
 End clerk_proof.
