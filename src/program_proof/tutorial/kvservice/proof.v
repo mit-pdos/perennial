@@ -771,6 +771,7 @@ Context `{!urpcregG Σ}.
 
 Lemma wp_Server__Start (s:loc) (host:u64) :
   {{{
+        "#Hsrv" ∷ is_Server s ∗
         "#Hhost" ∷ is_lockserver_host host
   }}}
     Server__Start #s #host
@@ -788,7 +789,7 @@ Proof.
   iIntros (handlers) "Hhandlers".
 
   wp_pures.
-  wp_apply (map.wp_MapInsert with "Hhandlers").
+  wp_apply (map.wp_MapInsert u64 with "Hhandlers").
   iIntros "Hhandlers".
   wp_pures.
 
@@ -875,7 +876,7 @@ Proof.
       wp_apply (putArgs.wp_decode with "[$Hreq_sl]").
       { done. }
       iIntros (?) "Hargs".
-      wp_apply (wp_Server__put with "[$Hargs Hspec //]").
+      wp_apply (wp_Server__put with "[$Hsrv $Hargs Hspec //]").
       iIntros "HΨ". wp_pures.
       iApply ("HΦ" with "[HΨ] [$]").
       { iApply "HΨ". }
