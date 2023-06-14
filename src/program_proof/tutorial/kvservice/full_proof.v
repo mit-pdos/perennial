@@ -4,7 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof monotonic_pr
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof Require Import std_proof.
 From iris.base_logic.lib Require Import ghost_map.
-From iris.bi.lib Require Import atomic.
+From Perennial.program_logic Require Import atomic_fupd.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
@@ -790,20 +790,11 @@ Definition getFreshNum_core_spec (Φ:u64 → iPropO Σ): iPropO Σ :=
 Global Instance getFreshNum_core_MonotonicPred : MonotonicPred (getFreshNum_core_spec).
 Proof. apply _. Qed.
 
-Definition put_core_spec_manual (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ :=
+Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ :=
   (∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(putArgs.opId)
          (* pre *)   (|={⊤∖↑reqN,∅}=> ∃ oldv, args.(putArgs.key) ↪[γ.(kv_gn)] oldv ∗
                       (args.(putArgs.key) ↪[γ.(kv_gn)] args.(putArgs.val) ={∅,⊤∖↑reqN}=∗
                        Q))%I
-         (* post *)  (λ _, Q) ∗
-  (is_request_receipt γ.(erpc_gn) args.(putArgs.opId) "" -∗ Φ ()))%I.
-
-Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ :=
-  (∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(putArgs.opId)
-         (* pre *)   (AU << ∃∃ oldv, args.(putArgs.key) ↪[γ.(kv_gn)] oldv >>
-                            @ ⊤∖↑reqN, ∅
-                         << args.(putArgs.key) ↪[γ.(kv_gn)] args.(putArgs.val), COMM Q >>
-                                                                               )
          (* post *)  (λ _, Q) ∗
   (∀ r, (is_executed_witness γ.(erpc_gn) args.(putArgs.opId) ∗
     is_request_receipt γ.(erpc_gn) args.(putArgs.opId) r)
@@ -814,16 +805,15 @@ Proof. apply _. Qed.
 
 Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:string → iPropO Σ): iPropO Σ :=
   (∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(conditionalPutArgs.opId)
-   (* pre *) (AU << ∃∃ oldv, args.(conditionalPutArgs.key) ↪[γ.(kv_gn)] oldv >>
-                  @ ⊤∖↑reqN, ∅
-                << args.(conditionalPutArgs.key) ↪[γ.(kv_gn)]
-                if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
+   (* pre *) (|={⊤∖↑reqN,∅}=> ∃ oldv, args.(conditionalPutArgs.key) ↪[γ.(kv_gn)] oldv ∗
+                (args.(conditionalPutArgs.key) ↪[γ.(kv_gn)]
+                (if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
                   args.(conditionalPutArgs.newVal)
-                else oldv,
-                COMM (Q (if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
+                else oldv) ={∅,⊤∖↑reqN}=∗
+                (Q (if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
                            "ok"
                          else
-                           ""))>>)
+                           ""))))
    (* post *)  Q ∗
   (∀ r, (is_executed_witness γ.(erpc_gn) args.(conditionalPutArgs.opId) ∗
     is_request_receipt γ.(erpc_gn) args.(conditionalPutArgs.opId) r)
@@ -834,10 +824,9 @@ Proof. apply _. Qed.
 
 Definition get_core_spec (args:getArgs.t) (Φ:string → iPropO Σ): iPropO Σ :=
   (∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(getArgs.opId)
-   (* pre *) (AU << ∃∃ v, args.(getArgs.key) ↪[γ.(kv_gn)] v >>
-                  @ ⊤∖↑reqN, ∅
-                << args.(getArgs.key) ↪[γ.(kv_gn)] v,
-                COMM (Q v) >>)
+   (* pre *) (|={⊤∖↑reqN,∅}=> ∃ v, args.(getArgs.key) ↪[γ.(kv_gn)] v ∗
+                (args.(getArgs.key) ↪[γ.(kv_gn)] v ={∅,⊤∖↑reqN}=∗
+                (Q v)))
    (* post *)  Q ∗
   (∀ r, (is_executed_witness γ.(erpc_gn) args.(getArgs.opId) ∗
     is_request_receipt γ.(erpc_gn) args.(getArgs.opId) r)
@@ -1021,7 +1010,6 @@ Proof.
   iMod (server_execute_step with "Hlc Hinv Herpc") as "[Hau Hclose]".
   { done. }
   iMod "Hau" as (?) "[Hptsto Hau]".
-  iRight in "Hau".
   iMod (ghost_map_update with "Hkvs Hptsto") as "[Hkvs Hptsto]".
   iMod ("Hau" with "Hptsto") as "HQ".
   iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
@@ -1153,7 +1141,6 @@ Proof.
   iMod (server_execute_step with "Hlc Hinv Herpc") as "[Hau Hclose]".
   { done. }
   iMod "Hau" as (?) "[Hptsto Hau]".
-  iRight in "Hau".
   iDestruct (ghost_map_lookup with "Hkvs Hptsto") as %?.
   iMod (ghost_map_update with "Hkvs Hptsto") as "[Hkvs Hptsto]".
   iMod ("Hau" with "Hptsto") as "HQ".
@@ -1193,7 +1180,6 @@ Proof.
   iMod (server_execute_step with "Hlc Hinv Herpc") as "[Hau Hclose]".
   { done. }
   iMod "Hau" as (?) "[Hptsto Hau]".
-  iRight in "Hau".
   iDestruct (ghost_map_lookup with "Hkvs Hptsto") as %?.
   rewrite bool_decide_false.
   2:{
@@ -1383,7 +1369,6 @@ Proof.
   iMod (server_execute_step with "Hlc Hinv Herpc") as "[Hau Hclose]".
   { done. }
   iMod "Hau" as (?) "[Hptsto Hau]".
-  iRight in "Hau".
   iDestruct (ghost_map_lookup with "Hkvs Hptsto") as %Hlookup.
   iMod ("Hau" with "Hptsto") as "HQ".
   iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
@@ -2014,14 +1999,15 @@ Definition is_Clerk (ck:loc) γ : iProp Σ :=
   "#HisCl" ∷ is_Client cl γ
 .
 
-Lemma wp_Clerk__Put (ck:loc) k v :
-  {{{ is_Clerk ck }}}
-    Clerk__Put #ck #(str k) #(str v)
+Lemma wp_Clerk__Put (ck:loc) γ k v :
+  ⊢ {{{ is_Clerk ck γ }}}
+  <<< ∀∀ oldv, k ↪[γ.(kv_gn)] oldv >>>
+    Clerk__Put #ck #(str k) #(str v) @ ↑reqN
+  <<< k ↪[γ.(kv_gn)] v >>>
   {{{ RET #(); True }}}
 .
 Proof.
-  iIntros (Φ) "#Hck HΦ".
-  wp_lam.
+  iIntros "!#" (Φ) "#Hck Hatomic". wp_lam.
   (* symbolic execution *)
   wp_apply wp_ref_of_zero.
   { done. }
@@ -2040,8 +2026,9 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  wp_apply (wp_Client__getFreshNumRpc (λ opId, True)%I with "[$HisCl]").
-  { done. } (* TUTORIAL *)
+  wp_apply (wp_Client__getFreshNumRpc (λ opId, own_unexecuted_token γ.(erpc_gn) opId )%I with "[$HisCl]").
+  { iModIntro. rewrite /getFreshNum_core_spec.
+    iIntros (?) "$". }
   iIntros (err opId) "Hpost".
   wp_pures.
   wp_store.
@@ -2059,6 +2046,8 @@ Proof.
   iSplitR; first done.
   wp_pures.
 
+  iMod (client_allocate_step with "[Hatomic] Hpost") as (?) "[#Hreq Htok]".
+  { shelve. }
   wp_forBreak_cond.
 
   wp_load.
@@ -2072,9 +2061,18 @@ Proof.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__putRpc (λ _, True)%I with "[Hcl opId key val]").
-  { instantiate (2:=putArgs.mk _ _ _). iFrame "∗#". done. }
-  iClear "Hpost".
+  wp_apply (wp_Client__putRpc (λ _,
+    ∃ r, is_executed_witness γ.(erpc_gn) opId ∗ is_request_receipt γ.(erpc_gn) opId r
+                            )%I with "[Hcl opId key val]").
+  { instantiate (1:=putArgs.mk _ _ _). iFrame "∗ HisCl".
+    iModIntro.
+    iExists _, _. iFrame "#".
+    simpl.
+    iIntros.
+    iExists _; iFrame "#".
+  }
+  Unshelve.
+  2:{ iFrame. }
   iIntros (err) "Hpost".
   wp_pures.
   wp_if_destruct.
@@ -2087,7 +2085,11 @@ Proof.
   iRight.
   iModIntro.
   iSplitR; first done.
+  wp_pure1_credit "Hlc".
   wp_pures.
+  erewrite decide_True; last done.
+  iDestruct "Hpost" as (?) "#[??]".
+  iMod (client_claim_step with "Hlc Hreq [$] [$] Htok") as "HΦ".
   iModIntro. iApply "HΦ". done.
 Qed.
 
