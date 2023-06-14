@@ -602,7 +602,7 @@ Definition own_erpc_server γ (nextFreshId:u64) (lastReplies:gmap u64 string) : 
   "%Htoks" ∷ ⌜ set_Forall (λ id, int.nat id < int.nat nextFreshId) usedIds ⌝
 .
 
-Lemma alloc_server :
+Lemma alloc_erpc_server :
   ⊢ |==> ∃ γ, own_erpc_server γ 0 ∅.
 Proof.
   iMod (ghost_map_alloc_empty (V:=())) as (γreq) "Htoks".
@@ -1468,6 +1468,18 @@ Proof.
   iApply "Hspec".
 Qed.
 
+Lemma ghost_make :
+  ⊢ |==> ∃ γ, server.own_ghost γ (server.mk 0 ∅ ∅)
+.
+Proof.
+  iMod alloc_erpc_server as (γerpc) "Herpc".
+  iMod (ghost_map_alloc ∅) as (γkv) "[Hkvs Hptstos]".
+  iModIntro. iExists {| erpc_gn := _ ; kv_gn := _ |}.
+  iExists _; iFrame.
+  iPureIntro.
+  reflexivity.
+Qed.
+
 Lemma wp_MakeServer :
   {{{
         True
@@ -1495,12 +1507,15 @@ Proof.
   wp_apply (wp_NewMap u64).
   iIntros (lastReplies_loc) "HlastRepliesM".
   wp_storeField.
+  iMod (ghost_make) as (γ) "Hghost".
   iApply "HΦ".
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
   iExists _; iFrame "#".
   iMod (alloc_lock with "HmuInv [-]") as "$"; last done.
   iNext.
+  repeat iExists _; iFrame "Hghost".
   repeat iExists _; iFrame.
+  iPureIntro. reflexivity.
 Qed.
 
 End rpc_server_proofs.
@@ -1509,56 +1524,57 @@ Section encoded_rpc_definitions.
 (* This section is boilerplate. *)
 Context `{!gooseGlobalGS Σ}.
 Context `{!urpcregG Σ}.
+Context `{!kvserviceG Σ}.
 
-Program Definition getFreshNum_spec :=
+Program Definition getFreshNum_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (
-  getFreshNum_core_spec (λ (num:u64), Φ (u64_le num))
+  getFreshNum_core_spec γ (λ (num:u64), Φ (u64_le num))
   )%I
 .
 Next Obligation.
   solve_proper.
 Defined.
 
-Program Definition put_spec :=
+Program Definition put_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜putArgs.encodes enc_args args⌝ ∗
-   put_core_spec args (λ _, ∀ enc_reply, Φ enc_reply)
+   put_core_spec γ args (λ _, ∀ enc_reply, Φ enc_reply)
   )%I
 .
 Next Obligation.
   rewrite /put_core_spec. solve_proper.
 Defined.
 
-Program Definition conditionalPut_spec :=
+Program Definition conditionalPut_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜conditionalPutArgs.encodes enc_args args⌝ ∗
-   conditionalPut_core_spec args (λ rep, Φ (string_le rep))
+   conditionalPut_core_spec γ args (λ rep, Φ (string_le rep))
   )%I
 .
 Next Obligation.
   rewrite /conditionalPut_core_spec. solve_proper.
 Defined.
 
-Program Definition get_spec :=
+Program Definition get_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜getArgs.encodes enc_args args⌝ ∗
-   get_core_spec args (λ rep, Φ (string_le rep))
+   get_core_spec γ args (λ rep, Φ (string_le rep))
   )%I
 .
 Next Obligation.
-  solve_proper.
+  rewrite /get_core_spec. solve_proper.
 Defined.
 
-Definition is_kvserver_host host : iProp Σ :=
+Definition is_kvserver_host host γ : iProp Σ :=
   ∃ γrpc,
-  "#H0" ∷ handler_spec γrpc host (U64 0) getFreshNum_spec ∗
-  "#H1" ∷ handler_spec γrpc host (U64 1) put_spec ∗
-  "#H2" ∷ handler_spec γrpc host (U64 2) conditionalPut_spec ∗
-  "#H3" ∷ handler_spec γrpc host (U64 3) get_spec ∗
+  "#H0" ∷ handler_spec γrpc host (U64 0) (getFreshNum_spec γ) ∗
+  "#H1" ∷ handler_spec γrpc host (U64 1) (put_spec γ) ∗
+  "#H2" ∷ handler_spec γrpc host (U64 2) (conditionalPut_spec γ) ∗
+  "#H3" ∷ handler_spec γrpc host (U64 3) (get_spec γ) ∗
   "#Hdom" ∷ handlers_dom γrpc {[ U64 0; U64 1; U64 2; U64 3 ]}
   .
 
@@ -1568,11 +1584,12 @@ Section start_server_proof.
 (* This section is boilerplate. *)
 Context `{!heapGS Σ}.
 Context `{!urpcregG Σ}.
+Context `{!kvserviceG Σ}.
 
-Lemma wp_Server__Start (s:loc) (host:u64) :
+Lemma wp_Server__Start (s:loc) (host:u64) γ :
   {{{
-        "#Hsrv" ∷ is_Server s ∗
-        "#Hhost" ∷ is_kvserver_host host
+        "#Hsrv" ∷ is_Server s γ ∗
+        "#Hhost" ∷ is_kvserver_host host γ
   }}}
     Server__Start #s #host
   {{{
@@ -1709,21 +1726,21 @@ End start_server_proof.
 
 Section client_proof.
 (* This section is boilerplate. *)
-Context `{!heapGS Σ, !urpcregG Σ}.
-Definition is_Client (cl:loc) : iProp Σ :=
+Context `{!heapGS Σ, !urpcregG Σ, !kvserviceG Σ}.
+Definition is_Client (cl:loc) γ : iProp Σ :=
   ∃ (urpcCl:loc) host,
   "#Hcl" ∷ readonly (cl ↦[Client :: "cl"] #urpcCl) ∗
   "#HurpcCl" ∷ is_uRPCClient urpcCl host ∗
-  "#Hhost" ∷ is_kvserver_host host
+  "#Hhost" ∷ is_kvserver_host host γ
 .
 
-Lemma wp_makeClient (host:u64) :
+Lemma wp_makeClient (host:u64) γ:
   {{{
-        "#Hhost" ∷ is_kvserver_host host
+        "#Hhost" ∷ is_kvserver_host host γ
   }}}
     makeClient #host
   {{{
-        (cl:loc), RET #cl; is_Client cl
+        (cl:loc), RET #cl; is_Client cl γ
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -1744,10 +1761,10 @@ Proof.
   iFrame "#".
 Qed.
 
-Lemma wp_Client__getFreshNumRpc Post cl :
+Lemma wp_Client__getFreshNumRpc Post cl γ :
   {{{
-        "#Hcl" ∷ is_Client cl ∗
-        "#Hspec" ∷ □ getFreshNum_core_spec Post
+        "#Hcl" ∷ is_Client cl γ ∗
+        "#Hspec" ∷ □ getFreshNum_core_spec γ Post
   }}}
     Client__getFreshNumRpc #cl
   {{{
@@ -1802,11 +1819,11 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__putRpc Post cl args args_ptr :
+Lemma wp_Client__putRpc Post cl args args_ptr γ :
   {{{
         "Hargs" ∷ putArgs.own args_ptr args ∗
-        "#Hcl" ∷ is_Client cl ∗
-        "#Hspec" ∷ □ put_core_spec args Post
+        "#Hcl" ∷ is_Client cl γ ∗
+        "#Hspec" ∷ □ put_core_spec γ args Post
   }}}
     Client__putRpc #cl #args_ptr
   {{{
@@ -1860,11 +1877,11 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__conditionalPutRpc Post cl args args_ptr :
+Lemma wp_Client__conditionalPutRpc Post γ cl args args_ptr :
   {{{
         "Hargs" ∷ conditionalPutArgs.own args_ptr args ∗
-        "#Hcl" ∷ is_Client cl ∗
-        "#Hspec" ∷ □ conditionalPut_core_spec args Post
+        "#Hcl" ∷ is_Client cl γ ∗
+        "#Hspec" ∷ □ conditionalPut_core_spec γ args Post
   }}}
     Client__conditionalPutRpc #cl #args_ptr
   {{{
@@ -1922,11 +1939,11 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__getRpc Post cl args args_ptr :
+Lemma wp_Client__getRpc Post γ cl args args_ptr :
   {{{
         "Hargs" ∷ getArgs.own args_ptr args ∗
-        "#Hcl" ∷ is_Client cl ∗
-        "#Hspec" ∷ □ get_core_spec args Post
+        "#Hcl" ∷ is_Client cl γ ∗
+        "#Hspec" ∷ □ get_core_spec γ args Post
   }}}
     Client__getRpc #cl #args_ptr
   {{{
@@ -1984,17 +2001,17 @@ Proof.
   }
 Qed.
 
-
 End client_proof.
 
 Section clerk_proof.
 Context `{!heapGS Σ}.
 Context `{!urpcregG Σ}.
+Context `{!kvserviceG Σ}.
 
-Definition is_Clerk (ck:loc) : iProp Σ :=
+Definition is_Clerk (ck:loc) γ : iProp Σ :=
   ∃ (cl:loc),
   "#Hcl" ∷ readonly (ck ↦[Clerk :: "rpcCl"] #cl) ∗
-  "#HisCl" ∷ is_Client cl
+  "#HisCl" ∷ is_Client cl γ
 .
 
 Lemma wp_Clerk__Put (ck:loc) k v :
