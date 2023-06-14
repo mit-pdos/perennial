@@ -810,11 +810,8 @@ Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:string → i
                 (if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
                   args.(conditionalPutArgs.newVal)
                 else oldv) ={∅,⊤∖↑reqN}=∗
-                (Q (if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
-                           "ok"
-                         else
-                           ""))))
-   (* post *)  Q ∗
+                (Q (bool_decide (oldv = args.(conditionalPutArgs.expectedVal))))))
+   (* post *)  (λ r, if decide (r = "ok") then Q true else Q false) ∗
   (∀ r, (is_executed_witness γ.(erpc_gn) args.(conditionalPutArgs.opId) ∗
     is_request_receipt γ.(erpc_gn) args.(conditionalPutArgs.opId) r)
    -∗ Φ r))%I.
@@ -1144,14 +1141,15 @@ Proof.
   iDestruct (ghost_map_lookup with "Hkvs Hptsto") as %?.
   iMod (ghost_map_update with "Hkvs Hptsto") as "[Hkvs Hptsto]".
   iMod ("Hau" with "Hptsto") as "HQ".
-  iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
-  iModIntro.
   rewrite bool_decide_true.
   2:{
     rewrite -H0.
     setoid_rewrite server.gauge_proper_default_lookup; last done.
     by rewrite H1.
   }
+
+  iMod ("Hclose" $! "ok" with "HQ") as "[Herpc #Hwit]".
+  iModIntro.
   iSplitR "Hspec".
   {
     iExists _; iFrame.
@@ -1188,7 +1186,7 @@ Proof.
     by rewrite H1.
   }
   iMod ("Hau" with "Hptsto") as "HQ".
-  iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
+  iMod ("Hclose" $! "" with "HQ") as "[Herpc #Hwit]".
   iModIntro.
   iSplitR "Hspec".
   {
@@ -2093,14 +2091,15 @@ Proof.
   iModIntro. iApply "HΦ". done.
 Qed.
 
-Lemma wp_Clerk__ConditionalPut (ck:loc) k expectV newV :
-  {{{ is_Clerk ck }}}
-    Clerk__ConditionalPut #ck #(str k) #(str expectV) #(str newV)
-  {{{ (ok:bool), RET #ok; True }}}
+Lemma wp_Clerk__ConditionalPut (ck:loc) k expectV newV γ :
+  ⊢ {{{ is_Clerk ck γ }}}
+  <<< ∀∀ oldv, k ↪[γ.(kv_gn)] oldv >>>
+    Clerk__ConditionalPut #ck #(str k) #(str expectV) #(str newV) @ ↑reqN
+  <<< k ↪[γ.(kv_gn)] if bool_decide (oldv = expectV) then newV else oldv >>>
+  {{{ RET #(bool_decide (oldv = expectV)); True }}}
 .
 Proof.
-  iIntros (Φ) "#Hck HΦ".
-  wp_lam.
+  iIntros "!#" (Φ) "#Hck Hatomic". wp_lam.
   (* symbolic execution *)
   wp_apply wp_ref_of_zero.
   { done. }
@@ -2119,8 +2118,9 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  wp_apply (wp_Client__getFreshNumRpc (λ opId, True)%I with "[$HisCl]").
-  { done. } (* TUTORIAL *)
+  wp_apply (wp_Client__getFreshNumRpc (λ opId, own_unexecuted_token γ.(erpc_gn) opId )%I with "[$HisCl]").
+  { iModIntro. rewrite /getFreshNum_core_spec.
+    iIntros (?) "$". }
   iIntros (err opId) "Hpost".
   wp_pures.
   wp_store.
@@ -2142,6 +2142,9 @@ Proof.
   { done. }
   iIntros (ret_ptr) "Hret".
   wp_pures.
+
+  iMod (client_allocate_step with "[Hatomic] Hpost") as (?) "[#Hreq Htok]".
+  { shelve. }
   wp_forBreak_cond.
 
   wp_load.
@@ -2155,9 +2158,20 @@ Proof.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__conditionalPutRpc (λ _, True)%I with "[Hcl opId key expectedVal newVal]").
-  { instantiate (2:=conditionalPutArgs.mk _ _ _ _). iFrame "∗#". done. }
-  iClear "Hpost".
+  wp_apply (wp_Client__conditionalPutRpc (λ r,
+    is_executed_witness γ.(erpc_gn) opId ∗ is_request_receipt γ.(erpc_gn) opId r
+                                       )%I with "[Hcl opId key expectedVal newVal]").
+  { instantiate (1:=conditionalPutArgs.mk _ _ _ _). iFrame "∗HisCl".
+    iModIntro.
+    repeat iExists _, _. simpl. iFrame "#".
+    iIntros; done.
+  }
+  Unshelve.
+  2:{
+    instantiate (1:=(λ x, True -∗ Φ #x)%I).
+    (* FIXME: why doesn't the proof context get updated? *)
+    iFrame.
+  }
   iIntros (ret err) "Hpost".
   wp_pures.
   wp_if_destruct.
@@ -2171,19 +2185,26 @@ Proof.
   iRight.
   iModIntro.
   iSplitR; first done.
-  wp_pures.
+  wp_pure1_credit "Hlc".
   wp_load.
-  iModIntro. iApply "HΦ". done.
+  erewrite decide_True; last done.
+  iDestruct "Hpost" as "#[? ?]".
+  iMod (client_claim_step with "Hlc Hreq [$] [$] Htok") as "HΦ".
+  iModIntro.
+  destruct (decide _).
+  { subst. simpl. by iApply "HΦ". }
+  { rewrite bool_decide_false; last naive_solver. by iApply "HΦ". }
 Qed.
 
-Lemma wp_Clerk__Get (ck:loc) k :
-  {{{ is_Clerk ck }}}
-    Clerk__Get #ck #(str k)
-  {{{ v, RET #(str v); True }}}
+Lemma wp_Clerk__Get (ck:loc) γ k :
+  ⊢ {{{ is_Clerk ck γ }}}
+  <<< ∀∀ oldv, k ↪[γ.(kv_gn)] oldv >>>
+    Clerk__Get #ck #(str k) @ ↑reqN
+  <<< k ↪[γ.(kv_gn)] oldv >>>
+  {{{ RET #(str oldv); True }}}
 .
 Proof.
-  iIntros (Φ) "#Hck HΦ".
-  wp_lam.
+  iIntros "!#" (Φ) "#Hck Hatomic". wp_lam.
   (* symbolic execution *)
   wp_pures.
   wp_apply wp_ref_of_zero.
@@ -2203,8 +2224,9 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  wp_apply (wp_Client__getFreshNumRpc (λ opId, True)%I with "[$HisCl]").
-  { done. } (* TUTORIAL *)
+  wp_apply (wp_Client__getFreshNumRpc (λ opId, own_unexecuted_token γ.(erpc_gn) opId )%I with "[$HisCl]").
+  { iModIntro. rewrite /getFreshNum_core_spec.
+    iIntros (?) "$". }
   iIntros (err opId) "Hpost".
   wp_pures.
   wp_store.
@@ -2226,6 +2248,9 @@ Proof.
   { done. }
   iIntros (ret_ptr) "Hret".
   wp_pures.
+
+  iMod (client_allocate_step with "[Hatomic] Hpost") as (?) "[#Hreq Htok]".
+  { shelve. }
   wp_forBreak_cond.
 
   wp_load.
@@ -2239,9 +2264,14 @@ Proof.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__getRpc (λ _, True)%I with "[Hcl opId key]").
-  { instantiate (2:=getArgs.mk _ _). iFrame "∗#". done. }
-  iClear "Hpost".
+  wp_apply (wp_Client__getRpc (λ r,
+    is_executed_witness γ.(erpc_gn) opId ∗ is_request_receipt γ.(erpc_gn) opId r
+                            )%I with "[Hcl opId key]").
+  { instantiate (1:=getArgs.mk _ _). iFrame "∗HisCl".
+    iModIntro. repeat iExists _. iFrame "Hreq".
+    iIntros (?) "$". }
+  Unshelve.
+  3:{ iFrame. }
   iIntros (ret err) "Hpost".
   wp_pures.
   wp_if_destruct.
@@ -2255,15 +2285,18 @@ Proof.
   iRight.
   iModIntro.
   iSplitR; first done.
-  wp_pures.
+  wp_pure1_credit "Hlc".
   wp_load.
-  iModIntro. iApply "HΦ". done.
+  erewrite decide_True; last done.
+  iDestruct "Hpost" as "#[? ?]".
+  iMod (client_claim_step with "Hlc Hreq [$] [$] Htok") as "HΦ".
+  iModIntro. by iApply "HΦ".
 Qed.
 
-Lemma wp_MakeClerk (host:u64) :
-  {{{ is_kvserver_host host }}}
+Lemma wp_MakeClerk (host:u64) γ :
+  {{{ is_kvserver_host host γ }}}
     MakeClerk #host
-  {{{ ck, RET #ck; is_Clerk ck }}}
+  {{{ ck, RET #ck; is_Clerk ck γ }}}
 .
 Proof.
   iIntros (Φ) "#Hhost HΦ".
