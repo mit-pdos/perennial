@@ -852,21 +852,47 @@ Record t :=
 Global Instance etaServer : Settable _ :=
   settable! (mk) <nextFreshId; lastReplies; kvs>.
 
+Definition gauge_eq : relation (gmap string string) :=
+  λ m1 m2, ∀ k, default "" (m1 !! k) = default "" (m2 !! k).
+
+Global Instance gauge_eq_Equivalence: Equivalence (gauge_eq).
+Proof.
+  repeat constructor.
+  - intros ????k. symmetry. apply H.
+  - intros ??????k. etrans.
+    { apply H. }
+    { apply H0. }
+Qed.
+
+Global Instance gauge_proper_insert k v :
+  Proper (gauge_eq ==> gauge_eq) (insert k v).
+Proof. intros ????. destruct (decide (k = k0)).
+       - subst. do 2 rewrite lookup_insert. done.
+       - do 2 (rewrite lookup_insert_ne; last done). done.
+Qed.
+
+Global Instance gauge_proper_default_lookup (k:string) :
+  Proper (gauge_eq ==> eq) (λ m, default "" (lookup k m)).
+Proof. intros ???. apply H. Qed.
+
 Section local_defns.
 Context `{!heapGS Σ}.
 Definition own_mem (s:loc) (st:t) : iProp Σ :=
-  ∃ (lastReplies_loc kvs_loc:loc),
+  ∃ (lastReplies_loc kvs_loc:loc) (kvs_phys:gmap string string),
   "HnextFreshId" ∷ s ↦[Server :: "nextFreshId"] #st.(nextFreshId) ∗
   "HlastReplies" ∷ s ↦[Server :: "lastReplies"] #lastReplies_loc ∗
   "Hkvs" ∷ s ↦[Server :: "kvs"] #kvs_loc ∗
   "HlastRepliesM" ∷ own_map lastReplies_loc 1 st.(lastReplies) ∗
-  "HkvsM" ∷ own_map kvs_loc 1 st.(kvs)
+  "HkvsM" ∷ own_map kvs_loc 1 kvs_phys ∗
+  "%Hrel_phys" ∷ ⌜ gauge_eq kvs_phys st.(kvs) ⌝
 .
 
 Context `{!kvserviceG Σ}.
 Definition own_ghost γ (st:t) : iProp Σ :=
+  ∃ kvs_ghost,
   "Herpc" ∷ own_erpc_server γ.(erpc_gn) st.(nextFreshId) st.(lastReplies) ∗
-  "Hkvs" ∷ ghost_map_auth γ.(kv_gn) 1 st.(kvs)
+  "Hkvs" ∷ ghost_map_auth γ.(kv_gn) 1 kvs_ghost ∗
+  "%Hrel_ghost" ∷ ⌜ gauge_eq kvs_ghost st.(kvs) ⌝
 .
 
 Definition own s γ : iProp Σ :=
@@ -904,7 +930,8 @@ Proof.
   { done. }
   simpl.
   iModIntro.
-  iFrame.
+  iSplitR "Hspec Htok".
+  { repeat iExists _; iFrame "∗%". }
   iApply "Hspec".
   iFrame.
 Qed.
@@ -943,7 +970,7 @@ Proof.
     repeat iExists _.
     iFrame.
     repeat iExists _.
-    iFrame.
+    iFrame "∗%".
   }
   wp_pures.
   iApply "HΦ".
@@ -962,7 +989,8 @@ Proof.
   iIntros "Hspec". iNamed 1.
   iDestruct (server_duplicate_request_step with "Herpc") as "#Hrec".
   { done. }
-  iFrame.
+  iSplitR "Hspec".
+  { repeat iExists _; iFrame "∗%". }
   iNamed "Hspec".
   iDestruct "Hspec" as "[_ Hspec]".
   iApply "Hspec".
@@ -989,9 +1017,11 @@ Proof.
   iRight in "Hau".
   iMod (ghost_map_update with "Hkvs Hptsto") as "[Hkvs Hptsto]".
   iMod ("Hau" with "Hptsto") as "HQ".
-  iMod ("Hclose" with "HQ") as "[Herpc Hwit]".
+  iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
   iModIntro.
-  iFrame.
+  iSplitR "Hspec".
+  { repeat iExists _; iFrame. iPureIntro.
+    simpl. by f_equiv. }
   by iApply "Hspec".
 Qed.
 
@@ -1032,10 +1062,8 @@ Proof.
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
       iFrame "#∗". iNext.
-      repeat iExists _.
-      iFrame.
-      repeat iExists _.
-      iFrame.
+      repeat iExists _; iFrame "Hghost".
+      repeat iExists _; iFrame "∗%".
     }
     wp_pures.
     iApply "HΦ".
@@ -1060,10 +1088,9 @@ Proof.
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
     iFrame "#∗". iNext.
-    repeat iExists _.
-    iFrame.
-    repeat iExists _.
-    iFrame.
+    repeat iExists _; iFrame "Hghost".
+    repeat iExists _; iFrame "∗%".
+    iPureIntro. simpl. unfold typed_map.map_insert. by f_equiv.
   }
   wp_pures.
   iApply "HΦ".
@@ -1082,7 +1109,8 @@ Proof.
   iIntros "Hspec". iNamed 1.
   iDestruct (server_duplicate_request_step with "Herpc") as "#Hrec".
   { done. }
-  iFrame.
+  iSplitR "Hspec".
+  { repeat iExists _; iFrame "∗%". }
   iNamed "Hspec".
   iDestruct "Hspec" as "[_ Hspec]".
   iApply "Hspec".
@@ -1090,30 +1118,26 @@ Proof.
 Qed.
 
 Local Definition cond_put_ok st args :=
-  bool_decide ((default "" (st.(server.kvs) !! args.(conditionalPutArgs.key))) =
-               args.(conditionalPutArgs.expectedVal))
+  (st
+     <|server.lastReplies :=
+        <[args.(conditionalPutArgs.opId) := "ok"]> st.(server.lastReplies)|>
+     <|server.kvs :=
+        <[args.(conditionalPutArgs.key) := args.(conditionalPutArgs.newVal)]> st.(server.kvs)|>)
 .
 
-Local Definition cond_put st args :=
-  let oldv := default "" (st.(server.kvs) !! args.(conditionalPutArgs.key)) in
-  let newv := if (cond_put_ok st args) then
-                args.(conditionalPutArgs.newVal)
-              else
-                oldv in
-  (st <|server.lastReplies := <[args.(conditionalPutArgs.opId) :=
-              if (cond_put_ok st args) then "ok"
-              else ""
-     ]> st.(server.lastReplies)|>
-   <|server.kvs := <[args.(conditionalPutArgs.key) := newv]> st.(server.kvs)|>)
+Local Definition cond_put_not_ok st args :=
+  (st <|server.lastReplies := <[args.(conditionalPutArgs.opId) := ""]>
+                                st.(server.lastReplies)|>)
 .
 
-Lemma ghost_conditionalPut γ st Ψ args :
+Lemma ghost_conditionalPut_ok γ st Ψ args :
   st.(server.lastReplies) !! args.(conditionalPutArgs.opId) = None →
+  default "" (st.(server.kvs) !! args.(conditionalPutArgs.key)) = args.(conditionalPutArgs.expectedVal) →
   £ 1 -∗
   conditionalPut_core_spec γ args Ψ -∗
   server.own_ghost γ st ={⊤}=∗
-  server.own_ghost γ (cond_put st args) ∗
-  Ψ (if (cond_put_ok st args) then "ok" else "")
+  server.own_ghost γ (cond_put_ok st args) ∗
+  Ψ "ok"
 .
 Proof.
   intros.
@@ -1128,10 +1152,57 @@ Proof.
   iMod ("Hau" with "Hptsto") as "HQ".
   iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
   iModIntro.
-  iFrame.
-  unfold cond_put.
-  rewrite /cond_put_ok H0.
-  iFrame.
+  rewrite bool_decide_true.
+  2:{
+    rewrite -H0.
+    setoid_rewrite server.gauge_proper_default_lookup; last done.
+    by rewrite H1.
+  }
+  iSplitR "Hspec".
+  {
+    iExists _; iFrame.
+    rewrite /cond_put_ok /=.
+    iFrame.
+    iPureIntro.
+    by f_equiv.
+  }
+  iApply "Hspec".
+  iFrame "#".
+Qed.
+
+Lemma ghost_conditionalPut_not_ok γ st Ψ args :
+  st.(server.lastReplies) !! args.(conditionalPutArgs.opId) = None →
+  default "" (st.(server.kvs) !! args.(conditionalPutArgs.key)) ≠ args.(conditionalPutArgs.expectedVal) →
+  £ 1 -∗
+  conditionalPut_core_spec γ args Ψ -∗
+  server.own_ghost γ st ={⊤}=∗
+  server.own_ghost γ (cond_put_not_ok st args) ∗
+  Ψ ""
+.
+Proof.
+  intros.
+  iIntros "Hlc Hspec". iNamed 1.
+  iDestruct "Hspec" as (??) "[#Hinv Hspec]".
+  iMod (server_execute_step with "Hlc Hinv Herpc") as "[Hau Hclose]".
+  { done. }
+  iMod "Hau" as (?) "[Hptsto Hau]".
+  iRight in "Hau".
+  iDestruct (ghost_map_lookup with "Hkvs Hptsto") as %?.
+  rewrite bool_decide_false.
+  2:{
+    intros Heq. apply H0.
+    subst. setoid_rewrite <- (server.gauge_proper_default_lookup _ _ _ Hrel_ghost).
+    by rewrite H1.
+  }
+  iMod ("Hau" with "Hptsto") as "HQ".
+  iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
+  iModIntro.
+  iSplitR "Hspec".
+  {
+    iExists _; iFrame.
+    rewrite /cond_put_ok /=.
+    iFrame "∗%" .
+  }
   iApply "Hspec".
   iFrame "#".
 Qed.
@@ -1171,7 +1242,7 @@ Proof.
     {
       iFrame "#∗". iNext.
       repeat iExists _; iFrame "Hghost".
-      repeat iExists _; iFrame.
+      repeat iExists _; iFrame "∗%".
     }
     wp_pures.
     iApply "HΦ".
@@ -1210,19 +1281,21 @@ Proof.
     wp_pure1_credit "Hlc".
     wp_loadField.
 
-    iMod (ghost_conditionalPut with "Hlc Hspec Hghost") as "[Hghost Hspec]".
+    iMod (ghost_conditionalPut_ok with "Hlc Hspec Hghost") as "[Hghost Hspec]".
     { apply map_get_false in HlastReply as [? _]. done. }
+    { apply (f_equal fst) in Hlookup. rewrite /map_get /= in Hlookup.
+      rewrite -Hlookup.
+      by apply server.gauge_proper_default_lookup. }
     (* simplify by unfolding some of the cond_put stuff *)
-    rewrite /cond_put /cond_put_ok.
-    apply (f_equal fst) in Hlookup.
-    rewrite /map_get /= in Hlookup.
-    rewrite Hlookup /= bool_decide_true; last done.
 
     wp_apply (release_spec with "[-HΦ Hspec Hret]").
     {
       iFrame "#∗". iNext.
       repeat iExists _; iFrame "Hghost".
-      repeat iExists _; iFrame.
+      repeat iExists _; iFrame "∗%".
+      iPureIntro.
+      rewrite /cond_put_ok /=.
+      by f_equiv.
     }
     wp_pures.
     wp_load.
@@ -1241,27 +1314,21 @@ Proof.
   wp_pure1_credit "Hlc".
   wp_loadField.
 
-  iMod (ghost_conditionalPut with "Hlc Hspec Hghost") as "[Hghost Hspec]".
+  iMod (ghost_conditionalPut_not_ok with "Hlc Hspec Hghost") as "[Hghost Hspec]".
   { apply map_get_false in HlastReply as [? _]. done. }
+  { intros Heq.
+    apply (f_equal fst) in Hlookup.
+    rewrite /map_get /= in Hlookup.
+    subst. apply Heqb0.
+    repeat f_equal. rewrite -Heq.
+    by apply server.gauge_proper_default_lookup. }
   (* simplify by unfolding some of the cond_put stuff *)
-  rewrite /cond_put /cond_put_ok.
-  apply (f_equal fst) in Hlookup.
-  rewrite /map_get /= in Hlookup.
-  rewrite Hlookup /= bool_decide_false.
-  2:{ subst. destruct args. naive_solver. }
-  subst.
 
   wp_apply (release_spec with "[-HΦ Hspec Hret]").
   {
     iFrame "#∗". iNext.
     repeat iExists _; iFrame "Hghost".
-    repeat iExists _; iFrame.
-    simpl.
-    destruct (st.(server.kvs) !! _) eqn:?.
-    { rewrite /= insert_id; last done. iFrame. }
-    { simpl.
-      (* FIXME: *)
-      Don't want to insert into ghost_map in the case that conditionalPut fails.
+    repeat iExists _; iFrame "∗%".
   }
   wp_pures.
   wp_load.
@@ -1290,7 +1357,7 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hown]".
-  iNamed "Hown".
+  repeat iNamed "Hown".
   wp_pures.
   iNamed "Hargs".
   wp_loadField.
