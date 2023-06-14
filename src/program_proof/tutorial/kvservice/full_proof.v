@@ -4,6 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof monotonic_pr
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof Require Import std_proof.
 From iris.base_logic.lib Require Import ghost_map.
+From iris.bi.lib Require Import atomic.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
@@ -597,6 +598,7 @@ Definition own_erpc_server γ (nextFreshId:u64) (lastReplies:gmap u64 string) : 
   ∃ (usedIds:gset u64),
   "Htoks" ∷ ghost_map_auth γ.(req_gn) 1 (gset_to_gmap () usedIds) ∗
   "Hreplies" ∷ ghost_map_auth γ.(reply_gn) 1 lastReplies ∗
+  "#Hwits" ∷ ([∗ map] opId ↦ r ∈ lastReplies, is_executed_witness γ opId ∗ is_request_receipt γ opId r) ∗
   "%Htoks" ∷ ⌜ set_Forall (λ id, int.nat id < int.nat nextFreshId) usedIds ⌝
 .
 
@@ -608,7 +610,9 @@ Proof.
   iModIntro.
   iExists {| req_gn := _ ; reply_gn := _ |}.
   iExists ∅.
-  iFrame.
+  iFrame "∗#".
+  iSplit.
+  { by iApply big_sepM_empty. }
   iPureIntro.
   apply set_Forall_empty.
 Qed.
@@ -630,7 +634,7 @@ Proof.
     word.
   }
   rewrite -gset_to_gmap_union_singleton.
-  repeat iExists _; iFrame "∗".
+  repeat iExists _; iFrame "∗#".
   iPureIntro.
   apply set_Forall_union.
   {
@@ -663,6 +667,17 @@ Proof.
   iFrame.
 Qed.
 
+Lemma server_duplicate_request_step opId r γ (lastReplies:gmap u64 string) nextFreshId:
+  lastReplies !! opId = Some r →
+  own_erpc_server γ nextFreshId lastReplies -∗
+  is_executed_witness γ opId ∗
+  is_request_receipt γ opId r.
+Proof.
+  intros Hlookup.
+  iNamed 1.
+  by iDestruct (big_sepM_lookup_acc with "Hwits") as "[$ HH]".
+Qed.
+
 Lemma server_execute_step opId γ γcl pre post (lastReplies:gmap u64 string) nextFreshId:
   lastReplies !! opId = None →
   £ 1 -∗
@@ -671,6 +686,7 @@ Lemma server_execute_step opId γ γcl pre post (lastReplies:gmap u64 string) ne
   pre ∗
   (∀ r, post r ={⊤∖↑reqN,⊤}=∗
         own_erpc_server γ nextFreshId (<[opId := r]> lastReplies) ∗
+        is_executed_witness γ opId ∗
         is_request_receipt γ opId r)
 .
 Proof.
@@ -704,7 +720,9 @@ Proof.
   iModIntro.
   iFrame "∗#".
   repeat iExists _.
-  iFrame "∗%".
+  iFrame "∗#%".
+  rewrite big_sepM_insert; last done.
+  iFrame "#".
 Qed.
 
 Lemma client_claim_step opId γ γcl pre post ret:
@@ -780,7 +798,6 @@ Definition put_core_spec_manual (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO
          (* post *)  (λ _, Q) ∗
   (is_request_receipt γ.(erpc_gn) args.(putArgs.opId) "" -∗ Φ ()))%I.
 
-From iris.bi.lib Require Import atomic.
 Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ :=
   (∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(putArgs.opId)
          (* pre *)   (AU << ∃∃ oldv, args.(putArgs.key) ↪[γ.(kv_gn)] oldv >>
@@ -788,15 +805,29 @@ Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ :=
                          << args.(putArgs.key) ↪[γ.(kv_gn)] args.(putArgs.val), COMM Q >>
                                                                                )
          (* post *)  (λ _, Q) ∗
-  (is_request_receipt γ.(erpc_gn) args.(putArgs.opId) "" -∗ Φ ()))%I.
+  (∀ r, (is_executed_witness γ.(erpc_gn) args.(putArgs.opId) ∗
+    is_request_receipt γ.(erpc_gn) args.(putArgs.opId) r)
+   -∗ Φ ()))%I.
 
 Global Instance put_core_MonotonicPred args : MonotonicPred (put_core_spec args).
 Proof. apply _. Qed.
 
 Definition conditionalPut_core_spec (args:conditionalPutArgs.t) (Φ:string → iPropO Σ): iPropO Σ :=
-  (* TUTORIAL: write a more useful spec *)
-  (∀ status, Φ status)%I.
-
+  (∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(conditionalPutArgs.opId)
+   (* pre *) (AU << ∃∃ oldv, args.(conditionalPutArgs.key) ↪[γ.(kv_gn)] oldv >>
+                  @ ⊤∖↑reqN, ∅
+                << args.(conditionalPutArgs.key) ↪[γ.(kv_gn)]
+                if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
+                  args.(conditionalPutArgs.newVal)
+                else oldv,
+                COMM (Q (if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
+                           "ok"
+                         else
+                           ""))>>)
+   (* post *)  Q ∗
+  (∀ r, (is_executed_witness γ.(erpc_gn) args.(conditionalPutArgs.opId) ∗
+    is_request_receipt γ.(erpc_gn) args.(conditionalPutArgs.opId) r)
+   -∗ Φ r))%I.
 
 Global Instance conditionalPut_core_MonotonicPred args : MonotonicPred (conditionalPut_core_spec args).
 Proof. apply _. Qed.
@@ -860,13 +891,23 @@ Definition is_Server (s:loc) γ : iProp Σ :=
 Lemma ghost_getFreshNum γ st Ψ :
   int.nat (word.add st.(server.nextFreshId) 1) = int.nat st.(server.nextFreshId) + 1 →
   getFreshNum_core_spec γ Ψ -∗
-  server.own_ghost γ st -∗
+  server.own_ghost γ st ==∗
   server.own_ghost γ (st <|(server.nextFreshId) := word.add st.(server.nextFreshId) 1|>) ∗
   Ψ st.(server.nextFreshId)
 .
 Proof.
   intros Hoverflow.
-Admitted.
+  iIntros "Hspec".
+  iNamed 1.
+  iFrame.
+  iMod (server_fresh_id_step with "Herpc") as "[Herpc Htok]".
+  { done. }
+  simpl.
+  iModIntro.
+  iFrame.
+  iApply "Hspec".
+  iFrame.
+Qed.
 
 Lemma wp_Server__getFreshNum (s:loc) γ Ψ :
   {{{
@@ -894,7 +935,7 @@ Proof.
   iIntros (Hoverflow).
   wp_storeField.
   wp_loadField.
-  iDestruct (ghost_getFreshNum with "Hspec Hghost") as "[Hghost Hspec]".
+  iMod (ghost_getFreshNum with "Hspec Hghost") as "[Hghost Hspec]".
   { word. }
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
@@ -909,10 +950,55 @@ Proof.
   iApply "Hspec".
 Qed.
 
-Lemma wp_Server__put (s:loc) args_ptr (args:putArgs.t) Ψ :
+Lemma ghost_put_dup γ st r Ψ args :
+  st.(server.lastReplies) !! args.(putArgs.opId) = Some r →
+  put_core_spec γ args Ψ -∗
+  server.own_ghost γ st -∗
+  server.own_ghost γ st ∗
+  Ψ ()
+.
+Proof.
+  intros.
+  iIntros "Hspec". iNamed 1.
+  iDestruct (server_duplicate_request_step with "Herpc") as "#Hrec".
+  { done. }
+  iFrame.
+  iNamed "Hspec".
+  iDestruct "Hspec" as "[_ Hspec]".
+  iApply "Hspec".
+  iFrame "#".
+Qed.
+
+Lemma ghost_put γ st Ψ args :
+  st.(server.lastReplies) !! args.(putArgs.opId) = None →
+  £ 1 -∗
+  put_core_spec γ args Ψ -∗
+  server.own_ghost γ st ={⊤}=∗
+  server.own_ghost γ
+        (st <|server.lastReplies := <[args.(putArgs.opId) := ""]> st.(server.lastReplies)|>
+            <|server.kvs := <[args.(putArgs.key) := args.(putArgs.val)]> st.(server.kvs)|>) ∗
+  Ψ ()
+.
+Proof.
+  intros.
+  iIntros "Hlc Hspec". iNamed 1.
+  iDestruct "Hspec" as (??) "[#Hinv Hspec]".
+  iMod (server_execute_step with "Hlc Hinv Herpc") as "[Hau Hclose]".
+  { done. }
+  iMod "Hau" as (?) "[Hptsto Hau]".
+  iRight in "Hau".
+  iMod (ghost_map_update with "Hkvs Hptsto") as "[Hkvs Hptsto]".
+  iMod ("Hau" with "Hptsto") as "HQ".
+  iMod ("Hclose" with "HQ") as "[Herpc Hwit]".
+  iModIntro.
+  iFrame.
+  by iApply "Hspec".
+Qed.
+
+Lemma wp_Server__put (s:loc) γ args_ptr (args:putArgs.t) Ψ :
   {{{
-        "#Hsrv" ∷ is_Server s ∗
-        "Hspec" ∷ put_core_spec args Ψ ∗
+        "#Hsrv" ∷ is_Server s γ ∗
+        "Hspec" ∷ put_core_spec γ args Ψ ∗
         "Hargs" ∷ putArgs.own args_ptr args
   }}}
   Server__put #s #args_ptr
@@ -929,7 +1015,7 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hown]".
-  iNamed "Hown".
+  repeat iNamed "Hown".
   wp_pures.
   iNamed "Hargs".
   wp_loadField.
@@ -940,9 +1026,14 @@ Proof.
   wp_if_destruct.
   { (* case: this is a duplicate request *)
     wp_loadField.
+    apply map_get_true in HlastReply.
+    iDestruct (ghost_put_dup with "Hspec Hghost") as "[Hghost Hspec]".
+    { done. }
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
       iFrame "#∗". iNext.
+      repeat iExists _.
+      iFrame.
       repeat iExists _.
       iFrame.
     }
@@ -962,11 +1053,15 @@ Proof.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
   iIntros "HlastRepliesM".
-  wp_pures.
+  wp_pure1_credit "Hlc".
   wp_loadField.
+  iMod (ghost_put with "Hlc Hspec Hghost") as "[Hghost Hspec]".
+  { apply map_get_false in HlastReply as [? _]. done. }
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
     iFrame "#∗". iNext.
+    repeat iExists _.
+    iFrame.
     repeat iExists _.
     iFrame.
   }
@@ -975,10 +1070,76 @@ Proof.
   iApply "Hspec".
 Qed.
 
-Lemma wp_Server__conditionalPut (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ :
+Lemma ghost_conditionalPut_dup γ st r Ψ args :
+  st.(server.lastReplies) !! args.(conditionalPutArgs.opId) = Some r →
+  conditionalPut_core_spec γ args Ψ -∗
+  server.own_ghost γ st -∗
+  server.own_ghost γ st ∗
+  Ψ r
+.
+Proof.
+  intros.
+  iIntros "Hspec". iNamed 1.
+  iDestruct (server_duplicate_request_step with "Herpc") as "#Hrec".
+  { done. }
+  iFrame.
+  iNamed "Hspec".
+  iDestruct "Hspec" as "[_ Hspec]".
+  iApply "Hspec".
+  iFrame "#".
+Qed.
+
+Local Definition cond_put_ok st args :=
+  bool_decide ((default "" (st.(server.kvs) !! args.(conditionalPutArgs.key))) =
+               args.(conditionalPutArgs.expectedVal))
+.
+
+Local Definition cond_put st args :=
+  let oldv := default "" (st.(server.kvs) !! args.(conditionalPutArgs.key)) in
+  let newv := if (cond_put_ok st args) then
+                args.(conditionalPutArgs.newVal)
+              else
+                oldv in
+  (st <|server.lastReplies := <[args.(conditionalPutArgs.opId) :=
+              if (cond_put_ok st args) then "ok"
+              else ""
+     ]> st.(server.lastReplies)|>
+   <|server.kvs := <[args.(conditionalPutArgs.key) := newv]> st.(server.kvs)|>)
+.
+
+Lemma ghost_conditionalPut γ st Ψ args :
+  st.(server.lastReplies) !! args.(conditionalPutArgs.opId) = None →
+  £ 1 -∗
+  conditionalPut_core_spec γ args Ψ -∗
+  server.own_ghost γ st ={⊤}=∗
+  server.own_ghost γ (cond_put st args) ∗
+  Ψ (if (cond_put_ok st args) then "ok" else "")
+.
+Proof.
+  intros.
+  iIntros "Hlc Hspec". iNamed 1.
+  iDestruct "Hspec" as (??) "[#Hinv Hspec]".
+  iMod (server_execute_step with "Hlc Hinv Herpc") as "[Hau Hclose]".
+  { done. }
+  iMod "Hau" as (?) "[Hptsto Hau]".
+  iRight in "Hau".
+  iDestruct (ghost_map_lookup with "Hkvs Hptsto") as %?.
+  iMod (ghost_map_update with "Hkvs Hptsto") as "[Hkvs Hptsto]".
+  iMod ("Hau" with "Hptsto") as "HQ".
+  iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
+  iModIntro.
+  iFrame.
+  unfold cond_put.
+  rewrite /cond_put_ok H0.
+  iFrame.
+  iApply "Hspec".
+  iFrame "#".
+Qed.
+
+Lemma wp_Server__conditionalPut γ (s:loc) args_ptr (args:conditionalPutArgs.t) Ψ :
   {{{
-        "#Hsrv" ∷ is_Server s ∗
-        "Hspec" ∷ conditionalPut_core_spec args Ψ ∗
+        "#Hsrv" ∷ is_Server s γ ∗
+        "Hspec" ∷ conditionalPut_core_spec γ args Ψ ∗
         "Hargs" ∷ conditionalPutArgs.own args_ptr args
   }}}
     Server__conditionalPut #s #args_ptr
@@ -993,7 +1154,7 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Hown]".
-  iNamed "Hown".
+  repeat iNamed "Hown".
   wp_pures.
   iNamed "Hargs".
   wp_loadField.
@@ -1004,11 +1165,13 @@ Proof.
   wp_if_destruct.
   { (* case: this is a duplicate request *)
     wp_loadField.
+    iDestruct (ghost_conditionalPut_dup with "Hspec Hghost") as "[Hghost Hspec]".
+    { by apply map_get_true in HlastReply. }
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
       iFrame "#∗". iNext.
-      repeat iExists _.
-      iFrame.
+      repeat iExists _; iFrame "Hghost".
+      repeat iExists _; iFrame.
     }
     wp_pures.
     iApply "HΦ".
@@ -1021,7 +1184,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_apply (wp_MapGet with "HkvsM").
-  iIntros (??) "[Hlookup HkvsM]".
+  iIntros (??) "[%Hlookup HkvsM]".
   wp_pures.
   wp_loadField.
   wp_pures.
@@ -1044,13 +1207,22 @@ Proof.
     wp_apply (wp_MapInsert with "HlastRepliesM").
     { done. }
     iIntros "HlastRepliesM".
-    wp_pures.
+    wp_pure1_credit "Hlc".
     wp_loadField.
+
+    iMod (ghost_conditionalPut with "Hlc Hspec Hghost") as "[Hghost Hspec]".
+    { apply map_get_false in HlastReply as [? _]. done. }
+    (* simplify by unfolding some of the cond_put stuff *)
+    rewrite /cond_put /cond_put_ok.
+    apply (f_equal fst) in Hlookup.
+    rewrite /map_get /= in Hlookup.
+    rewrite Hlookup /= bool_decide_true; last done.
+
     wp_apply (release_spec with "[-HΦ Hspec Hret]").
     {
       iFrame "#∗". iNext.
-      repeat iExists _.
-      iFrame.
+      repeat iExists _; iFrame "Hghost".
+      repeat iExists _; iFrame.
     }
     wp_pures.
     wp_load.
@@ -1066,13 +1238,30 @@ Proof.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
   iIntros "HlastRepliesM".
-  wp_pures.
+  wp_pure1_credit "Hlc".
   wp_loadField.
+
+  iMod (ghost_conditionalPut with "Hlc Hspec Hghost") as "[Hghost Hspec]".
+  { apply map_get_false in HlastReply as [? _]. done. }
+  (* simplify by unfolding some of the cond_put stuff *)
+  rewrite /cond_put /cond_put_ok.
+  apply (f_equal fst) in Hlookup.
+  rewrite /map_get /= in Hlookup.
+  rewrite Hlookup /= bool_decide_false.
+  2:{ subst. destruct args. naive_solver. }
+  subst.
+
   wp_apply (release_spec with "[-HΦ Hspec Hret]").
   {
     iFrame "#∗". iNext.
-    repeat iExists _.
-    iFrame.
+    repeat iExists _; iFrame "Hghost".
+    repeat iExists _; iFrame.
+    simpl.
+    destruct (st.(server.kvs) !! _) eqn:?.
+    { rewrite /= insert_id; last done. iFrame. }
+    { simpl.
+      (* FIXME: *)
+      Don't want to insert into ghost_map in the case that conditionalPut fails.
   }
   wp_pures.
   wp_load.
@@ -1081,9 +1270,9 @@ Proof.
   iApply "Hspec".
 Qed.
 
-Lemma wp_Server__get (s:loc) args_ptr (args:getArgs.t) Ψ :
+Lemma wp_Server__get (s:loc) γ args_ptr (args:getArgs.t) Ψ :
   {{{
-        "#Hsrv" ∷ is_Server s ∗
+        "#Hsrv" ∷ is_Server s γ ∗
         "Hspec" ∷ get_core_spec args Ψ ∗
         "Hargs" ∷ getArgs.own args_ptr args
   }}}
@@ -1151,7 +1340,7 @@ Lemma wp_MakeServer :
   }}}
     MakeServer #()
   {{{
-        (s:loc), RET #s; is_Server s
+        (s:loc) γ, RET #s; is_Server s γ
   }}}
 .
 Proof.
