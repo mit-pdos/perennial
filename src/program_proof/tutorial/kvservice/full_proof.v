@@ -833,8 +833,15 @@ Global Instance conditionalPut_core_MonotonicPred args : MonotonicPred (conditio
 Proof. apply _. Qed.
 
 Definition get_core_spec (args:getArgs.t) (Φ:string → iPropO Σ): iPropO Σ :=
-  (* TUTORIAL: write a more useful spec *)
-  (∀ ret, Φ ret)%I.
+  (∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(getArgs.opId)
+   (* pre *) (AU << ∃∃ v, args.(getArgs.key) ↪[γ.(kv_gn)] v >>
+                  @ ⊤∖↑reqN, ∅
+                << args.(getArgs.key) ↪[γ.(kv_gn)] v,
+                COMM (Q v) >>)
+   (* post *)  Q ∗
+  (∀ r, (is_executed_witness γ.(erpc_gn) args.(getArgs.opId) ∗
+    is_request_receipt γ.(erpc_gn) args.(getArgs.opId) r)
+   -∗ Φ r))%I.
 
 Definition get_core_MonotonicPred args : MonotonicPred (get_core_spec args).
 Proof. apply _. Qed.
@@ -1337,10 +1344,61 @@ Proof.
   iApply "Hspec".
 Qed.
 
+Lemma ghost_get_dup γ st r Ψ args :
+  st.(server.lastReplies) !! args.(getArgs.opId) = Some r →
+  get_core_spec γ args Ψ -∗
+  server.own_ghost γ st -∗
+  server.own_ghost γ st ∗
+  Ψ r
+.
+Proof.
+  intros.
+  iIntros "Hspec". iNamed 1.
+  iDestruct (server_duplicate_request_step with "Herpc") as "#Hrec".
+  { done. }
+  iSplitR "Hspec".
+  { repeat iExists _; iFrame "∗%". }
+  iNamed "Hspec".
+  iDestruct "Hspec" as "[_ Hspec]".
+  iApply "Hspec".
+  iFrame "#".
+Qed.
+
+Lemma ghost_get γ st Ψ args :
+  st.(server.lastReplies) !! args.(getArgs.opId) = None →
+  £ 1 -∗
+  get_core_spec γ args Ψ -∗
+  server.own_ghost γ st ={⊤}=∗
+  server.own_ghost γ
+        (st <|server.lastReplies :=
+        <[args.(getArgs.opId) := (default "" (st.(server.kvs) !! args.(getArgs.key)))]>
+          st.(server.lastReplies)|>) ∗
+
+  Ψ (default "" (st.(server.kvs) !! args.(getArgs.key)))
+.
+Proof.
+  intros.
+  iIntros "Hlc Hspec". iNamed 1.
+  iDestruct "Hspec" as (??) "[#Hinv Hspec]".
+  iMod (server_execute_step with "Hlc Hinv Herpc") as "[Hau Hclose]".
+  { done. }
+  iMod "Hau" as (?) "[Hptsto Hau]".
+  iRight in "Hau".
+  iDestruct (ghost_map_lookup with "Hkvs Hptsto") as %Hlookup.
+  iMod ("Hau" with "Hptsto") as "HQ".
+  iMod ("Hclose" with "HQ") as "[Herpc #Hwit]".
+  iModIntro.
+  erewrite <- (server.gauge_proper_default_lookup _ _ st.(server.kvs) Hrel_ghost).
+  rewrite Hlookup /=.
+  iSplitR "Hspec".
+  { repeat iExists _; iFrame "∗%". }
+  by iApply "Hspec".
+Qed.
+
 Lemma wp_Server__get (s:loc) γ args_ptr (args:getArgs.t) Ψ :
   {{{
         "#Hsrv" ∷ is_Server s γ ∗
-        "Hspec" ∷ get_core_spec args Ψ ∗
+        "Hspec" ∷ get_core_spec γ args Ψ ∗
         "Hargs" ∷ getArgs.own args_ptr args
   }}}
     Server__get #s #args_ptr
@@ -1368,11 +1426,13 @@ Proof.
   wp_if_destruct.
   { (* case: this is a duplicate request *)
     wp_loadField.
+    iDestruct (ghost_get_dup with "Hspec Hghost") as "[Hghost Hspec]".
+    { by apply map_get_true in HlastReply. }
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
       iFrame "#∗". iNext.
-      repeat iExists _.
-      iFrame.
+      repeat iExists _; iFrame "Hghost".
+      repeat iExists _; iFrame "∗%".
     }
     wp_pures.
     iApply "HΦ".
@@ -1381,20 +1441,27 @@ Proof.
   wp_loadField.
   wp_loadField.
   wp_apply (wp_MapGet with "HkvsM").
-  iIntros (?? )"[Hlookup HkvsM]".
+  iIntros (?? )"[%Hlookup HkvsM]".
   wp_pures.
   wp_loadField.
   wp_loadField.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
   iIntros "HlastRepliesM".
-  wp_pures.
+  wp_pure1_credit "Hlc".
   wp_loadField.
+  iMod (ghost_get with "Hlc Hspec Hghost") as "[Hghost Hspec]".
+  { apply map_get_false in HlastReply as [? _]. done. }
+  apply (f_equal fst) in Hlookup.
+  simpl in *.
+  subst.
+  (* FIXME: better map_get *)
+  erewrite <- (server.gauge_proper_default_lookup _ _ st.(server.kvs) Hrel_phys).
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
     iFrame "#∗". iNext.
-    repeat iExists _.
-    iFrame.
+    repeat iExists _; iFrame "Hghost".
+    repeat iExists _; iFrame "∗%".
   }
   wp_pures.
   iApply "HΦ".
