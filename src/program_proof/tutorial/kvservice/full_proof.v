@@ -1451,29 +1451,35 @@ Proof.
   iApply "Hspec".
 Qed.
 
-Lemma ghost_make :
-  ⊢ |==> ∃ γ, server.own_ghost γ (server.mk 0 ∅ ∅)
+Lemma ghost_make γkv kvs :
+  server.gauge_eq kvs ∅ →
+  ghost_map_auth γkv 1 kvs ==∗
+  ∃ γrpc, server.own_ghost {| erpc_gn := γrpc ; kv_gn := γkv |} (server.mk 0 ∅ ∅)
 .
 Proof.
+  intros.
+  iIntros "Hkvs".
   iMod alloc_erpc_server as (γerpc) "Herpc".
-  iMod (ghost_map_alloc ∅) as (γkv) "[Hkvs Hptstos]".
-  iModIntro. iExists {| erpc_gn := _ ; kv_gn := _ |}.
-  iExists _; iFrame.
+  iModIntro.
+  repeat iExists _; iFrame.
   iPureIntro.
-  reflexivity.
+  done.
 Qed.
 
-Lemma wp_MakeServer :
+(* Technically, the points-tos will have to be allocated a level above this. *)
+Lemma wp_MakeServer γkv kvs :
   {{{
-        True
+        "%Hkvs_empty" ∷ ⌜ server.gauge_eq kvs ∅ ⌝ ∗
+        "Hauth" ∷ ghost_map_auth γkv 1 kvs
   }}}
     MakeServer #()
   {{{
-        (s:loc) γ, RET #s; is_Server s γ
+        (s:loc) γrpc, RET #s; is_Server s {| erpc_gn := γrpc ; kv_gn := γkv|}
   }}}
 .
 Proof.
   iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
   wp_lam.
   wp_apply wp_allocStruct.
   { repeat econstructor. }
@@ -1490,7 +1496,8 @@ Proof.
   wp_apply (wp_NewMap u64).
   iIntros (lastReplies_loc) "HlastRepliesM".
   wp_storeField.
-  iMod (ghost_make) as (γ) "Hghost".
+  iMod (ghost_make with "Hauth") as (?) "Hghost".
+  { done. }
   iApply "HΦ".
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
   iExists _; iFrame "#".
