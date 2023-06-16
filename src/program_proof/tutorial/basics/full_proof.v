@@ -62,7 +62,7 @@ Lemma wp_registerLocked (t : loc) γ (m : gmap u64 u64) (k : u64) (v : u64) :
     Tracker__registerLocked #t #k #v
   {{{ (b : bool), RET #b;
       if b then
-        tracker_state t γ (<[k := v]> m)
+        tracker_state t γ (<[k := v]> m) ∗ k ↪[γ] v
       else
         tracker_state t γ m }}}.
 Proof.
@@ -91,6 +91,7 @@ Proof.
     iMod (ghost_map_insert with "Ht_g") as "[Ht_g Hptsto]".
     { done. }
     iModIntro.
+    iFrame.
     iExists _.
     iFrame.
   }
@@ -130,7 +131,7 @@ Proof.
 Qed.
 
 Lemma wp_Register (t : loc) γ (k : u64) (v : u64) :
-  {{{ is_tracker t }}}
+  {{{ is_tracker t γ }}}
     Tracker__Register #t #k #v
   {{{ (b : bool), RET #b; True }}}.
 Proof.
