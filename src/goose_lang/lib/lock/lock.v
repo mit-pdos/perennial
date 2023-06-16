@@ -111,17 +111,6 @@ Section proof.
   Qed.
 
   Lemma newlock_spec E (R : iProp Σ):
-    {{{ ▷ R }}} lock.new #() @ E {{{ lk, RET lk; is_lock lk R }}}.
-  Proof.
-    iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
-    wp_lam. wp_apply wp_alloc_untyped; first by auto.
-    iIntros (l) "Hl".
-    iMod (alloc_lock with "[$] HR") as "Hlock".
-    iModIntro.
-    iApply "HΦ". iFrame.
-  Qed.
-
-  Lemma newlock_spec2 E (R : iProp Σ):
     {{{ ▷ R }}} lock.new #() @ E {{{ (lk:loc), RET #lk; is_lock #lk R }}}.
   Proof.
     iIntros (Φ) "HR HΦ". rewrite -wp_fupd /lock.new /=.
