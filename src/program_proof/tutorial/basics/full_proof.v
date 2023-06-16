@@ -57,6 +57,36 @@ Proof.
   }
 Qed.
 
+Lemma wp_lookupLocked_success (t : loc) γ (m : gmap u64 u64) (k v : u64) :
+  {{{ tracker_state t γ m ∗ k ↪[γ] v }}}
+    Tracker__lookupLocked #t #k
+  {{{ RET (#v, #true); tracker_state t γ m ∗ k ↪[γ] v }}}
+.
+Proof.
+  iIntros (Φ) "[Ht Hptsto] HΦ".
+  iNamed "Ht".
+  wp_call.
+  wp_loadField.
+
+  Search impl.MapGet.
+
+  wp_apply (wp_MapGet with "Ht_m").
+  iIntros (v' ok) "[%Hok Ht_m]".
+  wp_pures.
+  iModIntro.
+
+  iDestruct (ghost_map_lookup with "Ht_g Hptsto") as %Hlookup.
+  unfold map_get in Hok.
+  rewrite Hlookup in Hok.
+  simpl in Hok.
+  injection Hok as ? ?.
+  subst.
+
+  iApply "HΦ".
+  iFrame.
+  iExists _; iFrame.
+Qed.
+
 Lemma wp_registerLocked (t : loc) γ (m : gmap u64 u64) (k : u64) (v : u64) :
   {{{ tracker_state t γ m }}}
     Tracker__registerLocked #t #k #v
@@ -130,10 +160,44 @@ Proof.
   done.
 Qed.
 
+Lemma wp_Lookup_success (t : loc) γ (k v : u64) :
+  {{{ is_tracker t γ ∗ k ↪[γ] v }}}
+    Tracker__Lookup #t #k
+  {{{ RET (#v, #true); k ↪[γ] v }}}.
+Proof.
+  iIntros (Φ) "[Ht Hptsto] HΦ".
+  iNamed "Ht".
+  wp_call.
+  wp_loadField.
+
+  Search lock.acquire.
+
+  wp_apply (acquire_spec with "[]").
+  { iApply "Ht_lock". }
+  iIntros "[Hlocked Ht]".
+  iNamed "Ht".
+  wp_apply (wp_lookupLocked_success with "[Ht_state Hptsto]").
+  { iFrame. }
+  iIntros "[Ht_state Hptsto]".
+
+  wp_pures.
+  wp_loadField.
+
+  Search lock.release.
+
+  wp_apply (release_spec with "[Hlocked Ht_state]").
+  { iFrame "Ht_lock". iFrame "Hlocked".
+    iExists _. iFrame. }
+  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  done.
+Qed.
+
 Lemma wp_Register (t : loc) γ (k : u64) (v : u64) :
   {{{ is_tracker t γ }}}
     Tracker__Register #t #k #v
-  {{{ (b : bool), RET #b; True }}}.
+  {{{ (b : bool), RET #b; if b then k ↪[γ] v else True }}}.
 Proof.
   iIntros (Φ) "Ht HΦ".
   iNamed "Ht".
@@ -149,12 +213,14 @@ Proof.
   wp_loadField.
   destruct b.
   {
-    wp_apply (release_spec with "[Hlocked Hb]").
+    iDestruct "Hb" as "[Ht_state Hptsto]".
+    wp_apply (release_spec with "[Hlocked Ht_state]").
     { iFrame "Ht_lock". iFrame "Hlocked". iModIntro.
       iExists _. iFrame. }
     wp_pures.
+    iModIntro.
     iApply "HΦ".
-    done.
+    iFrame.
   }
   {
     wp_apply (release_spec with "[Hlocked Hb]").
