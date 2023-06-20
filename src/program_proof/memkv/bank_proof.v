@@ -27,10 +27,74 @@ Definition bal_total : u64 := 1000.
 
 Context (init_flag: u64) (acc1:u64) (acc2:u64). (* Account names for bank *)
 
-Definition bank_inv γ : iProp Σ :=
-  ∃ (bal1 bal2:u64),
-  "HlogBalCtx" ∷ map_ctx (log_gn γ) 1 ({[ acc1:=bal1 ]} ∪ {[ acc2:=bal2 ]}) ∗
-  "%" ∷ ⌜(word.add bal1 bal2 = bal_total)%Z⌝
+Definition map_total (m : gmap u64 u64) : u64 :=
+  map_fold (λ k v tot, word.add tot v) 0 m.
+
+Add Ring u64ring : (word.ring_theory (word := u64_instance.u64)).
+
+Lemma map_total_insert m k v :
+  m !! k = None ->
+  map_total (<[k := v]> m) = word.add (map_total m) v.
+Proof.
+  intro Hnone.
+  rewrite /map_total map_fold_insert_L; eauto.
+  intros; ring.
+Qed.
+
+Lemma map_total_insert_2 m k v :
+  m !! k = Some v ->
+  map_total m = word.add (map_total (delete k m)) v.
+Proof.
+  intro Hsome.
+  erewrite <- (map_total_insert _ k).
+  2: rewrite lookup_delete //.
+  rewrite insert_delete //.
+Qed.
+
+Lemma map_total_empty :
+  map_total ∅ = 0.
+Proof.
+  reflexivity.
+Qed.
+
+Lemma map_total_dom_empty m :
+  dom m = ∅ ->
+  map_total m = 0.
+Proof.
+  intros Hd.
+  apply dom_empty_inv_L in Hd; subst.
+  reflexivity.
+Qed.
+
+Lemma map_total_update : ∀ m k v v',
+  m !! k = Some v ->
+  map_total (<[k := v']> m) = word.add (word.sub (map_total m) v) v'.
+Proof.
+  induction m using map_ind.
+  - intros k v v'. rewrite lookup_empty. congruence.
+  - intros k v v' Hlookup.
+    destruct (decide (k = i)); subst.
+    + rewrite insert_insert.
+      rewrite lookup_insert in Hlookup; inversion Hlookup; subst.
+      rewrite map_total_insert //.
+      rewrite map_total_insert //.
+      ring_simplify.
+      done.
+    + rewrite insert_commute //.
+      rewrite lookup_insert_ne // in Hlookup.
+      rewrite (map_total_insert _ i).
+      2: { rewrite lookup_insert_ne //. }
+      rewrite (map_total_insert _ i) //.
+      erewrite IHm; last by eauto.
+      ring_simplify.
+      done.
+Qed.
+
+Definition bank_inv γ (accts : gset u64) : iProp Σ :=
+  ∃ (m:gmap u64 u64),
+    "HlogBalCtx" ∷ map_ctx (log_gn γ) 1 m ∗
+    "%" ∷ ⌜map_total m = bal_total⌝ ∗
+    "%" ∷ ⌜dom m = accts⌝
   .
 
 Definition init_lock_inv γlock γkv : iProp Σ :=
@@ -42,7 +106,7 @@ Definition init_lock_inv γlock γkv : iProp Σ :=
   (* Already init case *)
   (∃ γlog,
    let γ := {| bank_ls_names := γlock; bank_ks_names := γkv; bank_logBalGN := γlog |} in
-   kvptsto γkv init_flag [U8 0] ∗ inv bankN (bank_inv γ) ∗
+   kvptsto γkv init_flag [U8 0] ∗ inv bankN (bank_inv γ {[acc1; acc2]}) ∗
    "#Hacc1_is_lock" ∷ is_lock lockN γlock acc1 (bankPs γ acc1) ∗
    "#Hacc2_is_lock" ∷ is_lock lockN γlock acc2 (bankPs γ acc2)).
 
@@ -123,32 +187,20 @@ Proof.
   iIntros (Φ) "(Hlck & #Hln1_islock & #Hln2_islock & HP1 & HP2) Hpost".
   wp_lam.
   wp_pures.
-  destruct bool_decide; wp_pures.
-  {
-    wp_apply (wp_LockClerk__Unlock with "[$Hlck $Hln2_islock $HP2]").
-    iIntros "Hlck".
-    wp_pures.
-    wp_apply (wp_LockClerk__Unlock with "[$Hlck $Hln1_islock $HP1]").
-    iIntros "Hlck".
-    wp_pures.
-    iApply "Hpost"; by iFrame.
-  }
-  {
-    wp_apply (wp_LockClerk__Unlock with "[$Hlck $Hln1_islock $HP1]").
-    iIntros "Hlck".
-    wp_pures.
-    wp_apply (wp_LockClerk__Unlock with "[$Hlck $Hln2_islock $HP2]").
-    iIntros "Hlck".
-    wp_pures.
-    iApply "Hpost"; by iFrame.
-  }
+  wp_apply (wp_LockClerk__Unlock with "[$Hlck $Hln1_islock $HP1]").
+  iIntros "Hlck".
+  wp_pures.
+  wp_apply (wp_LockClerk__Unlock with "[$Hlck $Hln2_islock $HP2]").
+  iIntros "Hlck".
+  wp_pures.
+  iApply "Hpost"; by iFrame.
 Qed.
 
 Add Ring u64ring : (word.ring_theory (word := u64_instance.u64)).
 
-Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ :
+Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ accts :
 {{{
-     inv bankN (bank_inv acc1 acc2 γ) ∗
+     inv bankN (bank_inv γ accts) ∗
      own_bank_clerk γ bck
 }}}
   BankClerk__SimpleTransfer #bck #amount
@@ -220,21 +272,18 @@ Proof.
     iInv bankN as ">HbankInv" "HbankInvClose".
     iNamed "HbankInv".
     iDestruct (map_valid with "[$] Hacc1_log") as "%Hval1".
-    rewrite lookup_union_l' lookup_singleton // in Hval1. inversion Hval1; subst.
-
     iDestruct (map_valid with "[$] Hacc2_log") as "%Hval2".
-    rewrite lookup_union_r in Hval2; last first.
-    { rewrite lookup_singleton_ne //. }
-    rewrite lookup_singleton // in Hval2. inversion Hval2; subst.
-
     iMod (map_update acc1 _ (word.sub bal1 amount) with "HlogBalCtx Hacc1_log") as "[HlogBalCtx Hacc1_log]".
     iMod (map_update acc2 _ (word.add bal2 amount) with "HlogBalCtx Hacc2_log") as "[HlogBalCtx Hacc2_log]".
     iMod ("HbankInvClose" with "[HlogBalCtx]") as "_".
-    { iNext. iExists _, _. iSplitL "HlogBalCtx".
-      - rewrite insert_union_l. rewrite insert_singleton.
-        rewrite insert_union_r; last by apply lookup_singleton_ne. rewrite insert_singleton.
-        iFrame.
-      - iPureIntro. ring_simplify. eauto.
+    { iNext. iExists _. iSplitL "HlogBalCtx"; first by iFrame.
+      iSplit; iPureIntro.
+      + erewrite map_total_update; last by rewrite lookup_insert_ne //.
+        erewrite map_total_update; last by eauto.
+        ring_simplify. eauto.
+      + rewrite dom_insert_lookup_L.
+        2: { rewrite lookup_insert_ne //. }
+        rewrite dom_insert_lookup_L //.
     }
     iModIntro.
     wp_apply (release_two_spec with "[$Hlck_own Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
@@ -252,7 +301,7 @@ Qed.
 
 Lemma Bank__get_total_spec (bck:loc) γ :
 {{{
-     inv bankN (bank_inv acc1 acc2 γ) ∗
+     inv bankN (bank_inv γ {[ acc1; acc2 ]}) ∗
      own_bank_clerk γ bck
 }}}
   BankClerk__get_total #bck
@@ -300,35 +349,33 @@ Proof.
   iInv bankN as ">HbankInv" "HbankInvClose".
   iNamed "HbankInv".
   iDestruct (map_valid with "HlogBalCtx Hacc1_log") as %Hacc1_logphys.
-  assert (bal0 = bal1) as ->.
-  {
-    erewrite lookup_union_Some_l in Hacc1_logphys; last by apply lookup_singleton.
-    by injection Hacc1_logphys.
-  }
-
   iDestruct (map_valid with "HlogBalCtx Hacc2_log") as %Hacc2_logphys.
-  assert (bal2 = bal3) as ->.
-  {
-    erewrite lookup_union_Some_r in Hacc2_logphys; last by apply lookup_singleton.
-    { by injection Hacc2_logphys. }
-    rewrite map_disjoint_singleton_l.
-    by apply lookup_singleton_ne.
-  }
   iMod ("HbankInvClose" with "[HlogBalCtx]") as "_".
-  { iNext. iExists _, _. iFrame "∗ %". }
+  { iNext. iExists _. iFrame "∗ %". }
   iModIntro.
   wp_apply (release_two_spec with "[$Hlck_own Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]"); first iFrame "#".
   { iSplitL "Hacc1_phys Hacc1_log"; iExists _, _; iFrame; eauto. }
   iIntros "Hlck_own".
   wp_pures.
-  rewrite H2.
+
+  erewrite (map_total_insert_2 _ acc1) in H2; last by eauto.
+  erewrite (map_total_insert_2 _ acc2) in H2; last by rewrite lookup_delete_ne //.
+  rewrite map_total_dom_empty in H2.
+  2: {
+    rewrite dom_delete_L dom_delete_L H3. set_solver.
+  }
+  replace (word.add bal1 bal2) with (bal_total).
+  2: {
+    rewrite -H2 word.add_0_l. ring_simplify. done.
+  }
+
   iApply "Hpost".
   iExists _, _; iFrame "∗ # %"; eauto.
 Qed.
 
 Lemma Bank__SimpleAudit_spec (bck:loc) γ :
 {{{
-     inv bankN (bank_inv acc1 acc2 γ) ∗
+     inv bankN (bank_inv γ {[acc1; acc2]}) ∗
      own_bank_clerk γ bck
 }}}
   BankClerk__SimpleAudit #bck
@@ -360,7 +407,7 @@ Lemma wp_MakeBankClerk (lockhost kvhost : u64) cm γ1 γ2 cid  (Hneq: acc1 ≠ a
   }}}
     MakeBankClerk #lockhost #kvhost #cm #init_flag #acc1 #acc2 #cid
   {{{
-      γ (ck:loc), RET #ck; own_bank_clerk γ ck ∗ inv bankN (bank_inv acc1 acc2 γ)
+      γ (ck:loc), RET #ck; own_bank_clerk γ ck ∗ inv bankN (bank_inv γ {[acc1; acc2]})
   }}}
 .
 Proof.
@@ -448,12 +495,14 @@ Proof.
     { iExists _, _. by iFrame. }
     iMod (lock_alloc lockN _ _ acc2 (bankPs γ acc2) with "[$] [Hacc2_phys Hacc2]") as "#Hlk2".
     { iExists _, _. by iFrame. }
-    iMod (inv_alloc bankN _ (bank_inv acc1 acc2 γ) with "[Hmap_ctx]") as "#Hinv".
-    { iNext. iExists _, _. iSplitL "Hmap_ctx".
-      { rewrite /named. iExactEq "Hmap_ctx". simpl.
-        rewrite insert_union_singleton_l.
-        rewrite insert_empty //=. }
-      eauto.
+    iMod (inv_alloc bankN _ (bank_inv γ {[acc1; acc2]}) with "[Hmap_ctx]") as "#Hinv".
+    { iNext. iExists _. iSplitL "Hmap_ctx".
+      { rewrite /named. iFrame. }
+      iPureIntro; split.
+      { rewrite map_total_insert; last by rewrite lookup_insert_ne //.
+        rewrite map_total_insert; last by eauto.
+        rewrite map_total_empty. word. }
+      { rewrite dom_insert_L dom_insert_L. set_solver. }
     }
     wp_apply (wp_LockClerk__Unlock with "[$Hlk $Hinit_lock Hflag_phys]").
     { iRight. iExists γlog. iFrame "#". iFrame "Hflag_phys". }

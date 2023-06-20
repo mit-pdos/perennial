@@ -29,13 +29,8 @@ Definition acquire_two: val :=
 
 Definition release_two: val :=
   rec: "release_two" "lck" "l1" "l2" :=
-    (if: "l1" < "l2"
-    then
-      lockservice.LockClerk__Unlock "lck" "l2";;
-      lockservice.LockClerk__Unlock "lck" "l1"
-    else
-      lockservice.LockClerk__Unlock "lck" "l1";;
-      lockservice.LockClerk__Unlock "lck" "l2");;
+    lockservice.LockClerk__Unlock "lck" "l1";;
+    lockservice.LockClerk__Unlock "lck" "l2";;
     #().
 
 (* Requires that the account numbers are smaller than num_accounts
