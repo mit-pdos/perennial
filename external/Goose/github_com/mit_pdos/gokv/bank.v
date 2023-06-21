@@ -81,8 +81,8 @@ Definition BankClerk__SimpleAudit: val :=
       else Continue));;
     #().
 
-Definition MakeBankClerk: val :=
-  rec: "MakeBankClerk" "lockhost" "kvhost" "cm" "init_flag" "accts" "cid" :=
+Definition MakeBankClerkSlice: val :=
+  rec: "MakeBankClerkSlice" "lockhost" "kvhost" "cm" "init_flag" "accts" "cid" :=
     let: "bck" := struct.alloc BankClerk (zero_val (struct.t BankClerk)) in
     struct.storeF BankClerk "lck" "bck" (lockservice.MakeLockClerk "lockhost" "cm");;
     struct.storeF BankClerk "kvck" "bck" (memkv.MakeSeqKVClerk "kvhost" "cm");;
@@ -97,3 +97,10 @@ Definition MakeBankClerk: val :=
     else #());;
     lockservice.LockClerk__Unlock (struct.loadF BankClerk "lck" "bck") "init_flag";;
     "bck".
+
+Definition MakeBankClerk: val :=
+  rec: "MakeBankClerk" "lockhost" "kvhost" "cm" "init_flag" "acc1" "acc2" "cid" :=
+    let: "accts" := ref (zero_val (slice.T uint64T)) in
+    "accts" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "accts") "acc1";;
+    "accts" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "accts") "acc2";;
+    MakeBankClerkSlice "lockhost" "kvhost" "cm" "init_flag" (![slice.T uint64T] "accts") "cid".

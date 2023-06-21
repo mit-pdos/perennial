@@ -590,7 +590,7 @@ Proof.
   iModIntro. iLeft. iFrame. eauto.
 Qed.
 
-Lemma wp_MakeBankClerk (lockhost kvhost : u64) cm γ1 γ2 cid accts (accts_s : Slice.t) acc0 (accts_l : list u64) :
+Lemma wp_MakeBankClerkSlice (lockhost kvhost : u64) cm γ1 γ2 cid accts (accts_s : Slice.t) acc0 (accts_l : list u64) :
   {{{
        is_coord_server lockhost γ1 ∗
        is_coord_server kvhost γ2 ∗
@@ -600,7 +600,7 @@ Lemma wp_MakeBankClerk (lockhost kvhost : u64) cm γ1 γ2 cid accts (accts_s : S
        own_slice_small accts_s uint64T 1 (acc0 :: accts_l) ∗
        ⌜Permutation (elements accts) (acc0 :: accts_l)⌝
   }}}
-    MakeBankClerk #lockhost #kvhost #cm #init_flag (slice_val accts_s) #cid
+    MakeBankClerkSlice #lockhost #kvhost #cm #init_flag (slice_val accts_s) #cid
   {{{
       γ (ck:loc), RET #ck; own_bank_clerk γ ck accts ∗ inv bankN (bank_inv γ accts)
   }}}
@@ -829,6 +829,45 @@ Proof.
     iIntros "Hlck_own". wp_pures. iApply "HΦ". iModIntro. iFrame "Hinv".
     iExists _, _, _, _. iFrame "∗#%".
     iDestruct (big_sepS_elements with "H") as "He". rewrite Hperm. iFrame "He".
+Qed.
+
+Lemma wp_MakeBankClerk (lockhost kvhost : u64) cm γ1 γ2 cid (acc0 acc1 : u64) :
+  {{{
+       is_coord_server lockhost γ1 ∗
+       is_coord_server kvhost γ2 ∗
+       is_ConnMan cm ∗
+       is_lock lockN (γ1.(coord_kv_gn)) init_flag
+         (init_lock_inv init_flag γ1.(coord_kv_gn) γ2.(coord_kv_gn) {[acc0; acc1]}) ∗
+       ⌜ acc0 ≠ acc1 ⌝
+  }}}
+    MakeBankClerk #lockhost #kvhost #cm #init_flag #acc0 #acc1 #cid
+  {{{
+      γ (ck:loc), RET #ck; own_bank_clerk γ ck {[acc0; acc1]} ∗ inv bankN (bank_inv γ {[acc0; acc1]})
+  }}}
+.
+Proof.
+  iIntros (Φ) "(Ha & Hb & Hc & Hd & %He) HΦ".
+  wp_call.
+  wp_apply wp_ref_of_zero; first by eauto.
+  iIntros (accts) "Haccts".
+  wp_load.
+  wp_apply (wp_SliceAppend_to_zero); first by eauto.
+  iIntros (s) "Hs".
+  wp_store.
+  wp_load.
+  wp_apply (wp_SliceAppend with "Hs").
+  iIntros (s2) "Hs".
+  wp_store.
+  wp_load.
+  iDestruct (own_slice_to_small with "Hs") as "Hs".
+  wp_apply (wp_MakeBankClerkSlice with "[-HΦ]").
+  { iFrame. iPureIntro.
+    rewrite elements_disj_union; last by set_solver.
+    rewrite ?elements_singleton. set_solver.
+  }
+  iIntros (γ ck) "[Hck Hinv]".
+  iApply "HΦ".
+  iFrame.
 Qed.
 
 End bank_proof.
