@@ -19,9 +19,31 @@ Section inv.
     quorum c q2 ->
     ∃ x, x ∈ q1 ∧ x ∈ q2.
   Admitted.
-  
+
+  Lemma ledgers_overlapped (ls lsq1 lsq2 : gmap A ledger) :
+    lsq1 ⊆ ls ->
+    lsq2 ⊆ ls ->
+    quorum (dom ls) (dom lsq1) ->
+    quorum (dom ls) (dom lsq2) ->
+    ∃ x l, lsq1 !! x = Some l ∧ lsq2 !! x = Some l.
+  Proof.
+    intros Hsubseteq1 Hsubseteq2 Hquorum1 Hquorum2.
+    edestruct quorums_overlapped as (x & Hin1 & Hin2).
+    { apply Hquorum1. }
+    { apply Hquorum2. }
+    rewrite elem_of_dom in Hin1.
+    rewrite elem_of_dom in Hin2.
+    destruct Hin1 as [l1 Hlookup1].
+    destruct Hin2 as [l2 Hlookup2].
+    pose proof (lookup_weaken _ _ _ _ Hlookup1 Hsubseteq1) as H1.
+    pose proof (lookup_weaken _ _ _ _ Hlookup2 Hsubseteq2) as H2.
+    exists x, l1.
+    split; first done.
+    rewrite H1 in H2. by inversion H2.
+  Qed.
+
   Definition accepted_in (l : ledger) n :=
-    l !! n = Some n.
+    l !! n = Some n ∧ n ≠ O.
   
   Definition chosen_in (ls : gmap A ledger) (ds : decrees) n v :=
     ∃ lsq,
@@ -65,7 +87,8 @@ Section inv.
     end.
 
   Definition largest_proposal_step (x : A) (cur prev : nat) : nat :=
-    if (cur <? prev)%nat then prev else cur.
+    cur `max` prev.
+    (* if (cur <? prev)%nat then prev else cur. *)
 
   Definition largest_proposal (lsq : gmap A ledger) n :=
     let ps := fmap (latest_proposal n) lsq in
@@ -87,7 +110,7 @@ Section inv.
     ∀ n, map_Forall (λ _ l, accepted_in l n -> is_Some (ds !! n)) ls.
   
   (* Lemmas about [latest_proposal]. *)
-  Lemma latest_proposal_lt l m :
+  Lemma latest_proposal_le l m :
     (latest_proposal m l ≤ m)%nat.
   Proof.
     induction m as [| m' IHm']; first by simpl.
@@ -110,16 +133,16 @@ Section inv.
     case_decide; last by eauto.
     subst n''.
     etrans; first apply Hle.
-    apply latest_proposal_lt.
+    apply latest_proposal_le.
   Qed.
 
   Lemma latest_proposal_Sn l n :
     accepted_in l n ->
     latest_proposal (S n) l = n.
   Proof.
-    intros Hacc.
+    intros [Hlookup Hnz].
     simpl.
-    unfold accepted_in in Hacc. rewrite Hacc.
+    rewrite Hlookup.
     case_decide; done.
   Qed.
   
@@ -134,7 +157,82 @@ Section inv.
     apply latest_proposal_mono.
     lia.
   Qed.
-    
+  
+  Lemma latest_proposal_lt l n :
+    n ≠ O ->
+    (latest_proposal n l < n)%nat.
+  Proof.
+    induction n as [| n' IHn']; first by simpl.
+    intros _.
+    destruct (decide (n' = O)) as [-> | Hneq].
+    { simpl. destruct (l !! O); last lia.
+      case_decide; lia.
+    }
+    specialize (IHn' Hneq).
+    simpl.
+    destruct (l !! n') as [n'' |]; last lia.
+    case_decide; lia.
+  Qed.
+
+  (* Lemmas about [largest_proposal]. TODO: fix the argument order. *)
+  Lemma largest_proposal_step_ge ns :
+    map_Forall (λ _ n, (n ≤ map_fold largest_proposal_step O ns)%nat) ns.
+  Proof.
+  Admitted.
+  
+  Lemma largest_proposal_step_in ns :
+    ns ≠ ∅ ->
+    map_Exists (λ _ n, (n = map_fold largest_proposal_step O ns)%nat) ns.
+  Proof.
+  Admitted.
+
+  Lemma largest_proposal_ge ls n :
+    map_Forall (λ _ l, (latest_proposal n l ≤ largest_proposal ls n)%nat) ls.
+  Proof.
+    intros x l Hlookup.
+    unfold largest_proposal.
+    pose proof (largest_proposal_step_ge (latest_proposal n <$> ls)) as Hstep.
+    rewrite map_Forall_lookup in Hstep.
+    apply (Hstep x (latest_proposal n l)).
+    rewrite lookup_fmap.
+    by rewrite Hlookup.
+  Qed.
+  
+  Lemma largest_proposal_in ls n :
+    ls ≠ ∅ ->
+    map_Exists (λ _ l, (latest_proposal n l = largest_proposal ls n)%nat) ls.
+  Proof.
+    intros Hnonempty.
+    unfold largest_proposal.
+    pose proof (largest_proposal_step_in (latest_proposal n <$> ls)) as Hstep.
+    rewrite fmap_empty_iff in Hstep.
+    specialize (Hstep Hnonempty).
+    destruct Hstep as (x & m & Hlookup & <-).
+    rewrite lookup_fmap fmap_Some in Hlookup.
+    destruct Hlookup as (l & Hlookup & Heq).
+    by exists x, l.
+  Qed.
+  
+  Lemma largest_proposal_accepted_in ls n1 n2 :
+    (n1 < n2)%nat ->
+    ls ≠ ∅ ->
+    map_Exists (λ _ l, accepted_in l n1) ls ->
+    (n1 ≤ largest_proposal ls n2 < n2)%nat ∧ largest_proposal ls n2 ≠ O.
+  Proof.
+    intros Hn Hnonempty Hacc.
+    destruct Hacc as (x & l & Hlookup & Hacc).
+    pose proof (largest_proposal_ge ls n2) as Hlargest.
+    rewrite map_Forall_lookup in Hlargest.
+    specialize (Hlargest _ _ Hlookup).
+    pose proof (latest_proposal_accepted_in _ _ _ Hn Hacc).
+    split; last first.
+    { destruct Hacc as [_ Hnz]. lia. }
+    split; first lia.
+    destruct (largest_proposal_in ls n2 Hnonempty) as (y & ly & _ & <-).
+    apply latest_proposal_lt.
+    lia.
+  Qed.
+
   Lemma aac_chosen {ls ds n1 n2 v1 v2} :
     (n1 ≤ n2)%nat ->
     accepted_after_chosen ls ds ->
@@ -171,13 +269,38 @@ Section inv.
     { assert (n2 ≤ n1)%nat as Hle by lia. symmetry. eapply (aac_chosen Hle); done. }
   Qed.
 
-  Lemma valid_proposal_chosen_in ls ds m n v :
-    (m ≤ n)%nat ->
+  Lemma valid_proposal_chosen_in ls ds m n u v :
+    (m < n)%nat ->
     valid_proposal ls ds ->
-    chosen_in ls ds m v ->
+    chosen_in ls ds m u ->
+    ds !! n = Some v ->
     ∃ k, (ds !! n = ds !! k) ∧ (m ≤ k < n)%nat.
   Proof.
-  Admitted.
+    intros Hmn Hvp Hchosen Hlookup.
+    edestruct Hvp as (lsq1 & Hsubseteq1 & Hquorum1 & Heq).
+    { apply Hlookup. }
+    destruct Hchosen as (lsq2 & Hsubseteq2 & Hquorum2 & Hacc & ?).
+    (* Extract intersection between the two quorums. *)
+    edestruct ledgers_overlapped as (x & l & Hlsq1 & Hlsq2).
+    { apply Hsubseteq1. }
+    { apply Hsubseteq2. }
+    { apply Hquorum1. }
+    { apply Hquorum2. }
+    rewrite map_Forall_lookup in Hacc.
+    specialize (Hacc _ _ Hlsq2).
+    destruct (largest_proposal_accepted_in lsq1 m n) as [Hlp Hnz].
+    { apply Hmn. }
+    { set_solver. }
+    { rewrite map_Exists_lookup. by exists x, l. }
+    destruct Heq as [Heq | Heq].
+    { (* Case: None proposed in the majority. *)
+      rewrite Heq in Hnz. congruence.
+    }
+    { (* Case: Equal the largest proposal. *)
+      exists (largest_proposal lsq1 n).
+      by rewrite Heq Hlookup.
+    }
+  Qed.
 
   Lemma aip_pac_implies_aac ls ds :
     accepted_implies_proposed ls ds ->
@@ -193,7 +316,7 @@ Section inv.
     rewrite map_Forall_lookup in Haip.
     eapply Haip; [apply Hlookup | apply Hacc].
   Qed.
-    
+
   Lemma valid_implies_pac ls ds :
     valid_proposal ls ds ->
     proposed_after_chosen ls ds.
@@ -203,10 +326,18 @@ Section inv.
     (* https://coq-club.inria.narkive.com/VWS50VZQ/adding-strong-induction-to-the-standard-library *)
     (* strong induction on [n]. *)
     induction (lt_wf n) as [n _ IHn].
+    destruct (decide (m = n)) as [Heq | Hneq].
+    { (* Handle [m = n] as a special case. *)
+      rewrite Heq in Hchosen.
+      by destruct Hchosen as (_ & _ & _ & _ & Hv).
+    }
+    assert (Hlt : (m < n)%nat) by lia.
+    clear Hmn Hneq.
     edestruct valid_proposal_chosen_in as (k & Heq & Hmkn).
-    { apply Hmn. }
+    { apply Hlt. }
     { apply Hvalid. }
     { apply Hchosen. }
+    { apply Hlookup. }
     rewrite Heq.
     rewrite Heq in Hlookup.
     apply IHn; [lia | lia | done].
@@ -221,7 +352,7 @@ Section inv.
     apply aac_implies_consistency.
     apply aip_pac_implies_aac; done.
   Qed.
-    
+
   (* Transition functions. *)
   Definition accept_trans (ls : gmap A ledger) x n :=
     alter (λ l, (extend n l) ++ [n]) x ls.
