@@ -269,7 +269,7 @@ Proof.
 Qed.
 
 Lemma wp_KVCoordServer__Start (s:loc) (host : u64) γ :
-handlers_dom γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
+is_urpc_dom γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
 is_coord_server host γ -∗
 is_KVCoordServer s γ -∗
   {{{
@@ -313,7 +313,7 @@ Proof.
       iFrame "#HgetSpec".
 
       clear Φ.
-      rewrite /impl_handler_spec.
+      rewrite /is_urpc_handler_pred.
       iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
@@ -354,7 +354,7 @@ Proof.
       iFrame "#HaddSpec".
 
       clear Φ.
-      rewrite /impl_handler_spec.
+      rewrite /is_urpc_handler_pred.
       iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.

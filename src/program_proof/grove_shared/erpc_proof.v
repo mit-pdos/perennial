@@ -44,7 +44,7 @@ Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : uRPCSpec :=
 
 (** Convenience function to say that a given rpcid has such a handler *)
 Definition handler_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (spec : eRPCSpec) :=
-  handler_urpc_spec Γsrv host (eRPCSpec_uRPC γerpc spec).
+  is_urpc_spec Γsrv host (eRPCSpec_uRPC γerpc spec).
 
 (** What a client needs to get started *)
 Definition erpc_make_client_pre γ cid : iProp Σ :=
@@ -104,7 +104,7 @@ Definition own_erpc_client (γ : erpc_names) (c:loc) : iProp Σ :=
     "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
 .
 
-Definition impl_erpc_handler_spec (f : val) (spec : eRPCSpec)
+Definition impl_erpc_is_urpc_spec_pred (f : val) (spec : eRPCSpec)
    : iProp Σ :=
   ∀ (x : spec.(espec_ty)) (reqData : list u8) req repptr dummy_rep_sl dummy,
   {{{
@@ -124,8 +124,8 @@ Lemma wp_erpc_Server_HandleRequest spec γ s f :
   {{{ is_erpc_server γ s }}}
     Server__HandleRequest #s f
   {{{ f', RET f';
-      □ (impl_erpc_handler_spec f spec -∗
-      impl_handler_spec f' (uRPCSpec_Spec $ eRPCSpec_uRPC γ spec)) }}}.
+      □ (impl_erpc_is_urpc_spec_pred f spec -∗
+      is_urpc_handler_pred f' (uRPCSpec_Spec $ eRPCSpec_uRPC γ spec)) }}}.
 Proof.
   iIntros (Φ) "#Hs HΦ". wp_call. iModIntro.
   iApply "HΦ". iModIntro. clear Φ.

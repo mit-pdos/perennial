@@ -14,11 +14,11 @@ Context `{HPRE: !gooseGlobalGS Σ}.
 
 (* More general version of above initialization lemma *)
 Implicit Type (l:list (u64 * savedSpecO Σ (list u8) (list u8))).
-Fixpoint handler_spec_list γ host l :=
+Fixpoint is_urpc_spec_pred_list γ host l :=
   match l with
   | [] => True%I
   | x :: l =>
-    (handler_spec γ host x.1 x.2 ∗ handler_spec_list γ host l)%I
+    (is_urpc_spec_pred γ host x.1 x.2 ∗ is_urpc_spec_pred_list γ host l)%I
   end.
 
 Fixpoint dom_spec_list l : gset u64 :=
@@ -36,8 +36,8 @@ Fixpoint spec_list_wf l : Prop :=
 
 Lemma handler_is_init_list2 (host : chan) specs (Hwf: spec_list_wf specs) :
    host c↦ ∅ ={⊤}=∗ ∃ γ,
-   handlers_dom γ (dom_spec_list specs) ∗
-   handler_spec_list γ host specs.
+   is_urpc_dom γ (dom_spec_list specs) ∗
+   is_urpc_spec_pred_list γ host specs.
 Proof.
   iIntros "Hchan".
   iMod (map_init (∅ : gmap u64 gname)) as (γmap) "Hmap_ctx".
@@ -51,7 +51,7 @@ Proof.
   iAssert (∀ specs', ⌜ spec_list_wf specs' ⌝ ∗ ⌜ dom_spec_list specs' ⊆  dom_spec_list specs ⌝ →
            |==> ∃ gnames : gmap u64 gname, ⌜ dom gnames = dom_spec_list specs' ⌝ ∗
            map_ctx (scmap_name Γsrv) 1 gnames ∗
-           handler_spec_list Γsrv host specs')%I with "[Hmap_ctx]" as "H"; last first.
+           is_urpc_spec_pred_list Γsrv host specs')%I with "[Hmap_ctx]" as "H"; last first.
   { iMod ("H" with "[]") as (?) "(_&_&$)"; eauto. }
   iIntros (specs').
   iInduction specs' as [| hd spec] "IH".
@@ -86,8 +86,8 @@ Program Definition uRPCSpec_Spec (spec : uRPCSpec) : savedSpecO Σ (list u8) (li
     spec.(spec_Pre) x args ∗ (∀ rep, spec.(spec_Post) x args rep -∗ Φ rep))%I.
 Next Obligation. solve_proper. Qed.
 
-Definition handler_urpc_spec Γsrv (host rpcid:u64) (spec : uRPCSpec) :=
-  handler_spec Γsrv host rpcid (uRPCSpec_Spec spec).
+Definition is_urpc_spec Γsrv (host rpcid:u64) (spec : uRPCSpec) :=
+  is_urpc_spec_pred Γsrv host rpcid (uRPCSpec_Spec spec).
 
 
 Fixpoint dom_urpc_list (l: list (u64 * uRPCSpec_Spec)) : gset u64 :=
@@ -106,7 +106,7 @@ Fixpoint handler_uRPCSpecList γ host (l : uRPCSpecList) :=
   match l with
   | spec_nil => True%I
   | spec_cons x l =>
-    (handler_urpc_spec γ host x ∗
+    (is_urpc_spec γ host x ∗
                 handler_uRPCSpecList γ host l)%I
   end.
 
@@ -119,7 +119,7 @@ Fixpoint uRPCSpecList_wf (l : uRPCSpecList) : Prop :=
 
 Lemma handler_is_init_list (host : chan) (specs: uRPCSpecList) (Hwf: uRPCSpecList_wf specs) :
    host c↦ ∅ ={⊤}=∗ ∃ γ,
-   handlers_dom γ (dom_uRPCSpecList specs) ∗
+   is_urpc_dom γ (dom_uRPCSpecList specs) ∗
    handler_uRPCSpecList γ host specs.
 Proof.
   iIntros "Hchan".
@@ -162,7 +162,7 @@ End rpc_global_defs.
 Section urpc_spec_impl.
 Context `{!heapGS Σ, !urpcregG Σ}.
 
-Definition impl_urpc_handler_spec (f : val) (spec : uRPCSpec)
+Definition impl_urpc_is_urpc_spec_pred (f : val) (spec : uRPCSpec)
    : iProp Σ :=
   ∀ (x : spec.(spec_ty)) (reqData : list u8) req repptr dummy_rep_sl dummy,
   {{{
@@ -181,10 +181,10 @@ Definition impl_urpc_handler_spec (f : val) (spec : uRPCSpec)
 (** Lift handler registration and RPC calls to uRPCSpec *)
 
 Lemma urpc_handler_to_handler f spec :
-  impl_urpc_handler_spec f spec -∗
-  impl_handler_spec f (uRPCSpec_Spec spec).
+  impl_urpc_is_urpc_spec_pred f spec -∗
+  is_urpc_handler_pred f (uRPCSpec_Spec spec).
 Proof.
-  rewrite /impl_handler_spec.
+  rewrite /is_urpc_handler_pred.
   iIntros "#Hf %reqData %Cont %req %repptr !# %Φ Hpre HΦ".
   iDestruct "Hpre" as "(Hreq & Hrepptr & Hpre)". iSimpl in "Hpre".
   iDestruct "Hpre" as (x) "[Hpre Hcont]".
@@ -197,7 +197,7 @@ Qed.
 Lemma wp_Client__Call_uRPCSpec γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) (spec : uRPCSpec) (x : spec.(spec_ty)) :
   rpcid = spec.(spec_rpcid) →
-  handler_urpc_spec γsmap host spec -∗
+  is_urpc_spec γsmap host spec -∗
   {{{
       own_slice_small req byteT 1 reqData ∗
       rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗

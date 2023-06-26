@@ -165,7 +165,7 @@ Lemma wp_ConnMan__CallAtLeastOnce (γsmap:server_chan_gnames) (c_ptr:loc) (rpcid
     req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
     Spec Post :
   is_ConnMan c_ptr -∗
-  handler_spec γsmap host rpcid Spec -∗
+  is_urpc_spec_pred γsmap host rpcid Spec -∗
   □(▷ Spec reqData Post) -∗
   {{{
       own_slice_small req byteT 1 reqData ∗
@@ -277,7 +277,7 @@ Lemma wp_ConnMan__CallAtLeastOnce_uRPCSpec (spec : uRPCSpec) (x : spec.(spec_ty)
   req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
   :
   is_ConnMan c_ptr -∗
-  handler_urpc_spec γsmap host spec -∗
+  is_urpc_spec γsmap host spec -∗
   □(▷ spec.(spec_Pre) x reqData) -∗
   {{{
       own_slice_small req byteT 1 reqData ∗

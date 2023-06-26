@@ -109,9 +109,9 @@ Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u
   "#HputSpec" ∷ handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (is_shard_server_putSpec γ.(kv_gn)) ∗
   "#HconditionalPutSpec" ∷ handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn)) ∗
   "#HgetSpec" ∷ handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (is_shard_server_getSpec γ.(kv_gn)) ∗
-  "#HmoveSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
+  "#HmoveSpec" ∷ is_urpc_spec γ.(urpc_gn) host (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
   "#HinstallSpec" ∷ handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (is_shard_server_installSpec γ.(kv_gn)) ∗
-  "#HfreshSpec" ∷ handler_urpc_spec γ.(urpc_gn) host (is_shard_server_freshSpec γ.(erpc_gn))
+  "#HfreshSpec" ∷ is_urpc_spec γ.(urpc_gn) host (is_shard_server_freshSpec γ.(erpc_gn))
 )%I.
 
 (* Actually, handler_is is contractive now so we can remove the ▷ in is_shard_server *)
@@ -119,7 +119,7 @@ Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
-  f_equiv. rewrite /handler_urpc_spec /=. (* FIXME unfolding other abstractions (uRPCSpec is not an OFE) *)
+  f_equiv. rewrite /is_urpc_spec /=. (* FIXME unfolding other abstractions (uRPCSpec is not an OFE) *)
   f_contractive.
   rewrite /uRPCSpec_Spec /is_shard_server_moveSpec_pre /=.
   intros args Φ. simpl.

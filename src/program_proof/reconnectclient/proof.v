@@ -138,7 +138,7 @@ Qed.
 Lemma wp_ReconnectingClient__Call2 γsmap q (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
   is_ReconnectingClient cl_ptr host -∗
-  handler_spec γsmap host rpcid Spec -∗
+  is_urpc_spec_pred γsmap host rpcid Spec -∗
   own_slice_small req byteT q reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData (λ reply,

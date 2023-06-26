@@ -444,7 +444,7 @@ Proof using Type*.
       simpl. iExists _.
       iFrame "Hhandler".
 
-      rewrite /impl_handler_spec.
+      rewrite /is_urpc_handler_pred.
       iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & HFAISpec)".

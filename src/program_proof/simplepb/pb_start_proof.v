@@ -262,7 +262,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (?) "[% Hspec]".
@@ -281,7 +281,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (?) "Hspec".
@@ -300,7 +300,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (?) "Hspec".
@@ -319,7 +319,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (???) "[%Henc Hspec]".
@@ -346,7 +346,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (??) "[%Henc Hspec]".
@@ -368,7 +368,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (??) "[%Henc Hspec]".
@@ -396,7 +396,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (????) "[%Henc Hspec]".

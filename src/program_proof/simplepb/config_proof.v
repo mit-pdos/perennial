@@ -141,11 +141,11 @@ Defined.
 
 Definition is_config_host (host:u64) γ : iProp Σ :=
   ∃ γrpc,
-  handler_spec γrpc host (U64 0) (ReserveEpochAndGetConfig_spec γ) ∗
-  handler_spec γrpc host (U64 1) (GetConfig_spec γ) ∗
-  handler_spec γrpc host (U64 2) (TryWriteConfig_spec γ) ∗
-  handler_spec γrpc host (U64 3) (GetLease_spec γ) ∗
-  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
+  is_urpc_spec_pred γrpc host (U64 0) (ReserveEpochAndGetConfig_spec γ) ∗
+  is_urpc_spec_pred γrpc host (U64 1) (GetConfig_spec γ) ∗
+  is_urpc_spec_pred γrpc host (U64 2) (TryWriteConfig_spec γ) ∗
+  is_urpc_spec_pred γrpc host (U64 3) (GetLease_spec γ) ∗
+  is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
 .
 
 End config_global.
@@ -286,14 +286,14 @@ Lemma wp_Server__ReserveEpochAndGetConfig (server:loc) γ :
   }}}
     config.Server__ReserveEpochAndGetConfig #server
   {{{
-        (f:val), RET f; impl_handler_spec2 f (ReserveEpochAndGetConfig_spec γ)
+        (f:val), RET f; is_urpc_handler_pred2 f (ReserveEpochAndGetConfig_spec γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
   wp_call.
   iApply "HΦ".
   iModIntro.
-  unfold impl_handler_spec2.
+  unfold is_urpc_handler_pred2.
   clear Φ.
   iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
   wp_call.
@@ -462,14 +462,14 @@ Lemma wp_Server__GetConfig (server:loc) γ :
   }}}
     config.Server__GetConfig #server
   {{{
-        (f:val), RET f; impl_handler_spec2 f (GetConfig_spec γ)
+        (f:val), RET f; is_urpc_handler_pred2 f (GetConfig_spec γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
   wp_call.
   iApply "HΦ".
   iModIntro.
-  unfold impl_handler_spec2.
+  unfold is_urpc_handler_pred2.
   clear Φ.
   iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
   wp_call.
@@ -512,14 +512,14 @@ Lemma wp_Server__TryWriteConfig (server:loc) γ :
   }}}
     config.Server__TryWriteConfig #server
   {{{
-        (f:val), RET f; impl_handler_spec2 f (TryWriteConfig_spec γ)
+        (f:val), RET f; is_urpc_handler_pred2 f (TryWriteConfig_spec γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
   wp_call.
   iApply "HΦ".
   iModIntro.
-  unfold impl_handler_spec2.
+  unfold is_urpc_handler_pred2.
   clear Φ.
   iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
   wp_call.
@@ -837,14 +837,14 @@ Lemma wp_Server__GetLease (server:loc) γ :
   }}}
     config.Server__GetLease #server
   {{{
-        (f:val), RET f; impl_handler_spec2 f (GetLease_spec γ)
+        (f:val), RET f; is_urpc_handler_pred2 f (GetLease_spec γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
   wp_call.
   iApply "HΦ".
   iModIntro.
-  unfold impl_handler_spec2.
+  unfold is_urpc_handler_pred2.
   clear Φ.
   iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
   wp_call.

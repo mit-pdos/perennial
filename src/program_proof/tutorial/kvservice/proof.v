@@ -963,11 +963,11 @@ Defined.
 
 Definition is_kvserver_host host : iProp Σ :=
   ∃ γrpc,
-  "#H0" ∷ handler_spec γrpc host (U64 0) getFreshNum_spec ∗
-  "#H1" ∷ handler_spec γrpc host (U64 1) put_spec ∗
-  "#H2" ∷ handler_spec γrpc host (U64 2) conditionalPut_spec ∗
-  "#H3" ∷ handler_spec γrpc host (U64 3) get_spec ∗
-  "#Hdom" ∷ handlers_dom γrpc {[ U64 0; U64 1; U64 2; U64 3 ]}
+  "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) getFreshNum_spec ∗
+  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) put_spec ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) conditionalPut_spec ∗
+  "#H3" ∷ is_urpc_spec_pred γrpc host (U64 3) get_spec ∗
+  "#Hdom" ∷ is_urpc_dom γrpc {[ U64 0; U64 1; U64 2; U64 3 ]}
   .
 
 End encoded_rpc_definitions.
@@ -1038,7 +1038,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (?) "[%Henc Hspec]".
@@ -1057,7 +1057,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (?) "[%Henc Hspec]".
@@ -1077,7 +1077,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iDestruct "Hspec" as (?) "[%Henc Hspec]".
@@ -1094,7 +1094,7 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
       wp_pures.
       iEval (rewrite /getFreshNum_spec /=) in "Hspec".

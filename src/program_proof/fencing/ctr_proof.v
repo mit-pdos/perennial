@@ -501,10 +501,10 @@ Next Obligation.
 Defined.
 
 Definition is_host (host:u64) γ : iProp Σ :=
-  handler_spec γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
+  is_urpc_spec_pred γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
   handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (Put_spec_erpc γ) ∗
-  handler_spec γ.(urpc_gn) host (U64 2) (GetFreshCID_spec γ) ∗
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
+  is_urpc_spec_pred γ.(urpc_gn) host (U64 2) (GetFreshCID_spec γ) ∗
+  is_urpc_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
 
 Definition own_Clerk γ (ck:loc) : iProp Σ :=
@@ -1440,7 +1440,7 @@ Proof.
     {
       simpl. iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec.
+      unfold is_urpc_handler_pred.
       iIntros (?????) "!# Hpre HΦ".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hpre)".
@@ -1525,7 +1525,7 @@ Proof.
     {
       simpl. iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec.
+      unfold is_urpc_handler_pred.
       iIntros (?????) "!# Hpre HΦ".
       wp_pures.
       iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hpre)".

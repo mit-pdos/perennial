@@ -8,7 +8,7 @@ Section memkv_shard_start_proof.
 Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Lemma wp_KVShardServer__Start (s:loc) (host : u64) γ :
-handlers_dom γ.(urpc_gn) {[ U64 0; U64 1; U64 2; U64 3; U64 4; U64 5 ]} -∗
+is_urpc_dom γ.(urpc_gn) {[ U64 0; U64 1; U64 2; U64 3; U64 4; U64 5 ]} -∗
 is_shard_server host γ -∗
 is_KVShardServer s γ -∗
   {{{
@@ -257,7 +257,7 @@ Proof.
       iExists _.
       iFrame "HfreshSpec".
 
-      clear Φ. rewrite /impl_handler_spec.
+      clear Φ. rewrite /is_urpc_handler_pred.
       iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.

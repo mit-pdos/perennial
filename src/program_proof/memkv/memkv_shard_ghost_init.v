@@ -23,7 +23,7 @@ Definition shard_SpecList γkv γrpc : uRPCSpecList :=
 Lemma shard_server_ghost_init host (γkv : gname) :
   host c↦ ∅ ={⊤}=∗
   ∃ γ, ⌜ γ.(kv_gn) = γkv ⌝ ∗
-       handlers_dom γ.(urpc_gn) (dom_uRPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(erpc_gn)))) ∗
+       is_urpc_dom γ.(urpc_gn) (dom_uRPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(erpc_gn)))) ∗
        is_shard_server host γ ∗
        own_erpc_pre_server γ.(erpc_gn).
 Proof.

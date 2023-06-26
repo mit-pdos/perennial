@@ -760,8 +760,8 @@ Next Obligation.
 Defined.
 
 Definition is_host γ host : iProp Σ :=
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ]} ∗
-  handler_spec γ.(urpc_gn) host 0 (FAISpec_tada γ).
+  is_urpc_dom γ.(urpc_gn) {[ (U64 0) ]} ∗
+  is_urpc_spec_pred γ.(urpc_gn) host 0 (FAISpec_tada γ).
 
 Lemma wp_StartServer γ γcfg (me configHost host1 host2:u64) :
   config.is_host γcfg configHost (λ e, own_unused_epoch γ.(ctr1_gn) e ∗ own_unused_epoch γ.(ctr2_gn) e) (λ _, True) -∗
@@ -851,7 +851,7 @@ Proof using Type*.
       simpl. iExists _; iFrame "#".
 
       clear Φ.
-      rewrite /impl_handler_spec.
+      rewrite /is_urpc_handler_pred.
       iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & HFAISpec)".

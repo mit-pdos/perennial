@@ -70,8 +70,8 @@ Section iris.
   Next Obligation. solve_proper. Defined.
 
   Definition is_participant_host (γ: participant_names.t) (host:u64) : iProp Σ :=
-    "#H0" ∷ handler_spec γ.(participant_names.urpc) host (U64 0) (GetPreference_spec γ) ∗
-    "#Hdom" ∷ handlers_dom γ.(participant_names.urpc) {[ (U64 0) ]}.
+    "#H0" ∷ is_urpc_spec_pred γ.(participant_names.urpc) host (U64 0) (GetPreference_spec γ) ∗
+    "#Hdom" ∷ is_urpc_dom γ.(participant_names.urpc) {[ (U64 0) ]}.
 
   Definition is_participant_clerk (ck: loc) (γ: participant_names.t) : iProp Σ :=
     ∃ (cl:loc) host,
