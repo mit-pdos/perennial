@@ -4,14 +4,14 @@ Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (*******************************************************************)
-(* func findRightVer(tid uint64, vers []Version) Version           *)
+(* func findVersion(tid uint64, vers []Version) Version            *)
 (*******************************************************************)
-Local Theorem wp_findRightVer (tid : u64) (versS : Slice.t)
+Local Theorem wp_findVersion (tid : u64) (versS : Slice.t)
                               (vers : list (u64 * bool * string)) :
   {{{ ⌜∃ (ver : pver), (ver ∈ vers) ∧ (int.Z ver.1.1 < int.Z tid)⌝ ∗
       slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers)
   }}}
-    findRightVer #tid (to_val versS)
+    findVersion #tid (to_val versS)
   {{{ (ver : pver), RET (ver_to_val ver);
       ⌜spec_find_ver vers tid = Some ver⌝ ∗
       slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers)
@@ -315,7 +315,7 @@ Proof.
   wp_call.
 
   (***********************************************************)
-  (* ver := findRightVer(tid, tuple.vers)                    *)
+  (* ver := findVersion(tid, tuple.vers)                     *)
   (***********************************************************)
   iNamed "HtupleOwn".
   iNamed "Hphys".
@@ -330,7 +330,7 @@ Proof.
   { iDestruct "Hactive" as "[_ %H]". iPureIntro. word. }
   iMod ("HinvgcC" with "HinvgcO") as "_".
   iModIntro.
-  wp_apply (wp_findRightVer with "[$HversS]").
+  wp_apply (wp_findVersion with "[$HversS]").
   { iPureIntro.
     setoid_rewrite Exists_exists in HexistsLt.
     apply HexistsLt; word.

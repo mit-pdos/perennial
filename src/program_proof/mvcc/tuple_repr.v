@@ -22,7 +22,7 @@ Definition own_tuple_phys
   : iProp Σ :=
   ∃ (versS : Slice.t),
     "Howned" ∷ tuple ↦[Tuple :: "owned"] #owned ∗
-    "Htidlast" ∷ tuple ↦[Tuple :: "tidlast"] #tidlast ∗
+    "Htidlast" ∷ tuple ↦[Tuple :: "tslast"] #tidlast ∗
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
     "HversS" ∷ slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers).
 

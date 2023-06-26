@@ -6,56 +6,59 @@ Section code.
 Context `{ext_ty: ext_types}.
 Local Coercion Var' s: expr := Var s.
 
-(* *
-    * The lifetime of a version starts from `begin` of itself to the `begin` of
-    * next version; it's a half-open interval (]. *)
+(* @ts
+   Starting timestamp of this version, and also ending timestamp of the next
+   version. Lifetime is a half-open interval: (ts of this, ts of next].
+
+   @del
+   Tombstone of this version.
+
+   @val
+   Value of this version. *)
 Definition Version := struct.decl [
-  "begin" :: uint64T;
-  "deleted" :: boolT;
+  "ts" :: uint64T;
+  "del" :: boolT;
   "val" :: stringT
 ].
 
-(* *
-    * `owned`: A boolean flag indicating whether some txn owns this tuple..
-    *
-    * `tidlast`:
-    * 	An TID specifying the last txn (in the sense of the largest TID, not actual
-    * 	physical time) that reads (TID) or writes (TID + 1) this tuple.
-    *
-    * `vers`: Physical versions. *)
+(* @owned
+   Write lock of this tuple. Acquired before committing.
+
+   @rcond
+   Condition variable to wake up readers of this tuple.
+
+   @tslast
+   Timestamp of the last reader or last writer + 1.
+
+   @vers
+   Versions. *)
 Definition Tuple := struct.decl [
   "latch" :: ptrT;
   "rcond" :: ptrT;
   "owned" :: boolT;
-  "tidlast" :: uint64T;
+  "tslast" :: uint64T;
   "vers" :: slice.T (struct.t Version)
 ].
 
-Definition findRightVer: val :=
-  rec: "findRightVer" "tid" "vers" :=
+Definition findVersion: val :=
+  rec: "findVersion" "tid" "vers" :=
     let: "ver" := ref (zero_val (struct.t Version)) in
     let: "length" := slice.len "vers" in
     let: "idx" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, ![uint64T] "idx" < "length"); (λ: <>, Skip) := λ: <>,
       "ver" <-[struct.t Version] SliceGet (struct.t Version) "vers" ("length" - ![uint64T] "idx" - #1);;
-      (if: "tid" > struct.get Version "begin" (![struct.t Version] "ver")
+      (if: "tid" > struct.get Version "ts" (![struct.t Version] "ver")
       then Break
       else
         "idx" <-[uint64T] ![uint64T] "idx" + #1;;
         Continue));;
     ![struct.t Version] "ver".
 
-(* *
-    * Preconditions:
-    *
-    * Postconditions:
-    * 1. On a successful return, the txn `tid` get the permission to update this
-    * tuple (when we also acquire the latch of this tuple). *)
 Definition Tuple__Own: val :=
   rec: "Tuple__Own" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
-    (if: "tid" < struct.loadF Tuple "tidlast" "tuple"
+    (if: "tid" < struct.loadF Tuple "tslast" "tuple"
     then
       lock.release (struct.loadF Tuple "latch" "tuple");;
       common.RET_UNSERIALIZABLE
@@ -69,26 +72,25 @@ Definition Tuple__Own: val :=
         lock.release (struct.loadF Tuple "latch" "tuple");;
         common.RET_SUCCESS)).
 
-Definition Tuple__WriteLock: val :=
-  rec: "Tuple__WriteLock" "tuple" :=
+(* Call @WriteOpen before @AppendVersion and @KillVersion. *)
+Definition Tuple__WriteOpen: val :=
+  rec: "Tuple__WriteOpen" "tuple" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
     #().
 
 Definition Tuple__appendVersion: val :=
   rec: "Tuple__appendVersion" "tuple" "tid" "val" :=
     let: "verNew" := struct.mk Version [
-      "begin" ::= "tid";
-      "val" ::= "val";
-      "deleted" ::= #false
+      "ts" ::= "tid";
+      "del" ::= #false;
+      "val" ::= "val"
     ] in
     struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") "verNew");;
     struct.storeF Tuple "owned" "tuple" #false;;
-    struct.storeF Tuple "tidlast" "tuple" ("tid" + #1);;
+    struct.storeF Tuple "tslast" "tuple" ("tid" + #1);;
     #().
 
-(* *
-    * Preconditions:
-    * 1. The txn `tid` has the permission to update this tuple. *)
+(* Append a new version (@tid, @val) to this tuple. *)
 Definition Tuple__AppendVersion: val :=
   rec: "Tuple__AppendVersion" "tuple" "tid" "val" :=
     Tuple__appendVersion "tuple" "tid" "val";;
@@ -99,17 +101,15 @@ Definition Tuple__AppendVersion: val :=
 Definition Tuple__killVersion: val :=
   rec: "Tuple__killVersion" "tuple" "tid" :=
     let: "verNew" := struct.mk Version [
-      "begin" ::= "tid";
-      "deleted" ::= #true
+      "ts" ::= "tid";
+      "del" ::= #true
     ] in
     struct.storeF Tuple "vers" "tuple" (SliceAppend (struct.t Version) (struct.loadF Tuple "vers" "tuple") "verNew");;
     struct.storeF Tuple "owned" "tuple" #false;;
-    struct.storeF Tuple "tidlast" "tuple" ("tid" + #1);;
+    struct.storeF Tuple "tslast" "tuple" ("tid" + #1);;
     #true.
 
-(* *
-    * Preconditions:
-    * 1. The txn `tid` has the permission to update this tuple. *)
+(* Append a tombstone version of timestamp @tid to this tuple. *)
 Definition Tuple__KillVersion: val :=
   rec: "Tuple__KillVersion" "tuple" "tid" :=
     let: "ok" := Tuple__killVersion "tuple" "tid" in
@@ -121,8 +121,7 @@ Definition Tuple__KillVersion: val :=
     lock.release (struct.loadF Tuple "latch" "tuple");;
     ![uint64T] "ret".
 
-(* *
-    * Preconditions: *)
+(* Release the write lock without modifying the tuple. *)
 Definition Tuple__Free: val :=
   rec: "Tuple__Free" "tuple" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
@@ -131,25 +130,25 @@ Definition Tuple__Free: val :=
     lock.release (struct.loadF Tuple "latch" "tuple");;
     #().
 
+(* Call @ReadWait before @ReadVersion.
+   This design allows us to resolve the prophecy at the txn level. *)
 Definition Tuple__ReadWait: val :=
   rec: "Tuple__ReadWait" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
     Skip;;
-    (for: (λ: <>, ("tid" > struct.loadF Tuple "tidlast" "tuple") && (struct.loadF Tuple "owned" "tuple")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ("tid" > struct.loadF Tuple "tslast" "tuple") && (struct.loadF Tuple "owned" "tuple")); (λ: <>, Skip) := λ: <>,
       lock.condWait (struct.loadF Tuple "rcond" "tuple");;
       Continue);;
     #().
 
-(* *
-    * Preconditions: *)
 Definition Tuple__ReadVersion: val :=
   rec: "Tuple__ReadVersion" "tuple" "tid" :=
-    let: "ver" := findRightVer "tid" (struct.loadF Tuple "vers" "tuple") in
-    (if: struct.loadF Tuple "tidlast" "tuple" < "tid"
-    then struct.storeF Tuple "tidlast" "tuple" "tid"
+    let: "ver" := findVersion "tid" (struct.loadF Tuple "vers" "tuple") in
+    (if: struct.loadF Tuple "tslast" "tuple" < "tid"
+    then struct.storeF Tuple "tslast" "tuple" "tid"
     else #());;
     lock.release (struct.loadF Tuple "latch" "tuple");;
-    (struct.get Version "val" "ver", ~ (struct.get Version "deleted" "ver")).
+    (struct.get Version "val" "ver", ~ (struct.get Version "del" "ver")).
 
 Definition Tuple__removeVersions: val :=
   rec: "Tuple__removeVersions" "tuple" "tid" :=
@@ -158,7 +157,7 @@ Definition Tuple__removeVersions: val :=
     Skip;;
     (for: (λ: <>, ![uint64T] "idx" ≠ #0); (λ: <>, Skip) := λ: <>,
       let: "ver" := SliceGet (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx") in
-      (if: struct.get Version "begin" "ver" < "tid"
+      (if: struct.get Version "ts" "ver" < "tid"
       then Break
       else
         "idx" <-[uint64T] ![uint64T] "idx" - #1;;
@@ -166,9 +165,7 @@ Definition Tuple__removeVersions: val :=
     struct.storeF Tuple "vers" "tuple" (SliceSkip (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx"));;
     #().
 
-(* *
-    * Remove all versions whose `end` timestamp is less than or equal to `tid`.
-    * Preconditions: *)
+(* Remove all versions whose lifetime ends before @tid. *)
 Definition Tuple__RemoveVersions: val :=
   rec: "Tuple__RemoveVersions" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
@@ -182,10 +179,10 @@ Definition MkTuple: val :=
     struct.storeF Tuple "latch" "tuple" (lock.new #());;
     struct.storeF Tuple "rcond" "tuple" (lock.newCond (struct.loadF Tuple "latch" "tuple"));;
     struct.storeF Tuple "owned" "tuple" #false;;
-    struct.storeF Tuple "tidlast" "tuple" #1;;
+    struct.storeF Tuple "tslast" "tuple" #1;;
     struct.storeF Tuple "vers" "tuple" (NewSliceWithCap (struct.t Version) #1 #1);;
     SliceSet (struct.t Version) (struct.loadF Tuple "vers" "tuple") #0 (struct.mk Version [
-      "deleted" ::= #true
+      "del" ::= #true
     ]);;
     "tuple".
 
