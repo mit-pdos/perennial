@@ -12,30 +12,20 @@ Context `{!urpcregG Σ}.
 Context `{HPRE: !gooseGlobalGS Σ}.
 
 (* Higher-level interface for defining a uRPC spec. *)
-Record uRPCSpec :=
-  { spec_rpcid : u64;
-    spec_ty : Type;
+Record RpcSpec {spec_ty : Type} : Type :=
+  Build_uRPCSpec {
     spec_Pre : spec_ty → list u8 → iProp Σ;
     spec_Post : spec_ty → list u8 → list u8 → iProp Σ }.
 
-Program Definition uRPCSpec_Spec (spec : uRPCSpec) : savedSpecO Σ (list u8) (list u8) :=
-  λ args, λne (Φ : list u8 -d> iPropO Σ), (∃ x : spec.(spec_ty),
+Program Definition uRPCSpec_Spec {spec_ty:Type} (spec : RpcSpec (spec_ty:=spec_ty)) : savedSpecO Σ (list u8) (list u8) :=
+  λ args, λne (Φ : list u8 -d> iPropO Σ), (∃ x,
     spec.(spec_Pre) x args ∗ (∀ rep, spec.(spec_Post) x args rep -∗ Φ rep))%I.
 Next Obligation. solve_proper. Qed.
 
-Definition is_urpc_spec Γsrv (host:u64) (spec : uRPCSpec) :=
-  is_urpc_spec_pred Γsrv host spec.(spec_rpcid) (uRPCSpec_Spec spec).
+Definition is_urpc_spec Γsrv (host:u64) (rpcid:u64) {spec_ty:Type} (spec : uRPCSpec (spec_ty:=spec_ty)) :=
+  is_urpc_spec_pred Γsrv host rpcid (uRPCSpec_Spec spec).
 
-(* We define a custom type for a list of RPC specs in order to state lemmas
-   about initializing a collection of handler_is facts. Unfortunately, using the
-   standard list type leads to a universe error if the spec_ty field contains an
-   iProp Σ, which turns out to be rather common. *)
-
-Inductive uRPCSpecList : Type :=
-| spec_nil : uRPCSpecList
-| spec_cons (x: uRPCSpec) (l: uRPCSpecList) : uRPCSpecList.
-
-Fixpoint dom_uRPCSpecList (l:  uRPCSpecList) : gset u64 :=
+Fixpoint dom_uRPCSpecList (l: list (u64 * uRPCSpec_Spec)) : gset u64 :=
   match l with
   | spec_nil => ∅
   | spec_cons x l => {[ spec_rpcid x ]} ∪ dom_uRPCSpecList l

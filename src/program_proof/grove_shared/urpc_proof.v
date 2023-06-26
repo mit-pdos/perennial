@@ -1042,14 +1042,14 @@ Proof.
   iIntros "#Hhandler !#" (Φ) "H HΦ".
   iDestruct "H" as "(Hslice&Hrep_out_ptr&#Hclient&#HSpec)".
   wp_call.
-  wp_apply (wp_Client__CallStart with "Hhandler [$Hslice $Hclient $HSpec]").
+  wp_apply (wp_Client__CallStart_pred with "Hhandler [$Hslice $Hclient $HSpec]").
   iIntros (err cb_ptr) "[Hslice Hcb]".
   destruct err as [err|]; wp_pures.
   { destruct err; wp_pures.
     2: iApply ("HΦ" $! (Some CallErrDisconnect)).
     1: iApply ("HΦ" $! (Some CallErrTimeout)).
     all: eauto with iFrame. }
-  wp_apply (wp_Client__CallComplete with "[$Hrep_out_ptr $Hcb]").
+  wp_apply (wp_Client__CallComplete_pred with "[$Hrep_out_ptr $Hcb]").
   iIntros ([err|]) "Hcomplete".
   { iApply ("HΦ" $! (Some err)). eauto with iFrame. }
   iApply ("HΦ" $! None). eauto with iFrame.
@@ -1079,7 +1079,7 @@ Lemma wp_Client__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_pt
   WP Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
 Proof.
   iIntros "#His_cl #Hhandler Hreq_sl Hrep [#Hspec Hfail]".
-  wp_apply (wp_Client__Call with "[$Hhandler] [$His_cl $Hreq_sl $Hrep]").
+  wp_apply (wp_Client__Call_pred with "[$Hhandler] [$His_cl $Hreq_sl $Hrep]").
   { iModIntro.
     iModIntro.
     done. }
