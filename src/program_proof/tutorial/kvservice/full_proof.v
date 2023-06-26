@@ -8,6 +8,8 @@ From Perennial.program_logic Require Import atomic_fupd.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
+From Perennial.program_proof.tutorial.kvservice Require Import urpc_spec2.
+
 (********************************************************************************)
 
 (* FIXME: move this somewhere else *)
@@ -784,11 +786,11 @@ Context `{!kvserviceG Σ}.
 
 Context (γ:kvservice_names).
 
-Definition getFreshNum_core_spec (Φ:u64 → iPropO Σ): iPropO Σ :=
-  (∀ opId, own_unexecuted_token γ.(erpc_gn) opId -∗ Φ opId)%I.
+Definition getFreshNum_core_pre : iProp Σ :=
+  True.
 
-Global Instance getFreshNum_core_MonotonicPred : MonotonicPred (getFreshNum_core_spec).
-Proof. apply _. Qed.
+Definition getFreshNum_core_post : u64 → iProp Σ :=
+  λ opId, own_unexecuted_token γ.(erpc_gn) opId.
 
 Definition put_core_spec (args:putArgs.t) (Φ:unit → iPropO Σ): iPropO Σ :=
   (∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(putArgs.opId)
@@ -907,12 +909,11 @@ Definition is_Server (s:loc) γ : iProp Σ :=
   "#HmuInv" ∷ is_lock nroot mu (server.own s γ)
 .
 
-Lemma ghost_getFreshNum γ st Ψ :
+Lemma ghost_getFreshNum γ st :
   int.nat (word.add st.(server.nextFreshId) 1) = int.nat st.(server.nextFreshId) + 1 →
-  getFreshNum_core_spec γ Ψ -∗
   server.own_ghost γ st ==∗
   server.own_ghost γ (st <|(server.nextFreshId) := word.add st.(server.nextFreshId) 1|>) ∗
-  Ψ st.(server.nextFreshId)
+  getFreshNum_core_post γ st.(server.nextFreshId)
 .
 Proof.
   intros Hoverflow.
@@ -931,8 +932,8 @@ Qed.
 
 Lemma wp_Server__getFreshNum (s:loc) γ Ψ :
   {{{
-        "#Hsrv" ∷ is_Server s γ ∗
-        "Hspec" ∷ getFreshNum_core_spec γ Ψ
+        "#Hsrv" ∷ is_Server s γ (* ∗
+        "Hspec" ∷ getFreshNum_core_spec γ Ψ *)
   }}}
     Server__getFreshNum #s
   {{{ (n:u64), RET #n; Ψ n }}}
@@ -1516,15 +1517,13 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!urpcregG Σ}.
 Context `{!kvserviceG Σ}.
 
-Program Definition getFreshNum_spec γ :=
-  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (
-  getFreshNum_core_spec γ (λ (num:u64), Φ (u64_le num))
-  )%I
-.
-Next Obligation.
-  solve_proper.
-Defined.
+Definition getFreshNum_spec γ :=
+  {|
+    spec_rpcid := 0 ;
+    spec_ty := unit ;
+    spec_Pre := (λ _ _, getFreshNum_core_pre) ;
+    spec_Post := (λ _ _ enc_reply, ∃ reply, ⌜enc_reply = u64_le reply⌝ ∗ getFreshNum_core_post γ reply)%I ;
+  |}.
 
 Program Definition put_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
@@ -1561,7 +1560,7 @@ Defined.
 
 Definition is_kvserver_host host γ : iProp Σ :=
   ∃ γrpc,
-  "#H0" ∷ handler_spec γrpc host (U64 0) (getFreshNum_spec γ) ∗
+  "#H0" ∷ handler_urpc_spec γrpc host (getFreshNum_spec γ) ∗
   "#H1" ∷ handler_spec γrpc host (U64 1) (put_spec γ) ∗
   "#H2" ∷ handler_spec γrpc host (U64 2) (conditionalPut_spec γ) ∗
   "#H3" ∷ handler_spec γrpc host (U64 3) (get_spec γ) ∗
@@ -1620,7 +1619,7 @@ Proof.
   wp_pures.
 
   iNamed "Hhost".
-  wp_apply (wp_StartServer2 with "[$Hr]").
+  wp_apply (wp_StartServer with "[$Hr]").
   { set_solver. }
   { (* Here, we show that the functions being passed in Go inside `handlers`
        satisfy the spec they should. *)
@@ -1634,13 +1633,27 @@ Proof.
 
     (* Now show the RPC specs, one at a time *)
     iApply (big_sepM_insert_2 with "").
+    { admit. }
+    iApply (big_sepM_insert_2 with "").
+    { admit. }
+    iApply (big_sepM_insert_2 with "").
+    { admit. }
+    iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec2.
-      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      iApply urpc_handler_to_handler.
+      iIntros "%*%* !# [Hreq_sl Hpre] Hrep_sl".
       wp_pures.
-      iDestruct "Hspec" as (?) "[%Henc Hspec]".
+      wp_apply (wp_Server__getFreshNum with "[$]").
+      iIntros (?) "HΨ".
+      wp_apply wp_EncodeUint64.
+      iIntros (?) "Henc_req".
+      wp_store.
+      iApply ("HΦ" with "[HΨ] [$]").
+      { iApply "HΨ". }
+      by iDestruct (own_slice_to_small with "Henc_req") as "$".
+
       wp_apply (getArgs.wp_decode with "[$Hreq_sl]").
       { by iPureIntro. }
       iIntros (?) "[Hargs Hreq_sl]".
