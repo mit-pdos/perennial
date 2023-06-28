@@ -11,8 +11,7 @@ Definition uCOORD_GET: nat :=
 Record memkv_coord_names := {
  coord_urpc_gn : server_chan_gnames ;
  coord_kv_gn : gname
-}
-.
+}.
 
 Section memkv_global_coord_definitions.
 
@@ -23,9 +22,8 @@ Definition all_are_shard_servers (s:list u64) γkv : iProp Σ :=
               (∃ γ, is_shard_server host γ ∗ ⌜γ.(kv_gn) = γkv⌝)
 .
 
-Definition is_coord_server_addSpec γkv : uRPCSpec :=
-  {| spec_rpcid := uCOORD_ADD;
-     spec_ty := u64;
+Definition is_coord_server_addSpec γkv : RpcSpec :=
+  {| spec_ty := u64;
      spec_Pre := (λ host reqData, ⌜has_encoding_Uint64 reqData host ⌝ ∗
                                    ∃ γ, ⌜ γ.(kv_gn) = γkv ⌝ ∗ is_shard_server host γ)%I;
      spec_Post := (λ host reqData repData, True)%I |}.
@@ -34,9 +32,8 @@ Definition has_encoding_shardMapping (data : list u8) (l: list u64) :=
   has_encoding data (EncUInt64 <$> l) ∧
   length l = int.nat 65536.
 
-Definition is_coord_server_getSpec γkv : uRPCSpec :=
-  {| spec_rpcid := uCOORD_GET;
-     spec_ty := unit;
+Definition is_coord_server_getSpec γkv : RpcSpec :=
+  {| spec_ty := unit;
      spec_Pre := (λ _ reqData, True)%I;
      spec_Post := (λ _ reqData repData,
                    ∃ (shardMapping : list u64),
@@ -44,8 +41,8 @@ Definition is_coord_server_getSpec γkv : uRPCSpec :=
                      all_are_shard_servers shardMapping γkv)%I |}.
 
 Definition is_coord_server (host : u64) γ :=
-  ("#HaddSpec" ∷ is_urpc_spec γ.(coord_urpc_gn) host (is_coord_server_addSpec γ.(coord_kv_gn)) ∗
-  "#HgetSpec" ∷ is_urpc_spec γ.(coord_urpc_gn) host (is_coord_server_getSpec γ.(coord_kv_gn)))%I.
+  ("#HaddSpec" ∷ is_urpc_spec γ.(coord_urpc_gn) host uCOORD_ADD (is_coord_server_addSpec γ.(coord_kv_gn)) ∗
+  "#HgetSpec" ∷ is_urpc_spec γ.(coord_urpc_gn) host uCOORD_GET (is_coord_server_getSpec γ.(coord_kv_gn)))%I.
 
 End memkv_global_coord_definitions.
 
@@ -79,6 +76,5 @@ Definition is_KVCoordServer (s:loc) γ : iProp Σ :=
   "#Hmu" ∷ readonly (s ↦[KVCoord :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock memKVN mu (own_KVCoordServer s γ.(coord_kv_gn))
 .
-
 
 End memkv_coord_definitions.

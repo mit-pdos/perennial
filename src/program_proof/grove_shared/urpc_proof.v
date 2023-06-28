@@ -1021,12 +1021,12 @@ Qed.
 
 Lemma wp_Client__Call_pred γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Post q :
-  is_urpc_spec_pred γsmap host rpcid Spec -∗
   {{{
-      own_slice_small req byteT q reqData ∗
-      rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
-      is_uRPCClient cl_ptr host ∗
-      □(▷ Spec reqData Post)
+      "Hslice" ∷ own_slice_small req byteT q reqData ∗
+      "Hrep_out_ptr" ∷ rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      "#Hclient" ∷ is_uRPCClient cl_ptr host ∗
+      "#Hhandler" ∷ is_urpc_spec_pred γsmap host rpcid Spec ∗
+      "#HSpec" ∷ □(▷ Spec reqData Post)
   }}}
     Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms
   {{{
@@ -1039,8 +1039,8 @@ Lemma wp_Client__Call_pred γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_ou
           (Post repData))
   }}}.
 Proof.
-  iIntros "#Hhandler !#" (Φ) "H HΦ".
-  iDestruct "H" as "(Hslice&Hrep_out_ptr&#Hclient&#HSpec)".
+  iIntros (Φ) "H HΦ".
+  iNamed "H".
   wp_call.
   wp_apply (wp_Client__CallStart_pred with "Hhandler [$Hslice $Hclient $HSpec]").
   iIntros (err cb_ptr) "[Hslice Hcb]".
@@ -1079,10 +1079,17 @@ Lemma wp_Client__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_pt
   WP Client__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
 Proof.
   iIntros "#His_cl #Hhandler Hreq_sl Hrep [#Hspec Hfail]".
-  wp_apply (wp_Client__Call_pred with "[$Hhandler] [$His_cl $Hreq_sl $Hrep]").
-  { iModIntro.
-    iModIntro.
-    done. }
+  wp_apply (wp_Client__Call_pred with "[Hhandler His_cl Hreq_sl Hrep]").
+  {
+    iFrame.
+    iFrame "His_cl".
+    iSplitL.
+    { (* FIXME: iFrame "#" doesn't work without clearing the name. *)
+      iApply to_named.
+      iFrame "#".
+    }
+    iFrame "#".
+  }
   iIntros (err) "Hpost".
   iDestruct "Hpost" as "(Hreq&Hrep)".
   destruct err.

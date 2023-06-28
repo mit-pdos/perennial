@@ -40,15 +40,6 @@ Proof.
   wp_call.
   wp_loadField.
 
-  Search impl.MapGet.
-  Print Absorbing.
-  Search "spec_pat".
-  Search spec_patterns.spec_pat.
-  Compute (spec_patterns.spec_pat.parse "[>$] [$Hfoo]").
-  Search "tac_specialize_frame".
-  Search "tac_unlock_emp".
-  Print spec_patterns.SAutoFrame.
-
   (*
   iDestruct wp_MapGet as "-#HH".
   { shelve. }
@@ -77,12 +68,10 @@ Proof.
   iPureIntro.
   destruct ok.
   {
-    Search map_get lookup.
     apply map_get_true.
     eauto.
   }
   {
-    Search map_get lookup.
     apply map_get_false in Ht_m_lookup.
     destruct Ht_m_lookup.
     eauto.
@@ -112,8 +101,6 @@ Proof.
     repeat iNamed "Ht".
     wp_loadField.
 
-    Search impl.MapInsert.
-
     wp_apply (wp_MapInsert u64 u64 with "[Ht_m]").
     { eauto. }
     { iApply "Ht_m". }
@@ -141,8 +128,6 @@ Proof.
   wp_call.
   wp_loadField.
 
-  Search lock.acquire.
-
   wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Ht]".
   iNamed "Ht".
@@ -151,8 +136,6 @@ Proof.
 
   wp_pures.
   wp_loadField.
-
-  Search lock.release.
 
   iDestruct release_spec as "-#HH".
   notypeclasses refine (coq_tactics.tac_specialize_frame _ "HH" _ false _ _ _ _ _ _ _ _ _ _ _).

@@ -8,8 +8,6 @@ From Perennial.program_logic Require Import atomic_fupd.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Perennial.program_proof.tutorial.kvservice Require Import urpc_spec2.
-
 (********************************************************************************)
 
 (* FIXME: move this somewhere else *)

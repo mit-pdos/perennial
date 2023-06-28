@@ -313,13 +313,12 @@ Proof.
       iFrame "#HgetSpec".
 
       clear Φ.
-      rewrite /is_urpc_handler_pred.
-      iIntros (????) "!#".
+      rewrite /is_urpc_handler.
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
       simpl.
-      iDestruct "Hpre" as (_) "[_ Hpost]".
       iNamed "His_memkv".
       wp_loadField.
       wp_apply (acquire_spec with "[$HmuInv]").
@@ -342,11 +341,11 @@ Proof.
       iDestruct (own_slice_to_small with "Hdata") as "Hdata".
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hpost Hrep Hdata]").
+      wp_apply (release_spec with "[-HΦ Hrep Hdata]").
       { iFrame "Hlocked HmuInv".
         iNext. iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
         iDestruct "H1" as %Hequiv. iApply Hequiv. iFrame. }
-      wp_pures. iApply "HΦ". iFrame. iApply "Hpost". iModIntro. iExists _. iFrame "% #".
+      wp_pures. iApply "HΦ". iFrame. iModIntro. iExists _. iFrame "% #".
     }
     iApply (big_sepM_insert_2 with "").
     { (* AddServerRPC *)
@@ -354,11 +353,11 @@ Proof.
       iFrame "#HaddSpec".
 
       clear Φ.
-      rewrite /is_urpc_handler_pred.
-      iIntros (????) "!#".
+      rewrite /is_urpc_handler.
+      iIntros (??????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
       simpl.
       iDestruct "Hpre" as (x) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc&Hshard)".

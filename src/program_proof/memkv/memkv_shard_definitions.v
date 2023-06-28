@@ -39,8 +39,7 @@ Definition PreShardGet γkv key Q : iProp Σ :=
 Definition PostShardGet γkv (key:u64) Q (rep:GetReplyC) : iProp Σ :=
   ⌜rep.(GR_Err) ≠ 0⌝ ∗ (PreShardGet γkv key Q) ∨ ⌜rep.(GR_Err) = 0⌝ ∗ (Q rep.(GR_Value)).
 Definition is_shard_server_getSpec γkv : eRPCSpec :=
-  {| espec_rpcid := uKV_GET;
-     espec_ty := ((list u8 → iProp Σ) * GetRequestC);
+  {| espec_ty := ((list u8 → iProp Σ) * GetRequestC);
      espec_Pre := (λ '(Q, req) reqData, ⌜has_encoding_GetRequest reqData req⌝ ∗
                     PreShardGet γkv req.(GR_Key) Q
              )%I;
@@ -53,8 +52,7 @@ Definition PreShardPut γkv key Q v : iProp Σ :=
 Definition PostShardPut γkv (key:u64) Q v (rep:PutReplyC) : iProp Σ :=
   ⌜rep.(PR_Err) ≠ 0⌝ ∗ (PreShardPut γkv key Q v) ∨ ⌜rep.(PR_Err) = 0⌝ ∗ Q .
 Definition is_shard_server_putSpec (γkv : gname) : eRPCSpec :=
-  {| espec_rpcid := uKV_PUT;
-     espec_ty := (iProp Σ * PutRequestC)%type;
+  {| espec_ty := (iProp Σ * PutRequestC)%type;
      espec_Pre := (λ '(Q, req) reqData, ⌜has_encoding_PutRequest reqData req⌝ ∗
                      (PreShardPut γkv req.(PR_Key) Q req.(PR_Value))
              )%I;
@@ -69,8 +67,7 @@ Definition PreShardConditionalPut γkv key Q expv newv : iProp Σ :=
 Definition PostShardConditionalPut γkv (key:u64) Q expv newv (rep:ConditionalPutReplyC) : iProp Σ :=
   ⌜rep.(CPR_Err) ≠ 0⌝ ∗ (PreShardConditionalPut γkv key Q expv newv) ∨ ⌜rep.(CPR_Err) = 0⌝ ∗ Q rep.(CPR_Succ).
 Definition is_shard_server_conditionalPutSpec γkv : eRPCSpec :=
-  {| espec_rpcid := uKV_CONDITIONAL_PUT;
-     espec_ty := ((bool → iProp Σ) * ConditionalPutRequestC);
+  {| espec_ty := ((bool → iProp Σ) * ConditionalPutRequestC);
      espec_Pre :=(λ '(Q, req) reqData, ⌜has_encoding_ConditionalPutRequest reqData req⌝ ∗
                   PreShardConditionalPut γkv req.(CPR_Key) Q req.(CPR_ExpValue) req.(CPR_NewValue)
              )%I;
@@ -79,24 +76,21 @@ Definition is_shard_server_conditionalPutSpec γkv : eRPCSpec :=
              )%I |}.
 
 Definition is_shard_server_installSpec γkv : eRPCSpec :=
-  {| espec_rpcid := uKV_INS_SHARD;
-     espec_ty := ();
+  {| espec_ty := ();
      espec_Pre := (λ _ reqData, ∃ args, ⌜has_encoding_InstallShardRequest reqData args⌝ ∗
                             ⌜int.Z args.(IR_Sid) < uNSHARD⌝ ∗
                             own_shard γkv args.(IR_Sid) args.(IR_Kvs)
              )%I;
      espec_Post := (λ _ reqData repData, True)%I |}.
 
-Definition is_shard_server_freshSpec γrpc : uRPCSpec :=
-  {| spec_rpcid := uKV_FRESHCID;
-     spec_ty := unit;
+Definition is_shard_server_freshSpec γrpc : RpcSpec :=
+  {| spec_ty := unit;
      spec_Pre := (λ x reqData, True)%I;
      spec_Post := (λ x reqData repData, ∃ cid, ⌜has_encoding_Uint64 repData cid⌝ ∗
               erpc_make_client_pre γrpc cid)%I |}.
 
-Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : uRPCSpec :=
-  {| spec_rpcid := uKV_MOV_SHARD;
-     spec_ty := memkv_shard_names;
+Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : RpcSpec :=
+  {| spec_ty := memkv_shard_names;
      spec_Pre :=(λ x reqData, ∃ args, ⌜has_encoding_MoveShardRequest reqData args⌝ ∗
                                   ⌜int.Z args.(MR_Sid) < uNSHARD⌝ ∗
                                   (▷ ρ args.(MR_Dst) x) ∗
@@ -106,12 +100,13 @@ Definition is_shard_server_moveSpec_pre γkv (ρ:u64 -d> memkv_shard_names -d> i
 
 Definition is_shard_server_pre (ρ:u64 -d> memkv_shard_names -d> iPropO Σ) : (u64 -d> memkv_shard_names -d> iPropO Σ) :=
   (λ host γ,
-  "#HputSpec" ∷ handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (is_shard_server_putSpec γ.(kv_gn)) ∗
-  "#HconditionalPutSpec" ∷ handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (is_shard_server_conditionalPutSpec γ.(kv_gn)) ∗
-  "#HgetSpec" ∷ handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (is_shard_server_getSpec γ.(kv_gn)) ∗
-  "#HmoveSpec" ∷ is_urpc_spec γ.(urpc_gn) host (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
-  "#HinstallSpec" ∷ handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (is_shard_server_installSpec γ.(kv_gn)) ∗
-  "#HfreshSpec" ∷ is_urpc_spec γ.(urpc_gn) host (is_shard_server_freshSpec γ.(erpc_gn))
+  "#HputSpec" ∷ is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host uKV_PUT (is_shard_server_putSpec γ.(kv_gn)) ∗
+  "#HconditionalPutSpec" ∷ is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host uKV_CONDITIONAL_PUT
+                                    (is_shard_server_conditionalPutSpec γ.(kv_gn)) ∗
+  "#HgetSpec" ∷ is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host uKV_GET (is_shard_server_getSpec γ.(kv_gn)) ∗
+  "#HmoveSpec" ∷ is_urpc_spec γ.(urpc_gn) host uKV_MOV_SHARD (is_shard_server_moveSpec_pre γ.(kv_gn) ρ) ∗
+  "#HinstallSpec" ∷ is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host uKV_INS_SHARD (is_shard_server_installSpec γ.(kv_gn)) ∗
+  "#HfreshSpec" ∷ is_urpc_spec γ.(urpc_gn) host uKV_FRESHCID (is_shard_server_freshSpec γ.(erpc_gn))
 )%I.
 
 (* Actually, handler_is is contractive now so we can remove the ▷ in is_shard_server *)
@@ -119,9 +114,9 @@ Instance is_shard_server_pre_contr : Contractive is_shard_server_pre.
 Proof.
   rewrite /is_shard_server_pre=> n is1 is2 Hpre host γ.
   do 4 (f_contractive || f_equiv).
-  f_equiv. rewrite /is_urpc_spec /=. (* FIXME unfolding other abstractions (uRPCSpec is not an OFE) *)
+  f_equiv. rewrite /is_urpc_spec /=. (* FIXME unfolding other abstractions (RpcSpec is not an OFE) *)
   f_contractive.
-  rewrite /uRPCSpec_Spec /is_shard_server_moveSpec_pre /=.
+  rewrite /RpcSpec_Spec /is_shard_server_moveSpec_pre /=.
   intros args Φ. simpl.
   repeat f_equiv.
 Qed.

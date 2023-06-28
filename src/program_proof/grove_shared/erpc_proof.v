@@ -11,10 +11,9 @@ Notation erpcΣ := (erpc_lib.erpcΣ (list u8)).
 Definition erpcN := nroot .@ "erpc".
 
 (** Spec for an eRPC handler.
-This is isomorphic to uRPCSpec, but to avoid confusion we use distinct types. *)
+This is isomorphic to RpcSpec, but to avoid confusion we use distinct types. *)
 Record eRPCSpec {Σ} :=
-  { espec_rpcid : u64;
-    espec_ty : Type;
+  { espec_ty : Type;
     espec_Pre : espec_ty → list u8 → iProp Σ;
     espec_Post : espec_ty → list u8 → list u8 → iProp Σ }.
 
@@ -26,9 +25,8 @@ Local Definition encode_request (rid : eRPCRequestID) (payload : list u8) :=
 
 (** [Spec] is the spec of the eRPC handler;
     we compute the spec of the underlying uRPC handler. *)
-Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : uRPCSpec :=
- {| spec_rpcid := spec.(espec_rpcid);
-    spec_ty := erpc_request_names * eRPCRequestID * (list u8) * spec.(espec_ty);
+Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : RpcSpec :=
+ {| spec_ty := erpc_request_names * eRPCRequestID * (list u8) * spec.(espec_ty);
     spec_Pre :=(λ '(γreq, rid, payload, x) req,
                   ⌜req = encode_request rid payload ∧ int.Z rid.(Req_Seq) > 0⌝ ∗
                   is_eRPCRequest γerpc γreq
@@ -43,8 +41,8 @@ Definition eRPCSpec_uRPC γerpc (spec : eRPCSpec (Σ:=Σ)) : uRPCSpec :=
  |}.
 
 (** Convenience function to say that a given rpcid has such a handler *)
-Definition handler_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (spec : eRPCSpec) :=
-  is_urpc_spec Γsrv host (eRPCSpec_uRPC γerpc spec).
+Definition is_erpc_spec `{!urpcregG Σ} Γsrv γerpc (host:u64) (rpcid:u64) (spec : eRPCSpec) :=
+  is_urpc_spec Γsrv host rpcid (eRPCSpec_uRPC γerpc spec).
 
 (** What a client needs to get started *)
 Definition erpc_make_client_pre γ cid : iProp Σ :=
@@ -104,13 +102,12 @@ Definition own_erpc_client (γ : erpc_names) (c:loc) : iProp Σ :=
     "%HseqPostitive" ∷ ⌜0%Z < int.Z seq⌝%Z
 .
 
-Definition impl_erpc_is_urpc_spec_pred (f : val) (spec : eRPCSpec)
+Definition is_erpc_handler (f : val) (spec : eRPCSpec)
    : iProp Σ :=
-  ∀ (x : spec.(espec_ty)) (reqData : list u8) req repptr dummy_rep_sl dummy,
+  ∀ (x : spec.(espec_ty)) (reqData : list u8) req repptr,
   {{{
     own_slice_small req byteT 1 reqData ∗
-    repptr ↦[slice.T byteT] (slice_val dummy_rep_sl) ∗
-    own_slice (V:=u8) dummy_rep_sl byteT 1 dummy ∗
+    repptr ↦[slice.T byteT] (slice_val Slice.nil) ∗
     spec.(espec_Pre) x reqData
   }}}
     f (slice_val req) #repptr
@@ -124,15 +121,15 @@ Lemma wp_erpc_Server_HandleRequest spec γ s f :
   {{{ is_erpc_server γ s }}}
     Server__HandleRequest #s f
   {{{ f', RET f';
-      □ (impl_erpc_is_urpc_spec_pred f spec -∗
-      is_urpc_handler_pred f' (uRPCSpec_Spec $ eRPCSpec_uRPC γ spec)) }}}.
+      □ (is_erpc_handler f spec -∗
+      is_urpc_handler_pred f' (RpcSpec_Spec $ eRPCSpec_uRPC γ spec)) }}}.
 Proof.
   iIntros (Φ) "#Hs HΦ". wp_call. iModIntro.
   iApply "HΦ". iModIntro. clear Φ.
   iIntros "#Hf".
   iApply urpc_handler_to_handler.
-  iIntros ([[[γreq rid] payload] x] reqData req repptr ?? Φ) "!# Hpre HΦ". wp_lam.
-  iDestruct "Hpre" as "(Hreq & Hrepptr & Hrep & Hpre)". simpl.
+  iIntros ([[[γreq rid] payload] x] reqData req repptr Φ) "!# Hpre HΦ". wp_lam.
+  iDestruct "Hpre" as "(Hreq & Hrepptr & Hpre)". simpl.
   iDestruct "Hpre" as "[[-> %Hseqpos] #HreqInv]".
 
   wp_apply (wp_ReadInt with "Hreq"). clear req.
@@ -259,8 +256,8 @@ Proof.
     iDestruct "HH" as "(Hγpre & Hpre & Hproc)".
 
     (* *Now* we reduce the if, which takes a step. And call the handler. *)
-    wp_apply ("Hf" with "[$Hreq $Hrepptr $Hrep $Hpre]").
-    iIntros (rep_sl q rep) "(Hrepptr & Hrep & Hspecpost)".
+    wp_apply ("Hf" with "[$Hreq $Hrepptr $Hpre]").
+    iIntros (rep_sl ??) "(Hrepptr & Hrep & Hspecpost)".
 
     wp_loadField.
     wp_apply (wp_MapInsert with "HlastSeqMap").

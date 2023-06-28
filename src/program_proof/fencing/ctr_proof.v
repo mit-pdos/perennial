@@ -502,7 +502,7 @@ Defined.
 
 Definition is_host (host:u64) γ : iProp Σ :=
   is_urpc_spec_pred γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
-  handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (Put_spec_erpc γ) ∗
+  is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (Put_spec_erpc γ) ∗
   is_urpc_spec_pred γ.(urpc_gn) host (U64 2) (GetFreshCID_spec γ) ∗
   is_urpc_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
@@ -1303,7 +1303,7 @@ Proof.
   wp_loadField.
   iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_small".
   iDestruct "Hhost" as "(Hhost1 & #Hhost_erpc & Hhost2)".
-  wp_apply (wp_Client__Call_uRPCSpec with "Hhost_erpc [$Hrep $Hreq_small $Hcl_is]").
+  wp_apply (wp_Client__Call_RpcSpec with "Hhost_erpc [$Hrep $Hreq_small $Hcl_is]").
   { done. }
   {
     iFrame "#".
