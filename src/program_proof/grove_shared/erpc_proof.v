@@ -122,12 +122,11 @@ Lemma wp_erpc_Server_HandleRequest spec γ s f :
     Server__HandleRequest #s f
   {{{ f', RET f';
       □ (is_erpc_handler f spec -∗
-      is_urpc_handler_pred f' (RpcSpec_Spec $ eRPCSpec_uRPC γ spec)) }}}.
+      is_urpc_handler f' $ eRPCSpec_uRPC γ spec) }}}.
 Proof.
   iIntros (Φ) "#Hs HΦ". wp_call. iModIntro.
   iApply "HΦ". iModIntro. clear Φ.
   iIntros "#Hf".
-  iApply urpc_handler_to_handler.
   iIntros ([[[γreq rid] payload] x] reqData req repptr Φ) "!# Hpre HΦ". wp_lam.
   iDestruct "Hpre" as "(Hreq & Hrepptr & Hpre)". simpl.
   iDestruct "Hpre" as "[[-> %Hseqpos] #HreqInv]".

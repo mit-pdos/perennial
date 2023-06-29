@@ -42,7 +42,7 @@ Proof.
   iSpecialize ("Hput_handler" with "[]").
   {
     clear Φ.
-    iIntros ([Q req1] ?????) "!#".
+    iIntros ([Q req1] ???) "!#".
     iIntros (Φ) "Hpre HΦ".
     wp_pures.
     wp_apply (wp_allocStruct).
@@ -51,7 +51,7 @@ Proof.
     }
     iIntros (rep_ptr) "Hrep".
     wp_pures.
-    iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & [%Henc Hpre])".
+    iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & [%Henc Hpre])".
     wp_apply (wp_DecodePutRequest with "[$Hreq_sl]").
     { done. }
     iIntros (args_ptr val_sl) "Hargs".
@@ -82,14 +82,14 @@ Proof.
   iSpecialize ("Hget_handler" with "[]").
   {
     clear Φ.
-    iIntros ([Q req1] ?????) "!#".
+    iIntros ([Q req1] ???) "!#".
     iIntros (Φ) "Hpre HΦ".
     wp_pures.
     wp_apply (wp_allocStruct).
     { val_ty. }
     iIntros (rep_ptr) "Hrep".
     wp_pures.
-    iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & [%Henc Hpre])".
+    iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & [%Henc Hpre])".
     wp_apply (wp_DecodeGetRequest with "[$Hreq_sl]").
     { done. }
     iIntros (args_ptr) "Hargs".
@@ -126,7 +126,7 @@ Proof.
   iSpecialize ("Hcput_handler" with "[]").
   {
     clear Φ.
-    iIntros ([Q req1] ?????) "!#".
+    iIntros ([Q req1] ???) "!#".
     iIntros (Φ) "Hpre HΦ".
     wp_pures.
     wp_apply (wp_allocStruct).
@@ -135,7 +135,7 @@ Proof.
     }
     iIntros (rep_ptr) "Hrep".
     wp_pures.
-    iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & _ & [%Henc Hpre])".
+    iDestruct "Hpre" as "(Hreq_sl & Hrep_ptr & [%Henc Hpre])".
     wp_apply (wp_DecodeConditionalPutRequest with "[$Hreq_sl]").
     { done. }
     iIntros (args_ptr expv_sl newv) "Hargs".
@@ -166,11 +166,11 @@ Proof.
   iSpecialize ("Hinstall_handler" with "[]").
   {
     clear Φ.
-    iIntros ([] ?????) "!#".
+    iIntros ([] ???) "!#".
     iIntros (Φ) "Hpre HΦ".
     wp_pures.
 
-    iDestruct "Hpre" as "(Hpre_sl & Hrep & _ & Hpre)".
+    iDestruct "Hpre" as "(Hpre_sl & Hrep & Hpre)".
     iDestruct "Hpre" as (?) "(%Hargs_enc & %HsidLe & Hshard)".
     wp_apply (wp_decodeInstallShardRequest with "[$Hpre_sl]").
     { done. }
@@ -212,11 +212,11 @@ Proof.
       simpl. iExists _.
       iFrame "#HmoveSpec".
 
-      clear Φ. iApply urpc_handler_to_handler.
-      iIntros (??????) "!#".
+      clear Φ.
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hargs)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hargs)".
       simpl.
       iDestruct "Hargs" as (?) "(%HencArgs & %HsidLe & #Hdst_is_shard)".
       wp_apply (wp_decodeMoveShardRequest with "[$Hreq_sl]").
@@ -267,11 +267,10 @@ Proof.
       iIntros (rep_sl repData) "[Hrep_sl %HrepEnc]".
       iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
-      iSimpl in "Hpre". iDestruct "Hpre" as (_) "[_ Hpost]".
+      iSimpl in "Hpre".
       wp_store.
       iApply "HΦ".
       iFrame.
-      iApply "Hpost".
       iExists _; by iFrame.
     }
 
