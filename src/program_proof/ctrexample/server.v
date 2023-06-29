@@ -433,8 +433,8 @@ Proof using Type*.
     iExists _; iFrame "#".
   }
 
-  wp_apply (wp_StartServer with "[$Hsown]").
-  { rewrite ?dom_insert_L. set_solver by idtac. (* FIXME regular set_solver leaves shelved goals *) }
+  wp_apply (wp_StartServer_pred with "[$Hsown]").
+  { rewrite ?dom_insert_L. set_solver. }
   {
     iSplitL "".
     { rewrite /handlers_complete.

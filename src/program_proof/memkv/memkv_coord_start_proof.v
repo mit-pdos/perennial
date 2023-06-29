@@ -313,11 +313,10 @@ Proof.
       iFrame "#HgetSpec".
 
       clear Φ.
-      rewrite /is_urpc_handler.
-      iIntros (??????) "!#".
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
       simpl.
       iNamed "His_memkv".
       wp_loadField.
@@ -354,12 +353,11 @@ Proof.
 
       clear Φ.
       rewrite /is_urpc_handler.
-      iIntros (??????) "!#".
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
       simpl.
-      iDestruct "Hpre" as (x) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc&Hshard)".
       iDestruct "Hshard" as (γsh Heq) "#His_shard".
       wp_apply (wp_DecodeUint64' with "[$Hreq_sl]"); first by eauto.
@@ -373,7 +371,6 @@ Proof.
       wp_pures. iModIntro. iApply "HΦ". iFrame.
       iDestruct (own_slice_zero byteT 1%Qp) as "Hnil".
       rewrite own_slice_to_small. iFrame "Hnil".
-      iApply "Hpost". eauto.
     }
     rewrite big_sepM_empty. eauto.
   }

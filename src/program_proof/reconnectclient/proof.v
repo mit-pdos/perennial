@@ -171,9 +171,9 @@ Proof.
 
   destruct (decide _); last by exfalso.
   iDestruct "Hcl" as "#Hcl".
-  wp_apply (wp_Client__Call with "[$] [$Hsl $Hrep]").
-  { iFrame "#". }
-  iIntros (?) "(HurpcCl & Hsl & HΦ)".
+  wp_apply (wp_Client__Call_pred with "[Hsl Hrep]").
+  { iFrame "∗#". }
+  iIntros (?) "(Hsl & HΦ)".
   wp_pures.
   wp_if_destruct.
   {
@@ -182,7 +182,7 @@ Proof.
     wp_apply (acquire_spec with "HmuInv").
     iIntros "[Hlocked Hown]".
 
-    iClear "Hcl HurpcCl".
+    iClear "Hcl".
     clear urpcCl.
     iNamed "Hown".
     wp_pures.

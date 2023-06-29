@@ -116,9 +116,8 @@ Proof.
   wp_loadField.
 
   iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_Client__Call with "[] [$Hreq_sl $Hrep $His_cl]").
-  { iDestruct "His_host" as "[$ _]". }
-  {
+  wp_apply (wp_Client__Call_pred with "[$Hreq_sl $Hrep]").
+  { iFrame "#". iDestruct "His_host" as "[$ _]".
     do 2 iModIntro.
     simpl.
     iExists newHost.
@@ -130,7 +129,7 @@ Proof.
     iExists _; iFrame.
     done.
   }
-  iIntros (err) "(_ & Hreq_sl & Hpost)".
+  iIntros (err) "(Hreq_sl & Hpost)".
   destruct err.
   { (* there was an error; just Exit() *)
     simpl.
@@ -181,9 +180,8 @@ Proof.
   wp_loadField.
 
   iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_Client__Call with "[] [$Hreq_sl $Hrep $His_cl]").
-  { iDestruct "His_host" as "[_ [$ _]]". }
-  {
+  wp_apply (wp_Client__Call_pred with "[$Hreq_sl $Hrep His_cl]").
+  { iFrame "#". iDestruct "His_host" as "[_ [$ _]]".
     do 2 iModIntro.
     simpl.
     iIntros.
@@ -192,7 +190,7 @@ Proof.
     iExists _; iFrame.
     done.
   }
-  iIntros (err) "(_ & Hreq_sl & Hpost)".
+  iIntros (err) "(Hreq_sl & Hpost)".
   destruct err.
   { (* there was an error; just Exit() *)
     simpl.
