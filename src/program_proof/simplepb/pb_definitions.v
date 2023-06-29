@@ -611,6 +611,33 @@ Definition numClerks : nat := 32.
 Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
 (* this is meant to be unfolded in the code proof *)
+Print Hint pb_preread_protocol.pb_prereadG.
+Set Typeclasses Debug Verbosity 2.
+(*
+Debug: 1.2-1.1-1.1: simple apply @pb_prereadG on
+(pb_preread_protocol.pb_prereadG Σ) failed with: Cannot unify Type@{max(prod.u0,prod.u1)} and
+Type@{Perennial.program_proof.simplepb.pb_protocol.243}
+*)
+Set Printing Universes.
+
+#[program] Definition a:True.
+eassert (pb_ghostG Σ).
+{
+  Print Hint.
+  simple apply @preread_pb_ghostG.
+  Print Hint.
+  Set Printing All.
+  instantiate (1:=(_*_)%type).
+  simple apply @pb_prereadG.
+
+  (*
+  simple apply @pb_ghost_map_logG.
+  Print Hint.
+  simple apply @preread_pb_ghostG.
+  Print Hint.
+  simple apply @pb_prereadG. *)
+Admitted.
+
 Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
   ∃ (clerkss:list Slice.t) backups,
   "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
@@ -621,9 +648,10 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
                         ∃ clerks,
                         "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
                         "%Hclerks_conf" ∷ ⌜length clerks = length backups⌝ ∗
-                        "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.(r_pb) s.(server.epoch))
+                        "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv')
                     )
 .
+
 
 Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
 Hint Unfold no_overflow : arith.

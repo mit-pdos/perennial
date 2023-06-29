@@ -22,7 +22,7 @@ Record pb_server_names :=
 
 Context `{EntryType:Type}.
 Local Canonical Structure EntryTypeO := leibnizO EntryType.
-Local Definition logR := mono_listR EntryTypeO.
+Local Definition logR := mono_listR EntryType.
 
 Class pb_ghostG Σ := {
     pb_ghost_epochG :> mono_natG Σ ;

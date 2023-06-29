@@ -35,7 +35,7 @@ Local Example spec_iprop :=
   |}.
 
 (* XXX: using this because [list] is not universe polymorphic. *)
-Polymorphic Cumulative Inductive plist (A : Type) :=
+Inductive plist (A : Type) :=
 | pnil : plist A
 | pcons : A -> plist A -> plist A.
 Arguments pnil {A}.
