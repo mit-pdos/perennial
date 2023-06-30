@@ -12,7 +12,7 @@ Context `{!urpcregG Σ}.
 Context `{HPRE: !gooseGlobalGS Σ}.
 
 (* Higher-level interface for defining a uRPC spec. *)
-Record RpcSpec :=
+Polymorphic Record RpcSpec :=
   {
     spec_ty : Type;
     spec_Pre : spec_ty → list u8 → iProp Σ;

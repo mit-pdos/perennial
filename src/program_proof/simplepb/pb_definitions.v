@@ -13,6 +13,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.program_proof.simplepb Require Import config_proof.
 From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.grove_shared Require Import monotonic_pred.
+From Perennial.base_logic Require Import lib.saved_spec.
 
 (* State-machine record. An instance of Sm.t defines how to compute the reply
    for an op applied to some state and how to encode ops into bytes. *)
@@ -610,33 +611,35 @@ Definition numClerks : nat := 32.
 
 Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
+(* FIXME: for some reason, importing urpc_spec makes typeclass search for
+   pb_ghostG fail here. Seems like universe unification error:
+   Debug: 1.2-1.1-1.1: simple apply @pb_prereadG on
+  (pb_preread_protocol.pb_prereadG Σ) failed with: Cannot unify Type@{max(prod.u0,prod.u1)} and
+  Type@{Perennial.program_proof.simplepb.pb_protocol.243} *)
 (* this is meant to be unfolded in the code proof *)
-Print Hint pb_preread_protocol.pb_prereadG.
-Set Typeclasses Debug Verbosity 2.
+Print Universes.
+
 (*
-Debug: 1.2-1.1-1.1: simple apply @pb_prereadG on
-(pb_preread_protocol.pb_prereadG Σ) failed with: Cannot unify Type@{max(prod.u0,prod.u1)} and
-Type@{Perennial.program_proof.simplepb.pb_protocol.243}
-*)
-Set Printing Universes.
+This might be the suspicious new set of constraints:
+Let's try adding them manually.
 
+RpcSpec.u0 <= Coq.Relations.Relation_Definitions.1
+           < iris.bi.interface.3
+           < prod.u1
+           < Coq.Init.Datatypes.26
+           <= exist_ne.u0
+           < plist.u0 *)
+
+Print Universes.
+(* FIXME: with non-polymorphic RpcSpec, adding this constraint somehow breaks
+   typeclass search for pb_prereadG. *)
+Print Universes Subgraph (ucmra.u0 prod.u1).
+Constraint ucmra.u0 < prod.u1.
 #[program] Definition a:True.
-eassert (pb_ghostG Σ).
-{
-  Print Hint.
+eassert (pb_ghostG Σ); last done.
   simple apply @preread_pb_ghostG.
-  Print Hint.
-  Set Printing All.
-  instantiate (1:=(_*_)%type).
-  simple apply @pb_prereadG.
 
-  (*
-  simple apply @pb_ghost_map_logG.
-  Print Hint.
-  simple apply @preread_pb_ghostG.
-  Print Hint.
-  simple apply @pb_prereadG. *)
-Admitted.
+Definition foo := is_epoch_config.
 
 Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
   ∃ (clerkss:list Slice.t) backups,

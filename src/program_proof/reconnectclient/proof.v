@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Export reconnectclient.
-From Perennial.program_proof.grove_shared Require Export urpc_proof urpc_spec.
+From Perennial.program_proof.grove_shared Require Export urpc_proof.
 
 Section proof.
 

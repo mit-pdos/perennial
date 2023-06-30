@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export config.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof Require Import marshal_stateless_proof std_proof.
 From Perennial.program_proof.simplepb Require Import config_marshal_proof renewable_lease.
-From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
+From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 
 Section config_global.
