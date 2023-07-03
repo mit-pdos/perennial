@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Export reconnectclient.
-From Perennial.program_proof.grove_shared Require Export urpc_proof urpc_spec.
+From Perennial.program_proof.grove_shared Require Export urpc_proof.
 
 Section proof.
 
@@ -138,7 +138,7 @@ Qed.
 Lemma wp_ReconnectingClient__Call2 γsmap q (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
   is_ReconnectingClient cl_ptr host -∗
-  handler_spec γsmap host rpcid Spec -∗
+  is_urpc_spec_pred γsmap host rpcid Spec -∗
   own_slice_small req byteT q reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData (λ reply,
@@ -171,9 +171,9 @@ Proof.
 
   destruct (decide _); last by exfalso.
   iDestruct "Hcl" as "#Hcl".
-  wp_apply (wp_Client__Call with "[$] [$Hsl $Hrep]").
-  { iFrame "#". }
-  iIntros (?) "(HurpcCl & Hsl & HΦ)".
+  wp_apply (wp_Client__Call_pred with "[Hsl Hrep]").
+  { iFrame "∗#". }
+  iIntros (?) "(Hsl & HΦ)".
   wp_pures.
   wp_if_destruct.
   {
@@ -182,7 +182,7 @@ Proof.
     wp_apply (acquire_spec with "HmuInv").
     iIntros "[Hlocked Hown]".
 
-    iClear "Hcl HurpcCl".
+    iClear "Hcl".
     clear urpcCl.
     iNamed "Hown".
     wp_pures.

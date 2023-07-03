@@ -45,10 +45,6 @@ From Perennial.program_proof.pb Require
 From Goose.github_com.mit_pdos.gokv.pb Require
      controller.
 
-(* atomic commit tutorial (from gokv) *)
-From Perennial.program_proof Require
-     atomic_commit.
-
 From Perennial.program_proof.fencing Require
      config_proof ctr_proof frontend_proof.
 From Perennial.program_proof.ctrexample Require
@@ -105,4 +101,4 @@ From Perennial.program_proof.minlease Require proof.
 From Perennial.program_proof.tutorial Require
      basics.proof
      kvservice.proof
-     kvservice.full_proof.
+     (* kvservice.full_proof *).

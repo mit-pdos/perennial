@@ -3,7 +3,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export config.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof Require Import marshal_stateless_proof std_proof.
 From Perennial.program_proof.simplepb Require Import config_marshal_proof renewable_lease.
-From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
+From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 
 Section config_global.
@@ -141,11 +141,11 @@ Defined.
 
 Definition is_config_host (host:u64) γ : iProp Σ :=
   ∃ γrpc,
-  handler_spec γrpc host (U64 0) (ReserveEpochAndGetConfig_spec γ) ∗
-  handler_spec γrpc host (U64 1) (GetConfig_spec γ) ∗
-  handler_spec γrpc host (U64 2) (TryWriteConfig_spec γ) ∗
-  handler_spec γrpc host (U64 3) (GetLease_spec γ) ∗
-  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
+  is_urpc_spec_pred γrpc host (U64 0) (ReserveEpochAndGetConfig_spec γ) ∗
+  is_urpc_spec_pred γrpc host (U64 1) (GetConfig_spec γ) ∗
+  is_urpc_spec_pred γrpc host (U64 2) (TryWriteConfig_spec γ) ∗
+  is_urpc_spec_pred γrpc host (U64 3) (GetLease_spec γ) ∗
+  is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
 .
 
 End config_global.
@@ -286,16 +286,16 @@ Lemma wp_Server__ReserveEpochAndGetConfig (server:loc) γ :
   }}}
     config.Server__ReserveEpochAndGetConfig #server
   {{{
-        (f:val), RET f; impl_handler_spec2 f (ReserveEpochAndGetConfig_spec γ)
+        (f:val), RET f; is_urpc_handler_pred f (ReserveEpochAndGetConfig_spec γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
   wp_call.
   iApply "HΦ".
   iModIntro.
-  unfold impl_handler_spec2.
+  unfold is_urpc_handler_pred.
   clear Φ.
-  iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
+  iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
   wp_call.
 
   iNamed "His_srv".
@@ -357,104 +357,9 @@ Proof.
   wp_pures.
   iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
   iSpecialize ("Hupd" with "[% //] [% //]").
-  iApply ("HΦ" with "Hupd Hrep Hrep_sl").
+  iModIntro. iApply "HΦ".
+  iFrame.
 Qed.
-
-  (*
-  wp_forBreak.
-  wp_pures.
-  wp_apply wp_GetTimeRange.
-  iIntros (?????) "Htime".
-  rewrite /GetEpochAndConfig_spec /GetEpochAndConfig_core_spec.
-  iDestruct (own_time_get_lb with "Htime") as "#Htime_lb".
-  iFrame "Htime".
-  iModIntro.
-
-  wp_loadField.
-  wp_apply (acquire_spec with "[$His_mu]").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pure1_credit "Hlc".
-  wp_loadField.
-  wp_if_destruct.
-  2:{
-    wp_storeField.
-    wp_loadField.
-    wp_loadField.
-    wp_apply (release_spec with "[-HΨ HΦ Hrep Harg_sl Hlc]").
-    { iFrame "#∗". repeat iExists _; iFrame "∗#". }
-    wp_pures.
-    wp_apply wp_Sleep.
-    wp_pures.
-    iLeft.
-    iModIntro. iSplitR; first done.
-    iFrame.
-  }
-  (* eventually, lease expired *)
-  iModIntro. iRight.
-  iSplitR; first done.
-  wp_storeField.
-  wp_loadField.
-  wp_apply (wp_SumAssumeNoOverflow).
-  iIntros (Hno_overflow).
-  wp_storeField.
-  wp_loadField.
-  wp_apply (wp_slice_len).
-  wp_apply (wp_NewSliceWithCap).
-  { apply encoding.unsigned_64_nonneg. }
-  iIntros (ptr) "Hsl".
-  wp_store.
-  wp_loadField.
-  wp_load.
-  wp_apply (wp_WriteInt with "[$]").
-  iIntros (enc_sl) "Hrep_sl".
-  wp_store.
-  wp_loadField.
-  wp_apply (Config.wp_Encode with "[Hconf_sl]").
-  { iFrame. }
-  iIntros (enc_conf enc_conf_sl) "(%Hconf_enc & Hconf_sl & Henc_conf_sl)".
-  wp_load.
-  wp_apply (wp_WriteBytes with "[$Hrep_sl Henc_conf_sl]").
-  {
-    iDestruct (own_slice_to_small with "Henc_conf_sl") as "$".
-  }
-  iIntros (rep_sl) "[Hrep_sl Henc_conf_sl]".
-  replace (int.nat 0%Z) with 0%nat by word.
-  wp_store.
-  wp_loadField.
-
-  iApply fupd_wp.
-  iMod (fupd_mask_subseteq (↑epochLeaseN)) as "Hmask".
-  { set_solver. }
-  iMod (lease_expired_get_epoch with "[Htime_lb] Hepoch_lease") as "Hepoch_ghost".
-  { iApply is_time_lb_mono; last done. word. }
-  iMod "Hmask".
-  iSpecialize ("HΨ" with "Hlc").
-  iMod "HΨ".
-  iDestruct "HΨ" as (??) "(Hepoch_ghost2 & Hconf_ghost2 & Hupd)".
-  iDestruct (ghost_var_agree with "Hconf_ghost Hconf_ghost2") as %->.
-
-
-  iDestruct (mono_nat_auth_own_agree with "Hepoch_ghost Hepoch_ghost2") as %[_ Heq].
-  replace (epoch0) with (epoch) by word.
-  iCombine "Hepoch_ghost Hepoch_ghost2" as "Hepoch_ghost".
-  iMod (mono_nat_own_update (int.nat (word.add epoch 1)) with "Hepoch_ghost") as "[[Hepoch_ghost Hepoch_ghost2] _]".
-  { word. }
-  iSpecialize ("Hupd" with "[%] Hepoch_ghost2 Hconf_ghost2").
-  { word. }
-  iMod "Hupd".
-  iModIntro.
-
-  wp_apply (release_spec with "[- Hrep Hrep_sl Hupd HΦ]").
-  {
-    iFrame "His_mu Hlocked". iNext.
-    repeat iExists _.
-    iFrame "∗#%".
-  }
-  wp_pures.
-  iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
-  iSpecialize ("Hupd" with "[% //] [% //]").
-  iApply ("HΦ" with "Hupd Hrep Hrep_sl"). *)
 
 Lemma wp_Server__GetConfig (server:loc) γ :
   {{{
@@ -462,16 +367,16 @@ Lemma wp_Server__GetConfig (server:loc) γ :
   }}}
     config.Server__GetConfig #server
   {{{
-        (f:val), RET f; impl_handler_spec2 f (GetConfig_spec γ)
+        (f:val), RET f; is_urpc_handler_pred f (GetConfig_spec γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
   wp_call.
   iApply "HΦ".
   iModIntro.
-  unfold impl_handler_spec2.
+  unfold is_urpc_handler_pred.
   clear Φ.
-  iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
+  iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
   wp_call.
 
   iNamed "His_srv".
@@ -503,7 +408,7 @@ Proof.
   wp_pures.
   iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
   iSpecialize ("Hupd" with "[% //]").
-  iApply ("HΦ" with "Hupd Hrep Hrep_sl").
+  iModIntro. iApply "HΦ". iFrame.
 Qed.
 
 Lemma wp_Server__TryWriteConfig (server:loc) γ :
@@ -512,16 +417,16 @@ Lemma wp_Server__TryWriteConfig (server:loc) γ :
   }}}
     config.Server__TryWriteConfig #server
   {{{
-        (f:val), RET f; impl_handler_spec2 f (TryWriteConfig_spec γ)
+        (f:val), RET f; is_urpc_handler_pred f (TryWriteConfig_spec γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
   wp_call.
   iApply "HΦ".
   iModIntro.
-  unfold impl_handler_spec2.
+  unfold is_urpc_handler_pred.
   clear Φ.
-  iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
+  iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
   wp_call.
   iDestruct "HΨ" as (new_epoch new_conf enc_new_conf) "(%Henc & %Henc_conf & HΨ)".
   rewrite Henc.
@@ -573,8 +478,7 @@ Proof.
     { instantiate (1:=1). done. }
     rewrite app_nil_l.
     iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
-    iDestruct ("HΦ" with "HΨ Hrep Hrep_sl") as "HΦ".
-    done.
+    iModIntro. iApply "HΦ". iFrame.
   }
   iDestruct (mono_nat_lb_own_valid with "Hreserved_ghost Hepoch_lb") as %Hineq.
   assert (new_epoch = reservedEpoch); subst.
@@ -653,7 +557,7 @@ Proof.
     wp_pures.
     iSpecialize ("HΨ" $!_ with "[//]").
     iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
-    iApply ("HΦ" with "HΨ [$] [$]").
+    iModIntro. iApply "HΦ". iFrame.
   }
   { (* case: already in epoch *)
     wp_apply (Config.wp_Decode with "[$Hargs_sl]").
@@ -706,7 +610,7 @@ Proof.
     wp_pures.
     iSpecialize ("HΨ" $!_ with "[//]").
     iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
-    iApply ("HΦ" with "HΨ [$] [$]").
+    iModIntro. iApply "HΦ". iFrame.
   }
 Qed.
 
@@ -837,16 +741,16 @@ Lemma wp_Server__GetLease (server:loc) γ :
   }}}
     config.Server__GetLease #server
   {{{
-        (f:val), RET f; impl_handler_spec2 f (GetLease_spec γ)
+        (f:val), RET f; is_urpc_handler_pred f (GetLease_spec γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
   wp_call.
   iApply "HΦ".
   iModIntro.
-  unfold impl_handler_spec2.
+  unfold is_urpc_handler_pred.
   clear Φ.
-  iIntros (enc_args Φ Ψ req_sl rep_ptr) "!# Harg_sl Hrep HΦ HΨ".
+  iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
   wp_call.
   iNamed "His_srv".
   iDestruct "HΨ" as (?) "[% HΨ]".
@@ -890,7 +794,7 @@ Proof.
     wp_store.
     iRight in "HΨ".
     iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-    iApply ("HΦ" with "[HΨ] [$] [$]").
+    iApply "HΦ". iFrame.
     rewrite app_nil_l.
     iApply "HΨ".
     2: iPureIntro; done.
@@ -946,7 +850,7 @@ Proof.
     iModIntro.
     rewrite app_nil_l.
     iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-    iApply ("HΦ" with "[HΨ] [$] [$]").
+    iApply "HΦ". iFrame.
     iLeft in "HΨ".
     iApply "HΨ"; done.
   }
@@ -980,7 +884,7 @@ Proof.
     iModIntro.
     rewrite app_nil_l.
     iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-    iApply ("HΦ" with "[HΨ] [$] [$]").
+    iApply "HΦ". iFrame.
     iLeft in "HΨ".
     iApply "HΨ"; done.
   }
@@ -1018,6 +922,7 @@ Proof.
   {
     iDestruct "Hhost" as "[$ _]".
   }
+  iSplit.
   {
     iModIntro.
     iNext.
@@ -1104,6 +1009,7 @@ Proof.
   {
     iDestruct "Hhost" as "[_ [$ _]]".
   }
+  iSplit.
   {
     iModIntro.
     iNext.
@@ -1212,6 +1118,7 @@ Proof.
   {
     iDestruct "Hhost" as "[_ [_ [$ _]]]".
   }
+  iSplit.
   {
     iModIntro.
     iNext.
@@ -1318,6 +1225,7 @@ Proof.
   {
     iDestruct "Hhost" as "[_ [_ [_ [$ _]]]]".
   }
+  iSplit.
   {
     iModIntro.
     iNext.
@@ -1460,7 +1368,7 @@ Proof.
   wp_pures.
 
   iNamed "Hhost".
-  wp_apply (wp_StartServer2 with "[$Hr]").
+  wp_apply (wp_StartServer_pred with "[$Hr]").
   {
     set_solver.
   }
@@ -1530,7 +1438,7 @@ Lemma config_server_init host γ :
   is_config_host host γ.
 Proof.
   iIntros "Hchan".
-  iMod (handler_is_init_list2 host (config_spec_list γ) with "Hchan") as (γrpc) "H".
+  iMod (alloc_is_urpc_list_pred host (config_spec_list γ) with "Hchan") as (γrpc) "H".
   { simpl. set_solver. }
   iModIntro.
   iExists γrpc.

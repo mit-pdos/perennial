@@ -433,8 +433,8 @@ Proof using Type*.
     iExists _; iFrame "#".
   }
 
-  wp_apply (wp_StartServer with "[$Hsown]").
-  { rewrite ?dom_insert_L. set_solver by idtac. (* FIXME regular set_solver leaves shelved goals *) }
+  wp_apply (wp_StartServer_pred with "[$Hsown]").
+  { rewrite ?dom_insert_L. set_solver. }
   {
     iSplitL "".
     { rewrite /handlers_complete.
@@ -444,7 +444,7 @@ Proof using Type*.
       simpl. iExists _.
       iFrame "Hhandler".
 
-      rewrite /impl_handler_spec.
+      rewrite /is_urpc_handler_pred.
       iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       iDestruct "Hpre" as "(Hreq_sl & Hrep & HFAISpec)".
