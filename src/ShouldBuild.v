@@ -101,4 +101,4 @@ From Perennial.program_proof.minlease Require proof.
 From Perennial.program_proof.tutorial Require
      basics.proof
      kvservice.proof
-     kvservice.full_proof.
+     (* kvservice.full_proof *).

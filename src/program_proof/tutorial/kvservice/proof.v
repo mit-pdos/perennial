@@ -1021,7 +1021,7 @@ Proof.
   wp_pures.
 
   iNamed "Hhost".
-  wp_apply (wp_StartServer2 with "[$Hr]").
+  wp_apply (wp_StartServer_pred with "[$Hr]").
   { set_solver. }
   { (* Here, we show that the functions being passed in Go inside `handlers`
        satisfy the spec they should. *)
@@ -1038,8 +1038,8 @@ Proof.
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       iDestruct "Hspec" as (?) "[%Henc Hspec]".
       wp_apply (getArgs.wp_decode with "[$Hreq_sl]").
@@ -1051,14 +1051,14 @@ Proof.
       iIntros (ret_sl) "Hret_sl".
       iDestruct (own_slice_to_small with "Hret_sl") as "Hret_sl".
       wp_store.
-      iApply ("HΦ" with "[$] [$] [$]").
+      iModIntro. iApply "HΦ"; iFrame.
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       iDestruct "Hspec" as (?) "[%Henc Hspec]".
       wp_apply (conditionalPutArgs.wp_decode with "[$Hreq_sl]").
@@ -1069,16 +1069,15 @@ Proof.
       wp_apply wp_stringToBytes.
       iIntros (?) "Henc_req".
       wp_store.
-      iApply ("HΦ" with "[HΨ] [$]").
-      { iApply "HΨ". }
+      iApply "HΦ"; iFrame.
       by iDestruct (own_slice_to_small with "Henc_req") as "$".
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       iDestruct "Hspec" as (?) "[%Henc Hspec]".
       wp_apply (putArgs.wp_decode with "[$Hreq_sl]").
@@ -1086,16 +1085,15 @@ Proof.
       iIntros (?) "Hargs".
       wp_apply (wp_Server__put with "[$Hsrv $Hargs Hspec //]").
       iIntros "HΨ". wp_pures.
-      iApply ("HΦ" with "[HΨ] [$]").
-      { iApply "HΨ". }
-      by iApply (own_slice_small_nil _ 1).
+      iApply "HΦ"; iFrame.
+      by iDestruct (own_slice_small_nil _ 1) as "$".
     }
     iApply (big_sepM_insert_2 with "").
     {
       iExists _; iFrame "#".
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (?????) "!# Hreq_sl Hrep HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       iEval (rewrite /getFreshNum_spec /=) in "Hspec".
       wp_apply (wp_Server__getFreshNum with "[$]").
@@ -1103,8 +1101,7 @@ Proof.
       wp_apply wp_EncodeUint64.
       iIntros (?) "Henc_req".
       wp_store.
-      iApply ("HΦ" with "[HΨ] [$]").
-      { iApply "HΨ". }
+      iApply "HΦ"; iFrame.
       by iDestruct (own_slice_to_small with "Henc_req") as "$".
     }
     by iApply big_sepM_empty.
@@ -1184,6 +1181,7 @@ Proof.
   { iNamedAccu. }
 
   wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
+  iSplit.
   { (* case: got a reply *)
     iModIntro. iModIntro.
     rewrite replicate_0.
@@ -1243,6 +1241,7 @@ Proof.
   { iNamedAccu. }
 
   wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
+  iSplit.
   {
     iModIntro. iModIntro.
     rewrite /put_spec /=.
@@ -1301,6 +1300,7 @@ Proof.
   { iNamedAccu. }
 
   wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
+  iSplit.
   {
     iModIntro. iModIntro.
     rewrite /conditionalPut_spec /=.
@@ -1363,6 +1363,7 @@ Proof.
   { iNamedAccu. }
 
   wp_apply (wp_Client__Call2 with "[$] [] [$] [$] [Hspec]"); first iFrame "#".
+  iSplit.
   {
     iModIntro. iModIntro.
     rewrite /conditionalPut_spec /=.
