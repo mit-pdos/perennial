@@ -14,7 +14,7 @@ Section goose_lang.
   Context `{!invGS Σ}.
 
   Class AsMapsTo (P: iProp Σ)
-        (Φ : Qp -> iProp Σ) :=
+        (Φ : Qp -> iProp Σ) : Set :=
     { as_mapsto : P ≡ Φ 1%Qp;
       as_mapsto_fractional :> Fractional Φ;
       as_mapsto_timeless :> ∀ q, Timeless (Φ q);

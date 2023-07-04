@@ -6,7 +6,7 @@ From iris.algebra Require Import excl gset.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
-Class multiparG Σ :=
+Class multiparG Σ : Set :=
    { multiparG_auth :> inG Σ (gset_disjR nat);
      multiparG_tok :> inG Σ (exclR unitO) }.
 Definition multiparΣ := #[GFunctor (gset_disjR nat); GFunctor (exclR unitO)].

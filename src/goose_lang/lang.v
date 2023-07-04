@@ -77,14 +77,14 @@ Inductive bin_op : Set :=
   | OffsetOp (k:Z) (* Pointer offset *)
 .
 
-Inductive prim_op0 :=
+Inductive prim_op0 : Set :=
   (* a stuck expression, to represent undefined behavior *)
 | PanicOp (s: string)
   (* non-deterministically pick an integer *)
 | ArbitraryIntOp
 .
 
-Inductive prim_op1 :=
+Inductive prim_op1 : Set :=
   | PrepareWriteOp (* loc *)
   (* non-atomic loads (which conflict with stores) *)
   | StartReadOp (* loc *)
@@ -96,7 +96,7 @@ Inductive prim_op1 :=
 .
 
 
-Inductive prim_op2 :=
+Inductive prim_op2 : Set :=
  | AllocNOp (* array length (positive number), initial value *)
  | FinishStoreOp (* pointer, value *)
 .
@@ -180,7 +180,7 @@ Fixpoint flatten_struct (v: val) : list val :=
 
 Context {ffi : ffi_model}.
 
-Inductive naMode :=
+Inductive naMode : Set :=
   | Writing
   | Reading (n:nat).
 

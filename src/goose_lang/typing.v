@@ -9,7 +9,7 @@ Class val_types :=
 
 Section val_types.
   Context {val_tys: val_types}.
-  Inductive base_ty :=
+  Inductive base_ty : Set :=
   | uint64BT
   | uint32BT
   | byteBT
