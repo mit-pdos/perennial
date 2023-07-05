@@ -41,10 +41,11 @@ Inductive plist (A : Type) :=
 Arguments pnil {A}.
 Arguments pcons {A} a l.
 
+(* XXX: added this because there were universe inconsistencies in how prod was
+   used across memkv and simplepb. *)
 Polymorphic Inductive pprod (A : Type) (B:Type) :=
 | ppair : A → B → pprod A B.
 Arguments ppair {A} {B} a b.
-Print fst.
 Definition pfst {A B} (p:pprod A B) := let (a, _) := p in a.
 Definition psnd {A B} (p:pprod A B) := let (_, b) := p in b.
 
