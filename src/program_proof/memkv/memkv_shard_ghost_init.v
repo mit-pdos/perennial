@@ -2,9 +2,13 @@ From Perennial.algebra Require Import gen_heap_names.
 From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
-
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions.
 
+From Perennial.program_proof.simplepb Require
+     Import admin_proof pb_start_proof.
+Print Universes.
+
+Print Universes Subgraph (prod.u0 prod.u1 is_shard_server_putSpec.u0 universes.Logic).
 Section memkv_shard_ghost_init_proof.
 
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)
@@ -12,8 +16,14 @@ Context `{!gooseGlobalGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 (* TODO: duplicating this specs is unfortunate, should try to unify with the set up in shard_definitions *)
 
+Set Printing Universes.
+
+
+Definition test γkv : plist (_ * unit) :=
+    pcons (is_shard_server_putSpec γkv, ()) pnil.
+
 Definition shard_SpecList γkv γrpc : plist (u64 * RpcSpec) :=
-    pcons (U64 uKV_PUT, eRPCSpec_uRPC γrpc $ is_shard_server_putSpec γkv)
+    pcons (U64 uKV_PUT, eRPCSpec_uRPC γrpc $ is_shard_server_putSpec γkv).
   $ pcons (U64 uKV_CONDITIONAL_PUT, eRPCSpec_uRPC γrpc $ is_shard_server_conditionalPutSpec γkv)
   $ pcons (U64 uKV_GET, eRPCSpec_uRPC γrpc $ is_shard_server_getSpec γkv)
   $ pcons (U64 uKV_MOV_SHARD, is_shard_server_moveSpec γkv)

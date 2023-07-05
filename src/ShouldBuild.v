@@ -30,13 +30,22 @@ From Perennial.program_proof.examples Require
 From Perennial.program_proof.grove_shared Require
      urpc_proof erpc_proof.
 
+From Perennial.program_proof.simplepb Require
+     admin_proof pb_start_proof.
+
+From Perennial.program_proof.memkv Require
+     closed.
+
 (* In-memory sharded KV system *)
+Set Printing Universes.
 From Perennial.program_proof.memkv Require
      connman_proof
      memkv_clerk_proof memkv_shard_start_proof memkv_shard_make_proof memkv_coord_make_proof
      memkv_clerk_proof
-     lockservice_proof bank_proof
-     closed.
+     lockservice_proof bank_proof.
+
+Print memkv_shard_definitions.
+
 
 (* Primary-backup replication system *)
 From Perennial.program_proof.pb Require
@@ -54,8 +63,31 @@ From Perennial.program_proof.ctrexample Require
 From Perennial.program_proof.aof Require proof.
 
 (* SimplePB *)
+Print Coq.Init.Datatypes.
+(* (Coq.Init.Datatypes.26) is the universe for B type in fst/snd. *)
+(* Q: why is pb_protocol universe < B universe? *)
 From Perennial.program_proof.simplepb Require
      admin_proof pb_start_proof.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 From Perennial.program_proof.simplepb.simplelog Require proof.
 

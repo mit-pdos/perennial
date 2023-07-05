@@ -6,10 +6,22 @@ From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv connman bank.
 
-
 From Perennial.program_proof Require Import grove_prelude.
+
+
+Set Printing Universes.
+(* Perennial.program_proof.simplepb.pb_protocol.243  *)
+
 From Perennial.program_proof.memkv Require Export
-     memkv_shard_definitions memkv_shard_start_proof memkv_shard_make_proof memkv_shard_ghost_init.
+     memkv_shard_definitions memkv_shard_start_proof memkv_shard_make_proof
+     memkv_shard_ghost_init.
+
+Print urpc_spec.
+(* Perennial.program_proof.simplepb.pb_protocol.243  *)
+From Perennial.program_proof.simplepb Require
+     Import admin_proof pb_start_proof.
+
+
 From Perennial.program_proof.memkv Require Export
      memkv_coord_definitions memkv_coord_start_proof memkv_coord_make_proof memkv_coord_ghost_init.
 From Perennial.program_proof.memkv Require Export memkv_clerk_proof bank_proof.

@@ -8,7 +8,6 @@ From Perennial.program_proof.grove_shared Require Export  erpc_lib urpc_proof ur
 From Perennial.program_proof.memkv Require Export common_proof connman_proof memkv_ghost memkv_marshal_put_proof memkv_marshal_get_proof memkv_marshal_conditional_put_proof memkv_marshal_install_shard_proof memkv_marshal_getcid_proof memkv_marshal_move_shard_proof.
 
 Section memkv_shard_pre_definitions.
-
 Context `{erpcG Σ, urpcregG Σ, kvMapG Σ}.
 Context `{!gooseGlobalGS Σ}.
 
