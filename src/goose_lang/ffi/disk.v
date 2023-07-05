@@ -15,7 +15,7 @@ Set Default Proof Using "Type".
 usually written *)
 Set Printing Projections.
 
-Inductive DiskOp := ReadOp | WriteOp | SizeOp.
+Inductive DiskOp : Set := ReadOp | WriteOp | SizeOp.
 #[global]
 Instance eq_DiskOp : EqDecision DiskOp.
 Proof.
@@ -98,11 +98,11 @@ Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
   Block_to_vals block0.
 Proof. reflexivity. Qed.
 
-Class diskGS Σ := DiskGS
+Class diskGS Σ : Set := DiskGS
   { diskG_gen_heapG :> gen_heap.gen_heapGS Z Block Σ; }.
 
 
-Class disk_preG Σ :=
+Class disk_preG Σ : Set :=
   { disk_preG_gen_heapG :> gen_heap.gen_heapGpreS Z Block Σ; }.
 
 Definition diskΣ : gFunctors :=

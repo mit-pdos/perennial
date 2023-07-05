@@ -39,7 +39,7 @@ Definition circ_advance (newStart : u64) : transition circΣ.t unit :=
 Definition circ_append (l : list update.t) (endpos : u64) : transition circΣ.t unit :=
   modify (set circΣ.upds (fun u => u ++ l)).
 
-Class circG Σ :=
+Class circG Σ : Set :=
   { circ_list_u64 :> ghost_varG Σ (list u64);
     circ_list_block :> ghost_varG Σ (list Block);
     circ_mono_nat :> mono_natG Σ;
@@ -60,7 +60,7 @@ Context `{!circG Σ}.
 Context (N: namespace).
 Context (P: circΣ.t -> iProp Σ).
 
-Record circ_names :=
+Record circ_names : Set :=
   { addrs_name: gname;
     blocks_name: gname;
     start_name: gname;

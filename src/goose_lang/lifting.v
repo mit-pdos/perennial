@@ -129,18 +129,18 @@ Context `{!ffi_interp ffi}.
 Definition traceO := leibnizO (list event).
 Definition OracleO := leibnizO (Oracle).
 
-Record tr_names := {
+Record tr_names : Set := {
   trace_name : gname;
   oracle_name : gname;
 }.
 
-Class traceGS (Σ: gFunctors) := {
+Class traceGS (Σ: gFunctors) : Set := {
   trace_inG :> inG Σ (authR (optionUR (exclR traceO)));
   oracle_inG :> inG Σ (authR (optionUR (exclR OracleO)));
   trace_tr_names : tr_names;
 }.
 
-Class trace_preG (Σ: gFunctors) := {
+Class trace_preG (Σ: gFunctors) : Set := {
   trace_preG_inG :> inG Σ (authR (optionUR (exclR traceO)));
   oracle_preG_inG :> inG Σ (authR (optionUR (exclR OracleO)));
 }.
@@ -226,17 +226,17 @@ Proof.
   done.
 Qed.
 
-Record cr_names := {
+Record cr_names : Set := {
   credit_name : gname;
   coPset_name : gname;
 }.
 
-Class credit_preG (Σ: gFunctors) := {
+Class credit_preG (Σ: gFunctors) : Set := {
   credit_preG_inG :> inG Σ (authR natUR);
   frac_coPset_preG_inG :> inG Σ (frac_coPsetR);
 }.
 
-Class creditGS (Σ: gFunctors) := {
+Class creditGS (Σ: gFunctors) : Set := {
   credit_inG :> inG Σ (authR natUR);
   frac_coPset_inG :> inG Σ (frac_coPsetR);
   credit_cr_names : cr_names;
@@ -384,7 +384,7 @@ Proof.
 Qed.
 
 (** Global ghost state for GooseLang. *)
-Class gooseGlobalGS Σ := GooseGlobalGS {
+Class gooseGlobalGS Σ : Set := GooseGlobalGS {
   goose_invGS : invGS Σ;
   goose_prophGS :> proph_mapGS proph_id val Σ;
   goose_creditGS :> creditGS Σ;
@@ -394,7 +394,7 @@ Class gooseGlobalGS Σ := GooseGlobalGS {
 
 TODO: in program_logic we use the term "generation", in GooseLang we say "local".
 Would be good to align terminology. *)
-Class gooseLocalGS Σ := GooseLocalGS {
+Class gooseLocalGS Σ : Set := GooseLocalGS {
   goose_crashGS : crashGS Σ;
   goose_ffiLocalGS : ffiLocalGS Σ;
   goose_na_heapGS :> na_heapGS loc val Σ;
@@ -406,7 +406,7 @@ Class gooseLocalGS Σ := GooseLocalGS {
    For historic reasons, this is called heapGS
    TODO: rename to gooseGS, or remove. *)
 Local Set Primitive Projections.
-Class heapGS Σ := HeapGS {
+Class heapGS Σ : Set := HeapGS {
   goose_globalGS : gooseGlobalGS Σ;
   goose_localGS : gooseLocalGS Σ;
 }.
@@ -583,7 +583,7 @@ not if [v] contains a lambda/rec that is hidden behind a definition.
 
 To make sure that [wp_rec] and [wp_lam] do reduce lambdas/recs that are hidden
 behind a definition, we activate [AsRecV_recv] by hand in these tactics. *)
-Class AsRecV (v : val) (f x : binder) (erec : expr) :=
+Class AsRecV (v : val) (f x : binder) (erec : expr) : Set :=
   as_recv : v = RecV f x erec.
 Hint Mode AsRecV ! - - - : typeclass_instances.
 Definition AsRecV_recv f x e : AsRecV (RecV f x e) f x e := eq_refl.

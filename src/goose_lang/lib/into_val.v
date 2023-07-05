@@ -23,7 +23,7 @@ Qed.
 
 (* IntoVal where the value is guaranteed to be comparable, e.g. OK to use as the
    key type in a map *)
-Class IntoValComparable V `{IntoVal V} :=
+Class IntoValComparable V `{IntoVal V} : Set :=
   {
     IntoValComparable_comparable (v:V): is_comparable (to_val v);
     IntoValComparable_inj (v:V) (vval:val) : from_val vval = Some v → to_val v = vval
@@ -33,7 +33,7 @@ Class IntoValComparable V `{IntoVal V} :=
 Hint Mode IntoValComparable ! - - : typeclass_instances.
 
 (* IntoVal for a particular GooseLang type *)
-Class IntoValForType V {ext} {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) :=
+Class IntoValForType V {ext} {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) : Set :=
     { def_is_zero: to_val (IntoVal_def V) = zero_val t;
       to_val_has_zero: has_zero t;
       (* TODO: this isn't necessary, but it seems reasonable *)

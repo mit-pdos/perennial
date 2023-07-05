@@ -16,7 +16,7 @@ Context {ext_ty: ext_types ext}.
 Definition descriptor := list (string*ty).
 Definition mkStruct (fs: list (string*ty)): descriptor := fs.
 
-Class descriptor_wf (d:descriptor) :=
+Class descriptor_wf (d:descriptor) : Set :=
   { descriptor_NoDup: NoDup d.*1; }.
 
 Definition option_descriptor_wf (d:descriptor) : option (descriptor_wf d).

@@ -19,7 +19,7 @@ Set Printing Projections.
 
 (** * The Grove extension to GooseLang: primitive operations [Trusted definitions!] *)
 
-Inductive GroveOp :=
+Inductive GroveOp : Set :=
   (* Network ops *)
   ListenOp | ConnectOp | AcceptOp | SendOp | RecvOp |
   (* File ops *)
@@ -70,7 +70,7 @@ Proof.
   refine (mkExtOp GroveOp _ _ GroveVal _ _).
 Defined.
 
-Inductive GroveTys := GroveListenTy | GroveConnectionTy.
+Inductive GroveTys : Set := GroveListenTy | GroveConnectionTy.
 
 (* TODO: Why is this an instance but the ones above are not? *)
 #[global]
@@ -263,18 +263,18 @@ Section grove.
 End grove.
 
 (** * Grove semantic interpretation and lifting lemmas *)
-Class groveGS Σ := GroveGS {
+Class groveGS Σ : Set := GroveGS {
   groveG_net_heapG :> gen_heap.gen_heapGS chan (gset message) Σ;
   grove_time_name : gname;
   groveG_timeG :> mono_natG Σ;
 }.
 
-Class groveGpreS Σ := {
+Class groveGpreS Σ : Set := {
   grove_preG_net_heapG :> gen_heap.gen_heapGpreS chan (gset message) Σ;
   grove_preG_files_heapG :> gen_heap.gen_heapGpreS string (list byte) Σ;
   grove_preG_tscG :> mono_natG Σ;
 }.
-Class groveNodeGS Σ := GroveNodeGS {
+Class groveNodeGS Σ : Set := GroveNodeGS {
   groveG_preS :> groveGpreS Σ;
   grove_tsc_name : gname;
   groveG_files_heapG :> gen_heap.gen_heapGS string (list byte) Σ;

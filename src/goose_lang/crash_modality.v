@@ -17,7 +17,7 @@ Definition post_crash {Σ} `{hG: !heapGS Σ} (P: heapGS Σ → iProp Σ) : iProp
                ffi_crash_rel Σ (goose_ffiLocalGS (hL := goose_localGS)) σ (goose_ffiLocalGS (hL := hL')) σ' ∗
                (P (HeapGS _ _ hL'))).
 
-Class IntoCrash {Σ} `{!heapGS Σ} (P: iProp Σ) (Q: heapGS Σ → iProp Σ) :=
+Class IntoCrash {Σ} `{!heapGS Σ} (P: iProp Σ) (Q: heapGS Σ → iProp Σ) : Prop :=
   into_crash : P ⊢ post_crash (Σ := Σ) (λ hG', Q hG').
 
 Section post_crash_prop.
