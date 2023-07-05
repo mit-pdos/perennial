@@ -40,29 +40,36 @@ Inductive plist (A : Type) :=
 | pcons : A -> plist A -> plist A.
 Arguments pnil {A}.
 Arguments pcons {A} a l.
-(* FIXME: notation for this? *)
 
-Fixpoint dom_RpcSpec_list (l: plist (u64 * RpcSpec)) : gset u64 :=
+Polymorphic Inductive pprod (A : Type) (B:Type) :=
+| ppair : A → B → pprod A B.
+Arguments ppair {A} {B} a b.
+Print fst.
+Definition pfst {A B} (p:pprod A B) := let (a, _) := p in a.
+Definition psnd {A B} (p:pprod A B) := let (_, b) := p in b.
+
+Set Universe Polymorphism.
+Fixpoint dom_RpcSpec_list (l: plist (pprod u64 RpcSpec)) : gset u64 :=
   match l with
   | pnil => ∅
-  | pcons x l => {[ x.1 ]} ∪ dom_RpcSpec_list l
+  | pcons x l => {[ pfst x ]} ∪ dom_RpcSpec_list l
   end.
 
-Fixpoint is_urpc_spec_list γ host (l : plist (u64 * RpcSpec)) :=
+Fixpoint is_urpc_spec_list γ host (l : plist (pprod u64 RpcSpec)) :=
   match l with
   | pnil => True%I
   | pcons x l =>
-    (is_urpc_spec γ host x.1 x.2 ∗ is_urpc_spec_list γ host l)%I
+    (is_urpc_spec γ host (pfst x) (psnd x) ∗ is_urpc_spec_list γ host l)%I
   end.
 
-Fixpoint RpcSpec_list_wf (l : plist (u64 * RpcSpec)) : Prop :=
+Fixpoint RpcSpec_list_wf (l : plist (pprod u64 RpcSpec)) : Prop :=
   match l with
   | pnil => True
   | pcons x l =>
-    (x.1 ∉ dom_RpcSpec_list l) ∧ RpcSpec_list_wf l
+    (pfst x ∉ dom_RpcSpec_list l) ∧ RpcSpec_list_wf l
   end.
 
-Lemma alloc_is_urpc_list (host : chan) (specs: plist (u64 * RpcSpec)) (Hwf: RpcSpec_list_wf specs) :
+Lemma alloc_is_urpc_list (host : chan) (specs: plist (pprod u64 RpcSpec)) (Hwf: RpcSpec_list_wf specs) :
    host c↦ ∅ ={⊤}=∗ ∃ γ,
    is_urpc_dom γ (dom_RpcSpec_list specs) ∗
    is_urpc_spec_list γ host specs.
@@ -90,8 +97,8 @@ Proof.
     { iPureIntro. split.
       - destruct Hwf' as (_&?); eauto.
       - etransitivity; last eassumption. set_solver. }
-    iMod (saved_spec_alloc (RpcSpec_Spec hd.2)) as (γsave) "#Hsaved".
-    iMod (map_alloc_ro (hd.1) γsave
+    iMod (saved_spec_alloc (RpcSpec_Spec (psnd hd))) as (γsave) "#Hsaved".
+    iMod (map_alloc_ro (pfst hd) γsave
             with "Hmap_ctx") as "(Hmap_ctx&#Hsaved_name)"; auto.
     { apply not_elem_of_dom. destruct (Hwf') as (?&?). rewrite Hdom. eauto. }
     iExists _; iFrame. iModIntro.
@@ -195,3 +202,4 @@ End urpc_spec_impl.
 
 Arguments pnil {A}.
 Arguments pcons {A} a l.
+Arguments ppair {A} {B} a b.
