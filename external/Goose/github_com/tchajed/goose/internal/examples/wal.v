@@ -34,7 +34,7 @@ Definition New: val :=
     (if: "diskSize" ≤ logLength
     then Panic ("disk is too small to host log")
     else #());;
-    let: "cache" := NewMap disk.blockT #() in
+    let: "cache" := NewMap uint64T disk.blockT #() in
     let: "header" := intToBlock #0 in
     disk.Write #0 "header";;
     let: "lengthPtr" := ref (zero_val uint64T) in
@@ -169,7 +169,7 @@ Definition Open: val :=
     let: "length" := blockToInt "header" in
     applyLog "d" "length";;
     clearLog "d";;
-    let: "cache" := NewMap disk.blockT #() in
+    let: "cache" := NewMap uint64T disk.blockT #() in
     let: "lengthPtr" := ref (zero_val uint64T) in
     "lengthPtr" <-[uint64T] #0;;
     let: "l" := lock.new #() in

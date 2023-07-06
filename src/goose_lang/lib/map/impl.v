@@ -2,7 +2,7 @@ From stdpp Require Import fin_maps gmap.
 From Perennial.goose_lang.lib Require Import control.impl.
 From Perennial.goose_lang Require Import lang notation.
 
-Notation MapConsV k v m := (InjRV (PairV (PairV (LitV (LitInt k)) v) m)).
+Notation MapConsV k v m := (InjRV (PairV (PairV k v) m)).
 Notation MapNilV def := (InjLV def).
 Notation AllocMap v := (Alloc (MapNilV v)) (only parsing).
 

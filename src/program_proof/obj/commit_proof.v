@@ -111,7 +111,7 @@ Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : g
         is_txn_buf_pre γ bufptrval a buf
   }}}
     Log__installBufsMap #l (slice_val bufs)
-  {{{ (blkmapref : loc) (blkmap : Map.t Slice.t), RET #blkmapref;
+  {{{ (blkmapref : loc) (blkmap : gmap u64 Slice.t), RET #blkmapref;
       is_locked_walheap γ.(txn_walnames) lwh ∗
       own_map blkmapref 1 blkmap ∗
       ( [∗ map] a ↦ buf ∈ bufamap,

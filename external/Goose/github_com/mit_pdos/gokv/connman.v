@@ -16,8 +16,8 @@ Definition MakeConnMan: val :=
   rec: "MakeConnMan" <> :=
     let: "c" := struct.alloc ConnMan (zero_val (struct.t ConnMan)) in
     struct.storeF ConnMan "mu" "c" (lock.new #());;
-    struct.storeF ConnMan "rpcCls" "c" (NewMap ptrT #());;
-    struct.storeF ConnMan "making" "c" (NewMap ptrT #());;
+    struct.storeF ConnMan "rpcCls" "c" (NewMap HostName ptrT #());;
+    struct.storeF ConnMan "making" "c" (NewMap HostName ptrT #());;
     "c".
 
 Definition ConnMan__getClient: val :=

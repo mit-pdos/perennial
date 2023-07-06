@@ -185,7 +185,7 @@ Definition StartServer: val :=
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "e" "s" (erpc.MakeServer #());;
     struct.storeF Server "v" "s" #0;;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" RPC_GET ((λ: "raw_args" "raw_reply",
       let: "dec" := marshal.NewDec "raw_args" in
       let: "epoch" := marshal.Dec__GetInt "dec" in

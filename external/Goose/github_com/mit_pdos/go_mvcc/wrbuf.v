@@ -137,7 +137,7 @@ Definition WrBuf__OpenTuples: val :=
       #false
     else
       ForSlice (struct.t WrEnt) <> "ent" "ents"
-        (tuple.Tuple__WriteLock (struct.get WrEnt "tpl" "ent"));;
+        (tuple.Tuple__WriteOpen (struct.get WrEnt "tpl" "ent"));;
       #true).
 
 Definition WrBuf__UpdateTuples: val :=

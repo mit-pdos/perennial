@@ -13,6 +13,7 @@ From RecordUpdate Require Import RecordSet.
 From Perennial.program_proof.simplepb Require Import config_proof.
 From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.grove_shared Require Import monotonic_pred.
+From Perennial.base_logic Require Import lib.saved_spec.
 
 (* State-machine record. An instance of Sm.t defines how to compute the reply
    for an op applied to some state and how to encode ops into bytes. *)
@@ -342,14 +343,14 @@ Defined.
 Definition is_pb_host_pre ρ : (u64 -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
   ∃ γrpc,
-  handler_spec γrpc host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
-  handler_spec γrpc host (U64 1) (SetState_spec γ γsrv) ∗
-  handler_spec γrpc host (U64 2) (GetState_spec γ γsrv) ∗
-  handler_spec γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
-  handler_spec γrpc host (U64 4) (Apply_spec γ) ∗
-  handler_spec γrpc host (U64 6) (ApplyRo_spec γ) ∗
-  handler_spec γrpc host (U64 7) (IncreaseCommit_spec γ γsrv) ∗
-  handlers_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ; (U64 7) ]})%I
+  is_urpc_spec_pred γrpc host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (U64 1) (SetState_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (U64 2) (GetState_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
+  is_urpc_spec_pred γrpc host (U64 4) (Apply_spec γ) ∗
+  is_urpc_spec_pred γrpc host (U64 6) (ApplyRo_spec γ) ∗
+  is_urpc_spec_pred γrpc host (U64 7) (IncreaseCommit_spec γ γsrv) ∗
+  is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ; (U64 7) ]})%I
 .
 
 Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
@@ -610,7 +611,6 @@ Definition numClerks : nat := 32.
 
 Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
-(* this is meant to be unfolded in the code proof *)
 Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
   ∃ (clerkss:list Slice.t) backups,
   "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
@@ -624,6 +624,7 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
                         "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; backups, is_Clerk ck γ γsrv' ∗ is_epoch_lb γsrv'.(r_pb) s.(server.epoch))
                     )
 .
+
 
 Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
 Hint Unfold no_overflow : arith.

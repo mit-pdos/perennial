@@ -43,8 +43,8 @@ Proof.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
   iNamed "HrawRep".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_freshSpec _) () with "Hc [$] [] [$Hreq_sl $HrawRep //]").
-  { simpl. done. }
+  wp_apply (wp_ConnMan__CallAtLeastOnce (is_shard_server_freshSpec _) () with "[$Hreq_sl $HrawRep]").
+  { simpl. iFrame "#". done. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got reply *)
@@ -87,7 +87,7 @@ Lemma wp_KVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γdst:
        own_KVShardClerk ck γkv ∗
        is_shard_server dst γdst ∗
        ⌜int.Z sid < uNSHARD⌝ ∗
-       ⌜γdst.(kv_gn) = γkv⌝
+       ⌜ γdst.(kv_gn) = γkv ⌝
   }}}
     KVShardClerk__MoveShard #ck #sid #dst
   {{{ RET #();
@@ -96,6 +96,7 @@ Lemma wp_KVShardClerk__MoveShard γkv (ck : loc) (sid : u64) (dst : u64) γdst:
 Proof.
   iIntros (Φ) "Hpre HΦ".
   iDestruct "Hpre" as "(Hclerk & #Hserver & %Hid_lt & %Heq_kv_gn)".
+  subst.
   iNamed "Hclerk".
   wp_lam.
   wp_pures.
@@ -130,11 +131,8 @@ Proof.
   iNamed "His_shard".
   iNamed "HrawRep".
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_shard_server_moveSpec_pre _ _) with "Hc_own HmoveSpec [] [$Hsl $HrawRep //]").
-  { simpl. iModIntro. iNext. iExists _. iFrame "%". iSplit. 
-    - iNext => /=. iFrame "Hserver".
-    - iPureIntro. congruence.
-  }
+  wp_apply (wp_ConnMan__CallAtLeastOnce (is_shard_server_moveSpec_pre _ _) with "[$Hsl $HrawRep]").
+  { iFrame "#". iExists _. iFrame "%". iFrame "Hserver". done. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got reply *)
@@ -206,7 +204,7 @@ Proof.
 
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec with "Hc_own HinstallSpec [$Hpre] [$Hreq $HrawRep]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce with "[$]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   (* got a reply *)
@@ -269,8 +267,7 @@ Proof.
 
   wp_loadField.
   wp_loadField.
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec
-    with "Hc_own HputSpec [$Hpre] [$Hreq_sl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce with "[$]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   iMod ("Htakepost" with "Hpost") as "[Herpc Hpost]".
@@ -353,8 +350,7 @@ Proof.
   wp_loadField.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec
-    with "Hc_own HgetSpec [$Hpre] [$Hreq_sl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce with "[$]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   iMod ("Htakepost" with "Hpost") as "[Herpc Hpost]".
@@ -448,8 +444,7 @@ Proof.
   wp_loadField.
   rewrite is_shard_server_unfold.
   iNamed "His_shard".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec
-    with "Hc_own HconditionalPutSpec [$Hpre] [$Hreq_sl $HrawRep //]").
+  wp_apply (wp_ConnMan__CallAtLeastOnce with "[$]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   iMod ("Htakepost" with "Hpost") as "[Herpc Hpost]".

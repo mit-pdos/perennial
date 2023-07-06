@@ -652,7 +652,7 @@ Proof.
   }
   iIntros (?? mptr) "(Hmap & _)".
   wp_pures. wp_storeField.
-  wp_pures. wp_apply (wp_NewMap).
+  wp_pures. wp_apply (wp_NewMap u64).
   iClear "Hvnums_map".
   iIntros (?) "Hvnums_map".
   wp_storeField. wp_storeField.
@@ -714,7 +714,7 @@ Proof.
   wp_apply (wp_byteMapNew).
   iIntros (?) "Hmap".
   wp_storeField.
-  wp_apply (wp_NewMap).
+  wp_apply (wp_NewMap u64).
   iIntros (?) "Hvnums_map".
   wp_storeField.
   wp_apply (wp_KVState__apply).

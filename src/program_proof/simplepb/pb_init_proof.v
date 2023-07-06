@@ -4,7 +4,7 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.simplepb Require Export pb_protocol.
 From Perennial.program_proof.simplepb Require Import pb_definitions config_protocol_proof
      clerk_proof.
-From Perennial.program_proof.grove_shared Require Import urpc_spec.
+From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From iris.algebra Require Import mono_list.
 
 Section pb_init_proof.
@@ -32,7 +32,7 @@ Lemma pb_host_init host γsys γsrv :
   is_pb_host host γsys γsrv.
 Proof.
   iIntros "Hchan".
-  iMod (handler_is_init_list2 host (pb_spec_list γsys γsrv) with "Hchan") as (γrpc) "H".
+  iMod (alloc_is_urpc_list_pred host (pb_spec_list γsys γsrv) with "Hchan") as (γrpc) "H".
   { simpl. set_solver. }
   iModIntro.
   rewrite is_pb_host_unfold.

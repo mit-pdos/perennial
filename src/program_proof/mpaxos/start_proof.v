@@ -153,7 +153,7 @@ Proof.
       iExists _; iFrame "#".
 
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       unfold becomeleader_spec.
@@ -174,7 +174,7 @@ Proof.
       iExists _; iFrame "#".
 
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       unfold apply_spec.
@@ -214,7 +214,7 @@ Proof.
       iExists _; iFrame "#".
 
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       unfold apply_spec.
@@ -262,7 +262,7 @@ Proof.
       iExists _; iFrame "#".
 
       clear Φ.
-      unfold impl_handler_spec2.
+      unfold is_urpc_handler_pred2.
       iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
       wp_pures.
       unfold apply_spec.

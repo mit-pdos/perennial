@@ -18,21 +18,48 @@ Definition is_tracker (t : loc) : iProp Σ :=
     "Ht_mu" ∷ t ↦[Tracker :: "mu"] #muptr ∗
     "#Ht_lock" ∷ is_lock nroot #muptr (tracker_inv t).
 
-Lemma wp_lookupLocked (t : loc) (m : gmap u64 u64) (k : u64) :
-  {{{ tracker_state t m }}}
+Lemma rename_iprop m n {P:iProp Σ} :
+  named n P = named m P
+.
+Proof. reflexivity. Qed.
+
+Instance named_proper {A:Type} : Proper ((λ (_ _:string), True) ==> (@eq A) ==> (eq)) named.
+Proof. solve_proper. Qed.
+
+Lemma wp_lookupLocked (t : loc) (m : gmap u64 u64) (k : u64) Htracker :
+  {{{ Htracker ∷ tracker_state t m }}}
     Tracker__lookupLocked #t #k
-  {{{ (v : u64) (b : bool), RET (#v, #b); tracker_state t m ∗
-      ⌜if b then m !! k = Some v else m !! k = None⌝ }}}.
+  {{{ (v : u64) (b : bool), RET (#v, #b); Htracker ∷ tracker_state t m ∗
+      ("%" ++ Htracker ++ "_ok") ∷ ⌜if b then m !! k = Some v else m !! k = None⌝ }}}.
 Proof.
-  iIntros (Φ) "Ht HΦ".
-  iNamed "Ht".
+  iIntros (Φ) "Hpre HΦ".
+  (* erewrite named_proper. 2-3: done. *)
+  rewrite (rename_iprop "Htracker" Htracker).
+  iNamed "Hpre".
+  iNamed "Htracker".
   wp_call.
   wp_loadField.
 
-  Search impl.MapGet.
+  (*
+  iDestruct wp_MapGet as "-#HH".
+  { shelve. }
+  notypeclasses refine (coq_tactics.tac_specialize_frame _ "HH" _ false _ _ _ _ _ _ _ _ _ _ _).
+  { done. }
+  { tc_solve. }
+  { tc_solve. }
+  2:{ done. }
+  simpl.
+  iFrame.
+  notypeclasses refine (coq_tactics.tac_unlock _ _ _).
+  iIntros "HH". *)
 
-  wp_apply (wp_MapGet with "Ht_m").
-  iIntros (v ok) "[%Hok Ht_m]".
+  wp_apply (wp_MapGet with "[$]").
+
+  (*
+  Search ((∃ (_:_), _) ∗ _)%I.
+  rewrite sep_exist_r. *)
+
+  iIntros (v ok) "[%Ht_m_lookup Ht_m]".
   wp_pures.
   iModIntro.
   iApply "HΦ".
@@ -41,14 +68,12 @@ Proof.
   iPureIntro.
   destruct ok.
   {
-    Search map_get lookup.
     apply map_get_true.
     eauto.
   }
   {
-    Search map_get lookup.
-    apply map_get_false in Hok.
-    destruct Hok.
+    apply map_get_false in Ht_m_lookup.
+    destruct Ht_m_lookup.
     eauto.
   }
 Qed.
@@ -65,7 +90,7 @@ Proof.
   iIntros (Φ) "Ht HΦ".
   wp_call.
   wp_apply (wp_lookupLocked with "[Ht]").
-  { iApply "Ht". }
+  { iNamedAccu. }
   iIntros (? b) "[Ht %Hok]".
   wp_pures.
   wp_if_destruct.
@@ -73,10 +98,8 @@ Proof.
     iApply "HΦ". iFrame. done.
   }
   {
-    iNamed "Ht".
+    repeat iNamed "Ht".
     wp_loadField.
-
-    Search impl.MapInsert.
 
     wp_apply (wp_MapInsert u64 u64 with "[Ht_m]").
     { eauto. }
@@ -90,8 +113,13 @@ Proof.
   }
 Qed.
 
+Lemma later_sep_l_intro (P Q:iProp Σ) :
+  bi_entails (P ∗ Q)  (▷ P ∗ Q)
+.
+Proof. iIntros "[$ $]". Qed.
+
 Lemma wp_Lookup (t : loc) (k : u64) :
-  {{{ is_tracker t }}}
+  {{{ is_tracker t  }}}
     Tracker__Lookup #t #k
   {{{ (v : u64) (b : bool), RET (#v, #b); True }}}.
 Proof.
@@ -100,63 +128,41 @@ Proof.
   wp_call.
   wp_loadField.
 
-  Search lock.acquire.
-
-  wp_apply (acquire_spec with "[]").
-  { iApply "Ht_lock". }
+  wp_apply (acquire_spec with "[$]").
   iIntros "[Hlocked Ht]".
   iNamed "Ht".
-  wp_apply (wp_lookupLocked with "Ht_state").
+  wp_apply (wp_lookupLocked with "[$]").
   iIntros (v b) "[Ht_state %Hres]".
 
   wp_pures.
   wp_loadField.
 
-  Search lock.release.
+  iDestruct release_spec as "-#HH".
+  notypeclasses refine (coq_tactics.tac_specialize_frame _ "HH" _ false _ _ _ _ _ _ _ _ _ _ _).
+  { done. }
+  { tc_solve. }
+  { tc_solve. }
+  2:{ done. }
+  simpl.
+  iFrame "#∗".
+  iApply later_sep_l_intro.
+  unfold tracker_inv.
+  iApply sep_exist_r.
+  repeat iExists _.
+  iFrame.
+  notypeclasses refine (coq_tactics.tac_unlock _ _ _).
+  iIntros "HH".
+  wp_apply "HH".
+  wp_pures.
 
+  (*
   wp_apply (release_spec with "[Hlocked Ht_state]").
   { iFrame "Ht_lock". iFrame "Hlocked".
-    iExists _. iFrame. }
+    iExists _. iFrame. } *)
   wp_pures.
   iModIntro.
   iApply "HΦ".
   done.
-Qed.
-
-Lemma wp_Register (t : loc) (k : u64) (v : u64) :
-  {{{ is_tracker t }}}
-    Tracker__Register #t #k #v
-  {{{ (b : bool), RET #b; True }}}.
-Proof.
-  iIntros (Φ) "Ht HΦ".
-  iNamed "Ht".
-  wp_call.
-  wp_loadField.
-  wp_apply (acquire_spec with "Ht_lock").
-  iIntros "[Hlocked Ht]".
-  iNamed "Ht".
-  wp_pures.
-  wp_apply (wp_registerLocked with "Ht_state").
-  iIntros (b) "Hb".
-  wp_pures.
-  wp_loadField.
-  destruct b.
-  {
-    wp_apply (release_spec with "[Hlocked Hb]").
-    { iFrame "Ht_lock". iFrame "Hlocked". iModIntro.
-      iExists _. iFrame. }
-    wp_pures.
-    iApply "HΦ".
-    done.
-  }
-  {
-    wp_apply (release_spec with "[Hlocked Hb]").
-    { iFrame "Ht_lock". iFrame "Hlocked". iModIntro.
-      iExists _. iFrame. }
-    wp_pures.
-    iApply "HΦ".
-    done.
-  }
 Qed.
 
 End basics_proof.

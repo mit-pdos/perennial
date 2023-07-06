@@ -1722,7 +1722,7 @@ Proof.
   wp_pures.
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
-  wp_apply (wp_NewMap).
+  wp_apply (wp_NewMap u64).
   iIntros (lastSeq_ptr) "HlastSeq".
   wp_storeField.
   wp_apply (wp_byteMapNew).

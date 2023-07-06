@@ -137,7 +137,7 @@ Definition coord_boot (host : u64) (init : u64) : expr :=
 Definition transferrer_boot (lockcoord kvcoord : u64) (init acc1 acc2 : u64)  : expr :=
   let: "cm" := MakeConnMan #() in
   let: "ck" := MakeBankClerk #lockcoord #kvcoord "cm" #init #acc1 #acc2 #0 in
-  BankClerk__SimpleTransfer "ck" #1.
+  BankClerk__SimpleTransfer "ck".
 
 Definition auditor_boot (lockcoord kvcoord : u64) (init acc1 acc2 : u64)  : expr :=
   let: "cm" := MakeConnMan #() in
@@ -230,9 +230,14 @@ Proof.
   { set_unfold. eauto. }
 
   (* Finally alloc lock *)
-  iMod (lock_alloc lockN ⊤ _ init (init_lock_inv init acc1 acc2 _ _) with
+  iMod (lock_alloc lockN ⊤ _ init (init_lock_inv init _ _ {[acc1; acc2]}) with
             "[$] [Hinit Hacc1 Hacc2 Hacc1_lock Hacc2_lock]") as "#His_lock".
-  { iLeft. iFrame "Hinit". iFrame. }
+  { iLeft. iFrame "Hinit".
+    iApply big_sepS_elements.
+    rewrite elements_disj_union; last by set_solver.
+    rewrite ?elements_singleton //.
+    iFrame. rewrite big_sepL_nil. done.
+  }
 
   iSplitR ""; last first.
   { iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
@@ -329,15 +334,8 @@ Proof.
     iIntros (cm) "Hcm".
     wp_pures.
     wp_apply (wp_MakeBankClerk with "[Hcm]").
-    { eauto. }
-    { iFrame "Hcm".
-      iSplitL "".
-      { iExact "Hsrv'". }
-      iSplitL "".
-      { iExact "Hsrv''". }
-      iExactEq "His_lock".
-      rewrite Heq_kvcoord Heq_lockcoord; auto.
-    }
+    { iFrame. iFrame "Hsrv'' Hsrv'".
+      rewrite Heq_lockcoord Heq_kvcoord. iFrame "#". done. }
     iIntros (??) "(?&?)". wp_pures.
     wp_apply (Bank__SimpleTransfer_spec with "[$]").
     eauto.
@@ -353,15 +351,8 @@ Proof.
     iIntros (cm) "Hcm".
     wp_pures.
     wp_apply (wp_MakeBankClerk with "[Hcm]").
-    { eauto. }
-    {
-      iSplitL "".
-      { iExact "Hsrv'". }
-      iSplitL "".
-      { iExact "Hsrv''".  }
-      iFrame "Hcm". iExactEq "His_lock".
-      rewrite Heq_kvcoord Heq_lockcoord; auto.
-    }
+    { iFrame. iFrame "Hsrv'' Hsrv'".
+      rewrite Heq_lockcoord Heq_kvcoord. iFrame "#". done. }
     iIntros (??) "(?&?)". wp_pures.
     wp_apply (Bank__SimpleAudit_spec with "[$]").
     eauto.

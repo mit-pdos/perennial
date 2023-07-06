@@ -18,7 +18,7 @@ Definition EncodeMapU64ToU64: val :=
 Definition DecodeMapU64ToU64: val :=
   rec: "DecodeMapU64ToU64" "enc_in" :=
     let: "enc" := ref_to (slice.T byteT) "enc_in" in
-    let: "kvs" := NewMap uint64T #() in
+    let: "kvs" := NewMap uint64T uint64T #() in
     let: ("numEntries", "enc2") := marshal.ReadInt (![slice.T byteT] "enc") in
     "enc" <-[slice.T byteT] "enc2";;
     let: "i" := ref_to uint64T #0 in
@@ -48,7 +48,7 @@ Definition EncodeMapU64ToBytes: val :=
 Definition DecodeMapU64ToBytes: val :=
   rec: "DecodeMapU64ToBytes" "enc_in" :=
     let: "enc" := ref_to (slice.T byteT) "enc_in" in
-    let: "kvs" := NewMap (slice.T byteT) #() in
+    let: "kvs" := NewMap uint64T (slice.T byteT) #() in
     let: ("numEntries", "enc2") := marshal.ReadInt (![slice.T byteT] "enc") in
     "enc" <-[slice.T byteT] "enc2";;
     let: "i" := ref_to uint64T #0 in

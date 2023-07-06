@@ -42,7 +42,7 @@ Definition MakeTracker: val :=
   rec: "MakeTracker" <> :=
     let: "t" := struct.alloc Tracker (zero_val (struct.t Tracker)) in
     struct.storeF Tracker "mu" "t" (lock.new #());;
-    struct.storeF Tracker "m" "t" (NewMap uint64T #());;
+    struct.storeF Tracker "m" "t" (NewMap uint64T uint64T #());;
     "t".
 
 End code.

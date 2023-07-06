@@ -24,7 +24,7 @@ Definition openInodes: val :=
 
 Definition inodeUsedBlocks: val :=
   rec: "inodeUsedBlocks" "inodes" :=
-    let: "used" := NewMap (struct.t alloc.unit) #() in
+    let: "used" := NewMap uint64T (struct.t alloc.unit) #() in
     ForSlice ptrT <> "i" "inodes"
       (alloc.SetAdd "used" (async_mem_alloc_inode.Inode__UsedBlocks "i"));;
     "used".

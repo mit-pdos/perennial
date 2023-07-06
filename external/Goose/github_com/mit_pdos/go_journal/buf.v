@@ -130,7 +130,7 @@ Definition BufMap := struct.decl [
 Definition MkBufMap: val :=
   rec: "MkBufMap" <> :=
     let: "a" := struct.new BufMap [
-      "addrs" ::= NewMap ptrT #()
+      "addrs" ::= NewMap uint64T ptrT #()
     ] in
     "a".
 

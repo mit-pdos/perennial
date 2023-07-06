@@ -162,11 +162,11 @@ Defined.
 (* End RPC specs *)
 
 Definition is_mpaxos_host (host:u64) (γ:mp_system_names) (γsrv:mp_server_names) : iProp Σ :=
-  "#Hdom" ∷ handlers_dom γsrv.(mp_urpc_gn) {[ (U64 0); (U64 1); (U64 2); (U64 3)]} ∗
-  "#H0" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 0) (applyAsFollower_spec γ γsrv) ∗
-  "#H1" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
-  "#H2" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ) ∗
-  "#H3" ∷ handler_spec γsrv.(mp_urpc_gn) host (U64 3) (becomeleader_spec)
+  "#Hdom" ∷ is_urpc_dom γsrv.(mp_urpc_gn) {[ (U64 0); (U64 1); (U64 2); (U64 3)]} ∗
+  "#H0" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 0) (applyAsFollower_spec γ γsrv) ∗
+  "#H1" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
+  "#H2" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ) ∗
+  "#H3" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 3) (becomeleader_spec)
 .
 
 Definition is_ReconnectingClient : loc → u64 → iProp Σ.
@@ -178,7 +178,7 @@ Admitted.
 Lemma wp_ReconnectingClient__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
   is_ReconnectingClient cl_ptr host -∗
-  handler_spec γsmap host rpcid Spec -∗
+  is_urpc_spec_pred γsmap host rpcid Spec -∗
   own_slice_small req byteT 1 reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData (λ reply,

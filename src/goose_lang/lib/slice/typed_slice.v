@@ -511,4 +511,39 @@ Proof.
   rewrite firstn_all drop_all //.
 Qed.
 
+Theorem wp_forSliceEach (I: iProp Σ) (P Q: V -> iProp Σ) stk E s t q vs (body: val) :
+  (∀ (i: u64) (x: V),
+      {{{ I ∗ P x }}}
+        body #i (to_val x) @ stk; E
+      {{{ (v : val), RET v; I ∗ Q x }}}) -∗
+    {{{ own_slice_small s t q vs ∗ I ∗ [∗ list] x ∈ vs, P x }}}
+      forSlice t body (slice_val s) @ stk; E
+    {{{ RET #(); own_slice_small s t q vs ∗ I ∗ [∗ list] x ∈ vs, Q x }}}.
+Proof.
+  iIntros "#Hind".
+  iIntros (Φ) "!> [Hs [Hi Hp]] HΦ".
+  iApply (wp_forSliceEach I (λ vv, ∃ v, ⌜vv=to_val v⌝ ∗ P v)%I (λ vv, ∃ v, ⌜vv=to_val v⌝ ∗ Q v)%I with "[] [$Hs $Hi Hp]").
+  {
+    iIntros (i x Ψ) "!> [Hi Hp] HΨ".
+    iDestruct "Hp" as (v) "[% Hp]". subst.
+    iApply ("Hind" with "[$Hi $Hp] [-]").
+    iNext. iIntros (v0) "[Hi Hq]".
+    iApply "HΨ". iFrame. iExists _. iFrame. done.
+  }
+  {
+    iApply big_sepL_fmap.
+    iApply (big_sepL_impl with "Hp").
+    iModIntro. iIntros (??) "% Hp". iExists _. iFrame. done.
+  }
+  iNext.
+  iIntros "(Hs & Hi & Hq)".
+  iApply "HΦ".
+  iFrame.
+  rewrite big_sepL_fmap.
+  iApply (big_sepL_impl with "Hq"). iModIntro.
+  iIntros (??) "% Hq".
+  iDestruct "Hq" as (v) "[%Heq Hq]".
+  apply IntoVal_inj in Heq. subst. done.
+Qed.
+
 End heap.

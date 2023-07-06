@@ -113,7 +113,7 @@ Definition TryMakeClient: val :=
         "conn" ::= struct.get grove_ffi.ConnectRet "Connection" "a";
         "mu" ::= lock.new #();
         "seq" ::= #1;
-        "pending" ::= NewMap ptrT #()
+        "pending" ::= NewMap uint64T ptrT #()
       ] in
       Fork (Client__replyThread "cl");;
       (#0, "cl")).

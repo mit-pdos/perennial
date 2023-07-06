@@ -41,7 +41,7 @@ Proof.
   iIntros (Φ) "Hemp HΦ".
 
   wp_call.
-  wp_apply wp_NewMap.
+  wp_apply (wp_NewMap u64).
   iIntros (mref) "Hmref".
   wp_apply wp_allocStruct; first val_ty.
   iIntros (bufmap) "Hbufmap".

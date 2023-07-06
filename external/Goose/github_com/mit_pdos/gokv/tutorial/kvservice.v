@@ -101,14 +101,16 @@ Definition Clerk__Put: val :=
       (if: (![uint64T] "err" = #0)
       then Break
       else Continue));;
-    let: "args" := struct.new putArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key";
-      "val" ::= "val"
-    ] in
     Skip;;
-    (for: (λ: <>, Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args" ≠ urpc.ErrNone); (λ: <>, Skip) := λ: <>,
-      Continue);;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "args" := struct.new putArgs [
+        "opId" ::= ![uint64T] "opId";
+        "key" ::= "key";
+        "val" ::= "val"
+      ] in
+      (if: (Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args" = urpc.ErrNone)
+      then Break
+      else Continue));;
     #().
 
 (* conditionalPutArgs from kvservice.gb.go *)
@@ -158,15 +160,15 @@ Definition Clerk__ConditionalPut: val :=
       (if: (![uint64T] "err" = #0)
       then Break
       else Continue));;
-    let: "args" := struct.new conditionalPutArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key";
-      "expectedVal" ::= "expectedVal";
-      "newVal" ::= "newVal"
-    ] in
     let: "ret" := ref (zero_val boolT) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "args" := struct.new conditionalPutArgs [
+        "opId" ::= ![uint64T] "opId";
+        "key" ::= "key";
+        "expectedVal" ::= "expectedVal";
+        "newVal" ::= "newVal"
+      ] in
       let: ("reply", "err") := Client__conditionalPutRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
       (if: ("err" = urpc.ErrNone)
       then
@@ -214,13 +216,13 @@ Definition Clerk__Get: val :=
       (if: (![uint64T] "err" = #0)
       then Break
       else Continue));;
-    let: "args" := struct.new getArgs [
-      "opId" ::= ![uint64T] "opId";
-      "key" ::= "key"
-    ] in
     let: "ret" := ref (zero_val stringT) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "args" := struct.new getArgs [
+        "opId" ::= ![uint64T] "opId";
+        "key" ::= "key"
+      ] in
       let: ("reply", "err") := Client__getRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
       (if: ("err" = urpc.ErrNone)
       then
@@ -253,8 +255,8 @@ Definition decodePutArgs: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
     struct.storeF putArgs "opId" "a" "0_ret";;
     "e" <-[slice.T byteT] "1_ret";;
-    let: ("keyLen", "e") := marshal.ReadInt (![slice.T byteT] "e") in
-    let: ("keyBytes", "valBytes") := marshal.ReadBytes (![slice.T byteT] "e") "keyLen" in
+    let: ("keyLen", "e2") := marshal.ReadInt (![slice.T byteT] "e") in
+    let: ("keyBytes", "valBytes") := marshal.ReadBytes "e2" "keyLen" in
     struct.storeF putArgs "key" "a" (Data.bytesToString "keyBytes");;
     struct.storeF putArgs "val" "a" (Data.bytesToString "valBytes");;
     "a".
@@ -266,11 +268,11 @@ Definition decodeConditionalPutArgs: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
     struct.storeF conditionalPutArgs "opId" "a" "0_ret";;
     "e" <-[slice.T byteT] "1_ret";;
-    let: ("keyLen", "e") := marshal.ReadInt (![slice.T byteT] "e") in
-    let: ("keyBytes", "e") := marshal.ReadBytes (![slice.T byteT] "e") "keyLen" in
+    let: ("keyLen", "e2") := marshal.ReadInt (![slice.T byteT] "e") in
+    let: ("keyBytes", "e3") := marshal.ReadBytes "e2" "keyLen" in
     struct.storeF conditionalPutArgs "key" "a" (Data.bytesToString "keyBytes");;
-    let: ("expectedValLen", "e") := marshal.ReadInt (![slice.T byteT] "e") in
-    let: ("expectedValBytes", "newValBytes") := marshal.ReadBytes (![slice.T byteT] "e") "expectedValLen" in
+    let: ("expectedValLen", "e4") := marshal.ReadInt "e3" in
+    let: ("expectedValBytes", "newValBytes") := marshal.ReadBytes "e4" "expectedValLen" in
     struct.storeF conditionalPutArgs "expectedVal" "a" (Data.bytesToString "expectedValBytes");;
     struct.storeF conditionalPutArgs "newVal" "a" (Data.bytesToString "newValBytes");;
     "a".
@@ -352,12 +354,13 @@ Definition Server__get: val :=
       "ret"
     else
       let: "ret2" := Fst (MapGet (struct.loadF Server "kvs" "s") (struct.loadF getArgs "key" "args")) in
+      MapInsert (struct.loadF Server "lastReplies" "s") (struct.loadF getArgs "opId" "args") "ret2";;
       lock.release (struct.loadF Server "mu" "s");;
       "ret2").
 
 Definition Server__Start: val :=
   rec: "Server__Start" "s" "me" :=
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" rpcIdGetFreshNum ((λ: "enc_args" "enc_reply",
       "enc_reply" <-[slice.T byteT] EncodeUint64 (Server__getFreshNum "s");;
       #()
@@ -383,6 +386,6 @@ Definition MakeServer: val :=
   rec: "MakeServer" <> :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
-    struct.storeF Server "kvs" "s" (NewMap stringT #());;
-    struct.storeF Server "lastReplies" "s" (NewMap stringT #());;
+    struct.storeF Server "kvs" "s" (NewMap stringT stringT #());;
+    struct.storeF Server "lastReplies" "s" (NewMap uint64T stringT #());;
     "s".

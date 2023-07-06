@@ -4,12 +4,12 @@ Section proof.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
 (*****************************************************************)
-(* func (tuple *Tuple) WriteLock()                               *)
+(* func (tuple *Tuple) WriteOpen()                               *)
 (*****************************************************************)
-Theorem wp_tuple__WriteLock tuple (tid : nat) (key : u64) γ :
+Theorem wp_tuple__WriteOpen tuple (tid : nat) (key : u64) γ :
   is_tuple tuple key γ -∗
   {{{ mods_token γ key tid }}}
-    Tuple__WriteLock #tuple
+    Tuple__WriteOpen #tuple
   {{{ (phys : list dbval), RET #(); own_tuple_locked tuple key tid phys phys γ }}}.
 Proof.
   iIntros "#Htuple" (Φ) "!> Htoken HΦ".

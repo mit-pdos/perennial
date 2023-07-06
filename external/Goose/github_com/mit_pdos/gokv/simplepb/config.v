@@ -212,7 +212,7 @@ Definition MakeServer: val :=
 
 Definition Server__Serve: val :=
   rec: "Server__Serve" "s" "me" :=
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" RPC_RESERVEEPOCH (Server__ReserveEpochAndGetConfig "s");;
     MapInsert "handlers" RPC_GETCONFIG (Server__GetConfig "s");;
     MapInsert "handlers" RPC_TRYWRITECONFIG (Server__TryWriteConfig "s");;

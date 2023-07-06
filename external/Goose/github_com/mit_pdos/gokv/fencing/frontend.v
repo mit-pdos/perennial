@@ -69,7 +69,7 @@ Definition StartServer: val :=
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "ck1" "s" (ctr.MakeClerk "host1");;
     struct.storeF Server "ck2" "s" (ctr.MakeClerk "host2");;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" RPC_FAI ((λ: "args" "reply",
       let: "dec" := marshal.NewDec "args" in
       let: "enc" := marshal.NewEnc #8 in

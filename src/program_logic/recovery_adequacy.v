@@ -16,7 +16,7 @@ Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val Λ → iProp Σ.
 Implicit Types Φinv : generationGS Λ Σ → iProp Σ.
-Implicit Types Φc : generationGS Λ Σ → val Λ → iProp Σ.
+Implicit Types Φr : generationGS Λ Σ → val Λ → iProp Σ.
 Implicit Types v : val Λ.
 Implicit Types e : expr Λ.
 
@@ -59,13 +59,12 @@ Proof.
     eauto.
 Qed.
 
-Lemma wptp_recv_strong_normal_adequacy {CS Φ Φinv Φr κs' s HG} n ns ncurr mj D r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
-  nrsteps (CS := CS) r1 (ns ++ [n]) (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) Normal →
+Lemma wptp_recv_strong_normal_adequacy {CS Φ Φinv Φr κs' s HG} n ncurr mj D r1 e1 t1 κs t2 σ1 g1 σ2 g2 :
+  nrsteps (CS := CS) r1 [n] (e1 :: t1, (σ1,g1)) κs (t2, (σ2,g2)) Normal →
   state_interp σ1 (length t1) -∗
   global_state_interp g1 ncurr mj D (κs ++ κs') -∗
   wpr CS s HG ⊤ e1 r1 Φ Φinv Φr -∗
-  wptp s t1 -∗ NC 1-∗ step_fupdN_fresh ncurr ns HG (λ HG',
-    ⌜ HG' = HG ⌝ ∗
+  wptp s t1 -∗ NC 1-∗ (
     (£ (steps_sum num_laters_per_step step_count_next ncurr n) -∗
      ||={⊤|⊤,∅|∅}=> ||▷=>^(steps_sum num_laters_per_step step_count_next ncurr n) ||={∅|∅,⊤|⊤}=>
     ∃ e2 t2',
@@ -82,11 +81,7 @@ Proof.
   { eauto. }
   {rewrite wpr_unfold /wpr_pre. iApply "He". }
   iSpecialize ("H" with "[$]").
-  assert (ns = []) as ->;
-    first by (eapply nrsteps_normal_empty_prefix; eauto).
-  inversion H. subst.
   rewrite /step_fupdN_fresh.
-  iSplitL ""; first by eauto.
   iIntros "Hlc". iSpecialize ("H" with "Hlc").
   iApply (step_fupd2N_wand with "H"); auto.
 Qed.
@@ -214,15 +209,11 @@ Proof.
       iApply "Hinv". eauto.
     }
     iDestruct "Hr" as "(_&Hr)".
-    iDestruct (wptp_recv_strong_normal_adequacy (HG:=HG') with "[Hσ] [Hg] [Hr] [] HNC") as "H"; eauto.
-    iApply (step_fupdN_fresh_wand with "H").
-    { simpl. lia. }
-    iModIntro.
-    iIntros (HG'') "H Hlc".
-    iDestruct "H" as (->) "H".
-    iClear "HC". simpl.
     assert (ns' = []) as ->; first by (eapply nrsteps_normal_empty_prefix; eauto).
-    simpl.
+    iDestruct (wptp_recv_strong_normal_adequacy (HG:=HG') with "[Hσ] [Hg] [Hr] [] HNC") as "H"; eauto.
+    iModIntro.
+    iIntros "Hlc".
+    iClear "HC". simpl.
     iSpecialize ("H" with "[Hlc]").
     { iExactEq "Hlc". f_equal. rewrite Nat.add_0_r. done. }
     iApply (step_fupd2N_inner_wand with "H"); try set_solver+.
@@ -376,11 +367,10 @@ Proof.
     iIntros "H".
     iMod "H" as (???) "(?&H&?&?&?)". iExists _, _.
     repeat (iSplitL ""; try iFrame; eauto).
-  - iIntros. iDestruct (wptp_recv_strong_normal_adequacy with "[$] [$] [$] [$] [$]") as "H"; eauto.
-    iApply (step_fupdN_fresh_wand with "H"); first auto.
-    iIntros (?) "H Hlc".
-    iDestruct "H" as (->) "H".
+  - iIntros.
     assert (ns = []) as ->; first by (eapply nrsteps_normal_empty_prefix; eauto).
+    iDestruct (wptp_recv_strong_normal_adequacy with "[$] [$] [$] [$] [$]") as "H"; eauto.
+    iIntros "Hlc".
     simpl. rewrite Nat.add_0_r. iSpecialize ("H" with "Hlc").
     iMod "H". iModIntro.
     iApply (step_fupd2N_wand with "H"); auto.

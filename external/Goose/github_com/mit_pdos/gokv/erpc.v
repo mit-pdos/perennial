@@ -47,8 +47,8 @@ Definition Server__GetFreshCID: val :=
 Definition MakeServer: val :=
   rec: "MakeServer" <> :=
     let: "t" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "lastReply" "t" (NewMap (slice.T byteT) #());;
-    struct.storeF Server "lastSeq" "t" (NewMap uint64T #());;
+    struct.storeF Server "lastReply" "t" (NewMap uint64T (slice.T byteT) #());;
+    struct.storeF Server "lastSeq" "t" (NewMap uint64T uint64T #());;
     struct.storeF Server "nextCID" "t" #0;;
     struct.storeF Server "mu" "t" (lock.new #());;
     "t".

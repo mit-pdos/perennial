@@ -318,6 +318,40 @@ Section map.
       iFrame. iApply big_sepM_insert; eauto. iFrame. done.
   Qed.
 
+  Lemma big_sepM_mono_bupd `{!BiBUpd PROP} Φ Ψ m (I : PROP) :
+   □ ( ∀ k x, ⌜ m !! k = Some x ⌝ →
+      I ∗ Φ k x ==∗ I ∗ Ψ k x ) -∗
+    I ∗ ([∗ map] k↦x ∈ m, Φ k x) ==∗
+    I ∗ ([∗ map] k↦x ∈ m, Ψ k x).
+  Proof.
+    iIntros "#Hbupd [HI Hm]".
+    iInduction m as [|i x m] "IH" using map_ind.
+    - iModIntro. iFrame. iApply big_sepM_empty. done.
+    - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
+      iMod ("Hbupd" with "[] [$HI $Hi]") as "[HI Hi]".
+      { rewrite lookup_insert. eauto. }
+      iMod ("IH" with "[Hbupd] HI Hm") as "[HI Hm]".
+      { iModIntro. iIntros (k x0 Hkx0) "[HI Hk]".
+        destruct (decide (k = i)); subst; try congruence.
+        iApply "Hbupd".
+        { rewrite lookup_insert_ne; eauto. }
+        iFrame.
+      }
+      iFrame. iApply big_sepM_insert; eauto. iFrame. done.
+  Qed.
+
+  Lemma big_sepM_impl_subseteq (m m': gmap K A) :
+    ⊢@{PROP}
+      ([∗ map] k↦v ∈ m, ⌜m' !! k = Some v⌝) -∗
+      ⌜m ⊆ m'⌝.
+  Proof.
+    iPureIntro.
+    intros Hf.
+    eapply map_subseteq_spec.
+    intros i k Hik.
+    apply (map_Forall_lookup_1 _ _ _ _ Hf Hik).
+  Qed.
+
   Lemma big_sepM_lookup_holds (m: gmap K A) :
     ⊢@{PROP} [∗ map] k↦v ∈ m, ⌜m !! k = Some v⌝.
   Proof.

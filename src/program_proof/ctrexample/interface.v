@@ -46,7 +46,7 @@ Next Obligation.
 Defined.
 
 Definition is_CtrServer_urpc γurpc_gn γ : iProp Σ :=
-  handler_spec γurpc_gn localhost 0 (FAISpec γ) ∗
-  handlers_dom (γurpc_gn) {[ U64 0 ]}.
+  is_urpc_spec_pred γurpc_gn localhost 0 (FAISpec γ) ∗
+  is_urpc_dom (γurpc_gn) {[ U64 0 ]}.
 
 End interface.

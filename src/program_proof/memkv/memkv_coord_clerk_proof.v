@@ -49,7 +49,7 @@ Lemma wp_KVCoordClerk__AddShardServer (ck:loc) γkv γ (dst : u64) :
   {{{RET #(); own_KVCoordClerk ck γkv }}}
 .
 Proof.
-  iIntros (Φ) "(Hclerk&#His_shard&%) HΦ".
+  iIntros (Φ) "(Hclerk&#His_shard&%) HΦ". subst.
   wp_lam.
   wp_apply (wp_ref_of_zero).
   { naive_solver. }
@@ -70,8 +70,8 @@ Proof.
   wp_loadField.
   wp_loadField.
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_addSpec _) dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
-  { simpl. iModIntro. iNext. iFrame "%". iExists _. iFrame "#". iPureIntro; congruence. }
+  wp_apply (wp_ConnMan__CallAtLeastOnce (is_coord_server_addSpec _) dst with "[$Hc_own $HaddSpec Hsl $HrawRep]").
+  { iFrame "∗#". do 2 iModIntro. iFrame "%". iExists _. iFrame "#". done. }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   iModIntro. iApply "HΦ". rewrite /own_KVCoordClerk.
@@ -115,8 +115,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   iDestruct (own_slice_to_small with "H") as "H".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_getSpec _) () with "Hc_own HgetSpec [] [$H $HrawRep //]").
-  { done. }
+  wp_apply (wp_ConnMan__CallAtLeastOnce (is_coord_server_getSpec _) () with "[$Hc_own $HgetSpec $H $HrawRep //]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   wp_pures.

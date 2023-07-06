@@ -66,12 +66,12 @@ Section goose_lang.
                         val_ty (InjLV v1) (sumT t1 t2)
   | sum_ty_r v2 t1 t2 : val_ty v2 t2 ->
                         val_ty (InjRV v2) (sumT t1 t2)
-  | map_def_ty v t : val_ty v t ->
-                     val_ty (MapNilV v) (mapValT t)
-  | map_cons_ty k v mv' t : val_ty mv' (mapValT t) ->
-                            val_ty k uint64T ->
-                            val_ty v t ->
-                            val_ty (InjRV (k, v, mv')%V) (mapValT t)
+  | map_def_ty v kt vt : val_ty v vt ->
+                     val_ty (MapNilV v) (mapValT kt vt)
+  | map_cons_ty k v mv' vt kt : val_ty mv' (mapValT kt vt) ->
+                            val_ty k kt ->
+                            val_ty v vt ->
+                            val_ty (InjRV (k, v, mv')%V) (mapValT kt vt)
   | rec_ty f x e t1 t2 : val_ty (RecV f x e) (arrowT t1 t2)
   | ext_val_ty x T : val_ty (ExtV x) (extT T)
   .
@@ -137,9 +137,9 @@ Section goose_lang.
     - invc H0; simpl in *; inv_lit_ty; try congruence.
     - invc H0; simpl in *; inv_lit_ty; try congruence.
     - invc H0; simpl in *; inv_lit_ty; try congruence.
-    - invc H0; simpl in *; inv_lit_ty; try congruence.
-      invc H4.
-      invc H2; simpl in *; inv_lit_ty; try congruence.
+    - invc H; simpl in *; inv_lit_ty; try congruence.
+      * invc H3. invc H2; simpl in *; inv_lit_ty; try congruence.
+      * invc H3. invc H2; simpl in *; inv_lit_ty; try congruence.
     - invc H; simpl in *; inv_lit_ty; try congruence.
     - invc H; simpl in *; inv_lit_ty; try congruence.
   Qed.

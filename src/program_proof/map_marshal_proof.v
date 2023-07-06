@@ -22,7 +22,7 @@ Lemma wp_byteMapNew :
   {{{
         True
   }}}
-    NewMap (slice.T byteT) #()
+    NewMap uint64T (slice.T byteT) #()
   {{{
         mptr, RET #mptr; own_byte_map mptr ∅
   }}}.
@@ -161,7 +161,7 @@ Proof.
     split; first by apply NoDup_nil_2.
     rewrite map_zip_with_empty_r.
     split; first by apply list_to_map_nil.
-    rewrite -size_dom -Hkvs_dom size_dom. done. }
+    do 2 rewrite -size_dom. rewrite -Hkvs_dom size_dom. done. }
   { (* core loop *)
      clear Φ s' mptr. iIntros (k v kvs_todo kvs_done Φ) "!# [HI %Hk] HΦ". iNamed "HI". wp_pures.
      wp_load. wp_apply (wp_WriteInt with "Hs"). iIntros (s') "Hs". wp_store. clear s.
@@ -403,7 +403,7 @@ Proof.
     wp_apply (wp_ReadInt with "Hs"). iIntros (s'') "Hs".
     do 2 wp_store.
     do 2 wp_load.
-    wp_apply (wp_MapInsert _ _ _ _ data with "[$Hm]").
+    wp_apply (wp_MapInsert with "[$Hm]").
     { done. }
     rewrite /map_insert.
     iIntros "Hm". wp_pures. iApply "HΦ". iModIntro.

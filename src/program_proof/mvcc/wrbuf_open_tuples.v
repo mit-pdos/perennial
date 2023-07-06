@@ -294,7 +294,7 @@ Proof.
 
   (***********************************************************)
   (* for _, ent := range ents {                              *)
-  (*     ent.tpl.WriteLock()                                 *)
+  (*     ent.tpl.WriteOpen()                                 *)
   (* }                                                       *)
   (***********************************************************)
   replace (take (int.nat n) ents') with ents' in Htpls; last first.
@@ -350,7 +350,7 @@ Proof.
     { apply not_elem_of_list_to_map_1. set_solver. }
     iDestruct "Htokens" as "[Htoken Htokens]".
 
-    wp_apply (wp_tuple__WriteLock with "HtplRP Htoken").
+    wp_apply (wp_tuple__WriteOpen with "HtplRP Htoken").
     iIntros (phys) "Htpl".
     iApply "HΦ".
     replace (int.nat (word.add _ _)) with (S (int.nat j)) by word.

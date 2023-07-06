@@ -134,7 +134,7 @@ Definition MakeServer: val :=
 
 Definition Server__Start: val :=
   rec: "Server__Start" "s" "me" :=
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
     MapInsert "handlers" RPC_GET_FRESH_NUM ((λ: "enc_args" "enc_reply",
       "enc_reply" <-[slice.T byteT] EncodeUint64 (Server__getFreshNum "s");;
       #()

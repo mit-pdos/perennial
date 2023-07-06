@@ -298,10 +298,7 @@ Proof using Type*.
     iDestruct (big_sepS_elem_of_acc_impl req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
     iMod (fmcounter_map_update (int.nat req.(Req_Seq)) with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
     {
-      (* Set Printing All*)
-      (* Need to unfold Map.t to get map lookups to match *)
       rename select (_ < _) into Hlt.
-      unfold Map.t in Hlt.
       simpl in Hlt.
       rewrite -u64_Z_through_nat in Hlt.
       replace (int.Z req.(Req_Seq)%Z) with (int.nat req.(Req_Seq):Z) in Hlt; last first.
@@ -460,7 +457,6 @@ Proof.
       replace (int.Z req.(Req_Seq)%Z) with (int.nat req.(Req_Seq):Z) in Hrseq; last first.
       { rewrite u64_Z_through_nat. done. }
       rewrite -u64_Z_through_nat in Hrseq.
-      unfold Map.t in Hrseq.
       apply Nat2Z.inj_lt in Hrseq.
       lia.
     }
