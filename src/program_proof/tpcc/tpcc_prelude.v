@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Export grove_prelude marshal_stateless_proof.
-From Goose.github_com.mit_pdos.go_mvcc Require Export tpcc_deprecated.
+(* From Goose.github_com.mit_pdos.vmvcc Require Export tpcc_deprecated. *)
 Export Perennial.goose_lang.lib.slice.typed_slice.
 
 Definition dbval := option (list u8).

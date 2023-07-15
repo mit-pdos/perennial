@@ -4,7 +4,7 @@ From Goose Require github_com.mit_pdos.gokv.dmvcc.index.
 From Goose Require github_com.mit_pdos.gokv.dmvcc.prophname.
 From Goose Require github_com.mit_pdos.gokv.dmvcc.txncoordinator.
 From Goose Require github_com.mit_pdos.gokv.dmvcc.txnmgr.
-From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.go_mvcc.trusted_proph.
+From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.vmvcc.trusted_proph.
 
 Section code.
 Context `{ext_ty: ext_types}.

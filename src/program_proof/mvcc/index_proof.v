@@ -1,7 +1,7 @@
 From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv mvcc_misc
      tuple_repr tuple_mk tuple_remove_versions.
-From Goose.github_com.mit_pdos.go_mvcc Require Import index.
+From Goose.github_com.mit_pdos.vmvcc Require Import index.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 

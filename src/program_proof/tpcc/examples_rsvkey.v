@@ -2,7 +2,7 @@ From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv
      txnmgr_repr txnmgr_mk txnmgr_new
      txn_repr txn_get txn_put txn_do_txn.
-From Goose.github_com.mit_pdos.go_mvcc Require Import examples.
+From Goose.github_com.mit_pdos.vmvcc Require Import examples.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

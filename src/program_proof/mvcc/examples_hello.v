@@ -4,7 +4,7 @@ From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv
      txnmgr_repr txnmgr_mk txnmgr_new txnmgr_activate_gc
      txn_repr txn_get txn_put txn_delete txn_do_txn.
-From Goose.github_com.mit_pdos.go_mvcc Require Import examples.
+From Goose.github_com.mit_pdos.vmvcc Require Import examples.
 From Perennial.goose_lang Require Import grove_ffi_adequacy.
 
 Section program.

@@ -1,4 +1,4 @@
-From Goose.github_com.mit_pdos.go_mvcc Require Import wrbuf.
+From Goose.github_com.mit_pdos.vmvcc Require Import wrbuf.
 From Perennial.goose_lang Require Import lang notation prelude.
 
 Section goose_lang.

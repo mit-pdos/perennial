@@ -1,7 +1,7 @@
 From Perennial.base_logic Require Import ghost_map saved_prop mono_nat.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_ghost.
-From Goose.github_com.mit_pdos.go_mvcc Require Import tid.
+From Goose.github_com.mit_pdos.vmvcc Require Import tid.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 

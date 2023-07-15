@@ -88,7 +88,7 @@ def main():
     )
     parser.add_argument(
         "--mvcc",
-        help="path to go-mvcc repo (skip translation if not provided)",
+        help="path to vmvcc repo (skip translation if not provided)",
         metavar="MVCC_PATH",
         default=None,
     )
@@ -300,7 +300,6 @@ def main():
             "./config",
             "./common",
             "./examples",
-            "./tpcc-deprecated",
             # "./cfmutex",
         )
 
