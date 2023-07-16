@@ -243,10 +243,10 @@ Proof.
   iApply "HΦ".
   rewrite /is_txnmgr.
   iMod (readonly_alloc_1 with "latch") as "#Hlatch".
-  iMod (alloc_lock mvccN _ latch (own_txnmgr txnmgr) with "[$Hfree] [sidCur]") as "#Hlock".
+  iMod (alloc_lock mvccN _ latch (own_txnmgr txnmgr) with "[$Hfree] [sid]") as "#Hlock".
   { eauto with iFrame. }
   iMod (readonly_alloc_1 with "idx") as "#Hidx".
-  iMod (readonly_alloc_1 with "p") as "#Hp".
+  iMod (readonly_alloc_1 with "proph") as "#Hp".
   iMod (readonly_alloc_1 with "Hsites") as "#Hsites".
   iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".
   replace (int.nat (U64 N_TXN_SITES)) with (length sitesL); last first.

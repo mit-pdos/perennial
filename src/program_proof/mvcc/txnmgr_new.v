@@ -108,7 +108,7 @@ Proof.
   wp_pures.
   iApply "HΦ".
   iMod (readonly_alloc_1 with "idx") as "#Hidx_txn".
-  iMod (readonly_alloc_1 with "txnMgr") as "#Htxnmgr_txn".
+  iMod (readonly_alloc_1 with "mgr") as "#Htxnmgr_txn".
   replace (int.nat 0) with 0%nat by word.
   simpl.
   eauto 20 with iFrame.

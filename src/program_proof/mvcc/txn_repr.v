@@ -15,10 +15,10 @@ Definition own_txn_impl (txn : loc) (wrbuf : loc) (ts : nat) γ : iProp Σ :=
     "Hwrbuf"    ∷ txn ↦[Txn :: "wrbuf"] #wrbuf ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
-    "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
+    "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "mgr"] #txnmgr) ∗
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
     "Hactive" ∷ active_tid γ tid sid ∗
-    "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
+    "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "proph"] #p) ∗
     "#Hinv" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
@@ -50,9 +50,9 @@ Definition own_txn_uninit (txn : loc) γ : iProp Σ :=
     "HwrbufRP" ∷ own_wrbuf_xtpls wrbuf mods ∗
     "#Hidx" ∷ readonly (txn ↦[Txn :: "idx"] #idx) ∗
     "#HidxRI" ∷ is_index idx γ ∗
-    "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "txnMgr"] #txnmgr) ∗
+    "#Htxnmgr" ∷ readonly (txn ↦[Txn :: "mgr"] #txnmgr) ∗
     "#HtxnmgrRI" ∷ is_txnmgr txnmgr γ ∗
-    "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "p"] #p) ∗
+    "#Hp" ∷ readonly (txnmgr ↦[TxnMgr :: "proph"] #p) ∗
     "#Hinv" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
