@@ -46,7 +46,7 @@ Definition Log__installBufsMap: val :=
   rec: "Log__installBufsMap" "l" "bufs" :=
     let: "blks" := NewMap uint64T (slice.T byteT) #() in
     ForSlice ptrT <> "b" "bufs"
-      ((if: (struct.loadF buf.Buf "Sz" "b" = common.NBITBLOCK)
+      ((if: (struct.loadF buf.Buf "Sz" "b") = common.NBITBLOCK
       then MapInsert "blks" (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b")) (struct.loadF buf.Buf "Data" "b")
       else
         let: "blk" := ref (zero_val (slice.T byteT)) in
@@ -54,7 +54,7 @@ Definition Log__installBufsMap: val :=
         (if: "ok"
         then "blk" <-[slice.T byteT] "mapblk"
         else
-          "blk" <-[slice.T byteT] wal.Walog__Read (struct.loadF Log "log" "l") (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b"));;
+          "blk" <-[slice.T byteT] (wal.Walog__Read (struct.loadF Log "log" "l") (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b")));;
           MapInsert "blks" (struct.get addr.Addr "Blkno" (struct.loadF buf.Buf "Addr" "b")) (![slice.T byteT] "blk"));;
         buf.Buf__Install "b" (![slice.T byteT] "blk")));;
     "blks".
@@ -64,7 +64,7 @@ Definition Log__installBufs: val :=
     let: "bufmap" := Log__installBufsMap "l" "bufs" in
     let: "blks" := ref_to (slice.T (struct.t wal.Update)) (NewSliceWithCap (struct.t wal.Update) #0 (MapLen "bufmap")) in
     MapIter "bufmap" (λ: "blkno" "data",
-      "blks" <-[slice.T (struct.t wal.Update)] SliceAppend (struct.t wal.Update) (![slice.T (struct.t wal.Update)] "blks") (wal.MkBlockData "blkno" "data"));;
+      "blks" <-[slice.T (struct.t wal.Update)] (SliceAppend (struct.t wal.Update) (![slice.T (struct.t wal.Update)] "blks") (wal.MkBlockData "blkno" "data")));;
     ![slice.T (struct.t wal.Update)] "blks".
 
 (* Acquires the commit log, installs the buffers into their
@@ -73,8 +73,8 @@ Definition Log__doCommit: val :=
   rec: "Log__doCommit" "l" "bufs" :=
     lock.acquire (struct.loadF Log "mu" "l");;
     let: "blks" := Log__installBufs "l" "bufs" in
-    util.DPrintf #3 (#(str"doCommit: %v bufs
-    ")) #();;
+    util.DPrintf #3 #(str"doCommit: %v bufs
+    ") #();;
     let: ("n", "ok") := wal.Walog__MemAppend (struct.loadF Log "log" "l") "blks" in
     struct.storeF Log "pos" "l" "n";;
     lock.release (struct.loadF Log "mu" "l");;
@@ -84,21 +84,21 @@ Definition Log__doCommit: val :=
 Definition Log__CommitWait: val :=
   rec: "Log__CommitWait" "l" "bufs" "wait" :=
     let: "commit" := ref_to boolT #true in
-    (if: slice.len "bufs" > #0
+    (if: (slice.len "bufs") > #0
     then
       let: ("n", "ok") := Log__doCommit "l" "bufs" in
-      (if: ~ "ok"
+      (if: (~ "ok")
       then
-        util.DPrintf #10 (#(str"memappend failed; log is too small
-        ")) #();;
+        util.DPrintf #10 #(str"memappend failed; log is too small
+        ") #();;
         "commit" <-[boolT] #false
       else
         (if: "wait"
         then wal.Walog__Flush (struct.loadF Log "log" "l") "n"
         else #()))
     else
-      util.DPrintf #5 (#(str"commit read-only trans
-      ")) #());;
+      util.DPrintf #5 #(str"commit read-only trans
+      ") #());;
     ![boolT] "commit".
 
 (* NOTE: this is coarse-grained and unattached to the transaction ID *)

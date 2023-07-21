@@ -14,12 +14,12 @@ Definition PreparedWrite := struct.decl [
 
 Definition ParsePreparedWrite: val :=
   rec: "ParsePreparedWrite" "data" :=
-    Panic ("TODO: marshaling");;
+    Panic "TODO: marshaling";;
     #().
 
 Definition MarshalPreparedWrite: val :=
   rec: "MarshalPreparedWrite" "id" :=
-    Panic ("TODO: marshaling");;
+    Panic "TODO: marshaling";;
     #().
 
 Definition RecordChunkArgs := struct.decl [
@@ -31,12 +31,12 @@ Definition RecordChunkArgs := struct.decl [
 
 Definition MarshalRecordChunkArgs: val :=
   rec: "MarshalRecordChunkArgs" "args" :=
-    Panic ("TODO: marshaling");;
+    Panic "TODO: marshaling";;
     #().
 
 Definition ParseRecordChunkArgs: val :=
   rec: "ParseRecordChunkArgs" "data" :=
-    Panic ("TODO: marshaling");;
+    Panic "TODO: marshaling";;
     #().
 
 Definition FinishWriteArgs := struct.decl [
@@ -46,12 +46,12 @@ Definition FinishWriteArgs := struct.decl [
 
 Definition MarshalFinishWriteArgs: val :=
   rec: "MarshalFinishWriteArgs" "args" :=
-    Panic ("TODO: marshaling");;
+    Panic "TODO: marshaling";;
     #().
 
 Definition ParseFinishWriteArgs: val :=
   rec: "ParseFinishWriteArgs" "data" :=
-    Panic ("TODO: marshaling");;
+    Panic "TODO: marshaling";;
     #().
 
 Definition ChunkHandle := struct.decl [
@@ -65,12 +65,12 @@ Definition PreparedRead := struct.decl [
 
 Definition MarshalPreparedRead: val :=
   rec: "MarshalPreparedRead" "v" :=
-    Panic ("TODO: marshaling");;
+    Panic "TODO: marshaling";;
     #().
 
 Definition ParsePreparedRead: val :=
   rec: "ParsePreparedRead" "data" :=
-    Panic ("TODO: marshaling");;
+    Panic "TODO: marshaling";;
     #().
 
 (* client.go *)
@@ -148,7 +148,7 @@ Definition Server__PrepareWrite: val :=
   rec: "Server__PrepareWrite" "s" :=
     lock.acquire (struct.loadF Server "m" "s");;
     let: "id" := struct.loadF Server "nextWriteId" "s" in
-    struct.storeF Server "nextWriteId" "s" (struct.loadF Server "nextWriteId" "s" + #1);;
+    struct.storeF Server "nextWriteId" "s" ((struct.loadF Server "nextWriteId" "s") + #1);;
     MapInsert (struct.loadF Server "ongoing" "s") "id" (struct.mk PartialValue [
       "servers" ::= NewMap uint64T (struct.t ChunkHandle) #()
     ]);;
@@ -177,8 +177,8 @@ Definition Server__FinishWrite: val :=
     let: "numChunks" := MapLen "v" in
     let: "servers" := ref_to (slice.T (struct.t ChunkHandle)) (NewSlice (struct.t ChunkHandle) #0) in
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < "numChunks"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      "servers" <-[slice.T (struct.t ChunkHandle)] SliceAppend (struct.t ChunkHandle) (![slice.T (struct.t ChunkHandle)] "servers") (Fst (MapGet "v" (![uint64T] "i")));;
+    (for: (λ: <>, (![uint64T] "i") < "numChunks"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      "servers" <-[slice.T (struct.t ChunkHandle)] (SliceAppend (struct.t ChunkHandle) (![slice.T (struct.t ChunkHandle)] "servers") (Fst (MapGet "v" (![uint64T] "i"))));;
       Continue);;
     MapInsert (struct.loadF Server "data" "s") (struct.get FinishWriteArgs "Keyname" "args") (struct.mk Value [
       "servers" ::= ![slice.T (struct.t ChunkHandle)] "servers"
@@ -203,30 +203,30 @@ Definition StartServer: val :=
       "data" ::= NewMap stringT (struct.t Value) #();
       "nextWriteId" ::= #1
     ] in
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" PrepareWriteId ((λ: "_req" "reply",
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" PrepareWriteId (λ: "_req" "reply",
       let: "ret" := Server__PrepareWrite "s" in
-      "reply" <-[slice.T byteT] MarshalPreparedWrite "ret";;
+      "reply" <-[slice.T byteT] (MarshalPreparedWrite "ret");;
       #()
-      ));;
-    MapInsert "handlers" RecordChunkId ((λ: "req" "reply",
+      );;
+    MapInsert "handlers" RecordChunkId (λ: "req" "reply",
       let: "args" := ParseRecordChunkArgs "req" in
       Server__RecordChunk "s" "args";;
-      "reply" <-[slice.T byteT] NewSlice byteT #0;;
+      "reply" <-[slice.T byteT] (NewSlice byteT #0);;
       #()
-      ));;
-    MapInsert "handlers" FinishWriteId ((λ: "req" "reply",
+      );;
+    MapInsert "handlers" FinishWriteId (λ: "req" "reply",
       let: "args" := ParseFinishWriteArgs "req" in
       Server__FinishWrite "s" "args";;
-      "reply" <-[slice.T byteT] NewSlice byteT #0;;
+      "reply" <-[slice.T byteT] (NewSlice byteT #0);;
       #()
-      ));;
-    MapInsert "handlers" PrepareReadId ((λ: "req" "reply",
+      );;
+    MapInsert "handlers" PrepareReadId (λ: "req" "reply",
       let: "args" := Data.bytesToString "req" in
       let: "ret" := Server__PrepareRead "s" "args" in
-      "reply" <-[slice.T byteT] MarshalPreparedRead "ret";;
+      "reply" <-[slice.T byteT] (MarshalPreparedRead "ret");;
       #()
-      ));;
+      );;
     let: "server" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "server" "me";;
     #().

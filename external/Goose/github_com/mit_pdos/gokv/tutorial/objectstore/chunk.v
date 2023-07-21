@@ -17,12 +17,12 @@ Definition WriteChunkArgs := struct.decl [
 
 Definition MarshalWriteChunkArgs: val :=
   rec: "MarshalWriteChunkArgs" "args" :=
-    Panic ("TODO: marshalling");;
+    Panic "TODO: marshalling";;
     #().
 
 Definition ParseWriteChunkArgs: val :=
   rec: "ParseWriteChunkArgs" "data" :=
-    Panic ("TODO: marshalling");;
+    Panic "TODO: marshalling";;
     #().
 
 (* client.go *)
@@ -90,19 +90,19 @@ Definition StartServer: val :=
       "dir" ::= "dir";
       "me" ::= "me"
     ] in
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" WriteChunkId ((λ: "req" "reply",
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" WriteChunkId (λ: "req" "reply",
       let: "args" := ParseWriteChunkArgs "req" in
       Server__WriteChunk "s" "args";;
-      "reply" <-[slice.T byteT] NewSlice byteT #0;;
+      "reply" <-[slice.T byteT] (NewSlice byteT #0);;
       #()
-      ));;
-    MapInsert "handlers" GetChunkId ((λ: "req" "reply",
+      );;
+    MapInsert "handlers" GetChunkId (λ: "req" "reply",
       let: "args" := Data.bytesToString "req" in
       let: "ret" := Server__GetChunk "s" "args" in
       "reply" <-[slice.T byteT] "ret";;
       #()
-      ));;
+      );;
     let: "server" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "server" "me";;
     #().

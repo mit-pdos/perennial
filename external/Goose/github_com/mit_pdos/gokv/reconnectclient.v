@@ -34,11 +34,11 @@ Definition ReconnectingClient__getClient: val :=
       let: ("0_ret", "1_ret") := urpc.TryMakeClient (struct.loadF ReconnectingClient "addr" "cl") in
       "err" <-[uint64T] "0_ret";;
       "newRpcCl" <-[ptrT] "1_ret";;
-      (if: ![uint64T] "err" ≠ #0
+      (if: (![uint64T] "err") ≠ #0
       then time.Sleep #10000000
       else #());;
       lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
-      (if: (![uint64T] "err" = #0)
+      (if: (![uint64T] "err") = #0
       then
         struct.storeF ReconnectingClient "urpcCl" "cl" (![ptrT] "newRpcCl");;
         struct.storeF ReconnectingClient "valid" "cl" #true
@@ -53,7 +53,7 @@ Definition ReconnectingClient__Call: val :=
     then "err1"
     else
       let: "err" := urpc.Client__Call "urpcCl" "rpcid" "args" "reply" "timeout_ms" in
-      (if: ("err" = urpc.ErrDisconnect)
+      (if: "err" = urpc.ErrDisconnect
       then
         lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
         struct.storeF ReconnectingClient "valid" "cl" #false;;

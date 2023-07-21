@@ -30,14 +30,14 @@ Definition Enc__PutInt: val :=
   rec: "Enc__PutInt" "enc" "x" :=
     let: "off" := ![uint64T] (struct.get Enc "off" "enc") in
     UInt64Put (SliceSkip byteT (struct.get Enc "b" "enc") "off") "x";;
-    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #8;;
+    (struct.get Enc "off" "enc") <-[uint64T] ((![uint64T] (struct.get Enc "off" "enc")) + #8);;
     #().
 
 Definition Enc__PutInt32: val :=
   rec: "Enc__PutInt32" "enc" "x" :=
     let: "off" := ![uint64T] (struct.get Enc "off" "enc") in
     UInt32Put (SliceSkip byteT (struct.get Enc "b" "enc") "off") "x";;
-    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #4;;
+    (struct.get Enc "off" "enc") <-[uint64T] ((![uint64T] (struct.get Enc "off" "enc")) + #4);;
     #().
 
 Definition Enc__PutInts: val :=
@@ -50,7 +50,7 @@ Definition Enc__PutBytes: val :=
   rec: "Enc__PutBytes" "enc" "b" :=
     let: "off" := ![uint64T] (struct.get Enc "off" "enc") in
     let: "n" := SliceCopy byteT (SliceSkip byteT (struct.get Enc "b" "enc") "off") "b" in
-    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + "n";;
+    (struct.get Enc "off" "enc") <-[uint64T] ((![uint64T] (struct.get Enc "off" "enc")) + "n");;
     #().
 
 Definition bool2byte: val :=
@@ -63,7 +63,7 @@ Definition Enc__PutBool: val :=
   rec: "Enc__PutBool" "enc" "b" :=
     let: "off" := ![uint64T] (struct.get Enc "off" "enc") in
     SliceSet byteT (struct.get Enc "b" "enc") "off" (bool2byte "b");;
-    struct.get Enc "off" "enc" <-[uint64T] ![uint64T] (struct.get Enc "off" "enc") + #1;;
+    (struct.get Enc "off" "enc") <-[uint64T] ((![uint64T] (struct.get Enc "off" "enc")) + #1);;
     #().
 
 Definition Enc__Finish: val :=
@@ -87,21 +87,21 @@ Definition NewDec: val :=
 Definition Dec__GetInt: val :=
   rec: "Dec__GetInt" "dec" :=
     let: "off" := ![uint64T] (struct.get Dec "off" "dec") in
-    struct.get Dec "off" "dec" <-[uint64T] ![uint64T] (struct.get Dec "off" "dec") + #8;;
+    (struct.get Dec "off" "dec") <-[uint64T] ((![uint64T] (struct.get Dec "off" "dec")) + #8);;
     UInt64Get (SliceSkip byteT (struct.get Dec "b" "dec") "off").
 
 Definition Dec__GetInt32: val :=
   rec: "Dec__GetInt32" "dec" :=
     let: "off" := ![uint64T] (struct.get Dec "off" "dec") in
-    struct.get Dec "off" "dec" <-[uint64T] ![uint64T] (struct.get Dec "off" "dec") + #4;;
+    (struct.get Dec "off" "dec") <-[uint64T] ((![uint64T] (struct.get Dec "off" "dec")) + #4);;
     UInt32Get (SliceSkip byteT (struct.get Dec "b" "dec") "off").
 
 Definition Dec__GetInts: val :=
   rec: "Dec__GetInts" "dec" "num" :=
     let: "xs" := ref (zero_val (slice.T uint64T)) in
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < "num"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
-      "xs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "xs") (Dec__GetInt "dec");;
+    (for: (λ: <>, (![uint64T] "i") < "num"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      "xs" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "xs") (Dec__GetInt "dec"));;
       Continue);;
     ![slice.T uint64T] "xs".
 
@@ -109,14 +109,14 @@ Definition Dec__GetBytes: val :=
   rec: "Dec__GetBytes" "dec" "num" :=
     let: "off" := ![uint64T] (struct.get Dec "off" "dec") in
     let: "b" := SliceSubslice byteT (struct.get Dec "b" "dec") "off" ("off" + "num") in
-    struct.get Dec "off" "dec" <-[uint64T] ![uint64T] (struct.get Dec "off" "dec") + "num";;
+    (struct.get Dec "off" "dec") <-[uint64T] ((![uint64T] (struct.get Dec "off" "dec")) + "num");;
     "b".
 
 Definition Dec__GetBool: val :=
   rec: "Dec__GetBool" "dec" :=
     let: "off" := ![uint64T] (struct.get Dec "off" "dec") in
-    struct.get Dec "off" "dec" <-[uint64T] ![uint64T] (struct.get Dec "off" "dec") + #1;;
-    (if: (SliceGet byteT (struct.get Dec "b" "dec") "off" = #(U8 0))
+    (struct.get Dec "off" "dec") <-[uint64T] ((![uint64T] (struct.get Dec "off" "dec")) + #1);;
+    (if: (SliceGet byteT (struct.get Dec "b" "dec") "off") = #(U8 0)
     then #false
     else #true).
 
@@ -125,7 +125,7 @@ Definition Dec__GetBool: val :=
 Definition compute_new_cap: val :=
   rec: "compute_new_cap" "old_cap" "min_cap" :=
     let: "new_cap" := ref_to uint64T ("old_cap" * #2) in
-    (if: ![uint64T] "new_cap" < "min_cap"
+    (if: (![uint64T] "new_cap") < "min_cap"
     then "new_cap" <-[uint64T] "min_cap"
     else #());;
     ![uint64T] "new_cap".
@@ -135,7 +135,7 @@ Definition compute_new_cap: val :=
 Definition reserve: val :=
   rec: "reserve" "b" "additional" :=
     let: "min_cap" := std.SumAssumeNoOverflow (slice.len "b") "additional" in
-    (if: slice.cap "b" < "min_cap"
+    (if: (slice.cap "b") < "min_cap"
     then
       let: "new_cap" := compute_new_cap (slice.cap "b") "min_cap" in
       let: "dest" := NewSliceWithCap byteT (slice.len "b") "new_cap" in
@@ -174,7 +174,7 @@ Definition WriteBytes: val :=
   rec: "WriteBytes" "b" "data" :=
     let: "b2" := reserve "b" (slice.len "data") in
     let: "off" := slice.len "b2" in
-    let: "b3" := SliceTake "b2" ("off" + slice.len "data") in
+    let: "b3" := SliceTake "b2" ("off" + (slice.len "data")) in
     SliceCopy byteT (SliceSkip byteT "b3" "off") "data";;
     "b3".
 

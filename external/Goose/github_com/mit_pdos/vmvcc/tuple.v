@@ -46,19 +46,19 @@ Definition findVersion: val :=
     let: "length" := slice.len "vers" in
     let: "idx" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, ![uint64T] "idx" < "length"); (λ: <>, Skip) := λ: <>,
-      "ver" <-[struct.t Version] SliceGet (struct.t Version) "vers" ("length" - ![uint64T] "idx" - #1);;
-      (if: "tid" > struct.get Version "ts" (![struct.t Version] "ver")
+    (for: (λ: <>, (![uint64T] "idx") < "length"); (λ: <>, Skip) := λ: <>,
+      "ver" <-[struct.t Version] (SliceGet (struct.t Version) "vers" (("length" - (![uint64T] "idx")) - #1));;
+      (if: "tid" > (struct.get Version "ts" (![struct.t Version] "ver"))
       then Break
       else
-        "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+        "idx" <-[uint64T] ((![uint64T] "idx") + #1);;
         Continue));;
     ![struct.t Version] "ver".
 
 Definition Tuple__Own: val :=
   rec: "Tuple__Own" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
-    (if: "tid" < struct.loadF Tuple "tslast" "tuple"
+    (if: "tid" < (struct.loadF Tuple "tslast" "tuple")
     then
       lock.release (struct.loadF Tuple "latch" "tuple");;
       common.RET_UNSERIALIZABLE
@@ -136,7 +136,7 @@ Definition Tuple__ReadWait: val :=
   rec: "Tuple__ReadWait" "tuple" "tid" :=
     lock.acquire (struct.loadF Tuple "latch" "tuple");;
     Skip;;
-    (for: (λ: <>, ("tid" > struct.loadF Tuple "tslast" "tuple") && (struct.loadF Tuple "owned" "tuple")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, ("tid" > (struct.loadF Tuple "tslast" "tuple")) && (struct.loadF Tuple "owned" "tuple")); (λ: <>, Skip) := λ: <>,
       lock.condWait (struct.loadF Tuple "rcond" "tuple");;
       Continue);;
     #().
@@ -144,23 +144,23 @@ Definition Tuple__ReadWait: val :=
 Definition Tuple__ReadVersion: val :=
   rec: "Tuple__ReadVersion" "tuple" "tid" :=
     let: "ver" := findVersion "tid" (struct.loadF Tuple "vers" "tuple") in
-    (if: struct.loadF Tuple "tslast" "tuple" < "tid"
+    (if: (struct.loadF Tuple "tslast" "tuple") < "tid"
     then struct.storeF Tuple "tslast" "tuple" "tid"
     else #());;
     lock.release (struct.loadF Tuple "latch" "tuple");;
-    (struct.get Version "val" "ver", ~ (struct.get Version "del" "ver")).
+    (struct.get Version "val" "ver", (~ (struct.get Version "del" "ver"))).
 
 Definition Tuple__removeVersions: val :=
   rec: "Tuple__removeVersions" "tuple" "tid" :=
     let: "idx" := ref (zero_val uint64T) in
-    "idx" <-[uint64T] slice.len (struct.loadF Tuple "vers" "tuple") - #1;;
+    "idx" <-[uint64T] ((slice.len (struct.loadF Tuple "vers" "tuple")) - #1);;
     Skip;;
-    (for: (λ: <>, ![uint64T] "idx" ≠ #0); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "idx") ≠ #0); (λ: <>, Skip) := λ: <>,
       let: "ver" := SliceGet (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx") in
-      (if: struct.get Version "ts" "ver" < "tid"
+      (if: (struct.get Version "ts" "ver") < "tid"
       then Break
       else
-        "idx" <-[uint64T] ![uint64T] "idx" - #1;;
+        "idx" <-[uint64T] ((![uint64T] "idx") - #1);;
         Continue));;
     struct.storeF Tuple "vers" "tuple" (SliceSkip (struct.t Version) (struct.loadF Tuple "vers" "tuple") (![uint64T] "idx"));;
     #().

@@ -11,12 +11,12 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 Definition EncodeBool: val :=
   rec: "EncodeBool" "a" :=
     (if: "a"
-    then SliceAppend byteT (NewSlice byteT #0) (#(U8 1))
-    else SliceAppend byteT (NewSlice byteT #0) (#(U8 0))).
+    then SliceAppend byteT (NewSlice byteT #0) #(U8 1)
+    else SliceAppend byteT (NewSlice byteT #0) #(U8 0)).
 
 Definition DecodeBool: val :=
   rec: "DecodeBool" "x" :=
-    (SliceGet byteT "x" #0 = #(U8 1)).
+    (SliceGet byteT "x" #0) = #(U8 1).
 
 Definition EncodeUint64: val :=
   rec: "EncodeUint64" "a" :=
@@ -46,7 +46,7 @@ Definition Client__getFreshNum: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "args" := NewSlice byteT #0 in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") RPC_GET_FRESH_NUM "args" "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
+    (if: "err" = urpc.ErrNone
     then (DecodeUint64 (![slice.T byteT] "reply"), "err")
     else (#0, "err")).
 
@@ -55,7 +55,7 @@ Definition Client__tryAcquire: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "args" := EncodeUint64 "id" in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") RPC_TRY_ACQUIRE "args" "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
+    (if: "err" = urpc.ErrNone
     then (DecodeUint64 (![slice.T byteT] "reply"), "err")
     else (#0, "err")).
 
@@ -98,12 +98,12 @@ Definition Server__tryAcquire: val :=
   rec: "Server__tryAcquire" "s" "id" :=
     let: "ret" := ref (zero_val uint64T) in
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF Server "holder" "s" > "id"
+    (if: (struct.loadF Server "holder" "s") > "id"
     then "ret" <-[uint64T] StatusStale
     else
       (if: struct.loadF Server "locked" "s"
       then
-        (if: (struct.loadF Server "holder" "s" = "id")
+        (if: (struct.loadF Server "holder" "s") = "id"
         then "ret" <-[uint64T] StatusGranted
         else "ret" <-[uint64T] StatusRetry)
       else
@@ -117,7 +117,7 @@ Definition Server__tryAcquire: val :=
 Definition Server__release: val :=
   rec: "Server__release" "s" "id" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: (struct.loadF Server "holder" "s" = "id")
+    (if: (struct.loadF Server "holder" "s") = "id"
     then struct.storeF Server "locked" "s" #false
     else #());;
     (* log.Printf("Lock released by %d", id) *)
@@ -134,19 +134,19 @@ Definition MakeServer: val :=
 
 Definition Server__Start: val :=
   rec: "Server__Start" "s" "me" :=
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_GET_FRESH_NUM ((λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] EncodeUint64 (Server__getFreshNum "s");;
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" RPC_GET_FRESH_NUM (λ: "enc_args" "enc_reply",
+      "enc_reply" <-[slice.T byteT] (EncodeUint64 (Server__getFreshNum "s"));;
       #()
-      ));;
-    MapInsert "handlers" RPC_TRY_ACQUIRE ((λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] EncodeUint64 (Server__tryAcquire "s" (DecodeUint64 "enc_args"));;
+      );;
+    MapInsert "handlers" RPC_TRY_ACQUIRE (λ: "enc_args" "enc_reply",
+      "enc_reply" <-[slice.T byteT] (EncodeUint64 (Server__tryAcquire "s" (DecodeUint64 "enc_args")));;
       #()
-      ));;
-    MapInsert "handlers" RPC_RELEASE ((λ: "enc_args" "enc_reply",
+      );;
+    MapInsert "handlers" RPC_RELEASE (λ: "enc_args" "enc_reply",
       Server__release "s" (DecodeUint64 "enc_args");;
       #()
-      ));;
+      );;
     urpc.Server__Serve (urpc.MakeServer "handlers") "me";;
     #().
 
@@ -177,7 +177,7 @@ Definition Clerk__Acquire: val :=
       let: ("0_ret", "1_ret") := Client__getFreshNum (struct.loadF Clerk "rpcCl" "ck") in
       "id" <-[uint64T] "0_ret";;
       "err" <-[uint64T] "1_ret";;
-      (if: ![uint64T] "err" ≠ #0
+      (if: (![uint64T] "err") ≠ #0
       then Continue
       else
         Skip;;
@@ -188,15 +188,15 @@ Definition Clerk__Acquire: val :=
             time.Sleep (#100 * #1000000);;
             Continue
           else
-            (if: ("lockStatus" = StatusGranted)
+            (if: "lockStatus" = StatusGranted
             then
-              "l" <-[ptrT] struct.new Locked [
+              "l" <-[ptrT] (struct.new Locked [
                 "rpcCl" ::= struct.loadF Clerk "rpcCl" "ck";
                 "id" ::= ![uint64T] "id"
-              ];;
+              ]);;
               Break
             else Break)));;
-        (if: ![ptrT] "l" ≠ #null
+        (if: (![ptrT] "l") ≠ #null
         then Break
         else Continue)));;
     ![ptrT] "l".
@@ -205,7 +205,7 @@ Definition Locked__Release: val :=
   rec: "Locked__Release" "l" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (Client__release (struct.loadF Locked "rpcCl" "l") (struct.loadF Locked "id" "l") = #0)
+      (if: (Client__release (struct.loadF Locked "rpcCl" "l") (struct.loadF Locked "id" "l")) = #0
       then Break
       else Continue));;
     #().

@@ -25,7 +25,7 @@ Definition Server__HandleRequest: val :=
       let: "last" := Fst (MapGet (struct.loadF Server "lastSeq" "t") "cid") in
       (if: "seq" ≤ "last"
       then
-        "reply" <-[slice.T byteT] Fst (MapGet (struct.loadF Server "lastReply" "t") "cid");;
+        "reply" <-[slice.T byteT] (Fst (MapGet (struct.loadF Server "lastReply" "t") "cid"));;
         lock.release (struct.loadF Server "mu" "t");;
         #()
       else
@@ -62,7 +62,7 @@ Definition Client__NewRequest: val :=
   rec: "Client__NewRequest" "c" "request" :=
     let: "seq" := struct.loadF Client "nextSeq" "c" in
     struct.storeF Client "nextSeq" "c" (std.SumAssumeNoOverflow (struct.loadF Client "nextSeq" "c") #1);;
-    let: "data1" := NewSliceWithCap byteT #0 (#8 + #8 + slice.len "request") in
+    let: "data1" := NewSliceWithCap byteT #0 ((#8 + #8) + (slice.len "request")) in
     let: "data2" := marshal.WriteInt "data1" (struct.loadF Client "cid" "c") in
     let: "data3" := marshal.WriteInt "data2" "seq" in
     let: "data4" := marshal.WriteBytes "data3" "request" in

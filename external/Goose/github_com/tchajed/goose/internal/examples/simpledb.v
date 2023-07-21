@@ -51,7 +51,7 @@ Definition Entry := struct.decl [
    then decoding failed, and the value of type T should be ignored. *)
 Definition DecodeUInt64: val :=
   rec: "DecodeUInt64" "p" :=
-    (if: slice.len "p" < #8
+    (if: (slice.len "p") < #8
     then (#0, #0)
     else
       let: "n" := UInt64Get "p" in
@@ -61,7 +61,7 @@ Definition DecodeUInt64: val :=
 Definition DecodeEntry: val :=
   rec: "DecodeEntry" "data" :=
     let: ("key", "l1") := DecodeUInt64 "data" in
-    (if: ("l1" = #0)
+    (if: "l1" = #0
     then
       (struct.mk Entry [
          "Key" ::= #0;
@@ -69,25 +69,25 @@ Definition DecodeEntry: val :=
        ], #0)
     else
       let: ("valueLen", "l2") := DecodeUInt64 (SliceSkip byteT "data" "l1") in
-      (if: ("l2" = #0)
+      (if: "l2" = #0
       then
         (struct.mk Entry [
            "Key" ::= #0;
            "Value" ::= slice.nil
          ], #0)
       else
-        (if: slice.len "data" < "l1" + "l2" + "valueLen"
+        (if: (slice.len "data") < (("l1" + "l2") + "valueLen")
         then
           (struct.mk Entry [
              "Key" ::= #0;
              "Value" ::= slice.nil
            ], #0)
         else
-          let: "value" := SliceSubslice byteT "data" ("l1" + "l2") ("l1" + "l2" + "valueLen") in
+          let: "value" := SliceSubslice byteT "data" ("l1" + "l2") (("l1" + "l2") + "valueLen") in
           (struct.mk Entry [
              "Key" ::= "key";
              "Value" ::= "value"
-           ], "l1" + "l2" + "valueLen")))).
+           ], ("l1" + "l2") + "valueLen")))).
 
 Definition lazyFileBuf := struct.decl [
   "offset" :: uint64T;
@@ -105,22 +105,22 @@ Definition readTableIndex: val :=
       let: ("e", "l") := DecodeEntry (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf")) in
       (if: "l" > #0
       then
-        MapInsert "index" (struct.get Entry "Key" "e") (#8 + struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf"));;
-        "buf" <-[struct.t lazyFileBuf] struct.mk lazyFileBuf [
-          "offset" ::= struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf") + "l";
+        MapInsert "index" (struct.get Entry "Key" "e") (#8 + (struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf")));;
+        "buf" <-[struct.t lazyFileBuf] (struct.mk lazyFileBuf [
+          "offset" ::= (struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf")) + "l";
           "next" ::= SliceSkip byteT (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf")) "l"
-        ];;
+        ]);;
         Continue
       else
-        let: "p" := FS.readAt "f" (struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf") + slice.len (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf"))) #4096 in
-        (if: (slice.len "p" = #0)
+        let: "p" := FS.readAt "f" ((struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf")) + (slice.len (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf")))) #4096 in
+        (if: (slice.len "p") = #0
         then Break
         else
           let: "newBuf" := SliceAppendSlice byteT (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf")) "p" in
-          "buf" <-[struct.t lazyFileBuf] struct.mk lazyFileBuf [
+          "buf" <-[struct.t lazyFileBuf] (struct.mk lazyFileBuf [
             "offset" ::= struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf");
             "next" ::= "newBuf"
-          ];;
+          ]);;
           Continue)));;
     #().
 
@@ -157,7 +157,7 @@ Definition readValue: val :=
 Definition tableRead: val :=
   rec: "tableRead" "t" "k" :=
     let: ("off", "ok") := MapGet (struct.get Table "Index" "t") "k" in
-    (if: ~ "ok"
+    (if: (~ "ok")
     then (slice.nil, #false)
     else
       let: "p" := readValue (struct.get Table "File" "t") "off" in
@@ -179,18 +179,18 @@ Definition newBuf: val :=
 Definition bufFlush: val :=
   rec: "bufFlush" "f" :=
     let: "buf" := ![slice.T byteT] (struct.get bufFile "buf" "f") in
-    (if: (slice.len "buf" = #0)
+    (if: (slice.len "buf") = #0
     then #()
     else
       FS.append (struct.get bufFile "file" "f") "buf";;
-      struct.get bufFile "buf" "f" <-[slice.T byteT] slice.nil;;
+      (struct.get bufFile "buf" "f") <-[slice.T byteT] slice.nil;;
       #()).
 
 Definition bufAppend: val :=
   rec: "bufAppend" "f" "p" :=
     let: "buf" := ![slice.T byteT] (struct.get bufFile "buf" "f") in
     let: "buf2" := SliceAppendSlice byteT "buf" "p" in
-    struct.get bufFile "buf" "f" <-[slice.T byteT] "buf2";;
+    (struct.get bufFile "buf" "f") <-[slice.T byteT] "buf2";;
     #().
 
 Definition bufClose: val :=
@@ -223,7 +223,7 @@ Definition tableWriterAppend: val :=
   rec: "tableWriterAppend" "w" "p" :=
     bufAppend (struct.get tableWriter "file" "w") "p";;
     let: "off" := ![uint64T] (struct.get tableWriter "offset" "w") in
-    struct.get tableWriter "offset" "w" <-[uint64T] "off" + slice.len "p";;
+    (struct.get tableWriter "offset" "w") <-[uint64T] ("off" + (slice.len "p"));;
     #().
 
 Definition tableWriterClose: val :=
@@ -256,7 +256,7 @@ Definition tablePut: val :=
     let: "tmp2" := EncodeUInt64 "k" "tmp" in
     let: "tmp3" := EncodeSlice "v" "tmp2" in
     let: "off" := ![uint64T] (struct.get tableWriter "offset" "w") in
-    MapInsert (struct.get tableWriter "index" "w") "k" ("off" + slice.len "tmp2");;
+    MapInsert (struct.get tableWriter "index" "w") "k" ("off" + (slice.len "tmp2"));;
     tableWriterAppend "w" "tmp3";;
     #().
 
@@ -348,10 +348,10 @@ Definition Write: val :=
 
 Definition freshTable: val :=
   rec: "freshTable" "p" :=
-    (if: ("p" = #(str"table.0"))
+    (if: "p" = #(str"table.0")
     then #(str"table.1")
     else
-      (if: ("p" = #(str"table.1"))
+      (if: "p" = #(str"table.1")
       then #(str"table.0")
       else "p")).
 
@@ -374,24 +374,24 @@ Definition tablePutOldTable: val :=
       (if: "l" > #0
       then
         let: (<>, "ok") := MapGet "b" (struct.get Entry "Key" "e") in
-        (if: ~ "ok"
+        (if: (~ "ok")
         then tablePut "w" (struct.get Entry "Key" "e") (struct.get Entry "Value" "e")
         else #());;
-        "buf" <-[struct.t lazyFileBuf] struct.mk lazyFileBuf [
-          "offset" ::= struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf") + "l";
+        "buf" <-[struct.t lazyFileBuf] (struct.mk lazyFileBuf [
+          "offset" ::= (struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf")) + "l";
           "next" ::= SliceSkip byteT (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf")) "l"
-        ];;
+        ]);;
         Continue
       else
-        let: "p" := FS.readAt (struct.get Table "File" "t") (struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf") + slice.len (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf"))) #4096 in
-        (if: (slice.len "p" = #0)
+        let: "p" := FS.readAt (struct.get Table "File" "t") ((struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf")) + (slice.len (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf")))) #4096 in
+        (if: (slice.len "p") = #0
         then Break
         else
           let: "newBuf" := SliceAppendSlice byteT (struct.get lazyFileBuf "next" (![struct.t lazyFileBuf] "buf")) "p" in
-          "buf" <-[struct.t lazyFileBuf] struct.mk lazyFileBuf [
+          "buf" <-[struct.t lazyFileBuf] (struct.mk lazyFileBuf [
             "offset" ::= struct.get lazyFileBuf "offset" (![struct.t lazyFileBuf] "buf");
             "next" ::= "newBuf"
-          ];;
+          ]);;
           Continue)));;
     #().
 
@@ -422,15 +422,15 @@ Definition Compact: val :=
     lock.acquire (struct.get Database "bufferL" "db");;
     let: "buf" := ![mapT (slice.T byteT)] (struct.get Database "wbuffer" "db") in
     let: "emptyWbuffer" := NewMap uint64T (slice.T byteT) #() in
-    struct.get Database "wbuffer" "db" <-[mapT (slice.T byteT)] "emptyWbuffer";;
-    struct.get Database "rbuffer" "db" <-[mapT (slice.T byteT)] "buf";;
+    (struct.get Database "wbuffer" "db") <-[mapT (slice.T byteT)] "emptyWbuffer";;
+    (struct.get Database "rbuffer" "db") <-[mapT (slice.T byteT)] "buf";;
     lock.release (struct.get Database "bufferL" "db");;
     lock.acquire (struct.get Database "tableL" "db");;
     let: "oldTableName" := ![stringT] (struct.get Database "tableName" "db") in
     let: ("oldTable", "t") := constructNewTable "db" "buf" in
     let: "newTable" := freshTable "oldTableName" in
     struct.store Table (struct.get Database "table" "db") "t";;
-    struct.get Database "tableName" "db" <-[stringT] "newTable";;
+    (struct.get Database "tableName" "db") <-[stringT] "newTable";;
     let: "manifestData" := Data.stringToBytes "newTable" in
     FS.atomicCreate #(str"db") #(str"manifest") "manifestData";;
     CloseTable "oldTable";;
@@ -450,10 +450,10 @@ Definition recoverManifest: val :=
 (* delete 'name' if it isn't tableName or "manifest" *)
 Definition deleteOtherFile: val :=
   rec: "deleteOtherFile" "name" "tableName" :=
-    (if: ("name" = "tableName")
+    (if: "name" = "tableName"
     then #()
     else
-      (if: ("name" = #(str"manifest"))
+      (if: "name" = #(str"manifest")
       then #()
       else
         FS.delete #(str"db") "name";;
@@ -465,12 +465,12 @@ Definition deleteOtherFiles: val :=
     let: "nfiles" := slice.len "files" in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i" = "nfiles")
+      (if: (![uint64T] "i") = "nfiles"
       then Break
       else
         let: "name" := SliceGet stringT "files" (![uint64T] "i") in
         deleteOtherFile "name" "tableName";;
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
         Continue));;
     #().
 

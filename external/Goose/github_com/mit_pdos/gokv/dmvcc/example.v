@@ -15,19 +15,19 @@ Definition main: val :=
     let: "txnMgrHost" := txnmgr.MakeServer #() in
     let: "txnCoordHost" := txncoordinator.MakeServer "indexHost" in
     Fork (let: "txnCk" := txn.Begin "txnMgrHost" "txnCoordHost" "indexHost" in
-          txn.Clerk__DoTxn "txnCk" ((λ: "t",
+          txn.Clerk__DoTxn "txnCk" (λ: "t",
             txn.Clerk__Put "t" #0 #(str"hello");;
             txn.Clerk__Put "t" #1 #(str"world");;
             #true
-            )));;
+            ));;
     Fork (let: "txnCk" := txn.Begin "txnMgrHost" "txnCoordHost" "indexHost" in
-          txn.Clerk__DoTxn "txnCk" ((λ: "t",
-            (if: strLen (txn.Clerk__Get "t" #0) > #0
-            then control.impl.Assert (strLen (txn.Clerk__Get "t" #1) > #0)
+          txn.Clerk__DoTxn "txnCk" (λ: "t",
+            (if: (strLen (txn.Clerk__Get "t" #0)) > #0
+            then control.impl.Assert ((strLen (txn.Clerk__Get "t" #1)) > #0)
             else #());;
             (* log.Printf("Val on txn2: '%s'", t.Get(1)) *)
             #true
-            )));;
+            ));;
     time.Sleep #100000000;;
     #().
 

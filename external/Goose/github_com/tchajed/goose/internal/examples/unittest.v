@@ -37,9 +37,9 @@ Definition hasEndComment: val :=
 Definition condvarWrapping: val :=
   rec: "condvarWrapping" <> :=
     let: "mu" := ref (zero_val ptrT) in
-    "mu" <-[ptrT] lock.new #();;
+    "mu" <-[ptrT] (lock.new #());;
     let: "cond1" := lock.newCond (![ptrT] "mu") in
-    "mu" <-[ptrT] lock.new #();;
+    "mu" <-[ptrT] (lock.new #());;
     lock.condWait "cond1";;
     #().
 
@@ -52,14 +52,14 @@ Definition UntypedStringConstant : expr := #(str"bar").
 
 Definition TypedInt : expr := #32.
 
-Definition ConstWithArith : expr := #4 + #3 * TypedInt.
+Definition ConstWithArith : expr := #4 + (#3 * TypedInt).
 
 Definition TypedInt32 : expr := #(U32 3).
 
 Definition DivisionInConst : expr := (#4096 - #8) `quot` #8.
 
 (* 517 *)
-Definition ModInConst : expr := #513 + #12 `rem` #8.
+Definition ModInConst : expr := #513 + (#12 `rem` #8).
 
 (* 5 *)
 Definition ModInConstParens : expr := (#513 + #12) `rem` #8.
@@ -80,7 +80,7 @@ Definition alwaysReturn: val :=
 
 Definition alwaysReturnInNestedBranches: val :=
   rec: "alwaysReturnInNestedBranches" "x" :=
-    (if: ~ "x"
+    (if: (~ "x")
     then
       (if: "x"
       then #0
@@ -101,7 +101,7 @@ Definition conditionalAssign: val :=
     (if: "x"
     then "y" <-[uint64T] #1
     else "y" <-[uint64T] #2);;
-    "y" <-[uint64T] ![uint64T] "y" + #1;;
+    "y" <-[uint64T] ((![uint64T] "y") + #1);;
     ![uint64T] "y".
 
 Definition elseIf: val :=
@@ -153,19 +153,19 @@ Definition stringWrapperToString: val :=
 Definition testCopySimple: val :=
   rec: "testCopySimple" <> :=
     let: "x" := NewSlice byteT #10 in
-    SliceSet byteT "x" #3 (#(U8 1));;
+    SliceSet byteT "x" #3 #(U8 1);;
     let: "y" := NewSlice byteT #10 in
     SliceCopy byteT "y" "x";;
-    (SliceGet byteT "y" #3 = #(U8 1)).
+    (SliceGet byteT "y" #3) = #(U8 1).
 
 Definition testCopyDifferentLengths: val :=
   rec: "testCopyDifferentLengths" <> :=
     let: "x" := NewSlice byteT #15 in
-    SliceSet byteT "x" #3 (#(U8 1));;
-    SliceSet byteT "x" #12 (#(U8 2));;
+    SliceSet byteT "x" #3 #(U8 1);;
+    SliceSet byteT "x" #12 #(U8 2);;
     let: "y" := NewSlice byteT #10 in
     let: "n" := SliceCopy byteT "y" "x" in
-    ("n" = #10) && ((SliceGet byteT "y" #3 = #(U8 1))).
+    ("n" = #10) && ((SliceGet byteT "y" #3) = #(U8 1)).
 
 (* data_structures.go *)
 
@@ -211,7 +211,7 @@ Definition iterMapKeysAndValues: val :=
     let: "sumPtr" := ref (zero_val uint64T) in
     MapIter "m" (λ: "k" "v",
       let: "sum" := ![uint64T] "sumPtr" in
-      "sumPtr" <-[uint64T] "sum" + "k" + "v");;
+      "sumPtr" <-[uint64T] (("sum" + "k") + "v"));;
     let: "sum" := ![uint64T] "sumPtr" in
     "sum".
 
@@ -365,10 +365,10 @@ Definition TakesFunctionType: val :=
 Definition useInts: val :=
   rec: "useInts" "x" "y" :=
     let: "z" := ref (zero_val uint64T) in
-    "z" <-[uint64T] to_u64 "y";;
-    "z" <-[uint64T] ![uint64T] "z" + #1;;
+    "z" <-[uint64T] (to_u64 "y");;
+    "z" <-[uint64T] ((![uint64T] "z") + #1);;
     let: "y2" := ref (zero_val uint32T) in
-    "y2" <-[uint32T] "y" + #(U32 3);;
+    "y2" <-[uint32T] ("y" + #(U32 3));;
     (![uint64T] "z", ![uint32T] "y2").
 
 Definition my_u32: ty := uint32T.
@@ -458,12 +458,12 @@ Definition standardForLoop: val :=
     let: "sumPtr" := ref (zero_val uint64T) in
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "i" < slice.len "s"
+      (if: (![uint64T] "i") < (slice.len "s")
       then
         let: "sum" := ![uint64T] "sumPtr" in
         let: "x" := SliceGet uint64T "s" (![uint64T] "i") in
-        "sumPtr" <-[uint64T] "sum" + "x";;
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        "sumPtr" <-[uint64T] ("sum" + "x");;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
         Continue
       else Break));;
     let: "sum" := ![uint64T] "sumPtr" in
@@ -473,13 +473,13 @@ Definition conditionalInLoop: val :=
   rec: "conditionalInLoop" <> :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "i" < #3
-      then DoSomething (#(str"i is small"))
+      (if: (![uint64T] "i") < #3
+      then DoSomething #(str"i is small")
       else #());;
-      (if: ![uint64T] "i" > #5
+      (if: (![uint64T] "i") > #5
       then Break
       else
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
         Continue));;
     #().
 
@@ -487,10 +487,10 @@ Definition conditionalInLoopElse: val :=
   rec: "conditionalInLoopElse" <> :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "i" > #5
+      (if: (![uint64T] "i") > #5
       then Break
       else
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
         Continue));;
     #().
 
@@ -498,13 +498,13 @@ Definition nestedConditionalInLoopImplicitContinue: val :=
   rec: "nestedConditionalInLoopImplicitContinue" <> :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "i" > #5
+      (if: (![uint64T] "i") > #5
       then
-        (if: ![uint64T] "i" > #10
+        (if: (![uint64T] "i") > #10
         then Break
         else Continue)
       else
-        "i" <-[uint64T] ![uint64T] "i" + #1;;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
         Continue));;
     #().
 
@@ -512,7 +512,7 @@ Definition ImplicitLoopContinue: val :=
   rec: "ImplicitLoopContinue" <> :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "i" < #4
+      (if: (![uint64T] "i") < #4
       then
         "i" <-[uint64T] #0;;
         Continue
@@ -523,7 +523,7 @@ Definition ImplicitLoopContinue2: val :=
   rec: "ImplicitLoopContinue2" <> :=
     let: "i" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "i" < #4
+      (if: (![uint64T] "i") < #4
       then
         "i" <-[uint64T] #0;;
         Continue
@@ -548,18 +548,18 @@ Definition nestedLoops: val :=
         (if: #true
         then Break
         else
-          "j" <-[uint64T] ![uint64T] "j" + #1;;
+          "j" <-[uint64T] ((![uint64T] "j") + #1);;
           Continue));;
-      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
     #().
 
 Definition nestedGoStyleLoops: val :=
   rec: "nestedGoStyleLoops" <> :=
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < #10); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < #10); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       let: "j" := ref_to uint64T #0 in
-      (for: (λ: <>, ![uint64T] "j" < ![uint64T] "i"); (λ: <>, "j" <-[uint64T] ![uint64T] "j" + #1) := λ: <>,
+      (for: (λ: <>, (![uint64T] "j") < (![uint64T] "i")); (λ: <>, "j" <-[uint64T] ((![uint64T] "j") + #1)) := λ: <>,
         (if: #true
         then Break
         else Continue));;
@@ -570,7 +570,7 @@ Definition sumSlice: val :=
   rec: "sumSlice" "xs" :=
     let: "sum" := ref (zero_val uint64T) in
     ForSlice uint64T <> "x" "xs"
-      ("sum" <-[uint64T] ![uint64T] "sum" + "x");;
+      ("sum" <-[uint64T] ((![uint64T] "sum") + "x"));;
     ![uint64T] "sum".
 
 Definition breakFromLoop: val :=
@@ -593,7 +593,7 @@ Definition IterateMapKeys: val :=
   rec: "IterateMapKeys" "m" "sum" :=
     MapIter "m" (λ: "k" <>,
       let: "oldSum" := ![uint64T] "sum" in
-      "sum" <-[uint64T] "oldSum" + "k");;
+      "sum" <-[uint64T] ("oldSum" + "k"));;
     #().
 
 Definition MapSize: val :=
@@ -664,7 +664,7 @@ Definition LogicalAndEqualityOperators: val :=
 
 Definition ArithmeticShifts: val :=
   rec: "ArithmeticShifts" "x" "y" :=
-    to_u64 ("x" ≪ #3) + "y" ≪ (to_u64 "x") + "y" ≪ #1.
+    ((to_u64 ("x" ≪ #3)) + ("y" ≪ (to_u64 "x"))) + ("y" ≪ #1).
 
 Definition BitwiseOps: val :=
   rec: "BitwiseOps" "x" "y" :=
@@ -675,7 +675,7 @@ Definition Comparison: val :=
     (if: "x" < "y"
     then #true
     else
-      (if: ("x" = "y")
+      (if: "x" = "y"
       then #true
       else
         (if: "x" ≠ "y"
@@ -684,17 +684,17 @@ Definition Comparison: val :=
           (if: "x" > "y"
           then #true
           else
-            (if: "x" + #1 > "y" - #2
+            (if: ("x" + #1) > ("y" - #2)
             then #true
             else #false))))).
 
 Definition AssignOps: val :=
   rec: "AssignOps" <> :=
     let: "x" := ref (zero_val uint64T) in
-    "x" <-[uint64T] ![uint64T] "x" + #3;;
-    "x" <-[uint64T] ![uint64T] "x" - #3;;
-    "x" <-[uint64T] ![uint64T] "x" + #1;;
-    "x" <-[uint64T] ![uint64T] "x" - #1;;
+    "x" <-[uint64T] ((![uint64T] "x") + #3);;
+    "x" <-[uint64T] ((![uint64T] "x") - #3);;
+    "x" <-[uint64T] ((![uint64T] "x") + #1);;
+    "x" <-[uint64T] ((![uint64T] "x") - #1);;
     #().
 
 (* package.go *)
@@ -747,11 +747,11 @@ Definition ReassignVars: val :=
       "a" ::= ![uint64T] "x";
       "b" ::= "y"
     ]) in
-    "z" <-[struct.t composite] struct.mk composite [
+    "z" <-[struct.t composite] (struct.mk composite [
       "a" ::= "y";
       "b" ::= ![uint64T] "x"
-    ];;
-    "x" <-[uint64T] struct.get composite "a" (![struct.t composite] "z");;
+    ]);;
+    "x" <-[uint64T] (struct.get composite "a" (![struct.t composite] "z"));;
     #().
 
 (* replicated_disk.go *)
@@ -815,14 +815,14 @@ Definition ReplicatedDiskRecover: val :=
   rec: "ReplicatedDiskRecover" <> :=
     let: "a" := ref_to uint64T #0 in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![uint64T] "a" > DiskSize
+      (if: (![uint64T] "a") > DiskSize
       then Break
       else
         let: ("v", "ok") := TwoDiskRead Disk1 (![uint64T] "a") in
         (if: "ok"
         then TwoDiskWrite Disk2 (![uint64T] "a") "v"
         else #());;
-        "a" <-[uint64T] ![uint64T] "a" + #1;;
+        "a" <-[uint64T] ((![uint64T] "a") + #1);;
         Continue));;
     #().
 
@@ -837,7 +837,7 @@ Definition sliceOps: val :=
     let: "v2" := SliceSubslice uint64T "x" #2 #3 in
     let: "v3" := SliceTake "x" #3 in
     let: "v4" := SliceRef uint64T "x" #2 in
-    "v1" + SliceGet uint64T "v2" #0 + SliceGet uint64T "v3" #1 + ![uint64T] "v4" + slice.len "x" + slice.cap "x".
+    (((("v1" + (SliceGet uint64T "v2" #0)) + (SliceGet uint64T "v3" #1)) + (![uint64T] "v4")) + (slice.len "x")) + (slice.cap "x").
 
 Definition makeSingletonSlice: val :=
   rec: "makeSingletonSlice" "x" :=
@@ -888,13 +888,13 @@ Definition threadCode: val :=
 Definition loopSpawn: val :=
   rec: "loopSpawn" <> :=
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < #10); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < #10); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       let: "i" := ![uint64T] "i" in
       Fork (threadCode "i");;
       Continue);;
     let: "dummy" := ref_to boolT #true in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      "dummy" <-[boolT] ~ (![boolT] "dummy");;
+      "dummy" <-[boolT] (~ (![boolT] "dummy"));;
       Continue);;
     #().
 
@@ -902,7 +902,7 @@ Definition loopSpawn: val :=
 
 Definition stringAppend: val :=
   rec: "stringAppend" "s" "x" :=
-    #(str"prefix ") + "s" + #(str" ") + uint64_to_string "x".
+    ((#(str"prefix ") + "s") + #(str" ")) + (uint64_to_string "x").
 
 Definition stringLength: val :=
   rec: "stringLength" "s" :=
@@ -917,7 +917,7 @@ Definition Point := struct.decl [
 
 Definition Point__Add: val :=
   rec: "Point__Add" "c" "z" :=
-    struct.get Point "x" "c" + struct.get Point "y" "c" + "z".
+    ((struct.get Point "x" "c") + (struct.get Point "y" "c")) + "z".
 
 Definition Point__GetField: val :=
   rec: "Point__GetField" "c" :=

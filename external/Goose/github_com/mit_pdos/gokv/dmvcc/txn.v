@@ -60,7 +60,7 @@ Definition Clerk__DoTxn: val :=
   rec: "Clerk__DoTxn" "txn" "body" :=
     Clerk__begin "txn";;
     let: "wantToCommit" := "body" "txn" in
-    (if: ~ "wantToCommit"
+    (if: (~ "wantToCommit")
     then
       Clerk__abort "txn";;
       #false

@@ -21,10 +21,10 @@ Definition ApplyAsBackupArgs := struct.decl [
 
 Definition EncodeApplyAsBackupArgs: val :=
   rec: "EncodeApplyAsBackupArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 + slice.len (struct.loadF ApplyAsBackupArgs "op" "args"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "epoch" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "index" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "op" "args");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((#8 + #8) + (slice.len (struct.loadF ApplyAsBackupArgs "op" "args")))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "epoch" "args"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "index" "args"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyAsBackupArgs "op" "args"));;
     ![slice.T byteT] "enc".
 
 Definition DecodeApplyAsBackupArgs: val :=
@@ -49,11 +49,11 @@ Definition SetStateArgs := struct.decl [
 
 Definition EncodeSetStateArgs: val :=
   rec: "EncodeSetStateArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF SetStateArgs "State" "args"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "Epoch" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "NextIndex" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "CommittedNextIndex" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF SetStateArgs "State" "args");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len (struct.loadF SetStateArgs "State" "args")))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "Epoch" "args"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "NextIndex" "args"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF SetStateArgs "CommittedNextIndex" "args"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF SetStateArgs "State" "args"));;
     ![slice.T byteT] "enc".
 
 Definition DecodeSetStateArgs: val :=
@@ -79,7 +79,7 @@ Definition GetStateArgs := struct.decl [
 Definition EncodeGetStateArgs: val :=
   rec: "EncodeGetStateArgs" "args" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #8) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateArgs "Epoch" "args");;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateArgs "Epoch" "args"));;
     ![slice.T byteT] "enc".
 
 Definition DecodeGetStateArgs: val :=
@@ -99,11 +99,11 @@ Definition GetStateReply := struct.decl [
 
 Definition EncodeGetStateReply: val :=
   rec: "EncodeGetStateReply" "reply" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF GetStateReply "State" "reply"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "Err" "reply");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "NextIndex" "reply");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "CommittedNextIndex" "reply");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF GetStateReply "State" "reply");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len (struct.loadF GetStateReply "State" "reply")))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "Err" "reply"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "NextIndex" "reply"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF GetStateReply "CommittedNextIndex" "reply"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF GetStateReply "State" "reply"));;
     ![slice.T byteT] "enc".
 
 Definition DecodeGetStateReply: val :=
@@ -129,11 +129,11 @@ Definition BecomePrimaryArgs := struct.decl [
 
 Definition EncodeBecomePrimaryArgs: val :=
   rec: "EncodeBecomePrimaryArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 + #8 * slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF BecomePrimaryArgs "Epoch" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args"));;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((#8 + #8) + (#8 * (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args"))))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF BecomePrimaryArgs "Epoch" "args"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args")));;
     ForSlice uint64T <> "h" (struct.loadF BecomePrimaryArgs "Replicas" "args")
-      ("enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "h");;
+      ("enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") "h"));;
     ![slice.T byteT] "enc".
 
 Definition DecodeBecomePrimaryArgs: val :=
@@ -161,9 +161,9 @@ Definition ApplyReply := struct.decl [
 
 Definition EncodeApplyReply: val :=
   rec: "EncodeApplyReply" "reply" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF ApplyReply "Reply" "reply"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyReply "Err" "reply");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyReply "Reply" "reply");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len (struct.loadF ApplyReply "Reply" "reply")))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF ApplyReply "Err" "reply"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF ApplyReply "Reply" "reply"));;
     ![slice.T byteT] "enc".
 
 Definition DecodeApplyReply: val :=
@@ -190,17 +190,17 @@ Definition DecodeIncreaseCommitArgs: val :=
 (* 1_statemachine.go *)
 
 Definition StateMachine := struct.decl [
-  "StartApply" :: (Op -> (slice.T byteT * (unitT -> unitT)%ht))%ht;
-  "ApplyReadonly" :: (Op -> (uint64T * slice.T byteT))%ht;
-  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
-  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
+  "StartApply" :: (Op -> ((slice.T byteT) * (unitT -> unitT)%ht))%ht;
+  "ApplyReadonly" :: (Op -> (uint64T * (slice.T byteT)))%ht;
+  "SetStateAndUnseal" :: ((slice.T byteT) -> uint64T -> uint64T -> unitT)%ht;
+  "GetStateAndSeal" :: (unitT -> (slice.T byteT))%ht
 ].
 
 Definition SyncStateMachine := struct.decl [
-  "Apply" :: (Op -> slice.T byteT)%ht;
-  "ApplyReadonly" :: (Op -> (uint64T * slice.T byteT))%ht;
-  "SetStateAndUnseal" :: (slice.T byteT -> uint64T -> uint64T -> unitT)%ht;
-  "GetStateAndSeal" :: (unitT -> slice.T byteT)%ht
+  "Apply" :: (Op -> (slice.T byteT))%ht;
+  "ApplyReadonly" :: (Op -> (uint64T * (slice.T byteT)))%ht;
+  "SetStateAndUnseal" :: ((slice.T byteT) -> uint64T -> uint64T -> unitT)%ht;
+  "GetStateAndSeal" :: (unitT -> (slice.T byteT))%ht
 ].
 
 (* clerk.go *)
@@ -268,7 +268,7 @@ Definition Clerk__Apply: val :=
   rec: "Clerk__Apply" "ck" "op" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "cl" "ck") RPC_PRIMARYAPPLY "op" "reply" #5000 in
-    (if: ("err" = #0)
+    (if: "err" = #0
     then
       let: "r" := DecodeApplyReply (![slice.T byteT] "reply") in
       (struct.loadF ApplyReply "Err" "r", struct.loadF ApplyReply "Reply" "r")
@@ -278,7 +278,7 @@ Definition Clerk__ApplyRo: val :=
   rec: "Clerk__ApplyRo" "ck" "op" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "cl" "ck") RPC_ROPRIMARYAPPLY "op" "reply" #1000 in
-    (if: ("err" = #0)
+    (if: "err" = #0
     then
       let: "r" := DecodeApplyReply (![slice.T byteT] "reply") in
       (struct.loadF ApplyReply "Err" "r", struct.loadF ApplyReply "Reply" "r")
@@ -316,25 +316,25 @@ Definition Server__ApplyRoWaitForCommit: val :=
     struct.storeF ApplyReply "Reply" "reply" slice.nil;;
     struct.storeF ApplyReply "Err" "reply" e.None;;
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: ~ (struct.loadF Server "leaseValid" "s")
+    (if: (~ (struct.loadF Server "leaseValid" "s"))
     then
       lock.release (struct.loadF Server "mu" "s");;
       (* log.Printf("Lease invalid") *)
       struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
       "reply"
     else
-      (if: ((rand.RandomUint64 #()) `rem` #10000 = #0)
+      (if: ((rand.RandomUint64 #()) `rem` #10000) = #0
       then
         (* log.Printf("Server nextIndex=%d commitIndex=%d", s.nextIndex, s.committedNextIndex) *)
         #()
       else #());;
       let: "lastModifiedIndex" := ref (zero_val uint64T) in
-      let: ("0_ret", "1_ret") := struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s") "op" in
+      let: ("0_ret", "1_ret") := (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s")) "op" in
       "lastModifiedIndex" <-[uint64T] "0_ret";;
       struct.storeF ApplyReply "Reply" "reply" "1_ret";;
       let: "epoch" := struct.loadF Server "epoch" "s" in
       let: (<>, "h") := grove_ffi.GetTimeRange #() in
-      (if: struct.loadF Server "leaseExpiration" "s" ≤ "h"
+      (if: (struct.loadF Server "leaseExpiration" "s") ≤ "h"
       then
         lock.release (struct.loadF Server "mu" "s");;
         (* log.Printf("Lease expired because %d < %d", s.leaseExpiration, h) *)
@@ -343,12 +343,12 @@ Definition Server__ApplyRoWaitForCommit: val :=
       else
         Skip;;
         (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-          (if: struct.loadF Server "epoch" "s" ≠ "epoch"
+          (if: (struct.loadF Server "epoch" "s") ≠ "epoch"
           then
             struct.storeF ApplyReply "Err" "reply" e.Stale;;
             Break
           else
-            (if: ![uint64T] "lastModifiedIndex" ≤ struct.loadF Server "committedNextIndex" "s"
+            (if: (![uint64T] "lastModifiedIndex") ≤ (struct.loadF Server "committedNextIndex" "s")
             then
               struct.storeF ApplyReply "Err" "reply" e.None;;
               Break
@@ -363,7 +363,7 @@ Definition Server__ApplyRoWaitForCommit: val :=
 Definition Server__IncreaseCommitIndex: val :=
   rec: "Server__IncreaseCommitIndex" "s" "newCommittedNextIndex" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: ("newCommittedNextIndex" > struct.loadF Server "committedNextIndex" "s") && ("newCommittedNextIndex" ≤ struct.loadF Server "nextIndex" "s")
+    (if: ("newCommittedNextIndex" > (struct.loadF Server "committedNextIndex" "s")) && ("newCommittedNextIndex" ≤ (struct.loadF Server "nextIndex" "s"))
     then
       struct.storeF Server "committedNextIndex" "s" "newCommittedNextIndex";;
       lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s")
@@ -377,7 +377,7 @@ Definition Server__Apply: val :=
     let: "reply" := struct.alloc ApplyReply (zero_val (struct.t ApplyReply)) in
     struct.storeF ApplyReply "Reply" "reply" slice.nil;;
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: ~ (struct.loadF Server "isPrimary" "s")
+    (if: (~ (struct.loadF Server "isPrimary" "s"))
     then
       lock.release (struct.loadF Server "mu" "s");;
       struct.storeF ApplyReply "Err" "reply" e.Stale;;
@@ -389,7 +389,7 @@ Definition Server__Apply: val :=
         struct.storeF ApplyReply "Err" "reply" e.Stale;;
         "reply"
       else
-        let: ("ret", "waitForDurable") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") "op" in
+        let: ("ret", "waitForDurable") := (struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s")) "op" in
         struct.storeF ApplyReply "Reply" "reply" "ret";;
         let: "opIndex" := struct.loadF Server "nextIndex" "s" in
         struct.storeF Server "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF Server "nextIndex" "s") #1);;
@@ -423,19 +423,19 @@ Definition Server__Apply: val :=
         let: "err" := ref_to uint64T e.None in
         let: "i" := ref_to uint64T #0 in
         Skip;;
-        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks_inner"); (λ: <>, Skip) := λ: <>,
+        (for: (λ: <>, (![uint64T] "i") < (slice.len "clerks_inner")); (λ: <>, Skip) := λ: <>,
           let: "err2" := SliceGet uint64T "errs" (![uint64T] "i") in
           (if: "err2" ≠ e.None
           then "err" <-[uint64T] "err2"
           else #());;
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          "i" <-[uint64T] ((![uint64T] "i") + #1);;
           Continue);;
         struct.storeF ApplyReply "Err" "reply" (![uint64T] "err");;
-        (if: (![uint64T] "err" = e.None)
+        (if: (![uint64T] "err") = e.None
         then Server__IncreaseCommitIndex "s" "nextIndex"
         else
           lock.acquire (struct.loadF Server "mu" "s");;
-          (if: (struct.loadF Server "epoch" "s" = "epoch")
+          (if: (struct.loadF Server "epoch" "s") = "epoch"
           then struct.storeF Server "isPrimary" "s" #false
           else #());;
           lock.release (struct.loadF Server "mu" "s"));;
@@ -448,7 +448,7 @@ Definition Server__leaseRenewalThread: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: ("leaseErr", "leaseExpiration") := config.Clerk__GetLease (struct.loadF Server "confCk" "s") (![uint64T] "latestEpoch") in
       lock.acquire (struct.loadF Server "mu" "s");;
-      (if: (struct.loadF Server "epoch" "s" = ![uint64T] "latestEpoch") && ("leaseErr" = e.None)
+      (if: ((struct.loadF Server "epoch" "s") = (![uint64T] "latestEpoch")) && ("leaseErr" = e.None)
       then
         struct.storeF Server "leaseExpiration" "s" "leaseExpiration";;
         struct.storeF Server "leaseValid" "s" #true;;
@@ -456,9 +456,9 @@ Definition Server__leaseRenewalThread: val :=
         time.Sleep (#250 * #1000000);;
         Continue
       else
-        (if: ![uint64T] "latestEpoch" ≠ struct.loadF Server "epoch" "s"
+        (if: (![uint64T] "latestEpoch") ≠ (struct.loadF Server "epoch" "s")
         then
-          "latestEpoch" <-[uint64T] struct.loadF Server "epoch" "s";;
+          "latestEpoch" <-[uint64T] (struct.loadF Server "epoch" "s");;
           lock.release (struct.loadF Server "mu" "s");;
           Continue
         else
@@ -473,7 +473,7 @@ Definition Server__sendIncreaseCommitThread: val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       lock.acquire (struct.loadF Server "mu" "s");;
       Skip;;
-      (for: (λ: <>, (~ (struct.loadF Server "isPrimary" "s")) || ((slice.len (SliceGet (slice.T ptrT) (struct.loadF Server "clerks" "s") #0) = #0))); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, (~ (struct.loadF Server "isPrimary" "s")) || ((slice.len (SliceGet (slice.T ptrT) (struct.loadF Server "clerks" "s") #0)) = #0)); (λ: <>, Skip) := λ: <>,
         lock.condWait (struct.loadF Server "isPrimary_cond" "s");;
         Continue);;
       let: "newCommittedNextIndex" := struct.loadF Server "committedNextIndex" "s" in
@@ -487,7 +487,7 @@ Definition Server__sendIncreaseCommitThread: val :=
         Fork (Skip;;
               (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
                 let: "err" := Clerk__IncreaseCommitIndex "clerk" "newCommittedNextIndex" in
-                (if: ("err" = e.None)
+                (if: "err" = e.None
                 then Break
                 else Continue));;
               waitgroup.Done "wg"));;
@@ -500,7 +500,7 @@ Definition Server__sendIncreaseCommitThread: val :=
    returns true iff stale *)
 Definition Server__isEpochStale: val :=
   rec: "Server__isEpochStale" "s" "epoch" :=
-    struct.loadF Server "epoch" "s" ≠ "epoch".
+    (struct.loadF Server "epoch" "s") ≠ "epoch".
 
 (* called on backup servers to apply an operation so it is replicated and
    can be considered committed by primary. *)
@@ -508,9 +508,9 @@ Definition Server__ApplyAsBackup: val :=
   rec: "Server__ApplyAsBackup" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     Skip;;
-    (for: (λ: <>, ((struct.loadF ApplyAsBackupArgs "index" "args" > struct.loadF Server "nextIndex" "s") && (struct.loadF Server "epoch" "s" = struct.loadF ApplyAsBackupArgs "epoch" "args")) && (~ (struct.loadF Server "sealed" "s"))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (((struct.loadF ApplyAsBackupArgs "index" "args") > (struct.loadF Server "nextIndex" "s")) && ((struct.loadF Server "epoch" "s") = (struct.loadF ApplyAsBackupArgs "epoch" "args"))) && (~ (struct.loadF Server "sealed" "s"))); (λ: <>, Skip) := λ: <>,
       let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF ApplyAsBackupArgs "index" "args") in
-      (if: ~ "ok"
+      (if: (~ "ok")
       then
         let: "cond" := lock.newCond (struct.loadF Server "mu" "s") in
         MapInsert (struct.loadF Server "opAppliedConds" "s") (struct.loadF ApplyAsBackupArgs "index" "args") "cond";;
@@ -528,13 +528,13 @@ Definition Server__ApplyAsBackup: val :=
         lock.release (struct.loadF Server "mu" "s");;
         e.Stale
       else
-        (if: struct.loadF ApplyAsBackupArgs "index" "args" ≠ struct.loadF Server "nextIndex" "s"
+        (if: (struct.loadF ApplyAsBackupArgs "index" "args") ≠ (struct.loadF Server "nextIndex" "s")
         then
           lock.release (struct.loadF Server "mu" "s");;
           e.OutOfOrder
         else
-          let: (<>, "waitFn") := struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s") (struct.loadF ApplyAsBackupArgs "op" "args") in
-          struct.storeF Server "nextIndex" "s" (struct.loadF Server "nextIndex" "s" + #1);;
+          let: (<>, "waitFn") := (struct.loadF StateMachine "StartApply" (struct.loadF Server "sm" "s")) (struct.loadF ApplyAsBackupArgs "op" "args") in
+          struct.storeF Server "nextIndex" "s" ((struct.loadF Server "nextIndex" "s") + #1);;
           let: ("cond", "ok") := MapGet (struct.loadF Server "opAppliedConds" "s") (struct.loadF Server "nextIndex" "s") in
           (if: "ok"
           then
@@ -548,12 +548,12 @@ Definition Server__ApplyAsBackup: val :=
 Definition Server__SetState: val :=
   rec: "Server__SetState" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF Server "epoch" "s" > struct.loadF SetStateArgs "Epoch" "args"
+    (if: (struct.loadF Server "epoch" "s") > (struct.loadF SetStateArgs "Epoch" "args")
     then
       lock.release (struct.loadF Server "mu" "s");;
       e.Stale
     else
-      (if: (struct.loadF Server "epoch" "s" = struct.loadF SetStateArgs "Epoch" "args")
+      (if: (struct.loadF Server "epoch" "s") = (struct.loadF SetStateArgs "Epoch" "args")
       then
         lock.release (struct.loadF Server "mu" "s");;
         e.None
@@ -565,7 +565,7 @@ Definition Server__SetState: val :=
         struct.storeF Server "leaseValid" "s" #false;;
         struct.storeF Server "sealed" "s" #false;;
         struct.storeF Server "nextIndex" "s" (struct.loadF SetStateArgs "NextIndex" "args");;
-        struct.loadF StateMachine "SetStateAndUnseal" (struct.loadF Server "sm" "s") (struct.loadF SetStateArgs "State" "args") (struct.loadF SetStateArgs "NextIndex" "args") (struct.loadF SetStateArgs "Epoch" "args");;
+        (struct.loadF StateMachine "SetStateAndUnseal" (struct.loadF Server "sm" "s")) (struct.loadF SetStateArgs "State" "args") (struct.loadF SetStateArgs "NextIndex" "args") (struct.loadF SetStateArgs "Epoch" "args");;
         MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
           lock.condSignal "cond");;
         lock.condBroadcast (struct.loadF Server "committedNextIndex_cond" "s");;
@@ -578,7 +578,7 @@ Definition Server__SetState: val :=
 Definition Server__GetState: val :=
   rec: "Server__GetState" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF GetStateArgs "Epoch" "args" < struct.loadF Server "epoch" "s"
+    (if: (struct.loadF GetStateArgs "Epoch" "args") < (struct.loadF Server "epoch" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
       struct.new GetStateReply [
@@ -587,7 +587,7 @@ Definition Server__GetState: val :=
       ]
     else
       struct.storeF Server "sealed" "s" #true;;
-      let: "ret" := struct.loadF StateMachine "GetStateAndSeal" (struct.loadF Server "sm" "s") #() in
+      let: "ret" := (struct.loadF StateMachine "GetStateAndSeal" (struct.loadF Server "sm" "s")) #() in
       let: "nextIndex" := struct.loadF Server "nextIndex" "s" in
       let: "committedNextIndex" := struct.loadF Server "committedNextIndex" "s" in
       MapIter (struct.loadF Server "opAppliedConds" "s") (λ: <> "cond",
@@ -605,7 +605,7 @@ Definition Server__GetState: val :=
 Definition Server__BecomePrimary: val :=
   rec: "Server__BecomePrimary" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: (struct.loadF BecomePrimaryArgs "Epoch" "args" ≠ struct.loadF Server "epoch" "s") || (~ (struct.loadF Server "canBecomePrimary" "s"))
+    (if: ((struct.loadF BecomePrimaryArgs "Epoch" "args") ≠ (struct.loadF Server "epoch" "s")) || (~ (struct.loadF Server "canBecomePrimary" "s"))
     then
       (* log.Printf("Wrong epoch in BecomePrimary request (in %d, got %d)", s.epoch, args.Epoch) *)
       lock.release (struct.loadF Server "mu" "s");;
@@ -619,16 +619,16 @@ Definition Server__BecomePrimary: val :=
       struct.storeF Server "clerks" "s" (NewSlice (slice.T ptrT) "numClerks");;
       let: "j" := ref_to uint64T #0 in
       Skip;;
-      (for: (λ: <>, ![uint64T] "j" < "numClerks"); (λ: <>, Skip) := λ: <>,
-        let: "clerks" := NewSlice ptrT (slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args") - #1) in
+      (for: (λ: <>, (![uint64T] "j") < "numClerks"); (λ: <>, Skip) := λ: <>,
+        let: "clerks" := NewSlice ptrT ((slice.len (struct.loadF BecomePrimaryArgs "Replicas" "args")) - #1) in
         let: "i" := ref_to uint64T #0 in
         Skip;;
-        (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
-          SliceSet ptrT "clerks" (![uint64T] "i") (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") (![uint64T] "i" + #1)));;
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
+        (for: (λ: <>, (![uint64T] "i") < (slice.len "clerks")); (λ: <>, Skip) := λ: <>,
+          SliceSet ptrT "clerks" (![uint64T] "i") (MakeClerk (SliceGet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") ((![uint64T] "i") + #1)));;
+          "i" <-[uint64T] ((![uint64T] "i") + #1);;
           Continue);;
         SliceSet (slice.T ptrT) (struct.loadF Server "clerks" "s") (![uint64T] "j") "clerks";;
-        "j" <-[uint64T] ![uint64T] "j" + #1;;
+        "j" <-[uint64T] ((![uint64T] "j") + #1);;
         Continue);;
       lock.release (struct.loadF Server "mu" "s");;
       e.None).
@@ -653,35 +653,35 @@ Definition MakeServer: val :=
 
 Definition Server__Serve: val :=
   rec: "Server__Serve" "s" "me" :=
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_APPLYASBACKUP ((λ: "args" "reply",
-      "reply" <-[slice.T byteT] e.EncodeError (Server__ApplyAsBackup "s" (DecodeApplyAsBackupArgs "args"));;
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" RPC_APPLYASBACKUP (λ: "args" "reply",
+      "reply" <-[slice.T byteT] (e.EncodeError (Server__ApplyAsBackup "s" (DecodeApplyAsBackupArgs "args")));;
       #()
-      ));;
-    MapInsert "handlers" RPC_SETSTATE ((λ: "args" "reply",
-      "reply" <-[slice.T byteT] e.EncodeError (Server__SetState "s" (DecodeSetStateArgs "args"));;
+      );;
+    MapInsert "handlers" RPC_SETSTATE (λ: "args" "reply",
+      "reply" <-[slice.T byteT] (e.EncodeError (Server__SetState "s" (DecodeSetStateArgs "args")));;
       #()
-      ));;
-    MapInsert "handlers" RPC_GETSTATE ((λ: "args" "reply",
-      "reply" <-[slice.T byteT] EncodeGetStateReply (Server__GetState "s" (DecodeGetStateArgs "args"));;
+      );;
+    MapInsert "handlers" RPC_GETSTATE (λ: "args" "reply",
+      "reply" <-[slice.T byteT] (EncodeGetStateReply (Server__GetState "s" (DecodeGetStateArgs "args")));;
       #()
-      ));;
-    MapInsert "handlers" RPC_BECOMEPRIMARY ((λ: "args" "reply",
-      "reply" <-[slice.T byteT] e.EncodeError (Server__BecomePrimary "s" (DecodeBecomePrimaryArgs "args"));;
+      );;
+    MapInsert "handlers" RPC_BECOMEPRIMARY (λ: "args" "reply",
+      "reply" <-[slice.T byteT] (e.EncodeError (Server__BecomePrimary "s" (DecodeBecomePrimaryArgs "args")));;
       #()
-      ));;
-    MapInsert "handlers" RPC_PRIMARYAPPLY ((λ: "args" "reply",
-      "reply" <-[slice.T byteT] EncodeApplyReply (Server__Apply "s" "args");;
+      );;
+    MapInsert "handlers" RPC_PRIMARYAPPLY (λ: "args" "reply",
+      "reply" <-[slice.T byteT] (EncodeApplyReply (Server__Apply "s" "args"));;
       #()
-      ));;
-    MapInsert "handlers" RPC_ROPRIMARYAPPLY ((λ: "args" "reply",
-      "reply" <-[slice.T byteT] EncodeApplyReply (Server__ApplyRoWaitForCommit "s" "args");;
+      );;
+    MapInsert "handlers" RPC_ROPRIMARYAPPLY (λ: "args" "reply",
+      "reply" <-[slice.T byteT] (EncodeApplyReply (Server__ApplyRoWaitForCommit "s" "args"));;
       #()
-      ));;
-    MapInsert "handlers" RPC_INCREASECOMMIT ((λ: "args" "reply",
+      );;
+    MapInsert "handlers" RPC_INCREASECOMMIT (λ: "args" "reply",
       Server__IncreaseCommitIndex "s" (DecodeIncreaseCommitArgs "args");;
       #()
-      ));;
+      );;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     Fork (Server__leaseRenewalThread "s");;

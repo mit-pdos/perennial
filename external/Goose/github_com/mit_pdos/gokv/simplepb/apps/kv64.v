@@ -29,8 +29,8 @@ Definition EncodePutArgs: val :=
   rec: "EncodePutArgs" "args" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #9) in
     SliceSet byteT (![slice.T byteT] "enc") #0 OP_PUT;;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF PutArgs "Key" "args");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF PutArgs "Val" "args");;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF PutArgs "Key" "args"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF PutArgs "Val" "args"));;
     ![slice.T byteT] "enc".
 
 Definition DecodePutArgs: val :=
@@ -48,7 +48,7 @@ Definition EncodeGetArgs: val :=
   rec: "EncodeGetArgs" "args" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #9) in
     SliceSet byteT (![slice.T byteT] "enc") #0 OP_GET;;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "args";;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") "args");;
     ![slice.T byteT] "enc".
 
 Definition DecodeGetArgs: val :=
@@ -69,18 +69,18 @@ Definition KVState__apply: val :=
   rec: "KVState__apply" "s" "args" "vnum" :=
     let: "ret" := ref (zero_val (slice.T byteT)) in
     let: "n" := slice.len "args" in
-    (if: (SliceGet byteT "args" #0 = OP_PUT)
+    (if: (SliceGet byteT "args" #0) = OP_PUT
     then
       let: "args" := DecodePutArgs (SliceSubslice byteT "args" #1 "n") in
-      "ret" <-[slice.T byteT] KVState__put "s" "args";;
+      "ret" <-[slice.T byteT] (KVState__put "s" "args");;
       MapInsert (struct.loadF KVState "vnums" "s") (struct.loadF PutArgs "Key" "args") "vnum"
     else
-      (if: (SliceGet byteT "args" #0 = OP_GET)
+      (if: (SliceGet byteT "args" #0) = OP_GET
       then
         let: "key" := DecodeGetArgs (SliceSubslice byteT "args" #1 "n") in
-        "ret" <-[slice.T byteT] KVState__get "s" "key";;
+        "ret" <-[slice.T byteT] (KVState__get "s" "key");;
         MapInsert (struct.loadF KVState "vnums" "s") "key" "vnum"
-      else Panic ("unexpected op type")));;
+      else Panic "unexpected op type"));;
     ![slice.T byteT] "ret".
 
 Definition KVState__getState: val :=
@@ -98,11 +98,11 @@ Definition KVState__setState: val :=
 
 Definition KVState__applyReadonly: val :=
   rec: "KVState__applyReadonly" "s" "args" :=
-    (if: (SliceGet byteT "args" #0 = OP_PUT)
-    then Panic ("unexpectedly got put as readonly op")
+    (if: (SliceGet byteT "args" #0) = OP_PUT
+    then Panic "unexpectedly got put as readonly op"
     else
-      (if: SliceGet byteT "args" #0 ≠ OP_GET
-      then Panic ("unexpected op type")
+      (if: (SliceGet byteT "args" #0) ≠ OP_GET
+      then Panic "unexpected op type"
       else #()));;
     let: "n" := slice.len "args" in
     let: "key" := DecodeGetArgs (SliceSubslice byteT "args" #1 "n") in

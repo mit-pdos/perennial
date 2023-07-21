@@ -42,16 +42,16 @@ Definition ControllerServer := struct.decl [
 Definition ControllerServer__HandleFailedReplicas: val :=
   rec: "ControllerServer__HandleFailedReplicas" "s" :=
     (* log.Printf("In config %d, %+v failed", s.cn, s.failed) *)
-    let: "n" := slice.len (struct.loadF pb.Configuration "Replicas" (struct.loadF ControllerServer "conf" "s")) - MapLen (struct.loadF ControllerServer "failed" "s") in
+    let: "n" := (slice.len (struct.loadF pb.Configuration "Replicas" (struct.loadF ControllerServer "conf" "s"))) - (MapLen (struct.loadF ControllerServer "failed" "s")) in
     let: "newReplicas" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 "n") in
     ForSlice uint64T "i" "r" (struct.loadF pb.Configuration "Replicas" (struct.loadF ControllerServer "conf" "s"))
-      ((if: ~ (Fst (MapGet (struct.loadF ControllerServer "failed" "s") "i"))
-      then "newReplicas" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "newReplicas") "r"
+      ((if: (~ (Fst (MapGet (struct.loadF ControllerServer "failed" "s") "i")))
+      then "newReplicas" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "newReplicas") "r")
       else #()));;
     struct.storeF ControllerServer "conf" "s" (struct.new pb.Configuration [
       "Replicas" ::= ![slice.T uint64T] "newReplicas"
     ]);;
-    struct.storeF ControllerServer "cn" "s" (struct.loadF ControllerServer "cn" "s" + #1);;
+    struct.storeF ControllerServer "cn" "s" ((struct.loadF ControllerServer "cn" "s") + #1);;
     let: "ck" := pb.MakeReplicaClerk (SliceGet uint64T (![slice.T uint64T] "newReplicas") #0) in
     pb.ReplicaClerk__BecomePrimaryRPC "ck" (struct.new pb.BecomePrimaryArgs [
       "Cn" ::= struct.loadF ControllerServer "cn" "s";
@@ -75,23 +75,23 @@ Definition ControllerServer__HeartbeatThread: val :=
       struct.storeF ControllerServer "failed" "s" (NewMap uint64T boolT #());;
       ForSlice ptrT "i" <> "clerks"
         (let: "i" := "i" in
-        SliceSet ptrT "hbtimers" "i" (time.AfterFunc "HBTIMEOUT" ((λ: <>,
+        SliceSet ptrT "hbtimers" "i" (time.AfterFunc "HBTIMEOUT" (λ: <>,
           lock.acquire (struct.loadF ControllerServer "mu" "s");;
-          (if: (struct.loadF ControllerServer "cn" "s" = "cn")
+          (if: (struct.loadF ControllerServer "cn" "s") = "cn"
           then MapInsert (struct.loadF ControllerServer "failed" "s") "i" #true
           else #());;
           lock.release (struct.loadF ControllerServer "mu" "s");;
           #()
-          ))));;
+          )));;
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         lock.acquire (struct.loadF ControllerServer "mu" "s");;
-        (if: struct.loadF ControllerServer "cn" "s" > "cn"
+        (if: (struct.loadF ControllerServer "cn" "s") > "cn"
         then
           lock.release (struct.loadF ControllerServer "mu" "s");;
           Break
         else
-          (if: MapLen (struct.loadF ControllerServer "failed" "s") > #0
+          (if: (MapLen (struct.loadF ControllerServer "failed" "s")) > #0
           then
             ControllerServer__HandleFailedReplicas "s";;
             lock.release (struct.loadF ControllerServer "mu" "s");;
@@ -112,7 +112,7 @@ Definition ControllerServer__HeartbeatThread: val :=
 Definition ControllerServer__AddNewServerRPC: val :=
   rec: "ControllerServer__AddNewServerRPC" "s" "newServer" :=
     lock.acquire (struct.loadF ControllerServer "mu" "s");;
-    struct.storeF ControllerServer "cn" "s" (struct.loadF ControllerServer "cn" "s" + #1);;
+    struct.storeF ControllerServer "cn" "s" ((struct.loadF ControllerServer "cn" "s") + #1);;
     struct.storeF ControllerServer "conf" "s" (struct.new pb.Configuration [
       "Replicas" ::= SliceAppend uint64T (struct.loadF pb.Configuration "Replicas" (struct.loadF ControllerServer "conf" "s")) "newServer"
     ]);;
@@ -140,13 +140,13 @@ Definition StartControllerServer: val :=
       "Conf" ::= struct.loadF ControllerServer "conf" "s"
     ]);;
     Fork (ControllerServer__HeartbeatThread "s");;
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" CONTROLLER_ADD ((λ: "raw_args" <>,
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" CONTROLLER_ADD (λ: "raw_args" <>,
       let: "dec" := marshal.NewDec "raw_args" in
       let: "newServer" := marshal.Dec__GetInt "dec" in
       ControllerServer__AddNewServerRPC "s" "newServer";;
       #()
-      ));;
+      );;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().

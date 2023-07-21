@@ -8,9 +8,9 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 Definition GenTID: val :=
   rec: "GenTID" "sid" :=
     let: "tid" := ref (zero_val uint64T) in
-    "tid" <-[uint64T] grove_ffi.GetTSC #();;
-    "tid" <-[uint64T] (std.SumAssumeNoOverflow (![uint64T] "tid") config.N_TXN_SITES) `quot` config.N_TXN_SITES * config.N_TXN_SITES + "sid";;
+    "tid" <-[uint64T] (grove_ffi.GetTSC #());;
+    "tid" <-[uint64T] ((((std.SumAssumeNoOverflow (![uint64T] "tid") config.N_TXN_SITES) `quot` config.N_TXN_SITES) * config.N_TXN_SITES) + "sid");;
     Skip;;
-    (for: (λ: <>, grove_ffi.GetTSC #() ≤ ![uint64T] "tid"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (grove_ffi.GetTSC #()) ≤ (![uint64T] "tid")); (λ: <>, Skip) := λ: <>,
       Continue);;
     ![uint64T] "tid".

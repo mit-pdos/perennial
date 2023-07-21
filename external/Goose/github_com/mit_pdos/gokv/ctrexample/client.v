@@ -21,7 +21,7 @@ Definition main: val :=
       else
         let: "dec" := marshal.NewDec (![slice.T byteT] "rep") in
         let: "v" := marshal.Dec__GetInt "dec" in
-        control.impl.Assert ("v" ≥ ![uint64T] "localBound");;
+        control.impl.Assert ("v" ≥ (![uint64T] "localBound"));;
         "localBound" <-[uint64T] "v";;
         (* fmt.Println("One") *)
         Continue));;

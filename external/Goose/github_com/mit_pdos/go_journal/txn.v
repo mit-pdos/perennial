@@ -41,8 +41,8 @@ Definition Begin: val :=
       "locks" ::= struct.loadF Log "locks" "tsys";
       "acquired" ::= NewMap uint64T boolT #()
     ] in
-    util.DPrintf #5 (#(str"tp Begin: %v
-    ")) #();;
+    util.DPrintf #5 #(str"tp Begin: %v
+    ") #();;
     "trans".
 
 Definition Log__Flush: val :=
@@ -65,7 +65,7 @@ Definition Txn__isAlreadyAcquired: val :=
 Definition Txn__Acquire: val :=
   rec: "Txn__Acquire" "txn" "addr" :=
     let: "already_acquired" := Txn__isAlreadyAcquired "txn" "addr" in
-    (if: ~ "already_acquired"
+    (if: (~ "already_acquired")
     then
       Txn__acquireNoCheck "txn" "addr";;
       #()
@@ -97,12 +97,12 @@ Definition Txn__OverWrite: val :=
 Definition Txn__ReadBufBit: val :=
   rec: "Txn__ReadBufBit" "txn" "addr" :=
     let: "dataByte" := SliceGet byteT (Txn__ReadBuf "txn" "addr" #1) #0 in
-    (#(U8 1) = ("dataByte" ≫ ((struct.get addr.Addr "Off" "addr") `rem` #8)) `and` (#(U8 1))).
+    #(U8 1) = (("dataByte" ≫ ((struct.get addr.Addr "Off" "addr") `rem` #8)) `and` #(U8 1)).
 
 Definition bitToByte: val :=
   rec: "bitToByte" "off" "data" :=
     (if: "data"
-    then (#(U8 1)) ≪ "off"
+    then #(U8 1) ≪ "off"
     else #(U8 0)).
 
 Definition Txn__OverWriteBit: val :=
@@ -124,8 +124,8 @@ Definition Txn__NDirty: val :=
 
 Definition Txn__commitNoRelease: val :=
   rec: "Txn__commitNoRelease" "txn" "wait" :=
-    util.DPrintf #5 (#(str"tp Commit %p
-    ")) #();;
+    util.DPrintf #5 #(str"tp Commit %p
+    ") #();;
     jrnl.Op__CommitWait (struct.loadF Txn "buftxn" "txn") "wait".
 
 Definition Txn__Commit: val :=

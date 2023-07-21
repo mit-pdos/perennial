@@ -7,7 +7,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 (* if op is non-empty, set the state to that, otherwise return the current value *)
 Definition applyFn: val :=
   rec: "applyFn" "state" "op" :=
-    (if: slice.len "op" > #0
+    (if: (slice.len "op") > #0
     then (SliceSkip byteT "op" #1, NewSlice byteT #0)
     else ("state", "state")).
 
@@ -28,7 +28,7 @@ Definition StartServer: val :=
 
 Definition Clerk__Put: val :=
   rec: "Clerk__Put" "ck" "val" :=
-    let: "op" := NewSlice byteT (slice.len "val" + #1) in
+    let: "op" := NewSlice byteT ((slice.len "val") + #1) in
     mpaxos.Clerk__Apply (struct.loadF Clerk "c" "ck") "op";;
     #().
 

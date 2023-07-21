@@ -23,7 +23,7 @@ Definition CtrServer__FetchAndIncrement: val :=
   rec: "CtrServer__FetchAndIncrement" "s" :=
     lock.acquire (struct.loadF CtrServer "mu" "s");;
     let: "ret" := struct.loadF CtrServer "val" "s" in
-    struct.storeF CtrServer "val" "s" (struct.loadF CtrServer "val" "s" + #1);;
+    struct.storeF CtrServer "val" "s" ((struct.loadF CtrServer "val" "s") + #1);;
     CtrServer__MakeDurable "s";;
     lock.release (struct.loadF CtrServer "mu" "s");;
     "ret".
@@ -36,19 +36,19 @@ Definition main: val :=
     struct.storeF CtrServer "mu" "s" (lock.new #());;
     struct.storeF CtrServer "filename" "s" #(str"ctr");;
     let: "a" := grove_ffi.FileRead (struct.loadF CtrServer "filename" "s") in
-    (if: (slice.len "a" = #0)
+    (if: (slice.len "a") = #0
     then struct.storeF CtrServer "val" "s" #0
     else
       let: "d" := marshal.NewDec "a" in
       struct.storeF CtrServer "val" "s" (marshal.Dec__GetInt "d"));;
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" #0 ((λ: "args" "reply",
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" #0 (λ: "args" "reply",
       let: "v" := CtrServer__FetchAndIncrement "s" in
       let: "e" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "e" "v";;
-      "reply" <-[slice.T byteT] marshal.Enc__Finish "e";;
+      "reply" <-[slice.T byteT] (marshal.Enc__Finish "e");;
       #()
-      ));;
+      );;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
     #().

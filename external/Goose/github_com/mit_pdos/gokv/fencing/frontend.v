@@ -26,7 +26,7 @@ Definition Clerk__FetchAndIncrement: val :=
     then "err"
     else
       let: "dec" := marshal.NewDec (![slice.T byteT] "reply_ptr") in
-      "ret" <-[uint64T] marshal.Dec__GetInt "dec";;
+      "ret" <-[uint64T] (marshal.Dec__GetInt "dec");;
       #0).
 
 Definition MakeClerk: val :=
@@ -49,15 +49,15 @@ Definition Server__FetchAndIncrement: val :=
   rec: "Server__FetchAndIncrement" "s" "key" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     let: "ret" := ref (zero_val uint64T) in
-    (if: ("key" = #0)
+    (if: "key" = #0
     then
-      "ret" <-[uint64T] ctr.Clerk__Get (struct.loadF Server "ck1" "s") (struct.loadF Server "epoch" "s");;
+      "ret" <-[uint64T] (ctr.Clerk__Get (struct.loadF Server "ck1" "s") (struct.loadF Server "epoch" "s"));;
       std.SumAssumeNoOverflow (![uint64T] "ret") #1;;
-      ctr.Clerk__Put (struct.loadF Server "ck1" "s") (![uint64T] "ret" + #1) (struct.loadF Server "epoch" "s")
+      ctr.Clerk__Put (struct.loadF Server "ck1" "s") ((![uint64T] "ret") + #1) (struct.loadF Server "epoch" "s")
     else
-      "ret" <-[uint64T] ctr.Clerk__Get (struct.loadF Server "ck2" "s") (struct.loadF Server "epoch" "s");;
+      "ret" <-[uint64T] (ctr.Clerk__Get (struct.loadF Server "ck2" "s") (struct.loadF Server "epoch" "s"));;
       std.SumAssumeNoOverflow (![uint64T] "ret") #1;;
-      ctr.Clerk__Put (struct.loadF Server "ck2" "s") (![uint64T] "ret" + #1) (struct.loadF Server "epoch" "s"));;
+      ctr.Clerk__Put (struct.loadF Server "ck2" "s") ((![uint64T] "ret") + #1) (struct.loadF Server "epoch" "s"));;
     lock.release (struct.loadF Server "mu" "s");;
     ![uint64T] "ret".
 
@@ -69,14 +69,14 @@ Definition StartServer: val :=
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "ck1" "s" (ctr.MakeClerk "host1");;
     struct.storeF Server "ck2" "s" (ctr.MakeClerk "host2");;
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_FAI ((λ: "args" "reply",
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" RPC_FAI (λ: "args" "reply",
       let: "dec" := marshal.NewDec "args" in
       let: "enc" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "enc" (Server__FetchAndIncrement "s" (marshal.Dec__GetInt "dec"));;
-      "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
+      "reply" <-[slice.T byteT] (marshal.Enc__Finish "enc");;
       #()
-      ));;
+      );;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().

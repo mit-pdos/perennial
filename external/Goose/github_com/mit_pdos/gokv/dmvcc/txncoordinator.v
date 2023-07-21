@@ -16,10 +16,10 @@ Definition Server__TryCommit: val :=
   rec: "Server__TryCommit" "s" "tid" "writes" :=
     let: "err" := ref_to uint64T #0 in
     MapIter "writes" (λ: "key" <>,
-      (if: (![uint64T] "err" = #0)
-      then "err" <-[uint64T] index.Clerk__AcquireTuple (struct.loadF Server "indexCk" "s") "key" "tid"
+      (if: (![uint64T] "err") = #0
+      then "err" <-[uint64T] (index.Clerk__AcquireTuple (struct.loadF Server "indexCk" "s") "key" "tid")
       else #()));;
-    (if: ![uint64T] "err" ≠ #0
+    (if: (![uint64T] "err") ≠ #0
     then #false
     else
       index.Clerk__UpdateAndRelease (struct.loadF Server "indexCk" "s") "tid" "writes";;

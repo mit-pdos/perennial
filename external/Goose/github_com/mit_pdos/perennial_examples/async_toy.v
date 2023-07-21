@@ -9,12 +9,12 @@ From Perennial.goose_lang Require Import ffi.async_disk_prelude.
 Definition consumeEvenBlock: val :=
   rec: "consumeEvenBlock" "d" "a" :=
     let: "b4" := NewSlice byteT async_disk.BlockSize in
-    SliceSet byteT "b4" #0 (#(U8 4));;
+    SliceSet byteT "b4" #0 #(U8 4);;
     disk.Write "a" "b4";;
     let: "b" := disk.Read "a" in
-    (if: SliceGet byteT "b" #0 ≠ #(U8 4)
+    (if: (SliceGet byteT "b" #0) ≠ #(U8 4)
     then
-      Panic ("unexpected value on async_disk");;
+      Panic "unexpected value on async_disk";;
       #()
     else #()).
 

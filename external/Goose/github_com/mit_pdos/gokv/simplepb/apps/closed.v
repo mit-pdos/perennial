@@ -14,8 +14,8 @@ Definition configHost : expr := #10.
 Definition config_main: val :=
   rec: "config_main" <> :=
     let: "servers" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
-    "servers" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "servers") r1;;
-    "servers" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "servers") r2;;
+    "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") r1);;
+    "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") r2);;
     config.Server__Serve (config.MakeServer (![slice.T uint64T] "servers")) configHost;;
     #().
 
@@ -31,8 +31,8 @@ Definition kv_client_main: val :=
     let: "ck" := kvee.MakeClerk configHost in
     kvee.Clerk__Put "ck" #10 (NewSlice byteT #10);;
     let: "v1" := kvee.Clerk__Get "ck" #10 in
-    control.impl.Assert (slice.len "v1" = #10);;
+    control.impl.Assert ((slice.len "v1") = #10);;
     kvee.Clerk__Put "ck" #10 (NewSlice byteT #5);;
     let: "v2" := kvee.Clerk__Get "ck" #10 in
-    control.impl.Assert (slice.len "v2" = #5);;
+    control.impl.Assert ((slice.len "v2") = #5);;
     #().

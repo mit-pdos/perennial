@@ -19,7 +19,7 @@ Definition Server__TryLocalIncrement: val :=
   rec: "Server__TryLocalIncrement" "s" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     let: (<>, "h") := grove_ffi.GetTimeRange #() in
-    (if: "h" ≥ struct.loadF Server "leaseExpiration" "s"
+    (if: "h" ≥ (struct.loadF Server "leaseExpiration" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
       #false
@@ -58,10 +58,10 @@ Definition client: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: ("l", <>) := grove_ffi.GetTimeRange #() in
-      (if: "l" > struct.loadF Server "leaseExpiration" "s"
+      (if: "l" > (struct.loadF Server "leaseExpiration" "s")
       then Break
       else
-        time.Sleep (struct.loadF Server "leaseExpiration" "s" - "l");;
+        time.Sleep ((struct.loadF Server "leaseExpiration" "s") - "l");;
         Continue));;
     let: "v" := Server__Get "s" in
     let: "newv" := std.SumAssumeNoOverflow "v" #1 in

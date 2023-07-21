@@ -33,7 +33,7 @@ Definition Writer__AppendChunk: val :=
   rec: "Writer__AppendChunk" "w" "data" :=
     waitgroup.Add (struct.loadF Writer "wg" "w") #1;;
     let: "index" := struct.loadF Writer "index" "w" in
-    struct.storeF Writer "index" "w" (struct.loadF Writer "index" "w" + #1);;
+    struct.storeF Writer "index" "w" ((struct.loadF Writer "index" "w") + #1);;
     Fork (let: "addr" := SliceGet uint64T (struct.loadF Writer "chunkAddrs" "w") ("index" `rem` (slice.len (struct.loadF Writer "chunkAddrs" "w"))) in
           let: "args" := struct.mk chunk.WriteChunkArgs [
             "WriteId" ::= struct.loadF Writer "writeId" "w";
@@ -68,9 +68,9 @@ Definition Clerk__PrepareRead: val :=
 
 Definition Reader__GetNextChunk: val :=
   rec: "Reader__GetNextChunk" "r" :=
-    (if: struct.loadF Reader "index" "r" ≥ slice.len (struct.loadF Reader "chunkHandles" "r")
+    (if: (struct.loadF Reader "index" "r") ≥ (slice.len (struct.loadF Reader "chunkHandles" "r"))
     then (#false, slice.nil)
     else
       let: "handle" := SliceGet (struct.t dir.ChunkHandle) (struct.loadF Reader "chunkHandles" "r") (struct.loadF Reader "index" "r") in
-      struct.storeF Reader "index" "r" (struct.loadF Reader "index" "r" + #1);;
+      struct.storeF Reader "index" "r" ((struct.loadF Reader "index" "r") + #1);;
       (#true, chunk.ClerkPool__GetChunk (struct.loadF Clerk "chCk" (struct.loadF Reader "ck" "r")) (struct.get dir.ChunkHandle "Addr" "handle") (struct.get dir.ChunkHandle "ContentHash" "handle"))).

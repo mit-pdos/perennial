@@ -21,7 +21,7 @@ Definition Dir__mkHdr: val :=
   rec: "Dir__mkHdr" "d" :=
     let: "inode_addrs" := ref (zero_val (slice.T uint64T)) in
     MapIter (struct.loadF Dir "inodes" "d") (λ: "a" <>,
-      "inode_addrs" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "inode_addrs") "a");;
+      "inode_addrs" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "inode_addrs") "a"));;
     let: "enc" := marshal.NewEnc disk.BlockSize in
     marshal.Enc__PutInt "enc" (slice.len (![slice.T uint64T] "inode_addrs"));;
     marshal.Enc__PutInts "enc" (![slice.T uint64T] "inode_addrs");;
@@ -71,7 +71,7 @@ Definition Open: val :=
 Definition Dir__Create: val :=
   rec: "Dir__Create" "d" :=
     let: ("a", "ok") := alloc.Allocator__Reserve (struct.loadF Dir "allocator" "d") in
-    (if: ~ "ok"
+    (if: (~ "ok")
     then (#0, #false)
     else
       let: "empty" := NewSlice byteT disk.BlockSize in
@@ -103,8 +103,8 @@ Definition Dir__Read: val :=
   rec: "Dir__Read" "d" "ino" "off" :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
-    (if: ("i" = #null)
-    then Panic ("invalid inode")
+    (if: "i" = #null
+    then Panic "invalid inode"
     else #());;
     let: "b" := inode.Inode__Read "i" "off" in
     lock.release (struct.loadF Dir "m" "d");;
@@ -114,8 +114,8 @@ Definition Dir__Size: val :=
   rec: "Dir__Size" "d" "ino" :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
-    (if: ("i" = #null)
-    then Panic ("invalid inode")
+    (if: "i" = #null
+    then Panic "invalid inode"
     else #());;
     let: "sz" := inode.Inode__Size "i" in
     lock.release (struct.loadF Dir "m" "d");;
@@ -125,8 +125,8 @@ Definition Dir__Append: val :=
   rec: "Dir__Append" "d" "ino" "b" :=
     lock.acquire (struct.loadF Dir "m" "d");;
     let: "i" := Fst (MapGet (struct.loadF Dir "inodes" "d") "ino") in
-    (if: ("i" = #null)
-    then Panic ("invalid inode")
+    (if: "i" = #null
+    then Panic "invalid inode"
     else #());;
     let: "ok" := inode.Inode__Append "i" "b" (struct.loadF Dir "allocator" "d") in
     lock.release (struct.loadF Dir "m" "d");;

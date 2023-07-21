@@ -21,7 +21,7 @@ Definition MkIndex: val :=
     let: "idx" := struct.alloc Index (zero_val (struct.t Index)) in
     struct.storeF Index "buckets" "idx" (NewSlice ptrT config.N_IDX_BUCKET);;
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < config.N_IDX_BUCKET); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < config.N_IDX_BUCKET); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       let: "b" := struct.alloc IndexBucket (zero_val (struct.t IndexBucket)) in
       struct.storeF IndexBucket "latch" "b" (lock.new #());;
       struct.storeF IndexBucket "m" "b" (NewMap uint64T ptrT #());;
@@ -31,7 +31,7 @@ Definition MkIndex: val :=
 
 Definition getBucket: val :=
   rec: "getBucket" "key" :=
-    ("key" ≫ #52 + "key") `rem` config.N_IDX_BUCKET.
+    (("key" ≫ #52) + "key") `rem` config.N_IDX_BUCKET.
 
 (* @GetTuple returns the tuple pointer associated with the key.
 
@@ -60,11 +60,11 @@ Definition Index__GetTuple: val :=
 Definition Index__getKeys: val :=
   rec: "Index__getKeys" "idx" :=
     let: "keys" := ref (zero_val (slice.T uint64T)) in
-    "keys" <-[slice.T uint64T] NewSliceWithCap uint64T #0 #200;;
+    "keys" <-[slice.T uint64T] (NewSliceWithCap uint64T #0 #200);;
     ForSlice ptrT <> "bkt" (struct.loadF Index "buckets" "idx")
       (lock.acquire (struct.loadF IndexBucket "latch" "bkt");;
       MapIter (struct.loadF IndexBucket "m" "bkt") (λ: "k" <>,
-        "keys" <-[slice.T uint64T] SliceAppend uint64T (![slice.T uint64T] "keys") "k");;
+        "keys" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "keys") "k"));;
       lock.release (struct.loadF IndexBucket "latch" "bkt"));;
     ![slice.T uint64T] "keys".
 

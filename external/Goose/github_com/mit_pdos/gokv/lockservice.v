@@ -12,7 +12,7 @@ Definition LockClerk := struct.decl [
 Definition LockClerk__Lock: val :=
   rec: "LockClerk__Lock" "ck" "key" :=
     Skip;;
-    (for: (λ: <>, ~ (memkv.KVClerk__ConditionalPut (struct.loadF LockClerk "kv" "ck") "key" (NewSlice byteT #0) (NewSlice byteT #1))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (memkv.KVClerk__ConditionalPut (struct.loadF LockClerk "kv" "ck") "key" (NewSlice byteT #0) (NewSlice byteT #1)))); (λ: <>, Skip) := λ: <>,
       Continue);;
     #().
 

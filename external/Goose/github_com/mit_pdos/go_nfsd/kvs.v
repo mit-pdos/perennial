@@ -33,7 +33,7 @@ Definition KVS__MultiPut: val :=
   rec: "KVS__MultiPut" "kvs" "pairs" :=
     let: "op" := jrnl.Begin (struct.loadF KVS "log" "kvs") in
     ForSlice (struct.t KVPair) <> "p" "pairs"
-      ((if: (struct.get KVPair "Key" "p" ≥ struct.loadF KVS "sz" "kvs") || (struct.get KVPair "Key" "p" < common.LOGSIZE)
+      ((if: ((struct.get KVPair "Key" "p") ≥ (struct.loadF KVS "sz" "kvs")) || ((struct.get KVPair "Key" "p") < common.LOGSIZE)
       then Panic "oops"
       else #());;
       let: "akey" := addr.MkAddr (struct.get KVPair "Key" "p") #0 in
@@ -43,7 +43,7 @@ Definition KVS__MultiPut: val :=
 
 Definition KVS__Get: val :=
   rec: "KVS__Get" "kvs" "key" :=
-    (if: ("key" > struct.loadF KVS "sz" "kvs") || ("key" < common.LOGSIZE)
+    (if: ("key" > (struct.loadF KVS "sz" "kvs")) || ("key" < common.LOGSIZE)
     then Panic "oops"
     else #());;
     let: "op" := jrnl.Begin (struct.loadF KVS "log" "kvs") in

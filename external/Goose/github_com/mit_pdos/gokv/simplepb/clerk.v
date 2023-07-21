@@ -18,9 +18,9 @@ Definition makeClerks: val :=
     let: "clerks" := NewSlice ptrT (slice.len "servers") in
     let: "i" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, ![uint64T] "i" < slice.len "clerks"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "clerks")); (λ: <>, Skip) := λ: <>,
       SliceSet ptrT "clerks" (![uint64T] "i") (pb.MakeClerk (SliceGet uint64T "servers" (![uint64T] "i")));;
-      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
     "clerks".
 
@@ -31,7 +31,7 @@ Definition Make: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
-      (if: (slice.len "config" = #0)
+      (if: (slice.len "config") = #0
       then Continue
       else
         struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config");;
@@ -48,12 +48,12 @@ Definition Clerk__Apply: val :=
       let: ("0_ret", "1_ret") := pb.Clerk__Apply (SliceGet ptrT (struct.loadF Clerk "replicaClerks" "ck") #0) "op" in
       "err" <-[uint64T] "0_ret";;
       "ret" <-[slice.T byteT] "1_ret";;
-      (if: (![uint64T] "err" = e.None)
+      (if: (![uint64T] "err") = e.None
       then Break
       else
         time.Sleep (#100 * #1000000);;
         let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
-        (if: slice.len "config" > #0
+        (if: (slice.len "config") > #0
         then struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config")
         else #());;
         Continue));;
@@ -68,24 +68,24 @@ Definition Clerk__ApplyRo2: val :=
       let: "err" := ref (zero_val uint64T) in
       let: "i" := ref (zero_val uint64T) in
       Skip;;
-      (for: (λ: <>, ![uint64T] "i" < slice.len (struct.loadF Clerk "replicaClerks" "ck")); (λ: <>, Skip) := λ: <>,
-        let: "k" := (![uint64T] "i" + "offset") `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")) in
+      (for: (λ: <>, (![uint64T] "i") < (slice.len (struct.loadF Clerk "replicaClerks" "ck"))); (λ: <>, Skip) := λ: <>,
+        let: "k" := ((![uint64T] "i") + "offset") `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")) in
         let: ("0_ret", "1_ret") := pb.Clerk__ApplyRo (SliceGet ptrT (struct.loadF Clerk "replicaClerks" "ck") "k") "op" in
         "err" <-[uint64T] "0_ret";;
         "ret" <-[slice.T byteT] "1_ret";;
-        (if: (![uint64T] "err" = e.None)
+        (if: (![uint64T] "err") = e.None
         then
           struct.storeF Clerk "preferredReplica" "ck" "k";;
           Break
         else
-          "i" <-[uint64T] ![uint64T] "i" + #1;;
+          "i" <-[uint64T] ((![uint64T] "i") + #1);;
           Continue));;
-      (if: (![uint64T] "err" = e.None)
+      (if: (![uint64T] "err") = e.None
       then Break
       else
         time.Sleep (#10 * #1000000);;
         let: "config" := config.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
-        (if: slice.len "config" > #0
+        (if: (slice.len "config") > #0
         then
           struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config");;
           struct.storeF Clerk "preferredReplica" "ck" ((rand.RandomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")))

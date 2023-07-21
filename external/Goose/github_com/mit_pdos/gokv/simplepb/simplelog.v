@@ -8,13 +8,13 @@ From Goose Require github_com.tchajed.marshal.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition InMemoryStateMachine := struct.decl [
-  "ApplyReadonly" :: (slice.T byteT -> (uint64T * slice.T byteT))%ht;
-  "ApplyVolatile" :: (slice.T byteT -> slice.T byteT)%ht;
-  "GetState" :: (unitT -> slice.T byteT)%ht;
-  "SetState" :: (slice.T byteT -> uint64T -> unitT)%ht
+  "ApplyReadonly" :: ((slice.T byteT) -> (uint64T * (slice.T byteT)))%ht;
+  "ApplyVolatile" :: ((slice.T byteT) -> (slice.T byteT))%ht;
+  "GetState" :: (unitT -> (slice.T byteT))%ht;
+  "SetState" :: ((slice.T byteT) -> uint64T -> unitT)%ht
 ].
 
-Definition MAX_LOG_SIZE : expr := #64 * #1024 * #1024 * #1024.
+Definition MAX_LOG_SIZE : expr := ((#64 * #1024) * #1024) * #1024.
 
 (* File format:
    [N]u8: snapshot
@@ -35,11 +35,11 @@ Definition StateMachine := struct.decl [
 (* FIXME: better name; this isn't the same as "MakeDurable" *)
 Definition StateMachine__makeDurableWithSnap: val :=
   rec: "StateMachine__makeDurableWithSnap" "s" "snap" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "snap" + #8 + #8)) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "snap");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") "snap";;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "epoch" "s");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "nextIndex" "s");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (((#8 + (slice.len "snap")) + #8) + #8)) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (slice.len "snap"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") "snap");;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "epoch" "s"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF StateMachine "nextIndex" "s"));;
     (if: struct.loadF StateMachine "sealed" "s"
     then marshal.WriteBytes (![slice.T byteT] "enc") (NewSlice byteT #1)
     else #());;
@@ -52,18 +52,18 @@ Definition StateMachine__makeDurableWithSnap: val :=
    requires that the state machine is not sealed *)
 Definition StateMachine__truncateAndMakeDurable: val :=
   rec: "StateMachine__truncateAndMakeDurable" "s" :=
-    let: "snap" := struct.loadF InMemoryStateMachine "GetState" (struct.loadF StateMachine "smMem" "s") #() in
+    let: "snap" := (struct.loadF InMemoryStateMachine "GetState" (struct.loadF StateMachine "smMem" "s")) #() in
     StateMachine__makeDurableWithSnap "s" "snap";;
     #().
 
 Definition StateMachine__apply: val :=
   rec: "StateMachine__apply" "s" "op" :=
-    let: "ret" := struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s") "op" in
+    let: "ret" := (struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s")) "op" in
     struct.storeF StateMachine "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF StateMachine "nextIndex" "s") #1);;
-    struct.storeF StateMachine "logsize" "s" (struct.loadF StateMachine "logsize" "s" + slice.len "op");;
-    let: "opWithLen" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "op")) in
-    "opWithLen" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "opWithLen") (slice.len "op");;
-    "opWithLen" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "opWithLen") "op";;
+    struct.storeF StateMachine "logsize" "s" ((struct.loadF StateMachine "logsize" "s") + (slice.len "op"));;
+    let: "opWithLen" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len "op"))) in
+    "opWithLen" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "opWithLen") (slice.len "op"));;
+    "opWithLen" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "opWithLen") "op");;
     let: "l" := aof.AppendOnlyFile__Append (struct.loadF StateMachine "logFile" "s") (![slice.T byteT] "opWithLen") in
     let: "f" := struct.loadF StateMachine "logFile" "s" in
     let: "waitFn" := (λ: <>,
@@ -74,7 +74,7 @@ Definition StateMachine__apply: val :=
 
 Definition StateMachine__applyReadonly: val :=
   rec: "StateMachine__applyReadonly" "s" "op" :=
-    struct.loadF InMemoryStateMachine "ApplyReadonly" (struct.loadF StateMachine "smMem" "s") "op".
+    (struct.loadF InMemoryStateMachine "ApplyReadonly" (struct.loadF StateMachine "smMem" "s")) "op".
 
 (* TODO: make the nextIndex and epoch argument order consistent with pb.StateMachine *)
 Definition StateMachine__setStateAndUnseal: val :=
@@ -82,19 +82,19 @@ Definition StateMachine__setStateAndUnseal: val :=
     struct.storeF StateMachine "epoch" "s" "epoch";;
     struct.storeF StateMachine "nextIndex" "s" "nextIndex";;
     struct.storeF StateMachine "sealed" "s" #false;;
-    struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") "snap" "nextIndex";;
+    (struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s")) "snap" "nextIndex";;
     StateMachine__makeDurableWithSnap "s" "snap";;
     #().
 
 Definition StateMachine__getStateAndSeal: val :=
   rec: "StateMachine__getStateAndSeal" "s" :=
-    (if: ~ (struct.loadF StateMachine "sealed" "s")
+    (if: (~ (struct.loadF StateMachine "sealed" "s"))
     then
       struct.storeF StateMachine "sealed" "s" #true;;
       let: "l" := aof.AppendOnlyFile__Append (struct.loadF StateMachine "logFile" "s") (NewSlice byteT #1) in
       aof.AppendOnlyFile__WaitAppend (struct.loadF StateMachine "logFile" "s") "l"
     else #());;
-    let: "snap" := struct.loadF InMemoryStateMachine "GetState" (struct.loadF StateMachine "smMem" "s") #() in
+    let: "snap" := (struct.loadF InMemoryStateMachine "GetState" (struct.loadF StateMachine "smMem" "s")) #() in
     "snap".
 
 Definition recoverStateMachine: val :=
@@ -104,14 +104,14 @@ Definition recoverStateMachine: val :=
       "smMem" ::= "smMem"
     ] in
     let: "enc" := ref_to (slice.T byteT) (grove_ffi.FileRead (struct.loadF StateMachine "fname" "s")) in
-    (if: (slice.len (![slice.T byteT] "enc") = #0)
+    (if: (slice.len (![slice.T byteT] "enc")) = #0
     then
-      let: "initState" := struct.loadF InMemoryStateMachine "GetState" "smMem" #() in
-      let: "initialContents" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len "initState" + #8 + #8)) in
-      "initialContents" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "initialContents") (slice.len "initState");;
-      "initialContents" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "initialContents") "initState";;
-      "initialContents" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "initialContents") #0;;
-      "initialContents" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "initialContents") #0;;
+      let: "initState" := (struct.loadF InMemoryStateMachine "GetState" "smMem") #() in
+      let: "initialContents" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (((#8 + (slice.len "initState")) + #8) + #8)) in
+      "initialContents" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "initialContents") (slice.len "initState"));;
+      "initialContents" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "initialContents") "initState");;
+      "initialContents" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "initialContents") #0);;
+      "initialContents" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "initialContents") #0);;
       grove_ffi.FileWrite (struct.loadF StateMachine "fname" "s") (![slice.T byteT] "initialContents");;
       struct.storeF StateMachine "logFile" "s" (aof.CreateAppendOnlyFile "fname");;
       "s"
@@ -122,19 +122,19 @@ Definition recoverStateMachine: val :=
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       "snapLen" <-[uint64T] "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
-      "snap" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") #0 (![uint64T] "snapLen");;
+      "snap" <-[slice.T byteT] (SliceSubslice byteT (![slice.T byteT] "enc") #0 (![uint64T] "snapLen"));;
       let: "n" := slice.len (![slice.T byteT] "enc") in
-      "enc" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") (![uint64T] "snapLen") "n";;
+      "enc" <-[slice.T byteT] (SliceSubslice byteT (![slice.T byteT] "enc") (![uint64T] "snapLen") "n");;
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       struct.storeF StateMachine "epoch" "s" "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       struct.storeF StateMachine "nextIndex" "s" "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
-      struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s") (![slice.T byteT] "snap") (struct.loadF StateMachine "nextIndex" "s");;
+      (struct.loadF InMemoryStateMachine "SetState" (struct.loadF StateMachine "smMem" "s")) (![slice.T byteT] "snap") (struct.loadF StateMachine "nextIndex" "s");;
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        (if: slice.len (![slice.T byteT] "enc") > #1
+        (if: (slice.len (![slice.T byteT] "enc")) > #1
         then
           let: "opLen" := ref (zero_val uint64T) in
           let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
@@ -142,12 +142,12 @@ Definition recoverStateMachine: val :=
           "enc" <-[slice.T byteT] "1_ret";;
           let: "op" := SliceSubslice byteT (![slice.T byteT] "enc") #0 (![uint64T] "opLen") in
           let: "n" := slice.len (![slice.T byteT] "enc") in
-          "enc" <-[slice.T byteT] SliceSubslice byteT (![slice.T byteT] "enc") (![uint64T] "opLen") "n";;
-          struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s") "op";;
+          "enc" <-[slice.T byteT] (SliceSubslice byteT (![slice.T byteT] "enc") (![uint64T] "opLen") "n");;
+          (struct.loadF InMemoryStateMachine "ApplyVolatile" (struct.loadF StateMachine "smMem" "s")) "op";;
           struct.storeF StateMachine "nextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF StateMachine "nextIndex" "s") #1);;
           Continue
         else Break));;
-      (if: slice.len (![slice.T byteT] "enc") > #0
+      (if: (slice.len (![slice.T byteT] "enc")) > #0
       then struct.storeF StateMachine "sealed" "s" #true
       else #());;
       "s").

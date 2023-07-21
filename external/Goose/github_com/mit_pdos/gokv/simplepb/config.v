@@ -11,10 +11,10 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition EncodeConfig: val :=
   rec: "EncodeConfig" "config" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 * slice.len "config")) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (slice.len "config");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (#8 * (slice.len "config")))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (slice.len "config"));;
     ForSlice uint64T <> "h" "config"
-      ("enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") "h");;
+      ("enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") "h"));;
     ![slice.T byteT] "enc".
 
 Definition DecodeConfig: val :=
@@ -27,11 +27,11 @@ Definition DecodeConfig: val :=
     let: "config" := NewSlice uint64T (![uint64T] "configLen") in
     let: "i" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, ![uint64T] "i" < slice.len "config"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "config")); (λ: <>, Skip) := λ: <>,
       let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       SliceSet uint64T "config" (![uint64T] "i") "0_ret";;
       "enc" <-[slice.T byteT] "1_ret";;
-      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
     "config".
 
@@ -61,7 +61,7 @@ Definition Clerk__ReserveEpochAndGetConfig: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_RESERVEEPOCH (NewSlice byteT #0) "reply" #100 in
-      (if: ("err" = #0)
+      (if: "err" = #0
       then Break
       else Continue));;
     let: "epoch" := ref (zero_val uint64T) in
@@ -77,7 +77,7 @@ Definition Clerk__GetConfig: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETCONFIG (NewSlice byteT #0) "reply" #100 in
-      (if: ("err" = #0)
+      (if: "err" = #0
       then Break
       else Continue));;
     let: "config" := DecodeConfig (![slice.T byteT] "reply") in
@@ -86,11 +86,11 @@ Definition Clerk__GetConfig: val :=
 Definition Clerk__TryWriteConfig: val :=
   rec: "Clerk__TryWriteConfig" "ck" "epoch" "config" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 * slice.len "config")) in
-    "args" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "args") "epoch";;
-    "args" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "args") (EncodeConfig "config");;
+    let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (#8 * (slice.len "config")))) in
+    "args" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "args") "epoch");;
+    "args" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "args") (EncodeConfig "config"));;
     let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_TRYWRITECONFIG (![slice.T byteT] "args") "reply" #2000 in
-    (if: ("err" = #0)
+    (if: "err" = #0
     then
       let: ("e", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
       "e"
@@ -102,9 +102,9 @@ Definition Clerk__GetLease: val :=
   rec: "Clerk__GetLease" "ck" "epoch" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #8) in
-    "args" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "args") "epoch";;
+    "args" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "args") "epoch");;
     let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETLEASE (![slice.T byteT] "args") "reply" #100 in
-    (if: ("err" = #0)
+    (if: "err" = #0
     then
       let: ("err2", "enc") := marshal.ReadInt (![slice.T byteT] "reply") in
       let: ("leaseExpiration", <>) := marshal.ReadInt "enc" in
@@ -129,16 +129,16 @@ Definition Server__ReserveEpochAndGetConfig: val :=
   rec: "Server__ReserveEpochAndGetConfig" "s" "args" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     struct.storeF Server "reservedEpoch" "s" (std.SumAssumeNoOverflow (struct.loadF Server "reservedEpoch" "s") #1);;
-    "reply" <-[slice.T byteT] NewSliceWithCap byteT #0 (#8 + #8 + #8 * slice.len (struct.loadF Server "config" "s"));;
-    "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "reservedEpoch" "s");;
-    "reply" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig (struct.loadF Server "config" "s"));;
+    "reply" <-[slice.T byteT] (NewSliceWithCap byteT #0 ((#8 + #8) + (#8 * (slice.len (struct.loadF Server "config" "s")))));;
+    "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF Server "reservedEpoch" "s"));;
+    "reply" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig (struct.loadF Server "config" "s")));;
     lock.release (struct.loadF Server "mu" "s");;
     #().
 
 Definition Server__GetConfig: val :=
   rec: "Server__GetConfig" "s" "args" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    "reply" <-[slice.T byteT] EncodeConfig (struct.loadF Server "config" "s");;
+    "reply" <-[slice.T byteT] (EncodeConfig (struct.loadF Server "config" "s"));;
     lock.release (struct.loadF Server "mu" "s");;
     #().
 
@@ -148,35 +148,35 @@ Definition Server__TryWriteConfig: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       lock.acquire (struct.loadF Server "mu" "s");;
-      (if: "epoch" < struct.loadF Server "reservedEpoch" "s"
+      (if: "epoch" < (struct.loadF Server "reservedEpoch" "s")
       then
-        "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.Stale;;
+        "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.Stale);;
         lock.release (struct.loadF Server "mu" "s");;
         (* log.Printf("Stale: %d < %d", epoch, s.reservedEpoch) *)
         Break
       else
-        (if: "epoch" > struct.loadF Server "epoch" "s"
+        (if: "epoch" > (struct.loadF Server "epoch" "s")
         then
           let: ("l", <>) := grove_ffi.GetTimeRange #() in
-          (if: "l" ≥ struct.loadF Server "leaseExpiration" "s"
+          (if: "l" ≥ (struct.loadF Server "leaseExpiration" "s")
           then
             struct.storeF Server "wantLeaseToExpire" "s" #false;;
             struct.storeF Server "epoch" "s" "epoch";;
             struct.storeF Server "config" "s" (DecodeConfig "enc");;
             (* log.Println("New config is:", s.config) *)
-            "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.None;;
+            "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
             lock.release (struct.loadF Server "mu" "s");;
             Break
           else
             struct.storeF Server "wantLeaseToExpire" "s" #true;;
-            let: "timeToSleep" := struct.loadF Server "leaseExpiration" "s" - "l" in
+            let: "timeToSleep" := (struct.loadF Server "leaseExpiration" "s") - "l" in
             lock.release (struct.loadF Server "mu" "s");;
             time.Sleep "timeToSleep";;
             Continue)
         else
           struct.storeF Server "config" "s" (DecodeConfig "enc");;
           lock.release (struct.loadF Server "mu" "s");;
-          "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.None;;
+          "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
           Break)));;
     #().
 
@@ -184,22 +184,22 @@ Definition Server__GetLease: val :=
   rec: "Server__GetLease" "s" "args" "reply" :=
     let: ("epoch", <>) := marshal.ReadInt "args" in
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: (struct.loadF Server "epoch" "s" ≠ "epoch") || (struct.loadF Server "wantLeaseToExpire" "s")
+    (if: ((struct.loadF Server "epoch" "s") ≠ "epoch") || (struct.loadF Server "wantLeaseToExpire" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
-      "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.Stale;;
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") #0;;
+      "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.Stale);;
+      "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") #0);;
       (* log.Println("Rejected lease request", epoch, s.epoch, s.wantLeaseToExpire) *)
       #()
     else
       let: ("l", <>) := grove_ffi.GetTimeRange #() in
       let: "newLeaseExpiration" := "l" + LeaseInterval in
-      (if: "newLeaseExpiration" > struct.loadF Server "leaseExpiration" "s"
+      (if: "newLeaseExpiration" > (struct.loadF Server "leaseExpiration" "s")
       then struct.storeF Server "leaseExpiration" "s" "newLeaseExpiration"
       else #());;
       lock.release (struct.loadF Server "mu" "s");;
-      "reply" <-[slice.T byteT] marshal.WriteInt slice.nil e.None;;
-      "reply" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "reply") "newLeaseExpiration";;
+      "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
+      "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") "newLeaseExpiration");;
       #()).
 
 Definition MakeServer: val :=
@@ -212,7 +212,7 @@ Definition MakeServer: val :=
 
 Definition Server__Serve: val :=
   rec: "Server__Serve" "s" "me" :=
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
     MapInsert "handlers" RPC_RESERVEEPOCH (Server__ReserveEpochAndGetConfig "s");;
     MapInsert "handlers" RPC_GETCONFIG (Server__GetConfig "s");;
     MapInsert "handlers" RPC_TRYWRITECONFIG (Server__TryWriteConfig "s");;

@@ -16,7 +16,7 @@ Definition Clerk__FetchAndIncrement: val :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := frontend.Clerk__FetchAndIncrement (struct.loadF Clerk "frontendCk" "ck") "key" "ret" in
-      (if: ("err" = #0)
+      (if: "err" = #0
       then Break
       else
         let: "currentFrontend" := config.Clerk__Get (struct.loadF Clerk "configCk" "ck") in

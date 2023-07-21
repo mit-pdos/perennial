@@ -56,7 +56,7 @@ Definition Client__getFreshNumRpc: val :=
   rec: "Client__getFreshNumRpc" "cl" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGetFreshNum (NewSlice byteT #0) "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
+    (if: "err" = urpc.ErrNone
     then (DecodeUint64 (![slice.T byteT] "reply"), "err")
     else (#0, "err")).
 
@@ -72,11 +72,11 @@ Definition putArgs := struct.decl [
 Definition encodePutArgs: val :=
   rec: "encodePutArgs" "a" :=
     let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (struct.loadF putArgs "opId" "a");;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF putArgs "opId" "a"));;
     let: "keyBytes" := Data.stringToBytes (struct.loadF putArgs "key" "a") in
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (slice.len "keyBytes");;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") "keyBytes";;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF putArgs "val" "a"));;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (slice.len "keyBytes"));;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") "keyBytes");;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF putArgs "val" "a")));;
     ![slice.T byteT] "e".
 
 (* Client__putRpc from kvservice_rpc.gb.go *)
@@ -85,7 +85,7 @@ Definition Client__putRpc: val :=
   rec: "Client__putRpc" "cl" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdPut (encodePutArgs "args") "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
+    (if: "err" = urpc.ErrNone
     then "err"
     else "err").
 
@@ -98,7 +98,7 @@ Definition Clerk__Put: val :=
       let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
       "opId" <-[uint64T] "0_ret";;
       "err" <-[uint64T] "1_ret";;
-      (if: (![uint64T] "err" = #0)
+      (if: (![uint64T] "err") = #0
       then Break
       else Continue));;
     Skip;;
@@ -108,7 +108,7 @@ Definition Clerk__Put: val :=
         "key" ::= "key";
         "val" ::= "val"
       ] in
-      (if: (Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args" = urpc.ErrNone)
+      (if: (Client__putRpc (struct.loadF Clerk "rpcCl" "ck") "args") = urpc.ErrNone
       then Break
       else Continue));;
     #().
@@ -126,14 +126,14 @@ Definition conditionalPutArgs := struct.decl [
 Definition encodeConditionalPutArgs: val :=
   rec: "encodeConditionalPutArgs" "a" :=
     let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (struct.loadF conditionalPutArgs "opId" "a");;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF conditionalPutArgs "opId" "a"));;
     let: "keyBytes" := Data.stringToBytes (struct.loadF conditionalPutArgs "key" "a") in
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (slice.len "keyBytes");;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") "keyBytes";;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (slice.len "keyBytes"));;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") "keyBytes");;
     let: "expectedValBytes" := Data.stringToBytes (struct.loadF conditionalPutArgs "expectedVal" "a") in
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (slice.len "expectedValBytes");;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") "expectedValBytes";;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF conditionalPutArgs "newVal" "a"));;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (slice.len "expectedValBytes"));;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") "expectedValBytes");;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF conditionalPutArgs "newVal" "a")));;
     ![slice.T byteT] "e".
 
 (* Client__conditionalPutRpc from kvservice_rpc.gb.go *)
@@ -142,7 +142,7 @@ Definition Client__conditionalPutRpc: val :=
   rec: "Client__conditionalPutRpc" "cl" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdConditionalPut (encodeConditionalPutArgs "args") "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
+    (if: "err" = urpc.ErrNone
     then (Data.bytesToString (![slice.T byteT] "reply"), "err")
     else (#(str""), "err")).
 
@@ -157,7 +157,7 @@ Definition Clerk__ConditionalPut: val :=
       let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
       "opId" <-[uint64T] "0_ret";;
       "err" <-[uint64T] "1_ret";;
-      (if: (![uint64T] "err" = #0)
+      (if: (![uint64T] "err") = #0
       then Break
       else Continue));;
     let: "ret" := ref (zero_val boolT) in
@@ -170,7 +170,7 @@ Definition Clerk__ConditionalPut: val :=
         "newVal" ::= "newVal"
       ] in
       let: ("reply", "err") := Client__conditionalPutRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
-      (if: ("err" = urpc.ErrNone)
+      (if: "err" = urpc.ErrNone
       then
         "ret" <-[boolT] ("reply" = #(str"ok"));;
         Break
@@ -188,8 +188,8 @@ Definition getArgs := struct.decl [
 Definition encodeGetArgs: val :=
   rec: "encodeGetArgs" "a" :=
     let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
-    "e" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "e") (struct.loadF getArgs "opId" "a");;
-    "e" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF getArgs "key" "a"));;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF getArgs "opId" "a"));;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF getArgs "key" "a")));;
     ![slice.T byteT] "e".
 
 (* Client__getRpc from kvservice_rpc.gb.go *)
@@ -198,7 +198,7 @@ Definition Client__getRpc: val :=
   rec: "Client__getRpc" "cl" "args" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGet (encodeGetArgs "args") "reply" #100 in
-    (if: ("err" = urpc.ErrNone)
+    (if: "err" = urpc.ErrNone
     then (Data.bytesToString (![slice.T byteT] "reply"), "err")
     else (#(str""), "err")).
 
@@ -213,7 +213,7 @@ Definition Clerk__Get: val :=
       let: ("0_ret", "1_ret") := Client__getFreshNumRpc (struct.loadF Clerk "rpcCl" "ck") in
       "opId" <-[uint64T] "0_ret";;
       "err" <-[uint64T] "1_ret";;
-      (if: (![uint64T] "err" = #0)
+      (if: (![uint64T] "err") = #0
       then Break
       else Continue));;
     let: "ret" := ref (zero_val stringT) in
@@ -224,7 +224,7 @@ Definition Clerk__Get: val :=
         "key" ::= "key"
       ] in
       let: ("reply", "err") := Client__getRpc (struct.loadF Clerk "rpcCl" "ck") "args" in
-      (if: ("err" = urpc.ErrNone)
+      (if: "err" = urpc.ErrNone
       then
         "ret" <-[stringT] "reply";;
         Break
@@ -237,12 +237,12 @@ Definition Clerk__Get: val :=
 Definition EncodeBool: val :=
   rec: "EncodeBool" "a" :=
     (if: "a"
-    then SliceAppend byteT (NewSlice byteT #0) (#(U8 1))
-    else SliceAppend byteT (NewSlice byteT #0) (#(U8 0))).
+    then SliceAppend byteT (NewSlice byteT #0) #(U8 1)
+    else SliceAppend byteT (NewSlice byteT #0) #(U8 0)).
 
 Definition DecodeBool: val :=
   rec: "DecodeBool" "x" :=
-    (SliceGet byteT "x" #0 = #(U8 1)).
+    (SliceGet byteT "x" #0) = #(U8 1).
 
 Definition EncodeUint64: val :=
   rec: "EncodeUint64" "a" :=
@@ -335,7 +335,7 @@ Definition Server__conditionalPut: val :=
       "ret"
     else
       let: "ret2" := ref_to stringT #(str"") in
-      (if: (Fst (MapGet (struct.loadF Server "kvs" "s") (struct.loadF conditionalPutArgs "key" "args")) = struct.loadF conditionalPutArgs "expectedVal" "args")
+      (if: (Fst (MapGet (struct.loadF Server "kvs" "s") (struct.loadF conditionalPutArgs "key" "args"))) = (struct.loadF conditionalPutArgs "expectedVal" "args")
       then
         MapInsert (struct.loadF Server "kvs" "s") (struct.loadF conditionalPutArgs "key" "args") (struct.loadF conditionalPutArgs "newVal" "args");;
         "ret2" <-[stringT] #(str"ok")
@@ -360,23 +360,23 @@ Definition Server__get: val :=
 
 Definition Server__Start: val :=
   rec: "Server__Start" "s" "me" :=
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" rpcIdGetFreshNum ((λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] EncodeUint64 (Server__getFreshNum "s");;
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" rpcIdGetFreshNum (λ: "enc_args" "enc_reply",
+      "enc_reply" <-[slice.T byteT] (EncodeUint64 (Server__getFreshNum "s"));;
       #()
-      ));;
-    MapInsert "handlers" rpcIdPut ((λ: "enc_args" "enc_reply",
+      );;
+    MapInsert "handlers" rpcIdPut (λ: "enc_args" "enc_reply",
       Server__put "s" (decodePutArgs "enc_args");;
       #()
-      ));;
-    MapInsert "handlers" rpcIdConditionalPut ((λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] Data.stringToBytes (Server__conditionalPut "s" (decodeConditionalPutArgs "enc_args"));;
+      );;
+    MapInsert "handlers" rpcIdConditionalPut (λ: "enc_args" "enc_reply",
+      "enc_reply" <-[slice.T byteT] (Data.stringToBytes (Server__conditionalPut "s" (decodeConditionalPutArgs "enc_args")));;
       #()
-      ));;
-    MapInsert "handlers" rpcIdGet ((λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] Data.stringToBytes (Server__get "s" (decodeGetArgs "enc_args"));;
+      );;
+    MapInsert "handlers" rpcIdGet (λ: "enc_args" "enc_reply",
+      "enc_reply" <-[slice.T byteT] (Data.stringToBytes (Server__get "s" (decodeGetArgs "enc_args")));;
       #()
-      ));;
+      );;
     urpc.Server__Serve (urpc.MakeServer "handlers") "me";;
     #().
 

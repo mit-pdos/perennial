@@ -28,10 +28,10 @@ Definition applyAsFollowerArgs := struct.decl [
 
 Definition encodeApplyAsFollowerArgs: val :=
   rec: "encodeApplyAsFollowerArgs" "o" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 + slice.len (struct.loadF applyAsFollowerArgs "state" "o"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF applyAsFollowerArgs "epoch" "o");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF applyAsFollowerArgs "nextIndex" "o");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF applyAsFollowerArgs "state" "o");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((#8 + #8) + (slice.len (struct.loadF applyAsFollowerArgs "state" "o")))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF applyAsFollowerArgs "epoch" "o"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF applyAsFollowerArgs "nextIndex" "o"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF applyAsFollowerArgs "state" "o"));;
     ![slice.T byteT] "enc".
 
 Definition decodeApplyAsFollowerArgs: val :=
@@ -61,7 +61,7 @@ Definition decodeApplyAsFollowerReply: val :=
 Definition encodeApplyAsFollowerReply: val :=
   rec: "encodeApplyAsFollowerReply" "o" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #8) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF applyAsFollowerReply "err" "o");;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF applyAsFollowerReply "err" "o"));;
     ![slice.T byteT] "enc".
 
 Definition enterNewEpochArgs := struct.decl [
@@ -71,7 +71,7 @@ Definition enterNewEpochArgs := struct.decl [
 Definition encodeEnterNewEpochArgs: val :=
   rec: "encodeEnterNewEpochArgs" "o" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #8) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF enterNewEpochArgs "epoch" "o");;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF enterNewEpochArgs "epoch" "o"));;
     ![slice.T byteT] "enc".
 
 Definition decodeEnterNewEpochArgs: val :=
@@ -109,11 +109,11 @@ Definition decodeEnterNewEpochReply: val :=
 
 Definition encodeEnterNewEpochReply: val :=
   rec: "encodeEnterNewEpochReply" "o" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + #8 + #8 + slice.len (struct.loadF enterNewEpochReply "state" "o"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF enterNewEpochReply "err" "o");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF enterNewEpochReply "acceptedEpoch" "o");;
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF enterNewEpochReply "nextIndex" "o");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF enterNewEpochReply "state" "o");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (((#8 + #8) + #8) + (slice.len (struct.loadF enterNewEpochReply "state" "o")))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF enterNewEpochReply "err" "o"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF enterNewEpochReply "acceptedEpoch" "o"));;
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF enterNewEpochReply "nextIndex" "o"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF enterNewEpochReply "state" "o"));;
     ![slice.T byteT] "enc".
 
 Definition applyReply := struct.decl [
@@ -123,9 +123,9 @@ Definition applyReply := struct.decl [
 
 Definition encodeApplyReply: val :=
   rec: "encodeApplyReply" "o" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + slice.len (struct.loadF applyReply "ret" "o"))) in
-    "enc" <-[slice.T byteT] marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF applyReply "err" "o");;
-    "enc" <-[slice.T byteT] marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF applyReply "ret" "o");;
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (slice.len (struct.loadF applyReply "ret" "o")))) in
+    "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (struct.loadF applyReply "err" "o"));;
+    "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (struct.loadF applyReply "ret" "o"));;
     ![slice.T byteT] "enc".
 
 Definition decodeApplyReply: val :=
@@ -185,7 +185,7 @@ Definition ReconnectingClient__Call: val :=
   rec: "ReconnectingClient__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
     let: "urpcCl" := ReconnectingClient__getClient "cl" in
     let: "err" := urpc.Client__Call "urpcCl" "rpcid" "args" "reply" "timeout_ms" in
-    (if: ("err" = urpc.ErrDisconnect)
+    (if: "err" = urpc.ErrDisconnect
     then
       lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
       struct.storeF ReconnectingClient "valid" "cl" #false;;
@@ -221,7 +221,7 @@ Definition singleClerk__enterNewEpoch: val :=
     let: "raw_args" := encodeEnterNewEpochArgs "args" in
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_ENTER_NEW_EPOCH "raw_args" "raw_reply" #500 in
-    (if: ("err" = #0)
+    (if: "err" = #0
     then decodeEnterNewEpochReply (![slice.T byteT] "raw_reply")
     else
       struct.new enterNewEpochReply [
@@ -233,7 +233,7 @@ Definition singleClerk__applyAsFollower: val :=
     let: "raw_args" := encodeApplyAsFollowerArgs "args" in
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_APPLY_AS_FOLLOWER "raw_args" "raw_reply" #500 in
-    (if: ("err" = #0)
+    (if: "err" = #0
     then decodeApplyAsFollowerReply (![slice.T byteT] "raw_reply")
     else
       struct.new applyAsFollowerReply [
@@ -254,7 +254,7 @@ Definition singleClerk__apply: val :=
     then (ETimeout, slice.nil)
     else
       let: "r" := decodeApplyReply (![slice.T byteT] "reply") in
-      (if: struct.loadF applyReply "err" "r" ≠ ENone
+      (if: (struct.loadF applyReply "err" "r") ≠ ENone
       then (struct.loadF applyReply "err" "r", slice.nil)
       else (ENone, struct.loadF applyReply "ret" "r"))).
 
@@ -271,9 +271,9 @@ Definition MakeClerk: val :=
     let: "i" := ref_to uint64T #0 in
     let: "n" := slice.len "config" in
     Skip;;
-    (for: (λ: <>, ![uint64T] "i" < "n"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, Skip) := λ: <>,
       SliceSet ptrT (struct.loadF Clerk "cks" "ck") (![uint64T] "i") (makeSingleClerk (SliceGet uint64T "config" (![uint64T] "i")));;
-      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
     "ck".
 
@@ -295,7 +295,7 @@ Definition Clerk__Apply: val :=
       let: ("0_ret", "1_ret") := singleClerk__apply "cl" "op" in
       "err" <-[Error] "0_ret";;
       "reply" <-[slice.T byteT] "1_ret";;
-      (if: (![Error] "err" = ENone)
+      (if: (![Error] "err") = ENone
       then Break
       else
         (* log.Printf("cl.apply(op) returned %d\n", err) *)
@@ -312,20 +312,20 @@ Definition Server := struct.decl [
   "state" :: slice.T byteT;
   "clerks" :: slice.T ptrT;
   "isLeader" :: boolT;
-  "applyFn" :: (slice.T byteT -> slice.T byteT -> (slice.T byteT * slice.T byteT))%ht
+  "applyFn" :: ((slice.T byteT) -> (slice.T byteT) -> ((slice.T byteT) * (slice.T byteT)))%ht
 ].
 
 Definition Server__applyAsFollower: val :=
   rec: "Server__applyAsFollower" "s" "args" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF Server "epoch" "s" ≤ struct.loadF applyAsFollowerArgs "epoch" "args"
+    (if: (struct.loadF Server "epoch" "s") ≤ (struct.loadF applyAsFollowerArgs "epoch" "args")
     then
       struct.storeF Server "isLeader" "s" #false;;
-      (if: (struct.loadF Server "acceptedEpoch" "s" = struct.loadF applyAsFollowerArgs "epoch" "args")
+      (if: (struct.loadF Server "acceptedEpoch" "s") = (struct.loadF applyAsFollowerArgs "epoch" "args")
       then
-        (if: struct.loadF Server "nextIndex" "s" ≤ struct.loadF applyAsFollowerArgs "nextIndex" "args"
+        (if: (struct.loadF Server "nextIndex" "s") ≤ (struct.loadF applyAsFollowerArgs "nextIndex" "args")
         then
-          struct.storeF Server "nextIndex" "s" (struct.loadF applyAsFollowerArgs "nextIndex" "args" + #1);;
+          struct.storeF Server "nextIndex" "s" ((struct.loadF applyAsFollowerArgs "nextIndex" "args") + #1);;
           struct.storeF Server "state" "s" (struct.loadF applyAsFollowerArgs "state" "args");;
           struct.storeF applyAsFollowerReply "err" "reply" ENone
         else struct.storeF applyAsFollowerReply "err" "reply" ENone)
@@ -349,7 +349,7 @@ Definition Server__applyAsFollower: val :=
 Definition Server__enterNewEpoch: val :=
   rec: "Server__enterNewEpoch" "s" "args" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF Server "epoch" "s" ≥ struct.loadF enterNewEpochArgs "epoch" "args"
+    (if: (struct.loadF Server "epoch" "s") ≥ (struct.loadF enterNewEpochArgs "epoch" "args")
     then
       lock.release (struct.loadF Server "mu" "s");;
       struct.storeF enterNewEpochReply "err" "reply" EEpochStale;;
@@ -375,7 +375,7 @@ Definition Server__becomeLeader: val :=
     else
       let: "clerks" := struct.loadF Server "clerks" "s" in
       let: "args" := struct.new enterNewEpochArgs [
-        "epoch" ::= struct.loadF Server "epoch" "s" + #1
+        "epoch" ::= (struct.loadF Server "epoch" "s") + #1
       ] in
       lock.release (struct.loadF Server "mu" "s");;
       let: "numReplies" := ref_to uint64T #0 in
@@ -388,15 +388,15 @@ Definition Server__becomeLeader: val :=
         let: "i" := "i" in
         Fork (let: "reply" := singleClerk__enterNewEpoch "ck" "args" in
               lock.acquire "mu";;
-              "numReplies" <-[uint64T] ![uint64T] "numReplies" + #1;;
+              "numReplies" <-[uint64T] ((![uint64T] "numReplies") + #1);;
               SliceSet ptrT "replies" "i" "reply";;
-              (if: #2 * ![uint64T] "numReplies" > "n"
+              (if: (#2 * (![uint64T] "numReplies")) > "n"
               then lock.condSignal "numReplies_cond"
               else #());;
               lock.release "mu"));;
       lock.acquire "mu";;
       Skip;;
-      (for: (λ: <>, #2 * ![uint64T] "numReplies" ≤ "n"); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ "n"); (λ: <>, Skip) := λ: <>,
         lock.condWait "numReplies_cond";;
         Continue);;
       let: "latestReply" := ref (zero_val ptrT) in
@@ -404,25 +404,25 @@ Definition Server__becomeLeader: val :=
       ForSlice ptrT <> "reply" "replies"
         ((if: "reply" ≠ #null
         then
-          (if: (struct.loadF enterNewEpochReply "err" "reply" = ENone)
+          (if: (struct.loadF enterNewEpochReply "err" "reply") = ENone
           then
-            (if: (![uint64T] "numSuccesses" = #0)
+            (if: (![uint64T] "numSuccesses") = #0
             then "latestReply" <-[ptrT] "reply"
             else
-              (if: struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") < struct.loadF enterNewEpochReply "acceptedEpoch" "reply"
+              (if: (struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply")) < (struct.loadF enterNewEpochReply "acceptedEpoch" "reply")
               then "latestReply" <-[ptrT] "reply"
               else
-                (if: ((struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply") = struct.loadF enterNewEpochReply "acceptedEpoch" "reply")) && (struct.loadF enterNewEpochReply "nextIndex" "reply" > struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply"))
+                (if: ((struct.loadF enterNewEpochReply "acceptedEpoch" (![ptrT] "latestReply")) = (struct.loadF enterNewEpochReply "acceptedEpoch" "reply")) && ((struct.loadF enterNewEpochReply "nextIndex" "reply") > (struct.loadF enterNewEpochReply "nextIndex" (![ptrT] "latestReply")))
                 then "latestReply" <-[ptrT] "reply"
                 else #())));;
-            "numSuccesses" <-[uint64T] ![uint64T] "numSuccesses" + #1
+            "numSuccesses" <-[uint64T] ((![uint64T] "numSuccesses") + #1)
           else #())
         else #()));;
-      (if: #2 * ![uint64T] "numSuccesses" > "n"
+      (if: (#2 * (![uint64T] "numSuccesses")) > "n"
       then
         (* log.Printf("succeeded becomeleader in epoch %d\n", args.epoch) *)
         lock.acquire (struct.loadF Server "mu" "s");;
-        (if: struct.loadF Server "epoch" "s" < struct.loadF enterNewEpochArgs "epoch" "args"
+        (if: (struct.loadF Server "epoch" "s") < (struct.loadF enterNewEpochArgs "epoch" "args")
         then
           struct.storeF Server "epoch" "s" (struct.loadF enterNewEpochArgs "epoch" "args");;
           struct.storeF Server "isLeader" "s" #true;;
@@ -441,13 +441,13 @@ Definition Server__becomeLeader: val :=
 Definition Server__apply: val :=
   rec: "Server__apply" "s" "op" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: ~ (struct.loadF Server "isLeader" "s")
+    (if: (~ (struct.loadF Server "isLeader" "s"))
     then
       lock.release (struct.loadF Server "mu" "s");;
       struct.storeF applyReply "err" "reply" ENotLeader;;
       #()
     else
-      let: ("0_ret", "1_ret") := struct.loadF Server "applyFn" "s" (struct.loadF Server "state" "s") "op" in
+      let: ("0_ret", "1_ret") := (struct.loadF Server "applyFn" "s") (struct.loadF Server "state" "s") "op" in
       struct.storeF Server "state" "s" "0_ret";;
       struct.storeF applyReply "ret" "reply" "1_ret";;
       let: "args" := struct.new applyAsFollowerArgs [
@@ -468,26 +468,26 @@ Definition Server__apply: val :=
         let: "i" := "i" in
         Fork (let: "reply" := singleClerk__applyAsFollower "ck" "args" in
               lock.acquire "mu";;
-              "numReplies" <-[uint64T] ![uint64T] "numReplies" + #1;;
+              "numReplies" <-[uint64T] ((![uint64T] "numReplies") + #1);;
               SliceSet ptrT "replies" "i" "reply";;
-              (if: #2 * ![uint64T] "numReplies" > "n"
+              (if: (#2 * (![uint64T] "numReplies")) > "n"
               then lock.condSignal "numReplies_cond"
               else #());;
               lock.release "mu"));;
       lock.acquire "mu";;
       Skip;;
-      (for: (λ: <>, #2 * ![uint64T] "numReplies" ≤ "n"); (λ: <>, Skip) := λ: <>,
+      (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ "n"); (λ: <>, Skip) := λ: <>,
         lock.condWait "numReplies_cond";;
         Continue);;
       let: "numSuccesses" := ref_to uint64T #0 in
       ForSlice ptrT <> "reply" "replies"
         ((if: "reply" ≠ #null
         then
-          (if: (struct.loadF applyAsFollowerReply "err" "reply" = ENone)
-          then "numSuccesses" <-[uint64T] ![uint64T] "numSuccesses" + #1
+          (if: (struct.loadF applyAsFollowerReply "err" "reply") = ENone
+          then "numSuccesses" <-[uint64T] ((![uint64T] "numSuccesses") + #1)
           else #())
         else #()));;
-      (if: #2 * ![uint64T] "numSuccesses" > "n"
+      (if: (#2 * (![uint64T] "numSuccesses")) > "n"
       then
         struct.storeF applyReply "err" "reply" ENone;;
         #()
@@ -505,40 +505,40 @@ Definition makeServer: val :=
     let: "n" := slice.len (struct.loadF Server "clerks" "s") in
     let: "i" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, ![uint64T] "i" < "n"); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, Skip) := λ: <>,
       SliceSet ptrT (struct.loadF Server "clerks" "s") (![uint64T] "i") (makeSingleClerk (SliceGet uint64T "config" (![uint64T] "i")));;
-      "i" <-[uint64T] ![uint64T] "i" + #1;;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
     "s".
 
 Definition StartServer: val :=
   rec: "StartServer" "fname" "me" "applyFn" "config" :=
     let: "s" := makeServer "fname" "applyFn" "config" in
-    let: "handlers" := NewMap uint64T ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_APPLY_AS_FOLLOWER ((λ: "raw_args" "raw_reply",
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" RPC_APPLY_AS_FOLLOWER (λ: "raw_args" "raw_reply",
       let: "reply" := struct.alloc applyAsFollowerReply (zero_val (struct.t applyAsFollowerReply)) in
       let: "args" := decodeApplyAsFollowerArgs "raw_args" in
       Server__applyAsFollower "s" "args" "reply";;
-      "raw_reply" <-[slice.T byteT] encodeApplyAsFollowerReply "reply";;
+      "raw_reply" <-[slice.T byteT] (encodeApplyAsFollowerReply "reply");;
       #()
-      ));;
-    MapInsert "handlers" RPC_ENTER_NEW_EPOCH ((λ: "raw_args" "raw_reply",
+      );;
+    MapInsert "handlers" RPC_ENTER_NEW_EPOCH (λ: "raw_args" "raw_reply",
       let: "reply" := struct.alloc enterNewEpochReply (zero_val (struct.t enterNewEpochReply)) in
       let: "args" := decodeEnterNewEpochArgs "raw_args" in
       Server__enterNewEpoch "s" "args" "reply";;
-      "raw_reply" <-[slice.T byteT] encodeEnterNewEpochReply "reply";;
+      "raw_reply" <-[slice.T byteT] (encodeEnterNewEpochReply "reply");;
       #()
-      ));;
-    MapInsert "handlers" RPC_APPLY ((λ: "raw_args" "raw_reply",
+      );;
+    MapInsert "handlers" RPC_APPLY (λ: "raw_args" "raw_reply",
       let: "reply" := struct.alloc applyReply (zero_val (struct.t applyReply)) in
       Server__apply "s" "raw_args" "reply";;
-      "raw_reply" <-[slice.T byteT] encodeApplyReply "reply";;
+      "raw_reply" <-[slice.T byteT] (encodeApplyReply "reply");;
       #()
-      ));;
-    MapInsert "handlers" RPC_BECOME_LEADER ((λ: "raw_args" "raw_reply",
+      );;
+    MapInsert "handlers" RPC_BECOME_LEADER (λ: "raw_args" "raw_reply",
       Server__becomeLeader "s";;
       #()
-      ));;
+      );;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().
