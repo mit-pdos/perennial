@@ -100,8 +100,8 @@ Proof.
   iEval (rewrite -{-1}Heqk).
   clear Heqk. remember k' as k eqn:Heqk. clear Heqk.
 
-  remember ((word.sub (word.sub num_shards 65536)
-                                          (word.divu (word.mul num_shards 65536) num_shards)))
+  remember ((word.sub num_shards (word.sub 65536
+                                          (word.divu (word.mul num_shards 65536) num_shards))))
            as nf_left eqn:Hnf_left.
   clear Hnf_left.
 
