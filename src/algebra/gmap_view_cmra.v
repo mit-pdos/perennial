@@ -29,10 +29,20 @@ Section rel.
   Implicit Types (m : gmap K V) (k : K) (v : V) (n : nat).
   Implicit Types (f : gmap K (dfrac * V)).
 
-
-  (* FIXME: we should really have a name and theory for the reflexive closure of [≼]... *)
+  (* This is very similar to [auth] except that we do not require a unit,
+  and the authoritative fraction is "erased": instead of [dv ≼ (DfracOwn 1, v)],
+  we just say that [dv ≼ (_, v)] for *some* valid value in place of the
+  underscore, and we move to the reflexive closure via [Some dv ≼ Some (_, v)].
+  This ensures that if [dv.1] is the full fraction, we get the right behavior:
+  there is no frame, and hence [dv.2 ≡ v]. At the same time it allows
+  [dv.1 = DfracDiscarded], which would be ruled out by hard-coding [DfracOwn 1]. *)
   Local Definition gmap_view_rel_raw n m f : Prop :=
-    map_Forall (λ k dv, ∃ v, m !! k = Some v ∧ ✓{n} v ∧ (dv ≼{n} ((DfracOwn 1, v):prodR _ _) ∨ dv ≡{n}≡ (DfracOwn 1, v)) ∧ ✓ dv.1) f.
+    map_Forall (λ k dv, ∃ v dq, m !! k = Some v ∧ ✓{n} (dq, v) ∧ (Some dv ≼{n} Some (dq, v))) f.
+
+  (* FIXME: remove this from here *)
+  Lemma option_includedN_is_Some {A:cmra} n (x:A) (mb:option A) :
+    Some x ≼{n} mb → ∃ y, mb = Some y.
+  Proof. rewrite option_includedN. naive_solver. Qed.
 
   Local Lemma gmap_view_rel_raw_mono n1 n2 m1 m2 f1 f2 :
     gmap_view_rel_raw n1 m1 f1 →
@@ -41,50 +51,26 @@ Section rel.
     n2 ≤ n1 →
     gmap_view_rel_raw n2 m2 f2.
   Proof.
-    intros Hrel Hm Hf Hn k [q va] Hk.
+    intros Hrel Hm Hf Hn k [dqa va] Hk.
     (* For some reason applying the lemma in [Hf] does not work... *)
     destruct (lookup_includedN n2 f2 f1) as [Hf' _]. specialize (Hf' Hf). clear Hf.
     specialize (Hf' k). rewrite Hk in Hf'.
-    apply option_includedN in Hf'.
-    destruct Hf' as [[=]|(? & [q' va'] & [= <-] & Hf1 & Hincl)].
-    specialize (Hrel _ _ Hf1) as (v & Hm1 & Hvval & Hvincl & Hdval). simpl in *.
+    destruct (option_includedN_is_Some _ _ _ Hf') as [[q' va'] Heq]. rewrite Heq in Hf'.
+    specialize (Hrel _ _ Heq) as (v & dq & Hm1 & [Hvval Hdqval] & Hvincl). simpl in *.
     specialize (Hm k).
     edestruct (dist_Some_inv_l _ _ _ _ Hm Hm1) as (v' & Hm2 & Hv).
-    eexists. split; first done. split.
-    { rewrite -Hv. eapply cmra_validN_le; done. }
-    rewrite -Hv.
-    destruct Hincl as [[Heqq Heqva]|[Hinclq Hinclva]%pair_includedN].
-    - simpl in *. split.
-      + rewrite Heqva Heqq. destruct Hvincl.
-        * left. eapply cmra_includedN_le; last eassumption. done.
-        * right. eapply dist_le; last eassumption. done.
-      + rewrite <-discrete_iff in Heqq; last by apply _.
-        fold_leibniz. subst q'. done.
-    - split.
-      + left. destruct Hvincl.
-        * transitivity (q', va').
-          2:{
-            by eapply cmra_includedN_le; last eassumption.
-          }
-          apply pair_includedN; split; done.
-        * apply pair_includedN; split.
-          { by destruct H0 as [<- ?]; simpl in *. }
-          eapply dist_le in H0; last done.
-          by destruct H0 as [? <-]; simpl in *.
-      + rewrite <-cmra_discrete_included_iff in Hinclq.
-        eapply cmra_valid_included; done.
+    eexists. exists dq. split; first done. split.
+    { split; first done. simpl. rewrite -Hv. eapply cmra_validN_le; done. }
+    rewrite -Hv. etrans; first exact Hf'.
+    apply: cmra_includedN_le; eassumption.
   Qed.
 
   Local Lemma gmap_view_rel_raw_valid n m f :
     gmap_view_rel_raw n m f → ✓{n} f.
   Proof.
-    intros Hrel k. destruct (f !! k) as [[q va]|] eqn:Hf; rewrite Hf; last done.
-    specialize (Hrel _ _ Hf) as (v & Hm1 & Hmval & Hvincl & Hdval). simpl in *.
-    split; simpl.
-    - apply cmra_discrete_valid_iff. done.
-    - destruct Hvincl as [?|Hveq].
-      + eapply pair_includedN in H0 as [? ?]. eapply cmra_validN_includedN; done.
-      + destruct Hveq as [? ->]. done.
+    intros Hrel k. destruct (f !! k) as [[dqa va]|] eqn:Hf; rewrite Hf; last done.
+    specialize (Hrel _ _ Hf) as (v & dq & Hmval & Hvval & Hvincl). simpl in *.
+    eapply cmra_validN_includedN. 2:done. done.
   Qed.
 
   Local Lemma gmap_view_rel_raw_unit n :
@@ -111,7 +97,8 @@ Section rel.
       move: (Hf k'). by rewrite lookup_insert_ne. }
     exists (<[k:=v]> m).
     rewrite /gmap_view_rel /= /gmap_view_rel_raw map_Forall_insert //=. split_and!.
-    - exists v. rewrite lookup_insert. eauto.
+    - exists v, dq. split; first by rewrite lookup_insert.
+      split; first by split. done.
     - eapply map_Forall_impl; [apply Hm|]; simpl.
       intros k' [dq' ag'] (v'&?&?&?). exists v'.
       rewrite lookup_insert_ne; naive_solver.
@@ -125,13 +112,10 @@ Section rel.
     CmraDiscrete V → ViewRelDiscrete gmap_view_rel.
   Proof.
     intros ? n m f Hrel k [df va] Hk.
-    destruct (Hrel _ _ Hk) as (v & Hm & Hvval & Hvincl & Hdval).
-    exists v. split; first done.
+    destruct (Hrel _ _ Hk) as (v & dq & Hm & Hvval & Hvincl).
+    exists v, dq. split; first done.
     split; first by apply cmra_discrete_valid_iff_0.
-    split; last done.
-    destruct Hvincl.
-    - left. by apply cmra_discrete_included_iff_0.
-    - right. eapply discrete_iff_0; first by apply _. done.
+    rewrite -cmra_discrete_included_iff_0. done.
   Qed.
 End rel.
 
@@ -175,17 +159,17 @@ Section lemmas.
   (* Helper lemmas *)
   Local Lemma gmap_view_rel_lookup n m k dq v :
     gmap_view_rel K V n m {[k := (dq, v)]} ↔
-            ∃ v', m !! k = Some v' ∧ ✓{n} v' ∧ (v ≼{n} v' ∨ v ≡{n}≡ v') ∧ ✓ dq.
+    ∃ v' dq', m !! k = Some v' ∧ ✓{n} (dq', v') ∧ (Some (dq, v) ≼{n} Some (dq', v')).
   Proof.
     split.
     - intros Hrel.
-      edestruct (Hrel k) as (v' & Hval & ? & ? & ?).
+      edestruct (Hrel k) as (v' & dq' & Hagree & Hval & Hinc).
       { rewrite lookup_singleton. done. }
-      simpl in *. exists v'. split_and!; try assumption.
-    - intros (v' & Hm & Hv' & Hvinc & Hdq). intros j [df va].
+      simpl in *. eexists _, _. split_and!; done.
+    - intros (v' & dq' & Hagree & Hval & ?) j [df va].
       destruct (decide (k = j)) as [<-|Hne]; last by rewrite lookup_singleton_ne.
       rewrite lookup_singleton. intros [= <- <-]. simpl.
-      exists v'. split_and!; done.
+      exists v', dq'. split_and!; by rewrite ?Hv'.
   Qed.
 
   (** Composition and validity *)
@@ -239,22 +223,22 @@ Section lemmas.
     ✓ (gmap_view_auth (DfracOwn 1) m1 ⋅ gmap_view_auth (DfracOwn 1) m2) ↔ False.
   Proof. apply view_auth_op_valid. Qed.
 
-  Lemma gmap_view_frag_validN n k dq v : ✓{n} gmap_view_frag k dq v ↔ ✓ dq ∧ ✓{n} v.
+  Lemma gmap_view_frag_validN n k dq v : ✓{n} gmap_view_frag k dq v ↔ ✓{n} dq ∧ ✓{n} v.
   Proof.
-    rewrite view_frag_validN gmap_view_rel_exists singleton_validN pair_validN.
+    rewrite view_frag_validN gmap_view_rel_exists singleton_validN.
     naive_solver.
   Qed.
   Lemma gmap_view_frag_valid k dq v : ✓ gmap_view_frag k dq v ↔ ✓ dq ∧ ✓ v.
   Proof.
-    rewrite cmra_valid_validN. setoid_rewrite gmap_view_frag_validN.
-    rewrite (cmra_valid_validN v).
-    naive_solver eauto using O.
+    rewrite view_frag_valid. setoid_rewrite gmap_view_rel_exists.
+    setoid_rewrite singleton_validN.
+    by rewrite -pair_valid (cmra_valid_validN).
   Qed.
 
   Lemma gmap_view_frag_op k dq1 dq2 v1 v2 :
     gmap_view_frag k (dq1 ⋅ dq2) (v1 ⋅ v2) ≡ gmap_view_frag k dq1 v1 ⋅ gmap_view_frag k dq2 v2.
-  Proof. rewrite -view_frag_op singleton_op -pair_op //. Qed.
-  Lemma gmap_view_frag_add k q1 q2 v1 v2 :
+ Proof. rewrite -view_frag_op singleton_op -pair_op //. Qed.
+ Lemma gmap_view_frag_add k q1 q2 v1 v2 :
     gmap_view_frag k (DfracOwn (q1 + q2)) (v1 ⋅ v2) ≡
       gmap_view_frag k (DfracOwn q1) v1 ⋅ gmap_view_frag k (DfracOwn q2) v2.
   Proof. rewrite -gmap_view_frag_op. done. Qed.
@@ -282,48 +266,61 @@ Section lemmas.
 
   Lemma gmap_view_both_dfrac_validN n dp m k dq v :
     ✓{n} (gmap_view_auth dp m ⋅ gmap_view_frag k dq v) ↔
-     ✓ dp ∧ ✓ dq ∧ ∃ v', m !! k = Some v' ∧ ✓{n} v' ∧ (v ≼{n} v' ∨ v ≡{n}≡ v').
+     ✓ dp ∧ ∃ v' dq', m !! k = Some v' ∧ ✓{n} (dq', v') ∧ (Some (dq, v) ≼{n} Some (dq', v')).
   Proof.
     rewrite /gmap_view_auth /gmap_view_frag.
     rewrite view_both_dfrac_validN gmap_view_rel_lookup.
     split.
-    { intros [Hp (v' & Hm & ? & ? & ?)]. split_and!; try naive_solver. }
-    { intros [v' ?]. split_and!; try naive_solver. }
+    { intros [Hp (v' & dq' & Hm & Hval & Hinc)]. simpl in *.
+      split; first done. eexists _, _.
+      split_and!; try naive_solver.
+    }
+    { intros (? & ?). split; done. }
   Qed.
   Lemma gmap_view_both_validN n m k dq v :
     ✓{n} (gmap_view_auth (DfracOwn 1) m ⋅ gmap_view_frag k dq v) ↔
-       ✓ dq ∧ ∃ v', m !! k = Some v' ∧ ✓{n} v' ∧ (v ≼{n} v' ∨ v ≡{n}≡ v').
+     ∃ v' dq', m !! k = Some v' ∧ ✓{n} (dq', v') ∧ (Some (dq, v) ≼{n} Some (dq', v')).
   Proof. rewrite gmap_view_both_dfrac_validN. naive_solver done. Qed.
 
   Lemma gmap_view_both_dfrac_valid_discrete `{!CmraDiscrete V} dp m k dq v :
     ✓ (gmap_view_auth dp m ⋅ gmap_view_frag k dq v) ↔
-    ✓ dp ∧ ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (v ≼ v' ∨ v ≡ v').
+    ✓ dp ∧ ✓ dq ∧ ∃ v' dq', m !! k = Some v' ∧ ✓ (dq', v') ∧ (Some (dq, v) ≼ Some (dq', v')).
   Proof.
     rewrite /gmap_view_auth /gmap_view_frag.
     rewrite view_both_dfrac_valid. setoid_rewrite gmap_view_rel_lookup.
     split=>[[Hq Hm]|[Hq Hm]].
-    - split; first done. split.
-      + specialize (Hm 0%nat). naive_solver.
-      + destruct (Hm 0%nat) as (? & -> & ? & ? & ?).
-        exists x. split; first done.
-        rewrite cmra_discrete_included_iff discrete_iff cmra_discrete_valid_iff.
+    - split; first done.
+      split.
+      + specialize (Hm 0%nat). destruct Hm as (? & ? & ? & [Hdval Hvval] & Hinc).
+        rewrite Some_includedN in Hinc.
+        apply cmra_discrete_valid.
+        destruct Hinc as [[-> ?]|Hinc].
+        { naive_solver. }
+        rewrite pair_includedN in Hinc.
+        destruct Hinc as [Hinc ?].
+        eapply cmra_valid_included.
+        2:{ apply cmra_discrete_included_r; last done.
+            apply _. }
+        naive_solver.
+      + destruct (Hm 0%nat) as (? & ? & -> & ? & ?).
+        eexists _, _. split; first done.
+        rewrite cmra_discrete_included_iff cmra_discrete_valid_iff.
         done.
     - split; first done. intros n.
-      destruct Hm as [? (? & ? & ? & ?)].
-      exists x. split.
+      destruct Hm as [? (? & ? & ? & ? & ?)].
+      eexists _, _. split.
       + done.
-      + rewrite -cmra_discrete_included_iff -discrete_iff -cmra_discrete_valid_iff.
-        split_and!; auto.
+      + rewrite -cmra_discrete_included_iff -cmra_discrete_valid_iff.
+        split_and!; done.
   Qed.
 
   Lemma gmap_view_both_dfrac_valid_L `{!CmraDiscrete V} `{!LeibnizEquiv V} dp m k dq v :
     ✓ (gmap_view_auth dp m ⋅ gmap_view_frag k dq v) ↔
-    ✓ dp ∧ ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (v ≼ v' ∨ v = v').
-  Proof. setoid_rewrite <-(leibniz_equiv_iff (A:=V)).
-         apply gmap_view_both_dfrac_valid_discrete. Qed.
+    ✓ dp ∧ ✓ dq ∧  ∃ v' dq', m !! k = Some v' ∧ ✓ (dq', v') ∧ (Some (dq, v) ≼ Some (dq', v')).
+  Proof. apply gmap_view_both_dfrac_valid_discrete. Qed.
   Lemma gmap_view_both_valid `{!CmraDiscrete V} m k dq v :
     ✓ (gmap_view_auth (DfracOwn 1) m ⋅ gmap_view_frag k dq v) ↔
-    ✓ dq ∧  ∃ v', m !! k = Some v' ∧ ✓ v' ∧ (v ≼ v' ∨ v ≡ v').
+    ✓ dq ∧  ∃ v' dq', m !! k = Some v' ∧ ✓ (dq', v') ∧ (Some (dq, v) ≼ Some (dq', v')).
   Proof. rewrite gmap_view_both_dfrac_valid_discrete. naive_solver done. Qed.
   (* FIXME: Having a [valid_L] lemma is not consistent with [auth] and [view]; they
      have [inv_L] lemmas instead that just have an equality on the RHS. *)
@@ -344,20 +341,18 @@ Section lemmas.
     rewrite lookup_op. destruct (decide (j = k)) as [->|Hne].
     - assert (bf !! k = None) as Hbf.
       { destruct (bf !! k) as [[df' va']|] eqn:Hbf; last done.
-        specialize (Hrel _ _ Hbf). destruct Hrel as (v' & Hm & _).
+        specialize (Hrel _ _ Hbf). destruct Hrel as (v' & dq' & Hm & _).
         exfalso. rewrite Hm in Hfresh. done. }
       rewrite lookup_singleton Hbf right_id.
-      intros [= <- <-]. eexists.
+      intros [= <- <-]. eexists _,_.
       rewrite lookup_insert. split; first done.
       split.
-      { clear Hrel. revert n. rewrite -cmra_valid_validN. done. }
-      split; last done.
-      left.
-      by right.
+      { clear Hrel. revert n. instantiate (1:=dq). rewrite -cmra_valid_validN. done. }
+      done.
     - rewrite lookup_singleton_ne; last done.
       rewrite left_id=>Hbf.
       specialize (Hrel _ _ Hbf). destruct Hrel as (v' & ? & ? & ? & ?).
-      eexists.
+      eexists _,_.
       split; first rewrite lookup_insert_ne //.
       split; first done.
       rewrite /= in H2.
@@ -389,12 +384,19 @@ Section lemmas.
   Proof.
     apply view_update_dealloc=>n bf Hrel j [df va] Hbf.
     destruct (decide (j = k)) as [->|Hne].
-    - edestruct (Hrel k) as (v' & ? & ? & ? & Hdf).
+    - edestruct (Hrel k) as (v' & dq' & ? & Hval & Hdf).
       { rewrite lookup_op Hbf lookup_singleton -Some_op. done. }
-      exfalso. apply: dfrac_full_exclusive. apply Hdf.
+      exfalso. apply: dfrac_full_exclusive.
+      rewrite -pair_op Some_includedN in Hdf.
+      destruct Hdf as [Hdf|Hdf].
+      + destruct Hdf as [-> ?]. by destruct Hval.
+      + eapply cmra_valid_included.
+        { by destruct Hval. }
+        rewrite pair_includedN in Hdf.
+        by destruct Hdf.
     - edestruct (Hrel j) as (v' & ? & ? & Hm).
       { rewrite lookup_op lookup_singleton_ne // Hbf. done. }
-      exists v'.
+      eexists v', _.
       split; first rewrite lookup_delete_ne //.
       by rewrite /= in Hm.
   Qed.
@@ -450,19 +452,6 @@ Section lemmas.
     { rewrite map_Forall_lookup in Hvalid. eapply Hvalid. done. }
   Qed.
 
-  Print local_update.
-  Lemma gmap_view_update_frag m k dq v v' :
-    (∀ va, (va, v) ~l~> (va, v')) →
-    gmap_view_frag k dq v ~~>
-    gmap_view_frag k dq v'.
-  Proof.
-    intros Hup. apply view_update_frag=> a n bf Hrel j [df va] Hbf.
-    destruct (decide (j = k)) as [?|Hne]; first subst.
-    {
-
-    }
-  Qed.
-
   Lemma gmap_view_update_local m k dq mv v mv' v' :
     m !! k = Some mv →
     (mv, v) ~l~> (mv', v') →
@@ -472,29 +461,33 @@ Section lemmas.
     intros Hm Hup. apply view_update=> n bf Hrel j [df va] Hbf.
     destruct (decide (j = k)) as [?|Hne]; first subst.
     { (* prove the mapForall for k *)
-      exists mv'. rewrite lookup_insert. split; first done.
+      eexists mv', df. rewrite lookup_insert. split; first done.
       rewrite lookup_op lookup_singleton in Hbf.
       destruct (bf !! k) as [[? ?]|] eqn:HbfLookup.
       { (* case: k shows up in frame bf *)
         rewrite HbfLookup -Some_op /= in Hbf.
         injection Hbf as <- <-.
-        edestruct (Hrel k) as (mv2 & Hm' & ? & Hincl & Hdf).
+        edestruct (Hrel k) as (mv2 & dq2 & Hm' & Hval & Hincl).
         { by rewrite lookup_op lookup_singleton HbfLookup. }
         rewrite Hm' in Hm. injection Hm as ->.
         simpl in *.
-        destruct Hincl as [[bf']|].
+        rewrite -pair_op Some_includedN in Hincl.
+        destruct Hincl as [Heq|[bf']].
+        { (* case: frag val ≡ auth val *)
+          edestruct (Hup n (Some c0)).
+          { by destruct Hval. }
+          { by destruct Heq. }
+          simpl in *.
+          split_and!; auto.
+          { split; last done. simpl. destruct Heq as [-> ?]. by destruct Hval. }
+          { rewrite Some_includedN. by left. }
+        }
         { (* case: frag val ≼ auth val *)
           edestruct (Hup n (Some (c0 ⋅ bf'))); first done.
           { by rewrite /= assoc. }
           simpl in *.
           split_and!; auto. left. exists (bf').
           by rewrite -assoc.
-        }
-        { (* case: frag val ≡ auth val *)
-          edestruct (Hup n (Some c0)); first done.
-          { done. }
-          simpl in *.
-          split_and!; auto.
         }
       }
       { (* case: k does not show up in frame bf *)
