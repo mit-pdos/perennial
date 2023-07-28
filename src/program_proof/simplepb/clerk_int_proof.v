@@ -270,6 +270,10 @@ Proof.
   iModIntro.
   iDestruct (big_sepL2_length with "[$]") as %?.
   wp_pures.
+  wp_apply wp_RandomUint64. iIntros (?) "_".
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_storeField.
   iApply "HΦ".
   repeat iExists _.
   iModIntro. iFrame "∗#%".

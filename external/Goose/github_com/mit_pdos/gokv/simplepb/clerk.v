@@ -36,6 +36,7 @@ Definition Make: val :=
       else
         struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config");;
         Break));;
+    struct.storeF Clerk "preferredReplica" "ck" ((rand.RandomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")));;
     "ck".
 
 (* will retry forever *)
