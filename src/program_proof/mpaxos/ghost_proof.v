@@ -181,7 +181,7 @@ Proof.
                {[ st.(mp_epoch) := Cinr (◯ML _) ]}
               with "Hprop") as "#Hprop_lb".
   {
-    apply singleton_mono.
+    apply singleton_included_mono.
     apply Cinr_included.
     apply mono_list_included.
   }
@@ -376,7 +376,7 @@ Proof.
                {[ st.(mp_epoch) := (◯ML _) ]}
               with "Hacc") as "#Hacc_lb".
   {
-    apply singleton_mono.
+    apply singleton_included_mono.
     apply mono_list_included.
   }
 
@@ -433,7 +433,7 @@ Proof.
                {[ epoch' := (◯ML _) ]}
               with "Hacc_lb") as "$".
   {
-    apply singleton_mono.
+    apply singleton_included_mono.
     apply mono_list_lb_mono.
     done.
   }
@@ -469,7 +469,7 @@ Proof.
     iModIntro.
     iDestruct (own_mono _ _ {[ epoch' := (◯ML _) ]}
                 with "Hacc") as "#Hacc_lb2".
-    { apply singleton_mono. apply mono_list_included. }
+    { apply singleton_included_mono. apply mono_list_included. }
     unfold own_replica_ghost.
     simpl.
     destruct (decide _); last first.
@@ -514,7 +514,7 @@ Proof.
     replace st.(mp_epoch) with (epoch') by word.
     iDestruct (own_mono _ _ {[ epoch' := (◯ML _) ]}
                 with "Hacc") as "#Hacc_lb2".
-    { apply singleton_mono. apply mono_list_included. }
+    { apply singleton_included_mono. apply mono_list_included. }
 
     unfold own_replica_ghost.
     simpl.
@@ -963,8 +963,7 @@ Proof.
   iFrame "#".
   iDestruct (own_mono with "Hprop") as "$".
   {
-    apply singleton_included.
-    right.
+    apply singleton_included_mono.
     apply Cinr_included.
     apply mono_list_included.
   }

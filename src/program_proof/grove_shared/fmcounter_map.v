@@ -52,7 +52,7 @@ Section fmcounter_map_props.
     k fm[[γ]]↦{q} n ⊢@{_} k fm[[γ]]≥ n.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb.
-    apply own_mono. apply singleton_included. right.
+    apply own_mono. apply singleton_included_mono.
     apply mono_nat_included.
   Qed.
 
@@ -89,7 +89,7 @@ Section fmcounter_map_props.
     k fm[[γ]]≥ n2 -∗ k fm[[γ]]≥ n1.
   Proof.
     rewrite /fmcounter_map_own /fmcounter_map_lb. iIntros (Hn).
-    iApply own_mono. apply singleton_included. right.
+    iApply own_mono. apply singleton_included_mono.
     apply mono_nat_lb_mono; auto with lia.
   Qed.
 

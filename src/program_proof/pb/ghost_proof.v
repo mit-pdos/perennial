@@ -156,14 +156,14 @@ Lemma accepted_witness γ cn r l :
   accepted_ptsto γ cn r l -∗ accepted_lb γ cn r l.
 Proof.
   iApply own_mono.
-  apply singleton_mono, mono_list_included.
+  apply singleton_included_mono, mono_list_included.
 Qed.
 
 Lemma accepted_lb_monotonic γ cn r l l':
   l ⪯ l' → accepted_lb γ cn r l' -∗ accepted_lb γ cn r l.
 Proof.
   iIntros (Hll'). iApply own_mono.
-  apply singleton_mono, mono_list_lb_mono.
+  apply singleton_included_mono, mono_list_lb_mono.
   done.
 Qed.
 
@@ -194,7 +194,7 @@ Lemma proposal_lb_monotonic γ cn l l' :
 Proof.
   intros Hle.
   iApply own_mono.
-  apply singleton_mono. apply mono_list_lb_mono.
+  apply singleton_included_mono. apply mono_list_lb_mono.
   done.
 Qed.
 

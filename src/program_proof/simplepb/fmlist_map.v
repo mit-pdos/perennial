@@ -232,7 +232,7 @@ Section lemmas.
     k ⤳l[γ]⪰ l.
   Proof.
     unseal. iApply (own_mono).
-    rewrite singleton_included. right.
+    apply singleton_included_mono.
     apply mono_list_included.
   Qed.
 
@@ -242,7 +242,7 @@ Section lemmas.
     k ⤳l[γ]⪰ l'.
   Proof.
     intros. unseal. iApply (own_mono).
-    rewrite singleton_included. right.
+    apply singleton_included_mono.
     by apply mono_list_lb_mono.
   Qed.
 

@@ -259,7 +259,7 @@ Lemma vchain_witness γ q k vchain :
   ptuple_auth γ q k vchain -∗ ptuple_lb γ k vchain.
 Proof.
   iApply own_mono.
-  apply singleton_mono, mono_list_included.
+  apply singleton_included_mono, mono_list_included.
 Qed.
 
 Lemma ptuple_prefix γ q k l l' :
@@ -329,7 +329,7 @@ Lemma ltuple_witness γ k l :
   ltuple_auth γ k l -∗ ltuple_lb γ k l.
 Proof.
   iApply own_mono.
-  apply singleton_mono, mono_list_included.
+  apply singleton_included_mono, mono_list_included.
 Qed.
 
 Lemma ltuple_prefix γ k l l' :
@@ -430,7 +430,7 @@ Lemma site_min_tid_lb_weaken γ (sid : u64) tidN tidN' :
 Proof.
   iIntros "%Hle Hlb".
   iApply (own_mono with "Hlb").
-  rewrite singleton_included. right.
+  apply singleton_included_mono.
   apply mono_nat_lb_mono.
   done.
 Qed.
@@ -451,7 +451,7 @@ Lemma site_min_tid_witness {γ sid tid} :
   site_min_tid_lb γ sid tid.
 Proof.
   iApply own_mono.
-  apply singleton_mono, mono_nat_included.
+  apply singleton_included_mono, mono_nat_included.
 Qed.
 
 Lemma min_tid_lb_zero γ :
