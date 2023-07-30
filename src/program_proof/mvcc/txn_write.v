@@ -5,12 +5,9 @@ From Perennial.program_proof.mvcc Require Import
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-(*****************************************************************)
-(* func (txn *Txn) Put(key uint64, val string)                   *)
-(*****************************************************************)
-Theorem wp_txn__Put txn tid view (k : u64) dbv v γ τ :
+Theorem wp_txn__Write txn tid view (k : u64) dbv v γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv }}}
-    Txn__Put #txn #k #(LitString v)
+    Txn__Write #txn #k #(LitString v)
   {{{ RET #();
       own_txn txn tid view γ τ ∗ txnmap_ptsto τ k (Value v)
   }}}.
@@ -18,13 +15,13 @@ Proof.
   iIntros (Φ) "[Htxn Hptsto] HΦ".
   iNamed "Htxn".
   iNamed "Himpl".
+  
+  (*@ func (txn *Txn) Write(key uint64, val string) {                         @*)
+  (*@     wrbuf := txn.wrbuf                                                  @*)
+  (*@     wrbuf.Put(key, val)                                                 @*)
+  (*@ }                                                                       @*)
   wp_call.
   iDestruct (txnmap_lookup with "Htxnmap Hptsto") as "%Hlookup".
-  
-  (***********************************************************)
-  (* wrbuf := txn.wrbuf                                      *)
-  (* wrbuf.Put(key, val)                                     *)
-  (***********************************************************)
   wp_loadField.
   wp_pures.
   wp_apply (wp_wrbuf__Put with "HwrbufRP").

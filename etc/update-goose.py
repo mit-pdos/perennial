@@ -292,7 +292,8 @@ def main():
     if mvcc_dir is not None:
         run_goose(
             mvcc_dir,
-            "./txn",
+            "./vmvcc",
+            "./txnsite",
             "./index",
             "./tuple",
             "./wrbuf",
@@ -300,7 +301,6 @@ def main():
             "./config",
             "./common",
             "./examples",
-            # "./cfmutex",
         )
 
     if marshal_dir is not None:

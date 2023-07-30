@@ -2,8 +2,8 @@
 From iris.base_logic Require Import mono_nat.
 From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv
-     txnmgr_repr txnmgr_mk txnmgr_new
-     txn_repr txn_get txn_put txn_do_txn.
+     db_repr db_mk db_new_txn
+     txn_repr txn_read txn_write txn_run.
 From Goose.github_com.mit_pdos.vmvcc Require Import examples.
 
 Section program.
@@ -526,13 +526,13 @@ Definition mvcc_inv_app γ α : iProp Σ :=
 (*****************************************************************)
 (* func InitializeCounterData(txnmgr *txn.TxnMgr)                *)
 (*****************************************************************)
-Theorem wp_InitializeCounterData (txnmgr : loc) γ :
-  is_txnmgr txnmgr γ -∗
+Theorem wp_InitializeCounterData (db : loc) γ :
+  is_db db γ -∗
   {{{ dbmap_ptstos γ 1 (gset_to_gmap Nil keys_all) }}}
-    InitializeCounterData #txnmgr
+    InitializeCounterData #db
   {{{ α, RET #(); mvcc_inv_app γ α }}}.
 Proof.
-  iIntros "#Hmgr" (Φ) "!> Hdbpts HΦ".
+  iIntros "#Hdb" (Φ) "!> Hdbpts HΦ".
   wp_call.
 
   (***********************************************************)
@@ -544,7 +544,7 @@ Proof.
   (* for !t.DoTxn(body) {                                    *)
   (* }                                                       *)
   (***********************************************************)
-  wp_apply (wp_txnMgr__New with "Hmgr").
+  wp_apply (wp_DB__NewTxn with "Hdb").
   iIntros (txn) "Htxn".
   wp_pures.
   set P := (λ (b : bool),
@@ -641,7 +641,7 @@ Qed.
 Theorem wp_InitCounter :
   {{{ True }}}
     InitCounter #()
-  {{{ γ α (mgr : loc), RET #mgr; is_txnmgr mgr γ ∗ mvcc_inv_app γ α }}}.
+  {{{ γ α (db : loc), RET #db; is_db db γ ∗ mvcc_inv_app γ α }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
@@ -651,10 +651,10 @@ Proof.
   (* InitializeCounterData(mgr)                              *)
   (* return mgr                                              *)
   (***********************************************************)
-  wp_apply wp_MkTxnMgr.
-  iIntros (γ mgr) "[#Hmgr Hdbpts]".
+  wp_apply wp_MkDB.
+  iIntros (γ db) "[#Hdb Hdbpts]".
   wp_pures.
-  wp_apply (wp_InitializeCounterData with "Hmgr [$Hdbpts]").
+  wp_apply (wp_InitializeCounterData with "Hdb [$Hdbpts]").
   iIntros (α) "#Hinv".
   wp_pures.
   iModIntro.
@@ -666,21 +666,21 @@ Qed.
  * The purpose of this example is to show [Increment] *can* be called
  * under invariant [mvcc_inv_app].
  *)
-Theorem wp_CallIncrement (mgr : loc) γ α :
+Theorem wp_CallIncrement (db : loc) γ α :
   mvcc_inv_app γ α -∗
-  is_txnmgr mgr γ -∗
+  is_db db γ -∗
   {{{ True }}}
-    CallIncrement #mgr
+    CallIncrement #db
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
+  iIntros "#Hinv #Hdb" (Φ) "!> _ HΦ".
   wp_call.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)
   (***********************************************************)
-  wp_apply (wp_txnMgr__New with "Hmgr").
-  iNamed "Hmgr".
+  wp_apply (wp_DB__NewTxn with "Hdb").
+  iNamed "Hdb".
   iIntros (txn) "Htxn".
   wp_pures.
 
@@ -723,21 +723,21 @@ Qed.
  * The purpose of this example is to show [Decrement] *cannot* be
  * called under invariant [mvcc_inv_app].
  *)
-Theorem wp_CallDecrement (mgr : loc) γ α :
+Theorem wp_CallDecrement (db : loc) γ α :
   mvcc_inv_app γ α -∗
-  is_txnmgr mgr γ -∗
+  is_db db γ -∗
   {{{ True }}}
-    CallDecrement #mgr
+    CallDecrement #db
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
+  iIntros "#Hinv #Hdb" (Φ) "!> _ HΦ".
   wp_call.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)
   (***********************************************************)
-  wp_apply (wp_txnMgr__New with "Hmgr").
-  iNamed "Hmgr".
+  wp_apply (wp_DB__NewTxn with "Hdb").
+  iNamed "Hdb".
   iIntros (txn) "Htxn".
   wp_pures.
 
@@ -768,21 +768,21 @@ Abort.
  * [mvcc_inv_app], the counter value strictly increases when the txn
  * successfully commits.
  *)
-Theorem wp_CallIncrementFetch (mgr : loc) γ α :
+Theorem wp_CallIncrementFetch (db : loc) γ α :
   mvcc_inv_app γ α -∗
-  is_txnmgr mgr γ -∗
+  is_db db γ -∗
   {{{ True }}}
-    CallIncrementFetch #mgr
+    CallIncrementFetch #db
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Hinv #Hmgr" (Φ) "!> _ HΦ".
+  iIntros "#Hinv #Hdb" (Φ) "!> _ HΦ".
   wp_call.
 
   (***********************************************************)
   (* txn := mgr.New()                                        *)
   (***********************************************************)
-  wp_apply (wp_txnMgr__New with "Hmgr").
-  iNamed "Hmgr".
+  wp_apply (wp_DB__NewTxn with "Hdb").
+  iNamed "Hdb".
   iIntros (txn) "Htxn".
   wp_pures.
 

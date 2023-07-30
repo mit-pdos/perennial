@@ -27,7 +27,7 @@ Theorem wp_txn__DoTxn
   (∀ r w, (Decision (Q r w))) ->
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body body txn tid r P Q Rc Ra γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      Txn__DoTxn #txn body @ ↑mvccN
+      Txn__Run #txn body @ ↑mvccN
     <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ ∗ if ok then Rc r w else Ra r }}}.
 Proof.
@@ -35,23 +35,21 @@ Proof.
   iIntros (Φ) "[Htxn Hbody] HAU".
   wp_call.
 
-  (***********************************************************)
-  (* txn.begin()                                             *)
-  (* cmt := body(txn)                                        *)
-  (* if !cmt {                                               *)
-  (*     txn.abort()                                         *)
-  (*     return false                                        *)
-  (* }                                                       *)
-  (*                                                         *)
-  (* ok := txn.acquire()                                     *)
-  (* if !ok {                                                *)
-  (*     txn.abort()                                         *)
-  (*     return false                                        *)
-  (* }                                                       *)
-  (*                                                         *)
-  (* txn.commit()                                            *)
-  (* return true                                             *)
-  (***********************************************************)
+  (*@ func (txn *Txn) Run(body func(txn *Txn) bool) bool {                    @*)
+  (*@     txn.begin()                                                         @*)
+  (*@     cmt := body(txn)                                                    @*)
+  (*@     if !cmt {                                                           @*)
+  (*@         txn.abort()                                                     @*)
+  (*@         return false                                                    @*)
+  (*@     }                                                                   @*)
+  (*@     ok := txn.acquire()                                                 @*)
+  (*@     if !ok {                                                            @*)
+  (*@         txn.abort()                                                     @*)
+  (*@         return false                                                    @*)
+  (*@     }                                                                   @*)
+  (*@     txn.commit()                                                        @*)
+  (*@     return true                                                         @*)
+  (*@ }                                                                       @*)
   iAssert (∃ p, mvcc_inv_sst γ p)%I with "[Htxn]" as (p) "#Hinv".
   { iNamed "Htxn". eauto with iFrame. }
   wp_apply (wp_txn__begin with "Htxn").
@@ -463,7 +461,7 @@ Theorem wp_txn__DoTxn_xres
   (∀ r w, (Decision (Q r w))) ->
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_xres body txn tid r P Q γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      Txn__DoTxn #txn body @ ↑mvccN
+      Txn__Run #txn body @ ↑mvccN
     <<< ∃∃ (ok : bool) (w : dbmap), if ok then ⌜Q r w⌝ ∗ dbmap_ptstos γ 1 w else dbmap_ptstos γ 1 r >>>
     {{{ RET #ok; own_txn_uninit txn γ }}}.
 Proof.
@@ -513,7 +511,7 @@ Theorem wp_txn__DoTxn_readonly
         txn (body : val) (P : dbmap -> Prop) (Rc Ra : dbmap -> iProp Σ) γ :
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_readonly body txn tid r P Rc Ra γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      Txn__DoTxn #txn body @ ↑mvccN
+      Txn__Run #txn body @ ↑mvccN
     <<< dbmap_ptstos γ 1 r >>>
     {{{ (ok : bool), RET #ok; own_txn_uninit txn γ ∗ if ok then Rc r else Ra r }}}.
 Proof.
@@ -566,7 +564,7 @@ Theorem wp_txn__DoTxn_xres_readonly
         txn (body : val) (P : dbmap -> Prop) γ :
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_xres_readonly body txn tid r P γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
-      Txn__DoTxn #txn body @ ↑mvccN
+      Txn__Run #txn body @ ↑mvccN
     <<< dbmap_ptstos γ 1 r >>>
     {{{ (ok : bool), RET #ok; own_txn_uninit txn γ }}}.
 Proof.

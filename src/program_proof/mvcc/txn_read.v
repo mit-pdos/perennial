@@ -31,38 +31,35 @@ End lemma.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-(*****************************************************************)
-(* func (txn *Txn) Get(key uint64) (string, bool)                *)
-(*****************************************************************)
-Theorem wp_txn__Get txn tid view (k : u64) dbv γ τ :
+Theorem wp_txn__Read txn tid view (k : u64) dbv γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv }}}
-    Txn__Get #txn #k
+    Txn__Read #txn #k
   {{{ (v : string) (found : bool), RET (#(LitString v), #found);
       own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
   }}}.
 Proof.
+  (*@ func (txn *Txn) Read(key uint64) (string, bool) {                       @*)
   iIntros (Φ) "[Htxn Hptsto] HΦ".
   (* We need this to obtain a lb on logical tuple of key [k]. *)
   iDestruct (own_txn_txnmap_ptsto_dom with "Htxn Hptsto") as "%Hindom".
   iNamed "Htxn".
   iNamed "Himpl".
   wp_call.
-
-  (***********************************************************)
-  (* wrbuf := txn.wrbuf                                      *)
-  (* valb, wr, found := wrbuf.Lookup(key)                    *)
-  (***********************************************************)
+  
+  (*@     // First try to find @key in the local write set.                   @*)
+  (*@     wrbuf := txn.wrbuf                                                  @*)
+  (*@     valb, wr, found := wrbuf.Lookup(key)                                @*)
+  (*@                                                                         @*)
   wp_loadField.
   wp_pures.
   wp_apply (wp_wrbuf__Lookup with "HwrbufRP").
   iIntros (v d ok) "[HwrbufRP %Hlookup]".
   wp_pures.
 
-  (***********************************************************)
-  (* if found {                                              *)
-  (*     return valb, wr                                     *)
-  (* }                                                       *)
-  (***********************************************************)
+  (*@     if found {                                                          @*)
+  (*@         return valb, wr                                                 @*)
+  (*@     }                                                                   @*)
+  (*@                                                                         @*)
   unfold spec_wrbuf__Lookup in Hlookup.
   wp_if_destruct.
   { wp_pures.
@@ -77,32 +74,30 @@ Proof.
     by iFrame.
   }
 
-  (***********************************************************)
-  (* idx := txn.idx                                          *)
-  (* tuple := idx.GetTuple(key)                              *)
-  (***********************************************************)
+  (*@     idx := txn.idx                                                      @*)
+  (*@     tuple := idx.GetTuple(key)                                          @*)
+  (*@                                                                         @*)
   wp_loadField.
   wp_pures.
   wp_apply (wp_index__GetTuple with "HidxRI").
   iIntros (tuple) "#HtupleRI".
   wp_pures.
 
-  (***********************************************************)
-  (* tuple.ReadWait(txn.tid)                                 *)
-  (***********************************************************)
+  (*@     tuple.ReadWait(txn.tid)                                             @*)
+  (*@                                                                         @*)
   wp_loadField.
   wp_apply (wp_tuple__ReadWait with "HtupleRI").
   iIntros (owned vchain) "(Htuple & HtupleOwn & Hptuple & %Hwait)".
   wp_pures.
-
-  (***********************************************************)
-  (* proph.ResolveRead(txn.txnMgr.p, txn.tid, key)           *)
-  (***********************************************************)
-  do 3 wp_loadField.
+  
+  (*@     trusted_proph.ResolveRead(txn.proph, txn.tid, key)                  @*)
+  (*@                                                                         @*)
+  do 2 wp_loadField.
   wp_apply (wp_ResolveRead γ); first auto.
   iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
+  iRename "Hproph" into "Hp".
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
@@ -191,9 +186,8 @@ Proof.
   iIntros "_".
   wp_pures.
 
-  (***********************************************************)
-  (* val, found := tuple.ReadVersion(txn.tid)                *)
-  (***********************************************************)
+  (*@     val, found := tuple.ReadVersion(txn.tid)                            @*)
+  (*@                                                                         @*)
   wp_loadField.
   iDestruct (is_tuple_invgc with "HtupleRI") as "#Hinvgc".
   wp_apply (wp_tuple__ReadVersion with "[$Hactive $Htuple $HtupleOwn Hptuple]").
@@ -213,9 +207,8 @@ Proof.
   iMod ("HinvC" with "[Hproph Hm Hts Hkeys Hcmt Hnca Hfa Hfci Hfcc]") as "_".
   { eauto 20 with iFrame. }
 
-  (***********************************************************)
-  (* return val, found                                       *)
-  (***********************************************************)
+  (*@     return val, found                                                   @*)
+  (*@                                                                         @*)
   iModIntro.
   iApply "HΦ".
   iSplitR "Hptsto".
@@ -223,8 +216,8 @@ Proof.
     iFrame "Hltuples Htxnmap Hwrbuf HwrbufRP".
     iSplitL; last done.
     do 5 iExists _.
-    iFrame "Hactive Htid Hsid".
-    iFrame "Hidx HidxRI Htxnmgr HtxnmgrRI Hp Hinv".
+    iFrame "Hactive Htid".
+    iFrame "Hidx HidxRI Hsite HsiteRI Hp Hinv".
     done.
   }
   by iFrame "Hptsto".

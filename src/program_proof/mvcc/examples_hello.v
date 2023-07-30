@@ -2,8 +2,8 @@
 From iris.base_logic Require Import mono_nat.
 From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv
-     txnmgr_repr txnmgr_mk txnmgr_new txnmgr_activate_gc
-     txn_repr txn_get txn_put txn_delete txn_do_txn.
+     db_repr db_mk db_new_txn db_activate_gc
+     txn_repr txn_read txn_write txn_delete txn_run.
 From Goose.github_com.mit_pdos.vmvcc Require Import examples.
 From Perennial.goose_lang Require Import grove_ffi_adequacy.
 
@@ -37,9 +37,9 @@ Proof.
   (* txn.Delete(0)                                           *)
   (* return true                                             *)
   (***********************************************************)
-  wp_apply (wp_txn__Put with "[$Htxn $Hpt]").
+  wp_apply (wp_txn__Write with "[$Htxn $Hpt]").
   iIntros "[Htxn Hpt]".
-  wp_apply (wp_txn__Get with "[$Htxn $Hpt]").
+  wp_apply (wp_txn__Read with "[$Htxn $Hpt]").
   iIntros (u found) "[Htxn [Hpt %Hu]]".
   wp_pures.
   wp_apply (wp_txn__Delete with "[$Htxn $Hpt]").
@@ -129,12 +129,12 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   (* txn := db.New()                                         *)
   (* Hello(txn)                                              *)
   (***********************************************************)
-  wp_apply wp_MkTxnMgr.
-  iIntros (γ mgr) "[#Hmgr Hdbpts]".
+  wp_apply wp_MkDB.
+  iIntros (γ db) "[#Hdb Hdbpts]".
   wp_pures.
-  wp_apply (wp_txnMgr__ActivateGC with "Hmgr").
+  wp_apply (wp_DB__ActivateGC with "Hdb").
   wp_pures.
-  wp_apply (wp_txnMgr__New with "Hmgr").
+  wp_apply (wp_DB__NewTxn with "Hdb").
   iIntros (txn) "Htxn".
   wp_pures.
   wp_apply (wp_Hello with "Htxn").

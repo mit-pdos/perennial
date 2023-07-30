@@ -1,6 +1,6 @@
 From Perennial.program_proof.mvcc Require Import
-     txn_prelude txn_repr tuple_repr
-     txnmgr_deactivate
+     txn_prelude txn_repr txnsite_repr tuple_repr
+     txnsite_deactivate
      wrbuf_repr wrbuf_update_tuples
      proph_proof.
 
@@ -31,17 +31,18 @@ Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
   wp_call.
 
-  (***********************************************************)
-  (* proph.ResolveCommit(txn.txnMgr.p, txn.tid, txn.wrbuf)   *)
-  (***********************************************************)
+  (*@ func (txn *Txn) commit() {                                              @*)
+  (*@     trusted_proph.ResolveCommit(txn.proph, txn.tid, txn.wrbuf)          @*)
+  (*@                                                                         @*)
   iNamed "Htxn".
   iNamed "Himpl".
   iDestruct (own_wrbuf_mods_tpls_dom with "HwrbufRP") as "%Hdoms".
-  do 4 wp_loadField.
+  do 3 wp_loadField.
   wp_apply (wp_ResolveCommit with "[$HwrbufRP]"); first eauto.
   iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
+  iRename "Hproph" into "Hp".
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
@@ -228,17 +229,18 @@ Proof.
   iDestruct "H" as "(Hfrag & Htxnps & %Hdom)".
   wp_call.
 
-  (***********************************************************)
-  (* proph.ResolveCommit(txn.txnMgr.p, txn.tid, txn.wrbuf)   *)
-  (***********************************************************)
+  (*@ func (txn *Txn) commit() {                                              @*)
+  (*@     trusted_proph.ResolveCommit(txn.proph, txn.tid, txn.wrbuf)          @*)
+  (*@                                                                         @*)
   iNamed "Htxn".
   iNamed "Himpl".
   iDestruct (own_wrbuf_mods_tpls_dom with "HwrbufRP") as "%Hdoms".
-  do 4 wp_loadField.
+  do 3 wp_loadField.
   wp_apply (wp_ResolveCommit with "[$HwrbufRP]"); first eauto.
   iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
+  iRename "Hproph" into "Hp".
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
@@ -296,22 +298,22 @@ Proof.
   symmetry in Hdom.
   pose proof (Map.map_subset_dom_eq _ _ _ _ Hdom Hw) as Heq.
 
-  (***********************************************************)
-  (* txn.wrbuf.UpdateTuples(txn.tid)                         *)
-  (***********************************************************)
+  (*@     txn.wrbuf.UpdateTuples(txn.tid)                                     @*)
+  (*@                                                                         @*)
   do 2 wp_loadField.
   wp_apply (wp_wrbuf__UpdateTuples with "[$HwrbufRP Htuples $Hactive]").
   { unfold own_tuples_updated. by rewrite Etid. }
   iIntros "[HwrbufRP Hactive]".
   wp_pures.
-
-  (***********************************************************)
-  (* txn.txnMgr.deactivate(txn.sid, txn.tid)                 *)
-  (***********************************************************)
-  do 3 wp_loadField.
-  wp_apply (wp_txnMgr__deactivate with "HtxnmgrRI Hactive").
+  
+  (*@     txn.site.Deactivate(txn.tid)                                        @*)
+  (*@ }                                                                       @*)
+  do 2 wp_loadField.
+  wp_apply (wp_TxnSite__Deactivate with "HsiteRI Hactive").
   wp_pures.
   iApply "HΦ".
+  unfold own_txn_uninit.
+  iModIntro.
   eauto 20 with iFrame.
 Qed.
 

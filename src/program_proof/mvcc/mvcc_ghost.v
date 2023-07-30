@@ -150,6 +150,7 @@ Definition site_active_tids_frag_def γ (sid : u64) tid : iProp Σ :=
 Definition site_active_tids_frag γ (sid : u64) tid : iProp Σ :=
   site_active_tids_frag_def γ.(mvcc_sid_tids) sid tid.
 
+(* TODO: should be able to remove the second conjunct. *)
 Definition active_tid γ (tid sid : u64) : iProp Σ :=
   (site_active_tids_frag γ sid (int.nat tid) ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜(0 < int.Z tid < 2 ^ 64 - 1)⌝ .
 

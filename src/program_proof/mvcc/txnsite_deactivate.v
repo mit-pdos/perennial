@@ -1,4 +1,5 @@
-From Perennial.program_proof.mvcc Require Import txn_prelude txnmgr_repr.
+From Perennial.program_proof.mvcc Require Import txnsite_prelude.
+From Perennial.program_proof.mvcc Require Import txnsite_repr.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -228,71 +229,49 @@ Proof.
   by rewrite Exy.
 Qed.
 
-(*****************************************************************)
-(* func (txnMgr *TxnMgr) deactivate(sid uint64, tid uint64)      *)
-(*****************************************************************)
-Theorem wp_txnMgr__deactivate txnmgr (sid tid : u64) γ :
-  is_txnmgr txnmgr γ -∗
+Theorem wp_TxnSite__Deactivate site (sid tid : u64) γ :
+  is_txnsite site sid γ -∗
   {{{ active_tid γ tid sid }}}
-    TxnMgr__deactivate #txnmgr #sid #tid
+    TxnSite__Deactivate #site #tid
   {{{ RET #(); True }}}.
 Proof.
-  iIntros "#Htxnmgr" (Φ) "!> Hactive HΦ".
-  iNamed "Htxnmgr".
+  iIntros "#Hsite" (Φ) "!> Hactive HΦ".
+  iNamed "Hsite".
   wp_call.
-
-  (***********************************************************)
-  (* site := txnMgr.sites[sid]                               *)
-  (***********************************************************)
-  wp_loadField.
-  iMod (readonly_load with "HsitesS") as (q) "HsitesS'".
-  iDestruct "Hactive" as "[[HactiveFrag %Hbound] _]".
-  list_elem sitesL (int.nat sid) as site.
-  wp_apply (wp_SliceGet with "[$HsitesS']").
-  { iPureIntro.
-    rewrite list_lookup_fmap.
-    by rewrite Hsite_lookup.
-  }
-  iIntros "[HsitesS' %HsiteVT]".
-  wp_pures.
-
-  (***********************************************************)
-  (* site.latch.Lock()                                       *)
-  (***********************************************************)
-  iDestruct (big_sepL_lookup with "HsitesRP") as "HsiteRP"; first done.
-  iClear (latch) "Hlatch Hlock".
-  iNamed "HsiteRP".
+  
+  (*@ func (site *TxnSite) Deactivate(tid uint64) {                           @*)
+  (*@     // Require @site.tids contains @tid.                                @*)
+  (*@     site.latch.Lock()                                                   @*)
+  (*@                                                                         @*)
   wp_loadField.
   wp_apply (acquire_spec with "[$Hlock]").
   iIntros "[Hlocked HsiteOwn]".
-  replace (U64 (Z.of_nat _)) with sid by word. 
   iNamed "HsiteOwn".
   iDestruct (own_slice_sz with "HactiveL") as "%HactiveSz".
   rewrite fmap_length in HactiveSz.
   wp_pures.
 
-  (*****************************************************************)
-  (* idx := findTID(tid, site.tidsActive)                          *)
-  (*****************************************************************)
+  (*@     // Remove @tid from the set of active transactions.                 @*)
+  (*@     idx := findTID(tid, site.tids)                                      @*)
+  (*@                                                                         @*)
   wp_loadField.
+  iDestruct "Hactive" as "[[HactiveFrag _] _]".
   iDestruct (site_active_tids_elem_of with "HactiveAuth HactiveFrag") as "%Helem".
   rewrite -HactiveLM elem_of_list_to_set in Helem.
   apply u64_elem_of_fmap in Helem.
   wp_apply (wp_findTID tid _ tidsactiveL with "[$HactiveL]"); first done.
   iIntros (pos) "[HactiveL %Hlookup]".
   wp_pures.
-  
-  (*****************************************************************)
-  (* swapWithEnd(site.tidsActive, idx)                             *)
-  (*****************************************************************)
+
+  (*@     swapWithEnd(site.tids, idx)                                         @*)
+  (*@                                                                         @*)
   wp_loadField.
   wp_apply (wp_swapWithEnd with "[HactiveL]"); first by iFrame.
   iIntros (tids) "[HactiveL %Hperm]".
   wp_pures.
-  
-  (*****************************************************************)
-  (* site.tidsActive = site.tidsActive[:len(site.tidsActive) - 1]  *)
-  (*****************************************************************)
+
+  (*@     site.tids = site.tids[:len(site.tids) - 1]                          @*)
+  (*@                                                                         @*)
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_pures.
@@ -324,10 +303,9 @@ Proof.
   }
   iMod ("HinvgcC" with "[HinvgcO]") as "_"; first done.
   iModIntro.
-  
-  (*****************************************************************)
-  (* site.latch.Unlock()                                           *)
-  (*****************************************************************)
+
+  (*@     site.latch.Unlock()                                                 @*)
+  (*@ }                                                                       @*)
   wp_apply (release_spec with "[-HΦ]").
   { iFrame "Hlock Hlocked".
     iNext.

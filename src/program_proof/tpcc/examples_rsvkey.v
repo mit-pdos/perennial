@@ -1,7 +1,7 @@
 From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv
-     txnmgr_repr txnmgr_mk txnmgr_new
-     txn_repr txn_get txn_put txn_do_txn.
+     db_repr db_mk db_new_txn
+     txn_repr txn_read txn_write txn_run.
 From Goose.github_com.mit_pdos.vmvcc Require Import examples.
 
 Section program.

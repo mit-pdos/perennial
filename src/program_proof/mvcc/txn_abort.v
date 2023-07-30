@@ -1,6 +1,6 @@
 From Perennial.program_proof.mvcc Require Import
      txn_prelude txn_repr
-     txnmgr_deactivate proph_proof.
+     txnsite_deactivate proph_proof.
 
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
@@ -19,16 +19,17 @@ Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
   wp_call.
 
-  (***********************************************************)
-  (* proph.ResolveAbort(txn.txnMgr.p, txn.tid)               *)
-  (***********************************************************)
+  (*@ func (txn *Txn) abort() {                                               @*)
+  (*@     trusted_proph.ResolveAbort(txn.proph, txn.tid)                      @*)
+  (*@                                                                         @*)
   iNamed "Htxn".
   iNamed "Himpl".
-  do 3 wp_loadField.
+  do 2 wp_loadField.
   wp_apply (wp_ResolveAbort); first auto.
   iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
+  iRename "Hproph" into "Hp".
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
@@ -84,16 +85,17 @@ Proof.
   iIntros (Φ) "[Htxn Hfrag] HΦ".
   wp_call.
 
-  (***********************************************************)
-  (* proph.ResolveAbort(txn.txnMgr.p, txn.tid)               *)
-  (***********************************************************)
+  (*@ func (txn *Txn) abort() {                                               @*)
+  (*@     trusted_proph.ResolveAbort(txn.proph, txn.tid)                      @*)
+  (*@                                                                         @*)
   iNamed "Htxn".
   iNamed "Himpl".
-  do 3 wp_loadField.
+  do 2 wp_loadField.
   wp_apply (wp_ResolveAbort); first auto.
   iInv "Hinv" as "> HinvO" "HinvC".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
+  iRename "Hproph" into "Hp".
   iNamed "HinvO".
   iExists future.
   iFrame "Hproph".
@@ -106,16 +108,15 @@ Proof.
   iDestruct (fcc_inv_diff_action with "Hfcc") as "Hfcc"; [apply Hhead | done |].
   iDestruct (cmt_inv_diff_action with "Hcmt") as "Hcmt"; [apply Hhead | done |].
   iDestruct (per_key_inv_past_abort tid with "Hkeys") as "Hkeys".
-  iMod ("HinvC" with "[- HΦ Htid Hsid Hwrbuf HwrbufRP Hactive Hltuples Htxnmap]") as "_".
+  iMod ("HinvC" with "[- HΦ Htid Hsite Hwrbuf HwrbufRP Hactive Hltuples Htxnmap]") as "_".
   { (* Close the invariant. *) eauto 15 with iFrame. }
   iIntros "!> _".
   wp_pures.
 
-  (***********************************************************)
-  (* txn.txnMgr.deactivate(txn.sid, txn.tid)                 *)
-  (***********************************************************)
-  do 3 wp_loadField.
-  wp_apply (wp_txnMgr__deactivate with "HtxnmgrRI Hactive").
+  (*@     txn.site.Deactivate(txn.tid)                                        @*)
+  (*@ }                                                                       @*)
+  do 2 wp_loadField.
+  wp_apply (wp_TxnSite__Deactivate with "HsiteRI Hactive").
   wp_pures.
   iApply "HΦ".
   eauto 20 with iFrame.
