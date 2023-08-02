@@ -95,6 +95,54 @@ Definition DB__ActivateGC: val :=
             Continue));;
     #().
 
+Definition Txn__begin: val :=
+  rec: "Txn__begin" "txn" :=
+    let: "tid" := txnsite.TxnSite__Activate (struct.loadF Txn "site" "txn") in
+    struct.storeF Txn "tid" "txn" "tid";;
+    wrbuf.WrBuf__Clear (struct.loadF Txn "wrbuf" "txn");;
+    #().
+
+Definition Txn__abort: val :=
+  rec: "Txn__abort" "txn" :=
+    trusted_proph.ResolveAbort (struct.loadF Txn "proph" "txn") (struct.loadF Txn "tid" "txn");;
+    txnsite.TxnSite__Deactivate (struct.loadF Txn "site" "txn") (struct.loadF Txn "tid" "txn");;
+    #().
+
+Definition Txn__acquire: val :=
+  rec: "Txn__acquire" "txn" :=
+    let: "ok" := wrbuf.WrBuf__OpenTuples (struct.loadF Txn "wrbuf" "txn") (struct.loadF Txn "tid" "txn") (struct.loadF Txn "idx" "txn") in
+    "ok".
+
+Definition Txn__commit: val :=
+  rec: "Txn__commit" "txn" :=
+    trusted_proph.ResolveCommit (struct.loadF Txn "proph" "txn") (struct.loadF Txn "tid" "txn") (struct.loadF Txn "wrbuf" "txn");;
+    wrbuf.WrBuf__UpdateTuples (struct.loadF Txn "wrbuf" "txn") (struct.loadF Txn "tid" "txn");;
+    txnsite.TxnSite__Deactivate (struct.loadF Txn "site" "txn") (struct.loadF Txn "tid" "txn");;
+    #().
+
+Definition Txn__Run: val :=
+  rec: "Txn__Run" "txn" "body" :=
+    Txn__begin "txn";;
+    let: "cmt" := "body" "txn" in
+    (if: ~ "cmt"
+    then
+      Txn__abort "txn";;
+      #false
+    else
+      let: "ok" := Txn__acquire "txn" in
+      (if: ~ "ok"
+      then
+        Txn__abort "txn";;
+        #false
+      else
+        Txn__commit "txn";;
+        #true)).
+
+Definition DB__Run: val :=
+  rec: "DB__Run" "db" "body" :=
+    let: "txn" := DB__NewTxn "db" in
+    Txn__Run "txn" "body".
+
 (* txn.go *)
 
 Definition Txn__Write: val :=
@@ -122,46 +170,3 @@ Definition Txn__Read: val :=
       trusted_proph.ResolveRead (struct.loadF Txn "proph" "txn") (struct.loadF Txn "tid" "txn") "key";;
       let: ("val", "found") := tuple.Tuple__ReadVersion "tuple" (struct.loadF Txn "tid" "txn") in
       ("val", "found")).
-
-Definition Txn__begin: val :=
-  rec: "Txn__begin" "txn" :=
-    let: "tid" := txnsite.TxnSite__Activate (struct.loadF Txn "site" "txn") in
-    struct.storeF Txn "tid" "txn" "tid";;
-    wrbuf.WrBuf__Clear (struct.loadF Txn "wrbuf" "txn");;
-    #().
-
-Definition Txn__acquire: val :=
-  rec: "Txn__acquire" "txn" :=
-    let: "ok" := wrbuf.WrBuf__OpenTuples (struct.loadF Txn "wrbuf" "txn") (struct.loadF Txn "tid" "txn") (struct.loadF Txn "idx" "txn") in
-    "ok".
-
-Definition Txn__commit: val :=
-  rec: "Txn__commit" "txn" :=
-    trusted_proph.ResolveCommit (struct.loadF Txn "proph" "txn") (struct.loadF Txn "tid" "txn") (struct.loadF Txn "wrbuf" "txn");;
-    wrbuf.WrBuf__UpdateTuples (struct.loadF Txn "wrbuf" "txn") (struct.loadF Txn "tid" "txn");;
-    txnsite.TxnSite__Deactivate (struct.loadF Txn "site" "txn") (struct.loadF Txn "tid" "txn");;
-    #().
-
-Definition Txn__abort: val :=
-  rec: "Txn__abort" "txn" :=
-    trusted_proph.ResolveAbort (struct.loadF Txn "proph" "txn") (struct.loadF Txn "tid" "txn");;
-    txnsite.TxnSite__Deactivate (struct.loadF Txn "site" "txn") (struct.loadF Txn "tid" "txn");;
-    #().
-
-Definition Txn__Run: val :=
-  rec: "Txn__Run" "txn" "body" :=
-    Txn__begin "txn";;
-    let: "cmt" := "body" "txn" in
-    (if: ~ "cmt"
-    then
-      Txn__abort "txn";;
-      #false
-    else
-      let: "ok" := Txn__acquire "txn" in
-      (if: ~ "ok"
-      then
-        Txn__abort "txn";;
-        #false
-      else
-        Txn__commit "txn";;
-        #true)).
