@@ -19,7 +19,7 @@ Definition spec_body
       else Ra r) -∗ Φ #ok) -∗
   WP body #txn {{ v, Φ v }}.
 
-Theorem wp_txn__DoTxn
+Theorem wp_txn__Run
         txn (body : val)
         (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop)
         (Rc : dbmap -> dbmap -> iProp Σ) (Ra : dbmap -> iProp Σ)
@@ -454,7 +454,7 @@ Definition spec_body_xres
       if ok then ∃ w, ⌜Q r w ∧ dom r = dom w⌝ ∗ txnmap_ptstos τ w else True) -∗ Φ #ok) -∗
   WP body #txn {{ v, Φ v }}.
 
-Theorem wp_txn__DoTxn_xres
+Theorem wp_txn__Run_xres
         txn (body : val)
         (P : dbmap -> Prop) (Q : dbmap -> dbmap -> Prop)
         γ :
@@ -469,7 +469,7 @@ Proof.
   iIntros (Φ) "[Htxn Hbody] HAU".
   set Rc : dbmap -> dbmap -> iProp Σ := (λ (r w : dbmap), True)%I.
   set Ra : dbmap -> iProp Σ := (λ (r : dbmap), True)%I.
-  wp_apply (wp_txn__DoTxn _ _ P Q Rc Ra with "[$Htxn Hbody]").
+  wp_apply (wp_txn__Run _ _ P Q Rc Ra with "[$Htxn Hbody]").
   { clear Φ.
     iIntros (tid r τ Φ) "(Htxn & %HP & Htxnps) HΦ".
     wp_apply ("Hbody" with "[$Htxn $Htxnps]"); first done.
@@ -507,7 +507,7 @@ Definition spec_body_readonly
      (if ok then (Rc r ∧ Ra r) else Ra r) -∗ Φ #ok) -∗
   WP body #txn {{ v, Φ v }}.
 
-Theorem wp_txn__DoTxn_readonly
+Theorem wp_txn__Run_readonly
         txn (body : val) (P : dbmap -> Prop) (Rc Ra : dbmap -> iProp Σ) γ :
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_readonly body txn tid r P Rc Ra γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
@@ -518,7 +518,7 @@ Proof.
   iIntros (Φ) "!> [Htxn Hbody] HAU".
   set Q : dbmap -> dbmap -> Prop := λ (r w : dbmap), w = r.
   set Rc' : dbmap -> dbmap -> iProp Σ := (λ (r _ : dbmap), Rc r)%I.
-  wp_apply (wp_txn__DoTxn _ _ P Q Rc' Ra with "[$Htxn Hbody]").
+  wp_apply (wp_txn__Run _ _ P Q Rc' Ra with "[$Htxn Hbody]").
   { unfold Q. apply _. }
   { clear Φ.
     iIntros (tid r τ Φ) "(Htxn & %HP & Htxnps) HΦ".
@@ -560,7 +560,7 @@ Definition spec_body_xres_readonly
      own_txn txn tid r γ τ ∗ txnmap_ptstos τ r -∗ Φ #ok) -∗
   WP body #txn {{ v, Φ v }}.
 
-Theorem wp_txn__DoTxn_xres_readonly
+Theorem wp_txn__Run_xres_readonly
         txn (body : val) (P : dbmap -> Prop) γ :
   ⊢ {{{ own_txn_uninit txn γ ∗ (∀ tid r τ, spec_body_xres_readonly body txn tid r P γ τ) }}}
     <<< ∀∀ (r : dbmap), ⌜P r⌝ ∗ dbmap_ptstos γ 1 r >>>
@@ -570,7 +570,7 @@ Theorem wp_txn__DoTxn_xres_readonly
 Proof.
   iIntros (Φ) "!> [Htxn Hbody] HAU".
   set Q : dbmap -> dbmap -> Prop := λ (r w : dbmap), w = r.
-  wp_apply (wp_txn__DoTxn_xres _ _ P Q with "[$Htxn Hbody]").
+  wp_apply (wp_txn__Run_xres _ _ P Q with "[$Htxn Hbody]").
   { unfold Q. apply _. }
   { clear Φ.
     iIntros (tid r τ Φ) "(Htxn & %HP & Htxnps) HΦ".

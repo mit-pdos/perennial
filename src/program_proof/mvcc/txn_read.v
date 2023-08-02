@@ -38,14 +38,14 @@ Theorem wp_txn__Read txn tid view (k : u64) dbv γ τ :
       own_txn txn tid view γ τ ∗ txnmap_ptsto τ k dbv ∗ ⌜dbv = to_dbval found v⌝
   }}}.
 Proof.
-  (*@ func (txn *Txn) Read(key uint64) (string, bool) {                       @*)
   iIntros (Φ) "[Htxn Hptsto] HΦ".
   (* We need this to obtain a lb on logical tuple of key [k]. *)
   iDestruct (own_txn_txnmap_ptsto_dom with "Htxn Hptsto") as "%Hindom".
   iNamed "Htxn".
   iNamed "Himpl".
   wp_call.
-  
+
+  (*@ func (txn *Txn) Read(key uint64) (string, bool) {                       @*)
   (*@     // First try to find @key in the local write set.                   @*)
   (*@     wrbuf := txn.wrbuf                                                  @*)
   (*@     valb, wr, found := wrbuf.Lookup(key)                                @*)
@@ -221,6 +221,22 @@ Proof.
     done.
   }
   by iFrame "Hptsto".
+Qed.
+
+Theorem wp_txn__Read_found txn tid view (k : u64) (v : string) γ τ :
+  {{{ own_txn txn tid view γ τ ∗ txnmap_ptsto τ k (Some v) }}}
+    Txn__Read #txn #k
+  {{{ RET (#(LitString v), #true);
+      own_txn txn tid view γ τ ∗ txnmap_ptsto τ k (Some v)
+  }}}.
+Proof.
+  iIntros (Φ) "[Htxn Hpt] HΦ".
+  wp_apply (wp_txn__Read with "[$Htxn $Hpt]").
+  iIntros (v' found) "(Htxn & Hpt & %Hv')".
+  destruct found eqn:Efound; last by simpl in Hv'.
+  simpl in Hv'. inversion_clear Hv'.
+  iApply "HΦ".
+  iFrame.
 Qed.
 
 End program.

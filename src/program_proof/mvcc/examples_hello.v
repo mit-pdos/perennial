@@ -1,5 +1,3 @@
-(* [mono_nat] must go first otherwise the default scope becomes nat. *)
-From iris.base_logic Require Import mono_nat.
 From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv
      db_repr db_mk db_new_txn db_activate_gc
@@ -31,20 +29,26 @@ Proof.
   rewrite HP.
   rewrite big_sepM_singleton.
 
-  (***********************************************************)
-  (* txn.Put(0, "hello")                                     *)
-  (* txn.Get(0)                                              *)
-  (* txn.Delete(0)                                           *)
-  (* return true                                             *)
-  (***********************************************************)
+  (*@ func hello(txn *vmvcc.Txn) bool {                                       @*)
+  (*@     txn.Write(0, "hello")                                               @*)
+  (*@                                                                         @*)
   wp_apply (wp_txn__Write with "[$Htxn $Hpt]").
   iIntros "[Htxn Hpt]".
+  
+  (*@     txn.Read(0)                                                         @*)
+  (*@                                                                         @*)
   wp_apply (wp_txn__Read with "[$Htxn $Hpt]").
   iIntros (u found) "[Htxn [Hpt %Hu]]".
   wp_pures.
+
+  (*@     txn.Delete(0)                                                       @*)
+  (*@                                                                         @*)
   wp_apply (wp_txn__Delete with "[$Htxn $Hpt]").
   iIntros (ok) "[Htxn Hpt]".
   wp_pures.
+
+  (*@     return true                                                         @*)
+  (*@ }                                                                       @*)
   iApply "HΦ".
   iFrame.
   iModIntro.
@@ -67,13 +71,13 @@ Proof.
   iIntros (Φ) "Htxn HAU".
   wp_call.
 
-  (***********************************************************)
-  (* body := func(txn *txn.Txn) bool {                       *)
-  (*     return hello(txn)                                   *)
-  (* }                                                       *)
-  (* ok := t.DoTxn(body)                                     *)
-  (***********************************************************)
-  wp_apply (wp_txn__DoTxn_xres _ _ P_Hello Q_Hello with "[$Htxn]").
+  (*@ func Hello(txno *vmvcc.Txn) {                                           @*)
+  (*@     body := func(txni *vmvcc.Txn) bool {                                @*)
+  (*@         return hello(txni)                                              @*)
+  (*@     }                                                                   @*)
+  (*@     txno.Run(body)                                                      @*)
+  (*@ }                                                                       @*)
+  wp_apply (wp_txn__Run_xres _ _ P_Hello Q_Hello with "[$Htxn]").
   { unfold Q_Hello. apply _. }
   { unfold spec_body_xres.
     clear Φ.
@@ -123,12 +127,11 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   iIntros (Φ) "_ HΦ".
   wp_call.
 
-  (***********************************************************)
-  (* db := txn.MkTxnMgr()                                    *)
-  (* db.ActivateGC()                                         *)
-  (* txn := db.New()                                         *)
-  (* Hello(txn)                                              *)
-  (***********************************************************)
+  (*@ func CallHello() {                                                      @*)
+  (*@     db := vmvcc.MkDB()                                                  @*)
+  (*@     db.ActivateGC()                                                     @*)
+  (*@     txn := db.NewTxn()                                                  @*)
+  (*@                                                                         @*)
   wp_apply wp_MkDB.
   iIntros (γ db) "[#Hdb Hdbpts]".
   wp_pures.
@@ -137,6 +140,9 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   wp_apply (wp_DB__NewTxn with "Hdb").
   iIntros (txn) "Htxn".
   wp_pures.
+
+  (*@     Hello(txn)                                                          @*)
+  (*@ }                                                                       @*)
   wp_apply (wp_Hello with "Htxn").
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hmask".

@@ -301,6 +301,7 @@ def main():
             "./config",
             "./common",
             "./examples",
+            "./examples/strnum",
         )
 
     if marshal_dir is not None:
