@@ -24,8 +24,8 @@ Definition TxnSite__Activate: val :=
   rec: "TxnSite__Activate" "site" :=
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "t" := ref (zero_val uint64T) in
-    "t" <-[uint64T] tid.GenTID (struct.loadF TxnSite "sid" "site");;
-    control.impl.Assume (![uint64T] "t" < #18446744073709551615);;
+    "t" <-[uint64T] (tid.GenTID (struct.loadF TxnSite "sid" "site"));;
+    control.impl.Assume ((![uint64T] "t") < #18446744073709551615);;
     struct.storeF TxnSite "tids" "site" (SliceAppend uint64T (struct.loadF TxnSite "tids" "site") (![uint64T] "t"));;
     lock.release (struct.loadF TxnSite "latch" "site");;
     ![uint64T] "t".
@@ -34,15 +34,15 @@ Definition findTID: val :=
   rec: "findTID" "tid" "tids" :=
     let: "idx" := ref_to uint64T #0 in
     Skip;;
-    (for: (λ: <>, "tid" ≠ SliceGet uint64T "tids" (![uint64T] "idx")); (λ: <>, Skip) := λ: <>,
-      "idx" <-[uint64T] ![uint64T] "idx" + #1;;
+    (for: (λ: <>, "tid" ≠ (SliceGet uint64T "tids" (![uint64T] "idx"))); (λ: <>, Skip) := λ: <>,
+      "idx" <-[uint64T] ((![uint64T] "idx") + #1);;
       Continue);;
     ![uint64T] "idx".
 
 Definition swapWithEnd: val :=
   rec: "swapWithEnd" "xs" "i" :=
-    let: "tmp" := SliceGet uint64T "xs" (slice.len "xs" - #1) in
-    SliceSet uint64T "xs" (slice.len "xs" - #1) (SliceGet uint64T "xs" "i");;
+    let: "tmp" := SliceGet uint64T "xs" ((slice.len "xs") - #1) in
+    SliceSet uint64T "xs" ((slice.len "xs") - #1) (SliceGet uint64T "xs" "i");;
     SliceSet uint64T "xs" "i" "tmp";;
     #().
 
@@ -52,7 +52,7 @@ Definition TxnSite__Deactivate: val :=
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "idx" := findTID "tid" (struct.loadF TxnSite "tids" "site") in
     swapWithEnd (struct.loadF TxnSite "tids" "site") "idx";;
-    struct.storeF TxnSite "tids" "site" (SliceTake (struct.loadF TxnSite "tids" "site") (slice.len (struct.loadF TxnSite "tids" "site") - #1));;
+    struct.storeF TxnSite "tids" "site" (SliceTake (struct.loadF TxnSite "tids" "site") ((slice.len (struct.loadF TxnSite "tids" "site")) - #1));;
     lock.release (struct.loadF TxnSite "latch" "site");;
     #().
 
@@ -62,11 +62,11 @@ Definition TxnSite__GetSafeTS: val :=
   rec: "TxnSite__GetSafeTS" "site" :=
     lock.acquire (struct.loadF TxnSite "latch" "site");;
     let: "tidnew" := ref (zero_val uint64T) in
-    "tidnew" <-[uint64T] tid.GenTID (struct.loadF TxnSite "sid" "site");;
-    control.impl.Assume (![uint64T] "tidnew" < #18446744073709551615);;
+    "tidnew" <-[uint64T] (tid.GenTID (struct.loadF TxnSite "sid" "site"));;
+    control.impl.Assume ((![uint64T] "tidnew") < #18446744073709551615);;
     let: "tidmin" := ref_to uint64T (![uint64T] "tidnew") in
     ForSlice uint64T <> "tid" (struct.loadF TxnSite "tids" "site")
-      ((if: "tid" < ![uint64T] "tidmin"
+      ((if: "tid" < (![uint64T] "tidmin")
       then "tidmin" <-[uint64T] "tid"
       else #()));;
     lock.release (struct.loadF TxnSite "latch" "site");;

@@ -43,7 +43,7 @@ Definition xfer: val :=
       vmvcc.Txn__Write "txn" "src" "sbaly";;
       let: ("dbalx", <>) := vmvcc.Txn__Read "txn" "dst" in
       let: "dbal" := strnum.StringToU64 "dbalx" in
-      (if: "dbal" + "amt" < "dbal"
+      (if: ("dbal" + "amt") < "dbal"
       then #false
       else
         let: "dbaly" := strnum.U64ToString ("dbal" + "amt") in

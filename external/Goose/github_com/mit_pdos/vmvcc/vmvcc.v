@@ -29,7 +29,7 @@ Definition MkDB: val :=
     struct.storeF DB "sites" "db" (NewSlice ptrT config.N_TXN_SITES);;
     tid.GenTID #0;;
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < config.N_TXN_SITES); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < config.N_TXN_SITES); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       let: "site" := txnsite.MkTxnSite (![uint64T] "i") in
       SliceSet ptrT (struct.loadF DB "sites" "db") (![uint64T] "i") "site";;
       Continue);;
@@ -55,8 +55,8 @@ Definition DB__NewTxn: val :=
     struct.storeF Txn "site" "txn" (SliceGet ptrT (struct.loadF DB "sites" "db") (struct.loadF DB "sid" "db"));;
     struct.storeF Txn "wrbuf" "txn" (wrbuf.MkWrBuf #());;
     struct.storeF Txn "idx" "txn" (struct.loadF DB "idx" "db");;
-    struct.storeF DB "sid" "db" (struct.loadF DB "sid" "db" + #1);;
-    (if: struct.loadF DB "sid" "db" ≥ config.N_TXN_SITES
+    struct.storeF DB "sid" "db" ((struct.loadF DB "sid" "db") + #1);;
+    (if: (struct.loadF DB "sid" "db") ≥ config.N_TXN_SITES
     then struct.storeF DB "sid" "db" #0
     else #());;
     lock.release (struct.loadF DB "latch" "db");;
@@ -67,10 +67,10 @@ Definition DB__getSafeTS: val :=
   rec: "DB__getSafeTS" "db" :=
     let: "min" := ref_to uint64T config.TID_SENTINEL in
     let: "sid" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "sid" < config.N_TXN_SITES); (λ: <>, "sid" <-[uint64T] ![uint64T] "sid" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "sid") < config.N_TXN_SITES); (λ: <>, "sid" <-[uint64T] ((![uint64T] "sid") + #1)) := λ: <>,
       let: "site" := SliceGet ptrT (struct.loadF DB "sites" "db") (![uint64T] "sid") in
       let: "tid" := txnsite.TxnSite__GetSafeTS "site" in
-      (if: "tid" < ![uint64T] "min"
+      (if: "tid" < (![uint64T] "min")
       then
         "min" <-[uint64T] "tid";;
         Continue
@@ -124,13 +124,13 @@ Definition Txn__Run: val :=
   rec: "Txn__Run" "txn" "body" :=
     Txn__begin "txn";;
     let: "cmt" := "body" "txn" in
-    (if: ~ "cmt"
+    (if: (~ "cmt")
     then
       Txn__abort "txn";;
       #false
     else
       let: "ok" := Txn__acquire "txn" in
-      (if: ~ "ok"
+      (if: (~ "ok")
       then
         Txn__abort "txn";;
         #false
