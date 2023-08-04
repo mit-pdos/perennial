@@ -442,16 +442,16 @@ Opaque PeanoNat.Nat.div.
       change (Z.to_nat 8) with 8%nat.
       change (Z.to_nat 128) with 128%nat.
       change (128 * 8)%nat with (8 * 128)%nat.
-      rewrite -Nat.div_div; try word.
+      rewrite -Nat.Div0.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.mod_mul_r in Hy; try word.
+        rewrite Nat.Div0.mod_mul_r in Hy; try word.
       }
-      apply Nat.div_exact in Hx; try word.
+      apply Nat.Div0.div_exact in Hx; try word.
     }
     f_equal.
     {
@@ -465,29 +465,29 @@ Opaque PeanoNat.Nat.div.
       change (Z.to_nat (128*8-1)) with (128*8-1)%nat.
 
       replace (128 * 8)%nat with (8 * 128)%nat by reflexivity.
-      rewrite -Nat.div_div; try word.
+      rewrite -Nat.Div0.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.mod_mul_r in Hy; try word.
+        rewrite Nat.Div0.mod_mul_r in Hy; try word.
       }
-      apply Nat.div_exact in Hx; try word.
+      apply Nat.Div0.div_exact in Hx; try word.
       rewrite Nat.mul_comm in Hx.
       replace (S ((int.nat (addrOff a) `div` 8) `div` 128) * 128)%nat
          with (((int.nat (addrOff a) `div` 8) `div` 128) * 128 + 128)%nat by lia.
       rewrite -Hx.
 
-      edestruct (Nat.div_exact (int.nat (addrOff a)) 8) as [_ Hz]; first by lia.
+      edestruct (Nat.Div0.div_exact (int.nat (addrOff a)) 8) as [_ Hz].
       rewrite -> Hz at 1.
       2: {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.mod_mul_r in Hy; try word.
+        rewrite Nat.Div0.mod_mul_r in Hy; try word.
       }
 
       rewrite Nat.mul_comm. rewrite -> Nat.div_add_l by lia.
@@ -681,7 +681,7 @@ Proof. intros x1 x2 x3. lia. Qed.
 Lemma Nat_div_exact_2 : ∀ a b : nat, (b ≠ 0 → a `mod` b = 0 → a = b * a `div` b)%nat.
 Proof.
   intros.
-  apply Nat.div_exact; auto.
+  apply Nat.Div0.div_exact; auto.
 Qed.
 
 Lemma Z_mod_1024_to_div_8 (z:Z) :
@@ -1201,7 +1201,7 @@ Proof.
       rewrite vec_to_list_length.
     + revert Hoff'_bound. rewrite /block_bytes.
       change 1024%nat with (8 * 128)%nat.
-      rewrite -Nat.div_div; [ | lia | lia ].
+      rewrite -Nat.Div0.div_div.
       generalize (int.nat off' `div` 8)%nat; intros x Hx.
       assert (x `div` 128 < 32)%nat; try lia.
       eapply Nat.div_lt_upper_bound; lia.
