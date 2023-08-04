@@ -2012,7 +2012,7 @@ Proof using spec_trans.
     clear Hctx'.
 
     iIntros (mem_v).
-    iDestruct 1 as (lsval lval ?? γ (->&->&?&?)) "(#Hlocinv&Htok&Hj&#Hval&Hspts&Hpts&Hpts_clo)".
+    iDestruct 1 as (lsval lval ? γ q (->&->&?&?)) "(#Hlocinv&Htok&Hj&#Hval&Hspts&Hpts&Hpts_clo)".
 
     simpl.
     spec_bind (Rec _ _ _) as Hctx'.
