@@ -279,6 +279,7 @@ def main():
             "dmvcc/txncoordinator",
             "dmvcc/txnmgr",
             "dmvcc/example",
+            "leasekv",
         ]
 
         for pkg in pkgs:
