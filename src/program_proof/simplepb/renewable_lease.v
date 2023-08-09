@@ -27,18 +27,17 @@ Definition own_lease_expiration γl (t:u64) :=
   mono_nat_auth_own γl (1/2) (int.nat t)
 .
 
-Definition is_lease N γl (R:iProp Σ) : iProp Σ :=
-  ∃ γtok,
+Local Definition is_lease_inv N γl γtok R : iProp Σ :=
   inv N (∃ expirationTime, own_lease_expiration γl expirationTime ∗
-         (R ∨ is_time_lb expirationTime ∗ (R ∨ ghost_var γtok 1 ())))
+         (R ∨ is_time_lb expirationTime ∗ ghost_var γtok 1 ()))
+.
+
+Definition is_lease N γl (R:iProp Σ) : iProp Σ :=
+  ∃ γtok, is_lease_inv N γl γtok R
 .
 
 Definition post_lease N γl (R:iProp Σ) : iProp Σ :=
-  ∀ expirationTime,
-  own_lease_expiration γl expirationTime -∗
-  is_time_lb expirationTime ={↑N}=∗
-  ▷ R
-.
+  ∃ γtok, ghost_var γtok 1 () ∗ is_lease_inv N γl γtok R.
 
 Lemma lease_acc N e R γl t {E} :
   ↑N ⊆ E →
@@ -86,53 +85,31 @@ Proof.
     iSplitR "Htok".
     { iModIntro. iExists γtok. done. }
     iModIntro.
-    iIntros (?) "Hexp Hlb".
-    iInv "Hinv" as "Hi" "Hclose".
-    iDestruct "Hi" as (?) "(>Hexp2 & Hi)".
-    iDestruct (mono_nat_auth_own_agree with "Hexp Hexp2") as %[_ Hagree].
-    assert (expirationTime = expirationTime0) by word.
-    subst.
-    iDestruct "Hi" as "[HR | (_ & [HR | >Hbad])]".
-    {
-      iFrame "HR". iMod ("Hclose" with "[-]"); last done.
-      iExists _; iFrame.
-      iRight. iFrame.
-    }
-    {
-      iFrame. iMod ("Hclose" with "[-]"); last done.
-      iExists _; iFrame.
-      iRight. iFrame.
-    }
-    {
-      iDestruct (ghost_var_valid_2 with "Hbad Htok") as %[Hbad _].
-      exfalso.
-      done.
-    }
+    iExists _; iFrame "∗#".
   }
   { iExists _. iFrame. }
 Qed.
 
-Lemma renew_lease e' γl e t N R :
-  int.nat t < int.nat e →
+Lemma lease_renew e' γl e N R :
   int.nat e <= int.nat e' →
-  is_lease N γl R -∗
   own_lease_expiration γl e -∗
-  own_time t ={↑N}=∗
-  own_time t ∗ own_lease_expiration γl e'
+  post_lease N γl R
+  ={↑N}=∗
+  own_lease_expiration γl e'
 .
 Proof.
-  intros ??.
-  iIntros "#Hlease Hexp Htime".
-  iDestruct "Hlease" as (γtok) "#Hinv".
+  intros ?.
+  iIntros "Hexp Hpost".
+  iDestruct "Hpost" as (γtok) "[Htok #Hinv]".
   iInv "Hinv" as "Hi" "Hclose".
   iDestruct "Hi" as (?) "[>Hexp2 Hi]".
   iDestruct (mono_nat_auth_own_agree with "Hexp Hexp2") as %[_ Hagree].
   assert (expirationTime = e) by word.
   subst.
-  iDestruct "Hi" as "[HR|[>Hbad _]]".
+  iDestruct "Hi" as "[HR|>[_ Hbad2]]".
   2: {
-    iDestruct (mono_nat_lb_own_valid with "Htime Hbad") as %[_ Hbad].
-    exfalso. lia.
+    iCombine "Hbad2 Htok" gives %[? _].
+    exfalso. done.
   }
   iCombine "Hexp Hexp2" as "Hexp".
   iMod (mono_nat_own_update with "Hexp") as "[Hexp _]".
@@ -141,6 +118,33 @@ Proof.
   iFrame.
   iMod ("Hclose" with "[-]"); last done.
   iExists _; iFrame.
+Qed.
+
+Lemma lease_expire e N γl (R:iProp Σ) :
+  own_lease_expiration γl e -∗
+  post_lease N γl R -∗
+  is_time_lb e ={↑N}=∗
+  ▷ R
+.
+Proof.
+  iIntros "Hexp Hpost Hlb".
+  iDestruct "Hpost" as (?) "[Htok Hinv]".
+  iInv "Hinv" as "Hi" "Hclose".
+  iDestruct "Hi" as (?) "(>Hexp2 & Hi)".
+  iDestruct (mono_nat_auth_own_agree with "Hexp Hexp2") as %[_ Hagree].
+  assert (expirationTime = e) by word.
+  subst.
+  iDestruct "Hi" as "[HR |>[_ Hbad]]".
+  {
+    iFrame "HR". iMod ("Hclose" with "[-]"); last done.
+    iExists _; iFrame.
+    iRight. iFrame.
+  }
+  {
+    iDestruct (ghost_var_valid_2 with "Hbad Htok") as %[Hbad _].
+    exfalso.
+    done.
+  }
 Qed.
 
 Lemma lease_get_lb γl e :
