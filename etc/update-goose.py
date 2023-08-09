@@ -269,6 +269,7 @@ def main():
             "tutorial/lockservice",
             "tutorial/kvservice",
             "tutorial/basics",
+            "tutorial/queue",
             "mpaxos/",
             "mpaxos/example",
             "map_marshal",

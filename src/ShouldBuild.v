@@ -100,6 +100,7 @@ From Perennial.program_proof.minlease Require proof.
 (* Grove tutorial *)
 From Perennial.program_proof.tutorial Require
      basics.proof
+     queue.proof
      kvservice.proof
      (* kvservice.full_proof *).
 
