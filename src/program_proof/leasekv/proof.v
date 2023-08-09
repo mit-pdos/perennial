@@ -2,7 +2,7 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_logic Require Import atomic.
 From Goose.github_com.mit_pdos.gokv Require Import leasekv.
 From Perennial.program_proof.simplepb Require Import renewable_lease.
-From Perennial.program_proof.fencing Require Import map.
+From iris.base_logic.lib Require Import ghost_map.
 
 Module cacheValueC.
 Record t :=
@@ -31,7 +31,7 @@ End cacheValueC.
 
 Section proof.
 Context `{!heapGS Σ}.
-Context `{!mapG Σ string string}.
+Context `{!ghost_mapG Σ string string}.
 Context `{!renewable_leaseG Σ}.
 Context {kvptsto: string → string → iProp Σ}.
 
@@ -88,12 +88,13 @@ Definition invN := nroot .@ "lease".
 
 Definition is_inv γ : iProp Σ :=
   inv invN (∃ kvs leases,
+    "Hauth" ∷ ghost_map_auth γ 1 kvs ∗
     "Hmap" ∷ ([∗ map] k ↦ v; lease ∈ kvs ; leases,
                              kvptsto k (encode_cacheValue v lease) ∗
                              ((∃ γl, own_lease_expiration γl lease ∗
-                                    is_lease leaseN γl (k ⤳[γ]{#1/2} v) ∗
-                                    post_lease leaseN γl (k ⤳[γ]{#1/2} v)) ∨
-                             (k ⤳[γ]{#1/2} v)))
+                                    is_lease leaseN γl (k ↪[γ] {#1/2} v) ∗
+                                    post_lease leaseN γl (k ↪[γ] {#1/2} v)) ∨
+                             (k ↪[γ] {#1/2} v)))
            )
 .
 
@@ -102,7 +103,7 @@ Definition own_LeaseKv (k:loc) (γ:gname) : iProp Σ :=
   "Hcache_ptr" ∷ k ↦[LeaseKv :: "cache"] #cache_ptr ∗
   "Hcache" ∷ own_map cache_ptr 1 cache ∗
   "#Hleases" ∷ ([∗ map] k ↦ cv ∈ cache,
-                  ∃ γl, is_lease leaseN γl (k ⤳[γ]{#1/2} cv.(cacheValueC.v)) ∗
+                  ∃ γl, is_lease leaseN γl (k ↪[γ] {#1/2} cv.(cacheValueC.v)) ∗
                         is_lease_valid_lb γl cv.(cacheValueC.l)
                )
 .
@@ -125,9 +126,9 @@ Admitted.
 
 Lemma wp_LeaseKv__Get (k:loc) key γ :
   ⊢ {{{ is_LeaseKv k γ }}}
-    <<< ∀∀ v, key ⤳[γ]{#1/2} v >>>
+    <<< ∀∀ v, key ↪[γ] {#1/2} v >>>
       LeaseKv__Get #k #(LitString key) @ ↑leaseN ∪ ↑invN
-    <<< key ⤳[γ]{#1/2} v >>>
+    <<< key ↪[γ] {#1/2} v >>>
   {{{ RET #(LitString v); True }}}.
 Proof.
   Opaque struct.get.
@@ -160,7 +161,7 @@ Proof.
     iMod ncfupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey2 Hau]".
     { solve_ndisj. }
-    iDestruct (ghost_map_points_to_agree with "[$] [$]") as %?.
+    iDestruct (ghost_map_elem_agree with "[$] [$]") as %?.
     subst.
     iMod ("Hau" with "[$]") as "HΦ".
     iMod "Hmask" as "_".
@@ -220,38 +221,19 @@ Proof.
     iModIntro.
     iDestruct "Hau" as (?) "[Hkey Hau]".
     clear Hlookup.
-    assert (∃ v, kvs !! key = Some v) as [? Hlookup].
-    { admit. } (* FIXME: deal with infinite map domain *)
+    iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup.
     iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? HleaseLookup].
     { done. }
     iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH Hmap]".
     1-2: done.
     iDestruct "HH" as "[Hkvptsto Hrest]".
-    iAssert (⌜v0 = x⌝)%I with "[-]" as %?.
-    {
-      (* TODO: match up x in Hrest with v 0 from Hkey; naively, this requires
-         destructing into two cases: either the lease is expired, or it isn't.
-         This same annoyance showed up in the simplepb config service proof.
-         Ideally, we shouldn't need to do destruct, and should be able to make
-         use of the fact that---one way or another---we have access to `key ⤳ x`,
-         and that's all we need.
-         This will also require adjusting some masks, so we have access to the
-         lease resource here.
-       *)
-      (* XXX: Here's a hacky solution:
-         "Hrest" always directly maintains 1/4 ownership, and the other 1/4
-         might be in a lease.
-      *)
-      admit.
-    }
-    subst.
     iExists _.
     iFrame.
     iIntros "Hkvptsto".
     iSpecialize ("Hmap" with "[$]").
     iMod ("Hau" with "[$]") as "HΦ".
     iMod "Hmask".
-    iMod ("Hclose" with "[Hmap]") as "_".
+    iMod ("Hclose" with "[Hmap Hauth]") as "_".
     { iNext. repeat iExists _; iFrame. }
     iModIntro.
     iIntros "_".
@@ -262,6 +244,6 @@ Proof.
   }
   Unshelve.
   apply _.
-Admitted.
+Qed.
 
 End proof.
