@@ -250,13 +250,13 @@ Qed.
 Lemma wp_max (a b : u64) :
   {{{ True }}}
   leasekv.max #a #b
-  {{{ (v:u64), RET #v; True }}}
+  {{{ (v:u64), RET #v; ⌜int.nat a <= int.nat v⌝ ∗ ⌜int.nat b ≤ int.nat v⌝ }}}
 .
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
-  wp_if_destruct; by iApply "HΦ".
+  wp_if_destruct; iApply "HΦ"; iPureIntro; word.
 Qed.
 
 Lemma wp_EncodeValue (v:string) (l:u64) :
@@ -331,7 +331,7 @@ Proof.
   Transparent struct.get.
   wp_pures.
   wp_apply wp_max.
-  iIntros (newLeaseExpiration) "_".
+  iIntros (newLeaseExpiration) "[_ %Hineq]".
   wp_pure1_credit "Hlc".
   wp_apply wp_EncodeValue.
   wp_loadField.
@@ -389,10 +389,13 @@ Proof.
       iDestruct "Hrest" as "[Hlease|Hkey]".
       { (* in this case, renew the existing lease *)
         iDestruct "Hlease" as (?) "(Hexp & #Hlease & Hpost)".
-        admit. (* FIXME: want to be able to renew lease if we still have
-                  post_lease, without needing own_time. Maybe this can clean up
-                  config proof as well. *)
-        (* iMod (renew_lease with "[$] [$] [$]") as "Hlease". *)
+        iMod (lease_renew newLeaseExpiration with "[$] [$]") as "[Hpost Hexp]".
+        { word. }
+        iModIntro.
+        iDestruct (lease_get_lb with "[$]") as "#Hvalid".
+        iSplitL.
+        { iExists _; iFrame "∗#". }
+        shelve. (* XXX: shelving for later unification. *)
       }
       {
         iMod (lease_alloc with "Hkey") as (?) "(#Hlease & Hpost & Hexp)".
@@ -451,6 +454,7 @@ Proof.
       { iExact "Hlease". }
     }
     Unshelve.
+    2:{ iExists _; iFrame "#". }
     2:{ iExists _; iFrame "#". }
     wp_pures.
     by iApply "HΦ".
