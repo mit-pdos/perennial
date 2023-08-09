@@ -59,17 +59,17 @@ Definition LeaseKv__GetAndCache: val :=
       let: "enc" := (struct.loadF Kv "Get" (struct.loadF LeaseKv "kv" "k")) "key" in
       let: "old" := DecodeValue "enc" in
       let: (<>, "latest") := grove_ffi.GetTimeRange #() in
-      let: "newLeaseExpiration" := ref_to uint64T (max ("latest" + "cachetime") (struct.get cacheValue "l" "old")) in
+      let: "newLeaseExpiration" := max ("latest" + "cachetime") (struct.get cacheValue "l" "old") in
       let: "resp" := (struct.loadF Kv "ConditionalPut" (struct.loadF LeaseKv "kv" "k")) "key" "enc" (EncodeValue (struct.mk cacheValue [
         "v" ::= struct.get cacheValue "v" "old";
-        "l" ::= ![uint64T] "newLeaseExpiration"
+        "l" ::= "newLeaseExpiration"
       ])) in
       (if: "resp" = #(str"ok")
       then
         lock.acquire (struct.loadF LeaseKv "mu" "k");;
         MapInsert (struct.loadF LeaseKv "cache" "k") "key" (struct.mk cacheValue [
           "v" ::= struct.get cacheValue "v" "old";
-          "l" ::= ![uint64T] "newLeaseExpiration"
+          "l" ::= "newLeaseExpiration"
         ]);;
         Break
       else Continue));;
