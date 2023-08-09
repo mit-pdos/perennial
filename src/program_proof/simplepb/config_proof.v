@@ -205,7 +205,7 @@ Proof.
   iIntros "Htime_lb Hghost".
   iDestruct "Hghost" as "[H | $]"; last done.
   iDestruct "H" as (?) "(_ & Hexp & Hpost_lease)".
-  iMod ("Hpost_lease" with "Hexp Htime_lb") as ">$"; done.
+  iMod (lease_expire with "Hexp Hpost_lease Htime_lb") as ">$"; done.
 Qed.
 
 Lemma lease_acc_epoch γ t leaseExpiration epoch :
@@ -246,7 +246,7 @@ Proof.
     }
     { (* case: lease is expired.  *)
       iDestruct (own_time_get_lb with "Ht") as "#Hlb".
-      iMod ("Hpost" with "Hexp [Hlb]") as ">Hepoch".
+      iMod (lease_expire with "Hexp Hpost [Hlb]") as ">Hepoch".
       { iApply is_time_lb_mono; last done. word. }
       iApply fupd_mask_intro.
       { set_solver. }
@@ -614,115 +614,32 @@ Proof.
   }
 Qed.
 
-(* NOTE: There's a lot of case distinction with this lease stuff. Some of it
-   feels redundant. In particular, there are two cases in which we'll have
-   direct ownership of own_latest_epoch: either the mutex inv just has it, or the lease
-   is expired and we can get it immediately from post_lease.  This corresponds
-   to the two places that R shows up in renewable_lease: either pre-expiration,
-   or post-expiration but prior to escrow claiming it.
-
-  Here's a "cleanup" lemma to avoid this distinction.
-  It says that either you own the epoch number, or you have a valid lease.
- *)
-Lemma own_Config_ghost_normalize t γ epoch leaseExpiration :
-  own_time t -∗
-  own_Config_ghost γ leaseExpiration epoch
-  ={↑epochLeaseN}=∗
-  own_time t ∗
-  (own_latest_epoch γ epoch ∨
-   ∃ γl,
-    ⌜int.nat t < int.nat leaseExpiration⌝ ∗
-    own_lease_expiration γl leaseExpiration ∗
-    is_lease epochLeaseN γl (own_latest_epoch γ epoch) ∗
-    post_lease epochLeaseN γl (own_latest_epoch γ epoch)
-  )
-.
-Proof.
-  iIntros "Ht Hghost".
-  iDestruct "Hghost" as "[Hghost|$]".
-  2: by iFrame.
-  iDestruct "Hghost" as (?) "(#Hlease & Hexp & Hpost)".
-  destruct (decide (int.nat t < int.nat leaseExpiration)) eqn:Hlease.
-  { (* case: lease is not expired. *)
-    iFrame.
-    iModIntro.
-    iRight. iExists _; iFrame "∗#%".
-  }
-  { (* case: lease is expired *)
-    iDestruct (own_time_get_lb with "Ht") as "#?".
-    iMod ("Hpost" with "Hexp []") as ">$".
-    { iApply is_time_lb_mono; last done.
-      word.
-    }
-    by iFrame.
-  }
-Qed.
-
-Lemma get_lease_step newLeaseExpiration t γ epoch leaseExpiration :
+Lemma get_lease_step newLeaseExpiration γ epoch leaseExpiration :
   int.nat leaseExpiration <= int.nat newLeaseExpiration →
-  own_time t -∗
   own_Config_ghost γ leaseExpiration epoch
   ={↑epochLeaseN}=∗
   ∃ γl,
-  own_time t ∗
   is_lease epochLeaseN γl (own_latest_epoch γ epoch) ∗
   is_lease_valid_lb γl newLeaseExpiration ∗
   own_Config_ghost γ newLeaseExpiration epoch
 .
 Proof.
-  iIntros (?) "Htime Hghost".
-  iMod (own_Config_ghost_normalize with "Htime Hghost") as "[Htime Hghost]".
-  iDestruct "Hghost" as "[Hepoch|Hlease]".
+  iIntros (?) "Hghost".
+  iDestruct "Hghost" as "[Hlease|Hepoch]".
+  {(* renew the existing lease *)
+    iDestruct "Hlease" as (?) "(#Hlease & Hexp & Hpost)".
+    iMod (lease_renew newLeaseExpiration with "[$] [$]") as "[Hpost Hexp]".
+    { done. }
+    iModIntro.
+    iDestruct (lease_get_lb with "Hexp") as "#?".
+    iExists _; iFrame "∗#".
+    iLeft. iExists _; iFrame "∗#".
+  }
   { (* create a new lease *)
     iMod (lease_alloc newLeaseExpiration with "Hepoch") as (?) "(#Hlease & Hpost & Hexp)".
     iDestruct (lease_get_lb with "Hexp") as "#?".
     iModIntro.
     iExists _; iFrame "∗#".
-    iLeft. iExists _; iFrame "∗#".
-  }
-  {(* renew the existing lease *)
-    iDestruct "Hlease" as (?) "(% & Hexp & #Hlease & ?)".
-    iMod (renew_lease newLeaseExpiration with "Hlease Hexp Htime") as "[$ Hexp]".
-    { done. }
-    { done. }
-    iModIntro.
-    iDestruct (lease_get_lb with "Hexp") as "#?".
-    iExists _; iFrame "∗#".
-    iLeft. iExists _; iFrame "∗#".
-  }
-Qed.
-
-Lemma get_lease_step_old oldLeaseExpiration t γ epoch leaseExpiration :
-  int.nat oldLeaseExpiration <= int.nat leaseExpiration →
-  own_time t -∗
-  own_Config_ghost γ leaseExpiration epoch
-  ={↑epochLeaseN}=∗
-  ∃ γl,
-  own_time t ∗
-  is_lease epochLeaseN γl (own_latest_epoch γ epoch) ∗
-  is_lease_valid_lb γl oldLeaseExpiration ∗
-  own_Config_ghost γ leaseExpiration epoch
-.
-Proof.
-  iIntros (?) "Htime Hghost".
-  iMod (own_Config_ghost_normalize with "Htime Hghost") as "[Htime Hghost]".
-  iDestruct "Hghost" as "[Hepoch|Hlease]".
-  { (* create a new lease *)
-    iMod (lease_alloc leaseExpiration with "Hepoch") as (?) "(#Hlease & Hpost & Hexp)".
-    iDestruct (lease_get_lb with "Hexp") as "#?".
-    iModIntro.
-    iExists _; iFrame "∗#".
-    iSplitR.
-    { by iApply lease_lb_mono. }
-    iLeft. iExists _; iFrame "∗#".
-  }
-  {
-    iDestruct "Hlease" as (?) "(_ & Hexp & #Hlease & Hpost)".
-    iDestruct (lease_get_lb with "Hexp") as "#?".
-    iModIntro.
-    iExists _. iFrame "∗#".
-    iSplitR.
-    { by iApply lease_lb_mono. }
     iLeft. iExists _; iFrame "∗#".
   }
 Qed.
@@ -807,7 +724,7 @@ Proof.
      around it.
    *)
   wp_apply wp_GetTimeRange.
-  iIntros (?????) "Htime".
+  iIntros (?????) "$".
   iMod (fupd_mask_subseteq (↑epochLeaseN)) as "Hmask".
   { set_solver. }
   set (newLeaseExpiration:=(word.add l (U64 1000000000))).
@@ -820,7 +737,7 @@ Proof.
   }
   destruct (decide (int.nat leaseExpiration < int.nat newLeaseExpiration)).
   { (* the newLeaseExpiration time is actually bigger *)
-    iMod (get_lease_step newLeaseExpiration with "Htime Hepoch_lease") as (?) "($ & #? & #? & Hghost)".
+    iMod (get_lease_step newLeaseExpiration with "Hepoch_lease") as (?) "(#? & #? & Hghost)".
     { word. }
     iMod "Hmask" as "_".
     iModIntro.
@@ -855,8 +772,11 @@ Proof.
     iApply "HΨ"; done.
   }
   { (* the newLeaseExpiration time is smaller than the old lease expiration time. *)
-    iMod (get_lease_step_old newLeaseExpiration with "Htime Hepoch_lease") as (?) "($ & #? & #? & Hghost)".
+    iMod (get_lease_step leaseExpiration with "Hepoch_lease") as (?) "(#? & #Hlb2 & Hghost)".
     { word. }
+    iDestruct (lease_lb_mono _ _ newLeaseExpiration with "Hlb2") as "#Hlb".
+    { word. }
+    iClear "Hlb2".
     iMod "Hmask" as "_".
     iModIntro.
     wp_pures.

@@ -95,6 +95,7 @@ Lemma lease_renew e' γl e N R :
   own_lease_expiration γl e -∗
   post_lease N γl R
   ={↑N}=∗
+  post_lease N γl R ∗
   own_lease_expiration γl e'
 .
 Proof.
@@ -116,8 +117,9 @@ Proof.
   { instantiate (1:=int.nat e'). lia. }
   iDestruct "Hexp" as "[Hexp Hexp2]".
   iFrame.
-  iMod ("Hclose" with "[-]"); last done.
-  iExists _; iFrame.
+  iMod ("Hclose" with "[-Htok]").
+  { iExists _; iFrame. }
+  iModIntro. iExists _; iFrame "∗#".
 Qed.
 
 Lemma lease_expire e N γl (R:iProp Σ) :
