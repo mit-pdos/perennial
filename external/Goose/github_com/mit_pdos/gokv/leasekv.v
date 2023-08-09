@@ -18,6 +18,7 @@ Definition cacheValue := struct.decl [
 
 Definition LeaseKv := struct.decl [
   "kv" :: ptrT;
+  "mu" :: ptrT;
   "cache" :: mapT (struct.t cacheValue)
 ].
 
@@ -39,12 +40,16 @@ Definition max: val :=
 
 Definition LeaseKv__Get: val :=
   rec: "LeaseKv__Get" "k" "key" :=
+    lock.acquire (struct.loadF LeaseKv "mu" "k");;
     let: ("cv", "ok") := MapGet (struct.loadF LeaseKv "cache" "k") "key" in
-    let: ("low", <>) := grove_ffi.GetTimeRange #() in
-    (if: "ok" && ((struct.get cacheValue "l" "cv") < "low")
-    then struct.get cacheValue "v" (Fst (MapGet (struct.loadF LeaseKv "cache" "k") "key"))
+    let: (<>, "high") := grove_ffi.GetTimeRange #() in
+    (if: "ok" && ("high" < (struct.get cacheValue "l" "cv"))
+    then
+      lock.release (struct.loadF LeaseKv "mu" "k");;
+      struct.get cacheValue "v" "cv"
     else
       MapDelete (struct.loadF LeaseKv "cache" "k") "key";;
+      lock.release (struct.loadF LeaseKv "mu" "k");;
       struct.get cacheValue "v" (DecodeValue ((struct.loadF Kv "Get" (struct.loadF LeaseKv "kv" "k")) "key"))).
 
 Definition LeaseKv__GetAndCache: val :=
@@ -61,13 +66,16 @@ Definition LeaseKv__GetAndCache: val :=
       ])) in
       (if: "resp" = #(str"ok")
       then
+        lock.acquire (struct.loadF LeaseKv "mu" "k");;
         MapInsert (struct.loadF LeaseKv "cache" "k") "key" (struct.mk cacheValue [
           "v" ::= struct.get cacheValue "v" "old";
           "l" ::= ![uint64T] "newLeaseExpiration"
         ]);;
         Break
       else Continue));;
-    struct.get cacheValue "v" (Fst (MapGet (struct.loadF LeaseKv "cache" "k") "key")).
+    let: "ret" := struct.get cacheValue "v" (Fst (MapGet (struct.loadF LeaseKv "cache" "k") "key")) in
+    lock.release (struct.loadF LeaseKv "mu" "k");;
+    "ret".
 
 Definition LeaseKv__Put: val :=
   rec: "LeaseKv__Put" "k" "key" "val" :=

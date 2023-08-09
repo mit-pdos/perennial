@@ -102,3 +102,5 @@ From Perennial.program_proof.tutorial Require
      basics.proof
      kvservice.proof
      (* kvservice.full_proof *).
+
+From Perennial.program_proof.leasekv Require proof.
