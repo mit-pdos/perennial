@@ -482,4 +482,185 @@ Proof.
   }
 Admitted.
 
+Lemma wp_LeaseKv__Put (k:loc) key value γ :
+  ⊢ {{{ is_LeaseKv k γ }}}
+    <<< ∀∀ old_value, key ↪[γ] {#1/2} old_value >>>
+      LeaseKv__Put #k #(str key) #(str value) @ ↑leasekvN
+    <<< key ↪[γ] {#1/2} value >>>
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (?) "!# Hkv Hau".
+  Opaque struct.get.
+  wp_lam.
+  wp_pures.
+  iNamed "Hkv".
+  wp_forBreak.
+  wp_pure1_credit "Hlc".
+  wp_loadField.
+  iNamed "Hkv_is".
+  wp_loadField.
+
+  (* XXX: we could use the actual spec for Get() here, but that would require
+     having kvptsto for `key` from is_inv, but we can't be sure it exists
+     without seeing that (k ↪[γ] v) exists, but that would require calling
+     Hau right now. We could have an "atomic_update" with the ability to
+     peek at the resources, or we could actually linearize right here and use a
+     prophecy variable to resolve the fact that this iteration of the loop might
+     end up failing in CondPut.
+   *)
+  wp_apply ("HgetSpec" with "[//]").
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+  iNamed "Hi".
+  destruct (kvs !! key) eqn:Hlookup.
+  2:{ (* XXX: Derive a contradiction in the case that kvptsto is not available;
+         this is a bit of a strange argument, but it works. *)
+    iMod ncfupd_mask_subseteq as "Hmask".
+    2: iMod "Hau" as (?) "[Hkey Hau]".
+    { solve_ndisj. }
+    iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
+    exfalso. rewrite Hlookup in Hlookup2. done.
+  }
+  iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? HleaseLookup].
+  { done. }
+  iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH Hmap]".
+  1-2: done.
+  iDestruct "HH" as "[Hkvptsto Hrest]".
+  iApply ncfupd_mask_intro.
+  { solve_ndisj. }
+  iIntros "Hmask".
+  iExists _.
+  iFrame.
+  iIntros "Hkvptsto".
+  iMod "Hmask" as "_".
+  iSpecialize ("Hmap" with "[$]").
+  iMod ("Hclose" with "[Hmap Hauth]") as "_".
+  { iNext. eauto with iFrame. }
+
+  iModIntro. iIntros "_".
+  wp_pures.
+  wp_apply wp_DecodeValue.
+  Transparent struct.get.
+  wp_pures.
+  wp_apply wp_GetTimeRange.
+  iIntros "* _ %Hineq Htime".
+  iDestruct (own_time_get_lb with "Htime") as "#Hlb".
+  iFrame "Htime".
+  iModIntro.
+  Transparent struct.get.
+  wp_pure1_credit "Hlc".
+  wp_if_destruct.
+  { (* case: lease is not expired, so loop *)
+    iLeft.
+    iSplitR; first done. iModIntro.
+    iFrame.
+  }
+
+  (* case: lease is expired *)
+  wp_apply wp_EncodeValue.
+  wp_loadField.
+  wp_loadField.
+
+  wp_apply ("HcputSpec" with "[//]").
+  clear kvs Hlookup HleaseLookup.
+  (* XXX copy/paste from above: *)
+
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+  iNamed "Hi".
+  destruct (kvs !! key) eqn:Hlookup.
+  2:{ (* XXX: Derive a contradiction in the case that kvptsto is not available;
+         this is a bit of a strange argument, but it works. *)
+    iMod ncfupd_mask_subseteq as "Hmask".
+    2: iMod "Hau" as (?) "[Hkey Hau]".
+    { solve_ndisj. }
+    iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
+    exfalso. rewrite Hlookup in Hlookup2. done.
+  }
+  iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? HleaseLookup].
+  { done. }
+  iDestruct (big_sepM2_insert_acc with "Hmap") as "[HH Hmap]".
+  1-2: done.
+  iDestruct "HH" as "[Hkvptsto Hrest]".
+  iApply ncfupd_mask_intro.
+  { solve_ndisj. }
+  iIntros "Hmask".
+  iExists _.
+  iFrame.
+  iIntros "Hkvptsto".
+  iMod "Hmask" as "_".
+  (* end paste *)
+
+  destruct (bool_decide _) eqn:Hok.
+  { (* case: cput succeeded *)
+    apply bool_decide_eq_true in Hok.
+    assert (s = s0 ∧ x = x0) as [? ?]; last subst.
+    {
+      unfold encode_cacheValue in Hok.
+      admit. (* TODO: encoding injectivity. *)
+    }
+
+    iAssert (|NC={⊤∖∅∖↑invN}=> (_ ∗ ghost_map_auth γ 1 _ ∗ Φ #()))%I with "[Hrest Hau Hauth]" as "Hrest".
+    1: shelve. (* XXX: shelving this so unification can fill in the goal when
+                  specializing Hmap. *)
+    iMod "Hrest" as "(Hrest & Hauth & HΦ)".
+
+    iSpecialize ("Hmap" with "[Hkvptsto Hrest]").
+    { iFrame "Hkvptsto". iRight. iExact "Hrest". }
+    (* FIXME: can iAssert just the ghost_map_elem *)
+    Unshelve.
+    3:{
+      iDestruct "Hrest" as "[Hlease|Hkey]".
+      { (* in this case, expire the existing lease *)
+        iDestruct "Hlease" as (?) "(Hexp & #Hlease & Hpost)".
+        iMod ncfupd_mask_subseteq as "Hmask".
+        2: iMod (lease_expire with "[$] [$] []") as ">Hkey".
+        { solve_ndisj. }
+        { iApply (is_time_lb_mono with "[$]"). word. }
+        iMod "Hmask" as "_".
+        iMod ncfupd_mask_subseteq as "Hmask".
+        2: iMod "Hau" as (?) "[Hkey2 Hau]".
+        { solve_ndisj. }
+        iCombine "Hkey Hkey2" as "Hkey".
+        rewrite dfrac_op_own Qp.half_half.
+        iMod (ghost_map_update with "[$] [$]") as "[Hauth Hkey]".
+        iDestruct "Hkey" as "[$ Hkey]".
+        iMod ("Hau" with "[$] [//]") as "$".
+        iFrame.
+      }
+      {
+        iMod ncfupd_mask_subseteq as "Hmask".
+        2: iMod "Hau" as (?) "[Hkey2 Hau]".
+        { solve_ndisj. }
+        iCombine "Hkey Hkey2" as "Hkey".
+        rewrite dfrac_op_own Qp.half_half.
+        iMod (ghost_map_update with "[$] [$]") as "[Hauth Hkey]".
+        iDestruct "Hkey" as "[$ Hkey]".
+        iMod ("Hau" with "[$] [//]") as "$".
+        iFrame.
+      }
+    }
+    iMod ("Hclose" with "[Hmap Hauth]") as "_".
+    { iNext. repeat iExists _; iFrame. }
+    iModIntro.
+    iIntros "_".
+    wp_pures.
+    iRight. iModIntro. iSplitR; first done.
+    wp_pures.
+    by iApply "HΦ".
+  }
+  {
+    iSpecialize ("Hmap" with "[$Hkvptsto $Hrest]").
+    do 2 (rewrite insert_id; last done).
+    iMod ("Hclose" with "[Hmap Hauth]") as "_".
+    { iNext. repeat iExists _; iFrame. }
+    iModIntro.
+    iIntros "_".
+    wp_pures.
+    iLeft. iModIntro.
+    iSplitR; first done.
+    iFrame.
+  }
+Admitted. (* same encoding injectivity *)
+
 End proof.
