@@ -73,15 +73,19 @@ Definition is_Kv (k:loc) : iProp Σ :=
 .
 
 (* FIXME: copies from tutorial proof *)
-Fixpoint string_le (s:string): list u8 :=
+Fixpoint string_to_bytes (s:string): list u8 :=
   match s with
   | EmptyString => []
-  | String x srest => [U8 (Ascii.nat_of_ascii x)] ++ (string_le srest)
+  | String x srest => [U8 (Ascii.nat_of_ascii x)] ++ (string_to_bytes srest)
   end
 .
 
-Definition encode_cacheValue (v:string) (lease:u64) : string.
-Admitted.
+Definition bytes_to_string (l:list u8) : string :=
+  foldl (λ s b, String (u8_to_ascii b) s) EmptyString l
+.
+
+Definition encode_cacheValue (v:string) (lease:u64) : string :=
+  (bytes_to_string $ u64_le lease) ++ v.
 
 Definition leasekvN := nroot .@ "leasekv".
 Definition leaseN := leasekvN .@ "lease".
@@ -370,7 +374,10 @@ Proof.
   { (* case: cput succeeded *)
     apply bool_decide_eq_true in Hok.
     assert (s = s0 ∧ x = x0) as [? ?]; last subst.
-    { admit. (* TODO: prove that encoding is injective. *) }
+    {
+      unfold encode_cacheValue in Hok.
+      admit. (* TODO: encoding injectivity. *)
+    }
 
     iAssert (|={↑leaseN}=> _ ∗ _)%I with "[Hrest]" as "Hrest".
     1: shelve. (* XXX: shelving this so unification can fill in the goal when
