@@ -87,6 +87,13 @@ Definition bytes_to_string (l:list u8) : string :=
 Definition encode_cacheValue (v:string) (lease:u64) : string :=
   (bytes_to_string $ u64_le lease) ++ v.
 
+Lemma encode_cacheValue_inj v l v' l' :
+  encode_cacheValue v l = encode_cacheValue v' l' →
+  v = v' ∧
+  l = l'.
+Proof.
+Admitted.
+
 Definition leasekvN := nroot .@ "leasekv".
 Definition leaseN := leasekvN .@ "lease".
 Definition invN := leasekvN .@ "inv".
@@ -373,11 +380,7 @@ Proof.
   destruct (bool_decide _) eqn:Hok.
   { (* case: cput succeeded *)
     apply bool_decide_eq_true in Hok.
-    assert (s = s0 ∧ x = x0) as [? ?]; last subst.
-    {
-      unfold encode_cacheValue in Hok.
-      admit. (* TODO: encoding injectivity. *)
-    }
+    apply encode_cacheValue_inj in Hok as [? ?]; subst.
 
     iAssert (|={↑leaseN}=> _ ∗ _)%I with "[Hrest]" as "Hrest".
     1: shelve. (* XXX: shelving this so unification can fill in the goal when
@@ -480,7 +483,7 @@ Proof.
     iSplitR; first done.
     iFrame.
   }
-Admitted.
+Qed.
 
 Lemma wp_LeaseKv__Put (k:loc) key value γ :
   ⊢ {{{ is_LeaseKv k γ }}}
@@ -594,11 +597,7 @@ Proof.
   destruct (bool_decide _) eqn:Hok.
   { (* case: cput succeeded *)
     apply bool_decide_eq_true in Hok.
-    assert (s = s0 ∧ x = x0) as [? ?]; last subst.
-    {
-      unfold encode_cacheValue in Hok.
-      admit. (* TODO: encoding injectivity. *)
-    }
+    apply encode_cacheValue_inj in Hok as [? ?]; subst.
 
     iAssert (|NC={⊤∖∅∖↑invN}=> (_ ∗ ghost_map_auth γ 1 _ ∗ Φ #()))%I with "[Hrest Hau Hauth]" as "Hrest".
     1: shelve. (* XXX: shelving this so unification can fill in the goal when
@@ -661,6 +660,6 @@ Proof.
     iSplitR; first done.
     iFrame.
   }
-Admitted. (* same encoding injectivity *)
+Qed.
 
 End proof.
