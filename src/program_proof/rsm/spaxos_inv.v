@@ -9,15 +9,19 @@ Section inv.
   Definition quorum (c q : gset A) : Prop.
   Admitted.
 
-  Lemma quorum_not_empty (c q : gset A) :
-    quorum c q -> q ≠ empty.
-  Admitted.
-
   Lemma quorums_overlapped c q1 q2 :
     quorum c q1 ->
     quorum c q2 ->
     ∃ x, x ∈ q1 ∧ x ∈ q2.
   Admitted.
+
+  Lemma quorum_not_empty (c q : gset A) :
+    quorum c q -> q ≠ empty.
+  Proof.
+    intros Hquorum.
+    destruct (quorums_overlapped _ _ _ Hquorum Hquorum) as (x & Helem & _).
+    set_solver.
+  Qed.
 
   Lemma ledgers_overlapped (ls lsq1 lsq2 : gmap A ledger) :
     lsq1 ⊆ ls ->
@@ -376,13 +380,13 @@ Section inv.
   Proof. rewrite app_length replicate_length. lia. Qed.
 
   (* Transition functions. *)
-  Definition accept_trans (ls : gmap A ledger) x n :=
+  Definition spaxos_accept (ls : gmap A ledger) x n :=
     alter (λ l, extend false n l ++ [true]) x ls.
 
-  Definition prepare_trans (ls : gmap A ledger) (x : A) (n : nat) :=
+  Definition spaxos_prepare (ls : gmap A ledger) (x : A) (n : nat) :=
     alter (λ l, extend false n l) x ls.
 
-  Definition propose_trans (ds : decrees) (n : nat) (v : string) :=
+  Definition spaxos_propose (ds : decrees) (n : nat) (v : string) :=
     <[n := v]> ds.
 
   (* XXX: this should be general. *)
@@ -438,7 +442,7 @@ Section inv.
   Lemma largest_proposal_accept_same
     (ls : gmap A ledger) (x : A) (n m : nat) :
     map_Forall (λ _ l, (m ≤ length l)%nat) ls ->
-    largest_proposal (accept_trans ls x n) m = largest_proposal ls m.
+    largest_proposal (spaxos_accept ls x n) m = largest_proposal ls m.
   Proof.
     intros Hlens.
     unfold largest_proposal.
@@ -454,7 +458,7 @@ Section inv.
   Lemma largest_proposal_prepare_same
     (ls : gmap A ledger) (x : A) (n m : nat) :
     map_Forall (λ _ l, (m ≤ length l)%nat) ls ->
-    largest_proposal (prepare_trans ls x n) m = largest_proposal ls m.
+    largest_proposal (spaxos_prepare ls x n) m = largest_proposal ls m.
   Proof.
     intros Hlens.
     unfold largest_proposal.
@@ -513,19 +517,16 @@ Section inv.
   Qed.
 
   (* Invariance w.r.t. to all the transition functions above. *)
-  Theorem vp_inv_accept ls ls' ds x n :
-    ls' = accept_trans ls x n ->
+  Theorem vp_inv_accept ls ds x n :
     valid_proposals ls ds ->
-    valid_proposals ls' ds.
+    valid_proposals (spaxos_accept ls x n) ds.
   Proof.
-    intros Htrans Hvp.
+    intros Hvp.
     intros m v Hdsm.
     apply Hvp in Hdsm as (lsq & Hlsa & Hquorum & Hlens & Heq).
-    exists (accept_trans lsq x n).
-    split.
-    { rewrite Htrans. by apply alter_mono. }
-    split.
-    { rewrite Htrans. by do 2 rewrite dom_alter_L. }
+    exists (spaxos_accept lsq x n).
+    split; first by apply alter_mono.
+    split; first by do 2 rewrite dom_alter_L.
     unfold equal_largest_or_empty.
     split.
     { apply map_Forall_alter; last apply Hlens.
@@ -539,15 +540,13 @@ Section inv.
     by rewrite largest_proposal_accept_same.
   Qed.
 
-  Theorem vl_inv_accept ls ls' ds x n :
+  Theorem vl_inv_accept ls ds x n :
     is_Some (ds !! n) ->
     (∃ l, ls !! x = Some l ∧ length l ≤ n)%nat ->
-    ls' = accept_trans ls x n ->
     valid_ledgers ls ds ->
-    valid_ledgers ls' ds.
+    valid_ledgers (spaxos_accept ls x n) ds.
   Proof.
-    intros Hdsn Hlen Htrans Hvl.
-    rewrite Htrans.
+    intros Hdsn Hlen Hvl.
     apply map_Forall_alter; last apply Hvl.
     intros l Hlookup m Hacc.
     unfold valid_ledgers in Hvl.
@@ -569,19 +568,16 @@ Section inv.
     by rewrite -Heq.
   Qed.
 
-  Theorem vp_inv_prepare ls ls' ds x n :
-    ls' = prepare_trans ls x n ->
+  Theorem vp_inv_prepare ls ds x n :
     valid_proposals ls ds ->
-    valid_proposals ls' ds.
+    valid_proposals (spaxos_prepare ls x n) ds.
   Proof.
-    intros Htrans Hvp.
+    intros Hvp.
     intros m v Hdsm.
     apply Hvp in Hdsm as (lsq & Hlsa & Hquorum & Hlens & Heq).
-    exists (prepare_trans lsq x n).
-    split.
-    { rewrite Htrans. by apply alter_mono. }
-    split.
-    { rewrite Htrans. by do 2 rewrite dom_alter_L. }
+    exists (spaxos_prepare lsq x n).
+    split; first by apply alter_mono.
+    split; first by do 2 rewrite dom_alter_L.
     unfold equal_largest_or_empty.
     split.
     { apply map_Forall_alter; last apply Hlens.
@@ -594,13 +590,11 @@ Section inv.
     by rewrite largest_proposal_prepare_same.
   Qed.
 
-  Theorem vl_inv_prepare ls ls' ds x n :
-    ls' = prepare_trans ls x n ->
+  Theorem vl_inv_prepare ls ds x n :
     valid_ledgers ls ds ->
-    valid_ledgers ls' ds.
+    valid_ledgers (spaxos_prepare ls x n) ds.
   Proof.
-    intros Htrans Hvl.
-    rewrite Htrans.
+    intros Hvl.
     apply map_Forall_alter; last apply Hvl.
     intros l Hlookup m Hacc.
     unfold valid_ledgers in Hvl.
@@ -613,10 +607,10 @@ Section inv.
     n ≠ O ->
     valid_proposal ls ds n v ->
     valid_proposals ls ds ->
-    valid_proposals ls (propose_trans ds n v).
+    valid_proposals ls (spaxos_propose ds n v).
   Proof.
     intros Hnone Hnz Hvalid Hvp.
-    unfold propose_trans.
+    unfold spaxos_propose.
     apply map_Forall_insert_2; first by apply valid_proposal_insert_n.
     apply (map_Forall_impl _ _ _ Hvp).
     intros n' v' Hmu.
@@ -625,10 +619,10 @@ Section inv.
 
   Theorem vl_inv_propose ls ds n v :
     valid_ledgers ls ds ->
-    valid_ledgers ls (propose_trans ds n v).
+    valid_ledgers ls (spaxos_propose ds n v).
   Proof.
     intros Hvl.
-    unfold propose_trans.
+    unfold spaxos_propose.
     intros x l Hlookup n' Hacc.
     destruct (decide (n' = n)) as [-> | Hneq]; first by rewrite lookup_insert.
     rewrite lookup_insert_ne; last done.
