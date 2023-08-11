@@ -149,6 +149,12 @@ Proof.
   }
 Qed.
 
+Lemma post_get_lease R N γl :
+  post_lease N γl R -∗ is_lease N γl R.
+Proof.
+  iIntros "(% & ? & ?)". iExists _. iFrame.
+Qed.
+
 Lemma lease_get_lb γl e :
   own_lease_expiration γl e -∗
   is_lease_valid_lb γl e.

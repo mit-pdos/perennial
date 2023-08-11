@@ -33,31 +33,33 @@ Section proof.
 Context `{!heapGS Σ}.
 Context `{!ghost_mapG Σ string string}.
 Context `{!renewable_leaseG Σ}.
-Context {kvptsto: string → string → iProp Σ}.
+
+(* KV points-to for the internal kv service *)
+Context {kvptsto_int: string → string → iProp Σ}.
 
 (* Specification of Kv interface. *)
 Definition is_Kv_Put (Put_fn:val) : iProp Σ :=
   ∀ key value,
   {{{ True }}}
-  <<< ∀∀ old_value, kvptsto key old_value >>>
+  <<< ∀∀ old_value, kvptsto_int key old_value >>>
     Put_fn #(LitString key) #(LitString value) @ ∅
-  <<< kvptsto key value >>>
+  <<< kvptsto_int key value >>>
   {{{ RET #(); True }}}.
 
 Definition is_Kv_Get (Get_fn:val) : iProp Σ :=
   ∀ key,
   {{{ True }}}
-  <<< ∀∀ value, kvptsto key value >>>
+  <<< ∀∀ value, kvptsto_int key value >>>
     Get_fn #(LitString key) @ ∅
-  <<< kvptsto key value >>>
+  <<< kvptsto_int key value >>>
   {{{ RET #(LitString value); True }}}.
 
 Definition is_Kv_ConditionalPut (CondPut_fn:val) : iProp Σ :=
   ∀ key expect value,
   {{{ True }}}
-  <<< ∀∀ old_value, kvptsto key old_value >>>
+  <<< ∀∀ old_value, kvptsto_int key old_value >>>
     CondPut_fn #(LitString key) #(LitString expect) #(LitString value) @ ∅
-  <<< kvptsto key (if bool_decide (expect = old_value) then value else old_value) >>>
+  <<< kvptsto_int key (if bool_decide (expect = old_value) then value else old_value) >>>
   {{{ RET #(LitString (if bool_decide (expect = old_value) then "ok" else "")); True }}}.
 
 Definition is_Kv (k:loc) : iProp Σ :=
@@ -98,33 +100,38 @@ Definition leasekvN := nroot .@ "leasekv".
 Definition leaseN := leasekvN .@ "lease".
 Definition invN := leasekvN .@ "inv".
 
-Definition is_inv γ : iProp Σ :=
-  inv invN (∃ kvs leases,
-    "Hauth" ∷ ghost_map_auth γ 1 kvs ∗
-    "Hmap" ∷ ([∗ map] k ↦ v; lease ∈ kvs ; leases,
-                             kvptsto k (encode_cacheValue v lease) ∗
-                             ((∃ γl, own_lease_expiration γl lease ∗
-                                    is_lease leaseN γl (k ↪[γ] {#1/2} v) ∗
-                                    post_lease leaseN γl (k ↪[γ] {#1/2} v)) ∨
-                             (k ↪[γ] {#1/2} v)))
+(* The old proof used to have fractional points-tos. The current proof uses two
+   ghost_maps and glues them together in this invariant, so that there are two
+   full points-tos that are needed to update a key-value pair. *)
+Definition is_inv γs γc : iProp Σ :=
+  inv invN (∃ kvs,
+    (* This glues the two maps together *)
+    "HauthServer" ∷ ghost_map_auth γs 1 kvs ∗
+    "HauthClient" ∷ ghost_map_auth γc 1 kvs ∗
+
+    "Hmap" ∷ ([∗ map] k ↦ v ∈ kvs, ∃ leaseExpiration γl,
+                             kvptsto_int k (encode_cacheValue v leaseExpiration) ∗
+                             post_lease leaseN γl (k ↪[γs] v) ∗
+                             own_lease_expiration γl leaseExpiration
+             )
            )
 .
 
-Definition own_LeaseKv (k:loc) (γ:gname) : iProp Σ :=
+Definition own_LeaseKv (k:loc) (γs:gname) : iProp Σ :=
   ∃ (cache_ptr:loc) (cache:gmap string cacheValueC.t),
   "Hcache_ptr" ∷ k ↦[LeaseKv :: "cache"] #cache_ptr ∗
   "Hcache" ∷ own_map cache_ptr 1 cache ∗
   "#Hleases" ∷ ([∗ map] k ↦ cv ∈ cache,
-                  ∃ γl, is_lease leaseN γl (k ↪[γ] {#1/2} cv.(cacheValueC.v)) ∗
+                  ∃ γl, is_lease leaseN γl (k ↪[γs] cv.(cacheValueC.v)) ∗
                         is_lease_valid_lb γl cv.(cacheValueC.l)
                )
 .
 
 Definition is_LeaseKv (k:loc) γ : iProp Σ :=
-  ∃ mu (kv:loc),
-  "#Hinv" ∷ is_inv γ ∗
+  ∃ mu (kv:loc) γs,
+  "#Hinv" ∷ is_inv γs γ ∗
   "#Hmu" ∷ readonly (k ↦[LeaseKv :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock nroot mu (own_LeaseKv k γ) ∗
+  "#HmuInv" ∷ is_lock nroot mu (own_LeaseKv k γs) ∗
   "#Hkv" ∷ readonly (k ↦[LeaseKv :: "kv"] #kv) ∗
   "#Hkv_is" ∷ is_Kv kv
 .
@@ -136,11 +143,31 @@ Lemma wp_DecodeValue v l :
 Proof.
 Admitted.
 
+Lemma kv_agree γs γc k v v' :
+  is_inv γs γc -∗
+  k ↪[γs] v -∗
+  k ↪[γc] v'
+  ={↑invN}=∗
+  k ↪[γs] v ∗
+  k ↪[γc] v' ∗
+  ⌜v = v'⌝.
+Proof.
+  iIntros "#? Hk1 Hk2".
+  iInv invN as "Hi" "Hclose".
+  iDestruct "Hi" as (?) "(>Hs & >Hc & ?)".
+  iDestruct (ghost_map_lookup with "[$Hs] [$]") as %?.
+  iDestruct (ghost_map_lookup with "[$Hc] [$]") as %?.
+  iMod ("Hclose" with "[-Hk1 Hk2]").
+  { iExists _; iFrame. }
+  iFrame. iPureIntro.
+  naive_solver.
+Qed.
+
 Lemma wp_LeaseKv__Get (k:loc) key γ :
   ⊢ {{{ is_LeaseKv k γ }}}
-    <<< ∀∀ v, key ↪[γ] {#1/2} v >>>
+    <<< ∀∀ v, key ↪[γ] v >>>
       LeaseKv__Get #k #(LitString key) @ ↑leasekvN
-    <<< key ↪[γ] {#1/2} v >>>
+    <<< key ↪[γ] v >>>
   {{{ RET #(LitString v); True }}}.
 Proof.
   Opaque struct.get.
@@ -238,10 +265,10 @@ Proof.
     { done. }
     iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH Hmap]".
     1-2: done.
-    iDestruct "HH" as "[Hkvptsto Hrest]".
+    iDestruct "HH" as "[Hkvptsto_int Hrest]".
     iExists _.
     iFrame.
-    iIntros "Hkvptsto".
+    iIntros "Hkvptsto_int".
     iSpecialize ("Hmap" with "[$]").
     iMod ("Hau" with "[$]") as "HΦ".
     iMod "Hmask".
@@ -296,7 +323,7 @@ Proof.
   wp_loadField.
 
   (* XXX: we could use the actual spec for Get() here, but that would require
-     having kvptsto for `key` from is_inv, but we can't be sure it exists
+     having kvptsto_int for `key` from is_inv, but we can't be sure it exists
      without seeing that (k ↪[γ] v) exists, but that would require calling
      Hau right now. We could have an "atomic_update" with the ability to
      peek at the resources, or we could actually linearize right here and use a
@@ -308,7 +335,7 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iNamed "Hi".
   destruct (kvs !! key) eqn:Hlookup.
-  2:{ (* XXX: Derive a contradiction in the case that kvptsto is not available;
+  2:{ (* XXX: Derive a contradiction in the case that kvptsto_int is not available;
          this is a bit of a strange argument, but it works. *)
     iMod ncfupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
@@ -320,13 +347,13 @@ Proof.
   { done. }
   iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH Hmap]".
   1-2: done.
-  iDestruct "HH" as "[Hkvptsto Hrest]".
+  iDestruct "HH" as "[Hkvptsto_int Hrest]".
   iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
   iFrame.
-  iIntros "Hkvptsto".
+  iIntros "Hkvptsto_int".
   iMod "Hmask" as "_".
   iSpecialize ("Hmap" with "[$]").
   iMod ("Hclose" with "[Hmap Hauth]") as "_".
@@ -355,7 +382,7 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iNamed "Hi".
   destruct (kvs !! key) eqn:Hlookup.
-  2:{ (* XXX: Derive a contradiction in the case that kvptsto is not available;
+  2:{ (* XXX: Derive a contradiction in the case that kvptsto_int is not available;
          this is a bit of a strange argument, but it works. *)
     iMod ncfupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
@@ -367,13 +394,13 @@ Proof.
   { done. }
   iDestruct (big_sepM2_insert_acc with "Hmap") as "[HH Hmap]".
   1-2: done.
-  iDestruct "HH" as "[Hkvptsto Hrest]".
+  iDestruct "HH" as "[Hkvptsto_int Hrest]".
   iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
   iFrame.
-  iIntros "Hkvptsto".
+  iIntros "Hkvptsto_int".
   iMod "Hmask" as "_".
   (* end paste *)
 
@@ -390,9 +417,9 @@ Proof.
     { solve_ndisj. }
     iMod "Hmask" as "_".
 
-    iSpecialize ("Hmap" with "[Hkvptsto Hrest]").
+    iSpecialize ("Hmap" with "[Hkvptsto_int Hrest]").
     {
-      iFrame "Hkvptsto". iLeft. iExact "Hrest".
+      iFrame "Hkvptsto_int". iLeft. iExact "Hrest".
     }
     Unshelve.
     3:{
@@ -504,7 +531,7 @@ Proof.
   wp_loadField.
 
   (* XXX: we could use the actual spec for Get() here, but that would require
-     having kvptsto for `key` from is_inv, but we can't be sure it exists
+     having kvptsto_int for `key` from is_inv, but we can't be sure it exists
      without seeing that (k ↪[γ] v) exists, but that would require calling
      Hau right now. We could have an "atomic_update" with the ability to
      peek at the resources, or we could actually linearize right here and use a
@@ -516,7 +543,7 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iNamed "Hi".
   destruct (kvs !! key) eqn:Hlookup.
-  2:{ (* XXX: Derive a contradiction in the case that kvptsto is not available;
+  2:{ (* XXX: Derive a contradiction in the case that kvptsto_int is not available;
          this is a bit of a strange argument, but it works. *)
     iMod ncfupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
@@ -528,13 +555,13 @@ Proof.
   { done. }
   iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH Hmap]".
   1-2: done.
-  iDestruct "HH" as "[Hkvptsto Hrest]".
+  iDestruct "HH" as "[Hkvptsto_int Hrest]".
   iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
   iFrame.
-  iIntros "Hkvptsto".
+  iIntros "Hkvptsto_int".
   iMod "Hmask" as "_".
   iSpecialize ("Hmap" with "[$]").
   iMod ("Hclose" with "[Hmap Hauth]") as "_".
@@ -572,7 +599,7 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iNamed "Hi".
   destruct (kvs !! key) eqn:Hlookup.
-  2:{ (* XXX: Derive a contradiction in the case that kvptsto is not available;
+  2:{ (* XXX: Derive a contradiction in the case that kvptsto_int is not available;
          this is a bit of a strange argument, but it works. *)
     iMod ncfupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
@@ -584,13 +611,13 @@ Proof.
   { done. }
   iDestruct (big_sepM2_insert_acc with "Hmap") as "[HH Hmap]".
   1-2: done.
-  iDestruct "HH" as "[Hkvptsto Hrest]".
+  iDestruct "HH" as "[Hkvptsto_int Hrest]".
   iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
   iFrame.
-  iIntros "Hkvptsto".
+  iIntros "Hkvptsto_int".
   iMod "Hmask" as "_".
   (* end paste *)
 
@@ -604,8 +631,8 @@ Proof.
                   specializing Hmap. *)
     iMod "Hrest" as "(Hrest & Hauth & HΦ)".
 
-    iSpecialize ("Hmap" with "[Hkvptsto Hrest]").
-    { iFrame "Hkvptsto". iRight. iExact "Hrest". }
+    iSpecialize ("Hmap" with "[Hkvptsto_int Hrest]").
+    { iFrame "Hkvptsto_int". iRight. iExact "Hrest". }
     (* FIXME: can iAssert just the ghost_map_elem *)
     Unshelve.
     3:{
@@ -649,7 +676,7 @@ Proof.
     by iApply "HΦ".
   }
   {
-    iSpecialize ("Hmap" with "[$Hkvptsto $Hrest]").
+    iSpecialize ("Hmap" with "[$Hkvptsto_int $Hrest]").
     do 2 (rewrite insert_id; last done).
     iMod ("Hclose" with "[Hmap Hauth]") as "_".
     { iNext. repeat iExists _; iFrame. }
