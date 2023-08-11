@@ -100,38 +100,43 @@ Definition leasekvN := nroot .@ "leasekv".
 Definition leaseN := leasekvN .@ "lease".
 Definition invN := leasekvN .@ "inv".
 
-(* The old proof used to have fractional points-tos. The current proof uses two
-   ghost_maps and glues them together in this invariant, so that there are two
-   full points-tos that are needed to update a key-value pair. *)
-Definition is_inv γs γc : iProp Σ :=
+(* server/invariant-side key-value points-to *)
+Definition s_kvptsto γ key value : iProp Σ :=
+  key ↪[γ] {#1/2} value
+.
+
+Definition kvptsto γ key value : iProp Σ :=
+  key ↪[γ] {#1/2} value
+.
+
+Definition is_inv γ : iProp Σ :=
   inv invN (∃ kvs,
     (* This glues the two maps together *)
-    "HauthServer" ∷ ghost_map_auth γs 1 kvs ∗
-    "HauthClient" ∷ ghost_map_auth γc 1 kvs ∗
+    "Hauth" ∷ ghost_map_auth γ 1 kvs ∗
 
     "Hmap" ∷ ([∗ map] k ↦ v ∈ kvs, ∃ leaseExpiration γl,
                              kvptsto_int k (encode_cacheValue v leaseExpiration) ∗
-                             post_lease leaseN γl (k ↪[γs] v) ∗
+                             post_lease leaseN γl (s_kvptsto γ k v) ∗
                              own_lease_expiration γl leaseExpiration
              )
            )
 .
 
-Definition own_LeaseKv (k:loc) (γs:gname) : iProp Σ :=
+Definition own_LeaseKv (k:loc) γ : iProp Σ :=
   ∃ (cache_ptr:loc) (cache:gmap string cacheValueC.t),
   "Hcache_ptr" ∷ k ↦[LeaseKv :: "cache"] #cache_ptr ∗
   "Hcache" ∷ own_map cache_ptr 1 cache ∗
   "#Hleases" ∷ ([∗ map] k ↦ cv ∈ cache,
-                  ∃ γl, is_lease leaseN γl (k ↪[γs] cv.(cacheValueC.v)) ∗
+                  ∃ γl, is_lease leaseN γl (s_kvptsto γ k cv.(cacheValueC.v)) ∗
                         is_lease_valid_lb γl cv.(cacheValueC.l)
                )
 .
 
 Definition is_LeaseKv (k:loc) γ : iProp Σ :=
-  ∃ mu (kv:loc) γs,
-  "#Hinv" ∷ is_inv γs γ ∗
+  ∃ mu (kv:loc),
+  "#Hinv" ∷ is_inv γ ∗
   "#Hmu" ∷ readonly (k ↦[LeaseKv :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock nroot mu (own_LeaseKv k γs) ∗
+  "#HmuInv" ∷ is_lock nroot mu (own_LeaseKv k γ) ∗
   "#Hkv" ∷ readonly (k ↦[LeaseKv :: "kv"] #kv) ∗
   "#Hkv_is" ∷ is_Kv kv
 .
@@ -143,31 +148,11 @@ Lemma wp_DecodeValue v l :
 Proof.
 Admitted.
 
-Lemma kv_agree γs γc k v v' :
-  is_inv γs γc -∗
-  k ↪[γs] v -∗
-  k ↪[γc] v'
-  ={↑invN}=∗
-  k ↪[γs] v ∗
-  k ↪[γc] v' ∗
-  ⌜v = v'⌝.
-Proof.
-  iIntros "#? Hk1 Hk2".
-  iInv invN as "Hi" "Hclose".
-  iDestruct "Hi" as (?) "(>Hs & >Hc & ?)".
-  iDestruct (ghost_map_lookup with "[$Hs] [$]") as %?.
-  iDestruct (ghost_map_lookup with "[$Hc] [$]") as %?.
-  iMod ("Hclose" with "[-Hk1 Hk2]").
-  { iExists _; iFrame. }
-  iFrame. iPureIntro.
-  naive_solver.
-Qed.
-
 Lemma wp_LeaseKv__Get (k:loc) key γ :
   ⊢ {{{ is_LeaseKv k γ }}}
-    <<< ∀∀ v, key ↪[γ] v >>>
+    <<< ∀∀ v, kvptsto γ key v >>>
       LeaseKv__Get #k #(LitString key) @ ↑leasekvN
-    <<< key ↪[γ] v >>>
+    <<< kvptsto γ key v >>>
   {{{ RET #(LitString v); True }}}.
 Proof.
   Opaque struct.get.
@@ -261,15 +246,14 @@ Proof.
     iDestruct "Hau" as (?) "[Hkey Hau]".
     clear Hlookup.
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup.
-    iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? HleaseLookup].
-    { done. }
-    iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH Hmap]".
-    1-2: done.
-    iDestruct "HH" as "[Hkvptsto_int Hrest]".
+    iDestruct (big_sepM_lookup_acc with "Hmap") as "[HH Hmap]".
+    1: done.
+    iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
     iExists _.
     iFrame.
-    iIntros "Hkvptsto_int".
-    iSpecialize ("Hmap" with "[$]").
+    iIntros "Hkvptsto".
+    iSpecialize ("Hmap" with "[Hpost Hkvptsto Hexp]").
+    { repeat iExists _. iFrame. }
     iMod ("Hau" with "[$]") as "HΦ".
     iMod "Hmask".
     iMod ("Hclose" with "[Hmap Hauth]") as "_".
@@ -343,19 +327,17 @@ Proof.
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
     exfalso. rewrite Hlookup in Hlookup2. done.
   }
-  iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? HleaseLookup].
-  { done. }
-  iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH Hmap]".
-  1-2: done.
-  iDestruct "HH" as "[Hkvptsto_int Hrest]".
+  iDestruct (big_sepM_lookup_acc with "Hmap") as "[HH Hmap]"; first done.
+  iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
   iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
   iFrame.
-  iIntros "Hkvptsto_int".
+  iIntros "Hkvptsto".
   iMod "Hmask" as "_".
-  iSpecialize ("Hmap" with "[$]").
+  iSpecialize ("Hmap" with "[Hkvptsto Hpost Hexp]").
+  { repeat iExists _. iFrame. }
   iMod ("Hclose" with "[Hmap Hauth]") as "_".
   { iNext. eauto with iFrame. }
 
@@ -376,7 +358,7 @@ Proof.
   wp_loadField.
 
   wp_apply ("HcputSpec" with "[//]").
-  clear kvs Hlookup HleaseLookup.
+  clear kvs Hlookup.
   (* XXX copy/paste from above: *)
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
@@ -390,17 +372,14 @@ Proof.
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
     exfalso. rewrite Hlookup in Hlookup2. done.
   }
-  iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? HleaseLookup].
-  { done. }
-  iDestruct (big_sepM2_insert_acc with "Hmap") as "[HH Hmap]".
-  1-2: done.
-  iDestruct "HH" as "[Hkvptsto_int Hrest]".
+  iDestruct (big_sepM_insert_acc with "Hmap") as "[HH Hmap]"; first done.
+  iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
   iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
   iFrame.
-  iIntros "Hkvptsto_int".
+  iIntros "Hkvptsto".
   iMod "Hmask" as "_".
   (* end paste *)
 
@@ -409,41 +388,17 @@ Proof.
     apply bool_decide_eq_true in Hok.
     apply encode_cacheValue_inj in Hok as [? ?]; subst.
 
-    iAssert (|={↑leaseN}=> _ ∗ _)%I with "[Hrest]" as "Hrest".
-    1: shelve. (* XXX: shelving this so unification can fill in the goal when
-                  specializing Hmap. *)
+    (* extend/create lease *)
     iMod ncfupd_mask_subseteq as "Hmask".
-    2: iMod "Hrest" as "[Hrest Hlease]".
+    2: iMod (lease_renew newLeaseExpiration with "[$] [$]") as "[Hpost Hexp]".
     { solve_ndisj. }
+    { word. }
+    iDestruct (lease_get_lb with "[$]") as "#Hvalid".
+    iDestruct (post_get_lease with "[$]") as "#Hlease".
     iMod "Hmask" as "_".
 
-    iSpecialize ("Hmap" with "[Hkvptsto_int Hrest]").
-    {
-      iFrame "Hkvptsto_int". iLeft. iExact "Hrest".
-    }
-    Unshelve.
-    3:{
-      iDestruct "Hrest" as "[Hlease|Hkey]".
-      { (* in this case, renew the existing lease *)
-        iDestruct "Hlease" as (?) "(Hexp & #Hlease & Hpost)".
-        iMod (lease_renew newLeaseExpiration with "[$] [$]") as "[Hpost Hexp]".
-        { word. }
-        iModIntro.
-        iDestruct (lease_get_lb with "[$]") as "#Hvalid".
-        iSplitL.
-        { iExists _; iFrame "∗#". }
-        shelve. (* XXX: shelving for later unification. *)
-      }
-      {
-        iMod (lease_alloc with "Hkey") as (?) "(#Hlease & Hpost & Hexp)".
-        iModIntro.
-        iDestruct (lease_get_lb with "[$]") as "#Hvalid".
-        iSplitL.
-        { iExists _; iFrame "∗#". }
-        shelve. (* XXX: shelving for later unification. *)
-      }
-    }
-    2: shelve.
+    iSpecialize ("Hmap" with "[Hkvptsto Hpost Hexp]").
+    { repeat iExists _. iFrame. }
     iMod ncfupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
     { solve_ndisj. }
@@ -488,18 +443,16 @@ Proof.
       iFrame.
       rewrite /typed_map.map_insert.
       iApply (big_sepM_insert_2 with "[Hlease] Hleases").
-      { iExact "Hlease". }
+      { repeat iExists _; iFrame "#". }
     }
-    Unshelve.
-    2:{ iExists _; iFrame "#". }
-    2:{ iExists _; iFrame "#". }
     wp_pures.
     by iApply "HΦ".
   }
   { (* case: cput failed, go back to beginning of loop *)
     apply bool_decide_eq_false in Hok.
-    iSpecialize ("Hmap" with "[$]").
-    do 2 (rewrite insert_id; last done).
+    iSpecialize ("Hmap" with "[Hkvptsto Hexp Hpost]").
+    { repeat iExists _; iFrame. }
+    rewrite insert_id; last done.
     iMod ("Hclose" with "[Hmap Hauth]") as "_".
     { iNext. eauto with iFrame. }
     iModIntro.
@@ -551,19 +504,17 @@ Proof.
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
     exfalso. rewrite Hlookup in Hlookup2. done.
   }
-  iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? HleaseLookup].
-  { done. }
-  iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH Hmap]".
-  1-2: done.
-  iDestruct "HH" as "[Hkvptsto_int Hrest]".
+  iDestruct (big_sepM_lookup_acc with "Hmap") as "[HH Hmap]"; first done.
+  iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
   iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
   iFrame.
-  iIntros "Hkvptsto_int".
+  iIntros "Hkvptsto".
   iMod "Hmask" as "_".
-  iSpecialize ("Hmap" with "[$]").
+  iSpecialize ("Hmap" with "[Hpost Hkvptsto Hexp]").
+  { repeat iExists _; iFrame. }
   iMod ("Hclose" with "[Hmap Hauth]") as "_".
   { iNext. eauto with iFrame. }
 
@@ -592,7 +543,7 @@ Proof.
   wp_loadField.
 
   wp_apply ("HcputSpec" with "[//]").
-  clear kvs Hlookup HleaseLookup.
+  clear kvs Hlookup.
   (* XXX copy/paste from above: *)
 
   iInv "Hinv" as "Hi" "Hclose".
@@ -607,17 +558,14 @@ Proof.
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
     exfalso. rewrite Hlookup in Hlookup2. done.
   }
-  iDestruct (big_sepM2_lookup_l_some with "Hmap") as %[? HleaseLookup].
-  { done. }
-  iDestruct (big_sepM2_insert_acc with "Hmap") as "[HH Hmap]".
-  1-2: done.
-  iDestruct "HH" as "[Hkvptsto_int Hrest]".
+  iDestruct (big_sepM_insert_acc with "Hmap") as "[HH Hmap]"; first done.
+  iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
   iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
   iFrame.
-  iIntros "Hkvptsto_int".
+  iIntros "Hkvptsto".
   iMod "Hmask" as "_".
   (* end paste *)
 
@@ -626,46 +574,30 @@ Proof.
     apply bool_decide_eq_true in Hok.
     apply encode_cacheValue_inj in Hok as [? ?]; subst.
 
-    iAssert (|NC={⊤∖∅∖↑invN}=> (_ ∗ ghost_map_auth γ 1 _ ∗ Φ #()))%I with "[Hrest Hau Hauth]" as "Hrest".
-    1: shelve. (* XXX: shelving this so unification can fill in the goal when
-                  specializing Hmap. *)
-    iMod "Hrest" as "(Hrest & Hauth & HΦ)".
+    (* expire the existing lease, then make another one *)
+    iMod ncfupd_mask_subseteq as "Hmask".
+    2: iMod (lease_expire with "[$] [$] []") as ">Hkey".
+    { solve_ndisj. }
+    { iApply (is_time_lb_mono with "[$]"). word. }
+    iMod "Hmask" as "_".
+    iMod ncfupd_mask_subseteq as "Hmask".
+    2: iMod "Hau" as (?) "[Hkey2 Hau]".
+    { solve_ndisj. }
+    iCombine "Hkey Hkey2" as "Hkey".
+    rewrite dfrac_op_own Qp.half_half.
+    iMod (ghost_map_update with "[$] [$]") as "[Hauth Hkey]".
+    iDestruct "Hkey" as "[Hkey Hkey2]".
+    iMod ("Hau" with "[$] [//]") as "HΦ".
+    iFrame.
+    iMod "Hmask" as "_".
+    iMod ncfupd_mask_subseteq as "Hmask".
+    2: iMod (lease_alloc _ leaseN with "Hkey") as (?) "(#? & Hpost & Hexp)".
+    { solve_ndisj. }
+    iMod "Hmask".
 
-    iSpecialize ("Hmap" with "[Hkvptsto_int Hrest]").
-    { iFrame "Hkvptsto_int". iRight. iExact "Hrest". }
-    (* FIXME: can iAssert just the ghost_map_elem *)
-    Unshelve.
-    3:{
-      iDestruct "Hrest" as "[Hlease|Hkey]".
-      { (* in this case, expire the existing lease *)
-        iDestruct "Hlease" as (?) "(Hexp & #Hlease & Hpost)".
-        iMod ncfupd_mask_subseteq as "Hmask".
-        2: iMod (lease_expire with "[$] [$] []") as ">Hkey".
-        { solve_ndisj. }
-        { iApply (is_time_lb_mono with "[$]"). word. }
-        iMod "Hmask" as "_".
-        iMod ncfupd_mask_subseteq as "Hmask".
-        2: iMod "Hau" as (?) "[Hkey2 Hau]".
-        { solve_ndisj. }
-        iCombine "Hkey Hkey2" as "Hkey".
-        rewrite dfrac_op_own Qp.half_half.
-        iMod (ghost_map_update with "[$] [$]") as "[Hauth Hkey]".
-        iDestruct "Hkey" as "[$ Hkey]".
-        iMod ("Hau" with "[$] [//]") as "$".
-        iFrame.
-      }
-      {
-        iMod ncfupd_mask_subseteq as "Hmask".
-        2: iMod "Hau" as (?) "[Hkey2 Hau]".
-        { solve_ndisj. }
-        iCombine "Hkey Hkey2" as "Hkey".
-        rewrite dfrac_op_own Qp.half_half.
-        iMod (ghost_map_update with "[$] [$]") as "[Hauth Hkey]".
-        iDestruct "Hkey" as "[$ Hkey]".
-        iMod ("Hau" with "[$] [//]") as "$".
-        iFrame.
-      }
-    }
+    iSpecialize ("Hmap" with "[Hkvptsto Hpost Hexp]").
+    { repeat iExists _. iFrame. }
+
     iMod ("Hclose" with "[Hmap Hauth]") as "_".
     { iNext. repeat iExists _; iFrame. }
     iModIntro.
@@ -676,8 +608,9 @@ Proof.
     by iApply "HΦ".
   }
   {
-    iSpecialize ("Hmap" with "[$Hkvptsto_int $Hrest]").
-    do 2 (rewrite insert_id; last done).
+    iSpecialize ("Hmap" with "[Hkvptsto Hpost Hexp]").
+    { repeat iExists _; iFrame. }
+    rewrite insert_id; last done.
     iMod ("Hclose" with "[Hmap Hauth]") as "_".
     { iNext. repeat iExists _; iFrame. }
     iModIntro.
