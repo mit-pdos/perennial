@@ -6,36 +6,6 @@ From Perennial.program_proof Require Import std_proof.
 
 (********************************************************************************)
 
-(* FIXME: move this somewhere else *)
-Fixpoint string_le (s:string): list u8 :=
-  match s with
-  | EmptyString => []
-  | String x srest => [U8 (Ascii.nat_of_ascii x)] ++ (string_le srest)
-  end
-.
-
-Axiom wp_stringToBytes :
-  ∀ `{!heapGS Σ} (s:string),
-  {{{
-        True
-  }}}
-    prelude.Data.stringToBytes #(str s)
-  {{{
-        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT 1 (string_le s)
-  }}}
-.
-
-Axiom wp_bytesToString :
-  ∀ `{!heapGS Σ} sl q (s:string),
-  {{{
-        own_slice_small sl byteT q (string_le s)
-  }}}
-    prelude.Data.bytesToString (slice_val sl)
-  {{{
-        RET #(str s); own_slice_small sl byteT q (string_le s)
-  }}}
-.
-
 Module putArgs.
 Record t :=
   mk {
@@ -87,7 +57,7 @@ Proof.
   wp_store.
 
   wp_loadField.
-  wp_apply wp_stringToBytes.
+  wp_apply wp_StringToBytes.
   iIntros (key_sl) "Hkey_sl".
   wp_pures.
 
@@ -105,7 +75,7 @@ Proof.
   wp_store.
 
   wp_loadField.
-  wp_apply (wp_stringToBytes).
+  wp_apply (wp_StringToBytes).
   iIntros (?) "Hval_sl".
   iDestruct (own_slice_to_small with "Hval_sl") as "Hval_sl".
   wp_load.
@@ -165,10 +135,10 @@ Proof.
   { rewrite app_length in Hsz. word. }
   iIntros (???) "[Hkey Hval]".
   wp_pures.
-  wp_apply (wp_bytesToString with "[$Hkey]").
+  wp_apply (wp_StringFromBytes with "[$Hkey]").
   iIntros "Hkey".
   wp_storeField.
-  wp_apply (wp_bytesToString with "[$Hval]").
+  wp_apply (wp_StringFromBytes with "[$Hval]").
   iIntros "Hval".
   wp_storeField.
   iModIntro.
@@ -232,7 +202,7 @@ Proof.
   wp_store.
 
   wp_loadField.
-  wp_apply wp_stringToBytes.
+  wp_apply wp_StringToBytes.
   iIntros (key_sl) "Hkey_sl".
   wp_pures.
   wp_apply wp_slice_len.
@@ -249,7 +219,7 @@ Proof.
   wp_store.
 
   wp_loadField.
-  wp_apply (wp_stringToBytes).
+  wp_apply (wp_StringToBytes).
   iIntros (?) "Hexpect_sl".
   iDestruct (own_slice_to_small with "Hexpect_sl") as "Hexpect_sl".
   wp_pures.
@@ -267,7 +237,7 @@ Proof.
   wp_store.
 
   wp_loadField.
-  wp_apply (wp_stringToBytes).
+  wp_apply (wp_StringToBytes).
   iIntros (?) "Hval_sl".
   wp_load.
   iDestruct (own_slice_to_small with "Hval_sl") as "Hval_sl".
@@ -328,7 +298,7 @@ Proof.
   { rewrite app_length in Hsz. word. }
   iIntros (???) "[Hkey Hsl]".
   wp_pures.
-  wp_apply (wp_bytesToString with "[$Hkey]").
+  wp_apply (wp_StringFromBytes with "[$Hkey]").
   iIntros "_".
   wp_storeField.
 
@@ -341,10 +311,10 @@ Proof.
   iIntros (???) "[Hexpect Hval]".
   wp_pures.
 
-  wp_apply (wp_bytesToString with "[$Hexpect]").
+  wp_apply (wp_StringFromBytes with "[$Hexpect]").
   iIntros "_".
   wp_storeField.
-  wp_apply (wp_bytesToString with "[$Hval]").
+  wp_apply (wp_StringFromBytes with "[$Hval]").
   iIntros "_".
   wp_storeField.
   iModIntro. iApply "HΦ".
@@ -399,7 +369,7 @@ Proof.
   iIntros (?) "Hsl".
   wp_store.
   wp_loadField.
-  wp_apply (wp_stringToBytes).
+  wp_apply (wp_StringToBytes).
   iIntros (?) "Hkey_sl".
   wp_load.
   iDestruct (own_slice_to_small with "Hkey_sl") as "Hkey_sl".
@@ -449,7 +419,7 @@ Proof.
   wp_store.
 
   wp_load.
-  wp_apply (wp_bytesToString with "[$Hsl]").
+  wp_apply (wp_StringFromBytes with "[$Hsl]").
   iIntros "_".
   wp_storeField.
   iModIntro.
@@ -1047,7 +1017,7 @@ Proof.
       iIntros (?) "[Hargs Hreq_sl]".
       wp_apply (wp_Server__get with "[$]").
       iIntros (?) "HΨ".
-      wp_pures. wp_apply wp_stringToBytes.
+      wp_pures. wp_apply wp_StringToBytes.
       iIntros (ret_sl) "Hret_sl".
       iDestruct (own_slice_to_small with "Hret_sl") as "Hret_sl".
       wp_store.
@@ -1066,7 +1036,7 @@ Proof.
       iIntros (?) "[Hargs Hreq_sl]".
       wp_apply (wp_Server__conditionalPut with "[$]").
       iIntros (?) "HΨ".
-      wp_apply wp_stringToBytes.
+      wp_apply wp_StringToBytes.
       iIntros (?) "Henc_req".
       wp_store.
       iApply "HΦ"; iFrame.
@@ -1312,7 +1282,7 @@ Proof.
     iNamed 1.
     wp_pures.
     wp_load.
-    wp_apply (wp_bytesToString with "[$]").
+    wp_apply (wp_StringFromBytes with "[$]").
     iIntros "_".
     wp_pures.
     iModIntro. iApply "HΦ".
@@ -1375,7 +1345,7 @@ Proof.
     iNamed 1.
     wp_pures.
     wp_load.
-    wp_apply (wp_bytesToString with "[$]").
+    wp_apply (wp_StringFromBytes with "[$]").
     iIntros "_".
     wp_pures.
     iModIntro. iApply "HΦ".

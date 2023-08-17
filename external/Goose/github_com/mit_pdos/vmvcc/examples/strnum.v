@@ -10,12 +10,12 @@ Local Coercion Var' s: expr := Var s.
 
 Definition StringToU64: val :=
   rec: "StringToU64" "s" :=
-    UInt64Get (Data.stringToBytes "s").
+    UInt64Get (StringToBytes "s").
 
 Definition U64ToString: val :=
   rec: "U64ToString" "n" :=
     let: "buf" := NewSlice byteT #8 in
     UInt64Put "buf" "n";;
-    Data.bytesToString "buf".
+    StringFromBytes "buf".
 
 End code.

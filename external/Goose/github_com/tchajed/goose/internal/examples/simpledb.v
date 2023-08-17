@@ -431,7 +431,7 @@ Definition Compact: val :=
     let: "newTable" := freshTable "oldTableName" in
     struct.store Table (struct.get Database "table" "db") "t";;
     (struct.get Database "tableName" "db") <-[stringT] "newTable";;
-    let: "manifestData" := Data.stringToBytes "newTable" in
+    let: "manifestData" := StringToBytes "newTable" in
     FS.atomicCreate #(str"db") #(str"manifest") "manifestData";;
     CloseTable "oldTable";;
     FS.delete #(str"db") "oldTableName";;
@@ -443,7 +443,7 @@ Definition recoverManifest: val :=
   rec: "recoverManifest" <> :=
     let: "f" := FS.open #(str"db") #(str"manifest") in
     let: "manifestData" := FS.readAt "f" #0 #4096 in
-    let: "tableName" := Data.bytesToString "manifestData" in
+    let: "tableName" := StringFromBytes "manifestData" in
     FS.close "f";;
     "tableName".
 

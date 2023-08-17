@@ -121,7 +121,7 @@ Definition Clerk__FinishWrite: val :=
 
 Definition Clerk__PrepareRead: val :=
   rec: "Clerk__PrepareRead" "ck" "keyname" :=
-    let: "req" := Data.stringToBytes "keyname" in
+    let: "req" := StringToBytes "keyname" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
     reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "client" "ck") PrepareReadId "req" "reply" #100;;
     ParsePreparedRead (![slice.T byteT] "reply").
@@ -222,7 +222,7 @@ Definition StartServer: val :=
       #()
       );;
     MapInsert "handlers" PrepareReadId (λ: "req" "reply",
-      let: "args" := Data.bytesToString "req" in
+      let: "args" := StringFromBytes "req" in
       let: "ret" := Server__PrepareRead "s" "args" in
       "reply" <-[slice.T byteT] (MarshalPreparedRead "ret");;
       #()

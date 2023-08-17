@@ -22,8 +22,8 @@ Definition main: val :=
             ));;
     Fork (let: "txnCk" := txn.Begin "txnMgrHost" "txnCoordHost" "indexHost" in
           txn.Clerk__DoTxn "txnCk" (λ: "t",
-            (if: (strLen (txn.Clerk__Get "t" #0)) > #0
-            then control.impl.Assert ((strLen (txn.Clerk__Get "t" #1)) > #0)
+            (if: (StringLength (txn.Clerk__Get "t" #0)) > #0
+            then control.impl.Assert ((StringLength (txn.Clerk__Get "t" #1)) > #0)
             else #());;
             (* log.Printf("Val on txn2: '%s'", t.Get(1)) *)
             #true

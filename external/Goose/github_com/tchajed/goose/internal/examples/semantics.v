@@ -144,12 +144,12 @@ Definition literalCast: val :=
 
 Definition stringToByteSlice: val :=
   rec: "stringToByteSlice" "s" :=
-    let: "p" := Data.stringToBytes "s" in
+    let: "p" := StringToBytes "s" in
     "p".
 
 Definition byteSliceToString: val :=
   rec: "byteSliceToString" "p" :=
-    Data.bytesToString "p".
+    StringFromBytes "p".
 
 (* tests *)
 Definition testByteSliceToString: val :=
@@ -1142,7 +1142,7 @@ Definition stringAppend: val :=
 
 Definition stringLength: val :=
   rec: "stringLength" "s" :=
-    strLen "s".
+    StringLength "s".
 
 (* tests *)
 Definition failing_testStringAppend: val :=
@@ -1156,11 +1156,11 @@ Definition failing_testStringLength: val :=
   rec: "failing_testStringLength" <> :=
     let: "ok" := ref_to boolT #true in
     let: "s" := ref_to stringT #(str"") in
-    "ok" <-[boolT] ((![boolT] "ok") && ((strLen (![stringT] "s")) = #0));;
+    "ok" <-[boolT] ((![boolT] "ok") && ((StringLength (![stringT] "s")) = #0));;
     "s" <-[stringT] (stringAppend (![stringT] "s") #1);;
-    "ok" <-[boolT] ((![boolT] "ok") && ((strLen (![stringT] "s")) = #1));;
+    "ok" <-[boolT] ((![boolT] "ok") && ((StringLength (![stringT] "s")) = #1));;
     "s" <-[stringT] (stringAppend (![stringT] "s") #23);;
-    (![boolT] "ok") && ((strLen (![stringT] "s")) = #3).
+    (![boolT] "ok") && ((StringLength (![stringT] "s")) = #3).
 
 (* struct_pointers.go *)
 

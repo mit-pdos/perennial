@@ -132,12 +132,12 @@ Definition castInt: val :=
 
 Definition stringToByteSlice: val :=
   rec: "stringToByteSlice" "s" :=
-    let: "p" := Data.stringToBytes "s" in
+    let: "p" := StringToBytes "s" in
     "p".
 
 Definition byteSliceToString: val :=
   rec: "byteSliceToString" "p" :=
-    let: "s" := Data.bytesToString "p" in
+    let: "s" := StringFromBytes "p" in
     "s".
 
 Definition stringToStringWrapper: val :=
@@ -906,7 +906,7 @@ Definition stringAppend: val :=
 
 Definition stringLength: val :=
   rec: "stringLength" "s" :=
-    strLen "s".
+    StringLength "s".
 
 (* struct_method.go *)
 

@@ -73,10 +73,10 @@ Definition encodePutArgs: val :=
   rec: "encodePutArgs" "a" :=
     let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF putArgs "opId" "a"));;
-    let: "keyBytes" := Data.stringToBytes (struct.loadF putArgs "key" "a") in
+    let: "keyBytes" := StringToBytes (struct.loadF putArgs "key" "a") in
     "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (slice.len "keyBytes"));;
     "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") "keyBytes");;
-    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF putArgs "val" "a")));;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (StringToBytes (struct.loadF putArgs "val" "a")));;
     ![slice.T byteT] "e".
 
 (* Client__putRpc from kvservice_rpc.gb.go *)
@@ -127,13 +127,13 @@ Definition encodeConditionalPutArgs: val :=
   rec: "encodeConditionalPutArgs" "a" :=
     let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF conditionalPutArgs "opId" "a"));;
-    let: "keyBytes" := Data.stringToBytes (struct.loadF conditionalPutArgs "key" "a") in
+    let: "keyBytes" := StringToBytes (struct.loadF conditionalPutArgs "key" "a") in
     "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (slice.len "keyBytes"));;
     "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") "keyBytes");;
-    let: "expectedValBytes" := Data.stringToBytes (struct.loadF conditionalPutArgs "expectedVal" "a") in
+    let: "expectedValBytes" := StringToBytes (struct.loadF conditionalPutArgs "expectedVal" "a") in
     "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (slice.len "expectedValBytes"));;
     "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") "expectedValBytes");;
-    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF conditionalPutArgs "newVal" "a")));;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (StringToBytes (struct.loadF conditionalPutArgs "newVal" "a")));;
     ![slice.T byteT] "e".
 
 (* Client__conditionalPutRpc from kvservice_rpc.gb.go *)
@@ -143,7 +143,7 @@ Definition Client__conditionalPutRpc: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdConditionalPut (encodeConditionalPutArgs "args") "reply" #100 in
     (if: "err" = urpc.ErrNone
-    then (Data.bytesToString (![slice.T byteT] "reply"), "err")
+    then (StringFromBytes (![slice.T byteT] "reply"), "err")
     else (#(str""), "err")).
 
 (* returns true if ConditionalPut was successful, false if current value did not
@@ -189,7 +189,7 @@ Definition encodeGetArgs: val :=
   rec: "encodeGetArgs" "a" :=
     let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
     "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF getArgs "opId" "a"));;
-    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (Data.stringToBytes (struct.loadF getArgs "key" "a")));;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (StringToBytes (struct.loadF getArgs "key" "a")));;
     ![slice.T byteT] "e".
 
 (* Client__getRpc from kvservice_rpc.gb.go *)
@@ -199,7 +199,7 @@ Definition Client__getRpc: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") rpcIdGet (encodeGetArgs "args") "reply" #100 in
     (if: "err" = urpc.ErrNone
-    then (Data.bytesToString (![slice.T byteT] "reply"), "err")
+    then (StringFromBytes (![slice.T byteT] "reply"), "err")
     else (#(str""), "err")).
 
 (* returns true if ConditionalPut was successful, false if current value did not
@@ -257,8 +257,8 @@ Definition decodePutArgs: val :=
     "e" <-[slice.T byteT] "1_ret";;
     let: ("keyLen", "e2") := marshal.ReadInt (![slice.T byteT] "e") in
     let: ("keyBytes", "valBytes") := marshal.ReadBytes "e2" "keyLen" in
-    struct.storeF putArgs "key" "a" (Data.bytesToString "keyBytes");;
-    struct.storeF putArgs "val" "a" (Data.bytesToString "valBytes");;
+    struct.storeF putArgs "key" "a" (StringFromBytes "keyBytes");;
+    struct.storeF putArgs "val" "a" (StringFromBytes "valBytes");;
     "a".
 
 Definition decodeConditionalPutArgs: val :=
@@ -270,11 +270,11 @@ Definition decodeConditionalPutArgs: val :=
     "e" <-[slice.T byteT] "1_ret";;
     let: ("keyLen", "e2") := marshal.ReadInt (![slice.T byteT] "e") in
     let: ("keyBytes", "e3") := marshal.ReadBytes "e2" "keyLen" in
-    struct.storeF conditionalPutArgs "key" "a" (Data.bytesToString "keyBytes");;
+    struct.storeF conditionalPutArgs "key" "a" (StringFromBytes "keyBytes");;
     let: ("expectedValLen", "e4") := marshal.ReadInt "e3" in
     let: ("expectedValBytes", "newValBytes") := marshal.ReadBytes "e4" "expectedValLen" in
-    struct.storeF conditionalPutArgs "expectedVal" "a" (Data.bytesToString "expectedValBytes");;
-    struct.storeF conditionalPutArgs "newVal" "a" (Data.bytesToString "newValBytes");;
+    struct.storeF conditionalPutArgs "expectedVal" "a" (StringFromBytes "expectedValBytes");;
+    struct.storeF conditionalPutArgs "newVal" "a" (StringFromBytes "newValBytes");;
     "a".
 
 Definition decodeGetArgs: val :=
@@ -285,7 +285,7 @@ Definition decodeGetArgs: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
     struct.storeF getArgs "opId" "a" "0_ret";;
     "keyBytes" <-[slice.T byteT] "1_ret";;
-    struct.storeF getArgs "key" "a" (Data.bytesToString (![slice.T byteT] "keyBytes"));;
+    struct.storeF getArgs "key" "a" (StringFromBytes (![slice.T byteT] "keyBytes"));;
     "a".
 
 (* kvservice_rpc.gb.go *)
@@ -370,11 +370,11 @@ Definition Server__Start: val :=
       #()
       );;
     MapInsert "handlers" rpcIdConditionalPut (λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] (Data.stringToBytes (Server__conditionalPut "s" (decodeConditionalPutArgs "enc_args")));;
+      "enc_reply" <-[slice.T byteT] (StringToBytes (Server__conditionalPut "s" (decodeConditionalPutArgs "enc_args")));;
       #()
       );;
     MapInsert "handlers" rpcIdGet (λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] (Data.stringToBytes (Server__get "s" (decodeGetArgs "enc_args")));;
+      "enc_reply" <-[slice.T byteT] (StringToBytes (Server__get "s" (decodeGetArgs "enc_args")));;
       #()
       );;
     urpc.Server__Serve (urpc.MakeServer "handlers") "me";;

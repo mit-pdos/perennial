@@ -46,7 +46,7 @@ Definition ClerkPool__WriteChunk: val :=
 
 Definition ClerkPool__GetChunk: val :=
   rec: "ClerkPool__GetChunk" "ck" "addr" "content_hash" :=
-    let: "req" := Data.stringToBytes "content_hash" in
+    let: "req" := StringToBytes "content_hash" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
     connman.ConnMan__CallAtLeastOnce (struct.loadF ClerkPool "cm" "ck") "addr" GetChunkId "req" "reply" #100;;
     ![slice.T byteT] "reply".
@@ -98,7 +98,7 @@ Definition StartServer: val :=
       #()
       );;
     MapInsert "handlers" GetChunkId (λ: "req" "reply",
-      let: "args" := Data.bytesToString "req" in
+      let: "args" := StringFromBytes "req" in
       let: "ret" := Server__GetChunk "s" "args" in
       "reply" <-[slice.T byteT] "ret";;
       #()

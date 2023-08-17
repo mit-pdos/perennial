@@ -36,7 +36,10 @@ function checkout {
   local COMMIT_VAR=$1_COMMIT
   local DIR_VAR=$1_DIR
 
-  git clone "${!REPO_VAR}" "${!DIR_VAR}"
+  if [ ! -d ${!DIR_VAR} ] ; then
+     git clone "${!REPO_VAR}" "${!DIR_VAR}"
+  fi
+
   (cd "${!DIR_VAR}" && git reset --hard "${!COMMIT_VAR}")
 }
 
