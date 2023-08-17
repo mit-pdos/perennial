@@ -92,6 +92,12 @@ def main():
         metavar="MVCC_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--rsm",
+        help="path to rsm repo (skip translation if not provided)",
+        metavar="RSM_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -103,6 +109,7 @@ def main():
     distributed_dir = args.distributed_examples
     gokv_dir = args.gokv
     mvcc_dir = args.mvcc
+    rsm_dir = args.rsm
     marshal_dir = args.marshal
     std_dir = args.std
 
@@ -122,6 +129,8 @@ def main():
         parser.error("gokv directory does not exist")
     if mvcc_dir is not None and not os.path.isdir(mvcc_dir):
         parser.error("mvcc directory does not exist")
+    if mvcc_dir is not None and not os.path.isdir(rsm_dir):
+        parser.error("rsm directory does not exist")
     if marshal_dir is not None and not os.path.isdir(marshal_dir):
         parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
@@ -304,6 +313,12 @@ def main():
             "./common",
             "./examples",
             "./examples/strnum",
+        )
+
+    if rsm_dir is not None:
+        run_goose(
+            rsm_dir,
+            "./spaxos",
         )
 
     if marshal_dir is not None:

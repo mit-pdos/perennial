@@ -1,10 +1,10 @@
-From Perennial.program_proof Require Export grove_prelude.
+(**
+ * Pure/Iris invariant definitions and invariance.
+ *)
+From Perennial.program_proof.rsm Require Import spaxos_top.
 
-Section inv.
+Section pure.
   Context `{Countable A}.
-  
-  Definition decrees := gmap nat string.
-  Definition ledger := list bool.
 
   Definition quorum (c q : gset A) : Prop.
   Admitted.
@@ -23,12 +23,12 @@ Section inv.
     set_solver.
   Qed.
 
-  Lemma ledgers_overlapped (ls lsq1 lsq2 : gmap A ledger) :
-    lsq1 ⊆ ls ->
-    lsq2 ⊆ ls ->
-    quorum (dom ls) (dom lsq1) ->
-    quorum (dom ls) (dom lsq2) ->
-    ∃ x l, lsq1 !! x = Some l ∧ lsq2 !! x = Some l.
+  Lemma ballots_overlapped (bs bsq1 bsq2 : gmap A ballot) :
+    bsq1 ⊆ bs ->
+    bsq2 ⊆ bs ->
+    quorum (dom bs) (dom bsq1) ->
+    quorum (dom bs) (dom bsq2) ->
+    ∃ x l, bsq1 !! x = Some l ∧ bsq2 !! x = Some l.
   Proof.
     intros Hsubseteq1 Hsubseteq2 Hquorum1 Hquorum2.
     edestruct quorums_overlapped as (x & Hin1 & Hin2).
@@ -45,40 +45,40 @@ Section inv.
     rewrite H1 in H2. by inversion H2.
   Qed.
 
-  Definition accepted_in (l : ledger) n :=
+  Definition accepted_in (l : ballot) n :=
     l !! n = Some true ∧ n ≠ O.
   
-  Definition chosen_in (ls : gmap A ledger) (ds : decrees) n v :=
-    ∃ lsq,
-      lsq ⊆ ls ∧
-      quorum (dom ls) (dom lsq) ∧
-      map_Forall (λ _ l, accepted_in l n) lsq ∧
-      ds !! n = Some v.
+  Definition chosen_in (bs : gmap A ballot) (ps : proposals) n v :=
+    ∃ bsq,
+      bsq ⊆ bs ∧
+      quorum (dom bs) (dom bsq) ∧
+      map_Forall (λ _ l, accepted_in l n) bsq ∧
+      ps !! n = Some v.
 
-  Definition chosen (ls : gmap A ledger) (ds : decrees) v :=
-    ∃ n, chosen_in ls ds n v.
+  Definition chosen (bs : gmap A ballot) (ps : proposals) v :=
+    ∃ n, chosen_in bs ps n v.
 
   (* Top-level invariant. *)
-  Definition consistency (ls : gmap A ledger) (ds : decrees) :=
-    ∀ v1 v2, chosen ls ds v1 -> chosen ls ds v2 -> v1 = v2.
+  Definition consistency (bs : gmap A ballot) (ps : proposals) :=
+    ∀ v1 v2, chosen bs ps v1 -> chosen bs ps v2 -> v1 = v2.
 
   (* Invariant for [consistency]. *)
-  Definition accepted_after_chosen (ls : gmap A ledger) (ds : decrees) :=
+  Definition accepted_after_chosen (bs : gmap A ballot) (ps : proposals) :=
     ∀ m n v,
       (m ≤ n)%nat ->
-      chosen_in ls ds m v ->
-      map_Forall (λ _ l, accepted_in l n -> ds !! n = Some v) ls.
+      chosen_in bs ps m v ->
+      map_Forall (λ _ l, accepted_in l n -> ps !! n = Some v) bs.
 
   (* Invariant for [accepted_after_chosen]. *)
-  Definition proposed_after_chosen (ls : gmap A ledger) (ds : decrees) :=
+  Definition proposed_after_chosen (bs : gmap A ballot) (ps : proposals) :=
     ∀ m n v,
       (m ≤ n)%nat ->
-      chosen_in ls ds m v ->
-      is_Some (ds !! n) ->
-      ds !! n = Some v.
+      chosen_in bs ps m v ->
+      is_Some (ps !! n) ->
+      ps !! n = Some v.
 
   (* Compute the latest accepted proposal before [n]. *)
-  Fixpoint latest_proposal (n : nat) (l : ledger) : nat :=
+  Fixpoint latest_proposal (n : nat) (l : ballot) : nat :=
     match n with
     | O => O
     | S k => match l !! k with
@@ -93,28 +93,28 @@ Section inv.
     cur `max` prev.
     (* if (cur <? prev)%nat then prev else cur. *)
 
-  Definition largest_proposal (lsq : gmap A ledger) n :=
-    let ps := fmap (latest_proposal n) lsq in
+  Definition largest_proposal (bsq : gmap A ballot) n :=
+    let ps := fmap (latest_proposal n) bsq in
     map_fold largest_proposal_step O ps.
 
-  Definition equal_largest_or_empty (lsq : gmap A ledger) (ds : decrees) n v :=
-    largest_proposal lsq n = O ∨
-    ds !! (largest_proposal lsq n) = Some v.
+  Definition equal_largest_or_empty (bsq : gmap A ballot) (ps : proposals) n v :=
+    largest_proposal bsq n = O ∨
+    ps !! (largest_proposal bsq n) = Some v.
 
-  Definition valid_proposal (ls : gmap A ledger) (ds : decrees) n v :=
-    ∃ lsq : gmap A ledger,
-      lsq ⊆ ls ∧
-      quorum (dom ls) (dom lsq) ∧
-      map_Forall (λ _ l, (n ≤ length l)%nat) lsq ∧
-      equal_largest_or_empty lsq ds n v.
+  Definition valid_proposal (bs : gmap A ballot) (ps : proposals) n v :=
+    ∃ bsq : gmap A ballot,
+      bsq ⊆ bs ∧
+      quorum (dom bs) (dom bsq) ∧
+      map_Forall (λ _ l, (n ≤ length l)%nat) bsq ∧
+      equal_largest_or_empty bsq ps n v.
 
   (* Invariant for [proposed_after_chosen]. *)
-  Definition valid_proposals (ls : gmap A ledger) (ds : decrees) :=
-    map_Forall (λ n v, valid_proposal ls ds n v) ds.
+  Definition valid_proposals (bs : gmap A ballot) (ps : proposals) :=
+    map_Forall (λ n v, valid_proposal bs ps n v) ps.
 
   (* Invariant for [accepted_after_chosen]; i.e., proposed before accepted. *)
-  Definition valid_ledgers (ls : gmap A ledger) (ds : decrees) :=
-    map_Forall (λ _ l, ∀ n, accepted_in l n -> is_Some (ds !! n)) ls.
+  Definition valid_ballots (bs : gmap A ballot) (ps : proposals) :=
+    map_Forall (λ _ l, ∀ n, accepted_in l n -> is_Some (ps !! n)) bs.
   
   (* Lemmas about [latest_proposal]. *)
   Lemma latest_proposal_le l m :
@@ -191,25 +191,25 @@ Section inv.
   Proof.
   Admitted.
 
-  Lemma largest_proposal_ge ls n :
-    map_Forall (λ _ l, (latest_proposal n l ≤ largest_proposal ls n)%nat) ls.
+  Lemma largest_proposal_ge bs n :
+    map_Forall (λ _ l, (latest_proposal n l ≤ largest_proposal bs n)%nat) bs.
   Proof.
     intros x l Hlookup.
     unfold largest_proposal.
-    pose proof (largest_proposal_step_ge (latest_proposal n <$> ls)) as Hstep.
+    pose proof (largest_proposal_step_ge (latest_proposal n <$> bs)) as Hstep.
     rewrite map_Forall_lookup in Hstep.
     apply (Hstep x (latest_proposal n l)).
     rewrite lookup_fmap.
     by rewrite Hlookup.
   Qed.
   
-  Lemma largest_proposal_in ls n :
-    ls ≠ ∅ ->
-    map_Exists (λ _ l, (latest_proposal n l = largest_proposal ls n)%nat) ls.
+  Lemma largest_proposal_in bs n :
+    bs ≠ ∅ ->
+    map_Exists (λ _ l, (latest_proposal n l = largest_proposal bs n)%nat) bs.
   Proof.
     intros Hnonempty.
     unfold largest_proposal.
-    pose proof (largest_proposal_step_in (latest_proposal n <$> ls)) as Hstep.
+    pose proof (largest_proposal_step_in (latest_proposal n <$> bs)) as Hstep.
     rewrite fmap_empty_iff in Hstep.
     specialize (Hstep Hnonempty).
     destruct Hstep as (x & m & Hlookup & <-).
@@ -218,53 +218,53 @@ Section inv.
     by exists x, l.
   Qed.
   
-  Lemma largest_proposal_lt ls n :
+  Lemma largest_proposal_lt bs n :
     n ≠ O ->
-    ls ≠ ∅ ->
-    (largest_proposal ls n < n)%nat.
+    bs ≠ ∅ ->
+    (largest_proposal bs n < n)%nat.
   Proof.
     intros Hnz Hnonempty.
-    destruct (largest_proposal_in ls n Hnonempty) as (y & ly & _ & <-).
+    destruct (largest_proposal_in bs n Hnonempty) as (y & ly & _ & <-).
     by apply latest_proposal_lt.
   Qed.
 
-  Lemma largest_proposal_accepted_in ls n1 n2 :
+  Lemma largest_proposal_accepted_in bs n1 n2 :
     (n1 < n2)%nat ->
-    ls ≠ ∅ ->
-    map_Exists (λ _ l, accepted_in l n1) ls ->
-    (n1 ≤ largest_proposal ls n2 < n2)%nat ∧ largest_proposal ls n2 ≠ O.
+    bs ≠ ∅ ->
+    map_Exists (λ _ l, accepted_in l n1) bs ->
+    (n1 ≤ largest_proposal bs n2 < n2)%nat ∧ largest_proposal bs n2 ≠ O.
   Proof.
     intros Hn Hnonempty Hacc.
     destruct Hacc as (x & l & Hlookup & Hacc).
-    pose proof (largest_proposal_ge ls n2) as Hlargest.
+    pose proof (largest_proposal_ge bs n2) as Hlargest.
     rewrite map_Forall_lookup in Hlargest.
     specialize (Hlargest _ _ Hlookup).
     pose proof (latest_proposal_accepted_in _ _ _ Hn Hacc).
     split; last first.
     { destruct Hacc as [_ Hnz]. lia. }
     split; first lia.
-    destruct (largest_proposal_in ls n2 Hnonempty) as (y & ly & _ & <-).
+    destruct (largest_proposal_in bs n2 Hnonempty) as (y & ly & _ & <-).
     apply latest_proposal_lt.
     lia.
   Qed.
 
-  Lemma aac_chosen {ls ds n1 n2 v1 v2} :
+  Lemma aac_chosen {bs ps n1 n2 v1 v2} :
     (n1 ≤ n2)%nat ->
-    accepted_after_chosen ls ds ->
-    chosen_in ls ds n1 v1 ->
-    chosen_in ls ds n2 v2 ->
+    accepted_after_chosen bs ps ->
+    chosen_in bs ps n1 v1 ->
+    chosen_in bs ps n2 v2 ->
     v1 = v2.
   Proof.
     intros Hle Haac H1 H2.
     unshelve epose proof (Haac n1 n2 v1 _ _) as Haac; [apply Hle | done |].
-    destruct H2 as (lsq & Hlsq & Hquorum & Haccq & Hlookupq).
+    destruct H2 as (bsq & Hbsq & Hquorum & Haccq & Hlookupq).
     apply quorum_not_empty in Hquorum.
     rewrite dom_empty_iff_L in Hquorum.
     apply map_choose in Hquorum as (x & l & Hl).
-    assert (ds !! n2 = Some v1) as Hlookup.
+    assert (ps !! n2 = Some v1) as Hlookup.
     { rewrite map_Forall_lookup in Haac.
       apply (Haac x l).
-      { eapply lookup_weaken; [apply Hl | apply Hlsq]. }
+      { eapply lookup_weaken; [apply Hl | apply Hbsq]. }
       rewrite map_Forall_lookup in Haccq.
       by apply (Haccq x l).
     }
@@ -273,9 +273,9 @@ Section inv.
   Qed.
 
   (* Implication theorems of invariants. *)
-  Lemma aac_impl_consistency ls ds :
-    accepted_after_chosen ls ds ->
-    consistency ls ds.
+  Lemma aac_impl_consistency bs ps :
+    accepted_after_chosen bs ps ->
+    consistency bs ps.
   Proof.
     intros Hacc.
     intros v1 v2 [n1 Hv1] [n2 Hv2].
@@ -284,26 +284,26 @@ Section inv.
     { assert (n2 ≤ n1)%nat as Hle by lia. symmetry. eapply (aac_chosen Hle); done. }
   Qed.
 
-  Lemma valid_proposal_chosen_in ls ds m n u v :
+  Lemma valid_proposal_chosen_in bs ps m n u v :
     (m < n)%nat ->
-    valid_proposals ls ds ->
-    chosen_in ls ds m u ->
-    ds !! n = Some v ->
-    ∃ k, (ds !! n = ds !! k) ∧ (m ≤ k < n)%nat.
+    valid_proposals bs ps ->
+    chosen_in bs ps m u ->
+    ps !! n = Some v ->
+    ∃ k, (ps !! n = ps !! k) ∧ (m ≤ k < n)%nat.
   Proof.
     intros Hmn Hvp Hchosen Hlookup.
-    edestruct Hvp as (lsq1 & Hsubseteq1 & Hquorum1 & _ & Heq).
+    edestruct Hvp as (bsq1 & Hsubseteq1 & Hquorum1 & _ & Heq).
     { apply Hlookup. }
-    destruct Hchosen as (lsq2 & Hsubseteq2 & Hquorum2 & Hacc & ?).
+    destruct Hchosen as (bsq2 & Hsubseteq2 & Hquorum2 & Hacc & ?).
     (* Extract intersection between the two quorums. *)
-    edestruct ledgers_overlapped as (x & l & Hlsq1 & Hlsq2).
+    edestruct ballots_overlapped as (x & l & Hbsq1 & Hbsq2).
     { apply Hsubseteq1. }
     { apply Hsubseteq2. }
     { apply Hquorum1. }
     { apply Hquorum2. }
     rewrite map_Forall_lookup in Hacc.
-    specialize (Hacc _ _ Hlsq2).
-    destruct (largest_proposal_accepted_in lsq1 m n) as [Hlp Hnz].
+    specialize (Hacc _ _ Hbsq2).
+    destruct (largest_proposal_accepted_in bsq1 m n) as [Hlp Hnz].
     { apply Hmn. }
     { set_solver. }
     { rewrite map_Exists_lookup. by exists x, l. }
@@ -312,28 +312,28 @@ Section inv.
       rewrite Heq in Hnz. congruence.
     }
     { (* Case: Equal the largest proposal. *)
-      exists (largest_proposal lsq1 n).
+      exists (largest_proposal bsq1 n).
       by rewrite Heq Hlookup.
     }
   Qed.
 
-  Lemma vl_pac_impl_aac ls ds :
-    valid_ledgers ls ds ->
-    proposed_after_chosen ls ds ->
-    accepted_after_chosen ls ds.
+  Lemma vl_pac_impl_aac bs ps :
+    valid_ballots bs ps ->
+    proposed_after_chosen bs ps ->
+    accepted_after_chosen bs ps.
   Proof.
     intros Hvl Hpac.
     intros m n v Hmn Hchosen x l Hlookup Hacc.
     unfold proposed_after_chosen in Hpac.
     eapply Hpac; [apply Hmn | apply Hchosen |].
-    unfold valid_ledgers in Hvl.
+    unfold valid_ballots in Hvl.
     rewrite map_Forall_lookup in Hvl.
     eapply Hvl; [apply Hlookup | apply Hacc].
   Qed.
 
-  Lemma vp_impl_pac ls ds :
-    valid_proposals ls ds ->
-    proposed_after_chosen ls ds.
+  Lemma vp_impl_pac bs ps :
+    valid_proposals bs ps ->
+    proposed_after_chosen bs ps.
   Proof.
     intros Hvalid.
     intros m n v Hmn Hchosen [v' Hlookup].
@@ -357,10 +357,10 @@ Section inv.
     apply IHn; [lia | lia | done].
   Qed.
 
-  Theorem vp_vl_impl_consistency ls ds :
-    valid_proposals ls ds ->
-    valid_ledgers ls ds ->
-    consistency ls ds.
+  Theorem vp_vl_impl_consistency bs ps :
+    valid_proposals bs ps ->
+    valid_ballots bs ps ->
+    consistency bs ps.
   Proof.
     intros Hvp Hvl.
     apply aac_impl_consistency.
@@ -380,18 +380,18 @@ Section inv.
   Proof. rewrite app_length replicate_length. lia. Qed.
 
   (* Transition functions. *)
-  Definition spaxos_accept (ls : gmap A ledger) x n :=
-    alter (λ l, extend false n l ++ [true]) x ls.
+  Definition spaxos_accept (bs : gmap A ballot) x n :=
+    alter (λ l, extend false n l ++ [true]) x bs.
 
-  Definition spaxos_prepare (ls : gmap A ledger) (x : A) (n : nat) :=
-    alter (λ l, extend false n l) x ls.
+  Definition spaxos_prepare (bs : gmap A ballot) (x : A) (n : nat) :=
+    alter (λ l, extend false n l) x bs.
 
-  Definition spaxos_propose (ds : decrees) (n : nat) (v : string) :=
-    <[n := v]> ds.
+  Definition spaxos_propose (ps : proposals) (n : nat) (v : string) :=
+    <[n := v]> ps.
 
   (* XXX: this should be general. *)
   Lemma fmap_alter_same
-    (m : gmap A ledger) (i : A) (f : ledger -> nat) (g : ledger -> ledger) :
+    (m : gmap A ballot) (i : A) (f : ballot -> nat) (g : ballot -> ballot) :
     (∀ x, m !! i = Some x -> f x = f (g x)) ->
     fmap f (alter g i m) = fmap f m.
   Proof.
@@ -409,7 +409,7 @@ Section inv.
   
   (* XXX: this should be general. *)
   Lemma map_Forall_alter
-    (m : gmap A ledger) (i : A) (P : A -> ledger -> Prop) (f : ledger -> ledger) :
+    (m : gmap A ballot) (i : A) (P : A -> ballot -> Prop) (f : ballot -> ballot) :
     (∀ x, m !! i = Some x -> P i (f x)) ->
     map_Forall P m ->
     map_Forall P (alter f i m).
@@ -428,7 +428,7 @@ Section inv.
     by apply Hx.
   Qed.
 
-  Lemma latest_proposal_append_eq (n : nat) (l t : ledger) :
+  Lemma latest_proposal_append_eq (n : nat) (l t : ballot) :
     (n ≤ length l)%nat ->
     latest_proposal n (l ++ t) = latest_proposal n l.
   Proof.
@@ -440,9 +440,9 @@ Section inv.
   Qed.
 
   Lemma largest_proposal_accept_same
-    (ls : gmap A ledger) (x : A) (n m : nat) :
-    map_Forall (λ _ l, (m ≤ length l)%nat) ls ->
-    largest_proposal (spaxos_accept ls x n) m = largest_proposal ls m.
+    (bs : gmap A ballot) (x : A) (n m : nat) :
+    map_Forall (λ _ l, (m ≤ length l)%nat) bs ->
+    largest_proposal (spaxos_accept bs x n) m = largest_proposal bs m.
   Proof.
     intros Hlens.
     unfold largest_proposal.
@@ -456,9 +456,9 @@ Section inv.
   Qed.
 
   Lemma largest_proposal_prepare_same
-    (ls : gmap A ledger) (x : A) (n m : nat) :
-    map_Forall (λ _ l, (m ≤ length l)%nat) ls ->
-    largest_proposal (spaxos_prepare ls x n) m = largest_proposal ls m.
+    (bs : gmap A ballot) (x : A) (n m : nat) :
+    map_Forall (λ _ l, (m ≤ length l)%nat) bs ->
+    largest_proposal (spaxos_prepare bs x n) m = largest_proposal bs m.
   Proof.
     intros Hlens.
     unfold largest_proposal.
@@ -470,13 +470,13 @@ Section inv.
     by rewrite latest_proposal_append_eq.
   Qed.
 
-  Lemma valid_proposal_insert_n ls ds n v1 v2 :
+  Lemma valid_proposal_insert_n bs ps n v1 v2 :
     n ≠ O ->
-    valid_proposal ls ds n v1 ->
-    valid_proposal ls (<[n := v2]> ds) n v1.
+    valid_proposal bs ps n v1 ->
+    valid_proposal bs (<[n := v2]> ps) n v1.
   Proof.
-    intros Hnz (lsq & Hsubseteq & Hquorum & Hlen & Heq).
-    exists lsq.
+    intros Hnz (bsq & Hsubseteq & Hquorum & Hlen & Heq).
+    exists bsq.
     do 3 (split; first done).
     destruct Heq as [Hempty | Heq]; first by left.
     right.
@@ -488,13 +488,13 @@ Section inv.
     lia.
   Qed.
 
-  Lemma valid_proposal_insert_None ls ds n1 n2 v1 v2 :
-    ds !! n1 = None ->
-    valid_proposal ls ds n2 v2 ->
-    valid_proposal ls (<[n1 := v1]> ds) n2 v2.
+  Lemma valid_proposal_insert_None bs ps n1 n2 v1 v2 :
+    ps !! n1 = None ->
+    valid_proposal bs ps n2 v2 ->
+    valid_proposal bs (<[n1 := v1]> ps) n2 v2.
   Proof.
-    intros Hnone (lsq & Hsubseteq & Hquorum & Hlen & Heq).
-    exists lsq.
+    intros Hnone (bsq & Hsubseteq & Hquorum & Hlen & Heq).
+    exists bsq.
     do 3 (split; first done).
     destruct Heq as [Hempty | Heq]; first by left.
     right.
@@ -517,14 +517,14 @@ Section inv.
   Qed.
 
   (* Invariance w.r.t. to all the transition functions above. *)
-  Theorem vp_inv_accept ls ds x n :
-    valid_proposals ls ds ->
-    valid_proposals (spaxos_accept ls x n) ds.
+  Theorem vp_inv_accept bs ps x n :
+    valid_proposals bs ps ->
+    valid_proposals (spaxos_accept bs x n) ps.
   Proof.
     intros Hvp.
     intros m v Hdsm.
-    apply Hvp in Hdsm as (lsq & Hlsa & Hquorum & Hlens & Heq).
-    exists (spaxos_accept lsq x n).
+    apply Hvp in Hdsm as (bsq & Hbsa & Hquorum & Hlens & Heq).
+    exists (spaxos_accept bsq x n).
     split; first by apply alter_mono.
     split; first by do 2 rewrite dom_alter_L.
     unfold equal_largest_or_empty.
@@ -540,16 +540,16 @@ Section inv.
     by rewrite largest_proposal_accept_same.
   Qed.
 
-  Theorem vl_inv_accept ls ds x n :
-    is_Some (ds !! n) ->
-    (∃ l, ls !! x = Some l ∧ length l ≤ n)%nat ->
-    valid_ledgers ls ds ->
-    valid_ledgers (spaxos_accept ls x n) ds.
+  Theorem vl_inv_accept bs ps x n :
+    is_Some (ps !! n) ->
+    (∃ l, bs !! x = Some l ∧ length l ≤ n)%nat ->
+    valid_ballots bs ps ->
+    valid_ballots (spaxos_accept bs x n) ps.
   Proof.
-    intros Hdsn Hlen Hvl.
+    intros Hpsn Hlen Hvl.
     apply map_Forall_alter; last apply Hvl.
     intros l Hlookup m Hacc.
-    unfold valid_ledgers in Hvl.
+    unfold valid_ballots in Hvl.
     destruct Hacc as [Hm Hnz].
     destruct (decide (m < length (extend false n l))%nat) as [Hlt | Hge].
     { rewrite lookup_app_l in Hm; last done.
@@ -568,14 +568,14 @@ Section inv.
     by rewrite -Heq.
   Qed.
 
-  Theorem vp_inv_prepare ls ds x n :
-    valid_proposals ls ds ->
-    valid_proposals (spaxos_prepare ls x n) ds.
+  Theorem vp_inv_prepare bs ps x n :
+    valid_proposals bs ps ->
+    valid_proposals (spaxos_prepare bs x n) ps.
   Proof.
     intros Hvp.
     intros m v Hdsm.
-    apply Hvp in Hdsm as (lsq & Hlsa & Hquorum & Hlens & Heq).
-    exists (spaxos_prepare lsq x n).
+    apply Hvp in Hdsm as (bsq & Hbsa & Hquorum & Hlens & Heq).
+    exists (spaxos_prepare bsq x n).
     split; first by apply alter_mono.
     split; first by do 2 rewrite dom_alter_L.
     unfold equal_largest_or_empty.
@@ -590,24 +590,24 @@ Section inv.
     by rewrite largest_proposal_prepare_same.
   Qed.
 
-  Theorem vl_inv_prepare ls ds x n :
-    valid_ledgers ls ds ->
-    valid_ledgers (spaxos_prepare ls x n) ds.
+  Theorem vl_inv_prepare bs ps x n :
+    valid_ballots bs ps ->
+    valid_ballots (spaxos_prepare bs x n) ps.
   Proof.
     intros Hvl.
     apply map_Forall_alter; last apply Hvl.
     intros l Hlookup m Hacc.
-    unfold valid_ledgers in Hvl.
+    unfold valid_ballots in Hvl.
     apply (Hvl x l); first apply Hlookup.
     by eapply extend_false_accepted_in.
   Qed.
 
-  Theorem vp_inv_propose ls ds n v :
-    ds !! n = None ->
+  Theorem vp_inv_propose bs ps n v :
+    ps !! n = None ->
     n ≠ O ->
-    valid_proposal ls ds n v ->
-    valid_proposals ls ds ->
-    valid_proposals ls (spaxos_propose ds n v).
+    valid_proposal bs ps n v ->
+    valid_proposals bs ps ->
+    valid_proposals bs (spaxos_propose ps n v).
   Proof.
     intros Hnone Hnz Hvalid Hvp.
     unfold spaxos_propose.
@@ -617,9 +617,9 @@ Section inv.
     by apply valid_proposal_insert_None.
   Qed.
 
-  Theorem vl_inv_propose ls ds n v :
-    valid_ledgers ls ds ->
-    valid_ledgers ls (spaxos_propose ds n v).
+  Theorem vl_inv_propose bs ps n v :
+    valid_ballots bs ps ->
+    valid_ballots bs (spaxos_propose ps n v).
   Proof.
     intros Hvl.
     unfold spaxos_propose.
@@ -629,4 +629,6 @@ Section inv.
     by apply (Hvl x l).
   Qed.
 
-End inv.
+End pure.
+
+Definition spaxosN := nroot .@ "spaxos".
