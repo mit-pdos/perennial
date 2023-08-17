@@ -43,6 +43,7 @@ Instance pretty_un_op : Pretty un_op :=
         | ToUInt32Op => "to_u32"
         | ToUInt8Op => "to_u8"
         | ToStringOp => "to_string"
+        | StringLenOp => "StringLength"
         end.
 
 #[global]

@@ -83,7 +83,8 @@ etc/update-goose.py --goose $GOOSE_DIR --compile \
   --journal $JOURNAL_DIR \
   --nfsd $NFSD_DIR \
   --gokv $GOKV_DIR \
-  --mvcc $MVCC_DIR
+  --mvcc $MVCC_DIR \
+# --rsm $RSM_DIR
 # Missing: --distributed-examples (not currently used)
 
 echo && echo "Goose check: check if anything changed"

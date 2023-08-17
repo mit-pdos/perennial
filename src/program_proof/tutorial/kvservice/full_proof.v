@@ -19,8 +19,8 @@ Record t :=
   }.
 
 Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ (u64_le $ length $ string_le a.(key)) ++
-      string_le a.(key) ++ string_le a.(val)
+  x = u64_le a.(opId) ++ (u64_le $ length $ string_to_bytes a.(key)) ++
+      string_to_bytes a.(key) ++ string_to_bytes a.(val)
 .
 
 Section local_defs.
@@ -163,8 +163,8 @@ Record t :=
   }.
 
 Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ (u64_le $ length $ string_le a.(key)) ++ string_le a.(key) ++
-      (u64_le $ length $ string_le a.(expectedVal)) ++ string_le a.(expectedVal) ++ string_le a.(newVal)
+  x = u64_le a.(opId) ++ (u64_le $ length $ string_to_bytes a.(key)) ++ string_to_bytes a.(key) ++
+      (u64_le $ length $ string_to_bytes a.(expectedVal)) ++ string_to_bytes a.(expectedVal) ++ string_to_bytes a.(newVal)
 .
 
 Section local_defs.
@@ -336,7 +336,7 @@ Record t :=
   }.
 
 Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ string_le a.(key)
+  x = u64_le a.(opId) ++ string_to_bytes a.(key)
 .
 
 Section local_defs.
@@ -1508,7 +1508,7 @@ Program Definition conditionalPut_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜conditionalPutArgs.encodes enc_args args⌝ ∗
-   conditionalPut_core_spec γ args (λ rep, Φ (string_le rep))
+   conditionalPut_core_spec γ args (λ rep, Φ (string_to_bytes rep))
   )%I
 .
 Next Obligation.
@@ -1519,7 +1519,7 @@ Program Definition get_spec γ :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
   (∃ args,
    "%Henc" ∷ ⌜getArgs.encodes enc_args args⌝ ∗
-   get_core_spec γ args (λ rep, Φ (string_le rep))
+   get_core_spec γ args (λ rep, Φ (string_to_bytes rep))
   )%I
 .
 Next Obligation.
