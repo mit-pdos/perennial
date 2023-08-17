@@ -27,6 +27,10 @@ GOKV_COMMIT=main
 MVCC_REPO=https://github.com/mit-pdos/vmvcc
 MVCC_COMMIT=main
 
+# FIXME: need public repo
+# RSM_REPO=https://github.com/mit-pdos/rsm
+# RSM_COMMIT=main
+
 ## Actual test logic
 
 echo && echo "Goose check: fetch all the repos"
@@ -66,6 +70,9 @@ checkout GOKV
 
 MVCC_DIR=/tmp/mvcc
 checkout MVCC
+
+# RSM_DIR=/tmp/rsm
+# checkout RSM
 
 echo && echo "Goose check: re-run goose"
 etc/update-goose.py --goose $GOOSE_DIR --compile \

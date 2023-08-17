@@ -46,6 +46,7 @@ Proof.
   wp_pures.
   destruct sl; simpl in *.
   iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
+  iDestruct (own_slice_small_wf with "Hsl") as %Hwf.
   wp_if_destruct.
   { (* case: empty slice *)
     apply nil_length_inv in Hsz. subst.
@@ -62,28 +63,21 @@ Proof.
   iIntros "Hsl".
   wp_pures.
   wp_apply wp_slice_len.
-  wp_apply (wp_SliceSubslice_small with "[$]").
-  { rewrite Hsz. split; last done.
-    enough (int.nat sz ≠ int.nat 0); admit. (* TODO: word *)
-  }
-  iIntros (sl) "Hsl".
+  wp_apply wp_SliceSubslice.
+  { simpl in *; split; word. }
+  iDestruct (slice_small_split _ 1 with "Hsl") as "[H0 Hsl]".
+  { simpl. word. }
+  rewrite /slice_take /slice_subslice.
+  replace (u :: l) with ([u] ++ l) by done.
+  rewrite drop_app_alt; last done.
   wp_apply ("Hwp" with "[$]").
   iIntros "Hsl".
   wp_pures.
   iModIntro.
-  iSpecialize ("HΦ" with "[]").
-  { admit. } (* FIXME: recombine subslice *)
-  iExactEq "HΦ".
-  repeat f_equal.
-  rewrite /bytes_to_string /=.
-  repeat f_equal.
-  simpl in Hsz.
-  replace (int.nat 1) with (1%nat) by word.
-  rewrite -Hsz.
-  rewrite /List.subslice.
-  replace (u :: l) with ([u] ++ l) by done.
-  rewrite firstn_all2; last done.
-  by rewrite drop_app_alt.
-Admitted.
+  iSpecialize ("HΦ" with "[H0 Hsl]").
+  { iApply (own_slice_combine with "[$] [$]").
+    simpl in *. word. }
+  iFrame.
+Qed.
 
 End heap.
