@@ -129,7 +129,7 @@ def main():
         parser.error("gokv directory does not exist")
     if mvcc_dir is not None and not os.path.isdir(mvcc_dir):
         parser.error("mvcc directory does not exist")
-    if mvcc_dir is not None and not os.path.isdir(rsm_dir):
+    if rsm_dir is not None and not os.path.isdir(rsm_dir):
         parser.error("rsm directory does not exist")
     if marshal_dir is not None and not os.path.isdir(marshal_dir):
         parser.error("marshal directory does not exist")
