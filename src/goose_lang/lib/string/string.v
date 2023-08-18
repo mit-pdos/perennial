@@ -17,6 +17,53 @@ Definition bytes_to_string (l:list u8) : string :=
   fold_right (λ b s, (u8_to_string b) +:+ s) EmptyString l
 .
 
+Lemma byte_to_string_inj l :
+  string_to_bytes $ bytes_to_string l = l.
+Proof.
+  induction l as [|].
+  { done. }
+  {
+    rewrite /string_to_bytes /bytes_to_string /= /u8_to_ascii.
+    assert (int.nat a < 256)%nat.
+    { clear -a. admit. } (* FIXME: word (same as above) *)
+    rewrite Ascii.nat_ascii_embedding.
+    {
+      f_equal.
+      { clear -a. admit. } (* FIXME: word *)
+      done.
+    }
+    { done. }
+  }
+Admitted.
+
+Lemma string_to_bytes_app s1 s2 :
+  string_to_bytes (s1 ++ s2) = string_to_bytes s1 ++ string_to_bytes s2.
+Proof.
+Admitted.
+
+Lemma string_to_bytes_inj s :
+   bytes_to_string $ string_to_bytes s = s.
+Proof.
+  induction s as [|].
+  { done. }
+  {
+    replace (String a s) with ((String a EmptyString) +:+ s) by done.
+    rewrite string_to_bytes_app.
+    simpl.
+    rewrite IHs.
+    f_equal.
+    rewrite /u8_to_string /u8_to_ascii.
+    f_equal.
+    replace (int.nat (_)) with (Ascii.nat_of_ascii a).
+    2:{ Search Ascii.nat_of_ascii.
+        pose proof (Ascii.nat_ascii_bounded a) as H.
+        revert H. generalize (Ascii.nat_of_ascii a).
+        intros. admit. (* FIXME: word. *)
+    }
+    by rewrite Ascii.ascii_nat_embedding.
+  }
+Admitted.
+
 Lemma wp_StringToBytes (s:string) :
   {{{
         True

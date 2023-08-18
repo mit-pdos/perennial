@@ -15,8 +15,8 @@ Definition StringFromBytes : val :=
 Definition StringToBytes : val :=
   (rec: "stringToBytes" "b" :=
      if: (StringLength "b") = #0
-     then (Val #str "")
-     else (to_string (SliceGet byteT "b" #0)) +
+     then slice.nil
+     else (SliceAppend byteT (SliceGet byteT "b" #0)) +
             ("bytesToString" (SliceSubslice byteT "b" #1 (slice.len "b")))).
 
 End goose_lang.
