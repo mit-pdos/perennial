@@ -5,10 +5,6 @@ From Perennial.program_proof Require Import spaxos_top.
 From Perennial.base_logic Require Import ghost_map mono_nat.
 From iris.algebra Require Import mono_nat mono_list gmap_view gset.
 
-Inductive consensus : Set :=
-| Chosen (v : string)
-| Free.
-
 Class spaxos_ghostG (Σ : gFunctors).
 
 Record spaxos_names := {}.
@@ -19,26 +15,32 @@ Section consensus.
   Implicit Type (γ : spaxos_names).
 
   (* Definitions. *)
-  Definition is_chosen γ (v : string) : iProp Σ.
+  Definition own_consensus γ (c : consensus) : iProp Σ.
   Admitted.
 
-  Definition own_free γ : iProp Σ.
-  Admitted.
+  Definition is_chosen_consensus γ v : iProp Σ :=
+    own_consensus γ (Chosen v).
 
   (* Type class instances. *)
-  Instance is_chosen_persistent γ :
-    Persistent (∀ v, is_chosen γ v).
+  #[global]
+  Instance is_chosen_consensus_persistent γ v :
+    Persistent (is_chosen_consensus γ v).
   Admitted.
   
   (* Rules. *)
   Lemma consensus_update {γ} v :
-    own_free γ ==∗
-    is_chosen γ v.
+    own_consensus γ Free ==∗
+    own_consensus γ (Chosen v).
+  Admitted.
+
+  Lemma consensus_witness {γ v} :
+    own_consensus γ (Chosen v) -∗
+    is_chosen_consensus γ v.
   Admitted.
 
   Lemma consensus_agree {γ} v1 v2 :
-    is_chosen γ v1 -∗
-    is_chosen γ v2 -∗
+    is_chosen_consensus γ v1 -∗
+    is_chosen_consensus γ v2 -∗
     ⌜v1 = v2⌝.
   Admitted.
 End consensus.
@@ -56,8 +58,9 @@ Section proposal.
   Admitted.
   
   (* Type class instances. *)
-  Instance is_proposal_persistent γ :
-    Persistent (∀ n v, is_proposal γ n v).
+  #[global]
+  Instance is_proposal_persistent γ n v :
+    Persistent (is_proposal γ n v).
   Admitted.
 
   (* Rules. *)
@@ -84,8 +87,9 @@ Section ballot.
   Admitted.
 
   (* Type class instances. *)
-  Instance is_ballot_lb_persistent γ :
-    Persistent (∀ x b, is_ballot_lb γ x b).
+  #[global]
+  Instance is_ballot_lb_persistent γ x b :
+    Persistent (is_ballot_lb γ x b).
   Admitted.
 
   (* Rules. *)

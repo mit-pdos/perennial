@@ -118,13 +118,11 @@ Definition Paxos__Propose: val :=
       (if: (~ "accepted")
       then
         lock.release (struct.loadF Paxos "mu" "px");;
-        #false
+        (~ (![boolT] "helping"))
       else
         Paxos__learnAll "px" "term" (![stringT] "decree");;
         lock.release (struct.loadF Paxos "mu" "px");;
-        (if: ![boolT] "helping"
-        then #false
-        else #true))).
+        (~ (![boolT] "helping")))).
 
 Definition Paxos__isLearned: val :=
   rec: "Paxos__isLearned" "px" :=

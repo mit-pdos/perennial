@@ -1,5 +1,34 @@
 From Perennial.program_proof.rsm Require Import spaxos_prelude.
-  
+
+(* TODO: move this out to spaxos_iris_inv.v once stable. *)
+Section inv.
+Context `{!heapGS Σ, !spaxos_ghostG Σ}.
+
+Definition spaxosN := nroot .@ "spaxos".
+
+Definition spaxos_inv γ : iProp Σ :=
+  ∃ c bs ps,
+    "Hc"    ∷ own_consensus γ c ∗
+    "Hbs"   ∷ own_ballots γ bs ∗
+    "Hps"   ∷ own_proposals γ ps ∗
+    "%Hvc"  ∷ ⌜valid_consensus c bs ps⌝ ∗
+    "%Hvbs" ∷ ⌜valid_ballots bs ps⌝ ∗
+    "%Hvps" ∷ ⌜valid_proposals bs ps⌝.
+
+#[global]
+Instance spaxos_inv_timeless γ :
+  Timeless (spaxos_inv γ).
+Admitted.
+
+Definition know_sapxos_inv γ : iProp Σ :=
+  inv spaxosN (spaxos_inv γ).
+
+End inv.
+
+#[global]
+Hint Extern 1 (environments.envs_entails _ (spaxos_inv _)) => unfold spaxos_inv : core.
+(* TODO: move this out to spaxos_iris_inv.v once stable. *)
+
 (* TODO: move this out to spaxos_repr.v once stable. *)
 Section repr.
 Context `{!heapGS Σ, !spaxos_ghostG Σ}.
@@ -42,7 +71,9 @@ Definition is_paxos (paxos : loc) (nid : nat) γ : iProp Σ :=
     "#Hmu"   ∷ readonly (paxos ↦[Paxos :: "mu"] #mu) ∗
     "#Hlock" ∷ is_lock spaxosN #mu (own_paxos paxos nid γ) ∗
     (*@ Res: peers []*Paxos                                                     @*)
-    "#Hpeers" ∷ readonly (paxos ↦[Paxos :: "peers"] #peers).
+    "#Hpeers" ∷ readonly (paxos ↦[Paxos :: "peers"] #peers) ∗
+    (*@ Res: ginv                                                               @*)
+    "#Hinv" ∷ know_sapxos_inv γ.
 
 End repr.
 (* TODO: move this out to spaxos_repr.v once stable. *)
@@ -60,7 +91,7 @@ Theorem wp_Paxos__Outcome (px : loc) nid γ :
     Paxos__Outcome #px
   {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
       (* [is_chosen] encodes safety, [is_proposed_decree] encodes non-triviality. *)
-      if ok then is_chosen γ v ∗ is_proposed_decree γ v else True
+      if ok then is_chosen_consensus γ v ∗ is_proposed_decree γ v else True
   }}}.
 Proof.
   (*@ func (px *Paxos) Outcome() (string, bool) {                             @*)
@@ -87,7 +118,12 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Definition major_prepares (term : u64) (decree : string) : iProp Σ.
+Definition quorum_prepares (γ : spaxos_names) (term : u64) (decree : string) : iProp Σ.
+Admitted.
+
+#[global]
+Instance quorum_prepares_persistent γ term decree :
+  Persistent (quorum_prepares γ term decree).
 Admitted.
 
 Theorem wp_Paxos__prepareAll (px : loc) (term : u64) nid γ :
@@ -95,7 +131,7 @@ Theorem wp_Paxos__prepareAll (px : loc) (term : u64) nid γ :
     Paxos__prepareAll #px #term
   {{{ (term : u64) (decree : string) (ok : bool), RET (#term, #(LitString decree), #ok);
       own_paxos px nid γ ∗
-      if ok then major_prepares term decree else True
+      if ok then quorum_prepares γ term decree else True
   }}}.
 Proof.
   (*@ func (px *Paxos) prepareAll(term uint64) (uint64, string, bool) {       @*)
@@ -124,6 +160,50 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
+Definition quorum_accepts (γ : spaxos_names) (term : u64) : iProp Σ.
+Admitted.
+
+#[global]
+Instance quorum_accepts_persistent γ term :
+  Persistent (quorum_accepts γ term).
+Admitted.
+
+Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) nid γ :
+  is_proposal γ (int.nat term) decree -∗
+  {{{ own_paxos px nid γ }}}
+    Paxos__acceptAll #px #term #(LitString decree)
+  {{{ (ok : bool), RET #ok; own_paxos px nid γ ∗ if ok then quorum_accepts γ term else True }}}.
+Proof.
+  (*@ func (px *Paxos) acceptAll(term uint64, decree string) bool {           @*)
+  (*@     var nAccepted uint64 = 0                                            @*)
+  (*@     for _, peer := range(px.peers) {                                    @*)
+  (*@         ok := peer.accept(term, decree)                                 @*)
+  (*@         if ok {                                                         @*)
+  (*@             nAccepted++                                                 @*)
+  (*@         }                                                               @*)
+  (*@     }                                                                   @*)
+  (*@                                                                         @*)
+  (*@     return px.major(nAccepted)                                          @*)
+  (*@ }                                                                       @*)
+Admitted.
+
+Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) nid γ :
+  is_chosen_consensus γ decree -∗
+  {{{ own_paxos px nid γ }}}
+    Paxos__learnAll #px #term #(LitString decree)
+  {{{ RET #(); own_paxos px nid γ }}}.
+Proof.
+  (*@ func (px *Paxos) learnAll(term uint64, decree string) {                 @*)
+  (*@     for _, peer := range(px.peers) {                                    @*)
+  (*@         peer.learn(term, decree)                                        @*)
+  (*@     }                                                                   @*)
+  (*@ }                                                                       @*)
+Admitted.
+
+
+Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
+  (if b then f x else f y) = f (if b then x else y).
+Proof. destruct b; done. Qed.
 
 End temp.
 (* TODO: move them out to their own files once stable. *)
@@ -166,17 +246,21 @@ Proof.
   (*@                                                                         @*)
   wp_apply (wp_Paxos__prepareAll with "HpaxosOwn").
   iIntros (termLargest decreeLargest prepared) "[HpaxosOwn Hprepares]".
-  (* TODO: [major_prepares] along with global inv should allow us to deduce [valid_proposal]. *)
+  (* TODO: [quorum_prepares] along with global inv should allow us to deduce [valid_proposal]. *)
   wp_pures.
   
   (*@     if !prepared {                                                      @*)
   (*@         px.mu.Unlock()                                                  @*)
-  (*@         // Case ``not proposed''.                                       @*)
   (*@         return false                                                    @*)
   (*@     }                                                                   @*)
   (*@                                                                         @*)
   wp_if_destruct.
-  { admit. }
+  { wp_loadField.
+    wp_apply (release_spec with "[$Hlock $Hlocked $HpaxosOwn]").
+    wp_pures.
+    by iApply "HΦ".
+  }
+  iDestruct "Hprepares" as "#Hprepares".
   
   (*@     // If @termLargest is not set (meaning no node in the quorum has accepted @*)
   (*@     // any proposal yet), we can propose our value @v.                  @*)
@@ -184,10 +268,10 @@ Proof.
   (*@     var helping bool                                                    @*)
   (*@                                                                         @*)
   wp_apply (wp_ref_of_zero); first done.
-  iIntros (decree) "Hdecree".
+  iIntros (decreeRef) "Hdecree".
   wp_pures.
   wp_apply (wp_ref_of_zero); first done.
-  iIntros (helping) "Hhelping".
+  iIntros (helpingRef) "Hhelping".
   wp_pures.
 
   (*@     if termLargest == 0 {                                               @*)
@@ -203,23 +287,75 @@ Proof.
   wp_apply (wp_If_join_evar with "[Hdecree Hhelping]").
   { iIntros (b Eqb).
     case_bool_decide.
-    { wp_if_true. admit. }
-    { wp_if_false. admit. }
+    - wp_if_true.
+      do 2 wp_store.
+      iModIntro.
+      iSplit; first done.
+      replace (LitString v) with
+        (if b then (LitString v) else (LitString decreeLargest)) by by rewrite Eqb.
+      replace #false with #(if b then false else true) by by rewrite Eqb.
+      iNamedAccu.
+    - wp_if_false.
+      do 2 wp_store.
+      iModIntro.
+      iSplit; first done.
+      rewrite Eqb.
+      by iFrame.
   }
-  iIntros "H".
+  iIntros "Hdh".
+  iNamed "Hdh".
   wp_pures.
+
+  (* Push [LitString] and [LitBool] our for [Hdecree] and [Hhelping], respectively. *)
+  do 2 rewrite ite_apply.
+
+  (*@     // Now that we have decided what to propose (i.e., @decree), we can perform @*)
+  (*@     // a ghost update on [proposals]. To do so in an invariant-preserving way, @*)
+  (*@     // we need to know two things:                                      @*)
+  (*@     // 1. @term has not been proposed, and                              @*)
+  (*@     // 2. the proposal we're making, (@term, @decree), is a valid one.  @*)
+  (*@     // See [vp_inv_propose] for detail.                                 @*)
+  (*@                                                                         @*)
+  iApply fupd_wp.
+  iInv "Hinv" as ">HinvO" "HinvC".
+  iNamed "HinvO".
+  assert (Hfresh : ps !! (int.nat term) = None).
+  { (* TODO: prove this using inv about [termc] and [proposals]. *) admit. }
+  set decree := (if (bool_decide _) then v else _).
+  assert (Hvalid : valid_proposal bs ps (int.nat term) decree).
+  { (* TODO: prove this using [quorum_prepares]. *) admit. }
+  iMod (proposals_insert _ _ decree with "Hps") as "[Hps #Hp]"; first apply Hfresh.
+  assert (Hnz : (int.nat term) ≠ O).
+  { admit. }
+  pose proof (vp_inv_propose Hfresh Hnz Hvalid Hvps) as Hvps'.
+  pose proof (vb_inv_propose (int.nat term) decree Hvbs) as Hvbs'.
+  pose proof (vc_inv_propose (int.nat term) decree Hvc) as Hvc'.
+  iMod ("HinvC" with "[Hc Hbs Hps]") as "_"; first by eauto 10 with iFrame.
+  iModIntro.
 
   (*@     // Phase 2.                                                         @*)
   (*@     // Goal of this phase is to get a quorum of nodes accepting our proposal. @*)
   (*@     accepted := px.acceptAll(term, decree)                              @*)
   (*@                                                                         @*)
+  wp_load.
+  wp_apply (wp_Paxos__acceptAll with "Hp HpaxosOwn").
+  iIntros (accepted) "[HpaxosOwn Haccepts]".
+  wp_pures.
   
   (*@     if !accepted {                                                      @*)
   (*@         px.mu.Unlock()                                                  @*)
-  (*@         // Case ``not proposed'' or case ``proposed'', depending on @helping. @*)
-  (*@         return false                                                    @*)
+  (*@         return !helping                                                 @*)
   (*@     }                                                                   @*)
   (*@                                                                         @*)
+  wp_if_destruct.
+  { wp_loadField.
+    wp_apply (release_spec with "[$Hlock $Hlocked $HpaxosOwn]").
+    wp_pures.
+    wp_load.
+    unfold is_proposed_decree.
+    case_bool_decide; wp_pures; iApply "HΦ"; [by eauto | done].
+  }
+  iDestruct "Haccepts" as "#Haccepts".
   
   (*@     // If @accepted is true, we know @decree is chosen either the first time, @*)
   (*@     // or has already been chosen earlier. If it's the first time, we simply @*)
@@ -227,26 +363,50 @@ Proof.
   (*@     // apply the top-level consistency theorem to deduce the decree chosen here @*)
   (*@     // (i.e., @decree) is equal to the one chosen eariler.              @*)
   (*@                                                                         @*)
-  
+  iApply fupd_wp.
+  iInv "Hinv" as ">HinvO" "HinvC".
+  clear c bs ps Hvc Hvc' Hvbs Hvbs' Hvps Hvps' Hfresh Hvalid.
+  iNamed "HinvO".
+  assert (Hchosen : chosen bs ps decree).
+  { (* TODO: prove this using [Haccepts]. *) admit. }
+  iAssert (|==> own_consensus γ (Chosen decree))%I with "[Hc]" as "Hc".
+  { destruct c as [decree' |] eqn:Ec.
+    - (* Case [Chosen decree']. *)
+      unfold valid_consensus in Hvc.
+      pose proof (vb_vp_impl_consistency Hvbs Hvps) as Hconsistency.
+      rewrite (Hconsistency _ _ Hvc Hchosen).
+      by iFrame.
+    - (* Case [Free]. *)
+      iMod (consensus_update decree with "Hc") as "Hc".
+      by iFrame.
+  }
+  iMod "Hc".
+  iDestruct (consensus_witness with "Hc") as "#Hconsensus".
+  iMod ("HinvC" with "[Hc Hbs Hps]") as "_"; first by eauto 10 with iFrame.
+  iModIntro.
+
   (*@     // Phase 3.                                                         @*)
   (*@     // Goal of this phase is to broadcast the consensus to other nodes. @*)
   (*@     px.learnAll(term, decree)                                           @*)
   (*@                                                                         @*)
+  wp_load.
+  wp_apply (wp_Paxos__learnAll with "Hconsensus HpaxosOwn").
+  iIntros "HpaxosOwn".
+  wp_pures.
   
   (*@     px.mu.Unlock()                                                      @*)
   (*@                                                                         @*)
-  
-  (*@     // Return false since we're merely helping early proposal go through, rather @*)
-  (*@     // than proposing our own value @v.                                 @*)
-  (*@     if helping {                                                        @*)
-  (*@         // Case ``not proposed''.                                       @*)
-  (*@         return false                                                    @*)
-  (*@     }                                                                   @*)
+  wp_loadField.
+  wp_apply (release_spec with "[$Hlock $Hlocked $HpaxosOwn]").
+  wp_pures.
+
+  (*@     // If @helping is true, return false since we're merely helping an early @*)
+  (*@     // proposal go through, rather than proposing our own value @v.     @*)
+  (*@     return !helping                                                     @*)
   (*@                                                                         @*)
-  
-  (*@     // Case ``chosen''.                                                 @*)
-  (*@     return true                                                         @*)
-  (*@                                                                         @*)
+  wp_load.
+  unfold is_proposed_decree.
+  case_bool_decide; wp_pures; iApply "HΦ"; [by eauto | done].
   
   (*@     // Wait until consensus is reached.                                 @*)
   (*@     // NB: Deferred consensus don't need this.                          @*)

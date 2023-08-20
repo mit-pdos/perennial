@@ -115,6 +115,12 @@ Section pure.
   (* Invariant for [accepted_after_chosen]; i.e., proposed before accepted. *)
   Definition valid_ballots (bs : gmap A ballot) (ps : proposals) :=
     map_Forall (λ _ l, ∀ n, accepted_in l n -> is_Some (ps !! n)) bs.
+
+  Definition valid_consensus (c : consensus) (bs : gmap A ballot) (ps : proposals) :=
+    match c with
+    | Chosen v => chosen bs ps v
+    | _ => True
+    end.
   
   (* Lemmas about [latest_proposal]. *)
   Lemma latest_proposal_le l m :
@@ -317,18 +323,18 @@ Section pure.
     }
   Qed.
 
-  Lemma vl_pac_impl_aac bs ps :
+  Lemma vb_pac_impl_aac bs ps :
     valid_ballots bs ps ->
     proposed_after_chosen bs ps ->
     accepted_after_chosen bs ps.
   Proof.
-    intros Hvl Hpac.
+    intros Hvb Hpac.
     intros m n v Hmn Hchosen x l Hlookup Hacc.
     unfold proposed_after_chosen in Hpac.
     eapply Hpac; [apply Hmn | apply Hchosen |].
-    unfold valid_ballots in Hvl.
-    rewrite map_Forall_lookup in Hvl.
-    eapply Hvl; [apply Hlookup | apply Hacc].
+    unfold valid_ballots in Hvb.
+    rewrite map_Forall_lookup in Hvb.
+    eapply Hvb; [apply Hlookup | apply Hacc].
   Qed.
 
   Lemma vp_impl_pac bs ps :
@@ -357,14 +363,14 @@ Section pure.
     apply IHn; [lia | lia | done].
   Qed.
 
-  Theorem vp_vl_impl_consistency bs ps :
-    valid_proposals bs ps ->
+  Theorem vb_vp_impl_consistency {bs ps} :
     valid_ballots bs ps ->
+    valid_proposals bs ps ->
     consistency bs ps.
   Proof.
-    intros Hvp Hvl.
+    intros Hvb Hvp.
     apply aac_impl_consistency.
-    apply vl_pac_impl_aac; first done.
+    apply vb_pac_impl_aac; first done.
     by apply vp_impl_pac.
   Qed.
 
@@ -540,20 +546,20 @@ Section pure.
     by rewrite largest_proposal_accept_same.
   Qed.
 
-  Theorem vl_inv_accept bs ps x n :
+  Theorem vb_inv_accept bs ps x n :
     is_Some (ps !! n) ->
     (∃ l, bs !! x = Some l ∧ length l ≤ n)%nat ->
     valid_ballots bs ps ->
     valid_ballots (spaxos_accept bs x n) ps.
   Proof.
-    intros Hpsn Hlen Hvl.
-    apply map_Forall_alter; last apply Hvl.
+    intros Hpsn Hlen Hvb.
+    apply map_Forall_alter; last apply Hvb.
     intros l Hlookup m Hacc.
-    unfold valid_ballots in Hvl.
+    unfold valid_ballots in Hvb.
     destruct Hacc as [Hm Hnz].
     destruct (decide (m < length (extend false n l))%nat) as [Hlt | Hge].
     { rewrite lookup_app_l in Hm; last done.
-      apply (Hvl x l); first apply Hlookup.
+      apply (Hvb x l); first apply Hlookup.
       by eapply extend_false_accepted_in.
     }
     apply not_lt in Hge.
@@ -590,19 +596,19 @@ Section pure.
     by rewrite largest_proposal_prepare_same.
   Qed.
 
-  Theorem vl_inv_prepare bs ps x n :
+  Theorem vb_inv_prepare bs ps x n :
     valid_ballots bs ps ->
     valid_ballots (spaxos_prepare bs x n) ps.
   Proof.
-    intros Hvl.
-    apply map_Forall_alter; last apply Hvl.
+    intros Hvb.
+    apply map_Forall_alter; last apply Hvb.
     intros l Hlookup m Hacc.
-    unfold valid_ballots in Hvl.
-    apply (Hvl x l); first apply Hlookup.
+    unfold valid_ballots in Hvb.
+    apply (Hvb x l); first apply Hlookup.
     by eapply extend_false_accepted_in.
   Qed.
 
-  Theorem vp_inv_propose bs ps n v :
+  Theorem vp_inv_propose {bs ps n v} :
     ps !! n = None ->
     n ≠ O ->
     valid_proposal bs ps n v ->
@@ -617,18 +623,21 @@ Section pure.
     by apply valid_proposal_insert_None.
   Qed.
 
-  Theorem vl_inv_propose bs ps n v :
+  Theorem vb_inv_propose {bs ps} n v :
     valid_ballots bs ps ->
     valid_ballots bs (spaxos_propose ps n v).
   Proof.
-    intros Hvl.
+    intros Hvb.
     unfold spaxos_propose.
     intros x l Hlookup n' Hacc.
     destruct (decide (n' = n)) as [-> | Hneq]; first by rewrite lookup_insert.
     rewrite lookup_insert_ne; last done.
-    by apply (Hvl x l).
+    by apply (Hvb x l).
   Qed.
 
-End pure.
+  Theorem vc_inv_propose {c bs ps} n v :
+    valid_consensus c bs ps ->
+    valid_consensus c bs (spaxos_propose ps n v).
+  Admitted.
 
-Definition spaxosN := nroot .@ "spaxos".
+End pure.
