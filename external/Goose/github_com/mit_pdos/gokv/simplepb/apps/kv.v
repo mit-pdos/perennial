@@ -31,8 +31,8 @@ Definition OP_PUT : expr := #(U8 0).
 
 Definition OP_GET : expr := #(U8 1).
 
-Definition EncodePutArgs: val :=
-  rec: "EncodePutArgs" "args" :=
+Definition encodePutArgs: val :=
+  rec: "encodePutArgs" "args" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 (#1 + #8)) in
     SliceSet byteT (![slice.T byteT] "enc") #0 OP_PUT;;
     "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (StringLength (struct.loadF PutArgs "Key" "args")));;
@@ -46,11 +46,11 @@ Definition Clerk__Put: val :=
       "Key" ::= "key";
       "Val" ::= "val"
     ] in
-    esm.Clerk__ApplyExactlyOnce (struct.loadF Clerk "cl" "ck") (EncodePutArgs "putArgs");;
+    esm.Clerk__ApplyExactlyOnce (struct.loadF Clerk "cl" "ck") (encodePutArgs "putArgs");;
     #().
 
-Definition EncodeGetArgs: val :=
-  rec: "EncodeGetArgs" "args" :=
+Definition encodeGetArgs: val :=
+  rec: "encodeGetArgs" "args" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #1) in
     SliceSet byteT (![slice.T byteT] "enc") #0 OP_GET;;
     "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (StringToBytes "args"));;
@@ -58,7 +58,7 @@ Definition EncodeGetArgs: val :=
 
 Definition Clerk__Get: val :=
   rec: "Clerk__Get" "ck" "key" :=
-    StringFromBytes (esm.Clerk__ApplyReadonly (struct.loadF Clerk "cl" "ck") (EncodeGetArgs "key")).
+    StringFromBytes (esm.Clerk__ApplyReadonly (struct.loadF Clerk "cl" "ck") (encodeGetArgs "key")).
 
 (* clerkpool.go *)
 
@@ -132,9 +132,9 @@ Definition KVState := struct.decl [
   "minVnum" :: uint64T
 ].
 
-Definition DecodePutArgs: val :=
-  rec: "DecodePutArgs" "raw_args" :=
-    let: "enc" := ref_to (slice.T byteT) "raw_args" in
+Definition decodePutArgs: val :=
+  rec: "decodePutArgs" "raw_args" :=
+    let: "enc" := ref_to (slice.T byteT) (SliceSkip byteT "raw_args" #1) in
     let: "args" := struct.alloc PutArgs (zero_val (struct.t PutArgs)) in
     let: "l" := ref (zero_val uint64T) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
@@ -148,7 +148,7 @@ Definition getArgs: ty := stringT.
 
 Definition decodeGetArgs: val :=
   rec: "decodeGetArgs" "raw_args" :=
-    StringFromBytes "raw_args".
+    StringFromBytes (SliceSkip byteT "raw_args" #1).
 
 (* end of marshalling *)
 Definition KVState__put: val :=
@@ -164,13 +164,13 @@ Definition KVState__apply: val :=
   rec: "KVState__apply" "s" "args" "vnum" :=
     (if: (SliceGet byteT "args" #0) = OP_PUT
     then
-      let: "args" := DecodePutArgs (SliceSkip byteT "args" #1) in
+      let: "args" := decodePutArgs "args" in
       MapInsert (struct.loadF KVState "vnums" "s") (struct.loadF PutArgs "Key" "args") "vnum";;
       KVState__put "s" "args"
     else
       (if: (SliceGet byteT "args" #0) = OP_GET
       then
-        let: "key" := decodeGetArgs (SliceSkip byteT "args" #1) in
+        let: "key" := decodeGetArgs "args" in
         MapInsert (struct.loadF KVState "vnums" "s") "key" "vnum";;
         KVState__get "s" "key"
       else
@@ -182,7 +182,7 @@ Definition KVState__applyReadonly: val :=
     (if: (SliceGet byteT "args" #0) ≠ OP_GET
     then Panic "expected a GET as readonly-operation"
     else #());;
-    let: "key" := decodeGetArgs (SliceSkip byteT "args" #1) in
+    let: "key" := decodeGetArgs "args" in
     let: "reply" := KVState__get "s" "key" in
     let: ("vnum", "ok") := MapGet (struct.loadF KVState "vnums" "s") "key" in
     (if: "ok"

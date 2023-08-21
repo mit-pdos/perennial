@@ -40,9 +40,9 @@ Definition compute_reply ops op : list u8 :=
 
 Definition encode_op op : list u8 :=
   match op with
-    | getOp k => [U8 1] ++ string_to_bytes k
     | putOp k v => [U8 0] ++ u64_le (length (string_to_bytes k)) ++
                          string_to_bytes k ++ string_to_bytes v
+    | getOp k => [U8 1] ++ string_to_bytes k
   end
 .
 
@@ -73,20 +73,20 @@ Notation pbG := (pbG (pb_record:=kv_record)).
 Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
 Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
-Class kv64G Σ := Kv64G {
-  kv64_ghostMapG :> ghost_mapG Σ string string ;
-  kv64_logG :> inG Σ (mono_listR (leibnizO kvOp)) ;
-  kv64_vsmG :> vsmG (sm_record:=kv_record) Σ ;
+Class kvG Σ := KvG {
+  kv_ghostMapG :> ghost_mapG Σ string string ;
+  kv_logG :> inG Σ (mono_listR (leibnizO kvOp)) ;
+  kv_vsmG :> vsmG (sm_record:=kv_record) Σ ;
 }.
-Definition kv64Σ := #[configΣ; ghost_mapΣ string string;
+Definition kvΣ := #[configΣ; ghost_mapΣ string string;
                       GFunctor (mono_listR (leibnizO kvOp));
                       vsmΣ (sm_record:=kv_record)
    ].
-Global Instance subG_kv64Σ {Σ} : subG kv64Σ Σ → kv64G Σ.
+Global Instance subG_kvΣ {Σ} : subG kvΣ Σ → kvG Σ.
 Proof. intros. solve_inG. Qed.
 
 Context `{!gooseGlobalGS Σ}.
-Context `{!kv64G Σ}.
+Context `{!kvG Σ}.
 
 (* The abstract state applies the operation to an all-nil map,
    so that each key already exists from the start. This is consisent with
@@ -137,17 +137,17 @@ Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
 Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
 Context `{!heapGS Σ}.
-Context `{!kv64G Σ}.
+Context `{!kvG Σ}.
 
-Lemma wp_EncodePutArgs (args_ptr:loc) (key val:string) :
+Lemma wp_encodePutArgs (args_ptr:loc) (key val:string) :
   {{{
       "Hargs_key" ∷ args_ptr ↦[kv.PutArgs :: "Key"] #(str key) ∗
       "Hargs_val" ∷ args_ptr ↦[kv.PutArgs :: "Val"] #(str val)
   }}}
-    kv.EncodePutArgs #args_ptr
+    kv.encodePutArgs #args_ptr
   {{{
         enc enc_sl, RET (slice_val enc_sl);
-        ⌜has_op_encoding enc (putOp key val)⌝ ∗
+        ⌜ has_op_encoding enc (putOp key val)⌝ ∗
         own_slice enc_sl byteT 1 enc
   }}}.
 Proof.
@@ -189,11 +189,84 @@ Proof.
   by rewrite string_bytes_length.
 Qed.
 
-Lemma wp_EncodeGetArgs (key:string) :
+Lemma wp_decodePutArgs enc_sl enc q (key val:string) :
+  {{{
+        "%Henc" ∷ ⌜has_op_encoding enc (putOp key val)⌝ ∗
+        "Hsl" ∷ own_slice_small enc_sl byteT q enc
+  }}}
+    kv.decodePutArgs (slice_val enc_sl)
+  {{{
+        (args_ptr:loc), RET #args_ptr;
+        "Hargs_key" ∷ args_ptr ↦[kv.PutArgs :: "Key"] #(str key) ∗
+        "Hargs_val" ∷ args_ptr ↦[kv.PutArgs :: "Val"] #(str val)
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
+  wp_call.
+
+  (* IDEA: maybe get rid of redundancy in slice length by having the slice object be
+     (own_slice_small byteT slptr cap l)
+     (slice_val sl_ptr lst).
+     So instead of an arbitrary `enc_sl`, we should really have `Slice.mk
+     enc_ptr (length enc) enc_cap`, but written more compactly.
+   *)
+  iDestruct (own_slice_small_sz with "Hsl") as %Hsl_sz.
+  cbn in Henc.
+  subst.
+  wp_apply wp_SliceSkip.
+  { cbn in Hsl_sz. word. }
+  iDestruct (slice_small_split _ 1 with "Hsl") as "[_ Hsl]".
+  { cbn. word. }
+  rewrite skipn_cons drop_0.
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (enc_ptr) "Henc".
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. repeat econstructor. Opaque slice.T. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (?) "Hl".
+  wp_load.
+  wp_apply (wp_ReadInt with "[$Hsl]").
+  iIntros (kv_sl) "Hkv_sl".
+  wp_pures. wp_store. wp_store. wp_load. wp_load.
+  iDestruct (own_slice_small_wf with "Hkv_sl") as %Hkv_wf.
+  iDestruct (own_slice_small_sz with "Hkv_sl") as %Hkv_sz.
+  simpl in Hsl_sz. rewrite app_length in Hkv_sz.
+  wp_apply wp_SliceTake.
+  { word. }
+  iDestruct (slice_small_split with "Hkv_sl") as "[Hk Hv]".
+  { shelve. }
+  replace (int.nat (length (string_to_bytes key))) with (length (string_to_bytes key)) by word.
+  Unshelve.
+  2:{ rewrite app_length. word. }
+  wp_apply (wp_StringFromBytes with "[$Hk]").
+  iIntros "Hk".
+  rewrite take_app.
+  wp_storeField.
+  rewrite drop_app.
+  wp_load.
+  wp_load.
+  wp_apply wp_SliceSkip.
+  { word. }
+  wp_apply (wp_StringFromBytes with "[$Hv]").
+  iIntros "Hv".
+  do 2 rewrite string_to_bytes_inj.
+  wp_storeField.
+  iModIntro. iApply "HΦ".
+  iFrame.
+Qed.
+
+Lemma wp_encodeGetArgs (key:string) :
   {{{
         True
   }}}
-    kv.EncodeGetArgs #(str key)
+    kv.encodeGetArgs #(str key)
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_op_encoding enc (getOp key)⌝ ∗
@@ -224,6 +297,32 @@ Proof.
   iApply "HΦ". iModIntro. iFrame.
   iPureIntro.
   done.
+Qed.
+
+Lemma wp_decodeGetArgs enc_sl enc q (key:string) :
+  {{{
+        "%Henc" ∷ ⌜has_op_encoding enc (getOp key)⌝ ∗
+        "Hsl" ∷ own_slice_small enc_sl byteT q enc
+  }}}
+    kv.decodeGetArgs (slice_val enc_sl)
+  {{{
+        RET #(str key); True
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
+  wp_call.
+  cbn in Henc. subst.
+  iDestruct (own_slice_small_sz with "Hsl") as %Hsl_sz.
+  wp_apply wp_SliceSkip.
+  { simpl in Hsl_sz. word. }
+  iDestruct (slice_small_split _ 1 with "Hsl") as "[_ Hsl]".
+  { simpl. word. }
+  rewrite skipn_cons drop_0.
+  wp_apply (wp_StringFromBytes with "[$]").
+  iIntros "_".
+  wp_pures.
+  rewrite string_to_bytes_inj.
+  by iApply "HΦ".
 Qed.
 
 Notation is_state := (is_state (sm_record:=kv_record)).
@@ -272,7 +371,6 @@ Proof.
   iNamed "Hown".
   wp_pures.
   iMod (readonly_load with "Hsl") as (?) "Hsl2".
-  iDestruct (own_slice_small_sz with "Hsl2") as %Hsl_sz.
   destruct op.
   { (* case: put op *)
     rewrite -Henc.
@@ -280,70 +378,8 @@ Proof.
     { done. }
     iIntros "Hsl2".
     wp_pures.
-    Opaque u64_le.
-    simpl in Henc.
-    rewrite /encode_op /=.
-    subst.
-    wp_apply wp_SliceSkip.
-    { cbn in Hsl_sz. word. }
-    (* rewrite -Hsl_sz -Henc. *)
-    iDestruct (slice_small_split _ 1 with "Hsl2") as "[_ Hop_sl]".
-    { cbn. word. }
-
-    replace (cons (U8 0)) with (app [U8 0]) by done.
-    replace (int.nat 1) with (length [U8 0]) by done.
-    rewrite drop_app.
-
-    (* TODO: separate lemma *)
-    wp_call.
-    wp_apply (wp_ref_to).
-    { done. }
-    iIntros (enc_ptr) "Henc".
-    wp_pures.
-    wp_apply (wp_allocStruct).
-    { Transparent slice.T. repeat econstructor. Opaque slice.T. }
-    iIntros (args_ptr) "Hargs".
-    iDestruct (struct_fields_split with "Hargs") as "HH".
-    iNamed "HH".
-    wp_pures.
-    wp_apply wp_ref_of_zero.
-    { done. }
-    iIntros (?) "Hl".
-    wp_load.
-    wp_apply (wp_ReadInt with "[$Hop_sl]").
-    iIntros (kv_sl) "Hkv_sl".
-    wp_pures.
-    wp_store.
-    wp_store.
-    wp_load.
-    wp_load.
-    iDestruct (own_slice_small_wf with "Hkv_sl") as %Hkv_wf.
-    iDestruct (own_slice_small_sz with "Hkv_sl") as %Hkv_sz.
-    simpl in Hsl_sz. rewrite app_length in Hkv_sz.
-    iDestruct (slice_small_split with "Hkv_sl") as "[Hk Hv]".
-    { shelve. }
-    replace (int.nat (length (string_to_bytes s0))) with (length (string_to_bytes s0)) by word.
-    Unshelve.
-    2:{ rewrite app_length. word. }
-    wp_apply wp_SliceTake.
-    { word. }
-    wp_apply (wp_StringFromBytes with "[$Hk]").
-    iIntros "Hk".
-    rewrite take_app.
-    wp_storeField.
-    rewrite string_to_bytes_inj.
-    rewrite drop_app.
-    wp_load.
-    wp_load.
-
-    wp_apply wp_SliceSkip.
-    { word. }
-    wp_apply (wp_StringFromBytes with "[$Hv]").
-    iIntros "Hv".
-    wp_storeField.
-    wp_pures.
-    (* TODO: end of separate lemma? *)
-
+    wp_apply (wp_decodePutArgs with "[$Hsl2 //]").
+    iIntros (?). iNamed 1.
     wp_pures.
     wp_loadField.
     wp_loadField.
@@ -356,7 +392,6 @@ Proof.
     wp_loadField.
     wp_loadField.
     wp_loadField.
-    rewrite string_to_bytes_inj.
     wp_apply (wp_MapInsert_to_val with "[$Hkvs_map]").
     iIntros "Hkvs_map".
     wp_pures.
@@ -435,26 +470,7 @@ Proof.
     { done. }
     iIntros "Hsl2".
     wp_pures.
-
-    simpl in Henc. subst.
-    rewrite /encode_op /=.
-    wp_apply wp_SliceSkip.
-    { simpl in Hsl_sz. word. }
-    iDestruct (slice_small_split _ 1 with "Hsl2") as "[_ Hsl2]".
-    { simpl. word. }
-
-    replace (cons (U8 1)) with (app [U8 1]) by done.
-    replace (int.nat 1) with (length [U8 1]) by done.
-    rewrite drop_app.
-
-    (* TODO: separate lemma *)
-    wp_call.
-    wp_pures.
-    wp_apply (wp_StringFromBytes with "[$Hsl2]").
-    iIntros "_".
-    wp_pures.
-    rewrite string_to_bytes_inj.
-    (* end separate lemma *)
+    wp_apply (wp_decodeGetArgs with "[$Hsl2 //]").
 
     wp_loadField.
     wp_apply (wp_MapInsert with "[$]").
@@ -521,7 +537,7 @@ Proof.
         iExists _. by iFrame "Hint".
       }
     }
-    injection Hlookup as -> <-.
+    injection Hlookup as <- <-.
     iDestruct (own_slice_to_small with "Hrep_sl") as "$".
   }
 Qed.
@@ -559,26 +575,7 @@ Proof.
   { done. }
   iIntros "Hsl2".
   wp_pures.
-  iDestruct (own_slice_small_sz with "Hsl2") as %Hsl_sz.
-  simpl in Hsl_sz.
-  wp_apply wp_SliceSkip.
-  { word. }
-
-  iDestruct (slice_small_split _ 1 with "Hsl2") as "[_ Hsl2]".
-  { simpl. word. }
-  replace (cons (U8 1)) with (app [U8 1]) by done.
-  replace (int.nat 1) with (length [U8 1]) by done.
-  rewrite drop_app.
-
-
-  (* TODO: separate lemma *)
-  wp_call.
-  wp_pures.
-  wp_apply (wp_StringFromBytes with "[$]").
-  iIntros "_".
-  rewrite string_to_bytes_inj.
-  (* end separate lemma *)
-
+  wp_apply (wp_decodeGetArgs with "[$Hsl2 //]").
   iNamed "Hown".
   wp_pures.
   wp_call.
