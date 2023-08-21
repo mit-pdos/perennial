@@ -1144,6 +1144,7 @@ Definition stringLength: val :=
   rec: "stringLength" "s" :=
     StringLength "s".
 
+(* tests *)
 Definition failing_testStringAppend: val :=
   rec: "failing_testStringAppend" <> :=
     let: "ok" := ref_to boolT #true in

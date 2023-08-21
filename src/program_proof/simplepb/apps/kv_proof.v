@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Goose.github_com.mit_pdos.gokv.simplepb.apps Require Import kv64.
+From Goose.github_com.mit_pdos.gokv.simplepb.apps Require Import kv.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From iris.base_logic Require Import ghost_map.
 From iris.algebra Require Import mono_list.
