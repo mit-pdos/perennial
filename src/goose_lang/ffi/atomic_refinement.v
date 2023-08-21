@@ -497,26 +497,10 @@ Section go_refinement.
            destruct l => //=; destruct l0 => //=; eauto; done); done).
     2:{
       rewrite /bin_op_eval.
-      (* NOTE: messy proof *)
-      case_match.
-      {
-        destruct iv1 => //=; inversion 1; eauto;
-                        subst; try (destruct iv2; inversion 1; subst; destruct l => //=; destruct l0 => //=; eauto).
-        all:
-          simpl in H;
-          destruct (list_ascii_of_string s !! (int.nat n));
-          last (exfalso; done ) ;
-          simpl in H; destruct v => //=; destruct l => //=;
-          eexists _; split; eauto;
-          by inversion H.
-      }
-      {
-        destruct iv1 => //=; inversion 1; eauto;
-                        subst; try (destruct iv2; inversion 1; subst; destruct l => //=; destruct l0 => //=; eauto).
-        all: rewrite fmap_None in H;
-          rewrite fmap_None;
-          done.
-      }
+      destruct iv1 => //=;
+        inversion 1; eauto; subst; destruct iv2; inversion 1;
+        subst; destruct l => //=; destruct l0 => //=;
+        destruct (list_ascii_of_string s !! (int.nat n)) => //=; eauto.
     }
 
     rewrite /bin_op_eval /bin_op_eval_eq /=.
