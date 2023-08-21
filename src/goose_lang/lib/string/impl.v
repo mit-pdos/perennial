@@ -12,11 +12,17 @@ Definition StringFromBytes : val :=
      else (to_string (SliceGet byteT "b" #0)) +
             ("StringFromBytes" (SliceSubslice byteT "b" #1 (slice.len "b")))).
 
-Definition StringToBytes : val :=
-  (rec: "stringToBytes" "b" :=
-     if: (StringLength "b") = #0
+Definition stringToBytes : val :=
+  (rec: "stringToBytes" "i" "s" :=
+     if: (Var "i") = #0
      then slice.nil
-     else (SliceAppend byteT (SliceGet byteT "b" #0)) +
-            ("bytesToString" (SliceSubslice byteT "b" #1 (slice.len "b")))).
+     else
+       let: "j" := "i" - #1 in
+       (SliceAppend byteT ("stringToBytes" "j" "s") (StringGet "s" "j")))
+.
+
+Definition StringToBytes : val :=
+  λ: "s", stringToBytes (StringLength "s") "s"
+.
 
 End goose_lang.

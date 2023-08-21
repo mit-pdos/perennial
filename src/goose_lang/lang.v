@@ -77,6 +77,7 @@ Inductive bin_op : Set :=
   | ShiftLOp | ShiftROp (* Shifts *)
   | LeOp | LtOp | EqOp (* Relations *)
   | OffsetOp (k:Z) (* Pointer offset *)
+  | StringGetOp
 .
 
 Inductive prim_op0 : Set :=
@@ -489,6 +490,7 @@ Proof.
                                 | LeOp => inl 10
                                 | LtOp => inl 11
                                 | EqOp => inl 12
+                                | StringGetOp => inl 13
                                 | OffsetOp k => inr k
                                 end)
                          (λ x, match x with
@@ -505,6 +507,7 @@ Proof.
                                | inl 10 => _
                                | inl 11 => _
                                | inl 12 => _
+                               | inl 13 => _
                                | inl _ => PlusOp
                                | inr k => OffsetOp k
                                end) _); by intros [].
@@ -851,11 +854,20 @@ Definition bin_op_eval_bool (op : bin_op) (b1 b2 : bool) : option base_lit :=
   | LeOp | LtOp => None (* InEquality *)
   | EqOp => Some (LitBool (bool_decide (b1 = b2)))
   | OffsetOp _ => None (* Pointer arithmetic *)
+  | _ => None
   end.
 
 Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :=
   match op with
   | PlusOp => Some $ LitString (s1 ++ s2)
+  | _ => None
+  end.
+
+Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: Interface.word width} (w2 : word): option base_lit :=
+  match op with
+  | StringGetOp => mbind (M:=option)
+                  (λ (x:Ascii.ascii), Some $ LitByte (U8 (Ascii.nat_of_ascii x)))
+                  ((list_ascii_of_string s1) !! (int.nat w2) : option Ascii.ascii)
   | _ => None
   end.
 
@@ -913,6 +925,9 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
                                              Some $ LitV $ LitLoc (l +ₗ k * (int.Z (off: u64)))
                                            | _ => None
                                            end
+    | LitV (LitString s1), LitV (LitByte n) => LitV <$> bin_op_eval_string_word op s1 n
+    | LitV (LitString s1), LitV (LitInt32 n) => LitV <$> bin_op_eval_string_word op s1 n
+    | LitV (LitString s1), LitV (LitInt n) => LitV <$> bin_op_eval_string_word op s1 n
     | _, _ => None
     end.
 
