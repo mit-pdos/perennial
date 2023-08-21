@@ -55,7 +55,7 @@ Ltac word_cleanup :=
          end;
   try lia. *)
 
-Lemma byte_to_string_inj l :
+Lemma bytes_to_string_inj l :
   string_to_bytes $ bytes_to_string l = l.
 Proof.
   rewrite /string_to_bytes /bytes_to_string /=.
@@ -106,6 +106,15 @@ Proof.
     }
     by rewrite Ascii.ascii_nat_embedding.
   }
+Qed.
+
+Lemma string_bytes_length s :
+  String.length s = length $ string_to_bytes s.
+Proof.
+  rewrite /string_to_bytes fmap_length.
+  induction s as [|? ? IHs].
+  { done. }
+  { cbn. apply f_equal. done. }
 Qed.
 
 (*

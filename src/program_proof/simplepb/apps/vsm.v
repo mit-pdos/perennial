@@ -1,4 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
+From Goose.github_com.mit_pdos.gokv.simplepb.apps Require Import esm.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.fencing Require Import map.

@@ -7,7 +7,7 @@ From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb Require Import pb_definitions.
 From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
-From Perennial.program_proof Require Import map_marshal_proof.
+From Perennial.program_proof Require Import map_string_marshal_proof.
 From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.simplepb Require Import config_proof.
 From Perennial.program_proof.simplepb Require Import pb_init_proof.
@@ -16,50 +16,51 @@ From Perennial.program_proof.fencing Require Import map.
 
 Section global_proof.
 
-Inductive kv64Op :=
-  | putOp : u64 → list u8 → kv64Op
-  | getOp : u64 → kv64Op
+Inductive kvOp :=
+  | putOp : string → string → kvOp
+  | getOp : string → kvOp
 .
 
-Definition apply_op (state:gmap u64 (list u8)) (op:kv64Op) :=
+Definition apply_op (state:gmap string string) (op:kvOp) :=
   match op with
     | getOp _ => state
     | putOp k v => <[k:=v]> state
   end
 .
 
-Definition compute_state ops : gmap u64 (list u8) :=
+Definition compute_state ops : gmap string string :=
   foldl apply_op ∅ ops.
 
-Definition compute_reply ops op : (list u8) :=
+Definition compute_reply ops op : list u8 :=
   match op with
-    | getOp k => default [] ((compute_state ops) !! k)
+    | getOp k => string_to_bytes (default "" ((compute_state ops) !! k))
     | putOp k v => []
   end
 .
 
 Definition encode_op op : list u8 :=
   match op with
-    | getOp k => [U8 1] ++ u64_le k
-    | putOp k v => [U8 0] ++ u64_le k ++ v
+    | getOp k => [U8 1] ++ string_to_bytes k
+    | putOp k v => [U8 0] ++ u64_le (length (string_to_bytes k)) ++
+                         string_to_bytes k ++ string_to_bytes v
   end
 .
 
-Definition is_readonly_op (op:kv64Op) :=
+Definition is_readonly_op (op:kvOp) :=
   match op with
     | getOp _ => True
     | _ => False
   end
 .
 
-Instance op_eqdec : EqDecision kv64Op.
+Instance op_eqdec : EqDecision kvOp.
 Proof. solve_decision. Qed.
 
 Definition kv_record : Sm.t :=
   {|
-    Sm.OpType := kv64Op ;
+    Sm.OpType := kvOp ;
     Sm.has_op_encoding := λ op_bytes op, encode_op op = op_bytes ;
-    Sm.has_snap_encoding := λ snap_bytes ops, has_byte_map_encoding snap_bytes (compute_state ops) ;
+    Sm.has_snap_encoding := λ snap_bytes ops, has_string_map_encoding snap_bytes (compute_state ops) ;
     Sm.compute_reply :=  compute_reply ;
     Sm.is_readonly_op :=  is_readonly_op ;
     Sm.apply_postcond :=  λ ops op, True ;
@@ -73,12 +74,12 @@ Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
 Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
 Class kv64G Σ := Kv64G {
-  kv64_ghostMapG :> ghost_mapG Σ u64 (list u8) ;
-  kv64_logG :> inG Σ (mono_listR (leibnizO kv64Op)) ;
+  kv64_ghostMapG :> ghost_mapG Σ string string ;
+  kv64_logG :> inG Σ (mono_listR (leibnizO kvOp)) ;
   kv64_vsmG :> vsmG (sm_record:=kv_record) Σ ;
 }.
-Definition kv64Σ := #[configΣ; ghost_mapΣ u64 (list u8);
-                      GFunctor (mono_listR (leibnizO kv64Op));
+Definition kv64Σ := #[configΣ; ghost_mapΣ string string;
+                      GFunctor (mono_listR (leibnizO kvOp));
                       vsmΣ (sm_record:=kv_record)
    ].
 Global Instance subG_kv64Σ {Σ} : subG kv64Σ Σ → kv64G Σ.
@@ -91,7 +92,8 @@ Context `{!kv64G Σ}.
    so that each key already exists from the start. This is consisent with
    [getOp] doing [default []]. *)
 Definition own_kvs (γkv:gname) ops : iProp Σ :=
-  ghost_map_auth γkv 1 (compute_state ops ∪ gset_to_gmap [] (fin_to_set u64))
+  ∃ allocatedKeys,
+  ghost_map_auth γkv 1 (compute_state ops ∪ gset_to_gmap "" allocatedKeys)
 .
 
 Definition stateN := nroot .@ "state".
@@ -99,27 +101,28 @@ Definition stateN := nroot .@ "state".
 Definition kv_inv γlog γkv : iProp Σ :=
   inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γkv ops).
 
-Definition kv_ptsto γkv (k:u64) (v:list u8): iProp Σ :=
+Definition kv_ptsto γkv (k v : string) : iProp Σ :=
   k ↪[γkv] v.
 
-Lemma alloc_kv γlog :
+Lemma alloc_kv γlog allocated :
   own_log γlog [] ={⊤}=∗
   ∃ γkv ,
   kv_inv γlog γkv ∗
-  [∗ set] k ∈ fin_to_set u64, kv_ptsto γkv k []
+  [∗ set] k ∈ allocated, kv_ptsto γkv k ""
 .
 Proof.
   iIntros "Hlog".
-  iMod (ghost_map_alloc (gset_to_gmap [] (fin_to_set u64))) as (γkv) "[Hkvs Hkvptsto]".
+  iMod (ghost_map_alloc (gset_to_gmap "" allocated)) as (γkv) "[Hkvs Hkvptsto]".
   iExists _.
   iMod (inv_alloc with "[Hkvs Hlog]") as "$".
-  { iNext. iExists _; iFrame. rewrite /own_kvs /compute_state /= left_id_L. done. }
-  replace (fin_to_set u64) with (dom (gset_to_gmap (A:=list u8) [] (fin_to_set u64))) at 2.
+  { iNext. iExists _; iFrame. rewrite /own_kvs /compute_state /=.
+    iExists _. rewrite left_id_L. done. }
+  replace allocated with (dom (gset_to_gmap "" allocated)) at 2.
   2:{ rewrite dom_gset_to_gmap. done. }
   iApply big_sepM_dom. iApply (big_sepM_impl with "Hkvptsto").
-  iIntros "!# %k %x". rewrite lookup_gset_to_gmap option_guard_True.
-  2:{ apply elem_of_fin_to_set. }
-  iIntros ([= <-]). auto.
+  iIntros "!# %k %x".
+  rewrite lookup_gset_to_gmap_Some.
+  iIntros ([_ <-]). auto.
 Qed.
 
 End global_proof.
@@ -136,13 +139,12 @@ Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 Context `{!heapGS Σ}.
 Context `{!kv64G Σ}.
 
-Lemma wp_EncodePutArgs (args_ptr:loc) (key:u64) val val_sl :
+Lemma wp_EncodePutArgs (args_ptr:loc) (key val:string) :
   {{{
-      "Hargs_key" ∷ args_ptr ↦[kv64.PutArgs :: "Key"] #key ∗
-      "Hargs_val" ∷ args_ptr ↦[kv64.PutArgs :: "Val"] (slice_val val_sl) ∗
-      "Hargs_val_sl" ∷ own_slice_small val_sl byteT 1 (val)
+      "Hargs_key" ∷ args_ptr ↦[kv.PutArgs :: "Key"] #(str key) ∗
+      "Hargs_val" ∷ args_ptr ↦[kv.PutArgs :: "Val"] #(str val)
   }}}
-    kv64.EncodePutArgs #args_ptr
+    kv.EncodePutArgs #args_ptr
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_op_encoding enc (putOp key val)⌝ ∗
@@ -165,21 +167,33 @@ Proof.
   iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
   wp_loadField. wp_load.
   wp_apply (wp_WriteInt with "Hbuf"). iIntros (sl) "Hbuf". wp_store. clear ptr.
-  wp_loadField. wp_load.
-  wp_apply (wp_WriteBytes with "[$Hbuf $Hargs_val_sl]").
-  iIntros (sl') "[Hbuf _]". (* FIXME we are throwing away the args_val_sl here? *)
+  wp_loadField.
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hsl".
+  wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_WriteBytes with "[$Hbuf $Hsl]").
+  iIntros (sl') "[Hbuf _]".
+  wp_store. clear sl.
+  wp_loadField.
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hsl".
+  wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_WriteBytes with "[$Hbuf $Hsl]").
+  iIntros (?) "[Hbuf _]".
   wp_store. clear sl.
   wp_load.
   iApply "HΦ". iModIntro. iFrame.
   iPureIntro.
-  done.
+  by rewrite string_bytes_length.
 Qed.
 
-Lemma wp_EncodeGetArgs (key:u64) :
+Lemma wp_EncodeGetArgs (key:string) :
   {{{
         True
   }}}
-    kv64.EncodeGetArgs #key
+    kv.EncodeGetArgs #(str key)
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_op_encoding enc (getOp key)⌝ ∗
@@ -200,8 +214,12 @@ Proof.
   iEval simpl.
   change (<[int.nat 0%Z:=U8 1]> (replicate (int.nat 1%Z) (U8 0))) with [U8 1].
   iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hsl".
   wp_load.
-  wp_apply (wp_WriteInt with "Hbuf"). iIntros (sl) "Hbuf". wp_store. clear ptr.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_WriteBytes with "[$Hbuf $Hsl]").
+  iIntros (?) "[Hbuf _]". wp_store. clear ptr.
   wp_load.
   iApply "HΦ". iModIntro. iFrame.
   iPureIntro.
@@ -211,18 +229,18 @@ Qed.
 Notation is_state := (is_state (sm_record:=kv_record)).
 
 Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp Σ :=
-  ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap u64 u64) (minVnum:u64),
+  ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap string u64) (minVnum:u64),
   "Hkvs" ∷ s ↦[KVState :: "kvs"] #kvs_loc ∗
   "Hvnums" ∷ s ↦[KVState :: "vnums"] #vnums_loc ∗
   "HminVnum" ∷ s ↦[KVState :: "minVnum"] #minVnum ∗
-  "Hkvs_map" ∷ own_byte_map kvs_loc (compute_state ops) ∗
+  "Hkvs_map" ∷ own_map kvs_loc 1 (compute_state ops) ∗
   "Hvnums_map" ∷ own_map vnums_loc 1 vnumsM ∗
-  "#Hst" ∷ □ (∀ (k:u64),
+  "#Hst" ∷ □ (∀ (k:string),
               (∀ (vnum':u64), ⌜int.nat vnum' <= int.nat latestVnum⌝ →
                              ⌜int.nat (default minVnum (vnumsM !! k)) <= int.nat vnum'⌝ →
               ∃ someOps, is_state γst vnum' someOps ∗
                       ⌜compute_reply someOps (getOp k) = compute_reply ops (getOp k)⌝)) ∗
-  "%Hle" ∷ ⌜∀ (k:u64), int.nat (default minVnum (vnumsM !! k)) <= int.nat latestVnum⌝
+  "%Hle" ∷ ⌜∀ (k:string), int.nat (default minVnum (vnumsM !! k)) <= int.nat latestVnum⌝
 .
 
 Implicit Type own_VersionedStateMachine : gname → (list OpType) → u64 → iProp Σ.
@@ -253,11 +271,6 @@ Proof.
   iDestruct "Hpre" as "(%Henc & %Hvnum & #Hsl & Hown & #Hintermediate)".
   iNamed "Hown".
   wp_pures.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (ret) "Hret".
-  wp_pures.
-  wp_apply (wp_slice_len).
   iMod (readonly_load with "Hsl") as (?) "Hsl2".
   iDestruct (own_slice_small_sz with "Hsl2") as %Hsl_sz.
   destruct op.
@@ -267,25 +280,19 @@ Proof.
     { done. }
     iIntros "Hsl2".
     wp_pures.
-    wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
-    { rewrite -Hsl_sz.
-      rewrite -Henc.
-      split; last done.
-      rewrite app_length.
-      simpl.
-      word.
-    }
-    iIntros (putOp_sl) "Hop_sl".
-    rewrite -Hsl_sz -Henc.
-    rewrite -> subslice_drop_take; last first.
-    { rewrite app_length. simpl. word. }
-    rewrite app_length.
-    rewrite singleton_length.
-    unfold encode_op.
-    replace (1 + length (u64_le u ++ l) - int.nat 1%Z) with (length (u64_le u ++ l)) by word.
-    replace (int.nat (U64 1)) with (length [U8 0]) by done.
+    Opaque u64_le.
+    simpl in Henc.
+    rewrite /encode_op /=.
+    subst.
+    wp_apply wp_SliceSkip.
+    { cbn in Hsl_sz. word. }
+    (* rewrite -Hsl_sz -Henc. *)
+    iDestruct (slice_small_split _ 1 with "Hsl2") as "[_ Hop_sl]".
+    { cbn. word. }
+
+    replace (cons (U8 0)) with (app [U8 0]) by done.
+    replace (int.nat 1) with (length [U8 0]) by done.
     rewrite drop_app.
-    rewrite take_ge; last word.
 
     (* TODO: separate lemma *)
     wp_call.
@@ -299,36 +306,65 @@ Proof.
     iDestruct (struct_fields_split with "Hargs") as "HH".
     iNamed "HH".
     wp_pures.
+    wp_apply wp_ref_of_zero.
+    { done. }
+    iIntros (?) "Hl".
     wp_load.
     wp_apply (wp_ReadInt with "[$Hop_sl]").
-    iIntros (val_sl) "Hval_sl".
+    iIntros (kv_sl) "Hkv_sl".
     wp_pures.
+    wp_store.
+    wp_store.
+    wp_load.
+    wp_load.
+    iDestruct (own_slice_small_wf with "Hkv_sl") as %Hkv_wf.
+    iDestruct (own_slice_small_sz with "Hkv_sl") as %Hkv_sz.
+    simpl in Hsl_sz. rewrite app_length in Hkv_sz.
+    iDestruct (slice_small_split with "Hkv_sl") as "[Hk Hv]".
+    { shelve. }
+    replace (int.nat (length (string_to_bytes s0))) with (length (string_to_bytes s0)) by word.
+    Unshelve.
+    2:{ rewrite app_length. word. }
+    wp_apply wp_SliceTake.
+    { word. }
+    wp_apply (wp_StringFromBytes with "[$Hk]").
+    iIntros "Hk".
+    rewrite take_app.
     wp_storeField.
+    rewrite string_to_bytes_inj.
+    rewrite drop_app.
+    wp_load.
+    wp_load.
+
+    wp_apply wp_SliceSkip.
+    { word. }
+    wp_apply (wp_StringFromBytes with "[$Hv]").
+    iIntros "Hv".
     wp_storeField.
+    wp_pures.
     (* TODO: end of separate lemma? *)
+
+    wp_pures.
+    wp_loadField.
+    wp_loadField.
+    wp_apply (wp_MapInsert with "[$]").
+    { done. }
+    iIntros "Hvnums_map".
 
     wp_pures.
     wp_call.
     wp_loadField.
     wp_loadField.
     wp_loadField.
-    wp_apply (wp_byteMapPut with "[$Hkvs_map $Hval_sl]").
+    rewrite string_to_bytes_inj.
+    wp_apply (wp_MapInsert_to_val with "[$Hkvs_map]").
     iIntros "Hkvs_map".
     wp_pures.
-    wp_apply (wp_NewSlice).
-    iIntros (rep_sl) "Hrep_sl".
-    wp_store.
 
-    wp_loadField.
-    wp_loadField.
-    wp_apply (wp_MapInsert with "Hvnums_map").
-    { done. }
-    iIntros "Hvnums_map".
-    wp_pures.
-    wp_load.
+    wp_apply wp_NewSlice.
+    iIntros (?) "Hnil".
 
     iApply "HΦ".
-    iModIntro.
     iSplitL "Hkvs Hkvs_map Hvnums HminVnum Hvnums_map".
     {
       repeat iExists _; iFrame.
@@ -340,12 +376,12 @@ Proof.
         iModIntro.
         iIntros.
         rewrite /typed_map.map_insert /= in H0.
-        destruct (decide (k = u)).
+        destruct (decide (k = s0)).
         { subst. rewrite lookup_insert /= in H0.
           replace (vnum) with (vnum') by word.
           iExists _. by iDestruct "Hintermediate" as "[_ $]".
         }
-        assert (compute_reply (ops ++ [putOp u l]) (getOp k) =
+        assert (compute_reply (ops ++ [putOp s0 s1]) (getOp k) =
                   compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
         {
           rewrite /compute_reply /compute_state.
@@ -372,7 +408,7 @@ Proof.
       }
       {
         iPureIntro. intros.
-        destruct (decide (k = u)).
+        destruct (decide (k = s0)).
         { subst.
           by rewrite /typed_map.map_insert lookup_insert /=.
         }
@@ -385,7 +421,8 @@ Proof.
       }
     }
     simpl.
-    iDestruct (own_slice_to_small with "Hrep_sl") as "$".
+    rewrite replicate_0.
+    iDestruct (own_slice_to_small with "Hnil") as "$".
   }
   { (* case: get op *)
     wp_pures.
@@ -399,51 +436,42 @@ Proof.
     iIntros "Hsl2".
     wp_pures.
 
-    wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
-    { rewrite -Hsl_sz.
-      rewrite -Henc.
-      split; last done.
-      rewrite app_length.
-      simpl.
-      word.
-    }
-    iIntros (getOp_sl) "Hop_sl".
-    rewrite -Hsl_sz -Henc.
-    rewrite -> subslice_drop_take; last first.
-    { rewrite app_length. simpl. word. }
-    rewrite app_length.
-    rewrite singleton_length.
-    unfold encode_op.
-    replace (1 + length (u64_le u) - int.nat 1%Z) with (length (u64_le u)) by word.
-    replace (int.nat (U64 1)) with (length [U8 1]) by done.
+    simpl in Henc. subst.
+    rewrite /encode_op /=.
+    wp_apply wp_SliceSkip.
+    { simpl in Hsl_sz. word. }
+    iDestruct (slice_small_split _ 1 with "Hsl2") as "[_ Hsl2]".
+    { simpl. word. }
+
+    replace (cons (U8 1)) with (app [U8 1]) by done.
+    replace (int.nat 1) with (length [U8 1]) by done.
     rewrite drop_app.
-    rewrite take_ge; last word.
 
     (* TODO: separate lemma *)
     wp_call.
     wp_pures.
-    wp_apply (wp_ReadInt with "Hop_sl").
-    iIntros (?) "_".
+    wp_apply (wp_StringFromBytes with "[$Hsl2]").
+    iIntros "_".
     wp_pures.
+    rewrite string_to_bytes_inj.
     (* end separate lemma *)
 
-    (* TODO: separate lemma *)
-    wp_call.
     wp_loadField.
-    wp_apply (wp_byteMapGet with "Hkvs_map").
-    iIntros (rep_sl) "[#Hrep_sl Hkvs_map]".
-    iMod (readonly_load with "Hrep_sl") as (?) "Hrep_sl2".
-    wp_store.
-
-    wp_loadField.
-    wp_apply (wp_MapInsert with "Hvnums_map").
+    wp_apply (wp_MapInsert with "[$]").
     { done. }
     iIntros "Hvnums_map".
     wp_pures.
-    wp_load.
+
+    (* TODO: separate lemma *)
+    wp_call.
+    wp_loadField.
+    wp_apply (wp_MapGet with "[$Hkvs_map]").
+    iIntros (??) "[%Hlookup Hkvs_map]".
+    wp_pures.
+    wp_apply wp_StringToBytes.
+    iIntros (?) "Hrep_sl".
 
     iApply "HΦ".
-    iModIntro.
     iSplitL "Hkvs Hkvs_map Hvnums HminVnum Hvnums_map".
     {
       repeat iExists _; iFrame.
@@ -453,7 +481,7 @@ Proof.
       iSplitL.
       2: {
         iPureIntro. intros.
-        destruct (decide (k = u)).
+        destruct (decide (k = s0)).
         { subst.
           by rewrite /typed_map.map_insert lookup_insert /=. }
         { rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
@@ -464,7 +492,7 @@ Proof.
       iModIntro.
       iIntros.
       rewrite /typed_map.map_insert /= in H0.
-      destruct (decide (k = u)).
+      destruct (decide (k = s0)).
       { subst. rewrite lookup_insert /= in H0.
         replace (vnum) with (vnum') by word.
         iExists _. by iDestruct "Hintermediate" as "[_ $]".
@@ -493,7 +521,8 @@ Proof.
         iExists _. by iFrame "Hint".
       }
     }
-    iFrame.
+    injection Hlookup as -> <-.
+    iDestruct (own_slice_to_small with "Hrep_sl") as "$".
   }
 Qed.
 
@@ -530,61 +559,52 @@ Proof.
   { done. }
   iIntros "Hsl2".
   wp_pures.
-  wp_apply (wp_SliceGet with "[$Hsl2]").
-  { done. }
-  iIntros "Hsl2".
-  wp_pures.
-  wp_apply (wp_slice_len).
-  wp_pures.
   iDestruct (own_slice_small_sz with "Hsl2") as %Hsl_sz.
-  wp_apply (wp_SliceSubslice_small with "[$Hsl2]").
-  { rewrite -Hsl_sz.
-    split; last done.
-    simpl.
-    word.
-  }
-  iIntros (getOp_sl) "Hop_sl".
-  rewrite -Hsl_sz.
-  rewrite -> subslice_drop_take; last first.
+  simpl in Hsl_sz.
+  wp_apply wp_SliceSkip.
+  { word. }
+
+  iDestruct (slice_small_split _ 1 with "Hsl2") as "[_ Hsl2]".
   { simpl. word. }
-  rewrite cons_length.
-  unfold encode_op.
-  replace (S (length (u64_le u)) - int.nat 1%Z) with (length (u64_le u)) by word.
-  replace (int.nat (U64 1)) with (length [U8 1]) by done.
+  replace (cons (U8 1)) with (app [U8 1]) by done.
+  replace (int.nat 1) with (length [U8 1]) by done.
   rewrite drop_app.
-  rewrite take_ge; last word.
+
 
   (* TODO: separate lemma *)
   wp_call.
   wp_pures.
-  wp_apply (wp_ReadInt with "Hop_sl").
-  iIntros (?) "_".
-  wp_pures.
+  wp_apply (wp_StringFromBytes with "[$]").
+  iIntros "_".
+  rewrite string_to_bytes_inj.
   (* end separate lemma *)
 
   iNamed "Hown".
+  wp_pures.
   wp_call.
   wp_loadField.
-  wp_apply (wp_byteMapGet with "Hkvs_map").
-  iIntros (rep_sl) "[#Hrep_sl Hkvs_map]".
-  iMod (readonly_load with "Hrep_sl") as (?) "Hrep_sl2".
+  wp_apply (wp_MapGet with "Hkvs_map").
+  iIntros (??) "[%Hkv_lookup Hkvs_map]".
   wp_pures.
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hrep_sl".
   wp_loadField.
-  wp_apply (wp_MapGet with "[$]").
+  wp_apply (wp_MapGet with "Hvnums_map").
   iIntros (??) "(%Hlookup & Hvnums_map)".
   wp_pures.
   wp_if_destruct.
   {
     wp_pures. iApply "HΦ". iModIntro.
     apply map_get_true in Hlookup.
-    pose proof (Hle u) as Hle2.
+    pose proof (Hle s0) as Hle2.
     rewrite Hlookup /= in Hle2.
     iSplitR. { iPureIntro. word. }
-    iFrame "Hrep_sl2".
+    injection Hkv_lookup as <- ?.
+    iDestruct (own_slice_to_small with "Hrep_sl") as "$".
     rewrite /kv_record /compute_reply /compute_state /=.
     iSplitL.
     { repeat iExists _; iFrame "∗#%". }
-    iSpecialize ("Hst" $! u).
+    iSpecialize ("Hst" $! s0).
     rewrite Hlookup /=.
     iModIntro. iIntros.
     iApply "Hst".
@@ -595,14 +615,15 @@ Proof.
     wp_loadField. wp_pures. iApply "HΦ". iModIntro.
     apply map_get_false in Hlookup as [Hlookup Hv].
     subst.
-    pose proof (Hle u) as Hle2.
+    pose proof (Hle s0) as Hle2.
     rewrite Hlookup /= in Hle2.
     iSplitR. { iPureIntro. word. }
-    iFrame "Hrep_sl2".
+    injection Hkv_lookup as <- ?.
+    iDestruct (own_slice_to_small with "Hrep_sl") as "$".
     rewrite /kv_record /compute_reply /compute_state /=.
     iSplitL.
     { repeat iExists _; iFrame "∗#%". }
-    iSpecialize ("Hst" $! u).
+    iSpecialize ("Hst" $! s0).
     rewrite Hlookup /=.
     iModIntro. iIntros.
     iApply "Hst".
@@ -639,7 +660,12 @@ Proof.
 
   iNamed "Hown".
   iMod (readonly_load with "Hsnap_sl") as (?) "Hsnap_sl2".
-  wp_apply (wp_DecodeMapU64ToBytes with "[Hsnap_sl2]").
+  wp_storeField.
+  wp_apply (wp_NewMap string).
+  iClear "Hvnums_map".
+  iIntros (?) "Hvnums_map".
+  wp_storeField.
+  wp_apply (wp_DecodeStringMap with "[Hsnap_sl2]").
   {
     rewrite /kv_record.(Sm.has_snap_encoding) /= in Hsnap.
     iSplitR; first done.
@@ -650,15 +676,10 @@ Proof.
     rewrite app_nil_r.
     done.
   }
-  iIntros (?? mptr) "(Hmap & _)".
-  wp_pures. wp_storeField.
-  wp_pures. wp_apply (wp_NewMap u64).
-  iClear "Hvnums_map".
-  iIntros (?) "Hvnums_map".
-  wp_storeField. wp_storeField.
+  iIntros (mptr) "Hmap".
+  wp_storeField.
   iApply "HΦ".
   iModIntro. repeat iExists _; iFrame.
-  iFrame "%".
   iSplitR.
   { iModIntro. iIntros.
     assert (int.nat vnum' = int.nat vnum).
@@ -678,7 +699,7 @@ Proof.
   iNamed "Hown".
   wp_loadField.
   iApply wp_fupd.
-  wp_apply (wp_EncodeMapU64ToBytes with "Hkvs_map").
+  wp_apply (wp_EncodeStringMap with "Hkvs_map").
   iIntros (??) "(Hmap & Henc & %Henc)".
   iDestruct (own_slice_to_small with "Henc") as "Henc_sl".
   iMod (readonly_alloc_1 with "Henc_sl") as "#Henc_sl".
@@ -691,11 +712,11 @@ Qed.
 
 Notation is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=kv_record)).
 
-Lemma wp_MakeKVStateMachine :
+Lemma wp_makeVersionedStateMachine :
   {{{
         True
   }}}
-    MakeKVStateMachine #()
+    makeVersionedStateMachine #()
   {{{
       sm own_MemStateMachine, RET #sm;
         is_VersionedStateMachine sm own_MemStateMachine ∗
@@ -711,10 +732,10 @@ Proof.
   iDestruct (struct_fields_split with "Hs") as "Hs".
   iNamed "Hs".
   wp_pures.
-  wp_apply (wp_byteMapNew).
+  wp_apply (wp_NewMap string).
   iIntros (?) "Hmap".
   wp_storeField.
-  wp_apply (wp_NewMap u64).
+  wp_apply (wp_NewMap string).
   iIntros (?) "Hvnums_map".
   wp_storeField.
   wp_apply (wp_KVState__apply).

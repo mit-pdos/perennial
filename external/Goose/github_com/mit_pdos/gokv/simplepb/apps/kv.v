@@ -33,7 +33,7 @@ Definition OP_GET : expr := #(U8 1).
 
 Definition EncodePutArgs: val :=
   rec: "EncodePutArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 (((#1 + #8) + (StringLength (struct.loadF PutArgs "Key" "args"))) + (StringLength (struct.loadF PutArgs "Val" "args")))) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 (#1 + #8)) in
     SliceSet byteT (![slice.T byteT] "enc") #0 OP_PUT;;
     "enc" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "enc") (StringLength (struct.loadF PutArgs "Key" "args")));;
     "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (StringToBytes (struct.loadF PutArgs "Key" "args")));;
@@ -51,7 +51,7 @@ Definition Clerk__Put: val :=
 
 Definition EncodeGetArgs: val :=
   rec: "EncodeGetArgs" "args" :=
-    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 (#1 + (StringLength "args"))) in
+    let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #1) in
     SliceSet byteT (![slice.T byteT] "enc") #0 OP_GET;;
     "enc" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "enc") (StringToBytes "args"));;
     ![slice.T byteT] "enc".
@@ -183,7 +183,7 @@ Definition KVState__applyReadonly: val :=
     then Panic "expected a GET as readonly-operation"
     else #());;
     let: "key" := decodeGetArgs (SliceSkip byteT "args" #1) in
-    let: "reply" := KVState__get "s" (decodeGetArgs (SliceSkip byteT "args" #1)) in
+    let: "reply" := KVState__get "s" "key" in
     let: ("vnum", "ok") := MapGet (struct.loadF KVState "vnums" "s") "key" in
     (if: "ok"
     then ("vnum", "reply")
@@ -197,13 +197,8 @@ Definition KVState__setState: val :=
   rec: "KVState__setState" "s" "snap" "nextIndex" :=
     struct.storeF KVState "minVnum" "s" "nextIndex";;
     struct.storeF KVState "vnums" "s" (NewMap stringT uint64T #());;
-    (if: (slice.len "snap") = #0
-    then
-      struct.storeF KVState "kvs" "s" (NewMap stringT stringT #());;
-      #()
-    else
-      struct.storeF KVState "kvs" "s" (map_string_marshal.DecodeStringMap "snap");;
-      #()).
+    struct.storeF KVState "kvs" "s" (map_string_marshal.DecodeStringMap "snap");;
+    #().
 
 Definition makeVersionedStateMachine: val :=
   rec: "makeVersionedStateMachine" <> :=
