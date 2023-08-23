@@ -3,17 +3,30 @@
  *)
 From Perennial.program_proof.rsm Require Import spaxos_top.
 
+Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Section pure.
   Context `{Countable A}.
 
-  Definition quorum (c q : gset A) : Prop.
-  Admitted.
+  Definition quorum (c q : gset A) :=
+    q ⊆ c ∧ size c / 2 < size q.
 
   Lemma quorums_overlapped c q1 q2 :
     quorum c q1 ->
     quorum c q2 ->
     ∃ x, x ∈ q1 ∧ x ∈ q2.
-  Admitted.
+  Proof.
+    intros [Hle1 Hsize1] [Hle2 Hsize2].
+    apply dec_stable.
+    intros Hcontra.
+    assert (Hdisjoint : q1 ## q2) by set_solver.
+    apply size_union in Hdisjoint.
+    assert (Hsubseteq : q1 ∪ q2 ⊆ c) by set_solver.
+    apply subseteq_size in Hsubseteq.
+    rewrite Hdisjoint in Hsubseteq.
+    clear -Hsize1 Hsize2 Hsubseteq.
+    lia.
+  Qed.
 
   Lemma quorum_not_empty (c q : gset A) :
     quorum c q -> q ≠ empty.
@@ -49,11 +62,11 @@ Section pure.
     l !! n = Some true ∧ n ≠ O.
   
   Definition chosen_in (bs : gmap A ballot) (ps : proposals) n v :=
+    ps !! n = Some v ∧
     ∃ bsq,
       bsq ⊆ bs ∧
       quorum (dom bs) (dom bsq) ∧
-      map_Forall (λ _ l, accepted_in l n) bsq ∧
-      ps !! n = Some v.
+      map_Forall (λ _ l, accepted_in l n) bsq.
 
   Definition chosen (bs : gmap A ballot) (ps : proposals) v :=
     ∃ n, chosen_in bs ps n v.
@@ -91,7 +104,6 @@ Section pure.
 
   Definition largest_proposal_step (x : A) (cur prev : nat) : nat :=
     cur `max` prev.
-    (* if (cur <? prev)%nat then prev else cur. *)
 
   Definition largest_proposal (bsq : gmap A ballot) n :=
     let ps := fmap (latest_proposal n) bsq in
@@ -263,7 +275,7 @@ Section pure.
   Proof.
     intros Hle Haac H1 H2.
     unshelve epose proof (Haac n1 n2 v1 _ _) as Haac; [apply Hle | done |].
-    destruct H2 as (bsq & Hbsq & Hquorum & Haccq & Hlookupq).
+    destruct H2 as (Hlookupq & bsq & Hbsq & Hquorum & Haccq).
     apply quorum_not_empty in Hquorum.
     rewrite dom_empty_iff_L in Hquorum.
     apply map_choose in Hquorum as (x & l & Hl).
@@ -300,7 +312,7 @@ Section pure.
     intros Hmn Hvp Hchosen Hlookup.
     edestruct Hvp as (bsq1 & Hsubseteq1 & Hquorum1 & _ & Heq).
     { apply Hlookup. }
-    destruct Hchosen as (bsq2 & Hsubseteq2 & Hquorum2 & Hacc & ?).
+    destruct Hchosen as (_ & bsq2 & Hsubseteq2 & Hquorum2 & Hacc).
     (* Extract intersection between the two quorums. *)
     edestruct ballots_overlapped as (x & l & Hbsq1 & Hbsq2).
     { apply Hsubseteq1. }
@@ -349,7 +361,7 @@ Section pure.
     destruct (decide (m = n)) as [Heq | Hneq].
     { (* Handle [m = n] as a special case. *)
       rewrite Heq in Hchosen.
-      by destruct Hchosen as (_ & _ & _ & _ & Hv).
+      by destruct Hchosen as [Hv _].
     }
     assert (Hlt : (m < n)%nat) by lia.
     clear Hmn Hneq.
@@ -443,6 +455,44 @@ Section pure.
     simpl.
     rewrite -IHn'; last by lia.
     rewrite lookup_app_l; [done | lia].
+  Qed.
+
+  Lemma dom_eq_Some_or_None `{Countable A} {B : Type} {m1 m2 : gmap A B} i :
+    dom m1 = dom m2 ->
+    (is_Some (m1 !! i) ∧ is_Some (m2 !! i)) ∨ (m1 !! i = None ∧ m2 !! i = None).
+  Proof.
+    intros Hdom.
+    rewrite set_eq in Hdom.
+    specialize (Hdom i).
+    do 2 rewrite elem_of_dom in Hdom.
+    destruct (decide (is_Some (m1 !! i))) as [? | Hm1]; first naive_solver.
+    destruct (decide (is_Some (m2 !! i))) as [? | Hm2]; first naive_solver.
+    rewrite -eq_None_not_Some in Hm1.
+    rewrite -eq_None_not_Some in Hm2.
+    by right.
+  Qed.
+
+  Lemma largest_proposal_eq (n : nat) (bs bslb : gmap A ballot) :
+    dom bs = dom bslb ->
+    map_Forall (λ _ l, (n ≤ length l)%nat) bslb ->
+    prefixes bslb bs ->
+    largest_proposal bs n = largest_proposal bslb n.
+  Proof.
+    intros Hdom Hlen Hprefix.
+    unfold largest_proposal.
+    replace (latest_proposal n <$> bs) with (latest_proposal n <$> bslb); first done.
+    rewrite map_eq_iff.
+    intros x.
+    do 2 rewrite lookup_fmap.
+    destruct (dom_eq_Some_or_None x Hdom) as [[[l Hl] [lb Hlb]] | [-> ->]]; last done.
+    rewrite Hlb Hl.
+    simpl.
+    f_equal.
+    specialize (Hlen _ _ Hlb). simpl in Hlen.
+    specialize (Hprefix _ _ _  Hlb Hl).
+    destruct Hprefix as [tail ->].
+    symmetry.
+    by apply latest_proposal_append_eq.
   Qed.
 
   Lemma largest_proposal_accept_same

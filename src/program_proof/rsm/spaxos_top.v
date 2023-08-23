@@ -8,3 +8,6 @@ Definition ballot := list bool.
 Inductive consensus : Set :=
 | Chosen (v : string)
 | Free.
+
+Definition prefixes `{Countable A} {B : Type} (lbs ls : gmap A (list B)) :=
+  ∀ x lb l, lbs !! x = Some lb -> ls !! x = Some l -> prefix lb l.

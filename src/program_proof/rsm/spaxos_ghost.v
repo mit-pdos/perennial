@@ -69,6 +69,12 @@ Section proposal.
     own_proposals γ ps ==∗
     own_proposals γ (<[n := v]> ps) ∗ is_proposal γ n v.
   Admitted.
+
+  Lemma proposal_lookup {γ} ps n v :
+    is_proposal γ n v -∗
+    own_proposals γ ps -∗
+    ⌜ps !! n = Some v⌝.
+  Admitted.
 End proposal.
 
 Section ballot.
@@ -98,5 +104,11 @@ Section ballot.
     own_ballot γ x b -∗
     own_ballots γ bs ==∗
     own_ballot γ x b' ∗ own_ballots γ (<[x := b']> bs).
+  Admitted.
+
+  Lemma ballots_prefix {γ} bs bsqlb :
+    ([∗ map] x ↦ b ∈ bsqlb, is_ballot_lb γ x b) -∗
+    own_ballots γ bs -∗
+    ⌜prefixes bsqlb bs⌝.
   Admitted.
 End ballot.

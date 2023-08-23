@@ -6,14 +6,29 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
 Definition spaxosN := nroot .@ "spaxos".
 
+Definition is_cluster (γ : spaxos_names) (c : gset nat) : iProp Σ.
+Admitted.
+
+#[global]
+Instance is_cluster_persistent γ c :
+  Persistent (is_cluster γ c).
+Admitted.
+
+Lemma cluster_eq {γ s1 s2} :
+  is_cluster γ s1 -∗
+  is_cluster γ s2 -∗
+  ⌜s1 = s2⌝.
+Admitted.
+
 Definition spaxos_inv γ : iProp Σ :=
   ∃ c bs ps,
-    "Hc"    ∷ own_consensus γ c ∗
-    "Hbs"   ∷ own_ballots γ bs ∗
-    "Hps"   ∷ own_proposals γ ps ∗
-    "%Hvc"  ∷ ⌜valid_consensus c bs ps⌝ ∗
-    "%Hvbs" ∷ ⌜valid_ballots bs ps⌝ ∗
-    "%Hvps" ∷ ⌜valid_proposals bs ps⌝.
+    "Hc"     ∷ own_consensus γ c ∗
+    "Hbs"    ∷ own_ballots γ bs ∗
+    "Hps"    ∷ own_proposals γ ps ∗
+    "#Hclst" ∷ is_cluster γ (dom bs) ∗
+    "%Hvc"   ∷ ⌜valid_consensus c bs ps⌝ ∗
+    "%Hvbs"  ∷ ⌜valid_ballots bs ps⌝ ∗
+    "%Hvps"  ∷ ⌜valid_proposals bs ps⌝.
 
 #[global]
 Instance spaxos_inv_timeless γ :
@@ -118,20 +133,26 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Definition quorum_prepares (γ : spaxos_names) (term : u64) (decree : string) : iProp Σ.
-Admitted.
+Definition quorum_prepares (γ : spaxos_names) (term termp : u64) (decree : string) : iProp Σ :=
+  ∃ (bsqlb : gmap nat ballot) (cluster : gset nat),
+    "#Hlbs"      ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
+    "#Hcluster"  ∷ is_cluster γ cluster ∗
+    "#Hproposal" ∷ (if decide (int.nat termp = O) then True else is_proposal γ (int.nat termp) decree) ∗
+    "%Hquorum"   ∷ ⌜quorum cluster (dom bsqlb)⌝ ∗
+    "%Hlen"      ∷ ⌜map_Forall (λ _ l, ((int.nat term) ≤ length l)%nat) bsqlb⌝ ∗
+    "%Hlargest"  ∷ ⌜largest_proposal bsqlb (int.nat term) = int.nat termp⌝.
 
 #[global]
-Instance quorum_prepares_persistent γ term decree :
-  Persistent (quorum_prepares γ term decree).
+Instance quorum_prepares_persistent γ term termp decree :
+  Persistent (quorum_prepares γ term termp decree).
 Admitted.
 
 Theorem wp_Paxos__prepareAll (px : loc) (term : u64) nid γ :
   {{{ own_paxos px nid γ }}}
     Paxos__prepareAll #px #term
-  {{{ (term : u64) (decree : string) (ok : bool), RET (#term, #(LitString decree), #ok);
+  {{{ (termp : u64) (decree : string) (ok : bool), RET (#termp, #(LitString decree), #ok);
       own_paxos px nid γ ∗
-      if ok then quorum_prepares γ term decree else True
+      if ok then quorum_prepares γ term termp decree else True
   }}}.
 Proof.
   (*@ func (px *Paxos) prepareAll(term uint64) (uint64, string, bool) {       @*)
@@ -160,8 +181,12 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Definition quorum_accepts (γ : spaxos_names) (term : u64) : iProp Σ.
-Admitted.
+Definition quorum_accepts (γ : spaxos_names) (term : u64) : iProp Σ :=
+  ∃ (bsqlb : gmap nat ballot) (cluster : gset nat),
+    "#Hlbs"     ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
+    "#Hcluster" ∷ is_cluster γ cluster ∗
+    "%Hquorum"  ∷ ⌜quorum cluster (dom bsqlb)⌝ ∗
+    "%Haccin"   ∷ ⌜map_Forall (λ _ l, accepted_in l (int.nat term)) bsqlb⌝.
 
 #[global]
 Instance quorum_accepts_persistent γ term :
@@ -208,6 +233,19 @@ Proof. destruct b; done. Qed.
 End temp.
 (* TODO: move them out to their own files once stable. *)
 
+Section fin_maps.
+Context `{FinMap K M}.
+
+Lemma map_intersection_subseteq {A : Type} (m1 m2 : M A) :
+  m1 ∩ m2 ⊆ m1.
+Proof using EqDecision0 H H0 H1 H2 H3 H4 H5 H6 K M.
+  rewrite !map_subseteq_spec. intros i x Hm.
+  rewrite lookup_intersection_Some in Hm.
+  by destruct Hm as [? _].
+Qed.
+
+End fin_maps.
+
 Section prog.
 Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
@@ -246,7 +284,6 @@ Proof.
   (*@                                                                         @*)
   wp_apply (wp_Paxos__prepareAll with "HpaxosOwn").
   iIntros (termLargest decreeLargest prepared) "[HpaxosOwn Hprepares]".
-  (* TODO: [quorum_prepares] along with global inv should allow us to deduce [valid_proposal]. *)
   wp_pures.
   
   (*@     if !prepared {                                                      @*)
@@ -306,7 +343,7 @@ Proof.
   iNamed "Hdh".
   wp_pures.
 
-  (* Push [LitString] and [LitBool] our for [Hdecree] and [Hhelping], respectively. *)
+  (* Push [LitString] and [LitBool] out for [Hdecree] and [Hhelping], respectively. *)
   do 2 rewrite ite_apply.
 
   (*@     // Now that we have decided what to propose (i.e., @decree), we can perform @*)
@@ -322,8 +359,59 @@ Proof.
   assert (Hfresh : ps !! (int.nat term) = None).
   { (* TODO: prove this using inv about [termc] and [proposals]. *) admit. }
   set decree := (if (bool_decide _) then v else _).
-  assert (Hvalid : valid_proposal bs ps (int.nat term) decree).
-  { (* TODO: prove this using [quorum_prepares]. *) admit. }
+  iAssert (⌜valid_proposal bs ps (int.nat term) decree⌝)%I as "%Hvalid".
+  { iNamed "Hprepares".
+    iDestruct (ballots_prefix with "Hlbs Hbs") as "%Hprefix".
+    iAssert (⌜if decide (int.nat termLargest = O)
+             then True
+             else ps !! (int.nat termLargest) = Some decreeLargest⌝)%I as "%Hatterm".
+    { case_decide; [done | by iApply proposal_lookup]. }
+    iDestruct (cluster_eq with "Hcluster Hclst") as "->".
+    iPureIntro.
+    set bsq := bs ∩ bsqlb.
+    exists bsq.
+    split; first by apply map_intersection_subseteq.
+    split.
+    { replace (dom bsq) with (dom bsqlb); first done.
+      rewrite dom_intersection_L.
+      destruct Hquorum as [? _].
+      set_solver.
+    }
+    split.
+    { intros x b Hxb.
+      rewrite lookup_intersection_Some in Hxb.
+      destruct Hxb as [Hb [blb Hblb]].
+      specialize (Hprefix _ _ _ Hblb Hb).
+      apply Hlen in Hblb.
+      apply prefix_length in Hprefix.
+      lia.
+    }
+    unfold equal_largest_or_empty.
+    rewrite (largest_proposal_eq _ _ bsqlb); last first.
+    { unfold prefixes.
+      intros x lb l Hlb Hl.
+      rewrite lookup_intersection_Some in Hl.
+      destruct Hl as [Hl _].
+      by specialize (Hprefix _ _ _ Hlb Hl).
+    }
+    { done. }
+    { replace (dom bsq) with (dom bsqlb); first done.
+      rewrite dom_intersection_L.
+      destruct Hquorum as [? _].
+      set_solver.
+    }
+    case_decide as Hcase.
+    - left. by rewrite Hcase in Hlargest.
+    - right. rewrite Hlargest.
+      subst decree.
+      case_bool_decide as Hcontra; last done.
+      clear -Hcase Hcontra.
+      (* Set Printing Coercions. *)
+      inversion Hcontra as [Hzero].
+      rewrite Hzero in Hcase.
+      unfold int.nat in Hcase.
+      replace (int.Z _) with 0 in Hcase; word.
+  }
   iMod (proposals_insert _ _ decree with "Hps") as "[Hps #Hp]"; first apply Hfresh.
   assert (Hnz : (int.nat term) ≠ O).
   { admit. }
@@ -365,10 +453,36 @@ Proof.
   (*@                                                                         @*)
   iApply fupd_wp.
   iInv "Hinv" as ">HinvO" "HinvC".
+  iClear "Hclst".
   clear c bs ps Hvc Hvc' Hvbs Hvbs' Hvps Hvps' Hfresh Hvalid.
   iNamed "HinvO".
-  assert (Hchosen : chosen bs ps decree).
-  { (* TODO: prove this using [Haccepts]. *) admit. }
+  iAssert (⌜chosen bs ps decree⌝)%I as "%Hchosen".
+  { iNamed "Haccepts".
+    iDestruct (ballots_prefix with "Hlbs Hbs") as "%Hprefix".
+    iDestruct (proposal_lookup with "Hp Hps") as "%Hatterm".
+    iDestruct (cluster_eq with "Hcluster Hclst") as "->".
+    iPureIntro.
+    exists (int.nat term).
+    split; first apply Hatterm.
+    set bsq := bs ∩ bsqlb.
+    exists bsq.
+    split; first by apply map_intersection_subseteq.
+    split.
+    { replace (dom bsq) with (dom bsqlb); first done.
+      rewrite dom_intersection_L.
+      destruct Hquorum as [? _].
+      set_solver.
+    }
+    intros x b Hxb.
+    rewrite lookup_intersection_Some in Hxb.
+    destruct Hxb as [Hb [blb Hblb]].
+    specialize (Hprefix _ _ _ Hblb Hb).
+    apply Haccin in Hblb.
+    unfold accepted_in.
+    split; last done.
+    eapply prefix_lookup_Some; last apply Hprefix.
+    by destruct Hblb as [? _].
+  }
   iAssert (|==> own_consensus γ (Chosen decree))%I with "[Hc]" as "Hc".
   { destruct c as [decree' |] eqn:Ec.
     - (* Case [Chosen decree']. *)
