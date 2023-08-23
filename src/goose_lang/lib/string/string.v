@@ -79,11 +79,20 @@ Proof.
   done.
 Qed.
 
+Lemma String_append s1 s2 a :
+  String a s1 +:+ s2 = String a (s1 +:+ s2).
+Proof.
+  reflexivity.
+Qed.
+
 Lemma string_to_bytes_app s1 s2 :
   string_to_bytes (s1 ++ s2) = string_to_bytes s1 ++ string_to_bytes s2.
 Proof.
   rewrite /string_to_bytes.
-Admitted.
+  induction s1; first done.
+  cbn. rewrite String_append -IHs1.
+  done.
+Qed.
 
 Lemma string_to_bytes_inj s :
    bytes_to_string $ string_to_bytes s = s.
