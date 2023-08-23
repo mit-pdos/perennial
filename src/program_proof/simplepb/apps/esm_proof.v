@@ -26,13 +26,13 @@ Notation low_is_readonly_op := (Sm.is_readonly_op low_record).
 Instance low_op_eqdec : EqDecision (low_OpType).
 Proof. apply (Sm.OpType_EqDecision low_record). Qed.
 
-Inductive eeOp :=
-  | getcid : eeOp
-  | ee : u64 → u64 -> low_OpType → eeOp
-  | ro_ee : low_OpType → eeOp
+Inductive EOp :=
+  | getcid : EOp
+  | eop : u64 → u64 -> low_OpType → EOp
+  | ro_eop : low_OpType → EOp
 .
 
-Record eeState := mkEeState
+Record EState := mkEState
 {
   nextCID : u64;
   lastSeq : gmap u64 u64 ;
@@ -40,13 +40,13 @@ Record eeState := mkEeState
   lowops : list low_OpType
 }.
 
-Global Instance etaEeState : Settable _ :=
-  settable! (mkEeState) <nextCID ; lastSeq ; lastReply ; lowops >.
+Global Instance etaEState : Settable _ :=
+  settable! (mkEState) <nextCID ; lastSeq ; lastReply ; lowops >.
 
-Definition apply_op_and_get_reply (state:eeState) (op:eeOp) : eeState * list u8 :=
+Definition apply_op_and_get_reply (state:EState) (op:EOp) : EState * list u8 :=
     match op with
     | getcid => (state <| nextCID := (word.add state.(nextCID) 1) |>, u64_le state.(nextCID))
-    | ee cid seq op =>
+    | eop cid seq op =>
         if decide (int.nat seq <= int.nat (default (U64 0) (state.(lastSeq) !! cid))) then
           (state, default [] (state.(lastReply) !! cid))
         else
@@ -54,7 +54,7 @@ Definition apply_op_and_get_reply (state:eeState) (op:eeOp) : eeState * list u8 
           (state <| lastSeq := <[cid:=seq]> state.(lastSeq) |>
                 <| lastReply := <[cid:=rep]> state.(lastReply) |>
                 <| lowops := (state.(lowops) ++ [op]) |>, rep)
-    | ro_ee op => (state, (low_compute_reply state.(lowops) op))
+    | ro_eop op => (state, (low_compute_reply state.(lowops) op))
     end
 .
 
@@ -62,22 +62,22 @@ Definition apply_op state op :=
   (apply_op_and_get_reply state op).1
 .
 
-Definition init_state := mkEeState 0 ∅ ∅ [].
+Definition init_state := mkEState 0 ∅ ∅ [].
 
-Definition compute_state ops : eeState :=
+Definition compute_state ops : EState :=
   foldl apply_op init_state ops.
 
 Definition compute_reply ops op : (list u8) :=
   (apply_op_and_get_reply (compute_state ops) op).2
 .
 
-Definition ee_has_encoding op_bytes op :=
+Definition esm_has_encoding op_bytes op :=
   match op with
   | getcid => op_bytes = [U8 1]
-  | ee cid seq lowop =>
+  | eop cid seq lowop =>
       ∃ lowop_enc, low_has_op_encoding lowop_enc lowop ∧
       op_bytes = [U8 0] ++ u64_le cid ++ u64_le seq ++ (lowop_enc)
-  | ro_ee lowop =>
+  | ro_eop lowop =>
       ∃ lowop_enc,
   low_has_op_encoding lowop_enc lowop ∧
   low_is_readonly_op lowop ∧
@@ -85,7 +85,7 @@ Definition ee_has_encoding op_bytes op :=
   end
 .
 
-Definition ee_has_snap_encoding snap_bytes ops :=
+Definition esm_has_snap_encoding snap_bytes ops :=
   let st := (compute_state ops) in
   ∃ low_snap_bytes enc_lastSeq enc_lastReply,
   has_u64_map_encoding enc_lastSeq st.(lastSeq) ∧
@@ -94,16 +94,16 @@ Definition ee_has_snap_encoding snap_bytes ops :=
   snap_bytes = (u64_le st.(nextCID)) ++ (enc_lastSeq) ++ enc_lastReply ++ low_snap_bytes
 .
 
-Definition ee_is_readonly_op op :=
+Definition esm_is_readonly_op op :=
   match op with
     | getcid => False
-    | ee _ _ _=> False
-    | ro_ee lowop => low_is_readonly_op lowop
+    | eop _ _ _=> False
+    | ro_eop lowop => low_is_readonly_op lowop
   end
 .
 
 (* TODO: could strengthen this to export the lower-level postcond's *)
-Definition ee_apply_postcond ops op :=
+Definition esm_apply_postcond ops op :=
   match op with
     | getcid => (int.Z (word.add (compute_state ops).(nextCID) 1) =
                  (int.Z (compute_state ops).(nextCID)) + 1)%Z
@@ -111,52 +111,52 @@ Definition ee_apply_postcond ops op :=
   end
 .
 
-Instance op_eqdec : EqDecision eeOp.
+Instance op_eqdec : EqDecision EOp.
 Proof. solve_decision. Qed.
 
 Program Definition
-  ee_record:=
+  esm_record:=
   {|
-    Sm.OpType := eeOp ;
-    Sm.has_op_encoding := ee_has_encoding ;
-    Sm.has_snap_encoding := ee_has_snap_encoding ;
+    Sm.OpType := EOp ;
+    Sm.has_op_encoding := esm_has_encoding ;
+    Sm.has_snap_encoding := esm_has_snap_encoding ;
     Sm.compute_reply :=  compute_reply ;
-    Sm.is_readonly_op := ee_is_readonly_op ;
-    Sm.apply_postcond := ee_apply_postcond ;
+    Sm.is_readonly_op := esm_is_readonly_op ;
+    Sm.apply_postcond := esm_apply_postcond ;
   |}.
 Obligation 1.
-intros. rewrite /ee_apply_postcond /=.
+intros. rewrite /esm_apply_postcond /=.
 destruct o; apply _.
 Qed.
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
-Context `{!pbG (pb_record:=ee_record) Σ}.
+Context `{!pbG (pb_record:=esm_record) Σ}.
 
 Context `{!gooseGlobalGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
-Definition own_eeState st γ γerpc : iProp Σ :=
+Definition own_esm st γ γerpc : iProp Σ :=
   "Hlog" ∷ own_log γ st.(lowops) ∗
   "HerpcServer" ∷ eRPCServer_own_ghost γerpc st.(lastSeq) st.(lastReply) ∗
   "Hcids" ∷ ([∗ set] cid ∈ (fin_to_set u64), ⌜int.Z cid < int.Z st.(nextCID)⌝%Z ∨
                                               (is_eRPCClient_ghost γerpc cid 1))
 .
 
-Definition eeN := nroot .@ "ee".
+Definition esmN := nroot .@ "esm".
 
-Notation own_op_log := (own_op_log (pb_record:=ee_record)).
+Notation own_op_log := (own_op_log (pb_record:=esm_record)).
 
 (* This is the invariant maintained by all the servers for the "centralized"
    ghost state of the system. *)
-Definition is_ee_inv γpb γlog γerpc : iProp Σ :=
-  inv eeN (∃ ops,
+Definition is_esm_inv γpb γlog γerpc : iProp Σ :=
+  inv esmN (∃ ops,
               own_op_log γpb ops ∗
-              own_eeState (compute_state ops) γlog γerpc
+              own_esm (compute_state ops) γlog γerpc
       )
 .
 
-Lemma alloc_ee γpb :
+Lemma alloc_esm γpb :
   own_op_log γpb [] ={⊤}=∗
   ∃ γlog γerpc,
-  is_ee_inv γpb γlog γerpc ∗
+  is_esm_inv γpb γlog γerpc ∗
   is_eRPCServer γerpc ∗
   own_log γlog ([]:list low_OpType)
 .
@@ -188,25 +188,25 @@ Proof. apply (Sm.OpType_EqDecision low_record). Qed.
 
 Context `{!heapGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
 
-Notation ee_record := (ee_record (low_record:=low_record)).
+Notation esm_record := (esm_record (low_record:=low_record)).
 Notation compute_state := (compute_state (low_record:=low_record)).
-Notation eeOp := (eeOp (low_record:=low_record)).
-Notation ee_is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=ee_record)).
+Notation EOp := (EOp (low_record:=low_record)).
+Notation esm_is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=esm_record)).
 Notation low_is_VersionedStateMachine := (is_VersionedStateMachine (sm_record:=low_record)).
-Notation own_pb_Clerk := (clerk_proof.own_Clerk (pb_record:=ee_record)).
-Notation is_ee_inv := (is_ee_inv (low_record:=low_record)).
+Notation own_pb_Clerk := (clerk_proof.own_Clerk (pb_record:=esm_record)).
+Notation is_esm_inv := (is_esm_inv (low_record:=low_record)).
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
-Context `{!pbG (pb_record:=ee_record) Σ}.
+Context `{!pbG (pb_record:=esm_record) Σ}.
 Context `{!vsmG (sm_record:=low_record) Σ}.
 
 Definition own_Clerk ck γoplog : iProp Σ :=
   ∃ (pb_ck:loc) γpb γerpc (cid seqno:u64),
-    "Hcid" ∷ ck ↦[eesm.Clerk :: "cid"] #cid ∗
-    "Hseq" ∷ ck ↦[eesm.Clerk :: "seq"] #seqno ∗
+    "Hcid" ∷ ck ↦[esm.Clerk :: "cid"] #cid ∗
+    "Hseq" ∷ ck ↦[esm.Clerk :: "seq"] #seqno ∗
     "Hown_ck" ∷ own_pb_Clerk pb_ck γpb ∗
-    "#Hpb_ck" ∷ readonly (ck ↦[eesm.Clerk :: "ck"] #pb_ck) ∗
-    "#Hee_inv" ∷ is_ee_inv γpb γoplog γerpc ∗
+    "#Hpb_ck" ∷ readonly (ck ↦[esm.Clerk :: "ck"] #pb_ck) ∗
+    "#Hee_inv" ∷ is_esm_inv γpb γoplog γerpc ∗
     "Herpc" ∷ is_eRPCClient_ghost γerpc cid seqno ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
     "%Hseqno_pos" ∷ ⌜ int.nat seqno > 0 ⌝
@@ -222,8 +222,8 @@ Lemma wp_Clerk__ApplyExactlyOnce ck γoplog lowop op_sl lowop_bytes Φ:
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗
   own_slice op_sl byteT 1 lowop_bytes -∗
-  (|={⊤∖↑pbN∖↑prophReadN∖↑eeN,∅}=> ∃ oldops, own_log γoplog oldops ∗
-    (own_log γoplog (oldops ++ [lowop]) ={∅,⊤∖↑pbN∖↑prophReadN∖↑eeN}=∗
+  (|={⊤∖↑pbN∖↑prophReadN∖↑esmN,∅}=> ∃ oldops, own_log γoplog oldops ∗
+    (own_log γoplog (oldops ++ [lowop]) ={∅,⊤∖↑pbN∖↑prophReadN∖↑esmN}=∗
     (∀ reply_sl, own_Clerk ck γoplog -∗ own_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
      -∗ Φ (slice_val reply_sl )))) -∗
   WP Clerk__ApplyExactlyOnce #ck (slice_val op_sl) {{ Φ }}.
@@ -305,7 +305,7 @@ Proof.
     simpl.
     rewrite -app_assoc.
     rewrite -app_assoc.
-    instantiate (1:= ee cid seqno lowop).
+    instantiate (1:= eop cid seqno lowop).
     exists lowop_bytes.
     split; done.
   }
@@ -492,8 +492,8 @@ Lemma wp_Clerk__ApplyReadonly ck γoplog lowop op_sl lowop_bytes Φ:
   low_has_op_encoding lowop_bytes lowop →
   own_Clerk ck γoplog -∗
   own_slice op_sl byteT 1 lowop_bytes -∗
-  (|={⊤∖↑pbN∖↑prophReadN∖↑eeN,∅}=> ∃ oldops, own_log γoplog oldops ∗
-    (own_log γoplog (oldops) ={∅,⊤∖↑pbN∖↑prophReadN∖↑eeN}=∗
+  (|={⊤∖↑pbN∖↑prophReadN∖↑esmN,∅}=> ∃ oldops, own_log γoplog oldops ∗
+    (own_log γoplog (oldops) ={∅,⊤∖↑pbN∖↑prophReadN∖↑esmN}=∗
     (∀ reply_sl, own_Clerk ck γoplog -∗ own_slice_small reply_sl byteT 1 (low_compute_reply oldops lowop)
      -∗ Φ (slice_val reply_sl )))) -∗
   WP Clerk__ApplyReadonly #ck (slice_val op_sl) {{ Φ }}.
@@ -536,11 +536,11 @@ Proof.
   iDestruct (own_slice_to_small with "Henc_sl") as "Henc_sl".
   wp_apply (wp_Clerk__ApplyReadonly with "Hown_ck [$Henc_sl]").
   {
-    instantiate (1:= ro_ee lowop).
-    by rewrite /ee_record /ee_is_readonly_op /=.
+    instantiate (1:= ro_eop lowop).
+    by rewrite /esm_record /esm_is_readonly_op /=.
   }
   {
-    rewrite /ee_record /=.
+    rewrite /esm_record /=.
     eexists _; split; done.
   }
 
@@ -564,7 +564,7 @@ Proof.
 Qed.
 
 (* Now, the server proof. *)
-Definition own_ghost_vnums γst (ops:list eeOp) (latestVnum:u64) : iProp Σ :=
+Definition own_ghost_vnums γst (ops:list EOp) (latestVnum:u64) : iProp Σ :=
   "HfutureVersions" ∷ ([∗ set] vnum ∈ (fin_to_set u64), ⌜int.nat vnum > length ops⌝ →
                                                        vnum ⤳[γst] []) ∗
   "Hversions" ∷ ([∗ set] vnum ∈ (fin_to_set u64), ⌜int.nat vnum <= length ops⌝ →
@@ -576,18 +576,18 @@ Definition own_ghost_vnums γst (ops:list eeOp) (latestVnum:u64) : iProp Σ :=
                                       (is_state γst vnum (compute_state ops).(lowops))))
 .
 
-Definition own_StateMachine (s:loc) (ops:list eeOp) : iProp Σ :=
+Definition own_StateMachine (s:loc) (ops:list EOp) : iProp Σ :=
   let st := (compute_state ops) in
       ∃ (lastSeq_ptr lastReply_ptr lowSm:loc) (latestVnum:u64) own_low γst,
-  "HnextCID" ∷ s ↦[EEStateMachine :: "nextCID"] #st.(nextCID) ∗
-  "HlastSeq_ptr" ∷ s ↦[EEStateMachine :: "lastSeq"] #lastSeq_ptr ∗
-  "HlastReply_ptr" ∷ s ↦[EEStateMachine :: "lastReply"] #lastReply_ptr ∗
+  "HnextCID" ∷ s ↦[eStateMachine:: "nextCID"] #st.(nextCID) ∗
+  "HlastSeq_ptr" ∷ s ↦[eStateMachine :: "lastSeq"] #lastSeq_ptr ∗
+  "HlastReply_ptr" ∷ s ↦[eStateMachine :: "lastReply"] #lastReply_ptr ∗
   "HlastSeq" ∷ own_map lastSeq_ptr 1 st.(lastSeq) ∗
   "HlastReply" ∷ own_byte_map lastReply_ptr st.(lastReply) ∗
 
-  "HeeNextIndex" ∷ s ↦[EEStateMachine :: "eeNextIndex"] #(U64 (length ops)) ∗
+  "HesmNextIndex" ∷ s ↦[eStateMachine :: "esmNextIndex"] #(U64 (length ops)) ∗
 
-  "Hsm" ∷ s ↦[EEStateMachine :: "sm"] #lowSm ∗
+  "Hsm" ∷ s ↦[eStateMachine :: "sm"] #lowSm ∗
   "Hghost" ∷ own_ghost_vnums γst ops latestVnum ∗
   "#Hislow" ∷ low_is_VersionedStateMachine lowSm own_low ∗
   "Hlowstate" ∷ own_low γst st.(lowops) latestVnum ∗
@@ -595,10 +595,10 @@ Definition own_StateMachine (s:loc) (ops:list eeOp) : iProp Σ :=
   "%HnoOverflow" ∷ ⌜length ops = int.nat (length ops)⌝
 .
 
-Notation ee_is_InMemory_applyVolatileFn := (is_InMemory_applyVolatileFn (sm_record:=ee_record)).
-Notation ee_is_InMemory_setStateFn := (is_InMemory_setStateFn (sm_record:=ee_record)).
-Notation ee_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=ee_record)).
-Notation ee_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_record:=ee_record)).
+Notation ee_is_InMemory_applyVolatileFn := (is_InMemory_applyVolatileFn (sm_record:=esm_record)).
+Notation ee_is_InMemory_setStateFn := (is_InMemory_setStateFn (sm_record:=esm_record)).
+Notation ee_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=esm_record)).
+Notation ee_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_record:=esm_record)).
 
 Lemma u64_plus_1_le_no_overflow (y: u64) (n : nat) :
   n + 1 = int.nat (u64_instance.u64.(word.add) n 1) →
@@ -817,11 +817,11 @@ Proof.
   }
 Qed.
 
-Lemma wp_EEStateMachine__apply s :
+Lemma wp_eStateMachine__apply s :
   {{{
         True
   }}}
-    EEStateMachine__applyVolatile #s
+    eStateMachine__applyVolatile #s
   {{{
           applyFn, RET applyFn;
         ⌜val_ty applyFn (slice.T byteT -> slice.T byteT)⌝ ∗
@@ -903,8 +903,8 @@ Proof.
     repeat iExists _.
     iFrame "Hlowstate ∗".
     rewrite app_length /=.
-    iSplitL "HeeNextIndex".
-    { iApply to_named. iExactEq "HeeNextIndex".
+    iSplitL "HesmNextIndex".
+    { iApply to_named. iExactEq "HesmNextIndex".
       repeat f_equal. word.
     }
     iFrame "Hislow".
@@ -1010,8 +1010,8 @@ Proof.
         word.
       }
       iModIntro.
-      iSplitL "HeeNextIndex".
-      { iApply to_named. iExactEq "HeeNextIndex".
+      iSplitL "HesmNextIndex".
+      { iApply to_named. iExactEq "HesmNextIndex".
         repeat f_equal. rewrite app_length /=. word.
       }
       iFrame "Hislow".
@@ -1124,8 +1124,8 @@ Proof.
       repeat iExists _.
       iFrame "∗".
       rewrite app_length /=.
-      iSplitL "HeeNextIndex".
-      { iApply to_named. iExactEq "HeeNextIndex".
+      iSplitL "HesmNextIndex".
+      { iApply to_named. iExactEq "HesmNextIndex".
         repeat f_equal. word.
       }
       iSplitL "Hghost".
@@ -1211,8 +1211,8 @@ Proof.
         unfold apply_op.
         simpl. done.
       }
-      iSplitL "HeeNextIndex".
-      { iModIntro. iApply to_named. iExactEq "HeeNextIndex".
+      iSplitL "HesmNextIndex".
+      { iModIntro. iApply to_named. iExactEq "HesmNextIndex".
         repeat f_equal. rewrite app_length /=. word.
       }
       simpl.
@@ -1479,10 +1479,10 @@ Lemma applyreadonly_step γst ops o latestVnum (lastModifiedVnum:u64) :
           → ∃ someOps : list low_OpType, is_state γst vnum someOps ∗
           ⌜low_compute_reply someOps o =
           low_compute_reply (compute_state ops).(lowops) o⌝) -∗
-  ⌜∀ ops' : list ee_record.(Sm.OpType),
+  ⌜∀ ops' : list esm_record.(Sm.OpType),
      ops' `prefix_of` ops
   → int.nat lastModifiedVnum ≤ length ops'
-  → ee_record.(Sm.compute_reply) ops (ro_ee o) = ee_record.(Sm.compute_reply) ops' (ro_ee o)⌝
+  → esm_record.(Sm.compute_reply) ops (ro_ee o) = esm_record.(Sm.compute_reply) ops' (ro_ee o)⌝
 .
 Proof.
   intros HnoOverflow.
@@ -1523,7 +1523,7 @@ Proof.
     iPureIntro.
     replace (take (int.nat (length a)) ops) with a in H.
     {
-      unfold ee_record. simpl.
+      unfold esm_record. simpl.
       unfold compute_reply.
       unfold apply_op_and_get_reply.
       rewrite H /=.
@@ -1555,7 +1555,7 @@ Proof.
     iPureIntro.
     replace (take (int.nat (length a)) ops) with a in H.
     {
-      unfold ee_record. simpl.
+      unfold esm_record. simpl.
       unfold compute_reply.
       unfold apply_op_and_get_reply.
       simpl.
@@ -1645,7 +1645,7 @@ Proof.
   iMod (readonly_alloc (own_slice_small eeop_sl byteT 1 lowop_bytes) with "[Hop_sl]") as "#Hop_sl".
   { simpl. iFrame. }
   wp_apply ("HapplyReadonly_spec" with "[$Hlowstate]").
-  { iFrame "#". rewrite /ee_record /= in Hro. iPureIntro; split; done. }
+  { iFrame "#". rewrite /esm_record /= in Hro. iPureIntro; split; done. }
   iIntros (???) "(%Hlen & Hlow & Hrep_sl & #Hstates)".
   iApply "HΦ".
   iSplitR.
@@ -1766,11 +1766,11 @@ Qed.
 
 Lemma wp_MakeClerk confHost γ γoplog γerpc :
   {{{
-    "#Hee_inv" ∷ is_ee_inv γ γoplog γerpc ∗
+    "#Hee_inv" ∷ is_esm_inv γ γoplog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
     "#Hconf" ∷ is_pb_sys_host confHost γ
   }}}
-    eesm.MakeClerk #confHost
+    esm.MakeClerk #confHost
   {{{
         ck, RET #ck; own_Clerk ck γoplog
   }}}
@@ -1839,13 +1839,13 @@ Proof.
       iModIntro.
       iIntros (???) "[%Hineq|$]".
       iLeft. iPureIntro.
-      rewrite /ee_record /= in Hpost.
+      rewrite /esm_record /= in Hpost.
       rewrite /apply_op /=.
       word.
     }
     {
       iLeft. iPureIntro.
-      rewrite /ee_record /= in Hpost.
+      rewrite /esm_record /= in Hpost.
       rewrite /apply_op /=.
       word.
     }
