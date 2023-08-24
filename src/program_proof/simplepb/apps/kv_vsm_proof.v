@@ -11,7 +11,7 @@ From Perennial.program_proof.simplepb Require Import config_proof.
 From Perennial.program_proof.simplepb.apps Require Import vsm log.
 From Perennial.program_proof.fencing Require Import map.
 
-Section global_proof.
+Section defns.
 
 Inductive kvOp :=
   | putOp : string → string → kvOp
@@ -63,66 +63,7 @@ Definition kv_record : Sm.t :=
     Sm.apply_postcond :=  λ ops op, True ;
   |}.
 
-Notation OpType := (Sm.OpType kv_record).
-Notation has_op_encoding := (Sm.has_op_encoding kv_record).
-(* Notation compute_reply := (pb_compute_reply pb_record). *)
-Notation pbG := (pbG (pb_record:=kv_record)).
-Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
-Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
-
-Class kvG Σ := KvG {
-  kv_ghostMapG :> ghost_mapG Σ string string ;
-  kv_logG :> inG Σ (mono_listR (leibnizO kvOp)) ;
-  kv_vsmG :> vsmG (sm_record:=kv_record) Σ ;
-}.
-Definition kvΣ := #[configΣ; ghost_mapΣ string string;
-                      GFunctor (mono_listR (leibnizO kvOp));
-                      vsmΣ (sm_record:=kv_record)
-   ].
-Global Instance subG_kvΣ {Σ} : subG kvΣ Σ → kvG Σ.
-Proof. intros. solve_inG. Qed.
-
-Context `{!gooseGlobalGS Σ}.
-Context `{!kvG Σ}.
-
-(* The abstract state applies the operation to an all-nil map,
-   so that each key already exists from the start. This is consisent with
-   [getOp] doing [default []]. *)
-Definition own_kvs (γkv:gname) ops : iProp Σ :=
-  ∃ allocatedKeys,
-  ghost_map_auth γkv 1 (compute_state ops ∪ gset_to_gmap "" allocatedKeys)
-.
-
-Definition stateN := nroot .@ "state".
-
-Definition kv_inv γlog γkv : iProp Σ :=
-  inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γkv ops).
-
-Definition kv_ptsto γkv (k v : string) : iProp Σ :=
-  k ↪[γkv] v.
-
-Lemma alloc_kv γlog allocated :
-  own_log γlog [] ={⊤}=∗
-  ∃ γkv ,
-  kv_inv γlog γkv ∗
-  [∗ set] k ∈ allocated, kv_ptsto γkv k ""
-.
-Proof.
-  iIntros "Hlog".
-  iMod (ghost_map_alloc (gset_to_gmap "" allocated)) as (γkv) "[Hkvs Hkvptsto]".
-  iExists _.
-  iMod (inv_alloc with "[Hkvs Hlog]") as "$".
-  { iNext. iExists _; iFrame. rewrite /own_kvs /compute_state /=.
-    iExists _. rewrite left_id_L. done. }
-  replace allocated with (dom (gset_to_gmap "" allocated)) at 2.
-  2:{ rewrite dom_gset_to_gmap. done. }
-  iApply big_sepM_dom. iApply (big_sepM_impl with "Hkvptsto").
-  iIntros "!# %k %x".
-  rewrite lookup_gset_to_gmap_Some.
-  iIntros ([_ <-]). auto.
-Qed.
-
-End global_proof.
+End defns.
 
 Section local_proof.
 
@@ -134,7 +75,6 @@ Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
 Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
 Context `{!heapGS Σ}.
-Context `{!kvG Σ}.
 
 Lemma wp_encodePutArgs (args_ptr:loc) (key val:string) :
   {{{
@@ -323,6 +263,8 @@ Proof.
 Qed.
 
 Notation is_state := (is_state (sm_record:=kv_record)).
+
+Context `{!vsmG (sm_record:=kv_record) Σ}.
 
 Definition own_KVState (s:loc) γst (ops:list OpType) (latestVnum:u64) : iProp Σ :=
   ∃ (kvs_loc vnums_loc:loc) (vnumsM:gmap string u64) (minVnum:u64),
