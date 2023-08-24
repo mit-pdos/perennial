@@ -20,7 +20,7 @@ Definition eStateMachine := struct.decl [
   "lastReply" :: mapT (slice.T byteT);
   "nextCID" :: uint64T;
   "sm" :: ptrT;
-  "eeNextIndex" :: uint64T
+  "esmNextIndex" :: uint64T
 ].
 
 Definition OPTYPE_RW : expr := #(U8 0).
@@ -32,7 +32,7 @@ Definition OPTYPE_RO : expr := #(U8 2).
 Definition eStateMachine__applyVolatile: val :=
   rec: "eStateMachine__applyVolatile" "s" "op" :=
     let: "ret" := ref (zero_val (slice.T byteT)) in
-    struct.storeF eStateMachine "eeNextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF eStateMachine "eeNextIndex" "s") #1);;
+    struct.storeF eStateMachine "esmNextIndex" "s" (std.SumAssumeNoOverflow (struct.loadF eStateMachine "esmNextIndex" "s") #1);;
     (if: (SliceGet byteT "op" #0) = OPTYPE_GETFRESHCID
     then
       "ret" <-[slice.T byteT] (NewSliceWithCap byteT #0 #8);;
@@ -48,7 +48,7 @@ Definition eStateMachine__applyVolatile: val :=
         (if: (Fst (MapGet (struct.loadF eStateMachine "lastSeq" "s") "cid")) ≥ "seq"
         then "ret" <-[slice.T byteT] (Fst (MapGet (struct.loadF eStateMachine "lastReply" "s") "cid"))
         else
-          "ret" <-[slice.T byteT] ((struct.loadF VersionedStateMachine "ApplyVolatile" (struct.loadF eStateMachine "sm" "s")) "realOp" (struct.loadF eStateMachine "eeNextIndex" "s"));;
+          "ret" <-[slice.T byteT] ((struct.loadF VersionedStateMachine "ApplyVolatile" (struct.loadF eStateMachine "sm" "s")) "realOp" (struct.loadF eStateMachine "esmNextIndex" "s"));;
           MapInsert (struct.loadF eStateMachine "lastReply" "s") "cid" (![slice.T byteT] "ret");;
           MapInsert (struct.loadF eStateMachine "lastSeq" "s") "cid" "seq")
       else
@@ -100,7 +100,7 @@ Definition eStateMachine__setState: val :=
     struct.storeF eStateMachine "lastReply" "s" "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
     (struct.loadF VersionedStateMachine "SetState" (struct.loadF eStateMachine "sm" "s")) (![slice.T byteT] "enc") "nextIndex";;
-    struct.storeF eStateMachine "eeNextIndex" "s" "nextIndex";;
+    struct.storeF eStateMachine "esmNextIndex" "s" "nextIndex";;
     #().
 
 Definition MakeExactlyOnceStateMachine: val :=

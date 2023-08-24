@@ -595,10 +595,10 @@ Definition own_StateMachine (s:loc) (ops:list EOp) : iProp Σ :=
   "%HnoOverflow" ∷ ⌜length ops = int.nat (length ops)⌝
 .
 
-Notation ee_is_InMemory_applyVolatileFn := (is_InMemory_applyVolatileFn (sm_record:=esm_record)).
-Notation ee_is_InMemory_setStateFn := (is_InMemory_setStateFn (sm_record:=esm_record)).
-Notation ee_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=esm_record)).
-Notation ee_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_record:=esm_record)).
+Notation esm_is_InMemory_applyVolatileFn := (is_InMemory_applyVolatileFn (sm_record:=esm_record)).
+Notation esm_is_InMemory_setStateFn := (is_InMemory_setStateFn (sm_record:=esm_record)).
+Notation esm_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=esm_record)).
+Notation esm_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_record:=esm_record)).
 
 Lemma u64_plus_1_le_no_overflow (y: u64) (n : nat) :
   n + 1 = int.nat (u64_instance.u64.(word.add) n 1) →
@@ -825,7 +825,7 @@ Lemma wp_eStateMachine__apply s :
   {{{
           applyFn, RET applyFn;
         ⌜val_ty applyFn (slice.T byteT -> slice.T byteT)⌝ ∗
-        ee_is_InMemory_applyVolatileFn applyFn (own_StateMachine s)
+        esm_is_InMemory_applyVolatileFn applyFn (own_StateMachine s)
   }}}
 .
 Proof.
@@ -1032,7 +1032,7 @@ Proof.
       { word. }
       { done. }
       { instantiate (1:=o).
-        instantiate (1:=ee u u0 o).
+        instantiate (1:=eop u u0 o).
         rewrite compute_state_snoc.
         unfold apply_op.
         simpl.
@@ -1289,15 +1289,15 @@ Proof.
   iFrame "#".
 Qed.
 
-Lemma wp_EEStateMachine__setState s :
+Lemma wp_eStateMachine__setState s :
   {{{
         True
   }}}
-    EEStateMachine__setState #s
+    eStateMachine__setState #s
   {{{
         setFn, RET setFn;
         ⌜val_ty setFn (slice.T byteT -> (arrowT uint64T unitT))%ht⌝ ∗
-        ee_is_InMemory_setStateFn setFn (own_StateMachine s)
+        esm_is_InMemory_setStateFn setFn (own_StateMachine s)
   }}}
 .
 Proof.
@@ -1326,7 +1326,7 @@ Proof.
 
   simpl in Hsnap.
   unfold own_StateMachine.
-  rewrite /ee_has_snap_encoding in Hsnap.
+  rewrite /esm_has_snap_encoding in Hsnap.
   set (st:=compute_state ops) in *.
   set (st_old:=compute_state ops_prev) in *.
   destruct Hsnap as (lowsnap & enc_lastSeq & enc_lastReply & Hencseq  & Hencrep & Hlowsnap & Hsnap).
@@ -1387,8 +1387,8 @@ Proof.
   rewrite -Hlen. reflexivity.
 Qed.
 
-Lemma wp_EEStatemachine__getState (s:loc) :
-  ⊢ ee_is_InMemory_getStateFn (λ: <>, EEStateMachine__getState #s) (own_StateMachine s).
+Lemma wp_eStatemachine__getState (s:loc) :
+  ⊢ esm_is_InMemory_getStateFn (λ: <>, eStateMachine__getState #s) (own_StateMachine s).
 Proof.
   iIntros (? Φ) "!# Hpre HΦ".
   iDestruct "Hpre" as "Hown".
@@ -1458,7 +1458,7 @@ Proof.
   }
   iPureIntro.
   cbn.
-  unfold ee_has_snap_encoding.
+  unfold esm_has_snap_encoding.
   replace (compute_state ops) with (st) by done.
   rewrite X.
   exists snap, enc, enc0.
@@ -1482,7 +1482,7 @@ Lemma applyreadonly_step γst ops o latestVnum (lastModifiedVnum:u64) :
   ⌜∀ ops' : list esm_record.(Sm.OpType),
      ops' `prefix_of` ops
   → int.nat lastModifiedVnum ≤ length ops'
-  → esm_record.(Sm.compute_reply) ops (ro_ee o) = esm_record.(Sm.compute_reply) ops' (ro_ee o)⌝
+  → esm_record.(Sm.compute_reply) ops (ro_eop o) = esm_record.(Sm.compute_reply) ops' (ro_eop o)⌝
 .
 Proof.
   intros HnoOverflow.
@@ -1570,15 +1570,15 @@ Proof.
   }
 Qed.
 
-Lemma wp_EEStateMachine__applyReadonly s :
+Lemma wp_eStateMachine__applyReadonly s :
   {{{
         True
   }}}
-    EEStateMachine__applyReadonly #s
+    eStateMachine__applyReadonly #s
   {{{
         applyReadonlyFn, RET applyReadonlyFn;
         ⌜val_ty applyReadonlyFn (slice.T byteT -> (prodT uint64T (slice.T byteT)))⌝ ∗
-        ee_is_InMemory_applyReadonlyFn applyReadonlyFn (own_StateMachine s)
+        esm_is_InMemory_applyReadonlyFn applyReadonlyFn (own_StateMachine s)
   }}}
 .
 Proof.
@@ -1701,16 +1701,16 @@ Proof.
   iFrame "#".
 Qed.
 
-Lemma wp_MakeEEKVStateMachine own_low lowSm :
+Lemma wp_MakeExactlyOnceStateMachine own_low lowSm :
   {{{
       "#Hislow" ∷ low_is_VersionedStateMachine lowSm own_low ∗
       "Hlowstate" ∷ (∀ γst, is_state γst 0 [] -∗
                       own_low γst [] 0)
   }}}
-    MakeEEKVStateMachine #lowSm
+    MakeExactlyOnceStateMachine #lowSm
   {{{
       sm own_MemStateMachine, RET #sm;
-        ee_is_InMemoryStateMachine sm own_MemStateMachine ∗
+        esm_is_InMemoryStateMachine sm own_MemStateMachine ∗
         own_MemStateMachine []
   }}}.
 Proof.
@@ -1731,11 +1731,11 @@ Proof.
   wp_storeField.
   wp_storeField.
 
-  wp_apply wp_EEStateMachine__applyReadonly.
+  wp_apply wp_eStateMachine__applyReadonly.
   iIntros (?) "[% #HisapplyReadonly]".
-  wp_apply wp_EEStateMachine__apply.
+  wp_apply wp_eStateMachine__apply.
   iIntros (?) "[% #Hisapply]".
-  wp_apply wp_EEStateMachine__setState.
+  wp_apply wp_eStateMachine__setState.
   iIntros (?) "[% #Hissetstae]".
   iApply wp_fupd.
   wp_apply wp_allocStruct.
@@ -1753,7 +1753,7 @@ Proof.
     iExists _, _, _, _.
     iFrame "#".
     iModIntro.
-    iApply wp_EEStatemachine__getState.
+    iApply wp_eStatemachine__getState.
   }
   iNamed "Hpre".
   iMod (alloc_own_ghost_vnums) as (?) "[Hghost #Hstate]".
@@ -1766,7 +1766,7 @@ Qed.
 
 Lemma wp_MakeClerk confHost γ γoplog γerpc :
   {{{
-    "#Hee_inv" ∷ is_esm_inv γ γoplog γerpc ∗
+    "#Hesm_inv" ∷ is_esm_inv γ γoplog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
     "#Hconf" ∷ is_pb_sys_host confHost γ
   }}}
@@ -1813,7 +1813,7 @@ Proof.
   }
   iModIntro.
 
-  iInv "Hee_inv" as "Hi" "Hclose".
+  iInv "Hesm_inv" as "Hi" "Hclose".
   iDestruct "Hi" as (?) "[>Hpblog Hee]".
   iDestruct "Hee" as ">Hee".
   iNamed "Hee".
