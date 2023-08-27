@@ -6,7 +6,7 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
 Definition spaxosN := nroot .@ "spaxos".
 
-Definition is_cluster (γ : spaxos_names) (c : gset nat) : iProp Σ.
+Definition is_cluster (γ : spaxos_names) (c : gset Z) : iProp Σ.
 Admitted.
 
 #[global]
@@ -20,15 +20,27 @@ Lemma cluster_eq {γ s1 s2} :
   ⌜s1 = s2⌝.
 Admitted.
 
+Definition num_nodes : Z := 16.
+
+Definition is_term_of_node (x : Z) (n : nat) :=
+  n `mod` num_nodes = x.
+
+(* TODO: make this a typeclass. *)
+Lemma is_term_of_node_partitioned x1 x2 n :
+  x1 ≠ x2 -> is_term_of_node x1 n -> not (is_term_of_node x2 n).
+Proof. unfold is_term_of_node. lia. Qed.
+
 Definition spaxos_inv γ : iProp Σ :=
-  ∃ c bs ps,
+  ∃ c bs ps ts,
     "Hc"     ∷ own_consensus γ c ∗
     "Hbs"    ∷ own_ballots γ bs ∗
     "Hps"    ∷ own_proposals γ ps ∗
+    "Hts"    ∷ own_terms γ ts ∗
     "#Hclst" ∷ is_cluster γ (dom bs) ∗
     "%Hvc"   ∷ ⌜valid_consensus c bs ps⌝ ∗
     "%Hvbs"  ∷ ⌜valid_ballots bs ps⌝ ∗
-    "%Hvps"  ∷ ⌜valid_proposals bs ps⌝.
+    "%Hvps"  ∷ ⌜valid_proposals bs ps⌝ ∗
+    "%Hvts"  ∷ ⌜valid_terms is_term_of_node ps ts⌝.
 
 #[global]
 Instance spaxos_inv_timeless γ :
@@ -40,8 +52,10 @@ Definition know_sapxos_inv γ : iProp Σ :=
 
 End inv.
 
-#[global]
+#[export]
 Hint Extern 1 (environments.envs_entails _ (spaxos_inv _)) => unfold spaxos_inv : core.
+#[export]
+Hint Extern 1 (environments.envs_entails _ (is_cluster _ (dom (alter _ _ _)))) => rewrite dom_alter_L : core.
 (* TODO: move this out to spaxos_iris_inv.v once stable. *)
 
 (* TODO: move this out to spaxos_repr.v once stable. *)
@@ -62,9 +76,8 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 (*@     // Other paxos instances. Eventually should be just addresses.      @*)
 (*@     peers   []*Paxos                                                    @*)
 (*@ }                                                                       @*)
-Definition own_paxos (paxos : loc) (nid : nat) γ : iProp Σ :=
-  ∃ (termc : u64) (termp : u64) (decree : string) (learned : bool)
-    (blt : ballot),
+Definition own_paxos (paxos : loc) (nid : Z) γ : iProp Σ :=
+  ∃ (termc termp : u64) (decree : string) (learned : bool) (blt : ballot),
     (*@ Res: termc uint64                                                       @*)
     "Htermc" ∷ paxos ↦[Paxos :: "termc"] #termc ∗
     (*@ Res: termp uint64                                                       @*)
@@ -75,22 +88,40 @@ Definition own_paxos (paxos : loc) (nid : nat) γ : iProp Σ :=
     "Hlearned" ∷ paxos ↦[Paxos :: "learned"] #learned ∗
     (*@ Res: ballot ghost                                                       @*)
     "Hballot" ∷ own_ballot γ nid blt ∗
+    (*@ Res: termmap ghost                                                      @*)
+    "Hterm" ∷ own_term γ nid (int.nat termc) ∗
     (*@ Res: termc uint64 / ballot ghost                                        @*)
     "%HballotLen" ∷ ⌜length blt = int.nat termc⌝ ∗
     (*@ Res: termp uint64 / ballot ghost                                        @*)
     "%HlastAcpt" ∷ True.
 
-Definition is_paxos (paxos : loc) (nid : nat) γ : iProp Σ :=
-  ∃ (mu : loc) (peers : loc),
+Definition is_paxos_node (paxos : loc) (nid : Z) γ : iProp Σ :=
+  ∃ (mu : loc),
     (*@ Res: mu *sync.Mutex                                                     @*)
     "#Hmu"   ∷ readonly (paxos ↦[Paxos :: "mu"] #mu) ∗
-    "#Hlock" ∷ is_lock spaxosN #mu (own_paxos paxos nid γ) ∗
+    "#Hlock" ∷ is_lock spaxosN #mu (own_paxos paxos nid γ).
+
+Definition is_paxos_comm (paxos : loc) (clst : gset Z) γ : iProp Σ :=
+  ∃ (peers : Slice.t) (peersL : list loc),
     (*@ Res: peers []*Paxos                                                     @*)
-    "#Hpeers" ∷ readonly (paxos ↦[Paxos :: "peers"] #peers) ∗
-    (*@ Res: ginv                                                               @*)
-    "#Hinv" ∷ know_sapxos_inv γ.
+    "#Hpeers"  ∷ readonly (paxos ↦[Paxos :: "peers"] (to_val peers)) ∗
+    "#HpeersL" ∷ readonly (own_slice_small peers ptrT 1 peersL) ∗
+    (* For now we're using list index as node id, but might need another indirection later. *)
+    "#Hpaxos"  ∷ ([∗ list] i ↦ px ∈ peersL, is_paxos_node px (Z.of_nat i) γ) ∗
+    (* This looks ugly; think if there's better way to define this. *)
+    "%Hclsteq" ∷ ⌜clst = list_to_set (Z.of_nat <$> (seq O (length peersL)))⌝.
+
+Definition is_paxos (paxos : loc) (nid : Z) γ : iProp Σ :=
+  ∃ (clst : gset Z),
+    "#Hcluster" ∷ is_cluster γ clst ∗
+    "#Hnode"    ∷ is_paxos_node paxos nid γ ∗
+    "#Hcomm"    ∷ is_paxos_comm paxos clst γ ∗
+    "#Hinv"     ∷ know_sapxos_inv γ.
 
 End repr.
+
+#[export]
+Hint Extern 1 (environments.envs_entails _ (own_paxos _ _ _)) => unfold own_paxos : core.
 (* TODO: move this out to spaxos_repr.v once stable. *)
 
 (* TODO: move them out to their own files once stable. *)
@@ -122,10 +153,20 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Theorem wp_Paxos__proceedToNewTerm (px : loc) nid γ :
-  {{{ own_paxos px nid γ }}}
+Definition P_Paxos__advance (px : loc) (termc : u64) nid γ: iProp Σ :=
+  "Htermc" ∷ px ↦[Paxos :: "termc"] #termc ∗
+  "Hterm"  ∷ own_term γ nid (int.nat termc).
+
+Definition Q_Paxos__advance (px : loc) (termc termold : u64) nid γ: iProp Σ :=
+  "Htermc"   ∷ px ↦[Paxos :: "termc"] #termc ∗
+  "Hterm"    ∷ own_term γ nid (int.nat termold) ∗
+  "%HtermLt" ∷ ⌜(int.nat termold < int.nat termc)%nat⌝ ∗
+  "%Hnode"   ∷ ⌜is_term_of_node nid (int.nat termc)⌝.
+
+Theorem wp_Paxos__proceedToNewTerm px termc nid γ :
+  {{{ P_Paxos__advance px termc nid γ }}}
     Paxos__proceedToNewTerm #px
-  {{{ (term : u64), RET #term; own_paxos px nid γ }}}.
+  {{{ (term : u64), RET #term; Q_Paxos__advance px term termc nid γ }}}.
 Proof.
   (*@ func (px *Paxos) proceedToNewTerm() uint64 {                            @*)
   (*@     // TODO                                                             @*)
@@ -133,26 +174,26 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Definition quorum_prepares (γ : spaxos_names) (term termp : u64) (decree : string) : iProp Σ :=
-  ∃ (bsqlb : gmap nat ballot) (cluster : gset nat),
+Definition quorum_prepares
+  (term termp : u64) (decree : string) (clst : gset Z) (γ : spaxos_names) : iProp Σ :=
+  ∃ (bsqlb : gmap Z ballot),
     "#Hlbs"      ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
-    "#Hcluster"  ∷ is_cluster γ cluster ∗
     "#Hproposal" ∷ (if decide (int.nat termp = O) then True else is_proposal γ (int.nat termp) decree) ∗
-    "%Hquorum"   ∷ ⌜quorum cluster (dom bsqlb)⌝ ∗
+    "%Hquorum"   ∷ ⌜quorum clst (dom bsqlb)⌝ ∗
     "%Hlen"      ∷ ⌜map_Forall (λ _ l, ((int.nat term) ≤ length l)%nat) bsqlb⌝ ∗
     "%Hlargest"  ∷ ⌜largest_proposal bsqlb (int.nat term) = int.nat termp⌝.
 
 #[global]
-Instance quorum_prepares_persistent γ term termp decree :
-  Persistent (quorum_prepares γ term termp decree).
-Admitted.
+Instance quorum_prepares_persistent term termp decree clst γ :
+  Persistent (quorum_prepares term termp decree clst γ).
+Proof. unfold quorum_prepares. case_decide; apply _. Qed.
 
-Theorem wp_Paxos__prepareAll (px : loc) (term : u64) nid γ :
-  {{{ own_paxos px nid γ }}}
+Theorem wp_Paxos__prepareAll (px : loc) (term : u64) clst γ :
+  is_paxos_comm px clst γ -∗
+  {{{ True }}}
     Paxos__prepareAll #px #term
   {{{ (termp : u64) (decree : string) (ok : bool), RET (#termp, #(LitString decree), #ok);
-      own_paxos px nid γ ∗
-      if ok then quorum_prepares γ term termp decree else True
+      if ok then quorum_prepares term termp decree clst γ else True
   }}}.
 Proof.
   (*@ func (px *Paxos) prepareAll(term uint64) (uint64, string, bool) {       @*)
@@ -181,23 +222,23 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Definition quorum_accepts (γ : spaxos_names) (term : u64) : iProp Σ :=
-  ∃ (bsqlb : gmap nat ballot) (cluster : gset nat),
+Definition quorum_accepts (term : u64) (clst : gset Z) (γ : spaxos_names) : iProp Σ :=
+  ∃ (bsqlb : gmap Z ballot),
     "#Hlbs"     ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
-    "#Hcluster" ∷ is_cluster γ cluster ∗
-    "%Hquorum"  ∷ ⌜quorum cluster (dom bsqlb)⌝ ∗
+    "%Hquorum"  ∷ ⌜quorum clst (dom bsqlb)⌝ ∗
     "%Haccin"   ∷ ⌜map_Forall (λ _ l, accepted_in l (int.nat term)) bsqlb⌝.
 
 #[global]
-Instance quorum_accepts_persistent γ term :
-  Persistent (quorum_accepts γ term).
-Admitted.
+Instance quorum_accepts_persistent term clst γ :
+  Persistent (quorum_accepts γ term clst).
+Proof. apply _. Qed.
 
-Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) nid γ :
+Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) clst γ :
+  is_paxos_comm px clst γ -∗
   is_proposal γ (int.nat term) decree -∗
-  {{{ own_paxos px nid γ }}}
+  {{{ True }}}
     Paxos__acceptAll #px #term #(LitString decree)
-  {{{ (ok : bool), RET #ok; own_paxos px nid γ ∗ if ok then quorum_accepts γ term else True }}}.
+  {{{ (ok : bool), RET #ok; if ok then quorum_accepts term clst γ else True }}}.
 Proof.
   (*@ func (px *Paxos) acceptAll(term uint64, decree string) bool {           @*)
   (*@     var nAccepted uint64 = 0                                            @*)
@@ -212,11 +253,12 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) nid γ :
+Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) clst γ :
+  is_paxos_comm px clst γ -∗
   is_chosen_consensus γ decree -∗
-  {{{ own_paxos px nid γ }}}
+  {{{ True }}}
     Paxos__learnAll #px #term #(LitString decree)
-  {{{ RET #(); own_paxos px nid γ }}}.
+  {{{ RET #(); True }}}.
 Proof.
   (*@ func (px *Paxos) learnAll(term uint64, decree string) {                 @*)
   (*@     for _, peer := range(px.peers) {                                    @*)
@@ -224,7 +266,6 @@ Proof.
   (*@     }                                                                   @*)
   (*@ }                                                                       @*)
 Admitted.
-
 
 Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
   (if b then f x else f y) = f (if b then x else y).
@@ -244,6 +285,14 @@ Proof using EqDecision0 H H0 H1 H2 H3 H4 H5 H6 K M.
   by destruct Hm as [? _].
 Qed.
 
+Lemma lookup_insert_alter {A : Type} (f : A -> A) (m : M A) (i : K) (x : A) :
+  m !! i = Some x ->
+  <[i := f x]> m = alter f i m.
+Proof using EqDecision0 H H0 H1 H2 H3 H4 H5 H6 K M.
+  intros Hmi.
+  by rewrite -alter_insert insert_id.
+Qed.
+
 End fin_maps.
 
 Section prog.
@@ -257,6 +306,7 @@ Theorem wp_Paxos__Propose (px : loc) (v : string) nid γ :
 Proof.
   iIntros "#Hpaxos !>" (Φ) "_ HΦ".
   iNamed "Hpaxos".
+  iNamed "Hnode".
   wp_call.
 
   (*@ func (px *Paxos) Propose(v string) bool {                               @*)
@@ -271,10 +321,26 @@ Proof.
   (*@     // NB: Raft does not exclusively own a term until the first phase goes thru. @*)
   (*@     term := px.proceedToNewTerm()                                       @*)
   (*@                                                                         @*)
-  wp_apply (wp_Paxos__proceedToNewTerm with "HpaxosOwn").
-  iIntros (term) "HpaxosOwn".
+  iNamed "HpaxosOwn".
+  wp_apply (wp_Paxos__proceedToNewTerm with "[$Htermc $Hterm]").
+  iIntros (term) "Hpost".
+  iNamed "Hpost".
   wp_pures.
-  (* TODO: We need invariant to know [term] is free when we make our proposal after phase 1. *)
+
+  iApply fupd_wp.
+  iInv "Hinv" as ">HinvO" "HinvC".
+  iNamed "HinvO".
+  iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
+  iMod (ballot_update (extend false (int.nat term) blt) with "Hballot Hbs") as "[Hballot Hbs]".
+  { apply extend_prefix. }
+  rewrite lookup_insert_alter; last done.
+  pose proof (vb_inv_prepare nid (int.nat term) Hvbs) as Hvbs'.
+  pose proof (vp_inv_prepare nid (int.nat term) Hvps) as Hvps'.
+  pose proof (vc_inv_prepare nid (int.nat term) Hvc) as Hvc'.
+  iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 15 with iFrame.
+  iModIntro.
+  iClear "Hclst".
+  clear c bs ps ts Hvc Hvc' Hvbs Hvbs' Hvps Hvps' Hvts Hblt.
   
   (*@     // Phase 1.                                                         @*)
   (*@     // Goals of this phase is to get a quorum of nodes:                 @*)
@@ -282,8 +348,8 @@ Proof.
   (*@     // (2) find out the largest proposal (below @term) accepted by the quorum. @*)
   (*@     termLargest, decreeLargest, prepared := px.prepareAll(term)         @*)
   (*@                                                                         @*)
-  wp_apply (wp_Paxos__prepareAll with "HpaxosOwn").
-  iIntros (termLargest decreeLargest prepared) "[HpaxosOwn Hprepares]".
+  wp_apply (wp_Paxos__prepareAll with "Hcomm").
+  iIntros (termLargest decreeLargest prepared) "Hprepares".
   wp_pures.
   
   (*@     if !prepared {                                                      @*)
@@ -293,7 +359,18 @@ Proof.
   (*@                                                                         @*)
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[$Hlock $Hlocked $HpaxosOwn]").
+    iApply fupd_wp.
+    iInv "Hinv" as ">HinvO" "HinvC".
+    iNamed "HinvO".
+    iDestruct (term_lookup with "Hterm Hts") as %Htermc.
+    assert (Hprev : gt_prev_term ts nid (int.nat term)).
+    { exists (int.nat termc). split; [done | word]. }
+    iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
+    pose proof (vt_inv_advance Hprev Hvts) as Hvts'.
+    iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 15 with iFrame.
+    iModIntro.
+    wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]").
+    { do 5 iExists _. iFrame. iPureIntro. rewrite extend_length. lia. }
     wp_pures.
     by iApply "HΦ".
   }
@@ -305,10 +382,10 @@ Proof.
   (*@     var helping bool                                                    @*)
   (*@                                                                         @*)
   wp_apply (wp_ref_of_zero); first done.
-  iIntros (decreeRef) "Hdecree".
+  iIntros (decreeRef) "HdecreeRef".
   wp_pures.
   wp_apply (wp_ref_of_zero); first done.
-  iIntros (helpingRef) "Hhelping".
+  iIntros (helpingRef) "HhelpingRef".
   wp_pures.
 
   (*@     if termLargest == 0 {                                               @*)
@@ -321,7 +398,7 @@ Proof.
   (*@         helping = true                                                  @*)
   (*@     }                                                                   @*)
   (*@                                                                         @*)
-  wp_apply (wp_If_join_evar with "[Hdecree Hhelping]").
+  wp_apply (wp_If_join_evar with "[HdecreeRef HhelpingRef]").
   { iIntros (b Eqb).
     case_bool_decide.
     - wp_if_true.
@@ -342,7 +419,6 @@ Proof.
   iIntros "Hdh".
   iNamed "Hdh".
   wp_pures.
-
   (* Push [LitString] and [LitBool] out for [Hdecree] and [Hhelping], respectively. *)
   do 2 rewrite ite_apply.
 
@@ -356,10 +432,14 @@ Proof.
   iApply fupd_wp.
   iInv "Hinv" as ">HinvO" "HinvC".
   iNamed "HinvO".
-  assert (Hfresh : ps !! (int.nat term) = None).
-  { (* TODO: prove this using inv about [termc] and [proposals]. *) admit. }
+  iDestruct (term_lookup with "Hterm Hts") as %Htermc.
+  assert (Hprev : gt_prev_term ts nid (int.nat term)).
+  { exists (int.nat termc). split; [done | word]. }
+  iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
+  pose proof (vt_impl_freshness Htermc HtermLt Hnode Hvts) as Hfresh.
+  rename decree into decree_prev.
   set decree := (if (bool_decide _) then v else _).
-  iAssert (⌜valid_proposal bs ps (int.nat term) decree⌝)%I as "%Hvalid".
+  iAssert (⌜valid_proposal bs ps (int.nat term) decree⌝)%I as %Hvalid.
   { iNamed "Hprepares".
     iDestruct (ballots_prefix with "Hlbs Hbs") as "%Hprefix".
     iAssert (⌜if decide (int.nat termLargest = O)
@@ -413,12 +493,13 @@ Proof.
       replace (int.Z _) with 0 in Hcase; word.
   }
   iMod (proposals_insert _ _ decree with "Hps") as "[Hps #Hp]"; first apply Hfresh.
-  assert (Hnz : (int.nat term) ≠ O).
-  { admit. }
+  iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
+  assert (Hnz : (int.nat term) ≠ O) by lia.
   pose proof (vp_inv_propose Hfresh Hnz Hvalid Hvps) as Hvps'.
   pose proof (vb_inv_propose (int.nat term) decree Hvbs) as Hvbs'.
   pose proof (vc_inv_propose (int.nat term) decree Hvc) as Hvc'.
-  iMod ("HinvC" with "[Hc Hbs Hps]") as "_"; first by eauto 10 with iFrame.
+  pose proof (vt_inv_propose_advance decree Hprev Hnode Hvts) as Hvts'.
+  iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 10 with iFrame.
   iModIntro.
 
   (*@     // Phase 2.                                                         @*)
@@ -426,8 +507,8 @@ Proof.
   (*@     accepted := px.acceptAll(term, decree)                              @*)
   (*@                                                                         @*)
   wp_load.
-  wp_apply (wp_Paxos__acceptAll with "Hp HpaxosOwn").
-  iIntros (accepted) "[HpaxosOwn Haccepts]".
+  wp_apply (wp_Paxos__acceptAll with "Hcomm Hp").
+  iIntros (accepted) "Haccepts".
   wp_pures.
   
   (*@     if !accepted {                                                      @*)
@@ -437,7 +518,8 @@ Proof.
   (*@                                                                         @*)
   wp_if_destruct.
   { wp_loadField.
-    wp_apply (release_spec with "[$Hlock $Hlocked $HpaxosOwn]").
+    wp_apply (release_spec with "[-HΦ HhelpingRef $Hlock $Hlocked]").
+    { do 5 iExists _. iFrame. iPureIntro. rewrite extend_length. lia. }
     wp_pures.
     wp_load.
     unfold is_proposed_decree.
@@ -454,13 +536,13 @@ Proof.
   iApply fupd_wp.
   iInv "Hinv" as ">HinvO" "HinvC".
   iClear "Hclst".
-  clear c bs ps Hvc Hvc' Hvbs Hvbs' Hvps Hvps' Hfresh Hvalid.
+  clear c bs ps ts Hvc Hvc' Hvbs Hvbs' Hvps Hvps' Hvts Hvts' Hfresh Hvalid Hblt Htermc Hprev.
   iNamed "HinvO".
   iAssert (⌜chosen bs ps decree⌝)%I as "%Hchosen".
   { iNamed "Haccepts".
-    iDestruct (ballots_prefix with "Hlbs Hbs") as "%Hprefix".
-    iDestruct (proposal_lookup with "Hp Hps") as "%Hatterm".
-    iDestruct (cluster_eq with "Hcluster Hclst") as "->".
+    iDestruct (ballots_prefix with "Hlbs Hbs") as %Hprefix.
+    iDestruct (proposal_lookup with "Hp Hps") as %Hatterm.
+    iDestruct (cluster_eq with "Hcluster Hclst") as %->.
     iPureIntro.
     exists (int.nat term).
     split; first apply Hatterm.
@@ -496,7 +578,7 @@ Proof.
   }
   iMod "Hc".
   iDestruct (consensus_witness with "Hc") as "#Hconsensus".
-  iMod ("HinvC" with "[Hc Hbs Hps]") as "_"; first by eauto 10 with iFrame.
+  iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 10 with iFrame.
   iModIntro.
 
   (*@     // Phase 3.                                                         @*)
@@ -504,14 +586,14 @@ Proof.
   (*@     px.learnAll(term, decree)                                           @*)
   (*@                                                                         @*)
   wp_load.
-  wp_apply (wp_Paxos__learnAll with "Hconsensus HpaxosOwn").
-  iIntros "HpaxosOwn".
+  wp_apply (wp_Paxos__learnAll with "Hcomm Hconsensus").
   wp_pures.
   
   (*@     px.mu.Unlock()                                                      @*)
   (*@                                                                         @*)
   wp_loadField.
-  wp_apply (release_spec with "[$Hlock $Hlocked $HpaxosOwn]").
+  wp_apply (release_spec with "[-HΦ HhelpingRef $Hlock $Hlocked]").
+  { do 5 iExists _. iFrame. iPureIntro. rewrite extend_length. lia. }
   wp_pures.
 
   (*@     // If @helping is true, return false since we're merely helping an early @*)
@@ -526,6 +608,6 @@ Proof.
   (*@     // NB: Deferred consensus don't need this.                          @*)
   (*@     // for !px.isLearned() { }                                          @*)
   (*@ }                                                                       @*)
-Admitted.
+Qed.
 
 End prog.

@@ -133,6 +133,13 @@ Section pure.
     | Chosen v => chosen bs ps v
     | _ => True
     end.
+
+  Definition valid_term (P : A -> nat -> Prop) (ps : proposals) (x : A) (n : nat) :=
+    ∀ n', P x n' -> (n < n')%nat -> ps !! n' = None.
+
+  Definition valid_terms (P : A -> nat -> Prop) (ps : proposals) (ts : gmap A nat) :=
+    (∀ x1 x2 n, x1 ≠ x2 -> P x1 n -> not (P x2 n)) ∧
+    map_Forall (λ x n, valid_term P ps x n) ts.
   
   (* Lemmas about [latest_proposal]. *)
   Lemma latest_proposal_le l m :
@@ -386,6 +393,17 @@ Section pure.
     by apply vp_impl_pac.
   Qed.
 
+  Theorem vt_impl_freshness {P : A -> nat -> Prop} {ps ts x n1 n2} :
+    ts !! x = Some n1 ->
+    (n1 < n2)%nat ->
+    P x n2 ->
+    valid_terms P ps ts ->
+    ps !! n2 = None.
+  Proof.
+    intros Hts Hn12 Hxn2 [_ Hvt].
+    by specialize (Hvt _ _ Hts _ Hxn2 Hn12).
+  Qed.
+
   Definition extend {X : Type} (x : X) (n : nat) (l : list X) :=
     l ++ replicate (n - length l) x.
 
@@ -397,6 +415,10 @@ Section pure.
     length (extend x n l) = (n - length l + length l)%nat.
   Proof. rewrite app_length replicate_length. lia. Qed.
 
+  Lemma extend_prefix {X : Type} (x : X) (n : nat) (l : list X) :
+  prefix l (extend x n l).
+  Proof. unfold extend. by apply prefix_app_r. Qed.
+
   (* Transition functions. *)
   Definition spaxos_accept (bs : gmap A ballot) x n :=
     alter (λ l, extend false n l ++ [true]) x bs.
@@ -406,6 +428,9 @@ Section pure.
 
   Definition spaxos_propose (ps : proposals) (n : nat) (v : string) :=
     <[n := v]> ps.
+
+   Definition spaxos_advance (ts : gmap A nat) (x : A) (n : nat) :=
+    <[x := n]> ts.
 
   (* XXX: this should be general. *)
   Lemma fmap_alter_same
@@ -573,7 +598,7 @@ Section pure.
   Qed.
 
   (* Invariance w.r.t. to all the transition functions above. *)
-  Theorem vp_inv_accept bs ps x n :
+  Theorem vp_inv_accept {bs ps} x n :
     valid_proposals bs ps ->
     valid_proposals (spaxos_accept bs x n) ps.
   Proof.
@@ -596,7 +621,7 @@ Section pure.
     by rewrite largest_proposal_accept_same.
   Qed.
 
-  Theorem vb_inv_accept bs ps x n :
+  Theorem vb_inv_accept {bs ps} x n :
     is_Some (ps !! n) ->
     (∃ l, bs !! x = Some l ∧ length l ≤ n)%nat ->
     valid_ballots bs ps ->
@@ -624,7 +649,7 @@ Section pure.
     by rewrite -Heq.
   Qed.
 
-  Theorem vp_inv_prepare bs ps x n :
+  Theorem vp_inv_prepare {bs ps} x n :
     valid_proposals bs ps ->
     valid_proposals (spaxos_prepare bs x n) ps.
   Proof.
@@ -646,7 +671,7 @@ Section pure.
     by rewrite largest_proposal_prepare_same.
   Qed.
 
-  Theorem vb_inv_prepare bs ps x n :
+  Theorem vb_inv_prepare {bs ps} x n :
     valid_ballots bs ps ->
     valid_ballots (spaxos_prepare bs x n) ps.
   Proof.
@@ -689,5 +714,59 @@ Section pure.
     valid_consensus c bs ps ->
     valid_consensus c bs (spaxos_propose ps n v).
   Admitted.
+
+  Theorem vc_inv_prepare {c bs ps} x n :
+    valid_consensus c bs ps ->
+    valid_consensus c (spaxos_prepare bs x n) ps.
+  Admitted.
+
+  Definition gt_prev_term (ts : gmap A nat) (x : A) (n : nat) :=
+    (∃ c, ts !! x = Some c ∧ (c < n)%nat).
+
+  Theorem vt_inv_advance {P : A -> nat -> Prop} {ps ts x n} :
+    gt_prev_term ts x n ->
+    valid_terms P ps ts ->
+    valid_terms P ps (spaxos_advance ts x n).
+  Proof.
+    intros Hprev [Hdisj Hvt].
+    split; first done.
+    intros y u Hadv u' Hyu' Hlt.
+    unfold spaxos_advance in Hadv.
+    destruct (decide (y = x)) as [-> | Hne]; last first.
+    { rewrite lookup_insert_ne in Hadv; last done.
+      by specialize (Hvt _ _ Hadv _ Hyu' Hlt).
+    }
+    rewrite lookup_insert in Hadv.
+    inversion Hadv. subst u. clear Hadv.
+    destruct Hprev as (c & Hxc & Hcn).
+    assert (Hcu' : (c < u')%nat) by lia.
+    by specialize (Hvt _ _ Hxc _ Hyu' Hcu').
+  Qed.
+
+  Theorem vt_inv_propose_advance {P : A -> nat -> Prop} {ps ts x n} v :
+    gt_prev_term ts x n ->
+    P x n ->
+    valid_terms P ps ts ->
+    valid_terms P (spaxos_propose ps n v) (spaxos_advance ts x n).
+  Proof.
+    intros Hprev Hxn [Hdisj Hvt].
+    split; first done.
+    intros y u Hadv u' Hyu' Hlt.
+    unfold spaxos_propose.
+    unfold spaxos_advance in Hadv.
+    destruct (decide (y = x)) as [-> | Hne]; last first.
+    { destruct (decide (u' = n)) as [-> | Hne'].
+      { by specialize (Hdisj _ _ _ Hne Hyu'). }
+      rewrite lookup_insert_ne in Hadv; last done.
+      specialize (Hvt _ _ Hadv _ Hyu' Hlt).
+      by rewrite lookup_insert_ne.
+    }
+    rewrite lookup_insert in Hadv.
+    inversion Hadv. subst u. clear Hadv.
+    rewrite lookup_insert_ne; last lia.
+    destruct Hprev as (c & Hxc & Hcn).
+    assert (Hcu' : (c < u')%nat) by lia.
+    by specialize (Hvt _ _ Hxc _ Hyu' Hcu').
+  Qed.
 
 End pure.

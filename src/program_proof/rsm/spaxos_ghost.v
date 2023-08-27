@@ -83,13 +83,13 @@ Section ballot.
   Implicit Type (γ : spaxos_names).
 
   (* Definitions. *)
-  Definition own_ballot γ (x : nat) (b : ballot) : iProp Σ.
+  Definition own_ballot γ (x : Z) (b : ballot) : iProp Σ.
   Admitted.
 
-  Definition is_ballot_lb γ (x : nat) (b : ballot) : iProp Σ.
+  Definition is_ballot_lb γ (x : Z) (b : ballot) : iProp Σ.
   Admitted.
 
-  Definition own_ballots γ (bs : gmap nat ballot) : iProp Σ.
+  Definition own_ballots γ (bs : gmap Z ballot) : iProp Σ.
   Admitted.
 
   (* Type class instances. *)
@@ -99,7 +99,13 @@ Section ballot.
   Admitted.
 
   (* Rules. *)
-  Lemma ballot_update {γ} bs x b b' :
+  Lemma ballot_lookup {γ bs x b} :
+    own_ballot γ x b -∗
+    own_ballots γ bs -∗
+    ⌜bs !! x = Some b⌝.
+  Admitted.
+
+  Lemma ballot_update {γ bs x b} b' :
     prefix b b' ->
     own_ballot γ x b -∗
     own_ballots γ bs ==∗
@@ -112,3 +118,29 @@ Section ballot.
     ⌜prefixes bsqlb bs⌝.
   Admitted.
 End ballot.
+
+Section term.
+  Context `{!spaxos_ghostG Σ}.
+  (* TODO: remove this once we have real defintions for resources. *)
+  Implicit Type (γ : spaxos_names).
+
+  (* Definitions. *)
+  Definition own_terms γ (ts : gmap Z nat) : iProp Σ.
+  Admitted.
+
+  Definition own_term γ (x : Z) (n : nat) : iProp Σ.
+  Admitted.
+
+  (* Rules. *)
+  Lemma term_lookup {γ ts x n} :
+    own_term γ x n -∗
+    own_terms γ ts -∗
+    ⌜ts !! x = Some n⌝.
+  Admitted.
+
+  Lemma term_update {γ ts x n} n' :
+    own_term γ x n -∗
+    own_terms γ ts ==∗
+    own_term γ x n' ∗ own_terms γ (<[x := n']> ts).
+  Admitted.
+End term.
