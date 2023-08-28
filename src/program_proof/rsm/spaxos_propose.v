@@ -327,21 +327,20 @@ Proof.
   iNamed "Hpost".
   wp_pures.
 
-  iApply fupd_wp.
-  iInv "Hinv" as ">HinvO" "HinvC".
-  iNamed "HinvO".
-  iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
-  iMod (ballot_update (extend false (int.nat term) blt) with "Hballot Hbs") as "[Hballot Hbs]".
-  { apply extend_prefix. }
-  rewrite lookup_insert_alter; last done.
-  pose proof (vb_inv_prepare nid (int.nat term) Hvbs) as Hvbs'.
-  pose proof (vp_inv_prepare nid (int.nat term) Hvps) as Hvps'.
-  pose proof (vc_inv_prepare nid (int.nat term) Hvc) as Hvc'.
-  iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 15 with iFrame.
-  iModIntro.
-  iClear "Hclst".
-  clear c bs ps ts Hvc Hvc' Hvbs Hvbs' Hvps Hvps' Hvts Hblt.
-  
+  set blt' := extend false (int.nat term) blt.
+  iAssert (|={⊤}=> own_ballot γ nid blt')%I with "[Hballot]" as "> Hballot".
+  { iInv "Hinv" as ">HinvO" "HinvC".
+    iNamed "HinvO".
+    iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
+    iMod (ballot_update (extend false (int.nat term) blt) with "Hballot Hbs") as "[Hballot Hbs]".
+    { apply extend_prefix. }
+    rewrite lookup_insert_alter; last done.
+    pose proof (vb_inv_prepare nid (int.nat term) Hvbs) as Hvbs'.
+    pose proof (vp_inv_prepare nid (int.nat term) Hvps) as Hvps'.
+    pose proof (vc_inv_prepare nid (int.nat term) Hvc) as Hvc'.
+    by iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 15 with iFrame.
+  }
+
   (*@     // Phase 1.                                                         @*)
   (*@     // Goals of this phase is to get a quorum of nodes:                 @*)
   (*@     // (1) promise not to accept any proposal with term below @term, and @*)
@@ -359,6 +358,7 @@ Proof.
   (*@                                                                         @*)
   wp_if_destruct.
   { wp_loadField.
+    (* XXX: should not need below after relating term map to termp rather than termc. *)
     iApply fupd_wp.
     iInv "Hinv" as ">HinvO" "HinvC".
     iNamed "HinvO".
@@ -429,78 +429,80 @@ Proof.
   (*@     // 2. the proposal we're making, (@term, @decree), is a valid one.  @*)
   (*@     // See [vp_inv_propose] for detail.                                 @*)
   (*@                                                                         @*)
-  iApply fupd_wp.
-  iInv "Hinv" as ">HinvO" "HinvC".
-  iNamed "HinvO".
-  iDestruct (term_lookup with "Hterm Hts") as %Htermc.
-  assert (Hprev : gt_prev_term ts nid (int.nat term)).
-  { exists (int.nat termc). split; [done | word]. }
-  iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
-  pose proof (vt_impl_freshness Htermc HtermLt Hnode Hvts) as Hfresh.
+  assert (Hnz : (int.nat term) ≠ O) by lia.
   rename decree into decree_prev.
   set decree := (if (bool_decide _) then v else _).
-  iAssert (⌜valid_proposal bs ps (int.nat term) decree⌝)%I as %Hvalid.
-  { iNamed "Hprepares".
-    iDestruct (ballots_prefix with "Hlbs Hbs") as "%Hprefix".
-    iAssert (⌜if decide (int.nat termLargest = O)
-             then True
-             else ps !! (int.nat termLargest) = Some decreeLargest⌝)%I as "%Hatterm".
-    { case_decide; [done | by iApply proposal_lookup]. }
-    iDestruct (cluster_eq with "Hcluster Hclst") as "->".
-    iPureIntro.
-    set bsq := bs ∩ bsqlb.
-    exists bsq.
-    split; first by apply map_intersection_subseteq.
-    split.
-    { replace (dom bsq) with (dom bsqlb); first done.
-      rewrite dom_intersection_L.
-      destruct Hquorum as [? _].
-      set_solver.
+  set R := (own_term γ nid (int.nat term) ∗ is_proposal γ (int.nat term) decree)%I.
+  iAssert (|={⊤}=> R)%I with "[Hterm]" as "> [Hterm #Hp]".
+  { iInv "Hinv" as ">HinvO" "HinvC".
+    iNamed "HinvO".
+    iDestruct (term_lookup with "Hterm Hts") as %Htermc.
+    assert (Hprev : gt_prev_term ts nid (int.nat term)).
+    { exists (int.nat termc). split; [done | word]. }
+    pose proof (vt_impl_freshness Htermc HtermLt Hnode Hvts) as Hfresh.
+    iAssert (⌜valid_proposal bs ps (int.nat term) decree⌝)%I as %Hvalid.
+    { iNamed "Hprepares".
+      iDestruct (ballots_prefix with "Hlbs Hbs") as "%Hprefix".
+      iAssert (⌜if decide (int.nat termLargest = O)
+               then True
+               else ps !! (int.nat termLargest) = Some decreeLargest⌝)%I as "%Hatterm".
+      { case_decide; [done | by iApply proposal_lookup]. }
+      iDestruct (cluster_eq with "Hcluster Hclst") as "->".
+      iPureIntro.
+      set bsq := bs ∩ bsqlb.
+      exists bsq.
+      split; first by apply map_intersection_subseteq.
+      split.
+      { replace (dom bsq) with (dom bsqlb); first done.
+        rewrite dom_intersection_L.
+        destruct Hquorum as [? _].
+        set_solver.
+      }
+      split.
+      { intros x b Hxb.
+        rewrite lookup_intersection_Some in Hxb.
+        destruct Hxb as [Hb [blb Hblb]].
+        specialize (Hprefix _ _ _ Hblb Hb).
+        apply Hlen in Hblb.
+        apply prefix_length in Hprefix.
+        lia.
+      }
+      unfold equal_largest_or_empty.
+      rewrite (largest_proposal_eq _ _ bsqlb); last first.
+      { unfold prefixes.
+        intros x lb l Hlb Hl.
+        rewrite lookup_intersection_Some in Hl.
+        destruct Hl as [Hl _].
+        by specialize (Hprefix _ _ _ Hlb Hl).
+      }
+      { done. }
+      { replace (dom bsq) with (dom bsqlb); first done.
+        rewrite dom_intersection_L.
+        destruct Hquorum as [? _].
+        set_solver.
+      }
+      case_decide as Hcase.
+      - left. by rewrite Hcase in Hlargest.
+      - right. rewrite Hlargest.
+        subst decree.
+        case_bool_decide as Hcontra; last done.
+        clear -Hcase Hcontra.
+        (* Set Printing Coercions. *)
+        inversion Hcontra as [Hzero].
+        rewrite Hzero in Hcase.
+        unfold int.nat in Hcase.
+        replace (int.Z _) with 0 in Hcase; word.
     }
-    split.
-    { intros x b Hxb.
-      rewrite lookup_intersection_Some in Hxb.
-      destruct Hxb as [Hb [blb Hblb]].
-      specialize (Hprefix _ _ _ Hblb Hb).
-      apply Hlen in Hblb.
-      apply prefix_length in Hprefix.
-      lia.
-    }
-    unfold equal_largest_or_empty.
-    rewrite (largest_proposal_eq _ _ bsqlb); last first.
-    { unfold prefixes.
-      intros x lb l Hlb Hl.
-      rewrite lookup_intersection_Some in Hl.
-      destruct Hl as [Hl _].
-      by specialize (Hprefix _ _ _ Hlb Hl).
-    }
-    { done. }
-    { replace (dom bsq) with (dom bsqlb); first done.
-      rewrite dom_intersection_L.
-      destruct Hquorum as [? _].
-      set_solver.
-    }
-    case_decide as Hcase.
-    - left. by rewrite Hcase in Hlargest.
-    - right. rewrite Hlargest.
-      subst decree.
-      case_bool_decide as Hcontra; last done.
-      clear -Hcase Hcontra.
-      (* Set Printing Coercions. *)
-      inversion Hcontra as [Hzero].
-      rewrite Hzero in Hcase.
-      unfold int.nat in Hcase.
-      replace (int.Z _) with 0 in Hcase; word.
+    iMod (proposals_insert _ _ decree with "Hps") as "[Hps #Hp]"; first apply Hfresh.
+    iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
+    pose proof (vp_inv_propose Hfresh Hnz Hvalid Hvps) as Hvps'.
+    pose proof (vb_inv_propose (int.nat term) decree Hvbs) as Hvbs'.
+    pose proof (vc_inv_propose (int.nat term) decree Hvc) as Hvc'.
+    pose proof (vt_inv_propose_advance decree Hprev Hnode Hvts) as Hvts'.
+    iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 10 with iFrame.
+    by iFrame.
   }
-  iMod (proposals_insert _ _ decree with "Hps") as "[Hps #Hp]"; first apply Hfresh.
-  iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
-  assert (Hnz : (int.nat term) ≠ O) by lia.
-  pose proof (vp_inv_propose Hfresh Hnz Hvalid Hvps) as Hvps'.
-  pose proof (vb_inv_propose (int.nat term) decree Hvbs) as Hvbs'.
-  pose proof (vc_inv_propose (int.nat term) decree Hvc) as Hvc'.
-  pose proof (vt_inv_propose_advance decree Hprev Hnode Hvts) as Hvts'.
-  iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 10 with iFrame.
-  iModIntro.
+  clear R.
 
   (*@     // Phase 2.                                                         @*)
   (*@     // Goal of this phase is to get a quorum of nodes accepting our proposal. @*)
@@ -533,53 +535,51 @@ Proof.
   (*@     // apply the top-level consistency theorem to deduce the decree chosen here @*)
   (*@     // (i.e., @decree) is equal to the one chosen eariler.              @*)
   (*@                                                                         @*)
-  iApply fupd_wp.
-  iInv "Hinv" as ">HinvO" "HinvC".
-  iClear "Hclst".
-  clear c bs ps ts Hvc Hvc' Hvbs Hvbs' Hvps Hvps' Hvts Hvts' Hfresh Hvalid Hblt Htermc Hprev.
-  iNamed "HinvO".
-  iAssert (⌜chosen bs ps decree⌝)%I as "%Hchosen".
-  { iNamed "Haccepts".
-    iDestruct (ballots_prefix with "Hlbs Hbs") as %Hprefix.
-    iDestruct (proposal_lookup with "Hp Hps") as %Hatterm.
-    iDestruct (cluster_eq with "Hcluster Hclst") as %->.
-    iPureIntro.
-    exists (int.nat term).
-    split; first apply Hatterm.
-    set bsq := bs ∩ bsqlb.
-    exists bsq.
-    split; first by apply map_intersection_subseteq.
-    split.
-    { replace (dom bsq) with (dom bsqlb); first done.
-      rewrite dom_intersection_L.
-      destruct Hquorum as [? _].
-      set_solver.
+  iAssert (|={⊤}=> is_chosen_consensus γ decree)%I as "> #Hconsensus".
+  { iInv "Hinv" as ">HinvO" "HinvC".
+    iNamed "HinvO".
+    iAssert (⌜chosen bs ps decree⌝)%I as %Hchosen.
+    { iNamed "Haccepts".
+      iDestruct (ballots_prefix with "Hlbs Hbs") as %Hprefix.
+      iDestruct (proposal_lookup with "Hp Hps") as %Hatterm.
+      iDestruct (cluster_eq with "Hcluster Hclst") as %->.
+      iPureIntro.
+      exists (int.nat term).
+      split; first apply Hatterm.
+      set bsq := bs ∩ bsqlb.
+      exists bsq.
+      split; first by apply map_intersection_subseteq.
+      split.
+      { replace (dom bsq) with (dom bsqlb); first done.
+        rewrite dom_intersection_L.
+        destruct Hquorum as [? _].
+        set_solver.
+      }
+      intros x b Hxb.
+      rewrite lookup_intersection_Some in Hxb.
+      destruct Hxb as [Hb [blb Hblb]].
+      specialize (Hprefix _ _ _ Hblb Hb).
+      apply Haccin in Hblb.
+      unfold accepted_in.
+      split; last done.
+      eapply prefix_lookup_Some; last apply Hprefix.
+      by destruct Hblb as [? _].
     }
-    intros x b Hxb.
-    rewrite lookup_intersection_Some in Hxb.
-    destruct Hxb as [Hb [blb Hblb]].
-    specialize (Hprefix _ _ _ Hblb Hb).
-    apply Haccin in Hblb.
-    unfold accepted_in.
-    split; last done.
-    eapply prefix_lookup_Some; last apply Hprefix.
-    by destruct Hblb as [? _].
+    iAssert (|==> own_consensus γ (Chosen decree))%I with "[Hc]" as "Hc".
+    { destruct c as [decree' |] eqn:Ec.
+      - (* Case [Chosen decree']. *)
+        unfold valid_consensus in Hvc.
+        pose proof (vb_vp_impl_consistency Hvbs Hvps) as Hconsistency.
+        rewrite (Hconsistency _ _ Hvc Hchosen).
+        by iFrame.
+      - (* Case [Free]. *)
+        iMod (consensus_update decree with "Hc") as "Hc".
+        by iFrame.
+    }
+    iMod "Hc".
+    iDestruct (consensus_witness with "Hc") as "#Hconsensus".
+    by iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 10 with iFrame.
   }
-  iAssert (|==> own_consensus γ (Chosen decree))%I with "[Hc]" as "Hc".
-  { destruct c as [decree' |] eqn:Ec.
-    - (* Case [Chosen decree']. *)
-      unfold valid_consensus in Hvc.
-      pose proof (vb_vp_impl_consistency Hvbs Hvps) as Hconsistency.
-      rewrite (Hconsistency _ _ Hvc Hchosen).
-      by iFrame.
-    - (* Case [Free]. *)
-      iMod (consensus_update decree with "Hc") as "Hc".
-      by iFrame.
-  }
-  iMod "Hc".
-  iDestruct (consensus_witness with "Hc") as "#Hconsensus".
-  iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 10 with iFrame.
-  iModIntro.
 
   (*@     // Phase 3.                                                         @*)
   (*@     // Goal of this phase is to broadcast the consensus to other nodes. @*)
