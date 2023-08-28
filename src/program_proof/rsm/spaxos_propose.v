@@ -181,7 +181,7 @@ Definition quorum_prepares
     "#Hproposal" ∷ (if decide (int.nat termp = O) then True else is_proposal γ (int.nat termp) decree) ∗
     "%Hquorum"   ∷ ⌜quorum clst (dom bsqlb)⌝ ∗
     "%Hlen"      ∷ ⌜map_Forall (λ _ l, ((int.nat term) ≤ length l)%nat) bsqlb⌝ ∗
-    "%Hlargest"  ∷ ⌜largest_proposal bsqlb (int.nat term) = int.nat termp⌝.
+    "%Hlargest"  ∷ ⌜latest_before_quorum (int.nat term) bsqlb = int.nat termp⌝.
 
 #[global]
 Instance quorum_prepares_persistent term termp decree clst γ :
@@ -467,8 +467,8 @@ Proof.
         apply prefix_length in Hprefix.
         lia.
       }
-      unfold equal_largest_or_empty.
-      rewrite (largest_proposal_eq _ _ bsqlb); last first.
+      unfold equal_latest_proposal_or_free.
+      rewrite (latest_before_quorum_eq _ _ bsqlb); last first.
       { unfold prefixes.
         intros x lb l Hlb Hl.
         rewrite lookup_intersection_Some in Hl.

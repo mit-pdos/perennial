@@ -91,34 +91,34 @@ Section pure.
       ps !! n = Some v.
 
   (* Compute the latest accepted proposal before [n]. *)
-  Fixpoint latest_proposal (n : nat) (l : ballot) : nat :=
+  Fixpoint latest_before (n : nat) (l : ballot) : nat :=
     match n with
     | O => O
     | S k => match l !! k with
             | Some b => if b : bool (* XXX: why do I need this? *)
                        then k
-                       else latest_proposal k l
-            | _ => latest_proposal k l
+                       else latest_before k l
+            | _ => latest_before k l
             end
     end.
 
-  Definition largest_proposal_step (x : A) (cur prev : nat) : nat :=
+  Definition latest_before_quorum_step (x : A) (cur prev : nat) : nat :=
     cur `max` prev.
 
-  Definition largest_proposal (bsq : gmap A ballot) n :=
-    let ps := fmap (latest_proposal n) bsq in
-    map_fold largest_proposal_step O ps.
+  Definition latest_before_quorum (n : nat) (bsq : gmap A ballot) :=
+    let ps := fmap (latest_before n) bsq in
+    map_fold latest_before_quorum_step O ps.
 
-  Definition equal_largest_or_empty (bsq : gmap A ballot) (ps : proposals) n v :=
-    largest_proposal bsq n = O ∨
-    ps !! (largest_proposal bsq n) = Some v.
+  Definition equal_latest_proposal_or_free (bsq : gmap A ballot) (ps : proposals) n v :=
+    latest_before_quorum n bsq = O ∨
+    ps !! (latest_before_quorum n bsq) = Some v.
 
   Definition valid_proposal (bs : gmap A ballot) (ps : proposals) n v :=
     ∃ bsq : gmap A ballot,
       bsq ⊆ bs ∧
       quorum (dom bs) (dom bsq) ∧
       map_Forall (λ _ l, (n ≤ length l)%nat) bsq ∧
-      equal_largest_or_empty bsq ps n v.
+      equal_latest_proposal_or_free bsq ps n v.
 
   (* Invariant for [proposed_after_chosen]. *)
   Definition valid_proposals (bs : gmap A ballot) (ps : proposals) :=
@@ -141,9 +141,9 @@ Section pure.
     (∀ x1 x2 n, x1 ≠ x2 -> P x1 n -> not (P x2 n)) ∧
     map_Forall (λ x n, valid_term P ps x n) ts.
   
-  (* Lemmas about [latest_proposal]. *)
-  Lemma latest_proposal_le l m :
-    (latest_proposal m l ≤ m)%nat.
+  (* Lemmas about [latest_before]. *)
+  Lemma latest_before_le l m :
+    (latest_before m l ≤ m)%nat.
   Proof.
     induction m as [| m' IHm']; first by simpl.
     simpl.
@@ -151,9 +151,9 @@ Section pure.
     destruct b; lia.
   Qed.
 
-  Lemma latest_proposal_mono l m n :
+  Lemma latest_before_mono l m n :
     (m ≤ n)%nat ->
-    (latest_proposal m l ≤ latest_proposal n l)%nat.
+    (latest_before m l ≤ latest_before n l)%nat.
   Proof.
     intros Hmn.
     induction n as [| n' IH].
@@ -164,33 +164,33 @@ Section pure.
     destruct (l !! n') as [b |]; last by eauto.
     destruct b; last by eauto.
     etrans; first apply Hle.
-    apply latest_proposal_le.
+    apply latest_before_le.
   Qed.
 
-  Lemma latest_proposal_Sn l n :
+  Lemma latest_before_Sn l n :
     accepted_in l n ->
-    latest_proposal (S n) l = n.
+    latest_before (S n) l = n.
   Proof.
     intros [Hlookup Hnz].
     simpl.
     by rewrite Hlookup.
   Qed.
   
-  Lemma latest_proposal_accepted_in l m n :
+  Lemma latest_before_accepted_in l m n :
     (m < n)%nat ->
     accepted_in l m ->
-    (m ≤ latest_proposal n l)%nat.
+    (m ≤ latest_before n l)%nat.
   Proof.
     intros Hmn Hacc.
-    apply latest_proposal_Sn in Hacc.
+    apply latest_before_Sn in Hacc.
     rewrite -Hacc.
-    apply latest_proposal_mono.
+    apply latest_before_mono.
     lia.
   Qed.
   
-  Lemma latest_proposal_lt l n :
+  Lemma latest_before_lt l n :
     n ≠ O ->
-    (latest_proposal n l < n)%nat.
+    (latest_before n l < n)%nat.
   Proof.
     induction n as [| n' IHn']; first by simpl.
     intros _.
@@ -204,37 +204,37 @@ Section pure.
     destruct b; lia.
   Qed.
 
-  (* Lemmas about [largest_proposal]. TODO: fix the argument order. *)
-  Lemma largest_proposal_step_ge ns :
-    map_Forall (λ _ n, (n ≤ map_fold largest_proposal_step O ns)%nat) ns.
+  (* Lemmas about [latest_before_quorum]. TODO: fix the argument order. *)
+  Lemma latest_before_quorum_step_ge ns :
+    map_Forall (λ _ n, (n ≤ map_fold latest_before_quorum_step O ns)%nat) ns.
   Proof.
   Admitted.
   
-  Lemma largest_proposal_step_in ns :
+  Lemma latest_before_quorum_step_in ns :
     ns ≠ ∅ ->
-    map_Exists (λ _ n, (n = map_fold largest_proposal_step O ns)%nat) ns.
+    map_Exists (λ _ n, (n = map_fold latest_before_quorum_step O ns)%nat) ns.
   Proof.
   Admitted.
 
-  Lemma largest_proposal_ge bs n :
-    map_Forall (λ _ l, (latest_proposal n l ≤ largest_proposal bs n)%nat) bs.
+  Lemma latest_before_quorum_ge bs n :
+    map_Forall (λ _ l, (latest_before n l ≤ latest_before_quorum n bs)%nat) bs.
   Proof.
     intros x l Hlookup.
-    unfold largest_proposal.
-    pose proof (largest_proposal_step_ge (latest_proposal n <$> bs)) as Hstep.
+    unfold latest_before_quorum.
+    pose proof (latest_before_quorum_step_ge (latest_before n <$> bs)) as Hstep.
     rewrite map_Forall_lookup in Hstep.
-    apply (Hstep x (latest_proposal n l)).
+    apply (Hstep x (latest_before n l)).
     rewrite lookup_fmap.
     by rewrite Hlookup.
   Qed.
   
-  Lemma largest_proposal_in bs n :
+  Lemma latest_before_quorum_in bs n :
     bs ≠ ∅ ->
-    map_Exists (λ _ l, (latest_proposal n l = largest_proposal bs n)%nat) bs.
+    map_Exists (λ _ l, (latest_before n l = latest_before_quorum n bs)%nat) bs.
   Proof.
     intros Hnonempty.
-    unfold largest_proposal.
-    pose proof (largest_proposal_step_in (latest_proposal n <$> bs)) as Hstep.
+    unfold latest_before_quorum.
+    pose proof (latest_before_quorum_step_in (latest_before n <$> bs)) as Hstep.
     rewrite fmap_empty_iff in Hstep.
     specialize (Hstep Hnonempty).
     destruct Hstep as (x & m & Hlookup & <-).
@@ -243,33 +243,33 @@ Section pure.
     by exists x, l.
   Qed.
   
-  Lemma largest_proposal_lt bs n :
+  Lemma latest_before_quorum_lt bs n :
     n ≠ O ->
     bs ≠ ∅ ->
-    (largest_proposal bs n < n)%nat.
+    (latest_before_quorum n bs < n)%nat.
   Proof.
     intros Hnz Hnonempty.
-    destruct (largest_proposal_in bs n Hnonempty) as (y & ly & _ & <-).
-    by apply latest_proposal_lt.
+    destruct (latest_before_quorum_in bs n Hnonempty) as (y & ly & _ & <-).
+    by apply latest_before_lt.
   Qed.
 
-  Lemma largest_proposal_accepted_in bs n1 n2 :
+  Lemma latest_before_quorum_accepted_in bs n1 n2 :
     (n1 < n2)%nat ->
     bs ≠ ∅ ->
     map_Exists (λ _ l, accepted_in l n1) bs ->
-    (n1 ≤ largest_proposal bs n2 < n2)%nat ∧ largest_proposal bs n2 ≠ O.
+    (n1 ≤ latest_before_quorum n2 bs < n2)%nat ∧ latest_before_quorum n2 bs ≠ O.
   Proof.
     intros Hn Hnonempty Hacc.
     destruct Hacc as (x & l & Hlookup & Hacc).
-    pose proof (largest_proposal_ge bs n2) as Hlargest.
+    pose proof (latest_before_quorum_ge bs n2) as Hlargest.
     rewrite map_Forall_lookup in Hlargest.
     specialize (Hlargest _ _ Hlookup).
-    pose proof (latest_proposal_accepted_in _ _ _ Hn Hacc).
+    pose proof (latest_before_accepted_in _ _ _ Hn Hacc).
     split; last first.
     { destruct Hacc as [_ Hnz]. lia. }
     split; first lia.
-    destruct (largest_proposal_in bs n2 Hnonempty) as (y & ly & _ & <-).
-    apply latest_proposal_lt.
+    destruct (latest_before_quorum_in bs n2 Hnonempty) as (y & ly & _ & <-).
+    apply latest_before_lt.
     lia.
   Qed.
 
@@ -328,7 +328,7 @@ Section pure.
     { apply Hquorum2. }
     rewrite map_Forall_lookup in Hacc.
     specialize (Hacc _ _ Hbsq2).
-    destruct (largest_proposal_accepted_in bsq1 m n) as [Hlp Hnz].
+    destruct (latest_before_quorum_accepted_in bsq1 m n) as [Hlp Hnz].
     { apply Hmn. }
     { set_solver. }
     { rewrite map_Exists_lookup. by exists x, l. }
@@ -337,7 +337,7 @@ Section pure.
       rewrite Heq in Hnz. congruence.
     }
     { (* Case: Equal the largest proposal. *)
-      exists (largest_proposal bsq1 n).
+      exists (latest_before_quorum n bsq1).
       by rewrite Heq Hlookup.
     }
   Qed.
@@ -471,9 +471,9 @@ Section pure.
     by apply Hx.
   Qed.
 
-  Lemma latest_proposal_append_eq (n : nat) (l t : ballot) :
+  Lemma latest_before_append_eq (n : nat) (l t : ballot) :
     (n ≤ length l)%nat ->
-    latest_proposal n (l ++ t) = latest_proposal n l.
+    latest_before n (l ++ t) = latest_before n l.
   Proof.
     intros Hlen.
     induction n as [| n' IHn']; first done.
@@ -497,15 +497,15 @@ Section pure.
     by right.
   Qed.
 
-  Lemma largest_proposal_eq (n : nat) (bs bslb : gmap A ballot) :
+  Lemma latest_before_quorum_eq (n : nat) (bs bslb : gmap A ballot) :
     dom bs = dom bslb ->
     map_Forall (λ _ l, (n ≤ length l)%nat) bslb ->
     prefixes bslb bs ->
-    largest_proposal bs n = largest_proposal bslb n.
+    latest_before_quorum n bs = latest_before_quorum n bslb.
   Proof.
     intros Hdom Hlen Hprefix.
-    unfold largest_proposal.
-    replace (latest_proposal n <$> bs) with (latest_proposal n <$> bslb); first done.
+    unfold latest_before_quorum.
+    replace (latest_before n <$> bs) with (latest_before n <$> bslb); first done.
     rewrite map_eq_iff.
     intros x.
     do 2 rewrite lookup_fmap.
@@ -517,38 +517,38 @@ Section pure.
     specialize (Hprefix _ _ _  Hlb Hl).
     destruct Hprefix as [tail ->].
     symmetry.
-    by apply latest_proposal_append_eq.
+    by apply latest_before_append_eq.
   Qed.
 
-  Lemma largest_proposal_accept_same
+  Lemma latest_before_quorum_accept_same
     (bs : gmap A ballot) (x : A) (n m : nat) :
     map_Forall (λ _ l, (m ≤ length l)%nat) bs ->
-    largest_proposal (spaxos_accept bs x n) m = largest_proposal bs m.
+    latest_before_quorum m (spaxos_accept bs x n) = latest_before_quorum m bs.
   Proof.
     intros Hlens.
-    unfold largest_proposal.
+    unfold latest_before_quorum.
     rewrite fmap_alter_same; first done.
     intros l Hlookup.
     pose proof (map_Forall_lookup_1 _ _ _ _ Hlens Hlookup) as Hlen.
     simpl in Hlen.
     unfold extend.
     rewrite app_assoc_reverse.
-    by rewrite latest_proposal_append_eq.
+    by rewrite latest_before_append_eq.
   Qed.
 
-  Lemma largest_proposal_prepare_same
+  Lemma latest_before_quorum_prepare_same
     (bs : gmap A ballot) (x : A) (n m : nat) :
     map_Forall (λ _ l, (m ≤ length l)%nat) bs ->
-    largest_proposal (spaxos_prepare bs x n) m = largest_proposal bs m.
+    latest_before_quorum m (spaxos_prepare bs x n) = latest_before_quorum m bs.
   Proof.
     intros Hlens.
-    unfold largest_proposal.
+    unfold latest_before_quorum.
     rewrite fmap_alter_same; first done.
     intros l Hlookup.
     pose proof (map_Forall_lookup_1 _ _ _ _ Hlens Hlookup) as Hlen.
     simpl in Hlen.
     unfold extend.
-    by rewrite latest_proposal_append_eq.
+    by rewrite latest_before_append_eq.
   Qed.
 
   Lemma valid_proposal_insert_n bs ps n v1 v2 :
@@ -565,7 +565,7 @@ Section pure.
     apply lookup_insert_ne.
     pose proof (quorum_not_empty _ _ Hquorum) as Hnonempty.
     rewrite dom_empty_iff_L in Hnonempty.
-    pose proof (largest_proposal_lt _ _ Hnz Hnonempty) as Hlt.
+    pose proof (latest_before_quorum_lt _ _ Hnz Hnonempty) as Hlt.
     lia.
   Qed.
 
@@ -608,7 +608,7 @@ Section pure.
     exists (spaxos_accept bsq x n).
     split; first by apply alter_mono.
     split; first by do 2 rewrite dom_alter_L.
-    unfold equal_largest_or_empty.
+    unfold equal_latest_proposal_or_free.
     split.
     { apply map_Forall_alter; last apply Hlens.
       intros y Hlookup.
@@ -618,7 +618,7 @@ Section pure.
       pose proof (extend_length_ge false n y) as Hextend.
       lia.
     }
-    by rewrite largest_proposal_accept_same.
+    by rewrite latest_before_quorum_accept_same.
   Qed.
 
   Theorem vb_inv_accept {bs ps} x n :
@@ -659,7 +659,7 @@ Section pure.
     exists (spaxos_prepare bsq x n).
     split; first by apply alter_mono.
     split; first by do 2 rewrite dom_alter_L.
-    unfold equal_largest_or_empty.
+    unfold equal_latest_proposal_or_free.
     split.
     { apply map_Forall_alter; last apply Hlens.
       intros y Hlookup.
@@ -668,7 +668,7 @@ Section pure.
       pose proof (extend_length_ge false n y) as Hextend.
       lia.
     }
-    by rewrite largest_proposal_prepare_same.
+    by rewrite latest_before_quorum_prepare_same.
   Qed.
 
   Theorem vb_inv_prepare {bs ps} x n :
