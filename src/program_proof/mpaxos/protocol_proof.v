@@ -690,15 +690,15 @@ Proof.
   { iPureIntro. word. }
 Qed.
 
-Lemma is_proposal_lb_compare γsys log log' epoch :
+Lemma is_proposal_compare γsys log log' epoch :
   length log' ≤ length log →
-  is_proposal_lb γsys epoch log -∗
-  is_proposal_lb γsys epoch log' -∗
+  is_proposal γsys epoch log -∗
+  is_proposal γsys epoch log' -∗
   ⌜prefix log' log⌝
 .
 Proof.
   intros Hlen.
-  iIntros "Hprop1 Hprop2".
+  iIntros "[Hprop1 _] [Hprop2 _]".
   iDestruct (own_valid_2 with "Hprop1 Hprop2") as %Hcomp.
   rewrite singleton_op singleton_valid in Hcomp.
   rewrite -Cinr_op Cinr_valid in Hcomp.

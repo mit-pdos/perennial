@@ -11,19 +11,12 @@ From Perennial.program_proof.mpaxos Require Export definitions enternewepoch_pro
 Section becomeleader_proof.
 
 Context `{!heapGS Σ}.
-Context {mp_record:MPRecord}.
-Notation OpType := (mp_OpType mp_record).
-Notation has_op_encoding := (mp_has_op_encoding mp_record).
-Notation next_state := (mp_next_state mp_record).
-Notation compute_reply := (mp_compute_reply mp_record).
-Notation is_Server := (is_Server (mp_record:=mp_record)).
-Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
 
-Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
+Context `{HconfigTC:!configTC}.
 
 Lemma wp_Server__becomeLeader s γ γsrv Ψ Φ :
-  is_Server conf s γ γsrv -∗
+  is_Server s γ γsrv -∗
   (Ψ -∗ Φ #()) -∗
   becomeleader_core_spec Ψ -∗
   WP mpaxos.Server__becomeLeader #s {{ Φ }}
@@ -38,6 +31,8 @@ Proof.
   iNamed "Hown".
 
   wp_pures.
+  iNamed "Hvol".
+  wp_loadField.
   wp_loadField.
   wp_if_destruct.
   { (* already leader, no need to do anything *)
@@ -46,9 +41,9 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      iExists _,_,_,_,_,_.
-      iFrame "∗#%".
-      iFrame "HleaderOnly".
+      repeat iExists _; iFrame.
+      rewrite Heqb.
+      iExists _. iFrame "∗#".
     }
     wp_pures.
     iModIntro.
@@ -56,7 +51,7 @@ Proof.
   }
   wp_loadField.
   wp_pures.
-  wp_loadField.
+  wp_loadField. wp_loadField.
   wp_apply (wp_allocStruct).
   { repeat econstructor. }
   iIntros (args_ptr) "Hargs".
@@ -66,8 +61,9 @@ Proof.
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    iExists _,_,_,_,_,_.
-    iFrame "∗#%".
+    repeat iExists _; iFrame.
+    rewrite Heqb.
+    iExists _. iFrame "∗#".
   }
 
   wp_pures.
@@ -87,17 +83,17 @@ Proof.
   wp_pures.
   rewrite -Hclerks_sz.
 
-  set (newepoch:=word.add st.(mp_epoch) 1%Z).
+  set (newepoch:=word.add pst.(paxosState.epoch) 1%Z).
   iMod (ghost_var_alloc ()) as (γescrow) "HreplyPostEscrow".
   set (replyInv:=(
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
-                    "%HlenEq" ∷ ⌜length reply_ptrs = length conf⌝ ∗
+                    "%HlenEq" ∷ ⌜length reply_ptrs = length config⌝ ∗
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
-                    "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                    "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; config,
                     ⌜reply_ptr = null⌝ ∨ (∃ reply, readonly (enterNewEpochReply.own reply_ptr reply 1) ∗
                                               (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
-                                                enterNewEpoch_post conf γ γsrv' reply newepoch
+                                                enterNewEpoch_post γ γsrv' reply newepoch
                                               else
                                                 True)
                                   ))
@@ -227,7 +223,7 @@ Proof.
           iFrame.
         }
 
-        replace (<[int.nat i:=x2]> conf) with (conf) ; last first.
+        replace (<[int.nat i:=x2]> config) with (config) ; last first.
         {
           symmetry.
           by apply list_insert_id.
@@ -295,11 +291,11 @@ Proof.
                  "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
                  "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(U64 (size W)) ∗
                  "HlatestReply_loc" ∷ latestReply_ptr ↦[ptrT] #latestReply_loc ∗
-                 "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                 "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; config,
                   ⌜int.nat i ≤ j⌝ →
                  ⌜reply_ptr = null⌝ ∨ (∃ reply, readonly (enterNewEpochReply.own reply_ptr reply 1) ∗
                                            (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
-                                             enterNewEpoch_post conf γ γsrv' reply newepoch
+                                             enterNewEpoch_post γ γsrv' reply newepoch
                                            else
                                              True)
                                )) ∗
@@ -311,14 +307,13 @@ Proof.
                   "%Hlatestlog" ∷ ⌜latestReply.(enterNewEpochReply.state) = get_state latestLog⌝ ∗
                   "%HlatestlogLen" ∷ ⌜int.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
                   "%HlatestEpoch_ineq" ∷ ⌜int.nat latestReply.(enterNewEpochReply.acceptedEpoch) < int.nat newepoch⌝ ∗
-                  "#Hlatest_prop_lb" ∷ is_proposal_lb γ latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
-                  "#Hlatest_prop_facts" ∷ is_proposal_facts conf γ latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
-                  "#Hacc_lbs" ∷ (□ [∗ list] s ↦ γsrv' ∈ conf, ⌜s ∈ W⌝ →
+                  "#Hlatest_prop" ∷ is_proposal γ latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
+                  "#Hacc_lbs" ∷ (□ [∗ list] s ↦ γsrv' ∈ config, ⌜s ∈ W⌝ →
                                         is_accepted_upper_bound γsrv' latestLog
                                                                 latestReply.(enterNewEpochReply.acceptedEpoch)
                                                                 newepoch
                                 ) ∗
-                  "Hvotes" ∷ ([∗ list] s ↦ γsrv' ∈ conf, ⌜s ∈ W⌝ → own_vote_tok γsrv' newepoch)
+                  "Hvotes" ∷ ([∗ list] s ↦ γsrv' ∈ config, ⌜s ∈ W⌝ → own_vote_tok γsrv' newepoch)
       )%I).
 
   wp_apply (wp_forSlice (V:=loc) I _ _ _ _ _ reply_ptrs with "[] [HnumSuccesses HlatestReply Hreplies_sl Hreplies]").
@@ -367,12 +362,14 @@ Proof.
           wp_store.
           replace (W) with (∅:gset nat); last first.
           {
-            destruct (decide (W = ∅)).
-            {
-              done.
-            }
             assert (size W = 0).
-            { admit. } (* FIXME: overflow reasoning about size W *)
+            {
+              apply (f_equal int.Z) in Heqb3.
+              rewrite Z_u64 in Heqb3.
+              2:{ word. }
+              replace (int.Z (U64 0)) with (0%Z) in Heqb3 by word.
+              word.
+            }
             apply size_empty_inv in H.
             by apply leibniz_equiv.
           }
@@ -399,10 +396,9 @@ Proof.
           rewrite size_empty.
           iFrame.
           simpl.
-          rewrite Heqb.
           destruct (decide (_)); last first.
           { exfalso. done. }
-          iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
+          iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
           iSplitL "Hreplies".
           {
             iApply "Hreplies".
@@ -458,7 +454,9 @@ Proof.
         { (* In this case, there have been previous successful replies. Compare with latestReply *)
           wp_load.
           destruct (decide (size W = 0)).
-          { exfalso. rewrite e in Heqb2. done. }
+          { exfalso.
+            apply Heqb3. f_equal. rewrite e.
+            done. }
           iNamed "Hi".
           iMod (readonly_load with "HlatestReply") as (?) "HlatestReply2".
           iRename "Hreply_acceptedEpoch" into "Hreply_acceptedEpoch2".
@@ -537,9 +535,9 @@ Proof.
 
             destruct (decide (_)); last first.
             { exfalso. done. }
-            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
+            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
             iExists reply, log.
-            iFrame "Hreply Hprop_lb %".
+            iFrame "Hreply Hprop %".
             iFrame "#".
             iSplitR "Hvotes Hvote"; last first.
             { (* accumulate votes *)
@@ -675,9 +673,9 @@ Proof.
 
                 destruct (decide (_)); last first.
                 { exfalso. done. }
-                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
+                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
                 iExists reply, log.
-                iFrame "Hreply Hprop_lb %".
+                iFrame "Hreply Hprop %".
 
                 iFrame "#".
                 (* XXX: copy/paste votes *)
@@ -720,7 +718,7 @@ Proof.
                   iSpecialize ("Hwand" with "[%//]").
                   iFrame.
                   rewrite X.
-                  iDestruct (is_proposal_lb_compare with "Hprop_lb Hlatest_prop_lb") as "%Hpre".
+                  iDestruct (is_proposal_compare with "Hprop Hlatest_prop") as "%Hpre".
                   {
                     word.
                   }
@@ -806,7 +804,7 @@ Proof.
 
                 destruct (decide (_)); last first.
                 { exfalso. done. }
-                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
+                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
 
                 (* XXX: copy/paste votes *)
                 iSplitR "Hvotes Hvote"; last first.
@@ -854,7 +852,7 @@ Proof.
                   rewrite Hnew.
                   rewrite X.
 
-                  iDestruct (is_proposal_lb_compare with "Hlatest_prop_lb Hprop_lb") as %Hpre.
+                  iDestruct (is_proposal_compare with "Hlatest_prop Hprop") as %Hpre.
                   {
                     word.
                   }
@@ -939,7 +937,7 @@ Proof.
 
             destruct (decide (_)); last first.
             { exfalso. done. }
-            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop_lb & #Hprop_facts & Hvote)".
+            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
 
             (* XXX: copy/paste votes *)
             iSplitR "Hvotes Hvote"; last first.
@@ -1084,7 +1082,6 @@ Proof.
   wp_load.
   wp_if_destruct.
   { (* case: got enough replies to become leader *)
-    wp_loadField.
     destruct (decide (size W = 0)).
     {
       exfalso.
@@ -1094,10 +1091,12 @@ Proof.
       word.
     }
 
-    wp_apply (acquire_spec with "HmuInv").
-    iIntros "[Hlocked2 Hown]".
+    wp_apply (wp_Server__withLock with "[]").
+    { repeat iExists _; iFrame "#". done. }
+    iIntros (??) "Hvol".
+    iClear "Hstate_sl".
+    iNamed "Hvol".
     wp_pures.
-    iNamed "Hown".
     wp_loadField.
     wp_loadField.
     wp_if_destruct.
@@ -1117,55 +1116,50 @@ Proof.
       wp_load.
       wp_loadField.
       wp_storeField.
-      wp_loadField.
-
-      iClear "Hstate_sl Hclerks_sl Hclerks_rpc HisApplyFn Hinv".
-      iNamed "Hown".
-      rewrite Hlatestlog.
-      (* A few protocol steps *)
-      iApply fupd_wp.
-      iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
-      { set_solver. }
       iDestruct (own_slice_small_sz with "Hreplies_sl") as "%Hreplies_sz".
-      iMod (become_leader with "[] Hacc_lbs Hlatest_prop_lb Hlatest_prop_facts Hvotes") as "HghostLeader".
+
+      iModIntro.
+      iExists _.
+      rewrite sep_exist_r.
+      instantiate (1:=paxosState.mk _ _ _ _ _).
+      iExists _. simpl. iFrame.
+
+      (* start ghost reasoning *)
+      (* A few protocol steps *)
+      iIntros "Hghost".
+      iNamed "Hghost".
+      iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
+      { solve_ndisj. }
+      iMod (become_leader with "Hvote_inv Hacc_lbs Hlatest_prop Hvotes") as "HghostLeader".
       {
         intros ??.
         apply HW_in_range in H.
         word.
       }
-      { admit. (* FIXME: word.mul overflow with size W *) }
-      { admit. } (* TODO: use vote_inv from *)
+      {
+        enough (int.Z (word.mul 2 (size W)) <= (2 * size W))%Z.
+        { word. }
+        rewrite word.unsigned_mul.
+        rewrite /word.wrap /=.
+        etransitivity.
+        { apply Z.mod_le; word. }
+        word.
+      }
       iMod "Hmask".
       iDestruct (ghost_replica_helper1 with "Hghost") as %Hineq.
-      iDestruct (ghost_leader_get_proposal with "HghostLeader") as "#[Hprop_lb Hprop_facts]".
-      iMod (ghost_replica_accept_new_epoch with "Hghost Hprop_lb Hprop_facts") as "Hghost".
-      { simpl. word. }
-      { simpl. word. }
+      iDestruct (ghost_leader_get_proposal with "HghostLeader") as "#Hprop".
+      iMod (ghost_replica_accept_new_epoch with "Hghost Hprop") as "Hghost".
+      { simpl in *. word. }
+      { simpl in *. word. }
       iModIntro.
 
-      wp_apply (release_spec with "[-HΦ HΨ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow]").
+      iSplitR "HΦ HΨ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow".
       {
-        iFrame "HmuInv Hlocked2".
-        iNext.
-        iExists _, _, _, _, _, _.
-        instantiate (1:=mkMPaxosState _ _ _).
-        simpl.
-        iFrame "HisLeader ∗".
-        iSplitL "HnextIndex".
-        {
-          iApply to_named.
-          iExactEq "HnextIndex".
-          f_equal.
-          f_equal.
-          f_equal. (* XXX: this looks like it has no effect, but actually strips off a base_lit *)
-          word.
-        }
-        iFrame "#".
-        iSplitR.
-        { iPureIntro. word. }
-        iSplitR.
-        { iPureIntro. word. }
-        done.
+        repeat iExists _. simpl.
+        iFrame "∗#".
+        iPureIntro.
+        split_and!; try done.
+        word.
       }
       wp_pures.
       wp_apply (release_spec with "[-HΦ HΨ]").
@@ -1181,14 +1175,12 @@ Proof.
     }
     {
       wp_pures.
-      wp_loadField.
-      wp_apply (release_spec with "[-HΦ HΨ Hlocked Hreplies_sl HnumReplies Hreplies HreplyPostEscrow]").
-      {
-        iFrame "HmuInv Hlocked2".
-        iNext.
-        iExists _, _, _, _, _, _.
-        iFrame "∗#".
-      }
+      iModIntro.
+      iExists _.
+      rewrite sep_exist_r.
+      instantiate (1:=paxosState.mk _ _ _ _ _).
+      iExists _. simpl. iFrame "∗#".
+      iIntros "$ !#".
       wp_pures.
       wp_apply (release_spec with "[-HΦ HΨ]").
       {
@@ -1214,6 +1206,6 @@ Proof.
     iModIntro.
     by iApply "HΦ".
   }
-Admitted.
+Qed.
 
 End becomeleader_proof.
