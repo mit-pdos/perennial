@@ -381,10 +381,10 @@ Definition Server__apply: val :=
         struct.storeF paxosState "nextIndex" "ps" (std.SumAssumeNoOverflow (struct.loadF paxosState "nextIndex" "ps") #1);;
         #())
       );;
-    let: "clerks" := struct.loadF Server "clerks" "s" in
     (if: (![Error] "retErr") ≠ #0
     then (![Error] "retErr", slice.nil)
     else
+      let: "clerks" := struct.loadF Server "clerks" "s" in
       let: "numReplies" := ref_to uint64T #0 in
       let: "replies" := NewSlice ptrT (slice.len "clerks") in
       let: "mu" := lock.new #() in

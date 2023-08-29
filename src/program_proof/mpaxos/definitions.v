@@ -13,7 +13,7 @@ From Perennial.program_proof.asyncfile Require Export proof.
 Definition client_logR := dfrac_agreeR (leibnizO (list u8)).
 
 Class mpG Σ := {
-    mp_ghostG :> mp_ghostG (EntryType:=(list u8 * (list u8 → iProp Σ))%type) Σ ;
+    mp_ghostG :> mp_ghostG (EntryType:=(list u8 * iProp Σ)%type) Σ ;
     mp_urpcG :> urpcregG Σ ;
     mp_wgG :> waitgroupG Σ ; (* for apply proof *)
     mp_logG :> inG Σ client_logR;
@@ -29,7 +29,7 @@ Definition own_state γ ς := own γ (to_dfrac_agree (DfracOwn (1/2)) (ς : (lei
 
 (* RPC specs *)
 
-Definition get_state (σ:list (list u8 * (list u8 → iProp Σ))) := default [] (last (fst <$> σ)).
+Definition get_state (σ:list (list u8 * iProp Σ)) := default [] (last (fst <$> σ)).
 
 Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply.C -> iProp Σ) : iProp Σ :=
   (
@@ -90,18 +90,19 @@ Defined.
 Definition appN := mpN .@ "app".
 Definition escrowN := mpN .@ "escrow".
 
-Definition is_inv γlog γsys :=
+Definition is_state_inv γlog γsys :=
   inv appN (∃ log,
         own_state γlog (get_state log) ∗
         own_ghost γsys log ∗
         □(
           (* XXX: this is a bit different from pb_definitions.v *)
           (* This says that for all (log'prefix ++ [lastEnt]) ⪯ log,
-             lastEnt.Q (state of log'prefix) is true.
+             lastEnt.Q is true.
            *)
           ∀ log' log'prefix lastEnt, ⌜prefix log' log⌝ -∗
                 ⌜log' = log'prefix ++ [lastEnt]⌝ -∗
-                (lastEnt.2 (get_state log'prefix))
+                (* FIXME: use gnames and saved_pred insted of direct higher-order state *)
+                lastEnt.2
         )
       ).
 
@@ -179,7 +180,7 @@ Context `{!mpG Σ}.
 Context `{configTC0:!configTC}.
 
 Definition own_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
-  ∃ (log:list (list u8 * (list u8 → iProp Σ))),
+  ∃ (log:list (list u8 * iProp Σ)),
   "Hghost" ∷ own_replica_ghost γ γsrv
            (mkMPaxosState st.(epoch) st.(acceptedEpoch) log) ∗
   "%Hlog" ∷ ⌜ length log = int.nat st.(nextIndex) ⌝ ∗

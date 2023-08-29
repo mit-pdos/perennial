@@ -166,7 +166,7 @@ Lemma ghost_leader_propose γsys st entry :
   £ 1 -∗
   (|={⊤∖↑ghostN,∅}=> ∃ someσ, own_ghost γsys someσ ∗
       (⌜someσ = st.(mp_log)⌝ -∗ own_ghost γsys (someσ ++ [entry]) ={∅,⊤∖↑ghostN}=∗ True))
-  ={⊤}=∗
+  ={↑sysN}=∗
   own_leader_ghost γsys (mkMPaxosState st.(mp_epoch) st.(mp_acceptedEpoch) (st.(mp_log) ++ [entry]))∗
   is_proposal γsys st.(mp_epoch) (st.(mp_log) ++ [entry])
 .
@@ -195,7 +195,7 @@ Proof.
 
   iFrame "∗#".
 
-  iAssert (|={⊤}=> is_proposal_facts γsys st.(mp_epoch) (st.(mp_log) ++ [entry]))%I with "[Hupd Hlc]" as ">#Hvalid2".
+  iAssert (|={↑sysN}=> is_proposal_facts γsys st.(mp_epoch) (st.(mp_log) ++ [entry]))%I with "[Hupd Hlc]" as ">#Hvalid2".
   {
     iDestruct "Hprop_facts" as "(Hmax & Hvalid)".
     iSplitL "".
@@ -217,7 +217,7 @@ Proof.
       done.
     }
 
-    iAssert (|={⊤}=> is_valid_inv γsys st.(mp_log) entry)%I with "[Hupd Hlc]" as ">#Hinv".
+    iAssert (|={↑sysN}=> is_valid_inv γsys st.(mp_log) entry)%I with "[Hupd Hlc]" as ">#Hinv".
     {
       iMod (inv_alloc with "[Hupd Hlc]") as "$".
       {
