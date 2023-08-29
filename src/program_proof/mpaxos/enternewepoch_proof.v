@@ -6,33 +6,25 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.mpaxos Require Export definitions.
+From Perennial.program_proof.mpaxos Require Export definitions withlock_proof.
 
 Section enternewepoch_proof.
 
 Context `{!heapGS Σ}.
-Context {mp_record:MPRecord}.
-Notation OpType := (mp_OpType mp_record).
-Notation has_op_encoding := (mp_has_op_encoding mp_record).
-Notation next_state := (mp_next_state mp_record).
-Notation compute_reply := (mp_compute_reply mp_record).
-Notation is_Server := (is_Server (mp_record:=mp_record)).
-Notation enterNewEpoch_core_spec := (enterNewEpoch_core_spec).
-Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
 
-Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
+Context `{HconfigTC:!configTC}.
 
 Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q :
   {{{
-        "#His_ck" ∷ is_singleClerk conf ck γ γsrv ∗
+        "#His_ck" ∷ is_singleClerk ck γ γsrv ∗
         "Hargs" ∷ enterNewEpochArgs.own args_ptr args q
   }}}
     singleClerk__enterNewEpoch #ck #args_ptr
   {{{
         reply_ptr reply, RET #reply_ptr; enterNewEpochReply.own reply_ptr reply 1 ∗
         if (decide (reply.(enterNewEpochReply.err) = (U64 0))) then
-          enterNewEpoch_post conf γ γsrv reply args.(enterNewEpochArgs.epoch)
+          enterNewEpoch_post γ γsrv reply args.(enterNewEpochArgs.epoch)
         else
           True
   }}}.
@@ -138,22 +130,20 @@ Proof.
 Qed.
 
 Lemma wp_Server__enterNewEpoch (s:loc) (args_ptr reply_ptr:loc) γ γsrv args init_reply Φ Ψ :
-  is_Server conf s γ γsrv -∗
+  is_Server s γ γsrv -∗
   enterNewEpochArgs.own args_ptr args 1 -∗
   enterNewEpochReply.own reply_ptr init_reply 1 -∗
   (∀ reply, Ψ reply -∗ enterNewEpochReply.own reply_ptr reply 1 -∗ Φ #()) -∗
-  enterNewEpoch_core_spec conf γ γsrv args Ψ -∗
+  enterNewEpoch_core_spec γ γsrv args Ψ -∗
   WP mpaxos.Server__enterNewEpoch #s #args_ptr #reply_ptr {{ Φ }}
 .
 Proof.
   iIntros "#HisSrv Hpre Hreply HΦ HΨ".
   iNamed "Hpre".
-  iNamed "HisSrv".
   wp_call.
-  wp_loadField.
-  wp_apply (acquire_spec with "HmuInv").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
+  wp_apply (wp_Server__withLock with "[$]").
+  iIntros (??) "Hvol".
+  iNamed "Hvol".
   wp_pures.
   wp_loadField.
   wp_loadField.
@@ -161,17 +151,14 @@ Proof.
   iNamed "HΨ".
   wp_if_destruct.
   { (* case: args.epoch ≤ s.epoch, do nothing *)
-    wp_loadField.
-    wp_apply (release_spec with "[-HΦ HΨ Hreply]").
-    {
-      iFrame "HmuInv Hlocked".
-      iNext.
-      iExists _, _, _, _, _, _.
-      iFrame "∗#%".
-    }
-    wp_pures.
     iNamed "Hreply".
     wp_storeField.
+    iModIntro.
+    iExists _.
+    rewrite sep_exist_r.
+    iExists _; iFrame "∗#".
+    iIntros "$ !#".
+    wp_pures.
     iRight in "HΨ".
     iApply ("HΦ" with "[HΨ]").
     2:{
@@ -184,7 +171,6 @@ Proof.
     { iApply "HΨ". done. }
   }
   { (* case: args.epoch > s.epoch, can enter new epoch and return a vote *)
-    assert (int.nat args.(enterNewEpochArgs.epoch) > int.nat st.(mp_epoch)) as Hineq by word.
     wp_storeField.
     wp_loadField.
     wp_storeField.
@@ -195,45 +181,49 @@ Proof.
     wp_storeField.
     wp_loadField.
     wp_storeField.
-    wp_loadField.
-    iDestruct (ghost_replica_helper1 with "Hghost") as "%HepochIneq".
-    iMod (ghost_replica_enter_new_epoch with "Hghost") as "(Hghost & Htok & #Hrest)".
-    { exact Hineq. }
-    simpl in HepochIneq.
+    iModIntro. iExists _.
+    rewrite sep_exist_r.
+    instantiate (1:=paxosState.mk _ _ _ _ _).
+    iExists _; simpl. iFrame "∗#".
 
-    wp_apply (release_spec with "[-HΦ HΨ Hreply_err Hreply_acceptedEpoch Hreply_nextIndex Hreply_ret Hreply_ret_sl Htok]").
+    (* start ghost reasoning *)
+    iIntros "Hghost". iNamed "Hghost".
+    assert (int.nat args.(enterNewEpochArgs.epoch) > int.nat pst.(paxosState.epoch)) as Hineq by word.
+    iDestruct (ghost_replica_helper1 with "Hghost") as "%HepochIneq".
+    simpl in *.
+    iMod (ghost_replica_enter_new_epoch with "Hghost") as "(Hghost & Htok & #Hrest)".
+    { simpl. exact Hineq. }
+    (* end ghost reasoning *)
+
+    iModIntro.
+    iSplitR "HΦ HΨ Hreply_err Hreply_acceptedEpoch Hreply_nextIndex Hreply_ret Hreply_ret_sl Htok".
     {
-      iFrame "HmuInv Hlocked".
-      iNext.
-      iExists _, _, _, _, _, _.
-      iFrame "∗#%".
-      done.
+      repeat iExists _. simpl.
+      iFrame "∗#". done.
     }
+
     wp_pures.
     iModIntro.
     iLeft in "HΨ".
     iSpecialize ("HΨ" with "[$Htok]").
     {
       instantiate (1:=enterNewEpochReply.mkC _ _ _ _).
-      iExists st.(mp_log).
+      simpl.
+      iExists _.
       iDestruct "Hrest" as "(Hacc & Hprop_lb & Hprop_facts)".
       simpl.
       iFrame "#".
       iPureIntro.
-      split.
-      {
-        word.
-      }
-      split.
-      {
-        done.
-      }
-      done.
+      split_and!; try done; word.
     }
     iApply ("HΦ" with "HΨ").
     iExists _.
     simpl.
     iFrame "∗#".
+    rewrite Hlog.
+    iApply to_named.
+    iExactEq "Hreply_nextIndex".
+    repeat f_equal. word.
   }
 Qed.
 

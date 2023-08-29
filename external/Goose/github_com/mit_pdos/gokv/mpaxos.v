@@ -279,7 +279,6 @@ Definition Server__enterNewEpoch: val :=
         struct.storeF enterNewEpochReply "acceptedEpoch" "reply" (struct.loadF paxosState "acceptedEpoch" "ps");;
         struct.storeF enterNewEpochReply "nextIndex" "reply" (struct.loadF paxosState "nextIndex" "ps");;
         struct.storeF enterNewEpochReply "state" "reply" (struct.loadF paxosState "state" "ps");;
-        lock.release (struct.loadF Server "mu" "s");;
         #())
       );;
     #().
