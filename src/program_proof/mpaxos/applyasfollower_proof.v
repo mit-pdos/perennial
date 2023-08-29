@@ -1,12 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require mpaxos.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
-From Perennial.goose_lang.lib Require Import waitgroup.
-From iris.base_logic Require Export lib.ghost_var mono_nat.
-From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.goose_lang Require Import crash_borrow.
-From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.mpaxos Require Export definitions.
+From Perennial.program_proof.mpaxos Require Export definitions withlock_proof.
 
 Section applyasfollower_proof.
 
@@ -134,39 +129,6 @@ Proof.
     done.
   }
 Qed.
-
-
-Lemma wp_Server__withLock (s:loc) γ γsrv (f:val) Φ :
-  is_Server s γ γsrv -∗
-  (∀ ps pst,
-  paxosState.own_vol ps pst -∗
-  WP f #ps {{ λ _, ∃ pst', paxosState.own_vol ps pst' ∗
-                   (paxosState.own_ghost γ γsrv pst ={⊤}=∗
-                    paxosState.own_ghost γ γsrv pst' ∗ Φ #())
-    }}) -∗
-  WP Server__withLock #s f {{ Φ }}
-.
-Proof.
-  iIntros "#Hsrv Hwp".
-  wp_lam.
-  wp_pures.
-  iNamed "Hsrv".
-  wp_loadField.
-  wp_apply (acquire_spec with "[$]").
-  iIntros "[Hlocked Hown]".
-  iNamed "Hown".
-  wp_pures.
-  wp_loadField.
-  wp_bind (f #ps).
-  wp_apply (wp_wand with "[Hwp Hvol]").
-  { wp_apply ("Hwp" with "Hvol"). }
-  iIntros (?) "Hpost".
-  iDestruct "Hpost" as (?) "[Hvol Hupd]".
-  wp_pures.
-  wp_loadField.
-  admit. (* TODO: spec for encodePaxosState and asyncfile; with those in hand,
-            this should be straightforward *)
-Admitted.
 
 Lemma wp_Server__applyAsFollower (s:loc) (args_ptr reply_ptr:loc) γ γsrv args init_reply σ Φ Ψ :
   is_Server s γ γsrv -∗

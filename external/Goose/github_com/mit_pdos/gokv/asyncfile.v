@@ -3,7 +3,7 @@ From Perennial.goose_lang Require Import prelude.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-Definition File := struct.decl [
+Definition AsyncFile := struct.decl [
   "mu" :: ptrT;
   "data" :: slice.T byteT;
   "filename" :: stringT;
@@ -16,83 +16,83 @@ Definition File := struct.decl [
   "closedCond" :: ptrT
 ].
 
-Definition File__wait: val :=
-  rec: "File__wait" "s" "index" :=
-    lock.acquire (struct.loadF File "mu" "s");;
+Definition AsyncFile__wait: val :=
+  rec: "AsyncFile__wait" "s" "index" :=
+    lock.acquire (struct.loadF AsyncFile "mu" "s");;
     Skip;;
-    (for: (λ: <>, (struct.loadF File "durableIndex" "s") < "index"); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF File "durableIndexCond" "s");;
+    (for: (λ: <>, (struct.loadF AsyncFile "durableIndex" "s") < "index"); (λ: <>, Skip) := λ: <>,
+      lock.condWait (struct.loadF AsyncFile "durableIndexCond" "s");;
       Continue);;
-    lock.release (struct.loadF File "mu" "s");;
+    lock.release (struct.loadF AsyncFile "mu" "s");;
     #().
 
-Definition File__AsyncWrite: val :=
-  rec: "File__AsyncWrite" "s" "data" :=
-    lock.acquire (struct.loadF File "mu" "s");;
-    struct.storeF File "data" "s" "data";;
-    struct.storeF File "index" "s" ((struct.loadF File "index" "s") + #1);;
-    let: "index" := struct.loadF File "index" "s" in
-    lock.release (struct.loadF File "mu" "s");;
+Definition AsyncFile__Write: val :=
+  rec: "AsyncFile__Write" "s" "data" :=
+    lock.acquire (struct.loadF AsyncFile "mu" "s");;
+    struct.storeF AsyncFile "data" "s" "data";;
+    struct.storeF AsyncFile "index" "s" ((struct.loadF AsyncFile "index" "s") + #1);;
+    let: "index" := struct.loadF AsyncFile "index" "s" in
+    lock.release (struct.loadF AsyncFile "mu" "s");;
     (λ: <>,
-      File__wait "s" "index";;
+      AsyncFile__wait "s" "index";;
       #()
       ).
 
-Definition File__flushThread: val :=
-  rec: "File__flushThread" "s" :=
-    lock.acquire (struct.loadF File "mu" "s");;
+Definition AsyncFile__flushThread: val :=
+  rec: "AsyncFile__flushThread" "s" :=
+    lock.acquire (struct.loadF AsyncFile "mu" "s");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: struct.loadF File "closeRequested" "s"
+      (if: struct.loadF AsyncFile "closeRequested" "s"
       then
-        grove_ffi.FileWrite (struct.loadF File "filename" "s") (struct.loadF File "data" "s");;
-        struct.storeF File "durableIndex" "s" (struct.loadF File "index" "s");;
-        lock.condBroadcast (struct.loadF File "durableIndexCond" "s");;
-        struct.storeF File "closed" "s" #true;;
-        lock.release (struct.loadF File "mu" "s");;
-        lock.condSignal (struct.loadF File "closedCond" "s");;
+        grove_ffi.FileWrite (struct.loadF AsyncFile "filename" "s") (struct.loadF AsyncFile "data" "s");;
+        struct.storeF AsyncFile "durableIndex" "s" (struct.loadF AsyncFile "index" "s");;
+        lock.condBroadcast (struct.loadF AsyncFile "durableIndexCond" "s");;
+        struct.storeF AsyncFile "closed" "s" #true;;
+        lock.release (struct.loadF AsyncFile "mu" "s");;
+        lock.condSignal (struct.loadF AsyncFile "closedCond" "s");;
         Break
       else
-        (if: (struct.loadF File "durableIndex" "s") ≥ (struct.loadF File "index" "s")
+        (if: (struct.loadF AsyncFile "durableIndex" "s") ≥ (struct.loadF AsyncFile "index" "s")
         then
-          lock.condWait (struct.loadF File "indexCond" "s");;
+          lock.condWait (struct.loadF AsyncFile "indexCond" "s");;
           Continue
         else
-          let: "index" := struct.loadF File "index" "s" in
-          let: "data" := struct.loadF File "data" "s" in
-          lock.release (struct.loadF File "mu" "s");;
-          grove_ffi.FileWrite (struct.loadF File "filename" "s") "data";;
-          lock.acquire (struct.loadF File "mu" "s");;
-          struct.storeF File "durableIndex" "s" "index";;
-          lock.condBroadcast (struct.loadF File "durableIndexCond" "s");;
+          let: "index" := struct.loadF AsyncFile "index" "s" in
+          let: "data" := struct.loadF AsyncFile "data" "s" in
+          lock.release (struct.loadF AsyncFile "mu" "s");;
+          grove_ffi.FileWrite (struct.loadF AsyncFile "filename" "s") "data";;
+          lock.acquire (struct.loadF AsyncFile "mu" "s");;
+          struct.storeF AsyncFile "durableIndex" "s" "index";;
+          lock.condBroadcast (struct.loadF AsyncFile "durableIndexCond" "s");;
           Continue)));;
     #().
 
-Definition File__Close: val :=
-  rec: "File__Close" "s" :=
-    lock.acquire (struct.loadF File "mu" "s");;
-    struct.storeF File "closeRequested" "s" #true;;
-    lock.condSignal (struct.loadF File "indexCond" "s");;
+Definition AsyncFile__Close: val :=
+  rec: "AsyncFile__Close" "s" :=
+    lock.acquire (struct.loadF AsyncFile "mu" "s");;
+    struct.storeF AsyncFile "closeRequested" "s" #true;;
+    lock.condSignal (struct.loadF AsyncFile "indexCond" "s");;
     Skip;;
-    (for: (λ: <>, (~ (struct.loadF File "closed" "s"))); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF File "closedCond" "s");;
+    (for: (λ: <>, (~ (struct.loadF AsyncFile "closed" "s"))); (λ: <>, Skip) := λ: <>,
+      lock.condWait (struct.loadF AsyncFile "closedCond" "s");;
       Continue);;
-    lock.release (struct.loadF File "mu" "s");;
+    lock.release (struct.loadF AsyncFile "mu" "s");;
     #().
 
 (* returns the state, then the File object *)
-Definition MakeFile: val :=
-  rec: "MakeFile" "filename" :=
-    let: "s" := struct.alloc File (zero_val (struct.t File)) in
-    struct.storeF File "mu" "s" (lock.new #());;
-    struct.storeF File "indexCond" "s" (lock.newCond (struct.loadF File "mu" "s"));;
-    struct.storeF File "durableIndexCond" "s" (lock.newCond (struct.loadF File "mu" "s"));;
-    struct.storeF File "closedCond" "s" (lock.newCond (struct.loadF File "mu" "s"));;
-    struct.storeF File "filename" "s" "filename";;
-    struct.storeF File "data" "s" (grove_ffi.FileRead "filename");;
-    struct.storeF File "index" "s" #0;;
-    struct.storeF File "durableIndex" "s" #0;;
-    struct.storeF File "closed" "s" #false;;
-    struct.storeF File "closeRequested" "s" #false;;
-    Fork (File__flushThread "s");;
-    (struct.loadF File "data" "s", "s").
+Definition MakeAsyncFile: val :=
+  rec: "MakeAsyncFile" "filename" :=
+    let: "s" := struct.alloc AsyncFile (zero_val (struct.t AsyncFile)) in
+    struct.storeF AsyncFile "mu" "s" (lock.new #());;
+    struct.storeF AsyncFile "indexCond" "s" (lock.newCond (struct.loadF AsyncFile "mu" "s"));;
+    struct.storeF AsyncFile "durableIndexCond" "s" (lock.newCond (struct.loadF AsyncFile "mu" "s"));;
+    struct.storeF AsyncFile "closedCond" "s" (lock.newCond (struct.loadF AsyncFile "mu" "s"));;
+    struct.storeF AsyncFile "filename" "s" "filename";;
+    struct.storeF AsyncFile "data" "s" (grove_ffi.FileRead "filename");;
+    struct.storeF AsyncFile "index" "s" #0;;
+    struct.storeF AsyncFile "durableIndex" "s" #0;;
+    struct.storeF AsyncFile "closed" "s" #false;;
+    struct.storeF AsyncFile "closeRequested" "s" #false;;
+    Fork (AsyncFile__flushThread "s");;
+    (struct.loadF AsyncFile "data" "s", "s").

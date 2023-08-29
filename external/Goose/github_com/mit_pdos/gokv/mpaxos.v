@@ -224,7 +224,7 @@ Definition Server__withLock: val :=
   rec: "Server__withLock" "s" "f" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     "f" (struct.loadF Server "ps" "s");;
-    let: "waitFn" := asyncfile.File__AsyncWrite (struct.loadF Server "storage" "s") (encodePaxosState (struct.loadF Server "ps" "s")) in
+    let: "waitFn" := asyncfile.AsyncFile__Write (struct.loadF Server "storage" "s") (encodePaxosState (struct.loadF Server "ps" "s")) in
     lock.release (struct.loadF Server "mu" "s");;
     "waitFn" #();;
     #().
@@ -425,7 +425,7 @@ Definition makeServer: val :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
     let: "encstate" := ref (zero_val (slice.T byteT)) in
-    let: ("0_ret", "1_ret") := asyncfile.MakeFile "fname" in
+    let: ("0_ret", "1_ret") := asyncfile.MakeAsyncFile "fname" in
     "encstate" <-[slice.T byteT] "0_ret";;
     struct.storeF Server "storage" "s" "1_ret";;
     struct.storeF Server "ps" "s" (decodePaxosState (![slice.T byteT] "encstate"));;

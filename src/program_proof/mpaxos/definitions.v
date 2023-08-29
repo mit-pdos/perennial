@@ -8,6 +8,7 @@ From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.mpaxos Require Export protocol_proof marshal_proof.
 From Perennial.program_proof.reconnectclient Require Export proof.
+From Perennial.program_proof.asyncfile Require Export proof.
 
 Definition client_logR := dfrac_agreeR (leibnizO (list u8)).
 
@@ -141,6 +142,13 @@ Record t :=
       isLeader : bool ;
     }.
 
+Definition encode (st:t) : list u8.
+Admitted.
+
+#[global]
+Instance encode_inj : Inj (=) (=) encode.
+Proof. intros ???. Admitted.
+
 Context `{!heapGS Σ}.
 Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
   ∃ state_sl,
@@ -151,6 +159,21 @@ Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
   "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT 1 st.(state)) ∗
   "HisLeader" ∷ s ↦[paxosState :: "isLeader"] #st.(isLeader)
 .
+
+Lemma wp_encode s st :
+  {{{
+        own_vol s st
+  }}}
+    encodePaxosState #s
+  {{{
+        sl, RET (slice_val sl);
+        own_vol s st ∗
+        own_slice sl byteT 1 (encode st)
+  }}}
+.
+Proof.
+Admitted.
+
 
 Context `{!mpG Σ}.
 Context `{configTC0:!configTC}.
@@ -190,11 +213,20 @@ Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
 
 (* Server-side definitions *)
 
-Definition own_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (ps:loc) pst,
-  "Hps" ∷ s ↦[mpaxos.Server :: "ps"] #ps ∗
-  "Hvol" ∷ paxosState.own_vol ps pst ∗
+Definition fileN := nroot .@ "file".
+
+Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
+  ∃ pst,
+  "%Henc" ∷ ⌜ paxosState.encode pst = data ⌝ ∗
   "Hghost" ∷ paxosState.own_ghost γ γsrv pst
+.
+
+Definition own_Server (s:loc) γ γsrv : iProp Σ :=
+  ∃ (f:loc) (ps:loc) pst,
+  "Hps" ∷ s ↦[mpaxos.Server :: "ps"] #ps ∗
+  "Hstorage" ∷ s ↦[mpaxos.Server :: "storage"] #f ∗
+  "Hfile" ∷ own_AsyncFile fileN f (own_file_inv γ γsrv) (paxosState.encode pst) ∗
+  "Hvol" ∷ paxosState.own_vol ps pst
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
