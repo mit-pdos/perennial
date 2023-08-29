@@ -30,12 +30,12 @@ Definition own_state γ ς := own γ (to_dfrac_agree (DfracOwn (1/2)) (ς : (lei
 
 Definition get_state (σ:list (list u8 * (list u8 → iProp Σ))) := default [] (last (fst <$> σ)).
 
-Definition applyAsFollower_core_spec γ γsrv args σ Q (Φ : applyAsFollowerReply.C -> iProp Σ) : iProp Σ :=
+Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply.C -> iProp Σ) : iProp Σ :=
   (
-   "%Hstate" ∷ ⌜args.(applyAsFollowerArgs.state) = get_state σ⌝ ∗
-   "%Hσ_index" ∷ ⌜length σ = (int.nat args.(applyAsFollowerArgs.nextIndex) + 1)%nat⌝ ∗
-   "%Hghost_op_σ" ∷ ⌜last σ = Some (args.(applyAsFollowerArgs.state), Q)⌝ ∗
-   "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1)⌝ ∗
+   "%Hstate" ∷ ⌜ args.(applyAsFollowerArgs.state) = get_state σ ⌝ ∗
+   "%Hσ_index" ∷ ⌜ length σ = (int.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
+   "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
+   "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1) ⌝ ∗
    "#Hprop" ∷ is_proposal γ args.(applyAsFollowerArgs.epoch) σ ∗
    "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (U64 0))) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (applyAsFollowerReply.mkC err)))
@@ -44,9 +44,9 @@ Definition applyAsFollower_core_spec γ γsrv args σ Q (Φ : applyAsFollowerRep
 
 Program Definition applyAsFollower_spec γ γsrv :=
   λ (encoded_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ args σ Q,
+  (∃ args σ,
     ⌜applyAsFollowerArgs.has_encoding encoded_args args⌝ ∗
-    applyAsFollower_core_spec γ γsrv args σ Q (λ reply, ∀ enc_reply,
+    applyAsFollower_core_spec γ γsrv args σ (λ reply, ∀ enc_reply,
                                                 ⌜applyAsFollowerReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
     )%I
 .
@@ -149,7 +149,7 @@ Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
   "HnextIndex" ∷ s ↦[paxosState :: "nextIndex"] #st.(nextIndex) ∗
   "Hstate" ∷ s ↦[paxosState :: "state"] (slice_val state_sl) ∗
   "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT 1 st.(state)) ∗
-  "HisLeader" ∷ s ↦[paxosState :: "nextIndex"] #st.(isLeader)
+  "HisLeader" ∷ s ↦[paxosState :: "isLeader"] #st.(isLeader)
 .
 
 Context `{!mpG Σ}.
@@ -191,8 +191,9 @@ Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
 (* Server-side definitions *)
 
 Definition own_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ ps pst,
-  "Hps" ∷ paxosState.own_vol ps pst ∗
+  ∃ (ps:loc) pst,
+  "Hps" ∷ s ↦[mpaxos.Server :: "ps"] #ps ∗
+  "Hvol" ∷ paxosState.own_vol ps pst ∗
   "Hghost" ∷ paxosState.own_ghost γ γsrv pst
 .
 

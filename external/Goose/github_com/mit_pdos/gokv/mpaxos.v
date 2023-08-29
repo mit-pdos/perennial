@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.asyncfile.
+From Goose Require github_com.mit_pdos.gokv.reconnectclient.
 From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
 
@@ -151,59 +152,6 @@ Definition decodePaxosState: val :=
     Panic "impl";;
     #().
 
-(* 1_reconnectingclient.go *)
-
-Definition ReconnectingClient := struct.decl [
-  "mu" :: ptrT;
-  "valid" :: boolT;
-  "urpcCl" :: ptrT;
-  "making" :: boolT;
-  "made_cond" :: ptrT;
-  "addr" :: uint64T
-].
-
-Definition MakeReconnectingClient: val :=
-  rec: "MakeReconnectingClient" "addr" :=
-    let: "r" := struct.alloc ReconnectingClient (zero_val (struct.t ReconnectingClient)) in
-    struct.storeF ReconnectingClient "mu" "r" (lock.new #());;
-    struct.storeF ReconnectingClient "valid" "r" #false;;
-    struct.storeF ReconnectingClient "making" "r" #false;;
-    struct.storeF ReconnectingClient "made_cond" "r" (lock.newCond (struct.loadF ReconnectingClient "mu" "r"));;
-    struct.storeF ReconnectingClient "addr" "r" "addr";;
-    "r".
-
-Definition ReconnectingClient__getClient: val :=
-  rec: "ReconnectingClient__getClient" "cl" :=
-    lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
-    (if: struct.loadF ReconnectingClient "valid" "cl"
-    then
-      let: "ret" := struct.loadF ReconnectingClient "urpcCl" "cl" in
-      lock.release (struct.loadF ReconnectingClient "mu" "cl");;
-      "ret"
-    else
-      struct.storeF ReconnectingClient "making" "cl" #true;;
-      lock.release (struct.loadF ReconnectingClient "mu" "cl");;
-      let: "newRpcCl" := urpc.MakeClient (struct.loadF ReconnectingClient "addr" "cl") in
-      lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
-      struct.storeF ReconnectingClient "urpcCl" "cl" "newRpcCl";;
-      lock.condBroadcast (struct.loadF ReconnectingClient "made_cond" "cl");;
-      struct.storeF ReconnectingClient "valid" "cl" #true;;
-      struct.storeF ReconnectingClient "making" "cl" #false;;
-      lock.release (struct.loadF ReconnectingClient "mu" "cl");;
-      "newRpcCl").
-
-Definition ReconnectingClient__Call: val :=
-  rec: "ReconnectingClient__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
-    let: "urpcCl" := ReconnectingClient__getClient "cl" in
-    let: "err" := urpc.Client__Call "urpcCl" "rpcid" "args" "reply" "timeout_ms" in
-    (if: "err" = urpc.ErrDisconnect
-    then
-      lock.acquire (struct.loadF ReconnectingClient "mu" "cl");;
-      struct.storeF ReconnectingClient "valid" "cl" #false;;
-      lock.release (struct.loadF ReconnectingClient "mu" "cl")
-    else #());;
-    "err".
-
 (* 2_internalclerk.go *)
 
 Definition RPC_APPLY_AS_FOLLOWER : expr := #0.
@@ -221,7 +169,7 @@ Definition singleClerk := struct.decl [
 Definition makeSingleClerk: val :=
   rec: "makeSingleClerk" "addr" :=
     let: "ck" := struct.new singleClerk [
-      "cl" ::= MakeReconnectingClient "addr"
+      "cl" ::= reconnectclient.MakeReconnectingClient "addr"
     ] in
     "ck".
 
@@ -229,7 +177,7 @@ Definition singleClerk__enterNewEpoch: val :=
   rec: "singleClerk__enterNewEpoch" "s" "args" :=
     let: "raw_args" := encodeEnterNewEpochArgs "args" in
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_ENTER_NEW_EPOCH "raw_args" "raw_reply" #500 in
+    let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_ENTER_NEW_EPOCH "raw_args" "raw_reply" #500 in
     (if: "err" = #0
     then decodeEnterNewEpochReply (![slice.T byteT] "raw_reply")
     else
@@ -241,7 +189,7 @@ Definition singleClerk__applyAsFollower: val :=
   rec: "singleClerk__applyAsFollower" "s" "args" :=
     let: "raw_args" := encodeApplyAsFollowerArgs "args" in
     let: "raw_reply" := ref (zero_val (slice.T byteT)) in
-    let: "err" := ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_APPLY_AS_FOLLOWER "raw_args" "raw_reply" #500 in
+    let: "err" := reconnectclient.ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_APPLY_AS_FOLLOWER "raw_args" "raw_reply" #500 in
     (if: "err" = #0
     then decodeApplyAsFollowerReply (![slice.T byteT] "raw_reply")
     else
@@ -252,7 +200,7 @@ Definition singleClerk__applyAsFollower: val :=
 Definition singleClerk__becomeLeader: val :=
   rec: "singleClerk__becomeLeader" "s" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_BECOME_LEADER (NewSlice byteT #0) "reply" #500;;
+    reconnectclient.ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_BECOME_LEADER (NewSlice byteT #0) "reply" #500;;
     #().
 
 (* server.go *)
@@ -289,9 +237,9 @@ Definition Server__applyAsFollower: val :=
         struct.storeF paxosState "isLeader" "ps" #false;;
         (if: (struct.loadF paxosState "acceptedEpoch" "ps") = (struct.loadF applyAsFollowerArgs "epoch" "args")
         then
-          (if: (struct.loadF paxosState "nextIndex" "ps") ≤ (struct.loadF applyAsFollowerArgs "nextIndex" "args")
+          (if: (struct.loadF paxosState "nextIndex" "ps") < (struct.loadF applyAsFollowerArgs "nextIndex" "args")
           then
-            struct.storeF paxosState "nextIndex" "ps" ((struct.loadF applyAsFollowerArgs "nextIndex" "args") + #1);;
+            struct.storeF paxosState "nextIndex" "ps" (struct.loadF applyAsFollowerArgs "nextIndex" "args");;
             struct.storeF paxosState "state" "ps" (struct.loadF applyAsFollowerArgs "state" "args");;
             struct.storeF applyAsFollowerReply "err" "reply" ENone;;
             #()
