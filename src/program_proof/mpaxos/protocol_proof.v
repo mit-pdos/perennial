@@ -7,7 +7,7 @@ From Perennial.Helpers Require Import ListSolver.
 
 Section mpaxos_protocol.
 
-Context `{!heapGS Σ}.
+Context `{!invGS Σ}.
 
 Record mp_system_names :=
 {
@@ -28,7 +28,9 @@ Local Canonical Structure EntryTypeO := leibnizO EntryType.
 Local Definition logR := mono_listR EntryTypeO.
 Local Definition proposalR := gmapR (u64) (csumR (exclR unitO) logR).
 
-Context (config: list mp_server_names).
+Class configTC := {
+    config: list mp_server_names
+  }.
 
 Class mp_ghostG Σ := {
     mp_ghost_epochG :> mono_natG Σ ;
@@ -39,6 +41,7 @@ Class mp_ghostG Σ := {
 }.
 
 Context `{!mp_ghostG Σ}.
+Context `{configTC0:!configTC}.
 
 Implicit Type γsrv : mp_server_names.
 Implicit Type γsys : mp_system_names.
@@ -49,7 +52,7 @@ Definition own_proposal_unused γsys epoch : iProp Σ :=
   own γsys.(mp_proposal_gn) {[ epoch := Cinl (Excl ()) ]}.
 Definition own_proposal γsys epoch σ : iProp Σ :=
   own γsys.(mp_proposal_gn) (A:=proposalR) {[ epoch := Cinr (●ML σ)]}.
-Definition is_proposal_lb γsys epoch σ : iProp Σ :=
+Local Definition is_proposal_lb γsys epoch σ : iProp Σ :=
   own γsys.(mp_proposal_gn) (A:=proposalR) {[ epoch := Cinr (◯ML σ)]}.
 
 Notation "lhs ⪯ rhs" := (prefix lhs rhs)
@@ -92,7 +95,7 @@ Definition sysN := ghostN .@ "sys".
 Definition opN := ghostN .@ "op".
 
 (* XXX(namespaces):
-   The update for the ghost state is fired while the sys_inv is open.
+   The update for the ghost state is fired while is_repl_inv is open.
    Additionally, the update is fired while the is_valid_inv is open, so we need
    the initial mask to exclude those invariants.
 *)
@@ -107,7 +110,7 @@ Definition is_valid_inv γsys σ op : iProp Σ :=
 Definition is_proposal_valid γ σ : iProp Σ :=
   □(∀ σ', ⌜σ' ⪯ σ⌝ → own_commit γ σ' ={⊤∖↑sysN}=∗ own_commit γ σ).
 
-Definition is_proposal_facts γ epoch σ: iProp Σ :=
+Local Definition is_proposal_facts γ epoch σ: iProp Σ :=
   old_proposal_max γ epoch σ ∗
   is_proposal_valid γ σ.
 
@@ -153,6 +156,11 @@ Definition own_leader_ghost γsys (st:MPaxosState): iProp Σ :=
   "#Hprop_facts" ∷ is_proposal_facts γsys st.(mp_epoch) st.(mp_log)
 .
 
+Definition is_proposal γsys epoch log : iProp Σ :=
+  is_proposal_lb γsys epoch log ∗
+  is_proposal_facts γsys epoch log
+.
+
 Lemma ghost_leader_propose γsys st entry :
   own_leader_ghost γsys st -∗
   £ 1 -∗
@@ -160,8 +168,7 @@ Lemma ghost_leader_propose γsys st entry :
       (⌜someσ = st.(mp_log)⌝ -∗ own_ghost γsys (someσ ++ [entry]) ={∅,⊤∖↑ghostN}=∗ True))
   ={⊤}=∗
   own_leader_ghost γsys (mkMPaxosState st.(mp_epoch) st.(mp_acceptedEpoch) (st.(mp_log) ++ [entry]))∗
-  is_proposal_lb γsys st.(mp_epoch) (st.(mp_log) ++ [entry]) ∗
-  is_proposal_facts γsys st.(mp_epoch) (st.(mp_log) ++ [entry])
+  is_proposal γsys st.(mp_epoch) (st.(mp_log) ++ [entry])
 .
 Proof.
   iNamed 1.
@@ -331,15 +338,14 @@ Lemma ghost_replica_accept_same_epoch γsys γsrv st epoch' log' :
   int.nat st.(mp_acceptedEpoch) = int.nat epoch' →
   length st.(mp_log) ≤ length log' →
   own_replica_ghost γsys γsrv st -∗
-  is_proposal_lb γsys epoch' log' -∗
-  is_proposal_facts γsys epoch' log'
+  is_proposal γsys epoch' log'
   ==∗
   ⌜st.(mp_epoch) = epoch'⌝ ∗
   own_replica_ghost γsys γsrv (mkMPaxosState epoch' epoch' log').
 Proof.
   intros Hineq1 Hineq2 Hlen.
   iNamed 1.
-  iIntros "#Hprop_lb2 #Hprop_facts2".
+  iIntros "[#Hprop_lb2 #Hprop_facts2]".
   iAssert (⌜st.(mp_epoch) = epoch'⌝)%I as "%HepochEq".
   { iPureIntro. word. }
   iFrame "%".
@@ -398,12 +404,12 @@ Lemma ghost_replica_accept_same_epoch_old γsys γsrv st epoch' log' :
   int.nat st.(mp_acceptedEpoch) = int.nat epoch' →
   length log' ≤ length st.(mp_log) →
   own_replica_ghost γsys γsrv st -∗
-  is_proposal_lb γsys epoch' log' -∗
+  is_proposal γsys epoch' log' -∗
   is_accepted_lb γsrv epoch' log'.
 Proof.
   intros Hineq1 Heq2 Hlen.
   iNamed 1.
-  iIntros "#Hprop_lb2".
+  iIntros "#[Hprop_lb2 _]".
   iAssert (⌜st.(mp_epoch) = epoch'⌝)%I as "%HepochEq".
   { iPureIntro. word. }
   iFrame "%".
@@ -443,14 +449,13 @@ Lemma ghost_replica_accept_new_epoch γsys γsrv st epoch' log' :
   int.nat st.(mp_epoch) ≤ int.nat epoch' →
   int.nat st.(mp_acceptedEpoch) ≠ int.nat epoch' →
   own_replica_ghost γsys γsrv st -∗
-  is_proposal_lb γsys epoch' log' -∗
-  is_proposal_facts γsys epoch' log'
+  is_proposal γsys epoch' log'
   ==∗
   own_replica_ghost γsys γsrv (mkMPaxosState epoch' epoch' log').
 Proof.
   intros Hineq1 Hneq2.
   iNamed 1.
-  iIntros "#Hprop_lb2 #Hprop_facts2".
+  iIntros "[#Hprop_lb2 #Hprop_facts2]".
   assert (int.nat st.(mp_epoch) < int.nat epoch' ∨ int.nat st.(mp_epoch) = int.nat epoch') as Hcases.
   { word. }
   destruct Hcases as [HnewEpoch|HcurrentEpoch].
@@ -554,7 +559,7 @@ Proof.
   iExists _; iFrame "∗#%".
 Qed.
 
-Definition sys_inv γsys := inv sysN
+Definition is_repl_inv γsys := inv sysN
 (
   ∃ σ epoch,
   own_commit γsys σ ∗
@@ -565,14 +570,13 @@ Definition sys_inv γsys := inv sysN
 
 (* copy/pasted almost verbatin from ghost_commit in pb_ghost.v! *)
 Lemma ghost_commit γsys epoch σ :
-  sys_inv γsys -∗
+  is_repl_inv γsys -∗
   committed_by epoch σ -∗
-  is_proposal_lb γsys epoch σ -∗
-  is_proposal_facts γsys epoch σ
+  is_proposal γsys epoch σ
   ={⊤}=∗ (* XXX: this is ⊤ because the user-provided fupd is fired, and it is allowed to know about ⊤ *)
   is_ghost_lb γsys σ.
 Proof.
-  iIntros "#Hinv #Hcom #Hprop_lb #Hprop_facts".
+  iIntros "#Hinv #Hcom [#Hprop_lb #Hprop_facts]".
   iInv "Hinv" as "Hown" "Hclose".
   iDestruct "Hown" as (σcommit epoch_commit) "(>Hghost & >#Hcom_com & >#Hprop_lb_com & #Hprop_facts_com)".
   iDestruct "Hprop_facts_com" as "(>Hmax_com & Hvalid_com)".
@@ -742,7 +746,7 @@ Proof.
   rewrite /validSet. apply set_size_all_lt.
 Qed.
 
-Definition vote_inv γsys := inv sysN
+Definition is_vote_inv γsys := inv sysN
 (
   [∗ set] e ∈ (fin_to_set u64),
   (∃ (W:gset nat), ⌜validSet W⌝ ∗ ⌜2 * (size W) > length config⌝ ∗
@@ -787,7 +791,7 @@ Qed.
 Lemma get_proposal_from_votes γsys (W:gset nat) newEpoch :
   2 * (size W) > length config →
   validSet W →
-  vote_inv γsys -∗
+  is_vote_inv γsys -∗
   ([∗ list] s↦γsrv ∈ config, ⌜s ∈ W⌝ → own_vote_tok γsrv newEpoch) ={↑sysN}=∗
   own_proposal γsys newEpoch [].
 Proof.
@@ -882,16 +886,15 @@ Qed.
 Lemma become_leader γsys (W:gset nat) latestLog acceptedEpoch newEpoch:
   validSet W →
   2 * (size W) > length config →
-  vote_inv γsys -∗
+  is_vote_inv γsys -∗
   ([∗ list] s↦γsrv ∈ config, ⌜s ∈ W⌝ → is_accepted_upper_bound γsrv latestLog acceptedEpoch newEpoch) -∗
-  is_proposal_lb γsys acceptedEpoch latestLog -∗
-  is_proposal_facts γsys acceptedEpoch latestLog -∗
+  is_proposal γsys acceptedEpoch latestLog -∗
   ([∗ list] s↦γsrv ∈ config, ⌜s ∈ W⌝ → own_vote_tok γsrv newEpoch) ={↑sysN}=∗
   own_leader_ghost γsys (mkMPaxosState newEpoch newEpoch latestLog)
 .
 Proof.
   intros HW Hquorum.
-  iIntros "#Hinv #Hacc #Hprop_lb #Hprop_facts Hvotes".
+  iIntros "#Hinv #Hacc [#Hprop_lb #Hprop_facts] Hvotes".
 
   iMod (get_proposal_from_votes with "Hinv Hvotes") as "Hprop".
   { done. }
@@ -955,8 +958,7 @@ Qed.
 
 Lemma ghost_leader_get_proposal γsys st :
   own_leader_ghost γsys st -∗
-  is_proposal_lb γsys st.(mp_epoch) st.(mp_log) ∗
-  is_proposal_facts γsys st.(mp_epoch) st.(mp_log)
+  is_proposal γsys st.(mp_epoch) st.(mp_log)
 .
 Proof.
   iNamed 1.
@@ -984,8 +986,7 @@ Lemma ghost_replica_enter_new_epoch γsys γsrv st newEpoch :
   own_replica_ghost γsys γsrv (mkMPaxosState newEpoch st.(mp_acceptedEpoch) st.(mp_log)) ∗
   own_vote_tok γsrv newEpoch ∗
   is_accepted_upper_bound γsrv st.(mp_log) st.(mp_acceptedEpoch) newEpoch ∗
-  is_proposal_lb γsys st.(mp_acceptedEpoch) st.(mp_log) ∗
-  is_proposal_facts γsys st.(mp_acceptedEpoch) st.(mp_log)
+  is_proposal γsys st.(mp_acceptedEpoch) st.(mp_log)
 .
 Proof.
   intros Hineq.

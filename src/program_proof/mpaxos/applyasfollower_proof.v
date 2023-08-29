@@ -11,14 +11,6 @@ From Perennial.program_proof.mpaxos Require Export definitions.
 Section applyasfollower_proof.
 
 Context `{!heapGS Σ}.
-Context {mp_record:MPRecord}.
-Notation OpType := (mp_OpType mp_record).
-Notation has_op_encoding := (mp_has_op_encoding mp_record).
-Notation next_state := (mp_next_state mp_record).
-Notation compute_reply := (mp_compute_reply mp_record).
-Notation is_Server := (is_Server (mp_record:=mp_record)).
-Notation applyAsFollower_core_spec := (applyAsFollower_core_spec).
-Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
 
 Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
@@ -31,8 +23,7 @@ Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ Q args_ptr args :
         "%Hσ_index" ∷ ⌜length σ = (int.nat args.(applyAsFollowerArgs.nextIndex) + 1)%nat⌝ ∗
         "%Hghost_op_σ" ∷ ⌜last σ = Some (args.(applyAsFollowerArgs.state), Q)⌝ ∗
         "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1)⌝ ∗
-        "#Hprop_lb" ∷ is_proposal_lb γ args.(applyAsFollowerArgs.epoch) σ ∗
-        "#Hprop_facts" ∷ is_proposal_facts conf γ args.(applyAsFollowerArgs.epoch) σ
+        "#Hprop" ∷ is_proposal γ args.(applyAsFollowerArgs.epoch) σ
   }}}
     singleClerk__applyAsFollower #ck #args_ptr
   {{{

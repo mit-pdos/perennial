@@ -6,23 +6,8 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.mpaxos Require Export ghost_proof marshal_proof.
-
-Section definitions.
-
-Record MPRecord :=
-  {
-    mp_OpType : Type ;
-    mp_has_op_encoding : list u8 → mp_OpType → Prop ;
-    mp_next_state : list u8 → mp_OpType → list u8 ;
-    mp_compute_reply : list u8 → mp_OpType → list u8 ;
-  }.
-
-Context {mp_record:MPRecord}.
-Notation OpType := (mp_OpType mp_record).
-Notation has_op_encoding := (mp_has_op_encoding mp_record).
-Notation next_state := (mp_next_state mp_record).
-Notation compute_reply := (mp_compute_reply mp_record).
+From Perennial.program_proof.mpaxos Require Export protocol_proof marshal_proof.
+From Perennial.program_proof.reconnectclient Require Export proof.
 
 Definition client_logR := dfrac_agreeR (leibnizO (list u8)).
 
@@ -34,16 +19,14 @@ Class mpG Σ := {
     mp_apply_escrow_tok :> ghost_varG Σ unit ;
 }.
 
-Context `{!heapGS Σ}.
+Section global_definitions.
+Context `{!gooseGlobalGS Σ}.
 Context `{!mpG Σ}.
+Context `{configTC0:!configTC}.
 
 Definition own_state γ ς := own γ (to_dfrac_agree (DfracOwn (1/2)) (ς : (leibnizO (list u8)))).
 
 (* RPC specs *)
-
-(* Notation OpType := (mp_OpType mp_record). *)
-
-Context (conf:list mp_server_names).
 
 Definition get_state (σ:list (list u8 * (list u8 → iProp Σ))) := default [] (last (fst <$> σ)).
 
@@ -53,8 +36,7 @@ Definition applyAsFollower_core_spec γ γsrv args σ Q (Φ : applyAsFollowerRep
    "%Hσ_index" ∷ ⌜length σ = (int.nat args.(applyAsFollowerArgs.nextIndex) + 1)%nat⌝ ∗
    "%Hghost_op_σ" ∷ ⌜last σ = Some (args.(applyAsFollowerArgs.state), Q)⌝ ∗
    "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1)⌝ ∗
-   "#Hprop_lb" ∷ is_proposal_lb γ args.(applyAsFollowerArgs.epoch) σ ∗
-   "#Hprop_facts" ∷ is_proposal_facts conf γ args.(applyAsFollowerArgs.epoch) σ ∗
+   "#Hprop" ∷ is_proposal γ args.(applyAsFollowerArgs.epoch) σ ∗
    "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (U64 0))) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (applyAsFollowerReply.mkC err)))
     )%I
@@ -79,8 +61,7 @@ Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
   ⌜reply.(enterNewEpochReply.state) = get_state log⌝ ∗
   ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
   is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
-  is_proposal_lb γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
-  is_proposal_facts conf γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
+  is_proposal γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
   own_vote_tok γsrv epoch
 .
 
@@ -123,29 +104,6 @@ Definition is_inv γlog γsys :=
         )
       ).
 
-Definition apply_core_spec γ γlog op enc_op :=
-  λ (Φ : applyReply.C -> iPropO Σ) ,
-  (
-  ⌜has_op_encoding enc_op op⌝ ∗
-  is_inv γlog γ ∗
-  □(|={⊤∖↑mpN,∅}=> ∃ ς, own_state γlog ς ∗ (own_state γlog (next_state ς op) ={∅,⊤∖↑mpN}=∗
-            Φ (applyReply.mkC 0 (compute_reply ς op))
-  )) ∗
-  □(∀ (err:u64) ret, ⌜err ≠ 0⌝ -∗ Φ (applyReply.mkC err ret))
-  )%I
-.
-
-Program Definition apply_spec γ :=
-  λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  (∃ op γlog, apply_core_spec γ γlog op enc_args
-                      (λ reply, ∀ enc_reply, ⌜applyReply.has_encoding enc_reply reply⌝ -∗ Φ enc_reply)
-  )%I
-.
-Next Obligation.
-  unfold apply_core_spec.
-  solve_proper.
-Defined.
-
 Definition becomeleader_core_spec :=
   λ (Φ : iPropO Σ), (Φ)%I
 .
@@ -162,42 +120,64 @@ Defined.
 (* End RPC specs *)
 
 Definition is_mpaxos_host (host:u64) (γ:mp_system_names) (γsrv:mp_server_names) : iProp Σ :=
-  "#Hdom" ∷ is_urpc_dom γsrv.(mp_urpc_gn) {[ (U64 0); (U64 1); (U64 2); (U64 3)]} ∗
+  "#Hdom" ∷ is_urpc_dom γsrv.(mp_urpc_gn) {[ (U64 0); (U64 1); (U64 2); (U64 2) ]} ∗
   "#H0" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 0) (applyAsFollower_spec γ γsrv) ∗
   "#H1" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
-  "#H2" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 2) (apply_spec γ) ∗
-  "#H3" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 3) (becomeleader_spec)
+  "#H2" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 2) (becomeleader_spec)
 .
 
-Definition is_ReconnectingClient : loc → u64 → iProp Σ.
-Admitted.
-
-Global Instance is_ReconnectingClient_pers cl host : Persistent (is_ReconnectingClient cl host).
-Admitted.
-
-Lemma wp_ReconnectingClient__Call2 γsmap (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
-      (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
-  is_ReconnectingClient cl_ptr host -∗
-  is_urpc_spec_pred γsmap host rpcid Spec -∗
-  own_slice_small req byteT 1 reqData -∗
-  rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
-  □(▷ Spec reqData (λ reply,
-       own_slice_small req byteT 1 reqData -∗
-        ∀ rep_sl,
-          rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
-          own_slice_small rep_sl byteT 1 reply -∗
-          Φ #0)
-  ) -∗
-  (
-   ∀ (err:u64), ⌜err ≠ 0⌝ →
-                own_slice_small req byteT 1 reqData -∗
-                rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
-  ) -∗
-  WP ReconnectingClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
-Proof.
-Admitted.
-
 Global Instance is_mpaxos_host_pers host γ γsrv: Persistent (is_mpaxos_host host γ γsrv) := _.
+
+End global_definitions.
+
+Module paxosState.
+Section paxosState.
+Record t :=
+  mk {
+      epoch : u64;
+      acceptedEpoch : u64 ;
+      nextIndex : u64 ;
+      state : list u8 ;
+      isLeader : bool ;
+    }.
+
+Context `{!heapGS Σ}.
+Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
+  ∃ state_sl,
+  "Hepoch" ∷ s ↦[paxosState :: "epoch"] #st.(epoch) ∗
+  "HaccEpoch" ∷ s ↦[paxosState :: "acceptedEpoch"] #st.(acceptedEpoch) ∗
+  "HnextIndex" ∷ s ↦[paxosState :: "nextIndex"] #st.(nextIndex) ∗
+  "Hstate" ∷ s ↦[paxosState :: "state"] (slice_val state_sl) ∗
+  "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT 1 st.(state)) ∗
+  "HisLeader" ∷ s ↦[paxosState :: "nextIndex"] #st.(isLeader)
+.
+
+Context `{!mpG Σ}.
+Context `{configTC0:!configTC}.
+
+Definition own_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
+  ∃ (log:list (list u8 * (list u8 → iProp Σ))),
+  "Hghost" ∷ own_replica_ghost γ γsrv
+           (mkMPaxosState st.(epoch) st.(acceptedEpoch) log) ∗
+  "%Hlog" ∷ ⌜ length log = int.nat st.(nextIndex) ⌝ ∗
+  "%Hlog" ∷ ⌜ default [] (last log.*1) = st.(state) ⌝ ∗
+  "#Hinv" ∷ is_repl_inv γ ∗
+  "#Hvote_inv" ∷ is_vote_inv γ ∗
+
+  "HleaderOnly" ∷ (if st.(isLeader) then
+                     own_leader_ghost γ (mkMPaxosState st.(epoch) st.(acceptedEpoch) log)
+                   else True) ∗
+  "%HnextIndex_nooverflow" ∷ ⌜ length log = int.nat (length log) ⌝ ∗
+  "%HaccEpochEq" ∷ ⌜ if st.(isLeader) then st.(acceptedEpoch) = st.(epoch) else True ⌝
+.
+
+End paxosState.
+End paxosState.
+
+Section local_definitions.
+Context `{!heapGS Σ}.
+Context `{!mpG Σ}.
+Context `{configTC0:!configTC}.
 
 Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
@@ -210,63 +190,23 @@ Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
 
 (* Server-side definitions *)
 
-Definition is_applyFn (applyFn:val) : iProp Σ :=
-  ∀ op_sl state_sl (state:list u8) (op_bytes:list u8) op,
-  {{{
-        ⌜has_op_encoding op_bytes op⌝ ∗
-        readonly (own_slice_small op_sl byteT 1 op_bytes) ∗
-        readonly (own_slice_small state_sl byteT 1 state)
-  }}}
-    applyFn (slice_val state_sl) (slice_val op_sl)
-  {{{
-        newstate_sl reply_sl,
-        RET (slice_val newstate_sl, slice_val reply_sl);
-        readonly (own_slice_small newstate_sl byteT 1 (next_state state op)) ∗
-        own_slice_small reply_sl byteT 1 (compute_reply state op)
-  }}}
-.
-
-(* Hides the ghost part of the log; this is suitable for exposing as part of
-   interfaces for users of the library.
-   . *)
 Definition own_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ st (isLeader:bool) (clerks_sl:Slice.t)
-    state_sl applyFn clerks,
-    let nextIndex := U64 (length st.(mp_log)) in
-    let state := (default [] (last (fst <$> st.(mp_log)))) in
-  (* physical *)
-  "Hepoch" ∷ s ↦[mpaxos.Server :: "epoch"] #(st.(mp_epoch)) ∗
-  "HaccceptedEpoch" ∷ s ↦[mpaxos.Server :: "acceptedEpoch"] #(st.(mp_acceptedEpoch)) ∗
-  "HnextIndex" ∷ s ↦[mpaxos.Server :: "nextIndex"] #nextIndex ∗
-  "HisLeader" ∷ s ↦[mpaxos.Server :: "isLeader"] #isLeader ∗
-  "Hclerks" ∷ s ↦[mpaxos.Server :: "clerks"] (slice_val clerks_sl) ∗
-  "Hstate" ∷ s ↦[mpaxos.Server :: "state"] (slice_val state_sl) ∗
-  "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT 1 state) ∗
-  "HapplyFn" ∷ s ↦[mpaxos.Server :: "applyFn"] applyFn ∗
-  "%HnextIndex_nooverflow" ∷ ⌜length st.(mp_log) = int.nat (length st.(mp_log))⌝ ∗
-
-  (* clerks *)
-  "%Hconf_clerk_len" ∷ ⌜length clerks = length (conf)⌝ ∗
-  "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
-  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; conf, is_singleClerk ck γ γsrv') ∗
-
-  (* applyFn callback spec *)
-  "#HisApplyFn" ∷ is_applyFn applyFn ∗
-
-  (* ghost-state *)
-  "Hghost" ∷ own_replica_ghost conf γ γsrv st ∗
-  "#Hinv" ∷ sys_inv conf γ ∗
-  "#Hvote_inv" ∷ vote_inv conf γ ∗
-
-  (* leader-only *)
-  "HleaderOnly" ∷ (if isLeader then own_leader_ghost conf γ st else True) ∗
-  "%HaccEpochEq" ∷ ⌜if isLeader then st.(mp_acceptedEpoch) = st.(mp_epoch) else True⌝
+  ∃ ps pst,
+  "Hps" ∷ paxosState.own_vol ps pst ∗
+  "Hghost" ∷ paxosState.own_ghost γ γsrv pst
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val),
+  ∃ (mu:val) (clerks_sl:Slice.t) clerks,
   "#Hmu" ∷ readonly (s ↦[mpaxos.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock mpN mu (own_Server s γ γsrv)
-  (* "#Hsys_inv" ∷ sys_inv γ *).
+  "#HmuInv" ∷ is_lock mpN mu (own_Server s γ γsrv) ∗
 
-End definitions.
+  "#Hclerks" ∷ readonly (s ↦[mpaxos.Server :: "clerks"] (slice_val clerks_sl)) ∗
+
+  (* clerks *)
+  "%Hconf_clerk_len" ∷ ⌜length clerks = length config⌝ ∗
+  "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
+  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; config, is_singleClerk ck γ γsrv')
+.
+
+End local_definitions.
