@@ -112,6 +112,11 @@ Section ballot.
     own_ballot γ x b' ∗ own_ballots γ (<[x := b']> bs).
   Admitted.
 
+  Lemma ballot_witness {γ x b} :
+    own_ballot γ x b -∗
+    is_ballot_lb γ x b.
+  Admitted.
+
   Lemma ballots_prefix {γ} bs bsqlb :
     ([∗ map] x ↦ b ∈ bsqlb, is_ballot_lb γ x b) -∗
     own_ballots γ bs -∗

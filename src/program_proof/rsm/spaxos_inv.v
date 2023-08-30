@@ -59,6 +59,7 @@ Section pure.
   Qed.
 
   Definition accepted_in (l : ballot) n :=
+    (* TODO: see if we can move [n ≠ O] into [chosen]. *)
     l !! n = Some true ∧ n ≠ O.
   
   Definition chosen_in (bs : gmap A ballot) (ps : proposals) n v :=
@@ -102,6 +103,8 @@ Section pure.
             end
     end.
 
+  Definition latest_term (l : ballot) := latest_before (length l) l.
+
   Definition latest_before_quorum_step (x : A) (cur prev : nat) : nat :=
     cur `max` prev.
 
@@ -140,6 +143,22 @@ Section pure.
   Definition valid_terms (P : A -> nat -> Prop) (ps : proposals) (ts : gmap A nat) :=
     (∀ x1 x2 n, x1 ≠ x2 -> P x1 n -> not (P x2 n)) ∧
     map_Forall (λ x n, valid_term P ps x n) ts.
+
+  (* Definition of and lemmas about [extend]. *)
+  Definition extend {X : Type} (x : X) (n : nat) (l : list X) :=
+    l ++ replicate (n - length l) x.
+
+  Lemma extend_length_ge {X : Type} (x : X) (n : nat) (l : list X) :
+    (length l ≤ length (extend x n l))%nat.
+  Proof. rewrite app_length. lia. Qed.
+
+  Lemma extend_length {X : Type} (x : X) (n : nat) (l : list X) :
+    length (extend x n l) = (n - length l + length l)%nat.
+  Proof. rewrite app_length replicate_length. lia. Qed.
+
+  Lemma extend_prefix {X : Type} (x : X) (n : nat) (l : list X) :
+  prefix l (extend x n l).
+  Proof. unfold extend. by apply prefix_app_r. Qed.
   
   (* Lemmas about [latest_before]. *)
   Lemma latest_before_le l m :
@@ -273,6 +292,48 @@ Section pure.
     lia.
   Qed.
 
+  Lemma latest_before_append_eq (n : nat) (l t : ballot) :
+    (n ≤ length l)%nat ->
+    latest_before n (l ++ t) = latest_before n l.
+  Proof.
+    intros Hlen.
+    induction n as [| n' IHn']; first done.
+    simpl.
+    rewrite -IHn'; last by lia.
+    rewrite lookup_app_l; [done | lia].
+  Qed.
+
+  (* Lemmas about [latest_term]. *)
+  Lemma latest_term_snoc_false (l : ballot) :
+    latest_term (l ++ [false]) = latest_term l.
+  Proof.
+    unfold latest_term. rewrite last_length. simpl.
+    replace (_ !! length l) with (Some false); last first.
+    { symmetry. rewrite lookup_snoc_Some. by right. }
+    by apply latest_before_append_eq.
+  Qed.
+
+  Lemma latest_term_extend_false (n : nat) (l : ballot) :
+    latest_term (extend false n l) = latest_term l.
+  Proof.
+    unfold extend.
+    induction n as [| n' IHn']; first by rewrite app_nil_r.
+    destruct (decide (n' < length l)%nat) as [Hlt | Hge].
+    { replace (n' - length l)%nat with O in IHn' by lia.
+      by replace (S n' - length l)%nat with O by lia.
+    }
+    replace (S n' - length l)%nat with (S (n' - length l)%nat) by lia.
+    by rewrite replicate_S_end app_assoc latest_term_snoc_false.
+  Qed.
+
+  Lemma latest_term_snoc_true (l : ballot) :
+    latest_term (l ++ [true]) = length l.
+  Proof.
+    unfold latest_term. rewrite last_length. simpl.
+    rewrite lookup_app_r; last done.
+    by replace (_ - _)%nat with O by lia.
+  Qed.
+
   Lemma aac_chosen {bs ps n1 n2 v1 v2} :
     (n1 ≤ n2)%nat ->
     accepted_after_chosen bs ps ->
@@ -404,21 +465,6 @@ Section pure.
     by specialize (Hvt _ _ Hts _ Hxn2 Hn12).
   Qed.
 
-  Definition extend {X : Type} (x : X) (n : nat) (l : list X) :=
-    l ++ replicate (n - length l) x.
-
-  Lemma extend_length_ge {X : Type} (x : X) (n : nat) (l : list X) :
-    (length l ≤ length (extend x n l))%nat.
-  Proof. rewrite app_length. lia. Qed.
-
-  Lemma extend_length {X : Type} (x : X) (n : nat) (l : list X) :
-    length (extend x n l) = (n - length l + length l)%nat.
-  Proof. rewrite app_length replicate_length. lia. Qed.
-
-  Lemma extend_prefix {X : Type} (x : X) (n : nat) (l : list X) :
-  prefix l (extend x n l).
-  Proof. unfold extend. by apply prefix_app_r. Qed.
-
   (* Transition functions. *)
   Definition spaxos_accept (bs : gmap A ballot) x n :=
     alter (λ l, extend false n l ++ [true]) x bs.
@@ -469,17 +515,6 @@ Section pure.
     destruct Halter as (y & Hlookup & Hy).
     rewrite Hy.
     by apply Hx.
-  Qed.
-
-  Lemma latest_before_append_eq (n : nat) (l t : ballot) :
-    (n ≤ length l)%nat ->
-    latest_before n (l ++ t) = latest_before n l.
-  Proof.
-    intros Hlen.
-    induction n as [| n' IHn']; first done.
-    simpl.
-    rewrite -IHn'; last by lia.
-    rewrite lookup_app_l; [done | lia].
   Qed.
 
   Lemma dom_eq_Some_or_None `{Countable A} {B : Type} {m1 m2 : gmap A B} i :
@@ -718,6 +753,11 @@ Section pure.
   Theorem vc_inv_prepare {c bs ps} x n :
     valid_consensus c bs ps ->
     valid_consensus c (spaxos_prepare bs x n) ps.
+  Admitted.
+
+  Theorem vc_inv_accept {c bs ps} x n :
+    valid_consensus c bs ps ->
+    valid_consensus c (spaxos_accept bs x n) ps.
   Admitted.
 
   Definition gt_prev_term (ts : gmap A nat) (x : A) (n : nat) :=
