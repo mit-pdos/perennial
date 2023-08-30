@@ -21,24 +21,25 @@ Definition own_applyfn (f:val) γ Q : iProp Σ :=
   (readonly (own_slice_small new_sl byteT 1 newstate) ∗
   readonly (own_slice_small reply_sl byteT 1 reply) ∗
   (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗
-      (own_ghost γ (σ ++ [(newstate, Q reply)]) ={∅,⊤∖↑ghostN}=∗ True)))
+      (⌜ get_state σ = oldstate ⌝ -∗ own_ghost γ (σ ++ [(newstate, Q reply)]) ={∅,⊤∖↑ghostN}=∗ True)))
   -∗ Φ (slice_val new_sl, slice_val reply_sl)%V
   ) -∗
   WP f (slice_val old_sl) {{ Φ }}
 .
 
-Lemma wp_Server__apply_internal s γ γsrv f Q:
+Lemma wp_Server__apply_internal Q s γ γsrv f :
   {{{
         is_Server s γ γsrv ∗
         own_applyfn f γ Q
   }}}
     mpaxos.Server__apply #s f
   {{{
-        (err:u64) reply_sl reply, RET (#err, slice_val reply_sl);
+        (err:u64) reply_sl, RET (#err, slice_val reply_sl);
         £ 1 ∗ £ 1 ∗
         if (decide (err = 0%Z)) then
-          own_slice reply_sl byteT 1 reply ∗
-          ∃ someState σ, is_ghost_lb γ (σ ++ [(someState, Q reply)])
+          ∃ someState σ reply,
+          readonly (own_slice_small reply_sl byteT 1 reply) ∗
+          is_ghost_lb γ (σ ++ [(someState, Q reply)])
         else
           True
   }}}.
@@ -88,9 +89,12 @@ Proof.
   wp_store.
 
   wp_loadField.
+  wp_apply (std_proof.wp_SumAssumeNoOverflow).
+  iIntros "%Hno_overflow".
+  wp_storeField.
   wp_loadField.
   wp_loadField.
-  wp_pures.
+  wp_loadField.
   wp_apply (wp_allocStruct).
   { repeat econstructor. done. }
   iIntros (args_ptr) "Hargs".
@@ -98,10 +102,6 @@ Proof.
   wp_pure1_credit "Hlc".
   wp_store.
 
-  wp_loadField.
-  wp_apply (std_proof.wp_SumAssumeNoOverflow).
-  iIntros "%Hno_overflow".
-  wp_storeField.
   iModIntro.
   iExists _.
   rewrite sep_exist_r.
@@ -120,8 +120,8 @@ Proof.
     iDestruct "Hupd" as (?) "[H1 Hupd]".
     iExists _. iFrame "H1".
     iIntros "%Heq Hghost".
-    rewrite Heq.
-    iMod ("Hupd" with "Hghost").
+    rewrite Heq /=.
+    iMod ("Hupd" with "[% //] Hghost").
     iModIntro.
     done.
   }
@@ -132,11 +132,11 @@ Proof.
   { word. }
   { simpl. done. }
   { rewrite app_length. word. }
-  (* end ghost reasoning *)
   iMod "Hmask" as "_".
+
   iModIntro.
   simpl.
-  iSplitR "Hlc1 Hlc2 HΦ Herr Hret Hreply Hargs".
+  iSplitR "Hlc1 Hlc2 HΦ Herr Hret Hreply Hargs Hargs_ptr".
   {
     repeat iExists _.
     simpl.
@@ -146,6 +146,8 @@ Proof.
     split_and!; try done; try word.
     { rewrite fmap_app last_app /= //. }
   }
+  (* end ghost reasoning *)
+
   wp_pures.
   wp_load.
   wp_pures.
@@ -156,7 +158,7 @@ Proof.
   (* set (newstate:=(next_state (default [] (last st.(mp_log).*1)) op)). *)
   iAssert (|={⊤}=> applyAsFollowerArgs.own args_ptr (applyAsFollowerArgs.mkC
                                                pst.(paxosState.epoch)
-                                               (U64 (length log))
+                                               (U64 (length log + 1))
                                                newstate
           ))%I with "[Hargs]" as "Hargs".
   {
@@ -165,10 +167,15 @@ Proof.
     iMod (readonly_alloc_1 with "epoch") as "$".
     simpl.
     rewrite Hlog.
-    iMod (readonly_alloc_1 with "nextIndex") as "HnextIndex".
+
+    rewrite Z2Nat.id; last word.
+    rewrite -Hno_overflow.
+    unfold U64.
+    rewrite word.of_Z_unsigned.
+
+    iMod (readonly_alloc_1 with "nextIndex") as "$".
     iMod (readonly_alloc_1 with "state") as "$".
-    iFrame "#".
-    done.
+    iModIntro. iFrame "#".
   }
   iMod "Hargs" as "#Hargs".
 
@@ -190,14 +197,15 @@ Proof.
   simpl.
 
   wp_pures.
+  rename reply into ret.
   set (replyInv:=(
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
-                    "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; conf,
+                    "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; config,
                     ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply 1) ∗
                                                    if decide (reply.(applyAsFollowerReply.err) = (U64 0)) then
-                                                     is_accepted_lb γsrv' st.(mp_epoch) (st.(mp_log) ++ [(newstate, Q)])
+                                                     is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q ret)])
                                                    else
                                                      True
                                          ))
@@ -226,6 +234,7 @@ Proof.
   wp_pures.
   wp_apply (wp_slice_len).
   wp_pures.
+  iMod (readonly_alloc_1 with "Hargs_ptr") as "#Hargs_ptr".
 
   iMod (readonly_load with "Hclerks_sl") as (?) "Hclerks_sl2".
   wp_apply (wp_forSlice (λ _, True%I) (V:=loc) with "[] [$Hclerks_sl2]").
@@ -245,20 +254,18 @@ Proof.
       iDestruct (big_sepL2_lookup_acc with "Hclerks_rpc2") as "[#His_ck _]".
       { done. }
       { done. }
+      iMod (readonly_load with "Hargs_ptr") as (?) "H".
+      wp_load. iClear "H".
       wp_apply (wp_singleClerk__applyAsFollower with "[$His_ck]").
       {
         iFrame.
-        iFrame "Hargs".
-        iFrame "Hprop_lb Hprop_facts".
+        iFrame "Hargs Hprop".
         iPureIntro.
         split.
         { rewrite app_length. simpl. word. }
-        split.
-        { rewrite last_snoc. done. }
-        simpl.
-        word.
+        { simpl. rewrite fmap_app last_app /= //. }
       }
-      clear reply_ptr.
+      iRename "Hreply" into "Hret".
       iIntros (reply_ptr reply) "Hreply".
       wp_pures.
 
@@ -304,7 +311,7 @@ Proof.
           iFrame "#".
         }
 
-        replace (<[int.nat i:=x2]> conf) with (conf) ; last first.
+        replace (<[int.nat i:=x2]> config) with (config) ; last first.
         {
           symmetry.
           by apply list_insert_id.
@@ -331,7 +338,7 @@ Proof.
   wp_if_destruct.
   { (* not enough replies, wait for cond *)
     wp_pures.
-    wp_apply (wp_condWait with "[-HΦ Hreply_epoch Hreply_ret Hret_sl]").
+    wp_apply (wp_condWait with "[-HΦ Hlc1 Hlc2 Herr Hret]").
     {
       iFrame "#∗".
       iExists _, _.
@@ -360,7 +367,7 @@ Proof.
                  "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < int.nat i⌝ ∗
                  "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
                  "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(U64 (size W)) ∗
-                 "#Hacc_lbs" ∷ ([∗ list] s ↦ γsrv' ∈ conf, ⌜s ∈ W⌝ → is_accepted_lb γsrv' st.(mp_epoch) (st.(mp_log) ++ [(newstate, Q)]))
+                 "#Hacc_lbs" ∷ ([∗ list] s ↦ γsrv' ∈ config, ⌜s ∈ W⌝ → is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q ret)]))
       )%I).
 
   wp_apply (wp_forSlice (V:=loc) I _ _ _ _ _ reply_ptrs with "[] [HnumSuccesses Hreplies_sl]").
@@ -393,8 +400,9 @@ Proof.
       { done. }
       iDestruct "Hreply_post" as "[%Hbad|#Hreply_post]".
       {
-        exfalso. rewrite Hbad in Heqb0. done.
+        exfalso. subst. done.
       }
+      iRename "Hreply" into "Hret".
       iDestruct "Hreply_post" as (?) "[#Hreply Hpost]".
       iMod (readonly_load with "Hreply") as (?) "Hreplyq".
       wp_loadField.
@@ -402,7 +410,7 @@ Proof.
       { (* increase size of W *)
         wp_load.
         wp_store.
-        rewrite -Heqb1.
+        rewrite -Heqb2.
         iEval (rewrite decide_True) in "Hpost".
         iApply "HΦ".
         iModIntro.
@@ -453,8 +461,7 @@ Proof.
           apply lookup_lt_Some in Hi_conf_lookup.
           rewrite -Hconf_clerk_len Hclerks_sz in Hi_conf_lookup.
           assert (Z.of_nat (size W) < int.Z clerks_sl.(Slice.sz))%Z by word.
-          (* TODO: overflow of size of W proof *)
-          admit.
+          repeat f_equal. word.
         }
 
         iApply (big_sepL_impl with "Hacc_lbs").
@@ -525,58 +532,52 @@ Proof.
   wp_pures.
   wp_if_destruct.
   { (* enough acceptances to commit *)
-    wp_storeField.
+    wp_store.
+    wp_pures.
+    wp_load.
+    wp_load.
+    wp_pures.
 
     iDestruct (big_sepL2_length with "Hreplies") as "%Hreplies_len_eq_conf".
-    replace (int.nat replies_sl.(Slice.sz)) with (length conf) in HW_in_range; last first.
-    {
-      word.
-    }
+    replace (int.nat replies_sl.(Slice.sz)) with (length config) in HW_in_range; last first.
+    { word. }
 
     iDestruct (establish_committed_by with "Hacc_lbs") as "Hcom".
+    { done.}
     {
-      done.
-    }
-    {
-      assert (2 * size W > int.Z (u64_instance.u64.(word.mul) 2 (size W)))%Z.
-      { admit. } (* FIXME: check for multiplication overflow *)
+      assert (2 * size W >= int.Z (u64_instance.u64.(word.mul) 2 (size W)))%Z.
+      {
+        rewrite word.unsigned_mul.
+        rewrite /word.wrap /=.
+        apply Z.le_ge.
+        etrans.
+        { apply Z.mod_le; word. }
+        word.
+      }
       word.
     }
-    iMod (ghost_commit with "Hinv Hcom Hprop_lb Hprop_facts") as "Hlb".
+    iMod (ghost_commit with "Hinv Hcom Hprop") as "Hlb".
     iApply "HΦ".
     iModIntro.
     iFrame.
-    instantiate (1:=(applyReply.mkC _ _)).
-    iSplitL "Hreply_epoch Hreply_ret Hret_sl".
-    {
-      iExists _.
-      iFrame.
-    }
     simpl.
     destruct (decide _).
     {
-      iExists _.
-      iFrame "Hlb".
-      done.
+      repeat iExists _.
+      iFrame "∗ #".
     }
     {
       done.
     }
   }
   { (* error, too few successful applyAsFollower() RPCs *)
-    wp_storeField.
+    wp_store. wp_pures.
+    wp_load. wp_load. wp_pures.
     iApply "HΦ".
     iModIntro.
     iFrame.
-    instantiate (1:=(applyReply.mkC _ _)).
-    iSplitL "Hreply_epoch Hreply_ret Hret_sl".
-    {
-      iExists _.
-      iFrame.
-    }
-    done.
   }
-Admitted.
+Qed.
 
 (* TODO: copied from pb_apply_proof.v *)
 Lemma prefix_app_cases {A} (σ σ':list A) e:
@@ -585,61 +586,83 @@ Lemma prefix_app_cases {A} (σ σ':list A) e:
 Proof.
 Admitted.
 
-Lemma wp_Server__Apply (s:loc) γlog γ γsrv op_sl op (enc_op:list u8) init_reply reply_ptr Ψ (Φ: val → iProp Σ) :
-  is_Server conf s γ γsrv -∗
-  readonly (own_slice_small op_sl byteT 1 enc_op) -∗
-  applyReply.own reply_ptr init_reply 1 -∗
-  (∀ reply, Ψ reply -∗ applyReply.own reply_ptr reply 1 -∗ Φ #()) -∗
-  apply_core_spec γ γlog op enc_op Ψ -∗
-  WP (mpaxos.Server__apply #s (slice_val op_sl) #reply_ptr) {{ Φ }}
+(* NOTE: might be more convenient to have a statemachine controlled by the user
+   for which this library can call SetState and GetState. This library could
+   have a parameterized state type, instead of list u8. *)
+Lemma wp_Server__Apply (s:loc) (f:val) γst γ γsrv (Φ: val → iProp Σ) :
+  is_Server s γ γsrv -∗
+  is_state_inv γst γ -∗
+  (∀ Ψ (oldstate:list u8) old_sl,
+     readonly (own_slice_small old_sl byteT 1 oldstate) -∗
+     (∀ new_sl reply_sl (newstate reply:list u8),
+        (readonly (own_slice_small new_sl byteT 1 newstate) ∗
+         readonly (own_slice_small reply_sl byteT 1 reply) ∗
+         (|={⊤∖↑ghostN∖↑appN,∅}=> ∃ oldstate',
+            own_state γst oldstate' ∗
+            (⌜ oldstate' = oldstate ⌝ -∗ own_state γst newstate ={∅,⊤∖↑ghostN∖↑appN}=∗
+             (* XXX: there should be (∀ rep_sl, own_slice rep_sl -∗
+                                        Φ (slice_val rep_sl))
+                     but the prover of this WP will have to establish
+                     `readonly $ own_slice_small reply_sl`, so they can reuse
+                     that for the Φ proof.
+              *)
+             (∀ ret_sl,
+                readonly (own_slice_small ret_sl byteT 1 reply) -∗
+                Φ (#0, slice_val ret_sl)%V)))
+        ) -∗
+        Ψ (slice_val new_sl, slice_val reply_sl)%V) -∗
+     WP f (slice_val old_sl) {{ Ψ }}
+  ) -∗
+  (∀ (err:u64) reply_sl, ⌜ err ≠ U64 0 ⌝ → Φ (#err, slice_val reply_sl)%V) -∗
+  WP  mpaxos.Server__apply #s f {{ Φ }}
 .
 Proof using Type*.
-  iIntros "#Hsrv #Hop_sl Hreply".
-  iIntros "HΨ HΦ".
-  iApply (wp_frame_wand with "HΨ").
-  iDestruct "HΦ" as "(%Hop_enc & #Hinv & #Hupd & Hfail_Φ)".
+  iIntros "#Hsrv #Hinv Hupd Hfail".
   iMod (ghost_var_alloc (())) as (γtok) "Htok".
   iApply wp_fupd.
-  wp_apply (wp_Server__apply_internal _ _ _ op _ _ _ _
-      (λ ς, inv escrowN (
-        Ψ (applyReply.mkC 0 (compute_reply ς op)) ∨
+  wp_apply (wp_Server__apply_internal
+      (λ reply, inv escrowN (
+        (∀ ret_sl, readonly (own_slice_small ret_sl byteT 1 reply) -∗
+                   Φ (#0, slice_val ret_sl)%V) ∨
           ghost_var γtok 1 ()
         )%I)
-             with "[$Hsrv $Hop_sl $Hreply Hupd]").
+             with "[$Hsrv Hupd]").
   {
-    iSplitL ""; first done.
+    rewrite /own_applyfn.
+    iIntros (Ψ) "*".
+    iIntros "Hsl HΨ".
+    wp_apply ("Hupd" with "[$]").
+    iIntros "* Hupd".
+    iDestruct "Hupd" as "(#Hnew & #Hreply & Hupd)".
+    iSpecialize ("HΨ" with "[-]").
+    2: iApply "HΨ".
+    iFrame "#".
     iInv "Hinv" as "HH" "Hclose".
     iDestruct "HH" as (?) "(>Hstate & >Hghost & #HQs)".
-    iMod (fupd_mask_subseteq (⊤∖↑mpN)) as "Hmask".
-    {
-      assert ((↑ghostN:coPset) ⊆ (↑mpN:coPset)).
-      { apply nclose_subseteq. }
-      assert ((↑appN:coPset) ⊆ (↑mpN:coPset)).
-      { apply nclose_subseteq. }
-      set_solver.
-    }
-    iMod "Hupd".
+
+    iMod "Hupd" as (?) "[Hstate2 Hupd]".
     iModIntro.
-    iDestruct "Hupd" as (ς) "[Hstate2 Hupd]".
     iDestruct (own_valid_2 with "Hstate Hstate2") as %Hvalid.
     rewrite dfrac_agree_op_valid_L in Hvalid.
     destruct Hvalid as [_ Heq].
     rewrite Heq.
     iExists _; iFrame.
-    iIntros "Hghost".
+    iIntros "%Heq2 Hghost".
+    subst.
 
     iMod (own_update_2 with "Hstate Hstate2") as "Hstate".
     {
-      apply (dfrac_agree_update_2 _ _ _ _ ((next_state ς op): leibnizO (list u8))).
+      apply (dfrac_agree_update_2).
       rewrite dfrac_op_own.
       rewrite Qp.half_half.
       done.
     }
     iDestruct "Hstate" as "[Hstate Hstate2]".
-    iMod ("Hupd" with "Hstate2") as "Hupd".
+    iMod ("Hupd" with "[% //] Hstate2") as "Hupd".
 
-    iAssert (|={↑escrowN}=> inv escrowN ((Ψ (applyReply.mkC 0 (compute_reply ς op)))
-                                  ∨ ghost_var γtok 1 ()))%I
+    iAssert (|={↑escrowN}=> inv escrowN
+                    ((∀ reply_sl0 : Slice.t, readonly (own_slice_small reply_sl0 byteT 1 reply) -∗ Φ (#0, reply_sl0)%V)
+                     ∨ ghost_var γtok 1 ()))%I
             with "[Hupd]" as "Hinv2".
     {
       iMod (inv_alloc with "[-]") as "$"; last done.
@@ -648,18 +671,12 @@ Proof using Type*.
       iLeft.
       iIntros.
       iApply "Hupd".
+      iFrame "#".
     }
 
-    iMod "Hmask" as "_".
     iMod (fupd_mask_subseteq (↑escrowN)) as "Hmask".
-    {
-      assert ((↑escrowN:coPset) ## (↑ghostN:coPset)).
-      { by apply ndot_ne_disjoint. }
-      assert ((↑escrowN:coPset) ## (↑appN:coPset)).
-      { by apply ndot_ne_disjoint. }
-      set_solver.
-    }
-    iMod "Hinv2" as "#HΦ_inv".
+    2: iMod "Hinv2" as "#HΦ_inv".
+    { solve_ndisj. }
     iMod "Hmask".
 
     iMod ("Hclose" with "[HQs Hghost Hstate]").
@@ -670,7 +687,6 @@ Proof using Type*.
       rewrite fmap_app.
       rewrite last_snoc.
       simpl.
-      rewrite -Heq.
       iFrame.
 
       iModIntro.
@@ -706,15 +722,12 @@ Proof using Type*.
     iModIntro.
     done.
   }
-  iIntros (reply).
-  iIntros "(Hcred & Hcred2 & Hreply & Hpost)".
+  iIntros "* (Hcred & Hcred2 & Hpost)".
 
-  destruct (decide (reply.(applyReply.err) = U64 0)).
+  destruct (decide (err = U64 0)).
   { (* no error *)
-    iNamed "Hreply".
-    rewrite e.
-    iDestruct "Hpost" as (?) "[%Hrep #Hghost_lb]".
-    rewrite Hrep.
+    subst.
+    iDestruct "Hpost" as (???) "[#Hsl #Hghost_lb]".
     iInv "Hinv" as "HH" "Hclose".
     {
       iDestruct "HH" as (?) "(>Hlog & >Hghost & #HQs)".
@@ -741,25 +754,14 @@ Proof using Type*.
       iMod ("Hclose" with "[$Htok]").
       iMod (lc_fupd_elim_later with "Hcred2 HΦ") as "HΦ".
       iModIntro.
-      iIntros "HΨ".
-      iApply ("HΨ" with "HΦ").
-      iExists _.
-      simpl.
-      iFrame.
+      iApply "HΦ".
+      iFrame "#".
     }
   }
   {
     iIntros.
-    iNamed "Hreply".
-    iModIntro.
-    iIntros "HΨ".
-    iApply ("HΨ" with "[Hfail_Φ]").
-    {
-      iApply "Hfail_Φ".
-      done.
-    }
-    iExists _.
-    iFrame.
+    iApply "Hfail".
+    done.
   }
 Qed.
 

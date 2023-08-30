@@ -373,12 +373,12 @@ Definition Server__apply: val :=
         let: ("0_ret", "1_ret") := "applyFn" (struct.loadF paxosState "state" "ps") in
         struct.storeF paxosState "state" "ps" "0_ret";;
         "retVal" <-[slice.T byteT] "1_ret";;
+        struct.storeF paxosState "nextIndex" "ps" (std.SumAssumeNoOverflow (struct.loadF paxosState "nextIndex" "ps") #1);;
         "args" <-[ptrT] (struct.new applyAsFollowerArgs [
           "epoch" ::= struct.loadF paxosState "epoch" "ps";
           "nextIndex" ::= struct.loadF paxosState "nextIndex" "ps";
           "state" ::= struct.loadF paxosState "state" "ps"
         ]);;
-        struct.storeF paxosState "nextIndex" "ps" (std.SumAssumeNoOverflow (struct.loadF paxosState "nextIndex" "ps") #1);;
         #())
       );;
     (if: (![Error] "retErr") ≠ #0

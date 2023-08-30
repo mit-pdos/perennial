@@ -17,7 +17,6 @@ Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
 
         "%Hσ_index" ∷ ⌜ length σ = (int.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
         "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
-        "%Hno_overflow" ∷ ⌜ int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1) ⌝ ∗
         "#Hprop" ∷ is_proposal γ args.(applyAsFollowerArgs.epoch) σ
   }}}
     singleClerk__applyAsFollower #ck #args_ptr
