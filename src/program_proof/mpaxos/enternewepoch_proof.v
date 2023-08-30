@@ -13,7 +13,8 @@ Section enternewepoch_proof.
 Context `{!heapGS Σ}.
 
 Context `{!mpG Σ}.
-Context `{HconfigTC:!configTC}.
+Context `{!mpaxosParams.t Σ}.
+Import mpaxosParams.
 
 Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q :
   {{{
@@ -142,7 +143,8 @@ Proof.
   iNamed "Hpre".
   wp_call.
   wp_apply (wp_Server__withLock with "[$]").
-  iIntros (??) "Hvol".
+  iIntros (??) "HH".
+  iNamed "HH".
   iNamed "Hvol".
   wp_pures.
   wp_loadField.

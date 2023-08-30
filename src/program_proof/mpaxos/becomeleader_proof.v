@@ -13,7 +13,8 @@ Section becomeleader_proof.
 Context `{!heapGS Σ}.
 
 Context `{!mpG Σ}.
-Context `{HconfigTC:!configTC}.
+Context `{Hparams:!mpaxosParams.t Σ}.
+Import mpaxosParams.
 
 Lemma wp_Server__becomeLeader s γ γsrv Ψ Φ :
   is_Server s γ γsrv -∗
@@ -41,7 +42,7 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      repeat iExists _; iFrame.
+      repeat iExists _; iFrame "∗#".
       rewrite Heqb.
       iExists _. iFrame "∗#".
     }
@@ -61,7 +62,7 @@ Proof.
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    repeat iExists _; iFrame.
+    repeat iExists _; iFrame "∗#".
     rewrite Heqb.
     iExists _. iFrame "∗#".
   }
@@ -98,7 +99,7 @@ Proof.
                                                 True)
                                   ))
                 )%I).
-  wp_apply (newlock_spec mpN _ replyInv with "[HnumReplies Hreplies_sl]").
+  wp_apply (newlock_spec N _ replyInv with "[HnumReplies Hreplies_sl]").
   {
     iNext.
     iExists _, _.
@@ -308,6 +309,7 @@ Proof.
                   "%HlatestlogLen" ∷ ⌜int.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
                   "%HlatestEpoch_ineq" ∷ ⌜int.nat latestReply.(enterNewEpochReply.acceptedEpoch) < int.nat newepoch⌝ ∗
                   "#Hlatest_prop" ∷ is_proposal γ latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
+                  "#HP_latest" ∷ (□ Pwf latestReply.(enterNewEpochReply.state)) ∗
                   "#Hacc_lbs" ∷ (□ [∗ list] s ↦ γsrv' ∈ config, ⌜s ∈ W⌝ →
                                         is_accepted_upper_bound γsrv' latestLog
                                                                 latestReply.(enterNewEpochReply.acceptedEpoch)
@@ -362,7 +364,7 @@ Proof.
           wp_store.
           replace (W) with (∅:gset nat); last first.
           {
-            assert (size W = 0).
+            assert (size W = 0) as Hsz.
             {
               apply (f_equal int.Z) in Heqb3.
               rewrite Z_u64 in Heqb3.
@@ -370,7 +372,7 @@ Proof.
               replace (int.Z (U64 0)) with (0%Z) in Heqb3 by word.
               word.
             }
-            apply size_empty_inv in H.
+            apply size_empty_inv in Hsz.
             by apply leibniz_equiv.
           }
           iModIntro.
@@ -380,9 +382,8 @@ Proof.
           iSplitR.
           {
             iPureIntro.
-            intros.
-            apply elem_of_singleton_1 in H.
-            rewrite H.
+            intros ? Hin.
+            apply elem_of_singleton_1 in Hin as ->.
             word.
           }
           iSplitR.
@@ -398,7 +399,7 @@ Proof.
           simpl.
           destruct (decide (_)); last first.
           { exfalso. done. }
-          iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
+          iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
           iSplitL "Hreplies".
           {
             iApply "Hreplies".
@@ -408,13 +409,13 @@ Proof.
               iIntros (?).
               iApply "Hwand".
               iPureIntro.
-              replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H2 by word.
+              replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in * by word.
               word.
             }
             {
               iIntros.
               exfalso.
-              replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in H by word.
+              replace (int.nat (word.add i 1%Z)) with (int.nat i + 1) in * by word.
               word.
             }
           }
@@ -535,7 +536,7 @@ Proof.
 
             destruct (decide (_)); last first.
             { exfalso. done. }
-            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
+            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
             iExists reply, log.
             iFrame "Hreply Hprop %".
             iFrame "#".
@@ -563,7 +564,7 @@ Proof.
               {
                 iIntros.
                 iFrame "Hvote".
-            }
+              }
             }
 
             iModIntro.
@@ -673,7 +674,7 @@ Proof.
 
                 destruct (decide (_)); last first.
                 { exfalso. done. }
-                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
+                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
                 iExists reply, log.
                 iFrame "Hreply Hprop %".
 
@@ -804,7 +805,7 @@ Proof.
 
                 destruct (decide (_)); last first.
                 { exfalso. done. }
-                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
+                iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
 
                 (* XXX: copy/paste votes *)
                 iSplitR "Hvotes Hvote"; last first.
@@ -937,7 +938,7 @@ Proof.
 
             destruct (decide (_)); last first.
             { exfalso. done. }
-            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & Hvote)".
+            iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
 
             (* XXX: copy/paste votes *)
             iSplitR "Hvotes Hvote"; last first.
@@ -1093,7 +1094,9 @@ Proof.
 
     wp_apply (wp_Server__withLock with "[]").
     { repeat iExists _; iFrame "#". done. }
-    iIntros (??) "Hvol".
+    iIntros (??) "HH".
+    iRename "HP" into "HP_in".
+    iNamed "HH".
     iClear "Hstate_sl".
     iNamed "Hvol".
     wp_pures.
@@ -1126,17 +1129,21 @@ Proof.
 
       (* start ghost reasoning *)
       (* A few protocol steps *)
+      iFrame "#".
       iIntros "Hghost".
       iNamed "Hghost".
       iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
       { solve_ndisj. }
+      simpl.
       iMod (become_leader with "Hvote_inv Hacc_lbs Hlatest_prop Hvotes") as "HghostLeader".
       {
         intros ??.
         apply HW_in_range in H.
+        simpl.
         word.
       }
       {
+        simpl.
         enough (int.Z (word.mul 2 (size W)) <= (2 * size W))%Z.
         { word. }
         rewrite word.unsigned_mul.

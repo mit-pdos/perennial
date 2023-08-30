@@ -8,13 +8,15 @@ Section applyasfollower_proof.
 Context `{!heapGS Σ}.
 
 Context `{!mpG Σ}.
-Context `{HconfigTC:!configTC}.
+Context `{!mpaxosParams.t Σ}.
+Import mpaxosParams.
 
 Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
   {{{
         "#His_ck" ∷ is_singleClerk ck γ γsrv ∗
         "Hargs" ∷ applyAsFollowerArgs.own args_ptr args ∗
 
+        "#HP" ∷ □ Pwf args.(applyAsFollowerArgs.state) ∗
         "%Hσ_index" ∷ ⌜ length σ = (int.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
         "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
         "#Hprop" ∷ is_proposal γ args.(applyAsFollowerArgs.epoch) σ
@@ -142,8 +144,10 @@ Proof.
   iNamed "Hpre".
   wp_call.
   wp_apply (wp_Server__withLock with "[$]").
-  iIntros (??) "Hvol".
+  iIntros (??) "HH".
+  iNamed "HH".
   wp_pures.
+  iRename "HP" into "HP_in".
   iNamed "Hvol".
   wp_loadField.
   wp_loadField.
@@ -173,6 +177,7 @@ Proof.
           instantiate (1:=paxosState.mk _ _ _ _ _).
           repeat iExists _; simpl; iFrame "∗#".
         }
+        iFrame "HP".
 
         (* start ghost reasoning *)
         (* use protocol lemma *)
@@ -216,7 +221,8 @@ Proof.
           repeat iExists _; simpl; iFrame "∗#".
         }
 
-
+        simpl.
+        iFrame "HP_in".
         (* start ghost reasoning *)
         iIntros "Hghost".
         iNamed "Hghost".
@@ -268,6 +274,7 @@ Proof.
 
       (* start ghost reasoning *)
       (* use protocol lemma *)
+      iFrame "HP".
       iIntros "Hghost".
       iNamed "Hghost".
       iMod (ghost_replica_accept_new_epoch with "Hghost Hprop") as "Hghost".
@@ -310,6 +317,7 @@ Proof.
       instantiate (1:=paxosState.mk _ _ _ _ _).
       repeat iExists _; simpl; iFrame "∗#".
     }
+    iFrame "HP_in".
     iIntros "$".
     iModIntro.
     wp_pures.

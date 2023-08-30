@@ -20,10 +20,24 @@ Class mpG Σ := {
     mp_apply_escrow_tok :> ghost_varG Σ unit ;
 }.
 
+Module mpaxosParams.
+Class t Σ := {
+    config: list mp_server_names ;
+    Pwf : list u8 → iProp Σ ;
+    N : namespace ;
+  }
+.
+Global Instance mpaxos_to_protocol_params Σ :
+  t Σ → protocol_params.t :=
+  λ p, protocol_params.mk config (N .@ "protocol").
+
+End mpaxosParams.
+
+Import mpaxosParams.
 Section global_definitions.
 Context `{!gooseGlobalGS Σ}.
 Context `{!mpG Σ}.
-Context `{configTC0:!configTC}.
+Context `{!mpaxosParams.t Σ}.
 
 Definition own_state γ ς := own γ (to_dfrac_agree (DfracOwn (1/2)) (ς : (leibnizO (list u8)))).
 
@@ -36,6 +50,7 @@ Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply
    "%Hstate" ∷ ⌜ args.(applyAsFollowerArgs.state) = get_state σ ⌝ ∗
    "%Hσ_index" ∷ ⌜ length σ = (int.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
    "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
+   "#HP" ∷ □ Pwf args.(applyAsFollowerArgs.state) ∗
    (* "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1) ⌝ ∗ *)
    "#Hprop" ∷ is_proposal γ args.(applyAsFollowerArgs.epoch) σ ∗
    "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (U64 0))) ∧
@@ -63,6 +78,7 @@ Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
   ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
   is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
   is_proposal γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
+  □ Pwf reply.(enterNewEpochReply.state) ∗
   own_vote_tok γsrv epoch
 .
 
@@ -86,9 +102,8 @@ Next Obligation.
   solve_proper.
 Defined.
 
-(* TODO: copied from pb_definitions.v *)
-Definition appN := mpN .@ "app".
-Definition escrowN := mpN .@ "escrow".
+Definition appN := N .@ "app".
+Definition escrowN := N .@ "escrow".
 
 Definition is_state_inv γlog γsys :=
   inv appN (∃ log,
@@ -177,7 +192,7 @@ Admitted.
 
 
 Context `{!mpG Σ}.
-Context `{configTC0:!configTC}.
+Context `{!mpaxosParams.t Σ}.
 
 Definition own_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
   ∃ (log:list (list u8 * iProp Σ)),
@@ -201,7 +216,7 @@ End paxosState.
 Section local_definitions.
 Context `{!heapGS Σ}.
 Context `{!mpG Σ}.
-Context `{configTC0:!configTC}.
+Context `{!mpaxosParams.t Σ}.
 
 Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
@@ -214,7 +229,7 @@ Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
 
 (* Server-side definitions *)
 
-Definition fileN := nroot .@ "file".
+Definition fileN := N .@ "file".
 
 Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
   ∃ pst,
@@ -222,18 +237,20 @@ Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
   "Hghost" ∷ paxosState.own_ghost γ γsrv pst
 .
 
+(* The P is a validity predicate for any proposed state *)
 Definition own_Server (s:loc) γ γsrv : iProp Σ :=
   ∃ (f:loc) (ps:loc) pst,
   "Hps" ∷ s ↦[mpaxos.Server :: "ps"] #ps ∗
   "Hstorage" ∷ s ↦[mpaxos.Server :: "storage"] #f ∗
   "Hfile" ∷ own_AsyncFile fileN f (own_file_inv γ γsrv) (paxosState.encode pst) ∗
-  "Hvol" ∷ paxosState.own_vol ps pst
+  "Hvol" ∷ paxosState.own_vol ps pst ∗
+  "#HP" ∷ □ Pwf pst.(paxosState.state)
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   ∃ (mu:val) (clerks_sl:Slice.t) clerks,
   "#Hmu" ∷ readonly (s ↦[mpaxos.Server :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock mpN mu (own_Server s γ γsrv) ∗
+  "#HmuInv" ∷ is_lock N mu (own_Server s γ γsrv) ∗
 
   "#Hclerks" ∷ readonly (s ↦[mpaxos.Server :: "clerks"] (slice_val clerks_sl)) ∗
 

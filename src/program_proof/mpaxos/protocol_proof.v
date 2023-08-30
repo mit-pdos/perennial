@@ -5,10 +5,6 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list csum.
 From Perennial.Helpers Require Import ListSolver.
 
-Section mpaxos_protocol.
-
-Context `{!invGS Σ}.
-
 Record mp_system_names :=
 {
   mp_proposal_gn : gname ;
@@ -22,15 +18,21 @@ Record mp_server_names :=
   mp_vote_gn : gname ; (* token for granting vote to a node in a particular epoch *)
 }.
 
-Context `{EntryType:Type}.
+Module protocol_params.
+Class t := mk{
+    config: list mp_server_names ;
+    N : namespace
+  }.
+End protocol_params.
+Import protocol_params.
 
+Section mpaxos_protocol.
+
+Context `{!invGS Σ}.
+Context `{EntryType:Type}.
 Local Canonical Structure EntryTypeO := leibnizO EntryType.
 Local Definition logR := mono_listR EntryTypeO.
 Local Definition proposalR := gmapR (u64) (csumR (exclR unitO) logR).
-
-Class configTC := {
-    config: list mp_server_names
-  }.
 
 Class mp_ghostG Σ := {
     mp_ghost_epochG :> mono_natG Σ ;
@@ -41,7 +43,7 @@ Class mp_ghostG Σ := {
 }.
 
 Context `{!mp_ghostG Σ}.
-Context `{configTC0:!configTC}.
+Context `{Hparams:!protocol_params.t}.
 
 Implicit Type γsrv : mp_server_names.
 Implicit Type γsys : mp_system_names.
@@ -88,8 +90,7 @@ Definition old_proposal_max γsys epoch σ : iProp Σ := (* persistent *)
    ⌜int.nat epoch_old < int.nat epoch⌝ →
    committed_by epoch_old σ_old → ⌜σ_old ⪯ σ⌝).
 
-Definition mpN := nroot .@ "mp".
-Definition ghostN := mpN .@ "ghost".
+Definition ghostN := N .@ "ghost".
 
 Definition sysN := ghostN .@ "sys".
 Definition opN := ghostN .@ "op".

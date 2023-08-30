@@ -7,13 +7,16 @@ Section withlock_proof.
 Context `{!heapGS Σ}.
 
 Context `{!mpG Σ}.
-Context `{HconfigTC:!configTC}.
+Context `{!mpaxosParams.t Σ}.
+Import mpaxosParams.
 
 Lemma wp_Server__withLock (s:loc) γ γsrv (f:val) Φ :
   is_Server s γ γsrv -∗
   (∀ ps pst,
-  paxosState.own_vol ps pst -∗
+  ("Hvol" ∷ paxosState.own_vol ps pst ∗
+   "#HP" ∷ □ Pwf pst.(paxosState.state)) -∗
   WP f #ps {{ λ _, ∃ pst', paxosState.own_vol ps pst' ∗
+                   (□ Pwf pst'.(paxosState.state)) ∗
                    (paxosState.own_ghost γ γsrv pst ={⊤∖↑fileN}=∗
                     paxosState.own_ghost γ γsrv pst' ∗ Φ #())
     }}) -∗
@@ -32,9 +35,10 @@ Proof.
   wp_loadField.
   wp_bind (f #ps).
   wp_apply (wp_wand with "[Hwp Hvol]").
-  { wp_apply ("Hwp" with "Hvol"). }
+  { wp_apply ("Hwp" with "[$]"). }
   iIntros (?) "Hpost".
-  iDestruct "Hpost" as (?) "[Hvol Hupd]".
+  iClear "HP".
+  iDestruct "Hpost" as (?) "(Hvol & #HP & Hupd)".
   wp_pures.
   wp_loadField.
   wp_apply (paxosState.wp_encode with "[$]").
@@ -61,7 +65,7 @@ Proof.
     iFrame "HmuInv Hlocked".
     iNext.
     repeat iExists _.
-    iFrame.
+    iFrame "∗#".
   }
   wp_pures.
   wp_apply (wp_wand with "Hwp").

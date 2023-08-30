@@ -359,8 +359,8 @@ Definition Server__becomeLeader: val :=
         (* log.Println("failed becomeleader") *)
         #())).
 
-Definition Server__apply: val :=
-  rec: "Server__apply" "s" "applyFn" :=
+Definition Server__Apply: val :=
+  rec: "Server__Apply" "s" "applyFn" :=
     let: "retErr" := ref (zero_val Error) in
     let: "retVal" := ref (zero_val (slice.T byteT)) in
     let: "args" := ref (zero_val ptrT) in
@@ -418,6 +418,13 @@ Definition Server__apply: val :=
       then "retErr" <-[Error] ENone
       else "retErr" <-[Error] EEpochStale);;
       (![Error] "retErr", ![slice.T byteT] "retVal")).
+
+Definition Server__WeakRead: val :=
+  rec: "Server__WeakRead" "s" :=
+    lock.acquire (struct.loadF Server "mu" "s");;
+    let: "ret" := struct.loadF paxosState "state" (struct.loadF Server "ps" "s") in
+    lock.release (struct.loadF Server "mu" "s");;
+    "ret".
 
 Definition makeServer: val :=
   rec: "makeServer" "fname" "applyFn" "config" :=

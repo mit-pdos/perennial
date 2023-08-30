@@ -11,16 +11,19 @@ From Perennial.program_proof.mpaxos Require Export definitions applyasfollower_p
 Section apply_proof.
 
 Context `{!heapGS Σ}.
-Context `{HconfigTC:!configTC}.
+Context `{Hparams:!mpaxosParams.t Σ}.
+Import mpaxosParams.
 Context `{!mpG Σ}.
 
 Definition own_applyfn (f:val) γ Q : iProp Σ :=
   ∀ Φ (oldstate:list u8) old_sl,
-  readonly (own_slice_small old_sl byteT 1 oldstate) -∗
+  (readonly (own_slice_small old_sl byteT 1 oldstate) ∗
+   Pwf oldstate) -∗
   (∀ new_sl reply_sl (newstate reply:list u8),
   (readonly (own_slice_small new_sl byteT 1 newstate) ∗
-  readonly (own_slice_small reply_sl byteT 1 reply) ∗
-  (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗
+   readonly (own_slice_small reply_sl byteT 1 reply) ∗
+   (□ Pwf newstate) ∗
+   (|={⊤∖↑ghostN,∅}=> ∃ σ, own_ghost γ σ ∗
       (⌜ get_state σ = oldstate ⌝ -∗ own_ghost γ (σ ++ [(newstate, Q reply)]) ={∅,⊤∖↑ghostN}=∗ True)))
   -∗ Φ (slice_val new_sl, slice_val reply_sl)%V
   ) -∗
@@ -32,7 +35,7 @@ Lemma wp_Server__apply_internal Q s γ γsrv f :
         is_Server s γ γsrv ∗
         own_applyfn f γ Q
   }}}
-    mpaxos.Server__apply #s f
+    mpaxos.Server__Apply #s f
   {{{
         (err:u64) reply_sl, RET (#err, slice_val reply_sl);
         £ 1 ∗ £ 1 ∗
@@ -57,7 +60,8 @@ Proof.
   wp_pure1_credit "Hlc2".
 
   wp_apply (wp_Server__withLock with "[$]").
-  iIntros (??) "Hvol".
+  iIntros (??) "HH".
+  iNamed "HH".
   iNamed "Hvol".
   wp_pures.
   wp_loadField.
@@ -83,7 +87,8 @@ Proof.
   wp_loadField.
   wp_apply ("Hwp" with "[$]").
   iClear "Hstate_sl".
-  iIntros (????) "(#Hstate_sl & #Hreply & Hupd)".
+  iClear "HP".
+  iIntros (????) "(#Hstate_sl & #Hreply & #HP & Hupd)".
   wp_pures.
   wp_storeField.
   wp_store.
@@ -109,6 +114,7 @@ Proof.
   instantiate (1:=paxosState.mk _ _ _ _ _). simpl; iFrame "∗Hstate_sl".
 
   (* start ghost reasoning *)
+  iFrame "HP".
   iIntros "Hghost". iNamed "Hghost".
   rewrite Heqb.
   iMod (fupd_mask_subseteq _) as "Hmask".
@@ -210,7 +216,7 @@ Proof.
                                                      True
                                          ))
                 )%I).
-  wp_apply (newlock_spec mpN _ replyInv with "[HnumReplies Hreplies_sl]").
+  wp_apply (newlock_spec N _ replyInv with "[HnumReplies Hreplies_sl]").
   {
     iNext.
     iExists _, _.
@@ -259,7 +265,7 @@ Proof.
       wp_apply (wp_singleClerk__applyAsFollower with "[$His_ck]").
       {
         iFrame.
-        iFrame "Hargs Hprop".
+        iFrame "Hargs Hprop HP".
         iPureIntro.
         split.
         { rewrite app_length. simpl. word. }
@@ -542,7 +548,7 @@ Proof.
     replace (int.nat replies_sl.(Slice.sz)) with (length config) in HW_in_range; last first.
     { word. }
 
-    iDestruct (establish_committed_by with "Hacc_lbs") as "Hcom".
+    iDestruct (establish_committed_by with "[$Hacc_lbs]") as "Hcom".
     { done.}
     {
       assert (2 * size W >= int.Z (u64_instance.u64.(word.mul) 2 (size W)))%Z.
@@ -554,6 +560,7 @@ Proof.
         { apply Z.mod_le; word. }
         word.
       }
+      simpl.
       word.
     }
     iMod (ghost_commit with "Hinv Hcom Hprop") as "Hlb".
@@ -593,10 +600,13 @@ Lemma wp_Server__Apply (s:loc) (f:val) γst γ γsrv (Φ: val → iProp Σ) :
   is_Server s γ γsrv -∗
   is_state_inv γst γ -∗
   (∀ Ψ (oldstate:list u8) old_sl,
-     readonly (own_slice_small old_sl byteT 1 oldstate) -∗
+     (readonly (own_slice_small old_sl byteT 1 oldstate) ∗
+      Pwf oldstate
+      )-∗
      (∀ new_sl reply_sl (newstate reply:list u8),
         (readonly (own_slice_small new_sl byteT 1 newstate) ∗
          readonly (own_slice_small reply_sl byteT 1 reply) ∗
+         □ Pwf newstate ∗
          (|={⊤∖↑ghostN∖↑appN,∅}=> ∃ oldstate',
             own_state γst oldstate' ∗
             (⌜ oldstate' = oldstate ⌝ -∗ own_state γst newstate ={∅,⊤∖↑ghostN∖↑appN}=∗
@@ -614,7 +624,7 @@ Lemma wp_Server__Apply (s:loc) (f:val) γst γ γsrv (Φ: val → iProp Σ) :
      WP f (slice_val old_sl) {{ Ψ }}
   ) -∗
   (∀ (err:u64) reply_sl, ⌜ err ≠ U64 0 ⌝ → Φ (#err, slice_val reply_sl)%V) -∗
-  WP  mpaxos.Server__apply #s f {{ Φ }}
+  WP  mpaxos.Server__Apply #s f {{ Φ }}
 .
 Proof using Type*.
   iIntros "#Hsrv #Hinv Hupd Hfail".
@@ -633,7 +643,7 @@ Proof using Type*.
     iIntros "Hsl HΨ".
     wp_apply ("Hupd" with "[$]").
     iIntros "* Hupd".
-    iDestruct "Hupd" as "(#Hnew & #Hreply & Hupd)".
+    iDestruct "Hupd" as "(#Hnew & #Hreply & #HP & Hupd)".
     iSpecialize ("HΨ" with "[-]").
     2: iApply "HΨ".
     iFrame "#".
