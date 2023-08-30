@@ -607,9 +607,9 @@ Lemma wp_Server__Apply (s:loc) (f:val) γst γ γsrv (Φ: val → iProp Σ) :
         (readonly (own_slice_small new_sl byteT 1 newstate) ∗
          readonly (own_slice_small reply_sl byteT 1 reply) ∗
          □ Pwf newstate ∗
-         (|={⊤∖↑ghostN∖↑appN,∅}=> ∃ oldstate',
+         (|={⊤∖↑N,∅}=> ∃ oldstate',
             own_state γst oldstate' ∗
-            (⌜ oldstate' = oldstate ⌝ -∗ own_state γst newstate ={∅,⊤∖↑ghostN∖↑appN}=∗
+            (⌜ oldstate' = oldstate ⌝ -∗ own_state γst newstate ={∅,⊤∖↑N}=∗
              (* XXX: there should be (∀ rep_sl, own_slice rep_sl -∗
                                         Φ (slice_val rep_sl))
                      but the prover of this WP will have to establish
@@ -649,8 +649,9 @@ Proof using Type*.
     iFrame "#".
     iInv "Hinv" as "HH" "Hclose".
     iDestruct "HH" as (?) "(>Hstate & >Hghost & #HQs)".
-
-    iMod "Hupd" as (?) "[Hstate2 Hupd]".
+    iMod (fupd_mask_subseteq _) as "Hmask".
+    2: iMod "Hupd" as (?) "[Hstate2 Hupd]".
+    { rewrite /ghostN /appN /=. solve_ndisj. }
     iModIntro.
     iDestruct (own_valid_2 with "Hstate Hstate2") as %Hvalid.
     rewrite dfrac_agree_op_valid_L in Hvalid.
@@ -684,9 +685,10 @@ Proof using Type*.
       iFrame "#".
     }
 
+    iMod "Hmask" as "_".
     iMod (fupd_mask_subseteq (↑escrowN)) as "Hmask".
     2: iMod "Hinv2" as "#HΦ_inv".
-    { solve_ndisj. }
+    { rewrite /escrowN /=. solve_ndisj. }
     iMod "Hmask".
 
     iMod ("Hclose" with "[HQs Hghost Hstate]").
