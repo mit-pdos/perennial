@@ -261,6 +261,7 @@ def main():
             "map_string_marshal",
             "simplepb/admin",
             "simplepb/config",
+            "simplepb/config2",
             "simplepb/pb",
             "simplepb/apps/esm",
             "simplepb/apps/kv",
