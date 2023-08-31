@@ -4,16 +4,6 @@ From Perennial.program_proof.fencing Require Import map.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang Require Import crash_borrow.
 
-Section asyncfile_proof.
-
-Context `{!heapGS Σ}.
-Context `{!mapG Σ u64 ()}.
-Context `{!ghost_varG Σ (list u8)}.
-Context `{!ghost_varG Σ ()}.
-Context `{!ghost_varG Σ u64}.
-Context `{!stagedG Σ}.
-Implicit Types (P: list u8 → iProp Σ).
-
 Record af_names := mk_af_names {
   index_gn : gname ;
   index_escrow_gn : gname ;
@@ -24,6 +14,21 @@ Record af_names := mk_af_names {
   close_req_tok: gname ;
   close_tok: gname ;
 }.
+
+Class asyncfileG Σ :=
+  AsyncFileG {
+    map_inG :> mapG Σ u64 ();
+    data_inG :> ghost_varG Σ (list u8);
+    tok_inG :> ghost_varG Σ ();
+    idx_ing :> ghost_varG Σ u64;
+    stagedG :> stagedG Σ ; (* for crash borrows? *)
+  }.
+
+Section asyncfile_proof.
+
+Context `{!heapGS Σ}.
+Context `{!asyncfileG Σ}.
+Implicit Types (P: list u8 → iProp Σ).
 
 (* Plan: have a per-index escrow token to reclaim the Q resources.
    The mutex invariant owns all the unused index tokens.

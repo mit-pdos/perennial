@@ -549,7 +549,7 @@ Proof.
     { word. }
 
     iDestruct (establish_committed_by with "[$Hacc_lbs]") as "Hcom".
-    { done.}
+    { done. }
     {
       assert (2 * size W >= int.Z (u64_instance.u64.(word.mul) 2 (size W)))%Z.
       {

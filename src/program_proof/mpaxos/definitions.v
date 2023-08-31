@@ -18,6 +18,7 @@ Class mpG Σ := {
     mp_wgG :> waitgroupG Σ ; (* for apply proof *)
     mp_logG :> inG Σ client_logR;
     mp_apply_escrow_tok :> ghost_varG Σ unit ;
+    mp_asyncfile :> asyncfileG Σ ;
 }.
 
 Module mpaxosParams.
@@ -239,10 +240,10 @@ Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
 
 (* The P is a validity predicate for any proposed state *)
 Definition own_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (f:loc) (ps:loc) pst,
+  ∃ (f:loc) (ps:loc) pst γf,
   "Hps" ∷ s ↦[mpaxos.Server :: "ps"] #ps ∗
   "Hstorage" ∷ s ↦[mpaxos.Server :: "storage"] #f ∗
-  "Hfile" ∷ own_AsyncFile fileN f (own_file_inv γ γsrv) (paxosState.encode pst) ∗
+  "Hfile" ∷ own_AsyncFile fileN f γf (own_file_inv γ γsrv) (paxosState.encode pst) ∗
   "Hvol" ∷ paxosState.own_vol ps pst ∗
   "#HP" ∷ □ Pwf pst.(paxosState.state)
 .
