@@ -51,7 +51,10 @@ Proof.
     iNamed "Hi".
     eapply inj in Henc; last apply _.
     subst.
-    iMod ("Hupd" with "[$]") as "[Hghost HΦ]".
+    iMod (fupd_mask_subseteq _) as "Hmask".
+    2: iMod ("Hupd" with "[$]") as "[Hghost HΦ]".
+    { solve_ndisj. }
+    iMod "Hmask".
     iModIntro.
     iSplitR "HΦ".
     { repeat iExists _; iFrame. done. }
