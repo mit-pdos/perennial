@@ -610,12 +610,6 @@ Lemma wp_Server__Apply (s:loc) (f:val) γst γ γsrv (Φ: val → iProp Σ) :
          (|={⊤∖↑N,∅}=> ∃ oldstate',
             own_state γst oldstate' ∗
             (⌜ oldstate' = oldstate ⌝ -∗ own_state γst newstate ={∅,⊤∖↑N}=∗
-             (* XXX: there should be (∀ rep_sl, own_slice rep_sl -∗
-                                        Φ (slice_val rep_sl))
-                     but the prover of this WP will have to establish
-                     `readonly $ own_slice_small reply_sl`, so they can reuse
-                     that for the Φ proof.
-              *)
              (∀ ret_sl,
                 readonly (own_slice_small ret_sl byteT 1 reply) -∗
                 Φ (#0, slice_val ret_sl)%V)))

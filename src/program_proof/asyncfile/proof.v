@@ -75,7 +75,7 @@ Definition is_write_inv N γ idx Q : iProp Σ :=
 
 Definition own_unused γ (idx:u64): iProp Σ :=
   [∗ set] i ∈ fin_to_set u64,
-                 if decide (int.nat idx < int.nat i) then
+                 if decide (int.nat idx < int.nat i)%nat then
                    own_write_token γ i ∗ own_escrow_token γ i
                  else
                    True
@@ -83,7 +83,7 @@ Definition own_unused γ (idx:u64): iProp Σ :=
 
 Definition is_witnesses γ (durableIndex: u64) : iProp Σ :=
   □ ([∗ set] x ∈ fin_to_set u64,
-                 if decide (int.nat x <= int.nat durableIndex) then
+                 if decide (int.nat x <= int.nat durableIndex)%nat then
                    is_write_witness γ x
                  else
                    True)
@@ -614,7 +614,7 @@ Proof.
   iMod (ghost_var_alloc (U64 0)) as (durIdx) "[HdurIdx HdurIdx2]".
   iMod (ghost_var_alloc ()) as (closeReq) "HcloseReq".
   iMod (ghost_var_alloc ()) as (closed) "Hclosed".
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hunused1") as "[Hwit1 Hunused1]".
+  iDestruct (big_sepS_delete _ _ (U64 0) with "Hunused1") as "[Hwit1 Hunused1]".
   { set_solver. }
   iMod (ghost_map_points_to_persist with "Hwit1") as "#Hwit1".
   iModIntro.
@@ -624,11 +624,18 @@ Proof.
   rewrite /is_witnesses /own_unused /is_write_witness /own_predurable_index /own_write_token
           /own_escrow_token /own_durable_index /own_predurable_data /own_vol_data /own_close_req_token /=.
   iFrame.
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hunused2") as "[_ Hunused2]".
+  iDestruct (big_sepS_delete _ _ (U64 0) with "Hunused2") as "[_ Hunused2]".
   { set_solver. }
   iSplitL "Hunused1 Hunused2".
   {
-    admit.
+    iDestruct (big_sepS_sep with "[$Hunused1 $Hunused2]") as "Hunused".
+    iApply (big_sepS_delete _ _ (U64 0)).
+    { set_solver. }
+    iSplitR.
+    { setoid_rewrite decide_False; first done; word. }
+    iApply (big_sepS_impl with "Hunused").
+    iModIntro. iIntros.
+    destruct (decide _); done.
   }
   simpl.
   iSplitR.
@@ -638,17 +645,14 @@ Proof.
   iApply big_sepS_forall.
   { intros. destruct (decide _); apply _. }
   iIntros.
+  replace (int.nat 0) with (0%nat) by word.
   destruct (decide _).
   { replace (x) with (U64 0).
     { done. }
-    {
-      assert (int.nat 0 = int.nat x).
-      { admit. } (* word *)
-      admit. (* word *)
-    }
+    { word. }
   }
   done.
-Admitted.
+Qed.
 
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
@@ -656,7 +660,8 @@ Lemma wp_MakeAsyncFile fname N P data :
   }}}
     asyncfile.MakeAsyncFile #(str fname)
   {{{
-        γ f, RET #f; own_AsyncFile N f γ P data
+        γ sl f, RET (slice_val sl, #f); readonly (own_slice_small sl byteT 1 data) ∗
+                                        own_AsyncFile N f γ P data
   }}}
 .
 Proof.
@@ -711,17 +716,35 @@ Proof.
 
   wp_loadField.
   wp_pures.
+  iMod (readonly_alloc_1 with "mu") as "#Hmu".
+  iMod (readonly_alloc_1 with "filename") as "#Hfilename".
+  iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+  iMod (readonly_alloc_1 with "Hdata") as "#Hdata".
   iMod (alloc_ghost N P data fname) as (γ) "H".
   iNamed "H".
+  iAssert (|={⊤}=> is_AsyncFile N f γ P)%I with "[-HpreIdx HpreData HdurIdx Hfile HΦ Hvol_data Hnotclosed]" as ">#His".
+  {
+    repeat iExists _; iFrame "#".
+    iMod (alloc_lock with "[$] [-]") as "$"; last done.
+    iNext. repeat iExists _; iFrame "Hghost ∗ #".
+    done.
+  }
+
   wp_apply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile]").
   {
     iNext.
     wp_apply (wp_AsyncFile__flushThread with "[-]").
-    { iFrame. admit. }
+    {
+      (* iFrame performance slow: iFrame "His".*)
+      iSplitR.
+      { iExact "His". }
+      iFrame "∗#".
+    }
     done.
   }
   wp_pures.
-  admit.
-Admitted.
+  iApply "HΦ". iModIntro.
+  iFrame "∗#".
+Qed.
 
 End asyncfile_proof.
