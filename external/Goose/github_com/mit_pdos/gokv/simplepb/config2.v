@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.mpaxos.
+From Goose Require github_com.mit_pdos.gokv.reconnectclient.
 From Goose Require github_com.mit_pdos.gokv.simplepb.e.
 From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
@@ -39,7 +40,9 @@ Definition DecodeConfig: val :=
 (* client.go *)
 
 Definition Clerk := struct.decl [
-  "cl" :: ptrT
+  "mu" :: ptrT;
+  "cls" :: slice.T ptrT;
+  "leader" :: uint64T
 ].
 
 Definition RPC_RESERVEEPOCH : expr := #0.
@@ -51,21 +54,39 @@ Definition RPC_TRYWRITECONFIG : expr := #2.
 Definition RPC_GETLEASE : expr := #3.
 
 Definition MakeClerk: val :=
-  rec: "MakeClerk" "host" :=
+  rec: "MakeClerk" "hosts" :=
+    let: "cls" := ref_to (slice.T ptrT) (NewSlice ptrT #0) in
+    ForSlice uint64T <> "host" "hosts"
+      ("cls" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "cls") (reconnectclient.MakeReconnectingClient "host")));;
     struct.new Clerk [
-      "cl" ::= urpc.MakeClient "host"
+      "cls" ::= ![slice.T ptrT] "cls"
     ].
 
-(* FIXME: potentially return error *)
 Definition Clerk__ReserveEpochAndGetConfig: val :=
   rec: "Clerk__ReserveEpochAndGetConfig" "ck" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_RESERVEEPOCH (NewSlice byteT #0) "reply" #100 in
-      (if: "err" = #0
-      then Break
-      else Continue));;
+      lock.acquire (struct.loadF Clerk "mu" "ck");;
+      let: "l" := struct.loadF Clerk "leader" "ck" in
+      lock.release (struct.loadF Clerk "mu" "ck");;
+      let: "err" := reconnectclient.ReconnectingClient__Call (SliceGet ptrT (struct.loadF Clerk "cls" "ck") "l") RPC_RESERVEEPOCH (NewSlice byteT #0) "reply" #100 in
+      (if: "err" ≠ #0
+      then Continue
+      else
+        let: "err2" := ref (zero_val uint64T) in
+        let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "reply") in
+        "err2" <-[uint64T] "0_ret";;
+        "reply" <-[slice.T byteT] "1_ret";;
+        (if: (![uint64T] "err2") = e.NotLeader
+        then
+          lock.acquire (struct.loadF Clerk "mu" "ck");;
+          (if: "l" = (struct.loadF Clerk "leader" "ck")
+          then struct.storeF Clerk "leader" "ck" (((struct.loadF Clerk "leader" "ck") + #1) `rem` (slice.len (struct.loadF Clerk "cls" "ck")))
+          else #());;
+          lock.release (struct.loadF Clerk "mu" "ck");;
+          Continue
+        else Break)));;
     let: "epoch" := ref (zero_val uint64T) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "reply") in
     "epoch" <-[uint64T] "0_ret";;
@@ -78,7 +99,8 @@ Definition Clerk__GetConfig: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETCONFIG (NewSlice byteT #0) "reply" #100 in
+      let: "i" := rand.RandomUint64 #() in
+      let: "err" := reconnectclient.ReconnectingClient__Call (SliceGet ptrT (struct.loadF Clerk "cls" "ck") "i") RPC_GETCONFIG (NewSlice byteT #0) "reply" #100 in
       (if: "err" = #0
       then Break
       else Continue));;
@@ -91,12 +113,27 @@ Definition Clerk__TryWriteConfig: val :=
     let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (#8 + (#8 * (slice.len "config")))) in
     "args" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "args") "epoch");;
     "args" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "args") (EncodeConfig "config"));;
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_TRYWRITECONFIG (![slice.T byteT] "args") "reply" #2000 in
-    (if: "err" = #0
-    then
-      let: ("e", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
-      "e"
-    else "err").
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      lock.acquire (struct.loadF Clerk "mu" "ck");;
+      let: "l" := struct.loadF Clerk "leader" "ck" in
+      lock.release (struct.loadF Clerk "mu" "ck");;
+      let: "err" := reconnectclient.ReconnectingClient__Call (SliceGet ptrT (struct.loadF Clerk "cls" "ck") "l") RPC_TRYWRITECONFIG (![slice.T byteT] "args") "reply" #2000 in
+      (if: "err" ≠ #0
+      then Continue
+      else
+        let: ("err2", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
+        (if: "err2" = e.NotLeader
+        then
+          lock.acquire (struct.loadF Clerk "mu" "ck");;
+          (if: "l" = (struct.loadF Clerk "leader" "ck")
+          then struct.storeF Clerk "leader" "ck" (((struct.loadF Clerk "leader" "ck") + #1) `rem` (slice.len (struct.loadF Clerk "cls" "ck")))
+          else #());;
+          lock.release (struct.loadF Clerk "mu" "ck");;
+          Continue
+        else Break)));;
+    let: ("err", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
+    "err".
 
 (* returns e.None if the lease was granted for the given epoch, and a conservative
    guess on when the lease expires. *)
@@ -105,13 +142,28 @@ Definition Clerk__GetLease: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     let: "args" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 #8) in
     "args" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "args") "epoch");;
-    let: "err" := urpc.Client__Call (struct.loadF Clerk "cl" "ck") RPC_GETLEASE (![slice.T byteT] "args") "reply" #100 in
-    (if: "err" = #0
-    then
-      let: ("err2", "enc") := marshal.ReadInt (![slice.T byteT] "reply") in
-      let: ("leaseExpiration", <>) := marshal.ReadInt "enc" in
-      ("err2", "leaseExpiration")
-    else ("err", #0)).
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      lock.acquire (struct.loadF Clerk "mu" "ck");;
+      let: "l" := struct.loadF Clerk "leader" "ck" in
+      lock.release (struct.loadF Clerk "mu" "ck");;
+      let: "err" := reconnectclient.ReconnectingClient__Call (SliceGet ptrT (struct.loadF Clerk "cls" "ck") "l") RPC_GETLEASE (![slice.T byteT] "args") "reply" #100 in
+      (if: "err" ≠ #0
+      then Continue
+      else
+        let: ("err2", <>) := marshal.ReadInt (![slice.T byteT] "reply") in
+        (if: "err2" = e.NotLeader
+        then
+          lock.acquire (struct.loadF Clerk "mu" "ck");;
+          (if: "l" = (struct.loadF Clerk "leader" "ck")
+          then struct.storeF Clerk "leader" "ck" (((struct.loadF Clerk "leader" "ck") + #1) `rem` (slice.len (struct.loadF Clerk "cls" "ck")))
+          else #());;
+          lock.release (struct.loadF Clerk "mu" "ck");;
+          Continue
+        else Break)));;
+    let: ("err2", "enc") := marshal.ReadInt (![slice.T byteT] "reply") in
+    let: ("leaseExpiration", <>) := marshal.ReadInt "enc" in
+    ("err2", "leaseExpiration").
 
 (* server.go *)
 
@@ -165,7 +217,6 @@ Definition Server := struct.decl [
   "s" :: ptrT
 ].
 
-(* TODO: mpaxos doesn't need to return reply anymore *)
 Definition Server__tryAcquire: val :=
   rec: "Server__tryAcquire" "s" :=
     let: (("err", "e"), "relF") := mpaxos.Server__TryAcquire (struct.loadF Server "s" "s") in
@@ -193,6 +244,7 @@ Definition Server__ReserveEpochAndGetConfig: val :=
       then #()
       else
         "reply" <-[slice.T byteT] (NewSliceWithCap byteT #0 ((#8 + #8) + (#8 * (slice.len "config"))));;
+        "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") e.None);;
         "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") "reservedEpoch");;
         "reply" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig "config"));;
         #())).

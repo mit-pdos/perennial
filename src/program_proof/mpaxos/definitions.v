@@ -22,7 +22,7 @@ Class mpG Σ := {
 }.
 
 Module mpaxosParams.
-Class t Σ := {
+Class t Σ := mk {
     config: list mp_server_names ;
     Pwf : list u8 → iProp Σ ;
     N : namespace ;

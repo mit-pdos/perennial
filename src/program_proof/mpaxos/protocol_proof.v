@@ -1165,4 +1165,6 @@ Proof.
   }
 Qed.
 
+(* FIXME: initialization proof *)
+
 End mpaxos_protocol.
