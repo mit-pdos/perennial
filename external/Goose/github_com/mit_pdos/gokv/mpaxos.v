@@ -359,65 +359,62 @@ Definition Server__becomeLeader: val :=
         (* log.Println("failed becomeleader") *)
         #())).
 
-Definition Server__Apply: val :=
-  rec: "Server__Apply" "s" "applyFn" :=
+Definition Server__TryAcquire: val :=
+  rec: "Server__TryAcquire" "s" :=
     let: "retErr" := ref (zero_val Error) in
-    let: "retVal" := ref (zero_val (slice.T byteT)) in
-    let: "args" := ref (zero_val ptrT) in
-    Server__withLock "s" (λ: "ps",
-      (if: (~ (struct.loadF paxosState "isLeader" "ps"))
-      then
-        "retErr" <-[Error] ENotLeader;;
-        #()
-      else
-        let: ("0_ret", "1_ret") := "applyFn" (struct.loadF paxosState "state" "ps") in
-        struct.storeF paxosState "state" "ps" "0_ret";;
-        "retVal" <-[slice.T byteT] "1_ret";;
-        struct.storeF paxosState "nextIndex" "ps" (std.SumAssumeNoOverflow (struct.loadF paxosState "nextIndex" "ps") #1);;
-        "args" <-[ptrT] (struct.new applyAsFollowerArgs [
-          "epoch" ::= struct.loadF paxosState "epoch" "ps";
-          "nextIndex" ::= struct.loadF paxosState "nextIndex" "ps";
-          "state" ::= struct.loadF paxosState "state" "ps"
-        ]);;
-        #())
-      );;
-    (if: (![Error] "retErr") ≠ #0
-    then (![Error] "retErr", slice.nil)
+    lock.acquire (struct.loadF Server "mu" "s");;
+    (if: (~ (struct.loadF paxosState "isLeader" (struct.loadF Server "ps" "s")))
+    then
+      lock.release (struct.loadF Server "mu" "s");;
+      let: "n" := ref (zero_val ptrT) in
+      (ENotLeader, ![ptrT] "n", slice.nil)
     else
-      let: "clerks" := struct.loadF Server "clerks" "s" in
-      let: "numReplies" := ref_to uint64T #0 in
-      let: "replies" := NewSlice ptrT (slice.len "clerks") in
-      let: "mu" := lock.new #() in
-      let: "numReplies_cond" := lock.newCond "mu" in
-      let: "n" := slice.len "clerks" in
-      ForSlice ptrT "i" "ck" "clerks"
-        (let: "ck" := "ck" in
-        let: "i" := "i" in
-        Fork (let: "reply" := singleClerk__applyAsFollower "ck" (![ptrT] "args") in
-              lock.acquire "mu";;
-              "numReplies" <-[uint64T] ((![uint64T] "numReplies") + #1);;
-              SliceSet ptrT "replies" "i" "reply";;
-              (if: (#2 * (![uint64T] "numReplies")) > "n"
-              then lock.condSignal "numReplies_cond"
-              else #());;
-              lock.release "mu"));;
-      lock.acquire "mu";;
-      Skip;;
-      (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ "n"); (λ: <>, Skip) := λ: <>,
-        lock.condWait "numReplies_cond";;
-        Continue);;
-      let: "numSuccesses" := ref_to uint64T #0 in
-      ForSlice ptrT <> "reply" "replies"
-        ((if: "reply" ≠ #null
-        then
-          (if: (struct.loadF applyAsFollowerReply "err" "reply") = ENone
-          then "numSuccesses" <-[uint64T] ((![uint64T] "numSuccesses") + #1)
-          else #())
-        else #()));;
-      (if: (#2 * (![uint64T] "numSuccesses")) > "n"
-      then "retErr" <-[Error] ENone
-      else "retErr" <-[Error] EEpochStale);;
-      (![Error] "retErr", ![slice.T byteT] "retVal")).
+      let: "tryRelease" := (λ: <>,
+        struct.storeF paxosState "nextIndex" (struct.loadF Server "ps" "s") (std.SumAssumeNoOverflow (struct.loadF paxosState "nextIndex" (struct.loadF Server "ps" "s")) #1);;
+        let: "args" := struct.new applyAsFollowerArgs [
+          "epoch" ::= struct.loadF paxosState "epoch" (struct.loadF Server "ps" "s");
+          "nextIndex" ::= struct.loadF paxosState "nextIndex" (struct.loadF Server "ps" "s");
+          "state" ::= struct.loadF paxosState "state" (struct.loadF Server "ps" "s")
+        ] in
+        let: "waitFn" := asyncfile.AsyncFile__Write (struct.loadF Server "storage" "s") (encodePaxosState (struct.loadF Server "ps" "s")) in
+        lock.release (struct.loadF Server "mu" "s");;
+        "waitFn" #();;
+        let: "clerks" := struct.loadF Server "clerks" "s" in
+        let: "numReplies" := ref_to uint64T #0 in
+        let: "replies" := NewSlice ptrT (slice.len "clerks") in
+        let: "mu" := lock.new #() in
+        let: "numReplies_cond" := lock.newCond "mu" in
+        let: "n" := slice.len "clerks" in
+        ForSlice ptrT "i" "ck" "clerks"
+          (let: "ck" := "ck" in
+          let: "i" := "i" in
+          Fork (let: "reply" := singleClerk__applyAsFollower "ck" "args" in
+                lock.acquire "mu";;
+                "numReplies" <-[uint64T] ((![uint64T] "numReplies") + #1);;
+                SliceSet ptrT "replies" "i" "reply";;
+                (if: (#2 * (![uint64T] "numReplies")) > "n"
+                then lock.condSignal "numReplies_cond"
+                else #());;
+                lock.release "mu"));;
+        lock.acquire "mu";;
+        Skip;;
+        (for: (λ: <>, (#2 * (![uint64T] "numReplies")) ≤ "n"); (λ: <>, Skip) := λ: <>,
+          lock.condWait "numReplies_cond";;
+          Continue);;
+        let: "numSuccesses" := ref_to uint64T #0 in
+        ForSlice ptrT <> "reply" "replies"
+          ((if: "reply" ≠ #null
+          then
+            (if: (struct.loadF applyAsFollowerReply "err" "reply") = ENone
+            then "numSuccesses" <-[uint64T] ((![uint64T] "numSuccesses") + #1)
+            else #())
+          else #()));;
+        (if: (#2 * (![uint64T] "numSuccesses")) > "n"
+        then "retErr" <-[Error] ENone
+        else "retErr" <-[Error] EEpochStale);;
+        ![Error] "retErr"
+        ) in
+      (ENone, struct.fieldRef paxosState "state" (struct.loadF Server "ps" "s"), "tryRelease")).
 
 Definition Server__WeakRead: val :=
   rec: "Server__WeakRead" "s" :=

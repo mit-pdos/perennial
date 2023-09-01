@@ -56,6 +56,7 @@ Definition MakeClerk: val :=
       "cl" ::= urpc.MakeClient "host"
     ].
 
+(* FIXME: potentially return error *)
 Definition Clerk__ReserveEpochAndGetConfig: val :=
   rec: "Clerk__ReserveEpochAndGetConfig" "ck" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
@@ -165,25 +166,36 @@ Definition Server := struct.decl [
 ].
 
 (* TODO: mpaxos doesn't need to return reply anymore *)
-Definition Server__withLock: val :=
-  rec: "Server__withLock" "s" "f" :=
-    mpaxos.Server__Apply (struct.loadF Server "s" "s") (λ: "e",
-      let: "st" := decodeState "e" in
-      "f" "st";;
-      (encodeState "st", slice.nil)
-      );;
-    #().
+Definition Server__tryAcquire: val :=
+  rec: "Server__tryAcquire" "s" :=
+    let: (("err", "e"), "relF") := mpaxos.Server__TryAcquire (struct.loadF Server "s" "s") in
+    (if: "err" ≠ #0
+    then (#false, slice.nil, slice.nil)
+    else
+      let: "st" := decodeState (![slice.T byteT] "e") in
+      let: "releaseFn" := (λ: <>,
+        "e" <-[slice.T byteT] (encodeState "st");;
+        ("relF" #()) = #0
+        ) in
+      (#true, "st", "releaseFn")).
 
 Definition Server__ReserveEpochAndGetConfig: val :=
   rec: "Server__ReserveEpochAndGetConfig" "s" "args" "reply" :=
-    Server__withLock "s" (λ: "st",
+    "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.NotLeader);;
+    let: (("ok", "st"), "tryReleaseFn") := Server__tryAcquire "s" in
+    (if: (~ "ok")
+    then #()
+    else
       struct.storeF state "reservedEpoch" "st" (std.SumAssumeNoOverflow (struct.loadF state "reservedEpoch" "st") #1);;
-      "reply" <-[slice.T byteT] (NewSliceWithCap byteT #0 ((#8 + #8) + (#8 * (slice.len (struct.loadF state "config" "st")))));;
-      "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") (struct.loadF state "reservedEpoch" "st"));;
-      "reply" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig (struct.loadF state "config" "st")));;
-      #()
-      );;
-    #().
+      let: "config" := struct.loadF state "config" "st" in
+      let: "reservedEpoch" := struct.loadF state "reservedEpoch" "st" in
+      (if: (~ ("tryReleaseFn" #()))
+      then #()
+      else
+        "reply" <-[slice.T byteT] (NewSliceWithCap byteT #0 ((#8 + #8) + (#8 * (slice.len "config"))));;
+        "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") "reservedEpoch");;
+        "reply" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "reply") (EncodeConfig "config"));;
+        #())).
 
 Definition Server__GetConfig: val :=
   rec: "Server__GetConfig" "s" "args" "reply" :=
@@ -193,18 +205,23 @@ Definition Server__GetConfig: val :=
 
 Definition Server__TryWriteConfig: val :=
   rec: "Server__TryWriteConfig" "s" "args" "reply" :=
+    "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.NotLeader);;
     let: ("epoch", "enc") := marshal.ReadInt "args" in
+    let: "config" := DecodeConfig "enc" in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "done" := ref_to boolT #false in
-      let: "timeToSleep" := ref (zero_val uint64T) in
-      Server__withLock "s" (λ: "st",
+      let: (("ok", "st"), "tryReleaseFn") := Server__tryAcquire "s" in
+      (if: (~ "ok")
+      then Break
+      else
         (if: "epoch" < (struct.loadF state "reservedEpoch" "st")
         then
-          "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.Stale);;
-          (* log.Printf("Stale: %d < %d", epoch, st.reservedEpoch) *)
-          "done" <-[boolT] #true;;
-          #()
+          (if: (~ ("tryReleaseFn" #()))
+          then Break
+          else
+            "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.Stale);;
+            (* log.Printf("Stale: %d < %d", epoch, st.reservedEpoch) *)
+            Break)
         else
           (if: "epoch" > (struct.loadF state "epoch" "st")
           then
@@ -213,55 +230,59 @@ Definition Server__TryWriteConfig: val :=
             then
               struct.storeF state "wantLeaseToExpire" "st" #false;;
               struct.storeF state "epoch" "st" "epoch";;
-              struct.storeF state "config" "st" (DecodeConfig "enc");;
-              (* log.Println("New config is:", st.config) *)
-              "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
-              "done" <-[boolT] #true;;
-              #()
+              struct.storeF state "config" "st" "config";;
+              (if: (~ ("tryReleaseFn" #()))
+              then Break
+              else
+                (* log.Println("New config is:", st.config) *)
+                "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
+                Break)
             else
               struct.storeF state "wantLeaseToExpire" "st" #true;;
-              "timeToSleep" <-[uint64T] ((struct.loadF state "leaseExpiration" "st") - "l");;
-              "done" <-[boolT] #false;;
-              #())
+              let: "timeToSleep" := (struct.loadF state "leaseExpiration" "st") - "l" in
+              (if: (~ ("tryReleaseFn" #()))
+              then Break
+              else
+                time.Sleep "timeToSleep";;
+                Continue))
           else
-            struct.storeF state "config" "st" (DecodeConfig "enc");;
-            "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
-            "done" <-[boolT] #true;;
-            #()))
-        );;
-      (if: ![boolT] "done"
-      then Break
-      else
-        time.Sleep (![uint64T] "timeToSleep");;
-        Continue));;
+            struct.storeF state "config" "st" "config";;
+            (if: (~ ("tryReleaseFn" #()))
+            then Break
+            else
+              "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
+              Break)))));;
     #().
 
 Definition Server__GetLease: val :=
   rec: "Server__GetLease" "s" "args" "reply" :=
+    "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.NotLeader);;
     let: ("epoch", <>) := marshal.ReadInt "args" in
-    let: "newLeaseExpiration" := ref (zero_val uint64T) in
-    Server__withLock "s" (λ: "st",
+    let: (("ok", "st"), "tryReleaseFn") := Server__tryAcquire "s" in
+    (if: (~ "ok")
+    then #()
+    else
       (if: ((struct.loadF state "epoch" "st") ≠ "epoch") || (struct.loadF state "wantLeaseToExpire" "st")
       then
-        "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.Stale);;
-        "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") #0);;
         (* log.Println("Rejected lease request", epoch, st.epoch, st.wantLeaseToExpire) *)
-        #()
+        (if: (~ ("tryReleaseFn" #()))
+        then #()
+        else
+          "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.Stale);;
+          "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") #0);;
+          #())
       else
         let: ("l", <>) := grove_ffi.GetTimeRange #() in
         let: "newLeaseExpiration" := "l" + LeaseInterval in
         (if: "newLeaseExpiration" > (struct.loadF state "leaseExpiration" "st")
-        then
-          struct.storeF state "leaseExpiration" "st" "newLeaseExpiration";;
-          #()
-        else #()))
-      );;
-    (if: (slice.len (![slice.T byteT] "reply")) = #0
-    then
-      "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
-      "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") (![uint64T] "newLeaseExpiration"));;
-      #()
-    else #()).
+        then struct.storeF state "leaseExpiration" "st" "newLeaseExpiration"
+        else #());;
+        (if: (~ ("tryReleaseFn" #()))
+        then #()
+        else
+          "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.None);;
+          "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") "newLeaseExpiration");;
+          #()))).
 
 Definition MakeServer: val :=
   rec: "MakeServer" "initconfig" :=
