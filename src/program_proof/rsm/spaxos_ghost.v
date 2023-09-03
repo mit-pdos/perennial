@@ -120,7 +120,7 @@ Section ballot.
   Lemma ballots_prefix {γ} bs bsqlb :
     ([∗ map] x ↦ b ∈ bsqlb, is_ballot_lb γ x b) -∗
     own_ballots γ bs -∗
-    ⌜prefixes bsqlb bs⌝.
+    ⌜dom bsqlb ⊆ dom bs ∧ prefixes bsqlb bs⌝.
   Admitted.
 End ballot.
 

@@ -13,6 +13,7 @@ Definition Paxos := struct.decl [
   "termp" :: uint64T;
   "decree" :: stringT;
   "learned" :: boolT;
+  "sc" :: uint64T;
   "peers" :: slice.T ptrT
 ].
 
@@ -44,7 +45,7 @@ Definition Paxos__prepare: val :=
 
 Definition Paxos__major: val :=
   rec: "Paxos__major" "px" "n" :=
-    "n" > ((slice.len (struct.loadF Paxos "peers" "px")) `quot` #2).
+    "n" > ((struct.loadF Paxos "sc" "px") `quot` #2).
 
 Definition Paxos__prepareAll: val :=
   rec: "Paxos__prepareAll" "px" "term" "terma" "decreea" :=
@@ -159,13 +160,8 @@ Definition Paxos__getDecree: val :=
 
 Definition Paxos__Outcome: val :=
   rec: "Paxos__Outcome" "px" :=
-    lock.acquire (struct.loadF Paxos "mu" "px");;
     (if: Paxos__isLearned "px"
-    then
-      lock.release (struct.loadF Paxos "mu" "px");;
-      (Paxos__getDecree "px", #true)
-    else
-      lock.release (struct.loadF Paxos "mu" "px");;
-      (#(str""), #false)).
+    then (Paxos__getDecree "px", #true)
+    else (#(str""), #false)).
 
 End code.

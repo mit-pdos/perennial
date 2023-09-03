@@ -28,20 +28,6 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
 Definition spaxosN := nroot .@ "spaxos".
 
-Definition is_cluster (γ : spaxos_names) (c : gset Z) : iProp Σ.
-Admitted.
-
-#[global]
-Instance is_cluster_persistent γ c :
-  Persistent (is_cluster γ c).
-Admitted.
-
-Lemma cluster_eq {γ s1 s2} :
-  is_cluster γ s1 -∗
-  is_cluster γ s2 -∗
-  ⌜s1 = s2⌝.
-Admitted.
-
 Definition num_nodes : Z := 16.
 
 Definition is_term_of_node (x : Z) (n : nat) :=
@@ -52,25 +38,25 @@ Lemma is_term_of_node_partitioned x1 x2 n :
   x1 ≠ x2 -> is_term_of_node x1 n -> not (is_term_of_node x2 n).
 Proof. unfold is_term_of_node. lia. Qed.
 
-Definition spaxos_inv γ : iProp Σ :=
+Definition spaxos_inv sc γ : iProp Σ :=
   ∃ c bs ps ts,
-    "Hc"     ∷ own_consensus γ c ∗
-    "Hbs"    ∷ own_ballots γ bs ∗
-    "Hps"    ∷ own_proposals γ ps ∗
-    "Hts"    ∷ own_terms γ ts ∗
-    "#Hclst" ∷ is_cluster γ (dom bs) ∗
-    "%Hvc"   ∷ ⌜valid_consensus c bs ps⌝ ∗
-    "%Hvbs"  ∷ ⌜valid_ballots bs ps⌝ ∗
-    "%Hvps"  ∷ ⌜valid_proposals bs ps⌝ ∗
-    "%Hvts"  ∷ ⌜valid_terms is_term_of_node ps ts⌝.
+    "Hc"      ∷ own_consensus γ c ∗
+    "Hbs"     ∷ own_ballots γ bs ∗
+    "Hps"     ∷ own_proposals γ ps ∗
+    "Hts"     ∷ own_terms γ ts ∗
+    "%Hvc"    ∷ ⌜valid_consensus c bs ps⌝ ∗
+    "%Hvbs"   ∷ ⌜valid_ballots bs ps⌝ ∗
+    "%Hvps"   ∷ ⌜valid_proposals bs ps⌝ ∗
+    "%Hvts"   ∷ ⌜valid_terms is_term_of_node ps ts⌝ ∗
+    "%Hdombs" ∷ ⌜size (dom bs) = sc⌝.
 
 #[global]
-Instance spaxos_inv_timeless γ :
-  Timeless (spaxos_inv γ).
+Instance spaxos_inv_timeless sc γ :
+  Timeless (spaxos_inv sc γ).
 Admitted.
 
-Definition know_sapxos_inv γ : iProp Σ :=
-  inv spaxosN (spaxos_inv γ).
+Definition know_sapxos_inv sc γ : iProp Σ :=
+  inv spaxosN (spaxos_inv sc γ).
 
 Definition is_proposal_nz γ n v : iProp Σ :=
   (if decide (n = O) then True else is_proposal γ n v)%I.
@@ -83,9 +69,9 @@ Proof. unfold is_proposal_nz. case_decide; apply _. Qed.
 End inv.
 
 #[export]
-Hint Extern 1 (environments.envs_entails _ (spaxos_inv _)) => unfold spaxos_inv : core.
+Hint Extern 1 (environments.envs_entails _ (spaxos_inv _ _)) => unfold spaxos_inv : core.
 #[export]
-Hint Extern 1 (environments.envs_entails _ (is_cluster _ (dom (alter _ _ _)))) => rewrite dom_alter_L : core.
+Hint Extern 1 (size (dom (alter _ _ _)) = _) => rewrite dom_alter_L : core.
 (* TODO: move this out to spaxos_iris_inv.v once stable. *)
 
 (* TODO: move this out to spaxos_repr.v once stable. *)
@@ -131,31 +117,30 @@ Definition own_paxos (paxos : loc) (nid : Z) γ : iProp Σ :=
     "%Hlatest" ∷ ⌜latest_term blt = (int.nat termp)⌝.
 
 (* TODO: figure the clean way of defining node ID. *)
-Definition is_paxos_node (paxos : loc) (nid : Z) (clst : gset Z) γ : iProp Σ :=
-  ∃ (mu : loc) (nidu64 : u64),
+Definition is_paxos_node (paxos : loc) (nid : Z) (sc : nat) γ : iProp Σ :=
+  ∃ (mu : loc) (nidu64 : u64) (scu64 : u64),
     (*@ Res: mu *sync.Mutex                                                     @*)
     "#Hmu"   ∷ readonly (paxos ↦[Paxos :: "mu"] #mu) ∗
     "#Hlock" ∷ is_lock spaxosN #mu (own_paxos paxos nid γ) ∗
     (*@ Res: nid uint64                                                         @*)
-    "#Hnid"  ∷ readonly (paxos ↦[Paxos :: "nid"] #nidu64) ∗
-    "%HnidZ" ∷ ⌜int.Z nidu64 = nid⌝ ∗
-    (*@ Res: cluster ghost                                                      @*)
-    "#Hcluster" ∷ is_cluster γ clst ∗
+    "#Hnid" ∷ readonly (paxos ↦[Paxos :: "nid"] #nidu64) ∗
+    "%Hnid" ∷ ⌜int.Z nidu64 = nid⌝ ∗
+    (*@ Res: sc uint64                                                          @*)
+    "#Hsc" ∷ readonly (paxos ↦[Paxos :: "nid"] #nidu64) ∗
+    "%Hsc" ∷ ⌜int.nat scu64 = sc⌝ ∗
     (*@ Res: ginv                                                               @*)
-    "#Hinv"  ∷ know_sapxos_inv γ.
+    "#Hinv" ∷ know_sapxos_inv sc γ.
 
-Definition is_paxos_comm (paxos : loc) (clst : gset Z) γ : iProp Σ :=
+Definition is_paxos_comm (paxos : loc) sc γ : iProp Σ :=
   ∃ (peers : Slice.t) (peersL : list loc),
     (*@ Res: peers []*Paxos                                                     @*)
     "#Hpeers"  ∷ readonly (paxos ↦[Paxos :: "peers"] (to_val peers)) ∗
     "#HpeersL" ∷ readonly (own_slice_small peers ptrT 1 peersL) ∗
-    "#Hpaxos"  ∷ ([∗ list] i ↦ px ∈ peersL, is_paxos_node px (Z.of_nat i) clst γ) ∗
-    "%Hclsteq" ∷ ⌜clst = list_to_set (Z.of_nat <$> (seq O (length peersL)))⌝.
+    "#Hpaxos"  ∷ ([∗ list] i ↦ px ∈ peersL, is_paxos_node px (Z.of_nat i) sc γ).
 
-Definition is_paxos (paxos : loc) (nid : Z) γ : iProp Σ :=
-  ∃ (clst : gset Z),
-    "#Hnode"    ∷ is_paxos_node paxos nid clst γ ∗
-    "#Hcomm"    ∷ is_paxos_comm paxos clst γ.
+Definition is_paxos (paxos : loc) (nid : Z) sc γ : iProp Σ :=
+  "#Hnode" ∷ is_paxos_node paxos nid sc γ ∗
+  "#Hcomm" ∷ is_paxos_comm paxos sc γ.
 End repr.
 
 #[export]
@@ -169,8 +154,8 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 Definition is_proposed_decree γ v : iProp Σ :=
   ∃ n, is_proposal γ n v.
 
-Theorem wp_Paxos__Outcome (px : loc) nid γ :
-  is_paxos px nid γ -∗
+Theorem wp_Paxos__Outcome (px : loc) nid sc γ :
+  is_paxos px nid sc γ -∗
   {{{ True }}}
     Paxos__Outcome #px
   {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
@@ -179,14 +164,10 @@ Theorem wp_Paxos__Outcome (px : loc) nid γ :
   }}}.
 Proof.
   (*@ func (px *Paxos) Outcome() (string, bool) {                             @*)
-  (*@     px.mu.Lock()                                                        @*)
-  (*@                                                                         @*)
   (*@     if px.isLearned() {                                                 @*)
-  (*@         px.mu.Unlock()                                                  @*)
   (*@         return px.getDecree(), true                                     @*)
   (*@     }                                                                   @*)
   (*@                                                                         @*)
-  (*@     px.mu.Unlock()                                                      @*)
   (*@     return "", false                                                    @*)
   (*@ }                                                                       @*)
 Admitted.
@@ -198,8 +179,8 @@ Definition node_prepared (term termp : u64) (decree : string) nid γ : iProp Σ 
     "%Hlen"    ∷ ⌜(int.nat term ≤ length l)%nat⌝ ∗
     "%Hlatest" ∷ ⌜latest_before (int.nat term) l = int.nat termp⌝.
 
-Theorem wp_Paxos__prepare (px : loc) (term : u64) nid clst γ :
-  is_paxos_node px nid clst γ -∗
+Theorem wp_Paxos__prepare (px : loc) (term : u64) nid sc γ :
+  is_paxos_node px nid sc γ -∗
   {{{ True }}}
     Paxos__prepare #px #term
   {{{ (termp : u64) (decree : string) (ok : bool), RET (#termp, #(LitString decree), #ok);
@@ -293,8 +274,8 @@ Proof.
   apply latest_term_extend_false.
 Qed.
 
-Theorem wp_Paxos__advance (px : loc) nid clst γ :
-  is_paxos_node px nid clst γ -∗
+Theorem wp_Paxos__advance (px : loc) nid sc γ :
+  is_paxos_node px nid sc γ -∗
   {{{ True }}}
     Paxos__advance #px
   {{{ (term : u64) (termp : u64) (decree : string), RET (#term, #termp, #(LitString decree));
@@ -393,8 +374,8 @@ Definition node_accepted (term : u64) (decree : string) nid γ : iProp Σ :=
     "#Hlb"    ∷ is_ballot_lb γ nid l ∗
     "%Haccin" ∷ ⌜accepted_in l (int.nat term)⌝.
 
-Theorem wp_Paxos__accept (px : loc) (term : u64) (decree : string) nid clst γ :
-  is_paxos_node px nid clst γ -∗
+Theorem wp_Paxos__accept (px : loc) (term : u64) (decree : string) nid sc γ :
+  is_paxos_node px nid sc γ -∗
   is_proposal γ (int.nat term) decree -∗
   {{{ True }}}
     Paxos__accept #px #term #(LitString decree)
@@ -501,26 +482,28 @@ Proof.
   by replace (_ - _)%nat with O by lia.
 Qed.
 
+Definition reached_quorum (sc n : nat) := sc / 2 < n.
+
 Definition quorum_prepared
-  (term : u64) (terml : u64) (decreel : string) (clst : gset Z) (γ : spaxos_names) : iProp Σ :=
+  (term : u64) (terml : u64) (decreel : string) (sc : nat) (γ : spaxos_names) : iProp Σ :=
   ∃ (bsqlb : gmap Z ballot),
     "#Hlbs"      ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
     "#Hproposal" ∷ is_proposal_nz γ (int.nat terml) decreel ∗
-    "%Hquorum"   ∷ ⌜quorum clst (dom bsqlb)⌝ ∗
+    "%Hnprep"    ∷ ⌜reached_quorum sc (size (dom bsqlb))⌝ ∗
     "%Hlen"      ∷ ⌜map_Forall (λ _ l, ((int.nat term) ≤ length l)%nat) bsqlb⌝ ∗
     "%Hlargest"  ∷ ⌜latest_before_quorum (int.nat term) bsqlb = int.nat terml⌝.
 
 #[global]
-Instance quorum_prepared_persistent term terml decree clst γ :
-  Persistent (quorum_prepared term terml decree clst γ).
+Instance quorum_prepared_persistent term terml decree sc γ :
+  Persistent (quorum_prepared term terml decree sc γ).
 Proof. apply _. Qed.
 
 Theorem wp_Paxos__accept__proposer
-  (px : loc) (term : u64) (decree : string) (terml : u64) decreel nid clst γ :
+  (px : loc) (term : u64) (decree : string) (terml : u64) decreel nid sc γ :
   is_term_of_node nid (int.nat term) ->
   (if decide (int.nat terml = O) then True else decree = decreel) ->
-  quorum_prepared term terml decreel clst γ -∗
-  is_paxos_node px nid clst γ -∗
+  quorum_prepared term terml decreel sc γ -∗
+  is_paxos_node px nid sc γ -∗
   {{{ True }}}
     Paxos__accept #px #term #(LitString decree)
   {{{ (ok : bool), RET #ok;
@@ -604,23 +587,20 @@ Proof.
     pose proof (vt_impl_freshness Htermc Htermorder Hofnode Hvts) as Hfresh.
     iAssert (⌜valid_proposal bs ps (int.nat term) decree⌝)%I as %Hvalid.
     { iNamed "Hprepares".
-      iDestruct (ballots_prefix with "Hlbs Hbs") as %Hprefix.
+      iDestruct (ballots_prefix with "Hlbs Hbs") as "[%Hsubseteq %Hprefix]".
       unfold is_proposal_nz.
       iAssert (⌜if decide (int.nat terml = O)
                then True
                else ps !! (int.nat terml) = Some decree⌝)%I as %Hatterm.
       { case_decide; first done. rewrite Hdecree. by iApply proposal_lookup. }
-      iDestruct (cluster_eq with "Hcluster Hclst") as %->.
       iPureIntro.
       set bsq := bs ∩ bsqlb.
       exists bsq.
+      assert (Hdoms : dom bsq = dom bsqlb).
+      { rewrite dom_intersection_L. set_solver. }
       split; first by apply map_intersection_subseteq.
       split.
-      { replace (dom bsq) with (dom bsqlb); first done.
-        rewrite dom_intersection_L.
-        destruct Hquorum as [? _].
-        set_solver.
-      }
+      { rewrite Hdoms. split; [done | by rewrite Hdombs]. }
       split.
       { intros x b Hxb.
         rewrite lookup_intersection_Some in Hxb.
@@ -639,11 +619,7 @@ Proof.
         by specialize (Hprefix _ _ _ Hlb Hl).
       }
       { done. }
-      { replace (dom bsq) with (dom bsqlb); first done.
-        rewrite dom_intersection_L.
-        destruct Hquorum as [? _].
-        set_solver.
-      }
+      { by rewrite Hdoms. }
       case_decide as Hcase.
       - left. by rewrite Hcase in Hlargest.
       - right. by rewrite Hlargest.
@@ -716,13 +692,13 @@ Proof.
   by replace (_ - _)%nat with O by lia.
 Qed.
 
-Theorem wp_Paxos__prepareAll (px : loc) (term terma : u64) (decreea : string) clst nid γ :
-  is_paxos_comm px clst γ -∗
+Theorem wp_Paxos__prepareAll (px : loc) (term terma : u64) (decreea : string) nid sc γ :
+  is_paxos_comm px sc γ -∗
   node_prepared term terma decreea nid γ -∗
   {{{ True }}}
     Paxos__prepareAll #px #term #terma #(LitString decreea)
   {{{ (termp : u64) (decree : string) (ok : bool), RET (#termp, #(LitString decree), #ok);
-      if ok then quorum_prepared term termp decree clst γ else True
+      if ok then quorum_prepared term termp decree sc γ else True
   }}}.
 Proof.
   (*@ func (px *Paxos) prepareAll(term uint64) (uint64, string, bool) {       @*)
@@ -751,24 +727,24 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Definition quorum_accepted (term : u64) (clst : gset Z) (γ : spaxos_names) : iProp Σ :=
+Definition quorum_accepted (term : u64) (sc : nat) (γ : spaxos_names) : iProp Σ :=
   ∃ (bsqlb : gmap Z ballot),
     "#Hlbs"    ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
-    "%Hquorum" ∷ ⌜quorum clst (dom bsqlb)⌝ ∗
+    "%Hnacpt " ∷ ⌜reached_quorum sc (size (dom bsqlb))⌝ ∗
     "%Haccin"  ∷ ⌜map_Forall (λ _ l, accepted_in l (int.nat term)) bsqlb⌝.
 
 #[global]
-Instance quorum_accepted_persistent term clst γ :
-  Persistent (quorum_accepted γ term clst).
+Instance quorum_accepted_persistent term sc γ :
+  Persistent (quorum_accepted γ term sc).
 Proof. apply _. Qed.
 
-Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) clst nid γ :
-  is_paxos_comm px clst γ -∗
+Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) nid sc γ :
+  is_paxos_comm px sc γ -∗
   node_accepted term decree nid γ -∗
   is_proposal γ (int.nat term) decree -∗
   {{{ True }}}
     Paxos__acceptAll #px #term #(LitString decree)
-  {{{ (ok : bool), RET #ok; if ok then quorum_accepted term clst γ else True }}}.
+  {{{ (ok : bool), RET #ok; if ok then quorum_accepted term sc γ else True }}}.
 Proof.
   (*@ func (px *Paxos) acceptAll(term uint64, decree string) bool {           @*)
   (*@     var nAccepted uint64 = 0                                            @*)
@@ -783,8 +759,8 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) clst γ :
-  is_paxos_comm px clst γ -∗
+Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) sc γ :
+  is_paxos_comm px sc γ -∗
   is_chosen_consensus γ decree -∗
   {{{ True }}}
     Paxos__learnAll #px #term #(LitString decree)
@@ -806,8 +782,8 @@ End temp.
 Section prog.
 Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
-Theorem wp_Paxos__Propose (px : loc) (v : string) nid γ :
-  is_paxos px nid γ -∗
+Theorem wp_Paxos__Propose (px : loc) (v : string) nid sc γ :
+  is_paxos px nid sc γ -∗
   {{{ True }}}
     Paxos__Propose #px #(LitString v)
   {{{ (ok : bool), RET #ok; if ok then is_proposed_decree γ v else True }}}.
@@ -945,21 +921,18 @@ Proof.
     iNamed "HinvO".
     iAssert (⌜chosen bs ps decree⌝)%I as %Hchosen.
     { iNamed "Hacptq".
-      iDestruct (ballots_prefix with "Hlbs Hbs") as %Hprefix.
+      iDestruct (ballots_prefix with "Hlbs Hbs") as "[%Hsubseteq %Hprefix]".
       iDestruct (proposal_lookup with "Hpsl Hps") as %Hatterm.
-      iDestruct (cluster_eq with "Hcluster Hclst") as %->.
       iPureIntro.
       exists (int.nat term).
       split; first apply Hatterm.
       set bsq := bs ∩ bsqlb.
       exists bsq.
+      assert (Hdoms : dom bsq = dom bsqlb).
+      { rewrite dom_intersection_L. set_solver. }
       split; first by apply map_intersection_subseteq.
       split.
-      { replace (dom bsq) with (dom bsqlb); first done.
-        rewrite dom_intersection_L.
-        destruct Hquorum as [? _].
-        set_solver.
-      }
+      { rewrite Hdoms. split; [done | by rewrite Hdombs]. }
       intros x b Hxb.
       rewrite lookup_intersection_Some in Hxb.
       destruct Hxb as [Hb [blb Hblb]].
