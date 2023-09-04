@@ -1251,4 +1251,217 @@ Proof.
   }
 Qed.
 
+Lemma wp_Clerk__TryWriteConfig (ck:loc) new_conf new_conf_sl epoch γ Φ :
+  is_Clerk ck γ -∗
+  readonly (own_slice_small new_conf_sl uint64T 1 new_conf) -∗
+  is_reserved_epoch_lb γ epoch -∗
+  (□ Pwf new_conf) -∗
+  □ (£ 1 -∗ |={⊤∖↑N,∅}=> ∃ latest_epoch reserved_epoch conf,
+    own_latest_epoch γ latest_epoch ∗
+    own_reserved_epoch γ reserved_epoch ∗
+    own_config γ conf ∗ (⌜ epoch = reserved_epoch ⌝ -∗ own_config γ new_conf -∗
+                         own_reserved_epoch γ reserved_epoch -∗
+                         own_latest_epoch γ epoch
+                         ={∅,⊤∖↑N}=∗
+                         Φ #0)
+  ) -∗
+  (∀ (err:u64) , ⌜err ≠ 0⌝ -∗ Φ #err) -∗
+  WP config2.Clerk__TryWriteConfig #ck #epoch (slice_val new_conf_sl)
+  {{ Φ }}
+.
+Proof.
+  iIntros "#Hck #Hconf_sl #Hlb #HP_new #HΦ Hfail".
+  wp_lam.
+  wp_apply wp_ref_of_zero.
+  { eauto. }
+  iIntros (reply_ptr) "Hreply".
+  wp_pures.
+  wp_apply wp_slice_len.
+  wp_pures.
+  wp_apply (wp_NewSliceWithCap).
+  { apply encoding.unsigned_64_nonneg. }
+  iIntros (?) "Hargs_sl".
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (args_ptr) "Hargs".
+  wp_pures.
+  wp_load.
+  wp_apply (wp_WriteInt with "[$]").
+  iIntros (?) "Hsl".
+  wp_store.
+  wp_apply (Config.wp_Encode with "[$]").
+  iIntros (??) "(%HconfEnc & _ & Henc_sl)".
+  iDestruct (own_slice_to_small with "Henc_sl") as "Henc_sl".
+  wp_load.
+  wp_apply (wp_WriteBytes with "[$Hsl $Henc_sl]").
+  iIntros (?) "[Hargs_sl _]".
+  wp_store.
+  wp_pures.
+  iDestruct (own_slice_to_small with "Hargs_sl") as "Hargs_sl".
+  replace (int.nat 0%Z) with (0%nat) by word.
+  iAssert ( ∃ sl,
+      "Hreply" ∷ reply_ptr ↦[slice.T byteT] (slice_val sl)
+    )%I with "[Hreply]" as "HH".
+  { rewrite zero_slice_val. iExists _; iFrame. }
+  wp_forBreak.
+  iNamed "HH".
+  wp_pures.
+
+  iNamed "Hck".
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
+  wp_apply (release_spec with "[Hlocked Hleader]").
+  { iFrame "#∗". iNext. iExists _; iFrame "∗%". }
+  wp_pures.
+  wp_load.
+  wp_loadField.
+  rewrite -Hsz in HleaderBound.
+  apply list_lookup_lt in HleaderBound as [? Hlookup].
+  iMod (readonly_load with "Hcls_sl") as (?) "Hcls_sl2".
+  iDestruct (own_slice_small_sz with "Hcls_sl2") as %Hsl_sz.
+  wp_apply (wp_SliceGet with "[$Hcls_sl2]").
+  { done. }
+  iIntros "_".
+  iDestruct (big_sepL_lookup with "Hrpc") as (?) "#[Hcl_rpc Hhost]".
+  { exact Hlookup. }
+  iNamed "Hhost".
+  wp_apply (wp_frame_wand with "[Hfail Hargs]"); first iNamedAccu.
+  wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
+  { iDestruct "Hhost" as "(_ & _ & $ & _)". }
+  { (* successful RPC *)
+    iModIntro.
+    iNext.
+    Opaque u64_le.
+    rewrite /TryWriteConfig_spec /TryWriteConfig_core_spec /=.
+    repeat iExists _.
+    iSplitR.
+    { iPureIntro. done. }
+    iSplitR.
+    { iPureIntro. done. }
+    iFrame "#".
+    Transparent u64_le.
+    iSplitR.
+    { (* case: successfully wrote new config and epoch *)
+      iIntros "Hlc".
+      iDestruct ("HΦ" with "Hlc") as "Hupd".
+      (* case: got a new epoch, no error *)
+      iMod "Hupd".
+      iModIntro.
+      iDestruct "Hupd" as (???) "(H1&H2&H3&Hupd)".
+      repeat iExists _.
+      iFrame "H1 H2 H3".
+      iIntros.
+      iMod ("Hupd" with "[% //] [$] [$] [$]") as "Hupd".
+      iModIntro.
+      iIntros (?) "%Hconf_enc Hargs_sl".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+      subst.
+      iDestruct ("Hrep_sl") as "[Hrep_sl1 Hrep_sl2]".
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros (?) "Hrep_sl".
+      wp_pures.
+      iModIntro.
+      iNamed 1.
+      iRight. iSplitR; first done.
+      wp_pures.
+      wp_load.
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros (?) "_".
+      wp_pures.
+      iModIntro.
+      iApply "Hupd".
+    }
+    { (* case: RPC ran, but was not able to write *)
+      iIntros (?) "%Herr".
+      iIntros (?) "%HrepEnc Harg_sl".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+      subst.
+      iDestruct "Hrep_sl" as "[Hrep_sl Hrep_sl2]".
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros (?) "_".
+      wp_pures.
+      wp_if_destruct.
+      { (* case: ErrNotLeader, so retry *)
+        wp_loadField.
+        wp_apply (acquire_spec with "[$]").
+        iIntros "[Hlocked Hown]".
+        wp_pures.
+        iNamed "Hown".
+        wp_loadField.
+        wp_if_destruct.
+        { (* case: increase leader idx *)
+          wp_loadField.
+          wp_loadField.
+          wp_apply (wp_slice_len).
+          wp_pures.
+          wp_storeField.
+          wp_loadField.
+          wp_apply (release_spec with "[Hlocked Hleader]").
+          {
+            iFrame "#∗".
+            iNext. repeat iExists _; iFrame.
+            iPureIntro.
+            rewrite -Hsz.
+            rewrite Hsl_sz.
+            rewrite word.unsigned_modu_nowrap; last lia.
+            { apply Z2Nat.inj_lt; auto using encoding.unsigned_64_nonneg.
+              { apply Z.mod_pos; lia. }
+              { apply Z_mod_lt; lia. }
+            }
+          }
+          wp_pures.
+          iModIntro. iNamed 1. iLeft.
+          iSplitR; first done.
+          iFrame. repeat iExists _. iFrame.
+        }
+        { (* case: don't increase leader idx *)
+          wp_loadField.
+          wp_apply (release_spec with "[Hlocked Hleader]").
+          {
+            iFrame "#∗".
+            iNext. repeat iExists _; iFrame "∗%".
+          }
+          wp_pures.
+          iModIntro. iNamed 1.
+          iLeft. iSplitR; first done.
+          iFrame.
+          repeat iExists _.
+          iFrame.
+        }
+      }
+      { (* case: some other error, don't retry *)
+        iModIntro. iNamed 1.
+        iRight.
+        iSplitR; first done.
+        wp_pures.
+        wp_load.
+        wp_apply (wp_ReadInt with "[$]").
+        iIntros (?) "_".
+        wp_pures.
+        iApply "Hfail".
+        done.
+      }
+    }
+  }
+  {
+    iIntros (?) "%Herr Hreply_sl Hrep".
+    wp_pures.
+    wp_if_destruct.
+    2:{ exfalso. done. }
+    iModIntro. iNamed 1. iLeft.
+    iSplitR; first done.
+    iFrame. repeat iExists _. iFrame.
+  }
+Qed.
+
 End config_proof.
