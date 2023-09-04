@@ -149,6 +149,29 @@ Proof.
   }
 Qed.
 
+Lemma post_lease_acc N R γl {E} :
+  ↑N ⊆ E →
+  post_lease N γl R ={E,E∖↑N}=∗
+  ▷ R ∗ (▷ R ={E∖↑N,E}=∗ post_lease N γl R)
+.
+Proof.
+  iIntros (?) "Hpost".
+  iDestruct "Hpost" as (?) "[Htok #Hinv]".
+  iInv "Hinv" as "Hi" "Hclose".
+  iDestruct "Hi" as (?) "[>Hexpiration Hi]".
+  iDestruct "Hi" as "[HR | [_ >Hbad]]"; last first.
+  {
+    iCombine "Htok Hbad" gives %[Hbad _].
+    exfalso. done.
+  }
+  iFrame "HR".
+  iModIntro.
+  iIntros "HR".
+  iExists _; iFrame "∗#".
+  iMod ("Hclose" with "[-]"); last done.
+  iExists _; iFrame.
+Qed.
+
 Lemma post_get_lease R N γl :
   post_lease N γl R -∗ is_lease N γl R.
 Proof.

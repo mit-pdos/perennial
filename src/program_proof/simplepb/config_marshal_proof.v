@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Goose.github_com.mit_pdos.gokv.simplepb Require Export config.
+From Goose.github_com.mit_pdos.gokv.simplepb Require Export config2.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From coqutil.Datatypes Require Import List.
 
@@ -20,7 +20,7 @@ Lemma wp_Encode conf_sl (conf:C) :
   {{{
         own conf_sl conf
   }}}
-    config.EncodeConfig (slice_val conf_sl)
+    config2.EncodeConfig (slice_val conf_sl)
   {{{
         enc enc_sl, RET (slice_val enc_sl);
         ⌜has_encoding enc conf⌝ ∗
@@ -189,7 +189,7 @@ Lemma wp_Decode enc enc_sl (conf:C) :
         ⌜has_encoding enc conf⌝ ∗
         own_slice_small enc_sl byteT 1 enc
   }}}
-    config.DecodeConfig (slice_val enc_sl)
+    config2.DecodeConfig (slice_val enc_sl)
   {{{
         conf_sl, RET (slice_val conf_sl); own conf_sl conf
   }}}.
