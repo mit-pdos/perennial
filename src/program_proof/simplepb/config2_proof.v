@@ -1464,4 +1464,193 @@ Proof.
   }
 Qed.
 
+Lemma wp_Clerk__GetLease (ck:loc) γ epoch Φ :
+  is_Clerk ck γ -∗
+  □ ((∀ (leaseExpiration:u64) γl,
+      is_lease epochLeaseN γl (own_latest_epoch γ epoch) -∗
+      is_lease_valid_lb γl leaseExpiration -∗ Φ (#0, #leaseExpiration)%V) ∧
+    (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (#err, #0)%V)
+  ) -∗
+  WP config2.Clerk__GetLease #ck #epoch {{ Φ }}
+.
+Proof.
+  iIntros "#Hck #HΦ".
+  wp_lam.
+  wp_apply wp_ref_of_zero.
+  { eauto. }
+  iIntros (reply_ptr) "Hreply".
+  wp_pures.
+  wp_apply (wp_NewSliceWithCap).
+  { apply encoding.unsigned_64_nonneg. }
+  iIntros (?) "Hargs_sl".
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (args_ptr) "Hargs".
+  wp_pures.
+  wp_load.
+  wp_apply (wp_WriteInt with "[$]").
+  iIntros (?) "Hargs_sl".
+  iDestruct (own_slice_to_small with "Hargs_sl") as "Hargs_sl".
+  wp_store.
+  wp_pures.
+  iAssert ( ∃ sl,
+      "Hreply" ∷ reply_ptr ↦[slice.T byteT] (slice_val sl)
+    )%I with "[Hreply]" as "HH".
+  { rewrite zero_slice_val. iExists _; iFrame. }
+  wp_forBreak.
+  iNamed "HH".
+  wp_pures.
+
+  iNamed "Hck".
+  wp_loadField.
+  wp_apply (acquire_spec with "[$]").
+  iIntros "[Hlocked Hown]".
+  iNamed "Hown".
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
+  wp_apply (release_spec with "[Hlocked Hleader]").
+  { iFrame "#∗". iNext. iExists _; iFrame "∗%". }
+  wp_pures.
+  wp_load.
+  wp_loadField.
+  rewrite -Hsz in HleaderBound.
+  apply list_lookup_lt in HleaderBound as [? Hlookup].
+  iMod (readonly_load with "Hcls_sl") as (?) "Hcls_sl2".
+  iDestruct (own_slice_small_sz with "Hcls_sl2") as %Hsl_sz.
+  wp_apply (wp_SliceGet with "[$Hcls_sl2]").
+  { done. }
+  iIntros "_".
+  iDestruct (big_sepL_lookup with "Hrpc") as (?) "#[Hcl_rpc Hhost]".
+  { exact Hlookup. }
+  iNamed "Hhost".
+  wp_apply (wp_frame_wand with "[Hargs]"); first iNamedAccu.
+  wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
+  { iDestruct "Hhost" as "(_ & _ & _ & $ & _)". }
+  { (* successful RPC *)
+    iModIntro.
+    iNext.
+    Opaque u64_le.
+    rewrite /GetLease_spec /GetLease_core_spec /=.
+    repeat iExists _.
+    iSplitR.
+    { iPureIntro. done. }
+    iSplit.
+    { (* case: got a lease *)
+      iIntros (??) "H1 H2".
+      iIntros (?) "%Henc Hargs_sl".
+      iIntros (?) "Hrep Hreply_sl".
+      wp_pures.
+      iLeft in "HΦ".
+      iDestruct ("HΦ" with "[$] [$]") as "Hupd".
+      wp_load.
+      subst.
+      iDestruct "Hreply_sl" as "[Hrep_sl Hrep_sl2]".
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros (?) "_".
+      wp_pures.
+      iModIntro.
+      iNamed 1.
+      iRight.
+      iSplitR; first done.
+      wp_pures.
+      wp_load.
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros (?) "?".
+      wp_pures.
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros (?) "_".
+      wp_pures.
+      iApply "Hupd".
+    }
+    { (* case: RPC ran, but server gave an error *)
+      iIntros (?) "%Herr".
+      iIntros (?) "%HrepEnc Harg_sl".
+      iIntros (?) "Hrep Hrep_sl".
+      wp_pures.
+      wp_load.
+      subst.
+      iDestruct "Hrep_sl" as "[Hrep_sl Hrep_sl2]".
+      wp_apply (wp_ReadInt with "[$]").
+      iIntros (?) "_".
+      wp_pures.
+      wp_if_destruct.
+      { (* case: ErrNotLeader, so retry *)
+        wp_loadField.
+        wp_apply (acquire_spec with "[$]").
+        iIntros "[Hlocked Hown]".
+        wp_pures.
+        iNamed "Hown".
+        wp_loadField.
+        wp_if_destruct.
+        { (* case: increase leader idx *)
+          wp_loadField.
+          wp_loadField.
+          wp_apply (wp_slice_len).
+          wp_pures.
+          wp_storeField.
+          wp_loadField.
+          wp_apply (release_spec with "[Hlocked Hleader]").
+          {
+            iFrame "#∗".
+            iNext. repeat iExists _; iFrame.
+            iPureIntro.
+            rewrite -Hsz.
+            rewrite Hsl_sz.
+            rewrite word.unsigned_modu_nowrap; last lia.
+            { apply Z2Nat.inj_lt; auto using encoding.unsigned_64_nonneg.
+              { apply Z.mod_pos; lia. }
+              { apply Z_mod_lt; lia. }
+            }
+          }
+          wp_pures.
+          iModIntro. iNamed 1. iLeft.
+          iSplitR; first done.
+          iFrame. repeat iExists _. iFrame.
+        }
+        { (* case: don't increase leader idx *)
+          wp_loadField.
+          wp_apply (release_spec with "[Hlocked Hleader]").
+          {
+            iFrame "#∗".
+            iNext. repeat iExists _; iFrame "∗%".
+          }
+          wp_pures.
+          iModIntro. iNamed 1.
+          iLeft. iSplitR; first done.
+          iFrame.
+          repeat iExists _.
+          iFrame.
+        }
+      }
+      { (* case: some other error, don't retry *)
+        iModIntro. iNamed 1.
+        iRight.
+        iSplitR; first done.
+        wp_pures.
+        wp_load.
+        wp_apply (wp_ReadInt with "[$]").
+        iIntros (?) "?".
+        wp_pures.
+        wp_apply (wp_ReadInt with "[$]").
+        iIntros (?) "_".
+        wp_pures.
+        iRight in "HΦ".
+        iApply "HΦ".
+        done.
+      }
+    }
+  }
+  {
+    iIntros (?) "%Herr Hreply_sl Hrep".
+    wp_pures.
+    wp_if_destruct.
+    2:{ exfalso. done. }
+    iModIntro. iNamed 1. iLeft.
+    iSplitR; first done.
+    iFrame. repeat iExists _. iFrame.
+  }
+Qed.
+
 End config_proof.
