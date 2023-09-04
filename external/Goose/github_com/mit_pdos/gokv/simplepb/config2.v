@@ -224,7 +224,9 @@ Definition Server__tryAcquire: val :=
   rec: "Server__tryAcquire" "s" :=
     let: (("err", "e"), "relF") := mpaxos.Server__TryAcquire (struct.loadF Server "s" "s") in
     (if: "err" ≠ #0
-    then (#false, slice.nil, slice.nil)
+    then
+      let: "p" := ref (zero_val ptrT) in
+      (#false, ![ptrT] "p", slice.nil)
     else
       let: "st" := decodeState (![slice.T byteT] "e") in
       let: "releaseFn" := (λ: <>,

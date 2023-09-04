@@ -21,6 +21,10 @@ Record t :=
 Definition encode (x:t) : list u8.
 Admitted.
 
+Global Instance encode_inj : Inj eq eq encode.
+Proof.
+Admitted.
+
 Context `{!heapGS Σ}.
 Definition own (l:loc) (x:t) : iProp Σ :=
   ∃ conf_sl,
@@ -39,6 +43,19 @@ Lemma wp_decode (x:t) sl q :
     decodeState (slice_val sl)
   {{{
         l, RET #l; own l x
+  }}}
+.
+Proof.
+Admitted.
+
+Lemma wp_encode l (x:t) :
+  {{{
+        own l x
+  }}}
+    encodeState #l
+  {{{
+        sl, RET (slice_val sl);  own_slice_small sl byteT 1 (encode x) ∗
+        own l x
   }}}
 .
 Proof.
@@ -220,16 +237,18 @@ Definition own_Config_ghost γ (st:state.t) : iProp Σ :=
 .
 
 Definition configWf (a:list u8) : iProp Σ :=
-  ∃ st, ⌜ a = state.encode st ⌝ ∗ Pwf st.(state.config)
+  ∃ st, ⌜ a = state.encode st ⌝ ∗ □ Pwf st.(state.config)
 .
 
-Definition configPaxosN := N .@ "paxos".
+Definition configN := N .@ "paxos".
+Definition configPaxosN := configN .@ "paxos".
+Definition configInvN := configN .@ "inv".
 
 Instance c : mpaxosParams.t Σ :=
   mpaxosParams.mk Σ config configWf configPaxosN.
 
 Definition is_config_inv γ γst : iProp Σ :=
-  inv N (∃ st,
+  inv configInvN (∃ st,
         "Hst" ∷ own_state γst (state.encode st) ∗
         "Hghost" ∷ own_Config_ghost γ st
       )
@@ -247,8 +266,8 @@ Definition own_tryRelease (f:val) γ (st_ptr:loc) (oldst:state.t) : iProp Σ :=
   ∀ (newst:state.t) Φ,
   (
     "Hvol" ∷ state.own st_ptr newst ∗
-    "Hwf" ∷ □ Pwf newst.(state.config) ∗
-    "Hupd" ∷ (own_Config_ghost γ oldst ={⊤∖↑configPaxosN}=∗ own_Config_ghost γ newst ∗ Φ #true)
+    "#Hwf" ∷ □ Pwf newst.(state.config) ∗
+    "Hupd" ∷ (own_Config_ghost γ oldst ={⊤∖↑configN}=∗ own_Config_ghost γ newst ∗ Φ #true)
   ) -∗
   (Φ #false) -∗
   WP f #() {{ Φ }}
@@ -271,7 +290,83 @@ Lemma wp_Server__tryAcquire s γ :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ) "Hsrv HΦ".
+  wp_lam.
+  iNamed "Hsrv".
+  wp_loadField.
+  wp_apply (wp_Server__TryAcquire with "[$]").
+  iIntros "* Hpost".
+  wp_pures.
+  wp_if_destruct.
+  {
+    iClear "Hpost".
+    wp_apply wp_ref_of_zero.
+    { done. }
+    iIntros (?) "Hl".
+    wp_pures. wp_load.
+    wp_pures.
+    iApply "HΦ".
+    done.
+  }
+  setoid_rewrite decide_True.
+  2:{ done. }
+  iDestruct "Hpost" as (??) "(Hsl_ptr & #Hsl & HP & Hwp)".
+  wp_load.
+  iMod (readonly_load with "Hsl") as (?) "Hsl2".
+  iDestruct "HP" as (?) "[%Henc #HP]".
+  subst.
+  wp_apply (state.wp_decode with "[$Hsl2]").
+  iIntros (?) "Hst".
+  wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  iExists _; iFrame "∗#".
+  clear.
+  iIntros (??). iNamed 1.
+  iIntros "HΦ".
+  wp_pures.
+  wp_apply (state.wp_encode with "[$]").
+  iClear "Hsl".
+  iIntros (?) "[Hsl _]".
+  wp_pure1_credit "Hlc".
+  wp_store.
+  iMod (readonly_alloc_1 with "Hsl") as "Hsl".
+  wp_apply ("Hwp" with "[-HΦ]").
+  {
+    iFrame "∗#".
+    iSplitR.
+    { iModIntro. iExists _; iFrame "#%". done. }
+    iInv "Hconfig_inv" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
+    iNamed "Hi".
+    iApply fupd_mask_intro.
+    { solve_ndisj. }
+    iIntros "Hmask".
+    iExists _; iFrame.
+    iIntros "%Heq".
+    eapply inj in Heq.
+    2:{ apply _. }
+    subst.
+    iIntros "Hst".
+    iMod "Hmask" as "_".
+    iMod (fupd_mask_subseteq _) as "Hmask".
+    2: iMod ("Hupd" with "[$]") as "[Hghost Hupd]".
+    { simpl. solve_ndisj. }
+    iMod "Hmask" as "_".
+    iMod ("Hclose" with "[Hghost Hst]").
+    { repeat iExists _; iFrame. }
+    iModIntro.
+    wp_pures.
+    iApply "Hupd".
+  }
+  {
+    iIntros.
+    wp_pures.
+    rewrite bool_decide_false.
+    { iApply "HΦ". }
+    naive_solver.
+  }
+Qed.
 
 Lemma wp_Server__ReserveEpochAndGetConfig (server:loc) γ :
   {{{
