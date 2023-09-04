@@ -309,6 +309,7 @@ Definition Server__TryWriteConfig: val :=
 Definition Server__GetLease: val :=
   rec: "Server__GetLease" "s" "args" "reply" :=
     "reply" <-[slice.T byteT] (marshal.WriteInt slice.nil e.NotLeader);;
+    "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") #0);;
     let: ("epoch", <>) := marshal.ReadInt "args" in
     let: (("ok", "st"), "tryReleaseFn") := Server__tryAcquire "s" in
     (if: (~ "ok")

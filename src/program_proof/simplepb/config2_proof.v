@@ -238,70 +238,6 @@ Definition own_Config_ghost γ (st:state.t) : iProp Σ :=
   "%HresIneq" ∷ ⌜ int.nat st.(state.epoch) <= int.nat st.(state.reservedEpoch) ⌝
 .
 
-(*
-Lemma lease_expired_get_epoch γ leaseExpiration epoch :
-  is_time_lb leaseExpiration -∗
-  own_Config_ghost γ leaseExpiration epoch ={↑epochLeaseN}=∗
-  own_latest_epoch γ epoch
-.
-Proof.
-  iIntros "Htime_lb Hghost".
-  iDestruct "Hghost" as "[H | $]"; last done.
-  iDestruct "H" as (?) "(_ & Hexp & Hpost_lease)".
-  iMod (lease_expire with "Hexp Hpost_lease Htime_lb") as ">$"; done.
-Qed.
-
-Lemma lease_acc_epoch γ t leaseExpiration epoch :
-  own_time t -∗
-  own_Config_ghost γ leaseExpiration epoch ={↑epochLeaseN, ∅}=∗
-  own_latest_epoch γ epoch ∗ (own_latest_epoch γ epoch ={∅,↑epochLeaseN}=∗
-                       own_time t ∗
-                       own_Config_ghost γ leaseExpiration epoch
-                      ).
-Proof.
-  iIntros "Ht Hghost".
-  iDestruct "Hghost" as "[H | Hepoch]".
-  2:{ (* case: we own the epoch directly; just do some meaningless stuff to get
-         the right masks *)
-    iFrame "Hepoch".
-    iApply fupd_mask_intro.
-    { set_solver. }
-    iIntros "Hmask".
-    iIntros "Hepoch".
-    iMod "Hmask" as "_".
-    by iFrame.
-  }
-  {
-    iDestruct "H" as (?) "(#Hlease & Hexp & Hpost)".
-    destruct (decide (int.nat t < int.nat leaseExpiration)) eqn:Hineq.
-    { (* case: lease is unexpired. Access own_latest_epoch from the lease. *)
-      iDestruct (lease_get_lb with "Hexp") as "#Hvalid".
-      iMod (lease_acc with "Hvalid Hlease Ht") as "[>$ HH]".
-      { done. }
-      { done. }
-      replace (↑epochLeaseN ∖ ↑epochLeaseN) with (∅:coPset) by set_solver.
-      iModIntro.
-      iIntros "Hepoch".
-      iMod ("HH" with "Hepoch") as "$".
-      iModIntro.
-      iLeft.
-      iExists _; iFrame "∗#".
-    }
-    { (* case: lease is expired.  *)
-      iDestruct (own_time_get_lb with "Ht") as "#Hlb".
-      iMod (lease_expire with "Hexp Hpost [Hlb]") as ">Hepoch".
-      { iApply is_time_lb_mono; last done. word. }
-      iApply fupd_mask_intro.
-      { set_solver. }
-      iIntros "Hmask".
-      iFrame.
-      iIntros "Hepoch".
-      iMod "Hmask". iModIntro.
-      iFrame.
-    }
-  }
-Qed. *)
-
 Definition configWf (a:list u8) : iProp Σ :=
   ∃ st, ⌜ a = state.encode st ⌝ ∗ Pwf st.(state.config)
 .
@@ -824,6 +760,201 @@ Proof.
       iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
       iFrame.
       iApply "Hfail"; last done; done.
+    }
+  }
+Qed.
+
+Lemma wp_Server__GetLease (server:loc) γ :
+  {{{
+        is_Server server γ
+  }}}
+    config2.Server__GetLease #server
+  {{{
+        (f:val), RET f; is_urpc_handler_pred f (GetLease_spec γ)
+  }}}.
+Proof.
+  iIntros (Φ) "#His_srv HΦ".
+  wp_call.
+  iApply "HΦ".
+  iModIntro.
+  unfold is_urpc_handler_pred.
+  clear Φ.
+  iIntros (enc_args Ψ req_sl rep_ptr) "!# %Φ (Harg_sl & Hrep & HΨ) HΦ".
+  wp_call.
+  iDestruct "HΨ" as (?) "[% HΨ]".
+  subst.
+  change (slice.nil) with (slice_val Slice.nil).
+  wp_apply (wp_WriteInt with "[]").
+  { iApply own_slice_zero. }
+  iIntros (?) "Hrep_sl".
+  wp_store.
+  wp_load.
+  wp_apply (wp_WriteInt with "[$Hrep_sl]").
+  iIntros (?) "Hrep_sl".
+  wp_store.
+  wp_apply (wp_ReadInt with "Harg_sl").
+  iIntros (?) "Hargs_sl".
+  wp_pures.
+  wp_apply (wp_Server__tryAcquire with "[$]").
+  iIntros "* Hpost".
+  wp_pures.
+  wp_if_destruct.
+  { (* case: not leader *)
+    iApply "HΦ".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iFrame.
+    iRight in "HΨ".
+    iApply "HΨ"; last done.
+    done.
+  }
+  iDestruct "Hpost" as (?) "(#HP & Hvol & Hwp)".
+  iNamed "Hvol".
+  wp_loadField.
+  wp_apply (wp_or with "[HwantLeaseToExpire]").
+  { iNamedAccu. }
+  { wp_pures. iPureIntro. by rewrite -bool_decide_not. }
+  { iIntros. wp_loadField. iFrame. iPureIntro.
+    repeat f_equal.
+    instantiate (2:=(st.(state.wantLeaseToExpire) = true)).
+    Unshelve. 2:{ apply _. }
+    by destruct st, wantLeaseToExpire.
+  }
+  iNamed 1.
+  wp_if_destruct.
+  { (* case: epoch number that the caller wants is not the latest epoch, or wantToExpireLease *)
+    wp_bind (f #()).
+    wp_apply (wp_frame_wand with "[HΨ HΦ Hrep_sl Hrep]"); first iNamedAccu.
+    wp_apply ("Hwp" with "[-]").
+    { (* case: committed (non-)update *)
+      repeat rewrite sep_exist_r.
+      repeat iExists _. iFrame "∗#".
+      iIntros "$ !#".
+      wp_pures.
+      iNamed 1.
+      wp_apply (wp_WriteInt with "[]").
+      { iApply own_slice_zero. }
+      iClear "Hrep_sl".
+      iIntros (?) "Hrep_sl".
+      wp_store.
+      wp_load.
+      wp_apply (wp_WriteInt with "[$Hrep_sl]").
+      iIntros (?) "Hrep_sl".
+      wp_store.
+      iModIntro.
+      iApply "HΦ".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iFrame.
+      iRight in "HΨ".
+      iApply "HΨ"; last done; done.
+    }
+    {
+      iNamed 1.
+      wp_pures.
+      iModIntro.
+      iApply "HΦ".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iFrame.
+      iRight in "HΨ".
+      iApply "HΨ"; last done; done.
+    }
+  }
+  { (* case: epoch matches *)
+
+    assert (epoch = st.(state.epoch)); last subst.
+    {
+      apply Decidable.not_or in Heqb.
+      destruct Heqb as [? ?].
+      apply dec_stable in H.
+      by injection H.
+    }
+    wp_apply wp_GetTimeRange.
+    iIntros "* % % $".
+    iModIntro.
+    wp_pures.
+    wp_loadField.
+    wp_pures.
+    wp_bind (if: #_ then _ else _)%E.
+    wp_apply (wp_wand with "[HleaseExpiration]").
+    {
+      instantiate (1:=(λ _, ∃ (newLeaseExpiration:u64),
+                        "%Hineq1" ∷ ⌜ int.nat st.(state.leaseExpiration) <= int.nat newLeaseExpiration⌝ ∗
+                        "%Hineq2" ∷ ⌜ int.nat (word.add l 1000000000%Z) <=
+                          int.nat newLeaseExpiration⌝ ∗
+                        "HleaseExpiration" ∷ st_ptr ↦[state :: "leaseExpiration"] #newLeaseExpiration )%I).
+      wp_if_destruct.
+      {
+        wp_storeField.
+        iExists _; iFrame. iPureIntro.
+        split.
+        { apply Z2Nat.inj_le; try apply encoding.unsigned_64_nonneg. lia. }
+        { apply Z2Nat.inj_le; try apply encoding.unsigned_64_nonneg. lia. }
+      }
+      { iExists _; iFrame. iPureIntro.
+        split; first done.
+        apply Z2Nat.inj_le; try apply encoding.unsigned_64_nonneg. lia.
+      }
+    }
+    iIntros (?).
+    iNamed 1.
+    wp_pures.
+    wp_bind (f #()).
+    wp_apply (wp_frame_wand with "[HΨ HΦ Hrep Hrep_sl]"); first iNamedAccu.
+    wp_apply ("Hwp" with "[-]").
+    { (* successfully commit paxos write *)
+      repeat rewrite sep_exist_r.
+      instantiate (1:=state.mk _ _ _ _ _).
+      Opaque u64_le.
+      iExists _; simpl.
+      iFrame "∗#".
+      Transparent u64_le.
+
+      (* start ghost reasoning *)
+      iNamed 1.
+      iMod (fupd_mask_subseteq _) as "Hmask".
+      2: iMod (lease_renew newLeaseExpiration with "[$] [$]") as "[Hlatest_epoch HleaseExp]".
+      { solve_ndisj. }
+      { word. }
+      iMod "Hmask" as "_".
+      iDestruct (post_get_lease with "[$]") as "#Hlease".
+      iDestruct (lease_get_lb with "[$]") as "#Hlb".
+      iDestruct (lease_lb_mono with "[$]") as "#Hlb2".
+      { exact Hineq2. }
+      iClear "Hlb".
+      repeat rewrite sep_exist_r.
+      iExists _. iFrame.
+      iSplitR.
+      { iPureIntro. simpl. done. }
+      iModIntro.
+      (* end ghost reasoning *)
+
+      iNamed 1.
+      iLeft in "HΨ".
+      iDestruct ("HΨ" with "[$] [$]") as "HΨ".
+      wp_pures.
+      wp_apply (wp_WriteInt with "[]").
+      { iApply own_slice_zero. }
+      iClear "Hrep_sl".
+      iIntros (?) "Hrep_sl".
+      wp_store.
+      wp_load.
+      wp_apply (wp_WriteInt with "[$Hrep_sl]").
+      iIntros (?) "Hrep_sl".
+      wp_store.
+      iModIntro.
+      iApply "HΦ".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iFrame.
+      iApply "HΨ".
+      iPureIntro. done.
+    }
+    { (* case: paxos write failed *)
+      iNamed 1.
+      wp_pures.
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iApply "HΦ".
+      iFrame.
+      iRight in "HΨ".
+      iApply "HΨ"; last done; done.
     }
   }
 Qed.
