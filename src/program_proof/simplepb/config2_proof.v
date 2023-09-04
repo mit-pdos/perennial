@@ -34,6 +34,7 @@ Implicit Type γ : config_names.
 
 Context `{!gooseGlobalGS Σ}.
 Context `{!configG Σ}.
+Context {N:namespace}.
 
 Definition own_latest_epoch γ (epoch:u64) : iProp Σ :=
   mono_nat_auth_own γ.(epoch_gn) (1/2) (int.nat epoch).
@@ -48,14 +49,14 @@ Definition own_config γ (conf:list u64) : iProp Σ :=
   ghost_var γ.(config_val_gn) (1/2) conf
 .
 
-Definition epochLeaseN := nroot .@ "epochLeaseN".
+Definition epochLeaseN := N .@ "epochLeaseN".
 
 Program Definition ReserveEpochAndGetConfig_core_spec γ Φ :=
   (
     £ 1 -∗
-    (|={⊤,∅}=> ∃ reservedEpoch conf, own_reserved_epoch γ reservedEpoch ∗ own_config γ conf ∗
+    (|={⊤∖↑N,∅}=> ∃ reservedEpoch conf, own_reserved_epoch γ reservedEpoch ∗ own_config γ conf ∗
     (⌜int.nat reservedEpoch < int.nat (word.add reservedEpoch (U64 1))⌝ -∗
-      own_reserved_epoch γ (word.add reservedEpoch (U64 1)) -∗ own_config γ conf ={∅,⊤}=∗
+      own_reserved_epoch γ (word.add reservedEpoch (U64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
       Φ (word.add reservedEpoch 1) conf
       ))
     )%I.
@@ -169,8 +170,15 @@ Definition encode (x:t) : list u8.
 Admitted.
 
 Context `{!heapGS Σ}.
-Definition own (l:loc) (x:t) : iProp Σ.
-Admitted.
+Definition own (l:loc) (x:t) : iProp Σ :=
+  ∃ conf_sl,
+  "Hepoch" ∷ l ↦[state :: "epoch"] #x.(epoch) ∗
+  "HreservedEpoch" ∷ l ↦[state :: "reservedEpoch"] #x.(reservedEpoch) ∗
+  "HleaseExpiration" ∷ l ↦[state :: "leaseExpiration"] #x.(leaseExpiration) ∗
+  "HwantLeaseToExpire" ∷ l ↦[state :: "wantLeaseToExpire"] #x.(wantLeaseToExpire) ∗
+  "Hconf" ∷ l ↦[state :: "config"] (slice_val conf_sl) ∗
+  "#Hconf_sl" ∷ readonly (own_slice_small conf_sl uint64T 1 x.(config))
+.
 
 End state.
 End state.
@@ -179,17 +187,20 @@ Section config_proof.
 
 Context `{!heapGS Σ}.
 Context `{!configG Σ}.
+Context `{config:list mp_server_names}.
+Context `{Pwf:state.t → iProp Σ}.
+Context {N:namespace}.
 
 Definition is_Clerk (ck:loc) γ : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[config.Clerk :: "cl"] #cl) ∗
   "#Hcl_rpc"  ∷ is_uRPCClient cl srv ∗
-  "#Hhost" ∷ is_config_host srv γ
+  "#Hhost" ∷ is_config_host (N:=N) srv γ
 .
 
 Lemma wp_MakeClerk configHost γ:
   {{{
-      is_config_host configHost γ
+      is_config_host (N:=N) configHost γ
   }}}
     config.MakeClerk #configHost
   {{{
@@ -217,7 +228,7 @@ Definition own_Config_ghost γ (st:state.t) : iProp Σ :=
   "Hconf_ghost" ∷ own_config γ st.(state.config) ∗
   "Hreserved_ghost" ∷ own_reserved_epoch γ st.(state.reservedEpoch) ∗
   "Hepoch_lease" ∷ ((∃ γl, own_lease_expiration γl st.(state.leaseExpiration) ∗
-                          post_lease epochLeaseN γl (own_latest_epoch γ st.(state.epoch)))
+                          post_lease (epochLeaseN (N:=N)) γl (own_latest_epoch γ st.(state.epoch)))
                    ) ∗
    "%HresIneq" ∷ ⌜ int.nat st.(state.epoch) <= int.nat st.(state.reservedEpoch) ⌝
 .
@@ -286,10 +297,6 @@ Proof.
   }
 Qed. *)
 
-Context `{config:list mp_server_names}.
-Context `{Pwf:state.t → iProp Σ}.
-Context {N:namespace}.
-
 Definition configWf (a:list u8) : iProp Σ :=
   ∃ st, ⌜ a = state.encode st ⌝ ∗ Pwf st
 .
@@ -355,7 +362,7 @@ Lemma wp_Server__ReserveEpochAndGetConfig (server:loc) γ :
   }}}
     config2.Server__ReserveEpochAndGetConfig #server
   {{{
-        (f:val), RET f; is_urpc_handler_pred f (ReserveEpochAndGetConfig_spec γ)
+        (f:val), RET f; is_urpc_handler_pred f (ReserveEpochAndGetConfig_spec (N:=N) γ)
   }}}.
 Proof.
   iIntros (Φ) "#His_srv HΦ".
@@ -388,6 +395,103 @@ Proof.
   }
   iDestruct "Hpost" as (?) "[Hvol Hwp]".
   iNamed "Hvol".
-Admitted.
+  wp_loadField.
+  wp_apply wp_SumAssumeNoOverflow.
+  iIntros "%HnoOverflow".
+  wp_storeField.
+  wp_loadField.
+  wp_pures.
+  wp_loadField.
+  wp_pures.
+  iDestruct "HΨ" as "[HΨ1 Hfail]".
+  wp_bind (f #()).
+  wp_apply (wp_frame_wand with "[HΦ Hrep Hrep_sl]").
+  { iNamedAccu. }
+  wp_apply ("Hwp" with "[-Hfail] [Hfail]").
+  {
+    iSplitL "Hepoch HreservedEpoch HleaseExpiration HwantLeaseToExpire Hconf Hconf_sl".
+    {
+      instantiate (1:=state.mk _ _ _ _ _).
+      repeat iExists _; simpl; iFrame "∗#".
+    }
+    iSplitR.
+    { admit. } (* FIXME: spec*)
+    iIntros "Hghost".
+
+    (* start ghost reasoning *)
+    iNamed "Hghost".
+    rewrite /ReserveEpochAndGetConfig_core_spec.
+    iMod ("HΨ1" with "[$]") as (??) "(Hres & Hconf & Hupd)".
+    iCombine "Hconf Hconf_ghost" gives %[_ H]. subst.
+
+    rewrite /own_reserved_epoch.
+    iDestruct (mono_nat_auth_own_agree with "Hres [$]") as %[? H].
+    apply Z2Nat.inj in H; try word.
+    eapply (inj (R:=eq)) in H.
+    2:{ apply _. }
+    subst.
+    iCombine "Hres Hreserved_ghost" as "Hres".
+    (* FIXME: combine instance for mono_nat_auth_own *)
+    iMod (mono_nat_own_update with "Hres") as "[[Hres1 Hres2] _]".
+    { shelve. }
+    iMod ("Hupd" with "[%] [$] [$]") as "HΨ".
+    { word. }
+    Unshelve.
+    2:{ word. }
+    iModIntro.
+    iFrame.
+    iSplitR.
+    { iPureIntro. simpl. word. }
+    (* end ghost reasoning *)
+
+    iNamed 1.
+
+    wp_pures.
+
+    iClear "Hrep_sl".
+    wp_apply (wp_slice_len).
+    wp_apply (wp_NewSliceWithCap).
+    { apply encoding.unsigned_64_nonneg. }
+    iIntros (ptr) "Hsl".
+    wp_store.
+    wp_load.
+    wp_apply (wp_WriteInt with "[$]").
+    iIntros (enc_sl) "Hrep_sl".
+    wp_store.
+    wp_load.
+    wp_apply (wp_WriteInt with "[$]").
+    iIntros (?) "Hrep_sl".
+    wp_store.
+    wp_apply (Config.wp_Encode with "[Hconf_sl]").
+    { iFrame "#". }
+    iIntros (enc_conf enc_conf_sl) "(%Hconf_enc & _ & Henc_conf_sl)".
+    wp_load.
+    wp_apply (wp_WriteBytes with "[$Hrep_sl Henc_conf_sl]").
+    {
+      iDestruct (own_slice_to_small with "Henc_conf_sl") as "$".
+    }
+    iIntros (?) "[Hrep_sl Henc_conf_sl]".
+    replace (int.nat 0%Z) with 0%nat by word.
+    wp_store.
+    iApply "HΦ".
+    iFrame "Hrep".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "?".
+    iFrame.
+    iModIntro.
+    simpl.
+    iApply "HΨ".
+    done.
+  }
+  {
+    simpl.
+    iNamed 1.
+    wp_pures.
+    iApply "HΦ".
+    iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
+    iFrame.
+    iApply "Hfail".
+    done.
+  }
+Admitted. (* TODO: bubble up Pwf predicate into RPC spec *)
 
 End config_proof.

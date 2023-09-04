@@ -14,7 +14,7 @@ Definition has_encoding (encoded:list u8) (args:C) : Prop :=
 Context `{!heapGS Σ}.
 
 Definition own conf_sl (conf:list u64) : iProp Σ :=
-  "Hargs_state_sl" ∷ own_slice_small conf_sl uint64T 1 conf.
+  "Hargs_state_sl" ∷ readonly (own_slice_small conf_sl uint64T 1 conf).
 
 Lemma wp_Encode conf_sl (conf:C) :
   {{{
@@ -30,6 +30,7 @@ Lemma wp_Encode conf_sl (conf:C) :
 Proof.
   iIntros (Φ) "Hconf HΦ".
   wp_call.
+  iMod (readonly_load with "[$]") as (?) "Hconf".
   iDestruct (own_slice_small_sz with "Hconf") as %Hsz.
   wp_apply (wp_slice_len).
   wp_pures.
@@ -120,6 +121,11 @@ Proof.
   wp_pures.
   wp_load.
   iApply "HΦ".
+  iMod (readonly_alloc
+          (Φ:=(λ (p:Qp), own_slice_small conf_sl uint64T p conf)%I)
+          (own_slice_small conf_sl uint64T 1 conf)
+          q with "[Hconf_sl]") as "Hconf_sl".
+  { iFrame. }
   iModIntro.
   iFrame.
   rewrite -Hsz.
@@ -370,6 +376,8 @@ Proof.
   rewrite app_nil_r.
   rewrite firstn_all.
   iFrame.
+  iMod (readonly_alloc_1 with "Hconf_sl") as "Hconf_sl".
+  iModIntro.
   done.
 Qed.
 
