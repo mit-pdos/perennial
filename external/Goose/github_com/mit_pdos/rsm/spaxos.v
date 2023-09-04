@@ -14,7 +14,7 @@ Definition Paxos := struct.decl [
   "decree" :: stringT;
   "learned" :: boolT;
   "sc" :: uint64T;
-  "peers" :: slice.T ptrT
+  "peers" :: mapT ptrT
 ].
 
 Definition MAX_NODES : expr := #16.
@@ -51,9 +51,9 @@ Definition Paxos__prepareAll: val :=
   rec: "Paxos__prepareAll" "px" "term" "terma" "decreea" :=
     let: "termLargest" := ref_to uint64T "terma" in
     let: "decreeLargest" := ref_to stringT "decreea" in
-    let: "nPrepared" := ref (zero_val uint64T) in
-    ForSlice ptrT <> "peer" (struct.loadF Paxos "peers" "px")
-      (let: (("termPeer", "decreePeer"), "ok") := Paxos__prepare "peer" "term" in
+    let: "nPrepared" := ref_to uint64T #1 in
+    MapIter (struct.loadF Paxos "peers" "px") (λ: <> "peer",
+      let: (("termPeer", "decreePeer"), "ok") := Paxos__prepare "peer" "term" in
       (if: "ok"
       then
         "nPrepared" <-[uint64T] ((![uint64T] "nPrepared") + #1);;
@@ -83,9 +83,9 @@ Definition Paxos__accept: val :=
 
 Definition Paxos__acceptAll: val :=
   rec: "Paxos__acceptAll" "px" "term" "decree" :=
-    let: "nAccepted" := ref_to uint64T #0 in
-    ForSlice ptrT <> "peer" (struct.loadF Paxos "peers" "px")
-      (let: "ok" := Paxos__accept "peer" "term" "decree" in
+    let: "nAccepted" := ref_to uint64T #1 in
+    MapIter (struct.loadF Paxos "peers" "px") (λ: <> "peer",
+      let: "ok" := Paxos__accept "peer" "term" "decree" in
       (if: "ok"
       then "nAccepted" <-[uint64T] ((![uint64T] "nAccepted") + #1)
       else #()));;
@@ -102,8 +102,8 @@ Definition Paxos__learn: val :=
 
 Definition Paxos__learnAll: val :=
   rec: "Paxos__learnAll" "px" "term" "decree" :=
-    ForSlice ptrT <> "peer" (struct.loadF Paxos "peers" "px")
-      (Paxos__learn "peer" "term" "decree");;
+    MapIter (struct.loadF Paxos "peers" "px") (λ: <> "peer",
+      Paxos__learn "peer" "term" "decree");;
     #().
 
 (* Note that @Propose returning true doesn't mean that @v is chosen, but only

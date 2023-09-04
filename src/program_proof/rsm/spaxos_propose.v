@@ -28,15 +28,20 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
 Definition spaxosN := nroot .@ "spaxos".
 
-Definition num_nodes : Z := 16.
+Definition max_nodes : Z := 16.
 
-Definition is_term_of_node (x : Z) (n : nat) :=
-  n `mod` num_nodes = x.
+Definition is_term_of_node (x : u64) (n : nat) :=
+  n `mod` max_nodes = (int.Z x).
 
 (* TODO: make this a typeclass. *)
 Lemma is_term_of_node_partitioned x1 x2 n :
   x1 ≠ x2 -> is_term_of_node x1 n -> not (is_term_of_node x2 n).
-Proof. unfold is_term_of_node. lia. Qed.
+Proof.
+  unfold is_term_of_node.
+  intros Hne Hx1.
+  rewrite Hx1.
+  by apply word.unsigned_inj'.
+Qed.
 
 Definition spaxos_inv sc γ : iProp Σ :=
   ∃ c bs ps ts,
@@ -92,9 +97,9 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 (*@     // Have we learned the consensus?                                   @*)
 (*@     learned bool                                                        @*)
 (*@     // Other paxos instances. Eventually should be just addresses.      @*)
-(*@     peers   []*Paxos                                                    @*)
+(*@     peers   map[uint64]*Paxos                                           @*)
 (*@ }                                                                       @*)
-Definition own_paxos (paxos : loc) (nid : Z) γ : iProp Σ :=
+Definition own_paxos (paxos : loc) (nid : u64) γ : iProp Σ :=
   ∃ (termc termp : u64) (decree : string) (learned : bool) (blt : ballot),
     (*@ Res: termc uint64                                                       @*)
     "Htermc" ∷ paxos ↦[Paxos :: "termc"] #termc ∗
@@ -117,30 +122,36 @@ Definition own_paxos (paxos : loc) (nid : Z) γ : iProp Σ :=
     "%Hlatest" ∷ ⌜latest_term blt = (int.nat termp)⌝.
 
 (* TODO: figure the clean way of defining node ID. *)
-Definition is_paxos_node (paxos : loc) (nid : Z) (sc : nat) γ : iProp Σ :=
-  ∃ (mu : loc) (nidu64 : u64) (scu64 : u64),
+Definition is_paxos_node (paxos : loc) (nid : u64) (sc : nat) γ : iProp Σ :=
+  ∃ (mu : loc),
     (*@ Res: mu *sync.Mutex                                                     @*)
     "#Hmu"   ∷ readonly (paxos ↦[Paxos :: "mu"] #mu) ∗
     "#Hlock" ∷ is_lock spaxosN #mu (own_paxos paxos nid γ) ∗
     (*@ Res: nid uint64                                                         @*)
-    "#Hnid" ∷ readonly (paxos ↦[Paxos :: "nid"] #nidu64) ∗
-    "%Hnid" ∷ ⌜int.Z nidu64 = nid⌝ ∗
-    (*@ Res: sc uint64                                                          @*)
-    "#Hsc" ∷ readonly (paxos ↦[Paxos :: "nid"] #nidu64) ∗
-    "%Hsc" ∷ ⌜int.nat scu64 = sc⌝ ∗
+    "#Hnid" ∷ readonly (paxos ↦[Paxos :: "nid"] #nid) ∗
     (*@ Res: ginv                                                               @*)
     "#Hinv" ∷ know_sapxos_inv sc γ.
 
-Definition is_paxos_comm (paxos : loc) sc γ : iProp Σ :=
-  ∃ (peers : Slice.t) (peersL : list loc),
-    (*@ Res: peers []*Paxos                                                     @*)
-    "#Hpeers"  ∷ readonly (paxos ↦[Paxos :: "peers"] (to_val peers)) ∗
-    "#HpeersL" ∷ readonly (own_slice_small peers ptrT 1 peersL) ∗
-    "#Hpaxos"  ∷ ([∗ list] i ↦ px ∈ peersL, is_paxos_node px (Z.of_nat i) sc γ).
+(* NB: We don't really need read-only map since reconfiguration is to be supported. *)
+Instance own_map_as_mapsto `{Countable K} `{!IntoVal K} `{!IntoVal V} (mref : loc) (m : gmap K V) :
+  AsMapsTo (own_map mref 1 m) (λ q : Qp, own_map mref q m).
+Admitted.
 
-Definition is_paxos (paxos : loc) (nid : Z) sc γ : iProp Σ :=
+Definition is_paxos_comm (paxos : loc) (nid : u64) sc γ : iProp Σ :=
+  ∃ (peers : loc) (peersM : gmap u64 loc) (scu64 : u64),
+    (*@ Res: peers []*Paxos                                                     @*)
+    "#Hpeers"   ∷ readonly (paxos ↦[Paxos :: "peers"] #peers) ∗
+    "#HpeersMR" ∷ readonly (own_map peers 1 peersM) ∗
+    "#Hpaxos"   ∷ ([∗ map] i ↦ px ∈ peersM, is_paxos_node px i sc γ) ∗
+    "%Hszpeers" ∷ ⌜size peersM < max_nodes⌝ ∗
+    "%Hnotin"   ∷ ⌜nid ∉ dom peersM⌝ ∗
+    (*@ Res: sc uint64                                                          @*)
+    "#Hsc"    ∷ readonly (paxos ↦[Paxos :: "sc"] #scu64) ∗
+    "%Hscu64" ∷ ⌜int.nat scu64 = sc⌝.
+
+Definition is_paxos (paxos : loc) (nid : u64) sc γ : iProp Σ :=
   "#Hnode" ∷ is_paxos_node paxos nid sc γ ∗
-  "#Hcomm" ∷ is_paxos_comm paxos sc γ.
+  "#Hcomm" ∷ is_paxos_comm paxos nid sc γ.
 End repr.
 
 #[export]
@@ -486,7 +497,7 @@ Definition reached_quorum (sc n : nat) := sc / 2 < n.
 
 Definition quorum_prepared
   (term : u64) (terml : u64) (decreel : string) (sc : nat) (γ : spaxos_names) : iProp Σ :=
-  ∃ (bsqlb : gmap Z ballot),
+  ∃ (bsqlb : gmap u64 ballot),
     "#Hlbs"      ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
     "#Hproposal" ∷ is_proposal_nz γ (int.nat terml) decreel ∗
     "%Hnprep"    ∷ ⌜reached_quorum sc (size (dom bsqlb))⌝ ∗
@@ -692,8 +703,24 @@ Proof.
   by replace (_ - _)%nat with O by lia.
 Qed.
 
+Theorem wp_Paxos__major (px : loc) (n : u64) (sc : nat) (scu64 : u64) :
+  int.nat scu64 = sc ->
+  readonly (px ↦[Paxos :: "sc"] #scu64) -∗
+  {{{ True }}}
+    Paxos__major #px #n
+  {{{ (ok : bool), RET #ok; ⌜if ok then reached_quorum sc (int.nat n) else True⌝ }}}.
+Proof.
+  (*@ func (px *Paxos) major(n uint64) bool {                                 @*)
+  (*@     return n > px.sc / 2                                                @*)
+  (*@ }                                                                       @*)
+Admitted.
+
+Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
+  (if b then f x else f y) = f (if b then x else y).
+Proof. destruct b; done. Qed.
+
 Theorem wp_Paxos__prepareAll (px : loc) (term terma : u64) (decreea : string) nid sc γ :
-  is_paxos_comm px sc γ -∗
+  is_paxos_comm px nid sc γ -∗
   node_prepared term terma decreea nid γ -∗
   {{{ True }}}
     Paxos__prepareAll #px #term #terma #(LitString decreea)
@@ -701,10 +728,22 @@ Theorem wp_Paxos__prepareAll (px : loc) (term terma : u64) (decreea : string) ni
       if ok then quorum_prepared term termp decree sc γ else True
   }}}.
 Proof.
+  iIntros "#Hcomm #Hprep" (Φ) "!> _ HΦ".
+  wp_call.
+
   (*@ func (px *Paxos) prepareAll(term uint64) (uint64, string, bool) {       @*)
   (*@     var termLargest uint64                                              @*)
   (*@     var decreeLargest string                                            @*)
   (*@     var nPrepared uint64                                                @*)
+  (*@                                                                         @*)
+  wp_apply (wp_ref_to); first by auto.
+  iIntros (termlRef) "HtermlRef".
+  wp_apply (wp_ref_to); first by auto.
+  iIntros (decreelRef) "HdecreelRef".
+  wp_apply (wp_ref_to); first by auto.
+  iIntros (nRef) "HnRef".
+  wp_pures.
+
   (*@     for _, peer := range(px.peers) {                                    @*)
   (*@         // Send each node a prepare message.                            @*)
   (*@         termPeer, decreePeer, ok := peer.prepare(term)                  @*)
@@ -718,17 +757,136 @@ Proof.
   (*@         }                                                               @*)
   (*@     }                                                                   @*)
   (*@                                                                         @*)
+  iNamed "Hcomm".
+  wp_loadField.
+  iMod (readonly_load with "HpeersMR") as (q) "HpeersM".
+  set P := (λ (m : gmap u64 loc),
+    ∃ (terml : u64) (decreel : string) (n : u64) (bsqlb : gmap u64 ballot),
+      "HtermlRef"   ∷ termlRef ↦[uint64T] #terml ∗
+      "HdecreelRef" ∷ decreelRef ↦[stringT] #(str decreel) ∗
+      "HnRef"  ∷ nRef ↦[uint64T] #n ∗
+      "#Hlbs"  ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
+      "#Hpsl"  ∷ is_proposal_nz γ (int.nat terml) decreel ∗
+      "%Hm"    ∷ ⌜m ⊆ peersM⌝ ∗
+      "%Hdom"  ∷ ⌜dom bsqlb ⊆ {[ nid ]} ∪ dom m⌝ ∗
+      "%Hlens" ∷ ⌜map_Forall (λ _ l, (int.nat term ≤ length l)%nat) bsqlb⌝ ∗
+      "%Hlq"   ∷ ⌜latest_before_quorum (int.nat term) bsqlb = int.nat terml⌝ ∗
+      "%Hn"    ∷ ⌜size (dom bsqlb) = int.nat n⌝)%I.
+  wp_apply (wp_MapIter_fold _ _ _ P with "HpeersM [HtermlRef HdecreelRef HnRef]").
+  { do 3 iExists _. iFrame.
+    iNamed "Hprep".
+    iExists {[ nid := l ]}.
+    rewrite big_sepM_singleton.
+    iFrame "#". iPureIntro.
+    split; first by apply map_empty_subseteq.
+    split; first set_solver.
+    split; first by rewrite map_Forall_singleton.
+    split.
+    { unfold latest_before_quorum.
+      rewrite map_fmap_singleton map_fold_singleton.
+      unfold latest_before_quorum_step. lia.
+    }
+    { rewrite dom_singleton size_singleton. word. }
+  }
+  { clear Φ.
+    iIntros (mdone nidpeer pxpeer Φ) "!> [HP [%Hdone %Hin]] HΦ". iNamed "HP".
+    wp_pures.
+    iDestruct (big_sepM_lookup with "Hpaxos") as "Hpeer"; first by apply Hin.
+    wp_apply (wp_Paxos__prepare with "Hpeer").
+    iClear "Hprep". iIntros (termpeer decreepeer ok) "Hprep".
+    wp_pures.
+    wp_if_destruct.
+    { wp_load. wp_store. wp_load. wp_pures.
+      wp_apply (wp_If_join_evar with "[HtermlRef HdecreelRef]").
+      { iIntros (b Eqb).
+        case_bool_decide.
+        - wp_if_true. do 2 wp_store.
+          iModIntro.
+          iSplit; first done.
+          replace #termpeer with #(if b then termpeer else terml) by by rewrite Eqb.
+          replace #(LitString decreepeer) with
+            #(if b then (LitString decreepeer) else (LitString decreel)) by by rewrite Eqb.
+          iNamedAccu.
+        - wp_if_false.
+          iModIntro.
+          iSplit; first done.
+          rewrite Eqb. iFrame.
+      }
+      iIntros "H". iNamed "H".
+      iApply "HΦ".
+      do 2 rewrite ite_apply.
+      set terml' := if (bool_decide _) then termpeer else _.
+      set decreel' := if (bool_decide _) then decreepeer else _.
+      do 3 iExists _. iFrame.
+      iNamed "Hprep".
+      iExists (<[nidpeer := l]> bsqlb).
+      assert (Hnidpeer : bsqlb !! nidpeer = None).
+      { clear -Hdom Hdone Hin Hnotin.
+        assert (Hne : nid ≠ nidpeer).
+        { apply elem_of_dom_2 in Hin. set_solver. }
+        rewrite -not_elem_of_dom.
+        rewrite -not_elem_of_dom in Hdone.
+        set_solver.
+      }
+      iSplit.
+      { rewrite big_sepM_insert; [by iFrame "#" | done]. }
+      iSplit.
+      { subst terml' decreel'. case_bool_decide; by iFrame "#". }
+      iPureIntro.
+      split; first by apply insert_subseteq_l.
+      split; first set_solver.
+      split; first by rewrite map_Forall_insert.
+      split.
+      { unfold latest_before_quorum.
+        rewrite fmap_insert map_fold_insert_L; last first.
+        { rewrite lookup_fmap. by rewrite Hnidpeer. }
+        { unfold latest_before_quorum_step. lia. }
+        unfold latest_before_quorum in Hlq. rewrite Hlq.
+        unfold latest_before_quorum_step.
+        subst terml'. case_bool_decide; lia.
+      }
+      rewrite dom_insert_L size_union; last first.
+      { rewrite -not_elem_of_dom in Hnidpeer. set_solver. }
+      rewrite size_singleton. rewrite Hn.
+      assert (Hsz : (size (dom bsqlb) ≤ 16)%nat).
+      { apply subseteq_size in Hdom.
+        apply subseteq_dom in Hm.
+        rewrite size_union in Hdom; last first.
+        { rewrite disjoint_singleton_l. set_solver. }
+        apply subseteq_size in Hm.
+        rewrite size_singleton in Hdom.
+        rewrite -size_dom in Hszpeers.
+        clear -Hdom Hm Hszpeers. unfold max_nodes in Hszpeers. lia.
+      }
+      word.
+    }
+    iApply "HΦ". do 4 iExists _. iFrame "∗ # %". iPureIntro.
+    split; [by apply insert_subseteq_l | set_solver].
+  }
+  iIntros "[HpeersM HP]".
+  wp_pures.
+
   (*@     // Did not reach a majority.                                        @*)
   (*@     if !px.major(nPrepared) {                                           @*)
   (*@         return 0, "", false                                             @*)
   (*@     }                                                                   @*)
   (*@                                                                         @*)
+  iNamed "HP". clear P.
+  wp_load.
+  wp_apply (wp_Paxos__major with "Hsc"); first apply Hscu64.
+  iIntros (ok Hquorum). rewrite -Hn in Hquorum.
+  wp_if_destruct; wp_pures; first by iApply "HΦ".
+
   (*@     return termLargest, decreeLargest, true                             @*)
   (*@ }                                                                       @*)
-Admitted.
+  do 2 wp_load. wp_pures.
+  iApply "HΦ".
+  iExists _.
+  by iFrame "∗ # %".
+Qed.
 
 Definition quorum_accepted (term : u64) (sc : nat) (γ : spaxos_names) : iProp Σ :=
-  ∃ (bsqlb : gmap Z ballot),
+  ∃ (bsqlb : gmap u64 ballot),
     "#Hlbs"    ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
     "%Hnacpt " ∷ ⌜reached_quorum sc (size (dom bsqlb))⌝ ∗
     "%Haccin"  ∷ ⌜map_Forall (λ _ l, accepted_in l (int.nat term)) bsqlb⌝.
@@ -739,7 +897,7 @@ Instance quorum_accepted_persistent term sc γ :
 Proof. apply _. Qed.
 
 Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) nid sc γ :
-  is_paxos_comm px sc γ -∗
+  is_paxos_comm px nid sc γ -∗
   node_accepted term decree nid γ -∗
   is_proposal γ (int.nat term) decree -∗
   {{{ True }}}
@@ -759,8 +917,8 @@ Proof.
   (*@ }                                                                       @*)
 Admitted.
 
-Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) sc γ :
-  is_paxos_comm px sc γ -∗
+Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) nid sc γ :
+  is_paxos_comm px nid sc γ -∗
   is_chosen_consensus γ decree -∗
   {{{ True }}}
     Paxos__learnAll #px #term #(LitString decree)
@@ -772,10 +930,6 @@ Proof.
   (*@     }                                                                   @*)
   (*@ }                                                                       @*)
 Admitted.
-
-Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
-  (if b then f x else f y) = f (if b then x else y).
-Proof. destruct b; done. Qed.
 
 End temp.
 

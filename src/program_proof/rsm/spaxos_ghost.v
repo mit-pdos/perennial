@@ -83,13 +83,13 @@ Section ballot.
   Implicit Type (γ : spaxos_names).
 
   (* Definitions. *)
-  Definition own_ballot γ (x : Z) (b : ballot) : iProp Σ.
+  Definition own_ballot γ (x : u64) (b : ballot) : iProp Σ.
   Admitted.
 
-  Definition is_ballot_lb γ (x : Z) (b : ballot) : iProp Σ.
+  Definition is_ballot_lb γ (x : u64) (b : ballot) : iProp Σ.
   Admitted.
 
-  Definition own_ballots γ (bs : gmap Z ballot) : iProp Σ.
+  Definition own_ballots γ (bs : gmap u64 ballot) : iProp Σ.
   Admitted.
 
   (* Type class instances. *)
@@ -130,10 +130,10 @@ Section term.
   Implicit Type (γ : spaxos_names).
 
   (* Definitions. *)
-  Definition own_terms γ (ts : gmap Z nat) : iProp Σ.
+  Definition own_terms γ (ts : gmap u64 nat) : iProp Σ.
   Admitted.
 
-  Definition own_term γ (x : Z) (n : nat) : iProp Σ.
+  Definition own_term γ (x : u64) (n : nat) : iProp Σ.
   Admitted.
 
   (* Rules. *)
