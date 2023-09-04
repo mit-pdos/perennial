@@ -86,7 +86,10 @@ Definition Clerk__ReserveEpochAndGetConfig: val :=
           else #());;
           lock.release (struct.loadF Clerk "mu" "ck");;
           Continue
-        else Break)));;
+        else
+          (if: (![uint64T] "err2") = e.None
+          then Break
+          else Continue))));;
     let: "epoch" := ref (zero_val uint64T) in
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "reply") in
     "epoch" <-[uint64T] "0_ret";;
@@ -99,7 +102,7 @@ Definition Clerk__GetConfig: val :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "i" := rand.RandomUint64 #() in
+      let: "i" := (rand.RandomUint64 #()) `rem` (slice.len (struct.loadF Clerk "cls" "ck")) in
       let: "err" := reconnectclient.ReconnectingClient__Call (SliceGet ptrT (struct.loadF Clerk "cls" "ck") "i") RPC_GETCONFIG (NewSlice byteT #0) "reply" #100 in
       (if: "err" = #0
       then Break
