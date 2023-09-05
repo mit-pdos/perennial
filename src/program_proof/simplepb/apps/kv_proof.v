@@ -303,4 +303,96 @@ Proof.
     iApply "HΦ". repeat iExists _. iFrame "∗#".
 Qed.
 
+Local Lemma helper (m:gmap string string) s k v d :
+  (m ∪ gset_to_gmap d s) !! k = Some v →
+  default d (m !! k) = v.
+Proof.
+  rewrite lookup_union.
+  destruct (m !! k).
+  { rewrite union_Some_l. naive_solver. }
+  { rewrite option_union_left_id lookup_gset_to_gmap_Some. naive_solver. }
+Qed.
+
+Lemma wp_Clerk__CondPut ck γkv key expect val :
+⊢ {{{ own_Clerk ck γkv }}}
+  <<< ∀∀ old_value, kv_ptsto γkv key old_value >>>
+    Clerk__CondPut #ck #(str key) #(str expect) #(str val) @ (↑pbN ∪ ↑prophReadN ∪ ↑esmN ∪ ↑stateN)
+  <<< kv_ptsto γkv key (if bool_decide (expect = old_value) then val else old_value) >>>
+  {{{ RET #(str (if bool_decide (expect = old_value) then "ok" else "")); own_Clerk ck γkv }}}.
+Proof.
+  iIntros "%Φ !# Hck Hupd".
+  wp_lam.
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. repeat econstructor. Opaque slice.T. }
+  iIntros (args) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  iNamed "Hck".
+  wp_apply (wp_encodeCondPutArgs with "[$Key $Expect $Val]").
+  iIntros (putEncoded put_sl) "[%Henc Henc_sl]".
+  wp_loadField.
+  wp_apply (wp_Clerk__ApplyExactlyOnce with "Hownck Henc_sl").
+  { done. }
+  iInv "Hkvinv" as ">Hown" "Hclose".
+
+  (* make this a separate lemma? *)
+  iMod (fupd_mask_subseteq _) as "Hmaskclose".
+  2: iMod "Hupd".
+  1:{ eauto 20 with ndisj. } (* FIXME: increase search depth on solve_ndisj? *)
+
+  iModIntro.
+  iDestruct "Hown" as (?) "[Hlog Hkvs]".
+  iDestruct ("Hupd") as (?) "[Hkvptsto Hkvclose]".
+
+  rewrite /kv_record /=.
+  iExists _; iFrame.
+  iIntros "Hlog".
+
+  iNamed "Hkvs".
+  iDestruct (ghost_map_lookup with "[$] [$]") as %Hlook.
+  iMod (ghost_map_update _ with "Hkvs Hkvptsto") as "[Hkvs Hkvptsto]".
+
+  pose proof Hlook as Heq.
+  apply helper in Heq. subst.
+  iMod ("Hkvclose" with "Hkvptsto") as "HH".
+  iMod "Hmaskclose" as "_".
+  iMod ("Hclose" with "[Hlog Hkvs]") as "_".
+  {
+    iExists _; iFrame.
+    iNext.
+    unfold own_kvs.
+    unfold compute_state.
+    rewrite foldl_snoc.
+    simpl. rewrite insert_union_l.
+    destruct (decide _).
+    {
+      subst.
+      rewrite /compute_state.
+      rewrite bool_decide_true.
+      2:{ done. }
+      iExists _; iFrame.
+    }
+    {
+      rewrite bool_decide_false.
+      2:{ naive_solver. }
+      iExists _.
+      subst.
+      rewrite -insert_union_l.
+      rewrite insert_id.
+      2:{ done. }
+      iFrame.
+    }
+  }
+  iModIntro.
+  iIntros (?) "Hck Hsl".
+  wp_apply (wp_StringFromBytes with "[$Hsl]").
+  iIntros "_".
+  wp_pures.
+  destruct (decide _).
+  { subst. rewrite bool_decide_true; last done. iApply "HH". repeat iExists _; iFrame "∗#". }
+  { subst. rewrite bool_decide_false; last done. iApply "HH". repeat iExists _; iFrame "∗#". }
+Qed.
+
 End local_proof.

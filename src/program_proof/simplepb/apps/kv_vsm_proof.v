@@ -16,12 +16,18 @@ Section defns.
 Inductive kvOp :=
   | putOp : string → string → kvOp
   | getOp : string → kvOp
+  | condPutOp : string → string → string → kvOp
 .
 
 Definition apply_op (state:gmap string string) (op:kvOp) :=
   match op with
     | getOp _ => state
     | putOp k v => <[k:=v]> state
+    | condPutOp k e v =>
+        if decide (default "" (state !! k) = e) then
+          <[k:=v]> state
+        else
+          state
   end
 .
 
@@ -32,6 +38,9 @@ Definition compute_reply ops op : list u8 :=
   match op with
     | getOp k => string_to_bytes (default "" ((compute_state ops) !! k))
     | putOp k v => []
+    | condPutOp k e v => if decide (default "" ((compute_state ops) !! k) = e) then
+                          string_to_bytes ("ok")
+                        else []
   end
 .
 
@@ -40,6 +49,11 @@ Definition encode_op op : list u8 :=
     | putOp k v => [U8 0] ++ u64_le (length (string_to_bytes k)) ++
                          string_to_bytes k ++ string_to_bytes v
     | getOp k => [U8 1] ++ string_to_bytes k
+    | condPutOp k e v => [U8 2] ++ u64_le (length (string_to_bytes k)) ++
+                         string_to_bytes k ++
+                         u64_le (length (string_to_bytes e)) ++
+                         string_to_bytes e ++
+                         string_to_bytes v
   end
 .
 
@@ -262,6 +276,157 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Lemma wp_encodeCondPutArgs (args_ptr:loc) (key expect val:string) :
+  {{{
+      "Hargs_key" ∷ args_ptr ↦[kv.CondPutArgs :: "Key"] #(str key) ∗
+      "Hargs_expect" ∷ args_ptr ↦[kv.CondPutArgs :: "Expect"] #(str expect) ∗
+      "Hargs_val" ∷ args_ptr ↦[kv.CondPutArgs :: "Val"] #(str val)
+  }}}
+    kv.encodeCondPutArgs #args_ptr
+  {{{
+        enc enc_sl, RET (slice_val enc_sl);
+        ⌜ has_op_encoding enc (condPutOp key expect val)⌝ ∗
+        own_slice enc_sl byteT 1 enc
+  }}}.
+Proof.
+  iIntros (Φ) "H1 HΦ".
+  iNamed "H1".
+  wp_call.
+  wp_apply (wp_NewSliceWithCap (V:=u8)).
+  { done. }
+  iIntros (ptr) "Hbuf".
+  wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
+  wp_load.
+  iDestruct (own_slice_small_acc with "Hbuf") as "[Hbuf Hbufclose]".
+  wp_apply (wp_SliceSet with "[$Hbuf]").
+  { iPureIntro. done. }
+  iEval simpl.
+  change (<[int.nat 0%Z:=U8 0]> (replicate (int.nat 1%Z) (U8 0))) with [U8 0].
+  iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
+  wp_pures.
+  wp_loadField. wp_load.
+  wp_apply (wp_WriteInt with "Hbuf"). iIntros (sl) "Hbuf". wp_store. clear ptr.
+  wp_loadField.
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hsl".
+  wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_WriteBytes with "[$Hbuf $Hsl]").
+  iIntros (sl') "[Hbuf _]".
+  wp_store. clear sl.
+  wp_loadField.
+  wp_load.
+  wp_apply (wp_WriteInt with "Hbuf"). iIntros (sl) "Hbuf". wp_store.
+  wp_loadField.
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hsl".
+  wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_WriteBytes with "[$Hbuf $Hsl]").
+  iIntros (?) "[Hbuf _]".
+  wp_store. clear sl.
+  wp_loadField.
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hsl".
+  wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_WriteBytes with "[$Hbuf $Hsl]").
+  iIntros (?) "[Hbuf _]".
+  wp_store. clear sl.
+  wp_load.
+  iApply "HΦ". iModIntro. iFrame.
+  iPureIntro.
+  repeat rewrite string_bytes_length.
+  repeat rewrite -app_assoc. done.
+Qed.
+
+Lemma wp_decodeCondPutArgs enc_sl enc q (key expect val:string) :
+  {{{
+        "%Henc" ∷ ⌜has_op_encoding enc (condPutOp key expect val)⌝ ∗
+        "Hsl" ∷ own_slice_small enc_sl byteT q enc
+  }}}
+    kv.decodeCondPutArgs (slice_val enc_sl)
+  {{{
+        (args_ptr:loc), RET #args_ptr;
+        "Hargs_key" ∷ args_ptr ↦[kv.CondPutArgs :: "Key"] #(str key) ∗
+        "Hargs_expect" ∷ args_ptr ↦[kv.CondPutArgs :: "Expect"] #(str expect) ∗
+        "Hargs_val" ∷ args_ptr ↦[kv.CondPutArgs :: "Val"] #(str val)
+  }}}.
+Proof.
+  iIntros (Φ) "Hpre HΦ". iNamed "Hpre".
+  wp_call.
+  iDestruct (own_slice_small_sz with "Hsl") as %Hsl_sz.
+  cbn in Henc.
+  subst.
+  wp_apply wp_SliceSkip.
+  { cbn in Hsl_sz. word. }
+  iDestruct (slice_small_split _ 1 with "Hsl") as "[_ Hsl]".
+  { cbn. word. }
+  rewrite skipn_cons drop_0.
+  wp_apply (wp_ref_to).
+  { done. }
+  iIntros (enc_ptr) "Henc".
+  wp_pures.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. repeat econstructor. Opaque slice.T. }
+  iIntros (args_ptr) "Hargs".
+  iDestruct (struct_fields_split with "Hargs") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply wp_ref_of_zero.
+  { done. }
+  iIntros (?) "Hl".
+  wp_load.
+  wp_apply (wp_ReadInt with "[$Hsl]").
+  iIntros (kv_sl) "Hsl".
+  wp_pures. wp_store. wp_store. wp_load. wp_load.
+  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
+  Opaque u64_le.
+  simpl in Hsz. rewrite app_length in Hsz.
+  wp_apply (wp_ReadBytes with "[$]").
+  { word. }
+  iIntros "* [Hkey_sl Hsl]".
+  wp_pures.
+  wp_apply (wp_StringFromBytes with "[$Hkey_sl]").
+  iIntros "_".
+  rewrite string_to_bytes_inj.
+  wp_storeField.
+  wp_apply (wp_ReadInt with "[$]").
+  iIntros (?) "Hsl".
+  wp_pures.
+  wp_store.
+  wp_store.
+  wp_load.
+  wp_load.
+
+  clear Hsz.
+  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
+  simpl in Hsl_sz. rewrite app_length in Hsz.
+  iDestruct (own_slice_small_wf with "Hsl") as %Hwf.
+  wp_apply wp_SliceTake.
+  { word. }
+  iDestruct (slice_small_split with "Hsl") as "[He Hv]".
+  { shelve. }
+  replace (int.nat (length (string_to_bytes expect))) with (length (string_to_bytes expect)) by word.
+  Unshelve.
+  2:{ rewrite app_length. word. }
+  wp_apply (wp_StringFromBytes with "[$He]").
+  iIntros "He".
+  rewrite take_app.
+  wp_storeField.
+  rewrite drop_app.
+  wp_load.
+  wp_load.
+  wp_apply wp_SliceSkip.
+  { word. }
+  wp_apply (wp_StringFromBytes with "[$Hv]").
+  iIntros "Hv".
+  wp_storeField.
+  do 2 rewrite string_to_bytes_inj.
+  iModIntro. iApply "HΦ".
+  iFrame.
+Qed.
+
 Notation is_state := (is_state (sm_record:=kv_record)).
 
 Context `{!vsmG (sm_record:=kv_record) Σ}.
@@ -479,6 +644,169 @@ Proof.
     injection Hlookup as <- <-.
     iDestruct (own_slice_to_small with "Hrep_sl") as "$".
   }
+  { (* case: cond put op *)
+    rewrite -Henc.
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+    wp_apply (wp_SliceGet with "[$Hsl2]").
+    { done. }
+    iIntros "Hsl2".
+    wp_pures.
+    wp_apply (wp_decodeCondPutArgs with "[$Hsl2 //]").
+    iIntros (?). iNamed 1.
+    wp_pures.
+    wp_loadField.
+    wp_loadField.
+    wp_apply (wp_MapGet with "[$Hkvs_map]").
+    iIntros (??) "[%Hlookup Hkvs_map]".
+    wp_loadField.
+    wp_pures.
+    wp_if_destruct.
+    { (* case: condput successful *)
+      wp_loadField.
+      wp_loadField.
+      wp_apply (wp_MapInsert with "[$Hvnums_map]").
+      { done. }
+      iIntros "Hvnums_map".
+
+      wp_pures.
+      wp_loadField.
+      wp_loadField.
+      wp_loadField.
+      wp_apply (wp_MapInsert_to_val with "[$Hkvs_map]").
+      iIntros "Hkvs_map".
+      wp_pures.
+
+      injection Hlookup as <-.
+      wp_apply wp_StringToBytes.
+      iIntros (?) "Hreply_sl".
+      iApply "HΦ".
+      iSplitL "Hkvs Hkvs_map Hvnums HminVnum Hvnums_map".
+      {
+        repeat iExists _; iFrame.
+        unfold compute_state.
+        rewrite foldl_snoc.
+        rewrite /=.
+        rewrite decide_True.
+        2:{ done. }
+        iFrame.
+        iSplitL.
+        {
+          iModIntro.
+          iIntros.
+          rewrite /typed_map.map_insert /= in H0.
+          destruct (decide (k = s0)).
+          { subst. rewrite lookup_insert /= in H1.
+            replace (vnum) with (vnum') by word.
+            iExists _. by iDestruct "Hintermediate" as "[_ $]".
+          }
+          eassert (compute_reply (ops ++ [condPutOp s0 _ s2]) (getOp k) =
+                  compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
+          {
+            rewrite /compute_reply /compute_state.
+            rewrite foldl_snoc /=.
+            f_equal.
+            rewrite decide_True; last done.
+            by rewrite lookup_insert_ne.
+          }
+          rewrite lookup_insert_ne in H1; last done.
+          destruct (decide (int.nat vnum' <= int.nat latestVnum)).
+          { by iApply "Hst". }
+          destruct (decide (int.nat vnum' = int.nat vnum)).
+          { replace (vnum') with (vnum) by word.
+            iExists _.
+            iDestruct "Hintermediate" as "[_ $]".
+            iPureIntro.
+            rewrite /compute_reply /compute_state foldl_snoc /=. f_equal.
+            rewrite decide_True; last done.
+            by rewrite lookup_insert_ne.
+          }
+          {
+            iDestruct "Hintermediate" as "[Hint _]".
+            iSpecialize ("Hint" $! vnum' with "[%] [%]").
+            { word. }
+            { word. }
+            iExists _. by iFrame "Hint".
+          }
+        }
+        {
+          iPureIntro. intros.
+          destruct (decide (k = s0)).
+          { subst.
+            by rewrite /typed_map.map_insert lookup_insert /=.
+          }
+          {
+            rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
+            transitivity (int.nat latestVnum).
+            { apply Hle. }
+            word.
+          }
+        }
+      }
+      simpl.
+      rewrite decide_True; last done.
+      iDestruct (own_slice_to_small with "Hreply_sl") as "$".
+    }
+    { (* case: condput failed *)
+      wp_apply wp_StringToBytes.
+      injection Hlookup as <-.
+      iIntros (?) "Hreply_sl".
+      assert (default "" (foldl apply_op ∅ ops !! s0) ≠ s1) as Hnot.
+      { intros x. apply Heqb. repeat f_equal. done. }
+      iApply "HΦ".
+      iSplitL "Hkvs Hkvs_map Hvnums HminVnum Hvnums_map".
+      {
+        repeat iExists _; iFrame.
+        unfold compute_state.
+        rewrite foldl_snoc.
+        rewrite /=.
+        rewrite decide_False; last done.
+        iFrame.
+        iSplitL.
+        {
+          iModIntro.
+          iIntros.
+          iDestruct "Hintermediate" as "[Hintermediate Hcurst]".
+          assert (compute_state (ops ++ [condPutOp s0 s1 s2])
+                                = (compute_state ops)) as Heq.
+          { rewrite /compute_state foldl_snoc /=.
+            rewrite decide_False; done.
+          }
+          setoid_rewrite Heq.
+          destruct (decide (int.nat vnum' <= int.nat latestVnum)).
+          { by iApply "Hst". }
+          destruct (decide (int.nat vnum' = int.nat vnum)).
+          { replace (vnum') with (vnum) by word.
+            iExists _.
+            iFrame "Hcurst".
+            iPureIntro.
+            rewrite /compute_state foldl_snoc /=.
+            rewrite decide_False; done.
+          }
+          {
+            iSpecialize ("Hintermediate" $! vnum' with "[%] [%]").
+            { word. }
+            { word. }
+            iExists _. by iFrame "Hintermediate".
+          }
+        }
+        {
+          iPureIntro. intros.
+          specialize (Hle k).
+          word.
+        }
+      }
+      iDestruct (own_slice_to_small with "Hreply_sl") as "Hreply_sl".
+      simpl. rewrite decide_False; last done.
+      iFrame "Hreply_sl".
+    }
+  }
 Qed.
 
 Lemma wp_KVState__applyReadonly s :
@@ -507,6 +835,7 @@ Proof.
   wp_pures.
   destruct op.
   { by exfalso. }
+  2:{ by exfalso. }
   rewrite /kv_record /= in Henc.
   rewrite <- Henc.
   iMod (readonly_load with "Hsl") as (?) "Hsl2".
