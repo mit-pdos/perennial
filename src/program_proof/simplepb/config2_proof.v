@@ -67,7 +67,6 @@ End state.
 Module configParams.
 Class t Σ :=
   mk {
-      config:list mp_server_names ;
       Pwf:list u64 → iProp Σ ;
       N: namespace ;
     }.
@@ -244,9 +243,6 @@ Definition configN := N .@ "paxos".
 Definition configPaxosN := configN .@ "paxos".
 Definition configInvN := configN .@ "inv".
 
-Instance c : mpaxosParams.t Σ :=
-  mpaxosParams.mk Σ config configWf configPaxosN.
-
 Definition is_config_inv γ γst : iProp Σ :=
   inv configInvN (∃ st,
         "Hst" ∷ own_state γst (state.encode st) ∗
@@ -255,7 +251,8 @@ Definition is_config_inv γ γst : iProp Σ :=
 .
 
 Definition is_Server (s:loc) γ : iProp Σ :=
-  ∃ (p:loc) γp γsrv γst,
+  ∃ (p:loc) γp γsrv γst config,
+  let mpParams := mpaxosParams.mk Σ config configWf configPaxosN in
   "#Hs" ∷ readonly (s ↦[config2.Server :: "s"] #p) ∗
   "#Hsrv" ∷ is_Server p γp γsrv ∗
   "#Hst_inv" ∷ is_state_inv γst γp ∗
@@ -1884,4 +1881,184 @@ Proof.
   }
 Qed.
 
+Definition makeConfigServer_pre γ conf : iProp Σ :=
+  own_latest_epoch γ 0 ∗ own_reserved_epoch γ 0 ∗ own_config γ conf.
+
+(*
+Lemma wp_MakeServer γ conf_sl conf :
+  {{{
+        makeConfigServer_pre γ conf ∗
+        own_slice_small conf_sl uint64T 1 conf
+  }}}
+    config2.MakeServer (slice_val conf_sl)
+  {{{
+        (s:loc), RET #s; is_Server s γ
+  }}}.
+Proof.
+  iIntros (Φ) "((Hepoch & Hres & Hconf) & Hconf_sl) HΦ".
+  wp_call.
+  wp_apply (wp_allocStruct).
+  { Transparent slice.T. repeat econstructor. Opaque slice.T. }
+  iIntros (s) "Hs".
+  iDestruct (struct_fields_split with "Hs") as "HH".
+  iNamed "HH".
+  simpl.
+  wp_pures.
+  iApply "HΦ".
+  repeat iExists _.
+  iMod (readonly_alloc_1 with )
+  wp_apply (wp_new_free_lock).
+  iIntros (mu) "Hmu_inv".
+  wp_storeField.
+  wp_storeField.
+  wp_storeField.
+  iMod (readonly_alloc_1 with "mu") as "#Hmu".
+  iApply "HΦ".
+  iExists _.
+  iMod (alloc_lock with "Hmu_inv [Hepoch Hres reservedEpoch Hconf epoch config leaseExpiration wantLeaseToExpire Hconf_sl]") as "$".
+  {
+    iNext.
+    repeat iExists _.
+    iFrame. done.
+  }
+  iFrame "Hmu".
+  done.
+Qed.
+
+Lemma wp_Server__Serve s γ host :
+  is_config_host host γ -∗ is_Server s γ -∗
+  {{{
+        True
+  }}}
+    config.Server__Serve #s #host
+  {{{
+        RET #(); True
+  }}}.
+Proof.
+  iIntros "#Hhost #His_srv !#" (Φ) "_ HΦ".
+  wp_call.
+
+  wp_apply (map.wp_NewMap u64).
+  iIntros (handlers) "Hhandlers".
+
+  wp_pures.
+  wp_apply (wp_Server__ReserveEpochAndGetConfig).
+  { done. }
+  iIntros (getEpochFn) "#HgetEpochSpec".
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_pures.
+  wp_apply (wp_Server__GetConfig).
+  { done. }
+  iIntros (getFn) "#HgetSpec".
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_pures.
+  wp_apply (wp_Server__TryWriteConfig).
+  { done. }
+  iIntros (writeConfigFn) "#HwriteSpec".
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_pures.
+  wp_apply (wp_Server__GetLease).
+  { done. }
+  iIntros (getLeaseFn) "#HgetLeaseSpec".
+  wp_apply (map.wp_MapInsert with "Hhandlers").
+  iIntros "Hhandlers".
+  wp_pures.
+
+  wp_apply (urpc_proof.wp_MakeServer with "Hhandlers").
+  iIntros (r) "Hr".
+  wp_pures.
+
+  iNamed "Hhost".
+  wp_apply (wp_StartServer_pred with "[$Hr]").
+  {
+    set_solver.
+  }
+  {
+    iDestruct "Hhost" as "(H1&H2&H3&H4&Hhandlers)".
+    unfold handlers_complete.
+    repeat rewrite dom_insert_L.
+    rewrite dom_empty_L.
+    iSplitL "".
+    {
+      iExactEq "Hhandlers".
+      f_equal.
+      set_solver.
+    }
+
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+    }
+    iApply (big_sepM_insert_2 with "").
+    {
+      iExists _; iFrame "#".
+    }
+    by iApply big_sepM_empty.
+  }
+  wp_pures.
+  by iApply "HΦ".
+Qed. *)
+
 End config_proof.
+
+(*
+Section config_init.
+
+Context `{!configG Σ}.
+Context `{!gooseGlobalGS Σ}.
+
+Definition config_spec_list γ :=
+  [ (U64 0, ReserveEpochAndGetConfig_spec γ) ;
+    (U64 1, GetConfig_spec γ) ;
+    (U64 2, TryWriteConfig_spec γ) ;
+    (U64 3, GetLease_spec γ)].
+
+Lemma config_ghost_init conf :
+  ⊢ |==> ∃ γ,
+    makeConfigServer_pre γ conf ∗
+    own_reserved_epoch γ 0 ∗
+    own_latest_epoch γ 0 ∗ own_config γ conf.
+Proof.
+  iMod (mono_nat_own_alloc 0) as (γepoch) "[[Hepoch Hepoch2] _]".
+  iMod (mono_nat_own_alloc 0) as (γres) "[[Hres Hres2] _]".
+  iMod (ghost_var_alloc conf) as (γconf) "[Hconf Hconf2]".
+  iExists {| epoch_gn := γepoch ; config_val_gn:= _ ; repoch_gn := γres |}.
+  iModIntro.
+  iFrame.
+Qed.
+
+Lemma config_server_init host γ :
+  host c↦ ∅ ={⊤}=∗
+  is_config_host host γ.
+Proof.
+  iIntros "Hchan".
+  iMod (alloc_is_urpc_list_pred host (config_spec_list γ) with "Hchan") as (γrpc) "H".
+  { simpl. set_solver. }
+  iModIntro.
+  iExists γrpc.
+  simpl.
+  iDestruct "H" as "(H1 & $ & $ & $ & $ & _)".
+  iExactEq "H1".
+  f_equal.
+  set_solver.
+Qed.
+
+End config_init.
+*)

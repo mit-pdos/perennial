@@ -10,7 +10,7 @@ From Perennial.program_proof.simplepb Require Import pb_marshal_proof fmlist_map
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
-From Perennial.program_proof.simplepb Require Import config_proof.
+From Perennial.program_proof.simplepb Require Import config2_proof.
 From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.grove_shared Require Import monotonic_pred.
 From Perennial.base_logic Require Import lib.saved_spec.
@@ -386,8 +386,17 @@ Qed.
 (* End RPC specs *)
 
 (* Begin config client-side protocol. *)
+Definition configN := nroot .@ "config".
+Definition configInvN := nroot .@ "confinv".
+Definition configWf γ (conf:list u64) : iProp Σ :=
+  ∃ confγs,
+  "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv)
+.
+
+Instance mkConfParams : simplepb_system_names → configParams.t Σ := λ γ, configParams.mk Σ (configWf γ) configN.
+
 Definition is_conf_inv γ γconf : iProp Σ :=
-  inv configN (∃ reservedEpoch epoch conf confγs,
+  inv configInvN (∃ reservedEpoch epoch conf confγs,
   "Hepoch" ∷ own_latest_epoch γconf epoch ∗
   "Hres" ∷ own_reserved_epoch γconf reservedEpoch ∗
   "Hconf" ∷ own_config γconf conf ∗
@@ -669,11 +678,12 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
 .
 
 Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
+  let cParams := mkConfParams γ in
   "#HprereadInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
   "#Hlease" ∷ □(if leaseValid then
                 ∃ γl γconf,
                 is_conf_inv γ γconf ∗
-                is_lease config_proof.epochLeaseN γl (own_latest_epoch γconf epoch) ∗
+                is_lease config2_proof.epochLeaseN γl (own_latest_epoch γconf epoch) ∗
                 is_lease_valid_lb γl leaseExpiration
               else
                 True)
@@ -723,13 +733,14 @@ Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
+  let cParams := mkConfParams γ in
   ∃ (mu:val) (confCk:loc) γconf,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
   "#His_repl_inv" ∷ is_repl_inv γ.(s_pb) ∗
   "#HconfCk" ∷ readonly (s ↦[pb.Server :: "confCk"] #confCk) ∗
   "#Hconf_inv" ∷ is_conf_inv γ γconf ∗
-  "#HconfCk_is" ∷ config_proof.is_Clerk confCk γconf ∗
+  "#HconfCk_is" ∷ config2_proof.is_Clerk confCk γconf ∗
   "#HhelpingInv" ∷ is_helping_inv γ ∗
   "#HprereadInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads)
 .
