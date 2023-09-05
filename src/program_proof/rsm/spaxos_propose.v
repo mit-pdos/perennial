@@ -1,6 +1,8 @@
 From Perennial.program_proof.rsm Require Import spaxos_prelude.
 From Perennial.program_proof Require Import std_proof.
 
+Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
+
 Section fin_maps.
 Context `{FinMap K M}.
 
@@ -710,10 +712,18 @@ Theorem wp_Paxos__major (px : loc) (n : u64) (sc : nat) (scu64 : u64) :
     Paxos__major #px #n
   {{{ (ok : bool), RET #ok; ⌜if ok then reached_quorum sc (int.nat n) else True⌝ }}}.
 Proof.
+  iIntros "%Hscu64 #Hsc" (Φ) "!> _ HΦ".
+  wp_call.
+
   (*@ func (px *Paxos) major(n uint64) bool {                                 @*)
   (*@     return n > px.sc / 2                                                @*)
   (*@ }                                                                       @*)
-Admitted.
+  wp_loadField. wp_pures.
+  iApply "HΦ". iPureIntro.
+  case_bool_decide as Hlt; last done.
+  unfold reached_quorum.
+  rewrite word.unsigned_divu_nowrap in Hlt; word.
+Qed.
 
 Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
   (if b then f x else f y) = f (if b then x else y).
@@ -767,7 +777,9 @@ Proof.
       "HnRef"  ∷ nRef ↦[uint64T] #n ∗
       "#Hlbs"  ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
       "#Hpsl"  ∷ is_proposal_nz γ (int.nat terml) decreel ∗
+      (* [Hm], [Hdom] and [Hszpeers] in [is_paxos_comm] gives [size (dom bsqlb) ≤ max_nodes]. *)
       "%Hm"    ∷ ⌜m ⊆ peersM⌝ ∗
+      (* [Hdom] gives [bsqlb !! nidpeer = None], where [nidpeer] is the nid of current iteration. *)
       "%Hdom"  ∷ ⌜dom bsqlb ⊆ {[ nid ]} ∪ dom m⌝ ∗
       "%Hlens" ∷ ⌜map_Forall (λ _ l, (int.nat term ≤ length l)%nat) bsqlb⌝ ∗
       "%Hlq"   ∷ ⌜latest_before_quorum (int.nat term) bsqlb = int.nat terml⌝ ∗
@@ -786,7 +798,7 @@ Proof.
       rewrite map_fmap_singleton map_fold_singleton.
       unfold latest_before_quorum_step. lia.
     }
-    { rewrite dom_singleton size_singleton. word. }
+    rewrite dom_singleton size_singleton. word.
   }
   { clear Φ.
     iIntros (mdone nidpeer pxpeer Φ) "!> [HP [%Hdone %Hin]] HΦ". iNamed "HP".
@@ -848,7 +860,7 @@ Proof.
       rewrite dom_insert_L size_union; last first.
       { rewrite -not_elem_of_dom in Hnidpeer. set_solver. }
       rewrite size_singleton. rewrite Hn.
-      assert (Hsz : (size (dom bsqlb) ≤ 16)%nat).
+      assert (Hsz : (size (dom bsqlb) ≤ max_nodes)).
       { apply subseteq_size in Hdom.
         apply subseteq_dom in Hm.
         rewrite size_union in Hdom; last first.
@@ -856,9 +868,10 @@ Proof.
         apply subseteq_size in Hm.
         rewrite size_singleton in Hdom.
         rewrite -size_dom in Hszpeers.
-        clear -Hdom Hm Hszpeers. unfold max_nodes in Hszpeers. lia.
+        clear -Hdom Hm Hszpeers.
+        unfold max_nodes. unfold max_nodes in Hszpeers. lia.
       }
-      word.
+      unfold max_nodes in Hsz. word.
     }
     iApply "HΦ". do 4 iExists _. iFrame "∗ # %". iPureIntro.
     split; [by apply insert_subseteq_l | set_solver].
@@ -904,8 +917,16 @@ Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) nid sc γ 
     Paxos__acceptAll #px #term #(LitString decree)
   {{{ (ok : bool), RET #ok; if ok then quorum_accepted term sc γ else True }}}.
 Proof.
+  iIntros "#Hcomm #Hacpt #Hpsl" (Φ) "!> _ HΦ".
+  wp_call.
+
   (*@ func (px *Paxos) acceptAll(term uint64, decree string) bool {           @*)
-  (*@     var nAccepted uint64 = 0                                            @*)
+  (*@     var nAccepted uint64 = 1                                            @*)
+  (*@                                                                         @*)
+  wp_apply (wp_ref_to); first by auto.
+  iIntros (nRef) "HnRef".
+  wp_pures.
+
   (*@     for _, peer := range(px.peers) {                                    @*)
   (*@         ok := peer.accept(term, decree)                                 @*)
   (*@         if ok {                                                         @*)
@@ -913,9 +934,91 @@ Proof.
   (*@         }                                                               @*)
   (*@     }                                                                   @*)
   (*@                                                                         @*)
+  iNamed "Hcomm".
+  wp_loadField.
+  iMod (readonly_load with "HpeersMR") as (q) "HpeersM".
+  set P := (λ (m : gmap u64 loc),
+    ∃ (n : u64) (bsqlb : gmap u64 ballot),
+      "HnRef"   ∷ nRef ↦[uint64T] #n ∗
+      "#Hlbs"   ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
+      (* [Hm], [Hdom] and [Hszpeers] in [is_paxos_comm] gives [size (dom bsqlb) ≤ max_nodes]. *)
+      "%Hm"     ∷ ⌜m ⊆ peersM⌝ ∗
+      (* [Hdom] gives [bsqlb !! nidpeer = None], where [nidpeer] is the nid of current iteration. *)
+      "%Hdom"   ∷ ⌜dom bsqlb ⊆ {[ nid ]} ∪ dom m⌝ ∗
+      "%Haccin" ∷ ⌜map_Forall (λ _ l, accepted_in l (int.nat term)) bsqlb⌝ ∗
+      "%Hn"     ∷ ⌜size (dom bsqlb) = int.nat n⌝)%I.
+  wp_apply (wp_MapIter_fold _ _ _ P with "HpeersM [HnRef]").
+  { iExists _. iFrame.
+    iNamed "Hacpt".
+    iExists {[ nid := l ]}.
+    rewrite big_sepM_singleton.
+    iFrame "#". iPureIntro.
+    split; first by apply map_empty_subseteq.
+    split; first set_solver.
+    split; first by rewrite map_Forall_singleton.
+    rewrite dom_singleton size_singleton. word.
+  }
+  { clear Φ.
+    iIntros (mdone nidpeer pxpeer Φ) "!> [HP [%Hdone %Hin]] HΦ". iNamed "HP".
+    wp_pures.
+    iDestruct (big_sepM_lookup with "Hpaxos") as "Hpeer"; first by apply Hin.
+    wp_apply (wp_Paxos__accept with "Hpeer Hpsl").
+    iClear "Hacpt". iIntros (ok) "Hacpt".
+    wp_pures.
+    wp_if_destruct.
+    { wp_load. wp_store.
+      iApply "HΦ".
+      iExists _. iFrame.
+      iNamed "Hacpt".
+      iExists (<[nidpeer := l]> bsqlb).
+      assert (Hnidpeer : bsqlb !! nidpeer = None).
+      { clear -Hdom Hdone Hin Hnotin.
+        assert (Hne : nid ≠ nidpeer).
+        { apply elem_of_dom_2 in Hin. set_solver. }
+        rewrite -not_elem_of_dom.
+        rewrite -not_elem_of_dom in Hdone.
+        set_solver.
+      }
+      iModIntro.
+      iSplit.
+      { rewrite big_sepM_insert; [by iFrame "#" | done]. }
+      iPureIntro.
+      split; first by apply insert_subseteq_l.
+      split; first set_solver.
+      split; first by rewrite map_Forall_insert.
+      rewrite dom_insert_L size_union; last first.
+      { rewrite -not_elem_of_dom in Hnidpeer. set_solver. }
+      rewrite size_singleton. rewrite Hn.
+      assert (Hsz : (size (dom bsqlb) ≤ max_nodes)).
+      { apply subseteq_size in Hdom.
+        apply subseteq_dom in Hm.
+        rewrite size_union in Hdom; last first.
+        { rewrite disjoint_singleton_l. set_solver. }
+        apply subseteq_size in Hm.
+        rewrite size_singleton in Hdom.
+        rewrite -size_dom in Hszpeers.
+        clear -Hdom Hm Hszpeers.
+        unfold max_nodes. unfold max_nodes in Hszpeers. lia.
+      }
+      unfold max_nodes in Hsz. word.
+    }
+    iApply "HΦ". do 2 iExists _. iFrame "∗ # %". iPureIntro.
+    split; [by apply insert_subseteq_l | set_solver].
+  }
+  iIntros "[HpeersM HP]".
+  wp_pures.
+
   (*@     return px.major(nAccepted)                                          @*)
   (*@ }                                                                       @*)
-Admitted.
+  iNamed "HP". clear P.
+  wp_load.
+  wp_apply (wp_Paxos__major with "Hsc"); first apply Hscu64.
+  iIntros (ok Hquorum). rewrite -Hn in Hquorum.
+  iApply "HΦ".
+  destruct ok; last done.
+  iExists _.
+  by iFrame "∗ # %".
+Qed.
 
 Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) nid sc γ :
   is_paxos_comm px nid sc γ -∗
