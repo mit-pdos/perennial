@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude std_proof.
-From Goose.github_com.mit_pdos.gokv Require Import memkv lockservice.
+From Goose.github_com.mit_pdos.gokv Require Import memkv memkv.lockservice.
 From Perennial.program_proof.memkv Require Export common_proof memkv_clerk_proof.
 
 Section lockservice_proof.

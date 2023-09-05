@@ -243,6 +243,9 @@ def main():
         pkgs = [
             "urpc",
             "memkv",
+            "kv",
+            "memkv/bank",
+            "memkv/lockservice",
             "connman",
             "paxi/single",
             "bank",
