@@ -59,7 +59,8 @@ Definition MakeClerk: val :=
     ForSlice uint64T <> "host" "hosts"
       ("cls" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "cls") (reconnectclient.MakeReconnectingClient "host")));;
     struct.new Clerk [
-      "cls" ::= ![slice.T ptrT] "cls"
+      "cls" ::= ![slice.T ptrT] "cls";
+      "mu" ::= lock.new #()
     ].
 
 Definition Clerk__ReserveEpochAndGetConfig: val :=

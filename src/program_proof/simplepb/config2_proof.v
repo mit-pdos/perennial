@@ -1035,34 +1035,176 @@ Proof.
   }
 Qed.
 
-Definition own_Clerk_inv (ck:loc) : iProp Σ :=
+Definition own_Clerk_inv (ck:loc) l : iProp Σ :=
   ∃ (leader:u64),
   "Hleader" ∷ ck ↦[config2.Clerk :: "leader"] #leader ∗
-  "%HleaderBound" ∷ ⌜ int.nat leader < length config ⌝
+  "%HleaderBound" ∷ ⌜ int.nat leader < l ⌝
 .
 
 Definition is_Clerk (ck:loc) γ : iProp Σ :=
   ∃ mu cls_sl (cls:list loc),
   "#Hmu" ∷ readonly (ck ↦[config2.Clerk :: "mu"] mu) ∗
-  "#HmuInv" ∷ is_lock N mu (own_Clerk_inv ck) ∗
+  "#HmuInv" ∷ is_lock N mu (own_Clerk_inv ck (length cls)) ∗
   "#Hcls" ∷ readonly (ck ↦[config2.Clerk :: "cls"] (slice_val cls_sl)) ∗
-  "#Hcls_sl" ∷ readonly (own_slice_small cls_sl (struct.ptrT Clerk) 1 cls) ∗
+  "#Hcls_sl" ∷ readonly (own_slice_small cls_sl ptrT 1 cls) ∗
   "#Hrpc" ∷ ([∗ list] cl ∈ cls, ∃ srv, is_ReconnectingClient cl srv ∗ is_config_host srv γ) ∗
-  "%Hsz" ∷ ⌜ length cls = length config ⌝ ∗
-  "%HszNonzero" ∷ ⌜ length config > 0 ⌝
+  "%HszNonzero" ∷ ⌜ length cls > 0 ⌝
 .
 
-Lemma wp_MakeClerk configHost γ:
+(* FIXME: copied from pb_apply_proof. *)
+Lemma wp_forSlice' {V} {H:IntoVal V} I ϕ sl ty q (l:list V) (body:val) :
+  (∀ (i:u64) (v:V),
+    {{{
+          ⌜int.nat i < length l⌝ ∗ ⌜l !! (int.nat i) = Some v⌝ ∗ ϕ (int.nat i) v ∗ I i
+    }}}
+      body #i (to_val v)
+    {{{
+          RET #(); I (word.add i 1)
+    }}}
+  ) -∗
   {{{
-      is_config_host configHost γ
+        own_slice_small sl ty q l ∗
+        ([∗ list] i ↦ v ∈ l, ϕ i v) ∗
+        I 0
   }}}
-    config2.MakeClerk #configHost
+    forSlice ty body (slice_val sl)
+  {{{
+        RET #(); I (length l)
+  }}}
+.
+Proof.
+  iIntros "#Hwp".
+  iIntros (?) "!# (Hsl & Hl & HI) HΦ".
+  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
+  wp_apply (wp_forSlice (λ i, I i ∗ [∗ list] j ↦ v ∈ (drop (int.nat i) l), ϕ (j + int.nat i) v) %I
+             with "[] [$Hsl Hl HI]").
+  2: { rewrite drop_0.
+       replace (int.nat (U64 0)) with (0) by word.
+       setoid_rewrite <- plus_n_O. iFrame. }
+  {
+    clear Φ.
+    iIntros (???Φ) "!# ([HI Hl] & % & %) HΦ".
+    assert ((drop (int.nat i) l) !! 0 = Some x) as ?.
+    {
+      rewrite lookup_drop. rewrite <- H1.
+      f_equal. word.
+    }
+    iDestruct (big_sepL_take_drop _ _ 1 with "Hl") as "[Hϕ Hl]".
+    wp_apply ("Hwp" with "[HI Hϕ]").
+    {
+      iFrame "∗%".
+      iSplit. 1: iPureIntro; word.
+      iDestruct (big_sepL_lookup_acc with "Hϕ") as "[H _]".
+      {
+        rewrite lookup_take.
+        { done. }
+        lia.
+      }
+      iExactEq "H". repeat f_equal.
+    }
+    iIntros "HI".
+    iApply "HΦ".
+    iFrame.
+    rewrite drop_drop.
+    replace (int.nat (u64_instance.u64.(word.add) i 1%Z)) with (int.nat i + 1) by word.
+    iApply (big_sepL_impl with "Hl").
+    iModIntro.
+    iIntros.
+    replace (k + (int.nat i + 1)) with (1 + k + int.nat i) by word.
+    done.
+  }
+  iIntros "[[HI _] _]".
+  iApply "HΦ".
+  rewrite Hsz.
+  iExactEq "HI". f_equal. word.
+Qed.
+
+Lemma wp_MakeClerk hosts hosts_sl γ:
+  {{{
+      "Hhosts_sl" ∷ readonly (own_slice_small hosts_sl uint64T 1 hosts) ∗
+      "#Hhosts" ∷ ([∗ list] host ∈ hosts, is_config_host host γ) ∗
+      "%Hnonempty" ∷ ⌜ 0 < length hosts ⌝
+  }}}
+    config2.MakeClerk (slice_val hosts_sl)
   {{{
       ck, RET #ck; is_Clerk ck γ
   }}}
 .
 Proof.
-Admitted.
+  iIntros (Φ) "H HΦ".
+  iNamed "H".
+  wp_lam.
+  wp_apply wp_NewSlice.
+  iIntros (?) "Hcls_sl".
+  wp_apply wp_ref_to.
+  { done. }
+  iIntros (cls_ptr) "Hcls".
+  wp_pures.
+  iMod (readonly_load with "Hhosts_sl") as (?) "Hhosts_sl".
+  iDestruct (own_slice_small_sz with "Hhosts_sl") as %Hsz.
+  wp_apply (wp_forSlice'
+              (λ i,
+               ∃ sl cls,
+               "Hcls" ∷ cls_ptr ↦[slice.T ptrT] (slice_val sl) ∗
+               "Hcls_sl" ∷ own_slice sl ptrT 1 (cls) ∗
+               "#Hrpc" ∷ ([∗ list] cl ∈ cls, ∃ srv : u64, is_ReconnectingClient cl srv ∗ is_config_host srv γ) ∗
+               "%Hsz" ∷ ⌜ length cls = int.nat i ⌝
+               )%I
+             with "[] [Hcls Hcls_sl $Hhosts_sl]").
+  2:{
+    iSplitL "Hhosts".
+    { iExact "Hhosts". }
+    repeat iExists _.
+    iFrame.
+    iSplitR; last done.
+    by iApply big_sepL_nil.
+  }
+  {
+    clear Φ.
+    iIntros (???) "!# Hpre HΦ".
+    wp_pures.
+    iDestruct "Hpre" as "(%Hineq & %Hlookup & #Hhost & Hpre)".
+    iNamed "Hpre".
+    wp_apply wp_MakeReconnectingClient.
+    iIntros (?) "#Hcl".
+    wp_load.
+    wp_bind (SliceAppend _ _ _).
+    change (#cl_ptr) with (loc_IntoVal.(to_val) cl_ptr).
+    wp_apply (wp_SliceAppend with "[$Hcls_sl]").
+    iIntros (?) "Hcls_sl".
+    wp_store.
+    iApply "HΦ".
+    iModIntro. repeat iExists _; iFrame.
+    iSplitL.
+    2:{ iPureIntro. rewrite app_length. simpl. word. }
+    iApply (big_sepL_app with "[]").
+    iFrame "Hrpc".
+    iApply big_sepL_singleton.
+    iExists _; iFrame "#".
+  }
+  iNamed 1.
+  wp_pures.
+  wp_apply wp_new_free_lock.
+  iIntros (?) "HmuInv".
+  wp_load.
+  iApply wp_fupd.
+  wp_apply wp_allocStruct.
+  { eauto 20. }
+  iIntros (?) "Hc".
+  iDestruct (struct_fields_split with "Hc") as "HH".
+  iNamed "HH".
+  iApply "HΦ".
+  repeat iExists _.
+  iMod (readonly_alloc_1 with "mu") as "$".
+  iMod (readonly_alloc_1 with "cls") as "$".
+  iDestruct (own_slice_to_small with "Hcls_sl") as "Hcls_sl".
+  iMod (readonly_alloc_1 with "Hcls_sl") as "$".
+  iFrame "Hrpc".
+  rewrite Hsz0.
+  iMod (alloc_lock with "HmuInv [leader]") as "$".
+  { iNext. repeat iExists _; iFrame. iPureIntro. word. }
+  iPureIntro. word.
+Qed.
 
 Lemma wp_Clerk__ReserveEpochAndGetConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
@@ -1106,7 +1248,6 @@ Proof.
   iIntros (?) "Hargs_sl".
   iDestruct (own_slice_to_small with "Hargs_sl") as "Hargs_sl".
   wp_loadField.
-  rewrite -Hsz in HleaderBound.
   apply list_lookup_lt in HleaderBound as [? Hlookup].
   iMod (readonly_load with "Hcls_sl") as (?) "Hcls_sl2".
   iDestruct (own_slice_small_sz with "Hcls_sl2") as %Hsl_sz.
@@ -1214,7 +1355,6 @@ Proof.
             iFrame "#∗".
             iNext. repeat iExists _; iFrame.
             iPureIntro.
-            rewrite -Hsz.
             rewrite Hsl_sz.
             rewrite word.unsigned_modu_nowrap; last lia.
             { apply Z2Nat.inj_lt; auto using encoding.unsigned_64_nonneg.
@@ -1416,7 +1556,6 @@ Proof.
   wp_pures.
   wp_load.
   wp_loadField.
-  rewrite -Hsz in HleaderBound.
   apply list_lookup_lt in HleaderBound as [? Hlookup].
   iMod (readonly_load with "Hcls_sl") as (?) "Hcls_sl2".
   iDestruct (own_slice_small_sz with "Hcls_sl2") as %Hsl_sz.
@@ -1506,7 +1645,6 @@ Proof.
             iFrame "#∗".
             iNext. repeat iExists _; iFrame.
             iPureIntro.
-            rewrite -Hsz.
             rewrite Hsl_sz.
             rewrite word.unsigned_modu_nowrap; last lia.
             { apply Z2Nat.inj_lt; auto using encoding.unsigned_64_nonneg.
@@ -1610,7 +1748,6 @@ Proof.
   wp_pures.
   wp_load.
   wp_loadField.
-  rewrite -Hsz in HleaderBound.
   apply list_lookup_lt in HleaderBound as [? Hlookup].
   iMod (readonly_load with "Hcls_sl") as (?) "Hcls_sl2".
   iDestruct (own_slice_small_sz with "Hcls_sl2") as %Hsl_sz.
@@ -1691,7 +1828,6 @@ Proof.
             iFrame "#∗".
             iNext. repeat iExists _; iFrame.
             iPureIntro.
-            rewrite -Hsz.
             rewrite Hsl_sz.
             rewrite word.unsigned_modu_nowrap; last lia.
             { apply Z2Nat.inj_lt; auto using encoding.unsigned_64_nonneg.
