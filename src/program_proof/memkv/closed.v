@@ -4,7 +4,7 @@ From Perennial.goose_lang Require Import lang notation typing lifting.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list_slice.
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_prelude.
-From Goose.github_com.mit_pdos.gokv Require Import memkv connman bank.
+From Goose.github_com.mit_pdos.gokv Require Import memkv connman memkv.bank.
 
 
 From Perennial.program_proof Require Import grove_prelude.
