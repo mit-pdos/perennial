@@ -84,11 +84,16 @@ Definition Paxos__accept: val :=
       lock.release (struct.loadF Paxos "mu" "px");;
       #false
     else
-      struct.storeF Paxos "termc" "px" (std.SumAssumeNoOverflow "term" #1);;
-      struct.storeF Paxos "termp" "px" "term";;
-      struct.storeF Paxos "decreep" "px" "decree";;
-      lock.release (struct.loadF Paxos "mu" "px");;
-      #true).
+      (if: struct.loadF Paxos "learned" "px"
+      then
+        lock.release (struct.loadF Paxos "mu" "px");;
+        #false
+      else
+        struct.storeF Paxos "termc" "px" (std.SumAssumeNoOverflow "term" #1);;
+        struct.storeF Paxos "termp" "px" "term";;
+        struct.storeF Paxos "decreep" "px" "decree";;
+        lock.release (struct.loadF Paxos "mu" "px");;
+        #true)).
 
 Definition Paxos__acceptAll: val :=
   rec: "Paxos__acceptAll" "px" "term" "decree" :=
@@ -103,11 +108,17 @@ Definition Paxos__acceptAll: val :=
 Definition Paxos__learn: val :=
   rec: "Paxos__learn" "px" "term" "decree" :=
     lock.acquire (struct.loadF Paxos "mu" "px");;
-    struct.storeF Paxos "termp" "px" "term";;
-    struct.storeF Paxos "decreep" "px" "decree";;
-    struct.storeF Paxos "learned" "px" #true;;
-    lock.release (struct.loadF Paxos "mu" "px");;
-    #().
+    (if: "term" < (struct.loadF Paxos "termc" "px")
+    then
+      lock.release (struct.loadF Paxos "mu" "px");;
+      #()
+    else
+      struct.storeF Paxos "termc" "px" (std.SumAssumeNoOverflow "term" #1);;
+      struct.storeF Paxos "termp" "px" "term";;
+      struct.storeF Paxos "decreep" "px" "decree";;
+      struct.storeF Paxos "learned" "px" #true;;
+      lock.release (struct.loadF Paxos "mu" "px");;
+      #()).
 
 Definition Paxos__learnAll: val :=
   rec: "Paxos__learnAll" "px" "term" "decree" :=
@@ -149,6 +160,7 @@ Definition Paxos__Propose: val :=
         (if: (~ "accepted")
         then (~ (![boolT] "helping"))
         else
+          Paxos__learn "px" "term" (![stringT] "decree");;
           Paxos__learnAll "px" "term" (![stringT] "decree");;
           (~ (![boolT] "helping"))))).
 
