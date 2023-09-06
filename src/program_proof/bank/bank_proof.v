@@ -128,6 +128,10 @@ Definition init_lock_inv γlk kvptsto (accts:gset string) : iProp Σ :=
    bank_kvptsto γ init_flag "1" ∗ inv bankN (bank_inv γ accts) ∗
     [∗ set] acc ∈ accts, is_lock lockN (lock_gn γ) acc (bankPs γ acc)).
 
+Definition is_bank γlk kvptsto accs : iProp Σ :=
+  is_lock lockN γlk init_flag
+          (init_lock_inv γlk kvptsto accs).
+
 End bank_defs.
 
 Section bank_proof.
@@ -859,15 +863,11 @@ Proof.
     iDestruct (big_sepS_elements with "H") as "He". rewrite Hperm. iFrame "He".
 Qed.
 
-Definition is_bank γlk kvptsto accs : iProp Σ :=
-  is_lock lockN γlk init_flag
-          (init_lock_inv init_flag γlk kvptsto accs).
-
 Lemma wp_MakeBankClerk (lck kck : loc) γlk kvptsto (acc0 acc1 : string ) E :
   {{{
        is_LockClerk lockN lck γlk ∗
        is_Kv kck kvptsto E ∗
-       is_bank γlk kvptsto {[ acc0; acc1 ]}∗
+       is_bank init_flag γlk kvptsto {[ acc0; acc1 ]}∗
        ⌜ acc0 ≠ acc1 ⌝
   }}}
     MakeBankClerk #lck #kck #(str init_flag) #(str acc0) #(str acc1)

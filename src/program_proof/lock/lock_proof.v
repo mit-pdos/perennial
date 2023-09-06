@@ -12,20 +12,22 @@ Record lock_names :=
     kvptsto_lock : string → string → iProp Σ
   }
 .
+
+Definition lock_inv γ key R : iProp Σ :=
+  ∃ b : bool, kvptsto_lock γ key (if b then "1" else "") ∗ if b then True else R.
+
+Definition is_lock N `{invGS Σ} γ key R :=
+  inv N (lock_inv γ key R).
+
 End lockservice_defns.
 
 Section lockservice_proof.
 Context `{!heapGS Σ}.
-Definition lock_inv γ key R : iProp Σ :=
-  ∃ b : bool, kvptsto_lock γ key (if b then "1" else "") ∗ if b then True else R.
 
 Context (N: namespace).
 
-Definition is_lock `{invGS Σ} γ key R :=
-  inv N (lock_inv γ key R).
-
 Lemma lock_alloc `{invGS Σ} γ E key R :
-  kvptsto_lock γ key "" -∗ R ={E}=∗ is_lock γ key R.
+  kvptsto_lock γ key "" -∗ R ={E}=∗ is_lock N γ key R.
 Proof.
   iIntros "Hkv HR".
   iMod (inv_alloc _ _ (lock_inv γ key R) with "[Hkv HR]").
@@ -67,7 +69,7 @@ Qed.
 
 Lemma wp_LockClerk__Lock ck key γ R :
   {{{
-       is_LockClerk ck γ ∗ is_lock γ key R
+       is_LockClerk ck γ ∗ is_lock N γ key R
   }}}
     LockClerk__Lock #ck #(str key)
   {{{
@@ -114,7 +116,7 @@ Qed.
 
 Lemma wp_LockClerk__Unlock ck key γ R :
   {{{
-       is_LockClerk ck γ ∗ is_lock γ key R ∗ R
+       is_LockClerk ck γ ∗ is_lock N γ key R ∗ R
   }}}
     LockClerk__Unlock #ck #(str key)
   {{{

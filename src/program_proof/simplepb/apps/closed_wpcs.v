@@ -6,7 +6,7 @@ From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 From Perennial.program_logic Require dist_lang.
 
 From Perennial.program_proof.bank Require Export bank_proof.
-From Perennial.program_proof.lock Require Import lock_proof.
+From Perennial.program_proof.lock Require Export lock_proof.
 From Perennial.program_proof.simplepb Require Import pb_init_proof pb_definitions.
 From Perennial.program_proof.simplepb Require Import kv_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
