@@ -164,25 +164,17 @@ Definition Paxos__Propose: val :=
           Paxos__learnAll "px" "term" (![stringT] "decree");;
           (~ (![boolT] "helping"))))).
 
-(* TODO: merge below *)
-Definition Paxos__isLearned: val :=
-  rec: "Paxos__isLearned" "px" :=
-    lock.acquire (struct.loadF Paxos "mu" "px");;
-    let: "learned" := struct.loadF Paxos "learned" "px" in
-    lock.release (struct.loadF Paxos "mu" "px");;
-    "learned".
-
-Definition Paxos__getDecree: val :=
-  rec: "Paxos__getDecree" "px" :=
+Definition Paxos__outcome: val :=
+  rec: "Paxos__outcome" "px" :=
     lock.acquire (struct.loadF Paxos "mu" "px");;
     let: "decree" := struct.loadF Paxos "decreep" "px" in
+    let: "learned" := struct.loadF Paxos "learned" "px" in
     lock.release (struct.loadF Paxos "mu" "px");;
-    "decree".
+    ("decree", "learned").
 
 Definition Paxos__Outcome: val :=
   rec: "Paxos__Outcome" "px" :=
-    (if: Paxos__isLearned "px"
-    then (Paxos__getDecree "px", #true)
-    else (#(str""), #false)).
+    let: ("decree", "ok") := Paxos__outcome "px" in
+    ("decree", "ok").
 
 End code.

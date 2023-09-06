@@ -133,7 +133,9 @@ Definition own_paxos (paxos : loc) (nid : u64) γ : iProp Σ :=
     (*@ Res: termc uint64 / ballot ghost                                        @*)
     "%Hcurrent" ∷ ⌜length blt = int.nat termc⌝ ∗
     (*@ Res: termp uint64 / ballot ghost                                        @*)
-    "%Hlatest" ∷ ⌜latest_term blt = (int.nat termp)⌝.
+    "%Hlatest" ∷ ⌜latest_term blt = (int.nat termp)⌝ ∗
+    (*@ Res: termp uint64 / learned bool                                        @*)
+    "%Htermpnz" ∷ ⌜if learned then (int.nat termp) ≠ O else True⌝.
 
 (* TODO: figure the clean way of defining node ID. *)
 Definition is_paxos_node (paxos : loc) (nid : u64) (sc : nat) γ : iProp Σ :=
@@ -242,23 +244,61 @@ Qed.
 Definition is_proposed_decree γ v : iProp Σ :=
   ∃ n, is_proposal γ n v.
 
-Theorem wp_Paxos__Outcome (px : loc) nid sc γ :
-  is_paxos px nid sc γ -∗
+Theorem wp_Paxos__outcome (px : loc) nid sc γ :
+  is_paxos_node px nid sc γ -∗
   {{{ True }}}
-    Paxos__Outcome #px
+    Paxos__outcome #px
   {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
       (* [is_chosen] encodes safety, [is_proposed_decree] encodes non-triviality. *)
       if ok then is_chosen_consensus γ v ∗ is_proposed_decree γ v else True
   }}}.
 Proof.
-  (*@ func (px *Paxos) Outcome() (string, bool) {                             @*)
-  (*@     if px.isLearned() {                                                 @*)
-  (*@         return px.getDecree(), true                                     @*)
-  (*@     }                                                                   @*)
-  (*@                                                                         @*)
-  (*@     return "", false                                                    @*)
+  iIntros "#Hnode" (Φ) "!> _ HΦ".
+  wp_call.
+
+  (*@ func (px *Paxos) outcome() (string, bool) {                             @*)
+  (*@     px.mu.Lock()                                                        @*)
+  (*@     decree := px.decreep                                                @*)
+  (*@     learned := px.learned                                               @*)
+  (*@     px.mu.Unlock()                                                      @*)
+  (*@     return decree, learned                                              @*)
   (*@ }                                                                       @*)
-Admitted.
+  iNamed "Hnode".
+  wp_loadField.
+  wp_apply (acquire_spec with "[$Hlock]").
+  iIntros "[Hlocked HpaxosOwn]".
+  wp_pures.
+  iNamed "HpaxosOwn".
+  do 2 wp_loadField. wp_pures. wp_loadField.
+  wp_apply (release_spec with "[-HΦ $Hlock $Hlocked]"); first eauto 15 with iFrame.
+  wp_pures.
+  iApply "HΦ".
+  unfold is_chosen_consensus_learned, is_proposal_nz, is_proposed_decree.
+  destruct learned; last done.
+  case_decide; [done | by eauto with iFrame].
+Qed.
+
+Theorem wp_Paxos__Outcome (px : loc) nid sc γ :
+  is_paxos px nid sc γ -∗
+  {{{ True }}}
+    Paxos__Outcome #px
+  {{{ (v : string) (ok : bool), RET (#(LitString v), #ok);
+      if ok then is_chosen_consensus γ v ∗ is_proposed_decree γ v else True
+  }}}.
+Proof.
+  iIntros "#Hpaxos" (Φ) "!> _ HΦ".
+  wp_call.
+
+  (*@ func (px *Paxos) Outcome() (string, bool) {                             @*)
+  (*@     decree, ok := px.outcome()                                          @*)
+  (*@     return decree, ok                                                   @*)
+  (*@ }                                                                       @*)
+  iNamed "Hpaxos".
+  wp_apply (wp_Paxos__outcome with "Hnode").
+  iIntros (decree ok) "H".
+  wp_pures.
+  by iApply "HΦ".
+Qed.
 
 Definition node_prepared (term termp : u64) (decree : string) nid γ : iProp Σ :=
   ∃ (l : ballot),
