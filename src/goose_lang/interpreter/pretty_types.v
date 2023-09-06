@@ -44,6 +44,7 @@ Instance pretty_un_op : Pretty un_op :=
         | ToUInt8Op => "to_u8"
         | ToStringOp => "to_string"
         | StringLenOp => "StringLength"
+        | IsNoStringOverflowOp => "IsNoStringOverflow"
         end.
 
 #[global]
