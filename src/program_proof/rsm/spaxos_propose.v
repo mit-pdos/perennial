@@ -73,6 +73,14 @@ Instance is_proposal_nz_persistent γ n v :
   Persistent (is_proposal_nz γ n v).
 Proof. unfold is_proposal_nz. case_decide; apply _. Qed.
 
+Definition is_chosen_consensus_learned γ (l : bool) (v : string) : iProp Σ :=
+  (if l then is_chosen_consensus γ v else True)%I.
+
+#[global]
+Instance is_consensus_learned_persistent γ l v :
+  Persistent (is_chosen_consensus_learned γ l v).
+Proof. unfold is_chosen_consensus_learned. destruct l; apply _. Qed.
+
 End inv.
 
 #[export]
@@ -95,21 +103,21 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 (*@     // Term in which the currently accepted proposal is made.           @*)
 (*@     termp   uint64                                                      @*)
 (*@     // Content of the currently accepted proposal.                      @*)
-(*@     decree  string                                                      @*)
+(*@     decreep  string                                                     @*)
 (*@     // Have we learned the consensus?                                   @*)
 (*@     learned bool                                                        @*)
 (*@     // Other paxos instances. Eventually should be just addresses.      @*)
 (*@     peers   map[uint64]*Paxos                                           @*)
 (*@ }                                                                       @*)
 Definition own_paxos (paxos : loc) (nid : u64) γ : iProp Σ :=
-  ∃ (termc termp : u64) (decree : string) (learned : bool) (blt : ballot),
+  ∃ (termc termp : u64) (decreep : string) (learned : bool) (blt : ballot),
     (*@ Res: termc uint64                                                       @*)
     "Htermc" ∷ paxos ↦[Paxos :: "termc"] #termc ∗
     "%Hnz"   ∷ ⌜int.nat termc ≠ O⌝ ∗
     (*@ Res: termp uint64                                                       @*)
     "Htermp" ∷ paxos ↦[Paxos :: "termp"] #termp ∗
     (*@ Res: decree string                                                      @*)
-    "Hdecree" ∷ paxos ↦[Paxos :: "decree"] #(LitString decree) ∗
+    "Hdecreep" ∷ paxos ↦[Paxos :: "decreep"] #(LitString decreep) ∗
     (*@ Res: learned bool                                                       @*)
     "Hlearned" ∷ paxos ↦[Paxos :: "learned"] #learned ∗
     (*@ Res: ballot ghost                                                       @*)
@@ -117,7 +125,9 @@ Definition own_paxos (paxos : loc) (nid : u64) γ : iProp Σ :=
     (*@ Res: termp uint64 / termmap ghost                                       @*)
     "Hterm" ∷ own_term γ nid (int.nat termp) ∗
     (*@ Res: termp uint64 / decree string / proposal ghost                      @*)
-    "#Hproposed" ∷ is_proposal_nz γ (int.nat termp) decree ∗
+    "#Hproposed" ∷ is_proposal_nz γ (int.nat termp) decreep ∗
+    (*@ Res: learned bool / consensus ghost                                     @*)
+    (* "#Hconsensus" ∷ is_chosen_consensus_learned γ learned decreep ∗ *)
     (*@ Res: termc uint64 / ballot ghost                                        @*)
     "%Hcurrent" ∷ ⌜length blt = int.nat termc⌝ ∗
     (*@ Res: termp uint64 / ballot ghost                                        @*)
@@ -313,8 +323,8 @@ Proof.
   }
   iDestruct (ballot_witness with "Hballot") as "#Hbltlb".
 
-  (*@     termp  := px.termp                                                  @*)
-  (*@     decree := px.decree                                                 @*)
+  (*@     termp   := px.termp                                                 @*)
+  (*@     decreep := px.decreep                                              @*)
   (*@                                                                         @*)
   do 2 wp_loadField.
   wp_pures.
@@ -336,7 +346,7 @@ Proof.
   (*@     // (1) This node will not accept any proposal with term below @n, and @*)
   (*@     // (2) The largest-term proposal this node has accepted before term @n is @*)
   (*@     // decree (@t, @d).                                                 @*)
-  (*@     return termp, decree, true                                          @*)
+  (*@     return termp, decreep, true                                         @*)
   (*@ }                                                                       @*)
   iApply "HΦ".
   iExists _.
@@ -403,8 +413,8 @@ Proof.
   }
   iDestruct (ballot_witness with "Hballot") as "#Hbltlb".
 
-  (*@     termp  := px.termp                                                  @*)
-  (*@     decree := px.decree                                                 @*)
+  (*@     termp   := px.termp                                                  @*)
+  (*@     decreep := px.decreep                                               @*)
   (*@                                                                         @*)
   do 2 wp_loadField.
   wp_pures.
@@ -422,7 +432,7 @@ Proof.
   }
   wp_pures.
 
-  (*@     return term, termp, decree                                          @*)
+  (*@     return term, termp, decreep                                         @*)
   (*@ }                                                                       @*)
   iApply "HΦ".
   iModIntro.
@@ -480,7 +490,7 @@ Proof.
 
   (*@     px.termc = std.SumAssumeNoOverflow(term, 1)                         @*)
   (*@     px.termp = term                                                     @*)
-  (*@     px.decree = decree                                                  @*)
+  (*@     px.decreep = decree                                                 @*)
   (*@                                                                         @*)
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hoverflow).
@@ -610,7 +620,7 @@ Proof.
 
   (*@     px.termc = std.SumAssumeNoOverflow(term, 1)                         @*)
   (*@     px.termp = term                                                     @*)
-  (*@     px.decree = decree                                                  @*)
+  (*@     px.decreep = decree                                                 @*)
   (*@                                                                         @*)
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hoverflow).
