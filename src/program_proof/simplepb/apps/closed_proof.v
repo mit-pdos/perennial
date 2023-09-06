@@ -28,12 +28,7 @@ Definition grove_dist_adequate
                ebσs in
   dist_adequacy.dist_adequate (CS := goose_crash_lang) (enonidempσs ++ ρs) g.
 
-Definition kv_pbΣ := #[heapΣ; ekvΣ].
-
-Definition configHost : chan := U64 10.
-Definition r1Host: chan := U64 1.
-Definition r2Host: chan := U64 2.
-
+Definition kv_pbΣ := #[heapΣ; ekvΣ; bankΣ].
 
 #[global]
 Instance sys_inv_into_crash `{!heapGS Σ} EntryType `{!pbG Σ} γsys :
@@ -80,7 +75,7 @@ Definition kv_replica_main_crash_cond `{ekvG Σ} γsys fname γsrv1:=
 (λ hG : heapGS Σ, ∃ data',
     (fname f↦ data') ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv1) data')%I.
 
-Lemma wpr_kv_replica_main fname me γsys γsrv {Σ} {HKV: ekvG Σ}
+Lemma wpr_kv_replica_main fname me configHost γsys γsrv {Σ} {HKV: ekvG Σ}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   "Hinvs" ∷ is_pb_system_invs γsys -∗
@@ -88,7 +83,7 @@ Lemma wpr_kv_replica_main fname me γsys γsrv {Σ} {HKV: ekvG Σ}
   "Hconfhost" ∷ is_pb_config_host configHost γsys -∗
   "Hinit" ∷ fname f↦[] -∗
   "Hfile_crash" ∷ file_crash (own_Server_ghost_f γsys γsrv) [] -∗
-  wpr NotStuck ⊤ (kv_replica_main #(LitString fname) #me) (kv_replica_main #(LitString fname) #me) (λ _ : goose_lang.val, True)
+  wpr NotStuck ⊤ (kv_replica_main #(LitString fname) #me #configHost) (kv_replica_main #(LitString fname) #me #configHost) (λ _ : goose_lang.val, True)
     (λ _ , True) (λ _ _, True).
 Proof.
    iIntros. iNamed.
@@ -134,11 +129,59 @@ Proof.
    }
 Qed.
 
-Lemma wp_config_main γconf {Σ} {HKV: ekvG Σ} {HG} {HL}:
+Lemma wp_lconfig_main γconf {Σ} {HKV: ekvG Σ} {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
-  "HconfInit" ∷ makeConfigServer_pre γconf [U64 1; U64 2] ∗
-  "#Hhost" ∷ is_config_host configHost γconf -∗
-  WP config_main #() {{ _, True }}
+  "HconfInit" ∷ makeConfigServer_pre γconf [lr1Host; lr2Host] ∗
+  "#Hhost" ∷ is_config_host lconfigHost γconf -∗
+  WP lconfig_main #() {{ _, True }}
+.
+Proof.
+  intros ?.
+  iNamed 1.
+  wp_call.
+  wp_apply (wp_NewSlice).
+  iIntros (?) "Hsl".
+  wp_apply wp_ref_to.
+  { done. }
+  iIntros (servers_ptr) "Hservers".
+  wp_pures.
+
+  wp_apply (wp_LoadAt with "[$Hservers]").
+  iIntros "Hservers".
+  wp_apply (wp_SliceAppend with "Hsl").
+  iIntros (?) "Hsl".
+  wp_apply (wp_StoreAt with "[$Hservers]").
+  { done. }
+  iIntros "Hservers".
+
+  wp_apply (wp_LoadAt with "[$Hservers]").
+  iIntros "Hservers".
+  wp_apply (wp_SliceAppend with "Hsl").
+  iIntros (?) "Hsl".
+  wp_apply (wp_StoreAt with "[$Hservers]").
+  { done. }
+  iIntros "Hservers".
+
+  wp_apply (wp_LoadAt with "[$Hservers]").
+  iIntros "Hservers".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  rewrite replicate_0.
+  simpl.
+  wp_apply (config_proof.wp_MakeServer with "[$HconfInit $Hsl]").
+  iIntros (?) "#Hissrv".
+  wp_apply (wp_Server__Serve with "[$]").
+  {
+    iFrame "Hissrv".
+  }
+  wp_pures.
+  done.
+Qed.
+
+Lemma wp_dconfig_main γconf {Σ} {HKV: ekvG Σ} {HG} {HL}:
+  let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
+  "HconfInit" ∷ makeConfigServer_pre γconf [dr1Host; dr2Host] ∗
+  "#Hhost" ∷ is_config_host dconfigHost γconf -∗
+  WP dconfig_main #() {{ _, True }}
 .
 Proof.
   intros ?.
@@ -186,7 +229,6 @@ Qed.
    This is probably a remnant of an older version of the proof in which the subG
    wasn't proven anywhere else.
  *)
-
 Local Instance subG_ekvΣ {Σ} : subG kv_pbΣ Σ → ekvG Σ.
 Proof. intros. solve_inG. Qed.
 
@@ -195,27 +237,46 @@ Definition replica_fname := "kv.data".
 (* FIXME: put this in the file that defines ekvΣ? *)
 Opaque ekvΣ.
 Lemma kv_pb_boot :
-  ∀ σconfig σsrv1 σsrv2 (g : goose_lang.global_state),
+  ∀ σdconfig σdsrv1 σdsrv2
+    σlconfig σlsrv1 σlsrv2
+    (g : goose_lang.global_state),
   (* *)
   chan_msg_bounds g.(global_world).(grove_net) →
 
-  file_content_bounds σconfig.(world).(grove_node_files) →
-  file_content_bounds σsrv1.(world).(grove_node_files) →
-  file_content_bounds σsrv2.(world).(grove_node_files) →
+  file_content_bounds σdconfig.(world).(grove_node_files) →
+  file_content_bounds σdsrv1.(world).(grove_node_files) →
+  file_content_bounds σdsrv2.(world).(grove_node_files) →
+  σdsrv1.(world).(grove_node_files) !! replica_fname = Some [] →
+  σdsrv2.(world).(grove_node_files) !! replica_fname = Some [] →
 
-  σsrv1.(world).(grove_node_files) !! replica_fname = Some [] →
-  σsrv2.(world).(grove_node_files) !! replica_fname = Some [] →
+  g.(global_world).(grove_net) !! dconfigHost = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! dr1Host = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! dr2Host = Some (∅ : gset message) →
 
-  g.(global_world).(grove_net) !! configHost = Some (∅ : gset message) →
-  g.(global_world).(grove_net) !! r1Host = Some (∅ : gset message) →
-  g.(global_world).(grove_net) !! r2Host = Some (∅ : gset message) →
+  file_content_bounds σlconfig.(world).(grove_node_files) →
+  file_content_bounds σlsrv1.(world).(grove_node_files) →
+  file_content_bounds σlsrv2.(world).(grove_node_files) →
+  σlsrv1.(world).(grove_node_files) !! replica_fname = Some [] →
+  σlsrv2.(world).(grove_node_files) !! replica_fname = Some [] →
+
+  g.(global_world).(grove_net) !! lconfigHost = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! lr1Host = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! lr2Host = Some (∅ : gset message) →
+
   grove_dist_adequate
-    [ {| init_thread := config_main #() ; init_restart := of_val #(); init_local_state := σconfig |}]
-    [(kv_replica_main #(LitString replica_fname) #(r1Host:u64), σsrv1);
-     (kv_replica_main #(LitString replica_fname) #(r2Host:u64), σsrv2)] g (λ _, True).
+    [ {| init_thread := dconfig_main #() ; init_restart := of_val #(); init_local_state := σdconfig |} ;
+      {| init_thread := lconfig_main #() ; init_restart := of_val #(); init_local_state := σlconfig |}
+      ]
+    [(kv_replica_main #(LitString replica_fname) #(dr1Host:u64) #dconfigHost, σdsrv1);
+     (kv_replica_main #(LitString replica_fname) #(dr2Host:u64) #dconfigHost, σdsrv2);
+     (kv_replica_main #(LitString replica_fname) #(lr1Host:u64) #lconfigHost, σlsrv1);
+     (kv_replica_main #(LitString replica_fname) #(lr2Host:u64) #lconfigHost, σlsrv2)
+    ] g (λ _, True).
 Proof.
-  intros ????.
-  intros Hinitg Hinitconfig Hinitr1 Hinitr2 Hinitr1file Hinitr2file HconfChan Hr1Chan Hr2Chan.
+  intros ???????.
+  intros Hinitg.
+  intros Hdinitconfig Hdinitr1 Hdinitr2 Hdinitr1file Hdinitr2file HdconfChan Hdr1Chan Hdr2Chan.
+  intros Hlinitconfig Hlinitr1 Hlinitr2 Hlinitr1file Hlinitr2file HlconfChan Hlr1Chan Hlr2Chan.
   eapply (grove_ffi_dist_adequacy (kv_pbΣ)).
   { assumption. }
   { repeat constructor; naive_solver. }
@@ -225,47 +286,52 @@ Proof.
   iSplitR ""; last first.
   { iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
 
-  (* First, pre-set up the two KV replica servers *)
-  iMod (prealloc_simplepb_server) as (γsrv1) "[#Hsrv1wit Hsrv1]".
-  iMod (prealloc_simplepb_server) as (γsrv2) "[#Hsrv2wit Hsrv2]".
+  (* First, pre-set up the two pairs of KV replica servers *)
+  iMod (prealloc_simplepb_server) as (γsrvd1) "[#Hdsrv1wit Hdsrv1]".
+  iMod (prealloc_simplepb_server) as (γsrvd2) "[#Hdsrv2wit Hdsrv2]".
+  iMod (prealloc_simplepb_server) as (γsrvl1) "[#Hlsrv1wit Hlsrv1]".
+  iMod (prealloc_simplepb_server) as (γsrvl2) "[#Hlsrv2wit Hlsrv2]".
 
-  set (confγs:=[γsrv1 ; γsrv2]).
-  iMod (alloc_simplepb_system confγs with "[]") as (γpb) "H".
+  set (confdγs:=[γsrvd1 ; γsrvd2]).
+  set (conflγs:=[γsrvl1 ; γsrvl2]).
+  iMod (alloc_simplepb_system confdγs with "[]") as (γdpb) "Hd".
   { simpl. lia. }
-  {
-    iIntros.
-    rewrite /confγs elem_of_list_In /= in H.
-    naive_solver.
-  }
-  iDestruct "H" as "(#Hinvs & Hlog & #Hwits & Hconf1 & Hconf2 & #Hclient_invs)".
+  { iIntros. rewrite /confdγs elem_of_list_In /= in H.
+    naive_solver. }
+
+  iMod (alloc_simplepb_system conflγs with "[]") as (γlpb) "Hl".
+  { simpl. lia. }
+  { iIntros. rewrite /conflγs elem_of_list_In /= in H.
+    naive_solver. }
+  iDestruct "Hd" as "(#Hinvs & Hlog & #Hwits & Hconf1 & Hconf2 & #Hclient_invs)".
 
   (* Now, set up the exactly-once kv system *)
   iMod (alloc_ekv with "Hlog") as (?) "[#Hclient_invs2 Hkvs]".
 
   (* Now, set up all the hosts *)
   iDestruct (big_sepM_delete with "Hchan") as "[HconfChan Hchan]".
-  { apply HconfChan. } (* get out conf chan points-to for later *)
+  { apply HdconfChan. } (* get out conf chan points-to for later *)
 
   iDestruct (big_sepM_delete with "Hchan") as "[Hr1Chan Hchan]".
-  { rewrite lookup_delete_Some. split; last apply Hr1Chan. done. }
-  iMod (pb_host_init r1Host with "Hr1Chan") as "#Hsrvhost1".
+  { rewrite lookup_delete_Some. split; last apply Hdr1Chan. done. }
+  iMod (pb_host_init dr1Host with "Hr1Chan") as "#Hsrvhost1".
 
   iDestruct (big_sepM_delete with "Hchan") as "[Hr2Chan Hchan]".
   { rewrite lookup_delete_Some.
     rewrite lookup_delete_Some.
-    split; last (split ; last apply Hr2Chan); done. }
-  iMod (pb_host_init r2Host with "Hr2Chan") as "#Hsrvhost2".
+    split; last (split ; last apply Hdr2Chan); done. }
+  iMod (pb_host_init dr2Host with "Hr2Chan") as "#Hsrvhost2".
 
-  set (conf:=[r1Host ; r2Host]).
-  iMod (alloc_pb_config_ghost γpb conf confγs with "[] Hconf1 Hconf2") as (γconf) "[#Hconf HconfInit]".
+  set (dconf:=[dr1Host ; dr2Host]).
+  iMod (alloc_pb_config_ghost γdpb dconf confdγs with "[] Hconf1 Hconf2") as (γconf) "[#Hconf HconfInit]".
   {
     iFrame "#".
     by iApply big_sepL2_nil.
   }
 
-  iMod (config_server_init configHost γconf with "HconfChan") as "#Hconfhost".
+  iMod (config_server_init dconfigHost γconf with "HconfChan") as "#Hconfhost".
 
-  iAssert (is_pb_config_host configHost γpb) with "[]" as "#HbConfHost".
+  iAssert (is_pb_config_host dconfigHost γdpb) with "[]" as "#HbConfHost".
   { iExists _. iFrame "#". }
 
   iModIntro.
@@ -280,7 +346,7 @@ Proof.
       instantiate (1:=λ _, True%I).
       simpl.
       iApply wp_wpc.
-      iApply (wp_config_main _ with "[$]").
+      iApply (wp_dconfig_main _ with "[$]").
     }
     { (* crash; there should actually be no crashes of the config server *)
       iModIntro.
@@ -295,36 +361,39 @@ Proof.
       done.
     }
   }
-  iSplitL "Hsrv1".
+  iSplitR.
+  {
+    admit. (* TODO: other config *)
+  }
+  iSplitL "Hdsrv1".
   {
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iSpecialize ("Hsrv1" $! γpb with "[]").
-    { iApply "Hwits". iPureIntro. rewrite /confγs elem_of_list_In /= //. naive_solver. }
+    iSpecialize ("Hdsrv1" $! γdpb with "[]").
+    { iApply "Hwits". iPureIntro. rewrite /confdγs elem_of_list_In /= //. naive_solver. }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iAssert (file_crash (own_Server_ghost_f γpb _) []) with "[Hsrv1]" as "HfileCrash".
+    iAssert (file_crash (own_Server_ghost_f γdpb _) []) with "[Hdsrv1]" as "HfileCrash".
     { iLeft. by iFrame. }
-    iApply (@wpr_kv_replica_main _ _ _ γsrv1 with "[$] [$] [$] [$] [$]").
+    iApply (@wpr_kv_replica_main _ _ _ _ γsrvd1 with "[$] [$] [$] [$] [$]").
   }
   (* TODO: do like above for replica main1 as separate lemma *)
-  iSplitL "Hsrv2".
+  iSplitL "Hdsrv2".
   {
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iSpecialize ("Hsrv2" $! γpb with "[]").
-    { iApply "Hwits". iPureIntro. rewrite /confγs elem_of_list_In /= //. naive_solver. }
+    iSpecialize ("Hdsrv2" $! γdpb with "[]").
+    { iApply "Hwits". iPureIntro. rewrite /confdγs elem_of_list_In /= //. naive_solver. }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iAssert (file_crash (own_Server_ghost_f γpb _) []) with "[Hsrv2]" as "HfileCrash".
+    iAssert (file_crash (own_Server_ghost_f γdpb _) []) with "[Hdsrv2]" as "HfileCrash".
     { iLeft. by iFrame. }
-    iApply (@wpr_kv_replica_main _ _ _ γsrv2 with "[$] [$] [$] [$] [$]").
+    iApply (@wpr_kv_replica_main _ _ _ _ γsrvd2 with "[$] [$] [$] [$] [$]").
   }
-  done.
-Qed.
+Admitted.
 
 End closed.

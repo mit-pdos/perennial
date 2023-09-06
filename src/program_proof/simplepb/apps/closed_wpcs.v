@@ -5,7 +5,7 @@ From Perennial.goose_lang Require adequacy dist_adequacy.
 From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 From Perennial.program_logic Require dist_lang.
 
-From Perennial.program_proof.bank Require Import bank_proof.
+From Perennial.program_proof.bank Require Export bank_proof.
 From Perennial.program_proof.lock Require Import lock_proof.
 From Perennial.program_proof.simplepb Require Import pb_init_proof pb_definitions.
 From Perennial.program_proof.simplepb Require Import kv_proof.
@@ -88,8 +88,16 @@ Proof.
   done.
 Qed.
 
+
 Definition dconfigHost : u64 := (U64 10).
+Definition dr1Host: u64 := (U64 1).
+Definition dr2Host: u64 := (U64 2).
+
 Definition lconfigHost : u64 := (U64 110).
+Definition lr1Host: u64 := (U64 101).
+Definition lr2Host: u64 := (U64 102).
+
+
 Context `{!bankG Σ}.
 Lemma wp_makeBankClerk γlk γkv :
   {{{
