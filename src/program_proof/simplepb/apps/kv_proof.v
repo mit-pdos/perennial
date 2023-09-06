@@ -110,49 +110,6 @@ Proof.
   iModIntro. repeat iExists _; iFrame "#".
 Qed.
 
-Lemma alloc_ekv_system γsrvs :
-  length γsrvs > 0 →
-  (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_accepted_lb γsrv.(r_pb) (U64 0) [] ∗ is_epoch_lb γsrv.(r_pb) 0)
-  host c↦ ∅ ={⊤}=∗
-  ={⊤}=∗ ∃ γ,
-  is_pb_system_invs γ ∗
-  own_op_log γ [] ∗
-  (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_pb_sys_init_witness γ γsrv) ∗
-  pb_init_for_config γ.(s_pb) (r_pb <$> γsrvs) ∗
-  primary_init_for_config γ.(s_prim) ∗
-  is_proph_read_inv γ
-.
-Proof.
-  iIntros (?) "#Hpre".
-  iMod alloc_primary_protocol as (γprim) "[Hprim #HprimWit]".
-  iMod (pb_system_init (r_pb <$> γsrvs) with "[]") as (γpb) "Hpb".
-  { by rewrite fmap_length. }
-  { iIntros.
-    apply elem_of_list_fmap_2 in H0 as (? & ? & ?); subst.
-    by iApply "Hpre". }
-  iDestruct "Hpb" as "(#Hrep & Hlog & Hinit & #Hwit)".
-  iMod (alloc_pb_preread_protocol with "Hlog") as (γprelog γreads) "[#Hpreread Hlog]".
-  iMod (own_alloc (●ML [])) as (γintlog) "[Hintlog Hintlog2]".
-  { apply mono_list_auth_valid. }
-  iMod (own_alloc (●ML [])) as (γoplog) "[Hoplog Hoplog2]".
-  { apply mono_list_auth_valid. }
-
-  set (γ:={| s_pb:=γpb ; s_prim:=γprim ; s_prelog := γprelog ; s_internal_log := γintlog ;
-             s_reads:=γreads ; s_log := γoplog
-          |}).
-  iMod (alloc_helping_inv γ with "Hlog Hintlog2") as "#Hhelp".
-  iAssert (|={⊤}=> is_proph_read_inv γ)%I with "[Hintlog Hoplog2]" as ">#Hproph_read_inv".
-  { iApply (inv_alloc with "[Hintlog Hoplog2]").
-    iExists _; iFrame. }
-  iModIntro. iExists γ.
-  iNamed "Hinit".
-  iFrame "∗ His_conf #".
-  iIntros.
-  iExists _; iFrame "#".
-  iPureIntro.
-  by apply elem_of_list_fmap_1.
-Qed.
-
 End global_proof.
 
 Section local_proof.
