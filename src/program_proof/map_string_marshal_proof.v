@@ -45,8 +45,8 @@ Proof.
   iIntros "%Φ H HΦ". iNamed "H". iNamed "Hmap". wp_call.
   wp_apply wp_NewSlice. iIntros (s) "Hs".
   wp_apply wp_ref_to; first by val_ty. iIntros (l) "Hl".
-  (*
-  wp_apply (wp_MapLen with "Hkvs_map"). iIntros "[%Hmsize Hkvs_map]".
+  wp_pures.
+  wp_apply (wp_MapLen with "Hmap"). iIntros "[%Hmsize Hmap]".
   wp_load.
   wp_apply (wp_WriteInt with "Hs"). iIntros (s') "Hs".
   rewrite replicate_0 /=. wp_store. clear s.
@@ -173,7 +173,7 @@ Proof.
   rewrite Hls. iFrame "Hm".
   rewrite drop_ge.
   2:{ rewrite -Map.size_list_to_map // Hls. word. }
-  done. *)
+  done.
 Admitted.
 
 End map_string_marshal_proof.

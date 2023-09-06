@@ -296,7 +296,6 @@ Proof.
     injection Hlook as <-.
     iApply "HΦ". repeat iExists _. iFrame "∗#".
   -
-    Search lookup gset_to_gmap.
     rewrite left_id lookup_gset_to_gmap_Some in Hlook.
     destruct Hlook as [? ?]; subst.
     iApply "HΦ". repeat iExists _. iFrame "∗#".
