@@ -136,10 +136,10 @@ Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !bankG Σ}.
 Context (init_flag: string). (* Account names for bank *)
 
 Definition own_bank_clerk γ (bank_ck:loc) (accts : gset string) : iProp Σ :=
-  ∃ (lck kck : loc) (accts_s : Slice.t) (accts_l : list string),
+  ∃ (lck kck : loc) (accts_s : Slice.t) (accts_l : list string) E,
   "%" ∷ ⌜Permutation (elements accts) (accts_l)⌝ ∗
-  "#Hlck_is" ∷ is_LockClerk lck (lock_gn γ) ∗
-  "#Hkck_is" ∷ is_Kv (kvptsto:=bank_kvptsto γ) kck ∗
+  "#Hlck_is" ∷ is_LockClerk lockN lck (lock_gn γ) ∗
+  "#Hkck_is" ∷ is_Kv kck (bank_kvptsto γ) E ∗
 
   "Hkck" ∷ bank_ck ↦[BankClerk :: "kvck"] #kck ∗
   "Hlck" ∷ bank_ck ↦[BankClerk :: "lck"] #lck ∗
@@ -151,7 +151,7 @@ Definition own_bank_clerk γ (bank_ck:loc) (accts : gset string) : iProp Σ :=
 
 Lemma acquire_two_spec (lck :loc) (ln1 ln2:string) γ:
 {{{
-     is_LockClerk lck γ.(bank_ls_names) ∗
+     is_LockClerk lockN lck γ.(bank_ls_names) ∗
      is_lock lockN γ.(bank_ls_names) ln1 (bankPs γ ln1) ∗
      is_lock lockN γ.(bank_ls_names) ln2 (bankPs γ ln2)
 }}}
@@ -176,7 +176,7 @@ Qed.
 
 Lemma release_two_spec (lck :loc) (ln1 ln2:string) γ:
 {{{
-     is_LockClerk lck γ.(bank_ls_names) ∗
+     is_LockClerk lockN lck γ.(bank_ls_names) ∗
      is_lock lockN γ.(bank_ls_names) ln1 (bankPs γ ln1) ∗
      is_lock lockN γ.(bank_ls_names) ln2 (bankPs γ ln2) ∗
      bankPs γ ln1 ∗
@@ -269,7 +269,7 @@ Proof.
   iNamed "Hkck_is2".
   wp_loadField.
   wp_apply ("HgetSpec" with "[//]").
-  iApply (ncfupd_mask_intro); first by solve_ndisj. iIntros "Hclo".
+  iApply (fupd_mask_intro); first by solve_ndisj. iIntros "Hclo".
   iExists _. iFrame "Hacc1_phys".
   iIntros "Hacc1_phys". iMod ("Hclo") as "_". iModIntro.
   iIntros "_".
@@ -282,7 +282,7 @@ Proof.
     wp_loadField.
     wp_loadField.
     wp_apply ("HputSpec" with "[//]").
-    iApply (ncfupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hacc1_phys".
     iMod ("Hclo") as "_". iIntros "!> _".
     wp_pures.
@@ -290,7 +290,7 @@ Proof.
 
     wp_loadField.
     wp_apply ("HgetSpec" with "[//]").
-    iApply (ncfupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame "Hacc2_phys".
     iIntros "Hacc2_phys". iMod ("Hclo") as "_". iModIntro.
     iIntros "_".
@@ -301,7 +301,7 @@ Proof.
     wp_loadField.
 
     wp_apply ("HputSpec" with "[//]").
-    iApply (ncfupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hacc2_phys".
     iMod ("Hclo") as "_". iIntros "!> _".
     wp_pures.
@@ -364,7 +364,7 @@ Proof.
   destruct (bool_decide (int.Z src < int.Z accts_s.(Slice.sz))) eqn:Hsrc.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    iExists _, _, _, _. iFrame "∗%#".
+    repeat iExists _. iFrame "∗%#".
   }
 
   wp_loadField.
@@ -373,13 +373,13 @@ Proof.
   destruct (bool_decide (int.Z dst < int.Z accts_s.(Slice.sz))) eqn:Hdst.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    iExists _, _, _, _. iFrame "∗%#".
+    repeat iExists _. iFrame "∗%#".
   }
 
   wp_if_destruct.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    iExists _, _, _, _. iFrame "∗%#".
+    repeat iExists _. iFrame "∗%#".
   }
 
   iDestruct (own_slice_small_sz with "Haccts_slice") as %Hslicelen.
@@ -400,7 +400,7 @@ Proof.
 
   wp_apply (Bank__transfer_internal_spec with "[-Hpost]").
   { iFrame "#". iSplitL.
-    - iExists _, _, _, _. iFrame "∗%#".
+    - repeat iExists _. iFrame "∗%#".
     - iPureIntro.
       intro Hc; subst.
       assert (NoDup accts_l) as Hnodup.
@@ -470,7 +470,7 @@ Proof.
     wp_loadField.
     wp_apply ("HgetSpec" with "[//]").
 
-    iApply (ncfupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame "Hx_kv".
     iIntros "Hx_kv". iMod ("Hclo") as "_". iModIntro.
     iIntros "_".
@@ -594,7 +594,7 @@ Proof.
   wp_load.
   replace (map_total m) with (bal_total) by auto.
   iApply "Hpost".
-  iModIntro. iExists _, _, _, _. iFrame "∗ Hkck_is Hlck_is #%".
+  iModIntro. repeat iExists _. iFrame "∗ Hkck_is Hlck_is #%".
 Qed.
 
 Lemma Bank__SimpleAudit_spec (bck:loc) γ accts :
@@ -621,10 +621,10 @@ Proof.
   iModIntro. iLeft. iFrame. eauto.
 Qed.
 
-Lemma wp_MakeBankClerkSlice (lck kck : loc) γlk kvptsto accts (accts_s : Slice.t) acc0 (accts_l : list string) :
+Lemma wp_MakeBankClerkSlice (lck kck : loc) γlk kvptsto E accts (accts_s : Slice.t) acc0 (accts_l : list string) :
   {{{
-       is_LockClerk lck γlk ∗
-       is_Kv (kvptsto:=kvptsto) kck ∗
+       is_LockClerk lockN lck γlk ∗
+       is_Kv kck kvptsto E ∗
        is_lock lockN γlk init_flag
          (init_lock_inv init_flag γlk kvptsto accts) ∗
        own_slice_small accts_s stringT 1 (acc0 :: accts_l) ∗
@@ -659,7 +659,7 @@ Proof.
   wp_apply ("HgetSpec" with "[//]").
   iDestruct "Hinit" as "[Huninit|Hinit]".
   - iDestruct "Huninit" as "(Hflag&Haccs)".
-    iApply ncfupd_mask_intro; first by set_solver+. iIntros "Hclo'".
+    iApply fupd_mask_intro; first by set_solver+. iIntros "Hclo'".
     iExists _. iFrame. iIntros "Hflag".
     iMod "Hclo'" as "_". iIntros "!> _".
     wp_pures.
@@ -676,7 +676,7 @@ Proof.
     iDestruct (big_sepL_cons with "Haccs") as "[Hacc0 Haccs]".
     iDestruct "Hacc0" as "(Hacc0_2 & Hacc0_1)".
 
-    iApply (ncfupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hacc0_2".
     iMod ("Hclo") as "_". iIntros "!> _".
     wp_pures.
@@ -711,7 +711,7 @@ Proof.
       iDestruct "Htodo" as "[Hx Htodo]".
       iNamed "Hx".
 
-      iApply (ncfupd_mask_intro); first by set_solver. iIntros "Hclo".
+      iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
       iExists _. iFrame. iIntros "Hacc1_phys".
       iMod ("Hclo") as "_". iIntros "!> _".
       wp_pures.
@@ -757,7 +757,7 @@ Proof.
     wp_loadField.
 
     wp_apply ("HputSpec" with "[//]").
-    iApply (ncfupd_mask_intro); first by set_solver. iIntros "Hclo".
+    iApply (fupd_mask_intro); first by set_solver. iIntros "Hclo".
     iExists _. iFrame. iIntros "Hflag_phys".
     iMod ("Hclo") as "_". iIntros "!> _".
     wp_pures.
@@ -832,11 +832,11 @@ Proof.
       rewrite Hperm. iFrame "Haccs_list".
     }
     wp_pures. iApply "HΦ". iModIntro. iFrame "Hinv".
-    iExists _, _, _, _. iFrame "lck accts".
-    iFrame "∗%#".
+    repeat iExists _. iFrame "lck accts Haccts_slice".
+    iFrame "Hkck_is Haccs_list ∗#%".
 
   - iDestruct "Hinit" as (γlog) "(Hflag&#Hinv&#H)".
-    iApply ncfupd_mask_intro; first by set_solver+. iIntros "Hclo'".
+    iApply fupd_mask_intro; first by set_solver+. iIntros "Hclo'".
     iExists _. simpl. iFrame. iIntros "Hflag".
     iMod "Hclo'" as "_". iIntros "!> _".
     wp_pures.
@@ -844,7 +844,7 @@ Proof.
     wp_apply (wp_LockClerk__Unlock with "[$Hlck_is $Hinit_lock Hflag]").
     { iRight. iExists γlog. iFrame "∗#". }
     wp_pures. iApply "HΦ". iModIntro. iFrame "Hinv".
-    iExists _, _, _, _. iFrame "∗#%".
+    repeat iExists _. iFrame "∗ Hkck_is # %".
     iDestruct (big_sepS_elements with "H") as "He". rewrite Hperm. iFrame "He".
 Qed.
 
@@ -852,10 +852,10 @@ Definition is_bank γlk kvptsto accs : iProp Σ :=
   is_lock lockN γlk init_flag
           (init_lock_inv init_flag γlk kvptsto accs).
 
-Lemma wp_MakeBankClerk (lck kck : loc) γlk kvptsto (acc0 acc1 : string ) :
+Lemma wp_MakeBankClerk (lck kck : loc) γlk kvptsto (acc0 acc1 : string ) E :
   {{{
-       is_LockClerk lck γlk ∗
-       is_Kv (kvptsto:=kvptsto) kck ∗
+       is_LockClerk lockN lck γlk ∗
+       is_Kv kck kvptsto E ∗
        is_bank γlk kvptsto {[ acc0; acc1 ]}∗
        ⌜ acc0 ≠ acc1 ⌝
   }}}

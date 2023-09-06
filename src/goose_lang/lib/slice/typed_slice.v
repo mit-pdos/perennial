@@ -36,6 +36,11 @@ Typeclasses Transparent slice.own_slice_small.
 Definition own_slice s t q vs := slice.own_slice s t q (list.untype vs).
 Definition own_slice_small s t q vs := slice.own_slice_small s t q (list.untype vs).
 
+Lemma own_slice_split s t q vs :
+  own_slice s t q vs ⊣⊢
+  own_slice_small s t q vs ∗ own_slice_cap s t.
+Proof. by rewrite /own_slice /own_slice_small. Qed.
+
 Lemma own_slice_small_acc s t q vs :
   own_slice s t q vs -∗ own_slice_small s t q vs ∗ (∀ vs', own_slice_small s t q vs' -∗ own_slice s t q vs').
 Proof.

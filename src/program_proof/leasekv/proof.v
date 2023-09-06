@@ -1,5 +1,4 @@
 From Perennial.program_proof Require Import grove_prelude marshal_stateless_proof.
-From Perennial.program_logic Require Import atomic.
 From Goose.github_com.mit_pdos.gokv Require Import leasekv.
 From Perennial.program_proof.simplepb Require Import renewable_lease.
 From Perennial.program_proof.kv Require Import interface.
@@ -98,15 +97,17 @@ Definition own_LeaseKv (k:loc) γ : iProp Σ :=
                )
 .
 
-(* FIXME: allocation lemma *)
+(* TODO: allocation lemma *)
 
+Context `{E:coPset}.
 Definition is_LeaseKv (k:loc) γ : iProp Σ :=
   ∃ mu kvptsto_int (kv:loc),
   "#Hinv" ∷ is_leasekv_inv kvptsto_int γ ∗
   "#Hmu" ∷ readonly (k ↦[LeaseKv :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock nroot mu (own_LeaseKv k γ) ∗
   "#Hkv" ∷ readonly (k ↦[LeaseKv :: "kv"] #kv) ∗
-  "#Hkv_is" ∷ is_Kv (kvptsto:=kvptsto_int) kv
+  "#Hkv_is" ∷ is_Kv kv kvptsto_int E ∗
+  "%Hdisj" ∷ ⌜ ↑leasekvN ## E ⌝
 .
 
 Lemma wp_DecodeValue v l :
@@ -172,7 +173,7 @@ Qed.
 Lemma wp_LeaseKv__Get (k:loc) key γ :
   ⊢ {{{ is_LeaseKv k γ }}}
     <<< ∀∀ v, kvptsto γ key v >>>
-      LeaseKv__Get #k #(LitString key) @ ↑leasekvN
+      LeaseKv__Get #k #(LitString key) @ (↑leasekvN ∪ E)
     <<< kvptsto γ key v >>>
   {{{ RET #(LitString v); True }}}.
 Proof.
@@ -260,7 +261,7 @@ Proof.
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
     iNamed "Hi".
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod "Hau".
     { solve_ndisj. }
     iModIntro.
@@ -305,7 +306,7 @@ Qed.
 Lemma wp_LeaseKv__GetAndCache (k:loc) key (cachetime:u64) γ :
   ⊢ {{{ is_LeaseKv k γ }}}
     <<< ∀∀ v, key ↪[γ] {#1/2} v >>>
-      LeaseKv__GetAndCache #k #(LitString key) #cachetime @ ↑leasekvN
+      LeaseKv__GetAndCache #k #(LitString key) #cachetime @ (↑leasekvN ∪ E)
     <<< key ↪[γ] {#1/2} v >>>
   {{{ RET #(LitString v); True }}}.
 Proof.
@@ -335,7 +336,7 @@ Proof.
   destruct (kvs !! key) eqn:Hlookup.
   2:{ (* XXX: Derive a contradiction in the case that kvptsto_int is not available;
          this is a bit of a strange argument, but it works. *)
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
     { solve_ndisj. }
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
@@ -343,7 +344,7 @@ Proof.
   }
   iDestruct (big_sepM_lookup_acc with "Hmap") as "[HH Hmap]"; first done.
   iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
-  iApply ncfupd_mask_intro.
+  iApply fupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
@@ -380,7 +381,7 @@ Proof.
   destruct (kvs !! key) eqn:Hlookup.
   2:{ (* XXX: Derive a contradiction in the case that kvptsto_int is not available;
          this is a bit of a strange argument, but it works. *)
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
     { solve_ndisj. }
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
@@ -388,7 +389,7 @@ Proof.
   }
   iDestruct (big_sepM_insert_acc with "Hmap") as "[HH Hmap]"; first done.
   iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
-  iApply ncfupd_mask_intro.
+  iApply fupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
@@ -403,7 +404,7 @@ Proof.
     apply encode_cacheValue_inj in Hok as [? ?]; subst.
 
     (* extend/create lease *)
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod (lease_renew newLeaseExpiration with "[$] [$]") as "[Hpost Hexp]".
     { solve_ndisj. }
     { word. }
@@ -413,7 +414,7 @@ Proof.
 
     iSpecialize ("Hmap" with "[Hkvptsto Hpost Hexp]").
     { repeat iExists _. iFrame. }
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
     { solve_ndisj. }
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
@@ -482,7 +483,7 @@ Qed.
 Lemma wp_LeaseKv__Put (k:loc) key value γ :
   ⊢ {{{ is_LeaseKv k γ }}}
     <<< ∀∀ old_value, key ↪[γ] {#1/2} old_value >>>
-      LeaseKv__Put #k #(str key) #(str value) @ ↑leasekvN
+      LeaseKv__Put #k #(str key) #(str value) @ (↑leasekvN ∪ E)
     <<< key ↪[γ] {#1/2} value >>>
   {{{ RET #(); True }}}.
 Proof.
@@ -512,7 +513,7 @@ Proof.
   destruct (kvs !! key) eqn:Hlookup.
   2:{ (* XXX: Derive a contradiction in the case that kvptsto_int is not available;
          this is a bit of a strange argument, but it works. *)
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
     { solve_ndisj. }
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
@@ -520,7 +521,7 @@ Proof.
   }
   iDestruct (big_sepM_lookup_acc with "Hmap") as "[HH Hmap]"; first done.
   iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
-  iApply ncfupd_mask_intro.
+  iApply fupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
@@ -566,7 +567,7 @@ Proof.
   destruct (kvs !! key) eqn:Hlookup.
   2:{ (* XXX: Derive a contradiction in the case that kvptsto_int is not available;
          this is a bit of a strange argument, but it works. *)
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey Hau]".
     { solve_ndisj. }
     iDestruct (ghost_map_lookup with "[$] [$]") as %Hlookup2.
@@ -574,7 +575,7 @@ Proof.
   }
   iDestruct (big_sepM_insert_acc with "Hmap") as "[HH Hmap]"; first done.
   iDestruct "HH" as (??) "(Hkvptsto & Hpost & Hexp)".
-  iApply ncfupd_mask_intro.
+  iApply fupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _.
@@ -589,12 +590,12 @@ Proof.
     apply encode_cacheValue_inj in Hok as [? ?]; subst.
 
     (* expire the existing lease, then make another one *)
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod (lease_expire with "[$] [$] []") as ">Hkey".
     { solve_ndisj. }
     { iApply (is_time_lb_mono with "[$]"). word. }
     iMod "Hmask" as "_".
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod "Hau" as (?) "[Hkey2 Hau]".
     { solve_ndisj. }
     iCombine "Hkey Hkey2" as "Hkey".
@@ -604,7 +605,7 @@ Proof.
     iMod ("Hau" with "[$] [//]") as "HΦ".
     iFrame.
     iMod "Hmask" as "_".
-    iMod ncfupd_mask_subseteq as "Hmask".
+    iMod fupd_mask_subseteq as "Hmask".
     2: iMod (lease_alloc _ leaseN with "Hkey") as (?) "(#? & Hpost & Hexp)".
     { solve_ndisj. }
     iMod "Hmask".

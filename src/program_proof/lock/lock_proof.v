@@ -34,13 +34,16 @@ Proof.
 Qed.
 
 Definition is_LockClerk (ck:loc) γ : iProp Σ :=
-  ∃ (kvCk : loc),
+  ∃ (kvCk : loc) E,
     "#Hkv" ∷ readonly (ck ↦[LockClerk :: "kv"] #kvCk) ∗
-    "#Hkv_is" ∷ is_Kv (kvptsto:=kvptsto_lock γ) kvCk.
+    "#Hkv_is" ∷ is_Kv kvCk (kvptsto_lock γ) E ∗
+    "%Hdisj" ∷ ⌜ E ## ↑N ⌝
+.
 
-Lemma wp_MakeLockClerk kvCk γ :
+Lemma wp_MakeLockClerk kvCk γ E :
   {{{
-        is_Kv (kvptsto:=kvptsto_lock γ) kvCk
+       is_Kv kvCk (kvptsto_lock γ) E ∗
+       ⌜ E ## ↑N ⌝
   }}}
     MakeLockClerk #kvCk
   {{{
@@ -85,11 +88,10 @@ Proof.
   wp_loadField.
   wp_apply ("HcputSpec" with "[//]").
   rewrite /is_lock.
-  replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver+.
   iInv "Hlock" as "Hlock_inner" "Hclo".
   iMod (lc_fupd_elim_later with "Hlc Hlock_inner") as "Hlock_inner".
   iDestruct "Hlock_inner" as (?) "(Hk&HR)".
-  iApply ncfupd_mask_intro.
+  iApply fupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _. iFrame "Hk".
@@ -129,11 +131,10 @@ Proof.
   wp_loadField.
   wp_apply ("HputSpec" with "[//]").
   rewrite /is_lock.
-  replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver+.
   iInv "Hlock" as "Hlock_inner" "Hclo".
   iMod (lc_fupd_elim_later with "Hlc Hlock_inner") as "Hlock_inner".
   iDestruct "Hlock_inner" as (?) "(Hk&_)".
-  iApply ncfupd_mask_intro.
+  iApply fupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _. iFrame "Hk".

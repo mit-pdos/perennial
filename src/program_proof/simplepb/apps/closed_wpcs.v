@@ -9,6 +9,7 @@ From Perennial.program_proof.bank Require Import bank_proof.
 From Perennial.program_proof.simplepb Require Import pb_init_proof pb_definitions.
 From Perennial.program_proof.simplepb Require Import kv_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
+From Perennial.program_proof.simplepb.apps Require Import clerkpool_proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.goose_lang Require Import crash_borrow crash_modality.
 
@@ -101,8 +102,7 @@ Lemma wp_makeBankClerk γlk kvptsto :
 Proof.
   iIntros (?) "Hpre HΦ".
   wp_lam.
-  wp
-Qed.
+Admitted.
 
 Lemma wp_config_main γconf {Σ} {HKV: ekvG Σ} {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in

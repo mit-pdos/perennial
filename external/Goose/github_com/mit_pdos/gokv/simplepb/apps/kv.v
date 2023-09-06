@@ -129,9 +129,6 @@ Definition ClerkPool__doWithClerk: val :=
       "f" (![ptrT] "cl");;
       lock.acquire (struct.loadF ClerkPool "mu" "ck");;
       struct.storeF ClerkPool "cls" "ck" (SliceAppend ptrT (struct.loadF ClerkPool "cls" "ck") (![ptrT] "cl"));;
-      struct.storeF ClerkPool "cls" "ck" (SliceAppend ptrT (struct.loadF ClerkPool "cls" "ck") (![ptrT] "cl"));;
-      struct.storeF ClerkPool "cls" "ck" (SliceAppend ptrT (struct.loadF ClerkPool "cls" "ck") (![ptrT] "cl"));;
-      struct.storeF ClerkPool "cls" "ck" (SliceAppend ptrT (struct.loadF ClerkPool "cls" "ck") (![ptrT] "cl"));;
       lock.release (struct.loadF ClerkPool "mu" "ck");;
       #()).
 
