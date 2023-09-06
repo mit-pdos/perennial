@@ -131,6 +131,7 @@ Definition is_paxos_node (paxos : loc) (nid : u64) (sc : nat) γ : iProp Σ :=
     "#Hlock" ∷ is_lock spaxosN #mu (own_paxos paxos nid γ) ∗
     (*@ Res: nid uint64                                                         @*)
     "#Hnid" ∷ readonly (paxos ↦[Paxos :: "nid"] #nid) ∗
+    "%Hnid" ∷ ⌜0 ≤ int.Z nid < max_nodes⌝ ∗
     (*@ Res: ginv                                                               @*)
     "#Hinv" ∷ know_sapxos_inv sc γ.
 
@@ -163,6 +164,69 @@ Hint Extern 1 (environments.envs_entails _ (own_paxos _ _ _)) => unfold own_paxo
 (* TODO: move them out to their own files once stable. *)
 Section temp.
 Context `{!heapGS Σ, !spaxos_ghostG Σ}.
+
+Lemma Z_next_aligned (c i l : Z) :
+  0 ≤ l < i ->
+  (c + (l - (c `mod` i))) `mod` i = l.
+Proof.
+  intros Horder.
+  rewrite Zplus_mod Zminus_mod Zmod_mod -Zminus_mod -Zplus_mod.
+  replace (c + _) with l by lia.
+  apply Zmod_small. lia.
+Qed.
+
+Theorem wp_NextAligned (current : u64) (interval : u64) (low : u64) :
+  int.Z interval < 2 ^ 63 ->
+  0 ≤ int.Z low < int.Z interval ->
+  {{{ True }}}
+    NextAligned #current #interval #low
+  {{{ (n : u64), RET #n;
+      ⌜int.Z current < int.Z n ∧ int.Z n `mod` int.Z interval = int.Z low⌝
+  }}}.
+Proof.
+  iIntros (Hitv Horder Φ) "_ HΦ".
+  wp_call.
+
+  (*@ func NextAligned(current, interval, low uint64) uint64 {                @*)
+  (*@     var delta uint64                                                    @*)
+  (*@                                                                         @*)
+  wp_apply (wp_ref_of_zero); first done.
+  iIntros (deltaRef) "HdeltaRef".
+  wp_pures.
+
+  (*@     rem := current % interval                                           @*)
+  (*@     if rem < low {                                                      @*)
+  (*@         delta = low - rem                                               @*)
+  (*@     } else {                                                            @*)
+  (*@         delta = interval + low - rem                                    @*)
+  (*@     }                                                                   @*)
+  (*@     return std.SumAssumeNoOverflow(current, delta)                      @*)
+  (*@ }                                                                       @*)
+  set rem := (word.modu _ _).
+  wp_if_destruct; wp_store; wp_load; wp_apply wp_SumAssumeNoOverflow.
+  - iIntros (Hoverflow). iApply "HΦ". iPureIntro.
+    rewrite Hoverflow.
+    split; first word.
+    rewrite word.unsigned_sub_nowrap; last lia.
+    rewrite word.unsigned_modu_nowrap; last lia.
+    apply Z_next_aligned.
+    lia.
+  - iIntros (Hoverflow). iApply "HΦ". iPureIntro.
+    rewrite Hoverflow.
+    rewrite word.unsigned_sub_nowrap; last first.
+    { rewrite word.unsigned_add_nowrap; last lia.
+      rewrite word.unsigned_modu_nowrap; last lia.
+      lia.
+    }
+    rewrite word.unsigned_add_nowrap; last lia.
+    rewrite word.unsigned_modu_nowrap; last lia.
+    rewrite word.unsigned_modu_nowrap in Heqb; last lia.
+    split; first lia.
+    rewrite -Z.add_sub_assoc Z.add_assoc (Z.add_comm (int.Z current)) -Z.add_assoc.
+    rewrite Zplus_mod Z_mod_same_full Z.add_0_l Zmod_mod.
+    apply Z_next_aligned.
+    lia.
+Qed.
 
 Definition is_proposed_decree γ v : iProp Σ :=
   ∃ n, is_proposal γ n v.
@@ -307,20 +371,14 @@ Proof.
   iIntros "[Hlocked HpaxosOwn]".
   wp_pures.
 
-  (*@     term := std.SumAssumeNoOverflow(px.termc, MAX_NODES) / MAX_NODES * MAX_NODES + px.nid @*)
+  (*@     term := NextAligned(px.termc, MAX_NODES, px.nid)                    @*)
   (*@                                                                         @*)
   iNamed "HpaxosOwn".
-  wp_loadField.
-  wp_apply wp_SumAssumeNoOverflow.
-  iIntros (Hoverflow).
+  do 2 wp_loadField.
+  unfold max_nodes in Hnid.
+  wp_apply wp_NextAligned; [word | word |].
+  iIntros (term) "[%Hlt %Hofnode]".
   wp_pures.
-  wp_loadField.
-  wp_pures.
-  set term := (word.add _ _).
-  assert (Hofnode : is_term_of_node nid (int.nat term)).
-  { admit. }
-  assert (Hlt : (int.nat termc < int.nat term)%nat).
-  { admit. }
 
   (*@     px.termc = term                                                     @*)
   (*@                                                                         @*)
@@ -369,7 +427,7 @@ Proof.
   iApply "HΦ".
   iModIntro.
   iSplit; last first.
-  { iPureIntro. split; [done | lia]. }
+  { iPureIntro. unfold is_term_of_node, max_nodes. split; [word | lia]. }
   iExists _.
   iFrame "# %".
   iPureIntro.
@@ -380,7 +438,7 @@ Proof.
   rewrite -Hlatest.
   replace (latest_before _ _) with (latest_term blt') by done.
   apply latest_term_extend_false.
-Admitted.
+Qed.
 
 Definition node_accepted (term : u64) (decree : string) nid γ : iProp Σ :=
   ∃ (l : ballot),

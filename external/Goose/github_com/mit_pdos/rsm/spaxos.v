@@ -19,10 +19,19 @@ Definition Paxos := struct.decl [
 
 Definition MAX_NODES : expr := #16.
 
+Definition NextAligned: val :=
+  rec: "NextAligned" "current" "interval" "low" :=
+    let: "delta" := ref (zero_val uint64T) in
+    let: "rem" := "current" `rem` "interval" in
+    (if: "rem" < "low"
+    then "delta" <-[uint64T] ("low" - "rem")
+    else "delta" <-[uint64T] (("interval" + "low") - "rem"));;
+    std.SumAssumeNoOverflow "current" (![uint64T] "delta").
+
 Definition Paxos__advance: val :=
   rec: "Paxos__advance" "px" :=
     lock.acquire (struct.loadF Paxos "mu" "px");;
-    let: "term" := (((std.SumAssumeNoOverflow (struct.loadF Paxos "termc" "px") MAX_NODES) `quot` MAX_NODES) * MAX_NODES) + (struct.loadF Paxos "nid" "px") in
+    let: "term" := NextAligned (struct.loadF Paxos "termc" "px") MAX_NODES (struct.loadF Paxos "nid" "px") in
     struct.storeF Paxos "termc" "px" "term";;
     let: "termp" := struct.loadF Paxos "termp" "px" in
     let: "decree" := struct.loadF Paxos "decree" "px" in
