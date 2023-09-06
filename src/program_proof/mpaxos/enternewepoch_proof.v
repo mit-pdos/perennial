@@ -157,9 +157,10 @@ Proof.
     wp_storeField.
     iModIntro.
     iExists _.
-    rewrite sep_exist_r.
-    iExists _; iFrame "∗#".
+    repeat rewrite sep_exist_r.
+    Opaque own_paxosState_ghost. iExists _; iFrame "∗#".
     iIntros "$ !#".
+    Transparent own_paxosState_ghost.
     wp_pures.
     iRight in "HΨ".
     iApply ("HΦ" with "[HΨ]").

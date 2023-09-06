@@ -317,8 +317,10 @@ Proof.
       instantiate (1:=paxosState.mk _ _ _ _ _).
       repeat iExists _; simpl; iFrame "∗#".
     }
+    Opaque own_paxosState_ghost.
     iFrame "HP_in".
     iIntros "$".
+    Transparent own_paxosState_ghost.
     iModIntro.
     wp_pures.
     iNamed "HΨ".

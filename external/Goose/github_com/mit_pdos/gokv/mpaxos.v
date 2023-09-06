@@ -455,6 +455,9 @@ Definition makeServer: val :=
   rec: "makeServer" "fname" "initstate" "config" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
+    struct.storeF Server "clerks" "s" (NewSlice ptrT #0);;
+    ForSlice uint64T <> "host" "config"
+      (struct.storeF Server "clerks" "s" (SliceAppend ptrT (struct.loadF Server "clerks" "s") (makeSingleClerk "host")));;
     let: "encstate" := ref (zero_val (slice.T byteT)) in
     let: ("0_ret", "1_ret") := asyncfile.MakeAsyncFile "fname" in
     "encstate" <-[slice.T byteT] "0_ret";;
@@ -464,14 +467,6 @@ Definition makeServer: val :=
       struct.storeF Server "ps" "s" (struct.alloc paxosState (zero_val (struct.t paxosState)));;
       struct.storeF paxosState "state" (struct.loadF Server "ps" "s") "initstate"
     else struct.storeF Server "ps" "s" (decodePaxosState (![slice.T byteT] "encstate")));;
-    struct.storeF Server "clerks" "s" (NewSlice ptrT (slice.len "config"));;
-    let: "n" := slice.len (struct.loadF Server "clerks" "s") in
-    let: "i" := ref_to uint64T #0 in
-    Skip;;
-    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, Skip) := λ: <>,
-      SliceSet ptrT (struct.loadF Server "clerks" "s") (![uint64T] "i") (makeSingleClerk (SliceGet uint64T "config" (![uint64T] "i")));;
-      "i" <-[uint64T] ((![uint64T] "i") + #1);;
-      Continue);;
     "s".
 
 Definition StartServer: val :=

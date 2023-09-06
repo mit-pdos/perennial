@@ -6,35 +6,28 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.mpaxos Require Export definitions applyasfollower_proof enternewepoch_proof becomeleader_proof.
+From Perennial.program_proof.mpaxos Require Export definitions applyasfollower_proof
+     enternewepoch_proof becomeleader_proof clerk_proof.
 
 Section start_proof.
-
 Context `{!heapGS Σ}.
-Context {mp_record:MPRecord}.
-Notation OpType := (mp_OpType mp_record).
-Notation has_op_encoding := (mp_has_op_encoding mp_record).
-Notation next_state := (mp_next_state mp_record).
-Notation compute_reply := (mp_compute_reply mp_record).
-Notation is_Server := (is_Server (mp_record:=mp_record)).
-Notation apply_core_spec := (apply_core_spec (mp_record:=mp_record)).
-Notation is_singleClerk := (is_singleClerk (mp_record:=mp_record)).
-Notation is_applyFn := (is_applyFn (mp_record:=mp_record)).
-Notation is_mpaxos_host:= (is_mpaxos_host (mp_record:=mp_record)).
-
-Context (conf:list mp_server_names).
 Context `{!mpG Σ}.
+Context `{Hparams:!mpaxosParams.t Σ}.
+Import mpaxosParams.
 
-Lemma wp_makeServer γ γsrv (fname:string) applyFn conf_sl (hosts:list u64) :
+Lemma wp_makeServer γ γsrv (fname:string) data conf_sl (hosts:list u64) init_sl :
   {{{
-        "#HapplyFn" ∷ is_applyFn applyFn ∗
+        "Hfile" ∷ crash_borrow (own_file_inv γ γsrv data ∗ fname f↦ data)
+                (∃ d : list u8, own_file_inv γ γsrv d ∗ fname f↦d) ∗
+        "#HP" ∷ (□ Pwf initstate) ∗
         "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 hosts ∗
-        "#Hhost" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; conf, is_mpaxos_host conf host γ γsrv' ) ∗
-        "Hghost" ∷ own_replica_ghost conf γ γsrv (mkMPaxosState 0 0 [])
+        "#Hhosts" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; config, is_mpaxos_host host γ γsrv' ) ∗
+        "Hinitstate" ∷ own_slice_small init_sl byteT 1 initstate
+
   }}}
-    makeServer #(str fname) applyFn (slice_val conf_sl)
+    makeServer #(str fname) (slice_val init_sl) (slice_val conf_sl)
   {{{
-        s, RET #s; is_Server conf s γ γsrv
+        s, RET #s; is_Server s γ γsrv
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -49,46 +42,155 @@ Proof.
   wp_apply (wp_new_free_lock).
   iIntros (mu) "HmuInv".
   wp_storeField.
-
-  wp_apply (wp_NewSlice).
-  iIntros (state_sl) "Hstate_sl".
-  wp_storeField.
-
-  wp_apply (wp_storeField with "[applyFn]").
-  {
-    unfold Server.
-    unfold field_ty.
-    simpl.
-    admit. (* typecheck applyFn *)
+  wp_apply wp_NewSlice.
+  iIntros (?) "Hcls_sl".
+  wp_bind (struct.storeF _ _ _ _)%E.
+  iApply (wpc_wp _ _ _ _ True).
+  wpc_apply (wpc_crash_borrow_open with "Hfile").
+  { done. }
+  iSplit; first done.
+  iIntros "[Hinv Hf]".
+  iNamed "Hinv".
+  iAssert (□ Pwf _)%I with "[-]" as "#Hpwf".
+  { iNamed "Hghost". iFrame "#". }
+  iCache with "Hf Hghost".
+  { iSplit; first done. iExists _; iFrame. iExists _; iFrame "∗%". }
+  wpc_storeField.
+  iSplitL "Hf Hghost".
+  { iFrame. iExists _. iFrame "∗%". }
+  iIntros "Hfile". iSplit; first done.
+  wp_pures.
+  iDestruct (own_slice_small_sz with "Hconf_sl") as %Hsz.
+  iDestruct (big_sepL2_to_sepL_1 with "Hhosts") as "#Hhosts2".
+  wp_apply (wp_forSlice'
+              (λ i,
+               ∃ sl cls,
+               "Hcls" ∷ s ↦[Server :: "clerks"] (slice_val sl) ∗
+               "Hcls_sl" ∷ own_slice sl ptrT 1 (cls) ∗
+               "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ cls ; (take (int.nat i) config),
+                                   is_singleClerk ck γ γsrv') ∗
+               "%Hsz" ∷ ⌜ length cls = int.nat i ⌝
+               )%I
+             with "[] [clerks Hcls_sl $Hconf_sl]").
+  2:{
+    iFrame "Hhosts2".
+    repeat iExists _.
+    iFrame.
+    iSplitR; last done.
+    by iApply big_sepL2_nil.
   }
-  { iFrame. }
-  iIntros "applyFn".
-  wp_pures.
+  {
+    clear Φ.
+    iIntros (???) "!# Hpre HΦ".
+    wp_pures.
+    iDestruct "Hpre" as "(%Hineq & %Hlookup & #Hhost & Hpre)".
+    iNamed "Hpre".
+    iDestruct "Hhost" as (?) "[%Hlookup2 Hhost]".
+    wp_apply wp_makeSingleClerk.
+    { iFrame "#". }
+    iIntros (?) "#Hcl".
+    wp_loadField.
+    wp_bind (SliceAppend _ _ _).
+    wp_apply (wp_SliceAppend with "[$Hcls_sl]").
+    iIntros (?) "Hcls_sl".
+    wp_storeField.
+    iApply "HΦ".
+    repeat iExists _; iFrame.
+    iSplitL.
+    2:{ iPureIntro. rewrite app_length. simpl. word. }
+    replace (int.nat (word.add i 1%Z)) with (S (int.nat i)) by word.
+    erewrite take_S_r; last done.
+    iApply (big_sepL2_app with "[$]").
+    iFrame "#". done.
+  }
+  iNamed 1.
 
-  iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
-  wp_apply (wp_slice_len).
-  wp_apply (wp_NewSlice).
-  iIntros (clerks_sl) "Hclerks_sl".
+  wp_pures.
+  wp_apply wp_ref_of_zero; first done.
+  iIntros (?) "Hencstate".
+  wp_pures.
+  wp_apply (wp_MakeAsyncFile _ fileN with "[$]").
+  iIntros "* [#Hsl Hfile]".
+  wp_pures.
+  wp_store.
   wp_storeField.
-  wp_loadField.
-  wp_apply (wp_slice_len).
-  iDestruct (own_slice_sz with "Hclerks_sl") as %Hclerks_sz.
-  wp_pures.
-  wp_apply (wp_ref_to).
-  { eauto. }
-  iIntros (i_ptr) "Hi".
-  wp_pures.
-Admitted.
+  wp_load.
+  wp_apply wp_slice_len.
+  iMod (readonly_load with "Hsl") as (?) "Hsl2".
+  rename Hsz into HhostSz.
+  iDestruct (own_slice_small_sz with "[$Hsl2]") as %Hsz.
+  iMod (readonly_alloc_1 with "mu") as "#mu".
+  iMod (readonly_alloc_1 with "Hcls") as "#Hclerks".
+  iDestruct (own_slice_to_small with "Hcls_sl") as "Hcls_sl".
+  iMod (readonly_alloc_1 with "Hcls_sl") as "#Hcls_sl".
+  wp_if_destruct.
+  { (* case: empty file *)
+    destruct data.
+    2:{ exfalso. rewrite Heqb /= in Hsz. replace (int.nat 0%Z) with 0%nat in Hsz by word. discriminate. }
+    wp_apply wp_allocStruct; first by val_ty.
+    iIntros (?) "Hps".
+    iDestruct (struct_fields_split with "Hps") as "HH".
+    iNamed "HH".
+    wp_storeField.
+    wp_loadField.
+    wp_storeField.
+    simpl.
+    iApply "HΦ".
+    iMod (readonly_alloc_1 with "Hinitstate") as "#Hinit_sl".
+    repeat iExists _.
+    iFrame "#".
+    iMod (alloc_lock with "HmuInv [-]") as "$".
+    {
+      iNext. repeat iExists _. iFrame.
+      iSplitL.
+      { repeat iExists _. instantiate (1:=paxosState.mk _ _ _ _ _). iFrame "∗#". }
+      simpl. iFrame "HP".
+      iPureIntro. right. done.
+    }
+    iDestruct (big_sepL2_length with "Hhosts") as %Hlen.
+    rewrite Hlen.
+    rewrite take_ge.
+    2:{ rewrite -Hlen. word. }
+    by iFrame "#".
+  }
+  { (* case: file had contents *)
+    wp_load.
+    destruct Henc as [Henc|[-> ->]].
+    2:{
+      exfalso.
+      simpl in *. apply Heqb. repeat f_equal. word.
+    }
+    subst.
+    wp_apply (paxosState.wp_decode with "[$Hsl2]").
+    iIntros (?) "Hvol".
+    wp_storeField.
+    iApply "HΦ".
+    repeat iExists _; iFrame "#".
+    iMod (alloc_lock with "HmuInv [-]") as "$".
+    {
+      iNext. repeat iExists _. iFrame "∗#".
+      iPureIntro. left. done.
+    }
+    iDestruct (big_sepL2_length with "Hhosts") as %Hlen.
+    rewrite Hlen.
+    rewrite take_ge.
+    2:{ rewrite -Hlen. word. }
+    by iFrame "#".
+  }
+Qed.
 
-Lemma wp_StartServer γ γsrv (me:u64) (fname:string) applyFn conf_sl (hosts:list u64) :
+Lemma wp_StartServer γ γsrv (me:u64) (fname:string) data init_sl conf_sl (hosts:list u64) :
   {{{
-        "#HapplyFn" ∷ is_applyFn applyFn ∗
+        "Hfile" ∷ crash_borrow (own_file_inv γ γsrv data ∗ fname f↦ data)
+                (∃ d : list u8, own_file_inv γ γsrv d ∗ fname f↦d) ∗
+        "#HP" ∷ (□ Pwf initstate) ∗
         "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 hosts ∗
-        "#Hhost" ∷ is_mpaxos_host conf me γ γsrv ∗
-        "#Hhosts" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; conf, is_mpaxos_host conf host γ γsrv' ) ∗
-        "Hghost" ∷ own_replica_ghost conf γ γsrv (mkMPaxosState 0 0 [])
+        "#Hhost" ∷ is_mpaxos_host me γ γsrv ∗
+        "#Hhosts" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; config, is_mpaxos_host host γ γsrv' ) ∗
+        "Hinitstate" ∷ own_slice_small init_sl byteT 1 initstate
+
   }}}
-    StartServer #(str fname) #me applyFn (slice_val conf_sl)
+    StartServer #(str fname) (slice_val init_sl) #me (slice_val conf_sl)
   {{{
         RET #(); True
   }}}.
@@ -96,7 +198,7 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_call.
-  wp_apply (wp_makeServer with "[$Hconf_sl $Hghost]").
+  wp_apply (wp_makeServer with "[$Hconf_sl $Hfile $Hinitstate]").
   { iFrame "#". }
   iIntros (s) "#His_srv".
   wp_pures.
@@ -106,12 +208,7 @@ Proof.
 
 
   wp_pures.
-  wp_apply (map.wp_MapInsert with "Hhandlers").
-  iIntros "Hhandlers".
-  wp_pures.
-
-  wp_pures.
-  wp_apply (map.wp_MapInsert with "Hhandlers").
+  wp_apply (map.wp_MapInsert u64 with "Hhandlers").
   iIntros "Hhandlers".
   wp_pures.
 
@@ -131,7 +228,7 @@ Proof.
   iIntros (r) "Hr".
   wp_pures.
 
-  wp_apply (wp_StartServer2 with "[$Hr]").
+  wp_apply (wp_StartServer_pred with "[$Hr]").
   {
     set_solver.
   }
@@ -153,71 +250,28 @@ Proof.
       iExists _; iFrame "#".
 
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
+      rewrite /is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
       unfold becomeleader_spec.
       simpl.
-      wp_apply (wp_Server__becomeLeader with "His_srv [HΦ Hrep Hrep_sl] Hspec").
+      wp_apply (wp_Server__becomeLeader with "His_srv [HΦ Hrep] Hspec").
       iIntros "HΨ".
       wp_pures.
 
-      iApply ("HΦ" with "[HΨ] Hrep [Hrep_sl]").
-      2:{
-        iDestruct (own_slice_to_small with "Hrep_sl") as "$".
-      }
-      { iApply "HΨ". }
+      iApply ("HΦ" with "[HΨ $Hrep]").
+      iDestruct (own_slice_small_nil _ 1) as "$"; first done.
+      iApply "HΨ".
     }
 
-    iApply (big_sepM_insert_2 with "").
-    { (* apply *)
-      iExists _; iFrame "#".
-
-      clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
-      wp_pures.
-      unfold apply_spec.
-      simpl.
-      wp_apply (wp_allocStruct).
-      { Transparent slice.T. repeat econstructor. Opaque slice.T. }
-      iIntros (rep_ptr) "Hreply".
-
-      iMod (readonly_alloc_1 with "Hreq_sl") as "#Hreq_sl".
-      iDestruct "Hspec" as (??) "Hspec".
-      wp_apply (wp_Server__Apply with "His_srv Hreq_sl [Hreply] [Hrep HΦ] Hspec").
-      {
-        iDestruct (struct_fields_split with "Hreply") as "HH".
-        iNamed "HH".
-        iExists _.
-        instantiate (1:=applyReply.mkC _ _).
-        replace (zero_val (slice.T byteT)) with (slice_val Slice.nil) by done.
-        simpl.
-        iFrame "∗".
-        iApply (own_slice_small_nil).
-        done.
-      }
-
-      iIntros (?) "HΨ Hreply".
-      wp_pures.
-      wp_apply (applyReply.wp_Encode with "Hreply").
-      iIntros (enc_reply rep_enc_sl) "[%Hrep_enc Hrep_sl]".
-      wp_store.
-      iApply ("HΦ" with "[HΨ] Hrep [Hrep_sl]").
-      2:{
-        iDestruct (own_slice_to_small with "Hrep_sl") as "$".
-      }
-      { iApply "HΨ". done. }
-    }
     iApply (big_sepM_insert_2 with "").
     { (* enterNewEpoch *)
       iExists _; iFrame "#".
 
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
-      unfold apply_spec.
       simpl.
       wp_apply (wp_allocStruct).
       { Transparent slice.T. repeat econstructor. Opaque slice.T. }
@@ -251,27 +305,23 @@ Proof.
       wp_apply (enterNewEpochReply.wp_Encode with "Hreply").
       iIntros (enc_reply rep_enc_sl) "[%Hrep_enc Hrep_sl]".
       wp_store.
-      iApply ("HΦ" with "[HΨ] Hrep [Hrep_sl]").
-      2:{
-        iDestruct (own_slice_to_small with "Hrep_sl") as "$".
-      }
-      { iApply "HΨ". done. }
+      iApply ("HΦ" with "[HΨ $Hrep Hrep_sl]").
+      iDestruct (own_slice_to_small with "Hrep_sl") as "$".
+      by iApply "HΨ".
     }
     iApply (big_sepM_insert_2 with "").
     { (* enterNewEpoch *)
       iExists _; iFrame "#".
 
       clear Φ.
-      unfold is_urpc_handler_pred2.
-      iIntros (???????) "!# Hreq_sl Hrep Hrep_sl HΦ Hspec".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
-      unfold apply_spec.
-      simpl.
       wp_apply (wp_allocStruct).
       { Transparent slice.T. repeat econstructor. Opaque slice.T. }
       iIntros (rep_ptr) "Hreply".
 
-      iDestruct "Hspec" as (????) "Hspec".
+      iDestruct "Hspec" as (???) "Hspec".
       wp_pures.
       rewrite H.
       wp_apply (applyAsFollowerArgs.wp_Decode with "[$Hreq_sl]").
@@ -292,11 +342,9 @@ Proof.
       wp_apply (applyAsFollowerReply.wp_Encode with "Hreply").
       iIntros (enc_reply rep_enc_sl) "[%Hrep_enc Hrep_sl]".
       wp_store.
-      iApply ("HΦ" with "[HΨ] Hrep [Hrep_sl]").
-      2:{
-        iDestruct (own_slice_to_small with "Hrep_sl") as "$".
-      }
-      { iApply "HΨ". done. }
+      iApply ("HΦ" with "[HΨ $Hrep Hrep_sl]").
+      iDestruct (own_slice_to_small with "Hrep_sl") as "$".
+      by iApply "HΨ".
     }
     iApply big_sepM_empty.
     done.

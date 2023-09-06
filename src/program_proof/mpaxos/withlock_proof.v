@@ -10,6 +10,25 @@ Context `{!mpG Σ}.
 Context `{!mpaxosParams.t Σ}.
 Import mpaxosParams.
 
+Lemma encodes_paxosState_inj st1 st2 data :
+  encodes_paxosState st1 data →
+  encodes_paxosState st2 data →
+  st1 = st2.
+Proof.
+  intros H1 H2.
+  destruct H1 as [H1 | [-> ->]].
+  {
+    subst.
+    destruct H2 as [H2 | [? ->]].
+    { by eapply inj in H2; last apply _. }
+    exfalso.
+    done.
+  }
+  destruct H2 as [H2 | [? ->]].
+  { by exfalso. }
+  done.
+Qed.
+
 Lemma wp_Server__withLock (s:loc) γ γsrv (f:val) Φ :
   is_Server s γ γsrv -∗
   (∀ ps pst,
@@ -49,7 +68,8 @@ Proof.
   {
     iIntros "Hi".
     iNamed "Hi".
-    eapply inj in Henc; last apply _.
+    eapply encodes_paxosState_inj in Henc; last exact HencPaxos.
+    subst.
     subst.
     iMod (fupd_mask_subseteq _) as "Hmask".
     2: iMod ("Hupd" with "[$]") as "[Hghost HΦ]".
@@ -57,7 +77,8 @@ Proof.
     iMod "Hmask".
     iModIntro.
     iSplitR "HΦ".
-    { repeat iExists _; iFrame. done. }
+    { repeat iExists _; iFrame. iPureIntro.
+      by left. }
     iAccu.
   }
   iIntros (?) "[Hfile Hwp]".
@@ -68,7 +89,7 @@ Proof.
     iFrame "HmuInv Hlocked".
     iNext.
     repeat iExists _.
-    iFrame "∗#".
+    iFrame "∗#%". iPureIntro. by left.
   }
   wp_pures.
   wp_apply (wp_wand with "Hwp").

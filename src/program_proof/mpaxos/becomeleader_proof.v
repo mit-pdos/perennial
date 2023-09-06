@@ -42,9 +42,9 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      repeat iExists _; iFrame "∗#".
+      repeat iExists _; iFrame "∗#%".
       rewrite Heqb.
-      iExists _. iFrame "∗#".
+      repeat iExists _. iFrame "∗#".
     }
     wp_pures.
     iModIntro.
@@ -62,7 +62,7 @@ Proof.
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    repeat iExists _; iFrame "∗#".
+    repeat iExists _; iFrame "∗#%".
     rewrite Heqb.
     iExists _. iFrame "∗#".
   }
@@ -1103,7 +1103,7 @@ Proof.
     { repeat iExists _.
       iFrame "Hmu". iSplitR.
       { iExact "HmuInv". }
-      iFrame "#". done.
+      iFrame "#".
     }
     iIntros (??) "HH".
     iRename "HP" into "HP_in".
@@ -1145,6 +1145,7 @@ Proof.
       iMod (fupd_mask_subseteq (↑sysN)) as "Hmask".
       { solve_ndisj. }
       simpl.
+      iDestruct (big_sepL2_length with "[$Hclerks_rpc]") as %Hlen.
       iMod (become_leader with "Hvote_inv Hacc_lbs Hlatest_prop Hvotes") as "HghostLeader".
       {
         intros ??.
@@ -1153,9 +1154,8 @@ Proof.
         word.
       }
       {
-        simpl.
         enough (int.Z (word.mul 2 (size W)) <= (2 * size W))%Z.
-        { word. }
+        { simpl in *. word. }
         rewrite word.unsigned_mul.
         rewrite /word.wrap /=.
         etransitivity.
@@ -1196,8 +1196,11 @@ Proof.
       iExists _.
       rewrite sep_exist_r.
       instantiate (1:=paxosState.mk _ _ _ _ _).
-      iExists _. simpl. iFrame "∗#".
+      iExists _. simpl.
+      Opaque own_paxosState_ghost.
+      iFrame "∗#".
       iIntros "$ !#".
+      Transparent own_paxosState_ghost.
       wp_pures.
       wp_apply (release_spec with "[-HΦ HΨ]").
       {

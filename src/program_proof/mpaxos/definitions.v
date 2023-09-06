@@ -24,6 +24,7 @@ Class mpG Σ := {
 Module mpaxosParams.
 Class t Σ := mk {
     config: list mp_server_names ;
+    initstate: list u8 ;
     Pwf : list u8 → iProp Σ ;
     N : namespace ;
   }
@@ -177,6 +178,7 @@ Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
   "%Hlog" ∷ ⌜ default [] (last log.*1) = st.(paxosState.state) ⌝ ∗
   "#Hinv" ∷ is_repl_inv γ ∗
   "#Hvote_inv" ∷ is_vote_inv γ ∗
+  "#Hpwf" ∷ (□ Pwf st.(paxosState.state)) ∗
 
   "HleaderOnly" ∷ (if st.(paxosState.isLeader) then
                      own_leader_ghost γ (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
@@ -185,20 +187,25 @@ Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
   "%HaccEpochEq" ∷ ⌜ if st.(paxosState.isLeader) then st.(paxosState.acceptedEpoch) = st.(paxosState.epoch) else True ⌝
 .
 
+Definition encodes_paxosState st data : Prop :=
+  paxosState.encode st = data ∨ (data = [] ∧ st = paxosState.mk 0 0 0 initstate false)
+.
+
 Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
   ∃ pst,
-  "%Henc" ∷ ⌜ paxosState.encode pst = data ⌝ ∗
+  "%Henc" ∷ ⌜ encodes_paxosState pst data ⌝ ∗
   "Hghost" ∷ own_paxosState_ghost γ γsrv pst
 .
 
 (* The P is a validity predicate for any proposed state *)
 Definition own_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (f:loc) (ps:loc) pst γf,
+  ∃ (f:loc) (ps:loc) pst γf data,
   "Hps" ∷ s ↦[mpaxos.Server :: "ps"] #ps ∗
   "Hstorage" ∷ s ↦[mpaxos.Server :: "storage"] #f ∗
-  "Hfile" ∷ own_AsyncFile fileN f γf (own_file_inv γ γsrv) (paxosState.encode pst) ∗
+  "Hfile" ∷ own_AsyncFile fileN f γf (own_file_inv γ γsrv) data ∗
   "Hvol" ∷ paxosState.own_vol ps pst ∗
-  "#HP" ∷ □ Pwf pst.(paxosState.state)
+  "#HP" ∷ □ Pwf pst.(paxosState.state) ∗
+  "%HencPaxos" ∷ ⌜ encodes_paxosState pst data ⌝
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
@@ -209,7 +216,6 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
   "#Hclerks" ∷ readonly (s ↦[mpaxos.Server :: "clerks"] (slice_val clerks_sl)) ∗
 
   (* clerks *)
-  "%Hconf_clerk_len" ∷ ⌜length clerks = length config⌝ ∗
   "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
   "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; config, is_singleClerk ck γ γsrv')
 .
