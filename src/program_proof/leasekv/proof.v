@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof Require Import grove_prelude marshal_stateless_proof.
 From Perennial.program_logic Require Import atomic.
 From Goose.github_com.mit_pdos.gokv Require Import leasekv.
 From Perennial.program_proof.simplepb Require Import renewable_lease.
@@ -35,18 +35,6 @@ Context `{!heapGS Σ}.
 Context `{!ghost_mapG Σ string string}.
 Context `{!renewable_leaseG Σ}.
 
-(* FIXME: copies from tutorial proof *)
-Fixpoint string_to_bytes (s:string): list u8 :=
-  match s with
-  | EmptyString => []
-  | String x srest => [U8 (Ascii.nat_of_ascii x)] ++ (string_to_bytes srest)
-  end
-.
-
-Definition bytes_to_string (l:list u8) : string :=
-  foldl (λ s b, String (u8_to_ascii b) s) EmptyString l
-.
-
 Definition encode_cacheValue (v:string) (lease:u64) : string :=
   (bytes_to_string $ u64_le lease) ++ v.
 
@@ -55,7 +43,21 @@ Lemma encode_cacheValue_inj v l v' l' :
   v = v' ∧
   l = l'.
 Proof.
-Admitted.
+  intros H.
+  rewrite /encode_cacheValue in H.
+  apply (f_equal string_to_bytes) in H.
+  repeat rewrite string_to_bytes_app bytes_to_string_inj in H.
+  apply app_inj_1 in H.
+  2:{ done. }
+  destruct H as [H1 H2].
+  split.
+  {
+    apply (f_equal bytes_to_string) in H2. repeat rewrite string_to_bytes_inj in H2. done.
+  }
+  apply (f_equal le_to_u64) in H1.
+  repeat rewrite u64_le_to_word in H1.
+  done.
+Qed.
 
 Definition leasekvN := nroot .@ "leasekv".
 Definition leaseN := leasekvN .@ "lease".
@@ -73,7 +75,7 @@ Definition kvptsto γ key value : iProp Σ :=
 (* KV points-to for the internal kv service *)
 Implicit Types kvptsto_int: string → string → iProp Σ.
 
-Definition is_inv kvptsto_int γ : iProp Σ :=
+Definition is_leasekv_inv kvptsto_int γ : iProp Σ :=
   inv invN (∃ kvs,
     (* This glues the two maps together *)
     "Hauth" ∷ ghost_map_auth γ 1 kvs ∗
@@ -96,9 +98,11 @@ Definition own_LeaseKv (k:loc) γ : iProp Σ :=
                )
 .
 
+(* FIXME: allocation lemma *)
+
 Definition is_LeaseKv (k:loc) γ : iProp Σ :=
   ∃ mu kvptsto_int (kv:loc),
-  "#Hinv" ∷ is_inv kvptsto_int γ ∗
+  "#Hinv" ∷ is_leasekv_inv kvptsto_int γ ∗
   "#Hmu" ∷ readonly (k ↦[LeaseKv :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock nroot mu (own_LeaseKv k γ) ∗
   "#Hkv" ∷ readonly (k ↦[LeaseKv :: "kv"] #kv) ∗
@@ -110,7 +114,60 @@ Lemma wp_DecodeValue v l :
   DecodeValue #(str encode_cacheValue v l)
   {{{ RET (to_val (cacheValueC.mk v l)); True }}}.
 Proof.
-Admitted.
+  iIntros (?) "_ HΦ".
+  wp_lam.
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hsl".
+  wp_apply wp_ref_to.
+  { done. }
+  iIntros (?) "Hptr".
+  wp_pures.
+  wp_load.
+  rewrite /encode_cacheValue string_to_bytes_app bytes_to_string_inj.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_ReadInt with "[$Hsl]").
+  iIntros (?) "Hsl".
+  wp_pures.
+  wp_apply (wp_StringFromBytes with "[$]").
+  iIntros "_". rewrite string_to_bytes_inj.
+  wp_pures. iModIntro.
+  by iApply "HΦ".
+Qed.
+
+Lemma wp_EncodeValue (v:string) (l:u64) :
+  {{{ True }}}
+  EncodeValue (to_val (cacheValueC.mk v l))
+  {{{ RET #(str encode_cacheValue v l); True }}}.
+Proof.
+  iIntros (?) "_ HΦ".
+  wp_lam.
+  wp_apply (wp_NewSlice).
+  iIntros (?) "Hsl".
+  wp_apply wp_ref_to.
+  { done. }
+  iIntros (?) "Hptr".
+  wp_pures.
+  wp_load.
+  wp_apply (wp_WriteInt with "[$]").
+  iIntros (?) "Hsl".
+  wp_store.
+  wp_pures.
+  wp_apply wp_StringToBytes.
+  iIntros (?) "Hv_sl".
+  wp_load.
+  iDestruct (own_slice_to_small with "Hv_sl") as "Hv_sl".
+  wp_apply (wp_WriteBytes with "[$Hsl $Hv_sl]").
+  iIntros (?) "[Hsl _]".
+  wp_store.
+  wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_StringFromBytes with "[$]").
+  iIntros "_".
+  Opaque u64_le.
+  simpl. rewrite replicate_0 /=.
+  rewrite bytes_to_string_app string_to_bytes_inj.
+  by iApply "HΦ".
+Qed.
 
 Lemma wp_LeaseKv__Get (k:loc) key γ :
   ⊢ {{{ is_LeaseKv k γ }}}
@@ -244,13 +301,6 @@ Proof.
   wp_pures.
   wp_if_destruct; iApply "HΦ"; iPureIntro; word.
 Qed.
-
-Lemma wp_EncodeValue (v:string) (l:u64) :
-  {{{ True }}}
-  EncodeValue (to_val (cacheValueC.mk v l))
-  {{{ RET #(str encode_cacheValue v l); True }}}.
-Proof.
-Admitted.
 
 Lemma wp_LeaseKv__GetAndCache (k:loc) key (cachetime:u64) γ :
   ⊢ {{{ is_LeaseKv k γ }}}

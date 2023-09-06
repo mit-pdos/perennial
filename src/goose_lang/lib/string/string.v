@@ -94,6 +94,15 @@ Proof.
   done.
 Qed.
 
+Lemma bytes_to_string_app l1 l2 :
+  bytes_to_string (l1 ++ l2) = bytes_to_string l1 +:+ bytes_to_string l2.
+Proof.
+  rewrite /bytes_to_string.
+  induction l1; first done.
+  cbn. rewrite String_append -IHl1.
+  done.
+Qed.
+
 Lemma string_to_bytes_inj s :
    bytes_to_string $ string_to_bytes s = s.
 Proof.
