@@ -101,7 +101,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_loadField.
-  iDestruct (own_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
+  iDestruct (slice.own_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
   iDestruct (big_sepS_delete _ _ args.(MR_Sid) with "HownShards") as "[HownShard HownShards]".
   { set_solver. }
   iDestruct "HownShard" as "[%Hbad|HownShard]".

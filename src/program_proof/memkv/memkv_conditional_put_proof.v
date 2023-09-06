@@ -65,7 +65,7 @@ Proof.
   wp_if_destruct.
   { (* have the shard *)
     wp_loadField.
-    iDestruct (own_slice_split with "Hkvss_sl") as "[Hkvss_sl Hkvss_sl_close]".
+    iDestruct (slice.own_slice_split with "Hkvss_sl") as "[Hkvss_sl Hkvss_sl_close]".
     iDestruct (big_sepS_elem_of_acc _ _ sid with "HownShards") as "[HownShard HownShards]".
     { set_solver. }
     iDestruct "HownShard" as "[%Hbad|HownShard]".
