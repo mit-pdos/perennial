@@ -19,7 +19,7 @@ Import mpaxosParams.
 Lemma wp_Server__becomeLeader s γ γsrv Ψ Φ :
   is_Server s γ γsrv -∗
   (Ψ -∗ Φ #()) -∗
-  becomeleader_core_spec Ψ -∗
+  becomeLeader_core_spec Ψ -∗
   WP mpaxos.Server__becomeLeader #s {{ Φ }}
 .
 Proof.
@@ -308,7 +308,7 @@ Proof.
                   "%Hlatestlog" ∷ ⌜latestReply.(enterNewEpochReply.state) = get_state latestLog⌝ ∗
                   "%HlatestlogLen" ∷ ⌜int.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
                   "%HlatestEpoch_ineq" ∷ ⌜int.nat latestReply.(enterNewEpochReply.acceptedEpoch) < int.nat newepoch⌝ ∗
-                  "#Hlatest_prop" ∷ is_proposal γ latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
+                  "#Hlatest_prop" ∷ is_proposal γ.(s_mp) latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
                   "#HP_latest" ∷ (□ Pwf latestReply.(enterNewEpochReply.state)) ∗
                   "#Hacc_lbs" ∷ (□ [∗ list] s ↦ γsrv' ∈ config, ⌜s ∈ W⌝ →
                                         is_accepted_upper_bound γsrv' latestLog

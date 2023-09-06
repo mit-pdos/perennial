@@ -27,7 +27,6 @@ Import protocol_params.
 
 Section mpaxos_protocol.
 
-Context `{!invGS Σ}.
 Context `{EntryType:Type}.
 Local Canonical Structure EntryTypeO := leibnizO EntryType.
 Local Definition logR := mono_listR EntryTypeO.
@@ -39,6 +38,16 @@ Class mp_ghostG Σ := {
     mp_proposal_escrowG :> inG Σ (gmapR (u64) (dfrac_agreeR unitO)) ;
 }.
 
+Definition mp_ghostΣ :=
+  #[mono_natΣ ; fmlist_mapΣ u64 EntryType ;
+    GFunctor (gmapR (u64) logR) ;
+    GFunctor logR ;
+    GFunctor (gmapR u64 (dfrac_agreeR unitO))
+    ].
+Global Instance subG_mp_ghostΣ {Σ} : subG (mp_ghostΣ) Σ → (mp_ghostG Σ).
+Proof. solve_inG. Qed.
+
+Context `{!invGS Σ}.
 Context `{!mp_ghostG Σ}.
 Context `{Hparams:!protocol_params.t}.
 

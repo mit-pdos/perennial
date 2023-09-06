@@ -9,11 +9,23 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.mpaxos Require Export protocol_proof marshal_proof.
 From Perennial.program_proof.reconnectclient Require Export proof.
 From Perennial.program_proof.asyncfile Require Export proof.
+From Perennial.base_logic Require Import lib.saved_prop.
+
+Record mpaxos_system_names :=
+  {
+    s_log : gname ;
+    s_mp : mp_system_names ;
+  }.
+
+Definition mpaxos_server_names := mp_server_names.
+
+Implicit Type γ : mpaxos_system_names.
 
 Definition client_logR := dfrac_agreeR (leibnizO (list u8)).
 
 Class mpG Σ := {
-    mp_ghostG :> mp_ghostG (EntryType:=(list u8 * iProp Σ)%type) Σ ;
+    (* mp_ghostG :> mp_ghostG (EntryType:=(list u8 * iProp Σ)%type) Σ ; *)
+    mp_ghostG :> mp_ghostG (EntryType:=(list u8 * gname)%type) Σ ;
     mp_urpcG :> urpcregG Σ ;
     mp_wgG :> waitgroupG Σ ; (* for apply proof *)
     mp_logG :> inG Σ client_logR;
@@ -41,11 +53,11 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!mpG Σ}.
 Context `{!mpaxosParams.t Σ}.
 
-Definition own_state γ ς := own γ (to_dfrac_agree (DfracOwn (1/2)) (ς : (leibnizO (list u8)))).
+Definition own_state γ ς := own γ.(s_log) (to_dfrac_agree (DfracOwn (1/2)) (ς : (leibnizO (list u8)))).
 
 (* RPC specs *)
 
-Definition get_state (σ:list (list u8 * iProp Σ)) := default [] (last (fst <$> σ)).
+Definition get_state {A} (σ:list (list u8 * A)) := default [] (last (fst <$> σ)).
 
 Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply.C -> iProp Σ) : iProp Σ :=
   (
@@ -54,7 +66,7 @@ Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply
    "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
    "#HP" ∷ □ Pwf args.(applyAsFollowerArgs.state) ∗
    (* "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1) ⌝ ∗ *)
-   "#Hprop" ∷ is_proposal γ args.(applyAsFollowerArgs.epoch) σ ∗
+   "#Hprop" ∷ is_proposal γ.(s_mp) args.(applyAsFollowerArgs.epoch) σ ∗
    "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (U64 0))) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (applyAsFollowerReply.mkC err)))
     )%I
@@ -79,7 +91,7 @@ Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
   ⌜reply.(enterNewEpochReply.state) = get_state log⌝ ∗
   ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
   is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
-  is_proposal γ reply.(enterNewEpochReply.acceptedEpoch) log ∗
+  is_proposal γ.(s_mp) reply.(enterNewEpochReply.acceptedEpoch) log ∗
   □ Pwf reply.(enterNewEpochReply.state) ∗
   own_vote_tok γsrv epoch
 .
@@ -107,10 +119,16 @@ Defined.
 Definition appN := N .@ "app".
 Definition escrowN := N .@ "escrow".
 
-Definition is_state_inv γlog γsys :=
+Definition own_log' γ (opsfullQ : list ((list u8) * iProp Σ)) : iProp Σ :=
+  ∃ ops_gnames: list ((list u8) * gname),
+    own_log γ.(s_mp) ops_gnames ∗
+    ⌜ opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
+    [∗ list] k↦Φ;γprop ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_prop_own γprop DfracDiscarded Φ.
+
+Definition is_helping_inv γlog γsys :=
   inv appN (∃ log,
         own_state γlog (get_state log) ∗
-        own_ghost γsys log ∗
+        own_log' γsys log ∗
         □(
           (* XXX: this is a bit different from pb_definitions.v *)
           (* This says that for all (log'prefix ++ [lastEnt]) ⪯ log,
@@ -118,31 +136,31 @@ Definition is_state_inv γlog γsys :=
            *)
           ∀ log' log'prefix lastEnt, ⌜prefix log' log⌝ -∗
                 ⌜log' = log'prefix ++ [lastEnt]⌝ -∗
-                (* FIXME: use gnames and saved_pred insted of direct higher-order state *)
                 lastEnt.2
         )
       ).
 
-Definition becomeleader_core_spec :=
+Definition becomeLeader_core_spec :=
   λ (Φ : iPropO Σ), (Φ)%I
 .
 
-Program Definition becomeleader_spec :=
+Program Definition becomeLeader_spec :=
   λ (enc_args:list u8), λne (Φ : list u8 -d> iPropO Σ) ,
-  becomeleader_core_spec (∀ enc_reply, Φ enc_reply)%I
+  becomeLeader_core_spec (∀ enc_reply, Φ enc_reply)%I
 .
 Next Obligation.
-  unfold becomeleader_core_spec.
+  unfold becomeLeader_core_spec.
   solve_proper.
 Defined.
 
 (* End RPC specs *)
 
-Definition is_mpaxos_host (host:u64) (γ:mp_system_names) (γsrv:mp_server_names) : iProp Σ :=
-  "#Hdom" ∷ is_urpc_dom γsrv.(mp_urpc_gn) {[ (U64 0); (U64 1); (U64 2); (U64 2) ]} ∗
-  "#H0" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 0) (applyAsFollower_spec γ γsrv) ∗
-  "#H1" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
-  "#H2" ∷ is_urpc_spec_pred γsrv.(mp_urpc_gn) host (U64 2) (becomeleader_spec)
+Definition is_mpaxos_host (host:u64) γ (γsrv:mp_server_names) : iProp Σ :=
+  ∃ γrpc,
+  "#Hdom" ∷ is_urpc_dom γrpc {[ (U64 0); (U64 1); (U64 2); (U64 2) ]} ∗
+  "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) (applyAsFollower_spec γ γsrv) ∗
+  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) (becomeLeader_spec)
 .
 
 Global Instance is_mpaxos_host_pers host γ γsrv: Persistent (is_mpaxos_host host γ γsrv) := _.
@@ -171,17 +189,17 @@ Context `{!mpG Σ}.
 Context `{!mpaxosParams.t Σ}.
 
 Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
-  ∃ (log:list (list u8 * iProp Σ)),
-  "Hghost" ∷ own_replica_ghost γ γsrv
+  ∃ (log:list (list u8 * gname)),
+  "Hghost" ∷ own_replica_ghost γ.(s_mp) γsrv
            (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log) ∗
   "%Hlog" ∷ ⌜ length log = int.nat st.(paxosState.nextIndex) ⌝ ∗
   "%Hlog" ∷ ⌜ default [] (last log.*1) = st.(paxosState.state) ⌝ ∗
-  "#Hinv" ∷ is_repl_inv γ ∗
-  "#Hvote_inv" ∷ is_vote_inv γ ∗
+  "#Hinv" ∷ is_repl_inv γ.(s_mp) ∗
+  "#Hvote_inv" ∷ is_vote_inv γ.(s_mp) ∗
   "#Hpwf" ∷ (□ Pwf st.(paxosState.state)) ∗
 
   "HleaderOnly" ∷ (if st.(paxosState.isLeader) then
-                     own_leader_ghost γ (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
+                     own_leader_ghost γ.(s_mp) (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
                    else True) ∗
   "%HnextIndex_nooverflow" ∷ ⌜ length log = int.nat (length log) ⌝ ∗
   "%HaccEpochEq" ∷ ⌜ if st.(paxosState.isLeader) then st.(paxosState.acceptedEpoch) = st.(paxosState.epoch) else True ⌝

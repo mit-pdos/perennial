@@ -45,12 +45,10 @@ Proof.
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   iApply (wp_frame_wand with "[HΦ]").
   { iNamedAccu. }
+  unfold is_mpaxos_host.
+  iNamed "Hsrv".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hsl Hrep").
-  {
-    unfold is_mpaxos_host.
-    iNamed "Hsrv".
-    iFrame "#".
-  }
+  { iFrame "#". }
   { (* Successful RPC *)
     iModIntro.
     iNext.
