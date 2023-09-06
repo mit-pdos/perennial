@@ -6,6 +6,7 @@ From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
 From Perennial.program_logic Require dist_lang.
 
 From Perennial.program_proof.bank Require Import bank_proof.
+From Perennial.program_proof.lock Require Import lock_proof.
 From Perennial.program_proof.simplepb Require Import pb_init_proof pb_definitions.
 From Perennial.program_proof.simplepb Require Import kv_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
@@ -18,8 +19,6 @@ Section closed_wpcs.
 Context `{!heapGS Σ}.
 Context `{!ekvG Σ}.
 
-Definition dconfigHost : u64 := 10.
-Definition lconfigHost : u64 := 110.
 Lemma wpc_kv_replica_main γsys γsrv Φc fname me configHost :
   ((∃ data' : list u8, fname f↦data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') -∗
     Φc) -∗
@@ -89,69 +88,96 @@ Proof.
   done.
 Qed.
 
+Definition dconfigHost : u64 := (U64 10).
+Definition lconfigHost : u64 := (U64 110).
 Context `{!bankG Σ}.
-Lemma wp_makeBankClerk γlk kvptsto :
+Lemma wp_makeBankClerk γlk γkv :
   {{{
-       is_bank "init" γlk kvptsto {[ "a1"; "a2" ]}
+        "#Hhost1" ∷ is_kv_config dconfigHost γkv ∗
+        "#Hhost2" ∷ is_kv_config lconfigHost γlk ∗
+        "#Hbank" ∷ is_bank "init" (Build_lock_names (kv_ptsto γlk)) (kv_ptsto γkv) {[ "a1"; "a2" ]}
   }}}
     makeBankClerk #()
   {{{
-        γ (b:loc), RET #b; own_bank_clerk γ b {[ "a1" ; "a2" ]}
+        (b:loc), RET #b; own_bank_clerk b {[ "a1" ; "a2" ]}
   }}}
 .
 Proof.
   iIntros (?) "Hpre HΦ".
+  iNamed "Hpre".
   wp_lam.
-Admitted.
-
-Lemma wp_config_main γconf {Σ} {HKV: ekvG Σ} {HG} {HL}:
-  let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
-  "HconfInit" ∷ makeConfigServer_pre γconf [U64 1; U64 2] ∗
-  "#Hhost" ∷ is_config_host configHost γconf -∗
-  WP config_main #() {{ _, True }}
-.
-Proof.
-  intros ?.
-  iNamed 1.
-  wp_call.
-  wp_apply (wp_NewSlice).
-  iIntros (?) "Hsl".
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (servers_ptr) "Hservers".
+  wp_apply (wp_MakeKv with "[$Hhost1]").
+  iIntros (?) "#Hkv".
   wp_pures.
-
-  wp_apply (wp_LoadAt with "[$Hservers]").
-  iIntros "Hservers".
-  wp_apply (wp_SliceAppend with "Hsl").
-  iIntros (?) "Hsl".
-  wp_apply (wp_StoreAt with "[$Hservers]").
-  { done. }
-  iIntros "Hservers".
-
-  wp_apply (wp_LoadAt with "[$Hservers]").
-  iIntros "Hservers".
-  wp_apply (wp_SliceAppend with "Hsl").
-  iIntros (?) "Hsl".
-  wp_apply (wp_StoreAt with "[$Hservers]").
-  { done. }
-  iIntros "Hservers".
-
-  wp_apply (wp_LoadAt with "[$Hservers]").
-  iIntros "Hservers".
-  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
-  rewrite replicate_0.
-  simpl.
-  wp_apply (config_proof.wp_MakeServer with "[$HconfInit $Hsl]").
-  iIntros (?) "#Hissrv".
-  wp_apply (wp_Server__Serve with "[$]").
+  wp_apply (wp_MakeKv with "[$Hhost2]").
+  iIntros (?) "Hlock_kv".
+  wp_apply (wp_MakeLockClerk lockN with "[Hlock_kv]").
   {
-    iFrame "Hissrv".
+    instantiate (3:=(Build_lock_names (kv_ptsto γlk))).
+    iFrame. iPureIntro. solve_ndisj.
   }
+  iIntros (?) "#Hlck".
   wp_pures.
-  done.
+  wp_apply (wp_MakeBankClerk with "[]").
+  { iFrame "#". done. }
+  iIntros (?) "Hb".
+  iApply "HΦ".
+  iFrame.
 Qed.
 
-End closed_wpcs.
+Definition bank_pre : iProp Σ :=
+  ∃ γkv γlk,
+  "#Hhost1" ∷ is_kv_config dconfigHost γkv ∗
+  "#Hhost2" ∷ is_kv_config lconfigHost γlk ∗
+  "#Hbank" ∷ is_bank "init" (Build_lock_names (kv_ptsto γlk)) (kv_ptsto γkv) {[ "a1"; "a2" ]}
+.
+
+Lemma wp_bank_transferer_main :
+  {{{
+        bank_pre
+  }}}
+    bank_transferer_main #()
+  {{{
+        RET #(); True
+  }}}
+.
+Proof.
+  iIntros (?) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_apply (wp_makeBankClerk with "[$]").
+  iIntros (?) "Hck".
+  wp_pures.
+  wp_forBreak.
+  wp_pures.
+  wp_apply (Bank__SimpleTransfer_spec with "[$]").
+  iIntros "Hck".
+  wp_pures.
+  iModIntro. iLeft. iFrame. done.
+Qed.
+
+Lemma wp_bank_auditor_main :
+  {{{
+        bank_pre
+  }}}
+    bank_auditor_main #()
+  {{{
+        RET #(); True
+  }}}
+.
+Proof.
+  iIntros (?) "Hpre HΦ".
+  iNamed "Hpre".
+  wp_lam.
+  wp_apply (wp_makeBankClerk with "[$]").
+  iIntros (?) "Hck".
+  wp_pures.
+  wp_forBreak.
+  wp_pures.
+  wp_apply (Bank__SimpleAudit_spec with "[$]").
+  iIntros "Hck".
+  wp_pures.
+  iModIntro. iLeft. iFrame. done.
+Qed.
 
 End closed_wpcs.

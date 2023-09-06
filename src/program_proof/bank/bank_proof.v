@@ -135,11 +135,13 @@ Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !bankG Σ}.
 
 Context (init_flag: string). (* Account names for bank *)
 
-Definition own_bank_clerk γ (bank_ck:loc) (accts : gset string) : iProp Σ :=
-  ∃ (lck kck : loc) (accts_s : Slice.t) (accts_l : list string) E,
+Definition own_bank_clerk (bank_ck:loc) (accts : gset string) : iProp Σ :=
+  ∃ (lck kck : loc) (accts_s : Slice.t) (accts_l : list string) γ E,
   "%" ∷ ⌜Permutation (elements accts) (accts_l)⌝ ∗
   "#Hlck_is" ∷ is_LockClerk lockN lck (lock_gn γ) ∗
   "#Hkck_is" ∷ is_Kv kck (bank_kvptsto γ) E ∗
+
+  "#Hbinv" ∷ inv bankN (bank_inv γ accts) ∗
 
   "Hkck" ∷ bank_ck ↦[BankClerk :: "kvck"] #kck ∗
   "Hlck" ∷ bank_ck ↦[BankClerk :: "lck"] #lck ∗
@@ -241,24 +243,31 @@ Proof.
   simpl. by iApply "HΦ".
 Qed.
 
-Lemma Bank__transfer_internal_spec (bck:loc) (src dst:string) (amount:u64) γ accts :
+Lemma Bank__transfer_internal_spec (bck:loc) (src dst:string) (amount:u64) accts :
 {{{
-     inv bankN (bank_inv γ accts) ∗
-     own_bank_clerk γ bck accts ∗
-     is_lock lockN γ.(bank_ls_names) src (bankPs γ src) ∗
-     is_lock lockN γ.(bank_ls_names) dst (bankPs γ dst) ∗
-     ⌜src ≠ dst⌝
+     own_bank_clerk bck accts ∗
+     ⌜ src ∈ accts ⌝ ∗
+     ⌜ dst ∈ accts ⌝ ∗
+     ⌜ src ≠ dst ⌝
 }}}
   BankClerk__transfer_internal #bck #(str src) #(str dst) #amount
 {{{
      RET #();
-     own_bank_clerk γ bck accts
+     own_bank_clerk bck accts
 }}}.
 Proof.
-  iIntros (Φ) "(#Hbinv & Hpre & #Hsrc & #Hdst & %) Hpost".
+  iIntros (Φ) "(Hpre & %Hsrc & %Hdst & %Hneq) Hpost".
   iNamed "Hpre".
   wp_lam. wp_pures.
   wp_loadField.
+
+  rewrite -elem_of_elements H in Hsrc.
+  apply elem_of_list_lookup_1 in Hsrc as [? Hsrc].
+  rewrite -elem_of_elements H in Hdst.
+  apply elem_of_list_lookup_1 in Hdst as [? Hdst].
+  iDestruct (big_sepL_lookup _ _ _ src with "Haccts_is_lock") as "#Hasrc_is_lock"; first by eauto.
+  iDestruct (big_sepL_lookup _ _ _ dst with "Haccts_is_lock") as "#Hadst_is_lock"; first by eauto.
+
   wp_apply (acquire_two_spec with "[$Hlck_is]"); first iFrame "#".
   iIntros "(Hacc1_unlocked & Hacc2_unlocked)".
   iDestruct "Hacc1_unlocked" as (bal1) "(Hacc1_phys & Hacc1_log)".
@@ -334,21 +343,21 @@ Proof.
     wp_apply (release_two_spec with "[$Hlck_is Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
     { iFrame "#". iSplitL "Hacc1_phys Hacc1_log"; repeat iExists _; iFrame; eauto. }
     wp_pures. iApply "Hpost". iModIntro.
-    repeat iExists _. iFrame "∗ Hkck_is Hlck_is # %".
+    repeat iExists _. iClear "Hasrc_is_lock Hadst_is_lock". iFrame "∗%".
+    iFrame "Hlck_is Hkck_is". iFrame "#".
 Qed.
 
-Lemma Bank__SimpleTransfer_spec (bck:loc) γ accts :
+Lemma Bank__SimpleTransfer_spec (bck:loc) accts :
 {{{
-     inv bankN (bank_inv γ accts) ∗
-     own_bank_clerk γ bck accts
+     own_bank_clerk bck accts
 }}}
   BankClerk__SimpleTransfer #bck
 {{{
      RET #();
-     own_bank_clerk γ bck accts
+     own_bank_clerk bck accts
 }}}.
 Proof.
-  iIntros (Φ) "[#Hbinv Hpre] Hpost".
+  iIntros (Φ) "Hpre Hpost".
   wp_call.
   wp_forBreak_cond.
   wp_pures.
@@ -395,13 +404,14 @@ Proof.
   wp_apply (wp_SliceGet with "[$Haccts_slice]"); first by eauto.
   iIntros "Haccts_slice".
 
-  iDestruct (big_sepL_lookup _ _ _ asrc with "Haccts_is_lock") as "#Hasrc_is_lock"; first by eauto.
-  iDestruct (big_sepL_lookup _ _ _ adst with "Haccts_is_lock") as "#Hadst_is_lock"; first by eauto.
-
   wp_apply (Bank__transfer_internal_spec with "[-Hpost]").
-  { iFrame "#". iSplitL.
+  { iSplitL.
     - repeat iExists _. iFrame "∗%#".
     - iPureIntro.
+      split.
+      { rewrite -elem_of_elements H elem_of_list_lookup; by eauto. }
+      split.
+      { rewrite -elem_of_elements H elem_of_list_lookup; by eauto. }
       intro Hc; subst.
       assert (NoDup accts_l) as Hnodup.
       { rewrite -H. apply NoDup_elements. }
@@ -416,18 +426,17 @@ Proof.
   iFrame. done.
 Qed.
 
-Lemma Bank__get_total_spec (bck:loc) γ accts :
+Lemma Bank__get_total_spec (bck:loc) accts :
 {{{
-     inv bankN (bank_inv γ accts) ∗
-     own_bank_clerk γ bck accts
+     own_bank_clerk bck accts
 }}}
   BankClerk__get_total #bck
 {{{
      RET #bal_total;
-     own_bank_clerk γ bck accts
+     own_bank_clerk bck accts
 }}}.
 Proof.
-  iIntros (Φ) "[#Hbinv Hpre] Hpost".
+  iIntros (Φ) "Hpre Hpost".
   wp_call.
   wp_apply wp_ref_of_zero; first by done.
   iIntros (sum) "Hsum".
@@ -597,17 +606,16 @@ Proof.
   iModIntro. repeat iExists _. iFrame "∗ Hkck_is Hlck_is #%".
 Qed.
 
-Lemma Bank__SimpleAudit_spec (bck:loc) γ accts :
+Lemma Bank__SimpleAudit_spec (bck:loc) accts :
 {{{
-     inv bankN (bank_inv γ accts) ∗
-     own_bank_clerk γ bck accts
+     own_bank_clerk bck accts
 }}}
   BankClerk__SimpleAudit #bck
 {{{
-     RET #(); True
+     RET #(); own_bank_clerk bck accts
 }}}.
 Proof.
-  iIntros (Φ) "[#Hbinv Hpre] Hpost".
+  iIntros (Φ) "Hpre Hpost".
   wp_lam.
   wp_pures.
   iCombine "Hpre Hpost" as "H".
@@ -632,7 +640,7 @@ Lemma wp_MakeBankClerkSlice (lck kck : loc) γlk kvptsto E accts (accts_s : Slic
   }}}
     MakeBankClerkSlice #lck #kck #(str init_flag) (slice_val accts_s)
   {{{
-      γ (ck:loc), RET #ck; own_bank_clerk γ ck accts ∗ inv bankN (bank_inv γ accts)
+      (ck:loc), RET #ck; own_bank_clerk ck accts
   }}}
 .
 Proof.
@@ -831,8 +839,10 @@ Proof.
       iApply big_sepS_elements.
       rewrite Hperm. iFrame "Haccs_list".
     }
-    wp_pures. iApply "HΦ". iModIntro. iFrame "Hinv".
+    wp_pures. iApply "HΦ". iModIntro.
     repeat iExists _. iFrame "lck accts Haccts_slice".
+    iSplitR; first done.
+    instantiate (1:=γ).
     iFrame "Hkck_is Haccs_list ∗#%".
 
   - iDestruct "Hinit" as (γlog) "(Hflag&#Hinv&#H)".
@@ -843,8 +853,9 @@ Proof.
     wp_loadField.
     wp_apply (wp_LockClerk__Unlock with "[$Hlck_is $Hinit_lock Hflag]").
     { iRight. iExists γlog. iFrame "∗#". }
-    wp_pures. iApply "HΦ". iModIntro. iFrame "Hinv".
-    repeat iExists _. iFrame "∗ Hkck_is # %".
+    wp_pures. iApply "HΦ". iModIntro.
+    repeat iExists _. instantiate (2:=BankNames _ _ _). simpl.
+    iFrame "∗ Hlck_is Hkck_is # %".
     iDestruct (big_sepS_elements with "H") as "He". rewrite Hperm. iFrame "He".
 Qed.
 
@@ -861,7 +872,7 @@ Lemma wp_MakeBankClerk (lck kck : loc) γlk kvptsto (acc0 acc1 : string ) E :
   }}}
     MakeBankClerk #lck #kck #(str init_flag) #(str acc0) #(str acc1)
   {{{
-      γ (ck:loc), RET #ck; own_bank_clerk γ ck {[acc0; acc1]} ∗ inv bankN (bank_inv γ {[acc0; acc1]})
+      (ck:loc), RET #ck; own_bank_clerk ck {[acc0; acc1]}
   }}}
 .
 Proof.
@@ -884,9 +895,7 @@ Proof.
     rewrite elements_disj_union; last by set_solver.
     rewrite ?elements_singleton. set_solver.
   }
-  iIntros (γ ck) "[Hck Hinv]".
-  iApply "HΦ".
-  iFrame.
+  iIntros (ck) "Hck". iApply "HΦ". iFrame "Hck".
 Qed.
 
 End bank_proof.
