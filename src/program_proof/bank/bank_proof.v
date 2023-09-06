@@ -3,11 +3,20 @@ From Perennial.program_proof Require Import grove_prelude std_proof marshal_stat
 From Perennial.program_proof.lock Require Import lock_proof.
 From Goose.github_com.mit_pdos.gokv Require Import lockservice bank.
 
+Class bankG Σ := {
+    bank_mapG :> mapG Σ string u64 ;
+  }.
+
+Definition bankΣ :=
+  #[mapΣ string u64].
+Global Instance subG_pbΣ {Σ} : subG (bankΣ) Σ → (bankG Σ).
+Proof. solve_inG. Qed.
+
 Add Ring u64ring : (word.ring_theory (word := u64_instance.u64)).
 
 Section bank_defs.
 
-Context `{!invGS Σ, !kvMapG Σ, mapG Σ string u64}.
+Context `{!invGS Σ, !bankG Σ}.
 
 Record bank_names := BankNames {
   bank_ls_names: (lock_names (Σ:=Σ)) ; (* Logical balances of accounts; must match the physical balance by the time you give up the lock *)
@@ -122,7 +131,7 @@ Definition init_lock_inv γlk kvptsto (accts:gset string) : iProp Σ :=
 End bank_defs.
 
 Section bank_proof.
-Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !erpcG Σ, !urpcregG Σ, !kvMapG Σ, mapG Σ string u64}.
+Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !bankG Σ}.
 
 Context (init_flag: string). (* Account names for bank *)
 
@@ -395,7 +404,7 @@ Proof.
     - iPureIntro.
       intro Hc; subst.
       assert (NoDup accts_l) as Hnodup.
-      { rewrite -H1. apply NoDup_elements. }
+      { rewrite -H. apply NoDup_elements. }
       epose proof (NoDup_lookup _ _ _ _ Hnodup Hasrc Hadst).
       apply Heqb. f_equal. f_equal. word.
   }
@@ -449,7 +458,7 @@ Proof.
 
     wp_loadField.
     iDestruct (big_sepL_elem_of _ _ x with "Haccts_is_lock") as "#Hx_is_lock".
-    { rewrite -H2. set_solver. }
+    { rewrite -H0. set_solver. }
     wp_apply (wp_LockClerk__Lock with "[$Hlck_is $Hx_is_lock]").
     iIntros "Hx".
     iDestruct "Hx" as (x_bal) "[Hx_kv Hx_log]".
@@ -476,11 +485,11 @@ Proof.
 
     destruct (decide (x ∈ dom locked)).
     {
-      rewrite -H2 in H1.
-      rewrite -Hlocked_dom in H1.
+      rewrite -H0 in H.
+      rewrite -Hlocked_dom in H.
       exfalso.
       assert (NoDup (elements (dom locked) ++ x :: todo)) as Hnodup.
-      { rewrite -H1. apply NoDup_elements. }
+      { rewrite -H. apply NoDup_elements. }
       apply NoDup_app in Hnodup.
       destruct Hnodup as (_ & Hnodup & _).
       specialize (Hnodup x).
@@ -534,7 +543,7 @@ Proof.
     apply elem_of_subseteq.
     intros x Hx.
     apply elem_of_elements.
-    rewrite Hlocked_dom. rewrite -H1. rewrite -H3.
+    rewrite Hlocked_dom. rewrite -H. rewrite -H1.
     apply elem_of_elements.
     done.
   }
@@ -788,8 +797,8 @@ Proof.
 
     iAssert (⌜map_total (gset_to_gmap (U64 0) sdone) = 0⌝)%I as %Hdone_zero_total.
     { iPureIntro. apply map_total_zero.
-      intros ???.
-      rewrite lookup_gset_to_gmap_Some in H1.
+      intros ?? H.
+      rewrite lookup_gset_to_gmap_Some in H.
       naive_solver.
     }
 
@@ -839,12 +848,15 @@ Proof.
     iDestruct (big_sepS_elements with "H") as "He". rewrite Hperm. iFrame "He".
 Qed.
 
+Definition is_bank γlk kvptsto accs : iProp Σ :=
+  is_lock lockN γlk init_flag
+          (init_lock_inv init_flag γlk kvptsto accs).
+
 Lemma wp_MakeBankClerk (lck kck : loc) γlk kvptsto (acc0 acc1 : string ) :
   {{{
        is_LockClerk lck γlk ∗
        is_Kv (kvptsto:=kvptsto) kck ∗
-       is_lock lockN γlk init_flag
-         (init_lock_inv init_flag γlk kvptsto {[acc0; acc1]}) ∗
+       is_bank γlk kvptsto {[ acc0; acc1 ]}∗
        ⌜ acc0 ≠ acc1 ⌝
   }}}
     MakeBankClerk #lck #kck #(str init_flag) #(str acc0) #(str acc1)

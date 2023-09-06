@@ -7,7 +7,7 @@ From Perennial.program_logic Require dist_lang.
 
 From Perennial.program_proof.simplepb Require Import config_proof pb_definitions
      pb_protocol pb_init_proof config_protocol_proof.
-From Perennial.program_proof.simplepb Require Import kvee_proof admin_proof.
+From Perennial.program_proof.simplepb Require Import kv_proof admin_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.program_proof.simplepb.apps Require Import closed_wpcs.

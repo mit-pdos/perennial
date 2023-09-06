@@ -8,7 +8,6 @@ From Perennial.program_proof.simplepb Require Import pb_definitions config_proof
 From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 From Perennial.program_proof.grove_shared Require Import erpc_lib.
 From Perennial.program_proof Require Import map_marshal_proof.
-From Perennial.program_proof Require Import map_marshal_proof.
 From iris.algebra Require Import dfrac_agree mono_list.
 
 From Perennial.program_proof.simplepb.apps Require Import vsm esm_proof kv_vsm_proof log.

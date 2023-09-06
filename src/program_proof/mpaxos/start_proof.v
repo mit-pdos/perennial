@@ -6,7 +6,7 @@ From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof Require Import marshal_stateless_proof.
-From Perennial.program_proof.mpaxos Require Export definitions applyasfollower_proof enternewepoch_proof apply_proof becomeleader_proof.
+From Perennial.program_proof.mpaxos Require Export definitions applyasfollower_proof enternewepoch_proof becomeleader_proof.
 
 Section start_proof.
 

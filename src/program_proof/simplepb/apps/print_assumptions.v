@@ -1,5 +1,5 @@
 From Perennial.program_proof.simplepb Require config_proof admin_proof.
-From Perennial.program_proof.simplepb.apps Require kv_proof kvee_proof closed_proof.
+From Perennial.program_proof.simplepb.apps Require kv_proof closed_proof.
 
 Definition lemmas :=
   (@config_proof.wp_MakeServer,
