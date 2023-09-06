@@ -104,6 +104,7 @@ Notation "'to_u32' e" := (UnOp ToUInt32Op e%E) (at level 10) : expr_scope.
 Notation "'to_u8' e" := (UnOp ToUInt8Op e%E) (at level 10) : expr_scope.
 Notation "'to_string' e" := (UnOp ToStringOp e%E) (at level 10) : expr_scope.
 Notation "'StringLength' e" := (UnOp StringLenOp e%E) (at level 10) : expr_scope.
+Notation "'IsNoStringOverflow' e" := (UnOp IsNoStringOverflowOp e%E) (at level 10) : expr_scope.
 
 Notation "'StringGet'" := (BinOp StringGetOp) (at level 10) : expr_scope.
 Notation "e1 + e2" := (BinOp PlusOp e1%E e2%E) : expr_scope.

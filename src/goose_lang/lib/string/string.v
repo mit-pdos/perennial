@@ -1,5 +1,6 @@
 From Perennial.goose_lang Require Import notation proofmode slice typed_slice.
 From Perennial.goose_lang.lib Require Import string.impl.
+From Perennial.goose_lang.lib Require Import control.
 Import uPred.
 
 Section heap.
@@ -156,12 +157,9 @@ Lemma wp_StringToBytes (s:string) :
 .
 Proof.
   iIntros (Φ) "Hsl HΦ".
-  wp_lam. wp_pures.
-  wp_apply (wp_NewSlice).
-  iIntros (?) "Hsl2".
-  assert (int.nat (String.length s) = String.length s).
-  { admit. (* TODO: overflow; maybe add assumption that strings are not too long
-              to operational semantics? *) }
+  wp_lam. wp_pure1. wp_pures.
+  wp_apply wp_Assume. iIntros (Hover).
+  rewrite bool_decide_eq_true in Hover.
   wp_apply wp_stringToBytes.
   { iPureIntro. word. }
   iIntros. iApply "HΦ".
@@ -170,7 +168,7 @@ Proof.
   { iFrame. }
   rewrite -string_bytes_length.
   word.
-Admitted.
+Qed.
 
 Lemma wp_StringFromBytes sl q (l:list u8) :
   {{{

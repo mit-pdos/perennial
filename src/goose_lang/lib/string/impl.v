@@ -1,4 +1,5 @@
 From Perennial.goose_lang Require Import lang slice notation typing.
+From Perennial.goose_lang.lib Require Import control.impl.
 
 Section goose_lang.
 Context {ext:ffi_syntax}.
@@ -23,7 +24,7 @@ Definition stringToBytes : val :=
 
 Definition StringToBytes : val :=
   λ: "s",
-    NewSlice byteT (StringLength "s") ;;
+    Assume (IsNoStringOverflow "s") ;;
     stringToBytes (StringLength "s") "s"
 .
 
