@@ -142,15 +142,51 @@ Definition decodeApplyReply: val :=
     struct.storeF applyReply "ret" "o" (![slice.T byteT] "enc");;
     "o".
 
+Definition boolToU64: val :=
+  rec: "boolToU64" "b" :=
+    (if: "b"
+    then #1
+    else #0).
+
+(* paxosState from server.go *)
+
+Definition paxosState := struct.decl [
+  "epoch" :: uint64T;
+  "acceptedEpoch" :: uint64T;
+  "nextIndex" :: uint64T;
+  "state" :: slice.T byteT;
+  "isLeader" :: boolT
+].
+
 Definition encodePaxosState: val :=
   rec: "encodePaxosState" "ps" :=
-    Panic "impl";;
-    #().
+    let: "e" := ref_to (slice.T byteT) (NewSlice byteT #0) in
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF paxosState "epoch" "ps"));;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF paxosState "acceptedEpoch" "ps"));;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (struct.loadF paxosState "nextIndex" "ps"));;
+    "e" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "e") (boolToU64 (struct.loadF paxosState "isLeader" "ps")));;
+    "e" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "e") (struct.loadF paxosState "state" "ps"));;
+    ![slice.T byteT] "e".
 
 Definition decodePaxosState: val :=
-  rec: "decodePaxosState" "" :=
-    Panic "impl";;
-    #().
+  rec: "decodePaxosState" "enc" :=
+    let: "e" := ref_to (slice.T byteT) "enc" in
+    let: "leaderInt" := ref (zero_val uint64T) in
+    let: "ps" := struct.alloc paxosState (zero_val (struct.t paxosState)) in
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
+    struct.storeF paxosState "epoch" "ps" "0_ret";;
+    "e" <-[slice.T byteT] "1_ret";;
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
+    struct.storeF paxosState "acceptedEpoch" "ps" "0_ret";;
+    "e" <-[slice.T byteT] "1_ret";;
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
+    struct.storeF paxosState "nextIndex" "ps" "0_ret";;
+    "e" <-[slice.T byteT] "1_ret";;
+    let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e") in
+    "leaderInt" <-[uint64T] "0_ret";;
+    struct.storeF paxosState "state" "ps" "1_ret";;
+    struct.storeF paxosState "isLeader" "ps" ((![uint64T] "leaderInt") = #1);;
+    "ps".
 
 (* 2_internalclerk.go *)
 
@@ -204,14 +240,6 @@ Definition singleClerk__becomeLeader: val :=
     #().
 
 (* server.go *)
-
-Definition paxosState := struct.decl [
-  "epoch" :: uint64T;
-  "acceptedEpoch" :: uint64T;
-  "nextIndex" :: uint64T;
-  "state" :: slice.T byteT;
-  "isLeader" :: boolT
-].
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
@@ -424,14 +452,18 @@ Definition Server__WeakRead: val :=
     "ret".
 
 Definition makeServer: val :=
-  rec: "makeServer" "fname" "applyFn" "config" :=
+  rec: "makeServer" "fname" "initstate" "config" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
     let: "encstate" := ref (zero_val (slice.T byteT)) in
     let: ("0_ret", "1_ret") := asyncfile.MakeAsyncFile "fname" in
     "encstate" <-[slice.T byteT] "0_ret";;
     struct.storeF Server "storage" "s" "1_ret";;
-    struct.storeF Server "ps" "s" (decodePaxosState (![slice.T byteT] "encstate"));;
+    (if: (slice.len (![slice.T byteT] "encstate")) = #0
+    then
+      struct.storeF Server "ps" "s" (struct.alloc paxosState (zero_val (struct.t paxosState)));;
+      struct.storeF paxosState "state" (struct.loadF Server "ps" "s") "initstate"
+    else struct.storeF Server "ps" "s" (decodePaxosState (![slice.T byteT] "encstate")));;
     struct.storeF Server "clerks" "s" (NewSlice ptrT (slice.len "config"));;
     let: "n" := slice.len (struct.loadF Server "clerks" "s") in
     let: "i" := ref_to uint64T #0 in
@@ -443,8 +475,8 @@ Definition makeServer: val :=
     "s".
 
 Definition StartServer: val :=
-  rec: "StartServer" "fname" "me" "applyFn" "config" :=
-    let: "s" := makeServer "fname" "applyFn" "config" in
+  rec: "StartServer" "fname" "initstate" "me" "config" :=
+    let: "s" := makeServer "fname" "initstate" "config" in
     let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
     MapInsert "handlers" RPC_APPLY_AS_FOLLOWER (λ: "raw_args" "raw_reply",
       let: "reply" := struct.alloc applyAsFollowerReply (zero_val (struct.t applyAsFollowerReply)) in

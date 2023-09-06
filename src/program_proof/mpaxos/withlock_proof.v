@@ -17,8 +17,8 @@ Lemma wp_Server__withLock (s:loc) γ γsrv (f:val) Φ :
    "#HP" ∷ □ Pwf pst.(paxosState.state)) -∗
   WP f #ps {{ λ _, ∃ pst', paxosState.own_vol ps pst' ∗
                    (□ Pwf pst'.(paxosState.state)) ∗
-                   (paxosState.own_ghost γ γsrv pst ={⊤∖↑fileN}=∗
-                    paxosState.own_ghost γ γsrv pst' ∗ Φ #())
+                   (own_paxosState_ghost γ γsrv pst ={⊤∖↑fileN}=∗
+                    own_paxosState_ghost γ γsrv pst' ∗ Φ #())
     }}) -∗
   WP Server__withLock #s f {{ Φ }}
 .

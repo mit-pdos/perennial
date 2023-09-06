@@ -92,7 +92,7 @@ Proof.
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
                     "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; config,
-                    ⌜reply_ptr = null⌝ ∨ (∃ reply, readonly (enterNewEpochReply.own reply_ptr reply 1) ∗
+                    ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
                                               (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
                                                 enterNewEpoch_post γ γsrv' reply newepoch
                                               else
@@ -198,7 +198,7 @@ Proof.
         wp_pures.
         by iApply "HΦ'".
       }
-      iMod (readonly_alloc_1 with "Hreply") as "Hreply".
+      (* iMod (readonly_alloc_1 with "Hreply") as "Hreply". *)
       wp_apply (release_spec with "[-]").
       {
         iFrame "# Hlocked".
@@ -294,7 +294,7 @@ Proof.
                  "HlatestReply_loc" ∷ latestReply_ptr ↦[ptrT] #latestReply_loc ∗
                  "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; config,
                   ⌜int.nat i ≤ j⌝ →
-                 ⌜reply_ptr = null⌝ ∨ (∃ reply, readonly (enterNewEpochReply.own reply_ptr reply 1) ∗
+                 ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
                                            (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
                                              enterNewEpoch_post γ γsrv' reply newepoch
                                            else
@@ -304,7 +304,7 @@ Proof.
                    True
                  else
                    ∃ latestReply latestLog,
-                  "#HlatestReply" ∷ readonly (enterNewEpochReply.own latestReply_loc latestReply 1) ∗
+                  "HlatestReply" ∷ (enterNewEpochReply.own latestReply_loc latestReply 1) ∗
                   "%Hlatestlog" ∷ ⌜latestReply.(enterNewEpochReply.state) = get_state latestLog⌝ ∗
                   "%HlatestlogLen" ∷ ⌜int.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
                   "%HlatestEpoch_ineq" ∷ ⌜int.nat latestReply.(enterNewEpochReply.acceptedEpoch) < int.nat newepoch⌝ ∗
@@ -349,9 +349,8 @@ Proof.
       {
         exfalso. rewrite Hbad in Heqb1. done.
       }
-      iDestruct "Hreply_post" as (?) "[#Hreply Hpost]".
-      iMod (readonly_load with "Hreply") as (?) "Hreplyq".
-      iNamed "Hreplyq".
+      iDestruct "Hreply_post" as (?) "[Hreply Hpost]".
+      iNamed "Hreply".
       wp_loadField.
       wp_if_destruct.
       { (* got ENone, increase size of W *)
@@ -420,7 +419,8 @@ Proof.
             }
           }
           iExists reply, log.
-          iFrame "Hreply".
+          iSplitR "Hvote".
+          { iExists _; iFrame "∗#". }
           iFrame "#%".
           iSplitR "Hvote"; last first.
           {
@@ -459,11 +459,12 @@ Proof.
             apply Heqb3. f_equal. rewrite e.
             done. }
           iNamed "Hi".
-          iMod (readonly_load with "HlatestReply") as (?) "HlatestReply2".
           iRename "Hreply_acceptedEpoch" into "Hreply_acceptedEpoch2".
           iRename "Hreply_nextIndex" into "Hreply_nextIndex2".
-          iClear "Hreply_err Hreply_ret Hreply_ret_sl".
-          iNamed "HlatestReply2".
+          iDestruct "Hreply_err" as "?".
+          iDestruct "Hreply_ret" as "?".
+          iDestruct "Hreply_ret_sl" as "?".
+          iNamed "HlatestReply".
           wp_loadField.
           wp_loadField.
           wp_if_destruct.
@@ -538,7 +539,11 @@ Proof.
             { exfalso. done. }
             iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
             iExists reply, log.
-            iFrame "Hreply Hprop %".
+            iSplitR "Hvote Hvotes Hprop".
+            {
+              repeat iExists _; iFrame "∗#".
+            }
+            iFrame "Hprop %".
             iFrame "#".
             iSplitR "Hvotes Hvote"; last first.
             { (* accumulate votes *)
@@ -676,9 +681,7 @@ Proof.
                 { exfalso. done. }
                 iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
                 iExists reply, log.
-                iFrame "Hreply Hprop %".
-
-                iFrame "#".
+                rewrite sep_exist_r. iExists _; iFrame "∗#%".
                 (* XXX: copy/paste votes *)
                 iSplitR "Hvotes Hvote"; last first.
                 { (* accumulate votes *)
@@ -801,12 +804,16 @@ Proof.
 
                 destruct (decide (size W + 1 = 0)).
                 { done. }
-                iExists _, _; iFrame "#%".
+                repeat iExists _.
+                rewrite sep_exist_r. repeat iExists _.
+                instantiate (1:=enterNewEpochReply.mkC _ _ _ _). simpl.
+                iFrame "Hreply_ret ∗".
 
                 destruct (decide (_)); last first.
                 { exfalso. done. }
                 iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
 
+                iFrame "#%".
                 (* XXX: copy/paste votes *)
                 iSplitR "Hvotes Hvote"; last first.
                 { (* accumulate votes *)
@@ -939,7 +946,7 @@ Proof.
             destruct (decide (_)); last first.
             { exfalso. done. }
             iDestruct "Hpost" as (?) "(%Hepoch_ineq & %Hlog & %Hlen & #Hacc_ub & #Hprop & #HP2 & Hvote)".
-
+            rewrite sep_exist_r. iExists _; iFrame.
             (* XXX: copy/paste votes *)
             iSplitR "Hvotes Hvote"; last first.
             { (* accumulate votes *)
@@ -1093,7 +1100,11 @@ Proof.
     }
 
     wp_apply (wp_Server__withLock with "[]").
-    { repeat iExists _; iFrame "#". done. }
+    { repeat iExists _.
+      iFrame "Hmu". iSplitR.
+      { iExact "HmuInv". }
+      iFrame "#". done.
+    }
     iIntros (??) "HH".
     iRename "HP" into "HP_in".
     iNamed "HH".
@@ -1112,8 +1123,7 @@ Proof.
       wp_load.
 
       iNamed "Hi".
-      iMod (readonly_load with "HlatestReply") as (?) "HlatestReply2".
-      iNamed "HlatestReply2".
+      iNamed "HlatestReply".
       wp_loadField.
       wp_storeField.
       wp_load.

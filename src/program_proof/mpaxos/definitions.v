@@ -148,72 +148,6 @@ Global Instance is_mpaxos_host_pers host γ γsrv: Persistent (is_mpaxos_host ho
 
 End global_definitions.
 
-Module paxosState.
-Section paxosState.
-Record t :=
-  mk {
-      epoch : u64;
-      acceptedEpoch : u64 ;
-      nextIndex : u64 ;
-      state : list u8 ;
-      isLeader : bool ;
-    }.
-
-Definition encode (st:t) : list u8.
-Admitted.
-
-#[global]
-Instance encode_inj : Inj (=) (=) encode.
-Proof. intros ???. Admitted.
-
-Context `{!heapGS Σ}.
-Definition own_vol (s:loc) (st: paxosState.t) : iProp Σ :=
-  ∃ state_sl,
-  "Hepoch" ∷ s ↦[paxosState :: "epoch"] #st.(epoch) ∗
-  "HaccEpoch" ∷ s ↦[paxosState :: "acceptedEpoch"] #st.(acceptedEpoch) ∗
-  "HnextIndex" ∷ s ↦[paxosState :: "nextIndex"] #st.(nextIndex) ∗
-  "Hstate" ∷ s ↦[paxosState :: "state"] (slice_val state_sl) ∗
-  "#Hstate_sl" ∷ readonly (own_slice_small state_sl byteT 1 st.(state)) ∗
-  "HisLeader" ∷ s ↦[paxosState :: "isLeader"] #st.(isLeader)
-.
-
-Lemma wp_encode s st :
-  {{{
-        own_vol s st
-  }}}
-    encodePaxosState #s
-  {{{
-        sl, RET (slice_val sl);
-        own_vol s st ∗
-        own_slice sl byteT 1 (encode st)
-  }}}
-.
-Proof.
-Admitted.
-
-
-Context `{!mpG Σ}.
-Context `{!mpaxosParams.t Σ}.
-
-Definition own_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
-  ∃ (log:list (list u8 * iProp Σ)),
-  "Hghost" ∷ own_replica_ghost γ γsrv
-           (mkMPaxosState st.(epoch) st.(acceptedEpoch) log) ∗
-  "%Hlog" ∷ ⌜ length log = int.nat st.(nextIndex) ⌝ ∗
-  "%Hlog" ∷ ⌜ default [] (last log.*1) = st.(state) ⌝ ∗
-  "#Hinv" ∷ is_repl_inv γ ∗
-  "#Hvote_inv" ∷ is_vote_inv γ ∗
-
-  "HleaderOnly" ∷ (if st.(isLeader) then
-                     own_leader_ghost γ (mkMPaxosState st.(epoch) st.(acceptedEpoch) log)
-                   else True) ∗
-  "%HnextIndex_nooverflow" ∷ ⌜ length log = int.nat (length log) ⌝ ∗
-  "%HaccEpochEq" ∷ ⌜ if st.(isLeader) then st.(acceptedEpoch) = st.(epoch) else True ⌝
-.
-
-End paxosState.
-End paxosState.
-
 Section local_definitions.
 Context `{!heapGS Σ}.
 Context `{!mpG Σ}.
@@ -232,10 +166,29 @@ Definition is_singleClerk (ck:loc) γ γsrv : iProp Σ :=
 
 Definition fileN := N .@ "file".
 
+Context `{!mpG Σ}.
+Context `{!mpaxosParams.t Σ}.
+
+Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
+  ∃ (log:list (list u8 * iProp Σ)),
+  "Hghost" ∷ own_replica_ghost γ γsrv
+           (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log) ∗
+  "%Hlog" ∷ ⌜ length log = int.nat st.(paxosState.nextIndex) ⌝ ∗
+  "%Hlog" ∷ ⌜ default [] (last log.*1) = st.(paxosState.state) ⌝ ∗
+  "#Hinv" ∷ is_repl_inv γ ∗
+  "#Hvote_inv" ∷ is_vote_inv γ ∗
+
+  "HleaderOnly" ∷ (if st.(paxosState.isLeader) then
+                     own_leader_ghost γ (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
+                   else True) ∗
+  "%HnextIndex_nooverflow" ∷ ⌜ length log = int.nat (length log) ⌝ ∗
+  "%HaccEpochEq" ∷ ⌜ if st.(paxosState.isLeader) then st.(paxosState.acceptedEpoch) = st.(paxosState.epoch) else True ⌝
+.
+
 Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
   ∃ pst,
   "%Henc" ∷ ⌜ paxosState.encode pst = data ⌝ ∗
-  "Hghost" ∷ paxosState.own_ghost γ γsrv pst
+  "Hghost" ∷ own_paxosState_ghost γ γsrv pst
 .
 
 (* The P is a validity predicate for any proposed state *)
