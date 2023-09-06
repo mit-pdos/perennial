@@ -22,7 +22,9 @@ Definition stringToBytes : val :=
 .
 
 Definition StringToBytes : val :=
-  λ: "s", stringToBytes (StringLength "s") "s"
+  λ: "s",
+    NewSlice byteT (StringLength "s") ;;
+    stringToBytes (StringLength "s") "s"
 .
 
 End goose_lang.

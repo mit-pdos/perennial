@@ -863,11 +863,14 @@ Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :
   | _ => None
   end.
 
+Definition string_to_bytes (s:string): list u8 :=
+  (λ x, U8 $ Ascii.nat_of_ascii x) <$> list_ascii_of_string s.
+
 Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: Interface.word width} (w2 : word): option base_lit :=
   match op with
   | StringGetOp => mbind (M:=option)
-                  (λ (x:Ascii.ascii), Some $ LitByte (U8 (Ascii.nat_of_ascii x)))
-                  ((list_ascii_of_string s1) !! (int.nat w2) : option Ascii.ascii)
+                  (λ (x:u8), Some $ LitByte x)
+                  ((string_to_bytes s1) !! (int.nat w2))
   | _ => None
   end.
 

@@ -6,54 +6,8 @@ Section heap.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
 
-Definition string_to_bytes (s:string): list u8 :=
-  (λ x, U8 $ Ascii.nat_of_ascii x) <$> list_ascii_of_string s.
-
 Definition bytes_to_string (l:list u8) : string :=
   string_of_list_ascii (u8_to_ascii <$> l).
-
-(*
-Ltac word_cleanup :=
-  repeat autounfold with word in *;
-  try match goal with
-      | |- @eq u64 _ _ => apply word.unsigned_inj
-      | |- @eq u32 _ _ => apply word.unsigned_inj
-      | |- @eq u8 _ _ => apply word.unsigned_inj
-      end;
-  (* can't replace this with [autorewrite], probably because typeclass inference
-  isn't the same *)
-  rewrite ?word.unsigned_add, ?word.unsigned_sub,
-  ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
-  ?unsigned_U64_0, ?unsigned_U32_0,
-  ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
-  try autorewrite with word;
-  repeat match goal with
-         | [ H: context[word.unsigned (U64 (Zpos ?x))] |- _ ] => change (int.Z (Zpos x)) with (Zpos x) in *
-         | [ |- context[word.unsigned (U64 (Zpos ?x))] ] => change (int.Z (Zpos x)) with (Zpos x)
-         | [ H: context[word.unsigned (U32 (Zpos ?x))] |- _ ] => change (int.Z (U32 (Zpos x))) with (Zpos x) in *
-         | [ |- context[word.unsigned (U32 (Zpos ?x))] ] => change (int.Z (U32 (Zpos x))) with (Zpos x)
-         end;
-  repeat match goal with
-         | [ |- context[int.Z ?x] ] =>
-           lazymatch goal with
-           | [ H': 0 <= int.Z x < 2^64 |- _ ] => fail
-           | [ H': 0 <= int.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
-           | _ => pose proof (word.unsigned_range x)
-           end
-         | [ H: context[int.Z ?x] |- _ ] =>
-           lazymatch goal with
-           | [ H': 0 <= int.Z x < 2^64 |- _ ] => fail
-           | [ H': 0 <= int.Z x <= 2^64 |- _ ] => fail (* TODO: should be unnecessary *)
-           | _ => pose proof (word.unsigned_range x)
-           end
-         end;
-  repeat match goal with
-         | |- context[@word.wrap _ ?word ?ok ?z] =>
-           rewrite (@wrap_small _ word ok z) by lia
-         | |- context[Z.of_nat (Z.to_nat ?z)] =>
-           rewrite (Z2Nat.id z) by lia
-         end;
-  try lia. *)
 
 Lemma bytes_to_string_inj l :
   string_to_bytes $ bytes_to_string l = l.
@@ -164,24 +118,32 @@ Proof.
     by iApply (own_slice_nil).
   }
   wp_pures.
+  destruct (decide (i = 0)).
+  { subst. by exfalso. }
+  assert (int.nat (word.sub i 1%Z) < String.length s)%nat as Hlookup.
+  { enough (int.nat i ≠ 0%nat) by word.
+    intros ?. apply n. word. }
+  pose proof Hlookup as Hineq2.
+  rewrite string_bytes_length in Hlookup.
+  apply List.list_lookup_lt in Hlookup as [? Hlookup].
   wp_pure1.
-  { (* FIXME: StringGet wp_pures *)
-    rewrite /bin_op_eval /=.
-    instantiate (1:=(LitV $ LitByte $ (U8 37))).
-    admit.
-  }
+  { by rewrite /bin_op_eval /= Hlookup. }
   wp_pures.
   wp_apply ("Hwp" with "[]").
-  {
-    iPureIntro. admit. (* TODO: overflow reasoning *)
-  }
+  { iPureIntro.
+    rewrite -Nat2Z.inj_le.
+    lia. }
   iIntros (?) "Hsl'".
-  change (#(U8 37)) with (into_val.to_val (U8 37)).
   wp_apply (wp_SliceAppend with "[$]").
   iIntros (?) "Hsl".
   iApply "HΦ".
-  (* FIXME: appending in wrong order *)
-Admitted.
+  rewrite -take_S_r.
+  2:{ done. }
+  replace (int.nat i) with (S $ int.nat (word.sub i 1%Z))%nat.
+  2:{ enough (int.nat i ≠ 0%nat) by word.
+      intros ?. apply n. word. }
+  iFrame.
+Qed.
 
 Lemma wp_StringToBytes (s:string) :
   {{{
@@ -195,12 +157,19 @@ Lemma wp_StringToBytes (s:string) :
 Proof.
   iIntros (Φ) "Hsl HΦ".
   wp_lam. wp_pures.
+  wp_apply (wp_NewSlice).
+  iIntros (?) "Hsl2".
+  assert (int.nat (String.length s) = String.length s).
+  { admit. (* TODO: overflow; maybe add assumption that strings are not too long
+              to operational semantics? *) }
   wp_apply wp_stringToBytes.
-  { admit. (* TODO: overflow *) }
+  { iPureIntro. word. }
   iIntros. iApply "HΦ".
+  iDestruct (own_slice_sz with "[$]") as %Hsz.
   rewrite take_ge.
   { iFrame. }
-  admit. (* TODO: overflow and length of string_to_bytes vs String.length *)
+  rewrite -string_bytes_length.
+  word.
 Admitted.
 
 Lemma wp_StringFromBytes sl q (l:list u8) :
