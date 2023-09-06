@@ -1,6 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
 (* From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb. *)
-From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list csum.
 From Perennial.program_proof.simplepb Require Export fmlist_map.
@@ -14,7 +13,6 @@ Record mp_system_names :=
 
 Record mp_server_names :=
 {
-  mp_urpc_gn : urpc_proof.server_chan_gnames ;
   mp_accepted_gn : gname ;
   mp_vote_gn : gname ; (* token for granting vote to a node in a particular epoch *)
 }.
@@ -1054,6 +1052,245 @@ Proof.
     iLeft.
     iPureIntro. word.
   }
+Qed.
+
+(* Right order of allocation:
+  Allocate the purely local state of each server. That determines `config`.
+  Set up system state and is_repl_inv.
+  Finish setting up local state, how that is_repl_inv is available.
+*)
+
+Lemma alloc_const_gmap {A:cmra} (a:A) `{H:inG Σ (gmapR u64 A)} :
+  (✓a) →
+    ⊢ |==> ∃ γ, [∗ set] epoch ∈ (fin_to_set u64), own γ {[ epoch := a ]}
+.
+Proof.
+  intros Havalid.
+  set (m:=(gset_to_gmap a (fin_to_set u64))).
+  iMod (own_alloc m) as (γ) "H".
+  { intros k. rewrite lookup_gset_to_gmap option_guard_True; last by apply elem_of_fin_to_set.
+    rewrite Some_valid. done. }
+
+  iAssert ([∗ set] epoch ∈ fin_to_set u64,
+            own γ {[ epoch := a ]}
+          )%I with "[H]" as "H".
+  {
+    rewrite -(big_opM_singletons m).
+    rewrite big_opM_own_1.
+    replace (fin_to_set u64) with (dom m); last first.
+    { rewrite dom_gset_to_gmap. done. }
+    iApply big_sepM_dom.
+    iApply (big_sepM_impl with "H").
+    iIntros "!#" (k x). subst m.
+    rewrite lookup_gset_to_gmap_Some.
+    iIntros ([_ [= <-]]).
+    iIntros "$".
+  }
+  iModIntro.
+  iExists _; iFrame.
+Qed.
+
+Definition own_server_pre γsrv : iProp Σ :=
+  "Haccepted" ∷ own_accepted γsrv 0 [] ∗
+  "Haccepted_rest" ∷ ([∗ set] e' ∈ (fin_to_set u64), ⌜int.nat 0 < int.nat e'⌝ →
+                                                      own_accepted γsrv e' []) ∗
+  "Hvotes" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), own_vote_tok γsrv epoch')
+.
+
+Lemma pb_ghost_server_pre_init :
+  ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) []
+.
+Proof.
+  iMod (fmlist_map_alloc_fin []) as (γacc) "Hacc".
+  iMod (mono_nat_own_alloc 0) as (γepoch) "[Hepoch Hepoch_lb]".
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hacc") as "[Hacc Haccrest]".
+  { set_solver. }
+  iDestruct (fmlist_ptsto_get_lb with "Hacc") as "#Hacc_lb".
+  iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1) ())) as (?) "Hvotes".
+  { done. }
+
+  iExists {| mp_accepted_gn := _ ; mp_vote_gn := _ |}.
+  iModIntro.
+  iFrame "∗#".
+  iApply "Haccrest".
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  {
+    iIntros. exfalso. replace (int.nat 0%Z) with 0 in H; word.
+  }
+Qed.
+
+
+Definition is_sys_init_witness γsys : iProp Σ :=
+  is_proposal_lb γsys (U64 0) [] ∗ is_proposal_facts γsys (U64 0) [].
+
+Lemma pb_system_init :
+length config > 0 →
+(∀ γsrv, ⌜γsrv ∈ config⌝ → is_accepted_lb γsrv (U64 0) []) ={⊤}=∗
+    ∃ γsys,
+    is_repl_inv γsys ∗
+    is_vote_inv γsys ∗
+    own_log γsys [] ∗
+    is_sys_init_witness γsys
+.
+Proof.
+  intros Hlen.
+  iIntros "#Hacc".
+  (* allocate ghost state, and establish is_repl_inv *)
+  iMod (own_alloc (●ML [])) as "Hghost".
+  { apply mono_list_auth_valid. }
+  iDestruct "Hghost" as (γstate) "[Hghost Hghost2]".
+  (*
+  iMod (fmlist_map_alloc_fin []) as (γproposal) "Hproposal".
+  iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1)
+                                         (None : leibnizO (option (list pb_server_names)))
+       )) as (γconfig) "Hconfig".
+  { done. }
+  iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1)
+                                         (None : leibnizO (option (list pb_server_names)))
+       )) as (γconfig_proposal) "Hconfig_prop".
+  { done. }
+
+  (* set up proposal for epoch 0 *)
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hproposal") as "[Hprop Hprop_rest]".
+  { set_solver. }
+  iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb".
+
+  (* set up initial config proposal *)
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig_prop") as "[Hconfig_prop Hconfig_prop_rest]".
+  { set_solver. }
+  iMod (own_update with "Hconfig_prop") as "Hconf_prop".
+  {
+    apply singleton_update.
+    instantiate (1:=(to_dfrac_agree (DfracDiscarded) (Some confγs : leibnizO _))).
+    apply cmra_update_exclusive.
+    done.
+  }
+  iDestruct "Hconf_prop" as "#Hconf_prop".
+
+  (* set up initial config *)
+  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig") as "[Hconfig Hconfig_rest]".
+  { set_solver. }
+  iMod (own_update with "Hconfig") as "Hconf".
+  {
+    apply singleton_update.
+    instantiate (1:=(to_dfrac_agree (DfracDiscarded) (Some confγs : leibnizO _))).
+    apply cmra_update_exclusive.
+    done.
+  }
+  iDestruct "Hconf" as "#Hconf".
+
+  set  (γsys:= {|
+      pb_proposal_gn := γproposal ;
+      pb_config_gn := γconfig ;
+      pb_config_prop_gn := γconfig_proposal ;
+      pb_state_gn := γstate ;
+    |}).
+  iExists γsys.
+  simpl.
+
+  iAssert (is_proposal_facts
+    {|
+      pb_proposal_gn := γproposal;
+      pb_config_gn := γconfig;
+      pb_config_prop_gn := γconfig_proposal;
+      pb_state_gn := γstate
+    |} 0%Z []) with "[]" as "#Hprop_facts".
+  {
+    iSplit.
+    {
+      iIntros (???).
+      exfalso.
+      replace (int.nat (U64 0)) with (0) in H by word.
+      lia.
+    }
+    iModIntro.
+    iIntros (??).
+    iIntros "Hcom".
+    apply prefix_nil_inv in H.
+    rewrite H.
+    iFrame.
+    done.
+  }
+
+  iMod (inv_alloc with "[Hghost2]") as "$".
+  { (* establish is_repl_inv *)
+    iNext.
+    iExists [], (U64 0).
+    simpl.
+    iFrame "∗#".
+    iExists _; iFrame "#".
+    iSplitL; first done.
+    iIntros (??).
+    iDestruct ("Hacc" $! _ H) as "[$ _]".
+  }
+  iModIntro.
+  iFrame "∗#".
+  iSplitR; first done.
+  iSplitR; first done.
+  iSplitR.
+  {
+    iIntros (??).
+    iDestruct ("Hacc" $! γsrv H) as "[_ $]".
+  }
+
+  rewrite /own_proposal_unused /config_unset /config_proposal_unset /=.
+  iSpecialize ("Hprop_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → own_proposal_unused γsys epoch)%I with "[] []").
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+
+  iSpecialize ("Hconfig_prop_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → config_proposal_unset γsys epoch)%I with "[] []").
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+
+  iSpecialize ("Hconfig_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → config_unset γsys epoch)%I with "[] []").
+  {
+    iModIntro.
+    iIntros.
+    iFrame.
+  }
+  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+
+  iDestruct (big_sepS_sep_2 with "Hprop_rest Hconfig_prop_rest") as "HH".
+  iDestruct (big_sepS_sep_2 with "HH Hconfig_rest") as "HH".
+  iApply (big_sepS_impl with "HH").
+  iModIntro.
+  iIntros (??) "[[H1 H2] H3]".
+  iIntros (Hineq).
+  iDestruct ("H1" $! Hineq) as "$".
+  iDestruct ("H2" $! Hineq) as "$".
+  iDestruct ("H3" $! Hineq) as "$". *)
+Admitted.
+
+Lemma pb_ghost_server_init γsys γsrv :
+  is_sys_init_witness γsys -∗
+  own_server_pre γsrv
+  -∗
+  own_replica_ghost γsys γsrv (mkMPaxosState 0 0 [])
+.
+Proof.
+  iIntros "[#Hprop_lb #Hfacts] Hown".
+  iNamed "Hown".
+  repeat iExists _.
+  iDestruct (fmlist_ptsto_get_lb with "Haccepted") as "#Hacc_lb".
+  iFrame "∗#%".
+  simpl.
+  iSplitR; first done.
+  iSplitR.
+  { iIntros (?). exfalso. lia. }
+  iApply (big_sepS_impl with "Hvotes").
+  iModIntro. iIntros. iFrame.
 Qed.
 
 End mpaxos_protocol.
