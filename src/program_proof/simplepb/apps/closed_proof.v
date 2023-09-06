@@ -63,6 +63,26 @@ Proof.
 Qed.
 
 #[global]
+Instance is_kv_config_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ:
+  IntoCrash (is_kv_config u γ)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_config u γ)%I
+.
+Proof.
+  rewrite /IntoCrash /is_kv_config.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+#[global]
+Instance is_bank_into_crash `{hG0: !heapGS Σ} `{!bankG Σ} a b c d :
+  IntoCrash (is_bank a b c d)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_bank a b c d)%I
+.
+Proof.
+  rewrite /IntoCrash /is_bank.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+#[global]
 Instance file_crash_into_crash `{hG0: !heapGS Σ} SMRecord `{!pbG Σ} γsys γsrv1 data:
   IntoCrash (file_crash (own_Server_ghost_f γsys γsrv1) data)
     (λ hG, (file_crash (sm_record := SMRecord) (own_Server_ghost_f γsys γsrv1 ) data)).
@@ -508,6 +528,20 @@ Proof.
     { iLeft. by iFrame. }
     iApply (@wpr_kv_replica_main _ _ _ γlpb γsrvl2 with "[$] [$] [$] [$] [$]").
   }
+  iAssert (is_kv_config dconfigHost γkv) with "[]" as "#Hkvconf".
+  {
+    iDestruct "Hclient_invs2" as (??) "H".
+    repeat iExists _.
+    iDestruct "H" as "( $ & $ & $ )".
+    iFrame "#".
+  }
+  iAssert (is_kv_config lconfigHost γkv0) with "[]" as "#Hlkvconf".
+  {
+    iDestruct "Hlclient_invs2" as (??) "H".
+    repeat iExists _.
+    iDestruct "H" as "( $ & $ & $ )".
+    iFrame "#".
+  }
   iSplitR.
   {
     iIntros (HL) "Hfiles".
@@ -519,14 +553,7 @@ Proof.
       iApply wp_wpc.
       wp_apply (wp_bank_transferer_main with "[]"); last done.
       repeat iExists _.
-      iFrame "Hbank".
-      (* FIXME: bundle these invariants better *)
-      iSplit.
-      {
-        iDestruct "Hclient_invs2" as (??) "(? & ? & ?)".
-        repeat iExists _. admit.
-      }
-      admit.
+      iFrame "Hbank #".
     }
     {
       rewrite /hG'.
@@ -537,13 +564,69 @@ Proof.
       simpl.
       set (hG' := HeapGS _ _ hL').
       iDestruct "Hinvs" as "-#Hinvs".
-      iDestruct "Hsrvhost1" as "-#Hsrvhost1".
-      iDestruct "Hconfhost" as "-#Hconfhost".
+      iDestruct "Hkvconf" as "-#Hkvconf".
+      iDestruct "Hlkvconf" as "-#Hlkvconf".
+      iDestruct "Hbank" as "-#Hbank".
       iCrash.
-      admit. (* TODO: more IntoCrash instances *)
+      iIntros "$".
+      destruct hL as [HG'' ?].
+      iDestruct "Hkvconf" as "[%Hheap2 #Hkvconf]"; subst.
+      iDestruct "Hlkvconf" as "[_ #Hlkvconf]".
+      iDestruct "Hbank" as "[_ #Hbank]".
+      clear hG'.
+      clear hL'.
+      (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+      set (hG2' := HeapGS _ _ goose_localGS).
+      simpl.
+      iApply wp_wpc.
+      wp_apply (wp_bank_transferer_main with "[]"); last done.
+      repeat iExists _.
+      iFrame "Hbank #".
     }
   }
-  admit. (* copy/paste the previous part *)
-Admitted.
+  iSplitR.
+  {
+    iIntros (HL) "Hfiles".
+    iModIntro.
+    iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
+    set (hG' := HeapGS _ _ _).
+    iApply (idempotence_wpr with "[] []").
+    { instantiate (1:=(λ _, True)%I). simpl.
+      iApply wp_wpc.
+      wp_apply (wp_bank_auditor_main with "[]"); last done.
+      repeat iExists _.
+      iFrame "Hbank #".
+    }
+    {
+      rewrite /hG'.
+      clear hG'.
+      iModIntro.
+      iIntros (????) "_".
+      iNext.
+      simpl.
+      set (hG' := HeapGS _ _ hL').
+      iDestruct "Hinvs" as "-#Hinvs".
+      iDestruct "Hkvconf" as "-#Hkvconf".
+      iDestruct "Hlkvconf" as "-#Hlkvconf".
+      iDestruct "Hbank" as "-#Hbank".
+      iCrash.
+      iIntros "$".
+      destruct hL as [HG'' ?].
+      iDestruct "Hkvconf" as "[%Hheap2 #Hkvconf]"; subst.
+      iDestruct "Hlkvconf" as "[_ #Hlkvconf]".
+      iDestruct "Hbank" as "[_ #Hbank]".
+      clear hG'.
+      clear hL'.
+      (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+      set (hG2' := HeapGS _ _ goose_localGS).
+      simpl.
+      iApply wp_wpc.
+      wp_apply (wp_bank_auditor_main with "[]"); last done.
+      repeat iExists _.
+      iFrame "Hbank #".
+    }
+  }
+  done.
+Qed.
 
 End closed.
