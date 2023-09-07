@@ -54,8 +54,19 @@ Qed.
 
 #[global]
 Instance is_pb_config_host_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} u γ:
-  IntoCrash (is_pb_config_host u γ)
-    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_pb_config_host (pb_record:=PBRecord) u γ)%I
+  IntoCrash (is_pb_config_hosts u γ)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_pb_config_hosts (pb_record:=PBRecord) u γ)%I
+.
+Proof.
+  rewrite /IntoCrash /is_pb_host.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+#[global]
+Instance is_proph_read_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} γ:
+  IntoCrash (clerk_proof.is_proph_read_inv γ)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗
+           clerk_proof.is_proph_read_inv (pb_record:=PBRecord) γ)%I
 .
 Proof.
   rewrite /IntoCrash /is_pb_host.
@@ -64,11 +75,11 @@ Qed.
 
 #[global]
 Instance is_kv_config_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ:
-  IntoCrash (is_kv_config u γ)
-    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_config u γ)%I
+  IntoCrash (is_kv_config_hosts u γ)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_config_hosts u γ)%I
 .
 Proof.
-  rewrite /IntoCrash /is_kv_config.
+  rewrite /IntoCrash /is_kv_config_hosts.
   iIntros "$". iIntros; eauto.
 Qed.
 
@@ -100,7 +111,8 @@ Lemma wpr_kv_replica_main fname me configHost γsys γsrv {Σ} {HKV: ekvG Σ}
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   "Hinvs" ∷ is_pb_system_invs γsys -∗
   "Hsrvhost1" ∷ is_pb_host me γsys γsrv -∗
-  "Hconfhost" ∷ is_pb_config_host configHost γsys -∗
+  "Hconfhost" ∷ is_pb_config_hosts [configHost] γsys -∗
+  "Hproph" ∷ clerk_proof.is_proph_read_inv γsys -∗
   "Hinit" ∷ fname f↦[] -∗
   "Hfile_crash" ∷ file_crash (own_Server_ghost_f γsys γsrv) [] -∗
   wpr NotStuck ⊤ (kv_replica_main #(LitString fname) #me #configHost) (kv_replica_main #(LitString fname) #me #configHost) (λ _ : goose_lang.val, True)
@@ -111,7 +123,7 @@ Proof.
    {
      instantiate (1:=kv_replica_main_crash_cond γsys fname γsrv).
      simpl.
-     wpc_apply (wpc_kv_replica_main γsys γsrv with "[] [$] [$] [$]").
+     wpc_apply (wpc_kv_replica_main γsys γsrv with "[] [$] [$] [$] [$]").
      { iIntros "$". }
      iExists _. iFrame.
    }
@@ -127,19 +139,21 @@ Proof.
      iDestruct "Hinvs" as "-#Hinvs".
      iDestruct "Hsrvhost1" as "-#Hsrvhost1".
      iDestruct "Hconfhost" as "-#Hconfhost".
+     iDestruct "Hproph" as "-#Hproph".
      iCrash.
      iIntros "_".
      destruct hL as [HG'' ?].
      iSplit; first done.
      iDestruct "Hsrvhost1" as "(%&Hsrvhost1)".
      iDestruct "Hconfhost" as "(%&Hconfhost)".
+     iDestruct "Hproph" as "(%&Hproph)".
      subst.
      clear hG'.
      clear hL'.
      (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
      set (hG2' := HeapGS _ _ goose_localGS).
      simpl.
-     wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') γsys γsrv with "[] [$] [$] [$]").
+     wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') γsys γsrv with "[] [$] [$] [$] [$]").
      { iIntros "H".
        iDestruct "H" as (?) "[Hfile Hcrash]".
        iExists _.
@@ -149,15 +163,19 @@ Proof.
    }
 Qed.
 
-Lemma wp_lconfig_main γconf {Σ} {HKV: ekvG Σ} {HG} {HL}:
+Lemma wp_lconfig_main γconf {Σ} {HKV: ekvG Σ} {HG} {HL} fname γ γsrv wf someN
+      (pPwf:configParams.Pwf.t Σ) (pNtop:configParams.Ntop.t)
+  :
+  let initconfig := configParams.initconfig.mk [lr1Host ; lr2Host] in
+  let paxosParams := definitions.mpaxosParams.mk Σ [γsrv] initstate wf someN in
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
-  "HconfInit" ∷ makeConfigServer_pre γconf [lr1Host; lr2Host] ∗
   "#Hhost" ∷ is_config_host lconfigHost γconf -∗
-  WP lconfig_main #() {{ _, True }}
+  "#HpaxosHost" ∷ definitions.is_mpaxos_host lconfigHostPaxos γ γsrv -∗
+  WP lconfig_main #(str fname) {{ _, True }}
 .
 Proof.
-  intros ?.
-  iNamed 1.
+  intros ???.
+  repeat iNamed 1.
   wp_call.
   wp_apply (wp_NewSlice).
   iIntros (?) "Hsl".
@@ -187,7 +205,20 @@ Proof.
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   rewrite replicate_0.
   simpl.
-  wp_apply (config_proof.wp_MakeServer with "[$HconfInit $Hsl]").
+  wp_apply wp_mk_lconfig_hosts.
+  iIntros (?) "#Hhosts_sl".
+  iMod (readonly_alloc_1 with "Hsl") as "Hsl".
+  wp_apply (config_proof.wp_StartServer with "[Hsl]").
+  {
+    iFrame "Hsl". iFrame "Hhost".
+    instantiate (8:=[lconfigHost]).
+    iSplitR; first admit.
+    iSplitR; first admit.
+    iSplitR; first admit.
+    iSplitR.
+    { admit. } (* FIXME: parameters don't match *)
+    admit.
+  }
   iIntros (?) "#Hissrv".
   wp_apply (wp_Server__Serve with "[$]").
   {

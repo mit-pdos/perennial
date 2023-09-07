@@ -54,13 +54,13 @@ From Perennial.program_proof.ctrexample Require
 From Perennial.program_proof.aof Require proof.
 
 (* SimplePB *)
-(* From Perennial.program_proof.simplepb Require
-     admin_proof pb_start_proof. *)
+From Perennial.program_proof.simplepb Require
+     admin_proof pb_start_proof.
 
 From Perennial.program_proof.simplepb.simplelog Require proof.
 
-(*
-From Perennial.program_proof.simplepb.apps Require closed_proof kv_proof kvee_proof. *)
+From Perennial.program_proof.simplepb.apps Require kv_proof closed_wpcs.
+(* closed_proof . *)
 
 From Perennial.program_proof.mpaxos Require
      applyasfollower_proof.
