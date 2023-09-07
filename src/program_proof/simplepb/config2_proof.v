@@ -68,6 +68,7 @@ Module configParams.
 Class t Σ :=
   mk {
       Pwf:list u64 → iProp Σ ;
+      initconfig: list u64 ;
       N: namespace ;
     }.
 End configParams.
@@ -90,11 +91,10 @@ Class configG Σ := {
     config_leaseG :> renewable_leaseG Σ ;
 }.
 
-Definition configΣ := #[mono_natΣ ; ghost_varΣ (list u64) ; urpcregΣ ; renewable_leaseΣ ].
+Definition configΣ := #[mono_natΣ ; mpΣ ; ghost_varΣ (list u64) ; urpcregΣ ; renewable_leaseΣ ].
 
 Global Instance subG_configΣ {Σ} : subG configΣ Σ → configG Σ.
-Proof. intros. (* solve_inG. Qed. *)
-       Admitted. (* FIXME: mpΣ *)
+Proof. intros. solve_inG. Qed.
 
 Implicit Type γ : config_names.
 
@@ -211,11 +211,11 @@ Defined.
 
 Definition is_config_host (host:u64) γ : iProp Σ :=
   ∃ γrpc,
-  is_urpc_spec_pred γrpc host (U64 0) (ReserveEpochAndGetConfig_spec γ) ∗
-  is_urpc_spec_pred γrpc host (U64 1) (GetConfig_spec γ) ∗
-  is_urpc_spec_pred γrpc host (U64 2) (TryWriteConfig_spec γ) ∗
-  is_urpc_spec_pred γrpc host (U64 3) (GetLease_spec γ) ∗
-  is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
+  "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) (ReserveEpochAndGetConfig_spec γ) ∗
+  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) (GetConfig_spec γ) ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) (TryWriteConfig_spec γ) ∗
+  "#H3" ∷ is_urpc_spec_pred γrpc host (U64 3) (GetLease_spec γ) ∗
+  "#Hdom" ∷ is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
 .
 
 End config_global.
@@ -239,6 +239,9 @@ Definition configWf (a:list u8) : iProp Σ :=
   ∃ st, ⌜ a = state.encode st ⌝ ∗ □ Pwf st.(state.config)
 .
 
+Definition initstate : list u8 :=
+  u64_le (length initconfig) ++ concat (u64_le <$> initconfig).
+
 Definition configN := N .@ "paxos".
 Definition configPaxosN := configN .@ "paxos".
 Definition configInvN := configN .@ "inv".
@@ -252,10 +255,10 @@ Definition is_config_inv γ γst : iProp Σ :=
 
 Definition is_Server (s:loc) γ : iProp Σ :=
   ∃ (p:loc) γp γsrv γst config,
-  let mpParams := mpaxosParams.mk Σ config configWf configPaxosN in
+  let mpParams := mpaxosParams.mk Σ config initstate configWf configPaxosN in
   "#Hs" ∷ readonly (s ↦[config2.Server :: "s"] #p) ∗
   "#Hsrv" ∷ is_Server p γp γsrv ∗
-  "#Hst_inv" ∷ is_state_inv γst γp ∗
+  "#Hst_inv" ∷ is_helping_inv γst γp ∗
   "#Hconfig_inv" ∷ is_config_inv γ γst
 .
 
@@ -1187,7 +1190,7 @@ Proof.
   { exact Hlookup. }
   iNamed "Hhost".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
-  { iDestruct "Hhost" as "[$ _]". }
+  { iFrame "#". }
   { (* successful RPC *)
     iModIntro.
     iNext.
@@ -1201,9 +1204,9 @@ Proof.
       (* case: got a new epoch, no error *)
       iMod "Hupd".
       iModIntro.
-      iDestruct "Hupd" as (??) "(H1&H2&Hupd)".
+      iDestruct "Hupd" as (??) "(Ha&Hb&Hupd)".
       iExists _, _.
-      iFrame "H1 H2".
+      iFrame "Ha Hb".
       iIntros.
       iMod ("Hupd" with "[% //] [$] [$]") as "Hupd".
       iModIntro.
@@ -1385,7 +1388,7 @@ Proof.
   { exact Hlookup. }
   iNamed "Hhost".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
-  { iDestruct "Hhost" as "(_ & $ & _)". }
+  { iFrame "#". }
   { (* successful RPC *)
     iModIntro.
     iNext.
@@ -1496,7 +1499,7 @@ Proof.
   iNamed "Hhost".
   wp_apply (wp_frame_wand with "[Hfail Hargs]"); first iNamedAccu.
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
-  { iDestruct "Hhost" as "(_ & _ & $ & _)". }
+  { iFrame "#". }
   { (* successful RPC *)
     iModIntro.
     iNext.
@@ -1516,6 +1519,7 @@ Proof.
       (* case: got a new epoch, no error *)
       iMod "Hupd".
       iModIntro.
+      iClear "H1 H2 H3".
       iDestruct "Hupd" as (???) "(H1&H2&H3&Hupd)".
       repeat iExists _.
       iFrame "H1 H2 H3".
@@ -1688,7 +1692,7 @@ Proof.
   iNamed "Hhost".
   wp_apply (wp_frame_wand with "[Hargs]"); first iNamedAccu.
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hargs_sl Hreply").
-  { iDestruct "Hhost" as "(_ & _ & _ & $ & _)". }
+  { iFrame "#". }
   { (* successful RPC *)
     iModIntro.
     iNext.
@@ -1699,6 +1703,7 @@ Proof.
     { iPureIntro. done. }
     iSplit.
     { (* case: got a lease *)
+      iClear "H1 H2".
       iIntros (??) "H1 H2".
       iIntros (?) "%Henc Hargs_sl".
       iIntros (?) "Hrep Hreply_sl".
@@ -1812,9 +1817,6 @@ Proof.
     iFrame. repeat iExists _. iFrame.
   }
 Qed.
-
-Definition makeConfigServer_pre γ conf : iProp Σ :=
-  own_latest_epoch γ 0 ∗ own_reserved_epoch γ 0 ∗ own_config γ conf.
 
 (*
 Lemma wp_MakeServer γ conf_sl conf :
@@ -1950,11 +1952,14 @@ Qed. *)
 
 End config_proof.
 
-(*
 Section config_init.
 
 Context `{!configG Σ}.
 Context `{!gooseGlobalGS Σ}.
+Context `{params:!configParams.t Σ}.
+
+Definition makeConfigServer_pre γ conf : iProp Σ :=
+  own_latest_epoch γ 0 ∗ own_reserved_epoch γ 0 ∗ own_config γ conf.
 
 Definition config_spec_list γ :=
   [ (U64 0, ReserveEpochAndGetConfig_spec γ) ;
@@ -1987,10 +1992,10 @@ Proof.
   iExists γrpc.
   simpl.
   iDestruct "H" as "(H1 & $ & $ & $ & $ & _)".
+  iApply to_named.
   iExactEq "H1".
   f_equal.
   set_solver.
 Qed.
 
 End config_init.
-*)

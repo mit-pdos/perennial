@@ -24,6 +24,12 @@ Class asyncfileG Σ :=
     stagedG :> stagedG Σ ; (* for crash borrows? *)
   }.
 
+Definition asyncfileΣ :=
+  #[mapΣ u64 () ; ghost_varΣ (list u8); ghost_varΣ (); ghost_varΣ u64 ;
+    stagedΣ].
+Global Instance subG_asyncfileΣ {Σ} : subG (asyncfileΣ) Σ → (asyncfileG Σ).
+Proof. solve_inG. Qed.
+
 Section asyncfile_proof.
 
 Context `{!heapGS Σ}.

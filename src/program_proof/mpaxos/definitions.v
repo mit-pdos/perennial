@@ -33,6 +33,15 @@ Class mpG Σ := {
     mp_asyncfile :> asyncfileG Σ ;
 }.
 
+Definition mpΣ :=
+  #[mp_ghostΣ (EntryType:=(list u8 * gname)); savedPropΣ ; urpcregΣ ; waitgroupΣ ;
+    GFunctor (client_logR) ; ghost_varΣ unit ;
+    asyncfileΣ ;
+    GFunctor dfracR
+    ].
+Global Instance subG_pbΣ {Σ} : subG (mpΣ) Σ → (mpG Σ).
+Proof. solve_inG. Qed.
+
 Module mpaxosParams.
 Class t Σ := mk {
     config: list mp_server_names ;

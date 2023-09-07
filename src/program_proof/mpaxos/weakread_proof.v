@@ -36,7 +36,8 @@ Proof.
     iFrame "HmuInv Hlocked".
     iNext.
     repeat iExists _; iFrame "∗#".
-    iExists _; iFrame "∗#".
+    repeat iExists _; iFrame "∗#%".
+    repeat iExists _; iFrame "∗#%".
   }
   wp_pures.
   iModIntro.
