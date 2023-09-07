@@ -387,7 +387,7 @@ Qed.
 
 (* Begin config client-side protocol. *)
 Definition is_conf_inv γ γconf : iProp Σ :=
-  inv configN (∃ reservedEpoch epoch conf confγs,
+  inv (pbN .@ "configInv") (∃ reservedEpoch epoch conf confγs,
   "Hepoch" ∷ own_latest_epoch γconf epoch ∗
   "Hres" ∷ own_reserved_epoch γconf reservedEpoch ∗
   "Hconf" ∷ own_config γconf conf ∗
@@ -669,11 +669,12 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
 .
 
 Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
+  let pNtop := (configParams.Ntop.mk $ pbN .@ "config") in
   "#HprereadInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
   "#Hlease" ∷ □(if leaseValid then
                 ∃ γl γconf,
                 is_conf_inv γ γconf ∗
-                is_lease config_proof.epochLeaseN γl (own_latest_epoch γconf epoch) ∗
+                is_lease epochLeaseN γl (own_latest_epoch γconf epoch) ∗
                 is_lease_valid_lb γl leaseExpiration
               else
                 True)
@@ -723,7 +724,8 @@ Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val) (confCk:loc) γconf,
+  ∃ (mu:val) (confCk:loc) γconf (_:configParams.Pwf.t Σ) ,
+  let pNtop := (configParams.Ntop.mk $ pbN .@ "config") in
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
   "#His_repl_inv" ∷ is_repl_inv γ.(s_pb) ∗

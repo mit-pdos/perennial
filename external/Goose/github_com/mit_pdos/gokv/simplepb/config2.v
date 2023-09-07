@@ -343,13 +343,16 @@ Definition Server__GetLease: val :=
           "reply" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "reply") "newLeaseExpiration");;
           #()))).
 
-Definition MakeServer: val :=
-  rec: "MakeServer" "initconfig" :=
+Definition makeServer: val :=
+  rec: "makeServer" "fname" "paxosMe" "hosts" "initconfig" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
+    let: "initEnc" := EncodeConfig "initconfig" in
+    struct.storeF Server "s" "s" (mpaxos.StartServer "fname" "initEnc" "paxosMe" "hosts");;
     "s".
 
-Definition Server__Serve: val :=
-  rec: "Server__Serve" "s" "me" :=
+Definition StartServer: val :=
+  rec: "StartServer" "fname" "me" "paxosMe" "hosts" "initconfig" :=
+    let: "s" := makeServer "fname" "paxosMe" "hosts" "initconfig" in
     let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
     MapInsert "handlers" RPC_RESERVEEPOCH (Server__ReserveEpochAndGetConfig "s");;
     MapInsert "handlers" RPC_GETCONFIG (Server__GetConfig "s");;
@@ -357,4 +360,4 @@ Definition Server__Serve: val :=
     MapInsert "handlers" RPC_GETLEASE (Server__GetLease "s");;
     let: "rs" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "rs" "me";;
-    #().
+    "s".

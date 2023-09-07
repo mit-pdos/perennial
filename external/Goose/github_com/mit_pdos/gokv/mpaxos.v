@@ -493,4 +493,4 @@ Definition StartServer: val :=
       );;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
-    #().
+    "s".

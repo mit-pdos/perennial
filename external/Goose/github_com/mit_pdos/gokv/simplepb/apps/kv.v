@@ -15,9 +15,9 @@ Definition Clerk := struct.decl [
 ].
 
 Definition MakeClerk: val :=
-  rec: "MakeClerk" "confHost" :=
+  rec: "MakeClerk" "confHosts" :=
     struct.new Clerk [
-      "cl" ::= esm.MakeClerk "confHost"
+      "cl" ::= esm.MakeClerk "confHosts"
     ].
 
 (* PutArgs from server.go *)
@@ -95,15 +95,15 @@ Definition Clerk__CondPut: val :=
 Definition ClerkPool := struct.decl [
   "mu" :: ptrT;
   "cls" :: slice.T ptrT;
-  "confHost" :: uint64T
+  "confHosts" :: slice.T uint64T
 ].
 
 Definition MakeClerkPool: val :=
-  rec: "MakeClerkPool" "confHost" :=
+  rec: "MakeClerkPool" "confHosts" :=
     struct.new ClerkPool [
       "mu" ::= lock.new #();
       "cls" ::= NewSlice ptrT #0;
-      "confHost" ::= "confHost"
+      "confHosts" ::= "confHosts"
     ].
 
 (* TODO: get rid of stale clerks from the ck.cls list?
@@ -125,7 +125,7 @@ Definition ClerkPool__doWithClerk: val :=
       #()
     else
       lock.release (struct.loadF ClerkPool "mu" "ck");;
-      "cl" <-[ptrT] (MakeClerk (struct.loadF ClerkPool "confHost" "ck"));;
+      "cl" <-[ptrT] (MakeClerk (struct.loadF ClerkPool "confHosts" "ck"));;
       "f" (![ptrT] "cl");;
       lock.acquire (struct.loadF ClerkPool "mu" "ck");;
       struct.storeF ClerkPool "cls" "ck" (SliceAppend ptrT (struct.loadF ClerkPool "cls" "ck") (![ptrT] "cl"));;
@@ -159,8 +159,8 @@ Definition ClerkPool__CondPut: val :=
     ![stringT] "ret".
 
 Definition MakeKv: val :=
-  rec: "MakeKv" "confHost" :=
-    let: "ck" := MakeClerkPool "confHost" in
+  rec: "MakeKv" "confHosts" :=
+    let: "ck" := MakeClerkPool "confHosts" in
     struct.new kv.Kv [
       "Put" ::= ClerkPool__Put "ck";
       "Get" ::= ClerkPool__Get "ck";
@@ -285,6 +285,6 @@ Definition makeVersionedStateMachine: val :=
     ].
 
 Definition Start: val :=
-  rec: "Start" "fname" "host" "confHost" :=
-    pb.Server__Serve (simplelog.MakePbServer (esm.MakeExactlyOnceStateMachine (makeVersionedStateMachine #())) "fname" "confHost") "host";;
+  rec: "Start" "fname" "host" "confHosts" :=
+    pb.Server__Serve (simplelog.MakePbServer (esm.MakeExactlyOnceStateMachine (makeVersionedStateMachine #())) "fname" "confHosts") "host";;
     #().

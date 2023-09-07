@@ -126,9 +126,9 @@ Definition Clerk := struct.decl [
 ].
 
 Definition MakeClerk: val :=
-  rec: "MakeClerk" "confHost" :=
+  rec: "MakeClerk" "confHosts" :=
     let: "ck" := struct.alloc Clerk (zero_val (struct.t Clerk)) in
-    struct.storeF Clerk "ck" "ck" (clerk.Make "confHost");;
+    struct.storeF Clerk "ck" "ck" (clerk.Make "confHosts");;
     let: "v" := NewSlice byteT #1 in
     SliceSet byteT "v" #0 OPTYPE_GETFRESHCID;;
     let: "cidEnc" := clerk.Clerk__Apply (struct.loadF Clerk "ck" "ck") "v" in

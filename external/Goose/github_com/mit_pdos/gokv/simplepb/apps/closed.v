@@ -39,13 +39,19 @@ Definition kv_replica_main: val :=
   rec: "kv_replica_main" "fname" "me" "configHost" :=
     let: "x" := ref (zero_val uint64T) in
     "x" <-[uint64T] #1;;
-    kv.Start "fname" "me" "configHost";;
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    "configHosts" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "configHosts") "configHost");;
+    kv.Start "fname" "me" (![slice.T uint64T] "configHosts");;
     #().
 
 Definition makeBankClerk: val :=
   rec: "makeBankClerk" <> :=
-    let: "kvck" := kv.MakeKv dconfigHost in
-    let: "lck" := lockservice.MakeLockClerk (kv.MakeKv lconfigHost) in
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    "configHosts" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "configHosts") dconfigHost);;
+    let: "kvck" := kv.MakeKv (![slice.T uint64T] "configHosts") in
+    "configHosts" <-[slice.T uint64T] (NewSlice uint64T #0);;
+    "configHosts" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "configHosts") lconfigHost);;
+    let: "lck" := lockservice.MakeLockClerk (kv.MakeKv (![slice.T uint64T] "configHosts")) in
     bank.MakeBankClerk "lck" "kvck" #(str"init") #(str"a1") #(str"a2").
 
 Definition bank_transferer_main: val :=

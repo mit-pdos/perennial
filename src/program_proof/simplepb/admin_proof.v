@@ -24,13 +24,15 @@ Context `{!waitgroupG Σ}.
 
 Definition adminN := nroot .@ "admin".
 
-Lemma wp_Reconfig γ (configHost:u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
+Lemma wp_Reconfig γ configHosts_sl (configHosts:list u64) (servers:list u64) (servers_sl:Slice.t) server_γs :
   {{{
         "Hservers_sl" ∷ own_slice servers_sl uint64T 1 servers ∗
+        "#HconfHost_sl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
         "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host host γ γsrv) ∗
-        "#Hconf_host" ∷ is_pb_config_host configHost γ
+        "#Hconf_host" ∷ is_pb_config_hosts configHosts γ ∗
+        "%Hconf_ne " ∷ ⌜ 0 < length configHosts ⌝
   }}}
-    EnterNewConfig #configHost (slice_val servers_sl)
+    EnterNewConfig (slice_val configHosts_sl) (slice_val servers_sl)
   {{{
         (err:u64), RET #err; True
   }}}.
@@ -47,7 +49,8 @@ Proof using waitgroupG0.
     by iApply "HΦ".
   }
 
-  wp_apply (wp_MakeClerk2 with "Hconf_host").
+  wp_apply (wp_MakeClerk2 with "[Hconf_host]").
+  { iFrame "#". done. }
   iIntros (ck γconf) "#Hck".
   wp_pures.
   wp_bind (Clerk__ReserveEpochAndGetConfig _).
@@ -78,7 +81,8 @@ Proof using waitgroupG0.
     rewrite fmap_length in Hconfγ_nz.
     word.
   }
-  iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_len.
+  iMod (readonly_load with "Hconf_sl") as (?) "Hconf_sl2".
+  iDestruct (own_slice_small_sz with "Hconf_sl2") as %Hconf_len.
   set (oldNodeId:=word.modu randId config_sl.(Slice.sz)).
   assert (int.nat oldNodeId < length conf) as Hlookup_conf.
   { rewrite Hconf_len.
@@ -89,7 +93,7 @@ Proof using waitgroupG0.
     word.
   }
   apply lookup_lt_is_Some_2 in Hlookup_conf as [host Hlookup_conf].
-  wp_apply (wp_SliceGet with "[$Hconf_sl]").
+  wp_apply (wp_SliceGet with "[$Hconf_sl2]").
   { done. }
   iIntros "Hconf_sl".
   simpl.

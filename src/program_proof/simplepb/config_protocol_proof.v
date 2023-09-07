@@ -16,19 +16,35 @@ Notation OpType := (Sm.OpType pb_record).
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
-Definition configN := nroot .@ "config".
+Import configParams.
+Context `{pconf:!initconfig.t}.
+Instance pNtop : Ntop.t := (Ntop.mk $ pbN .@ "config").
 
-Definition is_pb_config_host confHost γ : iProp Σ :=
+Definition configWf γ : list u64 → iProp Σ :=
+  λ conf, (∃ confγs, [∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv)%I
+.
+
+Instance pPwf γ : Pwf.t Σ := Pwf.mk Σ (configWf γ).
+
+Definition is_pb_config_hosts hosts γ : iProp Σ :=
   ∃ γconf,
-  is_config_host confHost γconf ∗ is_conf_inv γ γconf.
+   let _ := pPwf γ in
+  "#Hhosts" ∷ ([∗ list] host ∈ hosts, is_config_host host γconf) ∗
+  "#HconfInv" ∷ is_conf_inv γ γconf.
 
+Definition makeConfigServer_pre γ conf : iProp Σ :=
+  own_latest_epoch γ 0 ∗ own_reserved_epoch γ 0 ∗ own_config γ conf.
+
+(*
 (* before calling this lemma, have to already allocate pb ghost state *)
 Lemma alloc_pb_config_ghost γ conf confγs :
+  let confParams := mkConfParams γ in
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) -∗
   pb_init_for_config γ.(s_pb) (r_pb <$> confγs) -∗
   primary_init_for_config γ.(s_prim)
   ={⊤}=∗ ∃ γconf, is_conf_inv γ γconf ∗ makeConfigServer_pre γconf conf.
 Proof.
+  intros.
   iIntros "#Hhosts Hinitconf HprimInit".
   iMod (config_ghost_init conf) as (γconf) "(Hconfpre & Hepoch & Hres & Hconf)".
   iExists _; iFrame "Hconfpre".
@@ -52,7 +68,7 @@ Proof.
   iSplitR.
   { by iRight. }
   iIntros (???). exfalso. word.
-Qed.
+Qed. *)
 
 End config_global.
 
@@ -64,63 +80,58 @@ Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
+Notation pPwf := (pPwf (pb_record:=pb_record)).
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
 
-Definition is_Clerk2 ck γ γconf : iProp Σ :=
-    "#Hinv" ∷ is_conf_inv γ γconf ∗
-    "#Hck" ∷ config_proof.is_Clerk ck γconf.
+Import configParams.
+Context `{pconf:!initconfig.t}.
+Existing Instance pNtop.
 
-Lemma wp_MakeClerk2 (configHost:u64) γ :
+Definition is_Clerk2 ck γ γconf : iProp Σ :=
+   let _ := pPwf γ in
+  "#Hinv" ∷ is_conf_inv γ γconf ∗
+  "#Hck" ∷ config_proof.is_Clerk ck γconf.
+
+Lemma wp_MakeClerk2 hosts hosts_sl γ :
   {{{
-        is_pb_config_host configHost γ
+      "#Hhosts_sl" ∷ readonly (own_slice_small hosts_sl uint64T 1 hosts) ∗
+      "#Hhosts" ∷ is_pb_config_hosts hosts γ ∗
+      "%Hnonempty" ∷ ⌜ 0 < length hosts ⌝
   }}}
-    config.MakeClerk #configHost
+    config2.MakeClerk (slice_val hosts_sl)
   {{{
       γconf ck, RET #ck; is_Clerk2 ck γ γconf
   }}}.
 Proof.
-  iIntros (Φ) "#Hhost HΦ".
-  iDestruct "Hhost" as (?) "[Hhost Hinv]".
-  wp_apply (config_proof.wp_MakeClerk with "[$Hhost]").
+  iIntros (Φ) "Hpre HΦ".
+  iNamed "Hpre".
+  iNamed "Hhosts".
+  wp_apply (config_proof.wp_MakeClerk with "[]").
+  { iFrame "#%". }
   iIntros.
   iApply "HΦ".
-  iFrame "#".
+  repeat iExists _. iFrame "HconfInv". iFrame "#".
 Qed.
 
 Lemma wp_Clerk__GetConfig2 ck γ γconf Φ :
   is_Clerk2 ck γ γconf -∗
   □(∀ confγs (conf:list u64) config_sl,
-  (own_slice_small config_sl uint64T 1 conf ∗
+  (readonly (own_slice_small config_sl uint64T 1 conf) ∗
   ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) -∗
    Φ (slice_val config_sl)%V
   )) -∗
-  WP config.Clerk__GetConfig #ck {{ Φ }}
+  WP config2.Clerk__GetConfig #ck {{ Φ }}
 .
 Proof.
   iIntros "#Hck #HΦ".
   iNamed "Hck".
   wp_apply (wp_Clerk__GetConfig with "[$Hck]").
   iModIntro.
-  iIntros "Hlc".
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
-  iApply fupd_mask_intro.
-  { set_solver. }
-  iIntros "Hmask".
-  iNamed "Hi".
-  iExists _.
-  iFrame.
-  iIntros "Hconfig".
-  iMod "Hmask".
-  iMod ("Hclose" with "[-]").
-  {
-    iNext. iExists _, _, _, _.
-    iFrame "∗#%".
-  }
-  iModIntro.
-  iIntros (?) "Hconf".
+  iIntros (??) "Hwf #Hsl".
+  rewrite /= /configWf.
+  iNamed "Hwf".
   iApply "HΦ".
   iFrame "∗#".
 Qed.
@@ -128,7 +139,7 @@ Qed.
 Lemma wp_Clerk_ReserveEpochAndGetConfig2 ck γ γconf Φ :
   is_Clerk2 ck γ γconf -∗
   □((∀ (epoch epoch_lb:u64) confγs (conf:list u64) config_sl,
-  (own_slice_small config_sl uint64T 1 conf ∗
+  (readonly (own_slice_small config_sl uint64T 1 conf) ∗
   is_reserved_epoch_lb γconf epoch ∗
   config_proposal_unset γ.(s_pb) epoch ∗
   own_proposal_unused γ.(s_pb) epoch ∗
@@ -139,7 +150,7 @@ Lemma wp_Clerk_ReserveEpochAndGetConfig2 ck γ γconf Φ :
   (∀ γsrv, ⌜γsrv ∈ (r_pb <$> confγs)⌝ → is_epoch_lb γsrv epoch_lb)) -∗
    Φ (#epoch, slice_val config_sl)%V
   )) -∗
-  WP config.Clerk__ReserveEpochAndGetConfig #ck {{ Φ }}
+  WP config2.Clerk__ReserveEpochAndGetConfig #ck {{ Φ }}
 .
 Proof.
   iIntros "#Hck #HΦ".
@@ -277,7 +288,7 @@ Qed.
 
 Lemma wp_Clerk__WriteConfig2 ck γ γconf Φ config_sl conf confγ epoch :
   is_Clerk2 ck γ γconf -∗
-  own_slice_small config_sl uint64T 1 conf -∗
+  readonly (own_slice_small config_sl uint64T 1 conf) -∗
   is_epoch_config_proposal γ.(s_pb) epoch (r_pb <$> confγ) -∗
   is_reserved_epoch_lb γconf epoch -∗
   ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host host γ γsrv) -∗
@@ -286,11 +297,9 @@ Lemma wp_Clerk__WriteConfig2 ck γ γconf Φ config_sl conf confγ epoch :
       (if (decide (err = U64 0)) then
         is_epoch_config γ.(s_pb) epoch (r_pb <$> confγ)
       else
-        True) -∗
-      own_slice_small config_sl uint64T 1 conf -∗
-      Φ #err)
+        True) -∗ Φ #err)
   -∗
-  WP config.Clerk__TryWriteConfig #ck #epoch (slice_val config_sl) {{ Φ }}
+  WP config2.Clerk__TryWriteConfig #ck #epoch (slice_val config_sl) {{ Φ }}
 .
 Proof.
   iIntros "#Hck Hsl #Hconf_prop #Hwit #Hhosts #Hlbs #HΦ".
@@ -298,97 +307,73 @@ Proof.
   wp_apply (wp_Clerk__TryWriteConfig with "Hck Hsl"); last first.
   {
     iIntros.
-    iApply ("HΦ" with "[] [$]").
+    iApply ("HΦ" with "[]").
     destruct (decide _).
     { exfalso. done. }
     done.
   }
+  2:{ iModIntro. rewrite /= /configWf. iExists _. iFrame "#". }
   2:{ iFrame "#". }
   iModIntro.
   iIntros "Hlc".
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
   iApply fupd_mask_intro.
-  {
-    enough (↑epochLeaseN ## (↑configN:coPset)) by set_solver.
-    by apply ndot_ne_disjoint.
-  }
+  { solve_ndisj. }
   iIntros "Hmask".
   iNamed "Hi".
-  iExists _, _.
+  repeat iExists _.
   iFrame "∗".
-  destruct (decide (_)); last first.
-  { (* write failed because of stale epoch. *)
-    iIntros "Hepoch Hres".
-    iMod "Hmask" as "_".
-    iMod ("Hclose" with "[Hepoch Hres Hconf Hunreserved Hunset_or_set]").
+  iIntros "% Hconf Hres Hepoch". subst.
+  iMod "Hmask" as "_".
+
+  iDestruct "Hunset_or_set" as "[Hunset|%Hset]"; last first.
+  { (* config was already set before *)
+    assert (epoch0 = reservedEpoch) by word. subst.
+    iDestruct "Hconf_prop" as "[Hconf_prop %Hle]".
+    iDestruct "His_conf" as "(? & His_conf_prop & ?)".
+    iDestruct (own_valid_2 with "His_conf_prop Hconf_prop") as %Hvalid.
+    rewrite singleton_op in Hvalid.
+    rewrite singleton_valid in Hvalid.
+    rewrite dfrac_agree_op_valid in Hvalid.
+    replace (r_pb <$> confγs) with (r_pb <$> confγ) in * by naive_solver.
+
+    iMod ("Hclose" with "[Hepoch Hconf Hunreserved Hres]").
     {
       iNext.  iExists _, _, _, _.
-      iFrame "∗ His_conf #%".
+      iFrame "Hhosts ∗#".
+      iSplitR; first done.
+      by iRight.
     }
+    iApply "HΦ".
     iModIntro.
-    iIntros (??) "Hsl".
-    wp_pures.
-    iApply ("HΦ" with "[] Hsl").
-    destruct (decide (_)).
-    { exfalso. done. }
-    done.
+    iFrame "#".
   }
-  { (* successful write *)
-    rewrite e.
-    iExists _.
-    iFrame.
-    iIntros "Hconf Hres Hepoch".
-    iMod "Hmask" as "_".
-
-    iDestruct "Hunset_or_set" as "[Hunset|%Hset]"; last first.
-    { (* config was already set before *)
-      replace (epoch) with (epoch0) by word.
-      iDestruct "Hconf_prop" as "[Hconf_prop %Hle]".
-      iDestruct "His_conf" as "(? & His_conf_prop & ?)".
-      iDestruct (own_valid_2 with "His_conf_prop Hconf_prop") as %Hvalid.
-      rewrite singleton_op in Hvalid.
-      rewrite singleton_valid in Hvalid.
-      rewrite dfrac_agree_op_valid in Hvalid.
-      replace (r_pb <$> confγs) with (r_pb <$> confγ) in * by naive_solver.
-
-      iMod ("Hclose" with "[Hepoch Hconf Hunreserved Hres]").
-      {
-        iNext.  iExists _, _, _, _.
-        iFrame "Hhosts ∗#".
-        iSplitR; first done.
-        by iRight.
-      }
-      iApply "HΦ".
-      iModIntro.
-      iFrame "#".
+  { (* config is being set for the first time *)
+    iMod (own_update with "Hunset") as "Hset".
+    {
+      apply singleton_update.
+      apply cmra_update_exclusive.
+      instantiate (1:=(to_dfrac_agree (DfracOwn 1) ((Some (r_pb <$> confγ)) : (leibnizO _)))).
+      done.
     }
-    { (* config is being set for the first time *)
-      iMod (own_update with "Hunset") as "Hset".
-      {
-        apply singleton_update.
-        apply cmra_update_exclusive.
-        instantiate (1:=(to_dfrac_agree (DfracOwn 1) ((Some (r_pb <$> confγ)) : (leibnizO _)))).
-        done.
-      }
-      iMod (own_update with "Hset") as "Hset".
-      { apply singleton_update. apply dfrac_agree_persist. }
-      iDestruct "Hset" as "#Hset".
-      iMod ("Hclose" with "[Hconf Hres Hepoch Hunreserved]").
-      {
-        iNext. iExists _, _, _, _.
-        iFrame "∗ Hset #".
-        iDestruct "Hconf_prop" as "[_ %Hineq]".
-        iSplitR; first done.
-        iSplitL.
-        { by iRight. }
-        iIntros (???).
-        exfalso.
-        word.
-      }
-      iApply "HΦ".
-      by iFrame "Hconf_prop Hset".
+    iMod (own_update with "Hset") as "Hset".
+    { apply singleton_update. apply dfrac_agree_persist. }
+    iDestruct "Hset" as "#Hset".
+    iMod ("Hclose" with "[Hconf Hres Hepoch Hunreserved]").
+    {
+      iNext. iExists _, _, _, _.
+      iFrame "∗ Hset #".
+      iDestruct "Hconf_prop" as "[_ %Hineq]".
+      iSplitR; first done.
+      iSplitL.
+      { by iRight. }
+      iIntros (???).
+      exfalso.
+      word.
     }
+    iApply "HΦ".
+    by iFrame "Hconf_prop Hset".
   }
 Qed.
 

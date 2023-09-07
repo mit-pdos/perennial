@@ -2,7 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.reconnectclient.
-From Goose Require github_com.mit_pdos.gokv.simplepb.config.
+From Goose Require github_com.mit_pdos.gokv.simplepb.config2.
 From Goose Require github_com.mit_pdos.gokv.simplepb.e.
 From Goose Require github_com.mit_pdos.gokv.urpc.
 From Goose Require github_com.tchajed.marshal.
@@ -446,7 +446,7 @@ Definition Server__leaseRenewalThread: val :=
     let: "latestEpoch" := ref (zero_val uint64T) in
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("leaseErr", "leaseExpiration") := config.Clerk__GetLease (struct.loadF Server "confCk" "s") (![uint64T] "latestEpoch") in
+      let: ("leaseErr", "leaseExpiration") := config2.Clerk__GetLease (struct.loadF Server "confCk" "s") (![uint64T] "latestEpoch") in
       lock.acquire (struct.loadF Server "mu" "s");;
       (if: ((struct.loadF Server "epoch" "s") = (![uint64T] "latestEpoch")) && ("leaseErr" = e.None)
       then
@@ -634,7 +634,7 @@ Definition Server__BecomePrimary: val :=
       e.None).
 
 Definition MakeServer: val :=
-  rec: "MakeServer" "sm" "confHost" "nextIndex" "epoch" "sealed" :=
+  rec: "MakeServer" "sm" "confHosts" "nextIndex" "epoch" "sealed" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "epoch" "s" "epoch";;
@@ -646,7 +646,7 @@ Definition MakeServer: val :=
     struct.storeF Server "leaseValid" "s" #false;;
     struct.storeF Server "canBecomePrimary" "s" #false;;
     struct.storeF Server "opAppliedConds" "s" (NewMap uint64T ptrT #());;
-    struct.storeF Server "confCk" "s" (config.MakeClerk "confHost");;
+    struct.storeF Server "confCk" "s" (config2.MakeClerk "confHosts");;
     struct.storeF Server "committedNextIndex_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
     struct.storeF Server "isPrimary_cond" "s" (lock.newCond (struct.loadF Server "mu" "s"));;
     "s".
