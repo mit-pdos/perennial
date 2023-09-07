@@ -13,13 +13,13 @@ From Perennial.program_proof.reconnectclient Require Import proof.
 Section pb_roapply_proof.
 
 Context `{!heapGS Σ}.
-Context {pb_record:Sm.t}.
+Context `{p:!pbParams.t}.
+Import pbParams.
 
 Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation is_readonly_op := (Sm.is_readonly_op pb_record).
-Notation pbG := (pbG (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
 
@@ -132,7 +132,7 @@ Lemma is_StateMachine_acc_applyReadonly sm own_StateMachine P :
   is_StateMachine sm own_StateMachine P -∗
   (∃ applyFn,
     "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "ApplyReadonly"] applyFn) ∗
-    "#HapplySpec" ∷ is_ApplyReadonlyFn (pb_record:=pb_record) own_StateMachine applyFn P
+    "#HapplySpec" ∷ is_ApplyReadonlyFn own_StateMachine applyFn P
   )
 .
 Proof.

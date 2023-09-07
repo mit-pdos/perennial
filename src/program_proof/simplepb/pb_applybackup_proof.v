@@ -13,14 +13,12 @@ Import RecordSetNotations.
 Section pb_applybackup_proof.
 
 Context `{!heapGS Σ}.
-Context {pb_record:Sm.t}.
+Context `{p:!pbParams.t}.
+Import pbParams.
 Notation OpType := (pb_record.(Sm.OpType)).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
-Notation "server.t" := (server.t (pb_record:=pb_record)).
-Notation pbG := (pbG (pb_record:=pb_record)).
-Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
@@ -29,7 +27,7 @@ Lemma is_StateMachine_acc_apply sm own_StateMachine P :
   is_StateMachine sm own_StateMachine P -∗
   (∃ applyFn,
     "#Happly" ∷ readonly (sm ↦[pb.StateMachine :: "StartApply"] applyFn) ∗
-    "#HapplySpec" ∷ is_ApplyFn (pb_record:=pb_record) own_StateMachine applyFn P
+    "#HapplySpec" ∷ is_ApplyFn own_StateMachine applyFn P
   )
 .
 Proof.

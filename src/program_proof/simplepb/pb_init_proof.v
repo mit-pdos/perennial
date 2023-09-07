@@ -9,12 +9,12 @@ From iris.algebra Require Import mono_list.
 
 Section pb_init_proof.
 
-Context {pb_record:Sm.t}.
+Context `{p:!pbParams.t}.
+Import pbParams.
 Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
-Notation pbG := (pbG (pb_record:=pb_record)).
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 

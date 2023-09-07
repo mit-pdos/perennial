@@ -52,9 +52,20 @@ Record simplepb_server_names :=
 
 Implicit Type (γ : simplepb_system_names) (γsrv:simplepb_server_names).
 
+Module pbParams.
+Class t :=
+  mk {
+      pb_record : Sm.t;
+      N : namespace ;
+    }
+.
+End pbParams.
+Import pbParams.
+Import Sm.
+
 Section pb_global_definitions.
 
-Context {pb_record:Sm.t}.
+Context `{p:!pbParams.t}.
 Notation OpType := (pb_record.(Sm.OpType)).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
@@ -445,7 +456,9 @@ Definition is_pb_system_invs γsys : iProp Σ :=
 End pb_global_definitions.
 
 Module server.
-Record t {pb_record:Sm.t} :=
+Section server.
+Context `{p:!pbParams.t}.
+Record t :=
   mkC {
     epoch : u64 ;
     sealed : bool ;
@@ -459,15 +472,16 @@ Record t {pb_record:Sm.t} :=
     leaseExpiration : u64 ;
   }.
 
-Global Instance etaServer {pb_record:Sm.t} : Settable _ :=
-  settable! (mkC pb_record) <epoch; sealed; ops_full_eph; isPrimary;
+Global Instance etaServer : Settable _ :=
+  settable! mkC <epoch; sealed; ops_full_eph; isPrimary;
         canBecomePrimary; committedNextIndex; leaseValid; leaseExpiration>.
+End server.
 End server.
 
 Section pb_local_definitions.
 (* definitions that refer to a particular node *)
+Context `{p:!pbParams.t}.
 
-Context {pb_record:Sm.t}.
 Notation OpType := (pb_record.(Sm.OpType)).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
@@ -475,8 +489,8 @@ Notation compute_reply := (Sm.compute_reply pb_record).
 Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 Notation apply_postcond := (Sm.apply_postcond pb_record).
 
-Notation pbG := (pbG (pb_record:=pb_record)).
-Notation "server.t" := (server.t (pb_record:=pb_record)).
+(* Notation pbG := (pbG (pb_record:=pb_record)). *)
+(* Notation "server.t" := (server.t (pb_record:=pb_record)). *)
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
@@ -609,7 +623,7 @@ Qed.
 
 Definition numClerks : nat := 32.
 
-Notation get_rwops := (get_rwops (pb_record:=pb_record)).
+(* Notation get_rwops := (get_rwops (pb_record:=pb_record)). *)
 
 Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
   ∃ (clerkss:list Slice.t) backups,

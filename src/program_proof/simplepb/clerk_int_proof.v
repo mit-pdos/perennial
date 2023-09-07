@@ -6,7 +6,8 @@ From Perennial.program_proof.simplepb Require Export config_protocol_proof.
 
 Section clerk_proof.
 Context `{!heapGS Σ}.
-Context {pb_record:Sm.t}.
+Context `{p:!pbParams.t}.
+Import pbParams.
 
 Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
@@ -14,8 +15,6 @@ Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation apply_postcond := (Sm.apply_postcond pb_record).
-Notation pbG := (pbG (pb_record:=pb_record)).
-Notation is_pb_Clerk := (pb_definitions.is_Clerk (pb_record:=pb_record)).
 
 Context `{!pbG Σ}.
 

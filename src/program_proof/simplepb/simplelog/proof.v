@@ -11,15 +11,15 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 
 Section global_proof.
 
-Context {sm_record:Sm.t}.
-Notation OpType := (Sm.OpType sm_record).
-Notation has_op_encoding := (Sm.has_op_encoding sm_record).
-Notation is_readonly_op := (Sm.is_readonly_op sm_record).
-Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
-Notation compute_reply := (Sm.compute_reply sm_record).
-Instance e : EqDecision OpType := (Sm.OpType_EqDecision sm_record).
-Notation pbG := (pbG (pb_record:=sm_record)).
-Notation pbΣ := (pbΣ (pb_record:=sm_record)).
+Context `{p:!pbParams.t}.
+Import pbParams.
+
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation is_readonly_op := (Sm.is_readonly_op pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
+Instance e : EqDecision OpType := (Sm.OpType_EqDecision pb_record).
 
 Class simplelogG Σ := SimplelogG {
   simplelog_fmlistG :> fmlistG ((list OpType) * bool) Σ;
@@ -155,16 +155,17 @@ End global_proof.
 Section local_proof.
 
 Context `{!heapGS Σ}.
+Context `{p:!pbParams.t}.
+Import pbParams.
 
-Context {sm_record:Sm.t}.
-Notation OpType := (Sm.OpType sm_record).
-Notation has_op_encoding := (Sm.has_op_encoding sm_record).
-Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
-Notation compute_reply := (Sm.compute_reply sm_record).
-Notation is_readonly_op := (Sm.is_readonly_op sm_record).
-Notation apply_postcond := (Sm.apply_postcond sm_record).
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
+Notation is_readonly_op := (Sm.is_readonly_op pb_record).
+Notation apply_postcond := (Sm.apply_postcond pb_record).
 
-Context `{!simplelogG (sm_record:=sm_record) Σ}.
+Context `{!simplelogG Σ}.
 
 Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMachine : iProp Σ :=
   ∀ ops op op_sl op_bytes,
@@ -1755,10 +1756,6 @@ Proof.
   iFrame "HisMemSm".
   iFrame "∗#%".
 Qed.
-
-Notation own_Server_ghost_f := (own_Server_ghost_f (pb_record:=sm_record)).
-
-Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
 
 Definition simplelog_P γ γsrv := file_crash (own_Server_ghost_f γ γsrv).
 

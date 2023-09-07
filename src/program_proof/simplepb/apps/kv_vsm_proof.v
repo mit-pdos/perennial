@@ -84,9 +84,6 @@ Section local_proof.
 Notation OpType := (Sm.OpType kv_record).
 Notation has_op_encoding := (Sm.has_op_encoding kv_record).
 (* Notation compute_reply := (pb_compute_reply pb_record). *)
-Notation pbG := (pbG (pb_record:=kv_record)).
-Notation is_ApplyFn := (is_ApplyFn (pb_record:=kv_record)).
-Notation is_pb_host := (is_pb_host (pb_record:=kv_record)).
 
 Context `{!heapGS Σ}.
 
