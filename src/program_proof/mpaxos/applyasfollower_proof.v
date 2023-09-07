@@ -10,6 +10,7 @@ Context `{!heapGS Σ}.
 Context `{!mpG Σ}.
 Context `{!mpaxosParams.t Σ}.
 Import mpaxosParams.
+Notation is_proposal := (is_proposal (config:=config) (N:=N)).
 
 Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
   {{{

@@ -17,14 +17,6 @@ Record mp_server_names :=
   mp_vote_gn : gname ; (* token for granting vote to a node in a particular epoch *)
 }.
 
-Module protocol_params.
-Class t := mk{
-    config: list mp_server_names ;
-    N : namespace
-  }.
-End protocol_params.
-Import protocol_params.
-
 Section mpaxos_protocol.
 
 Context `{EntryType:Type}.
@@ -49,7 +41,6 @@ Proof. solve_inG. Qed.
 
 Context `{!invGS Σ}.
 Context `{!mp_ghostG Σ}.
-Context `{Hparams:!protocol_params.t}.
 
 Implicit Type γsrv : mp_server_names.
 Implicit Type γsys : mp_system_names.
@@ -81,6 +72,8 @@ Definition is_log_lb γ σ : iProp Σ :=
   own γ.(mp_state_gn) (◯ML σ).
 
 (* This definition needs to only require a quorum *)
+Context `{config:list mp_server_names}.
+Context {N:namespace}.
 Definition committed_by epoch σ : iProp Σ :=
   ∃ (W:gset nat),
   ⌜(∀ s, s ∈ W → s < length config)⌝ ∗

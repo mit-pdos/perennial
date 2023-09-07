@@ -28,23 +28,26 @@ Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
 
 Implicit Type (own_StateMachine: u64 → list OpType → bool → (u64 → list OpType → bool → iProp Σ) → iProp Σ).
-Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHost:u64) opsfull (sealed:bool) (nextIndex:u64) γ γsrv :
+Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHosts:list u64) opsfull (sealed:bool) (nextIndex:u64) γ γsrv
+      confHosts_sl :
   {{{
         "Hstate" ∷ own_StateMachine epoch (get_rwops opsfull) sealed (own_Server_ghost_f γ γsrv) ∗
         "#His_sm" ∷ is_StateMachine sm_ptr own_StateMachine (own_Server_ghost_f γ γsrv) ∗
 
         "#Hinvs" ∷ is_pb_system_invs γ ∗
 
-        "#Hconf_host" ∷ is_pb_config_host confHost γ ∗
+        "#Hconf_host" ∷ is_pb_config_hosts confHosts γ ∗
+        "#Hconf_host_sl" ∷ readonly (own_slice_small (confHosts_sl) uint64T 1 confHosts) ∗
         "%HnextIndex" ∷ ⌜int.nat nextIndex = length (get_rwops opsfull)⌝ ∗
         (* XXX: this is basically a guarantee that the list of ops being
            implicitly passed in via own_StateMachine has been made durable. It
            would now be buggy to buffer an op in memory before passing a
            StateMachine into MakeServer because the Server tracks the
            durableNextIndex and initializes it here to be nextIndex. *)
-        "#Hacc_lb" ∷ is_accepted_lb γsrv.(r_pb) epoch opsfull
+        "#Hacc_lb" ∷ is_accepted_lb γsrv.(r_pb) epoch opsfull ∗
+        "%Hnonempty" ∷ ⌜0 < length confHosts⌝
   }}}
-    pb.MakeServer #sm_ptr #confHost #nextIndex #epoch #sealed
+    pb.MakeServer #sm_ptr (slice_val confHosts_sl) #nextIndex #epoch #sealed
   {{{
         s, RET #s; is_Server s γ γsrv
   }}}
@@ -105,7 +108,8 @@ Proof.
   wp_storeField.
 
   iDestruct "Hconf_host" as (?) "[#Hconf_host1 #Hconf_inv]".
-  wp_apply (config_proof.wp_MakeClerk with "[$]").
+  wp_apply (config_proof.wp_MakeClerk with "[]").
+  { iFrame "#%". }
   iIntros (confCk) "#HconfCk".
   wp_storeField.
 

@@ -20,8 +20,8 @@ Context `{!pbG Σ}.
 Definition is_proph_read_inv γ : iProp Σ :=
   inv prophReadLogN (∃ σ, own_op_log γ σ ∗ own_int_log γ σ).
 
-Definition is_pb_sys_host host γ : iProp Σ :=
-  is_pb_config_host host γ ∗ is_proph_read_inv γ.
+Definition is_pb_sys_hosts hosts γ : iProp Σ :=
+  is_pb_config_hosts hosts γ ∗ is_proph_read_inv γ.
 
 End global_proof.
 
@@ -314,18 +314,22 @@ Proof.
   iApply ("Hupd" with "[$] [$] [$]").
 Qed.
 
-Lemma wp_MakeClerk γ configHost:
+Lemma wp_MakeClerk γ configHosts configHosts_sl :
   {{{
-        "#Hconf" ∷ is_pb_sys_host configHost γ
+        "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+        "#Hconf" ∷ is_pb_sys_hosts configHosts γ ∗
+        "%Hnonempty" ∷ ⌜0 < length configHosts⌝
   }}}
-    Make #configHost
+    Make (slice_val configHosts_sl)
   {{{
         (ck:loc), RET #ck; own_Clerk ck γ
   }}}
 .
 Proof.
-  iIntros (?) "#[? ?] HΦ".
-  wp_apply (wp_MakeClerk2 with "[$]").
+  iIntros (?) "#H HΦ".
+  iNamed "H". iDestruct "Hconf" as "[? ?]".
+  wp_apply (wp_MakeClerk2 with "[]").
+  { iFrame "#%". }
   iIntros (?) "?". iApply "HΦ".
   iFrame "∗#".
 Qed.

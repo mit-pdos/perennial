@@ -192,7 +192,7 @@ Lemma wp_StartServer γ γsrv (me:u64) (fname:string) data init_sl conf_sl (host
   }}}
     StartServer #(str fname) (slice_val init_sl) #me (slice_val conf_sl)
   {{{
-        RET #(); True
+        s, RET #s; is_Server s γ γsrv
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -228,13 +228,12 @@ Proof.
   iIntros (r) "Hr".
   wp_pures.
 
+  iNamed "Hhost".
   wp_apply (wp_StartServer_pred with "[$Hr]").
   {
     set_solver.
   }
   {
-    iNamed "Hhost".
-
     unfold handlers_complete.
     repeat rewrite dom_insert_L.
     rewrite dom_empty_L.
@@ -253,7 +252,7 @@ Proof.
       rewrite /is_urpc_handler_pred.
       iIntros (?????) "!# (Hreq_sl & Hrep & Hspec) HΦ".
       wp_pures.
-      unfold becomeleader_spec.
+      unfold becomeLeader_spec.
       simpl.
       wp_apply (wp_Server__becomeLeader with "His_srv [HΦ Hrep] Hspec").
       iIntros "HΨ".

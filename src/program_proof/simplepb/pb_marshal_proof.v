@@ -509,7 +509,7 @@ Definition own args_ptr args : iProp Σ :=
   ∃ replicas_sl,
   "Hargs_epoch" ∷ args_ptr ↦[pb.BecomePrimaryArgs :: "Epoch"] #args.(epoch) ∗
   "Hargs_replicas" ∷ args_ptr ↦[pb.BecomePrimaryArgs :: "Replicas"] (slice_val replicas_sl) ∗
-  "Hargs_replicas_sl" ∷ own_slice_small replicas_sl uint64T 1 args.(replicas)
+  "#Hargs_replicas_sl" ∷ readonly (own_slice_small replicas_sl uint64T 1 args.(replicas))
   .
 
 Lemma wp_Encode (args_ptr:loc) (args:C) :
@@ -546,7 +546,8 @@ Proof.
   wp_store.
   wp_loadField.
   wp_apply (wp_slice_len).
-  iDestruct (own_slice_small_sz with "Hargs_replicas_sl") as %Hsz.
+  iMod (readonly_load with "Hargs_replicas_sl") as (?) "Hsl2".
+  iDestruct (own_slice_small_sz with "Hsl2") as %Hsz.
   wp_load.
   wp_apply (wp_WriteInt with "Henc_sl").
   iIntros (?) "Henc_sl".
@@ -562,7 +563,7 @@ Proof.
   "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
   "Henc_sl" ∷ own_slice enc_sl byteT 1 (([] ++ u64_le args.(epoch)) ++ u64_le (length args.(replicas)) ++ (flat_map u64_le replicas_so_far))
               )%I
-              with "[] [$Hargs_replicas_sl Henc Henc_sl]"
+              with "[] [$Hsl2 Henc Henc_sl]"
            ).
   {
     iIntros.
@@ -627,7 +628,7 @@ Proof.
   }
   iFrame.
   iSplitR; first done.
-  iExists _; iFrame.
+  iExists _; iFrame "∗#".
 Qed.
 
 Lemma flat_map_len_non_nil {A B : Type} (f: A -> list B) (l: list A):
@@ -846,12 +847,14 @@ Proof.
 
   iNamed 1.
   wp_pures.
-  iModIntro.
-  iApply "HΦ".
   iDestruct (own_slice_small_sz with "Hreplicas_sl") as %Hsz.
-  iExists _; iFrame.
+  iMod (readonly_alloc_1 with "Hreplicas_sl") as "Hreplicas_sl".
+  Unshelve.
+  3:{ apply _. }
+  iApply "HΦ".
+  iExists _; iFrame "∗#".
   destruct (replicas_left).
-  { rewrite Hreplicas_prefix app_nil_r //. }
+  { simpl. rewrite Hreplicas_prefix //.  }
   { exfalso.
     rewrite replicate_length /= ?app_length /= in Hreplicas_sz Hsz.
     rewrite -Hreplicas_len in Hreplicas_sz.

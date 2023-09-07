@@ -22,7 +22,8 @@ Context `{!ekvG Σ}.
 Lemma wpc_kv_replica_main γsys γsrv Φc fname me configHost :
   ((∃ data' : list u8, fname f↦data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') -∗
     Φc) -∗
-  config_protocol_proof.is_pb_config_host configHost γsys -∗
+  config_protocol_proof.is_pb_config_hosts [configHost] γsys -∗
+  clerk_proof.is_proph_read_inv γsys -∗
   is_pb_host me γsys γsrv -∗
   is_pb_system_invs γsys -∗
   (∃ data : list u8, fname f↦data ∗ file_crash (own_Server_ghost_f γsys γsrv) data) -∗
@@ -32,8 +33,7 @@ Lemma wpc_kv_replica_main γsys γsrv Φc fname me configHost :
 .
 Proof.
   (* TODO: all the invs *)
-  iIntros "HΦc #HconfHost #Hpbhost #Hinvs Hpre".
-  iNamed "Hinvs".
+  iIntros "HΦc #HconfHost #Hproph #Hpbhost #Hinvs Hpre".
   iDestruct "Hpre" as (?) "[Hfile Hcrash]".
 
   unfold kv_replica_main.
@@ -79,30 +79,71 @@ Proof.
     done. }
   iApply wp_wpc.
   wp_pures.
+  wp_apply wp_NewSlice.
+  iIntros (?) "Hsl".
+  wp_apply wp_ref_to; first by val_ty.
+  iIntros (?) "HconfigHosts".
+  wp_pures.
+  wp_load. wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl".
+  wp_store. wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  iMod (readonly_alloc_1 with "Hsl") as "#Hsl".
 
-  wp_apply (wp_Start with "[Hfile_ctx]").
+  wp_apply (wp_Start with "[$Hfile_ctx]").
   {
-    iFrame "∗#".
+    iFrame "#". iPureIntro. simpl. rewrite app_length /=. word.
   }
   wp_pures.
   done.
 Qed.
 
 
-Definition dconfigHost : u64 := (U64 10).
+Definition dconfigHost : u64 := (U64 11).
+Definition dconfigHostPaxos : u64 := (U64 12).
 Definition dr1Host: u64 := (U64 1).
 Definition dr2Host: u64 := (U64 2).
 
-Definition lconfigHost : u64 := (U64 110).
+Definition lconfigHost : u64 := (U64 111).
+Definition lconfigHostPaxos : u64 := (U64 112).
 Definition lr1Host: u64 := (U64 101).
 Definition lr2Host: u64 := (U64 102).
 
+Lemma wp_mk_dconfig_hosts :
+  {{{ True }}}
+    mk_dconfig_hosts #()
+  {{{ sl, RET (slice_val sl); readonly (own_slice_small sl uint64T 1 [ dconfigHost ]) }}}
+.
+  iIntros (?) "_ HΦ".
+  wp_lam. wp_apply (wp_NewSlice).
+  iIntros (?) "Hsl". wp_apply wp_ref_to; first by val_ty.
+  iIntros (?) "Hptr". wp_pures. wp_load.
+  iApply wp_fupd. wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl". iApply "HΦ".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  iMod (readonly_alloc_1 with "Hsl") as "$". done.
+Qed.
+
+Lemma wp_mk_lconfig_hosts :
+  {{{ True }}}
+    mk_lconfig_hosts #()
+  {{{ sl, RET (slice_val sl); readonly (own_slice_small sl uint64T 1 [ lconfigHost ]) }}}
+.
+  iIntros (?) "_ HΦ".
+  wp_lam. wp_apply (wp_NewSlice).
+  iIntros (?) "Hsl". wp_apply wp_ref_to; first by val_ty.
+  iIntros (?) "Hptr". wp_pures. wp_load.
+  iApply wp_fupd. wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl". iApply "HΦ".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  iMod (readonly_alloc_1 with "Hsl") as "$". done.
+Qed.
 
 Context `{!bankG Σ}.
 Lemma wp_makeBankClerk γlk γkv :
   {{{
-        "#Hhost1" ∷ is_kv_config dconfigHost γkv ∗
-        "#Hhost2" ∷ is_kv_config lconfigHost γlk ∗
+        "#Hhost1" ∷ is_kv_config_hosts [dconfigHost] γkv ∗
+        "#Hhost2" ∷ is_kv_config_hosts [lconfigHost] γlk ∗
         "#Hbank" ∷ is_bank "init" (Build_lock_names (kv_ptsto γlk)) (kv_ptsto γkv) {[ "a1"; "a2" ]}
   }}}
     makeBankClerk #()
@@ -114,10 +155,18 @@ Proof.
   iIntros (?) "Hpre HΦ".
   iNamed "Hpre".
   wp_lam.
+  wp_apply wp_mk_dconfig_hosts.
+  iIntros (?) "#Hdsl".
+
   wp_apply (wp_MakeKv with "[$Hhost1]").
+  { iFrame "#". done. }
   iIntros (?) "#Hkv".
   wp_pures.
+
+  wp_apply wp_mk_lconfig_hosts.
+  iIntros (?) "#Hlsl".
   wp_apply (wp_MakeKv with "[$Hhost2]").
+  { iFrame "#". done. }
   iIntros (?) "Hlock_kv".
   wp_apply (wp_MakeLockClerk lockN with "[Hlock_kv]").
   {
@@ -135,8 +184,8 @@ Qed.
 
 Definition bank_pre : iProp Σ :=
   ∃ γkv γlk,
-  "#Hhost1" ∷ is_kv_config dconfigHost γkv ∗
-  "#Hhost2" ∷ is_kv_config lconfigHost γlk ∗
+  "#Hhost1" ∷ is_kv_config_hosts [dconfigHost] γkv ∗
+  "#Hhost2" ∷ is_kv_config_hosts [lconfigHost] γlk ∗
   "#Hbank" ∷ is_bank "init" (Build_lock_names (kv_ptsto γlk)) (kv_ptsto γkv) {[ "a1"; "a2" ]}
 .
 

@@ -3,36 +3,50 @@ From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.gokv.bank.
 From Goose Require github_com.mit_pdos.gokv.lockservice.
 From Goose Require github_com.mit_pdos.gokv.simplepb.apps.kv.
-From Goose Require github_com.mit_pdos.gokv.simplepb.config.
+From Goose Require github_com.mit_pdos.gokv.simplepb.config2.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
+
+Definition dconfigHost : expr := #11.
+
+Definition dconfigHostPaxos : expr := #12.
 
 Definition dr1 : expr := #1.
 
 Definition dr2 : expr := #2.
 
-Definition dconfigHost : expr := #10.
+Definition lconfigHost : expr := #111.
+
+Definition lconfigHostPaxos : expr := #112.
 
 Definition lr1 : expr := #101.
 
 Definition lr2 : expr := #102.
 
-Definition lconfigHost : expr := #110.
+Definition mk_lconfig_hosts: val :=
+  rec: "mk_lconfig_hosts" <> :=
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    SliceAppend uint64T (![slice.T uint64T] "configHosts") lconfigHost.
+
+Definition mk_dconfig_hosts: val :=
+  rec: "mk_dconfig_hosts" <> :=
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    SliceAppend uint64T (![slice.T uint64T] "configHosts") dconfigHost.
 
 Definition lconfig_main: val :=
-  rec: "lconfig_main" <> :=
+  rec: "lconfig_main" "fname" :=
     let: "servers" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
     "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") lr1);;
     "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") lr2);;
-    config.Server__Serve (config.MakeServer (![slice.T uint64T] "servers")) lconfigHost;;
+    config2.StartServer "fname" lconfigHost lconfigHostPaxos (mk_lconfig_hosts #()) (![slice.T uint64T] "servers");;
     #().
 
 Definition dconfig_main: val :=
-  rec: "dconfig_main" <> :=
+  rec: "dconfig_main" "fname" :=
     let: "servers" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
     "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") dr1);;
     "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") dr2);;
-    config.Server__Serve (config.MakeServer (![slice.T uint64T] "servers")) dconfigHost;;
+    config2.StartServer "fname" dconfigHost dconfigHostPaxos (mk_dconfig_hosts #()) (![slice.T uint64T] "servers");;
     #().
 
 Definition kv_replica_main: val :=
@@ -46,12 +60,8 @@ Definition kv_replica_main: val :=
 
 Definition makeBankClerk: val :=
   rec: "makeBankClerk" <> :=
-    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
-    "configHosts" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "configHosts") dconfigHost);;
-    let: "kvck" := kv.MakeKv (![slice.T uint64T] "configHosts") in
-    "configHosts" <-[slice.T uint64T] (NewSlice uint64T #0);;
-    "configHosts" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "configHosts") lconfigHost);;
-    let: "lck" := lockservice.MakeLockClerk (kv.MakeKv (![slice.T uint64T] "configHosts")) in
+    let: "kvck" := kv.MakeKv (mk_dconfig_hosts #()) in
+    let: "lck" := lockservice.MakeLockClerk (kv.MakeKv (mk_lconfig_hosts #())) in
     bank.MakeBankClerk "lck" "kvck" #(str"init") #(str"a1") #(str"a2").
 
 Definition bank_transferer_main: val :=

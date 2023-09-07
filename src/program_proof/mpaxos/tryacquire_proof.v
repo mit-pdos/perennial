@@ -16,6 +16,8 @@ Context `{Hparams:!mpaxosParams.t Σ}.
 Import mpaxosParams.
 Context `{!mpG Σ}.
 
+Notation ghostN := (ghostN (N:=N)).
+
 Definition own_releaseFn_internal (f:val) γ sl_ptr oldstate : iProp Σ :=
   ∀ sl Φ newstate Q,
   ( (* precondition: *)
@@ -240,7 +242,7 @@ Proof.
     iExists _.
     iMod (readonly_alloc_1 with "epoch") as "$".
     simpl.
-    rewrite Hlog.
+    rewrite HlogLen.
 
     rewrite Z2Nat.id; last word.
     rewrite -Hno_overflow.
@@ -653,11 +655,11 @@ Proof.
 Qed.
 
 (* This is where "helping" happens. *)
-Lemma releaseFn_fact γst γ rel sl_ptr oldstate :
+Lemma releaseFn_fact γ rel sl_ptr oldstate :
   £ 1 -∗ £ 1 -∗
-  is_helping_inv γst γ -∗
+  is_helping_inv γ -∗
   own_releaseFn_internal rel γ sl_ptr oldstate -∗
-  own_releaseFn rel γst sl_ptr oldstate
+  own_releaseFn rel γ sl_ptr oldstate
 .
 Proof.
   iIntros "Hlc1 Hlc2 #Hinv Hwp".
@@ -839,10 +841,10 @@ Proof.
   }
 Qed.
 
-Lemma wp_Server__TryAcquire s γst γ γsrv  :
+Lemma wp_Server__TryAcquire s γ γsrv  :
   {{{
         is_Server s γ γsrv ∗
-        is_helping_inv γst γ
+        is_helping_inv γ
   }}}
     mpaxos.Server__TryAcquire #s
   {{{
@@ -852,7 +854,7 @@ Lemma wp_Server__TryAcquire s γst γ γsrv  :
             sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
             readonly (own_slice_small sl byteT 1 oldstate) ∗
             Pwf oldstate ∗
-            own_releaseFn rel γst sl_ptr oldstate
+            own_releaseFn rel γ sl_ptr oldstate
         else
           True
   }}}.
@@ -866,7 +868,7 @@ Proof.
   iDestruct "Hpost" as "(? & ? & Hpost)".
   iNamed "Hpost". repeat iExists _.
   iDestruct "Hpost" as "($ & $ & $ & H)".
-  iApply (releaseFn_fact with "[$] [$] [$] [$]").
+  iApply (releaseFn_fact with "[$] [$] [$] H").
 Qed.
 
 End tryacquire_proof.

@@ -15,7 +15,8 @@ Class aofG Σ := AofG {
   aof_mnatG :> inG Σ mono_natUR ;
   aof_mapG :> mapG Σ u64 unit ;
   aof_tokG :> inG Σ (exclR unitO) ;
-  aof_stagedG :> stagedG Σ ; (* for crash borrows? *)
+  (* XXX: a stagedG shows up in asyncfile, so don't want to bundle this in here. *)
+  (* aof_stagedG :> stagedG Σ ; (* for crash borrows? *) *)
   aof_ghostG :> ghost_varG Σ unit ;
   aof_curdataG :> ghost_varG Σ (list u8) ;
 }.
@@ -24,7 +25,6 @@ Definition aofΣ := #[
   fmlistΣ u8 ; GFunctor (mono_natUR) ;
   mapΣ u64 unit ;
   GFunctor (exclR unitO) ;
-  stagedΣ ;
   ghost_varΣ unit ;
   ghost_varΣ (list u8)
 ].
@@ -33,7 +33,7 @@ Global Instance subG_aofΣ {Σ} : subG aofΣ Σ → aofG Σ.
 Proof. solve_inG. Qed.
 
 Context `{!heapGS Σ}.
-Context `{!filesysG Σ}.
+Context `{!stagedG Σ}.
 
 Record aof_vol_names := mk_aof_vol_names {
   logdata : gname ;

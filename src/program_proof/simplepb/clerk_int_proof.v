@@ -30,10 +30,10 @@ Definition own_Clerk2 ck γ : iProp Σ :=
     "%Hlen" ∷ ⌜length γsrvs > 0⌝
 .
 
-Lemma wp_makeClerks γ config_sl servers γsrvs :
+Lemma wp_makeClerks γ config_sl servers γsrvs q :
   {{{
         "#Hhosts" ∷ ([∗ list] γsrv ; host ∈ γsrvs ; servers, is_pb_host host γ γsrv) ∗
-        "Hservers_sl" ∷ own_slice_small config_sl uint64T 1 servers
+        "Hservers_sl" ∷ own_slice_small config_sl uint64T q servers
   }}}
     makeClerks (slice_val config_sl)
   {{{
@@ -67,7 +67,7 @@ Proof.
           "%HcompleteLen" ∷ ⌜length clerksComplete = int.nat i⌝ ∗
           "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length servers⌝ ∗
           "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
-          "Hservers_sl" ∷ own_slice_small config_sl uint64T 1 servers ∗
+          "Hservers_sl" ∷ own_slice_small config_sl uint64T q servers ∗
           "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) γsrvs),
                               pb_definitions.is_Clerk ck γ γsrv
                               )
@@ -201,11 +201,13 @@ Proof.
   by iFrame "#".
 Qed.
 
-Lemma wp_MakeClerk2 γ configHost:
+Lemma wp_MakeClerk2 γ configHosts configHosts_sl :
   {{{
-        "#Hconf" ∷ is_pb_config_host configHost γ
+        "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+        "#Hconf" ∷ is_pb_config_hosts configHosts γ ∗
+        "%Hnonempty" ∷ ⌜0 < length configHosts⌝
   }}}
-    Make #configHost
+    Make (slice_val configHosts_sl)
   {{{
         (ck:loc), RET #ck; own_Clerk2 ck γ
   }}}
@@ -220,7 +222,8 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "HH".
   iNamed "HH".
   wp_pures.
-  wp_apply (wp_MakeClerk2 with "[$]").
+  wp_apply (wp_MakeClerk2 with "[]").
+  { iFrame "#". done. }
   iIntros (??) "#HconfCk".
   wp_storeField.
   wp_pures.
@@ -228,12 +231,12 @@ Proof.
   wp_forBreak.
   wp_pures.
   wp_loadField.
-  wp_bind (config.Clerk__GetConfig _).
+  wp_bind (config2.Clerk__GetConfig _).
   wp_apply (wp_frame_wand with "[-HconfCk]").
   { iNamedAccu. }
   wp_apply (wp_Clerk__GetConfig2 with "HconfCk").
   iModIntro.
-  iIntros (???) "[Hconf_sl #Hhost]".
+  iIntros (???) "[Hconf_sl_ro #Hhost]".
   iNamed 1.
   wp_pures.
   wp_apply (wp_slice_len).
@@ -244,6 +247,7 @@ Proof.
     iFrame.
     done.
   }
+  iMod (readonly_load with "Hconf_sl_ro") as (?) "Hconf_sl".
   iDestruct (own_slice_small_sz with "Hconf_sl") as "%Hlen".
   iDestruct (big_sepL2_length with "Hhost") as %Hleneq.
   assert (length conf > 0).
@@ -394,14 +398,15 @@ Proof.
     wp_apply (wp_Sleep).
     wp_pures.
     wp_loadField.
-    wp_bind (config.Clerk__GetConfig _).
+    wp_bind (config2.Clerk__GetConfig _).
     wp_apply (wp_frame_wand with "[-]").
     { iNamedAccu. }
     wp_apply (wp_Clerk__GetConfig2 with "HisConfCk").
     iModIntro.
-    iIntros (???) "[Hconf_sl #Hhosts]".
+    iIntros (???) "[Hconf_sl_ro #Hhosts]".
     iNamed 1.
     wp_pures.
+    iMod (readonly_load with "Hconf_sl_ro") as (?) "Hconf_sl".
     iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
     wp_apply (wp_slice_len).
     wp_pures.
@@ -648,14 +653,15 @@ Proof.
       wp_apply (wp_Sleep).
       wp_pures.
       wp_loadField.
-      wp_bind (config.Clerk__GetConfig _).
+      wp_bind (config2.Clerk__GetConfig _).
       wp_apply (wp_frame_wand with "[-]").
       { iNamedAccu. }
       wp_apply (wp_Clerk__GetConfig2 with "HisConfCk").
       iModIntro.
-      iIntros (???) "[Hconf_sl #Hhosts]".
+      iIntros (???) "[Hconf_sl_ro #Hhosts]".
       iNamed 1.
       wp_pures.
+      iMod (readonly_load with "Hconf_sl_ro") as (?) "Hconf_sl".
       iDestruct (own_slice_small_sz with "Hconf_sl") as %Hconf_sz.
       wp_apply (wp_slice_len).
       wp_pures.

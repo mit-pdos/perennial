@@ -11,7 +11,6 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
 From Perennial.program_proof.simplepb Require Import config_proof.
-From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.grove_shared Require Import monotonic_pred.
 From Perennial.base_logic Require Import lib.saved_spec.
 
@@ -724,7 +723,7 @@ Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val) (confCk:loc) γconf (_:configParams.Pwf.t Σ) ,
+  ∃ (mu:val) (confCk:loc) γconf (_pPwf:configParams.Pwf.t Σ) ,
   let pNtop := (configParams.Ntop.mk $ pbN .@ "config") in
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗

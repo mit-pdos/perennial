@@ -15,6 +15,7 @@ Context `{!heapGS Σ}.
 Context `{!mpG Σ}.
 Context `{Hparams:!mpaxosParams.t Σ}.
 Import mpaxosParams.
+Notation is_proposal := (is_proposal (config:=config) (N:=N)).
 
 Lemma wp_Server__becomeLeader s γ γsrv Ψ Φ :
   is_Server s γ γsrv -∗

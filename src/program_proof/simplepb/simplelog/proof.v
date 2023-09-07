@@ -1765,17 +1765,19 @@ Definition simplelog_P γ γsrv := file_crash (own_Server_ghost_f γ γsrv).
 Definition simplelog_pre γ γsrv fname :=
   (|C={⊤}=> ∃ data, fname f↦ data ∗ ▷ simplelog_P γ γsrv data)%I.
 
-Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHost :
+Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHosts confHosts_sl :
   let P := (own_Server_ghost_f γ γsrv) in
   {{{
        "#Hinvs" ∷ is_pb_system_invs γ ∗
-       "#HisConfHost" ∷ config_protocol_proof.is_pb_config_host confHost γ ∗
+       "#HisConfHost" ∷ config_protocol_proof.is_pb_config_hosts confHosts γ ∗
+       "#Hconf_sl" ∷ readonly (own_slice_small confHosts_sl uint64T 1 confHosts) ∗
+       "%HnonEmpty" ∷ ⌜ length confHosts > 0 ⌝ ∗
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
        "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
        "Hmemstate" ∷ own_InMemoryStateMachine []
   }}}
-    MakePbServer #smMem #(LitString fname) #(confHost)
+    MakePbServer #smMem #(LitString fname) (slice_val confHosts_sl)
   {{{
         s, RET #s; pb_definitions.is_Server s γ γsrv
   }}}
@@ -1825,7 +1827,7 @@ Proof.
 
   wp_apply (wp_MakeServer _ (own_StateMachine s)  with "[$Hsm]").
   {
-    iFrame "#".
+    iFrame "#%".
     iSplitL; last first.
     {
       iPureIntro.

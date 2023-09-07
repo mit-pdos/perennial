@@ -88,12 +88,12 @@ Definition is_ekv_invs γpb γkv : iProp Σ :=
   kv_inv γlog γkv
 .
 
-Definition is_kv_config confHost γkv : iProp Σ :=
+Definition is_kv_config_hosts confHosts γkv : iProp Σ :=
   ∃ γpb γerpc γlog,
     "#Hee_inv" ∷ is_esm_inv (low_record:=kv_record) γpb γlog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
     "#Hkv_inv" ∷ kv_inv γlog γkv ∗
-    "#Hconf" ∷ is_pb_sys_host confHost γpb
+    "#Hconf" ∷ is_pb_sys_hosts confHosts γpb
 .
 
 Lemma alloc_ekv γpb allocated :
@@ -117,16 +117,19 @@ Section local_proof.
 Context `{!heapGS Σ}.
 Context `{!ekvG Σ}.
 
-Lemma wp_Start fname (confHost host:chan) γsys γsrv data :
+Lemma wp_Start fname configHosts_sl configHosts (host:chan) γsys γsrv data :
   {{{
+      "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+      "#Hconf" ∷ is_pb_sys_hosts configHosts γsys ∗
+      "#HisConfHost" ∷ config_protocol_proof.is_pb_config_hosts configHosts γsys ∗
+      "%Hnonempty" ∷ ⌜0 < length configHosts⌝ ∗
       "#Hhost" ∷ is_pb_host (pb_record:=ekv_record) host γsys γsrv ∗
-      "#HconfHost" ∷ config_protocol_proof.is_pb_config_host confHost γsys ∗
       "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash (own_Server_ghost_f γsys γsrv) data)
                   (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') ∗
 
       "#Hinvs" ∷ is_pb_system_invs γsys
   }}}
-    Start #(LitString fname) #(host:u64) #(confHost:u64)
+    Start #(LitString fname) #(host:u64) (slice_val configHosts_sl)
   {{{
         RET #(); True
   }}}
@@ -144,7 +147,7 @@ Proof using Type*.
   }
   iIntros (??) "[#His2 Hown]".
   wp_apply (wp_MakePbServer (sm_record:=ekv_record) with "[$Hown $Hfile_ctx]").
-  { iFrame "#". }
+  { iFrame "#%". }
   iIntros (?) "His".
   wp_pures.
   wp_apply (pb_start_proof.wp_Server__Serve with "[$]").
@@ -159,11 +162,13 @@ Definition own_Clerk ck γkv : iProp Σ :=
     "Hownck" ∷ esm_proof.own_Clerk (low_record:=kv_record) eeCk γlog
 .
 
-Lemma wp_MakeClerk γkv confHost :
+Lemma wp_MakeClerk γkv configHosts configHosts_sl :
   {{{
-      is_kv_config confHost γkv
+      "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+      "#Hhost" ∷ is_kv_config_hosts configHosts γkv ∗
+      "%Hnonempty" ∷ ⌜0 < length configHosts⌝
   }}}
-    kv.MakeClerk #confHost
+    kv.MakeClerk (slice_val configHosts_sl)
   {{{
         ck, RET #ck; own_Clerk ck γkv
   }}}
@@ -172,8 +177,9 @@ Proof.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_call.
+  iNamed "Hhost".
   wp_apply (esm_proof.wp_MakeClerk with "[]").
-  { iFrame "#". }
+  { iFrame "#%". }
   iIntros (?) "Hck".
   wp_apply (wp_allocStruct).
   { repeat econstructor. }

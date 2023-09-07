@@ -1764,13 +1764,15 @@ Proof.
   done.
 Qed.
 
-Lemma wp_MakeClerk confHost γ γoplog γerpc :
+Lemma wp_MakeClerk configHosts_sl configHosts γ γoplog γerpc :
   {{{
+    "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
+    "#Hconf" ∷ is_pb_sys_hosts configHosts γ ∗
+    "%Hnonempty" ∷ ⌜0 < length configHosts⌝ ∗
     "#Hesm_inv" ∷ is_esm_inv γ γoplog γerpc ∗
-    "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
-    "#Hconf" ∷ is_pb_sys_host confHost γ
+    "#Herpc_inv" ∷ is_eRPCServer γerpc
   }}}
-    esm.MakeClerk #confHost
+    esm.MakeClerk (slice_val configHosts_sl)
   {{{
         ck, RET #ck; own_Clerk ck γoplog
   }}}
@@ -1786,7 +1788,7 @@ Proof.
   iNamed "HH".
   wp_pures.
   wp_apply clerk_proof.wp_MakeClerk.
-  { iFrame "#". }
+  { iFrame "#%". }
   iIntros (?) "Hck".
   wp_storeField.
   wp_apply (wp_NewSlice).

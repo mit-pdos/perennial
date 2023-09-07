@@ -14,6 +14,7 @@ From Perennial.base_logic Require Import lib.saved_prop.
 Record mpaxos_system_names :=
   {
     s_log : gname ;
+    s_st: gname ;
     s_mp : mp_system_names ;
   }.
 
@@ -50,9 +51,6 @@ Class t Σ := mk {
     N : namespace ;
   }
 .
-Global Instance mpaxos_to_protocol_params Σ :
-  t Σ → protocol_params.t :=
-  λ p, protocol_params.mk config (N .@ "protocol").
 
 End mpaxosParams.
 
@@ -62,11 +60,13 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!mpG Σ}.
 Context `{!mpaxosParams.t Σ}.
 
-Definition own_state γ ς := own γ.(s_log) (to_dfrac_agree (DfracOwn (1/2)) (ς : (leibnizO (list u8)))).
+Notation is_proposal := (is_proposal (config:=config) (N:=N)).
+
+Definition own_state γ ς := own γ.(s_st) (to_dfrac_agree (DfracOwn (1/2)) (ς : (leibnizO (list u8)))).
 
 (* RPC specs *)
 
-Definition get_state {A} (σ:list (list u8 * A)) := default [] (last (fst <$> σ)).
+Definition get_state {A} (σ:list (list u8 * A)) := default initstate (last (fst <$> σ)).
 
 Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply.C -> iProp Σ) : iProp Σ :=
   (
@@ -134,9 +134,9 @@ Definition own_log' γ (opsfullQ : list ((list u8) * iProp Σ)) : iProp Σ :=
     ⌜ opsfullQ.*1 = ops_gnames.*1 ⌝ ∗
     [∗ list] k↦Φ;γprop ∈ snd <$> opsfullQ; snd <$> ops_gnames, saved_prop_own γprop DfracDiscarded Φ.
 
-Definition is_helping_inv γlog γsys :=
+Definition is_helping_inv γsys :=
   inv appN (∃ log,
-        own_state γlog (get_state log) ∗
+        own_state γsys (get_state log) ∗
         own_log' γsys log ∗
         □(
           (* XXX: this is a bit different from pb_definitions.v *)
@@ -166,13 +166,44 @@ Defined.
 
 Definition is_mpaxos_host (host:u64) γ (γsrv:mp_server_names) : iProp Σ :=
   ∃ γrpc,
-  "#Hdom" ∷ is_urpc_dom γrpc {[ (U64 0); (U64 1); (U64 2); (U64 2) ]} ∗
+  "#Hdom" ∷ is_urpc_dom γrpc {[ (U64 0); (U64 1); (U64 2) ]} ∗
   "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) (applyAsFollower_spec γ γsrv) ∗
   "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
   "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) (becomeLeader_spec)
 .
 
 Global Instance is_mpaxos_host_pers host γ γsrv: Persistent (is_mpaxos_host host γ γsrv) := _.
+
+Notation own_replica_ghost := (own_replica_ghost (config:=config) (N:=N)).
+Notation own_leader_ghost := (own_leader_ghost (config:=config) (N:=N)).
+Notation is_repl_inv := (is_repl_inv (config:=config) (N:=N)).
+Notation is_vote_inv := (is_vote_inv (config:=config) (N:=N)).
+Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
+  ∃ (log:list (list u8 * gname)),
+  "Hghost" ∷ own_replica_ghost γ.(s_mp) γsrv
+           (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log) ∗
+  "%HlogLen" ∷ ⌜ length log = int.nat st.(paxosState.nextIndex) ⌝ ∗
+  "%Hlog" ∷ ⌜ default initstate (last log.*1) = st.(paxosState.state) ⌝ ∗
+  "#Hinv" ∷ is_repl_inv γ.(s_mp) ∗
+  "#Hvote_inv" ∷ is_vote_inv γ.(s_mp) ∗
+  "#Hpwf" ∷ (□ Pwf st.(paxosState.state)) ∗
+
+  "HleaderOnly" ∷ (if st.(paxosState.isLeader) then
+                     own_leader_ghost γ.(s_mp) (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
+                   else True) ∗
+  "%HnextIndex_nooverflow" ∷ ⌜ length log = int.nat (length log) ⌝ ∗
+  "%HaccEpochEq" ∷ ⌜ if st.(paxosState.isLeader) then st.(paxosState.acceptedEpoch) = st.(paxosState.epoch) else True ⌝
+.
+
+Definition encodes_paxosState st data : Prop :=
+  paxosState.encode st = data ∨ (data = [] ∧ st = paxosState.mk 0 0 0 initstate false)
+.
+
+Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
+  ∃ pst,
+  "%Henc" ∷ ⌜ encodes_paxosState pst data ⌝ ∗
+  "Hghost" ∷ own_paxosState_ghost γ γsrv pst
+.
 
 End global_definitions.
 
@@ -196,33 +227,6 @@ Definition fileN := N .@ "file".
 
 Context `{!mpG Σ}.
 Context `{!mpaxosParams.t Σ}.
-
-Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
-  ∃ (log:list (list u8 * gname)),
-  "Hghost" ∷ own_replica_ghost γ.(s_mp) γsrv
-           (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log) ∗
-  "%Hlog" ∷ ⌜ length log = int.nat st.(paxosState.nextIndex) ⌝ ∗
-  "%Hlog" ∷ ⌜ default [] (last log.*1) = st.(paxosState.state) ⌝ ∗
-  "#Hinv" ∷ is_repl_inv γ.(s_mp) ∗
-  "#Hvote_inv" ∷ is_vote_inv γ.(s_mp) ∗
-  "#Hpwf" ∷ (□ Pwf st.(paxosState.state)) ∗
-
-  "HleaderOnly" ∷ (if st.(paxosState.isLeader) then
-                     own_leader_ghost γ.(s_mp) (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
-                   else True) ∗
-  "%HnextIndex_nooverflow" ∷ ⌜ length log = int.nat (length log) ⌝ ∗
-  "%HaccEpochEq" ∷ ⌜ if st.(paxosState.isLeader) then st.(paxosState.acceptedEpoch) = st.(paxosState.epoch) else True ⌝
-.
-
-Definition encodes_paxosState st data : Prop :=
-  paxosState.encode st = data ∨ (data = [] ∧ st = paxosState.mk 0 0 0 initstate false)
-.
-
-Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
-  ∃ pst,
-  "%Henc" ∷ ⌜ encodes_paxosState pst data ⌝ ∗
-  "Hghost" ∷ own_paxosState_ghost γ γsrv pst
-.
 
 (* The P is a validity predicate for any proposed state *)
 Definition own_Server (s:loc) γ γsrv : iProp Σ :=

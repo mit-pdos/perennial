@@ -741,6 +741,7 @@ Proof using waitgroupG0.
     }
   }
 
+  iMod (readonly_alloc_1 with "Hservers_sl") as "#Hservers_sl".
   wp_apply (wp_Clerk__WriteConfig2 with "Hck Hservers_sl [$Hconf_prop] Hres Hhost").
   {
     iPureIntro.
@@ -786,7 +787,7 @@ Proof using waitgroupG0.
     iFrame "Hrest".
   }
   iModIntro.
-  iIntros (err) "Hpost Hservers_sl".
+  iIntros (err) "Hpost".
   iNamed 1.
 
   wp_pures.
@@ -892,7 +893,7 @@ Proof using waitgroupG0.
       }
     }
     {
-      iExists _; iFrame.
+      iExists _; iFrame "∗#".
     }
   }
   iIntros.

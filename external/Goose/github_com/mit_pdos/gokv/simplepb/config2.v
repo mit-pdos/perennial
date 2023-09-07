@@ -346,7 +346,9 @@ Definition Server__GetLease: val :=
 Definition makeServer: val :=
   rec: "makeServer" "fname" "paxosMe" "hosts" "initconfig" :=
     let: "s" := struct.alloc Server (zero_val (struct.t Server)) in
-    let: "initEnc" := EncodeConfig "initconfig" in
+    let: "initEnc" := encodeState (struct.new state [
+      "config" ::= "initconfig"
+    ]) in
     struct.storeF Server "s" "s" (mpaxos.StartServer "fname" "initEnc" "paxosMe" "hosts");;
     "s".
 

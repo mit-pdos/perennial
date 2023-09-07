@@ -14,11 +14,13 @@ Definition own_ClerkPool c γkv : iProp Σ :=
 .
 
 Definition is_ClerkPool c γkv : iProp Σ :=
-  ∃ mu (confHost:u64),
+  ∃ mu confHost_sl (confHosts:list u64),
   "#Hmu" ∷ readonly (c ↦[ClerkPool :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock nroot mu (own_ClerkPool c γkv) ∗
-  "#HconfHost" ∷ readonly (c ↦[ClerkPool :: "confHost"] #confHost) ∗
-  "#Hhost" ∷ is_kv_config confHost γkv
+  "#HconfHosts" ∷ readonly (c ↦[ClerkPool :: "confHosts"] (slice_val confHost_sl)) ∗
+  "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
+  "#Hhost" ∷ is_kv_config_hosts confHosts γkv ∗
+  "%Hnonempty" ∷ ⌜ 0 < length confHosts ⌝
 .
 
 Lemma wp_doWithClerk c γkv (f:val) Φ :
@@ -101,7 +103,8 @@ Proof.
     { iFrame "#∗". iNext. repeat iExists _. iFrame "∗#". }
     wp_pures.
     wp_loadField.
-    wp_apply (wp_MakeClerk with "[$]").
+    wp_apply (wp_MakeClerk with "[]").
+    { iFrame "#%". iPureIntro. word. }
     iIntros (?) "Hck".
     wp_store.
     wp_load.
@@ -128,11 +131,13 @@ Proof.
   }
 Qed.
 
-Lemma wp_MakeClerkPool γkv confHost :
+Lemma wp_MakeClerkPool γkv confHosts confHost_sl :
   {{{
-        "#Hhost" ∷ is_kv_config confHost γkv
+        "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
+        "#Hhost" ∷ is_kv_config_hosts confHosts γkv ∗
+        "%Hnonempty" ∷ ⌜ 0 < length confHosts ⌝
   }}}
-    MakeClerkPool #confHost
+    MakeClerkPool (slice_val confHost_sl)
   {{{
         ck, RET #ck; is_ClerkPool ck γkv
   }}}
@@ -153,7 +158,7 @@ Proof.
   iDestruct (struct_fields_split with "Hc") as "HH".
   iNamed "HH".
   iMod (readonly_alloc_1 with "mu") as "#Hmu".
-  iMod (readonly_alloc_1 with "confHost") as "#HconfHost".
+  iMod (readonly_alloc_1 with "confHosts") as "#HconfHosts".
   iApply "HΦ".
   repeat iExists _; iFrame "#".
   iMod (alloc_lock with "[$] [-]") as "$"; last done.
@@ -162,11 +167,13 @@ Qed.
 
 Definition vkvE : coPset := (↑pb_protocol.pbN ∪ ↑clerk_proof.prophReadN ∪ ↑esm_proof.esmN ∪
                                      ↑stateN).
-Lemma wp_MakeKv γkv confHost :
+Lemma wp_MakeKv γkv confHost_sl confHosts :
   {{{
-        "#Hhost" ∷ is_kv_config confHost γkv
+        "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
+        "#Hhost" ∷ is_kv_config_hosts confHosts γkv ∗
+        "%Hnonempty" ∷ ⌜ 0 < length confHosts ⌝
   }}}
-    MakeKv #confHost
+    MakeKv (slice_val confHost_sl)
   {{{
         k, RET #k; is_Kv k (kv_ptsto γkv) vkvE
 
@@ -176,7 +183,8 @@ Proof.
   iIntros (?) "Hpre HΦ".
   iNamed "Hpre".
   wp_lam.
-  wp_apply (wp_MakeClerkPool with "[$]").
+  wp_apply (wp_MakeClerkPool with "[]").
+  { iFrame "#%". }
   iIntros (?) "#Hck".
   wp_pures.
   wp_lam. wp_pures.

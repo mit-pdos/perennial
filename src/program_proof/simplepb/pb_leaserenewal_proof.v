@@ -25,6 +25,7 @@ Notation get_rwops := (get_rwops (pb_record:=pb_record)).
 Context `{!pbG Σ}.
 
 Lemma lease_renewal_step γ γsrv γconf γl newLeaseExpiration st :
+  let pNtop := (configParams.Ntop.mk $ pbN .@ "config") in
   is_lease config_proof.epochLeaseN γl (own_latest_epoch γconf st.(server.epoch)) -∗
   is_lease_valid_lb γl newLeaseExpiration -∗
   is_conf_inv γ γconf -∗
@@ -34,6 +35,7 @@ Lemma lease_renewal_step γ γsrv γconf γl newLeaseExpiration st :
           γ γsrv
 .
 Proof.
+  intros ?.
   iIntros "#Hnew_lease #Hlb #Hconf".
   rewrite /own_Server_ghost_eph_f /tc_opaque.
   iNamed 1.

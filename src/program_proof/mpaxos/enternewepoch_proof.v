@@ -221,7 +221,7 @@ Proof.
     iExists _.
     simpl.
     iFrame "∗#".
-    rewrite Hlog.
+    rewrite HlogLen.
     iApply to_named.
     iExactEq "Hreply_nextIndex".
     repeat f_equal. word.

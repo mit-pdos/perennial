@@ -204,7 +204,8 @@ Proof.
     iIntros (j_ptr) "Hj".
     wp_pures.
 
-    iRename "Hargs_replicas_sl" into "Hreplicas_sl".
+    iRename "Hargs_replicas_sl" into "Hreplicas_sl_ro".
+      iMod (readonly_load with "Hreplicas_sl_ro") as (?) "Hreplicas_sl".
     iAssert (
           ∃ (j:u64) clerkssComplete clerkssLeft,
             "Hj" ∷ j_ptr ↦[uint64T] #j ∗
