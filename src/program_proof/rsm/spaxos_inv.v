@@ -1,5 +1,5 @@
 (**
- * Pure/Iris invariant definitions and invariance.
+ * Pure invariants and their invariance theorems.
  *)
 From Perennial.program_proof.rsm Require Import spaxos_top.
 
@@ -223,17 +223,59 @@ Section pure.
     destruct b; lia.
   Qed.
 
-  (* Lemmas about [latest_before_quorum]. TODO: fix the argument order. *)
+  (* Lemmas about [latest_before_quorum]. *)
   Lemma latest_before_quorum_step_ge ns :
     map_Forall (λ _ n, (n ≤ map_fold latest_before_quorum_step O ns)%nat) ns.
   Proof.
-  Admitted.
-  
+    intros x n.
+    apply (map_fold_ind (λ p m, (m !! x = Some n -> n ≤ p)%nat)); first done.
+    intros y n' m b _ Hnr Hn'.
+    unfold latest_before_quorum_step.
+    destruct (decide (y = x)) as [-> | Hne].
+    { rewrite lookup_insert in Hn'. inversion_clear Hn'. lia. }
+    rewrite lookup_insert_ne in Hn'; [lia | done].
+  Qed.
+
+  Lemma latest_before_quorum_step_O_or_exists ns :
+    map_fold latest_before_quorum_step O ns = O ∨
+    ∃ x, ns !! x = Some (map_fold latest_before_quorum_step O ns).
+  Proof.
+    apply (map_fold_ind (λ p m, p = O ∨ ∃ x, m !! x = Some p)); first by left.
+    intros x n m b Hmx IHm.
+    unfold latest_before_quorum_step.
+    destruct IHm as [-> | [y Hy]]; right.
+    { exists x. rewrite lookup_insert. by rewrite Nat.max_0_r. }
+    destruct (decide (b ≤ n)%nat).
+    { exists x. rewrite lookup_insert. by replace (_ `max` _)%nat with n by lia. }
+    exists y.
+    assert (Hne : x ≠ y) by set_solver.
+    rewrite lookup_insert_ne; last done. rewrite Hy.
+    by replace (_ `max` _)%nat with b by lia.
+  Qed.
+
   Lemma latest_before_quorum_step_in ns :
     ns ≠ ∅ ->
-    map_Exists (λ _ n, (n = map_fold latest_before_quorum_step O ns)%nat) ns.
+    map_Exists (λ _ n, n = map_fold latest_before_quorum_step O ns) ns.
   Proof.
-  Admitted.
+    intros Hnonempty.
+    destruct (latest_before_quorum_step_O_or_exists ns) as [Hz | [x Hx]]; last first.
+    { exists x. by eauto. }
+    rewrite Hz.
+    destruct (decide (O ∈ (map_img ns : gset nat))) as [Hin | Hnotin].
+    { rewrite elem_of_map_img in Hin.
+      destruct Hin as [x Hx].
+      by exists x, O.
+    }
+    assert (Hallgz : ∀ n, n ∈ (map_img ns : gset nat) -> (0 < n)%nat).
+    { intros n Hn. assert (Hnz : n ≠ O) by set_solver. lia. }
+    apply map_choose in Hnonempty.
+    destruct Hnonempty as (x & n & Hxn).
+    apply latest_before_quorum_step_ge in Hxn as Hle.
+    rewrite Hz in Hle.
+    apply (elem_of_map_img_2 (SA:=gset nat)) in Hxn.
+    apply Hallgz in Hxn.
+    lia.
+  Qed.
 
   Lemma latest_before_quorum_ge bs n :
     map_Forall (λ _ l, (latest_before n l ≤ latest_before_quorum n bs)%nat) bs.
