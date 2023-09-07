@@ -130,6 +130,7 @@ destruct o; apply _.
 Qed.
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
+Context `{!pbG (pb_record:=esm_record) Σ}.
 
 Context `{!gooseGlobalGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
 Definition own_esm st γ γerpc : iProp Σ :=
@@ -141,12 +142,10 @@ Definition own_esm st γ γerpc : iProp Σ :=
 
 Definition esmN := nroot .@ "esm".
 
+Notation own_op_log := (own_op_log (pb_record:=esm_record)).
 
 (* This is the invariant maintained by all the servers for the "centralized"
    ghost state of the system. *)
-Local Instance p : pbParams.t := (pbParams.mk esm_record nroot).
-
-Context `{!pbG Σ}.
 Definition is_esm_inv γpb γlog γerpc : iProp Σ :=
   inv esmN (∃ ops,
               own_op_log γpb ops ∗
@@ -188,7 +187,7 @@ Instance low_op_dec2 : EqDecision low_OpType.
 Proof. apply (Sm.OpType_EqDecision low_record). Qed.
 
 Context `{!heapGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
-Add some Σs
+
 Notation esm_record := (esm_record (low_record:=low_record)).
 Notation compute_state := (compute_state (low_record:=low_record)).
 Notation EOp := (EOp (low_record:=low_record)).

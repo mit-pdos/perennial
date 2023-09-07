@@ -8,14 +8,17 @@ From Perennial.program_proof.simplepb Require Import config_protocol_proof pb_ge
 
 Section admin_proof.
 
-Context `{!heapGS Σ}.
-Context `{p:!pbParams.t}.
-Import pbParams.
+Context {pb_record:Sm.t}.
+Notation pbG := (pbG (pb_record:=pb_record)).
 Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 
+Notation wp_Clerk__GetState := (wp_Clerk__GetState (pb_record:=pb_record)).
+Notation wp_Clerk__SetState := (wp_Clerk__SetState (pb_record:=pb_record)).
+
+Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
 Context `{!waitgroupG Σ}.
 

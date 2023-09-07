@@ -4,7 +4,7 @@ From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.goose_lang.lib Require Import waitgroup.
 From iris.base_logic Require Export lib.ghost_var mono_nat.
 From iris.algebra Require Import dfrac_agree mono_list.
-From Perennial.program_proof.simplepb Require Export config2_proof pb2_definitions
+From Perennial.program_proof.simplepb Require Export config2_proof pb_definitions
      pb_protocol primary_protocol.
 
 Section config_global.
@@ -15,26 +15,9 @@ Notation OpType := (Sm.OpType pb_record).
 
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
-Context `{!configG Σ}.
-
-Definition is_conf_inv γ γconf : iProp Σ :=
-  inv nroot (∃ reservedEpoch epoch conf confγs,
-  "Hepoch" ∷ own_latest_epoch γconf epoch ∗
-  "Hres" ∷ own_reserved_epoch γconf reservedEpoch ∗
-  "Hconf" ∷ own_config γconf conf ∗
-  "%HepochLe" ∷ ⌜int.nat epoch <= int.nat reservedEpoch⌝ ∗
-  "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch (r_pb <$> confγs) ∗
-  "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
-  "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch) ∗
-  "Hunreserved" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat reservedEpoch < int.nat epoch'⌝ →
-        config_proposal_unset γ.(s_pb) epoch' ∗ config_unset γ.(s_pb) epoch' ∗ own_proposal_unused γ.(s_pb) epoch' ∗ own_init_proposal_unused γ.(s_prim) epoch') ∗
-  "Hunset_or_set" ∷ (config_unset γ.(s_pb) reservedEpoch ∨ ⌜int.nat epoch = int.nat reservedEpoch⌝) ∗
-  "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat reservedEpoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip)
-  )
-.
 
 Definition is_pb_config_host confHost γ γconf : iProp Σ :=
-  ∃ (p:configParams.t Σ),
+    let confParams := mkConfParams γ in
   is_config_host confHost γconf ∗ is_conf_inv γ γconf.
 
 Definition makeConfigServer_pre γ conf : iProp Σ :=
@@ -88,12 +71,11 @@ Notation compute_reply := (Sm.compute_reply pb_record).
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
-Context `{!configG Σ}.
-Context `{cParams:!configParams.t Σ}.
 
 Definition is_Clerk2 ck γ γconf : iProp Σ :=
-  "#Hinv" ∷ is_conf_inv γ γconf ∗
-  "#Hck" ∷ config2_proof.is_Clerk ck γconf.
+  let cParams := mkConfParams γ in
+    "#Hinv" ∷ is_conf_inv γ γconf ∗
+    "#Hck" ∷ config2_proof.is_Clerk ck γconf.
 
 Lemma wp_MakeClerk2 hosts hosts_sl γ γconf :
   {{{
@@ -113,7 +95,7 @@ Proof.
     iFrame "#%".
     iApply (big_sepL_impl with "Hhosts").
     iModIntro.
-    iIntros "* % H". iDestruct "H" as (?) "[? ?]". iFrame.
+    iIntros "* % H". iDestruct "H" as "[? ?]". iFrame.
   }
   iIntros.
   iApply "HΦ".
