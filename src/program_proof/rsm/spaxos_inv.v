@@ -746,19 +746,60 @@ Section pure.
   Qed.
 
   Theorem vc_inv_propose {c bs ps} n v :
+    ps !! n = None ->
     valid_consensus c bs ps ->
     valid_consensus c bs (spaxos_propose ps n v).
-  Admitted.
+  Proof.
+    intros Hpsn. unfold valid_consensus.
+    destruct c as [v' |]; last done.
+    intros [n' [Hpsn' Hbsq]].
+    exists n'. split; last by apply Hbsq.
+    assert (Hne : n ≠ n') by set_solver.
+    rewrite lookup_insert_Some. by right.
+  Qed.
+
+  Lemma accepted_in_app_eq b n t :
+    accepted_in b n ->
+    accepted_in (b ++ t) n.
+  Proof.
+    unfold accepted_in.
+    intros [Hbn Hnz]. split; [by apply lookup_app_l_Some | done].
+  Qed.
 
   Theorem vc_inv_prepare {c bs ps} x n :
     valid_consensus c bs ps ->
     valid_consensus c (spaxos_prepare bs x n) ps.
-  Admitted.
+  Proof.
+    unfold valid_consensus.
+    destruct c as [v' |]; last done.
+    intros [n' [Hpsn' (bsq & Hsubseteq & Hquorum & Haccin)]].
+    exists n'. split; first done.
+    exists (spaxos_prepare bsq x n).
+    split; first by apply alter_mono.
+    split; first by do 2 rewrite dom_alter_L.
+    apply map_Forall_alter; last done.
+    intros y Hy.
+    specialize (Haccin _ _ Hy).
+    by apply accepted_in_app_eq.
+  Qed.
 
   Theorem vc_inv_accept {c bs ps} x n :
     valid_consensus c bs ps ->
     valid_consensus c (spaxos_accept bs x n) ps.
-  Admitted.
+  Proof.
+    unfold valid_consensus.
+    destruct c as [v' |]; last done.
+    intros [n' [Hpsn' (bsq & Hsubseteq & Hquorum & Haccin)]].
+    exists n'. split; first done.
+    exists (spaxos_accept bsq x n).
+    split; first by apply alter_mono.
+    split; first by do 2 rewrite dom_alter_L.
+    apply map_Forall_alter; last done.
+    intros y Hy.
+    specialize (Haccin _ _ Hy).
+    rewrite -app_assoc.
+    by apply accepted_in_app_eq.
+  Qed.
 
   Definition gt_prev_term (ts : gmap A nat) (x : A) (n : nat) :=
     (∃ c, ts !! x = Some c ∧ (c < n)%nat).

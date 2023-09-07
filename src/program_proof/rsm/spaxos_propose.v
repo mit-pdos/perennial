@@ -777,7 +777,7 @@ Proof.
     assert (Htermnz : int.nat term ≠ O) by lia.
     pose proof (vp_inv_propose Hfresh Htermnz Hvalid Hvps) as Hvps'.
     pose proof (vb_inv_propose (int.nat term) decree Hvbs) as Hvbs'.
-    pose proof (vc_inv_propose (int.nat term) decree Hvc) as Hvc'.
+    pose proof (vc_inv_propose (int.nat term) decree Hfresh Hvc) as Hvc'.
     pose proof (vt_inv_propose_advance decree Hprev Hofnode Hvts) as Hvts'.
     iMod ("HinvC" with "[Hc Hbs Hps Hts]") as "_"; first by eauto 10 with iFrame.
     by iFrame.
