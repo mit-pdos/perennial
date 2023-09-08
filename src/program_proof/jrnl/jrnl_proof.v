@@ -58,7 +58,7 @@ Proof. reflexivity. Qed.
 Lemma modified_mkVersioned {K} c m : modified (@mkVersioned K c m) = existT K m.
 Proof. reflexivity. Qed.
 
-Class jrnlG Σ :=
+Class jrnlG Σ : Set :=
   { jrnl_txn   :> txnG Σ;
   }.
 

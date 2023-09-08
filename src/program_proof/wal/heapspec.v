@@ -17,7 +17,7 @@ Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)
 .
 
-Class walheapG (Σ: gFunctors) :=
+Class walheapG (Σ: gFunctors) : Set :=
   { walheap_u64_heap_block :> ghost_mapG Σ u64 heap_block;
     walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
     walheap_mono_nat :> mono_natG Σ;

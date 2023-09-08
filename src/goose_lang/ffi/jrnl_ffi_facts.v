@@ -66,7 +66,7 @@ Qed.
 Definition openR := csumR (prodR fracR (agreeR unitO)) (agreeR unitO).
 Definition jrnl_opened : openR := Cinr (to_agree tt).
 
-Class jrnlG Σ :=
+Class jrnlG Σ : Set :=
   { jrnlG_open_inG :> inG Σ openR;
     jrnlG_open_name : gname;
     jrnlG_data_inG :> mapG Σ addr obj;

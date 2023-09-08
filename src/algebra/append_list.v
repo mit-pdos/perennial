@@ -10,7 +10,7 @@ From Perennial.algebra Require Import auth_map.
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".
 
-Class alistG Σ A :=
+Class alistG Σ A : Set :=
   { alist_inG :> mapG Σ nat A; }.
 
 Definition alistΣ A : gFunctors := #[ mapΣ nat A ].

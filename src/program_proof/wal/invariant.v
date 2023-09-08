@@ -14,7 +14,7 @@ From Perennial.program_proof.wal Require Export boundaries.
 
 Transparent slice.T.
 
-Class walG Σ :=
+Class walG Σ : Set :=
   { wal_circ         :> circG Σ;
     wal_txns_map     :> ghost_mapG Σ nat (u64 * list update.t);
     wal_circ_state   :> ghost_varG Σ circΣ.t;

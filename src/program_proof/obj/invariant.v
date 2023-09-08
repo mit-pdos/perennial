@@ -11,7 +11,7 @@ From Goose.github_com.mit_pdos.go_journal Require Import wal.
 From Perennial.program_proof Require Import wal.specs wal.lib wal.heapspec addr.addr_proof buf.buf_proof disk_lib.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
-Class txnG (Σ: gFunctors) :=
+Class txnG (Σ: gFunctors) : Set :=
   {
     txn_boolG :> ghost_varG Σ bool;
     txn_walheapG :> walheapG Σ;

@@ -43,7 +43,7 @@ Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 Definition objKind (obj: object): bufDataKind := projT1 obj.
 Definition objData (obj: object): bufDataT (objKind obj) := projT2 obj.
 
-Class jrnlG Σ :=
+Class jrnlG Σ : Set :=
   { jrnl_buffer_inG :> mapG Σ addr object;
     jrnl_mspec_jrnlG :> mspec.jrnlG Σ;
     jrnl_asyncG :> asyncG Σ addr object;

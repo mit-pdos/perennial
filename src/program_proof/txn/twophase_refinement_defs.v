@@ -34,7 +34,7 @@ Notation jrnl_nat_K :=
 (leibnizO (nat * ((@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)
                            → (@spec_lang jrnl_spec_ext jrnl_spec_ffi_model jrnl_spec_ext_semantics).(language.expr)))).
 
-Class twophaseG (Σ: gFunctors) :=
+Class twophaseG (Σ: gFunctors) : Set :=
   { twophase_stagedG :> stagedG Σ;
     twophase_lockmapG :> lockmapG Σ;
     twophase_jrnlG :> sep_jrnl_invariant.jrnlG Σ;
