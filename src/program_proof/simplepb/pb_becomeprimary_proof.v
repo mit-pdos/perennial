@@ -475,8 +475,8 @@ Proof.
 
       destruct clerkssLeft.
       { exfalso. rewrite app_nil_r in Hlens. word. }
-(*
-      replace (<[int.nat j:=new_clerks_sl]> (clerkssComplete ++ t :: clerkssLeft))
+      rename t0 into x.
+      replace (<[int.nat j:=new_clerks_sl]> (clerkssComplete ++ x :: clerkssLeft))
         with
         (((clerkssComplete ++ [new_clerks_sl]) ++ (clerkssLeft))); last first.
       {
@@ -577,7 +577,5 @@ Proof.
     iApply "HΨ".
   }
 Qed.
-*)
-Admitted.
 
 End pb_becomeprimary_proof.
