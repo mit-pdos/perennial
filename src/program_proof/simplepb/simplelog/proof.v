@@ -11,15 +11,14 @@ From Goose.github_com.mit_pdos.gokv.simplepb Require Export simplelog.
 
 Section global_proof.
 
-Context {sm_record:Sm.t}.
-Notation OpType := (Sm.OpType sm_record).
-Notation has_op_encoding := (Sm.has_op_encoding sm_record).
-Notation is_readonly_op := (Sm.is_readonly_op sm_record).
-Notation has_snap_encoding := (Sm.has_snap_encoding sm_record).
-Notation compute_reply := (Sm.compute_reply sm_record).
-Instance e : EqDecision OpType := (Sm.OpType_EqDecision sm_record).
-Notation pbG := (pbG (pb_record:=sm_record)).
-Notation pbΣ := (pbΣ (pb_record:=sm_record)).
+Context {params:pbParams.t}.
+Import pbParams.
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation is_readonly_op := (Sm.is_readonly_op pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
+Instance e : EqDecision OpType := (Sm.OpType_EqDecision pb_record).
 
 Class simplelogG Σ := SimplelogG {
   simplelog_fmlistG :> fmlistG ((list OpType) * bool) Σ;
@@ -148,13 +147,9 @@ Definition file_crash P (contents:list u8) : iProp Σ :=
     P epoch ops sealed
 .
 
-Implicit Types own_InMemoryStateMachine : list OpType → iProp Σ.
-
 End global_proof.
 
-Section local_proof.
-
-Context `{!heapGS Σ}.
+Section sm_defn.
 
 Context {sm_record:Sm.t}.
 Notation OpType := (Sm.OpType sm_record).
@@ -164,8 +159,8 @@ Notation compute_reply := (Sm.compute_reply sm_record).
 Notation is_readonly_op := (Sm.is_readonly_op sm_record).
 Notation apply_postcond := (Sm.apply_postcond sm_record).
 
-Context `{!simplelogG (sm_record:=sm_record) Σ}.
-
+Context `{!heapGS Σ}.
+Implicit Types own_InMemoryStateMachine : list OpType → iProp Σ.
 Definition is_InMemory_applyVolatileFn (applyVolatileFn:val) own_InMemoryStateMachine : iProp Σ :=
   ∀ ops op op_sl op_bytes,
   {{{
@@ -229,25 +224,6 @@ Definition is_InMemory_applyReadonlyFn (applyReadonlyFn:val) own_InMemoryStateMa
   }}}
 .
 
-
-Record simplelog_names :=
-{
-  (* file_encodes_state is not injective, so we use this state to
-     remember that "for the 5th append, the (epoch, ops, sealed) was X".
-     For each possible length, there's a potential read-only proposal.
-   *)
-  sl_state : gname;
-  proposed_gn: gname;
-}.
-
-Definition file_inv γ P epoch (contents:list u8) : iProp Σ :=
-  ∃ ops sealed,
-  ⌜file_encodes_state contents epoch ops sealed⌝ ∗
-  P epoch ops sealed ∗
-  fmlist_idx γ.(sl_state) (length contents) (ops, sealed) ∗
-  fmlist_lb γ.(proposed_gn) ops
-.
-
 Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ :=
   ∃ applyVolatileFn setStateFn getStateFn applyReadonlyFn,
   "#HapplyVolatile" ∷ readonly (sm ↦[InMemoryStateMachine :: "ApplyVolatile"] applyVolatileFn) ∗
@@ -261,6 +237,42 @@ Definition is_InMemoryStateMachine (sm:loc) own_InMemoryStateMachine : iProp Σ 
 
   "#HapplyReadonly" ∷ readonly (sm ↦[InMemoryStateMachine :: "ApplyReadonly"] applyReadonlyFn) ∗
   "#HapplyReadonly_spec" ∷ is_InMemory_applyReadonlyFn applyReadonlyFn own_InMemoryStateMachine
+.
+
+End sm_defn.
+
+Section local_proof.
+
+Context `{!heapGS Σ}.
+
+Context {params:pbParams.t}.
+Import pbParams.
+Notation OpType := (Sm.OpType pb_record).
+Notation has_op_encoding := (Sm.has_op_encoding pb_record).
+Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
+Notation compute_reply := (Sm.compute_reply pb_record).
+Notation is_readonly_op := (Sm.is_readonly_op pb_record).
+Notation apply_postcond := (Sm.apply_postcond pb_record).
+
+
+Record simplelog_names :=
+{
+  (* file_encodes_state is not injective, so we use this state to
+     remember that "for the 5th append, the (epoch, ops, sealed) was X".
+     For each possible length, there's a potential read-only proposal.
+   *)
+  sl_state : gname;
+  proposed_gn: gname;
+}.
+
+Context `{!simplelogG Σ}.
+
+Definition file_inv γ P epoch (contents:list u8) : iProp Σ :=
+  ∃ ops sealed,
+  ⌜file_encodes_state contents epoch ops sealed⌝ ∗
+  P epoch ops sealed ∗
+  fmlist_idx γ.(sl_state) (length contents) (ops, sealed) ∗
+  fmlist_lb γ.(proposed_gn) ops
 .
 
 Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) P : iProp Σ :=
@@ -913,7 +925,7 @@ Lemma wp_recoverStateMachine data P fname smMem own_InMemoryStateMachine Q :
   {{{
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
-       "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
+       "#HisMemSm" ∷ is_InMemoryStateMachine (sm_record:=pb_record) smMem own_InMemoryStateMachine ∗
        "Hmemstate" ∷ own_InMemoryStateMachine [] ∗
        "Hinit_upd" ∷ (∀ epoch ops sealed, P epoch ops sealed -∗ □ Q epoch ops sealed )
   }}}
@@ -1756,10 +1768,6 @@ Proof.
   iFrame "∗#%".
 Qed.
 
-Notation own_Server_ghost_f := (own_Server_ghost_f (pb_record:=sm_record)).
-
-Notation wp_MakeServer := (wp_MakeServer (pb_record:=sm_record)).
-
 Definition simplelog_P γ γsrv := file_crash (own_Server_ghost_f γ γsrv).
 
 Definition simplelog_pre γ γsrv fname :=
@@ -1774,7 +1782,7 @@ Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHos
        "%HnonEmpty" ∷ ⌜ length confHosts > 0 ⌝ ∗
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
-       "#HisMemSm" ∷ is_InMemoryStateMachine smMem own_InMemoryStateMachine ∗
+       "#HisMemSm" ∷ is_InMemoryStateMachine (sm_record:=pb_record) smMem own_InMemoryStateMachine ∗
        "Hmemstate" ∷ own_InMemoryStateMachine []
   }}}
     MakePbServer #smMem #(LitString fname) (slice_val confHosts_sl)

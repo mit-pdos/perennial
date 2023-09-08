@@ -25,15 +25,19 @@ Global Instance subG_kvΣ {Σ} : subG kvΣ Σ → kvG Σ.
 Proof. intros. solve_inG. Qed.
 
 Definition ekv_record := (esm_record (low_record:=kv_record)).
+
+Context {conf_host_names:list config_proof.config_server_names}.
+Context {initconf:list u64}.
+Local Instance esmParams : pbParams.t := pbParams.mk conf_host_names initconf (ekv_record).
+
 Class ekvG Σ :=
   {
     ekv_erpcG :> erpcG Σ (list u8) ;
-    ekv_simplelogG :> simplelogG (sm_record:=ekv_record) Σ;
+    ekv_simplelogG :> simplelogG Σ;
     ekv_kvG :> kvG Σ ;
   }.
 
-Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ (sm_record:=ekv_record);
-                     kvΣ].
+Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ; kvΣ].
 Global Instance subG_ekvΣ {Σ} : subG ekvΣ Σ → ekvG Σ.
 Proof. intros. solve_inG. Qed.
 
@@ -117,13 +121,14 @@ Section local_proof.
 Context `{!heapGS Σ}.
 Context `{!ekvG Σ}.
 
+(* FIXME: this shouldn't expose any internal pb stuff *)
 Lemma wp_Start fname configHosts_sl configHosts (host:chan) γsys γsrv data :
   {{{
       "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
       "#Hconf" ∷ is_pb_sys_hosts configHosts γsys ∗
       "#HisConfHost" ∷ config_protocol_proof.is_pb_config_hosts configHosts γsys ∗
       "%Hnonempty" ∷ ⌜0 < length configHosts⌝ ∗
-      "#Hhost" ∷ is_pb_host (pb_record:=ekv_record) host γsys γsrv ∗
+      "#Hhost" ∷ is_pb_host host γsys γsrv ∗
       "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash (own_Server_ghost_f γsys γsrv) data)
                   (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') ∗
 
@@ -146,7 +151,7 @@ Proof using Type*.
     iFrame "His1".
   }
   iIntros (??) "[#His2 Hown]".
-  wp_apply (wp_MakePbServer (sm_record:=ekv_record) with "[$Hown $Hfile_ctx]").
+  wp_apply (wp_MakePbServer with "[$Hown $Hfile_ctx]").
   { iFrame "#%". }
   iIntros (?) "His".
   wp_pures.

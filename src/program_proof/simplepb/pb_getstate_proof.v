@@ -10,14 +10,13 @@ Import RecordSetNotations.
 
 Section pb_getstate_proof.
 Context `{!heapGS Σ}.
-Context {pb_record:Sm.t}.
+Context {params:pbParams.t}.
+Import pbParams.
 
 Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
-Notation pbG := (pbG (pb_record:=pb_record)).
-Notation own_Server_ghost_f := (own_Server_ghost_f (pb_record:=pb_record)).
 
 Context `{!waitgroupG Σ}.
 Context `{!pbG Σ}.
@@ -148,7 +147,7 @@ Lemma is_StateMachine_acc_getstate sm own_StateMachine P :
   is_StateMachine sm own_StateMachine P -∗
   (∃ getstateFn,
     "#Hgetstate" ∷ readonly (sm ↦[pb.StateMachine :: "GetStateAndSeal"] getstateFn) ∗
-    "#HgetstateSpec" ∷ is_GetStateAndSeal_fn (pb_record:=pb_record) own_StateMachine getstateFn P
+    "#HgetstateSpec" ∷ is_GetStateAndSeal_fn own_StateMachine getstateFn P
   )
 .
 Proof.

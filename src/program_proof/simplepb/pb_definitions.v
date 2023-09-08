@@ -33,7 +33,8 @@ End Sm.
 
 (* FIXME: is there really no better way than prefixing all of the projections
    with something to make them unique?  *)
-Record simplepb_system_names :=
+(* XXX: this is a typeclass so that typeclass search can use the instance toConfigParams *)
+Class simplepb_system_names :=
   {
     s_log : gname ;
     s_internal_log : gname ;
@@ -51,9 +52,20 @@ Record simplepb_server_names :=
 
 Implicit Type (γ : simplepb_system_names) (γsrv:simplepb_server_names).
 
+Module pbParams.
+Class t :=
+  mk {
+      conf_host_names: list config_server_names ;
+      initconf : list u64 ; (* XXX: have to put these here to construct a configParams.t; bundling problem *)
+      pb_record:Sm.t
+    }
+.
+End pbParams.
+Import pbParams.
+
 Section pb_global_definitions.
 
-Context {pb_record:Sm.t}.
+Context {params:pbParams.t}.
 Notation OpType := (pb_record.(Sm.OpType)).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
@@ -441,10 +453,20 @@ Definition is_pb_system_invs γsys : iProp Σ :=
   "#HpreInv" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads)
 .
 
+Definition pbConfWf γ (conf:list u64) : iProp Σ :=
+  ∃ confγs, ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv)
+.
+
+Local Instance toConfigParams γ : configParams.t Σ :=
+  configParams.mk Σ
+                  (pbConfWf γ)
+                  (pbN .@ "configservice")
+                  conf_host_names initconf
+.
 End pb_global_definitions.
 
 Module server.
-Record t {pb_record:Sm.t} :=
+Record t {params:pbParams.t} :=
   mkC {
     epoch : u64 ;
     sealed : bool ;
@@ -458,24 +480,21 @@ Record t {pb_record:Sm.t} :=
     leaseExpiration : u64 ;
   }.
 
-Global Instance etaServer {pb_record:Sm.t} : Settable _ :=
-  settable! (mkC pb_record) <epoch; sealed; ops_full_eph; isPrimary;
+Global Instance etaServer {params:pbParams.t} : Settable _ :=
+  settable! (mkC params) <epoch; sealed; ops_full_eph; isPrimary;
         canBecomePrimary; committedNextIndex; leaseValid; leaseExpiration>.
 End server.
 
 Section pb_local_definitions.
 (* definitions that refer to a particular node *)
 
-Context {pb_record:Sm.t}.
+Context {params:pbParams.t}.
 Notation OpType := (pb_record.(Sm.OpType)).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
 Notation is_readonly_op := (Sm.is_readonly_op pb_record).
 Notation apply_postcond := (Sm.apply_postcond pb_record).
-
-Notation pbG := (pbG (pb_record:=pb_record)).
-Notation "server.t" := (server.t (pb_record:=pb_record)).
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
@@ -608,8 +627,6 @@ Qed.
 
 Definition numClerks : nat := 32.
 
-Notation get_rwops := (get_rwops (pb_record:=pb_record)).
-
 Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
   ∃ (clerkss:list Slice.t) backups,
   "%Hclerkss_len" ∷ ⌜length clerkss = numClerks⌝ ∗
@@ -667,8 +684,8 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
   "%HnextIndexNoOverflow" ∷ ⌜no_overflow (length (get_rwops (st.(server.ops_full_eph))))⌝
 .
 
+Existing Instance toConfigParams.
 Definition is_Server_lease_resource γ (epoch:u64) (leaseValid:bool) (leaseExpiration:u64) : iProp Σ :=
-  let pNtop := (configParams.Ntop.mk $ pbN .@ "config") in
   "#HprereadInv" ∷ is_preread_inv γ.(s_pb) γ.(s_prelog) γ.(s_reads) ∗
   "#Hlease" ∷ □(if leaseValid then
                 ∃ γl γconf,
@@ -723,8 +740,7 @@ Definition mu_inv (s:loc) γ γsrv mu: iProp Σ :=
 .
 
 Definition is_Server (s:loc) γ γsrv : iProp Σ :=
-  ∃ (mu:val) (confCk:loc) γconf (_pPwf:configParams.Pwf.t Σ) ,
-  let pNtop := (configParams.Ntop.mk $ pbN .@ "config") in
+  ∃ (mu:val) (confCk:loc) γconf,
   "#Hmu" ∷ readonly (s ↦[pb.Server :: "mu"] mu) ∗
   "#HmuInv" ∷ is_lock pbN mu (mu_inv s γ γsrv mu) ∗
   "#His_repl_inv" ∷ is_repl_inv γ.(s_pb) ∗

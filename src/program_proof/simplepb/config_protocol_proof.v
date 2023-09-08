@@ -9,26 +9,18 @@ From Perennial.program_proof.simplepb Require Export config_proof pb_definitions
 
 Section config_global.
 
-Context {pb_record:Sm.t}.
-Notation pbG := (pbG (pb_record:=pb_record)).
+Context {params:pbParams.t}.
+Import pbParams.
 Notation OpType := (Sm.OpType pb_record).
 
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
 Import configParams.
-Context `{pconf:!initconfig.t}.
-Instance pNtop : Ntop.t := (Ntop.mk $ pbN .@ "config").
 
-Definition configWf γ : list u64 → iProp Σ :=
-  λ conf, (∃ confγs, [∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv)%I
-.
-
-Instance pPwf γ : Pwf.t Σ := Pwf.mk Σ (configWf γ).
-
+Existing Instance toConfigParams.
 Definition is_pb_config_hosts hosts γ : iProp Σ :=
   ∃ γconf,
-   let _ := pPwf γ in
   "#Hhosts" ∷ ([∗ list] host ∈ hosts, is_config_host host γconf) ∗
   "#HconfInv" ∷ is_conf_inv γ γconf.
 
@@ -74,23 +66,20 @@ End config_global.
 
 Section pb_config_proof.
 
-Context {pb_record:Sm.t}.
-Notation pbG := (pbG (pb_record:=pb_record)).
+Context {params:pbParams.t}.
+Import pbParams.
 Notation OpType := (Sm.OpType pb_record).
 Notation has_op_encoding := (Sm.has_op_encoding pb_record).
 Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
 Notation compute_reply := (Sm.compute_reply pb_record).
-Notation pPwf := (pPwf (pb_record:=pb_record)).
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
 
 Import configParams.
-Context `{pconf:!initconfig.t}.
-Existing Instance pNtop.
+Existing Instance toConfigParams.
 
 Definition is_Clerk2 ck γ γconf : iProp Σ :=
-   let _ := pPwf γ in
   "#Hinv" ∷ is_conf_inv γ γconf ∗
   "#Hck" ∷ config_proof.is_Clerk ck γconf.
 

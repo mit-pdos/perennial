@@ -130,7 +130,6 @@ destruct o; apply _.
 Qed.
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
-Context `{!pbG (pb_record:=esm_record) Σ}.
 
 Context `{!gooseGlobalGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
 Definition own_esm st γ γerpc : iProp Σ :=
@@ -142,8 +141,10 @@ Definition own_esm st γ γerpc : iProp Σ :=
 
 Definition esmN := nroot .@ "esm".
 
-Notation own_op_log := (own_op_log (pb_record:=esm_record)).
-
+Context {conf_host_names:list config_proof.config_server_names}.
+Context {initconf:list u64}.
+Local Instance esmParams : pbParams.t := pbParams.mk conf_host_names initconf (esm_record).
+Context `{!pbG Σ}.
 (* This is the invariant maintained by all the servers for the "centralized"
    ghost state of the system. *)
 Definition is_esm_inv γpb γlog γerpc : iProp Σ :=
@@ -152,6 +153,7 @@ Definition is_esm_inv γpb γlog γerpc : iProp Σ :=
               own_esm (compute_state ops) γlog γerpc
       )
 .
+
 
 Lemma alloc_esm γpb :
   own_op_log γpb [] ={⊤}=∗
@@ -193,11 +195,16 @@ Notation compute_state := (compute_state (low_record:=low_record)).
 Notation EOp := (EOp (low_record:=low_record)).
 Notation esm_is_InMemoryStateMachine := (is_InMemoryStateMachine (sm_record:=esm_record)).
 Notation low_is_VersionedStateMachine := (is_VersionedStateMachine (sm_record:=low_record)).
-Notation own_pb_Clerk := (clerk_proof.own_Clerk (pb_record:=esm_record)).
+Notation own_pb_Clerk := clerk_proof.own_Clerk.
 Notation is_esm_inv := (is_esm_inv (low_record:=low_record)).
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
-Context `{!pbG (pb_record:=esm_record) Σ}.
+Context {conf_host_names:list config_proof.config_server_names}.
+Context {initconf:list u64}.
+Existing Instance esmParams.
+(* FIXME: can this second copy of the instance be avoided? *)
+Local Instance esmParams2 : pbParams.t := pbParams.mk conf_host_names initconf (esm_record).
+Context `{!pbG Σ}.
 Context `{!vsmG (sm_record:=low_record) Σ}.
 
 Definition own_Clerk ck γoplog : iProp Σ :=
