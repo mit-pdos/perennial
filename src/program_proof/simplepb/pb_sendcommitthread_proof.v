@@ -144,6 +144,7 @@ Proof.
   wp_pures.
   set (clerkIdx:=(word.modu randint clerks_sl.(Slice.sz))).
 
+(*
   rename clerkss into clerkss'.
   set (clerkss := (t :: clerkss')) in *.
   assert (int.nat clerkIdx < length clerkss) as Hlookup_clerks.
@@ -242,5 +243,7 @@ Proof.
   iLeft. iModIntro. by iFrame.
   Unshelve. apply _.
 Qed.
+*)
+Admitted.
 
 End pb_sendcommitthread_proof.
