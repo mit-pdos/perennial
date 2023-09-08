@@ -15,7 +15,7 @@ Set Default Proof Using "Type".
 usually written *)
 Set Printing Projections.
 
-Inductive DiskOp := ReadOp | WriteOp | SizeOp | BarrierOp.
+Inductive DiskOp : Set := ReadOp | WriteOp | SizeOp | BarrierOp.
 #[global]
 Instance eq_DiskOp : EqDecision DiskOp.
 Proof.

@@ -47,7 +47,7 @@ Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
   Block_to_vals block0.
 Proof. reflexivity. Qed.
 
-Class diskGS Σ := DiskGS
+Class diskGS Σ : Set := DiskGS
   { diskG_gen_heapG :> gen_heap.gen_heapGS Z CrashBlock Σ; }.
 
 Class disk_preG Σ :=
