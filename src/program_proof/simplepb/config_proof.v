@@ -2067,7 +2067,9 @@ Proof.
   iExists {| epoch_gn := γepoch ; config_val_gn:= _ ; repoch_gn := γres |}.
   iModIntro.
   iFrame.
-Qed.
+Unshelve.
+(* FIXME parameters missing *)
+Admitted.
 
 (* FIXME: allso allocate is_mpaxos_host here *)
 Lemma config_server_init host γ :

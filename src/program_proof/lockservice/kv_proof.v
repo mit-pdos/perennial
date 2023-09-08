@@ -37,7 +37,7 @@ Definition KVClerk_own γ ck_ptr (host : string) : iProp Σ :=
    "Hprimary" ∷ ck_ptr ↦[KVClerk :: "primary"] #(str host) ∗
    "Hcl" ∷ RPCClient_own cl_ptr host γ.(ks_rpcGN).
 
-Print is_lock.
+(* Print is_lock. *)
 
 Definition KVServer_own_core γ srv kvsM : iProp Σ :=
   ∃ (kvs_ptr:loc),
