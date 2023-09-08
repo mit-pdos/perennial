@@ -41,8 +41,17 @@ Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ; kvΣ].
 Global Instance subG_ekvΣ {Σ} : subG ekvΣ Σ → ekvG Σ.
 Proof. intros. solve_inG. Qed.
 
-Section global_proof.
+Record kv_names :=
+  {
+    pb_gn : simplepb_system_names ;
+    log_gn : gname ;
+    kv_gn : gname ;
+  }
+.
 
+Implicit Types γ : kv_names.
+
+Section global_proof.
 
 Context `{!gooseGlobalGS Σ}.
 Context `{!ekvG Σ}.
@@ -50,29 +59,61 @@ Context `{!ekvG Σ}.
 (* The abstract state applies the operation to an all-nil map,
    so that each key already exists from the start. This is consisent with
    [getOp] doing [default []]. *)
-Definition own_kvs (γkv:gname) ops : iProp Σ :=
+Definition own_kvs γ ops : iProp Σ :=
   ∃ allocatedKeys,
-  ghost_map_auth γkv 1 (compute_state ops ∪ gset_to_gmap "" allocatedKeys)
+  ghost_map_auth γ.(kv_gn) 1 (compute_state ops ∪ gset_to_gmap "" allocatedKeys)
 .
 
 Definition stateN := nroot .@ "state".
 
-Definition kv_inv γlog γkv : iProp Σ :=
-  inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γkv ops).
+Definition kv_inv γlog γ : iProp Σ :=
+  inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γ ops).
 
-Definition kv_ptsto γkv (k v : string) : iProp Σ :=
-  k ↪[γkv] v.
+Definition kv_ptsto γ (k v : string) : iProp Σ :=
+  k ↪[γ.(kv_gn)] v.
+
+(* FIXME: this should not expose own_log. Want to directly allocate KV system
+   and servers in one shot, without manually doing pb underneath. *)
+
+Definition is_kv_config_hosts confHosts γ : iProp Σ :=
+  ∃ γerpc γlog,
+    "#Hee_inv" ∷ is_esm_inv (low_record:=kv_record) γ.(pb_gn) γlog γerpc ∗
+    "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
+    "#Hkv_inv" ∷ kv_inv γlog γ ∗
+    "#Hinvs" ∷ is_pb_system_invs γ.(pb_gn) ∗
+    "#Hconf" ∷ is_pb_sys_hosts confHosts γ.(pb_gn) ∗
+    "%Hnonempty" ∷ ⌜0 < length confHosts⌝
+.
+
+Definition is_kv_server_host host γ γsrv : iProp Σ :=
+  is_pb_host host γ.(pb_gn) γsrv.
+
+(*
+Lemma alloc_kv_system γsrvs :
+  length γsrvs > 0 →
+  (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_accepted_lb γsrv.(r_pb) (U64 0) [] ∗ is_epoch_lb γsrv.(r_pb) 0)
+  ={⊤}=∗ ∃ γ,
+  is_kv_inv γ ∗
+  [∗ set] k ∈ allocated, kv_ptsto γ k ""
+.
+  is_pb_system_invs γ ∗
+  own_op_log γ [] ∗
+  (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_pb_sys_init_witness γ γsrv) ∗
+  pb_init_for_config γ.(s_pb) (r_pb <$> γsrvs) ∗
+  primary_init_for_config γ.(s_prim) ∗
+  is_proph_read_inv γ
+.
 
 Lemma alloc_kv γlog allocated :
   own_log γlog [] ={⊤}=∗
-  ∃ γkv ,
-  kv_inv γlog γkv ∗
-  [∗ set] k ∈ allocated, kv_ptsto γkv k ""
+  ∃ γ ,
+  kv_inv γlog γ ∗
+  [∗ set] k ∈ allocated, kv_ptsto γ k ""
 .
 Proof.
   iIntros "Hlog".
   iMod (ghost_map_alloc (gset_to_gmap "" allocated)) as (γkv) "[Hkvs Hkvptsto]".
-  iExists _.
+  iExists {| |}.
   iMod (inv_alloc with "[Hkvs Hlog]") as "$".
   { iNext. iExists _; iFrame. rewrite /own_kvs /compute_state /=.
     iExists _. rewrite left_id_L. done. }
@@ -83,36 +124,7 @@ Proof.
   rewrite lookup_gset_to_gmap_Some.
   iIntros ([_ <-]). auto.
 Qed.
-
-(* These are the client-side invs *)
-Definition is_ekv_invs γpb γkv : iProp Σ :=
-  ∃ γlog γerpc,
-  is_esm_inv (low_record:=kv_record) γpb γlog γerpc ∗
-  is_eRPCServer γerpc ∗
-  kv_inv γlog γkv
-.
-
-Definition is_kv_config_hosts confHosts γkv : iProp Σ :=
-  ∃ γpb γerpc γlog,
-    "#Hee_inv" ∷ is_esm_inv (low_record:=kv_record) γpb γlog γerpc ∗
-    "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
-    "#Hkv_inv" ∷ kv_inv γlog γkv ∗
-    "#Hconf" ∷ is_pb_sys_hosts confHosts γpb
-.
-
-Lemma alloc_ekv γpb allocated :
-  own_op_log γpb [] ={⊤}=∗
-  ∃ γkv ,
-  is_ekv_invs γpb γkv ∗
-  [∗ set] k ∈ allocated, kv_ptsto γkv k ""
-.
-Proof.
-  iIntros "Hoplog".
-  iMod (alloc_esm with "[$]") as (??) "(#? & #? & ?)".
-  iMod (alloc_kv with "[$]") as (?) "(#? & Hkvs)".
-  iExists _. iFrame.
-  iModIntro. repeat iExists _; iFrame "#".
-Qed.
+ *)
 
 End global_proof.
 
@@ -121,18 +133,15 @@ Section local_proof.
 Context `{!heapGS Σ}.
 Context `{!ekvG Σ}.
 
-(* FIXME: this shouldn't expose any internal pb stuff *)
-Lemma wp_Start fname configHosts_sl configHosts (host:chan) γsys γsrv data :
+Definition kv_crash_resources γ γsrv data : iProp Σ := file_crash (own_Server_ghost_f γ.(pb_gn) γsrv) data.
+
+Lemma wp_Start fname configHosts_sl configHosts (host:chan) γ γsrv data :
   {{{
       "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
-      "#Hconf" ∷ is_pb_sys_hosts configHosts γsys ∗
-      "#HisConfHost" ∷ config_protocol_proof.is_pb_config_hosts configHosts γsys ∗
-      "%Hnonempty" ∷ ⌜0 < length configHosts⌝ ∗
-      "#Hhost" ∷ is_pb_host host γsys γsrv ∗
-      "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash (own_Server_ghost_f γsys γsrv) data)
-                  (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') ∗
-
-      "#Hinvs" ∷ is_pb_system_invs γsys
+      "#Hconf" ∷ is_kv_config_hosts configHosts γ ∗
+      "#Hhost" ∷ is_kv_server_host host γ γsrv ∗
+      "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ kv_crash_resources γ γsrv data)
+                  (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ kv_crash_resources γ γsrv data')
   }}}
     Start #(LitString fname) #(host:u64) (slice_val configHosts_sl)
   {{{
@@ -143,6 +152,7 @@ Proof using Type*.
   iIntros (Φ) "Hpre HΦ".
   iNamed "Hpre".
   wp_call.
+
   wp_apply (wp_makeVersionedStateMachine).
   iIntros (??) "[#His1 Hown]".
   wp_apply (wp_MakeExactlyOnceStateMachine with "[Hown]").
@@ -151,8 +161,13 @@ Proof using Type*.
     iFrame "His1".
   }
   iIntros (??) "[#His2 Hown]".
-  wp_apply (wp_MakePbServer with "[$Hown $Hfile_ctx]").
-  { iFrame "#%". }
+  iNamed "Hconf". iNamed "Hconf".
+  wp_apply (wp_MakePbServer with "[Hown Hfile_ctx]").
+  {
+    iDestruct "Hconf" as "[Hconf ?]".
+    iFrame "Hinvs". iFrame "HconfSl Hconf". iFrame "%".
+    iFrame "His2 ∗".
+  }
   iIntros (?) "His".
   wp_pures.
   wp_apply (pb_start_proof.wp_Server__Serve with "[$]").
@@ -170,8 +185,7 @@ Definition own_Clerk ck γkv : iProp Σ :=
 Lemma wp_MakeClerk γkv configHosts configHosts_sl :
   {{{
       "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
-      "#Hhost" ∷ is_kv_config_hosts configHosts γkv ∗
-      "%Hnonempty" ∷ ⌜0 < length configHosts⌝
+      "#Hhost" ∷ is_kv_config_hosts configHosts γkv
   }}}
     kv.MakeClerk (slice_val configHosts_sl)
   {{{

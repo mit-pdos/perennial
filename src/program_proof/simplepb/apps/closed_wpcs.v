@@ -13,28 +13,27 @@ From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb.apps Require Import clerkpool_proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From Perennial.goose_lang Require Import crash_borrow crash_modality.
+From Perennial.goose_lang Require Import recovery_lifting.
 
 Section closed_wpcs.
 
 Context `{!heapGS Σ}.
 Context `{!ekvG Σ}.
 
-Lemma wpc_kv_replica_main γsys γsrv Φc fname me configHost :
-  ((∃ data' : list u8, fname f↦data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data') -∗
+Lemma wpc_kv_replica_main γ γsrv Φc fname me configHost data :
+  ((∃ data' : list u8, fname f↦data' ∗ ▷ kv_crash_resources γ γsrv data') -∗
     Φc) -∗
-  config_protocol_proof.is_pb_config_hosts [configHost] γsys -∗
-  clerk_proof.is_proph_read_inv γsys -∗
-  is_pb_host me γsys γsrv -∗
-  is_pb_system_invs γsys -∗
-  (∃ data : list u8, fname f↦data ∗ file_crash (own_Server_ghost_f γsys γsrv) data) -∗
+  ("#Hconf" ∷ is_kv_config_hosts [configHost] γ ∗
+   "#Hhost" ∷ is_kv_server_host me γ γsrv ∗
+   "Hfile" ∷ fname f↦ data ∗
+   "Hcrash" ∷ kv_crash_resources γ γsrv data
+  ) -∗
   WPC kv_replica_main #(LitString fname) #me #configHost @ ⊤
   {{ _, True }}
   {{ Φc }}
 .
 Proof.
-  (* TODO: all the invs *)
-  iIntros "HΦc #HconfHost #Hproph #Hpbhost #Hinvs Hpre".
-  iDestruct "Hpre" as (?) "[Hfile Hcrash]".
+  iIntros "HΦc H". iNamed "H".
 
   unfold kv_replica_main.
   wpc_call.
@@ -63,7 +62,7 @@ Proof.
   { iAccu. }
   {
     iModIntro.
-    instantiate (1:=(|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv) data')).
+    instantiate (1:=(|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ kv_crash_resources γ γsrv data')).
     iIntros "[H1 H2]".
     iModIntro.
     iExists _.
@@ -91,9 +90,7 @@ Proof.
   iMod (readonly_alloc_1 with "Hsl") as "#Hsl".
 
   wp_apply (wp_Start with "[$Hfile_ctx]").
-  {
-    iFrame "#". iPureIntro. simpl. rewrite app_length /=. word.
-  }
+  { iFrame "#". }
   wp_pures.
   done.
 Qed.
@@ -159,14 +156,14 @@ Proof.
   iIntros (?) "#Hdsl".
 
   wp_apply (wp_MakeKv with "[$Hhost1]").
-  { iFrame "#". done. }
+  { iFrame "#". }
   iIntros (?) "#Hkv".
   wp_pures.
 
   wp_apply wp_mk_lconfig_hosts.
   iIntros (?) "#Hlsl".
   wp_apply (wp_MakeKv with "[$Hhost2]").
-  { iFrame "#". done. }
+  { iFrame "#". }
   iIntros (?) "Hlock_kv".
   wp_apply (wp_MakeLockClerk lockN with "[Hlock_kv]").
   {
@@ -238,3 +235,94 @@ Proof.
 Qed.
 
 End closed_wpcs.
+
+Section closed_wprs.
+
+#[global]
+Instance is_kv_config_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ:
+  IntoCrash (is_kv_config_hosts u γ)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_config_hosts u γ)%I
+.
+Proof.
+  rewrite /IntoCrash /is_kv_config_hosts.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+#[global]
+Instance is_kv_host_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ γsrv:
+  IntoCrash (is_kv_server_host u γ γsrv)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_server_host u γ γsrv)%I
+.
+Proof.
+  rewrite /IntoCrash /is_kv_config_hosts.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+#[global]
+Instance kv_crash_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} a b c:
+  IntoCrash (kv_crash_resources a b c)
+    (λ hG, (kv_crash_resources a b c))%I.
+Proof.
+  rewrite /IntoCrash /file_crash.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+Local Definition crash_cond {Σ} `{ekvG Σ} {fname γ γsrv} :=
+  (λ hG : heapGS Σ, ∃ data, fname f↦ data ∗ ▷ kv_crash_resources γ γsrv data)%I.
+
+Lemma wpr_kv_replica_main fname me configHost γ γsrv {Σ} {HKV: ekvG Σ}
+                               {HG} {HL}:
+  let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
+  ("#Hconf" ∷ is_kv_config_hosts [configHost] γ ∗
+   "#Hhost" ∷ is_kv_server_host me γ γsrv ∗
+   "Hcrash" ∷ kv_crash_resources γ γsrv [] ∗
+   "Hfile" ∷ fname f↦ []
+  ) -∗
+  wpr NotStuck ⊤ (kv_replica_main #(LitString fname) #me #configHost) (kv_replica_main #(LitString fname) #me #configHost) (λ _ : goose_lang.val, True)
+    (λ _ , True) (λ _ _, True).
+Proof.
+  intros.
+  iNamed 1.
+  iApply (idempotence_wpr with "[Hfile Hcrash] []").
+  {
+    instantiate (1:=crash_cond).
+    simpl.
+    wpc_apply (wpc_kv_replica_main with "[]").
+    { iIntros "$". }
+    iFrame "∗#".
+  }
+  { (* recovery *)
+    rewrite /hG.
+    clear hG.
+    iModIntro.
+    iIntros (????) "Hcrash".
+    iNext.
+    iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
+    simpl.
+    set (hG' := HeapGS _ _ hL').
+    iDestruct "Hconf" as "-#Hconf".
+    iDestruct "Hhost" as "-#Hhost".
+    iCrash.
+    iIntros "_".
+    destruct hL as [HG'' ?].
+    iSplit; first done.
+    iDestruct "Hconf" as "(%&Hconf)".
+    iDestruct "Hhost" as "(%&Hhost)".
+    subst.
+    simpl in *.
+    clear hG'.
+    clear hL'.
+    (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+    set (hG2' := HeapGS _ _ goose_localGS).
+    simpl.
+    wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') with "[]").
+    { iIntros "H".
+      iDestruct "H" as (?) "[Hfile Hcrash]".
+      iExists _.
+      iFrame.
+    }
+    iFrame "∗#".
+  }
+Qed.
+
+End closed_wprs.

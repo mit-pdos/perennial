@@ -19,8 +19,7 @@ Definition is_ClerkPool c γkv : iProp Σ :=
   "#HmuInv" ∷ is_lock nroot mu (own_ClerkPool c γkv) ∗
   "#HconfHosts" ∷ readonly (c ↦[ClerkPool :: "confHosts"] (slice_val confHost_sl)) ∗
   "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
-  "#Hhost" ∷ is_kv_config_hosts confHosts γkv ∗
-  "%Hnonempty" ∷ ⌜ 0 < length confHosts ⌝
+  "#Hhost" ∷ is_kv_config_hosts confHosts γkv
 .
 
 Lemma wp_doWithClerk c γkv (f:val) Φ :
@@ -104,7 +103,7 @@ Proof.
     wp_pures.
     wp_loadField.
     wp_apply (wp_MakeClerk with "[]").
-    { iFrame "#%". iPureIntro. word. }
+    { iFrame "#%". }
     iIntros (?) "Hck".
     wp_store.
     wp_load.
@@ -134,8 +133,7 @@ Qed.
 Lemma wp_MakeClerkPool γkv confHosts confHost_sl :
   {{{
         "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
-        "#Hhost" ∷ is_kv_config_hosts confHosts γkv ∗
-        "%Hnonempty" ∷ ⌜ 0 < length confHosts ⌝
+        "#Hhost" ∷ is_kv_config_hosts confHosts γkv
   }}}
     MakeClerkPool (slice_val confHost_sl)
   {{{
@@ -170,8 +168,7 @@ Definition vkvE : coPset := (↑pb_protocol.pbN ∪ ↑clerk_proof.prophReadN �
 Lemma wp_MakeKv γkv confHost_sl confHosts :
   {{{
         "#Hconf_sl" ∷ readonly (own_slice_small confHost_sl uint64T 1 confHosts) ∗
-        "#Hhost" ∷ is_kv_config_hosts confHosts γkv ∗
-        "%Hnonempty" ∷ ⌜ 0 < length confHosts ⌝
+        "#Hhost" ∷ is_kv_config_hosts confHosts γkv
   }}}
     MakeKv (slice_val confHost_sl)
   {{{

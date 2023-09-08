@@ -42,16 +42,8 @@ Qed.
 (* The globalGS equality should actually always be the case (or more precisely,
  we should be unbundling, but let's include it here in the conclusion as a
  hack *)
-#[global]
-Instance is_pb_host_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} u γ1 γ2 :
-  IntoCrash (is_pb_host u γ1 γ2)
-    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_pb_host (pb_record:=PBRecord) u γ1 γ2)%I
-.
-Proof.
-  rewrite /IntoCrash /is_pb_host.
-  iIntros "$". iIntros; eauto.
-Qed.
 
+(*
 #[global]
 Instance is_pb_config_host_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} u γ:
   IntoCrash (is_pb_config_hosts u γ)
@@ -101,23 +93,21 @@ Proof.
   rewrite /IntoCrash /file_crash.
   iIntros "$". iIntros; eauto.
 Qed.
+ *)
 
 Definition kv_replica_main_crash_cond `{ekvG Σ} γsys fname γsrv1:=
 (λ hG : heapGS Σ, ∃ data',
     (fname f↦ data') ∗ ▷ file_crash (own_Server_ghost_f γsys γsrv1) data')%I.
 
-Lemma wpr_kv_replica_main fname me configHost γsys γsrv {Σ} {HKV: ekvG Σ}
+Lemma wpr_kv_replica_main fname me configHost {Σ} {HKV: ekvG Σ}
                                {HG} {HL}:
-  let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
-  "Hinvs" ∷ is_pb_system_invs γsys -∗
-  "Hsrvhost1" ∷ is_pb_host me γsys γsrv -∗
-  "Hconfhost" ∷ is_pb_config_hosts [configHost] γsys -∗
-  "Hproph" ∷ clerk_proof.is_proph_read_inv γsys -∗
+  let hG : heapGS Σ := {| goose_globalGS := HG; goose_localGS := HL |} in
   "Hinit" ∷ fname f↦[] -∗
-  "Hfile_crash" ∷ file_crash (own_Server_ghost_f γsys γsrv) [] -∗
   wpr NotStuck ⊤ (kv_replica_main #(LitString fname) #me #configHost) (kv_replica_main #(LitString fname) #me #configHost) (λ _ : goose_lang.val, True)
     (λ _ , True) (λ _ _, True).
 Proof.
+  Locate wpr.
+  Print wpr.
    iIntros. iNamed.
    iApply (idempotence_wpr with "[Hinit Hfile_crash] []").
    {
