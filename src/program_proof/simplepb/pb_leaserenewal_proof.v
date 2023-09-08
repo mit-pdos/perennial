@@ -34,7 +34,6 @@ Lemma lease_renewal_step γ γsrv γconf γl newLeaseExpiration st :
           γ γsrv
 .
 Proof.
-  intros ?.
   iIntros "#Hnew_lease #Hlb #Hconf".
   rewrite /own_Server_ghost_eph_f /tc_opaque.
   iNamed 1.
