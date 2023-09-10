@@ -122,8 +122,10 @@ Lemma kv_pb_boot :
   file_content_bounds σdsrv2.(world).(grove_node_files) →
   σdsrv1.(world).(grove_node_files) !! replica_fname = Some [] →
   σdsrv2.(world).(grove_node_files) !! replica_fname = Some [] →
+  σdconfig.(world).(grove_node_files) !! replica_fname = Some [] →
 
   g.(global_world).(grove_net) !! dconfigHost = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! dconfigHostPaxos = Some (∅ : gset message) →
   g.(global_world).(grove_net) !! dr1Host = Some (∅ : gset message) →
   g.(global_world).(grove_net) !! dr2Host = Some (∅ : gset message) →
 
@@ -132,15 +134,18 @@ Lemma kv_pb_boot :
   file_content_bounds σlsrv2.(world).(grove_node_files) →
   σlsrv1.(world).(grove_node_files) !! replica_fname = Some [] →
   σlsrv2.(world).(grove_node_files) !! replica_fname = Some [] →
+  σlconfig.(world).(grove_node_files) !! replica_fname = Some [] →
 
   g.(global_world).(grove_net) !! lconfigHost = Some (∅ : gset message) →
+  g.(global_world).(grove_net) !! lconfigHostPaxos = Some (∅ : gset message) →
   g.(global_world).(grove_net) !! lr1Host = Some (∅ : gset message) →
   g.(global_world).(grove_net) !! lr2Host = Some (∅ : gset message) →
 
   grove_dist_adequate
     []
     [
-      (dconfig_main #(LitString replica_fname), σlsrv2); (* FIXME: this needs to be a separate state *)
+      (dconfig_main #(LitString replica_fname), σdconfig);
+      (lconfig_main #(LitString replica_fname), σlconfig);
       (kv_replica_main #(LitString replica_fname) #(dr1Host:u64) #dconfigHost, σdsrv1);
       (kv_replica_main #(LitString replica_fname) #(dr2Host:u64) #dconfigHost, σdsrv2);
       (kv_replica_main #(LitString replica_fname) #(lr1Host:u64) #lconfigHost, σlsrv1);
@@ -152,8 +157,9 @@ Lemma kv_pb_boot :
 Proof.
   intros ?????????.
   intros Hinitg. intros HbtChan1 HbaChan2.
-  intros Hdinitconfig Hdinitr1 Hdinitr2 Hdinitr1file Hdinitr2file HdconfChan Hdr1Chan Hdr2Chan.
-  intros Hlinitconfig Hlinitr1 Hlinitr2 Hlinitr1file Hlinitr2file HlconfChan Hlr1Chan Hlr2Chan.
+  intros.
+  (* intros Hdinitconfig Hdinitr1 Hdinitr2 Hdinitr1file Hdinitr2file HdconfChan Hdr1Chan Hdr2Chan.
+  intros Hlinitconfig Hlinitr1 Hlinitr2 Hlinitr1file Hlinitr2file HlconfChan Hlr1Chan Hlr2Chan. *)
   eapply (grove_ffi_dist_adequacy (kv_pbΣ)).
   { assumption. }
   { repeat constructor; naive_solver. }
@@ -164,103 +170,46 @@ Proof.
   { iModIntro. iMod (fupd_mask_subseteq ∅); eauto. }
 
   (* Allocate a vkv system *)
+
+  set (own_chans:=(λ l, [∗ list] h ∈ l, h c↦ ∅)%I).
+  iAssert (
+      own_chans [dr1Host ; dr2Host] ∗
+      own_chans [dconfigHost; dconfigHostPaxos] ∗
+      own_chans [lr1Host ; lr2Host] ∗
+      own_chans [lconfigHost; lconfigHostPaxos]
+          )%I with "[Hchan]" as "Hchans".
+  {
+    rewrite /own_chans.
+    repeat rewrite -big_sepL_app; simpl.
+    repeat (
+        iDestruct (big_sepM_delete with "Hchan") as "[$ Hchan]";
+        first (repeat rewrite lookup_delete_Some; try split_and!; try done)
+      ).
+  }
+
+  iDestruct "Hchans" as "(Hd1 & Hd2 & Hl1 & Hl2)".
+
+  (* Allocate the kv system used for storing data *)
   iMod (alloc_vkv [dr1Host ; dr2Host ] [(dconfigHost, dconfigHostPaxos)]
-                  {[ "init"; "a1"; "a2" ]} with "[Hchan]") as "[Hdkv Hdconf]".
-  { admit. }
-  iDestruct "Hdkv" as (γd ?)  "(Hkvs & #Hdhost & Hdsrvs)".
+                  {[ "init"; "a1"; "a2" ]} with "[Hd1 Hd2]") as "[Hdkv Hdconf]".
+  {
+    rewrite /own_chans /=.
+    repeat iDestruct (wand_refl (_ ∗ _) with "[$]") as "[? ?]".
+    iFrame.
+  }
+  iDestruct "Hdkv" as (γd γdsrvs)  "(Hkvs & #Hdhost & Hdsrvs)".
   iSimpl in "Hdhost".
 
+  (* Allocate the kv system used as a lockservice *)
   iMod (alloc_vkv [lr1Host ; lr2Host ] [(lconfigHost, lconfigHostPaxos)]
-                  {[ "init"; "a1"; "a2" ]} with "[]") as "[Hlkv Hlconf]".
-  { admit. }
-  iDestruct "Hlkv" as (γl ?)  "(Hlkvs & #Hlhost & Hlsrvs)".
+                  {[ "init"; "a1"; "a2" ]} with "[Hl1 Hl2]") as "[Hlkv Hlconf]".
+  {
+    rewrite /own_chans /=.
+    repeat iDestruct (wand_refl (_ ∗ _) with "[$]") as "[? ?]".
+    iFrame.
+  }
+  iDestruct "Hlkv" as (γl γlsrvs)  "(Hlkvs & #Hlhost & Hlsrvs)".
   iSimpl in "Hlhost".
-
-  (*
-  (* SET UP RSM SYTEM *)
-  (* First, pre-set up the two pairs of KV replica servers *)
-  iMod (prealloc_simplepb_server) as (γsrvd1) "[#Hdsrv1wit Hdsrv1]".
-  iMod (prealloc_simplepb_server) as (γsrvd2) "[#Hdsrv2wit Hdsrv2]".
-  set (confdγs:=[γsrvd1 ; γsrvd2]).
-  iMod (alloc_simplepb_system confdγs with "[]") as (γdpb) "Hd".
-  { simpl. lia. }
-  { iIntros. rewrite /confdγs elem_of_list_In /= in H.
-    naive_solver. }
-
-  iDestruct "Hd" as "(#Hinvs & Hlog & #Hwits & Hconf1 & Hconf2 & #Hclient_invs)".
-
-  (* Now, set up the exactly-once kv system *)
-  iMod (alloc_ekv _ {[ "init"; "a1"; "a2" ]} with "Hlog") as (?) "[#Hclient_invs2 Hkvs]".
-
-  (* Now, set up all the hosts *)
-  iDestruct (big_sepM_delete with "Hchan") as "[HconfChan Hchan]".
-  { apply HdconfChan. } (* get out conf chan points-to for later *)
-
-  iDestruct (big_sepM_delete with "Hchan") as "[Hr1Chan Hchan]".
-  { rewrite lookup_delete_Some. split; last apply Hdr1Chan. done. }
-  iMod (pb_host_init dr1Host with "Hr1Chan") as "#Hsrvhost1".
-
-  iDestruct (big_sepM_delete with "Hchan") as "[Hr2Chan Hchan]".
-  { rewrite lookup_delete_Some.
-    rewrite lookup_delete_Some.
-    split; last (split ; last apply Hdr2Chan); done. }
-  iMod (pb_host_init dr2Host with "Hr2Chan") as "#Hsrvhost2".
-
-  set (dconf:=[dr1Host ; dr2Host]).
-  iMod (alloc_pb_config_ghost γdpb dconf confdγs with "[] Hconf1 Hconf2") as (γconf) "[#Hconf HconfInit]".
-  {
-    iFrame "#".
-    by iApply big_sepL2_nil.
-  }
-
-  iMod (config_server_init dconfigHost γconf with "HconfChan") as "#Hconfhost".
-
-  iAssert (is_pb_config_host dconfigHost γdpb) with "[]" as "#HbConfHost".
-  { iExists _. iFrame "#". }
-  (* END SET UP RSM SYTEM *)
-  (* TODO: the above should probably be a lemma *)
-
-  (* SET UP RSM SYTEM *)
-  (* First, pre-set up the two pairs of KV replica servers *)
-  iMod (prealloc_simplepb_server) as (γsrvl1) "[#Hlsrv1wit Hlsrv1]".
-  iMod (prealloc_simplepb_server) as (γsrvl2) "[#Hlsrv2wit Hlsrv2]".
-  set (conflγs:=[γsrvl1 ; γsrvl2]).
-  iMod (alloc_simplepb_system conflγs with "[]") as (γlpb) "Hl".
-  { simpl. lia. }
-  { iIntros. rewrite /conflγs elem_of_list_In /= in H.
-    naive_solver. }
-
-  iDestruct "Hl" as "(#Hlinvs & Hllog & #Hlwits & Hlconf1 & Hlconf2 & #Hlclient_invs)".
-
-  (* Now, set up the exactly-once kv system *)
-  iMod (alloc_ekv _ {[ "init"; "a1"; "a2" ]} with "Hllog") as (?) "[#Hlclient_invs2 Hlkvs]".
-
-  (* Now, set up all the hosts *)
-  iDestruct (big_sepM_delete with "Hchan") as "[HlconfChan Hchan]".
-  { repeat rewrite lookup_delete_Some.
-    split_and!; last apply HlconfChan; done. }
-
-  iDestruct (big_sepM_delete with "Hchan") as "[Hlr1Chan Hchan]".
-  { repeat rewrite lookup_delete_Some. split_and!; last apply Hlr1Chan; done. }
-  iMod (pb_host_init lr1Host with "Hlr1Chan") as "#Hlsrvhost1".
-
-  iDestruct (big_sepM_delete with "Hchan") as "[Hlr2Chan Hchan]".
-  { repeat rewrite lookup_delete_Some.
-    split_and!; last apply Hlr2Chan; done. }
-  iMod (pb_host_init lr2Host with "Hlr2Chan") as "#Hlsrvhost2".
-
-  set (lconf:=[lr1Host ; lr2Host]).
-  iMod (alloc_pb_config_ghost γlpb lconf conflγs with "[] Hlconf1 Hlconf2") as (γlconf) "[#Hlconf HlconfInit]".
-  {
-    iFrame "#".
-    by iApply big_sepL2_nil.
-  }
-
-  iMod (config_server_init lconfigHost γlconf with "HlconfChan") as "#Hlconfhost".
-
-  iAssert (is_pb_config_host lconfigHost γlpb) with "[]" as "#HlConfHost".
-  { iExists _. iFrame "#". }
-  (* END SET UP RSM SYTEM *) *)
 
   (* set up bank *)
   iAssert (|={⊤}=> is_bank "init" _ _ {[ "a1" ; "a2" ]})%I with "[Hlkvs Hkvs]" as ">#Hbank".
@@ -283,8 +232,10 @@ Proof.
   }
 
   iModIntro.
-  iDestruct (big_sepL_cons with "Hdconf") as "[Hdconf _]".
-  simpl. iSplitL "Hdconf".
+  simpl.
+  (* data config *)
+  iDestruct "Hdconf" as "[Hdconf _]".
+  iSplitL "Hdconf".
   {
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[Hfile _]".
@@ -293,107 +244,82 @@ Proof.
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iApply (wpr_dconfig_main with "[-]").
-    { done. }
-    { iFrame "∗#". }
+    by iApply (wpr_dconfig_main with "[$]").
   }
-  iSplitL "HlconfInit".
+
+  (* lock config *)
+  iDestruct "Hlconf" as "[Hlconf _]".
+  iSplitL "Hlconf".
   {
     iIntros (HL) "Hfiles".
+    iDestruct (big_sepM_lookup_acc with "Hfiles") as "[Hfile _]".
+    { done. }
+    iDestruct "Hlconf" as (???) "(% & #Hhost & #Hpeers & #Hinvs & #Hwf & Hcrash)".
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
-    set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
-    iApply (idempotence_wpr with "[HlconfInit] []").
-    {
-      instantiate (1:=λ _, True%I).
-      simpl.
-      iApply wp_wpc.
-      iApply (wp_lconfig_main _ with "[$]").
-    }
-    { (* crash; there should actually be no crashes of the config server *)
-      iModIntro.
-      iIntros.
-      iModIntro.
-      rewrite /post_crash.
-      iIntros. iModIntro.
-      iSplit; first done. iIntros. iSplit; first done.
-      set (hG2' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
-      wpc_pures.
-      { done. }
-      done.
-    }
+    set (hG' := HeapGS _ _ _).
+    by iApply (wpr_lconfig_main with "[$]").
   }
-  iSplitL "Hdsrv1".
+  destruct γdsrvs as [|? γdsrvs].
+  { iDestruct (big_sepL2_length with "Hdsrvs")as %Hlen. by exfalso. }
+  iDestruct (big_sepL2_cons with "Hdsrvs") as "[Hdsrv Hdsrvs]".
+  iSplitL "Hdsrv".
   {
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iSpecialize ("Hdsrv1" $! γdpb with "[]").
-    { iApply "Hwits". iPureIntro. rewrite /confdγs elem_of_list_In /= //. naive_solver. }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iAssert (file_crash (own_Server_ghost_f γdpb _) []) with "[Hdsrv1]" as "HfileCrash".
-    { iLeft. by iFrame. }
-    iApply (@wpr_kv_replica_main _ _ _ γdpb γsrvd1 with "[$] [$] [$] [$] [$]").
+    iDestruct "Hdsrv" as "[H1 H2]".
+    iApply (wpr_kv_replica_main with "[$]").
+    (* FIXME: why is this iApply slow? *)
   }
-  (* TODO: do like above for replica main1 as separate lemma *)
-  iSplitL "Hdsrv2".
+  destruct γdsrvs as [|? γdsrvs].
+  { iDestruct (big_sepL2_length with "Hdsrvs")as %Hlen. by exfalso. }
+  iDestruct (big_sepL2_cons with "Hdsrvs") as "[Hdsrv Hdsrvs]".
+  iSplitL "Hdsrv".
   {
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iSpecialize ("Hdsrv2" $! γdpb with "[]").
-    { iApply "Hwits". iPureIntro. rewrite /confdγs elem_of_list_In /= //. naive_solver. }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iAssert (file_crash (own_Server_ghost_f γdpb _) []) with "[Hdsrv2]" as "HfileCrash".
-    { iLeft. by iFrame. }
-    iApply (@wpr_kv_replica_main _ _ _ γdpb γsrvd2 with "[$] [$] [$] [$] [$]").
+    iDestruct "Hdsrv" as "[H1 H2]".
+    iApply (wpr_kv_replica_main with "[$]").
   }
-  iSplitL "Hlsrv1".
+
+  destruct γlsrvs as [|? γlsrvs].
+  { iDestruct (big_sepL2_length with "Hlsrvs")as %Hlen. by exfalso. }
+  iDestruct (big_sepL2_cons with "Hlsrvs") as "[Hlsrv Hlsrvs]".
+  iSplitL "Hlsrv".
   {
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iSpecialize ("Hlsrv1" $! γlpb with "[]").
-    { iApply "Hlwits". iPureIntro. rewrite /confdγs elem_of_list_In /= //. naive_solver. }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iAssert (file_crash (own_Server_ghost_f γlpb _) []) with "[Hlsrv1]" as "HfileCrash".
-    { iLeft. by iFrame. }
-    iApply (@wpr_kv_replica_main _ _ _ γlpb γsrvl1 with "[$] [$] [$] [$] [$]").
+    iDestruct "Hlsrv" as "[H1 H2]".
+    iApply (wpr_kv_replica_main with "[$]").
   }
-  iSplitL "Hlsrv2".
+
+  destruct γlsrvs as [|? γlsrvs].
+  { iDestruct (big_sepL2_length with "Hlsrvs")as %Hlen. by exfalso. }
+  iDestruct (big_sepL2_cons with "Hlsrvs") as "[Hlsrv Hlsrvs]".
+  iSplitL "Hlsrv".
   {
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[HH _]".
     { done. }
-    iSpecialize ("Hlsrv2" $! γlpb with "[]").
-    { iApply "Hlwits". iPureIntro. rewrite /confdγs elem_of_list_In /= //. naive_solver. }
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iAssert (file_crash (own_Server_ghost_f γlpb _) []) with "[Hlsrv2]" as "HfileCrash".
-    { iLeft. by iFrame. }
-    iApply (@wpr_kv_replica_main _ _ _ γlpb γsrvl2 with "[$] [$] [$] [$] [$]").
+    iDestruct "Hlsrv" as "[H1 H2]".
+    iApply (wpr_kv_replica_main with "[$]").
   }
-  iAssert (is_kv_config dconfigHost γkv) with "[]" as "#Hkvconf".
-  {
-    iDestruct "Hclient_invs2" as (??) "H".
-    repeat iExists _.
-    iDestruct "H" as "( $ & $ & $ )".
-    iFrame "#".
-  }
-  iAssert (is_kv_config lconfigHost γkv0) with "[]" as "#Hlkvconf".
-  {
-    iDestruct "Hlclient_invs2" as (??) "H".
-    repeat iExists _.
-    iDestruct "H" as "( $ & $ & $ )".
-    iFrame "#".
-  }
+
   iSplitR.
   {
     iIntros (HL) "Hfiles".
@@ -415,9 +341,8 @@ Proof.
       iNext.
       simpl.
       set (hG' := HeapGS _ _ hL').
-      iDestruct "Hinvs" as "-#Hinvs".
-      iDestruct "Hkvconf" as "-#Hkvconf".
-      iDestruct "Hlkvconf" as "-#Hlkvconf".
+      iDestruct "Hdhost" as "-#Hdhost".
+      iDestruct "Hlhost" as "-#Hlhost".
       iDestruct "Hbank" as "-#Hbank".
       iCrash.
       iIntros "$".

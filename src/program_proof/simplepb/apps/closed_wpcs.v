@@ -242,6 +242,84 @@ Proof.
   done.
 Qed.
 
+Lemma wpc_lconfig_main (params:configParams.t Σ) γ γsrv Φc fname data :
+  params.(configParams.initconfig) = [lr1Host ; lr2Host] →
+  ((∃ data' : list u8, config_crash_resources γ γsrv data' ∗ fname f↦data') -∗
+    Φc) -∗
+  ("#Hhost" ∷ is_config_server_host lconfigHost lconfigHostPaxos γ γsrv ∗
+   "#Hpeers" ∷ is_config_peers [lconfigHostPaxos] γ ∗
+   "#Hinvs" ∷ is_config_invs γ ∗
+   "#Hwf" ∷ □ configParams.Pwf configParams.initconfig ∗
+
+   "Hfile" ∷ fname f↦ data ∗
+   "Hcrash" ∷ config_crash_resources γ γsrv data
+  ) -∗
+  WPC lconfig_main #(LitString fname) @ ⊤
+  {{ _, True }}
+  {{ Φc }}
+.
+Proof.
+  intros Hinit.
+  iIntros "HΦc H". iNamed "H".
+
+  wpc_call.
+  { iApply "HΦc". iExists _. iFrame. }
+
+  iCache with "HΦc Hfile Hcrash".
+  { iApply "HΦc". iExists _. iFrame. }
+  wpc_bind (NewSlice _ _).
+  wpc_frame.
+  iApply wp_crash_borrow_generate_pre.
+  { done. }
+  wp_apply wp_NewSlice.
+  iIntros (?) "Hsl".
+  iIntros "Hpreborrow".
+  iNamed 1.
+  wpc_pures.
+
+  iApply wpc_cfupd.
+  wpc_apply (wpc_crash_borrow_inits with "Hpreborrow [Hcrash Hfile] []").
+  { iAccu. }
+  {
+    iModIntro.
+    instantiate (1:=(∃ data', config_crash_resources γ γsrv data' ∗ fname f↦ data')%I).
+    iIntros "[H1 H2]".
+    iExists _.
+    iFrame.
+  }
+  iIntros "Hfile_ctx".
+  wpc_apply (wpc_crash_mono _ _ _ _ _ (True%I) with "[HΦc]").
+  { iIntros "_".
+    iIntros "H".
+    iModIntro.
+    iApply "HΦc".
+    done. }
+  iApply wp_wpc.
+  wp_pures.
+  wp_apply (wp_ref_to); first by val_ty.
+  iIntros (?) "Hservers".
+  wp_pures.
+  wp_load. wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl".
+  wp_store. wp_load.
+  wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl".
+  wp_store. wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  rewrite replicate_0 /=.
+  iMod (readonly_alloc_1 with "Hsl") as "#Hsl".
+  wp_apply wp_mk_lconfig_paxosHosts.
+  iIntros (?) "HconfSl".
+  wp_apply (wp_StartServer with "[$Hfile_ctx $HconfSl]").
+  {
+    rewrite Hinit.
+    iFrame "#".
+  }
+  iIntros (?) "_".
+  wp_pures.
+  done.
+Qed.
+
 Context `{!bankG Σ}.
 Lemma wp_makeBankClerk γlk γkv :
   {{{
@@ -456,6 +534,68 @@ Proof.
     instantiate (1:=config_crash_cond).
     simpl.
     wpc_apply (wpc_dconfig_main with "[]").
+    { done. }
+    { iIntros "$". }
+    iFrame "∗#".
+  }
+  { (* recovery *)
+    rewrite /hG.
+    clear hG.
+    iModIntro.
+    iIntros (????) "Hcrash".
+    iNext.
+    iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
+    simpl.
+    set (hG' := HeapGS _ _ hL').
+    iDestruct "Hhost" as "-#Hhost".
+    (* FIXME: bundle invariants together. *)
+    (*
+    iDestruct "Hhost" as "-#Hhost".
+    iCrash.
+    iIntros "_".
+    destruct hL as [HG'' ?].
+    iSplit; first done.
+    iDestruct "Hconf" as "(%&Hconf)".
+    iDestruct "Hhost" as "(%&Hhost)".
+    subst.
+    simpl in *.
+    clear hG'.
+    clear hL'.
+    (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+    set (hG2' := HeapGS _ _ goose_localGS).
+    simpl.
+    wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') with "[]").
+    { iIntros "H".
+      iDestruct "H" as (?) "[Hfile Hcrash]".
+      iExists _.
+      iFrame.
+    }
+    iFrame "∗#".
+  } *)
+Admitted.
+
+Lemma wpr_lconfig_main {Σ} {HKV: ekvG Σ} (params:configParams.t Σ) fname γ γsrv
+                               {HG} {HL}:
+  let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
+  params.(configParams.initconfig) = [lr1Host ; lr2Host] →
+  ("#Hhost" ∷ is_config_server_host lconfigHost lconfigHostPaxos γ γsrv ∗
+   "#Hpeers" ∷ is_config_peers [lconfigHostPaxos] γ ∗
+   "#Hinvs" ∷ is_config_invs γ ∗
+   "#Hwf" ∷ □ configParams.Pwf configParams.initconfig ∗
+
+   "Hfile" ∷ fname f↦ [] ∗
+   "Hcrash" ∷ config_crash_resources γ γsrv []
+  ) -∗
+  wpr NotStuck ⊤ (lconfig_main #(LitString fname)) (lconfig_main #(LitString fname)) (λ _ : goose_lang.val, True)
+    (λ _ , True) (λ _ _, True).
+Proof.
+  intros.
+  iNamed 1.
+  iApply (idempotence_wpr with "[Hfile Hcrash] []").
+  {
+    instantiate (1:=config_crash_cond).
+    simpl.
+    wpc_apply (wpc_lconfig_main with "[]").
     { done. }
     { iIntros "$". }
     iFrame "∗#".
