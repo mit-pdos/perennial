@@ -8,7 +8,7 @@ From Perennial.program_logic Require dist_lang.
 From Perennial.program_proof.bank Require Export bank_proof.
 From Perennial.program_proof.lock Require Export lock_proof.
 From Perennial.program_proof.simplepb Require Import pb_init_proof pb_definitions.
-From Perennial.program_proof.simplepb Require Import kv_proof.
+From Perennial.program_proof.simplepb Require Import kv_proof config_proof.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
 From Perennial.program_proof.simplepb.apps Require Import clerkpool_proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
@@ -24,7 +24,7 @@ Lemma wpc_kv_replica_main γ γsrv Φc fname me configHost data :
   ((∃ data' : list u8, fname f↦data' ∗ ▷ kv_crash_resources γ γsrv data') -∗
     Φc) -∗
   ("#Hconf" ∷ is_kv_config_hosts [configHost] γ ∗
-   "#Hhost" ∷ is_kv_server_host me γ γsrv ∗
+   "#Hhost" ∷ is_kv_replica_host me γ γsrv ∗
    "Hfile" ∷ fname f↦ data ∗
    "Hcrash" ∷ kv_crash_resources γ γsrv data
   ) -∗
@@ -134,6 +134,112 @@ Lemma wp_mk_lconfig_hosts :
   iIntros (?) "Hsl". iApply "HΦ".
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   iMod (readonly_alloc_1 with "Hsl") as "$". done.
+Qed.
+
+Lemma wp_mk_dconfig_paxosHosts :
+  {{{ True }}}
+    mk_dconfig_paxosHosts #()
+  {{{ sl, RET (slice_val sl); own_slice_small sl uint64T 1 [ dconfigHostPaxos ] }}}
+.
+  iIntros (?) "_ HΦ".
+  wp_lam. wp_apply (wp_NewSlice).
+  iIntros (?) "Hsl". wp_apply wp_ref_to; first by val_ty.
+  iIntros (?) "Hptr". wp_pures. wp_load.
+  iApply wp_fupd. wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl". iApply "HΦ".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl". done.
+Qed.
+
+Lemma wp_mk_lconfig_paxosHosts :
+  {{{ True }}}
+    mk_lconfig_paxosHosts #()
+  {{{ sl, RET (slice_val sl); own_slice_small sl uint64T 1 [ lconfigHostPaxos ] }}}
+.
+  iIntros (?) "_ HΦ".
+  wp_lam. wp_apply (wp_NewSlice).
+  iIntros (?) "Hsl". wp_apply wp_ref_to; first by val_ty.
+  iIntros (?) "Hptr". wp_pures. wp_load.
+  iApply wp_fupd. wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl". iApply "HΦ".
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl". done.
+Qed.
+
+Lemma wpc_dconfig_main (params:configParams.t Σ) γ γsrv Φc fname data :
+  params.(configParams.initconfig) = [dr1Host ; dr2Host] →
+  ((∃ data' : list u8, config_crash_resources γ γsrv data' ∗ fname f↦data') -∗
+    Φc) -∗
+  ("#Hhost" ∷ is_config_server_host dconfigHost dconfigHostPaxos γ γsrv ∗
+   "#Hpeers" ∷ is_config_peers [dconfigHostPaxos] γ ∗
+   "#Hinvs" ∷ is_config_invs γ ∗
+   "#Hwf" ∷ □ configParams.Pwf configParams.initconfig ∗
+
+   "Hfile" ∷ fname f↦ data ∗
+   "Hcrash" ∷ config_crash_resources γ γsrv data
+  ) -∗
+  WPC dconfig_main #(LitString fname) @ ⊤
+  {{ _, True }}
+  {{ Φc }}
+.
+Proof.
+  intros Hinit.
+  iIntros "HΦc H". iNamed "H".
+
+  wpc_call.
+  { iApply "HΦc". iExists _. iFrame. }
+
+  iCache with "HΦc Hfile Hcrash".
+  { iApply "HΦc". iExists _. iFrame. }
+  wpc_bind (NewSlice _ _).
+  wpc_frame.
+  iApply wp_crash_borrow_generate_pre.
+  { done. }
+  wp_apply wp_NewSlice.
+  iIntros (?) "Hsl".
+  iIntros "Hpreborrow".
+  iNamed 1.
+  wpc_pures.
+
+  iApply wpc_cfupd.
+  wpc_apply (wpc_crash_borrow_inits with "Hpreborrow [Hcrash Hfile] []").
+  { iAccu. }
+  {
+    iModIntro.
+    instantiate (1:=(∃ data', config_crash_resources γ γsrv data' ∗ fname f↦ data')%I).
+    iIntros "[H1 H2]".
+    iExists _.
+    iFrame.
+  }
+  iIntros "Hfile_ctx".
+  wpc_apply (wpc_crash_mono _ _ _ _ _ (True%I) with "[HΦc]").
+  { iIntros "_".
+    iIntros "H".
+    iModIntro.
+    iApply "HΦc".
+    done. }
+  iApply wp_wpc.
+  wp_pures.
+  wp_apply (wp_ref_to); first by val_ty.
+  iIntros (?) "Hservers".
+  wp_pures.
+  wp_load. wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl".
+  wp_store. wp_load.
+  wp_apply (wp_SliceAppend with "[$]").
+  iIntros (?) "Hsl".
+  wp_store. wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  rewrite replicate_0 /=.
+  iMod (readonly_alloc_1 with "Hsl") as "#Hsl".
+  wp_apply wp_mk_dconfig_paxosHosts.
+  iIntros (?) "HconfSl".
+  wp_apply (wp_StartServer with "[$Hfile_ctx $HconfSl]").
+  {
+    rewrite Hinit.
+    iFrame "#".
+  }
+  iIntros (?) "_".
+  wp_pures.
+  done.
 Qed.
 
 Context `{!bankG Σ}.
@@ -249,9 +355,9 @@ Proof.
 Qed.
 
 #[global]
-Instance is_kv_host_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ γsrv:
-  IntoCrash (is_kv_server_host u γ γsrv)
-    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_server_host u γ γsrv)%I
+Instance is_kv_replica_host_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ γsrv:
+  IntoCrash (is_kv_replica_host u γ γsrv)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_replica_host u γ γsrv)%I
 .
 Proof.
   rewrite /IntoCrash /is_kv_config_hosts.
@@ -274,7 +380,7 @@ Lemma wpr_kv_replica_main fname me configHost γ γsrv {Σ} {HKV: ekvG Σ}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   ("#Hconf" ∷ is_kv_config_hosts [configHost] γ ∗
-   "#Hhost" ∷ is_kv_server_host me γ γsrv ∗
+   "#Hhost" ∷ is_kv_replica_host me γ γsrv ∗
    "Hcrash" ∷ kv_crash_resources γ γsrv [] ∗
    "Hfile" ∷ fname f↦ []
   ) -∗
@@ -325,4 +431,105 @@ Proof.
   }
 Qed.
 
+Local Definition config_crash_cond {Σ} `{configG Σ} {fname γ γsrv} {params:configParams.t Σ} :=
+  (λ hG : heapGS Σ, ∃ data, config_crash_resources γ γsrv data ∗ fname f↦ data)%I.
+
+Lemma wpr_dconfig_main {Σ} {HKV: ekvG Σ} (params:configParams.t Σ) fname γ γsrv
+                               {HG} {HL}:
+  let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
+  params.(configParams.initconfig) = [dr1Host ; dr2Host] →
+  ("#Hhost" ∷ is_config_server_host dconfigHost dconfigHostPaxos γ γsrv ∗
+   "#Hpeers" ∷ is_config_peers [dconfigHostPaxos] γ ∗
+   "#Hinvs" ∷ is_config_invs γ ∗
+   "#Hwf" ∷ □ configParams.Pwf configParams.initconfig ∗
+
+   "Hfile" ∷ fname f↦ [] ∗
+   "Hcrash" ∷ config_crash_resources γ γsrv []
+  ) -∗
+  wpr NotStuck ⊤ (dconfig_main #(LitString fname)) (dconfig_main #(LitString fname)) (λ _ : goose_lang.val, True)
+    (λ _ , True) (λ _ _, True).
+Proof.
+  intros.
+  iNamed 1.
+  iApply (idempotence_wpr with "[Hfile Hcrash] []").
+  {
+    instantiate (1:=config_crash_cond).
+    simpl.
+    wpc_apply (wpc_dconfig_main with "[]").
+    { done. }
+    { iIntros "$". }
+    iFrame "∗#".
+  }
+  { (* recovery *)
+    rewrite /hG.
+    clear hG.
+    iModIntro.
+    iIntros (????) "Hcrash".
+    iNext.
+    iDestruct "Hcrash" as (?) "[Hfile Hcrash]".
+    simpl.
+    set (hG' := HeapGS _ _ hL').
+    iDestruct "Hhost" as "-#Hhost".
+    (* FIXME: bundle invariants together. *)
+    (*
+    iDestruct "Hhost" as "-#Hhost".
+    iCrash.
+    iIntros "_".
+    destruct hL as [HG'' ?].
+    iSplit; first done.
+    iDestruct "Hconf" as "(%&Hconf)".
+    iDestruct "Hhost" as "(%&Hhost)".
+    subst.
+    simpl in *.
+    clear hG'.
+    clear hL'.
+    (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
+    set (hG2' := HeapGS _ _ goose_localGS).
+    simpl.
+    wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') with "[]").
+    { iIntros "H".
+      iDestruct "H" as (?) "[Hfile Hcrash]".
+      iExists _.
+      iFrame.
+    }
+    iFrame "∗#".
+  } *)
+Admitted.
+
 End closed_wprs.
+
+Section closed_init.
+
+Context `{!gooseGlobalGS Σ}.
+Context `{!ekvG Σ}.
+
+Lemma alloc_vkv (replicaHosts:list u64) configHostPairs allocated :
+  ([∗ list] h ∈ configHostPairs, h.1 c↦ ∅ ∗ h.2 c↦ ∅) ∗
+  ([∗ list] h ∈ replicaHosts, h c↦ ∅)
+  ={⊤}=∗ (∃ γ γsrvs,
+
+  (* system-wide: allows clients to connect to the system, and gives them ownership of keys *)
+  ([∗ set] k ∈ allocated, kv_ptsto γ k "") ∗
+  is_kv_config_hosts (configHostPairs.*1) γ ∗
+
+  (* for each kv replica server:  *)
+  ([∗ list] host; γsrv ∈ replicaHosts ; γsrvs,
+     is_kv_replica_host host γ γsrv ∗
+     kv_crash_resources γ γsrv []
+  )) ∗
+
+  (* for each config paxos server:  *)
+  ([∗ list] configHostPair ∈ configHostPairs,
+    ∃ γconf γconfsrv params,
+    ⌜ params.(configParams.initconfig) = replicaHosts ⌝ ∗
+    is_config_server_host configHostPair.1 configHostPair.2 γconf γconfsrv ∗
+    is_config_peers (configHostPairs.*2) γconf ∗
+    is_config_invs γconf ∗
+    (□ configParams.Pwf configParams.initconfig) ∗
+    config_crash_resources γconf γconfsrv []
+  )
+.
+Proof.
+Admitted.
+
+End closed_init.

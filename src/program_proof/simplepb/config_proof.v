@@ -260,7 +260,7 @@ Definition initstate : list u8 :=
 Local Instance mpParams : mpaxosParams.t Σ :=
   mpaxosParams.mk Σ host_names initstate configWf configPaxosN.
 
-Definition crash_resources γ (γsrv:config_server_names) d : iProp Σ :=
+Definition config_crash_resources γ (γsrv:config_server_names) d : iProp Σ :=
   own_file_inv γ.(mpaxos_gn) γsrv d
 .
 
@@ -272,6 +272,11 @@ Definition is_config_server_host me paxosMe γ γsrv : iProp Σ :=
 Definition is_config_invs γ : iProp Σ :=
   "#Hst_inv" ∷ is_helping_inv γ.(mpaxos_gn) ∗
   "#Hconfig_inv" ∷ is_config_inv γ
+.
+
+(* XXX: maybe use is_config_server_host? *)
+Definition is_config_peers (paxosHosts: list u64) γ : iProp Σ :=
+  "#Hhosts" ∷ ([∗ list] host;γsrv' ∈ paxosHosts; host_names, is_mpaxos_host host γ.(mpaxos_gn) γsrv')
 .
 
 End config_global.
@@ -1847,11 +1852,6 @@ Proof.
   }
 Qed.
 
-(* XXX: maybe use is_config_server_host? *)
-Definition is_config_peers (paxosHosts: list u64) γ : iProp Σ :=
-  "#Hhosts" ∷ ([∗ list] host;γsrv' ∈ paxosHosts; host_names, is_mpaxos_host host γ.(mpaxos_gn) γsrv')
-.
-
 Lemma wp_makeServer γ γsrv fname data (paxosMe:u64) hosts_sl init_sl (hosts: list u64) :
   {{{
         "Hhosts_sl" ∷ (own_slice_small hosts_sl uint64T 1 hosts) ∗
@@ -1859,8 +1859,8 @@ Lemma wp_makeServer γ γsrv fname data (paxosMe:u64) hosts_sl init_sl (hosts: l
         "#Hhost" ∷ is_mpaxos_host paxosMe γ.(mpaxos_gn) γsrv ∗
         "#Hst_inv" ∷ is_helping_inv γ.(mpaxos_gn) ∗
         "#Hconfig_inv" ∷ is_config_inv γ ∗
-        "Hfile" ∷ crash_borrow (crash_resources γ γsrv data ∗ fname f↦ data)
-                (∃ d, crash_resources γ γsrv d ∗ fname f↦ d) ∗
+        "Hfile" ∷ crash_borrow (config_crash_resources γ γsrv data ∗ fname f↦ data)
+                (∃ d, config_crash_resources γ γsrv d ∗ fname f↦ d) ∗
         "#Hpeers" ∷ is_config_peers hosts γ ∗
         "#Hwf" ∷ □ Pwf initconfig
   }}}
@@ -1902,13 +1902,12 @@ Proof.
   by iFrame "Hsrv #".
 Qed.
 
-Lemma wp_StartServer γ γsrv fname me (paxosMe:u64) (data:list u8) hosts_sl init_sl (hosts: list u64) hostγs :
-  let mpParams := mpaxosParams.mk Σ hostγs initstate configWf configPaxosN in
+Lemma wp_StartServer γ γsrv fname me (paxosMe:u64) (data:list u8) hosts_sl init_sl (hosts: list u64) :
   {{{
         "Hhosts_sl" ∷ (own_slice_small hosts_sl uint64T 1 hosts) ∗
         "#Hinit" ∷ readonly (own_slice_small init_sl uint64T 1 initconfig) ∗
-        "Hfile" ∷ crash_borrow (crash_resources γ γsrv data ∗ fname f↦ data)
-                (∃ d, crash_resources γ γsrv d ∗ fname f↦ d) ∗
+        "Hfile" ∷ crash_borrow (config_crash_resources γ γsrv data ∗ fname f↦ data)
+                (∃ d, config_crash_resources γ γsrv d ∗ fname f↦ d) ∗
 
         "#Hhost" ∷ is_config_server_host me paxosMe γ γsrv ∗
         "#Hinvs" ∷ is_config_invs γ ∗
@@ -1921,7 +1920,6 @@ Lemma wp_StartServer γ γsrv fname me (paxosMe:u64) (data:list u8) hosts_sl ini
         (s:loc), RET #s; is_Server s γ
   }}}.
 Proof.
-  intros ?.
   iIntros (?) "H HΦ".
   iNamed "H".
   wp_call.
@@ -2006,16 +2004,6 @@ End config_proof.
 
 Section config_init.
 
-(*
-    "Hfile" ∷ crash_borrow (crash_resources γ γsrv data ∗ fname f↦ data)
-            (∃ d, crash_resources γ γsrv d ∗ fname f↦ d) ∗
-
-    "#Hinvs" ∷ is_config_invs γ ∗
-    "#Hwf" ∷ □ Pwf initconfig
-    "#Hhost" ∷ is_config_server_host me paxosMe γ γsrv ∗
-    "#Hpeers" ∷ is_config_peers hosts γ ∗
-*)
-
 Context `{!configG Σ}.
 Context `{!gooseGlobalGS Σ}.
 
@@ -2042,7 +2030,7 @@ Lemma prealloc_config_server :
   is_config_server_prealloc_witness γsrv ∗
   (∀ γ params,
      is_config_sys_init_witness γ params -∗
-     crash_resources γ γsrv []
+     config_crash_resources γ γsrv []
   )
 .
 Proof.

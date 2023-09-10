@@ -85,7 +85,10 @@ Definition is_kv_config_hosts confHosts γ : iProp Σ :=
     "%Hnonempty" ∷ ⌜0 < length confHosts⌝
 .
 
-Definition is_kv_server_host host γ γsrv : iProp Σ :=
+Definition is_kv_replica_host host γ γsrv : iProp Σ :=
+  is_pb_host host γ.(pb_gn) γsrv.
+
+Definition is_kv_config_host host γ γsrv : iProp Σ :=
   is_pb_host host γ.(pb_gn) γsrv.
 
 (*
@@ -126,6 +129,8 @@ Proof.
 Qed.
  *)
 
+Definition kv_crash_resources γ γsrv data : iProp Σ := file_crash (own_Server_ghost_f γ.(pb_gn) γsrv) data.
+
 End global_proof.
 
 Section local_proof.
@@ -133,13 +138,11 @@ Section local_proof.
 Context `{!heapGS Σ}.
 Context `{!ekvG Σ}.
 
-Definition kv_crash_resources γ γsrv data : iProp Σ := file_crash (own_Server_ghost_f γ.(pb_gn) γsrv) data.
-
 Lemma wp_Start fname configHosts_sl configHosts (host:chan) γ γsrv data :
   {{{
       "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
       "#Hconf" ∷ is_kv_config_hosts configHosts γ ∗
-      "#Hhost" ∷ is_kv_server_host host γ γsrv ∗
+      "#Hhost" ∷ is_kv_replica_host host γ γsrv ∗
       "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ kv_crash_resources γ γsrv data)
                   (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ kv_crash_resources γ γsrv data')
   }}}

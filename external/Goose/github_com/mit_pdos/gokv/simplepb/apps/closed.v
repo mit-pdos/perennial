@@ -33,12 +33,22 @@ Definition mk_dconfig_hosts: val :=
     let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
     SliceAppend uint64T (![slice.T uint64T] "configHosts") dconfigHost.
 
+Definition mk_lconfig_paxosHosts: val :=
+  rec: "mk_lconfig_paxosHosts" <> :=
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    SliceAppend uint64T (![slice.T uint64T] "configHosts") lconfigHostPaxos.
+
+Definition mk_dconfig_paxosHosts: val :=
+  rec: "mk_dconfig_paxosHosts" <> :=
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    SliceAppend uint64T (![slice.T uint64T] "configHosts") dconfigHostPaxos.
+
 Definition lconfig_main: val :=
   rec: "lconfig_main" "fname" :=
     let: "servers" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
     "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") lr1);;
     "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") lr2);;
-    config2.StartServer "fname" lconfigHost lconfigHostPaxos (mk_lconfig_hosts #()) (![slice.T uint64T] "servers");;
+    config2.StartServer "fname" lconfigHost lconfigHostPaxos (mk_lconfig_paxosHosts #()) (![slice.T uint64T] "servers");;
     #().
 
 Definition dconfig_main: val :=
@@ -46,7 +56,7 @@ Definition dconfig_main: val :=
     let: "servers" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
     "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") dr1);;
     "servers" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "servers") dr2);;
-    config2.StartServer "fname" dconfigHost dconfigHostPaxos (mk_dconfig_hosts #()) (![slice.T uint64T] "servers");;
+    config2.StartServer "fname" dconfigHost dconfigHostPaxos (mk_dconfig_paxosHosts #()) (![slice.T uint64T] "servers");;
     #().
 
 Definition kv_replica_main: val :=
