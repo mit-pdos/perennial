@@ -2193,6 +2193,7 @@ Proof.
   iIntros "Hchans #HP".
   iDestruct (big_sepL_sep with "Hchans") as "[Hc Hp]".
   iMod (alloc_mpaxos_system mpParams (hostPairs.*2) with "[Hp] []") as "H".
+  { rewrite fmap_length. lia. }
   { by rewrite big_sepL_fmap. }
   { simpl. iExists _.
 

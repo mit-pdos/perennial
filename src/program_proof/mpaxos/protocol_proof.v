@@ -1125,20 +1125,6 @@ Proof.
   }
 Qed.
 
-Definition natsUpTo (n:nat) : gset nat :=
-  foldl (λ s n, s ∪ {[ n  ]}) ∅ (seq 0 n).
-
-Lemma natsUpTo_size n :
-  size (natsUpTo n) = n
-.
-Proof.
-Admitted.
-
-Lemma natsUpTo_bound x n :
-  x ∈ (natsUpTo n) → x < n.
-Proof.
-Admitted.
-
 Definition is_sys_init_witness γsys : iProp Σ :=
   is_proposal_lb γsys (U64 0) [] ∗ is_proposal_facts γsys (U64 0) [].
 
@@ -1196,11 +1182,11 @@ Proof.
     iExists [], (U64 0).
     simpl.
     iFrame "∗#".
-    iExists (natsUpTo (length config)); iFrame "#".
+    iExists (set_seq 0 (length config)); iFrame "#".
     iSplitR.
-    { iPureIntro. intros. by apply natsUpTo_bound. }
+    { iPureIntro. intros. apply elem_of_set_seq in H. lia. }
     iSplitR.
-    { iPureIntro. intros. rewrite natsUpTo_size. lia. }
+    { iPureIntro. intros. rewrite size_set_seq. lia. }
     iApply big_sepL_forall.
     iIntros.
     iApply "Hacc".
