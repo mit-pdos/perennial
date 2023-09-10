@@ -21,7 +21,7 @@ Import configParams.
 Existing Instance toConfigParams.
 Definition is_pb_config_hosts hosts γ : iProp Σ :=
   ∃ γconf,
-  "#Hhosts" ∷ ([∗ list] host ∈ hosts, is_config_host host γconf) ∗
+  "#Hhosts" ∷ is_config_hosts hosts γconf ∗
   "#HconfInv" ∷ is_conf_inv γ γconf ∗
   "#HprophRead" ∷ is_proph_read_inv γ
   (* XXX: proph_read is here because this invariant is the precondition to
@@ -91,8 +91,7 @@ Definition is_Clerk2 ck γ γconf : iProp Σ :=
 Lemma wp_MakeClerk2 hosts hosts_sl γ :
   {{{
       "#Hhosts_sl" ∷ readonly (own_slice_small hosts_sl uint64T 1 hosts) ∗
-      "#Hhosts" ∷ is_pb_config_hosts hosts γ ∗
-      "%Hnonempty" ∷ ⌜ 0 < length hosts ⌝
+      "#Hhosts" ∷ is_pb_config_hosts hosts γ
   }}}
     config2.MakeClerk (slice_val hosts_sl)
   {{{

@@ -4,7 +4,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 From iris.base_logic Require Import ghost_map.
 From Perennial.goose_lang Require Import crash_borrow.
 From Perennial.program_proof.simplepb.simplelog Require Import proof.
-From Perennial.program_proof.simplepb Require Import pb_definitions config_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions config_proof config_protocol_proof.
 From Perennial.program_proof.simplepb Require Import pb_apply_proof clerk_proof.
 From Perennial.program_proof.grove_shared Require Import erpc_lib.
 From Perennial.program_proof Require Import map_marshal_proof.
@@ -26,25 +26,22 @@ Proof. intros. solve_inG. Qed.
 
 Definition ekv_record := (esm_record (low_record:=kv_record)).
 
-Context {conf_host_names:list config_proof.config_server_names}.
-Context {initconf:list u64}.
-Local Instance esmParams : pbParams.t := pbParams.mk conf_host_names initconf (ekv_record).
+Local Instance esmParams (initconf: list u64) : pbParams.t := pbParams.mk initconf (ekv_record).
 
-Class ekvG Σ :=
+Class ekvG {initconfig:list u64} Σ :=
   {
     ekv_erpcG :> erpcG Σ (list u8) ;
-    ekv_simplelogG :> simplelogG Σ;
+    ekv_simplelogG :> simplelogG Σ (params:=esmParams initconfig);
     ekv_kvG :> kvG Σ ;
   }.
 
-Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ; kvΣ].
-Global Instance subG_ekvΣ {Σ} : subG ekvΣ Σ → ekvG Σ.
+Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ (params:=esmParams []); kvΣ].
+Global Instance subG_ekvΣ {Σ} {initconfig:list u64} : subG ekvΣ Σ → ekvG (initconfig:=initconfig) Σ.
 Proof. intros. solve_inG. Qed.
 
 Record kv_names :=
   {
     pb_gn : simplepb_system_names ;
-    log_gn : gname ;
     kv_gn : gname ;
   }
 .
@@ -54,7 +51,8 @@ Implicit Types γ : kv_names.
 Section global_proof.
 
 Context `{!gooseGlobalGS Σ}.
-Context `{!ekvG Σ}.
+Context {initconfig: list u64}.
+Context `{!ekvG (initconfig:=initconfig) Σ}.
 
 (* The abstract state applies the operation to an all-nil map,
    so that each key already exists from the start. This is consisent with
@@ -75,14 +73,14 @@ Definition kv_ptsto γ (k v : string) : iProp Σ :=
 (* FIXME: this should not expose own_log. Want to directly allocate KV system
    and servers in one shot, without manually doing pb underneath. *)
 
+Local Instance esmParams1 : pbParams.t := esmParams initconfig.
+
 Definition is_kv_config_hosts confHosts γ : iProp Σ :=
   ∃ γerpc γlog,
     "#Hee_inv" ∷ is_esm_inv (low_record:=kv_record) γ.(pb_gn) γlog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
     "#Hkv_inv" ∷ kv_inv γlog γ ∗
-    "#Hinvs" ∷ is_pb_system_invs γ.(pb_gn) ∗
-    "#Hconf" ∷ is_pb_sys_hosts confHosts γ.(pb_gn) ∗
-    "%Hnonempty" ∷ ⌜0 < length confHosts⌝
+    "#Hconf" ∷ is_pb_config_hosts confHosts γ.(pb_gn)
 .
 
 Definition is_kv_replica_host host γ γsrv : iProp Σ :=
@@ -136,7 +134,7 @@ End global_proof.
 Section local_proof.
 
 Context `{!heapGS Σ}.
-Context `{!ekvG Σ}.
+Context `{!ekvG (initconfig:=initconfig) Σ}.
 
 Lemma wp_Start fname configHosts_sl configHosts (host:chan) γ γsrv data :
   {{{
@@ -164,13 +162,9 @@ Proof using Type*.
     iFrame "His1".
   }
   iIntros (??) "[#His2 Hown]".
-  iNamed "Hconf". iNamed "Hconf".
+  iNamed "Hconf".
   wp_apply (wp_MakePbServer with "[Hown Hfile_ctx]").
-  {
-    iDestruct "Hconf" as "[Hconf ?]".
-    iFrame "Hinvs". iFrame "HconfSl Hconf". iFrame "%".
-    iFrame "His2 ∗".
-  }
+  { iFrame "∗#". }
   iIntros (?) "His".
   wp_pures.
   wp_apply (pb_start_proof.wp_Server__Serve with "[$]").

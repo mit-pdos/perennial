@@ -99,8 +99,10 @@ Qed.
    This is probably a remnant of an older version of the proof in which the subG
    wasn't proven anywhere else.
  *)
-Local Instance subG_ekvΣ {Σ} : subG kv_pbΣ Σ → ekvG Σ.
-Proof. intros. solve_inG. Qed.
+Local Instance subG_ekvΣ {Σ} {initconfig:list u64}: subG kv_pbΣ Σ → ekvG (initconfig:=initconfig) Σ.
+Proof. intros. solve_inG. Unshelve.
+       (* FIXME: something weird is going on here.... *)
+       all: refine []. Qed.
 
 Definition replica_fname := "kv.data".
 
@@ -191,24 +193,24 @@ Proof.
 
   (* Allocate the kv system used for storing data *)
   iMod (alloc_vkv [dr1Host ; dr2Host ] [(dconfigHost, dconfigHostPaxos)]
-                  {[ "init"; "a1"; "a2" ]} with "[Hd1 Hd2]") as "[Hdkv Hdconf]".
+                  {[ "init"; "a1"; "a2" ]} with "[Hd1 Hd2]") as "[Hdkv Hdconf]"; try (simpl; lia).
   {
     rewrite /own_chans /=.
     repeat iDestruct (wand_refl (_ ∗ _) with "[$]") as "[? ?]".
     iFrame.
   }
-  iDestruct "Hdkv" as (γd γdsrvs)  "(Hkvs & #Hdhost & Hdsrvs)".
+  iDestruct "Hdkv" as (γd)  "(Hkvs & #Hdhost & Hdsrvs)".
   iSimpl in "Hdhost".
 
   (* Allocate the kv system used as a lockservice *)
   iMod (alloc_vkv [lr1Host ; lr2Host ] [(lconfigHost, lconfigHostPaxos)]
-                  {[ "init"; "a1"; "a2" ]} with "[Hl1 Hl2]") as "[Hlkv Hlconf]".
+                  {[ "init"; "a1"; "a2" ]} with "[Hl1 Hl2]") as "[Hlkv Hlconf]"; try (simpl; lia).
   {
     rewrite /own_chans /=.
     repeat iDestruct (wand_refl (_ ∗ _) with "[$]") as "[? ?]".
     iFrame.
   }
-  iDestruct "Hlkv" as (γl γlsrvs)  "(Hlkvs & #Hlhost & Hlsrvs)".
+  iDestruct "Hlkv" as (γl)  "(Hlkvs & #Hlhost & Hlsrvs)".
   iSimpl in "Hlhost".
 
   (* set up bank *)
@@ -240,7 +242,7 @@ Proof.
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[Hfile _]".
     { done. }
-    iDestruct "Hdconf" as (???) "(% & #Hhost & #Hpeers & #Hinvs & #Hwf & Hcrash)".
+    iDestruct "Hdconf" as (???) "(% & #Hhost & #Hpeers & #Hwf & Hcrash)".
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
@@ -254,15 +256,13 @@ Proof.
     iIntros (HL) "Hfiles".
     iDestruct (big_sepM_lookup_acc with "Hfiles") as "[Hfile _]".
     { done. }
-    iDestruct "Hlconf" as (???) "(% & #Hhost & #Hpeers & #Hinvs & #Hwf & Hcrash)".
+    iDestruct "Hlconf" as (???) "(% & #Hhost & #Hpeers & #Hwf & Hcrash)".
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     by iApply (wpr_lconfig_main with "[$]").
   }
-  destruct γdsrvs as [|? γdsrvs].
-  { iDestruct (big_sepL2_length with "Hdsrvs")as %Hlen. by exfalso. }
-  iDestruct (big_sepL2_cons with "Hdsrvs") as "[Hdsrv Hdsrvs]".
+  iDestruct ("Hdsrvs") as "[Hdsrv Hdsrvs]".
   iSplitL "Hdsrv".
   {
     iIntros (HL) "Hfiles".
@@ -271,13 +271,11 @@ Proof.
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iDestruct "Hdsrv" as "[H1 H2]".
+    iDestruct "Hdsrv" as (?) "[H1 H2]".
     iApply (wpr_kv_replica_main with "[- $H1]").
     { iFrame "∗#". }
   }
-  destruct γdsrvs as [|? γdsrvs].
-  { iDestruct (big_sepL2_length with "Hdsrvs")as %Hlen. by exfalso. }
-  iDestruct (big_sepL2_cons with "Hdsrvs") as "[Hdsrv Hdsrvs]".
+  iDestruct ("Hdsrvs") as "[Hdsrv Hdsrvs]".
   iSplitL "Hdsrv".
   {
     iIntros (HL) "Hfiles".
@@ -286,14 +284,11 @@ Proof.
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iDestruct "Hdsrv" as "[H1 H2]".
+    iDestruct "Hdsrv" as (?) "[H1 H2]".
     iApply (wpr_kv_replica_main with "[- $H1]").
     { iFrame "∗#". }
   }
-
-  destruct γlsrvs as [|? γlsrvs].
-  { iDestruct (big_sepL2_length with "Hlsrvs")as %Hlen. by exfalso. }
-  iDestruct (big_sepL2_cons with "Hlsrvs") as "[Hlsrv Hlsrvs]".
+  iDestruct ("Hlsrvs") as "[Hlsrv Hlsrvs]".
   iSplitL "Hlsrv".
   {
     iIntros (HL) "Hfiles".
@@ -302,14 +297,11 @@ Proof.
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iDestruct "Hlsrv" as "[H1 H2]".
+    iDestruct "Hlsrv" as (?) "[H1 H2]".
     iApply (wpr_kv_replica_main with "[- $H1]").
     { iFrame "∗#". }
   }
-
-  destruct γlsrvs as [|? γlsrvs].
-  { iDestruct (big_sepL2_length with "Hlsrvs")as %Hlen. by exfalso. }
-  iDestruct (big_sepL2_cons with "Hlsrvs") as "[Hlsrv Hlsrvs]".
+  iDestruct ("Hlsrvs") as "[Hlsrv Hlsrvs]".
   iSplitL "Hlsrv".
   {
     iIntros (HL) "Hfiles".
@@ -318,7 +310,7 @@ Proof.
     iModIntro.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
-    iDestruct "Hlsrv" as "[H1 H2]".
+    iDestruct "Hlsrv" as (?) "[H1 H2]".
     iApply (wpr_kv_replica_main with "[- $H1]").
     { iFrame "∗#". }
   }
@@ -334,7 +326,16 @@ Proof.
       iApply wp_wpc.
       wp_apply (wp_bank_transferer_main with "[]"); last done.
       repeat iExists _.
-      iFrame "Hbank #".
+      iSplitR.
+      2:{ iSplitR.
+          2:{
+            instantiate (1:=γd).
+            instantiate (3:=γl).
+            iApply to_named.
+            iExactEq "Hbank".
+            repeat f_equal.
+            admit.
+          }
     }
     {
       rewrite /hG'.

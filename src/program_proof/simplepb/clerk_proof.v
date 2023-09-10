@@ -308,8 +308,7 @@ Qed.
 Lemma wp_MakeClerk γ configHosts configHosts_sl :
   {{{
         "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
-        "#Hconf" ∷ is_pb_config_hosts configHosts γ ∗
-        "%Hnonempty" ∷ ⌜0 < length configHosts⌝
+        "#Hconf" ∷ is_pb_config_hosts configHosts γ
   }}}
     Make (slice_val configHosts_sl)
   {{{
@@ -318,10 +317,11 @@ Lemma wp_MakeClerk γ configHosts configHosts_sl :
 .
 Proof.
   iIntros (?) "#H HΦ".
-  iNamed "H". iDestruct "Hconf" as "[? ?]".
+  iNamed "H".
   wp_apply (wp_MakeClerk2 with "[]").
   { iFrame "#%". }
   iIntros (?) "?". iApply "HΦ".
+  iNamed "Hconf".
   iFrame "∗#".
 Qed.
 

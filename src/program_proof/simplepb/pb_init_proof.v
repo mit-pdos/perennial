@@ -43,6 +43,7 @@ Proof.
   set_solver.
 Qed.
 
+(* FIXME: make this global, not per-server by changing how to initialize idle replica servers *)
 Definition is_pb_sys_init_witness γ γsrv : iProp Σ :=
   is_sys_init_witness γ.(s_pb) ∗
   is_in_config γ γsrv (U64 0) ∗
@@ -143,9 +144,17 @@ Proof.
 Qed.
 
 Lemma alloc_simplepb_system (configHostPairs: list (u64 * u64)) (extrahosts: list u64) :
-  ([∗ list] h ∈ (initconf ++ extrahosts), h c↦ ∅)
+  extrahosts = [] → (* FIXME: get rid of this assumption *)
+  length initconf > 0 →
+  length configHostPairs > 0 →
+  ([∗ list] h ∈ (initconf ++ extrahosts), h c↦ ∅) -∗
+  ([∗ list] h ∈ configHostPairs, h.1 c↦ ∅ ∗ h.2 c↦ ∅)
   ={⊤}=∗
   ∃ γ,
+  (* committed log of operations *)
+   own_op_log γ [] ∗
+   is_pb_config_hosts configHostPairs.*1 γ ∗
+
   (* for each pb replica server:  *)
   ([∗ list] host ∈ initconf ++ extrahosts,
      ∃ γsrv,
@@ -159,12 +168,131 @@ Lemma alloc_simplepb_system (configHostPairs: list (u64 * u64)) (extrahosts: lis
     ⌜ params.(configParams.initconfig) = initconf ⌝ ∗
     is_config_server_host configHostPair.1 configHostPair.2 γconf γconfsrv ∗
     is_config_peers (configHostPairs.*2) γconf ∗
-    is_config_invs γconf ∗
     (□ configParams.Pwf configParams.initconfig) ∗
     config_crash_resources γconf γconfsrv []
   )
 .
 Proof.
-Admitted.
+  intros.
+  iIntros "Hchans HconfChans".
+  subst. rewrite app_nil_r.
+  iAssert (|={⊤}=> [∗ list] h ∈ initconf (* ++ extrahosts*),
+             ∃ γsrv,
+           is_server_prealloc_witness γsrv ∗
+           (∀ γ, is_pb_sys_init_witness γ γsrv -∗ own_Server_ghost_f γ γsrv (U64 0) [] false)
+           )%I with "[]" as ">Hpresrvs".
+  {
+    iApply big_sepL_fupd. iApply big_sepL_impl.
+    { by iApply big_sepL_emp. }
+    iIntros "!# * _ _".
+    iMod prealloc_simplepb_server as (?) "H".
+    by iExists _; iFrame.
+  }
+  iDestruct (big_sepL_exists_to_sepL2 with "Hpresrvs") as (γsrvs) "Hpresrvs".
+  iDestruct (big_sepL2_sep with "Hpresrvs") as "[#Hwits Hpresrvs]".
+  (* iDestruct (big_sepL2_app_inv_l with "Hwits") as (γsrvs ? _) "[#Hwits _]". *)
+  iDestruct (big_sepL2_length with "Hwits") as %Hlength.
+
+  iMod (alloc_simplepb_last γsrvs with "[]") as (γ) "H".
+  { lia. }
+  {
+    iIntros.
+    iDestruct (big_sepL2_const_sepL_r with "Hwits") as "[_ Hwits2]".
+    by iDestruct (big_sepL_elem_of with "Hwits2") as "$".
+  }
+
+  iClear "Hwits".
+  iDestruct "H" as "(#HsysInvs & Hlog & #HinitWits & Hconf & Hprim & #Hproph)".
+  iDestruct (big_sepL2_impl with "Hpresrvs []") as "Hpresrvs".
+  {
+    iModIntro. iIntros "* % % H".
+    iSpecialize ("H" $! γ).
+    iAccu.
+  }
+  simpl.
+  iDestruct (big_sepL2_wand with "[] Hpresrvs") as "Hsrvs".
+  {
+    iApply big_sepL2_forall.
+    iSplitR; first done.
+    iIntros.
+    iApply "HinitWits".
+    iPureIntro.
+    by eapply elem_of_list_lookup_2.
+  }
+  iExists γ.
+  iFrame "Hlog".
+  rewrite sep_comm. repeat rewrite -sep_assoc.
+  iAssert (|={⊤}=> [∗ list] h; γsrv ∈ params.(initconf); γsrvs, is_pb_host h γ γsrv)%I with "[Hchans]" as ">#Hrpcs".
+  {
+    iApply big_sepL2_fupd.
+    iDestruct (big_sepL2_const_sepL_l with "[$Hchans]") as "HH".
+    { done. }
+    iDestruct (big_sepL2_impl with "HH []") as "$".
+    iIntros "!# * % % H".
+    iMod (alloc_pb_rpcs with "[$]") as "$".
+    by iFrame "HsysInvs".
+  }
+  iSplitL "Hsrvs".
+  {
+    iModIntro.
+    iDestruct (big_sepL2_sep with "[$Hsrvs $Hrpcs]") as "HH".
+    iDestruct (big_sepL2_to_sepL_1 with "HH") as "HH".
+    iApply (big_sepL_impl with "HH").
+    iIntros "!# * %Hlookup H".
+    iDestruct "H" as (?) "[_ [? ?]]".
+    iExists _; iFrame.
+  }
+  set (p:=toConfigParams γ).
+  iMod (alloc_config_system p configHostPairs with "HconfChans []") as "H".
+  { done. }
+  { iModIntro.
+    simpl.
+    iExists _.
+    iApply big_sepL2_flip.
+    iFrame "Hrpcs".
+  }
+  iDestruct "H" as (γconf) "(Hsrvs & #HconfHosts & Hres)".
+  iSplitL "Hsrvs".
+  {
+    iApply (big_sepL_impl with "Hsrvs").
+    iIntros "!> !# * %Hlookup H".
+    iDestruct "H" as (?) "(#Hpeers & Hhost & Hcrash)".
+    repeat iExists _; iFrame "∗#".
+    iSplitR.
+    { done. }
+    iModIntro.
+    simpl. iExists _.
+    iApply big_sepL2_flip.
+    iFrame "Hrpcs".
+  }
+  repeat iExists _.
+  iFrame "#".
+  iMod (inv_alloc with "[-]") as "$"; last done.
+  iNext.
+  repeat iExists _.
+  iDestruct "Hres" as "(? & ? & ?)".
+  iNamed "Hconf".
+  rewrite /primary_init_for_config /pb_init_for_config.
+  iFrame "∗ His_conf #".
+  iSplitR; first done.
+  iSplitR.
+  {
+    iApply big_sepL2_flip.
+    iFrame "Hrpcs".
+  }
+  iSplitL "Hunused Hprim".
+  {
+    iDestruct (big_sepS_sep with "[$Hunused $Hprim]") as "HH".
+    iApply (big_sepS_impl with "HH").
+    iIntros "!# * % [H1 H2] %".
+    iSpecialize ("H1" with "[//]").
+    iSpecialize ("H2" with "[//]").
+    iFrame.
+  }
+  iSplitR.
+  { by iRight. }
+  iIntros (???).
+  exfalso. word.
+Qed.
 
 End pb_init_proof.

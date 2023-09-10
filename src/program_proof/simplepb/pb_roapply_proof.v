@@ -48,7 +48,7 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  rewrite is_pb_host_unfold.
+  rewrite is_pb_rpcs_unfold.
   iNamed "Hsrv".
   wp_apply (wp_ReconnectingClient__Call2 with "Hcl_rpc [] Hop_sl Hrep").
   {

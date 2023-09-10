@@ -26,8 +26,7 @@ Lemma wp_Reconfig γ configHosts_sl (configHosts:list u64) (servers:list u64) (s
         "Hservers_sl" ∷ own_slice servers_sl uint64T 1 servers ∗
         "#HconfHost_sl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
         "#Hhost" ∷ ([∗ list] γsrv ; host ∈ server_γs ; servers, is_pb_host host γ γsrv) ∗
-        "#Hconf_host" ∷ is_pb_config_hosts configHosts γ ∗
-        "%Hconf_ne " ∷ ⌜ 0 < length configHosts ⌝
+        "#Hconf_host" ∷ is_pb_config_hosts configHosts γ
   }}}
     EnterNewConfig (slice_val configHosts_sl) (slice_val servers_sl)
   {{{
@@ -47,7 +46,7 @@ Proof using waitgroupG0.
   }
 
   wp_apply (wp_MakeClerk2 with "[Hconf_host]").
-  { iFrame "#". done. }
+  { iFrame "#". }
   iIntros (ck γconf) "#Hck".
   wp_pures.
   wp_bind (Clerk__ReserveEpochAndGetConfig _).
@@ -98,6 +97,14 @@ Proof using waitgroupG0.
   iDestruct (big_sepL2_lookup_2_some with "His_hosts") as %HH.
   { done. }
   destruct HH as [γsrv_old Hconfγ_lookup].
+  iRename "His_hosts" into "His_hosts_full".
+  iAssert ([∗ list] γsrv;host0 ∈ confγs;conf, is_pb_rpcs host0 γ γsrv)%I with "[]" as "#His_hosts".
+  {
+    iApply (big_sepL2_impl with "[$]").
+    iIntros "!# * % % H".
+    iClear "Hhost".
+    iNamed "H". iFrame "#".
+  }
   wp_apply (pb_makeclerk_proof.wp_MakeClerk with "[]").
   {
     iDestruct (big_sepL2_lookup_acc with "His_hosts") as "[HisHost _]".
@@ -231,7 +238,9 @@ Proof using waitgroupG0.
     destruct HH as [γsrv Hserver_γs_lookup].
     wp_apply (wp_MakeClerk with "[]").
     {
-      iDestruct (big_sepL2_lookup_acc with "Hhost") as "[$ _]"; done.
+      iDestruct (big_sepL2_lookup_acc with "Hhost") as "[H _]".
+      3:{ iClear "Hhost". iNamed "H". iFrame "#". }
+      all: done.
     }
     iIntros (pbCk) "#HpbCk".
     wp_load.
@@ -867,9 +876,10 @@ Proof using waitgroupG0.
       instantiate (1:=servers).
       iSplitL; first done.
       iIntros.
-      iDestruct (big_sepL2_lookup_acc with "Hhost") as "[$ HH]".
-      { done. }
-      { done. }
+      iDestruct (big_sepL2_lookup_acc with "Hhost") as "[H _]".
+      1-2: done.
+      iClear "Hhost".
+      iNamed "H". iFrame "#".
       iApply "Hrest"; last first.
       {
         iPureIntro.

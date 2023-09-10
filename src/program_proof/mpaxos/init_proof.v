@@ -8,7 +8,7 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!mpG Σ}.
 Import mpaxosParams.
 
-Lemma alloc_mpaxos_system (params:mpaxosParams.t Σ) (hosts: list u64):
+Lemma alloc_mpaxos_system (params:mpaxosParams.t Σ) (initstate: list u8) (hosts: list u64):
   ([∗ list] h ∈ hosts, h c↦ ∅) -∗
   □ (Pwf initstate)
   ={⊤}=∗

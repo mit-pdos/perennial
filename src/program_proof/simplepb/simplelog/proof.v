@@ -1773,13 +1773,12 @@ Definition simplelog_P γ γsrv := file_crash (own_Server_ghost_f γ γsrv).
 Definition simplelog_pre γ γsrv fname :=
   (|C={⊤}=> ∃ data, fname f↦ data ∗ ▷ simplelog_P γ γsrv data)%I.
 
-Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHosts confHosts_sl :
+Lemma wp_MakePbServer smMem own_InMemoryStateMachine fname γ data γsrv confHosts confHosts_sl me :
   let P := (own_Server_ghost_f γ γsrv) in
   {{{
-       "#Hinvs" ∷ is_pb_system_invs γ ∗
+       "#Hinvs" ∷ is_pb_host me γ γsrv ∗
        "#HisConfHost" ∷ config_protocol_proof.is_pb_config_hosts confHosts γ ∗
        "#Hconf_sl" ∷ readonly (own_slice_small confHosts_sl uint64T 1 confHosts) ∗
-       "%HnonEmpty" ∷ ⌜ length confHosts > 0 ⌝ ∗
        "Hfile_ctx" ∷ crash_borrow (fname f↦ data ∗ file_crash P data)
                     (|C={⊤}=> ∃ data', fname f↦ data' ∗ ▷ file_crash P data') ∗
        "#HisMemSm" ∷ is_InMemoryStateMachine (sm_record:=pb_record) smMem own_InMemoryStateMachine ∗

@@ -38,8 +38,7 @@ Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHosts:list u64) ops
            would now be buggy to buffer an op in memory before passing a
            StateMachine into MakeServer because the Server tracks the
            durableNextIndex and initializes it here to be nextIndex. *)
-        "#Hacc_lb" ∷ is_accepted_lb γsrv.(r_pb) epoch opsfull ∗
-        "%Hnonempty" ∷ ⌜0 < length confHosts⌝
+        "#Hacc_lb" ∷ is_accepted_lb γsrv.(r_pb) epoch opsfull
   }}}
     pb.MakeServer #sm_ptr (slice_val confHosts_sl) #nextIndex #epoch #sealed
   {{{

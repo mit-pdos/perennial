@@ -395,24 +395,6 @@ Qed.
 
 (* End RPC specs *)
 
-(* Begin config client-side protocol. *)
-Definition is_conf_inv γ γconf : iProp Σ :=
-  inv (pbN .@ "configInv") (∃ reservedEpoch epoch conf confγs,
-  "Hepoch" ∷ own_latest_epoch γconf epoch ∗
-  "Hres" ∷ own_reserved_epoch γconf reservedEpoch ∗
-  "Hconf" ∷ own_config γconf conf ∗
-  "%HepochLe" ∷ ⌜int.nat epoch <= int.nat reservedEpoch⌝ ∗
-  "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch (r_pb <$> confγs) ∗
-  "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_rpcs host γ γsrv) ∗
-  "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch) ∗
-  "Hunreserved" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat reservedEpoch < int.nat epoch'⌝ →
-        config_proposal_unset γ.(s_pb) epoch' ∗ config_unset γ.(s_pb) epoch' ∗ own_proposal_unused γ.(s_pb) epoch' ∗ own_init_proposal_unused γ.(s_prim) epoch') ∗
-  "Hunset_or_set" ∷ (config_unset γ.(s_pb) reservedEpoch ∨ ⌜int.nat epoch = int.nat reservedEpoch⌝) ∗
-  "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat reservedEpoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip)
-  )
-.
-(* End config client-side protocol. *)
-
 (* Encapsulates the protocol-level ghost resources of a replica server; this is
    suitable for exposing as part of interfaces for users of the library. For
    now, it's only part of the crash obligation. *)
@@ -458,21 +440,43 @@ Definition is_pb_system_invs γsys : iProp Σ :=
   "#HpropH" ∷ is_proph_read_inv γsys
 .
 
-Definition pbConfWf γ (conf:list u64) : iProp Σ :=
-  ∃ confγs, ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_rpcs host γ γsrv)
-.
-
-Local Instance toConfigParams γ : configParams.t Σ :=
-  configParams.mk Σ
-                  (pbConfWf γ)
-                  (pbN .@ "configservice")
-                  initconf
-.
-
 Definition is_pb_host (host:u64) γ γsrv : iProp Σ :=
   "#Hhost" ∷ is_pb_rpcs host γ γsrv ∗
   "#Hinvs" ∷ is_pb_system_invs γ
 .
+
+Definition pbConfWf γ (conf:list u64) : iProp Σ :=
+  ∃ confγs, ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv)
+.
+
+(* Begin config client-side protocol. *)
+Definition is_conf_inv γ γconf : iProp Σ :=
+  inv (pbN .@ "configInv") (∃ reservedEpoch epoch conf confγs,
+  "Hepoch" ∷ own_latest_epoch γconf epoch ∗
+  "Hres" ∷ own_reserved_epoch γconf reservedEpoch ∗
+  "Hconf" ∷ own_config γconf conf ∗
+  "%HepochLe" ∷ ⌜int.nat epoch <= int.nat reservedEpoch⌝ ∗
+  "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch (r_pb <$> confγs) ∗
+  "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
+  "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch) ∗
+  "Hunreserved" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat reservedEpoch < int.nat epoch'⌝ →
+        config_proposal_unset γ.(s_pb) epoch' ∗ config_unset γ.(s_pb) epoch' ∗ own_proposal_unused γ.(s_pb) epoch' ∗ own_init_proposal_unused γ.(s_prim) epoch') ∗
+  "Hunset_or_set" ∷ (config_unset γ.(s_pb) reservedEpoch ∨ ⌜int.nat epoch = int.nat reservedEpoch⌝) ∗
+  "#His_skip" ∷ (∀ epoch_skip, ⌜int.nat epoch < int.nat epoch_skip⌝ → ⌜int.nat epoch_skip < int.nat reservedEpoch⌝ → is_epoch_skipped γ.(s_pb) epoch_skip)
+  )
+.
+(* End config client-side protocol. *)
+
+Program Local Instance toConfigParams γ : configParams.t Σ :=
+  configParams.mk Σ
+                  (pbConfWf γ)
+                  (pbN .@ "configservice")
+                  initconf _
+.
+Next Obligation.
+  intros. rewrite /crash_modality.IntoCrash.
+  iIntros "$". iIntros; eauto.
+Qed.
 
 End pb_global_definitions.
 

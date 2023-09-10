@@ -141,9 +141,8 @@ Definition own_esm st γ γerpc : iProp Σ :=
 
 Definition esmN := nroot .@ "esm".
 
-Context {conf_host_names:list config_proof.config_server_names}.
 Context {initconf:list u64}.
-Local Instance esmParams : pbParams.t := pbParams.mk conf_host_names initconf (esm_record).
+Local Instance esmParams : pbParams.t := pbParams.mk initconf (esm_record).
 Context `{!pbG Σ}.
 (* This is the invariant maintained by all the servers for the "centralized"
    ghost state of the system. *)
@@ -199,11 +198,11 @@ Notation own_pb_Clerk := clerk_proof.own_Clerk.
 Notation is_esm_inv := (is_esm_inv (low_record:=low_record)).
 
 Context `{!inG Σ (mono_listR (leibnizO low_OpType))}.
-Context {conf_host_names:list config_proof.config_server_names}.
 Context {initconf:list u64}.
-Existing Instance esmParams.
 (* FIXME: can this second copy of the instance be avoided? *)
-Local Instance esmParams2 : pbParams.t := pbParams.mk conf_host_names initconf (esm_record).
+(* Existing Instance esmParams. *)
+Local Instance esmParams2 : pbParams.t := esmParams (low_record:=low_record) (initconf:=initconf).
+
 Context `{!pbG Σ}.
 Context `{!vsmG (sm_record:=low_record) Σ}.
 
@@ -1774,8 +1773,7 @@ Qed.
 Lemma wp_MakeClerk configHosts_sl configHosts γ γoplog γerpc :
   {{{
     "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
-    "#Hconf" ∷ is_pb_sys_hosts configHosts γ ∗
-    "%Hnonempty" ∷ ⌜0 < length configHosts⌝ ∗
+    "#Hconf" ∷ config_protocol_proof.is_pb_config_hosts configHosts γ ∗
     "#Hesm_inv" ∷ is_esm_inv γ γoplog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc
   }}}

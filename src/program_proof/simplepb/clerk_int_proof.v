@@ -103,7 +103,8 @@ Proof.
     { done. }
     destruct HH as [γsrv Hserver_γs_lookup].
     wp_apply (pb_makeclerk_proof.wp_MakeClerk with "[]").
-    { iDestruct (big_sepL2_lookup_acc with "Hhosts") as "[$ _]"; done. }
+    { iDestruct (big_sepL2_lookup_acc with "Hhosts") as "[H _]"; try done. iNamed "H".
+      iFrame "#". }
     iIntros (pbCk) "#HpbCk".
     wp_load.
     wp_apply (wp_SliceSet (V:=loc) with "[Hclerks_sl]").
@@ -203,8 +204,7 @@ Qed.
 Lemma wp_MakeClerk2 γ configHosts configHosts_sl :
   {{{
         "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
-        "#Hconf" ∷ is_pb_config_hosts configHosts γ ∗
-        "%Hnonempty" ∷ ⌜0 < length configHosts⌝
+        "#Hconf" ∷ is_pb_config_hosts configHosts γ
   }}}
     Make (slice_val configHosts_sl)
   {{{
@@ -222,7 +222,7 @@ Proof.
   iNamed "HH".
   wp_pures.
   wp_apply (wp_MakeClerk2 with "[]").
-  { iFrame "#". done. }
+  { iFrame "#". }
   iIntros (??) "#HconfCk".
   wp_storeField.
   wp_pures.

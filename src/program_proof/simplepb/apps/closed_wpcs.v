@@ -1,5 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb.apps Require Import closed.
+From iris.base_logic Require Import ghost_map.
 
 From Perennial.goose_lang Require adequacy dist_adequacy.
 From Perennial.goose_lang.ffi Require grove_ffi_adequacy.
@@ -18,7 +19,7 @@ From Perennial.goose_lang Require Import recovery_lifting.
 Section closed_wpcs.
 
 Context `{!heapGS Σ}.
-Context `{!ekvG Σ}.
+Context `{!ekvG (initconfig:=initconfig) Σ}.
 
 Lemma wpc_kv_replica_main γ γsrv Φc fname me configHost data :
   ((∃ data' : list u8, fname f↦data' ∗ ▷ kv_crash_resources γ γsrv data') -∗
@@ -170,7 +171,6 @@ Lemma wpc_dconfig_main (params:configParams.t Σ) γ γsrv Φc fname data :
     Φc) -∗
   ("#Hhost" ∷ is_config_server_host dconfigHost dconfigHostPaxos γ γsrv ∗
    "#Hpeers" ∷ is_config_peers [dconfigHostPaxos] γ ∗
-   "#Hinvs" ∷ is_config_invs γ ∗
    "#Hwf" ∷ □ configParams.Pwf configParams.initconfig ∗
 
    "Hfile" ∷ fname f↦ data ∗
@@ -248,7 +248,6 @@ Lemma wpc_lconfig_main (params:configParams.t Σ) γ γsrv Φc fname data :
     Φc) -∗
   ("#Hhost" ∷ is_config_server_host lconfigHost lconfigHostPaxos γ γsrv ∗
    "#Hpeers" ∷ is_config_peers [lconfigHostPaxos] γ ∗
-   "#Hinvs" ∷ is_config_invs γ ∗
    "#Hwf" ∷ □ configParams.Pwf configParams.initconfig ∗
 
    "Hfile" ∷ fname f↦ data ∗
@@ -423,7 +422,7 @@ End closed_wpcs.
 Section closed_wprs.
 
 #[global]
-Instance is_kv_config_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ:
+Instance is_kv_config_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ (initconfig:=initconfig)} u γ:
   IntoCrash (is_kv_config_hosts u γ)
     (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_config_hosts u γ)%I
 .
@@ -433,7 +432,7 @@ Proof.
 Qed.
 
 #[global]
-Instance is_kv_replica_host_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ γsrv:
+Instance is_kv_replica_host_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ (initconfig:=initconfig)} u γ γsrv:
   IntoCrash (is_kv_replica_host u γ γsrv)
     (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_replica_host u γ γsrv)%I
 .
@@ -443,7 +442,7 @@ Proof.
 Qed.
 
 #[global]
-Instance kv_crash_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} a b c:
+Instance kv_crash_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ (initconfig:=initconfig)} a b c:
   IntoCrash (kv_crash_resources a b c)
     (λ hG, (kv_crash_resources a b c))%I.
 Proof.
@@ -451,10 +450,10 @@ Proof.
   iIntros "$". iIntros; eauto.
 Qed.
 
-Local Definition crash_cond {Σ} `{ekvG Σ} {fname γ γsrv} :=
+Local Definition crash_cond {Σ} `{ekvG Σ (initconfig:=initconfig)} {fname γ γsrv} :=
   (λ hG : heapGS Σ, ∃ data, fname f↦ data ∗ ▷ kv_crash_resources γ γsrv data)%I.
 
-Lemma wpr_kv_replica_main fname me configHost γ γsrv {Σ} {HKV: ekvG Σ}
+Lemma wpr_kv_replica_main fname me configHost γ γsrv {Σ} `{HKV: ekvG Σ (initconfig:=initconfig)}
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   ("#Hconf" ∷ is_kv_config_hosts [configHost] γ ∗
@@ -509,16 +508,44 @@ Proof.
   }
 Qed.
 
+#[global]
+Instance is_config_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ (initconfig:=initconfig)} {p:configParams.t Σ} u γ:
+  IntoCrash (is_config_peers u γ)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_config_peers u γ)%I
+.
+Proof.
+  rewrite /IntoCrash /is_config_peers.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+#[global]
+Instance is_config_server_host_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ (initconfig:=initconfig)} {p:configParams.t Σ} a b c d :
+  IntoCrash (is_config_server_host a b c d)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_config_server_host a b c d)%I
+.
+Proof.
+  rewrite /IntoCrash /is_config_server_host.
+  iIntros "$". iIntros; eauto.
+Qed.
+
+#[global]
+Instance config_crash_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ (initconfig:=initconfig)} {p:configParams.t Σ} a b c:
+  IntoCrash (config_crash_resources a b c)
+    (λ hG, (config_crash_resources a b c))%I.
+Proof.
+  rewrite /IntoCrash /config_crash_resources.
+  iIntros "$". iIntros; eauto.
+Qed.
+
 Local Definition config_crash_cond {Σ} `{configG Σ} {fname γ γsrv} {params:configParams.t Σ} :=
   (λ hG : heapGS Σ, ∃ data, config_crash_resources γ γsrv data ∗ fname f↦ data)%I.
 
-Lemma wpr_dconfig_main {Σ} {HKV: ekvG Σ} (params:configParams.t Σ) fname γ γsrv
+Lemma wpr_dconfig_main {Σ} `{HKV: ekvG Σ (initconfig:=initconfig)} (params:configParams.t Σ) fname γ γsrv
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   params.(configParams.initconfig) = [dr1Host ; dr2Host] →
   ("#Hhost" ∷ is_config_server_host dconfigHost dconfigHostPaxos γ γsrv ∗
    "#Hpeers" ∷ is_config_peers [dconfigHostPaxos] γ ∗
-   "#Hinvs" ∷ is_config_invs γ ∗
    "#Hwf" ∷ □ configParams.Pwf configParams.initconfig ∗
 
    "Hfile" ∷ fname f↦ [] ∗
@@ -548,39 +575,44 @@ Proof.
     simpl.
     set (hG' := HeapGS _ _ hL').
     iDestruct "Hhost" as "-#Hhost".
-    (* FIXME: bundle invariants together. *)
-    (*
-    iDestruct "Hhost" as "-#Hhost".
+    iDestruct "Hpeers" as "-#Hpeers".
+    iAssert (□ _)%I with "[]" as "-#Hwf2".
+    { iModIntro. iExact "Hwf". }
+    destruct params eqn:Hparams. (* FIXME: why do I need to do this to get iCrash to find the IntoCrash typeclass? *)
+    simpl in *.
     iCrash.
     iIntros "_".
     destruct hL as [HG'' ?].
     iSplit; first done.
-    iDestruct "Hconf" as "(%&Hconf)".
-    iDestruct "Hhost" as "(%&Hhost)".
-    subst.
+
+    set (to_name := (λ x, match x with INamed y => y | _ => "?" end)).
+    repeat iSelect (⌜ _ ⌝ ∗ _)%I
+           (fun H => let x := (eval compute in ("[% " +:+ to_name H +:+ "]")) in
+                  iDestruct H as x).
+
     simpl in *.
     clear hG'.
     clear hL'.
     (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     set (hG2' := HeapGS _ _ goose_localGS).
     simpl.
-    wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') with "[]").
+    wpc_apply (wpc_dconfig_main params (heapGS0:=hG2') with "[]"); subst.
+    { done. }
     { iIntros "H".
       iDestruct "H" as (?) "[Hfile Hcrash]".
       iExists _.
       iFrame.
     }
     iFrame "∗#".
-  } *)
-Admitted.
+  }
+Qed.
 
-Lemma wpr_lconfig_main {Σ} {HKV: ekvG Σ} (params:configParams.t Σ) fname γ γsrv
+Lemma wpr_lconfig_main {Σ} `{HKV: ekvG Σ (initconfig:=initconfig)} (params:configParams.t Σ) fname γ γsrv
                                {HG} {HL}:
   let hG := {| goose_globalGS := HG; goose_localGS := HL |} in
   params.(configParams.initconfig) = [lr1Host ; lr2Host] →
   ("#Hhost" ∷ is_config_server_host lconfigHost lconfigHostPaxos γ γsrv ∗
    "#Hpeers" ∷ is_config_peers [lconfigHostPaxos] γ ∗
-   "#Hinvs" ∷ is_config_invs γ ∗
    "#Hwf" ∷ □ configParams.Pwf configParams.initconfig ∗
 
    "Hfile" ∷ fname f↦ [] ∗
@@ -610,50 +642,58 @@ Proof.
     simpl.
     set (hG' := HeapGS _ _ hL').
     iDestruct "Hhost" as "-#Hhost".
-    (* FIXME: bundle invariants together. *)
-    (*
-    iDestruct "Hhost" as "-#Hhost".
+    iDestruct "Hpeers" as "-#Hpeers".
+    iAssert (□ _)%I with "[]" as "-#Hwf2".
+    { iModIntro. iExact "Hwf". }
+    destruct params eqn:Hparams. (* FIXME: why do I need to do this to get iCrash to find the IntoCrash typeclass? *)
+    simpl in *.
     iCrash.
     iIntros "_".
     destruct hL as [HG'' ?].
     iSplit; first done.
-    iDestruct "Hconf" as "(%&Hconf)".
-    iDestruct "Hhost" as "(%&Hhost)".
-    subst.
+
+    set (to_name := (λ x, match x with INamed y => y | _ => "?" end)).
+    repeat iSelect (⌜ _ ⌝ ∗ _)%I
+           (fun H => let x := (eval compute in ("[% " +:+ to_name H +:+ "]")) in
+                  iDestruct H as x).
+
     simpl in *.
     clear hG'.
     clear hL'.
     (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     set (hG2' := HeapGS _ _ goose_localGS).
     simpl.
-    wpc_apply (wpc_kv_replica_main (heapGS0:=hG2') with "[]").
+    wpc_apply (wpc_lconfig_main params (heapGS0:=hG2') with "[]"); subst.
+    { done. }
     { iIntros "H".
       iDestruct "H" as (?) "[Hfile Hcrash]".
       iExists _.
       iFrame.
     }
     iFrame "∗#".
-  } *)
-Admitted.
+  }
+Qed.
 
 End closed_wprs.
 
 Section closed_init.
 
 Context `{!gooseGlobalGS Σ}.
-Context `{!ekvG Σ}.
 
-Lemma alloc_vkv (replicaHosts:list u64) configHostPairs allocated :
+Lemma alloc_vkv (replicaHosts:list u64) configHostPairs allocated `{!ekvG Σ (initconfig:=replicaHosts)}:
+  length replicaHosts > 0 →
+  length configHostPairs > 0 →
   ([∗ list] h ∈ configHostPairs, h.1 c↦ ∅ ∗ h.2 c↦ ∅) ∗
   ([∗ list] h ∈ replicaHosts, h c↦ ∅)
-  ={⊤}=∗ (∃ γ γsrvs,
+  ={⊤}=∗ (∃ γ,
 
   (* system-wide: allows clients to connect to the system, and gives them ownership of keys *)
   ([∗ set] k ∈ allocated, kv_ptsto γ k "") ∗
   is_kv_config_hosts (configHostPairs.*1) γ ∗
 
   (* for each kv replica server:  *)
-  ([∗ list] host; γsrv ∈ replicaHosts ; γsrvs,
+  ([∗ list] host ∈ replicaHosts,
+     ∃ γsrv,
      is_kv_replica_host host γ γsrv ∗
      kv_crash_resources γ γsrv []
   )) ∗
@@ -664,12 +704,46 @@ Lemma alloc_vkv (replicaHosts:list u64) configHostPairs allocated :
     ⌜ params.(configParams.initconfig) = replicaHosts ⌝ ∗
     is_config_server_host configHostPair.1 configHostPair.2 γconf γconfsrv ∗
     is_config_peers (configHostPairs.*2) γconf ∗
-    is_config_invs γconf ∗
     (□ configParams.Pwf configParams.initconfig) ∗
     config_crash_resources γconf γconfsrv []
   )
 .
 Proof.
-Admitted.
+  intros.
+  iIntros "[HconfChan Hchan]".
+  set (p:=esmParams replicaHosts).
+  iMod (alloc_simplepb_system configHostPairs _ with "[$Hchan] [$HconfChan]") as (?) "H"; try done.
+  iDestruct "H" as "(Hlog & #Hhosts & Hsrvs & HconfSrvs)".
+  iFrame "HconfSrvs".
+  iMod (ghost_map_alloc (gset_to_gmap "" allocated)) as (γkv_gn) "[Hauth Hkvs]".
+  iExists (Build_kv_names _ _).
+  rewrite big_sepM_gset_to_gmap.
+  iFrame "Hkvs".
+  iAssert (|={⊤}=> is_kv_config_hosts configHostPairs.*1 _)%I with "[Hlog Hauth]" as ">#Hhosts2".
+  {
+    rewrite /is_kv_config_hosts.
+    iMod (esm_proof.alloc_esm with "Hlog") as (??) "(#He1 & #He2 & Hlog)".
+    repeat iExists _.
+    instantiate (1:=Build_kv_names _ _). simpl.
+    iFrame "#".
+    iMod (inv_alloc with "[-]"); last done.
+    iNext. repeat iExists _.
+    iFrame. rewrite /own_kvs /=.
+    iExists _; iFrame.
+    iExactEq "Hauth".
+    repeat f_equal.
+    rewrite /kv_vsm_proof.compute_state /=.
+    rewrite map_empty_union. done.
+  }
+  iModIntro.
+  iFrame "#".
+  simpl. rewrite app_nil_r.
+  iApply (big_sepL_impl with "Hsrvs []").
+  iIntros "!# * %Hlookup H".
+  iDestruct "H" as (?) "[#HpbHost Hghost]".
+  iExists _. rewrite /is_kv_replica_host. iFrame "HpbHost".
+  rewrite /kv_crash_resources.
+  iLeft. iFrame. done.
+Qed.
 
 End closed_init.

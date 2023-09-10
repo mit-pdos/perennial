@@ -5,7 +5,7 @@ From Perennial.program_proof.kv Require Import interface.
 
 Section clerkpool_proof.
 
-Context `{!heapGS Σ, !ekvG Σ}.
+Context `{!heapGS Σ, !ekvG (initconfig:=initconfig) Σ}.
 Definition own_ClerkPool c γkv : iProp Σ :=
   ∃ (cls:list loc) cls_sl,
   "Hcls" ∷ c ↦[ClerkPool :: "cls"] (slice_val cls_sl) ∗
@@ -163,7 +163,7 @@ Proof.
   iNext. repeat iExists _; iFrame. rewrite replicate_0. iApply big_sepL_nil. done.
 Qed.
 
-Definition vkvE : coPset := (↑pb_protocol.pbN ∪ ↑clerk_proof.prophReadN ∪ ↑esm_proof.esmN ∪
+Definition vkvE : coPset := (↑pb_protocol.pbN ∪ ↑pb_definitions.prophReadN ∪ ↑esm_proof.esmN ∪
                                      ↑stateN).
 Lemma wp_MakeKv γkv confHost_sl confHosts :
   {{{

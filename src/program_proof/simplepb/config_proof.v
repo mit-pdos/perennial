@@ -6,7 +6,7 @@ From Perennial.program_proof.simplepb Require Import config_marshal_proof renewa
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From iris.base_logic Require Import lib.ghost_var mono_nat.
 From Perennial.program_proof.mpaxos Require Import tryacquire_proof weakread_proof start_proof init_proof.
-From Perennial.goose_lang Require Import crash_borrow.
+From Perennial.goose_lang Require Import crash_borrow crash_modality.
 
 Module state.
 Section state.
@@ -80,7 +80,8 @@ Class t Σ :=
   mk {
       Pwf : list u64 → iProp Σ ;
       Ntop: namespace ;
-      initconfig: list u64 ;
+      initconfig : list u64 ;
+      HPwf_into_crash : ∀ (hG: heapGS Σ), IntoCrash (□ Pwf initconfig)%I (λ hG', □ Pwf initconfig)%I ;
     }
 .
 End configParams.
