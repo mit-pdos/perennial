@@ -15,7 +15,6 @@ Context `{!heapGS Σ}.
 Context `{!mpG Σ}.
 Context `{Hparams:!mpaxosParams.t Σ}.
 Import mpaxosParams.
-Notation is_proposal := (is_proposal (config:=config) (N:=N)).
 
 Lemma wp_Server__becomeLeader s γ γsrv Ψ Φ :
   is_Server s γ γsrv -∗
@@ -89,10 +88,10 @@ Proof.
   iMod (ghost_var_alloc ()) as (γescrow) "HreplyPostEscrow".
   set (replyInv:=(
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
-                    "%HlenEq" ∷ ⌜length reply_ptrs = length config⌝ ∗
+                    "%HlenEq" ∷ ⌜length reply_ptrs = length γ.(s_hosts) ⌝ ∗
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
-                    "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; config,
+                    "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts),
                     ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
                                               (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
                                                 enterNewEpoch_post γ γsrv' reply newepoch
@@ -225,7 +224,7 @@ Proof.
           iFrame.
         }
 
-        replace (<[int.nat i:=x2]> config) with (config) ; last first.
+        replace (<[int.nat i:=x2]> γ.(s_hosts)) with (γ.(s_hosts)) ; last first.
         {
           symmetry.
           by apply list_insert_id.
@@ -293,7 +292,7 @@ Proof.
                  "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
                  "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(U64 (size W)) ∗
                  "HlatestReply_loc" ∷ latestReply_ptr ↦[ptrT] #latestReply_loc ∗
-                 "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; config,
+                 "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts) ,
                   ⌜int.nat i ≤ j⌝ →
                  ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
                                            (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
@@ -309,14 +308,15 @@ Proof.
                   "%Hlatestlog" ∷ ⌜latestReply.(enterNewEpochReply.state) = get_state latestLog⌝ ∗
                   "%HlatestlogLen" ∷ ⌜int.nat latestReply.(enterNewEpochReply.nextIndex) = length latestLog⌝ ∗
                   "%HlatestEpoch_ineq" ∷ ⌜int.nat latestReply.(enterNewEpochReply.acceptedEpoch) < int.nat newepoch⌝ ∗
-                  "#Hlatest_prop" ∷ is_proposal γ.(s_mp) latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
+                  "#Hlatest_prop" ∷ is_proposal (config:=γ.(s_hosts)) (N:=N)
+                                  γ.(s_mp) latestReply.(enterNewEpochReply.acceptedEpoch) latestLog ∗
                   "#HP_latest" ∷ (□ Pwf latestReply.(enterNewEpochReply.state)) ∗
-                  "#Hacc_lbs" ∷ (□ [∗ list] s ↦ γsrv' ∈ config, ⌜s ∈ W⌝ →
+                  "#Hacc_lbs" ∷ (□ [∗ list] s ↦ γsrv' ∈ γ.(s_hosts), ⌜s ∈ W⌝ →
                                         is_accepted_upper_bound γsrv' latestLog
                                                                 latestReply.(enterNewEpochReply.acceptedEpoch)
                                                                 newepoch
                                 ) ∗
-                  "Hvotes" ∷ ([∗ list] s ↦ γsrv' ∈ config, ⌜s ∈ W⌝ → own_vote_tok γsrv' newepoch)
+                  "Hvotes" ∷ ([∗ list] s ↦ γsrv' ∈ γ.(s_hosts), ⌜s ∈ W⌝ → own_vote_tok γsrv' newepoch)
       )%I).
 
   wp_apply (wp_forSlice (V:=loc) I _ _ _ _ _ reply_ptrs with "[] [HnumSuccesses HlatestReply Hreplies_sl Hreplies]").

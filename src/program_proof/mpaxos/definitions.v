@@ -16,6 +16,7 @@ Record mpaxos_system_names :=
     s_log : gname ;
     s_st: gname ;
     s_mp : mp_system_names ;
+    s_hosts: list mp_server_names ;
   }.
 
 Definition mpaxos_server_names := mp_server_names.
@@ -45,7 +46,6 @@ Proof. solve_inG. Qed.
 
 Module mpaxosParams.
 Class t Σ := mk {
-    config: list mp_server_names ;
     initstate: list u8 ;
     Pwf : list u8 → iProp Σ ;
     N : namespace ;
@@ -60,8 +60,6 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!mpG Σ}.
 Context `{!mpaxosParams.t Σ}.
 
-Notation is_proposal := (is_proposal (config:=config) (N:=N)).
-
 Definition own_state γ ς := own γ.(s_st) (to_dfrac_agree (DfracOwn (1/2)) (ς : (leibnizO (list u8)))).
 
 (* RPC specs *)
@@ -75,7 +73,7 @@ Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply
    "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
    "#HP" ∷ □ Pwf args.(applyAsFollowerArgs.state) ∗
    (* "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1) ⌝ ∗ *)
-   "#Hprop" ∷ is_proposal γ.(s_mp) args.(applyAsFollowerArgs.epoch) σ ∗
+   "#Hprop" ∷ is_proposal (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) args.(applyAsFollowerArgs.epoch) σ ∗
    "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (U64 0))) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (applyAsFollowerReply.mkC err)))
     )%I
@@ -100,7 +98,7 @@ Definition enterNewEpoch_post γ γsrv reply (epoch:u64) : iProp Σ:=
   ⌜reply.(enterNewEpochReply.state) = get_state log⌝ ∗
   ⌜int.nat reply.(enterNewEpochReply.nextIndex) = length log⌝ ∗
   is_accepted_upper_bound γsrv log reply.(enterNewEpochReply.acceptedEpoch) epoch ∗
-  is_proposal γ.(s_mp) reply.(enterNewEpochReply.acceptedEpoch) log ∗
+  is_proposal (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) reply.(enterNewEpochReply.acceptedEpoch) log ∗
   □ Pwf reply.(enterNewEpochReply.state) ∗
   own_vote_tok γsrv epoch
 .
@@ -174,22 +172,18 @@ Definition is_mpaxos_host (host:u64) γ (γsrv:mp_server_names) : iProp Σ :=
 
 Global Instance is_mpaxos_host_pers host γ γsrv: Persistent (is_mpaxos_host host γ γsrv) := _.
 
-Notation own_replica_ghost := (own_replica_ghost (config:=config) (N:=N)).
-Notation own_leader_ghost := (own_leader_ghost (config:=config) (N:=N)).
-Notation is_repl_inv := (is_repl_inv (config:=config) (N:=N)).
-Notation is_vote_inv := (is_vote_inv (config:=config) (N:=N)).
 Definition own_paxosState_ghost γ γsrv (st:paxosState.t) : iProp Σ :=
   ∃ (log:list (list u8 * gname)),
-  "Hghost" ∷ own_replica_ghost γ.(s_mp) γsrv
+  "Hghost" ∷ own_replica_ghost (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) γsrv
            (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log) ∗
   "%HlogLen" ∷ ⌜ length log = int.nat st.(paxosState.nextIndex) ⌝ ∗
   "%Hlog" ∷ ⌜ default initstate (last log.*1) = st.(paxosState.state) ⌝ ∗
-  "#Hinv" ∷ is_repl_inv γ.(s_mp) ∗
-  "#Hvote_inv" ∷ is_vote_inv γ.(s_mp) ∗
+  "#Hinv" ∷ is_repl_inv (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) ∗
+  "#Hvote_inv" ∷ is_vote_inv (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) ∗
   "#Hpwf" ∷ (□ Pwf st.(paxosState.state)) ∗
 
   "HleaderOnly" ∷ (if st.(paxosState.isLeader) then
-                     own_leader_ghost γ.(s_mp) (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
+                     own_leader_ghost (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) (mkMPaxosState st.(paxosState.epoch) st.(paxosState.acceptedEpoch) log)
                    else True) ∗
   "%HnextIndex_nooverflow" ∷ ⌜ length log = int.nat (length log) ⌝ ∗
   "%HaccEpochEq" ∷ ⌜ if st.(paxosState.isLeader) then st.(paxosState.acceptedEpoch) = st.(paxosState.epoch) else True ⌝
@@ -203,6 +197,14 @@ Definition own_file_inv γ γsrv (data:list u8) : iProp Σ :=
   ∃ pst,
   "%Henc" ∷ ⌜ encodes_paxosState pst data ⌝ ∗
   "Hghost" ∷ own_paxosState_ghost γ γsrv pst
+.
+
+Definition is_mpaxos_server_host (host:u64) γ (γsrv:mp_server_names) : iProp Σ :=
+  "Hhost" ∷ is_mpaxos_host host γ γsrv  ∗
+  "Hinv" ∷ is_helping_inv γ.
+
+Definition is_mpaxos_hosts hosts γ : iProp Σ :=
+  "#Hhosts" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; γ.(s_hosts), is_mpaxos_host host γ γsrv')
 .
 
 End global_definitions.
@@ -248,7 +250,8 @@ Definition is_Server (s:loc) γ γsrv : iProp Σ :=
 
   (* clerks *)
   "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
-  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; config, is_singleClerk ck γ γsrv')
+  "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ clerks ; γ.(s_hosts), is_singleClerk ck γ γsrv') ∗
+  "#HhelpingInv" ∷ is_helping_inv γ
 .
 
 End local_definitions.

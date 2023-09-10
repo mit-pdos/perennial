@@ -10,7 +10,6 @@ Context `{!heapGS Σ}.
 Context `{!mpG Σ}.
 Context `{!mpaxosParams.t Σ}.
 Import mpaxosParams.
-Notation is_proposal := (is_proposal (config:=config) (N:=N)).
 
 Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
   {{{
@@ -20,7 +19,7 @@ Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
         "#HP" ∷ □ Pwf args.(applyAsFollowerArgs.state) ∗
         "%Hσ_index" ∷ ⌜ length σ = (int.nat args.(applyAsFollowerArgs.nextIndex))%nat ⌝ ∗
         "%Hghost_op_σ" ∷ ⌜ last σ.*1 = Some args.(applyAsFollowerArgs.state) ⌝ ∗
-        "#Hprop" ∷ is_proposal γ.(s_mp) args.(applyAsFollowerArgs.epoch) σ
+        "#Hprop" ∷ is_proposal (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) args.(applyAsFollowerArgs.epoch) σ
   }}}
     singleClerk__applyAsFollower #ck #args_ptr
   {{{

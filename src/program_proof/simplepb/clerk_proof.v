@@ -12,16 +12,7 @@ Context `{!gooseGlobalGS Σ}.
 Context {params:pbParams.t}.
 Import pbParams.
 
-Definition prophReadN := nroot .@ "prophread".
-Definition prophReadReqN := prophReadN .@ "req".
-Definition prophReadLogN := prophReadN .@ "log".
 Context `{!pbG Σ}.
-
-Definition is_proph_read_inv γ : iProp Σ :=
-  inv prophReadLogN (∃ σ, own_op_log γ σ ∗ own_int_log γ σ).
-
-Definition is_pb_sys_hosts hosts γ : iProp Σ :=
-  is_pb_config_hosts hosts γ ∗ is_proph_read_inv γ.
 
 End global_proof.
 
@@ -125,6 +116,7 @@ Definition read_fupd γ readOp (Q:list u8 → iProp Σ) : iProp Σ :=
 £ 1 ∗ (|={⊤∖↑pbN∖↑prophReadN,∅}=> ∃ ops, own_op_log γ ops ∗
   (own_op_log γ ops ={∅,⊤∖↑pbN∖↑prophReadN}=∗ Q (compute_reply ops readOp))).
 
+Definition prophReadReqN := prophReadN .@ "req".
 Definition prophetic_read_inv prophV γ γreq readOp Φ : iProp Σ :=
   inv prophReadReqN (
         (*
@@ -316,7 +308,7 @@ Qed.
 Lemma wp_MakeClerk γ configHosts configHosts_sl :
   {{{
         "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
-        "#Hconf" ∷ is_pb_sys_hosts configHosts γ ∗
+        "#Hconf" ∷ is_pb_config_hosts configHosts γ ∗
         "%Hnonempty" ∷ ⌜0 < length configHosts⌝
   }}}
     Make (slice_val configHosts_sl)

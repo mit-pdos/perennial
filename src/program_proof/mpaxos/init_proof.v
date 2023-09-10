@@ -6,7 +6,22 @@ From Perennial.program_proof.mpaxos Require Export definitions protocol_proof.
 Section init_proof.
 Context `{!gooseGlobalGS Σ}.
 Context `{!mpG Σ}.
+Import mpaxosParams.
 
+Lemma alloc_mpaxos_system (params:mpaxosParams.t Σ) (hosts: list u64):
+  ([∗ list] h ∈ hosts, h c↦ ∅) -∗
+  □ (Pwf initstate)
+  ={⊤}=∗
+  ∃ γ,
+    ([∗ list] host ∈ hosts, ∃ γsrv, is_mpaxos_server_host host γ γsrv ∗
+                                    own_file_inv γ γsrv []) ∗
+    is_mpaxos_hosts hosts γ ∗
+    own_state γ initstate
+.
+Proof.
+Admitted.
+
+(*
 Definition is_mpaxos_sys_init_witness γ config N : iProp Σ :=
   is_sys_init_witness (config:=config) (N:=N) γ.(s_mp)
 .
@@ -131,6 +146,6 @@ Proof.
   iExactEq "H1".
   f_equal.
   set_solver.
-Qed.
+Qed. *)
 
 End init_proof.

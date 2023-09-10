@@ -23,14 +23,14 @@ Context `{!pbG Σ}.
 
 Implicit Type (own_StateMachine: u64 → list OpType → bool → (u64 → list OpType → bool → iProp Σ) → iProp Σ).
 Lemma wp_MakeServer sm_ptr own_StateMachine (epoch:u64) (confHosts:list u64) opsfull (sealed:bool) (nextIndex:u64) γ γsrv
-      confHosts_sl :
+      confHosts_sl host :
   {{{
         "Hstate" ∷ own_StateMachine epoch (get_rwops opsfull) sealed (own_Server_ghost_f γ γsrv) ∗
         "#His_sm" ∷ is_StateMachine sm_ptr own_StateMachine (own_Server_ghost_f γ γsrv) ∗
 
-        "#Hinvs" ∷ is_pb_system_invs γ ∗
-
         "#Hconf_host" ∷ is_pb_config_hosts confHosts γ ∗
+        "#Hhost" ∷ is_pb_host host γ γsrv ∗
+
         "#Hconf_host_sl" ∷ readonly (own_slice_small (confHosts_sl) uint64T 1 confHosts) ∗
         "%HnextIndex" ∷ ⌜int.nat nextIndex = length (get_rwops opsfull)⌝ ∗
         (* XXX: this is basically a guarantee that the list of ops being
@@ -110,7 +110,8 @@ Proof.
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑pb_protocolN)) as "Hmask".
   { set_solver. }
-  iDestruct "Hinvs" as "(#? & #? & #?)".
+  iNamed "Hhost".
+  iDestruct "Hinvs" as "(#? & #? & #? & #?)".
   iMod (pb_log_get_nil_lb with "[$]") as "#Hcommit_nil_lb".
   iMod "Hmask".
   iModIntro.
@@ -132,6 +133,7 @@ Proof.
   iMod (readonly_alloc_1 with "confCk") as "#confCk".
   iMod (alloc_lock with "HmuInv [-]") as "$"; last first.
   { repeat iExists _.
+    iNamed "Hconf_inv".
     iModIntro. iFrame "#".
   }
 
@@ -193,7 +195,7 @@ Lemma wp_Server__Serve s host γ γsrv :
 .
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
+  iNamed "Hpre". iNamed "Hhost".
   wp_call.
 
   wp_apply (map.wp_NewMap u64).
@@ -238,7 +240,7 @@ Proof.
   iIntros (r) "Hr".
   wp_pures.
 
-  rewrite is_pb_host_unfold.
+  rewrite is_pb_rpcs_unfold.
   iNamed "Hhost".
   wp_apply (wp_StartServer_pred with "[$Hr]").
   {

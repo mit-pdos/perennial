@@ -39,14 +39,14 @@ Definition own_releaseFn_internal (f:val) γ sl_ptr oldstate : iProp Σ :=
   WP f #() {{ Φ }}
 .
 
-Definition own_releaseFn (f:val) γst sl_ptr oldstate : iProp Σ :=
+Definition own_releaseFn (f:val) γ sl_ptr oldstate : iProp Σ :=
   ∀ sl Φ newstate,
   ( (* precondition: *)
   "Hsl_ptr" ∷ sl_ptr ↦[slice.T byteT] (slice_val sl) ∗
   "Hsl" ∷ readonly (own_slice_small sl byteT 1 newstate) ∗
   "Hwf" ∷ (□ Pwf newstate) ∗
-  "Hupd" ∷ (|={⊤∖↑N,∅}=> ∃ oldstate', own_state γst oldstate' ∗
-              (⌜ oldstate' = oldstate ⌝ -∗ own_state γst newstate ={∅,⊤∖↑N}=∗ Φ #0))
+  "Hupd" ∷ (|={⊤∖↑N,∅}=> ∃ oldstate', own_state γ oldstate' ∗
+              (⌜ oldstate' = oldstate ⌝ -∗ own_state γ newstate ={∅,⊤∖↑N}=∗ Φ #0))
   ) -∗
   (∀ (err:u64), ⌜ err ≠ U64 0 ⌝ → Φ #err) -∗
   WP f #() {{ Φ }}
@@ -277,7 +277,7 @@ Proof.
                   ∃ (numReplies:u64) (reply_ptrs:list loc),
                     "HnumReplies" ∷ numReplies_ptr ↦[uint64T] #numReplies ∗
                     "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
-                    "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; config,
+                    "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts),
                     ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply 1) ∗
                                                    if decide (reply.(applyAsFollowerReply.err) = (U64 0)) then
                                                      is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q)])
@@ -382,7 +382,7 @@ Proof.
           iFrame "#".
         }
 
-        replace (<[int.nat i:=x2]> config) with (config) ; last first.
+        replace (<[int.nat i:=x2]> γ.(s_hosts)) with (γ.(s_hosts)) ; last first.
         {
           symmetry.
           by apply list_insert_id.
@@ -439,7 +439,7 @@ Proof.
                  "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < int.nat i⌝ ∗
                  "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
                  "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(U64 (size W)) ∗
-                 "#Hacc_lbs" ∷ ([∗ list] s ↦ γsrv' ∈ config, ⌜s ∈ W⌝ → is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q)]))
+                 "#Hacc_lbs" ∷ ([∗ list] s ↦ γsrv' ∈ γ.(s_hosts), ⌜s ∈ W⌝ → is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q)]))
       )%I).
 
   wp_apply (wp_forSlice (V:=loc) I _ _ _ _ _ reply_ptrs with "[] [HnumSuccesses Hreplies_sl]").
@@ -609,7 +609,7 @@ Proof.
     wp_pures.
 
     iDestruct (big_sepL2_length with "Hreplies") as "%Hreplies_len_eq_conf".
-    replace (int.nat replies_sl.(Slice.sz)) with (length config) in HW_in_range; last first.
+    replace (int.nat replies_sl.(Slice.sz)) with (length γ.(s_hosts)) in HW_in_range; last first.
     { word. }
 
     iDestruct (establish_committed_by with "[$Hacc_lbs]") as "Hcom".
@@ -843,8 +843,7 @@ Qed.
 
 Lemma wp_Server__TryAcquire s γ γsrv  :
   {{{
-        is_Server s γ γsrv ∗
-        is_helping_inv γ
+        is_Server s γ γsrv
   }}}
     mpaxos.Server__TryAcquire #s
   {{{
@@ -859,7 +858,7 @@ Lemma wp_Server__TryAcquire s γ γsrv  :
           True
   }}}.
 Proof.
-  iIntros (?) "#[? ?] HΦ".
+  iIntros (?) "#Hsrv HΦ".
   wp_apply (wp_Server__TryAcquire_internal with "[$]").
   iIntros "* Hpost".
   iApply "HΦ".
@@ -868,7 +867,7 @@ Proof.
   iDestruct "Hpost" as "(? & ? & Hpost)".
   iNamed "Hpost". repeat iExists _.
   iDestruct "Hpost" as "($ & $ & $ & H)".
-  iApply (releaseFn_fact with "[$] [$] [$] H").
+  iNamed "Hsrv". iApply (releaseFn_fact with "[$] [$] [$] [$]").
 Qed.
 
 End tryacquire_proof.

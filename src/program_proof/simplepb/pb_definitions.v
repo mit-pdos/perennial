@@ -55,7 +55,6 @@ Implicit Type (γ : simplepb_system_names) (γsrv:simplepb_server_names).
 Module pbParams.
 Class t :=
   mk {
-      conf_host_names: list config_server_names ;
       initconf : list u64 ; (* XXX: have to put these here to construct a configParams.t; bundling problem *)
       pb_record:Sm.t
     }
@@ -351,7 +350,7 @@ Next Obligation.
   solve_proper.
 Defined.
 
-Definition is_pb_host_pre ρ : (u64 -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
+Definition is_pb_rpcs_pre ρ : (u64 -d> simplepb_system_names -d> simplepb_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
   ∃ γrpc,
   is_urpc_spec_pred γrpc host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
@@ -364,33 +363,33 @@ Definition is_pb_host_pre ρ : (u64 -d> simplepb_system_names -d> simplepb_serve
   is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ; (U64 7) ]})%I
 .
 
-Instance is_pb_host_pre_contr : Contractive is_pb_host_pre.
+Instance is_pb_rpcs_pre_contr : Contractive is_pb_rpcs_pre.
 Proof.
-  intros n ?? Hρ. rewrite /is_pb_host_pre.
+  intros n ?? Hρ. rewrite /is_pb_rpcs_pre.
   intros ???. f_equiv. intros ?.
   do 5 (f_contractive || f_equiv).
   rewrite /BecomePrimary_spec_pre /BecomePrimary_core_spec.
   intros args Φ. simpl. repeat f_equiv. apply Hρ.
 Qed.
 
-Definition is_pb_host_def :=
-  fixpoint (is_pb_host_pre).
-Definition is_pb_host_aux : seal (is_pb_host_def). by eexists. Qed.
-Definition is_pb_host := is_pb_host_aux.(unseal).
-Definition is_pb_host_eq : is_pb_host = is_pb_host_def := is_pb_host_aux.(seal_eq).
+Definition is_pb_rpcs_def :=
+  fixpoint (is_pb_rpcs_pre).
+Definition is_pb_rpcs_aux : seal (is_pb_rpcs_def). by eexists. Qed.
+Definition is_pb_rpcs := is_pb_rpcs_aux.(unseal).
+Definition is_pb_rpcs_eq : is_pb_rpcs = is_pb_rpcs_def := is_pb_rpcs_aux.(seal_eq).
 
-Definition BecomePrimary_spec γ γsrv := BecomePrimary_spec_pre γ γsrv is_pb_host.
+Definition BecomePrimary_spec γ γsrv := BecomePrimary_spec_pre γ γsrv is_pb_rpcs.
 
-Lemma is_pb_host_unfold host γ γsrv:
-  is_pb_host host γ γsrv ⊣⊢ is_pb_host_pre (is_pb_host) host γ γsrv
+Lemma is_pb_rpcs_unfold host γ γsrv:
+  is_pb_rpcs host γ γsrv ⊣⊢ is_pb_rpcs_pre (is_pb_rpcs) host γ γsrv
 .
 Proof.
-  rewrite is_pb_host_eq. apply (fixpoint_unfold (is_pb_host_pre)).
+  rewrite is_pb_rpcs_eq. apply (fixpoint_unfold (is_pb_rpcs_pre)).
 Qed.
 
-Global Instance is_pb_host_pers host γ γsrv: Persistent (is_pb_host host γ γsrv).
+Global Instance is_pb_rpcs_pers host γ γsrv: Persistent (is_pb_rpcs host γ γsrv).
 Proof.
-  rewrite is_pb_host_unfold.
+  rewrite is_pb_rpcs_unfold.
   apply _.
 Qed.
 
@@ -404,7 +403,7 @@ Definition is_conf_inv γ γconf : iProp Σ :=
   "Hconf" ∷ own_config γconf conf ∗
   "%HepochLe" ∷ ⌜int.nat epoch <= int.nat reservedEpoch⌝ ∗
   "#His_conf" ∷ is_epoch_config γ.(s_pb) epoch (r_pb <$> confγs) ∗
-  "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv) ∗
+  "#His_hosts" ∷ ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_rpcs host γ γsrv) ∗
   "#His_lbs" ∷ (∀ (γsrv:pb_server_names), ⌜γsrv ∈ r_pb <$> confγs⌝ → is_epoch_lb γsrv epoch) ∗
   "Hunreserved" ∷ ([∗ set] epoch' ∈ (fin_to_set u64), ⌜int.nat reservedEpoch < int.nat epoch'⌝ →
         config_proposal_unset γ.(s_pb) epoch' ∗ config_unset γ.(s_pb) epoch' ∗ own_proposal_unused γ.(s_pb) epoch' ∗ own_init_proposal_unused γ.(s_prim) epoch') ∗
@@ -446,23 +445,35 @@ Definition is_helping_inv γ :=
       )
       ).
 
+Definition prophReadN := nroot .@ "prophread".
+Definition prophReadLogN := prophReadN .@ "log".
+Definition is_proph_read_inv γ : iProp Σ :=
+  inv prophReadLogN (∃ σ, own_op_log γ σ ∗ own_int_log γ σ).
+
 (* These are the server-side invs that must be al *)
 Definition is_pb_system_invs γsys : iProp Σ :=
-  "#Hsys" ∷ is_repl_inv γsys.(s_pb) ∗
+  "#Hrepl" ∷ is_repl_inv γsys.(s_pb) ∗
   "#Hhelping" ∷ is_helping_inv γsys ∗
-  "#HpreInv" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads)
+  "#HpreInv" ∷ is_preread_inv γsys.(s_pb) γsys.(s_prelog) γsys.(s_reads) ∗
+  "#HpropH" ∷ is_proph_read_inv γsys
 .
 
 Definition pbConfWf γ (conf:list u64) : iProp Σ :=
-  ∃ confγs, ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_host host γ γsrv)
+  ∃ confγs, ([∗ list] γsrv ; host ∈ confγs ; conf, is_pb_rpcs host γ γsrv)
 .
 
 Local Instance toConfigParams γ : configParams.t Σ :=
   configParams.mk Σ
                   (pbConfWf γ)
                   (pbN .@ "configservice")
-                  conf_host_names initconf
+                  initconf
 .
+
+Definition is_pb_host (host:u64) γ γsrv : iProp Σ :=
+  "#Hhost" ∷ is_pb_rpcs host γ γsrv ∗
+  "#Hinvs" ∷ is_pb_system_invs γ
+.
+
 End pb_global_definitions.
 
 Module server.
@@ -503,7 +514,7 @@ Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,
   "#Hcl" ∷ readonly (ck ↦[pb.Clerk :: "cl"] #cl) ∗
   "#Hcl_rpc"  ∷ is_ReconnectingClient cl srv ∗
-  "#Hsrv" ∷ is_pb_host srv γ γsrv
+  "#Hsrv" ∷ is_pb_rpcs srv γ γsrv
 .
 
 (* End clerk specs *)

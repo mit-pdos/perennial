@@ -21,7 +21,8 @@ Lemma wp_makeServer γ γsrv (fname:string) data conf_sl (hosts:list u64) init_s
                 (∃ d : list u8, own_file_inv γ γsrv d ∗ fname f↦d) ∗
         "#HP" ∷ (□ Pwf initstate) ∗
         "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 hosts ∗
-        "#Hhosts" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; config, is_mpaxos_host host γ γsrv' ) ∗
+        "#Hhosts" ∷ is_mpaxos_hosts hosts γ ∗
+        "#HinvHelping" ∷ is_helping_inv γ ∗
         "Hinitstate" ∷ own_slice_small init_sl byteT 1 initstate
 
   }}}
@@ -67,7 +68,7 @@ Proof.
                ∃ sl cls,
                "Hcls" ∷ s ↦[Server :: "clerks"] (slice_val sl) ∗
                "Hcls_sl" ∷ own_slice sl ptrT 1 (cls) ∗
-               "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ cls ; (take (int.nat i) config),
+               "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv' ∈ cls ; (take (int.nat i) γ.(s_hosts)),
                                    is_singleClerk ck γ γsrv') ∗
                "%Hsz" ∷ ⌜ length cls = int.nat i ⌝
                )%I
@@ -185,8 +186,8 @@ Lemma wp_StartServer γ γsrv (me:u64) (fname:string) data init_sl conf_sl (host
                 (∃ d : list u8, own_file_inv γ γsrv d ∗ fname f↦d) ∗
         "#HP" ∷ (□ Pwf initstate) ∗
         "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 hosts ∗
-        "#Hhost" ∷ is_mpaxos_host me γ γsrv ∗
-        "#Hhosts" ∷ ([∗ list] _ ↦ host ; γsrv' ∈ hosts ; config, is_mpaxos_host host γ γsrv' ) ∗
+        "#Hhost" ∷ is_mpaxos_server_host me γ γsrv ∗
+        "#Hhosts" ∷ is_mpaxos_hosts hosts γ ∗
         "Hinitstate" ∷ own_slice_small init_sl byteT 1 initstate
 
   }}}
@@ -196,7 +197,7 @@ Lemma wp_StartServer γ γsrv (me:u64) (fname:string) data init_sl conf_sl (host
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
+  iNamed "Hpre". iNamed "Hhost".
   wp_call.
   wp_apply (wp_makeServer with "[$Hconf_sl $Hfile $Hinitstate]").
   { iFrame "#". }

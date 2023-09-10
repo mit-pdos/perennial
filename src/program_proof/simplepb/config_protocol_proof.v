@@ -22,7 +22,11 @@ Existing Instance toConfigParams.
 Definition is_pb_config_hosts hosts γ : iProp Σ :=
   ∃ γconf,
   "#Hhosts" ∷ ([∗ list] host ∈ hosts, is_config_host host γconf) ∗
-  "#HconfInv" ∷ is_conf_inv γ γconf.
+  "#HconfInv" ∷ is_conf_inv γ γconf ∗
+  "#HprophRead" ∷ is_proph_read_inv γ
+  (* XXX: proph_read is here because this invariant is the precondition to
+     top-level MakeClerk, which requires knowing proph_read. *)
+.
 
 Definition makeConfigServer_pre γ conf : iProp Σ :=
   own_latest_epoch γ 0 ∗ own_reserved_epoch γ 0 ∗ own_config γ conf.
@@ -81,7 +85,8 @@ Existing Instance toConfigParams.
 
 Definition is_Clerk2 ck γ γconf : iProp Σ :=
   "#Hinv" ∷ is_conf_inv γ γconf ∗
-  "#Hck" ∷ config_proof.is_Clerk ck γconf.
+  "#Hck" ∷ config_proof.is_Clerk ck γconf
+.
 
 Lemma wp_MakeClerk2 hosts hosts_sl γ :
   {{{

@@ -2,8 +2,7 @@ From Perennial.base_logic Require Import lib.saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv.simplepb Require Export pb.
 From Perennial.program_proof.simplepb Require Export pb_protocol.
-From Perennial.program_proof.simplepb Require Import pb_definitions config_protocol_proof
-     clerk_proof.
+From Perennial.program_proof.simplepb Require Import pb_definitions config_protocol_proof config_proof.
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
 From iris.algebra Require Import mono_list.
 
@@ -27,15 +26,15 @@ Definition pb_spec_list γ γsrv :=
     (U64 6, ApplyRo_spec γ);
     (U64 7, IncreaseCommit_spec γ γsrv)].
 
-Lemma pb_host_init host γsys γsrv :
+Lemma alloc_pb_rpcs host γsys γsrv :
   host c↦ ∅ ={⊤}=∗
-  is_pb_host host γsys γsrv.
+  is_pb_rpcs host γsys γsrv.
 Proof.
   iIntros "Hchan".
   iMod (alloc_is_urpc_list_pred host (pb_spec_list γsys γsrv) with "Hchan") as (γrpc) "H".
   { simpl. set_solver. }
   iModIntro.
-  rewrite is_pb_host_unfold.
+  rewrite is_pb_rpcs_unfold.
   iExists γrpc.
   simpl.
   iDestruct "H" as "(H1 & $ & $ & $ & $ & $ & $ & $ & _)".
@@ -101,7 +100,7 @@ Proof.
   lia.
 Qed.
 
-Lemma alloc_simplepb_system γsrvs :
+Lemma alloc_simplepb_last γsrvs :
   length γsrvs > 0 →
   (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_accepted_lb γsrv.(r_pb) (U64 0) [] ∗ is_epoch_lb γsrv.(r_pb) 0)
   ={⊤}=∗ ∃ γ,
@@ -142,5 +141,30 @@ Proof.
   iPureIntro.
   by apply elem_of_list_fmap_1.
 Qed.
+
+Lemma alloc_simplepb_system (configHostPairs: list (u64 * u64)) (extrahosts: list u64) :
+  ([∗ list] h ∈ (initconf ++ extrahosts), h c↦ ∅)
+  ={⊤}=∗
+  ∃ γ,
+  (* for each pb replica server:  *)
+  ([∗ list] host ∈ initconf ++ extrahosts,
+     ∃ γsrv,
+     is_pb_host host γ γsrv ∗
+     (own_Server_ghost_f γ γsrv 0 [] false)
+  ) ∗
+
+  (* for each config paxos server:  *)
+  ([∗ list] configHostPair ∈ configHostPairs,
+    ∃ γconf γconfsrv params,
+    ⌜ params.(configParams.initconfig) = initconf ⌝ ∗
+    is_config_server_host configHostPair.1 configHostPair.2 γconf γconfsrv ∗
+    is_config_peers (configHostPairs.*2) γconf ∗
+    is_config_invs γconf ∗
+    (□ configParams.Pwf configParams.initconfig) ∗
+    config_crash_resources γconf γconfsrv []
+  )
+.
+Proof.
+Admitted.
 
 End pb_init_proof.

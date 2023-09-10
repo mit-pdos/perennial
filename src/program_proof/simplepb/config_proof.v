@@ -65,6 +65,8 @@ Admitted.
 End state.
 End state.
 
+Definition config_server_names := mp_server_names.
+
 Record config_names :=
 {
   epoch_gn:gname ;
@@ -73,14 +75,11 @@ Record config_names :=
   mpaxos_gn:mpaxos_system_names ;
 }.
 
-Definition config_server_names := mp_server_names.
-
 Module configParams.
 Class t Σ :=
   mk {
       Pwf : list u64 → iProp Σ ;
       Ntop: namespace ;
-      host_names: list config_server_names ;
       initconfig: list u64 ;
     }
 .
@@ -258,25 +257,29 @@ Definition initstate : list u8 :=
   state.encode (state.mk 0 0 0 false initconfig ).
 
 Local Instance mpParams : mpaxosParams.t Σ :=
-  mpaxosParams.mk Σ host_names initstate configWf configPaxosN.
+  mpaxosParams.mk Σ initstate configWf configPaxosN.
 
 Definition config_crash_resources γ (γsrv:config_server_names) d : iProp Σ :=
   own_file_inv γ.(mpaxos_gn) γsrv d
 .
 
-Definition is_config_server_host me paxosMe γ γsrv : iProp Σ :=
-  "#HhostConf" ∷ is_config_host me γ ∗
-  "#HhostPaxos" ∷ is_mpaxos_host paxosMe γ.(mpaxos_gn) γsrv
+Definition is_config_invs γ : iProp Σ :=
+  "#Hconfig_inv" ∷ is_config_inv γ
 .
 
-Definition is_config_invs γ : iProp Σ :=
-  "#Hst_inv" ∷ is_helping_inv γ.(mpaxos_gn) ∗
-  "#Hconfig_inv" ∷ is_config_inv γ
+Definition is_config_server_host me paxosMe γ γsrv : iProp Σ :=
+  "#Hinvs" ∷ is_config_invs γ ∗
+  "#HhostConf" ∷ is_config_host me γ ∗
+  "#HhostPaxos" ∷ is_mpaxos_server_host paxosMe γ.(mpaxos_gn) γsrv
 .
 
 (* XXX: maybe use is_config_server_host? *)
 Definition is_config_peers (paxosHosts: list u64) γ : iProp Σ :=
-  "#Hhosts" ∷ ([∗ list] host;γsrv' ∈ paxosHosts; host_names, is_mpaxos_host host γ.(mpaxos_gn) γsrv')
+  is_mpaxos_hosts paxosHosts γ.(mpaxos_gn).
+
+Definition is_config_hosts (hosts: list u64) γ : iProp Σ :=
+  "#Hhosts" ∷ ([∗ list] host ∈ hosts, is_config_host host γ) ∗
+  "%Hnonempty" ∷ ⌜ 0 < length hosts ⌝
 .
 
 End config_global.
@@ -292,7 +295,6 @@ Definition is_Server (s:loc) γ : iProp Σ :=
   ∃ (p:loc) γsrv,
   "#Hs" ∷ readonly (s ↦[config2.Server :: "s"] #p) ∗
   "#Hsrv" ∷ is_Server p γ.(mpaxos_gn) γsrv ∗
-  "#Hst_inv" ∷ is_helping_inv γ.(mpaxos_gn) ∗
   "#Hconfig_inv" ∷ is_config_inv γ
 .
 
@@ -1088,8 +1090,7 @@ Definition is_Clerk (ck:loc) γ : iProp Σ :=
 Lemma wp_MakeClerk hosts hosts_sl γ:
   {{{
       "Hhosts_sl" ∷ readonly (own_slice_small hosts_sl uint64T 1 hosts) ∗
-      "#Hhosts" ∷ ([∗ list] host ∈ hosts, is_config_host host γ) ∗
-      "%Hnonempty" ∷ ⌜ 0 < length hosts ⌝
+      "#Hhosts" ∷ is_config_hosts hosts γ
   }}}
     config2.MakeClerk (slice_val hosts_sl)
   {{{
@@ -1098,7 +1099,7 @@ Lemma wp_MakeClerk hosts hosts_sl γ:
 .
 Proof.
   iIntros (Φ) "H HΦ".
-  iNamed "H".
+  iNamed "H". iNamed "Hhosts".
   wp_lam.
   wp_apply wp_NewSlice.
   iIntros (?) "Hcls_sl".
@@ -1856,12 +1857,11 @@ Lemma wp_makeServer γ γsrv fname data (paxosMe:u64) hosts_sl init_sl (hosts: l
   {{{
         "Hhosts_sl" ∷ (own_slice_small hosts_sl uint64T 1 hosts) ∗
         "#Hinit" ∷ readonly (own_slice_small init_sl uint64T 1 initconfig) ∗
-        "#Hhost" ∷ is_mpaxos_host paxosMe γ.(mpaxos_gn) γsrv ∗
-        "#Hst_inv" ∷ is_helping_inv γ.(mpaxos_gn) ∗
-        "#Hconfig_inv" ∷ is_config_inv γ ∗
+        "#Hhost" ∷ is_mpaxos_server_host paxosMe γ.(mpaxos_gn) γsrv ∗
         "Hfile" ∷ crash_borrow (config_crash_resources γ γsrv data ∗ fname f↦ data)
                 (∃ d, config_crash_resources γ γsrv d ∗ fname f↦ d) ∗
         "#Hpeers" ∷ is_config_peers hosts γ ∗
+        "#Hconfig_inv" ∷ is_config_inv γ ∗
         "#Hwf" ∷ □ Pwf initconfig
   }}}
     config2.makeServer #(str fname) #paxosMe (slice_val hosts_sl) (slice_val init_sl)
@@ -1888,6 +1888,7 @@ Proof.
   }
   iIntros (?) "[Henc _]".
   wp_pures.
+  iNamed "Hpeers".
   wp_apply (wp_StartServer with "[$Hfile $Hhosts_sl Henc]").
   {
     iFrame "∗#". simpl. iFrame.
@@ -1910,7 +1911,6 @@ Lemma wp_StartServer γ γsrv fname me (paxosMe:u64) (data:list u8) hosts_sl ini
                 (∃ d, config_crash_resources γ γsrv d ∗ fname f↦ d) ∗
 
         "#Hhost" ∷ is_config_server_host me paxosMe γ γsrv ∗
-        "#Hinvs" ∷ is_config_invs γ ∗
         "#Hpeers" ∷ is_config_peers hosts γ ∗
         "#Hwf" ∷ □ Pwf initconfig
 
@@ -1924,7 +1924,7 @@ Proof.
   iNamed "H".
   wp_call.
   wp_apply (wp_makeServer with "[-HΦ]").
-  { iNamed "Hinvs". iNamed "Hhost". iFrame "∗#". }
+  { iNamed "Hhost". iFrame "∗#". }
   iIntros (?) "#Hsrv".
   wp_pures.
 
@@ -1967,8 +1967,8 @@ Proof.
   iIntros (r) "Hr".
   wp_pures.
 
-  iNamed "Hinvs".
   iNamed "Hhost". iNamed "HhostConf".
+  iNamed "Hinvs".
   wp_apply (wp_StartServer_pred with "[$Hr]").
   { set_solver. }
   {
@@ -2007,60 +2007,15 @@ Section config_init.
 Context `{!configG Σ}.
 Context `{!gooseGlobalGS Σ}.
 
-Definition own_config_res γ conf : iProp Σ :=
-  own_latest_epoch γ 0 ∗ own_reserved_epoch γ 0 ∗ own_config γ conf.
-
-Definition is_config_server_prealloc_witness γsrv : iProp Σ :=
-  is_mpaxos_server_prealloc_witness γsrv.
-
-Definition is_config_sys_init_witness γ (params:configParams.t Σ) : iProp Σ :=
-  is_mpaxos_sys_init_witness γ.(mpaxos_gn) host_names N.
-
-Lemma alloc_config_system (params:configParams.t Σ) :
-  length host_names > 0 →
-  (∀ γsrv, ⌜γsrv ∈ host_names⌝ → is_config_server_prealloc_witness γsrv)
-  ={⊤}=∗
-  ∃ γ, is_config_invs γ ∗ is_config_sys_init_witness γ params
-.
-Proof.
-Admitted.
-
-Lemma prealloc_config_server :
-  ⊢ |={⊤}=> ∃ γsrv,
-  is_config_server_prealloc_witness γsrv ∗
-  (∀ γ params,
-     is_config_sys_init_witness γ params -∗
-     config_crash_resources γ γsrv []
-  )
-.
-Proof.
-Admitted.
-
-Context `{params:configParams.t Σ}.
+Context `(params:configParams.t Σ).
 Definition config_spec_list γ :=
   [ (U64 0, ReserveEpochAndGetConfig_spec γ) ;
     (U64 1, GetConfig_spec γ) ;
     (U64 2, TryWriteConfig_spec γ) ;
     (U64 3, GetLease_spec γ)].
 
-Lemma config_ghost_init conf :
-  ⊢ |==> ∃ γ,
-    own_config_res γ conf ∗
-    own_reserved_epoch γ 0 ∗
-    own_latest_epoch γ 0 ∗ own_config γ conf.
-Proof.
-  iMod (mono_nat_own_alloc 0) as (γepoch) "[[Hepoch Hepoch2] _]".
-  iMod (mono_nat_own_alloc 0) as (γres) "[[Hres Hres2] _]".
-  iMod (ghost_var_alloc conf) as (γconf) "[Hconf Hconf2]".
-  iExists {| epoch_gn := γepoch ; config_val_gn:= _ ; repoch_gn := γres |}.
-  iModIntro.
-  iFrame.
-Unshelve.
-(* FIXME parameters missing *)
-Admitted.
 
-(* FIXME: allso allocate is_mpaxos_host here *)
-Lemma config_server_init host γ :
+Lemma alloc_config_rpc host γ :
   host c↦ ∅ ={⊤}=∗
   is_config_host host γ.
 Proof.
@@ -2075,6 +2030,95 @@ Proof.
   iExactEq "H1".
   f_equal.
   set_solver.
+Qed.
+
+Definition own_config_res γ conf : iProp Σ :=
+  own_latest_epoch γ 0 ∗ own_reserved_epoch γ 0 ∗ own_config γ conf.
+
+Existing Instance mpParams.
+Lemma alloc_config_system (hostPairs: list (u64 * u64)) :
+  length hostPairs > 0 →
+  ([∗ list] h ∈ hostPairs, h.1 c↦ ∅ ∗ h.2 c↦ ∅) -∗
+  □ (Pwf initconfig)
+  ={⊤}=∗
+  ∃ γ,
+    ([∗ list] h ∈ hostPairs,
+       ∃ γsrv,
+         is_config_peers (hostPairs.*2) γ ∗
+         is_config_server_host h.1 h.2 γ γsrv ∗
+         config_crash_resources γ γsrv []) ∗
+    is_config_hosts (hostPairs.*1) γ ∗
+    own_config_res γ initconfig
+.
+Proof.
+  intros ?.
+  iIntros "Hchans #HP".
+  iDestruct (big_sepL_sep with "Hchans") as "[Hc Hp]".
+  iMod (alloc_mpaxos_system _ (hostPairs.*2) with "[Hp] []") as "H".
+  { by rewrite big_sepL_fmap. }
+  { simpl. iExists _.
+    iSplitR.
+    { done. }
+    iModIntro.
+    iFrame "HP".
+  }
+  iDestruct "H" as (?) "(Hsrvs & #Hhost & Hst)".
+
+  (* allocate config-specific ghost state *)
+  iMod (mono_nat_own_alloc 0) as (γepoch) "[[Hepoch Hepoch2] _]".
+  iMod (mono_nat_own_alloc 0) as (γres) "[[Hres Hres2] _]".
+  iMod (ghost_var_alloc initconfig) as (γconf) "[Hconf Hconf2]".
+
+  iExists (Build_config_names _ _ _ _).
+  iAssert (|={⊤}=> is_config_hosts hostPairs.*1 _)%I with "[Hc]" as ">#Hhosts".
+  {
+    rewrite /is_config_hosts.
+    iSplitL.
+    2:{ iPureIntro. by rewrite fmap_length. }
+    iApply big_sepL_fupd.
+    rewrite big_sepL_fmap.
+    iApply (big_sepL_impl with "Hc").
+    iModIntro. iIntros.
+    by iMod (alloc_config_rpc with "[$]").
+  }
+  iMod fupd_mask_subseteq as "Hmask".
+  2: iMod (lease_alloc _ epochLeaseN with "Hepoch") as (?) "(_ & Hepoch & Hexp)".
+  { solve_ndisj. }
+  iMod "Hmask".
+  iAssert (|={⊤}=> is_config_invs _)%I with "[Hst Hepoch Hexp Hres Hconf]" as ">#Hinv".
+  {
+    iMod (inv_alloc with "[-]") as "$"; last done.
+    iNext. repeat iExists _. iFrame.
+    simpl. rewrite /initstate.
+    instantiate (2:=(Build_config_names _ _ _ _)).
+    simpl.
+    iFrame "Hst".
+    rewrite /own_Config_ghost /=.
+    iExists _.
+    iFrame. done.
+  }
+  iFrame "Hhosts".
+  iSplitL "Hsrvs".
+  {
+    iModIntro.
+    rewrite big_sepL_fmap.
+    iApply (big_sepL_impl with "Hsrvs").
+    iModIntro. iIntros "* %Hlookup H".
+    iDestruct "H" as (?) "[#Hmphost Hcrash]".
+    iExists _; iFrame "Hmphost".
+    iSplitR.
+    { by rewrite /is_config_peers /=. }
+    iSplitR.
+    { iFrame "#".
+      iNamed "Hhosts".
+      iDestruct (big_sepL_lookup with "Hhosts") as "$".
+      rewrite list_lookup_fmap.
+      instantiate (1:=k). rewrite Hlookup. done.
+    }
+    iNamed "Hcrash".
+    repeat iExists _. iFrame. done.
+  }
+  iModIntro. iFrame.
 Qed.
 
 End config_init.
