@@ -76,16 +76,6 @@ Proof.
 Qed.
 
 #[global]
-Instance is_bank_into_crash `{hG0: !heapGS Σ} `{!bankG Σ} a b c d :
-  IntoCrash (is_bank a b c d)
-    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_bank a b c d)%I
-.
-Proof.
-  rewrite /IntoCrash /is_bank.
-  iIntros "$". iIntros; eauto.
-Qed.
-
-#[global]
 Instance file_crash_into_crash `{hG0: !heapGS Σ} SMRecord `{!pbG Σ} γsys γsrv1 data:
   IntoCrash (file_crash (own_Server_ghost_f γsys γsrv1) data)
     (λ hG, (file_crash (sm_record := SMRecord) (own_Server_ghost_f γsys γsrv1 ) data)).
@@ -94,6 +84,16 @@ Proof.
   iIntros "$". iIntros; eauto.
 Qed.
  *)
+
+#[global]
+Instance is_bank_into_crash `{hG0: !heapGS Σ} `{!bankG Σ} a b c d :
+  IntoCrash (is_bank a b c d)
+    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_bank a b c d)%I
+.
+Proof.
+  rewrite /IntoCrash /is_bank.
+  iIntros "$". iIntros; eauto.
+Qed.
 
 (* There's one of these in kvee_proof.v, so I got rid of this.
    This is probably a remnant of an older version of the proof in which the subG
@@ -106,7 +106,7 @@ Definition replica_fname := "kv.data".
 
 (* FIXME: put this in the file that defines ekvΣ? *)
 Opaque ekvΣ.
-Lemma kv_pb_boot :
+Lemma closed_bank :
   ∀ σdconfig σdsrv1 σdsrv2
     σlconfig σlsrv1 σlsrv2
     σbt σba
@@ -272,8 +272,8 @@ Proof.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     iDestruct "Hdsrv" as "[H1 H2]".
-    iApply (wpr_kv_replica_main with "[$]").
-    (* FIXME: why is this iApply slow? *)
+    iApply (wpr_kv_replica_main with "[- $H1]").
+    { iFrame "∗#". }
   }
   destruct γdsrvs as [|? γdsrvs].
   { iDestruct (big_sepL2_length with "Hdsrvs")as %Hlen. by exfalso. }
@@ -287,7 +287,8 @@ Proof.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     iDestruct "Hdsrv" as "[H1 H2]".
-    iApply (wpr_kv_replica_main with "[$]").
+    iApply (wpr_kv_replica_main with "[- $H1]").
+    { iFrame "∗#". }
   }
 
   destruct γlsrvs as [|? γlsrvs].
@@ -302,7 +303,8 @@ Proof.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     iDestruct "Hlsrv" as "[H1 H2]".
-    iApply (wpr_kv_replica_main with "[$]").
+    iApply (wpr_kv_replica_main with "[- $H1]").
+    { iFrame "∗#". }
   }
 
   destruct γlsrvs as [|? γlsrvs].
@@ -317,7 +319,8 @@ Proof.
     iExists (λ _, True%I), (λ _, True%I), (λ _ _, True%I).
     set (hG' := HeapGS _ _ _).
     iDestruct "Hlsrv" as "[H1 H2]".
-    iApply (wpr_kv_replica_main with "[$]").
+    iApply (wpr_kv_replica_main with "[- $H1]").
+    { iFrame "∗#". }
   }
 
   iSplitR.
@@ -347,18 +350,19 @@ Proof.
       iCrash.
       iIntros "$".
       destruct hL as [HG'' ?].
-      iDestruct "Hkvconf" as "[%Hheap2 #Hkvconf]"; subst.
-      iDestruct "Hlkvconf" as "[_ #Hlkvconf]".
-      iDestruct "Hbank" as "[_ #Hbank]".
-      clear hG'.
-      clear hL'.
+      set (to_name := (λ x, match x with INamed y => y | _ => "?" end)).
+      repeat iSelect (⌜ _ ⌝ ∗ _)%I
+             (fun H => let x := (eval compute in ("[% " +:+ to_name H +:+ "]")) in
+                    iDestruct H as x).
+      clear hG' hL' HL.
+      subst.
       (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
       set (hG2' := HeapGS _ _ goose_localGS).
-      simpl.
+      clear to_name.
       iApply wp_wpc.
-      wp_apply (wp_bank_transferer_main with "[]"); last done.
+      wp_apply (wp_bank_transferer_main with "[-]"); last done.
       repeat iExists _.
-      iFrame "Hbank #".
+      iFrame.
     }
   }
   iSplitR.
@@ -382,25 +386,25 @@ Proof.
       iNext.
       simpl.
       set (hG' := HeapGS _ _ hL').
-      iDestruct "Hinvs" as "-#Hinvs".
-      iDestruct "Hkvconf" as "-#Hkvconf".
-      iDestruct "Hlkvconf" as "-#Hlkvconf".
+      iDestruct "Hdhost" as "-#Hdhost".
+      iDestruct "Hlhost" as "-#Hlhost".
       iDestruct "Hbank" as "-#Hbank".
       iCrash.
       iIntros "$".
       destruct hL as [HG'' ?].
-      iDestruct "Hkvconf" as "[%Hheap2 #Hkvconf]"; subst.
-      iDestruct "Hlkvconf" as "[_ #Hlkvconf]".
-      iDestruct "Hbank" as "[_ #Hbank]".
-      clear hG'.
-      clear hL'.
+      set (to_name := (λ x, match x with INamed y => y | _ => "?" end)).
+      repeat iSelect (⌜ _ ⌝ ∗ _)%I
+             (fun H => let x := (eval compute in ("[% " +:+ to_name H +:+ "]")) in
+                    iDestruct H as x).
+      clear hG' hL' HL.
+      subst.
       (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
       set (hG2' := HeapGS _ _ goose_localGS).
-      simpl.
+      clear to_name.
       iApply wp_wpc.
-      wp_apply (wp_bank_auditor_main with "[]"); last done.
+      wp_apply (wp_bank_auditor_main with "[-]"); last done.
       repeat iExists _.
-      iFrame "Hbank #".
+      iFrame.
     }
   }
   done.
