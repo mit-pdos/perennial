@@ -19,12 +19,48 @@ Record t :=
       config : list u64 ;
     }.
 
-Definition encode (x:t) : list u8.
-Admitted.
+Definition encode (x:t) : list u8 :=
+  u64_le x.(epoch) ++
+  u64_le x.(reservedEpoch) ++
+  u64_le x.(leaseExpiration) ++
+  u64_le (if x.(wantLeaseToExpire) then U64 1 else U64 0) ++
+  (u64_le (length x.(config)) ++ concat (u64_le <$> x.(config))).
+
+
+Lemma list_u64_to_byte_inj a b :
+  concat (u64_le <$> a) = concat (u64_le <$> b) → a = b.
+Proof.
+  generalize b; clear b. induction a; intros b.
+  { simpl. intros. by destruct b; done. }
+  rewrite fmap_cons concat_cons.
+  intros. destruct b.
+  { by exfalso. }
+  rewrite fmap_cons concat_cons in H.
+  apply app_inj_1 in H as [? H]; last done.
+  f_equal.
+  {
+    apply (f_equal le_to_u64) in H0.
+    by repeat rewrite u64_le_to_word in H0.
+  }
+  by apply IHa.
+Qed.
 
 Global Instance encode_inj : Inj eq eq encode.
 Proof.
-Admitted.
+  intros ???. destruct x, y.
+  Opaque u64_le.
+  apply app_inj_1 in H as [? H]; last done.
+  apply app_inj_1 in H as [? H]; last done.
+  apply app_inj_1 in H as [? H]; last done.
+  apply app_inj_1 in H as [? H]; last done.
+  simpl in *.
+  apply (f_equal le_to_u64) in H0, H1, H2.
+  repeat rewrite u64_le_to_word in H0, H1, H2.
+  subst. f_equal.
+  { by destruct wantLeaseToExpire0, wantLeaseToExpire1. }
+  apply app_inj_1 in H as [? H]; last done.
+  by apply list_u64_to_byte_inj.
+Qed.
 
 Context `{!heapGS Σ}.
 Definition own (l:loc) (x:t) : iProp Σ :=
@@ -47,7 +83,43 @@ Lemma wp_decode (x:t) sl q :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (?) "Hsl HΦ".
+  wp_lam.
+  wp_apply (wp_allocStruct); first by val_ty.
+  iIntros (?) "Hl". iDestruct (struct_fields_split with "Hl") as "HH".
+  iNamed "HH".
+  wp_pures.
+  wp_apply (wp_ref_to); first by val_ty.
+  iIntros (?) "He2".
+  wp_pures.
+  wp_load. wp_apply (wp_ReadInt with "[$]").
+  iIntros (?) "?".
+  wp_pures. wp_storeField. wp_store.
+  wp_load. wp_apply (wp_ReadInt with "[$]").
+  iIntros (?) "?".
+  wp_pures. wp_storeField. wp_store.
+  wp_load. wp_apply (wp_ReadInt with "[$]").
+  iIntros (?) "?".
+  wp_pures. wp_storeField. wp_store.
+  wp_apply (wp_ref_of_zero); first done.
+  iIntros (?) "HwantExp".
+  wp_pures.
+  wp_load. wp_apply (wp_ReadInt with "[$]").
+  iIntros (?) "Hsl".
+  wp_pures.
+  wp_store. wp_store.
+  wp_load.
+  wp_storeField.
+  wp_load.
+  wp_apply (Config.wp_Decode with "[$Hsl]").
+  { done. }
+  iIntros (?) "Hconf".
+  wp_storeField.
+  iApply "HΦ".
+  repeat iExists _.
+  iFrame "∗#".
+  by destruct x, wantLeaseToExpire; iFrame.
+Qed.
 
 Lemma wp_encode l (x:t) :
   {{{
@@ -60,7 +132,72 @@ Lemma wp_encode l (x:t) :
   }}}
 .
 Proof.
-Admitted.
+  iIntros (?) "H HΦ".
+  iNamed "H".
+  wp_lam.
+  wp_apply (wp_ref_of_zero); first done.
+  iIntros (?) "Hl".
+  wp_pures.
+  wp_loadField.
+  change (slice.nil) with (slice_val Slice.nil).
+  wp_apply (wp_WriteInt with "[]").
+  { iApply own_slice_zero. }
+  iIntros (?) "?". wp_store.
+  wp_loadField. wp_load.
+  wp_apply (wp_WriteInt with "[$]").
+  iIntros (?) "?". wp_store.
+  wp_loadField. wp_load.
+  wp_apply (wp_WriteInt with "[$]").
+  iIntros (?) "?". wp_store.
+  wp_loadField.
+  wp_if_destruct.
+  {
+    wp_load. wp_apply (wp_WriteInt with "[$]").
+    iIntros (?) "Hsl". wp_store.
+    wp_loadField.
+    wp_apply (Config.wp_Encode with "[]").
+    { iFrame "#". }
+    iIntros (??) "(%Henc & _ & HconfEnc)".
+    wp_load.
+    iDestruct (own_slice_to_small with "HconfEnc") as "HconfEnc".
+    wp_apply (wp_WriteBytes with "[$Hsl $HconfEnc]").
+    iIntros (?) "[Hsl _]".
+    wp_store.
+    wp_load.
+    iApply "HΦ".
+    iModIntro.
+    iSplitL "Hsl".
+    {
+      iApply own_slice_to_small. simpl. rewrite /encode Heqb -app_assoc. rewrite Henc.
+      iFrame.
+    }
+    repeat iExists _; iFrame "∗#".
+    rewrite Heqb. iFrame.
+  }
+  {
+    wp_load. wp_apply (wp_WriteInt with "[$]").
+    iIntros (?) "Hsl". wp_store.
+    wp_loadField.
+    wp_apply (Config.wp_Encode with "[]").
+    { iFrame "#". }
+    iIntros (??) "(%Henc & _ & HconfEnc)".
+    wp_load.
+    iDestruct (own_slice_to_small with "HconfEnc") as "HconfEnc".
+    wp_apply (wp_WriteBytes with "[$Hsl $HconfEnc]").
+    iIntros (?) "[Hsl _]".
+    wp_store.
+    wp_load.
+    iApply "HΦ".
+    iModIntro.
+    iSplitL "Hsl".
+    {
+      iApply own_slice_to_small. simpl. rewrite /encode Heqb -app_assoc. rewrite Henc.
+      iFrame.
+    }
+    repeat iExists _; iFrame "∗#".
+    rewrite Heqb. iFrame.
+  }
+Qed.
 
 End state.
 End state.
@@ -2055,9 +2192,10 @@ Proof.
   intros ?.
   iIntros "Hchans #HP".
   iDestruct (big_sepL_sep with "Hchans") as "[Hc Hp]".
-  iMod (alloc_mpaxos_system _ (hostPairs.*2) with "[Hp] []") as "H".
+  iMod (alloc_mpaxos_system mpParams (hostPairs.*2) with "[Hp] []") as "H".
   { by rewrite big_sepL_fmap. }
   { simpl. iExists _.
+
     iSplitR.
     { done. }
     iModIntro.

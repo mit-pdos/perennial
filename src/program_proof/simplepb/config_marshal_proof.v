@@ -184,10 +184,10 @@ Proof.
   }
 Qed.
 
-Lemma wp_Decode enc enc_sl (conf:C) :
+Lemma wp_Decode enc enc_sl (conf:C) q :
   {{{
         ⌜has_encoding enc conf⌝ ∗
-        own_slice_small enc_sl byteT 1 enc
+        own_slice_small enc_sl byteT q enc
   }}}
     config2.DecodeConfig (slice_val enc_sl)
   {{{
@@ -239,7 +239,7 @@ Proof.
   iDestruct (own_slice_to_small with "Hconf_sl") as "Hconf_sl".
   set (P:=(λ (i:u64),
       ∃ enc_sl,
-      "Henc_sl" ∷ own_slice_small enc_sl byteT 1 (concat (u64_le <$> (drop (int.nat i) conf))) ∗
+      "Henc_sl" ∷ own_slice_small enc_sl byteT q (concat (u64_le <$> (drop (int.nat i) conf))) ∗
       "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
       "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 ((take (int.nat i) conf) ++
                                                 replicate (length conf - int.nat i) (U64 0))

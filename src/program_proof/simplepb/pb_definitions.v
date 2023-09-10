@@ -17,7 +17,7 @@ From Perennial.base_logic Require Import lib.saved_spec.
 (* State-machine record. An instance of Sm.t defines how to compute the reply
    for an op applied to some state and how to encode ops into bytes. *)
 Module Sm.
-Record t :=
+Class t :=
   {
     OpType:Type ;
     OpType_EqDecision:EqDecision OpType;
@@ -56,32 +56,17 @@ Module pbParams.
 Class t :=
   mk {
       initconf : list u64 ; (* XXX: have to put these here to construct a configParams.t; bundling problem *)
-      pb_record:Sm.t
+      pb_record :> Sm.t
     }
 .
 End pbParams.
 Import pbParams.
 
-Section pb_global_definitions.
+Section pb_inG.
+Context {pb_record:Sm.t}.
 
-Context {params:pbParams.t}.
-Notation OpType := (pb_record.(Sm.OpType)).
-Notation has_op_encoding := (Sm.has_op_encoding pb_record).
-Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
-Notation compute_reply := (Sm.compute_reply pb_record).
-Notation is_readonly_op := (Sm.is_readonly_op pb_record).
-Notation apply_postcond := (Sm.apply_postcond pb_record).
-
-(* opsfull has all the ghost ops (RO and RW) in it as well as the gname for the
-   Q for that op. get_rwops returns the RW ops only with the gnames removed.
-   Generalizing it to an arbitrary extra type A instead of gname
-   specifically, because sometimes we want to use get_rwops on a list that has
-   an iProp predicate instead of the gname (see is_helping_inv). *)
-Definition get_rwops {A} (opsfull:list (OpType * A)) : list OpType :=
-  fst <$> opsfull.
-
+Import Sm.
 Definition client_logR := mono_listR (leibnizO OpType).
-
 Class pbG Σ := {
     (*
     pb_ghostG :> pb_ghostG (EntryType:=(OpType * (list OpType → iProp Σ))%type) Σ ;
@@ -109,6 +94,21 @@ Definition pbΣ :=
 Global Instance subG_pbΣ {Σ} : subG (pbΣ) Σ → (pbG Σ).
 Proof. solve_inG. Qed.
 
+End pb_inG.
+
+Section pb_global_definitions.
+
+Context {params:pbParams.t}.
+Import Sm.
+
+(* opsfull has all the ghost ops (RO and RW) in it as well as the gname for the
+   Q for that op. get_rwops returns the RW ops only with the gnames removed.
+   Generalizing it to an arbitrary extra type A instead of gname
+   specifically, because sometimes we want to use get_rwops on a list that has
+   an iProp predicate instead of the gname (see is_helping_inv). *)
+Definition get_rwops {A} (opsfull:list (OpType * A)) : list OpType :=
+  fst <$> opsfull.
+
 Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
@@ -121,7 +121,7 @@ Definition own_int_log γ σ := own γ.(s_internal_log) (●ML{#1/2} (σ : list 
 
 Definition ApplyAsBackup_core_spec γ γsrv args opsfull op Q (Φ : u64 -> iProp Σ) : iProp Σ :=
   ("%Hσ_index" ∷ ⌜length (get_rwops opsfull) = (int.nat args.(ApplyAsBackupArgs.index) + 1)%nat⌝ ∗
-   "%Hhas_encoding" ∷ ⌜has_op_encoding args.(ApplyAsBackupArgs.op) op⌝ ∗
+   "%Hhas_encoding" ∷ ⌜ has_op_encoding args.(ApplyAsBackupArgs.op) op⌝ ∗
    "%Hghost_op_σ" ∷ ⌜last opsfull = Some (op, Q)⌝ ∗
    "%Hno_overflow" ∷ ⌜int.nat args.(ApplyAsBackupArgs.index) < int.nat (word.add args.(ApplyAsBackupArgs.index) 1)⌝ ∗
    "#Hepoch_lb" ∷ is_epoch_lb γsrv.(r_pb) args.(ApplyAsBackupArgs.epoch) ∗
@@ -513,6 +513,7 @@ Notation apply_postcond := (Sm.apply_postcond pb_record).
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.
+Import Sm.
 
 Definition is_Clerk (ck:loc) γ γsrv : iProp Σ :=
   ∃ (cl:loc) srv,

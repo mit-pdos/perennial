@@ -60,7 +60,7 @@ From Perennial.program_proof.simplepb Require
 From Perennial.program_proof.simplepb.simplelog Require proof.
 
 From Perennial.program_proof.simplepb.apps Require kv_proof.
-     (* closed_wpcs closed_proof . *)
+     closed_wpcs closed_proof.
 
 From Perennial.program_proof.mpaxos Require
      applyasfollower_proof.

@@ -211,9 +211,7 @@ Definition decodeState: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "e2") in
     "wantExp" <-[uint64T] "0_ret";;
     "e2" <-[slice.T byteT] "1_ret";;
-    (if: (![uint64T] "wantExp") ≠ #0
-    then struct.storeF state "wantLeaseToExpire" "st" #true
-    else #());;
+    struct.storeF state "wantLeaseToExpire" "st" ((![uint64T] "wantExp") = #1);;
     struct.storeF state "config" "st" (DecodeConfig (![slice.T byteT] "e2"));;
     "st".
 

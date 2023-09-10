@@ -18,13 +18,13 @@ Section global_proof.
 
 Context `{low_record:Sm.t}.
 
-Notation low_OpType := (Sm.OpType low_record).
-Notation low_has_op_encoding := (Sm.has_op_encoding low_record).
-Notation low_has_snap_encoding := (Sm.has_snap_encoding low_record).
-Notation low_compute_reply := (Sm.compute_reply low_record).
-Notation low_is_readonly_op := (Sm.is_readonly_op low_record).
+Notation low_OpType := (@Sm.OpType low_record).
+Notation low_has_op_encoding := (@Sm.has_op_encoding low_record).
+Notation low_has_snap_encoding := (@Sm.has_snap_encoding low_record).
+Notation low_compute_reply := (@Sm.compute_reply low_record).
+Notation low_is_readonly_op := (@Sm.is_readonly_op low_record).
 Instance low_op_eqdec : EqDecision (low_OpType).
-Proof. apply (Sm.OpType_EqDecision low_record). Qed.
+Proof. apply (@Sm.OpType_EqDecision low_record). Qed.
 
 Inductive EOp :=
   | getcid : EOp
@@ -141,18 +141,17 @@ Definition own_esm st γ γerpc : iProp Σ :=
 
 Definition esmN := nroot .@ "esm".
 
-Context {initconf:list u64}.
-Local Instance esmParams : pbParams.t := pbParams.mk initconf (esm_record).
-Context `{!pbG Σ}.
 (* This is the invariant maintained by all the servers for the "centralized"
    ghost state of the system. *)
+Context {initconf:list u64}.
+Local Instance esmParams : pbParams.t := pbParams.mk initconf (esm_record).
+Context `{!pbG (pb_record:=esmParams.(pbParams.pb_record)) Σ}.
 Definition is_esm_inv γpb γlog γerpc : iProp Σ :=
   inv esmN (∃ ops,
-              own_op_log γpb ops ∗
-              own_esm (compute_state ops) γlog γerpc
-      )
+               own_op_log γpb ops ∗
+               own_esm (compute_state ops) γlog γerpc
+       )
 .
-
 
 Lemma alloc_esm γpb :
   own_op_log γpb [] ={⊤}=∗
@@ -180,12 +179,12 @@ End global_proof.
 Section local_proof.
 
 Context {low_record:Sm.t}.
-Notation low_OpType := (Sm.OpType low_record).
-Notation low_has_op_encoding := (Sm.has_op_encoding low_record).
-Notation low_is_readonly_op := (Sm.is_readonly_op low_record).
-Notation low_compute_reply := (Sm.compute_reply low_record).
+Notation low_OpType := (@Sm.OpType low_record).
+Notation low_has_op_encoding := (@Sm.has_op_encoding low_record).
+Notation low_is_readonly_op := (@Sm.is_readonly_op low_record).
+Notation low_compute_reply := (@Sm.compute_reply low_record).
 Instance low_op_dec2 : EqDecision low_OpType.
-Proof. apply (Sm.OpType_EqDecision low_record). Qed.
+Proof. apply (@Sm.OpType_EqDecision low_record). Qed.
 
 Context `{!heapGS Σ, !urpcregG Σ, !erpcG Σ (list u8)}.
 
@@ -203,7 +202,7 @@ Context {initconf:list u64}.
 (* Existing Instance esmParams. *)
 Local Instance esmParams2 : pbParams.t := esmParams (low_record:=low_record) (initconf:=initconf).
 
-Context `{!pbG Σ}.
+Context `{!pbG (pb_record:=esmParams2.(pbParams.pb_record)) Σ}.
 Context `{!vsmG (sm_record:=low_record) Σ}.
 
 Definition own_Clerk ck γoplog : iProp Σ :=

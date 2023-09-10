@@ -8,22 +8,13 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!mpG Σ}.
 Import mpaxosParams.
 
-Lemma alloc_mpaxos_system (params:mpaxosParams.t Σ) (initstate: list u8) (hosts: list u64):
-  ([∗ list] h ∈ hosts, h c↦ ∅) -∗
-  □ (Pwf initstate)
-  ={⊤}=∗
-  ∃ γ,
-    ([∗ list] host ∈ hosts, ∃ γsrv, is_mpaxos_server_host host γ γsrv ∗
-                                    own_file_inv γ γsrv []) ∗
-    is_mpaxos_hosts hosts γ ∗
-    own_state γ initstate
-.
-Proof.
-Admitted.
-
-(*
-Definition is_mpaxos_sys_init_witness γ config N : iProp Σ :=
-  is_sys_init_witness (config:=config) (N:=N) γ.(s_mp)
+Context (params:mpaxosParams.t Σ).
+Definition is_mpaxos_sys_init_witness γ : iProp Σ :=
+  "#Hinit" ∷ is_sys_init_witness (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) ∗
+  "#Hhelp" ∷ is_helping_inv γ ∗
+  "#Hvote" ∷ is_vote_inv (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) ∗
+  "#Hrepl" ∷ is_repl_inv (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) ∗
+  "#Hpwf" ∷ □ params.(Pwf) params.(initstate)
 .
 
 Definition is_mpaxos_server_prealloc_witness γsrv : iProp Σ :=
@@ -32,27 +23,25 @@ Definition is_mpaxos_server_prealloc_witness γsrv : iProp Σ :=
 Lemma prealloc_mpaxos_server :
   ⊢ |={⊤}=> ∃ γsrv,
   is_mpaxos_server_prealloc_witness γsrv ∗
-  (∀ γ (p:mpaxosParams.t Σ),
-     is_mpaxos_sys_init_witness γ p.(mpaxosParams.config) p.(mpaxosParams.N) -∗
-        own_file_inv γ γsrv []).
+  (∀ γ, is_mpaxos_sys_init_witness γ -∗ own_file_inv γ γsrv []).
 Proof.
-  (* iMod (pb_ghost_server_pre_init) as (γpb) "(Hpre & #? & #?)".
-  iMod (alloc_primary_protocol_server) as (γprim) "Hprim".
-  iExists {| r_pb := γpb ; r_prim := γprim |}.
+  iMod (paxos_ghost_server_pre_init) as (γpb) "(Hpre & #?)".
+  iExists _.
   iModIntro. iFrame "#".
-  iIntros (?) "#(? & ? & ?)".
+  iIntros (?) "H". iNamed "H".
   iDestruct (pb_ghost_server_init with "[$] [$]") as "H".
-  by iExists _; iFrame "∗#". *)
-Admitted.
+  rewrite /own_file_inv.
+  iExists _.
+  iSplitR.
+  { iPureIntro. right. done. }
+  iExists _; iFrame "∗#".
+  simpl.
+  iPureIntro.
+  done.
+Qed.
 
-(* Invariants:
-   is_repl_inv
-   is_vote_inv
-   is_helping_inv
- *)
-
-Lemma alloc_mpaxos_helping_inv {p:mpaxosParams.t Σ} γ :
-  own_log γ.(s_mp) [] -∗ own_state γ p.(mpaxosParams.initstate)
+Lemma alloc_mpaxos_helping_inv γ :
+  own_log γ.(s_mp) [] -∗ own_state γ initstate
   ={⊤}=∗ is_helping_inv γ.
 Proof.
   iIntros "Hprelog Hint_log".
@@ -78,51 +67,39 @@ Proof.
   lia.
 Qed.
 
-Lemma alloc_mpaxos_system γsrvs init N Pwf :
+Lemma alloc_mpaxos_last γsrvs :
   length γsrvs > 0 →
+  □ params.(Pwf) params.(initstate) -∗
   (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_mpaxos_server_prealloc_witness γsrv)
   ={⊤}=∗
-  let params:=(mpaxosParams.mk Σ γsrvs init Pwf N) in
   ∃ γ,
+   ⌜ γ.(s_hosts) = γsrvs ⌝ ∗
    is_helping_inv γ ∗
    is_vote_inv (config:=γsrvs) (N:=N) γ.(s_mp) ∗
    is_repl_inv (config:=γsrvs) (N:=N) γ.(s_mp) ∗
-   own_state γ init ∗
-   is_mpaxos_sys_init_witness γ γsrvs N
+   own_state γ initstate ∗
+   is_mpaxos_sys_init_witness γ
 .
 Proof.
-  (* iIntros (?) "#Hpre".
-  iMod alloc_primary_protocol as (γprim) "[Hprim #HprimWit]".
-  iMod (pb_system_init (r_pb <$> γsrvs) with "[]") as (γpb) "Hpb".
-  { by rewrite fmap_length. }
-  { iIntros.
-    apply elem_of_list_fmap_2 in H0 as (? & ? & ?); subst.
-    by iApply "Hpre". }
-  iDestruct "Hpb" as "(#Hrep & Hlog & Hinit & #Hwit)".
-  iMod (alloc_pb_preread_protocol with "Hlog") as (γprelog γreads) "[#Hpreread Hlog]".
-  iMod (own_alloc (●ML [])) as (γintlog) "[Hintlog Hintlog2]".
-  { apply mono_list_auth_valid. }
-  iMod (own_alloc (●ML [])) as (γoplog) "[Hoplog Hoplog2]".
-  { apply mono_list_auth_valid. }
+  intros.
+  iIntros "#Hpwf #Hpre".
+  iMod (paxos_system_init (config:=γsrvs) with "[]") as (γpb) "Hpb".
+  { done. }
+  { iIntros. by iApply "Hpre". }
+  iDestruct "Hpb" as "(#Hrep & #Hvote & Hlog & Hinit & #Hwit)".
+  iMod (own_alloc (dfrac_agree.to_dfrac_agree (DfracOwn 1) (initstate : (leibnizO (list u8))))) as (γst_gn) "Hst".
+  { done. }
+  rewrite -Qp.half_half.
+  rewrite -dfrac_op_own.
+  rewrite dfrac_agree.dfrac_agree_op.
+  iDestruct "Hst" as "[Hst Hst2]".
 
-  set (γ:={| s_pb:=γpb ; s_prim:=γprim ; s_prelog := γprelog ; s_internal_log := γintlog ;
-             s_reads:=γreads ; s_log := γoplog
-          |}).
-  iMod (alloc_helping_inv γ with "Hlog Hintlog2") as "#Hhelp".
-  iAssert (|={⊤}=> is_proph_read_inv γ)%I with "[Hintlog Hoplog2]" as ">#Hproph_read_inv".
-  { iApply (inv_alloc with "[Hintlog Hoplog2]").
-    iExists _; iFrame. }
+  set (γ:={| s_st:=γst_gn; s_mp := γpb ; s_hosts := γsrvs |}).
+  iMod (alloc_mpaxos_helping_inv γ with "[$Hlog] [$Hst2]") as "#Hhelp".
   iModIntro. iExists γ.
-  iNamed "Hinit".
-  iFrame "∗ His_conf #".
-  iIntros.
-  iExists _; iFrame "#".
-  iPureIntro.
-  by apply elem_of_list_fmap_1. *)
-Admitted.
-
-Context `{Hparams:!mpaxosParams.t Σ}.
-Import mpaxosParams.
+  iFrame "∗ #".
+  done.
+Qed.
 
 Definition pb_spec_list γ γsrv :=
   [ (U64 0, applyAsFollower_spec γ γsrv) ;
@@ -146,6 +123,74 @@ Proof.
   iExactEq "H1".
   f_equal.
   set_solver.
-Qed. *)
+Qed.
+
+Lemma alloc_mpaxos_system (hosts: list u64):
+  length hosts > 0 →
+  ([∗ list] h ∈ hosts, h c↦ ∅) -∗
+  □ (Pwf initstate)
+  ={⊤}=∗
+  ∃ γ,
+    ([∗ list] host ∈ hosts, ∃ γsrv, is_mpaxos_server_host host γ γsrv ∗
+                                    own_file_inv γ γsrv []) ∗
+    is_mpaxos_hosts hosts γ ∗
+    own_state γ initstate
+.
+Proof.
+  intros.
+  iIntros "Hchan #Hwf".
+  iAssert (|={⊤}=> [∗ list] h ∈ hosts,
+             ∃ γsrv, is_mpaxos_server_prealloc_witness γsrv ∗
+                     (∀ γ, is_mpaxos_sys_init_witness γ -∗ own_file_inv γ γsrv []))%I with "[]" as ">H".
+  {
+    iMod (big_sepL_fupd _ _ hosts with "[]") as "$"; last done.
+    iApply (big_sepL_impl with "[]").
+    { by iApply big_sepL_emp. }
+    iIntros "!# * %Hlookup _".
+    by iMod (prealloc_mpaxos_server) as "$".
+  }
+  iDestruct (big_sepL_exists_to_sepL2 with "H") as (γsrvs) "H".
+  iDestruct (big_sepL2_sep with "H") as "[#Hwits Hsrvs]".
+  iDestruct (big_sepL2_length with "Hsrvs") as %Hlength.
+  iMod (alloc_mpaxos_last γsrvs with "[] []") as "H".
+  { lia. }
+  { iFrame "#". }
+  {
+    iIntros.
+    iDestruct (big_sepL2_const_sepL_r with "Hwits") as "[_ Hwits2]".
+    by iDestruct (big_sepL_elem_of with "Hwits2") as "$".
+  }
+  iClear "Hwits".
+  iDestruct "H" as (?) "(%Heq & #Hhelp & #Hvote & #Hrepl & Hst & #HinitWits)".
+  subst.
+  iExists _.
+  iFrame.
+  iAssert (|={⊤}=> [∗ list] h ; γsrv ∈ hosts ; γ.(s_hosts), is_mpaxos_server_host h γ γsrv)%I
+          with "[Hchan]" as ">#Hhosts".
+  {
+    iApply big_sepL2_fupd.
+    iDestruct (big_sepL2_const_sepL_l with "[$Hchan]") as "Hchan".
+    { iPureIntro. exact Hlength. }
+    iApply (big_sepL2_impl with "Hchan").
+    iIntros "!# * % % H".
+    iFrame "#".
+    by iMod (mpaxos_host_init with "[$]") as "$".
+  }
+  iDestruct (big_sepL2_sep with "[$Hsrvs $Hhosts]") as "Hsrvs".
+  iDestruct (big_sepL2_to_sepL_1 with "Hsrvs") as "Hsrvs".
+  iSplitL.
+  2:{
+    rewrite /is_mpaxos_hosts.
+    iModIntro.
+    iApply (big_sepL2_impl with "Hhosts").
+    iIntros "!# * % % [? ?]". iFrame.
+  }
+  iApply (big_sepL_impl with "Hsrvs").
+  iIntros "!> !# * % H".
+  iDestruct "H" as (??) "(Hfin & Hhost)".
+  iExists _; iFrame.
+  iApply "Hfin". iFrame "#".
+Qed.
 
 End init_proof.
+

@@ -13,10 +13,7 @@ Section pb_start_proof.
 
 Context {params:pbParams.t}.
 Import pbParams.
-Notation OpType := (Sm.OpType pb_record).
-Notation has_op_encoding := (Sm.has_op_encoding pb_record).
-Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
-Notation compute_reply := (Sm.compute_reply pb_record).
+Import Sm.
 
 Context `{!heapGS Σ}.
 Context `{!pbG Σ}.

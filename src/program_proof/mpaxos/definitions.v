@@ -13,7 +13,6 @@ From Perennial.base_logic Require Import lib.saved_prop.
 
 Record mpaxos_system_names :=
   {
-    s_log : gname ;
     s_st: gname ;
     s_mp : mp_system_names ;
     s_hosts: list mp_server_names ;

@@ -81,9 +81,9 @@ End defns.
 
 Section local_proof.
 
-Notation OpType := (Sm.OpType kv_record).
-Notation has_op_encoding := (Sm.has_op_encoding kv_record).
+Import Sm.
 (* Notation compute_reply := (pb_compute_reply pb_record). *)
+Existing Instance kv_record.
 
 Context `{!heapGS Σ}.
 
@@ -520,7 +520,7 @@ Proof.
         assert (compute_reply (ops ++ [putOp s0 s1]) (getOp k) =
                   compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
         {
-          rewrite /compute_reply /compute_state.
+          rewrite /compute_reply /= /compute_state.
           rewrite foldl_snoc /=.
           by rewrite lookup_insert_ne.
         }
@@ -532,7 +532,7 @@ Proof.
           iExists _.
           iDestruct "Hintermediate" as "[_ $]".
           iPureIntro.
-          by rewrite /compute_reply /compute_state foldl_snoc /= lookup_insert_ne.
+          by rewrite /compute_reply /= /compute_state foldl_snoc /= lookup_insert_ne.
         }
         {
           iDestruct "Hintermediate" as "[Hint _]".
@@ -617,7 +617,7 @@ Proof.
       eassert (compute_reply (ops ++ [_]) (getOp k) =
                 compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
       {
-        rewrite /compute_reply /compute_state.
+        rewrite /compute_reply /= /compute_state.
         rewrite foldl_snoc /=. done.
       }
       rewrite lookup_insert_ne in H0; last done.
@@ -628,7 +628,7 @@ Proof.
         iExists _.
         iDestruct "Hintermediate" as "[_ $]".
         iPureIntro.
-        by rewrite /compute_reply /compute_state foldl_snoc /=.
+        by rewrite /compute_reply /= /compute_state foldl_snoc /=.
       }
       {
         iDestruct "Hintermediate" as "[Hint _]".
@@ -706,7 +706,7 @@ Proof.
           eassert (compute_reply (ops ++ [condPutOp s0 _ s2]) (getOp k) =
                   compute_reply (ops) (getOp k)) as Heq; last setoid_rewrite Heq.
           {
-            rewrite /compute_reply /compute_state.
+            rewrite /compute_reply /= /compute_state.
             rewrite foldl_snoc /=.
             f_equal.
             rewrite decide_True; last done.
@@ -720,7 +720,7 @@ Proof.
             iExists _.
             iDestruct "Hintermediate" as "[_ $]".
             iPureIntro.
-            rewrite /compute_reply /compute_state foldl_snoc /=. f_equal.
+            rewrite /compute_reply /= /compute_state foldl_snoc /=. f_equal.
             rewrite decide_True; last done.
             by rewrite lookup_insert_ne.
           }
@@ -863,7 +863,7 @@ Proof.
     iSplitR. { iPureIntro. word. }
     injection Hkv_lookup as <- ?.
     iDestruct (own_slice_to_small with "Hrep_sl") as "$".
-    rewrite /kv_record /compute_reply /compute_state /=.
+    rewrite /kv_record /compute_reply /= /compute_state /=.
     iSplitL.
     { repeat iExists _; iFrame "∗#%". }
     iSpecialize ("Hst" $! s0).
@@ -882,7 +882,7 @@ Proof.
     iSplitR. { iPureIntro. word. }
     injection Hkv_lookup as <- ?.
     iDestruct (own_slice_to_small with "Hrep_sl") as "$".
-    rewrite /kv_record /compute_reply /compute_state /=.
+    rewrite /kv_record /compute_reply /= /compute_state /=.
     iSplitL.
     { repeat iExists _; iFrame "∗#%". }
     iSpecialize ("Hst" $! s0).

@@ -28,15 +28,15 @@ Definition ekv_record := (esm_record (low_record:=kv_record)).
 
 Local Instance esmParams (initconf: list u64) : pbParams.t := pbParams.mk initconf (ekv_record).
 
-Class ekvG {initconfig:list u64} Σ :=
+Class ekvG Σ :=
   {
     ekv_erpcG :> erpcG Σ (list u8) ;
-    ekv_simplelogG :> simplelogG Σ (params:=esmParams initconfig);
+    ekv_simplelogG :> simplelogG Σ (sm_record:=ekv_record);
     ekv_kvG :> kvG Σ ;
   }.
 
-Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ (params:=esmParams []); kvΣ].
-Global Instance subG_ekvΣ {Σ} {initconfig:list u64} : subG ekvΣ Σ → ekvG (initconfig:=initconfig) Σ.
+Definition ekvΣ := #[erpcΣ (list u8); simplelogΣ (sm_record:=ekv_record); kvΣ].
+Global Instance subG_ekvΣ {Σ} : subG ekvΣ Σ → ekvG Σ.
 Proof. intros. solve_inG. Qed.
 
 Record kv_names :=
@@ -48,11 +48,17 @@ Record kv_names :=
 
 Implicit Types γ : kv_names.
 
+Module ekvParams.
+Class t :=
+  mk {
+      initconfig : list u64
+    }.
+End ekvParams.
+
 Section global_proof.
 
 Context `{!gooseGlobalGS Σ}.
-Context {initconfig: list u64}.
-Context `{!ekvG (initconfig:=initconfig) Σ}.
+Context `{!ekvG Σ}.
 
 (* The abstract state applies the operation to an all-nil map,
    so that each key already exists from the start. This is consisent with
@@ -70,14 +76,12 @@ Definition kv_inv γlog γ : iProp Σ :=
 Definition kv_ptsto γ (k v : string) : iProp Σ :=
   k ↪[γ.(kv_gn)] v.
 
-(* FIXME: this should not expose own_log. Want to directly allocate KV system
-   and servers in one shot, without manually doing pb underneath. *)
-
-Local Instance esmParams1 : pbParams.t := esmParams initconfig.
+Context {params:ekvParams.t}.
+Local Instance toEsmParams1 : pbParams.t := esmParams (ekvParams.initconfig).
 
 Definition is_kv_config_hosts confHosts γ : iProp Σ :=
   ∃ γerpc γlog,
-    "#Hee_inv" ∷ is_esm_inv (low_record:=kv_record) γ.(pb_gn) γlog γerpc ∗
+    "#Hee_inv" ∷ is_esm_inv (initconf:=ekvParams.initconfig) (low_record:=kv_record) γ.(pb_gn) γlog γerpc ∗
     "#Herpc_inv" ∷ is_eRPCServer γerpc ∗
     "#Hkv_inv" ∷ kv_inv γlog γ ∗
     "#Hconf" ∷ is_pb_config_hosts confHosts γ.(pb_gn)
@@ -89,44 +93,6 @@ Definition is_kv_replica_host host γ γsrv : iProp Σ :=
 Definition is_kv_config_host host γ γsrv : iProp Σ :=
   is_pb_host host γ.(pb_gn) γsrv.
 
-(*
-Lemma alloc_kv_system γsrvs :
-  length γsrvs > 0 →
-  (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_accepted_lb γsrv.(r_pb) (U64 0) [] ∗ is_epoch_lb γsrv.(r_pb) 0)
-  ={⊤}=∗ ∃ γ,
-  is_kv_inv γ ∗
-  [∗ set] k ∈ allocated, kv_ptsto γ k ""
-.
-  is_pb_system_invs γ ∗
-  own_op_log γ [] ∗
-  (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_pb_sys_init_witness γ γsrv) ∗
-  pb_init_for_config γ.(s_pb) (r_pb <$> γsrvs) ∗
-  primary_init_for_config γ.(s_prim) ∗
-  is_proph_read_inv γ
-.
-
-Lemma alloc_kv γlog allocated :
-  own_log γlog [] ={⊤}=∗
-  ∃ γ ,
-  kv_inv γlog γ ∗
-  [∗ set] k ∈ allocated, kv_ptsto γ k ""
-.
-Proof.
-  iIntros "Hlog".
-  iMod (ghost_map_alloc (gset_to_gmap "" allocated)) as (γkv) "[Hkvs Hkvptsto]".
-  iExists {| |}.
-  iMod (inv_alloc with "[Hkvs Hlog]") as "$".
-  { iNext. iExists _; iFrame. rewrite /own_kvs /compute_state /=.
-    iExists _. rewrite left_id_L. done. }
-  replace allocated with (dom (gset_to_gmap "" allocated)) at 2.
-  2:{ rewrite dom_gset_to_gmap. done. }
-  iApply big_sepM_dom. iApply (big_sepM_impl with "Hkvptsto").
-  iIntros "!# %k %x".
-  rewrite lookup_gset_to_gmap_Some.
-  iIntros ([_ <-]). auto.
-Qed.
- *)
-
 Definition kv_crash_resources γ γsrv data : iProp Σ := file_crash (own_Server_ghost_f γ.(pb_gn) γsrv) data.
 
 End global_proof.
@@ -134,8 +100,10 @@ End global_proof.
 Section local_proof.
 
 Context `{!heapGS Σ}.
-Context `{!ekvG (initconfig:=initconfig) Σ}.
+Context `{!ekvG Σ}.
 
+Context {params:ekvParams.t}.
+Existing Instance toEsmParams1.
 Lemma wp_Start fname configHosts_sl configHosts (host:chan) γ γsrv data :
   {{{
       "#HconfSl" ∷ readonly (own_slice_small configHosts_sl uint64T 1 configHosts) ∗
@@ -176,7 +144,7 @@ Definition own_Clerk ck γkv : iProp Σ :=
   ∃ (eeCk:loc) γlog,
     "Hcl" ∷ ck ↦[kv.Clerk :: "cl"] #eeCk ∗
     "#Hkvinv" ∷ kv_inv γlog γkv ∗
-    "Hownck" ∷ esm_proof.own_Clerk (low_record:=kv_record) eeCk γlog
+    "Hownck" ∷ esm_proof.own_Clerk (initconf:=ekvParams.initconfig) (low_record:=kv_record) eeCk γlog
 .
 
 Lemma wp_MakeClerk γkv configHosts configHosts_sl :

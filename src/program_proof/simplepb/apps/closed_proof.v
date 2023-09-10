@@ -99,10 +99,8 @@ Qed.
    This is probably a remnant of an older version of the proof in which the subG
    wasn't proven anywhere else.
  *)
-Local Instance subG_ekvΣ {Σ} {initconfig:list u64}: subG kv_pbΣ Σ → ekvG (initconfig:=initconfig) Σ.
-Proof. intros. solve_inG. Unshelve.
-       (* FIXME: something weird is going on here.... *)
-       all: refine []. Qed.
+Local Instance subG_ekvΣ {Σ} : subG kv_pbΣ Σ → ekvG Σ.
+Proof. intros. solve_inG. Qed.
 
 Definition replica_fname := "kv.data".
 
@@ -192,7 +190,7 @@ Proof.
   iDestruct "Hchans" as "(Hd1 & Hd2 & Hl1 & Hl2)".
 
   (* Allocate the kv system used for storing data *)
-  iMod (alloc_vkv [dr1Host ; dr2Host ] [(dconfigHost, dconfigHostPaxos)]
+  iMod (alloc_vkv (ekvParams.mk [dr1Host ; dr2Host ]) [(dconfigHost, dconfigHostPaxos)]
                   {[ "init"; "a1"; "a2" ]} with "[Hd1 Hd2]") as "[Hdkv Hdconf]"; try (simpl; lia).
   {
     rewrite /own_chans /=.
@@ -203,7 +201,7 @@ Proof.
   iSimpl in "Hdhost".
 
   (* Allocate the kv system used as a lockservice *)
-  iMod (alloc_vkv [lr1Host ; lr2Host ] [(lconfigHost, lconfigHostPaxos)]
+  iMod (alloc_vkv (ekvParams.mk [lr1Host ; lr2Host ]) [(lconfigHost, lconfigHostPaxos)]
                   {[ "init"; "a1"; "a2" ]} with "[Hl1 Hl2]") as "[Hlkv Hlconf]"; try (simpl; lia).
   {
     rewrite /own_chans /=.
@@ -326,16 +324,8 @@ Proof.
       iApply wp_wpc.
       wp_apply (wp_bank_transferer_main with "[]"); last done.
       repeat iExists _.
-      iSplitR.
-      2:{ iSplitR.
-          2:{
-            instantiate (1:=γd).
-            instantiate (3:=γl).
-            iApply to_named.
-            iExactEq "Hbank".
-            repeat f_equal.
-            admit.
-          }
+      iFrame "Hbank".
+      iSplit. - iExact "Hdhost". - iExact "Hlhost".
     }
     {
       rewrite /hG'.
@@ -363,7 +353,8 @@ Proof.
       iApply wp_wpc.
       wp_apply (wp_bank_transferer_main with "[-]"); last done.
       repeat iExists _.
-      iFrame.
+      iFrame "Hbank".
+      iSplit. - iExact "Hdhost". - iExact "Hlhost".
     }
   }
   iSplitR.
@@ -377,7 +368,8 @@ Proof.
       iApply wp_wpc.
       wp_apply (wp_bank_auditor_main with "[]"); last done.
       repeat iExists _.
-      iFrame "Hbank #".
+      iFrame "Hbank".
+      iSplit. - iExact "Hdhost". - iExact "Hlhost".
     }
     {
       rewrite /hG'.
@@ -405,7 +397,8 @@ Proof.
       iApply wp_wpc.
       wp_apply (wp_bank_auditor_main with "[-]"); last done.
       repeat iExists _.
-      iFrame.
+      iFrame "Hbank".
+      iSplit. - iExact "Hdhost". - iExact "Hlhost".
     }
   }
   done.

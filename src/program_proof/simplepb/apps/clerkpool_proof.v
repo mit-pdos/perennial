@@ -5,7 +5,8 @@ From Perennial.program_proof.kv Require Import interface.
 
 Section clerkpool_proof.
 
-Context `{!heapGS Σ, !ekvG (initconfig:=initconfig) Σ}.
+Context `{!heapGS Σ, !ekvG Σ}.
+Context {params:ekvParams.t}.
 Definition own_ClerkPool c γkv : iProp Σ :=
   ∃ (cls:list loc) cls_sl,
   "Hcls" ∷ c ↦[ClerkPool :: "cls"] (slice_val cls_sl) ∗

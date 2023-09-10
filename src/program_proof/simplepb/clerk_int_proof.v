@@ -8,13 +8,7 @@ Section clerk_proof.
 Context `{!heapGS Σ}.
 Context {params:pbParams.t}.
 Import pbParams.
-
-Notation OpType := (Sm.OpType pb_record).
-Notation has_op_encoding := (Sm.has_op_encoding pb_record).
-Notation is_readonly_op := (Sm.is_readonly_op pb_record).
-Notation has_snap_encoding := (Sm.has_snap_encoding pb_record).
-Notation compute_reply := (Sm.compute_reply pb_record).
-Notation apply_postcond := (Sm.apply_postcond pb_record).
+Import Sm.
 
 Context `{!pbG Σ}.
 
