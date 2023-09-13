@@ -43,48 +43,6 @@ Qed.
  we should be unbundling, but let's include it here in the conclusion as a
  hack *)
 
-(*
-#[global]
-Instance is_pb_config_host_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} u γ:
-  IntoCrash (is_pb_config_hosts u γ)
-    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_pb_config_hosts (pb_record:=PBRecord) u γ)%I
-.
-Proof.
-  rewrite /IntoCrash /is_pb_host.
-  iIntros "$". iIntros; eauto.
-Qed.
-
-#[global]
-Instance is_proph_read_into_crash `{hG0: !heapGS Σ} PBRecord `{!pbG Σ} γ:
-  IntoCrash (clerk_proof.is_proph_read_inv γ)
-    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗
-           clerk_proof.is_proph_read_inv (pb_record:=PBRecord) γ)%I
-.
-Proof.
-  rewrite /IntoCrash /is_pb_host.
-  iIntros "$". iIntros; eauto.
-Qed.
-
-#[global]
-Instance is_kv_config_into_crash `{hG0: !heapGS Σ} `{!ekvG Σ} u γ:
-  IntoCrash (is_kv_config_hosts u γ)
-    (λ hG, ⌜ hG0.(goose_globalGS) = hG.(goose_globalGS) ⌝ ∗ is_kv_config_hosts u γ)%I
-.
-Proof.
-  rewrite /IntoCrash /is_kv_config_hosts.
-  iIntros "$". iIntros; eauto.
-Qed.
-
-#[global]
-Instance file_crash_into_crash `{hG0: !heapGS Σ} SMRecord `{!pbG Σ} γsys γsrv1 data:
-  IntoCrash (file_crash (own_Server_ghost_f γsys γsrv1) data)
-    (λ hG, (file_crash (sm_record := SMRecord) (own_Server_ghost_f γsys γsrv1 ) data)).
-Proof.
-  rewrite /IntoCrash /file_crash.
-  iIntros "$". iIntros; eauto.
-Qed.
- *)
-
 #[global]
 Instance is_bank_into_crash `{hG0: !heapGS Σ} `{!bankG Σ} a b c d :
   IntoCrash (is_bank a b c d)
