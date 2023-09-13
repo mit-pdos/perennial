@@ -38,7 +38,7 @@ Lemma val_of_obj'_inj o1 o2:
 Proof.
   rewrite /=.
   intros Hval%val_of_list_inj.
-  apply fmap_inj in Hval; eauto.
+  apply list_fmap_eq_inj in Hval; eauto.
   intros ??. inversion 1; eauto.
 Qed.
 

@@ -351,7 +351,7 @@ lemmas. *)
       rewrite <- (Nat2Z.id i) in H1, H2.
       rewrite H in H1; try lia; congruence. }
     apply vec_to_list_inj2.
-    apply fmap_inj in H0; auto.
+    apply list_fmap_eq_inj in H0; auto.
     hnf; intros.
     inversion H1; subst; auto.
   Qed.

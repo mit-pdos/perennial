@@ -202,7 +202,7 @@ Proof.
     iDestruct "Hupds1" as (bks) "[Hbs1 Hupds1]".
     iDestruct "Hupds2" as (bks') "[Hbs2 Hupds2]".
     iDestruct (own_slice_small_agree with "Hbs1 Hbs2") as %Heq.
-    apply (fmap_inj update_val) in Heq; auto using update_val_inj; subst.
+    apply (list_fmap_eq_inj update_val) in Heq; auto using update_val_inj; subst.
     iCombine "Hbs1 Hbs2" as "Hbs".
     iCombine "Hupds1 Hupds2" as "Hupds".
     iExists _; iFrame.
