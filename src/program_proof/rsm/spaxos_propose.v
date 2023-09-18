@@ -609,9 +609,7 @@ Proof.
   iExists _.
   iFrame "#".
   iPureIntro.
-  unfold accepted_in.
-  split; last lia.
-  rewrite lookup_app_r; last first.
+  rewrite /accepted_in lookup_app_r; last first.
   { rewrite extend_length. lia. }
   rewrite extend_length.
   by replace (_ - _)%nat with O by lia.
@@ -748,7 +746,7 @@ Proof.
       { rewrite dom_intersection_L. set_solver. }
       split; first by apply map_intersection_subseteq.
       split.
-      { rewrite Hdoms. split; [done | by rewrite Hdombs]. }
+      { rewrite Hdoms. unfold quorum_size. by rewrite Hdombs. }
       split.
       { intros x b Hxb.
         rewrite lookup_intersection_Some in Hxb.
@@ -832,9 +830,7 @@ Proof.
   iExists _.
   iFrame "#".
   iPureIntro.
-  unfold accepted_in.
-  split; last lia.
-  rewrite lookup_app_r; last first.
+  rewrite /accepted_in lookup_app_r; last first.
   { rewrite extend_length. lia. }
   rewrite extend_length.
   by replace (_ - _)%nat with O by lia.
@@ -1433,6 +1429,7 @@ Proof.
       iDestruct (proposal_lookup with "Hpsl Hps") as %Hatterm.
       iPureIntro.
       exists (int.nat term).
+      split; first done.
       split; first apply Hatterm.
       set bsq := bs ∩ bsqlb.
       exists bsq.
@@ -1440,16 +1437,14 @@ Proof.
       { rewrite dom_intersection_L. set_solver. }
       split; first by apply map_intersection_subseteq.
       split.
-      { rewrite Hdoms. split; [done | by rewrite Hdombs]. }
+      { rewrite Hdoms. unfold quorum_size. by rewrite Hdombs. }
       intros x b Hxb.
       rewrite lookup_intersection_Some in Hxb.
       destruct Hxb as [Hb [blb Hblb]].
       specialize (Hprefix _ _ _ Hblb Hb).
       apply Haccin in Hblb.
       unfold accepted_in.
-      split; last done.
-      eapply prefix_lookup_Some; last apply Hprefix.
-      by destruct Hblb as [? _].
+      eapply prefix_lookup_Some; [done | apply Hprefix].
     }
     iAssert (|==> own_consensus γ (Chosen decree))%I with "[Hc]" as "Hc".
     { destruct c as [decree' |] eqn:Ec.
