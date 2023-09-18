@@ -82,14 +82,14 @@ Section pure.
   (* Invariant for [consistency]. *)
   Definition accepted_after_chosen (bs : gmap A ballot) (ps : proposals) :=
     ∀ m n v,
-      (O < m ≤ n)%nat ->
+      (O < m < n)%nat ->
       chosen_in bs ps m v ->
       map_Forall (λ _ l, accepted_in l n -> ps !! n = Some v) bs.
 
   (* Invariant for [accepted_after_chosen]. *)
   Definition proposed_after_chosen (bs : gmap A ballot) (ps : proposals) :=
     ∀ m n v,
-      (O < m ≤ n)%nat ->
+      (O < m < n)%nat ->
       chosen_in bs ps m v ->
       is_Some (ps !! n) ->
       ps !! n = Some v.
@@ -372,6 +372,12 @@ Section pure.
     by replace (_ - _)%nat with O by lia.
   Qed.
 
+  Lemma chosen_in_same_term {bs ps n v1 v2} :
+    chosen_in bs ps n v1 ->
+    chosen_in bs ps n v2 ->
+    v1 = v2.
+  Proof. intros [Hv1 _] [Hv2 _]. naive_solver. Qed.
+
   Lemma aac_chosen {bs ps n1 n2 v1 v2} :
     (O < n1 ≤ n2)%nat ->
     accepted_after_chosen bs ps ->
@@ -380,7 +386,10 @@ Section pure.
     v1 = v2.
   Proof.
     intros Hle Haac H1 H2.
-    unshelve epose proof (Haac n1 n2 v1 _ _) as Haac; [apply Hle | done |].
+    destruct (decide (n1 = n2)) as [Heq | Hneq].
+    { rewrite Heq in H1. by eapply chosen_in_same_term. }
+    assert (Horder : (O < n1 < n2)%nat) by lia.
+    unshelve epose proof (Haac n1 n2 v1 _ _) as Haac; [apply Horder | done |].
     destruct H2 as (Hlookupq & bsq & Hbsq & Hsize & Haccq).
     assert (Hquorum : quorum (dom bs) (dom bsq)).
     { split; [by apply subseteq_dom | done]. }
@@ -465,20 +474,19 @@ Section pure.
     (* https://coq-club.inria.narkive.com/VWS50VZQ/adding-strong-induction-to-the-standard-library *)
     (* strong induction on [n]. *)
     induction (lt_wf n) as [n _ IHn].
-    destruct (decide (m = n)) as [Heq | Hneq].
-    { (* Handle [m = n] as a special case. *)
-      rewrite Heq in Hchosen.
-      by destruct Hchosen as [Hv _].
-    }
-    assert (Hlt : (O < m < n)%nat) by lia.
-    clear Hmn Hneq.
     edestruct valid_proposal_chosen_in as (k & Heq & Hmkn).
-    { apply Hlt. }
+    { apply Hmn. }
     { apply Hvalid. }
     { apply Hchosen. }
     { apply Hlookup. }
     rewrite Heq.
     rewrite Heq in Hlookup.
+    destruct (decide (m = k)) as [Hmk | Hmk].
+    { (* Handle [m = k] as a special case. *)
+      rewrite Hmk in Hchosen.
+      by destruct Hchosen as [Hpsk _].
+    }
+    assert (Horder : (m < k < n)%nat) by lia.
     apply IHn; [lia | lia | done].
   Qed.
 
