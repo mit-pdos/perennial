@@ -198,12 +198,11 @@ Definition RPC_BECOME_LEADER : expr := #2.
 
 (* these clerks hide connection failures, and retry forever *)
 Definition singleClerk := struct.decl [
-  "cl" :: ptrT;
-  "addr" :: uint64T
+  "cl" :: ptrT
 ].
 
-Definition makeSingleClerk: val :=
-  rec: "makeSingleClerk" "addr" :=
+Definition MakeSingleClerk: val :=
+  rec: "MakeSingleClerk" "addr" :=
     let: "ck" := struct.new singleClerk [
       "cl" ::= reconnectclient.MakeReconnectingClient "addr"
     ] in
@@ -233,8 +232,8 @@ Definition singleClerk__applyAsFollower: val :=
         "err" ::= ETimeout
       ]).
 
-Definition singleClerk__becomeLeader: val :=
-  rec: "singleClerk__becomeLeader" "s" :=
+Definition singleClerk__TryBecomeLeader: val :=
+  rec: "singleClerk__TryBecomeLeader" "s" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
     reconnectclient.ReconnectingClient__Call (struct.loadF singleClerk "cl" "s") RPC_BECOME_LEADER (NewSlice byteT #0) "reply" #500;;
     #().
@@ -262,7 +261,6 @@ Definition Server__applyAsFollower: val :=
     Server__withLock "s" (λ: "ps",
       (if: (struct.loadF paxosState "epoch" "ps") ≤ (struct.loadF applyAsFollowerArgs "epoch" "args")
       then
-        struct.storeF paxosState "isLeader" "ps" #false;;
         (if: (struct.loadF paxosState "acceptedEpoch" "ps") = (struct.loadF applyAsFollowerArgs "epoch" "args")
         then
           (if: (struct.loadF paxosState "nextIndex" "ps") < (struct.loadF applyAsFollowerArgs "nextIndex" "args")
@@ -279,6 +277,7 @@ Definition Server__applyAsFollower: val :=
           struct.storeF paxosState "epoch" "ps" (struct.loadF applyAsFollowerArgs "epoch" "args");;
           struct.storeF paxosState "state" "ps" (struct.loadF applyAsFollowerArgs "state" "args");;
           struct.storeF paxosState "nextIndex" "ps" (struct.loadF applyAsFollowerArgs "nextIndex" "args");;
+          struct.storeF paxosState "isLeader" "ps" #false;;
           struct.storeF applyAsFollowerReply "err" "reply" ENone;;
           #())
       else
@@ -311,8 +310,8 @@ Definition Server__enterNewEpoch: val :=
       );;
     #().
 
-Definition Server__becomeLeader: val :=
-  rec: "Server__becomeLeader" "s" :=
+Definition Server__TryBecomeLeader: val :=
+  rec: "Server__TryBecomeLeader" "s" :=
     (* log.Println("started trybecomeleader") *)
     lock.acquire (struct.loadF Server "mu" "s");;
     (if: struct.loadF paxosState "isLeader" (struct.loadF Server "ps" "s")
@@ -368,10 +367,10 @@ Definition Server__becomeLeader: val :=
         else #()));;
       (if: (#2 * (![uint64T] "numSuccesses")) > "n"
       then
-        (* log.Printf("succeeded becomeleader in epoch %d\n", args.epoch) *)
         Server__withLock "s" (λ: "ps",
-          (if: (struct.loadF paxosState "epoch" "ps") < (struct.loadF enterNewEpochArgs "epoch" "args")
+          (if: (struct.loadF paxosState "epoch" "ps") ≤ (struct.loadF enterNewEpochArgs "epoch" "args")
           then
+            (* log.Printf("succeeded becomeleader in epoch %d\n", args.epoch) *)
             struct.storeF paxosState "epoch" "ps" (struct.loadF enterNewEpochArgs "epoch" "args");;
             struct.storeF paxosState "isLeader" "ps" #true;;
             struct.storeF paxosState "acceptedEpoch" "ps" (struct.loadF paxosState "epoch" "ps");;
@@ -457,7 +456,7 @@ Definition makeServer: val :=
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "clerks" "s" (NewSlice ptrT #0);;
     ForSlice uint64T <> "host" "config"
-      (struct.storeF Server "clerks" "s" (SliceAppend ptrT (struct.loadF Server "clerks" "s") (makeSingleClerk "host")));;
+      (struct.storeF Server "clerks" "s" (SliceAppend ptrT (struct.loadF Server "clerks" "s") (MakeSingleClerk "host")));;
     let: "encstate" := ref (zero_val (slice.T byteT)) in
     let: ("0_ret", "1_ret") := asyncfile.MakeAsyncFile "fname" in
     "encstate" <-[slice.T byteT] "0_ret";;
@@ -488,7 +487,7 @@ Definition StartServer: val :=
       #()
       );;
     MapInsert "handlers" RPC_BECOME_LEADER (λ: "raw_args" "raw_reply",
-      Server__becomeLeader "s";;
+      Server__TryBecomeLeader "s";;
       #()
       );;
     let: "r" := urpc.MakeServer "handlers" in

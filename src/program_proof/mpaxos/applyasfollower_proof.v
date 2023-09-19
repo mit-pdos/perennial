@@ -153,7 +153,6 @@ Proof.
   iNamed "HΨ".
   wp_if_destruct.
   { (* case: s.epoch ≤ args.epoch *)
-    wp_storeField.
     wp_loadField.
     wp_loadField.
     wp_pures.
@@ -191,11 +190,22 @@ Proof.
         iSplitR "HΦ HΨ Hreply".
         { repeat iExists _. simpl.
           rewrite Heqb0 Heq.
-          iFrame "Hghost #".
-          iPureIntro.
-          rewrite Hghost_op_σ.
-          simpl.
-          split_and!; try done; word.
+          destruct pst, isLeader; simpl in *; subst.
+          { (* case: is leader; contradiction *)
+            iExFalso.
+            iDestruct (ghost_leader_proposal_ineq with "[Hprop] [$HleaderOnly]") as %Hineq.
+            { simpl. iFrame "#". }
+            exfalso. simpl in *.
+            apply prefix_length in Hineq.
+            word.
+          }
+          { (* not leader *)
+            iFrame "Hghost #".
+            iPureIntro.
+            rewrite Hghost_op_σ.
+            simpl.
+            split_and!; try done; word.
+          }
         }
         (* end ghost reasoning *)
 
@@ -236,7 +246,8 @@ Proof.
         iModIntro.
         iSplitR "HΦ HΨ Hreply".
         { repeat iExists _. simpl. rewrite Heqb0.
-          iFrame "Hghost # %".
+          rewrite -Heqb0. 
+          iFrame "∗ # %".
         }
         (* end ghost reasoning*)
 
@@ -260,6 +271,7 @@ Proof.
       wp_loadField.
       wp_storeField.
       wp_loadField.
+      wp_storeField.
       wp_storeField.
       wp_storeField.
       iModIntro.

@@ -255,7 +255,7 @@ Proof.
       wp_pures.
       unfold becomeLeader_spec.
       simpl.
-      wp_apply (wp_Server__becomeLeader with "His_srv [HΦ Hrep] Hspec").
+      wp_apply (wp_Server__TryBecomeLeader with "His_srv [HΦ Hrep] Hspec").
       iIntros "HΨ".
       wp_pures.
 

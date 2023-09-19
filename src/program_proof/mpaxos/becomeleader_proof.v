@@ -16,11 +16,11 @@ Context `{!mpG Σ}.
 Context `{Hparams:!mpaxosParams.t Σ}.
 Import mpaxosParams.
 
-Lemma wp_Server__becomeLeader s γ γsrv Ψ Φ :
+Lemma wp_Server__TryBecomeLeader s γ γsrv Ψ Φ :
   is_Server s γ γsrv -∗
   (Ψ -∗ Φ #()) -∗
   becomeLeader_core_spec Ψ -∗
-  WP mpaxos.Server__becomeLeader #s {{ Φ }}
+  WP mpaxos.Server__TryBecomeLeader #s {{ Φ }}
 .
 Proof.
   iIntros "#Hsrv HΦ HΨ".
@@ -1165,9 +1165,7 @@ Proof.
       }
       iMod "Hmask".
       iDestruct (ghost_replica_helper1 with "Hghost") as %Hineq.
-      iDestruct (ghost_leader_get_proposal with "HghostLeader") as "#Hprop".
-      iMod (ghost_replica_accept_new_epoch with "Hghost Hprop") as "Hghost".
-      { simpl in *. word. }
+      iMod (ghost_replica_leader_init with "HghostLeader Hghost") as "[Hghost Hleader]".
       { simpl in *. word. }
       iModIntro.
 

@@ -137,10 +137,10 @@ Definition own_replica_ghost γsys γsrv (st:MPaxosState) : iProp Σ :=
   "#Hacc_lb" ∷ is_accepted_lb γsrv st.(mp_acceptedEpoch) st.(mp_log) ∗
   "%HepochIneq" ∷ ⌜int.nat st.(mp_acceptedEpoch) ≤ int.nat st.(mp_epoch)⌝ ∗
 
-  "Hacc" ∷ (if (decide (int.nat st.(mp_acceptedEpoch) = int.nat st.(mp_epoch))) then
-                  own_accepted γsrv st.(mp_epoch) st.(mp_log)
-                else
-                 own_accepted γsrv st.(mp_epoch) []) ∗
+  "Hacc" ∷ own_accepted γsrv st.(mp_epoch)
+                                  (if (decide (int.nat st.(mp_acceptedEpoch) = int.nat st.(mp_epoch))) then
+                                     st.(mp_log)
+                                   else []) ∗
    (* XXX: could combine this with the previous proposition *)
   "#Hacc_ub" ∷ (⌜int.nat st.(mp_acceptedEpoch) < int.nat st.(mp_epoch)⌝ →
                  is_accepted_upper_bound γsrv st.(mp_log) st.(mp_acceptedEpoch) st.(mp_epoch)) ∗
@@ -874,6 +874,56 @@ Lemma ghost_leader_get_proposal γsys st :
 Proof.
   iNamed 1. iFrame "#".
   iDestruct (fmlist_ptsto_get_lb with "Hprop") as "$".
+Qed.
+
+Lemma ghost_leader_proposal_ineq γsys st l :
+  is_proposal γsys st.(mp_epoch) l -∗
+  own_leader_ghost γsys st -∗
+  ⌜ l ⪯ st.(mp_log) ⌝
+.
+Proof.
+  iIntros "#[? ?]". iNamed 1.
+  iDestruct (fmlist_ptsto_lb_agree with "[$] [$]") as "$".
+Qed.
+
+Lemma ghost_replica_leader_init γsys γsrv st1 st2 :
+  int.nat st2.(mp_epoch) ≤ int.nat st1.(mp_epoch) →
+  own_leader_ghost γsys st1 -∗
+  own_replica_ghost γsys γsrv st2
+  ==∗
+  own_replica_ghost γsys γsrv (mkMPaxosState st1.(mp_epoch) st1.(mp_epoch) st1.(mp_log)) ∗
+  own_leader_ghost γsys st1.
+Proof.
+  intros. iNamed 1.
+  iRename "Hprop_facts" into "Hprop_facts2".
+  iIntros "Hghost".
+  iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb2".
+  destruct (decide (int.nat st1.(mp_epoch) = int.nat st2.(mp_acceptedEpoch))).
+  2:{ (* case: replica is entering new epoch *)
+    iMod (ghost_replica_accept_new_epoch  with "[$] [$]") as "Hghost".
+    { word. }
+    { word. }
+    by iFrame "∗#".
+  }
+  iNamed "Hghost".
+  assert (st1.(mp_epoch) = st2.(mp_acceptedEpoch)) by word.
+  assert (st2.(mp_epoch) = st2.(mp_acceptedEpoch)) by word.
+  destruct st1, st2. simpl in *. subst.
+  iDestruct (fmlist_ptsto_lb_agree with "Hprop [$]") as %Hineq.
+  rewrite decide_True; last done.
+  iMod (fmlist_ptsto_update with "Hacc") as "Hacc".
+  { exact Hineq. }
+  iClear "Hacc_lb Hprop_lb".
+  iDestruct (fmlist_ptsto_get_lb with "Hacc") as "#Hacc_lb".
+  iFrame "∗#".
+  simpl.
+  rewrite decide_True; last done.
+  iFrame.
+  iSplitR; first done.
+  iModIntro. iIntros (?).
+  iSpecialize ("Hacc_ub" with "[//]").
+  iApply is_accepted_upper_bound_mono_log; last iFrame "#".
+  done.
 Qed.
 
 Lemma ghost_replica_helper1 γsys γsrv st :

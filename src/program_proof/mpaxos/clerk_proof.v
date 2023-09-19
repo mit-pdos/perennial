@@ -13,7 +13,7 @@ Lemma wp_makeSingleClerk (host:u64) γ γsrv :
   {{{
         is_mpaxos_host host γ γsrv
   }}}
-    makeSingleClerk #host
+    MakeSingleClerk #host
   {{{
         ck, RET #ck; is_singleClerk ck γ γsrv
   }}}
