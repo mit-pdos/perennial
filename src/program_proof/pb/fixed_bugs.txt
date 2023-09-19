@@ -1,4 +1,0 @@
-Forgot to turn a primary into a backup when it receives an AppendRPC() from a
-primary in a future configuration
-(Perennial: db3151bf0abe50ac2fac44c98fb326c99df01ca7
-gokv: 5a3dba646f51633e03445695e4c8621fe725bbd8)

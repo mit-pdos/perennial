@@ -12,7 +12,7 @@ From Perennial.goose_lang.lib Require Export lock.
 From Perennial.Helpers Require Import NamedProps.
 
 
-From Perennial.program_proof.fencing Require Import map.
+From Perennial.algebra Require Import map.
 Set Default Proof Using "Type".
 
 Section goose_lang.

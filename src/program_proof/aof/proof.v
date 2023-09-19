@@ -1,9 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import aof.
-From Perennial.algebra Require Import mlist.
+From Perennial.algebra Require Import mlist map.
 From iris.algebra Require Import mono_nat.
 From Perennial.Helpers Require Import ModArith.
-From Perennial.program_proof.fencing Require Import map.
 From Perennial.goose_lang Require Import crash_borrow.
 
 From Perennial.program_proof Require Import marshal_stateless_proof.

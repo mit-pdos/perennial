@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import asyncfile.
-From Perennial.program_proof.fencing Require Import map.
+From Perennial.algebra Require Import map.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang Require Import crash_borrow.
 

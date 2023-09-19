@@ -1,5 +1,0 @@
-[ ] (list length) overflow reasoning
-[ ] fix higher order ghost state in preread
-[ ] inG's for every library
-[ ] deal with multiple urpcG instances polluting proof
-[ ] ghost state allocation lemmas
