@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial Require Import replica.protocol replica.definitions.
+From Perennial Require Import marshal_stateless_proof replica.protocol replica.definitions.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.

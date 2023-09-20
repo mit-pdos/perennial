@@ -107,7 +107,7 @@ Proof using waitgroupG0.
     iClear "Hhost".
     iNamed "H". iFrame "#".
   }
-  wp_apply (pb_makeclerk_proof.wp_MakeClerk with "[]").
+  wp_apply (makeclerk_proof.wp_MakeClerk with "[]").
   {
     iDestruct (big_sepL2_lookup_acc with "His_hosts") as "[HisHost _]".
     { done. }
@@ -204,7 +204,7 @@ Proof using waitgroupG0.
           "Hclerks_sl" ∷ own_slice_small clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
           "Hservers_sl" ∷ own_slice_small servers_sl uint64T 1 servers ∗
           "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) server_γs),
-                              pb_definitions.is_Clerk ck γ γsrv
+                              is_Clerk ck γ γsrv
                               )
           )%I with "[Hclerks_sl Hservers_sl Hi]" as "HH".
   {
@@ -386,7 +386,7 @@ Proof using waitgroupG0.
       ⌜server_γs !! int.nat i = Some γsrv'⌝ ∗
         readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] int.Z i)↦[uint64T] #err) ∗
         □ if (decide (err = U64 0)) then
-            pb_protocol.is_epoch_lb γsrv'.(r_pb) epoch
+            protocol.is_epoch_lb γsrv'.(r_pb) epoch
           else
             True
   )%I : u64 → iProp Σ).
@@ -599,7 +599,7 @@ Proof using waitgroupG0.
               "%Hj_ub" ∷ ⌜int.nat i ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
               "#Hrest" ∷ □ if (decide (err = (U64 0)%Z)) then
-                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ pb_protocol.is_epoch_lb γsrv.(r_pb) epoch)
+                (∀ (k:u64) γsrv, ⌜int.nat k < int.nat i⌝ -∗ ⌜server_γs !! (int.nat k) = Some γsrv⌝ -∗ protocol.is_epoch_lb γsrv.(r_pb) epoch)
               else
                 True
           )%I with "[Hi Herr]" as "Hloop".
@@ -839,7 +839,7 @@ Proof using waitgroupG0.
     { word. }
     done.
   }
-  replace (s) with (γsrv) in *; last first.
+  replace (r) with (γsrv) in *; last first.
   {
     rewrite lookup_take /= in Hlookup2; last first.
     { word. }
@@ -859,7 +859,7 @@ Proof using waitgroupG0.
   {
 
     iFrame.
-    instantiate (1:=(pb_marshal_proof.BecomePrimaryArgs.mkC _ _)).
+    instantiate (1:=(marshal_proof.BecomePrimaryArgs.mkC _ _)).
     simpl.
     iFrame "#".
     iSplitR.

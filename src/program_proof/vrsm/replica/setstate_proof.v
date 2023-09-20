@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial Require Import replica.definitions
+From Perennial Require Import marshal_stateless_proof replica.definitions
      replica.increasecommit_proof.
 From Perennial.program_proof.reconnectclient Require Import proof.
 From iris.algebra Require Import mono_list.

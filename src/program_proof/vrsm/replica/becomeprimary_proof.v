@@ -256,7 +256,7 @@ Proof.
               "%Hlen" ∷ ⌜length (clerksComplete ++ clerksLeft) = length backupγ⌝ ∗
               "Hclerks_sl" ∷ own_slice_small new_clerks_sl ptrT 1 (clerksComplete ++ clerksLeft) ∗
               "#Hclerks_is" ∷ ([∗ list] ck ; γsrv ∈ clerksComplete ; (take (length clerksComplete) backupγ),
-                                  pb_definitions.is_Clerk ck γ γsrv ∗
+                                  is_Clerk ck γ γsrv ∗
                                   is_epoch_lb γsrv.(r_pb) args.(BecomePrimaryArgs.epoch)
                                   )
               )%I with "[Hnew_clerks_sl Hi]" as "HH".

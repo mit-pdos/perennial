@@ -223,7 +223,7 @@ Proof.
   wp_forBreak.
   wp_pures.
   wp_loadField.
-  wp_bind (config2.Clerk__GetConfig _).
+  wp_bind (configservice.Clerk__GetConfig _).
   wp_apply (wp_frame_wand with "[-HconfCk]").
   { iNamedAccu. }
   wp_apply (wp_Clerk__GetConfig2 with "HconfCk").
@@ -390,7 +390,7 @@ Proof.
     wp_apply (wp_Sleep).
     wp_pures.
     wp_loadField.
-    wp_bind (config2.Clerk__GetConfig _).
+    wp_bind (configservice.Clerk__GetConfig _).
     wp_apply (wp_frame_wand with "[-]").
     { iNamedAccu. }
     wp_apply (wp_Clerk__GetConfig2 with "HisConfCk").
@@ -645,7 +645,7 @@ Proof.
       wp_apply (wp_Sleep).
       wp_pures.
       wp_loadField.
-      wp_bind (config2.Clerk__GetConfig _).
+      wp_bind (configservice.Clerk__GetConfig _).
       wp_apply (wp_frame_wand with "[-]").
       { iNamedAccu. }
       wp_apply (wp_Clerk__GetConfig2 with "HisConfCk").

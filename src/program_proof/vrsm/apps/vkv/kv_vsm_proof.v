@@ -4,7 +4,7 @@ From iris.base_logic Require Import ghost_map.
 From iris.algebra Require Import mono_list.
 From Perennial.program_proof.vrsm.storage Require Import proof.
 From Perennial.program_proof.vrsm.replica Require Import definitions.
-From Perennial.program_proof Require Import map_string_marshal_proof.
+From Perennial.program_proof Require Import marshal_stateless_proof map_string_marshal_proof.
 From Perennial.program_proof.aof Require Import proof.
 From Perennial.program_proof.vrsm Require Import config_proof.
 From Perennial.program_proof.vrsm.apps Require Import vsm log.
