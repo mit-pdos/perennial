@@ -92,7 +92,7 @@ SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/program_proof/memkv/memkv_conditional_put_proof.v\
 	src/program_proof/memkv/memkv_coord_start_proof.v\
 	src/program_proof/memkv/memkv_get_proof.v\
-	src/program_proof/simplepb/simplelog/proof.v
+	src/program_proof/vrsm/storage/proof.v
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
