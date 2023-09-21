@@ -285,7 +285,7 @@ Proof.
         rewrite map_filter_insert_not'; eauto.
         simpl; intros y Hy Htrue.
         assert (filter (λ (b : addr * buf), (b.2).(bufDirty) = true) gBufmap !! a = Some y) as Hz.
-        { eapply map_filter_lookup_Some_2; eauto. }
+        { eapply map_lookup_filter_Some_2; eauto. }
         rewrite H in Hz; eauto. congruence. }
       destruct anydirty; simpl; try reflexivity.
       rewrite map_filter_insert_False in Hx; last eauto.
@@ -375,7 +375,7 @@ Proof.
         rewrite map_filter_insert_not'; eauto.
         simpl; intros y Hy Htrue.
         assert (filter (λ (b : addr * buf), (b.2).(bufDirty) = true) gBufmap !! a = Some y) as Hz.
-        { eapply map_filter_lookup_Some_2; eauto. }
+        { eapply map_lookup_filter_Some_2; eauto. }
         rewrite H in Hz; eauto. inversion Hz. }
       destruct anydirty; simpl.
       {
@@ -708,11 +708,11 @@ Lemma map_filter_elem_of_dom {L} `{Countable L} {V} (m: gmap L V) P `{∀ x, Dec
 Proof.
   rewrite !elem_of_dom.
   split.
-  - destruct 1 as [x [Hlookup HP]%map_filter_lookup_Some].
+  - destruct 1 as [x [Hlookup HP]%map_lookup_filter_Some].
     eauto.
   - destruct 1 as [v [Hlookup HP]].
     eexists.
-    apply map_filter_lookup_Some; eauto.
+    apply map_lookup_filter_Some; eauto.
 Qed.
 
 Theorem wp_Op__CommitWait (PreQ: iProp Σ) buftx mt γUnified dinit (wait : bool) E  (Q : nat -> iProp Σ) anydirty :
@@ -778,7 +778,7 @@ Proof.
 
   iDestruct (big_sepM_mono with "Hctxelem1") as "Hctxelem1".
   { iIntros (k x Hkx) "H".
-    eapply map_filter_lookup_Some in Hkx; simpl in Hkx; destruct Hkx.
+    eapply map_lookup_filter_Some in Hkx; simpl in Hkx; destruct Hkx.
     destruct (gBufmap !! k).
     2: iExact "H".
     simpl in H0.
@@ -787,7 +787,7 @@ Proof.
 
   iDestruct (big_sepM_mono with "Hctxelem0") as "Hctxelem0".
   { iIntros (k x Hkx) "H".
-    eapply map_filter_lookup_Some in Hkx; simpl in Hkx; destruct Hkx.
+    eapply map_lookup_filter_Some in Hkx; simpl in Hkx; destruct Hkx.
     destruct (gBufmap !! k).
     { simpl in *. destruct b.(bufDirty); try congruence.
       iDestruct "H" as "[H _]". iExact "H". }
@@ -824,20 +824,20 @@ Proof.
         destruct (filter (λ x : addr * buf, (x.2).(bufDirty) = true) gBufmap !! a) eqn:Heq.
         2: {
           rewrite lookup_fmap.
-          rewrite map_filter_lookup_None_2; eauto.
-          eapply map_filter_lookup_None_1 in Heq. intuition.
+          rewrite map_lookup_filter_None_2; eauto.
+          eapply map_lookup_filter_None_1 in Heq. intuition.
           { right; intros; simpl. rewrite H1 in H3. done. }
           right; intros; simpl.
           eapply fmap_Some_1 in H3. destruct H3; intuition; subst.
           eapply H1; eauto.
         }
-        eapply map_filter_lookup_Some in Heq; destruct Heq; simpl in *; subst.
+        eapply map_lookup_filter_Some in Heq; destruct Heq; simpl in *; subst.
         eapply lookup_weaken in Hbufmapelem.
         2: { rewrite lookup_fmap. erewrite H. done. }
         rewrite lookup_fmap in Hbufmapelem.
         eapply fmap_Some_1 in Hbufmapelem. destruct Hbufmapelem; intuition; subst.
         rewrite lookup_fmap.
-        erewrite map_filter_lookup_Some_2; eauto.
+        erewrite map_lookup_filter_Some_2; eauto.
         2: { simpl. rewrite H. simpl. congruence. }
         simpl. f_equal.
         destruct b. simpl in *.
@@ -919,7 +919,7 @@ Proof.
         iPureIntro. intro Hempty. apply fmap_empty_iff in Hempty.
         assert (filter (λ b, (b.2).(bufDirty) = true) gBufmap = ∅); intuition try congruence.
         eapply map_empty; intros a.
-        eapply map_filter_lookup_None.
+        eapply map_lookup_filter_None.
         destruct (gBufmap !! a) eqn:He; intuition eauto. right.
         simpl. intros bb Hx Hbb. inversion Hx; clear Hx; subst.
         eapply lookup_weaken in Hbufmapelem.
@@ -929,7 +929,7 @@ Proof.
         destruct bb; simpl in *. inversion He2; subst.
         apply eq_sigT_eq_dep in He2. apply Eqdep_dec.eq_dep_eq_dec in He2; last apply bufDataKind_eq_dec.
         subst.
-        eapply map_filter_lookup_Some_2 in Hbufmapelem.
+        eapply map_lookup_filter_Some_2 in Hbufmapelem.
         { erewrite Hempty in Hbufmapelem. inversion Hbufmapelem. }
         simpl. rewrite He. simpl. eauto.
       }
@@ -965,11 +965,11 @@ Proof.
         assert (filter (λ v : addr * versioned_object, bufDirty <$> gBufmap !! v.1 = Some true) mt = ∅) as Hz.
         {
           eapply map_empty; intros a.
-          eapply map_filter_lookup_None.
+          eapply map_lookup_filter_None.
           destruct (mt !! a) eqn:He; intuition eauto. right.
           simpl. intros vo Hx Hvo. inversion Hx; clear Hx; subst.
           eapply fmap_Some_1 in Hvo. destruct Hvo as [bb [Hvo He2]].
-          eapply map_filter_lookup_Some_2 in Hvo.
+          eapply map_lookup_filter_Some_2 in Hvo.
           { erewrite H1 in Hvo. inversion Hvo. }
           simpl. eauto.
         }

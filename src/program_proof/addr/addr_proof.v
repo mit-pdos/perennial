@@ -375,7 +375,7 @@ Section gmap_addr_by_block.
       rewrite map_filter_insert_True; eauto.
       rewrite -IHm; clear IHm.
       rewrite gmap_addr_by_block_insert; eauto; simpl.
-      2: { rewrite map_filter_lookup_None; eauto. }
+      2: { rewrite map_lookup_filter_None; eauto. }
 
       f_equal. f_equal. f_equal.
       rewrite /gmap_addr_by_block.
@@ -386,7 +386,7 @@ Section gmap_addr_by_block.
       + destruct (decide (P (addrBlock i))).
         * rewrite map_filter_insert_True; eauto.
           repeat rewrite gmap_curry_insert; eauto.
-          2: rewrite map_filter_lookup_None; eauto.
+          2: rewrite map_lookup_filter_None; eauto.
           destruct (decide (i.1 = b)); subst.
           { repeat rewrite lookup_insert. f_equal. f_equal. rewrite IHm. eauto. }
           repeat rewrite lookup_insert_ne; eauto.

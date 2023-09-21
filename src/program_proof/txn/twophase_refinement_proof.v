@@ -443,15 +443,15 @@ Proof.
     apply map_eq => i.
     destruct (decide (s = i)).
     * subst. rewrite lookup_delete.
-      symmetry. apply map_filter_lookup_None_2; eauto.
+      symmetry. apply map_lookup_filter_None_2; eauto.
       right. intros. rewrite lookup_delete //=.
     * rewrite lookup_delete_ne //.
       destruct (decide (is_Some (Γ !! i))).
-      ** rewrite ?(map_filter_lookup_key_in _ (λ i, is_Some (Γ !! i))) //.
-         rewrite ?(map_filter_lookup_key_in _ (λ i, is_Some (delete s Γ !! i))) //.
+      ** rewrite ?(map_lookup_filter_key_in _ (λ i, is_Some (Γ !! i))) //.
+         rewrite ?(map_lookup_filter_key_in _ (λ i, is_Some (delete s Γ !! i))) //.
          rewrite lookup_delete_ne //.
-      ** rewrite ?(map_filter_lookup_key_notin _ (λ i, is_Some (Γ !! i))) //.
-         rewrite ?(map_filter_lookup_key_notin _ (λ i, is_Some (delete s Γ !! i))) //.
+      ** rewrite ?(map_lookup_filter_key_notin _ (λ i, is_Some (Γ !! i))) //.
+         rewrite ?(map_lookup_filter_key_notin _ (λ i, is_Some (delete s Γ !! i))) //.
          rewrite lookup_delete_ne //.
 Qed.
 
@@ -469,8 +469,8 @@ Lemma  filtered_subst_lookup1 (Γ' : Ctx) (Γsubst : gmap string (@subst_tuple d
 Proof.
   intros Hsome.
   destruct ((subst_ty <$> Γsubst) !! i) eqn:Heq.
-  { apply map_filter_lookup_Some_2; eauto. }
-  apply map_filter_lookup_None_2; eauto.
+  { apply map_lookup_filter_Some_2; eauto. }
+  apply map_lookup_filter_None_2; eauto.
 Qed.
 
 Notation spec_ty := jrnl_ty.
@@ -583,7 +583,7 @@ Proof.
   rewrite Heq.
   rewrite lookup_fmap.
   apply fmap_None.
-  apply map_filter_lookup_None_2; right. intros => //=.
+  apply map_lookup_filter_None_2; right. intros => //=.
   intros (?&Heq'). clear -Heq Heq'. rewrite Heq in Heq'. discriminate.
 Qed.
 
@@ -633,8 +633,8 @@ Proof.
     * rewrite /=. edestruct Hmap as (Heq'&Hconv); eauto.
       { rewrite ?lookup_fmap Heq. eauto. }
       rewrite ?lookup_fmap //=.
-      erewrite map_filter_lookup_Some_2; eauto.
-    * rewrite /=. erewrite map_filter_lookup_None_2; eauto.
+      erewrite map_lookup_filter_Some_2; eauto.
+    * rewrite /=. erewrite map_lookup_filter_None_2; eauto.
   - f_equal.
     rewrite -binder_delete_fmap.
     rewrite -binder_delete_fmap.
@@ -693,8 +693,8 @@ Proof.
     * rewrite /=. edestruct Hmap as (Heq'&Hconv); eauto.
       { rewrite ?lookup_fmap Heq. eauto. }
       rewrite ?lookup_fmap //=.
-      erewrite map_filter_lookup_Some_2; eauto.
-    * rewrite /=. erewrite map_filter_lookup_None_2; eauto.
+      erewrite map_lookup_filter_Some_2; eauto.
+    * rewrite /=. erewrite map_lookup_filter_None_2; eauto.
   - f_equal.
     rewrite -binder_delete_fmap.
     rewrite -binder_delete_fmap.

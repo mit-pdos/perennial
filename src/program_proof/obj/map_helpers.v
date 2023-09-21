@@ -19,9 +19,9 @@ Proof.
   intros.
   apply map_eq; intros i.
   destruct (decide (P i)).
-  2: { rewrite !map_filter_lookup_key_notin; eauto. }
-  rewrite map_filter_lookup_key_in; eauto.
-  rewrite map_filter_lookup_key_in; eauto.
+  2: { rewrite !map_lookup_filter_key_notin; eauto. }
+  rewrite map_lookup_filter_key_in; eauto.
+  rewrite map_lookup_filter_key_in; eauto.
   rewrite lookup_union_r; eauto.
   destruct (m' !! i) eqn:He; eauto.
   exfalso. eapply H1; eauto.
@@ -35,9 +35,9 @@ Proof.
   intros.
   apply map_eq; intros i.
   destruct (decide (P i)).
-  2: { rewrite ?map_filter_lookup_key_notin; eauto. }
-  rewrite map_filter_lookup_key_in; eauto.
-  rewrite map_filter_lookup_key_in; eauto.
+  2: { rewrite ?map_lookup_filter_key_notin; eauto. }
+  rewrite map_lookup_filter_key_in; eauto.
+  rewrite map_lookup_filter_key_in; eauto.
   rewrite /gmap_addr_by_block.
   destruct (gmap_curry m !! i) eqn:He.
   2: {

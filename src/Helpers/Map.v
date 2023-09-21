@@ -79,7 +79,7 @@ Proof.
     destruct (decide (P (i, x))).
     + rewrite map_filter_insert_True //.
       rewrite map_size_insert_None.
-      { apply map_filter_lookup_None_2; auto. }
+      { apply map_lookup_filter_None_2; auto. }
       lia.
     + rewrite map_filter_insert_not' //.
       { congruence. }

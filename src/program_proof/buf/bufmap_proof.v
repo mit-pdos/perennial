@@ -284,7 +284,7 @@ Proof using.
           assert (0 < size mtodo)%nat.
           { eauto using map_size_nonzero_lookup. }
           word.
-        - rewrite map_filter_lookup_None_2 //.
+        - rewrite map_lookup_filter_None_2 //.
           left.
           apply elem_of_dom_2 in H3.
           apply not_elem_of_dom.
@@ -467,7 +467,7 @@ Proof using.
       iFrame "Hbufs". iFrame "Hbufptrslice".
       rewrite map_filter_insert_True; last by eauto.
       iApply big_sepML_insert_app.
-      { rewrite map_filter_lookup_None. left.
+      { rewrite map_lookup_filter_None. left.
         apply not_elem_of_dom.
         assert (is_Some (mtodo !! a)) as Hsome by eauto.
         apply elem_of_dom in Hsome. set_solver. }

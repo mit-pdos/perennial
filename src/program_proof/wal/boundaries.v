@@ -468,7 +468,7 @@ Proof.
   rewrite <- (take_drop u_us upds) at 1.
   rewrite insert_app_r_alt take_length; last by lia.
   rewrite Nat.min_l; last by lia.
-  rewrite Nat.sub_add'.
+  rewrite Nat.add_sub'.
   rewrite lookup_app_r; last by (rewrite take_length; lia).
   rewrite take_length.
   f_equal.
@@ -1397,7 +1397,7 @@ Proof.
   rewrite subslice_to_end; last by rewrite app_length //=.
   rewrite subslice_drop_take; last by lia.
   rewrite (drop_app_alt (take _ _)); last by (rewrite take_length; lia).
-  rewrite Nat.sub_add'.
+  rewrite Nat.add_sub'.
   rewrite firstn_all.
   rewrite drop_app_le; last by lia.
   apply memWrite_generic_0_region.

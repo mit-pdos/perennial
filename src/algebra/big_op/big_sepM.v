@@ -10,22 +10,22 @@ Section filter.
   Context `{Countable K}.
   Context {A B : Type}.
 
-  Theorem map_filter_lookup_key_in (m : gmap K A) (P : K -> Prop)
+  Theorem map_lookup_filter_key_in (m : gmap K A) (P : K -> Prop)
       (_ : ∀ (ka : K * A), Decision (P ka.1)) i :
     P i ->
     filter (λ x, P x.1) m !! i = m !! i.
   Proof.
     destruct (m !! i) eqn:He; intros.
-    - rewrite map_filter_lookup_Some; eauto.
-    - rewrite map_filter_lookup_None; eauto.
+    - rewrite map_lookup_filter_Some; eauto.
+    - rewrite map_lookup_filter_None; eauto.
   Qed.
 
-  Theorem map_filter_lookup_key_notin (m : gmap K A) (P : K -> Prop)
+  Theorem map_lookup_filter_key_notin (m : gmap K A) (P : K -> Prop)
       (_ : ∀ (ka : K * A), Decision (P ka.1)) i :
     ~ P i ->
     filter (λ x, P x.1) m !! i = None.
   Proof.
-    rewrite map_filter_lookup_None; eauto.
+    rewrite map_lookup_filter_None; eauto.
   Qed.
 
   Lemma filter_same_keys_0' (m1 : gmap K A) (m2 : gmap K B) (P : K -> Prop)
@@ -37,12 +37,12 @@ Section filter.
   Proof.
     intros.
     destruct H1.
-    eapply map_filter_lookup_Some in H1. destruct H1.
+    eapply map_lookup_filter_Some in H1. destruct H1.
     assert (is_Some (m2 !! k)).
     { apply H0. eauto. }
     destruct H3.
     eexists.
-    eapply map_filter_lookup_Some. eauto.
+    eapply map_lookup_filter_Some. eauto.
   Qed.
 
   Lemma filter_same_keys_1' (m1 : gmap K A) (m2 : gmap K B) (P : K -> Prop)
@@ -59,11 +59,11 @@ Section filter.
     destruct H2.
     destruct (decide (P k)).
     - edestruct H0.
-      { eexists. eapply map_filter_lookup_Some. eauto. }
-      eapply map_filter_lookup_Some in H3. intuition eauto.
+      { eexists. eapply map_lookup_filter_Some. eauto. }
+      eapply map_lookup_filter_Some in H3. intuition eauto.
     - edestruct H1.
-      { eexists. eapply map_filter_lookup_Some. eauto. }
-      eapply map_filter_lookup_Some in H3. intuition eauto.
+      { eexists. eapply map_lookup_filter_Some. eauto. }
+      eapply map_lookup_filter_Some in H3. intuition eauto.
   Qed.
 
   Lemma filter_dom (P : K -> Prop) (m : gmap K A) `{Hdk : ∀ k, Decision (P k)} :
@@ -210,9 +210,9 @@ Section map_zip.
     apply map_eq; intros.
     erewrite lookup_merge by reflexivity.
     destruct (decide (P i)).
-    - rewrite !map_filter_lookup_key_in; eauto.
+    - rewrite !map_lookup_filter_key_in; eauto.
       erewrite lookup_merge by reflexivity; eauto.
-    - rewrite !map_filter_lookup_key_notin; eauto.
+    - rewrite !map_lookup_filter_key_notin; eauto.
   Qed.
 End map_zip.
 

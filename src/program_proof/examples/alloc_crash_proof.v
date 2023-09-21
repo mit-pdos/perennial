@@ -44,8 +44,8 @@ Module alloc.
   Proof.
     rewrite /unused /used.
     apply elem_of_disjoint => a H1 H2.
-    apply elem_of_dom in H1 as [s1 [H1 Hs1]%map_filter_lookup_Some].
-    apply elem_of_dom in H2 as [s2 [H2 Hs2]%map_filter_lookup_Some].
+    apply elem_of_dom in H1 as [s1 [H1 Hs1]%map_lookup_filter_Some].
+    apply elem_of_dom in H2 as [s2 [H2 Hs2]%map_lookup_filter_Some].
     congruence.
   Qed.
 
@@ -58,13 +58,13 @@ Module alloc.
     rewrite !elem_of_dom.
     split.
     - destruct 1.
-      + destruct H as [s [H _]%map_filter_lookup_Some]; eauto.
-      + destruct H as [s [H _]%map_filter_lookup_Some]; eauto.
+      + destruct H as [s [H _]%map_lookup_filter_Some]; eauto.
+      + destruct H as [s [H _]%map_lookup_filter_Some]; eauto.
     - intros.
       destruct H as [s H].
       destruct (decide (s = block_used)); [right | left]; exists s.
-      + rewrite map_filter_lookup_Some; eauto.
-      + rewrite map_filter_lookup_Some; eauto.
+      + rewrite map_lookup_filter_Some; eauto.
+      + rewrite map_lookup_filter_Some; eauto.
   Qed.
 End alloc.
 
@@ -77,7 +77,7 @@ Lemma alloc_post_crash_lookup_unused σ k:
   σ !! k = Some block_free.
 Proof.
   intros <-. rewrite elem_of_dom. intros (kv&Hlook).
-  edestruct (map_filter_lookup_Some (λ x, x.2 = block_free) σ k kv) as (Hlook'&_).
+  edestruct (map_lookup_filter_Some (λ x, x.2 = block_free) σ k kv) as (Hlook'&_).
   simpl in *; intuition; subst; auto.
 Qed.
 
@@ -89,7 +89,7 @@ Proof.
   assert (σ !! k = Some block_free); last by congruence.
   apply alloc_post_crash_lookup_unused; auto.
   rewrite /alloc.unused. rewrite elem_of_dom. eexists.
-  rewrite map_filter_lookup_Some; split; eauto.
+  rewrite map_lookup_filter_Some; split; eauto.
 Qed.
 
 Lemma alloc_used_reserve s u :
@@ -100,7 +100,7 @@ Proof.
   rewrite /alloc.free /alloc.used.
   intros Hufree.
   apply elem_of_dom in Hufree as [status Hufree].
-  apply map_filter_lookup_Some in Hufree as [Hufree ?];
+  apply map_lookup_filter_Some in Hufree as [Hufree ?];
     simpl in *; subst.
   rewrite map_filter_insert_not' //= => status.
   rewrite Hufree=>[= <-] //.
@@ -229,12 +229,12 @@ Lemma elem_of_filter_dom {A B} `{Countable A} (P': A * B → Prop) `{∀ x, Deci
   x ∈ dom (filter P' m) ↔ (∃ (y: B), m !! x = Some y ∧ P' (x,y)).
 Proof.
   split; intros.
-  - apply elem_of_dom in H1 as [y [H1 Hy]%map_filter_lookup_Some];
+  - apply elem_of_dom in H1 as [y [H1 Hy]%map_lookup_filter_Some];
       simpl in *; subst.
     exists y; eauto.
   - destruct H1 as [y [Hlookup HP]].
     apply elem_of_dom; eexists.
-    apply map_filter_lookup_Some; eauto.
+    apply map_lookup_filter_Some; eauto.
 Qed.
 
 Lemma alloc_post_crash_no_reserved σ :
@@ -282,7 +282,7 @@ Lemma new_alloc_state_no_reserved start sz used :
 Proof.
   clear.
   apply gset_elem_is_empty; intros x Helem.
-  apply elem_of_dom in Helem as [s1 [Helem Hs1]%map_filter_lookup_Some];
+  apply elem_of_dom in Helem as [s1 [Helem Hs1]%map_lookup_filter_Some];
     simpl in *; subst.
   apply lookup_union_Some_raw in Helem as [Helem | [? Helem]].
   - apply lookup_gset_to_gmap_Some in Helem.
@@ -537,13 +537,13 @@ Proof.
   iSplitL "Hfree".
   { iApply big_sepM_dom. iApply (big_sepM_mono with "Hfree").
     iIntros (?? Hlookup).
-    apply map_filter_lookup_Some in Hlookup as (?&Heq). simpl in Heq. subst.
+    apply map_lookup_filter_Some in Hlookup as (?&Heq). simpl in Heq. subst.
     eauto. }
   iAssert ([∗ map] k↦x ∈ filter (λ x : u64 * block_status, x.2 ≠ block_free) σ, Φ k block_used)%I
            with "[Hnfree]" as "Hused".
   { iApply (big_sepM_mono with "Hnfree").
     iIntros (?? Hfilter) "H".
-    apply map_filter_lookup_Some in Hfilter as (?&Heq).
+    apply map_lookup_filter_Some in Hfilter as (?&Heq).
     simpl in Heq. destruct x; try iFrame; try congruence.
     exfalso. eapply alloc_post_crash_lookup_not_reserved; eauto.
   }
@@ -683,7 +683,7 @@ Theorem reserved_not_in_alloc_free σ a :
 Proof.
   clear.
   rewrite /alloc.free /= => Hlook.
-  rewrite elem_of_dom. intros (x&(His&Heq)%map_filter_lookup_Some).
+  rewrite elem_of_dom. intros (x&(His&Heq)%map_lookup_filter_Some).
   simpl in Heq. rewrite Heq Hlook in His. congruence.
 Qed.
 
