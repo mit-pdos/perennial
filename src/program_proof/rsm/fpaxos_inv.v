@@ -1,25 +1,33 @@
 (**
  * Pure invariants and their invariance theorems.
  *)
-From Perennial.program_proof.rsm Require Import spaxos_top.
+From Perennial.program_proof.rsm Require Import fpaxos_top.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Section pure.
   Context `{Countable A}.
 
-  Definition quorum_size (c q : gset A) :=
+  Definition cquorum_size (c q : gset A) :=
     size c / 2 < size q.
 
-  Definition quorum (c q : gset A) :=
-    q ⊆ c ∧ quorum_size c q.
+  Definition cquorum (c q : gset A) :=
+    q ⊆ c ∧ cquorum_size c q.
 
-  Lemma quorums_overlapped c q1 q2 :
-    quorum c q1 ->
-    quorum c q2 ->
+  Definition fquorum_size (c q : gset A) :=
+    (* this is more conservative than what Lamport suggests *)
+    3 * size c / 4 < size q.
+
+  Definition fquorum (c q : gset A) :=
+    q ⊆ c ∧ fquorum_size c q.
+
+  Lemma quorums_overlapped_raw (c q1 q2 : gset A) :
+    q1 ⊆ c ->
+    q2 ⊆ c ->
+    size c < size q1 + size q2 ->
     ∃ x, x ∈ q1 ∧ x ∈ q2.
   Proof.
-    intros [Hle1 Hsize1] [Hle2 Hsize2].
+    intros Hq1 Hq2 Hsize.
     apply dec_stable.
     intros Hcontra.
     assert (Hdisjoint : q1 ## q2) by set_solver.
@@ -27,30 +35,54 @@ Section pure.
     assert (Hsubseteq : q1 ∪ q2 ⊆ c) by set_solver.
     apply subseteq_size in Hsubseteq.
     rewrite Hdisjoint in Hsubseteq.
-    clear -Hsize1 Hsize2 Hsubseteq.
-    unfold quorum_size in Hsize1, Hsize2.
     lia.
   Qed.
 
-  Lemma quorum_not_empty (c q : gset A) :
-    quorum c q -> q ≠ empty.
+  Lemma quorums_overlapped c q1 q2 :
+    (cquorum c q1 ∨ fquorum c q1) ->
+    (cquorum c q2 ∨ fquorum c q2) ->
+    ∃ x, x ∈ q1 ∧ x ∈ q2.
+  Proof.
+    rewrite /cquorum /cquorum_size /fquorum /fquorum_size.
+    intros [[Hle1 Hsize1] | [Hle1 Hsize1]] [[Hle2 Hsize2] | [Hle2 Hsize2]];
+      (apply (quorums_overlapped_raw c); [done | done | lia]).
+  Qed.
+
+  Lemma quorums_sufficient c qc qf :
+    cquorum_size c qc ->
+    fquorum_size c qf ->
+    2 * size c < size qc + 2 * size qf.
+  Proof.
+    intros Hsizec Hsizef.
+    unfold cquorum_size in Hsizec.
+    unfold fquorum_size in Hsizef.
+    lia.
+  Qed.
+
+  Lemma cquorum_not_empty (c q : gset A) :
+    cquorum c q -> q ≠ empty.
   Proof.
     intros Hquorum.
-    destruct (quorums_overlapped _ _ _ Hquorum Hquorum) as (x & Helem & _).
+    unshelve epose proof (quorums_overlapped c q q _ _) as (x & Helem & _).
+    { by left. }
+    { by left. }
     set_solver.
   Qed.
 
   Lemma ballots_overlapped (bs bsq1 bsq2 : gmap A ballot) :
     bsq1 ⊆ bs ->
     bsq2 ⊆ bs ->
-    quorum_size (dom bs) (dom bsq1) ->
-    quorum_size (dom bs) (dom bsq2) ->
+    cquorum_size (dom bs) (dom bsq1) ->
+    (cquorum_size (dom bs) (dom bsq2) ∨ fquorum_size (dom bs) (dom bsq2)) ->
     ∃ x l, bsq1 !! x = Some l ∧ bsq2 !! x = Some l.
   Proof.
     intros Hsubseteq1 Hsubseteq2 Hsize1 Hsize2.
-    edestruct quorums_overlapped as (x & Hin1 & Hin2).
-    { split; last apply Hsize1. by apply subseteq_dom. }
-    { split; last apply Hsize2. by apply subseteq_dom. }
+    unshelve epose proof (quorums_overlapped (dom bs) (dom bsq1) (dom bsq2)) as (x & Hin1 & Hin2).
+    { left. split; last apply Hsize1. by apply subseteq_dom. }
+    { destruct Hsize2 as [Hsize2 | Hsize2]; [left | right].
+      { split; last apply Hsize2. by apply subseteq_dom. }
+      { split; last apply Hsize2. by apply subseteq_dom. }
+    }
     rewrite elem_of_dom in Hin1.
     rewrite elem_of_dom in Hin2.
     destruct Hin1 as [l1 Hlookup1].
@@ -62,15 +94,29 @@ Section pure.
     rewrite H1 in H2. by inversion H2.
   Qed.
 
+  Definition accepted_in_classic (l : ballot) n :=
+    l !! n = Some CAccept.
+
+  Definition accepted_in_fast (l : ballot) n v :=
+    l !! n = Some (FAccept v).
+
   Definition accepted_in (l : ballot) n :=
-    l !! n = Some true.
-  
+    accepted_in_classic l n ∨ ∃ v, accepted_in_fast l n v.
+
+  Definition chosen_in_classic (bs bsq : gmap A ballot) (ps : proposals) n v :=
+    ps !! n = Some (Proposed v) ∧
+    cquorum_size (dom bs) (dom bsq) ∧
+    map_Forall (λ _ l, accepted_in_classic l n) bsq.
+
+  Definition chosen_in_fast (bs bsq : gmap A ballot) (ps : proposals) n v :=
+    ps !! n = Some Any ∧
+    fquorum_size (dom bs) (dom bsq) ∧
+    map_Forall (λ _ l, accepted_in_fast l n v) bsq.
+
   Definition chosen_in (bs : gmap A ballot) (ps : proposals) n v :=
-    ps !! n = Some v ∧
     ∃ bsq,
       bsq ⊆ bs ∧
-      quorum_size (dom bs) (dom bsq) ∧
-      map_Forall (λ _ l, accepted_in l n) bsq.
+      (chosen_in_classic bs bsq ps n v ∨ chosen_in_fast bs bsq ps n v).
 
   Definition chosen (bs : gmap A ballot) (ps : proposals) v :=
     ∃ n, n ≠ O ∧ chosen_in bs ps n v.
@@ -84,7 +130,8 @@ Section pure.
     ∀ m n v,
       (O < m < n)%nat ->
       chosen_in bs ps m v ->
-      map_Forall (λ _ l, accepted_in l n -> ps !! n = Some v) bs.
+      ps !! n ≠ Some Any ∧
+      map_Forall (λ _ l, accepted_in_classic l n -> ps !! n = Some (Proposed v)) bs.
 
   (* Invariant for [accepted_after_chosen]. *)
   Definition proposed_after_chosen (bs : gmap A ballot) (ps : proposals) :=
@@ -92,16 +139,17 @@ Section pure.
       (O < m < n)%nat ->
       chosen_in bs ps m v ->
       is_Some (ps !! n) ->
-      ps !! n = Some v.
+      ps !! n = Some (Proposed v).
 
   (* Compute the latest accepted proposal before [n]. *)
   Fixpoint latest_before (n : nat) (l : ballot) : nat :=
     match n with
     | O => O
     | S k => match l !! k with
-            | Some b => if b : bool (* XXX: why do I need this? *)
-                       then k
-                       else latest_before k l
+            | Some e => match e with
+                       | Reject => latest_before k l
+                       | _ => k
+                       end
             | _ => latest_before k l
             end
     end.
@@ -115,24 +163,54 @@ Section pure.
     let ps := fmap (latest_before n) bsq in
     map_fold latest_before_quorum_step O ps.
 
-  Definition equal_latest_proposal_or_free (bsq : gmap A ballot) (ps : proposals) n v :=
+  Definition is_fast (l : ballot) (n : nat) (v : string) :=
+    l !! n = Some (FAccept v).
+
+  #[local]
+  Instance is_fast_decision l n v :
+    Decision (is_fast l n v).
+  Proof. unfold is_fast. apply _. Qed.
+
+  Definition nfast (bsq : gmap A ballot) (n : nat) (v : string) :=
+    size (filter (λ x : A * ballot, is_fast x.2 n v) bsq).
+
+  Definition nfastneg (bsq : gmap A ballot) (n : nat) (v : string) :=
+    size (filter (λ x : A * ballot, not (is_fast x.2 n v)) bsq).
+
+  Definition equal_max_occurrence (bsq : gmap A ballot) n v :=
+    ∀ v', (nfast bsq n v' ≤ nfast bsq n v)%nat.
+
+  Definition equal_latest_proposal (bsq : gmap A ballot) (ps : proposals) n e :=
+    match e with
+    | Any => False
+    | Proposed v => let k := latest_before_quorum n bsq in
+                   match ps !! k with
+                   | None => False
+                   | Some Any => equal_max_occurrence bsq k v
+                   | Some (Proposed v') => v' = v
+                   end
+    end.
+
+  Definition equal_latest_proposal_or_free (bsq : gmap A ballot) (ps : proposals) n e :=
     latest_before_quorum n bsq = O ∨
-    ps !! (latest_before_quorum n bsq) = Some v.
+    equal_latest_proposal bsq ps n e.
 
   Definition valid_proposal (bs : gmap A ballot) (ps : proposals) n v :=
     ∃ bsq : gmap A ballot,
       bsq ⊆ bs ∧
-      quorum_size (dom bs) (dom bsq) ∧
+      cquorum_size (dom bs) (dom bsq) ∧
       map_Forall (λ _ l, (n ≤ length l)%nat) bsq ∧
       equal_latest_proposal_or_free bsq ps n v.
 
   (* Invariant for [proposed_after_chosen]. *)
   Definition valid_proposals (bs : gmap A ballot) (ps : proposals) :=
+    ps !! O = None (* need this to prove vp_inv_accep *) ∧
     map_Forall (λ n v, valid_proposal bs ps n v) ps.
 
   (* Invariant for [accepted_after_chosen]; i.e., proposed before accepted. *)
   Definition valid_ballots (bs : gmap A ballot) (ps : proposals) :=
-    map_Forall (λ _ l, ∀ n, accepted_in l n -> is_Some (ps !! n)) bs.
+    (* TODO: probably also needs something for fast. *)
+    map_Forall (λ _ l, ∀ n, accepted_in_classic l n -> ∃ v, ps !! n = Some (Proposed v)) bs.
 
   Definition valid_consensus (c : consensus) (bs : gmap A ballot) (ps : proposals) :=
     match c with
@@ -181,18 +259,20 @@ Section pure.
     induction n as [| n' IH].
     { assert (Hm : (m = 0)%nat); first lia. by rewrite Hm. }
     destruct (decide (m = S n')); first by rewrite e.
-    unshelve epose proof (IH _) as Hle; first lia.
-    simpl.
+    unshelve epose proof (IH _) as Hle; first lia. simpl.
     destruct (l !! n') as [b |]; last by eauto.
-    destruct b; last by eauto.
-    etrans; first apply Hle.
-    apply latest_before_le.
+    assert (Hn' : (latest_before m l ≤ n')%nat).
+    { etrans; [apply Hle | apply latest_before_le]. }
+    by destruct b.
   Qed.
 
   Lemma latest_before_Sn l n :
     accepted_in l n ->
     latest_before (S n) l = n.
-  Proof. intros Haccin. simpl. by rewrite Haccin. Qed.
+  Proof.
+    intros Hacc. simpl.
+    by destruct Hacc as [Hacc | [? Hacc]]; rewrite Hacc.
+  Qed.
   
   Lemma latest_before_accepted_in l m n :
     (m < n)%nat ->
@@ -214,7 +294,7 @@ Section pure.
     intros _.
     destruct (decide (n' = O)) as [-> | Hneq].
     { simpl. destruct (l !! O); last lia.
-      destruct b; lia.
+      destruct v; lia.
     }
     specialize (IHn' Hneq).
     simpl.
@@ -302,6 +382,13 @@ Section pure.
     destruct Hlookup as (l & Hlookup & Heq).
     by exists x, l.
   Qed.
+
+  Lemma latest_before_quorum_zero bs :
+    latest_before_quorum O bs = O.
+  Proof.
+    destruct (decide (bs = ∅)) as [-> | Hne]; first done.
+    by destruct (latest_before_quorum_in _ O Hne) as (_ & l & _ & Hz).
+  Qed.
   
   Lemma latest_before_quorum_lt bs n :
     n ≠ O ->
@@ -342,17 +429,17 @@ Section pure.
   Qed.
 
   (* Lemmas about [latest_term]. *)
-  Lemma latest_term_snoc_false (l : ballot) :
-    latest_term (l ++ [false]) = latest_term l.
+  Lemma latest_term_snoc_reject (l : ballot) :
+    latest_term (l ++ [Reject]) = latest_term l.
   Proof.
     unfold latest_term. rewrite last_length. simpl.
-    replace (_ !! length l) with (Some false); last first.
+    replace (_ !! length l) with (Some Reject); last first.
     { symmetry. rewrite lookup_snoc_Some. by right. }
     by apply latest_before_append_eq.
   Qed.
 
-  Lemma latest_term_extend_false (n : nat) (l : ballot) :
-    latest_term (extend false n l) = latest_term l.
+  Lemma latest_term_extend_reject (n : nat) (l : ballot) :
+    latest_term (extend Reject n l) = latest_term l.
   Proof.
     unfold extend.
     induction n as [| n' IHn']; first by rewrite app_nil_r.
@@ -361,11 +448,11 @@ Section pure.
       by replace (S n' - length l)%nat with O by lia.
     }
     replace (S n' - length l)%nat with (S (n' - length l)%nat) by lia.
-    by rewrite replicate_S_end app_assoc latest_term_snoc_false.
+    by rewrite replicate_S_end app_assoc latest_term_snoc_reject.
   Qed.
 
-  Lemma latest_term_snoc_true (l : ballot) :
-    latest_term (l ++ [true]) = length l.
+  Lemma latest_term_snoc_caccept (l : ballot) :
+    latest_term (l ++ [CAccept]) = length l.
   Proof.
     unfold latest_term. rewrite last_length. simpl.
     rewrite lookup_app_r; last done.
@@ -376,7 +463,25 @@ Section pure.
     chosen_in bs ps n v1 ->
     chosen_in bs ps n v2 ->
     v1 = v2.
-  Proof. intros [Hv1 _] [Hv2 _]. naive_solver. Qed.
+  Proof.
+    intros (bsq1 & Hbsq1 & Hchosen1) (bsq2 & Hbsq2 & Hchosen2).
+    destruct Hchosen1 as [[Hc1 _] | (Hf1 & Hq1 & Hacc1)]; destruct Hchosen2 as [[Hc2 _] | (Hf2 & Hq2 & Hacc2)].
+    { naive_solver. }
+    { naive_solver. }
+    { naive_solver. }
+    unshelve epose proof (quorums_overlapped (dom bs) (dom bsq1) (dom bsq2) _ _) as (x & Hx1 & Hx2).
+    { right. by split; first apply subseteq_dom. }
+    { right. by split; first apply subseteq_dom. }
+    apply elem_of_dom in Hx1 as [l1 Hl1].
+    apply elem_of_dom in Hx2 as [l2 Hl2].
+    specialize (Hacc1 _ _ Hl1). simpl in Hacc1.
+    specialize (Hacc2 _ _ Hl2). simpl in Hacc2.
+    pose proof (lookup_weaken _ _ _ _ Hl1 Hbsq1) as Hbs1.
+    pose proof (lookup_weaken _ _ _ _ Hl2 Hbsq2) as Hbs2.
+    rewrite Hbs1 in Hbs2. inversion Hbs2. subst l2.
+    unfold accepted_in_fast in Hacc1, Hacc2.
+    set_solver.
+  Qed.
 
   Lemma aac_chosen {bs ps n1 n2 v1 v2} :
     (O < n1 ≤ n2)%nat ->
@@ -385,26 +490,27 @@ Section pure.
     chosen_in bs ps n2 v2 ->
     v1 = v2.
   Proof.
-    intros Hle Haac H1 H2.
+    intros Hle Haac Hn1 Hn2.
     destruct (decide (n1 = n2)) as [Heq | Hneq].
-    { rewrite Heq in H1. by eapply chosen_in_same_term. }
-    assert (Horder : (O < n1 < n2)%nat) by lia.
-    unshelve epose proof (Haac n1 n2 v1 _ _) as Haac; [apply Horder | done |].
-    destruct H2 as (Hlookupq & bsq & Hbsq & Hsize & Haccq).
-    assert (Hquorum : quorum (dom bs) (dom bsq)).
+    { rewrite Heq in Hn1. by eapply chosen_in_same_term. }
+    assert (Horder : (O < n1 < n2)%nat) by lia. clear Hle Hneq.
+    specialize (Haac _ _ _ Horder Hn1) as [Hnany Haac].
+    destruct Hn2 as (bsq & Hbsq & [Hclassic | Hfast]); last first.
+    { by destruct Hfast as [? _]. }
+    destruct Hclassic as (Hpsn2 & Hsize &Haccq).
+    assert (Hquorum : cquorum (dom bs) (dom bsq)).
     { split; [by apply subseteq_dom | done]. }
-    apply quorum_not_empty in Hquorum.
+    apply cquorum_not_empty in Hquorum.
     rewrite dom_empty_iff_L in Hquorum.
     apply map_choose in Hquorum as (x & l & Hl).
-    assert (ps !! n2 = Some v1) as Hlookup.
-    { rewrite map_Forall_lookup in Haac.
-      apply (Haac x l).
+    assert (Some (Proposed v2) = Some (Proposed v1)) as Hv12.
+    { assert (Hxl : bs !! x = Some l).
       { eapply lookup_weaken; [apply Hl | apply Hbsq]. }
-      rewrite map_Forall_lookup in Haccq.
-      by apply (Haccq x l).
+      specialize (Haccq _ _ Hl). simpl in Haccq.
+      specialize (Haac _ _ Hxl Haccq).
+      by rewrite Hpsn2 in Haac.
     }
-    rewrite Hlookupq in Hlookup.
-    by inversion Hlookup.
+    by inversion Hv12.
   Qed.
 
   (* Implication theorems of invariants. *)
@@ -419,75 +525,126 @@ Section pure.
     { assert (Horder : (O < n2 ≤ n1)%nat) by lia. symmetry. eapply (aac_chosen Horder); done. }
   Qed.
 
-  Lemma valid_proposal_chosen_in bs ps m n u v :
-    (O < m < n)%nat ->
-    valid_proposals bs ps ->
-    chosen_in bs ps m u ->
-    ps !! n = Some v ->
-    ∃ k, (ps !! n = ps !! k) ∧ (m ≤ k < n)%nat.
-  Proof.
-    intros Hmn Hvp Hchosen Hlookup.
-    edestruct Hvp as (bsq1 & Hsubseteq1 & Hquorum1 & _ & Heq).
-    { apply Hlookup. }
-    destruct Hchosen as (_ & bsq2 & Hsubseteq2 & Hquorum2 & Hacc).
-    (* Extract intersection between the two quorums. *)
-    edestruct ballots_overlapped as (x & l & Hbsq1 & Hbsq2).
-    { apply Hsubseteq1. }
-    { apply Hsubseteq2. }
-    { apply Hquorum1. }
-    { apply Hquorum2. }
-    rewrite map_Forall_lookup in Hacc.
-    specialize (Hacc _ _ Hbsq2).
-    unshelve epose proof (latest_before_quorum_accepted_in bsq1 m n _ _) as Horder.
-    { apply Hmn. }
-    { rewrite map_Exists_lookup. by exists x, l. }
-    destruct Heq as [Heq | Heq].
-    { (* Case: None proposed in the majority. *)
-      rewrite Heq in Horder. lia.
-    }
-    { (* Case: Equal the largest proposal. *)
-      exists (latest_before_quorum n bsq1).
-      by rewrite Heq Hlookup.
-    }
-  Qed.
-
   Lemma vb_pac_impl_aac bs ps :
     valid_ballots bs ps ->
     proposed_after_chosen bs ps ->
     accepted_after_chosen bs ps.
   Proof.
     intros Hvb Hpac.
-    intros m n v Hmn Hchosen x l Hlookup Hacc.
+    intros m n v Hmn Hchosen.
+    split.
+    { intros Hpsn.
+      specialize (Hpac _ _ _ Hmn Hchosen).
+      set_solver.
+    }
+    intros x l Hlookup Hacc.
     unfold proposed_after_chosen in Hpac.
     eapply Hpac; [apply Hmn | apply Hchosen |].
     unfold valid_ballots in Hvb.
     rewrite map_Forall_lookup in Hvb.
-    eapply Hvb; [apply Hlookup | apply Hacc].
+    specialize (Hvb _ _ Hlookup _ Hacc).
+    set_solver.
+  Qed.
+
+  Lemma nfast_nfastneg_dom_size bs n v :
+    (nfast bs n v + nfastneg bs n v)%nat = size (dom bs).
+  Proof.
+    rewrite size_dom -map_size_disj_union.
+    { by rewrite map_filter_union_complement. }
+    apply map_disjoint_filter_complement.
+  Qed.
+
+  Lemma cfquorums_nfast {bs bsqc bsqf n v} :
+    bsqc ⊆ bs ->
+    cquorum_size (dom bs) (dom bsqc) ->
+    bsqf ⊆ bs ->
+    fquorum_size (dom bs) (dom bsqf) ->
+    map_Forall (λ _ l, accepted_in_fast l n v) bsqf ->
+    ∀ v', v' ≠ v -> (nfast bsqc n v' < nfast bsqc n v)%nat.
+  Proof.
+    intros Hbsqc Hqc Hbsqf Hqf Hacc v' Hne.
+    apply dec_stable. intros Hle. rewrite Nat.nlt_ge in Hle.
+    assert (Hsizef : (size (dom bsqf) = nfast bsqf n v)%nat).
+    { clear -Hacc.
+      rewrite /nfast size_dom map_filter_id; first done.
+      intros x l Hxl.
+      by specialize (Hacc _ _ Hxl).
+    }
+    assert (Hf : (nfast bsqf n v ≤ nfast bs n v)%nat).
+    { by apply map_subseteq_size, map_filter_subseteq_mono. }
+    assert (Hsizec : ((size (dom bsqc) ≤ 2 * nfastneg bsqc n v)%nat)).
+    { pose proof (nfast_nfastneg_dom_size bsqc n v) as Hsizedom.
+      assert (Hv' : (nfast bsqc n v' ≤ nfastneg bsqc n v)%nat).
+      { clear -Hne Hle.
+        rewrite /nfast /nfastneg /is_fast.
+        apply map_subseteq_size.
+        rewrite map_filter_subseteq_ext.
+        naive_solver.
+      }
+      lia.
+    }
+    assert (Hc : (nfastneg bsqc n v ≤ nfastneg bs n v)%nat).
+    { by apply map_subseteq_size, map_filter_subseteq_mono. }
+    pose proof (nfast_nfastneg_dom_size bs n v) as Hsize.
+    epose proof (quorums_sufficient _ _ _ Hqc Hqf) as Hsuff.
+    lia.
   Qed.
 
   Lemma vp_impl_pac bs ps :
     valid_proposals bs ps ->
     proposed_after_chosen bs ps.
   Proof.
-    intros Hvalid.
-    intros m n v Hmn Hchosen [v' Hlookup].
+    intros [_ Hvp].
+    intros m n v Hmn Hchosen Hpsn.
     (* https://coq-club.inria.narkive.com/VWS50VZQ/adding-strong-induction-to-the-standard-library *)
     (* strong induction on [n]. *)
     induction (lt_wf n) as [n _ IHn].
-    edestruct valid_proposal_chosen_in as (k & Heq & Hmkn).
-    { apply Hmn. }
-    { apply Hvalid. }
-    { apply Hchosen. }
+    destruct Hpsn as [e Hlookup].
+    edestruct Hvp as (bsq1 & Hsubseteq1 & Hquorum1 & _ & Heq).
     { apply Hlookup. }
-    rewrite Heq.
-    rewrite Heq in Hlookup.
-    destruct (decide (m = k)) as [Hmk | Hmk].
-    { (* Handle [m = k] as a special case. *)
-      rewrite Hmk in Hchosen.
-      by destruct Hchosen as [Hpsk _].
+    destruct Hchosen as (bsq2 & Hsubseteq2 & Hchosen).
+    edestruct ballots_overlapped as (x & l & Hbsq1 & Hbsq2).
+    { apply Hsubseteq1. }
+    { apply Hsubseteq2. }
+    { apply Hquorum1. }
+    { destruct Hchosen as [(_ & ? & _) | (_ & ? & _)]; [by left | by right]. }
+    unshelve epose proof (latest_before_quorum_accepted_in bsq1 m n _ _) as Horder.
+    { apply Hmn. }
+    { rewrite map_Exists_lookup.
+      destruct Hchosen as [(_ & _ & Hacc) | (_ & _ & Hacc)]; specialize (Hacc _ _ Hbsq2); exists x, l.
+      { by split; [ | left]. }
+      { split; first done. right. simpl in Hacc. by eauto. }
     }
-    assert (Horder : (m < k < n)%nat) by lia.
-    apply IHn; [lia | lia | done].
+    destruct Heq as [Heq | Heq].
+    { exfalso. rewrite Heq in Horder. lia. }
+    unfold equal_latest_proposal in Heq.
+    set k := latest_before_quorum _ _ in Horder Heq.
+    destruct (decide (m = k)) as [Hmk | Hmk]; last first.
+    { (* Case: [m < k < n]. *)
+      assert (Hmkn : (m < k < n)%nat) by lia. clear Horder Hmk.
+      destruct e as [| u]; first done. simpl in Heq.
+      destruct (ps !! k) as [u' |] eqn:Hpsk; last done.
+      unshelve epose proof (IHn k _ _ _) as Hv; [lia | lia | done |].
+      rewrite Hv in Hpsk. inversion Hpsk. subst u'.
+      by rewrite Heq.
+    }
+    { (* Case: [m = k]. *)
+      destruct e as [| u]; first done.
+      destruct (ps !! k) as [u' |] eqn:Hpsk; last done.
+      destruct Hchosen as [(Hpsm & _ & _) | (Hpsm & Hquorum2 & Hacc)];
+        subst m; rewrite Hpsm in Hpsk; inversion Hpsk; subst u'.
+      { (* Case: [k] is a classic round. *)
+        by rewrite Heq.
+      }
+      { (* Case: [k] is a fast round. Core reasoning in fpaxos. *)
+        rewrite Hlookup.
+        clear -Hsubseteq1 Hsubseteq2 Hquorum1 Hquorum2 Hacc Heq.
+        unfold equal_max_occurrence in Heq.
+        pose proof (cfquorums_nfast Hsubseteq1 Hquorum1 Hsubseteq2 Hquorum2 Hacc) as Hv.
+        destruct (decide (u = v)) as [-> | Hneq]; first done.
+        specialize (Heq v). specialize (Hv u). lia.
+      }
+    }
   Qed.
 
   Theorem vb_vp_impl_consistency {bs ps} :
@@ -513,16 +670,24 @@ Section pure.
   Qed.
 
   (* Transition functions. *)
-  Definition spaxos_accept (bs : gmap A ballot) x n :=
-    alter (λ l, extend false n l ++ [true]) x bs.
+  Definition fpaxos_accept_classic (bs : gmap A ballot) x n :=
+    alter (λ l, extend Reject n l ++ [CAccept]) x bs.
 
-  Definition spaxos_prepare (bs : gmap A ballot) (x : A) (n : nat) :=
-    alter (λ l, extend false n l) x bs.
+  (* TODO: invariance *)
+  Definition fpaxos_accept_fast (bs : gmap A ballot) x n v :=
+    alter (λ l, extend Reject n l ++ [FAccept v]) x bs.
 
-  Definition spaxos_propose (ps : proposals) (n : nat) (v : string) :=
-    <[n := v]> ps.
+  Definition fpaxos_prepare (bs : gmap A ballot) (x : A) (n : nat) :=
+    alter (λ l, extend Reject n l) x bs.
 
-  Definition spaxos_advance (ts : gmap A nat) (x : A) (n : nat) :=
+  Definition fpaxos_propose_classic (ps : proposals) (n : nat) (v : string) :=
+    <[n := Proposed v]> ps.
+
+  (* TODO: invariance *)
+  Definition fpaxos_propose_fast (ps : proposals) (n : nat) :=
+    <[n := Any]> ps.
+
+  Definition fpaxos_advance (ts : gmap A nat) (x : A) (n : nat) :=
     <[x := n]> ts.
 
   (* XXX: this should be general. *)
@@ -605,7 +770,7 @@ Section pure.
   Lemma latest_before_quorum_accept_same
     (bs : gmap A ballot) (x : A) (n m : nat) :
     map_Forall (λ _ l, (m ≤ length l)%nat) bs ->
-    latest_before_quorum m (spaxos_accept bs x n) = latest_before_quorum m bs.
+    latest_before_quorum m (fpaxos_accept_classic bs x n) = latest_before_quorum m bs.
   Proof.
     intros Hlens.
     unfold latest_before_quorum.
@@ -621,7 +786,7 @@ Section pure.
   Lemma latest_before_quorum_prepare_same
     (bs : gmap A ballot) (x : A) (n m : nat) :
     map_Forall (λ _ l, (m ≤ length l)%nat) bs ->
-    latest_before_quorum m (spaxos_prepare bs x n) = latest_before_quorum m bs.
+    latest_before_quorum m (fpaxos_prepare bs x n) = latest_before_quorum m bs.
   Proof.
     intros Hlens.
     unfold latest_before_quorum.
@@ -633,6 +798,20 @@ Section pure.
     by rewrite latest_before_append_eq.
   Qed.
 
+  Lemma equal_max_occurrence_accept_same
+    (bs : gmap A ballot) (x : A) (n m : nat) v :
+    (* TODO: check we actually need [<] rather than [≤] *)
+    map_Forall (λ _ l, (m < length l)%nat) bs ->
+    equal_max_occurrence (fpaxos_accept_classic bs x n) m v = equal_max_occurrence bs m v.
+  Admitted.
+
+  Lemma equal_max_occurrence_prepare_same
+    (bs : gmap A ballot) (x : A) (n m : nat) v :
+    (* TODO: check we actually need [<] rather than [≤] *)
+    map_Forall (λ _ l, (m < length l)%nat) bs ->
+    equal_max_occurrence (fpaxos_prepare bs x n) m v = equal_max_occurrence bs m v.
+  Admitted.
+
   Lemma valid_proposal_insert_n bs ps n v :
     n ≠ O ->
     valid_proposal bs ps n v ->
@@ -643,11 +822,13 @@ Section pure.
     do 3 (split; first done).
     destruct Heq as [Hempty | Heq]; first by left.
     right.
-    rewrite -Heq.
-    apply lookup_insert_ne.
-    assert (Hquorum : quorum (dom bs) (dom bsq)).
+    unfold equal_latest_proposal.
+    set k := latest_before_quorum n bsq.
+    replace (<[n := v]> ps !! k) with (ps !! k); first done.
+    symmetry. apply lookup_insert_ne.
+    assert (Hquorum : cquorum (dom bs) (dom bsq)).
     { split; [by apply subseteq_dom | done]. }
-    pose proof (quorum_not_empty _ _ Hquorum) as Hnonempty.
+    pose proof (cquorum_not_empty _ _ Hquorum) as Hnonempty.
     rewrite dom_empty_iff_L in Hnonempty.
     pose proof (latest_before_quorum_lt _ _ Hnz Hnonempty) as Hlt.
     lia.
@@ -663,15 +844,19 @@ Section pure.
     do 3 (split; first done).
     destruct Heq as [Hempty | Heq]; first by left.
     right.
+    move: Heq. unfold equal_latest_proposal.
+    set k := latest_before_quorum n2 bsq. intros Heq.
+    replace (<[n1 := v1]> ps !! k) with (ps !! k); first done.
     rewrite lookup_insert_ne; first done.
+    destruct v2; first done. destruct (ps !! k) eqn:Hpsk; last done.
     set_solver.
   Qed.
 
-  Lemma extend_false_accepted_in n1 n2 l :
-    accepted_in (extend false n2 l) n1 ->
-    accepted_in l n1.
+  Lemma extend_reject_accepted_in n1 n2 l :
+    accepted_in_classic (extend Reject n2 l) n1 ->
+    accepted_in_classic l n1.
   Proof.
-    unfold accepted_in.
+    unfold accepted_in_classic.
     intros Haccin.
     destruct (decide (n1 < length l)%nat) as [Hlt | Hge].
     { by rewrite lookup_app_l in Haccin. }
@@ -681,14 +866,14 @@ Section pure.
   Qed.
 
   (* Invariance w.r.t. to all the transition functions above. *)
-  Theorem vp_inv_accept {bs ps} x n :
+  Theorem vp_inv_accept_classic {bs ps} x n :
     valid_proposals bs ps ->
-    valid_proposals (spaxos_accept bs x n) ps.
+    valid_proposals (fpaxos_accept_classic bs x n) ps.
   Proof.
-    intros Hvp.
-    intros m v Hdsm.
+    intros [Hpsz Hvp].
+    split; first done. intros m e Hdsm.
     apply Hvp in Hdsm as (bsq & Hbsa & Hquorum & Hlens & Heq).
-    exists (spaxos_accept bsq x n).
+    exists (fpaxos_accept_classic bsq x n).
     split; first by apply alter_mono.
     split; first by do 2 rewrite dom_alter_L.
     unfold equal_latest_proposal_or_free.
@@ -698,29 +883,43 @@ Section pure.
       pose proof (map_Forall_lookup_1 _ _ _ _ Hlens Hlookup) as Hlen.
       simpl in Hlen.
       rewrite last_length.
-      pose proof (extend_length_ge false n y) as Hextend.
+      pose proof (extend_length_ge Reject n y) as Hextend.
       lia.
     }
-    by rewrite latest_before_quorum_accept_same.
+    unfold equal_latest_proposal.
+    rewrite latest_before_quorum_accept_same; last done.
+    destruct Heq as [? | Heq]; [by left | right].
+    destruct e as [| v]; first done. simpl in Heq.
+    rewrite equal_max_occurrence_accept_same; first done.
+    apply (map_Forall_impl _ _ _ Hlens). intros _ l Hl.
+    eapply Nat.lt_le_trans; last apply Hl.
+    apply latest_before_quorum_lt.
+    { intros Hz. by rewrite Hz latest_before_quorum_zero Hpsz in Heq. }
+    (* This seems tedious, also repetitive. *)
+    assert (Hq : cquorum (dom bs) (dom bsq)).
+    { split; [by apply subseteq_dom | done]. }
+    apply cquorum_not_empty in Hq.
+    by rewrite dom_empty_iff_L in Hq.
+    (* END *)
   Qed.
 
-  Theorem vb_inv_accept {bs ps} x n :
-    is_Some (ps !! n) ->
+  Theorem vb_inv_accept_classic {bs ps} x n :
+    (∃ v, ps !! n = Some (Proposed v)) ->
     (∃ l, bs !! x = Some l ∧ length l ≤ n)%nat ->
     valid_ballots bs ps ->
-    valid_ballots (spaxos_accept bs x n) ps.
+    valid_ballots (fpaxos_accept_classic bs x n) ps.
   Proof.
     intros Hpsn Hlen Hvb.
     apply map_Forall_alter; last apply Hvb.
     intros l Hlookup m Hm.
     unfold valid_ballots in Hvb.
-    destruct (decide (m < length (extend false n l))%nat) as [Hlt | Hge].
-    { rewrite /accepted_in lookup_app_l in Hm; last done.
+    destruct (decide (m < length (extend Reject n l))%nat) as [Hlt | Hge].
+    { rewrite /accepted_in_classic lookup_app_l in Hm; last done.
       apply (Hvb x l); first apply Hlookup.
-      by eapply extend_false_accepted_in.
+      by eapply extend_reject_accepted_in.
     }
     apply not_lt in Hge.
-    rewrite /accepted_in lookup_app_r in Hm; last lia.
+    rewrite /accepted_in_classic lookup_app_r in Hm; last lia.
     rewrite list_lookup_singleton_Some in Hm.
     destruct Hm as [Hle _].
     destruct Hlen as (l' & Hlookup' & Hlen).
@@ -733,12 +932,12 @@ Section pure.
 
   Theorem vp_inv_prepare {bs ps} x n :
     valid_proposals bs ps ->
-    valid_proposals (spaxos_prepare bs x n) ps.
+    valid_proposals (fpaxos_prepare bs x n) ps.
   Proof.
-    intros Hvp.
-    intros m v Hdsm.
+    intros [Hpsz Hvp]. split; first done.
+    intros m e Hdsm.
     apply Hvp in Hdsm as (bsq & Hbsa & Hquorum & Hlens & Heq).
-    exists (spaxos_prepare bsq x n).
+    exists (fpaxos_prepare bsq x n).
     split; first by apply alter_mono.
     split; first by do 2 rewrite dom_alter_L.
     unfold equal_latest_proposal_or_free.
@@ -747,106 +946,156 @@ Section pure.
       intros y Hlookup.
       pose proof (map_Forall_lookup_1 _ _ _ _ Hlens Hlookup) as Hlen.
       simpl in Hlen.
-      pose proof (extend_length_ge false n y) as Hextend.
+      pose proof (extend_length_ge Reject n y) as Hextend.
       lia.
     }
-    by rewrite latest_before_quorum_prepare_same.
+    unfold equal_latest_proposal.
+    rewrite latest_before_quorum_prepare_same; last done.
+    destruct Heq as [? | Heq]; [by left | right].
+    destruct e as [| v]; first done. simpl in Heq.
+    rewrite equal_max_occurrence_prepare_same; first done.
+    apply (map_Forall_impl _ _ _ Hlens). intros _ l Hl.
+    eapply Nat.lt_le_trans; last apply Hl.
+    apply latest_before_quorum_lt.
+    { intros Hz. by rewrite Hz latest_before_quorum_zero Hpsz in Heq. }
+    (* This seems tedious, also repetitive. *)
+    assert (Hq : cquorum (dom bs) (dom bsq)).
+    { split; [by apply subseteq_dom | done]. }
+    apply cquorum_not_empty in Hq.
+    by rewrite dom_empty_iff_L in Hq.
+    (* END *)
   Qed.
 
   Theorem vb_inv_prepare {bs ps} x n :
     valid_ballots bs ps ->
-    valid_ballots (spaxos_prepare bs x n) ps.
+    valid_ballots (fpaxos_prepare bs x n) ps.
   Proof.
     intros Hvb.
     apply map_Forall_alter; last apply Hvb.
     intros l Hlookup m Hacc.
     unfold valid_ballots in Hvb.
     apply (Hvb x l); first apply Hlookup.
-    by eapply extend_false_accepted_in.
+    by eapply extend_reject_accepted_in.
   Qed.
 
-  Theorem vp_inv_propose {bs ps n v} :
+  Theorem vp_inv_propose_classic {bs ps n v} :
     ps !! n = None ->
     n ≠ O ->
-    valid_proposal bs ps n v ->
+    valid_proposal bs ps n (Proposed v) ->
     valid_proposals bs ps ->
-    valid_proposals bs (spaxos_propose ps n v).
+    valid_proposals bs (fpaxos_propose_classic ps n v).
   Proof.
-    intros Hnone Hnz Hvalid Hvp.
-    unfold spaxos_propose.
+    intros Hnone Hnz Hvalid [Hpsz Hvp].
+    unfold fpaxos_propose_classic.
+    split; first by rewrite lookup_insert_None.
     apply map_Forall_insert_2; first by apply valid_proposal_insert_n.
     apply (map_Forall_impl _ _ _ Hvp).
     intros n' v' Hmu.
     by apply valid_proposal_insert_None.
   Qed.
 
-  Theorem vb_inv_propose {bs ps} n v :
+  Theorem vb_inv_propose_classic {bs ps} n v :
     valid_ballots bs ps ->
-    valid_ballots bs (spaxos_propose ps n v).
+    valid_ballots bs (fpaxos_propose_classic ps n v).
   Proof.
     intros Hvb.
-    unfold spaxos_propose.
+    unfold fpaxos_propose_classic.
     intros x l Hlookup n' Hacc.
-    destruct (decide (n' = n)) as [-> | Hneq]; first by rewrite lookup_insert.
+    destruct (decide (n' = n)) as [-> | Hneq].
+    { rewrite lookup_insert. by eauto. }
     rewrite lookup_insert_ne; last done.
     by apply (Hvb x l).
   Qed.
 
-  Theorem vc_inv_propose {c bs ps} n v :
+  Theorem vc_inv_propose_classic {c bs ps} n v :
     ps !! n = None ->
     valid_consensus c bs ps ->
-    valid_consensus c bs (spaxos_propose ps n v).
+    valid_consensus c bs (fpaxos_propose_classic ps n v).
   Proof.
     intros Hpsn. unfold valid_consensus.
     destruct c as [v' |]; last done.
-    intros [n' (Hnz & Hpsn' & Hbsq)].
+    intros [n' (Hnz & bsq & Hbsq & Hchosen)].
     exists n'.
     split; first done.
-    split; last by apply Hbsq.
-    assert (Hne : n ≠ n') by set_solver.
-    rewrite lookup_insert_Some. by right.
+    exists bsq.
+    split; first done.
+    destruct Hchosen as [(Hpsn' & Hquorum & Hacc) | (Hpsn' & Hquorum & Hacc)]; [left | right].
+    { split; last done.
+      assert (Hne : n ≠ n') by set_solver.
+      rewrite lookup_insert_Some. by right.
+    }
+    { split; last done.
+      assert (Hne : n ≠ n') by set_solver.
+      rewrite lookup_insert_Some. by right.
+    }
   Qed.
 
-  Lemma accepted_in_app_eq b n t :
-    accepted_in b n ->
-    accepted_in (b ++ t) n.
-  Proof. unfold accepted_in. intros Hbn. by apply lookup_app_l_Some. Qed.
+  Lemma accepted_in_classic_app_eq b n t :
+    accepted_in_classic b n ->
+    accepted_in_classic (b ++ t) n.
+  Proof. intros Hacc. by apply lookup_app_l_Some. Qed.
+
+  Lemma accepted_in_fast_app_eq b n v t :
+    accepted_in_fast b n v ->
+    accepted_in_fast (b ++ t) n v.
+  Proof. intros Hacc. by apply lookup_app_l_Some. Qed.
 
   Theorem vc_inv_prepare {c bs ps} x n :
     valid_consensus c bs ps ->
-    valid_consensus c (spaxos_prepare bs x n) ps.
+    valid_consensus c (fpaxos_prepare bs x n) ps.
   Proof.
     unfold valid_consensus.
     destruct c as [v' |]; last done.
-    intros [n' [Hpsn' [Hnz (bsq & Hsubseteq & Hquorum & Haccin)]]].
+    intros [n' (Hnz & bsq & Hbsq & Hchosen)].
     exists n'.
-    do 2 (split; first done).
-    exists (spaxos_prepare bsq x n).
+    split; first done.
+    exists (fpaxos_prepare bsq x n).
     split; first by apply alter_mono.
-    split; first by do 2 rewrite dom_alter_L.
-    apply map_Forall_alter; last done.
-    intros y Hy.
-    specialize (Haccin _ _ Hy).
-    by apply accepted_in_app_eq.
+    destruct Hchosen as [(Hpsn' & Hquorum & Hacc) | (Hpsn' & Hquorum & Hacc)]; [left | right].
+    { split; first done.
+      split; first by do 2 rewrite dom_alter_L.
+      apply map_Forall_alter; last done.
+      intros y Hy.
+      specialize (Hacc _ _ Hy). simpl in Hacc.
+      by apply accepted_in_classic_app_eq.
+    }
+    { split; first done.
+      split; first by do 2 rewrite dom_alter_L.
+      apply map_Forall_alter; last done.
+      intros y Hy.
+      specialize (Hacc _ _ Hy). simpl in Hacc.
+      by apply accepted_in_fast_app_eq.
+    }
   Qed.
 
-  Theorem vc_inv_accept {c bs ps} x n :
+  Theorem vc_inv_accept_classic {c bs ps} x n :
     valid_consensus c bs ps ->
-    valid_consensus c (spaxos_accept bs x n) ps.
+    valid_consensus c (fpaxos_accept_classic bs x n) ps.
   Proof.
     unfold valid_consensus.
     destruct c as [v' |]; last done.
-    intros [n' [Hpsn' [Hnz (bsq & Hsubseteq & Hquorum & Haccin)]]].
+    intros [n' (Hnz & bsq & Hbsq & Hchosen)].
     exists n'.
-    do 2 (split; first done).
-    exists (spaxos_accept bsq x n).
+    split; first done.
+    exists (fpaxos_accept_classic bsq x n).
     split; first by apply alter_mono.
-    split; first by do 2 rewrite dom_alter_L.
-    apply map_Forall_alter; last done.
-    intros y Hy.
-    specialize (Haccin _ _ Hy).
-    rewrite -app_assoc.
-    by apply accepted_in_app_eq.
+    destruct Hchosen as [(Hpsn' & Hquorum & Hacc) | (Hpsn' & Hquorum & Hacc)]; [left | right].
+    { split; first done.
+      split; first by do 2 rewrite dom_alter_L.
+      apply map_Forall_alter; last done.
+      intros y Hy.
+      specialize (Hacc _ _ Hy). simpl in Hacc.
+      rewrite -app_assoc.
+      by apply accepted_in_classic_app_eq.
+    }
+    { split; first done.
+      split; first by do 2 rewrite dom_alter_L.
+      apply map_Forall_alter; last done.
+      intros y Hy.
+      specialize (Hacc _ _ Hy). simpl in Hacc.
+      rewrite -app_assoc.
+      by apply accepted_in_fast_app_eq.
+    }
   Qed.
 
   Definition gt_prev_term (ts : gmap A nat) (x : A) (n : nat) :=
@@ -855,12 +1104,12 @@ Section pure.
   Theorem vt_inv_advance {P : A -> nat -> Prop} {ps ts x n} :
     gt_prev_term ts x n ->
     valid_terms P ps ts ->
-    valid_terms P ps (spaxos_advance ts x n).
+    valid_terms P ps (fpaxos_advance ts x n).
   Proof.
     intros Hprev [Hdisj Hvt].
     split; first done.
     intros y u Hadv u' Hyu' Hlt.
-    unfold spaxos_advance in Hadv.
+    unfold fpaxos_advance in Hadv.
     destruct (decide (y = x)) as [-> | Hne]; last first.
     { rewrite lookup_insert_ne in Hadv; last done.
       by specialize (Hvt _ _ Hadv _ Hyu' Hlt).
@@ -872,17 +1121,17 @@ Section pure.
     by specialize (Hvt _ _ Hxc _ Hyu' Hcu').
   Qed.
 
-  Theorem vt_inv_propose_advance {P : A -> nat -> Prop} {ps ts x n} v :
+  Theorem vt_inv_propose_classic_advance {P : A -> nat -> Prop} {ps ts x n} v :
     gt_prev_term ts x n ->
     P x n ->
     valid_terms P ps ts ->
-    valid_terms P (spaxos_propose ps n v) (spaxos_advance ts x n).
+    valid_terms P (fpaxos_propose_classic ps n v) (fpaxos_advance ts x n).
   Proof.
     intros Hprev Hxn [Hdisj Hvt].
     split; first done.
     intros y u Hadv u' Hyu' Hlt.
-    unfold spaxos_propose.
-    unfold spaxos_advance in Hadv.
+    unfold fpaxos_propose_classic.
+    unfold fpaxos_advance in Hadv.
     destruct (decide (y = x)) as [-> | Hne]; last first.
     { destruct (decide (u' = n)) as [-> | Hne'].
       { by specialize (Hdisj _ _ _ Hne Hyu'). }
