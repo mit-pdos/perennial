@@ -35,7 +35,7 @@ check-assumptions: \
 	src/program_proof/simple/print_assumptions.vo \
 	src/program_proof/mvcc/print_assumptions.vo \
 	src/program_proof/memkv/print_assumptions.vo \
-	src/program_proof/simplepb/apps/print_assumptions.vo
+	src/program_proof/vrsm/apps/print_assumptions.vo
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
