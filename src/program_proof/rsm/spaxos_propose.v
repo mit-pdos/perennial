@@ -1,28 +1,7 @@
-From Perennial.program_proof.rsm Require Import spaxos_prelude.
+From Perennial.program_proof.rsm Require Import spaxos_prelude rsm_misc.
 From Perennial.program_proof Require Import std_proof.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
-
-Section fin_maps.
-Context `{FinMap K M}.
-
-Lemma map_intersection_subseteq {A : Type} (m1 m2 : M A) :
-  m1 ∩ m2 ⊆ m1.
-Proof using EqDecision0 H H0 H1 H2 H3 H4 H5 H6 K M.
-  rewrite !map_subseteq_spec. intros i x Hm.
-  rewrite lookup_intersection_Some in Hm.
-  by destruct Hm as [? _].
-Qed.
-
-Lemma lookup_insert_alter {A : Type} (f : A -> A) (m : M A) (i : K) (x : A) :
-  m !! i = Some x ->
-  <[i := f x]> m = alter f i m.
-Proof using EqDecision0 H H0 H1 H2 H3 H4 H5 H6 K M.
-  intros Hmi.
-  by rewrite -alter_insert insert_id.
-Qed.
-
-End fin_maps.
 
 (* TODO: move this out to spaxos_iris_inv.v once stable. *)
 Section inv.
@@ -356,7 +335,7 @@ Proof.
     iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply extend_prefix. }
-    rewrite lookup_insert_alter; last done.
+    rewrite -lookup_alter_Some; last done.
     pose proof (vb_inv_prepare nid (int.nat term) Hvbs) as Hvbs'.
     pose proof (vp_inv_prepare nid (int.nat term) Hvps) as Hvps'.
     pose proof (vc_inv_prepare nid (int.nat term) Hvc) as Hvc'.
@@ -446,7 +425,7 @@ Proof.
     iDestruct (ballot_lookup with "Hballot Hbs") as %Hblt.
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply extend_prefix. }
-    rewrite lookup_insert_alter; last done.
+    rewrite -lookup_alter_Some; last done.
     pose proof (vb_inv_prepare nid (int.nat term) Hvbs) as Hvbs'.
     pose proof (vp_inv_prepare nid (int.nat term) Hvps) as Hvps'.
     pose proof (vc_inv_prepare nid (int.nat term) Hvc) as Hvc'.
@@ -571,7 +550,7 @@ Proof.
     }
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply prefix_app_r, extend_prefix. }
-    rewrite lookup_insert_alter; last done.
+    rewrite -lookup_alter_Some; last done.
     iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
     unshelve epose proof (vb_inv_accept nid (int.nat term) _ _ Hvbs) as Hvbs'.
     { done. }
@@ -795,7 +774,7 @@ Proof.
     iDestruct (proposal_lookup with "Hproposal Hps") as %Hpsl.
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply prefix_app_r, extend_prefix. }
-    rewrite lookup_insert_alter; last done.
+    rewrite -lookup_alter_Some; last done.
     unshelve epose proof (vb_inv_accept nid (int.nat term) _ _ Hvbs) as Hvbs'.
     { done. }
     { exists blt. split; first done. lia. }
@@ -1215,7 +1194,7 @@ Proof.
     }
     iMod (ballot_update blt' with "Hballot Hbs") as "[Hballot Hbs]".
     { apply prefix_app_r, extend_prefix. }
-    rewrite lookup_insert_alter; last done.
+    rewrite -lookup_alter_Some; last done.
     iMod (term_update (int.nat term) with "Hterm Hts") as "[Hterm Hts]".
     unshelve epose proof (vb_inv_accept nid (int.nat term) _ _ Hvbs) as Hvbs'.
     { done. }
