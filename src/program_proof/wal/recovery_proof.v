@@ -1331,7 +1331,7 @@ Proof.
             rewrite Nat.max_l; last by lia.
             iApply "Hdurable_lb_pos".
           }
-          replace (slidingM.memEnd _) with (int.Z diskEnd) by reflexivity.
+          replace (slidingM.memEnd _) with (int.Z diskEnd) by assumption.
           iSplit.
           {
             iPureIntro.
