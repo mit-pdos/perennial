@@ -98,6 +98,12 @@ def main():
         metavar="RSM_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--chat",
+        help="path to chat repo (skip translation if not provided)",
+        metavar="CHAT_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -112,6 +118,7 @@ def main():
     rsm_dir = args.rsm
     marshal_dir = args.marshal
     std_dir = args.std
+    chat_dir = args.chat
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -135,6 +142,8 @@ def main():
         parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
         parser.error("std directory does not exist")
+    if chat_dir is not None and not os.path.isdir(chat_dir):
+        parser.error("chat directory does not exist")
 
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
@@ -299,6 +308,14 @@ def main():
                 # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
                 # "From Goose Require github_com.mit_pdos.lockservice."
             )
+
+    if chat_dir is not None:
+        pkgs = [
+            "chat4"
+        ]
+
+        for pkg in pkgs:
+            run_goose(path.join(chat_dir, pkg))
 
     if mvcc_dir is not None:
         run_goose(
