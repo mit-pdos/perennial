@@ -374,7 +374,7 @@ Lemma append_refinement (es: @expr log_op) σs e σ (τ: @ty log_ty.(@val_tys lo
   refinement.trace_refines e e σ es es σs.
 Proof.
   intros. intros ?.
-  efeed pose proof sty_adequacy; eauto using append_init_obligation1, append_init_obligation2,
+  opose proof (sty_adequacy _); eauto using append_init_obligation1, append_init_obligation2,
                                  append_crash_inv_obligation, append_crash_obligation,
                                  append_rules_obligation.
 Qed.

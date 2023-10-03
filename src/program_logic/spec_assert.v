@@ -172,11 +172,11 @@ Section ghost_step.
     - rewrite lookup_insert tpool_to_res_lookup list_lookup_insert //=.
     - rewrite lookup_insert_ne //=.
       destruct (decide (i < length tp)) as [Hl|Hnl].
-      * efeed pose proof (lookup_lt_is_Some_2 tp) as His; first eassumption.
+      * opose proof (lookup_lt_is_Some_2 tp _ _) as His; first eassumption.
         destruct His as (e'&His).
         rewrite (proj2 (tpool_to_res_lookup tp i e')) //=.
         apply tpool_to_res_lookup. rewrite list_lookup_insert_ne //=.
-      * efeed pose proof (lookup_ge_None_2 tp i) as Hnone; first lia.
+      * opose proof (lookup_ge_None_2 tp i _) as Hnone; first lia.
         rewrite (proj2 (tpool_to_res_lookup_none tp i)) //=.
         apply tpool_to_res_lookup_none. rewrite list_lookup_insert_ne //=.
   Qed.
@@ -190,11 +190,11 @@ Section ghost_step.
       rewrite lookup_app_r //= Nat.sub_diag //=.
     - rewrite lookup_insert_ne //=.
       destruct (decide (i < length tp)) as [Hl|Hnl].
-      * efeed pose proof (lookup_lt_is_Some_2 tp) as His; first eassumption.
+      * opose proof (lookup_lt_is_Some_2 tp _ _) as His; first eassumption.
         destruct His as (e'&His).
         rewrite (proj2 (tpool_to_res_lookup tp i e')) //=.
         apply tpool_to_res_lookup. rewrite lookup_app_l //=.
-      * efeed pose proof (lookup_ge_None_2 tp i) as Hnone; first lia.
+      * opose proof (lookup_ge_None_2 tp i _) as Hnone; first lia.
         rewrite (proj2 (tpool_to_res_lookup_none tp i)) //=.
         apply tpool_to_res_lookup_none. rewrite lookup_ge_None_2 //= app_length //=; lia.
   Qed.

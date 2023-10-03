@@ -102,7 +102,7 @@ Section cmra_mlist.
     - repeat (case_decide; auto).
       + rewrite !mlist_op_l; auto. etrans; eauto.
       + simpl. repeat case_decide; last done; exfalso.
-        * feed pose proof (prefix_of_down_total D1 D2 D3); auto.
+        * opose proof (prefix_of_down_total D1 D2 D3); auto.
           intuition.
         * match goal with | H: ¬ _ |- _ => apply H; by etrans end.
       + rewrite mlist_op_l; [by rewrite mlist_op_r|auto].
@@ -113,7 +113,7 @@ Section cmra_mlist.
         * exfalso.
           match goal with | H: ¬ _ |- _ => apply H; by etrans end.
         * case_decide; last done. exfalso.
-          feed pose proof (prefix_of_down_total D2 D3 D1); auto.
+          opose proof (prefix_of_down_total D2 D3 D1); auto.
           intuition.
     - simpl. repeat case_decide; auto.
   Qed.

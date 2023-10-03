@@ -1213,7 +1213,7 @@ Section translate.
     { rewrite /log_heap.possible//=. apply elem_of_app; right; econstructor. }
     rewrite Hlook''.
     rewrite //= in Hcurr. subst. do 2 f_equal; eauto.
-    efeed pose proof (Hsynced); eauto.
+    opose proof (Hsynced _ _ _); eauto.
   Qed.
 
   Lemma all_synced_compat_full (pσ1' pσ1 : pstate) σ1:

@@ -222,7 +222,7 @@ Proof.
   iMod "Hclose2" as "_".
   set inbounds := bool_decide (int.Z clock2 + 32 < 2^64).
   set clock2_boundsafe := if inbounds then clock2 else 0.
-  feed pose proof (u64_round_up_spec clock2_boundsafe (U64 32)) as H.
+  opose proof (u64_round_up_spec clock2_boundsafe (U64 32) _ _) as H.
   { subst clock2_boundsafe inbounds. case_bool_decide; word. }
   { word. }
   move:H.

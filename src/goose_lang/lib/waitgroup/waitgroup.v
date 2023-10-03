@@ -185,12 +185,12 @@ Proof.
   induction n as [| n IHn] => W Hvalid.
   - destruct W as [| x W] using set_ind_L; auto.
     { rewrite size_empty. lia. }
-    exfalso. feed pose proof (Hvalid x); first by set_solver. lia.
+    exfalso. opose proof (Hvalid x _); first by set_solver. lia.
   - transitivity (size ({[U64 n]} ∪ (W ∖ {[U64 n]}))).
     { apply Nat2Z.inj_le. apply subseteq_size. set_unfold. intros x. destruct (decide (x = U64 n)); auto. }
     rewrite size_union ?size_singleton; last by set_solver.
     refine (_ (IHn (W ∖ {[U64 n]}) _)); first lia.
-    { set_unfold. intros x (Hin&Hneq). feed pose proof (Hvalid x); auto.
+    { set_unfold. intros x (Hin&Hneq). opose proof (Hvalid x _); auto.
       cut (int.nat x ≠ n); first lia.
       intros Heq.
       move: Hneq.

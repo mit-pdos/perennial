@@ -768,7 +768,7 @@ Section proof.
     iDestruct (na_crash_inv_status_wand_sepM with "Hcrash_invs") as
       "#Hstatuses".
     iDestruct (jrnl_ctx_allocs_agree2 with "[$] [$]") as %Hlookup'.
-    efeed pose proof (always_steps_extend_allocs2); eauto.
+    opose proof (always_steps_extend_allocs2 _ _ _ _ _ _ _ _); eauto.
     { destruct Hlookup'; eauto. left. apply not_elem_of_dom; eauto. }
     clear Halways_steps.
     iDestruct (jrnl_ctx_allocs_extend with "[$] [$]") as "#Hjrnl_allocs'".
@@ -1365,7 +1365,7 @@ Section proof.
         apply Halways_steps.
       }
       apply always_steps_bind.
-      efeed pose proof always_steps_OverWriteOp as Halways_steps'.
+      opose proof (always_steps_OverWriteOp _ _ _ _ _ _ _ _) as Halways_steps'.
       1: apply Hwf_jrnl2.
       {
         destruct Hjrnl_maps_mt as (_&<-).
@@ -1399,7 +1399,7 @@ Section proof.
         destruct Hjrnl_maps_kinds as (->&_).
         split; first by eassumption.
         split; first by apply objSz_bufObj_to_obj.
-        efeed pose proof Hvalids as Hvalid;
+        opose proof (Hvalids _ _ _) as Hvalid;
           first by apply lookup_insert.
         simpl in Hvalid.
         destruct Hvalid as (_&Hvalid_off&_).
@@ -1408,7 +1408,7 @@ Section proof.
       eapply always_steps_trans; first by apply Halways_steps.
       apply always_steps_bind.
       remember (updateData σj2 a (bufObj_to_obj (committed vobj))) as σj'.
-      efeed pose proof (always_steps_OverWriteOp a data (projT1 vobj) σj')
+      opose proof (always_steps_OverWriteOp a data (projT1 vobj) σj' _ _ _ _)
         as Halways_steps'.
       {
         subst σj'.
@@ -1565,7 +1565,7 @@ Section proof.
         apply Halways_steps.
       }
       apply always_steps_bind.
-      efeed pose proof always_steps_OverWriteBitOp as Halways_steps'.
+      opose proof (always_steps_OverWriteBitOp _ _ _ _ _ _ _ _) as Halways_steps'.
       1: apply Hwf_jrnl2.
       {
         destruct Hjrnl_maps_mt as (_&<-).
@@ -1596,7 +1596,7 @@ Section proof.
         eexists _.
         destruct Hjrnl_maps_kinds as (->&_).
         split; first by eassumption.
-        efeed pose proof Hvalids as Hvalid;
+        opose proof (Hvalids _ _ _) as Hvalid;
           first by apply lookup_insert.
         simpl in Hvalid.
         destruct Hvalid as (_&Hvalid_off&_).
@@ -1608,7 +1608,7 @@ Section proof.
       eapply always_steps_trans; first by apply Halways_steps.
       apply always_steps_bind.
       remember (updateData σj2 a (bufObj_to_obj (committed vobj))) as σj'.
-      efeed pose proof (always_steps_OverWriteBitOp a o (projT1 vobj) σj')
+      opose proof (always_steps_OverWriteBitOp a o (projT1 vobj) σj' _ _ _ _)
         as Halways_steps'.
       {
         subst σj'.

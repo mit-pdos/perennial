@@ -1458,7 +1458,7 @@ Proof.
       iDestruct (is_installed_txn_crash γ γ' with "circ.start Hinstalled_txn_id_stable") as "$"; first by lia.
       iFrame "Hdurable_txn".
       rewrite /is_durable.
-      efeed pose proof (circ_matches_txns_crash (int.nat diskEnd)) as Hcirc_matches'; [ | by eauto | ].
+      opose proof (circ_matches_txns_crash (int.nat diskEnd) _ _ _ _ _ _ _ _ _ _) as Hcirc_matches'; [ | by eauto | ].
       { word. }
       iExists _, _, _; iFrame (Hlog_wf) "∗".
       iPureIntro.

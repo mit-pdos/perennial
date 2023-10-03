@@ -145,8 +145,8 @@ Proof.
   induction n1 as [|n1 IHn1] => n2 Hlt.
   - rewrite //= right_id. apply AE'_disj. lia.
   - rewrite //=.
-    feed pose proof (IHn1 n2); first lia.
-    feed pose proof (AE'_disj n2 (S n1)); first lia.
+    opose proof (IHn1 n2 _); first lia.
+    opose proof (AE'_disj n2 (S n1) _); first lia.
     set_solver.
 Qed.
 Lemma AE_full_mono n1 n2 : n1 ≤ n2 → AE_full n1 ⊆ AE_full n2.

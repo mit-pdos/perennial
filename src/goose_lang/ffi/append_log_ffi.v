@@ -75,12 +75,12 @@ Inductive LogOp :=
   | OpenOp (* (no arguments) *)
 .
 
-Instance eq_LogOp : EqDecision LogOp.
+#[global] Instance eq_LogOp : EqDecision LogOp.
 Proof.
   solve_decision.
 Defined.
 
-Instance LogOp_fin : Countable LogOp.
+#[global] Instance LogOp_fin : Countable LogOp.
 Proof.
   solve_countable LogOp_rec 5%nat.
 Qed.
@@ -92,7 +92,7 @@ Defined.
 
 Inductive Log_ty := LogT.
 
-Instance log_val_ty: val_types :=
+#[global] Instance log_val_ty: val_types :=
   {| ext_tys := Log_ty; |}.
 
 Section log.

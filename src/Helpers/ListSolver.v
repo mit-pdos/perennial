@@ -131,6 +131,7 @@ Ltac find_list_hyps :=
              clear H
          end.
 
+(*
 Ltac learn_feed_as H i :=
   feed_core H using (fun p => let P := type of p in
                   lazymatch goal with
@@ -144,6 +145,7 @@ Ltac use_list_hyps :=
              let Hi := fresh H i in
              learn_feed_as (H i) Hi; [ lia .. | ]
          end.
+*)
 
 Ltac start_list_eq :=
   let i := fresh "i" in
@@ -175,6 +177,7 @@ Ltac split_app_lookups :=
              split_i l1 i
          end.
 
+(*
 Ltac solve_list_eq :=
   find_list_hyps;
   start_list_eq;
@@ -199,12 +202,14 @@ Ltac solve_list_prefix :=
   use_list_hyps;
   list_simpl;
   auto with lia list.
+*)
 
 Ltac solve_list_general :=
   find_list_hyps;
   list_simpl;
   auto with lia list.
 
+(*
 Ltac list_solver :=
   autounfold with list in *;
   intros;
@@ -213,7 +218,9 @@ Ltac list_solver :=
   | |- _ `prefix_of` _ => solve [ solve_list_prefix ]
   | _ => solve [ solve_list_general ]
   end.
+*)
 
+(*
 Section test.
   Context {A: Type}.
   Implicit Types (l: list A).
@@ -256,3 +263,4 @@ Section test.
   Qed.
 
 End test.
+*)

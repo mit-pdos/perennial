@@ -365,7 +365,7 @@ Proof.
   set (off:=i * 8* 128).
   rewrite /bufDataT_in_block; simpl.
   rewrite /is_bufData_at_off.
-  feed pose proof (extract_inode0 off) as Hextract; [ word .. | ].
+  opose proof (extract_inode0 off _ _) as Hextract; [ word .. | ].
   rewrite /valid_addr /valid_off /addr2flat_z /=.
   assert (valid_off KindInode off).
   { rewrite /valid_off /=.

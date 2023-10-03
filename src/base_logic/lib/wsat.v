@@ -268,7 +268,7 @@ Proof.
       - apply Next_contractive; auto using dist_later_0.
       - apply Next_contractive.
         move: Hd; rewrite -!dist_later_S; inversion 1; subst; eauto. }
-    efeed pose proof (IHl1' l2') as Hagree; eauto.
+    opose proof (IHl1' l2' _ _) as Hagree; eauto.
     { destruct n; eauto using dist_later_0.
       move: Hd; rewrite -!dist_later_S; inversion 1; subst; eauto. }
     apply to_agree_injN in Hagree. eapply Hagree.

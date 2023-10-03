@@ -660,12 +660,12 @@ Proof.
   revert W.
   induction n as [| n IHn] => W Hvalid.
   - destruct W as [| x W] using set_ind_L; auto.
-    exfalso. feed pose proof (Hvalid x); first by set_solver. lia.
+    exfalso. opose proof (Hvalid x _); first by set_solver. lia.
   - transitivity (size ({[n]} ∪ (W ∖ {[n]}))).
     { apply subseteq_size. set_unfold. intros x. destruct (decide (x = n)); auto. }
     rewrite size_union ?size_singleton; last by set_solver.
-    feed pose proof (IHn (W ∖ {[n]})).
-    { set_unfold. intros x (Hin&?). feed pose proof (Hvalid x); auto. lia. }
+    opose proof (IHn (W ∖ {[n]}) _).
+    { set_unfold. intros x (Hin&?). opose proof (Hvalid x _); auto. lia. }
     lia.
 Qed.
 

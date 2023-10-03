@@ -760,7 +760,7 @@ Section go_refinement.
       }
       destruct Hr as (_&Hsσ1).
       destruct Hr2 as (_&Hiσ1).
-      efeed pose proof Hlookup; eauto.
+      opose proof (Hlookup _ _ _ _ _); eauto.
     }
   Qed.
 
@@ -959,7 +959,7 @@ Section go_refinement.
     - rewrite /head_step//= in Hstep.
       destruct_head.
       inv_expr_impl.
-      feed pose proof (expr_impl_un_op_eval op _ _ H2) as Heval; eauto.
+      opose proof (expr_impl_un_op_eval op _ _ H2) as Heval; eauto.
       destruct (un_op_eval op v).
       * destruct Heval as (sv'&Heval&Hval).
         inv_head_step. monad_inv.
@@ -969,7 +969,7 @@ Section go_refinement.
     - rewrite /head_step//= in Hstep.
       destruct_head.
       inv_expr_impl.
-      feed pose proof (expr_impl_bin_op_eval op _ _ _ _ H3 H1) as Heval; eauto.
+      opose proof (expr_impl_bin_op_eval op _ _ _ _ H3 H1) as Heval; eauto.
       destruct (bin_op_eval op _ _).
       * destruct Heval as (sv'&Heval&Hval).
         inv_head_step. monad_inv.
@@ -1230,7 +1230,7 @@ Section go_refinement.
     - rewrite /head_step//= in Hstep.
       destruct_head.
       inv_expr_impl.
-      feed pose proof (expr_impl_un_op_eval op _ _ H0) as Heval; eauto.
+      opose proof (expr_impl_un_op_eval op _ _ H0) as Heval; eauto.
       destruct (un_op_eval op v') eqn:Heq.
       * destruct Heval as (sv'&Heval&Hval).
         inv_head_step. monad_inv.
@@ -1240,7 +1240,7 @@ Section go_refinement.
     - rewrite /head_step//= in Hstep.
       destruct_head.
       inv_expr_impl.
-      feed pose proof (expr_impl_bin_op_eval op _ _ _ _ H1 H0) as Heval; eauto.
+      opose proof (expr_impl_bin_op_eval op _ _ _ _ H1 H0) as Heval; eauto.
       destruct (bin_op_eval op v'0 v') eqn:Heq.
       * destruct Heval as (sv'&Heval&Hval).
         inv_head_step. monad_inv.

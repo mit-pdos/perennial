@@ -543,8 +543,8 @@ lemmas. *)
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
-      feed pose proof (Hl i) as Hl; [lia..|].
-      feed pose proof (Hm0 i) as Hm0; [lia..|].
+      opose proof (Hl i _ _) as Hl; [lia..|].
+      opose proof (Hm0 i _ _) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
       destruct v'' as [lit| | | | |]; try done.
       destruct lit; try done.
@@ -738,8 +738,8 @@ lemmas. *)
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
-      feed pose proof (Hl i) as Hl; [lia..|].
-      feed pose proof (Hm0 i) as Hm0; [lia..|].
+      opose proof (Hl i _ _) as Hl; [lia..|].
+      opose proof (Hm0 i _ _) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
       destruct v'' as [lit| | | | |]; try done.
       destruct lit; try done.
@@ -796,8 +796,8 @@ lemmas. *)
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
-      feed pose proof (Hl i) as Hl; [lia..|].
-      feed pose proof (Hm0 i) as Hm0; [lia..|].
+      opose proof (Hl i _ _) as Hl; [lia..|].
+      opose proof (Hm0 i _ _) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
       destruct v'' as [lit| | | | |]; try done.
       destruct lit; try done.

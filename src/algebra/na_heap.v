@@ -704,7 +704,7 @@ Section na_heap.
     move=> /Some_included_total/to_agree_included. inversion 1; subst.
     destruct Hwf as (Hwf1&Hwf2).
     destruct (decide (l ∈ dom σ)).
-    - efeed pose proof (Hwf1 l); eauto.
+    - opose proof (Hwf1 l _ _ _); eauto.
       { rewrite -addr_id_of_base; eauto. }
       { lia. }
     - apply (not_elem_of_dom (D := gset L)); eauto.
