@@ -331,7 +331,7 @@ Proof.
       rewrite -fmap_take.
       do 2 f_equal.
       replace (int.nat idxlast) with (length tids).
-      apply take_app.
+      apply take_app_length.
     }
     iPureIntro.
     split.

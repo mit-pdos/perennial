@@ -1294,7 +1294,7 @@ Proof.
   rewrite drop_0.
   rewrite Nat.sub_0_r.
   replace (int.nat (length snap)) with (length snap).
-  rewrite take_app.
+  rewrite take_app_length.
   wp_store.
 
   wp_load.
@@ -1322,7 +1322,7 @@ Proof.
     rewrite app_length; word.
   }
   replace (int.nat (length snap)) with (length snap).
-  rewrite drop_app.
+  rewrite drop_app_length.
   iEval (rewrite app_length) in "Hdata_sl".
   replace (length snap +
                      length
@@ -1470,7 +1470,7 @@ Proof.
     rewrite drop_0.
     rewrite Nat.sub_0_r.
     replace (int.nat (length op_bytes)) with (length op_bytes).
-    rewrite take_app.
+    rewrite take_app_length.
 
     wp_pures.
     wp_load.
@@ -1502,7 +1502,7 @@ Proof.
       rewrite app_length; word.
     }
     replace (int.nat (length op_bytes)) with (length op_bytes).
-    rewrite drop_app.
+    rewrite drop_app_length.
     iEval (rewrite app_length) in "Hdata_sl".
     replace ((length op_bytes + length (concat new_rest_ops_bytes ++ sealed_bytes) -
                      length op_bytes))%nat with

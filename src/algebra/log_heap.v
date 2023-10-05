@@ -84,7 +84,7 @@ Proof.
   - rewrite last_snoc.
     rewrite app_length /=.
     replace (length l + 1 - 1)%nat with (length l) by lia.
-    rewrite take_app //.
+    rewrite take_app_length //.
 Qed.
 
 Lemma length_possible {A} (x: async A) :

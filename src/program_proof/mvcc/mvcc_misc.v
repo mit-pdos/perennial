@@ -18,7 +18,7 @@ Proof.
   rewrite delete_take_drop.
   replace i with (length (take i l)) at 1; last first.
   { apply take_length_le. lia. }
-  rewrite take_app.
+  rewrite take_app_length.
   rewrite cons_middle.
   replace (S i) with (length (take i l ++ [v])); last first.
   { rewrite app_length.
@@ -27,7 +27,7 @@ Proof.
     lia.
   }
   rewrite app_assoc.
-  rewrite drop_app.
+  rewrite drop_app_length.
   rewrite app_length.
   simpl.
   rewrite take_length_le; last lia.

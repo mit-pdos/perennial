@@ -122,7 +122,7 @@ Proof.
       rewrite app_inv_head_iff.
       rewrite subslice_comm.
       rewrite subslice_comm.
-      rewrite drop_app.
+      rewrite drop_app_length.
       epose proof (insert_length slice (int.nat (int.nat first0 + int.nat count0 - length slice)) e).
       replace ((drop (length slice)
                 (<[int.nat (int.nat first0 + int.nat count0 - length slice):=e]> slice ++
@@ -132,7 +132,7 @@ Proof.
                  (<[int.nat (int.nat first0 + int.nat count0 - length slice):=e]> slice ++
                  <[int.nat (int.nat first0 + int.nat count0 - length slice):=e]> slice)).
       2: { rewrite H7. eauto. }
-      rewrite drop_app.
+      rewrite drop_app_length.
       rewrite take_insert.
       { eauto. }
       word_cleanup.
@@ -270,7 +270,7 @@ Proof.
   2: word.
   rewrite <- (take_drop_middle (slice) (int.nat first0) e).
   2: eauto.
-  rewrite drop_app_alt.
+  rewrite drop_app_length'.
   2: { rewrite take_length. word. }
   rewrite firstn_cons.
   rewrite take_0.
@@ -316,7 +316,7 @@ Proof.
     replace (Init.Nat.add 0 (Z.to_nat (Z.sub (u64_instance.u64.(word.unsigned) count0) 1))) with (Z.to_nat (Z.sub (u64_instance.u64.(word.unsigned) count0) 1)).
     2: word.
     rewrite subslice_comm.
-    rewrite drop_app.
+    rewrite drop_app_length.
     rewrite subslice_comm.
     rewrite drop_0.
     replace (Init.Nat.sub (Z.to_nat (Z.sub (u64_instance.u64.(word.unsigned) count0) 1)) 0) with (Z.to_nat (Z.sub (u64_instance.u64.(word.unsigned) count0) 1)).

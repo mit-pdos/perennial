@@ -626,7 +626,7 @@ Proof.
   rewrite -> subslice_drop_take by word.
   replace (int.nat (word.add off (length bs)) - int.nat off)%nat with (length bs) by word.
   rewrite Hdataeq.
-  rewrite take_app_alt //; lia.
+  rewrite take_app_length' //; lia.
 Qed.
 
 Theorem wp_Dec__GetBytes stk E dec_v bs (n: u64) r s q data :
@@ -659,7 +659,7 @@ Proof.
     rewrite -> subslice_drop_take by word.
     replace (int.nat (word.add off (length bs)) - int.nat off)%nat with (length bs) by word.
     rewrite Hdataeq.
-    rewrite take_app_alt //; lia.
+    rewrite take_app_length' //; lia.
   }
   iExists _, _; iFrame.
   iPureIntro.
@@ -668,7 +668,7 @@ Proof.
   rewrite -drop_drop.
   eapply has_encoding_from_app.
   rewrite Hdataeq.
-  rewrite drop_app_alt //; word.
+  rewrite drop_app_length' //; word.
 Qed.
 
 Theorem wp_Dec__GetBytes_ro stk E dec_v bs (n: u64) r s q data :

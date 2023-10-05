@@ -194,9 +194,9 @@ Proof.
   2:{ rewrite app_length. word. }
   wp_apply (wp_StringFromBytes with "[$Hk]").
   iIntros "Hk".
-  rewrite take_app.
+  rewrite take_app_length.
   wp_storeField.
-  rewrite drop_app.
+  rewrite drop_app_length.
   wp_load.
   wp_load.
   wp_apply wp_SliceSkip.
@@ -408,9 +408,9 @@ Proof.
   2:{ rewrite app_length. word. }
   wp_apply (wp_StringFromBytes with "[$He]").
   iIntros "He".
-  rewrite take_app.
+  rewrite take_app_length.
   wp_storeField.
-  rewrite drop_app.
+  rewrite drop_app_length.
   wp_load.
   wp_load.
   wp_apply wp_SliceSkip.

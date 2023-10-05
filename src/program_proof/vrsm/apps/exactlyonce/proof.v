@@ -947,7 +947,7 @@ Proof.
     replace (1 + length (u64_le u ++ u64_le u0 ++ x) - int.nat 1%Z)
       with (length (u64_le u ++ u64_le u0 ++ x)) by word.
     replace (int.nat (U64 1)) with (length [U8 0]) by done.
-    rewrite drop_app.
+    rewrite drop_app_length.
     rewrite take_ge; last word.
     rename x into eeop_bytes.
     wp_pures.
@@ -1178,7 +1178,7 @@ Proof.
     replace (1 + length x - int.nat 1%Z)
       with (length (x)) by word.
     replace (int.nat (U64 1)) with (length [U8 2]) by done.
-    rewrite drop_app.
+    rewrite drop_app_length.
     rewrite take_ge; last word.
     rename x into eeop_bytes.
     wp_pures.
@@ -1536,7 +1536,7 @@ Proof.
     {
       rewrite HaOverflow.
       destruct a0 as [? ->].
-      by rewrite take_app.
+      by rewrite take_app_length.
     }
   }
   { (* use Hstates *)
@@ -1569,7 +1569,7 @@ Proof.
     {
       rewrite HaOverflow.
       destruct a0 as [? ->].
-      by rewrite take_app.
+      by rewrite take_app_length.
     }
   }
 Qed.
@@ -1639,7 +1639,7 @@ Proof.
   replace (1 + length lowop_bytes - int.nat 1%Z)
     with (length lowop_bytes) by word.
   replace (int.nat (U64 1)) with (length [U8 2]) by done.
-  rewrite drop_app.
+  rewrite drop_app_length.
   rewrite take_ge; last word.
   wp_pures.
   wp_loadField.

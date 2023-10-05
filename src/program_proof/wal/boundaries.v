@@ -732,7 +732,7 @@ Proof.
   rewrite take_app_le.
   2: rewrite take_length; lia.
   rewrite take_take Nat.min_id.
-  rewrite drop_app_alt; last by (rewrite take_length; lia).
+  rewrite drop_app_length'; last by (rewrite take_length; lia).
   reflexivity.
 Qed.
 
@@ -1308,16 +1308,16 @@ Proof.
   replace (_ - 2)%nat with (length mwrbs - 1 - 1)%nat in Hb by lia.
   rewrite -Hi /= Nat.sub_0_r Hbndry1 in Hb.
   inversion Hb; subst b; clear Hb.
-  rewrite subslice_take_drop take_add_app.
+  rewrite subslice_take_drop take_app_add'.
   2: rewrite take_length; lia.
   rewrite firstn_all.
   rewrite <- (take_length_le txns bndry1.(mwrb.txn)) at 1; last by lia.
-  rewrite drop_app.
-  rewrite subslice_take_drop take_add_app.
+  rewrite drop_app_length.
+  rewrite subslice_take_drop take_app_add'.
   2: rewrite take_length; lia.
   rewrite firstn_all.
   rewrite <- (take_length_le upds bndry1.(mwrb.upd)) at 1; last by lia.
-  rewrite drop_app.
+  rewrite drop_app_length.
   assumption.
 Qed.
 
@@ -1396,7 +1396,7 @@ Proof.
   split; first by lia.
   rewrite subslice_to_end; last by rewrite app_length //=.
   rewrite subslice_drop_take; last by lia.
-  rewrite (drop_app_alt (take _ _)); last by (rewrite take_length; lia).
+  rewrite (drop_app_length' (take _ _)); last by (rewrite take_length; lia).
   rewrite Nat.add_sub'.
   rewrite firstn_all.
   rewrite drop_app_le; last by lia.

@@ -91,7 +91,7 @@ Proof.
       rewrite /own_slice.
       iDestruct (own_slice_take_cap _ _ _ (length Hck) with "HfreeClerks_sl") as "HfreeClerks_sl".
       { rewrite /list.untype fmap_length app_length /=. word. }
-      rewrite /list.untype fmap_app take_app_alt; last first.
+      rewrite /list.untype fmap_app take_app_length'; last first.
       { rewrite fmap_length. word. }
       replace (word.sub freeClerks_sl.(Slice.sz) 1%Z) with (length Hck : u64) by word.
       iFrame. }

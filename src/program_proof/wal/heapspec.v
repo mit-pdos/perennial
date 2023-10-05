@@ -2325,7 +2325,7 @@ Proof using walheapG0.
       rewrite take_app_le; first by iFrame.
       apply lookup_lt_Some in Hkh. lia. }
     iSplitL; last by done.
-    rewrite -> take_app_alt by lia.
+    rewrite -> take_app_length' by lia.
     eauto.
   }
 

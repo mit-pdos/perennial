@@ -1049,7 +1049,7 @@ Proof.
     replace (drop (int.nat i) vs) with (x :: drop (S (int.nat i)) vs).
     2: {
       rewrite <- H0 at 2.
-      rewrite drop_app_alt; eauto.
+      rewrite drop_app_length'; eauto.
     }
     iDestruct "Hp" as "[Hpx Hp]".
     iApply ("Hind" with "[$Hi $Hpx]").

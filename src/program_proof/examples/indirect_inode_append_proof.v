@@ -92,7 +92,7 @@ Proof.
     replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
   }
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
-  { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
+  { rewrite HiaddrsLen HindAddrs. rewrite take_app_length; auto. }
 
   wp_call.
   wp_loadField.
@@ -168,7 +168,7 @@ Proof.
     assert (daddrs = take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) as Hdaddrs.
     {
       rewrite HdirAddrs. rewrite -HdaddrsLen.
-      rewrite take_app. auto.
+      rewrite take_app_length. auto.
     }
 
     assert (drop (length σ.(inode.blocks) + 1) ds.(impl_s.dirAddrs) = replicate (500%nat - (length σ.(inode.blocks) + 1)) (U64 0)) as HdirAddrsEnd.
@@ -183,7 +183,7 @@ Proof.
       rewrite -HdaddrsLen.
       replace (length daddrs + 1)%nat with (length (daddrs ++ [(U64 0)])); last first.
       { len. }
-      by rewrite drop_app.
+      by rewrite drop_app_length.
     }
 
     (* prove the postcondition holds *)
@@ -217,7 +217,7 @@ Proof.
             assert ((length σ.(inode.blocks) + 1)%nat = length ((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a]))) as Hlen.
             { rewrite app_length. rewrite take_length Nat.min_l; simpl; word. }
             rewrite Hlen.
-            rewrite (take_app (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])); auto.
+            rewrite (take_app_length (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])); auto.
           }
           assert (((take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
                     ++ take ds.(impl_s.numInd) ds.(impl_s.indAddrs)
@@ -251,7 +251,7 @@ Proof.
           rewrite HdirAddrsEnd.
           rewrite cons_middle app_assoc.
           rewrite HdirAddrs.
-          rewrite -HdaddrsLen take_app.
+          rewrite -HdaddrsLen take_app_length.
           rewrite Nat.min_l; auto; word.
         }
 
@@ -337,7 +337,7 @@ Proof.
         replace (daddrs ++ [a] ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs)) with
             ((daddrs ++ [a]) ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs))
           by (rewrite -app_assoc -cons_middle; auto).
-        rewrite -tmp2 take_app. rewrite tmp2 firstn_all.
+        rewrite -tmp2 take_app_length. rewrite tmp2 firstn_all.
         iApply (big_sepL2_app with "[HdataDirect]"); auto.
         + rewrite H0 -Hdaddrs firstn_all; auto.
         + iFrame; eauto.
@@ -363,7 +363,7 @@ Proof.
         replace (daddrs ++ a :: drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs)) with
             ((daddrs ++ [a]) ++ drop (length (σ.(inode.blocks) ++ [b])) ds.(impl_s.dirAddrs))
         by (rewrite -app_assoc -cons_middle; auto).
-        rewrite -tmp take_app; auto.
+        rewrite -tmp take_app_length; auto.
     }
   }
   (* cannot fit in direct blocks, return false *)
@@ -454,7 +454,7 @@ Proof.
     replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
   }
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
-  { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
+  { rewrite HiaddrsLen HindAddrs. rewrite take_app_length; auto. }
 
   assert (Z.to_nat (4096 - 8 * length (indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (U64 0)))
           = 0%nat) as Hrem0.
@@ -669,7 +669,7 @@ Proof.
     replace (Z.of_nat (length iaddrs + (int.nat (U64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
   }
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
-  { rewrite HiaddrsLen HindAddrs. rewrite take_app; auto. }
+  { rewrite HiaddrsLen HindAddrs. rewrite take_app_length; auto. }
 
   wp_call.
   wp_loadField.

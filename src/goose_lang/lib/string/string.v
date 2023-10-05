@@ -210,7 +210,7 @@ Proof.
   { simpl. word. }
   rewrite /slice_take /slice_subslice.
   replace (u :: l) with ([u] ++ l) by done.
-  rewrite drop_app_alt; last done.
+  rewrite drop_app_length'; last done.
   wp_apply ("Hwp" with "[$]").
   iIntros "Hsl".
   wp_pures.

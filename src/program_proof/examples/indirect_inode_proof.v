@@ -868,7 +868,7 @@ Proof using allocG0 allocN heapG0 inodeN stagedG0 Σ.
     }
     rewrite HrewriteMe.
     replace (int.nat (int.Z (length (usedBlksList ++ usedIndBlks)))) with (length (usedBlksList ++ usedIndBlks)) by word.
-    rewrite drop_app take_length min_l; try word.
+    rewrite drop_app_length take_length min_l; try word.
     rewrite -HindBlkAddrsListLen.
     rewrite firstn_all.
     iApply own_slice_split.

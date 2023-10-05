@@ -147,7 +147,7 @@ Proof.
     + exists 0%nat. done.
     + simpl. destruct (IHoff txns). rewrite H.
       exists (length (snd p) + x)%nat.
-      rewrite drop_add_app; eauto.
+      rewrite drop_app_add'; eauto.
 Qed.
 
 Lemma apply_upds_in : ∀ upds a d0 d1,

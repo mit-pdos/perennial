@@ -424,7 +424,7 @@ Proof.
   (* TODO: list_solver *)
   subst.
   destruct Hprefix as []; subst.
-  apply take_app.
+  apply take_app_length.
 Qed.
 
 (* XXX: for this lemma, want prereadN ∩ pbN = ∅ *)

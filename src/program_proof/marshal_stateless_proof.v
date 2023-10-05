@@ -18,7 +18,7 @@ Theorem wp_ReadInt s q x tail :
 Proof.
   iIntros (Φ) "Hs HΦ". wp_lam.
   wp_apply (wp_UInt64Get_unchanged with "Hs").
-  { rewrite /list.untype fmap_app take_app_alt //. }
+  { rewrite /list.untype fmap_app take_app_length' //. }
   iIntros "Hs".
   wp_apply (wp_SliceSkip_small with "Hs").
   { rewrite /list.untype fmap_length app_length /=. word. }
@@ -39,7 +39,7 @@ Proof.
   { rewrite /list.untype fmap_length app_length /=. word. }
   iIntros (s') "Hs'". wp_pures. iApply "HΦ".
   { rewrite /list.untype -fmap_take -fmap_drop.
-    rewrite take_app_alt // drop_app_alt //. iFrame. done. }
+    rewrite take_app_length' // drop_app_length' //. iFrame. done. }
 Qed.
 
 Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
@@ -68,8 +68,8 @@ Proof.
   { rewrite list_untype_length app_length. word. }
   iIntros (s') "Hs'".
   wp_pures. iApply "HΦ". iModIntro. iSplitR "Hs'".
-  - iApply "Hbclose". rewrite take_app_alt //.
-  - rewrite /list.untype -fmap_drop drop_app_alt //.
+  - iApply "Hbclose". rewrite take_app_length' //.
+  - rewrite /list.untype -fmap_drop drop_app_length' //.
 Qed.
 
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
@@ -140,7 +140,7 @@ Proof.
   wp_pures. iApply "HΦ". iModIntro.
   rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
   rewrite /list.untype fmap_app. f_equal.
-  { rewrite take_app_alt //. len. }
+  { rewrite take_app_length' //. len. }
   rewrite drop_ge //. len. rewrite Hex. word.
 Qed.
 
@@ -174,7 +174,7 @@ Proof.
   wp_pures. iApply "HΦ". iFrame "Hdata". iModIntro.
   rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
   rewrite /list.untype fmap_app. f_equal.
-  rewrite take_app_alt //. len.
+  rewrite take_app_length' //. len.
 Qed.
 
 End goose_lang.
