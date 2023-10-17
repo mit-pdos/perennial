@@ -299,6 +299,7 @@ def main():
             "dmvcc/txnmgr",
             "dmvcc/example",
             "cachekv",
+            "etcd/election",
         ]
 
         for pkg in pkgs:
