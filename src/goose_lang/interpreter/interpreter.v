@@ -284,8 +284,7 @@ Section interpreter.
 
   Definition mfail_bt (msg: string) : StateT btstate Error val :=
     s <- mget;
-      mfail ("[" ++ (pretty (snd s)) ++ "]:
- " ++ msg).
+      interpret_types.mfail ("[" ++ "]:")%string.
 
   Definition mlift_bt {X} (ma: option X) (msg: string) : StateT btstate Error X :=
     s <- mget;
