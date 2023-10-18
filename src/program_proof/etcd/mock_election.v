@@ -148,6 +148,71 @@ Axiom wp_Txn__Commit : ∀ t cmp thenOps elseOps,
   {{{ r_ptr r (err:u64), RET (#r_ptr, #err); TxnResponse.own r_ptr r }}}
 .
 
+Local Definition keys (ops:list Op.t) : gset string.
+Admitted.
+
+Definition op_update γ op Φ : iProp Σ :=
+  match op with
+  | Op.Get k =>
+      ∃ v, k ↪[γ] v ∗ (k ↪[γ] v -∗ Φ (RangeResponse.mk [KeyValue.mk k v 37])) (* TODO: track CreateRev *)
+  | Op.PutWithLease k v l =>
+   (* TODO: lease *)
+      ∃ oldv, k ↪[γ] oldv ∗ (k ↪[γ] v -∗ Φ (RangeResponse.mk []))
+  | Op.Delete k => (* TODO: deletion seems to be indicated by CreateRev = 0.
+                       https://github.com/etcd-io/etcd/issues/6740 *)
+      False
+end
+.
+
+(* Atomic update for committing a transaction *)
+Definition txn_atomic_update γ (cmp:string * u64) (thenOps elseOps : list Op.t)
+           (Φ: list RangeResponse.t → iProp Σ)
+  : iProp Σ :=
+  |={⊤,∅}=>
+  ∃ v,
+  cmp.1 ↪[γ] v ∗
+  (cmp.1 ↪[γ] v -∗
+   if (decide (cmp.2 = cmp.2)) then (* TODO: need model for etcd's versioned kv state *)
+     (* "then" case *)
+     (fold_right
+        (λ op Φcont, (λ prevResponses, op_update γ op (λ resp, Φcont (prevResponses ++ [resp]))))
+        Φ
+        thenOps)
+       []
+   else
+     (* "else" case *)
+     (fold_right
+        (λ op Φcont, (λ prevResponses, op_update γ op (λ resp, Φcont (prevResponses ++ [resp]))))
+        Φ
+        elseOps)
+       []
+  )
+.
+
+Lemma test_txn_atomic_update γ Φ :
+  "Ha" ∷ "a" ↪[γ] "aold" ∗
+  "Hx" ∷ "x" ↪[γ] "y" ∗
+  "Hc" ∷ "c" ↪[γ] "cold" -∗
+  txn_atomic_update γ ("x",U64 0)
+                    [Op.Get "x" ; Op.PutWithLease "a" "b" "x"; Op.PutWithLease "c" "d" "x"]
+                    [] Φ.
+Proof.
+  rewrite /txn_atomic_update /=.
+  iNamed 1.
+  iApply fupd_mask_intro.
+  { solve_ndisj. }
+  iIntros "Hmask".
+  iExists _; iFrame.
+  setoid_rewrite decide_True; last word.
+  iIntros "Hx".
+  iExists _; iFrame.
+  iIntros "Hx".
+  iExists _; iFrame.
+  iIntros "Ha".
+  iExists _; iFrame.
+  iIntros "Hc".
+Admitted.
+
 End txn_axioms.
 
 Section proof.
