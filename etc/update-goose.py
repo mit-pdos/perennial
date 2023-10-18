@@ -312,7 +312,8 @@ def main():
 
     if chat_dir is not None:
         pkgs = [
-            "chat4"
+            "chat4",
+            "full",
         ]
 
         for pkg in pkgs:

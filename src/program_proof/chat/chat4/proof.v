@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.goose_lang.lib Require Import waitgroup.
-From Perennial.program_proof.secure_chat Require Import encoding ffi.
+From Perennial.program_proof.chat.chat4 Require Import encoding ffi.
 From Goose.github_com.mit_pdos.secure_chat Require Import chat4.
 
 Section chat4.
@@ -27,7 +27,7 @@ Lemma wp_alice γ skA vkB:
   aliceMain #skA #vkB
   {{{
     (sn : u64) (err : bool), RET (#sn, #err);
-    □ (if err then True else readonly (ghost_var γ 1 sn))
+    if err then True else readonly (ghost_var γ 1 sn)
   }}}.
 Proof.
   iIntros (Φ) "[Hsk Hvk] HΦ".
@@ -146,7 +146,6 @@ Proof.
   apply msgT.encode_inj in Heq.
   rewrite <- Heq.
   rewrite Heqb /=.
-  iModIntro.
   iApply "Hro".
 Qed.
 
@@ -159,7 +158,7 @@ Lemma wp_bob γ skB vkA:
   bobMain #skB #vkA
   {{{
     (sn : u64) (err : bool), RET (#sn, #err);
-    □ (if err then True else readonly (ghost_var γ 1 sn))
+    if err then True else readonly (ghost_var γ 1 sn)
   }}}.
 Proof.
   iIntros (Φ) "(Hsk & Hvk & Hg) HΦ".
@@ -235,6 +234,9 @@ Definition party_ret γ sn err : iProp Σ :=
   readonly (sn ↦[uint64T] #sn_val) ∗
   readonly (err ↦[boolT] #err_val) ∗
   if err_val then True else readonly (ghost_var γ 1 sn_val).
+
+Hint Extern 100 (Persistent (match ?x with _ => _ end)) =>
+  destruct x : typeclass_instances.
 
 Lemma wp_game:
   {{{ True }}}
