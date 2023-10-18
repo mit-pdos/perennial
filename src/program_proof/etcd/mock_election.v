@@ -37,6 +37,81 @@ Axiom wp_OpDelete : ∀ key,
 .
 End op_axioms.
 
+Module ResponseHeader.
+Section ResponseHeader.
+Record t :=
+mk {
+    Revision : u64;
+  }.
+
+Context `{!heapGS Σ}.
+Definition own (r:loc) (x:t) : iProp Σ :=
+  "HRevision" ∷ r ↦[ResponseHeader :: "Revision"] #x.(Revision)
+.
+End ResponseHeader.
+End ResponseHeader.
+
+Module KeyValue.
+Section KeyValue.
+Record t :=
+mk {
+    Key : string ;
+    Value : string ;
+    CreateRevision : u64 ;
+  }.
+Context `{!heapGS Σ}.
+
+Definition own (r:loc) (x:t) : iProp Σ :=
+  "HKey" ∷ r ↦[KeyValue :: "Key"] #(str x.(Key)) ∗
+  "HValue" ∷ r ↦[KeyValue :: "Value"] #(str x.(Value)) ∗
+  "HCreateRevision" ∷ r ↦[KeyValue :: "CreateRevision"] #x.(CreateRevision)
+  .
+
+End KeyValue.
+End KeyValue.
+
+Module RangeResponse.
+Section RangeResponse.
+Record t :=
+mk {
+    Kvs : list KeyValue.t
+  }.
+Context `{!heapGS Σ}.
+
+Definition own (r:loc) (x:t) : iProp Σ :=
+  ∃ kvs_ptrs kvs_sl ,
+  "HKvs" ∷ r ↦[RangeResponse :: "Kvs"] (slice_val kvs_sl) ∗
+  "HKvs_sl" ∷ own_slice kvs_sl ptrT 1 kvs_ptrs ∗
+  "Hkvs_own" ∷ ([∗ list] p; kv ∈ kvs_ptrs ; x.(Kvs), KeyValue.own p kv)
+.
+
+End RangeResponse.
+End RangeResponse.
+
+Module TxnResponse.
+Section TxnResponse.
+Record t :=
+mk {
+    Succeeded : bool ;
+    Header : ResponseHeader.t ;
+    Responses : list RangeResponse.t
+  }.
+
+Context `{!heapGS Σ}.
+Definition own (r:loc) (x:t) : iProp Σ :=
+  ∃ (rh:loc) resps_sl (resps : list loc),
+  "HSucceeded" ∷ r ↦[TxnResponse :: "Succeeded"] #x.(Succeeded) ∗
+  "HHeader" ∷ r ↦[TxnResponse :: "Header"] #rh ∗
+  "HHeader_own" ∷ ResponseHeader.own rh x.(Header) ∗
+  "HResponses" ∷ r ↦[TxnResponse :: "Responses"] (slice_val resps_sl) ∗
+  "HResp_sl" ∷ own_slice_small resps_sl ptrT 1 resps ∗
+  "Hresps_own" ∷ ([∗ list] resp_ptr; resp ∈ resps; x.(Responses),
+      RangeResponse.own resp_ptr resp)
+.
+
+End TxnResponse.
+End TxnResponse.
+
 Section txn_axioms.
 Context `{!etcdG Σ}.
 Context `{!heapGS Σ}.
@@ -67,6 +142,12 @@ Axiom wp_Txn__IfCreateRevisionEq : ∀ t k ver,
   {{{ t, RET #t; own_Txn t (Some (k, ver)) [] [] }}}
 .
 
+Axiom wp_Txn__Commit : ∀ t cmp thenOps elseOps,
+  {{{ own_Txn t (Some cmp) thenOps elseOps }}}
+    Txn__Commit #t
+  {{{ r_ptr r (err:u64), RET (#r_ptr, #err); TxnResponse.own r_ptr r }}}
+.
+
 End txn_axioms.
 
 Section proof.
@@ -83,13 +164,18 @@ Definition own_Election (e:loc) : iProp Σ :=
   "HleaderRev" ∷ e ↦[Election :: "leaderRev"] #leaderRev
 .
 
+Axiom wp_waitDeletes : ∀ pfx (rev:u64),
+  {{{ True }}}
+    waitDeletes #(str pfx) #rev
+  {{{ (err:u64), RET #err; True }}}.
+
 Lemma wp_Campaign e (v:string) :
   {{{
         "Hown" ∷ own_Election e
   }}}
     Election__Campaign #e #(str v)
   {{{
-        RET #(); True
+        (err:u64), RET #err; True
   }}}
 .
 Proof.
@@ -124,12 +210,53 @@ Proof.
   wp_store.
 
   wp_apply wp_ref_of_zero; first done.
-  iIntros (resp_ptr) "Hresp".
+  iIntros (resp_ptr) "Hresp_ptr".
   wp_pures.
   wp_apply wp_ref_of_zero; first done.
   iIntros (err_ptr) "Herr".
   wp_pures.
   wp_load.
+  wp_apply (wp_Txn__Commit with "[$]").
+  iIntros (???) "Hresp".
+  wp_pures.
+  wp_store.
+  wp_store.
+  wp_load.
+  wp_if_destruct.
+  {
+    wp_load.
+    by iApply "HΦ".
+  }
+  wp_storeField.
+  wp_load.
+  iNamed "Hresp".
+  wp_loadField.
+  wp_loadField.
+  wp_storeField.
+  wp_storeField.
+  wp_apply wp_ref_to; first val_ty.
+  iIntros (?) "Hdone".
+  wp_pures.
+  wp_load. wp_loadField.
+  wp_if_destruct.
+  { (* case: txn "else" *)
+    wp_load.
+    wp_loadField.
+    admit. (* TODO: need to know that if commit `Succeeded`, then there are actually responses *)
+  }
+  (* case: txn "then" *)
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_loadField.
+  wp_loadField.
+  wp_apply wp_waitDeletes.
+  iIntros (?) "_".
+  wp_store.
+  wp_load.
+  wp_if_destruct.
+  { wp_pures. by iApply "HΦ". }
+  { wp_pures. by iApply "HΦ". }
 Admitted.
 
 End proof.
