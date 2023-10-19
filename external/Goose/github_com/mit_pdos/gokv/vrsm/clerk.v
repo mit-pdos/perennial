@@ -7,10 +7,14 @@ From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.gokv.truste
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
+(* 1 second *)
+Definition PreferenceRefreshTime : expr := #1000000000.
+
 Definition Clerk := struct.decl [
   "confCk" :: ptrT;
   "replicaClerks" :: slice.T ptrT;
-  "preferredReplica" :: uint64T
+  "preferredReplica" :: uint64T;
+  "lastPreferenceRefresh" :: uint64T
 ].
 
 Definition makeClerks: val :=
@@ -37,6 +41,9 @@ Definition Make: val :=
         struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config");;
         Break));;
     struct.storeF Clerk "preferredReplica" "ck" ((rand.RandomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")));;
+    let: ("0_ret", "1_ret") := grove_ffi.GetTimeRange #() in
+    struct.storeF Clerk "lastPreferenceRefresh" "ck" "0_ret";;
+    "1_ret";;
     "ck".
 
 (* will retry forever *)
@@ -60,9 +67,22 @@ Definition Clerk__Apply: val :=
         Continue));;
     ![slice.T byteT] "ret".
 
+Definition Clerk__maybeRefreshPreference: val :=
+  rec: "Clerk__maybeRefreshPreference" "ck" :=
+    let: ("now", <>) := grove_ffi.GetTimeRange #() in
+    (if: "now" > ((struct.loadF Clerk "lastPreferenceRefresh" "ck") + PreferenceRefreshTime)
+    then
+      struct.storeF Clerk "preferredReplica" "ck" ((rand.RandomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")));;
+      let: ("0_ret", "1_ret") := grove_ffi.GetTimeRange #() in
+      struct.storeF Clerk "lastPreferenceRefresh" "ck" "0_ret";;
+      "1_ret";;
+      #()
+    else #()).
+
 Definition Clerk__ApplyRo2: val :=
   rec: "Clerk__ApplyRo2" "ck" "op" :=
     let: "ret" := ref (zero_val (slice.T byteT)) in
+    Clerk__maybeRefreshPreference "ck";;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "offset" := struct.loadF Clerk "preferredReplica" "ck" in
@@ -80,15 +100,22 @@ Definition Clerk__ApplyRo2: val :=
           Break
         else
           "i" <-[uint64T] ((![uint64T] "i") + #1);;
+          let: ("0_ret", "1_ret") := grove_ffi.GetTimeRange #() in
+          struct.storeF Clerk "lastPreferenceRefresh" "ck" "0_ret";;
+          "1_ret";;
           Continue));;
       (if: (![uint64T] "err") = e.None
       then Break
       else
-        time.Sleep (#10 * #1000000);;
+        let: "timeToSleep" := #5 + ((rand.RandomUint64 #()) `rem` #10) in
+        time.Sleep ("timeToSleep" * #1000000);;
         let: "config" := configservice.Clerk__GetConfig (struct.loadF Clerk "confCk" "ck") in
         (if: (slice.len "config") > #0
         then
           struct.storeF Clerk "replicaClerks" "ck" (makeClerks "config");;
+          let: ("0_ret", "1_ret") := grove_ffi.GetTimeRange #() in
+          struct.storeF Clerk "lastPreferenceRefresh" "ck" "0_ret";;
+          "1_ret";;
           struct.storeF Clerk "preferredReplica" "ck" ((rand.RandomUint64 #()) `rem` (slice.len (struct.loadF Clerk "replicaClerks" "ck")))
         else #());;
         Continue));;

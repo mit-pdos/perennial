@@ -176,14 +176,14 @@ Definition txn_atomic_update γ (cmp:string * u64) (thenOps elseOps : list Op.t)
      (* "then" case *)
      (fold_right
         (λ op Φcont, (λ prevResponses, op_update γ op (λ resp, Φcont (prevResponses ++ [resp]))))
-        Φ
+        (λ x, |={∅,⊤}=> Φ x)%I
         thenOps)
        []
    else
      (* "else" case *)
      (fold_right
         (λ op Φcont, (λ prevResponses, op_update γ op (λ resp, Φcont (prevResponses ++ [resp]))))
-        Φ
+        (λ x, |={∅,⊤}=> Φ x)%I
         elseOps)
        []
   )
@@ -211,6 +211,7 @@ Proof.
   iIntros "Ha".
   iExists _; iFrame.
   iIntros "Hc".
+  iMod "Hmask" as "_".
 Admitted.
 
 End txn_axioms.

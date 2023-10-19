@@ -92,6 +92,8 @@ Definition Clerk__CondPut: val :=
 
 (* clerkpool.go *)
 
+(* TODO: should implement clerk pool at the exactlyonce level, so that we can
+   avoid aking ownership of a whole clerk just to do a Get(). *)
 Definition ClerkPool := struct.decl [
   "mu" :: ptrT;
   "cls" :: slice.T ptrT;

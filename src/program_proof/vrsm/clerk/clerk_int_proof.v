@@ -12,15 +12,49 @@ Import Sm.
 Context `{!pbG Σ}.
 
 Definition own_int_Clerk ck γ : iProp Σ :=
-  ∃ (confCk:loc) (prefReplica:u64) clerks_sl clerks γsrvs γconf,
+  ∃ (confCk:loc) (prefReplica lastPreferenceRefresh:u64) clerks_sl clerks γsrvs γconf,
     "#HconfCk" ∷ readonly (ck ↦[clerk.Clerk :: "confCk"] #confCk) ∗
     "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] (slice_val clerks_sl) ∗
     "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica ∗
+    "HlastPreferenceRefresh" ∷ ck ↦[clerk.Clerk :: "lastPreferenceRefresh"] #lastPreferenceRefresh ∗
     "#HisConfCk" ∷ is_Clerk2 confCk γ γconf ∗ (* config clerk *)
     "#Hclerks_sl" ∷ readonly (own_slice_small clerks_sl ptrT 1 clerks) ∗
     "#Hclerks_rpc" ∷ ([∗ list] ck ; γsrv ∈ clerks ; γsrvs, is_Clerk ck γ γsrv) ∗
     "%Hlen" ∷ ⌜length γsrvs > 0⌝
 .
+
+Lemma wp_Clerk__maybeRefreshPreference ck γ :
+  {{{
+        own_int_Clerk ck γ
+  }}}
+    Clerk__maybeRefreshPreference #ck
+  {{{
+        RET #(); own_int_Clerk ck γ
+  }}}
+.
+Proof.
+  iIntros (?) "H HΦ". iNamed "H".
+  wp_lam. wp_pures.
+  wp_apply wp_GetTimeRange.
+  iIntros "* _ _ $ !>".
+  wp_pures. wp_loadField. wp_pures.
+  wp_if_destruct.
+  { wp_apply wp_RandomUint64. iIntros (?) "_".
+    wp_loadField. wp_apply wp_slice_len. wp_storeField.
+    wp_pures.
+    wp_apply wp_GetTimeRange.
+    iIntros "* _ _ $ !>".
+    wp_pures. wp_storeField. wp_pures.
+    iModIntro. iApply "HΦ".
+    repeat iExists _; iFrame "∗". 
+    instantiate (7:=γconf).
+    iFrame "#%".
+  }
+  iModIntro. iApply "HΦ".
+  repeat iExists _; iFrame "∗".
+  instantiate (7:=γconf).
+  iFrame "#%".
+Qed.
 
 Lemma wp_makeClerks γ config_sl servers γsrvs q :
   {{{
@@ -270,6 +304,8 @@ Proof.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_storeField.
+  wp_apply wp_GetTimeRange. iIntros "* _ _ $ !>".
+  wp_pures. wp_storeField. wp_pures.
   iApply "HΦ".
   repeat iExists _.
   iModIntro. iFrame "∗#%".
@@ -446,6 +482,9 @@ Proof.
   { done. }
   iIntros (ret) "Hret".
   wp_pures.
+  wp_apply (wp_Clerk__maybeRefreshPreference with "[$]").
+  iIntros "Hck".
+  wp_pures.
 
   iAssert (
       ∃ some_sl,
@@ -474,10 +513,11 @@ Proof.
     "Hi" ∷ i ↦[uint64T] #ival ∗
     "Hloopcase" ∷ match b with
     | true =>
-      ∃ (prefReplica' : u64),
+      ∃ (prefReplica' prefRefresh' : u64),
       "Hop_sl" ∷ own_slice_small op_sl byteT 1 op_bytes ∗
       "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] clerks_sl ∗
       "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica' ∗
+      "HlastPreferenceRefresh" ∷ ck ↦[clerk.Clerk :: "lastPreferenceRefresh"] #prefRefresh' ∗
       match decide (ival = 0) with
       | left _  => True
       | right _ => "%Herrval" ∷ ⌜errval ≠ 0⌝
@@ -485,16 +525,17 @@ Proof.
     | false =>
       ( "%Herrval" ∷ ⌜errval = 0⌝ ∗
         "HΦ" ∷ Φ (slice_val ret_sl)) ∨
-      ( ∃ (prefReplica' : u64),
+      ( ∃ (prefReplica' prefRefresh' : u64),
         "%Herrval" ∷ ⌜errval ≠ 0⌝ ∗
         "Hop_sl" ∷ own_slice_small op_sl byteT 1 op_bytes ∗
         "HreplicaClerks" ∷ ck ↦[clerk.Clerk :: "replicaClerks"] clerks_sl ∗
+        "HlastPreferenceRefresh" ∷ ck ↦[clerk.Clerk :: "lastPreferenceRefresh"] #prefRefresh' ∗
         "HprefReplica" ∷ ck ↦[clerk.Clerk :: "preferredReplica"] #prefReplica')
-    end)%I with "[] [HreplicaClerks HprefReplica Hop_sl Hi Herr Hret] []").
+    end)%I with "[] [HreplicaClerks HprefReplica Hop_sl Hi Herr Hret HlastPreferenceRefresh] []").
   2: {
     repeat iExists _.
     iFrame.
-    iExists _. iFrame.
+    repeat iExists _. iFrame.
   }
 
   - iIntros (Φloop) "!> Hloop HΦloop".
@@ -515,7 +556,7 @@ Proof.
       iFrame.
       destruct (decide _).
       { exfalso. subst. rewrite -Hlen_clerks in Hlen. apply Heqb. word. }
-      iRight. iExists _. iFrame.
+      iRight. repeat iExists _. iFrame.
     }
 
     wp_pures.
@@ -619,10 +660,12 @@ Proof.
       wp_if_destruct.
       { exfalso. apply Herr. word. }
       wp_load. wp_store.
+      wp_apply wp_GetTimeRange. iIntros "* _ _ $ !>".
+      wp_pures. wp_storeField. wp_pures.
       iModIntro.
       iApply "HΦloop".
       repeat iExists _. iFrame "Herr Hret Hi".
-      iExists _. iFrame.
+      repeat iExists _. iFrame.
       iClear "Hloopcase".
       destruct (decide _); done.
     }
@@ -642,6 +685,8 @@ Proof.
       wp_if_destruct.
       { exfalso. apply Herrval. word. }
 
+      wp_apply wp_RandomUint64. iIntros (?) "_".
+      wp_pures.
       wp_apply (wp_Sleep).
       wp_pures.
       wp_loadField.
@@ -658,13 +703,15 @@ Proof.
       wp_apply (wp_slice_len).
       wp_pures.
       iDestruct (big_sepL2_length with "Hhosts") as %?.
-      wp_apply (wp_If_join (own_int_Clerk ck γ) with "[Hconf_sl HreplicaClerks HprefReplica]").
+      wp_apply (wp_If_join (own_int_Clerk ck γ) with "[Hconf_sl HreplicaClerks HprefReplica HlastPreferenceRefresh]").
       { iSplit; iIntros "%".
         2: { wp_pures. iModIntro. iSplitR; first done.
              repeat iExists _. iFrame "∗#%". }
         wp_apply (wp_makeClerks with "[$]").
         iIntros (??) "[? ?]".
         wp_storeField.
+        wp_apply wp_GetTimeRange. iIntros "* _ _ $ !>".
+        wp_pures. wp_storeField. wp_pures.
         wp_apply wp_RandomUint64. iIntros (?) "_".
         wp_loadField.
         wp_apply wp_slice_len.
