@@ -27,7 +27,7 @@ Record buf_and_prev_data := {
 
 Definition is_txn_buf_pre γ (bufptr:loc) (a : addr) (buf : buf_and_prev_data) : iProp Σ :=
   "Hisbuf" ∷ is_buf bufptr a buf.(buf_) ∗
-  "Hmapto" ∷ mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)).
+  "Hmapto" ∷ pointsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)).
 
 Definition is_txn_buf_blkno (bufptr : loc) (a : addr) (buf : buf) blkno :=
   ( "Hisbuf" ∷ is_buf bufptr a buf ∗
@@ -68,16 +68,16 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
+Theorem pointsto_txn_locked (γ : txn_names) l dinit lwh a data E :
   ↑invN ⊆ E ->
   ↑walN ⊆ E ∖ ↑invN ->
   is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) dinit ∗
   ncinv invN (is_txn_always γ) ∗
   is_locked_walheap γ.(txn_walnames) lwh ∗
-  mapsto_txn γ a data -∗
+  pointsto_txn γ a data -∗
   |NC={E}=>
     is_locked_walheap γ.(txn_walnames) lwh ∗
-    mapsto_txn γ a data ∗
+    pointsto_txn γ a data ∗
     ⌜ ∃ v, locked_wh_disk lwh !! int.Z a.(addrBlock) = Some v ⌝.
 Proof.
   iIntros (H0 H1) "(#Hiswal & #Hinv & Hlockedheap & Hmapsto)".
@@ -90,7 +90,7 @@ Proof.
   iDestruct (big_sepM2_lookup_r_some with "Hheapmatch") as (x) "%Hlm"; eauto.
   iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hx Hheapmatch]"; eauto.
   iNamed "Hx".
-  iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.
+  iMod (wal_heap_pointsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.
   iMod ("Hclo" with "[-Hlockedheap Hmapsto_log Hmapsto_meta Hmod_frag]").
   { iNext. iExists _, _, _. iFrame.
     iApply "Hheapmatch". iExists _, _, _. iFrame. iFrame "%". }
@@ -115,7 +115,7 @@ Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : g
       is_locked_walheap γ.(txn_walnames) lwh ∗
       own_map blkmapref 1 blkmap ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
-        mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
+        pointsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
       [∗ map] blkno ↦ blkslice; offmap ∈ blkmap; gmap_addr_by_block bufamap,
         ∃ b,
           is_block blkslice 1 b ∗
@@ -142,7 +142,7 @@ Opaque struct.t.
           ∃ b,
             is_block blkslice 1 b ∗
             ⌜ updBlockKindOK blkno b γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝ ) ∗
-        "Hbufamap_done_mapsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
+        "Hbufamap_done_pointsto" ∷ ( [∗ map] a↦buf ∈ bufamap_done, pointsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
         "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh
       )%I
       with "[] [$Hbufs Hbufpre Hblks Hlockedheap]").
@@ -166,7 +166,7 @@ Opaque struct.t.
     iDestruct (big_sepML_delete_cons with "Hbufamap_todo") as (a buf) "(%Hb & Htxnbuf & Hbufamap_todo)".
     iNamed "Htxnbuf".
 
-    iMod (mapsto_txn_locked with "[$Hiswal $Hinv $Hmapto $Hlockedheap]") as "(Hlockedheap & Hmapto & %Hlockedsome)".
+    iMod (pointsto_txn_locked with "[$Hiswal $Hinv $Hmapto $Hlockedheap]") as "(Hlockedheap & Hmapto & %Hlockedsome)".
     1: solve_ndisj.
     1: solve_ndisj.
     destruct Hlockedsome as [lockedv Hlockedsome].
@@ -179,7 +179,7 @@ Opaque struct.t.
       Opaque BlockSize. Opaque bufSz.
       wp_pures.
 
-      iMod (mapsto_txn_valid with "Hinv Hmapto") as "[Hmapto %Hvalid]".
+      iMod (pointsto_txn_valid with "Hinv Hmapto") as "[Hmapto %Hvalid]".
       { solve_ndisj. }
 
       intros.
@@ -204,9 +204,9 @@ Opaque struct.t.
       iFrame "Hlockedheap".
       iSplitR.
       { iPureIntro. etransitivity; first by apply delete_subseteq. eauto. }
-      iSplitR "Hbufamap_done_mapsto Hmapto".
+      iSplitR "Hbufamap_done_pointsto Hmapto".
       2: {
-        iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_mapsto").
+        iApply (big_sepM_insert_2 with "[Hmapto] Hbufamap_done_pointsto").
         intuition.
       }
       rewrite /map_insert.
@@ -249,7 +249,7 @@ Opaque struct.t.
       wp_apply (wp_MapGet with "Hblks"). iIntros (v ok) "[% Hblks]".
       wp_pures.
 
-      iMod (mapsto_txn_valid with "Hinv Hmapto") as "[Hmapto %Hvalid]".
+      iMod (pointsto_txn_valid with "Hinv Hmapto") as "[Hmapto %Hvalid]".
       { solve_ndisj. }
 
       wp_apply (wp_If_join
@@ -337,9 +337,9 @@ Opaque struct.t.
         erewrite lookup_weaken; eauto. }
       iSplitR.
       { iPureIntro. etransitivity; first by apply delete_subseteq. eauto. }
-      iSplitR "Hbufamap_done_mapsto Hmapto".
+      iSplitR "Hbufamap_done_pointsto Hmapto".
       2: {
-        iApply (big_sepM_insert_2 with "[Hmapto] [$Hbufamap_done_mapsto]").
+        iApply (big_sepM_insert_2 with "[Hmapto] [$Hbufamap_done_pointsto]").
         iFrame. }
       rewrite gmap_addr_by_block_insert.
       2: { eapply lookup_difference_None; eauto. }
@@ -418,7 +418,7 @@ Theorem wp_txn__installBufs l q walptr γ dinit lwh bufs buflist (bufamap : gmap
       is_locked_walheap γ.(txn_walnames) lwh ∗
       updates_slice blkslice upds ∗
       ( [∗ map] a ↦ buf ∈ bufamap,
-        mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
+        pointsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)) ) ∗
       [∗ maplist] blkno ↦ offmap; upd ∈ gmap_addr_by_block bufamap; upds,
         ⌜ upd.(update.addr) = blkno ⌝ ∗
         ⌜ updBlockKindOK blkno upd.(update.b) γ (locked_wh_disk lwh) (buf_ <$> offmap) ⌝
@@ -428,7 +428,7 @@ Proof.
 
   wp_call.
   wp_apply (wp_txn__installBufsMap with "[$Hinv $Hiswal $Hlog $Hlockedheap $Hbufs $Hbufpre]").
-  iIntros (blkmapref blkmap) "(Hlockedheap & Hblkmapref & Hbufamap_mapsto & Hblkmap)".
+  iIntros (blkmapref blkmap) "(Hlockedheap & Hblkmapref & Hbufamap_pointsto & Hblkmap)".
 
   wp_apply (wp_MapLen with "Hblkmapref").
   (* we don't use this length, it's just a slice capacity *)
@@ -591,10 +591,10 @@ Proof.
   eapply elem_of_list_fmap_1_alt; eauto.
 Qed.
 
-Definition txn_crashstates_matches_mapsto σl γ σl' a v :
+Definition txn_crashstates_matches_pointsto σl γ σl' a v :
   ( ( ghost_map_auth γ.(txn_logheap) 1 (latest σl) ∗ ghost_var γ.(txn_crashstates) (1/4) σl ) ∗
     ghost_var γ.(txn_crashstates) (3/4) σl' ∗
-    mapsto_txn γ a v ) -∗
+    pointsto_txn γ a v ) -∗
   ⌜σl'.(latest) !! a = Some v⌝.
 Proof.
   iIntros "[[Hctx H0] [H1 Hmapsto]]".
@@ -611,7 +611,7 @@ Theorem wp_txn__doCommit l q γ dinit bufs buflist (bufamap : gmap addr _) E (Pr
       PreQ ∧ (|NC={⊤ ∖ ↑walN ∖ ↑invN, E}=>
         ∀ CP,
         □ ( ∀ σl a v,
-          ( CP ∗ ghost_var γ.(txn_crashstates) (3/4) σl ∗ mapsto_txn γ a v ) -∗ ⌜σl.(latest) !! a = Some v⌝ ) ∗
+          ( CP ∗ ghost_var γ.(txn_crashstates) (3/4) σl ∗ pointsto_txn γ a v ) -∗ ⌜σl.(latest) !! a = Some v⌝ ) ∗
         CP
         -∗ |NC={E}=>
         CP ∗
@@ -629,11 +629,11 @@ Theorem wp_txn__doCommit l q γ dinit bufs buflist (bufamap : gmap addr _) E (Pr
         ∃ txn_id,
         txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id commitpos ∗ Q txn_id ∗
         [∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn γ a (existT _ buf.(buf_).(bufData))
+          pointsto_txn γ a (existT _ buf.(buf_).(bufData))
       else
         PreQ ∗
         ([∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)))
+          pointsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)))
   }}}.
 Proof using txnG0 Σ.
   iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".
@@ -656,12 +656,12 @@ Proof using txnG0 Σ.
 
   wp_apply (wp_Walog__MemAppend _
     ("Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh ∗
-     "Hmapstos" ∷ ([∗ map] a↦buf ∈ bufamap, mapsto_txn γ a (existT _ buf.(data_))) ∗
+     "Hmapstos" ∷ ([∗ map] a↦buf ∈ bufamap, pointsto_txn γ a (existT _ buf.(data_))) ∗
      "HPreQ" ∷ PreQ)
     (λ npos,
       ∃ lwh' txn_id,
         "Hlockedheap" ∷ is_locked_walheap γ.(txn_walnames) lwh' ∗
-        "Hmapstos" ∷ ( [∗ map] k↦x ∈ bufamap, mapsto_txn γ k (existT _ x.(buf_).(bufData)) ) ∗
+        "Hmapstos" ∷ ( [∗ map] k↦x ∈ bufamap, pointsto_txn γ k (existT _ x.(buf_).(bufData)) ) ∗
         "Hpos" ∷ txn_pos (wal_heap_walnames (txn_walnames γ)) txn_id npos ∗
         "HQ" ∷ Q txn_id
     )%I
@@ -677,7 +677,7 @@ Proof using txnG0 Σ.
     {
       iSplitR.
       { iModIntro. iIntros (σl a v) "(CP & H & Hmapsto)".
-        iApply (txn_crashstates_matches_mapsto logm). iFrame "H Hmapsto".
+        iApply (txn_crashstates_matches_pointsto logm). iFrame "H Hmapsto".
         iExact "CP". }
       iFrame.
     }
@@ -778,7 +778,7 @@ Proof using txnG0 Σ.
       eapply elem_of_list_lookup_1 in Hlv. destruct Hlv as [i Hlv].
       iDestruct (big_sepML_lookup_l_acc with "Hheapmatch") as (k v) "(% & Hlv & _)"; eauto.
       iDestruct "Hlv" as "[_ Hlv]".
-      iDestruct (wal_heap_mapsto_latest_helper with "[$Hiswal_heap $Hwal_latest $Hlv]") as "%Hlwh_ok".
+      iDestruct (wal_heap_pointsto_latest_helper with "[$Hiswal_heap $Hwal_latest $Hlv]") as "%Hlwh_ok".
       eauto.
     }
     iAssert (⌜∀ lv, lv ∈ updlist_olds ->
@@ -842,7 +842,7 @@ Proof using txnG0 Σ.
     }
 
     iDestruct (gmap_addr_by_block_big_sepM' _
-      (λ a v, mapsto_txn γ a (existT v.(buf_).(bufKind) v.(data_)))
+      (λ a v, pointsto_txn γ a (existT v.(buf_).(bufKind) v.(data_)))
       with "Hmapstos") as "Hmapstos".
 
     iDestruct (big_sepML_sepL_combine with "[$Hheapmatch $Hq]") as "Hheapmatch".
@@ -1024,7 +1024,7 @@ Proof using txnG0 Σ.
     iMod (ghost_var_update_parts (async_put σl'latest σl) with "Hcrashstates Hcrashstates_frag") as "[Hcrashstates Hcrashstates_frag]".
     { rewrite Qp.quarter_three_quarter //. }
 
-    iDestruct (mapsto_txn_cur_map _ _ _
+    iDestruct (pointsto_txn_cur_map _ _ _
       (λ b, Build_buf_and_prev_data (b.(buf_)) (b.(buf_).(bufData)))
       with "Hmapstos") as "[Hmapsto_cur Hmapstos]".
     set σmod := ((λ b : buf_and_prev_data, existT b.(buf_).(bufKind) b.(buf_).(bufData)) <$> bufamap).
@@ -1217,7 +1217,7 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist (bufamap : gmap addr _) (wai
       PreQ ∧ ( ⌜bufamap ≠ ∅⌝ -∗ |NC={⊤ ∖ ↑walN ∖ ↑invN, E}=>
         ∀ CP,
         □ ( ∀ σl a v,
-          ( CP ∗ ghost_var γ.(txn_crashstates) (3/4) σl ∗ mapsto_txn γ a v ) -∗ ⌜σl.(latest) !! a = Some v⌝ ) ∗
+          ( CP ∗ ghost_var γ.(txn_crashstates) (3/4) σl ∗ pointsto_txn γ a v ) -∗ ⌜σl.(latest) !! a = Some v⌝ ) ∗
         CP
         -∗ |NC={E}=>
         CP ∗
@@ -1236,11 +1236,11 @@ Theorem wp_txn_CommitWait l q γ dinit bufs buflist (bufamap : gmap addr _) (wai
           ( ⌜wait=true⌝ -∗ @mono_nat_lb_own Σ _ γ.(txn_walnames).(wal_heap_durable_lb) txn_id ) ) ∗
         ( ⌜bufamap = ∅⌝ -∗ PreQ )) ∗
         [∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn γ a (existT _ buf.(buf_).(bufData))
+          pointsto_txn γ a (existT _ buf.(buf_).(bufData))
       else
         PreQ ∗
         ([∗ map] a ↦ buf ∈ bufamap,
-          mapsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)))
+          pointsto_txn γ a (existT buf.(buf_).(bufKind) buf.(data_)))
   }}}.
 Proof.
   iIntros (Φ) "(#Htxn & Hbufs & Hbufpre & Hfupd) HΦ".

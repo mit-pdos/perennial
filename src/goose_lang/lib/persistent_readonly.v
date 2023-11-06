@@ -15,12 +15,12 @@ Section goose_lang.
 
   Class AsMapsTo (P: iProp Σ)
         (Φ : Qp -> iProp Σ) : Set :=
-    { as_mapsto : P ≡ Φ 1%Qp;
-      as_mapsto_fractional :> Fractional Φ;
-      as_mapsto_timeless :> ∀ q, Timeless (Φ q);
+    { as_pointsto : P ≡ Φ 1%Qp;
+      as_pointsto_fractional :> Fractional Φ;
+      as_pointsto_timeless :> ∀ q, Timeless (Φ q);
     }.
 
-  Arguments as_mapsto {P Φ} AsMapsTo.
+  Arguments as_pointsto {P Φ} AsMapsTo.
 
   Definition readonly_def P `{H: AsMapsTo P Φ}: iProp Σ :=
     □ |={∅}=> ∃ q, Φ q.
@@ -53,7 +53,7 @@ Section goose_lang.
   Global Instance readonly_persistent P `{H: AsMapsTo P Φ} : Persistent (readonly P).
   Proof. unseal; apply _. Qed.
 
-  Instance as_mapsto_AsFractional P `{H: AsMapsTo P Φ} q :
+  Instance as_pointsto_AsFractional P `{H: AsMapsTo P Φ} q :
     AsFractional (Φ q) (λ q, Φ q) q.
   Proof.
     split; auto.
@@ -64,7 +64,7 @@ Section goose_lang.
     P ={E}=∗ readonly P.
   Proof.
     iIntros "HP".
-    rewrite {1}H.(as_mapsto).
+    rewrite {1}H.(as_pointsto).
     iApply (readonly_alloc with "HP").
   Qed.
 
@@ -100,7 +100,7 @@ Section goose_lang.
     AsMapsTo (P ∗ Q) (λ q, Φ1 q ∗ Φ2 q)%I.
   Proof.
     split; try apply _.
-    rewrite (as_mapsto (P:=P)) (as_mapsto (P:=Q)) //.
+    rewrite (as_pointsto (P:=P)) (as_pointsto (P:=Q)) //.
   Qed.
 
   Theorem readonly_extend P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
@@ -129,7 +129,7 @@ Section goose_lang.
 End goose_lang.
 
 #[global]
-Instance heap_mapsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapGS loc val Σ}
+Instance heap_pointsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapGS loc val Σ}
          (l: loc) (v: val) :
   AsMapsTo (l ↦ v) (λ q, l ↦{q} v)%I.
 Proof.

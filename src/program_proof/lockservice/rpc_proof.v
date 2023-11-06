@@ -352,13 +352,13 @@ Proof.
   wp_apply (wp_Dec__GetInt with "Hd"). iIntros "Hd".
   wp_storeField.
   wp_apply (wp_Dec__GetInt with "Hd"). iIntros "Hd".
-  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Args"); first done.
   iIntros (fl) "[%Hfl Args]".
   wp_apply (wp_storeField_struct with "Args"); first auto.
   iIntros "Args".
   rewrite Hfl; clear Hfl fl.
   wp_apply (wp_Dec__GetInt with "Hd"). iIntros "Hd".
-  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Args"); first done.
   iIntros (fl) "[%Hfl Args]".
   iApply wp_fupd.
   wp_apply (wp_storeField_struct with "Args"); first auto.

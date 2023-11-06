@@ -312,9 +312,9 @@ Section grove.
           mono_nat_auth_own grove_time_name 1 (int.nat g.(grove_global_time))
          )%I;
        ffi_local_start _ _ σ :=
-         ([∗ map] f↦c ∈ σ.(grove_node_files), (mapsto (L:=string) (V:=list byte) f (DfracOwn 1) c))%I;
+         ([∗ map] f↦c ∈ σ.(grove_node_files), (pointsto (L:=string) (V:=list byte) f (DfracOwn 1) c))%I;
        ffi_global_start _ _ g :=
-         ([∗ map] e↦ms ∈ g.(grove_net), (mapsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
+         ([∗ map] e↦ms ∈ g.(grove_net), (pointsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
        ffi_restart _ _ _ := True%I;
       ffi_crash_rel Σ hF1 σ1 hF2 σ2 :=
         (* TODO: you could also assume the tsc is non-decreasing across a crash *)
@@ -322,10 +322,10 @@ Section grove.
     |}.
 End grove.
 
-Notation "c c↦ ms" := (mapsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
+Notation "c c↦ ms" := (pointsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
                        (at level 20, format "c  c↦  ms") : bi_scope.
 
-Notation "s f↦{ q } c" := (mapsto (L:=string) (V:=list byte) s q c)
+Notation "s f↦{ q } c" := (pointsto (L:=string) (V:=list byte) s q c)
                             (at level 20, q at level 50, format "s  f↦{ q } c") : bi_scope.
 
 Notation "s f↦ c" := (s f↦{DfracOwn 1} c)%I
@@ -375,21 +375,21 @@ Section lifting.
     ExtV BadSocketV.
 
   (* Lifting automation *)
-  Local Hint Extern 0 (head_reducible _ _ _) => eexists _, _, _, _, _; simpl : core.
-  Local Hint Extern 0 (head_reducible_no_obs _ _ _) => eexists _, _, _, _; simpl : core.
-  (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
-[head_step]. The tactic will discharge head-reductions starting from values, and
+  Local Hint Extern 0 (base_reducible _ _ _) => eexists _, _, _, _, _; simpl : core.
+  Local Hint Extern 0 (base_reducible_no_obs _ _ _) => eexists _, _, _, _; simpl : core.
+  (** The tactic [inv_base_step] performs inversion on hypotheses of the shape
+[base_step]. The tactic will discharge head-reductions starting from values, and
 simplifies hypothesis related to conversions from and to values, and finite map
 operations. This tactic is slightly ad-hoc and tuned for proving our lifting
 lemmas. *)
-  Ltac inv_head_step :=
+  Ltac inv_base_step :=
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : head_step_atomic _ _ _ _ _ _ _ _ |- _ =>
-          apply head_step_atomic_inv in H; [ | by inversion 1 ]
-        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
-          rewrite /head_step /= in H;
+        | H : base_step_atomic _ _ _ _ _ _ _ _ |- _ =>
+          apply base_step_atomic_inv in H; [ | by inversion 1 ]
+        | H : base_step ?e _ _ _ _ _ _ _ |- _ =>
+          rewrite /base_step /= in H;
           monad_inv; repeat (simpl in H; monad_inv)
         | H : ffi_step _ _ _ _ _ |- _ =>
           inversion H; subst; clear H
@@ -400,16 +400,16 @@ lemmas. *)
       ExternalOp ListenOp (LitV $ LitInt c) @ s; E
     {{{ RET listen_socket c; True }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    inv_head_step.
+    inv_base_step.
     simpl.
     iFrame.
     iIntros "!>".
@@ -425,11 +425,11 @@ lemmas. *)
       if err then True else c_l c↦ ∅
     }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
       { econstructor. eapply gen_isFreshChan. }
       monad_simpl. econstructor; first by econstructor.
@@ -439,7 +439,7 @@ lemmas. *)
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
     iDestruct "Hg" as "((Hg & %Hg & ?)&?)".
-    inv_head_step.
+    inv_base_step.
     match goal with
     | H : isFreshChan _ ?c |- _ => rename H into Hfresh; rename c into c_l
     end.
@@ -465,18 +465,18 @@ lemmas. *)
       ExternalOp AcceptOp (listen_socket c_l) @ s; E
     {{{ c_r, RET connection_socket c_l c_r; True }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
       1:by eapply (relation.suchThat_runs _ _ (U64 0)).
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    inv_head_step.
+    inv_base_step.
     simpl.
     iFrame.
     iIntros "!>".
@@ -484,15 +484,15 @@ lemmas. *)
     by iApply "HΦ".
   Qed.
 
-  Lemma mapsto_vals_bytes_valid l (data : list u8) q (σ : gmap _ _) :
-    na_heap.na_heap_ctx tls σ -∗ mapsto_vals l q (data_vals data) -∗
+  Lemma pointsto_vals_bytes_valid l (data : list u8) q (σ : gmap _ _) :
+    na_heap.na_heap_ctx tls σ -∗ pointsto_vals l q (data_vals data) -∗
     ⌜ (forall (i:Z), (0 <= i)%Z -> (i < length data)%Z ->
               match σ !! (l +ₗ i) with
            | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
            | _ => False
               end) ⌝.
   Proof.
-    iIntros "Hh Hv". iDestruct (mapsto_vals_valid with "Hh Hv") as %Hl.
+    iIntros "Hh Hv". iDestruct (pointsto_vals_valid with "Hh Hv") as %Hl.
     iPureIntro. intros i Hlb Hub.
     rewrite fmap_length in Hl. specialize (Hl _ Hlb Hub).
     destruct (σ !! (l +ₗ i)) as [[[] v]|]; [done| |done].
@@ -502,36 +502,36 @@ lemmas. *)
 
   Lemma wp_SendOp c_l c_r ms (l : loc) (len : u64) (data : list u8) (q : Qp) s E :
     length data = int.nat len →
-    {{{ c_r c↦ ms ∗ mapsto_vals l q (data_vals data) }}}
+    {{{ c_r c↦ ms ∗ pointsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (connection_socket c_l c_r, (#l, #len))%V @ s; E
     {{{ (err_early err_late : bool), RET #(err_early || err_late);
        c_r c↦ (if err_early then ms else ms ∪ {[Message c_l data]}) ∗
-       mapsto_vals l q (data_vals data) }}}.
+       pointsto_vals l q (data_vals data) }}}.
   Proof.
     iIntros (Hmlen Φ) "[Hc Hl] HΦ".
-    iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
     iDestruct "Hg" as "((Hg & %Hg & ?)&?)".
     iDestruct (@gen_heap_valid with "Hg Hc") as %Hc.
-    iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
+    iDestruct (pointsto_vals_bytes_valid with "Hσ Hl") as %Hl.
     iModIntro.
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. econstructor. 1:by eapply (relation.suchThat_runs _ _ true).
       monad_simpl. econstructor; first by econstructor.
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_head_step.
+    inv_base_step.
     rename x into err_early. clear H.
     destruct err_early.
     { monad_inv. iFrame. iModIntro.
       do 2 (iSplitR; first done).
       iApply ("HΦ" $! true true). by iFrame. }
-    inv_head_step.
+    inv_base_step.
     monad_inv.
     rename x into err_late.
     iFrame.
@@ -569,10 +569,10 @@ lemmas. *)
         RET (#err, (#l, #len));
         ⌜if err then l = null ∧ data = [] ∧ len = 0 else
           Message c_r data ∈ ms ∧ length data = int.nat len⌝ ∗
-        c_l c↦ ms ∗ mapsto_vals l 1 (data_vals data)
+        c_l c↦ ms ∗ pointsto_vals l 1 (data_vals data)
     }}}.
   Proof.
-    iIntros (Φ) "He HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Φ) "He HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
@@ -581,7 +581,7 @@ lemmas. *)
     iDestruct (@gen_heap_valid with "Hg He") as %He.
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. econstructor; first by econstructor.
       monad_simpl. econstructor.
       { constructor. left. done. }
@@ -590,16 +590,16 @@ lemmas. *)
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_head_step.
+    inv_base_step.
     monad_inv.
     rename select (m = None ∨ _) into Hm. simpl in Hm.
     destruct Hm as [->|(m' & -> & Hm & <-)].
     { (* Returning no message. *)
-      inv_head_step.
+      inv_base_step.
       monad_inv.
       iFrame. simpl. iModIntro. do 2 (iSplit; first done).
       iApply ("HΦ" $! true).
-      iFrame; (iSplit; first done); rewrite /mapsto_vals big_sepL_nil //.
+      iFrame; (iSplit; first done); rewrite /pointsto_vals big_sepL_nil //.
     }
     (* Returning a message *)
     repeat match goal with
@@ -608,7 +608,7 @@ lemmas. *)
     move: (Hg _ _ _ He Hm)=>Hlen.
     rename select (isFresh _ _) into Hfresh.
     iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals m'.(msg_data)) ∪ σ1.(heap)) ∗
-      [∗ list] i↦v ∈ data_vals m'.(msg_data), na_heap_mapsto (addr_plus_off l i) 1 v)%I
+      [∗ list] i↦v ∈ data_vals m'.(msg_data), na_heap_pointsto (addr_plus_off l i) 1 v)%I
       with "[> Hσ]" as "[Hσ Hl]".
     { destruct (decide (length m'.(msg_data) = 0%nat)) as [Heq%nil_length_inv|Hne].
       { (* Zero-length message... no actually new memory allocation, so the proof needs
@@ -632,9 +632,9 @@ lemmas. *)
     iApply ("HΦ" $! false _ _ m'.(msg_data)). iFrame "He".
     iSplit.
     { iPureIntro. split; first by destruct m'. word. }
-    rewrite /mapsto_vals. iApply (big_sepL_mono with "Hl").
+    rewrite /pointsto_vals. iApply (big_sepL_mono with "Hl").
     clear -Hfresh. simpl. iIntros (i v _) "Hmapsto".
-    iApply (na_mapsto_to_heap with "Hmapsto").
+    iApply (na_pointsto_to_heap with "Hmapsto").
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
@@ -642,10 +642,10 @@ lemmas. *)
     {{{ f f↦{q} c }}}
       ExternalOp FileReadOp #(str f) @ E
     {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
-      f f↦{q} c ∗ if err then True else ⌜length c = int.nat len⌝ ∗ mapsto_vals l 1 (data_vals c)
+      f f↦{q} c ∗ if err then True else ⌜length c = int.nat len⌝ ∗ pointsto_vals l 1 (data_vals c)
     }}}.
   Proof.
-    iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
@@ -653,7 +653,7 @@ lemmas. *)
     iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
     iModIntro. iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
       1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
       monad_simpl. econstructor.
@@ -661,16 +661,16 @@ lemmas. *)
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_head_step.
+    inv_base_step.
     rename x into err_early.
     destruct err_early.
     { monad_inv. iFrame. iModIntro. do 2 (iSplitR; first done).
       simpl. iApply "HΦ". by iFrame. }
-    inv_head_step. monad_inv.
+    inv_base_step. monad_inv.
     move: (Hfilebound _ _ Hf)=>Hlen.
     rename select (isFresh _ _) into Hfresh.
     iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals c) ∪ σ1.(heap)) ∗
-      [∗ list] i↦v ∈ data_vals c, na_heap_mapsto (addr_plus_off l i) 1 v)%I
+      [∗ list] i↦v ∈ data_vals c, na_heap_pointsto (addr_plus_off l i) 1 v)%I
       with "[> Hσ]" as "[Hσ Hl]".
     { destruct (decide (length c = 0%nat)) as [Heq%nil_length_inv|Hne].
       { (* Zero-length file... no actually new memory allocation, so the proof needs
@@ -692,31 +692,31 @@ lemmas. *)
     iModIntro. iEval simpl. iFrame "Htr Hg Hσ ∗".
     do 2 (iSplitR; first done).
     iApply "HΦ". iFrame "Hf".
-    rewrite /mapsto_vals. iSplitR.
+    rewrite /pointsto_vals. iSplitR.
     { iPureIntro. word. }
     iApply (big_sepL_mono with "Hl").
     clear -Hfresh. simpl. iIntros (i v _) "Hmapsto".
-    iApply (na_mapsto_to_heap with "Hmapsto").
+    iApply (na_pointsto_to_heap with "Hmapsto").
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
   Lemma wp_FileWriteOp (f : string) old new l q (len : u64) E :
     length new = int.nat len →
-    {{{ f f↦ old ∗ mapsto_vals l q (data_vals new) }}}
+    {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
-    {{{ (err : bool), RET #err; f f↦ (if err then old else new) ∗ mapsto_vals l q (data_vals new) }}}.
+    {{{ (err : bool), RET #err; f f↦ (if err then old else new) ∗ pointsto_vals l q (data_vals new) }}}.
   Proof.
     iIntros (Hmlen Φ) "[Hf Hl] HΦ".
-    iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
     iDestruct "Hw" as "(Htsc & %Hfilebound & Hfiles)".
     iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
-    iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
+    iDestruct (pointsto_vals_bytes_valid with "Hσ Hl") as %Hl.
     iModIntro. iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
       1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
       monad_simpl. econstructor.
@@ -724,11 +724,11 @@ lemmas. *)
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_head_step.
+    inv_base_step.
     rename x into err_early.
     destruct err_early.
     { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
-    inv_head_step. monad_inv.
+    inv_base_step. monad_inv.
     iFrame.
     iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
     assert (data = new) as <-.
@@ -756,21 +756,21 @@ lemmas. *)
 
   Lemma wp_FileAppendOp (f : string) old new l q (len : u64) E :
     length new = int.nat len →
-    {{{ f f↦ old ∗ mapsto_vals l q (data_vals new) }}}
+    {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
-    {{{ (err : bool), RET #err; f f↦ (if err then old else (old ++ new)) ∗ mapsto_vals l q (data_vals new) }}}.
+    {{{ (err : bool), RET #err; f f↦ (if err then old else (old ++ new)) ∗ pointsto_vals l q (data_vals new) }}}.
   Proof.
     iIntros (Hmlen Φ) "[Hf Hl] HΦ".
-    iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
     iDestruct "Hw" as "(Htsc & %Hfilebound & Hfiles)".
     iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
-    iDestruct (mapsto_vals_bytes_valid with "Hσ Hl") as %Hl.
+    iDestruct (pointsto_vals_bytes_valid with "Hσ Hl") as %Hl.
     iModIntro. iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
       1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
       monad_simpl. econstructor.
@@ -778,15 +778,15 @@ lemmas. *)
       monad_simpl.
     }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_head_step.
+    inv_base_step.
     rename x into err_early.
     destruct err_early.
     { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
-    inv_head_step. monad_inv.
+    inv_base_step. monad_inv.
     iFrame.
     case_bool_decide.
     { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
-    inv_head_step. monad_inv. iFrame.
+    inv_base_step. monad_inv. iFrame.
     rename select (¬ length _ >= _) into Halen.
     iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
     assert (data = new) as <-.
@@ -819,18 +819,18 @@ lemmas. *)
       ⌜prev_time ≤ int.nat new_time⌝ ∗ tsc_lb (int.nat new_time)
     }}}.
   Proof.
-    iIntros (Φ) "Hprev HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Φ) "Hprev HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
       1:by eapply (relation.suchThat_runs _ _ (U64 0)).
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    inv_head_step. iFrame. simpl.
+    inv_base_step. iFrame. simpl.
     iSplitR; first done.
     iDestruct "Hw" as "[Htsc Hfiles]".
     set old := σ1.(world).(grove_node_tsc).
@@ -854,11 +854,11 @@ lemmas. *)
                   own_time t -∗ |NC={E}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
    WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}.
   Proof.
-    iIntros (Φ) "HΦ". iApply wp_lift_atomic_head_step_no_fork_nc; first by auto.
+    iIntros (Φ) "HΦ". iApply wp_lift_atomic_base_step_no_fork_nc; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     iSplit.
     { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /head_step/=.
+      econstructor. rewrite /base_step/=.
       monad_simpl.
       econstructor.
       1:by eapply (relation.suchThat_runs _ _ (U64 0)).
@@ -881,7 +881,7 @@ lemmas. *)
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    inv_head_step.
+    inv_base_step.
     simpl.
     iFrame.
     iSplitR; first done.
@@ -1065,32 +1065,32 @@ Section grove.
   Qed.
 
   (* FIXME move the next 2 lemmas some place more general *)
-  Lemma own_slice_small_byte_mapsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
-    own_slice_small s byteT q data -∗ mapsto_vals (Slice.ptr s) q (data_vals data).
+  Lemma own_slice_small_byte_pointsto_vals (s : Slice.t) (data : list u8) (q : Qp) :
+    own_slice_small s byteT q data -∗ pointsto_vals (Slice.ptr s) q (data_vals data).
   Proof.
     rewrite /own_slice_small /slice.own_slice_small.
-    iIntros "[Hs _]". rewrite /array.array /mapsto_vals.
+    iIntros "[Hs _]". rewrite /array.array /pointsto_vals.
     change (list.untype data) with (data_vals data).
     iApply (big_sepL_impl with "Hs"). iIntros "!#" (i v Hv) "Hl".
     move: Hv. rewrite /data_vals list_lookup_fmap.
     intros (b & _ & ->)%fmap_Some_1.
-    rewrite byte_mapsto_untype byte_offset_untype //.
+    rewrite byte_pointsto_untype byte_offset_untype //.
   Qed.
 
-  Lemma mapsto_vals_own_slice_small_byte (s : Slice.t) (data : list u8) (q : Qp) :
+  Lemma pointsto_vals_own_slice_small_byte (s : Slice.t) (data : list u8) (q : Qp) :
     int.Z s.(Slice.sz) ≤ int.Z s.(Slice.cap) →
     length data = int.nat (Slice.sz s) →
-    mapsto_vals (Slice.ptr s) q (data_vals data) -∗
+    pointsto_vals (Slice.ptr s) q (data_vals data) -∗
     own_slice_small s byteT q data.
   Proof.
     iIntros (? Hlen) "Hl". rewrite /own_slice_small /slice.own_slice_small. iSplit; last first.
     { iPureIntro. rewrite /list.untype fmap_length. auto. }
-    rewrite /array.array /mapsto_vals.
+    rewrite /array.array /pointsto_vals.
     change (list.untype data) with (data_vals data).
     iApply (big_sepL_impl with "Hl"). iIntros "!#" (i v Hv) "Hl".
     move: Hv. rewrite /data_vals list_lookup_fmap.
     intros (b & _ & ->)%fmap_Some_1.
-    rewrite byte_mapsto_untype byte_offset_untype //.
+    rewrite byte_pointsto_untype byte_offset_untype //.
   Qed.
 
 Ltac inv_undefined :=
@@ -1101,7 +1101,7 @@ Ltac inv_undefined :=
 
 Local Ltac solve_atomic :=
   apply strongly_atomic_atomic, ectx_language_atomic;
-  [ apply heap_head_atomic; cbn [relation.denote head_trans]; intros * H;
+  [ apply heap_base_atomic; cbn [relation.denote base_trans]; intros * H;
     repeat inv_undefined;
     try solve [ apply atomically_is_val in H; auto ]
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
@@ -1134,13 +1134,13 @@ Local Ltac solve_atomic2 :=
     iMod "HΦ" as (ms) "[Hc HΦ]".
     { solve_atomic2. }
     wp_apply (wp_SendOp with "[$Hc Hs]"); [done..| |].
-    { iApply own_slice_small_byte_mapsto_vals. done. }
+    { iApply own_slice_small_byte_pointsto_vals. done. }
     iIntros (err_early err_late) "[Hc Hl]".
     iApply ("HΦ" $! (negb err_early) with "[Hc]").
     { by destruct err_early. }
     iSplit.
     - iPureIntro. by destruct err_early, err_late.
-    - iApply mapsto_vals_own_slice_small_byte; done.
+    - iApply pointsto_vals_own_slice_small_byte; done.
   Qed.
 
   Lemma wp_Receive c_l c_r :
@@ -1174,7 +1174,7 @@ Local Ltac solve_atomic2 :=
     iApply ("HΦ" $! (Slice.mk _ _ _)).
     rewrite /own_slice.
     iSplitL.
-    - iApply mapsto_vals_own_slice_small_byte; done.
+    - iApply pointsto_vals_own_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
   Qed.
@@ -1206,7 +1206,7 @@ Local Ltac solve_atomic2 :=
     iApply ("HΦ" $! (Slice.mk _ _ _)). iFrame. iModIntro.
     rewrite /own_slice.
     iSplitL.
-    - iApply mapsto_vals_own_slice_small_byte; done.
+    - iApply pointsto_vals_own_slice_small_byte; done.
     - iExists []. simpl. iSplit; first by eauto with lia.
       iApply array.array_nil. done.
   Qed.
@@ -1232,7 +1232,7 @@ Local Ltac solve_atomic2 :=
     iSplit.
     { iApply "HΦ". by iLeft. }
     wp_apply (wp_FileWriteOp with "[$Hf Hs]"); [done..| |].
-    { iApply own_slice_small_byte_mapsto_vals. done. }
+    { iApply own_slice_small_byte_pointsto_vals. done. }
     iIntros (err) "[Hf Hs]".
     iSplit; last first.
     { iApply "HΦ". destruct err; by eauto. }
@@ -1241,7 +1241,7 @@ Local Ltac solve_atomic2 :=
     wpc_pures.
     { iApply "HΦ". eauto. }
     iApply "HΦ". iFrame.
-    iApply mapsto_vals_own_slice_small_byte; done.
+    iApply pointsto_vals_own_slice_small_byte; done.
   Qed.
 
   Lemma wpc_FileAppend f s q old data E :
@@ -1265,7 +1265,7 @@ Local Ltac solve_atomic2 :=
     iSplit.
     { iApply "HΦ". by iLeft. }
     wp_apply (wp_FileAppendOp with "[$Hf Hs]"); [done..| |].
-    { iApply own_slice_small_byte_mapsto_vals. done. }
+    { iApply own_slice_small_byte_pointsto_vals. done. }
     iIntros (err) "[Hf Hs]".
     iSplit; last first.
     { iApply "HΦ". destruct err; eauto. }
@@ -1274,7 +1274,7 @@ Local Ltac solve_atomic2 :=
     wpc_pures.
     { iApply "HΦ". eauto. }
     iApply "HΦ". iFrame.
-    iApply mapsto_vals_own_slice_small_byte; done.
+    iApply pointsto_vals_own_slice_small_byte; done.
   Qed.
 
   Lemma wp_GetTSC :

@@ -141,7 +141,7 @@ Proof using Type*.
 
   (* Transform the readonly struct field into a bunch of readonly ptsto for each field via fieldRef *)
   iMod (readonly_load with "req") as (q) "req2".
-  wp_apply (wp_struct_fieldRef_mapsto with "req2"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req2"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
@@ -268,7 +268,7 @@ Proof.
   wp_loadField.
 
   (* This block of proof writes to a field in a struct contained as a field in another struct *)
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   symmetry in Hacc_req.
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
@@ -281,7 +281,7 @@ Proof.
   wp_loadField.
   wp_binop.
 
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
@@ -295,12 +295,12 @@ Proof.
 
   (* TODO: too much copy-paste *)
   (* Open ref to req field in ShortTermIncrClerk *)
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
   (* Open ref to args field in RPCRequest *)
-  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Args"); first done.
   iIntros (Args) "[%Hacc_Args HArgs]".
   iDestruct (struct_fields_split with "HArgs") as "HArgs".
   iNamed "HArgs".
@@ -319,12 +319,12 @@ Proof.
   iIntros "His_dec".
 
   (* Open ref to req field in ShortTermIncrClerk *)
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
   (* Open ref to args field in RPCRequest *)
-  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Args"); first done.
   iIntros (Args) "[%Hacc_Args HArgs]".
   iDestruct (struct_fields_split with "HArgs") as "HArgs".
   iNamed "HArgs".
@@ -397,8 +397,8 @@ Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
   "#His_incrserver" ∷ is_incrserver γback server.(incrserver)
 .
 
-(* Either the proxy server has the mapsto fact for the backend, or, if it
-   doesn't, then it has the  mapsto for γ, meaning backend mapsto is being used
+(* Either the proxy server has the pointsto fact for the backend, or, if it
+   doesn't, then it has the  pointsto for γ, meaning backend pointsto is being used
    for a request, and thus belongs to some request's invariant.
  *)
 Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=

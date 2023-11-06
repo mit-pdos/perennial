@@ -19,7 +19,7 @@ From Perennial.algebra Require Import own_discrete.
     [map_delete], and [map_freeze] (these are the ghost updates); [ptsto_agree]
     is the main fact we get from validity.
 
-    This ownership is quite similar to what GooseLang provides for its mapsto
+    This ownership is quite similar to what GooseLang provides for its pointsto
     predicate, but it always has an explicit ghost name since this is intended
     for ghost state independent of the program's heap.
 

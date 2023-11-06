@@ -118,7 +118,7 @@ Section liftable.
   Qed.
 
   Global Instance singleton_liftable a v :
-    Liftable (fun mapsto => mapsto a v)%I.
+    Liftable (fun pointsto => pointsto a v)%I.
   Proof.
     intros; unfold Liftable.
     iIntros (mapsto1 ?) "Ha".

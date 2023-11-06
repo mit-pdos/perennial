@@ -580,7 +580,7 @@ Proof.
       iNamed "Hclose".
       iDestruct "HexpectedData" as (?) "HexpectedData".
       iDestruct (fmlist_agree_1 with "HexpectedData Hlogdata") as %->.
-      iDestruct (struct_field_mapsto_agree with "Hclosed closed2") as %Heq.
+      iDestruct (struct_field_pointsto_agree with "Hclosed closed2") as %Heq.
       inversion Heq.
 
       iMod (ctx_inv_close with "Hctx_inv Hlc2 HexpectedData Hcurdata Hreq_tok Hcrashtok") as "[HP Hcrashtok]".
@@ -608,7 +608,7 @@ Proof.
 
       wp_loadField.
 
-      iDestruct (struct_field_mapsto_agree with "HdurLen HdurableLength") as %Heq'.
+      iDestruct (struct_field_pointsto_agree with "HdurLen HdurableLength") as %Heq'.
       rewrite Heq'.
       iCombine "HdurLen HdurableLength" as "HdurLen".
       wp_storeField.
@@ -786,7 +786,7 @@ Proof.
     iNamed "Haof_own".
     wp_pures.
 
-    iDestruct (struct_field_mapsto_agree with "HdurLen HdurableLength") as %Heq.
+    iDestruct (struct_field_pointsto_agree with "HdurLen HdurableLength") as %Heq.
     rewrite Heq.
     iCombine "HdurLen HdurableLength" as "HdurLen".
     wp_storeField.

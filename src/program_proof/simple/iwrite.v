@@ -53,12 +53,12 @@ Proof.
   iNamed "Henc".
   iDestruct (own_slice_to_small with "Hs") as "Hs".
   wp_apply (wp_Op__OverWrite
-    _ _ _ _ _ _ _ _ _ _ _ (existT KindInode (bufInode (list_to_inode_buf data))) with "[$Hjrnl $Hinode_enc_mapsto $Hs]").
+    _ _ _ _ _ _ _ _ _ _ _ (existT KindInode (bufInode (list_to_inode_buf data))) with "[$Hjrnl $Hinode_enc_pointsto $Hs]").
   { eauto. }
   { rewrite /data_has_obj /=. apply list_to_inode_buf_to_list.
     rewrite /inode_bytes. word. }
   { eauto. }
-  iIntros "[Hjrnl Hinode_enc_mapsto]".
+  iIntros "[Hjrnl Hinode_enc_pointsto]".
   wp_apply util_proof.wp_DPrintf.
   wp_pures. iModIntro. iApply "HΦ". iFrame.
   iExists _. iFrame. iPureIntro.

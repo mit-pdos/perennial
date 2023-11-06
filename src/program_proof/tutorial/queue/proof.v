@@ -396,7 +396,7 @@ Proof.
     done.
 Qed.
 
-Lemma readonly_struct_field_mapsto_agree E l d f v1 v2 :
+Lemma readonly_struct_field_pointsto_agree E l d f v1 v2 :
   readonly (l ↦[d :: f] v1) -∗
     readonly (l ↦[d :: f] v2) -∗
       |={E}=> ⌜v1 = v2⌝.
@@ -404,7 +404,7 @@ Proof.
   iIntros "#H1 #H2".
   iMod (readonly_load with "H1") as (q1) "Hv1".
   iMod (readonly_load with "H2") as (q2) "Hv2".
-  iDestruct (struct_field_mapsto_agree with "Hv1 Hv2") as "%Hv".
+  iDestruct (struct_field_pointsto_agree with "Hv1 Hv2") as "%Hv".
   done.
 Qed.
 (* src/program_proof/wal/installer_proof.v *)

@@ -324,7 +324,7 @@ Proof.
       iIntros "[Hlocked Hown]".
       iNamed "Hown".
       wp_pures.
-      wp_apply (wp_struct_fieldRef_mapsto with "[$shardMap]").
+      wp_apply (wp_struct_fieldRef_pointsto with "[$shardMap]").
       { eauto. }
       iIntros (fl) "(H1&H2)".
       iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_close]".

@@ -21,16 +21,16 @@ Section goose_lang.
   Local Definition txnN := N .@ "txn".
   Local Definition lockN := N .@ "lock".
 
-  Definition rb_rep a0 a1 σ (mapsto: addr → object → iProp Σ) : iProp Σ :=
-    "Ha0" ∷ mapsto a0 (existT _ (bufBlock σ)) ∗
-    "Ha1" ∷ mapsto a1 (existT _ (bufBlock σ)).
+  Definition rb_rep a0 a1 σ (pointsto: addr → object → iProp Σ) : iProp Σ :=
+    "Ha0" ∷ pointsto a0 (existT _ (bufBlock σ)) ∗
+    "Ha1" ∷ pointsto a1 (existT _ (bufBlock σ)).
 
   (* stronger lifting theorem that actually extracts the non-map part of rb_rep
   rather than leaving it a wand; this makes it possible to actually update
   rb_rep to a new σ' (by running a fupd) *)
-  Lemma rb_rep_lift a0 a1 σ mapsto `{!Conflicting mapsto} :
-    rb_rep a0 a1 σ mapsto -∗ ∃ m, "%Hdom" ∷ ⌜dom m = {[a0; a1]}⌝ ∗
-                                  "rb_rep_m" ∷ ([∗ map] a↦v ∈ m, mapsto a v).
+  Lemma rb_rep_lift a0 a1 σ pointsto `{!Conflicting pointsto} :
+    rb_rep a0 a1 σ pointsto -∗ ∃ m, "%Hdom" ∷ ⌜dom m = {[a0; a1]}⌝ ∗
+                                  "rb_rep_m" ∷ ([∗ map] a↦v ∈ m, pointsto a v).
   Proof.
     clear P.
     iNamed 1.
@@ -54,11 +54,11 @@ Section goose_lang.
       "a0" ∷ l ↦[RepBlock :: "a0"] (addr2val a0) ∗
       "a1" ∷ l ↦[RepBlock :: "a1"] (addr2val a1) ∗
       "rb_rep" ∷ rb_rep a0 a1 σ
-                   (λ a v, durable_mapsto_own γ a v) ∗
+                   (λ a v, durable_pointsto_own γ a v) ∗
       "HP" ∷ P σ.
 
   Definition rb_cinv a0 a1 l γ: iProp Σ :=
-    ∃ σ, rb_rep a0 a1 σ (durable_mapsto γ) ∗
+    ∃ σ, rb_rep a0 a1 σ (durable_pointsto γ) ∗
          P σ.
 
   Definition is_rep_block l: iProp Σ :=

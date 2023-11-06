@@ -155,7 +155,7 @@ Theorem own_slice_small_as_fractional s q t vs :
   fractional.AsFractional (own_slice_small s t q vs) (λ q, own_slice_small s t q vs) q.
 Proof. split; auto; apply _. Qed.
 
-Global Instance own_slice_small_as_mapsto s t vs :
+Global Instance own_slice_small_as_pointsto s t vs :
   AsMapsTo (own_slice_small s t 1 vs) (λ q, own_slice_small s t q vs).
 Proof. constructor; auto; apply _. Qed.
 
@@ -185,9 +185,9 @@ Proof.
   destruct s; destruct vs; simpl in *; try lia.
   rewrite array_cons.
   iDestruct "Hs" as "[Hptr _]".
-  rewrite base_mapsto_untype.
+  rewrite base_pointsto_untype.
   2: { destruct bt; eauto. }
-  iApply heap_mapsto_non_null.
+  iApply heap_pointsto_non_null.
   iDestruct "Hptr" as "[Hptr %]".
   iFrame.
 Qed.
@@ -878,7 +878,7 @@ Proof.
   iDestruct (array_elem_acc H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
   word_cleanup.
-  iDestruct (struct_mapsto_ty with "Hi") as %Hty.
+  iDestruct (struct_pointsto_ty with "Hi") as %Hty.
   wp_load.
   iSpecialize ("Hsl'" with "Hi").
   iApply "HΦ"; iFrame.
@@ -1110,7 +1110,7 @@ Proof.
     iDestruct (array_cons with "Hsrc") as "[Hsrc Hvs2]".
     wp_load.
     wp_bind (store_ty _ _).
-    iDestruct (struct_mapsto_ty with "Hsrc") as %Hv0ty.
+    iDestruct (struct_pointsto_ty with "Hsrc") as %Hv0ty.
     wp_store.
     wp_pures.
     rewrite Z.mul_1_r.

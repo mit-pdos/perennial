@@ -51,24 +51,24 @@ Definition LVL_INV : nat := 125.
 
 Definition twophase_crash_cond_full
            {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
-  := ("%Hvalids" ∷ ⌜ map_Forall (mapsto_valid γ) mt ⌝ ∗
+  := ("%Hvalids" ∷ ⌜ map_Forall (pointsto_valid γ) mt ⌝ ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "#Hdom" ∷ jrnl_dom (dom mt) ∗
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
-      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
-      "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj) ∗
+      "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
+      "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj) ∗
       "%Hdomsize" ∷ ⌜ size mt = JRNL_SIZE ⌝).
 
 Definition twophase_crash_cond_partial
            {Σ: gFunctors} {hG: heapGS Σ} {rG: refinement_heapG Σ} {aG : twophaseG Σ}  γ dinit logm mt : iProp Σ
-  := ("%Hvalids" ∷ ⌜ map_Forall (mapsto_valid γ) mt ⌝ ∗
+  := ("%Hvalids" ∷ ⌜ map_Forall (pointsto_valid γ) mt ⌝ ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "#Hdom" ∷ jrnl_dom (dom mt) ∗
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
-      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
-      "Hjrnl_mapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj obj)) ∗
+      "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
+      "Hjrnl_pointsto" ∷ jrnl_pointsto a 1 (bufObj_to_obj obj)) ∗
       "%Hdomsize" ∷ ⌜ size mt = JRNL_SIZE ⌝).
 
 Definition twophase_crash_cond

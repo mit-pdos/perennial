@@ -121,7 +121,7 @@ Proof.
   iSplitL "Hstate".
   {
     iExactEq "Hstate".
-    rewrite struct_field_mapsto_eq.
+    rewrite struct_field_pointsto_eq.
     done. (* FIXME: maybe add a lemma to avoid unfolding this definition? *)
   }
   clear Φ.
@@ -144,7 +144,7 @@ Proof.
   wp_loadField.
   wp_loadField.
   iAssert (ps ↦[paxosState :: "state"] (slice_val sl))%I with "[Hsl_ptr]" as "Hsl_ptr".
-  { iExactEq "Hsl_ptr". rewrite struct_field_mapsto_eq. done. }
+  { iExactEq "Hsl_ptr". rewrite struct_field_pointsto_eq. done. }
   wp_loadField.
   wp_apply (wp_allocStruct).
   { repeat econstructor. done. }

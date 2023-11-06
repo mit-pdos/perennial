@@ -248,7 +248,7 @@ End translate.
 
 Section initP.
 
-Definition kinds_mapsto_valid (kinds : gmap u64 defs.bufDataKind)
+Definition kinds_pointsto_valid (kinds : gmap u64 defs.bufDataKind)
            (a : addr_proof.addr) (obj : {K : defs.bufDataKind & defs.bufDataT K}) :=
   addr_proof.valid_addr a
   ∧ defs.valid_off (buf_proof.objKind obj) (addr_proof.addrOff a)

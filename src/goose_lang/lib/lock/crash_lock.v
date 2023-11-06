@@ -226,7 +226,7 @@ Section proof.
     iInv Nlock as (b) "[>Hl _]".
 
     iDestruct (locked_loc with "Hlocked") as "Hl2".
-    iDestruct (heap_mapsto_agree with "[$Hl $Hl2]") as %->.
+    iDestruct (heap_pointsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
     iApply (wpc_wp NotStuck _ _ _ True).

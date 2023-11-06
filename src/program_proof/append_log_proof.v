@@ -17,7 +17,7 @@ Implicit Types s : Slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
 (* TODO: is this still needed? *)
-Local Opaque struct_mapsto.
+Local Opaque struct_pointsto.
 
 Definition is_hdr_block (sz disk_sz: u64) (b: Block) :=
   block_encodes b [EncUInt64 sz; EncUInt64 disk_sz].
@@ -45,7 +45,7 @@ Definition ptsto_log (l:loc) (vs:list Block): iProp Σ :=
 Theorem wp_mkHdr stk E lptr (sz disk_sz: u64) :
   {{{ log_fields lptr sz disk_sz }}}
     Log__mkHdr #lptr @ stk; E
-  {{{ l cap b, RET (slice_val (Slice.mk l 4096 cap)); mapsto_block l 1 b ∗ ⌜is_hdr_block sz disk_sz b⌝ ∗
+  {{{ l cap b, RET (slice_val (Slice.mk l 4096 cap)); pointsto_block l 1 b ∗ ⌜is_hdr_block sz disk_sz b⌝ ∗
                                                       log_fields lptr sz disk_sz }}}.
 Proof.
   iIntros (Φ) "[Hsz Hdisk_sz] HΦ".

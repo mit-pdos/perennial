@@ -43,7 +43,7 @@ Proof.
   }
 
   replace (#(LitInt (word.mul 128 8))) with (#1024%nat) by reflexivity.
-  wp_apply (wp_Op__ReadBuf with "[$Hjrnl $Hinode_enc_mapsto]"); eauto.
+  wp_apply (wp_Op__ReadBuf with "[$Hjrnl $Hinode_enc_pointsto]"); eauto.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_pures. wp_call.

@@ -35,22 +35,22 @@ Section proof.
    ((|C={⊤}=> ∃ mt',
        ⌜ dom mt' = d ⌝ ∗
        ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
-       ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
+       ⌜ map_Forall (pointsto_valid γ') mt' ⌝ ∗
        "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
-         "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
-         "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj) ∗
+         "Hdurable_pointsto" ∷ durable_pointsto_own γ' a obj ∗
+         "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj) ∗
       "%Hdomsize" ∷ ⌜ size mt' = JRNL_SIZE ⌝))%I.
 
   Theorem wpc_Init N d γ dinit logm mt mj (Hlt: (/2 < mj)%Qp) :
     N ## invN →
     N ## invariant.walN →
-    map_Forall (mapsto_valid γ) mt →
+    map_Forall (pointsto_valid γ) mt →
     {{{
       "Hpre" ∷ ([∗ map] _ ↦ _ ∈ mt, pre_borrow) ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
-        "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
-        "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj
+        "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
+        "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj
       ) ∗
       "%Hdomsize" ∷ ⌜ size mt = JRNL_SIZE ⌝ ∗
       "#Hspec_ctx" ∷ spec_ctx ∗
@@ -70,11 +70,11 @@ Section proof.
     {{{ ∃ γ' logm' mt',
        ⌜ dom mt' = dom mt ⌝ ∗
        ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
-       ⌜ map_Forall (mapsto_valid γ') mt' ⌝ ∗
+       ⌜ map_Forall (pointsto_valid γ') mt' ⌝ ∗
       is_txn_durable γ' dinit logm' ∗
       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
-        "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
-        "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj
+        "Hdurable_pointsto" ∷ durable_pointsto_own γ' a obj ∗
+        "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj
       ) ∗
       "%Hdomsize" ∷ ⌜ size mt' = JRNL_SIZE ⌝
     }}}.
@@ -92,7 +92,7 @@ Section proof.
       { subst. iModIntro. iApply "HΦ". iExists _, _, mt. by iFrame. }
       iDestruct (big_sepM_sep with "Hmapstos") as "(Hm1&Hm2)".
       rewrite /named.
-      iMod (exchange_durable_mapsto with "[$Hcinv Hm1]") as "Hm1".
+      iMod (exchange_durable_pointsto with "[$Hcinv Hm1]") as "Hm1".
       { iApply (big_sepM_mono with "Hm1"). iIntros (???) "H".
         iDestruct "H" as "(?&?)". iFrame. }
       iModIntro. iApply "HΦ". iExists _, _, mt. iFrame.
@@ -101,7 +101,7 @@ Section proof.
       iSplit; first eauto.
       iSplit; first eauto.
       { iPureIntro. eapply map_Forall_impl; try eassumption.
-        intros. eapply exchange_mapsto_valid; try eassumption. }
+        intros. eapply exchange_pointsto_valid; try eassumption. }
       iFrame "%".
       iApply big_sepM_sep. iFrame.
     }
@@ -118,7 +118,7 @@ Section proof.
       iMod "Htxn_cancel".
       iDestruct (big_sepM_sep with "Hmapstos") as "(Hm1&Hm2)".
       rewrite /named.
-      iMod (exchange_durable_mapsto with "[Hm1]") as "Hm1".
+      iMod (exchange_durable_pointsto with "[Hm1]") as "Hm1".
       { iFrame "Htxn_cinv". iApply (big_sepM_mono with "Hm1"). iIntros (???) "H".
         iDestruct "H" as "(?&?)". iFrame. }
       iIntros "HC". iDestruct "Htxn_cancel" as ">Htxn_cancel".
@@ -129,7 +129,7 @@ Section proof.
       iSplit; first eauto.
       iSplit; first eauto.
       { iPureIntro. eapply map_Forall_impl; try eassumption.
-        intros. eapply exchange_mapsto_valid; try eassumption. }
+        intros. eapply exchange_pointsto_valid; try eassumption. }
       iFrame "%".
       iApply big_sepM_sep. iFrame.
     }
@@ -175,7 +175,7 @@ Section proof.
     }
     wpc_frame.
     wp_apply (
-      wp_MkLockMap _ (twophase_linv_flat jrnl_mapsto_own γ γ')
+      wp_MkLockMap _ (twophase_linv_flat jrnl_pointsto_own γ γ')
       with "[Hlinvs]"
     ).
     {

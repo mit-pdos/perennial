@@ -481,7 +481,7 @@ Tactic Notation "awp_apply" open_constr(lem) "without" constr(Hs) :=
 *)
 
 Tactic Notation "wp_untyped_load" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
     iAssumptionCore || fail "wp_load: cannot find" l "↦ ?" in
   wp_pures;
@@ -491,13 +491,13 @@ Tactic Notation "wp_untyped_load" :=
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load _ _ _ _ _ K))
       |fail 1 "wp_load: cannot find 'Load' in" e];
     [tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |wp_finish]
   | _ => fail "wp_load: not a 'wp'"
   end.
 
 Tactic Notation "wp_cmpxchg" "as" simple_intropattern(H1) "|" simple_intropattern(H2) :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
     iAssumptionCore || fail "wp_cmpxchg: cannot find" l "↦ ?" in
   wp_pures;
@@ -507,7 +507,7 @@ Tactic Notation "wp_cmpxchg" "as" simple_intropattern(H1) "|" simple_intropatter
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_cmpxchg _ _ _ _ _ _ K))
       |fail 1 "wp_cmpxchg: cannot find 'CmpXchg' in" e];
     [tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |pm_reflexivity
     |try solve_vals_compare_safe
     |intros H1; wp_finish
@@ -516,7 +516,7 @@ Tactic Notation "wp_cmpxchg" "as" simple_intropattern(H1) "|" simple_intropatter
   end.
 
 Tactic Notation "wp_cmpxchg_fail" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
     iAssumptionCore || fail "wp_cmpxchg_fail: cannot find" l "↦ ?" in
   wp_pures;
@@ -526,7 +526,7 @@ Tactic Notation "wp_cmpxchg_fail" :=
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_cmpxchg_fail _ _ _ _ _ K))
       |fail 1 "wp_cmpxchg_fail: cannot find 'CmpXchg' in" e];
     [tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |try (simpl; congruence) (* value inequality *)
     |try solve_vals_compare_safe
     |wp_finish]
@@ -534,7 +534,7 @@ Tactic Notation "wp_cmpxchg_fail" :=
   end.
 
 Tactic Notation "wp_cmpxchg_suc" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
     iAssumptionCore || fail "wp_cmpxchg_suc: cannot find" l "↦ ?" in
   wp_pures;
@@ -544,7 +544,7 @@ Tactic Notation "wp_cmpxchg_suc" :=
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_cmpxchg_suc _ _ _ _ _ _ K))
       |fail 1 "wp_cmpxchg_suc: cannot find 'CmpXchg' in" e];
     [tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |pm_reflexivity
     |try (simpl; congruence) (* value equality *)
     |try solve_vals_compare_safe

@@ -368,12 +368,12 @@ Proof.
       contradiction.
     }
 
-    iDestruct "Hdata" as (b_disk txn_id') "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
+    iDestruct "Hdata" as (b_disk txn_id') "(%Hb_disk&Haddr_i_pointsto&%Haddr_LogSz_bound)".
     iExists _.
     rewrite -Hupd.
-    iFrame "Haddr_i_mapsto".
+    iFrame "Haddr_i_pointsto".
     iApply ncfupd_mask_intro; first set_solver+.
-    iIntros "HcloseE /= Haddr_i_mapsto".
+    iIntros "HcloseE /= Haddr_i_pointsto".
     iMod "HcloseE" as "_".
     iDestruct (txns_are_sound with "Htxns_ctx Hsubtxns") as %Hsubtxns.
 
@@ -384,7 +384,7 @@ Proof.
       HownInstallerPos_walinv HownInstallerTxn_walinv
       HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
       HownDiskEnd_walinv HownDiskEndTxn_walinv
-      HP Hdataclose Haddr_i_mapsto]") as "_".
+      HP Hdataclose Haddr_i_pointsto]") as "_".
     {
       iIntros "!>".
       iExists _.
@@ -406,7 +406,7 @@ Proof.
       }
       iExists _.
       iFrame (Hinstalled_bounds) "∗".
-      iSpecialize ("Hdataclose" with "[Haddr_i_mapsto]").
+      iSpecialize ("Hdataclose" with "[Haddr_i_pointsto]").
       {
         (* show that the new big_sepM condition holds for address touched by the update *)
         destruct Hbufs as [Hhas Hmatch].
@@ -470,7 +470,7 @@ Qed.
 (* TODO: why do we need this here again? *)
 Opaque is_sliding.
 
-Lemma readonly_struct_field_mapsto_agree E l d f v1 v2 :
+Lemma readonly_struct_field_pointsto_agree E l d f v1 v2 :
   readonly (l ↦[d :: f] v1) -∗
   readonly (l ↦[d :: f] v2) -∗
   |={E}=> ⌜v1 = v2⌝.
@@ -478,7 +478,7 @@ Proof.
   iIntros "#H1 #H2".
   iMod (readonly_load with "H1") as (q1) "Hv1".
   iMod (readonly_load with "H2") as (q2) "Hv2".
-  iDestruct (struct_field_mapsto_agree with "Hv1 Hv2") as "%Hv".
+  iDestruct (struct_field_pointsto_agree with "Hv1 Hv2") as "%Hv".
   done.
 Qed.
 
@@ -802,9 +802,9 @@ Proof.
   iNamed "Hmem".
   iClear "Hmem".
   iDestruct "Hstfields" as "(memLock'&d'&circ'&st'&Hstfields)".
-  iMod (readonly_struct_field_mapsto_agree with "st st'") as "<-".
-  iMod (readonly_struct_field_mapsto_agree with "memLock memLock'") as "<-".
-  iMod (readonly_struct_field_mapsto_agree with "d d'") as "<-".
+  iMod (readonly_struct_field_pointsto_agree with "st st'") as "<-".
+  iMod (readonly_struct_field_pointsto_agree with "memLock memLock'") as "<-".
+  iMod (readonly_struct_field_pointsto_agree with "d d'") as "<-".
 
   wp_loadField.
   wp_loadField.

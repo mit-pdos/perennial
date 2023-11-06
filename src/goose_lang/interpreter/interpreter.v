@@ -171,9 +171,9 @@ Proof.
   }
 Qed.
 
-(* Deals with monadic wrappers around head_trans. *)
-Ltac head_step :=
-  apply head_step_trans; rewrite /= /head_step /=; repeat (Transitions.monad_simpl; simpl).
+(* Deals with monadic wrappers around base_trans. *)
+Ltac base_step :=
+  apply base_step_trans; rewrite /= /base_step /=; repeat (Transitions.monad_simpl; simpl).
 
 (* Suppose we want to show that [a -> b] in 1 step. Then, nsteps
 doesn't have a constructor for stepping just once. Instead we have to
@@ -185,7 +185,7 @@ Note that we always apply step_atomic with t1, t2 as [] since we don't
 care about threading. *)
 Ltac single_step :=
   eapply language.nsteps_l; [|apply language.nsteps_refl];
-  eapply step_atomic with (t1:=[]) (t2:=[]); [simpl; reflexivity|simpl; reflexivity|apply head_prim_step; head_step].
+  eapply step_atomic with (t1:=[]) (t2:=[]); [simpl; reflexivity|simpl; reflexivity|apply base_prim_step; base_step].
 
 (* Given that the first part of a computation succeeds, rewrites the
 hypothesis to be about the rest of the computation. If the first part
@@ -472,7 +472,7 @@ Section interpreter.
           v2 <- interpret n e2;
           sbt <- mget;
           let s := fst sbt in
-          t <- mlift_bt (Transitions.interpret [] (head_trans (Primitive2 p (Val v1) (Val v2))) s) "transition.interpret failed in Primitive2";
+          t <- mlift_bt (Transitions.interpret [] (base_trans (Primitive2 p (Val v1) (Val v2))) s) "transition.interpret failed in Primitive2";
               match t return StateT btstate Error val with
               (* hints, new state, (obs list, next expr, threads) *)
               | (hints, s', (l, expr', ts)) =>

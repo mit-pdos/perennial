@@ -204,7 +204,7 @@ Proof.
   - iIntros "(H1&H2)".
     iDestruct "H1" as (hd1 Heq) "H1".
     iDestruct "H2" as (hd2 Heq') "H2".
-    iDestruct (heap_mapsto_agree with "[$H1 $H2]") as %Heq''. subst.
+    iDestruct (heap_pointsto_agree with "[$H1 $H2]") as %Heq''. subst.
     iExists _; iSplit; first done.
     by iSplitL "H1".
 Qed.

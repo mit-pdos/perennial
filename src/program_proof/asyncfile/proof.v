@@ -530,7 +530,7 @@ Proof.
 
   iMod (readonly_load with "Hfilename_in") as (?) "H1".
   iMod (readonly_load with "Hfilename") as (?) "H2".
-  iDestruct (struct_field_mapsto_agree with "H1 H2") as %?.
+  iDestruct (struct_field_pointsto_agree with "H1 H2") as %?.
   iClear "H1 H2".
   injection H as <-.
   wp_bind (FileWrite _ _).

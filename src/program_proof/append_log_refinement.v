@@ -160,7 +160,7 @@ Proof.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. econstructor; eauto. }
+      apply base_prim_step. econstructor; eauto. }
     rewrite /LVL_OPS.
     wpc_apply (@wpc_Log__Reset with "[$] []").
     { eauto. }
@@ -179,7 +179,7 @@ Proof.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. econstructor; eauto. }
+      apply base_prim_step. econstructor; eauto. }
     wpc_apply (@wpc_Init with "[$] []").
     { eauto. }
     { eauto. }
@@ -203,7 +203,7 @@ Proof.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step. econstructor; eauto. }
+      apply base_prim_step. econstructor; eauto. }
     wpc_apply (@wpc_Open with "[$] []").
     { eauto. }
     { rewrite /LVL_INV. lia. }

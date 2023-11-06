@@ -117,7 +117,7 @@ Proof.
     inversion Htrans. subst.
     iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
-    { econstructor. apply head_prim_step_trans. econstructor. eauto. }
+    { econstructor. apply base_prim_step_trans. econstructor. eauto. }
     { solve_ndisj. }
     { iDestruct "Hspec" as "(?&?)". eauto. }
     wp_apply (wp_Init JRNL_KIND_SIZE (nroot.@"H") with "[Hj]").
@@ -134,7 +134,7 @@ Proof.
     inversion Htrans. subst.
     iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
-    { econstructor. apply head_prim_step_trans. econstructor. eauto. }
+    { econstructor. apply base_prim_step_trans. econstructor. eauto. }
     { solve_ndisj. }
     { iDestruct "Hspec" as "(?&?)". eauto. }
     iMod (ghost_step_jrnl_mkalloc with "[$] [$Hj]") as "H".
@@ -214,7 +214,7 @@ Proof.
   iDestruct (jrnl_dom_agree with "[$Hdom] [$Hdom']") as %Hdom.
   rewrite /twophase_crash_cond.
   rewrite /twophase_crash_tok.
-  rewrite /jrnl_mapsto_own.
+  rewrite /jrnl_pointsto_own.
   iEval (setoid_rewrite sep_assoc) in "Hmapstos".
   iDestruct (big_sepM_sep with "Hmapstos") as "(H1&H2)".
   iSplitL "H1 Htxn_durable".
@@ -289,7 +289,7 @@ Proof.
   iAssert (⌜ dom mt = dom (jrnlData s)⌝)%I with "[]" as %Hdomeq.
   { rewrite /jrnl_dom.
     destruct Heq as (Heq_data&Heq_kinds&Heq_dom&Heq_data_name&Heq_kinds_name&Heq_dom_name).
-    rewrite /jrnl_mapsto/jrnl_kinds.
+    rewrite /jrnl_pointsto/jrnl_kinds.
     rewrite Heq_dom Heq_dom_name.
     iDestruct (jrnl_dom_agree with "Hdom Hdom'") as %Hdom; eauto.
   }
@@ -303,7 +303,7 @@ Proof.
   iSplitL "".
   {
     destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
-    rewrite /jrnl_mapsto/jrnl_kinds.
+    rewrite /jrnl_pointsto/jrnl_kinds.
     rewrite Heq_kinds Heq_kinds_name.
     by iFrame "#".
   }
@@ -312,12 +312,12 @@ Proof.
     iFrame "%".
     iApply (big_sepM_mono with "Hmapstos").
     { iIntros (???) "(($&Hjrnl)&Htok)".
-      rewrite /jrnl_mapsto_own.
+      rewrite /jrnl_pointsto_own.
       iNamed "Hjrnl".
-      iNamed "Hjrnl_mapsto".
+      iNamed "Hjrnl_pointsto".
       rewrite /jrnlG0//=.
       destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
-      rewrite /jrnl_mapsto/jrnl_kinds.
+      rewrite /jrnl_pointsto/jrnl_kinds.
       rewrite Heq_data Heq_data_name Heq_kinds Heq_kinds_name.
       iFrame.
     }

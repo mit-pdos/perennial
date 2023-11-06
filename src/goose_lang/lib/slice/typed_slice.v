@@ -147,7 +147,7 @@ Global Instance own_slice_small_AsFractional s q t vs :
   fractional.AsFractional (own_slice_small s t q vs) (λ q, own_slice_small s t q vs) q.
 Proof. split; auto; apply _. Qed.
 
-Global Instance own_slice_small_as_mapsto s t vs :
+Global Instance own_slice_small_as_pointsto s t vs :
   AsMapsTo (own_slice_small s t 1 vs) (λ q, own_slice_small s t q vs).
 Proof. constructor; auto; intros; apply _. Qed.
 

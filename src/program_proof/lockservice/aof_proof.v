@@ -202,7 +202,7 @@ Proof.
     iNamed "Haof_own".
     wp_pures.
 
-    iDestruct (struct_field_mapsto_agree with "HdurLen HdurableLength") as %Heq.
+    iDestruct (struct_field_pointsto_agree with "HdurLen HdurableLength") as %Heq.
     rewrite Heq.
     iCombine "HdurLen HdurableLength" as "HdurLen".
     wp_storeField.

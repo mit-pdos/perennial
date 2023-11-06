@@ -26,7 +26,7 @@ Qed.
 End goose_lang.
 
 Tactic Notation "wp_untyped_store" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
     iAssumptionCore || fail "wp_untyped_store: cannot find" l "↦ ?" in
   wp_pures;
@@ -36,7 +36,7 @@ Tactic Notation "wp_untyped_store" :=
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ _ _ K))
       |fail 1 "wp_untyped_store: cannot find 'Store' in" e];
     [tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |pm_reflexivity
     |first [wp_seq|wp_finish]]
   | _ => fail "wp_untyped_store: not a 'wp'"

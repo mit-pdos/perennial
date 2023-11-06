@@ -86,9 +86,9 @@ Qed.
 
 Lemma array_to_block l q (bs: list byte) :
   length bs = Z.to_nat 4096 ->
-  l ↦∗[byteT]{q} (b2val <$> bs) -∗ mapsto_block l q (list_to_block bs).
+  l ↦∗[byteT]{q} (b2val <$> bs) -∗ pointsto_block l q (list_to_block bs).
 Proof.
-  rewrite /array /mapsto_block.
+  rewrite /array /pointsto_block.
   iIntros (H) "Hl".
   rewrite -> list_to_block_to_vals by auto.
   rewrite heap_array_to_list.
@@ -97,13 +97,13 @@ Proof.
   iApply (big_sepL_impl with "Hl"); simpl.
   iModIntro.
   iIntros (i x) "% Hl".
-  iApply (byte_mapsto_untype with "Hl").
+  iApply (byte_pointsto_untype with "Hl").
 Qed.
 
 Lemma array_to_block_array l q b :
-  array l q byteT (Block_to_vals b) ⊣⊢ mapsto_block l q b.
+  array l q byteT (Block_to_vals b) ⊣⊢ pointsto_block l q b.
 Proof.
-  rewrite /mapsto_block /array.
+  rewrite /pointsto_block /array.
   rewrite heap_array_to_list.
   rewrite ?big_sepL_fmap.
   setoid_rewrite Z.mul_1_l.
@@ -111,11 +111,11 @@ Proof.
   intros k y Heq.
   rewrite /Block_to_vals in Heq.
   rewrite /b2val.
-  rewrite byte_mapsto_untype //.
+  rewrite byte_pointsto_untype //.
 Qed.
 
 Lemma slice_to_block_array s q b :
-  own_slice_small s byteT q (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) q b.
+  own_slice_small s byteT q (Block_to_vals b) -∗ pointsto_block s.(Slice.ptr) q b.
 Proof.
   rewrite /own_slice_small.
   iIntros "[Ha _]".
@@ -123,7 +123,7 @@ Proof.
 Qed.
 
 Lemma block_array_to_slice_raw l q b :
-  mapsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = int.nat 4096⌝.
+  pointsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = int.nat 4096⌝.
 Proof.
   iIntros "Hm".
   rewrite /own_slice_small.
@@ -144,7 +144,7 @@ Ltac inv_undefined :=
 
 Local Ltac solve_atomic :=
   apply strongly_atomic_atomic, ectx_language_atomic;
-  [ apply heap_head_atomic; cbn [relation.denote head_trans]; intros * H;
+  [ apply heap_base_atomic; cbn [relation.denote base_trans]; intros * H;
     repeat inv_undefined;
     try solve [ apply atomically_is_val in H; auto ]
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
@@ -496,7 +496,7 @@ Qed.
 Theorem slice_to_block s q bs :
   s.(Slice.sz) = 4096 ->
   own_slice_small s byteT q (b2val <$> bs) -∗
-  mapsto_block s.(Slice.ptr) q (list_to_block bs).
+  pointsto_block s.(Slice.ptr) q (list_to_block bs).
 Proof.
   iIntros (Hsz) "Hs".
   rewrite /own_slice_small.

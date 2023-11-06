@@ -175,18 +175,18 @@ Local Instance comparable_PureExec (ϕ: Prop) (v1 v2:val) :
 Proof.
   intros ?.
   eapply nsteps_once.
-  apply pure_head_step_pure_step.
+  apply pure_base_step_pure_step.
   constructor.
   {
     intros; subst; do 4 eexists; constructor 1; cbn.
-    rewrite /head_step /head_trans /bin_op_eval /bin_op_eval_eq /=.
+    rewrite /base_step /base_trans /bin_op_eval /bin_op_eval_eq /=.
     rewrite decide_True; last done.
     repeat (Transitions.monad_simpl; simpl).
   }
   {
     inversion 1; subst.
     simpl in *.
-    rewrite /head_step /head_trans /bin_op_eval /bin_op_eval_eq /= in H1.
+    rewrite /base_step /base_trans /bin_op_eval /bin_op_eval_eq /= in H1.
     rewrite decide_True in H1; last done.
     simpl in H1.
     by Transitions.monad_inv.

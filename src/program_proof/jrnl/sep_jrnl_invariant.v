@@ -15,20 +15,20 @@ From Perennial.goose_lang.ffi Require Import disk_prelude.
 
 Overview of resources used here:
 
-durable_mapsto_own - durable, exclusive
-durable_mapsto - durable but missing modify_token
+durable_pointsto_own - durable, exclusive
+durable_pointsto - durable but missing modify_token
 jrnl_maps_to - ephemeral
 
-is_crash_lock (durable_mapsto_own) (durable_mapsto)
-on crash: exchange durable_mapsto for durable_mapsto_own
+is_crash_lock (durable_pointsto_own) (durable_pointsto)
+on crash: exchange durable_pointsto for durable_pointsto_own
 
-lift: move durable_mapsto_own into transaction and get jrnl_maps_to and durable_mapsto is added to is_jrnl
+lift: move durable_pointsto_own into transaction and get jrnl_maps_to and durable_pointsto is added to is_jrnl
 
 is_jrnl P = is_jrnl_mem * is_jrnl_durable P
 
 reads and writes need jrnl_maps_to and is_jrnl_mem
 
-is_jrnl_durable P -* P (P is going to be durable_mapsto) (use this to frame out crash condition)
+is_jrnl_durable P -* P (P is going to be durable_pointsto) (use this to frame out crash condition)
 
 exchange own_last_frag γ for own_last_frag γ' ∗ modify_token γ' (in sep_jrnl layer)
 exchange ephemeral_txn_val γ for ephemeral_txn_val γ' if the transaction id was preserved
@@ -87,7 +87,7 @@ Section goose_lang.
   in [async.v], but we still have to track this token to be able to lift
   addresses into a transaction. *)
   Definition modify_token γ (a: addr) : iProp Σ :=
-    ∃ obj, obj.invariant.mapsto_txn γ.(jrnl_txn_names) a obj.
+    ∃ obj, obj.invariant.pointsto_txn γ.(jrnl_txn_names) a obj.
 
   Global Instance modify_token_conflicting γ T :
     Conflicting (λ (l : addr) (_ : T), modify_token γ l).
@@ -95,7 +95,7 @@ Section goose_lang.
     iIntros (a0 v0 a1 v1) "H0 H1".
     iDestruct "H0" as (o0) "H0".
     iDestruct "H1" as (o1) "H1".
-    iApply (mspec.mapsto_txn_conflicting with "H0 H1").
+    iApply (mspec.pointsto_txn_conflicting with "H0 H1").
   Qed.
 
   (* The basic statement of what is in the logical, committed disk of the
@@ -105,12 +105,12 @@ Section goose_lang.
   exclusive ownership over transactions ≥ i, and a persistent witness that i is
   durable (so we don't crash to before this fact is relevant). The first two are
   grouped into [ephemeral_val_from]. *)
-  Definition durable_mapsto γ (a: addr) obj: iProp Σ :=
+  Definition durable_pointsto γ (a: addr) obj: iProp Σ :=
     ∃ i, ephemeral_val_from γ.(jrnl_async_name) i a obj ∗
          txn_durable γ i.
 
-  Global Instance durable_mapsto_conflicting γ :
-    Conflicting (λ a v, durable_mapsto γ a v).
+  Global Instance durable_pointsto_conflicting γ :
+    Conflicting (λ a v, durable_pointsto γ a v).
   Proof.
     iIntros (a0 v0 a1 v1) "H0 H1".
     iDestruct "H0" as (o0) "[H0 _]".
@@ -119,10 +119,10 @@ Section goose_lang.
     iDestruct (ephemeral_val_from_conflict with "H0 H1") as "H". done.
   Qed.
 
-  Definition durable_mapsto_own γ a obj: iProp Σ :=
-    modify_token γ a ∗ durable_mapsto γ a obj.
+  Definition durable_pointsto_own γ a obj: iProp Σ :=
+    modify_token γ a ∗ durable_pointsto γ a obj.
 
-  Global Instance durable_mapsto_own_discretizable γ a obj: Discretizable (durable_mapsto_own γ a obj).
+  Global Instance durable_pointsto_own_discretizable γ a obj: Discretizable (durable_pointsto_own γ a obj).
   Proof. apply _. Qed.
 
   Definition crash_point γ logm crash_txn : iProp Σ :=
@@ -209,10 +209,10 @@ Section goose_lang.
   (* To make work with 2PL:
      Consider is_jrnl_mem' that has Hdurable removed and adds mT as an explicit parameter.
      Right before commit, we
-     convert is_jrnl_mem' .. .. mT ∗ ([∗ map] a ↦ o ∈ mT durable_mapsto a o) into an is_jrnl. *)
+     convert is_jrnl_mem' .. .. mT ∗ ([∗ map] a ↦ o ∈ mT durable_pointsto a o) into an is_jrnl. *)
 
   (* Alternative is define is_jrnl_durable' mT which is just Hdurable and then prove that
-     from is_jrnl_mem ∗ ([∗ map] a ↦ o ∈ mT, durable_mapsto a o) ∗ is_jrnl_durable' mT
+     from is_jrnl_mem ∗ ([∗ map] a ↦ o ∈ mT, durable_pointsto a o) ∗ is_jrnl_durable' mT
      can be converted into an is_jrnl
 
     This seems better.
@@ -222,11 +222,11 @@ Section goose_lang.
     ∃ committed_mT,
       "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT ∗
       "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT,
-                     durable_mapsto γ a v) ∗
-      "#HrestoreP0" ∷ □ (∀ mapsto,
+                     durable_pointsto γ a v) ∗
+      "#HrestoreP0" ∷ □ (∀ pointsto,
                          ([∗ map] a↦v ∈ committed_mT,
-                          mapsto a v) -∗
-                         P0 mapsto)
+                          pointsto a v) -∗
+                         P0 pointsto)
   .
 
   Definition is_jrnl l γ dinit γtxn P0 : iProp Σ :=
@@ -256,13 +256,13 @@ Section goose_lang.
 
   Theorem is_jrnl_durable_wand γ γdurable P1 P2 :
     is_jrnl_durable γ γdurable P1 -∗
-    □(∀ mapsto, P1 mapsto -∗ P2 mapsto) -∗
+    □(∀ pointsto, P1 pointsto -∗ P2 pointsto) -∗
     is_jrnl_durable γ γdurable P2.
   Proof.
     iIntros "Htxn #Hwand".
     iNamed "Htxn".
     iExists _; iFrame "∗#%".
-    iIntros (mapsto) "!> Hm".
+    iIntros (pointsto) "!> Hm".
     iApply "Hwand". iApply "HrestoreP0". iFrame.
   Qed.
 
@@ -286,7 +286,7 @@ Section goose_lang.
 
   Theorem is_jrnl_wand l γ dinit γtxn P1 P2 :
     is_jrnl l γ dinit γtxn P1 -∗
-    □(∀ mapsto, P1 mapsto -∗ P2 mapsto) -∗
+    □(∀ pointsto, P1 pointsto -∗ P2 pointsto) -∗
     is_jrnl l γ dinit γtxn P2.
   Proof.
     iIntros "Htxn #Hwand".
@@ -296,7 +296,7 @@ Section goose_lang.
   Qed.
 
   Theorem is_jrnl_durable_to_old_pred γ γdurable P0 :
-    is_jrnl_durable γ γdurable P0 -∗ P0 (durable_mapsto γ).
+    is_jrnl_durable γ γdurable P0 -∗ P0 (durable_pointsto γ).
   Proof.
     iNamed 1.
     iApply "HrestoreP0". iFrame.
@@ -305,22 +305,22 @@ Section goose_lang.
   Theorem is_jrnl_to_old_pred' l γ dinit γtxn γdurable committed_mT :
     "Hjrnl_mem" ∷ is_jrnl_mem l γ dinit γtxn γdurable -∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
-    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) -∗
-    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ a v).
+    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_pointsto γ a v) -∗
+    "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_pointsto_own γ a v).
   Proof.
     iIntros "???".
     iNamed.
     iNamed "Hjrnl_mem".
     iDestruct (map_ctx_agree with "Hdurable_frag Hdurable") as %->.
     iApply big_sepM_sep. iFrame.
-    iDestruct (mspec.is_jrnl_to_committed_mapsto_txn with "Hjrnl") as "Hmod".
+    iDestruct (mspec.is_jrnl_to_committed_pointsto_txn with "Hjrnl") as "Hmod".
     iApply (big_sepM_mono with "Hmod").
     iIntros (k x Hkx) "H".
     iExists _; iFrame.
   Qed.
 
   Theorem is_jrnl_to_old_pred l γ dinit γtxn P0 :
-    is_jrnl l γ dinit γtxn P0 -∗ P0 (durable_mapsto_own γ).
+    is_jrnl l γ dinit γtxn P0 -∗ P0 (durable_pointsto_own γ).
   Proof.
     iNamed 1.
     iNamed "Hjrnl_durable".
@@ -354,15 +354,15 @@ Section goose_lang.
     mspec.modified (object_to_versioned obj) = obj.
   Proof. destruct obj; reflexivity. Qed.
 
-  Lemma durable_mapsto_mapsto_txn_agree' E γ a obj1 obj2 k q :
+  Lemma durable_pointsto_mapsto_txn_agree' E γ a obj1 obj2 k q :
     ↑N ⊆ E →
     ↑invN ⊆ E →
     N ## invN →
     is_txn_system γ -∗
-    durable_mapsto γ a obj1 -∗
-    mapsto_txn γ.(jrnl_txn_names) a obj2 -∗
+    durable_pointsto γ a obj1 -∗
+    pointsto_txn γ.(jrnl_txn_names) a obj2 -∗
     NC q -∗
-    |k={E}=> (⌜obj1 = obj2⌝ ∗ durable_mapsto γ a obj1 ∗ mapsto_txn γ.(jrnl_txn_names) a obj2) ∗ NC q.
+    |k={E}=> (⌜obj1 = obj2⌝ ∗ durable_pointsto γ a obj1 ∗ pointsto_txn γ.(jrnl_txn_names) a obj2) ∗ NC q.
   Proof.
     iIntros (???) "#Hinv Ha_i Ha HNC".
     iNamed "Hinv".
@@ -376,7 +376,7 @@ Section goose_lang.
     iClear "Hheapmatch Hcrashheapsmatch Hmetactx".
     iNamed "Hinner2".
     iDestruct (ghost_var_agree with "Hcrashstates [$]") as %->.
-    iDestruct (mapsto_txn_cur with "Ha") as "[Ha _]".
+    iDestruct (pointsto_txn_cur with "Ha") as "[Ha _]".
     iDestruct "Ha_i" as (i) "[Ha_i _]".
     iDestruct (ephemeral_val_from_agree_latest with "H●latest Ha_i") as %Hlookup_obj.
     iDestruct (ghost_map_lookup with "Hlogheapctx [$]") as %Hlookup_obj0.
@@ -384,23 +384,23 @@ Section goose_lang.
     congruence.
   Qed.
 
-  Lemma durable_mapsto_mapsto_txn_agree E γ a obj1 obj2 :
+  Lemma durable_pointsto_mapsto_txn_agree E γ a obj1 obj2 :
     ↑N ⊆ E →
     ↑invN ⊆ E →
     N ## invN →
     is_txn_system γ -∗
-    durable_mapsto γ a obj1 -∗
-    mapsto_txn γ.(jrnl_txn_names) a obj2 -∗
-    |NC={E}=> ⌜obj1 = obj2⌝ ∗ durable_mapsto γ a obj1 ∗ mapsto_txn γ.(jrnl_txn_names) a obj2.
+    durable_pointsto γ a obj1 -∗
+    pointsto_txn γ.(jrnl_txn_names) a obj2 -∗
+    |NC={E}=> ⌜obj1 = obj2⌝ ∗ durable_pointsto γ a obj1 ∗ pointsto_txn γ.(jrnl_txn_names) a obj2.
   Proof.
     iIntros (???) "#Hinv Ha_i Ha".
     rewrite ncfupd_eq /ncfupd_def.
     iIntros. iApply (fupd_level_fupd _ _ _ O).
-    iMod (durable_mapsto_mapsto_txn_agree' with "[$] [$] [$] [$]"); auto.
+    iMod (durable_pointsto_mapsto_txn_agree' with "[$] [$] [$] [$]"); auto.
   Qed.
 
   Theorem is_jrnl_durable_not_in_map γ a obj γdurable P0 committed_mT :
-    durable_mapsto γ a obj -∗
+    durable_pointsto γ a obj -∗
     is_jrnl_durable γ γdurable P0 -∗
     map_ctx γdurable (1 / 2) committed_mT -∗
     ⌜committed_mT !! a = None⌝.
@@ -422,12 +422,12 @@ Section goose_lang.
     N ## invN →
     "Hjrnl_mem" ∷ is_jrnl_mem l γ dinit γtxn γdurable -∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
-    "Hdurable_maps_to" ∷ durable_mapsto_own γ a obj -∗
+    "Hdurable_maps_to" ∷ durable_pointsto_own γ a obj -∗
     |NC={E}=>
     "Hjrnl_maps_to" ∷ jrnl_maps_to γtxn a obj ∗
     "Hjrnl_mem" ∷ is_jrnl_mem l γ dinit γtxn γdurable ∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) (<[a:=obj]>committed_mT) ∗
-    "Hdurable_maps_to" ∷ durable_mapsto γ a obj ∗
+    "Hdurable_maps_to" ∷ durable_pointsto γ a obj ∗
     "%Hnew" ∷ ⌜committed_mT !! a = None⌝.
   Proof.
     iIntros (HN HinvN HNdisj) "? ? [Ha Ha_i]".
@@ -436,7 +436,7 @@ Section goose_lang.
 
     iDestruct "Ha" as (obj0) "Ha".
 
-    iMod (durable_mapsto_mapsto_txn_agree with "[$] Ha_i Ha") as "(%Heq & Ha_i & Ha)";
+    iMod (durable_pointsto_mapsto_txn_agree with "[$] Ha_i Ha") as "(%Heq & Ha_i & Ha)";
       [ solve_ndisj.. | subst obj0 ].
 
     iDestruct (mspec.is_jrnl_not_in_map with "Hjrnl Ha") as %Hnotin.
@@ -471,10 +471,10 @@ Section goose_lang.
     ↑invN ⊆ E →
     N ## invN →
     is_jrnl l γ dinit γtxn P0 -∗
-    durable_mapsto_own γ a obj
+    durable_pointsto_own γ a obj
     -∗ |NC={E}=>
     jrnl_maps_to γtxn a obj ∗
-    is_jrnl l γ dinit γtxn (λ mapsto, mapsto a obj ∗ P0 mapsto).
+    is_jrnl l γ dinit γtxn (λ pointsto, pointsto a obj ∗ P0 pointsto).
   Proof.
     iIntros (HN HinvN HNdisj) "Hctx Hnew".
     iNamed "Hctx".
@@ -497,7 +497,7 @@ Section goose_lang.
       iFrame.
     }
     iModIntro.
-    iIntros (mapsto) "H".
+    iIntros (pointsto) "H".
     iDestruct (big_sepM_insert with "H") as "[Ha H]"; eauto. iFrame.
     iApply "HrestoreP0"; iFrame.
   Qed.
@@ -508,12 +508,12 @@ Section goose_lang.
     N ## invN →
     "Hjrnl_mem" ∷ is_jrnl_mem l γ dinit γtxn γdurable -∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT -∗
-    "Hm" ∷ ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
+    "Hm" ∷ ([∗ map] a↦v ∈ m, durable_pointsto_own γ a v)
     -∗ |NC={E}=>
     "Hjrnl_maps_to" ∷ ([∗ map] a↦v ∈ m, jrnl_maps_to γtxn a v) ∗
     "Hjrnl_mem" ∷ is_jrnl_mem l γ dinit γtxn γdurable ∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) (m ∪ committed_mT) ∗
-    "Hdurable_mapstos" ∷ ([∗ map] a↦v ∈ m, durable_mapsto γ a v) ∗
+    "Hdurable_mapstos" ∷ ([∗ map] a↦v ∈ m, durable_pointsto γ a v) ∗
     "%Hall_new" ∷ ⌜m ##ₘ committed_mT⌝.
   Proof.
     iIntros (???) "???".
@@ -527,7 +527,7 @@ Section goose_lang.
       apply map_disjoint_empty_l.
     - rewrite !big_sepM_insert //.
       iDestruct "Hm" as "[[Ha_mod Ha_dur] Hm]".
-      iAssert (durable_mapsto_own γ a v) with "[Ha_mod Ha_dur]" as "Ha".
+      iAssert (durable_pointsto_own γ a v) with "[Ha_mod Ha_dur]" as "Ha".
       { iFrame. }
       iMod (lift_into_txn' with "Hjrnl_mem Hdurable_frag Ha")
         as "(?&?&?&?&?)"; [ solve_ndisj .. | ].
@@ -549,11 +549,11 @@ Section goose_lang.
     ↑N ⊆ E →
     N ## invN →
     is_jrnl l γ dinit γtxn P0 -∗
-    ([∗ map] a↦v ∈ m, durable_mapsto_own γ a v)
+    ([∗ map] a↦v ∈ m, durable_pointsto_own γ a v)
     -∗ |NC={E}=>
     ([∗ map] a↦v ∈ m, jrnl_maps_to γtxn a v) ∗
-    is_jrnl l γ dinit γtxn (λ mapsto,
-      ([∗ map] a↦v ∈ m, mapsto a v) ∗ P0 mapsto
+    is_jrnl l γ dinit γtxn (λ pointsto,
+      ([∗ map] a↦v ∈ m, pointsto a v) ∗ P0 pointsto
     ).
   Proof.
     iIntros (???) "Hctx Hm".
@@ -601,12 +601,12 @@ Section goose_lang.
     ↑N ⊆ E →
     N ## invN →
     is_jrnl l γ dinit γtxn P0 -∗
-    P (λ a v, durable_mapsto_own γ a v)
+    P (λ a v, durable_pointsto_own γ a v)
     -∗ |NC={E}=>
     P (jrnl_maps_to γtxn) ∗
     is_jrnl l γ dinit γtxn
-      (λ mapsto,
-       P mapsto ∗ P0 mapsto).
+      (λ pointsto,
+       P pointsto ∗ P0 pointsto).
   Proof.
     iIntros (???) "Hctx HP".
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hm #HP]".
@@ -617,7 +617,7 @@ Section goose_lang.
     iSplitR "Hctx".
     - iApply "HP"; iFrame.
     - iApply (is_jrnl_wand with "Hctx").
-      iIntros (mapsto) "!> [Hm $]".
+      iIntros (pointsto) "!> [Hm $]".
       iApply "HP"; auto.
   Qed.
 
@@ -628,7 +628,7 @@ Section goose_lang.
     ([∗ map] k0↦x ∈ m0, ephemeral_txn_val γ.(jrnl_async_name) crash_txn k0 x ∗
                         (∃ i v, ephemeral_val_from γ.(jrnl_async_name) i k0 v)) -∗
     addr_exchangers crash_txn γ γ' m1 ∗
-    [∗ map] k0↦x ∈ m0, durable_mapsto_own γ' k0 x.
+    [∗ map] k0↦x ∈ m0, durable_pointsto_own γ' k0 x.
   Proof.
     iIntros (Hdom) "#Hdur H1 H2".
     rewrite /addr_exchangers.
@@ -653,10 +653,10 @@ Section goose_lang.
     iFrame "# ∗". iExists _. iFrame "# ∗".
   Qed.
 
-  Lemma exchange_durable_mapsto γ γ' m :
+  Lemma exchange_durable_pointsto γ γ' m :
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
-     "Hm" ∷ [∗ map] a↦v ∈ m, durable_mapsto γ a v) -∗
-    |C={⊤}=> ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
+     "Hm" ∷ [∗ map] a↦v ∈ m, durable_pointsto γ a v) -∗
+    |C={⊤}=> ([∗ map] a↦v ∈ m, durable_pointsto_own γ' a v).
   Proof.
     iNamed 1.
     iDestruct "Htxn_cinv" as "[#Hinv %kinds]".
@@ -704,24 +704,24 @@ Section goose_lang.
 
   Lemma exchange_durable_mapsto1 γ γ' a v :
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
-     "Hm" ∷ durable_mapsto γ a v) -∗
-    |C={⊤}=> durable_mapsto_own γ' a v.
+     "Hm" ∷ durable_pointsto γ a v) -∗
+    |C={⊤}=> durable_pointsto_own γ' a v.
   Proof.
     iIntros "H".
-    iMod (exchange_durable_mapsto γ γ' {[ a := v ]} with "[-]").
+    iMod (exchange_durable_pointsto γ γ' {[ a := v ]} with "[-]").
     { iNamed "H". iFrame "Htxn_cinv". rewrite big_sepM_singleton. eauto. }
     iModIntro. rewrite big_sepM_singleton. eauto.
   Qed.
 
-  Lemma exchange_mapsto_commit γ γ' m0 m txn_id :
+  Lemma exchange_pointsto_commit γ γ' m0 m txn_id :
     dom m0 ⊆ dom m →
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
     "Hold_vals" ∷ ([∗ map] k↦x ∈ m0,
           ∃ i : nat, txn_durable γ i ∗
                      ephemeral_txn_val_range γ.(jrnl_async_name) i txn_id k x) ∗
     "Hval" ∷ [∗ map] k↦x ∈ m, ephemeral_val_from γ.(jrnl_async_name) txn_id k x) -∗
-    |C={⊤}=> ([∗ map] a↦v ∈ m0, durable_mapsto_own γ' a v) ∨
-                  ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v).
+    |C={⊤}=> ([∗ map] a↦v ∈ m0, durable_pointsto_own γ' a v) ∨
+                  ([∗ map] a↦v ∈ m, durable_pointsto_own γ' a v).
   Proof.
     iIntros (Hdom1) "H". iNamed "H".
     iDestruct "Htxn_cinv" as "[#Hinv %kinds]".

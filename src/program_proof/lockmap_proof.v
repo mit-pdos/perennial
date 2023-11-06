@@ -146,7 +146,7 @@ Proof.
     iIntros (lockStatePtr ok) "[% Hmptr]".
 
     wp_pures.
-    iEval (rewrite struct_mapsto_eq) in "Hstate".
+    iEval (rewrite struct_pointsto_eq) in "Hstate".
     iDestruct "Hstate" as "[[Hstate _] _]". rewrite /=.
     rewrite loc_add_0.
 
@@ -203,7 +203,7 @@ Proof.
           wp_loadField.
           wp_storeField.
 
-          iEval (rewrite struct_mapsto_eq) in "Hacquired".
+          iEval (rewrite struct_pointsto_eq) in "Hacquired".
           iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
           wp_untyped_load.
 
@@ -214,7 +214,7 @@ Proof.
           iApply "Haddrs".
           iExists _, _. iFrame. done.
 
-        * iEval (rewrite struct_mapsto_eq) in "Hacquired".
+        * iEval (rewrite struct_pointsto_eq) in "Hacquired".
           iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
           wp_untyped_load.
           wp_pures.
@@ -229,7 +229,7 @@ Proof.
         iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
         iMod (ghost_map_update true with "Hghctx Haddr") as "[Hghctx Haddr]".
 
-        iEval (rewrite struct_mapsto_eq) in "Hacquired".
+        iEval (rewrite struct_pointsto_eq) in "Hacquired".
         iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
         wp_pures.
         wp_untyped_store.
@@ -275,7 +275,7 @@ Proof.
 
       iMod (ghost_map_insert addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].  
 
-      iEval (rewrite struct_mapsto_eq) in "Hacquired".
+      iEval (rewrite struct_pointsto_eq) in "Hacquired".
       iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
       wp_untyped_store.
       wp_untyped_load.

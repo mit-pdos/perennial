@@ -150,7 +150,7 @@ Definition is_paxos_node (paxos : loc) (nid : u64) (sc : nat) γ : iProp Σ :=
     "#Hinv" ∷ know_sapxos_inv sc γ.
 
 (* NB: We don't really need read-only map since reconfiguration is to be supported. *)
-Instance own_map_as_mapsto `{Countable K} `{!IntoVal K} `{!IntoVal V} (mref : loc) (m : gmap K V) :
+Instance own_map_as_pointsto `{Countable K} `{!IntoVal K} `{!IntoVal V} (mref : loc) (m : gmap K V) :
   AsMapsTo (own_map mref 1 m) (λ q : Qp, own_map mref q m).
 Admitted.
 

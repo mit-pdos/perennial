@@ -246,7 +246,7 @@ Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
                        "wal_heap_locked" ∷ is_locked_walheap γheapnames
                          {| locked_wh_σd := (log_state0 bs).(log_state.d);
                             locked_wh_σtxns := [(U64 0, [])]|} ∗
-                       "wal_heap_h_mapsto" ∷ ([∗ map] l↦v ∈ gh_heapblock0 bs,
+                       "wal_heap_h_pointsto" ∷ ([∗ map] l↦v ∈ gh_heapblock0 bs,
                           l ↪[γheapnames.(wal_heap_h)] v) ∗
                        "wal_heap_crash_heaps" ∷ ghost_var γheapnames.(wal_heap_crash_heaps)
                               (3 / 4) (Build_async (crash_heap0 bs) [])
@@ -261,7 +261,7 @@ Proof.
   iMod (alloc_heapspec_init_ghost_state γwalnames) as (γheapnames Heq1) "?"; iNamed.
   iNamed "Hinit".
 
-  iMod (ghost_map_insert_big gh with "wal_heap_h") as "(wal_heap_h & wal_heap_mapsto)".
+  iMod (ghost_map_insert_big gh with "wal_heap_h") as "(wal_heap_h & wal_heap_pointsto)".
   { apply map_disjoint_empty_r. }
   rewrite right_id_L.
   iMod (ghost_var_update (list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs), [(U64 0, [])])
@@ -843,7 +843,7 @@ Proof.
   simpl.
   iNamed 1.
   (* TODO: note that this loses the old map, which makes it impossible to use
-  those resources to write an exchanger for wal_heap_h mapsto facts in the old
+  those resources to write an exchanger for wal_heap_h pointsto facts in the old
   generation (don't know if those are useful) *)
   iMod (wal_heap_gh_crash _ crash_txn with "wal_heap_h Hgh") as
       (gh' Hdom) "[Hctx' Hgh'] {Hctx}".
@@ -2407,7 +2407,7 @@ Proof.
   eapply in_drop_ge; [ | eauto ]; lia.
 Qed.
 
-Lemma wal_heap_inv_mapsto_in_bounds γ dq walptr wn dinit a v E :
+Lemma wal_heap_inv_pointsto_in_bounds γ dq walptr wn dinit a v E :
   ↑walN.@"wal" ⊆ E ->
   is_wal (wal_heap_inv γ) walptr wn dinit -∗
   a ↪[γ.(wal_heap_h)] {dq} v -∗ |NC={E}=>
@@ -2602,7 +2602,7 @@ Proof using walheapG0.
   }
 Qed.
 
-Theorem wal_heap_mapsto_latest_helper γ dq lwh (a : u64) (v : heap_block) σ :
+Theorem wal_heap_pointsto_latest_helper γ dq lwh (a : u64) (v : heap_block) σ :
   wal_heap_inv γ σ ∗
   is_locked_walheap γ lwh ∗
   a ↪[γ.(wal_heap_h)] {dq} v -∗
@@ -2623,7 +2623,7 @@ Proof.
   rewrite /locked_wh_disk. rewrite -H0 -H1 /=. congruence.
 Qed.
 
-Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
+Theorem wal_heap_pointsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
   ↑walN ⊆ E ->
   is_wal (wal_heap_inv γ) l wn dinit ∗
   is_locked_walheap γ lwh ∗
@@ -2634,7 +2634,7 @@ Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
 Proof.
   iIntros (HNE) "(#Hwal & Htxnsfrag & Hmapsto)".
   iMod (is_wal_open with "Hwal") as (σ) "[>Hheap Hclose]"; first by solve_ndisj.
-  iDestruct (wal_heap_mapsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
+  iDestruct (wal_heap_pointsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
   iMod ("Hclose" with "Hheap").
   iModIntro.
   by iFrame.

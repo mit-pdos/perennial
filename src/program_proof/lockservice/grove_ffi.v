@@ -29,12 +29,12 @@ Class filesysG Σ := FileSysG {
   filesys_inG :> mapG Σ string (list byte)
 }.
 
-Definition file_mapsto {fG:filesysG Σ} (s:string) (c:list byte) (q:Qp): iProp Σ :=
+Definition file_pointsto {fG:filesysG Σ} (s:string) (c:list byte) (q:Qp): iProp Σ :=
   s [[filesys_gname]]↦{q} c.
 
 Context `{!filesysG Σ}.
 
-Notation "s f↦{ q } c" := (file_mapsto s c q)
+Notation "s f↦{ q } c" := (file_pointsto s c q)
 (at level 20, q at level 50, format "s  f↦{ q } c") : bi_scope.
 
 Notation "s f↦ c" := (s f↦{1} c)%I
@@ -193,7 +193,7 @@ Axiom wp_StartRPCServer : ∀ host (handlers : gmap u64 val) (mref : loc) (def :
 
 End grove_ffi.
 
-Notation "s f↦{ q } c" := (file_mapsto s c q)
+Notation "s f↦{ q } c" := (file_pointsto s c q)
 (at level 20, q at level 50, format "s  f↦{ q } c") : bi_scope.
 
 Notation "s f↦ c" := (s f↦{1} c)%I

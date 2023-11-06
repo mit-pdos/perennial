@@ -136,7 +136,7 @@ Proof.
     { rewrite big_sepM2_insert //. by iFrame. }
 Qed.
 
-Theorem mapsto_txn_alloc {T} (γ : gname) (logm : gmap addr T) :
+Theorem pointsto_txn_alloc {T} (γ : gname) (logm : gmap addr T) :
   map_ctx γ 1 ∅
   ==∗
   ∃ m,
@@ -424,7 +424,7 @@ Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
          "Htxn_durable" ∷ is_txn_durable γ dinit ∗
          "#Hdurable_lb" ∷ mono_nat_lb_own γ.(txn_walnames).(wal_heap_durable_lb) 0 ∗
          "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (3/4) (Build_async (kind_heap0 kinds) []) ∗
-         "Hmapsto_txns" ∷ ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
+         "Hmapsto_txns" ∷ ([∗ map] a ↦ o ∈ kind_heap0 kinds, pointsto_txn γ a o).
 Proof.
   iIntros (Hdinit_dom Hkinds_dom Hbound) "H".
   iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
@@ -441,7 +441,7 @@ Proof.
 
   iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Hinit".
   iNamed "Hinit".
-  iMod (ghost_map_insert_big (kind_heap0 kinds) with "logheap") as "[logheap logheap_mapsto_curs]".
+  iMod (ghost_map_insert_big (kind_heap0 kinds) with "logheap") as "[logheap logheap_pointsto_curs]".
   { simpl. apply map_disjoint_empty_r. }
   iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
           with "crashstates") as "H".
@@ -456,10 +456,10 @@ Proof.
   rewrite /is_txn_durable.
   iSplit.
   { eauto. }
-  iSplitR "Hmetas2 logheap_mapsto_curs".
+  iSplitR "Hmetas2 logheap_pointsto_curs".
   2: {
     iDestruct (big_sepM2_sepM_1 with "Hmetas2") as "Hmetas2".
-    iDestruct (big_sepM_sep with "[$Hmetas2 $logheap_mapsto_curs]") as "H".
+    iDestruct (big_sepM_sep with "[$Hmetas2 $logheap_pointsto_curs]") as "H".
     iApply (big_sepM_mono with "H").
     iIntros (k x Hkx) "[H0 H1]".
     iDestruct "H0" as (γm) "(% & Ha & Hb)".
@@ -479,7 +479,7 @@ Proof.
   simpl. rewrite right_id.
   iFrame "wal_heap_crash_heaps logheap crashstates1 metaheap".
 
-  iSplitL "Hmetas1 wal_heap_h_mapsto".
+  iSplitL "Hmetas1 wal_heap_h_pointsto".
   - iDestruct (gmap_addr_by_block_big_sepM2 with "Hmetas1") as "Hmetas".
     iDestruct (big_sepM2_dom with "Hmetas") as "%Hmetadom".
     iApply big_sepM_sepM2_merge_ex; eauto.
@@ -496,7 +496,7 @@ Proof.
       { eapply block0_map_not_empty. eassumption. }
     }
 
-    iDestruct (big_sepM_sepM2_merge with "[$wal_heap_h_mapsto $Hmetas]") as "H".
+    iDestruct (big_sepM_sepM2_merge with "[$wal_heap_h_pointsto $Hmetas]") as "H".
     { rewrite /gh_heapblock0.
       rewrite dom_fmap_L Hkinds_dom.
       rewrite dom_list_to_map_L. f_equal.
@@ -639,7 +639,7 @@ Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
     "Hmapsto_txns" ∷ ([∗ map] addr↦bufData ∈ latest logm, ∃ γm, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
 Proof.
   iNamed 1.
-  iMod (mapsto_txn_alloc _ logm.(latest) with "Hmetactx") as (metam) "(%Hdom & Hmetactx' & H0 & H1)".
+  iMod (pointsto_txn_alloc _ logm.(latest) with "Hmetactx") as (metam) "(%Hdom & Hmetactx' & H0 & H1)".
 
   rewrite /crash_heaps_match /possible.
   rewrite big_sepL2_snoc.
@@ -699,7 +699,7 @@ Lemma wal_heap_inv_wf names ls:
   ⌜ wal_wf ls ⌝.
 Proof. iNamed 1. eauto. Qed.
 
-Lemma latest_wal_heap_h_mapsto_split (γ: gname) gh :
+Lemma latest_wal_heap_h_pointsto_split (γ: gname) gh :
   ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] hb) ⊣⊢
   ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] {#1/2} hb) ∗
   ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] {#1/2} hb).
@@ -737,7 +737,7 @@ Definition txn_resources γ γ' logm : iProp Σ :=
   "%Hlen_compare" ∷ ⌜ (length (possible logm) ≤ length (possible logm0))%nat ⌝ ∗
   "Hlogm" ∷ ghost_var γ'.(txn_crashstates) (3/4) logm ∗
   "Holdlogm" ∷ ghost_var γ.(txn_crashstates) (1/4) logm0 ∗
-  "Hmapsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ' a v) ∗
+  "Hmapsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), pointsto_txn γ' a v) ∗
   "Hdurable" ∷ mono_nat_lb_own γ'.(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id ∗
   "Hdurable_exchanger" ∷ heapspec_durable_exchanger γ.(txn_walnames) txn_id)%I.
 

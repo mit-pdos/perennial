@@ -42,7 +42,7 @@ Section goose_lang.
             ⌜ γ.(jrnl_txn_names).(txn_kinds) = kinds ⌝ ∗
               is_txn_durable γ dinit logm0 ∗
               txn_durable γ 0 ∗
-              ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_mapsto_own γ a o)
+              ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_pointsto_own γ a o)
   .
   Proof.
     iIntros (Hdom1 Hdom2 Hlt) "Hpre".
@@ -68,10 +68,10 @@ Section goose_lang.
     iSplit; first eauto.
     iApply (big_sepM_impl with "H"); simpl.
     iIntros "!>" (a o Hlookup) "[Hmapsto Heph]".
-    rewrite /durable_mapsto_own.
+    rewrite /durable_pointsto_own.
     iSplitL "Hmapsto".
     - iExists _; iFrame.
-    - rewrite /durable_mapsto /=.
+    - rewrite /durable_pointsto /=.
       iExists _; iFrame.
       rewrite /txn_durable /=.
       iFrame "#".

@@ -154,7 +154,7 @@ Section proof.
     iDestruct "H2" as (l2 ?) "H2".
     inversion H; subst.
     iCombine "H1 H2" as "H".
-    iDestruct (heap_mapsto_frac_valid with "H") as %Hval.
+    iDestruct (heap_pointsto_frac_valid with "H") as %Hval.
     eauto.
   Qed.
 
@@ -444,7 +444,7 @@ Section proof.
     iInv N as (b) "[>Hl _]".
 
     iDestruct (locked_loc with "Hlocked") as "Hl2".
-    iDestruct (heap_mapsto_agree with "[$Hl $Hl2]") as %->.
+    iDestruct (heap_pointsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
     wp_cmpxchg_suc.

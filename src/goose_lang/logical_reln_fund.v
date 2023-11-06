@@ -468,10 +468,10 @@ Lemma logical_reln_prepare_write t ts vs v j K (Hctx: LanguageCtx K):
                        inv locN (loc_inv γ ls l (val_interp (hS := hS) t)) ∗
                        fc_tok γ (1/2)%Qp ∗
                        j ⤇ K #() ∗
-                       na_heap_mapsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp mem_vs ∗
-                       (∀ v' : sval, na_heap_mapsto ls 1 v' -∗ heap_mapsto ls 1 v') ∗
-                       na_heap_mapsto_st (hG := goose_na_heapGS) WSt l 1 mem_v ∗
-                       (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')}}}.
+                       na_heap_pointsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp mem_vs ∗
+                       (∀ v' : sval, na_heap_pointsto ls 1 v' -∗ heap_pointsto ls 1 v') ∗
+                       na_heap_pointsto_st (hG := goose_na_heapGS) WSt l 1 mem_v ∗
+                       (∀ v' : ival, na_heap_pointsto l 1 v' -∗ heap_pointsto l 1 v')}}}.
 Proof.
   intros. iIntros "(#Hctx&Hvl&Hj) HΦ".
   rewrite val_interp_struct_unfold.
@@ -533,10 +533,10 @@ Lemma logical_reln_finish_store (ls l: loc) (vs vs': sval) (v v': ival) j K (Hct
   forall vTy,
   {{{ spec_ctx ∗ vTy vs v ∗ j ⤇ K (FinishStore #ls vs) ∗ fc_tok γ (1/2)%Qp ∗
       inv locN (loc_inv γ ls l vTy) ∗
-      na_heap_mapsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp vs' ∗
-      (∀ v' : sval, na_heap_mapsto ls 1 v' -∗ heap_mapsto ls 1 v') ∗
-      na_heap_mapsto_st (hG := goose_na_heapGS) WSt l 1 v' ∗
-      (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')
+      na_heap_pointsto_st (hG := refinement_na_heapG) WSt ls (1/2)%Qp vs' ∗
+      (∀ v' : sval, na_heap_pointsto ls 1 v' -∗ heap_pointsto ls 1 v') ∗
+      na_heap_pointsto_st (hG := goose_na_heapGS) WSt l 1 v' ∗
+      (∀ v' : ival, na_heap_pointsto l 1 v' -∗ heap_pointsto l 1 v')
  }}}
     FinishStore #l v
  {{{ RET #(); j ⤇ K (of_val #()) }}}.
@@ -547,21 +547,21 @@ Proof.
   iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
   {
     iDestruct "H0readers" as "(>Hfc&_&>Hpts'&_)".
-    iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
-    rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
-    iDestruct (na_heap_mapsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
+    iDestruct (heap_pointsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    rewrite ?na_heap_pointsto_eq /na_heap_pointsto_def.
+    iDestruct (na_heap_pointsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
     apply Z2Qc_inj_le in Hval. lia.
   }
   {
     iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts'&Hspts'_clo&>Hpts'&_)".
-    iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
-    rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
-    iDestruct (na_heap_mapsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
+    iDestruct (heap_pointsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    rewrite ?na_heap_pointsto_eq /na_heap_pointsto_def.
+    iDestruct (na_heap_pointsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
     exfalso. eapply Qp.not_add_le_l, Hval.
   }
   {
     iDestruct "Hwriter" as "(>Hfc&>Hspts')".
-    iDestruct (na_heap_mapsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
+    iDestruct (na_heap_pointsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
     { iFrame. }
     subst.
     iCombine "Hspts Hspts'" as "Hspts".
@@ -588,9 +588,9 @@ Lemma logical_reln_start_read t ts vs v j K (Hctx: LanguageCtx K):
                        fc_tok γ q ∗
                        j ⤇ K mem_vs ∗
                        val_interp (hS := hS) t mem_vs mem_v ∗
-                       na_heap_mapsto_st (hG := refinement_na_heapG) (RSt O) ls q mem_vs ∗
-                       na_heap_mapsto_st (hG := goose_na_heapGS) (RSt 1) l q mem_v ∗
-                       (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')}}}.
+                       na_heap_pointsto_st (hG := refinement_na_heapG) (RSt O) ls q mem_vs ∗
+                       na_heap_pointsto_st (hG := goose_na_heapGS) (RSt 1) l q mem_v ∗
+                       (∀ v' : ival, na_heap_pointsto l 1 v' -∗ heap_pointsto l 1 v')}}}.
 Proof.
   intros. iIntros "(#Hctx&Hvl&Hj) HΦ".
   rewrite val_interp_struct_unfold.
@@ -609,28 +609,28 @@ Proof.
         rewrite ?loc_add_0.
         iApply wp_ncfupd.
         iApply (wp_start_read with "[$]"). iIntros "!> (Hpts&Hpts_clo)".
-        iDestruct (heap_mapsto_na_acc with "Hspts") as "(Hspts&Hspts_clo)".
-        rewrite na_heap_mapsto_eq.
+        iDestruct (heap_pointsto_na_acc with "Hspts") as "(Hspts&Hspts_clo)".
+        rewrite na_heap_pointsto_eq.
         iMod (@ghost_start_read _ _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hj)".
         { solve_ndisj. }
         replace (RSt 1) with (RSt (1 + O)%nat) by eauto.
         iMod (fc_auth_first_tok with "Hfc") as "(Hfc&Htok)".
         iEval (replace 1%Qp with (1/2 + 1/2)%Qp by apply Qp.half_half) in "Hpts".
         iEval (replace 1%Qp with (1/2 + 1/2)%Qp by apply Qp.half_half) in "Hspts".
-        iDestruct (na_heap_mapsto_st_rd_frac _ 1 O with "Hpts") as "(Hpts1&Hpts2)".
-        iDestruct (na_heap_mapsto_st_rd_frac _ 1 O with "Hspts") as "(Hspts1&Hspts2)".
+        iDestruct (na_heap_pointsto_st_rd_frac _ 1 O with "Hpts") as "(Hpts1&Hpts2)".
+        iDestruct (na_heap_pointsto_st_rd_frac _ 1 O with "Hspts") as "(Hspts1&Hspts2)".
         iMod ("Hclo" with "[Hpts2 Hspts1 Hfc Hval]").
         { iNext. iExists mem_vs, mem_v. iRight. iLeft. iExists (1/2)%Qp, (1/2)%Qp, _. iFrame.
           iSplitL "".
           { rewrite Qp.half_half; eauto. }
           iSplitL "".
-          { rewrite -na_heap_mapsto_eq. iIntros (?) "H". iApply (na_mapsto_to_heap with "H").
+          { rewrite -na_heap_pointsto_eq. iIntros (?) "H". iApply (na_pointsto_to_heap with "H").
             apply addr_base_non_null; eauto.
           }
           iFrame "Hval".
-          iApply (na_mapsto_to_heap with "[Hpts2]").
+          iApply (na_pointsto_to_heap with "[Hpts2]").
           { apply addr_base_non_null; eauto. }
-          { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
+          { rewrite na_heap_pointsto_eq /na_heap_pointsto_def. eauto. }
         }
         iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
         iExists _, _, _, _, _. iFrame. iFrame "Hlocinv Hval". iPureIntro; split_and!; eauto;
@@ -641,35 +641,35 @@ Proof.
         rewrite ?loc_add_0.
         iApply (wp_ncfupd).
         iApply (wp_start_read with "[$]"). iIntros "!> (Hpts&Hpts_clo)".
-        rewrite na_heap_mapsto_eq.
+        rewrite na_heap_pointsto_eq.
         iMod (@ghost_start_read _ _ _ _ _ _ _ _ _ _ Hctx with "[$] Hspts Hj") as "(Hspts&Hj)".
         { solve_ndisj. }
         replace (S (Pos.to_nat n')) with (S (Pos.to_nat n') + 0)%nat by lia.
         iMod (fc_auth_new_tok _ q q' with "Hfc") as "(Hfc&Htok)"; eauto.
         specialize (Qp.div_2 q') => Hq'.
-        rewrite -[x in na_heap_mapsto_st _ lv x _]Hq'.
-        rewrite -[x in na_heap_mapsto_st (hG := refinement_na_heapG) _ _ x mem_vs]Hq'.
-        iDestruct (na_heap_mapsto_st_rd_frac _ 1 O with "Hpts") as "(Hpts1&Hpts2)".
-        iDestruct (na_heap_mapsto_st_rd_frac _ _ _ with "Hspts") as "(Hspts1&Hspts2)".
+        rewrite -[x in na_heap_pointsto_st _ lv x _]Hq'.
+        rewrite -[x in na_heap_pointsto_st (hG := refinement_na_heapG) _ _ x mem_vs]Hq'.
+        iDestruct (na_heap_pointsto_st_rd_frac _ 1 O with "Hpts") as "(Hpts1&Hpts2)".
+        iDestruct (na_heap_pointsto_st_rd_frac _ _ _ with "Hspts") as "(Hspts1&Hspts2)".
         iMod ("Hclo" with "[Hpts2 Hspts1 Hfc Hval]").
         { iNext. iExists mem_vs, mem_v. iRight. iLeft. iExists (q + q'/2)%Qp, (q'/2)%Qp, _. iFrame.
           iSplitL "".
           { iPureIntro. rewrite -assoc Hq'. eauto. }
           replace (S (Pos.to_nat n')) with ((Pos.to_nat (n' + 1)))%nat by lia. iFrame.
           iSplitL "".
-          { rewrite -na_heap_mapsto_eq. iIntros (?) "H". iApply (na_mapsto_to_heap with "H").
+          { rewrite -na_heap_pointsto_eq. iIntros (?) "H". iApply (na_pointsto_to_heap with "H").
             apply addr_base_non_null; eauto.
           }
           iFrame "Hval".
-          iApply (na_mapsto_to_heap with "[Hpts2]").
+          iApply (na_pointsto_to_heap with "[Hpts2]").
           { apply addr_base_non_null; eauto. }
-          { rewrite na_heap_mapsto_eq /na_heap_mapsto_def. eauto. }
+          { rewrite na_heap_pointsto_eq /na_heap_pointsto_def. eauto. }
         }
         iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
         iExists _, _, _, _, _. iFrame. iFrame "#".
         iSplitL "".
         { iPureIntro; split_and!; eauto; eapply addr_base_non_null; eauto. }
-        { rewrite -na_heap_mapsto_eq. iIntros (?) "H". iApply (na_mapsto_to_heap with "H").
+        { rewrite -na_heap_pointsto_eq. iIntros (?) "H". iApply (na_pointsto_to_heap with "H").
           apply addr_base_non_null; eauto. }
       }
       {
@@ -699,9 +699,9 @@ Lemma logical_reln_finish_read (ls l: loc) (vs': sval) (v': ival) j K (Hctx: Lan
   forall vTy,
  {{{ spec_ctx ∗ j ⤇ K (FinishRead #ls) ∗ fc_tok γ q ∗
       inv locN (loc_inv γ ls l vTy) ∗
-      na_heap_mapsto_st (hG := refinement_na_heapG) (RSt O) ls q vs' ∗
-      na_heap_mapsto_st (hG := goose_na_heapGS) (RSt 1) l q v' ∗
-      (∀ v' : ival, na_heap_mapsto l 1 v' -∗ heap_mapsto l 1 v')
+      na_heap_pointsto_st (hG := refinement_na_heapG) (RSt O) ls q vs' ∗
+      na_heap_pointsto_st (hG := goose_na_heapGS) (RSt 1) l q v' ∗
+      (∀ v' : ival, na_heap_pointsto l 1 v' -∗ heap_pointsto l 1 v')
  }}}
     FinishRead #l
  {{{ RET #(); j ⤇ K (of_val #()) }}}.
@@ -712,36 +712,36 @@ Proof.
   iDestruct "H" as "[H0readers|[Hreaders|Hwriter]]".
   {
     iDestruct "H0readers" as "(>Hfc&_&>Hpts'&_)".
-    iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
-    rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
-    iDestruct (na_heap_mapsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
+    iDestruct (heap_pointsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    rewrite ?na_heap_pointsto_eq /na_heap_pointsto_def.
+    iDestruct (na_heap_pointsto_st_frac_valid2 with "Hpts Hpts'") as %Hval.
     exfalso. revert Hval; rewrite (comm _ q 1%Qp). eapply Qp.not_add_le_l.
   }
   {
     iDestruct "Hreaders" as (q1 q2 n') "(>Hq_sum&>Hfc&>Hspts'&Hspts'_clo&>Hpts'&Hvty)".
     iDestruct "Hq_sum" as %Hq_sum.
-    iDestruct (heap_mapsto_na_acc with "Hpts'") as "(Hpts'&_)".
+    iDestruct (heap_pointsto_na_acc with "Hpts'") as "(Hpts'&_)".
     iApply wp_ncfupd.
     wp_apply (wp_finish_read with "[Hpts]").
-    { iFrame. iIntros (?). iApply na_mapsto_to_heap; eauto. }
+    { iFrame. iIntros (?). iApply na_pointsto_to_heap; eauto. }
     iIntros "Hpts".
-    iDestruct (heap_mapsto_na_acc with "Hpts") as "(Hpts&_)".
-    rewrite ?na_heap_mapsto_eq /na_heap_mapsto_def.
+    iDestruct (heap_pointsto_na_acc with "Hpts") as "(Hpts&_)".
+    rewrite ?na_heap_pointsto_eq /na_heap_pointsto_def.
 
     assert (n' = 1 ∨ ∃ n'', n' = 1 + n'')%positive as [H1reader|Hmore].
     { induction n' using Pos.peano_ind; eauto.
       right. exists n'. lia.
     }
     - subst. iDestruct (fc_auth_last_agree with "Hfc Htok") as %Hq. subst.
-      iDestruct (na_heap_mapsto_st_agree with "[Hpts Hpts']") as %Heq.
+      iDestruct (na_heap_pointsto_st_agree with "[Hpts Hpts']") as %Heq.
       { iFrame. } subst.
-      iDestruct (na_heap_mapsto_st_rd_frac with "[$]") as "Hpts".
+      iDestruct (na_heap_pointsto_st_rd_frac with "[$]") as "Hpts".
       rewrite Hq_sum Nat.add_0_r.
       iMod (ghost_finish_read with "Hctx Hspts' Hj") as "(Hspts'&Hj)".
       { solve_ndisj. }
-      iDestruct (na_heap_mapsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
+      iDestruct (na_heap_pointsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
       { iFrame. } subst.
-      iDestruct (na_heap_mapsto_st_rd_frac (hG := refinement_na_heapG) with "[Hspts Hspts']") as "Hspts".
+      iDestruct (na_heap_pointsto_st_rd_frac (hG := refinement_na_heapG) with "[Hspts Hspts']") as "Hspts".
       { iFrame. }
       iMod (fc_auth_drop_last with "[$]") as "Hfc".
       iMod ("Hclo" with "[- Hj HΦ]").
@@ -757,15 +757,15 @@ Proof.
       eauto.
     - destruct Hmore as (n''&->).
       iDestruct (fc_auth_non_last_agree with "[$] [$]") as %(q'&Hq).
-      iDestruct (na_heap_mapsto_st_agree with "[Hpts Hpts']") as %Heq.
+      iDestruct (na_heap_pointsto_st_agree with "[Hpts Hpts']") as %Heq.
       { iFrame. } subst.
-      iDestruct (na_heap_mapsto_st_rd_frac with "[$]") as "Hpts".
+      iDestruct (na_heap_pointsto_st_rd_frac with "[$]") as "Hpts".
       replace (Pos.to_nat (1 + n'')) with (S (Pos.to_nat n'')) by lia.
       iMod (ghost_finish_read with "Hctx Hspts' Hj") as "(Hspts'&Hj)".
       { solve_ndisj. }
-      iDestruct (na_heap_mapsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
+      iDestruct (na_heap_pointsto_st_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
       { iFrame. } subst.
-      iDestruct (na_heap_mapsto_st_rd_frac (hG := refinement_na_heapG) with "[Hspts Hspts']") as "Hspts".
+      iDestruct (na_heap_pointsto_st_rd_frac (hG := refinement_na_heapG) with "[Hspts Hspts']") as "Hspts".
       { iFrame. }
       iMod (fc_auth_drop with "[$]") as "Hfc".
       iMod ("Hclo" with "[- Hj HΦ]").
@@ -777,15 +777,15 @@ Proof.
         iSplitL "".
         { iPureIntro. rewrite -Hq_sum. rewrite -assoc {1}(comm _ q2). eauto. }
         rewrite (comm _ q2).
-        iApply na_mapsto_to_heap; auto.
-        rewrite na_heap_mapsto_eq. iFrame.
+        iApply na_pointsto_to_heap; auto.
+        rewrite na_heap_pointsto_eq. iFrame.
       }
       iApply "HΦ". iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
       eauto.
   }
   {
     iDestruct "Hwriter" as "(>Hfc&>Hspts')".
-    iDestruct (na_heap_mapsto_st_WSt_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
+    iDestruct (na_heap_pointsto_st_WSt_agree (hG := refinement_na_heapG) with "[Hspts Hspts']") as %Heq.
     { iFrame. }
     congruence.
   }
@@ -893,7 +893,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. econstructor; eauto.
+      apply base_prim_step_trans. econstructor; eauto.
       { simpl. econstructor; eauto. }
       { econstructor; eauto. }
     }
@@ -912,7 +912,7 @@ Proof using spec_trans.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. econstructor; eauto.
+      apply base_prim_step_trans. econstructor; eauto.
     }
     iPoseProof (ctx_has_semTy_subst with "[] []") as "H1".
     { iApply IHHtyping. }
@@ -933,7 +933,7 @@ Proof using spec_trans.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. econstructor; eauto.
+      apply base_prim_step_trans. econstructor; eauto.
     }
     iEval (simpl; rewrite right_id) in "Hchild".
     iDestruct "Hchild" as (j') "Hj'".
@@ -967,7 +967,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. econstructor; eauto.
+        apply base_prim_step_trans. econstructor; eauto.
       }
       iApply wpc_wp.
       iApply (IHHtyping2 with "[//] [$] [$] [$] [$]"). eauto.
@@ -977,7 +977,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. econstructor; eauto.
+        apply base_prim_step_trans. econstructor; eauto.
       }
       iApply wpc_wp.
       iApply (IHHtyping3 with "[//] [$] [$] [$] [$]"). eauto.
@@ -998,7 +998,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     iModIntro. iExists _. iFrame. iExists _. iPureIntro; eauto.
   - subst.
@@ -1024,7 +1024,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
@@ -1052,7 +1052,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
@@ -1080,7 +1080,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
@@ -1108,7 +1108,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
@@ -1127,7 +1127,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; eauto.
     iExists _. iFrame. eauto.
@@ -1155,7 +1155,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
       rewrite /bin_op_eval /bin_op_eval_eq /=.
       rewrite decide_True //.
     }
@@ -1191,7 +1191,7 @@ Proof using spec_trans.
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
       (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
-       [ intros; eexists; apply head_prim_step_trans; repeat econstructor; eauto
+       [ intros; eexists; apply base_prim_step_trans; repeat econstructor; eauto
         | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
 
   - subst.
@@ -1219,7 +1219,7 @@ Proof using spec_trans.
       iDestruct "Hv1" as (?) "(%&%)"; subst;
       iDestruct "Hv2" as (?) "(%&%)"; subst;
       (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
-       [ intros; eexists; apply head_prim_step_trans; repeat econstructor; eauto
+       [ intros; eexists; apply base_prim_step_trans; repeat econstructor; eauto
         | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1244,7 +1244,7 @@ Proof using spec_trans.
     iDestruct "Hv1" as (?) "(%&%)"; subst;
     iDestruct "Hv2" as (?) "(%&%)"; subst;
     (iMod (ghost_step_lifting_puredet with "[$]") as "(Hj&Hchild)";
-     [ intros; eexists; apply head_prim_step_trans; repeat econstructor; eauto
+     [ intros; eexists; apply base_prim_step_trans; repeat econstructor; eauto
       | set_solver+ | wp_pures; eauto; iExists _; iFrame; eauto]).
 
   (* data *)
@@ -1274,7 +1274,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; auto.
     iExists _. iFrame. iExists _, _, _, _. iFrame. eauto.
@@ -1295,7 +1295,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; eauto.
   - subst.
@@ -1315,7 +1315,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; eauto.
   - subst.
@@ -1344,7 +1344,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -1353,7 +1353,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; auto.
     iExists _. iFrame.
@@ -1397,7 +1397,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -1407,7 +1407,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     simpl.
 
@@ -1416,7 +1416,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -1426,7 +1426,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -1436,7 +1436,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -1453,7 +1453,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
 
       spec_bind (Rec _ _ _)%E as Hctx'.
@@ -1461,7 +1461,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
       simpl.
       clear Hctx'.
@@ -1470,7 +1470,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
 
       simpl.
@@ -1491,7 +1491,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
 
       spec_bind (Rec _ _ _)%E as Hctx'.
@@ -1499,7 +1499,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
       simpl.
       clear Hctx'.
@@ -1508,7 +1508,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
 
       simpl.
@@ -1544,7 +1544,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; auto.
     iExists _. iFrame. iLeft. iExists _, _; iFrame; eauto.
@@ -1565,7 +1565,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; auto.
     iExists _. iFrame. iRight. iExists _, _; iFrame; eauto.
@@ -1589,7 +1589,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
       iApply wpc_wp.
       wpc_bind (subst_map _ e1').
@@ -1615,7 +1615,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { set_solver+. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
       iApply (wpc_wp _).
       wpc_bind (subst_map _ e2').
@@ -1730,7 +1730,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { solve_ndisj. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
       iModIntro. iExists _. iFrame. iRight.
       iExists _. rewrite /loc_add. rewrite addr_plus_plus. eauto.
@@ -1742,7 +1742,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { solve_ndisj. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     iModIntro.
     iExists _. iFrame. iLeft.
@@ -1780,7 +1780,7 @@ Proof using spec_trans.
       { iFrame. iDestruct "Hspec" as "($&?)". }
       { solve_ndisj. }
       { intros ?. eexists. simpl.
-        apply head_prim_step_trans. repeat econstructor; eauto.
+        apply base_prim_step_trans. repeat econstructor; eauto.
       }
       iModIntro. iExists _. iFrame. iRight.
       iExists _. rewrite /loc_add. rewrite addr_plus_plus. eauto.
@@ -1792,7 +1792,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { solve_ndisj. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. repeat econstructor; eauto.
+      apply base_prim_step_trans. repeat econstructor; eauto.
     }
     iModIntro.
     iExists _. iFrame.
@@ -1915,7 +1915,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. econstructor. eauto.
+      apply base_prim_step_trans. simpl. econstructor. eauto.
     }
     simpl.
     clear Hctx'.
@@ -1927,7 +1927,7 @@ Proof using spec_trans.
     { simpl. iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. econstructor; eauto.
+      apply base_prim_step_trans. simpl. econstructor; eauto.
       * simpl. econstructor. econstructor.
       * econstructor. eauto.
     }
@@ -1939,7 +1939,7 @@ Proof using spec_trans.
     { simpl. iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. econstructor; eauto.
+      apply base_prim_step_trans. simpl. econstructor; eauto.
     }
     clear Hctx'.
 
@@ -1958,7 +1958,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
+      apply base_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
 
@@ -1969,7 +1969,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
+      apply base_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -2001,7 +2001,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. econstructor. eauto.
+      apply base_prim_step_trans. simpl. econstructor. eauto.
     }
     simpl.
     clear Hctx'.
@@ -2021,7 +2021,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
+      apply base_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
 
@@ -2032,7 +2032,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
+      apply base_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
     simpl.
@@ -2052,7 +2052,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
+      apply base_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     clear Hctx'.
 
@@ -2063,7 +2063,7 @@ Proof using spec_trans.
     { iFrame. iDestruct "Hspec" as "($&?)". }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. simpl. repeat econstructor; eauto.
+      apply base_prim_step_trans. simpl. repeat econstructor; eauto.
     }
     wp_pures.
     iModIntro. iExists _. simpl. iFrame. eauto.
@@ -2277,7 +2277,7 @@ Proof using spec_trans.
     }
     { set_solver+. }
     { intros ?. eexists. simpl.
-      apply head_prim_step_trans. econstructor; eauto.
+      apply base_prim_step_trans. econstructor; eauto.
     }
 
     iPoseProof (ctx_has_semTy_subst with "[] []") as "H1".

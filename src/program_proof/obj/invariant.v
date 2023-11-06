@@ -53,18 +53,18 @@ Implicit Types (stk:stuckness) (E: coPset).
 Definition lockN : namespace := nroot .@ "txnlock".
 Definition invN : namespace := nroot .@ "txninv".
 
-Definition mapsto_txn (γ : txn_names) (l : addr) (v : object) : iProp Σ :=
+Definition pointsto_txn (γ : txn_names) (l : addr) (v : object) : iProp Σ :=
   ∃ γm,
     "Hmapsto_log" ∷ l ↪[γ.(txn_logheap)] v ∗
     "Hmapsto_meta" ∷ ptsto_mut γ.(txn_metaheap) l 1 γm ∗
     "Hmod_frag" ∷ ghost_var γm (1/2) true.
 
-Theorem mapsto_txn_2 γ a v0 v1 :
-  mapsto_txn γ a v0 -∗
-  mapsto_txn γ a v1 -∗
+Theorem pointsto_txn_2 γ a v0 v1 :
+  pointsto_txn γ a v0 -∗
+  pointsto_txn γ a v1 -∗
   False.
 Proof.
-  rewrite /mapsto_txn.
+  rewrite /pointsto_txn.
   iIntros "H0 H1".
   iDestruct "H0" as (g0) "(H0log & H0m & H0own)".
   iDestruct "H1" as (g1) "(H1log & H1m & H1own)".
@@ -144,11 +144,11 @@ Definition is_txn (l : loc) (γ : txn_names) dinit : iProp Σ :=
 
 Global Instance is_txn_persistent l γ dinit : Persistent (is_txn l γ dinit) := _.
 
-Theorem mapsto_txn_valid γ a v E :
+Theorem pointsto_txn_valid γ a v E :
   ↑invN ⊆ E ->
   ncinv invN (is_txn_always γ) -∗
-  mapsto_txn γ a v -∗ |NC={E}=>
-    mapsto_txn γ a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ∧ γ.(txn_kinds) !! a.(addrBlock) = Some (projT1 v) ⌝.
+  pointsto_txn γ a v -∗ |NC={E}=>
+    pointsto_txn γ a v ∗ ⌜ valid_addr a ∧ valid_off (projT1 v) a.(addrOff) ∧ γ.(txn_kinds) !! a.(addrBlock) = Some (projT1 v) ⌝.
 Proof.
   iIntros (HN) "#Hinv H".
   iMod (ncinv_acc with "Hinv") as "(>Halways&Hclose)"; auto.
@@ -184,48 +184,48 @@ Proof.
   intuition eauto; congruence.
 Qed.
 
-Theorem mapsto_txn_cur γ (a : addr) (v : {K & bufDataT K}) :
-  mapsto_txn γ a v -∗
+Theorem pointsto_txn_cur γ (a : addr) (v : {K & bufDataT K}) :
+  pointsto_txn γ a v -∗
   a ↪[γ.(txn_logheap)] v ∗
-  (∀ v', a ↪[γ.(txn_logheap)] v' -∗ mapsto_txn γ a v').
+  (∀ v', a ↪[γ.(txn_logheap)] v' -∗ pointsto_txn γ a v').
 Proof.
-  rewrite /mapsto_txn.
+  rewrite /pointsto_txn.
   iIntros "H". iNamed "H".
   iFrame.
   iIntros (v') "H". iExists _. iFrame.
 Qed.
 
-Theorem mapsto_txn_cur_map {A} γ (m : gmap addr A) (f : A -> {K & bufDataT K}) (xform : A -> A):
-  ( [∗ map] a↦v ∈ m, mapsto_txn γ a (f v) ) -∗
+Theorem pointsto_txn_cur_map {A} γ (m : gmap addr A) (f : A -> {K & bufDataT K}) (xform : A -> A):
+  ( [∗ map] a↦v ∈ m, pointsto_txn γ a (f v) ) -∗
   ( [∗ map] a↦v ∈ m, a ↪[γ.(txn_logheap)] (f v)) ∗
   ( ([∗ map] a↦v ∈ xform <$> m, a ↪[γ.(txn_logheap)] (f v)) -∗
-    [∗ map] a↦v ∈ xform <$> m, mapsto_txn γ a (f v) ).
+    [∗ map] a↦v ∈ xform <$> m, pointsto_txn γ a (f v) ).
 Proof.
   iIntros "Hm".
   iDestruct (big_sepM_mono _ (λ a v, a ↪[γ.(txn_logheap)] (f v) ∗
-                                    (a ↪[γ.(txn_logheap)] (f (xform v)) -∗ mapsto_txn γ a (f (xform v))))%I with "Hm") as "Hm".
+                                    (a ↪[γ.(txn_logheap)] (f (xform v)) -∗ pointsto_txn γ a (f (xform v))))%I with "Hm") as "Hm".
   2: iDestruct (big_sepM_sep with "Hm") as "[$ Hm1]".
-  { iIntros (k x Hkx) "H". iDestruct (mapsto_txn_cur with "H") as "[$ H]".
+  { iIntros (k x Hkx) "H". iDestruct (pointsto_txn_cur with "H") as "[$ H]".
     iIntros "H'". iApply "H". iFrame. }
   iIntros "Hm0".
   iDestruct (bi_iff_2 with "[Hm1]") as "Hm1".
-  1: iApply (big_sepM_fmap _ (λ k x, k ↪[_] (f x) -∗ mapsto_txn γ k (f x))%I).
+  1: iApply (big_sepM_fmap _ (λ k x, k ↪[_] (f x) -∗ pointsto_txn γ k (f x))%I).
   2: iDestruct (big_sepM_sep with "[$Hm0 $Hm1]") as "Hm".
   1: iFrame.
   iApply (big_sepM_mono with "Hm").
   iIntros (k x Hkx) "[H0 H1]". iApply "H1". iFrame.
 Qed.
 
-Theorem mapsto_txn_locked (γ : txn_names) l dinit lwh a data E :
+Theorem pointsto_txn_locked (γ : txn_names) l dinit lwh a data E :
   ↑invN ⊆ E ->
   ↑walN ⊆ E ∖ ↑invN ->
   is_wal (wal_heap_inv γ.(txn_walnames)) l (wal_heap_walnames γ.(txn_walnames)) dinit ∗
   ncinv invN (is_txn_always γ) ∗
   is_locked_walheap γ.(txn_walnames) lwh ∗
-  mapsto_txn γ a data
+  pointsto_txn γ a data
   -∗ |NC={E}=>
     is_locked_walheap γ.(txn_walnames) lwh ∗
-    mapsto_txn γ a data ∗
+    pointsto_txn γ a data ∗
     ⌜ ∃ v, locked_wh_disk lwh !! int.Z a.(addrBlock) = Some v ⌝.
 Proof.
   iIntros (H0 H1) "(#Hiswal & #Hinv & Hlockedheap & Hmapsto)".
@@ -238,7 +238,7 @@ Proof.
   iDestruct (big_sepM2_lookup_r_some with "Hheapmatch") as (x) "%Hlm"; eauto.
   iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hx Hheapmatch]"; eauto.
   iNamed "Hx".
-  iMod (wal_heap_mapsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.
+  iMod (wal_heap_pointsto_latest with "[$Hiswal $Hlockedheap $Htxn_hb]") as "(Hlockedheap & Htxn_hb & %)"; eauto.
   iMod ("Hclo" with "[-Hlockedheap Hmapsto_log Hmapsto_meta Hmod_frag]").
   { iNext. iExists _, _, _. iFrame.
     iApply "Hheapmatch". iExists _, _, _. iFrame. iFrame "%". }

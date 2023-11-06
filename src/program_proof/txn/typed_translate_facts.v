@@ -24,7 +24,7 @@ Qed.
 
 Lemma kind_heap0_ok kinds :
   (∀ (a: u64), a ∈ dom kinds → int.Z a * 4096 * 8 < 2^64) →
-  map_Forall  (kinds_mapsto_valid kinds) (recovery_proof.kind_heap0 kinds).
+  map_Forall  (kinds_pointsto_valid kinds) (recovery_proof.kind_heap0 kinds).
 Proof.
   intros Hdom.
   apply map_Forall_lookup => a o Hlookup.
@@ -34,7 +34,7 @@ Proof.
   rewrite option_fmap_bind in Hlookup.
   apply bind_Some in Hlookup as [k [Hlookup Ho]].
   simpl in Ho.
-  rewrite /kinds_mapsto_valid /=.
+  rewrite /kinds_pointsto_valid /=.
   split.
   - rewrite /valid_addr /=.
     rewrite /addr2flat_z /=.
@@ -67,7 +67,7 @@ Proof.
 Qed.
 
 Lemma wf_jrnl_alt kinds :
-  map_Forall  (kinds_mapsto_valid kinds) (recovery_proof.kind_heap0 kinds) →
+  map_Forall  (kinds_pointsto_valid kinds) (recovery_proof.kind_heap0 kinds) →
   let σj := {| jrnlData := (bufObj_to_obj <$> recovery_proof.kind_heap0 kinds);
                 jrnlKinds := kinds;
                 jrnlAllocs := ∅

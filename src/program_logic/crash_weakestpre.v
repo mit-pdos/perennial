@@ -1814,16 +1814,16 @@ End proofmode_classes.
 Section wpc_ectx_lifting.
 Import ectx_language.
 Context {Λ : ectxLanguage} `{!irisGS Λ Σ, !generationGS Λ Σ} {Hinh : Inhabited (state Λ)}.
-Hint Resolve head_prim_reducible head_reducible_prim_step : core.
+Hint Resolve base_prim_reducible base_reducible_prim_step : core.
 Local Definition reducible_not_val_inhabitant_state e := reducible_not_val e inhabitant.
 Hint Resolve reducible_not_val_inhabitant_state : core.
-Hint Resolve head_stuck_stuck : core.
+Hint Resolve base_stuck_stuck : core.
 
-Lemma wpc_lift_head_step_fupd s E Φ Φc e1 :
+Lemma wpc_lift_base_step_fupd s E Φ Φc e1 :
   to_val e1 = None →
   ((∀ σ1 g1 ns mj D κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns mj D (κ ++ κs) -∗ |={E,∅}=> ▷
-    (⌜head_reducible e1 σ1 g1⌝ ∗
-    ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E}=>
+    (⌜base_reducible e1 σ1 g1⌝ ∗
+    ∀ e2 σ2 g2 efs, ⌜base_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E}=>
       (state_interp σ2 (length efs + nt) ∗
        global_state_interp g2 (step_count_next ns) mj D κs ∗
        WPC e2 @ s; E {{ Φ }} {{ Φc }} ∗
@@ -1839,11 +1839,11 @@ Proof.
   - iDestruct "H" as "(_&$)".
 Qed.
 
-Lemma wpc_lift_head_step s E1 Φ Φc e1 :
+Lemma wpc_lift_base_step s E1 Φ Φc e1 :
   to_val e1 = None →
   ((∀ σ1 g1 ns mj D κ κs nt, state_interp σ1 nt -∗ global_state_interp g1 ns mj D (κ ++ κs) -∗ |={E1,∅}=> ▷
-    (⌜head_reducible e1 σ1 g1⌝ ∗
-     ∀ e2 σ2 g2 efs, ⌜head_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E1}=>
+    (⌜base_reducible e1 σ1 g1⌝ ∗
+     ∀ e2 σ2 g2 efs, ⌜base_step e1 σ1 g1 κ e2 σ2 g2 efs⌝ -∗ |={∅,E1}=>
       state_interp σ2 (length efs + nt) ∗
       global_state_interp g2 (step_count_next ns) mj D κs ∗
       WPC e2 @ s; E1 {{ Φ }} {{ Φc }} ∗
@@ -1851,7 +1851,7 @@ Lemma wpc_lift_head_step s E1 Φ Φc e1 :
   ∧ |C={E1}=> Φc)%I
   ⊢ WPC e1 @ s; E1 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros (?) "H". iApply wpc_lift_head_step_fupd; [done|]. iSplit.
+  iIntros (?) "H". iApply wpc_lift_base_step_fupd; [done|]. iSplit.
   - iDestruct "H" as "(H&_)". iIntros (????????) "??".
     iMod ("H" with "[$] [$]") as "[$ H]". iIntros "!> !>" (e2 σ2 g2 efs ?). by iApply "H".
   - iDestruct "H" as "(_&$)".

@@ -87,9 +87,9 @@ Qed.
 
 Lemma array_to_block l q (bs: list byte) :
   length bs = Z.to_nat 4096 ->
-  l ↦∗[byteT]{q} (b2val <$> bs) -∗ mapsto_block l q (list_to_block bs).
+  l ↦∗[byteT]{q} (b2val <$> bs) -∗ pointsto_block l q (list_to_block bs).
 Proof.
-  rewrite /array /mapsto_block.
+  rewrite /array /pointsto_block.
   iIntros (H) "Hl".
   rewrite -> list_to_block_to_vals by auto.
   rewrite heap_array_to_list.
@@ -98,13 +98,13 @@ Proof.
   iApply (big_sepL_impl with "Hl"); simpl.
   iModIntro.
   iIntros (i x) "% Hl".
-  iApply (byte_mapsto_untype with "Hl").
+  iApply (byte_pointsto_untype with "Hl").
 Qed.
 
 Lemma array_to_block_array l q b :
-  array l q byteT (Block_to_vals b) ⊣⊢ mapsto_block l q b.
+  array l q byteT (Block_to_vals b) ⊣⊢ pointsto_block l q b.
 Proof.
-  rewrite /mapsto_block /array.
+  rewrite /pointsto_block /array.
   rewrite heap_array_to_list.
   rewrite ?big_sepL_fmap.
   setoid_rewrite Z.mul_1_l.
@@ -112,11 +112,11 @@ Proof.
   intros k y Heq.
   rewrite /Block_to_vals in Heq.
   rewrite /b2val.
-  rewrite byte_mapsto_untype //.
+  rewrite byte_pointsto_untype //.
 Qed.
 
 Lemma slice_to_block_array s q b :
-  own_slice_small s byteT q (Block_to_vals b) -∗ mapsto_block s.(Slice.ptr) q b.
+  own_slice_small s byteT q (Block_to_vals b) -∗ pointsto_block s.(Slice.ptr) q b.
 Proof.
   rewrite /own_slice_small.
   iIntros "[Ha _]".
@@ -124,7 +124,7 @@ Proof.
 Qed.
 
 Lemma block_array_to_slice_raw l q b :
-  mapsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = int.nat 4096⌝.
+  pointsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = int.nat 4096⌝.
 Proof.
   iIntros "Hm".
   rewrite /own_slice_small.
@@ -146,7 +146,7 @@ Ltac inv_undefined :=
 
 Local Ltac solve_atomic :=
   apply strongly_atomic_atomic, ectx_language_atomic;
-  [ apply heap_head_atomic; cbn [relation.denote head_trans]; intros * H;
+  [ apply heap_base_atomic; cbn [relation.denote base_trans]; intros * H;
     repeat inv_undefined;
     try solve [ apply atomically_is_val in H; auto ]
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
@@ -328,11 +328,11 @@ Proof.
   iIntros "!> * Hs". iApply ("HΦ" with "[$]").
 Qed.
 
-  Ltac inv_head_step :=
+  Ltac inv_base_step :=
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
+        | H : base_step ?e _ _ _ _ _ _ _ |- _ =>
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
@@ -354,7 +354,7 @@ Proof.
   Opaque async_disk_proph.Barrier.
   iLöb as "IH".
   wp_bind (ExternalOp _ _).
-  iApply ectx_lifting.wp_lift_head_step_nc; first by auto.
+  iApply ectx_lifting.wp_lift_base_step_nc; first by auto.
   iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg".
   iApply (ncfupd_mask_intro); first set_solver+. iIntros "Hclo".
   cbv [ffi_local_ctx disk_interp].
@@ -371,8 +371,8 @@ Proof.
       rewrite decide_False //. repeat (monad_simpl; cbn).
   }
   iNext; iIntros (v2 σ2 g2 efs Hstep).
-  apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-  inv_head_step.
+  apply base_step_atomic_inv in Hstep; [ | by inversion 1 ].
+  inv_base_step.
   monad_inv.
   iMod "Hclo". iIntros.
   destruct (decide (all_synced _)) as [Ha|Hna].
@@ -587,7 +587,7 @@ Qed.
 Theorem slice_to_block s q bs :
   s.(Slice.sz) = 4096 ->
   own_slice_small s byteT q (b2val <$> bs) -∗
-  mapsto_block s.(Slice.ptr) q (list_to_block bs).
+  pointsto_block s.(Slice.ptr) q (list_to_block bs).
 Proof.
   iIntros (Hsz) "Hs".
   rewrite /own_slice_small.
@@ -614,7 +614,7 @@ Proof.
   { eauto. }
   iLöb as "IH".
   Opaque async_disk_proph.Barrier.
-  iApply wpc_lift_head_step_fupd; first by auto.
+  iApply wpc_lift_base_step_fupd; first by auto.
   iSplit; last first.
   { iModIntro. iLeft in "HΦ". iApply "HΦ". eauto. }
   iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd'&Htr) Hg".
@@ -633,8 +633,8 @@ Proof.
       rewrite decide_False //. repeat (monad_simpl; cbn).
   }
   iNext; iIntros (v2 σ2 g2 efs Hstep).
-  apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-  inv_head_step.
+  apply base_step_atomic_inv in Hstep; [ | by inversion 1 ].
+  inv_base_step.
   monad_inv.
   iMod "Hclo". iIntros.
   destruct (decide (all_synced _)) as [Ha|Hna].

@@ -175,14 +175,14 @@ Proof using Ptimeless.
 
     iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
 
-    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+    wp_apply (wp_struct_fieldRef_pointsto with "Resok"); first done.
     iIntros (fl) "[%Hfl Resok]".
     wp_apply (wp_storeField_struct with "Resok").
     { compute. val_ty. }
     iIntros "Resok".
     rewrite Hfl; clear Hfl fl.
 
-    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+    wp_apply (wp_struct_fieldRef_pointsto with "Resok"); first done.
     iIntros (fl) "[%Hfl Resok]".
     wp_apply (wp_storeField_struct with "Resok").
     { compute. val_ty. }

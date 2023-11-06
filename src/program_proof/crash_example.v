@@ -208,17 +208,17 @@ Qed.
 
 Example is_state_write_0 l γ sl first data' data E :
   is_state l γ sl ∗
-  mapsto_txn γ first (Build_addr A0 0) (existT KindBlock data')
+  pointsto_txn γ first (Build_addr A0 0) (existT KindBlock data')
 (*
   ( ∀ a q v,
       a ∉ writtenBufs ->
-      mapsto_range γ first (S first) a q v -∗
-      mapsto_range γ (S first) (S (S first)) a q v )
+      pointsto_range γ first (S first) a q v -∗
+      pointsto_range γ (S first) (S (S first)) a q v )
 *)
   ={E}=∗
   ∃ txn_id,
     is_state l γ (async_put (set state.b0 (λ _, data) (latest sl)) sl) ∗
-    mapsto_txn γ txn_id (Build_addr A0 0) (existT KindBlock (bufBlock data)).
+    pointsto_txn γ txn_id (Build_addr A0 0) (existT KindBlock (bufBlock data)).
 Proof.
   iIntros "[Hs H0]".
   iNamed "Hs".
@@ -226,14 +226,14 @@ Proof.
   iDestruct "Hlatest" as "[Hlatest _]".
   iNamed "Hlatest".
   iNamed "H0".
-  iDestruct (mapsto_cur_range_agree with "Hmapsto_log Hv0") as %Hagree.
+  iDestruct (pointsto_cur_range_agree with "Hmapsto_log Hv0") as %Hagree.
   { admit. }
 
   iNamed "Histxn".
 (*
   iInv "Histxna" as "Htxinv". "Htxinv_close".
 *)
-  iDestruct (mapsto_cur_snapshot with "[] Hmapsto_log") as "[Hmapsto_log Hmapsto_snap]".
+  iDestruct (pointsto_cur_snapshot with "[] Hmapsto_log") as "[Hmapsto_log Hmapsto_snap]".
   { admit. }
 
   iModIntro.
@@ -288,7 +288,7 @@ Definition kvpairs_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t): iProp Σ
 
 Definition kvpairs_match (pairs: list kvpair.t) γDisk : iProp Σ :=
   [∗ list] kvp ∈ pairs, let '(kvpair.mk a bs) := kvp in
-                        (∃ blk, is_block bs 1 blk ∗ mapsto_txn γDisk a (defs.bufBlock blk))%I.
+                        (∃ blk, is_block bs 1 blk ∗ pointsto_txn γDisk a (defs.bufBlock blk))%I.
 
 Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K})
            (sz : nat) γDisk : iProp Σ :=
@@ -299,10 +299,10 @@ Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K
       ⌜(∀ n : nat, n < sz -> ∃ blk,
              kvsblks !! (nat_key_to_addr n) = Some (existT defs.KindBlock (defs.bufBlock blk))
       )⌝
-      ∗ [∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I.
+      ∗ [∗ map] k↦b ∈ kvsblks, pointsto_txn γDisk k (projT2 b))%I.
 
 Definition crashed_kvs kvp_ls kvsblks γDisk : iProp Σ :=
-      ([∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k (projT2 b))%I
+      ([∗ map] k↦b ∈ kvsblks, pointsto_txn γDisk k (projT2 b))%I
       ∗ kvpairs_match kvp_ls γDisk.
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
@@ -360,7 +360,7 @@ Proof.
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
 
-      iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k (projT2 b)) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
+      iDestruct (big_sepM_lookup_acc (λ k b, pointsto_txn γDisk k (projT2 b)) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
       pose ({[key := existT defs.KindBlock (defs.bufBlock blk)]} : gmap (specs.addr) ({K & defs.bufDataT K})) as keyMp.
 
       iMod (Op_lift buftx _ γDisk keyMp with "[Hbtxn HkeyMt]") as "[Hbtxn HkeyMt]"; iFrame; eauto.

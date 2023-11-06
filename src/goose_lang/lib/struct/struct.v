@@ -126,22 +126,22 @@ Proof.
       econstructor; eauto.
 Qed.
 
-Definition struct_field_mapsto_def l q (d: descriptor) (f0: string) (fv:val): iProp Σ :=
+Definition struct_field_pointsto_def l q (d: descriptor) (f0: string) (fv:val): iProp Σ :=
   match field_offset d f0 with
   | Some (off, t) =>
     (* this struct is for the field type *)
-    struct_mapsto (l +ₗ off) q t fv
+    struct_pointsto (l +ₗ off) q t fv
   | None => ⌜fv = #()⌝
   end.
 
-Definition struct_field_mapsto_aux : seal (@struct_field_mapsto_def). Proof. by eexists. Qed.
-Definition struct_field_mapsto := struct_field_mapsto_aux.(unseal).
-Definition struct_field_mapsto_eq : @struct_field_mapsto = @struct_field_mapsto_def := struct_field_mapsto_aux.(seal_eq).
+Definition struct_field_pointsto_aux : seal (@struct_field_pointsto_def). Proof. by eexists. Qed.
+Definition struct_field_pointsto := struct_field_pointsto_aux.(unseal).
+Definition struct_field_pointsto_eq : @struct_field_pointsto = @struct_field_pointsto_def := struct_field_pointsto_aux.(seal_eq).
 
 Ltac unseal :=
-  rewrite struct_field_mapsto_eq /struct_field_mapsto_def.
+  rewrite struct_field_pointsto_eq /struct_field_pointsto_def.
 
-Global Instance struct_field_mapsto_timeless l d f q v : Timeless (struct_field_mapsto l q d f v).
+Global Instance struct_field_pointsto_timeless l d f q v : Timeless (struct_field_pointsto l q d f v).
 Proof.
   unseal.
   destruct (field_offset d f).
@@ -149,7 +149,7 @@ Proof.
   - refine _.
 Qed.
 
-Global Instance struct_field_mapsto_fractional l d f v : fractional.Fractional (λ q : Qp, struct_field_mapsto l q d f v).
+Global Instance struct_field_pointsto_fractional l d f v : fractional.Fractional (λ q : Qp, struct_field_pointsto l q d f v).
 Proof.
   unseal.
   destruct (field_offset d f).
@@ -157,7 +157,7 @@ Proof.
   - refine _.
 Qed.
 
-Global Instance struct_field_mapsto_as_fractional l q d f v : fractional.AsFractional (struct_field_mapsto l q d f v) (λ q0 : Qp, struct_field_mapsto l q0 d f v) q.
+Global Instance struct_field_pointsto_as_fractional l q d f v : fractional.AsFractional (struct_field_pointsto l q d f v) (λ q0 : Qp, struct_field_pointsto l q0 d f v) q.
 Proof.
   split; [ done | apply _ ].
 Qed.
@@ -167,7 +167,7 @@ Local Fixpoint struct_big_sep l q (d:descriptor) (v:val): iProp Σ :=
   | [] => ⌜v = #()⌝
   | (f,t)::fs =>
     match v with
-    | PairV v1 v2 => struct_mapsto l q t v1 ∗
+    | PairV v1 v2 => struct_pointsto l q t v1 ∗
                     struct_big_sep (l +ₗ ty_size t) q fs v2
     | _ => False
     end
@@ -182,26 +182,26 @@ Proof.
     val_ty.
   - destruct v; auto.
     iIntros "[Hv1 Hv2]".
-    iDestruct (struct_mapsto_ty with "Hv1") as %Hv1ty.
+    iDestruct (struct_pointsto_ty with "Hv1") as %Hv1ty.
     iDestruct (IHfs with "Hv2") as %Hv2ty.
     iPureIntro.
     constructor; auto.
 Qed.
 
-Local Lemma struct_mapsto_to_big l q d v :
-  struct_mapsto l q (struct.t d) v ⊣⊢ struct_big_sep l q d v.
+Local Lemma struct_pointsto_to_big l q d v :
+  struct_pointsto l q (struct.t d) v ⊣⊢ struct_big_sep l q d v.
 Proof.
   apply (bient_pure_wlog (val_ty v (struct.t d))).
-  { iApply struct_mapsto_ty. }
+  { iApply struct_pointsto_ty. }
   { iApply struct_big_sep_ty. }
   intros Hty.
   (iInduction (d) as [| [f t] fs] "IH" forall (l v Hty)); simpl.
   - inv_ty Hty.
-    rewrite struct_mapsto_eq /struct_mapsto_def /flatten_struct /=.
+    rewrite struct_pointsto_eq /struct_pointsto_def /flatten_struct /=.
     rewrite left_id.
     auto.
   - inv_ty Hty.
-    rewrite struct_mapsto_prod.
+    rewrite struct_pointsto_prod.
     iSplit; iIntros "[$ Hv2]".
     + iApply ("IH" with "[//] Hv2").
     + iApply ("IH" with "[//] Hv2").
@@ -212,7 +212,7 @@ Local Fixpoint struct_big_fields_rec l q (d: descriptor) (fs:descriptor) (v:val)
   | [] => "_" ∷ ⌜v = #()⌝
   | (f,t)::fs =>
     match v with
-    | PairV v1 v2 => f ∷ struct_field_mapsto l q d f v1 ∗
+    | PairV v1 v2 => f ∷ struct_field_pointsto l q d f v1 ∗
                     struct_big_fields_rec l q d fs v2
     | _ => False
     end
@@ -300,9 +300,9 @@ Qed.
 (** This is the big splitting theorem, for converting from a monolithic struct
 points-to fact to the individual field pointers. *)
 Theorem struct_fields_split l q d {dwf: struct.wf d} v :
-  struct_mapsto l q (struct.t d) v ⊣⊢ struct_fields l q d v.
+  struct_pointsto l q (struct.t d) v ⊣⊢ struct_fields l q d v.
 Proof.
-  rewrite struct_mapsto_to_big struct_big_sep_to_fields //.
+  rewrite struct_pointsto_to_big struct_big_sep_to_fields //.
 Qed.
 
 Transparent structFieldRef.
@@ -328,56 +328,56 @@ Qed.
 
 Opaque structFieldRef.
 
-Lemma struct_field_mapsto_unfold l q d f v off t :
+Lemma struct_field_pointsto_unfold l q d f v off t :
   field_offset d f = Some (off, t) →
-  struct_field_mapsto l q d f v = ((l +ₗ off) ↦[t]{q} v)%I.
+  struct_field_pointsto l q d f v = ((l +ₗ off) ↦[t]{q} v)%I.
 Proof. unseal. by intros ->. Qed.
 
-Lemma wp_struct_fieldRef_mapsto l q d f off t v :
+Lemma wp_struct_fieldRef_pointsto l q d f off t v :
   field_offset d f = Some (off, t) →
-  {{{ struct_field_mapsto l q d f v  }}}
+  {{{ struct_field_pointsto l q d f v  }}}
     struct.fieldRef d f #l
-  {{{ fl, RET #fl; ⌜∀ v', fl ↦[t]{q} v' ⊣⊢ struct_field_mapsto l q d f v'⌝ ∗ fl ↦[t]{q} v }}}.
+  {{{ fl, RET #fl; ⌜∀ v', fl ↦[t]{q} v' ⊣⊢ struct_field_pointsto l q d f v'⌝ ∗ fl ↦[t]{q} v }}}.
 Proof.
   iIntros (Hoff Φ) "Hf HΦ".
-  erewrite struct_field_mapsto_unfold; eauto.
+  erewrite struct_field_pointsto_unfold; eauto.
   wp_apply wp_struct_fieldRef.
   { rewrite Hoff //. }
   rewrite /struct.fieldRef_f Hoff.
   iApply "HΦ"; iFrame.
   iIntros "!%" (v').
-  erewrite struct_field_mapsto_unfold; eauto.
+  erewrite struct_field_pointsto_unfold; eauto.
 Qed.
 
-Lemma struct_mapsto_field_offset_acc l q d f0 (off: Z) t0 v :
+Lemma struct_pointsto_field_offset_acc l q d f0 (off: Z) t0 v :
   field_offset d f0 = Some (off, t0) ->
-  struct_mapsto l q (struct.t d) v ⊢@{_}
-  (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
-   (∀ fv', struct_mapsto (l +ₗ off) q t0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
+  struct_pointsto l q (struct.t d) v ⊢@{_}
+  (struct_pointsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
+   (∀ fv', struct_pointsto (l +ₗ off) q t0 fv' -∗ struct_pointsto l q (struct.t d) (setField_f d f0 fv' v))).
 Proof.
   revert l v off t0.
   induction d as [|[f t] fs]; simpl; intros.
   - congruence.
   - iIntros "Hl".
-    iDestruct (struct_mapsto_ty with "Hl") as %Hty.
+    iDestruct (struct_pointsto_ty with "Hl") as %Hty.
     inv_ty Hty.
     destruct (f =? f0)%string.
     + invc H; simpl.
       rewrite loc_add_0.
-      iDestruct (struct_mapsto_prod with "Hl") as "[Hv1 Hv2]".
+      iDestruct (struct_pointsto_prod with "Hl") as "[Hv1 Hv2]".
       iFrame.
       iIntros (fv') "Hv1".
-      iDestruct (struct_mapsto_prod with "[$Hv1 $Hv2]") as "$".
+      iDestruct (struct_pointsto_prod with "[$Hv1 $Hv2]") as "$".
     + destruct_with_eqn (field_offset fs f0); try congruence.
       destruct p as [off' t'].
       invc H.
-      iDestruct (struct_mapsto_prod with "Hl") as "[Hv1 Hv2]".
+      iDestruct (struct_pointsto_prod with "Hl") as "[Hv1 Hv2]".
       erewrite IHfs by eauto.
       rewrite loc_add_assoc.
       iDestruct "Hv2" as "[Hf Hupd]".
       iFrame "Hf".
       iIntros (fv') "Hf".
-      iApply struct_mapsto_prod; iFrame.
+      iApply struct_pointsto_prod; iFrame.
       iApply ("Hupd" with "[$]").
 Qed.
 
@@ -390,14 +390,14 @@ Proof.
     destruct (f =? f0)%string; congruence.
 Qed.
 
-Lemma struct_mapsto_acc_offset_read l q d f0 (off: Z) t0 v :
+Lemma struct_pointsto_acc_offset_read l q d f0 (off: Z) t0 v :
   field_offset d f0 = Some (off, t0) ->
-  struct_mapsto l q (struct.t d) v -∗
-  (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
-   (struct_mapsto (l +ₗ off) q t0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
+  struct_pointsto l q (struct.t d) v -∗
+  (struct_pointsto (l +ₗ off) q t0 (getField_f d f0 v) ∗
+   (struct_pointsto (l +ₗ off) q t0 (getField_f d f0 v) -∗ struct_pointsto l q (struct.t d) v)).
 Proof.
   iIntros (Hf) "Hl".
-  iDestruct (struct_mapsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | .. ].
+  iDestruct (struct_pointsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | .. ].
   iFrame.
   iIntros "Hf".
   iSpecialize ("Hupd" with "Hf").
@@ -405,9 +405,9 @@ Proof.
 Qed.
 
 Notation "l ↦[ d :: f ]{ q } v" :=
-  (struct_field_mapsto l q d f%string v%V).
+  (struct_field_pointsto l q d f%string v%V).
 Notation "l ↦[ d :: f ] v" :=
-  (struct_field_mapsto l 1 d f%string v%V).
+  (struct_field_pointsto l 1 d f%string v%V).
 
 Theorem getField_f_none d f0 v :
   field_offset d f0 = None ->
@@ -436,60 +436,60 @@ Proof.
       rewrite IHfs //.
 Qed.
 
-Lemma struct_mapsto_q l q t v :
-  struct_mapsto l q t v ⊣⊢
-  struct_mapsto l (q/2) t v ∗
-  struct_mapsto l (q/2) t v.
+Lemma struct_pointsto_q l q t v :
+  struct_pointsto l q t v ⊣⊢
+  struct_pointsto l (q/2) t v ∗
+  struct_pointsto l (q/2) t v.
 Proof.
-  rewrite -typed_mem.struct_mapsto_fractional Qp.div_2. auto.
+  rewrite -typed_mem.struct_pointsto_fractional Qp.div_2. auto.
 Qed.
 
-Global Instance struct_mapsto_as_mapsto d l v :
-  AsMapsTo (struct_mapsto l 1 d v)
-           (fun q => struct_mapsto l q d v).
+Global Instance struct_pointsto_as_pointsto d l v :
+  AsMapsTo (struct_pointsto l 1 d v)
+           (fun q => struct_pointsto l q d v).
 Proof.
   split; [ done | apply _ | apply _ ].
 Qed.
 
-Lemma struct_field_mapsto_q l q d f v :
-  struct_field_mapsto l q d f v ⊣⊢
-  struct_field_mapsto l (q/2) d f v ∗
-  struct_field_mapsto l (q/2) d f v.
+Lemma struct_field_pointsto_q l q d f v :
+  struct_field_pointsto l q d f v ⊣⊢
+  struct_field_pointsto l (q/2) d f v ∗
+  struct_field_pointsto l (q/2) d f v.
 Proof.
   unseal.
   destruct (field_offset d f).
   - destruct p.
-    rewrite struct_mapsto_q. done.
+    rewrite struct_pointsto_q. done.
   - iSplit; iIntros; iPureIntro; intuition.
 Qed.
 
-Theorem struct_field_mapsto_agree l d f q1 v1 q2 v2 :
-  struct_field_mapsto l q1 d f v1 -∗
-  struct_field_mapsto l q2 d f v2 -∗
+Theorem struct_field_pointsto_agree l d f q1 v1 q2 v2 :
+  struct_field_pointsto l q1 d f v1 -∗
+  struct_field_pointsto l q2 d f v2 -∗
   ⌜v1 = v2⌝.
 Proof.
   unseal.
   destruct (field_offset d f).
   - destruct p.
-    apply struct_mapsto_agree.
+    apply struct_pointsto_agree.
   - iIntros; iPureIntro; subst; intuition.
 Qed.
 
-Global Instance struct_field_mapsto_as_mapsto d f l v :
-  AsMapsTo (struct_field_mapsto l 1 d f v)
-           (fun q => struct_field_mapsto l q d f v).
+Global Instance struct_field_pointsto_as_pointsto d f l v :
+  AsMapsTo (struct_field_pointsto l 1 d f v)
+           (fun q => struct_field_pointsto l q d f v).
 Proof.
   split; [ done | apply _ | apply _ ].
 Qed.
 
-Lemma struct_mapsto_acc f0 l q d v :
-  struct_mapsto l q (struct.t d) v -∗
-  (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
-   (∀ fv', struct_field_mapsto l q d f0 fv' -∗ struct_mapsto l q (struct.t d) (setField_f d f0 fv' v))).
+Lemma struct_pointsto_acc f0 l q d v :
+  struct_pointsto l q (struct.t d) v -∗
+  (struct_field_pointsto l q d f0 (getField_f d f0 v) ∗
+   (∀ fv', struct_field_pointsto l q d f0 fv' -∗ struct_pointsto l q (struct.t d) (setField_f d f0 fv' v))).
 Proof.
   destruct (field_offset d f0) as [[off t0]|] eqn:Hf.
   - iIntros "Hl".
-    iDestruct (struct_mapsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | ].
+    iDestruct (struct_pointsto_field_offset_acc with "Hl") as "[Hf Hupd]"; [ eauto | ].
     unseal; rewrite Hf.
     iFrame.
   - unseal; rewrite Hf.
@@ -500,14 +500,14 @@ Proof.
     rewrite -> setField_f_none by auto; auto.
 Qed.
 
-Lemma struct_mapsto_acc_read f0 l q d v :
-  struct_mapsto l q (struct.t d) v -∗
-  (struct_field_mapsto l q d f0 (getField_f d f0 v) ∗
-   (struct_field_mapsto l q d f0 (getField_f d f0 v) -∗ struct_mapsto l q (struct.t d) v)).
+Lemma struct_pointsto_acc_read f0 l q d v :
+  struct_pointsto l q (struct.t d) v -∗
+  (struct_field_pointsto l q d f0 (getField_f d f0 v) ∗
+   (struct_field_pointsto l q d f0 (getField_f d f0 v) -∗ struct_pointsto l q (struct.t d) v)).
 Proof.
   destruct (field_offset d f0) as [[off t0]|] eqn:Hf.
   - iIntros "Hl".
-    iDestruct (struct_mapsto_acc_offset_read with "Hl") as "[Hf Hupd]"; [ eauto | ].
+    iDestruct (struct_pointsto_acc_offset_read with "Hl") as "[Hf Hupd]"; [ eauto | ].
     unseal; rewrite Hf.
     iFrame.
   - unseal; rewrite Hf.
@@ -515,20 +515,20 @@ Proof.
     rewrite getField_f_none; auto.
 Qed.
 
-Theorem struct_field_mapsto_ty l q d z t f v :
+Theorem struct_field_pointsto_ty l q d z t f v :
   field_offset d f = Some (z, t) ->
-  struct_field_mapsto l q d f v -∗ ⌜val_ty v t⌝.
+  struct_field_pointsto l q d f v -∗ ⌜val_ty v t⌝.
 Proof.
   unseal.
   intros ->.
   iIntros "Hl".
-  iDestruct (struct_mapsto_ty with "Hl") as %Hty.
+  iDestruct (struct_pointsto_ty with "Hl") as %Hty.
   auto.
 Qed.
 
-Theorem struct_field_mapsto_none l q d f v :
+Theorem struct_field_pointsto_none l q d f v :
   field_offset d f = None ->
-  struct_field_mapsto l q d f v -∗ ⌜v = #()⌝.
+  struct_field_pointsto l q d f v -∗ ⌜v = #()⌝.
 Proof.
   unseal.
   intros ->.
@@ -554,9 +554,9 @@ Qed.
 Transparent loadField storeField.
 
 Theorem wp_loadField stk E l q d f fv :
-  {{{ ▷ struct_field_mapsto l q d f fv }}}
+  {{{ ▷ struct_field_pointsto l q d f fv }}}
     struct.loadF d f #l @ stk; E
-  {{{ RET fv; struct_field_mapsto l q d f fv }}}.
+  {{{ RET fv; struct_field_pointsto l q d f fv }}}.
 Proof.
   rewrite /loadField.
   destruct (field_offset d f) as [[z t]|] eqn:Hf.
@@ -568,13 +568,13 @@ Proof.
     iApply ("HΦ" with "[$]").
   - iIntros (Φ) "Hl HΦ".
     wp_pures.
-    iDestruct (struct_field_mapsto_none with "Hl") as %->; auto.
+    iDestruct (struct_field_pointsto_none with "Hl") as %->; auto.
     iApply ("HΦ" with "[$]").
 Qed.
 
 Lemma tac_wp_loadField Δ Δ' s E i l q d f v Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
-  envs_lookup i Δ' = Some (false, struct_field_mapsto l q d f v)%I →
+  envs_lookup i Δ' = Some (false, struct_field_pointsto l q d f v)%I →
   envs_entails Δ' (Φ v) →
   envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
@@ -585,7 +585,7 @@ Proof.
 Qed.
 
 Theorem wp_load_ro l t v :
-  {{{ readonly (struct_mapsto l 1%Qp t v) }}}
+  {{{ readonly (struct_pointsto l 1%Qp t v) }}}
     load_ty t #l
   {{{ RET v; True }}}.
 Proof.
@@ -596,7 +596,7 @@ Proof.
 Qed.
 
 Theorem wp_loadField_ro {stk E} l d f fv :
-  {{{ readonly (struct_field_mapsto l 1%Qp d f fv) }}}
+  {{{ readonly (struct_field_pointsto l 1%Qp d f fv) }}}
     struct.loadF d f #l @ stk; E
   {{{ RET fv; True }}}.
 Proof.
@@ -607,7 +607,7 @@ Proof.
 Qed.
 
 Lemma tac_wp_loadField_ro {E} Δ s i l d f v Φ :
-  envs_lookup i Δ = Some (true, readonly (struct_field_mapsto l 1%Qp d f v))%I →
+  envs_lookup i Δ = Some (true, readonly (struct_field_pointsto l 1%Qp d f v))%I →
   envs_entails Δ (Φ v) →
   envs_entails Δ (WP (struct.loadF d f (LitV l)) @ s; E {{ Φ }}).
 Proof.
@@ -629,9 +629,9 @@ Definition field_ty d f: ty :=
 
 Theorem wp_storeField stk E l d f fv fv' :
   val_ty fv' (field_ty d f) ->
-  {{{ ▷ struct_field_mapsto l 1 d f fv }}}
+  {{{ ▷ struct_field_pointsto l 1 d f fv }}}
     struct.storeF d f #l fv' @ stk; E
-  {{{ RET #(); struct_field_mapsto l 1 d f fv' }}}.
+  {{{ RET #(); struct_field_pointsto l 1 d f fv' }}}.
 Proof.
   rewrite /storeField /field_ty.
   intros Hty.
@@ -645,7 +645,7 @@ Proof.
   - inv_ty Hty.
     iIntros (Φ) "Hl HΦ".
     wp_pures.
-    iDestruct (struct_field_mapsto_none with "Hl") as %->; auto.
+    iDestruct (struct_field_pointsto_none with "Hl") as %->; auto.
     iApply ("HΦ" with "[$]").
 Qed.
 
@@ -667,12 +667,12 @@ Proof.
 Qed.
 
 Theorem wp_loadField_struct stk E l q d f v :
-  {{{ struct_mapsto l q (struct.t d) v }}}
+  {{{ struct_pointsto l q (struct.t d) v }}}
     struct.loadF d f #l @ stk; E
-  {{{ RET (getField_f d f v); struct_mapsto l q (struct.t d) v }}}.
+  {{{ RET (getField_f d f v); struct_pointsto l q (struct.t d) v }}}.
 Proof.
   iIntros (Φ) "Hs HΦ".
-  iDestruct (struct_mapsto_acc_read f with "Hs") as "[Hf Hupd]".
+  iDestruct (struct_pointsto_acc_read f with "Hs") as "[Hf Hupd]".
   wp_apply (wp_loadField with "Hf"); iIntros "Hf".
   iApply "HΦ".
   iApply ("Hupd" with "[$]").
@@ -680,12 +680,12 @@ Qed.
 
 Theorem wp_storeField_struct stk E l d f v fv' :
   val_ty fv' (field_ty d f) ->
-  {{{ struct_mapsto l 1 (struct.t d) v }}}
+  {{{ struct_pointsto l 1 (struct.t d) v }}}
     struct.storeF d f #l fv' @ stk; E
-  {{{ RET #(); struct_mapsto l 1 (struct.t d) (setField_f d f fv' v) }}}.
+  {{{ RET #(); struct_pointsto l 1 (struct.t d) (setField_f d f fv' v) }}}.
 Proof.
   iIntros (Hty Φ) "Hs HΦ".
-  iDestruct (struct_mapsto_acc f with "Hs") as "[Hf Hupd]".
+  iDestruct (struct_pointsto_acc f with "Hs") as "[Hf Hupd]".
   wp_apply (wp_storeField with "Hf"); auto.
   iIntros "Hf".
   iApply "HΦ".
@@ -706,13 +706,13 @@ Qed.
 
 End goose_lang.
 
-Typeclasses Opaque struct_mapsto.
-Typeclasses Opaque struct_field_mapsto.
+Typeclasses Opaque struct_pointsto.
+Typeclasses Opaque struct_field_pointsto.
 
 Notation "l ↦[ d :: f ]{ q } v" :=
-  (struct_field_mapsto l q d f%string v%V).
+  (struct_field_pointsto l q d f%string v%V).
 Notation "l ↦[ d :: f ] v" :=
-  (struct_field_mapsto l 1 d f%string v%V).
+  (struct_field_pointsto l 1 d f%string v%V).
 
 (* Enable solving of val_ty goals where the type is looked up from a struct declaration.
 ([simple apply] unification is too weak to do this automatically.)
@@ -728,7 +728,7 @@ Hint Extern 5 (val_ty ?v (field_ty ?t ?f)) =>
   : core.
 
 Tactic Notation "wp_loadField" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
     iAssumptionCore || fail 1 "wp_load: cannot find" l "↦[d :: f] ?" in
   wp_pures;
@@ -745,13 +745,13 @@ Tactic Notation "wp_loadField" :=
       [eapply tac_wp_loadField
       |fail 2 "wp_loadField: cannot find 'struct.loadF' in" e];
     [tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |]
   | _ => fail 1 "wp_loadField: not a 'wp'"
   end.
 
 Tactic Notation "wp_storeField" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_ :: _]{_} _)%I) => l end in
     iAssumptionCore || fail "wp_storeField: cannot find" l "↦[d :: f] ?" in
   wp_pures;
@@ -763,7 +763,7 @@ Tactic Notation "wp_storeField" :=
       |fail 1 "wp_storeField: cannot find 'storeField' in" e];
     [val_ty
     |tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |pm_reflexivity
     |try wp_seq ]
   | _ => fail "wp_storeField: not a 'wp'"

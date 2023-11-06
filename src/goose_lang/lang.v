@@ -1087,7 +1087,7 @@ Definition modifyσ (f : state → state) : transition (state*global_state) () :
 Definition modifyg (f : global_state → global_state) : transition (state*global_state) () :=
   modify (λ '(σ, g), (σ, f g)).
 
-Definition head_trans (e: expr) :
+Definition base_trans (e: expr) :
  transition (state * global_state) (list observation * expr * list expr) :=
   match e with
   | Rec f x e => atomically $ ret $ RecV f x e
@@ -1186,10 +1186,10 @@ Definition head_trans (e: expr) :
   | _ => undefined
   end.
 
-Definition head_step:
+Definition base_step:
     expr -> state -> global_state -> list observation -> expr -> state -> global_state -> list expr -> Prop :=
   fun e s g κs e' s' g' efs =>
-      relation.denote (head_trans e) (s,g) (s',g') (κs, e', efs).
+      relation.denote (base_trans e) (s,g) (s',g') (κs, e', efs).
 
 Definition fill' (K : list (ectx_item)) (e : expr) : expr := foldl (flip fill_item) e K.
 
@@ -1197,7 +1197,7 @@ Inductive prim_step' (e1 : expr) (σ1 : state) (g1 : global_state) (κ : list (o
     (e2 : expr) (σ2 : state) (g2 : global_state) (efs : list (expr)) : Prop :=
   Ectx_step' K e1' e2' :
     e1 = fill' K e1' → e2 = fill' K e2' →
-    head_step e1' σ1 g1 κ e2' σ2 g2 efs → prim_step' e1 σ1 g1 κ e2 σ2 g2 efs.
+    base_step e1' σ1 g1 κ e2' σ2 g2 efs → prim_step' e1 σ1 g1 κ e2 σ2 g2 efs.
 
 Definition irreducible' (e : expr) (σ : state) (g : global_state) :=
   ∀ κ e' σ' g' efs, ¬prim_step' e σ g κ e' σ' g' efs.
@@ -1214,25 +1214,25 @@ Definition prim_step'_safe e s g :=
               Fork expressions. *)
   ).
 
-Inductive head_step_atomic:
+Inductive base_step_atomic:
     expr -> state -> global_state -> list observation -> expr -> state -> global_state -> list expr -> Prop :=
- | head_step_trans : ∀ e s g κs e' s' g' efs,
-     head_step e s g κs e' s' g' efs →
-     head_step_atomic e s g κs e' s' g' efs
- | head_step_atomically : ∀ (vl : val) e s g κs v' s' g',
+ | base_step_trans : ∀ e s g κs e' s' g' efs,
+     base_step e s g κs e' s' g' efs →
+     base_step_atomic e s g κs e' s' g' efs
+ | base_step_atomically : ∀ (vl : val) e s g κs v' s' g',
      rtc (λ '(e, (s, g)) '(e', (s', g')), prim_step' e s g [] e' s' g' []) (e, (s, g)) (Val (InjRV v'), (s', g')) →
      prim_step'_safe e s g →
-     head_step_atomic (Atomically (of_val vl) e) s g κs (Val (InjRV v')) s' g' []
- | head_step_atomically_fail : ∀ vl e s g κs,
+     base_step_atomic (Atomically (of_val vl) e) s g κs (Val (InjRV v')) s' g' []
+ | base_step_atomically_fail : ∀ vl e s g κs,
      (* An atomically block can non-deterministically fail _ONLY_ if the block would not trigger UB *)
      prim_step'_safe e s g →
-     head_step_atomic (Atomically (of_val vl) e) s g κs (Val (InjLV (LitV LitUnit))) s g []
+     base_step_atomic (Atomically (of_val vl) e) s g κs (Val (InjLV (LitV LitUnit))) s g []
 .
 
-Lemma head_step_atomic_inv e s g κs e' s' g' efs :
-  head_step_atomic e s g κs e' s' g' efs →
+Lemma base_step_atomic_inv e s g κs e' s' g' efs :
+  base_step_atomic e s g κs e' s' g' efs →
   (∀ el e'', e ≠ Atomically el e'') →
-  head_step e s g κs e' s' g' efs.
+  base_step e s g κs e' s' g' efs.
 Proof.
   inversion 1; subst; eauto.
   - intros. contradiction (H2 (of_val vl) e0); auto.
@@ -1259,19 +1259,19 @@ Qed.
 
 Hint Resolve suchThat_false : core.
 
-Lemma val_head_stuck e1 σ1 g1 κ e2 σ2 g2 efs :
-  head_step e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None.
+Lemma val_base_stuck e1 σ1 g1 κ e2 σ2 g2 efs :
+  base_step e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None.
 Proof.
-  rewrite /head_step; intros.
+  rewrite /base_step; intros.
   destruct e1; auto; simpl.
   exfalso.
   simpl in H; eapply suchThat_false; eauto.
 Qed.
 
-Lemma val_head_atomic_stuck e1 σ1 g1 κ e2 σ2 g2 efs :
-  head_step_atomic e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None.
+Lemma val_base_atomic_stuck e1 σ1 g1 κ e2 σ2 g2 efs :
+  base_step_atomic e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None.
 Proof.
-  inversion 1; subst; eauto using val_head_stuck.
+  inversion 1; subst; eauto using val_base_stuck.
 Qed.
 
 
@@ -1281,20 +1281,20 @@ Ltac inv_undefined :=
     destruct e; try (apply suchThat_false in H; contradiction)
   end.
 
-Lemma head_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
-  head_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
+Lemma base_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
+  base_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
 Proof.
   revert κ e2.
   induction Ki; intros;
-    rewrite /head_step /= in H;
+    rewrite /base_step /= in H;
     repeat inv_undefined; eauto.
   - inversion H; subst; clear H. done.
 Qed.
 
-Lemma head_ctx_step_atomic_val Ki e σ1 g1 κ e2 σ2 g2 efs :
-  head_step_atomic (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
+Lemma base_ctx_step_atomic_val Ki e σ1 g1 κ e2 σ2 g2 efs :
+  base_step_atomic (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
 Proof.
-  inversion 1; subst; eauto using head_ctx_step_val.
+  inversion 1; subst; eauto using base_ctx_step_val.
   - destruct Ki; simpl in H0; try solve [ inversion H0 ].
     inversion H0. subst. eauto.
   - destruct Ki; simpl in H0; try solve [ inversion H0 ].
@@ -1312,12 +1312,12 @@ Qed.
 Lemma alloc_fresh v (n: u64) σ g :
   let l := fresh_locs (dom σ.(heap)) in
   (0 < int.Z n)%Z →
-  head_step_atomic (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ g []
+  base_step_atomic (AllocN ((Val $ LitV $ LitInt $ n)) (Val v)) σ g []
             (Val $ LitV $ LitLoc l) (state_init_heap l (int.Z n) v σ) g [].
 Proof.
   intros.
   constructor 1.
-  rewrite /head_step /=.
+  rewrite /base_step /=.
   monad_simpl.
   eapply relation.bind_runs with (σ,g) l.
   { econstructor.
@@ -1327,12 +1327,12 @@ Proof.
 Qed.
 
 Lemma arbitrary_int_step σ g :
-  head_step_atomic (ArbitraryInt) σ g []
+  base_step_atomic (ArbitraryInt) σ g []
             (Val $ LitV $ LitInt $ U64 0) σ g [].
 Proof.
   intros.
   constructor 1.
-  rewrite /head_step /=.
+  rewrite /base_step /=.
   monad_simpl.
   eapply relation.bind_runs; [ | monad_simpl ].
   constructor; auto.
@@ -1340,11 +1340,11 @@ Qed.
 
 Lemma new_proph_id_fresh σ g :
   let p := fresh g.(used_proph_id) in
-  head_step_atomic NewProph σ g [] (Val $ LitV $ LitProphecy p) σ (set used_proph_id ({[ p ]} ∪.) g) [].
+  base_step_atomic NewProph σ g [] (Val $ LitV $ LitProphecy p) σ (set used_proph_id ({[ p ]} ∪.) g) [].
 Proof.
   intro p.
   constructor 1.
-  rewrite /head_step /=.
+  rewrite /base_step /=.
   monad_simpl.
   eapply relation.bind_runs with (σ,g) p.
   { econstructor.
@@ -1352,10 +1352,10 @@ Proof.
   monad_simpl.
 Qed.
 
-Lemma goose_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step_atomic.
+Lemma goose_lang_mixin : EctxiLanguageMixin of_val to_val fill_item base_step_atomic.
 Proof.
-  split; apply _ || eauto using to_of_val, of_to_val, val_head_atomic_stuck,
-    fill_item_val, fill_item_val_inv, fill_item_no_val_inj, head_ctx_step_atomic_val.
+  split; apply _ || eauto using to_of_val, of_to_val, val_base_atomic_stuck,
+    fill_item_val, fill_item_val_inv, fill_item_no_val_inj, base_ctx_step_atomic_val.
 Qed.
 
 End external.
@@ -1395,55 +1395,55 @@ Proof.
   by simplify_eq.
 Qed.
 
-Lemma prim_step_to_val_is_head_step e σ1 g1 κs w σ2 g2 efs :
-  prim_step e σ1 g1 κs (Val w) σ2 g2 efs → head_step_atomic (ffi_semantics:=ffi_semantics) e σ1 g1 κs (Val w) σ2 g2 efs.
+Lemma prim_step_to_val_is_base_step e σ1 g1 κs w σ2 g2 efs :
+  prim_step e σ1 g1 κs (Val w) σ2 g2 efs → base_step_atomic (ffi_semantics:=ffi_semantics) e σ1 g1 κs (Val w) σ2 g2 efs.
 Proof.
   intro H. destruct H as [K e1 e2 H1 H2].
   assert (to_val (fill K e2) = Some w) as H3; first by rewrite -H2.
   apply to_val_fill_some in H3 as [-> ->]. subst e. done.
 Qed.
 
-Lemma head_prim_step_trans e σ g κ e' σ' g' efs :
-  head_step e σ g κ e' σ' g' efs →
+Lemma base_prim_step_trans e σ g κ e' σ' g' efs :
+  base_step e σ g κ e' σ' g' efs →
   ectx_language.prim_step e σ g κ e' σ' g' efs.
 Proof.
   intros.
-  apply head_prim_step. apply head_step_trans.
+  apply base_prim_step. apply base_step_trans.
   auto.
 Qed.
 
-Lemma head_prim_step_trans' e σ g κ e' σ' g' efs :
-  head_step e σ g κ e' σ' g' efs →
+Lemma base_prim_step_trans' e σ g κ e' σ' g' efs :
+  base_step e σ g κ e' σ' g' efs →
   prim_step' e σ g κ e' σ' g' efs.
 Proof. apply Ectx_step' with empty_ectx; by rewrite ?fill_empty. Qed.
 
-Definition head_reducible' (e : expr) (σ : state) (g : global_state) :=
-  ∃ κ e' σ' g' efs, head_step e σ g κ e' σ' g' efs.
-Definition head_irreducible' (e : expr) (σ : state) (g : global_state) :=
-  ∀ κ e' σ' g' efs, ¬head_step e σ g κ e' σ' g' efs.
+Definition base_reducible' (e : expr) (σ : state) (g : global_state) :=
+  ∃ κ e' σ' g' efs, base_step e σ g κ e' σ' g' efs.
+Definition base_irreducible' (e : expr) (σ : state) (g : global_state) :=
+  ∀ κ e' σ' g' efs, ¬base_step e σ g κ e' σ' g' efs.
 Definition reducible' (e : expr) (σ : state) (g : global_state) :=
   ∃ κ e' σ' g' efs, prim_step' e σ g κ e' σ' g' efs.
 
-Lemma prim_head_reducible' e σ g :
-  reducible' e σ g → sub_redexes_are_values e → head_reducible' e σ g.
+Lemma prim_base_reducible' e σ g :
+  reducible' e σ g → sub_redexes_are_values e → base_reducible' e σ g.
 Proof.
   intros (κ&e'&σ'&g'&efs&[K e1' e2' -> -> Hstep]) Hsub.
   assert (K = empty_ectx).
-  { apply val_head_stuck in Hstep.
+  { apply val_base_stuck in Hstep.
     eapply Hsub; eauto.
   }
-  subst. rewrite //= /head_reducible. econstructor; eauto.
+  subst. rewrite //= /base_reducible. econstructor; eauto.
 Qed.
 
 Lemma not_reducible' e σ g : ¬reducible' e σ g ↔ irreducible' e σ g.
 Proof. unfold reducible', irreducible'. naive_solver. Qed.
-Lemma not_head_reducible' e σ g : ¬head_reducible' e σ g ↔ head_irreducible' e σ g.
-Proof. unfold head_reducible', head_irreducible'. naive_solver. Qed.
+Lemma not_base_reducible' e σ g : ¬base_reducible' e σ g ↔ base_irreducible' e σ g.
+Proof. unfold base_reducible', base_irreducible'. naive_solver. Qed.
 
-Lemma prim_head_irreducible' e σ g :
-  head_irreducible' e σ g → sub_redexes_are_values e → irreducible' e σ g.
+Lemma prim_base_irreducible' e σ g :
+  base_irreducible' e σ g → sub_redexes_are_values e → irreducible' e σ g.
 Proof.
-  rewrite -not_reducible' -not_head_reducible'; eauto using prim_head_reducible'.
+  rewrite -not_reducible' -not_base_reducible'; eauto using prim_base_reducible'.
 Qed.
 
 Class LanguageCtx' (K : expr → expr) : Prop :=
@@ -1463,18 +1463,18 @@ Proof.
   eapply H.
 Qed.
 
-Lemma head_redex_unique K K' e e' σ g :
+Lemma base_redex_unique K K' e e' σ g :
   fill' K e = fill' K' e' →
-  head_reducible e σ g →
-  head_reducible e' σ g →
+  base_reducible e σ g →
+  base_reducible e' σ g →
   K = K' ∧ e = e'.
 Proof.
   intros Heq (κ & e2 & σ2 & g2 & efs & Hred) (κ' & e2' & σ2' & g2' & efs' & Hred').
   edestruct (step_by_val K' K e' e) as [K'' HK];
-    [by eauto using ectx_language.val_head_stuck..|].
+    [by eauto using ectx_language.val_base_stuck..|].
   subst K. move: Heq. rewrite -fill_comp'. intros <-%(inj (fill _)).
-  destruct (ectx_language.head_ctx_step_val _ _ _ _ _ _ _ _ _ Hred') as [[]%not_eq_None_Some|HK''].
-  { by eapply ectx_language.val_head_stuck. }
+  destruct (ectx_language.base_ctx_step_val _ _ _ _ _ _ _ _ _ Hred') as [[]%not_eq_None_Some|HK''].
+  { by eapply ectx_language.val_base_stuck. }
   subst. rewrite //=.
 Qed.
 
@@ -1579,36 +1579,36 @@ Qed.
 
 Lemma stuck_ExternalOp' σ g o e:
   is_Some (to_val e) →
-  head_irreducible' (ExternalOp o e) σ g →
+  base_irreducible' (ExternalOp o e) σ g →
   stuck' (ExternalOp o e) σ g.
 Proof.
   intros Hval Hirred. split; first done.
-  apply prim_head_irreducible'; auto. apply ExternalOp_sub_redexes; eauto.
+  apply prim_base_irreducible'; auto. apply ExternalOp_sub_redexes; eauto.
 Qed.
 
 Lemma stuck_Var σ g x :
   stuck (Var x) σ g.
 Proof.
   split; first done.
-  apply prim_head_irreducible; auto.
+  apply prim_base_irreducible; auto.
   { inversion 1. inversion H0; eauto. }
   { apply Var_sub_redexes; eauto. }
 Qed.
 
 Lemma stuck_ExternalOp σ g o e:
   is_Some (to_val e) →
-  head_irreducible (ExternalOp o e) σ g →
+  base_irreducible (ExternalOp o e) σ g →
   stuck (ExternalOp o e) σ g.
 Proof.
   intros Hval Hirred. split; first done.
-  apply prim_head_irreducible; auto. apply ExternalOp_sub_redexes; eauto.
+  apply prim_base_irreducible; auto. apply ExternalOp_sub_redexes; eauto.
 Qed.
 
 Lemma stuck_Panic' σ g msg:
   stuck' (Primitive0 (PanicOp msg)) σ g.
 Proof.
   split; first done.
-  apply prim_head_irreducible'; auto.
+  apply prim_base_irreducible'; auto.
   * inversion 1; subst; eauto.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     apply Panic_fill_item_inv in Heq; subst; auto; by exfalso.
@@ -1618,7 +1618,7 @@ Lemma stuck_Panic σ g msg:
   stuck (Primitive0 (PanicOp msg)) σ g.
 Proof.
   split; first done.
-  apply prim_head_irreducible; auto.
+  apply prim_base_irreducible; auto.
   * inversion 1; subst; eauto.
     inversion H0; auto.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
@@ -1632,7 +1632,7 @@ Proof.
   intros Hnstuck ??? Hrtc Hstuck.
   apply Hnstuck.
   split; first done.
-  apply prim_head_irreducible; last first.
+  apply prim_base_irreducible; last first.
   { intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e0' Heq.
     assert (of_val l = e0').
     { move: Heq. destruct Ki => //=; congruence. }
