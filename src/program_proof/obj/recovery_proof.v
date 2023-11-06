@@ -424,7 +424,7 @@ Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
          "Htxn_durable" ∷ is_txn_durable γ dinit ∗
          "#Hdurable_lb" ∷ mono_nat_lb_own γ.(txn_walnames).(wal_heap_durable_lb) 0 ∗
          "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (3/4) (Build_async (kind_heap0 kinds) []) ∗
-         "Hmapsto_txns" ∷ ([∗ map] a ↦ o ∈ kind_heap0 kinds, pointsto_txn γ a o).
+         "Hpointsto_txns" ∷ ([∗ map] a ↦ o ∈ kind_heap0 kinds, pointsto_txn γ a o).
 Proof.
   iIntros (Hdinit_dom Hkinds_dom Hbound) "H".
   iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
@@ -510,7 +510,7 @@ Proof.
     iApply (big_sepM_mono with "H").
     intros.
     iIntros "Hm".
-    iDestruct "Hm" as (hb) "(%Hhb & Hmapsto & H)". destruct hb.
+    iDestruct "Hm" as (hb) "(%Hhb & Hpointsto & H)". destruct hb.
     iDestruct "H" as (mm) "(%Hmm & Hmm)".
     iExists _. iSplit; first by eauto.
     rewrite lookup_fmap in H.
@@ -636,7 +636,7 @@ Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
         "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
         "Htxn_hb" ∷ blkno ↪[γ.(txn_walnames).(wal_heap_h)] (HB installed bs) ∗
         "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
-    "Hmapsto_txns" ∷ ([∗ map] addr↦bufData ∈ latest logm, ∃ γm, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
+    "Hpointsto_txns" ∷ ([∗ map] addr↦bufData ∈ latest logm, ∃ γm, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
 Proof.
   iNamed 1.
   iMod (pointsto_txn_alloc _ logm.(latest) with "Hmetactx") as (metam) "(%Hdom & Hmetactx' & H0 & H1)".
@@ -662,7 +662,7 @@ Proof.
   iIntros (k y1 y2 Hky1 Hky2) "[H0 H1]".
   iDestruct "H0" as (y0) "(%Hcl & H0 & H2)".
   iDestruct "H0" as (block) "[%Hk H0]". iNamed "H0".
-  iDestruct "H2" as (hb) "[%Hb Hmapsto]".
+  iDestruct "H2" as (hb) "[%Hb Hpointsto]".
   destruct hb.
   iExists _, _, _. iFrame. iFrame "%".
 
@@ -737,7 +737,7 @@ Definition txn_resources γ γ' logm : iProp Σ :=
   "%Hlen_compare" ∷ ⌜ (length (possible logm) ≤ length (possible logm0))%nat ⌝ ∗
   "Hlogm" ∷ ghost_var γ'.(txn_crashstates) (3/4) logm ∗
   "Holdlogm" ∷ ghost_var γ.(txn_crashstates) (1/4) logm0 ∗
-  "Hmapsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), pointsto_txn γ' a v) ∗
+  "Hpointsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), pointsto_txn γ' a v) ∗
   "Hdurable" ∷ mono_nat_lb_own γ'.(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id ∗
   "Hdurable_exchanger" ∷ heapspec_durable_exchanger γ.(txn_walnames) txn_id)%I.
 

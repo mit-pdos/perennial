@@ -608,9 +608,9 @@ Qed.
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValsC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
-   "Hmapsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
+   "Hpointsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
   ("Hfown_oldv" ∷ ∃ data cid γreq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
-   "Hmapsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+   "Hpointsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
    ⌜has_encoding_for_onetime_clerk data cid args⌝ ∗
    RPCClient_own γback.(incr_rpcGN) cid 2 ∗
    RPCRequest_token γreq ∗
@@ -676,7 +676,7 @@ Proof.
 
   iDestruct "HincrCrashInv" as "[Hcase|Hcase]".
   - iNamed "Hcase".
-    iCache with "Hfown_oldv Hmapsto Hghost Hpost".
+    iCache with "Hfown_oldv Hpointsto Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iSplitR "Hghost".
       - iLeft. by iFrame.
@@ -724,7 +724,7 @@ Proof.
     iNext. iIntros (cid ck_ptr) "(Hownclerk & Hrpcclient_own & Hvol & Hghost)".
     iNamed "Hownclerk".
 
-    iCache with "Hfown_oldv Hmapsto Hghost Hpost".
+    iCache with "Hfown_oldv Hpointsto Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iSplitR "Hghost".
       - iLeft. by iFrame.
@@ -774,14 +774,14 @@ Proof.
       - (* Write succeeded  *)
         iApply "HΦc".
         iNamed "Hghost".
-        iDestruct (map_valid with "Hctx Hmapsto") as %Hsome.
+        iDestruct (map_valid with "Hctx Hpointsto") as %Hsome.
         iDestruct (big_sepM_lookup_acc with "Hback") as "[[Hbackend_one|Hbad] Hback_rest]"; first done.
         2: {
-          iDestruct (ptsto_valid_2 with "Hbad Hmapsto") as %Hbad.
+          iDestruct (ptsto_valid_2 with "Hbad Hpointsto") as %Hbad.
           contradiction.
         }
-        iDestruct "Hmapsto" as "[Hmapsto Hmapsto2]".
-        iSpecialize ("Hback_rest" with "[Hmapsto2]").
+        iDestruct "Hpointsto" as "[Hpointsto Hpointsto2]".
+        iSpecialize ("Hback_rest" with "[Hpointsto2]").
         { by iRight. }
         iMod (make_request {|Req_Seq:= _; Req_CID:=_; |} (IncrPreCond args) (IncrPostCond args) with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
 
@@ -802,24 +802,24 @@ Proof.
 
     (* TODO: this is copy pasted from above; commit to backend cid and seq *)
         iNamed "Hghost".
-        iDestruct (map_valid with "Hctx Hmapsto") as %Hsome.
+        iDestruct (map_valid with "Hctx Hpointsto") as %Hsome.
         iDestruct (big_sepM_lookup_acc with "Hback") as "[[Hbackend_one|Hbad] Hback_rest]"; first done.
         2: {
-          iDestruct (ptsto_valid_2 with "Hbad Hmapsto") as %Hbad.
+          iDestruct (ptsto_valid_2 with "Hbad Hpointsto") as %Hbad.
           contradiction.
         }
-        iDestruct "Hmapsto" as "[Hmapsto Hmapsto2]".
-        iDestruct ("Hback_rest" with "[Hmapsto2]") as "Hback".
+        iDestruct "Hpointsto" as "[Hpointsto Hpointsto2]".
+        iDestruct ("Hback_rest" with "[Hpointsto2]") as "Hback".
         { by iRight. }
         iMod (make_request {|Req_Seq:= _; Req_CID:=_; |} (IncrPreCond args) (IncrPostCond args) with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
         iDestruct "Hreq" as (γreq) "[#His_req Hreqtok]".
     (* End commit to backend cid and seq *)
 
     iIntros "[Hfown Hslice]".
-    iCache with "Hfown HownCIDs Hfown_lastCID Hback Hctx Hpost Hreqtok Hmapsto Hrpcclient_own".
+    iCache with "Hfown HownCIDs Hfown_lastCID Hback Hctx Hpost Hreqtok Hpointsto Hrpcclient_own".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc".
-      iSplitL "Hreqtok Hmapsto Hrpcclient_own Hfown".
+      iSplitL "Hreqtok Hpointsto Hrpcclient_own Hfown".
       - iRight. iFrame. iExists _,_,_; iFrame "#∗".
         done.
       - by iExists _; iFrame.
@@ -838,7 +838,7 @@ Proof.
     }
 
     iNamed "Hfown_oldv".
-    iDestruct "Hfown_oldv" as "(Hfown_oldv & Hmapsto & %Henc & Hrpc_clientown & HrpcToken & #Hisreq)".
+    iDestruct "Hfown_oldv" as "(Hfown_oldv & Hpointsto & %Henc & Hrpc_clientown & HrpcToken & #Hisreq)".
     wpc_apply (wpc_Read with "Hfown_oldv").
     iSplit.
     { (* crash obligation of called implies our crash obligation *)
@@ -851,7 +851,7 @@ Proof.
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
 
-    iCache with "Hfown_oldv Hrpc_clientown Hghost HrpcToken Hmapsto Hpost".
+    iCache with "Hfown_oldv Hrpc_clientown Hghost HrpcToken Hpointsto Hpost".
     { (* Prove crash obligation after destructing above; TODO: do this earlier *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
       iSplitR "Hghost".
@@ -929,7 +929,7 @@ Proof.
       {
         iModIntro. iSplit.
         { iFrame.
-          iMod (get_request_post with "Hisreq HmakeReqPost HrpcToken") as ">Hbackmapsto"; first done.
+          iMod (get_request_post with "Hisreq HmakeReqPost HrpcToken") as ">Hbackpointsto"; first done.
           by iFrame.
         }
         { iRight. by iExists _,_,_; iFrame "#∗". }
@@ -937,20 +937,20 @@ Proof.
 
       (* Prove the fupd *)
       iModIntro.
-      iIntros "Hghost >[Hγmapsto Hγbackmapsto]".
+      iIntros "Hghost >[Hγpointsto Hγbackpointsto]".
       iNamed "Hghost".
-      iDestruct (map_valid with "Hctx Hγmapsto") as %HkInMap.
+      iDestruct (map_valid with "Hctx Hγpointsto") as %HkInMap.
       iDestruct (big_sepM_insert_acc _ _ args.(U64_1) old_v with "Hback") as "[Hk Hback]".
       { done. }
       iDestruct "Hk" as "[Hk|Hk]".
       { (* Impossible case: big_sepM has γback ptsto *)
-        iDestruct (ptsto_agree_frac_value with "Hγbackmapsto Hk") as %[_ Hbad].
+        iDestruct (ptsto_agree_frac_value with "Hγbackpointsto Hk") as %[_ Hbad].
         by exfalso.
       }
       (* Take the ↦{1/2} from the big_sepM element that we accessesd *)
-      iCombine "Hγmapsto Hk" as "Hγmapsto".
-      iMod (map_update _ _ _ with "Hctx Hγmapsto") as "[Hctx Hγmapsto]".
-      iSpecialize ("Hback" $! (word.add old_v 1) with "[Hγbackmapsto]").
+      iCombine "Hγpointsto Hk" as "Hγpointsto".
+      iMod (map_update _ _ _ with "Hctx Hγpointsto") as "[Hctx Hγpointsto]".
+      iSpecialize ("Hback" $! (word.add old_v 1) with "[Hγbackpointsto]").
       { by iLeft. }
       iModIntro.
       iFrame.

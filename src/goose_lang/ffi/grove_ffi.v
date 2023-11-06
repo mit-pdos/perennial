@@ -633,8 +633,8 @@ lemmas. *)
     iSplit.
     { iPureIntro. split; first by destruct m'. word. }
     rewrite /pointsto_vals. iApply (big_sepL_mono with "Hl").
-    clear -Hfresh. simpl. iIntros (i v _) "Hmapsto".
-    iApply (na_pointsto_to_heap with "Hmapsto").
+    clear -Hfresh. simpl. iIntros (i v _) "Hpointsto".
+    iApply (na_pointsto_to_heap with "Hpointsto").
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
@@ -695,8 +695,8 @@ lemmas. *)
     rewrite /pointsto_vals. iSplitR.
     { iPureIntro. word. }
     iApply (big_sepL_mono with "Hl").
-    clear -Hfresh. simpl. iIntros (i v _) "Hmapsto".
-    iApply (na_pointsto_to_heap with "Hmapsto").
+    clear -Hfresh. simpl. iIntros (i v _) "Hpointsto".
+    iApply (na_pointsto_to_heap with "Hpointsto").
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 

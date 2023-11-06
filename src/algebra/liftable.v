@@ -14,7 +14,7 @@ Section liftable.
   (** The resources needed to restore predicate P over map m; has no ownership
   of maps-to facts itself *)
   Definition PredRestore P (m: gmap L V) : PROP :=
-    (∀ mapsto2, ([∗ map] a↦v ∈ m, mapsto2 a v) -∗ P mapsto2)%I.
+    (∀ pointsto2, ([∗ map] a↦v ∈ m, pointsto2 a v) -∗ P pointsto2)%I.
 
   Global Instance PredRestore_proper : Proper (pointwise_relation _ (⊣⊢) ==> eq ==> (⊣⊢)) PredRestore.
   Proof.
@@ -25,11 +25,11 @@ Section liftable.
   Qed.
 
   Class Liftable (P : (L -> V -> PROP) -> PROP) := liftable :
-    ∀ mapsto1,
-      Conflicting mapsto1 ->
-      P mapsto1 -∗
+    ∀ pointsto1,
+      Conflicting pointsto1 ->
+      P pointsto1 -∗
       ∃ (m : gmap L V),
-        ([∗ map] a ↦ v ∈ m, mapsto1 a v) ∗
+        ([∗ map] a ↦ v ∈ m, pointsto1 a v) ∗
            □ PredRestore P m.
 
   Global Instance liftable_proper : Proper (pointwise_relation _ (⊣⊢) ==> iff) Liftable.
@@ -40,8 +40,8 @@ Section liftable.
     auto.
   Qed.
 
-  Lemma liftable_restore_elim P `{!Liftable P} mapsto1 `{!Conflicting mapsto1} :
-    P mapsto1 -∗ ∃ m, ([∗ map] a↦v ∈ m, mapsto1 a v) ∗ □PredRestore P m.
+  Lemma liftable_restore_elim P `{!Liftable P} pointsto1 `{!Conflicting pointsto1} :
+    P pointsto1 -∗ ∃ m, ([∗ map] a↦v ∈ m, pointsto1 a v) ∗ □PredRestore P m.
   Proof.
     iIntros "HP".
     iDestruct (liftable with "HP") as (m) "[Hm HP]".
@@ -109,7 +109,7 @@ Section liftable.
   Global Instance independent_liftable R `{!Persistent R} : Liftable (fun h => R)%I.
   Proof.
     intros; unfold Liftable.
-    iIntros (mapsto1 ?) "#H".
+    iIntros (pointsto1 ?) "#H".
     iFrame "H".
     iExists ∅.
     rewrite big_sepM_empty.
@@ -121,7 +121,7 @@ Section liftable.
     Liftable (fun pointsto => pointsto a v)%I.
   Proof.
     intros; unfold Liftable.
-    iIntros (mapsto1 ?) "Ha".
+    iIntros (pointsto1 ?) "Ha".
     iExists (<[a:=v]> ∅).
     rewrite big_sepM_insert; try apply lookup_empty.
     iFrame.

@@ -159,12 +159,12 @@ Proof.
   iDestruct "Hdurable_pointsto" as "[Htoken Hdurable_pointsto]".
   iDestruct "Htoken" as (obj') "Htoken".
   iMod (
-    durable_pointsto_mapsto_txn_agree with
+    durable_pointsto_pointsto_txn_agree with
     "Htxn_system Hdurable_pointsto Htoken"
-  ) as "[<- [$ Hmapsto]]"; [assumption|assumption|solve_ndisj|].
+  ) as "[<- [$ Hpointsto]]"; [assumption|assumption|solve_ndisj|].
   iNamed "Htxn_system".
-  iMod (pointsto_txn_valid with "His_txn Hmapsto")
-    as "[Hmapsto %Hvalid]"; first by assumption.
+  iMod (pointsto_txn_valid with "His_txn Hpointsto")
+    as "[Hpointsto %Hvalid]"; first by assumption.
   iModIntro.
   iSplit; first by (iExists _; iFrame).
   iPureIntro.
@@ -190,7 +190,7 @@ Theorem twophase_init_locks {E} ex_pointsto `{!∀ a obj, Timeless (ex_pointsto 
   "Hpre" ∷ ([∗ map] _ ↦ _ ∈ mt, pre_borrow) -∗
   "#Htxn_system" ∷ is_txn_system Njrnl γ -∗
   "#Htxn_cinv" ∷ txn_cinv Njrnl γ γ' -∗
-  "Hmapstos" ∷ (
+  "Hpointstos" ∷ (
     [∗ map] a ↦ obj ∈ mt,
       "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
       "Hex_pointsto" ∷ ex_pointsto a obj
@@ -208,13 +208,13 @@ Theorem twophase_init_locks {E} ex_pointsto `{!∀ a obj, Timeless (ex_pointsto 
 Proof.
   iIntros (HNjrnl NinvN Haddrs_valid) "????".
   iNamed.
-  iDestruct (big_sepM_sep with "Hmapstos")
-    as "[Hdurable_mapstos Hex_mapstos]".
+  iDestruct (big_sepM_sep with "Hpointstos")
+    as "[Hdurable_pointstos Hex_pointstos]".
   iMod (
     big_sepM_mono_ncfupd _ (λ a obj,
       "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
       "%Hkind" ∷ ⌜pointsto_valid γ a obj⌝
-    )%I mt True%I with "[] [Hdurable_mapstos]"
+    )%I mt True%I with "[] [Hdurable_pointstos]"
   ) as "[_ Hmono]".
   2: {
     iSplit; first by trivial.
@@ -229,27 +229,27 @@ Proof.
     iSplit; first by trivial.
     iFrame.
   }
-  iDestruct (big_sepM_sep with "Hmono") as "[Hdurable_mapstos %Hkinds]".
-  iDestruct (big_sepM_sep with "Hdurable_mapstos")
-    as "[Htokens Hdurable_mapstos]".
+  iDestruct (big_sepM_sep with "Hmono") as "[Hdurable_pointstos %Hkinds]".
+  iDestruct (big_sepM_sep with "Hdurable_pointstos")
+    as "[Htokens Hdurable_pointstos]".
   iApply fupd_ncfupd.
   iDestruct (
     big_sepM_crash_borrow_init_cancel
     (λ a _,
       |C={⊤}=> (∃ obj', twophase_crash_inv_pred ex_pointsto γ' a obj'))%I
     (λ a o, twophase_pre_crash_inv_pred ex_pointsto γ a o)
-    with "Hpre [Hdurable_mapstos Hex_mapstos] []") as "Hcrash".
+    with "Hpre [Hdurable_pointstos Hex_pointstos] []") as "Hcrash".
   {
-    iDestruct (big_sepM_sep with "[$Hdurable_mapstos $Hex_mapstos]")
-      as "Hmapstos".
-    iApply (big_sepM_impl with "Hmapstos").
+    iDestruct (big_sepM_sep with "[$Hdurable_pointstos $Hex_pointstos]")
+      as "Hpointstos".
+    iApply (big_sepM_impl with "Hpointstos").
     iIntros (a obj Hacc) "!> [Hdurable_pointsto ?]".
     iFrame. eauto. }
   {
     iApply big_sepM_forall.
     iIntros (a obj Hacc) "!>Hpreds".
     iNamed "Hpreds".
-    iMod (exchange_durable_mapsto1 with "[$]") as "Hdurable".
+    iMod (exchange_durable_pointsto1 with "[$]") as "Hdurable".
     iModIntro. iExists _. iFrame.
     iDestruct ("Htxn_cinv") as "(_&%)".
     iPureIntro. eapply exchange_pointsto_valid; eauto.
@@ -279,7 +279,7 @@ Proof.
   iApply big_sepM_fupd.
   iApply (big_sepM_wand with "H").
   iApply big_sepM_intro. iIntros "!>" (???) "H".
-  iMod ("H" with "[$]") as (obj) "(Hex&Hdur&Hmapsto_valid)".
+  iMod ("H" with "[$]") as (obj) "(Hex&Hdur&Hpointsto_valid)".
   iModIntro. iExists _. iFrame.
 Qed.
 
@@ -676,7 +676,7 @@ Proof.
   iFrame.
   iSplitL; first by (iApply big_sepM_fmap; iFrame).
   iModIntro.
-  iIntros (?) "Hmapstos".
+  iIntros (?) "Hpointstos".
   trivial.
 Qed.
 
@@ -730,7 +730,7 @@ Proof.
     iSplit; last by (iPureIntro; assumption).
     iIntros "!> (?&?&?)".
     iIntros "Hc".
-    iMod (exchange_durable_mapsto1 with "[$] [$]") as "Hdurable".
+    iMod (exchange_durable_pointsto1 with "[$] [$]") as "Hdurable".
     iNamed.
     iIntros "!>".
     iExists _.
@@ -1152,7 +1152,7 @@ Proof.
     iModIntro.
     iIntros (?? Hacc) "[? [? %]]".
     iIntros "HC".
-    iMod (exchange_durable_mapsto1 _ _ _ with "[$] [$]") as "Hdurable".
+    iMod (exchange_durable_pointsto1 _ _ _ with "[$] [$]") as "Hdurable".
     iModIntro. iExists _. iFrame.
     iDestruct ("Htxn_cinv") as "(_&%)".
     iPureIntro. eapply exchange_pointsto_valid; eauto.
@@ -1160,32 +1160,32 @@ Proof.
   iSplit; first by auto.
   iIntros "Hcrash_invs".
   iDestruct (big_sepM_sep with "Hcrash_invs")
-    as "[Hex_mapstos Hdurable_mapstos]".
-  iDestruct (big_sepM_sep with "Hdurable_mapstos")
-    as "[Hdurable_mapstos #Hwfs]".
+    as "[Hex_pointstos Hdurable_pointstos]".
+  iDestruct (big_sepM_sep with "Hdurable_pointstos")
+    as "[Hdurable_pointstos #Hwfs]".
   iApply big_sepM_fmap in "Hjrnl_maps_tos".
-  iApply big_sepM_fmap in "Hdurable_mapstos".
+  iApply big_sepM_fmap in "Hdurable_pointstos".
   iApply wpc_cfupd.
   iApply wpc_ncfupd.
   wpc_apply (wpc_Op__CommitWait' with "[
-    $Hjrnl_mem $Hjrnl_durable_frag $Hjrnl_maps_tos $Hdurable_mapstos
+    $Hjrnl_mem $Hjrnl_durable_frag $Hjrnl_maps_tos $Hdurable_pointstos
     $Htxn_cinv
   ]").
   1-3: solve_ndisj.
   iSplit.
   {
     iDestruct "Hfupd" as "[Hfupd _]".
-    iIntros "Hdurable_mapstos HC".
+    iIntros "Hdurable_pointstos HC".
     iSplitR; first by trivial.
     iDestruct (big_sepM_forall with "Hwfs") as "%Hwfs".
     iDestruct "Htxn_cinv" as "(_&%Hkinds)".
-    iDestruct "Hdurable_mapstos" as "[Hdurable_mapstos|Hdurable_mapstos]".
+    iDestruct "Hdurable_pointstos" as "[Hdurable_pointstos|Hdurable_pointstos]".
     {
       iIntros "!>".
-      iApply (big_sepM_fmap committed) in "Hdurable_mapstos".
-      iDestruct (big_sepM_sep with "[$Hex_mapstos $Hdurable_mapstos]")
-        as "Hmapstos".
-      iApply (big_sepM_impl with "Hmapstos").
+      iApply (big_sepM_fmap committed) in "Hdurable_pointstos".
+      iDestruct (big_sepM_sep with "[$Hex_pointstos $Hdurable_pointstos]")
+        as "Hpointstos".
+      iApply (big_sepM_impl with "Hpointstos").
       iIntros (a vobj Hacc) "!> [? Hdurable_pointsto]".
       iModIntro.
       iExists _.
@@ -1195,13 +1195,13 @@ Proof.
       eapply exchange_pointsto_valid; eassumption.
     }
     iDestruct "HC" as "#HC".
-    iMod ("Hfupd" with "Hex_mapstos HC") as "?".
+    iMod ("Hfupd" with "Hex_pointstos HC") as "?".
     iNamed.
     iIntros "!>".
-    iApply (big_sepM_fmap modified) in "Hdurable_mapstos".
-    iDestruct (big_sepM_sep with "[$Hmodified $Hdurable_mapstos]")
-      as "Hmapstos".
-    iApply (big_sepM_impl with "Hmapstos").
+    iApply (big_sepM_fmap modified) in "Hdurable_pointstos".
+    iDestruct (big_sepM_sep with "[$Hmodified $Hdurable_pointstos]")
+      as "Hpointstos".
+    iApply (big_sepM_impl with "Hpointstos").
     iIntros (a vobj Hacc) "!> [? Hdurable_pointsto]".
     iModIntro.
     iExists _.
@@ -1212,23 +1212,23 @@ Proof.
   }
   iDestruct "Hfupd" as "[_ Hfupd]".
   iModIntro.
-  iIntros (ok) "Hdurable_mapstos".
-  iDestruct (big_sepM_sep with "Hdurable_mapstos") as
-    "[Htokens Hdurable_mapstos]".
+  iIntros (ok) "Hdurable_pointstos".
+  iDestruct (big_sepM_sep with "Hdurable_pointstos") as
+    "[Htokens Hdurable_pointstos]".
   replace (if ok then _ else _) with
     ((if ok then modified else committed) <$> mt_changed);
     last by (destruct ok; reflexivity).
   iApply (
     big_sepM_fmap (if ok then modified else committed)
-  ) in "Hdurable_mapstos".
+  ) in "Hdurable_pointstos".
   iAssert (
     |NC={⊤}=>
       ([∗ map] a ↦ vobj ∈ mt_changed,
         ex_pointsto a ((if ok then modified else committed) vobj)
       ) ∗ (if ok then Qok else Qnok)
-  )%I with "[Hex_mapstos Hfupd]" as "> [Hex_mapstos HQ]".
+  )%I with "[Hex_pointstos Hfupd]" as "> [Hex_pointstos HQ]".
   {
-    iDestruct ("Hfupd" with "Hex_mapstos") as "Hfupd".
+    iDestruct ("Hfupd" with "Hex_pointstos") as "Hfupd".
     destruct ok.
     - iDestruct "Hfupd" as "[> [??] _]".
       iFrame; trivial.
@@ -1236,11 +1236,11 @@ Proof.
       iFrame; trivial.
   }
   iModIntro.
-  iDestruct (big_sepM_sep with "[$Hex_mapstos $Hdurable_mapstos]")
-    as "Hmapstos".
-  iSplitL "Hmapstos".
+  iDestruct (big_sepM_sep with "[$Hex_pointstos $Hdurable_pointstos]")
+    as "Hpointstos".
+  iSplitL "Hpointstos".
   {
-    iApply (big_sepM_impl with "Hmapstos").
+    iApply (big_sepM_impl with "Hpointstos").
     iIntros (a vobj Hacc) "!> [? Hdurable_pointsto]".
     apply Hvalids in Hacc.
     destruct (decide (#ok = #true)) as [Hok|Hok].
@@ -1260,7 +1260,7 @@ Proof.
     iApply big_sepM_forall.
     iIntros (a vobj Hacc) "!> [? [? %]]".
     iIntros "HC".
-    iMod (exchange_durable_mapsto1 with "[$] [$]") as "Hdurable".
+    iMod (exchange_durable_pointsto1 with "[$] [$]") as "Hdurable".
     iModIntro. iExists _. iFrame.
     iDestruct ("Htxn_cinv") as "(_&%)".
     iPureIntro. eapply exchange_pointsto_valid; eauto.

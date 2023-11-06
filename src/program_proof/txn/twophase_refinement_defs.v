@@ -55,7 +55,7 @@ Definition twophase_crash_cond_full
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "#Hdom" ∷ jrnl_dom (dom mt) ∗
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
-      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
+      "Hpointstos" ∷ ([∗ map] a ↦ obj ∈ mt,
       "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
       "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj) ∗
       "%Hdomsize" ∷ ⌜ size mt = JRNL_SIZE ⌝).
@@ -66,7 +66,7 @@ Definition twophase_crash_cond_partial
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
       "#Hdom" ∷ jrnl_dom (dom mt) ∗
       "#Hjrnl_kinds_lb" ∷ jrnl_kinds γ.(jrnl_txn_names).(txn_kinds) ∗
-      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
+      "Hpointstos" ∷ ([∗ map] a ↦ obj ∈ mt,
       "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
       "Hjrnl_pointsto" ∷ jrnl_pointsto a 1 (bufObj_to_obj obj)) ∗
       "%Hdomsize" ∷ ⌜ size mt = JRNL_SIZE ⌝).

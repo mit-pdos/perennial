@@ -36,7 +36,7 @@ Section proof.
        ⌜ dom mt' = d ⌝ ∗
        ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
        ⌜ map_Forall (pointsto_valid γ') mt' ⌝ ∗
-       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
+       "Hpointstos" ∷ ([∗ map] a ↦ obj ∈ mt',
          "Hdurable_pointsto" ∷ durable_pointsto_own γ' a obj ∗
          "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj) ∗
       "%Hdomsize" ∷ ⌜ size mt' = JRNL_SIZE ⌝))%I.
@@ -48,7 +48,7 @@ Section proof.
     {{{
       "Hpre" ∷ ([∗ map] _ ↦ _ ∈ mt, pre_borrow) ∗
       "Htxn_durable" ∷ is_txn_durable γ dinit logm ∗
-      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt,
+      "Hpointstos" ∷ ([∗ map] a ↦ obj ∈ mt,
         "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
         "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj
       ) ∗
@@ -72,7 +72,7 @@ Section proof.
        ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝ ∗
        ⌜ map_Forall (pointsto_valid γ') mt' ⌝ ∗
       is_txn_durable γ' dinit logm' ∗
-      "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
+      "Hpointstos" ∷ ([∗ map] a ↦ obj ∈ mt',
         "Hdurable_pointsto" ∷ durable_pointsto_own γ' a obj ∗
         "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj
       ) ∗
@@ -90,7 +90,7 @@ Section proof.
       iIntros "H". iDestruct "H" as (γ' logm') "(Hdur&Hcase)".
       iDestruct "Hcase" as "[%|#Hcinv]".
       { subst. iModIntro. iApply "HΦ". iExists _, _, mt. by iFrame. }
-      iDestruct (big_sepM_sep with "Hmapstos") as "(Hm1&Hm2)".
+      iDestruct (big_sepM_sep with "Hpointstos") as "(Hm1&Hm2)".
       rewrite /named.
       iMod (exchange_durable_pointsto with "[$Hcinv Hm1]") as "Hm1".
       { iApply (big_sepM_mono with "Hm1"). iIntros (???) "H".
@@ -116,7 +116,7 @@ Section proof.
       rewrite /txn_cfupd_cancel.
       rewrite own_discrete_elim.
       iMod "Htxn_cancel".
-      iDestruct (big_sepM_sep with "Hmapstos") as "(Hm1&Hm2)".
+      iDestruct (big_sepM_sep with "Hpointstos") as "(Hm1&Hm2)".
       rewrite /named.
       iMod (exchange_durable_pointsto with "[Hm1]") as "Hm1".
       { iFrame "Htxn_cinv". iApply (big_sepM_mono with "Hm1"). iIntros (???) "H".
@@ -133,7 +133,7 @@ Section proof.
       iFrame "%".
       iApply big_sepM_sep. iFrame.
     }
-    iMod (twophase_init_locks with "Hpre Histxn_system Htxn_cinv Hmapstos") as "Hcrash".
+    iMod (twophase_init_locks with "Hpre Histxn_system Htxn_cinv Hpointstos") as "Hcrash".
     1-2: set_solver.
     {
       intros a Hin.
@@ -274,17 +274,17 @@ Section proof.
     iSplit; first done.
     iIntros "H". iNamed "H". iDestruct "H" as "(Hpre&H)". iNamed "H".
     iIntros (mj Hlt).
-    wpc_apply (wpc_Init _ _ γ dinit logm with "[Hpre Htxn_durable Hmapstos] [HΦ Hj]"); try eassumption.
+    wpc_apply (wpc_Init _ _ γ dinit logm with "[Hpre Htxn_durable Hpointstos] [HΦ Hj]"); try eassumption.
     { iFrame "Hpre". iSplitL "Htxn_durable".
       { iExact "Htxn_durable". }
-      iFrame "Hmapstos".
+      iFrame "Hpointstos".
       iFrame "#".
       eauto.
     }
     iSplit.
     * iIntros "H".
       iSplit; first done.
-      iDestruct "H" as (??? Heq Heq' Hforall) "(Hdurable&Hmapstos)".
+      iDestruct "H" as (??? Heq Heq' Hforall) "(Hdurable&Hpointstos)".
       iNamed.
       iExists _, _, _, _. iFrame.
       rewrite Heq Heq'. iFrame "#".
@@ -299,7 +299,7 @@ Section proof.
         rewrite own_discrete_elim. iMod ("Hcancel_txn" with "[$]") as ">Htxn".
         iDestruct "Htxn" as (logm') "Htxn".
         iMod ("Hobj" with "[$]") as "Hobj".
-        iDestruct "Hobj" as (mt'' Hdom Heqkinds Hforall) "Hmapstos".
+        iDestruct "Hobj" as (mt'' Hdom Heqkinds Hforall) "Hpointstos".
         iExists _, _, _, _. iFrame.
         rewrite Hdom Heqkinds. iFrame "#Hdom".
         eauto.

@@ -354,7 +354,7 @@ Section goose_lang.
     mspec.modified (object_to_versioned obj) = obj.
   Proof. destruct obj; reflexivity. Qed.
 
-  Lemma durable_pointsto_mapsto_txn_agree' E γ a obj1 obj2 k q :
+  Lemma durable_pointsto_pointsto_txn_agree' E γ a obj1 obj2 k q :
     ↑N ⊆ E →
     ↑invN ⊆ E →
     N ## invN →
@@ -384,7 +384,7 @@ Section goose_lang.
     congruence.
   Qed.
 
-  Lemma durable_pointsto_mapsto_txn_agree E γ a obj1 obj2 :
+  Lemma durable_pointsto_pointsto_txn_agree E γ a obj1 obj2 :
     ↑N ⊆ E →
     ↑invN ⊆ E →
     N ## invN →
@@ -396,7 +396,7 @@ Section goose_lang.
     iIntros (???) "#Hinv Ha_i Ha".
     rewrite ncfupd_eq /ncfupd_def.
     iIntros. iApply (fupd_level_fupd _ _ _ O).
-    iMod (durable_pointsto_mapsto_txn_agree' with "[$] [$] [$] [$]"); auto.
+    iMod (durable_pointsto_pointsto_txn_agree' with "[$] [$] [$] [$]"); auto.
   Qed.
 
   Theorem is_jrnl_durable_not_in_map γ a obj γdurable P0 committed_mT :
@@ -436,7 +436,7 @@ Section goose_lang.
 
     iDestruct "Ha" as (obj0) "Ha".
 
-    iMod (durable_pointsto_mapsto_txn_agree with "[$] Ha_i Ha") as "(%Heq & Ha_i & Ha)";
+    iMod (durable_pointsto_pointsto_txn_agree with "[$] Ha_i Ha") as "(%Heq & Ha_i & Ha)";
       [ solve_ndisj.. | subst obj0 ].
 
     iDestruct (mspec.is_jrnl_not_in_map with "Hjrnl Ha") as %Hnotin.
@@ -513,7 +513,7 @@ Section goose_lang.
     "Hjrnl_maps_to" ∷ ([∗ map] a↦v ∈ m, jrnl_maps_to γtxn a v) ∗
     "Hjrnl_mem" ∷ is_jrnl_mem l γ dinit γtxn γdurable ∗
     "Hdurable_frag" ∷ map_ctx γdurable (1/2) (m ∪ committed_mT) ∗
-    "Hdurable_mapstos" ∷ ([∗ map] a↦v ∈ m, durable_pointsto γ a v) ∗
+    "Hdurable_pointstos" ∷ ([∗ map] a↦v ∈ m, durable_pointsto γ a v) ∗
     "%Hall_new" ∷ ⌜m ##ₘ committed_mT⌝.
   Proof.
     iIntros (???) "???".
@@ -575,8 +575,8 @@ Section goose_lang.
     }
 
     iModIntro.
-    iIntros (?) "Hmapsto".
-    iDestruct (big_sepM_union with "Hmapsto") as "[Hnew Hold]".
+    iIntros (?) "Hpointsto".
+    iDestruct (big_sepM_union with "Hpointsto") as "[Hnew Hold]".
     1: assumption.
     iFrame.
     iApply "HrestoreP0".
@@ -702,7 +702,7 @@ Section goose_lang.
     iModIntro. eauto.
   Qed.
 
-  Lemma exchange_durable_mapsto1 γ γ' a v :
+  Lemma exchange_durable_pointsto1 γ γ' a v :
     ("#Htxn_cinv" ∷ txn_cinv γ γ' ∗
      "Hm" ∷ durable_pointsto γ a v) -∗
     |C={⊤}=> durable_pointsto_own γ' a v.

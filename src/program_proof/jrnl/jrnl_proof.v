@@ -850,7 +850,7 @@ Proof.
       iDestruct (big_sepML_sepM with "[$Hdirtylist $Hctxelem0]") as "Hdirtylist".
       iApply (big_sepML_mono with "Hdirtylist").
       iPureIntro.
-      iIntros (k v lv) "[Hbuf Hmapsto]".
+      iIntros (k v lv) "[Hbuf Hpointsto]".
       rewrite /is_txn_buf_pre. iFrame.
     }
     {
@@ -867,13 +867,13 @@ Proof.
       3: iDestruct (big_sepM_sep with "Hctxelem1") as "[Hctxelem1 Hctxelem1']".
       2: iAccu.
       {
-        iIntros (k x Hkx) "[(#Hunify & HCP & Hcrashstates_frag) [Hmapsto Hextra]]".
+        iIntros (k x Hkx) "[(#Hunify & HCP & Hcrashstates_frag) [Hpointsto Hextra]]".
         intuition try congruence.
-        iDestruct ("Hunify" with "[$HCP $Hcrashstates_frag $Hmapsto]") as "#Hu".
+        iDestruct ("Hunify" with "[$HCP $Hcrashstates_frag $Hpointsto]") as "#Hu".
         iSplitL "HCP Hcrashstates_frag". 1: iFrame "#∗".
         iAssert (⌜committed x = modified x⌝)%I as %Heq.
         { iDestruct "Hextra" as %Hextra. intuition eauto. }
-        iSplitL "Hmapsto Hextra".
+        iSplitL "Hpointsto Hextra".
         { iAccu. }
         rewrite Heq. iExact "Hu".
       }
@@ -910,7 +910,7 @@ Proof.
 
   iApply "HΦ".
   destruct ok.
-  - iDestruct "Hunifiedtxns" as "[[Hq Hpreq] Hmapsto0]".
+  - iDestruct "Hunifiedtxns" as "[[Hq Hpreq] Hpointsto0]".
     destruct anydirty.
     {
       iLeft.
@@ -939,10 +939,10 @@ Proof.
       iFrame "Hq". iFrame "Hflush".
 
       rewrite big_sepM_fmap.
-      iDestruct (big_sepM_union (λ k x, pointsto_txn γUnified k (modified x)) with "[Hmapsto0 Hctxelem1]") as "Hmapsto".
+      iDestruct (big_sepM_union (λ k x, pointsto_txn γUnified k (modified x)) with "[Hpointsto0 Hctxelem1]") as "Hpointsto".
       2: {
-        iSplitL "Hmapsto0".
-        { iApply (big_sepM_mono with "Hmapsto0").
+        iSplitL "Hpointsto0".
+        { iApply (big_sepM_mono with "Hpointsto0").
           iIntros (k x Hkx) "H".
           destruct x; rewrite /modified /=. iFrame. }
         iApply (big_sepM_mono with "Hctxelem1").
@@ -977,10 +977,10 @@ Proof.
       }
 
       rewrite big_sepM_fmap.
-      iDestruct (big_sepM_union (λ k x, pointsto_txn γUnified k (modified x)) with "[Hmapsto0 Hctxelem1]") as "Hmapsto".
+      iDestruct (big_sepM_union (λ k x, pointsto_txn γUnified k (modified x)) with "[Hpointsto0 Hctxelem1]") as "Hpointsto".
       2: {
-        iSplitL "Hmapsto0".
-        { iApply (big_sepM_mono with "Hmapsto0").
+        iSplitL "Hpointsto0".
+        { iApply (big_sepM_mono with "Hpointsto0").
           iIntros (k x Hkx) "H".
           destruct x; rewrite /modified /=. iFrame. }
         iApply (big_sepM_mono with "Hctxelem1").
@@ -995,17 +995,17 @@ Proof.
       iMod (ncfupd_mask_mono with "Hpreq"); auto.
     }
 
-  - iDestruct "Hunifiedtxns" as "[Hpreq Hmapsto0]".
+  - iDestruct "Hunifiedtxns" as "[Hpreq Hpointsto0]".
     iDestruct "Hpreq" as "[Hpreq Hctxelem1]".
     iMod (ncfupd_mask_mono with "Hpreq") as "Hpreq"; first auto.
     iModIntro.
     iFrame "Hpreq".
 
     rewrite big_sepM_fmap.
-    iDestruct (big_sepM_union (λ k x, pointsto_txn γUnified k (committed x)) with "[Hmapsto0 Hctxelem1]") as "Hmapsto".
+    iDestruct (big_sepM_union (λ k x, pointsto_txn γUnified k (committed x)) with "[Hpointsto0 Hctxelem1]") as "Hpointsto".
     2: {
-      iSplitL "Hmapsto0".
-      { iApply (big_sepM_mono with "Hmapsto0").
+      iSplitL "Hpointsto0".
+      { iApply (big_sepM_mono with "Hpointsto0").
         iIntros (k x Hkx) "H".
         destruct x; rewrite /committed /=. iFrame. }
       iApply (big_sepM_mono with "Hctxelem1").

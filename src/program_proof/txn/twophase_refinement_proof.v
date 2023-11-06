@@ -43,7 +43,7 @@ Proof.
   destruct Hinit as (sz&kinds&Hsize2&Hnn&Hnonneg&Heqi&Heqs&Hdom&Hkind_size).
   rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
-  iDestruct "Hjrnl_frag" as "(Hsmapstos&Hcrashtoks&Hcrash_ctx&Hkinds&Hdom&Hfull)".
+  iDestruct "Hjrnl_frag" as "(Hspointstos&Hcrashtoks&Hcrash_ctx&Hkinds&Hdom&Hfull)".
   rewrite /twophase_crash_cond_full.
   iMod (sep_jrnl_recovery_proof.is_txn_durable_init
           (dinit0 (sz + 513)) kinds sz with "[Hdisk]") as "H".
@@ -61,7 +61,7 @@ Proof.
   }
   rewrite /LVL_INIT.
   iIntros "Hpre".
-  iDestruct "H" as (γ) "(%Hγ&His_txn_durable&#Hlb&Himapstos)".
+  iDestruct "H" as (γ) "(%Hγ&His_txn_durable&#Hlb&Hipointstos)".
   iExists tt, γ, _, _, (recovery_proof.kind_heap0 kinds).
   iFrame "His_txn_durable".
   iModIntro.
@@ -84,10 +84,10 @@ Proof.
   { rewrite /named. iExactEq "Hkinds". f_equal. rewrite //=. }
   iFrame "Hfull Hclosed_frag Hcrash_ctx".
   rewrite /=.
-  iEval (rewrite big_sepM_fmap) in "Hsmapstos".
+  iEval (rewrite big_sepM_fmap) in "Hspointstos".
   iEval (rewrite big_sepM_fmap) in "Hcrashtoks".
-  iDestruct (big_sepM_sep with "[$Hsmapstos $Hcrashtoks]") as "H".
-  iDestruct (big_sepM_sep with "[$H $Himapstos]") as "H".
+  iDestruct (big_sepM_sep with "[$Hspointstos $Hcrashtoks]") as "H".
+  iDestruct (big_sepM_sep with "[$H $Hipointstos]") as "H".
   iSplitL "H".
   - iApply (big_sepM_mono with "H").
     { iIntros (?? Hlookup) "(Hkind&Hmod&Hdurable)".
@@ -215,8 +215,8 @@ Proof.
   rewrite /twophase_crash_cond.
   rewrite /twophase_crash_tok.
   rewrite /jrnl_pointsto_own.
-  iEval (setoid_rewrite sep_assoc) in "Hmapstos".
-  iDestruct (big_sepM_sep with "Hmapstos") as "(H1&H2)".
+  iEval (setoid_rewrite sep_assoc) in "Hpointstos".
+  iDestruct (big_sepM_sep with "Hpointstos") as "(H1&H2)".
   iSplitL "H1 Htxn_durable".
   { iExists _, _, _, _. iFrame. eauto. }
   iFrame.
@@ -297,7 +297,7 @@ Proof.
   iDestruct (big_sepM_dom with "Hcrash_toks") as "Hcrash_toks".
   rewrite -Hdomeq.
   iDestruct (big_sepM_dom with "Hcrash_toks") as "Hcrash_toks".
-  iCombine "Hmapstos Hcrash_toks" as "Hmapstos".
+  iCombine "Hpointstos Hcrash_toks" as "Hpointstos".
   rewrite -big_sepM_sep.
   rewrite -sep_assoc.
   iSplitL "".
@@ -307,10 +307,10 @@ Proof.
     rewrite Heq_kinds Heq_kinds_name.
     by iFrame "#".
   }
-  iSplitL "Hmapstos".
+  iSplitL "Hpointstos".
   {
     iFrame "%".
-    iApply (big_sepM_mono with "Hmapstos").
+    iApply (big_sepM_mono with "Hpointstos").
     { iIntros (???) "(($&Hjrnl)&Htok)".
       rewrite /jrnl_pointsto_own.
       iNamed "Hjrnl".

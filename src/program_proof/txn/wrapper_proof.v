@@ -37,7 +37,7 @@ Section proof.
   Definition LVL := 100%nat.
 
   Definition jrnl_pointsto_own a bufObj : iProp Σ :=
-    "Hmapsto" ∷ jrnl_pointsto a 1 (bufObj_to_obj bufObj) ∗
+    "Hpointsto" ∷ jrnl_pointsto a 1 (bufObj_to_obj bufObj) ∗
     "Htok" ∷ jrnl_crash_tok a.
 
   Global Instance jrnl_pointsto_own_Timeless a bufObj:
@@ -205,7 +205,7 @@ Section proof.
   Definition twophase_obj_cfupd_cancel γ' d :=
    ((|C={⊤}=> ∃ mt',
        ⌜ dom mt' = d ⌝ ∗
-       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
+       "Hpointstos" ∷ ([∗ map] a ↦ obj ∈ mt',
          "Hdurable_pointsto" ∷ durable_pointsto_own γ' a obj ∗
          "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj)))%I.
 
@@ -315,20 +315,20 @@ Section proof.
         iNamed.
         iAssert (
           [∗ map] a ↦ o ∈ jrnlData σj1,
-            "Hmapsto" ∷ jrnl_pointsto a 1 o ∗
+            "Hpointsto" ∷ jrnl_pointsto a 1 o ∗
             "Htok" ∷ jrnl_crash_tok a
         )%I with "[Hcommitted]" as "Hcommitted".
         {
           destruct Hjrnl_maps_mt as [<- _].
           rewrite !big_sepM_fmap //.
         }
-        iDestruct (big_sepM_sep with "Hcommitted") as "[Hmapstos Htoks]".
+        iDestruct (big_sepM_sep with "Hcommitted") as "[Hpointstos Htoks]".
         destruct Hjrnl_maps_kinds as [<- _].
         iDestruct (
           ghost_step_jrnl_atomically_crash
-          with "Hspec_crash_ctx Hmapstos Htoks Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
-        ) as "H"; (* "> [Hmapstos Htoks]" *) [eassumption|set_solver|].
-        iMod (cfupd_weaken_mask with "H") as "[Hmapstos Htoks]".
+          with "Hspec_crash_ctx Hpointstos Htoks Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
+        ) as "H"; (* "> [Hpointstos Htoks]" *) [eassumption|set_solver|].
+        iMod (cfupd_weaken_mask with "H") as "[Hpointstos Htoks]".
         { auto. }
         iModIntro.
         iApply big_sepM_sep.
@@ -339,14 +339,14 @@ Section proof.
         iNamed.
         iAssert (
           [∗ map] a ↦ o ∈ jrnlData σj1,
-            "Hmapsto" ∷ jrnl_pointsto a 1 o ∗
+            "Hpointsto" ∷ jrnl_pointsto a 1 o ∗
             "Htok" ∷ jrnl_crash_tok a
         )%I with "[Hcommitted]" as "Hcommitted".
         {
           destruct Hjrnl_maps_mt as [<- _].
           rewrite !big_sepM_fmap //.
         }
-        iDestruct (big_sepM_sep with "Hcommitted") as "[Hmapstos Htoks]".
+        iDestruct (big_sepM_sep with "Hcommitted") as "[Hpointstos Htoks]".
         destruct Hjrnl_maps_kinds as [<- _].
         iSplit.
         2: {
@@ -360,8 +360,8 @@ Section proof.
         }
         iDestruct (
           ghost_step_jrnl_atomically
-          with "Hspec_ctx Hmapstos Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
-        ) as "> [Hj Hmapstos]"; [eassumption|set_solver|].
+          with "Hspec_ctx Hpointstos Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
+        ) as "> [Hj Hpointstos]"; [eassumption|set_solver|].
         iModIntro.
         iFrame.
         destruct Hjrnl_maps_mt as [<- <-].
@@ -454,21 +454,21 @@ Section proof.
     ) as "H". (* "> [Htoks Hcrash_invs]". *)
     {
       iIntros "Hpreds".
-      iDestruct (big_sepM_sep with "Hpreds") as "[Hjrnl_mapstos Hpreds]".
+      iDestruct (big_sepM_sep with "Hpreds") as "[Hjrnl_pointstos Hpreds]".
       iDestruct (big_sepM_sep with "Hpreds")
-        as "[Hdurable_mapstos %Hcommitted_valids]".
-      iApply big_sepM_fmap in "Hdurable_mapstos".
+        as "[Hdurable_pointstos %Hcommitted_valids]".
+      iApply big_sepM_fmap in "Hdurable_pointstos".
       iDestruct (
         is_jrnl_to_old_pred' with
-        "Hjrnl_mem Hjrnl_durable_frag Hdurable_mapstos"
+        "Hjrnl_mem Hjrnl_durable_frag Hdurable_pointstos"
       ) as "?".
       iNamed.
       iApply (big_sepM_fmap committed) in "Hold_vals".
       iDestruct (big_sepM_sep with "Hold_vals")
-        as "[Htokens Hdurable_mapstos]".
+        as "[Htokens Hdurable_pointstos]".
       iModIntro.
       iFrame "∗ #".
-      iDestruct (big_sepM_sep with "[$Hdurable_mapstos $Hjrnl_mapstos]")
+      iDestruct (big_sepM_sep with "[$Hdurable_pointstos $Hjrnl_pointstos]")
         as "Hpreds".
       iApply (big_sepM_impl with "Hpreds").
       iIntros (a vobj) "!> %Hacc [Hdurable_pointsto Hjrnl_pointsto]".
@@ -794,14 +794,14 @@ Section proof.
     ) as "H". (* "> [HR Hcrash_invs]". *)
     {
       iIntros "Hpreds".
-      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_mapstos&Hpreds)".
+      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_pointstos&Hpreds)".
       iDestruct (big_sepM_sep with "Hpreds") as "(Hdurables&%Hvalids_c)".
-      iDestruct (big_sepM_sep with "Hjrnl_mapstos")
-        as "(Hjrnl_mapstos&Htoks)".
+      iDestruct (big_sepM_sep with "Hjrnl_pointstos")
+        as "(Hjrnl_pointstos&Htoks)".
       iMod (
         ghost_step_jrnl_atomically_ub'
-        with "Hspec_ctx [Hjrnl_mapstos] [] Hjrnl_allocs' [$] Hjrnl_open Hj"
-      ) as "(%Hnotstuck&Hj&Hjrnl_mapstos)".
+        with "Hspec_ctx [Hjrnl_pointstos] [] Hjrnl_allocs' [$] Hjrnl_open Hj"
+      ) as "(%Hnotstuck&Hj&Hjrnl_pointstos)".
       1-2: eassumption.
       {
         rewrite Heq_data_update.
@@ -817,7 +817,7 @@ Section proof.
       destruct Hjrnl_maps_mt as [<- _].
       rewrite !big_sepM_fmap //.
       iDestruct (big_sepM_sep with "[$Htoks $Hdurables]") as "Hpreds".
-      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_mapstos]") as "Hpreds".
+      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_pointstos]") as "Hpreds".
       iApply (big_sepM_mono with "Hpreds").
       iIntros (a vobj Hacc) "[[Htok Hdurable] Hcrash_inv]".
       iFrame.
@@ -888,14 +888,14 @@ Section proof.
     ) as "H". (* "> [HR Hcrash_invs]". *)
     {
       iIntros "Hpreds".
-      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_mapstos&Hpreds)".
+      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_pointstos&Hpreds)".
       iDestruct (big_sepM_sep with "Hpreds") as "(Hdurables&%Hvalids_c)".
-      iDestruct (big_sepM_sep with "Hjrnl_mapstos")
-        as "(Hjrnl_mapstos&Htoks)".
+      iDestruct (big_sepM_sep with "Hjrnl_pointstos")
+        as "(Hjrnl_pointstos&Htoks)".
       iMod (
         ghost_step_jrnl_atomically_ub'
-        with "Hspec_ctx [Hjrnl_mapstos] [] Hjrnl_allocs [$] Hjrnl_open Hj"
-      ) as "(%Hnotstuck&Hj&Hjrnl_mapstos)".
+        with "Hspec_ctx [Hjrnl_pointstos] [] Hjrnl_allocs [$] Hjrnl_open Hj"
+      ) as "(%Hnotstuck&Hj&Hjrnl_pointstos)".
       1-2: eassumption.
       {
         destruct Hjrnl_maps_mt as [<- _].
@@ -907,7 +907,7 @@ Section proof.
       destruct Hjrnl_maps_mt as [<- _].
       rewrite !big_sepM_fmap //.
       iDestruct (big_sepM_sep with "[$Htoks $Hdurables]") as "Hpreds".
-      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_mapstos]") as "Hpreds".
+      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_pointstos]") as "Hpreds".
       iApply (big_sepM_mono with "Hpreds").
       iIntros (a vobj Hacc) "[[Htok Hdurable] Hcrash_inv]".
       iFrame.
