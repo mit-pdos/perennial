@@ -1319,6 +1319,7 @@ Proof using spec_trans.
     }
     wp_pures; eauto.
   - subst.
+    Opaque val_interp.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H1"; eauto.
     iPoseProof (IHHtyping2 with "[//] [$] [$] [$] [$]") as "H2"; eauto.
@@ -1475,6 +1476,7 @@ Proof using spec_trans.
 
       simpl.
 
+      Transparent val_interp.
       wp_pures.
       rewrite /val_interp -/val_interp.
       rewrite /arrowT_interp.
@@ -1634,6 +1636,7 @@ Proof using spec_trans.
     }
   (* pointers *)
   - subst.
+    Opaque val_interp.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) n').
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
@@ -1650,6 +1653,7 @@ Proof using spec_trans.
     iIntros (v2) "H". iDestruct "H" as (vs2) "(Hj&Hv2)".
     iApply wp_wpc.
     iApply wp_fupd.
+    Transparent val_interp.
     iDestruct "Hv1" as (nint) "(->&->)".
     destruct (decide (0 < int.Z nint)) as [Hnonneg|]; last first.
     {
@@ -2068,6 +2072,7 @@ Proof using spec_trans.
     wp_pures.
     iModIntro. iExists _. simpl. iFrame. eauto.
   - subst.
+    Opaque val_interp.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) l').
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H".
@@ -2096,7 +2101,7 @@ Proof using spec_trans.
     clear Hctx'.
     simpl.
 
-
+    Transparent val_interp.
     iApply wp_wpc.
     iApply wp_fupd.
 
