@@ -1027,7 +1027,7 @@ Proof using spec_trans.
         apply base_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
-      wp_pures; eauto.
+      wp_pures.
       by eauto 10 with iFrame.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1055,7 +1055,7 @@ Proof using spec_trans.
         apply base_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
-      wp_pures; eauto.
+      wp_pures.
       by eauto 10 with iFrame.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1083,7 +1083,7 @@ Proof using spec_trans.
         apply base_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
-      wp_pures; eauto.
+      wp_pures.
       by eauto 10 with iFrame.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1111,7 +1111,7 @@ Proof using spec_trans.
         apply base_prim_step_trans. repeat econstructor; eauto.
         rewrite Heq2; eauto. econstructor; eauto.
       }
-      wp_pures; eauto.
+      wp_pures.
       by eauto 10 with iFrame.
   - destruct op; try inversion e; subst.
     iIntros (j K Hctx) "Hj". simpl.
@@ -1129,7 +1129,7 @@ Proof using spec_trans.
     { intros ?. eexists. simpl.
       apply base_prim_step_trans. repeat econstructor; eauto.
     }
-    wp_pures; eauto.
+    wp_pures.
     by eauto 10 with iFrame.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
