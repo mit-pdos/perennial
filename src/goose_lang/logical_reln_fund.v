@@ -1028,7 +1028,7 @@ Proof using spec_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
-      iExists _. iFrame. eauto.
+      by eauto 10 with iFrame.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e2).
@@ -1056,7 +1056,7 @@ Proof using spec_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
-      iExists _. iFrame. eauto.
+      by eauto 10 with iFrame.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e2).
@@ -1084,7 +1084,7 @@ Proof using spec_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
-      iExists _. iFrame. eauto.
+      by eauto 10 with iFrame.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e2).
@@ -1112,7 +1112,7 @@ Proof using spec_trans.
         rewrite Heq2; eauto. econstructor; eauto.
       }
       wp_pures; eauto.
-      iExists _. iFrame. eauto.
+      by eauto 10 with iFrame.
   - destruct op; try inversion e; subst.
     iIntros (j K Hctx) "Hj". simpl.
     wpc_bind (subst_map _ e2).
@@ -1130,7 +1130,7 @@ Proof using spec_trans.
       apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; eauto.
-    iExists _. iFrame. eauto.
+    by eauto 10 with iFrame.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping1 with "[//] [$] [$] [$] [$]") as "H"; eauto.
