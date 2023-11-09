@@ -124,7 +124,7 @@ Implicit Types P : iProp Σ.
     iMod ("HncinvQ" with "[%] [$]") as "[$ [HNC HcloseQ]]"; first set_solver.
     iMod (fupd_level_mask_subseteq (E ∖ ↑N)) as "Hclose"; first set_solver.
     iFrame. iIntros "!> [HP HQ]".
-    iMod "Hclose" as %_. iIntros (?) "HNC".
+    iMod "Hclose" as % _. iIntros (?) "HNC".
     iMod ("HcloseQ" with "HQ HNC") as "HNC".
     iMod ("HcloseP" with "HP HNC") as "$".
     auto.
