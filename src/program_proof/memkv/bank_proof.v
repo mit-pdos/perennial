@@ -475,8 +475,7 @@ Proof.
     }
     iApply big_sepM_insert; first by auto.
     iFrame.
-    iFrame "#".
-    iExists _. iFrame. done.
+    iFrame "#". done.
   }
 
   iIntros "[Haccts_slice Hloop]".
@@ -494,7 +493,7 @@ Proof.
     iIntros (??) "%Hsome [HlogBalCtx HbankPs]".
     iDestruct "HbankPs" as (vd) "(%Henc & Hphys & Hlog)".
     iDestruct (map_valid with "HlogBalCtx Hlog") as %Hlogeq.
-    iFrame "∗%". iExists _. iFrame "∗%".
+    iFrame "∗%".
   }
 
   iMod ("HbankInvClose" with "[HlogBalCtx]") as "_".
@@ -542,8 +541,7 @@ Proof.
     wp_apply (wp_LockClerk__Unlock with "[$Hlck_own $Hacc_islock HbankPs]").
     { iDestruct "HbankPs" as (?) "(% & Hkv & Hlog)". iExists _, _. iFrame "∗%". }
     iIntros "Hlck_own".
-    iApply "HΨ". iFrame.
-    iExists _. iFrame. iPureIntro.
+    iApply "HΨ". iFrame. iPureIntro.
     replace (mtodo) with (<[x := x0]> (delete x mtodo)) in Hdom.
     2: rewrite insert_delete //.
     rewrite dom_insert_L in Hdom.
@@ -725,7 +723,7 @@ Proof.
       }
       iApply big_sepM_insert.
       { apply not_elem_of_dom_1. done. }
-      iFrame. iSplit; first done. iExists _. iFrame. done.
+      iFrame. iSplit; done.
     }
     {
       iExists ∅. iFrame. iSplit.

@@ -298,7 +298,7 @@ Proof.
   iApply "HΦ".
   iFrame "∗ %".
   iIntros "Haddrs".
-  iExists _; iFrame.
+  iExists _; by iFrame.
 Qed.
 
 Theorem wpc_Inode__UsedBlocks {l σ addr} :
@@ -374,7 +374,7 @@ Proof.
 
   iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
   iCache with "Hfupd Hlockinv HP".
-  { iLeft in "Hfupd". iFrame. iExists _; iFrame. iApply inode_linv_to_cinv; eauto. }
+  { iLeft in "Hfupd". iFrame. iApply inode_linv_to_cinv; eauto. }
   wpc_call.
   wpc_bind (_ ≥ _)%E.
   iNamed "Hlockinv".
@@ -527,7 +527,7 @@ Proof.
   iDestruct 1 as (σ) "(Hlockinv&HP)".
   iApply ncfupd_wpc.
   iSplit.
-  { iLeft in "Hfupd". iModIntro. iFrame. iExists _; iFrame.
+  { iLeft in "Hfupd". iModIntro. iFrame.
     iApply inode_linv_to_cinv. eauto. }
   iEval (rewrite /named) in "HP".
   iNamed "Hlockinv".
@@ -766,7 +766,6 @@ Proof.
     do 2 iNamed "Hlockinv".
     iCache with "Hfupd HP Hdurable".
     { iLeft in "Hfupd". iFrame.
-      iExists _; iFrame.
       iExists _; iFrame. }
     iDestruct (own_slice_sz with "Haddrs") as %Hlen1.
     autorewrite with len in Hlen1.
@@ -837,7 +836,7 @@ Proof.
       wpc_apply (wpc_Write_ncfupd with "[$Hb]").
       iSplit.
       { iLeft in "Hfupd". iSplitR "Hda".
-        * iFrame. iExists _; iFrame. iExists _; iFrame.
+        * iFrame. iExists _; iFrame.
         * iApply block_cinv_free_pred. iExists _; iFrame. }
       iNamed "Hdurable".
       iRight in "Hfupd".
@@ -884,21 +883,20 @@ Proof.
       | |- envs_entails _ ((?P ∗ _) ∧ _) =>
         iCache (P)%I with "HQ HP Hdurable"
       end.
-      { iLeft in "HQ". iFrame. iExists _; iFrame.
-        iExists _; iFrame. }
+      { iLeft in "HQ". iFrame. iExists _; iFrame. }
       iCache (block_cinv Ψ γalloc a) with "Hused".
       { iApply block_cinv_from_used; iFrame. }
       iSplit.
-      { iLeft in "HQ". iFrame. iExists _. iFrame. iExists _; iFrame. }
+      { iLeft in "HQ". iFrame. iExists _. iFrame. }
       iIntros "Hb".
       subst Φ'; cbv beta.
       (* done applying wpc_Write_fupd *)
 
       wpc_pures.
-      { iLeft in "HQ". iFrame. iExists _. iFrame. iExists _; iFrame. }
+      { iLeft in "HQ". iFrame. iExists _. iFrame. }
       iModIntro. iSplitR "Hused"; last (iFromCache).
       iSplit.
-      { iLeft in "HQ". iFrame. iExists _. iFrame. iExists _; iFrame. }
+      { iLeft in "HQ". iFrame. iExists _. iFrame. }
       iSplitR "HP Haddrs addrs Hdurable"; last first.
       { iExists _; iFrame. iModIntro.
         iExists _, _; iFrame "∗ %". }

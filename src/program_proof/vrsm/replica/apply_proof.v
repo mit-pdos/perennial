@@ -187,8 +187,7 @@ Proof.
   rewrite Hprim.
   iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #? & #?)".
   { done. }
-  iFrame "∗#".
-  repeat iExists _. by iFrame "#%".
+  by iFrame "∗#%".
 Qed.
 
 Definition own_slice_elt {V} {H:IntoVal V} (sl:Slice.t) (idx:u64) typ q (v:V) : iProp Σ :=
@@ -460,8 +459,8 @@ Proof.
     wp_pures.
     wp_storeField.
     iApply ("HΦ" $! _ (ApplyReply.mkC 1 [])).
-    iFrame.
-    iExists _, 1%Qp; iFrame.
+    unfold ApplyReply.own_q. iFrame.
+    iExists 1%Qp.
     iApply own_slice_small_nil.
     done.
   }

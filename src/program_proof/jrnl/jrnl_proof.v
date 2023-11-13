@@ -890,7 +890,7 @@ Proof.
         eapply Hx in Ha. eauto.
       }
 
-      iModIntro. iFrame. iExists _. iFrame.
+      iModIntro. iFrame.
       iIntros "H".
       iMod ("Hcrashstates_fupd" with "[H]") as "$"; last done.
 

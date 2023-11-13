@@ -586,8 +586,7 @@ Proof.
     iDestruct "Hx" as "[Hacc_islock HbankPs]".
     wp_apply (wp_LockClerk__Unlock with "[$Hlck_is $Hacc_islock HbankPs]").
     { iDestruct "HbankPs" as "(Hkv & Hlog)". repeat iExists _. iFrame. }
-    iApply "HΨ". iFrame.
-    iExists _. iFrame. iPureIntro.
+    iApply "HΨ". iFrame. iPureIntro.
     replace (mtodo) with (<[x := x0]> (delete x mtodo)) in Hdom.
     2: rewrite insert_delete //.
     rewrite dom_insert_L in Hdom.

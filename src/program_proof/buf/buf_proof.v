@@ -1280,7 +1280,7 @@ Proof.
     iSplitL.
     { iExists _; iFrame "∗%"; simpl.
       iSplitR "Hsrc".
-      - eauto with iFrame.
+      - unfold is_buf_without_data. eauto with iFrame.
       - iExists _; iFrame "∗%". }
     iPureIntro.
     apply is_installed_block_bit; auto.

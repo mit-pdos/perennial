@@ -84,7 +84,7 @@ Proof.
                             else (∃ (ent : wrent), ents !! (int.nat pos) = Some ent ∧ ent.1.1.1 = key) ∨
                                  (int.Z entsS.(Slice.sz)) ≤ (int.Z pos)⌝) ∗
                "%Hnotin" ∷ (⌜key ∉ (take (int.nat pos) ents.*1.*1.*1)⌝))%I.
-  wp_apply (wp_forBreak_cond P with "[] [$HentsS HposR]").
+  wp_apply (wp_forBreak_cond P with "[] [HentsS HposR]").
   { clear Φ.
     iIntros (Φ) "!> HP HΦ".
     iNamed "HP".

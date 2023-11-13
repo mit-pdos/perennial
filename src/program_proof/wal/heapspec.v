@@ -884,7 +884,7 @@ Proof.
     rewrite Hdom Hgh_complete.
     auto.
   }
-  iExists _, _; iFrame "#∗%".
+  iFrame "#∗%".
   iPureIntro; congruence.
 Qed.
 

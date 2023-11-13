@@ -61,7 +61,7 @@ Proof.
     iDestruct ("HshardMap_sl_close" with "[$HshardMap_sl]") as "HshardMap_sl".
     wp_pures. iModIntro. iApply "HΦ".
     remember uNSHARD as uNSHARD' eqn:Heq_uNSHARD.
-    { iFrame. iExists _. iFrame.
+    { iFrame.
       iSplit.
       { iPureIntro. rewrite insert_length //. }
       iSplit.

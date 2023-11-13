@@ -350,9 +350,7 @@ Section goose.
     iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
     iMod "HcloseM" as "_".
     iModIntro.
-    iFrame.
-    iSplitL; last by auto.
-    eauto with iFrame.
+    iFrame. auto.
   Qed.
 
   Theorem wpc_SingleInode__Read_triple (Q: option Block → iProp Σ) l sz (i: u64) :

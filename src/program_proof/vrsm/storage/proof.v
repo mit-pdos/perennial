@@ -1070,8 +1070,6 @@ Proof.
         iFrame.
         iNext.
         iRight.
-        iExists (U64 0), [], false.
-        iFrame.
         iPureIntro.
         replace (snap_sl.(Slice.sz)) with (U64 (length snap)); last first.
         { word. }

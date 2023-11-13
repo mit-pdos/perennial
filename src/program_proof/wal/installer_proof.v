@@ -444,7 +444,7 @@ Proof.
         rewrite app_assoc apply_upds_app /= lookup_insert //.
       }
       rewrite Hsubtxns.
-      iFrame.
+      iFrame. eauto.
     }
     iIntros "!> Hb_i".
     iApply "HΦ".

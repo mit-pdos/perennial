@@ -245,8 +245,7 @@ Proof using IntoValComparable0.
     iDestruct "HP" as (v0) "[-> HP]".
     wp_apply ("Hbody" with "[$HI $HP]").
     iIntros "[HI HQ]".
-    iApply "HΦ"; iFrame.
-    iExists _; iFrame; done. }
+    iApply "HΦ"; iFrame. done. }
   iIntros "(Hm & HI & HQ)".
   iApply "HΦ". iFrame.
   rewrite /Map.untype /=.
@@ -290,12 +289,9 @@ Proof using IntoValComparable0.
     iNext.
     iIntros "H".
     iApply "HΦ"; iFrame.
-    iExists (delete k mtodo'), (<[k:=v0]> mdone').
     iSplitR.
-    { rewrite fmap_delete. done. }
-    iSplitR.
-    { rewrite fmap_insert. done. }
-    iFrame. }
+    - rewrite fmap_delete. done.
+    - rewrite fmap_insert. done. }
   iIntros "(Hm & HI)".
   iDestruct "HI" as (mtodo' mdone') "(% & % & HI)".
   iApply "HΦ". iFrame.

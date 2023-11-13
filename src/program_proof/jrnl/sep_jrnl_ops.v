@@ -304,7 +304,6 @@ Section goose_lang.
       iMod ("IH" with "Hctx Hm") as "(Hctx&Hold&Hm)".
       iModIntro.
       iFrame.
-      eauto with iFrame.
   Qed.
 
 

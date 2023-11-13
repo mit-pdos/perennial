@@ -458,9 +458,8 @@ Section lemmas.
     { iDestruct "Htaken" as (??) "Htaken".
       iDestruct (ghost_async_map_elem_frac_ne with "[$] [$]") as %Hval; eauto. congruence. }
     iDestruct ("Hexch" with "[Hk]") as "Hexch".
-    { iExists _. iSplit; first eauto. iLeft. iExists _, _. by iFrame. }
-    iFrame. iSplit; first eauto.
-    iExists _. iFrame. iPureIntro. simpl.
+    { iExists _. iSplit; first eauto. iLeft. iFrame. }
+    iFrame. iSplit; first eauto. iPureIntro. simpl.
     destruct Hpossible as (?&?&?). set_solver.
   Qed.
 

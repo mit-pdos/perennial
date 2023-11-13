@@ -615,12 +615,12 @@ Proof.
     iDestruct "Hp" as (v) "[% Hp]". subst.
     iApply ("Hind" with "[$Hi $Hp] [-]").
     iNext. iIntros (v0) "[Hi Hq]".
-    iApply "HΨ". iFrame. iExists _. iFrame. done.
+    iApply "HΨ". iFrame. done.
   }
   {
     iApply big_sepL_fmap.
     iApply (big_sepL_impl with "Hp").
-    iModIntro. iIntros (??) "% Hp". iExists _. iFrame. done.
+    iModIntro. iIntros (??) "% Hp". iFrame. done.
   }
   iNext.
   iIntros "(Hs & Hi & Hq)".

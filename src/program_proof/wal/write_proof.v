@@ -862,8 +862,8 @@ Proof.
         iSplit.
         { iExists _; iFrame "#". }
         iExists (set memLog (λ _, memLog') σ); simpl.
-        rewrite /wal_linv_core memWrite_same_start.
-        iFrame.
+        rewrite /wal_linv_core memWrite_same_start /memLog_linv /memLog_linv_core /named.
+        iFrame "HdiskEnd_circ Hstart_circ HownDiskEndMem_linv HownDiskEndMemTxn_linv".
         iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet
                  HownLoggerPos_linv HownLoggerTxn_linv
                  HownInstallerPosMem_linv HownInstallerTxnMem_linv
@@ -877,7 +877,7 @@ Proof.
         iFrame.
         iFrame "%".
         iSplit.
-        2: { iExists _. iFrame. iFrame "%". }
+        2: { unfold memLog_linv_nextDiskEnd_txn_id. iFrame. iFrame "#%". }
         subst memLog'.
         rewrite Nat.add_sub memWrite_same_start memWrite_same_mutable /=.
         iSplit.

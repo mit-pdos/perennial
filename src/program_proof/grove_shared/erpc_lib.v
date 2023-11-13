@@ -307,7 +307,7 @@ Proof using Type*.
       lia.
     }
     iMod ("HMClose" with "[Hpost]") as "_".
-    { iNext. iFrame "#". iRight. iRight. iExists _; iFrame "#∗". }
+    { iNext. iFrame "#". iRight. by iRight. }
     iModIntro.
 
     iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM req.(Req_CID) req.(Req_Seq) reply with "[Hreqeq_lb] Hrcagree") as "Hrcagree2"; eauto.
@@ -465,7 +465,7 @@ Proof.
     iMod ("Hfupd" with "HP Hproc_tok Hlseq_new_lb Hctx") as "(Hpost & Hγproc & Hctx')".
 
     iMod ("HMClose" with "[Hpost]") as "_".
-    { iNext. iFrame "#". iRight. iRight. iExists _; iFrame "#∗". }
+    { iNext. iFrame "#". iRight. by iRight. }
     iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM req.(Req_CID) req.(Req_Seq) reply with "[Hreqeq_lb] Hrcagree") as "Hrcagree2"; eauto.
     iModIntro.
     iFrame "∗#".

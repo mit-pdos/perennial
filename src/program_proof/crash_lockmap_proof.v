@@ -979,11 +979,11 @@ Proof.
 
   iIntros "[HP Hlocked]".
   wp_pures. iModIntro. iApply "HΦ".
-  iFrame "HP".
+  unfold CrashLocked. iFrame "HP".
 
-  iExists _. iFrame.
-  rewrite /Locked. iSplitR "Hlocked"; last first.
-  { iExists _. iFrame. iPureIntro.
+  iExists _. rewrite /Locked. iFrame.
+  iSplitL; last first.
+  { iPureIntro.
     rewrite -Hgh_lookup. f_equal.
     unseal_nshard.
     word. }
@@ -1036,8 +1036,8 @@ Proof.
     iSpecialize ("H" with "[$]").
     iApply (wpc_strong_mono with "H"); eauto.
     iSplit.
-    * iIntros (?) "(Hclose&?)". iModIntro. iFrame. iFrame "#".
-      iIntros. iApply "Hclose". iFrame; eauto.
+    * iIntros (?) "(Hclose&?)". iModIntro. iFrame.
+      iIntros. iApply "Hclose". unfold CrashLocked. iFrame; eauto.
     * iIntros. iIntros "!>". eauto.
 Qed.
 

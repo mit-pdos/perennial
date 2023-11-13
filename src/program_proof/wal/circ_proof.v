@@ -631,8 +631,7 @@ Proof.
     - iPureIntro.
       apply circ_wf_advance; eauto.
       word.
-    - iExists _, _; iFrame "Hown".
-      iSplitR; [ iPureIntro | ].
+    - iSplitR; [ iPureIntro | ].
       { eapply has_circ_updates_advance; eauto; word. }
       iExists _, _; iFrame.
       iSplitR; auto.
@@ -918,7 +917,7 @@ Proof.
   { iModIntro.
     iExists _; iFrame "HP".
     iSplitR; first by auto.
-    iFrame "Hpos".
+    iFrame "Hpos". unfold is_low_state.
     iExists _, _; iFrame.
     iSplitR.
     { iPureIntro.
@@ -932,8 +931,7 @@ Proof.
     { iPureIntro.
       eapply circ_low_wf_blocks; eauto.
     }
-    iExists hdr1, hdr2.
-      by iFrame.
+    by iFrame.
   }
   iIntros "!> Hs".
   wp_loadField.
@@ -1179,7 +1177,6 @@ Proof.
       autorewrite with len in HdiskEnd'.
       apply circ_wf_app; auto; len.
     }
-    iExists _, _; iFrame "Haddrs Hblocks".
     iSplitR.
     { iPureIntro.
       rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.

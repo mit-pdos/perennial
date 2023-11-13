@@ -100,7 +100,7 @@ Proof.
         edestruct (Hkvss_dom) as (?&Heq); first eassumption. eexists.
         Search lookup fmap. eapply lookup_fmap_Some; eauto. } *)
       wp_pures. iModIntro. iApply "HΦ".
-      { iFrame. iExists _, (<[int.nat i := mv]>kvs_ptrs). iFrame.
+      { iFrame. iExists (<[int.nat i := mv]>kvs_ptrs).
         rewrite ?insert_length.
         do 2 (iSplit; first done).
         iSplit.
@@ -169,7 +169,7 @@ Proof.
     }
     {
       wp_pures. iModIntro. iApply "HΦ".
-      { iFrame. iExists _, kvs_ptrs. iFrame.
+      { iFrame.
         iSplit.
         { iPureIntro. rewrite insert_length //. }
         iSplit.

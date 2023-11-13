@@ -211,7 +211,7 @@ Section goose.
     iNamed "Hlkinv".
     iApply ncfupd_wpc.
     iSplit.
-    { iLeft in "Hfupd". iModIntro. iFrame. iExists _; iFrame.
+    { iLeft in "Hfupd". iModIntro. iFrame.
       iApply rblock_linv_to_cinv; iFrame. }
     iAssert (int.Z addr' d↦ σ ∗
                    (int.Z addr' d↦ σ -∗ rblock_linv addr σ))%I
@@ -227,7 +227,6 @@ Section goose.
     iSplit; [ | iNext ].
     { iLeft in "HQ".
       iFrame. iIntros.
-      iExists _; iFrame.
       iApply rblock_linv_to_cinv; iFrame. iApply "Hlkinv". eauto. }
     iIntros (s) "(Haddr'&Hb)".
     iDestruct (own_slice_to_small with "Hb") as "Hb".
@@ -322,14 +321,14 @@ Section goose.
     between crash and recovery - the commit cannot happen until recovery
     succesfully synchronizes the disks. *)
     wpc_apply (wpc_Write_ncfupd ⊤ with "Hb").
-    iModIntro. iExists _; iFrame. iIntros "!> Hprimary".
+    iModIntro. iExists _; iFrame "Hprimary". iIntros "!> Hprimary".
     (* linearization/simulation point: run Hfupd. *)
     iRight in "Hfupd".
     rewrite difference_empty_L.
     iMod ("Hfupd" with "HP") as "[HP HΦ]".
     iEval (rewrite ->(left_id True bi_wand)%I) in "HΦ".
     iModIntro. iSplit.
-    { iLeft in "HΦ". eauto 10 with iFrame. }
+    { iLeft in "HΦ". iFrame. eauto. }
     iIntros "Hb".
     iCache (Φc)%I with "HΦ".
     { by iLeft in "HΦ". }

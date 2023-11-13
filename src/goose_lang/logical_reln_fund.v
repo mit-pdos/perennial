@@ -771,7 +771,7 @@ Proof.
       iMod ("Hclo" with "[- Hj HΦ]").
       {
         iNext. iExists _, _. iRight. iLeft. iFrame.
-        iExists _, _, _.
+        iExists _.
         rewrite ?Nat.add_0_r.
         iFrame.
         iSplitL "".

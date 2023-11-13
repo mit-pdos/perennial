@@ -349,9 +349,9 @@ Proof.
     iDestruct (txns_ctx_txn_pos with "Htxns_ctx") as "#HdiskEnd_pos".
     1: apply HdiskEnd_txn.
     iModIntro.
-    iFrame "HdiskEnd_pos Howntxns".
+    iFrame "HdiskEnd_pos Howntxns γtxns".
     iSplitL; try done.
-    iModIntro. iExists _. iFrame. iFrame "%".
+    iModIntro. iFrame "∗%".
   }
   iMod ("HdiskEnd_pos_helper" with "Howntxns") as "[Howntxns #HdiskEnd_pos]".
 
@@ -594,7 +594,7 @@ Proof.
       rewrite subslice_length; try lia.
       pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn). lia.
     }
-    iModIntro. iSplitL; last by done. iModIntro. iExists _. iFrame. iFrame "%".
+    iModIntro. by iFrame "∗%".
   }
   iMod ("Htxns0_helper" with "Howntxns") as "(Howntxns & %HnextDiskEnd_txns0 & %Htxns)".
 
@@ -691,20 +691,17 @@ Proof.
       HownDiskEnd_logger HownDiskEndTxn_logger
     "; last by iFrame.
     iFrame (Hwf) "∗".
-    iExists _.
-    iFrame (Hdaddrs_init) "∗ #".
+    iExists _. iFrame.
     iExists _, _, _.
     iFrame "Hinstalled #".
-    iExists _, _, _.
-    iFrame.
+    unfold is_durable, named. iFrame "∗%".
 
     iPureIntro.
-    split; last by word.
-    eapply (is_memLog_boundaries_move _ _ _ pmwrb_de) in Hcirc_matches;
-      last by reflexivity.
     simpl in Hcirc_matches.
     rewrite /circ_matches_txns /circΣ.diskEnd.
     replace (int.nat _ - int.nat _)%nat with (length (upds cs)) by word.
+    eapply (is_memLog_boundaries_move _ _ _ pmwrb_de) in Hcirc_matches;
+      last by reflexivity.
     assumption.
   }
   iMod ("HdiskEndMem_update" with "

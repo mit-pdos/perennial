@@ -76,12 +76,12 @@ Proof.
     rewrite singleton_op singleton_valid. done. }
   case_bool_decide; last first.
   { (* They gave us an outdated timestamp. *)
-    iSplitR; first done. eauto with iFrame. }
+    iSplitR; first done. unfold gentid_inv. by iFrame "#∗". }
   iMod (saved_pred_alloc Φ DfracDiscarded) as (γr) "#HΦ"; first done.
   iMod (ghost_map_insert ts γr with "Hreserved_map") as "[Hreserved_map Hreserved_ts]"; first done.
   iSplitL "Hreserved_ts".
   { rewrite /tid_reserved. eauto. }
-  iExists last, _. iFrame "Hreserved_map Hts". iSplitR; first done.
+  iExists last, _. iFrame "Hreserved_map Hts Htsc". iSplitR; first done.
   iApply big_sepM_insert; first done.
   iFrame. rewrite /reserved_inv. rewrite bool_decide_false; last lia.
   iExists Φ. iFrame "HΦ". rewrite -Hsid. iFrame. done.

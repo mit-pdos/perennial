@@ -113,8 +113,8 @@ Proof.
   iModIntro.
   iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf'.
   simpl.
-  iSplitL; last by trivial.
-  iFrame "# ∗".
+  iSplitL; last by trivial. unfold wal_linv_core, memLog_linv, memLog_linv_core, named.
+  iFrame "HdiskEnd_circ Hstart_circ HownDiskEndMem_linv HownDiskEndMemTxn_linv HownInstalledPosMem_linv".
   iSplitR "Howntxns HownLoggerPos_linv HownLoggerTxn_linv HnextDiskEnd HownInstallerPosMem_linv HownInstallerTxnMem_linv HownInstalledTxnMem_linv".
   { iExists _; iFrame.
     iPureIntro.
@@ -137,12 +137,15 @@ Proof.
   iFrame "% HinstalledTxn_lb".
   iSplit.
   2: {
-    iNamed "HnextDiskEnd". iExists _. iFrame. iFrame "#". iFrame "%".
+    iNamed "HnextDiskEnd". 
+    unfold memLog_linv_nextDiskEnd_txn_id, named. iFrame "∗#%".
   }
   iSplit.
-  { iPureIntro. lia. }
+  { iPureIntro. cbn. lia. }
   iSplit.
   { iPureIntro. lia. }
+  iNamed "HnextDiskEnd". unfold named.
+  iFrame "#∗".
   iSplit.
   2: {
     iPureIntro.

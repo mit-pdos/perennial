@@ -383,12 +383,11 @@ Proof.
 
   iAssert (crash_borrow P Pc)%I with "[Hlt1 Hlt2 Hlt5 H2 Hstat2 Hitok_u]"  as "Hborrow".
   {
-    rewrite crash_borrow_eq.
+    rewrite crash_borrow_eq /crash_borrow_def.
     iFrame "# ∗". iExists P, Pc.
     iSplitR; first eauto.
-    iSplitR; first eauto.
-    iExists _, _, _, _, _, _. iFrame "∗". iFrame "Hsaved Hsaved'".
-    iExists _, _. iFrame "Hpri_inv". eauto.
+    iSplitR; first eauto. unfold staged_value_idle, staged_inv. 
+    iFrame "#∗". eauto.
   }
 
   iAssert (staged_inv_cancel ⊤ mj Pc)%I with "[Hitok_ikeep Hpending Hlt3]" as "Hcancel".

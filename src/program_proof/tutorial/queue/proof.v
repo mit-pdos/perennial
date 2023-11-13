@@ -467,8 +467,6 @@ Proof.
     + iModIntro.
       iApply "Post".
       iFrame.
-      iExists first1, count1, queue1.
-      iFrame.
       iFrame "Hqueue".
       apply Z.lt_nge in Heqb.
       iPureIntro.
@@ -641,8 +639,6 @@ Proof.
       iFrame.
     + iModIntro.
       iApply "Post".
-      iFrame.
-      iExists first1, count1, queue1.
       iFrame.
       iFrame "Hqueue".
       iPureIntro.

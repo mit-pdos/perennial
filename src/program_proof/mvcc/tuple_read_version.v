@@ -246,7 +246,7 @@ Proof.
     (* Evaluate the loop body. *)
     wp_loadField.
     wp_apply (wp_condWait with "[-HΦ]").
-    { eauto 15 with iFrame. }
+    { iFrame "#∗". unfold own_tuple, named, own_tuple_phys. by iFrame "#∗". }
     iIntros "[Hlocked HtupleOwn]".
     iNamed "HtupleOwn".
     wp_pures.

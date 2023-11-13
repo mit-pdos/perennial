@@ -417,7 +417,6 @@ Next Obligation.
   rewrite /wf_jrnl/offsets_aligned/sizes_correct in Hwf.
   destruct Hwf as (Hoff&Hsize).
   edestruct Hsize as (k&Hlookup_kind&Hlen); eauto. iFrame.
-  iExists _. iFrame "% #".
   iPureIntro. exists k.
   split_and!; eauto.
   edestruct (Hoff a); eauto.

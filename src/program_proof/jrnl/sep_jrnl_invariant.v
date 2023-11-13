@@ -690,10 +690,10 @@ Section goose_lang.
       iIntros (? ? Hlookup) "((Hdurable_exchanger&Hasync)&Hm)".
       iDestruct "Hm" as (?) "(?&?)".
       iDestruct (txn_durable_exchanger_use with "[$] [$]") as %Hlb.
-      iDestruct (ephemeral_val_from_val with "Hasync [$]") as "#$".
+      iDestruct (ephemeral_val_from_val with "Hasync [$]") as "#H".
+      { exact Hlb. }
       { lia. }
-      { lia. }
-      iFrame. iExists _, _; eauto.
+      iFrame "∗#".
     }
     iDestruct (exchange_big_sepM_addrs with "[$] [$] Hm") as "(Hexchanger&Hval)".
     { eauto. }
@@ -778,10 +778,10 @@ Section goose_lang.
               with "[Hasync Hval]" as "[Hasync Hval]".
       {iDestruct (big_sepM_mono_with_inv with "Hasync Hval") as "($&H)"; last iApply "H".
        iIntros (? ? Hlookup) "(Hasync&Hval)".
-       iDestruct (ephemeral_val_from_val with "Hasync Hval") as "#$".
+       iDestruct (ephemeral_val_from_val with "Hasync Hval") as "#H".
+       { trans crash_txn; last reflexivity. lia. }
        { lia. }
-       { lia. }
-       iFrame. iExists _, _; eauto.
+       iFrame "Hval ∗#".
       }
       iDestruct (exchange_big_sepM_addrs with "[$] [$] Hval") as "(Hexchanger&Hval)".
       { eauto. }

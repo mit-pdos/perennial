@@ -780,7 +780,7 @@ Section na_heap.
     iDestruct "Hσ" as (m sz Hσm) "[Hσ Hσm]".
     iDestruct (na_heap_pointsto_lookup with "Hσ Hmt") as %[lk [n' [Hσl Hlkeq]]]; eauto.
     iMod (na_heap_read_vs _ _ n (S n) with "Hσ Hmt") as "[Hσ Hmt]"; [ done | done | by eapply Hrl | ].
-    iModIntro. iExists lk, (n + n'); iSplit; [done|]. iFrame "Hσ Hmt".
+    iModIntro. iExists lk, (n + n'); iSplit; [done|]. unfold na_heap_ctx. iFrame "Hσ Hmt".
     iExists _, _. rewrite dom_insert_L block_sizes_wf_override //. iFrame. iPureIntro; set_solver.
   Qed.
 
@@ -857,7 +857,7 @@ Section na_heap.
     iDestruct (na_heap_pointsto_lookup_1 with "Hσ Hmt") as %(?&?&Hread); auto.
     iMod (na_heap_write_vs with "Hσ [Hmt]") as "[Hσ ?]"; first done.
     { by rewrite /na_heap_pointsto_def Hread. }
-    iFrame. rewrite /na_heap_pointsto_def Hread_lk. iFrame. iModIntro.
+    unfold na_heap_ctx. iFrame. rewrite /na_heap_pointsto_def Hread_lk. iFrame. iModIntro.
     iExists _, _. rewrite dom_insert_L block_sizes_wf_override //. iFrame. iPureIntro; set_solver.
   Qed.
 
@@ -878,7 +878,7 @@ Section na_heap.
     iDestruct (na_heap_pointsto_lookup_1 with "Hσ Hmt") as %(lkr&?&Hread); eauto.
     iMod (na_heap_write_vs with "Hσ [Hmt]") as "[Hσ Hmt]"; first done.
     { by rewrite /na_heap_pointsto_def Hread. }
-    iModIntro. iExists lkr. iSplit; [done|]. iFrame. rewrite Hwrite //. iFrame.
+    iModIntro. iExists lkr. iSplit; [done|]. unfold na_heap_ctx. iFrame. rewrite Hwrite //. iFrame.
     iExists _, _. rewrite dom_insert_L block_sizes_wf_override //. iFrame. iPureIntro; set_solver.
   Qed.
 

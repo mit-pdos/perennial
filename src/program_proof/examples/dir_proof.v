@@ -556,7 +556,6 @@ Section goose.
       iNamed 1.
       iRight in "HΦ"; iApply "HΦ".
       iFrame.
-      iExists _, _; iFrame.
       iDestruct (big_sepL2_length with "Hpre_inodes") as %Hlens;
           autorewrite with len in Hlens.
       replace (int.nat (word.add n 1%Z)) with (S (int.nat n)); last first.

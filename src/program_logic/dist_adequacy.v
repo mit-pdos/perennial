@@ -72,7 +72,7 @@ Proof.
   iMod "H" as "(Hσ&Hg&Hwpr&Hwptp&HNC)".
   iFrame. iModIntro.
   simpl. iExists Φ, Φinv, Φr.
-  rewrite wpr0_unfold/wpr0_pre. eauto.
+  rewrite wpr0_unfold/wpr0_pre. iFrame.
 Qed.
 
 Lemma stwpnode_crash gen eb t1 σ1 g σ2 κs ns D:

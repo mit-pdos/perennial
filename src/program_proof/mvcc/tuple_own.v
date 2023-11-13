@@ -64,7 +64,7 @@ Proof.
   wp_if_destruct.
   { wp_loadField.
     wp_apply (release_spec with "[-HΦ Hactive]").
-    { eauto 15 with iFrame. }
+    { unfold is_lock. iFrame "#∗". unfold own_tuple at 2, own_tuple_phys, named. by iFrame. }
     wp_pures.
     iApply "HΦ".
     by iFrame.

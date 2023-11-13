@@ -42,9 +42,9 @@ Proof.
     {
       iFrame "HmuInv Hlocked".
       iNext.
-      repeat iExists _; iFrame "∗#%".
-      rewrite Heqb.
-      repeat iExists _. iFrame "∗#".
+      iExists _; iFrame "∗#%". unfold paxosState.own_vol.
+      iExists _; iFrame "∗#%".
+      rewrite Heqb. iFrame "∗#".
     }
     wp_pures.
     iModIntro.
@@ -62,7 +62,8 @@ Proof.
   {
     iFrame "HmuInv Hlocked".
     iNext.
-    repeat iExists _; iFrame "∗#%".
+    repeat iExists _; iFrame "∗#%". unfold paxosState.own_vol.
+    
     rewrite Heqb.
     iExists _. iFrame "∗#".
   }

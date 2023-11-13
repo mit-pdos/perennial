@@ -722,7 +722,7 @@ Proof.
       { rewrite Hreplicas_len. reflexivity. }
       simpl. rewrite ?replicate_length //.
     }
-    iIntros. iExists _, _, _. iFrame. eauto.
+    iIntros. iExists _. iFrame. eauto.
   }
   {
     clear Φ.

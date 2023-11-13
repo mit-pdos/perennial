@@ -344,15 +344,15 @@ Proof.
     iFrame.
     iExists _. iFrame "Howncs".
     iExists installed_txn_id, installer_txn_id, diskEnd_txn_id0. simpl.
-    iFrame "Hdurable".
+    iFrame "Hdurable". unfold is_durable_txn.
     iFrame "#".
     iSplit. 2: iSplit. 3: iSplit. 4: eauto.
     3: {
       replace ((_ `max` _) `max` _)%nat
         with (σ.(log_state.durable_lb) `max` diskEnd_txn_id0)%nat;
         last by lia.
-      iExists diskEnd0. iFrame "%". iFrame "#".
-      iExists (durable_lb_alt `max` installed_txn_id)%nat.
+      iExists diskEnd0.
+      iExists (durable_lb_alt `max` installed_txn_id)%nat. iFrame "%". iFrame "#".
       iPureIntro.
       split; first by lia.
       split; first by lia.

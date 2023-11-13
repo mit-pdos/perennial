@@ -891,13 +891,10 @@ Proof.
     iApply (wpc_strong_mono with "H"); eauto.
     iSplit.
     * iIntros (?) "(Hclose&HR&Hprep&#Hcinv)". iModIntro. iFrame. iFrame "#".
-      iExists (R' v).
       iFrame "HR".
-      iSplitL "".
-      { iModIntro. eauto. }
       iIntros. iApply "Hclose". iSplitR "Hprep".
       ** by iFrame.
-      ** iIntros. eauto.
+      ** eauto.
     * eauto.
 Qed.
 
