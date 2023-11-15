@@ -112,6 +112,15 @@ Section lemmas.
     apply dfrac_agree_update_2. done.
   Qed.
 
+  Lemma ghost_var_persist γ q a :
+    ghost_var γ (DfracOwn q) a ==∗ ghost_var γ DfracDiscarded a.
+  Proof.
+    unseal. iApply own_update. apply dfrac_agree_persist.
+  Qed.
+
+  Global Instance ghost_var_persistent γ a : Persistent (ghost_var γ DfracDiscarded a).
+  Proof. unseal; apply _. Qed.
+
   (** Framing support *)
   Global Instance frame_ghost_var p γ a q1 q2 q :
     FrameFractionalQp q1 q2 q →

@@ -11,20 +11,18 @@ Definition aliceMsg : expr := #10.
 
 Definition bobMsg : expr := #11.
 
+(* Init from lib.go *)
+
+Definition Init: val :=
+  rec: "Init" <> :=
+    Panic "oops";;
+    #().
+
 (* msgT from encoding.go *)
 
 Definition msgT := struct.decl [
   "body" :: uint64T
 ].
-
-Definition contains: val :=
-  rec: "contains" "sl" "m" :=
-    let: "in" := ref (zero_val boolT) in
-    ForSlice (struct.t msgT) <> "o" "sl"
-      ((if: (struct.loadF msgT "body" "m") = (struct.get msgT "body" "o")
-      then "in" <-[boolT] #true
-      else #()));;
-    ![boolT] "in".
 
 (* Put from lib.go *)
 
@@ -40,6 +38,7 @@ Definition Get: val :=
 
 Definition alice: val :=
   rec: "alice" <> :=
+    Init #();;
     let: "a_msg" := struct.new msgT [
       "body" ::= aliceMsg
     ] in
@@ -48,14 +47,21 @@ Definition alice: val :=
     ] in
     Put "a_msg";;
     let: "g" := Get #() in
-    (if: contains "g" "b_msg"
+    (if: #2 ≤ (slice.len "g")
     then
-      control.impl.Assert (contains "g" "a_msg");;
+      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g" #0)) = (struct.loadF msgT "body" "a_msg"));;
+      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g" #1)) = (struct.loadF msgT "body" "b_msg"));;
+      control.impl.Assert ((slice.len "g") = #2);;
+      let: "g2" := Get #() in
+      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g2" #0)) = (struct.loadF msgT "body" "a_msg"));;
+      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g2" #1)) = (struct.loadF msgT "body" "b_msg"));;
+      control.impl.Assert ((slice.len "g2") = #2);;
       #()
     else #()).
 
 Definition bob: val :=
   rec: "bob" <> :=
+    Init #();;
     let: "a_msg" := struct.new msgT [
       "body" ::= aliceMsg
     ] in
@@ -63,8 +69,9 @@ Definition bob: val :=
       "body" ::= bobMsg
     ] in
     let: "g" := Get #() in
-    (if: contains "g" "a_msg"
+    (if: #1 ≤ (slice.len "g")
     then
+      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g" #0)) = (struct.loadF msgT "body" "a_msg"));;
       Put "b_msg";;
       #()
     else #()).
