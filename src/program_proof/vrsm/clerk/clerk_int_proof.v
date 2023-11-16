@@ -48,12 +48,12 @@ Proof.
     iModIntro. iApply "HΦ".
     repeat iExists _; iFrame "∗". 
     instantiate (7:=γconf).
-    iFrame "#%".
+    iFrame "HisConfCk #%".
   }
   iModIntro. iApply "HΦ".
   repeat iExists _; iFrame "∗".
   instantiate (7:=γconf).
-  iFrame "#%".
+  iFrame "HisConfCk #%".
 Qed.
 
 Lemma wp_makeClerks γ config_sl servers γsrvs q :
@@ -147,13 +147,10 @@ Proof.
     iLeft.
     iModIntro.
     iSplitR; first done.
-    iFrame "∗#".
-    iExists _, _, _.
     iFrame "∗".
-    instantiate (1:=clerksComplete ++ [pbCk]).
+    iExists (clerksComplete ++ [pbCk]), (tail clerksLeft).
     iSplitR.
     { iPureIntro. rewrite app_length /=. word. }
-    instantiate (2:=tail clerksLeft).
     destruct clerksLeft.
     { exfalso. rewrite app_nil_r in Hlen. word. }
 
@@ -308,7 +305,7 @@ Proof.
   wp_pures. wp_storeField. wp_pures.
   iApply "HΦ".
   repeat iExists _.
-  iModIntro. iFrame "∗#%".
+  iModIntro. iFrame "∗ Hclerks_rpc HconfCk #".
   iPureIntro. lia.
 Qed.
 
@@ -407,7 +404,7 @@ Proof.
     wp_load.
     iApply "HΦ".
     iModIntro.
-    repeat iExists _.
+    repeat iExists _. iFrame "HisConfCk".
     iFrame "∗#%".
   }
   { (* retry *)
@@ -446,19 +443,16 @@ Proof.
       wp_storeField.
       iLeft. iModIntro.
       iSplitR; first done.
-      iFrame.
-      iSplitR "Hret".
-      { repeat iExists _. iFrame "∗#%".
-        iPureIntro. word. }
-      iExists _. iFrame.
+      iFrame "Hret Hop_sl".
+      repeat iExists _. iFrame "HisConfCk ∗#%".
+      iPureIntro. word.
     }
     {
       wp_pures.
       iLeft.
-      iFrame. iSplitR; first done.
-      iModIntro. iSplitR "Hret".
-      2: eauto with iFrame.
-      repeat iExists _; iFrame "∗#%".
+      iFrame "Hret Hop_sl". iSplitR; first done.
+      iModIntro.
+      repeat iExists _; iFrame "HisConfCk ∗#%".
     }
   }
 Qed.
@@ -535,7 +529,6 @@ Proof.
   2: {
     repeat iExists _.
     iFrame.
-    repeat iExists _. iFrame.
   }
 
   - iIntros (Φloop) "!> Hloop HΦloop".
@@ -647,7 +640,7 @@ Proof.
       iSplitR; first done.
       iApply "HΦ".
       repeat iExists _.
-      iFrame "∗#%".
+      iFrame "HisConfCk ∗#%".
     }
     { (* retry *)
       iDestruct "Herror" as (??) "[Hop_sl Herror]".
@@ -706,7 +699,7 @@ Proof.
       wp_apply (wp_If_join (own_int_Clerk ck γ) with "[Hconf_sl HreplicaClerks HprefReplica HlastPreferenceRefresh]").
       { iSplit; iIntros "%".
         2: { wp_pures. iModIntro. iSplitR; first done.
-             repeat iExists _. iFrame "∗#%". }
+             repeat iExists _. iFrame "HisConfCk ∗#%". }
         wp_apply (wp_makeClerks with "[$]").
         iIntros (??) "[? ?]".
         wp_storeField.
@@ -717,7 +710,12 @@ Proof.
         wp_apply wp_slice_len.
         wp_storeField.
         iSplitR; first done.
-        repeat iExists _. iFrame. iFrame "#".
+        repeat iExists _.
+        (* FIXME: framing is_Clerk2 takes forever here.
+          After unfolding [named], it is instant. Setting
+          [Strategy expand [named]] influences this behavior,
+          but only changes it from 12 -> 2 seconds, which is still unacceptable *)
+        unfold named. iFrame "HisConfCk ∗#%".
         iPureIntro.
         match goal with
         | H: bool_decide _ = true |- _ => apply bool_decide_eq_true_1 in H

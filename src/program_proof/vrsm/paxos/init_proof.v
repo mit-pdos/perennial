@@ -50,8 +50,6 @@ Proof.
   iFrame.
   iSplitL.
   {
-    iExists [].
-    iFrame.
     iSplitR; first done.
     iApply big_sepL2_nil.
     done.

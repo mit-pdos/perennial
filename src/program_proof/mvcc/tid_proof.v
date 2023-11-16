@@ -81,7 +81,7 @@ Proof.
   iMod (ghost_map_insert ts γr with "Hreserved_map") as "[Hreserved_map Hreserved_ts]"; first done.
   iSplitL "Hreserved_ts".
   { rewrite /tid_reserved. eauto. }
-  iExists last, _. iFrame "Hreserved_map Hts Htsc". iSplitR; first done.
+  iExists last, _. iFrame "Hreserved_map Hts". iSplitR; first done.
   iApply big_sepM_insert; first done.
   iFrame. rewrite /reserved_inv. rewrite bool_decide_false; last lia.
   iExists Φ. iFrame "HΦ". rewrite -Hsid. iFrame. done.

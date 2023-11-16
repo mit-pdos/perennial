@@ -62,8 +62,6 @@ Proof.
     apply fmap_Some_2; eauto. }
   iIntros "[Hs %Hty]".
   iApply "HΦ"; iFrame.
-  iIntros "HΦ"; iSpecialize ("Hxs" with "HΦ").
-  iExists _; iFrame.
 Qed.
 
 Theorem wp_SliceAppend {stk E} s l v x :
@@ -114,7 +112,6 @@ Proof.
     iApply "HΦ"; iFrame. }
   iIntros "((HI&Hxs)&Hs)".
   iApply "HΦ"; iFrame.
-  iExists _; iFrame.
 Qed.
 
 End goose_lang.

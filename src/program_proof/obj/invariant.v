@@ -243,10 +243,7 @@ Proof.
   { iNext. iExists _, _, _. iFrame.
     iApply "Hheapmatch". iExists _, _, _. iFrame. iFrame "%". }
   iModIntro.
-  iFrame.
-  iSplitL.
-  { iExists _. iFrame. }
-  iExists _. done.
+  iFrame. eauto.
 Qed.
 
 End goose_lang.

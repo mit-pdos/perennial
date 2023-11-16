@@ -328,7 +328,7 @@ Section goose.
     iMod ("Hfupd" with "HP") as "[HP HΦ]".
     iEval (rewrite ->(left_id True bi_wand)%I) in "HΦ".
     iModIntro. iSplit.
-    { iLeft in "HΦ". iFrame. eauto. }
+    { iLeft in "HΦ". iFrame. }
     iIntros "Hb".
     iCache (Φc)%I with "HΦ".
     { by iLeft in "HΦ". }
@@ -530,7 +530,7 @@ Proof.
   iDestruct (big_sepM_delete _ _ (int.Z (word.add addr 1)) with "Hmap") as "(Hd2&Hmap)".
   { rewrite lookup_delete_ne //=.
     apply word_add1_neq. }
-  iFrame. iExists _. iFrame.
+  iFrame.
 Qed.
 
 Theorem OpenRead_adequate σ g addr :

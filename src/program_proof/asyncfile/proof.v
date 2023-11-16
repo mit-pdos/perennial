@@ -435,7 +435,7 @@ Proof.
     { iFrame "∗#". }
     by iFrame.
   }
-  iExists _, _; iFrame "∗#".
+  iFrame "∗#".
   iIntros "$ !#". done.
 Qed.
 

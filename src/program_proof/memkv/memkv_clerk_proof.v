@@ -48,7 +48,7 @@ Proof.
     { do 2 f_equal. word. }
     wp_loadField.
     wp_apply (release_spec'' with "Hinv [-HΦ]").
-    { iFrame. rewrite /own_KVClerk. eauto with iFrame. }
+    { iFrame. }
     wp_pures.
     wp_apply (wp_MakeConnMan).
     iIntros (cm2) "Hcm2".

@@ -311,7 +311,6 @@ Proof using Ptimeless.
     iSplitR "Hinode_state Hcommit".
     2: {
       iExists _; iFrame.
-      iExists _; iFrame.
     }
     iIntros "Hcrashlocked".
     iSplit.

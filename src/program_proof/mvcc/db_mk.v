@@ -225,7 +225,7 @@ Proof.
   { unfold N_TXN_SITES in *. word. }
   iFrame "Hpts".
   rewrite firstn_all.
-  by iFrame "# %".
+  by iFrame "HidxRP # %".
 Qed.
 
 End program.

@@ -414,7 +414,6 @@ Proof.
   iIntros "[(HI&Hbs) Hs]".
   iApply "HΦ".
   iFrame.
-  iExists _; iFrame.
 Qed.
 
 Theorem wp_forSlice_updates_consume {stk E}

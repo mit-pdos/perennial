@@ -104,8 +104,7 @@ Proof.
   iApply (wpc0_strong_mono with "Hwpc0"); auto.
   iSplit.
   { iIntros (?) "H". iDestruct ("H" with "[-]") as "H".
-    { iFrame. iExists _, _, _, _, _, _. iFrame "# ∗".
-      iExists _, _. iFrame "#". eauto. }
+    { iFrame "# ∗". eauto. }
     iFrame. eauto. }
   eauto.
 Qed.

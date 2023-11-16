@@ -466,7 +466,6 @@ Opaque struct.t.
     iDestruct (big_sepM_delete with "Hctxvalid") as "[%Ha2 Hctxvalid2]"; eauto.
     iDestruct (big_sepM_delete with "Hctxelem") as "[[He %Hedirty] Hctxelem]"; eauto. rewrite Hbufmap_a /= in Hedirty.
 
-    iExists _, _, _.
     simpl.
     iFrame. iFrame "#".
 

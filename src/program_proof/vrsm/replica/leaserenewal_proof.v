@@ -40,8 +40,6 @@ Proof.
   iClear "Hlease".
   repeat iExists _.
   iFrame "#%".
-  simpl.
-  repeat iExists _; iFrame "#".
 Qed.
 
 Lemma wp_Server__leaseRenewalThread (s:loc) γ γsrv :

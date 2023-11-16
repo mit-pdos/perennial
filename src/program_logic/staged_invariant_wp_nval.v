@@ -115,9 +115,7 @@ Proof.
     iDestruct ("Hg_inv_clo" with "Hg") as "Hg".
     iMod (global_state_interp_le with "Hg") as "$".
     { lia. }
-    iModIntro. iFrame.
-    iExists _, _, _, _, _, _. iFrame "∗ #".
-    iExists _, _. iFrame "#"; eauto.
+    iModIntro. iFrame "#∗"; eauto.
 Qed.
 
 End def.

@@ -483,7 +483,7 @@ Section proof.
     iDestruct (big_sepM_sep with "[$Htoks $Hcrash_invs]") as "Hcrash_invs".
     iModIntro.
     iFrame.
-    iExists _, _, _, _.
+    iExists _, _, _.
     iFrame "∗ %".
     iSplit; last by auto.
     iApply big_sepS_set_map.

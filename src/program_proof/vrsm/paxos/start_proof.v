@@ -55,10 +55,10 @@ Proof.
   iAssert (□ Pwf _)%I with "[-]" as "#Hpwf".
   { iNamed "Hghost". iFrame "#". }
   iCache with "Hf Hghost".
-  { iSplit; first done. iExists _; iFrame. iExists _; iFrame "∗%". }
+  { by iFrame. }
   wpc_storeField.
   iSplitL "Hf Hghost".
-  { iFrame. iExists _. iFrame "∗%". }
+  { by iFrame. }
   iIntros "Hfile". iSplit; first done.
   wp_pures.
   iDestruct (own_slice_small_sz with "Hconf_sl") as %Hsz.

@@ -54,7 +54,6 @@ Proof.
               with "[] [-HΦ]").
   2: {
     iFrame.
-    iExists _; iFrame "# ∗".
     iPureIntro. inversion 1.
   }
   { iIntros "!>" (Φ') "HI HΦ".
@@ -68,18 +67,15 @@ Proof.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
-      { iExists _; iFrame "∗ #". iExists _; iFrame "% # ∗". }
+      { by iFrame "∗ #". }
       iIntros "(Hlocked&Hlkinv)".
       wp_pures.
       iApply "HΦ"; iFrame.
       iNamed "Hlkinv".
       iExists _; iFrame "# ∗".
       iPureIntro; inversion 1.
-    - iApply "HΦ"; iFrame. iModIntro.
-      iExists _; iFrame "∗ #".
-      iSplit.
-      { iExists _; by iFrame "# ∗". }
-      iPureIntro.
+    - iApply "HΦ"; iFrame.
+      iPureIntro. split; [done | ].
       intros _.
       unfold locked_wf, slidingM.wf in Hlocked_wf.
       revert Heqb; word.
@@ -211,8 +207,7 @@ Proof.
     iApply "HΦ".
     iModIntro.
     iSplitL; last by trivial.
-    iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
-    iExists _, _. iFrame "∗ #". iExists _. iFrame.
+    by iFrame "∗#".
   }
   wp_loadField.
   wp_apply (wp_sliding__clearMutable_wal with "[
@@ -222,10 +217,7 @@ Proof.
     log_mutable is_addrPos
     HdiskEnd_circ Hstart_circ HmemLog_linv
   ]").
-  {
-    iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
-    iExists _, _. iFrame "∗ #". iExists _. iFrame.
-  }
+  { by iFrame "∗#". }
   clear.
   iIntros (σ') "[Hlkinv %HmemLog_len]".
   iNamed "Hlkinv". iNamed "Hfields". iNamed "Hfield_ptsto".
@@ -234,8 +226,7 @@ Proof.
   iApply "HΦ".
   iModIntro.
   iFrame (HmemLog_len).
-  iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
-  iExists _, _. iFrame "∗ #". iExists _. iFrame.
+  by iFrame.
 Qed.
 
 Theorem wp_Walog__logAppend l circ_l γ dinit σₛ :
@@ -295,8 +286,7 @@ Proof.
       HownDiskEndMem_logger HownDiskEndMemTxn_logger
       HownDiskEnd_logger HownDiskEndTxn_logger
     ".
-    - iExists _; iFrame.
-      iExists _; by iFrame "% ∗".
+    - by iFrame.
     - iExists _, _. by iFrame.
   }
   wp_pures.
@@ -376,7 +366,7 @@ Proof.
     iFrame "HownLoggerPos_linv HownLoggerTxn_linv".
     iFrame.
     iSplitR.
-    2: iExists _; iFrame "∗ # %".
+    2: iFrame "∗ # %".
     iFrame (HdiskEnd_txn Htxnpos_bound) "#".
     iPureIntro.
     split; first by lia.
@@ -418,7 +408,7 @@ Proof.
     iDestruct (txns_are_sound with "Htxns_ctx Htxns_are") as %Htxns_are.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart'.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd'.
-    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[Hcirc_ctx Howncs]".
 
     iDestruct (txn_pos_valid_general with "Htxns_ctx HdiskEnd_pos") as %HdiskEnd_pos.
     iNamed "circ.end".
@@ -456,12 +446,11 @@ Proof.
     iSplitR "
       HownDiskEndMem_logger HownDiskEndMemTxn_logger
       HownDiskEnd_logger HownDiskEndTxn_logger
+      Hcirc_ctx
     "; last by iFrame.
     iNext.
-    iExists _; iFrame.
+    iFrame "HP Howncs Hmem Htxns_ctx γtxns HnextDiskEnd_inv".
     iSplitR; auto.
-    iExists _.
-    iFrame "Howncs".
     iExists installed_txn_id, installer_txn_id, nextDiskEnd_txn_id.
     iSplitL "Hinstalled".
     { iApply (is_installed_extend_durable with "Hinstalled").
@@ -690,11 +679,7 @@ Proof.
       HownDiskEndMem_logger HownDiskEndMemTxn_logger
       HownDiskEnd_logger HownDiskEndTxn_logger
     "; last by iFrame.
-    iFrame (Hwf) "∗".
-    iExists _. iFrame.
-    iExists _, _, _.
-    iFrame "Hinstalled #".
-    unfold is_durable, named. iFrame "∗%".
+    iFrame (Hwf) "∗#%".
 
     iPureIntro.
     simpl in Hcirc_matches.
@@ -741,12 +726,7 @@ Proof.
     HownDiskEndMem_logger HownDiskEndMemTxn_logger
     HownDiskEnd_logger HownDiskEndTxn_logger
   ".
-  2: {
-    iModIntro.
-    iFrame.
-    iExists _, _.
-    iFrame.
-  }
+  2: { by iFrame. }
   iExists (set diskEnd (λ _, int.Z σ.(diskEnd) + int.Z s.(Slice.sz))
           (set locked_diskEnd_txn_id (λ _, nextDiskEnd_txn_id) σ0)).
   simpl.

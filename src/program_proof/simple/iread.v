@@ -71,7 +71,7 @@ Proof.
   }
   wp_pures.
   iApply "HΦ".
-  iFrame. iExists _. by iFrame "∗%".
+  by iFrame.
 Qed.
 
 Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents γdurable dinit :
@@ -101,8 +101,7 @@ Proof.
     iApply "HΦ". iModIntro.
     iSplitR.
     { iApply (own_slice_zero (V:=u8)). }
-    iFrame. iSplit.
-    { iExists _. iFrame "∗%". }
+    iFrame. iSplit; first done.
     iPureIntro; intuition; simpl; lia.
   }
 
@@ -235,7 +234,7 @@ Proof.
   iApply "HΦ". iModIntro.
   iFrame "Hdataslice Hjrnl".
   iFrame. iSplit.
-  { iExists _. iFrame "∗%". }
+  { done. }
 
   iPureIntro. intuition (try congruence).
   {

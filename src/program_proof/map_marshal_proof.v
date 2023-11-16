@@ -197,8 +197,7 @@ Proof.
        move:Hsz. rewrite Hdata Hm. erewrite lookup_union_Some_l by done. cbn. intros. word.
   }
   iIntros "[Hkvs_map HI]". iNamed "HI".
-  wp_load. iApply "HΦ". iFrame. iSplitL.
-  { iExists _. iFrame. eauto. }
+  wp_load. iApply "HΦ". iFrame. iSplitL; first eauto.
   iPureIntro. split.
   - rewrite -size_dom -Hkvs_dom size_dom. rewrite Hmsize. word.
   - replace m with (map_zip_with (λ (v : list u8) (_ : Slice.t), v) m kvs_sl) at 2. 1:done.

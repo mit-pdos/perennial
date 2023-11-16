@@ -177,8 +177,8 @@ Proof.
     apply prefix_length in Hbad.
     lia.
   }
-  iFrame "%#".
-  iSplitR; last done.
+  iSplitR; first done.
+  iSplitL; last done.
   by iApply is_proposal_facts_prim_mono.
 Qed.
 

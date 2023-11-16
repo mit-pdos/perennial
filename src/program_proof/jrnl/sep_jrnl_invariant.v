@@ -487,8 +487,6 @@ Section goose_lang.
     iFrame "Hjrnl_maps_to".
     iExists _.
     iFrame.
-    iExists _.
-    iFrame.
 
     iModIntro.
     iSplit.
@@ -650,7 +648,7 @@ Section goose_lang.
     { iSplitL "Htok0".
       - iLeft. eauto.
       - iExists _. iFrame "#". }
-    iFrame "# ∗". iExists _. iFrame "# ∗".
+    iFrame "# ∗".
   Qed.
 
   Lemma exchange_durable_pointsto γ γ' m :

@@ -62,7 +62,6 @@ Proof.
     iSplitR.
     { iPureIntro; word. }
     rewrite /named.
-    iExists _; iFrame.
     iPureIntro.
     rewrite /map_insert dom_insert_L.
     rewrite Hmapdom.
@@ -76,7 +75,6 @@ Proof.
   - iIntros "(HI&Hil)"; iNamed "HI".
     wp_pures.
     iApply "HΦ"; iFrame.
-    iExists _; iFrame.
     iPureIntro; auto.
     rewrite Hmapdom.
     repeat (f_equal; try word).
@@ -228,8 +226,7 @@ Proof.
     wp_pures.
     iApply "HΦ".
     rewrite Hdom.
-    iFrame.
-    iExists _; by iFrame "% ∗".
+    by iFrame.
 Qed.
 
 Theorem wp_SetAdd mref used addr_s q (addrs: list u64) E :

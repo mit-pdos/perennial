@@ -172,8 +172,7 @@ Proof using txnG0 Σ.
     iApply "HΦ". iFrame.
     rewrite /=.
     iSplitR; first done.
-    destruct v. iSplitR; first done.
-    iExists _. by iFrame.
+    destruct v. done.
   }
 
   (* Case 2: missed in cache *)
@@ -253,9 +252,7 @@ Proof using txnG0 Σ.
   iApply "HΦ".
   iFrame.
   iSplitR; first done.
-  destruct v.
-  iSplitR; first done.
-  iExists _. by iFrame.
+  destruct v. done.
 Qed.
 
 End goose_lang.

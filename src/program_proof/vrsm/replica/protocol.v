@@ -810,7 +810,6 @@ Proof.
     iExists [], (U64 0).
     simpl.
     iFrame "∗#".
-    iExists _; iFrame "#".
     iSplitL; first done.
     iIntros (??).
     iDestruct ("Hacc" $! _ H) as "[$ _]".

@@ -68,8 +68,7 @@ Proof.
     iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
     iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
-    iApply "HΦ". iFrame.
-    iExists _; by iFrame.
+    iApply "HΦ". by iFrame.
   }
 
   wp_apply (map.wp_MapInsert with "Hmap").
@@ -104,8 +103,6 @@ Proof.
       iNamed "HH".
       iExists (mkGetReplyC _ []).
       iFrame.
-      iExists (Slice.nil).
-      iFrame.
     }
     iIntros (rep') "[Hrep Hpost']".
     wp_pures.
@@ -113,8 +110,7 @@ Proof.
     iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
     iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
-    iApply "HΦ". iFrame.
-    iExists _; by iFrame.
+    iApply "HΦ". by iFrame.
   }
 
   wp_apply (map.wp_MapInsert with "Hmap").
@@ -152,8 +148,7 @@ Proof.
     iIntros (repData rep_sl) "[Hrep_sl %HrepEnc]".
     iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_sl".
     wp_store.
-    iApply "HΦ". iFrame. iSimpl.
-    iExists _; by iFrame.
+    iApply "HΦ". by iFrame.
   }
 
   wp_apply (map.wp_MapInsert with "Hmap").
@@ -270,8 +265,7 @@ Proof.
       iSimpl in "Hpre".
       wp_store.
       iApply "HΦ".
-      iFrame.
-      iExists _; by iFrame.
+      by iFrame.
     }
 
     iApply big_sepM_empty.

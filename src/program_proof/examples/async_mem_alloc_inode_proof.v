@@ -71,8 +71,7 @@ Theorem is_inode_durable_read addr σ addrs :
 Proof.
   iNamed 1.
   iExists _; iFrame "∗ %".
-  iIntros "!> Hhdr Hdata".
-  iExists _; iFrame "∗ %".
+  iIntros "!> $ $".
 Qed.
 
 Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
@@ -254,8 +253,7 @@ Proof.
   iExists _, _; iFrame.
   iSplitR.
   { iFrame "#". }
-  iExists _, _; iFrame "% ∗".
-  iExists _; iFrame "% ∗".
+  iFrame "% ∗".
 Qed.
 
 Theorem is_inode_durable_addrs addr σ addrs :
@@ -298,8 +296,7 @@ Proof.
   iFrame.
   iNamed 1.
   iIntros "Hdurable".
-  iExists _, _; iFrame.
-  iExists _, _; iFrame "∗ %".
+  iFrame "∗ %".
 Qed.
 
 Theorem wp_Inode__UsedBlocks {l σ addrs} :
@@ -315,8 +312,7 @@ Proof.
   wp_loadField.
   iApply "HΦ".
   iFrame "∗ %".
-  iIntros "Haddrs".
-  iExists _; iFrame. auto.
+  iIntros "$".
 Qed.
 
 Theorem wpc_Inode__UsedBlocks {l σ addr} :
@@ -344,9 +340,8 @@ Proof.
   iSplitR; first auto.
   iSplit.
   - iIntros "Haddrs".
-    iExists _, _; iFrame.
-    iExists _, _; iFrame "∗ %".
-  - iNamed "Hdurable". iExists _, _, _; eauto with iFrame.
+    iFrame "∗ %".
+  - iNamed "Hdurable". iFrame "∗%".
 Qed.
 
 Ltac crash_lock_open H :=
@@ -833,7 +828,7 @@ Proof.
       iSplitR "HP Hdurable addrs Haddrs"; last first.
       { iExists _; iFrame.
         do 1 iModIntro.
-        iFrame. iExists _, _; iFrame "∗ %". }
+        iFrame "∗%". }
       iModIntro.
       iIntros "His_locked".
       iSplit; first iFromCache.
@@ -908,26 +903,18 @@ Proof.
         assert (bd'' = hdr) by intuition eauto.
         (* The we will crash without the write hitting disk *)
         iModIntro. iSplit.
-        - iLeft in "Hfupd". iFrame. iSplitR "Hda".
-          * iExists _. iFrame "% ∗". by subst.
-          * iLeft. iExists _, _. iFrame.
+        - iLeft in "Hfupd". iFrame; by subst.
         - iIntros "Hb".
           subst Φ'; cbv beta.
           wpc_pures.
           {
-            iFrame.
-            iLeft in "Hfupd". iFrame. iSplitR "Hda".
-            * iExists _. iFrame "%∗". by subst.
-            * iLeft. iExists _, _. iFrame.
+            iLeft in "Hfupd". iFrame; by subst.
           }
           (* But now we hit a barrier and we will derive a contradiction in the post-condition *)
           wpc_apply (wpc_Barrier1 with "[$Hhdr]").
           iSplit.
           {
-            iFrame.
-            iLeft in "Hfupd". iFrame. iIntros "Hhdr". iSplitR "Hda".
-            * iExists _. iFrame "%∗". by subst.
-            * iLeft. iExists _, _. iFrame.
+            iLeft in "Hfupd". iFrame. iIntros "$". by subst.
           }
           iNext. iIntros "[%Hfalso ?]". exfalso. congruence.
       }
@@ -1007,8 +994,7 @@ Proof.
         iDestruct (inode_durable_to_cinv with "[$]") as "?".
         iFrame. }
       iSplitR "HP Haddrs addrs Hdurable"; last first.
-      { iExists _; iFrame. iModIntro.
-        iExists _, _; iFrame "∗ %". }
+      { iExists _; iFrame. iModIntro. done. }
       iModIntro.
       iIntros "His_locked".
       iSplit; first iFromCache.

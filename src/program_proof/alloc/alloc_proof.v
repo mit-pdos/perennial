@@ -256,13 +256,9 @@ Proof.
       iIntros "Hbits".
       wp_pures.
       iApply "HΦ".
-      iExists _; iFrame.
-      iModIntro.
-      iSplit; first by (iPureIntro; word).
       rewrite -list_fmap_insert.
-      iExists _, _, _; iFrame "∗%".
-      rewrite insert_length.
-      iFrame "%".
+      iExists _; iFrame "∗%".
+      by rewrite insert_length.
     + wp_apply (wp_incNext max with "[next bitmap Hbits]"); first done.
       { iExists _, _, _; iFrame "∗%". }
       iIntros (next'') "[%Hnext'' Hlinv]".

@@ -87,8 +87,7 @@ Proof.
       word.
     }
     subst.
-    iFrame "#".
-    iExists _; iFrame "∗#%". iModIntro. done.
+    by iFrame "#∗%".
   }
 
   iDestruct "Hstate" as "(Hstate & #Hepochlb & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hin_conf)".

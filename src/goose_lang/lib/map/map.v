@@ -481,7 +481,7 @@ Proof using IntoValComparable0.
     iIntros "Hm".
     iApply "HΦ"; iFrame.
     iSplitR "Hp"; iFrame.
-    + iExists _. iFrame. done.
+    + done.
     + iApply big_sepM_empty. done.
   - intuition subst.
     inversion H3; clear H3; subst.
@@ -621,7 +621,6 @@ Proof using IntoValComparable0.
     iIntros "Hm".
     rewrite left_id.
     iApply "HΦ"; iFrame.
-    iExists _. iFrame.
     rewrite H left_id. done.
   - intuition subst.
     inversion H3; clear H3; subst.

@@ -223,11 +223,7 @@ Proof.
     constructor. reflexivity.
   }
 
-  iModIntro.
-  iFrame "HP HQ".
-  iFrame.
-  iSplit; first by done.
-  repeat iExists _. iFrame "∗#%".
+  by iFrame "HP HQ Hdisk ∗#%".
 Qed.
 
 Lemma apply_upds_in_not_None : ∀ upds a d,
@@ -340,12 +336,8 @@ Proof.
   { iExists _. iFrame "HP".
     iSplit.
     { rewrite /wal_wf in Hwf. rewrite /wal_wf. iPureIntro. simpl.
-      intuition eauto; lia. }
-    iFrame.
-    iExists _. iFrame "Howncs".
-    iExists installed_txn_id, installer_txn_id, diskEnd_txn_id0. simpl.
-    iFrame "Hdurable". unfold is_durable_txn.
-    iFrame "#".
+      intuition eauto; lia. } simpl.
+    iFrame "Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hdurable #". simpl.
     iSplit. 2: iSplit. 3: iSplit. 4: eauto.
     3: {
       replace ((_ `max` _) `max` _)%nat

@@ -100,11 +100,6 @@ Proof.
   iApply "HΦ".
   unfold post_tuple__Own.
   iFrame.
-  change (int.Z 0) with 0.
-  simpl.
-  unfold mods_token.
-  iExists vchain.
-  iFrame.
   iPureIntro.
   word.
 Qed.

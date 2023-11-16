@@ -105,9 +105,7 @@ Proof.
   iClear "HC".
   iMod "H" as (HG') "(HNC&Hσ&Hg&(_&Hwpr))".
   iModIntro. iExists HG'.
-  iFrame.
-  rewrite /wpnode/=.
-  iExists _, _, _. iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
+  iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
 Qed.
 
 Lemma stwpnodes_step dns1 g1 ns D dns2 g2 κ κs :

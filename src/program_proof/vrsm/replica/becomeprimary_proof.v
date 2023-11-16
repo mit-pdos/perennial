@@ -126,7 +126,7 @@ Proof.
   { apply list_prefix_eq; first done. by apply prefix_length. }
   subst.
   iExists _.
-  by iFrame "∗#%".
+  by iFrame "∗ Hprim_facts_in #%".
 Qed.
 
 Lemma wp_Server__BecomePrimary γ γsrv s args_ptr args σ backupγ Φ Ψ :
@@ -361,7 +361,6 @@ Proof.
           done.
         }
 
-        iExists _, _, _.
         iFrame "∗".
         iSplitL; first iPureIntro.
         {
@@ -469,7 +468,7 @@ Proof.
       iLeft.
       iModIntro.
       iSplitR; first done.
-      iFrame "∗#%".
+      iFrame "∗".
 
       destruct clerkssLeft.
       { exfalso. rewrite app_nil_r in Hlens. word. }
@@ -484,8 +483,7 @@ Proof.
         done.
       }
 
-      iExists _, _, _; iFrame "Hj".
-      iFrame "∗".
+      iFrame.
       iSplitR.
       {
         iPureIntro.
@@ -566,8 +564,7 @@ Proof.
       simpl.
       iRight.
       repeat iExists _.
-      iFrame "∗#%".
-      iPureIntro. rewrite -Hlens. by rewrite app_nil_r.
+      iFrame "∗#%". by rewrite app_nil_r.
     }
     wp_pures.
     iModIntro.

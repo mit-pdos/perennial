@@ -196,7 +196,6 @@ Proof.
       }
       iFrame. eauto.
     }
-    iExists _, _, _. iFrame "# ∗".
     iDestruct (struct_fields_split with "Hset") as "Hset". iNamed "Hset".
     iFrame. rewrite big_sepM_empty. eauto.
   }

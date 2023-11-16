@@ -103,9 +103,7 @@ Proof.
     iApply "HΦ".
     iDestruct "Hcrash" as "[Hdur|Hdur]".
     { (* write didn't go through *)
-      iExists _. iFrame.
-      iExists _; iFrame.
-      done.
+      by iFrame.
     }
     { (* write went through *)
       iExists _.
@@ -128,19 +126,13 @@ Proof.
       iLeft in "HΦ".
       iModIntro.
       iApply "HΦ".
-      iExists _; iFrame.
-      iExists _; iFrame.
-      iRight.
-      done.
+      iFrame. eauto.
     }
     wpc_pures.
     iModIntro.
     iRight in "HΦ".
     iApply "HΦ".
-    iFrame.
-    iExists _; iFrame.
-    iRight.
-    done.
+    iFrame. eauto.
   }
 Qed.
 
@@ -310,15 +302,13 @@ Proof using Type*.
   iSplit.
   {
     iIntros.
-    iExists _; iFrame.
-    iExists data; iFrame.
-    done.
+    by iFrame.
   }
   iNext.
   iIntros (sl) "[Hdur Hsl]".
 
   iCache with "Hdur Hghost".
-  { iExists _; iFrame. iExists _; iFrame. done. }
+  { by iFrame. }
 
   wpc_pures.
 
@@ -396,12 +386,7 @@ Proof using Type*.
   }
 
   iSplitL "Hdur Hghost Hfilename Hval".
-  {
-    iExists _.
-    iFrame.
-    iExists _; iFrame.
-    done.
-  }
+  { by iFrame. }
   iFrame "HmuInv".
   iIntros "#HmuInv".
 

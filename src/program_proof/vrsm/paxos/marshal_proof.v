@@ -472,7 +472,7 @@ Proof.
   wp_loadField. wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl2]").
   iIntros (?) "[Hsl _]". wp_store. wp_load.
   iApply "HΦ".
-  iFrame. iExists _; by iFrame "∗#".
+  by iFrame.
 Qed.
 
 Lemma wp_decode sl st q :

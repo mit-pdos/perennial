@@ -175,8 +175,7 @@ Proof.
   iNext.
   iExists _.
   iFrame "∗#".
-  rewrite H. iFrame.
-  iExists _; iFrame "∗#%".
+  rewrite H. by iFrame.
 Qed.
 
 Lemma preread_step st γ γsrv t (lastModifiedIndex:u64) Q rop {own_StateMachine} :

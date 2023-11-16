@@ -278,7 +278,6 @@ Proof.
   iExists γheapnames; iFrame.
   iSplit; first by done.
   iFrame "Hlb".
-  iExists gh, crash_heaps.
   iSplit.
   { iPureIntro.
     rewrite dom_blocks_to_map_u64.
@@ -295,7 +294,6 @@ Proof.
       word.
   }
 
-  iFrame.
   iSplit.
   { iPureIntro.
     simpl.
@@ -790,7 +788,6 @@ Proof.
   - iDestruct (ghost_var_agree with "[$] [$]") as %<-.
     iSplitR "Hcrash_heaps H Hdurable_lb_old2".
     * iFrame "% # ∗".
-      iRight. iExists _; iFrame.
     * iFrame.
       { iDestruct "Hdurable_lb_old2" as (? n Hle) "H".
         iFrame "%".
@@ -869,9 +866,8 @@ Proof.
   iDestruct (wal_heap_inv_crashes_crash _ crash_txn ls ls' with "Hcrash_heaps") as "#Hcrash_heaps'"; auto.
   iDestruct (big_sepM_sep with "Hgh'") as "[#Hinv_addr Hgh']".
 
-  iSplitR "Hcrash_heaps Hcrash_heaps_own Hcrash_heaps_own2 Hgh'"; last first.
-  { iExists _; iFrame.
-    simpl.
+  iSplitR "Hcrash_heaps Hcrash_heaps_own2 Hgh'"; last first.
+  { simpl.
     rewrite -Hasync_take -/crash_heap'.
     iFrame "Hcrash_heaps_own2".
     iDestruct (big_sepM_sep with "[Hinv_addr Hgh']") as "Hgh'".
@@ -905,8 +901,7 @@ Proof.
   apply log_crash_unfold in Htrans as (crash_txn & Hbound & Hls'_eq).
   subst ls'; simpl.
   iSplit; first by (iPureIntro; lia).
-  iExists 1%Qp, _. unshelve iExists _; [ | iFrame ].
-  lia.
+  unshelve iExists _; done.
 Qed.
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
@@ -1916,8 +1911,6 @@ Proof using walheapG0 Σ.
   iFrame.
   destruct H1.
   intuition.
-
-  iExists _, _. iFrame. done.
 Qed.
 
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
@@ -2520,8 +2513,7 @@ Proof using walheapG0.
 
       simpl in *; monad_inv.
 
-      iModIntro. iFrame. iSplitL; last by done.
-      iExists _, _. iFrame. done.
+      iModIntro. iFrame. iSplitL; done.
     }
     {
       simpl in *; monad_inv.
@@ -2577,8 +2569,7 @@ Proof using walheapG0.
       rewrite Hb in Heqo.
       inversion Heqo; subst.
 
-      iModIntro. iFrame. iSplitL; last by done.
-      iExists _, _. iFrame. done.
+      iModIntro. iFrame. iSplitL; done.
     }
   }
 

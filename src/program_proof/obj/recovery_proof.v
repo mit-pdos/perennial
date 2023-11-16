@@ -972,7 +972,7 @@ Proof.
       { iNext. iExists _. iFrame. }
       { iNext. iFrame. }
     }
-    { iNext. iFrame. iExists _, _; iFrame. }
+    { iFrame. }
     iDestruct "Hcfupd" as "(Hcfupd_cancel&Hcfupd)".
     iRight in "HΦ".
     iApply "HΦ".

@@ -116,10 +116,8 @@ Proof.
   iMod (mono_nat_own_update with "Hexp") as "[Hexp _]".
   { instantiate (1:=int.nat e'). lia. }
   iDestruct "Hexp" as "[Hexp Hexp2]".
-  iFrame.
-  iMod ("Hclose" with "[-Htok]").
-  { iExists _; iFrame. }
-  iModIntro. iExists _; iFrame "∗#".
+  iFrame "Hexp2".
+  iMod ("Hclose" with "[-Htok]"); by iFrame.
 Qed.
 
 Lemma lease_expire e N γl (R:iProp Σ) :

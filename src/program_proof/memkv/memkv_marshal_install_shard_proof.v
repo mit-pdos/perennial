@@ -588,8 +588,7 @@ Proof.
   iIntros (??) "(%&%&?)".
   iApply "HΦ".
   iFrame.
-  iSplit; last first.
-  { iExists _, _. iFrame. eauto. }
+  iSplit; last eauto.
   iPureIntro. rewrite /has_encoding_InstallShardRequest. eexists; split; eauto.
 Qed.
 

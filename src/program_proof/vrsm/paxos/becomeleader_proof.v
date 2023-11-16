@@ -40,11 +40,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ HΨ]").
     {
-      iFrame "HmuInv Hlocked".
-      iNext.
-      iExists _; iFrame "∗#%". unfold paxosState.own_vol.
-      iExists _; iFrame "∗#%".
-      rewrite Heqb. iFrame "∗#".
+      do 2 iFrame "∗#%". by rewrite Heqb.
     }
     wp_pures.
     iModIntro.
@@ -60,12 +56,7 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hargs HΨ]").
   {
-    iFrame "HmuInv Hlocked".
-    iNext.
-    repeat iExists _; iFrame "∗#%". unfold paxosState.own_vol.
-    
-    rewrite Heqb.
-    iExists _. iFrame "∗#".
+    do 2 iFrame "∗#%". by rewrite Heqb.
   }
 
   wp_pures.
@@ -420,9 +411,8 @@ Proof.
               word.
             }
           }
-          iExists reply, log.
-          iSplitR "Hvote".
-          { iExists _; iFrame "∗#". }
+          iExists log.
+          iSplitR; first done.
           iFrame "#%".
           iSplitR "Hvote"; last first.
           {

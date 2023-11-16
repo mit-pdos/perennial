@@ -1277,7 +1277,7 @@ Proof using spec_trans.
       apply base_prim_step_trans. repeat econstructor; eauto.
     }
     wp_pures; auto.
-    iExists _. iFrame. iExists _, _, _, _. iFrame. eauto.
+    iExists _. iFrame. eauto.
   - subst.
     iIntros (j K Hctx) "Hj". simpl.
     iPoseProof (IHHtyping with "[//] [$] [$] [$] [$]") as "H"; eauto.
@@ -2149,8 +2149,8 @@ Proof using spec_trans.
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval]").
             { iNext. iExists _, _. iLeft. iFrame. eauto. }
             iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
-            iIntros "!>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
-            iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
+            iIntros "!>". iExists _. iClear "Hvs2_done". iFrame. iExists _, _, _, _.
+            iSplitL ""; first eauto. iFrame "Hval". eauto.
         }
         {
           iDestruct "Hreaders" as (q q' n') "(>%&>Hfc&>Hspts&Hspts_clo&>Hpts&#Hval)".
@@ -2173,8 +2173,8 @@ Proof using spec_trans.
             iMod ("Hclo" with "[Hpts Hspts Hfc Hval Hspts_clo]").
             { iNext. iExists _, _. iRight. iLeft. iExists _, _, _. iFrame. iFrame "%". eauto. }
             iApply fupd_ncfupd. iApply fupd_mask_intro_subseteq; first by set_solver+.
-            iIntros "!>". iExists _. iFrame. iClear "Hvs2_done". iExists _, _, _, _.
-            iFrame. iSplitL ""; first eauto. iFrame "Hval". eauto.
+            iIntros "!>". iExists _. iClear "Hvs2_done". iFrame. iExists _, _, _, _.
+            iSplitL ""; first eauto. iFrame "Hval". eauto.
         }
         {
           iDestruct "Hwriter" as "(>Hfc&>Hspts)".

@@ -118,14 +118,12 @@ Proof.
     wp_loadField.
     iIntros "(HP&Hk)".
     wp_apply (release_spec with "[-HΦ Hk $His_lock $His_locked]").
-    { iNext. iExists _; iFrame.
-      iExists _. iFrame. rewrite /map_del dom_delete_L. iPureIntro; congruence. }
+    { iNext. iExists _; iFrame. rewrite /map_del dom_delete_L. iPureIntro; congruence. }
     wp_pures.
     iApply "HΦ"; by iFrame.
   - wp_loadField.
     wp_apply (release_spec with "[-HΦ $His_lock $His_locked]").
-    { iNext. iExists _; iFrame.
-      iExists _. iFrame. rewrite /map_del dom_delete_L. subst.
+    { iNext. iExists _; iFrame. rewrite /map_del dom_delete_L. subst.
       iPureIntro. rewrite Hdom. set_solver. }
     wp_pures.
     iApply "HΦ"; by iFrame.

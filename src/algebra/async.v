@@ -392,7 +392,7 @@ Proof.
   destruct (Hlast _ _ Hmap) as (v' & Hlookup' & Htail).
   rewrite Hlookup in Hlookup'. injection Hlookup' as [=<-].
   iApply ephemeral_lookup_txn_val; last first.
-  - rewrite /async_ctx. iFrame. iExists last. iFrame. done.
+  - rewrite /async_ctx. by iFrame.
   - apply Htail; done.
 Qed.
 

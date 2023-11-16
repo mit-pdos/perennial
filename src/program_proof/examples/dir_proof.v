@@ -301,7 +301,7 @@ Section goose.
            iDestruct (init_inode with "Hinode") as "Hinode".
            iFrame.
     }
-    iSplitL "Hfree Hallused".
+    iSplitL "Hfree".
     { pose proof (new_alloc_state_properties num_inodes (sz-num_inodes) ∅ ltac:(set_solver))
         as (Hdom&Hpost_crash&Hused&Hunused).
       iExists (new_alloc_state num_inodes (sz-num_inodes) ∅).
@@ -311,10 +311,8 @@ Section goose.
         rewrite /alloc.domain in Hdom; eauto.
       }
       rewrite /Palloc Hused.
-      iSplitL "Hallused".
-      + iExists (gset_to_gmap ∅ (set_seq 0 num_inodes)).
-        iFrame "Hallused".
-        iSplit; iPureIntro; set_unfold; lia.
+      iSplitR.
+      + iSplit; iPureIntro; set_unfold; lia.
       + rewrite Hunused difference_empty_L.
         rewrite /rangeSet.
         rewrite big_sepS_list_to_set; last first.
@@ -377,7 +375,7 @@ Section goose.
       iFrame.
       iApply pre_inode_to_cinv; eauto.
     - iDestruct (is_allocator_pre_post_crash with "Halloc_mem") as %?.
-      iExists _; iFrame "∗ %".
+      done.
   Qed.
 
   Theorem is_dir_alloc l (sz: Z) σ :
@@ -446,14 +444,14 @@ Section goose.
     iDestruct "Hdir" as (σ') "(>Hdir_inv&HP)".
     iIntros "Hc". iExists _. iFrame.
     iMod (alloc_crash_cond_strip_later with "Halloc") as "Halloc".
-    iModIntro.
-    iExists _, _; iFrame.
+    iModIntro. iFrame.
     (* here's a bit of gymnastics to maneuver the existential in the big_sepL: *)
     iDestruct (big_sepL2_const_sepL_r with "Hinodes") as "(_&Hinodes)".
     iDestruct (big_sepL_exists_list with "Hinodes") as (s_inodes') "[%Hlen' Hinodes]".
     iApply big_sepL2_to_sepL_1' in "Hinodes"; auto.
     iApply big_sepL2_to_sepL_2 in "Hinodes".
-    iExists s_inodes'. iSplit; first (iPureIntro; congruence).
+    iExists s_inodes'.
+    iSplit; first (iPureIntro; congruence).
 
     iApply (big_sepL_mono with "Hinodes").
     iIntros (???) "H".
@@ -830,11 +828,10 @@ Section goose.
     { crash_case.
       iApply dir_cinv_post_crash.
       iExists _, _; iFrame.
-      iSplitL "Hpre_inodes HPinodes".
-      - iExists s_inodes; iFrame "∗ %".
-        iApply big_sepL_sep; iFrame.
-        iApply pre_inodes_to_cinv. eauto.
-      - iExists _; iFrame "∗ %". }
+      iSplitL "Hpre_inodes HPinodes"; last done.
+      iExists s_inodes; iFrame "∗ %".
+      iApply big_sepL_sep; iFrame.
+      iApply pre_inodes_to_cinv. eauto. }
     rewrite -wp_fupd.
     wp_apply (wp_newAllocator s_alloc with "Hused_set").
     { word. }
@@ -861,16 +858,14 @@ Section goose.
     { iPureIntro; lia. }
     iSplitR.
     { iExists _, _; iFrame "#". }
-    iSplitL "Hpre_inodes HPinodes".
-    { iExists s_inodes; iFrame.
-      rewrite big_sepL2_sep; iFrame.
-      iAssert ([∗ list] k↦v ∈ inode_refs, emp)%I as "Hinode_refs".
-      { iApply big_sepL_emp. done. }
-      iDestruct (big_sepL2_sepL_2 with "Hinode_refs HPinodes") as "Hmerge"; eauto.
-      iApply (big_sepL2_mono with "Hmerge").
-      iIntros (?????) "[_ H]". iFrame.
-    }
-    iExists _; iFrame "∗ %".
+    iSplit; last done.
+    iExists s_inodes; iFrame.
+    rewrite big_sepL2_sep; iFrame.
+    iAssert ([∗ list] k↦v ∈ inode_refs, emp)%I as "Hinode_refs".
+    { iApply big_sepL_emp. done. }
+    iDestruct (big_sepL2_sepL_2 with "Hinode_refs HPinodes") as "Hmerge"; eauto.
+    iApply (big_sepL2_mono with "Hmerge").
+    iIntros (?????) "[_ H]". iFrame.
   Qed.
 
   Theorem wpc_Dir__Read (Q: option Block → iProp Σ) l sz (idx: u64) (i: u64) :
@@ -1133,8 +1128,7 @@ Section goose.
       iFrame.
       rewrite /Palloc.
       iSplitR "HQ".
-      { iNext. iExists _. iFrame "Hused".
-        (* Show that the domain bookeeping worked out. *)
+      { (* Show that the domain bookeeping worked out. *)
         iPureIntro. split.
         - rewrite map_size_insert_Some //.
         - rewrite alloc_used_insert.
@@ -1182,8 +1176,7 @@ Section crash_stable.
     rewrite /inode_allblocks.
     iPoseProof (post_crash_nodep with "Hγblocks") as "Hγblocks".
     iCrash.
-    iExists _, _. iFrame. iFrame "%".
-    iExists _. iFrame. eauto.
+    iExists _, _. iFrame. done.
   Qed.
 
 End crash_stable.

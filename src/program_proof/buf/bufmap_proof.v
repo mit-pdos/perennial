@@ -89,12 +89,12 @@ Proof using.
   - iDestruct (big_sepM2_lookup_l_some with "Ham") as (v2) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Ham") as "[Hcur Hacc]"; eauto.
     iApply "Hacc".
-    iExists _; iFrame. iExists _; iFrame. done.
+    iExists _; iFrame. done.
 
   - iDestruct (big_sepM2_lookup_l_none with "Ham") as "%"; eauto.
     iApply big_sepM2_insert; eauto.
     iFrame "Ham".
-    iExists _; iFrame. iExists _; iFrame. done.
+    iExists _; iFrame. done.
 Qed.
 
 Theorem wp_BufMap__Del l m a stk E :
@@ -166,11 +166,10 @@ Proof using.
     iFrame.
 
     iIntros "!>" (b') "Hbuf".
-    iExists _, _, _.
-    iFrame.
+    iExists _.
     iSplitR; first eauto.
     replace (am) with (<[a:=v]> am) at 1 by ( apply insert_id; eauto ).
-    iApply "Ham". iFrame.
+    by iApply "Ham".
 
   - apply map_get_false in H1; intuition subst.
     erewrite flatid_addr_lookup in H2; eauto.
@@ -376,8 +375,7 @@ Proof using.
   rewrite left_id_L in Hm; subst mdone.
   rewrite left_id_L in Ham; subst amdone.
   iSplitR; first by done.
-  iExists _, _, _; iFrame.
-  auto.
+  by iFrame.
 Qed.
 
 Theorem wp_BufMap__DirtyBufs l m stk E1 :

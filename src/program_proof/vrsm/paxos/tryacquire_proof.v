@@ -92,9 +92,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hlc1 Hlc2]").
     {
-      iFrame "HmuInv Hlocked". iNext.
-      repeat iExists _. iFrame "∗#%".
-      repeat iExists _; iFrame "∗#".
+      do 2 iFrame "∗#%".
     }
     wp_pures.
     wp_apply wp_ref_of_zero.
@@ -631,8 +629,6 @@ Proof.
     iModIntro. iNamed 1.
     iApply "HΦ".
     iFrame.
-    simpl. iExists _.
-    iFrame.
   }
   { (* error, too few successful applyAsFollower() RPCs *)
     wp_store. wp_pures.
@@ -815,7 +811,7 @@ Proof.
     {
       iNext.
       iExists _; iFrame "∗#".
-      iThaw "Hsaved'". iExists _; iFrame "∗#%".
+      iThaw "Hsaved'". iFrame "∗#%".
     }
     iClear "Hsaved'".
     iDestruct (saved_prop_agree with "Hsaved Hsaved2") as "Hagree".

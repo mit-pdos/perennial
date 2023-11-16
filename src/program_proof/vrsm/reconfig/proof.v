@@ -259,10 +259,8 @@ Proof using waitgroupG0.
     iLeft.
     iModIntro.
     iSplitR; first done.
-    iFrame "∗#".
-    iExists _, _, _.
     iFrame "∗".
-    instantiate (1:=clerksComplete ++ [pbCk]).
+    iExists (clerksComplete ++ [pbCk]), (tail clerksLeft).
     iSplitR.
     {
       iPureIntro.
@@ -270,7 +268,6 @@ Proof using waitgroupG0.
       simpl.
       word.
     }
-    instantiate (2:=tail clerksLeft).
     destruct clerksLeft.
     {
       exfalso.
@@ -496,7 +493,7 @@ Proof using waitgroupG0.
       { done. }
       wp_apply (wp_Clerk__SetState with "[Epoch NextIndex CommittedNextIndex State]").
       {
-        iFrame "∗#".
+        iFrame "HcommitFacts HH # ∗".
         iSplitR.
         {
           iPureIntro.
@@ -509,7 +506,6 @@ Proof using waitgroupG0.
         }
         iSplitR.
         {
-          iExists _. iFrame "#".
           iPureIntro; split.
           { rewrite fmap_length //. destruct server_γs.
             { exfalso. rewrite take_nil /= // in Hlookup2. }
@@ -523,10 +519,7 @@ Proof using waitgroupG0.
             done.
           }
         }
-        iSplitR.
-        { iPureIntro. word. }
-        iExists _.
-        iFrame "∗#".
+        iPureIntro. word.
       }
       iIntros (err) "#Hpost".
 
@@ -557,8 +550,6 @@ Proof using waitgroupG0.
     iLeft.
     iSplitR; first done.
     iFrame "∗".
-    iExists _.
-    iFrame "∗#".
     iSplitR.
     { iPureIntro. word. }
     iApply to_named.
@@ -661,8 +652,6 @@ Proof using waitgroupG0.
       iModIntro.
       iSplitL ""; first done.
       iFrame "∗".
-      iExists _, _.
-      iFrame "Hj Herr".
       iSplitL "".
       { iPureIntro. word. }
       iModIntro.
@@ -699,8 +688,6 @@ Proof using waitgroupG0.
       iModIntro.
       iSplitL ""; first done.
       iFrame "∗".
-      iExists _, _.
-      iFrame "Hj Herr".
       destruct (decide (err0 = _)).
       { exfalso. naive_solver. }
       iPureIntro.
@@ -875,7 +862,6 @@ Proof using waitgroupG0.
     iSplitR.
     {
       iApply big_sepL2_forall.
-      instantiate (1:=servers).
       iSplitL; first done.
       iIntros.
       iDestruct (big_sepL2_lookup_acc with "Hhost") as "[H _]".
@@ -902,7 +888,7 @@ Proof using waitgroupG0.
       }
     }
     {
-      iExists _; iFrame "∗#".
+      iFrame.
     }
   }
   iIntros.

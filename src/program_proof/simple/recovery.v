@@ -251,7 +251,7 @@ Proof.
   iIntros (k v Hlookup) "(Hctx&src&Hstable)".
   iNamed "Hstable".
   iDestruct (map_valid with "[$] [$]") as %Heq.
-  subst. iFrame. iExists _. iFrame. rewrite /named. iExactEq "src". f_equal. congruence.
+  subst. iFrame. rewrite /named. iExactEq "src". f_equal. congruence.
 Qed.
 
 Definition fs_cfupd_cancel dinit P :=
@@ -446,7 +446,7 @@ Proof using All.
   { iNext. iExists _. iFrame "# ∗ %". }
   iDestruct "Hcfupdcancel" as (?) "?".
   iExists γ', γsrc', _. iFrame.
-  iModIntro. iNext. iExists _. iFrame "# ∗ %".
+  iModIntro. iNext. by iFrame "#".
 Qed.
 
 End goose_lang.

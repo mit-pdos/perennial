@@ -1419,7 +1419,6 @@ Proof.
     iModIntro. iLeft.
     iSplitR; first done.
     iFrame.
-    repeat iExists _; iFrame.
   }
   (* case: successful RPC *)
   iModIntro. iRight.
@@ -1496,7 +1495,6 @@ Proof.
     iModIntro. iLeft.
     iSplitR; first done.
     iFrame.
-    repeat iExists _; iFrame.
   }
   (* case: successful RPC *)
   iModIntro. iRight.
@@ -1580,7 +1578,6 @@ Proof.
     iModIntro. iLeft.
     iSplitR; first done.
     iFrame.
-    repeat iExists _; iFrame.
   }
   (* case: successful RPC *)
   iModIntro. iRight.

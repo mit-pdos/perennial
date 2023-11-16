@@ -84,9 +84,7 @@ Section goose_lang.
     iApply "HΦ".
     iExists γdurable.
     iFrame.
-    iExists ∅.
     rewrite !big_sepM_empty.
-    iFrame "∗#".
     auto with iFrame.
   Qed.
 

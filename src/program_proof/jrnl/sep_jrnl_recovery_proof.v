@@ -203,7 +203,7 @@ Section goose_lang.
           eauto.
         }
         {
-        iFrame. iNext. rewrite /txn_system_inv. iExists _. iFrame.
+        iFrame.
         }
         iDestruct "Hcfupd" as "(Hcfupd1&Hcfupd2)".
         iModIntro. iApply "HΦ".

@@ -114,7 +114,7 @@ Proof.
     iMod (fupd_level_mask_subseteq (styN)) as "Hclo"; eauto.
     iMod (Hsty_crash with "[$] [$]") as "H".
     iMod "Hclo".
-    iModIntro. iFrame. iExists _. iFrame.
+    iModIntro. iFrame.
 Qed.
 End pre_assumptions.
 

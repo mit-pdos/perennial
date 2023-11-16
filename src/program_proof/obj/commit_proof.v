@@ -95,10 +95,7 @@ Proof.
   { iNext. iExists _, _, _. iFrame.
     iApply "Hheapmatch". iExists _, _, _. iFrame. iFrame "%". }
   iModIntro.
-  iFrame.
-  iSplitL.
-  { iExists _. iFrame. }
-  iExists _. done.
+  iFrame. eauto.
 Qed.
 
 Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :

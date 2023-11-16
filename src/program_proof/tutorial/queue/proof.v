@@ -534,7 +534,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[H2 Hqueue Hfirst Hcount H4 Helem HP]").
     { iFrame "HlockC". 
-      iFrame. iNext. iExists _, (u64_instance.u64.(word.add) count1 1).
+      iFrame "H2". iNext. iExists _, (u64_instance.u64.(word.add) count1 1).
       iExists (<[int.nat
       (u64_instance.u64.(word.modu)
          (u64_instance.u64.(word.add) first1 count1)

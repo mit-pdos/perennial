@@ -119,7 +119,7 @@ Proof.
   - (* this index is equal *)
     wp_load. wp_store.
     iModIntro. iLeft. iSplit; first done.
-    iFrame. iExists (S i).
+    iFrame "Hx Hy". iExists (S i).
     iSplit.
     { iPureIntro. word. }
     replace (word.add i 1) with (U64 (S i)) by word.
