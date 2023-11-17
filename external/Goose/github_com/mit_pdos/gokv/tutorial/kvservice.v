@@ -35,6 +35,8 @@ Definition MakeClerk: val :=
       "rpcCl" ::= makeClient "host"
     ].
 
+Definition Error: ty := uint64T.
+
 Definition rpcIdGetFreshNum : expr := #0.
 
 Definition rpcIdPut : expr := #1.
@@ -289,8 +291,6 @@ Definition decodeGetArgs: val :=
     "a".
 
 (* kvservice_rpc.gb.go *)
-
-Definition Error: ty := uint64T.
 
 (* kvservice_rpc_server.gb.go *)
 

@@ -1026,6 +1026,15 @@ Definition sleep: val :=
     time.Sleep #1000;;
     #().
 
+(* topsort.go *)
+
+Definition A := struct.decl [
+].
+
+Definition B := struct.decl [
+  "a" :: slice.T (struct.t A)
+].
+
 (* trailing_call.go *)
 
 Definition mkInt: val :=

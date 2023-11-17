@@ -7,6 +7,10 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 (* 0data.go *)
 
+(* WriteID from client.go *)
+
+Definition WriteID: ty := uint64T.
+
 Definition PreparedWrite := struct.decl [
   "Id" :: uint64T;
   "ChunkAddrs" :: slice.T uint64T
@@ -74,8 +78,6 @@ Definition ParsePreparedRead: val :=
     #().
 
 (* client.go *)
-
-Definition WriteID: ty := uint64T.
 
 Definition PrepareWriteId : expr := #1.
 

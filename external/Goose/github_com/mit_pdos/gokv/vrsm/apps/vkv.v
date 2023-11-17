@@ -52,6 +52,8 @@ Definition Clerk__Put: val :=
     exactlyonce.Clerk__ApplyExactlyOnce (struct.loadF Clerk "cl" "ck") (encodePutArgs "args");;
     #().
 
+Definition getArgs: ty := stringT.
+
 Definition encodeGetArgs: val :=
   rec: "encodeGetArgs" "args" :=
     let: "enc" := ref_to (slice.T byteT) (NewSliceWithCap byteT #1 #1) in
@@ -188,8 +190,6 @@ Definition decodePutArgs: val :=
     struct.storeF PutArgs "Key" "args" (StringFromBytes (SliceTake (![slice.T byteT] "enc") (![uint64T] "l")));;
     struct.storeF PutArgs "Val" "args" (StringFromBytes (SliceSkip byteT (![slice.T byteT] "enc") (![uint64T] "l")));;
     "args".
-
-Definition getArgs: ty := stringT.
 
 Definition decodeGetArgs: val :=
   rec: "decodeGetArgs" "raw_args" :=

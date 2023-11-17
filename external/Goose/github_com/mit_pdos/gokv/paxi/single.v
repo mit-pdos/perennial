@@ -20,13 +20,15 @@ Definition Clerk__Prepare: val :=
   rec: "Clerk__Prepare" "ck" "pn" "reply" :=
     #().
 
+(* ValType from common.go *)
+
+Definition ValType: ty := uint64T.
+
 Definition Clerk__Propose: val :=
   rec: "Clerk__Propose" "ck" "Pn" "Val" :=
     #false.
 
 (* common.go *)
-
-Definition ValType: ty := uint64T.
 
 Definition PREPARE : expr := #1.
 
