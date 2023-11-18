@@ -1,5 +1,4 @@
 From stdpp Require Export namespaces.
-From Coq Require Import Min.
 From stdpp Require Import coPset.
 From iris.algebra Require Import big_op gmap frac agree reservation_map.
 From iris.algebra Require Import csum excl auth cmra_big_op numbers lib.gmap_view.
