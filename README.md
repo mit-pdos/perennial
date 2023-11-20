@@ -17,10 +17,10 @@ server built on top.
 
 ## Compiling
 
-We develop Perennial using Coq master and maintain compatibility with Coq 8.15.
-If CI (updated dependencies) is broken above Perennial should still compile but
-is currently incompatible with an upstream change to one of our dependencies.
-We try to avoid this situation.
+We develop Perennial using Coq master and maintain compatibility with the
+latest version of Coq. If CI (updated dependencies) is broken above Perennial
+should still compile but is currently incompatible with an upstream change to
+one of our dependencies. We try to avoid this situation.
 
 This project uses git submodules to include several dependencies. You should run `git submodule update --init --recursive` to set that up.
 
@@ -29,6 +29,17 @@ To compile just run `make` with Coq on your `$PATH`.
 We compile with [coqc.py](etc/coqc.py), a Python wrapper around `coqc` to get
 timing information. The wrapper requires Python3 and the `argparse` library. You
 can also compile without timing information with `make TIMED=false`.
+
+## Maintaining dependencies
+
+There are a few dependencies managed as submodules in `external/`. To update
+them, run `git submodule update --init --remote`, then commit the resulting
+change with git.
+
+The dependencies are frozen at a particular version to avoid breaking the
+Perennial build when there are incompatible upstream changes. However, we
+regularly check compatibility in the "CI (updated dependencies)" build, and try
+to fix Perennial to work with the latest version quickly.
 
 ## Compilation times
 
