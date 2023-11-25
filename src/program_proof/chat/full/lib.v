@@ -79,7 +79,7 @@ Qed.
 
 Lemma wp_put cp γ P p m lmsg :
   {{{
-    "Hcli" ∷ is_ChatCli γ P cp ∗
+    "#Hcli" ∷ is_ChatCli γ P cp ∗
     "#Hm" ∷ readonly (p ↦[msgT :: "body"] #m.(msgT.body)) ∗
     "#Hl_lb" ∷ mono_list_lb_own γ lmsg ∗
     (* Note: need □ on fupd RHS to establish lock inv with □ P. *)
@@ -88,12 +88,12 @@ Lemma wp_put cp γ P p m lmsg :
   ChatCli__Put #cp #p
   {{{ RET #(); True }}}.
 Proof.
+  rewrite /ChatCli__Put.
   iIntros (Φ) "H HΦ".
   iNamed "H".
-  rewrite /ChatCli__Put.
   rewrite /is_ChatCli.
   iNamed "Hcli".
-  wp_apply (wp_loadField_ro with "[$]").
+  wp_apply (wp_loadField_ro with "[$Hlk]").
 
   wp_apply (acquire_spec with "[$]").
   iIntros "(Hlocked & HR)".
@@ -123,7 +123,7 @@ Qed.
 
 Lemma wp_get cp γ P lold :
   {{{
-    "Hcli" ∷ is_ChatCli γ P cp ∗
+    "#Hcli" ∷ is_ChatCli γ P cp ∗
     "#Hlold_lb" ∷ mono_list_lb_own γ lold
   }}}
   ChatCli__Get #cp
@@ -138,10 +138,10 @@ Lemma wp_get cp γ P lold :
       readonly (x1 ↦[msgT :: "body"] #x2.(msgT.body)))
   }}}.
 Proof.
+  rewrite /ChatCli__Get.
   iIntros (Φ) "H HΦ".
   iNamed "H".
   iNamed "Hcli".
-  rewrite /ChatCli__Get.
 
   wp_apply (wp_loadField_ro with "[$]").
   wp_apply (acquire_spec with "[$]").
