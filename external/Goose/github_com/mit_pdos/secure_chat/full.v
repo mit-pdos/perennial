@@ -11,79 +11,92 @@ Definition aliceMsg : expr := #10.
 
 Definition bobMsg : expr := #11.
 
-(* Init from lib.go *)
-
-Definition Init: val :=
-  rec: "Init" <> :=
-    Panic "oops";;
-    #().
-
-(* msgT from encoding.go *)
+(* msgT from lib.go *)
 
 Definition msgT := struct.decl [
   "body" :: uint64T
 ].
 
-(* Put from lib.go *)
+Definition ChatCli := struct.decl [
+  "log" :: slice.T ptrT;
+  "lock" :: ptrT
+].
 
-Definition Put: val :=
-  rec: "Put" "m" :=
-    Panic "oops";;
+Definition ChatCli__Put: val :=
+  rec: "ChatCli__Put" "c" "m" :=
+    lock.acquire (struct.loadF ChatCli "lock" "c");;
+    struct.storeF ChatCli "log" "c" (SliceAppend ptrT (struct.loadF ChatCli "log" "c") "m");;
+    lock.release (struct.loadF ChatCli "lock" "c");;
     #().
 
-Definition Get: val :=
-  rec: "Get" <> :=
-    Panic "oops";;
-    #().
+Definition ChatCli__Get: val :=
+  rec: "ChatCli__Get" "c" :=
+    lock.acquire (struct.loadF ChatCli "lock" "c");;
+    let: "ret" := NewSlice ptrT (slice.len (struct.loadF ChatCli "log" "c")) in
+    SliceCopy ptrT "ret" (struct.loadF ChatCli "log" "c");;
+    lock.release (struct.loadF ChatCli "lock" "c");;
+    "ret".
 
 Definition alice: val :=
-  rec: "alice" <> :=
-    Init #();;
+  rec: "alice" "c" :=
     let: "a_msg" := struct.new msgT [
       "body" ::= aliceMsg
     ] in
     let: "b_msg" := struct.new msgT [
       "body" ::= bobMsg
     ] in
-    Put "a_msg";;
-    let: "g" := Get #() in
+    ChatCli__Put "c" "a_msg";;
+    let: "g" := ChatCli__Get "c" in
     (if: #2 ≤ (slice.len "g")
     then
-      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g" #0)) = (struct.loadF msgT "body" "a_msg"));;
-      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g" #1)) = (struct.loadF msgT "body" "b_msg"));;
+      control.impl.Assert ((struct.loadF msgT "body" (SliceGet ptrT "g" #0)) = (struct.loadF msgT "body" "a_msg"));;
+      control.impl.Assert ((struct.loadF msgT "body" (SliceGet ptrT "g" #1)) = (struct.loadF msgT "body" "b_msg"));;
       control.impl.Assert ((slice.len "g") = #2);;
-      let: "g2" := Get #() in
-      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g2" #0)) = (struct.loadF msgT "body" "a_msg"));;
-      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g2" #1)) = (struct.loadF msgT "body" "b_msg"));;
+      let: "g2" := ChatCli__Get "c" in
+      control.impl.Assert ((struct.loadF msgT "body" (SliceGet ptrT "g2" #0)) = (struct.loadF msgT "body" "a_msg"));;
+      control.impl.Assert ((struct.loadF msgT "body" (SliceGet ptrT "g2" #1)) = (struct.loadF msgT "body" "b_msg"));;
       control.impl.Assert ((slice.len "g2") = #2);;
       #()
     else #()).
 
 Definition bob: val :=
-  rec: "bob" <> :=
-    Init #();;
+  rec: "bob" "c" :=
     let: "a_msg" := struct.new msgT [
       "body" ::= aliceMsg
     ] in
     let: "b_msg" := struct.new msgT [
       "body" ::= bobMsg
     ] in
-    let: "g" := Get #() in
+    let: "g" := ChatCli__Get "c" in
     (if: #1 ≤ (slice.len "g")
     then
-      control.impl.Assert ((struct.get msgT "body" (SliceGet (struct.t msgT) "g" #0)) = (struct.loadF msgT "body" "a_msg"));;
-      Put "b_msg";;
+      control.impl.Assert ((struct.loadF msgT "body" (SliceGet ptrT "g" #0)) = (struct.loadF msgT "body" "a_msg"));;
+      control.impl.Assert ((slice.len "g") = #1);;
+      ChatCli__Put "c" "b_msg";;
       #()
     else #()).
 
-(* encoding.go *)
+Definition Init: val :=
+  rec: "Init" <> :=
+    let: "c" := struct.new ChatCli [
+    ] in
+    struct.storeF ChatCli "log" "c" (NewSlice ptrT #0);;
+    struct.storeF ChatCli "lock" "c" (lock.new #());;
+    "c".
+
+Definition main: val :=
+  rec: "main" <> :=
+    let: "c" := Init #() in
+    Fork (alice "c");;
+    bob "c";;
+    #().
+
+(* lib.go *)
 
 Definition errorT: ty := boolT.
 
 Definition ERRNONE : expr := #false.
 
 Definition ERRSOME : expr := #true.
-
-(* lib.go *)
 
 End code.
