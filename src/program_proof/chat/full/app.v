@@ -4,7 +4,7 @@ From iris.unstable.base_logic Require Import mono_list.
 From Perennial.algebra Require Import ghost_var.
 From Perennial.program_proof.chat.full Require Import lib.
 
-Section proof.
+Section app.
 
 Context `{!heapGS Σ, !ghost_varG Σ nat, !mono_listG msgT.t Σ}.
 
@@ -256,4 +256,4 @@ Proof using ghost_varG0 heapGS0 mono_listG0 Σ.
   by iApply "HΦ".
 Qed.
 
-End proof.
+End app.
