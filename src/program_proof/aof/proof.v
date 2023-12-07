@@ -6,6 +6,64 @@ From Perennial.Helpers Require Import ModArith.
 From Perennial.goose_lang Require Import crash_borrow.
 
 From Perennial.program_proof Require Import marshal_stateless_proof.
+From Perennial.program_proof.verus Require Import wpc_transformer.
+
+Section file_wp_specs.
+Context `{!heapGS Σ}.
+Context `{!stagedG Σ}.
+
+Lemma wp_FileAppend f s q old data R R' Qc' S:
+  {{{
+        "Hsl" ∷ own_slice_small s byteT q data ∗
+        "Hcrash" ∷ crash_borrow R (|C={⊤}=> Qc') ∗
+        "Hacc" ∷ (R ={⊤}=∗ (f f↦ old) ∗
+                  ((f f↦ old ∨ f f↦ (old ++ data)) -∗ |C={⊤}=> Qc') ∧ (f f↦ (old ++ data) ={⊤}=∗ R' ∗ S)) ∗
+        "#HcrashOk" ∷ □(R' -∗ |C={⊤}=> Qc')
+  }}}
+    FileAppend #(str f) (slice_val s)
+  {{{
+        r, RET r; crash_borrow R' (|C={⊤}=> Qc') ∗ own_slice_small s byteT q data ∗ S
+  }}}.
+Proof.
+  iIntros "* Hpre HΦ".
+  iNamed "Hpre".
+  wp_apply (wp_wpc_transformer_better  with "[- HΦ]").
+  { done. }
+  2:{
+    iIntros "* [Hcrash HS]".
+    iApply "HΦ".
+    iFrame .
+    shelve.
+  }
+  {
+    iFrame "Hcrash".
+    iSplit.
+    {
+      iIntros "HR".
+      iMod ("Hacc" with "HR") as "[Hf HR]".
+      iModIntro.
+      wpc_apply wpc_cfupd.
+      wpc_apply wpc_fupd.
+      wpc_apply (wpc_FileAppend with "[$]").
+      iSplit.
+      { iLeft in "HR". iIntros "H". iMod ("HR" with "H") as "$". done. }
+      { iNext. iRight in "HR".
+        iIntros "[Hf Hsl]".
+        iMod ("HR" with "Hf") as "HR".
+        iModIntro. instantiate (1:=const _).
+        simpl. iDestruct "HR" as "[HR HS]".
+        iFrame. iAccu.
+      }
+    }
+    iModIntro. simpl.
+    iIntros "_ HR".
+    iMod ("HcrashOk" with "HR"). iFrame. done.
+  }
+  Unshelve.
+  iFrame.
+Qed.
+
+End file_wp_specs.
 
 Section aof_proof.
 
@@ -516,90 +574,106 @@ Proof.
          arugment as when we write with the lock *)
       wp_loadField.
 
+      (*
       wp_bind (FileAppend _ _).
       iApply (wpc_wp _ _ _ _ True).
       wpc_apply (wpc_crash_borrow_open_modify with "Hfile_ctx").
       { done. }
       iSplit; first done.
       iIntros "(Hfile & Hcurdata & Hcrashtok)".
-      iApply wpc_fupd.
+      iApply wpc_fupd. *)
 
       iDestruct (own_slice_to_small with "Hmembuf_sl") as "Hmembuf_sl".
-      wpc_apply (wpc_FileAppend with "[$Hfile $Hmembuf_sl]").
-      iSplit.
-      { (* This is the case in which the node crashes during the FileAppend. *)
-        iIntros "[Hbefore|Hafter]".
+      (* wpc_apply (wpc_FileAppend with "[$Hfile $Hmembuf_sl]"). *)
+      wp_apply (wp_FileAppend with "[-]").
+      {
+        iFrame "Hfile_ctx Hmembuf_sl".
+        iSplitL.
         {
-          iSplitR; first done.
-          iMod (ctx_inv_crash with "Hctx_inv Hcurdata Hcrashtok") as "HP".
+          iIntros "(Hfile & Hcurdata & Hcrashtok)".
+          iFrame "Hfile".
+          iModIntro.
+          iSplit.
+          { (* case that node crashes during FileAppend *)
+            iIntros "[Hbefore|Hafter]".
+            {
+              iMod (ctx_inv_crash with "Hctx_inv Hcurdata Hcrashtok") as "HP".
+              iMod ("Hcrash_wand" with "HP") as "HP".
+              iModIntro.
+              iExists _. iFrame.
+            }
+            {
+              repeat rewrite -app_assoc.
+              iMod (ctx_inv_update with "Hctx_inv Hlc Hlog_lb [Hmembuf_fupd] Hdur Hcurdata Hcrashtok") as "(Hcurdata & Hcrashtok & _)".
+              {
+                rewrite app_assoc.
+                apply prefix_app_r.
+                done.
+              }
+              {
+                instantiate (1:=True%I).
+                iIntros "HP Hlb".
+                iMod ("Hmembuf_fupd" with "HP Hlb") as "[$ _]".
+                done.
+              }
+              iMod (ctx_inv_crash with "Hctx_inv Hcurdata Hcrashtok") as "HP".
+              iMod ("Hcrash_wand" with "HP") as "HP".
+              iModIntro.
+              iExists _. iFrame.
+            }
+          }
+          { (* case that operation succeeds *)
+            (* commit remaining operations before we close the file. *)
+            iMod (ctx_inv_update with "Hctx_inv Hlc Hlog_lb [Hmembuf_fupd] Hdur Hcurdata Hcrashtok") as "(Hcurdata & Hcrashtok & Hdur & Hlen_fupd)".
+            { rewrite app_assoc. apply prefix_app_r. done. }
+            {
+              iIntros "HP Hlb".
+              iMod ("Hmembuf_fupd" with "HP Hlb") as "[$ Hlen_fupd]".
+              iModIntro.
+              iExact "Hlen_fupd".
+            }
+
+            iMod ("Hlen_fupd" with "Hlen") as "Hlen".
+            iEval (rewrite mono_nat_auth_lb_op) in "Hlen".
+            iDestruct "Hlen" as "[Hlen #Hlenlb]".
+
+            (* Going to return the crash borrow to the user, so get it back into the
+               form they want. *)
+            iNamed "Hclose".
+            iDestruct "HexpectedData" as (?) "HexpectedData".
+            iDestruct (fmlist_agree_1 with "HexpectedData Hlogdata") as %->.
+            iDestruct (struct_field_pointsto_agree with "Hclosed closed2") as %Heq.
+            assert (isClosed = false) by naive_solver.
+
+            iMod (ctx_inv_close with "Hctx_inv Hlc2 HexpectedData Hcurdata [Hreq_tok] Hcrashtok") as "[HP Hcrashtok]".
+            { subst. iFrame. }
+
+            rewrite -app_assoc.
+            iIntros "Hfile".
+            iModIntro.
+            iAssert (⌜ isClosed = false ⌝)%I as "-#HisClosed"; first done.
+            iDestruct "HexpectedData" as "-#HexpectedData".
+            iDestruct "Hlenlb" as "-#Hlenlb".
+            iSplitL "Hfile HP".
+            { iAccu. }
+            iNamedAccu.
+          }
+        }
+        {
+          iModIntro. iIntros "(Hfile & HP)".
           iMod ("Hcrash_wand" with "HP") as "HP".
           iModIntro.
           iExists _. iFrame.
         }
-        {
-          iSplitR; first done.
-
-          repeat rewrite -app_assoc.
-          iMod (ctx_inv_update with "Hctx_inv Hlc Hlog_lb [Hmembuf_fupd] Hdur Hcurdata Hcrashtok") as "(Hcurdata & Hcrashtok & _)".
-          {
-            rewrite app_assoc.
-            apply prefix_app_r.
-            done.
-          }
-          {
-            instantiate (1:=True%I).
-            iIntros "HP Hlb".
-            iMod ("Hmembuf_fupd" with "HP Hlb") as "[$ _]".
-            done.
-          }
-          iMod (ctx_inv_crash with "Hctx_inv Hcurdata Hcrashtok") as "HP".
-          iMod ("Hcrash_wand" with "HP") as "HP".
-          iModIntro.
-          iExists _. iFrame.
-        }
       }
-      iNext.
-      iIntros "[Hfile _]".
+      simpl.
 
-      (* commit remaining operations before we close the file. *)
-      iMod (ctx_inv_update with "Hctx_inv Hlc Hlog_lb [Hmembuf_fupd] Hdur Hcurdata Hcrashtok") as "(Hcurdata & Hcrashtok & Hdur & Hlen_fupd)".
-      { rewrite app_assoc. apply prefix_app_r. done. }
-      {
-        iIntros "HP Hlb".
-        iMod ("Hmembuf_fupd" with "HP Hlb") as "[$ Hlen_fupd]".
-        iModIntro.
-        iExact "Hlen_fupd".
-      }
-
-      iMod ("Hlen_fupd" with "Hlen") as "Hlen".
-      iEval (rewrite mono_nat_auth_lb_op) in "Hlen".
-      iDestruct "Hlen" as "[Hlen #Hlenlb]".
-
-      (* Going to return the crash borrow to the user, so get it back into the
-         form they want. *)
-      iNamed "Hclose".
-      iDestruct "HexpectedData" as (?) "HexpectedData".
-      iDestruct (fmlist_agree_1 with "HexpectedData Hlogdata") as %->.
-      iDestruct (struct_field_pointsto_agree with "Hclosed closed2") as %Heq.
-      inversion Heq.
-
-      iMod (ctx_inv_close with "Hctx_inv Hlc2 HexpectedData Hcurdata Hreq_tok Hcrashtok") as "[HP Hcrashtok]".
-
-      rewrite -app_assoc.
-      iModIntro.
-      iExists _.
-      iSplitL "Hfile HP".
-      { iAccu. }
-      iSplit.
-      {
-        iModIntro. iIntros "(Hfile & HP)".
-        iMod ("Hcrash_wand" with "HP") as "HP".
-        iModIntro.
-        iExists _. iFrame.
-      }
-
-      iIntros "Hfile_ctx".
-      iSplit; first done.
+      (* FIXME: find a nicer way to carry resources through in wp_FileAppend spec. *)
+      iIntros (r) "(Hfile_ctx & Hslice & HS)".
+      iNamed "HS".
+      iDestruct "HisClosed" as "%HisClosed". subst.
+      iDestruct "HexpectedData" as "#HexpectedData".
+      iDestruct "Hlenlb" as "#Hlenlb".
       wp_pures.
 
       wp_apply (wp_NewSlice).
