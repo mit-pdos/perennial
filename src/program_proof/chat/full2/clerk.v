@@ -11,28 +11,30 @@ Definition pred_transf P : (list u8 → iProp Σ) :=
   λ lb, (∃ l, ⌜MsgTSlice.encodes lb l⌝ ∗ P l)%I.
 
 Definition is_clerk cp γ (P:list MsgT.t → iProp Σ) lmsg : iProp Σ :=
-  ∃ cli log llog (num:u64) sk vks lvks,
-  "His_cli" ∷ is_uRPCClient cli ∗
+  ∃ (cli:loc) log llog (num:u64) (sk:loc) vks lvks,
   "Hcli" ∷ cp ↦[Clerk :: "cli"] #cli ∗
   "Hlog" ∷ cp ↦[Clerk :: "log"] (slice_val log) ∗
-  "Hlog_own" ∷ own_slice log ptrT 1 llog ∗
-  "Hsep" ∷ ([∗ list] x1;x2 ∈ llog;lmsg, MsgT.own x1 x2) ∗
-  "#HPold" ∷ □ P lmsg ∗
-  "Hl_auth" ∷ mono_list_auth_own γ 1 lmsg ∗
   "Hnum" ∷ cp ↦[Clerk :: "myNum"] #num ∗
-  "His_sk" ∷ is_sk sk (pred_transf P) ∗
   "Hsk" ∷ cp ↦[Clerk :: "signer"] #sk ∗
   "Hvks" ∷ cp ↦[Clerk :: "verifiers"] (slice_val vks) ∗
+
+  "Hlog_own" ∷ own_slice log ptrT 1 llog ∗
+  "Hsep" ∷ ([∗ list] x1;x2 ∈ llog;lmsg, MsgT.own x1 x2) ∗
+  "Hl_auth" ∷ mono_list_auth_own γ 1 lmsg ∗
+  "His_sk" ∷ is_sk sk (pred_transf P) ∗
   "Hvks_own" ∷ own_slice_small vks ptrT 1 lvks ∗
-  "%Hvks_len" ∷ ⌜length lvks = max_senders⌝ ∗
-  "Hvks_sep" ∷ ([∗ list] vk ∈ lvks, is_vk vk (pred_transf P)).
+  "His_cli" ∷ is_uRPCClient cli ∗
+
+  "#Hvks_sep" ∷ ([∗ list] vk ∈ lvks, is_vk vk (pred_transf P)) ∗
+  "#HPold" ∷ □ P lmsg ∗
+  "%Hvks_len" ∷ ⌜length lvks = max_senders⌝.
 
 Lemma wp_clerk_make sk P vks lvks (host num:u64) :
   {{{
     "#HP" ∷ □ P [] ∗
     "His_sk" ∷ is_sk sk (pred_transf P) ∗
     "Hvks_own" ∷ own_slice_small vks ptrT 1 lvks ∗
-    "Hvks_sep" ∷ ([∗ list] vk ∈ lvks, is_vk vk (pred_transf P)) ∗
+    "#Hvks_sep" ∷ ([∗ list] vk ∈ lvks, is_vk vk (pred_transf P)) ∗
     "%Hvks_len" ∷ ⌜length lvks = max_senders⌝
   }}}
   MakeClerk #host #num #sk (slice_val vks)
@@ -204,26 +206,26 @@ Proof.
   iNamed "H".
   wp_if_destruct.
   {
-    iSpecialize ("HΦ" $! nilRet [] [] (Some ErrSome)).
     wp_pures.
-    iApply "HΦ".
-    (* TODO: maybe there's a better way to set things up so that I don't
-       have to manually specify some vars to make iFrame select the right things. *)
-    iExists _, log, _, _, _, vks, _.
-    by iFrame "#∗".
+    iApply ("HΦ" $! nilRet [] [] (Some ErrSome)).
+    repeat iExists _.
+    by iFrame "Hlog Hvks ∗#%".
   }
-  (* TODO: better way to destruct the err? *)
+  (* TODO: better way to destruct the err?
+     Not for this err construction,
+     but I can switch to ite (bool_decide) postconds,
+     which would remove one level of wrapping here.
+  *)
   destruct err; [destruct c; done|].
   iNamed "H".
   wp_apply (PutArg.wp_decode with "[$]").
   iIntros (???) "H".
   wp_if_destruct.
   {
-    iSpecialize ("HΦ" $! nilRet [] [] (Some ErrSome)).
     wp_pures.
-    iApply "HΦ".
-    iExists _, log, _, _, _, vks, _.
-    by iFrame "#∗".
+    iApply ("HΦ" $! nilRet [] [] (Some ErrSome)).
+    repeat iExists _.
+    by iFrame "Hlog Hvks ∗#%".
   }
   destruct err; [destruct f; done|].
   iNamed "H".
@@ -237,20 +239,16 @@ Proof.
   iIntros "Hvks_own".
   wp_loadField.
   wp_loadField.
-  (* TODO: since Persistent Φ, should be able to pull out
-     Φ x without deleting x. *)
-  iDestruct (big_sepL_lookup_acc with "Hvks_sep") as "(#Hvk & Hvks_sep)"; [done|].
+  iDestruct (big_sepL_lookup_acc with "Hvks_sep") as "(#Hvk & _)"; [done|].
   wp_apply (wp_verify with "[$Hvk $Hsig_sl $HlogB_sl]").
   iIntros (?) "H".
   iNamed "H".
-  iDestruct ("Hvks_sep" with "Hvk") as "Hvks_sep".
   wp_if_destruct.
   {
-    iSpecialize ("HΦ" $! nilRet [] [] (Some ErrSome)).
     wp_pures.
-    iApply "HΦ".
-    iExists _, log, _, _, _, vks, _.
-    by iFrame "#∗".
+    iApply ("HΦ" $! nilRet [] [] (Some ErrSome)).
+    repeat iExists _.
+    by iFrame "Hlog Hvks ∗#%".
   }
   destruct err; [destruct f; done|].
   iNamed "H".
@@ -280,20 +278,18 @@ Proof.
   iDestruct ("Hsl_conv" with "Hsl") as "Hlog_own".
   wp_if_destruct.
   {
-    iSpecialize ("HΦ" $! nilRet [] [] (Some ErrSome)).
     wp_pures.
-    iApply "HΦ".
-    iExists _, log, _, _, _, vks, _.
-    by iFrame "#∗".
+    iApply ("HΦ" $! nilRet [] [] (Some ErrSome)).
+    repeat iExists _.
+    by iFrame "Hlog Hvks ∗#%".
   }
   wp_apply (MsgTSlice.wp_copy with "[$]").
   iIntros (??) "H".
   iNamed "H".
   wp_apply (wp_storeField with "[$Hlog]"); [val_ty|].
   iIntros "Hlog".
-  iSpecialize ("HΦ" $! args_ptr0 lloc ldec None).
   wp_pures.
-  iApply "HΦ".
+  iApply ("HΦ" $! args_ptr0 lloc ldec None).
   destruct Heq; destruct H; [done|].
   iMod (mono_list_auth_own_update_app x with "[$]") as "(Hl_auth & Hl_lb)".
   rewrite -H.
@@ -306,7 +302,7 @@ Proof.
     rewrite /prefix.
     naive_solver.
   }
-  iExists _, np, _, _, _, vks, _.
+  repeat iExists _.
   by iFrame "#∗".
 Qed.
 
