@@ -1,7 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.secure_chat.full2 Require Import shared.
 From Goose.github_com.mit_pdos.secure_chat Require Import full2.
-From Perennial.program_proof.chat.full2 Require Import shared ffi.
+
+From Perennial.program_proof.chat.full2 Require Import encoding ffi.
 From iris.unstable.base_logic Require Import mono_list.
 
 Section clerk.
