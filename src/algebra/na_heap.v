@@ -28,7 +28,7 @@ Definition na_sizeUR (L: Type) `{Countable L} : ucmra :=
 Class na_heapGS (L V: Type) Σ `{BlockAddr L} := Na_HeapG {
   na_heap_inG :> inG Σ (authR (na_heapUR L V));
   na_size_inG :> inG Σ (authR (na_sizeUR Z));
-  na_meta_inG :> inG Σ (gmap_viewR L gnameO);
+  na_meta_inG :> inG Σ (gmap_viewR L (agreeR gnameO));
   na_meta_data_inG :> inG Σ (reservation_mapR (agreeR positiveO));
   na_heap_name : gname;
   na_size_name : gname;
@@ -42,14 +42,14 @@ Arguments na_meta_name {_ _ _ _ _ _} _ : assert.
 Class na_heapGpreS (L V : Type) (Σ : gFunctors) `{BlockAddr L} := {
   na_heap_preG_inG :> inG Σ (authR (na_heapUR L V));
   na_size_preG_inG :> inG Σ (authR (na_sizeUR Z));
-  na_meta_preG_inG :> inG Σ (gmap_viewR L gnameO);
+  na_meta_preG_inG :> inG Σ (gmap_viewR L (agreeR gnameO));
   na_meta_data_preG_inG :> inG Σ (reservation_mapR (agreeR positiveO));
 }.
 
 Definition na_heapΣ (L V : Type) `{BlockAddr L} : gFunctors := #[
   GFunctor (authR (na_heapUR L V));
   GFunctor (authR (na_sizeUR Z));
-  GFunctor (gmap_viewR L gnameO);
+  GFunctor (gmap_viewR L (agreeR gnameO));
   GFunctor (reservation_mapR (agreeR positiveO))
 ].
 
@@ -115,14 +115,14 @@ Section definitions.
     seal_eq na_block_size_aux.
 
   Definition meta_token_def (l : L) (E : coPset) : iProp Σ :=
-    (∃ γm, own (na_meta_name hG) (gmap_view_frag l DfracDiscarded γm) ∗
+    (∃ γm, own (na_meta_name hG) (gmap_view_frag l DfracDiscarded (to_agree γm)) ∗
            own γm (reservation_map_token E))%I.
   Definition meta_token_aux : seal (@meta_token_def). Proof. by eexists. Qed.
   Definition meta_token := meta_token_aux.(unseal).
   Definition meta_token_eq : @meta_token = @meta_token_def := meta_token_aux.(seal_eq).
 
   Definition meta_def `{Countable A} (l : L) (N : namespace) (x : A) : iProp Σ :=
-    (∃ γm, own (na_meta_name hG) (gmap_view_frag l DfracDiscarded γm) ∗
+    (∃ γm, own (na_meta_name hG) (gmap_view_frag l DfracDiscarded (to_agree γm)) ∗
            own γm (reservation_map_data (positives_flatten N) (to_agree (encode x))))%I.
   Definition meta_aux : seal (@meta_def). Proof. by eexists. Qed.
   Definition meta {A dA cA} := meta_aux.(unseal) A dA cA.
@@ -326,7 +326,8 @@ Section na_heap.
     iDestruct 1 as (γm1) "[#Hγm1 Hm1]". iDestruct 1 as (γm2) "[#Hγm2 Hm2]".
     iAssert ⌜ γm1 = γm2 ⌝%I as %->.
     { iDestruct (own_valid_2 with "Hγm1 Hγm2") as %Hγ; iPureIntro.
-      move: Hγ. apply gmap_view_frag_op_valid_L. }
+      apply gmap_view_frag_op_valid in Hγ. destruct Hγ as [Ha Hb].
+      apply to_agree_op_inv_L in Hb. done. }
     iDestruct (own_valid_2 with "Hm1 Hm2") as %?%reservation_map_token_valid_op.
     iExists γm2. iFrame "Hγm2". rewrite reservation_map_token_union //. by iSplitL "Hm1".
   Qed.
@@ -351,7 +352,8 @@ Section na_heap.
     iDestruct 1 as (γm1) "[Hγm1 Hm1]"; iDestruct 1 as (γm2) "[Hγm2 Hm2]".
     iAssert ⌜ γm1 = γm2 ⌝%I as %->.
     { iDestruct (own_valid_2 with "Hγm1 Hγm2") as %Hγ; iPureIntro.
-      move: Hγ. apply gmap_view_frag_op_valid_L.  }
+      apply gmap_view_frag_op_valid in Hγ. destruct Hγ as [Ha Hb].
+      apply to_agree_op_inv_L in Hb. done. }
     iDestruct (own_valid_2 with "Hm1 Hm2") as %Hγ; iPureIntro.
     move: Hγ. rewrite -reservation_map_data_op reservation_map_data_valid.
     move=> /to_agree_op_inv_L. naive_solver.
@@ -384,8 +386,8 @@ Section na_heap.
     iMod (own_alloc (reservation_map_token ⊤)) as (γm) "Hγm".
     { apply reservation_map_token_valid. }
     iMod (own_update with "Hm") as "[Hm Hlm]".
-    { eapply (gmap_view_alloc _ l DfracDiscarded); last done.
-      move: Hσl. rewrite -!(not_elem_of_dom (D:=gset L)). set_solver. }
+    { eapply (gmap_view_alloc _ l DfracDiscarded (to_agree _)). 2: done. 2: done.
+      { move: Hσl. rewrite -!(not_elem_of_dom (D:=gset L)). set_solver. } }
     iDestruct "Hwf" as %[Hwf1 Hwf2].
     assert (sz !! addr_id l = None).
     {
@@ -402,7 +404,7 @@ Section na_heap.
     iModIntro. rewrite na_heap_pointsto_eq/na_heap_pointsto_def.
     iFrame "Hl".
     iSplitL "Hσ Hm Hsz". (* last by eauto with iFrame. *)
-    { iExists (<[l:=γm]> m), sz.
+    { iExists (<[l:=(to_agree γm)]> m), sz.
       rewrite to_na_heap_insert /block_sizes_wf
               !dom_insert_L Hread //=.
       iFrame; iPureIntro; split_and!.
@@ -432,7 +434,7 @@ Section na_heap.
     iMod (own_alloc (reservation_map_token ⊤)) as (γm) "Hγm".
     { apply reservation_map_token_valid. }
     iMod (own_update with "Hm") as "[Hm Hlm]".
-    { eapply (gmap_view_alloc _ l DfracDiscarded); last done.
+    { eapply (gmap_view_alloc _ l DfracDiscarded (to_agree _)). 2: done. 2: done.
       move: Hσl. rewrite -!(not_elem_of_dom (D:=gset L)). set_solver. }
     iDestruct "Hwf" as %[Hwf1 Hwf2].
     assert (sz !! addr_id l = None).
@@ -449,7 +451,7 @@ Section na_heap.
     iModIntro. rewrite na_heap_pointsto_eq/na_heap_pointsto_def na_block_size_eq/na_block_size_def.
     iFrame "Hl Hszl".
     iSplitL "Hσ Hm Hsz". (* last by eauto with iFrame. *)
-    { iExists (<[l:=γm]> m), (<[addr_id l:=z]> sz).
+    { iExists (<[l:=(to_agree γm)]> m), (<[addr_id l:=z]> sz).
       rewrite to_na_heap_insert to_na_size_insert /block_sizes_wf
               !dom_insert_L Hread //=.
       iFrame; iPureIntro; split_and!.
