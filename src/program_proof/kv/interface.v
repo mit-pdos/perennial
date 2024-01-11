@@ -1,5 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import kv.
+From Perennial.program_logic Require Import atomic.
 
 Section definitions.
 Context `{!heapGS Σ}.
@@ -45,3 +46,36 @@ Definition is_Kv (k:loc) kvptsto E : iProp Σ :=
 .
 
 End definitions.
+
+Section hocap_definitions.
+Context `{!heapGS Σ}.
+
+(* HoCAP predicate *)
+Implicit Types (P: gmap string string → iProp Σ).
+Implicit Types (E:coPset).
+
+(* Specification of Kv interface. *)
+Definition is_Kv_Put_hocap P E (Put_fn:val) : iProp Σ :=
+  ∀ key value Q,
+  {{{
+      ∀ σ, P σ ={E}=∗ P (<[ key := value ]> σ) ∗ Q
+  }}}
+     Put_fn #(LitString key) #(LitString value) @ E
+  {{{
+      RET #(); Q
+  }}}.
+
+Definition is_Kv_Get_hocap P E (Get_fn:val) : iProp Σ :=
+  ∀ key Q,
+  {{{ ∀ σ, P σ ={E}=∗ P σ ∗ Q (default "" (σ !! key))  }}}
+    Get_fn #(LitString key) @ E
+  {{{ value, RET #(LitString value); Q value }}}.
+
+(* equivalent to the above, but maybe a bit cleaner by writing it with WP directly *)
+Definition is_Kv_Get_hocap2 P E (Get_fn:val) : iProp Σ :=
+  ∀ key Φ,
+  (∀ σ, P σ ={E}=∗ P σ ∗ Φ #(LitString (default "" (σ !! key)))) -∗
+  WP Get_fn #(LitString key) @ E {{ Φ }}
+.
+
+End hocap_definitions.
