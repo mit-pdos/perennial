@@ -1,6 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import kv.
-From Perennial.program_logic Require Import atomic.
 
 Section definitions.
 Context `{!heapGS Σ}.
