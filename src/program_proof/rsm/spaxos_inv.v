@@ -134,7 +134,7 @@ Section pure.
   Definition valid_ballots (bs : gmap A ballot) (ps : proposals) :=
     map_Forall (λ _ l, ∀ n, accepted_in l n -> is_Some (ps !! n)) bs.
 
-  Definition valid_consensus (c : consensus) (bs : gmap A ballot) (ps : proposals) :=
+  Definition valid_commitment (c : consensus) (bs : gmap A ballot) (ps : proposals) :=
     match c with
     | Chosen v => chosen bs ps v
     | _ => True
@@ -794,10 +794,10 @@ Section pure.
 
   Theorem vc_inv_propose {c bs ps} n v :
     ps !! n = None ->
-    valid_consensus c bs ps ->
-    valid_consensus c bs (spaxos_propose ps n v).
+    valid_commitment c bs ps ->
+    valid_commitment c bs (spaxos_propose ps n v).
   Proof.
-    intros Hpsn. unfold valid_consensus.
+    intros Hpsn. unfold valid_commitment.
     destruct c as [v' |]; last done.
     intros [n' (Hnz & Hpsn' & Hbsq)].
     exists n'.
@@ -813,10 +813,10 @@ Section pure.
   Proof. unfold accepted_in. intros Hbn. by apply lookup_app_l_Some. Qed.
 
   Theorem vc_inv_prepare {c bs ps} x n :
-    valid_consensus c bs ps ->
-    valid_consensus c (spaxos_prepare bs x n) ps.
+    valid_commitment c bs ps ->
+    valid_commitment c (spaxos_prepare bs x n) ps.
   Proof.
-    unfold valid_consensus.
+    unfold valid_commitment.
     destruct c as [v' |]; last done.
     intros [n' [Hpsn' [Hnz (bsq & Hsubseteq & Hquorum & Haccin)]]].
     exists n'.
@@ -831,10 +831,10 @@ Section pure.
   Qed.
 
   Theorem vc_inv_accept {c bs ps} x n :
-    valid_consensus c bs ps ->
-    valid_consensus c (spaxos_accept bs x n) ps.
+    valid_commitment c bs ps ->
+    valid_commitment c (spaxos_accept bs x n) ps.
   Proof.
-    unfold valid_consensus.
+    unfold valid_commitment.
     destruct c as [v' |]; last done.
     intros [n' [Hpsn' [Hnz (bsq & Hsubseteq & Hquorum & Haccin)]]].
     exists n'.

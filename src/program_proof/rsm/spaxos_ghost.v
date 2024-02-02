@@ -18,8 +18,17 @@ Section consensus.
   Definition own_consensus γ (c : consensus) : iProp Σ.
   Admitted.
 
+  Definition own_consensus_half γ (c : consensus) : iProp Σ.
+  Admitted.
+
   Definition is_chosen_consensus γ v : iProp Σ :=
-    own_consensus γ (Chosen v).
+    own_consensus_half γ (Chosen v).
+
+  Definition own_candidates γ (vs : gset string) : iProp Σ.
+  Admitted.
+
+  Definition own_candidates_half γ (vs : gset string) : iProp Σ.
+  Admitted.
 
   (* Type class instances. *)
   #[global]
@@ -28,22 +37,94 @@ Section consensus.
   Admitted.
   
   (* Rules. *)
-  Lemma consensus_update {γ} v :
-    own_consensus γ Free ==∗
-    own_consensus γ (Chosen v).
+  Lemma consensus_update {γ} v vs :
+    v ∈ vs ->
+    own_consensus γ Free -∗
+    own_candidates_half γ vs ==∗
+    own_consensus γ (Chosen v) ∗ own_candidates_half γ vs.
   Admitted.
 
   Lemma consensus_witness {γ v} :
-    own_consensus γ (Chosen v) -∗
+    own_consensus_half γ (Chosen v) -∗
     is_chosen_consensus γ v.
   Admitted.
 
-  Lemma consensus_agree {γ} v1 v2 :
+  Lemma consensus_combine {γ v1 v2} :
+    own_consensus_half γ v1 -∗
+    own_consensus_half γ v2 -∗
+    own_consensus γ v1 ∧ ⌜v1 = v2⌝.
+  Admitted.
+
+  Lemma consensus_split {γ v} :
+    own_consensus γ v -∗
+    own_consensus_half γ v ∗ own_consensus_half γ v.
+  Admitted.
+
+  Lemma consensus_agree {γ v1 v2} :
     is_chosen_consensus γ v1 -∗
     is_chosen_consensus γ v2 -∗
     ⌜v1 = v2⌝.
   Admitted.
+
+  Lemma candidates_update {γ vs1} vs2 :
+    vs1 ⊆ vs2 ->
+    own_candidates γ vs1 ==∗
+    own_candidates γ vs2.
+  Admitted.
+
+  Lemma candidates_combine {γ vs1 vs2} :
+    own_candidates_half γ vs1 -∗
+    own_candidates_half γ vs2 -∗
+    own_candidates γ vs1 ∧ ⌜vs1 = vs2⌝.
+  Admitted.
+
+  Lemma candidates_split {γ vs} :
+    own_candidates γ vs -∗
+    own_candidates_half γ vs ∗ own_candidates_half γ vs.
+  Admitted.
 End consensus.
+
+Section commitment.
+  Context `{!spaxos_ghostG Σ}.
+  (* TODO: remove this once we have real defintions for resources. *)
+  Implicit Type (γ : spaxos_names).
+
+  (* Definitions. *)
+  Definition own_commitment γ (c : consensus) : iProp Σ.
+  Admitted.
+
+  Definition is_chosen_commitment γ v : iProp Σ :=
+    own_commitment γ (Chosen v).
+
+  (* Type class instances. *)
+  #[global]
+  Instance is_chosen_commitment_persistent γ v :
+    Persistent (is_chosen_commitment γ v).
+  Admitted.
+
+  (* Rules. *)
+  Lemma commitment_update {γ} v :
+    own_commitment γ Free ==∗
+    own_commitment γ (Chosen v).
+  Admitted.
+
+  Lemma commitment_witness {γ v} :
+    own_commitment γ (Chosen v) -∗
+    is_chosen_commitment γ v.
+  Admitted.
+
+  Lemma commitment_agree {γ v1 v2} :
+    is_chosen_commitment γ v1 -∗
+    is_chosen_commitment γ v2 -∗
+    ⌜v1 = v2⌝.
+  Admitted.
+
+  Lemma commitment_discharged {γ} c v :
+    own_commitment γ c -∗
+    is_chosen_commitment γ v -∗
+    ⌜c = Chosen v⌝.
+  Admitted.
+End commitment.
 
 Section proposal.
   Context `{!spaxos_ghostG Σ}.
