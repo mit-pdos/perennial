@@ -177,4 +177,33 @@ Definition Paxos__Outcome: val :=
     let: ("decree", "ok") := Paxos__outcome "px" in
     ("decree", "ok").
 
+(* TODO: This really should be returning a slice of paxos objects, but now for
+   simplicity let's just return one of them. *)
+Definition MkPaxos: val :=
+  rec: "MkPaxos" <> :=
+    let: "px" := ref (zero_val ptrT) in
+    ![ptrT] "px".
+
+(* The goals of this examples are:
+
+   1. Show the basic usage of consensus: getting the same value from two
+   successful @px.Outcome.
+
+   2. Show how to construct invariants on the candidate set, and then transfer
+   those invariants to the consensus with the inclusion property between the
+   consensus and the candidate set. *)
+Definition example1: val :=
+  rec: "example1" <> :=
+    let: "px" := MkPaxos #() in
+    Paxos__Propose "px" #(str"hello");;
+    Paxos__Propose "px" #(str"world");;
+    let: ("v1", "ok1") := Paxos__Outcome "px" in
+    let: ("v2", "ok2") := Paxos__Outcome "px" in
+    (if: "ok1" && "ok2"
+    then
+      control.impl.Assert ("v1" = "v2");;
+      control.impl.Assert ((strLen "v1") = #5);;
+      #()
+    else #()).
+
 End code.

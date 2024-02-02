@@ -156,6 +156,23 @@ Hint Extern 1 (environments.envs_entails _ (own_paxos _ _ _)) => unfold own_paxo
 Section temp.
 Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
+Definition paxos_init px γ : iProp Σ :=
+  "Hvs"  ∷ own_candidates_half γ ∅ ∗
+  "Hv"   ∷ own_consensus_half γ Free ∗
+  "#Hpx" ∷ is_paxos px (U64 0) 3%nat γ.
+
+Theorem wp_MkPaxos :
+  {{{ True }}}
+    MkPaxos #()
+  {{{ (γ : spaxos_names) (px : loc), RET #px; paxos_init px γ }}}.
+Proof.
+  (*@ func MkPaxos() *Paxos {                                                 @*)
+  (*@     var px *Paxos                                                       @*)
+  (*@                                                                         @*)
+  (*@     return px                                                           @*)
+  (*@ }                                                                       @*)
+Admitted.
+
 Lemma Z_next_aligned (c i l : Z) :
   0 ≤ l < i ->
   (c + (l - (c `mod` i))) `mod` i = l.
@@ -226,7 +243,7 @@ Theorem wp_Paxos__outcome (px : loc) nid sc γ :
   {{{ True }}}
   <<< ∀∀ c, own_consensus_half γ c >>>
     Paxos__outcome #px @ ↑spaxosN
-  <<< ∃∃ (v : string) (ok : bool), if ok then is_chosen_consensus γ v else own_consensus_half γ c >>>
+  <<< ∃∃ (v : string) (ok : bool), own_consensus_half γ (if ok then Chosen v else c) >>>
   {{{ RET (#(LitString v), #ok); True }}}.
 Proof.
   iIntros "#Hnode" (Φ) "!> _ HAU".
@@ -290,7 +307,7 @@ Theorem wp_Paxos__Outcome (px : loc) nid sc γ :
   {{{ True }}}
   <<< ∀∀ c, own_consensus_half γ c >>>
     Paxos__Outcome #px @ ↑spaxosN
-  <<< ∃∃ (v : string) (ok : bool), if ok then is_chosen_consensus γ v else own_consensus_half γ c >>>
+  <<< ∃∃ (v : string) (ok : bool), own_consensus_half γ (if ok then Chosen v else c) >>>
   {{{ RET (#(LitString v), #ok); True }}}.
 Proof.
   iIntros "#Hpaxos" (Φ) "!> _ HAU".

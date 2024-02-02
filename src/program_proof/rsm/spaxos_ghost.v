@@ -82,6 +82,12 @@ Section consensus.
     own_candidates γ vs -∗
     own_candidates_half γ vs ∗ own_candidates_half γ vs.
   Admitted.
+
+  Lemma consensus_incl {γ v vs} :
+    own_consensus_half γ (Chosen v) -∗
+    own_candidates_half γ vs -∗
+    ⌜v ∈ vs⌝.
+  Admitted.
 End consensus.
 
 Section commitment.
