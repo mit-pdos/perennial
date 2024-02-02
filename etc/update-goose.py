@@ -341,6 +341,7 @@ def main():
         run_goose(
             rsm_dir,
             "./spaxos",
+            "./mpaxos",
         )
 
     if marshal_dir is not None:

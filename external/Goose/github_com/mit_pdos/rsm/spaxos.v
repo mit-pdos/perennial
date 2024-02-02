@@ -184,13 +184,13 @@ Definition MkPaxos: val :=
     let: "px" := ref (zero_val ptrT) in
     ![ptrT] "px".
 
-(* The goals of this examples are:
+(* The goals of this example are:
 
    1. Show the basic usage of consensus: getting the same value from two
    successful @px.Outcome.
 
    2. Show how to construct invariants on the candidate set, and then transfer
-   those invariants to the consensus with the inclusion property between the
+   those invariants to the consensus using the inclusion property between the
    consensus and the candidate set. *)
 Definition example1: val :=
   rec: "example1" <> :=
@@ -202,7 +202,6 @@ Definition example1: val :=
     (if: "ok1" && "ok2"
     then
       control.impl.Assert ("v1" = "v2");;
-      control.impl.Assert ((strLen "v1") = #5);;
       #()
     else #()).
 
