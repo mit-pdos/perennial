@@ -21,6 +21,7 @@ jobs:
           - dev
           - "8.17"
           - "8.18"
+          - "8.19"
       max-parallel: 4
       # don't cancel all in-progress jobs if one matrix job fails:
       fail-fast: false
