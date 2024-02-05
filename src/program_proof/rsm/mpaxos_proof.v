@@ -259,21 +259,28 @@ Section prog.
     iIntros (l1) "Hl1".
     iDestruct (consensus_witness with "Hl1") as "#Hlb1".
     iMod "Hmask" as "_".
+    iDestruct (consensus_incl with "Hl1 Hvs") as %Hin1.
     iMod ("HinvC" with "[Hl1 Hvs]") as "_".
-    { iDestruct (consensus_incl with "Hl1 Hvs") as %Hin.
-      do 2 iExists _. iFrame.
+    { do 2 iExists _. iFrame.
       iPureIntro. split; last done.
       unfold length_of_consensus.
       unfold length_of_candidates in Hlenvs.
       rewrite Forall_forall.
       intros x Hx.
-      rewrite Forall_forall in Hin.
-      specialize (Hin _ Hx).
-      by specialize (Hlenvs _ Hin).
+      rewrite Forall_forall in Hin1.
+      specialize (Hin1 _ Hx).
+      by specialize (Hlenvs _ Hin1).
     }
     iIntros "!>" (v1 ok1 Hv1).
+    assert (Hlenv1 : if ok1 then of_length_five v1 else True).
+    { destruct ok1; last done.
+      apply elem_of_list_lookup_2 in Hv1.
+      rewrite Forall_forall in Hin1.
+      specialize (Hin1 _ Hv1).
+      by specialize (Hlenvs _ Hin1).
+    }
     wp_pures.
-    clear Hlenl Hlenvs l vs.
+    clear Hin1 Hlenl Hlenvs l vs.
 
     (*@     v2, ok2 := px.Lookup(i1)                                            @*)
     (*@                                                                         @*)
@@ -304,8 +311,7 @@ Section prog.
 
     (*@     if ok1 && ok2 {                                                     @*)
     (*@         machine.Assert(v1 == v2)                                        @*)
-    (*@         // @len not supported in Goose                                  @*)
-    (*@         // machine.Assert(len(v1) == 5)                                 @*)
+    (*@         machine.Assert(len(v1) == 5)                                    @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
     wp_apply (wp_and_pure (ok1 = true) (ok2 = true)).
@@ -322,6 +328,8 @@ Section prog.
     iDestruct (consensus_lb_prefix with "Hlb1 Hlb2") as %Hprefix.
     rewrite -(prefix_lookup_same_index Hprefix Hv1 Hv2).
     wp_apply wp_Assert; first by rewrite bool_decide_eq_true.
+    wp_pures.
+    wp_apply wp_Assert; first by rewrite Hlenv1.
     wp_pures.
     by iApply "HΦ".
   Qed.

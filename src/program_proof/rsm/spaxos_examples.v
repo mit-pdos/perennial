@@ -109,14 +109,16 @@ Section prog.
     iAssert (if ok1 then is_chosen_consensus γ v1 else True)%I with "[Hv]" as "#Hv1".
     { by destruct ok1. }
     iMod "Hmask" as "_".
-    iMod ("HinvC" with "[Hv Hvs]") as "_".
+    iAssert (⌜if ok1 then of_length_five v1 else True⌝)%I as %Hlenv1.
     { iAssert (⌜if ok1 then v1 ∈ vs else True⌝)%I as %Hin.
       { destruct ok1; [by iApply consensus_incl | done]. }
-      do 2 iExists _. iFrame.
-      iPureIntro. split; last done.
       destruct ok1; last done.
-      unfold length_of_consensus.
       by specialize (Hlenvs _ Hin).
+    }
+    iMod ("HinvC" with "[Hv Hvs]") as "_".
+    { do 2 iExists _. iFrame. iPureIntro.
+      split; last done.
+      by destruct ok1.
     }
     iIntros "!> _".
     wp_pures.
@@ -134,14 +136,16 @@ Section prog.
     iAssert (if ok2 then is_chosen_consensus γ v2 else True)%I with "[Hv]" as "#Hv2".
     { by destruct ok2. }
     iMod "Hmask" as "_".
-    iMod ("HinvC" with "[Hv Hvs]") as "_".
+    iAssert (⌜if ok2 then of_length_five v2 else True⌝)%I as %Hlenv2.
     { iAssert (⌜if ok2 then v2 ∈ vs else True⌝)%I as %Hin.
       { destruct ok2; [by iApply consensus_incl | done]. }
-      do 2 iExists _. iFrame.
-      iPureIntro. split; last done.
       destruct ok2; last done.
-      unfold length_of_consensus.
       by specialize (Hlenvs _ Hin).
+    }
+    iMod ("HinvC" with "[Hv Hvs]") as "_".
+    { do 2 iExists _. iFrame. iPureIntro.
+      split; last done.
+      by destruct ok2.
     }
     iIntros "!> _".
     wp_pures.
@@ -149,6 +153,7 @@ Section prog.
 
     (*@     if ok1 && ok2 {                                                     @*)
     (*@         machine.Assert(v1 == v2)                                        @*)
+    (*@         machine.Assert(len(v1) == 5)                                    @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
     wp_apply (wp_and_pure (ok1 = true) (ok2 = true)).
@@ -165,6 +170,8 @@ Section prog.
     iDestruct (consensus_agree with "Hv1 Hv2") as %Heq.
     wp_apply wp_Assert.
     { subst v1. by rewrite bool_decide_eq_true. }
+    wp_pures.
+    wp_apply wp_Assert; first by rewrite Hlenv1.
     wp_pures.
     by iApply "HΦ".
   Qed.

@@ -202,6 +202,7 @@ Definition example1: val :=
     (if: "ok1" && "ok2"
     then
       control.impl.Assert ("v1" = "v2");;
+      control.impl.Assert ((StringLength "v1") = #5);;
       #()
     else #()).
 
