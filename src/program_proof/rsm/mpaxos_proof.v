@@ -152,16 +152,25 @@ End prog.
 (* TODO: move to mpaxos_propose/lookup.v once stable *)
 
 (* TODO: move to mpaxos_examples.v once stable *)
+
+(* example1 *)
+Definition of_length_five s := String.length s = 5%nat.
+
+Definition length_of_consensus l :=
+  Forall of_length_five l.
+
+Definition length_of_candidates (vs : gset string) :=
+  set_Forall of_length_five vs.
+
+Lemma prefix_lookup_same_index {A : Type} {l1 l2 : list A} {i v1 v2} :
+  prefix l1 l2 ∨ prefix l2 l1 ->
+  l1 !! i = Some v1 ->
+  l2 !! i = Some v2 ->
+  v1 = v2.
+Admitted.
+
 Section prog.
   Context `{!heapGS Σ, !mpaxos_ghostG Σ}.
-
-  Definition of_length_five s := String.length s = 5%nat.
-
-  Definition length_of_consensus l :=
-    Forall of_length_five l.
-
-  Definition length_of_candidates (vs : gset string) :=
-    set_Forall of_length_five vs.
 
   Definition inv_example1 γ : iProp Σ :=
     ∃ l vs,
@@ -178,13 +187,6 @@ Section prog.
   Definition example1N := nroot .@ "example1N".
   Definition know_inv_example1 γ : iProp Σ :=
     inv example1N (inv_example1 γ).
-
-  Lemma prefix_lookup_same_index {A : Type} {l1 l2 : list A} {i v1 v2} :
-    prefix l1 l2 ∨ prefix l2 l1 ->
-    l1 !! i = Some v1 ->
-    l2 !! i = Some v2 ->
-    v1 = v2.
-  Admitted.
 
   Theorem wp_example1 :
     {{{ True }}}
@@ -335,4 +337,194 @@ Section prog.
   Qed.
 
 End prog.
+
+(* example2 *)
+Fixpoint hello_then_world (l : list string) :=
+  match l with
+  | [] => True
+  | hd :: tl => if decide (hd = "hello")
+              then True
+              else if decide (hd = "world")
+                   then False
+                   else hello_then_world tl
+  end.
+
+Lemma htw_no_world l :
+  "world" ∉ l ->
+  hello_then_world l.
+Proof.
+  intros Hnotin.
+  induction l as [| hd tl]; first done.
+  simpl.
+  case_decide; first done.
+  case_decide; first set_solver.
+  apply IHtl. set_solver.
+Qed.
+
+Theorem htw_inv_app_no_world l1 l2 :
+  "world" ∉ l2 ->
+  hello_then_world l1 ->
+  hello_then_world (l1 ++ l2).
+Proof.
+  intros Hnotin Hhtw.
+  induction l1 as [| hd tl].
+  { simpl. by apply htw_no_world. }
+  rewrite -app_comm_cons. simpl.
+  simpl in Hhtw.
+  case_decide; first done.
+  case_decide; first done.
+  by apply IHtl.
+Qed.
+
+Theorem htw_inv_snoc l1 l2 :
+  "hello" ∈ l1 ->
+  hello_then_world l1 ->
+  hello_then_world (l1 ++ l2).
+Proof.
+  intros Hin Hhtw.
+  induction l1 as [| hd tl]; first set_solver.
+  rewrite -app_comm_cons. simpl.
+  simpl in Hhtw.
+  case_decide; first done.
+  case_decide; first done.
+  apply IHtl; [set_solver | done].
+Qed.
+
+Definition contain_hello (l : list string) (vs : gset string) :=
+  "world" ∈ vs -> "hello" ∈ l.
+
+Section prog.
+  Context `{!heapGS Σ, !mpaxos_ghostG Σ}.
+
+  Definition inv_example2 γ : iProp Σ :=
+    ∃ l vs,
+      "Hl"  ∷ own_consensus_half γ l ∗
+      "Hvs" ∷ own_candidates_half γ vs ∗
+      "%Hhtw" ∷ ⌜hello_then_world l⌝ ∗
+      "%Hch"  ∷ ⌜contain_hello l vs⌝.
+
+  #[global]
+  Instance inv_example2_timeless γ :
+    Timeless (inv_example2 γ).
+  Admitted.
+
+  Definition example2N := nroot .@ "example2N".
+  Definition know_inv_example2 γ : iProp Σ :=
+    inv example2N (inv_example2 γ).
+
+  Theorem wp_example2 :
+  {{{ True }}}
+    example2 #()
+  {{{ RET #(); True }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ".
+    wp_call.
+
+    (*@ func example2() {                                                       @*)
+    (*@     px := MkPaxos()                                                     @*)
+    (*@                                                                         @*)
+    wp_apply wp_MkPaxos.
+    iIntros (γ px) "Hinit".
+    iNamed "Hinit".
+    wp_pures.
+    iMod (inv_alloc example1N _ (inv_example2 γ) with "[Hv Hvs]") as "#Hinvapp".
+    { do 2 iExists _. iFrame. set_solver. }
+
+    (*@     i, _ := px.Propose("hello")                                         @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__Propose with "Hpx").
+    iInv "Hinvapp" as "> HinvO" "HinvC".
+    iNamed "HinvO".
+    iApply ncfupd_mask_intro; first set_solver.
+    iIntros "Hmask".
+    iExists vs. iFrame.
+    iIntros "Hvs".
+    iMod "Hmask" as "_".
+    iMod ("HinvC" with "[Hl Hvs]") as "_".
+    { do 2 iExists _. iFrame.
+      iPureIntro. split; first done.
+      unfold contain_hello. intros Hworld. apply Hch.
+      set_solver.
+    }
+    iIntros "!>" (lsn term) "_".
+    wp_pures.
+    clear Hhtw Hch l vs.
+
+    (*@     v, ok := px.Lookup(i)                                               @*)
+    (*@                                                                         @*)
+    wp_apply (wp_Paxos__Lookup with "Hpx").
+    iInv "Hinvapp" as "> HinvO" "HinvC".
+    iNamed "HinvO".
+    iApply ncfupd_mask_intro; first set_solver.
+    iIntros "Hmask".
+    iDestruct (consensus_witness with "Hl") as "#Hlb".
+    iExists l. iFrame.
+    iIntros (l') "Hl'".
+    iDestruct (consensus_prefix with "Hl' Hlb") as %Hprefix.
+    iClear "Hlb".
+    iDestruct (consensus_witness with "Hl'") as "#Hlb".
+    iMod "Hmask" as "_".
+    iDestruct (consensus_incl with "Hl' Hvs") as %Hin.
+    iMod ("HinvC" with "[Hl' Hvs]") as "_".
+    { do 2 iExists _. iFrame.
+      iPureIntro. split; last first.
+      { unfold contain_hello.
+        intros Hvs.
+        specialize (Hch Hvs).
+        by apply (elem_of_prefix l).
+      }
+      destruct Hprefix as [k Hprefix]. subst l'.
+      destruct (decide ("world" ∈ k)) as [Hk | Hk].
+      { apply htw_inv_snoc; last done.
+        apply Hch.
+        rewrite Forall_forall in Hin.
+        apply Hin.
+        set_solver.
+      }
+      { by apply htw_inv_app_no_world. }
+    }
+    iIntros "!>" (v ok Hlsn).
+    wp_pures.
+    clear Hhtw Hch Hin Hprefix l vs.
+
+    (*@     if ok && v == "hello" {                                             @*)
+    (*@         px.Propose("world")                                             @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    wp_apply (wp_and_pure (ok = true) (v = "hello")).
+    { wp_pures. iPureIntro.
+      case_bool_decide as H; first by rewrite H.
+      rewrite not_true_iff_false in H. by rewrite H.
+    }
+    { iIntros "_". wp_pures. iPureIntro.
+      case_bool_decide as Ev.
+      - by inversion Ev.
+      - by case_bool_decide as Ev'; first subst v.
+    }
+    wp_if_destruct.
+    { destruct Heqb as [Hok Hv]. subst ok. subst v.
+      wp_apply (wp_Paxos__Propose with "Hpx").
+      iInv "Hinvapp" as "> HinvO" "HinvC".
+      iNamed "HinvO".
+      iApply ncfupd_mask_intro; first set_solver.
+      iIntros "Hmask".
+      iExists vs. iFrame.
+      iIntros "Hvs".
+      iDestruct (consensus_prefix with "Hl Hlb") as %Hprefix.
+      iMod "Hmask" as "_".
+      iMod ("HinvC" with "[Hl Hvs]") as "_".
+      { do 2 iExists _. iFrame.
+        iPureIntro. split; first done.
+        unfold contain_hello. intros _.
+        by apply (elem_of_prefix l'); first eapply elem_of_list_lookup_2.
+      }
+      iIntros "!>" (lsn' term') "_".
+      wp_pures.
+      by iApply "HΦ".
+    }
+    by iApply "HΦ".
+  Qed.
+
+End prog.
+
 (* TODO: move to mpaxos_examples.v once stable *)
