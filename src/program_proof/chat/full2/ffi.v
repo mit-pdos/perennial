@@ -55,6 +55,8 @@ Proof. Admitted.
 
 Lemma wp_verify vk P sig q1 (lsig:list u8) data q2 (ldata:list u8) :
   {{{
+    (* is_vk can take in whether the key is honest.
+       Post: if not honest, True. *)
     "#His_vk" ∷ is_vk vk P ∗
     "Hsig_sl" ∷ own_slice_small sig byteT q1 lsig ∗
     "Hdata_sl" ∷ own_slice_small data byteT q2 ldata

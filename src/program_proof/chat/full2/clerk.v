@@ -71,6 +71,43 @@ Proof.
   by iApply big_sepL2_nil.
 Qed.
 
+(*
+B: [A1; B1]
+C: [A1; C1]
+
+A: [A1], send A2
+A: E.g., [A1; B1; A2]
+
+B: [A1; B1; A2]
+C: [A1; C1; A2]
+
+A: [A1; B1; A2], send A3
+A: [A1; B1; A2, A3]
+
+B: [A1; B1; A2; A3]
+C: [A1; C1; A2; A3]
+  BAD bc when it gets A3, history will say idx 1 = B1, but we have C1.
+  In spec, P couldn't hold on the list C got back.
+ *)
+
+(*
+Potential spec for Fork*:
+Lemma wp_put' cp γ P p m lmsg :
+  {{{
+    "Hclk" ∷ is_clerk cp γ P lmsg cid ∗
+    "Hm" ∷ MsgT.own p m ∗
+    "Hfupd" ∷ □ (∀ lext, (* no lext elem has cid *) -∗ P (lmsg ++ lext) ={⊤}=∗ □ P (lmsg ++ lext ++ [(cid, m)]))
+  }}}
+  Clerk__Put #cp #p
+  {{{
+    lext, RET #();
+    "Hclk" ∷ is_clerk cp γ P (lmsg ++ lext ++ [(cid, m)]) ∗
+    (* no lext elem has cid *) ∗
+    "Hm" ∷ MsgT.own p m
+  }}}.
+Proof. Admitted.
+*)
+
 Lemma wp_put cp γ P p m lmsg :
   {{{
     "Hclk" ∷ is_clerk cp γ P lmsg ∗
@@ -165,6 +202,29 @@ Proof.
   iDestruct (big_sepL2_app_inv with "Hsep") as "(Hsep & _)"; [naive_solver|].
   by iFrame "#∗".
 Qed.
+
+(*
+Potential spec for Fork*:
+Lemma wp_get' cp γ P lmsg :
+  {{{
+    "Hclk" ∷ is_clerk cp γ P lmsg cid
+  }}}
+  Clerk__Get #cp
+  {{{
+    lg lloc' lmsg' err lext, RET ((slice_val lg), #(fc_errno err));
+    match err with
+    | Some ErrSome =>
+      "Hclk" ∷ is_clerk cp γ P lmsg cid
+    | None =>
+        "Hclk" ∷ is_clerk cp γ P (lmsg ++ lext) cid ∗
+      "Hsl" ∷ own_slice_small lg ptrT 1 lloc' ∗
+      (* lext doesn't have cid *)
+      "HP" ∷ P (lmsg' ++ lext) ∗
+      "Hsep" ∷ ([∗ list] x1;x2 ∈ lloc';(lmsg' ++ lext), MsgT.own x1 x2)
+    end
+  }}}.
+Proof. Admitted.
+*)
 
 Lemma wp_get cp γ P lmsg :
   {{{
