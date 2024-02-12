@@ -214,14 +214,16 @@ Section translate.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       destruct (un_op_eval op v) eqn:Heq; eauto; subst.
-      * inversion Hstep; monad_inv.
+      * rewrite /unwrap in Hstep.
+        inversion Hstep; monad_inv.
         do 2 eexists. split_and!; eauto.
         econstructor; rewrite ?Heq; eauto; econstructor; eauto.
       * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       destruct (bin_op_eval op v) eqn:Heq; eauto; subst.
-      * inversion Hstep; monad_inv.
+      * rewrite /unwrap in Hstep.
+        inversion Hstep; monad_inv.
         do 2 eexists. split_and!; eauto.
         econstructor; rewrite ?Heq; eauto; econstructor; eauto.
       * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
@@ -701,14 +703,16 @@ Section translate.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       destruct (un_op_eval op v) eqn:Heq; eauto; subst.
-      * inversion Hstep; monad_inv.
+      * rewrite /unwrap /= in Hstep.
+        inversion Hstep; monad_inv.
         do 3 eexists. split_and!; eauto.
         econstructor; rewrite ?Heq; eauto; econstructor; eauto.
       * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       destruct (bin_op_eval op v) eqn:Heq; eauto; subst.
-      * inversion Hstep; monad_inv.
+      * rewrite /unwrap /= in Hstep.
+        inversion Hstep; monad_inv.
         do 3 eexists. split_and!; eauto.
         econstructor; rewrite ?Heq; eauto; econstructor; eauto.
       * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
@@ -1361,14 +1365,16 @@ Section translate.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       destruct (un_op_eval op v) eqn:Heq; eauto; subst.
-      * inversion Hstep; monad_inv.
+      * rewrite /unwrap /= in Hstep.
+        inversion Hstep; monad_inv.
         do 4 eexists. split_and!; eauto.
         econstructor; rewrite ?Heq; eauto; econstructor; eauto.
       * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       destruct (bin_op_eval op v) eqn:Heq; eauto; subst.
-      * inversion Hstep; monad_inv.
+      * rewrite /unwrap /= in Hstep.
+        inversion Hstep; monad_inv.
         do 4 eexists. split_and!; eauto.
         econstructor; rewrite ?Heq; eauto; econstructor; eauto.
       * simpl in Hstep. inversion Hstep; subst. inv_monad_false.
