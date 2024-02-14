@@ -19,7 +19,6 @@ jobs:
       matrix:
         coq_version:
           - dev
-          - "8.17"
           - "8.18"
           - "8.19"
       max-parallel: 4
