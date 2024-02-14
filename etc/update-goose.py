@@ -317,6 +317,9 @@ def main():
             "full2/shared",
             "full2/fc_ffi_shim",
             "full2",
+            "kt",
+            "kt/shared",
+            "kt/kt_shim",
         ]
 
         for pkg in pkgs:
