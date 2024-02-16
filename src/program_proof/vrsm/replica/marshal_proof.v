@@ -626,9 +626,7 @@ Proof.
     apply list_prefix_eq; last word.
     done.
   }
-  iFrame.
-  iSplitR; first done.
-  iExists _; iFrame "∗#".
+  by iFrame "∗#".
 Qed.
 
 Lemma flat_map_len_non_nil {A B : Type} (f: A -> list B) (l: list A):
@@ -722,7 +720,7 @@ Proof.
       { rewrite Hreplicas_len. reflexivity. }
       simpl. rewrite ?replicate_length //.
     }
-    iIntros. iExists _, _, _. iFrame. eauto.
+    iIntros. iExists _. iFrame. eauto.
   }
   {
     clear Φ.

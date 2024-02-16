@@ -126,7 +126,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _. iFrame. iExists _. iFrame. done.
+  iExists _. iFrame. done.
 Qed.
 
 Theorem wp_buf_loadField_addr bufptr a b stk E :
@@ -144,7 +144,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _; iFrame. iExists _; iFrame. done.
+  iExists _; iFrame. done.
 Qed.
 
 Theorem wp_buf_loadField_dirty bufptr a b stk E :
@@ -162,7 +162,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _; iFrame. iExists _; iFrame. done.
+  iExists _; iFrame. done.
 Qed.
 
 Theorem wp_buf_wd_loadField_sz bufptr a b dataslice stk E :
@@ -241,7 +241,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iFrame. iExists _; iFrame. done.
+  iFrame. done.
 Qed.
 
 Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k') stk E :
@@ -262,7 +262,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_storeField.
   iApply "HΦ".
-  iExists _; iFrame. iExists _; iFrame. intuition subst. done.
+  iExists _; iFrame. intuition subst. done.
 Qed.
 
 Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list val :=
@@ -321,12 +321,7 @@ Proof using.
 
   iDestruct (buf_pointsto_non_null with "[$]") as %Hnotnull.
 
-  iExists _. iFrame.
-  iExists _. iFrame.
-  iSplitL; try done.
-  iSplitL; try done.
-
-  iPureIntro. congruence.
+  iExists _. iFrame. eauto with congruence.
 Qed.
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
@@ -1278,10 +1273,7 @@ Proof.
     iDestruct (own_slice_to_block with "Hdst") as "$".
     { len. }
     iSplitL.
-    { iExists _; iFrame "∗%"; simpl.
-      iSplitR "Hsrc".
-      - eauto with iFrame.
-      - iExists _; iFrame "∗%". }
+    { iExists _; iFrame "∗%"; done. }
     iPureIntro.
     apply is_installed_block_bit; auto.
     word.
@@ -1318,9 +1310,7 @@ Proof.
     wp_pures. iApply "HΦ". iModIntro.
     iFrame "Hblk".
     iSplitL.
-    { iExists _; iFrame.
-      iExists _; iFrame "%∗".
-      done. }
+    { iExists _; iFrame. done. }
     iPureIntro.
     apply is_installed_block_inode.
     auto.
@@ -1351,11 +1341,7 @@ Proof.
     wp_pures. iModIntro. iApply "HΦ".
     iFrame "Hblk".
     iSplitL.
-    { iExists _; iFrame.
-      iExists _; iFrame "∗%".
-      iPureIntro.
-      split; [|done].
-      simpl; auto. }
+    { iExists _; iFrame. auto. }
     iPureIntro.
     change (Z.to_nat (int.Z 0 `div` 8)) with 0%nat.
     change (Z.to_nat (int.Z 32768 `div` 8)) with block_bytes.
@@ -1378,7 +1364,7 @@ Proof.
   wp_call.
   wp_storeField.
   iApply "HΦ".
-  iExists _; iFrame. iExists _; iFrame. done.
+  iExists _; iFrame. done.
 Qed.
 
 End heap.

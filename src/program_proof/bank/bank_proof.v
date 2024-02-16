@@ -341,7 +341,15 @@ Proof.
     wp_apply (release_two_spec with "[$Hlck_is Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
     { iFrame "#". iSplitL "Hacc1_phys Hacc1_log"; repeat iExists _; iFrame; eauto. }
     wp_pures. iApply "Hpost". iModIntro.
-    repeat iExists _. iFrame "∗ Hkck_is Hlck_is # %".
+    repeat iExists _. iFrame "∗%".
+    (* FIXME: Coq's conversion checker will hang when we try to frame the occurrence of Hkck_is 
+        _within_ is_lockClerk. You can reproduce this with:
+
+      iSplitL; last admit. iExists _, _. iSplitR; [ admit | iSplitL; [ | admit]]. 
+      Timeout 10 iFrame "Hkck_is".
+
+      Maybe [is_Kv] or [is_lockClerk] should be made Typeclasses Opaque..? *)
+    iFrame "Hlck_is #".
   - (* Don't do the transfer *)
     wp_loadField.
     wp_apply (release_two_spec with "[$Hlck_is Hacc1_phys Hacc2_phys Hacc1_log Hacc2_log]").
@@ -377,7 +385,7 @@ Proof.
   destruct (bool_decide (int.Z src < int.Z accts_s.(Slice.sz))) eqn:Hsrc.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    repeat iExists _. iFrame "∗%#".
+    repeat iExists _. iFrame "∗% Hlck_is #".
   }
 
   wp_loadField.
@@ -386,13 +394,13 @@ Proof.
   destruct (bool_decide (int.Z dst < int.Z accts_s.(Slice.sz))) eqn:Hdst.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    repeat iExists _. iFrame "∗%#".
+    repeat iExists _. iFrame "∗% Hlck_is #".
   }
 
   wp_if_destruct.
   2: {
     wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    repeat iExists _. iFrame "∗%#".
+    repeat iExists _. iFrame "∗% Hlck_is #".
   }
 
   iDestruct (own_slice_small_sz with "Haccts_slice") as %Hslicelen.
@@ -410,7 +418,7 @@ Proof.
 
   wp_apply (Bank__transfer_internal_spec with "[-Hpost]").
   { iSplitL.
-    - repeat iExists _. iFrame "∗%#".
+    - repeat iExists _. iFrame "∗% Hlck_is #".
     - iPureIntro.
       split.
       { rewrite -elem_of_elements H elem_of_list_lookup; by eauto. }
@@ -586,8 +594,7 @@ Proof.
     iDestruct "Hx" as "[Hacc_islock HbankPs]".
     wp_apply (wp_LockClerk__Unlock with "[$Hlck_is $Hacc_islock HbankPs]").
     { iDestruct "HbankPs" as "(Hkv & Hlog)". repeat iExists _. iFrame. }
-    iApply "HΨ". iFrame.
-    iExists _. iFrame. iPureIntro.
+    iApply "HΨ". iFrame. iPureIntro.
     replace (mtodo) with (<[x := x0]> (delete x mtodo)) in Hdom.
     2: rewrite insert_delete //.
     rewrite dom_insert_L in Hdom.
@@ -607,7 +614,7 @@ Proof.
   wp_load.
   replace (map_total m) with (bal_total) by auto.
   iApply "Hpost".
-  iModIntro. repeat iExists _. iFrame "∗ Hkck_is Hlck_is #%".
+  iModIntro. repeat iExists _. iFrame "∗ Hlck_is #%".
 Qed.
 
 Lemma Bank__SimpleAudit_spec (bck:loc) accts :
@@ -660,7 +667,7 @@ Proof.
   wp_storeField.
   wp_storeField.
   wp_loadField.
-  wp_apply (wp_LockClerk__Lock with "[$]").
+  wp_apply (wp_LockClerk__Lock with "[$Hlck_is $Hinit_lock]").
   iIntros "Hinit".
 
   wp_pures.
@@ -847,7 +854,7 @@ Proof.
     repeat iExists _. iFrame "lck accts Haccts_slice".
     iSplitR; first done.
     instantiate (1:=γ).
-    iFrame "Hkck_is Haccs_list ∗#%".
+    iFrame "Hlck_is Hkck_is Haccs_list ∗#%".
 
   - iDestruct "Hinit" as (γlog) "(Hflag&#Hinv&#H)".
     iApply fupd_mask_intro; first by set_solver+. iIntros "Hclo'".
@@ -891,7 +898,7 @@ Proof.
   wp_load.
   iDestruct (own_slice_to_small with "Hs") as "Hs".
   wp_apply (wp_MakeBankClerkSlice with "[-HΦ]").
-  { iFrame. iPureIntro.
+  { iFrame "Ha ∗". iPureIntro.
     rewrite elements_disj_union; last by set_solver.
     rewrite ?elements_singleton. set_solver.
   }

@@ -68,7 +68,7 @@ Section inv_mut.
     rewrite ?(ownE_op (AE _ _)) //.
     iEval (rewrite (union_difference_L (↑ N) E) // ownE_op_MaybeEn; last set_solver).
     iEval (rewrite {1}(union_difference_L {[ i ]} (MaybeEn1 (↑ N))) // ownE_op; last set_solver). iFrame.
-    do 2 iModIntro. iFrame. iExists _. iFrame "# ∗". iPureIntro. set_solver.
+    do 2 iModIntro. iFrame "# ∗". iPureIntro. set_solver.
   Qed.
 
   Lemma inv_mut_acc k E N sch Ps :

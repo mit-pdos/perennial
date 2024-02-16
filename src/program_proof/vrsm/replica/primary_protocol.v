@@ -116,9 +116,7 @@ Proof.
   iIntros "Hinit".
   iMod (fmlist_ptsto_update σ with "Hinit") as "Hinit".
   { apply prefix_nil. }
-  iMod (fmlist_ptsto_persist with "Hinit") as "#$".
-  iExists _; iFrame "#".
-  done.
+  by iMod (fmlist_ptsto_persist with "Hinit") as "#$".
 Qed.
 
 Lemma primary_ghost_init_primary_escrow R γsys γsrv σ epoch :

@@ -207,16 +207,12 @@ Proof.
 
   iCache with "HΦ Hpos Haddrs Hblocks Hd0 Hd1 Hd2 Hres".
   { crash_case.
-    iFrame "% ∗".
-    iExists _, _; iFrame "∗ %".
-    iExists _, _; iFrame "∗ %". }
+    iFrame "% ∗". }
 
   wpc_apply (wpc_Read with "[Hd0]"); first by iFrame.
   iSplit.
   { iLeft in "HΦ". iIntros "Hd0". iApply "HΦ".
-    iFrame "% ∗".
-    iExists _, _; iFrame "∗ %".
-    iExists _, _; iFrame "∗ %". }
+    iFrame "% ∗". }
 
   iIntros (s0) "!> [Hd0 Hs0]".
   wpc_pures.
@@ -224,9 +220,7 @@ Proof.
   wpc_apply (wpc_Read with "[Hd1]"); first iFrame.
   iSplit.
   { iLeft in "HΦ". iIntros "Hd1". iApply "HΦ".
-    iFrame "% ∗".
-    iExists _, _; iFrame "∗ %".
-    iExists _, _; iFrame "∗ %". }
+    iFrame "% ∗". }
 
   iIntros (s1) "!> [Hd1 Hs1]".
   wpc_pures.
@@ -345,7 +339,6 @@ Proof.
     iApply "HΦ".
     iFrame.
     iSplit; first by iPureIntro; word.
-    iExists _; iFrame.
     iExactEq "Hupds'".
     f_equal.
     destruct Hwf.
@@ -382,9 +375,7 @@ Proof.
   - iSplit.
     { iLeft in "HΦ". iDestruct 1 as (i) "(Hd2&%)".
       iApply "HΦ".
-      iFrame "% ∗".
-      iExists _, _; iFrame "∗ %".
-      iExists _, _; iFrame "∗ %". }
+      iFrame "% ∗". }
 
     iIntros "!> [(_ & HI & Hdiskaddrs & Hd2) Hposl]".
     iDestruct "HI" as (bufSlice) "[Hbufsloc Hupds]".
@@ -414,23 +405,18 @@ Proof.
     iNamed 1.
     iDestruct "HΦ" as "(_&HΦ)".
     iApply ("HΦ").
-    iFrame "Hpos Hupds". iFrame.
+    iFrame "Hpos Hupds".
     iDestruct "Hres" as (???) "(Haddrs'&Hblocks')".
     iDestruct (ghost_var_agree with "Hblocks Hblocks'") as %->.
     iDestruct (ghost_var_agree with "Haddrs Haddrs'") as %->.
     iSplitL "Hd0 Hd1 Hd2 Hblocks Haddrs".
-    { iSplit; first done. iExists _, _. iFrame.
-      iSplit; first done.
-      iSplit; first done.
-      iExists _, _. iFrame. eauto.
-    }
+    { iSplit; first done. iExists _, _. iFrame. done. }
     iSplitL "Hca Hposl Hdiskaddrs Haddrs' Hblocks'".
     {
       iExists _, _, _. iFrame. iSplit; first done.
       iDestruct (struct_fields_split with "Hca") as "[Hca _]".
       iFrame.
     }
-    iFrame.
     (*
     iSplitL "Hend_is".
     {
@@ -515,7 +501,7 @@ Proof.
     { iNext. iExists _. iFrame. }
     { iNext. iExists _. iFrame. }
   }
-  { iNext. iFrame. iExists _. iFrame. }
+  { iNext. iFrame. }
   iModIntro. iExists γ'.
   iSplitL "Hncinv".
   { rewrite /is_circular. iApply ncinv_split_l; iApply "Hncinv". }

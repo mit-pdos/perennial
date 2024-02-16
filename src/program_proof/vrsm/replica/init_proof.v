@@ -84,8 +84,6 @@ Proof.
   iFrame.
   iSplitL.
   {
-    iExists [].
-    iFrame.
     iSplitR; first done.
     iApply big_sepL2_nil.
     done.
@@ -137,7 +135,6 @@ Proof.
   iNamed "Hinit".
   iFrame "∗ His_conf #".
   iIntros.
-  iExists _; iFrame "#".
   iPureIntro.
   by apply elem_of_list_fmap_1.
 Qed.

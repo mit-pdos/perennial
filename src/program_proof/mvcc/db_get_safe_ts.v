@@ -69,8 +69,6 @@ Proof.
       iApply "HΦ".
       iModIntro.
       iFrame.
-      iExists _.
-      iFrame.
       replace (int.nat (word.add _ _)) with (S (int.nat i)); last by word.
       rewrite (take_S_r _ _ i); last by apply sids_all_lookup.
       iApply big_sepL_app.
@@ -87,8 +85,6 @@ Proof.
       iApply "HΦ".
       iModIntro.
       iFrame.
-      iExists _.
-      iFrame.
       replace (int.nat (word.add _ _)) with (S (int.nat i)); last by word.
       rewrite (take_S_r _ _ i); last by apply sids_all_lookup.
       iApply big_sepL_app.
@@ -100,8 +96,6 @@ Proof.
       word.
   }
   { iFrame.
-    iExists _.
-    iFrame.
     replace (int.nat 0) with 0%nat; last word.
     rewrite take_0.
     auto.

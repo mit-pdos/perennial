@@ -487,14 +487,12 @@ Section auth_map.
     iIntros "Hk".
     iDestruct (own_valid_2 with "Hm Hk") as
         %[Hlookup%map_ptsto_included _]%auth_both_valid_discrete.
-    iMod (own_update_2 with "Hm Hk") as "[Hm $]".
+    iMod (own_update_2 with "Hm Hk") as "[Hm Hl]".
     { eapply auth_update, singleton_local_update,
         (exclusive_local_update _ (Cinl (1%Qp, to_agree (v2: leibnizO V))))=> //.
       rewrite lookup_fmap Hlookup //=. }
-    iModIntro.
     rewrite -to_mapUR_insert_inl.
-    iExists _; iFrame.
-    iPureIntro.
+    iFrame. iPureIntro.
     rewrite fmap_insert //.
   Qed.
 
@@ -549,14 +547,12 @@ Section auth_map.
     iIntros "Hk".
     iDestruct (own_valid_2 with "Hm Hk") as
         %[Hlookup%map_ptsto_included _]%auth_both_valid_discrete.
-    iMod (own_update_2 with "Hm Hk") as "[Hm $]".
+    iMod (own_update_2 with "Hm Hk") as "[Hm Hl]".
     { eapply auth_update, singleton_local_update,
         (exclusive_local_update _ (Cinr (to_agree (v: leibnizO V))))=> //.
       rewrite lookup_fmap Hlookup //=. }
-    iModIntro.
     rewrite -to_mapUR_insert_inr.
-    iExists _; iFrame.
-    iPureIntro.
+    iFrame. iPureIntro.
     apply map_eq; intros k'; rewrite !lookup_fmap.
     destruct (decide (k = k')); subst.
     - rewrite lookup_insert Hlookup //.

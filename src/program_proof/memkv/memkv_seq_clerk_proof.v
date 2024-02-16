@@ -63,8 +63,7 @@ Proof.
   wp_storeField.
   iModIntro. iApply "HΦ".
   iExists _, _, _, _. iFrame.
-  iFrame "% #". iExists _, _, _.
-  iFrame "Hmap_set Hcm".
+  iFrame "% #".
   iDestruct (struct_fields_split with "Hset") as "HH".
   iNamed "HH". iFrame.
   rewrite big_sepM_empty; done.
@@ -149,10 +148,9 @@ Proof using Type*.
     iMod (readonly_load with "Hval_sl") as (?) "Hval_sl".
     iModIntro.
     iApply "HΦ".
-    iFrame.
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iExists _, _, _, _. by iFrame "#∗".
+    by iFrame "#∗".
   }
   {
     wp_loadField.
@@ -265,8 +263,7 @@ Proof using Type*.
 
     iSplitL ""; first done.
     iDestruct "Hatomic" as "[_ $]".
-    iFrame.
-    iExists _,_,_,_. by iFrame "#∗".
+    by iFrame "∗#".
   }
 Qed.
 
@@ -342,7 +339,7 @@ Proof using Type*.
     iApply "HΦ". iModIntro.
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iFrame. iExists _, _, _, _. by iFrame "#∗".
+    by iFrame "∗#".
   }
   {
     wp_loadField.
@@ -358,8 +355,7 @@ Proof using Type*.
 
     iSplitL ""; first done.
     iDestruct "Hatomic" as "(_ & $ & Hsucc)".
-    iFrame.
-    iExists _,_,_,_; by iFrame "#∗".
+    by iFrame "∗#".
   }
 Qed.
 

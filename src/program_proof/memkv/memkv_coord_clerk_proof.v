@@ -71,7 +71,7 @@ Proof.
   wp_loadField.
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ConnMan__CallAtLeastOnce (is_coord_server_addSpec _) dst with "[$Hc_own $HaddSpec Hsl $HrawRep]").
-  { iFrame "∗#". do 2 iModIntro. iFrame "%". iExists _. iFrame "#". done. }
+  { iFrame "∗#". do 2 iModIntro. by iFrame "%". }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   iModIntro. iApply "HΦ". rewrite /own_KVCoordClerk.

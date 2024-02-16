@@ -275,7 +275,7 @@ Proof.
   iMod ("Hkvclose" with "Hkvptsto") as "HΦ".
   iMod "Hmaskclose" as "_".
   iMod ("Hclose" with "[Hlog Hkvs]") as "_".
-  { iExists _; iFrame. iExists _; iFrame. }
+  { iExists _; iFrame. }
   iModIntro.
   iIntros (?) "Hck Hsl".
   wp_apply (wp_StringFromBytes with "[$]").

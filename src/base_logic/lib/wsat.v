@@ -914,7 +914,7 @@ Proof.
   iExists iG, eq_refl.
   rewrite /ownE. iFrame. iClear "HD".
   replace γI with (inv_list_name) by eauto.
-  iExists [] => //=. iFrame. rewrite wsat_unfold //.
+  rewrite wsat_unfold //.
 Qed.
 
 Section schema_test_bupd.
@@ -963,7 +963,7 @@ Lemma ownI_bupd_factory_alloc lvl φ Q P :
        ==∗ ∃ i, ⌜φ i⌝ ∗ wsat (S lvl) ∗ ownI_full_bupd_factory lvl i (1/2)%Qp Q P.
 Proof.
   iIntros (?) "(Hw&(HQ&#Hfactory))". iMod (ownI_alloc with "[$Hw HQ]") as (i) "(?&?&?&?)"; eauto; last first.
-  { iModIntro. iExists i. iFrame. iExists 1, (list_to_vec [Q]). iFrame. rewrite //=. }
+  { iModIntro. iExists i. iFrame. instantiate (1:= list_to_vec [Q]). rewrite //=. }
   repeat (rewrite ?bi_schema_interp_unfold //=).
   iFrame. eauto.
 Qed.
@@ -1007,11 +1007,11 @@ Proof.
   destruct (vec_to_list Qs_mut !! 0) as [?|] eqn:Heq; rewrite Heq //=.
   - iSplitL "Hinterp".
     { iDestruct "Hinterp" as "($&#$)". }
-    iFrame "#". iExists _, Qs_mut. rewrite Heq //=. by iFrame.
+    iFrame "#∗". rewrite Heq //=.
   - iSplitL "Hinterp".
     { iDestruct "Hinterp" as "(?&#Hwand)". iSplitL ""; first eauto.
       iModIntro. iIntros. iMod ("Hwand" with "[//]") as "(?&$)"; eauto. }
-    iFrame "#". iExists _, Qs_mut. rewrite Heq //=. by iFrame.
+    iFrame "#∗". rewrite Heq //=.
 Qed.
 
 Lemma ownI_bupd_factory_close lvl i Q P:

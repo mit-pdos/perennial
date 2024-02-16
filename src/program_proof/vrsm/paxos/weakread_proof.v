@@ -33,11 +33,7 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ]").
   {
-    iFrame "HmuInv Hlocked".
-    iNext.
-    repeat iExists _; iFrame "∗#".
-    repeat iExists _; iFrame "∗#%".
-    repeat iExists _; iFrame "∗#%".
+    do 2 iFrame "∗#%".
   }
   wp_pures.
   iModIntro.

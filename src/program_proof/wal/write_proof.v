@@ -45,8 +45,7 @@ Proof.
   { iPureIntro.
     apply bool_decide_ext.
     word. }
-  iFrame.
-  iExists _; by iFrame "# ∗".
+  by iFrame.
 Qed.
 
 Theorem wp_WalogState__memLogHasSpace st σ (newUpdates: u64) :
@@ -68,8 +67,7 @@ Proof.
   wp_pures.
   change (int.Z $ word.divu (word.sub 4096 8) 8) with LogSz.
   iAssert (wal_linv_fields st σ) with "[-HΦ]" as "Hfields".
-  { iFrame.
-    iExists _; by iFrame "# ∗". }
+  { by iFrame. }
   wp_if_destruct; iApply "HΦ"; iFrame; iPureIntro.
   - symmetry; apply bool_decide_eq_false.
     revert Heqb; repeat word_cleanup.
@@ -768,9 +766,7 @@ Proof.
         wp_store.
         iApply "HΦ".
         iExists _, _; iFrame.
-        rewrite right_id.
-        iDestruct "Hsim" as "[_ $]".
-        iExists _; by iFrame "# ∗". }
+        by iDestruct "Hsim" as "[_ $]". }
       wp_apply wp_slice_len.
       wp_apply (wp_WalogState__memLogHasSpace with "Hfields").
       { revert Heqb0; word. }
@@ -840,9 +836,8 @@ Proof.
             rewrite slidingM.memEnd_ok; eauto.
             eapply is_mem_memLog_endpos_highest; eauto. }
           simpl.
-          iSplitL "Hstablectx Hstablero".
+          iSplitR.
           {
-            iExists _. iFrame "Hstablectx". iFrame "Hstablero".
             iPureIntro.
             eapply stable_sound_app; eauto. word.
           }
@@ -856,14 +851,13 @@ Proof.
         wp_pures.
         iModIntro.
         iApply "HΦ".
-        iExists _, _; iFrame.
-        rewrite (right_id _ bi_sep).
-        iFrame "HQ".
+        iFrame "ok txn HQ Hlocked".
         iSplit.
         { iExists _; iFrame "#". }
+        rewrite (right_id _ bi_sep).
         iExists (set memLog (λ _, memLog') σ); simpl.
         rewrite /wal_linv_core memWrite_same_start.
-        iFrame.
+        iFrame "HdiskEnd_circ Hstart_circ HownDiskEndMem_linv HownDiskEndMemTxn_linv".
         iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet
                  HownLoggerPos_linv HownLoggerTxn_linv
                  HownInstallerPosMem_linv HownInstallerTxnMem_linv
@@ -876,8 +870,6 @@ Proof.
         autorewrite with len.
         iFrame.
         iFrame "%".
-        iSplit.
-        2: { iExists _. iFrame. iFrame "%". }
         subst memLog'.
         rewrite Nat.add_sub memWrite_same_start memWrite_same_mutable /=.
         iSplit.

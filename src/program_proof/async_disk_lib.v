@@ -563,7 +563,6 @@ Proof.
   iRight in "HΦ".
   iIntros "Hb".
   iApply "HΦ"; iFrame.
-  iExists _. iFrame.
 Qed.
 
 Theorem wpc_Write stk E1 (a: u64) s q b :
@@ -581,7 +580,6 @@ Proof.
   iIntros "!> H". iDestruct "H" as (??) "H".
   iRight in "HΦ".
   iApply "HΦ"; iFrame.
-  iExists _. iFrame.
 Qed.
 
 Theorem slice_to_block s q bs :

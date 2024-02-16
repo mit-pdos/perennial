@@ -351,7 +351,7 @@ Proof.
     iExists _, _. iFrame. eauto.
   }
   iSplitL "Hstart2 HdiskEnd2 Hγaddrs Hγblocks".
-  { iFrame. iSplitR; first eauto. iExists _, _. iFrame. eauto. }
+  { iFrame "#∗". eauto. }
   iSplitL "Haddrs Hblocks Hstart Hend Hend_at_least".
   { iModIntro.
     rewrite /is_circular_state_crash.
@@ -631,10 +631,8 @@ Proof.
     - iPureIntro.
       apply circ_wf_advance; eauto.
       word.
-    - iExists _, _; iFrame "Hown".
-      iSplitR; [ iPureIntro | ].
+    - iSplitR; [ iPureIntro | ].
       { eapply has_circ_updates_advance; eauto; word. }
-      iExists _, _; iFrame.
       iSplitR; auto.
       iPureIntro.
       rewrite -> diskEnd_advance_unchanged by word.
@@ -863,8 +861,6 @@ Proof.
     wp_pures. iModIntro. iApply "HΦ"; iFrame.
     rewrite -> take_ge by lia.
     iFrame.
-    rewrite /updates_slice.
-    iExists _; iFrame.
   }
 
   iIntros (i bk Φₗ) "!> [HI [% %]] HΦ".
@@ -932,8 +928,7 @@ Proof.
     { iPureIntro.
       eapply circ_low_wf_blocks; eauto.
     }
-    iExists hdr1, hdr2.
-      by iFrame.
+    by iFrame.
   }
   iIntros "!> Hs".
   wp_loadField.
@@ -1179,7 +1174,6 @@ Proof.
       autorewrite with len in HdiskEnd'.
       apply circ_wf_app; auto; len.
     }
-    iExists _, _; iFrame "Haddrs Hblocks".
     iSplitR.
     { iPureIntro.
       rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
@@ -1187,10 +1181,9 @@ Proof.
       apply has_circ_updates_app; auto; len.
     }
     iSplitR; first by eauto.
-    iExists _, _. iFrame.
     iPureIntro; intuition.
-    { eapply block_encodes_eq; eauto.
-      f_equal. f_equal. f_equal.
+    { eapply block_encodes_eq; eauto. simpl.
+      f_equal. f_equal.
       rewrite /circΣ.diskEnd /set /= in HdiskEnd', Hstart_lb' |- *.
       autorewrite with len in HdiskEnd'.
       cbn [circ_proof.start circ_proof.upds] in *.
@@ -1198,7 +1191,7 @@ Proof.
   }
   iIntros "!> Hb_s".
   wp_apply wp_Barrier.
-  wp_pures. iModIntro. iApply "HΦ". iFrame. iExists _, _, _. iFrame.
+  wp_pures. iModIntro. iApply "HΦ". iFrame.
   eauto using circ_low_wf_update_addrs.
 Qed.
 

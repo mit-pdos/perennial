@@ -330,8 +330,7 @@ Proof.
   wp_pures.
   destruct (bool_decide (int.Z src < int.Z accts_s.(Slice.sz))) eqn:Hsrc.
   2: {
-    wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    iExists _, _, _, _. iFrame "∗%#".
+    wp_pures. iModIntro. iLeft. by iFrame "Hkck_own ∗#%".
   }
 
   wp_loadField.
@@ -339,14 +338,12 @@ Proof.
   wp_pures.
   destruct (bool_decide (int.Z dst < int.Z accts_s.(Slice.sz))) eqn:Hdst.
   2: {
-    wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    iExists _, _, _, _. iFrame "∗%#".
+    wp_pures. iModIntro. iLeft. by iFrame "Hkck_own ∗#%".
   }
 
   wp_if_destruct.
   2: {
-    wp_pures. iModIntro. iLeft. iFrame. iSplit; first by done.
-    iExists _, _, _, _. iFrame "∗%#".
+    wp_pures. iModIntro. iLeft. by iFrame "Hkck_own ∗#%".
   }
 
   iDestruct (own_slice_small_sz with "Haccts_slice") as %Hslicelen.
@@ -367,7 +364,7 @@ Proof.
 
   wp_apply (Bank__transfer_internal_spec with "[-Hpost]").
   { iFrame "#". iSplitL.
-    - iExists _, _, _, _. iFrame "∗%#".
+    - iFrame "Hkck_own ∗%#".
     - iPureIntro.
       intro Hc; subst.
       assert (NoDup accts_l) as Hnodup.
@@ -475,8 +472,7 @@ Proof.
     }
     iApply big_sepM_insert; first by auto.
     iFrame.
-    iFrame "#".
-    iExists _. iFrame. done.
+    iFrame "#". done.
   }
 
   iIntros "[Haccts_slice Hloop]".
@@ -494,7 +490,7 @@ Proof.
     iIntros (??) "%Hsome [HlogBalCtx HbankPs]".
     iDestruct "HbankPs" as (vd) "(%Henc & Hphys & Hlog)".
     iDestruct (map_valid with "HlogBalCtx Hlog") as %Hlogeq.
-    iFrame "∗%". iExists _. iFrame "∗%".
+    iFrame "∗%".
   }
 
   iMod ("HbankInvClose" with "[HlogBalCtx]") as "_".
@@ -542,8 +538,7 @@ Proof.
     wp_apply (wp_LockClerk__Unlock with "[$Hlck_own $Hacc_islock HbankPs]").
     { iDestruct "HbankPs" as (?) "(% & Hkv & Hlog)". iExists _, _. iFrame "∗%". }
     iIntros "Hlck_own".
-    iApply "HΨ". iFrame.
-    iExists _. iFrame. iPureIntro.
+    iApply "HΨ". iFrame. iPureIntro.
     replace (mtodo) with (<[x := x0]> (delete x mtodo)) in Hdom.
     2: rewrite insert_delete //.
     rewrite dom_insert_L in Hdom.
@@ -563,7 +558,7 @@ Proof.
   wp_load.
   replace (map_total m) with (bal_total) by auto.
   iApply "Hpost".
-  iModIntro. iExists _, _, _, _. iFrame "∗#%".
+  iModIntro. iFrame "Hkck_own ∗#%".
 Qed.
 
 Lemma Bank__SimpleAudit_spec (bck:loc) γ accts :
@@ -725,7 +720,7 @@ Proof.
       }
       iApply big_sepM_insert.
       { apply not_elem_of_dom_1. done. }
-      iFrame. iSplit; first done. iExists _. iFrame. done.
+      iFrame. iSplit; done.
     }
     {
       iExists ∅. iFrame. iSplit.
@@ -811,7 +806,7 @@ Proof.
     }
     iIntros "H". wp_pures. iApply "HΦ". iModIntro. iFrame "Hinv".
     iExists _, _, _, _. iFrame "lck accts".
-    iFrame "∗%#".
+    iFrame "Hkv ∗%#".
 
   - iDestruct "Hinit" as (γlog) "(Hflag&#Hinv&#H)".
     iApply (fupd_mask_weaken ∅); first by set_solver+. iIntros "Hclo'".

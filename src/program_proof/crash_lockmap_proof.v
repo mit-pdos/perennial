@@ -257,7 +257,6 @@ Proof.
           wp_pures.
           iApply "HΦloop".
           iFrame.
-          iExists _, _. iFrame.
           iApply "Haddrs".
           iExists _, _. iFrame. done.
 
@@ -266,8 +265,7 @@ Proof.
           wp_untyped_load.
           wp_pures.
           iApply "HΦloop".
-          iFrame.
-          iExists _, _. by iFrame.
+          by iFrame.
 
       + wp_untyped_load.
         wp_storeField.
@@ -397,12 +395,8 @@ Proof.
         iApply "HΦloop".
         iFrame.
 
-        iExists _, _. iFrame.
         iApply (big_sepM2_insert); [auto | auto | ].
-        iFrame.
-        iExists  _, _.
         iFrame "∗ Hcond".
-        iFrame.
         iSplitL; [ iPureIntro; congruence | ].
         iLeft; done.
   }
@@ -979,11 +973,10 @@ Proof.
 
   iIntros "[HP Hlocked]".
   wp_pures. iModIntro. iApply "HΦ".
-  iFrame "HP".
+  iFrame "HP Hlocked".
 
-  iExists _. iFrame.
-  rewrite /Locked. iSplitR "Hlocked"; last first.
-  { iExists _. iFrame. iPureIntro.
+  iExists _. iSplitL; last first.
+  { iPureIntro.
     rewrite -Hgh_lookup. f_equal.
     unseal_nshard.
     word. }
@@ -1036,7 +1029,7 @@ Proof.
     iSpecialize ("H" with "[$]").
     iApply (wpc_strong_mono with "H"); eauto.
     iSplit.
-    * iIntros (?) "(Hclose&?)". iModIntro. iFrame. iFrame "#".
+    * iIntros (?) "(Hclose&?)". iModIntro. iFrame.
       iIntros. iApply "Hclose". iFrame; eauto.
     * iIntros. iIntros "!>". eauto.
 Qed.

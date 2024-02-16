@@ -436,7 +436,7 @@ Proof.
   wp_pures.
   iModIntro.
   iApply "HΦ".
-  iFrame.
+  iFrame "Hreply_sl".
   iSplitR; first done.
   iSplitR "HupdQ".
   {
@@ -694,7 +694,7 @@ Proof.
   wp_storeField.
   wp_pures.
   iApply "HΦ".
-  iFrame "HQ".
+  iSplitR "HQ"; last done.
   iModIntro.
   iExists fname, new_aof_ptr, γ2, γaof2, _, _, newdata, own_InMemoryStateMachine.
   iExists _.
@@ -802,8 +802,9 @@ Proof.
     wp_pures.
     iApply "HΦ".
     iModIntro.
-    iFrame "Hsnap_sl HQ".
     iSplitR; first done.
+    iSplitR; first done.
+    iSplitR "HQ"; last done.
 
     iExists fname, aof_ptr, γ, γaof, _, _, _, _.
     iExists _.
@@ -831,7 +832,7 @@ Proof.
     wp_pure1_credit "Hlc".
     wp_pures.
     iApply "HΦ".
-    iFrame "Hsnap_sl".
+    iSplitR; first done.
 
     iDestruct (accessP with "His_aof Hdurlb Haof") as "HH".
     iMod "HH".
@@ -857,8 +858,8 @@ Proof.
       iFrame "∗#%".
     }
     iModIntro.
-    iFrame "HQ".
     iSplitR; first done.
+    iSplitR "HQ"; last done.
 
     iExists fname, aof_ptr, γ, γaof, _, _, _, _.
     iExists _.
@@ -1070,8 +1071,6 @@ Proof.
         iFrame.
         iNext.
         iRight.
-        iExists (U64 0), [], false.
-        iFrame.
         iPureIntro.
         replace (snap_sl.(Slice.sz)) with (U64 (length snap)); last first.
         { word. }
@@ -1204,8 +1203,6 @@ Proof.
   iExists (fname f↦data ∗ file_inv γ P epoch data)%I.
   iSplitL "Hfile HP".
   {
-    iFrame.
-    iExists _, _.
     iFrame "∗#%".
   }
   iSplit.
@@ -1526,7 +1523,7 @@ Proof.
     iModIntro.
     iLeft.
     iSplitR; first done.
-    iFrame "∗#%".
+    iFrame "Hsnap HsnapLen Haof HΦ fname logFile logsize sealed epoch smMem His_aof Hallstates Hops_proposed".
     iExists _, (numOpsApplied + 1)%nat, (q/2)%Qp.
     iFrame.
     iSplitL "Hdata_sl".
@@ -1742,11 +1739,11 @@ Proof.
     iNext. iExists _, _. iFrame "∗#%".
   }
   iModIntro.
-  iFrame "Φ".
+  (* FIXME: without this unfold, iFrame takes forever..? *)
+  unfold own_StateMachine, named.
+  iFrame "HisMemSm Φ".
 
-  iExists fname, _, γ, _, _, _, _, own_InMemoryStateMachine.
-  iExists _.
-  iFrame "HisMemSm".
+  iExists fname, _, γ, _, _, _, _.
   iFrame "∗#%".
 Qed.
 
@@ -1822,7 +1819,8 @@ Proof.
       iPureIntro.
       destruct Henc as (?&?&?&?&?&?). word.
     }
-    iExists _, _, _, _.
+    iExists _, _, _, _. unfold named.
+    rewrite -simplelog_accessP.
     iFrame "#".
     iSplitL.
     { (* apply spec *)
@@ -1897,7 +1895,7 @@ Proof.
       iFrame.
     }
     {
-      iApply simplelog_accessP.
+      done.
     }
   }
   done.

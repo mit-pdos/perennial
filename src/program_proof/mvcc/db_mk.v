@@ -142,7 +142,7 @@ Proof.
     "Hsites" ∷ (db ↦[DB :: "sites"] (to_val sites)) ∗
     "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
     "Hsids" ∷ ([∗ list] sid ∈ (drop (int.nat n) sids_all), sid_own γ sid))%I.
-  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS $sites $HiRef HactiveAuths Hsids]"); first done.
+  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) with "[] [HsitesS sites $HiRef HactiveAuths Hsids]"); first done.
   { clear Φ latch.
     iIntros (i Φ) "!> (Hloop & HiRef & %Hbound) HΦ".
     iNamed "Hloop".
@@ -156,7 +156,7 @@ Proof.
     }
     iDestruct (big_sepL_cons with "HactiveAuths") as "[HactiveAuth HactiveAuths]".
     iDestruct (big_sepL_cons with "Hsids") as "[Hsid Hsids]".
-    wp_apply (wp_MkTxnSite with "[$HactiveAuth $Hsid]"); first by eauto with iFrame.
+    wp_apply (wp_MkTxnSite with "[HactiveAuth $Hsid]"); first by iFrame "#∗".
     iIntros (site) "HsiteRP".
     wp_pures.
     
@@ -225,8 +225,7 @@ Proof.
   { unfold N_TXN_SITES in *. word. }
   iFrame "Hpts".
   rewrite firstn_all.
-  do 5 iExists _.
-  by iFrame "# %".
+  by iFrame "HidxRP # %".
 Qed.
 
 End program.

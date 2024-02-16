@@ -84,9 +84,7 @@ Section goose_lang.
     iApply "HΦ".
     iExists γdurable.
     iFrame.
-    iExists ∅.
     rewrite !big_sepM_empty.
-    iFrame "∗#".
     auto with iFrame.
   Qed.
 
@@ -304,7 +302,6 @@ Section goose_lang.
       iMod ("IH" with "Hctx Hm") as "(Hctx&Hold&Hm)".
       iModIntro.
       iFrame.
-      eauto with iFrame.
   Qed.
 
 

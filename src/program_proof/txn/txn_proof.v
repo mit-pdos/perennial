@@ -1346,7 +1346,7 @@ Proof.
   iFrame "Hlocks Hcrash_invs".
   iSplitL "
     Htxn.jrnl Hjrnl_mem Hjrnl_durable_frag Hjrnl_maps_tos
-  "; first by (iExists _, _, _; iFrame).
+  "; first by iFrame "Hjrnl_mem ∗".
   by iFrame "# %".
 Qed.
 

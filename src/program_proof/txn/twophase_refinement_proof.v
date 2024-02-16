@@ -219,7 +219,6 @@ Proof.
   iDestruct (big_sepM_sep with "Hpointstos") as "(H1&H2)".
   iSplitL "H1 Htxn_durable".
   { iExists _, _, _, _. iFrame. eauto. }
-  iFrame.
   iExists {| jrnlData := (bufObj_to_obj <$> _); jrnlKinds := ∅; jrnlAllocs := ∅ |}.
   iSplitL "H2".
   { iApply big_sepM_fmap. iExact "H2". }
@@ -229,7 +228,7 @@ Proof.
   rewrite /jrnl_full_crash_tok.
   erewrite (fmap_unit_jrnl_dom_equal (bufObj_to_obj <$> mt) (bufObj_to_obj <$> mt')); last first.
   { rewrite !dom_fmap_L //=. }
-  eauto.
+  by iFrame.
 Qed.
 
 Lemma jrnl_crash_obligation:

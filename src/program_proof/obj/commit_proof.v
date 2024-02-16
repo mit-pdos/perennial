@@ -95,10 +95,7 @@ Proof.
   { iNext. iExists _, _, _. iFrame.
     iApply "Hheapmatch". iExists _, _, _. iFrame. iFrame "%". }
   iModIntro.
-  iFrame.
-  iSplitL.
-  { iExists _. iFrame. }
-  iExists _. done.
+  iFrame. eauto.
 Qed.
 
 Theorem wp_txn__installBufsMap l q walptr γ dinit lwh bufs buflist (bufamap : gmap addr buf_and_prev_data) :
@@ -761,8 +758,7 @@ Proof using txnG0 Σ.
       iIntros "(<- & H)".
       iDestruct "H" as (v0) "(% & H)".
       iDestruct "H" as (installed bs blockK) "(% & H0 & H1)".
-      iExists (installed, bs). iFrame.
-      iExists _, _. iFrame. done. }
+      iExists (installed, bs). iFrame. done. }
 
     iDestruct (big_sepML_exists with "Hheapmatch") as (updlist_olds) "[-> Hheapmatch]".
     iExists (snd <$> updlist_olds).
@@ -951,19 +947,15 @@ Proof using txnG0 Σ.
           iDestruct (ghost_var_agree with "Hmod Hmod_frag") as %->.
           iDestruct ("Hmapstos" with "[Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hmapstos".
           { iExists _. iFrame. }
-          iFrame. iExists _. iSplit; first done.
-          iExists _. iFrame. iFrame "%". iPureIntro; eauto.
+          iFrame "∗%". iPureIntro; eauto.
         }
-        iFrame.
-        iExists _; iSplit; first done.
-        iExists _; iFrame. iFrame "%". iPureIntro; eauto.
+        iFrame "∗%". iPureIntro; eauto.
       }
       iDestruct "Hmapstos_and_metactx" as "[Hmapstos Hmetactx]".
       iFrame.
 
       iExists _. iSplit; eauto.
-      iExists _, _, _. iSplit; eauto.
-      iFrame "Hmapsto".
+      iExists _. iSplit; eauto.
 
       iApply big_sepM_sepM2_merge_ex.
       { rewrite -Hdomeq. rewrite dom_union_L. rewrite dom_fmap_L. set_solver. }
@@ -1194,9 +1186,7 @@ Proof using txnG0 Σ.
     { iExists _, _, _. iFrame. }
 
     wp_pures.
-    iApply "HΦ".
-    iFrame.
-    iExists txn_id. by iFrame.
+    iApply "HΦ". by iFrame.
   }
   {
     iNamed "Hnpos".
@@ -1285,7 +1275,6 @@ Proof.
         iApply "HΦ". iModIntro. iFrame.
         iSplitL.
         2: { iIntros "%H". congruence. }
-        iIntros (?). iExists txn_id. iFrame.
         done.
 
       * wp_pures.
@@ -1293,8 +1282,7 @@ Proof.
         iApply "HΦ". iModIntro. iFrame.
         iSplitL.
         2: { iIntros "%H". congruence. }
-        iIntros (?). iExists txn_id. iFrame.
-        iIntros (?). intuition congruence.
+        iIntros (??). intuition congruence.
 
     + wp_apply util_proof.wp_DPrintf.
       wp_store.

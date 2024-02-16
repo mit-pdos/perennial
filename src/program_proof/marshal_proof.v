@@ -399,8 +399,7 @@ Proof.
   wp_load; wp_store.
   iApply "HΦ".
   iFrame. iModIntro.
-  iExists _, _, _; iFrame.
-  iSplitR; first by eauto.
+  iExists _; iSplitR; first by eauto.
   iSplitR.
   { iPureIntro; len. }
   iSplitR.
@@ -718,7 +717,7 @@ Proof.
                         "Hdec" ∷ is_dec dec_v ((EncUInt64 <$> todo) ++ r) s q data ∗
                         "*" ∷ ∃ s, "Hsptr" ∷ s_l ↦[slice.T uint64T] (slice_val s) ∗
                                    "Hdone" ∷ own_slice s uint64T 1 done
-           )%I with "[] [$Hi Hsptr Hdec]").
+           )%I with "[] [Hi Hsptr Hdec]").
   - word.
   - clear Φ.
     iIntros (?) "!>".
@@ -730,21 +729,19 @@ Proof.
     wp_load.
     wp_apply (wp_SliceAppend with "Hdone"); iIntros (s') "Hdone".
     wp_store.
-    iApply "HΦ"; iFrame.
+    iApply "HΦ". iFrame "Hsptr".
     replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
-    iFrame "Hdec".
-    iExists _; iFrame.
-    erewrite take_S_r; eauto.
-  - rewrite drop_0; iFrame "Hdec".
+    erewrite take_S_r; eauto. by iFrame.
+  - rewrite drop_0. iFrame "Hdec Hi".
     iExists Slice.nil.
     iFrame.
     rewrite take_0.
     iApply own_slice_nil; auto.
   - iIntros "(HI&Hi)"; iNamed "HI".
     wp_load.
-    iApply "HΦ"; iFrame.
+    iApply "HΦ".
     rewrite -> take_ge, drop_ge by len.
-    by iFrame.
+    by iFrame "Hdone Hdec".
 Qed.
 
 (* special case where GetInts is the last thing and there are no more remaining

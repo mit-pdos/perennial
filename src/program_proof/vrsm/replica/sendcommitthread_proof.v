@@ -101,9 +101,7 @@ Proof.
     wp_apply (wp_condWait with "[- HΦ]").
     {
       iFrame "# Hlocked".
-      repeat iExists _; iSplitR "HghostEph"; last iFrame.
-      repeat iExists _. iFrame "∗#". iFrame "%".
-      iRight. repeat iExists _; iFrame "#%".
+      iFrame "∗#%".
     }
     iIntros "[Hlocked Hown]".
     wp_pures.
@@ -124,12 +122,7 @@ Proof.
   wp_apply (release_spec with "[-HΦ]").
   {
     iFrame "HmuInv Hlocked".
-    iNext.
-    repeat (iExists _).
-    iSplitR "HghostEph"; last iFrame.
-    repeat (iExists _).
-    iFrame "Hstate ∗#"; iFrame "%".
-    iRight; repeat iExists _; iFrame "#%".
+    iFrame "∗#%".
   }
   wp_pures.
 

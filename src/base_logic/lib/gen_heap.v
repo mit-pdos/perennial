@@ -28,8 +28,7 @@ Proof.
     iDestruct (@pointsto_ne with "[$] [$]") as %Hval; eauto. congruence. }
   iDestruct ("Hexch" with "[Hk]") as "Hexch".
   { iExists _. iSplit; first eauto. iLeft. iExists _. by iFrame. }
-  iFrame.
-  iExists _. iFrame. eauto.
+  by iFrame.
 Qed.
 End exchanger.
 

@@ -251,7 +251,6 @@ Proof.
   iSplitL "Hf3".
   { rewrite /named. iExactEq "Hf3". do 3 f_equal.
     word. }
-  iSplitL "HfneedFlush"; first by auto.
   iDestruct (own_slice_cap_wf with "Hcap") as %Hcap.
   iSplitR.
   - rewrite /readonly_log /slidingM.numMutable /=.
@@ -376,7 +375,6 @@ Proof.
   iIntros "Hb"; iSpecialize ("Hlog" with "Hb").
   iSpecialize ("Hlog_mutable" with "Hlog").
   iSplit; auto.
-  iExists _, _; iFrame "# ∗".
 Qed.
 
 Theorem addrPosMap_lookup_inv σ pos :
@@ -409,8 +407,7 @@ Proof.
   wp_pures.
   iApply "HΦ". iModIntro.
   iSplitL.
-  { iFrame "% ∗".
-    iExists _, _; iFrame "# ∗". }
+  { iFrame "# % ∗". }
   iPureIntro.
   destruct ok.
   - apply map_get_true in Hmapget as Hindex.
@@ -667,8 +664,7 @@ Proof.
     wp_loadField.
     wp_pures.
     iSpecialize ("HΦ" with "[-]").
-    { iFrame "% ∗".
-      iExists _, _; iFrame "# ∗". }
+    { iFrame "% ∗ #". }
     iModIntro. iExactEq "HΦ".
     erewrite bool_decide_ext; eauto.
     intuition auto.
@@ -694,7 +690,6 @@ Proof.
            with "[] [$Hupds pos Hs]").
   2: {
     simpl; iFrame.
-    iExists _; iFrame.
   }
   { clear Φ.
     iIntros (i uv u done todo).
@@ -754,8 +749,6 @@ Proof.
       wp_store.
       iApply "HΦ". iModIntro.
       iFrame.
-      iSplitL "pos".
-      { iExists _; by iFrame. }
       iExactEq "Hs".
       rewrite /named.
       f_equal.
@@ -878,8 +871,7 @@ Proof.
   { revert Hbks_len; word. }
   iApply "HΦ".
   iSplitR "Hs2 Hblocks".
-  { iFrame "% ∗".
-    iExists _, _; iFrame "# ∗". }
+  { iFrame "# % ∗". }
   iExists _.
   rewrite -fmap_drop.
   iFrame "Hs2".
@@ -1242,8 +1234,6 @@ Proof.
     rewrite /slidingM.wf drop_length /=.
     word.
   }
-  iExists _, _.
-  iFrame.
   iSplitL "log_mutable".
   {
     rewrite /mutable_log /set drop_length /=.

@@ -156,7 +156,7 @@ Proof.
   iModIntro. iExists _. iFrame "H". iSplit.
   { iPureIntro. rewrite !dom_insert_L Hdom. done. }
   iSplitL "H0 Hγ0 Ha".
-  { iApply big_sepM_insert; eauto. iFrame. iExists _. iFrame. }
+  { iApply big_sepM_insert; eauto. iFrame. }
   iApply big_sepM_insert; eauto. iFrame.
 Qed.
 
@@ -839,9 +839,7 @@ Proof.
   iFrame "Hcrash_heaps".
   iSplitL "".
   { iModIntro. iPureIntro. eapply log_crash_to_post_crash; eauto. }
-  iFrame.
-  iExists metam_new.
-  iFrame "# ∗".
+  iFrame "#∗".
   simpl. iEval (rewrite right_id) in "logheap". iFrame "logheap".
   eauto.
 Qed.
@@ -973,7 +971,7 @@ Proof.
       { iNext. iExists _. iFrame. }
       { iNext. iFrame. }
     }
-    { iNext. iFrame. iExists _, _; iFrame. }
+    { iFrame. }
     iDestruct "Hcfupd" as "(Hcfupd_cancel&Hcfupd)".
     iRight in "HΦ".
     iApply "HΦ".

@@ -236,10 +236,10 @@ Local Lemma own_last_update γ σs k v' m i :
 Proof.
   iIntros "Halast Hflast". iDestruct "Halast" as (last Hlast) "Hmap".
   assert ((S (length (possible σs)) - 1) = length (possible σs)) as -> by lia.
-  iMod (own_update_2 with "Hmap Hflast") as "[Hmap $]".
+  iMod (own_update_2 with "Hmap Hflast") as "[Hmap Hflast]".
   { apply (gmap_view_replace _ k _ (to_agree (length (possible σs)))). done. }
   rewrite -fmap_insert.
-  iExists _. iFrame "Hmap". iPureIntro.
+  iFrame. iPureIntro.
   intros k' j. destruct (decide (k = k')) as [<-|Hne].
   - rewrite lookup_insert=>[=<-]. exists v'.
     assert (lookup_async (async_put (<[k:=v']> m) σs) (length (possible σs)) k = Some v').
@@ -392,7 +392,7 @@ Proof.
   destruct (Hlast _ _ Hmap) as (v' & Hlookup' & Htail).
   rewrite Hlookup in Hlookup'. injection Hlookup' as [=<-].
   iApply ephemeral_lookup_txn_val; last first.
-  - rewrite /async_ctx. iFrame. iExists last. iFrame. done.
+  - rewrite /async_ctx. by iFrame.
   - apply Htail; done.
 Qed.
 

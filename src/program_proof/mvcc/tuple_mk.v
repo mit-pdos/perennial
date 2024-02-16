@@ -95,8 +95,6 @@ Proof.
     iExists false, (U64 1), (U64 0), [(U64 0, true, "")], [Nil; Nil].
     iFrame.
     iSplit.
-    { iExists (Slice.mk vers 1 1). iFrame. }
-    iSplit.
     { (* Prove [HtupleAbs]. *)
       iPureIntro.
       simpl.

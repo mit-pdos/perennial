@@ -144,17 +144,7 @@ Proof.
   iMod "HinnerN" as "_".
   iFrame.
   iMod ("Hclose" with "[-HQ HΦ]") as "_".
-  {
-    iModIntro.
-    iExists _; iFrame "HP".
-    iFrame.
-    iSplit; auto.
-    iExists _.
-    iFrame "Howncs".
-    iExists _, _, _.
-    iFrame "# ∗".
-    auto.
-  }
+  { by iFrame "#∗". }
   iIntros "!>" (s) "Hs".
   iApply "HΦ".
   iExists _; iFrame.
@@ -818,11 +808,7 @@ Proof.
   wp_if_destruct; wp_pures.
   {
     iApply "HΦ".
-    iFrame "His_locked Hinstaller".
-    iExists _.
-    iFrame "∗ #".
-    iExists _.
-    by iFrame (Hlocked_wf) "∗".
+    by iFrame "∗ #".
   }
 
   iDestruct (updates_slice_frag_len with "Htxn_slice") as %Hs_len.
@@ -1014,7 +1000,7 @@ Proof.
     2: lia.
     replace (installed_txn_id_mem + (S σ.(locked_diskEnd_txn_id) - installed_txn_id_mem))%nat
       with (S σ.(locked_diskEnd_txn_id)) in Hsnapshot_txns_are by lia.
-    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[Hcirc_ctx Howncs]".
     iDestruct (txn_val_valid_general with "Htxns_ctx HdiskEnd_txn_val") as %HdiskEnd_txn_lookup.
     iNamed "Hdisk".
     iNamed "Hinstalled".
@@ -1039,18 +1025,13 @@ Proof.
       in Hsnapshot_txns by lia.
     iSplitR "HownInstallerPos_installer HownInstallerTxn_installer
       HownBeingInstalledStartTxn_installer
-      Halready_installed_installer".
+      Halready_installed_installer Hcirc_ctx".
     2: iFrame; eauto.
-    iExists _.
     iFrame (Hwf) "HP Hmem Htxns_ctx γtxns HnextDiskEnd_inv".
     iExists _; iFrame.
-    iExists σ.(locked_diskEnd_txn_id), σ.(locked_diskEnd_txn_id), diskEnd_txn_id.
     iFrame (Hdaddrs_init) "Hbasedisk".
-    iSplitL "HownBeingInstalledStartTxn_walinv Halready_installed Hdata".
+    iSplitL "Hdata".
     {
-      iExists _.
-      iFrame "HownBeingInstalledStartTxn_walinv Halready_installed".
-
       iSplitR; first by (iPureIntro; lia).
       iSplitR.
       { rewrite subslice_zero_length. iApply txns_are_nil. }
@@ -1120,8 +1101,6 @@ Proof.
 
     iSplitL.
     {
-      iExists _, _, _.
-      iFrame.
       rewrite /circΣ.diskEnd /= drop_length.
       replace (Z.to_nat (int.Z σ.(diskEnd) - int.Z (start σc)))
         with (int.nat σ.(diskEnd) - int.nat (start σc))%nat by word.
@@ -1256,13 +1235,6 @@ Proof.
   2: {
     iExists _, _. iModIntro.
     iFrame "HdiskEndMem_lb ∗".
-    iSplitL "HownInstallerPos_installer".
-    1: iExists _; by iFrame.
-    iSplitL "HownInstallerPosMem_installer".
-    1: iExists _; by iFrame.
-    iSplitL "HownInstallerTxnMem_installer".
-    1: iExists _; by iFrame.
-    1: iExists _; by iFrame.
   }
   iExists {|
     diskEnd := σ'.(diskEnd);

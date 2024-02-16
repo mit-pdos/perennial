@@ -60,8 +60,7 @@ Proof.
   { eauto. }
   iIntros "[Hjrnl Hinode_enc_pointsto]".
   wp_apply util_proof.wp_DPrintf.
-  wp_pures. iModIntro. iApply "HΦ". iFrame.
-  iExists _. iFrame. iPureIntro.
+  wp_pures. iModIntro. iApply "HΦ". iFrame. iPureIntro.
   rewrite /encodes_inode.
   rewrite list_to_inode_buf_to_list. 2: { rewrite /inode_bytes; word. }
   eapply Hdata.
@@ -163,7 +162,7 @@ Proof.
     wp_apply (wp_SliceSet (V:=u8) with "[$Hbufdata]"); eauto.
     iIntros "Hbufdata".
     wp_pures.
-    iApply "HΦ'". iModIntro. iFrame.
+    iApply "HΦ'". iModIntro. iFrame "Hcount".
 
     assert ((int.nat (word.add offset count')) < block_bytes) as fin.
     {
@@ -173,9 +172,9 @@ Proof.
       rewrite vec_to_list_length /block_bytes in H.
       rewrite /block_bytes; lia.
     }
-    iExists (vinsert (nat_to_fin fin) u bbuf'). iSplit.
-    { iApply is_buf_return_data. iFrame.
-      iExactEq "Hbufdata".
+    iExists (vinsert (nat_to_fin fin) u bbuf'). iFrame.
+    iSplit.
+    { iExactEq "Hbufdata".
       rewrite /= /Block_to_vals vec_to_list_insert.
       rewrite /own_slice_small. f_equal.
       rewrite /list.untype /to_val /u8_IntoVal /b2val. f_equal. f_equal.
@@ -279,7 +278,7 @@ Proof.
       { rewrite -Hcount; word. }
       lia.
     }
-    iExists _. iFrame. iPureIntro.
+    iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1.
     rewrite !app_length.
     rewrite drop_length.
@@ -318,7 +317,7 @@ Proof.
       { rewrite -Hcount; word. }
       lia.
     }
-    iExists _. iFrame. iPureIntro.
+    iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1 Hbuf.
     rewrite !app_length.
     rewrite drop_length.

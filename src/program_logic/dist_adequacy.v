@@ -72,7 +72,7 @@ Proof.
   iMod "H" as "(Hσ&Hg&Hwpr&Hwptp&HNC)".
   iFrame. iModIntro.
   simpl. iExists Φ, Φinv, Φr.
-  rewrite wpr0_unfold/wpr0_pre. eauto.
+  rewrite wpr0_unfold/wpr0_pre. iFrame.
 Qed.
 
 Lemma stwpnode_crash gen eb t1 σ1 g σ2 κs ns D:
@@ -105,9 +105,7 @@ Proof.
   iClear "HC".
   iMod "H" as (HG') "(HNC&Hσ&Hg&(_&Hwpr))".
   iModIntro. iExists HG'.
-  iFrame.
-  rewrite /wpnode/=.
-  iExists _, _, _. iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
+  iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
 Qed.
 
 Lemma stwpnodes_step dns1 g1 ns D dns2 g2 κ κs :

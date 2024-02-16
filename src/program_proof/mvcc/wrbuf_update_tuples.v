@@ -95,9 +95,7 @@ Proof.
   iDestruct ("HentsC" with "HentsS") as "HentsS".
   wp_pures.
   iApply "HΦ".
-  iFrame.
-  do 2 iExists _.
-  by iFrame "∗ %".
+  by iFrame.
 Qed.
 
 End heap.

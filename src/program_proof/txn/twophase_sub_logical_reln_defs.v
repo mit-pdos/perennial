@@ -713,7 +713,7 @@ Proof.
       apply base_prim_step_trans'. repeat econstructor; eauto.
     }
     wp_pures; auto.
-    iExists _. iFrame. iExists _, _, _, _. iFrame. eauto.
+    iExists _. by iFrame.
   - subst. simpl.
     iPoseProof (IHHtyping with "[//] [$] [$]") as "H"; eauto.
     wpc_bind (subst_map ((subst_ival <$> Γsubst)) e').

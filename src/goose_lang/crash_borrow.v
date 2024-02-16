@@ -384,16 +384,14 @@ Proof.
   iAssert (crash_borrow P Pc)%I with "[Hlt1 Hlt2 Hlt5 H2 Hstat2 Hitok_u]"  as "Hborrow".
   {
     rewrite crash_borrow_eq.
-    iFrame "# ∗". iExists P, Pc.
+    iExists P, Pc. iFrame "# ∗". 
     iSplitR; first eauto.
-    iSplitR; first eauto.
-    iExists _, _, _, _, _, _. iFrame "∗". iFrame "Hsaved Hsaved'".
-    iExists _, _. iFrame "Hpri_inv". eauto.
+    iSplitR; eauto.
   }
 
   iAssert (staged_inv_cancel ⊤ mj Pc)%I with "[Hitok_ikeep Hpending Hlt3]" as "Hcancel".
   {
-    iExists _, _, _, _, _, _, _. iFrame "%". iFrame. eauto.
+    iExists _, _, _, _, _, _, _. iFrame "∗%". eauto.
   }
   iSpecialize ("Hwpc" with "[$]").
   iSpecialize ("Hwpc" $! mj).
@@ -914,7 +912,6 @@ Proof.
   iFrame "#".
   iSplitR; first eauto.
   iFrame.
-  iExists _, _, _, _, _, _. iFrame "∗".
 Qed.
 
 Lemma crash_borrow_wpc_nval E Pc P P' R :
@@ -954,7 +951,6 @@ Proof.
   iFrame "#".
   iSplitR; first eauto.
   iFrame.
-  iExists _, _, _, _, _, _. iFrame "∗".
 Qed.
 
 Lemma crash_borrow_wp_nval_sepM `{Countable A} {B} E (P: A → B → iProp Σ) Q Q' R m:

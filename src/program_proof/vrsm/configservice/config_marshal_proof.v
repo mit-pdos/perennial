@@ -259,7 +259,6 @@ Proof.
     iFrame.
     iSplitR; first iPureIntro.
     { word. }
-    iExists _; iFrame.
     replace (int.nat 0) with 0%nat by word.
     rewrite Nat.sub_0_r.
     iFrame.
@@ -328,13 +327,12 @@ Proof.
     iModIntro.
     iSplitR; first done.
     iFrame "∗".
-    iExists _; iFrame "∗".
     iSplitR.
     {
       iPureIntro. word.
     }
     unfold P.
-    iExists _; iFrame "∗".
+    iFrame "∗".
     replace (int.nat (word.add i 1)) with (int.nat i + 1)%nat by word.
     iSplitL "Henc_sl".
     {

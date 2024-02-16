@@ -851,7 +851,7 @@ Proof.
   }
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest2' Hrest3 Hrest4 Hrest5 HresD Hresv]").
-  { iNext. iExists _, _. iFrame "H". iFrame.
+  { iNext. iExists _, _. iFrame "H Hrest5 Hrest3 Hrest2' Hrest2 Hrest1 Hσ".
     iDestruct "Hrest4" as %Hnon_null.
     iSplit.
     {

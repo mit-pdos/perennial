@@ -71,8 +71,7 @@ Theorem is_inode_durable_read addr σ addrs :
 Proof.
   iNamed 1.
   iExists _; iFrame "∗ %".
-  iIntros "!> Hhdr Hdata".
-  iExists _; iFrame "∗ %".
+  iIntros "!> $ $".
 Qed.
 
 Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
@@ -235,9 +234,8 @@ Proof.
   iApply "HΦ".
   iExists _, _; iFrame.
   iSplitR.
-  { iFrame "#". }
-  iExists _, _; iFrame "% ∗".
-  iExists _; iFrame "% ∗".
+  { iFrame "#". } 
+  done.
 Qed.
 
 Theorem is_inode_durable_addrs addr σ addrs :
@@ -280,8 +278,7 @@ Proof.
   iFrame.
   iNamed 1.
   iIntros "Hdurable".
-  iExists _, _; iFrame.
-  iExists _, _; iFrame "∗ %".
+  iExists _, _; iFrame. done.
 Qed.
 
 Theorem wp_Inode__UsedBlocks {l σ addrs} :
@@ -297,8 +294,7 @@ Proof.
   wp_loadField.
   iApply "HΦ".
   iFrame "∗ %".
-  iIntros "Haddrs".
-  iExists _; iFrame.
+  iIntros "$".
 Qed.
 
 Theorem wpc_Inode__UsedBlocks {l σ addr} :
@@ -326,8 +322,7 @@ Proof.
   iSplitR; first auto.
   iSplit.
   - iIntros "Haddrs".
-    iExists _, _; iFrame.
-    iExists _, _; iFrame "∗ %".
+    iExists _, _; iFrame. done.
   - iExists _; eauto.
 Qed.
 
@@ -374,7 +369,7 @@ Proof.
 
   iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
   iCache with "Hfupd Hlockinv HP".
-  { iLeft in "Hfupd". iFrame. iExists _; iFrame. iApply inode_linv_to_cinv; eauto. }
+  { iLeft in "Hfupd". iFrame. iApply inode_linv_to_cinv; eauto. }
   wpc_call.
   wpc_bind (_ ≥ _)%E.
   iNamed "Hlockinv".
@@ -527,7 +522,7 @@ Proof.
   iDestruct 1 as (σ) "(Hlockinv&HP)".
   iApply ncfupd_wpc.
   iSplit.
-  { iLeft in "Hfupd". iModIntro. iFrame. iExists _; iFrame.
+  { iLeft in "Hfupd". iModIntro. iFrame.
     iApply inode_linv_to_cinv. eauto. }
   iEval (rewrite /named) in "HP".
   iNamed "Hlockinv".
@@ -765,9 +760,7 @@ Proof.
     iEval (rewrite /named) in "HP".
     do 2 iNamed "Hlockinv".
     iCache with "Hfupd HP Hdurable".
-    { iLeft in "Hfupd". iFrame.
-      iExists _; iFrame.
-      iExists _; iFrame. }
+    { iLeft in "Hfupd". iFrame. }
     iDestruct (own_slice_sz with "Haddrs") as %Hlen1.
     autorewrite with len in Hlen1.
     iDestruct (is_inode_durable_size with "Hdurable") as %Hlen2.
@@ -780,9 +773,7 @@ Proof.
     wpc_if_destruct.
     + wpc_pures.
       iSplitR "HP Hdurable addrs Haddrs"; last first.
-      { iExists _; iFrame.
-        do 1 iModIntro.
-        iFrame. iExists _, _; iFrame "∗ %". }
+      { by iFrame. }
       iModIntro.
       iIntros "His_locked".
       iSplit; first iFromCache.
@@ -837,7 +828,7 @@ Proof.
       wpc_apply (wpc_Write_ncfupd with "[$Hb]").
       iSplit.
       { iLeft in "Hfupd". iSplitR "Hda".
-        * iFrame. iExists _; iFrame. iExists _; iFrame.
+        * iFrame.
         * iApply block_cinv_free_pred. iExists _; iFrame. }
       iNamed "Hdurable".
       iRight in "Hfupd".
@@ -854,7 +845,7 @@ Proof.
         iFrame. eauto. }
 
       iModIntro.
-      iExists _; iFrame.
+      iFrame "Hhdr".
       iNext.
       iIntros "Hhdr".
       iMod "Hget_used" as "[ (HP&HQ) Hused]".
@@ -884,24 +875,22 @@ Proof.
       | |- envs_entails _ ((?P ∗ _) ∧ _) =>
         iCache (P)%I with "HQ HP Hdurable"
       end.
-      { iLeft in "HQ". iFrame. iExists _; iFrame.
-        iExists _; iFrame. }
+      { iLeft in "HQ". iFrame. }
       iCache (block_cinv Ψ γalloc a) with "Hused".
       { iApply block_cinv_from_used; iFrame. }
       iSplit.
-      { iLeft in "HQ". iFrame. iExists _. iFrame. iExists _; iFrame. }
+      { iLeft in "HQ". iFrame. }
       iIntros "Hb".
       subst Φ'; cbv beta.
       (* done applying wpc_Write_fupd *)
 
       wpc_pures.
-      { iLeft in "HQ". iFrame. iExists _. iFrame. iExists _; iFrame. }
+      { iLeft in "HQ". iFrame. }
       iModIntro. iSplitR "Hused"; last (iFromCache).
       iSplit.
-      { iLeft in "HQ". iFrame. iExists _. iFrame. iExists _; iFrame. }
+      { iLeft in "HQ". iFrame. }
       iSplitR "HP Haddrs addrs Hdurable"; last first.
-      { iExists _; iFrame. iModIntro.
-        iExists _, _; iFrame "∗ %". }
+      { by iFrame. }
       iModIntro.
       iIntros "His_locked".
       iSplit; first iFromCache.

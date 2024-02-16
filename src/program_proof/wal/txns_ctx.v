@@ -176,7 +176,6 @@ Proof.
   rewrite {2 3}/txns_ctx /list_ctx /old_txn_factory.
   iIntros "Htxn [Hctx #Hels]".
   iFrame "#∗".
-  iExists _; iFrame "#∗".
 Qed.
 
 Lemma old_txn_get γ γ' crash_txn txn_id txn :

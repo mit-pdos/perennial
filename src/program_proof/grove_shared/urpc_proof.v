@@ -931,12 +931,12 @@ Proof.
     { iNamed "Hcase1".
       iDestruct "Hcase1" as "(#?&#?&#?&Hrest)". iNamed "Hrest".
       iExists _. iFrame.
-      iIntros "H". iExists _, _, _, _, _. iFrame "∗ # %".
+      iIntros "H". iFrame "∗ # %".
       iThaw "Hclo". iApply "Hclo".
       { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "# ∗". eauto. }
     }
     { iNamed "Hcase2". iExists _. iFrame.
-      iIntros "H".  iExists _, _, _, _, _. iFrame "∗ # %".
+      iIntros "H". iFrame "∗ # %".
       iThaw "Hclo". iApply "Hclo".
       { simpl. iExists _. iFrame "HPost_saved Hreg". iRight.
         iLeft. iExists _, _. iFrame "# ∗". eauto. }

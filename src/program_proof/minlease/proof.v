@@ -326,8 +326,6 @@ Proof.
       iModIntro.
       iSplitR; first done.
       iFrame.
-      iExists _.
-      iFrame.
     }
     (* Otherwise, lease has expired *)
     iModIntro.

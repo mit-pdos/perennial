@@ -177,12 +177,11 @@ Section goose.
     iNamed "Hcinv".
     iNamed "Hinode".
     iCache with "HΦ Halloc Hs_inode Hinode_cinv HPinode".
-    { crash_case.
-      iExists _, _. iFrame. iExists _; iFrame. }
+    { crash_case. iFrame. }
     wpc_apply (inode_proof.wpc_Open with "Hinode_cinv").
     iSplit.
     { iLeft in "HΦ". iIntros "Hinode_cinv".
-      iApply "HΦ". iExists _, _. iFrame. iExists _. iFrame. }
+      iApply "HΦ". iFrame. }
     iIntros "!>" (inode_ref) "Hpre_inode".
     iCache with "HΦ Halloc Hs_inode Hpre_inode HPinode".
     { iDestruct (pre_inode_to_cinv with "Hpre_inode") as "Hinode_cinv".
@@ -199,10 +198,7 @@ Section goose.
     iDestruct (pre_inode_read_addrs with "Hpre_inode") as (addrs) "(Hused_blocks&Hdurable&Hpre_inode)".
     wpc_bind_seq.
     wpc_frame "HΦ Halloc Hs_inode Hdurable HPinode".
-    { crash_case.
-      iExists _, _; iFrame.
-      iExists _; iFrame.
-      iExists _; iFrame. }
+    { crash_case. iFrame. }
 
     (* reconstruct the used set from the inode *)
     wp_apply (wp_Inode__UsedBlocks with "Hused_blocks").
@@ -303,16 +299,14 @@ Section goose.
     iApply (init_cancel_cfupd ⊤).
     iApply (init_cancel_wand with "H [] [Hinv_crash]").
     { iIntros "(Halloc&Hinode)".
-      iNamed "Hinode".
-      iExists _, _, _, _, _. iFrame "#Hinv Halloc". iExists _, _.
-      iFrame "# ∗". rewrite Halloc_dom. eauto. }
+      iNamed "Hinode". iFrame "#∗".
+      rewrite Halloc_dom. eauto. }
     iIntros "(Hinode&Halloc)".
     iMod (cfupd_weaken_mask with "Hinv_crash") as "Hs_inode".
     { solve_ndisj. }
     iDestruct "Hs_inode" as (σ') "[>Hs_inv HP]".
     iModIntro.
     iExists _; iFrame.
-    iExists _, _; iFrame.
     rewrite Halloc_dom; eauto.
   Qed.
 
@@ -350,9 +344,7 @@ Section goose.
     iDestruct (ghost_var_agree with "Hγblocks Hownblocks") as %->.
     iMod "HcloseM" as "_".
     iModIntro.
-    iFrame.
-    iSplitL; last by auto.
-    eauto with iFrame.
+    iFrame. auto.
   Qed.
 
   Theorem wpc_SingleInode__Read_triple (Q: option Block → iProp Σ) l sz (i: u64) :

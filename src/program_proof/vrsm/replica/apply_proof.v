@@ -187,8 +187,7 @@ Proof.
   rewrite Hprim.
   iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #? & #?)".
   { done. }
-  iFrame "∗#".
-  repeat iExists _. by iFrame "#%".
+  by iFrame "∗#%".
 Qed.
 
 Definition own_slice_elt {V} {H:IntoVal V} (sl:Slice.t) (idx:u64) typ q (v:V) : iProp Σ :=
@@ -431,12 +430,11 @@ Proof.
     wp_storeField.
     iApply "HΦ".
     iFrame.
-    iSplitL "Err Reply".
+    iSplitL "Err".
     {
       instantiate (1:=(ApplyReply.mkC _ _)).
       iExists _.
       iFrame.
-      iExists 1%Qp.
       iApply own_slice_small_nil.
       done.
     }
@@ -461,7 +459,7 @@ Proof.
     wp_storeField.
     iApply ("HΦ" $! _ (ApplyReply.mkC 1 [])).
     iFrame.
-    iExists _, 1%Qp; iFrame.
+    iExists 1%Qp.
     iApply own_slice_small_nil.
     done.
   }
@@ -821,8 +819,6 @@ Proof.
       iModIntro.
       iSplitL ""; first done.
       iFrame "∗".
-      iExists _, _.
-      iFrame "Hj Herr".
       iSplitL "".
       { iPureIntro. word. }
       iModIntro.
@@ -863,8 +859,6 @@ Proof.
       iModIntro.
       iSplitL ""; first done.
       iFrame "∗".
-      iExists _, _.
-      iFrame "Hj Herr".
       destruct (decide (err0 = _)).
       { exfalso. naive_solver. }
       iPureIntro.
@@ -909,10 +903,7 @@ Proof.
       iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
       iFrame.
       simpl.
-      rewrite decide_False; last naive_solver.
-      iModIntro.
-      iSplitL; last done.
-      iExists _, _; iFrame.
+      rewrite decide_False; last naive_solver. done.
     }
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
@@ -925,10 +916,7 @@ Proof.
     iApply ("HΦ" $! reply_ptr (ApplyReply.mkC _ _)).
     iFrame.
     simpl.
-    rewrite decide_False; last naive_solver.
-    iModIntro.
-    iSplitL; last done.
-    iExists _, _; iFrame.
+    rewrite decide_False; last naive_solver. done.
   }
   (* otherwise, no error *)
   iAssert (committed_by γ.(s_pb) st.(server.epoch) _) with "[]" as "#HcommitBy".
@@ -964,7 +952,7 @@ Proof.
   rewrite bool_decide_true; last naive_solver.
   wp_pures.
   wp_apply (wp_Server__IncreaseCommit with "[] [-] []").
-  { repeat iExists _; iFrame "#". }
+  { repeat iExists _. iFrame "Hconf_inv HconfCk_is #". }
   { instantiate (1:=(λ _, True)%I).
     iIntros "_".
     wp_pures.
@@ -991,7 +979,7 @@ Proof.
     iApply establish_committed_log_fact.
     1-2: iFrame "#".
   }
-  Unshelve. exact True%I. (* this is from the "doomed" path in the proof. *)
+  Unshelve. 1: exact 1%Qp. exact True%I. (* this is from the "doomed" path in the proof. *)
 Qed.
 
 Lemma wp_Server__Apply (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :
@@ -1072,9 +1060,8 @@ Proof using Type*.
     {
       iNext.
       iExists (opsfullQ ++ [(op, OpPred)]); iFrame.
-      iSplitL "Hghost".
-      { iExists _. iFrame.
-        iSplitL.
+      iSplitR.
+      { iSplitL.
         { iPureIntro. rewrite ?fmap_app /=. congruence. }
         rewrite ?fmap_app. iApply big_sepL2_app.
         { iFrame "Hsaved'". }
@@ -1156,14 +1143,7 @@ Proof using Type*.
       { done. } 
       simpl.
       iMod ("Hclose" with "[Hghost Hlog]") as "_".
-      {
-        iNext.
-        iExists _; iFrame "∗#".
-        iExists _. iFrame.
-        iSplit.
-        { iPureIntro. auto. }
-        iApply "Hsaved'".
-      }
+      { by iFrame "∗#". }
 
       rewrite Heq0. rewrite ?fmap_app -app_assoc. iDestruct (big_sepL2_app_inv with "Hsaved'") as "(H1&H2)".
       { left. rewrite ?fmap_length //. }

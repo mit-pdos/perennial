@@ -210,7 +210,6 @@ Proof.
           wp_pures.
           iApply "HΦloop".
           iFrame.
-          iExists _, _. iFrame.
           iApply "Haddrs".
           iExists _, _. iFrame. done.
 
@@ -219,8 +218,7 @@ Proof.
           wp_untyped_load.
           wp_pures.
           iApply "HΦloop".
-          iFrame.
-          iExists _, _. by iFrame.
+          by iFrame.
 
       + wp_untyped_load.
         wp_storeField.
@@ -288,15 +286,10 @@ Proof.
       iSplitR "Hp".
       2: { iApply "Hp"; done. }
 
-      iExists _, _. iFrame.
-
       iSplitR "Hcovered".
       {
         iApply (big_sepM2_insert); [auto | auto | ].
-        iFrame.
-        iExists  _, _.
         iFrame "∗ Hcond".
-        iFrame.
         iSplitL; [ iPureIntro; congruence | ].
         iLeft; done.
       }

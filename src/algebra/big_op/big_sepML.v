@@ -100,8 +100,6 @@ Section maplist.
     iSplitR; eauto.
     iDestruct (big_sepM2_delete with "Hml") as "[Hp Hml]"; eauto.
     iFrame.
-    iExists _.
-    iSplitR; last iFrame.
     iPureIntro.
     replace lm with (<[k := lv0]> (delete k lm)) in H0.
     2: {
@@ -182,8 +180,6 @@ Section maplist.
 
     iExists _, _; iFrame.
     iSplitR; eauto.
-
-    iExists _; iFrame.
     iPureIntro.
     eapply map_to_list_delete; eauto.
   Qed.

@@ -93,8 +93,7 @@ Proof using Hrpre Hcpre.
             with "[] [-Htr' Hor' Htr Hor]") as "(#Hinv&_&#Hcfupd2)".
   { set_solver. }
   { iModIntro. iIntros "H _". iModIntro; eauto. }
-  { iNext. iExists _, _. iFrame. iSplit; first iPureIntro; eauto.
-    iExists _; iFrame. iPureIntro.
+  { iNext. iExists _, _. iFrame. iSplit; iPureIntro; eauto.
     intros l Hdom. split.
     * apply Hnonneg. apply elem_of_dom. auto.
     * rewrite /D. rewrite elem_of_gset_to_coPset elem_of_list_to_set elem_of_list_fmap.
@@ -180,7 +179,7 @@ Proof using Hrpre Hcpre.
     inversion Hcrash. subst.
     simpl. iSplit.
     { iPureIntro => ?. rewrite lookup_empty //. }
-    { iExists ∅; iFrame. iPureIntro => ?. rewrite dom_empty_L; inversion 1. }
+    { iPureIntro => ?. rewrite dom_empty_L; inversion 1. }
   }
   rewrite /trace_ctx.
   iMod (ncinv_alloc (spec_traceN) _ trace_inv with "[-Hcfupd2]") as "($&Hcfupd3)".

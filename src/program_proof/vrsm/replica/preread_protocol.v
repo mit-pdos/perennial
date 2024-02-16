@@ -537,14 +537,7 @@ Proof.
   iMod (inv_alloc with "[- Hlog2]") as "$".
   {
     iNext. repeat iExists _.
-    iFrame.
-    instantiate (1:=∅).
-    iSplitL.
-    {
-      iExists _. instantiate (1:=∅).
-      iFrame "Hreads".
-      done.
-    }
+    iFrame. iSplitL; first done.
     iSplit.
     { by iApply big_sepM_empty. }
     { by iApply big_sepM_empty. }

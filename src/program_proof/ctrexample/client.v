@@ -84,7 +84,6 @@ Proof.
     iLeft. iModIntro.
     iSplitL ""; first done.
     iFrame "∗#".
-    iExists _; iFrame "∗#".
   }
   destruct err.
   {
@@ -118,7 +117,6 @@ Proof.
   iLeft.
   iSplitL ""; first done.
   iFrame.
-  iExists _; iFrame "∗#".
 Admitted.
 
 End client_proof.

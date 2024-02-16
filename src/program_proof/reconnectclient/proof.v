@@ -47,10 +47,7 @@ Proof.
     wp_loadField.
     wp_loadField.
     wp_apply (release_spec with "[- HΦ]").
-    { iFrame "HmuInv ∗".
-      repeat iExists _.
-      iFrame "∗#".
-    }
+    { iFrame "HmuInv ∗ #". }
     wp_pures. by iApply "HΦ".
   }
 
@@ -107,11 +104,7 @@ Proof.
     wp_loadField.
     iDestruct "Hnewcl" as "#Hnewcl".
     wp_apply (release_spec with "[- HΦ HnewRpcCl Herr]").
-    { iFrame "HmuInv ∗".
-      repeat iExists _.
-      iFrame "Hvalid HurpcCl".
-      iFrame "∗#".
-    }
+    { iFrame "HmuInv ∗ #". }
 
     wp_load.
     wp_load.
@@ -120,11 +113,7 @@ Proof.
     by iFrame "#".
   - wp_loadField.
     wp_apply (release_spec with "[- HΦ HnewRpcCl Herr]").
-    { iFrame "HmuInv ∗".
-      repeat iExists _.
-      iFrame "Hvalid HurpcCl".
-      iFrame "∗#".
-    }
+    { iFrame "HmuInv ∗ #". }
 
     wp_load.
     wp_load.

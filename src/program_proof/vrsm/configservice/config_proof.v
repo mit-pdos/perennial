@@ -508,8 +508,7 @@ Proof.
   wp_apply ("Hwp" with "[-HΦ]").
   {
     iFrame "∗#".
-    iSplitR.
-    { iModIntro. iExists _; iFrame "#%". done. }
+    iSplitR; first done.
     iInv "Hconfig_inv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "Hlc Hi") as "Hi".
     iNamed "Hi".
@@ -1761,7 +1760,7 @@ Proof.
           wp_pures.
           iModIntro. iNamed 1. iLeft.
           iSplitR; first done.
-          iFrame. repeat iExists _. iFrame.
+          iFrame.
         }
         { (* case: don't increase leader idx *)
           wp_loadField.
@@ -1773,8 +1772,6 @@ Proof.
           wp_pures.
           iModIntro. iNamed 1.
           iLeft. iSplitR; first done.
-          iFrame.
-          repeat iExists _.
           iFrame.
         }
       }
@@ -1799,7 +1796,7 @@ Proof.
     2:{ exfalso. done. }
     iModIntro. iNamed 1. iLeft.
     iSplitR; first done.
-    iFrame. repeat iExists _. iFrame.
+    iFrame.
   }
 Qed.
 
@@ -1945,7 +1942,7 @@ Proof.
           wp_pures.
           iModIntro. iNamed 1. iLeft.
           iSplitR; first done.
-          iFrame. repeat iExists _. iFrame.
+          iFrame.
         }
         { (* case: don't increase leader idx *)
           wp_loadField.
@@ -1957,8 +1954,6 @@ Proof.
           wp_pures.
           iModIntro. iNamed 1.
           iLeft. iSplitR; first done.
-          iFrame.
-          repeat iExists _.
           iFrame.
         }
       }
@@ -1987,7 +1982,7 @@ Proof.
     2:{ exfalso. done. }
     iModIntro. iNamed 1. iLeft.
     iSplitR; first done.
-    iFrame. repeat iExists _. iFrame.
+    iFrame.
   }
 Qed.
 
@@ -2228,14 +2223,10 @@ Proof.
   iAssert (|={⊤}=> is_config_invs _)%I with "[Hst Hepoch Hexp Hres Hconf]" as ">#Hinv".
   {
     iMod (inv_alloc with "[-]") as "$"; last done.
-    iNext. repeat iExists _. iFrame.
+    iNext. repeat iExists _.
     simpl. rewrite /initstate.
     instantiate (2:=(Build_config_names _ _ _ _)).
-    simpl.
-    iFrame "Hst".
-    rewrite /own_Config_ghost /=.
-    iExists _.
-    iFrame. done.
+    simpl. by iFrame "Hst ∗".
   }
   iFrame "Hhosts".
   iSplitL "Hsrvs".

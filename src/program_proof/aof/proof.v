@@ -470,8 +470,6 @@ Proof.
       iSplitR; first done.
       iSplitR.
       { by iIntros "$ _ !> $ !>". }
-      iExists false, false.
-      iFrame.
       done.
     }
     iModIntro.
@@ -543,9 +541,7 @@ Proof.
     {
       wp_loadField.
       wp_apply (wp_condWait with "[- closed2 Hfile_ctx]").
-      { iFrame "#∗". repeat iExists _; iFrame "∗#". iSplitR; first done.
-        iExists _, _; iFrame "∗#".
-      }
+      { by iFrame "HlenCond Hmu_inv ∗#". }
       iIntros "[Hlocked Haof_own]".
       wp_pures.
       iLeft.
@@ -713,22 +709,17 @@ Proof.
 
       wp_apply (release_spec with "[-Hlen closed2]").
       {
-        iFrame "#∗".
+        iFrame "Hmu_inv Hcrash_wand Hlocked".
         iNext.
         iDestruct "HdurLen" as "[HdurableLength HdurLen]".
-        iExists _, [], _, _, _, _.
+        iExists _, [], _.
         rewrite app_nil_r.
         iFrame "∗#%".
         iSplitR.
         { by iIntros "$ _ !> $ !>". }
         unfold aof_length_lb.
         rewrite Hlengthsafe.
-        iFrame "#".
-
-        iExists _, _.
-        iFrame "Hclosed ∗".
-        iFrame "#".
-        iExists _; iFrame "#".
+        iFrame "#∗".
       }
       wp_pures.
       iRight.
@@ -758,13 +749,10 @@ Proof.
     wp_loadField.
 
     wp_apply (release_spec with "[-Hfile_ctx Hpredur Hdur Hmembuf_fupd Hmembuf_sl HdurLen Hlen closed2]").
-    { iFrame "#∗". iNext. iExists _, [], (predurableC ++ membufC),_, _, _. iFrame "∗#".
-      rewrite app_nil_r.
-      iFrame.
+    { iFrame "Hmu_inv Hlocked Hcrash_wand". iNext. iExists _, [], (predurableC ++ membufC),_, _, _.
+      rewrite app_nil_r. iFrame "∗#".
       iSplitL ""; first done.
-      iSplitR.
-      { iIntros "$ _ !> $ !> //". }
-      iExists _, _; iFrame "∗#".
+      iIntros "$ _ !> $ !> //".
     }
 
     wp_pure1_credit "Hlc".
@@ -872,9 +860,10 @@ Proof.
     iFrame.
     iSplitL ""; first done.
     iDestruct "HdurLen" as "[HdurableLength HdurLen]".
-    iSplitR "Hpredur Hdur HdurLen Hlen Hfile_ctx".
+    iFrame.
+    iSplitR "Hfile_ctx".
     {
-      repeat iExists _; iFrame "∗#".
+      iFrame "∗#".
       unfold aof_length_lb.
       iSplitL ""; first done.
       unfold aof_length_lb.
@@ -885,9 +874,7 @@ Proof.
     {
       rewrite -Hpredur.
       repeat rewrite -app_assoc.
-      iExists _; iFrame.
-      iModIntro.
-      done.
+      by iFrame.
     }
   }
   wp_pures.
@@ -1211,7 +1198,7 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Haof_log HfupdQ Htok]").
   {
-    iFrame "#∗".
+    iFrame "Hmu_inv Hlocked Hcrash_wand".
     iNext.
     repeat iExists _.
     rewrite -app_assoc.
@@ -1294,8 +1281,6 @@ Proof.
       wp_loadField.
       wp_store. iModIntro.
       iSplitR; first done.
-      iFrame.
-      iExists _.
       by iFrame.
     }
   }
@@ -1324,9 +1309,7 @@ Proof.
     wp_load.
     wp_apply (wp_condWait with "[- HΦ Hcond]").
     {
-      iFrame "#∗".
-      repeat iExists _. iFrame "#∗".
-      done.
+      iFrame "His_cond Hmu_inv HdurableCond". by iFrame "∗#".
     }
     iIntros "[Hlocked Haof_own]".
     wp_pures.
@@ -1353,9 +1336,7 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[- HΦ]").
   {
-    iFrame "#∗".
-    repeat iExists _; iFrame "#∗".
-    done.
+    by iFrame "Hmu_inv HdurableCond ∗#".
   }
   wp_pures.
   iApply "HΦ".
@@ -1392,13 +1373,10 @@ Proof.
 
   iAssert (aof_mu_invariant aof_ptr mu_ptr γ fname P Pcrash) with "[-Htok HΦ Hlocked]" as "Haof_own".
   {
-    repeat iExists _; iFrame "∗#%".
-    iExists _, _.
-    iFrame "HcloseRequested ∗%".
-    iDestruct "Hclose" as "[_ [_ $]]".
-    iSplit.
-    { iExists _; iFrame "#". }
-    destruct isClosed; iEval simpl; auto; by iFrame.
+    iFrame "HdurableCond HoldDurableCond Hclosed HcloseRequested".
+    iFrame "∗#".
+    destruct isClosed; iEval simpl;
+    iDestruct "Hclose" as "(_ & _ & Hclose)"; by iFrame.
   }
 
   wp_forBreak_cond.
@@ -1413,10 +1391,8 @@ Proof.
     wp_loadField.
     wp_apply (wp_condWait with "[-Htok HΦ]").
     {
-      iFrame "#∗".
-      repeat iExists _; iFrame "∗#%".
-      iExists _, _.
-      iFrame "∗#∗".
+      iFrame "Hmu_inv HdurableCond HoldDurableCond Hclosed HcloseRequested".
+      by iFrame "#∗".
     }
     iIntros "[Hlocked Haof_own]".
     wp_pures.
@@ -1451,11 +1427,8 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hf]").
   {
-    iFrame "#∗".
-    iNext.
-    repeat iExists _; iFrame "∗#%".
-    iExists _, _. iFrame "∗#".
-    simpl. iFrame.
+    iFrame "Hmu_inv HdurableCond ∗#%".
+    by simpl.
   }
   wp_pures.
   iModIntro.
