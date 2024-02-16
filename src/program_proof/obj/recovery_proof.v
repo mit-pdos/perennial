@@ -835,7 +835,6 @@ Proof.
     eapply log_crash_to_post_crash; eauto.
   }
   iExists ls2, _, _. simpl. iFrame "Hheap_inv Hres' Hdur'".
-  unfold is_txn_state, named.
 
   iFrame "Hcrash_heaps".
   iSplitL "".

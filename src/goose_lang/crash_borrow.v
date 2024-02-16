@@ -383,7 +383,7 @@ Proof.
 
   iAssert (crash_borrow P Pc)%I with "[Hlt1 Hlt2 Hlt5 H2 Hstat2 Hitok_u]"  as "Hborrow".
   {
-    rewrite crash_borrow_eq /crash_borrow_def.
+    rewrite crash_borrow_eq.
     iExists P, Pc. iFrame "# ∗". 
     iSplitR; first eauto.
     iSplitR; eauto.

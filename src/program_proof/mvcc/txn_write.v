@@ -36,7 +36,6 @@ Proof.
     rewrite insert_union_l.
     set mods' := (<[ _ := _ ]> mods).
     iExists _, mods'.
-    unfold own_txn_impl, named.
     iFrame "Hltuples Htxnmap Hwrbuf HwrbufRP".
     iSplitL; first eauto 20 with iFrame.
     iPureIntro.

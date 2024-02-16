@@ -76,7 +76,7 @@ Proof.
     rewrite singleton_op singleton_valid. done. }
   case_bool_decide; last first.
   { (* They gave us an outdated timestamp. *)
-    iSplitR; first done. unfold gentid_inv. by iFrame "#∗". }
+    iSplitR; first done. eauto with iFrame. }
   iMod (saved_pred_alloc Φ DfracDiscarded) as (γr) "#HΦ"; first done.
   iMod (ghost_map_insert ts γr with "Hreserved_map") as "[Hreserved_map Hreserved_ts]"; first done.
   iSplitL "Hreserved_ts".

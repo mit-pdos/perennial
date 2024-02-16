@@ -1739,6 +1739,7 @@ Proof.
     iNext. iExists _, _. iFrame "∗#%".
   }
   iModIntro.
+  (* FIXME: without this unfold, iFrame takes forever..? *)
   unfold own_StateMachine, named.
   iFrame "HisMemSm Φ".
 

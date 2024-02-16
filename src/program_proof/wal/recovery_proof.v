@@ -623,10 +623,8 @@ Proof.
     diskEnd2 diskEnd_txn_id2
   ".
   2: {
-    unfold wal_resources, logger_resources.
     iFrame.
-    replace (int.nat 0) with 0%nat by word. iFrame.
-    unfold installer_inv, named. iFrame "#∗".
+    replace (int.nat 0) with 0%nat by word. iFrame "∗#".
   }
   iSplit; first by eauto using log_state0_wf.
   iSplit; first by eauto using log_state0_post_crash.
@@ -710,7 +708,6 @@ Proof.
     rewrite subslice_nil subslice_zero_length.
     apply is_memLog_region_nil.
   }
-  unfold is_durable_txn, is_installed_txn, named. simpl.
   iFrame "#".
   iSplit; first by rewrite /log_state0 //.
   iPureIntro.

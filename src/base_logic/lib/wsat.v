@@ -1007,11 +1007,11 @@ Proof.
   destruct (vec_to_list Qs_mut !! 0) as [?|] eqn:Heq; rewrite Heq //=.
   - iSplitL "Hinterp".
     { iDestruct "Hinterp" as "($&#$)". }
-    unfold ownI_full_bupd_factory. iFrame "#∗". rewrite Heq //=.
+    iFrame "#∗". rewrite Heq //=.
   - iSplitL "Hinterp".
     { iDestruct "Hinterp" as "(?&#Hwand)". iSplitL ""; first eauto.
       iModIntro. iIntros. iMod ("Hwand" with "[//]") as "(?&$)"; eauto. }
-    unfold ownI_full_bupd_factory. iFrame "#∗". rewrite Heq //=.
+    iFrame "#∗". rewrite Heq //=.
 Qed.
 
 Lemma ownI_bupd_factory_close lvl i Q P:

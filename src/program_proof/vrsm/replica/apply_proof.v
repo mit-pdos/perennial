@@ -458,7 +458,7 @@ Proof.
     wp_pures.
     wp_storeField.
     iApply ("HΦ" $! _ (ApplyReply.mkC 1 [])).
-    unfold ApplyReply.own_q. iFrame.
+    iFrame.
     iExists 1%Qp.
     iApply own_slice_small_nil.
     done.

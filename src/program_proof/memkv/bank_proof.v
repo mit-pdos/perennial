@@ -558,7 +558,7 @@ Proof.
   wp_load.
   replace (map_total m) with (bal_total) by auto.
   iApply "Hpost".
-  iModIntro. iExists _, _, _, _. iFrame "Hkck_own ∗#%".
+  iModIntro. iFrame "Hkck_own ∗#%".
 Qed.
 
 Lemma Bank__SimpleAudit_spec (bck:loc) γ accts :

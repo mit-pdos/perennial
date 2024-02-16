@@ -212,7 +212,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iSplitR "Hptsto".
-  { iExists _, _. unfold own_txn_impl, named.
+  { iExists _, _.
     iFrame "Hltuples Htxnmap Hwrbuf HwrbufRP".
     iSplitL; last done.
     do 5 iExists _.

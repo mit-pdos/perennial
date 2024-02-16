@@ -856,7 +856,7 @@ Proof.
         { iExists _; iFrame "#". }
         rewrite (right_id _ bi_sep).
         iExists (set memLog (λ _, memLog') σ); simpl.
-        rewrite /wal_linv_core memWrite_same_start /memLog_linv /memLog_linv_core /named.
+        rewrite /wal_linv_core memWrite_same_start.
         iFrame "HdiskEnd_circ Hstart_circ HownDiskEndMem_linv HownDiskEndMemTxn_linv".
         iSplitR "HmemStart_txn HnextDiskEnd_txn Howntxns HownStableSet
                  HownLoggerPos_linv HownLoggerTxn_linv

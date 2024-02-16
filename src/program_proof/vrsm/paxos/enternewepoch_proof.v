@@ -206,9 +206,8 @@ Proof.
     wp_pures.
     iModIntro.
     iLeft in "HΨ".
-    iSpecialize ("HΨ" with "[Htok]").    
+    iSpecialize ("HΨ" with "[$Htok]").
     {
-      unfold enterNewEpoch_post. iFrame "Htok".
       instantiate (1:=enterNewEpochReply.mkC _ _ _ _).
       simpl.
       iExists _.

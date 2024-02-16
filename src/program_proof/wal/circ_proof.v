@@ -914,7 +914,7 @@ Proof.
   { iModIntro.
     iExists _; iFrame "HP".
     iSplitR; first by auto.
-    iFrame "Hpos". unfold is_low_state.
+    iFrame "Hpos".
     iExists _, _; iFrame.
     iSplitR.
     { iPureIntro.
