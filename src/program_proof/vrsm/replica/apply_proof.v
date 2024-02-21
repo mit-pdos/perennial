@@ -187,7 +187,7 @@ Proof.
   rewrite Hprim.
   iMod (apply_eph_primary_step with "Hupd Hlc Hprimary") as "(Hprimary & #? & #? & #?)".
   { done. }
-  by iFrame "∗#%".
+  by iFrame "∗%#".
 Qed.
 
 Definition own_slice_elt {V} {H:IntoVal V} (sl:Slice.t) (idx:u64) typ q (v:V) : iProp Σ :=
@@ -894,7 +894,7 @@ Proof.
       wp_loadField.
       iDestruct (become_backup with "HghostEph") as "HghostEph".
       wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
-      { iFrame "#∗".
+      { iFrame "∗#".
         repeat iExists _; iSplitR "HghostEph"; last iFrame.
         repeat iExists _; iFrame "∗#".
         iFrame "%". by iLeft.
@@ -907,7 +907,7 @@ Proof.
     }
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hreply Err Reply Hcred1 Hcred2 Hcred3]").
-    { iFrame "#∗".
+    { iFrame "∗#".
       repeat iExists _; iSplitR "HghostEph"; last iFrame.
       repeat iExists _; iFrame "∗#".
       iFrame "%".

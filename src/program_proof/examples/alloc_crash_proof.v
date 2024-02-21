@@ -359,7 +359,7 @@ Proof using allocG0.
   iModIntro.
   iIntros "Htoks".
   iApply "HΦ".
-  iExists _, _; iFrame "# ∗".
+  iExists _, _; iFrame "∗#".
   iSplitR; first auto.
   (*
   iSplitR "Htoks"; last first.
@@ -397,7 +397,7 @@ Lemma alloc_crash_cond_from_post_crash d :
   alloc_crash_cond d true -∗ alloc_crash_cond d false.
 Proof.
   iNamed 1.
-  iExists _; iFrame "% ∗".
+  iExists _; iFrame "∗%".
 Qed.
 
 Lemma alloc_crash_cond_strip_later `{∀ σ, Timeless (P σ)} d b :
@@ -412,7 +412,7 @@ Lemma alloc_crash_cond_no_later_from_post_crash d :
   alloc_crash_cond_no_later d true -∗ alloc_crash_cond_no_later d false.
 Proof.
   iNamed 1.
-  iExists _; iFrame "% ∗".
+  iExists _; iFrame "∗%".
 Qed.
 
 Definition revert_reserved (σ : alloc.t) : alloc.t :=

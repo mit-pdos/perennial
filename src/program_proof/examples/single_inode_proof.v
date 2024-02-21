@@ -299,7 +299,7 @@ Section goose.
     iApply (init_cancel_cfupd ⊤).
     iApply (init_cancel_wand with "H [] [Hinv_crash]").
     { iIntros "(Halloc&Hinode)".
-      iNamed "Hinode". iFrame "#∗".
+      iNamed "Hinode". iFrame "∗#".
       rewrite Halloc_dom. eauto. }
     iIntros "(Hinode&Halloc)".
     iMod (cfupd_weaken_mask with "Hinv_crash") as "Hs_inode".

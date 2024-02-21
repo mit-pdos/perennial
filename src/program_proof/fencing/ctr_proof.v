@@ -815,10 +815,10 @@ Proof.
         {
           iNext.
           iRight.
-          iFrame "#∗".
+          iFrame "∗#".
         }
         iModIntro.
-        iFrame "#∗".
+        iFrame "∗#".
       }
       iDestruct "Hi" as "[HopIncomplete [[HneIncomplete Hgood] | Hi]]"; last first.
       { (* the request was run previously, but the Get fupd wasn't fired
@@ -832,7 +832,7 @@ Proof.
         iLeft.
         iFrame.
         iRight.
-        iFrame "#∗".
+        iFrame "∗#".
       }
       iEval (rewrite /EnterNewEpoch_spec) in "Hgood".
       iMod "Hgood".

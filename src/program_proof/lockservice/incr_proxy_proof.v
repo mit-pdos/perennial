@@ -164,7 +164,7 @@ Proof using Type*.
   iDestruct "HrpcPost" as (reply') "[Hown_reply [%He|(%He & HrpcPost)]]".
   - rewrite He. iNamed "Herrb_ptr". wp_store. wp_load. wp_binop. wp_pures.
     iLeft.
-    iFrame "#∗".
+    iFrame "∗#".
     iSplitL ""; first done.
     iSplitL "Herrb_ptr".
     { iExists _; iFrame. }
@@ -377,7 +377,7 @@ Proof.
   wp_storeField.
   iMod (readonly_alloc_1 with "req") as "#req".
   iApply "HΦ".
-  by iFrame "#∗".
+  by iFrame "∗#".
 Qed.
 
 Variable γ:incrservice_names.
@@ -602,7 +602,7 @@ Proof.
   iSplitL "req".
   { iExists _, _, _, _; iFrame. }
   rewrite HincrSafe.
-  iFrame "#∗".
+  iFrame "∗#".
   by iExists _; iFrame.
 Qed.
 
@@ -790,7 +790,7 @@ Proof.
         iSplitR "Hback_rest Hctx HownCIDs Hfown_lastCID".
         { iRight.
           iExists data2,_,_.
-          iFrame "#∗".
+          iFrame "∗#".
           simpl.
           done.
         }
@@ -820,7 +820,7 @@ Proof.
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc".
       iSplitL "Hreqtok Hpointsto Hrpcclient_own Hfown".
-      - iRight. iFrame. iExists _,_,_; iFrame "#∗".
+      - iRight. iFrame. iExists _,_,_; iFrame "∗#".
         done.
       - by iExists _; iFrame.
     }
@@ -845,7 +845,7 @@ Proof.
       iDestruct "Hpost" as "[HΦc _]".
       iModIntro. iIntros. iApply "HΦc".
       iSplitR "Hghost".
-      - iRight. by iExists _, _, _; iFrame "#∗".
+      - iRight. by iExists _, _, _; iFrame "∗#".
       - by iExists _; iFrame.
     }
     iNext.
@@ -855,7 +855,7 @@ Proof.
     { (* Prove crash obligation after destructing above; TODO: do this earlier *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
       iSplitR "Hghost".
-      - iRight. by iExists _,_, _; iFrame "#∗".
+      - iRight. by iExists _,_, _; iFrame "∗#".
       - eauto.
     }
    wpc_pures.
@@ -900,7 +900,7 @@ Proof.
       wpc_frame.
       wp_apply (wp_ShortTermIncrClerk__MakePreparedRequest with "His_incrserver [Hown_ck Hisreq]").
       { iNamed "Hown_ck".
-        iFrame "#∗".
+        iFrame "∗#".
         iExists _; iFrame "Hisreq".
       }
 
@@ -932,7 +932,7 @@ Proof.
           iMod (get_request_post with "Hisreq HmakeReqPost HrpcToken") as ">Hbackpointsto"; first done.
           by iFrame.
         }
-        { iRight. by iExists _,_,_; iFrame "#∗". }
+        { iRight. by iExists _,_,_; iFrame "∗#". }
       }
 
       (* Prove the fupd *)

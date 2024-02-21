@@ -200,7 +200,7 @@ Proof.
     iFrame. rewrite big_sepM_empty. eauto.
   }
   unshelve (iMod (readonly_alloc_1 with "mu") as "#mu"); [| apply _ |].
-  iModIntro. iApply "HΦ". iExists _. iFrame "# ∗".
+  iModIntro. iApply "HΦ". iExists _. iFrame "∗#".
 Qed.
 
 End memkv_coord_make_proof.

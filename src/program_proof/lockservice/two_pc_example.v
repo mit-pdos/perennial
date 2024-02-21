@@ -345,7 +345,7 @@ Proof.
   {
     iMod (unfinished_coord_aborted_abort with "Hunfinished Hcoordabort") as "#?".
     iMod ("Hpclose" with "[]") as "_".
-    { iRight; iRight. iRight. iFrame "#∗". }
+    { iRight; iRight. iRight. iFrame "∗#". }
     iDestruct "HR" as "[$|>?]"; first by iModIntro.
     iExFalso. iApply coordinator_aborted_unstarted_false; eauto.
   }
@@ -373,7 +373,7 @@ Proof.
     { iExFalso. iApply (unfinished_unfinished_false with "Hunfinished HRfinish"). }
     iFrame.
     iMod ("Htclose" with  "[Hunfinished]"); last by iModIntro.
-    iRight; iRight; iLeft; iFrame "#∗".
+    iRight; iRight; iLeft; iFrame "∗#".
   }
   iDestruct "Ht" as ">#Habort".
   { iExFalso. iApply (unfinished_aborted_false with "[$] [$]"). }
@@ -406,7 +406,7 @@ Proof.
       {
         iMod (do_commit with "Hdodec Hundec") as "#$".
         iMod ("Htclose" with "[HR']"); last by iModIntro.
-        iRight; iRight; iLeft. iFrame "#∗".
+        iRight; iRight; iLeft. iFrame "∗#".
       }
       iDestruct "Ht" as "[[#>Hcommitted _]|Ht]".
       { iExFalso. iApply (do_decide_committed_false with "[$] [$]"). }
@@ -562,12 +562,12 @@ Proof using Type*.
     iDestruct "Hi" as "[Hundec|Hi]".
     {
       iRight; iLeft. iDestruct "Hundec" as "[$ [HR|$]]".
-      iLeft. iExists _; iFrame "#∗".
+      iLeft. iExists _; iFrame "∗#".
     }
     iDestruct "Hi" as "[Hcom|$]".
     {
       iRight; iRight; iLeft. iDestruct "Hcom" as "[$ [HR|$]]".
-      iLeft. iExists _; iFrame "#∗".
+      iLeft. iExists _; iFrame "∗#".
     }
   }
 Qed.
@@ -619,7 +619,7 @@ Proof.
     { done. }
     wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
     {
-      iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
+      iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
       done.
     }
     wp_pures.
@@ -638,7 +638,7 @@ Proof.
   { (* Transaction already finished *)
     wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
     {
-      iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
+      iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
       done.
     }
     wp_pures.
@@ -666,7 +666,7 @@ Proof.
     wp_pures.
     wp_loadField. wp_apply (release_spec with "[$Hmu_inv $Hmulocked Hkvs Htxns HfinishedTxns HlockMap_ptr HkvsMap HtxnsMap HfinishedTxnsMap Hkvs_ctx Hfreshtxns Htxns_postcommit]").
     {
-      iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
+      iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
       done.
     }
     wp_pures.
@@ -859,8 +859,8 @@ Proof.
   { (* No pending transaction with that TID *)
     wp_loadField. wp_apply (release_spec with "[- HΦ]").
     {
-      iFrame "#∗".
-      iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
+      iFrame "∗#".
+      iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
       done.
     }
     wp_pures.
@@ -972,8 +972,8 @@ Proof.
   { (* No pending transaction with that TID *)
     wp_loadField. wp_apply (release_spec with "[- HΦ]").
     {
-      iFrame "#∗".
-      iNext. iExists _, _, _,_,_,_,_; iFrame "#∗".
+      iFrame "∗#".
+      iNext. iExists _, _, _,_,_,_,_; iFrame "∗#".
       done.
     }
     wp_pures.

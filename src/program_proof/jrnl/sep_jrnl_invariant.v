@@ -648,7 +648,7 @@ Section goose_lang.
     { iSplitL "Htok0".
       - iLeft. eauto.
       - iExists _. iFrame "#". }
-    iFrame "# ∗".
+    iFrame "∗#".
   Qed.
 
   Lemma exchange_durable_pointsto γ γ' m :
@@ -696,7 +696,7 @@ Section goose_lang.
     iDestruct (exchange_big_sepM_addrs with "[$] [$] Hm") as "(Hexchanger&Hval)".
     { eauto. }
     iMod ("Hclo" with "[Hexchanger Hdurable_exchanger Hasync]").
-    { iNext. iExists _, _. iFrame "# ∗". eauto. }
+    { iNext. iExists _, _. iFrame "∗#". eauto. }
     iModIntro. eauto.
   Qed.
 
@@ -767,7 +767,7 @@ Section goose_lang.
       iDestruct (exchange_big_sepM_addrs with "[$] [$] Hval") as "(Hexchanger&Hval)".
       { etransitivity; last eassumption; eauto. }
       iMod ("Hclo" with "[Hexchanger Hdurable_exchanger Hasync]").
-      { iNext. iExists _, _. iFrame "# ∗". eauto. }
+      { iNext. iExists _, _. iFrame "∗#". eauto. }
       iModIntro. eauto.
     - (* We go forward, txn_id is durable *)
       iAssert (async_ctx γ.(jrnl_async_name) 1 logm ∗
@@ -784,7 +784,7 @@ Section goose_lang.
       iDestruct (exchange_big_sepM_addrs with "[$] [$] Hval") as "(Hexchanger&Hval)".
       { eauto. }
       iMod ("Hclo" with "[Hexchanger Hdurable_exchanger Hasync]").
-      { iNext. iExists _, _. iFrame "# ∗". eauto. }
+      { iNext. iExists _, _. iFrame "∗#". eauto. }
       iModIntro. eauto.
   Qed.
 

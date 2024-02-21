@@ -77,7 +77,7 @@ Proof.
   replace logSlice.(Slice.sz) with (U64 $ length σ.(slidingM.log)) by word.
   iApply "HΦ". iModIntro.
   iSplit; auto.
-  iExists _, _; iFrame "# ∗".
+  iExists _, _; iFrame "∗#".
 Qed.
 
 Lemma take_0 {A} (l: list A) : take 0 l = [].
@@ -339,7 +339,7 @@ Proof.
   replace (word.add σ.(slidingM.start) logSlice.(Slice.sz)) with (slidingM.endPos σ) by word.
   iApply "HΦ". iModIntro.
   iSplit; auto.
-  iExists _, _; iFrame "# ∗".
+  iExists _, _; iFrame "∗#".
 Qed.
 
 Hint Unfold slidingM.logIndex : word.
@@ -407,7 +407,7 @@ Proof.
   wp_pures.
   iApply "HΦ". iModIntro.
   iSplitL.
-  { iFrame "# % ∗". }
+  { iFrame "∗#%". }
   iPureIntro.
   destruct ok.
   - apply map_get_true in Hmapget as Hindex.
@@ -644,7 +644,7 @@ Proof.
   wp_pures. iModIntro. iApply "HΦ".
   iSplitR.
   { eauto. }
-  iExists _, _; iFrame "# ∗".
+  iExists _, _; iFrame "∗#".
   iExactEq "is_addrPos".
   rewrite /named.
   f_equal.
@@ -871,7 +871,7 @@ Proof.
   { revert Hbks_len; word. }
   iApply "HΦ".
   iSplitR "Hs2 Hblocks".
-  { iFrame "# % ∗". }
+  { iFrame "∗#%". }
   iExists _.
   rewrite -fmap_drop.
   iFrame "Hs2".
@@ -939,7 +939,7 @@ Proof.
   iApply "HΦ".
   iSplitR "Hupds".
   { iSplit; auto.
-    iExists _, _; iFrame "# ∗". }
+    iExists _, _; iFrame "∗#". }
   rewrite take_take.
   iExactEq "Hupds".
   repeat (f_equal; try word).

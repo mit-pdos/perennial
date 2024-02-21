@@ -814,12 +814,12 @@ Proof using Type*.
     unfold is_Server.
     iMod (readonly_alloc_1 with "mu") as "#Hmu".
     iMod (readonly_alloc_1 with "epoch") as "#Hepoch".
-    iExists _; iFrame "#∗".
+    iExists _; iFrame "∗#".
     iApply (alloc_lock with "HmuInv").
     iNext.
     iExists _.
     iExists _, _.
-    iFrame "ck1 ck2 #∗".
+    iFrame "ck1 ck2 ∗#".
     iDestruct "Hunused" as "[$ $]".
   }
 

@@ -209,7 +209,7 @@ Proof.
       wp_loadField.
       wp_apply (release_spec with "[-HΦ Hrep_val_sl Hrepptr]").
       {
-        iFrame "#∗".
+        iFrame "∗#".
         iNext.
         iExists _,_,_, _, _, _.
         iFrame.
@@ -232,7 +232,7 @@ Proof.
       wp_loadField.
       wp_apply (release_spec with "[-HΦ Hrep_val_sl Hrepptr]").
       {
-        iFrame "#∗".
+        iFrame "∗#".
         iNext.
         iExists _,_,_, _, _, _.
         iFrame.
@@ -334,7 +334,7 @@ Proof.
   }
   wp_pures. iApply "HΦ". iExists _.
   iMod (readonly_alloc_1 with "mu") as "$".
-  by iFrame "# ∗".
+  by iFrame "∗#".
 Qed.
 
 Lemma wp_erpc_GetFreshCID s γ :

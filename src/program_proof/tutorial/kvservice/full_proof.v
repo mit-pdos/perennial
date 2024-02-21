@@ -929,7 +929,7 @@ Proof.
   { word. }
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
-    iFrame "#∗". iNext.
+    iFrame "∗#". iNext.
     repeat iExists _.
     iFrame.
     repeat iExists _.
@@ -1023,7 +1023,7 @@ Proof.
     { done. }
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
-      iFrame "#∗". iNext.
+      iFrame "∗#". iNext.
       repeat iExists _; iFrame "Hghost".
       repeat iExists _; iFrame "∗%".
     }
@@ -1049,7 +1049,7 @@ Proof.
   { apply map_get_false in HlastReply as [? _]. done. }
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
-    iFrame "#∗". iNext.
+    iFrame "∗#". iNext.
     repeat iExists _; iFrame "Hghost".
     repeat iExists _; iFrame "∗%".
     iPureIntro. simpl. unfold typed_map.map_insert. by f_equiv.
@@ -1201,7 +1201,7 @@ Proof.
     { by apply map_get_true in HlastReply. }
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
-      iFrame "#∗". iNext.
+      iFrame "∗#". iNext.
       repeat iExists _; iFrame "Hghost".
       repeat iExists _; iFrame "∗%".
     }
@@ -1251,7 +1251,7 @@ Proof.
 
     wp_apply (release_spec with "[-HΦ Hspec Hret]").
     {
-      iFrame "#∗". iNext.
+      iFrame "∗#". iNext.
       repeat iExists _; iFrame "Hghost".
       repeat iExists _; iFrame "∗%".
       iPureIntro.
@@ -1287,7 +1287,7 @@ Proof.
 
   wp_apply (release_spec with "[-HΦ Hspec Hret]").
   {
-    iFrame "#∗". iNext.
+    iFrame "∗#". iNext.
     repeat iExists _; iFrame "Hghost".
     repeat iExists _; iFrame "∗%".
   }
@@ -1383,7 +1383,7 @@ Proof.
     { by apply map_get_true in HlastReply. }
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
-      iFrame "#∗". iNext.
+      iFrame "∗#". iNext.
       repeat iExists _; iFrame "Hghost".
       repeat iExists _; iFrame "∗%".
     }
@@ -1412,7 +1412,7 @@ Proof.
   erewrite <- (server.gauge_proper_default_lookup _ _ st.(server.kvs) Hrel_phys).
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
-    iFrame "#∗". iNext.
+    iFrame "∗#". iNext.
     repeat iExists _; iFrame "Hghost".
     repeat iExists _; iFrame "∗%".
   }

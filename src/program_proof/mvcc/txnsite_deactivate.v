@@ -171,7 +171,7 @@ Proof.
     iExists _.
     iDestruct (own_slice_sz with "HtidsS") as "%HtidsSz".
     rewrite fmap_length in HtidsSz.
-    iFrame "% ∗".
+    iFrame "∗%".
     iPureIntro.
     split.
     { replace (int.nat _) with (S (int.nat idx)); last word.

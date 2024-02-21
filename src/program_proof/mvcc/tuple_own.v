@@ -88,7 +88,7 @@ Proof.
     do 4 iExists _.
     iSplitL "Howned Htidlast Hvers HversS".
     { eauto with iFrame. }
-    iFrame "% ∗".
+    iFrame "∗%".
     iFrame "∗ #".
   }
   wp_pures.

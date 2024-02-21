@@ -152,7 +152,7 @@ Proof.
       iIntros (ck_ptr) "(Hclerk&Hclerk_clo)".
       wp_bind (KVShardClerk__MoveShard #ck_ptr #_ #x).
       wp_apply (wp_KVShardClerk__MoveShard with "[$Hclerk]").
-      { iFrame "#His_shard". iPureIntro.
+      { iFrame "His_shard". iPureIntro.
         eapply lookup_lt_Some in Heq. lia. }
       iIntros "Hclerk".
       wp_pures.
@@ -217,7 +217,7 @@ Proof.
       iIntros (ck_ptr) "(Hclerk&Hclerk_clo)".
       wp_bind (KVShardClerk__MoveShard #ck_ptr #_ #x).
       wp_apply (wp_KVShardClerk__MoveShard with "[$Hclerk]").
-      { iFrame "#His_shard". iPureIntro.
+      { iFrame "His_shard". iPureIntro.
         eapply lookup_lt_Some in Heq. lia. }
       iIntros "Hclerk".
       wp_pures.
@@ -310,7 +310,7 @@ Proof.
     iApply (big_sepM_insert_2 with "").
     { (* GetShardMapping RPC handler_is *)
       iExists _.
-      iFrame "#HgetSpec".
+      iFrame "HgetSpec".
 
       clear Φ.
       iIntros (????) "!#".
@@ -349,7 +349,7 @@ Proof.
     iApply (big_sepM_insert_2 with "").
     { (* AddServerRPC *)
       iExists _.
-      iFrame "#HaddSpec".
+      iFrame "HaddSpec".
 
       clear Φ.
       rewrite /is_urpc_handler.

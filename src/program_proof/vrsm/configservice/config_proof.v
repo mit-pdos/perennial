@@ -1346,7 +1346,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_apply (release_spec with "[Hlocked Hleader]").
-  { iFrame "#∗". iNext. iExists _; iFrame "∗%". }
+  { iFrame "∗#". iNext. iExists _; iFrame "∗%". }
   wp_pures.
   wp_apply wp_NewSlice.
   iIntros (?) "Hargs_sl".
@@ -1456,7 +1456,7 @@ Proof.
           wp_loadField.
           wp_apply (release_spec with "[Hlocked Hleader]").
           {
-            iFrame "#∗".
+            iFrame "∗#".
             iNext. repeat iExists _; iFrame.
             iPureIntro.
             rewrite Hsl_sz.
@@ -1476,7 +1476,7 @@ Proof.
           wp_loadField.
           wp_apply (release_spec with "[Hlocked Hleader]").
           {
-            iFrame "#∗".
+            iFrame "∗#".
             iNext. repeat iExists _; iFrame "∗%".
           }
           wp_pures.
@@ -1656,7 +1656,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_apply (release_spec with "[Hlocked Hleader]").
-  { iFrame "#∗". iNext. iExists _; iFrame "∗%". }
+  { iFrame "∗#". iNext. iExists _; iFrame "∗%". }
   wp_pures.
   wp_load.
   wp_loadField.
@@ -1747,7 +1747,7 @@ Proof.
           wp_loadField.
           wp_apply (release_spec with "[Hlocked Hleader]").
           {
-            iFrame "#∗".
+            iFrame "∗#".
             iNext. repeat iExists _; iFrame.
             iPureIntro.
             rewrite Hsl_sz.
@@ -1766,7 +1766,7 @@ Proof.
           wp_loadField.
           wp_apply (release_spec with "[Hlocked Hleader]").
           {
-            iFrame "#∗".
+            iFrame "∗#".
             iNext. repeat iExists _; iFrame "∗%".
           }
           wp_pures.
@@ -1847,7 +1847,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_apply (release_spec with "[Hlocked Hleader]").
-  { iFrame "#∗". iNext. iExists _; iFrame "∗%". }
+  { iFrame "∗#". iNext. iExists _; iFrame "∗%". }
   wp_pures.
   wp_load.
   wp_loadField.
@@ -1929,7 +1929,7 @@ Proof.
           wp_loadField.
           wp_apply (release_spec with "[Hlocked Hleader]").
           {
-            iFrame "#∗".
+            iFrame "∗#".
             iNext. repeat iExists _; iFrame.
             iPureIntro.
             rewrite Hsl_sz.
@@ -1948,7 +1948,7 @@ Proof.
           wp_loadField.
           wp_apply (release_spec with "[Hlocked Hleader]").
           {
-            iFrame "#∗".
+            iFrame "∗#".
             iNext. repeat iExists _; iFrame "∗%".
           }
           wp_pures.

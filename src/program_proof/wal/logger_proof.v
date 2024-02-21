@@ -72,7 +72,7 @@ Proof.
       wp_pures.
       iApply "HΦ"; iFrame.
       iNamed "Hlkinv".
-      iExists _; iFrame "# ∗".
+      iExists _; iFrame "∗#".
       iPureIntro; inversion 1.
     - iApply "HΦ"; iFrame.
       iPureIntro. split; [done | ].
@@ -812,7 +812,7 @@ Proof.
     wp_if_destruct.
     - wp_pures.
       wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $Hlogger]").
-      { iFrame "# ∗". }
+      { iFrame "∗#". }
       iIntros (progress) "(Hlkinv&Hlk_held&Hlogger)".
       wp_pures.
       wp_if_destruct.

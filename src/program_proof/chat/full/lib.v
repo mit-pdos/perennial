@@ -113,7 +113,7 @@ Proof.
   wp_apply (release_spec with "[-HΦ $Hlk_inv $Hlocked]").
   {
     iExists _, _, _.
-    iFrame "#∗".
+    iFrame "∗#".
     naive_solver.
   }
 
@@ -171,12 +171,12 @@ Proof.
   wp_apply (release_spec with "[-HΦ Hret $Hlk_inv $Hlocked]").
   {
     iExists _, _, _.
-    iFrame "#∗".
+    iFrame "∗#".
   }
 
   wp_pures.
   iApply "HΦ".
-  by iFrame "#∗".
+  by iFrame "∗#".
 Qed.
 
 End lib.

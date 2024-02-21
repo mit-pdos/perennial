@@ -227,7 +227,7 @@ Proof.
       iLeft. iFrame.
     }
     iModIntro. iFrame.
-    iFrame "# ∗".
+    iFrame "∗#".
   }
   { (* impossible case: reply for request has already been set *)
     by iExFalso; iApply (new_seq_implies_unproc with "Hlseq_lb Hlseq_own").
@@ -254,7 +254,7 @@ Proof.
   {
     iDestruct "Hpre2" as "[>Hproc_tok|[>HγPre2 _]]".
     - iMod ("HMClose" with "[HγPre Hpre Hunproc]") as "_"; last by [iModIntro; iFrame].
-      iNext. iFrame "#". iLeft. iFrame "#∗". iRight. iFrame.
+      iNext. iFrame "#". iLeft. iFrame "∗#". iRight. iFrame.
     - by iDestruct (own_valid_2 with "HγPre HγPre2") as %Hbad.
   }
   {
@@ -446,7 +446,7 @@ Proof.
     iDestruct (big_sepM_insert_2 _ _ (req.(Req_CID), req.(Req_Seq)) (Some reply) with "[Hreqeq_lb] Hcseq_lb") as "Hcseq_lb2"; eauto.
     iMod ("HNClose" with "[Hrcctx Hcseq_lb2]") as "_".
     {
-      iNext. iExists _; iFrame "# ∗".
+      iNext. iExists _; iFrame "∗#".
     }
 
     iDestruct (big_sepS_elem_of_acc_impl req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";

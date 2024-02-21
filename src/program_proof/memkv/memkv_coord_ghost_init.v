@@ -33,7 +33,7 @@ Proof.
     iSplitL. { iFrame "Hadd". }
     iFrame "Hget".
   }
-  iExists Γsrv. iFrame "# ∗".
+  iExists Γsrv. iFrame "∗#".
   eauto.
 Qed.
 

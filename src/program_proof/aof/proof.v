@@ -719,7 +719,7 @@ Proof.
         { by iIntros "$ _ !> $ !>". }
         unfold aof_length_lb.
         rewrite Hlengthsafe.
-        iFrame "#∗".
+        iFrame "∗#".
       }
       wp_pures.
       iRight.
@@ -1392,7 +1392,7 @@ Proof.
     wp_apply (wp_condWait with "[-Htok HΦ]").
     {
       iFrame "Hmu_inv HdurableCond HoldDurableCond Hclosed HcloseRequested".
-      by iFrame "#∗".
+      by iFrame "∗#".
     }
     iIntros "[Hlocked Haof_own]".
     wp_pures.

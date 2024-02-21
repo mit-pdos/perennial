@@ -150,7 +150,7 @@ Proof.
     { rewrite /circ_positions.
       rewrite /start_is /diskEnd_is /diskEnd_at_least /=.
       rewrite HdiskEnd.
-      iFrame "#∗".
+      iFrame "∗#".
       iPureIntro; lia. }
     iExists _, _.
     rewrite /circ_own.
@@ -207,12 +207,12 @@ Proof.
 
   iCache with "HΦ Hpos Haddrs Hblocks Hd0 Hd1 Hd2 Hres".
   { crash_case.
-    iFrame "% ∗". }
+    iFrame "∗%". }
 
   wpc_apply (wpc_Read with "[Hd0]"); first by iFrame.
   iSplit.
   { iLeft in "HΦ". iIntros "Hd0". iApply "HΦ".
-    iFrame "% ∗". }
+    iFrame "∗%". }
 
   iIntros (s0) "!> [Hd0 Hs0]".
   wpc_pures.
@@ -220,7 +220,7 @@ Proof.
   wpc_apply (wpc_Read with "[Hd1]"); first iFrame.
   iSplit.
   { iLeft in "HΦ". iIntros "Hd1". iApply "HΦ".
-    iFrame "% ∗". }
+    iFrame "∗%". }
 
   iIntros (s1) "!> [Hd1 Hs1]".
   wpc_pures.
@@ -375,7 +375,7 @@ Proof.
   - iSplit.
     { iLeft in "HΦ". iDestruct 1 as (i) "(Hd2&%)".
       iApply "HΦ".
-      iFrame "% ∗". }
+      iFrame "∗%". }
 
     iIntros "!> [(_ & HI & Hdiskaddrs & Hd2) Hposl]".
     iDestruct "HI" as (bufSlice) "[Hbufsloc Hupds]".

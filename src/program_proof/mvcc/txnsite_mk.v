@@ -46,7 +46,7 @@ Proof.
     unfold own_txnsite.
     iExists (Slice.mk tids 0 8), [], ∅.
     replace (int.nat (U64 0)) with 0%nat by word.
-    iFrame "% # ∗".
+    iFrame "∗%#".
     iPureIntro.
     rewrite fmap_nil.
     split; [done | apply NoDup_nil_2].

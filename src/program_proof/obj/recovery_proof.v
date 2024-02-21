@@ -839,7 +839,7 @@ Proof.
   iFrame "Hcrash_heaps".
   iSplitL "".
   { iModIntro. iPureIntro. eapply log_crash_to_post_crash; eauto. }
-  iFrame "#∗".
+  iFrame "∗#".
   simpl. iEval (rewrite right_id) in "logheap". iFrame "logheap".
   eauto.
 Qed.

@@ -108,7 +108,7 @@ Proof.
   iMod (readonly_alloc_1 with "Hstate") as "Hstate".
   iModIntro.
   iApply "HΦ".
-  iExists _, _. iFrame "# ∗".
+  iExists _, _. iFrame "∗#".
 Qed.
 
 Theorem alloc_lockShard_init_cancel covered ls (P Pc : u64 → iProp Σ):
@@ -142,7 +142,7 @@ Proof.
     }
     iMod (alloc_lock lockN with "Hfree1 Hinner") as "Hlock".
     iModIntro.
-    iExists _, _, _. iFrame "# ∗". iModIntro.
+    iExists _, _, _. iFrame "∗#". iModIntro.
     iApply (big_sepS_mono with "Hwand"); eauto.
     iIntros (??) "H". iApply "H".
   - iIntros "H2". iApply (big_sepS_mono with "H2").
@@ -980,7 +980,7 @@ Proof.
     rewrite -Hgh_lookup. f_equal.
     unseal_nshard.
     word. }
-  iExists _, _. iFrame "# ∗". eauto.
+  iExists _, _. iFrame "∗#". eauto.
 Qed.
 
 Theorem wp_LockMap__Release l ghs (addr : u64) (P Pc : u64 -> iProp Σ) :

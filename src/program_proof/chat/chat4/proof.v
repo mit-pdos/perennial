@@ -289,7 +289,7 @@ Proof using ghost_varG0 heapGS0 waitgroupG0 Σ.
     iMod (readonly_alloc_1 with "Ha_sn") as "#Ha_sn".
     iMod (readonly_alloc_1 with "Ha_err") as "#Ha_err".
     wp_apply (wp_WaitGroup__Done with "[-]"); try done.
-    iFrame "#∗".
+    iFrame "∗#".
     iModIntro.
     change (int.Z 0) with 0.
     repeat iExists _.

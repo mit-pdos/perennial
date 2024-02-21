@@ -35,7 +35,7 @@ Proof.
 
   iAssert (∃ x, counter_lb γ x ∗ localBound_ptr ↦[uint64T] #(U64 x))%I with "[HlocalBound Hlb]" as "HH".
   {
-    iExists 0%nat. iFrame "#∗".
+    iExists 0%nat. iFrame "∗#".
   }
   wp_forBreak.
   wp_pures.

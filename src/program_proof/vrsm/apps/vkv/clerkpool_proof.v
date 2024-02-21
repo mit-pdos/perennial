@@ -71,7 +71,7 @@ Proof.
     { word. }
     rewrite skipn_cons drop_0.
     wp_apply (release_spec with "[-HΦ Hcl_own Hl]").
-    { iFrame "#∗". iNext. repeat iExists _. iFrame "∗#". }
+    { iFrame "∗#". iNext. repeat iExists _. iFrame "∗#". }
     wp_pures.
     wp_load.
     wp_bind (f #_).
@@ -93,14 +93,14 @@ Proof.
     wp_storeField.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hl]").
-    { iFrame "#∗". iNext. repeat iExists _. iFrame "∗#". done. }
+    { iFrame "∗#". iNext. repeat iExists _. iFrame "∗#". done. }
     wp_pures.
     iApply "HΦ".
   }
   {
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hl]").
-    { iFrame "#∗". iNext. repeat iExists _. iFrame "∗#". }
+    { iFrame "∗#". iNext. repeat iExists _. iFrame "∗#". }
     wp_pures.
     wp_loadField.
     wp_apply (wp_MakeClerk with "[]").
@@ -125,7 +125,7 @@ Proof.
     wp_storeField.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hl]").
-    { iFrame "#∗". iNext. repeat iExists _. iFrame "∗#". done. }
+    { iFrame "∗#". iNext. repeat iExists _. iFrame "∗#". done. }
     wp_pures.
     iApply "HΦ".
   }

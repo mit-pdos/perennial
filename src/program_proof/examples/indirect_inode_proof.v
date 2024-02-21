@@ -213,7 +213,7 @@ Proof.
   iNamed "Hinv".
   iNamed "Hdurable".
   iExists ds.
-  iFrame "% ∗".
+  iFrame "∗%".
   auto.
 Qed.
 

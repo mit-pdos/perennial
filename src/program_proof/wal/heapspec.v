@@ -546,7 +546,7 @@ Proof using walheapG0.
     rewrite !dom_insert_L //.
     iSplit; first by (iPureIntro; congruence).
     rewrite big_sepM_insert //.
-    iFrame "#∗".
+    iFrame "∗#".
 Qed.
 
 Lemma wal_heap_inv_crash_as_last_disk crash_heap ls :
@@ -787,7 +787,7 @@ Proof.
   iDestruct "Hcrash_heaps_exchange" as "[H|H]"; iNamed "H".
   - iDestruct (ghost_var_agree with "[$] [$]") as %<-.
     iSplitR "Hcrash_heaps H Hdurable_lb_old2".
-    * iFrame "% # ∗".
+    * iFrame "∗%#".
     * iFrame.
       { iDestruct "Hdurable_lb_old2" as (? n Hle) "H".
         iFrame "%".
@@ -897,7 +897,7 @@ Proof.
   iModIntro.
   iDestruct "resources" as "(?&?&?&?)".
   iFrame.
-  iFrame "%∗".
+  iFrame "∗%".
   apply log_crash_unfold in Htrans as (crash_txn & Hbound & Hls'_eq).
   subst ls'; simpl.
   iSplit; first by (iPureIntro; lia).

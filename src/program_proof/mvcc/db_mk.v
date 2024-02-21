@@ -156,7 +156,7 @@ Proof.
     }
     iDestruct (big_sepL_cons with "HactiveAuths") as "[HactiveAuth HactiveAuths]".
     iDestruct (big_sepL_cons with "Hsids") as "[Hsid Hsids]".
-    wp_apply (wp_MkTxnSite with "[HactiveAuth $Hsid]"); first by iFrame "#∗".
+    wp_apply (wp_MkTxnSite with "[HactiveAuth $Hsid]"); first by iFrame "∗#".
     iIntros (site) "HsiteRP".
     wp_pures.
     

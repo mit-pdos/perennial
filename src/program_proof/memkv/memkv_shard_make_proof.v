@@ -250,7 +250,7 @@ Proof.
   iMod (readonly_alloc_1 with "mu") as "$".
   iMod (readonly_alloc_1 with "cm") as "$".
   iMod (readonly_alloc_1 with "erpc") as "$".
-  by iFrame "# ∗".
+  by iFrame "∗#".
 Qed.
 
 End memkv_shard_make_proof.

@@ -351,7 +351,7 @@ Proof.
     iExists _, _. iFrame. eauto.
   }
   iSplitL "Hstart2 HdiskEnd2 Hγaddrs Hγblocks".
-  { iFrame "#∗". eauto. }
+  { iFrame "∗#". eauto. }
   iSplitL "Haddrs Hblocks Hstart Hend Hend_at_least".
   { iModIntro.
     rewrite /is_circular_state_crash.
@@ -429,7 +429,7 @@ Theorem is_circular_state_pos_acc γ σ :
 Proof.
   iIntros "His_circ".
   iDestruct "His_circ" as "(%Hwf&$&Hrest)"; iIntros "Hpos".
-  iFrame "% ∗".
+  iFrame "∗%".
 Qed.
 
 Theorem is_circular_inner_wf γ addrs blocks σ :

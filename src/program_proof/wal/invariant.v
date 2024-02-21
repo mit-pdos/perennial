@@ -905,7 +905,7 @@ Proof.
   iIntros (shutdown' nthread') "Hshutdown Hnthread".
   iExists σ. iFrame "HdiskEnd_circ Hstart_circ HmemLog_linv".
   iExists (set shutdown (λ _, shutdown') (set nthread (λ _, nthread') σₗ)); simpl.
-  by iFrame "# ∗".
+  by iFrame "∗#".
 Qed.
 
 Lemma is_txn_pos_unique txns tid pos pos' :

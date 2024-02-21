@@ -150,7 +150,7 @@ Proof using Type*.
     iApply "HΦ".
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    by iFrame "#∗".
+    by iFrame "∗#".
   }
   {
     wp_loadField.
@@ -166,7 +166,7 @@ Proof using Type*.
 
     iSplitL ""; first done.
     iDestruct "Hatomic" as "[_ $]".
-    iExists _,_,_,_; by iFrame "#∗".
+    iExists _,_,_,_; by iFrame "∗#".
   }
 Qed.
 
@@ -247,7 +247,7 @@ Proof using Type*.
     iApply "Hpost".
     iDestruct ("HcloseShardSet" with "HshardCk") as "HshardSet".
     iDestruct ("HslClose" with "Hsmall_sl") as "?".
-    iModIntro. iExists _, _, _, _. by iFrame "#∗".
+    iModIntro. iExists _, _, _, _. by iFrame "∗#".
   }
   {
     wp_loadField.

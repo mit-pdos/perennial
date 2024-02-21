@@ -144,7 +144,7 @@ Proof.
   iSplit.
   { iPureIntro. lia. }
   iNamed "HnextDiskEnd".
-  iFrame "#∗".
+  iFrame "∗#".
   iSplit.
   2: {
     iPureIntro.
@@ -349,7 +349,7 @@ Proof.
     { by iFrame. }
     iExists nextDiskEnd_txn_id.
     iSplitL "HownStableSet".
-    { by iFrame "#∗". }
+    { by iFrame "∗#". }
     rewrite subslice_zero_length.
     eapply is_txn_bound in HnextDiskEnd_txn.
     iPureIntro. intuition eauto; lia.

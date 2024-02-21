@@ -417,7 +417,7 @@ Section goose.
     iModIntro.
     iSplitL "Halloc Hinode".
     { iExists _, _, _, _, _, _. iFrame "Hinode". iFrame "Halloc".
-      iFrame "# ∗". }
+      iFrame "∗#". }
     iModIntro.
     iMod "Halloc_crash" as "Halloc".
     iMod "Hinode_crash" as "Hinode".

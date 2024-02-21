@@ -123,7 +123,7 @@ Proof.
     wp_apply (wp_Init JRNL_KIND_SIZE (nroot.@"H") with "[Hj]").
     { solve_ndisj. }
     { solve_ndisj. }
-    { iFrame "# ∗". }
+    { iFrame "∗#". }
     iIntros (l') "(Hj&Hopen&H)". iNamed "H".
     iExists _. iFrame "Hj". rewrite /val_interp//=/twophase_val_interp.
     iExists _, _, _, _, _.
