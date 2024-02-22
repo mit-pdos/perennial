@@ -604,7 +604,7 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
-    iFrame "#∗". iNext.
+    iFrame "∗#". iNext.
     repeat iExists _.
     iFrame.
   }
@@ -646,7 +646,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
-      iFrame "#∗". iNext.
+      iFrame "∗#". iNext.
       repeat iExists _.
       iFrame.
     }
@@ -670,7 +670,7 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
-    iFrame "#∗". iNext.
+    iFrame "∗#". iNext.
     repeat iExists _.
     iFrame.
   }
@@ -710,7 +710,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
-      iFrame "#∗". iNext.
+      iFrame "∗#". iNext.
       repeat iExists _.
       iFrame.
     }
@@ -752,7 +752,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hspec Hret]").
     {
-      iFrame "#∗". iNext.
+      iFrame "∗#". iNext.
       repeat iExists _.
       iFrame.
     }
@@ -774,7 +774,7 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hspec Hret]").
   {
-    iFrame "#∗". iNext.
+    iFrame "∗#". iNext.
     repeat iExists _.
     iFrame.
   }
@@ -818,7 +818,7 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[-HΦ Hspec]").
     {
-      iFrame "#∗". iNext.
+      iFrame "∗#". iNext.
       repeat iExists _.
       iFrame.
     }
@@ -840,7 +840,7 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Hspec]").
   {
-    iFrame "#∗". iNext.
+    iFrame "∗#". iNext.
     repeat iExists _.
     iFrame.
   }

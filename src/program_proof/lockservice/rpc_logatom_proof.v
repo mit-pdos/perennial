@@ -144,7 +144,7 @@ Proof using Type*.
     {
       iSplit; last first.
       { unfold read_request.
-        iFrame "#∗".
+        iFrame "∗#".
         simpl. iPureIntro. lia.
       }
       iFrame "Hreqinv_init".

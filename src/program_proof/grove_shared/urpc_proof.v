@@ -232,7 +232,7 @@ Proof.
   unshelve (iMod (readonly_alloc_1 with "handlers") as "#handlers"); [| apply _ |].
   unshelve (iMod (readonly_alloc_1 with "Hmap") as "#Hmap"); [| apply _ |].
   iApply "HΦ". iExists _, _.
-  iFrame "# ∗". eauto.
+  iFrame "∗#". eauto.
 Qed.
 
 Definition urpc_handler_mapping (γ : server_chan_gnames) (host : u64) (handlers : gmap u64 val) : iProp Σ :=
@@ -259,7 +259,7 @@ Proof.
     iNamed "His_urpc_spec_pred". iFrame "% #".
     rewrite big_sepM_insert //. iSplitL "His_urpcHandler".
     { iExists Spec, _.
-      iFrame "# ∗". }
+      iFrame "∗#". }
     apply dom_empty_iff_L in Hemp. rewrite Hemp big_sepM_empty. eauto.
   }
   iDestruct ("IH" with "[//] [$]") as "HIH".
@@ -269,7 +269,7 @@ Proof.
     rewrite /is_urpc_spec_pred.
     iDestruct "His_urpc_spec_pred" as (g0 rpcdom) "H".
     iDestruct "H" as "(#Hdom1&%Hdom2&#Hspec_name&#Hspec_saved&H)".
-    iExists _, _.  iFrame "# ∗".
+    iExists _, _.  iFrame "∗#".
   }
 Qed.
 
@@ -528,7 +528,7 @@ Proof.
   wp_pures.
   wp_if_destruct; last first.
   { wp_pures. wp_loadField. wp_apply (release_spec with "[-]").
-    { iFrame "# ∗". iNext. iExists _, _, _, _, _. iFrame.
+    { iFrame "∗#". iNext. iExists _, _, _, _, _. iFrame.
       eauto. }
     wp_pures. eauto.
   }
@@ -574,12 +574,12 @@ Proof.
     { iThaw "Hclo". iApply (big_sepM_mono with "Hclo").
       iIntros (?? Hlookup) "H". iNamed "H".
       iExists _. iFrame "Hreg_entry HPost_saved". iDestruct "H" as "[Hcase1|[Hcase2|Hcase3]]".
-      { iNamed "Hcase1". iLeft. iExists _, _, _, aborted0. iFrame "# ∗".
+      { iNamed "Hcase1". iLeft. iExists _, _, _, aborted0. iFrame "∗#".
         iPureIntro.
         destruct (decide (seqno = k)).
         { subst. rewrite lookup_delete in Hlookup; congruence. }
         rewrite lookup_delete_ne //=. }
-      { iNamed "Hcase2". iRight. iLeft. iExists _, _. iFrame "# ∗".
+      { iNamed "Hcase2". iRight. iLeft. iExists _, _. iFrame "∗#".
         iPureIntro.
         apply lookup_delete_None; auto.
       }
@@ -839,7 +839,7 @@ Proof.
     }
     iExists Post.
     iFrame "Hreg Hsaved".
-    iLeft. iExists _, _, _, false. iFrame "# ∗".
+    iLeft. iExists _, _, _, false. iFrame "∗#".
     iPureIntro. rewrite lookup_insert //. }
   wp_pures.
   wp_apply (wp_slice_len).
@@ -933,13 +933,13 @@ Proof.
       iExists _. iFrame.
       iIntros "H". iFrame "∗ # %".
       iThaw "Hclo". iApply "Hclo".
-      { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "# ∗". eauto. }
+      { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "∗#". eauto. }
     }
     { iNamed "Hcase2". iExists _. iFrame.
       iIntros "H". iFrame "∗ # %".
       iThaw "Hclo". iApply "Hclo".
       { simpl. iExists _. iFrame "HPost_saved Hreg". iRight.
-        iLeft. iExists _, _. iFrame "# ∗". eauto. }
+        iLeft. iExists _, _. iFrame "∗#". eauto. }
     }
     { iDestruct "Hcase3" as "(?&Hex)".
       iDestruct (ptsto_valid_2 with "Hex [$]") as %Hval.
@@ -974,7 +974,7 @@ Proof.
     wp_pures.
     iThaw "Hclo".
     iDestruct ("Hclo" with "[Hdone Hcond Hescrow Hrep_ptr]") as "H".
-    { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "# ∗". eauto. }
+    { simpl. iExists _. iFrame "Hsaved Hreg". iLeft. iExists _, _, _. iFrame "∗#". eauto. }
     rewrite bool_decide_false.
     2: by destruct aborted.
     wp_loadField.

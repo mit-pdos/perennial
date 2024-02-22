@@ -381,7 +381,7 @@ Proof.
         wp_pures.
         wp_loadField.
         wp_apply (release_spec with "[HlockC H0 Hqueue Hfirst Hcount H1 Helem]").
-        { iFrame "#∗". iNext. iExists _, _, _. iFrame. eauto. }
+        { iFrame "∗#". iNext. iExists _, _, _. iFrame. eauto. }
         wp_pures.
         iModIntro.
         iApply "Post".
@@ -389,7 +389,7 @@ Proof.
       } }
   - wp_loadField.
     wp_apply (release_spec with "[HlockC H0 Hqueue Hfirst Hcount isSlice Helem]").
-    { iFrame "#∗". iNext. iExists _,_,_. iFrame. eauto. }
+    { iFrame "∗#". iNext. iExists _,_,_. iFrame. eauto. }
     wp_pures.
     iModIntro.
     iApply "Post".
@@ -676,7 +676,7 @@ Proof.
     erewrite (remove_one queue1 first1 count1); eauto; try word.
     iDestruct "Helem" as "[Hp Helem]". 
     wp_apply (release_spec with "[HlockC H2 Hqueue Hfirst Hcount H3 Helem]").
-    { iFrame "#∗". 
+    { iFrame "∗#". 
       iNext.
       iExists _, (u64_instance.u64.(word.sub) count1 1).
       iExists _. 

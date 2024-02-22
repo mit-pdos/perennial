@@ -205,7 +205,7 @@ Proof.
     iApply (big_sepM_insert_2 with "").
     { (* MoveShardRPC handler_is *)
       simpl. iExists _.
-      iFrame "#HmoveSpec".
+      iFrame "HmoveSpec".
 
       clear Φ.
       iIntros (????) "!#".

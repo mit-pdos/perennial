@@ -262,14 +262,14 @@ Proof.
   iExists _, _; iFrame.
   iSplitR.
   { iFrame "#". }
-  iExists _, (Slice.nil), [], addrs. iFrame "% ∗".
+  iExists _, (Slice.nil), [], addrs. iFrame "∗%".
   iSplitL "".
   { eauto. }
   iSplitR ""; last first.
   { rewrite /blocks_slice.
     iExists 1%Qp. rewrite big_sepL2_nil. rewrite right_id.
     by iApply own_slice_nil. }
-  iExists _. iFrame "% ∗".
+  iExists _. iFrame "∗%".
   iPureIntro; eauto.
 Qed.
 
@@ -309,7 +309,7 @@ Proof.
   iDestruct (is_inode_durable_addrs with "Hdurable") as "%Haddr_set".
   iExists addrs.
   iSplitL "addrs Haddrs".
-  { iExists _; iFrame "% ∗". }
+  { iExists _; iFrame "∗%". }
   iFrame.
   iNamed 1.
   iIntros "Hdurable".

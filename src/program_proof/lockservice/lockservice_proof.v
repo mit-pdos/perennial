@@ -277,7 +277,7 @@ Proof using Type*.
   wp_loadField.
   wp_apply (RPCClient__MakeRequest_spec _ cl_ptr (mkRPCValsC _ _) γ.(ls_rpcGN) with "[] [Hcl]"); eauto.
   {
-    iNamed "Hserver". iNamed "His_rpc". iFrame "# ∗".
+    iNamed "Hserver". iNamed "His_rpc". iFrame "∗#".
   }
   iIntros (v) "Hretv".
 
@@ -341,7 +341,7 @@ Proof using Type*.
   wp_loadField.
   wp_apply (RPCClient__MakeRequest_spec _ cl_ptr (mkRPCValsC _ _) γ.(ls_rpcGN) with "[] [Hcl HP]"); eauto.
   {
-    iNamed "Hserver". iNamed "His_rpc". iFrame "# ∗".
+    iNamed "Hserver". iNamed "His_rpc". iFrame "∗#".
   }
   iIntros (v) "Hretv".
 

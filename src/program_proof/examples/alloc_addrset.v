@@ -186,12 +186,12 @@ Proof.
       { iPureIntro.
         rewrite -Hmapdom.
         apply elem_of_dom; eauto. }
-      iExists _; by iFrame "% ∗".
+      iExists _; by iFrame "∗%".
     + iSplitR.
       { iPureIntro.
         rewrite -Hmapdom; subst.
         rewrite dom_empty_L //. }
-      iExists _; by iFrame "% ∗".
+      iExists _; by iFrame "∗%".
 Qed.
 
 Theorem wp_mapRemove m_ref remove_ref free remove E :

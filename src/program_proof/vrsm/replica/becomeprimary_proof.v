@@ -560,7 +560,7 @@ Proof.
       repeat (iExists _).
       iSplitR "HghostEph"; last iFrame.
       repeat (iExists _).
-      iFrame "∗#%".
+      iFrame "∗%#".
       simpl.
       iRight.
       repeat iExists _.

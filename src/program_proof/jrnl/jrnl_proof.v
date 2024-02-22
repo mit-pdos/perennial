@@ -321,7 +321,7 @@ Proof.
     intuition idtac; subst.
     + iModIntro.
       iExists _, _, _.
-      iFrame "# ∗".
+      iFrame "∗#".
 
       iSplit.
       { iPureIntro.
@@ -349,7 +349,7 @@ Proof.
 
     + iModIntro.
       iExists _, _, _.
-      iFrame "# ∗".
+      iFrame "∗#".
 
       iSplit.
       { iPureIntro.
@@ -869,7 +869,7 @@ Proof.
         iIntros (k x Hkx) "[(#Hunify & HCP & Hcrashstates_frag) [Hpointsto Hextra]]".
         intuition try congruence.
         iDestruct ("Hunify" with "[$HCP $Hcrashstates_frag $Hpointsto]") as "#Hu".
-        iSplitL "HCP Hcrashstates_frag". 1: iFrame "#∗".
+        iSplitL "HCP Hcrashstates_frag". 1: iFrame "∗#".
         iAssert (⌜committed x = modified x⌝)%I as %Heq.
         { iDestruct "Hextra" as %Hextra. intuition eauto. }
         iSplitL "Hpointsto Hextra".

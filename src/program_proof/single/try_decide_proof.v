@@ -656,7 +656,7 @@ Proof.
         (* TODO: Pure reasoning to know that numAccepted > f+1 *)
         admit.
       }
-      iFrame "#∗".
+      iFrame "∗#".
       done.
     }
     iApply "HΦ".

@@ -253,7 +253,7 @@ Proof.
   iExists _, _; iFrame.
   iSplitR.
   { iFrame "#". }
-  iFrame "% ∗".
+  iFrame "∗%".
 Qed.
 
 Theorem is_inode_durable_addrs addr σ addrs :
@@ -292,7 +292,7 @@ Proof.
   iDestruct (is_inode_durable_addrs with "Hdurable") as "%Haddr_set".
   iExists addrs.
   iSplitL "addrs Haddrs".
-  { iExists _; iFrame "% ∗". }
+  { iExists _; iFrame "∗%". }
   iFrame.
   iNamed 1.
   iIntros "Hdurable".

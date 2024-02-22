@@ -365,7 +365,7 @@ Proof.
   (* this is very bad, breaks sliding abstraction boundary *)
   iNamed "His_memLog"; iNamed "Hinv". wp_loadField.
   iApply "HΦ".
-  by iFrame "# ∗".
+  by iFrame "∗#".
 Qed.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ dinit txn_id pos :
@@ -427,7 +427,7 @@ Proof.
       iFrame "Hlocked".
       iNamed "HdiskEnd_circ".
       iSplitL.
-      { by iFrame "# ∗". }
+      { by iFrame "∗#". }
       iApply (diskEnd_at_least_mono with "HdiskEnd_at_least"); auto.
   }
 

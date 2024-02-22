@@ -301,13 +301,12 @@ Section proof.
         iMod ("Hobj" with "[$]") as "Hobj".
         iDestruct "Hobj" as (mt'' Hdom Heqkinds Hforall) "Hpointstos".
         iExists _, _, _, _. iFrame.
-        rewrite Hdom Heqkinds. iFrame "#Hdom".
+        rewrite Hdom Heqkinds. iFrame "Hdom".
         eauto.
       }
       iSplit; first done.
       iApply "HΦ".
       iFrame "Hj".
-      iSplit; first by iFrame "Hopen".
-      iExists _, _, _, _. by iFrame.
+      by iFrame.
   Qed.
 End proof.

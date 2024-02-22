@@ -64,9 +64,9 @@ Proof.
   wp_storeField.
   iMod (mono_list_own_alloc []) as (γ) "(Hauth & #Hlb)".
   iApply ("HΦ" $! γ).
-  iFrame "#∗".
+  iFrame "∗#".
   iExists _, s, _, _, _, vks, _.
-  iFrame "%#∗".
+  iFrame "∗%#".
   rewrite replicate_0.
   by iApply big_sepL2_nil.
 Qed.
@@ -200,7 +200,7 @@ Proof.
   iClear "Hlog_own' Hargs HP".
   iExists _, _, _, _, _, _, _.
   iDestruct (big_sepL2_app_inv with "Hsep") as "(Hsep & _)"; [naive_solver|].
-  by iFrame "#∗".
+  by iFrame "∗#".
 Qed.
 
 (*
@@ -357,14 +357,14 @@ Proof.
   iEval (rewrite /MsgTSlice.own) in "Hold".
   iRename "Hsep" into "Hsepold".
   iNamed "Hold".
-  iFrame "#∗".
+  iFrame "∗#".
   iSplitL.
   2: {
     rewrite /prefix.
     naive_solver.
   }
   repeat iExists _.
-  by iFrame "#∗".
+  by iFrame "∗#".
 Qed.
 
 End clerk.

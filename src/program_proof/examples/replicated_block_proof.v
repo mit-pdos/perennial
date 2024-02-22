@@ -426,7 +426,7 @@ Section goose.
     wpc_apply (wpc_RepBlock__Read with "Hrblock").
     iSplit.
     { iIntros "_". iLeft in "HΦ". eauto. }
-    iIntros "!> * ?". iModIntro. iFrame "# ∗".
+    iIntros "!> * ?". iModIntro. iFrame "∗#".
     rewrite left_id.
     iSplit.
     - iLeft in "HΦ". eauto.

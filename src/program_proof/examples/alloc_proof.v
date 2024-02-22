@@ -109,7 +109,7 @@ Proof using allocG0.
           with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame.
     rewrite /alloc.free /=.
-    iFrame "% ∗". }
+    iFrame "∗%". }
   iModIntro.
   iApply ("HΦ" $! _ γ).
   iExists _, _; iFrame "#".

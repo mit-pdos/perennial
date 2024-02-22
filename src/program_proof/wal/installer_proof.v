@@ -144,7 +144,7 @@ Proof.
   iMod "HinnerN" as "_".
   iFrame.
   iMod ("Hclose" with "[-HQ HΦ]") as "_".
-  { by iFrame "#∗". }
+  { by iFrame "∗#". }
   iIntros "!>" (s) "Hs".
   iApply "HΦ".
   iExists _; iFrame.

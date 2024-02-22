@@ -55,7 +55,7 @@ Proof.
       iIntros "Hmap".
       wp_pures.
       iSplit; eauto.
-      iExists _. iFrame "# ∗".
+      iExists _. iFrame "∗#".
       iSplit.
       { iPureIntro. rewrite /typed_map.map_insert lookup_insert; eauto. }
       iApply big_sepM_insert.

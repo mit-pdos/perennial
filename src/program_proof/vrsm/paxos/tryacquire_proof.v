@@ -409,7 +409,7 @@ Proof.
     wp_pures.
     wp_apply (wp_condWait with "[-HΦ Herr]").
     {
-      iFrame "#∗".
+      iFrame "∗#".
       iExists _, _.
       iFrame "∗#".
     }
@@ -670,7 +670,7 @@ Proof.
 
   wp_apply ("Hwp" $! _ _ _ γghost_op with "[-Hfail Htok Hlc2] [-]").
   {
-    iFrame "#∗".
+    iFrame "∗#".
     iInv "Hinv" as "HH" "Hclose".
     iMod (lc_fupd_elim_later with "Hlc1 HH") as "HH".
     iDestruct "HH" as (?) "(Hstate & Hghost & #HQs)".

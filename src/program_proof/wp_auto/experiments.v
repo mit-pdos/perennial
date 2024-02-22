@@ -144,7 +144,7 @@ Proof.
   { tc_solve. }
   2:{ done. }
   simpl.
-  iFrame "#∗".
+  iFrame "∗#".
   iApply later_sep_l_intro.
   unfold tracker_inv.
   iApply sep_exist_r.

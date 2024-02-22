@@ -394,7 +394,7 @@ Proof.
   { done. }
   iFrame "H".
   iMod "Hmask". iModIntro.
-  repeat iExists _; iFrame "∗#%".
+  repeat iExists _; iFrame "∗%#".
 Qed.
 
 Lemma wp_Server__ApplyRo (s:loc) γ γsrv op_sl op (enc_op:list u8) Ψ (Φ: val → iProp Σ) :

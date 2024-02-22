@@ -46,7 +46,7 @@ Proof.
     iSplitL. { iFrame "Hinstall". }
     iFrame "Hfresh".
   }
-  iExists Γsrv. iFrame "# ∗".
+  iExists Γsrv. iFrame "∗#".
   eauto.
 Qed.
 

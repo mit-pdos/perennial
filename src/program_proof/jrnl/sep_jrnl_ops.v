@@ -134,7 +134,7 @@ Section goose_lang.
       rewrite (insert_id (mspec.committed <$> mT)); last first.
       { rewrite lookup_fmap Hmt_lookup //. }
       rewrite orb_true_r.
-      iFrame "#∗".
+      iFrame "∗#".
       iPureIntro; intros; congruence.
     - (* user did not change buf, so no basic updates are needed *)
       iModIntro.
@@ -231,7 +231,7 @@ Section goose_lang.
     rewrite !fmap_insert !mspec.committed_mkVersioned !mspec.modified_mkVersioned /=.
     rewrite (insert_id (mspec.committed <$> mT)); last first.
     { rewrite lookup_fmap Hlookup //. }
-    iFrame "#∗".
+    iFrame "∗#".
     iSplit.
     2: eauto.
     iExactEq "Htxn_ctx".
@@ -477,7 +477,7 @@ Section goose_lang.
       rewrite length_possible_async_put.
       replace (S (length (possible σs)) - 1)%nat with (length (possible σs))%nat by lia.
       iSplit.
-      { iModIntro. iModIntro. generalize (length (possible σs)); intros. iFrame "# ∗". }
+      { iModIntro. iModIntro. generalize (length (possible σs)); intros. iFrame "∗#". }
       iExactEq "Hnew".
       auto with f_equal lia. }
     iSplit.

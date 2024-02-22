@@ -404,7 +404,7 @@ Lemma neutralize_request (req:RPCRequestID) γrpc γreq (PreCond:iProp Σ) PostC
   <disc> neutralized_pre γrpc req.(Req_CID) PreCond PostCond.
 Proof.
     iIntros "%HincrSafe #Hsrpc #His_req Hγpost".
-    iFrame "#∗".
+    iFrame "∗#".
 
 
     iInv "His_req" as "[>#Hcseq_lb_strict HN]" "HNClose".
@@ -433,7 +433,7 @@ Proof.
 
       iMod ("HNClose" with "[Hγpost]") as "_".
       {
-        iNext. iFrame "Hcseq_lb_strict". iRight. iFrame "#∗".
+        iNext. iFrame "Hcseq_lb_strict". iRight. iFrame "∗#".
         iApply (fmcounter_map_mono_lb with "Hlb").
         word.
       }
@@ -452,7 +452,7 @@ Proof.
         iNext.
         iFrame "Hcseq_lb_strict".
         iRight.
-        iFrame "# ∗".
+        iFrame "∗#".
       }
       iDestruct "Hreply_post" as (last_reply) "[#Hreply Hpost]".
       iModIntro.

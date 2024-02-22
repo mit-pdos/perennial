@@ -142,7 +142,7 @@ Proof.
     {
       wp_loadField.
       wp_apply (wp_condWait with "[- Hfile_ctx]").
-      { iFrame "#∗". iExists _, _, _, _; iFrame "∗#". done. }
+      { iFrame "∗#". iExists _, _, _, _; iFrame "∗#". done. }
       iIntros "[Hlocked Haof_own]".
       wp_pures.
       iLeft.
@@ -174,7 +174,7 @@ Proof.
     { by apply prefix_app_r. }
     iDestruct "Hpredur" as "[Hpredur Hpredurable]".
     wp_apply (release_spec with "[-Hfile Hctx Hpredur Hmembuf_fupd Hmembuf_sl HdurLen Hlen]").
-    { iFrame "#∗". iNext. iExists _, [], (predurableC ++ membufC), _. iFrame "∗#".
+    { iFrame "∗#". iNext. iExists _, [], (predurableC ++ membufC), _. iFrame "∗#".
       rewrite app_nil_r.
       iFrame.
       iSplitL ""; first done.
@@ -594,10 +594,10 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[-HΦ Haof_log HfupdQ]").
   {
-    iFrame "#∗".
+    iFrame "∗#".
     iNext.
     iExists _, _, _, _.
-    iFrame "#∗".
+    iFrame "∗#".
     iSplitR ""; last done.
     replace (word.add (length (predurableC ++ membufC)) (length newData)) with
         (U64 (length (predurableC ++ membufC'))); last first.
@@ -663,8 +663,8 @@ Proof.
     wp_loadField.
     wp_apply (wp_condWait with "[- HΦ]").
     {
-      iFrame "#∗".
-      iExists _, _, _, _. iFrame "#∗".
+      iFrame "∗#".
+      iExists _, _, _, _. iFrame "∗#".
       done.
     }
     iIntros "[Hlocked Haof_own]".
@@ -691,8 +691,8 @@ Proof.
   wp_loadField.
   wp_apply (release_spec with "[- HΦ]").
   {
-    iFrame "#∗".
-    iExists _, _, _, _. iFrame "#∗".
+    iFrame "∗#".
+    iExists _, _, _, _. iFrame "∗#".
     done.
   }
   iFrame.

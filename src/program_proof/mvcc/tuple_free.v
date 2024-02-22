@@ -50,7 +50,7 @@ Proof.
     do 4 iExists _.
     iSplitL "Howned Htidlast Hvers HversS".
     { eauto with iFrame. }
-    iFrame "% # ∗".
+    iFrame "∗%#".
     iDestruct "Htoken" as (vchain') "[Hptuple' %HvchainLenLt]".
     destruct owned; last iFrame.
     by iDestruct (vchain_combine (1 / 2) with "Hptuple Hptuple'") as "[Hptuple ->]"; first compute_done.

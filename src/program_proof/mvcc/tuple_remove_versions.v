@@ -147,7 +147,7 @@ Proof.
       iModIntro.
       unfold P.
       iExists _.
-      iFrame "% ∗".
+      iFrame "∗%".
       iPureIntro.
       right.
       split; first word.
@@ -351,7 +351,7 @@ Proof.
     iExists tid, vers', vchain.
     iSplitL "Howned Htidlast Hvers HversS".
     { eauto with iFrame. }
-    iFrame "% # ∗".
+    iFrame "∗%#".
     iSplit.
     { (* Prove [HtupleAbs]. *)
       iPureIntro.

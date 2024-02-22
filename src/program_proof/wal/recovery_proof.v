@@ -473,7 +473,7 @@ Proof.
     rewrite /slidingM.wf /=.
     word. }
   rewrite /named.
-  iFrame "#∗".
+  iFrame "∗#".
   iApply (memLog_linv_init with "HmemLog_pers HmemLog_ghost").
 Qed.
 
@@ -762,7 +762,7 @@ Proof.
     rewrite gset_to_gmap_union_singleton.
     iFrame.
     rewrite big_sepM_insert //.
-    iFrame "#∗".
+    iFrame "∗#".
 Qed.
 
 Lemma map_set_ctx_alloc {K} `{Countable K} `{!mapG Σ K ()} {γ: gname} (s' s: gset K) :
@@ -929,7 +929,7 @@ Lemma memLog_linv_nextDiskEnd_txn_id_post_crash γ diskEnd diskEnd_txn_id instal
   memLog_linv_nextDiskEnd_txn_id γ diskEnd (durable_lb `max` diskEnd_txn_id)%nat.
 Proof.
   iIntros (Hbound) "Hctx #Hpos #HdiskEnd_stable".
-  iExists _; iFrame "#∗".
+  iExists _; iFrame "∗#".
   iPureIntro.
   intros ??.
   apply lookup_gset_to_gmap_None.
@@ -1230,7 +1230,7 @@ Proof.
       iFrame "Htxns_ctx'".
       iFrame "Htxns2".
       iSplitL "Hstable_txns2".
-      { iThaw "#". iExists _. iFrame "# ∗".
+      { iThaw "#". iExists _. iFrame "∗#".
         iPureIntro.
         (* we proved this before with [memLog_linv_nextDiskEnd_txn_id_post_crash] *)
         assumption. }
@@ -1620,7 +1620,7 @@ Proof.
       iSplit; first by auto.
       iSplit; first by auto.
       iExists _. iFrame "Hwal_linv". iFrame "Hcirc". rewrite /disk_inv. iFrame "Howncs".
-      iExists _, _, _. iFrame "# ∗". eauto.
+      iExists _, _, _. iFrame "∗#". eauto.
     }
     { by iFrame. }
   }
@@ -1699,7 +1699,7 @@ Proof.
     HownDiskEnd_logger HownDiskEndTxn_logger
     HownDiskEndMem_logger HownDiskEndMemTxn_logger
   ".
-  { iExists _. iFrame "# ∗". }
+  { iExists _. iFrame "∗#". }
   iFrame "Hinstaller".
 Qed.
 
@@ -1796,7 +1796,7 @@ Proof.
     by wp_apply (wp_Walog__installer with "[$]").
   }
   wp_pures. iIntros "!> H Hcfupd".
-  iApply "H". by iFrame "# ∗".
+  iApply "H". by iFrame "∗#".
 Qed.
 
 End goose_lang.
@@ -1830,7 +1830,7 @@ Proof.
   rewrite /IntoCrash. iNamed 1.
   iNamed "Howninstalled".
   iDestruct "Hbeing_installed_txns" as "-#Hbeing_installed_txns".
-  iCrash. iExists _. iFrame "% ∗".
+  iCrash. iExists _. iFrame "∗%".
 Qed.
 
 Instance disk_inv_stable γ s cs dinit:
