@@ -3,7 +3,6 @@ From Goose.github_com.mit_pdos.gokv Require Import urpc.
 From Goose.github_com.mit_pdos.secure_chat.kt Require Import kt_shim.
 
 From Perennial.program_proof.grove_shared Require Import urpc_proof.
-From Perennial.program_proof.chat.full2 Require Import encoding.
 
 Section crypto.
 Context `{!heapGS Σ}.
@@ -20,20 +19,20 @@ Proof. Admitted.
 
 Lemma wp_MakeKeys P hon :
   {{{
-    "#HP" ∷ ∀ l, □ P l
+    "%Hpersis" ∷ ⌜∀ l, Persistent (P l)⌝
   }}}
   MakeKeys #()
   {{{
     sk vk, RET (#sk, #vk);
     "Hsk" ∷ own_sk sk P hon ∗
-    "Hvk" ∷ is_vk vk P hon
+    "#Hvk" ∷ is_vk vk P hon
   }}}.
 Proof. Admitted.
 
 Lemma wp_Sign sk P hon sl_data data :
   {{{
     "Hsk" ∷ own_sk sk P hon ∗
-    "#HP" ∷ □ P data ∗
+    "HP" ∷ P data ∗
     "Hdata" ∷ own_slice_small sl_data byteT 1 data
   }}}
   SignerT__Sign #sk (slice_val sl_data)
@@ -57,7 +56,7 @@ Lemma wp_Verify vk P hon sl_sig (sig:list u8) sl_data (data:list u8) :
     "Hsig" ∷ own_slice_small sl_sig byteT 1 sig ∗
     "Hdata" ∷ own_slice_small sl_data byteT 1 data ∗
     if bool_decide (err = 0) && hon then
-      "#HP" ∷ □ P data
+      "HP" ∷ P data
     else True%I
   }}}.
 Proof. Admitted.
@@ -67,7 +66,7 @@ End crypto.
 Section rpc.
 Context `{!heapGS Σ}.
 
-Definition is_rpc_cli (ptr:loc) : iProp Σ.
+Definition own_rpc_cli (ptr:loc) : iProp Σ.
 Admitted.
 
 Lemma wp_rpc_MakeClient (addr:u64) :
@@ -75,18 +74,20 @@ Lemma wp_rpc_MakeClient (addr:u64) :
   MakeClient #addr
   {{{
     ptr, RET #ptr;
-    "Hurpc" ∷ is_rpc_cli ptr
+    "Hurpc" ∷ own_rpc_cli ptr
   }}}.
 Proof. Admitted.
 
-Lemma wp_rpc_Call cli (id:u64) sl_input sl_out (time:u64) :
+Lemma wp_rpc_Call cli (id:u64) sl_in (inB:list u8) sl_out (time:u64) :
   {{{
-    "Hrpc" ∷ is_rpc_cli cli
+    "Hrpc" ∷ own_rpc_cli cli ∗
+    "Hin" ∷ own_slice_small sl_in byteT 1 inB
   }}}
-  Client__Call #cli #id (slice_val sl_input) (slice_val sl_out) #time
+  Client__Call #cli #id (slice_val sl_in) (slice_val sl_out) #time
   {{{
     err (out:list u8), RET #err;
-    "Hrpc" ∷ is_rpc_cli cli ∗
+    "Hrpc" ∷ own_rpc_cli cli ∗
+    "Hin" ∷ own_slice_small sl_in byteT 1 inB ∗
     if bool_decide (err = 0) then
       "Hout" ∷ own_slice_small sl_out byteT 1 out
     else True%I

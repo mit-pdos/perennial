@@ -5,17 +5,17 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 Section Bytes.
 Context `{!heapGS Σ}.
 
-Lemma wp_BytesEqual b1 b2 b1L b2L :
+Lemma wp_BytesEqual sl_b0 sl_b1 (b0 b1:list u8) :
   {{{
-    "Hb1" ∷ own_slice_small b1 byteT 1 b1L ∗
-    "Hb2" ∷ own_slice_small b2 byteT 1 b2L
+    "Hb0" ∷ own_slice_small sl_b0 byteT 1 b0 ∗
+    "Hb1" ∷ own_slice_small sl_b1 byteT 1 b1
   }}}
-  BytesEqual (slice_val b1) (slice_val b2)
+  BytesEqual (slice_val sl_b0) (slice_val sl_b1)
   {{{
     (eqb:bool), RET #eqb;
-    "Hb1" ∷ own_slice_small b1 byteT 1 b1L ∗
-    "Hb2" ∷ own_slice_small b2 byteT 1 b2L ∗
-    "%Heqb" ∷ ⌜eqb ↔ b1L ≡ b2L⌝
+    "Hb0" ∷ own_slice_small sl_b0 byteT 1 b0 ∗
+    "Hb1" ∷ own_slice_small sl_b1 byteT 1 b1 ∗
+    "%Heqb" ∷ ⌜eqb ↔ b0 = b1⌝
   }}}.
 Proof. Admitted.
 End Bytes.
@@ -27,70 +27,70 @@ Record t :=
     Key: list u8;
   }.
 
-Definition encodesF (a:t) : list u8 :=
-  u64_le a.(Uname) ++ a.(Key).
-Definition encodes (x:list u8) (a:t) : Prop :=
-  x = encodesF a.
+Definition encodesF (arg:t) : list u8 :=
+  u64_le arg.(Uname) ++ arg.(Key).
+Definition encodes (argB:list u8) (arg:t) : Prop :=
+  argB = encodesF arg.
 
 Section local_defs.
 Context `{!heapGS Σ}.
-Definition own l args : iProp Σ :=
-  ∃ key,
-  "Huname" ∷ l ↦[UnameKey :: "Uname"] #args.(Uname) ∗
-  "Hkey" ∷ l ↦[UnameKey :: "Key"] (slice_val key) ∗
-  "Hkey_sl" ∷ own_slice_small key byteT 1 args.(Key).
+Definition own ptr arg : iProp Σ :=
+  ∃ sl_key,
+  "Huname" ∷ ptr ↦[UnameKey :: "Uname"] #arg.(Uname) ∗
+  "Hkey" ∷ own_slice_small sl_key byteT 1 arg.(Key) ∗
+  "Hsl_key" ∷ ptr ↦[UnameKey :: "Key"] (slice_val sl_key).
 
-Lemma wp_DeepCopy l1 uk :
+Lemma wp_DeepCopy ptr0 arg0 :
   {{{
-    "Huk1" ∷ own l1 uk
+    "Harg0" ∷ own ptr0 arg0
   }}}
-  UnameKey__DeepCopy #l1
+  UnameKey__DeepCopy #ptr0
   {{{
-    l2, RET #l2;
-    "Huk1" ∷ own l1 uk ∗
-    "Huk2" ∷ own l2 uk
+    ptr1, RET #ptr1;
+    "Harg0" ∷ own ptr0 arg0 ∗
+    "Harg1" ∷ own ptr1 arg0
   }}}.
 Proof. Admitted.
 
-Lemma wp_IsEqual l1 uk1 l2 uk2 :
+Lemma wp_IsEqual ptr0 arg0 ptr1 arg1 :
   {{{
-    "Huk1" ∷ own l1 uk1 ∗
-    "Huk2" ∷ own l2 uk2
+    "Harg0" ∷ own ptr0 arg0 ∗
+    "Harg1" ∷ own ptr1 arg1
   }}}
-  UnameKey__IsEqual #l1 #l2
+  UnameKey__IsEqual #ptr0 #ptr1
   {{{
     (eqb:bool), RET #eqb;
-    "Huk1" ∷ own l1 uk1 ∗
-    "Huk2" ∷ own l2 uk2 ∗
-    "%Heqb" ∷ ⌜eqb ↔ uk1.(Uname) = uk2.(Uname) ∧ uk1.(Key) ≡ uk2.(Key)⌝
+    "Harg0" ∷ own ptr0 arg0 ∗
+    "Harg1" ∷ own ptr1 arg1 ∗
+    "%Heqb" ∷ ⌜eqb ↔ arg0.(Uname) = arg1.(Uname) ∧ arg0.(Key) = arg1.(Key)⌝
   }}}.
 Proof. Admitted.
 
-Lemma wp_encode args_ptr args :
+Lemma wp_Encode ptr arg :
   {{{
-    "Hargs" ∷ own args_ptr args
+    "Harg" ∷ own ptr arg
   }}}
-    UnameKey__Encode #args_ptr
+    UnameKey__Encode #ptr
   {{{
-    sl enc_args, RET (slice_val sl);
-    "Hargs" ∷ own args_ptr args ∗
-    "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
-    "Hsl" ∷ own_slice_small sl byteT 1 enc_args
+    sl_argB (argB:list u8), RET (slice_val sl_argB);
+    "Harg" ∷ own ptr arg ∗
+    "HargB" ∷ own_slice_small sl_argB byteT 1 argB ∗
+    "%Henc" ∷ ⌜encodes argB arg⌝
   }}}.
 Proof. Admitted.
 
-Lemma wp_decode sl fullB args_ptr :
+Lemma wp_Decode sl_fullB fullB ptr :
   {{{
-    "Hsl" ∷ own_slice_small sl byteT 1 fullB
+    "HfullB" ∷ own_slice_small sl_fullB byteT 1 fullB
   }}}
-    UnameKey__Decode #args_ptr (slice_val sl)
+    UnameKey__Decode #ptr (slice_val sl_fullB)
   {{{
-    sl_rem args (err:u64) fstB sndB, RET ((slice_val sl_rem), #err);
+    sl_remB (err:u64) arg argB remB, RET ((slice_val sl_remB), #err);
     if bool_decide (err = 0) then
-      "%Hsplit" ∷ ⌜fullB = fstB ++ sndB⌝ ∗
-      "%Henc" ∷ ⌜encodes fstB args⌝ ∗
-      "Hargs" ∷ own args_ptr args ∗
-      "Hrem" ∷ own_slice_small sl_rem byteT 1 sndB
+      "Harg" ∷ own ptr arg ∗
+      "HremB" ∷ own_slice_small sl_remB byteT 1 remB ∗
+      "%Hsplit" ∷ ⌜fullB = argB ++ remB⌝ ∗
+      "%Henc" ∷ ⌜encodes argB arg⌝
     else True%I
   }}}.
 Proof. Admitted.
@@ -104,52 +104,51 @@ Record t :=
     Log: list UnameKey.t
   }.
 
-Notation mk_new := (mk []).
-Definition encodesF (a:t) : list u8 :=
-  u64_le (length a.(Log)) ++ list_bind _ _ UnameKey.encodesF a.(Log).
-Definition encodes (x:list u8) (a:t) : Prop :=
-  x = encodesF a.
+Definition encodesF (arg:t) : list u8 :=
+  u64_le (length arg.(Log)) ++ list_bind _ _ UnameKey.encodesF arg.(Log).
+Definition encodes (argB:list u8) (arg:t) : Prop :=
+  argB = encodesF arg.
 
 Section local_defs.
 Context `{!heapGS Σ}.
-Definition own l args : iProp Σ :=
-  ∃ sl_args lptrs,
-  "Hlog" ∷ l ↦[KeyLog :: "Log"] (slice_val sl_args) ∗
-  "Hsl" ∷ own_slice_small sl_args ptrT 1 lptrs ∗
-  "Hptrs" ∷ [∗ list]  x1;x2 ∈ lptrs;args.(Log), UnameKey.own x1 x2.
+Definition own ptr arg : iProp Σ :=
+  ∃ sl_log log,
+  "Hlog" ∷ [∗ list] x0;x1 ∈ log;arg.(Log), UnameKey.own x0 x1 ∗
+  "Hsl_log" ∷ own_slice_small sl_log ptrT 1 log ∗
+  "Hptr_log" ∷ ptr ↦[KeyLog :: "Log"] (slice_val sl_log).
 
 Lemma wp_New :
   {{{ True }}}
   NewKeyLog #()
   {{{
-    args_ptr, RET #args_ptr;
-    own args_ptr mk_new
+    ptr, RET #ptr;
+    own ptr (mk [])
   }}}.
 Proof. Admitted.
 
-Lemma wp_DeepCopy l1 log :
+Lemma wp_DeepCopy ptr0 arg0 :
   {{{
-    "Hlog1" ∷ own l1 log
+    "Harg0" ∷ own ptr0 arg0
   }}}
-  KeyLog__DeepCopy #l1
+  KeyLog__DeepCopy #ptr0
   {{{
-    l2, RET #l2;
-    "Hlog1" ∷ own l1 log ∗
-    "hlog2" ∷ own l2 log
+    ptr1, RET #ptr1;
+    "Harg0" ∷ own ptr0 arg0 ∗
+    "Harg1" ∷ own ptr1 arg0
   }}}.
 Proof. Admitted.
 
-Lemma wp_IsPrefix ptr_short short ptr_long long :
+Lemma wp_IsPrefix ptr_short arg_short ptr_long arg_long :
   {{{
-    "Hshort" ∷ own ptr_short short ∗
-    "Hlong" ∷ own ptr_long long
+    "Hshort" ∷ own ptr_short arg_short ∗
+    "Hlong" ∷ own ptr_long arg_long
   }}}
   KeyLog__IsPrefix #ptr_short #ptr_long
   {{{
     (eqb:bool), RET #eqb;
-    "Hshort" ∷ own ptr_short short ∗
-    "Hlong" ∷ own ptr_long long ∗
-    "%Heq" ∷ ⌜eqb ↔ short.(Log) `prefix_of` long.(Log)⌝
+    "Hshort" ∷ own ptr_short arg_short ∗
+    "Hlong" ∷ own ptr_long arg_long ∗
+    "%Heq" ∷ ⌜eqb ↔ arg_short.(Log) `prefix_of` arg_long.(Log)⌝
   }}}.
 Proof. Admitted.
 
@@ -160,69 +159,69 @@ Proof. Admitted.
   "first" property.
   list_find also doesn't have any lemmas about reversed lists.
 *)
-Lemma wp_Lookup ptr args (uname:u64) :
+Lemma wp_Lookup ptr arg (uname:u64) :
   {{{
-    "Hlog" ∷ own ptr args
+    "Harg" ∷ own ptr arg
   }}}
   KeyLog__Lookup #ptr #uname
   {{{
-    (idx:u64) key_sl (key:list u8) (ok:bool), RET (#idx, (slice_val key_sl), #ok);
-    "Hlog" ∷ own ptr args ∗
+    (idx:u64) sl_found (found:list u8) (ok:bool), RET (#idx, (slice_val sl_found), #ok);
+    "Harg" ∷ own ptr arg ∗
     if ok then
-      "Hkey" ∷ own_slice_small key_sl byteT 1 key ∗
-      "%Hkey_elem_of" ∷ ⌜args.(Log) !! int.nat idx = Some (UnameKey.mk uname key)⌝
+      "Hfound" ∷ own_slice_small sl_found byteT 1 found ∗
+      "%Hfound_idx" ∷ ⌜arg.(Log) !! int.nat idx = Some (UnameKey.mk uname found)⌝
     else True%I
   }}}.
 Proof. Admitted.
 
-Lemma wp_Len ptr args :
+Lemma wp_Len ptr arg :
   {{{
-    "Hlog" ∷ own ptr args
+    "Harg" ∷ own ptr arg
   }}}
   KeyLog__Len #ptr
   {{{
-    RET #(U64 (length args.(Log)));
-    "Hlog" ∷ own ptr args
+    RET #(U64 (length arg.(Log)));
+    "Harg" ∷ own ptr arg
   }}}.
 Proof. Admitted.
 
-Lemma wp_Append ptr args ptrUk argsUk :
+Lemma wp_Append ptr arg ptr_new arg_new :
   {{{
-    "Hlog" ∷ own ptr args ∗
-    "Huk" ∷ UnameKey.own ptrUk argsUk
+    "Harg" ∷ own ptr arg ∗
+    "Hnew" ∷ UnameKey.own ptr_new arg_new
   }}}
-  KeyLog__Len #ptr #ptrUk
+  KeyLog__Append #ptr #ptr_new
   {{{
     RET #();
-    "Hlog" ∷ own ptr (mk (args.(Log) ++ [argsUk]))
+    "Harg" ∷ own ptr (mk (arg.(Log) ++ [arg_new]))
   }}}.
 Proof. Admitted.
 
-Lemma wp_encode ptr args :
+Lemma wp_Encode ptr arg :
   {{{
-    "Hlog" ∷ own ptr args
+    "Harg" ∷ own ptr arg
   }}}
     KeyLog__Encode #ptr
   {{{
-    sl_enc enc, RET (slice_val sl_enc);
-    "Hlog" ∷ own ptr args ∗
-    "Henc" ∷ own_slice_small sl_enc byteT 1 enc ∗
-    "%Henc" ∷ ⌜encodes enc args⌝
+    sl_argB (argB:list u8), RET (slice_val sl_argB);
+    "Harg" ∷ own ptr arg ∗
+    "HargB" ∷ own_slice_small sl_argB byteT 1 argB ∗
+    "%Henc" ∷ ⌜encodes argB arg⌝
   }}}.
 Proof. Admitted.
 
-Lemma wp_decode sl fullB args_ptr :
+Lemma wp_Decode sl_fullB fullB ptr :
   {{{
-    "Hsl" ∷ own_slice_small sl byteT 1 fullB
+    "HfullB" ∷ own_slice_small sl_fullB byteT 1 fullB
   }}}
-    KeyLog__Decode #args_ptr (slice_val sl)
+    KeyLog__Decode #ptr (slice_val sl_fullB)
   {{{
-    sl_rem args (err:u64) fstB sndB, RET ((slice_val sl_rem), #err);
+    sl_remB (err:u64) arg argB remB, RET ((slice_val sl_remB), #err);
     if bool_decide (err = 0) then
-      "Hrem" ∷ own_slice_small sl_rem byteT 1 sndB ∗
-      "%Hsplit" ∷ ⌜fullB = fstB ++ sndB⌝ ∗
-      "%Henc" ∷ ⌜encodes fstB args⌝ ∗
-      "Hargs" ∷ own args_ptr args
+      "Harg" ∷ own ptr arg ∗
+      "HremB" ∷ own_slice_small sl_remB byteT 1 remB ∗
+      "%Hsplit" ∷ ⌜fullB = argB ++ remB⌝ ∗
+      "%Henc" ∷ ⌜encodes argB arg⌝
     else True%I
   }}}.
 Proof. Admitted.
@@ -237,45 +236,45 @@ Record t :=
     Log: KeyLog.t;
   }.
 
-Definition encodesF (a:t) : list u8 :=
-  a.(Sig) ++ KeyLog.encodesF a.(Log).
-Definition encodes (x:list u8) (a:t) : Prop :=
-  x = encodesF a.
+Definition encodesF (arg:t) : list u8 :=
+  arg.(Sig) ++ KeyLog.encodesF arg.(Log).
+Definition encodes (argB:list u8) (arg:t) : Prop :=
+  argB = encodesF arg.
 
 Section local_defs.
 Context `{!heapGS Σ}.
-Definition own ptr args : iProp Σ :=
+Definition own ptr arg : iProp Σ :=
   ∃ sl_sig ptr_log,
-  "Hsig_sl" ∷ own_slice_small sl_sig byteT 1 args.(Sig) ∗
-  "Hsig" ∷ ptr ↦[SigLog :: "Sig"] (slice_val sl_sig) ∗
-  "Hlog_own" ∷ KeyLog.own ptr_log args.(Log) ∗
-  "Hlog" ∷ ptr ↦[SigLog :: "Log"] #ptr_log.
+  "Hsig" ∷ own_slice_small sl_sig byteT 1 arg.(Sig) ∗
+  "Hptr_sig" ∷ ptr ↦[SigLog :: "Sig"] (slice_val sl_sig) ∗
+  "Hlog" ∷ KeyLog.own ptr_log arg.(Log) ∗
+  "Hptr_log" ∷ ptr ↦[SigLog :: "Log"] #ptr_log.
 
-Lemma wp_encode ptr args :
+Lemma wp_Encode ptr arg :
   {{{
-    "Hlog" ∷ own ptr args
+    "Harg" ∷ own ptr arg
   }}}
     SigLog__Encode #ptr
   {{{
-    sl_enc enc, RET (slice_val sl_enc);
-    "Hlog" ∷ own ptr args ∗
-    "Henc" ∷ own_slice_small sl_enc byteT 1 enc ∗
-    "%Henc" ∷ ⌜encodes enc args⌝
+    sl_argB (argB:list u8), RET (slice_val sl_argB);
+    "Harg" ∷ own ptr arg ∗
+    "HargB" ∷ own_slice_small sl_argB byteT 1 argB ∗
+    "%Henc" ∷ ⌜encodes argB arg⌝
   }}}.
 Proof. Admitted.
 
-Lemma wp_decode sl fullB args_ptr :
+Lemma wp_Decode sl_fullB fullB ptr :
   {{{
-    "Hsl" ∷ own_slice_small sl byteT 1 fullB
+    "HfullB" ∷ own_slice_small sl_fullB byteT 1 fullB
   }}}
-    SigLog__Decode #args_ptr (slice_val sl)
+    SigLog__Decode #ptr (slice_val sl_fullB)
   {{{
-    sl_rem args (err:u64) fstB sndB, RET ((slice_val sl_rem), #err);
+    sl_remB (err:u64) arg argB remB, RET ((slice_val sl_remB), #err);
     if bool_decide (err = 0) then
-      "Hrem" ∷ own_slice_small sl_rem byteT 1 sndB ∗
-      "%Hsplit" ∷ ⌜fullB = fstB ++ sndB⌝ ∗
-      "%Henc" ∷ ⌜encodes fstB args⌝ ∗
-      "Hargs" ∷ own args_ptr args
+      "Harg" ∷ own ptr arg ∗
+      "HremB" ∷ own_slice_small sl_remB byteT 1 remB ∗
+      "%Hsplit" ∷ ⌜fullB = argB ++ remB⌝ ∗
+      "%Henc" ∷ ⌜encodes argB arg⌝
     else True%I
   }}}.
 Proof. Admitted.

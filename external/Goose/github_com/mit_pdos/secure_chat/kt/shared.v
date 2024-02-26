@@ -10,31 +10,31 @@ Definition ErrorT: ty := uint64T.
 
 Definition ErrNone : expr := #0.
 
-Definition ErrSome : expr := #1.
+Definition ErrGeneric : expr := #1.
 
-Definition ErrKeyCli_AuditPrefix : expr := #2.
+Definition ErrVerify : expr := #2.
 
-Definition ErrKeyCli_CheckLogPrefix : expr := #3.
+Definition ErrUnameKey_Decode : expr := #3.
 
-Definition ErrKeyCli_CheckLogLookup : expr := #4.
+Definition ErrKeyLog_Decode : expr := #4.
 
-Definition ErrKeyCli_RegNoExist : expr := #5.
+Definition ErrSigLog_Decode : expr := #5.
 
-Definition ErrUnameKey_Decode : expr := #6.
+Definition ErrInjestNewLog_Prefix : expr := #6.
 
-Definition ErrKeyLog_Decode : expr := #7.
+Definition ErrKeyCli_RegNoExist : expr := #7.
 
-Definition ErrSigLog_Decode : expr := #8.
+Definition ErrKeyCli_LookNoExist : expr := #8.
 
-Definition ErrVerify : expr := #9.
+Definition ErrKeyCli_AuditPrefix : expr := #9.
 
-Definition RpcAppendLog : expr := #1.
+Definition RpcKeyServ_Put : expr := #1.
 
-Definition RpcGetLog : expr := #2.
+Definition RpcKeyServ_Get : expr := #2.
 
-Definition RpcDoAudit : expr := #3.
+Definition RpcAdtr_Update : expr := #3.
 
-Definition RpcGetAudit : expr := #4.
+Definition RpcAdtr_Get : expr := #4.
 
 Definition SigLen : expr := #69.
 

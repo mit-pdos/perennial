@@ -18,16 +18,16 @@ Definition newKeyServ: val :=
       "log" ::= shared.NewKeyLog #()
     ].
 
-Definition keyServ__appendLog: val :=
-  rec: "keyServ__appendLog" "ks" "entry" :=
+Definition keyServ__put: val :=
+  rec: "keyServ__put" "ks" "entry" :=
     lock.acquire (struct.loadF keyServ "mu" "ks");;
     shared.KeyLog__Append (struct.loadF keyServ "log" "ks") "entry";;
     let: "outLog" := shared.KeyLog__DeepCopy (struct.loadF keyServ "log" "ks") in
     lock.release (struct.loadF keyServ "mu" "ks");;
     "outLog".
 
-Definition keyServ__getLog: val :=
-  rec: "keyServ__getLog" "ks" :=
+Definition keyServ__get: val :=
+  rec: "keyServ__get" "ks" :=
     lock.acquire (struct.loadF keyServ "mu" "ks");;
     let: "outLog" := shared.KeyLog__DeepCopy (struct.loadF keyServ "log" "ks") in
     lock.release (struct.loadF keyServ "mu" "ks");;
@@ -36,122 +36,67 @@ Definition keyServ__getLog: val :=
 Definition keyServ__start: val :=
   rec: "keyServ__start" "ks" "me" :=
     let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
-    MapInsert "handlers" shared.RpcAppendLog (λ: "enc_args" "enc_reply",
+    MapInsert "handlers" shared.RpcKeyServ_Put (λ: "enc_args" "enc_reply",
       let: "entry" := struct.alloc shared.UnameKey (zero_val (struct.t shared.UnameKey)) in
       let: (<>, "err") := shared.UnameKey__Decode "entry" "enc_args" in
       (if: "err" ≠ shared.ErrNone
       then #()
       else
-        "enc_reply" <-[slice.T byteT] (shared.KeyLog__Encode (keyServ__appendLog "ks" "entry"));;
+        "enc_reply" <-[slice.T byteT] (shared.KeyLog__Encode (keyServ__put "ks" "entry"));;
         #())
       );;
-    MapInsert "handlers" shared.RpcGetLog (λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] (shared.KeyLog__Encode (keyServ__getLog "ks"));;
+    MapInsert "handlers" shared.RpcKeyServ_Get (λ: "enc_args" "enc_reply",
+      "enc_reply" <-[slice.T byteT] (shared.KeyLog__Encode (keyServ__get "ks"));;
       #()
       );;
     urpc.Server__Serve (urpc.MakeServer "handlers") "me";;
     #().
 
-Definition checkLogIn := struct.decl [
-  "currLog" :: ptrT;
-  "newLogB" :: slice.T byteT;
-  "uname" :: uint64T;
-  "doLookup" :: boolT
-].
-
-Definition checkLogOut := struct.decl [
-  "newLog" :: ptrT;
-  "epoch" :: uint64T;
-  "key" :: slice.T byteT;
-  "err" :: uint64T
-].
-
-Definition errNewLogOut: val :=
-  rec: "errNewLogOut" "err" :=
-    struct.new checkLogOut [
-      "newLog" ::= slice.nil;
-      "epoch" ::= #0;
-      "key" ::= slice.nil;
-      "err" ::= "err"
-    ].
-
-(* Decode RPC ret, check log prefix, check key lookup. *)
-Definition checkLog: val :=
-  rec: "checkLog" "in" :=
+Definition injestNewLog: val :=
+  rec: "injestNewLog" "currLog" "newLogB" :=
     let: "newLog" := struct.alloc shared.KeyLog (zero_val (struct.t shared.KeyLog)) in
-    let: (<>, "err1") := shared.KeyLog__Decode "newLog" (struct.loadF checkLogIn "newLogB" "in") in
+    let: (<>, "err1") := shared.KeyLog__Decode "newLog" "newLogB" in
     (if: "err1" ≠ shared.ErrNone
-    then errNewLogOut "err1"
+    then (slice.nil, "err1")
     else
-      (if: (~ (shared.KeyLog__IsPrefix (struct.loadF checkLogIn "currLog" "in") "newLog"))
-      then errNewLogOut shared.ErrKeyCli_CheckLogPrefix
-      else
-        (if: (~ (struct.loadF checkLogIn "doLookup" "in"))
-        then
-          struct.new checkLogOut [
-            "newLog" ::= "newLog";
-            "epoch" ::= #0;
-            "key" ::= slice.nil;
-            "err" ::= shared.ErrNone
-          ]
-        else
-          let: (("epoch", "key"), "ok") := shared.KeyLog__Lookup "newLog" (struct.loadF checkLogIn "uname" "in") in
-          (if: (~ "ok")
-          then errNewLogOut shared.ErrKeyCli_CheckLogLookup
-          else
-            struct.new checkLogOut [
-              "newLog" ::= "newLog";
-              "epoch" ::= "epoch";
-              "key" ::= "key";
-              "err" ::= shared.ErrNone
-            ])))).
+      (if: (~ (shared.KeyLog__IsPrefix "currLog" "newLog"))
+      then (slice.nil, shared.ErrInjestNewLog_Prefix)
+      else ("newLog", shared.ErrNone))).
 
 Definition auditor := struct.decl [
   "mu" :: ptrT;
   "log" :: ptrT;
-  "serv" :: ptrT;
-  "key" :: ptrT
+  "sk" :: ptrT
 ].
 
 Definition newAuditor: val :=
-  rec: "newAuditor" "servAddr" "key" :=
+  rec: "newAuditor" "sk" :=
     let: "l" := shared.NewKeyLog #() in
-    let: "c" := urpc.MakeClient "servAddr" in
     struct.new auditor [
       "mu" ::= lock.new #();
       "log" ::= "l";
-      "serv" ::= "c";
-      "key" ::= "key"
+      "sk" ::= "sk"
     ].
 
-Definition auditor__doAudit: val :=
-  rec: "auditor__doAudit" "a" :=
+Definition auditor__update: val :=
+  rec: "auditor__update" "a" "newLogB" :=
     lock.acquire (struct.loadF auditor "mu" "a");;
-    let: "newLogB" := NewSlice byteT #0 in
-    let: "err1" := urpc.Client__Call (struct.loadF auditor "serv" "a") shared.RpcGetLog slice.nil "newLogB" #100 in
-    control.impl.Assume ("err1" = urpc.ErrNone);;
-    let: "in" := struct.new checkLogIn [
-      "currLog" ::= struct.loadF auditor "log" "a";
-      "newLogB" ::= "newLogB";
-      "uname" ::= #0;
-      "doLookup" ::= #false
-    ] in
-    let: "out" := checkLog "in" in
-    (if: (struct.loadF checkLogOut "err" "out") ≠ shared.ErrNone
+    let: ("newLog", "err1") := injestNewLog (struct.loadF auditor "log" "a") "newLogB" in
+    (if: "err1" ≠ shared.ErrNone
     then
       lock.release (struct.loadF auditor "mu" "a");;
-      struct.loadF checkLogOut "err" "out"
+      "err1"
     else
-      struct.storeF auditor "log" "a" (struct.loadF checkLogOut "newLog" "out");;
+      struct.storeF auditor "log" "a" "newLog";;
       lock.release (struct.loadF auditor "mu" "a");;
       shared.ErrNone).
 
-Definition auditor__getAudit: val :=
-  rec: "auditor__getAudit" "a" :=
+Definition auditor__get: val :=
+  rec: "auditor__get" "a" :=
     lock.acquire (struct.loadF auditor "mu" "a");;
     let: "logCopy" := shared.KeyLog__DeepCopy (struct.loadF auditor "log" "a") in
     let: "logB" := shared.KeyLog__Encode "logCopy" in
-    let: "sig" := kt_shim.SignerT__Sign (struct.loadF auditor "key" "a") "logB" in
+    let: "sig" := kt_shim.SignerT__Sign (struct.loadF auditor "sk" "a") "logB" in
     lock.release (struct.loadF auditor "mu" "a");;
     struct.new shared.SigLog [
       "Sig" ::= "sig";
@@ -161,13 +106,13 @@ Definition auditor__getAudit: val :=
 Definition auditor__start: val :=
   rec: "auditor__start" "a" "me" :=
     let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
-    MapInsert "handlers" shared.RpcDoAudit (λ: "enc_args" "enc_reply",
-      let: "err" := auditor__doAudit "a" in
+    MapInsert "handlers" shared.RpcAdtr_Update (λ: "enc_args" "enc_reply",
+      let: "err" := auditor__update "a" "enc_args" in
       control.impl.Assume ("err" = shared.ErrNone);;
       #()
       );;
-    MapInsert "handlers" shared.RpcGetAudit (λ: "enc_args" "enc_reply",
-      "enc_reply" <-[slice.T byteT] (shared.SigLog__Encode (auditor__getAudit "a"));;
+    MapInsert "handlers" shared.RpcAdtr_Get (λ: "enc_args" "enc_reply",
+      "enc_reply" <-[slice.T byteT] (shared.SigLog__Encode (auditor__get "a"));;
       #()
       );;
     urpc.Server__Serve (urpc.MakeServer "handlers") "me";;
@@ -177,11 +122,11 @@ Definition keyCli := struct.decl [
   "log" :: ptrT;
   "serv" :: ptrT;
   "adtrs" :: slice.T ptrT;
-  "adtrKeys" :: slice.T ptrT
+  "adtrVks" :: slice.T ptrT
 ].
 
 Definition newKeyCli: val :=
-  rec: "newKeyCli" "serv" "adtrs" "adtrKeys" :=
+  rec: "newKeyCli" "serv" "adtrs" "adtrVks" :=
     let: "l" := shared.NewKeyLog #() in
     let: "servC" := urpc.MakeClient "serv" in
     let: "adtrsC" := NewSlice ptrT (slice.len "adtrs") in
@@ -191,109 +136,136 @@ Definition newKeyCli: val :=
       "log" ::= "l";
       "serv" ::= "servC";
       "adtrs" ::= "adtrsC";
-      "adtrKeys" ::= "adtrKeys"
+      "adtrVks" ::= "adtrVks"
     ].
 
 Definition keyCli__register: val :=
   rec: "keyCli__register" "kc" "entry" :=
     let: "entryB" := shared.UnameKey__Encode "entry" in
     let: "newLogB" := NewSlice byteT #0 in
-    let: "err1" := urpc.Client__Call (struct.loadF keyCli "serv" "kc") shared.RpcAppendLog "entryB" "newLogB" #100 in
+    let: "err1" := urpc.Client__Call (struct.loadF keyCli "serv" "kc") shared.RpcKeyServ_Put "entryB" "newLogB" #100 in
     control.impl.Assume ("err1" = urpc.ErrNone);;
-    let: "in" := struct.new checkLogIn [
-      "currLog" ::= struct.loadF keyCli "log" "kc";
-      "newLogB" ::= "newLogB";
-      "uname" ::= struct.loadF shared.UnameKey "Uname" "entry";
-      "doLookup" ::= #true
-    ] in
-    let: "out" := checkLog "in" in
-    (if: (struct.loadF checkLogOut "err" "out") ≠ shared.ErrNone
-    then (#0, struct.loadF checkLogOut "err" "out")
+    let: ("newLog", "err2") := injestNewLog (struct.loadF keyCli "log" "kc") "newLogB" in
+    (if: "err2" ≠ shared.ErrNone
+    then (#0, "err2")
     else
-      (if: (struct.loadF checkLogOut "epoch" "out") < (shared.KeyLog__Len (struct.loadF checkLogIn "currLog" "in"))
+      let: (("epoch", "key"), "ok") := shared.KeyLog__Lookup "newLog" (struct.loadF shared.UnameKey "Uname" "entry") in
+      (if: (~ "ok") || (~ (shared.BytesEqual "key" (struct.loadF shared.UnameKey "Key" "entry")))
       then (#0, shared.ErrKeyCli_RegNoExist)
       else
-        struct.storeF keyCli "log" "kc" (struct.loadF checkLogOut "newLog" "out");;
-        (struct.loadF checkLogOut "epoch" "out", shared.ErrNone))).
+        struct.storeF keyCli "log" "kc" "newLog";;
+        ("epoch", shared.ErrNone))).
 
 Definition keyCli__lookup: val :=
   rec: "keyCli__lookup" "kc" "uname" :=
     let: "newLogB" := NewSlice byteT #0 in
-    let: "err1" := urpc.Client__Call (struct.loadF keyCli "serv" "kc") shared.RpcGetLog slice.nil "newLogB" #100 in
+    let: "err1" := urpc.Client__Call (struct.loadF keyCli "serv" "kc") shared.RpcKeyServ_Get slice.nil "newLogB" #100 in
     control.impl.Assume ("err1" = urpc.ErrNone);;
-    let: "in" := struct.new checkLogIn [
-      "currLog" ::= struct.loadF keyCli "log" "kc";
-      "newLogB" ::= "newLogB";
-      "uname" ::= "uname";
-      "doLookup" ::= #true
-    ] in
-    let: "out" := checkLog "in" in
-    (if: (struct.loadF checkLogOut "err" "out") ≠ shared.ErrNone
-    then (#0, slice.nil, struct.loadF checkLogOut "err" "out")
+    let: ("newLog", "err2") := injestNewLog (struct.loadF keyCli "log" "kc") "newLogB" in
+    (if: "err2" ≠ shared.ErrNone
+    then (#0, slice.nil, "err2")
     else
-      struct.storeF keyCli "log" "kc" (struct.loadF checkLogOut "newLog" "out");;
-      (struct.loadF checkLogOut "epoch" "out", struct.loadF checkLogOut "key" "out", shared.ErrNone)).
+      let: (("epoch", "key"), "ok") := shared.KeyLog__Lookup "newLog" "uname" in
+      (if: (~ "ok")
+      then (#0, slice.nil, shared.ErrKeyCli_LookNoExist)
+      else
+        struct.storeF keyCli "log" "kc" "newLog";;
+        ("epoch", "key", shared.ErrNone))).
 
 Definition keyCli__audit: val :=
-  rec: "keyCli__audit" "kc" "aId" :=
-    let: "sigLogB" := NewSlice byteT #0 in
-    let: "err1" := urpc.Client__Call (SliceGet ptrT (struct.loadF keyCli "adtrs" "kc") "aId") shared.RpcGetAudit slice.nil "sigLogB" #100 in
+  rec: "keyCli__audit" "kc" "adtrId" :=
+    let: "adtrSigB" := NewSlice byteT #0 in
+    let: "err1" := urpc.Client__Call (SliceGet ptrT (struct.loadF keyCli "adtrs" "kc") "adtrId") shared.RpcAdtr_Get slice.nil "adtrSigB" #100 in
     control.impl.Assume ("err1" = urpc.ErrNone);;
-    let: "sigLog" := struct.alloc shared.SigLog (zero_val (struct.t shared.SigLog)) in
-    let: (<>, "err2") := shared.SigLog__Decode "sigLog" "sigLogB" in
+    let: "adtrSig" := struct.alloc shared.SigLog (zero_val (struct.t shared.SigLog)) in
+    let: (<>, "err2") := shared.SigLog__Decode "adtrSig" "adtrSigB" in
     (if: "err2" ≠ shared.ErrNone
     then (#0, "err2")
     else
-      let: "logB" := shared.KeyLog__Encode (struct.loadF shared.SigLog "Log" "sigLog") in
-      let: "err3" := kt_shim.VerifierT__Verify (SliceGet ptrT (struct.loadF keyCli "adtrKeys" "kc") "aId") (struct.loadF shared.SigLog "Sig" "sigLog") "logB" in
+      let: "adtrLogB" := shared.KeyLog__Encode (struct.loadF shared.SigLog "Log" "adtrSig") in
+      let: "err3" := kt_shim.VerifierT__Verify (SliceGet ptrT (struct.loadF keyCli "adtrVks" "kc") "adtrId") (struct.loadF shared.SigLog "Sig" "adtrSig") "adtrLogB" in
       (if: "err3" ≠ shared.ErrNone
       then (#0, "err3")
       else
-        (if: (~ (shared.KeyLog__IsPrefix (struct.loadF keyCli "log" "kc") (struct.loadF shared.SigLog "Log" "sigLog")))
-        then (#0, shared.ErrKeyCli_AuditPrefix)
+        let: "adtrLog" := struct.loadF shared.SigLog "Log" "adtrSig" in
+        (if: shared.KeyLog__IsPrefix (struct.loadF keyCli "log" "kc") "adtrLog"
+        then (shared.KeyLog__Len (struct.loadF keyCli "log" "kc"), shared.ErrNone)
         else
-          struct.storeF keyCli "log" "kc" (struct.loadF shared.SigLog "Log" "sigLog");;
-          (shared.KeyLog__Len (struct.loadF keyCli "log" "kc"), shared.ErrNone)))).
+          (if: shared.KeyLog__IsPrefix "adtrLog" (struct.loadF keyCli "log" "kc")
+          then (shared.KeyLog__Len "adtrLog", shared.ErrNone)
+          else (#0, shared.ErrKeyCli_AuditPrefix))))).
 
-(* Two clients lookup the same uname, talk to the same honest auditor,
-   and assert that their returned keys are the same. *)
+(* Two clients lookup the same uname, talk to some auditor servers
+   (at least one honest), and assert that their returned keys are the same. *)
 Definition testAuditPass: val :=
-  rec: "testAuditPass" "servAddr" "audAddr" :=
+  rec: "testAuditPass" "servAddr" "adtrAddrs" :=
     Fork (let: "s" := newKeyServ #() in
           keyServ__start "s" "servAddr");;
     time.Sleep #1000000;;
-    let: ("audSigner", "audVerifier") := kt_shim.MakeKeys #() in
-    Fork (let: "a" := newAuditor "servAddr" "audSigner" in
-          auditor__start "a" "audAddr");;
+    let: ("badSk0", "badVk0") := kt_shim.MakeKeys #() in
+    let: ("goodSk0", "goodVk0") := kt_shim.MakeKeys #() in
+    let: ("badSk1", "badVk1") := kt_shim.MakeKeys #() in
+    let: "adtrVks" := ref (zero_val (slice.T ptrT)) in
+    "adtrVks" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "adtrVks") "badVk0");;
+    "adtrVks" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "adtrVks") "goodVk0");;
+    "adtrVks" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "adtrVks") "badVk1");;
+    Fork (let: "a" := newAuditor "badSk0" in
+          auditor__start "a" (SliceGet uint64T "adtrAddrs" #0));;
+    Fork (let: "a" := newAuditor "goodSk0" in
+          auditor__start "a" (SliceGet uint64T "adtrAddrs" #1));;
+    Fork (let: "a" := newAuditor "badSk1" in
+          auditor__start "a" (SliceGet uint64T "adtrAddrs" #2));;
     time.Sleep #1000000;;
-    let: "adtrs" := SliceSingleton "audAddr" in
-    let: "adtrKeys" := SliceSingleton "audVerifier" in
-    let: "cReg" := newKeyCli "servAddr" "adtrs" "adtrKeys" in
-    let: "cLook1" := newKeyCli "servAddr" "adtrs" "adtrKeys" in
-    let: "cLook2" := newKeyCli "servAddr" "adtrs" "adtrKeys" in
-    let: "aliceUname" := #42 in
-    let: "aliceKey" := StringToBytes #(str"pubkey") in
-    let: "uk" := struct.new shared.UnameKey [
-      "Uname" ::= "aliceUname";
-      "Key" ::= "aliceKey"
+    let: "cReg" := newKeyCli "servAddr" "adtrAddrs" (![slice.T ptrT] "adtrVks") in
+    let: "cLook0" := newKeyCli "servAddr" "adtrAddrs" (![slice.T ptrT] "adtrVks") in
+    let: "cLook1" := newKeyCli "servAddr" "adtrAddrs" (![slice.T ptrT] "adtrVks") in
+    let: "uname0" := #42 in
+    let: "key0" := StringToBytes #(str"key0") in
+    let: "goodEntry" := struct.new shared.UnameKey [
+      "Uname" ::= "uname0";
+      "Key" ::= "key0"
     ] in
-    let: (<>, "err1") := keyCli__register "cReg" "uk" in
+    let: (<>, "err0") := keyCli__register "cReg" "goodEntry" in
+    control.impl.Assume ("err0" = shared.ErrNone);;
+    let: (("epoch0", "retKey0"), "err1") := keyCli__lookup "cLook0" "uname0" in
     control.impl.Assume ("err1" = shared.ErrNone);;
-    let: "audC" := urpc.MakeClient "audAddr" in
+    let: (("epoch1", "retKey1"), "err2") := keyCli__lookup "cLook1" "uname0" in
+    control.impl.Assume ("err2" = shared.ErrNone);;
+    let: "badAdtr0" := urpc.MakeClient (SliceGet uint64T "adtrAddrs" #0) in
+    let: "goodAdtr0" := urpc.MakeClient (SliceGet uint64T "adtrAddrs" #1) in
+    let: "badAdtr1" := urpc.MakeClient (SliceGet uint64T "adtrAddrs" #2) in
+    let: "uname1" := #43 in
+    let: "key1" := StringToBytes #(str"key1") in
+    let: "badEntry" := struct.new shared.UnameKey [
+      "Uname" ::= "uname1";
+      "Key" ::= "key1"
+    ] in
+    let: "badLog" := shared.NewKeyLog #() in
+    shared.KeyLog__Append "badLog" "badEntry";;
+    let: "badLogB" := shared.KeyLog__Encode "badLog" in
     let: "emptyB" := NewSlice byteT #0 in
-    let: "err2" := urpc.Client__Call "audC" shared.RpcDoAudit slice.nil "emptyB" #100 in
-    control.impl.Assume ("err2" = urpc.ErrNone);;
-    let: (("epochL1", "retKey1"), "err") := keyCli__lookup "cLook1" "aliceUname" in
-    control.impl.Assume ("err" = shared.ErrNone);;
-    let: (("epochL2", "retKey2"), "err") := keyCli__lookup "cLook2" "aliceUname" in
-    control.impl.Assume ("err" = shared.ErrNone);;
-    let: (<>, "err3") := keyCli__audit "cLook1" #0 in
-    control.impl.Assume ("err3" = shared.ErrNone);;
-    let: (<>, "err4") := keyCli__audit "cLook2" #0 in
-    control.impl.Assume ("err4" = shared.ErrNone);;
-    (if: "epochL1" = "epochL2"
+    let: "err3" := urpc.Client__Call "badAdtr0" shared.RpcAdtr_Update "badLogB" "emptyB" #100 in
+    control.impl.Assume ("err3" = urpc.ErrNone);;
+    let: "err4" := urpc.Client__Call "badAdtr1" shared.RpcAdtr_Update "badLogB" "emptyB" #100 in
+    control.impl.Assume ("err4" = urpc.ErrNone);;
+    let: "goodLog" := shared.NewKeyLog #() in
+    shared.KeyLog__Append "goodLog" "goodEntry";;
+    let: "goodLogB" := shared.KeyLog__Encode "goodLog" in
+    let: "err5" := urpc.Client__Call "goodAdtr0" shared.RpcAdtr_Update "goodLogB" "emptyB" #100 in
+    control.impl.Assume ("err5" = urpc.ErrNone);;
+    let: ("0_ret", "1_ret") := keyCli__audit "cLook0" #0 in
+    "0_ret";;
+    "1_ret";;
+    let: ("auditEpoch0", "err6") := keyCli__audit "cLook0" #1 in
+    control.impl.Assume ("err6" = shared.ErrNone);;
+    let: ("0_ret", "1_ret") := keyCli__audit "cLook1" #2 in
+    "0_ret";;
+    "1_ret";;
+    let: ("auditEpoch1", "err7") := keyCli__audit "cLook1" #1 in
+    control.impl.Assume ("err7" = shared.ErrNone);;
+    (if: (("epoch0" = "epoch1") && ("epoch0" ≤ "auditEpoch0")) && ("epoch1" ≤ "auditEpoch1")
     then
-      control.impl.Assert (shared.BytesEqual "retKey1" "retKey2");;
+      control.impl.Assert (shared.BytesEqual "retKey0" "retKey1");;
       #()
     else #()).
 
@@ -301,21 +273,23 @@ Definition testAuditPass: val :=
    a different server, but the user later contacts the auditor.
    The user's audit should return an error. *)
 Definition testAuditFail: val :=
-  rec: "testAuditFail" "servAddr1" "servAddr2" "audAddr" :=
+  rec: "testAuditFail" "servAddr1" "servAddr2" "adtrAddr" :=
     Fork (let: "s" := newKeyServ #() in
           keyServ__start "s" "servAddr1");;
     Fork (let: "s" := newKeyServ #() in
           keyServ__start "s" "servAddr2");;
     time.Sleep #1000000;;
-    let: ("audSigner", "audVerifier") := kt_shim.MakeKeys #() in
-    Fork (let: "a" := newAuditor "servAddr1" "audSigner" in
-          auditor__start "a" "audAddr");;
+    let: ("adtrSigner", "adtrVerifier") := kt_shim.MakeKeys #() in
+    Fork (let: "a" := newAuditor "adtrSigner" in
+          auditor__start "a" "adtrAddr");;
     time.Sleep #1000000;;
-    let: "adtrs" := SliceSingleton "audAddr" in
-    let: "adtrKeys" := SliceSingleton "audVerifier" in
-    let: "cReg1" := newKeyCli "servAddr1" "adtrs" "adtrKeys" in
-    let: "cReg2" := newKeyCli "servAddr2" "adtrs" "adtrKeys" in
-    let: "cLook2" := newKeyCli "servAddr2" "adtrs" "adtrKeys" in
+    let: "adtrs" := ref (zero_val (slice.T uint64T)) in
+    "adtrs" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "adtrs") "adtrAddr");;
+    let: "adtrVks" := ref (zero_val (slice.T ptrT)) in
+    "adtrVks" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "adtrVks") "adtrVerifier");;
+    let: "cReg1" := newKeyCli "servAddr1" (![slice.T uint64T] "adtrs") (![slice.T ptrT] "adtrVks") in
+    let: "cReg2" := newKeyCli "servAddr2" (![slice.T uint64T] "adtrs") (![slice.T ptrT] "adtrVks") in
+    let: "cLook2" := newKeyCli "servAddr2" (![slice.T uint64T] "adtrs") (![slice.T ptrT] "adtrVks") in
     let: "aliceUname" := #42 in
     let: "aliceKey1" := StringToBytes #(str"pubkey1") in
     let: "aliceKey2" := StringToBytes #(str"pubkey2") in
@@ -331,9 +305,12 @@ Definition testAuditFail: val :=
     control.impl.Assume ("err1" = shared.ErrNone);;
     let: (<>, "err2") := keyCli__register "cReg2" "uk2" in
     control.impl.Assume ("err2" = shared.ErrNone);;
-    let: "audC" := urpc.MakeClient "audAddr" in
+    let: "adtrCli" := urpc.MakeClient "adtrAddr" in
+    let: "goodLog" := shared.NewKeyLog #() in
+    shared.KeyLog__Append "goodLog" "uk1";;
+    let: "goodLogB" := shared.KeyLog__Encode "goodLog" in
     let: "emptyB" := NewSlice byteT #0 in
-    let: "err3" := urpc.Client__Call "audC" shared.RpcDoAudit slice.nil "emptyB" #100 in
+    let: "err3" := urpc.Client__Call "adtrCli" shared.RpcAdtr_Update "goodLogB" "emptyB" #100 in
     control.impl.Assume ("err3" = urpc.ErrNone);;
     let: ((<>, <>), "err4") := keyCli__lookup "cLook2" "aliceUname" in
     control.impl.Assume ("err4" = shared.ErrNone);;
