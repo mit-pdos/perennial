@@ -129,6 +129,7 @@ Lemma circular_init :
             start_is γ (1/2) (U64 0) ∗
             diskEnd_is γ (1/2) 0.
 Proof.
+  clear P.
   set (σ:={| upds := []; start := U64 0; |}).
   assert (circΣ.diskEnd σ = 0) as HdiskEnd by reflexivity.
   rewrite split_513_blocks.
@@ -278,9 +279,8 @@ Proof.
 
     wpc_frame_seq.
     wp_load.
-    list_elem addrs0 (int.Z i `mod` LogSz) as a.
-    { destruct Hlow_wf.
-      mod_bound; word. }
+    list_elem addrs0 (int.Z i `mod` LogSz) as a;
+      try solve [destruct Hlow_wf; mod_bound; word].
     wp_apply (wp_SliceGet _ _ _ _ 1 addrs0 with "[$Hdiskaddrs]"); eauto.
     { iPureIntro.
       change (word.divu _ _) with (U64 LogSz).

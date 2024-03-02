@@ -150,6 +150,7 @@ Theorem start_is_to_eq γ σ q startpos :
   start_is γ q startpos -∗
   ⌜start σ = startpos⌝.
 Proof.
+  clear P.
   iIntros "[Hstart1 _] Hstart2".
   rewrite /start_is.
   iDestruct (mono_nat_auth_own_agree with "Hstart1 Hstart2") as %[_ Heq].
@@ -162,6 +163,7 @@ Theorem start_at_least_to_le γ σ startpos :
   start_at_least γ startpos -∗
   ⌜int.Z startpos <= int.Z (start σ)⌝.
 Proof.
+  clear P.
   iIntros "[Hstart1 _] Hstart2".
   rewrite /start_is.
   iDestruct (mono_nat_lb_own_valid with "Hstart1 Hstart2") as %[_ Hlt].
@@ -199,6 +201,7 @@ Theorem diskEnd_is_to_eq γ σ q endpos :
   diskEnd_is γ q endpos -∗
   ⌜circΣ.diskEnd σ = endpos⌝.
 Proof.
+  clear P.
   iIntros "[_ Hend1] Hend2".
   iDestruct "Hend1" as "[_ [Hend1 _]]".
   iDestruct "Hend2" as "[% [Hend2 _]]".
@@ -232,6 +235,7 @@ Theorem diskEnd_at_least_to_le γ σ endpos_lb :
   diskEnd_at_least γ endpos_lb -∗
   ⌜endpos_lb ≤ circΣ.diskEnd σ ⌝.
 Proof.
+  clear P.
   iIntros "[_ Hend1] Hend_lb".
   iDestruct "Hend1" as "[% [Hend1 _]]".
   rewrite /diskEnd_is /diskEnd_at_least.
@@ -325,6 +329,7 @@ Lemma crash_upd γold γnew σ :
   is_circular_state_crash γold σ ∗
   circular_crash_ghost_exchange γold γnew.
 Proof.
+  clear P.
   iStartProof.
 
   iIntros "Hcs". iNamed 1.
@@ -533,6 +538,7 @@ Lemma diskEnd_advance_unchanged:
              (set upds (drop (Z.to_nat (int.Z newStart - int.Z (start σ)))) σ))
     = circΣ.diskEnd σ.
 Proof.
+  clear P.
   rewrite /circΣ.diskEnd /=.
   intros.
   len.
@@ -547,6 +553,7 @@ Lemma has_circ_updates_advance :
              (set upds (drop (Z.to_nat (int.Z newStart - int.Z (start σ)))) σ)) addrs
         blocks.
 Proof.
+  clear P.
   rewrite /has_circ_updates /=.
   intros.
   rewrite lookup_drop in H.
@@ -570,6 +577,7 @@ Lemma circ_positions_advance (newStart: u64) γ σ (start0: u64) :
                         (set upds (drop (Z.to_nat (int.Z newStart - int.Z (start σ)))) σ)) ∗
   start_is γ (1/2) newStart ∗ start_at_least γ newStart.
 Proof.
+  clear P.
   iIntros (Hwf Hmono) "[Hpos Hstart1]".
   iDestruct (start_is_to_eq with "[$] [$]") as %?; subst.
   iDestruct "Hpos" as "[Hstart2 Hend2]".
@@ -879,8 +887,8 @@ Proof.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (U64 LogSz).
   wp_apply (wp_Write_atomic with "Hi").
-  word_cleanup.
-  rewrite wrap_small_log_addr.
+  word_cleanup;
+  try rewrite wrap_small_log_addr;
   word_cleanup.
 
   iInv "Hcirc" as "HcircI" "Hclose".
@@ -981,7 +989,7 @@ Proof.
   induction upds; simpl; intros; auto.
   rewrite -> IHupds by word.
   rewrite list_lookup_insert_ne; auto.
-  apply Zto_nat_neq_inj; try (mod_bound; word).
+  apply Zto_nat_neq_inj; try (mod_bound; word);
   apply mod_neq_gt; try word.
 Qed.
 
@@ -1070,6 +1078,7 @@ Lemma circ_positions_append upds γ σ (startpos endpos: u64) :
   |==> circ_positions γ (set circ_proof.upds (λ u : list update.t, u ++ upds) σ) ∗
        diskEnd_is γ (1/2) (int.Z endpos + length upds).
 Proof.
+  clear P.
   iIntros (Hendpos_overflow Hhasspace) "[$ Hend1] #Hstart Hend2".
   rewrite /circΣ.diskEnd /=; autorewrite with len.
   iDestruct (diskEnd_is_agree with "Hend1 Hend2") as %Heq; rewrite Heq.
