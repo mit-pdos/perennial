@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Import notation typing.
+From Perennial.goose_lang Require Import notation.
 
 Module lock.
   Section goose_lang.
