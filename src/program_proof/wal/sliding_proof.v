@@ -375,6 +375,7 @@ Proof.
   iIntros "Hb"; iSpecialize ("Hlog" with "Hb").
   iSpecialize ("Hlog_mutable" with "Hlog").
   iSplit; auto.
+  iExists _, _; iFrame "∗#".
 Qed.
 
 Theorem addrPosMap_lookup_inv σ pos :

@@ -192,7 +192,7 @@ Proof.
   rewrite /pointsto_txn.
   iIntros "H". iNamed "H".
   iFrame.
-  iIntros (v') "$H".
+  iIntros (v') "$". iExists _; iFrame.
 Qed.
 
 Theorem pointsto_txn_cur_map {A} γ (m : gmap addr A) (f : A -> {K & bufDataT K}) (xform : A -> A):

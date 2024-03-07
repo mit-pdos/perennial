@@ -135,6 +135,7 @@ Proof.
   iNamed "Hinit".
   iFrame "∗ His_conf #".
   iIntros.
+  iExists _. iFrame "His_conf_prop".
   iPureIntro.
   by apply elem_of_list_fmap_1.
 Qed.

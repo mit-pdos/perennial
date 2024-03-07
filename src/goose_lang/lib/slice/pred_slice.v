@@ -62,6 +62,7 @@ Proof.
     apply fmap_Some_2; eauto. }
   iIntros "[Hs %Hty]".
   iApply "HΦ"; iFrame.
+  iIntros "HΨ". iFrame. iApply ("Hxs" with "HΨ").
 Qed.
 
 Theorem wp_SliceAppend {stk E} s l v x :

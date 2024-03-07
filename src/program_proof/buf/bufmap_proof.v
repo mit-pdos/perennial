@@ -166,7 +166,7 @@ Proof using.
     iFrame.
 
     iIntros "!>" (b') "Hbuf".
-    iExists _.
+    iExists _, _, _; iFrame.
     iSplitR; first eauto.
     replace (am) with (<[a:=v]> am) at 1 by ( apply insert_id; eauto ).
     by iApply "Ham".

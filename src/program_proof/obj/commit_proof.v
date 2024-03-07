@@ -1275,6 +1275,7 @@ Proof.
         iApply "HΦ". iModIntro. iFrame.
         iSplitL.
         2: { iIntros "%H". congruence. }
+        iIntros (H). iExists _; iFrame.
         done.
 
       * wp_pures.
@@ -1282,7 +1283,7 @@ Proof.
         iApply "HΦ". iModIntro. iFrame.
         iSplitL.
         2: { iIntros "%H". congruence. }
-        iIntros (??). intuition congruence.
+        iIntros (?). iExists _; iFrame. iIntros (?). intuition congruence.
 
     + wp_apply util_proof.wp_DPrintf.
       wp_store.

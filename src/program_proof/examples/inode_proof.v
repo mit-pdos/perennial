@@ -71,7 +71,7 @@ Theorem is_inode_durable_read addr σ addrs :
 Proof.
   iNamed 1.
   iExists _; iFrame "∗ %".
-  iIntros "!> $ $".
+  iIntros "!> Haddr Hdata". iExists _; iFrame "∗%".
 Qed.
 
 Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
@@ -294,7 +294,7 @@ Proof.
   wp_loadField.
   iApply "HΦ".
   iFrame "∗ %".
-  iIntros "$".
+  iIntros "$". iFrame.
 Qed.
 
 Theorem wpc_Inode__UsedBlocks {l σ addr} :

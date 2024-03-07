@@ -226,7 +226,7 @@ Section goose.
     wpc_apply (wpc_Read with "Haddr'").
     iSplit; [ | iNext ].
     { iLeft in "HQ".
-      iFrame. iIntros.
+      iFrame. iIntros. iFrame "HP".
       iApply rblock_linv_to_cinv; iFrame. iApply "Hlkinv". eauto. }
     iIntros (s) "(Haddr'&Hb)".
     iDestruct (own_slice_to_small with "Hb") as "Hb".
