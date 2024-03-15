@@ -320,6 +320,8 @@ def main():
             "kt",
             "kt/shared",
             "kt/kt_shim",
+            "merkle",
+            "merkle/merkle_shim",
         ]
 
         for pkg in pkgs:
