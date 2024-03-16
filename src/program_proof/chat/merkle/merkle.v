@@ -63,17 +63,25 @@ Definition tree_to_map (t : tree) : gmap (list u8) (list u8) :=
 Definition is_nil_hash h : iProp Σ :=
   is_hash [] h.
 
-Fixpoint is_tree_hash (t: tree) (h: list u8) {struct t}: iProp Σ :=
+Definition is_tree_hash' (recur : tree -d> list u8 -d> iPropO Σ) : tree -d> list u8 -d> iPropO Σ :=
+  (λ t h,
   match t with
   | Leaf val => is_hash val h
   | ChildNode children =>
       ∃ (child_hashes : list (list u8)),
-      ([∗ list] child; hash ∈ children; child_hashes,
+      ([∗ list] child;hash ∈ children;child_hashes,
         match child with
         | None => is_nil_hash hash
-        | Some t' => is_tree_hash t' hash
+        | Some t' => ▷ recur t' hash
         end) ∗
       is_hash (concat child_hashes) h
-  end.
+  end)%I.
+
+Local Instance is_tree_hash'_contractive : Contractive is_tree_hash'.
+Proof. solve_contractive. Qed.
+
+Definition is_tree_hash : tree → list u8 → iProp Σ := fixpoint is_tree_hash'.
+
+
 
 End proof.
