@@ -99,15 +99,28 @@ Definition Val := struct.decl [
   "B" :: slice.T byteT
 ].
 
-Definition NewNode: val :=
-  rec: "NewNode" <> :=
-    let: "d" := merkle_shim.Hash slice.nil in
+(* These nodes are neither interior nodes nor leaf nodes.
+   They'll be specialized after adding them to the tree. *)
+Definition NewGenericNode: val :=
+  rec: "NewGenericNode" <> :=
+    let: "v" := ref (zero_val ptrT) in
     let: "c" := NewSlice ptrT NumChildren in
     struct.new Node [
-      "Val" ::= slice.nil;
-      "hash" ::= "d";
+      "Val" ::= ![ptrT] "v";
+      "hash" ::= slice.nil;
       "Children" ::= "c"
     ].
+
+Definition Node__UpdateLeafHash: val :=
+  rec: "Node__UpdateLeafHash" "n" :=
+    struct.storeF Node "hash" "n" (merkle_shim.Hash (struct.loadF Val "B" (struct.loadF Node "Val" "n")));;
+    #().
+
+(* Assumes recursive child hashes are already up-to-date. *)
+Definition Node__UpdateInteriorHash: val :=
+  rec: "Node__UpdateInteriorHash" "n" :=
+    struct.storeF Node "hash" "n" (HashNodes (struct.loadF Node "Children" "n"));;
+    #().
 
 Definition Digest := struct.decl [
   "B" :: slice.T byteT
@@ -188,25 +201,18 @@ Definition NonmembProof__Check: val :=
       ] in
       PathProof__Check "pathProof").
 
-(* Assumes recursive child hashes are already up-to-date. *)
-Definition Node__UpdateHash: val :=
-  rec: "Node__UpdateHash" "n" :=
-    (if: (struct.loadF Node "Val" "n") ≠ #null
-    then
-      struct.storeF Node "hash" "n" (merkle_shim.Hash (struct.loadF Val "B" (struct.loadF Node "Val" "n")));;
-      #()
-    else
-      struct.storeF Node "hash" "n" (HashNodes (struct.loadF Node "Children" "n"));;
-      #()).
-
 Definition Tree := struct.decl [
   "Root" :: ptrT
 ].
 
 Definition NewTree: val :=
   rec: "NewTree" <> :=
+    let: "n" := struct.new Node [
+    ] in
+    struct.storeF Node "Children" "n" (NewSlice ptrT NumChildren);;
+    Node__UpdateInteriorHash "n";;
     struct.new Tree [
-      "Root" ::= NewNode #()
+      "Root" ::= "n"
     ].
 
 Definition Tree__Print: val :=
@@ -283,7 +289,7 @@ Definition Tree__WalkTreeAddLinks: val :=
       let: "currNode" := SliceGet ptrT (![slice.T ptrT] "nodePath") (![uint64T] "pathIdx") in
       let: "pos" := SliceGet byteT (struct.loadF Id "B" "id") (![uint64T] "pathIdx") in
       (if: (SliceGet ptrT (struct.loadF Node "Children" "currNode") "pos") = #null
-      then SliceSet ptrT (struct.loadF Node "Children" "currNode") "pos" (NewNode #())
+      then SliceSet ptrT (struct.loadF Node "Children" "currNode") "pos" (NewGenericNode #())
       else #());;
       "nodePath" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "nodePath") (SliceGet ptrT (struct.loadF Node "Children" "currNode") "pos"));;
       Continue);;
@@ -296,9 +302,10 @@ Definition Tree__Put: val :=
     else
       let: "nodePath" := Tree__WalkTreeAddLinks "t" "id" in
       struct.storeF Node "Val" (SliceGet ptrT "nodePath" HashLen) "v";;
-      let: "pathIdx" := ref_to uint64T (HashLen + #1) in
+      Node__UpdateLeafHash (SliceGet ptrT "nodePath" HashLen);;
+      let: "pathIdx" := ref_to uint64T HashLen in
       (for: (λ: <>, (![uint64T] "pathIdx") ≥ #1); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") - #1)) := λ: <>,
-        Node__UpdateHash (SliceGet ptrT "nodePath" ((![uint64T] "pathIdx") - #1));;
+        Node__UpdateInteriorHash (SliceGet ptrT "nodePath" ((![uint64T] "pathIdx") - #1));;
         Continue);;
       let: "digest" := struct.new Digest [
         "B" ::= CopySlice (Node__Hash (SliceGet ptrT "nodePath" #0))
