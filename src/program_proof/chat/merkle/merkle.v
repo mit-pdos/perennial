@@ -31,6 +31,18 @@ Fixpoint containsNodeAtEnd (tr : tree) (id : list u8) (node : tree) : Prop :=
 Definition is_nil_hash hash : iProp Σ :=
   is_hash [] hash.
 
+Fixpoint is_tree_hash'' (tr: tree) (hash: list u8) : iProp Σ :=
+  match tr with
+  | Cut hash' => ⌜hash = hash' ∧ length hash' = 32%nat⌝
+  | Empty => is_hash [U8 0] hash
+  | Leaf val => is_hash (val ++ [U8 1]) hash
+  | Interior children =>
+      ∃ (child_hashes : list (list u8)),
+      ([∗ list] child_fun;hash' ∈ (map (λ c h, is_tree_hash'' c h) children);child_hashes,
+        child_fun hash') ∗
+      is_hash (concat child_hashes ++ [U8 2]) hash
+  end%I.
+
 Definition is_tree_hash' (recur : tree -d> list u8 -d> iPropO Σ) : tree -d> list u8 -d> iPropO Σ :=
   (λ tr hash,
   match tr with
