@@ -53,6 +53,10 @@ Definition is_tree_hash : tree → list u8 → iProp Σ := fixpoint is_tree_hash
 Instance is_tree_hash_persistent tr hash : Persistent (is_tree_hash tr hash).
 Proof. Admitted.
 
+#[global]
+Instance is_tree_hash_timeless tr hash : Timeless (is_tree_hash tr hash).
+Proof. Admitted.
+
 Lemma is_tree_hash_unfold tr hash :
   is_tree_hash tr hash ⊣⊢ (is_tree_hash' is_tree_hash) tr hash.
 Proof.
@@ -63,28 +67,13 @@ Lemma tree_hash_len tr hash :
   is_tree_hash tr hash -∗ ⌜length hash = 32%nat⌝.
 Proof.
   iIntros "Htree".
-  destruct tr.
-  {
-    iDestruct (is_tree_hash_unfold with "Htree") as "Htree".
+  destruct tr;
+    iDestruct (is_tree_hash_unfold with "Htree") as "Htree";
     simpl.
-    iDestruct "Htree" as "[%Heq %Hlen]".
-    naive_solver.
-  }
+  { iDestruct "Htree" as "[%Heq %Hlen]". naive_solver. }
+  { iDestruct (hash_len with "Htree") as "%Hlen". naive_solver. }
+  { iDestruct (hash_len with "Htree") as "%Hlen". naive_solver. }
   {
-    iDestruct (is_tree_hash_unfold with "Htree") as "Htree".
-    simpl.
-    iDestruct (hash_len with "Htree") as "%Hlen".
-    naive_solver.
-  }
-  {
-    iDestruct (is_tree_hash_unfold with "Htree") as "Htree".
-    simpl.
-    iDestruct (hash_len with "Htree") as "%Hlen".
-    naive_solver.
-  }
-  {
-    iDestruct (is_tree_hash_unfold with "Htree") as "Htree".
-    simpl.
     iDestruct "Htree" as (ch) "[_ Htree]".
     iDestruct (hash_len with "Htree") as "%Hlen".
     naive_solver.
@@ -105,7 +94,7 @@ Definition is_path_val id val digest : iProp Σ :=
     | Some val' => Leaf val'
     end⌝.
 
-Lemma concat_eq_dim1_eq {A : Type} (l1 l2 : list (list A)) sz :
+Lemma concat_eq_dim1_eq {A : Type} sz (l1 l2 : list (list A)) :
   concat l1 = concat l2 →
   (Forall (λ l, length l = sz) l1) →
   (Forall (λ l, length l = sz) l2) →
@@ -125,20 +114,20 @@ Proof.
   apply Forall_cons_iff in Hlen_l1 as [Hlen_a1 Hlen_l1].
   apply Forall_cons_iff in Hlen_l2 as [Hlen_a2 Hlen_l2].
   assert (take (length a1) (a1 ++ concat l1) = take (length a2) (a2 ++ concat l2)) as Htake_concat.
-  { rewrite Hlen_a1. rewrite Hlen_a2. rewrite Heq_concat. reflexivity. }
+  { f_equal; naive_solver. }
   assert (drop (length a1) (a1 ++ concat l1) = drop (length a2) (a2 ++ concat l2)) as Hdrop_concat.
-  { rewrite Hlen_a1. rewrite Hlen_a2. rewrite Heq_concat. reflexivity. }
+  { f_equal; naive_solver. }
   do 2 rewrite take_app_length in Htake_concat.
   do 2 rewrite drop_app_length in Hdrop_concat.
-  (* TODO: this is really simple, how to automate? *)
-  assert (a1 = a2 → l1 = l2 → a1 :: l1 = a2 :: l2) as H by naive_solver;
-    apply H; clear H; [done|].
+  rewrite Htake_concat.
+  apply (app_inv_head_iff [a2]).
   apply IHl1; try eauto with lia.
 Qed.
 
-Lemma helper pos rest val1 val2 digest :
+Lemma is_path_val_inj' pos rest val1 val2 digest :
   is_path_val (pos :: rest) val1 digest -∗
-  is_path_val (pos :: rest) val2 digest -∗
+  (* Need fupd so we can remove ▷ in is_tree_hash. *)
+  is_path_val (pos :: rest) val2 digest ={⊤}=∗
   ∃ digest',
   is_path_val rest val1 digest' ∗
   is_path_val rest val2 digest'.
@@ -147,10 +136,14 @@ Proof.
   rewrite /is_path_val.
   iDestruct "Hval1" as (tr1) "[#Htree1 %Hcont1]".
   iDestruct "Hval2" as (tr2) "[#Htree2 %Hcont2]".
-  destruct tr1, tr2; try naive_solver.
-  simpl in Hcont1, Hcont2.
+  destruct tr1 as [| | |ct1], tr2 as [| | |ct2]; try naive_solver.
+
+  (* Get contains pred. *)
+  simpl in *.
   destruct Hcont1 as [child1 [Hlist1 Hcont1]].
   destruct Hcont2 as [child2 [Hlist2 Hcont2]].
+
+  (* Get is_tree_hash for children. *)
   iRename "Htree1" into "H";
     iDestruct (is_tree_hash_unfold with "H") as "Htree1";
     iClear "H".
@@ -161,25 +154,60 @@ Proof.
   iDestruct "Htree1" as (ch1) "[Htree1 Hdig1]".
   iDestruct "Htree2" as (ch2) "[Htree2 Hdig2]".
 
-  iDestruct (big_sepL2_lookup_1_some with "Htree1") as (h1) "%Helem1"; [done|].
-  iDestruct (big_sepL2_lookup_1_some with "Htree2") as (h2) "%Helem2"; [done|].
-  iDestruct (big_sepL2_lookup with "Htree1") as "Helem1"; [done..|].
-  iDestruct (big_sepL2_lookup with "Htree2") as "Helem2"; [done..|].
+  iRename "Htree1" into "H";
+    iDestruct (big_sepL2_later_2 with "H") as "Htree1";
+    iClear "H".
+  iRename "Htree2" into "H";
+    iDestruct (big_sepL2_later_2 with "H") as "Htree2";
+    iClear "H".
+  iMod "Htree1".
+  iMod "Htree2".
+
+  (* Use is_hash ch1/ch2 digest to prove that child hashes are same. *)
+  iAssert (⌜Forall (λ l, length l = 32%nat) ch1⌝%I) as %Hlen_ch1.
+  {
+    iDestruct (big_sepL2_impl _ (λ _ _ h, ⌜length h = 32%nat⌝%I) with "Htree1 []") as "Hlen_sepL2".
+    {
+      iIntros "!>" (???) "_ _ Hhash".
+      iDestruct (tree_hash_len with "Hhash") as "Hlen".
+      naive_solver.
+    }
+    iDestruct (big_sepL2_const_sepL_r with "Hlen_sepL2") as "[_ %Hlen_sepL1]".
+    iPureIntro.
+    by apply Forall_lookup.
+  }
+  iAssert (⌜Forall (λ l, length l = 32%nat) ch2⌝%I) as %Hlen_ch2.
+  {
+    iDestruct (big_sepL2_impl _ (λ _ _ h, ⌜length h = 32%nat⌝%I) with "Htree2 []") as "Hlen_sepL2".
+    {
+      iIntros "!>" (???) "_ _ Hhash".
+      iDestruct (tree_hash_len with "Hhash") as "Hlen".
+      naive_solver.
+    }
+    iDestruct (big_sepL2_const_sepL_r with "Hlen_sepL2") as "[_ %Hlen_sepL1]".
+    iPureIntro.
+    by apply Forall_lookup.
+  }
 
   iDestruct (hash_inj with "Hdig1 Hdig2") as "%Heq".
   apply app_inv_tail in Heq.
-  (*
-     have big_sepL2 with child;hash' and is_tree_hash child hash'.
-     from each tree_hash, get hash len eq.
-     Then prove the concat lemma.
-     Also need tree_hash 
-     
-     Want oneL equiv to twoL if twoL func doesn't talk about 1L.
-   *)
-  iAssert ([∗ list] hash' ∈ ch1, ⌜length ch1 
-  Search big_sepL2 big_opL.
-  About big_sepL2_impl.
-  iDestruct (big_sepL2_impl _ (λ _ _ h, ⌜length h = 32%nat⌝%I) with "Htree1") as "H".
+  assert (ch1 = ch2) as Hch.
+  { apply (concat_eq_dim1_eq 32); eauto with lia. }
+  subst ch1.
+
+  (* Finish up. *)
+  iDestruct (big_sepL2_lookup_1_some with "Htree1") as (h1) "%Hlook1"; [done|].
+  iDestruct (big_sepL2_lookup_1_some with "Htree2") as (h2) "%Hlook2"; [done|].
+  iDestruct (big_sepL2_lookup with "Htree1") as "Hhash1"; [done..|].
+  iDestruct (big_sepL2_lookup with "Htree2") as "Hhash2"; [done..|].
+  clear Hlook1 Hlook2.
+
+  iIntros "!>".
+  iExists h2.
+  iSplit.
+  { iExists child1. iFrame "%#". }
+  { iExists child2. iFrame "%#". }
+Qed.
 
 Lemma is_path_val_inj id val1 val2 digest :
   is_path_val id val1 digest -∗
@@ -187,8 +215,8 @@ Lemma is_path_val_inj id val1 val2 digest :
   ⌜val1 = val2⌝.
 Proof.
   iLöb as "IH" forall (id val1 val2 digest) "".
-`iLöb as "IH" forall (x1 ... xn) "selpat"` 
-
+  admit.
+Admitted.
 
 Definition own_Node' (recur : loc -d> tree -d> iPropO Σ) : loc -d> tree -d> iPropO Σ :=
   (λ ptr_tr tr,
