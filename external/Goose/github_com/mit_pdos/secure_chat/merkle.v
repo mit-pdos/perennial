@@ -45,13 +45,6 @@ Definition HasherSum: val :=
       ("b1" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "b1") "byt"));;
     ![slice.T byteT] "b1".
 
-Definition HashSlice2D: val :=
-  rec: "HashSlice2D" "b" :=
-    let: "h" := ref (zero_val (slice.T byteT)) in
-    ForSlice (slice.T byteT) <> "b1" "b"
-      (HasherWrite "h" "b1");;
-    HasherSum (![slice.T byteT] "h") slice.nil.
-
 Definition CopySlice: val :=
   rec: "CopySlice" "b1" :=
     let: "b2" := NewSlice byteT (slice.len "b1") in
@@ -119,57 +112,38 @@ Definition MembProof: ty := slice.T (slice.T (slice.T byteT)).
 
 Definition NonmembProof: ty := slice.T (slice.T (slice.T byteT)).
 
-(* TODO: rename to something better.
-   TODO: not sure whether this re-use of the interior hash methods
-   will actually help me. *)
-Definition ProofInteriorHash: val :=
-  rec: "ProofInteriorHash" "childHashes" :=
-    let: "n" := NewGenericNode #() in
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "i") < NumChildren); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
-      let: "child" := struct.new Node [
-      ] in
-      struct.storeF Node "hash" "child" (SliceGet (slice.T byteT) "childHashes" (![uint64T] "i"));;
-      SliceSet ptrT (struct.loadF Node "Children" "n") (![uint64T] "i") "child";;
-      Continue);;
-    Node__UpdateInteriorHash "n";;
-    Node__Hash "n".
-
 Definition PathProof__Check: val :=
   rec: "PathProof__Check" "p" :=
-    let: "proofLen" := slice.len (struct.loadF PathProof "Id" "p") in
-    (if: "proofLen" = #0
-    then
-      let: "empty" := ref (zero_val ptrT) in
-      (if: std.BytesEqual (struct.loadF PathProof "NodeHash" "p") (struct.loadF PathProof "Digest" "p")
-      then
-        (if: std.BytesEqual (struct.loadF PathProof "NodeHash" "p") (Node__Hash (![ptrT] "empty"))
-        then ErrNone
-        else ErrPathProof)
-      else ErrPathProof)
+    let: "currHash" := ref_to (slice.T byteT) (struct.loadF PathProof "NodeHash" "p") in
+    let: "proofLen" := slice.len (struct.loadF PathProof "ChildHashes" "p") in
+    let: "err" := ref_to uint64T ErrNone in
+    ForSlice (slice.T (slice.T byteT)) <> "children" (struct.loadF PathProof "ChildHashes" "p")
+      ((if: (slice.len "children") ≠ (NumChildren - #1)
+      then "err" <-[uint64T] ErrPathProof
+      else #()));;
+    (if: (![uint64T] "err") ≠ ErrNone
+    then ![uint64T] "err"
     else
-      let: "posBott" := SliceGet byteT (struct.loadF PathProof "Id" "p") ("proofLen" - #1) in
-      (if: (~ (std.BytesEqual (struct.loadF PathProof "NodeHash" "p") (SliceGet (slice.T byteT) (SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") ("proofLen" - #1)) "posBott")))
+      let: "pathIdx" := ref_to uint64T "proofLen" in
+      (for: (λ: <>, (![uint64T] "pathIdx") ≥ #1); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") - #1)) := λ: <>,
+        let: "pos" := to_u64 (SliceGet byteT (struct.loadF PathProof "Id" "p") ((![uint64T] "pathIdx") - #1)) in
+        let: "children" := SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") ((![uint64T] "pathIdx") - #1) in
+        let: "hr" := ref (zero_val (slice.T byteT)) in
+        let: "beforeIdx" := ref_to uint64T #0 in
+        (for: (λ: <>, (![uint64T] "beforeIdx") < "pos"); (λ: <>, "beforeIdx" <-[uint64T] ((![uint64T] "beforeIdx") + #1)) := λ: <>,
+          HasherWrite "hr" (SliceGet (slice.T byteT) "children" (![uint64T] "beforeIdx"));;
+          Continue);;
+        HasherWrite "hr" (![slice.T byteT] "currHash");;
+        let: "afterIdx" := ref_to uint64T "pos" in
+        (for: (λ: <>, (![uint64T] "afterIdx") < (NumChildren - #1)); (λ: <>, "afterIdx" <-[uint64T] ((![uint64T] "afterIdx") + #1)) := λ: <>,
+          HasherWrite "hr" (SliceGet (slice.T byteT) "children" (![uint64T] "afterIdx"));;
+          Continue);;
+        HasherWrite "hr" (SliceSingleton InteriorNodeId);;
+        "currHash" <-[slice.T byteT] (HasherSum (![slice.T byteT] "hr") slice.nil);;
+        Continue);;
+      (if: (~ (std.BytesEqual (![slice.T byteT] "currHash") (struct.loadF PathProof "Digest" "p")))
       then ErrPathProof
-      else
-        let: "err" := ref_to uint64T ErrNone in
-        let: "pathIdx" := ref_to uint64T ("proofLen" - #1) in
-        (for: (λ: <>, (![uint64T] "pathIdx") ≥ #1); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") - #1)) := λ: <>,
-          let: "interiorHash" := ProofInteriorHash (SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") (![uint64T] "pathIdx")) in
-          let: "prevIdx" := (![uint64T] "pathIdx") - #1 in
-          let: "pos" := SliceGet byteT (struct.loadF PathProof "Id" "p") "prevIdx" in
-          (if: (~ (std.BytesEqual "interiorHash" (SliceGet (slice.T byteT) (SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") "prevIdx") "pos")))
-          then
-            "err" <-[uint64T] ErrPathProof;;
-            Continue
-          else Continue));;
-        (if: (![uint64T] "err") ≠ ErrNone
-        then ![uint64T] "err"
-        else
-          let: "digest" := ProofInteriorHash (SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") #0) in
-          (if: (~ (std.BytesEqual "digest" (struct.loadF PathProof "Digest" "p")))
-          then ErrPathProof
-          else ErrNone)))).
+      else ErrNone)).
 
 Definition MembProofCheck: val :=
   rec: "MembProofCheck" "proof" "id" "val" "digest" :=
@@ -179,13 +153,12 @@ Definition MembProofCheck: val :=
       (if: (slice.len "proof") ≠ HashLen
       then ErrBadInput
       else
-        let: "leaf" := struct.new Node [
-          "Val" ::= "val"
-        ] in
-        Node__UpdateLeafHash "leaf";;
+        let: "hr" := ref (zero_val (slice.T byteT)) in
+        HasherWrite "hr" "val";;
+        HasherWrite "hr" (SliceSingleton LeafNodeId);;
         let: "pathProof" := struct.new PathProof [
           "Id" ::= "id";
-          "NodeHash" ::= Node__Hash "leaf";
+          "NodeHash" ::= HasherSum (![slice.T byteT] "hr") slice.nil;
           "Digest" ::= "digest";
           "ChildHashes" ::= "proof"
         ] in
@@ -200,10 +173,11 @@ Definition NonmembProofCheck: val :=
       then ErrBadInput
       else
         let: "idPref" := SliceTake (CopySlice "id") (slice.len "proof") in
-        let: "empty" := ref (zero_val ptrT) in
+        let: "hr" := ref (zero_val (slice.T byteT)) in
+        HasherWrite "hr" (SliceSingleton EmptyNodeId);;
         let: "pathProof" := struct.new PathProof [
           "Id" ::= "idPref";
-          "NodeHash" ::= Node__Hash (![ptrT] "empty");
+          "NodeHash" ::= HasherSum (![slice.T byteT] "hr") slice.nil;
           "Digest" ::= "digest";
           "ChildHashes" ::= "proof"
         ] in
@@ -248,16 +222,21 @@ Definition Tree__Print: val :=
     #().
 
 Definition GetChildHashes: val :=
-  rec: "GetChildHashes" "nodePath" :=
-    let: "childHashes" := NewSlice (slice.T (slice.T byteT)) (slice.len "nodePath") in
+  rec: "GetChildHashes" "nodePath" "id" :=
+    let: "childHashes" := NewSlice (slice.T (slice.T byteT)) ((slice.len "nodePath") - #1) in
     let: "pathIdx" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "pathIdx") < (slice.len "nodePath")); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") + #1)) := λ: <>,
-      let: "treeChildren" := struct.loadF Node "Children" (SliceGet ptrT "nodePath" (![uint64T] "pathIdx")) in
-      let: "proofChildren" := NewSlice (slice.T byteT) NumChildren in
+    (for: (λ: <>, (![uint64T] "pathIdx") < ((slice.len "nodePath") - #1)); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") + #1)) := λ: <>,
+      let: "children" := struct.loadF Node "Children" (SliceGet ptrT "nodePath" (![uint64T] "pathIdx")) in
+      let: "pos" := SliceGet byteT "id" (![uint64T] "pathIdx") in
+      let: "proofChildren" := NewSlice (slice.T byteT) (NumChildren - #1) in
       SliceSet (slice.T (slice.T byteT)) "childHashes" (![uint64T] "pathIdx") "proofChildren";;
-      let: "childIdx" := ref_to uint64T #0 in
-      (for: (λ: <>, (![uint64T] "childIdx") < NumChildren); (λ: <>, "childIdx" <-[uint64T] ((![uint64T] "childIdx") + #1)) := λ: <>,
-        SliceSet (slice.T byteT) "proofChildren" (![uint64T] "childIdx") (CopySlice (Node__Hash (SliceGet ptrT "treeChildren" (![uint64T] "childIdx"))));;
+      let: "beforeIdx" := ref_to uint64T #0 in
+      (for: (λ: <>, (![uint64T] "beforeIdx") < (to_u64 "pos")); (λ: <>, "beforeIdx" <-[uint64T] ((![uint64T] "beforeIdx") + #1)) := λ: <>,
+        SliceSet (slice.T byteT) "proofChildren" (![uint64T] "beforeIdx") (CopySlice (Node__Hash (SliceGet ptrT "children" (![uint64T] "beforeIdx"))));;
+        Continue);;
+      let: "afterIdx" := ref_to uint64T ((to_u64 "pos") + #1) in
+      (for: (λ: <>, (![uint64T] "afterIdx") < NumChildren); (λ: <>, "afterIdx" <-[uint64T] ((![uint64T] "afterIdx") + #1)) := λ: <>,
+        SliceSet (slice.T byteT) "proofChildren" ((![uint64T] "afterIdx") - #1) (CopySlice (Node__Hash (SliceGet ptrT "children" (![uint64T] "afterIdx"))));;
         Continue);;
       Continue);;
     "childHashes".
@@ -318,7 +297,7 @@ Definition Tree__Put: val :=
         Node__UpdateInteriorHash (SliceGet ptrT "nodePath" ((![uint64T] "pathIdx") - #1));;
         Continue);;
       let: "digest" := CopySlice (Node__Hash (SliceGet ptrT "nodePath" #0)) in
-      let: "proof" := GetChildHashes (SliceTake "nodePath" HashLen) in
+      let: "proof" := GetChildHashes "nodePath" "id" in
       ("digest", "proof", ErrNone)).
 
 Definition Tree__Get: val :=
@@ -332,7 +311,7 @@ Definition Tree__Get: val :=
       else
         let: "val" := CopySlice (struct.loadF Node "Val" (SliceGet ptrT "nodePath" HashLen)) in
         let: "digest" := CopySlice (Node__Hash (SliceGet ptrT "nodePath" #0)) in
-        let: "proof" := GetChildHashes (SliceTake "nodePath" HashLen) in
+        let: "proof" := GetChildHashes "nodePath" "id" in
         ("val", "digest", "proof", ErrNone))).
 
 Definition Tree__GetNil: val :=
@@ -345,7 +324,7 @@ Definition Tree__GetNil: val :=
       then (slice.nil, slice.nil, ErrFound)
       else
         let: "digest" := CopySlice (Node__Hash (SliceGet ptrT "nodePath" #0)) in
-        let: "proof" := GetChildHashes (SliceTake "nodePath" ((slice.len "nodePath") - #1)) in
+        let: "proof" := GetChildHashes "nodePath" "id" in
         ("digest", "proof", ErrNone))).
 
 End code.

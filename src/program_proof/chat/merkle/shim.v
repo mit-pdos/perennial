@@ -19,6 +19,10 @@ Lemma hash_inj d1 d2 h :
   is_hash d1 h -∗ is_hash d2 h -∗ ⌜d1 = d2⌝.
 Proof. Admitted.
 
+Lemma hash_len d h :
+  is_hash d h -∗ ⌜length h = 32%nat⌝.
+Proof. Admitted.
+
 Lemma wp_Hash sl_data data :
   {{{
     "Hdata" ∷ own_slice_small sl_data byteT 1 data

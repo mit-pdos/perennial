@@ -28,36 +28,13 @@ Fixpoint containsNodeAtEnd (tr : tree) (id : list u8) (node : tree) : Prop :=
     end
   end.
 
-Definition containsValAtEnd (tr : tree) (id : list u8) (val : option (list u8)) : Prop :=
-  match val with
-  | None => containsNodeAtEnd tr id Empty
-  | Some val' => containsNodeAtEnd tr id (Leaf val')
-  end.
-
-Definition tree_to_map (tr : tree) : gmap (list u8) (list u8) :=
-  let fix traverse (tr : tree) (acc : gmap (list u8) (list u8)) (path : list u8) :=
-    match tr with
-    | Cut _ => acc
-    | Empty => acc
-    | Leaf val => <[path:=val]>acc
-    | Interior children =>
-      (* Grab all entries from the children, storing the ongoing path. *)
-      (foldr
-        (λ child (pIdxAcc:(Z * gmap (list u8) (list u8))),
-          let acc' := traverse child pIdxAcc.2 (path ++ [U8 pIdxAcc.1])
-          in (pIdxAcc.1 + 1, acc'))
-        (0, acc) children
-      ).2
-    end
-  in traverse tr ∅ [].
-
 Definition is_nil_hash hash : iProp Σ :=
   is_hash [] hash.
 
 Definition is_tree_hash' (recur : tree -d> list u8 -d> iPropO Σ) : tree -d> list u8 -d> iPropO Σ :=
   (λ tr hash,
   match tr with
-  | Cut hash' => ⌜hash = hash'⌝
+  | Cut hash' => ⌜hash = hash' ∧ length hash' = 32%nat⌝
   | Empty => is_hash [U8 0] hash
   | Leaf val => is_hash (val ++ [U8 1]) hash
   | Interior children =>
@@ -76,17 +53,142 @@ Definition is_tree_hash : tree → list u8 → iProp Σ := fixpoint is_tree_hash
 Instance is_tree_hash_persistent tr hash : Persistent (is_tree_hash tr hash).
 Proof. Admitted.
 
-Lemma is_tree_hash_unfold tree hash :
-  is_tree_hash tree hash ⊣⊢ (is_tree_hash' is_tree_hash) tree hash.
+Lemma is_tree_hash_unfold tr hash :
+  is_tree_hash tr hash ⊣⊢ (is_tree_hash' is_tree_hash) tr hash.
 Proof.
   apply (fixpoint_unfold is_tree_hash').
 Qed.
 
-Lemma is_tree_hash_inj tree1 tree2 hash :
-  is_tree_hash tree1 hash -∗
-  is_tree_hash tree2 hash -∗
-  ⌜tree1 = tree2⌝.
-Proof. Admitted.
+Lemma tree_hash_len tr hash :
+  is_tree_hash tr hash -∗ ⌜length hash = 32%nat⌝.
+Proof.
+  iIntros "Htree".
+  destruct tr.
+  {
+    iDestruct (is_tree_hash_unfold with "Htree") as "Htree".
+    simpl.
+    iDestruct "Htree" as "[%Heq %Hlen]".
+    naive_solver.
+  }
+  {
+    iDestruct (is_tree_hash_unfold with "Htree") as "Htree".
+    simpl.
+    iDestruct (hash_len with "Htree") as "%Hlen".
+    naive_solver.
+  }
+  {
+    iDestruct (is_tree_hash_unfold with "Htree") as "Htree".
+    simpl.
+    iDestruct (hash_len with "Htree") as "%Hlen".
+    naive_solver.
+  }
+  {
+    iDestruct (is_tree_hash_unfold with "Htree") as "Htree".
+    simpl.
+    iDestruct "Htree" as (ch) "[_ Htree]".
+    iDestruct (hash_len with "Htree") as "%Hlen".
+    naive_solver.
+  }
+Qed.
+
+Definition is_path_node id node digest : iProp Σ :=
+  ∃ tr,
+  is_tree_hash tr digest ∧
+  ⌜containsNodeAtEnd tr id node⌝.
+
+Definition is_path_val id val digest : iProp Σ :=
+  ∃ tr,
+  is_tree_hash tr digest ∧
+  ⌜containsNodeAtEnd tr id
+    match val with
+    | None => Empty
+    | Some val' => Leaf val'
+    end⌝.
+
+Lemma concat_eq_dim1_eq {A : Type} (l1 l2 : list (list A)) sz :
+  concat l1 = concat l2 →
+  (Forall (λ l, length l = sz) l1) →
+  (Forall (λ l, length l = sz) l2) →
+  0 < sz →
+  l1 = l2.
+Proof.
+  intros Heq_concat Hlen_l1 Hlen_l2 Hsz.
+  assert (length (concat l1) = length (concat l2))
+    as Heq_concat_len by eauto with f_equal.
+  do 2 rewrite concat_length in Heq_concat_len.
+  generalize dependent l2.
+  induction l1 as [|a1]; destruct l2 as [|a2]; simpl;
+    intros Heq_concat Hlen_l2 Heq_concat_len.
+  { reflexivity. }
+  { apply Forall_inv in Hlen_l2. lia. }
+  { apply Forall_inv in Hlen_l1. lia. }
+  apply Forall_cons_iff in Hlen_l1 as [Hlen_a1 Hlen_l1].
+  apply Forall_cons_iff in Hlen_l2 as [Hlen_a2 Hlen_l2].
+  assert (take (length a1) (a1 ++ concat l1) = take (length a2) (a2 ++ concat l2)) as Htake_concat.
+  { rewrite Hlen_a1. rewrite Hlen_a2. rewrite Heq_concat. reflexivity. }
+  assert (drop (length a1) (a1 ++ concat l1) = drop (length a2) (a2 ++ concat l2)) as Hdrop_concat.
+  { rewrite Hlen_a1. rewrite Hlen_a2. rewrite Heq_concat. reflexivity. }
+  do 2 rewrite take_app_length in Htake_concat.
+  do 2 rewrite drop_app_length in Hdrop_concat.
+  (* TODO: this is really simple, how to automate? *)
+  assert (a1 = a2 → l1 = l2 → a1 :: l1 = a2 :: l2) as H by naive_solver;
+    apply H; clear H; [done|].
+  apply IHl1; try eauto with lia.
+Qed.
+
+Lemma helper pos rest val1 val2 digest :
+  is_path_val (pos :: rest) val1 digest -∗
+  is_path_val (pos :: rest) val2 digest -∗
+  ∃ digest',
+  is_path_val rest val1 digest' ∗
+  is_path_val rest val2 digest'.
+Proof.
+  iIntros "Hval1 Hval2".
+  rewrite /is_path_val.
+  iDestruct "Hval1" as (tr1) "[#Htree1 %Hcont1]".
+  iDestruct "Hval2" as (tr2) "[#Htree2 %Hcont2]".
+  destruct tr1, tr2; try naive_solver.
+  simpl in Hcont1, Hcont2.
+  destruct Hcont1 as [child1 [Hlist1 Hcont1]].
+  destruct Hcont2 as [child2 [Hlist2 Hcont2]].
+  iRename "Htree1" into "H";
+    iDestruct (is_tree_hash_unfold with "H") as "Htree1";
+    iClear "H".
+  iRename "Htree2" into "H";
+    iDestruct (is_tree_hash_unfold with "H") as "Htree2";
+    iClear "H".
+  simpl.
+  iDestruct "Htree1" as (ch1) "[Htree1 Hdig1]".
+  iDestruct "Htree2" as (ch2) "[Htree2 Hdig2]".
+
+  iDestruct (big_sepL2_lookup_1_some with "Htree1") as (h1) "%Helem1"; [done|].
+  iDestruct (big_sepL2_lookup_1_some with "Htree2") as (h2) "%Helem2"; [done|].
+  iDestruct (big_sepL2_lookup with "Htree1") as "Helem1"; [done..|].
+  iDestruct (big_sepL2_lookup with "Htree2") as "Helem2"; [done..|].
+
+  iDestruct (hash_inj with "Hdig1 Hdig2") as "%Heq".
+  apply app_inv_tail in Heq.
+  (*
+     have big_sepL2 with child;hash' and is_tree_hash child hash'.
+     from each tree_hash, get hash len eq.
+     Then prove the concat lemma.
+     Also need tree_hash 
+     
+     Want oneL equiv to twoL if twoL func doesn't talk about 1L.
+   *)
+  iAssert ([∗ list] hash' ∈ ch1, ⌜length ch1 
+  Search big_sepL2 big_opL.
+  About big_sepL2_impl.
+  iDestruct (big_sepL2_impl _ (λ _ _ h, ⌜length h = 32%nat⌝%I) with "Htree1") as "H".
+
+Lemma is_path_val_inj id val1 val2 digest :
+  is_path_val id val1 digest -∗
+  is_path_val id val2 digest -∗
+  ⌜val1 = val2⌝.
+Proof.
+  iLöb as "IH" forall (id val1 val2 digest) "".
+`iLöb as "IH" forall (x1 ... xn) "selpat"` 
+
 
 Definition own_Node' (recur : loc -d> tree -d> iPropO Σ) : loc -d> tree -d> iPropO Σ :=
   (λ ptr_tr tr,
@@ -126,6 +228,23 @@ Proof.
   apply (fixpoint_unfold own_Node').
 Qed.
 
+Definition tree_to_map (tr : tree) : gmap (list u8) (list u8) :=
+  let fix traverse (tr : tree) (acc : gmap (list u8) (list u8)) (path : list u8) :=
+    match tr with
+    | Cut _ => acc
+    | Empty => acc
+    | Leaf val => <[path:=val]>acc
+    | Interior children =>
+      (* Grab all entries from the children, storing the ongoing path. *)
+      (foldr
+        (λ child (pIdxAcc:(Z * gmap (list u8) (list u8))),
+          let acc' := traverse child pIdxAcc.2 (path ++ [U8 pIdxAcc.1])
+          in (pIdxAcc.1 + 1, acc'))
+        (0, acc) children
+      ).2
+    end
+  in traverse tr ∅ [].
+
 Definition own_Tree ptr_tr entry_map : iProp Σ :=
   ∃ tr root,
   "Hnode" ∷ own_Node root tr ∗
@@ -141,21 +260,6 @@ Definition is_Slice3D (sl : Slice.t) (obj0 : list (list (list u8))) : iProp Σ :
     ([∗ list] obj2;sl_2 ∈ obj1;list_sl1,
       readonly (own_slice_small sl_2 byteT 1 obj2))).
 
-Definition is_path_node id node digest : iProp Σ :=
-  ∃ tree,
-  is_tree_hash tree digest ∧
-  ⌜containsNodeAtEnd tree id node⌝.
-
-Definition is_path_val id val digest : iProp Σ :=
-  ∃ tree,
-  is_tree_hash tree digest ∧
-  ⌜containsValAtEnd tree id val⌝.
-
-Lemma is_path_val_inj id val1 val2 digest :
-  is_path_val id val1 digest -∗
-  is_path_val id val2 digest -∗
-  ⌜val1 = val2⌝.
-Proof. Admitted.
 
 End defs.
 
@@ -186,18 +290,18 @@ End PathProof.
 Section proofs.
 Context `{!heapGS Σ}.
 
-Lemma wp_Put ptr_tree entry_map sl_id id sl_val val :
+Lemma wp_Put ptr_tr entry_map sl_id id sl_val val :
   {{{
-    "Htree" ∷ own_Tree ptr_tree entry_map ∗
+    "Htree" ∷ own_Tree ptr_tr entry_map ∗
     "Hid" ∷ own_slice_small sl_id byteT 1 id ∗
     "Hval" ∷ own_slice_small sl_val byteT 1 val
   }}}
-  Tree__Put #ptr_tree (slice_val sl_id) (slice_val sl_val)
+  Tree__Put #ptr_tr (slice_val sl_id) (slice_val sl_val)
   {{{
     sl_digest ptr_proof (err:u64),
     RET ((slice_val sl_digest), #ptr_proof, #err);
     if bool_decide (err = 0) then
-      "Htree" ∷ own_Tree ptr_tree (<[id:=val]>entry_map)
+      "Htree" ∷ own_Tree ptr_tr (<[id:=val]>entry_map)
     else True%I
   }}}.
 Proof. Admitted.
