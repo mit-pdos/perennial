@@ -76,37 +76,6 @@ Proof.
   eauto.
 Qed.
 
-(* Not sure how to prove this. Should be true because tr is well founded, and
-   is_tree_hash' only has timeless stuff. *)
-#[global]
-Instance is_tree_hash_timeless tr hash : Timeless (is_tree_hash tr hash).
-Proof.
-  rewrite /Timeless.
-  iStartProof.
-  iLöb as "IH" forall (tr hash).
-  (* iInduction tr as [| | |] "IH". forall (tr hash). *)
-  iIntros "H".
-  rewrite is_tree_hash_unfold /is_tree_hash'.
-  destruct tr.
-  1-3: by iMod "H".
-  iDestruct "H" as (?) "[H >?]".
-  iExists _. iFrame.
-  iAssert (
-    ∀ (tr : tree) (hash0 : list u8), (▷ ▷ is_tree_hash tr hash0) -∗ (▷ ◇ is_tree_hash tr hash0)
-    )%I with "[IH]" as "#IH2".
-  {
-    iIntros. iSpecialize ("IH" $! _ _).
-    iNext. iApply "IH". iFrame "#".
-  }
-  iDestruct (big_sepL2_later_1 with "H") as ">H".
-  iApply big_sepL2_later_1. iApply big_sepL2_later_2.
-  iApply (big_sepL2_impl with "H").
-  iIntros "!> * % % H".
-  iDestruct ("IH2" with "H") as "H".
-  iNext.
-  admit.
-Admitted.
-
 Lemma tree_hash_len tr hash :
   is_tree_hash tr hash -∗ ⌜length hash = 32%nat⌝.
 Proof.
@@ -171,8 +140,8 @@ Qed.
 Lemma is_path_val_inj' pos rest val1 val2 digest :
   is_path_val (pos :: rest) val1 digest -∗
   (* Need fupd so we can remove ▷ in is_tree_hash. *)
-  is_path_val (pos :: rest) val2 digest ={⊤}=∗
-  ∃ digest',
+  is_path_val (pos :: rest) val2 digest -∗
+  ▷ ∃ digest',
   is_path_val rest val1 digest' ∗
   is_path_val rest val2 digest'.
 Proof.
@@ -204,8 +173,7 @@ Proof.
   iRename "Htree2" into "H";
     iDestruct (big_sepL2_later_2 with "H") as "Htree2";
     iClear "H".
-  iMod "Htree1".
-  iMod "Htree2".
+  iNext.
 
   (* Use is_hash ch1/ch2 digest to prove that child hashes are same. *)
   iAssert (⌜Forall (λ l, length l = 32%nat) ch1⌝%I) as %Hlen_ch1.
@@ -246,7 +214,6 @@ Proof.
   iDestruct (big_sepL2_lookup with "Htree2") as "Hhash2"; [done..|].
   clear Hlook1 Hlook2.
 
-  iIntros "!>".
   iExists h2.
   iSplit.
   { iExists child1. iFrame "%#". }
