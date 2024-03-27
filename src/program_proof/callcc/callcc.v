@@ -30,13 +30,13 @@ Axiom nclwp_throw :
   NCLWP (fill K (App (App throw (Val v)) (cont Kt))) {{ Φ }}
 .
 
-Notation "'return:' x" := (throw x "retK") (at level 20).
+Definition return_go x := (throw x "retK").
 
 Definition earlyReturnTest: val :=
   rec: "earlyReturnTest" "x" :=
     let: "x" := call_cc (λ: "retK",
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      return: #()
+      return_go #()
     )
     ) in
     "x"
@@ -45,7 +45,7 @@ Definition earlyReturnTest: val :=
 Definition earlyReturnTest2: expr :=
     call_cc (λ: "retK",
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      return: #()
+      return_go #()
     )
     )%E
 .
@@ -59,14 +59,12 @@ Lemma wp_earlyReturnTest :
 Proof.
   iIntros (?) "_ HΦ".
   rewrite /earlyReturnTest2.
-  Print reshape_expr.
-  replace (call_cc (λ: "retK", for: (λ: <>, #true) ; (λ: <>, Skip) := λ: <>, throw #() "retK")%E)
+  replace (call_cc (λ: "retK", for: (λ: <>, #true) ; (λ: <>, Skip) := λ: <>, return_go #())%E)
     with
-    (fill [] (call_cc (λ: "retK", for: (λ: <>, #true) ; (λ: <>, Skip) := λ: <>, throw #() "retK")%E))
+    (fill [] (call_cc (λ: "retK", for: (λ: <>, #true) ; (λ: <>, Skip) := λ: <>, return_go #())%E))
     by done.
   iApply nclwp_call_cc.
   simpl.
-  Locate "let:".
 
   lazymatch goal with
   | |- envs_entails _ (nclwp ?s ?E ?e ?Q) =>
@@ -74,7 +72,6 @@ Proof.
   | _ => fail "not a NCLWP"
   end
   .
-  Search reshape_expr.
   iApply nclwp_call_cc.
 
   wp_rec.

@@ -49,19 +49,63 @@ Proof. solve_contractive. Qed.
 
 Definition is_tree_hash : tree → list u8 → iProp Σ := fixpoint is_tree_hash'.
 
-#[global]
-Instance is_tree_hash_persistent tr hash : Persistent (is_tree_hash tr hash).
-Proof. Admitted.
-
-#[global]
-Instance is_tree_hash_timeless tr hash : Timeless (is_tree_hash tr hash).
-Proof. Admitted.
-
-Lemma is_tree_hash_unfold tr hash :
-  is_tree_hash tr hash ⊣⊢ (is_tree_hash' is_tree_hash) tr hash.
+Lemma is_tree_hash_unfold tree hash :
+  is_tree_hash tree hash ⊣⊢ (is_tree_hash' is_tree_hash) tree hash.
 Proof.
   apply (fixpoint_unfold is_tree_hash').
 Qed.
+
+(* XXX: is there a more concise proof? *)
+#[global]
+Instance is_tree_hash_persistent tr hash : Persistent (is_tree_hash tr hash).
+Proof.
+  rewrite /Persistent.
+  iStartProof.
+  iLöb as "IH" forall (tr hash).
+  iIntros "H".
+  rewrite is_tree_hash_unfold /is_tree_hash'.
+  destruct tr.
+  1-3: iDestruct "H" as "#H"; eauto.
+  iDestruct "H" as (?) "[H #?]".
+  iExists _. iFrame "#".
+  iApply big_sepL2_persistently.
+  iApply (big_sepL2_impl with "H").
+  iIntros "!> * % % H".
+  iApply later_persistently_1.
+  iNext. iDestruct ("IH" with "H") as "#H2".
+  eauto.
+Qed.
+
+(* Not sure how to prove this. Should be true because tr is well founded, and
+   is_tree_hash' only has timeless stuff. *)
+#[global]
+Instance is_tree_hash_timeless tr hash : Timeless (is_tree_hash tr hash).
+Proof.
+  rewrite /Timeless.
+  iStartProof.
+  iLöb as "IH" forall (tr hash).
+  (* iInduction tr as [| | |] "IH". forall (tr hash). *)
+  iIntros "H".
+  rewrite is_tree_hash_unfold /is_tree_hash'.
+  destruct tr.
+  1-3: by iMod "H".
+  iDestruct "H" as (?) "[H >?]".
+  iExists _. iFrame.
+  iAssert (
+    ∀ (tr : tree) (hash0 : list u8), (▷ ▷ is_tree_hash tr hash0) -∗ (▷ ◇ is_tree_hash tr hash0)
+    )%I with "[IH]" as "#IH2".
+  {
+    iIntros. iSpecialize ("IH" $! _ _).
+    iNext. iApply "IH". iFrame "#".
+  }
+  iDestruct (big_sepL2_later_1 with "H") as ">H".
+  iApply big_sepL2_later_1. iApply big_sepL2_later_2.
+  iApply (big_sepL2_impl with "H").
+  iIntros "!> * % % H".
+  iDestruct ("IH2" with "H") as "H".
+  iNext.
+  admit.
+Admitted.
 
 Lemma tree_hash_len tr hash :
   is_tree_hash tr hash -∗ ⌜length hash = 32%nat⌝.

@@ -11,6 +11,10 @@ Proof. Admitted.
 Instance is_hash_persistent data hash : Persistent (is_hash data hash).
 Proof. Admitted.
 
+#[global]
+Instance is_hash_timeless data hash : Timeless (is_hash data hash).
+Proof. Admitted.
+
 Lemma hash_is_func d h1 h2 :
   is_hash d h1 -∗ is_hash d h2 -∗ ⌜h1 = h2⌝.
 Proof. Admitted.
