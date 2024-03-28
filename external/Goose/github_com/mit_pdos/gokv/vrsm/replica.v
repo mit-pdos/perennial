@@ -323,6 +323,16 @@ Definition Server__ApplyRoWaitForCommit: val :=
       struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
       "reply"
     else
+      (if: ((rand.RandomUint64 #()) `rem` #10000) = #0
+      then
+        (* log.Printf("Server nextIndex=%d commitIndex=%d", s.nextIndex, s.committedNextIndex) *)
+        #()
+      else #());;
+      let: "lastModifiedIndex" := ref (zero_val uint64T) in
+      let: ("0_ret", "1_ret") := (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s")) "op" in
+      "lastModifiedIndex" <-[uint64T] "0_ret";;
+      struct.storeF ApplyReply "Reply" "reply" "1_ret";;
+      let: "epoch" := struct.loadF Server "epoch" "s" in
       let: (<>, "h") := grove_ffi.GetTimeRange #() in
       (if: (struct.loadF Server "leaseExpiration" "s") ≤ "h"
       then
@@ -331,18 +341,6 @@ Definition Server__ApplyRoWaitForCommit: val :=
         struct.storeF ApplyReply "Err" "reply" e.LeaseExpired;;
         "reply"
       else
-        lock.release (struct.loadF Server "mu" "s");;
-        lock.acquire (struct.loadF Server "mu" "s");;
-        (if: ((rand.RandomUint64 #()) `rem` #10000) = #0
-        then
-          (* log.Printf("Server nextIndex=%d commitIndex=%d", s.nextIndex, s.committedNextIndex) *)
-          #()
-        else #());;
-        let: "lastModifiedIndex" := ref (zero_val uint64T) in
-        let: ("0_ret", "1_ret") := (struct.loadF StateMachine "ApplyReadonly" (struct.loadF Server "sm" "s")) "op" in
-        "lastModifiedIndex" <-[uint64T] "0_ret";;
-        struct.storeF ApplyReply "Reply" "reply" "1_ret";;
-        let: "epoch" := struct.loadF Server "epoch" "s" in
         Skip;;
         (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
           (if: (struct.loadF Server "epoch" "s") ≠ "epoch"
