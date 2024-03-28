@@ -57,6 +57,7 @@ Fixpoint is_tree_hash (tr: tree) (hash: list u8) : iProp Σ :=
  *)
 
 (* XXX: is there a more concise proof? *)
+(*
 #[global]
 Instance is_tree_hash_persistent tr hash : Persistent (is_tree_hash tr hash).
 Proof.
@@ -77,21 +78,18 @@ Proof.
   iSpecialize ("IH" $! tr x2 with "[H]"); [iFrame|].
   iDestruct (later_persistently_1 with "IH") as "#IH2".
   iIntros "!>".
+  About map_ind.
   (* Problem: don't have later in goal to iMod IH2. *)
 Admitted.
+ *)
 
-(*
 Lemma tree_hash_len tr hash :
   is_tree_hash tr hash -∗ ⌜length hash = 32%nat⌝.
 Proof.
   iIntros "Htree".
-  destruct tr;
-    iDestruct (is_tree_hash_unfold with "Htree") as "Htree";
-    simpl.
+  destruct tr; simpl.
   { iDestruct "Htree" as "[%Heq %Hlen]". naive_solver. }
-  (* TODO: change to 1-2: *)
-  { iDestruct (hash_len with "Htree") as "%Hlen". naive_solver. }
-  { iDestruct (hash_len with "Htree") as "%Hlen". naive_solver. }
+  1-2: iDestruct (hash_len with "Htree") as "%Hlen"; naive_solver.
   {
     iDestruct "Htree" as (ch) "[_ Htree]".
     iDestruct (hash_len with "Htree") as "%Hlen".
@@ -142,7 +140,7 @@ Lemma sep_tree_hash_impl_forall_len ct ch :
   ([∗ list] t;h ∈ ct;ch, is_tree_hash t h) -∗
   ⌜Forall (λ l, length l = 32%nat) ch⌝.
 Proof.
-  iIntros "#Htree".
+  iIntros "Htree".
   iDestruct (big_sepL2_impl _ (λ _ _ h, ⌜length h = 32%nat⌝%I) with "Htree []") as "Hlen_sepL2".
   {
     iIntros "!>" (???) "_ _ Hhash".
@@ -156,41 +154,25 @@ Qed.
 
 Lemma is_path_val_inj' pos rest val1 val2 digest :
   is_path_val (pos :: rest) val1 digest -∗
-  (* Need fupd so we can remove ▷ in is_tree_hash. *)
   is_path_val (pos :: rest) val2 digest -∗
-  ▷ ∃ digest',
-  is_path_val rest val1 digest' ∗
-  is_path_val rest val2 digest'.
+  ∃ digest',
+  (is_path_val rest val1 digest' ∗
+  is_path_val rest val2 digest').
 Proof.
   iIntros "Hval1 Hval2".
   rewrite /is_path_val.
-  iDestruct "Hval1" as (tr1) "[#Htree1 %Hcont1]".
-  iDestruct "Hval2" as (tr2) "[#Htree2 %Hcont2]".
+  iDestruct "Hval1" as (tr1) "[Htree1 %Hcont1]".
+  iDestruct "Hval2" as (tr2) "[Htree2 %Hcont2]".
   destruct tr1 as [| | |ct1], tr2 as [| | |ct2]; try naive_solver.
 
-  (* Get contains pred. *)
-  simpl in *.
+  (* Get contains pred and is_tree_hash for children. *)
   destruct Hcont1 as [child1 [Hlist1 Hcont1]].
   destruct Hcont2 as [child2 [Hlist2 Hcont2]].
-
-  (* Get is_tree_hash for children. *)
-  iRename "Htree1" into "H";
-    iDestruct (is_tree_hash_unfold with "H") as "Htree1";
-    iClear "H".
-  iRename "Htree2" into "H";
-    iDestruct (is_tree_hash_unfold with "H") as "Htree2";
-    iClear "H".
   simpl.
   iDestruct "Htree1" as (ch1) "[Htree1 Hdig1]".
   iDestruct "Htree2" as (ch2) "[Htree2 Hdig2]".
-
-  iRename "Htree1" into "H";
-    iDestruct (big_sepL2_later_2 with "H") as "Htree1";
-    iClear "H".
-  iRename "Htree2" into "H";
-    iDestruct (big_sepL2_later_2 with "H") as "Htree2";
-    iClear "H".
-  iNext.
+  iDestruct (big_sepL2_fmap_l (λ c h, is_tree_hash c h) with "Htree1") as "Htree1".
+  iDestruct (big_sepL2_fmap_l (λ c h, is_tree_hash c h) with "Htree2") as "Htree2".
 
   (* Use is_hash ch1/ch2 digest to prove that child hashes are same. *)
   iDestruct (sep_tree_hash_impl_forall_len with "Htree1") as "%Hlen_ch1".
@@ -209,8 +191,7 @@ Proof.
   iDestruct (big_sepL2_lookup with "Htree2") as "Hhash2"; [done..|].
   clear Hlook1 Hlook2.
 
-  iExists h2.
-  iSplit; iFrame "%#".
+  iFrame "%∗".
 Qed.
 
 Lemma empty_leaf_hash_disjoint digest v :
@@ -219,8 +200,6 @@ Lemma empty_leaf_hash_disjoint digest v :
   False.
 Proof.
   iIntros "Hempty Hleaf".
-  iDestruct (is_tree_hash_unfold with "Hempty") as "Hempty".
-  iDestruct (is_tree_hash_unfold with "Hleaf") as "Hleaf".
   simpl.
   iDestruct (hash_inj with "Hempty Hleaf") as "%Heq".
   iPureIntro.
@@ -250,18 +229,15 @@ Proof.
     destruct Hcont2 as [_ Hleaf2].
     inversion Hleaf1; subst l; clear Hleaf1.
     inversion Hleaf2; subst l0; clear Hleaf2.
-    iDestruct (is_tree_hash_unfold with "Htree1") as "Htree1".
-    iDestruct (is_tree_hash_unfold with "Htree2") as "Htree2".
     simpl.
     iDestruct (hash_inj with "[$Htree1] [$Htree2]") as "%Heq".
     by list_simplifier.
   }
   {
-    iDestruct (is_path_val_inj' with "[$Hpath1] [$Hpath2]") as "Hhelper".
-    (* TODO: how to get rid of fupd here? *)
-    iMod "Hhelper".
+    iDestruct (is_path_val_inj' with "[$Hpath1] [$Hpath2]") as (digest') "[Hval1 Hval2]".
+    by iSpecialize ("IH" $! digest' with "[$Hval1] [$Hval2]").
   }
-Admitted.
+Qed.
 
 Definition own_Node' (recur : loc -d> tree -d> iPropO Σ) : loc -d> tree -d> iPropO Σ :=
   (λ ptr_tr tr,
@@ -332,8 +308,6 @@ Definition is_Slice3D (sl : Slice.t) (obj0 : list (list (list u8))) : iProp Σ :
     readonly (own_slice_small sl_1 (slice.T byteT) 1 list_sl1) ∗
     ([∗ list] obj2;sl_2 ∈ obj1;list_sl1,
       readonly (own_slice_small sl_2 byteT 1 obj2))).
-
- *)
 
 End defs.
 
