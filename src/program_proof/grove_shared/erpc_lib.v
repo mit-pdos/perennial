@@ -227,7 +227,7 @@ Proof.
       iLeft. iFrame.
     }
     iModIntro. iFrame.
-    iFrame "# ∗".
+    iFrame "∗#".
   }
   { (* impossible case: reply for request has already been set *)
     by iExFalso; iApply (new_seq_implies_unproc with "Hlseq_lb Hlseq_own").
@@ -254,7 +254,7 @@ Proof.
   {
     iDestruct "Hpre2" as "[>Hproc_tok|[>HγPre2 _]]".
     - iMod ("HMClose" with "[HγPre Hpre Hunproc]") as "_"; last by [iModIntro; iFrame].
-      iNext. iFrame "#". iLeft. iFrame "#∗". iRight. iFrame.
+      iNext. iFrame "#". iLeft. iFrame "∗#". iRight. iFrame.
     - by iDestruct (own_valid_2 with "HγPre HγPre2") as %Hbad.
   }
   {
@@ -298,10 +298,7 @@ Proof using Type*.
     iDestruct (big_sepS_elem_of_acc_impl req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
     iMod (fmcounter_map_update (int.nat req.(Req_Seq)) with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
     {
-      (* Set Printing All*)
-      (* Need to unfold Map.t to get map lookups to match *)
       rename select (_ < _) into Hlt.
-      unfold Map.t in Hlt.
       simpl in Hlt.
       rewrite -u64_Z_through_nat in Hlt.
       replace (int.Z req.(Req_Seq)%Z) with (int.nat req.(Req_Seq):Z) in Hlt; last first.
@@ -310,7 +307,7 @@ Proof using Type*.
       lia.
     }
     iMod ("HMClose" with "[Hpost]") as "_".
-    { iNext. iFrame "#". iRight. iRight. iExists _; iFrame "#∗". }
+    { iNext. iFrame "#". iRight. by iRight. }
     iModIntro.
 
     iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM req.(Req_CID) req.(Req_Seq) reply with "[Hreqeq_lb] Hrcagree") as "Hrcagree2"; eauto.
@@ -449,7 +446,7 @@ Proof.
     iDestruct (big_sepM_insert_2 _ _ (req.(Req_CID), req.(Req_Seq)) (Some reply) with "[Hreqeq_lb] Hcseq_lb") as "Hcseq_lb2"; eauto.
     iMod ("HNClose" with "[Hrcctx Hcseq_lb2]") as "_".
     {
-      iNext. iExists _; iFrame "# ∗".
+      iNext. iExists _; iFrame "∗#".
     }
 
     iDestruct (big_sepS_elem_of_acc_impl req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
@@ -460,7 +457,6 @@ Proof.
       replace (int.Z req.(Req_Seq)%Z) with (int.nat req.(Req_Seq):Z) in Hrseq; last first.
       { rewrite u64_Z_through_nat. done. }
       rewrite -u64_Z_through_nat in Hrseq.
-      unfold Map.t in Hrseq.
       apply Nat2Z.inj_lt in Hrseq.
       lia.
     }
@@ -469,7 +465,7 @@ Proof.
     iMod ("Hfupd" with "HP Hproc_tok Hlseq_new_lb Hctx") as "(Hpost & Hγproc & Hctx')".
 
     iMod ("HMClose" with "[Hpost]") as "_".
-    { iNext. iFrame "#". iRight. iRight. iExists _; iFrame "#∗". }
+    { iNext. iFrame "#". iRight. by iRight. }
     iDestruct (big_sepM2_insert_2 _ lastSeqM lastReplyM req.(Req_CID) req.(Req_Seq) reply with "[Hreqeq_lb] Hrcagree") as "Hrcagree2"; eauto.
     iModIntro.
     iFrame "∗#".

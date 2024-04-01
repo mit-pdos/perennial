@@ -109,7 +109,7 @@ Proof using allocG0.
           with "[$Hlock] [-HΦ]") as "#Hlock".
   { iExists _; iFrame.
     rewrite /alloc.free /=.
-    iFrame "% ∗". }
+    iFrame "∗%". }
   iModIntro.
   iApply ("HΦ" $! _ γ).
   iExists _, _; iFrame "#".
@@ -263,7 +263,7 @@ Proof.
   iNamed "Hlockinv".
   wp_loadField.
   iDestruct "Hfreemap" as (m) "[Hfreemap %Hdom]".
-  wp_apply (wp_MapInsert _ _ _ _ () with "Hfreemap"); first by auto.
+  wp_apply (wp_MapInsert _ _ () with "Hfreemap"); first by auto.
   iIntros "Hfreemap".
   iAssert (is_addrset mref (alloc.free σ ∪ {[a]})) with "[Hfreemap]" as "Hfreemap".
   { iExists _; iFrame.

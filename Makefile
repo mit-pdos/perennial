@@ -30,7 +30,12 @@ all: $(VFILES:.v=.vo)
 vos: src/ShouldBuild.vos
 vok: $(QUICK_CHECK_FILES:.v=.vok)
 interpreter: src/goose_lang/interpreter/generated_test.vos
-check-assumptions: src/program_proof/examples/print_assumptions.vo src/program_proof/simple/print_assumptions.vo
+check-assumptions: \
+	src/program_proof/examples/print_assumptions.vo \
+	src/program_proof/simple/print_assumptions.vo \
+	src/program_proof/mvcc/print_assumptions.vo \
+	src/program_proof/memkv/print_assumptions.vo \
+	src/program_proof/vrsm/apps/print_assumptions.vo
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
@@ -87,7 +92,7 @@ SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/program_proof/memkv/memkv_conditional_put_proof.v\
 	src/program_proof/memkv/memkv_coord_start_proof.v\
 	src/program_proof/memkv/memkv_get_proof.v\
-	src/program_proof/simplepb/simplelog/proof.v
+	src/program_proof/vrsm/storage/proof.v
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)

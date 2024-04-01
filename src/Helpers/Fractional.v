@@ -26,8 +26,9 @@ Section bi.
     P -∗ Φ q1.
   Proof.
     iIntros (?) "HP".
-    iDestruct (as_fractional (AsFractional:=H) with "HP") as "HΦ".
+    iDestruct (as_fractional (Φ:=Φ) with "HP") as "HΦ".
     iApply fractional_weaken; eauto.
+    by destruct H.
   Qed.
 
 End bi.

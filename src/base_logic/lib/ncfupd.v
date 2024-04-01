@@ -155,7 +155,7 @@ Lemma ncfupd_mask_frame E E' E1 E2 P :
 Proof.
   intros ?. rewrite (ncfupd_mask_frame_r _ _ (E ∖ E1)); last set_solver.
   rewrite ncfupd_trans.
-  by replace (E1 ∪ E ∖ E1) with E by (by apply union_difference_L).
+  replace (E1 ∪ E ∖ E1) with E by (by apply union_difference_L). auto.
 Qed.
 
 Global Instance into_wand_ncfupd E p q R P Q :
@@ -198,7 +198,7 @@ Proof.
 Qed.
 
 Lemma ncfupd_elim E1 E2 E3 P Q :
-  (Q -∗ (|NC={E2,E3}=> P)) → (|NC={E1,E2}=> Q) -∗ (|NC={E1,E3}=> P).
+  (Q ⊢ (|NC={E2,E3}=> P)) → (|NC={E1,E2}=> Q) ⊢ (|NC={E1,E3}=> P).
 Proof. intros ->. rewrite ncfupd_trans //. Qed.
 
 Global Instance except_0_ncfupd' E1 E2 P :
@@ -288,10 +288,10 @@ Proof.
   by rewrite ncfupd_frame_r left_id.
 Qed.
 
-Lemma step_ncfupd_intro Ei Eo P : Ei ⊆ Eo → ▷ P -∗ |NC={Eo,Ei}=> ▷ |NC={Ei,Eo}=> P.
+Lemma step_ncfupd_intro Ei Eo P : Ei ⊆ Eo → ▷ P ⊢ |NC={Eo,Ei}=> ▷ |NC={Ei,Eo}=> P.
 Proof. intros. by rewrite -(step_ncfupd_mask_mono Ei _ Ei _) // -!ncfupd_intro. Qed.
 
-Lemma step_ncfupd_wand Eo Ei P Q : (|NC={Eo}[Ei]▷=> P) -∗ (P -∗ Q) -∗ |NC={Eo}[Ei]▷=> Q.
+Lemma step_ncfupd_wand Eo Ei P Q : (|NC={Eo}[Ei]▷=> P) ⊢ (P -∗ Q) -∗ |NC={Eo}[Ei]▷=> Q.
 Proof.
   apply wand_intro_l.
   rewrite (later_intro (P -∗ Q)%I).
@@ -321,7 +321,7 @@ Proof.
 Qed.
 
 Lemma step_ncfupdN_wand Eo Ei n P Q :
-  (|NC={Eo}[Ei]▷=>^n P) -∗ (P -∗ Q) -∗ (|NC={Eo}[Ei]▷=>^n Q).
+  (|NC={Eo}[Ei]▷=>^n P) ⊢ (P -∗ Q) -∗ (|NC={Eo}[Ei]▷=>^n Q).
 Proof.
   apply wand_intro_l. induction n as [|n IH]=> /=.
   { by rewrite wand_elim_l. }

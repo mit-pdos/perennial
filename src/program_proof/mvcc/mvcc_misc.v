@@ -18,7 +18,7 @@ Proof.
   rewrite delete_take_drop.
   replace i with (length (take i l)) at 1; last first.
   { apply take_length_le. lia. }
-  rewrite take_app.
+  rewrite take_app_length.
   rewrite cons_middle.
   replace (S i) with (length (take i l ++ [v])); last first.
   { rewrite app_length.
@@ -27,7 +27,7 @@ Proof.
     lia.
   }
   rewrite app_assoc.
-  rewrite drop_app.
+  rewrite drop_app_length.
   rewrite app_length.
   simpl.
   rewrite take_length_le; last lia.
@@ -40,9 +40,9 @@ Lemma list_to_map_insert {A} `{FinMap K M} (l : list (K * A)) k v v' i :
   l !! i = Some (k, v) ->
   <[k := v']> (list_to_map l) =@{M A} list_to_map (<[i := (k, v')]> l).
 Proof.
-  intros.
-  apply lookup_lt_Some in H8 as Hlength.
-  apply delete_Permutation in H8 as Hperm.
+  intros Hnodup Hsome.
+  apply lookup_lt_Some in Hsome as Hlength.
+  apply delete_Permutation in Hsome as Hperm.
   apply Permutation_sym in Hperm.
   rewrite -(list_to_map_proper ((k, v) :: (delete i l)) l); last done; last first.
   { apply NoDup_Permutation_proper with l.*1; [by apply fmap_Permutation | done]. }
@@ -57,7 +57,7 @@ Proof.
     simpl.
     rewrite list_insert_id; first done.
     rewrite list_lookup_fmap.
-    by rewrite H8.
+    by rewrite Hsome.
   }
   do 2 rewrite list_to_map_cons.
   rewrite insert_insert.
@@ -238,7 +238,7 @@ Qed.
 Lemma big_sepM2_bupd
       `{BiBUpd PROP} {A B : Type} `{Countable K}
       (Φ : K → A -> B → PROP) (m1 : gmap K A) (m2 : gmap K B) :
-  ([∗ map] k↦x;y ∈ m1;m2, |==> Φ k x y) -∗ |==> [∗ map] k↦x;y ∈ m1;m2, Φ k x y.
+  ([∗ map] k↦x;y ∈ m1;m2, |==> Φ k x y) ⊢@{_} |==> [∗ map] k↦x;y ∈ m1;m2, Φ k x y.
 Proof.
   (* Q: What does [!] do? *)
   rewrite !big_sepM2_alt !persistent_and_affinely_sep_l.

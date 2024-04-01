@@ -186,7 +186,7 @@ Section list2.
   Qed.
 
   Lemma big_sepL2_to_sepL_1 Φ l1 l2 :
-    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) -∗
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ⊢
     ([∗ list] k↦y1 ∈ l1, ∃ y2, ⌜l2 !! k = Some y2⌝ ∧ Φ k y1 y2).
   Proof.
     iIntros "H".
@@ -195,7 +195,7 @@ Section list2.
   Qed.
 
   Lemma big_sepL2_to_sepL_2 (Φ: nat → B → A → PROP) l1 l2 :
-    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) -∗
+    ([∗ list] k↦y1;y2 ∈ l1;l2, Φ k y1 y2) ⊢
     ([∗ list] k↦y2 ∈ l2, ∃ y1, ⌜l1 !! k = Some y1⌝ ∧ Φ k y1 y2).
   Proof. rewrite big_sepL2_flip big_sepL2_to_sepL_1 //. Qed.
 
@@ -332,10 +332,10 @@ Section list2.
   Theorem big_sepL2_lookup_acc_and Φ Φc l1 l2 i x1 x2 :
     (* this is a pure assumption (instead of a persistent implication) because
     that's how big_sepL2_mono is written *)
-    (∀ k y1 y2, l1 !! k = Some y1 → l2 !! k = Some y2 → Φ k y1 y2 -∗ Φc k y1 y2) →
+    (∀ k y1 y2, l1 !! k = Some y1 → l2 !! k = Some y2 → Φ k y1 y2 ⊢ Φc k y1 y2) →
     l1 !! i = Some x1 →
     l2 !! i = Some x2 →
-    big_sepL2 Φ l1 l2 -∗
+    big_sepL2 Φ l1 l2 ⊢
     Φ i x1 x2 ∗ ((Φ i x1 x2 -∗ big_sepL2 Φ l1 l2) ∧ (Φc i x1 x2 -∗ big_sepL2 Φc l1 l2)).
   Proof.
     iIntros (Himpl Hx1 Hx2) "H".

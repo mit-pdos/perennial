@@ -38,16 +38,16 @@ Section definitions.
   Definition gen_dir_ctx (σ : gmap L1 (gmap L2 V)) : iProp Σ :=
     own (gen_dir_name hG) (● (to_gen_dir σ)).
 
-  Definition mapsto_def (l1 : L1) (l2: L2) (q: Qp) (v: V) : iProp Σ :=
+  Definition pointsto_def (l1 : L1) (l2: L2) (q: Qp) (v: V) : iProp Σ :=
     own (gen_dir_name hG) (◯ {[ l1 := {[ l2 := (q, to_agree (v : leibnizO V)) ]} ]}).
-  Definition mapsto_aux : seal (@mapsto_def). by eexists. Qed.
-  Definition mapsto := mapsto_aux.(unseal).
-  Definition mapsto_eq : @mapsto = @mapsto_def := mapsto_aux.(seal_eq).
+  Definition pointsto_aux : seal (@pointsto_def). by eexists. Qed.
+  Definition pointsto := pointsto_aux.(unseal).
+  Definition pointsto_eq : @pointsto = @pointsto_def := pointsto_aux.(seal_eq).
 End definitions.
 
-Local Notation "l1 / l2 ↦{ q } v" := (mapsto l1 l2 q v)
+Local Notation "l1 / l2 ↦{ q } v" := (pointsto l1 l2 q v)
   (at level 20, q at level 50, format "l1 / l2  ↦{ q }  v") : bi_scope.
-Local Notation "l1 / l2 ↦ v" := (mapsto l1 l2 1 v) (at level 20) : bi_scope.
+Local Notation "l1 / l2 ↦ v" := (pointsto l1 l2 1 v) (at level 20) : bi_scope.
 
 Local Notation "l1 / l2 ↦{ q } -" := (∃ v, l1 / l2 ↦{q} v)%I
   (at level 20, q at level 50, format "l1 / l2  ↦{ q }  -") : bi_scope.
@@ -131,55 +131,55 @@ Section gen_dir.
   Implicit Types d: L1.
   Implicit Types f: L2.
 
-  (** General properties of mapsto *)
-  Global Instance mapsto_timeless (l1: L1) (l2: L2) q v : Timeless (l1 / l2 ↦{q} v).
-  Proof. rewrite mapsto_eq /mapsto_def. apply _. Qed.
-  Global Instance mapsto_fractional d f v : Fractional (λ q, d/f ↦{q} v)%I.
+  (** General properties of pointsto *)
+  Global Instance pointsto_timeless (l1: L1) (l2: L2) q v : Timeless (l1 / l2 ↦{q} v).
+  Proof. rewrite pointsto_eq /pointsto_def. apply _. Qed.
+  Global Instance pointsto_fractional d f v : Fractional (λ q, d/f ↦{q} v)%I.
   Proof.
-    intros p q. by rewrite mapsto_eq /mapsto_def -own_op -auth_frag_op
+    intros p q. by rewrite pointsto_eq /pointsto_def -own_op -auth_frag_op
       singleton_op singleton_op -pair_op agree_idemp.
   Qed.
-  Global Instance mapsto_as_fractional d f q v :
+  Global Instance pointsto_as_fractional d f q v :
     AsFractional (d / f ↦{q} v) (λ q, d / f ↦{q} v)%I q.
   Proof. split. done. apply _. Qed.
 
-  Lemma mapsto_agree d f q1 q2 v1 v2 : d / f ↦{q1} v1 -∗ d / f ↦{q2} v2 -∗ ⌜v1 = v2⌝.
+  Lemma pointsto_agree d f q1 q2 v1 v2 : d / f ↦{q1} v1 -∗ d / f ↦{q2} v2 -∗ ⌜v1 = v2⌝.
   Proof.
     apply wand_intro_r.
-    rewrite mapsto_eq /mapsto_def.
+    rewrite pointsto_eq /pointsto_def.
     rewrite -own_op -auth_frag_op own_valid discrete_valid.
     rewrite auth_frag_valid. rewrite ?singleton_op ?singleton_valid -pair_op.
     f_equiv. by intros [_ ?%to_agree_op_inv_L].
   Qed.
 
-  Global Instance ex_mapsto_fractional d f : Fractional (λ q, d/f ↦{q} -)%I.
+  Global Instance ex_pointsto_fractional d f : Fractional (λ q, d/f ↦{q} -)%I.
   Proof.
     intros p q. iSplit.
     - iDestruct 1 as (v) "[H1 H2]". iSplitL "H1"; eauto.
     - iIntros "[H1 H2]". iDestruct "H1" as (v1) "H1". iDestruct "H2" as (v2) "H2".
-      iDestruct (mapsto_agree with "H1 H2") as %->. iExists v2. by iFrame.
+      iDestruct (pointsto_agree with "H1 H2") as %->. iExists v2. by iFrame.
   Qed.
-  Global Instance ex_mapsto_as_fractional d f q :
+  Global Instance ex_pointsto_as_fractional d f q :
     AsFractional (d/f ↦{q} -) (λ q, d/f ↦{q} -)%I q.
   Proof. split. done. apply _. Qed.
 
-  Lemma mapsto_valid d f q v : d/f ↦{q} v -∗ ✓ q.
+  Lemma pointsto_valid d f q v : d/f ↦{q} v -∗ ✓ q.
   Proof.
-    rewrite mapsto_eq /mapsto_def own_valid !discrete_valid auth_frag_valid.
+    rewrite pointsto_eq /pointsto_def own_valid !discrete_valid auth_frag_valid.
     apply pure_mono. rewrite ?singleton_valid. inversion 1; auto.
   Qed.
 
-  Lemma mapsto_valid2 d f q1 q2 v1 v2 :
+  Lemma pointsto_valid2 d f q1 q2 v1 v2 :
     d/f ↦{q1} v1 -∗ d/f ↦{q2} v2 -∗ ✓ (q1 + q2)%Qp.
   Proof.
-    iIntros "H1 H2". iDestruct (mapsto_agree with "H1 H2") as %->.
-    iApply (mapsto_valid d f _ v2). iFrame.
+    iIntros "H1 H2". iDestruct (pointsto_agree with "H1 H2") as %->.
+    iApply (pointsto_valid d f _ v2). iFrame.
   Qed.
 
   Lemma gen_dir_alloc1 σ d f v :
     σ !! d = None → gen_dir_ctx σ ==∗ gen_dir_ctx (<[d := {[f:=v]}]>σ) ∗ d / f ↦ v.
   Proof.
-    iIntros (?) "Hσ". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
+    iIntros (?) "Hσ". rewrite /gen_dir_ctx pointsto_eq /pointsto_def.
     iMod (own_update with "Hσ") as "[Hσ Hl]".
     { eapply auth_update_alloc,
         (alloc_singleton_local_update _ _ {[ f := (1%Qp, to_agree (v:leibnizO _))]})=> //.
@@ -194,7 +194,7 @@ Section gen_dir.
     σd !! f = None →
     gen_dir_ctx σ ==∗ gen_dir_ctx (<[d := <[f:=v]> σd]>σ) ∗ d / f ↦ v.
   Proof.
-    iIntros (??) "Hσ". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
+    iIntros (??) "Hσ". rewrite /gen_dir_ctx pointsto_eq /pointsto_def.
     iMod (own_update with "Hσ") as "[Hσ Hl]".
     { eapply auth_update_alloc.
       eapply insert_alloc_local_update.
@@ -210,7 +210,7 @@ Section gen_dir.
     σ !! d = Some σd →
     gen_dir_ctx σ -∗ d / f ↦ v ==∗ gen_dir_ctx (<[d := delete f σd]> σ).
   Proof.
-    iIntros (?) "Hσ Hl". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
+    iIntros (?) "Hσ Hl". rewrite /gen_dir_ctx pointsto_eq /pointsto_def.
     rewrite to_gen_dir_delete2.
     iMod (own_update_2 with "Hσ Hl") as "[$ Hl]"; last by auto.
     eapply auth_update, singleton_local_update.
@@ -221,7 +221,7 @@ Section gen_dir.
   Lemma gen_dir_valid σ d f q v :
     gen_dir_ctx σ -∗ d / f ↦{q} v -∗ ⌜ ∃ σd, σ !! d = Some σd ∧ σd !! f = Some v⌝.
   Proof.
-    iIntros "Hσ Hl". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
+    iIntros "Hσ Hl". rewrite /gen_dir_ctx pointsto_eq /pointsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
       as %[Hl%gen_dir_singleton_included _]%auth_both_valid_discrete; auto.
   Qed.
@@ -230,7 +230,7 @@ Section gen_dir.
     σ !! d = Some σd →
     gen_dir_ctx σ -∗ d / f ↦ v1 ==∗ gen_dir_ctx ((<[d := <[f:=v2]> σd]> σ)) ∗ d / f ↦ v2.
   Proof.
-    iIntros (?) "Hσ Hl". rewrite /gen_dir_ctx mapsto_eq /mapsto_def.
+    iIntros (?) "Hσ Hl". rewrite /gen_dir_ctx pointsto_eq /pointsto_def.
     iDestruct (own_valid_2 with "Hσ Hl")
       as %[Hl%gen_dir_singleton_included _]%auth_both_valid_discrete.
     destruct Hl as (σd'&Hlookup&Hdf). assert (σd = σd') as <- by congruence.

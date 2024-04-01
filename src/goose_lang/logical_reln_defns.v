@@ -105,12 +105,12 @@ Definition loc_inv γ (ls: loc) (l: loc) (vTy: val_semTy) :=
    (∃ vs v, (fc_auth γ None ∗ ls s↦ vs ∗ l ↦ v ∗ vTy vs v) ∨
             (∃ q q' (n: positive), ⌜ (q + q' = 1)%Qp ⌝ ∗
                 fc_auth γ (Some (q, n)) ∗
-                na_heap_mapsto_st (RSt (Pos.to_nat n)) ls q' vs ∗
-                (∀ v', na_heap_mapsto (hG := refinement_na_heapG) ls 1 v' -∗ ls s↦ v') ∗
+                na_heap_pointsto_st (RSt (Pos.to_nat n)) ls q' vs ∗
+                (∀ v', na_heap_pointsto (hG := refinement_na_heapG) ls 1 v' -∗ ls s↦ v') ∗
                 l ↦{q'} v ∗ vTy vs v)
             ∨
             (fc_auth γ (Some ((1/2)%Qp, 1%positive)) ∗
-             na_heap_mapsto_st WSt ls (1/2)%Qp vs))%I.
+             na_heap_pointsto_st WSt ls (1/2)%Qp vs))%I.
 
 Definition locN := nroot.@"loc".
 
@@ -200,7 +200,7 @@ Fixpoint val_interp (t: sty) {struct t} :=
   | extT x => sty_val_interp hS x
   | structRefT ts => structRefT_interp (map val_interp ts)
   | ptrT => ptrT_interp
-  | mapValT _ | prophT => λ _ _, False%I
+  | mapValT _ _ | prophT => λ _ _, False%I
   end with
  flatten_val_interp (t: sty) {struct t} : list (sval → ival → iProp Σ) :=
     match t with
@@ -214,7 +214,7 @@ Fixpoint val_interp (t: sty) {struct t} :=
     | extT x => [sty_val_interp hS x]
     | structRefT ts => [structRefT_interp (map val_interp ts)]
     | ptrT => [ptrT_interp]
-    | mapValT _ | prophT => [λ _ _, False%I]
+    | mapValT _ _ | prophT => [λ _ _, False%I]
     end.
 
 Lemma flatten_val_interp_flatten_ty t:
@@ -370,7 +370,7 @@ Global Instance sty_ctx_prop_pers `{hG: !heapGS Σ} `{hRG: !refinement_heapG Σ}
       (Γsubst: gmap string subst_tuple) :
       Persistent ([∗ map] t ∈ Γsubst, val_interp (hS := hS) (subst_ty t) (subst_sval t) (subst_ival t))%I.
 Proof.
-  apply big_sepM_persistent => ??. by apply val_interp_pers.
+  apply big_sepM_persistent' => ??. apply val_interp_pers.
 Qed.
 
 End reln_obligations.

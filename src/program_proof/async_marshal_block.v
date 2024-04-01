@@ -38,8 +38,8 @@ Proof.
   - rewrite /block_encodes.
     iPureIntro.
     rewrite list_to_block_to_list //.
-  - iApply is_slice_to_small in "Hs".
-    rewrite /is_slice_small /is_block.
+  - iApply own_slice_to_small in "Hs".
+    rewrite /own_slice_small /is_block.
     rewrite -> list_to_block_to_vals by word.
     iFrame.
 Qed.
@@ -58,7 +58,7 @@ Lemma is_dec_to_is_block dec_v r s q (b: Block) :
   is_dec dec_v r s q b -∗
   is_block s q b.
 Proof.
-  iIntros "H". iDestruct (is_dec_to_is_slice_small with "H") as "H".
+  iIntros "H". iDestruct (is_dec_to_own_slice_small with "H") as "H".
   iFrame.
 Qed.
 

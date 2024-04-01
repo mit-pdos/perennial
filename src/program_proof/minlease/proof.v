@@ -1,8 +1,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Export ffi.grove_prelude.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.goose_lang.ffi Require Export grove_ffi_time_axiom.
-From Perennial.base_logic.lib Require Import ghost_var.
+From Perennial.base_logic.lib Require Import ghost_var mono_nat.
 From Goose.github_com.mit_pdos.gokv Require Import minlease.
 From iris.bi.lib Require Import fixpoint.
 From Perennial.base_logic Require Import lib.saved_prop.
@@ -14,11 +13,6 @@ Context `{!heapGS Σ}.
 Context `{!ghost_varG Σ u64}.
 Context `{!ghost_varG Σ ()}.
 Context `{!savedPropG Σ }.
-
-Context {γtime:gname}.
-
-Notation is_time_lb := (is_time_lb γtime).
-Notation own_time := (own_time γtime).
 
 (* Q is the lease obligation *)
 Definition underLease (N:namespace) (leaseExpiration:u64) (P:iProp Σ) (Q:iProp Σ) : iProp Σ :=
@@ -283,11 +277,11 @@ Proof.
     wp_apply (acquire_spec with "HmuInv").
     iIntros "[Hlocked Hown]".
     wp_pures.
-    wp_apply (wp_GetTimeRange γtime).
+    wp_apply (wp_GetTimeRange).
     iIntros (low high t) "%Hineq1 %Hineq2 Htime".
     iNamed "HH".
 
-    destruct (decide (int.nat LEASE_EXP < int.nat high)).
+    destruct (decide (int.nat LEASE_EXP <= int.nat high)).
     2:{ (* case: lease is not expired *)
       iDestruct (lease_acc_update with "Hlease Hlc1 Hlc2") as "HH".
       iDestruct ("HH" $! t with "[%] Htime") as "HH".
@@ -332,8 +326,6 @@ Proof.
       iModIntro.
       iSplitR; first done.
       iFrame.
-      iExists _.
-      iFrame.
     }
     (* Otherwise, lease has expired *)
     iModIntro.
@@ -376,7 +368,7 @@ Proof.
   wp_call.
   wp_forBreak.
   wp_pures.
-  wp_apply (wp_GetTimeRange γtime).
+  wp_apply (wp_GetTimeRange).
   iIntros (low high t Hineq1 Hineq) "Htime".
 
   iAssert (_) with "Hsrv" as "Hsrv2".
@@ -389,7 +381,8 @@ Proof.
     iMod (fupd_mask_subseteq _) as "Hmask";
       last iMod ("HpostLease" with "[Hlb]") as "HpostLease".
     { set_solver. }
-    { iApply mono_nat_lb_own_le; last iFrame "#". word. }
+    { unfold is_time_lb. destruct goose_groveGS. simpl.
+      iApply mono_nat_lb_own_le; last iFrame "#". word. }
     iMod "Hmask" as "_".
     iModIntro.
     iFrame "Htime".
@@ -465,7 +458,7 @@ Lemma wp_main :
         RET #(); True
   }}}
 .
-Proof using Type* γtime.
+Proof using Type*.
   iIntros (Φ) "_ HΦ".
   wp_lam.
   iMod (ghost_var_alloc (U64 0)) as (γ) "[Hvar Hvar2]".

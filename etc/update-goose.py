@@ -88,8 +88,20 @@ def main():
     )
     parser.add_argument(
         "--mvcc",
-        help="path to go-mvcc repo (skip translation if not provided)",
+        help="path to vmvcc repo (skip translation if not provided)",
         metavar="MVCC_PATH",
+        default=None,
+    )
+    parser.add_argument(
+        "--rsm",
+        help="path to rsm repo (skip translation if not provided)",
+        metavar="RSM_PATH",
+        default=None,
+    )
+    parser.add_argument(
+        "--chat",
+        help="path to chat repo (skip translation if not provided)",
+        metavar="CHAT_PATH",
         default=None,
     )
 
@@ -103,8 +115,10 @@ def main():
     distributed_dir = args.distributed_examples
     gokv_dir = args.gokv
     mvcc_dir = args.mvcc
+    rsm_dir = args.rsm
     marshal_dir = args.marshal
     std_dir = args.std
+    chat_dir = args.chat
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -122,10 +136,14 @@ def main():
         parser.error("gokv directory does not exist")
     if mvcc_dir is not None and not os.path.isdir(mvcc_dir):
         parser.error("mvcc directory does not exist")
+    if rsm_dir is not None and not os.path.isdir(rsm_dir):
+        parser.error("rsm directory does not exist")
     if marshal_dir is not None and not os.path.isdir(marshal_dir):
         parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
         parser.error("std directory does not exist")
+    if chat_dir is not None and not os.path.isdir(chat_dir):
+        parser.error("chat directory does not exist")
 
     do_run = lambda cmd_args: run_command(
         cmd_args, dry_run=args.dry_run, verbose=args.verbose
@@ -231,37 +249,58 @@ def main():
         run_goose(distributed_dir, ".", "./grove_common")
 
     if gokv_dir is not None:
-        pkgs = ["urpc", "memkv", "connman", "paxi/single", "bank",
-                "lockservice", "pb", "pb/controller", "ctrexample/client",
-                "ctrexample/server", "fencing/ctr", "fencing/config",
-                "fencing/frontend", "fencing/client", "fencing/loopclient",
-                "erpc", "paxi/reconf",
-                "simplepb/admin",
-                "simplepb/config",
-                "simplepb/pb",
-                "simplepb/apps/kv64",
-                "simplepb/apps/eesm",
-                "simplepb/apps/kvee",
-                "aof",
-                # "simplepb/state",
-                "reconnectclient",
-                "simplepb/e",
-                "simplepb/clerk",
-                "simplepb/simplelog",
-                "simplepb/apps/closed",
-                "tutorial", # atomic commit
-                "mpaxos/",
-                "mpaxos/example",
-                "map_marshal",
-                "minlease",
-
-                "dmvcc/txn",
-                "dmvcc/index",
-                "dmvcc/prophname",
-                "dmvcc/txncoordinator",
-                "dmvcc/txnmgr",
-                "dmvcc/example",
-                ]
+        pkgs = [
+            "urpc",
+            "memkv",
+            "kv",
+            "memkv/bank",
+            "memkv/lockservice",
+            "connman",
+            "paxi/single",
+            "bank",
+            "lockservice",
+            "ctrexample/client",
+            "ctrexample/server",
+            "fencing/ctr",
+            "fencing/config",
+            "fencing/frontend",
+            "fencing/client",
+            "fencing/loopclient",
+            "erpc",
+            "paxi/reconf",
+            "map_string_marshal",
+            "vrsm/reconfig",
+            "vrsm/configservice",
+            "vrsm/replica",
+            "vrsm/apps/exactlyonce",
+            "vrsm/apps/vkv",
+            "aof",
+            "reconnectclient",
+            "vrsm/e",
+            "vrsm/clerk",
+            "vrsm/storage",
+            "vrsm/apps/closed",
+            "tutorial",  # atomic commit
+            "tutorial/objectstore/dir",
+            "tutorial/objectstore/chunk",
+            "tutorial/objectstore/client",
+            "tutorial/lockservice",
+            "tutorial/kvservice",
+            "tutorial/basics",
+            "tutorial/queue",
+            "asyncfile",
+            "vrsm/paxos",
+            "map_marshal",
+            "minlease",
+            "dmvcc/txn",
+            "dmvcc/index",
+            "dmvcc/prophname",
+            "dmvcc/txncoordinator",
+            "dmvcc/txnmgr",
+            "dmvcc/example",
+            "cachekv",
+            "etcd/election",
+        ]
 
         for pkg in pkgs:
             run_goose(
@@ -271,10 +310,28 @@ def main():
                 # "From Goose Require github_com.mit_pdos.lockservice."
             )
 
+    if chat_dir is not None:
+        pkgs = [
+            "chat4",
+            "full",
+            "full2/shared",
+            "full2/fc_ffi_shim",
+            "full2",
+            "kt",
+            "kt/shared",
+            "kt/kt_shim",
+            "merkle",
+            "merkle/merkle_shim",
+        ]
+
+        for pkg in pkgs:
+            run_goose(path.join(chat_dir, pkg))
+
     if mvcc_dir is not None:
         run_goose(
             mvcc_dir,
-            "./txn",
+            "./vmvcc",
+            "./txnsite",
             "./index",
             "./tuple",
             "./wrbuf",
@@ -282,8 +339,14 @@ def main():
             "./config",
             "./common",
             "./examples",
-            # "./tpcc",
-            # "./cfmutex",
+            "./examples/strnum",
+        )
+
+    if rsm_dir is not None:
+        run_goose(
+            rsm_dir,
+            "./spaxos",
+            "./mpaxos",
         )
 
     if marshal_dir is not None:

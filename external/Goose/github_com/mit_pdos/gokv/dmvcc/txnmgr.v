@@ -32,7 +32,7 @@ Definition Server__New: val :=
   rec: "Server__New" "txnMgr" :=
     lock.acquire (struct.loadF Server "mu" "txnMgr");;
     let: "tid" := struct.loadF Server "nextTid" "txnMgr" in
-    struct.storeF Server "nextTid" "txnMgr" (struct.loadF Server "nextTid" "txnMgr" + #1);;
+    struct.storeF Server "nextTid" "txnMgr" ((struct.loadF Server "nextTid" "txnMgr") + #1);;
     lock.release (struct.loadF Server "mu" "txnMgr");;
     "tid".
 

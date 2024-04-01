@@ -21,8 +21,19 @@ Proof.
   rewrite !IntoVal_inj' in Heq'. congruence.
 Qed.
 
+(* IntoVal where the value is guaranteed to be comparable, e.g. OK to use as the
+   key type in a map *)
+Class IntoValComparable V `{IntoVal V} : Set :=
+  {
+    IntoValComparable_comparable (v:V): is_comparable (to_val v);
+    IntoValComparable_inj (v:V) (vval:val) : from_val vval = Some v → to_val v = vval
+  }.
+
+#[global]
+Hint Mode IntoValComparable ! - - : typeclass_instances.
+
 (* IntoVal for a particular GooseLang type *)
-Class IntoValForType {ext} V {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) :=
+Class IntoValForType V {ext} {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) : Set :=
     { def_is_zero: to_val (IntoVal_def V) = zero_val t;
       to_val_has_zero: has_zero t;
       (* TODO: this isn't necessary, but it seems reasonable *)
@@ -31,7 +42,7 @@ Class IntoValForType {ext} V {H: @IntoVal ext V} {ext_ty: ext_types ext} (t:ty) 
 #[global]
 Hint Mode IntoValForType - - - - ! : typeclass_instances.
 #[global]
-Hint Mode IntoValForType - ! - - - : typeclass_instances.
+Hint Mode IntoValForType ! - - - - : typeclass_instances.
 
 #[global]
 Instance Permutation_inj_list_fmap {A B} (f: A -> B) `{!Inj eq eq f} :
@@ -92,6 +103,14 @@ Section instances.
   Proof.
     constructor; auto.
   Qed.
+  Global Instance u64_IntoValComparable : IntoValComparable u64.
+  Proof.
+    constructor; try done.
+    intros. simpl in *.
+    destruct vval; try done; destruct l; try done.
+    repeat f_equal.
+    by injection H.
+  Qed.
 
   Global Instance u8_IntoVal : IntoVal u8.
   Proof.
@@ -102,6 +121,14 @@ Section instances.
   Global Instance u8_IntoVal_byteT : IntoValForType u8 byteT.
   Proof.
     constructor; eauto.
+  Qed.
+  Global Instance u8_IntoValComparable : IntoValComparable u8.
+  Proof.
+    constructor; try done.
+    intros. simpl in *.
+    destruct vval; try done; destruct l; try done.
+    repeat f_equal.
+    by injection H.
   Qed.
 
   Global Instance loc_IntoVal : IntoVal loc.
@@ -122,6 +149,14 @@ Section instances.
   Proof.
     constructor; auto.
   Qed.
+  Global Instance loc_IntoValComparable : IntoValComparable loc.
+  Proof.
+    constructor; try done.
+    intros. simpl in *.
+    destruct vval; try done; destruct l; try done.
+    repeat f_equal.
+    by injection H.
+  Qed.
 
   Global Instance slice_IntoVal : IntoVal Slice.t.
     refine
@@ -137,7 +172,24 @@ Section instances.
     intros.
     apply slice_val_ty.
   Qed.
-
+  Global Instance slice_IntoValComparable : IntoValComparable Slice.t.
+  Proof.
+    constructor; try done.
+    intros.
+    destruct vval; try done.
+    simpl in *.
+    destruct vval1; try done; destruct vval1_1; try done.
+    destruct l; try done.
+    destruct vval1_2; try done.
+    destruct l0; try done.
+    destruct vval2; try done.
+    destruct l0; try done.
+    destruct v.
+    injection H.
+    intros.
+    subst.
+    done.
+  Qed.
 
   Global Instance bool_IntoVal : IntoVal bool.
   Proof.
@@ -147,6 +199,31 @@ Section instances.
   Defined.
   Global Instance bool_IntoVal_boolT : IntoValForType bool boolT.
   Proof. constructor; auto. Qed.
+  Global Instance bool_IntoValComparable : IntoValComparable bool.
+  Proof.
+    constructor; try done.
+    intros. simpl in *.
+    destruct vval; try done; destruct l; try done.
+    repeat f_equal.
+    by injection H.
+  Qed.
+
+  Global Instance string_IntoVal : IntoVal string.
+  Proof.
+    refine {| into_val.to_val := λ (x: string), #(str x);
+              from_val := λ v, match v with #(LitString x) => Some x | _ => None end;
+              IntoVal_def := ""; |}; done.
+  Defined.
+  Global Instance string_IntoVal_boolT : IntoValForType string stringT.
+  Proof. constructor; auto. Qed.
+  Global Instance string_IntoValComparable : IntoValComparable string.
+  Proof.
+    constructor; try done.
+    intros. simpl in *.
+    destruct vval; try done; destruct l; try done.
+    repeat f_equal.
+    by injection H.
+  Qed.
 
   Global Instance unit_IntoVal : IntoVal ().
   Proof.
@@ -158,5 +235,11 @@ Section instances.
   Defined.
   Global Instance unit_IntoValForType : IntoValForType () unitT.
   Proof. constructor; auto. Qed.
+  Global Instance unit_IntoValComparable : IntoValComparable unit.
+  Proof.
+    constructor; try done.
+    intros. simpl in *.
+    destruct vval; try done; destruct l; try done.
+  Qed.
 
 End instances.

@@ -21,7 +21,7 @@ Lemma jrnl_refinement (es: @expr jrnl_op) σs gs e σ g (τ: @ty jrnl_ty.(@val_t
   refinement.trace_refines e e σ g es es σs gs.
 Proof.
   intros. intros ?.
-  efeed pose proof sty_adequacy; eauto using jrnl_init_obligation1, jrnl_init_obligation2,
+  opose proof (sty_adequacy _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _); eauto using jrnl_init_obligation1, jrnl_init_obligation2,
                                  jrnl_crash_inv_obligation, jrnl_crash_obligation,
                                  jrnl_rules_obligation, jrnl_atomic_obligation.
 Qed.

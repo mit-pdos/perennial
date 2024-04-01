@@ -51,17 +51,16 @@ Proof.
     rewrite /NumInodes /InodeSz. simpl. lia.
   }
   iNamed "Henc".
-  iDestruct (is_slice_to_small with "Hs") as "Hs".
+  iDestruct (own_slice_to_small with "Hs") as "Hs".
   wp_apply (wp_Op__OverWrite
-    _ _ _ _ _ _ _ _ _ _ _ (existT KindInode (bufInode (list_to_inode_buf data))) with "[$Hjrnl $Hinode_enc_mapsto $Hs]").
+    _ _ _ _ _ _ _ _ _ _ _ (existT KindInode (bufInode (list_to_inode_buf data))) with "[$Hjrnl $Hinode_enc_pointsto $Hs]").
   { eauto. }
   { rewrite /data_has_obj /=. apply list_to_inode_buf_to_list.
     rewrite /inode_bytes. word. }
   { eauto. }
-  iIntros "[Hjrnl Hinode_enc_mapsto]".
+  iIntros "[Hjrnl Hinode_enc_pointsto]".
   wp_apply util_proof.wp_DPrintf.
-  wp_pures. iModIntro. iApply "HΦ". iFrame.
-  iExists _. iFrame. iPureIntro.
+  wp_pures. iModIntro. iApply "HΦ". iFrame. iPureIntro.
   rewrite /encodes_inode.
   rewrite list_to_inode_buf_to_list. 2: { rewrite /inode_bytes; word. }
   eapply Hdata.
@@ -80,7 +79,7 @@ Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (co
       is_inode_mem ip inum len blk ∗
       is_inode_enc inum len blk (jrnl_maps_to γtxn) ∗
       is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
-      is_slice_small dataslice u8T 1 databuf ∗
+      own_slice_small dataslice u8T 1 databuf ∗
       ⌜ int.nat count = length databuf ⌝ ∗
       ⌜ inum ∈ covered_inodes ⌝
   }}}
@@ -131,7 +130,7 @@ Proof.
 
   wp_apply (wp_forUpto (λ i,
     ∃ bbuf',
-      "Hdatabuf" ∷ is_slice_small dataslice byteT 1 databuf ∗
+      "Hdatabuf" ∷ own_slice_small dataslice byteT 1 databuf ∗
       "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|
              bufKind := objKind (existT KindBlock (bufBlock bbuf'));
              bufData := objData (existT KindBlock (bufBlock bbuf'));
@@ -149,7 +148,7 @@ Proof.
     wp_load.
     destruct (databuf !! int.nat count') eqn:He.
     2: {
-      iDestruct (is_slice_small_sz with "Hdatabuf") as "%Hlen".
+      iDestruct (own_slice_small_sz with "Hdatabuf") as "%Hlen".
       eapply lookup_ge_None_1 in He. word.
     }
     wp_apply (wp_SliceGet (V:=u8) with "[$Hdatabuf]"); eauto.
@@ -163,7 +162,7 @@ Proof.
     wp_apply (wp_SliceSet (V:=u8) with "[$Hbufdata]"); eauto.
     iIntros "Hbufdata".
     wp_pures.
-    iApply "HΦ'". iModIntro. iFrame.
+    iApply "HΦ'". iModIntro. iFrame "Hcount".
 
     assert ((int.nat (word.add offset count')) < block_bytes) as fin.
     {
@@ -173,11 +172,11 @@ Proof.
       rewrite vec_to_list_length /block_bytes in H.
       rewrite /block_bytes; lia.
     }
-    iExists (vinsert (nat_to_fin fin) u bbuf'). iSplit.
-    { iApply is_buf_return_data. iFrame.
-      iExactEq "Hbufdata".
+    iExists (vinsert (nat_to_fin fin) u bbuf'). iFrame.
+    iSplit.
+    { iExactEq "Hbufdata".
       rewrite /= /Block_to_vals vec_to_list_insert.
-      rewrite /is_slice_small. f_equal.
+      rewrite /own_slice_small. f_equal.
       rewrite /list.untype /to_val /u8_IntoVal /b2val. f_equal. f_equal.
       erewrite fin_to_nat_to_fin. reflexivity.
     }
@@ -279,7 +278,7 @@ Proof.
       { rewrite -Hcount; word. }
       lia.
     }
-    iExists _. iFrame. iPureIntro.
+    iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1.
     rewrite !app_length.
     rewrite drop_length.
@@ -318,7 +317,7 @@ Proof.
       { rewrite -Hcount; word. }
       lia.
     }
-    iExists _. iFrame. iPureIntro.
+    iPureIntro.
     rewrite Hbbuf. rewrite Hcontents0 Hcontents1 Hbuf.
     rewrite !app_length.
     rewrite drop_length.

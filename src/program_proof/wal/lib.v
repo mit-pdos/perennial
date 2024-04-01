@@ -29,7 +29,7 @@ Proof.
 Qed.
 
 Definition updates_slice' q (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
-  ∃ bks, is_slice bk_s (struct.t Update) 1 (update_val <$> bks) ∗
+  ∃ bks, own_slice bk_s (struct.t Update) 1 (update_val <$> bks) ∗
    [∗ list] _ ↦ b_upd;upd ∈ bks;bs , let '(update.mk a b) := upd in
                                      is_block (snd b_upd) q b ∗
                                      ⌜fst b_upd = a⌝.
@@ -38,7 +38,7 @@ Definition updates_slice (bk_s: Slice.t) (bs: list update.t): iProp Σ :=
   updates_slice' 1 bk_s bs.
 
 Definition updates_slice_frag' (bk_s: Slice.t) (q1 q2:Qp) (bs: list update.t): iProp Σ :=
-  ∃ bks, is_slice_small bk_s (struct.t Update) q1 (update_val <$> bks) ∗
+  ∃ bks, own_slice_small bk_s (struct.t Update) q1 (update_val <$> bks) ∗
    [∗ list] _ ↦ uv;upd ∈ bks;bs, is_update uv q2 upd.
 
 Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp Σ :=
@@ -46,19 +46,19 @@ Definition updates_slice_frag (bk_s: Slice.t) (q:Qp) (bs: list update.t): iProp 
 
 Theorem updates_slice_cap_acc' bk_s q bs :
   updates_slice' q bk_s bs ⊣⊢
-  updates_slice_frag' bk_s 1 q bs ∗ is_slice_cap bk_s (struct.t Update).
+  updates_slice_frag' bk_s 1 q bs ∗ own_slice_cap bk_s (struct.t Update).
 Proof.
   iSplit.
   - iIntros "Hupds".
     iDestruct "Hupds" as (bks) "[Hbks Hupds]".
-    iDestruct (is_slice_split with "Hbks") as "[Hbks_small $]".
+    iDestruct (own_slice_split with "Hbks") as "[Hbks_small $]".
     iExists _; iFrame.
     iApply (big_sepL2_mono with "Hupds").
     intros ? ? [a b] **.
       by iIntros "[$ %]".
   - iIntros "[Hupds Hcap]".
     iDestruct "Hupds" as (bks) "[Hbks Hupds]".
-    iDestruct (is_slice_split with "[$Hbks $Hcap]") as "Hbks".
+    iDestruct (own_slice_split with "[$Hbks $Hcap]") as "Hbks".
     iExists _; iFrame.
     iApply (big_sepL2_mono with "Hupds").
     intros ? ? [a b] **.
@@ -67,7 +67,7 @@ Qed.
 
 Theorem updates_slice_cap_acc bk_s bs :
   updates_slice bk_s bs ⊣⊢
-  updates_slice_frag bk_s 1 bs ∗ is_slice_cap bk_s (struct.t Update).
+  updates_slice_frag bk_s 1 bs ∗ own_slice_cap bk_s (struct.t Update).
 Proof. iApply updates_slice_cap_acc'. Qed.
 
 Theorem updates_slice_frag_acc q bk_s bs :
@@ -96,7 +96,7 @@ Lemma updates_slice_frag_len bk_s q1 q2 bs :
 Proof.
   iIntros "Hupds".
   iDestruct "Hupds" as (bks) "[Hbs Hbks]".
-  iDestruct (is_slice_small_sz with "Hbs") as %Hbs_sz.
+  iDestruct (own_slice_small_sz with "Hbs") as %Hbs_sz.
   iDestruct (big_sepL2_length with "Hbks") as %Hbks_len.
   rewrite fmap_length in Hbs_sz.
   iPureIntro.
@@ -111,7 +111,7 @@ Lemma updates_slice_frag_wf bk_s q1 q2 bs :
 Proof.
   iIntros "Hupds".
   iDestruct "Hupds" as (bks) "[Hbs Hbks]".
-  iDestruct (is_slice_small_wf with "Hbs") as %Hbs_wf.
+  iDestruct (own_slice_small_wf with "Hbs") as %Hbs_wf.
   auto.
 Qed.
 
@@ -133,7 +133,7 @@ Proof.
   auto.
 Qed.
 
-Existing Instance is_slice_small_as_fractional.
+Existing Instance own_slice_small_as_fractional.
 
 Global Instance fractional_big_sepL2:
   ∀ (PROP : bi) (A B : Type) (l1 : list A) (l2: list B) (Ψ : nat → A → B -> Qp → PROP),
@@ -186,38 +186,35 @@ Proof.
   congruence.
 Qed.
 
-Global Instance updates_slice_frag_fractional bk_s q bs :
-  fractional.AsFractional (updates_slice_frag bk_s q bs) (λ q, updates_slice_frag bk_s q bs) q.
+Global Instance updates_slice_frag_fractional bk_s bs :
+  fractional.Fractional (λ q, updates_slice_frag bk_s q bs).
 Proof.
-  split; auto.
   hnf; intros q1 q2.
   iSplit.
   + iIntros "Hupds".
     iDestruct "Hupds" as (bks) "[Hupds Hbs]".
-    iDestruct (fractional.fractional_split_1 with "Hupds") as "[Hupds1 Hupds2]".
-    iDestruct (fractional.fractional_split_1 with "Hbs") as "[Hbs1 Hbs2]".
+    iDestruct "Hupds" as "[Hupds1 Hupds2]".
+    iDestruct "Hbs" as "[Hbs1 Hbs2]".
     iSplitL "Hupds1 Hbs1".
     * iExists _; iFrame.
     * iExists _; iFrame.
   + iIntros "[Hupds1 Hupds2]".
     iDestruct "Hupds1" as (bks) "[Hbs1 Hupds1]".
     iDestruct "Hupds2" as (bks') "[Hbs2 Hupds2]".
-    iDestruct (is_slice_small_agree with "Hbs1 Hbs2") as %Heq.
-    apply (fmap_inj update_val) in Heq; auto using update_val_inj; subst.
-    iDestruct (fractional.fractional_split_2 with "Hbs1 Hbs2") as "Hbs".
-    { apply _. }
-    iDestruct (fractional.fractional_split_2 _ _ _ _ q1 q2 with "Hupds1 Hupds2") as "Hupds".
-    { apply _. }
+    iDestruct (own_slice_small_agree with "Hbs1 Hbs2") as %Heq.
+    apply (list_fmap_eq_inj update_val) in Heq; auto using update_val_inj; subst.
+    iCombine "Hbs1 Hbs2" as "Hbs".
+    iCombine "Hupds1 Hupds2" as "Hupds".
     iExists _; iFrame.
 Qed.
 
+Global Instance updates_slice_frag_as_fractional bk_s q bs :
+  fractional.AsFractional (updates_slice_frag bk_s q bs) (λ q, updates_slice_frag bk_s q bs) q.
+Proof. split; auto; apply _. Qed.
+
 Global Instance updates_slice_frag_AsMapsTo bk_s bs :
   AsMapsTo (updates_slice_frag bk_s 1 bs) (λ q, updates_slice_frag bk_s q bs).
-Proof.
-  constructor; auto; intros; apply _.
-  Unshelve.
-  exact 1%Qp.
-Qed.
+Proof. constructor; auto; apply _. Qed.
 
 Theorem wp_SliceGet_updates stk E bk_s bs (i: u64) q (u: update.t) :
   {{{ updates_slice_frag bk_s q bs ∗ ⌜bs !! int.nat i = Some u⌝ }}}
@@ -390,7 +387,7 @@ Proof.
   iIntros "#Hwp".
   iIntros "!>" (Φ) "(I0&Hupds) HΦ".
   iDestruct "Hupds" as (bks) "(Hs&Hbs)".
-  iDestruct (is_slice_small_sz with "Hs") as %Hslen.
+  iDestruct (own_slice_small_sz with "Hs") as %Hslen.
   autorewrite with len in Hslen.
   iDestruct (big_sepL2_length with "Hbs") as %Hlen_eq.
   wp_apply (wp_forSlice
@@ -417,7 +414,6 @@ Proof.
   iIntros "[(HI&Hbs) Hs]".
   iApply "HΦ".
   iFrame.
-  iExists _; iFrame.
 Qed.
 
 Theorem wp_forSlice_updates_consume {stk E}
@@ -435,7 +431,7 @@ Proof.
   iIntros "#Hwp".
   iIntros "!>" (Φ) "(I0&Hupds) HΦ".
   iDestruct "Hupds" as (bks) "(Hs&Hbs)".
-  iDestruct (is_slice_small_sz with "Hs") as %Hslen.
+  iDestruct (own_slice_small_sz with "Hs") as %Hslen.
   autorewrite with len in Hslen.
   iDestruct (big_sepL2_length with "Hbs") as %Hlen_eq.
   wp_apply (wp_forSlice
@@ -566,7 +562,7 @@ Proof.
   wp_call.
   wp_apply (util_proof.wp_CloneByteSlice with "Hb").
   iIntros (s') "(Hb&Hb')".
-  iDestruct (is_slice_to_small with "Hb'") as "Hb'".
+  iDestruct (own_slice_to_small with "Hb'") as "Hb'".
   iApply ("HΦ" with "[$]").
 Qed.
 

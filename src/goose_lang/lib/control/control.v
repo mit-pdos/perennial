@@ -22,6 +22,20 @@ Proof.
   - iApply ("HΦ" with "HR").
 Qed.
 
+Theorem wp_If_optional' stk E (R: iProp Σ) (b: bool) e Φ :
+  R -∗
+  (R -∗ ⌜b = true⌝ -∗ WP e @ stk; E {{ v, ⌜v = #()⌝ ∗ R }}) -∗
+  (R -∗ Φ #()) -∗ WP If #b e #() @ stk; E {{ Φ }}.
+Proof.
+  iIntros "HR He HΦ".
+  wp_if_destruct.
+  - wp_apply (wp_wand with "[He HR]").
+    { by wp_apply ("He" with "HR"). }
+    iIntros (?) "[% HR]". subst.
+    by iApply "HΦ".
+  - by iApply "HΦ".
+Qed.
+
 Theorem wp_If_join (R: iProp Σ) (b: bool) stk E e1 e2 :
   ∀ Φ, (⌜ b = true ⌝ -∗ WP e1 @ stk; E {{ v, ⌜v = #()⌝ ∗ R }}) ∧
        (⌜ b = false ⌝ -∗ WP e2 @ stk; E {{ v, ⌜v = #()⌝ ∗ R }}) -∗
@@ -118,6 +132,69 @@ Proof.
   - wp_pures. iClear "He2".
     rewrite bool_decide_eq_false_2 //; first by iApply "HΦ".
     naive_solver.
+Qed.
+
+(** A version of wp_and in which both "clauses" of the `and` can read from some
+    resources H; includes short-circuiting *)
+Lemma wp_and' e1 e2 Φ H P1 P2 {Hp1:Decision P1} {Hp2:Decision P2} :
+  H -∗
+  (H -∗ WP e1 {{ v, H ∗ ⌜v = #(bool_decide P1)⌝ }}) -∗
+  (H -∗ ⌜P1⌝ -∗ WP e2 {{ v, H ∗ ⌜v = #(bool_decide P2)⌝ }}) -∗
+  (H -∗ Φ #(bool_decide (P1 ∧ P2))) -∗
+  WP e1 && e2 {{ Φ }}
+.
+Proof.
+  iIntros "HH He1 He2 HΦ".
+  wp_bind e1. iSpecialize ("He1" with "HH"). iApply (wp_wand with "He1").
+  iIntros (v1) "[HH %]". subst. rewrite (bool_decide_decide P1).
+  destruct (decide P1) as [HP1|HP1].
+  - wp_pures. iSpecialize ("He2" with "HH").
+    iSpecialize ("He2" $! HP1).
+    iApply (wp_wand with "He2").
+    iIntros (v1) "[HH %Hre]"; subst.
+    rewrite (bool_decide_decide P2).
+    destruct (decide P2) as [HP2|HP2].
+    + rewrite bool_decide_eq_true_2 //. by iApply "HΦ".
+    + rewrite bool_decide_eq_false_2 //; first by iApply "HΦ".
+      naive_solver.
+  - wp_pures. iClear "He2".
+    rewrite bool_decide_eq_false_2 //; first by iApply "HΦ".
+    naive_solver.
+Qed.
+
+Lemma wp_and2' e1 e2 e3 Φ H P1 P2 P3 {Hp1:Decision P1} {Hp2:Decision P2} {Hp3:Decision P3}:
+  H -∗
+  (H -∗ WP e1 {{ v, H ∗ ⌜v = #(bool_decide P1)⌝ }}) -∗
+  (H -∗ ⌜P1⌝ -∗ WP e2 {{ v, H ∗ ⌜v = #(bool_decide P2)⌝ }}) -∗
+  (H -∗ ⌜P1⌝ -∗ ⌜P2⌝ -∗ WP e3 {{ v, H ∗ ⌜v = #(bool_decide P3)⌝ }}) -∗
+  (H -∗ Φ #(bool_decide (P1 ∧ P2 ∧ P3))) -∗
+  WP e1 && e2 && e3 {{ Φ }}
+.
+Proof.
+  iIntros "H He1 He2 He3 HΦ".
+  wp_bind (e1 && e2)%E.
+  wp_apply (wp_and' with "H He1 He2").
+  iIntros "H".
+  wp_apply (wp_and' with "H [] [He3]").
+  { iIntros "H". wp_pures. by iFrame. }
+  { iIntros "H [%HP1 %HP2]". iApply ("He3" with "H"); done. }
+  erewrite bool_decide_ext; first done.
+  by rewrite -Logic.and_assoc.
+Qed.
+
+Lemma wp_and2 e1 e2 e3 Φ H P1 P2 P3 {Hp1:Decision P1} {Hp2:Decision P2} {Hp3:Decision P3}:
+  H -∗
+  (H -∗ WP e1 {{ v, H ∗ ⌜v = #(bool_decide P1)⌝ }}) -∗
+  (H -∗ WP e2 {{ v, H ∗ ⌜v = #(bool_decide P2)⌝ }}) -∗
+  (H -∗ WP e3 {{ v, H ∗ ⌜v = #(bool_decide P3)⌝ }}) -∗
+  (H -∗ Φ #(bool_decide (P1 ∧ P2 ∧ P3))) -∗
+  WP e1 && e2 && e3 {{ Φ }}
+.
+Proof.
+  iIntros "H He1 He2 He3 HΦ".
+  wp_apply (wp_and2' with "H He1 [He2] [He3] HΦ").
+  { iIntros. by wp_apply "He2". }
+  { iIntros. by wp_apply "He3". }
 Qed.
 
 (* The first goal (H) is meant to be solved with [iNamedAccu]. *)

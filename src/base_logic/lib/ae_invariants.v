@@ -59,7 +59,7 @@ Section ae_inv.
     iDestruct "HI" as (? Ps_mut) "(Hinterp&Hmut)".
     iEval (rewrite ?bi_schema_interp_unfold /=) in "Hinterp".
     destruct mj; last first.
-    - { destruct k.
+    - { destruct k as [|k].
         - iMod ("Hshift" with "[$]") as ">(HP&HQ)".
           iDestruct (ownI_close O i _ (list_to_vec [P]) with "[Hw Hmut HD HP]") as "H".
           { iFrame "# ∗". }

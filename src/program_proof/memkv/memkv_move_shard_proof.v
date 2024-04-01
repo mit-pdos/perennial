@@ -42,7 +42,7 @@ Proof.
                         "HDst" ∷ args_ptr ↦[MoveShardRequest :: "Dst"] #args.(MR_Dst) ∗
                         "Hpeers" ∷ s ↦[KVShardServer :: "peers"] #peers_ptr ∗
                         "HpeerClerks" ∷ ([∗ map] ck ∈ peersM, own_KVShardClerk ck γ.(kv_gn)) ∗
-                        "HpeersMap" ∷ is_map peers_ptr 1 peersM)%I
+                        "HpeersMap" ∷ own_map peers_ptr 1 peersM)%I
               with "[HDst HpeersMap HpeerClerks Hpeers]").
   {
     wp_if_destruct.
@@ -55,7 +55,7 @@ Proof.
       iIntros "Hmap".
       wp_pures.
       iSplit; eauto.
-      iExists _. iFrame "# ∗".
+      iExists _. iFrame "∗#".
       iSplit.
       { iPureIntro. rewrite /typed_map.map_insert lookup_insert; eauto. }
       iApply big_sepM_insert.
@@ -67,7 +67,7 @@ Proof.
   }
   clear peersM Hlookup.
   iNamed 1.
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
+  iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_small HshardMap_sl]".
 
   assert (∃ b, shardMapping !! int.nat args.(MR_Sid) = Some b) as [? ?].
   {
@@ -101,7 +101,7 @@ Proof.
   wp_pures.
   wp_loadField.
   wp_loadField.
-  iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
+  iDestruct (slice.own_slice_split with "Hkvss_sl") as "[Hkvss_small Hkvss_sl]".
   iDestruct (big_sepS_delete _ _ args.(MR_Sid) with "HownShards") as "[HownShard HownShards]".
   { set_solver. }
   iDestruct "HownShard" as "[%Hbad|HownShard]".
@@ -118,7 +118,7 @@ Proof.
   iIntros "[Hkvss_small %Hkvs_ty]".
   wp_pures.
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (empty_ptr) "HemptyMap".
   wp_loadField.
   wp_loadField.

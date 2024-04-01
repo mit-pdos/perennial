@@ -5,7 +5,7 @@ From Perennial.program_proof.mvcc Require Import mvcc_prelude.
 (* RA definitions. *)
 Local Definition vchainR := mono_listR dbvalO.
 Local Definition key_vchainR := gmapR u64 vchainR.
-Local Definition tidsR := gmap_viewR nat unitO.
+Local Definition tidsR := gmap_viewR nat unitR.
 Local Definition sid_tidsR := gmapR u64 tidsR.
 Local Definition sid_min_tidR := gmapR u64 mono_natR.
 Local Definition sid_ownR := gmapR u64 (exclR unitO).
@@ -150,6 +150,7 @@ Definition site_active_tids_frag_def γ (sid : u64) tid : iProp Σ :=
 Definition site_active_tids_frag γ (sid : u64) tid : iProp Σ :=
   site_active_tids_frag_def γ.(mvcc_sid_tids) sid tid.
 
+(* TODO: should be able to remove the second conjunct. *)
 Definition active_tid γ (tid sid : u64) : iProp Σ :=
   (site_active_tids_frag γ sid (int.nat tid) ∧ ⌜int.Z sid < N_TXN_SITES⌝) ∧ ⌜(0 < int.Z tid < 2 ^ 64 - 1)⌝ .
 
@@ -259,7 +260,7 @@ Lemma vchain_witness γ q k vchain :
   ptuple_auth γ q k vchain -∗ ptuple_lb γ k vchain.
 Proof.
   iApply own_mono.
-  apply singleton_mono, mono_list_included.
+  apply singleton_included_mono, mono_list_included.
 Qed.
 
 Lemma ptuple_prefix γ q k l l' :
@@ -329,7 +330,7 @@ Lemma ltuple_witness γ k l :
   ltuple_auth γ k l -∗ ltuple_lb γ k l.
 Proof.
   iApply own_mono.
-  apply singleton_mono, mono_list_included.
+  apply singleton_included_mono, mono_list_included.
 Qed.
 
 Lemma ltuple_prefix γ k l l' :
@@ -349,8 +350,9 @@ Lemma site_active_tids_elem_of γ (sid : u64) tids tid :
 Proof.
   iIntros "Hauth Helem".
   iDestruct (own_valid_2 with "Hauth Helem") as %Hvalid.
-  rewrite singleton_op singleton_valid gmap_view_both_dfrac_valid_L in Hvalid.
-  destruct Hvalid as (_ & _ & Hlookup).
+  rewrite singleton_op singleton_valid in Hvalid.
+  apply gmap_view_both_dfrac_valid_discrete_total in Hvalid.
+  destruct Hvalid as (v' & _ & _ & Hlookup & _ & _).
   apply elem_of_dom_2 in Hlookup.
   rewrite dom_gset_to_gmap in Hlookup.
   done.
@@ -363,8 +365,10 @@ Lemma site_active_tids_agree γ (sid : u64) tids tids' :
 Proof.
   iIntros "Hauth1 Hauth2".
   iDestruct (own_valid_2 with "Hauth1 Hauth2") as %Hvalid.
-  rewrite singleton_op singleton_valid gmap_view_auth_dfrac_op_valid_L in Hvalid.
+  rewrite singleton_op singleton_valid in Hvalid.
+  apply gmap_view_auth_dfrac_op_valid in Hvalid.
   destruct Hvalid as [_ Etids].
+  iPureIntro.
   rewrite -(dom_gset_to_gmap tids ()) -(dom_gset_to_gmap tids' ()).
   by rewrite Etids.
 Qed.
@@ -386,7 +390,7 @@ Proof.
     apply singleton_update.
     rewrite gset_to_gmap_union_singleton.
     (* Q: What's the difference between [apply] (which fails here) and [apply:]? *)
-    apply: gmap_view_alloc; last done.
+    apply: gmap_view_alloc; last done; last done.
     by rewrite lookup_gset_to_gmap_None.
   }
   by iFrame.
@@ -430,7 +434,7 @@ Lemma site_min_tid_lb_weaken γ (sid : u64) tidN tidN' :
 Proof.
   iIntros "%Hle Hlb".
   iApply (own_mono with "Hlb").
-  rewrite singleton_included. right.
+  apply singleton_included_mono.
   apply mono_nat_lb_mono.
   done.
 Qed.
@@ -451,7 +455,7 @@ Lemma site_min_tid_witness {γ sid tid} :
   site_min_tid_lb γ sid tid.
 Proof.
   iApply own_mono.
-  apply singleton_mono, mono_nat_included.
+  apply singleton_included_mono, mono_nat_included.
 Qed.
 
 Lemma min_tid_lb_zero γ :
@@ -565,8 +569,6 @@ Proof.
     iIntros ([_ <-]) "Hown".
     unfold site_active_tids_auth_def.
     iFrame.
-    rewrite gset_to_gmap_empty.
-    done.
   }
   set sids : gset u64 := list_to_set sids_all.
   iDestruct (big_sepS_subseteq _ _ sids with "Hown") as "Hown"; first set_solver.
@@ -688,7 +690,6 @@ Proof.
   }
   iFrame.
   unfold nca_tids_auth, fa_tids_auth, fci_tmods_auth, fcc_tmods_auth, cmt_tmods_auth.
-  do 2 rewrite gset_to_gmap_empty.
   by iFrame.
 Qed.
 

@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import proofmode tactics.
 From Perennial.goose_lang.lib Require Import typed_mem.typed_mem.
 Set Default Proof Using "Type".
 
-(** This file defines the [array] connective, a version of [mapsto] that works
+(** This file defines the [array] connective, a version of [pointsto] that works
 with lists of values. It also contains array versions of the basic heap
 operations of GooseLang. *)
 
@@ -102,12 +102,12 @@ Proof.
   iFrame.
 Qed.
 
-Global Instance array_fractional l q t vs :
+Global Instance array_fractional l t vs :
+  fractional.Fractional (λ q, array l q t vs) := _.
+
+Global Instance array_as_fractional l t q vs :
   fractional.AsFractional (array l q t vs) (λ q, array l q t vs) q.
-Proof.
-  constructor; auto.
-  apply _.
-Qed.
+Proof. constructor; auto; apply _. Qed.
 
 Theorem loc_add_stride_Sn l t n :
   l +ₗ[t] S n = (l +ₗ ty_size t) +ₗ[t] n.
@@ -134,7 +134,7 @@ Proof.
   simpl.
   iDestruct "Ha1" as "[Hx1 Ha1]".
   iDestruct "Ha2" as "[Hx2 Ha2]".
-  iDestruct (struct_mapsto_agree with "Hx1 Hx2") as "->".
+  iDestruct (struct_pointsto_agree with "Hx1 Hx2") as "->".
   setoid_rewrite loc_add_stride_Sn.
   iDestruct ("IH" $! _ vs2 with "[] Ha1 Ha2") as %->; auto.
 Qed.
@@ -148,7 +148,7 @@ Proof.
   destruct vs; [simpl in H0; lia|].
   rewrite /array /=.
   iDestruct "Ha" as "[Hl _]".
-  by iApply (struct_mapsto_frac_valid with "Hl").
+  by iApply (struct_pointsto_frac_valid with "Hl").
 Qed.
 
 (* this lemma is just used to prove the update version (with q=1) and read
@@ -191,7 +191,7 @@ Proof.
 Qed.
 
 (** Allocation *)
-Lemma mapsto_seq_array l v t n :
+Lemma pointsto_seq_array l v t n :
   ([∗ list] i ∈ seq 0 n, (l +ₗ[t] (i : nat)) ↦[t] v) -∗
   l ↦∗[t] replicate n v.
 Proof.
@@ -209,7 +209,7 @@ Proof.
   lia.
 Qed.
 
-Lemma mapsto_seq_struct_array l v t n :
+Lemma pointsto_seq_struct_array l v t n :
   ([∗ list] i ∈ seq 0 n, (l +ₗ[t] (i:nat)) ↦[t] v) -∗
   l ↦∗[t] replicate n v.
 Proof.
@@ -230,11 +230,11 @@ Lemma wp_allocN t s E v (n: u64) :
 Proof.
   iIntros (Hsz Hty Φ) "_ HΦ". wp_apply wp_allocN_seq; [done..|].
   iIntros (l) "Hlm". iApply "HΦ".
-  iApply mapsto_seq_struct_array.
+  iApply pointsto_seq_struct_array.
   iApply (big_sepL_mono with "Hlm").
   iIntros (k y Heq) "Hvals".
   rewrite (nat_scaled_offset_to_Z Hty).
-  rewrite struct_mapsto_eq /struct_mapsto_def.
+  rewrite struct_pointsto_eq /struct_pointsto_def.
   iSplitL; auto.
 Qed.
 
@@ -244,7 +244,7 @@ Lemma wp_load_offset s E l q off t vs v :
 Proof.
   iIntros (Hlookup Φ) "Hl HΦ".
   iDestruct (array_elem_acc (l:=l) Hlookup with "Hl") as "[Hl1 Hl2]".
-  iDestruct (struct_mapsto_ty with "Hl1") as %Hty.
+  iDestruct (struct_pointsto_ty with "Hl1") as %Hty.
   wp_load.
   iApply "HΦ".
   iSplitL; eauto.

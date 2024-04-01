@@ -147,7 +147,7 @@ Proof.
     + exists 0%nat. done.
     + simpl. destruct (IHoff txns). rewrite H.
       exists (length (snd p) + x)%nat.
-      rewrite drop_add_app; eauto.
+      rewrite drop_app_add'; eauto.
 Qed.
 
 Lemma apply_upds_in : ∀ upds a d0 d1,
@@ -223,11 +223,7 @@ Proof.
     constructor. reflexivity.
   }
 
-  iModIntro.
-  iFrame "HP HQ".
-  iFrame.
-  iSplit; first by done.
-  repeat iExists _. iFrame "∗#%".
+  by iFrame "HP HQ Hdisk ∗#%".
 Qed.
 
 Lemma apply_upds_in_not_None : ∀ upds a d,
@@ -340,19 +336,15 @@ Proof.
   { iExists _. iFrame "HP".
     iSplit.
     { rewrite /wal_wf in Hwf. rewrite /wal_wf. iPureIntro. simpl.
-      intuition eauto; lia. }
-    iFrame.
-    iExists _. iFrame "Howncs".
-    iExists installed_txn_id, installer_txn_id, diskEnd_txn_id0. simpl.
-    iFrame "Hdurable".
-    iFrame "#".
+      intuition eauto; lia. } simpl.
+    iFrame "Hmem Htxns_ctx γtxns HnextDiskEnd_inv Howncs Hdurable #". simpl.
     iSplit. 2: iSplit. 3: iSplit. 4: eauto.
     3: {
       replace ((_ `max` _) `max` _)%nat
         with (σ.(log_state.durable_lb) `max` diskEnd_txn_id0)%nat;
         last by lia.
-      iExists diskEnd0. iFrame "%". iFrame "#".
-      iExists (durable_lb_alt `max` installed_txn_id)%nat.
+      iExists diskEnd0.
+      iExists (durable_lb_alt `max` installed_txn_id)%nat. iFrame "%". iFrame "#".
       iPureIntro.
       split; first by lia.
       split; first by lia.

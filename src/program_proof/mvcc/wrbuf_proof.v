@@ -55,10 +55,10 @@ Definition spec_search (key : u64) (ents : list wrent) (pos : u64) (found : bool
 (* func search(ents []WrEnt, key uint64) (uint64, bool)          *)
 (*****************************************************************)
 Local Lemma wp_search (key : u64) (entsS : Slice.t) (ents : list wrent) :
-  {{{ slice.is_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) }}}
+  {{{ slice.own_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) }}}
     search (to_val entsS) #key
   {{{ (pos : u64) (found : bool), RET (#pos, #found);
-      slice.is_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
+      slice.own_slice entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
       ⌜spec_search key ents pos found⌝
   }}}.
 Proof.
@@ -78,7 +78,7 @@ Proof.
   (* }                                                       *)
   (***********************************************************)
   set P := (λ (b : bool), ∃ (pos : u64),
-               "HentsS" ∷ (slice.is_slice entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents)) ∗
+               "HentsS" ∷ (slice.own_slice entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents)) ∗
                "HposR" ∷ posR ↦[uint64T] #pos ∗
                "%Hexit" ∷ (⌜if b then True
                             else (∃ (ent : wrent), ents !! (int.nat pos) = Some ent ∧ ent.1.1.1 = key) ∨
@@ -115,8 +115,8 @@ Proof.
       by apply Znot_lt_ge, Z.ge_le in Heqb.
     }
     (* Evaluate the second condition: `key != ents[pos].key`. *)
-    iDestruct (slice.is_slice_small_acc with "HentsS") as "[HentsS HentsC]".
-    iDestruct (slice.is_slice_small_sz with "[$HentsS]") as "%HentsSz".
+    iDestruct (slice.own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
+    iDestruct (slice.own_slice_small_sz with "[$HentsS]") as "%HentsSz".
     wp_load.
     destruct (list_lookup_lt _ (wrent_to_val <$> ents) (int.nat pos)) as [ent Hlookup]; first word.
     wp_apply (slice.wp_SliceGet with "[$HentsS]"); first done.
@@ -181,7 +181,7 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_load.
-  iDestruct (is_slice_sz with "HentsS") as "%Hsz".
+  iDestruct (own_slice_sz with "HentsS") as "%Hsz".
   rewrite fmap_length in Hsz.
   case_bool_decide; (wp_pures; iModIntro; iApply "HΦ"; iFrame; iPureIntro; unfold spec_search).
   { (* Write entry found. *)
@@ -229,7 +229,7 @@ Proof.
   (* }                                                       *)
   (* return 0, false, false                                  *)
   (***********************************************************)
-  iDestruct (is_slice_small_acc with "HentsS") as "[HentsS HentsC]".
+  iDestruct (own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
   wp_if_destruct.
   { (* cache hit *)
     wp_loadField.
@@ -296,7 +296,7 @@ Proof.
   (*     return                                              *)
   (* }                                                       *)
   (***********************************************************)
-  iDestruct (is_slice_small_acc with "HentsS") as "[HentsS HentsC]".
+  iDestruct (own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
   wp_if_destruct.
   { (* cache hit *)
     wp_loadField.
@@ -306,7 +306,7 @@ Proof.
     unfold spec_search in Hsearch.
     destruct Hsearch as (ent & Hlookup & Hkey).
     wp_apply (wp_slice_len).
-    iDestruct (is_slice_small_sz with "HentsS") as "%HentsSz".
+    iDestruct (own_slice_small_sz with "HentsS") as "%HentsSz".
     rewrite fmap_length in HentsSz.
     wp_if_destruct; first last.
     { destruct Heqb0.
@@ -315,7 +315,7 @@ Proof.
     }
     wp_apply (wp_slice_ptr).
     wp_pures.
-    unfold is_slice_small.
+    unfold own_slice_small.
     iDestruct "HentsS" as "[HentsA [%HentsLen %HentsCap]]".
     iDestruct (update_array (off:=int.nat pos) with "HentsA") as "[HentsP HentsA]".
     { by rewrite list_lookup_fmap Hlookup. }
@@ -453,7 +453,7 @@ Proof.
   (*     return                                              *)
   (* }                                                       *)
   (***********************************************************)
-  iDestruct (is_slice_small_acc with "HentsS") as "[HentsS HentsC]".
+  iDestruct (own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
   wp_if_destruct.
   { (* cache hit *)
     wp_loadField.
@@ -463,7 +463,7 @@ Proof.
     unfold spec_search in Hsearch.
     destruct Hsearch as (ent & Hlookup & Hkey).
     wp_apply (wp_slice_len).
-    iDestruct (is_slice_small_sz with "HentsS") as "%HentsSz".
+    iDestruct (own_slice_small_sz with "HentsS") as "%HentsSz".
     rewrite fmap_length in HentsSz.
     wp_if_destruct; first last.
     { destruct Heqb0.
@@ -472,7 +472,7 @@ Proof.
     }
     wp_apply (wp_slice_ptr).
     wp_pures.
-    unfold is_slice_small.
+    unfold own_slice_small.
     iDestruct "HentsS" as "[HentsA [%HentsLen %HentsCap]]".
     iDestruct (update_array (off:=int.nat pos) with "HentsA") as "[HentsP HentsA]".
     { by rewrite list_lookup_fmap Hlookup. }
@@ -598,7 +598,7 @@ Proof.
   iApply "HΦ".
   iModIntro.
   iExists _, [].
-  iDestruct (is_slice_take_cap _ _ _ (U64 0) with "HentsS") as "HentsS"; first word.
+  iDestruct (own_slice_take_cap _ _ _ (U64 0) with "HentsS") as "HentsS"; first word.
   change (int.nat 0) with 0%nat.
   rewrite take_0.
   do 2 rewrite fmap_nil.

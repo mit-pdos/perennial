@@ -443,8 +443,8 @@ Proof.
   rewrite /memLog_linv_core /named.
   iDestruct (memLog_linv_pers_core_init with "Hpers") as "$".
   simpl.
+  iDestruct (memLog_linv_nextDiskEnd_txn_id_init with "Hpers Hstable") as "$".
   iFrame.
-  iApply (memLog_linv_nextDiskEnd_txn_id_init with "Hpers Hstable").
 Qed.
 
 Lemma wal_linv_durable_init γ :
@@ -473,7 +473,7 @@ Proof.
     rewrite /slidingM.wf /=.
     word. }
   rewrite /named.
-  iFrame "#∗".
+  iFrame "∗#".
   iApply (memLog_linv_init with "HmemLog_pers HmemLog_ghost").
 Qed.
 
@@ -624,21 +624,7 @@ Proof.
   ".
   2: {
     iFrame.
-    iSplitL "
-      logger_pos logger_txn_id
-      diskEnd_mem2 diskEnd_mem_txn_id2
-      diskEnd diskEnd_txn_id
-    ".
-    {
-      iExists _, _.
-      replace (int.nat 0) with 0%nat by word.
-      iFrame.
-    }
-    iExists _, _.
-    iFrame "diskEnd_mem_txn_id_lb ∗".
-    iSplitL "installer_pos"; first by (iExists _; iFrame).
-    iSplitL "installer_pos_mem"; first by (iExists _; iFrame).
-    iSplitL "installer_txn_id_mem"; iExists _; iFrame.
+    replace (int.nat 0) with 0%nat by word. iFrame "∗#".
   }
   iSplit; first by eauto using log_state0_wf.
   iSplit; first by eauto using log_state0_post_crash.
@@ -663,11 +649,8 @@ Proof.
     iApply (wal_linv_durable_init with "[start_avail_ctx diskEnd_avail_ctx] [] HmemLog_ghost").
     all: iFrame "∗#".
   }
-  iExists 0%nat, 0%nat, 0%nat.
-  iSplitL "Hinstalled_ghost Hdata".
+  iSplitL "Hdata".
   {
-    iExists _.
-    iFrame.
     iSplit; first by (rewrite /log_state0 /=; iPureIntro; lia).
     iSplit; first by (rewrite subslice_zero_length; iApply txns_are_nil).
     iApply (big_sepM_mono (λ a b, a d↦ b)%I).
@@ -691,7 +674,6 @@ Proof.
   }
   iSplitL.
   {
-    iExists _, _, _.
     iFrame.
     iPureIntro.
     split; last by (simpl; word).
@@ -750,7 +732,7 @@ Qed.
 
 Lemma is_base_disk_crash γ γ' d :
   γ'.(base_disk_name) = γ.(base_disk_name) →
-  is_base_disk γ d -∗ is_base_disk γ' d.
+  is_base_disk γ d ⊢@{_} is_base_disk γ' d.
 Proof.
   rewrite /is_base_disk => -> //.
 Qed.
@@ -780,7 +762,7 @@ Proof.
     rewrite gset_to_gmap_union_singleton.
     iFrame.
     rewrite big_sepM_insert //.
-    iFrame "#∗".
+    iFrame "∗#".
 Qed.
 
 Lemma map_set_ctx_alloc {K} `{Countable K} `{!mapG Σ K ()} {γ: gname} (s' s: gset K) :
@@ -947,7 +929,7 @@ Lemma memLog_linv_nextDiskEnd_txn_id_post_crash γ diskEnd diskEnd_txn_id instal
   memLog_linv_nextDiskEnd_txn_id γ diskEnd (durable_lb `max` diskEnd_txn_id)%nat.
 Proof.
   iIntros (Hbound) "Hctx #Hpos #HdiskEnd_stable".
-  iExists _; iFrame "#∗".
+  iExists _; iFrame "∗#".
   iPureIntro.
   intros ??.
   apply lookup_gset_to_gmap_None.
@@ -1173,7 +1155,7 @@ Proof.
     iDestruct (txns_ctx_make_factory with "Htxns_ctx Htxns_ctx'") as "[Hold_txns Htxns_ctx']".
     iDestruct (is_durable_txn_get_txn_pos with "Hdurable_txn Htxns_ctx'") as "[#HdiskEnd_pos #Hdurable_lb_pos]".
     iDestruct (txn_pos_valid_general with "Htxns_ctx' HdiskEnd_pos") as %HdiskEnd_is_txn.
-    iDestruct (old_txn_get_pos with "[$] Hinstalled_pos") as "#Hinstalled_pos'"; first by lia.
+    iDestruct (old_txn_get_pos with "Hold_txns Hinstalled_pos") as "#Hinstalled_pos'"; first by lia.
 
     iMod (diskEnd_linv_post_crash _ (int.Z diskEnd)
             with "[Hcirc_diskEnd] diskEnd_avail_ctx diskEnd_avail")
@@ -1248,7 +1230,7 @@ Proof.
       iFrame "Htxns_ctx'".
       iFrame "Htxns2".
       iSplitL "Hstable_txns2".
-      { iThaw "#". iExists _. iFrame "# ∗".
+      { iThaw "#". iExists _. iFrame "∗#".
         iPureIntro.
         (* we proved this before with [memLog_linv_nextDiskEnd_txn_id_post_crash] *)
         assumption. }
@@ -1331,7 +1313,7 @@ Proof.
             rewrite Nat.max_l; last by lia.
             iApply "Hdurable_lb_pos".
           }
-          replace (slidingM.memEnd _) with (int.Z diskEnd) by reflexivity.
+          replace (slidingM.memEnd _) with (int.Z diskEnd) by assumption.
           iSplit.
           {
             iPureIntro.
@@ -1458,7 +1440,7 @@ Proof.
       iDestruct (is_installed_txn_crash γ γ' with "circ.start Hinstalled_txn_id_stable") as "$"; first by lia.
       iFrame "Hdurable_txn".
       rewrite /is_durable.
-      efeed pose proof (circ_matches_txns_crash (int.nat diskEnd)) as Hcirc_matches'; [ | by eauto | ].
+      opose proof (circ_matches_txns_crash (int.nat diskEnd) _ _ _ _ _ _ _ _ _ _) as Hcirc_matches'; [ | by eauto | ].
       { word. }
       iExists _, _, _; iFrame (Hlog_wf) "∗".
       iPureIntro.
@@ -1602,9 +1584,8 @@ Proof.
     {
       iSplit; first by auto.
       iSplit; first by auto.
-      iFrame.
-      iExists _; iFrame. }
-    { iFrame. iExists _, _. iFrame. }
+      iFrame. }
+    { iFrame. }
   }
   rename diskEnd into oldDiskEnd.
 
@@ -1639,9 +1620,9 @@ Proof.
       iSplit; first by auto.
       iSplit; first by auto.
       iExists _. iFrame "Hwal_linv". iFrame "Hcirc". rewrite /disk_inv. iFrame "Howncs".
-      iExists _, _, _. iFrame "# ∗". eauto.
+      iExists _, _, _. iFrame "∗#". eauto.
     }
-    { iFrame. iExists _, _. iFrame. iExists _, _. iFrame "∗ %". }
+    { by iFrame. }
   }
   wp_pures.
   wp_apply (wp_new_free_lock); iIntros (ml) "Hlock".
@@ -1710,8 +1691,7 @@ Proof.
                  condInstall := _; condShut := _ |}.
       iFrame "#".
     }
-    iFrame.
-    iExists _. iFrame. rewrite /disk_inv. iExists _, _, _. iFrame "# ∗". eauto.
+    iFrame "∗#". eauto.
   }
   iSplitL "
     Happender HnotLogging
@@ -1719,7 +1699,7 @@ Proof.
     HownDiskEnd_logger HownDiskEndTxn_logger
     HownDiskEndMem_logger HownDiskEndMemTxn_logger
   ".
-  { iExists _. iFrame "# ∗". iExists _, _. iFrame. }
+  { iExists _. iFrame "∗#". }
   iFrame "Hinstaller".
 Qed.
 
@@ -1816,7 +1796,7 @@ Proof.
     by wp_apply (wp_Walog__installer with "[$]").
   }
   wp_pures. iIntros "!> H Hcfupd".
-  iApply "H". by iFrame "# ∗".
+  iApply "H". by iFrame "∗#".
 Qed.
 
 End goose_lang.
@@ -1850,7 +1830,7 @@ Proof.
   rewrite /IntoCrash. iNamed 1.
   iNamed "Howninstalled".
   iDestruct "Hbeing_installed_txns" as "-#Hbeing_installed_txns".
-  iCrash. iExists _. iFrame "% ∗".
+  iCrash. iExists _. iFrame "∗%".
 Qed.
 
 Instance disk_inv_stable γ s cs dinit:
@@ -1872,9 +1852,7 @@ Proof.
   iDestruct (post_crash_nodep with "Htxns_ctx") as "Htxns_ctx".
   iDestruct (post_crash_nodep with "Hwal_linv") as "Hwal_linv".
   iCrash. iFrame.
-  iSplit; first done.
-  iSplit; first done.
-  iExists _. iFrame.
+  iSplit; done.
 Qed.
 End stable.
 

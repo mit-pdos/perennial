@@ -305,7 +305,7 @@ Definition kvs_uninit_auth {Σ} {kvsG :kvsG Σ} :=
 (* precondition in spec --> assert have points-to facts (no state RA), gen_heap *)
 Definition kvs_auth {Σ} {kvs :kvsG Σ} (s: gmap u64 disk.Block) := gen_heap.gen_heap_interp s.
 Definition kvs_frag {Σ} {kvsG :kvsG Σ} (k : u64) (v : disk.Block) : iProp Σ :=
-   (gen_heap.mapsto (L:=u64) (V:=disk.Block) k (DfracOwn 1) v)%I.
+   (gen_heap.pointsto (L:=u64) (V:=disk.Block) k (DfracOwn 1) v)%I.
 
 Section kvs_interp.
   Existing Instances kvs_op kvs_model kvs_val_ty.
@@ -441,9 +441,9 @@ Section kvs_lemmas.
   Qed.
 
   (* know that we're closed + know value at a particular key *)
-  Notation "l k↦ v" := (gen_heap.mapsto (L:=u64) (V:=disk.Block) l (DfracOwn 1) v%V)
+  Notation "l k↦ v" := (gen_heap.pointsto (L:=u64) (V:=disk.Block) l (DfracOwn 1) v%V)
                               (at level 20, format "l  k↦ v") : bi_scope.
-  Notation "l k↦{ q } v" := (gen_heap.mapsto (L:=u64) (V:=disk.Block) l (DfracOwn q) v%V)
+  Notation "l k↦{ q } v" := (gen_heap.pointsto (L:=u64) (V:=disk.Block) l (DfracOwn q) v%V)
                               (at level 20, q at level 50, format "l  k↦{ q }  v") : bi_scope.
   Lemma kvs_ctx_unify_closed kvs (key: u64) (val: disk.Block):
     kvs_closed_frag -∗ key k↦ val -∗ kvs_ctx kvs -∗ ∃ s, ⌜s !! key = Some val ∧ kvs = Closed s ⌝.
@@ -680,11 +680,11 @@ Existing Instance spec_ffi_model_field.
 Implicit Types K: spec_lang.(language.expr) → spec_lang.(language.expr).
 Instance kvsG0 : kvsG Σ := refinement_spec_ffiG.
 
-  Ltac inv_head_step :=
+  Ltac inv_base_step :=
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
+        | H : base_step ?e _ _ _ _ _ _ _ |- _ =>
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
@@ -705,11 +705,11 @@ Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
   { eapply stuck_ExternalOp; first (by eauto).
-    apply head_irreducible_not_atomically; [ by inversion 1 | ].
+    apply base_irreducible_not_atomically; [ by inversion 1 | ].
     intros ????? Hstep.
-    repeat (inv_head_step; simpl in *; repeat monad_inv).
+    repeat (inv_base_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
-    repeat (inv_head_step; simpl in *; repeat monad_inv).
+    repeat (inv_base_step; simpl in *; repeat monad_inv).
   }
   { solve_ndisj. }
 Qed.
@@ -725,11 +725,11 @@ Proof.
   iIntros (??) "Hj Hctx H".
   iMod (ghost_step_stuck with "Hj Hctx H") as "[]".
   { eapply stuck_ExternalOp; first (by eauto).
-    apply head_irreducible_not_atomically; [ by inversion 1 | ].
+    apply base_irreducible_not_atomically; [ by inversion 1 | ].
     intros ??????.
-    repeat (inv_head_step; simpl in *; repeat monad_inv).
+    repeat (inv_base_step; simpl in *; repeat monad_inv).
     destruct (σ.(world)); try congruence;
-    repeat (inv_head_step; simpl in *; repeat monad_inv); eauto.
+    repeat (inv_base_step; simpl in *; repeat monad_inv); eauto.
     eapply H2; eauto.
   }
   { solve_ndisj. }
@@ -780,7 +780,7 @@ Proof.
   iEval (simpl) in "Hffi".
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)". (* step one thread *)
-    { apply head_prim_step. simpl. constructor 1. econstructor.
+    { apply base_prim_step. simpl. constructor 1. econstructor.
       * eexists _ (fresh_locs (dom σ.(heap))); repeat econstructor.
         ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
@@ -814,8 +814,8 @@ Proof.
   destruct σ.(world) eqn:Heq; rewrite Heq; try (iDestruct "Hffi" as %[]).
   - iMod (ghost_step_stuck with "Hj' Hctx H") as "[]".
     { eapply stuck_ExternalOp; first (by eauto).
-      apply head_irreducible_not_atomically; [ by inversion 1 | ].
-      intros ??????. by repeat (inv_head_step; simpl in *; repeat monad_inv).
+      apply base_irreducible_not_atomically; [ by inversion 1 | ].
+      intros ??????. by repeat (inv_base_step; simpl in *; repeat monad_inv).
     }
     { solve_ndisj. }
   - iMod (ghost_step_init_stuck with "Hj [$] [$]") as "[]".
@@ -839,7 +839,7 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&>Hffi&Hrest)".
   iDestruct (kvs_ctx_unify_uninit with "[$] [$]") as %Heq.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step. simpl. constructor 1. econstructor.
+  { apply base_prim_step. simpl. constructor 1. econstructor.
     * eexists _ (fresh_locs (dom σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
@@ -915,7 +915,7 @@ Proof.
     { solve_ndisj. }
     { congruence. }
   - iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-    { apply head_prim_step. simpl. constructor 1. econstructor.
+    { apply base_prim_step. simpl. constructor 1. econstructor.
       * eexists _ (fresh_locs (dom σ.(heap))); repeat econstructor.
         ** apply fresh_locs_non_null; lia.
         ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
@@ -946,7 +946,7 @@ Proof.
   iDestruct (kvs_ctx_unify_closed' with "[$] [$]") as %Heq.
   destruct Heq as [s Heq].
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step. simpl. constructor 1. econstructor.
+  { apply base_prim_step. simpl. constructor 1. econstructor.
     * eexists _ (fresh_locs (dom σ.(heap))); repeat econstructor.
       ** apply fresh_locs_non_null; lia.
       ** hnf; intros. apply (not_elem_of_dom (D := gset loc)). by apply fresh_locs_fresh.
@@ -983,7 +983,7 @@ Proof.
   iDestruct (kvs_ctx_unify_opened with "[$] [$]") as %Heq.
   destruct Heq as (vs'&Heq).
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step. repeat (eauto || monad_simpl || rewrite Heq || econstructor). }
+  { apply base_prim_step. repeat (eauto || monad_simpl || rewrite Heq || econstructor). }
   { solve_ndisj. }
   simpl. rewrite Heq.
   iDestruct "Hffi" as "(Huninit_auth&Hvals_auth)".

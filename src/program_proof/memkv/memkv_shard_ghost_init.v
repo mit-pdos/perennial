@@ -12,24 +12,25 @@ Context `{!gooseGlobalGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 (* TODO: duplicating this specs is unfortunate, should try to unify with the set up in shard_definitions *)
 
-Definition shard_SpecList γkv γrpc : uRPCSpecList :=
-  spec_cons (eRPCSpec_uRPC γrpc $ is_shard_server_putSpec γkv)
-    (spec_cons (eRPCSpec_uRPC γrpc $ is_shard_server_conditionalPutSpec γkv)
-      (spec_cons (eRPCSpec_uRPC γrpc $ is_shard_server_getSpec γkv)
-        (spec_cons (is_shard_server_moveSpec γkv)
-          (spec_cons (eRPCSpec_uRPC γrpc $ is_shard_server_installSpec γkv)
-            (spec_cons (is_shard_server_freshSpec γrpc) spec_nil))))).
+Definition shard_SpecList γkv γrpc : plist (pprod u64 RpcSpec) :=
+    pcons (ppair (U64 uKV_PUT) (eRPCSpec_uRPC γrpc $ is_shard_server_putSpec γkv))
+  $ pcons (ppair (U64 uKV_CONDITIONAL_PUT) (eRPCSpec_uRPC γrpc $ is_shard_server_conditionalPutSpec γkv))
+  $ pcons (ppair (U64 uKV_GET) (eRPCSpec_uRPC γrpc $ is_shard_server_getSpec γkv))
+  $ pcons (ppair (U64 uKV_MOV_SHARD) (is_shard_server_moveSpec γkv))
+  $ pcons (ppair (U64 uKV_INS_SHARD) (eRPCSpec_uRPC γrpc $ is_shard_server_installSpec γkv))
+  $ pcons (ppair (U64 uKV_FRESHCID) (is_shard_server_freshSpec γrpc))
+  $ pnil.
 
 Lemma shard_server_ghost_init host (γkv : gname) :
   host c↦ ∅ ={⊤}=∗
   ∃ γ, ⌜ γ.(kv_gn) = γkv ⌝ ∗
-       handlers_dom γ.(urpc_gn) (dom_uRPCSpecList (shard_SpecList (γ.(kv_gn)) (γ.(erpc_gn)))) ∗
+       is_urpc_dom γ.(urpc_gn) (dom_RpcSpec_list (shard_SpecList (γ.(kv_gn)) (γ.(erpc_gn)))) ∗
        is_shard_server host γ ∗
        own_erpc_pre_server γ.(erpc_gn).
 Proof.
   iIntros "Hg".
   iMod (erpc_init_server_ghost) as (γrpc) "Herpc".
-  iMod (handler_is_init_list host (shard_SpecList γkv γrpc) with "[Hg]") as (γ) "H".
+  iMod (alloc_is_urpc_list host (shard_SpecList γkv γrpc) with "[Hg]") as (γ) "H".
   { simpl. set_solver. }
   { iExactEq "Hg". f_equal. }
   iDestruct "H" as "(#Hdom&#Hput&#Hcput&#Hget&#Hmove&#Hinstall&#Hfresh&_)".
@@ -45,7 +46,7 @@ Proof.
     iSplitL. { iFrame "Hinstall". }
     iFrame "Hfresh".
   }
-  iExists Γsrv. iFrame "# ∗".
+  iExists Γsrv. iFrame "∗#".
   eauto.
 Qed.
 

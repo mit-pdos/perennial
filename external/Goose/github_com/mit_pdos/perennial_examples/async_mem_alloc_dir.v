@@ -17,14 +17,14 @@ Definition openInodes: val :=
   rec: "openInodes" "d" :=
     let: "inodes" := ref (zero_val (slice.T ptrT)) in
     let: "addr" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "addr" < NumInodes); (λ: <>, "addr" <-[uint64T] ![uint64T] "addr" + #1) := λ: <>,
-      "inodes" <-[slice.T ptrT] SliceAppend ptrT (![slice.T ptrT] "inodes") (async_mem_alloc_inode.Open "d" (![uint64T] "addr"));;
+    (for: (λ: <>, (![uint64T] "addr") < NumInodes); (λ: <>, "addr" <-[uint64T] ((![uint64T] "addr") + #1)) := λ: <>,
+      "inodes" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "inodes") (async_mem_alloc_inode.Open "d" (![uint64T] "addr")));;
       Continue);;
     ![slice.T ptrT] "inodes".
 
 Definition inodeUsedBlocks: val :=
   rec: "inodeUsedBlocks" "inodes" :=
-    let: "used" := NewMap (struct.t alloc.unit) #() in
+    let: "used" := NewMap uint64T (struct.t alloc.unit) #() in
     ForSlice ptrT <> "i" "inodes"
       (alloc.SetAdd "used" (async_mem_alloc_inode.Inode__UsedBlocks "i"));;
     "used".

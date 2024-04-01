@@ -18,7 +18,7 @@ Lemma tac_wp_store Δ Δ' Δ'' s E i K l v v' Φ :
   envs_entails Δ (WP fill K (Store (LitV l) (Val v')) @ s; E {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal=> ????.
-  rewrite -wp_bind. eapply wand_apply; first by eapply wp_store.
+  rewrite -wp_bind. eapply wand_apply; first by eapply bi.wand_entails, wp_store.
   rewrite into_laterN_env_sound -later_sep envs_simple_replace_sound //; simpl.
   rewrite right_id. by apply later_mono, sep_mono_r, wand_mono.
 Qed.
@@ -26,7 +26,7 @@ Qed.
 End goose_lang.
 
 Tactic Notation "wp_untyped_store" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦{_} _)%I) => l end in
     iAssumptionCore || fail "wp_untyped_store: cannot find" l "↦ ?" in
   wp_pures;
@@ -36,7 +36,7 @@ Tactic Notation "wp_untyped_store" :=
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_store _ _ _ _ _ _ K))
       |fail 1 "wp_untyped_store: cannot find 'Store' in" e];
     [tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |pm_reflexivity
     |first [wp_seq|wp_finish]]
   | _ => fail "wp_untyped_store: not a 'wp'"

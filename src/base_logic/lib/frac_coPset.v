@@ -20,7 +20,7 @@ Section ofe.
       + by intros f x.
       + by intros f g ? x.
       + intros [f] [g] [h] ?? x. trans (g x); eauto.
-    - by intros n f g ? x; apply dist_S.
+    - by intros n f g ? x.
   Qed.
   Canonical Structure frac_coPsetO := Ofe (frac_coPset) frac_coPset_ofe_mixin.
   Global Instance frac_coPset_ofe_discrete :

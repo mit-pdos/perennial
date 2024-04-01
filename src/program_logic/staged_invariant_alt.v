@@ -60,7 +60,7 @@ Section def.
 Context `{IRISG: !irisGS Λ Σ, !crashGS Σ}.
 Context `{!pri_invG IRISG}.
 Context `{!later_tokG IRISG}.
-Context `{!stagedG Σ}.
+Context `{stagedG0: !stagedG Σ}.
 
 (*
 Definition staged_inv_cancel_pre E mj Pc : iProp Σ :=
@@ -107,7 +107,7 @@ Local Instance staged_inv_inner_pre_contractive : Contractive (staged_inv_inner_
 Proof.
   rewrite /staged_inv_inner_pre => n pre1 pre2 Hequiv ????????.
   do 15 (f_contractive || f_equiv).
-  destruct a1.
+  match goal with | a1: staged_inv_status |- _ => destruct a1 end.
   - repeat (f_contractive || f_equiv).
   - do 25 (f_contractive || f_equiv).
     eapply Hequiv.
@@ -153,7 +153,7 @@ Section inv.
 Context `{IRISG: !irisGS Λ Σ, !generationGS Λ Σ}.
 Context `{PRI: !pri_invG IRISG}.
 Context `{!later_tokG IRISG}.
-Context `{!stagedG Σ}.
+Context `{stagedG0: !stagedG Σ}.
 Implicit Types i : positive.
 Implicit Types N : namespace.
 Implicit Types P Q R : iProp Σ.
@@ -314,6 +314,7 @@ Proof.
     iIntros.
     iMod ("H" with "[//]") as "($&$&H&$)".
     iModIntro.
+    match goal with | H : Atomic _ _ |- _ => rename H into Atomic0 end.
     rewrite /Atomic/= in Atomic0.
     edestruct (Atomic0) as (v&Hval); eauto.
     rewrite Hval. rewrite ?wpc0_unfold /wpc_pre.
@@ -473,7 +474,7 @@ Proof using stagedG0.
   iSplitL "Hltok Hqa1 H1".
   {
     rewrite /wpc_crash_modality.
-    iIntros (????) "Hg #HC Hlc".
+    iIntros (? ns D ?) "Hg #HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Hle') "Hg".
     iApply (step_fupd2N_inner_fupd2).
     iApply (step_fupd2N_inner_le _ (S (num_laters_per_step ns'))).
@@ -532,7 +533,7 @@ Proof using stagedG0.
   }
   {
     rewrite /wpc_crash_modality.
-    iIntros (????) "Hg #HC Hlc".
+    iIntros (? ns D ?) "Hg #HC Hlc".
     iMod (later_tok_decr with "[$]") as (ns' Hle') "Hg".
     iApply (step_fupd2N_inner_fupd2).
     iApply (step_fupd2N_inner_le _ (S (num_laters_per_step ns'))).

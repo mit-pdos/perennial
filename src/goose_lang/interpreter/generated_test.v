@@ -106,6 +106,7 @@ Example testBitwiseOpsPrecedence_ok : testBitwiseOpsPrecedence #() ~~> #true := 
 Example testArithmeticShifts_ok : testArithmeticShifts #() ~~> #true := t.
 Example testBitAddAnd_ok : testBitAddAnd #() ~~> #true := t.
 Example testManyParentheses_ok : testManyParentheses #() ~~> #true := t.
+Example testPlusTimes_ok : testPlusTimes #() ~~> #true := t.
 
 (* precedence.go *)
 Example testOrCompareSimple_ok : testOrCompareSimple #() ~~> #true := t.

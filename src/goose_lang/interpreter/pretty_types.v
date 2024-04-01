@@ -43,6 +43,8 @@ Instance pretty_un_op : Pretty un_op :=
         | ToUInt32Op => "to_u32"
         | ToUInt8Op => "to_u8"
         | ToStringOp => "to_string"
+        | StringLenOp => "StringLength"
+        | IsNoStringOverflowOp => "IsNoStringOverflow"
         end.
 
 #[global]
@@ -61,5 +63,6 @@ Instance pretty_bin_op : Pretty bin_op :=
         | LeOp => "LeOp"
         | LtOp => "LtOp"
         | EqOp => "EqOp"
+        | StringGetOp => "StringGetOp"
         | OffsetOp k => ("OffsetOp(" ++ pretty k ++ ")")%string
         end.

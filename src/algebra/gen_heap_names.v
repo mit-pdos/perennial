@@ -49,7 +49,7 @@ Section gen_heap_defs.
     (gen_heapG_get_names (gen_heapG_update_pre hG names)) = names.
   Proof. destruct hG, names => //=. Qed.
 
-  Local Notation "l ↦ v" := (mapsto l (DfracOwn 1) v) (at level 20) : bi_scope.
+  Local Notation "l ↦ v" := (pointsto l (DfracOwn 1) v) (at level 20) : bi_scope.
 
   Lemma gen_heap_name_strong_init' `{!gen_heapGpreS L V Σ} σ :
     ⊢ |==> ∃ names : gen_heap_names, let _ := gen_heapG_update_pre _ names in
@@ -103,13 +103,13 @@ Section gen_heap_defs.
     iIntros "Hk". iExists _; iSplit; eauto. iRight. iFrame.
   Qed.
 
-  Global Instance mapsto_discretizable {Σ} (hG: gen_heapGS L V Σ) l q v:
-    Discretizable (mapsto (hG:=hG) l q v).
-  Proof. rewrite gen_heap.mapsto_unseal. apply _. Qed.
+  Global Instance pointsto_discretizable {Σ} (hG: gen_heapGS L V Σ) l q v:
+    Discretizable (pointsto (hG:=hG) l q v).
+  Proof. rewrite gen_heap.pointsto_unseal. apply _. Qed.
 
-  Global Instance mapsto_abs_timless {Σ} (hG: gen_heapGS L V Σ) l q v:
-    AbsolutelyTimeless (mapsto (hG:=hG) l q v).
-  Proof. rewrite gen_heap.mapsto_unseal. apply _. Qed.
+  Global Instance pointsto_abs_timless {Σ} (hG: gen_heapGS L V Σ) l q v:
+    AbsolutelyTimeless (pointsto (hG:=hG) l q v).
+  Proof. rewrite gen_heap.pointsto_unseal. apply _. Qed.
 
   Global Instance gen_heap_interp_abs_timeless {Σ} (hG: gen_heapGS L V Σ) σ:
     AbsolutelyTimeless (gen_heap_interp (hG:=hG) σ).

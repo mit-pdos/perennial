@@ -265,16 +265,16 @@ Qed.
 
 Theorem wp_UInt64Put stk E s x vs :
   length vs >= u64_bytes →
-  {{{ is_slice_small s byteT 1%Qp vs }}}
+  {{{ own_slice_small s byteT 1%Qp vs }}}
     UInt64Put (slice_val s) #x @ stk; E
-  {{{ RET #(); is_slice_small s byteT 1%Qp (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
+  {{{ RET #(); own_slice_small s byteT 1%Qp (u64_le_bytes x ++ (drop u64_bytes vs)) }}}.
 Proof.
   iIntros (? Φ) "Hsl HΦ".
   wp_lam.
   wp_let.
   wp_lam.
   wp_pures.
-  rewrite /is_slice_small. iDestruct "Hsl" as "(Hptr&%)".
+  rewrite /own_slice_small. iDestruct "Hsl" as "(Hptr&%)".
   iDestruct (array_split 8 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
   wp_apply (wp_EncodeUInt64 with "[$Henc]").
   { iPureIntro.
@@ -299,16 +299,16 @@ Qed.
 
 Theorem wp_UInt32Put stk E s (x: u32) vs :
   length vs >= u32_bytes →
-  {{{ is_slice_small s byteT 1%Qp vs }}}
+  {{{ own_slice_small s byteT 1%Qp vs }}}
     UInt32Put (slice_val s) #x @ stk; E
-  {{{ RET #(); is_slice_small s byteT 1%Qp (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
+  {{{ RET #(); own_slice_small s byteT 1%Qp (u32_le_bytes x ++ (drop u32_bytes vs)) }}}.
 Proof.
   iIntros (? Φ) "Hsl HΦ".
   wp_lam.
   wp_let.
   wp_lam.
   wp_pures.
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   iDestruct "Hsl" as "(Hptr&%)".
   iDestruct (array_split 4 with "Hptr") as "[Henc Hrest]"; [ lia .. | ].
   wp_apply (wp_EncodeUInt32 with "[$Henc]").
@@ -650,18 +650,18 @@ Proof.
 Qed.
 
 Theorem wp_UInt64Get stk E s q (x: u64) vs :
-  {{{ is_slice_small s byteT q vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
+  {{{ own_slice_small s byteT q vs ∗ ⌜take 8 vs = u64_le_bytes x⌝ }}}
     UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; is_slice_small s byteT q (u64_le_bytes x ++ drop 8 vs) }}}.
+  {{{ RET #x; own_slice_small s byteT q (u64_le_bytes x ++ drop 8 vs) }}}.
 Proof.
   iIntros (Φ) "[Hs %] HΦ".
   assert (vs = u64_le_bytes x ++ drop 8 vs).
   { rewrite -{1}(take_drop 8 vs).
     congruence. }
-  rewrite [vs in is_slice_small _ _ _ vs](H0).
+  rewrite [vs in own_slice_small _ _ _ vs](H0).
   wp_call.
   wp_apply wp_slice_ptr.
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   iDestruct "Hs" as "(Hptr&%)".
   iDestruct (array_app with "Hptr") as "[Htake Hrest]"; try lia;
     rewrite u64_le_bytes_length.
@@ -679,9 +679,9 @@ Qed.
 
 Theorem wp_UInt64Get_unchanged stk E s q (x: u64) vs :
   take 8 vs = u64_le_bytes x →
-  {{{ is_slice_small s byteT q vs }}}
+  {{{ own_slice_small s byteT q vs }}}
     UInt64Get (slice_val s) @ stk; E
-  {{{ RET #x; is_slice_small s byteT q vs }}}.
+  {{{ RET #x; own_slice_small s byteT q vs }}}.
 Proof.
   iIntros (Htake8 Φ) "Hs HΦ".
   rewrite -(take_drop 8 vs).
@@ -730,12 +730,12 @@ Qed.
 
 Theorem wp_UInt32Get_unchanged stk E s q (x: u32) vs :
   take 4 vs = u32_le_bytes x →
-  {{{ is_slice_small s byteT q vs }}}
+  {{{ own_slice_small s byteT q vs }}}
     UInt32Get (slice_val s) @ stk; E
-  {{{ RET #x; is_slice_small s byteT q vs }}}.
+  {{{ RET #x; own_slice_small s byteT q vs }}}.
 Proof.
   iIntros (Htake Φ) "Hs HΦ".
-  rewrite /is_slice_small.
+  rewrite /own_slice_small.
   iDestruct "Hs" as "[Hptr %]".
   rewrite -(take_drop 4 vs).
   iDestruct (array_app with "Hptr") as "[Hptr1 Hptr2]".

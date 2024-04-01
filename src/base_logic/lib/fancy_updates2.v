@@ -203,7 +203,7 @@ Proof.
   rewrite (fupd2_mask_frame_r _ _ _ _ (Ea ∖ E1a) (Eb ∖ E1b)); try set_solver.
   rewrite fupd2_trans.
   replace (E1a ∪ Ea ∖ E1a) with Ea by (by apply union_difference_L).
-  by replace (E1b ∪ Eb ∖ E1b) with Eb by (by apply union_difference_L).
+  replace (E1b ∪ Eb ∖ E1b) with Eb by (by apply union_difference_L). auto.
 Qed.
 
 Global Instance into_wand_fupd2 Ea Eb p q R P Q :
@@ -329,13 +329,13 @@ Proof.
   by rewrite fupd2_frame_r left_id.
 Qed.
 
-Lemma step_fupd2_intro Eia Eib Eoa Eob P : Eia ⊆ Eoa → Eib ⊆ Eob → ▷ P -∗ ||={Eoa|Eob,Eia|Eib}=> ▷ ||={Eia|Eib,Eoa|Eob}=> P.
+Lemma step_fupd2_intro Eia Eib Eoa Eob P : Eia ⊆ Eoa → Eib ⊆ Eob → ▷ P ⊢ ||={Eoa|Eob,Eia|Eib}=> ▷ ||={Eia|Eib,Eoa|Eob}=> P.
 Proof.
   intros. rewrite -(step_fupd2_mask_mono Eia Eib _ _ Eia Eib) // -!fupd2_intro //.
 Qed.
 
 Lemma fupd2_elim E1 E1' E2 E2' E3 E3' P Q :
-  (Q -∗ (||={E2|E2',E3|E3'}=> P)) → (||={E1|E1',E2|E2'}=> Q) -∗ (||={E1|E1',E3|E3'}=> P).
+  (Q ⊢ (||={E2|E2',E3|E3'}=> P)) → (||={E1|E1',E2|E2'}=> Q) ⊢ (||={E1|E1',E3|E3'}=> P).
 Proof. intros ->. rewrite fupd2_trans //. Qed.
 
 Lemma fupd2_forall E1 E1' E2 E2' A (Φ : A → _) :

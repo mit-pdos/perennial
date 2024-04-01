@@ -59,7 +59,7 @@ Qed.
 Definition own_tuple_phys_vers tuple vers : iProp Σ :=
   ∃ versS,
     "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
-    "HversS" ∷ slice.is_slice versS (structTy Version) 1 (ver_to_val <$> vers).
+    "HversS" ∷ slice.own_slice versS (structTy Version) 1 (ver_to_val <$> vers).
 
 (*****************************************************************)
 (* func (tuple *Tuple) removeVersions(tid uint64)                *)
@@ -80,9 +80,9 @@ Proof.
   iNamed "HtuplePhys".
   wp_call.
 
-  iDestruct (is_slice_sz with "HversS") as "%HversLen".
+  iDestruct (own_slice_sz with "HversS") as "%HversLen".
   rewrite fmap_length in HversLen.
-  iDestruct (is_slice_small_acc with "HversS") as "[HversX HversS]".
+  iDestruct (own_slice_small_acc with "HversS") as "[HversX HversS]".
 
   (***********************************************************)
   (* var idx uint64                                          *)
@@ -106,7 +106,7 @@ Proof.
              "%Hbound" ∷ (⌜int.Z 0 ≤ int.Z idx < Z.of_nat (length vers)⌝) ∗
              "HidxR" ∷ idxR ↦[uint64T] #idx ∗
              "Hvers" ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
-             "HversX" ∷ is_slice_small versS (struct.t Version) 1 (ver_to_val <$> vers) ∗
+             "HversX" ∷ own_slice_small versS (struct.t Version) 1 (ver_to_val <$> vers) ∗
              "%HallLe" ∷ (⌜Forall (λ ver, int.Z tid ≤ int.Z ver.1.1) (drop (S (int.nat idx)) vers)⌝) ∗
              "%Hexit" ∷ if b
                         then ⌜True⌝
@@ -147,7 +147,7 @@ Proof.
       iModIntro.
       unfold P.
       iExists _.
-      iFrame "% ∗".
+      iFrame "∗%".
       iPureIntro.
       right.
       split; first word.
@@ -202,9 +202,9 @@ Proof.
 
   iDestruct ("HversS" with "HversX") as "HversS".
   iDestruct "HversS" as "[HversX HversC]".
-  iDestruct (slice.is_slice_small_take_drop _ _ _ idx with "HversX") as "[HversX _]"; first word.
-  iDestruct (slice.is_slice_cap_skip _ _ idx with "HversC") as "HversC"; first word.
-  iDestruct (slice.is_slice_split with "[$HversX $HversC]") as "HversS".
+  iDestruct (slice.own_slice_small_take_drop _ _ _ idx with "HversX") as "[HversX _]"; first word.
+  iDestruct (slice.own_slice_cap_skip _ _ idx with "HversC") as "HversC"; first word.
+  iDestruct (slice.own_slice_split with "[$HversX $HversC]") as "HversS".
   rewrite <- fmap_drop.
 
   iApply "HΦ".
@@ -351,7 +351,7 @@ Proof.
     iExists tid, vers', vchain.
     iSplitL "Howned Htidlast Hvers HversS".
     { eauto with iFrame. }
-    iFrame "% # ∗".
+    iFrame "∗%#".
     iSplit.
     { (* Prove [HtupleAbs]. *)
       iPureIntro.

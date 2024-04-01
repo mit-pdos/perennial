@@ -149,7 +149,7 @@ Section proof.
       wp_cmpxchg_suc.
       iModIntro.
       iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-      iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+      iDestruct "Hl" as "[Hl1 Hl2]".
       iIntros "(Hc1&Hc2)".
       iSplit; first done. iModIntro.
       iSplitL "Hl1".
@@ -226,7 +226,7 @@ Section proof.
     iInv Nlock as (b) "[>Hl _]".
 
     iDestruct (locked_loc with "Hlocked") as "Hl2".
-    iDestruct (heap_mapsto_agree with "[$Hl $Hl2]") as %->.
+    iDestruct (heap_pointsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
     iApply (wpc_wp NotStuck _ _ _ True).
@@ -240,7 +240,7 @@ Section proof.
     iModIntro.
     iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-    iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+    iDestruct "Hl" as "[Hl1 Hl2]".
     iNext. iExists false. iFrame.
   Qed.
 

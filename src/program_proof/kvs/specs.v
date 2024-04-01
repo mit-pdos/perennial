@@ -50,7 +50,7 @@ Qed.
 
 (* Links a list of kvpairs to a slice *)
 Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz: iProp Σ :=
-  ∃ slice_kvps, is_slice slice_val (struct.t KVPair) 1 (kvpair_val <$> slice_kvps)
+  ∃ slice_kvps, own_slice slice_val (struct.t KVPair) 1 (kvpair_val <$> slice_kvps)
                          ∗ [∗ list] _ ↦ slice_kvp;ls_kvp ∈ slice_kvps;ls_kvps,
   let '(kvpair.mk key bs) := ls_kvp in ∃ (blk: Block),
       ⌜slice_kvp.(kvpair.key) = key ∧ valid_key key sz⌝ ∗
@@ -59,7 +59,7 @@ Definition kvpairs_valid_slice (slice_val: Slice.t) (ls_kvps: list kvpair.t) sz:
 
 Definition kvpairs_valid_match (pairs: list kvpair.t) (kvsblks : gmap specs.addr {K & defs.bufDataT K}) γDisk sz : iProp Σ :=
   [∗ list] kvp ∈ pairs, let '(kvpair.mk key bs) := kvp in
-                        (∃ blk, is_block bs 1 blk ∗ mapsto_txn γDisk key (existT defs.KindBlock (defs.bufBlock blk))
+                        (∃ blk, is_block bs 1 blk ∗ pointsto_txn γDisk key (existT defs.KindBlock (defs.bufBlock blk))
         ∗ ⌜kvsblks !! key = Some (existT defs.KindBlock (defs.bufBlock blk))⌝
         ∗ ⌜valid_key key sz⌝)%I.
 
@@ -72,10 +72,10 @@ Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K
       ⌜(∀ n : nat, n < sz -> ∃ blk,
              kvsblks !! (nat_key_to_addr n) = Some (existT defs.KindBlock (defs.bufBlock blk))
       )⌝
-      ∗ [∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k b)%I.
+      ∗ [∗ map] k↦b ∈ kvsblks, pointsto_txn γDisk k b)%I.
 
 Definition crashed_kvs kvp_ls kvsblks γDisk sz : iProp Σ :=
-      ([∗ map] k↦b ∈ kvsblks, mapsto_txn γDisk k b)%I
+      ([∗ map] k↦b ∈ kvsblks, pointsto_txn γDisk k b)%I
       ∗ kvpairs_valid_match kvp_ls kvsblks γDisk sz.
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
@@ -132,7 +132,7 @@ Proof.
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
 
-      iDestruct (big_sepM_lookup_acc (λ k b, mapsto_txn γDisk k b) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
+      iDestruct (big_sepM_lookup_acc (λ k b, pointsto_txn γDisk k b) kvsblks key (existT defs.KindBlock (defs.bufBlock blk)) HkeyLookup with "HkvsMt") as "[HkeyMt HrestMt]".
       pose ({[key := existT defs.KindBlock (defs.bufBlock blk)]} : gmap (specs.addr) ({K & defs.bufDataT K})) as keyMp.
 
       iDestruct (Op_lift buftx _ γDisk keyMp _ with "[Hbtxn HkeyMt]") as "He".

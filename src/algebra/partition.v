@@ -22,9 +22,9 @@ Instance subG_partitionG L V {Σ} `{Countable L, Infinite L, Countable V, Infini
   subG (partitionΣ L V) Σ → partition_preG L V Σ.
 Proof. solve_inG. Qed.
 
-Local Notation "l ↦{ q } v" := (mapsto l q v)
+Local Notation "l ↦{ q } v" := (pointsto l q v)
   (at level 20, q at level 50, format "l  ↦{ q }  v") : bi_scope.
-Local Notation "l ↦ v" := (mapsto l 1 v) (at level 20) : bi_scope.
+Local Notation "l ↦ v" := (pointsto l 1 v) (at level 20) : bi_scope.
 
 Local Notation "l ↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  ↦{ q }  -") : bi_scope.
@@ -125,7 +125,7 @@ Proof.
   iDestruct (gen_heap_valid with "Hctx Hl1") as %Hin1.
   iDestruct (gen_heap_valid with "Hctx Hl2") as %Hin2.
   iAssert (⌜l1 ≠ l2⌝)%I with "[-]" as %Hneq.
-  { iIntros (?). subst. iDestruct (mapsto_valid_2 with "[$] [$]") as %Hval.
+  { iIntros (?). subst. iDestruct (pointsto_valid_2 with "[$] [$]") as %Hval.
     rewrite frac_valid in Hval * => Hlt. by apply Qp.not_plus_q_ge_1 in Hlt.
   }
   iPureIntro. split; auto. eapply Hdisj; eauto.

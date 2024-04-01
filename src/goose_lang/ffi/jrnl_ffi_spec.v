@@ -62,7 +62,7 @@ Definition ty_ := forall (val_ty:val_types), @ty val_ty.
 Definition sliceT_ (t: ty_) : ty_ := λ val_ty, prodT (arrayT (t _)) uint64T.
 Definition blockT_: ty_ := sliceT_ (λ val_ty, byteT).
 
-Inductive JrnlOp :=
+Inductive JrnlOp : Set :=
   | ReadBufOp (* jrnl, addr *)
   | ReadBitOp (* jrnl, addr *)
   | OverWriteOp (* jrnl, addr, data tuple *)

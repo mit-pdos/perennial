@@ -114,7 +114,7 @@ Proof.
   iDestruct (is_sliding_wf with "His_memLog") as %Hsliding_wf'.
   simpl.
   iSplitL; last by trivial.
-  iFrame "# ∗".
+  iFrame "HdiskEnd_circ Hstart_circ HownDiskEndMem_linv HownDiskEndMemTxn_linv HownInstalledPosMem_linv".
   iSplitR "Howntxns HownLoggerPos_linv HownLoggerTxn_linv HnextDiskEnd HownInstallerPosMem_linv HownInstallerTxnMem_linv HownInstalledTxnMem_linv".
   { iExists _; iFrame.
     iPureIntro.
@@ -137,12 +137,14 @@ Proof.
   iFrame "% HinstalledTxn_lb".
   iSplit.
   2: {
-    iNamed "HnextDiskEnd". iExists _. iFrame. iFrame "#". iFrame "%".
+    iNamed "HnextDiskEnd". iFrame "∗#%".
   }
   iSplit.
-  { iPureIntro. lia. }
+  { iPureIntro. cbn. lia. }
   iSplit.
   { iPureIntro. lia. }
+  iNamed "HnextDiskEnd".
+  iFrame "∗#".
   iSplit.
   2: {
     iPureIntro.
@@ -179,15 +181,7 @@ Proof.
   wp_storeField.
 
   iApply "HΦ".
-  iModIntro.
-  iExists _.
-  iFrame.
-  iExists _.
-  iFrame (Hlocked_wf Hwf) "∗".
-  iExists _, _.
-  iFrame "∗ #".
-  iExists _.
-  iFrame.
+  by iFrame "∗#".
 Qed.
 
 Lemma is_txn_mid σ (a b c : nat) pos :
@@ -349,12 +343,13 @@ Proof.
   {
     iDestruct (big_sepM_lookup with "Hstablero") as "#Hstable'"; eauto.
     iModIntro.
-    iFrame "Hstable' Htxns_ctx".
+    iSplitR; first done.
+    iFrame "Htxns_ctx".
     iSplitL "Hstablectx Hstablero".
-    { iExists _. iFrame. iFrame "%". }
+    { by iFrame. }
     iExists nextDiskEnd_txn_id.
     iSplitL "HownStableSet".
-    { iExists _. iFrame. iFrame "#". iFrame "%". }
+    { by iFrame "∗#". }
     rewrite subslice_zero_length.
     eapply is_txn_bound in HnextDiskEnd_txn.
     iPureIntro. intuition eauto; lia.
@@ -363,7 +358,7 @@ Proof.
   iCombine "HownStableSet Hstablectx" as "Hctx".
   iMod (map_alloc_ro with "Hctx") as "[Hctx #Hstable']"; eauto.
   iDestruct (big_sepM_insert with "[$Hstablero Hstable']") as "Hstablero"; eauto.
-  iFrame "Hstable'".
+  iSplitR; first done.
 
   iModIntro.
   iDestruct "Hctx" as "[HownStableSet Hstablectx]".
@@ -403,7 +398,7 @@ Proof.
   iFrame.
   iExists txn_id'.
   iSplit.
-  { iExists _. iFrame. iFrame "Hstable'". iFrame "Htxn_id'_pos".
+  { iFrame "Hstable'". iFrame "Htxn_id'_pos".
     iPureIntro. intros. rewrite lookup_insert_ne; last by lia.
     eapply HnextDiskEnd_max_stable. lia. }
   eapply is_txn_bound in Histxn' as Histxn'_bound.

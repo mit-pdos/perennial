@@ -53,7 +53,7 @@ Definition sN_inv := sN.@ "base".
 Section ghost_spec.
   Context `{cfgG Σ, crashGS Σ, invGS Σ}.
 
-  Definition tpool_mapsto (j: nat) (e: language.expr Λ) : iProp Σ :=
+  Definition tpool_pointsto (j: nat) (e: language.expr Λ) : iProp Σ :=
     own cfg_name (◯ ({[ j := Excl e]}, ε)).
 
   (* ownership of this does not mean there aren't other threads not in (fst ρ) *)
@@ -83,7 +83,7 @@ Section ghost_spec.
   Definition source_crash_ctx P : iProp Σ :=
     (∃ r ρ, source_crash_ctx' r ρ P)%I.
 
-  Global Instance tpool_mapsto_timeless j e : Timeless (tpool_mapsto j e).
+  Global Instance tpool_pointsto_timeless j e : Timeless (tpool_pointsto j e).
   Proof. apply _. Qed.
   Global Instance source_state_timeless σ g : Timeless (source_state σ g).
   Proof. apply _. Qed.
@@ -98,7 +98,7 @@ Section ghost_spec.
 
 End ghost_spec.
 
-Notation "j ⤇ e" := (tpool_mapsto j e) (at level 20) : bi_scope.
+Notation "j ⤇ e" := (tpool_pointsto j e) (at level 20) : bi_scope.
 
 Section ghost_step.
   Context `{invGS Σ, crashGS Σ, stagedG Σ}.
@@ -172,11 +172,11 @@ Section ghost_step.
     - rewrite lookup_insert tpool_to_res_lookup list_lookup_insert //=.
     - rewrite lookup_insert_ne //=.
       destruct (decide (i < length tp)) as [Hl|Hnl].
-      * efeed pose proof (lookup_lt_is_Some_2 tp) as His; first eassumption.
+      * opose proof (lookup_lt_is_Some_2 tp _ _) as His; first eassumption.
         destruct His as (e'&His).
         rewrite (proj2 (tpool_to_res_lookup tp i e')) //=.
         apply tpool_to_res_lookup. rewrite list_lookup_insert_ne //=.
-      * efeed pose proof (lookup_ge_None_2 tp i) as Hnone; first lia.
+      * opose proof (lookup_ge_None_2 tp i _) as Hnone; first lia.
         rewrite (proj2 (tpool_to_res_lookup_none tp i)) //=.
         apply tpool_to_res_lookup_none. rewrite list_lookup_insert_ne //=.
   Qed.
@@ -190,11 +190,11 @@ Section ghost_step.
       rewrite lookup_app_r //= Nat.sub_diag //=.
     - rewrite lookup_insert_ne //=.
       destruct (decide (i < length tp)) as [Hl|Hnl].
-      * efeed pose proof (lookup_lt_is_Some_2 tp) as His; first eassumption.
+      * opose proof (lookup_lt_is_Some_2 tp _ _) as His; first eassumption.
         destruct His as (e'&His).
         rewrite (proj2 (tpool_to_res_lookup tp i e')) //=.
         apply tpool_to_res_lookup. rewrite lookup_app_l //=.
-      * efeed pose proof (lookup_ge_None_2 tp i) as Hnone; first lia.
+      * opose proof (lookup_ge_None_2 tp i _) as Hnone; first lia.
         rewrite (proj2 (tpool_to_res_lookup_none tp i)) //=.
         apply tpool_to_res_lookup_none. rewrite lookup_ge_None_2 //= app_length //=; lia.
   Qed.
@@ -323,9 +323,9 @@ Section ghost_step.
   Set Default Proof Using "Hstate_inhabited Hgstate_inhabited".
 
   Lemma source_pool_singleton e:
-    source_pool_map (tpool_to_map [e]) -∗ 0 ⤇ e.
+    source_pool_map (tpool_to_map [e]) ⊢@{_} 0 ⤇ e.
   Proof.
-    rewrite /source_pool_map/tpool_to_map/tpool_to_map_aux/tpool_mapsto.
+    rewrite /source_pool_map/tpool_to_map/tpool_to_map_aux/tpool_pointsto.
     by rewrite fmap_insert fmap_empty insert_empty.
   Qed.
 
@@ -713,5 +713,5 @@ Section ghost_step.
 End ghost_step.
 End ghost.
 
-Notation "j ⤇ e" := (tpool_mapsto j e) (at level 20) : bi_scope.
+Notation "j ⤇ e" := (tpool_pointsto j e) (at level 20) : bi_scope.
 

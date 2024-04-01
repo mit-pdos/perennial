@@ -3,13 +3,13 @@ From Perennial.program_proof.mvcc Require Export
      proph_proof
      index_proof
      tid_proof
-     (* txnmgr *)
-     txnmgr_repr txnmgr_mk txnmgr_new
-     txnmgr_activate txnmgr_deactivate
-     txnmgr_get_min_active_tid txnmgr_activate_gc
+     (* db *)
+     db_repr db_mk db_new_txn db_activate_gc db_get_safe_ts
+     (* txnsite *)
+     txnsite_activate txnsite_deactivate txnsite_get_safe_ts
      (* txn *)
-     txn_repr txn_begin txn_commit txn_acquire txn_do_txn
-     txn_get txn_put txn_delete txn_do_txn
+     txn_repr txn_begin txn_commit txn_acquire
+     txn_read txn_write txn_delete txn_run
      (* tuple *)
      tuple_prelude tuple_repr
      tuple_append_version tuple_kill_version tuple_read_version

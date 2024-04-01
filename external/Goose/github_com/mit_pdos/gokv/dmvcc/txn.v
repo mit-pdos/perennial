@@ -4,7 +4,7 @@ From Goose Require github_com.mit_pdos.gokv.dmvcc.index.
 From Goose Require github_com.mit_pdos.gokv.dmvcc.prophname.
 From Goose Require github_com.mit_pdos.gokv.dmvcc.txncoordinator.
 From Goose Require github_com.mit_pdos.gokv.dmvcc.txnmgr.
-From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.go_mvcc.trusted_proph.
+From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.vmvcc.trusted_proph.
 
 Section code.
 Context `{ext_ty: ext_types}.
@@ -24,7 +24,7 @@ Definition Begin: val :=
     struct.new Clerk [
       "p" ::= prophname.Get #();
       "tid" ::= txnmgr.Server__New "txnMgrHost";
-      "writes" ::= NewMap stringT #();
+      "writes" ::= NewMap uint64T stringT #();
       "indexCk" ::= index.MakeClerk "indexHost";
       "txnMgrHost" ::= "txnMgrHost";
       "txnCoordCk" ::= txncoordinator.MakeClerk "txnCoordHost"
@@ -60,7 +60,7 @@ Definition Clerk__DoTxn: val :=
   rec: "Clerk__DoTxn" "txn" "body" :=
     Clerk__begin "txn";;
     let: "wantToCommit" := "body" "txn" in
-    (if: ~ "wantToCommit"
+    (if: (~ "wantToCommit")
     then
       Clerk__abort "txn";;
       #false

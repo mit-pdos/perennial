@@ -71,8 +71,7 @@ Theorem is_inode_durable_read addr σ addrs :
 Proof.
   iNamed 1.
   iExists _; iFrame "∗ %".
-  iIntros "!> Hhdr Hdata".
-  iExists _; iFrame "∗ %".
+  iIntros "!> Haddr Hdata". iExists _; iFrame "∗%".
 Qed.
 
 Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
@@ -80,7 +79,7 @@ Definition inode_linv (l:loc) (addr:u64) σ : iProp Σ :=
     "%Hwf" ∷ ⌜inode.wf σ⌝ ∗
     "Hdurable" ∷ is_inode_durable addr σ addrs ∗
     "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
-    "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
+    "Haddrs" ∷ own_slice addr_s uint64T 1 addrs
 .
 Local Hint Extern 1 (environments.envs_entails _ (inode_linv _ _ _)) => unfold inode_linv : core.
 
@@ -133,7 +132,7 @@ Theorem inode_durable_to_cinv addr σ addrs :
   is_inode_durable addr σ addrs -∗ inode_cinv_precrash addr σ.
 Proof.
   iNamed 1.
-  iExists _; iFrame. iExists _, _. iFrame. eauto.
+  iExists _; iFrame. eauto.
 Qed.
 
 Theorem inode_linv_to_cinv l addr σ :
@@ -141,8 +140,7 @@ Theorem inode_linv_to_cinv l addr σ :
 Proof.
   iNamed 1.
   iNamed "Hdurable".
-  iExists _; iFrame.
-  iExists _, _. iFrame. eauto.
+  iExists _; iFrame. eauto.
 Qed.
 
 Theorem inode_linv_to_cinv' l addr σ :
@@ -230,7 +228,7 @@ Proof.
   iIntros (s) "(Hhdr&Hs)".
   wpc_frame.
   wp_pures.
-  iDestruct (slice.is_slice_to_small with "Hs") as "Hs".
+  iDestruct (slice.own_slice_to_small with "Hs") as "Hs".
   wp_apply (wp_new_dec with "Hs"); first eauto.
   iIntros (dec) "Hdec".
   wp_apply (wp_Dec__GetInt with "Hdec"); iIntros "Hdec".
@@ -255,8 +253,7 @@ Proof.
   iExists _, _; iFrame.
   iSplitR.
   { iFrame "#". }
-  iExists _, _; iFrame "% ∗".
-  iExists _; iFrame "% ∗".
+  iFrame "∗%".
 Qed.
 
 Theorem is_inode_durable_addrs addr σ addrs :
@@ -278,7 +275,7 @@ Definition used_blocks_pre l σ addrs: iProp Σ :=
   ∃ addr_s,
     "%Haddr_set" ∷ ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
     "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
-    "Haddrs" ∷ is_slice addr_s uint64T 1 addrs.
+    "Haddrs" ∷ own_slice addr_s uint64T 1 addrs.
 
 (* this lets the caller frame out the durable state for the crash invariant and
 the memory state for UsedBlocks *)
@@ -295,38 +292,36 @@ Proof.
   iDestruct (is_inode_durable_addrs with "Hdurable") as "%Haddr_set".
   iExists addrs.
   iSplitL "addrs Haddrs".
-  { iExists _; iFrame "% ∗". }
+  { iExists _; iFrame "∗%". }
   iFrame.
   iNamed 1.
   iIntros "Hdurable".
-  iExists _, _; iFrame.
-  iExists _, _; iFrame "∗ %".
+  iFrame "∗ %".
 Qed.
 
 Theorem wp_Inode__UsedBlocks {l σ addrs} :
   {{{ used_blocks_pre l σ addrs }}}
     Inode__UsedBlocks #l
   {{{ (s:Slice.t), RET (slice_val s);
-      is_slice s uint64T 1 addrs ∗
+      own_slice s uint64T 1 addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-      (is_slice s uint64T 1 addrs -∗ used_blocks_pre l σ addrs) }}}.
+      (own_slice s uint64T 1 addrs -∗ used_blocks_pre l σ addrs) }}}.
 Proof.
   iIntros (Φ) "Hinode HΦ"; iNamed "Hinode".
   wp_call.
   wp_loadField.
   iApply "HΦ".
   iFrame "∗ %".
-  iIntros "Haddrs".
-  iExists _; iFrame.
+  iIntros "$". iFrame.
 Qed.
 
 Theorem wpc_Inode__UsedBlocks {l σ addr} :
   {{{ pre_inode l addr σ  }}}
     Inode__UsedBlocks #l @ ⊤
   {{{ (s:Slice.t) (addrs: list u64), RET (slice_val s);
-      is_slice s uint64T 1 addrs ∗
+      own_slice s uint64T 1 addrs ∗
       ⌜list_to_set addrs = σ.(inode.addrs)⌝ ∗
-      (is_slice s uint64T 1 addrs -∗ pre_inode l addr σ) ∧ inode_cinv_precrash addr σ }}}
+      (own_slice s uint64T 1 addrs -∗ pre_inode l addr σ) ∧ inode_cinv_precrash addr σ }}}
   {{{ inode_cinv_precrash addr σ }}}.
 Proof.
   iIntros (Φ Φc) "Hinode HΦ"; iNamed "Hinode".
@@ -345,9 +340,8 @@ Proof.
   iSplitR; first auto.
   iSplit.
   - iIntros "Haddrs".
-    iExists _, _; iFrame.
-    iExists _, _; iFrame "∗ %".
-  - iNamed "Hdurable". iExists _, _, _; eauto with iFrame.
+    iFrame "∗ %".
+  - iNamed "Hdurable". iFrame "∗%".
 Qed.
 
 Ltac crash_lock_open H :=
@@ -393,18 +387,17 @@ Proof.
 
   iEval (rewrite ->(left_id True bi_wand)%I) in "Hfupd".
   iCache with "Hfupd Hlockinv HP".
-  { iLeft in "Hfupd". iFrame. iExists _; iFrame. iApply inode_linv_to_cinv; eauto. }
+  { iLeft in "Hfupd". iFrame. iApply inode_linv_to_cinv; eauto. }
   wpc_call.
   wpc_bind (_ ≥ _)%E.
   iNamed "Hlockinv".
   iCache with "Hfupd HP Hdurable".
   { iLeft in "Hfupd". iFrame. iExists _. iFrame.
-    iNamed "Hdurable".
-    iExists _, _, _. eauto 10 with iFrame. }
+    iNamed "Hdurable". eauto 10 with iFrame. }
   iDestruct (is_inode_durable_size with "Hdurable") as %Hlen1.
   wpc_frame.
   wp_loadField.
-  iDestruct (is_slice_sz with "Haddrs") as %Hlen2.
+  iDestruct (own_slice_sz with "Haddrs") as %Hlen2.
   autorewrite with len in Hlen2.
   wp_apply wp_slice_len.
   wp_pures. iModIntro.
@@ -441,7 +434,7 @@ Proof.
     iApply "HQ"; by iFrame.
   - destruct (list_lookup_lt _ addrs (int.nat off)) as [addr' Hlookup].
     { word. }
-    iDestruct (is_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
+    iDestruct (own_slice_split with "Haddrs") as "[Haddrs_small Haddrs]".
     wpc_pures.
     wpc_frame_seq.
     wp_loadField.
@@ -455,7 +448,7 @@ Proof.
     iDestruct (is_inode_durable_read with "Hdurable") as "H"; iNamed "H".
     iDestruct (big_sepL2_lookup_1_some with "Hdata") as "%Hblock_lookup"; eauto.
     destruct Hblock_lookup as [b0 Hlookup2].
-    iDestruct (is_slice_split with "[$Haddrs_small $Haddrs]") as "Haddrs".
+    iDestruct (own_slice_split with "[$Haddrs_small $Haddrs]") as "Haddrs".
     iDestruct (big_sepL2_lookup_acc with "Hdata") as "[Hb Hdata]"; eauto.
     iRight in "Hfupd".
     rewrite difference_empty_L.
@@ -487,7 +480,7 @@ Proof.
     iApply "HQ".
     iFrame.
     rewrite Hlookup2.
-    iDestruct (slice.is_slice_to_small with "Hb") as "Hb".
+    iDestruct (slice.own_slice_to_small with "Hb") as "Hb".
     by iFrame.
 Qed.
 
@@ -550,12 +543,12 @@ Proof.
   iDestruct 1 as (σ) "(Hlockinv&HP)".
   iApply ncfupd_wpc.
   iSplit.
-  { iLeft in "Hfupd". iModIntro. iFrame. iExists _; iFrame.
+  { iLeft in "Hfupd". iModIntro. iFrame.
     iApply inode_linv_to_cinv. eauto. }
   iEval (rewrite /named) in "HP".
   iNamed "Hlockinv".
   iNamed "Hlockinv".
-  iDestruct (is_slice_sz with "Haddrs") as %Haddrs_sz.
+  iDestruct (own_slice_sz with "Haddrs") as %Haddrs_sz.
   iDestruct (is_inode_durable_size with "Hdurable") as %Hblocks_length.
 
   iRight in "Hfupd".
@@ -622,14 +615,14 @@ Qed.
 Theorem wp_Inode__mkHdr {stk} l addr_s addrs :
   length addrs ≤ InodeMaxBlocks ->
   {{{ "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
-      "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
+      "Haddrs" ∷ own_slice addr_s uint64T 1 addrs
   }}}
     Inode__mkHdr #l @ stk
   {{{ s b, RET (slice_val s);
       is_block s 1 b ∗
       ⌜block_encodes b ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
-      "Haddrs" ∷ is_slice addr_s uint64T 1 addrs
+      "Haddrs" ∷ own_slice addr_s uint64T 1 addrs
   }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ"; iNamed "Hpre".
@@ -637,17 +630,17 @@ Proof.
   wp_apply wp_new_enc; iIntros (enc) "Henc".
   wp_pures.
   wp_loadField.
-  iDestruct (is_slice_sz with "Haddrs") as %Hlen.
+  iDestruct (own_slice_sz with "Haddrs") as %Hlen.
   wp_apply wp_slice_len.
   wp_apply (wp_Enc__PutInt with "Henc").
   { word. }
   iIntros "Henc".
   wp_loadField.
-  iDestruct (is_slice_split with "Haddrs") as "[Haddrs Hcap]".
+  iDestruct (own_slice_split with "Haddrs") as "[Haddrs Hcap]".
   wp_apply (wp_Enc__PutInts with "[$Henc $Haddrs]").
   { word. }
   iIntros "[Henc Haddrs]".
-  iDestruct (is_slice_split with "[$Haddrs $Hcap]") as "Haddrs".
+  iDestruct (own_slice_split with "[$Haddrs $Hcap]") as "Haddrs".
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (??) "(%Henc&Hs)".
   wp_pures.
@@ -819,10 +812,9 @@ Proof.
     do 2 iNamed "Hlockinv".
     iCache with "Hfupd HP Hdurable".
     { iLeft in "Hfupd". iFrame.
-      iExists _; iFrame.
       iDestruct (inode_durable_to_cinv with "[$]") as "?".
       eauto. }
-    iDestruct (is_slice_sz with "Haddrs") as %Hlen1.
+    iDestruct (own_slice_sz with "Haddrs") as %Hlen1.
     autorewrite with len in Hlen1.
     iDestruct (is_inode_durable_size with "Hdurable") as %Hlen2.
     wpc_call.
@@ -836,7 +828,7 @@ Proof.
       iSplitR "HP Hdurable addrs Haddrs"; last first.
       { iExists _; iFrame.
         do 1 iModIntro.
-        iFrame. iExists _, _; iFrame "∗ %". }
+        iFrame "∗%". }
       iModIntro.
       iIntros "His_locked".
       iSplit; first iFromCache.
@@ -891,7 +883,7 @@ Proof.
       wpc_apply (wpc_Write_ncfupd with "[$Hb]").
       iSplit.
       { iLeft in "Hfupd". iSplitR "Hda".
-        * iFrame. iExists _; iFrame.
+        * iFrame.
           iDestruct (inode_durable_to_cinv with "[$]") as "?".
           iFrame.
         * iApply block_cinv_free_pred. iExists _, _; iFrame. }
@@ -911,26 +903,18 @@ Proof.
         assert (bd'' = hdr) by intuition eauto.
         (* The we will crash without the write hitting disk *)
         iModIntro. iSplit.
-        - iLeft in "Hfupd". iFrame. iSplitR "Hda".
-          * iExists _. iFrame. iExists _, _, _. iFrame. iFrame "%". subst. eauto.
-          * iLeft. iExists _, _. iFrame.
+        - iLeft in "Hfupd". iFrame; by subst.
         - iIntros "Hb".
           subst Φ'; cbv beta.
           wpc_pures.
           {
-            iFrame.
-            iLeft in "Hfupd". iFrame. iSplitR "Hda".
-            * iExists _. iFrame. iExists _, _, _. iFrame. iFrame "%". subst. eauto.
-            * iLeft. iExists _, _. iFrame.
+            iLeft in "Hfupd". iFrame; by subst.
           }
           (* But now we hit a barrier and we will derive a contradiction in the post-condition *)
           wpc_apply (wpc_Barrier1 with "[$Hhdr]").
           iSplit.
           {
-            iFrame.
-            iLeft in "Hfupd". iFrame. iIntros "Hhdr". iSplitR "Hda".
-            * iExists _. iFrame. iExists _, _, _. iFrame. iFrame "%". subst. eauto.
-            * iLeft. iExists _, _. iFrame.
+            iLeft in "Hfupd". iFrame. iIntros "$". iFrame "∗%". by subst.
           }
           iNext. iIntros "[%Hfalso ?]". exfalso. congruence.
       }
@@ -971,14 +955,14 @@ Proof.
       | |- envs_entails _ ((?P ∗ _) ∧ _) =>
         iCache (P)%I with "HQ HP Hdurable"
       end.
-      { iLeft in "HQ". iFrame. iExists _; iFrame.
+      { iLeft in "HQ". iFrame.
         iDestruct (inode_durable_to_cinv with "[$]") as "?".
         iFrame.
       }
       iCache (block_cinv Ψ γalloc a) with "Hused".
       { iApply block_cinv_from_used; iFrame. }
       iSplit.
-      { iLeft in "HQ". iFrame. iExists _. iFrame.
+      { iLeft in "HQ". iFrame.
         iDestruct (inode_durable_to_cinv with "[$]") as "?".
         iFrame.
       }
@@ -987,31 +971,30 @@ Proof.
       (* done applying wpc_Write_fupd *)
 
       wpc_pures.
-      { iLeft in "HQ". iFrame. iExists _. iFrame.
+      { iLeft in "HQ". iFrame.
         iDestruct (inode_durable_to_cinv with "[$]") as "?".
         iFrame.
       }
       wpc_apply (wpc_Barrier0); first done.
       iSplit.
-      { iIntros. iLeft in "HQ". iFrame. iExists _. iFrame.
+      { iIntros. iLeft in "HQ". iFrame.
         iDestruct (inode_durable_to_cinv with "[$]") as "?".
         iFrame.
       }
       iNext. iIntros "_".
       wpc_pures.
-      { iIntros. iLeft in "HQ". iFrame. iExists _. iFrame.
+      { iIntros. iLeft in "HQ". iFrame.
         iDestruct (inode_durable_to_cinv with "[$]") as "?".
         iFrame.
       }
       iModIntro.
       iSplitR "Hused"; last (iFromCache).
       iSplit.
-      { iLeft in "HQ". iFrame. iExists _. iFrame.
+      { iLeft in "HQ". iFrame.
         iDestruct (inode_durable_to_cinv with "[$]") as "?".
         iFrame. }
       iSplitR "HP Haddrs addrs Hdurable"; last first.
-      { iExists _; iFrame. iModIntro.
-        iExists _, _; iFrame "∗ %". }
+      { iExists _; iFrame. iModIntro. done. }
       iModIntro.
       iIntros "His_locked".
       iSplit; first iFromCache.

@@ -9,7 +9,6 @@ Lemma default_fmap `{Countable K} `{EqDecision K} {A B:Type} (m : option (gmap K
   f <$> (default ∅ m).
 Proof.
   destruct m; simpl; eauto.
-  rewrite fmap_empty; eauto.
 Qed.
 
 Lemma filter_union_ignored {K A} `{EqDecision K} `{Countable K} (m m' : gmap K A) (P : K->Prop)
@@ -20,9 +19,9 @@ Proof.
   intros.
   apply map_eq; intros i.
   destruct (decide (P i)).
-  2: { rewrite !map_filter_lookup_key_notin; eauto. }
-  rewrite map_filter_lookup_key_in; eauto.
-  rewrite map_filter_lookup_key_in; eauto.
+  2: { rewrite !map_lookup_filter_key_notin; eauto. }
+  rewrite map_lookup_filter_key_in; eauto.
+  rewrite map_lookup_filter_key_in; eauto.
   rewrite lookup_union_r; eauto.
   destruct (m' !! i) eqn:He; eauto.
   exfalso. eapply H1; eauto.
@@ -36,9 +35,9 @@ Proof.
   intros.
   apply map_eq; intros i.
   destruct (decide (P i)).
-  2: { rewrite ?map_filter_lookup_key_notin; eauto. }
-  rewrite map_filter_lookup_key_in; eauto.
-  rewrite map_filter_lookup_key_in; eauto.
+  2: { rewrite ?map_lookup_filter_key_notin; eauto. }
+  rewrite map_lookup_filter_key_in; eauto.
+  rewrite map_lookup_filter_key_in; eauto.
   rewrite /gmap_addr_by_block.
   destruct (gmap_curry m !! i) eqn:He.
   2: {

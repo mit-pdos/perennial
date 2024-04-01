@@ -10,7 +10,7 @@ txn_id is referenced by pos, log < pos contains updates through and including up
 [txn_id: (pos, upds)]
 *)
 
-Class txns_ctxG Σ := { txns_ctx_alist :> alistG Σ (u64 * list update.t) }.
+Class txns_ctxG Σ : Set := { txns_ctx_alist :> alistG Σ (u64 * list update.t) }.
 Definition txns_ctxΣ : gFunctors := #[alistΣ (u64 * list update.t)].
 
 #[global]
@@ -104,7 +104,7 @@ Qed.
 
 Theorem txns_ctx_complete γ txns txn_id txn :
   txns !! txn_id = Some txn ->
-  txns_ctx γ txns -∗ txn_val γ txn_id txn.
+  txns_ctx γ txns ⊢@{_} txn_val γ txn_id txn.
 Proof.
   iIntros (Hlookup) "Hctx".
   iDestruct (alist_lookup_el with "Hctx") as "Hel"; eauto.
@@ -112,7 +112,7 @@ Qed.
 
 Theorem txns_ctx_complete' γ txns txn_id txn :
   txns !! txn_id = Some txn ->
-  ▷ txns_ctx γ txns -∗ ▷ txn_val γ txn_id txn ∗ ▷ txns_ctx γ txns.
+  ▷ txns_ctx γ txns ⊢@{_} ▷ txn_val γ txn_id txn ∗ ▷ txns_ctx γ txns.
 Proof.
   iIntros (Hlookup) "Hctx".
   iDestruct (txns_ctx_complete with "Hctx") as "#Hel"; eauto.
@@ -120,7 +120,7 @@ Qed.
 
 Theorem txns_ctx_txn_pos γ txns txn_id pos :
   is_txn txns txn_id pos ->
-  txns_ctx γ txns -∗ txn_pos γ txn_id pos.
+  txns_ctx γ txns ⊢@{_} txn_pos γ txn_id pos.
 Proof.
   intros [txn [Hlookup ->]]%fmap_Some_1.
   rewrite txns_ctx_complete; eauto.
@@ -175,8 +175,7 @@ Lemma txns_ctx_make_factory γ txns crash_txn γ' :
 Proof.
   rewrite {2 3}/txns_ctx /list_ctx /old_txn_factory.
   iIntros "Htxn [Hctx #Hels]".
-  iFrame "#∗".
-  iExists _; iFrame "#∗".
+  iFrame "∗#".
 Qed.
 
 Lemma old_txn_get γ γ' crash_txn txn_id txn :

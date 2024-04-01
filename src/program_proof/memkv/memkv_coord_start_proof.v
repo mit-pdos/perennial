@@ -14,14 +14,14 @@ Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 Lemma wp_encodeShardMap s (shardMap_sl : Slice.t) (shardMapping : list u64) :
   length shardMapping = int.nat uNSHARD →
   {{{ "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
-      "HshardMap_sl" ∷ typed_slice.is_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
+      "HshardMap_sl" ∷ typed_slice.own_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
   }}}
     encodeShardMap #s
   {{{ (sl: Slice.t) (data: list u8), RET (slice_val sl);
       "%Henc" ∷ ⌜ has_encoding_shardMapping data shardMapping ⌝ ∗
-      "Hdata" ∷  typed_slice.is_slice sl byteT 1 data ∗
+      "Hdata" ∷  typed_slice.own_slice sl byteT 1 data ∗
       "Hs_ptr" ∷ s ↦[slice.T HostName] (slice_val shardMap_sl) ∗
-      "HshardMap_sl" ∷ typed_slice.is_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
+      "HshardMap_sl" ∷ typed_slice.own_slice_small (V:=u64) shardMap_sl HostName 1 shardMapping
   }}}.
 Proof.
   wp_pures. iIntros (Hshards Φ) "H HΦ".
@@ -70,7 +70,7 @@ Proof.
   iIntros "Hmap".
   wp_pures.
   wp_loadField.
-  wp_apply (wp_MapLen (V:=u64) with "[$Hmap]").
+  wp_apply (wp_MapLen with "[$Hmap]").
   remember (size (typed_map.map_insert hostShards x 0)) as num_shards eqn:Heq_num_shards.
   iIntros "(%Hmap_size&Hmap)".
   wp_pures.
@@ -83,7 +83,7 @@ Proof.
   iIntros "Hnf_left".
   wp_pures.
   wp_loadField.
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "(HshardMap_sl&HshardMap_clo)".
+  iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "(HshardMap_sl&HshardMap_clo)".
   wp_bind (forSlice _ _ _).
   rewrite /forSlice.
   wp_pures.
@@ -100,8 +100,8 @@ Proof.
   iEval (rewrite -{-1}Heqk).
   clear Heqk. remember k' as k eqn:Heqk. clear Heqk.
 
-  remember ((word.sub (word.sub num_shards 65536)
-                                          (word.divu (word.mul num_shards 65536) num_shards)))
+  remember ((word.sub num_shards (word.sub 65536
+                                          (word.divu (word.mul num_shards 65536) num_shards))))
            as nf_left eqn:Hnf_left.
   clear Hnf_left.
 
@@ -117,7 +117,7 @@ Proof.
       iDestruct ("HshardMap_clo" with "[$]") as "$".
       iFrame. iSplit; eauto. }
     wp_pures. iApply "HΦ". eauto. }
-  iDestruct (typed_slice.is_slice_small_sz (V:=u64) with "[$]") as %Hsz.
+  iDestruct (typed_slice.own_slice_small_sz (V:=u64) with "[$]") as %Hsz.
   edestruct (list_lookup_lt _ (shardMapping) (int.nat k)) as (v&Heq).
   { word_cleanup. }
   wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[HshardMap_sl]").
@@ -152,7 +152,7 @@ Proof.
       iIntros (ck_ptr) "(Hclerk&Hclerk_clo)".
       wp_bind (KVShardClerk__MoveShard #ck_ptr #_ #x).
       wp_apply (wp_KVShardClerk__MoveShard with "[$Hclerk]").
-      { iFrame "#His_shard". iPureIntro.
+      { iFrame "His_shard". iPureIntro.
         eapply lookup_lt_Some in Heq. lia. }
       iIntros "Hclerk".
       wp_pures.
@@ -217,7 +217,7 @@ Proof.
       iIntros (ck_ptr) "(Hclerk&Hclerk_clo)".
       wp_bind (KVShardClerk__MoveShard #ck_ptr #_ #x).
       wp_apply (wp_KVShardClerk__MoveShard with "[$Hclerk]").
-      { iFrame "#His_shard". iPureIntro.
+      { iFrame "His_shard". iPureIntro.
         eapply lookup_lt_Some in Heq. lia. }
       iIntros "Hclerk".
       wp_pures.
@@ -269,7 +269,7 @@ Proof.
 Qed.
 
 Lemma wp_KVCoordServer__Start (s:loc) (host : u64) γ :
-handlers_dom γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
+is_urpc_dom γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
 is_coord_server host γ -∗
 is_KVCoordServer s γ -∗
   {{{
@@ -283,7 +283,7 @@ Proof.
   iIntros "#Hdom #His_coord #His_memkv !#" (Φ) "_ HΦ".
   wp_lam.
   wp_pures.
-  wp_apply map.wp_NewMap.
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers_ptr) "Hmap".
   wp_pures.
 
@@ -310,26 +310,24 @@ Proof.
     iApply (big_sepM_insert_2 with "").
     { (* GetShardMapping RPC handler_is *)
       iExists _.
-      iFrame "#HgetSpec".
+      iFrame "HgetSpec".
 
       clear Φ.
-      rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & _ & Hpre)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
       simpl.
-      iDestruct "Hpre" as (_) "[_ Hpost]".
       iNamed "His_memkv".
       wp_loadField.
       wp_apply (acquire_spec with "[$HmuInv]").
       iIntros "[Hlocked Hown]".
       iNamed "Hown".
       wp_pures.
-      wp_apply (wp_struct_fieldRef_mapsto with "[$shardMap]").
+      wp_apply (wp_struct_fieldRef_pointsto with "[$shardMap]").
       { eauto. }
       iIntros (fl) "(H1&H2)".
-      iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_close]".
+      iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_close]".
       wp_apply (wp_encodeShardMap with "[$]").
       { word_cleanup. rewrite wrap_small; last (rewrite /uNSHARD; lia).
         rewrite -Hlen_shardMapping. lia. }
@@ -339,29 +337,27 @@ Proof.
       iIntros "Hrep".
       iNamed "H".
       iDestruct ("HshardMap_close" with "HshardMap_sl") as "HshardMap_sl".
-      iDestruct (is_slice_to_small with "Hdata") as "Hdata".
+      iDestruct (own_slice_to_small with "Hdata") as "Hdata".
       wp_pures.
       wp_loadField.
-      wp_apply (release_spec with "[-HΦ Hpost Hrep Hdata]").
+      wp_apply (release_spec with "[-HΦ Hrep Hdata]").
       { iFrame "Hlocked HmuInv".
         iNext. iExists _, _, _, _, _. iFrame. iFrame "#". iFrame "%".
         iDestruct "H1" as %Hequiv. iApply Hequiv. iFrame. }
-      wp_pures. iApply "HΦ". iFrame. iApply "Hpost". iModIntro. iExists _. iFrame "% #".
+      wp_pures. iApply "HΦ". iFrame. iModIntro. iExists _. iFrame "% #".
     }
     iApply (big_sepM_insert_2 with "").
     { (* AddServerRPC *)
       iExists _.
-      iFrame "#HaddSpec".
+      iFrame "HaddSpec".
 
       clear Φ.
-      rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      rewrite /is_urpc_handler.
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & Hpre)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_sl".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hpre)".
       simpl.
-      iDestruct "Hpre" as (x) "[Hpre Hpost]".
       iDestruct "Hpre" as "(%Henc&Hshard)".
       iDestruct "Hshard" as (γsh Heq) "#His_shard".
       wp_apply (wp_DecodeUint64' with "[$Hreq_sl]"); first by eauto.
@@ -372,7 +368,9 @@ Proof.
         { rewrite /named. iExactEq "His_memkv". eauto. }
         iFrame "His_shard". eauto.
       }
-      wp_pures. iApply "HΦ". iFrame. iApply "Hpost". eauto.
+      wp_pures. iModIntro. iApply "HΦ". iFrame.
+      iDestruct (own_slice_zero byteT 1%Qp) as "Hnil".
+      rewrite own_slice_to_small. iFrame "Hnil".
     }
     rewrite big_sepM_empty. eauto.
   }

@@ -43,7 +43,7 @@ while A is the type that represents the larger predicates at each address *)
 Implicit Types (v: V) (x: A).
 
 Definition is_pred_slice s q l: iProp Σ :=
-  ∃ (vs: list V), is_slice_small s t q (to_val <$> vs) ∗
+  ∃ (vs: list V), own_slice_small s t q (to_val <$> vs) ∗
                   [∗ list] v;x ∈ vs;l, Ψ v x.
 
 Theorem wp_SliceGet {stk E} s q l (i: u64) (x: A) :
@@ -62,14 +62,13 @@ Proof.
     apply fmap_Some_2; eauto. }
   iIntros "[Hs %Hty]".
   iApply "HΦ"; iFrame.
-  iIntros "HΦ"; iSpecialize ("Hxs" with "HΦ").
-  iExists _; iFrame.
+  iIntros "HΨ". iFrame. iApply ("Hxs" with "HΨ").
 Qed.
 
 Theorem wp_SliceAppend {stk E} s l v x :
-  {{{ is_pred_slice s 1 l ∗ is_slice_cap s t ∗ Ψ v x }}}
+  {{{ is_pred_slice s 1 l ∗ own_slice_cap s t ∗ Ψ v x }}}
     SliceAppend t (slice_val s) (to_val v) @ stk; E
-  {{{ s', RET slice_val s'; is_pred_slice s' 1 (l ++ [x]) ∗ is_slice_cap s' t }}}.
+  {{{ s', RET slice_val s'; is_pred_slice s' 1 (l ++ [x]) ∗ own_slice_cap s' t }}}.
 Proof using IntoValForType0.
   iIntros (Φ) "(Hs&Hcap&Hx) HΦ".
   iDestruct "Hs" as (vs) "[Hs Hxs]".
@@ -114,7 +113,6 @@ Proof.
     iApply "HΦ"; iFrame. }
   iIntros "((HI&Hxs)&Hs)".
   iApply "HΦ"; iFrame.
-  iExists _; iFrame.
 Qed.
 
 End goose_lang.

@@ -47,7 +47,7 @@ Lemma replicate_zero_to_block0 `{ext_ty: ext_types} :
   Block_to_vals block0.
 Proof. reflexivity. Qed.
 
-Class diskGS Σ := DiskGS
+Class diskGS Σ : Set := DiskGS
   { diskG_gen_heapG :> gen_heap.gen_heapGS Z CrashBlock Σ; }.
 
 Class disk_preG Σ :=
@@ -165,7 +165,7 @@ Section disk.
        ffi_local_ctx Σ _ (d: @ffi_state disk_model) := gen_heap.gen_heap_interp d;
        ffi_global_ctx _ _ _ := True%I;
        ffi_local_start Σ _ (d: @ffi_state disk_model) :=
-                      ([∗ map] l↦v ∈ d, (gen_heap.mapsto (L:=Z) (V:=CrashBlock) l (DfracOwn 1) v))%I;
+                      ([∗ map] l↦v ∈ d, (gen_heap.pointsto (L:=Z) (V:=CrashBlock) l (DfracOwn 1) v))%I;
        ffi_global_start _ _ _ := True%I;
        ffi_restart := fun _ _ (d: @ffi_state disk_model) => True%I;
        (* TODO: need to actually say that the gname changes and σ2 should be a crashed version of σ1 *)
@@ -180,23 +180,23 @@ Section disk.
   Instance goose_diskGS : diskGS Σ := goose_ffiLocalGS.
 
   Notation "l d↦{ dq }[ a ] v" :=
-    (gen_heap.mapsto (L:=Z) (V:=CrashBlock) l dq {| crash_val := a; curr_val := v|}%V)
+    (gen_heap.pointsto (L:=Z) (V:=CrashBlock) l dq {| crash_val := a; curr_val := v|}%V)
                              (at level 20, dq at level 50, format "l  d↦{ dq }[ a ]  v") : bi_scope.
-  Notation "l d↦{# q }[ a ] v" := (gen_heap.mapsto (L:=Z) (V:=CrashBlock) l (DfracOwn q) {| crash_val := a; curr_val := v|}%V)
+  Notation "l d↦{# q }[ a ] v" := (gen_heap.pointsto (L:=Z) (V:=CrashBlock) l (DfracOwn q) {| crash_val := a; curr_val := v|}%V)
                              (at level 20, q at level 50, format "l  d↦{# q }[ a ]  v") : bi_scope.
-  Local Hint Extern 0 (head_reducible _ _) => eexists _, _, _, _; simpl : core.
-  Local Hint Extern 0 (head_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
+  Local Hint Extern 0 (base_reducible _ _) => eexists _, _, _, _; simpl : core.
+  Local Hint Extern 0 (base_reducible_no_obs _ _) => eexists _, _, _; simpl : core.
 
-  (** The tactic [inv_head_step] performs inversion on hypotheses of the shape
-[head_step]. The tactic will discharge head-reductions starting from values, and
+  (** The tactic [inv_base_step] performs inversion on hypotheses of the shape
+[base_step]. The tactic will discharge head-reductions starting from values, and
 simplifies hypothesis related to conversions from and to values, and finite map
 operations. This tactic is slightly ad-hoc and tuned for proving our lifting
 lemmas. *)
-  Ltac inv_head_step :=
+  Ltac inv_base_step :=
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : head_step ?e _ _ _ _ _ _ _ |- _ =>
+        | H : base_step ?e _ _ _ _ _ _ _ |- _ =>
           try (is_var e; fail 1); (* inversion yields many goals if [e] is a variable
      and can thus better be avoided. *)
           inversion H; subst; clear H
@@ -221,7 +221,7 @@ lemmas. *)
   Qed.
 
   Hint Resolve read_fresh : core.
-  Hint Extern 1 (head_step (ExternalOp _ _) _ _ _ _ _) => econstructor; simpl : core.
+  Hint Extern 1 (base_step (ExternalOp _ _) _ _ _ _ _) => econstructor; simpl : core.
    *)
 
   Lemma alloc_block_loc_not_null:
@@ -237,16 +237,16 @@ lemmas. *)
     apply H; eauto.
   Qed.
 
-  Definition mapsto_block (l: loc) (q: Qp) (b: Block) :=
+  Definition pointsto_block (l: loc) (q: Qp) (b: Block) :=
     ([∗ map] l ↦ v ∈ heap_array l (Block_to_vals b), l ↦{q} v)%I.
 
   Lemma wp_ReadOp s E (a: u64) aset q b :
     {{{ ▷ int.Z a d↦{q}[aset] b }}}
       ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
     {{{ l, RET LitV (LitLoc l); int.Z a d↦{q}[aset] b ∗
-                                  mapsto_block l 1 b }}}.
+                                  pointsto_block l 1 b }}}.
   Proof.
-    iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     cbv [ffi_local_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
@@ -254,15 +254,15 @@ lemmas. *)
     { iPureIntro.
       eexists _, _, _, _, _; simpl.
       constructor 1.
-      rewrite /head_step /=.
+      rewrite /base_step /=.
       monad_simpl.
       simpl.
       monad_simpl.
       econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
       monad_simpl. }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
-    apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    inv_head_step.
+    apply base_step_atomic_inv in Hstep; [ | by inversion 1 ].
+    inv_base_step.
     monad_inv.
     iMod (global_state_interp_le with "Hg") as "$".
     { apply step_count_next_incr. }
@@ -279,11 +279,11 @@ lemmas. *)
     iFrame.
     iApply "HΦ".
     iFrame.
-    { rewrite /mapsto_block.
-      iApply seq_mapsto_to_heap_array.
+    { rewrite /pointsto_block.
+      iApply seq_pointsto_to_heap_array.
       iApply (big_sepL_mono with "Hl").
       iIntros (k x Heq) "(Hli&Hmt)".
-      iApply (na_mapsto_to_heap with "Hli").
+      iApply (na_pointsto_to_heap with "Hli").
       destruct H1 as (H'&?). eapply H'.
     }
   Qed.
@@ -305,12 +305,12 @@ lemmas. *)
     rewrite H; eauto.
   Qed.
 
-  Theorem mapsto_block_extract i l q b :
+  Theorem pointsto_block_extract i l q b :
     (0 <= i)%Z ->
     (i < 4096)%Z ->
-    ⊢ mapsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝.
+    ⊢ pointsto_block l q b -∗ ∃ v, (l +ₗ i) ↦{q} v ∗ ⌜Block_to_vals b !! Z.to_nat i = Some v⌝.
   Proof.
-    unfold mapsto_block; intros Hlow Hhi.
+    unfold pointsto_block; intros Hlow Hhi.
     iIntros "Hm".
     pose proof (block_byte_index b i ltac:(auto) ltac:(auto)) as Hi.
     assert (heap_array l (Block_to_vals b) !! (l +ₗ i) =
@@ -324,7 +324,7 @@ lemmas. *)
   Qed.
 
   Theorem heap_valid_block l b q σ :
-    na_heap.na_heap_ctx tls σ -∗ mapsto_block l q b -∗
+    na_heap.na_heap_ctx tls σ -∗ pointsto_block l q b -∗
     ⌜ (forall (i:Z), (0 <= i)%Z -> (i < 4096)%Z ->
                 match σ !! (l +ₗ i) with
              | Some (Reading _, v) => Block_to_vals b !! Z.to_nat i = Some v
@@ -333,8 +333,8 @@ lemmas. *)
   Proof.
     iIntros "Hσ Hm".
     iIntros (i Hbound1 Hbound2).
-    iDestruct (mapsto_block_extract i with "Hm") as (v) "[Hi %]"; eauto.
-    iDestruct (heap_mapsto_na_acc with "Hi") as "[Hi Hi_rest]".
+    iDestruct (pointsto_block_extract i with "Hm") as (v) "[Hi %]"; eauto.
+    iDestruct (heap_pointsto_na_acc with "Hi") as "[Hi Hi_rest]".
     iDestruct (@na_heap.na_heap_read with "Hσ Hi") as %(lk&?&Hlookup&Hlock).
     destruct lk; inversion Hlock; subst. rewrite Hlookup //.
   Qed.
@@ -351,7 +351,7 @@ lemmas. *)
       rewrite <- (Nat2Z.id i) in H1, H2.
       rewrite H in H1; try lia; congruence. }
     apply vec_to_list_inj2.
-    apply fmap_inj in H0; auto.
+    apply list_fmap_eq_inj in H0; auto.
     hnf; intros.
     inversion H1; subst; auto.
   Qed.
@@ -366,7 +366,7 @@ lemmas. *)
   Proof.
     iIntros (Φ) ">H Hϕ".
     iLöb as "IH".
-    iApply wp_lift_head_step_nc; first by auto.
+    iApply wp_lift_base_step_nc; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg".
     iApply (ncfupd_mask_intro); first set_solver+. iIntros "Hclo".
     cbv [ffi_local_ctx disk_interp].
@@ -383,8 +383,8 @@ lemmas. *)
         rewrite decide_False //. repeat (monad_simpl; cbn).
     }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
-    apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    inv_head_step.
+    apply base_step_atomic_inv in Hstep; [ | by inversion 1 ].
+    inv_base_step.
     monad_inv.
     iMod "Hclo". iIntros.
     destruct (decide (all_synced _)) as [Ha|Hna].
@@ -410,14 +410,14 @@ lemmas. *)
   Qed.
 
   Lemma wp_WriteOp s E (a: u64) bc b0 b q l :
-    {{{ ▷ (int.Z a d↦{#1}[bc] b0 ∗ mapsto_block l q b) }}}
+    {{{ ▷ (int.Z a d↦{#1}[bc] b0 ∗ pointsto_block l q b) }}}
       ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
     {{{ RET LitV LitUnit;
         ∃ b', ⌜ b' = bc ∨ b' = b ⌝ ∗
-               int.Z a d↦{#1}[b'] b ∗ mapsto_block l q b}}}.
+               int.Z a d↦{#1}[b'] b ∗ pointsto_block l q b}}}.
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as "(Ha&Hl)".
-    iApply wp_lift_atomic_head_step_no_fork; first by auto.
+    iApply wp_lift_atomic_base_step_no_fork; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
     cbv [ffi_local_ctx disk_interp].
     iDestruct (@gen_heap_valid with "Hd Ha") as %?.
@@ -433,8 +433,8 @@ lemmas. *)
       exact true.
     }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
-    apply head_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    inv_head_step.
+    apply base_step_atomic_inv in Hstep; [ | by inversion 1 ].
+    inv_base_step.
     monad_inv.
     iMod (global_state_interp_le with "Hg") as "$".
     { apply step_count_next_incr. }
@@ -530,7 +530,7 @@ lemmas. *)
     disk_array 0 (DfracOwn 1) (replicate sz (block0 : Block)).
   Proof.
     induction sz; rewrite /init_disk-/init_disk/disk_array.
-    - rewrite big_sepM_empty big_sepL_nil //=.
+    - rewrite big_sepM_empty big_sepL_nil //=. auto.
     - rewrite replicate_S_end.
       rewrite big_sepL_app.
       rewrite replicate_length big_sepL_cons big_sepL_nil.
@@ -549,18 +549,18 @@ End disk.
 Global Opaque Write Read Size Barrier.
 
 
-Notation "l d↦{ q }[ a ] v" := (mapsto (L:=Z) (V:=CrashBlock) l q%Qp {| crash_val := a; curr_val := v|}%V)
+Notation "l d↦{ q }[ a ] v" := (pointsto (L:=Z) (V:=CrashBlock) l q%Qp {| crash_val := a; curr_val := v|}%V)
                             (at level 20, q at level 50, format "l  d↦{ q }[ a ]  v") : bi_scope.
-Notation "l d↦[ a ] v" := (mapsto (L:=Z) (V:=CrashBlock) l (DfracOwn 1) {| crash_val := a; curr_val := v|}%V)
+Notation "l d↦[ a ] v" := (pointsto (L:=Z) (V:=CrashBlock) l (DfracOwn 1) {| crash_val := a; curr_val := v|}%V)
                        (at level 20, format "l  d↦[ a ]  v") : bi_scope.
 Notation "l d↦∗ vs" := (disk_array l (DfracOwn 1) vs%V)
                        (at level 20, format "l  d↦∗  vs") : bi_scope.
 
 (*
 Notation "l d↦{ dq }[ a ] v" :=
-  (mapsto (L:=Z) (V:=CrashBlock) l dq {| crash_val := a; curr_val := v|}%V)
+  (pointsto (L:=Z) (V:=CrashBlock) l dq {| crash_val := a; curr_val := v|}%V)
                            (at level 20, dq at level 50, format "l  d↦{ dq }[ a ]  v") : bi_scope.
-Notation "l d↦{# q }[ a ] v" := (mapsto (L:=Z) (V:=CrashBlock) l (DfracOwn q)
+Notation "l d↦{# q }[ a ] v" := (pointsto (L:=Z) (V:=CrashBlock) l (DfracOwn q)
                                                  {| crash_val := a; curr_val := v|}%V)
                            (at level 20, q at level 50, format "l  d↦{# q }[ a ]  v") : bi_scope.
 Notation "l d↦∗ vs" := (disk_array l (DfracOwn 1) vs%V)
@@ -598,8 +598,8 @@ Section crash.
   Existing Instances async_disk_proph.disk_semantics async_disk_proph.disk_interp.
   Existing Instance goose_diskGS.
 
-  Lemma disk_mapsto_post_crash `{!heapGS Σ} l a v:
-    l d↦[a] v -∗ post_crash (λ _, l d↦[a] a).
+  Lemma disk_pointsto_post_crash `{!heapGS Σ} l a v:
+    l d↦[a] v ⊢@{_} post_crash (λ _, l d↦[a] a).
   Proof.
     iIntros "H". iIntros (???) "Hrel".
     rewrite /ffi_crash_rel. simpl.
@@ -612,11 +612,11 @@ Section crash.
     inversion Heq2. subst. iFrame.
   Qed.
 
-  Global Instance disk_mapsto_into_crash `{!heapGS Σ} l a v:
+  Global Instance disk_pointsto_into_crash `{!heapGS Σ} l a v:
     IntoCrash (l d↦[a] v)%I (λ hG, l d↦[a] a)%I.
-  Proof. apply disk_mapsto_post_crash. Qed.
+  Proof. apply disk_pointsto_post_crash. Qed.
 
   Global Instance disk_array_into_crash `{!heapGS Σ} l vs:
     IntoCrash (l d↦∗ vs)%I (λ _, l d↦∗ vs)%I.
-  Proof. apply big_sepL_into_crash. intros. apply disk_mapsto_post_crash. Qed.
+  Proof. apply big_sepL_into_crash. intros. apply disk_pointsto_post_crash. Qed.
 End crash.

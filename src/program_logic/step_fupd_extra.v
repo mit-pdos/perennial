@@ -43,14 +43,14 @@ Qed.
 
 Lemma step_fupdN_le {E1 E2 : coPset} (n1 n2 : nat) (P: PROP):
   E2 ⊆ E1 →
-  n1 ≤ n2 → (|={E1}[E2]▷=>^n1 P) -∗ |={E1}[E2]▷=>^n2 P.
+  n1 ≤ n2 → (|={E1}[E2]▷=>^n1 P) ⊢ |={E1}[E2]▷=>^n2 P.
 Proof.
   intros ?. induction 1 => //=.
   iIntros. iApply step_fupd_intro; auto. iNext. by iApply IHle.
 Qed.
 
 Lemma step_fupdN_fupd_swap {E : coPset} (P: PROP) (n: nat):
-  (|={E}▷=>^n |={E}=> P) -∗ |={E}=> |={E}▷=>^n P.
+  (|={E}▷=>^n |={E}=> P) ⊢ |={E}=> |={E}▷=>^n P.
 Proof.
   induction n => //=.
   iIntros "H". iMod "H". iModIntro. iModIntro. iNext. iMod "H".
@@ -59,7 +59,7 @@ Qed.
 
 Lemma step_fupdN_later E1 E2 k (P: PROP):
   E2 ⊆ E1 →
-  ▷^k P -∗ |={E1}[E2]▷=>^k P.
+  ▷^k P ⊢ |={E1}[E2]▷=>^k P.
 Proof using HAff.
   iIntros (Hle).
   iInduction k as [| k] "IH".
@@ -70,7 +70,7 @@ Proof using HAff.
 Qed.
 
 Lemma step_fupdN_inner_later' E1 E2 k (P: PROP):
-  (▷^k |={E1, E2}=> P)%I -∗ |={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> P.
+  (▷^k |={E1, E2}=> P)%I ⊢ |={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> P.
 Proof using HAff.
   iInduction k as [| k] "IH".
   - rewrite //=. iIntros "HP".
@@ -92,7 +92,7 @@ Proof using HAff.
 Qed.
 
 Lemma step_fupdN_inner_fupd E1 E2 k (P: PROP):
-  (|={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> |={E2}=> P) -∗
+  (|={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> |={E2}=> P) ⊢
   |={E1,∅}=> |={∅}▷=>^k |={∅,E2}=> P.
 Proof.
   iIntros "H". iMod "H". iApply (step_fupdN_wand with "H").
@@ -291,7 +291,7 @@ Proof.
 Qed.
 
 Lemma step_fupd2N_wand n P Q :
-  (||▷=>^n P) -∗ (P -∗ Q) -∗ (||▷=>^n Q).
+  (||▷=>^n P) ⊢ (P -∗ Q) -∗ (||▷=>^n Q).
 Proof.
   apply wand_intro_l. induction n as [|n IH]=> /=.
   { by rewrite wand_elim_l. }
@@ -349,7 +349,7 @@ Proof.
 Qed.
 
 Lemma step_fupd2N_le (n1 n2 : nat) P :
-  n1 ≤ n2 → (||▷=>^n1 P) -∗ ||▷=>^n2 P.
+  n1 ≤ n2 → (||▷=>^n1 P) ⊢ ||▷=>^n2 P.
 Proof.
   induction 1 => //=.
   iIntros. iApply step_fupd2_intro; auto. iNext. by iApply IHle.
@@ -373,7 +373,7 @@ Proof.
 Qed.
 
 Lemma step_fupdN_step_fupd2N k P :
-  (|={∅}▷=>^k P) -∗ ||▷=>^k P.
+  (|={∅}▷=>^k P) ⊢ ||▷=>^k P.
 Proof.
   induction k => //=.
   iIntros "H". iMod "H". iModIntro. iNext. iMod "H". iModIntro. by iApply IHk.

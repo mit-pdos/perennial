@@ -60,7 +60,7 @@ Definition prefToByte: val :=
 
 Definition byteToPref: val :=
   rec: "byteToPref" "b" :=
-    ("b" = #(U8 1)).
+    "b" = #(U8 1).
 
 Definition ParticipantClerk__GetPreference: val :=
   rec: "ParticipantClerk__GetPreference" "ck" :=
@@ -78,10 +78,10 @@ Definition CoordinatorServer__makeDecision: val :=
   rec: "CoordinatorServer__makeDecision" "s" :=
     lock.acquire (struct.loadF CoordinatorServer "m" "s");;
     ForSlice byteT <> "pref" (struct.loadF CoordinatorServer "preferences" "s")
-      ((if: ("pref" = Abort)
+      ((if: "pref" = Abort
       then struct.storeF CoordinatorServer "decision" "s" Abort
       else #()));;
-    (if: (struct.loadF CoordinatorServer "decision" "s" = Unknown)
+    (if: (struct.loadF CoordinatorServer "decision" "s") = Unknown
     then struct.storeF CoordinatorServer "decision" "s" Commit
     else #());;
     lock.release (struct.loadF CoordinatorServer "m" "s");;
@@ -111,9 +111,9 @@ Definition MakeCoordinator: val :=
     let: "clerks" := ref_to (slice.T ptrT) (NewSlice ptrT #0) in
     ForSlice uint64T <> "a" "participants"
       (let: "client" := urpc.MakeClient "a" in
-      "clerks" <-[slice.T ptrT] SliceAppend ptrT (![slice.T ptrT] "clerks") (struct.new ParticipantClerk [
+      "clerks" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "clerks") (struct.new ParticipantClerk [
         "client" ::= "client"
-      ]));;
+      ])));;
     struct.new CoordinatorServer [
       "m" ::= "m";
       "decision" ::= "decision";
@@ -141,14 +141,14 @@ Definition GetDecisionId : expr := #1.
 Definition CoordinatorMain: val :=
   rec: "CoordinatorMain" "me" "participants" :=
     let: "coordinator" := MakeCoordinator "participants" in
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" GetDecisionId ((λ: "_req" "reply",
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" GetDecisionId (λ: "_req" "reply",
       let: "decision" := CoordinatorServer__GetDecision "coordinator" in
       let: "replyData" := NewSlice byteT #1 in
       SliceSet byteT "replyData" #0 "decision";;
       "reply" <-[slice.T byteT] "replyData";;
       #()
-      ));;
+      );;
     let: "server" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "server" "me";;
     Fork (CoordinatorServer__backgroundLoop "coordinator");;
@@ -157,14 +157,14 @@ Definition CoordinatorMain: val :=
 Definition ParticipantMain: val :=
   rec: "ParticipantMain" "me" "pref" :=
     let: "participant" := MakeParticipant "pref" in
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" GetPreferenceId ((λ: "_req" "reply",
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" GetPreferenceId (λ: "_req" "reply",
       let: "pref" := ParticipantServer__GetPreference "participant" in
       let: "replyData" := NewSlice byteT #1 in
       SliceSet byteT "replyData" #0 (prefToByte "pref");;
       "reply" <-[slice.T byteT] "replyData";;
       #()
-      ));;
+      );;
     let: "server" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "server" "me";;
     #().

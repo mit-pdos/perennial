@@ -12,14 +12,14 @@ Lemma wpc_fork `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s E1 e
   ▷ WPC e @ s; ⊤ {{ _, True }} {{ True }} -∗ (Φc ∧ ▷ Φ (LitV LitUnit)) -∗
                       WPC Fork e @ s; E1 {{ Φ }} {{ Φc }}.
 Proof.
-  iIntros "He HΦ". iApply wpc_lift_head_step; [done|].
+  iIntros "He HΦ". iApply wpc_lift_base_step; [done|].
   iSplit; last first.
   {  iDestruct "HΦ" as "(HΦc&_)". eauto. }
   iIntros (σ1 g1 ns mj D κ κs n) "Hσ Hg".
   iMod (fupd_mask_subseteq ∅) as "Hclose"; first by set_solver+.
   iModIntro. iNext. iSplit.
   { iPureIntro; econstructor; do 4 eexists. constructor. constructor. eauto. }
-   iIntros (v2 σ2 g2 efs Hstep). apply head_step_atomic_inv in Hstep; [ | by inversion 1 ]. rewrite /head_step /= in Hstep.
+   iIntros (v2 σ2 g2 efs Hstep). apply base_step_atomic_inv in Hstep; [ | by inversion 1 ]. rewrite /base_step /= in Hstep.
   inversion Hstep as [??? Heq]. inversion Heq; subst.
   iMod "Hclose". iFrame.
   iMod (global_state_interp_le with "Hg") as "$".

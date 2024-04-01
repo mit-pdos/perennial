@@ -95,10 +95,10 @@ Global Instance spec_crash_ctx_persistent P : Persistent (spec_crash_ctx P).
 Proof. apply _. Qed.
 
 (** Override the notations so that scopes and coercions work out *)
-Notation "l s↦{ q } v" := (heap_mapsto (hG := refinement_na_heapG) l q v%V)
+Notation "l s↦{ q } v" := (heap_pointsto (hG := refinement_na_heapG) l q v%V)
   (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (heap_mapsto (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
+  (heap_pointsto (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
 Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
@@ -144,8 +144,8 @@ Proof.
   iDestruct "Hinterp" as "(>Hσ&?&?&>Htr_auth&?)".
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_simpl; simpl).
   }
   { solve_ndisj. }
@@ -171,8 +171,8 @@ Proof.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_simpl; simpl).
   }
   { solve_ndisj. }
@@ -182,20 +182,20 @@ Proof.
   iFrame. eauto.
 Qed.
 
-Lemma head_irreducible_not_atomically e σ g :
+Lemma base_irreducible_not_atomically e σ g :
   (∀ el e'', e ≠ Atomically el e'') →
-  (∀ κ e' σ' g' efs, head_step e σ g κ e' σ' g' efs → False) →
-  head_irreducible e σ g.
+  (∀ κ e' σ' g' efs, base_step e σ g κ e' σ' g' efs → False) →
+  base_irreducible e σ g.
 Proof.
   intros ? Hno_step.
-  intros ????? Hstep%head_step_atomic_inv; [ | done ].
+  intros ????? Hstep%base_step_atomic_inv; [ | done ].
   eauto.
 Qed.
 
-Ltac head_irreducible :=
-  apply head_irreducible_not_atomically;
+Ltac base_irreducible :=
+  apply base_irreducible_not_atomically;
   [ by inversion 1
-  | rewrite /head_step /=; intros ????? Hstep;
+  | rewrite /base_step /=; intros ????? Hstep;
     repeat match goal with
            | _ => progress (monad_inv; simpl in * )
            | H: context[unwrap ?mx], Hnone: ?mx = None |- _ =>
@@ -218,8 +218,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -231,7 +231,7 @@ Qed.
 Lemma ghost_load_write_stuck j K `{LanguageCtx _ K} E l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (WSt) l q v -∗
+  na_heap_pointsto_st (WSt) l q v -∗
   j ⤇ K (Load (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
@@ -241,8 +241,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -264,8 +264,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -277,17 +277,17 @@ Qed.
 Lemma ghost_load_rd j K `{LanguageCtx _ K} E n l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (RSt n) l q v -∗
+  na_heap_pointsto_st (RSt n) l q v -∗
   j ⤇ K (Load (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
-  na_heap_mapsto_st (RSt n) l q v ∗ j ⤇ K v.
+  na_heap_pointsto_st (RSt n) l q v ∗ j ⤇ K v.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   iDestruct (@na_heap_read' with "Hσ Hl") as %([]&?&?&Hlock&Hle); try inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_simpl; simpl).
   }
   { eauto. }
@@ -304,8 +304,8 @@ Lemma ghost_load j K `{LanguageCtx _ K} E l q v:
   l s↦{q} v ∗ j ⤇ K v.
 Proof.
   iIntros (?) "Hspec Hl0 Hj".
-  iDestruct (heap_mapsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
-  rewrite na_heap_mapsto_eq.
+  iDestruct (heap_pointsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
+  rewrite na_heap_pointsto_eq.
   iMod (ghost_load_rd with "Hspec [$] [$]") as "(?&$)"; eauto.
   iModIntro. iApply "Hclo_l". iFrame.
 Qed.
@@ -315,17 +315,17 @@ Lemma ghost_cmpxchg_fail_rd j K `{LanguageCtx _ K} E l q n v' v1 v2:
   v' ≠ v1 → vals_compare_safe v' v1 →
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (RSt n) l q v' -∗
+  na_heap_pointsto_st (RSt n) l q v' -∗
   j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=>
-  na_heap_mapsto_st (RSt n) l q v' ∗ j ⤇ K (PairV v' (LitV $ LitBool false)).
+  na_heap_pointsto_st (RSt n) l q v' ∗ j ⤇ K (PairV v' (LitV $ LitBool false)).
 Proof.
   iIntros (???) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
   iDestruct (@na_heap_read' with "Hσ Hl") as %([]&?&?&Hlock&Hle); try inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_simpl; simpl).
   }
   { eauto. }
@@ -344,8 +344,8 @@ Lemma ghost_cmpxchg_fail j K `{LanguageCtx _ K} E l q v' v1 v2:
   l s↦{q} v' ∗ j ⤇ K (PairV v' (LitV $ LitBool false)).
 Proof.
   iIntros (???) "Hspec Hl0 Hj".
-  iDestruct (heap_mapsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
-  rewrite na_heap_mapsto_eq.
+  iDestruct (heap_pointsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
+  rewrite na_heap_pointsto_eq.
   iMod (ghost_cmpxchg_fail_rd with "Hspec [$] [$]") as "(?&$)"; eauto.
   iModIntro. iApply "Hclo_l". iFrame.
 Qed.
@@ -371,13 +371,13 @@ Proof.
   iIntros (???) "(#Hctx&#Hstate) Hl0 Hj".
   iInv "Hstate" as (??) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
-  iDestruct (heap_mapsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
+  iDestruct (heap_pointsto_na_acc with "Hl0") as "(Hl&Hclo_l)".
   iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
   destruct lk; inversion Hlock; subst.
   iMod (na_heap_write _ _ _ (Reading 0) with "Hσ Hl") as "(Hσ&Hl)"; first done.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_simpl; simpl).
   }
   { eauto. }
@@ -405,8 +405,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e' ∨ of_val v1 = e' ∨ of_val v2 = e').
     { move: Heq. destruct Ki => //=; naive_solver congruence. }
@@ -428,8 +428,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e' ∨ of_val v1 = e' ∨ of_val v2 = e').
     { move: Heq. destruct Ki => //=; naive_solver congruence. }
@@ -443,7 +443,7 @@ Lemma ghost_cmpxchg_suc_read_stuck j K `{LanguageCtx _ K} E l v v1 v2 n q:
   (0 < n)%nat →
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (RSt n) l q v -∗
+  na_heap_pointsto_st (RSt n) l q v -∗
   j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=> False.
 Proof.
   iIntros (???) "(#Hctx&#Hstate) Hlread Hj".
@@ -453,8 +453,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
     destruct (decide (vals_compare_safe v1 v1)).
     ** destruct x; first by lia. monad_inv; eauto.
     ** monad_inv; eauto.
@@ -469,7 +469,7 @@ Qed.
 Lemma ghost_cmpxchg_write_stuck j K `{LanguageCtx _ K} E l v v1 v2 q:
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (WSt) l q v -∗
+  na_heap_pointsto_st (WSt) l q v -∗
   j ⤇ K (CmpXchg (Val $ LitV $ LitLoc l) (Val v1) (Val v2)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
@@ -479,8 +479,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e' ∨ of_val v1 = e' ∨ of_val v2 = e').
     { move: Heq. destruct Ki => //=; naive_solver congruence. }
@@ -492,8 +492,8 @@ Qed.
 Lemma ghost_finish_store j K `{LanguageCtx _ K} E l (v' v: val) :
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st WSt l 1 v' -∗
-  (∀ v', na_heap_mapsto (hG := refinement_na_heapG) l 1 v' -∗ l s↦ v') -∗
+  na_heap_pointsto_st WSt l 1 v' -∗
+  (∀ v', na_heap_pointsto (hG := refinement_na_heapG) l 1 v' -∗ l s↦ v') -∗
   j ⤇ K (FinishStore (Val $ LitV $ LitLoc l) v) -∗ |NC={E}=>
   l s↦ v ∗ j ⤇ K #().
 Proof.
@@ -503,8 +503,8 @@ Proof.
   iMod (na_heap_write_finish_vs _ _ _ _ (Reading 0) with "Hl Hσ") as (lkw (?&Hlock)) "(Hσ&Hl)"; first done.
   destruct lkw; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_inv; simpl in *; monad_simpl).
     econstructor.
     - rewrite /is_Writing/ifThenElse. destruct (decide _).
@@ -527,17 +527,17 @@ Lemma ghost_prepare_write j K `{LanguageCtx _ K} E l v :
   spec_ctx -∗
   l s↦ v -∗
   j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
-  na_heap_mapsto_st WSt l 1 v ∗ (∀ v', na_heap_mapsto l 1 v' -∗ l s↦ v') ∗ j ⤇ K #().
+  na_heap_pointsto_st WSt l 1 v ∗ (∀ v', na_heap_pointsto l 1 v' -∗ l s↦ v') ∗ j ⤇ K #().
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
   iDestruct "Hinterp" as "(>Hσ&Hrest)".
-  iDestruct (heap_mapsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".
   iMod (na_heap_write_prepare _ _ _ _ Writing with "Hσ Hl") as (lk1 (Hlookup&Hlock)) "(Hσ&?)"; first done.
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_simpl; simpl).
   }
   { eauto. }
@@ -554,7 +554,7 @@ Lemma ghost_prepare_write_read_stuck j K `{LanguageCtx _ K} E l v n q:
   (0 < n)%nat →
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (RSt n) l q v -∗
+  na_heap_pointsto_st (RSt n) l q v -∗
   j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (??) "(#Hctx&#Hstate) Hl Hj".
@@ -564,8 +564,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
     destruct x; first by lia. simpl in *; monad_inv; auto.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
@@ -589,8 +589,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -602,7 +602,7 @@ Qed.
 Lemma ghost_prepare_write_write_stuck j K `{LanguageCtx _ K} E l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (WSt) l q v -∗
+  na_heap_pointsto_st (WSt) l q v -∗
   j ⤇ K (PrepareWrite (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
@@ -612,8 +612,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -635,8 +635,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -648,9 +648,9 @@ Qed.
 Lemma ghost_finish_read j K `{LanguageCtx _ K} E l n q (v: val) :
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (RSt (S n)) l q v -∗
+  na_heap_pointsto_st (RSt (S n)) l q v -∗
   j ⤇ K (FinishRead (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
-  na_heap_mapsto_st (RSt n) l q v ∗ j ⤇ K #().
+  na_heap_pointsto_st (RSt n) l q v ∗ j ⤇ K #().
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
@@ -662,8 +662,8 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_inv; simpl in *; monad_simpl).
   }
   { eauto. }
@@ -679,9 +679,9 @@ Qed.
 Lemma ghost_start_read j K `{LanguageCtx _ K} E l n q (v: val) :
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (RSt n) l q v -∗
+  na_heap_pointsto_st (RSt n) l q v -∗
   j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) -∗ |NC={E}=>
-  na_heap_mapsto_st (RSt (S n)) l q v ∗ j ⤇ K v.
+  na_heap_pointsto_st (RSt (S n)) l q v ∗ j ⤇ K v.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
   iInv "Hstate" as (σ g) "(>H&Hinterp)" "Hclo".
@@ -693,8 +693,8 @@ Proof.
   }
   destruct lk1; inversion Hlock; subst.
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { eapply head_prim_step_trans.
-    rewrite /= /head_step /=.
+  { eapply base_prim_step_trans.
+    rewrite /= /base_step /=.
     repeat (monad_simpl; simpl).
   }
   { eauto. }
@@ -721,8 +721,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -734,7 +734,7 @@ Qed.
 Lemma ghost_start_read_write_stuck j K `{LanguageCtx _ K} E l q (v: val):
   nclose sN ⊆ E →
   spec_ctx -∗
-  na_heap_mapsto_st (WSt) l q v -∗
+  na_heap_pointsto_st (WSt) l q v -∗
   j ⤇ K (StartRead (Val $ LitV $ LitLoc l)) -∗ |NC={E}=> False.
 Proof.
   iIntros (?) "(#Hctx&#Hstate) Hl Hj".
@@ -744,8 +744,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -767,8 +767,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #l = e').
     { move: Heq. destruct Ki => //=; congruence. }
@@ -788,8 +788,8 @@ Proof.
   iMod (ghost_step_stuck with "Hj Hctx H") as %[].
   {
   split; first done.
-  apply prim_head_irreducible; auto.
-  * head_irreducible.
+  apply prim_base_irreducible; auto.
+  * base_irreducible.
   * intros Hval. apply ectxi_language_sub_redexes_are_values => Ki e' Heq.
     assert (of_val #n = e' ∨ of_val v = e').
     { move: Heq. destruct Ki => //=; naive_solver congruence. }
@@ -798,7 +798,7 @@ Proof.
   solve_ndisj.
 Qed.
 
-Definition spec_mapsto_vals_toks l q vs : iProp Σ :=
+Definition spec_pointsto_vals_toks l q vs : iProp Σ :=
   ([∗ list] j↦vj ∈ vs, (l +ₗ j) s↦{q} vj ∗ meta_token (hG := refinement_na_heapG) (l +ₗ j) ⊤)%I.
 
 Lemma ghost_allocN_seq_sized_meta_own_resv j K `{LanguageCtx _ K} E D d v (n: u64) :
@@ -813,7 +813,7 @@ Lemma ghost_allocN_seq_sized_meta_own_resv j K `{LanguageCtx _ K} E D d v (n: u6
    j ⤇ K (#l) ∗
    na_block_size (hG := refinement_na_heapG) l (int.nat n * length (flatten_struct v))%nat ∗
    [∗ list] i ∈ seq 0 (int.nat n),
-   (spec_mapsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
+   (spec_pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
                      (flatten_struct v)).
 Proof.
   iIntros (HinD Hlen Hn Φ) "(#Hctx&Hstate) HresD Hj".
@@ -829,7 +829,7 @@ Proof.
     - rewrite //=. apply not_elem_of_dom.
       intros Hin. set_solver. }
   iMod (ghost_step_lifting with "Hj Hctx H") as "(Hj&H&_)".
-  { apply head_prim_step_trans. simpl.
+  { apply base_prim_step_trans. simpl.
     econstructor; last (repeat econstructor).
     econstructor. { monad_simpl. }
     eexists _ l; repeat econstructor.
@@ -851,7 +851,7 @@ Proof.
   }
   { eauto. }
   iMod ("Hclo" with "[Hσ H Hrest1 Hrest2 Hrest2' Hrest3 Hrest4 Hrest5 HresD Hresv]").
-  { iNext. iExists _, _. iFrame "H". iFrame.
+  { iNext. iExists _, _. iFrame "H Hrest5 Hrest3 Hrest2' Hrest2 Hrest1 Hσ".
     iDestruct "Hrest4" as %Hnon_null.
     iSplit.
     {
@@ -878,15 +878,15 @@ Proof.
   }
   iModIntro.
   iFrame.
-  unfold mapsto_vals.
+  unfold pointsto_vals.
   rewrite concat_replicate_length. iFrame.
-  iDestruct (heap_seq_replicate_to_nested_mapsto l (flatten_struct v) (int.nat n)
+  iDestruct (heap_seq_replicate_to_nested_pointsto l (flatten_struct v) (int.nat n)
                                                  (λ l v, l s↦ v ∗ meta_token l ⊤)%I
                with "[Hl]") as "Hl".
   {
     iApply (big_sepL_mono with "Hl").
     iIntros (l0 x Heq) "(Hli&$)".
-    iApply (na_mapsto_to_heap with "Hli").
+    iApply (na_pointsto_to_heap with "Hli").
     destruct Hfresh as (H'&?). eapply H'.
   }
   (* { iPureIntro; split; eauto using isFresh_not_null, isFresh_offset0. } *)
@@ -894,7 +894,7 @@ Proof.
   iIntros (k0 ? _) "H".
   setoid_rewrite Z.mul_comm at 1.
   setoid_rewrite Z.mul_comm at 2.
-  rewrite /spec_mapsto_vals_toks. eauto.
+  rewrite /spec_pointsto_vals_toks. eauto.
 Qed.
 
 Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
@@ -907,7 +907,7 @@ Lemma ghost_allocN_seq_sized_meta j K `{LanguageCtx _ K} E v (n: u64) :
              ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
              na_block_size (hG := refinement_na_heapG) l (int.nat n * length (flatten_struct v))%nat ∗
              [∗ list] i ∈ seq 0 (int.nat n),
-             (spec_mapsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
+             (spec_pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) 1
                                (flatten_struct v)).
 Proof.
   iIntros.
@@ -922,10 +922,10 @@ End go_spec_definitions.
 
 End go_refinement.
 
-Notation "l s↦{ q } v" := (heap_mapsto (hG := refinement_na_heapG) l q v%V)
+Notation "l s↦{ q } v" := (heap_pointsto (hG := refinement_na_heapG) l q v%V)
   (at level 20, q at level 50, format "l  s↦{ q }  v") : bi_scope.
 Notation "l s↦ v" :=
-  (heap_mapsto (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
+  (heap_pointsto (hG := refinement_na_heapG) l 1 v%V) (at level 20) : bi_scope.
 Notation "l s↦{ q } -" := (∃ v, l ↦{q} v)%I
   (at level 20, q at level 50, format "l  s↦{ q }  -") : bi_scope.
 Notation "l ↦ -" := (l ↦{1} -)%I (at level 20) : bi_scope.
@@ -976,25 +976,25 @@ Context {hR: refinement_heapG Σ}.
 Set Printing Implicit.
 
 Lemma test_resolution1 l v :
-  l ↦ v -∗ (heap_mapsto (hG := goose_na_heapGS) l 1 (v)).
+  l ↦ v -∗ (heap_pointsto (hG := goose_na_heapGS) l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution2 l v :
-  l s↦ v -∗ (heap_mapsto (hG := refinement_na_heapG) l 1 (v)).
+  l s↦ v -∗ (heap_pointsto (hG := refinement_na_heapG) l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution3 l v :
-  l ↦ v -∗ (heap_mapsto l 1 (v)).
+  l ↦ v -∗ (heap_pointsto l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.
 
 Lemma test_resolution4 l v :
-  l s↦ v -∗ (heap_mapsto l 1 (v)).
+  l s↦ v -∗ (heap_pointsto l 1 (v)).
 Proof using Type.
   iIntros "H". eauto.
 Qed.

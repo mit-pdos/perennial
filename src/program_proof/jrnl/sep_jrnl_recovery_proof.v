@@ -42,7 +42,7 @@ Section goose_lang.
             ⌜ γ.(jrnl_txn_names).(txn_kinds) = kinds ⌝ ∗
               is_txn_durable γ dinit logm0 ∗
               txn_durable γ 0 ∗
-              ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_mapsto_own γ a o)
+              ([∗ map] a ↦ o ∈ kind_heap0 kinds, durable_pointsto_own γ a o)
   .
   Proof.
     iIntros (Hdom1 Hdom2 Hlt) "Hpre".
@@ -64,14 +64,14 @@ Section goose_lang.
     specified first *)
     iFrame "Htxn_durable ∗".
     iFrame "Hdurable_lb".
-    iDestruct (big_sepM_sep with "[$Hmapsto_txns $Hephemeral_val_froms]") as "H".
+    iDestruct (big_sepM_sep with "[$Hpointsto_txns $Hephemeral_val_froms]") as "H".
     iSplit; first eauto.
     iApply (big_sepM_impl with "H"); simpl.
-    iIntros "!>" (a o Hlookup) "[Hmapsto Heph]".
-    rewrite /durable_mapsto_own.
-    iSplitL "Hmapsto".
+    iIntros "!>" (a o Hlookup) "[Hpointsto Heph]".
+    rewrite /durable_pointsto_own.
+    iSplitL "Hpointsto".
     - iExists _; iFrame.
-    - rewrite /durable_mapsto /=.
+    - rewrite /durable_pointsto /=.
       iExists _; iFrame.
       rewrite /txn_durable /=.
       iFrame "#".
@@ -99,21 +99,21 @@ Section goose_lang.
     iModIntro.
     iDestruct (async_ctx_doms_prefix_latest _ _ logm0 logm1 with "[$]") as %Hdom.
     { auto. }
-    iSplitL "Hdurable_exchanger Hdurable Hmapsto_txns Hephem H●latest".
+    iSplitL "Hdurable_exchanger Hdurable Hpointsto_txns Hephem H●latest".
     {
       iExists logm1, txn_id. iFrame.
       iSplitL "".
       { iPureIntro. lia. }
-      iCombine "Hmapsto_txns Hephem" as "Hpts".
+      iCombine "Hpointsto_txns Hephem" as "Hpts".
       rewrite -big_sepM_sep.
       rewrite /addr_exchangers.
 
       iApply big_sepM_dom. rewrite -Hdom. iApply big_sepM_dom.
       iApply (big_sepM_mono with "Hpts").
       {
-        iIntros (?? Hlookup) "(Hmapsto&#Hval1&Hval_from)".
+        iIntros (?? Hlookup) "(Hpointsto&#Hval1&Hval_from)".
         iDestruct "Hval_from" as "(#Hval2&Htok)".
-        iSplitL "Hmapsto Htok".
+        iSplitL "Hpointsto Htok".
         { rewrite /token_exchanger.
           iRight. iSplitL "Htok".
           { iExactEq "Htok". f_equal. lia. }
@@ -170,11 +170,11 @@ Section goose_lang.
         iSplit; last by auto.
         do 2 iModIntro.
         iFrame "Hinv".
-      - iNext. iIntros (γtxn_names' l) "(#Histxn&Hcancel&Hmapstos)".
+      - iNext. iIntros (γtxn_names' l) "(#Histxn&Hcancel&Hpointstos)".
         iRight in "HΦ".
         rewrite /txn_cfupd_res.
-        iDestruct "Hmapstos" as "[%Heq_kinds Hmapstos]".
-        iDestruct (own_discrete_laterable with "Hmapstos") as (Ptxn_tok) "(HPtxn_tok&#HPtxn_tok_wand)".
+        iDestruct "Hpointstos" as "[%Heq_kinds Hpointstos]".
+        iDestruct (own_discrete_laterable with "Hpointstos") as (Ptxn_tok) "(HPtxn_tok&#HPtxn_tok_wand)".
         iDestruct (own_discrete_laterable with "Hcancel") as
             (Ptxn_cancel_tok) "(HPtxn_cancel_tok&#HPtxn_cancel_tok_wand)".
 
@@ -203,7 +203,7 @@ Section goose_lang.
           eauto.
         }
         {
-        iFrame. iNext. rewrite /txn_system_inv. iExists _. iFrame.
+        iFrame.
         }
         iDestruct "Hcfupd" as "(Hcfupd1&Hcfupd2)".
         iModIntro. iApply "HΦ".

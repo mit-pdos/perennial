@@ -39,7 +39,7 @@ Proof.
   "%Hlen_shardMapping" ∷ ⌜ Z.of_nat (length shardMapping) = uNSHARD ⌝ ∗
   "%HshardMapping_dom" ∷ ⌜ (∀ i : u64, int.Z i < int.Z uNSHARD → is_Some (shardMapping !! int.nat i)) ⌝ ∗
   "shardMap" ∷ s ↦[KVCoord :: "shardMap"] (slice_val shardMap_sl) ∗
-  "HshardMap_sl" ∷ @typed_slice.is_slice grove_op grove_model grove_interp Σ _ grove_ty u64
+  "HshardMap_sl" ∷ @typed_slice.own_slice grove_op grove_model grove_interp Σ _ grove_ty u64
                      (@u64_IntoVal grove_op) shardMap_sl HostName 1 shardMapping ∗
   "HownShards" ∷ ([∗ set] sid ∈ rangeSet 0 uNSHARD, ∃ (hid : u64),
                   ⌜ shardMapping !! int.nat sid = Some hid ⌝ ∗
@@ -54,14 +54,14 @@ Proof.
     wp_apply (wp_LoadAt with "[$Hi]").
     iIntros "Hi".
     wp_loadField.
-    iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "(HshardMap_sl&HshardMap_sl_close)".
+    iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "(HshardMap_sl&HshardMap_sl_close)".
     wp_apply (typed_slice.wp_SliceSet (V:=u64) with "[$HshardMap_sl]").
     { eauto. }
     iIntros "HshardMap_sl".
     iDestruct ("HshardMap_sl_close" with "[$HshardMap_sl]") as "HshardMap_sl".
     wp_pures. iModIntro. iApply "HΦ".
     remember uNSHARD as uNSHARD' eqn:Heq_uNSHARD.
-    { iFrame. iExists _. iFrame.
+    { iFrame.
       iSplit.
       { iPureIntro. rewrite insert_length //. }
       iSplit.
@@ -130,11 +130,11 @@ Proof.
   }
   iIntros "(Hloop_post&Hi)".
   wp_pures.
-  wp_apply (wp_NewMap).
+  wp_apply (wp_NewMap u64).
 
   iIntros (mref) "Hmap".
   wp_storeField. wp_loadField.
-  wp_apply (wp_MapInsert u64 _ _ _ (U64 65536) with "[$]").
+  wp_apply (wp_MapInsert _ u64 (U64 65536) with "[$]").
   { eauto. }
   iIntros "Hmap".
   wp_pures.
@@ -143,7 +143,7 @@ Proof.
   (* TODO: Pull this out to separate wp? it is called at least twice *)
   wp_bind (MakeShardClerkSet _).
   wp_lam.
-  wp_apply (wp_NewMap).
+  wp_apply (wp_NewMap u64).
   iIntros (mref_set) "Hmap_set".
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (clset) "Hset".
@@ -196,12 +196,11 @@ Proof.
       }
       iFrame. eauto.
     }
-    iExists _, _, _. iFrame "# ∗".
     iDestruct (struct_fields_split with "Hset") as "Hset". iNamed "Hset".
     iFrame. rewrite big_sepM_empty. eauto.
   }
   unshelve (iMod (readonly_alloc_1 with "mu") as "#mu"); [| apply _ |].
-  iModIntro. iApply "HΦ". iExists _. iFrame "# ∗".
+  iModIntro. iApply "HΦ". iExists _. iFrame "∗#".
 Qed.
 
 End memkv_coord_make_proof.

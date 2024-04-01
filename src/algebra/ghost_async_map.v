@@ -260,7 +260,7 @@ Section lemmas.
   Lemma ghost_async_map_delete {γ ma k a v} :
     ghost_async_map_auth γ 1 ma -∗ k ↪[γ][a] v ==∗ ghost_async_map_auth γ 1 (delete k ma).
   Proof.
-    unseal. apply bi.wand_intro_r. rewrite -own_op.
+    unseal. apply bi.entails_wand, bi.wand_intro_r. rewrite -own_op.
     iApply own_update. apply: gmap_rel_view_delete.
   Qed.
 
@@ -271,7 +271,7 @@ Section lemmas.
     ghost_async_map_auth γ 1 (<[k := Build_async w al]> ma) ∗ k ↪[γ][a'] w.
   Proof.
     intros Hsub.
-    unseal. apply bi.wand_intro_r. rewrite -!own_op.
+    unseal. apply bi.entails_wand, bi.wand_intro_r. rewrite -!own_op.
     apply own_update. apply: gmap_rel_view_update.
     intros n. rewrite //=; split => //=.
   Qed.
@@ -301,7 +301,7 @@ Section lemmas.
   Lemma ghost_async_map_flush_auth {γ} ma :
     ghost_async_map_auth γ 1 ma ==∗ ghost_async_map_auth γ 1 (flush <$> ma).
   Proof.
-    unseal. apply own_update. apply: gmap_rel_view_update_fmap.
+    unseal. apply bi.entails_wand, own_update. apply: gmap_rel_view_update_fmap.
     intros k vm v a n Hlookup Hrel.
     destruct Hrel as (Heq&Hsubset). split; first done.
     intros x Hin. set_solver.
@@ -314,7 +314,7 @@ Section lemmas.
     ghost_async_map_auth γ 1 ma ∗ k ↪[γ]{dq}[list_to_set (pending vm)] v.
   Proof.
     intros Hlook.
-    unseal. apply bi.wand_intro_r. rewrite -!own_op.
+    unseal. apply bi.entails_wand, bi.wand_intro_r. rewrite -!own_op.
     apply own_update. apply: gmap_rel_view_update_approx.
     intros vm' n Hlookup Hrel1.
     assert (vm = vm') as ->.
@@ -458,9 +458,8 @@ Section lemmas.
     { iDestruct "Htaken" as (??) "Htaken".
       iDestruct (ghost_async_map_elem_frac_ne with "[$] [$]") as %Hval; eauto. congruence. }
     iDestruct ("Hexch" with "[Hk]") as "Hexch".
-    { iExists _. iSplit; first eauto. iLeft. iExists _, _. by iFrame. }
-    iFrame. iSplit; first eauto.
-    iExists _. iFrame. iPureIntro. simpl.
+    { iExists _. iSplit; first eauto. iLeft. iFrame. }
+    iFrame. iSplit; first eauto. iPureIntro. simpl.
     destruct Hpossible as (?&?&?). set_solver.
   Qed.
 

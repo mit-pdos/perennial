@@ -25,7 +25,7 @@ Definition Server__HandleRequest: val :=
       let: "last" := Fst (MapGet (struct.loadF Server "lastSeq" "t") "cid") in
       (if: "seq" ≤ "last"
       then
-        "reply" <-[slice.T byteT] Fst (MapGet (struct.loadF Server "lastReply" "t") "cid");;
+        "reply" <-[slice.T byteT] (Fst (MapGet (struct.loadF Server "lastReply" "t") "cid"));;
         lock.release (struct.loadF Server "mu" "t");;
         #()
       else
@@ -47,8 +47,8 @@ Definition Server__GetFreshCID: val :=
 Definition MakeServer: val :=
   rec: "MakeServer" <> :=
     let: "t" := struct.alloc Server (zero_val (struct.t Server)) in
-    struct.storeF Server "lastReply" "t" (NewMap (slice.T byteT) #());;
-    struct.storeF Server "lastSeq" "t" (NewMap uint64T #());;
+    struct.storeF Server "lastReply" "t" (NewMap uint64T (slice.T byteT) #());;
+    struct.storeF Server "lastSeq" "t" (NewMap uint64T uint64T #());;
     struct.storeF Server "nextCID" "t" #0;;
     struct.storeF Server "mu" "t" (lock.new #());;
     "t".
@@ -62,7 +62,7 @@ Definition Client__NewRequest: val :=
   rec: "Client__NewRequest" "c" "request" :=
     let: "seq" := struct.loadF Client "nextSeq" "c" in
     struct.storeF Client "nextSeq" "c" (std.SumAssumeNoOverflow (struct.loadF Client "nextSeq" "c") #1);;
-    let: "data1" := NewSliceWithCap byteT #0 (#8 + #8 + slice.len "request") in
+    let: "data1" := NewSliceWithCap byteT #0 ((#8 + #8) + (slice.len "request")) in
     let: "data2" := marshal.WriteInt "data1" (struct.loadF Client "cid" "c") in
     let: "data3" := marshal.WriteInt "data2" "seq" in
     let: "data4" := marshal.WriteBytes "data3" "request" in

@@ -141,7 +141,7 @@ Proof using Type*.
 
   (* Transform the readonly struct field into a bunch of readonly ptsto for each field via fieldRef *)
   iMod (readonly_load with "req") as (q) "req2".
-  wp_apply (wp_struct_fieldRef_mapsto with "req2"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req2"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
@@ -164,7 +164,7 @@ Proof using Type*.
   iDestruct "HrpcPost" as (reply') "[Hown_reply [%He|(%He & HrpcPost)]]".
   - rewrite He. iNamed "Herrb_ptr". wp_store. wp_load. wp_binop. wp_pures.
     iLeft.
-    iFrame "#∗".
+    iFrame "∗#".
     iSplitL ""; first done.
     iSplitL "Herrb_ptr".
     { iExists _; iFrame. }
@@ -188,7 +188,7 @@ Lemma wp_EncodeShortTermIncrClerk ck cid args (isrv:loc) :
   EncodeShortTermIncrClerk #ck
 {{{
      content data, RET (slice_val content);
-     is_slice content byteT 1 data ∗
+     own_slice content byteT 1 data ∗
      ⌜has_encoding_for_onetime_clerk data cid args⌝
 }}}.
 Proof.
@@ -230,7 +230,7 @@ Qed.
 
 Lemma wp_DecodeShortTermIncrClerk cid args (isrv:loc) (content:Slice.t) data :
 {{{
-     is_slice content byteT 1 data ∗
+     own_slice content byteT 1 data ∗
      ⌜has_encoding_for_onetime_clerk data cid args⌝
 }}}
   DecodeShortTermIncrClerk #isrv (slice_val content)
@@ -268,7 +268,7 @@ Proof.
   wp_loadField.
 
   (* This block of proof writes to a field in a struct contained as a field in another struct *)
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   symmetry in Hacc_req.
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
@@ -281,7 +281,7 @@ Proof.
   wp_loadField.
   wp_binop.
 
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
@@ -295,12 +295,12 @@ Proof.
 
   (* TODO: too much copy-paste *)
   (* Open ref to req field in ShortTermIncrClerk *)
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
   (* Open ref to args field in RPCRequest *)
-  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Args"); first done.
   iIntros (Args) "[%Hacc_Args HArgs]".
   iDestruct (struct_fields_split with "HArgs") as "HArgs".
   iNamed "HArgs".
@@ -319,12 +319,12 @@ Proof.
   iIntros "His_dec".
 
   (* Open ref to req field in ShortTermIncrClerk *)
-  wp_apply (wp_struct_fieldRef_mapsto with "req"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "req"); first done.
   iIntros (req) "[%Hacc_req Hreq]".
   iDestruct (struct_fields_split with "Hreq") as "Hreq".
   iNamed "Hreq".
   (* Open ref to args field in RPCRequest *)
-  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Args"); first done.
   iIntros (Args) "[%Hacc_Args HArgs]".
   iDestruct (struct_fields_split with "HArgs") as "HArgs".
   iNamed "HArgs".
@@ -377,7 +377,7 @@ Proof.
   wp_storeField.
   iMod (readonly_alloc_1 with "req") as "#req".
   iApply "HΦ".
-  by iFrame "#∗".
+  by iFrame "∗#".
 Qed.
 
 Variable γ:incrservice_names.
@@ -397,8 +397,8 @@ Definition ProxyIncrServer_core_own_vol (srv:loc) server : iProp Σ :=
   "#His_incrserver" ∷ is_incrserver γback server.(incrserver)
 .
 
-(* Either the proxy server has the mapsto fact for the backend, or, if it
-   doesn't, then it has the  mapsto for γ, meaning backend mapsto is being used
+(* Either the proxy server has the pointsto fact for the backend, or, if it
+   doesn't, then it has the  pointsto for γ, meaning backend pointsto is being used
    for a request, and thus belongs to some request's invariant.
  *)
 Definition ProxyIncrServer_core_own_ghost server : iProp Σ :=
@@ -602,15 +602,15 @@ Proof.
   iSplitL "req".
   { iExists _, _, _, _; iFrame. }
   rewrite HincrSafe.
-  iFrame "#∗".
+  iFrame "∗#".
   by iExists _; iFrame.
 Qed.
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValsC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
-   "Hmapsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
+   "Hpointsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
   ("Hfown_oldv" ∷ ∃ data cid γreq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
-   "Hmapsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+   "Hpointsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
    ⌜has_encoding_for_onetime_clerk data cid args⌝ ∗
    RPCClient_own γback.(incr_rpcGN) cid 2 ∗
    RPCRequest_token γreq ∗
@@ -676,7 +676,7 @@ Proof.
 
   iDestruct "HincrCrashInv" as "[Hcase|Hcase]".
   - iNamed "Hcase".
-    iCache with "Hfown_oldv Hmapsto Hghost Hpost".
+    iCache with "Hfown_oldv Hpointsto Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame. iSplitR "Hghost".
       - iLeft. by iFrame.
@@ -702,7 +702,7 @@ Proof.
     iNamed 1.
 
     wpc_pures.
-    iDestruct (slice.is_slice_sz with "Hcontent_slice") as "%Hslice_len".
+    iDestruct (slice.own_slice_sz with "Hcontent_slice") as "%Hslice_len".
     simpl in Hslice_len.
     assert (int.Z content.(Slice.sz) = 0) as -> by word.
     destruct bool_decide eqn:Hs.
@@ -724,7 +724,7 @@ Proof.
     iNext. iIntros (cid ck_ptr) "(Hownclerk & Hrpcclient_own & Hvol & Hghost)".
     iNamed "Hownclerk".
 
-    iCache with "Hfown_oldv Hmapsto Hghost Hpost".
+    iCache with "Hfown_oldv Hpointsto Hghost Hpost".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iSplitR "Hghost".
       - iLeft. by iFrame.
@@ -774,14 +774,14 @@ Proof.
       - (* Write succeeded  *)
         iApply "HΦc".
         iNamed "Hghost".
-        iDestruct (map_valid with "Hctx Hmapsto") as %Hsome.
+        iDestruct (map_valid with "Hctx Hpointsto") as %Hsome.
         iDestruct (big_sepM_lookup_acc with "Hback") as "[[Hbackend_one|Hbad] Hback_rest]"; first done.
         2: {
-          iDestruct (ptsto_valid_2 with "Hbad Hmapsto") as %Hbad.
+          iDestruct (ptsto_valid_2 with "Hbad Hpointsto") as %Hbad.
           contradiction.
         }
-        iDestruct "Hmapsto" as "[Hmapsto Hmapsto2]".
-        iSpecialize ("Hback_rest" with "[Hmapsto2]").
+        iDestruct "Hpointsto" as "[Hpointsto Hpointsto2]".
+        iSpecialize ("Hback_rest" with "[Hpointsto2]").
         { by iRight. }
         iMod (make_request {|Req_Seq:= _; Req_CID:=_; |} (IncrPreCond args) (IncrPostCond args) with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
 
@@ -790,7 +790,7 @@ Proof.
         iSplitR "Hback_rest Hctx HownCIDs Hfown_lastCID".
         { iRight.
           iExists data2,_,_.
-          iFrame "#∗".
+          iFrame "∗#".
           simpl.
           done.
         }
@@ -802,25 +802,25 @@ Proof.
 
     (* TODO: this is copy pasted from above; commit to backend cid and seq *)
         iNamed "Hghost".
-        iDestruct (map_valid with "Hctx Hmapsto") as %Hsome.
+        iDestruct (map_valid with "Hctx Hpointsto") as %Hsome.
         iDestruct (big_sepM_lookup_acc with "Hback") as "[[Hbackend_one|Hbad] Hback_rest]"; first done.
         2: {
-          iDestruct (ptsto_valid_2 with "Hbad Hmapsto") as %Hbad.
+          iDestruct (ptsto_valid_2 with "Hbad Hpointsto") as %Hbad.
           contradiction.
         }
-        iDestruct "Hmapsto" as "[Hmapsto Hmapsto2]".
-        iDestruct ("Hback_rest" with "[Hmapsto2]") as "Hback".
+        iDestruct "Hpointsto" as "[Hpointsto Hpointsto2]".
+        iDestruct ("Hback_rest" with "[Hpointsto2]") as "Hback".
         { by iRight. }
         iMod (make_request {|Req_Seq:= _; Req_CID:=_; |} (IncrPreCond args) (IncrPostCond args) with "[ ] [$Hrpcclient_own] [Hbackend_one]") as "[Hrpcclient_own Hreq]"; eauto.
         iDestruct "Hreq" as (γreq) "[#His_req Hreqtok]".
     (* End commit to backend cid and seq *)
 
     iIntros "[Hfown Hslice]".
-    iCache with "Hfown HownCIDs Hfown_lastCID Hback Hctx Hpost Hreqtok Hmapsto Hrpcclient_own".
+    iCache with "Hfown HownCIDs Hfown_lastCID Hback Hctx Hpost Hreqtok Hpointsto Hrpcclient_own".
     { (* Re-prove crash obligation in the special case. Nothing interesting about this. *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc".
-      iSplitL "Hreqtok Hmapsto Hrpcclient_own Hfown".
-      - iRight. iFrame. iExists _,_,_; iFrame "#∗".
+      iSplitL "Hreqtok Hpointsto Hrpcclient_own Hfown".
+      - iRight. iFrame. iExists _,_,_; iFrame "∗#".
         done.
       - by iExists _; iFrame.
     }
@@ -838,24 +838,24 @@ Proof.
     }
 
     iNamed "Hfown_oldv".
-    iDestruct "Hfown_oldv" as "(Hfown_oldv & Hmapsto & %Henc & Hrpc_clientown & HrpcToken & #Hisreq)".
+    iDestruct "Hfown_oldv" as "(Hfown_oldv & Hpointsto & %Henc & Hrpc_clientown & HrpcToken & #Hisreq)".
     wpc_apply (wpc_Read with "Hfown_oldv").
     iSplit.
     { (* crash obligation of called implies our crash obligation *)
       iDestruct "Hpost" as "[HΦc _]".
       iModIntro. iIntros. iApply "HΦc".
       iSplitR "Hghost".
-      - iRight. by iExists _, _, _; iFrame "#∗".
+      - iRight. by iExists _, _, _; iFrame "∗#".
       - by iExists _; iFrame.
     }
     iNext.
     iIntros (content) "[Hcontent_slice Hfown_oldv]".
 
-    iCache with "Hfown_oldv Hrpc_clientown Hghost HrpcToken Hmapsto Hpost".
+    iCache with "Hfown_oldv Hrpc_clientown Hghost HrpcToken Hpointsto Hpost".
     { (* Prove crash obligation after destructing above; TODO: do this earlier *)
       iDestruct "Hpost" as "[HΦc _]". iModIntro. iApply "HΦc". iFrame.
       iSplitR "Hghost".
-      - iRight. by iExists _,_, _; iFrame "#∗".
+      - iRight. by iExists _,_, _; iFrame "∗#".
       - eauto.
     }
    wpc_pures.
@@ -900,7 +900,7 @@ Proof.
       wpc_frame.
       wp_apply (wp_ShortTermIncrClerk__MakePreparedRequest with "His_incrserver [Hown_ck Hisreq]").
       { iNamed "Hown_ck".
-        iFrame "#∗".
+        iFrame "∗#".
         iExists _; iFrame "Hisreq".
       }
 
@@ -929,35 +929,35 @@ Proof.
       {
         iModIntro. iSplit.
         { iFrame.
-          iMod (get_request_post with "Hisreq HmakeReqPost HrpcToken") as ">Hbackmapsto"; first done.
+          iMod (get_request_post with "Hisreq HmakeReqPost HrpcToken") as ">Hbackpointsto"; first done.
           by iFrame.
         }
-        { iRight. by iExists _,_,_; iFrame "#∗". }
+        { iRight. by iExists _,_,_; iFrame "∗#". }
       }
 
       (* Prove the fupd *)
       iModIntro.
-      iIntros "Hghost >[Hγmapsto Hγbackmapsto]".
+      iIntros "Hghost >[Hγpointsto Hγbackpointsto]".
       iNamed "Hghost".
-      iDestruct (map_valid with "Hctx Hγmapsto") as %HkInMap.
+      iDestruct (map_valid with "Hctx Hγpointsto") as %HkInMap.
       iDestruct (big_sepM_insert_acc _ _ args.(U64_1) old_v with "Hback") as "[Hk Hback]".
       { done. }
       iDestruct "Hk" as "[Hk|Hk]".
       { (* Impossible case: big_sepM has γback ptsto *)
-        iDestruct (ptsto_agree_frac_value with "Hγbackmapsto Hk") as %[_ Hbad].
+        iDestruct (ptsto_agree_frac_value with "Hγbackpointsto Hk") as %[_ Hbad].
         by exfalso.
       }
       (* Take the ↦{1/2} from the big_sepM element that we accessesd *)
-      iCombine "Hγmapsto Hk" as "Hγmapsto".
-      iMod (map_update _ _ _ with "Hctx Hγmapsto") as "[Hctx Hγmapsto]".
-      iSpecialize ("Hback" $! (word.add old_v 1) with "[Hγbackmapsto]").
+      iCombine "Hγpointsto Hk" as "Hγpointsto".
+      iMod (map_update _ _ _ with "Hctx Hγpointsto") as "[Hctx Hγpointsto]".
+      iSpecialize ("Hback" $! (word.add old_v 1) with "[Hγbackpointsto]").
       { by iLeft. }
       iModIntro.
       iFrame.
     }
     {
       iExFalso.
-      iDestruct (is_slice_sz with "Hcontent_slice") as %Hbad.
+      iDestruct (own_slice_sz with "Hcontent_slice") as %Hbad.
       apply bool_decide_eq_false in Hlen.
       assert (int.Z content.(Slice.sz) = 0)%Z.
       { apply Znot_lt_ge in Hlen.

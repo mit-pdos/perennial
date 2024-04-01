@@ -66,9 +66,8 @@ Proof.
       econstructor; monad_simpl.
       econstructor; monad_simpl; lia. }
   - simpl.
-    iFrame.
-    iExists _. iFrame "Howncs".
-    iExists installed_txn_id, _, _. simpl. iFrame "# ∗ %".
+    iFrame "Hmem Howncs HnextDiskEnd_inv Htxns_ctx γtxns".
+    iExists installed_txn_id, _, _. simpl. iFrame (Hdaddrs_init) "Hinstalled Hdurable circ.start Hbasedisk".
     iExists _, diskEnd_txn_id.
     rewrite (Nat.max_l (_ `max` _)%nat _); last by lia.
     iFrame "# %".
@@ -195,8 +194,7 @@ Proof.
         iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd_txn_bound.
         eapply is_txn_bound in HnextDiskEnd_txn_bound. iPureIntro. lia.
       }
-
-      iFrame "Hend_txn_stable".
+      iSplitR; first done.
       iFrame "HnextDiskEnd_inv".
       iFrame "Htxns_ctx".
       iExists nextDiskEnd_txn_id.
@@ -268,9 +266,7 @@ Proof.
     repeat (econstructor; monad_simpl; eauto); lia.
   }
   simpl.
-  iFrame.
-  iExists _; iFrame.
-  iExists installed_txn_id, _, _. iFrame "# ∗".
+  iFrame "∗#".
   iSplitL.
   2: {
     iPureIntro.
@@ -369,11 +365,7 @@ Proof.
   (* this is very bad, breaks sliding abstraction boundary *)
   iNamed "His_memLog"; iNamed "Hinv". wp_loadField.
   iApply "HΦ".
-  iExists _; iFrame "# ∗".
-  iExists _; iFrame "# ∗".
-  iSplit; auto.
-  iSplit; auto.
-  iExists _, _; iFrame "# ∗".
+  by iFrame "∗#".
 Qed.
 
 Theorem wp_Walog__Flush (Q: iProp Σ) l γ dinit txn_id pos :
@@ -427,8 +419,7 @@ Proof.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[-HΦ $cond_logger $lk $Hlocked]").
-      { iExists _; iFrame "∗ #".
-        iExists _; by iFrame "∗ #". }
+      { by iFrame "∗ #". }
       iIntros "(Hlocked&Hlockin)".
       wp_pures.
       iApply "HΦ"; by iFrame.
@@ -436,8 +427,7 @@ Proof.
       iFrame "Hlocked".
       iNamed "HdiskEnd_circ".
       iSplitL.
-      { iExists _; iFrame "# ∗".
-        iExists _; by iFrame "# ∗". }
+      { by iFrame "∗#". }
       iApply (diskEnd_at_least_mono with "HdiskEnd_at_least"); auto.
   }
 

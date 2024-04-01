@@ -20,7 +20,7 @@ Context `{!heapGS Σ}.
 
 Implicit Types (s : Slice.t) (γ: txn_names).
 
-Lemma wal_heap_inv_mapsto_in_bounds γ walptr dinit a v :
+Lemma wal_heap_inv_pointsto_in_bounds γ walptr dinit a v :
   is_wal (wal_heap_inv γ.(txn_walnames)) walptr γ.(txn_walnames).(wal_heap_walnames) dinit -∗
   ncinv invN (is_txn_always γ) -∗
   a ↪[γ.(txn_logheap)] v -∗ |NC={⊤}=>
@@ -37,7 +37,7 @@ Proof.
   iDestruct (big_sepM2_lookup_l_some with "Hheapmatch") as (metaoff) "%"; eauto.
   iDestruct (big_sepM2_lookup_acc with "Hheapmatch") as "[Hblock Hheapmatch]"; eauto.
   iNamed "Hblock".
-  iMod (wal_heap_inv_mapsto_in_bounds with "Hwal Htxn_hb") as "[Htxn_hb $]".
+  iMod (wal_heap_inv_pointsto_in_bounds with "Hwal Htxn_hb") as "[Htxn_hb $]".
   { solve_ndisj. }
   iDestruct ("Hheapmatch" with "[Htxn_hb Htxn_in_hb]") as "Hheapmatch".
   { iExists _, _, _. iFrame. iFrame "%". }
@@ -48,14 +48,14 @@ Qed.
 
 Theorem wp_txn_Load l γ dinit a v :
   {{{ is_txn l γ dinit ∗
-      mapsto_txn γ a v
+      pointsto_txn γ a v
   }}}
     Log__Load #l (addr2val a) #(bufSz (projT1 v))
   {{{ (bufptr : loc) b, RET #bufptr;
       is_buf bufptr a b ∗
       ⌜ b.(bufDirty) = false ⌝ ∗
       ⌜ existT b.(bufKind) b.(bufData) = v ⌝ ∗
-      mapsto_txn γ a v
+      pointsto_txn γ a v
   }}}.
 Proof using txnG0 Σ.
   iIntros (Φ) "(#Htxn & Hstable) HΦ".
@@ -172,15 +172,14 @@ Proof using txnG0 Σ.
     iApply "HΦ". iFrame.
     rewrite /=.
     iSplitR; first done.
-    destruct v. iSplitR; first done.
-    iExists _. by iFrame.
+    destruct v. done.
   }
 
   (* Case 2: missed in cache *)
   iNamed "Hres".
   wp_pures.
 
-  iMod (wal_heap_inv_mapsto_in_bounds with "[$] [$] Hmapsto_log") as "[Hmapsto_log #Hinbounds]".
+  iMod (wal_heap_inv_pointsto_in_bounds with "[$] [$] Hmapsto_log") as "[Hmapsto_log #Hinbounds]".
 
   wp_apply (wp_Walog__ReadInstalled _
     (λ b,
@@ -253,9 +252,7 @@ Proof using txnG0 Σ.
   iApply "HΦ".
   iFrame.
   iSplitR; first done.
-  destruct v.
-  iSplitR; first done.
-  iExists _. by iFrame.
+  destruct v. done.
 Qed.
 
 End goose_lang.

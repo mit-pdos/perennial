@@ -1,11 +1,12 @@
 -Q src Perennial
 -arg -w -arg -ssr-search-moved
--arg -w -arg +deprecated-hint-without-locality
 -arg -w -arg +deprecated-instance-without-locality
 -arg -w -arg -future-coercion-class-field
 -arg -w -arg +deprecated-hint-rewrite-without-locality
 -arg -w -arg -deprecated-field-instance-without-locality
 -arg -w -arg +deprecated-tactic-notation
+-arg -w -arg -deprecated-since-8.19
+-arg -w -arg -deprecated-since-8.20
 # Iris-disabled warnings
 -arg -w -arg -notation-overridden,-redundant-canonical-projection,-deprecated-typeclasses-transparency-without-locality
 -Q external/stdpp/stdpp stdpp

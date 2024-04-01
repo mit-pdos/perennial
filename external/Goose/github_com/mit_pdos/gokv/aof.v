@@ -7,6 +7,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition AppendOnlyFile := struct.decl [
   "mu" :: ptrT;
+  "oldDurableCond" :: ptrT;
   "durableCond" :: ptrT;
   "lengthCond" :: ptrT;
   "membuf" :: slice.T byteT;
@@ -22,12 +23,13 @@ Definition CreateAppendOnlyFile: val :=
     let: "a" := struct.alloc AppendOnlyFile (zero_val (struct.t AppendOnlyFile)) in
     struct.storeF AppendOnlyFile "mu" "a" (lock.new #());;
     struct.storeF AppendOnlyFile "lengthCond" "a" (lock.newCond (struct.loadF AppendOnlyFile "mu" "a"));;
+    struct.storeF AppendOnlyFile "oldDurableCond" "a" (lock.newCond (struct.loadF AppendOnlyFile "mu" "a"));;
     struct.storeF AppendOnlyFile "durableCond" "a" (lock.newCond (struct.loadF AppendOnlyFile "mu" "a"));;
     struct.storeF AppendOnlyFile "closedCond" "a" (lock.newCond (struct.loadF AppendOnlyFile "mu" "a"));;
     Fork (lock.acquire (struct.loadF AppendOnlyFile "mu" "a");;
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            (if: ((slice.len (struct.loadF AppendOnlyFile "membuf" "a") = #0)) && (~ (struct.loadF AppendOnlyFile "closeRequested" "a"))
+            (if: ((slice.len (struct.loadF AppendOnlyFile "membuf" "a")) = #0) && (~ (struct.loadF AppendOnlyFile "closeRequested" "a"))
             then
               lock.condWait (struct.loadF AppendOnlyFile "lengthCond" "a");;
               Continue
@@ -47,7 +49,8 @@ Definition CreateAppendOnlyFile: val :=
                 let: "newLength" := struct.loadF AppendOnlyFile "length" "a" in
                 struct.storeF AppendOnlyFile "membuf" "a" (NewSlice byteT #0);;
                 let: "cond" := struct.loadF AppendOnlyFile "durableCond" "a" in
-                struct.storeF AppendOnlyFile "durableCond" "a" (lock.newCond (struct.loadF AppendOnlyFile "mu" "a"));;
+                struct.storeF AppendOnlyFile "durableCond" "a" (struct.loadF AppendOnlyFile "oldDurableCond" "a");;
+                struct.storeF AppendOnlyFile "oldDurableCond" "a" "cond";;
                 lock.release (struct.loadF AppendOnlyFile "mu" "a");;
                 grove_ffi.FileAppend "fname" "l";;
                 lock.acquire (struct.loadF AppendOnlyFile "mu" "a");;
@@ -63,7 +66,7 @@ Definition AppendOnlyFile__Close: val :=
     struct.storeF AppendOnlyFile "closeRequested" "a" #true;;
     lock.condSignal (struct.loadF AppendOnlyFile "lengthCond" "a");;
     Skip;;
-    (for: (λ: <>, ~ (struct.loadF AppendOnlyFile "closed" "a")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (struct.loadF AppendOnlyFile "closed" "a"))); (λ: <>, Skip) := λ: <>,
       lock.condWait (struct.loadF AppendOnlyFile "closedCond" "a");;
       Continue);;
     lock.release (struct.loadF AppendOnlyFile "mu" "a");;
@@ -83,9 +86,13 @@ Definition AppendOnlyFile__Append: val :=
 Definition AppendOnlyFile__WaitAppend: val :=
   rec: "AppendOnlyFile__WaitAppend" "a" "length" :=
     lock.acquire (struct.loadF AppendOnlyFile "mu" "a");;
+    let: "cond" := ref (zero_val ptrT) in
+    (if: ("length" + (slice.len (struct.loadF AppendOnlyFile "membuf" "a"))) ≤ (struct.loadF AppendOnlyFile "length" "a")
+    then "cond" <-[ptrT] (struct.loadF AppendOnlyFile "oldDurableCond" "a")
+    else "cond" <-[ptrT] (struct.loadF AppendOnlyFile "durableCond" "a"));;
     Skip;;
-    (for: (λ: <>, struct.loadF AppendOnlyFile "durableLength" "a" < "length"); (λ: <>, Skip) := λ: <>,
-      lock.condWait (struct.loadF AppendOnlyFile "durableCond" "a");;
+    (for: (λ: <>, (struct.loadF AppendOnlyFile "durableLength" "a") < "length"); (λ: <>, Skip) := λ: <>,
+      lock.condWait (![ptrT] "cond");;
       Continue);;
     lock.release (struct.loadF AppendOnlyFile "mu" "a");;
     #().

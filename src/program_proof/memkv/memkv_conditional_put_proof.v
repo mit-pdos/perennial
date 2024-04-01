@@ -46,7 +46,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
+  iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
   set (sid:=shardOfC args.(CPR_Key)) in *.
 
   assert (∃ b, shardMapping !! int.nat sid = Some b) as [? ?].
@@ -65,7 +65,7 @@ Proof.
   wp_if_destruct.
   { (* have the shard *)
     wp_loadField.
-    iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_sl Hkvss_sl_close]".
+    iDestruct (slice.own_slice_split with "Hkvss_sl") as "[Hkvss_sl Hkvss_sl_close]".
     iDestruct (big_sepS_elem_of_acc _ _ sid with "HownShards") as "[HownShard HownShards]".
     { set_solver. }
     iDestruct "HownShard" as "[%Hbad|HownShard]".
@@ -96,7 +96,7 @@ Proof.
     wp_loadField.
     iMod (readonly_load with "HExpValue_sl") as (?) "HExpValue_sl'".
     (*
-      iDestruct (is_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl Hsrv_val_close]".
+      iDestruct (own_slice_small_acc with "Hsrv_val_sl") as "[Hsrv_val_sl Hsrv_val_close]".
      *)
     wp_apply (wp_BytesEqual with "[$HExpValue_sl' $Hsrv_val_sl]").
     iIntros "[_ Hsrv_val_sl]".

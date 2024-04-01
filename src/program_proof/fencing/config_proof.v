@@ -45,10 +45,10 @@ Defined.
 Context `{!urpcregG Σ}.
 
 Definition is_host γ (host:u64) (epoch_tok : u64 → iProp Σ) (host_inv:u64 → iProp Σ): iProp Σ :=
-  handler_spec γ.(urpc_gn) host (U64 0) (AcquireEpoch_spec epoch_tok host_inv) ∗
-  handler_spec γ.(urpc_gn) host (U64 1) (Get_spec host_inv) ∗
-  handler_spec γ.(urpc_gn) host (U64 2) trivial_spec ∗
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
+  is_urpc_spec_pred γ.(urpc_gn) host (U64 0) (AcquireEpoch_spec epoch_tok host_inv) ∗
+  is_urpc_spec_pred γ.(urpc_gn) host (U64 1) (Get_spec host_inv) ∗
+  is_urpc_spec_pred γ.(urpc_gn) host (U64 2) trivial_spec ∗
+  is_urpc_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
 
 Definition is_Clerk γ (ck:loc) epoch_tok host_inv : iProp Σ :=
@@ -115,10 +115,9 @@ Proof.
   iNamed "Hck".
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_Client__Call with "[] [$Hreq_sl $Hrep $His_cl]").
-  { iDestruct "His_host" as "[$ _]". }
-  {
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  wp_apply (wp_Client__Call_pred with "[$Hreq_sl $Hrep]").
+  { iFrame "#". iDestruct "His_host" as "[$ _]".
     do 2 iModIntro.
     simpl.
     iExists newHost.
@@ -130,7 +129,7 @@ Proof.
     iExists _; iFrame.
     done.
   }
-  iIntros (err) "(_ & Hreq_sl & Hpost)".
+  iIntros (err) "(Hreq_sl & Hpost)".
   destruct err.
   { (* there was an error; just Exit() *)
     simpl.
@@ -180,10 +179,9 @@ Proof.
   iIntros (dummy_req_sl) "Hreq_sl".
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
-  wp_apply (wp_Client__Call with "[] [$Hreq_sl $Hrep $His_cl]").
-  { iDestruct "His_host" as "[_ [$ _]]". }
-  {
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  wp_apply (wp_Client__Call_pred with "[$Hreq_sl $Hrep His_cl]").
+  { iFrame "#". iDestruct "His_host" as "[_ [$ _]]".
     do 2 iModIntro.
     simpl.
     iIntros.
@@ -192,7 +190,7 @@ Proof.
     iExists _; iFrame.
     done.
   }
-  iIntros (err) "(_ & Hreq_sl & Hpost)".
+  iIntros (err) "(Hreq_sl & Hpost)".
   destruct err.
   { (* there was an error; just Exit() *)
     simpl.

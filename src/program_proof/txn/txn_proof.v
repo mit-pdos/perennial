@@ -34,53 +34,53 @@ Implicit Types locked_by_map : gmap u64 (option nat).
 Definition modified := mspec.modified.
 Definition committed := mspec.committed.
 
-Definition mapsto_valid γ a obj :=
+Definition pointsto_valid γ a obj :=
   valid_addr a ∧
   valid_off (objKind obj) a.(addrOff) ∧
   γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some (objKind obj).
 
-Definition twophase_pre_crash_inv_pred ex_mapsto γ a obj : iProp Σ :=
-  "Hex_mapsto" ∷ ex_mapsto a obj ∗
-  "Hdurable" ∷ durable_mapsto γ a obj ∗
-  "%Hvalid" ∷ ⌜mapsto_valid γ a obj⌝.
+Definition twophase_pre_crash_inv_pred ex_pointsto γ a obj : iProp Σ :=
+  "Hex_pointsto" ∷ ex_pointsto a obj ∗
+  "Hdurable" ∷ durable_pointsto γ a obj ∗
+  "%Hvalid" ∷ ⌜pointsto_valid γ a obj⌝.
 
-Definition twophase_crash_inv_pred ex_mapsto γ a obj : iProp Σ :=
-  "Hex_mapsto" ∷ ex_mapsto a obj ∗
-  "Hdurable" ∷ durable_mapsto_own γ a obj ∗
-  "%Hvalid" ∷ ⌜mapsto_valid γ a obj⌝.
+Definition twophase_crash_inv_pred ex_pointsto γ a obj : iProp Σ :=
+  "Hex_pointsto" ∷ ex_pointsto a obj ∗
+  "Hdurable" ∷ durable_pointsto_own γ a obj ∗
+  "%Hvalid" ∷ ⌜pointsto_valid γ a obj⌝.
 
-Definition twophase_crash_inv ex_mapsto γ γ' a obj : iProp Σ :=
-  crash_borrow (twophase_pre_crash_inv_pred ex_mapsto γ a obj)
-    (|C={⊤}=> ∃ obj', twophase_crash_inv_pred ex_mapsto γ' a obj')%I.
+Definition twophase_crash_inv ex_pointsto γ γ' a obj : iProp Σ :=
+  crash_borrow (twophase_pre_crash_inv_pred ex_pointsto γ a obj)
+    (|C={⊤}=> ∃ obj', twophase_crash_inv_pred ex_pointsto γ' a obj')%I.
 
-Definition twophase_linv ex_mapsto γ γ' a : iProp Σ :=
+Definition twophase_linv ex_pointsto γ γ' a : iProp Σ :=
   ∃ obj,
     "Htoken" ∷ modify_token γ a ∗
-    "Hcrash_inv" ∷ twophase_crash_inv ex_mapsto γ γ' a obj ∗
-    "%Hvalid" ∷ ⌜mapsto_valid γ a obj⌝.
+    "Hcrash_inv" ∷ twophase_crash_inv ex_pointsto γ γ' a obj ∗
+    "%Hvalid" ∷ ⌜pointsto_valid γ a obj⌝.
 
-Definition twophase_linv_flat ex_mapsto γ γ' flat_addr : iProp Σ :=
+Definition twophase_linv_flat ex_pointsto γ γ' flat_addr : iProp Σ :=
   ∃ a,
-    "Hlinv" ∷ twophase_linv ex_mapsto γ γ' a ∗
+    "Hlinv" ∷ twophase_linv ex_pointsto γ γ' a ∗
     "%Ha" ∷ ⌜addr2flat a = flat_addr⌝.
 
-Definition is_twophase_locks l γ γ' ex_mapsto objs_dom_flat (locks_held: gset u64) : iProp Σ :=
+Definition is_twophase_locks l γ γ' ex_pointsto objs_dom_flat (locks_held: gset u64) : iProp Σ :=
   ∃ (locksl: loc) (acquired_m: loc) ghs,
     "Htxn.locks" ∷ l ↦[Txn :: "locks"] #locksl ∗
     "Htxn.acquired" ∷
       l ↦[Txn :: "acquired"] #acquired_m ∗
-    "Hacquired_m" ∷ is_map acquired_m 1
+    "Hacquired_m" ∷ own_map acquired_m 1
       (set_to_map (λ k, (k, true)) locks_held) ∗
     "Hlockeds" ∷ ([∗ set] flat_a ∈ locks_held,
       "Hlocked" ∷ Locked ghs flat_a
     ) ∗
     "#HlockMap" ∷ is_lockMap locksl ghs objs_dom_flat
-      (twophase_linv_flat ex_mapsto γ γ') ∗
+      (twophase_linv_flat ex_pointsto γ γ') ∗
     "%Hlocks_in_dom" ∷ ⌜locks_held ⊆ objs_dom_flat⌝.
 
-Lemma is_twophase_locks_get_pures l γ γ' ex_mapsto objs_dom_flat locks_held :
+Lemma is_twophase_locks_get_pures l γ γ' ex_pointsto objs_dom_flat locks_held :
   "Hlocks" ∷ is_twophase_locks
-    l γ γ' ex_mapsto objs_dom_flat locks_held -∗
+    l γ γ' ex_pointsto objs_dom_flat locks_held -∗
   "%Hlocks_in_dom" ∷ ⌜locks_held ⊆ objs_dom_flat⌝.
 Proof.
   iNamed 1.
@@ -99,21 +99,21 @@ Definition is_twophase_jrnl l γ dinit mt_changed : iProp Σ :=
       jrnl_maps_to γtxn a (modified vobj)
     ).
 
-Definition is_twophase_raw l γ γ' dinit ex_mapsto objs_dom mt_changed : iProp Σ :=
+Definition is_twophase_raw l γ γ' dinit ex_pointsto objs_dom mt_changed : iProp Σ :=
   "Hlocks" ∷ is_twophase_locks
-    l γ γ' ex_mapsto (set_map addr2flat objs_dom)
+    l γ γ' ex_pointsto (set_map addr2flat objs_dom)
     (set_map addr2flat (dom mt_changed)) ∗
   "Hjrnl" ∷ is_twophase_jrnl l γ dinit mt_changed ∗
   "Hcrash_invs" ∷ (
     [∗ map] a ↦ vobj ∈ mt_changed,
       "Hcrash_inv" ∷ twophase_crash_inv
-        ex_mapsto γ γ' a (committed vobj)
+        ex_pointsto γ γ' a (committed vobj)
   ) ∗
   "#Htxn_cinv" ∷ txn_cinv Njrnl γ γ' ∗
   "%Hvalids" ∷ ⌜
     map_Forall
       (λ a vobj,
-        mapsto_valid γ a (modified vobj)
+        pointsto_valid γ a (modified vobj)
       )
       mt_changed
   ⌝ ∗
@@ -133,7 +133,7 @@ Ltac wp_start :=
 
 Lemma big_sepS_set_map `{Countable A, Countable B} (h : A → B) (s : gset A) (f : B → iProp Σ) :
   (∀ x y, x ∈ s → y ∈ s → h x = h y → x = y) →
-  ([∗ set] x ∈ s, f (h x)) -∗ ([∗ set] x ∈ set_map h s, f x).
+  ([∗ set] x ∈ s, f (h x)) ⊢@{_} ([∗ set] x ∈ set_map h s, f x).
 Proof.
   intros Hinj.
   induction s as [|x s ? IH] using set_ind_L.
@@ -145,114 +145,114 @@ Proof.
   apply Hinj; set_solver.
 Qed.
 
-Lemma durable_mapsto_own_valid E γ a obj :
+Lemma durable_pointsto_own_valid E γ a obj :
   ↑Njrnl ⊆ E →
   ↑invN ⊆ E →
   "#Htxn_system" ∷ is_txn_system Njrnl γ -∗
-  "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj
+  "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj
   -∗ |NC={E}=>
-  "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
-  "%Hvalid" ∷ ⌜mapsto_valid γ a obj⌝.
+  "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
+  "%Hvalid" ∷ ⌜pointsto_valid γ a obj⌝.
 Proof.
   iIntros (HNjrnl HinvN) "??".
   iNamed.
-  iDestruct "Hdurable_mapsto" as "[Htoken Hdurable_mapsto]".
+  iDestruct "Hdurable_pointsto" as "[Htoken Hdurable_pointsto]".
   iDestruct "Htoken" as (obj') "Htoken".
   iMod (
-    durable_mapsto_mapsto_txn_agree with
-    "Htxn_system Hdurable_mapsto Htoken"
-  ) as "[<- [$ Hmapsto]]"; [assumption|assumption|solve_ndisj|].
+    durable_pointsto_pointsto_txn_agree with
+    "Htxn_system Hdurable_pointsto Htoken"
+  ) as "[<- [$ Hpointsto]]"; [assumption|assumption|solve_ndisj|].
   iNamed "Htxn_system".
-  iMod (mapsto_txn_valid with "His_txn Hmapsto")
-    as "[Hmapsto %Hvalid]"; first by assumption.
+  iMod (pointsto_txn_valid with "His_txn Hpointsto")
+    as "[Hpointsto %Hvalid]"; first by assumption.
   iModIntro.
   iSplit; first by (iExists _; iFrame).
   iPureIntro.
   apply Hvalid.
 Qed.
 
-Lemma exchange_mapsto_valid γ γ' a obj :
+Lemma exchange_pointsto_valid γ γ' a obj :
   γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds) →
-  mapsto_valid γ a obj →
-  mapsto_valid γ' a obj.
+  pointsto_valid γ a obj →
+  pointsto_valid γ' a obj.
 Proof.
   intros Hkinds (Hvalid_addr&Hvalid_off&Hvalid_kinds).
-  rewrite /mapsto_valid -Hvalid_kinds -Hkinds //=.
+  rewrite /pointsto_valid -Hvalid_kinds -Hkinds //=.
 Qed.
 
 Global Instance obj_inhabited: Inhabited object.
 Proof. econstructor. econstructor. apply (bufBit true). Qed.
 
-Theorem twophase_init_locks {E} ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} mt γ γ' :
+Theorem twophase_init_locks {E} ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} mt γ γ' :
   ↑Njrnl ⊆ E →
   ↑invN ⊆ E →
   set_Forall valid_addr (dom mt) →
   "Hpre" ∷ ([∗ map] _ ↦ _ ∈ mt, pre_borrow) -∗
   "#Htxn_system" ∷ is_txn_system Njrnl γ -∗
   "#Htxn_cinv" ∷ txn_cinv Njrnl γ γ' -∗
-  "Hmapstos" ∷ (
+  "Hpointstos" ∷ (
     [∗ map] a ↦ obj ∈ mt,
-      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
-      "Hex_mapsto" ∷ ex_mapsto a obj
+      "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
+      "Hex_pointsto" ∷ ex_pointsto a obj
   )
   -∗ |NC={E}=>
   "Hlinvs" ∷ (
     init_cancel ([∗ set] a ∈ set_map addr2flat (dom mt),
-                 "Hlinv" ∷ twophase_linv_flat ex_mapsto γ γ' a)
+                 "Hlinv" ∷ twophase_linv_flat ex_pointsto γ γ' a)
                 ("Hcrash" ∷
                    (|C={⊤}=> ([∗ map] a↦_ ∈ mt, ∃ (obj : object),
-                                     "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
-                                     "Hex_mapsto" ∷ ex_mapsto a obj ∗
-                                     "%Hvalid" ∷ ⌜ mapsto_valid γ' a obj ⌝)))
+                                     "Hdurable_pointsto" ∷ durable_pointsto_own γ' a obj ∗
+                                     "Hex_pointsto" ∷ ex_pointsto a obj ∗
+                                     "%Hvalid" ∷ ⌜ pointsto_valid γ' a obj ⌝)))
   ).
 Proof.
   iIntros (HNjrnl NinvN Haddrs_valid) "????".
   iNamed.
-  iDestruct (big_sepM_sep with "Hmapstos")
-    as "[Hdurable_mapstos Hex_mapstos]".
+  iDestruct (big_sepM_sep with "Hpointstos")
+    as "[Hdurable_pointstos Hex_pointstos]".
   iMod (
     big_sepM_mono_ncfupd _ (λ a obj,
-      "Hdurable_mapsto" ∷ durable_mapsto_own γ a obj ∗
-      "%Hkind" ∷ ⌜mapsto_valid γ a obj⌝
-    )%I _ True%I with "[] [Hdurable_mapstos]"
+      "Hdurable_pointsto" ∷ durable_pointsto_own γ a obj ∗
+      "%Hkind" ∷ ⌜pointsto_valid γ a obj⌝
+    )%I mt True%I with "[] [Hdurable_pointstos]"
   ) as "[_ Hmono]".
   2: {
     iSplit; first by trivial.
     iFrame.
   }
   {
-    iIntros (a obj) "!> %Hacc (_&Hdurable_mapsto)".
-    iMod (durable_mapsto_own_valid with "Htxn_system Hdurable_mapsto")
+    iIntros (a obj) "!> %Hacc (_&Hdurable_pointsto)".
+    iMod (durable_pointsto_own_valid with "Htxn_system Hdurable_pointsto")
       as "Himpl".
     1-2: eassumption.
     iModIntro.
     iSplit; first by trivial.
     iFrame.
   }
-  iDestruct (big_sepM_sep with "Hmono") as "[Hdurable_mapstos %Hkinds]".
-  iDestruct (big_sepM_sep with "Hdurable_mapstos")
-    as "[Htokens Hdurable_mapstos]".
+  iDestruct (big_sepM_sep with "Hmono") as "[Hdurable_pointstos %Hkinds]".
+  iDestruct (big_sepM_sep with "Hdurable_pointstos")
+    as "[Htokens Hdurable_pointstos]".
   iApply fupd_ncfupd.
   iDestruct (
     big_sepM_crash_borrow_init_cancel
     (λ a _,
-      |C={⊤}=> (∃ obj', twophase_crash_inv_pred ex_mapsto γ' a obj'))%I
-    (λ a o, twophase_pre_crash_inv_pred ex_mapsto γ a o)
-    with "Hpre [Hdurable_mapstos Hex_mapstos] []") as "Hcrash".
+      |C={⊤}=> (∃ obj', twophase_crash_inv_pred ex_pointsto γ' a obj'))%I
+    (λ a o, twophase_pre_crash_inv_pred ex_pointsto γ a o)
+    with "Hpre [Hdurable_pointstos Hex_pointstos] []") as "Hcrash".
   {
-    iDestruct (big_sepM_sep with "[$Hdurable_mapstos $Hex_mapstos]")
-      as "Hmapstos".
-    iApply (big_sepM_impl with "Hmapstos").
-    iIntros (a obj Hacc) "!> [Hdurable_mapsto ?]".
+    iDestruct (big_sepM_sep with "[$Hdurable_pointstos $Hex_pointstos]")
+      as "Hpointstos".
+    iApply (big_sepM_impl with "Hpointstos").
+    iIntros (a obj Hacc) "!> [Hdurable_pointsto ?]".
     iFrame. eauto. }
   {
     iApply big_sepM_forall.
     iIntros (a obj Hacc) "!>Hpreds".
     iNamed "Hpreds".
-    iMod (exchange_durable_mapsto1 with "[$]") as "Hdurable".
+    iMod (exchange_durable_pointsto1 with "[$]") as "Hdurable".
     iModIntro. iExists _. iFrame.
     iDestruct ("Htxn_cinv") as "(_&%)".
-    iPureIntro. eapply exchange_mapsto_valid; eauto.
+    iPureIntro. eapply exchange_pointsto_valid; eauto.
   }
   iModIntro. iApply (init_cancel_wand with "Hcrash [Htokens] []").
   {
@@ -279,11 +279,11 @@ Proof.
   iApply big_sepM_fupd.
   iApply (big_sepM_wand with "H").
   iApply big_sepM_intro. iIntros "!>" (???) "H".
-  iMod ("H" with "[$]") as (obj) "(Hex&Hdur&Hmapsto_valid)".
+  iMod ("H" with "[$]") as (obj) "(Hex&Hdur&Hpointsto_valid)".
   iModIntro. iExists _. iFrame.
 Qed.
 
-Theorem wp_Txn__Begin_raw (prel txnl locksl: loc) γ γ' dinit ex_mapsto ghs objs_dom :
+Theorem wp_Txn__Begin_raw (prel txnl locksl: loc) γ γ' dinit ex_pointsto ghs objs_dom :
   set_Forall valid_addr objs_dom →
   {{{
     "#Hpre.txn_ro" ∷ readonly (prel ↦[txn.Log :: "log"] #txnl) ∗
@@ -295,13 +295,13 @@ Theorem wp_Txn__Begin_raw (prel txnl locksl: loc) γ γ' dinit ex_mapsto ghs obj
     "#Htxn_cinv" ∷ txn_cinv Njrnl γ γ' ∗
     "#HlockMap" ∷ is_lockMap locksl ghs
       (set_map addr2flat objs_dom)
-      (twophase_linv_flat ex_mapsto γ γ')
+      (twophase_linv_flat ex_pointsto γ γ')
   }}}
     Begin #prel
   {{{
     (l : loc), RET #l;
       "Htwophase_raw" ∷
-        is_twophase_raw l γ γ' dinit ex_mapsto objs_dom ∅
+        is_twophase_raw l γ γ' dinit ex_pointsto objs_dom ∅
   }}}.
 Proof.
   intros Htracked_addrs_wf.
@@ -344,24 +344,24 @@ Proof.
   auto.
 Qed.
 
-Lemma twophase_linv_get_addr_valid ex_mapsto γ γ' a :
-  "Hlinv" ∷ twophase_linv ex_mapsto γ γ' a -∗
+Lemma twophase_linv_get_addr_valid ex_pointsto γ γ' a :
+  "Hlinv" ∷ twophase_linv ex_pointsto γ γ' a -∗
   "%Hvalid" ∷ ⌜valid_addr a⌝.
 Proof.
   iNamed 1.
   iNamed "Hlinv".
   iPureIntro.
-  rewrite /mapsto_valid in Hvalid.
+  rewrite /pointsto_valid in Hvalid.
   intuition.
 Qed.
 
-Lemma is_twophase_raw_get_valid l γ γ' dinit ex_mapsto objs_dom mt_changed :
+Lemma is_twophase_raw_get_valid l γ γ' dinit ex_pointsto objs_dom mt_changed :
   "Htwophase" ∷ is_twophase_raw
-    l γ γ' dinit ex_mapsto objs_dom mt_changed -∗
+    l γ γ' dinit ex_pointsto objs_dom mt_changed -∗
   "%Hvalids" ∷ ⌜
     map_Forall
       (λ a vobj,
-        mapsto_valid γ a (modified vobj)
+        pointsto_valid γ a (modified vobj)
       )
       mt_changed
   ⌝.
@@ -371,9 +371,9 @@ Proof.
   iFrame "%".
 Qed.
 
-Lemma is_twophase_raw_get_mt_in_spec l γ γ' dinit ex_mapsto objs_dom mt_changed :
+Lemma is_twophase_raw_get_mt_in_spec l γ γ' dinit ex_pointsto objs_dom mt_changed :
   "Htwophase" ∷ is_twophase_raw
-    l γ γ' dinit ex_mapsto objs_dom mt_changed -∗
+    l γ γ' dinit ex_pointsto objs_dom mt_changed -∗
   "Hmt_dom" ∷ ⌜dom mt_changed ⊆ objs_dom⌝.
 Proof.
   iNamed 1.
@@ -404,14 +404,14 @@ Proof.
 Qed.
 Opaque crash_borrow.
 
-Theorem wp_Txn__acquireNoCheck' l γ γ' ex_mapsto objs_dom_flat locks_held (a: addr):
+Theorem wp_Txn__acquireNoCheck' l γ γ' ex_pointsto objs_dom_flat locks_held (a: addr):
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   addr2flat a ∉ locks_held →
   ∀ Φ,
-  "Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held
-  -∗ (▷ ("Hlinv" ∷ twophase_linv ex_mapsto γ γ' a -∗
-        wpc_nval ⊤ ("Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat ({[addr2flat a]} ∪ locks_held)
+  "Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held
+  -∗ (▷ ("Hlinv" ∷ twophase_linv ex_pointsto γ γ' a -∗
+        wpc_nval ⊤ ("Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat ({[addr2flat a]} ∪ locks_held)
                     -∗ Φ #())))
      -∗ WP Txn__acquireNoCheck #l (addr2val a);; #() {{ v, Φ v }}.
 Proof.
@@ -498,19 +498,19 @@ Proof.
 Qed.
 
 (*
-Theorem wp_Txn__acquireNoCheck l γ γ' ex_mapsto objs_dom_flat locks_held (a: addr):
+Theorem wp_Txn__acquireNoCheck l γ γ' ex_pointsto objs_dom_flat locks_held (a: addr):
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   addr2flat a ∉ locks_held →
   {{{
-    "Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held
+    "Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held
   }}}
     Txn__acquireNoCheck #l (addr2val a)
   {{{
     RET #();
     "Hlocks" ∷ is_twophase_locks
-      l γ γ' ex_mapsto objs_dom_flat ({[addr2flat a]} ∪ locks_held) ∗
-    "Hlinv" ∷ twophase_linv ex_mapsto γ γ' a
+      l γ γ' ex_pointsto objs_dom_flat ({[addr2flat a]} ∪ locks_held) ∗
+    "Hlinv" ∷ twophase_linv ex_pointsto γ γ' a
   }}}.
 Proof.
   intros Ha_valid Hin_spec Haddr_not_locked.
@@ -522,12 +522,12 @@ Proof.
 Qed.
 *)
 
-Theorem wp_Txn__isAlreadyAcquired' l γ γ' ex_mapsto objs_dom_flat locks_held a :
+Theorem wp_Txn__isAlreadyAcquired' l γ γ' ex_pointsto objs_dom_flat locks_held a :
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   ∀ Φ,
-  "Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held -∗
-   ▷ ("Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held
+  "Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held -∗
+   ▷ ("Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held
             -∗ wpc_nval ⊤ (Φ #(bool_decide (addr2flat a ∈ locks_held)))) -∗
   WP Txn__isAlreadyAcquired #l (addr2val a) {{ v, Φ v }}.
 Proof.
@@ -571,16 +571,16 @@ Proof.
   eauto.
 Qed.
 
-Theorem wp_Txn__isAlreadyAcquired l γ γ' ex_mapsto objs_dom_flat locks_held a :
+Theorem wp_Txn__isAlreadyAcquired l γ γ' ex_pointsto objs_dom_flat locks_held a :
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   {{{
-    "Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held
+    "Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held
   }}}
     Txn__isAlreadyAcquired #l (addr2val a)
   {{{
     RET #(bool_decide (addr2flat a ∈ locks_held));
-    "Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held
+    "Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held
   }}}.
 Proof.
   intros Ha_valid Haddr_wf.
@@ -591,13 +591,13 @@ Proof.
   iNext. iApply "HΦ". iFrame.
 Qed.
 
-Theorem wp_Txn__Acquire' l γ γ' ex_mapsto objs_dom_flat locks_held (a: addr):
+Theorem wp_Txn__Acquire' l γ γ' ex_pointsto objs_dom_flat locks_held (a: addr):
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   ∀ Φ,
-  is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held -∗
-  ▷ ("Hlinv" ∷ (if decide (addr2flat a ∈ locks_held) then True else twophase_linv ex_mapsto γ γ' a) -∗
-     wpc_nval ⊤ ("Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat
+  is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held -∗
+  ▷ ("Hlinv" ∷ (if decide (addr2flat a ∈ locks_held) then True else twophase_linv ex_pointsto γ γ' a) -∗
+     wpc_nval ⊤ ("Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat
                 (if decide (addr2flat a ∈ locks_held) then locks_held else {[addr2flat a]} ∪ locks_held) -∗
                 Φ #())) -∗
   WP Txn__Acquire #l (addr2val a) {{ v, Φ v }}.
@@ -619,24 +619,24 @@ Proof.
     wp_apply (wp_Txn__acquireNoCheck' with "Hlocks"); eauto.
 Qed.
 
-Theorem wp_Txn__Acquire l γ γ' ex_mapsto objs_dom_flat locks_held (a: addr):
+Theorem wp_Txn__Acquire l γ γ' ex_pointsto objs_dom_flat locks_held (a: addr):
   valid_addr a →
   addr2flat a ∈ objs_dom_flat →
   {{{
-    "Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held
+    "Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held
   }}}
     Txn__Acquire #l (addr2val a)
   {{{
     RET #();
     let a_locked := addr2flat a ∈ locks_held in
-    "Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat (
+    "Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat (
       if decide (a_locked) then locks_held
       else ({[addr2flat a]} ∪ locks_held)
     ) ∗
     "Hlinv" ∷ (
       if decide (a_locked)
       then True
-      else twophase_linv ex_mapsto γ γ' a
+      else twophase_linv ex_pointsto γ γ' a
     )
   }}}.
 Proof.
@@ -652,9 +652,9 @@ Lemma is_twophase_jrnl_not_in_map l γ dinit mt_changed a obj :
   "Hjrnl" ∷ is_twophase_jrnl l γ dinit mt_changed -∗
   "Hold_vals" ∷ (
     [∗ map] a ↦ vobj ∈ mt_changed,
-      "Hdurable_mapsto" ∷ durable_mapsto γ a (committed vobj)
+      "Hdurable_pointsto" ∷ durable_pointsto γ a (committed vobj)
   ) -∗
-  "Hdurable_mapsto" ∷ durable_mapsto γ a obj -∗
+  "Hdurable_pointsto" ∷ durable_pointsto γ a obj -∗
   ⌜mt_changed !! a = None⌝.
 Proof.
   iIntros "???".
@@ -664,7 +664,7 @@ Proof.
   iDestruct (map_ctx_agree with "Hjrnl_durable_frag Hdurable") as %<-.
   iDestruct (
     is_jrnl_durable_not_in_map with
-    "Hdurable_mapsto [Hjrnl_durable_frag Hold_vals] Hdurable"
+    "Hdurable_pointsto [Hjrnl_durable_frag Hold_vals] Hdurable"
   ) as "%Hnotin".
   2: {
     iPureIntro.
@@ -676,29 +676,29 @@ Proof.
   iFrame.
   iSplitL; first by (iApply big_sepM_fmap; iFrame).
   iModIntro.
-  iIntros (?) "Hmapstos".
+  iIntros (?) "Hpointstos".
   trivial.
 Qed.
 
-Theorem twophase_lift l γ γ' dinit mt_changed ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} a :
+Theorem twophase_lift l γ γ' dinit mt_changed ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} a :
   mt_changed !! a = None →
   "#Htxn_cinv" ∷ txn_cinv Njrnl γ γ' -∗
   "Hjrnl" ∷ is_twophase_jrnl l γ dinit mt_changed -∗
   "Hcrash_invs" ∷ (
     [∗ map] a' ↦ vobj' ∈ mt_changed,
       "Hcrash_inv" ∷ twophase_crash_inv
-        ex_mapsto γ γ' a' (committed vobj')
+        ex_pointsto γ γ' a' (committed vobj')
   ) -∗
-  "Hlinv" ∷ twophase_linv ex_mapsto γ γ' a
+  "Hlinv" ∷ twophase_linv ex_pointsto γ γ' a
   -∗ wpc_nval ⊤ (∃ obj,
     let mt_changed' := <[a:=object_to_versioned obj]>mt_changed in
     "Hjrnl" ∷ is_twophase_jrnl l γ dinit mt_changed' ∗
     "Hcrash_invs" ∷ (
       [∗ map] a' ↦ vobj' ∈ mt_changed',
         "Hcrash_inv" ∷ twophase_crash_inv
-          ex_mapsto γ γ' a' (committed vobj')
+          ex_pointsto γ γ' a' (committed vobj')
     ) ∗
-    "%Hvalid" ∷ ⌜mapsto_valid γ a obj⌝
+    "%Hvalid" ∷ ⌜pointsto_valid γ a obj⌝
   ).
 Proof.
   iIntros (Hnotin) "????".
@@ -707,7 +707,7 @@ Proof.
   iNamed "Hjrnl".
   iPoseProof (
     crash_borrow_wpc_nval ⊤ _ _
-    (twophase_pre_crash_inv_pred ex_mapsto γ a obj)
+    (twophase_pre_crash_inv_pred ex_pointsto γ a obj)
     (
       "Hjrnl_mem" ∷ is_jrnl_mem
         Njrnl jrnll γ dinit γtxn γdurable ∗
@@ -730,13 +730,13 @@ Proof.
     iSplit; last by (iPureIntro; assumption).
     iIntros "!> (?&?&?)".
     iIntros "Hc".
-    iMod (exchange_durable_mapsto1 with "[$] [$]") as "Hdurable".
+    iMod (exchange_durable_pointsto1 with "[$] [$]") as "Hdurable".
     iNamed.
     iIntros "!>".
     iExists _.
     iFrame "∗ %".
     iDestruct ("Htxn_cinv") as "(_&%)".
-    iPureIntro. eapply exchange_mapsto_valid; eauto.
+    iPureIntro. eapply exchange_pointsto_valid; eauto.
   }
   iApply (wpc_nval_strong_mono with "Hnval").
   iNext. iDestruct 1 as "[(?&?&?) Hcrash_inv]".
@@ -758,18 +758,18 @@ Proof.
   iFrame.
 Qed.
 
-Theorem twophase_lift_if_needed l γ γ' dinit mt_changed ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} a :
+Theorem twophase_lift_if_needed l γ γ' dinit mt_changed ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} a :
   "Htxncinv" ∷ txn_cinv Njrnl γ γ' -∗
   "Hjrnl" ∷ is_twophase_jrnl l γ dinit mt_changed -∗
   "Hcrash_invs" ∷ (
     [∗ map] a' ↦ vobj' ∈ mt_changed,
       "Hcrash_inv" ∷ twophase_crash_inv
-        ex_mapsto γ γ' a' (committed vobj')
+        ex_pointsto γ γ' a' (committed vobj')
   ) -∗
   "Hlinv" ∷ (
     match mt_changed !! a with
     | Some _ => True
-    | None => "Hlinv" ∷ twophase_linv ex_mapsto γ γ' a
+    | None => "Hlinv" ∷ twophase_linv ex_pointsto γ γ' a
     end
   )
   -∗ wpc_nval ⊤ (∃ obj,
@@ -783,12 +783,12 @@ Theorem twophase_lift_if_needed l γ γ' dinit mt_changed ex_mapsto `{!∀ a obj
     "Hcrash_invs" ∷ (
       [∗ map] a' ↦ vobj' ∈ mt_changed',
         "Hcrash_inv" ∷ twophase_crash_inv
-          ex_mapsto γ γ' a' (committed vobj')
+          ex_pointsto γ γ' a' (committed vobj')
     ) ∗
     "%Hvalid" ∷ ⌜
       match mt_changed !! a with
       | Some _ => True
-      | None => mapsto_valid γ a obj
+      | None => pointsto_valid γ a obj
       end
     ⌝
   ).
@@ -815,11 +815,11 @@ Proof.
   destruct x; rewrite //=.
 Qed.
 
-Theorem wp_Txn__Acquire_lift l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a:
+Theorem wp_Txn__Acquire_lift l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} objs_dom mt_changed a:
   a ∈ objs_dom →
   {{{
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed
+      l γ γ' dinit ex_pointsto objs_dom mt_changed
   }}}
     Txn__Acquire #l (addr2val a)
   {{{
@@ -831,7 +831,7 @@ Theorem wp_Txn__Acquire_lift l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex
       end
     in
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed'
+      l γ γ' dinit ex_pointsto objs_dom mt_changed'
   }}}.
 Proof.
   intros Hin_spec.
@@ -924,11 +924,11 @@ Proof.
   iApply ((IHl HNoDup) with "Hsep").
 Qed.
 
-Theorem wp_Txn__ReleaseAll l γ γ' ex_mapsto objs_dom_flat locks_held :
+Theorem wp_Txn__ReleaseAll l γ γ' ex_pointsto objs_dom_flat locks_held :
   {{{
-    "Hlocks" ∷ is_twophase_locks l γ γ' ex_mapsto objs_dom_flat locks_held ∗
+    "Hlocks" ∷ is_twophase_locks l γ γ' ex_pointsto objs_dom_flat locks_held ∗
     "Hlinvs" ∷ ([∗ set] flat_a ∈ locks_held, (
-      "Hlinv" ∷ twophase_linv_flat ex_mapsto γ γ' flat_a
+      "Hlinv" ∷ twophase_linv_flat ex_pointsto γ γ' flat_a
     ))
   }}}
     Txn__ReleaseAll #l
@@ -948,7 +948,7 @@ Proof.
         "Hlocked" ∷ Locked ghs flat_a
       ) ∗
       "Hlinvs" ∷ ([∗ set] flat_a ∈ dom mtodo,
-        "Hlinv" ∷ twophase_linv_flat ex_mapsto γ γ' flat_a
+        "Hlinv" ∷ twophase_linv_flat ex_pointsto γ γ' flat_a
       )
     )%I
     with "Hacquired_m [$Htxn.locks Hlockeds Hlinvs] [] [HΦ]"
@@ -1077,39 +1077,39 @@ Proof.
   }
 Qed.
 
-Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Discretizable (ex_mapsto a obj)} `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed Qok Qnok :
+Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Discretizable (ex_pointsto a obj)} `{!∀ a obj, Timeless (ex_pointsto a obj)} objs_dom mt_changed Qok Qnok :
   {{{
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed ∗
+      l γ γ' dinit ex_pointsto objs_dom mt_changed ∗
     "Hfupd" ∷ (
       (
         "Hcommitted" ∷ (
           [∗ map] a ↦ vobj ∈ mt_changed,
-            ex_mapsto a (committed vobj)
+            ex_pointsto a (committed vobj)
         )
         -∗ |C={⊤}=>
         "Hmodified" ∷ (
           [∗ map] a ↦ vobj ∈ mt_changed,
-            ex_mapsto a (modified vobj)
+            ex_pointsto a (modified vobj)
         )
       ) ∧ ▷ (
         "Hcommitted" ∷ (
           [∗ map] a ↦ vobj ∈ mt_changed,
-            ex_mapsto a (committed vobj)
+            ex_pointsto a (committed vobj)
         )
         -∗
         (
           |NC={⊤}=>
           "Hmodified" ∷ (
             [∗ map] a ↦ vobj ∈ mt_changed,
-              ex_mapsto a (modified vobj)
+              ex_pointsto a (modified vobj)
           ) ∗
           "HQ" ∷ Qok
         ) ∧
         (
           "Hcommitted" ∷ (
             [∗ map] a ↦ vobj ∈ mt_changed,
-              ex_mapsto a (committed vobj)
+              ex_pointsto a (committed vobj)
           ) ∗
           "HQ" ∷ Qnok
         )
@@ -1120,11 +1120,11 @@ Theorem wp_Txn__commitNoRelease_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Discr
   {{{
     (ok:bool), RET #ok;
     "Hlocks" ∷ is_twophase_locks
-      l γ γ' ex_mapsto (set_map addr2flat objs_dom)
+      l γ γ' ex_pointsto (set_map addr2flat objs_dom)
       (set_map addr2flat (dom mt_changed)) ∗
     "Hlinvs" ∷ (
       [∗ set] a ∈ dom mt_changed,
-        "Hlinv" ∷ twophase_linv_flat ex_mapsto γ γ' (addr2flat a)
+        "Hlinv" ∷ twophase_linv_flat ex_pointsto γ γ' (addr2flat a)
     ) ∗
     "HQ" ∷ (if ok then Qok else Qnok)
   }}}.
@@ -1143,7 +1143,7 @@ Proof.
       let vobj_branch := (
         if decide (v = #true) then modified else committed
       ) in
-      twophase_pre_crash_inv_pred ex_mapsto γ a (vobj_branch vobj)
+      twophase_pre_crash_inv_pred ex_pointsto γ a (vobj_branch vobj)
     )%I
     _ _
     with "[] Hcrash_invs"
@@ -1152,83 +1152,83 @@ Proof.
     iModIntro.
     iIntros (?? Hacc) "[? [? %]]".
     iIntros "HC".
-    iMod (exchange_durable_mapsto1 _ _ _ with "[$] [$]") as "Hdurable".
+    iMod (exchange_durable_pointsto1 _ _ _ with "[$] [$]") as "Hdurable".
     iModIntro. iExists _. iFrame.
     iDestruct ("Htxn_cinv") as "(_&%)".
-    iPureIntro. eapply exchange_mapsto_valid; eauto.
+    iPureIntro. eapply exchange_pointsto_valid; eauto.
   }
   iSplit; first by auto.
   iIntros "Hcrash_invs".
   iDestruct (big_sepM_sep with "Hcrash_invs")
-    as "[Hex_mapstos Hdurable_mapstos]".
-  iDestruct (big_sepM_sep with "Hdurable_mapstos")
-    as "[Hdurable_mapstos #Hwfs]".
+    as "[Hex_pointstos Hdurable_pointstos]".
+  iDestruct (big_sepM_sep with "Hdurable_pointstos")
+    as "[Hdurable_pointstos #Hwfs]".
   iApply big_sepM_fmap in "Hjrnl_maps_tos".
-  iApply big_sepM_fmap in "Hdurable_mapstos".
+  iApply big_sepM_fmap in "Hdurable_pointstos".
   iApply wpc_cfupd.
   iApply wpc_ncfupd.
   wpc_apply (wpc_Op__CommitWait' with "[
-    $Hjrnl_mem $Hjrnl_durable_frag $Hjrnl_maps_tos $Hdurable_mapstos
+    $Hjrnl_mem $Hjrnl_durable_frag $Hjrnl_maps_tos $Hdurable_pointstos
     $Htxn_cinv
   ]").
   1-3: solve_ndisj.
   iSplit.
   {
     iDestruct "Hfupd" as "[Hfupd _]".
-    iIntros "Hdurable_mapstos HC".
+    iIntros "Hdurable_pointstos HC".
     iSplitR; first by trivial.
     iDestruct (big_sepM_forall with "Hwfs") as "%Hwfs".
     iDestruct "Htxn_cinv" as "(_&%Hkinds)".
-    iDestruct "Hdurable_mapstos" as "[Hdurable_mapstos|Hdurable_mapstos]".
+    iDestruct "Hdurable_pointstos" as "[Hdurable_pointstos|Hdurable_pointstos]".
     {
       iIntros "!>".
-      iApply (big_sepM_fmap committed) in "Hdurable_mapstos".
-      iDestruct (big_sepM_sep with "[$Hex_mapstos $Hdurable_mapstos]")
-        as "Hmapstos".
-      iApply (big_sepM_impl with "Hmapstos").
-      iIntros (a vobj Hacc) "!> [? Hdurable_mapsto]".
+      iApply (big_sepM_fmap committed) in "Hdurable_pointstos".
+      iDestruct (big_sepM_sep with "[$Hex_pointstos $Hdurable_pointstos]")
+        as "Hpointstos".
+      iApply (big_sepM_impl with "Hpointstos").
+      iIntros (a vobj Hacc) "!> [? Hdurable_pointsto]".
       iModIntro.
       iExists _.
       iFrame.
       iPureIntro.
       apply Hwfs in Hacc.
-      eapply exchange_mapsto_valid; eassumption.
+      eapply exchange_pointsto_valid; eassumption.
     }
     iDestruct "HC" as "#HC".
-    iMod ("Hfupd" with "Hex_mapstos HC") as "?".
+    iMod ("Hfupd" with "Hex_pointstos HC") as "?".
     iNamed.
     iIntros "!>".
-    iApply (big_sepM_fmap modified) in "Hdurable_mapstos".
-    iDestruct (big_sepM_sep with "[$Hmodified $Hdurable_mapstos]")
-      as "Hmapstos".
-    iApply (big_sepM_impl with "Hmapstos").
-    iIntros (a vobj Hacc) "!> [? Hdurable_mapsto]".
+    iApply (big_sepM_fmap modified) in "Hdurable_pointstos".
+    iDestruct (big_sepM_sep with "[$Hmodified $Hdurable_pointstos]")
+      as "Hpointstos".
+    iApply (big_sepM_impl with "Hpointstos").
+    iIntros (a vobj Hacc) "!> [? Hdurable_pointsto]".
     iModIntro.
     iExists _.
     iFrame.
     iPureIntro.
     apply Hwfs in Hacc.
-    eapply exchange_mapsto_valid; eassumption.
+    eapply exchange_pointsto_valid; eassumption.
   }
   iDestruct "Hfupd" as "[_ Hfupd]".
   iModIntro.
-  iIntros (ok) "Hdurable_mapstos".
-  iDestruct (big_sepM_sep with "Hdurable_mapstos") as
-    "[Htokens Hdurable_mapstos]".
+  iIntros (ok) "Hdurable_pointstos".
+  iDestruct (big_sepM_sep with "Hdurable_pointstos") as
+    "[Htokens Hdurable_pointstos]".
   replace (if ok then _ else _) with
     ((if ok then modified else committed) <$> mt_changed);
     last by (destruct ok; reflexivity).
   iApply (
     big_sepM_fmap (if ok then modified else committed)
-  ) in "Hdurable_mapstos".
+  ) in "Hdurable_pointstos".
   iAssert (
     |NC={⊤}=>
       ([∗ map] a ↦ vobj ∈ mt_changed,
-        ex_mapsto a ((if ok then modified else committed) vobj)
+        ex_pointsto a ((if ok then modified else committed) vobj)
       ) ∗ (if ok then Qok else Qnok)
-  )%I with "[Hex_mapstos Hfupd]" as "> [Hex_mapstos HQ]".
+  )%I with "[Hex_pointstos Hfupd]" as "> [Hex_pointstos HQ]".
   {
-    iDestruct ("Hfupd" with "Hex_mapstos") as "Hfupd".
+    iDestruct ("Hfupd" with "Hex_pointstos") as "Hfupd".
     destruct ok.
     - iDestruct "Hfupd" as "[> [??] _]".
       iFrame; trivial.
@@ -1236,12 +1236,12 @@ Proof.
       iFrame; trivial.
   }
   iModIntro.
-  iDestruct (big_sepM_sep with "[$Hex_mapstos $Hdurable_mapstos]")
-    as "Hmapstos".
-  iSplitL "Hmapstos".
+  iDestruct (big_sepM_sep with "[$Hex_pointstos $Hdurable_pointstos]")
+    as "Hpointstos".
+  iSplitL "Hpointstos".
   {
-    iApply (big_sepM_impl with "Hmapstos").
-    iIntros (a vobj Hacc) "!> [? Hdurable_mapsto]".
+    iApply (big_sepM_impl with "Hpointstos").
+    iIntros (a vobj Hacc) "!> [? Hdurable_pointsto]".
     apply Hvalids in Hacc.
     destruct (decide (#ok = #true)) as [Hok|Hok].
     - rewrite decide_True; last by assumption.
@@ -1260,10 +1260,10 @@ Proof.
     iApply big_sepM_forall.
     iIntros (a vobj Hacc) "!> [? [? %]]".
     iIntros "HC".
-    iMod (exchange_durable_mapsto1 with "[$] [$]") as "Hdurable".
+    iMod (exchange_durable_pointsto1 with "[$] [$]") as "Hdurable".
     iModIntro. iExists _. iFrame.
     iDestruct ("Htxn_cinv") as "(_&%)".
-    iPureIntro. eapply exchange_mapsto_valid; eauto.
+    iPureIntro. eapply exchange_pointsto_valid; eauto.
   }
   iSplit; first by auto.
   iIntros "Hcrash_invs".
@@ -1294,19 +1294,19 @@ Proof.
     assumption.
 Qed.
 
-Theorem wp_Txn__readBufNoAcquire l γ γ' dinit ex_mapsto objs_dom mt_changed a obj (sz: u64) :
+Theorem wp_Txn__readBufNoAcquire l γ γ' dinit ex_pointsto objs_dom mt_changed a obj (sz: u64) :
   modified <$> (mt_changed !! a) = Some obj →
   bufSz (objKind obj) = int.nat sz →
   {{{
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed
+      l γ γ' dinit ex_pointsto objs_dom mt_changed
   }}}
     Txn__readBufNoAcquire #l (addr2val a) #sz
   {{{
     data_s data, RET (slice_val data_s);
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed ∗
-    "Hdata_s" ∷ is_slice data_s byteT 1 data ∗
+      l γ γ' dinit ex_pointsto objs_dom mt_changed ∗
+    "Hdata_s" ∷ own_slice data_s byteT 1 data ∗
     "%Hdata" ∷ ⌜data_has_obj data a obj⌝
   }}}.
 Proof.
@@ -1346,25 +1346,25 @@ Proof.
   iFrame "Hlocks Hcrash_invs".
   iSplitL "
     Htxn.jrnl Hjrnl_mem Hjrnl_durable_frag Hjrnl_maps_tos
-  "; first by (iExists _, _, _; iFrame).
+  "; first by iFrame "Hjrnl_mem ∗".
   by iFrame "# %".
 Qed.
 
-Theorem wp_Txn__ReadBuf_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a sz :
+Theorem wp_Txn__ReadBuf_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} objs_dom mt_changed a sz :
   a ∈ objs_dom →
   bufSz <$> (
     γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock)
   ) = Some (int.nat sz) →
   {{{
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed
+      l γ γ' dinit ex_pointsto objs_dom mt_changed
   }}}
     Txn__ReadBuf #l (addr2val a) #sz
   {{{
     data_s data obj mt_changed', RET (slice_val data_s);
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed' ∗
-    "Hdata_s" ∷ is_slice data_s byteT 1 data ∗
+      l γ γ' dinit ex_pointsto objs_dom mt_changed' ∗
+    "Hdata_s" ∷ own_slice data_s byteT 1 data ∗
     "%Hdata" ∷ ⌜data_has_obj data a obj⌝ ∗
     "%Hobj" ∷ ⌜modified <$> (mt_changed' !! a) = Some obj⌝ ∗
     "%Hmt_changed'" ∷ ⌜
@@ -1448,18 +1448,18 @@ Proof.
   congruence.
 Qed.
 
-Theorem wp_Txn__ReadBufBit l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a :
+Theorem wp_Txn__ReadBufBit l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} objs_dom mt_changed a :
   a ∈ objs_dom →
   γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit →
   {{{
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed
+      l γ γ' dinit ex_pointsto objs_dom mt_changed
   }}}
     Txn__ReadBufBit #l (addr2val a)
   {{{
     b mt_changed', RET #b;
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed' ∗
+      l γ γ' dinit ex_pointsto objs_dom mt_changed' ∗
     "%Hobj" ∷ ⌜
       modified <$> (mt_changed' !! a) = Some (existT _ (bufBit b))
     ⌝ ∗
@@ -1481,7 +1481,7 @@ Proof.
   1: rewrite Hkind //.
   iIntros (????) "Hpost".
   iNamed "Hpost".
-  iDestruct (is_slice_small_read with "Hdata_s")
+  iDestruct (own_slice_small_read with "Hdata_s")
     as "[Hslice Hslice_restore]".
   iDestruct (is_twophase_raw_get_valid with "Htwophase") as "%Hvalids".
   apply fmap_Some_1 in Hobj as [vobj [Hacc_vobj ->]].
@@ -1526,21 +1526,21 @@ Proof.
   - rewrite Hmt_changed' //.
 Qed.
 
-Theorem wp_Txn__OverWrite_raw l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a sz data_s data obj' :
+Theorem wp_Txn__OverWrite_raw l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} objs_dom mt_changed a sz data_s data obj' :
   a ∈ objs_dom →
   γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some (objKind obj') →
   bufSz (objKind obj') = int.nat sz →
   data_has_obj data a obj' →
   {{{
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed ∗
-    "Hdata_s" ∷ is_slice_small data_s byteT 1 data
+      l γ γ' dinit ex_pointsto objs_dom mt_changed ∗
+    "Hdata_s" ∷ own_slice_small data_s byteT 1 data
   }}}
     Txn__OverWrite #l (addr2val a) #sz (slice_val data_s)
   {{{
     vobj, RET #();
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom (<[a:=vobj]>mt_changed) ∗
+      l γ γ' dinit ex_pointsto objs_dom (<[a:=vobj]>mt_changed) ∗
     "%Hvobj_committed" ∷ ⌜
       match mt_changed !! a with
       | Some vobj' => committed vobj = committed vobj'
@@ -1626,7 +1626,7 @@ Proof.
     iPureIntro.
     split; last by assumption.
     apply map_Forall_insert_2; last by assumption.
-    rewrite /mapsto_valid //.
+    rewrite /pointsto_valid //.
   - iDestruct (big_sepM_insert with "Hjrnl_maps_tos")
       as "[Hjrnl_maps_to Hjrnl_maps_tos]";
       first by assumption.
@@ -1679,7 +1679,7 @@ Proof.
     iFrame "#".
     iPureIntro.
     split; last by assumption.
-    apply map_Forall_insert_2; first by rewrite /mapsto_valid //.
+    apply map_Forall_insert_2; first by rewrite /pointsto_valid //.
     apply map_Forall_insert_1_2 in Hvalids; assumption.
 Qed.
 
@@ -1733,18 +1733,18 @@ Proof.
   lia.
 Qed.
 
-Theorem wp_Txn__OverWriteBit l γ γ' dinit ex_mapsto `{!∀ a obj, Timeless (ex_mapsto a obj)} objs_dom mt_changed a b :
+Theorem wp_Txn__OverWriteBit l γ γ' dinit ex_pointsto `{!∀ a obj, Timeless (ex_pointsto a obj)} objs_dom mt_changed a b :
   a ∈ objs_dom →
   γ.(jrnl_txn_names).(txn_kinds) !! a.(addrBlock) = Some KindBit →
   {{{
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom mt_changed
+      l γ γ' dinit ex_pointsto objs_dom mt_changed
   }}}
     Txn__OverWriteBit #l (addr2val a) #b
   {{{
     vobj, RET #();
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit ex_mapsto objs_dom (<[a:=vobj]>mt_changed) ∗
+      l γ γ' dinit ex_pointsto objs_dom (<[a:=vobj]>mt_changed) ∗
     "%Hvobj_committed" ∷ ⌜
       match mt_changed !! a with
       | Some vobj' => committed vobj = committed vobj'
@@ -1760,7 +1760,7 @@ Proof.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (sl) "Hslice".
   rewrite unsigned_U64 /word.wrap Z.mod_small //=.
-  iDestruct (is_slice_small_read with "Hslice")
+  iDestruct (own_slice_small_read with "Hslice")
     as "[Hslice Hslice_restore]".
   wp_apply wp_bitToByte.
   {

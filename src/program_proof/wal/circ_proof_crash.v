@@ -89,7 +89,7 @@ Ltac mod_bound :=
   end.
 
 Lemma split_513_blocks :
-  0 d↦∗ repeat block0 513 -∗
+  0 d↦∗ repeat block0 513 ⊢@{_}
   0 d↦ block0 ∗ 1 d↦ block0 ∗ 2 d↦∗ repeat block0 511.
 Proof. reflexivity. Qed.
 
@@ -150,7 +150,7 @@ Proof.
     { rewrite /circ_positions.
       rewrite /start_is /diskEnd_is /diskEnd_at_least /=.
       rewrite HdiskEnd.
-      iFrame "#∗".
+      iFrame "∗#".
       iPureIntro; lia. }
     iExists _, _.
     rewrite /circ_own.
@@ -207,16 +207,12 @@ Proof.
 
   iCache with "HΦ Hpos Haddrs Hblocks Hd0 Hd1 Hd2 Hres".
   { crash_case.
-    iFrame "% ∗".
-    iExists _, _; iFrame "∗ %".
-    iExists _, _; iFrame "∗ %". }
+    iFrame "∗%". }
 
   wpc_apply (wpc_Read with "[Hd0]"); first by iFrame.
   iSplit.
   { iLeft in "HΦ". iIntros "Hd0". iApply "HΦ".
-    iFrame "% ∗".
-    iExists _, _; iFrame "∗ %".
-    iExists _, _; iFrame "∗ %". }
+    iFrame "∗%". }
 
   iIntros (s0) "!> [Hd0 Hs0]".
   wpc_pures.
@@ -224,23 +220,21 @@ Proof.
   wpc_apply (wpc_Read with "[Hd1]"); first iFrame.
   iSplit.
   { iLeft in "HΦ". iIntros "Hd1". iApply "HΦ".
-    iFrame "% ∗".
-    iExists _, _; iFrame "∗ %".
-    iExists _, _; iFrame "∗ %". }
+    iFrame "∗%". }
 
   iIntros (s1) "!> [Hd1 Hs1]".
   wpc_pures.
 
   wpc_bind (decodeHdr1 _).
   wpc_frame.
-  iApply slice.is_slice_to_small in "Hs0".
+  iApply slice.own_slice_to_small in "Hs0".
   wp_apply (wp_decodeHdr1 with "Hs0"); [ eauto | word | ].
   iIntros (addrs) "Hdiskaddrs H". iNamed "H".
   wpc_pures.
 
   wpc_bind (decodeHdr2 _).
   wpc_frame.
-  iApply slice.is_slice_to_small in "Hs1".
+  iApply slice.own_slice_to_small in "Hs1".
   wp_apply (wp_decodeHdr2 with "Hs1"); [ eauto | ].
   iNamed 1.
 
@@ -262,7 +256,7 @@ Proof.
     (∃ bufSlice,
       bufsloc ↦[slice.T (struct.t Update)] (slice_val bufSlice) ∗
       updates_slice bufSlice (take (int.nat i - int.nat σ.(start)) σ.(upds))) ∗
-      is_slice_small addrs uint64T 1 addrs0 ∗
+      own_slice_small addrs uint64T 1 addrs0 ∗
       2 d↦∗ blocks0
     )%I
     (fun i => 2 d↦∗ blocks0)%I with "[] [Hbufsloc $Hposl $Hd2 Hdiskaddrs]").
@@ -336,7 +330,7 @@ Proof.
 
     wpc_frame.
     wp_apply (wp_SliceAppend_updates (uv:=(a, b_s)) with "[$Hupds Hb_s]").
-    { iApply slice.is_slice_to_small in "Hb_s". iFrame. }
+    { iApply slice.own_slice_to_small in "Hb_s". iFrame. }
     iIntros (bufSlice') "Hupds'".
     wp_store. iModIntro.
 
@@ -345,7 +339,6 @@ Proof.
     iApply "HΦ".
     iFrame.
     iSplit; first by iPureIntro; word.
-    iExists _; iFrame.
     iExactEq "Hupds'".
     f_equal.
     destruct Hwf.
@@ -366,14 +359,14 @@ Proof.
     rewrite Hieq /=.
     congruence.
 
-  - iDestruct (is_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".
+  - iDestruct (own_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".
     iFrame.
     rewrite zero_slice_val.
     iSplit; first by iPureIntro; word.
     iExists _. iFrame.
     iExists nil; simpl.
     iSplitL.
-    { iApply (slice.is_slice_zero). }
+    { iApply (slice.own_slice_zero). }
     replace (int.nat (start σ) - int.nat (start σ))%nat with 0%nat by lia.
     rewrite take_0.
     rewrite big_sepL2_nil.
@@ -382,9 +375,7 @@ Proof.
   - iSplit.
     { iLeft in "HΦ". iDestruct 1 as (i) "(Hd2&%)".
       iApply "HΦ".
-      iFrame "% ∗".
-      iExists _, _; iFrame "∗ %".
-      iExists _, _; iFrame "∗ %". }
+      iFrame "∗%". }
 
     iIntros "!> [(_ & HI & Hdiskaddrs & Hd2) Hposl]".
     iDestruct "HI" as (bufSlice) "[Hbufsloc Hupds]".
@@ -414,23 +405,18 @@ Proof.
     iNamed 1.
     iDestruct "HΦ" as "(_&HΦ)".
     iApply ("HΦ").
-    iFrame "Hpos Hupds". iFrame.
+    iFrame "Hpos Hupds".
     iDestruct "Hres" as (???) "(Haddrs'&Hblocks')".
     iDestruct (ghost_var_agree with "Hblocks Hblocks'") as %->.
     iDestruct (ghost_var_agree with "Haddrs Haddrs'") as %->.
     iSplitL "Hd0 Hd1 Hd2 Hblocks Haddrs".
-    { iSplit; first done. iExists _, _. iFrame.
-      iSplit; first done.
-      iSplit; first done.
-      iExists _, _. iFrame. eauto.
-    }
+    { iSplit; first done. iExists _, _. iFrame. done. }
     iSplitL "Hca Hposl Hdiskaddrs Haddrs' Hblocks'".
     {
       iExists _, _, _. iFrame. iSplit; first done.
       iDestruct (struct_fields_split with "Hca") as "[Hca _]".
       iFrame.
     }
-    iFrame.
     (*
     iSplitL "Hend_is".
     {
@@ -515,7 +501,7 @@ Proof.
     { iNext. iExists _. iFrame. }
     { iNext. iExists _. iFrame. }
   }
-  { iNext. iFrame. iExists _. iFrame. }
+  { iNext. iFrame. }
   iModIntro. iExists γ'.
   iSplitL "Hncinv".
   { rewrite /is_circular. iApply ncinv_split_l; iApply "Hncinv". }

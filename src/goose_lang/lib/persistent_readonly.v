@@ -6,6 +6,7 @@ From Perennial.Helpers Require Import iris.
 From Perennial.goose_lang Require Import notation.
 From Perennial.goose_lang Require Import lifting.
 From Perennial.goose_lang Require Import proofmode.
+From Perennial.base_logic.lib Require Import ghost_map.
 
 Set Default Proof Using "Type".
 
@@ -13,13 +14,13 @@ Section goose_lang.
   Context `{!invGS Σ}.
 
   Class AsMapsTo (P: iProp Σ)
-        (Φ : Qp -> iProp Σ) :=
-    { as_mapsto : P ≡ Φ 1%Qp;
-      as_mapsto_fractional :> Fractional Φ;
-      as_mapsto_timeless :> ∀ q, Timeless (Φ q);
+        (Φ : Qp -> iProp Σ) : Set :=
+    { as_pointsto : P ≡ Φ 1%Qp;
+      as_pointsto_fractional :> Fractional Φ;
+      as_pointsto_timeless :> ∀ q, Timeless (Φ q);
     }.
 
-  Arguments as_mapsto {P Φ} AsMapsTo.
+  Arguments as_pointsto {P Φ} AsMapsTo.
 
   Definition readonly_def P `{H: AsMapsTo P Φ}: iProp Σ :=
     □ |={∅}=> ∃ q, Φ q.
@@ -41,9 +42,9 @@ Section goose_lang.
     iApply (ae_inv_acc_bupd with "Hro []").
     iIntros ">Hinner !> !>".
     iDestruct "Hinner" as (q) "HΦ".
-    iDestruct (fractional_half with "HΦ") as "[HΦ1 HΦ2]".
-    { split; auto. eapply as_mapsto_fractional. }
-    { split; auto. eapply as_mapsto_fractional. }
+    (* Import the required instance (which is not registered by default *)
+    pose proof @fractional_as_fractional as fractional_instance.
+    iDestruct "HΦ" as "[HΦ1 HΦ2]".
     iSplitL "HΦ1".
     - iNext. iExists (q/2)%Qp. done.
     - iExists (q/2)%Qp. done.
@@ -52,7 +53,7 @@ Section goose_lang.
   Global Instance readonly_persistent P `{H: AsMapsTo P Φ} : Persistent (readonly P).
   Proof. unseal; apply _. Qed.
 
-  Instance as_mapsto_AsFractional P `{H: AsMapsTo P Φ} q :
+  Instance as_pointsto_AsFractional P `{H: AsMapsTo P Φ} q :
     AsFractional (Φ q) (λ q, Φ q) q.
   Proof.
     split; auto.
@@ -63,7 +64,7 @@ Section goose_lang.
     P ={E}=∗ readonly P.
   Proof.
     iIntros "HP".
-    rewrite {1}H.(as_mapsto).
+    rewrite {1}H.(as_pointsto).
     iApply (readonly_alloc with "HP").
   Qed.
 
@@ -92,14 +93,14 @@ Section goose_lang.
   Proof.
     unseal.
     intros Hequiv.
-    setoid_rewrite Hequiv. done.
+    setoid_rewrite Hequiv. auto.
   Qed.
 
   Global Instance readonly_sep P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
     AsMapsTo (P ∗ Q) (λ q, Φ1 q ∗ Φ2 q)%I.
   Proof.
     split; try apply _.
-    rewrite (as_mapsto (P:=P)) (as_mapsto (P:=Q)) //.
+    rewrite (as_pointsto (P:=P)) (as_pointsto (P:=Q)) //.
   Qed.
 
   Theorem readonly_extend P Q `{H1: AsMapsTo P Φ1} `{H2: AsMapsTo Q Φ2} :
@@ -128,9 +129,16 @@ Section goose_lang.
 End goose_lang.
 
 #[global]
-Instance heap_mapsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapGS loc val Σ}
+Instance heap_pointsto_AsMapsTo `{ext: !ffi_syntax} `{!na_heapGS loc val Σ}
          (l: loc) (v: val) :
   AsMapsTo (l ↦ v) (λ q, l ↦{q} v)%I.
+Proof.
+  split; [done|apply _|apply _].
+Qed.
+
+#[global]
+Instance ghost_map_auth_AsMapsTo `{ghost_mapG Σ K V} γ (m:gmap K V) :
+  AsMapsTo (ghost_map_auth γ 1 m) (λ q, ghost_map_auth γ q m)%I.
 Proof.
   split; [done|apply _|apply _].
 Qed.

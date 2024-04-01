@@ -24,7 +24,7 @@ Definition nInode: val :=
 
 Definition inum2Addr: val :=
   rec: "inum2Addr" "inum" :=
-    addr.MkAddr common.LOGSIZE ("inum" * common.INODESZ * #8).
+    addr.MkAddr common.LOGSIZE (("inum" * common.INODESZ) * #8).
 
 (* fh.go *)
 
@@ -84,61 +84,61 @@ Definition Decode: val :=
 (* Returns number of bytes read and eof *)
 Definition Inode__Read: val :=
   rec: "Inode__Read" "ip" "op" "offset" "bytesToRead" :=
-    (if: "offset" ≥ struct.loadF Inode "Size" "ip"
+    (if: "offset" ≥ (struct.loadF Inode "Size" "ip")
     then (slice.nil, #true)
     else
       let: "count" := ref_to uint64T "bytesToRead" in
-      (if: ![uint64T] "count" > struct.loadF Inode "Size" "ip" - "offset"
-      then "count" <-[uint64T] struct.loadF Inode "Size" "ip" - "offset"
+      (if: (![uint64T] "count") > ((struct.loadF Inode "Size" "ip") - "offset")
+      then "count" <-[uint64T] ((struct.loadF Inode "Size" "ip") - "offset")
       else #());;
-      util.DPrintf #5 (#(str"Read: off %d cnt %d
-      ")) #();;
+      util.DPrintf #5 #(str"Read: off %d cnt %d
+      ") #();;
       let: "data" := ref_to (slice.T byteT) (NewSlice byteT #0) in
       let: "buf" := jrnl.Op__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
       let: "countCopy" := ![uint64T] "count" in
       let: "b" := ref_to uint64T #0 in
-      (for: (λ: <>, ![uint64T] "b" < "countCopy"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
-        "data" <-[slice.T byteT] SliceAppend byteT (![slice.T byteT] "data") (SliceGet byteT (struct.loadF buf.Buf "Data" "buf") ("offset" + ![uint64T] "b"));;
+      (for: (λ: <>, (![uint64T] "b") < "countCopy"); (λ: <>, "b" <-[uint64T] ((![uint64T] "b") + #1)) := λ: <>,
+        "data" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "data") (SliceGet byteT (struct.loadF buf.Buf "Data" "buf") ("offset" + (![uint64T] "b"))));;
         Continue);;
-      let: "eof" := "offset" + ![uint64T] "count" ≥ struct.loadF Inode "Size" "ip" in
-      util.DPrintf #10 (#(str"Read: off %d cnt %d -> %v, %v
-      ")) #();;
+      let: "eof" := ("offset" + (![uint64T] "count")) ≥ (struct.loadF Inode "Size" "ip") in
+      util.DPrintf #10 #(str"Read: off %d cnt %d -> %v, %v
+      ") #();;
       (![slice.T byteT] "data", "eof")).
 
 Definition Inode__WriteInode: val :=
   rec: "Inode__WriteInode" "ip" "op" :=
     let: "d" := Inode__Encode "ip" in
     jrnl.Op__OverWrite "op" (inum2Addr (struct.loadF Inode "Inum" "ip")) (common.INODESZ * #8) "d";;
-    util.DPrintf #1 (#(str"WriteInode %v
-    ")) #();;
+    util.DPrintf #1 #(str"WriteInode %v
+    ") #();;
     #().
 
 (* Returns number of bytes written and error *)
 Definition Inode__Write: val :=
   rec: "Inode__Write" "ip" "op" "offset" "count" "dataBuf" :=
-    util.DPrintf #5 (#(str"Write: off %d cnt %d
-    ")) #();;
-    (if: "count" ≠ slice.len "dataBuf"
+    util.DPrintf #5 #(str"Write: off %d cnt %d
+    ") #();;
+    (if: "count" ≠ (slice.len "dataBuf")
     then (#0, #false)
     else
       (if: util.SumOverflows "offset" "count"
       then (#0, #false)
       else
-        (if: "offset" + "count" > disk.BlockSize
+        (if: ("offset" + "count") > disk.BlockSize
         then (#0, #false)
         else
-          (if: "offset" > struct.loadF Inode "Size" "ip"
+          (if: "offset" > (struct.loadF Inode "Size" "ip")
           then (#0, #false)
           else
             let: "buffer" := jrnl.Op__ReadBuf "op" (block2addr (struct.loadF Inode "Data" "ip")) common.NBITBLOCK in
             let: "b" := ref_to uint64T #0 in
-            (for: (λ: <>, ![uint64T] "b" < "count"); (λ: <>, "b" <-[uint64T] ![uint64T] "b" + #1) := λ: <>,
-              SliceSet byteT (struct.loadF buf.Buf "Data" "buffer") ("offset" + ![uint64T] "b") (SliceGet byteT "dataBuf" (![uint64T] "b"));;
+            (for: (λ: <>, (![uint64T] "b") < "count"); (λ: <>, "b" <-[uint64T] ((![uint64T] "b") + #1)) := λ: <>,
+              SliceSet byteT (struct.loadF buf.Buf "Data" "buffer") ("offset" + (![uint64T] "b")) (SliceGet byteT "dataBuf" (![uint64T] "b"));;
               Continue);;
             buf.Buf__SetDirty "buffer";;
-            util.DPrintf #1 (#(str"Write: off %d cnt %d size %d
-            ")) #();;
-            (if: "offset" + "count" > struct.loadF Inode "Size" "ip"
+            util.DPrintf #1 #(str"Write: off %d cnt %d size %d
+            ") #();;
+            (if: ("offset" + "count") > (struct.loadF Inode "Size" "ip")
             then
               struct.storeF Inode "Size" "ip" ("offset" + "count");;
               Inode__WriteInode "ip" "op"
@@ -184,9 +184,9 @@ Definition Inode__MkFattr: val :=
 Definition inodeInit: val :=
   rec: "inodeInit" "op" :=
     let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, ![uint64T] "i" < nInode #()); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (nInode #())); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       let: "ip" := ReadInode "op" (![uint64T] "i") in
-      struct.storeF Inode "Data" "ip" (common.LOGSIZE + #1 + ![uint64T] "i");;
+      struct.storeF Inode "Data" "ip" ((common.LOGSIZE + #1) + (![uint64T] "i"));;
       Inode__WriteInode "ip" "op";;
       Continue);;
     #().
@@ -204,7 +204,7 @@ Definition Mkfs: val :=
     let: "op" := jrnl.Begin "log" in
     inodeInit "op";;
     let: "ok" := jrnl.Op__CommitWait "op" #true in
-    (if: ~ "ok"
+    (if: (~ "ok")
     then slice.nil
     else "log").
 
@@ -224,7 +224,7 @@ Definition MakeNfs: val :=
     let: "op" := jrnl.Begin "log" in
     inodeInit "op";;
     let: "ok" := jrnl.Op__CommitWait "op" #true in
-    (if: ~ "ok"
+    (if: (~ "ok")
     then slice.nil
     else
       let: "lockmap" := lockmap.MkLockMap #() in
@@ -316,19 +316,19 @@ Definition rootFattr: val :=
 
 Definition Nfs__NFSPROC3_NULL: val :=
   rec: "Nfs__NFSPROC3_NULL" "nfs" :=
-    util.DPrintf #0 (#(str"NFS Null
-    ")) #();;
+    util.DPrintf #0 #(str"NFS Null
+    ") #();;
     #().
 
 Definition validInum: val :=
   rec: "validInum" "inum" :=
-    (if: ("inum" = #0)
+    (if: "inum" = #0
     then #false
     else
-      (if: ("inum" = common.ROOTINUM)
+      (if: "inum" = common.ROOTINUM
       then #false
       else
-        (if: "inum" ≥ nInode #()
+        (if: "inum" ≥ (nInode #())
         then #false
         else #true))).
 
@@ -353,17 +353,17 @@ Definition NFSPROC3_GETATTR_internal: val :=
 Definition Nfs__NFSPROC3_GETATTR: val :=
   rec: "Nfs__NFSPROC3_GETATTR" "nfs" "args" :=
     let: "reply" := ref (zero_val (struct.t nfstypes.GETATTR3res)) in
-    util.DPrintf #1 (#(str"NFS GetAttr %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS GetAttr %v
+    ") #();;
     let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.GETATTR3args "Object" "args") in
-    (if: ("inum" = common.ROOTINUM)
+    (if: "inum" = common.ROOTINUM
     then
       struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3_OK;;
       struct.storeF nfstypes.GETATTR3resok "Obj_attributes" (struct.fieldRef nfstypes.GETATTR3res "Resok" "reply") (rootFattr #());;
       ![struct.t nfstypes.GETATTR3res] "reply"
     else
-      (if: ~ (validInum "inum")
+      (if: (~ (validInum "inum"))
       then
         struct.storeF nfstypes.GETATTR3res "Status" "reply" nfstypes.NFS3ERR_INVAL;;
         ![struct.t nfstypes.GETATTR3res] "reply"
@@ -380,11 +380,11 @@ Definition NFSPROC3_SETATTR_wp: val :=
     (if: struct.get nfstypes.Set_size3 "Set_it" (struct.get nfstypes.Sattr3 "Size" (struct.get nfstypes.SETATTR3args "New_attributes" "args"))
     then
       let: "newsize" := struct.get nfstypes.Set_size3 "Size" (struct.get nfstypes.Sattr3 "Size" (struct.get nfstypes.SETATTR3args "New_attributes" "args")) in
-      (if: struct.loadF Inode "Size" "ip" < "newsize"
+      (if: (struct.loadF Inode "Size" "ip") < "newsize"
       then
-        let: "data" := NewSlice byteT ("newsize" - struct.loadF Inode "Size" "ip") in
-        Inode__Write "ip" "op" (struct.loadF Inode "Size" "ip") ("newsize" - struct.loadF Inode "Size" "ip") "data";;
-        (if: struct.loadF Inode "Size" "ip" ≠ "newsize"
+        let: "data" := NewSlice byteT ("newsize" - (struct.loadF Inode "Size" "ip")) in
+        Inode__Write "ip" "op" (struct.loadF Inode "Size" "ip") ("newsize" - (struct.loadF Inode "Size" "ip")) "data";;
+        (if: (struct.loadF Inode "Size" "ip") ≠ "newsize"
         then struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3ERR_NOSPC
         else "ok" <-[boolT] #true)
       else
@@ -397,7 +397,7 @@ Definition NFSPROC3_SETATTR_wp: val :=
 Definition NFSPROC3_SETATTR_internal: val :=
   rec: "NFSPROC3_SETATTR_internal" "args" "reply" "inum" "op" :=
     let: "ok1" := NFSPROC3_SETATTR_wp "args" "reply" "inum" "op" in
-    (if: ~ "ok1"
+    (if: (~ "ok1")
     then #()
     else
       let: "ok2" := jrnl.Op__CommitWait "op" #true in
@@ -412,13 +412,13 @@ Definition NFSPROC3_SETATTR_internal: val :=
 Definition Nfs__NFSPROC3_SETATTR: val :=
   rec: "Nfs__NFSPROC3_SETATTR" "nfs" "args" :=
     let: "reply" := ref (zero_val (struct.t nfstypes.SETATTR3res)) in
-    util.DPrintf #1 (#(str"NFS SetAttr %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS SetAttr %v
+    ") #();;
     let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.SETATTR3args "Object" "args") in
-    util.DPrintf #1 (#(str"inum %d %d
-    ")) #();;
-    (if: ~ (validInum "inum")
+    util.DPrintf #1 #(str"inum %d %d
+    ") #();;
+    (if: (~ (validInum "inum"))
     then
       struct.storeF nfstypes.SETATTR3res "Status" "reply" nfstypes.NFS3ERR_INVAL;;
       ![struct.t nfstypes.SETATTR3res] "reply"
@@ -431,18 +431,18 @@ Definition Nfs__NFSPROC3_SETATTR: val :=
 (* Lookup must lock child inode to find gen number *)
 Definition Nfs__NFSPROC3_LOOKUP: val :=
   rec: "Nfs__NFSPROC3_LOOKUP" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Lookup %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Lookup %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.LOOKUP3res)) in
     let: "fn" := struct.get nfstypes.Diropargs3 "Name" (struct.get nfstypes.LOOKUP3args "What" "args") in
     let: "inum" := ref (zero_val uint64T) in
-    (if: ("fn" = #(str"a"))
+    (if: "fn" = #(str"a")
     then "inum" <-[uint64T] #2
     else #());;
-    (if: ("fn" = #(str"b"))
+    (if: "fn" = #(str"b")
     then "inum" <-[uint64T] #3
     else #());;
-    (if: ~ (validInum (![uint64T] "inum"))
+    (if: (~ (validInum (![uint64T] "inum")))
     then
       struct.storeF nfstypes.LOOKUP3res "Status" "reply" nfstypes.NFS3ERR_NOENT;;
       ![struct.t nfstypes.LOOKUP3res] "reply"
@@ -456,8 +456,8 @@ Definition Nfs__NFSPROC3_LOOKUP: val :=
 
 Definition Nfs__NFSPROC3_ACCESS: val :=
   rec: "Nfs__NFSPROC3_ACCESS" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Access %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Access %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.ACCESS3res)) in
     struct.storeF nfstypes.ACCESS3res "Status" "reply" nfstypes.NFS3_OK;;
     struct.storeF nfstypes.ACCESS3resok "Access" (struct.fieldRef nfstypes.ACCESS3res "Resok" "reply") (((((nfstypes.ACCESS3_READ `or` nfstypes.ACCESS3_LOOKUP) `or` nfstypes.ACCESS3_MODIFY) `or` nfstypes.ACCESS3_EXTEND) `or` nfstypes.ACCESS3_DELETE) `or` nfstypes.ACCESS3_EXECUTE);;
@@ -487,11 +487,11 @@ Definition NFSPROC3_READ_internal: val :=
 Definition Nfs__NFSPROC3_READ: val :=
   rec: "Nfs__NFSPROC3_READ" "nfs" "args" :=
     let: "reply" := ref (zero_val (struct.t nfstypes.READ3res)) in
-    util.DPrintf #1 (#(str"NFS Read %v %d %d
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Read %v %d %d
+    ") #();;
     let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.READ3args "File" "args") in
-    (if: ~ (validInum "inum")
+    (if: (~ (validInum "inum"))
     then
       struct.storeF nfstypes.READ3res "Status" "reply" nfstypes.NFS3ERR_INVAL;;
       ![struct.t nfstypes.READ3res] "reply"
@@ -505,7 +505,7 @@ Definition NFSPROC3_WRITE_wp: val :=
   rec: "NFSPROC3_WRITE_wp" "args" "reply" "inum" "op" :=
     let: "ip" := ReadInode "op" "inum" in
     let: ("count", "writeok") := Inode__Write "ip" "op" (struct.get nfstypes.WRITE3args "Offset" "args") (to_u64 (struct.get nfstypes.WRITE3args "Count" "args")) (struct.get nfstypes.WRITE3args "Data" "args") in
-    (if: ~ "writeok"
+    (if: (~ "writeok")
     then
       struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3ERR_SERVERFAULT;;
       #false
@@ -517,7 +517,7 @@ Definition NFSPROC3_WRITE_wp: val :=
 Definition NFSPROC3_WRITE_internal: val :=
   rec: "NFSPROC3_WRITE_internal" "args" "reply" "inum" "op" :=
     let: "ok1" := NFSPROC3_WRITE_wp "args" "reply" "inum" "op" in
-    (if: ~ "ok1"
+    (if: (~ "ok1")
     then #()
     else
       let: "ok2" := jrnl.Op__CommitWait "op" #true in
@@ -532,13 +532,13 @@ Definition NFSPROC3_WRITE_internal: val :=
 Definition Nfs__NFSPROC3_WRITE: val :=
   rec: "Nfs__NFSPROC3_WRITE" "nfs" "args" :=
     let: "reply" := ref (zero_val (struct.t nfstypes.WRITE3res)) in
-    util.DPrintf #1 (#(str"NFS Write %v off %d cnt %d how %d
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Write %v off %d cnt %d how %d
+    ") #();;
     let: "txn" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.WRITE3args "File" "args") in
-    util.DPrintf #1 (#(str"inum %d %d
-    ")) #();;
-    (if: ~ (validInum "inum")
+    util.DPrintf #1 #(str"inum %d %d
+    ") #();;
+    (if: (~ (validInum "inum"))
     then
       struct.storeF nfstypes.WRITE3res "Status" "reply" nfstypes.NFS3ERR_INVAL;;
       ![struct.t nfstypes.WRITE3res] "reply"
@@ -550,80 +550,80 @@ Definition Nfs__NFSPROC3_WRITE: val :=
 
 Definition Nfs__NFSPROC3_CREATE: val :=
   rec: "Nfs__NFSPROC3_CREATE" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Create %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Create %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.CREATE3res)) in
     struct.storeF nfstypes.CREATE3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.CREATE3res] "reply".
 
 Definition Nfs__NFSPROC3_MKDIR: val :=
   rec: "Nfs__NFSPROC3_MKDIR" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Mkdir %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Mkdir %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.MKDIR3res)) in
     struct.storeF nfstypes.MKDIR3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.MKDIR3res] "reply".
 
 Definition Nfs__NFSPROC3_SYMLINK: val :=
   rec: "Nfs__NFSPROC3_SYMLINK" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Symlink %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Symlink %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.SYMLINK3res)) in
     struct.storeF nfstypes.SYMLINK3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.SYMLINK3res] "reply".
 
 Definition Nfs__NFSPROC3_READLINK: val :=
   rec: "Nfs__NFSPROC3_READLINK" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Readlink %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Readlink %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.READLINK3res)) in
     struct.storeF nfstypes.READLINK3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.READLINK3res] "reply".
 
 Definition Nfs__NFSPROC3_MKNOD: val :=
   rec: "Nfs__NFSPROC3_MKNOD" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Mknod %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Mknod %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.MKNOD3res)) in
     struct.storeF nfstypes.MKNOD3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.MKNOD3res] "reply".
 
 Definition Nfs__NFSPROC3_REMOVE: val :=
   rec: "Nfs__NFSPROC3_REMOVE" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Remove %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Remove %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.REMOVE3res)) in
     struct.storeF nfstypes.REMOVE3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.REMOVE3res] "reply".
 
 Definition Nfs__NFSPROC3_RMDIR: val :=
   rec: "Nfs__NFSPROC3_RMDIR" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Rmdir %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Rmdir %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.RMDIR3res)) in
     struct.storeF nfstypes.RMDIR3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.RMDIR3res] "reply".
 
 Definition Nfs__NFSPROC3_RENAME: val :=
   rec: "Nfs__NFSPROC3_RENAME" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Rename %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Rename %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.RENAME3res)) in
     struct.storeF nfstypes.RENAME3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.RENAME3res] "reply".
 
 Definition Nfs__NFSPROC3_LINK: val :=
   rec: "Nfs__NFSPROC3_LINK" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Link %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Link %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.LINK3res)) in
     struct.storeF nfstypes.LINK3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.LINK3res] "reply".
 
 Definition Nfs__NFSPROC3_READDIR: val :=
   rec: "Nfs__NFSPROC3_READDIR" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Readdir %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Readdir %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.READDIR3res)) in
     let: "e2" := struct.new nfstypes.Entry3 [
       "Fileid" ::= #3;
@@ -646,46 +646,46 @@ Definition Nfs__NFSPROC3_READDIR: val :=
 
 Definition Nfs__NFSPROC3_READDIRPLUS: val :=
   rec: "Nfs__NFSPROC3_READDIRPLUS" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Readdirplus %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Readdirplus %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.READDIRPLUS3res)) in
     struct.storeF nfstypes.READDIRPLUS3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.READDIRPLUS3res] "reply".
 
 Definition Nfs__NFSPROC3_FSSTAT: val :=
   rec: "Nfs__NFSPROC3_FSSTAT" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Fsstat %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Fsstat %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.FSSTAT3res)) in
     struct.storeF nfstypes.FSSTAT3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.FSSTAT3res] "reply".
 
 Definition Nfs__NFSPROC3_FSINFO: val :=
   rec: "Nfs__NFSPROC3_FSINFO" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Fsinfo %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Fsinfo %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.FSINFO3res)) in
     struct.storeF nfstypes.FSINFO3res "Status" "reply" nfstypes.NFS3_OK;;
-    struct.storeF nfstypes.FSINFO3resok "Wtmax" (struct.fieldRef nfstypes.FSINFO3res "Resok" "reply") (#(U32 4096));;
+    struct.storeF nfstypes.FSINFO3resok "Wtmax" (struct.fieldRef nfstypes.FSINFO3res "Resok" "reply") #(U32 4096);;
     struct.storeF nfstypes.FSINFO3resok "Maxfilesize" (struct.fieldRef nfstypes.FSINFO3res "Resok" "reply") #4096;;
     ![struct.t nfstypes.FSINFO3res] "reply".
 
 Definition Nfs__NFSPROC3_PATHCONF: val :=
   rec: "Nfs__NFSPROC3_PATHCONF" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Pathconf %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Pathconf %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.PATHCONF3res)) in
     struct.storeF nfstypes.PATHCONF3res "Status" "reply" nfstypes.NFS3ERR_NOTSUPP;;
     ![struct.t nfstypes.PATHCONF3res] "reply".
 
 Definition Nfs__NFSPROC3_COMMIT: val :=
   rec: "Nfs__NFSPROC3_COMMIT" "nfs" "args" :=
-    util.DPrintf #1 (#(str"NFS Commit %v
-    ")) #();;
+    util.DPrintf #1 #(str"NFS Commit %v
+    ") #();;
     let: "reply" := ref (zero_val (struct.t nfstypes.COMMIT3res)) in
     let: "op" := jrnl.Begin (struct.loadF Nfs "t" "nfs") in
     let: "inum" := fh2ino (struct.get nfstypes.COMMIT3args "File" "args") in
-    (if: ~ (validInum "inum")
+    (if: (~ (validInum "inum"))
     then
       struct.storeF nfstypes.COMMIT3res "Status" "reply" nfstypes.NFS3ERR_INVAL;;
       ![struct.t nfstypes.COMMIT3res] "reply"

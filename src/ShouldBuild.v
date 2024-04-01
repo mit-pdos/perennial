@@ -38,17 +38,7 @@ From Perennial.program_proof.memkv Require
      lockservice_proof bank_proof
      closed.
 
-(* Primary-backup replication system *)
-From Perennial.program_proof.pb Require
-     replica_proof.
-
-From Goose.github_com.mit_pdos.gokv.pb Require
-     controller.
-
-(* atomic commit tutorial (from gokv) *)
-From Perennial.program_proof Require
-     atomic_commit.
-
+(* Epoch-fencing examples *)
 From Perennial.program_proof.fencing Require
      config_proof ctr_proof frontend_proof.
 From Perennial.program_proof.ctrexample Require
@@ -57,16 +47,9 @@ From Perennial.program_proof.ctrexample Require
 (* Append-only file library *)
 From Perennial.program_proof.aof Require proof.
 
-(* SimplePB *)
-From Perennial.program_proof.simplepb Require
-     admin_proof pb_start_proof.
-
-From Perennial.program_proof.simplepb.simplelog Require proof.
-
-From Perennial.program_proof.simplepb.apps Require closed_proof kv_proof kvee_proof.
-
-From Perennial.program_proof.mpaxos Require
-     apply_proof.
+(* vrsm *)
+From Perennial.program_proof.vrsm Require
+     reconfig.proof vkv.kv_proof closed_proof.
 
 (* MVCC *)
 From Perennial.program_proof.mvcc Require mvcc_proof.
@@ -100,3 +83,12 @@ From Perennial Require LiteBuild.
 
 (* lease examples *)
 From Perennial.program_proof.minlease Require proof.
+
+(* Grove tutorial *)
+From Perennial.program_proof.tutorial Require
+     basics.proof
+     queue.proof
+     kvservice.proof
+     (* kvservice.full_proof *).
+
+From Perennial.program_proof.cachekv Require proof.

@@ -51,8 +51,8 @@ Definition lockShard_addr gh (shardlock : loc) (addr : u64) (gheld : bool)
 
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
            (ghostHeap : gname) (covered : gset u64) (P Pc : u64 -> iProp Σ) : iProp Σ :=
-  ( ∃ (m: Map.t loc) ghostMap,
-      is_map mptr 1 m ∗
+  ( ∃ (m: gmap u64 loc) ghostMap,
+      own_map mptr 1 m ∗
       ghost_map_auth ghostHeap 1 ghostMap ∗
       ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap shardlock addr gheld lockStatePtrV covered P Pc ) ∗
@@ -74,7 +74,7 @@ Definition is_free_lockShard (ls : loc) : iProp Σ :=
   ( ∃ (shardlock mptr : loc),
       "#Hls_mu" ∷ readonly (ls ↦[lockShard :: "mu"] #shardlock) ∗
       "#Hls_state" ∷ readonly (ls ↦[lockShard :: "state"] #mptr) ∗
-      "Hmap" ∷ is_map mptr 1 (∅ : Map.t loc) ∗
+      "Hmap" ∷ own_map mptr 1 (∅ :gmap u64 loc) ∗
       "Hfree" ∷ crash_lock.is_free_crash_lock shardlock
   )%I.
 
@@ -90,7 +90,7 @@ Proof.
   rewrite /mkLockShard.
   wp_pures.
 
-  wp_apply (wp_NewMap loc).
+  wp_apply (wp_NewMap _ loc).
   iIntros (mref) "Hmap".
   wp_pures.
 
@@ -108,7 +108,7 @@ Proof.
   iMod (readonly_alloc_1 with "Hstate") as "Hstate".
   iModIntro.
   iApply "HΦ".
-  iExists _, _. iFrame "# ∗".
+  iExists _, _. iFrame "∗#".
 Qed.
 
 Theorem alloc_lockShard_init_cancel covered ls (P Pc : u64 → iProp Σ):
@@ -123,8 +123,8 @@ Proof.
   iDestruct "Hfree" as "(Hfree1&Htoks)".
 
   iDestruct (big_sepS_sep with "HP") as "(HP&#Hwand)".
-  iPoseProof (crash_borrow_init_cancel ([∗ set] a ∈ covered, ⌜(∅ : Map.t loc) !! a = None⌝ → P a)
-                                ([∗ set] a ∈ covered, ⌜(∅ : Map.t loc) !! a = None⌝ → Pc a)
+  iPoseProof (crash_borrow_init_cancel ([∗ set] a ∈ covered, ⌜(∅ : gmap u64 loc) !! a = None⌝ → P a)
+                                ([∗ set] a ∈ covered, ⌜(∅ : gmap u64 loc) !! a = None⌝ → Pc a)
                                 with "[$] [HP] []") as "Hcancel".
   { iApply (big_sepS_mono with "HP"). iIntros; eauto. }
   { iIntros "!> Hs".
@@ -142,7 +142,7 @@ Proof.
     }
     iMod (alloc_lock lockN with "Hfree1 Hinner") as "Hlock".
     iModIntro.
-    iExists _, _, _. iFrame "# ∗". iModIntro.
+    iExists _, _, _. iFrame "∗#". iModIntro.
     iApply (big_sepS_mono with "Hwand"); eauto.
     iIntros (??) "H". iApply "H".
   - iIntros "H2". iApply (big_sepS_mono with "H2").
@@ -193,7 +193,7 @@ Proof.
     iIntros (lockStatePtr ok) "[% Hmptr]".
 
     wp_pures.
-    iEval (rewrite struct_mapsto_eq) in "Hstate".
+    iEval (rewrite struct_pointsto_eq) in "Hstate".
     iDestruct "Hstate" as "[[Hstate _] _]". rewrite /=.
     rewrite loc_add_0.
 
@@ -250,24 +250,22 @@ Proof.
           wp_loadField.
           wp_storeField.
 
-          iEval (rewrite struct_mapsto_eq) in "Hacquired".
+          iEval (rewrite struct_pointsto_eq) in "Hacquired".
           iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
           wp_untyped_load.
 
           wp_pures.
           iApply "HΦloop".
           iFrame.
-          iExists _, _. iFrame.
           iApply "Haddrs".
           iExists _, _. iFrame. done.
 
-        * iEval (rewrite struct_mapsto_eq) in "Hacquired".
+        * iEval (rewrite struct_pointsto_eq) in "Hacquired".
           iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
           wp_untyped_load.
           wp_pures.
           iApply "HΦloop".
-          iFrame.
-          iExists _, _. by iFrame.
+          by iFrame.
 
       + wp_untyped_load.
         wp_storeField.
@@ -276,7 +274,7 @@ Proof.
         iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
         iMod (ghost_map_update true with "Hghctx Haddr") as "[Hghctx Haddr]".
 
-        iEval (rewrite struct_mapsto_eq) in "Hacquired".
+        iEval (rewrite struct_pointsto_eq) in "Hacquired".
         iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
         wp_pures.
         wp_untyped_store.
@@ -322,7 +320,7 @@ Proof.
 
       iMod (ghost_map_insert addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].
 
-      iEval (rewrite struct_mapsto_eq) in "Hacquired".
+      iEval (rewrite struct_pointsto_eq) in "Hacquired".
       iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
       wp_untyped_store.
 
@@ -397,12 +395,8 @@ Proof.
         iApply "HΦloop".
         iFrame.
 
-        iExists _, _. iFrame.
         iApply (big_sepM2_insert); [auto | auto | ].
-        iFrame.
-        iExists  _, _.
         iFrame "∗ Hcond".
-        iFrame.
         iSplitL; [ iPureIntro; congruence | ].
         iLeft; done.
   }
@@ -728,7 +722,7 @@ Qed.
 Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P Pc: u64 -> iProp Σ) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (is_slice_small shardslice ptrT 1 shards) ∗
+    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT 1 shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P Pc.
@@ -736,7 +730,7 @@ Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P Pc: u64 
 Definition is_free_lockMap (l: loc) : iProp Σ :=
   ∃ (shards: list loc) (shardslice: Slice.t),
     "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (is_slice_small shardslice ptrT 1 shards) ∗
+    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT 1 shards) ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "Hfree_shards" ∷ [∗ list] shardnum ↦ shardloc ∈ shards, is_free_lockShard shardloc.
 
@@ -772,7 +766,7 @@ Proof.
   wp_apply (wp_forUpto (λ (i : u64),
                           ∃ s shardlocs,
                             "Hvar" ∷ shards ↦[slice.T ptrT] (slice_val s) ∗
-                            "Hslice" ∷ is_slice s ptrT 1 shardlocs ∗
+                            "Hslice" ∷ own_slice s ptrT 1 shardlocs ∗
                             "%Hlen" ∷ ⌜ length shardlocs = int.nat i ⌝ ∗
                             "Hshards" ∷ [∗ list] shardnum ↦ shardloc ∈ shardlocs,
                               is_free_lockShard shardloc)%I
@@ -803,7 +797,7 @@ Proof.
     iExists _, nil.
     iFrame "Hvar".
     iSplitR.
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     iSplitR.
     { done. }
     eauto.
@@ -816,7 +810,7 @@ Proof.
   iIntros (lm) "Hlm".
   iDestruct (struct_fields_split with "Hlm") as "(Hlm&_)".
   iMod (readonly_alloc_1 with "Hlm") as "Hlm".
-  iDestruct (is_slice_to_small with "Hslice") as "Hslice".
+  iDestruct (own_slice_to_small with "Hslice") as "Hslice".
   iMod (readonly_alloc_1 with "Hslice") as "Hslice".
   wp_pures.
   iApply "HΦ".
@@ -979,15 +973,14 @@ Proof.
 
   iIntros "[HP Hlocked]".
   wp_pures. iModIntro. iApply "HΦ".
-  iFrame "HP".
+  iFrame "HP Hlocked".
 
-  iExists _. iFrame.
-  rewrite /Locked. iSplitR "Hlocked"; last first.
-  { iExists _. iFrame. iPureIntro.
+  iExists _. iSplitL; last first.
+  { iPureIntro.
     rewrite -Hgh_lookup. f_equal.
     unseal_nshard.
     word. }
-  iExists _, _. iFrame "# ∗". eauto.
+  iExists _, _. iFrame "∗#". eauto.
 Qed.
 
 Theorem wp_LockMap__Release l ghs (addr : u64) (P Pc : u64 -> iProp Σ) :
@@ -1036,7 +1029,7 @@ Proof.
     iSpecialize ("H" with "[$]").
     iApply (wpc_strong_mono with "H"); eauto.
     iSplit.
-    * iIntros (?) "(Hclose&?)". iModIntro. iFrame. iFrame "#".
+    * iIntros (?) "(Hclose&?)". iModIntro. iFrame.
       iIntros. iApply "Hclose". iFrame; eauto.
     * iIntros. iIntros "!>". eauto.
 Qed.

@@ -152,8 +152,9 @@ Lemma  bin_op_eval_closed op v1 v2 v':
   is_closed_val v1 → is_closed_val v2 → bin_op_eval op v1 v2 = Some v' →
   is_closed_val v'.
 Proof.
-  rewrite /bin_op_eval /bin_op_eval_bool /bin_op_eval_shift /bin_op_eval_word /bin_op_eval_string /bin_op_eval_eq;
+  rewrite /bin_op_eval /bin_op_eval_bool /bin_op_eval_shift /bin_op_eval_word /bin_op_eval_string /bin_op_eval_eq /bin_op_eval_string_word;
     repeat case_match; try by naive_solver.
+  all: intros; by simplify_option_eq.
 Qed.
 
 Lemma heap_closed_alloc σ l n w :
@@ -204,10 +205,10 @@ Qed.
 
 (* The stepping relation preserves closedness *)
 (*
-Lemma head_step_is_closed e1 σ1 obs e2 σ2 es :
+Lemma base_step_is_closed e1 σ1 obs e2 σ2 es :
   is_closed_expr [] e1 →
   map_Forall (λ _ v, is_closed_val (snd v)) σ1.(heap) →
-  head_step e1 σ1 obs e2 σ2 es →
+  base_step e1 σ1 obs e2 σ2 es →
 
   is_closed_expr [] e2 ∧ Forall (is_closed_expr []) es ∧
   map_Forall (λ _ v, is_closed_val (snd v)) σ2.(heap).

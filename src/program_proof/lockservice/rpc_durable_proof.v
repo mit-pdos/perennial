@@ -68,8 +68,8 @@ Definition RPCServer_own_vol (sv:loc) rpc_server : iProp Σ :=
   ∃ (lastSeq_ptr lastReply_ptr:loc),
     "HlastSeqOwn" ∷ sv ↦[RPCServer :: "lastSeq"] #lastSeq_ptr
 ∗ "HlastReplyOwn" ∷ sv ↦[RPCServer :: "lastReply"] #lastReply_ptr
-∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) rpc_server.(lastSeqM)
-∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) rpc_server.(lastReplyM)
+∗ "HlastSeqMap" ∷ own_map (lastSeq_ptr) rpc_server.(lastSeqM)
+∗ "HlastReplyMap" ∷ own_map (lastReply_ptr) rpc_server.(lastReplyM)
 .
 
 Definition RPCServer_own_ghost (sv:loc) γrpc rpc_server : iProp Σ :=
@@ -104,8 +104,8 @@ Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γ
 {{{
      "%" ∷ ⌜int.nat req.(Req_Seq) > 0⌝
     ∗ "#Hrinv" ∷ is_RPCServer γrpc
-    ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
-    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM
+    ∗ "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM)
     ∗ ("Hreply" ∷ own_reply reply_ptr reply)
 }}}
@@ -116,14 +116,14 @@ CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply
     ∗ "Hcases" ∷ ("%" ∷ ⌜b = false⌝
          ∗ "%" ∷ ⌜(int.Z (map_get lastSeqM req.(Req_CID)).1 < int.Z req.(Req_Seq))%Z⌝
          ∗ "%" ∷ ⌜reply'.(Rep_Stale) = false⌝
-         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
+         ∗ "HlastSeqMap" ∷ own_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
          ∨ 
          "%" ∷ ⌜b = true⌝
-         ∗ "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM
+         ∗ "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM
          ∗ ((⌜reply'.(Rep_Stale) = true⌝ ∗ RPCRequestStale γrpc req)
           ∨ RPCReplyReceipt γrpc req reply'.(Rep_Ret)))
 
-    ∗ "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    ∗ "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM
     ∗ ("Hsrpc" ∷ RPCServer_own γrpc lastSeqM lastReplyM)
 }}}
 {{{

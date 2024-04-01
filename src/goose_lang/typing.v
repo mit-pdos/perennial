@@ -9,7 +9,7 @@ Class val_types :=
 
 Section val_types.
   Context {val_tys: val_types}.
-  Inductive base_ty :=
+  Inductive base_ty : Set :=
   | uint64BT
   | uint32BT
   | byteBT
@@ -30,7 +30,7 @@ Section val_types.
   unitBT) *)
   | structRefT (ts: list ty)
   (* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
-  | mapValT (vt: ty) (* keys are always uint64, for now *)
+  | mapValT (kt:ty) (vt: ty)
   | chanValT (vt: ty)
   | extT (x: ext_tys)
   (* propehy variable *)
@@ -102,7 +102,7 @@ Section goose_lang.
     | baseT boolBT => #false
     | baseT unitBT => #()
     | baseT stringBT => #(str"")
-    | mapValT vt => MapNilV (zero_val vt)
+    | mapValT kt vt => MapNilV (zero_val vt)
     | chanValT vt => ChannelClosedV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
     | listT t => InjLV (LitV LitUnit)
@@ -130,7 +130,7 @@ Section goose_lang.
     (*
     | mapValT t => has_zero t
     *)
-    | mapValT t => False
+    | mapValT t1 t2 => False
     | chanValT t => False
     | prodT t1 t2 => has_zero t1 ∧ has_zero t2
     | listT t => has_zero t
@@ -360,18 +360,18 @@ Section goose_lang.
       Γ ⊢ nilfun : arrowT unitT tret ->
       Γ ⊢ consfun : arrowT (prodT tl (listT tl)) tret ->
       Γ ⊢ ListMatch el nilfun consfun : tret
-  | mapNil_hasTy def vt :
+  | mapNil_hasTy def kt vt :
       Γ ⊢ def : vt ->
-      Γ ⊢ InjL def : mapValT vt
-  | mapCons_hasTy k v vt m :
-      Γ ⊢ k : uint64T ->
+      Γ ⊢ InjL def : mapValT kt vt
+  | mapCons_hasTy k v kt vt m :
+      Γ ⊢ k : kt ->
       Γ ⊢ v : vt ->
-      Γ ⊢ m : mapValT vt ->
-      Γ ⊢ InjR (Pair (Pair k v) m) : mapValT vt
-  | case_map_hasTy cond e1 e2 vt t :
-      Γ ⊢ cond : mapValT vt ->
+      Γ ⊢ m : mapValT kt vt ->
+      Γ ⊢ InjR (Pair (Pair k v) m) : mapValT kt vt
+  | case_map_hasTy cond e1 e2 kt vt t :
+      Γ ⊢ cond : mapValT kt vt ->
       Γ ⊢ e1 : arrowT vt t ->
-      Γ ⊢ e2 : arrowT (prodT (prodT uint64T vt ) (mapValT vt)) t ->
+      Γ ⊢ e2 : arrowT (prodT (prodT kt vt ) (mapValT kt vt)) t ->
       Γ ⊢ Case cond e1 e2 : t
   | inl_hasTy e t1 t2 :
       Γ ⊢ e : t1 ->
@@ -461,9 +461,9 @@ Section goose_lang.
   | rec_val_hasTy f x e t1 t2 :
       (<[f := arrowT t1 t2]> $ <[x := t1]> $ ∅) ⊢ e : t2 ->
       Γ ⊢v RecV f x e : arrowT t1 t2
-  | mapNilV_hasTy v t :
-      Γ ⊢v v : t ->
-      Γ ⊢v MapNilV v : mapValT t
+  | mapNilV_hasTy v kt vt :
+      Γ ⊢v v : vt ->
+      Γ ⊢v MapNilV v : mapValT kt vt
   where "Γ ⊢v v : A" := (val_hasTy Γ v A)
   .
 
@@ -563,8 +563,8 @@ Section goose_lang.
   Definition mapT (vt:ty) : ty := ptrT.
 
   (* A thunk that creates a map. *)
-  Definition NewMap (t:ty) : val :=
-    λ: <>, Alloc (zero_val (mapValT t)).
+  Definition NewMap (kt vt:ty) : val :=
+    λ: <>, Alloc (zero_val (mapValT kt vt)).
   (*
   Theorem NewMap_t t Γ : has_zero t -> Γ ⊢ NewMap t : mapT t.
   Proof.

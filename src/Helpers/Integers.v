@@ -659,7 +659,7 @@ Proof.
   { rewrite Z.mul_comm. apply ZLib.Z.Z_mod_mult'. }
   set (x' := int.Z x).
   set (div' := int.Z div).
-  feed pose proof (Z.div_mod (x' + div') div') as Heq. 1:word.
+  opose proof (Z.div_mod (x' + div') div' _) as Heq. 1:word.
   replace ((x' + div') `div` div' * div') with (x' + div' - (x' + div') `mod` div') by lia.
   assert ((x' + div') `mod` div' < div').
   { apply Z.mod_pos_bound. lia. }

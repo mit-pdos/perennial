@@ -15,20 +15,20 @@ From Perennial.program_proof Require Import jrnl.sep_jrnl_invariant.
 
 Overview of resources used here:
 
-durable_mapsto_own - durable, exclusive
-durable_mapsto - durable but missing modify_token
+durable_pointsto_own - durable, exclusive
+durable_pointsto - durable but missing modify_token
 jrnl_maps_to - ephemeral
 
-is_crash_lock (durable_mapsto_own) (durable_mapsto)
-on crash: exchange durable_mapsto for durable_mapsto_own
+is_crash_lock (durable_pointsto_own) (durable_pointsto)
+on crash: exchange durable_pointsto for durable_pointsto_own
 
-lift: move durable_mapsto_own into transaction and get jrnl_maps_to and durable_mapsto is added to is_jrnl
+lift: move durable_pointsto_own into transaction and get jrnl_maps_to and durable_pointsto is added to is_jrnl
 
 is_jrnl P = is_jrnl_mem * is_jrnl_durable P
 
 reads and writes need jrnl_maps_to and is_jrnl_mem
 
-is_jrnl_durable P -* P (P is going to be durable_mapsto) (use this to frame out crash condition)
+is_jrnl_durable P -* P (P is going to be durable_pointsto) (use this to frame out crash condition)
 
 exchange own_last_frag γ for own_last_frag γ' ∗ modify_token γ' (in sep_jrnl layer)
 exchange ephemeral_txn_val γ for ephemeral_txn_val γ' if the transaction id was preserved
@@ -84,9 +84,7 @@ Section goose_lang.
     iApply "HΦ".
     iExists γdurable.
     iFrame.
-    iExists ∅.
     rewrite !big_sepM_empty.
-    iFrame "∗#".
     auto with iFrame.
   Qed.
 
@@ -136,7 +134,7 @@ Section goose_lang.
       rewrite (insert_id (mspec.committed <$> mT)); last first.
       { rewrite lookup_fmap Hmt_lookup //. }
       rewrite orb_true_r.
-      iFrame "#∗".
+      iFrame "∗#".
       iPureIntro; intros; congruence.
     - (* user did not change buf, so no basic updates are needed *)
       iModIntro.
@@ -161,7 +159,7 @@ Section goose_lang.
 
   Theorem data_has_obj_to_buf_data s a obj data :
     data_has_obj data a obj →
-    is_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
+    own_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
   Proof.
     rewrite /data_has_obj /is_buf_data.
     iIntros (?) "Hs".
@@ -174,7 +172,7 @@ Section goose_lang.
   Qed.
 
   Theorem is_buf_data_has_obj s a obj :
-    is_buf_data s (objData obj) a ⊣⊢ ∃ data, is_slice_small s u8T 1 data ∗ ⌜data_has_obj data a obj⌝.
+    is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice_small s u8T 1 data ∗ ⌜data_has_obj data a obj⌝.
   Proof.
     iSplit; intros.
     - rewrite /data_has_obj /is_buf_data.
@@ -188,7 +186,7 @@ Section goose_lang.
 
   (* the subst in this lemma is really where the magic is happening *)
   Lemma is_buf_data_rew K s a obj (H: objKind obj = K) :
-    is_buf_data s (objData obj) a -∗
+    is_buf_data s (objData obj) a ⊢@{_}
     is_buf_data s (rew [bufDataT] H in objData obj) a.
   Proof.
     subst.
@@ -204,7 +202,7 @@ Section goose_lang.
         (* NOTE(tej): this has to be a 1 fraction, because the slice is
         incorporated into the jrnl, is handed out in ReadBuf, and should then
         be mutable. *)
-        is_slice_small data_s byteT 1 data }}}
+        own_slice_small data_s byteT 1 data }}}
       Op__OverWrite #l (addr2val a) #sz (slice_val data_s)
     {{{ RET #(); is_jrnl_mem N l γ dinit γtxn γdurable ∗ jrnl_maps_to γtxn a obj }}}.
   Proof.
@@ -233,7 +231,7 @@ Section goose_lang.
     rewrite !fmap_insert !mspec.committed_mkVersioned !mspec.modified_mkVersioned /=.
     rewrite (insert_id (mspec.committed <$> mT)); last first.
     { rewrite lookup_fmap Hlookup //. }
-    iFrame "#∗".
+    iFrame "∗#".
     iSplit.
     2: eauto.
     iExactEq "Htxn_ctx".
@@ -276,11 +274,11 @@ Section goose_lang.
   {P0 stable_maps_to ∨ P stable_maps_to}
 *)
 
-  (* TODO: is this too weak with [durable_mapsto]? does it need to be
-  [durable_mapsto_own]? *)
+  (* TODO: is this too weak with [durable_pointsto]? does it need to be
+  [durable_pointsto_own]? *)
   Lemma async_ctx_durable_map_split γ mT σs :
     async_ctx γ.(jrnl_async_name) 1 σs -∗
-    ([∗ map] a↦v ∈ mT, durable_mapsto γ a v) -∗
+    ([∗ map] a↦v ∈ mT, durable_pointsto γ a v) -∗
     |==> async_ctx γ.(jrnl_async_name) 1 σs ∗
           (* this complex expression is persistent and guarantees that the value
           after a crash comes from [mT] if we crash to any current transaction
@@ -304,7 +302,6 @@ Section goose_lang.
       iMod ("IH" with "Hctx Hm") as "(Hctx&Hold&Hm)".
       iModIntro.
       iFrame.
-      eauto with iFrame.
   Qed.
 
 
@@ -317,8 +314,8 @@ Section goose_lang.
       Op__CommitWait #l #true
     {{{ (ok:bool), RET #ok;
         if ok then
-            P (λ a v, durable_mapsto_own γ a v)
-        else P0 (λ a v, durable_mapsto_own γ a v) }}}.
+            P (λ a v, durable_pointsto_own γ a v)
+        else P0 (λ a v, durable_pointsto_own γ a v) }}}.
   (* crash condition will be [∃ txn_id', P0 (ephemeral_val_from
      γ.(jrnl_async_name) txn_id') ∨ P (ephemeral_val_from γ.(jrnl_async_name)
      txn_id') ]
@@ -334,7 +331,7 @@ Section goose_lang.
     iDestruct (liftable_restore_elim with "HP") as (m) "[Hstable HPrestore]".
     iDestruct (map_valid_subset with "Htxn_ctx Hstable") as %HmT_sub.
     (* here things are a little tricky because committing doesn't give us
-    [durable_mapsto] but just [ephemeral_val_from] *)
+    [durable_pointsto] but just [ephemeral_val_from] *)
     wp_apply (mspec.wp_Op__CommitWait
                 (* ([∗ map] a↦v ∈ (mspec.committed <$> mT),
                  ephemeral_val_from γ.(jrnl_async_name) txn_id0 a v) *) _
@@ -380,7 +377,7 @@ Section goose_lang.
         iApply "HPrestore".
         iApply big_sepM_subseteq; eauto.
         iApply big_sepM_sep; iFrame.
-        rewrite /durable_mapsto.
+        rewrite /durable_pointsto.
         iSplitR "HQ".
         (* TODO: factor this out to a lemma *)
         { iApply (big_sepM_mono with "Hmod_tokens").
@@ -414,18 +411,18 @@ Section goose_lang.
     {{{
       "Hjrnl_mem" ∷ is_jrnl_mem N l γ dinit γtxn γdurable ∗
       "Hdurable_frag" ∷ map_ctx γdurable (1/2) committed_mT ∗
-      "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_mapsto γ a v) ∗
+      "Hold_vals" ∷ ([∗ map] a↦v ∈ committed_mT, durable_pointsto γ a v) ∗
       "Hstable" ∷ ([∗ map] a↦v ∈ m, jrnl_maps_to γtxn a v) ∗
       "#Htxn_cinv" ∷ txn_cinv N γ γ'
     }}}
       Op__CommitWait #l #true @ ⊤
     {{{
       (ok:bool), RET #ok;
-      ([∗ map] a↦v ∈ (if ok then m else committed_mT), durable_mapsto_own γ a v)
+      ([∗ map] a↦v ∈ (if ok then m else committed_mT), durable_pointsto_own γ a v)
     }}}
     {{{
-      ([∗ map] a↦v ∈ committed_mT, durable_mapsto_own γ' a v) ∨
-      ([∗ map] a↦v ∈ m, durable_mapsto_own γ' a v)
+      ([∗ map] a↦v ∈ committed_mT, durable_pointsto_own γ' a v) ∨
+      ([∗ map] a↦v ∈ m, durable_pointsto_own γ' a v)
     }}}.
   Proof.
     iIntros (HwalN HinvN HwpwpcN Φ Φc) "(?&?&?&?&?) HΦ".
@@ -437,7 +434,7 @@ Section goose_lang.
     iApply wpc_cfupd.
 
     (* here things are a little tricky because committing doesn't give us
-    [durable_mapsto] but just [ephemeral_val_from] *)
+    [durable_pointsto] but just [ephemeral_val_from] *)
     wpc_apply (mspec.wpc_Op__CommitWait
                 (* ([∗ map] a↦v ∈ (mspec.committed <$> mT),
                  ephemeral_val_from γ.(jrnl_async_name) txn_id0 a v) *) _
@@ -480,7 +477,7 @@ Section goose_lang.
       rewrite length_possible_async_put.
       replace (S (length (possible σs)) - 1)%nat with (length (possible σs))%nat by lia.
       iSplit.
-      { iModIntro. iModIntro. generalize (length (possible σs)); intros. iFrame "# ∗". }
+      { iModIntro. iModIntro. generalize (length (possible σs)); intros. iFrame "∗#". }
       iExactEq "Hnew".
       auto with f_equal lia. }
     iSplit.
@@ -488,7 +485,7 @@ Section goose_lang.
       iDestruct "H" as "[H|H]".
       {
         iDestruct "H" as (txnid) "(H&#Hold_vals)".
-        iMod (exchange_mapsto_commit with "[$Htxn_cinv $H $Hold_vals]") as "H".
+        iMod (exchange_pointsto_commit with "[$Htxn_cinv $H $Hold_vals]") as "H".
         { rewrite ?dom_fmap //. }
         iModIntro.
         iApply "HΦc".
@@ -496,7 +493,7 @@ Section goose_lang.
         - iLeft. iApply "H".
         - iRight. iDestruct (big_sepM_subseteq with "H") as "H"; eauto.
       }
-      { iMod (exchange_durable_mapsto with "[$Htxn_cinv $H]") as "H".
+      { iMod (exchange_durable_pointsto with "[$Htxn_cinv $H]") as "H".
         iModIntro. iApply "HΦc". iLeft. iFrame. }
     }
     iModIntro.
@@ -510,7 +507,7 @@ Section goose_lang.
         iApply "HΦ".
         iApply big_sepM_subseteq; eauto.
         iApply big_sepM_sep; iFrame.
-        rewrite /durable_mapsto.
+        rewrite /durable_pointsto.
         iSplitR "HQ".
         (* TODO: factor this out to a lemma *)
         { iApply (big_sepM_mono with "Hmod_tokens").
@@ -548,10 +545,10 @@ Section goose_lang.
       Op__CommitWait #l #true @ ⊤
     {{{ (ok:bool), RET #ok;
         if ok then
-            P (λ a v, durable_mapsto_own γ a v)
-        else P0 (λ a v, durable_mapsto_own γ a v) }}}
-    {{{ P0 (durable_mapsto_own γ') ∨
-         P (durable_mapsto_own γ') }}}.
+            P (λ a v, durable_pointsto_own γ a v)
+        else P0 (λ a v, durable_pointsto_own γ a v) }}}
+    {{{ P0 (durable_pointsto_own γ') ∨
+         P (durable_pointsto_own γ') }}}.
   Proof.
     iIntros (??? Φ Φc) "Hpre HΦ". iNamed "Hpre".
     iNamed "Hjrnl".

@@ -1,7 +1,7 @@
 From Perennial.program_proof.mvcc Require Import
      mvcc_prelude mvcc_ghost mvcc_inv mvcc_misc
      tuple_repr tuple_mk tuple_remove_versions.
-From Goose.github_com.mit_pdos.go_mvcc Require Import index.
+From Goose.github_com.mit_pdos.vmvcc Require Import index.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
@@ -18,7 +18,7 @@ Definition keys_hashed (hash : nat) :=
 Definition own_index_bucket (bkt : loc) (hash : nat) (γ : mvcc_names) : iProp Σ :=
   ∃ (lockm : loc) (lockmM : gmap u64 loc),
     "Hlockm" ∷ bkt ↦[IndexBucket :: "m"] #lockm ∗
-    "HlockmOwn" ∷ is_map lockm 1 lockmM ∗
+    "HlockmOwn" ∷ own_map lockm 1 lockmM ∗
     "Hvchains" ∷ ([∗ set] key ∈ ((keys_hashed hash) ∖ (dom lockmM)), ptuple_auth γ (1/2) key [Nil; Nil]) ∗
     "#HtuplesRP" ∷ ([∗ map] key ↦ tuple ∈ lockmM, is_tuple tuple key γ) ∗
     "_" ∷ True.
@@ -40,7 +40,7 @@ Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
      * that have only one field to the type of that field, rather than the struct type.
      * So here we use [ptrT] instead of [structTy Index].
      *)
-    "#HbktsL" ∷ readonly (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
+    "#HbktsL" ∷ readonly (own_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
     "%HbktsLen" ∷ ⌜Z.of_nat (length bktsL) = N_IDX_BUCKET⌝ ∗
     "#HbktsRP" ∷ ([∗ list] i ↦ bkt ∈ bktsL, is_index_bucket bkt i γ) ∗
     "#Hinvgc" ∷ mvcc_inv_gc γ ∗
@@ -174,7 +174,7 @@ Theorem wp_index__getKeys idx γ :
   {{{ True }}}
     Index__getKeys #idx
   {{{ (keysS : Slice.t) (keys : list u64), RET (to_val keysS);
-      is_slice keysS uint64T 1 (to_val <$> keys)
+      own_slice keysS uint64T 1 (to_val <$> keys)
   }}}.
 Proof.
   iIntros "#Hidx" (Φ) "!> _ HΦ".
@@ -203,11 +203,11 @@ Proof.
   iNamed "Hidx".
   wp_loadField.
   iMod (readonly_load with "HbktsL") as (q) "HbktsS".
-  iDestruct (is_slice_small_sz with "HbktsS") as "%HbktsSz".
+  iDestruct (own_slice_small_sz with "HbktsS") as "%HbktsSz".
   rewrite fmap_length in HbktsSz.
   set P := (λ (_ : u64), ∃ keysS (keys : list u64),
                "HkeysR" ∷ keysR ↦[slice.T uint64T] (to_val keysS) ∗
-               "HkeysS" ∷ is_slice keysS uint64T 1 (to_val <$> keys))%I.
+               "HkeysS" ∷ own_slice keysS uint64T 1 (to_val <$> keys))%I.
   wp_apply (wp_forSlice P _ _ _ _ _ (to_val <$> bktsL) with "[] [HkeysR HkeysS $HbktsS]").
   { (* Outer loop body. *)
     clear Φ.
@@ -228,7 +228,7 @@ Proof.
     wp_loadField.
     set P := (∃ keysS (keys : list u64),
                  "HkeysR" ∷ keysR ↦[slice.T uint64T] (to_val keysS) ∗
-                 "HkeysS" ∷ is_slice keysS uint64T 1 (to_val <$> keys))%I.
+                 "HkeysS" ∷ own_slice keysS uint64T 1 (to_val <$> keys))%I.
     wp_apply (wp_MapIter _ _ _ _ _ P (λ _ _, True)%I (λ _ _, True)%I
                with "HlockmOwn [HkeysR HkeysS]"); [ | done | |].
     { (* Inner loop entry. *) subst P. eauto with iFrame. }
@@ -298,7 +298,7 @@ Proof.
   (*     tuple.RemoveVersions(tidMin)                        *)
   (* }                                                       *)
   (***********************************************************)
-  iDestruct (is_slice_to_small with "HkeysS") as "HkeysS".
+  iDestruct (own_slice_to_small with "HkeysS") as "HkeysS".
   wp_apply (wp_forSlice (λ _, True)%I _ _ _ _ _ (to_val <$> keys) with "[] [HkeysS]").
   { (* Loop body. *)
     clear Φ.
@@ -376,9 +376,9 @@ Proof.
   wp_apply (wp_ref_to); first auto.
   iIntros (iRef) "HiRef".
   wp_pures.
-  iDestruct (is_slice_to_small with "HbktsL") as "HbktsS".
+  iDestruct (own_slice_to_small with "HbktsL") as "HbktsS".
   wp_apply (wp_forUpto
-              (λ n, (∃ bktsL, (is_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
+              (λ n, (∃ bktsL, (own_slice_small bkts ptrT 1 (to_val <$> bktsL)) ∗
                               (⌜Z.of_nat (length bktsL) = N_IDX_BUCKET⌝) ∗
                               ([∗ list] i ↦ bkt ∈ (take (int.nat n) bktsL), is_index_bucket bkt i γ)) ∗
                     (idx ↦[Index :: "buckets"] (to_val bkts)) ∗

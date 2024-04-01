@@ -43,7 +43,7 @@ Proof.
   }
 
   replace (#(LitInt (word.mul 128 8))) with (#1024%nat) by reflexivity.
-  wp_apply (wp_Op__ReadBuf with "[$Hjrnl $Hinode_enc_mapsto]"); eauto.
+  wp_apply (wp_Op__ReadBuf with "[$Hjrnl $Hinode_enc_pointsto]"); eauto.
   iIntros (dirty bufptr) "[Hbuf Hbufdone]".
 
   wp_pures. wp_call.
@@ -62,7 +62,7 @@ Proof.
   wp_storeField.
   wp_apply (wp_Dec__GetInt with "Hdec"). iIntros "Hdec".
   wp_storeField.
-  iDestruct (is_dec_to_is_slice_small with "Hdec") as "Hbufslice".
+  iDestruct (is_dec_to_own_slice_small with "Hdec") as "Hbufslice".
   iMod ("Hbufdone" with "[Hbufslice Hbufwithoutdata] []") as "[Hjrnl Hbuf]"; eauto.
   {
     iApply is_buf_return_data. iFrame.
@@ -71,7 +71,7 @@ Proof.
   }
   wp_pures.
   iApply "HΦ".
-  iFrame. iExists _. by iFrame "∗%".
+  by iFrame.
 Qed.
 
 Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (bytesToRead : u64) contents γdurable dinit :
@@ -81,7 +81,7 @@ Theorem wp_Inode__Read γ γtxn ip inum len blk (btxn : loc) (offset : u64) (byt
   }}}
     Inode__Read #ip #btxn #offset #bytesToRead
   {{{ resSlice (eof : bool) (vs : list u8), RET (slice_val resSlice, #eof);
-      is_slice resSlice u8T 1 vs ∗
+      own_slice resSlice u8T 1 vs ∗
       is_jrnl_mem Njrnl btxn γ.(simple_jrnl) dinit γtxn γdurable ∗
       is_inode_mem ip inum len blk ∗
       is_inode_data len blk contents (jrnl_maps_to γtxn) ∗
@@ -100,9 +100,8 @@ Proof.
     replace (slice.nil) with (slice_val (Slice.nil)); auto.
     iApply "HΦ". iModIntro.
     iSplitR.
-    { iApply (is_slice_zero (V:=u8)). }
-    iFrame. iSplit.
-    { iExists _. iFrame "∗%". }
+    { iApply (own_slice_zero (V:=u8)). }
+    iFrame. iSplit; first done.
     iPureIntro; intuition; simpl; lia.
   }
 
@@ -158,7 +157,7 @@ Proof.
   wp_apply (wp_forUpto (λ i,
     ∃ dataslice vs,
       "Hdatavar" ∷ datavar ↦[slice.T byteT] (slice_val dataslice) ∗
-      "Hdataslice" ∷ is_slice dataslice byteT 1 vs ∗
+      "Hdataslice" ∷ own_slice dataslice byteT 1 vs ∗
       "%Hcontent" ∷ ⌜ firstn (int.nat i) (skipn (int.nat offset) contents) = vs ⌝ ∗
       "%Hvslen" ∷ ⌜ length vs = (int.nat i) ⌝ ∗
       "Hbuf" ∷ is_buf bufptr (blk2addr blk) {|
@@ -235,7 +234,7 @@ Proof.
   iApply "HΦ". iModIntro.
   iFrame "Hdataslice Hjrnl".
   iFrame. iSplit.
-  { iExists _. iFrame "∗%". }
+  { done. }
 
   iPureIntro. intuition (try congruence).
   {

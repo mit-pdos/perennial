@@ -51,8 +51,8 @@ Definition RPCServer_own_vol (sv:loc) (γrpc:rpc_names) (lastSeqM lastReplyM:gma
   ∃ (lastSeq_ptr lastReply_ptr:loc),
       "HlastSeqOwn" ∷ sv ↦[RPCServer :: "lastSeq"] #lastSeq_ptr ∗
       "HlastReplyOwn" ∷ sv ↦[RPCServer :: "lastReply"] #lastReply_ptr ∗
-      "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
-      "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM ∗
+      "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM ∗
+      "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM ∗
       "#Hlinv" ∷ is_RPCServer γrpc
 .
 
@@ -77,8 +77,8 @@ Lemma CheckReplyTable_spec (reply_ptr:loc) (req:RPCRequestID) (reply:Reply64) γ
 int.nat req.(Req_Seq) > 0 →
 is_RPCServer γrpc -∗
 {{{
-    "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
-    "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM ∗
+    "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM ∗
+    "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM ∗
     "Hreply" ∷ RPCReply_own reply_ptr reply
 }}}
   CheckReplyTable #lastSeq_ptr #lastReply_ptr #req.(Req_CID) #req.(Req_Seq) #reply_ptr
@@ -87,14 +87,14 @@ is_RPCServer γrpc -∗
       "Hcases" ∷ ("%" ∷ ⌜b = false⌝ ∗
            "%" ∷ ⌜(int.Z req.(Req_Seq) > int.Z (map_get lastSeqM req.(Req_CID)).1)%Z⌝ ∗
            "%" ∷ ⌜reply'.(Rep_Stale) = false⌝ ∗
-           "HlastSeqMap" ∷ is_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
+           "HlastSeqMap" ∷ own_map (lastSeq_ptr) (<[req.(Req_CID):=req.(Req_Seq)]>lastSeqM)
          ∨ 
          "%" ∷ ⌜b = true⌝ ∗
-           "HlastSeqMap" ∷ is_map (lastSeq_ptr) lastSeqM ∗
+           "HlastSeqMap" ∷ own_map (lastSeq_ptr) lastSeqM ∗
            ((⌜reply'.(Rep_Stale) = true⌝ ∗ (RPCServer_own_ghost γrpc lastSeqM lastReplyM ={⊤}=∗ RPCRequestStale γrpc req ∗ RPCServer_own_ghost γrpc lastSeqM lastReplyM )) ∨
              (RPCServer_own_ghost γrpc lastSeqM lastReplyM ={⊤}=∗ RPCReplyReceipt γrpc req reply'.(Rep_Ret) ∗ RPCServer_own_ghost γrpc lastSeqM lastReplyM ))) ∗
 
-    "HlastReplyMap" ∷ is_map (lastReply_ptr) lastReplyM
+    "HlastReplyMap" ∷ own_map (lastReply_ptr) lastReplyM
 }}}
 .
 Proof.
@@ -294,7 +294,7 @@ Theorem wp_rpcReqEncode (req_ptr:loc) (req:RPCRequestID) (args:RPCValsC) :
     rpcReqEncode #req_ptr
   {{{
     s (bs:list u8), RET (slice_val s);
-    is_slice s u8T 1%Qp bs ∗
+    own_slice s u8T 1%Qp bs ∗
     ⌜reqEncoded req args bs⌝
   }}}.
 Proof.
@@ -331,7 +331,7 @@ Qed.
 
 Theorem wp_rpcReqDecode (s:Slice.t) (reqptr:loc) (bs:list u8) (req:RPCRequestID) (args:RPCValsC) q :
   {{{
-    is_slice_small s u8T q bs ∗
+    own_slice_small s u8T q bs ∗
     ⌜reqEncoded req args bs⌝ ∗
     reqptr ↦[struct.t RPCRequest] (#0, (#0, (#0, (#0, #()), #())))
   }}}
@@ -352,13 +352,13 @@ Proof.
   wp_apply (wp_Dec__GetInt with "Hd"). iIntros "Hd".
   wp_storeField.
   wp_apply (wp_Dec__GetInt with "Hd"). iIntros "Hd".
-  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Args"); first done.
   iIntros (fl) "[%Hfl Args]".
   wp_apply (wp_storeField_struct with "Args"); first auto.
   iIntros "Args".
   rewrite Hfl; clear Hfl fl.
   wp_apply (wp_Dec__GetInt with "Hd"). iIntros "Hd".
-  wp_apply (wp_struct_fieldRef_mapsto with "Args"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Args"); first done.
   iIntros (fl) "[%Hfl Args]".
   iApply wp_fupd.
   wp_apply (wp_storeField_struct with "Args"); first auto.
@@ -385,7 +385,7 @@ Theorem wp_rpcReplyEncode (reply_ptr:loc) (reply:RPCReply) :
     rpcReplyEncode #reply_ptr
   {{{
     s (bs:list u8), RET (slice_val s);
-    is_slice s u8T 1%Qp bs ∗
+    own_slice s u8T 1%Qp bs ∗
     ⌜replyEncoded reply bs⌝
   }}}.
 Proof.
@@ -413,7 +413,7 @@ Admitted.
 
 Theorem wp_rpcReplyDecode (s:Slice.t) (reply_ptr:loc) (bs:list u8) (reply:RPCReply) q (v0 : bool) (v1 : u64) :
   {{{
-    is_slice_small s u8T q bs ∗
+    own_slice_small s u8T q bs ∗
     ⌜replyEncoded reply bs⌝ ∗
     reply_ptr ↦[struct.t RPCReply] (#v0, (#v1, #()))
   }}}
@@ -513,7 +513,7 @@ Proof.
   iMod (later_exist_except_0 with "Hpost") as (reply1) "Hpost".
   iDestruct "Hpost" as "(>% & >% & Hpost)".
 
-  iDestruct (is_slice_small_acc with "Hrep_sl") as "[Hrep_sl_small Hclose]".
+  iDestruct (own_slice_small_acc with "Hrep_sl") as "[Hrep_sl_small Hclose]".
   wp_pures.
   wp_load.
   wp_apply (wp_rpcReplyDecode with "[Hrep_sl_small Hreply]").
@@ -728,7 +728,7 @@ Proof.
   iIntros (reply_ptr) "Hreply".
   wp_pures.
   iDestruct "Hpre" as "(Hreq_sl & Hrep_sl & Hpre)".
-  iDestruct (is_slice_small_acc with "Hreq_sl") as "[Hreq_sl_small Hreq_close]".
+  iDestruct (own_slice_small_acc with "Hreq_sl") as "[Hreq_sl_small Hreq_close]".
   iDestruct "Hpre" as (???) "[% #His_req]".
   wp_apply (wp_rpcReqDecode with "[$Hreq_sl_small $Hreq]").
   { done. }

@@ -23,7 +23,7 @@ Implicit Types (stk:stuckness) (E: coPset).
 Definition is_bufmap (bufmap : loc) (bm : gmap addr buf) : iProp Σ :=
   ∃ (mptr : loc) (m : gmap u64 loc) (am : gmap addr loc),
     bufmap ↦[BufMap :: "addrs"] #mptr ∗
-    is_map mptr 1 m ∗
+    own_map mptr 1 m ∗
     ⌜ flatid_addr_map m am ⌝ ∗
     [∗ map] a ↦ bufptr; buf ∈ am; bm,
       is_buf bufptr a buf.
@@ -41,7 +41,7 @@ Proof.
   iIntros (Φ) "Hemp HΦ".
 
   wp_call.
-  wp_apply wp_NewMap.
+  wp_apply (wp_NewMap u64).
   iIntros (mref) "Hmref".
   wp_apply wp_allocStruct; first val_ty.
   iIntros (bufmap) "Hbufmap".
@@ -89,12 +89,12 @@ Proof using.
   - iDestruct (big_sepM2_lookup_l_some with "Ham") as (v2) "%"; eauto.
     iDestruct (big_sepM2_insert_acc with "Ham") as "[Hcur Hacc]"; eauto.
     iApply "Hacc".
-    iExists _; iFrame. iExists _; iFrame. done.
+    iExists _; iFrame. done.
 
   - iDestruct (big_sepM2_lookup_l_none with "Ham") as "%"; eauto.
     iApply big_sepM2_insert; eauto.
     iFrame "Ham".
-    iExists _; iFrame. iExists _; iFrame. done.
+    iExists _; iFrame. done.
 Qed.
 
 Theorem wp_BufMap__Del l m a stk E :
@@ -166,11 +166,10 @@ Proof using.
     iFrame.
 
     iIntros "!>" (b') "Hbuf".
-    iExists _, _, _.
-    iFrame.
+    iExists _, _, _; iFrame.
     iSplitR; first eauto.
     replace (am) with (<[a:=v]> am) at 1 by ( apply insert_id; eauto ).
-    iApply "Ham". iFrame.
+    by iApply "Ham".
 
   - apply map_get_false in H1; intuition subst.
     erewrite flatid_addr_lookup in H2; eauto.
@@ -284,7 +283,7 @@ Proof using.
           assert (0 < size mtodo)%nat.
           { eauto using map_size_nonzero_lookup. }
           word.
-        - rewrite map_filter_lookup_None_2 //.
+        - rewrite map_lookup_filter_None_2 //.
           left.
           apply elem_of_dom_2 in H3.
           apply not_elem_of_dom.
@@ -376,8 +375,7 @@ Proof using.
   rewrite left_id_L in Hm; subst mdone.
   rewrite left_id_L in Ham; subst amdone.
   iSplitR; first by done.
-  iExists _, _, _; iFrame.
-  auto.
+  by iFrame.
 Qed.
 
 Theorem wp_BufMap__DirtyBufs l m stk E1 :
@@ -387,7 +385,7 @@ Theorem wp_BufMap__DirtyBufs l m stk E1 :
     BufMap__DirtyBufs #l @ stk ; E1
   {{{
     (s : Slice.t) (bufptrlist : list loc), RET (slice_val s);
-    is_slice s ptrT 1 bufptrlist ∗
+    own_slice s ptrT 1 bufptrlist ∗
     let dirtybufs := filter (λ x, (snd x).(bufDirty) = true) m in
     [∗ maplist] a ↦ b;bufptr ∈ dirtybufs;bufptrlist,
       is_buf bufptr a b
@@ -412,7 +410,7 @@ Proof using.
         "Htodo" ∷ ( [∗ map] fa↦b ∈ bmtodo, ∃ a, ⌜fa = addr2flat a⌝ ∗
                                            (∃ y2 : buf, ⌜mtodo !! a = Some y2⌝ ∗ is_buf b a y2) ) ∗
         "Hbufs" ∷ bufs ↦[slice.T ptrT] (slice_val bufptrslice) ∗
-        "Hbufptrslice" ∷ is_slice bufptrslice ptrT 1 bufptrlist ∗
+        "Hbufptrslice" ∷ own_slice bufptrslice ptrT 1 bufptrlist ∗
         "Hresult" ∷ ( [∗ maplist] a↦b;bufptr ∈ filter (λ x, (x.2).(bufDirty) = true) mdone;bufptrlist,
                                 is_buf bufptr a b )
     )%I
@@ -425,7 +423,7 @@ Proof using.
     { iPureIntro. eauto. }
     iFrame "Hmap". iFrame "Hbufs".
     iSplitR.
-    { iApply is_slice_zero. }
+    { iApply own_slice_zero. }
     rewrite map_filter_empty. iApply big_sepML_empty.
   }
   {
@@ -467,7 +465,7 @@ Proof using.
       iFrame "Hbufs". iFrame "Hbufptrslice".
       rewrite map_filter_insert_True; last by eauto.
       iApply big_sepML_insert_app.
-      { rewrite map_filter_lookup_None. left.
+      { rewrite map_lookup_filter_None. left.
         apply not_elem_of_dom.
         assert (is_Some (mtodo !! a)) as Hsome by eauto.
         apply elem_of_dom in Hsome. set_solver. }

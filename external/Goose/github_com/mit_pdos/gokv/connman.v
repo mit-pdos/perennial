@@ -16,8 +16,8 @@ Definition MakeConnMan: val :=
   rec: "MakeConnMan" <> :=
     let: "c" := struct.alloc ConnMan (zero_val (struct.t ConnMan)) in
     struct.storeF ConnMan "mu" "c" (lock.new #());;
-    struct.storeF ConnMan "rpcCls" "c" (NewMap ptrT #());;
-    struct.storeF ConnMan "making" "c" (NewMap ptrT #());;
+    struct.storeF ConnMan "rpcCls" "c" (NewMap HostName ptrT #());;
+    struct.storeF ConnMan "making" "c" (NewMap HostName ptrT #());;
     "c".
 
 Definition ConnMan__getClient: val :=
@@ -41,7 +41,7 @@ Definition ConnMan__getClient: val :=
           let: "my_cond" := lock.newCond (struct.loadF ConnMan "mu" "c") in
           MapInsert (struct.loadF ConnMan "making" "c") "host" "my_cond";;
           lock.release (struct.loadF ConnMan "mu" "c");;
-          "ret" <-[ptrT] urpc.MakeClient "host";;
+          "ret" <-[ptrT] (urpc.MakeClient "host");;
           lock.acquire (struct.loadF ConnMan "mu" "c");;
           MapInsert (struct.loadF ConnMan "rpcCls" "c") "host" (![ptrT] "ret");;
           lock.condBroadcast "my_cond";;
@@ -54,21 +54,21 @@ Definition ConnMan__getClient: val :=
 Definition ConnMan__CallAtLeastOnce: val :=
   rec: "ConnMan__CallAtLeastOnce" "c" "host" "rpcid" "args" "reply" "retryTimeout" :=
     let: "cl" := ref (zero_val ptrT) in
-    "cl" <-[ptrT] ConnMan__getClient "c" "host";;
+    "cl" <-[ptrT] (ConnMan__getClient "c" "host");;
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := urpc.Client__Call (![ptrT] "cl") "rpcid" "args" "reply" "retryTimeout" in
-      (if: ("err" = urpc.ErrTimeout)
+      (if: "err" = urpc.ErrTimeout
       then Continue
       else
-        (if: ("err" = urpc.ErrDisconnect)
+        (if: "err" = urpc.ErrDisconnect
         then
           lock.acquire (struct.loadF ConnMan "mu" "c");;
-          (if: (![ptrT] "cl" = Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))
+          (if: (![ptrT] "cl") = (Fst (MapGet (struct.loadF ConnMan "rpcCls" "c") "host"))
           then MapDelete (struct.loadF ConnMan "rpcCls" "c") "host"
           else #());;
           lock.release (struct.loadF ConnMan "mu" "c");;
-          "cl" <-[ptrT] ConnMan__getClient "c" "host";;
+          "cl" <-[ptrT] (ConnMan__getClient "c" "host");;
           Continue
         else Break)));;
     #().

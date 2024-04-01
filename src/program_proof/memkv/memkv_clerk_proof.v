@@ -11,7 +11,7 @@ Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !erpcG Σ, !urpcregG Σ
 Local Definition own_KVClerk (p:loc) (γ:gname) : iProp Σ :=
   ∃ (freeClerks_sl:Slice.t) (freeClerks:list loc),
   "HfreeClerks" ∷ p ↦[KVClerk :: "freeClerks"] (slice_val freeClerks_sl) ∗
-  "HfreeClerks_sl" ∷ is_slice (V:=loc) freeClerks_sl ptrT 1 freeClerks ∗
+  "HfreeClerks_sl" ∷ own_slice (V:=loc) freeClerks_sl ptrT 1 freeClerks ∗
   "HfreeClerks_own" ∷ [∗ list] ck ∈ freeClerks, own_SeqKVClerk ck γ
 .
 
@@ -48,7 +48,7 @@ Proof.
     { do 2 f_equal. word. }
     wp_loadField.
     wp_apply (release_spec'' with "Hinv [-HΦ]").
-    { iFrame. rewrite /own_KVClerk. eauto with iFrame. }
+    { iFrame. }
     wp_pures.
     wp_apply (wp_MakeConnMan).
     iIntros (cm2) "Hcm2".
@@ -61,13 +61,13 @@ Proof.
     rewrite bool_decide_false; last first.
     { intros [=Hz]. apply Hnzero. rewrite Hz. word. }
     wp_loadField.
-    iDestruct (is_slice_sz with "HfreeClerks_sl") as %Hlen.
-    iDestruct (is_slice_wf with "HfreeClerks_sl") as %Hwf.
+    iDestruct (own_slice_sz with "HfreeClerks_sl") as %Hlen.
+    iDestruct (own_slice_wf with "HfreeClerks_sl") as %Hwf.
     destruct freeClerks as [|freeClerks Hck _] using rev_ind.
     { exfalso. apply Hnzero. done. }
     rewrite app_length in Hlen. simpl in Hlen.
     rewrite big_sepL_snoc.
-    iDestruct (is_slice_small_read with "HfreeClerks_sl") as "[HfreeClerks_sl HfreeClerks_close]".
+    iDestruct (own_slice_small_read with "HfreeClerks_sl") as "[HfreeClerks_sl HfreeClerks_close]".
     wp_apply (wp_SliceGet (V:=loc) with "[$HfreeClerks_sl]").
     { iPureIntro.
       replace (int.nat (word.sub freeClerks_sl.(Slice.sz) 1%Z)) with (int.nat freeClerks_sl.(Slice.sz) - 1) by word.
@@ -88,10 +88,10 @@ Proof.
     { rewrite /own_KVClerk. iModIntro. iExists _, _. iFrame.
       (* FIXME need typed slice lemma *)
       iClear "#".
-      rewrite /is_slice.
-      iDestruct (is_slice_take_cap _ _ _ (length Hck) with "HfreeClerks_sl") as "HfreeClerks_sl".
+      rewrite /own_slice.
+      iDestruct (own_slice_take_cap _ _ _ (length Hck) with "HfreeClerks_sl") as "HfreeClerks_sl".
       { rewrite /list.untype fmap_length app_length /=. word. }
-      rewrite /list.untype fmap_app take_app_alt; last first.
+      rewrite /list.untype fmap_app take_app_length'; last first.
       { rewrite fmap_length. word. }
       replace (word.sub freeClerks_sl.(Slice.sz) 1%Z) with (length Hck : u64) by word.
       iFrame. }
@@ -163,7 +163,7 @@ Lemma wp_KVClerk__Get (p:loc) (γ:gname) (key:u64) :
     KVClerk__Get #p #key @ ∅
   <<< kvptsto γ key v >>>
   {{{ val_sl q, RET slice_val val_sl;
-      is_slice_small val_sl byteT q%Qp v
+      own_slice_small val_sl byteT q%Qp v
   }}}.
 Proof.
   iIntros "!#" (Φ) "#Hp Hatomic". wp_lam.
@@ -183,7 +183,7 @@ Lemma wp_KVClerk__Get_seq (p:loc) (γ:gname) (key:u64) (v:list u8) :
   {{{ is_KVClerk p γ ∗ kvptsto γ key v }}}
     KVClerk__Get #p #key @ ⊤
   {{{ val_sl q, RET slice_val val_sl;
-      kvptsto γ key v ∗ is_slice_small val_sl byteT q%Qp v
+      kvptsto γ key v ∗ own_slice_small val_sl byteT q%Qp v
   }}}.
 Proof.
   iIntros (Φ) "(Hclerk & Hkey) HΦ".
@@ -195,7 +195,7 @@ Proof.
 Qed.
 
 Lemma wp_KVClerk__Put (p:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v:list u8) :
-⊢ {{{ is_KVClerk p γ ∗ readonly (is_slice_small val_sl byteT 1 v) }}}
+⊢ {{{ is_KVClerk p γ ∗ readonly (own_slice_small val_sl byteT 1 v) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     KVClerk__Put #p #key (slice_val val_sl) @ ∅
   <<< kvptsto γ key v >>>
@@ -214,7 +214,7 @@ Proof.
 Qed.
 
 Lemma wp_KVClerk__Put_seq (p:loc) (γ:gname) (key:u64) (val_sl:Slice.t) (v oldv:list u8) :
-  {{{ is_KVClerk p γ ∗ readonly (is_slice_small val_sl byteT 1 v) ∗ kvptsto γ key oldv }}}
+  {{{ is_KVClerk p γ ∗ readonly (own_slice_small val_sl byteT 1 v) ∗ kvptsto γ key oldv }}}
     KVClerk__Put #p #key (slice_val val_sl) @ ⊤
   {{{ RET #(); kvptsto γ key v }}}.
 Proof.
@@ -228,8 +228,8 @@ Qed.
 
 Lemma wp_KVClerk__ConditionalPut (p:loc) (γ:gname) (key:u64) (expv_sl newv_sl:Slice.t) (expv newv:list u8):
 ⊢ {{{ is_KVClerk p γ ∗
-      readonly (is_slice_small expv_sl byteT 1 expv) ∗
-      readonly (is_slice_small newv_sl byteT 1 newv) }}}
+      readonly (own_slice_small expv_sl byteT 1 expv) ∗
+      readonly (own_slice_small newv_sl byteT 1 newv) }}}
   <<< ∀∀ oldv, kvptsto γ key oldv >>>
     KVClerk__ConditionalPut #p #key (slice_val expv_sl) (slice_val newv_sl) @ ∅
   <<< kvptsto γ key (if bool_decide (expv = oldv) then newv else oldv) >>>
@@ -268,15 +268,15 @@ Qed.
 
 Lemma wp_KVClerk__MGet (p:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :
   {{{ is_KVClerk p γ ∗
-      is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
+      own_slice_small keys_sl uint64T q (keys_vals.*1) ∗
       [∗ list] key_val ∈ keys_vals, kvptsto γ key_val.1 key_val.2
   }}}
     KVClerk__MGet #p (slice_val keys_sl) @ ⊤
   {{{ (vals_sl:Slice.t) (val_sls:list Slice.t), RET slice_val vals_sl;
-      is_slice_small keys_sl uint64T q (keys_vals.*1) ∗
-      is_slice_small vals_sl (slice.T byteT) 1 val_sls ∗
+      own_slice_small keys_sl uint64T q (keys_vals.*1) ∗
+      own_slice_small vals_sl (slice.T byteT) 1 val_sls ∗
       [∗ list] key_val;sl ∈ keys_vals;val_sls, kvptsto γ key_val.1 key_val.2 ∗
-        readonly (is_slice_small sl byteT 1 key_val.2)
+        readonly (own_slice_small sl byteT 1 key_val.2)
   }}}.
 Proof using Type*.
   iIntros (Φ) "(#Hclerk & Hkeys_sl & Hkeys) HΦ". wp_lam.
@@ -285,10 +285,10 @@ Proof using Type*.
   iIntros (vals_sl) "Hvals_sl".
   wp_apply wp_slice_len.
 
-  iDestruct (is_slice_small_sz with "Hkeys_sl") as %Hlen.
+  iDestruct (own_slice_small_sz with "Hkeys_sl") as %Hlen.
   rewrite fmap_length in Hlen.
-  iDestruct (is_slice_to_small with "Hvals_sl") as "Hvals_sl".
-  iEval (rewrite /is_slice_small /slice.is_slice_small ?untype_replicate ?replicate_length)
+  iDestruct (own_slice_to_small with "Hvals_sl") as "Hvals_sl".
+  iEval (rewrite /own_slice_small /slice.own_slice_small ?untype_replicate ?replicate_length)
     in "Hkeys_sl Hvals_sl".
   iDestruct "Hkeys_sl" as "[Hkeys_sl %Hkeys_sl_len]".
   iDestruct "Hvals_sl" as "[Hvals_sl %Hvals_sl_len]".
@@ -301,7 +301,7 @@ Proof using Type*.
       (keys_sl.(Slice.ptr) +ₗ[uint64T] i) ↦[uint64T]{q} #key ∗
       kvptsto γ key val ∗
       (vals_sl.(Slice.ptr) +ₗ[slice.T byteT] i) ↦[slice.T byteT] slice_val val_sl ∗
-      readonly (is_slice_small val_sl byteT 1 val))%I
+      readonly (own_slice_small val_sl byteT 1 val))%I
     keys_sl.(Slice.sz)
     keys_vals
     with "[] [Hkeys_sl Hkeys Hvals_sl]").
@@ -342,7 +342,7 @@ Proof using Type*.
   iDestruct (big_sepL_exists_to_sepL2 with "H") as (xs) "H".
   iDestruct (big_sepL2_length with "H") as %Hlenxs.
   iApply ("HΦ" $! vals_sl xs). iModIntro.
-  iEval (rewrite {1 2}/is_slice_small /slice.is_slice_small).
+  iEval (rewrite {1 2}/own_slice_small /slice.own_slice_small).
   rewrite /array /list.untype !big_sepL_fmap !fmap_length.
   iEval (rewrite [(_ ∗ ⌜length keys_vals = _ ∧ _⌝)%I]comm -!assoc).
   iSplit; first naive_solver.

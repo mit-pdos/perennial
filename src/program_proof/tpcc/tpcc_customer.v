@@ -1,4 +1,4 @@
-From Perennial.program_proof.mvcc Require Import tpcc_prelude.
+From Perennial.program_proof.tpcc Require Import tpcc_prelude.
 
 Section program.
 Context `{!heapGS Σ}.
@@ -26,7 +26,7 @@ Theorem wp_readCustomer txn tplid cid cwid clast tid view γ τ :
     readCustomer #txn #tplid
   {{{ (clastS : Slice.t), RET (customer_record_to_val cid cwid clastS);
       own_txn txn tid view γ τ ∗ customer_tbl_txnpt τ tplid (cid, cwid, clast) ∗
-      is_slice_small clastS byteT 1 clast
+      own_slice_small clastS byteT 1 clast
   }}}.
 Proof.
   iIntros (Φ) "[Htxn Hpt] HΦ".
@@ -66,7 +66,7 @@ Proof.
   (* }                                                       *)
   (***********************************************************)
   simpl in Hret. inversion Hret. subst v'.
-  iDestruct (is_slice_to_small with "HvS") as "HvS".
+  iDestruct (own_slice_to_small with "HvS") as "HvS".
   wp_apply (wp_ReadInt with "HvS").
   iIntros (vS') "HvS'".
   wp_pures.
@@ -137,7 +137,7 @@ Proof.
   (* return tplid, true                                      *)
   (***********************************************************)
   simpl in Hret. inversion Hret. subst v.
-  iDestruct (is_slice_to_small with "HvS") as "HvS".
+  iDestruct (own_slice_to_small with "HvS") as "HvS".
   wp_apply (wp_ReadInt with "HvS").
   iIntros (vS') "HvS'".
   wp_pures.
@@ -201,7 +201,7 @@ Theorem wp_SelectCusomterByCID txn cid cwid (cref : loc) clast tid tplid view γ
       own_txn txn tid view γ τ ∗
       customer_idx_txnpt τ cid cwid tplid ∗ customer_tbl_txnpt τ tplid (cid, cwid, clast) ∗
       cref ↦[Customer :: "C_ID"] #cid ∗ cref ↦[Customer :: "C_W_ID"] #cwid ∗
-      cref ↦[Customer :: "C_LAST"] (to_val clastS) ∗ is_slice_small clastS byteT 1 clast
+      cref ↦[Customer :: "C_LAST"] (to_val clastS) ∗ own_slice_small clastS byteT 1 clast
   }}}.
 Proof.
   iIntros (Φ) "(Htxn & Hidxpt & Htblpt & Hc) HΦ".
@@ -277,7 +277,7 @@ Theorem wp_TxnSelectCusomterByCID txn cid cwid γ :
     TxnSelectCustomerByCID #txn #cid #cwid @ ⊤
     <<< customer_idx_dbpt γ cid cwid 1 tplid ∗ customer_tbl_dbpt γ tplid 1 (cid, cwid, clast) >>>
     {{{ (clastS : Slice.t), RET customer_record_to_val cid cwid clastS;
-        own_txn_uninit txn γ ∗ is_slice_small clastS byteT 1 clast
+        own_txn_uninit txn γ ∗ own_slice_small clastS byteT 1 clast
     }}}.
 Proof.
   iIntros (Φ) "!> Htxn HAU".
@@ -333,7 +333,7 @@ Proof.
                 ⌜r !! (U64 1, u64_le cid ++ u64_le cwid) = Some (Value (u64_le tplid)) ∧
                  r !! (U64 0, u64_le tplid) = Some (Value (u64_le cid ++ u64_le cwid ++ clast))⌝ ∗
                 cRef ↦[structTy Customer] (customer_record_to_val cid cwid clastS) ∗
-                is_slice_small clastS byteT 1 clast)%I.
+                own_slice_small clastS byteT 1 clast)%I.
   wp_apply (wp_txn__DoTxn_readonly _ _ P Rc Rc with "[$Htxn HcRef]").
   { (* Transaction body. *)
     clear Φ. unfold spec_body.

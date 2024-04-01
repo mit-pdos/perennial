@@ -4,7 +4,11 @@ from __future__ import print_function
 
 import sqlite3
 import pandas as pd
-
+try:
+    pd.set_option('future.no_silent_downcasting', True)
+except pd.errors.OptionError:
+    # ignore if not supported
+    pass
 
 def read_db(fname):
     conn = sqlite3.connect(fname)
@@ -28,7 +32,7 @@ def read_db(fname):
         mapper={"time_qed": "qed_time"}, axis="columns", inplace=True
     )
     file_df.fillna(value={"qed_time": 0.0}, inplace=True)
-    file_df.is_vos.replace({1: True, 0: False}, inplace=True)
+    file_df["is_vos"] = file_df["is_vos"].replace({1: True, 0: False})
     return qed_df, file_df
 
 

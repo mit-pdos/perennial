@@ -26,7 +26,7 @@ Proof.
   wp_lam.
   wp_pures.
   wp_apply (wp_MakeClient).
-  iIntros (cl_ptr) "Hcl".
+  iIntros (cl_ptr) "#Hcl".
   wp_pures.
   wp_apply (wp_ref_to).
   { eauto. }
@@ -35,7 +35,7 @@ Proof.
 
   iAssert (∃ x, counter_lb γ x ∗ localBound_ptr ↦[uint64T] #(U64 x))%I with "[HlocalBound Hlb]" as "HH".
   {
-    iExists 0%nat. iFrame "#∗".
+    iExists 0%nat. iFrame "∗#".
   }
   wp_forBreak.
   wp_pures.
@@ -50,10 +50,10 @@ Proof.
   wp_apply (wp_NewSlice _ _ byteT).
   iIntros (empty_req) "Hempty_sl".
 
-  iDestruct (is_slice_to_small with "Hempty_sl") as "Hempty_sl".
-  wp_apply (wp_Client__Call with "[] [$Hcl $Hrep $Hempty_sl]").
-  { iDestruct "Hsrv" as "[$ _]". }
-  {
+  iDestruct (own_slice_to_small with "Hempty_sl") as "Hempty_sl".
+  wp_apply (wp_Client__Call_pred with "[$Hrep $Hempty_sl]").
+  { iFrame "Hcl". iDestruct "Hsrv" as "[$ _]".
+  (* FIXME: why doesn't [$Hcl] work? *)
     instantiate (1:=(λ l, ∃ (x:nat), ⌜has_encoding l [EncUInt64 (U64 x)] ∧ localBound ≤ x⌝ ∗ counter_lb γ x)%I).
     iModIntro.
     iModIntro.
@@ -77,14 +77,13 @@ Proof.
     { done. }
     lia.
   }
-  iIntros (err) "(Hcl & Hreq & Hrep)".
+  iIntros (err) "(Hreq & Hrep)".
   wp_pures.
   wp_if_destruct.
   {
     iLeft. iModIntro.
     iSplitL ""; first done.
     iFrame "∗#".
-    iExists _; iFrame "∗#".
   }
   destruct err.
   {
@@ -118,7 +117,6 @@ Proof.
   iLeft.
   iSplitL ""; first done.
   iFrame.
-  iExists _; iFrame "∗#".
 Admitted.
 
 End client_proof.

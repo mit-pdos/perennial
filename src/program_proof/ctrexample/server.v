@@ -89,7 +89,7 @@ Proof.
 
   iDestruct "Hdur" as (old_data) "[Hdur %Hpure]".
   iApply wpc_cfupd.
-  iDestruct (is_slice_to_small with "Hslice") as "Hslice".
+  iDestruct (own_slice_to_small with "Hslice") as "Hslice".
   wpc_apply (wpc_FileWrite with "[Hdur Hslice]").
   {
     iFrame.
@@ -103,9 +103,7 @@ Proof.
     iApply "HΦ".
     iDestruct "Hcrash" as "[Hdur|Hdur]".
     { (* write didn't go through *)
-      iExists _. iFrame.
-      iExists _; iFrame.
-      done.
+      by iFrame.
     }
     { (* write went through *)
       iExists _.
@@ -128,19 +126,13 @@ Proof.
       iLeft in "HΦ".
       iModIntro.
       iApply "HΦ".
-      iExists _; iFrame.
-      iExists _; iFrame.
-      iRight.
-      done.
+      iFrame. eauto.
     }
     wpc_pures.
     iModIntro.
     iRight in "HΦ".
     iApply "HΦ".
-    iFrame.
-    iExists _; iFrame.
-    iRight.
-    done.
+    iFrame. eauto.
   }
 Qed.
 
@@ -310,22 +302,20 @@ Proof using Type*.
   iSplit.
   {
     iIntros.
-    iExists _; iFrame.
-    iExists data; iFrame.
-    done.
+    by iFrame.
   }
   iNext.
   iIntros (sl) "[Hdur Hsl]".
 
   iCache with "Hdur Hghost".
-  { iExists _; iFrame. iExists _; iFrame. done. }
+  { by iFrame. }
 
   wpc_pures.
 
   wpc_bind (@If _ _ _ _).
   wpc_frame.
 
-  iDestruct (is_slice_sz with "Hsl") as %HslSize.
+  iDestruct (own_slice_sz with "Hsl") as %HslSize.
   wp_apply (wp_slice_len).
   wp_pures.
   wp_apply (wp_If_join ("Hval" ∷ s ↦[CtrServer :: "val"] #c)
@@ -363,7 +353,7 @@ Proof using Type*.
         replace (sl.(Slice.sz)) with (U64 0) in Hslice_nonEmpty by word.
         done.
       }
-      iDestruct (is_slice_to_small with "Hsl") as "Hsl".
+      iDestruct (own_slice_to_small with "Hsl") as "Hsl".
       wp_apply (wp_new_dec with "Hsl").
       { done. }
       iIntros (dec) "Hdec".
@@ -396,12 +386,7 @@ Proof using Type*.
   }
 
   iSplitL "Hdur Hghost Hfilename Hval".
-  {
-    iExists _.
-    iFrame.
-    iExists _; iFrame.
-    done.
-  }
+  { by iFrame. }
   iFrame "HmuInv".
   iIntros "#HmuInv".
 
@@ -415,7 +400,7 @@ Proof using Type*.
   }
   iApply wp_wpc.
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers_ptr) "Hmap".
   wp_pures.
 
@@ -433,8 +418,8 @@ Proof using Type*.
     iExists _; iFrame "#".
   }
 
-  wp_apply (wp_StartServer with "[$Hsown]").
-  { rewrite ?dom_insert_L. set_solver by idtac. (* FIXME regular set_solver leaves shelved goals *) }
+  wp_apply (wp_StartServer_pred with "[$Hsown]").
+  { rewrite ?dom_insert_L. set_solver. }
   {
     iSplitL "".
     { rewrite /handlers_complete.
@@ -444,10 +429,10 @@ Proof using Type*.
       simpl. iExists _.
       iFrame "Hhandler".
 
-      rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      rewrite /is_urpc_handler_pred.
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & HFAISpec)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & HFAISpec)".
       wp_pures.
       wp_apply (wp_CtrServer__FetchAndIncrement with "[$HFAISpec $Hsrv]").
       iIntros (x) "HPost".
@@ -463,7 +448,7 @@ Proof using Type*.
       iIntros (rep_sl data1) "(%Henc & %Hlen & Hsl)".
       wp_store.
       iApply "HΦ".
-      iDestruct (is_slice_to_small with "Hsl") as "$".
+      iDestruct (own_slice_to_small with "Hsl") as "$".
       iFrame.
       iApply "HPost".
       done.

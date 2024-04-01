@@ -58,7 +58,7 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
         ⌜ getField_f nfstypes.READ3res "Resok" v = resok ⌝ ∗
         ⌜ getField_f nfstypes.READ3resok "Eof" resok = #eof ⌝ ∗
         ⌜ getField_f nfstypes.READ3resok "Data" resok = slice_val dataslice ⌝ ∗
-        is_slice dataslice u8T 1%Qp databuf ∗
+        own_slice dataslice u8T 1%Qp databuf ∗
         Q (SimpleNFS.OK (eof, databuf)) ) ∨
       ( ∃ (stat : Z),
         ⌜ getField_f nfstypes.READ3res "Status" v = #(U32 stat) ⌝ ∗
@@ -169,21 +169,21 @@ Proof using Ptimeless.
   iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
 
   wp_apply wp_slice_len.
-  wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Resok"); first done.
   iIntros (fl) "[%Hfl Resok]".
   wp_apply (wp_storeField_struct with "Resok").
   { auto. }
   iIntros "Resok".
   rewrite Hfl; clear Hfl fl.
 
-  wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Resok"); first done.
   iIntros (fl) "[%Hfl Resok]".
   wp_apply (wp_storeField_struct with "Resok").
   { compute. val_ty. }
   iIntros "Resok".
   rewrite Hfl; clear Hfl fl.
 
-  wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+  wp_apply (wp_struct_fieldRef_pointsto with "Resok"); first done.
   iIntros (fl) "[%Hfl Resok]".
   wp_apply (wp_storeField_struct with "Resok").
   { compute. val_ty. }
@@ -257,7 +257,6 @@ Proof using Ptimeless.
 
     iSplitR "Hinode_state Hcommit".
     2: {
-      iExists _; iFrame.
       iExists _; iFrame.
     }
     iIntros "Hcrashlocked".

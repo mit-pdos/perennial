@@ -15,8 +15,8 @@ Local Definition own_ConnMan (c_ptr:loc) (lock: val) : iProp Σ :=
   ∃ (rpcCls making:loc) (rpcClsM makingM:gmap u64 loc),
     "HrpcCls" ∷ c_ptr ↦[ConnMan :: "rpcCls"] #rpcCls ∗
     "Hmaking" ∷ c_ptr ↦[ConnMan :: "making"] #making ∗
-    "Hcls_map" ∷ is_map rpcCls 1 rpcClsM ∗
-    "Hmaking_map" ∷ is_map making 1 makingM ∗
+    "Hcls_map" ∷ own_map rpcCls 1 rpcClsM ∗
+    "Hmaking_map" ∷ own_map making 1 makingM ∗
     "#HownRpcCls" ∷ ([∗ map] host ↦ cl ∈ rpcClsM, is_uRPCClient cl host) ∗
     "#HownMaking" ∷ ([∗ map] host ↦ c ∈ makingM, is_cond c lock)
 .
@@ -120,7 +120,7 @@ Proof.
   wp_apply (wp_newCond with "Hinv").
   iIntros (cond) "#Hcond".
   wp_loadField.
-  wp_apply (wp_MapInsert _ _ _ _ cond with "Hmaking_map"); first done.
+  wp_apply (wp_MapInsert _ _ cond with "Hmaking_map"); first done.
   iIntros "Hmaking_map".
   wp_pures.
   iDestruct (big_sepM_insert_2 with "[Hcond] HownMaking") as "{HownMaking} #HownMaking".
@@ -140,7 +140,7 @@ Proof.
   iNamed "Hown".
   wp_load.
   wp_loadField.
-  wp_apply (wp_MapInsert _ _ _ _ cl_new with "Hcls_map"); first done.
+  wp_apply (wp_MapInsert _ _ cl_new with "Hcls_map"); first done.
   iIntros "Hcls_map".
   iDestruct (big_sepM_insert_2 with "[Hcl_new] HownRpcCls") as "{HownRpcCls} #HownRpcCls".
   { done. }
@@ -161,29 +161,29 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
-Lemma wp_ConnMan__CallAtLeastOnce (γsmap:server_chan_gnames) (c_ptr:loc) (rpcid:u64) (host:u64)
+Lemma wp_ConnMan__CallAtLeastOnce_pred (γsmap:server_chan_gnames) (c_ptr:loc) (rpcid:u64) (host:u64)
     req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
     Spec Post :
-  is_ConnMan c_ptr -∗
-  handler_spec γsmap host rpcid Spec -∗
-  □(▷ Spec reqData Post) -∗
   {{{
-      is_slice_small req byteT 1 reqData ∗
-      rep_out_ptr ↦[slice.T byteT] dummy_sl_val
+      "Hslice" ∷ own_slice_small req byteT 1 reqData ∗
+      "Hrep" ∷ rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      "#Hconn" ∷ is_ConnMan c_ptr ∗
+      "#Hrpc" ∷ is_urpc_spec_pred γsmap host rpcid Spec ∗
+      "#Hspec" ∷ □(▷ Spec reqData Post)
   }}}
       ConnMan__CallAtLeastOnce #c_ptr #host #rpcid (slice_val req) #rep_out_ptr #timeout_ms
     {{{
       RET #();
-      is_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT 1 reqData ∗
       ∃ rep_sl (repData:list u8),
         rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-        is_slice_small rep_sl byteT 1 repData ∗
+        own_slice_small rep_sl byteT 1 repData ∗
         (▷ Post repData)
     }}}
     .
 Proof.
-  iIntros "#Hconn #Hhandler #Hpre !#" (Φ) "H HΦ".
-  iDestruct "H" as "(Hslice & Hrep)".
+  iIntros (Φ) "H HΦ".
+  iNamed "H".
   Opaque urpc.Client.
   wp_lam.
   wp_pures.
@@ -206,10 +206,10 @@ Proof.
   iNamed "Hconn2".
   iDestruct "Hcl" as (cl) "[Hcl_ptr #Hcl]".
   wp_load.
-  wp_apply (wp_Client__Call with "Hhandler [$Hslice $Hrep $Hcl Hpre]").
-  { done. }
+  wp_apply (wp_Client__Call_pred with "[$Hslice $Hrep Hcl Hspec]").
+  { iFrame "#". }
   iIntros (err).
-  iIntros "(_ & Hslice & Hrep)".
+  iIntros "(Hslice & Hrep)".
   wp_pures.
   destruct err as [|].
   {
@@ -272,32 +272,31 @@ Proof.
   eauto with iFrame.
 Qed.
 
-Lemma wp_ConnMan__CallAtLeastOnce_uRPCSpec (spec : uRPCSpec) (x : spec.(spec_ty))
-  (γsmap:server_chan_gnames) (c_ptr:loc) (host:u64)
-  req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8)
-  :
-  is_ConnMan c_ptr -∗
-  handler_urpc_spec γsmap host spec -∗
-  □(▷ spec.(spec_Pre) x reqData) -∗
+Lemma wp_ConnMan__CallAtLeastOnce (spec : RpcSpec) (x : spec.(spec_ty))
+  (γsmap:server_chan_gnames) (c_ptr:loc) (host:u64) (rpcid:u64)
+  req rep_out_ptr (timeout_ms : u64) dummy_sl_val (reqData:list u8) :
   {{{
-      is_slice_small req byteT 1 reqData ∗
-      rep_out_ptr ↦[slice.T byteT] dummy_sl_val
+      "Hsl" ∷ own_slice_small req byteT 1 reqData ∗
+      "Hrep" ∷ rep_out_ptr ↦[slice.T byteT] dummy_sl_val ∗
+      "#Hconn" ∷ is_ConnMan c_ptr ∗
+      "#Hhandler" ∷ is_urpc_spec γsmap host rpcid spec ∗
+      "#Hpre" ∷ □(▷ spec.(spec_Pre) x reqData)
   }}}
-      ConnMan__CallAtLeastOnce #c_ptr #host #spec.(spec_rpcid) (slice_val req) #rep_out_ptr #timeout_ms
+      ConnMan__CallAtLeastOnce #c_ptr #host #rpcid (slice_val req) #rep_out_ptr #timeout_ms
     {{{
       RET #();
-      is_slice_small req byteT 1 reqData ∗
+      own_slice_small req byteT 1 reqData ∗
       ∃ rep_sl (repData:list u8),
         rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) ∗
-        is_slice_small rep_sl byteT 1 repData ∗
+        own_slice_small rep_sl byteT 1 repData ∗
         (▷ spec.(spec_Post) x reqData repData)
     }}}
     .
 Proof.
-  iIntros "#Hconn #Hhandler #Hpre !#" (Φ) "H HΦ".
-  iApply (wp_ConnMan__CallAtLeastOnce with "Hconn Hhandler [Hpre] H").
-  { simpl. do 2 iModIntro. iExists x. iSplitL; first done.
-    iIntros (rep) "?". iAccu. }
+  iIntros (Φ) "H HΦ". iNamed "H".
+  iApply (wp_ConnMan__CallAtLeastOnce_pred with "[-HΦ]").
+  { iFrame "∗#". simpl. do 2 iModIntro. iExists x.
+    iFrame "#". iIntros (?) "?". iAccu. }
   done.
 Qed.
 

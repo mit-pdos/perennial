@@ -17,7 +17,7 @@ Below you can find the relevant parts:
   Module heap_lang.
     (* Your language definition *)
 
-    Lemma heap_lang_mixin : EctxiLanguageMixin of_val to_val fill_item head_step.
+    Lemma heap_lang_mixin : EctxiLanguageMixin of_val to_val fill_item base_step.
     Proof. (* ... *) Qed.
   End heap_lang.
 
@@ -31,12 +31,12 @@ Section ectxi_language_mixin.
   Context (of_val : val → expr).
   Context (to_val : expr → option val).
   Context (fill_item : ectx_item → expr → expr).
-  Context (head_step : expr → state → global_state → list observation → expr → state → global_state → list expr → Prop).
+  Context (base_step : expr → state → global_state → list observation → expr → state → global_state → list expr → Prop).
 
   Record EctxiLanguageMixin := {
     mixin_to_of_val v : to_val (of_val v) = Some v;
     mixin_of_to_val e v : to_val e = Some v → of_val v = e;
-    mixin_val_stuck e1 σ1 g1 κ e2 σ2 g2 efs : head_step e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None;
+    mixin_val_stuck e1 σ1 g1 κ e2 σ2 g2 efs : base_step e1 σ1 g1 κ e2 σ2 g2 efs → to_val e1 = None;
 
     mixin_fill_item_val Ki e : is_Some (to_val (fill_item Ki e)) → is_Some (to_val e);
     (** [fill_item] is always injective on the expression for a fixed
@@ -54,8 +54,8 @@ Section ectxi_language_mixin.
         [ectx_language], an empty context is impossible here).  In other words,
         if [e] is not a value then wrapping it in a context does not add new
         head redex positions. *)
-    mixin_head_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
-      head_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e);
+    mixin_base_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
+      base_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e);
   }.
 End ectxi_language_mixin.
 
@@ -70,10 +70,10 @@ Structure ectxiLanguage := EctxiLanguage {
   of_val : val → expr;
   to_val : expr → option val;
   fill_item : ectx_item → expr → expr;
-  head_step : expr → state → global_state → list observation → expr → state → global_state → list expr → Prop;
+  base_step : expr → state → global_state → list observation → expr → state → global_state → list expr → Prop;
 
   ectxi_language_mixin :
-    EctxiLanguageMixin of_val to_val fill_item head_step
+    EctxiLanguageMixin of_val to_val fill_item base_step
 }.
 
 Bind Scope expr_scope with expr.
@@ -83,7 +83,7 @@ Global Arguments EctxiLanguage {_ _ _ _ _ _ _ _ _ _} _.
 Global Arguments of_val {_} _.
 Global Arguments to_val {_} _.
 Global Arguments fill_item {_} _ _.
-Global Arguments head_step {_} _ _ _ _ _ _.
+Global Arguments base_step {_} _ _ _ _ _ _.
 
 Section ectxi_language.
   Context {Λ : ectxiLanguage}.
@@ -102,8 +102,8 @@ Section ectxi_language.
     to_val e1 = None → to_val e2 = None →
     fill_item Ki1 e1 = fill_item Ki2 e2 → Ki1 = Ki2.
   Proof. apply ectxi_language_mixin. Qed.
-  Lemma head_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
-    head_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
+  Lemma base_ctx_step_val Ki e σ1 g1 κ e2 σ2 g2 efs :
+    base_step (fill_item Ki e) σ1 g1 κ e2 σ2 g2 efs → is_Some (to_val e).
   Proof. apply ectxi_language_mixin. Qed.
 
   Definition fill (K : ectx) (e : expr Λ) : expr Λ := foldl (flip fill_item) e K.
@@ -112,7 +112,7 @@ Section ectxi_language.
   Proof. apply foldl_app. Qed.
 
   Definition ectxi_lang_ectx_mixin :
-    EctxLanguageMixin of_val to_val [] (flip (++)) fill head_step.
+    EctxLanguageMixin of_val to_val [] (flip (++)) fill base_step.
   Proof.
     assert (fill_val : ∀ K e, is_Some (to_val (fill K e)) → is_Some (to_val e)).
     { intros K. induction K as [|Ki K IH]=> e //=. by intros ?%IH%fill_item_val. }
@@ -147,18 +147,18 @@ Section ectxi_language.
     - intros K K' e1 κ e1' σ1 g1 e2 σ2 g2 efs Hfill Hred Hstep; revert K' Hfill.
       induction K as [|Ki K IH] using rev_ind=> /= K' Hfill; eauto using app_nil_r.
       destruct K' as [|Ki' K' _] using @rev_ind; simplify_eq/=.
-      { rewrite fill_app in Hstep. apply head_ctx_step_val in Hstep.
+      { rewrite fill_app in Hstep. apply base_ctx_step_val in Hstep.
         apply fill_val in Hstep. by apply not_eq_None_Some in Hstep. }
       rewrite !fill_app /= in Hfill.
       assert (Ki = Ki') as ->.
-      { eapply fill_item_no_val_inj, Hfill; eauto using val_head_stuck.
+      { eapply fill_item_no_val_inj, Hfill; eauto using val_base_stuck.
         apply fill_not_val. revert Hstep. apply ectxi_language_mixin. }
       simplify_eq. destruct (IH K') as [K'' ->]; auto.
       exists K''. by rewrite assoc.
     - intros K e1 σ1 g1 κ e2 σ2 g2 efs.
       destruct K as [|Ki K _] using rev_ind; simpl; first by auto.
       rewrite fill_app /=.
-      intros ?%head_ctx_step_val; eauto using fill_val.
+      intros ?%base_ctx_step_val; eauto using fill_val.
   Qed.
 
   Canonical Structure ectxi_lang_ectx := EctxLanguage ectxi_lang_ectx_mixin.

@@ -75,21 +75,21 @@ Definition encodes_inode (len: u64) (blk: u64) data : Prop :=
 Definition inum2addr (inum : u64) := Build_addr LogSz (int.nat inum * InodeSz * 8).
 Definition blk2addr blk := Build_addr blk 0.
 
-Definition is_inode_enc (inum: u64) (len: u64) (blk: u64) (mapsto: addr -> object -> iProp Σ) : iProp Σ :=
+Definition is_inode_enc (inum: u64) (len: u64) (blk: u64) (pointsto: addr -> object -> iProp Σ) : iProp Σ :=
   ∃ (ibuf : defs.inode_buf),
     "%Hinode_encodes" ∷ ⌜ encodes_inode len blk (vec_to_list ibuf) ⌝ ∗
-    "Hinode_enc_mapsto" ∷ mapsto (inum2addr inum) (existT _ (defs.bufInode ibuf)).
+    "Hinode_enc_pointsto" ∷ pointsto (inum2addr inum) (existT _ (defs.bufInode ibuf)).
 
-Definition is_inode_data (len : u64) (blk: u64) (contents: list u8) (mapsto: addr -> object -> iProp Σ) : iProp Σ :=
+Definition is_inode_data (len : u64) (blk: u64) (contents: list u8) (pointsto: addr -> object -> iProp Σ) : iProp Σ :=
   ∃ (bbuf : Block),
     "%Hdiskdata" ∷ ⌜ firstn (length contents) (vec_to_list bbuf) = contents ⌝ ∗
     "%Hdisklen" ∷ ⌜ int.Z len = length contents ⌝ ∗
-    "Hdiskblk" ∷ mapsto (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
+    "Hdiskblk" ∷ pointsto (blk2addr blk) (existT _ (defs.bufBlock bbuf)).
 
-Definition is_inode (inum: u64) (state: list u8) (mapsto: addr -> object -> iProp Σ) : iProp Σ :=
+Definition is_inode (inum: u64) (state: list u8) (pointsto: addr -> object -> iProp Σ) : iProp Σ :=
   ∃ (blk: u64),
-    "Hinode_enc" ∷ is_inode_enc inum (length state) blk mapsto ∗
-    "Hinode_data" ∷ is_inode_data (length state) blk state mapsto.
+    "Hinode_enc" ∷ is_inode_enc inum (length state) blk pointsto ∗
+    "Hinode_data" ∷ is_inode_data (length state) blk state pointsto.
 
 Definition is_inode_mem (l: loc) (inum: u64) (len: u64) (blk: u64) : iProp Σ :=
   "Hinum" ∷ l ↦[Inode :: "Inum"] #inum ∗
@@ -101,13 +101,13 @@ Definition Njrnl := nroot .@ "jrnl".
 Definition is_inode_stable γsrc γtxn (inum: u64) : iProp Σ :=
   ∃ (state: list u8),
     "Hinode_state" ∷ inum [[γsrc]]↦ state ∗
-    "Hinode_disk" ∷ is_inode inum state (durable_mapsto_own γtxn).
+    "Hinode_disk" ∷ is_inode inum state (durable_pointsto_own γtxn).
 
 Definition N := nroot .@ "simplenfs".
 
 Definition is_fh (s : Slice.t) (fh : u64) : iProp Σ :=
   ∃ vs,
-    "#Hfh_slice" ∷ readonly (is_slice_small s u8T 1 vs) ∗
+    "#Hfh_slice" ∷ readonly (own_slice_small s u8T 1 vs) ∗
     "%Hfh_enc" ∷ ⌜ has_encoding vs (EncUInt64 fh :: nil) ⌝.
 
 Definition is_fs γ (nfs: loc) dinit : iProp Σ :=

@@ -96,7 +96,7 @@ Definition Clerk__Get: val :=
       control.impl.Exit #1
     else #());;
     let: "r" := DecGetReply (![slice.T byteT] "reply_ptr") in
-    (if: struct.loadF GetReply "err" "r" ≠ ENone
+    (if: (struct.loadF GetReply "err" "r") ≠ ENone
     then
       (* log.Println("ctr: get() stale epoch number") *)
       control.impl.Exit #1
@@ -153,7 +153,7 @@ Definition Server := struct.decl [
 Definition Server__Put: val :=
   rec: "Server__Put" "s" "args" :=
     lock.acquire (struct.loadF Server "mu" "s");;
-    (if: struct.loadF PutArgs "epoch" "args" < struct.loadF Server "lastEpoch" "s"
+    (if: (struct.loadF PutArgs "epoch" "args") < (struct.loadF Server "lastEpoch" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
       EStale
@@ -167,7 +167,7 @@ Definition Server__Get: val :=
   rec: "Server__Get" "s" "epoch" "reply" :=
     lock.acquire (struct.loadF Server "mu" "s");;
     struct.storeF GetReply "err" "reply" ENone;;
-    (if: "epoch" < struct.loadF Server "lastEpoch" "s"
+    (if: "epoch" < (struct.loadF Server "lastEpoch" "s")
     then
       lock.release (struct.loadF Server "mu" "s");;
       struct.storeF GetReply "err" "reply" EStale;;
@@ -185,29 +185,29 @@ Definition StartServer: val :=
     struct.storeF Server "mu" "s" (lock.new #());;
     struct.storeF Server "e" "s" (erpc.MakeServer #());;
     struct.storeF Server "v" "s" #0;;
-    let: "handlers" := NewMap ((slice.T byteT -> ptrT -> unitT)%ht) #() in
-    MapInsert "handlers" RPC_GET ((λ: "raw_args" "raw_reply",
+    let: "handlers" := NewMap uint64T ((slice.T byteT) -> ptrT -> unitT)%ht #() in
+    MapInsert "handlers" RPC_GET (λ: "raw_args" "raw_reply",
       let: "dec" := marshal.NewDec "raw_args" in
       let: "epoch" := marshal.Dec__GetInt "dec" in
       let: "reply" := struct.alloc GetReply (zero_val (struct.t GetReply)) in
       Server__Get "s" "epoch" "reply";;
-      "raw_reply" <-[slice.T byteT] EncGetReply "reply";;
+      "raw_reply" <-[slice.T byteT] (EncGetReply "reply");;
       #()
-      ));;
-    MapInsert "handlers" RPC_PUT (erpc.Server__HandleRequest (struct.loadF Server "e" "s") ((λ: "raw_args" "reply",
+      );;
+    MapInsert "handlers" RPC_PUT (erpc.Server__HandleRequest (struct.loadF Server "e" "s") (λ: "raw_args" "reply",
       let: "args" := DecPutArgs "raw_args" in
       let: "err" := Server__Put "s" "args" in
       let: "enc" := marshal.NewEnc #8 in
       marshal.Enc__PutInt "enc" "err";;
-      "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
-      #()
-      )));;
-    MapInsert "handlers" RPC_FRESHCID ((λ: "raw_args" "reply",
-      let: "enc" := marshal.NewEnc #8 in
-      marshal.Enc__PutInt "enc" (erpc.Server__GetFreshCID (struct.loadF Server "e" "s"));;
-      "reply" <-[slice.T byteT] marshal.Enc__Finish "enc";;
+      "reply" <-[slice.T byteT] (marshal.Enc__Finish "enc");;
       #()
       ));;
+    MapInsert "handlers" RPC_FRESHCID (λ: "raw_args" "reply",
+      let: "enc" := marshal.NewEnc #8 in
+      marshal.Enc__PutInt "enc" (erpc.Server__GetFreshCID (struct.loadF Server "e" "s"));;
+      "reply" <-[slice.T byteT] (marshal.Enc__Finish "enc");;
+      #()
+      );;
     let: "r" := urpc.MakeServer "handlers" in
     urpc.Server__Serve "r" "me";;
     #().

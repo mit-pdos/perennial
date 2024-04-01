@@ -27,7 +27,7 @@ Qed.
 
 (* TODO: might have a version where the □ is replaced with a □?p ? *)
 Lemma entailment_ownM_split {A: ucmra} (P: uPred A) (a: A):
-  □ (P -∗ uPred_ownM a) -∗ P -∗ ∃ (P': uPred A), (P' ∗ uPred_ownM a) ∧ □ ((P' ∗ uPred_ownM a) -∗ P).
+  □ (P -∗ uPred_ownM a) ⊢ P -∗ ∃ (P': uPred A), (P' ∗ uPred_ownM a) ∧ □ ((P' ∗ uPred_ownM a) -∗ P).
 Proof.
   repeat (rewrite /bi_entails/bi_exist/bi_intuitionistically/bi_affinely
                   /bi_and/bi_emp/bi_persistently/bi_sep/bi_wand/bi_wand_iff//=).
@@ -137,7 +137,7 @@ Definition own_discrete_eq  : own_discrete = own_discrete_def :=
 Arguments own_discrete _%I.
 
 Lemma own_discrete_elim  Q:
-  own_discrete Q -∗ Q.
+  own_discrete Q ⊢ Q.
 Proof.
   rewrite own_discrete_eq.
   iDestruct 1 as (a HD) "(Hown&Hwand)".
@@ -239,7 +239,7 @@ Proof.
 Qed.
 
 Lemma own_discrete_or_l P Q :
-  own_discrete P -∗ own_discrete (P ∨ Q).
+  own_discrete P ⊢ own_discrete (P ∨ Q).
 Proof.
   rewrite !own_discrete_eq /own_discrete_def.
   repeat f_equiv.
@@ -247,7 +247,7 @@ Proof.
 Qed.
 
 Lemma own_discrete_or_r P Q :
-  own_discrete Q -∗ own_discrete (P ∨ Q).
+  own_discrete Q ⊢ own_discrete (P ∨ Q).
 Proof.
   rewrite !own_discrete_eq /own_discrete_def.
   repeat f_equiv.
@@ -265,7 +265,7 @@ Proof. solve_proper. Qed.
 
 Lemma own_discrete_ownM (a: M0):
   Discrete a →
-  uPred_ownM a -∗ own_discrete (uPred_ownM a).
+  uPred_ownM a ⊢ own_discrete (uPred_ownM a).
 Proof.
   rewrite own_discrete_eq. iIntros (HD) "H". iExists a, HD. iFrame; eauto.
 Qed.
@@ -273,7 +273,7 @@ Qed.
 End modal.
 
 Class Discretizable {M} {P : uPred M} := discretizable :
-  P -∗ own_discrete P.
+  P ⊢ own_discrete P.
 Arguments Discretizable {_} _%I : simpl never.
 Arguments discretizable {_} _%I {_}.
 #[global]
@@ -501,10 +501,10 @@ Section instances_iProp.
     (∀ k x1 x2, Discretizable (Φc k x1 x2)) →
     (* this is a pure assumption (instead of a persistent implication) because
     that's how big_sepL2_mono is written *)
-    (∀ k y1 y2, l1 !! k = Some y1 → l2 !! k = Some y2 → Φ k y1 y2 -∗ Φc k y1 y2) →
+    (∀ k y1 y2, l1 !! k = Some y1 → l2 !! k = Some y2 → Φ k y1 y2 ⊢ Φc k y1 y2) →
     l1 !! i = Some x1 →
     l2 !! i = Some x2 →
-    big_sepL2 Φ l1 l2 -∗
+    big_sepL2 Φ l1 l2 ⊢
     Φ i x1 x2 ∗ (Φ i x1 x2 -∗ big_sepL2 Φ l1 l2) ∧ own_discrete ((Φc i x1 x2 -∗ big_sepL2 Φc l1 l2)).
   Proof.
     iIntros (? Himpl Hx1 Hx2) "H".
@@ -577,7 +577,7 @@ Section own_disc_fupd_props.
   Proof. solve_proper. Qed.
 
   Lemma own_disc_own_disc_fupd P:
-    <bdisc> P -∗ <disc> P.
+    <bdisc> P ⊢ <disc> P.
   Proof.
     iIntros "H". rewrite own_discrete_fupd_eq /=. iModIntro; eauto.
   Qed.
@@ -590,7 +590,7 @@ Section own_disc_fupd_props.
   Qed.
 
   Lemma own_disc_fupd_level_elim E k P:
-    <disc> P -∗ |k={E}=> P.
+    <disc> P ⊢ |k={E}=> P.
   Proof.
     rewrite own_discrete_fupd_eq /own_discrete_fupd_def /= own_discrete_elim.
     iIntros "H". iMod (fupd_level_mask_subseteq ∅) as "Hclo"; first set_solver.
@@ -598,7 +598,7 @@ Section own_disc_fupd_props.
   Qed.
 
   Lemma own_disc_fupd_elim E P:
-    <disc> P -∗ |={E}=> P.
+    <disc> P ⊢ |={E}=> P.
   Proof.
     iIntros. iApply (fupd_level_fupd _ _ _ 0). by iApply own_disc_fupd_level_elim. Qed.
 

@@ -14,7 +14,7 @@ From Perennial.program_proof.wal Require Export boundaries.
 
 Transparent slice.T.
 
-Class walG Σ :=
+Class walG Σ : Set :=
   { wal_circ         :> circG Σ;
     wal_txns_map     :> ghost_mapG Σ nat (u64 * list update.t);
     wal_circ_state   :> ghost_varG Σ circΣ.t;
@@ -901,11 +901,11 @@ Proof.
 
   For example, wrapping the wand in [tc_opaque] makes this fast.
    *)
-  iFrame.
+  iFrame "Hshutdown Hnthread" .
   iIntros (shutdown' nthread') "Hshutdown Hnthread".
-  iExists σ; iFrame "# ∗".
+  iExists σ. iFrame "HdiskEnd_circ Hstart_circ HmemLog_linv".
   iExists (set shutdown (λ _, shutdown') (set nthread (λ _, nthread') σₗ)); simpl.
-  by iFrame "# ∗".
+  by iFrame "∗#".
 Qed.
 
 Lemma is_txn_pos_unique txns tid pos pos' :

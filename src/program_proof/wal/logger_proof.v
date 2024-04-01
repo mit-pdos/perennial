@@ -54,7 +54,6 @@ Proof.
               with "[] [-HΦ]").
   2: {
     iFrame.
-    iExists _; iFrame "# ∗".
     iPureIntro. inversion 1.
   }
   { iIntros "!>" (Φ') "HI HΦ".
@@ -68,18 +67,15 @@ Proof.
     wp_if_destruct.
     - wp_loadField.
       wp_apply (wp_condWait with "[-HΦ]"); [ iFrame "His_cond2 His_lock Hlocked" | ].
-      { iExists _; iFrame "∗ #". iExists _; iFrame "% # ∗". }
+      { by iFrame "∗ #". }
       iIntros "(Hlocked&Hlkinv)".
       wp_pures.
       iApply "HΦ"; iFrame.
       iNamed "Hlkinv".
-      iExists _; iFrame "# ∗".
+      iExists _; iFrame "∗#".
       iPureIntro; inversion 1.
-    - iApply "HΦ"; iFrame. iModIntro.
-      iExists _; iFrame "∗ #".
-      iSplit.
-      { iExists _; by iFrame "# ∗". }
-      iPureIntro.
+    - iApply "HΦ"; iFrame.
+      iPureIntro. split; [done | ].
       intros _.
       unfold locked_wf, slidingM.wf in Hlocked_wf.
       revert Heqb; word.
@@ -211,8 +207,7 @@ Proof.
     iApply "HΦ".
     iModIntro.
     iSplitL; last by trivial.
-    iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
-    iExists _, _. iFrame "∗ #". iExists _. iFrame.
+    by iFrame "∗#".
   }
   wp_loadField.
   wp_apply (wp_sliding__clearMutable_wal with "[
@@ -222,10 +217,7 @@ Proof.
     log_mutable is_addrPos
     HdiskEnd_circ Hstart_circ HmemLog_linv
   ]").
-  {
-    iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
-    iExists _, _. iFrame "∗ #". iExists _. iFrame.
-  }
+  { by iFrame "∗#". }
   clear.
   iIntros (σ') "[Hlkinv %HmemLog_len]".
   iNamed "Hlkinv". iNamed "Hfields". iNamed "Hfield_ptsto".
@@ -234,8 +226,7 @@ Proof.
   iApply "HΦ".
   iModIntro.
   iFrame (HmemLog_len).
-  iFrame. iExists _. iFrame (Hlocked_wf Hwf) "∗".
-  iExists _, _. iFrame "∗ #". iExists _. iFrame.
+  by iFrame.
 Qed.
 
 Theorem wp_Walog__logAppend l circ_l γ dinit σₛ :
@@ -295,8 +286,7 @@ Proof.
       HownDiskEndMem_logger HownDiskEndMemTxn_logger
       HownDiskEnd_logger HownDiskEndTxn_logger
     ".
-    - iExists _; iFrame.
-      iExists _; by iFrame "% ∗".
+    - by iFrame.
     - iExists _, _. by iFrame.
   }
   wp_pures.
@@ -349,9 +339,9 @@ Proof.
     iDestruct (txns_ctx_txn_pos with "Htxns_ctx") as "#HdiskEnd_pos".
     1: apply HdiskEnd_txn.
     iModIntro.
-    iFrame "HdiskEnd_pos Howntxns".
+    iFrame "HdiskEnd_pos Howntxns γtxns".
     iSplitL; try done.
-    iModIntro. iExists _. iFrame. iFrame "%".
+    iModIntro. iFrame "∗%".
   }
   iMod ("HdiskEnd_pos_helper" with "Howntxns") as "[Howntxns #HdiskEnd_pos]".
 
@@ -376,7 +366,7 @@ Proof.
     iFrame "HownLoggerPos_linv HownLoggerTxn_linv".
     iFrame.
     iSplitR.
-    2: iExists _; iFrame "∗ # %".
+    2: iFrame "∗ # %".
     iFrame (HdiskEnd_txn Htxnpos_bound) "#".
     iPureIntro.
     split; first by lia.
@@ -418,7 +408,7 @@ Proof.
     iDestruct (txns_are_sound with "Htxns_ctx Htxns_are") as %Htxns_are.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HmemStart_txn") as %HmemStart'.
     iDestruct (txn_pos_valid_general with "Htxns_ctx HnextDiskEnd_txn") as %HnextDiskEnd'.
-    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[Hcirc_ctx Howncs]".
 
     iDestruct (txn_pos_valid_general with "Htxns_ctx HdiskEnd_pos") as %HdiskEnd_pos.
     iNamed "circ.end".
@@ -456,12 +446,11 @@ Proof.
     iSplitR "
       HownDiskEndMem_logger HownDiskEndMemTxn_logger
       HownDiskEnd_logger HownDiskEndTxn_logger
+      Hcirc_ctx
     "; last by iFrame.
     iNext.
-    iExists _; iFrame.
+    iFrame "HP Howncs Hmem Htxns_ctx γtxns HnextDiskEnd_inv".
     iSplitR; auto.
-    iExists _.
-    iFrame "Howncs".
     iExists installed_txn_id, installer_txn_id, nextDiskEnd_txn_id.
     iSplitL "Hinstalled".
     { iApply (is_installed_extend_durable with "Hinstalled").
@@ -594,7 +583,7 @@ Proof.
       rewrite subslice_length; try lia.
       pose proof (is_txn_bound _ _ _ HnextDiskEnd_txn). lia.
     }
-    iModIntro. iSplitL; last by done. iModIntro. iExists _. iFrame. iFrame "%".
+    iModIntro. by iFrame "∗%".
   }
   iMod ("Htxns0_helper" with "Howntxns") as "(Howntxns & %HnextDiskEnd_txns0 & %Htxns)".
 
@@ -658,13 +647,8 @@ Proof.
     iDestruct (ghost_var_agree with
       "HownDiskEndTxn_logger HownDiskEndTxn_walinv"
     ) as %->.
-    iDestruct (fractional.fractional_merge with
-      "HownDiskEndMem_linv HownDiskEndMem_walinv"
-    ) as "HownDiskEndMem".
-    iDestruct (fractional.fractional_merge with
-      "HownDiskEndMemTxn_linv HownDiskEndMemTxn_walinv"
-    ) as "HownDiskEndMemTxn".
-    rewrite Qp.div_2.
+    iCombine "HownDiskEndMem_linv HownDiskEndMem_walinv" as "HownDiskEndMem".
+    iCombine "HownDiskEndMemTxn_linv HownDiskEndMemTxn_walinv" as "HownDiskEndMemTxn".
     iMod (mono_nat_own_update_halves (int.nat (circΣ.diskEnd cs)) with
       "HownDiskEndMem_logger HownDiskEndMem"
     ) as "(HownDiskEndMem_logger&HownDiskEndMem&_)";
@@ -695,21 +679,14 @@ Proof.
       HownDiskEndMem_logger HownDiskEndMemTxn_logger
       HownDiskEnd_logger HownDiskEndTxn_logger
     "; last by iFrame.
-    iFrame (Hwf) "∗".
-    iExists _.
-    iFrame (Hdaddrs_init) "∗ #".
-    iExists _, _, _.
-    iFrame "Hinstalled #".
-    iExists _, _, _.
-    iFrame.
+    iFrame (Hwf) "∗#%".
 
     iPureIntro.
-    split; last by word.
-    eapply (is_memLog_boundaries_move _ _ _ pmwrb_de) in Hcirc_matches;
-      last by reflexivity.
     simpl in Hcirc_matches.
     rewrite /circ_matches_txns /circΣ.diskEnd.
     replace (int.nat _ - int.nat _)%nat with (length (upds cs)) by word.
+    eapply (is_memLog_boundaries_move _ _ _ pmwrb_de) in Hcirc_matches;
+      last by reflexivity.
     assumption.
   }
   iMod ("HdiskEndMem_update" with "
@@ -749,12 +726,7 @@ Proof.
     HownDiskEndMem_logger HownDiskEndMemTxn_logger
     HownDiskEnd_logger HownDiskEndTxn_logger
   ".
-  2: {
-    iModIntro.
-    iFrame.
-    iExists _, _.
-    iFrame.
-  }
+  2: { by iFrame. }
   iExists (set diskEnd (λ _, int.Z σ.(diskEnd) + int.Z s.(Slice.sz))
           (set locked_diskEnd_txn_id (λ _, nextDiskEnd_txn_id) σ0)).
   simpl.
@@ -840,7 +812,7 @@ Proof.
     wp_if_destruct.
     - wp_pures.
       wp_apply (wp_Walog__logAppend with "[$Hlkinv $Hlk_held $Hlogger]").
-      { iFrame "# ∗". }
+      { iFrame "∗#". }
       iIntros (progress) "(Hlkinv&Hlk_held&Hlogger)".
       wp_pures.
       wp_if_destruct.

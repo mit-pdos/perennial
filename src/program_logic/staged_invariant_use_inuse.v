@@ -55,7 +55,7 @@ Lemma wpc_staged_inv_aux e E1' mj mj_wp mj_ukeep Φ Φc P :
 Proof.
   iIntros "Hsv".
   iLöb as "IH" forall (e).
-  iDestruct "Hsv" as (????????? Hsub)
+  iDestruct "Hsv" as (E2 ? mj_ishare mj_ushare ????? Hsub)
     "(%Hnval&%Hinvalid&%Heq_mj&%Hle2&%Hinvalid2&Hown&Hownstat&#Hsaved1&#Hsaved2&Hltok&Hitok&%Hlt2&#Hinv)".
   iEval (rewrite wpc0_unfold).
   rewrite /wpc_pre. iSplit; last first.
@@ -66,7 +66,7 @@ Proof.
     iMod (pri_inv_acc with "[$]") as "(Hinner&Hclo)".
     { set_solver. }
     iEval (rewrite staged_inv_inner_unfold) in "Hinner".
-    iDestruct "Hinner" as (?????) "(>Hown'&#Hsaved1'&#Hsaved2'&>Hstatus'&>Hitok_ishare&Hinner)".
+    iDestruct "Hinner" as (γprop_stored ????) "(>Hown'&#Hsaved1'&#Hsaved2'&>Hstatus'&>Hitok_ishare&Hinner)".
     iDestruct (own_valid_2 with "Hown' Hown") as "#H".
     iDestruct "H" as %[Heq%Excl_included%leibniz_equiv _]%auth_both_valid_discrete.
     iDestruct (own_valid_2 with "Hstatus' Hownstat") as "#Heq_status".
@@ -187,7 +187,7 @@ Proof.
       apply num_laters_per_step_lt in Hlt'. lia. }
     iModIntro. iApply (step_fupd2N_wand with "Hwp").
     iIntros "($&Hwp)".
-    iIntros. iMod ("Hwp" with "[//]") as "($&Hg&H&Hefs&HNC)".
+    iIntros (e2 ????). iMod ("Hwp" with "[//]") as "($&Hg&H&Hefs&HNC)".
     destruct (to_val e2) eqn:Heq_val.
     {
       iEval (rewrite wpc0_unfold /wpc_pre) in "H".
@@ -314,7 +314,7 @@ Lemma wpc_staged_inv_inuse E1 e Φ Φc Qs P :
   ⊢ WPC e @ E1 {{ Φ }} {{ Φc }}.
 Proof.
   iIntros (Hnval) "(Hstaged&Hwp)".
-  iDestruct "Hstaged" as (??????) "(Hown&Hownstat&#Hsaved1&#Hsaved2&Hltok&Hitok&Hinv)".
+  iDestruct "Hstaged" as (E2 ??? γprop γprop') "(Hown&Hownstat&#Hsaved1&#Hsaved2&Hltok&Hitok&Hinv)".
   iDestruct "Hinv" as (mj_wp_init mj_ishare Hlt) "#Hinv".
   rewrite /staged_inv.
   rewrite wpc_eq /wpc_def. iIntros (mj).

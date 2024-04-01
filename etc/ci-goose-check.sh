@@ -24,8 +24,12 @@ NFSD_COMMIT=master
 GOKV_REPO=https://github.com/mit-pdos/gokv
 GOKV_COMMIT=main
 
-MVCC_REPO=https://github.com/mit-pdos/go-mvcc
+MVCC_REPO=https://github.com/mit-pdos/vmvcc
 MVCC_COMMIT=main
+
+# FIXME: need public repo
+# RSM_REPO=https://github.com/mit-pdos/rsm
+# RSM_COMMIT=main
 
 ## Actual test logic
 
@@ -36,7 +40,10 @@ function checkout {
   local COMMIT_VAR=$1_COMMIT
   local DIR_VAR=$1_DIR
 
-  git clone "${!REPO_VAR}" "${!DIR_VAR}"
+  if [ ! -d ${!DIR_VAR} ] ; then
+     git clone "${!REPO_VAR}" "${!DIR_VAR}"
+  fi
+
   (cd "${!DIR_VAR}" && git reset --hard "${!COMMIT_VAR}")
 }
 
@@ -64,6 +71,9 @@ checkout GOKV
 MVCC_DIR=/tmp/mvcc
 checkout MVCC
 
+# RSM_DIR=/tmp/rsm
+# checkout RSM
+
 echo && echo "Goose check: re-run goose"
 etc/update-goose.py --goose $GOOSE_DIR --compile \
   --goose-examples \
@@ -73,7 +83,8 @@ etc/update-goose.py --goose $GOOSE_DIR --compile \
   --journal $JOURNAL_DIR \
   --nfsd $NFSD_DIR \
   --gokv $GOKV_DIR \
-  --mvcc $MVCC_DIR
+  --mvcc $MVCC_DIR \
+# --rsm $RSM_DIR
 # Missing: --distributed-examples (not currently used)
 
 echo && echo "Goose check: check if anything changed"

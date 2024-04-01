@@ -1,6 +1,6 @@
 From Perennial.program_proof.mvcc Require Import
      txn_prelude txn_repr
-     txnmgr_activate
+     txnsite_activate
      wrbuf_repr wrbuf_proof.
 
 Section program.
@@ -22,13 +22,12 @@ Proof.
   iIntros "!>" (Φ) "Htxn HAU".
   iNamed "Htxn".
   wp_call.
-  
-  (***********************************************************)
-  (* tid := txn.txnMgr.activate(txn.sid)                     *)
-  (***********************************************************)
+
+  (*@ func (txn *Txn) begin() {                                               @*)
+  (*@     tid := txn.site.Activate()                                          @*)
+  (*@                                                                         @*)
   wp_loadField.
-  wp_loadField.
-  wp_apply (wp_txnMgr__activate with "HtxnmgrRI"); first done.
+  wp_apply (wp_TxnSite__Activate with "HsiteRI").
   rename tid into tid_tmp.
   iMod "HAU" as (ts) "[Hts HAUC]".
   iModIntro.
@@ -38,15 +37,13 @@ Proof.
   iMod ("HAUC" with "[H]") as "HΦ"; first eauto with iFrame.
   iIntros "!>" (tid) "[Hactive %HtidNZ]".
 
-  (***********************************************************)
-  (* txn.tid = tid                                           *)
-  (***********************************************************)
+  (*@     txn.tid = tid                                                       @*)
+  (*@                                                                         @*)
   wp_pures.
   wp_storeField.
   
-  (***********************************************************)
-  (* txn.wrbuf.Clear()                                       *)
-  (***********************************************************)
+  (*@     txn.wrbuf.Clear()                                                   @*)
+  (*@ }                                                                       @*)
   wp_loadField.
   wp_apply (wp_wrbuf__Clear with "HwrbufRP").
   iIntros "HwrbufRP".
@@ -54,8 +51,7 @@ Proof.
 
   iModIntro.
   iApply "HΦ". iFrame "HwrbufRP". iSplitL; last done.
-  repeat iExists _. iFrame "∗#".
-  iSplit; done.
+  eauto 15 with iFrame.
 Qed.
 
 End program.

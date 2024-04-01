@@ -38,7 +38,7 @@ Proof.
        let mods' := (list_to_map (wrent_to_key_dbval <$> (drop (int.nat i) ents))) in
        let tpls' := (list_to_map (wrent_to_key_tpl <$> (drop (int.nat i) ents))) in
        own_tuples_updated (int.nat tid) mods' tpls' γ ∗ active_tid γ tid sid)%I.
-  iDestruct (is_slice_small_acc with "HentsS") as "[HentsS HentsC]".
+  iDestruct (own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
   wp_apply (wp_forSlice P with "[] [$HentsS Htpls $Hactive]").
   { clear Φ.
     iIntros (i x).
@@ -95,9 +95,7 @@ Proof.
   iDestruct ("HentsC" with "HentsS") as "HentsS".
   wp_pures.
   iApply "HΦ".
-  iFrame.
-  do 2 iExists _.
-  by iFrame "∗ %".
+  by iFrame.
 Qed.
 
 End heap.

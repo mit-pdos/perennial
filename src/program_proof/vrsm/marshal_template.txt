@@ -1,0 +1,34 @@
+Definition has_encoding (encoded:list u8) (args:C) : Prop :=
+  encoded = (u64_le args.(epoch)) ++ args.(state).
+
+Context `{!heapGS Σ}.
+
+Definition own args_ptr args : iProp Σ :=
+  ∃ state_sl,
+  "Hargs_epoch" ∷ args_ptr ↦[pb.ApplyArgs :: "epoch"] #args.(epoch) ∗
+  "Hargs_state" ∷ args_ptr ↦[pb.ApplyArgs :: "op"] (slice_val state_sl) ∗
+  "Hargs_state_sl" ∷ own_slice_small state_sl byteT 1 args.(state)
+  .
+
+Lemma wp_Encode (args_ptr:loc) (args:C) :
+  {{{
+        own args_ptr args
+  }}}
+    pb.EncodeSetStateArgs #args_ptr
+  {{{
+        enc enc_sl, RET (slice_val enc_sl);
+        ⌜has_encoding enc args⌝ ∗
+        own_slice enc_sl byteT 1 enc
+  }}}.
+Admitted.
+
+Lemma wp_Decode enc enc_sl (args:C) :
+  {{{
+        ⌜has_encoding enc args⌝ ∗
+        own_slice enc_sl byteT 1 enc
+  }}}
+    pb.DecodeSetStateArgs (slice_val enc_sl)
+  {{{
+        args_ptr, RET #args_ptr; own args_ptr args
+  }}}.
+Admitted.

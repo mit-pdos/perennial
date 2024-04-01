@@ -20,10 +20,10 @@ Definition Allocator := struct.decl [
 
 Definition freeRange: val :=
   rec: "freeRange" "start" "sz" :=
-    let: "m" := NewMap (struct.t unit) #() in
+    let: "m" := NewMap uint64T (struct.t unit) #() in
     let: "end" := "start" + "sz" in
     let: "i" := ref_to uint64T "start" in
-    (for: (λ: <>, ![uint64T] "i" < "end"); (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #1) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < "end"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
       MapInsert "m" (![uint64T] "i") (struct.mk unit [
       ]);;
       Continue);;
@@ -62,7 +62,7 @@ Definition findKey: val :=
     let: "found" := ref_to uint64T #0 in
     let: "ok" := ref_to boolT #false in
     MapIter "m" (λ: "k" <>,
-      (if: ~ (![boolT] "ok")
+      (if: (~ (![boolT] "ok"))
       then
         "found" <-[uint64T] "k";;
         "ok" <-[boolT] #true

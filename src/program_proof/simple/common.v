@@ -91,7 +91,7 @@ Proof.
   iIntros "Henc".
   wp_apply (wp_Enc__Finish with "Henc").
   iIntros (s data) "(%Henc & %Hlen & Hs)".
-  iDestruct (is_slice_to_small with "Hs") as "Hs".
+  iDestruct (own_slice_to_small with "Hs") as "Hs".
   iMod (readonly_alloc_1 with "Hs") as "Hs".
   wp_pures.
   iApply "HΦ".
@@ -142,9 +142,9 @@ Qed.
 
 Lemma is_inode_crash_next γsrc γnext fh state blk :
   fh [[γsrc]]↦ state ∗
-  ( is_inode fh state (durable_mapsto_own γnext)
-    ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γnext)
-    ∗ is_inode_data (length state) blk state (durable_mapsto_own γnext) )
+  ( is_inode fh state (durable_pointsto_own γnext)
+    ∨ is_inode_enc fh (length state) blk (durable_pointsto_own γnext)
+    ∗ is_inode_data (length state) blk state (durable_pointsto_own γnext) )
   -∗ is_inode_stable γsrc γnext fh.
 Proof.
   iIntros "[Hfh Hi]".
@@ -156,9 +156,9 @@ Qed.
 Lemma is_inode_crash_prev γsrc γprev γnext fh state blk :
   txn_cinv Njrnl γprev γnext -∗
   fh [[γsrc]]↦ state ∗
-  ( is_inode fh state (durable_mapsto γprev)
-    ∨ is_inode_enc fh (length state) blk (durable_mapsto γprev)
-    ∗ is_inode_data (length state) blk state (durable_mapsto γprev) )
+  ( is_inode fh state (durable_pointsto γprev)
+    ∨ is_inode_enc fh (length state) blk (durable_pointsto γprev)
+    ∗ is_inode_data (length state) blk state (durable_pointsto γprev) )
   -∗
   |C={⊤}=>
   is_inode_stable γsrc γnext fh.
@@ -167,7 +167,7 @@ Proof.
 
   iDestruct (@liftable _ _ _ _ _ (λ m, is_inode fh state m ∨ is_inode_enc fh (length state) blk m ∗ is_inode_data (length state) blk state m)%I with "H") as (mlift) "[H #Hrestore]".
 
-  iMod (exchange_durable_mapsto with "[$Hcinv $H]") as "H".
+  iMod (exchange_durable_pointsto with "[$Hcinv $H]") as "H".
   iDestruct ("Hrestore" with "H") as "H".
 
   iModIntro.
@@ -177,9 +177,9 @@ Qed.
 Lemma is_inode_crash_prev_own γsrc γprev γnext fh state blk :
   txn_cinv Njrnl γprev γnext -∗
   fh [[γsrc]]↦ state ∗
-  ( is_inode fh state (durable_mapsto_own γprev)
-    ∨ is_inode_enc fh (length state) blk (durable_mapsto_own γprev)
-    ∗ is_inode_data (length state) blk state (durable_mapsto_own γprev) )
+  ( is_inode fh state (durable_pointsto_own γprev)
+    ∨ is_inode_enc fh (length state) blk (durable_pointsto_own γprev)
+    ∗ is_inode_data (length state) blk state (durable_pointsto_own γprev) )
   -∗
   |C={⊤}=>
   is_inode_stable γsrc γnext fh.
@@ -189,7 +189,7 @@ Proof.
   iDestruct (liftable_mono (Φ := λ m, is_inode fh state m
       ∨ is_inode_enc fh (length state) blk m
         ∗ is_inode_data (length state) blk state m)%I
-    _ (durable_mapsto γprev) with "H") as "H".
+    _ (durable_pointsto γprev) with "H") as "H".
   { iIntros (??) "[_ $]". }
 
   iApply (is_inode_crash_prev with "Hcinv"). iFrame.

@@ -10,12 +10,12 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (* func swap(ents []WrEnt, i, j uint64)                          *)
 (*****************************************************************)
 Local Lemma wp_swap (entsS : Slice.t) (ents : list wrent) (i j : u64) :
-  {{{ slice.is_slice_small entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
+  {{{ slice.own_slice_small entsS (structTy WrEnt) 1 (wrent_to_val <$> ents) ∗
       ⌜(int.nat i < length ents ∧ int.nat j < length ents)%nat⌝
   }}}
     swap (to_val entsS) #i #j
   {{{ (ents' : list wrent), RET #();
-      slice.is_slice_small entsS (structTy WrEnt) 1 (wrent_to_val <$> ents') ∗
+      slice.own_slice_small entsS (structTy WrEnt) 1 (wrent_to_val <$> ents') ∗
       ⌜ents' ≡ₚ ents⌝
   }}}.
 Proof.
@@ -25,7 +25,7 @@ Proof.
   destruct Hx as [x Hx].
   apply list_lookup_lt in Hj as Hy.
   destruct Hy as [y Hy].
-  iDestruct (is_slice_small_sz with "HentsS") as "%HentsLen".
+  iDestruct (own_slice_small_sz with "HentsS") as "%HentsLen".
   rewrite fmap_length in HentsLen.
   wp_call.
   
@@ -81,8 +81,8 @@ Proof.
   wp_apply (wp_ref_to); first by auto.
   iIntros (iRef) "HiRef".
   wp_pures.
-  iDestruct (is_slice_small_acc with "HentsS") as "[HentsS HentsC]".
-  iDestruct (is_slice_small_sz with "HentsS") as "%HentsLen".
+  iDestruct (own_slice_small_acc with "HentsS") as "[HentsS HentsC]".
+  iDestruct (own_slice_small_sz with "HentsS") as "%HentsLen".
   rewrite fmap_length in HentsLen.
 
   (***********************************************************)
@@ -99,7 +99,7 @@ Proof.
   (* }                                                       *)
   (***********************************************************)
   set P := (λ (b : bool), ∃ (ents' : list wrent) (i : u64),
-               "HentsS" ∷ is_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents') ∗
+               "HentsS" ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents') ∗
                "HiRef"  ∷ iRef ↦[uint64T] #i ∗
                "%Hperm" ∷ ⌜ents' ≡ₚ ents⌝
            )%I.
@@ -123,7 +123,7 @@ Proof.
 
     (* Inner loop. *)
     set Q := (λ (b : bool), ∃ (ents'' : list wrent) (j : u64),
-                "HentsS" ∷ is_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents'') ∗
+                "HentsS" ∷ own_slice_small entsS (struct.t WrEnt) 1 (wrent_to_val <$> ents'') ∗
                 "HjRef"  ∷ jRef ↦[uint64T] #j ∗
                 "%Hperm" ∷ ⌜ents'' ≡ₚ ents'⌝ ∗
                 "%Hle" ∷ ⌜int.Z j ≤ int.Z i⌝

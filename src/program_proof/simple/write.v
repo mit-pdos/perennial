@@ -39,7 +39,7 @@ Qed.
 Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset : u64) (dataslice : Slice.t) (databuf : list u8) (Q : SimpleNFS.res u32 -> iProp Σ) (stab : u32) dinit :
   {{{ is_fs P γ nfs dinit ∗
       is_fh fhslice fh ∗
-      is_slice dataslice u8T 1%Qp databuf ∗
+      own_slice dataslice u8T 1%Qp databuf ∗
       ⌜ (length databuf < 2^32)%Z ⌝ ∗
       ( ∀ σ σ' (r : SimpleNFS.res u32) E,
         ⌜relation.denote (SimpleNFS.wrapper fh (SimpleNFS.write fh offset databuf)) σ σ' r⌝ -∗
@@ -164,7 +164,7 @@ Proof using Ptimeless.
   iIntros (ip) "(Hjrnl_mem & Hinode_enc & Hinode_mem)".
 
   wp_apply (wp_Inode__Write with "[$Hjrnl_mem $Hinode_mem $Hinode_data $Hinode_enc Hdata]").
-  { iDestruct (is_slice_to_small with "Hdata") as "$".
+  { iDestruct (own_slice_to_small with "Hdata") as "$".
     iPureIntro. intuition eauto.
     rewrite /u32_to_u64. word.
   }
@@ -175,14 +175,14 @@ Proof using Ptimeless.
 
     iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
 
-    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+    wp_apply (wp_struct_fieldRef_pointsto with "Resok"); first done.
     iIntros (fl) "[%Hfl Resok]".
     wp_apply (wp_storeField_struct with "Resok").
     { compute. val_ty. }
     iIntros "Resok".
     rewrite Hfl; clear Hfl fl.
 
-    wp_apply (wp_struct_fieldRef_mapsto with "Resok"); first done.
+    wp_apply (wp_struct_fieldRef_pointsto with "Resok"); first done.
     iIntros (fl) "[%Hfl Resok]".
     wp_apply (wp_storeField_struct with "Resok").
     { compute. val_ty. }

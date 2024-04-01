@@ -232,18 +232,22 @@ Lemma wsat_le_acc n1 n2:
   n1 ≤ n2 →
   wsat n2 ⊢ wsat n1 ∗ (wsat n1 -∗ wsat n2).
 Proof.
-  induction 1.
+  induction 1 as [ | n Hle IH].
   - iIntros "$". eauto.
   - rewrite wsat_unfold.
     iIntros "($&Hm)".
-    iDestruct (IHle with "Hm") as "($&Hclo)".
+    iDestruct (IH with "Hm") as "($&Hclo)".
     auto.
 Qed.
 
 (* Invariants *)
 Lemma dist_later_vec_to_list {A: ofe} {m} n (l1 l2 : vec A m):
   dist_later n l1 l2 ↔ dist_later n (vec_to_list l1) (vec_to_list l2).
-Proof. destruct n => //=. Qed.
+Proof.
+  destruct n.
+  - split; intros _; apply dist_later_0.
+  - rewrite -!dist_later_S //.
+Qed.
 Local Instance invariant_unfold_contractive' m sch : Contractive (@invariant_unfold Σ m sch).
 Proof.
   intros n l1 l2 Hd.
@@ -255,14 +259,18 @@ Proof.
   rewrite -Heq1 -Heq2.
   clear l1 l2 Heq1 Heq2.
   revert l2' Hlen.
-  induction l1' => l2' Hlen Hd.
+  induction l1' as [|P l1' IHl1'] => l2' Hlen Hd.
   - destruct l2' => //=.
-  - destruct l2'; first by (simpl in Hlen; congruence).
+  - destruct l2' as [|P2 l2']; first by (simpl in Hlen; congruence).
     apply to_agree_ne => //=.
     apply pair_ne; last done. econstructor.
-    { destruct n; eauto. apply Next_contractive. inversion Hd; subst; eauto => //=. }
-    efeed pose proof (IHl1' l2') as Hagree; eauto.
-    { destruct n; eauto. inversion Hd; subst; eauto. }
+    { destruct n; eauto.
+      - apply Next_contractive; auto using dist_later_0.
+      - apply Next_contractive.
+        move: Hd; rewrite -!dist_later_S; inversion 1; subst; eauto. }
+    opose proof (IHl1' l2' _ _) as Hagree; eauto.
+    { destruct n; eauto using dist_later_0.
+      move: Hd; rewrite -!dist_later_S; inversion 1; subst; eauto. }
     apply to_agree_injN in Hagree. eapply Hagree.
 Qed.
 Global Instance ownI_contractive n lvl i sch : Contractive (@ownI Σ _ n lvl i sch).
@@ -505,15 +513,17 @@ Proof.
   - iSplit; simpl; iIntros "#H !>"; iApply "IH"; eauto.
   - iSplit; simpl; iIntros "H !>"; iApply "IH"; eauto.
   - iSplit; simpl; iIntros ">H"; iApply "IH"; eauto.
-  - iSpecialize ("HPQ1" $! n). iSplit; rewrite ?list_lookup_fmap;
-    destruct (Qs !! n) as [|] eqn:Heq1; rewrite Heq1 => //=;
-    destruct (Ps !! n) as [|] eqn:Heq2; rewrite Heq2 => //=;
+  - match goal with | |- context [ (bi_later <$> _) !! ?n ] => iSpecialize ("HPQ1" $! n) end.
+    iSplit; rewrite ?list_lookup_fmap;
+    destruct (Qs !! _) as [|] eqn:Heq1; rewrite Heq1 => //=;
+    destruct (Ps !! _) as [|] eqn:Heq2; rewrite Heq2 => //=;
     iIntros; rewrite option_equivI; auto; iNext.
     * by iRewrite -"HPQ1".
     * by iRewrite "HPQ1".
-  - iSpecialize ("HPQ2" $! n). iSplit; rewrite ?list_lookup_fmap;
-    destruct (Qs_mut !! n) as [|] eqn:Heq1; rewrite Heq1 => //=;
-    destruct (Ps_mut !! n) as [|] eqn:Heq2; rewrite Heq2 => //=;
+  - match goal with | |- context [ (bi_later <$> _) !! ?n ] => iSpecialize ("HPQ2" $! n) end.
+    iSplit; rewrite ?list_lookup_fmap;
+    destruct (Qs_mut !! _) as [|] eqn:Heq1; rewrite Heq1 => //=;
+    destruct (Ps_mut !! _) as [|] eqn:Heq2; rewrite Heq2 => //=;
     iIntros; rewrite option_equivI; auto; iNext.
     * by iRewrite -"HPQ2".
     * by iRewrite "HPQ2".
@@ -615,7 +625,7 @@ Proof.
     iDestruct "Hval" as (I') "Heq".
     rewrite gmap_equivI. iSpecialize ("Heq" $! i). rewrite lookup_fmap Hlookup //=.
     rewrite lookup_op lookup_singleton option_equivI.
-    case (I' !! i) => //=.
+    case: (I' !! i) => //=.
   }
   iExists QsI, schI, Qs_mutI.
   iMod (own_update_2 with "Hauth Hfrag") as "[$ $]"; last done.
@@ -904,7 +914,7 @@ Proof.
   iExists iG, eq_refl.
   rewrite /ownE. iFrame. iClear "HD".
   replace γI with (inv_list_name) by eauto.
-  iExists [] => //=. iFrame. rewrite wsat_unfold //.
+  rewrite wsat_unfold //.
 Qed.
 
 Section schema_test_bupd.
@@ -953,7 +963,7 @@ Lemma ownI_bupd_factory_alloc lvl φ Q P :
        ==∗ ∃ i, ⌜φ i⌝ ∗ wsat (S lvl) ∗ ownI_full_bupd_factory lvl i (1/2)%Qp Q P.
 Proof.
   iIntros (?) "(Hw&(HQ&#Hfactory))". iMod (ownI_alloc with "[$Hw HQ]") as (i) "(?&?&?&?)"; eauto; last first.
-  { iModIntro. iExists i. iFrame. iExists 1, (list_to_vec [Q]). iFrame. rewrite //=. }
+  { iModIntro. iExists i. iFrame. instantiate (1:= list_to_vec [Q]). rewrite //=. }
   repeat (rewrite ?bi_schema_interp_unfold //=).
   iFrame. eauto.
 Qed.
@@ -997,11 +1007,11 @@ Proof.
   destruct (vec_to_list Qs_mut !! 0) as [?|] eqn:Heq; rewrite Heq //=.
   - iSplitL "Hinterp".
     { iDestruct "Hinterp" as "($&#$)". }
-    iFrame "#". iExists _, Qs_mut. rewrite Heq //=. by iFrame.
+    iFrame "#∗". rewrite Heq //=.
   - iSplitL "Hinterp".
     { iDestruct "Hinterp" as "(?&#Hwand)". iSplitL ""; first eauto.
       iModIntro. iIntros. iMod ("Hwand" with "[//]") as "(?&$)"; eauto. }
-    iFrame "#". iExists _, Qs_mut. rewrite Heq //=. by iFrame.
+    iFrame "#∗". rewrite Heq //=.
 Qed.
 
 Lemma ownI_bupd_factory_close lvl i Q P:

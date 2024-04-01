@@ -144,21 +144,11 @@ Proof.
   iMod "HinnerN" as "_".
   iFrame.
   iMod ("Hclose" with "[-HQ HΦ]") as "_".
-  {
-    iModIntro.
-    iExists _; iFrame "HP".
-    iFrame.
-    iSplit; auto.
-    iExists _.
-    iFrame "Howncs".
-    iExists _, _, _.
-    iFrame "# ∗".
-    auto.
-  }
+  { by iFrame "∗#". }
   iIntros "!>" (s) "Hs".
   iApply "HΦ".
   iExists _; iFrame.
-  iDestruct (is_slice_to_small with "Hs") as "$".
+  iDestruct (own_slice_to_small with "Hs") as "$".
 Qed.
 
 Lemma txn_upds_subseteq txns1 txns2 :
@@ -270,7 +260,7 @@ Proof.
   iDestruct "Hbufs_s" as (bks) "(Hbks_s&Hupds)".
   rename bufs into upds.
 
-  iDestruct (slice.is_slice_small_sz with "Hbks_s") as %Hslen.
+  iDestruct (slice.own_slice_small_sz with "Hbks_s") as %Hslen.
   rewrite fmap_length in Hslen.
   iDestruct (big_sepL2_length with "Hupds") as %Hslen2.
 
@@ -368,12 +358,12 @@ Proof.
       contradiction.
     }
 
-    iDestruct "Hdata" as (b_disk txn_id') "(%Hb_disk&Haddr_i_mapsto&%Haddr_LogSz_bound)".
+    iDestruct "Hdata" as (b_disk txn_id') "(%Hb_disk&Haddr_i_pointsto&%Haddr_LogSz_bound)".
     iExists _.
     rewrite -Hupd.
-    iFrame "Haddr_i_mapsto".
+    iFrame "Haddr_i_pointsto".
     iApply ncfupd_mask_intro; first set_solver+.
-    iIntros "HcloseE /= Haddr_i_mapsto".
+    iIntros "HcloseE /= Haddr_i_pointsto".
     iMod "HcloseE" as "_".
     iDestruct (txns_are_sound with "Htxns_ctx Hsubtxns") as %Hsubtxns.
 
@@ -384,7 +374,7 @@ Proof.
       HownInstallerPos_walinv HownInstallerTxn_walinv
       HownDiskEndMem_walinv HownDiskEndMemTxn_walinv
       HownDiskEnd_walinv HownDiskEndTxn_walinv
-      HP Hdataclose Haddr_i_mapsto]") as "_".
+      HP Hdataclose Haddr_i_pointsto]") as "_".
     {
       iIntros "!>".
       iExists _.
@@ -406,7 +396,7 @@ Proof.
       }
       iExists _.
       iFrame (Hinstalled_bounds) "∗".
-      iSpecialize ("Hdataclose" with "[Haddr_i_mapsto]").
+      iSpecialize ("Hdataclose" with "[Haddr_i_pointsto]").
       {
         (* show that the new big_sepM condition holds for address touched by the update *)
         destruct Hbufs as [Hhas Hmatch].
@@ -470,7 +460,7 @@ Qed.
 (* TODO: why do we need this here again? *)
 Opaque is_sliding.
 
-Lemma readonly_struct_field_mapsto_agree E l d f v1 v2 :
+Lemma readonly_struct_field_pointsto_agree E l d f v1 v2 :
   readonly (l ↦[d :: f] v1) -∗
   readonly (l ↦[d :: f] v2) -∗
   |={E}=> ⌜v1 = v2⌝.
@@ -478,7 +468,7 @@ Proof.
   iIntros "#H1 #H2".
   iMod (readonly_load with "H1") as (q1) "Hv1".
   iMod (readonly_load with "H2") as (q2) "Hv2".
-  iDestruct (struct_field_mapsto_agree with "Hv1 Hv2") as "%Hv".
+  iDestruct (struct_field_pointsto_agree with "Hv1 Hv2") as "%Hv".
   done.
 Qed.
 
@@ -802,9 +792,9 @@ Proof.
   iNamed "Hmem".
   iClear "Hmem".
   iDestruct "Hstfields" as "(memLock'&d'&circ'&st'&Hstfields)".
-  iMod (readonly_struct_field_mapsto_agree with "st st'") as "<-".
-  iMod (readonly_struct_field_mapsto_agree with "memLock memLock'") as "<-".
-  iMod (readonly_struct_field_mapsto_agree with "d d'") as "<-".
+  iMod (readonly_struct_field_pointsto_agree with "st st'") as "<-".
+  iMod (readonly_struct_field_pointsto_agree with "memLock memLock'") as "<-".
+  iMod (readonly_struct_field_pointsto_agree with "d d'") as "<-".
 
   wp_loadField.
   wp_loadField.
@@ -818,11 +808,7 @@ Proof.
   wp_if_destruct; wp_pures.
   {
     iApply "HΦ".
-    iFrame "His_locked Hinstaller".
-    iExists _.
-    iFrame "∗ #".
-    iExists _.
-    by iFrame (Hlocked_wf) "∗".
+    by iFrame "∗ #".
   }
 
   iDestruct (updates_slice_frag_len with "Htxn_slice") as %Hs_len.
@@ -1014,7 +1000,7 @@ Proof.
     2: lia.
     replace (installed_txn_id_mem + (S σ.(locked_diskEnd_txn_id) - installed_txn_id_mem))%nat
       with (S σ.(locked_diskEnd_txn_id)) in Hsnapshot_txns_are by lia.
-    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[$ Howncs]".
+    iMod (ghost_var_update_halves with "Hcirc_ctx Howncs") as "[Hcirc_ctx Howncs]".
     iDestruct (txn_val_valid_general with "Htxns_ctx HdiskEnd_txn_val") as %HdiskEnd_txn_lookup.
     iNamed "Hdisk".
     iNamed "Hinstalled".
@@ -1039,18 +1025,13 @@ Proof.
       in Hsnapshot_txns by lia.
     iSplitR "HownInstallerPos_installer HownInstallerTxn_installer
       HownBeingInstalledStartTxn_installer
-      Halready_installed_installer".
+      Halready_installed_installer Hcirc_ctx".
     2: iFrame; eauto.
-    iExists _.
     iFrame (Hwf) "HP Hmem Htxns_ctx γtxns HnextDiskEnd_inv".
     iExists _; iFrame.
-    iExists σ.(locked_diskEnd_txn_id), σ.(locked_diskEnd_txn_id), diskEnd_txn_id.
     iFrame (Hdaddrs_init) "Hbasedisk".
-    iSplitL "HownBeingInstalledStartTxn_walinv Halready_installed Hdata".
+    iSplitL "Hdata".
     {
-      iExists _.
-      iFrame "HownBeingInstalledStartTxn_walinv Halready_installed".
-
       iSplitR; first by (iPureIntro; lia).
       iSplitR.
       { rewrite subslice_zero_length. iApply txns_are_nil. }
@@ -1120,8 +1101,6 @@ Proof.
 
     iSplitL.
     {
-      iExists _, _, _.
-      iFrame.
       rewrite /circΣ.diskEnd /= drop_length.
       replace (Z.to_nat (int.Z σ.(diskEnd) - int.Z (start σc)))
         with (int.nat σ.(diskEnd) - int.nat (start σc))%nat by word.
@@ -1256,13 +1235,6 @@ Proof.
   2: {
     iExists _, _. iModIntro.
     iFrame "HdiskEndMem_lb ∗".
-    iSplitL "HownInstallerPos_installer".
-    1: iExists _; by iFrame.
-    iSplitL "HownInstallerPosMem_installer".
-    1: iExists _; by iFrame.
-    iSplitL "HownInstallerTxnMem_installer".
-    1: iExists _; by iFrame.
-    1: iExists _; by iFrame.
   }
   iExists {|
     diskEnd := σ'.(diskEnd);

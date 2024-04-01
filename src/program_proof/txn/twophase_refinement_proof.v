@@ -43,7 +43,7 @@ Proof.
   destruct Hinit as (sz&kinds&Hsize2&Hnn&Hnonneg&Heqi&Heqs&Hdom&Hkind_size).
   rewrite Heqs Heqi.
   iIntros "(Hclosed_frag&Hjrnl_frag)".
-  iDestruct "Hjrnl_frag" as "(Hsmapstos&Hcrashtoks&Hcrash_ctx&Hkinds&Hdom&Hfull)".
+  iDestruct "Hjrnl_frag" as "(Hspointstos&Hcrashtoks&Hcrash_ctx&Hkinds&Hdom&Hfull)".
   rewrite /twophase_crash_cond_full.
   iMod (sep_jrnl_recovery_proof.is_txn_durable_init
           (dinit0 (sz + 513)) kinds sz with "[Hdisk]") as "H".
@@ -61,7 +61,7 @@ Proof.
   }
   rewrite /LVL_INIT.
   iIntros "Hpre".
-  iDestruct "H" as (γ) "(%Hγ&His_txn_durable&#Hlb&Himapstos)".
+  iDestruct "H" as (γ) "(%Hγ&His_txn_durable&#Hlb&Hipointstos)".
   iExists tt, γ, _, _, (recovery_proof.kind_heap0 kinds).
   iFrame "His_txn_durable".
   iModIntro.
@@ -84,10 +84,10 @@ Proof.
   { rewrite /named. iExactEq "Hkinds". f_equal. rewrite //=. }
   iFrame "Hfull Hclosed_frag Hcrash_ctx".
   rewrite /=.
-  iEval (rewrite big_sepM_fmap) in "Hsmapstos".
+  iEval (rewrite big_sepM_fmap) in "Hspointstos".
   iEval (rewrite big_sepM_fmap) in "Hcrashtoks".
-  iDestruct (big_sepM_sep with "[$Hsmapstos $Hcrashtoks]") as "H".
-  iDestruct (big_sepM_sep with "[$H $Himapstos]") as "H".
+  iDestruct (big_sepM_sep with "[$Hspointstos $Hcrashtoks]") as "H".
+  iDestruct (big_sepM_sep with "[$H $Hipointstos]") as "H".
   iSplitL "H".
   - iApply (big_sepM_mono with "H").
     { iIntros (?? Hlookup) "(Hkind&Hmod&Hdurable)".
@@ -117,13 +117,13 @@ Proof.
     inversion Htrans. subst.
     iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
-    { econstructor. apply head_prim_step_trans. econstructor. eauto. }
+    { econstructor. apply base_prim_step_trans. econstructor. eauto. }
     { solve_ndisj. }
     { iDestruct "Hspec" as "(?&?)". eauto. }
     wp_apply (wp_Init JRNL_KIND_SIZE (nroot.@"H") with "[Hj]").
     { solve_ndisj. }
     { solve_ndisj. }
-    { iFrame "# ∗". }
+    { iFrame "∗#". }
     iIntros (l') "(Hj&Hopen&H)". iNamed "H".
     iExists _. iFrame "Hj". rewrite /val_interp//=/twophase_val_interp.
     iExists _, _, _, _, _.
@@ -134,7 +134,7 @@ Proof.
     inversion Htrans. subst.
     iApply wp_wpc.
     iMod (ghost_step_lifting_puredet with "[$Hj]") as "(Hj&_)".
-    { econstructor. apply head_prim_step_trans. econstructor. eauto. }
+    { econstructor. apply base_prim_step_trans. econstructor. eauto. }
     { solve_ndisj. }
     { iDestruct "Hspec" as "(?&?)". eauto. }
     iMod (ghost_step_jrnl_mkalloc with "[$] [$Hj]") as "H".
@@ -214,12 +214,11 @@ Proof.
   iDestruct (jrnl_dom_agree with "[$Hdom] [$Hdom']") as %Hdom.
   rewrite /twophase_crash_cond.
   rewrite /twophase_crash_tok.
-  rewrite /jrnl_mapsto_own.
-  iEval (setoid_rewrite sep_assoc) in "Hmapstos".
-  iDestruct (big_sepM_sep with "Hmapstos") as "(H1&H2)".
+  rewrite /jrnl_pointsto_own.
+  iEval (setoid_rewrite sep_assoc) in "Hpointstos".
+  iDestruct (big_sepM_sep with "Hpointstos") as "(H1&H2)".
   iSplitL "H1 Htxn_durable".
   { iExists _, _, _, _. iFrame. eauto. }
-  iFrame.
   iExists {| jrnlData := (bufObj_to_obj <$> _); jrnlKinds := ∅; jrnlAllocs := ∅ |}.
   iSplitL "H2".
   { iApply big_sepM_fmap. iExact "H2". }
@@ -229,7 +228,7 @@ Proof.
   rewrite /jrnl_full_crash_tok.
   erewrite (fmap_unit_jrnl_dom_equal (bufObj_to_obj <$> mt) (bufObj_to_obj <$> mt')); last first.
   { rewrite !dom_fmap_L //=. }
-  eauto.
+  by iFrame.
 Qed.
 
 Lemma jrnl_crash_obligation:
@@ -289,7 +288,7 @@ Proof.
   iAssert (⌜ dom mt = dom (jrnlData s)⌝)%I with "[]" as %Hdomeq.
   { rewrite /jrnl_dom.
     destruct Heq as (Heq_data&Heq_kinds&Heq_dom&Heq_data_name&Heq_kinds_name&Heq_dom_name).
-    rewrite /jrnl_mapsto/jrnl_kinds.
+    rewrite /jrnl_pointsto/jrnl_kinds.
     rewrite Heq_dom Heq_dom_name.
     iDestruct (jrnl_dom_agree with "Hdom Hdom'") as %Hdom; eauto.
   }
@@ -297,27 +296,27 @@ Proof.
   iDestruct (big_sepM_dom with "Hcrash_toks") as "Hcrash_toks".
   rewrite -Hdomeq.
   iDestruct (big_sepM_dom with "Hcrash_toks") as "Hcrash_toks".
-  iCombine "Hmapstos Hcrash_toks" as "Hmapstos".
+  iCombine "Hpointstos Hcrash_toks" as "Hpointstos".
   rewrite -big_sepM_sep.
   rewrite -sep_assoc.
   iSplitL "".
   {
     destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
-    rewrite /jrnl_mapsto/jrnl_kinds.
+    rewrite /jrnl_pointsto/jrnl_kinds.
     rewrite Heq_kinds Heq_kinds_name.
     by iFrame "#".
   }
-  iSplitL "Hmapstos".
+  iSplitL "Hpointstos".
   {
     iFrame "%".
-    iApply (big_sepM_mono with "Hmapstos").
+    iApply (big_sepM_mono with "Hpointstos").
     { iIntros (???) "(($&Hjrnl)&Htok)".
-      rewrite /jrnl_mapsto_own.
+      rewrite /jrnl_pointsto_own.
       iNamed "Hjrnl".
-      iNamed "Hjrnl_mapsto".
+      iNamed "Hjrnl_pointsto".
       rewrite /jrnlG0//=.
       destruct Heq as (Heq_data&Heq_kinds&Hdom&Heq_data_name&Heq_kinds_name&_).
-      rewrite /jrnl_mapsto/jrnl_kinds.
+      rewrite /jrnl_pointsto/jrnl_kinds.
       rewrite Heq_data Heq_data_name Heq_kinds Heq_kinds_name.
       iFrame.
     }
@@ -443,15 +442,15 @@ Proof.
     apply map_eq => i.
     destruct (decide (s = i)).
     * subst. rewrite lookup_delete.
-      symmetry. apply map_filter_lookup_None_2; eauto.
+      symmetry. apply map_lookup_filter_None_2; eauto.
       right. intros. rewrite lookup_delete //=.
     * rewrite lookup_delete_ne //.
       destruct (decide (is_Some (Γ !! i))).
-      ** rewrite ?(map_filter_lookup_key_in _ (λ i, is_Some (Γ !! i))) //.
-         rewrite ?(map_filter_lookup_key_in _ (λ i, is_Some (delete s Γ !! i))) //.
+      ** rewrite ?(map_lookup_filter_key_in _ (λ i, is_Some (Γ !! i))) //.
+         rewrite ?(map_lookup_filter_key_in _ (λ i, is_Some (delete s Γ !! i))) //.
          rewrite lookup_delete_ne //.
-      ** rewrite ?(map_filter_lookup_key_notin _ (λ i, is_Some (Γ !! i))) //.
-         rewrite ?(map_filter_lookup_key_notin _ (λ i, is_Some (delete s Γ !! i))) //.
+      ** rewrite ?(map_lookup_filter_key_notin _ (λ i, is_Some (Γ !! i))) //.
+         rewrite ?(map_lookup_filter_key_notin _ (λ i, is_Some (delete s Γ !! i))) //.
          rewrite lookup_delete_ne //.
 Qed.
 
@@ -469,8 +468,8 @@ Lemma  filtered_subst_lookup1 (Γ' : Ctx) (Γsubst : gmap string (@subst_tuple d
 Proof.
   intros Hsome.
   destruct ((subst_ty <$> Γsubst) !! i) eqn:Heq.
-  { apply map_filter_lookup_Some_2; eauto. }
-  apply map_filter_lookup_None_2; eauto.
+  { apply map_lookup_filter_Some_2; eauto. }
+  apply map_lookup_filter_None_2; eauto.
 Qed.
 
 Notation spec_ty := jrnl_ty.
@@ -483,7 +482,7 @@ Lemma atomic_convertible_val_interp {Σ} {hG: heapGS Σ} {hRG : refinement_heapG
      {hS: (styG (specTy_model := twophaseTy_model JRNL_KIND_SIZE)) Σ}
     (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_convertible t →
-  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG (twophaseTy_model JRNL_KIND_SIZE) hS t es e -∗
+  @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG (twophaseTy_model JRNL_KIND_SIZE) hS t es e ⊢@{_}
   atomically_val_interp (htpG := hS) dinit objs_dom γ γ' tph_val t es e.
 Proof.
   revert es e.
@@ -524,7 +523,7 @@ Qed.
 Lemma atomically_deconvertible_val_interp `{hG: !heapGS Σ} {hRG : refinement_heapG Σ} {hS: styG Σ}
       (t : sty) es e dinit objs_dom γ γ' tph_val :
   atomic_deconvertible t →
-  atomically_val_interp (htpG := (styG_twophaseG _ hS)) dinit objs_dom γ γ' tph_val t es e -∗
+  atomically_val_interp (htpG := (styG_twophaseG _ hS)) dinit objs_dom γ γ' tph_val t es e ⊢@{_}
   @val_interp _ _ _ _ _ _ _ _ _ _ hG hRG (twophaseTy_model JRNL_KIND_SIZE) hS t es e.
 Proof.
   revert es e.
@@ -583,7 +582,7 @@ Proof.
   rewrite Heq.
   rewrite lookup_fmap.
   apply fmap_None.
-  apply map_filter_lookup_None_2; right. intros => //=.
+  apply map_lookup_filter_None_2; right. intros => //=.
   intros (?&Heq'). clear -Heq Heq'. rewrite Heq in Heq'. discriminate.
 Qed.
 
@@ -633,8 +632,8 @@ Proof.
     * rewrite /=. edestruct Hmap as (Heq'&Hconv); eauto.
       { rewrite ?lookup_fmap Heq. eauto. }
       rewrite ?lookup_fmap //=.
-      erewrite map_filter_lookup_Some_2; eauto.
-    * rewrite /=. erewrite map_filter_lookup_None_2; eauto.
+      erewrite map_lookup_filter_Some_2; eauto.
+    * rewrite /=. erewrite map_lookup_filter_None_2; eauto.
   - f_equal.
     rewrite -binder_delete_fmap.
     rewrite -binder_delete_fmap.
@@ -693,8 +692,8 @@ Proof.
     * rewrite /=. edestruct Hmap as (Heq'&Hconv); eauto.
       { rewrite ?lookup_fmap Heq. eauto. }
       rewrite ?lookup_fmap //=.
-      erewrite map_filter_lookup_Some_2; eauto.
-    * rewrite /=. erewrite map_filter_lookup_None_2; eauto.
+      erewrite map_lookup_filter_Some_2; eauto.
+    * rewrite /=. erewrite map_lookup_filter_None_2; eauto.
   - f_equal.
     rewrite -binder_delete_fmap.
     rewrite -binder_delete_fmap.

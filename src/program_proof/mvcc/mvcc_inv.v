@@ -314,7 +314,7 @@ Proof.
   { do 2 iExists _.
     apply tuple_mods_rel_last_logi in Htmrel as Hlogi.
     apply (tuplext_linearize_unchanged ts') in Htmrel.
-    iFrame "% ∗".
+    iFrame "∗%".
     iPureIntro.
     split.
     { rewrite -Hlmrel. apply extend_last. }

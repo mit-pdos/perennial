@@ -9,7 +9,7 @@ Definition SliceMap (T:ty) (U:ty): val :=
   rec: "SliceMap" "f" "s" :=
     let: "newSlice" := ref (zero_val (slice.T U)) in
     ForSlice T <> "x" "s"
-      ("newSlice" <-[slice.T U] SliceAppend U (![slice.T U] "newSlice") ("f" "x"));;
+      ("newSlice" <-[slice.T U] (SliceAppend U (![slice.T U] "newSlice") ("f" "x")));;
     ![slice.T U] "newSlice".
 
 Definition Id (T:ty): val :=

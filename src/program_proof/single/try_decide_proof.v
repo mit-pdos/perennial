@@ -168,7 +168,7 @@ Proof.
 
   wp_loadField.
   iMod (readonly_load with "HpeersSl") as (peersq) "HH".
-  iDestruct (is_slice_small_sz with "HH") as %HpeersSz.
+  iDestruct (own_slice_small_sz with "HH") as %HpeersSz.
 
   wp_apply (typed_slice.wp_forSlice (V:=loc) (λ i, [∗ list] k ↦ pid ∈ pids, ⌜k < int.nat i⌝ ∨ pid ↪[γtok] ()
                         )%I with "[] [$HH Hγtoks]").
@@ -656,7 +656,7 @@ Proof.
         (* TODO: Pure reasoning to know that numAccepted > f+1 *)
         admit.
       }
-      iFrame "#∗".
+      iFrame "∗#".
       done.
     }
     iApply "HΦ".

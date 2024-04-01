@@ -167,7 +167,7 @@ Section goose.
       "#d" ∷ readonly (l ↦[Dir :: "d"] (disk_val d)) ∗
       "#allocator" ∷ readonly (l ↦[Dir :: "allocator"] #alloc_l) ∗
       "#inodes" ∷ readonly (l ↦[Dir :: "inodes"] (slice_val inodes_s)) ∗
-      "#inodes_s" ∷ readonly (is_slice_small inodes_s ptrT 1 (inode_refs))
+      "#inodes_s" ∷ readonly (own_slice_small inodes_s ptrT 1 (inode_refs))
   .
 
   (** State of unallocated blocks *)
@@ -279,7 +279,7 @@ Section goose.
     iApply big_sepM_const_seq in "Hinode_used".
     iApply big_sepM_const_seq in "Hinode_blocks".
 
-    iExists γblocks, γused; iFrame.
+    iExists γblocks, γused; iFrame "Hallblocks".
     iSplitL "Hinodes Hinode_blocks Hinode_used".
     {
       iInduction num_inodes as [|n Sn] "IH".
@@ -403,8 +403,7 @@ Section goose.
       assert (x = z) by congruence; subst.
       iFrame.
       iApply pre_inode_to_cinv'; eauto.
-    - iDestruct (is_allocator_pre_post_crash with "Halloc_mem") as %?.
-      iExists _; iFrame "∗ %".
+    - iDestruct (is_allocator_pre_post_crash with "Halloc_mem") as %?. done.
   Qed.
 
   Theorem is_dir_alloc l (sz: Z) σ :
@@ -459,7 +458,7 @@ Section goose.
     iIntros "Hc". iExists _. iFrame.
     iMod (alloc_crash_cond_strip_later with "Halloc") as "Halloc".
     iModIntro.
-    iExists _, _; iFrame.
+    iExists _; iFrame.
     (* here's a bit of gymnastics to maneuver the existential in the big_sepL: *)
     iDestruct (big_sepL2_const_sepL_r with "Hinodes") as "(_&Hinodes)".
     iDestruct (big_sepL_exists_list with "Hinodes") as (s_inodes') "[%Hlen' Hinodes]".
@@ -492,7 +491,7 @@ Section goose.
       }}}
       openInodes (disk_val d) @ ⊤
     {{{ inode_s inode_refs, RET (slice_val inode_s);
-        is_slice_small inode_s ptrT 1 inode_refs ∗
+        own_slice_small inode_s ptrT 1 inode_refs ∗
         [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
             pre_inode inode_ref (U64 (Z.of_nat i)) s_inode
     }}}
@@ -518,7 +517,7 @@ Section goose.
     wpc_apply (wpc_forUpto
                (λ n, ∃ (inode_s: Slice.t) (inode_refs: list loc),
                    "Hinodes" ∷ ino_l ↦[slice.T ptrT] (slice_val inode_s) ∗
-                   "Hinode_slice" ∷ is_slice inode_s ptrT 1 inode_refs ∗
+                   "Hinode_slice" ∷ own_slice inode_s ptrT 1 inode_refs ∗
                    "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;(take (int.nat n) s_inodes),
                     pre_inode inode_ref i s_inode) ∗
                    "Hinode_cinvs" ∷ ([∗ list] i↦s_inode ∈ (drop (int.nat n) s_inodes),
@@ -587,7 +586,6 @@ Section goose.
       iNamed 1.
       iRight in "HΦ"; iApply "HΦ".
       iFrame.
-      iExists _, _; iFrame.
       iDestruct (big_sepL2_length with "Hpre_inodes") as %Hlens;
           autorewrite with len in Hlens.
       replace (int.nat (word.add n 1%Z)) with (S (int.nat n)); last first.
@@ -606,7 +604,7 @@ Section goose.
     { iExists Slice.nil, [].
       iFrame.
       rewrite big_sepL2_nil.
-      rewrite -is_slice_zero.
+      rewrite -own_slice_zero.
       rewrite /named //. }
     iSplit.
     { (* loop crash condition implies overall crash condition *)
@@ -640,18 +638,18 @@ Section goose.
     iNamed 1.
     iRight in "HΦ"; iApply "HΦ".
     iFrame.
-    iApply (is_slice_to_small with "Hinode_slice").
+    iApply (own_slice_to_small with "Hinode_slice").
   Qed.
 
   Theorem wpc_inodeUsedBlocks inode_s inode_refs s_inodes :
-    {{{ "Hinode_s" ∷ is_slice_small inode_s ptrT 1 inode_refs ∗
+    {{{ "Hinode_s" ∷ own_slice_small inode_s ptrT 1 inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                     pre_inode inode_ref i s_inode }}}
       inodeUsedBlocks (slice_val inode_s) @ ⊤
     {{{ (addrs_ref:loc) used, RET #addrs_ref;
         "Hused_set" ∷ is_addrset addrs_ref used ∗
         "%Hused_eq" ∷ ⌜used = ⋃ (inode.addrs <$> s_inodes)⌝ ∗
-        "Hinode_s" ∷ is_slice_small inode_s ptrT 1 inode_refs ∗
+        "Hinode_s" ∷ own_slice_small inode_s ptrT 1 inode_refs ∗
         "Hpre_inodes" ∷ [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                   pre_inode inode_ref i s_inode }}}
     {{{ [∗ list] i↦s_inode ∈ s_inodes,
@@ -665,12 +663,12 @@ Section goose.
     iCache with "HΦ Hpre_inodes".
     { crash_case. by iApply pre_inodes_to_cinv. }
     wpc_frame_seq.
-    wp_apply (wp_NewMap unit (t:=struct.t alloc.unit)).
+    wp_apply (wp_NewMap _ unit (vt:=struct.t alloc.unit)).
     iIntros (addrs_ref) "Hused_set".
     iApply is_addrset_from_empty in "Hused_set".
     iNamed 1.
     wpc_pures.
-    iDestruct (is_slice_small_sz with "Hinode_s") as %Hinode_ref_len.
+    iDestruct (own_slice_small_sz with "Hinode_s") as %Hinode_ref_len.
     wpc_apply (wpc_forSlice (V:=loc)
                 (λ n, "Hpre_inodes" ∷ ([∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
                                   pre_inode inode_ref i s_inode) ∗
@@ -718,7 +716,7 @@ Section goose.
         iApply (big_sepL_mono with "Hpre_inodes").
         iIntros (???) "Hcinv".
         iDestruct "Hcinv" as (?) "(_&$)". }
-      iDestruct (is_slice_small_acc with "Hused_addrs") as "(Hused_addrs&Hused_cap)".
+      iDestruct (own_slice_small_acc with "Hused_addrs") as "(Hused_addrs&Hused_cap)".
       wp_apply (wp_SetAdd with "[$Hused_set $Hused_addrs]").
       iIntros "(Hused_set&Hused_addrs)".
       iDestruct ("Hused_cap" with "Hused_addrs") as "Hused_addrs".
@@ -866,11 +864,10 @@ Section goose.
     wpc_frame "HΦ Hpre_inodes HPinodes HPalloc Hunused Hs_inode".
     { crash_case.
       iExists _, _; iFrame.
-      iSplitL "Hpre_inodes HPinodes".
-      - iExists s_inodes; iFrame "∗ %".
-        iApply big_sepL_sep; iFrame.
-        iApply pre_inodes_to_cinv. eauto.
-      - iExists _; iFrame "∗ %". }
+      iSplitL "Hpre_inodes HPinodes"; last done.
+      iExists s_inodes; iFrame "∗ %".
+      iApply big_sepL_sep; iFrame.
+      iApply pre_inodes_to_cinv. eauto. }
     rewrite -wp_fupd.
     wp_apply (wp_newAllocator s_alloc with "Hused_set").
     { word. }
@@ -897,16 +894,14 @@ Section goose.
     { iPureIntro; lia. }
     iSplitR.
     { iExists _, _; iFrame "#". }
-    iSplitL "Hpre_inodes HPinodes".
-    { iExists s_inodes; iFrame.
-      rewrite big_sepL2_sep; iFrame.
-      iAssert ([∗ list] k↦v ∈ inode_refs, emp)%I as "Hinode_refs".
-      { iApply big_sepL_emp. done. }
-      iDestruct (big_sepL2_sepL_2 with "Hinode_refs HPinodes") as "Hmerge"; eauto.
-      iApply (big_sepL2_mono with "Hmerge").
-      iIntros (?????) "[_ H]". iFrame.
-    }
-    iExists _; iFrame "∗ %".
+    iSplitL "Hpre_inodes HPinodes"; last done.
+    iExists s_inodes; iFrame.
+    rewrite big_sepL2_sep; iFrame.
+    iAssert ([∗ list] k↦v ∈ inode_refs, emp)%I as "Hinode_refs".
+    { iApply big_sepL_emp. done. }
+    iDestruct (big_sepL2_sepL_2 with "Hinode_refs HPinodes") as "Hmerge"; eauto.
+    iApply (big_sepL2_mono with "Hmerge").
+    iIntros (?????) "[_ H]". iFrame.
   Qed.
 
   Theorem wpc_Dir__Read (Q: option Block → iProp Σ) l sz (idx: u64) (i: u64) :
@@ -1171,7 +1166,7 @@ Section goose.
       iFrame.
       rewrite /Palloc.
       iSplitR "HQ".
-      { iNext. iExists _. iFrame "Hused".
+      { iNext.
         (* Show that the domain bookeeping worked out. *)
         iPureIntro. split.
         - rewrite map_size_insert_Some //.
@@ -1228,8 +1223,6 @@ Section crash_stable.
     }
     iModIntro.
     iFrame.
-    iSplitL "Hinodes".
-    { iExists _. iSplit; first eauto. iFrame. }
     eauto.
   Qed.
 

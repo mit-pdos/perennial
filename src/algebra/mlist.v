@@ -102,17 +102,18 @@ Section cmra_mlist.
     - repeat (case_decide; auto).
       + rewrite !mlist_op_l; auto. etrans; eauto.
       + simpl. repeat case_decide; last done; exfalso.
-        * feed pose proof (prefix_of_down_total D1 D2 D3); auto.
+        * opose proof (prefix_of_down_total D1 D2 D3); auto.
           intuition.
-        * apply H1. by etrans.
+        * match goal with | H: ¬ _ |- _ => apply H; by etrans end.
       + rewrite mlist_op_l; [by rewrite mlist_op_r|auto].
       + rewrite !mlist_op_r; auto. by etrans.
       + simpl. rewrite !decide_False; auto.
       + simpl. rewrite !decide_False; auto.
       + simpl. case_decide.
-        * exfalso. apply H. by etrans.
+        * exfalso.
+          match goal with | H: ¬ _ |- _ => apply H; by etrans end.
         * case_decide; last done. exfalso.
-          feed pose proof (prefix_of_down_total D2 D3 D1); auto.
+          opose proof (prefix_of_down_total D2 D3 D1); auto.
           intuition.
     - simpl. repeat case_decide; auto.
   Qed.
@@ -174,7 +175,8 @@ Section cmra_mlist.
       + constructor. by apply: anti_symm.
       + by exfalso.
       + constructor. apply : anti_symm; [done|by etrans].
-      + exfalso. apply H2. by etrans.
+      + exfalso.
+        match goal with | H: ¬ _ |- _ => apply H; by etrans end.
   Qed.
 
   Global Instance mlist_core_id (x : mlist) : CoreId x.
@@ -234,7 +236,7 @@ Proof.
   iDestruct 1 as (l2 Hlookup2) "H2".
   iDestruct (fmlist_lb_agree with "H1 H2") as %Hprefix.
   iPureIntro.
-  destruct Hprefix as [Hpre|Hpre]; eapply prefix_lookup in Hpre; eauto; congruence.
+  destruct Hprefix as [Hpre|Hpre]; eapply prefix_lookup_Some in Hpre; eauto; congruence.
 Qed.
 
 Lemma fmlist_idx_agree_2 γ q l i a :
@@ -244,7 +246,7 @@ Proof.
   iDestruct 1 as (l2 Hlookup2) "H2".
   iDestruct (fmlist_agree_2 with "H1 H2") as %Hpre.
   iPureIntro.
-  eapply prefix_lookup in Hpre; eauto; congruence.
+  eapply prefix_lookup_Some in Hpre; eauto; congruence.
 Qed.
 
 Lemma fmlist_lb_mono γ l1 l2:

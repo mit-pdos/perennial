@@ -81,11 +81,11 @@ Definition writeAll: val :=
 Definition Log__append: val :=
   rec: "Log__append" "log" "bks" :=
     let: "sz" := struct.loadF Log "sz" "log" in
-    (if: slice.len "bks" ≥ struct.loadF Log "diskSz" "log" - #1 - "sz"
+    (if: (slice.len "bks") ≥ (((struct.loadF Log "diskSz" "log") - #1) - "sz")
     then #false
     else
       writeAll "bks" (#1 + "sz");;
-      struct.storeF Log "sz" "log" (struct.loadF Log "sz" "log" + slice.len "bks");;
+      struct.storeF Log "sz" "log" ((struct.loadF Log "sz" "log") + (slice.len "bks"));;
       Log__writeHdr "log";;
       #true).
 

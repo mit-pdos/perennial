@@ -141,7 +141,7 @@ Proof.
     iNamed 1.
 
     wpc_pures.
-    iDestruct (slice.is_slice_sz with "Hcontent_slice") as "%Hslice_len".
+    iDestruct (slice.own_slice_sz with "Hcontent_slice") as "%Hslice_len".
     simpl in Hslice_len.
     assert (int.Z content.(Slice.sz) = 0) as -> by word.
     destruct bool_decide eqn:Hs.

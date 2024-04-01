@@ -36,7 +36,7 @@ Definition Inode__UsedBlocks: val :=
 
 Definition Inode__read: val :=
   rec: "Inode__read" "i" "off" :=
-    (if: "off" ≥ slice.len (struct.loadF Inode "addrs" "i")
+    (if: "off" ≥ (slice.len (struct.loadF Inode "addrs" "i"))
     then slice.nil
     else
       let: "a" := SliceGet uint64T (struct.loadF Inode "addrs" "i") "off" in
@@ -75,7 +75,7 @@ Definition Inode__mkHdr: val :=
    case, append returns ownership of the allocated block. *)
 Definition Inode__append: val :=
   rec: "Inode__append" "i" "a" :=
-    (if: slice.len (struct.loadF Inode "addrs" "i") ≥ MaxBlocks
+    (if: (slice.len (struct.loadF Inode "addrs" "i")) ≥ MaxBlocks
     then #false
     else
       struct.storeF Inode "addrs" "i" (SliceAppend uint64T (struct.loadF Inode "addrs" "i") "a");;
@@ -96,7 +96,7 @@ Definition Inode__Append: val :=
     lock.acquire (struct.loadF Inode "m" "i");;
     let: "ok2" := Inode__append "i" "a" in
     lock.release (struct.loadF Inode "m" "i");;
-    (if: ~ "ok2"
+    (if: (~ "ok2")
     then async_alloc.Alloc__FreeNum "allocator" "a"
     else #());;
     "ok2".

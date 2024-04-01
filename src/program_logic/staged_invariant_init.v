@@ -157,7 +157,7 @@ Lemma staged_inv_cancel_wpc_crash_modality'  E1 mj' Pc Qc :
   wpc_crash_modality E1 mj' (Pc ∗ Qc).
 Proof.
   iIntros "Hsc Hwpc".
-  iDestruct "Hsc" as (mj0 Einv mj_ishare mj_ikeep γ γ' ?) "Hsc".
+  iDestruct "Hsc" as (mj0 Einv mj_ishare mj_ikeep γ γ' γstatus) "Hsc".
   iDestruct "Hsc" as (Hlt Hinf Hinvalid Heq_mj) "(Htok2&H&Hitok_ikeep&#Hpri_inv)".
   iAssert (∃ E', ⌜ E' ⊆ E1 ⌝ ∧ pri_inv Einv (staged_inv_inner E' Einv mj0 mj_ishare γ γ' γstatus Pc))%I as "Hpri_inv'".
   { iExists E1. iSplit; eauto. }
@@ -171,7 +171,7 @@ Proof.
   iMod (pri_inv_acc with "Hpri_inv") as "(Hinner&Hclo)".
   { set_solver. }
   iEval (rewrite staged_inv_inner_unfold) in "Hinner".
-  iDestruct "Hinner" as (?????) "(Hown1&#Hsaved1&#Hsaved2&Hstat&>Hitok_ishare&Hinner)".
+  iDestruct "Hinner" as (γprop_stored ? stat ??) "(Hown1&#Hsaved1&#Hsaved2&Hstat&>Hitok_ishare&Hinner)".
   iDestruct "Hinner" as "[Hs|Hfired]"; last first.
   {
     iDestruct "Hfired" as "(HPr&_&[HPc|>Hbad])"; last first.
@@ -325,7 +325,7 @@ Lemma wpc0_staged_inv_cancel s mj' mj E1 E2 e Φ Φc Pc:
   wpc0 s mj E2 e Φ (Φc ∗ Pc).
 Proof.
   iIntros (Hsub Hle_mj) "Hsc Hwp".
-  iDestruct "Hsc" as (mj0 Einv mj_ishare mj_ikeep γ γ' ?) "Hsc".
+  iDestruct "Hsc" as (mj0 Einv mj_ishare mj_ikeep γ γ' γstatus) "Hsc".
   iDestruct "Hsc" as (Hlt Hinf Hinvalid Heq_mj) "(Htok2&H&Hitok_ikeep&#Hpri_inv)".
   iLöb as "IH" forall (e E2 Hsub).
   rewrite ?wpc0_unfold. rewrite /wpc_pre.
@@ -345,7 +345,7 @@ Proof.
     iMod (pri_inv_acc with "Hpri_inv") as "(Hinner&Hclo)".
     { set_solver. }
     iEval (rewrite staged_inv_inner_unfold) in "Hinner".
-    iDestruct "Hinner" as (?????) "(Hown1&#Hsaved1&#Hsaved2&Hstat&>Hitok_ishare&Hinner)".
+    iDestruct "Hinner" as (γprop_stored ? stat ??) "(Hown1&#Hsaved1&#Hsaved2&Hstat&>Hitok_ishare&Hinner)".
     iDestruct "Hinner" as "[Hs|Hfired]"; last first.
     {
       iDestruct "Hfired" as "(HPr&_&[HPc|>Hbad])"; last first.
@@ -499,7 +499,7 @@ Lemma staged_value_init_cancel P Pc :
 Proof.
   iIntros "(Htok1&Htok2&HP&#Hwand)".
   rewrite /init_cancel.
-  iIntros (????? mj1 Hlt1) "Hwp".
+  iIntros (e s Φ Φc Φc' mj1 Hlt1) "Hwp".
   rewrite wpc_eq /wpc_def. iIntros (mj2).
   iApply (wpc0_mj_valid). iIntros (Hlt2).
   iPoseProof (wpc0_staged_inv_create _ (mj1 `min` mj2)%Qp mj2 _ _ (λ v, wpc_crash_modality ⊤ mj1 Φc' -∗ Φ v)%I ((Pc -∗ Φc)) P Pc) as "H".

@@ -136,7 +136,7 @@ Proof.
     { rewrite big_sepM2_insert //. by iFrame. }
 Qed.
 
-Theorem mapsto_txn_alloc {T} (γ : gname) (logm : gmap addr T) :
+Theorem pointsto_txn_alloc {T} (γ : gname) (logm : gmap addr T) :
   map_ctx γ 1 ∅
   ==∗
   ∃ m,
@@ -156,7 +156,7 @@ Proof.
   iModIntro. iExists _. iFrame "H". iSplit.
   { iPureIntro. rewrite !dom_insert_L Hdom. done. }
   iSplitL "H0 Hγ0 Ha".
-  { iApply big_sepM_insert; eauto. iFrame. iExists _. iFrame. }
+  { iApply big_sepM_insert; eauto. iFrame. }
   iApply big_sepM_insert; eauto. iFrame.
 Qed.
 
@@ -365,7 +365,7 @@ Proof.
   set (off:=i * 8* 128).
   rewrite /bufDataT_in_block; simpl.
   rewrite /is_bufData_at_off.
-  feed pose proof (extract_inode0 off) as Hextract; [ word .. | ].
+  opose proof (extract_inode0 off _ _) as Hextract; [ word .. | ].
   rewrite /valid_addr /valid_off /addr2flat_z /=.
   assert (valid_off KindInode off).
   { rewrite /valid_off /=.
@@ -424,7 +424,7 @@ Lemma is_txn_durable_init dinit (kinds: gmap u64 bufDataKind) (sz: nat) :
          "Htxn_durable" ∷ is_txn_durable γ dinit ∗
          "#Hdurable_lb" ∷ mono_nat_lb_own γ.(txn_walnames).(wal_heap_durable_lb) 0 ∗
          "Hcrashstates" ∷ ghost_var γ.(txn_crashstates) (3/4) (Build_async (kind_heap0 kinds) []) ∗
-         "Hmapsto_txns" ∷ ([∗ map] a ↦ o ∈ kind_heap0 kinds, mapsto_txn γ a o).
+         "Hpointsto_txns" ∷ ([∗ map] a ↦ o ∈ kind_heap0 kinds, pointsto_txn γ a o).
 Proof.
   iIntros (Hdinit_dom Hkinds_dom Hbound) "H".
   iMod (is_wal_inner_durable_init dinit with "H") as (γwalnames) "[Hwal Hwal_res]".
@@ -441,12 +441,12 @@ Proof.
 
   iMod (alloc_txn_init_ghost_state γheapnames kinds) as (γ Heq2 Heq3)  "Hinit".
   iNamed "Hinit".
-  iMod (ghost_map_insert_big (kind_heap0 kinds) with "logheap") as "[logheap logheap_mapsto_curs]".
+  iMod (ghost_map_insert_big (kind_heap0 kinds) with "logheap") as "[logheap logheap_pointsto_curs]".
   { simpl. apply map_disjoint_empty_r. }
   iMod (ghost_var_update (Build_async (kind_heap0 kinds) [])
           with "crashstates") as "H".
   iEval (rewrite -Qp.quarter_three_quarter) in "H".
-  iDestruct (fractional.fractional_split with "H") as "[crashstates1 crashstates2]".
+  iDestruct "H" as "[crashstates1 crashstates2]".
 
   iMod (alloc_metamap _ (kind_heap0 kinds) with "metaheap") as (metamap) "(metaheap & Hmetas1 & Hmetas2)".
 
@@ -456,10 +456,10 @@ Proof.
   rewrite /is_txn_durable.
   iSplit.
   { eauto. }
-  iSplitR "Hmetas2 logheap_mapsto_curs".
+  iSplitR "Hmetas2 logheap_pointsto_curs".
   2: {
     iDestruct (big_sepM2_sepM_1 with "Hmetas2") as "Hmetas2".
-    iDestruct (big_sepM_sep with "[$Hmetas2 $logheap_mapsto_curs]") as "H".
+    iDestruct (big_sepM_sep with "[$Hmetas2 $logheap_pointsto_curs]") as "H".
     iApply (big_sepM_mono with "H").
     iIntros (k x Hkx) "[H0 H1]".
     iDestruct "H0" as (γm) "(% & Ha & Hb)".
@@ -479,7 +479,7 @@ Proof.
   simpl. rewrite right_id.
   iFrame "wal_heap_crash_heaps logheap crashstates1 metaheap".
 
-  iSplitL "Hmetas1 wal_heap_h_mapsto".
+  iSplitL "Hmetas1 wal_heap_h_pointsto".
   - iDestruct (gmap_addr_by_block_big_sepM2 with "Hmetas1") as "Hmetas".
     iDestruct (big_sepM2_dom with "Hmetas") as "%Hmetadom".
     iApply big_sepM_sepM2_merge_ex; eauto.
@@ -496,7 +496,7 @@ Proof.
       { eapply block0_map_not_empty. eassumption. }
     }
 
-    iDestruct (big_sepM_sepM2_merge with "[$wal_heap_h_mapsto $Hmetas]") as "H".
+    iDestruct (big_sepM_sepM2_merge with "[$wal_heap_h_pointsto $Hmetas]") as "H".
     { rewrite /gh_heapblock0.
       rewrite dom_fmap_L Hkinds_dom.
       rewrite dom_list_to_map_L. f_equal.
@@ -510,7 +510,7 @@ Proof.
     iApply (big_sepM_mono with "H").
     intros.
     iIntros "Hm".
-    iDestruct "Hm" as (hb) "(%Hhb & Hmapsto & H)". destruct hb.
+    iDestruct "Hm" as (hb) "(%Hhb & Hpointsto & H)". destruct hb.
     iDestruct "H" as (mm) "(%Hmm & Hmm)".
     iExists _. iSplit; first by eauto.
     rewrite lookup_fmap in H.
@@ -636,10 +636,10 @@ Lemma crash_heaps_match_heapmatch_latest γ logm crash_heaps :
         "%Htxn_hb_kind" ∷ ⌜ γ.(txn_kinds) !! blkno = Some blockK ⌝ ∗
         "Htxn_hb" ∷ blkno ↪[γ.(txn_walnames).(wal_heap_h)] (HB installed bs) ∗
         "Htxn_in_hb" ∷ bufDataTs_in_block installed bs blkno blockK offmap metamap ) ∗
-    "Hmapsto_txns" ∷ ([∗ map] addr↦bufData ∈ latest logm, ∃ γm, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
+    "Hpointsto_txns" ∷ ([∗ map] addr↦bufData ∈ latest logm, ∃ γm, ptsto_mut γ.(txn_metaheap) addr 1 γm ∗ ghost_var γm (1/2) true).
 Proof.
   iNamed 1.
-  iMod (mapsto_txn_alloc _ logm.(latest) with "Hmetactx") as (metam) "(%Hdom & Hmetactx' & H0 & H1)".
+  iMod (pointsto_txn_alloc _ logm.(latest) with "Hmetactx") as (metam) "(%Hdom & Hmetactx' & H0 & H1)".
 
   rewrite /crash_heaps_match /possible.
   rewrite big_sepL2_snoc.
@@ -662,7 +662,7 @@ Proof.
   iIntros (k y1 y2 Hky1 Hky2) "[H0 H1]".
   iDestruct "H0" as (y0) "(%Hcl & H0 & H2)".
   iDestruct "H0" as (block) "[%Hk H0]". iNamed "H0".
-  iDestruct "H2" as (hb) "[%Hb Hmapsto]".
+  iDestruct "H2" as (hb) "[%Hb Hpointsto]".
   destruct hb.
   iExists _, _, _. iFrame. iFrame "%".
 
@@ -699,10 +699,10 @@ Lemma wal_heap_inv_wf names ls:
   ⌜ wal_wf ls ⌝.
 Proof. iNamed 1. eauto. Qed.
 
-Lemma latest_wal_heap_h_mapsto_split (γ: gname) gh :
+Lemma latest_wal_heap_h_pointsto_split (γ: gname) gh :
   ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] hb) ⊣⊢
-  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ]{#1/2} hb) ∗
-  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ]{#1/2} hb).
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] {#1/2} hb) ∗
+  ([∗ map] a ↦ b ∈ gh, ∃ hb, ⌜hb_latest_update hb = b⌝ ∗ a ↪[γ] {#1/2} hb).
 Proof.
   rewrite -big_sepM_sep.
   repeat f_equiv.
@@ -737,7 +737,7 @@ Definition txn_resources γ γ' logm : iProp Σ :=
   "%Hlen_compare" ∷ ⌜ (length (possible logm) ≤ length (possible logm0))%nat ⌝ ∗
   "Hlogm" ∷ ghost_var γ'.(txn_crashstates) (3/4) logm ∗
   "Holdlogm" ∷ ghost_var γ.(txn_crashstates) (1/4) logm0 ∗
-  "Hmapsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), mapsto_txn γ' a v) ∗
+  "Hpointsto_txns" ∷ ([∗ map] a ↦ v ∈ latest (logm), pointsto_txn γ' a v) ∗
   "Hdurable" ∷ mono_nat_lb_own γ'.(txn_walnames).(heapspec.wal_heap_durable_lb) txn_id ∗
   "Hdurable_exchanger" ∷ heapspec_durable_exchanger γ.(txn_walnames) txn_id)%I.
 
@@ -799,7 +799,7 @@ Proof.
 
 
   iEval (rewrite -Qp.quarter_three_quarter) in "crashstates".
-  iDestruct (fractional.fractional_split_1 with "crashstates") as
+  iDestruct "crashstates" as
       "[crashstates1 crashstates2]".
   iDestruct (heapspec_durable_exchanger_dup with "[$]")
             as "(Hheap_lb_exchange1&Hheap_lb_exchange2)".
@@ -839,9 +839,7 @@ Proof.
   iFrame "Hcrash_heaps".
   iSplitL "".
   { iModIntro. iPureIntro. eapply log_crash_to_post_crash; eauto. }
-  iFrame.
-  iExists metam_new.
-  iFrame "# ∗".
+  iFrame "∗#".
   simpl. iEval (rewrite right_id) in "logheap". iFrame "logheap".
   eauto.
 Qed.
@@ -973,7 +971,7 @@ Proof.
       { iNext. iExists _. iFrame. }
       { iNext. iFrame. }
     }
-    { iNext. iFrame. iExists _, _; iFrame. }
+    { iFrame. }
     iDestruct "Hcfupd" as "(Hcfupd_cancel&Hcfupd)".
     iRight in "HΦ".
     iApply "HΦ".

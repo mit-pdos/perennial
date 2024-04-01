@@ -220,7 +220,7 @@ Proof.
   iMod ("H" with "[$] [$]") as "[$ H]".
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose". iNext.
-  iIntros. iMod "Hclose". iMod ("H" with "[//]") as "($ & $ & H & ?)".
+  iIntros (e2 ???) "%Hstep Hlater". iMod "Hclose". iMod ("H" with "[//]") as "($ & $ & H & ?)".
   destruct (to_val e2) eqn:?; last by iExFalso.
   iFrame. iModIntro. iApply wp_value; last done. by apply of_to_val.
 Qed.
@@ -243,7 +243,7 @@ Proof.
   iMod ("H" with "[$] [$]") as "[$ H]".
   iApply fupd_mask_intro; first set_solver.
   iIntros "Hclose". iNext.
-  iIntros. iMod "Hclose". iMod ("H" with "[//] [$]") as "($ & $ & H & ?)".
+  iIntros (e2 ???) "%Hstep Hlater". iMod "Hclose". iMod ("H" with "[//] [$]") as "($ & $ & H & ?)".
   destruct (to_val e2) eqn:?; last by iExFalso.
   iFrame. iModIntro. iApply wp_value; last done. by apply of_to_val.
 Qed.
@@ -286,7 +286,7 @@ Lemma wp_pure_step_later `{!Inhabited (state Λ), !Inhabited (global_state Λ)} 
   ▷^n (£ n -∗ WP e2 @ s; E {{ Φ }}) ⊢ WP e1 @ s; E {{ Φ }}.
 Proof.
   intros Hexec ?. rewrite -wp_pure_step_fupd //. clear Hexec.
-  enough (∀ P, ▷^n P -∗ |={E}▷=>^n P) as Hwp by apply Hwp. iIntros (?).
+  enough (∀ P, ▷^n P ⊢ |={E}▷=>^n P) as Hwp by apply Hwp. iIntros (?).
   induction n as [|n IH]; by rewrite //= -step_fupd_intro // IH.
 Qed.
 End lifting.

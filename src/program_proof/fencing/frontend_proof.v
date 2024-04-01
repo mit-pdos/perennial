@@ -760,8 +760,8 @@ Next Obligation.
 Defined.
 
 Definition is_host γ host : iProp Σ :=
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ]} ∗
-  handler_spec γ.(urpc_gn) host 0 (FAISpec_tada γ).
+  is_urpc_dom γ.(urpc_gn) {[ (U64 0) ]} ∗
+  is_urpc_spec_pred γ.(urpc_gn) host 0 (FAISpec_tada γ).
 
 Lemma wp_StartServer γ γcfg (me configHost host1 host2:u64) :
   config.is_host γcfg configHost (λ e, own_unused_epoch γ.(ctr1_gn) e ∗ own_unused_epoch γ.(ctr2_gn) e) (λ _, True) -∗
@@ -814,16 +814,16 @@ Proof using Type*.
     unfold is_Server.
     iMod (readonly_alloc_1 with "mu") as "#Hmu".
     iMod (readonly_alloc_1 with "epoch") as "#Hepoch".
-    iExists _; iFrame "#∗".
+    iExists _; iFrame "∗#".
     iApply (alloc_lock with "HmuInv").
     iNext.
     iExists _.
     iExists _, _.
-    iFrame "ck1 ck2 #∗".
+    iFrame "ck1 ck2 ∗#".
     iDestruct "Hunused" as "[$ $]".
   }
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers) "Hhandlers".
 
   wp_pures.
@@ -833,7 +833,7 @@ Proof using Type*.
   wp_apply (wp_MakeServer with "Hhandlers").
   iIntros (r) "Hr".
   wp_pures.
-  wp_apply (wp_StartServer with "[$Hr]").
+  wp_apply (wp_StartServer_pred with "[$Hr]").
   { set_solver by idtac. (* FIXME regular set_solver leaves shelved goals *) }
   {
     iDestruct "His_host" as "[H1 H2]".
@@ -849,12 +849,11 @@ Proof using Type*.
     iApply (big_sepM_insert_2 with "").
     {
       simpl. iExists _; iFrame "#".
-
       clear Φ.
-      rewrite /impl_handler_spec.
-      iIntros (??????) "!#".
+      rewrite /is_urpc_handler_pred.
+      iIntros (????) "!#".
       iIntros (Φ) "Hpre HΦ".
-      iDestruct "Hpre" as "(Hreq_sl & Hrep & Hrep_sl & HFAISpec)".
+      iDestruct "Hpre" as "(Hreq_sl & Hrep & HFAISpec)".
       wp_pures.
       iDestruct "HFAISpec" as (k) "(%H01 & %Henc & Hfupd)".
       wp_apply (wp_new_dec with "Hreq_sl").
@@ -875,9 +874,8 @@ Proof using Type*.
       iIntros "Henc".
       wp_pures.
       wp_apply (wp_Enc__Finish with "Henc").
-      iClear "Hrep_sl".
       iIntros (rep_sl rep_data) "(%Hrep_enc & %Hrep_len & Hrep_sl)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
       iApply "HΦ".
       iModIntro.
@@ -960,12 +958,11 @@ Proof.
   iNamed "Hck_is".
   wp_loadField.
 
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
-  wp_apply (wp_Client__Call with "[] [$Hreply_ptr $Hreq_small $Hcl_is]").
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_small".
+  wp_apply (wp_Client__Call_pred with "[$Hreply_ptr $Hreq_small Hcl_is]").
   {
+    iFrame "#".
     iDestruct "His_host" as "[_ $]".
-  }
-  {
     iModIntro.
     iNext.
     simpl.
@@ -995,7 +992,7 @@ Proof.
     iExists _; iFrame.
     done.
   }
-  iIntros (err) "(_ & Hreq_small & Hpost)".
+  iIntros (err) "(Hreq_small & Hpost)".
   wp_pures.
 
   destruct err.

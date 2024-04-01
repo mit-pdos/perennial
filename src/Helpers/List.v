@@ -92,7 +92,7 @@ Section list.
     intros Hlt Hprefix.
     apply lookup_lt_is_Some_2 in Hlt as [? Hlookup].
     rewrite Hlookup.
-    eapply prefix_lookup in Hlookup; eauto.
+    eapply prefix_lookup_Some in Hlookup; eauto.
   Qed.
 
   Lemma list_prefix_eq l1 l2 :
@@ -103,7 +103,7 @@ Section list.
     { apply prefix_length in Hprefix; lia. }
     eapply list_eq_same_length; [ done | done | ].
     intros i x y ? Hlookup1 Hlookup2.
-    eapply prefix_lookup in Hlookup1; eauto.
+    eapply prefix_lookup_Some in Hlookup1; eauto.
     congruence.
   Qed.
 End list.

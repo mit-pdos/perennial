@@ -375,7 +375,7 @@ Section gmap_addr_by_block.
       rewrite map_filter_insert_True; eauto.
       rewrite -IHm; clear IHm.
       rewrite gmap_addr_by_block_insert; eauto; simpl.
-      2: { rewrite map_filter_lookup_None; eauto. }
+      2: { rewrite map_lookup_filter_None; eauto. }
 
       f_equal. f_equal. f_equal.
       rewrite /gmap_addr_by_block.
@@ -386,7 +386,7 @@ Section gmap_addr_by_block.
       + destruct (decide (P (addrBlock i))).
         * rewrite map_filter_insert_True; eauto.
           repeat rewrite gmap_curry_insert; eauto.
-          2: rewrite map_filter_lookup_None; eauto.
+          2: rewrite map_lookup_filter_None; eauto.
           destruct (decide (i.1 = b)); subst.
           { repeat rewrite lookup_insert. f_equal. f_equal. rewrite IHm. eauto. }
           repeat rewrite lookup_insert_ne; eauto.
@@ -419,7 +419,7 @@ Section gmap_addr_by_block.
   Context {PROP : bi}.
 
   Theorem gmap_addr_by_block_big_sepM (m : gmap addr T) (Φ : addr -> T -> PROP) :
-    ( [∗ map] a ↦ v ∈ m, Φ a v ) -∗
+    ( [∗ map] a ↦ v ∈ m, Φ a v ) ⊢@{_}
     ( [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block m,
         [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ).
   Proof.
@@ -448,7 +448,7 @@ Section gmap_addr_by_block.
 
   Theorem gmap_addr_by_block_big_sepM' (m : gmap addr T) (Φ : addr -> T -> PROP) :
     ( [∗ map] blkno ↦ offmap ∈ gmap_addr_by_block m,
-        [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ) -∗
+        [∗ map] off ↦ v ∈ offmap, Φ (Build_addr blkno off) v ) ⊢@{_}
     ( [∗ map] a ↦ v ∈ m, Φ a v ).
   Proof.
     iIntros "Hm".
@@ -686,10 +686,43 @@ Proof.
     rewrite lookup_fmap. erewrite map_zip_lookup_some; eauto.
 Qed.
 
+Theorem dom_lookup_eq {K A B} `{Countable K} (m1 : gmap K A) (m2 : gmap K B):
+  (∀ k, is_Some (m1 !! k) ↔ is_Some (m2 !! k)) ->
+  dom m1 = dom m2.
+Proof.
+  revert m2.
+  induction m1 using map_ind; intros.
+  - rewrite dom_empty_L. symmetry. apply dom_empty_iff_L.
+    apply map_empty. intros. specialize (H0 i). destruct H0 as [H1 H2].
+    destruct (m2 !! i); eauto. exfalso. eapply is_Some_None.
+    rewrite lookup_empty in H2. apply H2. eauto.
+  - rewrite dom_insert_L. erewrite (IHm1 (delete i m2)).
+    2: {
+      intros.
+      destruct (EqDecision0 k i).
+      { subst. rewrite H0. rewrite lookup_delete. split; intros Hx; destruct Hx; congruence. }
+      { rewrite lookup_delete_ne; eauto. rewrite -H1. rewrite lookup_insert_ne; eauto. }
+    }
+    rewrite dom_delete_L.
+    rewrite -union_difference_L; eauto.
+    apply singleton_subseteq_l.
+    apply elem_of_dom. apply H1. rewrite lookup_insert. done.
+Qed.
+
+Theorem dom_lookup_eq_2 {K A B} `{Countable K} (m1 : gmap K A) (m2 : gmap K B):
+  dom m1 = dom m2 ->
+  (∀ k, is_Some (m1 !! k) ↔ is_Some (m2 !! k)).
+Proof.
+  intros.
+  split; intros.
+  - apply elem_of_dom. rewrite -H0. apply elem_of_dom. eauto.
+  - apply elem_of_dom. rewrite H0. apply elem_of_dom. eauto.
+Qed.
+
 Theorem gmap_addr_by_block_big_sepM2
         {PROP: bi} `{BiAffine PROP}
         {T1 T2} (m1 : gmap addr T1) (m2: gmap addr T2) (Φ : addr -> T1 -> T2 -> PROP) :
-  ( [∗ map] a ↦ v1; v2 ∈ m1; m2, Φ a v1 v2 ) -∗
+  ( [∗ map] a ↦ v1; v2 ∈ m1; m2, Φ a v1 v2 ) ⊢@{_}
   ( [∗ map] blkno ↦ offmap1; offmap2 ∈ gmap_addr_by_block m1; gmap_addr_by_block m2,
       [∗ map] off ↦ v1; v2 ∈ offmap1; offmap2, Φ (Build_addr blkno off) v1 v2 ).
 Proof.
@@ -697,19 +730,13 @@ Proof.
   rewrite gmap_addr_by_block_big_sepM.
   iIntros "[%Hdom Hm]".
   rewrite -gmap_addr_by_block_map_zip //.
-  iSplit.
-  { iPureIntro; intros. split; intros Hm.
-    { destruct Hm as [m Hm]. apply gmap_addr_by_block_off_not_empty in Hm as Hme.
-      apply map_choose in Hme. destruct Hme as [i [x Hme]]. apply elem_of_dom_2 in Hme.
-      eapply gmap_addr_by_block_elem_of_1 in Hme; eauto.
-      rewrite -> elem_of_dom in Hme. eapply Hdom in Hme. destruct Hme as [v Hme].
-      eapply gmap_addr_by_block_lookup in Hme. destruct Hme. intuition eauto. }
-    { destruct Hm as [m Hm]. apply gmap_addr_by_block_off_not_empty in Hm as Hme.
-      apply map_choose in Hme. destruct Hme as [i [x Hme]]. apply elem_of_dom_2 in Hme.
-      eapply gmap_addr_by_block_elem_of_1 in Hme; eauto.
-      rewrite -> elem_of_dom in Hme. eapply Hdom in Hme. destruct Hme as [v Hme].
-      eapply gmap_addr_by_block_lookup in Hme. destruct Hme. intuition eauto. }
+  2: {
+    intros; split; intro Hs.
+    all: apply elem_of_dom; apply elem_of_dom in Hs; congruence.
   }
+  iSplit.
+  { iPureIntro; intros.
+    apply gmap_addr_by_block_dom_eq. done. }
   rewrite big_sepM_fmap.
   iApply (big_sepM_mono with "Hm"); intros.
   iIntros "Hm".
@@ -717,12 +744,14 @@ Proof.
   iPureIntro; intros.
   apply map_lookup_zip_with_Some in H0 as (m1_ & m2_ & -> & Hlookup1 & Hlookup2).
   simpl.
+  apply dom_lookup_eq; intros.
   apply (f_equal (λ x, x ≫= lookup k0)) in Hlookup1.
   rewrite lookup_gmap_curry in Hlookup1.
   apply (f_equal (λ x, x ≫= lookup k0)) in Hlookup2.
   rewrite lookup_gmap_curry in Hlookup2.
   simpl in *.
   rewrite -Hlookup1 -Hlookup2.
+  apply dom_lookup_eq_2.
   auto.
 Qed.
 

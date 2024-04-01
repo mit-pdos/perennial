@@ -153,7 +153,7 @@ Section proof.
     iDestruct "H2" as (l2 ?) "H2".
     inversion H; subst.
     iCombine "H1 H2" as "H".
-    iDestruct (heap_mapsto_frac_valid with "H") as %Hval.
+    iDestruct (heap_pointsto_frac_valid with "H") as %Hval.
     eauto.
   Qed.
 
@@ -190,7 +190,7 @@ Section proof.
     { iIntros "!>". iExists _. iFrame.
       rewrite /is_free_lock.
       iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-      iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+      iDestruct "Hl" as "[Hl1 Hl2]".
       iFrame.
       rewrite remaining_free. iFrame.
     }
@@ -259,7 +259,7 @@ Section proof.
         wp_cmpxchg_suc.
         iModIntro.
         iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-        iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+        iDestruct "Hl" as "[Hl1 Hl2]".
         iIntros "(Hc1&Hc2)".
         iModIntro.
         iSplitL "Hl1 Hl2 Hc1"; first (iNext; iExists (word.add u 1); eauto).
@@ -330,7 +330,7 @@ Section proof.
         wp_cmpxchg_suc.
         iModIntro.
         iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-        iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+        iDestruct "Hl" as "[Hl1 Hl2]".
         iIntros "Hc".
         rewrite remaining_frac_read_release; auto.
         iModIntro.
@@ -387,7 +387,7 @@ Section proof.
       wp_cmpxchg_suc.
       iModIntro.
       iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-      iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+      iDestruct "Hl" as "[Hl1 Hl2]".
       iSplitL "Hl1"; first (iNext; iExists (U64 0); eauto).
       wp_pures.
       iApply "HΦ".
@@ -423,14 +423,14 @@ Section proof.
     iInv N as (b) "[>Hl _]".
 
     iDestruct (locked_loc with "Hlocked") as "Hl2".
-    iDestruct (heap_mapsto_agree with "[$Hl $Hl2]") as %->.
+    iDestruct (heap_pointsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
     wp_cmpxchg_suc.
     iModIntro.
     iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
-    iDestruct (fractional.fractional_split_1 with "Hl") as "[Hl1 Hl2]".
+    iDestruct "Hl" as "[Hl1 Hl2]".
     iNext. iExists (U64 1). iFrame.
     rewrite remaining_free. eauto.
   Qed.

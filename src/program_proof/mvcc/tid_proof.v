@@ -1,7 +1,7 @@
 From Perennial.base_logic Require Import ghost_map saved_prop mono_nat.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.program_proof.mvcc Require Import mvcc_prelude mvcc_ghost.
-From Goose.github_com.mit_pdos.go_mvcc Require Import tid.
+From Goose.github_com.mit_pdos.vmvcc Require Import tid.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
@@ -220,16 +220,16 @@ Proof.
   iExists _. iFrame "Hclock".
   iIntros (clock2) "[%Hclock Hclock2]".
   iMod "Hclose2" as "_".
-  set inbounds := bool_decide (int.Z clock2 + 16 < 2^64).
+  set inbounds := bool_decide (int.Z clock2 + 32 < 2^64).
   set clock2_boundsafe := if inbounds then clock2 else 0.
-  feed pose proof (u64_round_up_spec clock2_boundsafe (U64 16)) as H.
+  opose proof (u64_round_up_spec clock2_boundsafe (U64 32) _ _) as H.
   { subst clock2_boundsafe inbounds. case_bool_decide; word. }
   { word. }
   move:H.
-  set rounded_ts := u64_round_up clock2_boundsafe (U64 16).
+  set rounded_ts := u64_round_up clock2_boundsafe (U64 32).
   intros (Hmod & Hbound1 & Hbound2).
   set reserved_ts := word.add rounded_ts sid.
-  assert ((int.Z rounded_ts + int.Z sid) `mod` 16 = int.Z sid) as Hsidmod.
+  assert ((int.Z rounded_ts + int.Z sid) `mod` 32 = int.Z sid) as Hsidmod.
   { rewrite Z.add_mod. 2:lia.
     rewrite Hmod. rewrite [int.Z sid `mod` _]Z.mod_small. 2:split;[word|done].
     rewrite Z.mod_small. 1:lia. split;[word|done]. }

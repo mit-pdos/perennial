@@ -17,12 +17,12 @@ Definition own_KVCoordClerk ck γkv : iProp Σ :=
 Lemma wp_decodeShardMap data_sl data (shardMapping : list u64) :
   {{{
        "%Henc" ∷ ⌜ has_encoding_shardMapping data shardMapping ⌝ ∗
-      "Hsl" ∷ typed_slice.is_slice_small (V:=u8) data_sl byteT 1 data
+      "Hsl" ∷ typed_slice.own_slice_small (V:=u8) data_sl byteT 1 data
   }}}
     decodeShardMap (slice_val data_sl)
   {{{  rep_sl , RET (slice_val rep_sl);
        ⌜ length shardMapping = int.nat 65536 ⌝ ∗
-       typed_slice.is_slice rep_sl uint64T 1 shardMapping }}}.
+       typed_slice.own_slice rep_sl uint64T 1 shardMapping }}}.
 Proof.
   wp_pures. iIntros (Φ) "H HΦ".
   iNamed "H".
@@ -49,7 +49,7 @@ Lemma wp_KVCoordClerk__AddShardServer (ck:loc) γkv γ (dst : u64) :
   {{{RET #(); own_KVCoordClerk ck γkv }}}
 .
 Proof.
-  iIntros (Φ) "(Hclerk&#His_shard&%) HΦ".
+  iIntros (Φ) "(Hclerk&#His_shard&%) HΦ". subst.
   wp_lam.
   wp_apply (wp_ref_of_zero).
   { naive_solver. }
@@ -69,9 +69,9 @@ Proof.
   iIntros (sl0 d) "(Hsl&%)".
   wp_loadField.
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hsl") as "Hsl".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_addSpec _) dst with "Hc_own HaddSpec [] [Hsl $HrawRep //]").
-  { simpl. iModIntro. iNext. iFrame "%". iExists _. iFrame "#". iPureIntro; congruence. }
+  iDestruct (own_slice_to_small with "Hsl") as "Hsl".
+  wp_apply (wp_ConnMan__CallAtLeastOnce (is_coord_server_addSpec _) dst with "[$Hc_own $HaddSpec Hsl $HrawRep]").
+  { iFrame "∗#". do 2 iModIntro. by iFrame "%". }
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   iModIntro. iApply "HΦ". rewrite /own_KVCoordClerk.
@@ -88,7 +88,7 @@ Lemma wp_KVCoordClerk__GetShardMap (ck:loc) γkv :
   {{{
        shardMap_sl (shardMapping:list u64), RET (slice_val shardMap_sl);
        own_KVCoordClerk ck γkv ∗
-       typed_slice.is_slice shardMap_sl uint64T 1%Qp shardMapping ∗
+       typed_slice.own_slice shardMap_sl uint64T 1%Qp shardMapping ∗
        ⌜Z.of_nat (length shardMapping) = uNSHARD⌝ ∗
        all_are_shard_servers shardMapping γkv
   }}}
@@ -114,9 +114,8 @@ Proof.
   iIntros (s) "H".
   wp_loadField.
   wp_loadField.
-  iDestruct (is_slice_to_small with "H") as "H".
-  wp_apply (wp_ConnMan__CallAtLeastOnce_uRPCSpec (is_coord_server_getSpec _) () with "Hc_own HgetSpec [] [$H $HrawRep //]").
-  { done. }
+  iDestruct (own_slice_to_small with "H") as "H".
+  wp_apply (wp_ConnMan__CallAtLeastOnce (is_coord_server_getSpec _) () with "[$Hc_own $HgetSpec $H $HrawRep //]").
   iIntros "(Hreq_sl & Hpost)".
   iDestruct "Hpost" as "(% & % & HrawRep & Hrep_sl & Hpost)"; wp_pures.
   wp_pures.

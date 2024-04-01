@@ -5,6 +5,8 @@ Import derived_laws.bi.
 Import derived_laws_later.bi.
 Import base_logic.bi.uPred.
 
+Set Default Proof Using "Type".
+
 Section uPred_laws.
 Context {M: ucmra}.
 Implicit Types φ : Prop.
@@ -29,7 +31,8 @@ Proof.
     replace (S n - S a) with (n - a) by lia.
     intros. eapply IHa; eauto using cmra_validN_S.
     { lia. }
-    move: H. uPred.unseal => //=.
+    move: H.
+    rewrite /uPred_holds /=; uPred.unseal => //=.
 Qed.
 
 Lemma laterN_soundness P k: (⊢ ▷^k P) → ⊢ P.
@@ -82,7 +85,7 @@ Local Hint Resolve and_elim_l' and_elim_r' and_intro forall_intro : core.
 
 
 Lemma laterN_exist_false A (Φ : A → uPred M) k:
-  ▷^k (∃ a : A, Φ a) -∗ ▷^k False ∨ (∃ a : A, ▷^k Φ a).
+  ▷^k (∃ a : A, Φ a) ⊢ ▷^k False ∨ (∃ a : A, ▷^k Φ a).
 Proof.
   split => n x Hval Hall.
   destruct (decide (n < k)).
@@ -97,7 +100,7 @@ Proof.
 Qed.
 
 
-Lemma laterN_ownM (a: M) k: ▷^k uPred_ownM a -∗ ∃ b, uPred_ownM b ∧ ▷^k (a ≡ b).
+Lemma laterN_ownM (a: M) k: ▷^k uPred_ownM a ⊢ ∃ b, uPred_ownM b ∧ ▷^k (a ≡ b).
 Proof.
   revert a. induction k as [| k IH] => a; iIntros "H".
   - eauto.

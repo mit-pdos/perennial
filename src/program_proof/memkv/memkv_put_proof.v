@@ -46,7 +46,7 @@ Proof.
   wp_pures.
   wp_loadField.
 
-  iDestruct (typed_slice.is_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
+  iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_sl_close]".
   set (sid:=shardOfC args.(PR_Key)) in *.
 
   assert (∃ b, shardMapping !! int.nat sid = Some b) as [? ?].
@@ -67,7 +67,7 @@ Proof.
     wp_loadField.
     wp_loadField.
     wp_loadField.
-    iDestruct (is_slice_split with "Hkvss_sl") as "[Hkvss_sl Hkvss_sl_close]".
+    iDestruct (slice.own_slice_split with "Hkvss_sl") as "[Hkvss_sl Hkvss_sl_close]".
     iDestruct (big_sepS_elem_of_acc _ _ sid with "HownShards") as "[HownShard HownShards]".
     { set_solver. }
     iDestruct "HownShard" as "[%Hbad|HownShard]".

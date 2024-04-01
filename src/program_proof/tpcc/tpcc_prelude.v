@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Export grove_prelude marshal_stateless_proof.
-From Goose.github_com.mit_pdos.go_mvcc Require Export tpcc.
+(* From Goose.github_com.mit_pdos.vmvcc Require Export tpcc_deprecated. *)
 Export Perennial.goose_lang.lib.slice.typed_slice.
 
 Definition dbval := option (list u8).
@@ -102,12 +102,12 @@ Theorem wp_txn__Read
         txn (mid : u64) (key : Slice.t)
         (k : list u8) tid view dbv γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmaps_ptsto τ mid k dbv ∗
-      is_slice key byteT 1 k
+      own_slice key byteT 1 k
   }}}
     Txn__Read #txn #mid (to_val key)
   {{{ (vS : Slice.t) (found : bool) (v : list u8), RET (to_val vS, #found);
       own_txn txn tid view γ τ ∗ txnmaps_ptsto τ mid k dbv ∗
-      is_slice key byteT 1 k ∗ is_slice vS byteT 1 v ∗ ⌜dbv = to_dbval found v⌝
+      own_slice key byteT 1 k ∗ own_slice vS byteT 1 v ∗ ⌜dbv = to_dbval found v⌝
   }}}.
 Admitted.
 
@@ -115,7 +115,7 @@ Theorem wp_txn__Write
         txn (mid : u64) (key value : Slice.t)
         (k v : list u8) tid view dbv γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmaps_ptsto τ mid k dbv ∗
-      is_slice key byteT 1 k ∗ is_slice value byteT 1 v
+      own_slice key byteT 1 k ∗ own_slice value byteT 1 v
   }}}
     Txn__Write #txn #mid (to_val key) (to_val value)
   {{{ RET #();
@@ -127,7 +127,7 @@ Theorem wp_txn__Delete
         txn (mid : u64) (key : Slice.t)
         (k : list u8) tid view dbv γ τ :
   {{{ own_txn txn tid view γ τ ∗ txnmaps_ptsto τ mid k dbv ∗
-      is_slice key byteT 1 k
+      own_slice key byteT 1 k
   }}}
     Txn__Delete #txn #mid (to_val key)
   {{{ RET #();

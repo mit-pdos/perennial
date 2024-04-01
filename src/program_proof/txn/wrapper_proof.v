@@ -36,16 +36,16 @@ Section proof.
 
   Definition LVL := 100%nat.
 
-  Definition jrnl_mapsto_own a bufObj : iProp Σ :=
-    "Hmapsto" ∷ jrnl_mapsto a 1 (bufObj_to_obj bufObj) ∗
+  Definition jrnl_pointsto_own a bufObj : iProp Σ :=
+    "Hpointsto" ∷ jrnl_pointsto a 1 (bufObj_to_obj bufObj) ∗
     "Htok" ∷ jrnl_crash_tok a.
 
-  Global Instance jrnl_mapsto_own_Timeless a bufObj:
-    Timeless (jrnl_mapsto_own a bufObj).
+  Global Instance jrnl_pointsto_own_Timeless a bufObj:
+    Timeless (jrnl_pointsto_own a bufObj).
   Proof. refine _. Qed.
 
-  Global Instance jrnl_mapsto_own_Discretizable a bufObj:
-    Discretizable (jrnl_mapsto_own a bufObj).
+  Global Instance jrnl_pointsto_own_Discretizable a bufObj:
+    Discretizable (jrnl_pointsto_own a bufObj).
   Proof. refine _. Qed.
 
   Definition jrnl_maps_kinds_valid γ (σj1 σj2: jrnl_map) :=
@@ -63,7 +63,7 @@ Section proof.
       "#Histxn_system" ∷ is_txn_system Njrnl γ ∗
       "#Histxn" ∷ is_txn txnl γ.(jrnl_txn_names) dinit ∗
       "#HlockMap" ∷ is_lockMap locksl ghs (set_map addr2flat objs_dom)
-        (twophase_linv_flat jrnl_mapsto_own γ γ') ∗
+        (twophase_linv_flat jrnl_pointsto_own γ γ') ∗
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
@@ -77,7 +77,7 @@ Section proof.
       (* mark: do we need is_twophase_pre in here too? *)
       "Hj" ∷ j ⤇ K (Atomically ls e1) ∗
       "Htwophase" ∷ is_twophase_raw
-        l γ γ' dinit jrnl_mapsto_own objs_dom mt_changed ∗
+        l γ γ' dinit jrnl_pointsto_own objs_dom mt_changed ∗
       "#Hspec_ctx" ∷ spec_ctx ∗
       "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
       "#Hjrnl_open" ∷ jrnl_open ∗
@@ -92,9 +92,9 @@ Section proof.
   Definition is_twophase_releasable l γ γ' (objs_dom: gset addr) : iProp Σ :=
     ∃ locks_held mt_changed σj1 σj2,
       "Hlocks" ∷ is_twophase_locks
-        l γ γ' jrnl_mapsto_own (set_map addr2flat objs_dom) locks_held ∗
+        l γ γ' jrnl_pointsto_own (set_map addr2flat objs_dom) locks_held ∗
       "Hlinvs" ∷ ([∗ set] flat_a ∈ locks_held, (
-        "Hlinv" ∷ twophase_linv_flat jrnl_mapsto_own γ γ' flat_a
+        "Hlinv" ∷ twophase_linv_flat jrnl_pointsto_own γ γ' flat_a
       )) ∗
       "%Hlocks_held" ∷ ⌜
         set_map addr2flat (dom mt_changed) = locks_held
@@ -134,7 +134,7 @@ Section proof.
     jrnl_maps_kinds_valid γ σj1 σj2 →
     jrnl_maps_have_mt mt_changed σj1 σj2 →
     "Htwophase" ∷ is_twophase_raw
-      l γ γ' dinit jrnl_mapsto_own objs_dom mt_changed -∗
+      l γ γ' dinit jrnl_pointsto_own objs_dom mt_changed -∗
     "%Hwf_jrnl1" ∷ ⌜wf_jrnl σj1⌝ ∗
     "%Hwf_jrnl1" ∷ ⌜wf_jrnl σj2⌝.
   Proof.
@@ -205,9 +205,9 @@ Section proof.
   Definition twophase_obj_cfupd_cancel γ' d :=
    ((|C={⊤}=> ∃ mt',
        ⌜ dom mt' = d ⌝ ∗
-       "Hmapstos" ∷ ([∗ map] a ↦ obj ∈ mt',
-         "Hdurable_mapsto" ∷ durable_mapsto_own γ' a obj ∗
-         "Hjrnl_mapsto" ∷ jrnl_mapsto_own a obj)))%I.
+       "Hpointstos" ∷ ([∗ map] a ↦ obj ∈ mt',
+         "Hdurable_pointsto" ∷ durable_pointsto_own γ' a obj ∗
+         "Hjrnl_pointsto" ∷ jrnl_pointsto_own a obj)))%I.
 
   Lemma map_Forall_exists {A B} `{Countable K} (m: gmap K A) P :
     map_Forall (λ a x, ∃ y, P a x y) m →
@@ -315,20 +315,20 @@ Section proof.
         iNamed.
         iAssert (
           [∗ map] a ↦ o ∈ jrnlData σj1,
-            "Hmapsto" ∷ jrnl_mapsto a 1 o ∗
+            "Hpointsto" ∷ jrnl_pointsto a 1 o ∗
             "Htok" ∷ jrnl_crash_tok a
         )%I with "[Hcommitted]" as "Hcommitted".
         {
           destruct Hjrnl_maps_mt as [<- _].
           rewrite !big_sepM_fmap //.
         }
-        iDestruct (big_sepM_sep with "Hcommitted") as "[Hmapstos Htoks]".
+        iDestruct (big_sepM_sep with "Hcommitted") as "[Hpointstos Htoks]".
         destruct Hjrnl_maps_kinds as [<- _].
         iDestruct (
           ghost_step_jrnl_atomically_crash
-          with "Hspec_crash_ctx Hmapstos Htoks Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
-        ) as "H"; (* "> [Hmapstos Htoks]" *) [eassumption|set_solver|].
-        iMod (cfupd_weaken_mask with "H") as "[Hmapstos Htoks]".
+          with "Hspec_crash_ctx Hpointstos Htoks Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
+        ) as "H"; (* "> [Hpointstos Htoks]" *) [eassumption|set_solver|].
+        iMod (cfupd_weaken_mask with "H") as "[Hpointstos Htoks]".
         { auto. }
         iModIntro.
         iApply big_sepM_sep.
@@ -339,14 +339,14 @@ Section proof.
         iNamed.
         iAssert (
           [∗ map] a ↦ o ∈ jrnlData σj1,
-            "Hmapsto" ∷ jrnl_mapsto a 1 o ∗
+            "Hpointsto" ∷ jrnl_pointsto a 1 o ∗
             "Htok" ∷ jrnl_crash_tok a
         )%I with "[Hcommitted]" as "Hcommitted".
         {
           destruct Hjrnl_maps_mt as [<- _].
           rewrite !big_sepM_fmap //.
         }
-        iDestruct (big_sepM_sep with "Hcommitted") as "[Hmapstos Htoks]".
+        iDestruct (big_sepM_sep with "Hcommitted") as "[Hpointstos Htoks]".
         destruct Hjrnl_maps_kinds as [<- _].
         iSplit.
         2: {
@@ -360,8 +360,8 @@ Section proof.
         }
         iDestruct (
           ghost_step_jrnl_atomically
-          with "Hspec_ctx Hmapstos Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
-        ) as "> [Hj Hmapstos]"; [eassumption|set_solver|].
+          with "Hspec_ctx Hpointstos Hjrnl_kinds_lb Hjrnl_allocs Hjrnl_open Hj"
+        ) as "> [Hj Hpointstos]"; [eassumption|set_solver|].
         iModIntro.
         iFrame.
         destruct Hjrnl_maps_mt as [<- <-].
@@ -390,8 +390,8 @@ Section proof.
       destruct Hacc2 as [vo2 Hacc2].
       apply Hvalids in Hacc1.
       apply Hvalids in Hacc2.
-      rewrite /mapsto_valid in Hacc1.
-      rewrite /mapsto_valid in Hacc2.
+      rewrite /pointsto_valid in Hacc1.
+      rewrite /pointsto_valid in Hacc2.
       apply addr2flat_eq; intuition.
     }
     destruct ok; first by iFrame.
@@ -443,7 +443,7 @@ Section proof.
     iDestruct (
       crash_borrow_wpc_nval_sepM ⊤ _ _
       (λ a vobj,
-        twophase_pre_crash_inv_pred jrnl_mapsto_own γ a (committed vobj)
+        twophase_pre_crash_inv_pred jrnl_pointsto_own γ a (committed vobj)
       )
       (
         [∗ map] a ↦ vobj ∈ mt_changed,
@@ -454,24 +454,24 @@ Section proof.
     ) as "H". (* "> [Htoks Hcrash_invs]". *)
     {
       iIntros "Hpreds".
-      iDestruct (big_sepM_sep with "Hpreds") as "[Hjrnl_mapstos Hpreds]".
+      iDestruct (big_sepM_sep with "Hpreds") as "[Hjrnl_pointstos Hpreds]".
       iDestruct (big_sepM_sep with "Hpreds")
-        as "[Hdurable_mapstos %Hcommitted_valids]".
-      iApply big_sepM_fmap in "Hdurable_mapstos".
+        as "[Hdurable_pointstos %Hcommitted_valids]".
+      iApply big_sepM_fmap in "Hdurable_pointstos".
       iDestruct (
         is_jrnl_to_old_pred' with
-        "Hjrnl_mem Hjrnl_durable_frag Hdurable_mapstos"
+        "Hjrnl_mem Hjrnl_durable_frag Hdurable_pointstos"
       ) as "?".
       iNamed.
       iApply (big_sepM_fmap committed) in "Hold_vals".
       iDestruct (big_sepM_sep with "Hold_vals")
-        as "[Htokens Hdurable_mapstos]".
+        as "[Htokens Hdurable_pointstos]".
       iModIntro.
       iFrame "∗ #".
-      iDestruct (big_sepM_sep with "[$Hdurable_mapstos $Hjrnl_mapstos]")
+      iDestruct (big_sepM_sep with "[$Hdurable_pointstos $Hjrnl_pointstos]")
         as "Hpreds".
       iApply (big_sepM_impl with "Hpreds").
-      iIntros (a vobj) "!> %Hacc [Hdurable_mapsto Hjrnl_mapsto]".
+      iIntros (a vobj) "!> %Hacc [Hdurable_pointsto Hjrnl_pointsto]".
       iFrame.
       iPureIntro.
       apply Hcommitted_valids.
@@ -483,7 +483,7 @@ Section proof.
     iDestruct (big_sepM_sep with "[$Htoks $Hcrash_invs]") as "Hcrash_invs".
     iModIntro.
     iFrame.
-    iExists _, _, _, _.
+    iExists _, _, _.
     iFrame "∗ %".
     iSplit; last by auto.
     iApply big_sepS_set_map.
@@ -495,8 +495,8 @@ Section proof.
       destruct Hacc2 as [vo2 Hacc2].
       apply Hvalids in Hacc1.
       apply Hvalids in Hacc2.
-      rewrite /mapsto_valid in Hacc1.
-      rewrite /mapsto_valid in Hacc2.
+      rewrite /pointsto_valid in Hacc1.
+      rewrite /pointsto_valid in Hacc2.
       apply addr2flat_eq; intuition.
     }
     iApply big_sepM_dom.
@@ -508,8 +508,8 @@ Section proof.
     iFrame.
     iPureIntro.
     apply Hvalids in Hacc.
-    rewrite /mapsto_valid in Hacc.
-    rewrite /mapsto_valid //.
+    rewrite /pointsto_valid in Hacc.
+    rewrite /pointsto_valid //.
   Qed.
 
   Theorem wp_Txn__ReleaseAll' l γ γ' objs_dom :
@@ -528,7 +528,7 @@ Section proof.
     from ≤ length data →
     length data < 2^64 →
     {{{
-      "Hslice" ∷ is_slice data_s t q data
+      "Hslice" ∷ own_slice data_s t q data
     }}}
       SliceToListFrom t (slice_val data_s) #from
     {{{ RET (val_of_list (drop from data));
@@ -540,7 +540,7 @@ Section proof.
     iNamed "Hpre".
     wp_call.
     wp_apply wp_slice_len.
-    iDestruct (is_slice_sz with "Hslice") as "%Hsz".
+    iDestruct (own_slice_sz with "Hslice") as "%Hsz".
     wp_let.
     wp_if_destruct.
     2: {
@@ -552,7 +552,7 @@ Section proof.
     assert (from < length data)%nat as Hbound' by (revert Heqb; word).
     apply list_lookup_lt in Hbound' as Hacc.
     destruct Hacc as [x Hacc].
-    iDestruct (is_slice_small_read with "Hslice") as "[Hslice Hrestore]".
+    iDestruct (own_slice_small_read with "Hslice") as "[Hslice Hrestore]".
     wp_apply (wp_SliceGet with "[$Hslice]").
     {
       iPureIntro.
@@ -577,7 +577,7 @@ Section proof.
   Lemma wp_SliceToList data_s t q data :
     length data < 2^64 →
     {{{
-      "Hslice" ∷ is_slice data_s t q data
+      "Hslice" ∷ own_slice data_s t q data
     }}}
       SliceToList t (slice_val data_s)
     {{{ RET (val_of_list data);
@@ -598,11 +598,11 @@ Section proof.
     length data1 + length data2 < 2^64 →
     Forall (λ v, val_ty v t) data2 →
     {{{
-      "Hslice" ∷ is_slice data1_s t 1 data1
+      "Hslice" ∷ own_slice data1_s t 1 data1
     }}}
       ListToSliceApp t (val_of_list data2) (slice_val data1_s)
     {{{ data_s, RET (slice_val data_s);
-      "Hslice" ∷ is_slice data_s t 1 (data1 ++ data2)
+      "Hslice" ∷ own_slice data_s t 1 (data1 ++ data2)
     }}}.
   Proof.
     iLöb as "IH" forall (data1_s data1 data2).
@@ -647,7 +647,7 @@ Section proof.
     }}}
       ListToSlice t (val_of_list data)
     {{{ data_s, RET (slice_val data_s);
-      "Hslice" ∷ is_slice data_s t 1 data
+      "Hslice" ∷ own_slice data_s t 1 data
     }}}.
   Proof.
     iIntros (Ht Hwf Hty Φ) "_ HΦ".
@@ -748,7 +748,7 @@ Section proof.
         "%Hin" ∷ ⌜ (jrnlAllocs σj1 !! la = Some u) ⌝ ∗
         "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
         "Htwophase" ∷ is_twophase_raw
-          l γ γ' dinit jrnl_mapsto_own objs_dom mt_changed ∗
+          l γ γ' dinit jrnl_pointsto_own objs_dom mt_changed ∗
         "#Hspec_ctx" ∷ spec_ctx ∗
         "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
         "#Hjrnl_open" ∷ jrnl_open ∗
@@ -768,7 +768,7 @@ Section proof.
     iDestruct (na_crash_inv_status_wand_sepM with "Hcrash_invs") as
       "#Hstatuses".
     iDestruct (jrnl_ctx_allocs_agree2 with "[$] [$]") as %Hlookup'.
-    efeed pose proof (always_steps_extend_allocs2); eauto.
+    opose proof (always_steps_extend_allocs2 _ _ _ _ _ _ _ _); eauto.
     { destruct Hlookup'; eauto. left. apply not_elem_of_dom; eauto. }
     clear Halways_steps.
     iDestruct (jrnl_ctx_allocs_extend with "[$] [$]") as "#Hjrnl_allocs'".
@@ -779,7 +779,7 @@ Section proof.
     iDestruct (
       crash_borrow_wpc_nval_sepM E _ _
       (λ a vobj,
-        twophase_pre_crash_inv_pred jrnl_mapsto_own γ a (committed vobj)
+        twophase_pre_crash_inv_pred jrnl_pointsto_own γ a (committed vobj)
       )
       (
         "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
@@ -794,14 +794,14 @@ Section proof.
     ) as "H". (* "> [HR Hcrash_invs]". *)
     {
       iIntros "Hpreds".
-      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_mapstos&Hpreds)".
+      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_pointstos&Hpreds)".
       iDestruct (big_sepM_sep with "Hpreds") as "(Hdurables&%Hvalids_c)".
-      iDestruct (big_sepM_sep with "Hjrnl_mapstos")
-        as "(Hjrnl_mapstos&Htoks)".
+      iDestruct (big_sepM_sep with "Hjrnl_pointstos")
+        as "(Hjrnl_pointstos&Htoks)".
       iMod (
         ghost_step_jrnl_atomically_ub'
-        with "Hspec_ctx [Hjrnl_mapstos] [] Hjrnl_allocs' [$] Hjrnl_open Hj"
-      ) as "(%Hnotstuck&Hj&Hjrnl_mapstos)".
+        with "Hspec_ctx [Hjrnl_pointstos] [] Hjrnl_allocs' [$] Hjrnl_open Hj"
+      ) as "(%Hnotstuck&Hj&Hjrnl_pointstos)".
       1-2: eassumption.
       {
         rewrite Heq_data_update.
@@ -817,14 +817,14 @@ Section proof.
       destruct Hjrnl_maps_mt as [<- _].
       rewrite !big_sepM_fmap //.
       iDestruct (big_sepM_sep with "[$Htoks $Hdurables]") as "Hpreds".
-      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_mapstos]") as "Hpreds".
+      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_pointstos]") as "Hpreds".
       iApply (big_sepM_mono with "Hpreds").
       iIntros (a vobj Hacc) "[[Htok Hdurable] Hcrash_inv]".
       iFrame.
       iPureIntro.
       apply Hvalids in Hacc.
-      rewrite /mapsto_valid in Hacc.
-      rewrite /mapsto_valid //.
+      rewrite /pointsto_valid in Hacc.
+      rewrite /pointsto_valid //.
     }
     iApply (wpc_nval_strong_mono with "H").
     iIntros "!> [HR Hcrash_invs]".
@@ -851,7 +851,7 @@ Section proof.
       (∃ σj1 σj2 mt_changed (ls: sval),
         "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
         "Htwophase" ∷ is_twophase_raw
-          l γ γ' dinit jrnl_mapsto_own objs_dom mt_changed ∗
+          l γ γ' dinit jrnl_pointsto_own objs_dom mt_changed ∗
         "#Hspec_ctx" ∷ spec_ctx ∗
         "#Hspec_crash_ctx" ∷ spec_crash_ctx jrnl_crash_ctx ∗
         "#Hjrnl_open" ∷ jrnl_open ∗
@@ -873,7 +873,7 @@ Section proof.
     iDestruct (
       crash_borrow_wpc_nval_sepM E _ _
       (λ a vobj,
-        twophase_pre_crash_inv_pred jrnl_mapsto_own γ a (committed vobj)
+        twophase_pre_crash_inv_pred jrnl_pointsto_own γ a (committed vobj)
       )
       (
         "Hj" ∷ j ⤇ K0 (Atomically ls e0) ∗
@@ -888,14 +888,14 @@ Section proof.
     ) as "H". (* "> [HR Hcrash_invs]". *)
     {
       iIntros "Hpreds".
-      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_mapstos&Hpreds)".
+      iDestruct (big_sepM_sep with "Hpreds") as "(Hjrnl_pointstos&Hpreds)".
       iDestruct (big_sepM_sep with "Hpreds") as "(Hdurables&%Hvalids_c)".
-      iDestruct (big_sepM_sep with "Hjrnl_mapstos")
-        as "(Hjrnl_mapstos&Htoks)".
+      iDestruct (big_sepM_sep with "Hjrnl_pointstos")
+        as "(Hjrnl_pointstos&Htoks)".
       iMod (
         ghost_step_jrnl_atomically_ub'
-        with "Hspec_ctx [Hjrnl_mapstos] [] Hjrnl_allocs [$] Hjrnl_open Hj"
-      ) as "(%Hnotstuck&Hj&Hjrnl_mapstos)".
+        with "Hspec_ctx [Hjrnl_pointstos] [] Hjrnl_allocs [$] Hjrnl_open Hj"
+      ) as "(%Hnotstuck&Hj&Hjrnl_pointstos)".
       1-2: eassumption.
       {
         destruct Hjrnl_maps_mt as [<- _].
@@ -907,14 +907,14 @@ Section proof.
       destruct Hjrnl_maps_mt as [<- _].
       rewrite !big_sepM_fmap //.
       iDestruct (big_sepM_sep with "[$Htoks $Hdurables]") as "Hpreds".
-      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_mapstos]") as "Hpreds".
+      iDestruct (big_sepM_sep with "[$Hpreds $Hjrnl_pointstos]") as "Hpreds".
       iApply (big_sepM_mono with "Hpreds").
       iIntros (a vobj Hacc) "[[Htok Hdurable] Hcrash_inv]".
       iFrame.
       iPureIntro.
       apply Hvalids in Hacc.
-      rewrite /mapsto_valid in Hacc.
-      rewrite /mapsto_valid //.
+      rewrite /pointsto_valid in Hacc.
+      rewrite /pointsto_valid //.
     }
     iApply (wpc_nval_strong_mono with "H").
     iIntros "!> [HR Hcrash_invs]".
@@ -1305,8 +1305,8 @@ Section proof.
     iNamed.
     wp_apply wp_slice_len.
     wp_pures.
-    iDestruct (is_slice_to_small with "Hslice") as "Hslice".
-    iDestruct (is_slice_small_sz with "Hslice") as "%Hsz".
+    iDestruct (own_slice_to_small with "Hslice") as "Hslice".
+    iDestruct (own_slice_small_sz with "Hslice") as "%Hsz".
     rewrite list_untype_length in Hsz.
 
     wp_apply (wp_Txn__OverWrite_raw with "[$Htwophase $Hslice]");
@@ -1365,7 +1365,7 @@ Section proof.
         apply Halways_steps.
       }
       apply always_steps_bind.
-      efeed pose proof always_steps_OverWriteOp as Halways_steps'.
+      opose proof (always_steps_OverWriteOp _ _ _ _ _ _ _ _) as Halways_steps'.
       1: apply Hwf_jrnl2.
       {
         destruct Hjrnl_maps_mt as (_&<-).
@@ -1399,7 +1399,7 @@ Section proof.
         destruct Hjrnl_maps_kinds as (->&_).
         split; first by eassumption.
         split; first by apply objSz_bufObj_to_obj.
-        efeed pose proof Hvalids as Hvalid;
+        opose proof (Hvalids _ _ _) as Hvalid;
           first by apply lookup_insert.
         simpl in Hvalid.
         destruct Hvalid as (_&Hvalid_off&_).
@@ -1408,7 +1408,7 @@ Section proof.
       eapply always_steps_trans; first by apply Halways_steps.
       apply always_steps_bind.
       remember (updateData σj2 a (bufObj_to_obj (committed vobj))) as σj'.
-      efeed pose proof (always_steps_OverWriteOp a data (projT1 vobj) σj')
+      opose proof (always_steps_OverWriteOp a data (projT1 vobj) σj' _ _ _ _)
         as Halways_steps'.
       {
         subst σj'.
@@ -1565,7 +1565,7 @@ Section proof.
         apply Halways_steps.
       }
       apply always_steps_bind.
-      efeed pose proof always_steps_OverWriteBitOp as Halways_steps'.
+      opose proof (always_steps_OverWriteBitOp _ _ _ _ _ _ _ _) as Halways_steps'.
       1: apply Hwf_jrnl2.
       {
         destruct Hjrnl_maps_mt as (_&<-).
@@ -1596,7 +1596,7 @@ Section proof.
         eexists _.
         destruct Hjrnl_maps_kinds as (->&_).
         split; first by eassumption.
-        efeed pose proof Hvalids as Hvalid;
+        opose proof (Hvalids _ _ _) as Hvalid;
           first by apply lookup_insert.
         simpl in Hvalid.
         destruct Hvalid as (_&Hvalid_off&_).
@@ -1608,7 +1608,7 @@ Section proof.
       eapply always_steps_trans; first by apply Halways_steps.
       apply always_steps_bind.
       remember (updateData σj2 a (bufObj_to_obj (committed vobj))) as σj'.
-      efeed pose proof (always_steps_OverWriteBitOp a o (projT1 vobj) σj')
+      opose proof (always_steps_OverWriteBitOp a o (projT1 vobj) σj' _ _ _ _)
         as Halways_steps'.
       {
         subst σj'.

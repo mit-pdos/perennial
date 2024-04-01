@@ -120,8 +120,8 @@ Section goose.
     Timeless (s_inode_inv δdur δbuf blocks).
   Proof. apply _. Qed.
 
-  (* inode_mapsto is an exclusive permission used for calls to append *)
-  Definition inode_mapsto γbuf blocks : iProp Σ :=
+  (* inode_pointsto is an exclusive permission used for calls to append *)
+  Definition inode_pointsto γbuf blocks : iProp Σ :=
     fmlist γbuf (1/2) blocks.
 
   (* inode_durable_lb is persistent and ensures that the specified list is a prefix of
@@ -130,8 +130,8 @@ Section goose.
     fmlist_lb γdur blocks ∗
     fmlist_lb γbuf blocks.
 
-  Lemma inode_mapsto_agree γbuf blocks blocks' :
-    inode_mapsto γbuf blocks -∗ inode_mapsto γbuf blocks' -∗ ⌜ blocks = blocks' ⌝.
+  Lemma inode_pointsto_agree γbuf blocks blocks' :
+    inode_pointsto γbuf blocks -∗ inode_pointsto γbuf blocks' -∗ ⌜ blocks = blocks' ⌝.
   Proof.
     iApply fmlist_agree_1.
   Qed.
@@ -142,13 +142,13 @@ Section goose.
   Definition inode_current_lb γbuf blocks : iProp Σ :=
     fmlist_lb γbuf blocks.
 
-  Lemma inode_mapsto_lb_agree γbuf blocks blocks' :
-    inode_mapsto γbuf blocks -∗ inode_current_lb γbuf blocks' -∗ ⌜ blocks' `prefix_of` blocks ⌝.
+  Lemma inode_pointsto_lb_agree γbuf blocks blocks' :
+    inode_pointsto γbuf blocks -∗ inode_current_lb γbuf blocks' -∗ ⌜ blocks' `prefix_of` blocks ⌝.
   Proof. iApply fmlist_agree_2. Qed.
 
-  Lemma inode_mapsto_append γbuf blocks blocks' :
-    inode_mapsto γbuf blocks -∗ inode_mapsto γbuf blocks ==∗
-    inode_mapsto γbuf (blocks ++ blocks') ∗ inode_mapsto γbuf (blocks ++ blocks').
+  Lemma inode_pointsto_append γbuf blocks blocks' :
+    inode_pointsto γbuf blocks -∗ inode_pointsto γbuf blocks ==∗
+    inode_pointsto γbuf (blocks ++ blocks') ∗ inode_pointsto γbuf (blocks ++ blocks').
   Proof.
     iIntros "H1 H2".
     iCombine "H1 H2" as "H".
@@ -161,7 +161,7 @@ Section goose.
     ([∗ list] i ∈ seqZ 0 sz, i d↦ block0) ={E}=∗
     let σ0 := s_inode.mk [] [] in
     ∃ γdur γbuf, s_inode_cinv γdur γbuf sz σ0 true ∗
-                 inode_mapsto γbuf [].
+                 inode_pointsto γbuf [].
   Proof.
     iIntros (Hbound) "Hd".
     replace sz with (1 + (sz - 1))%Z at 1 by lia.
@@ -246,11 +246,11 @@ Section goose.
     {{{ l, RET #l;
        ∃ γbuf', pre_s_inode γdur γbuf' l (int.Z sz) (set s_inode.buffered_blocks (λ _, []) σ0) ∗
                 (* New buf points to fact *)
-                inode_mapsto γbuf' (s_inode.durable_blocks σ0) ∗
+                inode_pointsto γbuf' (s_inode.durable_blocks σ0) ∗
                 (* Durable lb for current state *)
                 inode_durable_lb γdur γbuf' (s_inode.durable_blocks σ0) ∗
                 (* Old buf points to fact *)
-                inode_mapsto γbuf (s_inode.durable_blocks σ0 ++ s_inode.buffered_blocks σ0)
+                inode_pointsto γbuf (s_inode.durable_blocks σ0 ++ s_inode.buffered_blocks σ0)
     }}}
     {{{ s_inode_cinv γdur γbuf (int.Z sz) σ0 true }}}.
   Proof.
@@ -299,7 +299,7 @@ Section goose.
     (* reconstruct the used set from the inode *)
     wp_apply (wp_Inode__UsedBlocks with "Hused_blocks").
     iIntros (s) "(Haddrs&%Haddr_set&Hused_blocks)".
-    iDestruct (is_slice_small_read with "Haddrs") as "[Haddrs_small Haddrs]".
+    iDestruct (own_slice_small_read with "Haddrs") as "[Haddrs_small Haddrs]".
     wp_apply (wp_SetAdd with "[$Hused $Haddrs_small]").
     iIntros "[Hused Haddrs_small]".
     iSpecialize ("Haddrs" with "Haddrs_small").
@@ -417,7 +417,7 @@ Section goose.
     iModIntro.
     iSplitL "Halloc Hinode".
     { iExists _, _, _, _, _, _. iFrame "Hinode". iFrame "Halloc".
-      iFrame "# ∗". }
+      iFrame "∗#". }
     iModIntro.
     iMod "Halloc_crash" as "Halloc".
     iMod "Hinode_crash" as "Hinode".
@@ -436,7 +436,7 @@ Section goose.
   Theorem wpc_SingleInode__Read {k} (Q: option Block → iProp Σ) γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
-        "Hfupd" ∷ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗ inode_mapsto γbuf blks ∗ Q (blks !! int.nat i)
+        "Hfupd" ∷ ∀ blks, inode_pointsto γbuf blks ={⊤ ∖ ↑N}=∗ inode_pointsto γbuf blks ∗ Q (blks !! int.nat i)
     }}}
       SingleInode__Read #l #i @ (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
@@ -483,14 +483,14 @@ Section goose.
       iApply "HΦ"; iFrame.  done.
   Qed.
 
-  (* If you have the full inode_mapsto (or rather, can get it by a view-shift, then
+  (* If you have the full inode_pointsto (or rather, can get it by a view-shift, then
      you know the exact results of your read, compare with wp_Read_triple for disk *)
 
   Theorem wpc_SingleInode__Read1 {k} (Q: option Block → iProp Σ) E γdur γbuf l sz k' (i: u64) :
     (S k < k')%nat →
     {{{ "#Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
-        "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
-                                (inode_mapsto γbuf blks -∗ |={E, ⊤∖↑N}=> Q (blks !! int.nat i))
+        "Hfupd" ∷ |={⊤∖↑N, E}=> ∃ blks, inode_pointsto γbuf blks ∗
+                                (inode_pointsto γbuf blks -∗ |={E, ⊤∖↑N}=> Q (blks !! int.nat i))
     }}}
       SingleInode__Read #l #i @ (S k); ⊤
     {{{ (s:Slice.t) mb, RET (slice_val s);
@@ -503,13 +503,13 @@ Section goose.
     iIntros (? Φ Φc) "Hpre HΦ"; iNamed "Hpre".
     wpc_apply (wpc_SingleInode__Read Q with "[$Hinode Hfupd]"); try eassumption.
     { iIntros (blks) "Hpts". iMod "Hfupd" as (blks') "(Hpts'&Hclo)".
-      iDestruct (inode_mapsto_agree with "[$] [$]") as %->.
+      iDestruct (inode_pointsto_agree with "[$] [$]") as %->.
       iMod ("Hclo" with "[$]"). iFrame. eauto.
     }
     eauto.
   Qed.
 
-  (* If you have only a lower bound inode_mapsto (or rather, can get it by a view-shift), then
+  (* If you have only a lower bound inode_pointsto (or rather, can get it by a view-shift), then
      you know the exact results of your read. One can prove a corresponding thing for if the read
      is out of bounds, saying that you can get either nothing or something (and then a new lb *)
 
@@ -527,7 +527,7 @@ Section goose.
     wpc_apply (wpc_SingleInode__Read (λ mb, match mb with None => False | Some b => Q b end)%I
                  with "[$Hinode Hfupd]"); try eassumption.
     { iIntros (blks) "Hpts". iMod "Hfupd" as (blks' b Hlookup') "(Hpts'&Hclo)".
-      iDestruct (inode_mapsto_lb_agree with "[$] [$]") as %Hprefix.
+      iDestruct (inode_pointsto_lb_agree with "[$] [$]") as %Hprefix.
       iMod ("Hclo"). iFrame. iModIntro.
       eapply prefix_lookup in Hlookup'; last eassumption.
       rewrite Hlookup'. iFrame.
@@ -567,8 +567,8 @@ Section goose.
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hb" ∷ is_block b_s q b0 ∗
-        "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ={⊤ ∖ ↑N}=∗
-                                inode_mapsto γbuf (blks ++ [b0]) ∗ (<disc> ▷ Qc ∧ Q))
+        "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_pointsto γbuf blks ={⊤ ∖ ↑N}=∗
+                                inode_pointsto γbuf (blks ++ [b0]) ∗ (<disc> ▷ Qc ∧ Q))
     }}}
       SingleInode__Append #l (slice_val b_s) @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
@@ -620,8 +620,8 @@ Section goose.
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
         "Hb" ∷ is_block b_s q b0 ∗
-        "Hfupd" ∷ (<disc> ▷ Qc ∧ |={⊤ ∖ ↑N, E}=> ∃ blks, inode_mapsto γbuf blks ∗
-                                  (inode_mapsto γbuf (blks ++ [b0]) ={E, ⊤ ∖ ↑N}=∗ <disc> ▷ Qc ∧ Q))
+        "Hfupd" ∷ (<disc> ▷ Qc ∧ |={⊤ ∖ ↑N, E}=> ∃ blks, inode_pointsto γbuf blks ∗
+                                  (inode_pointsto γbuf (blks ++ [b0]) ={E, ⊤ ∖ ↑N}=∗ <disc> ▷ Qc ∧ Q))
     }}}
       SingleInode__Append #l (slice_val b_s) @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
@@ -633,8 +633,8 @@ Section goose.
       { by iLeft in "Hfupd". }
       iRight in "Hfupd".
       iIntros (blks) "Hpts". iMod "Hfupd" as (blks') "(Hpts'&Hclo)".
-      iDestruct (inode_mapsto_agree with "[$] [$]") as %->.
-      iMod (inode_mapsto_append with "Hpts' Hpts") as "($&?)".
+      iDestruct (inode_pointsto_agree with "[$] [$]") as %->.
+      iMod (inode_pointsto_append with "Hpts' Hpts") as "($&?)".
       iMod ("Hclo" with "[$]"). iModIntro; eauto.
     }
     eauto.
@@ -643,8 +643,8 @@ Section goose.
   Theorem wpc_SingleInode__Flush {k} (Q Qc: iProp Σ) γdur γbuf l sz k' :
     (S k < k')%nat →
     {{{ "Hinode" ∷ is_single_inode γdur γbuf l sz k' ∗
-        "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ={⊤ ∖ ↑N}=∗
-                                inode_mapsto γbuf blks ∗ fmlist γdur 1 blks ∗ (<disc> ▷ Qc ∧ Q))
+        "Hfupd" ∷ (<disc> ▷ Qc ∧ ∀ blks, inode_pointsto γbuf blks ∗ fmlist γdur 1 blks ={⊤ ∖ ↑N}=∗
+                                inode_pointsto γbuf blks ∗ fmlist γdur 1 blks ∗ (<disc> ▷ Qc ∧ Q))
     }}}
       SingleInode__Flush #l @ (S k); ⊤
     {{{ (ok: bool), RET #ok; if ok then Q else emp }}}
@@ -751,7 +751,7 @@ Section goose.
     { iSplit.
       * iModIntro; eauto.
       * iIntros (blks') "(Hcurr&Hdur)".
-        iDestruct (inode_mapsto_lb_agree with "[$] [$]") as %Hpre.
+        iDestruct (inode_pointsto_lb_agree with "[$] [$]") as %Hpre.
         iFrame "Hcurr".
         iMod (fmlist_get_lb with "Hdur") as "($&Hlb')".
         iDestruct (fmlist_lb_mono _ _ _ Hpre with "Hlb'") as "Hlb''".

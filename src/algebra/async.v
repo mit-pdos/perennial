@@ -11,11 +11,11 @@ Set Default Proof Using "Type".
 
 Class asyncG Σ (K V: Type) `{Countable K, EqDecision V} := {
   async_listG :> fmlistG (gmap K V) Σ;
-  async_mapG :> inG Σ (gmap_viewR K natO);
+  async_mapG :> inG Σ (gmap_viewR K (agreeR natO));
 }.
 
 Definition asyncΣ K V `{Countable K, EqDecision V} : gFunctors :=
-  #[ fmlistΣ (gmap K V); GFunctor (gmap_viewR K natO) ].
+  #[ fmlistΣ (gmap K V); GFunctor (gmap_viewR K (agreeR natO)) ].
 
 #[global]
 Instance subG_asyncΣ Σ K V `{Countable K, EqDecision V} : subG (asyncΣ K V) Σ → asyncG Σ K V.
@@ -44,9 +44,9 @@ Local Definition is_last σs k i : Prop :=
   ∃ v, lookup_async σs i k = Some v ∧
     ∀ i', i ≤ i' → i' < length (possible σs) → lookup_async σs i' k = Some v.
 Local Definition own_last_auth γ q σs : iProp Σ :=
-  ∃ (last: gmap K nat), ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth q last).
+  ∃ (last: gmap K nat), ⌜map_Forall (is_last σs) last⌝ ∗ own γ.(async_map) (gmap_view_auth q (to_agree <$> last)).
 Local Definition own_last_frag γ k i : iProp Σ :=
-  own γ.(async_map) (gmap_view_frag k (DfracOwn 1) i).
+  own γ.(async_map) (gmap_view_frag k (DfracOwn 1) (to_agree i)).
 
 (* The possible states in [σs] are tracked in a regular append-only list.
 Additionally, there is a way to control which was the last transaction that changed
@@ -107,7 +107,8 @@ Lemma own_last_frag_conflict γ k i1 i2 :
 Proof.
   rewrite /own_last_frag.
   iIntros "H1 H2".
-  iDestruct (own_valid_2 with "H1 H2") as %Hvalid%gmap_view_frag_op_valid_L.
+  iDestruct (own_valid_2 with "H1 H2") as %Hvalid.
+  apply gmap_view_frag_op_valid in Hvalid.
   iPureIntro.
   destruct Hvalid as [Hdfrac _].
   rewrite dfrac_op_own in Hdfrac.
@@ -148,10 +149,13 @@ Proof.
   - iDestruct 1 as "[H1 H2]".
     iDestruct "H1" as (last1 ?) "H1".
     iDestruct "H2" as (last2 ?) "H2".
-    iDestruct (own_valid_2 with "H1 H2") as %Hvalid%gmap_view_auth_dfrac_op_inv_L.
-    subst.
+    iDestruct (own_valid_2 with "H1 H2") as %Hvalid.
+    apply gmap_view_auth_dfrac_op_inv in Hvalid.
     iCombine "H1 H2" as "H".
-    eauto.
+    rewrite Hvalid.
+    iExists last2. iSplit; first done.
+    rewrite -gmap_view_auth_dfrac_op.
+    iFrame.
 Qed.
 
 Local Lemma lookup_async_insert_ne k k' v' m σs j :
@@ -176,13 +180,20 @@ Local Lemma own_last_shift γ σs k i i' :
 Proof.
   iIntros (Hle Hi') "Halast Hflast".
   iDestruct "Halast" as (last Hlast) "Hmap".
-  iDestruct (own_valid_2 with "Hmap Hflast") as %[_ Hk]%gmap_view_both_valid_L.
+  iDestruct (own_valid_2 with "Hmap Hflast") as %Hk.
+  apply gmap_view_both_valid in Hk. destruct Hk as (_ & _ & Hk).
   iMod (own_update_2 with "Hmap Hflast") as "[Hmap Hflast]".
-  { apply (gmap_view_update _ k i i'). }
+  { apply (gmap_view_replace _ k (to_agree i) (to_agree i')). done. }
   iModIntro. iFrame "Hflast".
+  rewrite -fmap_insert.
   iExists _. iFrame. iPureIntro. intros k' j.
   destruct (decide (k=k')) as [->|Hne].
-  - rewrite lookup_insert=>[=<-]. destruct (Hlast _ _ Hk) as (v & Hv & Htail).
+  - rewrite lookup_insert=>[=<-].
+    assert (last !! k' = Some i) as Hk'.
+    { rewrite lookup_fmap in Hk. apply fmap_Some_equiv in Hk. destruct Hk as (x & Ha & Hb).
+      apply (inj to_agree) in Hb.
+      inversion Hb. done. }
+    destruct (Hlast _ _ Hk') as (v & Hv & Htail).
     exists v. split.
     + apply Htail; lia.
     + intros i'' Hi''. apply Htail. lia.
@@ -225,9 +236,10 @@ Local Lemma own_last_update γ σs k v' m i :
 Proof.
   iIntros "Halast Hflast". iDestruct "Halast" as (last Hlast) "Hmap".
   assert ((S (length (possible σs)) - 1) = length (possible σs)) as -> by lia.
-  iMod (own_update_2 with "Hmap Hflast") as "[Hmap $]".
-  { apply (gmap_view_update _ k _ (length (possible σs))). }
-  iExists _. iFrame "Hmap". iPureIntro.
+  iMod (own_update_2 with "Hmap Hflast") as "[Hmap Hflast]".
+  { apply (gmap_view_replace _ k _ (to_agree (length (possible σs)))). done. }
+  rewrite -fmap_insert.
+  iFrame. iPureIntro.
   intros k' j. destruct (decide (k = k')) as [<-|Hne].
   - rewrite lookup_insert=>[=<-]. exists v'.
     assert (lookup_async (async_put (<[k:=v']> m) σs) (length (possible σs)) k = Some v').
@@ -372,11 +384,15 @@ Proof.
   iClear "Hval".
   iDestruct "Hauth" as "(Halast & Halist & Hflist)".
   iDestruct "Halast" as (last Hlast) "Hmap".
-  iDestruct (own_valid_2 with "Hmap Hlast") as %(_  & _ & Hmap)%gmap_view_both_dfrac_valid_L.
+  iDestruct (own_valid_2 with "Hmap Hlast") as %Hmap.
+  apply gmap_view_both_dfrac_valid_discrete_total in Hmap.
+  destruct Hmap as (v' & _ & _ & Hma & _ & Hmc).
+  rewrite lookup_fmap in Hma. apply fmap_Some in Hma. destruct Hma as (x & Hmap & ->).
+  apply to_agree_included_L in Hmc. subst.
   destruct (Hlast _ _ Hmap) as (v' & Hlookup' & Htail).
   rewrite Hlookup in Hlookup'. injection Hlookup' as [=<-].
   iApply ephemeral_lookup_txn_val; last first.
-  - rewrite /async_ctx. iFrame. iExists last. iFrame. done.
+  - rewrite /async_ctx. by iFrame.
   - apply Htail; done.
 Qed.
 
@@ -469,8 +485,12 @@ Proof.
   { apply prefix_nil. }
   iFrame "Hlb".
   iMod (own_update with "Hmap") as "Hmap".
-  { eapply (gmap_view_alloc_big _ last (DfracOwn 1)); last done.
-    apply map_disjoint_empty_r. }
+  { eapply (gmap_view_alloc_big _ (to_agree <$> last) (DfracOwn 1)). 2: done.
+    1: apply map_disjoint_empty_r.
+    apply map_Forall_lookup. intros i x Ha.
+    rewrite lookup_fmap in Ha. apply fmap_Some in Ha. destruct Ha as (y & _ & ->).
+    done.
+  }
   iDestruct "Hmap" as "[Hmap Hfrag]".
   iModIntro. iSplitR "Hfrag"; first iSplit.
   - iExists last. rewrite right_id. iFrame.
@@ -484,6 +504,7 @@ Proof.
   - iPureIntro. apply Forall_app. split; first done.
     apply Forall_singleton. done.
   - rewrite big_opM_own_1. subst last.
+    rewrite big_sepM_fmap.
     rewrite big_sepM_fmap.
     iApply (big_sepM_impl with "Hfrag"). iIntros "!#" (k v Hk) "Hfrag".
     rewrite app_length /=.

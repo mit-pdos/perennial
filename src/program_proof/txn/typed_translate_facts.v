@@ -14,9 +14,17 @@ TCB. *)
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
+Lemma valid_off_0 :
+  ∀ k, valid_off k 0.
+Proof.
+  intros.
+  rewrite /valid_off Zmod_0_l /=.
+  done.
+Qed.
+
 Lemma kind_heap0_ok kinds :
   (∀ (a: u64), a ∈ dom kinds → int.Z a * 4096 * 8 < 2^64) →
-  map_Forall  (kinds_mapsto_valid kinds) (recovery_proof.kind_heap0 kinds).
+  map_Forall  (kinds_pointsto_valid kinds) (recovery_proof.kind_heap0 kinds).
 Proof.
   intros Hdom.
   apply map_Forall_lookup => a o Hlookup.
@@ -26,7 +34,7 @@ Proof.
   rewrite option_fmap_bind in Hlookup.
   apply bind_Some in Hlookup as [k [Hlookup Ho]].
   simpl in Ho.
-  rewrite /kinds_mapsto_valid /=.
+  rewrite /kinds_pointsto_valid /=.
   split.
   - rewrite /valid_addr /=.
     rewrite /addr2flat_z /=.
@@ -55,12 +63,11 @@ Proof.
       word.
     + apply recovery_proof.lookup_block0_map in Ho as [? ?]; subst; simpl.
       split; last done.
-      rewrite /valid_off /=.
-      auto.
+      apply valid_off_0.
 Qed.
 
 Lemma wf_jrnl_alt kinds :
-  map_Forall  (kinds_mapsto_valid kinds) (recovery_proof.kind_heap0 kinds) →
+  map_Forall  (kinds_pointsto_valid kinds) (recovery_proof.kind_heap0 kinds) →
   let σj := {| jrnlData := (bufObj_to_obj <$> recovery_proof.kind_heap0 kinds);
                 jrnlKinds := kinds;
                 jrnlAllocs := ∅

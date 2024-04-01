@@ -118,14 +118,12 @@ Proof.
     wp_loadField.
     iIntros "(HP&Hk)".
     wp_apply (release_spec with "[-HΦ Hk $His_lock $His_locked]").
-    { iNext. iExists _; iFrame.
-      iExists _. iFrame. rewrite /map_del dom_delete_L. iPureIntro; congruence. }
+    { iNext. iExists _; iFrame. rewrite /map_del dom_delete_L. iPureIntro; congruence. }
     wp_pures.
     iApply "HΦ"; by iFrame.
   - wp_loadField.
     wp_apply (release_spec with "[-HΦ $His_lock $His_locked]").
-    { iNext. iExists _; iFrame.
-      iExists _. iFrame. rewrite /map_del dom_delete_L. subst.
+    { iNext. iExists _; iFrame. rewrite /map_del dom_delete_L. subst.
       iPureIntro. rewrite Hdom. set_solver. }
     wp_pures.
     iApply "HΦ"; by iFrame.
@@ -158,7 +156,7 @@ Proof.
   iNamed "Hlockinv".
   wp_loadField.
   iDestruct "Hfreemap" as (m) "[Hfreemap %Hdom]".
-  wp_apply (wp_MapInsert _ _ _ _ () with "Hfreemap"); first by auto.
+  wp_apply (wp_MapInsert _ _ () with "Hfreemap"); first by auto.
   iIntros "Hfreemap".
   iAssert (is_addrset mref (σ ∪ {[a]})) with "[Hfreemap]" as "Hfreemap".
   { iExists _; iFrame.
@@ -207,14 +205,14 @@ Definition is_crash_allocator l P Pc :=
 Theorem wpc_newAllocator Φ Φc (mref : loc) (start sz: u64) used P Pc K `{!LanguageCtx K} :
   int.Z start + int.Z sz < 2^64 →
   let σ := (rangeSet (int.Z start) (int.Z sz)) ∖ used in
-  valid_allocPred P Pc -∗
+  valid_allocPred P Pc ⊢@{_}
   P σ -∗
   is_addrset mref used -∗
   Φc ∧ (∀ l, is_crash_allocator l P Pc -∗
      WPC (K (of_val #l)) @ ⊤ {{ Φ }} {{ Φc }}) -∗
   WPC (K (New #start #sz #mref)) @ ⊤ {{ Φ }} {{ Φc ∗ Pc σ }}.
 Proof.
-  iIntros (Hbound) "#Hvalid HP Haddr HK".
+  iIntros (Hbound ?) "#Hvalid HP Haddr HK".
   iApply (wpc_crash_borrow_init_ctx' _ _ _ _ (P _) (Pc _) with "[HP]"); auto.
   { iDestruct "Hvalid" as "(?&?&?&?&Himp)". by iApply "Himp". }
   iSplit.

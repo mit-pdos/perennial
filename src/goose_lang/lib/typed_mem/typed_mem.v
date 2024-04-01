@@ -32,30 +32,30 @@ Section goose_lang.
     lia.
   Qed.
 
-  Definition struct_mapsto_def l (q:Qp) (t:ty) (v: val): iProp Σ :=
+  Definition struct_pointsto_def l (q:Qp) (t:ty) (v: val): iProp Σ :=
     (([∗ list] j↦vj ∈ flatten_struct v, (l +ₗ j) ↦{q} vj) ∗ ⌜val_ty v t⌝)%I.
-  Definition struct_mapsto_aux : seal (@struct_mapsto_def). Proof. by eexists. Qed.
-  Definition struct_mapsto := struct_mapsto_aux.(unseal).
-  Definition struct_mapsto_eq : @struct_mapsto = @struct_mapsto_def := struct_mapsto_aux.(seal_eq).
+  Definition struct_pointsto_aux : seal (@struct_pointsto_def). Proof. by eexists. Qed.
+  Definition struct_pointsto := struct_pointsto_aux.(unseal).
+  Definition struct_pointsto_eq : @struct_pointsto = @struct_pointsto_def := struct_pointsto_aux.(seal_eq).
 
-  Notation "l ↦[ t ]{ q } v" := (struct_mapsto l q t v%V)
+  Notation "l ↦[ t ]{ q } v" := (struct_pointsto l q t v%V)
                                    (at level 20, q at level 50, t at level 50,
                                     format "l  ↦[ t ]{ q }  v") : bi_scope.
-  Notation "l ↦[ t ] v" := (struct_mapsto l 1 t v%V)
+  Notation "l ↦[ t ] v" := (struct_pointsto l 1 t v%V)
                               (at level 20, t at level 50,
                                format "l  ↦[ t ]  v") : bi_scope.
 
-  Ltac unseal := rewrite ?struct_mapsto_eq /struct_mapsto_def.
+  Ltac unseal := rewrite ?struct_pointsto_eq /struct_pointsto_def.
 
-  Global Instance struct_mapsto_timeless l t q v: Timeless (l ↦[t]{q} v).
+  Global Instance struct_pointsto_timeless l t q v: Timeless (l ↦[t]{q} v).
   Proof. unseal. apply _. Qed.
 
-  Global Instance struct_mapsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{q} v)%I.
+  Global Instance struct_pointsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{q} v)%I.
   Proof. unseal. apply _. Qed.
 
-  Theorem struct_mapsto_singleton l q t v v0 :
+  Theorem struct_pointsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
-    l ↦[t]{q} v -∗ l ↦{q} v0.
+    l ↦[t]{q} v ⊢@{_} l ↦{q} v0.
   Proof.
     intros Hv.
     unseal.
@@ -64,13 +64,13 @@ Section goose_lang.
     by iIntros "[$ _]".
   Qed.
 
-  Theorem struct_mapsto_ty q l v t :
-    l ↦[t]{q} v -∗ ⌜val_ty v t⌝.
+  Theorem struct_pointsto_ty q l v t :
+    l ↦[t]{q} v ⊢@{_} ⌜val_ty v t⌝.
   Proof.
     unseal. iIntros "[_ %] !%//".
   Qed.
 
-  Theorem struct_mapsto_frac_valid l q t v :
+  Theorem struct_pointsto_frac_valid l q t v :
     0 < ty_size t →
     l ↦[t]{q} v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof.
@@ -80,11 +80,11 @@ Section goose_lang.
     destruct (flatten_struct v); simpl in *.
     - lia.
     - iDestruct "Hvals" as "[Hl _]".
-      iDestruct (heap_mapsto_frac_valid with "Hl") as %Hq.
+      iDestruct (heap_pointsto_frac_valid with "Hl") as %Hq.
       auto.
   Qed.
 
-  Local Lemma struct_mapsto_agree_flatten l t q1 v1 q2 v2 :
+  Local Lemma struct_pointsto_agree_flatten l t q1 v1 q2 v2 :
     length (flatten_struct v1) = length (flatten_struct v2) ->
     l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
     ⌜flatten_struct v1 = flatten_struct v2⌝.
@@ -103,30 +103,30 @@ Section goose_lang.
     simpl.
     iDestruct "Hl1" as "[Hx1 Hl1]".
     iDestruct "Hl2" as "[Hx2 Hl2]".
-    iDestruct (heap_mapsto_agree with "[$Hx1 $Hx2]") as "->".
+    iDestruct (heap_pointsto_agree with "[$Hx1 $Hx2]") as "->".
     setoid_rewrite loc_add_Sn.
     iDestruct ("IH" $! (l +ₗ 1) l2 with "[] Hl1 Hl2") as %->; auto.
   Qed.
 
-  Theorem struct_mapsto_agree l t q1 v1 q2 v2 :
+  Theorem struct_pointsto_agree l t q1 v1 q2 v2 :
     l ↦[t]{q1} v1 -∗ l ↦[t]{q2} v2 -∗
     ⌜v1 = v2⌝.
   Proof.
     iIntros "Hl1 Hl2".
-    iDestruct (struct_mapsto_ty with "Hl1") as %Hty1.
-    iDestruct (struct_mapsto_ty with "Hl2") as %Hty2.
+    iDestruct (struct_pointsto_ty with "Hl1") as %Hty1.
+    iDestruct (struct_pointsto_ty with "Hl2") as %Hty2.
     pose proof (val_ty_len Hty1).
     pose proof (val_ty_len Hty2).
-    iDestruct (struct_mapsto_agree_flatten with "Hl1 Hl2") as %Heq.
+    iDestruct (struct_pointsto_agree_flatten with "Hl1 Hl2") as %Heq.
     { congruence. }
     iPureIntro.
     eapply flatten_struct_inj; eauto.
   Qed.
 
-  Lemma byte_mapsto_untype l q (x: u8) :
+  Lemma byte_pointsto_untype l q (x: u8) :
     l ↦[byteT]{q} #x ⊣⊢ l ↦{q} #x.
   Proof.
-    rewrite struct_mapsto_eq /struct_mapsto_def /=.
+    rewrite struct_pointsto_eq /struct_pointsto_def /=.
     rewrite loc_add_0 right_id.
     iSplit.
     - iDestruct 1 as "[$ _]".
@@ -134,7 +134,7 @@ Section goose_lang.
       auto.
   Qed.
 
-  Theorem base_mapsto_untype {l bt q v} :
+  Theorem base_pointsto_untype {l bt q v} :
     match bt with
     | unitBT => false
     | _ => true
@@ -144,8 +144,8 @@ Section goose_lang.
     intros Hnotunit.
     iSplit.
     - iIntros "Hl".
-      iDestruct (struct_mapsto_ty with "Hl") as %Hty.
-      rewrite struct_mapsto_singleton; eauto.
+      iDestruct (struct_pointsto_ty with "Hl") as %Hty.
+      rewrite struct_pointsto_singleton; eauto.
       inv_ty; simpl; auto.
       congruence.
     - iIntros "[Hl %]".
@@ -186,19 +186,19 @@ Section goose_lang.
     { iPureIntro.
       apply _. }
     iIntros (q v Φ') "!> Hl HΦ'".
-    iDestruct (struct_mapsto_ty with "Hl") as %Hty.
-    iDestruct (base_mapsto_untype with "Hl") as "[Hl _]"; auto.
+    iDestruct (struct_pointsto_ty with "Hl") as %Hty.
+    iDestruct (base_pointsto_untype with "Hl") as "[Hl _]"; auto.
     wp_apply (wp_load with "Hl").
     iIntros "Hl".
     iApply "HΦ'".
-    iApply (base_mapsto_untype with "[$Hl]"); eauto.
+    iApply (base_pointsto_untype with "[$Hl]"); eauto.
   Qed.
 
-  Theorem struct_mapsto_prod q l v1 t1 v2 t2 :
+  Theorem struct_pointsto_prod q l v1 t1 v2 t2 :
     l ↦[t1 * t2]{q} (v1, v2) ⊣⊢ l ↦[t1]{q} v1 ∗ (l +ₗ ty_size t1) ↦[t2]{q} v2.
   Proof.
     unseal.
-    rewrite /struct_mapsto /= big_opL_app.
+    rewrite /struct_pointsto /= big_opL_app.
     iSplit.
     - iIntros "[[Hv1 Hv2] %]".
       inversion H; subst; clear H.
@@ -327,12 +327,12 @@ Section goose_lang.
 
   Lemma tac_wp_load_ty Δ Δ' s E i K l q t v Φ :
     MaybeIntoLaterNEnvs 1 Δ Δ' →
-    envs_lookup i Δ' = Some (false, struct_mapsto l q t v)%I →
+    envs_lookup i Δ' = Some (false, struct_pointsto l q t v)%I →
     envs_entails Δ' (WP fill K (Val v) @ s; E {{ Φ }}) →
     envs_entails Δ (WP fill K (load_ty t (LitV l)) @ s; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal=> ???.
-    rewrite -wp_bind. eapply bi.wand_apply; first exact: wp_LoadAt.
+    rewrite -wp_bind. eapply bi.wand_apply; first by apply bi.wand_entails, wp_LoadAt.
     rewrite into_laterN_env_sound -bi.later_sep envs_lookup_split //; simpl.
     by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
@@ -436,22 +436,22 @@ Section goose_lang.
   Proof.
     intros Hty.
     rewrite envs_entails_unseal=> ????.
-    rewrite -wp_bind. eapply bi.wand_apply; first by eapply wp_StoreAt.
+    rewrite -wp_bind. eapply bi.wand_apply; first by eapply bi.wand_entails, wp_StoreAt.
     rewrite into_laterN_env_sound -bi.later_sep envs_simple_replace_sound //; simpl.
     rewrite right_id. by apply bi.later_mono, bi.sep_mono_r, bi.wand_mono.
   Qed.
 
 End goose_lang.
 
-Notation "l ↦[ t ]{ q } v" := (struct_mapsto l q t v%V)
+Notation "l ↦[ t ]{ q } v" := (struct_pointsto l q t v%V)
                                  (at level 20, q at level 50, t at level 50,
                                   format "l  ↦[ t ]{ q }  v") : bi_scope.
-Notation "l ↦[ t ] v" := (struct_mapsto l 1 t v%V)
+Notation "l ↦[ t ] v" := (struct_pointsto l 1 t v%V)
                             (at level 20, t at level 50,
                              format "l  ↦[ t ]  v") : bi_scope.
 
 Tactic Notation "wp_load" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_]{_} _)%I) => l end in
     iAssumptionCore || fail "wp_load: cannot find" l "↦[t] ?" in
   wp_pures;
@@ -461,13 +461,13 @@ Tactic Notation "wp_load" :=
       [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty _ _ _ _ _ K))
       |fail 1 "wp_load: cannot find 'load_ty' in" e];
     [tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |wp_finish]
   | _ => fail "wp_load: not a 'wp'"
   end.
 
 Tactic Notation "wp_store" :=
-  let solve_mapsto _ :=
+  let solve_pointsto _ :=
     let l := match goal with |- _ = Some (_, (?l ↦[_] _)%I) => l end in
     iAssumptionCore || fail "wp_store: cannot find" l "↦[t] ?" in
   wp_pures;
@@ -478,7 +478,7 @@ Tactic Notation "wp_store" :=
       |fail 1 "wp_store: cannot find 'store_ty' in" e];
     [val_ty
     |tc_solve
-    |solve_mapsto ()
+    |solve_pointsto ()
     |pm_reflexivity
     |first [wp_seq|wp_finish]]
   | _ => fail "wp_store: not a 'wp'"

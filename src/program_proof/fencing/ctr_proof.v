@@ -8,7 +8,7 @@ From iris.base_logic Require Export mono_nat.
 From Perennial.goose_lang Require Import proph.
 From Perennial.goose_lang Require Import prelude.
 
-From Perennial.program_proof.fencing Require Export map.
+From Perennial.algebra Require Export map.
 
 Section ctr_definitions.
 
@@ -483,7 +483,6 @@ Defined.
 
 Definition Put_spec_erpc γ : eRPCSpec :=
   {|
-    espec_rpcid := 1;
     espec_ty := (list u8 → iProp Σ);
     espec_Pre := λ Φ reqData, Put_spec γ reqData Φ;
     espec_Post := λ Φ reqData retData, (Φ retData);
@@ -501,10 +500,10 @@ Next Obligation.
 Defined.
 
 Definition is_host (host:u64) γ : iProp Σ :=
-  handler_spec γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
-  handler_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (Put_spec_erpc γ) ∗
-  handler_spec γ.(urpc_gn) host (U64 2) (GetFreshCID_spec γ) ∗
-  handlers_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
+  is_urpc_spec_pred γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
+  is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (U64 1) (Put_spec_erpc γ) ∗
+  is_urpc_spec_pred γ.(urpc_gn) host (U64 2) (GetFreshCID_spec γ) ∗
+  is_urpc_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
 .
 
 Definition own_Clerk γ (ck:loc) : iProp Σ :=
@@ -554,7 +553,7 @@ Proof.
   wp_pures.
   iNamed "Hck".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_sl".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_sl".
 
   iMod (own_alloc (DfracOwn 1)) as (γreq_op_gn) "HreqTok".
   { done. }
@@ -613,15 +612,14 @@ Proof.
     }
   }
 
-  wp_apply (wp_Client__Call _ _ _ _ _ _ _ _ _ _
+  wp_apply (wp_Client__Call_pred _ _ _ _ _ _ _ _ _ _
                           (λ (l:list u8), ∃ v e, ⌜has_GetReply_encoding l e v⌝ ∗
                                   if (decide (e = (U64 0) ∧ v = prophVal)) then
                                     operation_receipt _
                                   else
                                     True)%I
-             with "[] [$Hreq_sl $Hrep $Hcl_is HgetInv]").
-  { iDestruct "Hhost" as "[$ _]". }
-  {
+             with "[$Hreq_sl $Hrep Hcl_is HgetInv]").
+  { iFrame "Hcl_is". iDestruct "Hhost" as "[$ _]".
     iModIntro.
     iNext.
     rewrite /Get_proph_spec.
@@ -641,7 +639,7 @@ Proof.
     }
   }
 
-  iIntros (errCode) "(_ & Hreq_sl & Hpost)".
+  iIntros (errCode) "(Hreq_sl & Hpost)".
 
   wp_pures.
   destruct errCode.
@@ -817,10 +815,10 @@ Proof.
         {
           iNext.
           iRight.
-          iFrame "#∗".
+          iFrame "∗#".
         }
         iModIntro.
-        iFrame "#∗".
+        iFrame "∗#".
       }
       iDestruct "Hi" as "[HopIncomplete [[HneIncomplete Hgood] | Hi]]"; last first.
       { (* the request was run previously, but the Get fupd wasn't fired
@@ -834,7 +832,7 @@ Proof.
         iLeft.
         iFrame.
         iRight.
-        iFrame "#∗".
+        iFrame "∗#".
       }
       iEval (rewrite /EnterNewEpoch_spec) in "Hgood".
       iMod "Hgood".
@@ -1246,7 +1244,7 @@ Proof.
 
   iNamed "Hck".
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_small".
   wp_apply (wp_erpc_NewRequest (Put_spec_erpc γ)
       (λ l, ∃ err, ⌜has_PutReply_encoding l err⌝ ∗
       if (decide (err = 0)) then
@@ -1301,14 +1299,11 @@ Proof.
   iIntros (rep_ptr) "Hrep".
   wp_pures.
   wp_loadField.
-  iDestruct (is_slice_to_small with "Hreq_sl") as "Hreq_small".
+  iDestruct (own_slice_to_small with "Hreq_sl") as "Hreq_small".
   iDestruct "Hhost" as "(Hhost1 & #Hhost_erpc & Hhost2)".
-  wp_apply (wp_Client__Call_uRPCSpec with "Hhost_erpc [$Hrep $Hreq_small $Hcl_is]").
-  { done. }
-  {
-    iFrame "#".
-  }
-  iIntros (err) "(_ & Hreq_urpc_sl & Hpost)".
+  wp_apply (wp_Client__Call with "[Hhost_erpc $Hrep $Hreq_small Hcl_is]").
+  { iFrame "#". }
+  iIntros (err) "(Hreq_urpc_sl & Hpost)".
   wp_pures.
 
   destruct err.
@@ -1382,7 +1377,7 @@ Proof.
   wp_storeField.
   wp_storeField.
 
-  wp_apply (map.wp_NewMap).
+  wp_apply (map.wp_NewMap u64).
   iIntros (handlers) "Hhandlers".
 
   wp_pures.
@@ -1420,7 +1415,7 @@ Proof.
   }
   iMod "HH" as "#His_srv".
 
-  wp_apply (wp_StartServer with "[$Hr]").
+  wp_apply (wp_StartServer_pred with "[$Hr]").
   {
     set_solver.
   }
@@ -1440,10 +1435,10 @@ Proof.
     {
       simpl. iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec.
-      iIntros (???????) "!# Hpre HΦ".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hpre)".
       wp_apply (wp_new_enc).
       iIntros (enc) "Henc".
       wp_pures.
@@ -1457,9 +1452,8 @@ Proof.
       wp_pures.
 
       wp_apply (wp_Enc__Finish with "Henc").
-      iClear "Hrep_sl".
       iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
       iApply "HΦ".
       iFrame.
@@ -1470,11 +1464,12 @@ Proof.
     iApply (big_sepM_insert_2 with "").
     {
       simpl. iExists _; iFrame "#".
+      iApply urpc_handler_to_handler.
       iApply "Hput_erpc_to_urpc".
       clear Φ.
-      iIntros (???????) "!# Hpre HΦ".
+      iIntros (?????) "!# Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hpre)".
       iDestruct "Hpre" as (??) "[%HreqEnc Hpre]".
 
       (* TODO: put this in another lemma *)
@@ -1512,9 +1507,8 @@ Proof.
       wp_pures.
       simpl.
       wp_apply (wp_Enc__Finish with "Henc").
-      iClear "Hrep_sl".
       iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
       iModIntro.
       iApply "HΦ".
@@ -1526,10 +1520,10 @@ Proof.
     {
       simpl. iExists _; iFrame "#".
       clear Φ.
-      unfold impl_handler_spec.
-      iIntros (???????) "!# Hpre HΦ".
+      unfold is_urpc_handler_pred.
+      iIntros (?????) "!# Hpre HΦ".
       wp_pures.
-      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hrep_sl & Hpre)".
+      iDestruct "Hpre" as "(Hreq_small & Hrep_ptr & Hpre)".
       iDestruct "Hpre" as (????) "[%HreqEnc Hpre]".
 
       wp_apply (wp_new_dec with "[$Hreq_small]").
@@ -1572,9 +1566,8 @@ Proof.
       { done. }
       iIntros "Henc".
       wp_apply (wp_Enc__Finish with "Henc").
-      iClear "Hrep_sl".
       iIntros (rep_sl repData) "(%HrepEnc & %HrepLen & Hrep_sl)".
-      iDestruct (is_slice_to_small with "Hrep_sl") as "Hrep_small".
+      iDestruct (own_slice_to_small with "Hrep_sl") as "Hrep_small".
       wp_store.
       iApply "HΦ".
       iModIntro.
@@ -1620,14 +1613,16 @@ Proof.
   wp_pures.
   wp_apply (wp_NewSlice).
   iIntros (dummy_sl) "Hdummy_sl".
-  iDestruct (is_slice_to_small with "Hdummy_sl") as "Hargs_small".
+  iDestruct (own_slice_to_small with "Hdummy_sl") as "Hargs_small".
   wp_loadField.
 
-  wp_apply (wp_Client__Call _ _ _ _ _ _ _ _ _ _ (λ l, (∃ cid, erpc_make_client_pre γ.(erpc_gn) cid ∗ ⌜has_encoding l [EncUInt64 cid]⌝))%I with "[] [$His_cl $Hargs_small $Hrep]").
+  wp_apply (wp_Client__Call_pred _ _ _ _ _ _ _ _ _ _
+                (λ l, (∃ cid, erpc_make_client_pre γ.(erpc_gn) cid ∗
+                              ⌜has_encoding l [EncUInt64 cid]⌝))%I
+             with "[His_cl $Hargs_small $Hrep]").
   {
+    iFrame "#".
     iDestruct "Hhost" as "(_ & _ & $ & _)".
-  }
-  {
     iModIntro.
     iNext.
     simpl.
@@ -1635,7 +1630,7 @@ Proof.
     iExists _; iFrame.
     done.
   }
-  iIntros (err) "(_ & Hargs_small & Hpost)".
+  iIntros (err) "(Hargs_small & Hpost)".
   wp_pures.
   destruct err.
   { (* error *)

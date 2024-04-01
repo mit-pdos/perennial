@@ -1,20 +1,17 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Export reconnectclient.
-From Perennial.program_proof.grove_shared Require Export urpc_proof urpc_spec.
+From Perennial.program_proof.grove_shared Require Export urpc_proof.
 
 Section proof.
 
 Context `{!heapGS Σ}.
 Context `{!urpcregG Σ}.
 
-Definition own_ReconnectingClient ck host mu : iProp Σ :=
-  ∃ (valid:bool) (urpcCl:loc) (making:bool) (made_cond:loc),
+Definition own_ReconnectingClient ck host : iProp Σ :=
+  ∃ (valid:bool) (urpcCl:loc),
   "Hvalid" ∷ ck ↦[ReconnectingClient :: "valid"] #valid ∗
   "HurpcCl" ∷ ck ↦[ReconnectingClient :: "urpcCl"] #urpcCl ∗
-  "#Hcl" ∷ □(if valid then is_uRPCClient urpcCl host else True) ∗
-  "Hmaking" ∷ ck ↦[ReconnectingClient :: "making"] #making ∗
-  "Hmade_cond" ∷ ck ↦[ReconnectingClient :: "made_cond"] #made_cond ∗
-  "#Hmade_cond_cond" ∷ is_cond made_cond mu
+  "#Hcl" ∷ □(if valid then is_uRPCClient urpcCl host else True)
 .
 
 Definition reconnectN := nroot .@ "reconnect".
@@ -23,7 +20,7 @@ Definition is_ReconnectingClient ck (host:u64) : iProp Σ :=
   ∃ mu,
     "#Haddr" ∷ readonly (ck ↦[ReconnectingClient :: "addr"] #host) ∗
     "#Hmu" ∷ readonly (ck ↦[ReconnectingClient :: "mu"] mu) ∗
-    "#HmuInv" ∷ is_lock reconnectN mu (own_ReconnectingClient ck host mu)
+    "#HmuInv" ∷ is_lock reconnectN mu (own_ReconnectingClient ck host)
 .
 
 Lemma wp_getClient ck host :
@@ -32,7 +29,7 @@ Lemma wp_getClient ck host :
   }}}
    ReconnectingClient__getClient #ck
   {{{
-       urpcCl, RET #urpcCl; is_uRPCClient urpcCl host
+       (err: u64) urpcCl, RET (#err, #urpcCl); if (decide (err = 0)) then is_uRPCClient urpcCl host else True
   }}}
 .
 Proof.
@@ -50,15 +47,11 @@ Proof.
     wp_loadField.
     wp_loadField.
     wp_apply (release_spec with "[- HΦ]").
-    { iFrame "HmuInv ∗".
-      repeat iExists _.
-      iFrame "∗#".
-    }
-    wp_pures.
-    by iApply "HΦ".
+    { iFrame "HmuInv ∗ #". }
+    wp_pures. by iApply "HΦ".
   }
+
   (* else make a new one *)
-  wp_storeField.
   wp_loadField.
   wp_apply (release_spec with "[- HΦ]").
   { iFrame "HmuInv ∗".
@@ -74,7 +67,6 @@ Proof.
 
   iAssert (∃ (cl_ptr:loc), "HnewRpcCl" ∷ newRpcCl ↦[ptrT] #cl_ptr)%I with "[HnewRpcCl]" as "HH".
   { iExists _; iFrame. }
-  wp_forBreak.
   wp_pures.
   wp_apply (wp_ref_of_zero).
   { done. }
@@ -88,65 +80,66 @@ Proof.
   iNamed "HH".
   wp_store.
   wp_load.
+
+  wp_apply (wp_If_join emp).
+  { iSplit.
+    - iIntros. wp_apply wp_Sleep. done.
+    - iIntros. wp_pures. done.
+  }
+  iIntros "_".
+
+  wp_pures.
+  wp_loadField.
+  wp_apply (acquire_spec with "HmuInv").
+  iIntros "[Hlocked Hown]".
+
+  wp_load.
+  iClear "Hcl".
+  iNamed "Hown".
   wp_if_destruct.
-  {
-    destruct (decide _); last by exfalso.
-    iRight.
-    iModIntro.
-    iSplitR; first done.
+  - destruct (decide _); last by exfalso.
+    wp_load.
+    wp_storeField.
+    wp_storeField.
+    wp_loadField.
     iDestruct "Hnewcl" as "#Hnewcl".
-    wp_pures.
-    wp_loadField.
-    wp_apply (acquire_spec with "HmuInv").
-    iIntros "[Hlocked Hown]".
-    iNamed "Hown".
-    wp_pures.
+    wp_apply (release_spec with "[- HΦ HnewRpcCl Herr]").
+    { iFrame "HmuInv ∗ #". }
+
     wp_load.
-    wp_storeField.
-    iClear "Hcl Hmade_cond_cond".
-    iNamed "Hown".
-    wp_loadField.
-    wp_apply (wp_condBroadcast with "Hmade_cond_cond").
-    wp_pures.
-    wp_storeField.
-    wp_storeField.
-    wp_loadField.
-    wp_apply (release_spec with "[- HΦ HnewRpcCl]").
-    { iFrame "HmuInv ∗".
-      repeat iExists _.
-      iFrame "∗#".
-    }
-    wp_pures.
     wp_load.
-    by iApply "HΦ".
-  }
-  {
-    wp_apply wp_Sleep.
     wp_pures.
-    iLeft.
-    iModIntro.
-    iSplitR; first done.
-    iFrame.
-    iExists _; iFrame.
-  }
+    iApply "HΦ".
+    by iFrame "#".
+  - wp_loadField.
+    wp_apply (release_spec with "[- HΦ HnewRpcCl Herr]").
+    { iFrame "HmuInv ∗ #". }
+
+    wp_load.
+    wp_load.
+    wp_pures.
+    iApply "HΦ".
+    destruct (decide _).
+    { exfalso. congruence. }
+    done.
 Qed.
 
 Lemma wp_ReconnectingClient__Call2 γsmap q (cl_ptr:loc) (rpcid:u64) (host:u64) req rep_out_ptr
       (timeout_ms : u64) dummy_sl_val (reqData:list u8) Spec Φ :
   is_ReconnectingClient cl_ptr host -∗
-  handler_spec γsmap host rpcid Spec -∗
-  is_slice_small req byteT q reqData -∗
+  is_urpc_spec_pred γsmap host rpcid Spec -∗
+  own_slice_small req byteT q reqData -∗
   rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗
   □(▷ Spec reqData (λ reply,
-       is_slice_small req byteT q reqData -∗
+       own_slice_small req byteT q reqData -∗
         ∀ rep_sl,
           rep_out_ptr ↦[slice.T byteT] (slice_val rep_sl) -∗
-          is_slice_small rep_sl byteT 1 reply -∗
+          own_slice_small rep_sl byteT 1 reply -∗
           Φ #0)
   ) -∗
   (
    ∀ (err:u64), ⌜err ≠ 0⌝ →
-                is_slice_small req byteT q reqData -∗
+                own_slice_small req byteT q reqData -∗
                 rep_out_ptr ↦[slice.T byteT] dummy_sl_val -∗ Φ #err
   ) -∗
   WP ReconnectingClient__Call #cl_ptr #rpcid (slice_val req) #rep_out_ptr #timeout_ms {{ Φ }}.
@@ -155,11 +148,21 @@ Proof.
   iIntros.
   wp_call.
   wp_apply (wp_getClient with "[$]").
-  iIntros.
+  iIntros (??) "Hcl".
   wp_pures.
-  wp_apply (wp_Client__Call with "[$] [$Hsl $Hrep]").
-  { iFrame "#". }
-  iIntros (?) "(? & Hsl & HΦ)".
+
+  wp_if_destruct.
+  { destruct (decide _).
+    { exfalso. congruence. }
+    iApply ("HΦerr" with "[] Hsl Hrep").
+    done.
+  }
+
+  destruct (decide _); last by exfalso.
+  iDestruct "Hcl" as "#Hcl".
+  wp_apply (wp_Client__Call_pred with "[Hsl Hrep]").
+  { iFrame "∗#". }
+  iIntros (?) "(Hsl & HΦ)".
   wp_pures.
   wp_if_destruct.
   {
@@ -167,11 +170,14 @@ Proof.
     wp_loadField.
     wp_apply (acquire_spec with "HmuInv").
     iIntros "[Hlocked Hown]".
+
+    iClear "Hcl".
+    clear urpcCl.
     iNamed "Hown".
     wp_pures.
     wp_storeField.
     wp_loadField.
-    wp_apply (release_spec with "[Hlocked Hvalid Hmaking HurpcCl Hmade_cond]").
+    wp_apply (release_spec with "[Hlocked Hvalid HurpcCl]").
     {
       iFrame "HmuInv Hlocked".
       iNext. repeat iExists _.
@@ -228,11 +234,6 @@ Proof.
   wp_apply (wp_new_free_lock).
   iIntros (?) "HmuInv".
   wp_storeField.
-  wp_storeField.
-  wp_storeField.
-  wp_loadField.
-  wp_apply (wp_newCond' with "HmuInv").
-  iIntros (?) "[HmuInv #Hcond]".
   wp_storeField.
   wp_storeField.
   iApply "HΦ".

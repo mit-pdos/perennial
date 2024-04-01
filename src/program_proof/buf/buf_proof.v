@@ -28,10 +28,10 @@ Implicit Types (stk:stuckness) (E: coPset).
 
 Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ :=
   match d with
-  | bufBit b => ∃ (b0 : u8), slice.is_slice_small s u8T 1 (#b0 :: nil) ∗
+  | bufBit b => ∃ (b0 : u8), slice.own_slice_small s u8T 1 (#b0 :: nil) ∗
     ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
-  | bufInode i => slice.is_slice_small s u8T 1 (inode_to_vals i)
-  | bufBlock b => slice.is_slice_small s u8T 1 (Block_to_vals b)
+  | bufInode i => slice.own_slice_small s u8T 1 (inode_to_vals i)
+  | bufBlock b => slice.own_slice_small s u8T 1 (Block_to_vals b)
   end.
 
 Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : Slice.t) : iProp Σ :=
@@ -85,7 +85,7 @@ Definition data_has_obj (data: list byte) (a:addr) (obj: object) : Prop :=
 
 Theorem data_has_obj_to_buf_data s a obj data :
   data_has_obj data a obj →
-  is_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
+  own_slice_small s u8T 1 data -∗ is_buf_data s (objData obj) a.
 Proof.
   rewrite /data_has_obj /is_buf_data.
   iIntros (?) "Hs".
@@ -98,7 +98,7 @@ Proof.
 Qed.
 
 Theorem is_buf_data_has_obj s a obj :
-  is_buf_data s (objData obj) a ⊣⊢ ∃ data, is_slice_small s u8T 1 data ∗
+  is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice_small s u8T 1 data ∗
                                            ⌜data_has_obj data a obj⌝.
 Proof.
   iSplit; intros.
@@ -126,7 +126,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _. iFrame. iExists _. iFrame. done.
+  iExists _. iFrame. done.
 Qed.
 
 Theorem wp_buf_loadField_addr bufptr a b stk E :
@@ -144,7 +144,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _; iFrame. iExists _; iFrame. done.
+  iExists _; iFrame. done.
 Qed.
 
 Theorem wp_buf_loadField_dirty bufptr a b stk E :
@@ -162,7 +162,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iExists _; iFrame. iExists _; iFrame. done.
+  iExists _; iFrame. done.
 Qed.
 
 Theorem wp_buf_wd_loadField_sz bufptr a b dataslice stk E :
@@ -241,7 +241,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_loadField.
   iApply "HΦ".
-  iFrame. iExists _; iFrame. done.
+  iFrame. done.
 Qed.
 
 Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k') stk E :
@@ -262,7 +262,7 @@ Proof using.
   iNamed "Hisbuf_without_data".
   wp_storeField.
   iApply "HΦ".
-  iExists _; iFrame. iExists _; iFrame. intuition subst. done.
+  iExists _; iFrame. intuition subst. done.
 Qed.
 
 Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list val :=
@@ -288,12 +288,12 @@ Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop
       get_bit b0 (word.modu off 8) = d
   end.
 
-Lemma buf_mapsto_non_null b a:
+Lemma buf_pointsto_non_null b a:
   b ↦[Buf :: "Addr"] addr2val a -∗ ⌜ b ≠ null ⌝.
 Proof.
   iIntros "Hb.a".
-  iDestruct (heap_mapsto_non_null with "[Hb.a]") as %Hnotnull.
-  { rewrite struct_field_mapsto_eq /struct_field_mapsto_def //= struct_mapsto_eq /struct_mapsto_def.
+  iDestruct (heap_pointsto_non_null with "[Hb.a]") as %Hnotnull.
+  { rewrite struct_field_pointsto_eq /struct_field_pointsto_def //= struct_pointsto_eq /struct_pointsto_def.
     iDestruct "Hb.a" as "[[[Hb _] _] _]".
     repeat rewrite loc_add_0. iFrame. }
   eauto.
@@ -319,21 +319,16 @@ Proof using.
   iApply "HΦ".
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
 
-  iDestruct (buf_mapsto_non_null with "[$]") as %Hnotnull.
+  iDestruct (buf_pointsto_non_null with "[$]") as %Hnotnull.
 
-  iExists _. iFrame.
-  iExists _. iFrame.
-  iSplitL; try done.
-  iSplitL; try done.
-
-  iPureIntro. congruence.
+  iExists _. iFrame. eauto with congruence.
 Qed.
 
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) stk E :
   {{{
-    slice.is_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
+    slice.own_slice_small s u8T 1%Qp (Block_to_vals blk) ∗
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
     ⌜ valid_addr a ⌝
   }}}
@@ -346,7 +341,7 @@ Proof using.
   iIntros (Φ) "(Hs & % & %) HΦ".
   wp_call.
 
-  iDestruct (slice.is_slice_small_sz with "Hs") as "%".
+  iDestruct (slice.own_slice_small_sz with "Hs") as "%".
   destruct H as [Hoff Hatoff].
 
   wp_apply (slice.wp_SliceSubslice_small with "[$Hs]").
@@ -388,7 +383,7 @@ Proof using.
   iApply "HΦ". iModIntro.
   iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
 
-  iDestruct (buf_mapsto_non_null with "[$]") as %Hnotnull.
+  iDestruct (buf_pointsto_non_null with "[$]") as %Hnotnull.
   iExists _.
   iSplitR "Hs".
   { iExists _. rewrite /=. iFrame. iPureIntro. intuition eauto. congruence. }
@@ -442,16 +437,16 @@ Opaque PeanoNat.Nat.div.
       change (Z.to_nat 8) with 8%nat.
       change (Z.to_nat 128) with 128%nat.
       change (128 * 8)%nat with (8 * 128)%nat.
-      rewrite -Nat.div_div; try word.
+      rewrite -Nat.Div0.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.mod_mul_r in Hy; try word.
+        rewrite Nat.Div0.mod_mul_r in Hy; try word.
       }
-      apply Nat.div_exact in Hx; try word.
+      apply Nat.Div0.div_exact in Hx; try word.
     }
     f_equal.
     {
@@ -465,29 +460,29 @@ Opaque PeanoNat.Nat.div.
       change (Z.to_nat (128*8-1)) with (128*8-1)%nat.
 
       replace (128 * 8)%nat with (8 * 128)%nat by reflexivity.
-      rewrite -Nat.div_div; try word.
+      rewrite -Nat.Div0.div_div; try word.
       assert ((int.nat (addrOff a) `div` 8) `mod` 128 = 0)%nat as Hx.
       {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.mod_mul_r in Hy; try word.
+        rewrite Nat.Div0.mod_mul_r in Hy; try word.
       }
-      apply Nat.div_exact in Hx; try word.
+      apply Nat.Div0.div_exact in Hx; try word.
       rewrite Nat.mul_comm in Hx.
       replace (S ((int.nat (addrOff a) `div` 8) `div` 128) * 128)%nat
          with (((int.nat (addrOff a) `div` 8) `div` 128) * 128 + 128)%nat by lia.
       rewrite -Hx.
 
-      edestruct (Nat.div_exact (int.nat (addrOff a)) 8) as [_ Hz]; first by lia.
+      edestruct (Nat.Div0.div_exact (int.nat (addrOff a)) 8) as [_ Hz].
       rewrite -> Hz at 1.
       2: {
         replace (int.Z (addrOff a)) with (Z.of_nat (int.nat (addrOff a))) in Hoff by word.
         rewrite -Nat2Z.inj_mod in Hoff; try word.
         assert (int.nat (addrOff a) `mod` 1024 = 0)%nat as Hy by lia.
         replace (1024)%nat with (8*128)%nat in Hy by reflexivity.
-        rewrite Nat.mod_mul_r in Hy; try word.
+        rewrite Nat.Div0.mod_mul_r in Hy; try word.
       }
 
       rewrite Nat.mul_comm. rewrite -> Nat.div_add_l by lia.
@@ -681,7 +676,7 @@ Proof. intros x1 x2 x3. lia. Qed.
 Lemma Nat_div_exact_2 : ∀ a b : nat, (b ≠ 0 → a `mod` b = 0 → a = b * a `div` b)%nat.
 Proof.
   intros.
-  apply Nat.div_exact; auto.
+  apply Nat.Div0.div_exact; auto.
 Qed.
 
 Lemma Z_mod_1024_to_div_8 (z:Z) :
@@ -891,14 +886,14 @@ Theorem wp_installBit
         (dst_s: Slice.t)  (dst_bs: list u8) (* destination *)
         (dstoff: u64) (* the offset we're modifying, in bits *) stk E :
   (int.Z dstoff < 8 * Z.of_nat (length dst_bs)) →
-  {{{ is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs  }}}
+  {{{ own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT 1 dst_bs  }}}
     installBit (slice_val src_s) (slice_val dst_s) #dstoff @ stk; E
   {{{ RET #();
       let dst_bs' :=
           alter
             (λ dst, install_one_bit src_b dst (Z.to_nat $ int.Z dstoff `mod` 8))
             (Z.to_nat $ int.Z dstoff `div` 8) dst_bs in
-      is_slice_small src_s byteT q [src_b] ∗ is_slice_small dst_s byteT 1 dst_bs' }}}.
+      own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT 1 dst_bs' }}}.
 Proof.
   iIntros (Hbound Φ) "Hpre HΦ".
   iDestruct "Hpre" as "[Hsrc Hdst]".
@@ -939,23 +934,23 @@ Theorem wp_installBytes
         (nbit: u64)   (* the number of bits we're modifying *) stk E :
   int.Z nbit `div` 8 ≤ Z.of_nat (length src_bs) →
   int.Z dstoff `div` 8 + int.Z nbit `div` 8 ≤ Z.of_nat (length dst_bs) →
-  {{{ is_slice_small src_s byteT q src_bs ∗
-      is_slice_small dst_s byteT 1 dst_bs
+  {{{ own_slice_small src_s byteT q src_bs ∗
+      own_slice_small dst_s byteT 1 dst_bs
   }}}
     installBytes (slice_val src_s) (slice_val dst_s) #dstoff #nbit @ stk; E
-  {{{ RET #(); is_slice_small src_s byteT q src_bs ∗
+  {{{ RET #(); own_slice_small src_s byteT q src_bs ∗
                let src_bs' := take (Z.to_nat $ int.Z nbit `div` 8) src_bs in
                let dst_bs' := list_inserts (Z.to_nat $ int.Z dstoff `div` 8) src_bs' dst_bs in
-               is_slice_small dst_s byteT 1 dst_bs'
+               own_slice_small dst_s byteT 1 dst_bs'
   }}}.
 Proof.
   intros Hnbound Hdst_has_space.
   iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "[Hsrc Hdst]".
   wp_call.
-  iDestruct (is_slice_small_sz with "Hsrc") as %Hsrc_sz.
-  iDestruct (is_slice_small_wf with "Hsrc") as %Hsrc_wf.
-  iDestruct (is_slice_small_sz with "Hdst") as %Hdst_sz.
-  iDestruct (is_slice_small_wf with "Hdst") as %Hdst_wf.
+  iDestruct (own_slice_small_sz with "Hsrc") as %Hsrc_sz.
+  iDestruct (own_slice_small_wf with "Hsrc") as %Hsrc_wf.
+  iDestruct (own_slice_small_sz with "Hdst") as %Hdst_sz.
+  iDestruct (own_slice_small_wf with "Hdst") as %Hdst_wf.
   wp_apply wp_SliceTake; first by word.
   wp_pures.
   wp_apply wp_SliceSkip; first by word.
@@ -967,9 +962,9 @@ Proof.
   { len. }
   iIntros "[Hsrc1 Hdst2']".
   wp_pures.
-  iDestruct (is_slice_combine with "Hdst1 Hdst2'")
+  iDestruct (own_slice_combine with "Hdst1 Hdst2'")
     as "Hdst"; first by word.
-  iDestruct (is_slice_combine with "Hsrc1 Hsrc2")
+  iDestruct (own_slice_combine with "Hsrc1 Hsrc2")
     as "Hsrc"; first by word.
   rewrite take_drop.
   iApply "HΦ". iModIntro.
@@ -997,9 +992,9 @@ Qed.
 
 Hint Unfold valid_addr block_bytes : word.
 
-Lemma is_slice_to_block s q bs :
+Lemma own_slice_to_block s q bs :
   length bs = block_bytes →
-  is_slice_small s byteT q bs ⊣⊢
+  own_slice_small s byteT q bs ⊣⊢
   is_block s q (list_to_block bs).
 Proof.
   iIntros (Hlen).
@@ -1201,7 +1196,7 @@ Proof.
       rewrite vec_to_list_length.
     + revert Hoff'_bound. rewrite /block_bytes.
       change 1024%nat with (8 * 128)%nat.
-      rewrite -Nat.div_div; [ | lia | lia ].
+      rewrite -Nat.Div0.div_div.
       generalize (int.nat off' `div` 8)%nat; intros x Hx.
       assert (x `div` 128 < 32)%nat; try lia.
       eapply Nat.div_lt_upper_bound; lia.
@@ -1275,13 +1270,10 @@ Proof.
     iIntros "[Hsrc Hdst]".
     wp_apply wp_DPrintf.
     wp_pures. iApply "HΦ". iModIntro.
-    iDestruct (is_slice_to_block with "Hdst") as "$".
+    iDestruct (own_slice_to_block with "Hdst") as "$".
     { len. }
     iSplitL.
-    { iExists _; iFrame "∗%"; simpl.
-      iSplitR "Hsrc".
-      - eauto with iFrame.
-      - iExists _; iFrame "∗%". }
+    { iExists _; iFrame "∗%"; done. }
     iPureIntro.
     apply is_installed_block_bit; auto.
     word.
@@ -1313,14 +1305,12 @@ Proof.
       word. }
     iIntros "[Hbufdata Hblk]".
     wp_pures. wp_apply wp_DPrintf.
-    iDestruct (is_slice_to_block with "Hblk") as "Hblk".
+    iDestruct (own_slice_to_block with "Hblk") as "Hblk".
     { len. }
     wp_pures. iApply "HΦ". iModIntro.
     iFrame "Hblk".
     iSplitL.
-    { iExists _; iFrame.
-      iExists _; iFrame "%∗".
-      done. }
+    { iExists _; iFrame. done. }
     iPureIntro.
     apply is_installed_block_inode.
     auto.
@@ -1345,17 +1335,13 @@ Proof.
     { len. }
     { len. }
     iIntros "[Hsrc Hblk]".
-    iDestruct (is_slice_to_block with "Hblk") as "Hblk".
+    iDestruct (own_slice_to_block with "Hblk") as "Hblk".
     { len. }
     wp_pures. wp_apply wp_DPrintf.
     wp_pures. iModIntro. iApply "HΦ".
     iFrame "Hblk".
     iSplitL.
-    { iExists _; iFrame.
-      iExists _; iFrame "∗%".
-      iPureIntro.
-      split; [|done].
-      simpl; auto. }
+    { iExists _; iFrame. auto. }
     iPureIntro.
     change (Z.to_nat (int.Z 0 `div` 8)) with 0%nat.
     change (Z.to_nat (int.Z 32768 `div` 8)) with block_bytes.
@@ -1378,7 +1364,7 @@ Proof.
   wp_call.
   wp_storeField.
   iApply "HΦ".
-  iExists _; iFrame. iExists _; iFrame. done.
+  iExists _; iFrame. done.
 Qed.
 
 End heap.

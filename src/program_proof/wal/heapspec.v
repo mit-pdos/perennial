@@ -17,7 +17,7 @@ Inductive heap_block :=
 | HB (installed_block : Block) (blocks_since_install : list Block)
 .
 
-Class walheapG (Σ: gFunctors) :=
+Class walheapG (Σ: gFunctors) : Set :=
   { walheap_u64_heap_block :> ghost_mapG Σ u64 heap_block;
     walheap_disk_txns :> ghost_varG Σ (gmap Z Block * list (u64 * list update.t));
     walheap_mono_nat :> mono_natG Σ;
@@ -246,7 +246,7 @@ Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
                        "wal_heap_locked" ∷ is_locked_walheap γheapnames
                          {| locked_wh_σd := (log_state0 bs).(log_state.d);
                             locked_wh_σtxns := [(U64 0, [])]|} ∗
-                       "wal_heap_h_mapsto" ∷ ([∗ map] l↦v ∈ gh_heapblock0 bs,
+                       "wal_heap_h_pointsto" ∷ ([∗ map] l↦v ∈ gh_heapblock0 bs,
                           l ↪[γheapnames.(wal_heap_h)] v) ∗
                        "wal_heap_crash_heaps" ∷ ghost_var γheapnames.(wal_heap_crash_heaps)
                               (3 / 4) (Build_async (crash_heap0 bs) [])
@@ -261,7 +261,7 @@ Proof.
   iMod (alloc_heapspec_init_ghost_state γwalnames) as (γheapnames Heq1) "?"; iNamed.
   iNamed "Hinit".
 
-  iMod (ghost_map_insert_big gh with "wal_heap_h") as "(wal_heap_h & wal_heap_mapsto)".
+  iMod (ghost_map_insert_big gh with "wal_heap_h") as "(wal_heap_h & wal_heap_pointsto)".
   { apply map_disjoint_empty_r. }
   rewrite right_id_L.
   iMod (ghost_var_update (list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs), [(U64 0, [])])
@@ -269,7 +269,7 @@ Proof.
   iMod (ghost_var_update crash_heaps with "wal_heap_crash_heaps")
        as "H".
   iEval (rewrite -Qp.three_quarter_quarter) in "H".
-  iDestruct (fractional.fractional_split with "H") as "[wal_heap_crash_heaps1 wal_heap_crash_heaps2]".
+  iDestruct "H" as "[wal_heap_crash_heaps1 wal_heap_crash_heaps2]".
   iDestruct (mono_nat_lb_own_get with "wal_durable_lb") as "#Hlb".
 
   iModIntro.
@@ -278,7 +278,6 @@ Proof.
   iExists γheapnames; iFrame.
   iSplit; first by done.
   iFrame "Hlb".
-  iExists gh, crash_heaps.
   iSplit.
   { iPureIntro.
     rewrite dom_blocks_to_map_u64.
@@ -295,7 +294,6 @@ Proof.
       word.
   }
 
-  iFrame.
   iSplit.
   { iPureIntro.
     simpl.
@@ -460,7 +458,7 @@ Lemma wal_heap_inv_addr_crash ls a b crash_txn :
   (ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns))%nat →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
-  wal_heap_inv_addr ls a b -∗
+  wal_heap_inv_addr ls a b ⊢@{_}
   ∃ b', ⌜heap_block_blocks_since_install b' `prefix_of` heap_block_blocks_since_install b⌝ ∗
          wal_heap_inv_addr ls' a b'.
 Proof.
@@ -513,7 +511,7 @@ Lemma wal_heap_gh_crash (γ: gname) crash_txn (gh: gmap u64 heap_block) ls :
   (ls.(log_state.installed_lb) ≤ crash_txn < length ls.(log_state.txns))%nat →
   let ls' := (set log_state.txns (take (S crash_txn)) ls)
                 <| log_state.durable_lb := crash_txn |> in
-  ghost_map_auth γ 1 ∅ -∗
+  ghost_map_auth γ 1 ∅ ⊢@{_}
   ([∗ map] a↦b ∈ gh, wal_heap_inv_addr ls a b) -∗
   |==> ∃ gh',
       ⌜dom gh' = dom gh⌝ ∗
@@ -548,7 +546,7 @@ Proof using walheapG0.
     rewrite !dom_insert_L //.
     iSplit; first by (iPureIntro; congruence).
     rewrite big_sepM_insert //.
-    iFrame "#∗".
+    iFrame "∗#".
 Qed.
 
 Lemma wal_heap_inv_crash_as_last_disk crash_heap ls :
@@ -789,8 +787,7 @@ Proof.
   iDestruct "Hcrash_heaps_exchange" as "[H|H]"; iNamed "H".
   - iDestruct (ghost_var_agree with "[$] [$]") as %<-.
     iSplitR "Hcrash_heaps H Hdurable_lb_old2".
-    * iFrame "% # ∗".
-      iRight. iExists _; iFrame.
+    * iFrame "∗%#".
     * iFrame.
       { iDestruct "Hdurable_lb_old2" as (? n Hle) "H".
         iFrame "%".
@@ -843,7 +840,7 @@ Proof.
   simpl.
   iNamed 1.
   (* TODO: note that this loses the old map, which makes it impossible to use
-  those resources to write an exchanger for wal_heap_h mapsto facts in the old
+  those resources to write an exchanger for wal_heap_h pointsto facts in the old
   generation (don't know if those are useful) *)
   iMod (wal_heap_gh_crash _ crash_txn with "wal_heap_h Hgh") as
       (gh' Hdom) "[Hctx' Hgh'] {Hctx}".
@@ -856,7 +853,7 @@ Proof.
           with "wal_heap_crash_heaps")
     as "H".
   iEval (rewrite -Qp.quarter_three_quarter) in "H".
-  iDestruct (fractional.fractional_split_1 with "H") as "[Hcrash_heaps_own' Hcrash_heaps_own2]".
+  iDestruct "H" as "[Hcrash_heaps_own' Hcrash_heaps_own2]".
   iMod (mono_nat_own_update crash_txn with "wal_durable_lb") as "[Hcrash_heaps_lb' Hcrash_heaps_lb_lb]"; first lia.
   iMod (mono_nat_own_update ls.(log_state.installed_lb) with "wal_heap_installed")
     as "{Hinstalled} [Hinstalled #Hinstalled_lb]"; first by lia.
@@ -869,9 +866,8 @@ Proof.
   iDestruct (wal_heap_inv_crashes_crash _ crash_txn ls ls' with "Hcrash_heaps") as "#Hcrash_heaps'"; auto.
   iDestruct (big_sepM_sep with "Hgh'") as "[#Hinv_addr Hgh']".
 
-  iSplitR "Hcrash_heaps Hcrash_heaps_own Hcrash_heaps_own2 Hgh'"; last first.
-  { iExists _; iFrame.
-    simpl.
+  iSplitR "Hcrash_heaps Hcrash_heaps_own2 Hgh'"; last first.
+  { simpl.
     rewrite -Hasync_take -/crash_heap'.
     iFrame "Hcrash_heaps_own2".
     iDestruct (big_sepM_sep with "[Hinv_addr Hgh']") as "Hgh'".
@@ -884,7 +880,7 @@ Proof.
     rewrite Hdom Hgh_complete.
     auto.
   }
-  iExists _, _; iFrame "#∗%".
+  iFrame "#∗%".
   iPureIntro; congruence.
 Qed.
 
@@ -901,12 +897,11 @@ Proof.
   iModIntro.
   iDestruct "resources" as "(?&?&?&?)".
   iFrame.
-  iFrame "%∗".
+  iFrame "∗%".
   apply log_crash_unfold in Htrans as (crash_txn & Hbound & Hls'_eq).
   subst ls'; simpl.
   iSplit; first by (iPureIntro; lia).
-  iExists 1%Qp, _. unshelve iExists _; [ | iFrame ].
-  lia.
+  unshelve iExists _; done.
 Qed.
 
 Definition locked_wh_disk (lwh : locked_walheap) : disk :=
@@ -1916,8 +1911,6 @@ Proof using walheapG0 Σ.
   iFrame.
   destruct H1.
   intuition.
-
-  iExists _, _. iFrame. done.
 Qed.
 
 Definition memappend_pre γh (bs : list update.t) (olds : list (Block * list Block)) : iProp Σ :=
@@ -2325,7 +2318,7 @@ Proof using walheapG0.
       rewrite take_app_le; first by iFrame.
       apply lookup_lt_Some in Hkh. lia. }
     iSplitL; last by done.
-    rewrite -> take_app_alt by lia.
+    rewrite -> take_app_length' by lia.
     eauto.
   }
 
@@ -2407,11 +2400,11 @@ Proof.
   eapply in_drop_ge; [ | eauto ]; lia.
 Qed.
 
-Lemma wal_heap_inv_mapsto_in_bounds γ dq walptr wn dinit a v E :
+Lemma wal_heap_inv_pointsto_in_bounds γ dq walptr wn dinit a v E :
   ↑walN.@"wal" ⊆ E ->
   is_wal (wal_heap_inv γ) walptr wn dinit -∗
-  a ↪[γ.(wal_heap_h)]{dq} v -∗ |NC={E}=>
-  a ↪[γ.(wal_heap_h)]{dq} v ∗
+  a ↪[γ.(wal_heap_h)] {dq} v -∗ |NC={E}=>
+  a ↪[γ.(wal_heap_h)] {dq} v ∗
   in_bounds wn a.
 Proof.
   iIntros (HE) "#Hwal Hmapsto".
@@ -2520,8 +2513,7 @@ Proof using walheapG0.
 
       simpl in *; monad_inv.
 
-      iModIntro. iFrame. iSplitL; last by done.
-      iExists _, _. iFrame. done.
+      iModIntro. iFrame. iSplitL; done.
     }
     {
       simpl in *; monad_inv.
@@ -2577,8 +2569,7 @@ Proof using walheapG0.
       rewrite Hb in Heqo.
       inversion Heqo; subst.
 
-      iModIntro. iFrame. iSplitL; last by done.
-      iExists _, _. iFrame. done.
+      iModIntro. iFrame. iSplitL; done.
     }
   }
 
@@ -2602,10 +2593,10 @@ Proof using walheapG0.
   }
 Qed.
 
-Theorem wal_heap_mapsto_latest_helper γ dq lwh (a : u64) (v : heap_block) σ :
+Theorem wal_heap_pointsto_latest_helper γ dq lwh (a : u64) (v : heap_block) σ :
   wal_heap_inv γ σ ∗
   is_locked_walheap γ lwh ∗
-  a ↪[γ.(wal_heap_h)]{dq} v -∗
+  a ↪[γ.(wal_heap_h)] {dq} v -∗
   ⌜ locked_wh_disk lwh !! int.Z a = Some (hb_latest_update v) ⌝.
 Proof.
   iIntros "(Hheap & Htxnsfrag & Hmapsto)".
@@ -2623,7 +2614,7 @@ Proof.
   rewrite /locked_wh_disk. rewrite -H0 -H1 /=. congruence.
 Qed.
 
-Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
+Theorem wal_heap_pointsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
   ↑walN ⊆ E ->
   is_wal (wal_heap_inv γ) l wn dinit ∗
   is_locked_walheap γ lwh ∗
@@ -2634,7 +2625,7 @@ Theorem wal_heap_mapsto_latest γ l lwh (a : u64) (v : heap_block) E wn dinit :
 Proof.
   iIntros (HNE) "(#Hwal & Htxnsfrag & Hmapsto)".
   iMod (is_wal_open with "Hwal") as (σ) "[>Hheap Hclose]"; first by solve_ndisj.
-  iDestruct (wal_heap_mapsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
+  iDestruct (wal_heap_pointsto_latest_helper with "[$Hheap $Htxnsfrag $Hmapsto]") as %Hx.
   iMod ("Hclose" with "Hheap").
   iModIntro.
   by iFrame.

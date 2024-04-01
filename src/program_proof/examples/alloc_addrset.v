@@ -18,10 +18,10 @@ Context `{!heapGS Σ}.
 Implicit Types (m: gmap u64 ()) (addrs: gset u64).
 
 Definition is_addrset (m_ref: loc) addrs: iProp Σ :=
-  ∃ m, is_map m_ref 1 m ∗ ⌜dom m = addrs⌝.
+  ∃ m, own_map m_ref 1 m ∗ ⌜dom m = addrs⌝.
 
 Theorem is_addrset_from_empty (m_ref: loc) :
-  is_map m_ref 1 (∅: gmap u64 ()) -∗ is_addrset m_ref ∅.
+  own_map m_ref 1 (∅: gmap u64 ()) -∗ is_addrset m_ref ∅.
 Proof.
   iIntros "Hm".
   iExists _; iFrame.
@@ -44,7 +44,7 @@ Proof.
   iIntros (il) "i".
   wp_pures.
   wp_apply (wp_forUpto (λ i, "%Hilower_bound" ∷ ⌜int.Z start ≤ int.Z i⌝ ∗
-                             "*" ∷ ∃ m, "Hmap" ∷ is_map mref 1 m ∗
+                             "*" ∷ ∃ m, "Hmap" ∷ own_map mref 1 m ∗
                                         "%Hmapdom" ∷ ⌜dom m = rangeSet (int.Z start) (int.Z i - int.Z start)⌝)%I
             with "[] [Hmap $i]").
   - word.
@@ -54,7 +54,7 @@ Proof.
     iIntros "!>" (Φ) "(HI & i & %Hibound) HΦ"; iNamed "HI".
     wp_pures.
     wp_load.
-    wp_apply (wp_MapInsert _ _ _ _ () with "Hmap"); auto.
+    wp_apply (wp_MapInsert u64 () () with "Hmap"); auto.
     iIntros "Hm".
     wp_pures.
     iApply "HΦ".
@@ -62,7 +62,6 @@ Proof.
     iSplitR.
     { iPureIntro; word. }
     rewrite /named.
-    iExists _; iFrame.
     iPureIntro.
     rewrite /map_insert dom_insert_L.
     rewrite Hmapdom.
@@ -76,7 +75,6 @@ Proof.
   - iIntros "(HI&Hil)"; iNamed "HI".
     wp_pures.
     iApply "HΦ"; iFrame.
-    iExists _; iFrame.
     iPureIntro; auto.
     rewrite Hmapdom.
     repeat (f_equal; try word).
@@ -94,12 +92,12 @@ Qed.
 (* this is superceded by wp_findKey, but that theorem relies in an unproven map
 iteration theorem *)
 Theorem wp_findKey' mref m E :
-  {{{ is_map mref 1 m }}}
+  {{{ own_map mref 1 m }}}
     findKey #mref @ E
   {{{ (k: u64) (ok: bool), RET (#k, #ok);
       ⌜if ok then m !! k = Some tt else True⌝ ∗ (* TODO: easier if this
       promises to find a key if it exists *)
-      is_map mref 1 m
+      own_map mref 1 m
   }}}.
 Proof.
   iIntros (Φ) "Hmap HΦ".
@@ -135,7 +133,7 @@ Proof.
       iSplitL; auto.
       iExists _, _; iFrame.
       auto.
-  - iIntros "(His_map&HI&_HQ)"; iNamed "HI".
+  - iIntros "(Hown_map&HI&_HQ)"; iNamed "HI".
     wp_pures.
     wp_load. wp_load.
     wp_pures.
@@ -188,12 +186,12 @@ Proof.
       { iPureIntro.
         rewrite -Hmapdom.
         apply elem_of_dom; eauto. }
-      iExists _; by iFrame "% ∗".
+      iExists _; by iFrame "∗%".
     + iSplitR.
       { iPureIntro.
         rewrite -Hmapdom; subst.
         rewrite dom_empty_L //. }
-      iExists _; by iFrame "% ∗".
+      iExists _; by iFrame "∗%".
 Qed.
 
 Theorem wp_mapRemove m_ref remove_ref free remove E :
@@ -228,15 +226,14 @@ Proof.
     wp_pures.
     iApply "HΦ".
     rewrite Hdom.
-    iFrame.
-    iExists _; by iFrame "% ∗".
+    by iFrame.
 Qed.
 
 Theorem wp_SetAdd mref used addr_s q (addrs: list u64) E :
-  {{{ is_addrset mref used ∗ is_slice_small addr_s uint64T q addrs }}}
+  {{{ is_addrset mref used ∗ own_slice_small addr_s uint64T q addrs }}}
     SetAdd #mref (slice_val addr_s) @ E
   {{{ RET #(); is_addrset mref (used ∪ list_to_set addrs) ∗
-               is_slice_small addr_s uint64T q addrs }}}.
+               own_slice_small addr_s uint64T q addrs }}}.
 Proof.
   iIntros (Φ) "(Hused&Haddrs) HΦ".
   rewrite /SetAdd; wp_pures.
@@ -248,7 +245,7 @@ Proof.
     iIntros (Φ) "Hused HΦ".
     wp_pures.
     iDestruct "Hused" as (m) "[Hused %Hdom]".
-    wp_apply (wp_MapInsert _ _ _ _ () with "Hused").
+    wp_apply (wp_MapInsert _ _ () with "Hused").
     { auto. }
     iIntros "Hm".
     iApply "HΦ".

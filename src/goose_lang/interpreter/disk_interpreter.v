@@ -223,7 +223,7 @@ Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr
     bts <- mget;
     let '(σ,g) := fst (bts : btstate) in
       mret (Val $ LitV $ LitInt (U64 (disk_size σ.(@world _ disk_model))))
-  | _ => mfail ("DiskOp failed: Invalid argument types for " ++ (pretty op))
+  | _ => interpret_types.mfail ("DiskOp failed: Invalid argument types for " ++ (pretty op))
   end.
 
 Lemma disk_interpret_ok : forall (eop : DiskOp) (arg : val) (result : expr) (σ σ': state) (g g': global_state) (ws ws': btval),

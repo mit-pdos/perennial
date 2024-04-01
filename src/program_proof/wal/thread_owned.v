@@ -54,7 +54,6 @@ Proof.
   iModIntro.
   iExists γ.
   iFrame.
-  iExists true; iFrame.
 Qed.
 
 Theorem thread_own_get γ P :
@@ -66,10 +65,9 @@ Proof.
   rewrite /thread_own.
   iIntros "Hctx Hγ".
   iDestruct "Hctx" as (available) "(Hown&HP)".
-  unify_ghost_var γ. iFrame.
+  unify_ghost_var γ.
   iMod (ghost_var_update_halves false with "Hγ Hown") as "($&Hown)".
-  iModIntro.
-  iExists false; iFrame.
+  by iFrame.
 Qed.
 
 Theorem thread_own_put {γ} P' P :
@@ -81,8 +79,7 @@ Proof.
   iIntros "Hctx Hγ HP'".
   iDestruct "Hctx" as (available) "(Hown&_)".
   iMod (ghost_var_update_halves true with "Hγ Hown") as "($&Hown)".
-  iModIntro.
-  iExists true; iFrame.
+  by iFrame.
 Qed.
 
 Theorem thread_own_put_same {γ} P :
@@ -103,8 +100,7 @@ Proof.
   iIntros "Hctx Havail H".
   iMod (thread_own_get with "Hctx Havail") as "(Hctx&_&Hused)".
   iMod (thread_own_put with "Hctx Hused H") as "(Hctx&Havail)".
-  iFrame.
-  eauto.
+  by iFrame "Hctx Havail".
 Qed.
 
 End thread_owned.
