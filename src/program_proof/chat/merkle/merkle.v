@@ -28,7 +28,7 @@ Fixpoint containsNodeAtEnd (tr : tree) (id : list u8) (node : tree) : Prop :=
     end
   end.
 
-Fixpoint is_tree_hash (tr: tree) (hash: list u8) : iProp Σ :=
+Fixpoint is_tree_hash (tr : tree) (hash : list u8) : iProp Σ :=
   match tr with
   | Cut hash' => ⌜hash = hash' ∧ length hash' = 32%nat⌝
   | Empty => is_hash [U8 0] hash
@@ -40,32 +40,6 @@ Fixpoint is_tree_hash (tr: tree) (hash: list u8) : iProp Σ :=
       child_fn hash') ∗
     is_hash (concat child_hashes ++ [U8 2]) hash
   end%I.
-
-(*
-(* Note: don't currently need this, but it'd be nice to have. *)
-#[global]
-Instance is_tree_hash_persistent tr hash : Persistent (is_tree_hash tr hash).
-Proof.
-  rewrite /Persistent.
-  iStartProof.
-  iLöb as "IH" forall (tr hash).
-  iIntros "Htr_hash".
-  destruct tr.
-  1-3: iDestruct "Htr_hash" as "#Htr_hash"; done.
-  simpl.
-  iDestruct "Htr_hash" as (?) "[Htr_hash #Hhash]".
-  iFrame "#"; iClear (hash) "Hhash".
-  iApply big_sepL2_persistently.
-  iDestruct (big_sepL2_fmap_l (λ c h, is_tree_hash c h) with "Htr_hash") as "Htr_hash".
-  iApply (big_sepL2_fmap_l (λ c h, is_tree_hash c h)).
-  iApply (big_sepL2_impl with "Htr_hash").
-  iIntros "!> %k %tr' %hash' % % Htr_hash".
-  iSpecialize ("IH" $! tr' hash' with "[Htr_hash]"); [iFrame|].
-  iDestruct (later_persistently_1 with "IH") as "#IH2".
-  iIntros "!>".
-  (* Problem: don't have later in goal to iMod IH2. *)
-Admitted.
- *)
 
 Lemma tree_hash_len tr hash :
   is_tree_hash tr hash -∗ ⌜length hash = 32%nat⌝.
@@ -80,11 +54,7 @@ Proof.
   }
 Qed.
 
-Definition is_path_node id node digest : iProp Σ :=
-  ∃ tr,
-  is_tree_hash tr digest ∧
-  ⌜containsNodeAtEnd tr id node⌝.
-
+(* At a specific path down a tree rooted at digest, we will find this val. *)
 Definition is_path_val id val digest : iProp Σ :=
   ∃ tr,
   is_tree_hash tr digest ∧
@@ -257,16 +227,16 @@ Proof.
 Qed.
 
 Definition tree_to_map (tr : tree) : gmap (list u8) (list u8) :=
-  let fix traverse (tr : tree) (acc : gmap (list u8) (list u8)) (path : list u8) :=
+  let fix traverse (tr : tree) (acc : gmap (list u8) (list u8)) (id : list u8) :=
     match tr with
     | Cut _ => acc
     | Empty => acc
-    | Leaf val => <[path:=val]>acc
+    | Leaf val => <[id:=val]>acc
     | Interior children =>
-      (* Grab all entries from the children, storing the ongoing path. *)
+      (* Grab all entries from the children, storing the ongoing id. *)
       (foldr
         (λ child (pIdxAcc:(Z * gmap (list u8) (list u8))),
-          let acc' := traverse child pIdxAcc.2 (path ++ [U8 pIdxAcc.1])
+          let acc' := traverse child pIdxAcc.2 (id ++ [U8 pIdxAcc.1])
           in (pIdxAcc.1 + 1, acc'))
         (0, acc) children
       ).2
@@ -279,18 +249,17 @@ Definition own_Tree ptr_tr entry_map : iProp Σ :=
   "%Htree_map" ∷ ⌜tree_to_map tr = entry_map⌝ ∗
   "Hptr_root" ∷ ptr_tr ↦[Tree :: "Root"] #root.
 
-Definition is_Slice3D (sl : Slice.t) (obj0 : list (list (list u8))) : iProp Σ :=
-  ∃ list_sl0,
-  readonly (own_slice_small sl (slice.T (slice.T byteT)) 1 list_sl0) ∗
-  ([∗ list] obj1;sl_1 ∈ obj0;list_sl0,
-    ∃ list_sl1,
-    readonly (own_slice_small sl_1 (slice.T byteT) 1 list_sl1) ∗
-    ([∗ list] obj2;sl_2 ∈ obj1;list_sl1,
-      readonly (own_slice_small sl_2 byteT 1 obj2))).
+Definition is_Slice3D (sl_dim0 : Slice.t) (obj_dim0 : list (list (list u8))) : iProp Σ :=
+  ∃ list_dim0,
+  "Hsl_dim0" ∷ own_slice_small sl_dim0 (slice.T (slice.T byteT)) 1 list_dim0 ∗
+  "#Hsep_dim0" ∷ ([∗ list] sl_dim1;obj_dim1 ∈ list_dim0;obj_dim0,
+    ∃ list_dim1,
+    "#Hsl_dim1" ∷ readonly (own_slice_small sl_dim1 (slice.T byteT) 1 list_dim1) ∗
+    "#Hsep_dim1" ∷ ([∗ list] sl_dim2;obj_dim2 ∈ list_dim1;obj_dim1,
+      "#Hsl_dim2" ∷ readonly (own_slice_small sl_dim2 byteT 1 obj_dim2))).
 
 End defs.
 
-(*
 Module PathProof.
 Record t :=
   mk {
@@ -310,8 +279,10 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
   "Hptr_NodeHash" ∷ ptr ↦[PathProof :: "NodeHash"] (slice_val sl_NodeHash) ∗
   "HDigest" ∷ own_slice_small sl_Digest byteT 1 obj.(Digest) ∗
   "Hptr_Digest" ∷ ptr ↦[PathProof :: "Digest"] (slice_val sl_Digest) ∗
-  "#HChildHashes" ∷ is_Slice3D sl_ChildHashes obj.(ChildHashes) ∗
-  "Hptr_ChildHashes" ∷ ptr ↦[PathProof :: "ChildHashes"] (slice_val sl_ChildHashes).
+  "HChildHashes" ∷ is_Slice3D sl_ChildHashes obj.(ChildHashes) ∗
+  "Hptr_ChildHashes" ∷ ptr ↦[PathProof :: "ChildHashes"] (slice_val sl_ChildHashes) ∗
+  "%Hlen_id_depth" ∷ ⌜length obj.(Id) = length obj.(ChildHashes)⌝ ∗
+  "%Hlen_id_ub" ∷ ⌜length obj.(Id) ≤ 32⌝.
 End local_defs.
 End PathProof.
 
@@ -326,7 +297,7 @@ Lemma wp_Put ptr_tr entry_map sl_id id sl_val val :
   }}}
   Tree__Put #ptr_tr (slice_val sl_id) (slice_val sl_val)
   {{{
-    sl_digest ptr_proof (err:u64),
+    sl_digest ptr_proof (err : u64),
     RET ((slice_val sl_digest), #ptr_proof, #err);
     if bool_decide (err = 0) then
       "Htree" ∷ own_Tree ptr_tr (<[id:=val]>entry_map)
@@ -357,68 +328,105 @@ Proof.
   }
   iIntros (??) "H"; iNamed "H".
   iApply "HΦ".
-  iFrame.
-  iApply is_tree_hash_unfold.
-  rewrite /is_tree_hash'.
-  iFrame "#".
+  iFrame "#∗".
 Qed.
 
-Lemma wp_PathProofCheck ptr_proof proof node :
+Lemma wp_PathProofCheck ptr_proof proof val :
   {{{
     "Hproof" ∷ PathProof.own ptr_proof proof ∗
-    "#Hvalid_NodeHash" ∷ is_tree_hash node proof.(PathProof.NodeHash) ∗
-    "%Hproof_len_eq" ∷ ⌜length proof.(PathProof.Id) = length proof.(PathProof.ChildHashes)⌝ ∗
-    "%Hproof_len_ub" ∷ ⌜length proof.(PathProof.Id) ≤ 32⌝
+    let node := match val with
+    | None => Empty
+    | Some val' => Leaf val'
+    end in
+    "Hhash" ∷ is_tree_hash node proof.(PathProof.NodeHash)
   }}}
   PathProof__Check #ptr_proof
   {{{
-    (err:u64), RET #err;
+    (err : u64), RET #err;
     if bool_decide (err = 0) then
-      "#Hpath" ∷ is_path_node proof.(PathProof.Id) node proof.(PathProof.Digest)
+      "Hpath" ∷ is_path_val proof.(PathProof.Id) val proof.(PathProof.Digest)
     else True%I
   }}}.
 Proof.
-  iIntros (Φ) "H HΦ"; iNamed "H".
+  simpl.
+  iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hproof".
   rewrite /PathProof__Check.
-  iNamed "Hproof".
-  wp_loadField.
-  wp_apply wp_slice_len.
-  iDestruct (own_slice_small_sz with "HId") as "%Hid_sz".
+  wp_apply wp_ref_to; [val_ty|];
+    iIntros (ptr_err) "Hptr_err".
+  iDestruct ("HChildHashes") as (?) "H"; iNamed "H".
+  wp_apply (wp_loadField with "[$]");
+    iIntros "Hptr_ChildHashes".
+  set for_inv :=
+    (λ ub, ∃ (err : u64),
+      "Hptr_err" ∷ ptr_err ↦[uint64T] #err ∗
+      "Herr_pred" ∷ if bool_decide (err = 0) then
+        "#Hlen" ∷ ([∗ list] children ∈ take (int.nat ub) proof.(PathProof.ChildHashes),
+          ⌜length children = 255%nat⌝)
+      else True)%I : u64 → iProp Σ.
+  wp_apply (wp_forSlice for_inv with "[] [$Hptr_err $Hsl_dim0 //]").
+  {
+    iEval (rewrite /for_inv).
+    iIntros (? sl_dim1' Φ2) "!> (Hinv & %Hbound & %Hlook) HΦ2".
+    iDestruct (big_sepL2_lookup_1_some with "Hsep_dim0") as (obj_dim1') "%Hlook2";
+      [done|].
+    iDestruct (big_sepL2_lookup with "Hsep_dim0") as (list_dim1) "H"; [done..|];
+      iNamed "H".
+    iDestruct (readonly_load with "Hsl_dim1") as "> Hsl_dim1'".
+    iDestruct "Hsl_dim1'" as (?) "Hsl_dim1'".
+    iDestruct "Hinv" as (?) "H"; iNamed "H".
+    wp_apply wp_slice_len.
+    case_bool_decide; rename H into Herr; wp_if_destruct.
+    all: replace (u64_instance.u64.(word.sub) 256 1) with (U64 255) in Heqb; [|word].
+    {
+      wp_store.
+      iApply "HΦ2".
+      by iFrame.
+    }
+    {
+      (* The actual inv extension case. *)
+      iApply "HΦ2".
+      iFrame.
+      case_bool_decide; [|done]; iNamed "Herr_pred".
+      replace (int.nat (u64_instance.u64.(word.add) i 1)) with (S (int.nat i)); [|word].
+      rewrite (take_S_r _ _ _ Hlook2).
+      iDestruct (own_slice_small_sz with "Hsl_dim1'") as "%Hlen_list_sl".
+      iDestruct (big_sepL2_length with "Hsep_dim1") as "%Hlen_list_obj".
+      (* TODO: there should be a cleaner way to do the rewrites and words.
+         Something like "eauto with word" on the final assert. *)
+      rewrite Heqb in Hlen_list_sl.
+      rewrite Hlen_list_sl in Hlen_list_obj.
+      assert (length obj_dim1' = 255%nat) as Hlen_255 by word.
+      by iFrame "%#".
+    }
+    {
+      wp_store.
+      iApply "HΦ2".
+      by iFrame.
+    }
+    {
+      iApply "HΦ2".
+      iFrame.
+      by case_bool_decide.
+    }
+  }
+  iEval (rewrite /for_inv).
+  iIntros "[Hinv Hsl_dim0]".
+  iDestruct "Hinv" as (err) "Hinv"; iNamed "Hinv".
+  wp_load.
   wp_if_destruct.
   {
-    (* Case: empty tree. *)
-    wp_apply wp_ref_of_zero; [done|].
-    iIntros (ptr_empty) "Hempty".
-    wp_loadField.
-    wp_loadField.
-    wp_apply (wp_BytesEqual with "[$HNodeHash $HDigest]");
-      iIntros "[HNodeHash HDigest]".
-    wp_if_destruct; [|by iApply "HΦ"].
     wp_load.
-    wp_apply (wp_NodeHashNull); iIntros (??) "H"; iNamed "H".
-    wp_loadField.
-    wp_apply (wp_BytesEqual with "[$HNodeHash $Hhash]");
-      iIntros "[HNodeHash Hhash]".
-    wp_if_destruct; [|by iApply "HΦ"].
     iApply "HΦ".
-    iIntros "!>".
-    rewrite /is_path_node.
-    iExists Empty.
-    subst hash.
-    rewrite Heqb0.
-    iSplit; [iFrame "#"|].
-    rewrite Heqb in Hid_sz.
-    apply length_zero_iff_nil in Hid_sz.
-    rewrite Hid_sz.
-    iDestruct (is_tree_hash_inj with "Hvalid_NodeHash His_hash") as %Hnode.
-    rewrite Hnode.
-    naive_solver.
+    case_bool_decide; naive_solver.
   }
-
-  (* By the end of this next block, we should have is_tree_hash holding
-     on the bottom-most node of the tree. *)
+  case_bool_decide; [|done]; iNamed "Herr_pred";
+    iClear (H for_inv ptr_err) "Hptr_err".
   wp_loadField.
-  admit.
+  wp_apply wp_ref_to; [val_ty|]. iIntros (ptr_currHash) "HcurrHash".
+  wp_loadField.
+  wp_apply wp_slice_len.
+  wp_apply wp_ref_to; [val_ty|]; iIntros (ptr_pathIdx) "HpathIdx".
+
 Admitted.
 
 Lemma wp_MembProofCheck sl_proof proof sl_id sl_val sl_digest (id val digest : list u8) :
@@ -457,4 +465,3 @@ Lemma wp_NonmembCheck sl_proof proof sl_id sl_digest (id digest : list u8) :
 Proof. Admitted.
 
 End proofs.
-*)

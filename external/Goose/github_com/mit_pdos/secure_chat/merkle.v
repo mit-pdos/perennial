@@ -114,8 +114,6 @@ Definition NonmembProof: ty := slice.T (slice.T (slice.T byteT)).
 
 Definition PathProof__Check: val :=
   rec: "PathProof__Check" "p" :=
-    let: "currHash" := ref_to (slice.T byteT) (struct.loadF PathProof "NodeHash" "p") in
-    let: "proofLen" := slice.len (struct.loadF PathProof "ChildHashes" "p") in
     let: "err" := ref_to uint64T ErrNone in
     ForSlice (slice.T (slice.T byteT)) <> "children" (struct.loadF PathProof "ChildHashes" "p")
       ((if: (slice.len "children") ≠ (NumChildren - #1)
@@ -124,7 +122,8 @@ Definition PathProof__Check: val :=
     (if: (![uint64T] "err") ≠ ErrNone
     then ![uint64T] "err"
     else
-      let: "pathIdx" := ref_to uint64T "proofLen" in
+      let: "currHash" := ref_to (slice.T byteT) (struct.loadF PathProof "NodeHash" "p") in
+      let: "pathIdx" := ref_to uint64T (slice.len (struct.loadF PathProof "ChildHashes" "p")) in
       (for: (λ: <>, (![uint64T] "pathIdx") ≥ #1); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") - #1)) := λ: <>,
         let: "pos" := to_u64 (SliceGet byteT (struct.loadF PathProof "Id" "p") ((![uint64T] "pathIdx") - #1)) in
         let: "children" := SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") ((![uint64T] "pathIdx") - #1) in
