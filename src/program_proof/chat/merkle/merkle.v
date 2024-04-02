@@ -356,11 +356,13 @@ Proof.
   iDestruct ("HChildHashes") as (?) "H"; iNamed "H".
   wp_apply (wp_loadField with "[$]");
     iIntros "Hptr_ChildHashes".
+
+  (* Length checking loop. *)
   set for_inv :=
-    (λ ub, ∃ (err : u64),
+    (λ loopIdx, ∃ (err : u64),
       "Hptr_err" ∷ ptr_err ↦[uint64T] #err ∗
       "Herr_pred" ∷ if bool_decide (err = 0) then
-        "#Hlen" ∷ ([∗ list] children ∈ take (int.nat ub) proof.(PathProof.ChildHashes),
+        "#Hlen" ∷ ([∗ list] children ∈ take (int.nat loopIdx) proof.(PathProof.ChildHashes),
           ⌜length children = 255%nat⌝)
       else True)%I : u64 → iProp Σ.
   wp_apply (wp_forSlice for_inv with "[] [$Hptr_err $Hsl_dim0 //]").
@@ -421,12 +423,41 @@ Proof.
   }
   case_bool_decide; [|done]; iNamed "Herr_pred";
     iClear (H for_inv ptr_err) "Hptr_err".
+  iDestruct (own_slice_small_sz with "Hsl_dim0") as "%H1";
+    iDestruct (big_sepL2_length with "Hsep_dim0") as "%H2";
+    rewrite H1 in H2;
+    iEval (rewrite H2 firstn_all) in "Hlen";
+    clear H1 H2.
   wp_loadField.
   wp_apply wp_ref_to; [val_ty|]. iIntros (ptr_currHash) "HcurrHash".
   wp_loadField.
   wp_apply wp_slice_len.
-  wp_apply wp_ref_to; [val_ty|]; iIntros (ptr_pathIdx) "HpathIdx".
 
+  (* Main for loop. *)
+  wp_apply wp_ref_to; [val_ty|]; iIntros (ptr_loopIdx) "HloopIdx".
+  set for_inv :=
+    (λ loopIdx, ∃ sl_currHash currHash,
+      "Hsl_currHash" ∷ own_slice_small sl_currHash byteT 1 currHash ∗
+      "Hptr_currHash" ∷ ptr_currHash ↦[slice.T byteT] sl_currHash ∗
+      "Hpath_val" ∷ is_path_val
+        (drop (length proof.(PathProof.Id) - int.nat loopIdx)
+        proof.(PathProof.Id)) val currHash)%I : u64 → iProp Σ.
+  wp_apply (wp_forUpto for_inv with "[] [$HloopIdx $HNodeHash $HcurrHash Hhash]"); [word|..].
+  2: {
+    assert ((length proof.(PathProof.Id) - int.nat 0)%nat = length proof.(PathProof.Id)) as H by word;
+      iEval (rewrite H); clear H.
+    iEval (rewrite drop_all).
+    iFrame.
+    destruct val; done.
+  }
+  {
+    iEval (rewrite /for_inv).
+    iIntros (loopIdx Φ2) "!> (Hinv & HloopIdx & %HloopBound) HΦ2";
+      iNamed "Hinv".
+    (* TODO: write invariants for inner loops. *)
+    admit.
+  }
+  admit.
 Admitted.
 
 Lemma wp_MembProofCheck sl_proof proof sl_id sl_val sl_digest (id val digest : list u8) :

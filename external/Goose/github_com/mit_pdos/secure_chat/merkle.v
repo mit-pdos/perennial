@@ -123,10 +123,13 @@ Definition PathProof__Check: val :=
     then ![uint64T] "err"
     else
       let: "currHash" := ref_to (slice.T byteT) (struct.loadF PathProof "NodeHash" "p") in
-      let: "pathIdx" := ref_to uint64T (slice.len (struct.loadF PathProof "ChildHashes" "p")) in
-      (for: (λ: <>, (![uint64T] "pathIdx") ≥ #1); (λ: <>, "pathIdx" <-[uint64T] ((![uint64T] "pathIdx") - #1)) := λ: <>,
-        let: "pos" := to_u64 (SliceGet byteT (struct.loadF PathProof "Id" "p") ((![uint64T] "pathIdx") - #1)) in
-        let: "children" := SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") ((![uint64T] "pathIdx") - #1) in
+      let: "proofLen" := slice.len (struct.loadF PathProof "ChildHashes" "p") in
+      let: "loopIdx" := ref_to uint64T #0 in
+      Skip;;
+      (for: (λ: <>, (![uint64T] "loopIdx") < "proofLen"); (λ: <>, "loopIdx" <-[uint64T] ((![uint64T] "loopIdx") + #1)) := λ: <>,
+        let: "pathIdx" := ("proofLen" - #1) - (![uint64T] "loopIdx") in
+        let: "pos" := to_u64 (SliceGet byteT (struct.loadF PathProof "Id" "p") "pathIdx") in
+        let: "children" := SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") "pathIdx" in
         let: "hr" := ref (zero_val (slice.T byteT)) in
         let: "beforeIdx" := ref_to uint64T #0 in
         (for: (λ: <>, (![uint64T] "beforeIdx") < "pos"); (λ: <>, "beforeIdx" <-[uint64T] ((![uint64T] "beforeIdx") + #1)) := λ: <>,
