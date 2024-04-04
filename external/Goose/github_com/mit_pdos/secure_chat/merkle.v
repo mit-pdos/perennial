@@ -32,9 +32,15 @@ Definition Hasher: ty := slice.T byteT.
 (* Goose doesn't support non-struct types that well, so until that exists,
    use type aliases and non-method funcs. *)
 Definition HasherWrite: val :=
-  rec: "HasherWrite" "h" "b" :=
-    ForSlice byteT <> "b" "b"
+  rec: "HasherWrite" "h" "data" :=
+    ForSlice byteT <> "b" "data"
       ("h" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "h") "b"));;
+    #().
+
+Definition HasherWriteSl: val :=
+  rec: "HasherWriteSl" "h" "data" :=
+    ForSlice (slice.T byteT) <> "hash" "data"
+      (HasherWrite "h" "hash");;
     #().
 
 Definition HasherSum: val :=
@@ -128,18 +134,14 @@ Definition PathProof__Check: val :=
       Skip;;
       (for: (λ: <>, (![uint64T] "loopIdx") < "proofLen"); (λ: <>, "loopIdx" <-[uint64T] ((![uint64T] "loopIdx") + #1)) := λ: <>,
         let: "pathIdx" := ("proofLen" - #1) - (![uint64T] "loopIdx") in
-        let: "pos" := to_u64 (SliceGet byteT (struct.loadF PathProof "Id" "p") "pathIdx") in
         let: "children" := SliceGet (slice.T (slice.T byteT)) (struct.loadF PathProof "ChildHashes" "p") "pathIdx" in
+        let: "pos" := to_u64 (SliceGet byteT (struct.loadF PathProof "Id" "p") "pathIdx") in
         let: "hr" := ref (zero_val (slice.T byteT)) in
-        let: "beforeIdx" := ref_to uint64T #0 in
-        (for: (λ: <>, (![uint64T] "beforeIdx") < "pos"); (λ: <>, "beforeIdx" <-[uint64T] ((![uint64T] "beforeIdx") + #1)) := λ: <>,
-          HasherWrite "hr" (SliceGet (slice.T byteT) "children" (![uint64T] "beforeIdx"));;
-          Continue);;
+        let: "before" := SliceTake "children" "pos" in
+        let: "after" := SliceSkip (slice.T byteT) "children" "pos" in
+        HasherWriteSl "hr" "before";;
         HasherWrite "hr" (![slice.T byteT] "currHash");;
-        let: "afterIdx" := ref_to uint64T "pos" in
-        (for: (λ: <>, (![uint64T] "afterIdx") < (NumChildren - #1)); (λ: <>, "afterIdx" <-[uint64T] ((![uint64T] "afterIdx") + #1)) := λ: <>,
-          HasherWrite "hr" (SliceGet (slice.T byteT) "children" (![uint64T] "afterIdx"));;
-          Continue);;
+        HasherWriteSl "hr" "after";;
         HasherWrite "hr" (SliceSingleton InteriorNodeId);;
         "currHash" <-[slice.T byteT] (HasherSum (![slice.T byteT] "hr") slice.nil);;
         Continue);;

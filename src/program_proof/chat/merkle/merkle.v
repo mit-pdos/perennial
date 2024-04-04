@@ -249,6 +249,12 @@ Definition own_Tree ptr_tr entry_map : iProp Σ :=
   "%Htree_map" ∷ ⌜tree_to_map tr = entry_map⌝ ∗
   "Hptr_root" ∷ ptr_tr ↦[Tree :: "Root"] #root.
 
+Definition is_Slice2D (sl_dim0 : Slice.t) (obj_dim0 : list (list u8)) : iProp Σ :=
+  ∃ list_dim0,
+  "Hsl_dim0" ∷ own_slice_small sl_dim0 (slice.T byteT) 1 list_dim0 ∗
+  "#Hsep_dim0" ∷ ([∗ list] sl_dim1;obj_dim1 ∈ list_dim0;obj_dim0,
+    "#Hsl_dim1" ∷ readonly (own_slice_small sl_dim1 byteT 1 obj_dim1)).
+
 Definition is_Slice3D (sl_dim0 : Slice.t) (obj_dim0 : list (list (list u8))) : iProp Σ :=
   ∃ list_dim0,
   "Hsl_dim0" ∷ own_slice_small sl_dim0 (slice.T (slice.T byteT)) 1 list_dim0 ∗
@@ -331,6 +337,46 @@ Proof.
   iFrame "#∗".
 Qed.
 
+Lemma wp_HasherWrite sl_hasher hasher ptr_hasher sl_data (data : list u8) :
+  {{{
+    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 hasher ∗
+    "Hptr_hasher" ∷ ptr_hasher ↦[slice.T byteT] (slice_val sl_hasher) ∗
+    "#Hdata" ∷ readonly (own_slice_small sl_data byteT 1 data)
+  }}}
+  HasherWrite #ptr_hasher (slice_val sl_data)
+  {{{
+    RET #();
+    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 (hasher ++ data) ∗
+    "Hptr_hasher" ∷ ptr_hasher ↦[slice.T byteT] (slice_val sl_hasher)
+  }}}.
+Proof. Admitted.
+
+Lemma wp_HasherWriteSl sl_hasher hasher ptr_hasher sl_data data :
+  {{{
+    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 hasher ∗
+    "Hptr_hasher" ∷ ptr_hasher ↦[slice.T byteT] (slice_val sl_hasher) ∗
+    "#Hdata" ∷ is_Slice2D sl_data data
+  }}}
+  HasherWriteSl #ptr_hasher (slice_val sl_data)
+  {{{
+    RET #();
+    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 (hasher ++ concat data) ∗
+    "Hptr_hasher" ∷ ptr_hasher ↦[slice.T byteT] (slice_val sl_hasher)
+  }}}.
+Proof. Admitted.
+
+Lemma wp_HasherSumNil sl_hasher hasher :
+  {{{
+    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 hasher
+  }}}
+  HasherWrite (slice_val sl_hasher) #null
+  {{{
+    sl_hash hash, RET (slice_val sl_hash);
+    "#Hhash" ∷ is_hash hasher hash ∗
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT 1 hash
+  }}}.
+Proof. Admitted.
+
 Lemma wp_PathProofCheck ptr_proof proof val :
   {{{
     "Hproof" ∷ PathProof.own ptr_proof proof ∗
@@ -362,6 +408,7 @@ Proof.
     (λ loopIdx, ∃ (err : u64),
       "Hptr_err" ∷ ptr_err ↦[uint64T] #err ∗
       "Herr_pred" ∷ if bool_decide (err = 0) then
+        (* TODO: change to pure coq notation. *)
         "#Hlen" ∷ ([∗ list] children ∈ take (int.nat loopIdx) proof.(PathProof.ChildHashes),
           ⌜length children = 255%nat⌝)
       else True)%I : u64 → iProp Σ.
@@ -379,11 +426,7 @@ Proof.
     wp_apply wp_slice_len.
     case_bool_decide; rename H into Herr; wp_if_destruct.
     all: replace (u64_instance.u64.(word.sub) 256 1) with (U64 255) in Heqb; [|word].
-    {
-      wp_store.
-      iApply "HΦ2".
-      by iFrame.
-    }
+    { wp_store. iApply "HΦ2". by iFrame. }
     {
       (* The actual inv extension case. *)
       iApply "HΦ2".
@@ -400,27 +443,15 @@ Proof.
       assert (length obj_dim1' = 255%nat) as Hlen_255 by word.
       by iFrame "%#".
     }
-    {
-      wp_store.
-      iApply "HΦ2".
-      by iFrame.
-    }
-    {
-      iApply "HΦ2".
-      iFrame.
-      by case_bool_decide.
-    }
+    { wp_store. iApply "HΦ2". by iFrame. }
+    { iApply "HΦ2". iFrame. by case_bool_decide. }
   }
   iEval (rewrite /for_inv).
   iIntros "[Hinv Hsl_dim0]".
   iDestruct "Hinv" as (err) "Hinv"; iNamed "Hinv".
   wp_load.
   wp_if_destruct.
-  {
-    wp_load.
-    iApply "HΦ".
-    case_bool_decide; naive_solver.
-  }
+  { wp_load. iApply "HΦ". case_bool_decide; naive_solver. }
   case_bool_decide; [|done]; iNamed "Herr_pred";
     iClear (H for_inv ptr_err) "Hptr_err".
   iDestruct (own_slice_small_sz with "Hsl_dim0") as "%H1";
@@ -437,12 +468,16 @@ Proof.
   wp_apply wp_ref_to; [val_ty|]; iIntros (ptr_loopIdx) "HloopIdx".
   set for_inv :=
     (λ loopIdx, ∃ sl_currHash currHash,
+      "HId" ∷ own_slice_small sl_Id byteT 1 proof.(PathProof.Id) ∗
+      "Hptr_Id" ∷ ptr_proof ↦[PathProof :: "Id"] sl_Id ∗
+      "Hptr_ChildHashes" ∷ ptr_proof ↦[PathProof :: "ChildHashes"] sl_ChildHashes ∗
+      "Hsl_dim0" ∷ own_slice_small sl_ChildHashes (slice.T (slice.T byteT)) 1 list_dim0 ∗
       "Hsl_currHash" ∷ own_slice_small sl_currHash byteT 1 currHash ∗
       "Hptr_currHash" ∷ ptr_currHash ↦[slice.T byteT] sl_currHash ∗
       "Hpath_val" ∷ is_path_val
         (drop (length proof.(PathProof.Id) - int.nat loopIdx)
         proof.(PathProof.Id)) val currHash)%I : u64 → iProp Σ.
-  wp_apply (wp_forUpto for_inv with "[] [$HloopIdx $HNodeHash $HcurrHash Hhash]"); [word|..].
+  wp_apply (wp_forUpto for_inv with "[] [$HId $Hptr_Id $Hptr_ChildHashes $Hsl_dim0 $HloopIdx $HNodeHash $HcurrHash Hhash]"); [word|..].
   2: {
     assert ((length proof.(PathProof.Id) - int.nat 0)%nat = length proof.(PathProof.Id)) as H by word;
       iEval (rewrite H); clear H.
@@ -451,11 +486,59 @@ Proof.
     destruct val; done.
   }
   {
-    iEval (rewrite /for_inv).
+    iEval (rewrite /for_inv); clear for_inv.
     iIntros (loopIdx Φ2) "!> (Hinv & HloopIdx & %HloopBound) HΦ2";
       iNamed "Hinv".
-    (* TODO: write invariants for inner loops. *)
-    admit.
+    wp_load.
+    wp_apply (wp_loadField with "[$Hptr_ChildHashes]");
+      iIntros "Hptr_ChildHashes".
+    iDestruct (own_slice_small_sz with "Hsl_dim0") as "%Hlen_list_dim0".
+    (* Rewrite this early since it appears in multiple sub-terms. *)
+    replace (u64_instance.u64.(word.sub) (u64_instance.u64.(word.sub)
+      sl_ChildHashes.(Slice.sz) 1) loopIdx) with
+      (U64 (length list_dim0 - 1 - int.nat loopIdx)) by word.
+    assert (∃ (sl_dim1' : Slice.t),
+      list_dim0 !! int.nat (length list_dim0 - 1 - int.nat loopIdx) =
+      Some sl_dim1') as Hlook.
+    { apply lookup_lt_is_Some. word. }
+    destruct Hlook as [sl_dim1' Hlook].
+    wp_apply (wp_SliceGet with "[$Hsl_dim0]"); [done|];
+      iIntros "Hsl_dim0".
+    clear Hlook.
+    wp_apply (wp_loadField with "[$Hptr_Id]");
+      iIntros "Hptr_Id".
+    iDestruct (own_slice_small_sz with "HId") as "%Hlen_Id".
+    iDestruct (big_sepL2_length with "Hsep_dim0") as "%Hlen_ChildHashes".
+    assert (∃ (pos : u8),
+      proof.(PathProof.Id) !! int.nat (length list_dim0 - 1 - int.nat loopIdx) =
+      Some pos) as Hlook.
+    { apply lookup_lt_is_Some. word. }
+    destruct Hlook as [pos Hlook].
+    wp_apply (wp_SliceGet with "[$HId]"); [done|];
+      iIntros "HId".
+    wp_apply wp_ref_of_zero; [done|];
+      iIntros (ptr_hr) "Hhr".
+    Print slice_take.
+    Search SliceTake.
+    Print slice_take.
+    Search slice_take.
+    (* TODO: to prove idx, destruct big sep and len from above. *)
+    wp_apply wp_SliceTake; [admit|].
+    Print slice_take.
+    wp_pures.
+    Search Slice.mk.
+    (* probably should use slice_small_split.
+       how does that interact here?
+       Have SliceTake s pos and SliceSkip s pos.
+       Both of those get turned into slice_take/slice_skip on the same ptr.
+       But using the wp_SliceTake actually won't work,
+       since the capacity is the same as the original slice.
+       So instead, need to shrink the capacity as well.
+
+       How does slice_take work?
+       It's just a Slice.mk internally, but on the same ptr.
+       But I can't have two things owning that ptr mem, so what gives?
+    *)
   }
   admit.
 Admitted.
