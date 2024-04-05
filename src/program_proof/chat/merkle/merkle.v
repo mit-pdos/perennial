@@ -249,20 +249,21 @@ Definition own_Tree ptr_tr entry_map : iProp Σ :=
   "%Htree_map" ∷ ⌜tree_to_map tr = entry_map⌝ ∗
   "Hptr_root" ∷ ptr_tr ↦[Tree :: "Root"] #root.
 
+(* Note: make everything RO for easy big sep logic. *)
 Definition is_Slice2D (sl_dim0 : Slice.t) (obj_dim0 : list (list u8)) : iProp Σ :=
   ∃ list_dim0,
-  "Hsl_dim0" ∷ own_slice_small sl_dim0 (slice.T byteT) 1 list_dim0 ∗
+  "#Hro_sl_dim0" ∷ readonly (own_slice_small sl_dim0 (slice.T byteT) 1 list_dim0) ∗
   "#Hsep_dim0" ∷ ([∗ list] sl_dim1;obj_dim1 ∈ list_dim0;obj_dim0,
-    "#Hsl_dim1" ∷ readonly (own_slice_small sl_dim1 byteT 1 obj_dim1)).
+    "#Hro_sl_dim1" ∷ readonly (own_slice_small sl_dim1 byteT 1 obj_dim1)).
 
 Definition is_Slice3D (sl_dim0 : Slice.t) (obj_dim0 : list (list (list u8))) : iProp Σ :=
   ∃ list_dim0,
-  "Hsl_dim0" ∷ own_slice_small sl_dim0 (slice.T (slice.T byteT)) 1 list_dim0 ∗
+  "#Hro_sl_dim0" ∷ readonly (own_slice_small sl_dim0 (slice.T (slice.T byteT)) 1 list_dim0) ∗
   "#Hsep_dim0" ∷ ([∗ list] sl_dim1;obj_dim1 ∈ list_dim0;obj_dim0,
     ∃ list_dim1,
-    "#Hsl_dim1" ∷ readonly (own_slice_small sl_dim1 (slice.T byteT) 1 list_dim1) ∗
+    "#Hro_sl_dim1" ∷ readonly (own_slice_small sl_dim1 (slice.T byteT) 1 list_dim1) ∗
     "#Hsep_dim1" ∷ ([∗ list] sl_dim2;obj_dim2 ∈ list_dim1;obj_dim1,
-      "#Hsl_dim2" ∷ readonly (own_slice_small sl_dim2 byteT 1 obj_dim2))).
+      "#Hro_sl_dim2" ∷ readonly (own_slice_small sl_dim2 byteT 1 obj_dim2))).
 
 End defs.
 
@@ -285,7 +286,7 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
   "Hptr_NodeHash" ∷ ptr ↦[PathProof :: "NodeHash"] (slice_val sl_NodeHash) ∗
   "HDigest" ∷ own_slice_small sl_Digest byteT 1 obj.(Digest) ∗
   "Hptr_Digest" ∷ ptr ↦[PathProof :: "Digest"] (slice_val sl_Digest) ∗
-  "HChildHashes" ∷ is_Slice3D sl_ChildHashes obj.(ChildHashes) ∗
+  "#HChildHashes" ∷ is_Slice3D sl_ChildHashes obj.(ChildHashes) ∗
   "Hptr_ChildHashes" ∷ ptr ↦[PathProof :: "ChildHashes"] (slice_val sl_ChildHashes) ∗
   "%Hlen_id_depth" ∷ ⌜length obj.(Id) = length obj.(ChildHashes)⌝ ∗
   "%Hlen_id_ub" ∷ ⌜length obj.(Id) ≤ 32⌝.
@@ -324,7 +325,6 @@ Proof.
   rewrite /Node__Hash.
   wp_apply wp_SliceSingleton; [val_ty|];
     iIntros (sl_data) "Hdata".
-  (* SliceSingleton gives untyped slice. Need typed slice. *)
   wp_apply (wp_Hash with "[Hdata]").
   {
     iDestruct (slice.own_slice_to_small with "Hdata") as "Hdata".
@@ -337,43 +337,56 @@ Proof.
   iFrame "#∗".
 Qed.
 
-Lemma wp_HasherWrite sl_hasher hasher ptr_hasher sl_data (data : list u8) :
+Lemma wp_HasherWrite sl_hr hr ptr_hr sl_data (data : list u8) :
   {{{
-    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 hasher ∗
-    "Hptr_hasher" ∷ ptr_hasher ↦[slice.T byteT] (slice_val sl_hasher) ∗
+    "Hhr" ∷ own_slice_small sl_hr byteT 1 hr ∗
+    "Hptr_hr" ∷ ptr_hr ↦[slice.T byteT] (slice_val sl_hr) ∗
     "#Hdata" ∷ readonly (own_slice_small sl_data byteT 1 data)
   }}}
-  HasherWrite #ptr_hasher (slice_val sl_data)
+  HasherWrite #ptr_hr (slice_val sl_data)
   {{{
-    RET #();
-    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 (hasher ++ data) ∗
-    "Hptr_hasher" ∷ ptr_hasher ↦[slice.T byteT] (slice_val sl_hasher)
+    sl_hr', RET #();
+    "Hhr" ∷ own_slice_small sl_hr' byteT 1 (hr ++ data) ∗
+    "Hptr_hr" ∷ ptr_hr ↦[slice.T byteT] (slice_val sl_hr')
   }}}.
 Proof. Admitted.
 
-Lemma wp_HasherWriteSl sl_hasher hasher ptr_hasher sl_data data :
+Lemma wp_HasherWriteSl sl_hr hr ptr_hr sl_data data :
   {{{
-    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 hasher ∗
-    "Hptr_hasher" ∷ ptr_hasher ↦[slice.T byteT] (slice_val sl_hasher) ∗
+    "Hhr" ∷ own_slice_small sl_hr byteT 1 hr ∗
+    "Hptr_hr" ∷ ptr_hr ↦[slice.T byteT] (slice_val sl_hr) ∗
     "#Hdata" ∷ is_Slice2D sl_data data
   }}}
-  HasherWriteSl #ptr_hasher (slice_val sl_data)
+  HasherWriteSl #ptr_hr (slice_val sl_data)
   {{{
-    RET #();
-    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 (hasher ++ concat data) ∗
-    "Hptr_hasher" ∷ ptr_hasher ↦[slice.T byteT] (slice_val sl_hasher)
+    sl_hr', RET #();
+    "Hhr" ∷ own_slice_small sl_hr' byteT 1 (hr ++ concat data) ∗
+    "Hptr_hr" ∷ ptr_hr ↦[slice.T byteT] (slice_val sl_hr')
   }}}.
 Proof. Admitted.
 
-Lemma wp_HasherSumNil sl_hasher hasher :
+Lemma wp_HasherSumNil sl_hr hr :
   {{{
-    "Hhasher" ∷ own_slice_small sl_hasher byteT 1 hasher
+    "Hhr" ∷ own_slice_small sl_hr byteT 1 hr
   }}}
-  HasherWrite (slice_val sl_hasher) #null
+  HasherSum (slice_val sl_hr) slice.nil
   {{{
     sl_hash hash, RET (slice_val sl_hash);
-    "#Hhash" ∷ is_hash hasher hash ∗
+    "#Hhash" ∷ is_hash hr hash ∗
     "Hsl_hash" ∷ own_slice_small sl_hash byteT 1 hash
+  }}}.
+Proof. Admitted.
+
+Lemma wp_IsValidHashSl sl_data data :
+  {{{
+    "#Hdata" ∷ is_Slice2D sl_data data
+  }}}
+  IsValidHashSl (slice_val sl_data)
+  {{{
+    (ok : bool), RET #ok;
+    if bool_decide ok then
+      "%Hlen" ∷ ([∗ list] l ∈ data, ⌜length l = 32%nat⌝)
+    else True%I
   }}}.
 Proof. Admitted.
 
@@ -394,90 +407,37 @@ Lemma wp_PathProofCheck ptr_proof proof val :
     else True%I
   }}}.
 Proof.
-  simpl.
   iIntros (Φ) "H HΦ"; iNamed "H"; iNamed "Hproof".
   rewrite /PathProof__Check.
   wp_apply wp_ref_to; [val_ty|];
     iIntros (ptr_err) "Hptr_err".
-  iDestruct ("HChildHashes") as (?) "H"; iNamed "H".
-  wp_apply (wp_loadField with "[$]");
-    iIntros "Hptr_ChildHashes".
-
-  (* Length checking loop. *)
-  set for_inv :=
-    (λ loopIdx, ∃ (err : u64),
-      "Hptr_err" ∷ ptr_err ↦[uint64T] #err ∗
-      "Herr_pred" ∷ if bool_decide (err = 0) then
-        (* TODO: change to pure coq notation. *)
-        "#Hlen" ∷ ([∗ list] children ∈ take (int.nat loopIdx) proof.(PathProof.ChildHashes),
-          ⌜length children = 255%nat⌝)
-      else True)%I : u64 → iProp Σ.
-  wp_apply (wp_forSlice for_inv with "[] [$Hptr_err $Hsl_dim0 //]").
-  {
-    iEval (rewrite /for_inv).
-    iIntros (? sl_dim1' Φ2) "!> (Hinv & %Hbound & %Hlook) HΦ2".
-    iDestruct (big_sepL2_lookup_1_some with "Hsep_dim0") as (obj_dim1') "%Hlook2";
-      [done|].
-    iDestruct (big_sepL2_lookup with "Hsep_dim0") as (list_dim1) "H"; [done..|];
-      iNamed "H".
-    iDestruct (readonly_load with "Hsl_dim1") as "> Hsl_dim1'".
-    iDestruct "Hsl_dim1'" as (?) "Hsl_dim1'".
-    iDestruct "Hinv" as (?) "H"; iNamed "H".
-    wp_apply wp_slice_len.
-    case_bool_decide; rename H into Herr; wp_if_destruct.
-    all: replace (u64_instance.u64.(word.sub) 256 1) with (U64 255) in Heqb; [|word].
-    { wp_store. iApply "HΦ2". by iFrame. }
-    {
-      (* The actual inv extension case. *)
-      iApply "HΦ2".
-      iFrame.
-      case_bool_decide; [|done]; iNamed "Herr_pred".
-      replace (int.nat (u64_instance.u64.(word.add) i 1)) with (S (int.nat i)); [|word].
-      rewrite (take_S_r _ _ _ Hlook2).
-      iDestruct (own_slice_small_sz with "Hsl_dim1'") as "%Hlen_list_sl".
-      iDestruct (big_sepL2_length with "Hsep_dim1") as "%Hlen_list_obj".
-      (* TODO: there should be a cleaner way to do the rewrites and words.
-         Something like "eauto with word" on the final assert. *)
-      rewrite Heqb in Hlen_list_sl.
-      rewrite Hlen_list_sl in Hlen_list_obj.
-      assert (length obj_dim1' = 255%nat) as Hlen_255 by word.
-      by iFrame "%#".
-    }
-    { wp_store. iApply "HΦ2". by iFrame. }
-    { iApply "HΦ2". iFrame. by case_bool_decide. }
-  }
-  iEval (rewrite /for_inv).
-  iIntros "[Hinv Hsl_dim0]".
-  iDestruct "Hinv" as (err) "Hinv"; iNamed "Hinv".
-  wp_load.
-  wp_if_destruct.
-  { wp_load. iApply "HΦ". case_bool_decide; naive_solver. }
-  case_bool_decide; [|done]; iNamed "Herr_pred";
-    iClear (H for_inv ptr_err) "Hptr_err".
-  iDestruct (own_slice_small_sz with "Hsl_dim0") as "%H1";
-    iDestruct (big_sepL2_length with "Hsep_dim0") as "%H2";
-    rewrite H1 in H2;
-    iEval (rewrite H2 firstn_all) in "Hlen";
-    clear H1 H2.
   wp_loadField.
   wp_apply wp_ref_to; [val_ty|]. iIntros (ptr_currHash) "HcurrHash".
   wp_loadField.
   wp_apply wp_slice_len.
-
-  (* Main for loop. *)
   wp_apply wp_ref_to; [val_ty|]; iIntros (ptr_loopIdx) "HloopIdx".
+  iDestruct ("HChildHashes") as (?) "H"; iNamed "H".
+  iMod (readonly_alloc_1 with "HNodeHash") as "#Hro_NodeHash".
+  iDestruct (big_sepL2_length with "Hsep_dim0") as "%Hlen_ChildHashes".
+  iMod (readonly_load with "Hro_sl_dim0") as (q) "H";
+    iDestruct (own_slice_small_sz with "H") as "%Hlen_list_dim0";
+    iClear (q) "H".
+
+  (* Entering the main loop. *)
   set for_inv :=
-    (λ loopIdx, ∃ sl_currHash currHash,
+    (λ loopIdx, ∃ sl_currHash currHash (err : u64),
       "HId" ∷ own_slice_small sl_Id byteT 1 proof.(PathProof.Id) ∗
       "Hptr_Id" ∷ ptr_proof ↦[PathProof :: "Id"] sl_Id ∗
       "Hptr_ChildHashes" ∷ ptr_proof ↦[PathProof :: "ChildHashes"] sl_ChildHashes ∗
-      "Hsl_dim0" ∷ own_slice_small sl_ChildHashes (slice.T (slice.T byteT)) 1 list_dim0 ∗
-      "Hsl_currHash" ∷ own_slice_small sl_currHash byteT 1 currHash ∗
+      "#Hro_sl_currHash" ∷ readonly (own_slice_small sl_currHash byteT 1 currHash) ∗
       "Hptr_currHash" ∷ ptr_currHash ↦[slice.T byteT] sl_currHash ∗
-      "Hpath_val" ∷ is_path_val
-        (drop (length proof.(PathProof.Id) - int.nat loopIdx)
-        proof.(PathProof.Id)) val currHash)%I : u64 → iProp Σ.
-  wp_apply (wp_forUpto for_inv with "[] [$HId $Hptr_Id $Hptr_ChildHashes $Hsl_dim0 $HloopIdx $HNodeHash $HcurrHash Hhash]"); [word|..].
+      "Hptr_err" ∷ ptr_err ↦[uint64T] #err ∗
+      "Herr_pred" ∷ if bool_decide (err = 0) then
+        "Hpath_val" ∷ is_path_val
+          (drop (length proof.(PathProof.Id) - int.nat loopIdx)
+          proof.(PathProof.Id)) val currHash
+      else True)%I : u64 → iProp Σ.
+  wp_apply (wp_forUpto for_inv with "[] [$HId $Hptr_Id $Hptr_ChildHashes $HloopIdx $HcurrHash $Hro_NodeHash $Hptr_err Hhash]"); [word|..].
   2: {
     assert ((length proof.(PathProof.Id) - int.nat 0)%nat = length proof.(PathProof.Id)) as H by word;
       iEval (rewrite H); clear H.
@@ -492,56 +452,198 @@ Proof.
     wp_load.
     wp_apply (wp_loadField with "[$Hptr_ChildHashes]");
       iIntros "Hptr_ChildHashes".
-    iDestruct (own_slice_small_sz with "Hsl_dim0") as "%Hlen_list_dim0".
+
+    (* Note: move all the sep fetches into one block, like this. *)
+    iMod (readonly_load with "Hro_sl_dim0") as (?) "Hsl_dim0".
+    assert (∃ (sl_dim1' : Slice.t),
+      list_dim0 !! int.nat (length list_dim0 - 1 - int.nat loopIdx) =
+      Some sl_dim1') as [sl_dim1' Hlook_sl_dim1'].
+    { apply lookup_lt_is_Some. word. }
+    iDestruct (big_sepL2_lookup_1_some with "Hsep_dim0") as %[obj_dim1' Hlook_obj_dim1']; [done|].
+    iDestruct (big_sepL2_lookup with "Hsep_dim0") as (list_dim1') "H";
+      [done..|]; iNamed "H".
+    iMod (readonly_load with "Hro_sl_dim1") as (?) "Hsl_dim1".
+    iDestruct (own_slice_small_sz with "Hsl_dim1") as "%Hlen_list_dim1'".
+    iDestruct (big_sepL2_length with "Hsep_dim1") as "%Hlen_obj_dim1'".
+    iDestruct (own_slice_small_sz with "HId") as "%Hlen_Id".
+
     (* Rewrite this early since it appears in multiple sub-terms. *)
     replace (u64_instance.u64.(word.sub) (u64_instance.u64.(word.sub)
       sl_ChildHashes.(Slice.sz) 1) loopIdx) with
       (U64 (length list_dim0 - 1 - int.nat loopIdx)) by word.
-    assert (∃ (sl_dim1' : Slice.t),
-      list_dim0 !! int.nat (length list_dim0 - 1 - int.nat loopIdx) =
-      Some sl_dim1') as Hlook.
-    { apply lookup_lt_is_Some. word. }
-    destruct Hlook as [sl_dim1' Hlook].
+
     wp_apply (wp_SliceGet with "[$Hsl_dim0]"); [done|];
       iIntros "Hsl_dim0".
-    clear Hlook.
+    wp_apply wp_slice_len.
+
+    wp_if_destruct.
+    { wp_store. iApply "HΦ2". by iFrame "#∗". }
+    replace (u64_instance.u64.(word.sub) 256 1) with (U64 255) in Heqb;
+      [|word]; rename Heqb into Hsz_sl_dim1'.
+    wp_apply (wp_IsValidHashSl with "[$Hro_sl_dim1 $Hsep_dim1]").
+      iIntros (ok) "H".
+    wp_if_destruct.
+    { wp_store. iApply "HΦ2". by iFrame "#∗". }
+    iSimpl in "H"; iNamed "H"; rename Hlen into Hhash_len_obj_dim1'.
+
     wp_apply (wp_loadField with "[$Hptr_Id]");
       iIntros "Hptr_Id".
-    iDestruct (own_slice_small_sz with "HId") as "%Hlen_Id".
-    iDestruct (big_sepL2_length with "Hsep_dim0") as "%Hlen_ChildHashes".
     assert (∃ (pos : u8),
       proof.(PathProof.Id) !! int.nat (length list_dim0 - 1 - int.nat loopIdx) =
-      Some pos) as Hlook.
+      Some pos) as [pos Hlook_pos].
     { apply lookup_lt_is_Some. word. }
-    destruct Hlook as [pos Hlook].
     wp_apply (wp_SliceGet with "[$HId]"); [done|];
       iIntros "HId".
-    wp_apply wp_ref_of_zero; [done|];
-      iIntros (ptr_hr) "Hhr".
-    Print slice_take.
-    Search SliceTake.
-    Print slice_take.
-    Search slice_take.
-    (* TODO: to prove idx, destruct big sep and len from above. *)
-    wp_apply wp_SliceTake; [admit|].
-    Print slice_take.
-    wp_pures.
-    Search Slice.mk.
-    (* probably should use slice_small_split.
-       how does that interact here?
-       Have SliceTake s pos and SliceSkip s pos.
-       Both of those get turned into slice_take/slice_skip on the same ptr.
-       But using the wp_SliceTake actually won't work,
-       since the capacity is the same as the original slice.
-       So instead, need to shrink the capacity as well.
 
-       How does slice_take work?
-       It's just a Slice.mk internally, but on the same ptr.
-       But I can't have two things owning that ptr mem, so what gives?
-    *)
+    (* TODO: word should know this. *)
+    assert (length list_dim1' = 255%nat) as H255_list_dim1'.
+    { rewrite Hlen_list_dim1'. rewrite Hsz_sl_dim1'. word. }
+    (* Note: this slows down word for some reason. *)
+    pose proof (word.unsigned_range pos) as Hpos_bound.
+
+    (* The complicated slice splitting logic. *)
+    iDestruct (own_slice_small_wf with "Hsl_dim1") as "%Hwf_sl_dim1".
+    iDestruct (slice_small_split _ (u8_to_u64 pos) with "Hsl_dim1") as "[Hsl_before Hsl_after]".
+    (* TODO: word should know this. *)
+    { rewrite u8_to_u64_Z. lia. }
+    wp_apply wp_SliceTake.
+    { rewrite u8_to_u64_Z. lia. }
+    wp_apply wp_SliceSkip.
+    { rewrite u8_to_u64_Z. lia. }
+    iEval (rewrite u8_to_u64_Z) in "Hsl_before".
+    iEval (rewrite u8_to_u64_Z) in "Hsl_after".
+    (* TODO: we really shouldn't need to type in the entire P here. *)
+    iMod (readonly_alloc (own_slice_small (slice_take sl_dim1' (u8_to_u64 pos)) (slice.T byteT) 1 (take (int.nat pos) list_dim1')) with "[$Hsl_before]") as "#Hro_sl_before".
+    iMod (readonly_alloc (own_slice_small (slice_skip sl_dim1' (slice.T byteT) (u8_to_u64 pos)) (slice.T byteT) 1 (drop (int.nat pos) list_dim1')) with "[$Hsl_after]") as "#Hro_sl_after".
+
+    wp_apply wp_ref_of_zero; [done|];
+      iIntros (ptr_hr) "Hptr_hr".
+    iEval (rewrite zero_slice_val) in "Hptr_hr".
+    iDestruct (own_slice_small_nil byteT 1 (Slice.nil)) as "Hnil"; [done|].
+    wp_apply (wp_HasherWriteSl with "[$Hptr_hr $Hnil $Hro_sl_before]").
+    {
+      iApply big_sepL2_prefix.
+      4: iFrame "#".
+      1: apply prefix_take.
+      1: apply (prefix_take _ (int.nat pos)).
+      { do 2 rewrite take_length. lia. }
+    }
+    iIntros (sl_hr) "H"; iNamed "H".
+    wp_load.
+    wp_apply (wp_HasherWrite with "[$Hptr_hr $Hhr $Hro_sl_currHash]");
+      clear sl_hr; iIntros (sl_hr) "H"; iNamed "H".
+    wp_apply (wp_HasherWriteSl with "[$Hptr_hr $Hhr $Hro_sl_after]").
+    {
+      iApply big_sepL2_suffix.
+      4: iFrame "#".
+      1: apply suffix_drop.
+      1: apply (suffix_drop _ (int.nat pos)) .
+      { do 2 rewrite drop_length. lia. }
+    }
+    clear sl_hr; iIntros (sl_hr) "H"; iNamed "H".
+    wp_apply wp_SliceSingleton; [val_ty|];
+      iIntros (sl_tag) "H";
+      iDestruct (slice.own_slice_to_small with "H") as "Hsl_tag".
+    iAssert (own_slice_small _ _ _ [U8 2]) with "Hsl_tag" as "Hsl_tag".
+    iMod (readonly_alloc_1 with "Hsl_tag") as "#Hro_sl_tag".
+    wp_apply (wp_HasherWrite with "[$Hptr_hr $Hhr $Hro_sl_tag]").
+    clear sl_hr; iIntros (sl_hr) "H"; iNamed "H".
+    wp_load.
+    wp_apply (wp_HasherSumNil with "Hhr");
+      iIntros (sl_hash hash) "H"; iNamed "H".
+    wp_store.
+    iMod (readonly_alloc_1 with "Hsl_hash") as "#Hro_sl_hash".
+    iClear (sl_tag) "Hro_NodeHash Hro_sl_before Hro_sl_after Hnil Hro_sl_tag".
+
+    (* Done with code, now re-establish loop inv. *)
+    case_bool_decide; rename H into Herr; iNamed "Herr_pred".
+    2: { iApply "HΦ2". iFrame "#∗". by case_bool_decide. }
+    iApply "HΦ2".
+    iFrame "#∗".
+    case_bool_decide; [|done].
+    clear Herr H.
+
+    rewrite /is_path_val.
+    iDestruct "Hpath_val" as (tr) "[Htr_hash %Htr_contains]".
+    iExists (Interior (
+      ((λ h, Cut h) <$> (take (int.nat pos) obj_dim1')) ++
+      [tr] ++
+      ((λ h, Cut h) <$> (drop (int.nat pos) obj_dim1')))).
+    iIntros "!>".
+    iSplit.
+    {
+      iExists (
+        (take (int.nat pos) obj_dim1') ++
+        [currHash] ++
+        (drop (int.nat pos) obj_dim1')).
+      iSplit.
+      {
+        iEval (rewrite fmap_app).
+        iApply big_sepL2_app.
+        {
+          iEval (rewrite <-list_fmap_compose).
+          iApply big_sepL2_fmap_l.
+          iApply big_sepL_sepL2_diag.
+          iApply big_sepL_take.
+          iPureIntro.
+          naive_solver.
+        }
+        iEval (rewrite fmap_cons).
+        iApply big_sepL2_cons.
+        iFrame.
+        {
+          iEval (rewrite <-list_fmap_compose).
+          iApply big_sepL2_fmap_l.
+          iApply big_sepL_sepL2_diag.
+          iApply (big_sepL_drop (λ _ _, _)).
+          iPureIntro.
+          naive_solver.
+        }
+      }
+      iEval (do 2 rewrite concat_app).
+      by list_simplifier.
+    }
+    iPureIntro.
+    clear Hpos_bound.
+    rewrite (drop_S _ pos _ _).
+    2: { rewrite <-Hlook_pos. f_equal. word. }
+    (* TODO: is there a good way of extracting this goal automatically? *)
+    replace (S (length proof.(PathProof.Id) - int.nat (u64_instance.u64.(word.add) loopIdx 1))) with
+      ((length proof.(PathProof.Id) - int.nat loopIdx)%nat) by word.
+    exists tr.
+    split; [|done].
+    rewrite (lookup_app_r _ _ _ _).
+    2: {
+      rewrite fmap_length.
+      rewrite (take_length_le _ _ _); [done|].
+      pose proof (word.unsigned_range pos) as Hpos_bound.
+      lia.
+    }
+    rewrite fmap_length.
+    rewrite (take_length_le _ _ _).
+    2: { pose proof (word.unsigned_range pos) as Hpos_bound. lia. }
+    replace ((int.nat pos - int.nat pos)%nat) with (0%nat) by lia.
+    naive_solver.
   }
-  admit.
-Admitted.
+
+  (* Last chunk of code after for loop. *)
+  iEval (rewrite /for_inv); clear for_inv.
+  iIntros "[H _]"; iNamed "H".
+  wp_load.
+  wp_if_destruct; [by iApply "HΦ"|].
+  iSimpl in "Herr_pred"; iNamed "Herr_pred".
+  wp_apply (wp_loadField with "Hptr_Digest");
+    iIntros "Hptr_Digest".
+  wp_load.
+  iMod (readonly_load with "Hro_sl_currHash") as (?) "Hsl_currHash".
+  wp_apply (wp_BytesEqual with "[$Hsl_currHash $HDigest]");
+    iIntros "[Hsl_currHash HDigest]".
+  wp_if_destruct; [by iApply "HΦ"|].
+  iEval (replace ((length proof.(PathProof.Id) - int.nat sl_ChildHashes.(Slice.sz))%nat)
+    with (0%nat) by word) in "Hpath_val".
+  iEval (rewrite drop_0 Heqb) in "Hpath_val".
+  by iApply "HΦ".
+Qed.
 
 Lemma wp_MembProofCheck sl_proof proof sl_id sl_val sl_digest (id val digest : list u8) :
   {{{
