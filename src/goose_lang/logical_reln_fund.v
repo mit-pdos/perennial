@@ -341,6 +341,7 @@ Proof.
     { iDestruct "Hnull" as (?) "(%&%)"; subst. eauto. }
     iDestruct "Hval" as (????? (?&?&?&?)) "H1". subst; eauto.
   - iDestruct "Hval" as %[].
+  - iDestruct "Hval" as %[].
   - rewrite /val_interp/=. iDestruct (sty_val_size with "Hval") as "(%&%)"; eauto.
   - rewrite /val_interp/=. done.
 Qed.
@@ -412,6 +413,7 @@ Proof.
       simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
       simpl in *; inversion Hlookup2; inversion Hlookup3; subst; eauto.
       iRight. eauto. }
+  - iDestruct "Hval" as %[].
   - iDestruct "Hval" as %[].
   - rewrite /val_interp/=. iDestruct (sty_val_flatten with "Hval") as %[Heq1 Heq2].
     { simpl in Hlookup1. destruct i; simpl in *; try inversion Hlookup1; subst; eauto.
