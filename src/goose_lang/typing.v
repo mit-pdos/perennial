@@ -1,6 +1,6 @@
 From stdpp Require Import gmap.
 From Perennial.goose_lang Require Import lang notation.
-From Perennial.goose_lang.lib Require Import map.impl list.impl.
+From Perennial.goose_lang.lib Require Import lock.impl channel.impl map.impl list.impl.
 
 Set Default Proof Using "Type".
 
@@ -31,6 +31,7 @@ Section val_types.
   | structRefT (ts: list ty)
   (* mapValT vt = vt + (uint64 * vt * mapValT vt) *)
   | mapValT (kt:ty) (vt: ty)
+  | chanValT (vt: ty)
   | extT (x: ext_tys)
   (* propehy variable *)
   | prophT
@@ -102,6 +103,7 @@ Section goose_lang.
     | baseT unitBT => #()
     | baseT stringBT => #(str"")
     | mapValT kt vt => MapNilV (zero_val vt)
+    | chanValT vt => ChannelClosedV (zero_val vt)
     | prodT t1 t2 => (zero_val t1, zero_val t2)
     | listT t => InjLV (LitV LitUnit)
     | sumT t1 t2 => InjLV (zero_val t1)
@@ -129,6 +131,7 @@ Section goose_lang.
     | mapValT t => has_zero t
     *)
     | mapValT t1 t2 => False
+    | chanValT t => False
     | prodT t1 t2 => has_zero t1 ∧ has_zero t2
     | listT t => has_zero t
     | sumT t1 t2 => has_zero t1
@@ -573,6 +576,14 @@ Section goose_lang.
   Qed.
   *)
 
+  Definition chanT (vt:ty) : ty := (prodT ptrT ptrT).
+
+  Definition NewChan (t:ty) : val :=
+  λ: "cap",
+    let: "chanref" := Alloc (InjR (Var "cap", Var "cap", ChannelNilV (zero_val t))) in
+    let: "lock" := lock.new #() in
+    (InjR (Var "chanref", Var "lock"))
+  .
 End goose_lang.
 
 Declare Scope heap_types.

@@ -3,7 +3,7 @@ From Perennial.goose_lang.lib Require Export
      typed_mem.impl struct.impl loop.impl
      encoding.impl map.impl slice.impl lock.impl
      time.impl rand.impl proph.impl waitgroup.impl
-     string.impl
+     string.impl channel.impl
 .
 
 (* We provide stubs here for primitive operations to make the Goose unit tests
