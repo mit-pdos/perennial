@@ -35,14 +35,28 @@ Notation check_run p := (ltac:(check_run p)) (only parsing).
 Definition runs_to (p: expr) (v: val) :=
   run p = Works _ v.
 Notation "p ~~> v" := (runs_to p v) (at level 70).
+
+Inductive outcome_ok (v: val) : val -> Prop := outcome_eq : outcome_ok v v.
+Inductive outcome_fail (s: string) : Prop := .
+
+Lemma do_test p v:
+  match run p with Works _ w => outcome_ok w v | Fail _ s => outcome_fail s end ->
+  runs_to p v.
+Proof.
+unfold runs_to. destruct run as [v'|e]; intros H.
+- apply f_equal. now elim H.
+- easy.
+Qed.
+
 Ltac test :=
-  match goal with
+  lazymatch goal with
   | [ |- runs_to ?p _ ] =>
+    apply do_test;
     vm_compute;
     lazymatch goal with
-    | |- Works _ ?v' = Works _ ?v =>
+    | |- outcome_ok ?v' ?v =>
       reflexivity || fail 0 p "⇝" v' "but expected" v
-    | |- Fail _ ?msg = _ =>
+    | |- outcome_fail ?msg =>
       fail "interpreter failed on" p msg
     | |- ?goal =>
       fail "vm_compute got stuck" goal
