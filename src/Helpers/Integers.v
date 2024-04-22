@@ -298,6 +298,14 @@ Proof.
   rewrite Zmod_small; auto.
 Qed.
 
+Theorem u8_to_u64_Z x : int.Z (u8_to_u64 x) = int.Z x.
+Proof.
+  unfold u8_to_u64, U64.
+  rewrite word.unsigned_of_Z.
+  rewrite wrap_small; auto.
+  pose proof (word.unsigned_range x); lia.
+Qed.
+
 Theorem u32_to_u64_Z x : int.Z (u32_to_u64 x) = int.Z x.
 Proof.
   unfold u32_to_u64, U64.

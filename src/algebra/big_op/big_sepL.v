@@ -24,6 +24,13 @@ Section list.
   Implicit Types (P Q : PROP).
   Implicit Types (A : Type).
 
+  Lemma big_sepL_take {A} `{!BiAffine PROP} (Φ: nat → A → PROP) (m: list A) (n: nat):
+    ([∗ list] k ↦ x ∈ m, Φ k x) ⊢ ([∗ list] k ↦ x ∈ take n m, Φ k x).
+  Proof.
+    rewrite -{1}(take_drop n m) big_sepL_app.
+    by iIntros "(H&_)".
+  Qed.
+
   Lemma big_sepL_drop {A} `{!BiAffine PROP} (Φ: nat → A → PROP) (m: list A) (n: nat):
     ([∗ list] k ↦ x ∈ m, Φ k x) ⊢ ([∗ list] k ↦ x ∈ drop n m, Φ (n + k) x).
   Proof.
@@ -377,6 +384,22 @@ Section list2.
     destruct Hpre1 as (l1_rest & ->).
     destruct Hpre2 as (l2_rest & ->).
     iDestruct (big_sepL2_app_equiv with "H") as "($&_)"; eauto.
+  Qed.
+
+  Theorem big_sepL2_suffix `{!BiAffine PROP} (Φ : A → B → PROP) l1 l2 l1' l2' :
+    l1' `suffix_of` l1 →
+    l2' `suffix_of` l2 →
+    length l1' = length l2' →
+    ([∗ list] y1;y2 ∈ l1; l2, Φ y1 y2) -∗
+    ([∗ list] y1;y2 ∈ l1'; l2', Φ y1 y2).
+  Proof.
+    iIntros (Hsuff1 Hsuff2 Hlen) "H".
+    destruct Hsuff1 as (l1_rest & ->).
+    destruct Hsuff2 as (l2_rest & ->).
+    iDestruct (big_sepL2_length with "H") as "%Hlen_app".
+    iDestruct (big_sepL2_app_equiv with "H") as "(_&$)".
+    rewrite !app_length in Hlen_app.
+    lia.
   Qed.
 
 End list2.
