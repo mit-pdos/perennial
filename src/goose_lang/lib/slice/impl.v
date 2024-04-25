@@ -138,35 +138,6 @@ Definition SliceSet t: val :=
   λ: "s" "i" "v",
   (slice.ptr "s" +ₗ[t] "i") <-[t] "v".
 
-Definition SliceAppend t: val :=
-  λ: "s1" "x",
-  Assume (slice.len "s1" < #(2^64-1));;
-  let: "sz" := slice.len "s1" + #1 in
-  if: slice.cap "s1" - slice.len "s1" ≥ #1 then
-    (* re-use existing capacity *)
-    let: "p" := slice.ptr "s1" in
-    ("p" +ₗ[t] slice.len "s1") <-[t] "x";;
-    ("p", "sz", slice.cap "s1")
-  else
-    (* non-deterministically grow and copy *)
-    let: "cap" := make_cap "sz" in
-    let: "p" := AllocN "cap" (zero_val t) in
-    MemCpy_rec t "p" (slice.ptr "s1") (slice.len "s1");;
-    ("p" +ₗ[t] slice.len "s1") <-[t] "x";;
-    ("p", "sz", "cap").
-
-(* TODO: update to handle capacity correctly.
-For now, it's best to use SliceCopy (copy in Go) instead. *)
-Definition SliceAppendSlice t: val :=
-  λ: "s1" "s2",
-  let: "new_sz" := slice.len "s1" + slice.len "s2" in
-  let: "p" := AllocN "new_sz" (zero_val t) in
-  MemCpy_rec t "p" (slice.ptr "s1") (slice.len "s1");;
-  MemCpy_rec t ("p" +ₗ slice.len "s2") (slice.ptr "s2") "new_sz";;
-  (* TODO: unsound, need to de-allocate s1.p *)
-  (* FIXME: does not return a well-formed slice (capacity missing *)
-  ("p", "new_sz").
-
 Definition ArrayCopy (t:ty): val :=
   λ: "sz" "a",
   let: "p" := AllocN "sz" (zero_val t) in
@@ -186,6 +157,30 @@ Definition forSlice t: val :=
 (* TODO: this is super subtle to use, do we really need it? *)
 Definition ForSlice t (iv: binder) (xv: binder) (s: expr) (body: expr): expr :=
   forSlice t (λ: iv xv, body)%E s.
+
+Definition SliceAppend t: val :=
+  λ: "s1" "x",
+  Assume (slice.len "s1" < #(2^64-1));;
+  let: "sz" := slice.len "s1" + #1 in
+  if: slice.cap "s1" - slice.len "s1" ≥ #1 then
+    (* re-use existing capacity *)
+    let: "p" := slice.ptr "s1" in
+    ("p" +ₗ[t] slice.len "s1") <-[t] "x";;
+    ("p", "sz", slice.cap "s1")
+  else
+    (* non-deterministically grow and copy *)
+    let: "cap" := make_cap "sz" in
+    let: "p" := AllocN "cap" (zero_val t) in
+    MemCpy_rec t "p" (slice.ptr "s1") (slice.len "s1");;
+    ("p" +ₗ[t] slice.len "s1") <-[t] "x";;
+    ("p", "sz", "cap").
+
+Definition SliceAppendSlice t: val :=
+  λ: "s1" "s2",
+  let: "s" := ref_to (slice.T t) "s1" in
+  ForSlice t <> "x" "s2"
+    ("s" <-[slice.T t] (SliceAppend t (![slice.T t] "s") "x"));;
+  ![slice.T t] "s".
 
 End goose_lang.
 

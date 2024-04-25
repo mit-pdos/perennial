@@ -1163,6 +1163,7 @@ Qed.
 Global Opaque SliceCopy.
 
 Transparent SliceAppend.
+Transparent SliceAppendSlice.
 
 Lemma replicate_singleton {A} (x:A) :
   replicate 1 x = [x].
@@ -1411,6 +1412,53 @@ Proof.
   iDestruct (own_slice_zero t 1) as "Hs".
   wp_apply (wp_SliceAppend' with "Hs"); auto.
 Qed.
+
+Lemma own_slice_val_ty s t q vs :
+  own_slice_small s t q vs -∗
+  ⌜∀ i x, vs !! i = Some x → val_ty x t⌝.
+Proof.
+  iIntros "Hs %i %x %Hlook".
+  iDestruct "Hs" as "[Hs _]".
+  iDestruct (array_elem_acc Hlook with "Hs") as "[Hi _]".
+  iDestruct (struct_pointsto_ty with "Hi") as %Hty.
+  iFrame "%".
+Qed.
+
+Lemma wp_SliceAppendSlice stk E s1 s2 t vs1 vs2 q2 :
+  has_zero t →
+  {{{ own_slice s1 t 1 vs1 ∗ own_slice_small s2 t q2 vs2 }}}
+    SliceAppendSlice t s1 s2 @ stk; E
+  {{{ s', RET slice_val s'; own_slice s' t 1 (vs1 ++ vs2) }}}.
+Proof.
+  iIntros (Hzero Φ) "[Hs1 Hs2] HΦ".
+  wp_call.
+  wp_apply wp_ref_to; [apply slice_val_ty|].
+  iIntros (s_ptr) "Hs_ptr".
+  iDestruct (own_slice_val_ty with "Hs2") as "%Hty".
+
+  set for_inv :=
+    (λ (loopIdx : u64), ∃ s,
+      s_ptr ↦[slice.T t] (slice_val s) ∗
+      own_slice s t 1 (vs1 ++ (take (int.nat loopIdx) vs2)))%I.
+  wp_apply (wp_forSlice for_inv with "[] [Hs_ptr Hs1 Hs2]");
+    rewrite /for_inv;
+    clear for_inv.
+  2: {
+    replace (int.nat 0) with (0%nat) by word.
+    rewrite take_0.
+    rewrite app_nil_r.
+    iFrame.
+  }
+  {
+    iIntros (?? Φ2) "!> ([%s [Hs_ptr Hs]] & %Hlt & %Hlook) HΦ2".
+    wp_load.
+    specialize (Hty (int.nat i) x Hlook).
+    wp_apply (wp_SliceAppend with "[$Hs]"); [done..|].
+    iIntros (?) "Hs'".
+    (* TODO: why doesn't wp_store work here? *)
+    admit.
+  }
+Admitted.
 
 Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :
   {{{ own_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
