@@ -1428,7 +1428,11 @@ Lemma wp_SliceAppendSlice stk E s1 s2 t vs1 vs2 q2 :
   has_zero t →
   {{{ own_slice s1 t 1 vs1 ∗ own_slice_small s2 t q2 vs2 }}}
     SliceAppendSlice t s1 s2 @ stk; E
-  {{{ s', RET slice_val s'; own_slice s' t 1 (vs1 ++ vs2) }}}.
+  {{{
+    s', RET slice_val s';
+    own_slice s' t 1 (vs1 ++ vs2) ∗
+    own_slice_small s2 t q2 vs2
+  }}}.
 Proof.
   iIntros (Hzero Φ) "[Hs1 Hs2] HΦ".
   wp_call.
@@ -1470,7 +1474,8 @@ Proof.
   wp_load.
   iDestruct (own_slice_small_sz with "Hs2") as "<-".
   rewrite firstn_all.
-  by iApply "HΦ".
+  iApply "HΦ".
+  by iFrame.
 Qed.
 
 Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :

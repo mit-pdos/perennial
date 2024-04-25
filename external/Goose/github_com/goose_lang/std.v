@@ -25,6 +25,15 @@ Definition BytesEqual: val :=
           Continue));;
       ![boolT] "retval").
 
+(* See the [reference].
+
+   [reference]: https://pkg.go.dev/bytes#Clone *)
+Definition BytesClone: val :=
+  rec: "BytesClone" "b" :=
+    (if: "b" = slice.nil
+    then slice.nil
+    else SliceAppendSlice byteT (NewSlice byteT #0) "b").
+
 (* Compute the sum of two numbers, `Assume`ing that this does not overflow.
    *Use with care*, assumptions are trusted and should be justified! *)
 Definition SumAssumeNoOverflow: val :=

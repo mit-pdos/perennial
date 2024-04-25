@@ -4,7 +4,6 @@ From Goose.github_com.goose_lang Require Import std.
 
 From iris.algebra Require Import excl gset.
 From Perennial.program_proof Require Import proof_prelude.
-From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Class multiparG Σ : Set :=
    { multiparG_auth :> inG Σ (gset_disjR nat);
@@ -141,6 +140,44 @@ Proof.
       * rewrite -take_S_lookup_ne //.
         rewrite -[take i ys !! _]take_S_lookup_ne //.
         rewrite Heq //.
+Qed.
+
+Lemma wp_BytesClone sl_b q (b : list u8) :
+  {{{
+    own_slice_small sl_b byteT q b
+  }}}
+  BytesClone (slice_val sl_b)
+  {{{
+    sl_b0, RET (slice_val sl_b0);
+    own_slice_small sl_b0 byteT 1 b
+  }}}.
+Proof.
+  iIntros (Φ) "Hsl_b HΦ".
+  rewrite /BytesClone.
+  wp_pures.
+  wp_pure1; [done|].
+  wp_if_destruct.
+  {
+    iIntros "!>".
+    iSpecialize ("HΦ" $! Slice.nil).
+    iApply "HΦ".
+    inversion Heqb0.
+    apply (f_equal int.Z) in H1.
+    iPoseProof (slice.own_slice_small_nil _ 1) as "Hsl_b'"; [done|].
+    iDestruct (own_slice_small_agree with "[$Hsl_b] [$Hsl_b']") as %Heq.
+    destruct b; [|done].
+    iApply own_slice_to_small.
+    iApply own_slice_zero.
+  }
+  {
+    wp_apply wp_NewSlice.
+    iIntros (sl_b0) "Hsl_b0".
+    replace (int.nat 0) with (0%nat) by word.
+    wp_apply (wp_SliceAppendSlice with "[$Hsl_b $Hsl_b0]"); [done|].
+    iIntros (?) "[Hs' _]".
+    iDestruct (own_slice_to_small with "Hs'") as "Hs'".
+    by iApply "HΦ".
+  }
 Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
