@@ -1456,9 +1456,22 @@ Proof.
     wp_apply (wp_SliceAppend with "[$Hs]"); [done..|].
     iIntros (?) "Hs'".
     (* TODO: why doesn't wp_store work here? *)
-    admit.
+    wp_apply (wp_StoreAt with "Hs_ptr"); [apply slice_val_ty|].
+    iIntros "Hs'_ptr".
+    iApply "HΦ2".
+    apply take_S_r in Hlook.
+    replace (int.nat (word.add i 1)) with (S (int.nat i)) by word.
+    rewrite Hlook.
+    list_simplifier.
+    iFrame.
   }
-Admitted.
+
+  iIntros "[(%s & Hs_ptr & Hs) Hs2]".
+  wp_load.
+  iDestruct (own_slice_small_sz with "Hs2") as "<-".
+  rewrite firstn_all.
+  by iApply "HΦ".
+Qed.
 
 Lemma wp_SliceSet stk E s t vs (i: u64) (x: val) :
   {{{ own_slice_small s t 1 vs ∗ ⌜ is_Some (vs !! int.nat i) ⌝ ∗ ⌜val_ty x t⌝ }}}
