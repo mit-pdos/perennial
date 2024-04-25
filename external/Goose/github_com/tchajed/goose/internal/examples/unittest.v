@@ -409,6 +409,12 @@ Definition oddLiterals: val :=
       "b" ::= #false
     ].
 
+(* From Go spec: "note that the zero value for a slice or map type is not the
+   same as an initialized but empty value of the same type". *)
+Definition compositeLitLenZero: val :=
+  rec: "compositeLitLenZero" <> :=
+    NewSlice byteT #0.
+
 (* locks.go *)
 
 Definition useLocks: val :=
