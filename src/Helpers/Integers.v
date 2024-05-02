@@ -238,6 +238,14 @@ Proof.
 Qed.
 
 #[global]
+Instance sint_Z_inj `(word: Interface.word width) {word_ok: word.ok word} : Inj eq eq (@word.signed width _).
+Proof.
+  intros x1 x2.
+  intros.
+  apply word.signed_inj in H; auto.
+Qed.
+
+#[global]
 Instance byte_eq_dec : EqDecision byte.
 Proof. solve_decision. Defined.
 
@@ -268,6 +276,10 @@ Module int.
   Notation nat x := (Z.to_nat (Z x)).
 End int.
 
+Module sint.
+  Notation Z := word.signed.
+End sint.
+
 Theorem u64_Z_through_nat (x:u64) : Z.of_nat (int.nat x) = int.Z x.
 Proof.
   rewrite Z2Nat.id; auto.
@@ -296,6 +308,16 @@ Theorem wrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
 Proof.
   unfold word.wrap; intros.
   rewrite Zmod_small; auto.
+Qed.
+
+Theorem swrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
+  width > 0 ->
+  -(2^(width-1)) <= x < 2^(width-1) ->
+  @word.swrap _ word x = x.
+Proof.
+  unfold word.swrap; intros.
+  unshelve epose proof ZLib.Z.pow2_times2 width _; first by lia.
+  rewrite Zmod_small; lia.
 Qed.
 
 Theorem u8_to_u64_Z x : int.Z (u8_to_u64 x) = int.Z x.
@@ -506,6 +528,26 @@ Proof.
 Qed.
 
 Lemma unsigned_U32_0 : int.Z (U32 0) = 0.
+Proof.
+  reflexivity.
+Qed.
+
+Lemma signed_U64 z : sint.Z (U64 z) = word.swrap (word:=u64_instance.u64) z.
+Proof.
+  unfold U64; rewrite word.signed_of_Z; auto.
+Qed.
+
+Lemma signed_U32 z : sint.Z (U32 z) = word.swrap (word:=u32_instance.u32) z.
+Proof.
+  unfold U32; rewrite word.signed_of_Z; auto.
+Qed.
+
+Lemma signed_U64_0 : sint.Z (U64 0) = 0.
+Proof.
+  reflexivity.
+Qed.
+
+Lemma signed_U32_0 : sint.Z (U32 0) = 0.
 Proof.
   reflexivity.
 Qed.
