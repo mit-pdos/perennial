@@ -2,6 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.gokv.urpc.
+From Goose Require github_com.mit_pdos.secure_chat.ed25519.
 From Goose Require github_com.mit_pdos.secure_chat.cryptoffi.
 From Goose Require github_com.mit_pdos.secure_chat.cryptoutil.
 From Goose Require github_com.mit_pdos.secure_chat.marshalutil.
@@ -23,6 +24,7 @@ Definition okTy: ty := boolT.
 Definition errNone : expr := #false.
 
 Definition errSome : expr := #true.
+
 
 Definition keyServ := struct.decl [
   "sk" :: ed25519.PrivateKey;

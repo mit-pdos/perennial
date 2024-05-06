@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Goose.github_com.mit_pdos.secure_chat.merkle Require Import merkle_shim.
+From Goose.github_com.mit_pdos.secure_chat Require Import merkle.
 
 Section crypto.
 Context `{!heapGS Σ}.
