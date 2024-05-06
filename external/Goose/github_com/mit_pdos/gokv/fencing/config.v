@@ -72,7 +72,7 @@ Definition MILLION : expr := #1000000.
 
 Definition Server := struct.decl [
   "mu" :: ptrT;
-  "data" :: uint64T;
+  "data" :: grove_ffi.Address;
   "currentEpoch" :: uint64T;
   "epoch_cond" :: ptrT;
   "currHolderActive" :: boolT;

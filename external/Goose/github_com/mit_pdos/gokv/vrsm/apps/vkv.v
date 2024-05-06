@@ -99,7 +99,7 @@ Definition Clerk__CondPut: val :=
 Definition ClerkPool := struct.decl [
   "mu" :: ptrT;
   "cls" :: slice.T ptrT;
-  "confHosts" :: slice.T uint64T
+  "confHosts" :: slice.T grove_ffi.Address
 ].
 
 Definition MakeClerkPool: val :=

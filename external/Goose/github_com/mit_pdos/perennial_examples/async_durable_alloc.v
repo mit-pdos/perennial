@@ -6,7 +6,7 @@ From Perennial.goose_lang Require Import ffi.async_disk_prelude.
 (* Allocator uses a bit map to allocate and free numbers. Bit 0
    corresponds to number 0, bit 1 to 1, and so on. *)
 Definition Alloc := struct.decl [
-  "d" :: disk.Disk;
+  "d" :: async_disk.Disk;
   "mu" :: ptrT;
   "addr" :: uint64T;
   "next" :: uint64T;

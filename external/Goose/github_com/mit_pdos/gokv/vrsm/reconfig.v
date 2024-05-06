@@ -36,7 +36,7 @@ Definition EnterNewConfig: val :=
           "i" <-[uint64T] ((![uint64T] "i") + #1);;
           Continue);;
         let: "wg" := waitgroup.New #() in
-        let: "errs" := NewSlice uint64T (slice.len "clerks") in
+        let: "errs" := NewSlice e.Error (slice.len "clerks") in
         "i" <-[uint64T] #0;;
         Skip;;
         (for: (λ: <>, (![uint64T] "i") < (slice.len "clerks")); (λ: <>, Skip) := λ: <>,

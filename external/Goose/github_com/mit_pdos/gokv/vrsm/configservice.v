@@ -26,7 +26,7 @@ Definition DecodeConfig: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     "configLen" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    let: "config" := NewSlice uint64T (![uint64T] "configLen") in
+    let: "config" := NewSlice grove_ffi.Address (![uint64T] "configLen") in
     let: "i" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (slice.len "config")); (λ: <>, Skip) := λ: <>,
@@ -179,7 +179,7 @@ Definition state := struct.decl [
   "reservedEpoch" :: uint64T;
   "leaseExpiration" :: uint64T;
   "wantLeaseToExpire" :: boolT;
-  "config" :: slice.T uint64T
+  "config" :: slice.T grove_ffi.Address
 ].
 
 Definition encodeState: val :=

@@ -13,7 +13,7 @@ Definition WriteID: ty := uint64T.
 
 Definition PreparedWrite := struct.decl [
   "Id" :: uint64T;
-  "ChunkAddrs" :: slice.T uint64T
+  "ChunkAddrs" :: slice.T grove_ffi.Address
 ].
 
 Definition ParsePreparedWrite: val :=
@@ -28,7 +28,7 @@ Definition MarshalPreparedWrite: val :=
 
 Definition RecordChunkArgs := struct.decl [
   "WriteId" :: uint64T;
-  "Server" :: uint64T;
+  "Server" :: grove_ffi.Address;
   "ContentHash" :: stringT;
   "Index" :: uint64T
 ].
@@ -59,7 +59,7 @@ Definition ParseFinishWriteArgs: val :=
     #().
 
 Definition ChunkHandle := struct.decl [
-  "Addr" :: uint64T;
+  "Addr" :: grove_ffi.Address;
   "ContentHash" :: stringT
 ].
 

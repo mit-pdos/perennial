@@ -11,12 +11,12 @@ Definition Clerk := struct.decl [
 ].
 
 Definition Writer := struct.decl [
-  "writeId" :: uint64T;
+  "writeId" :: dir.WriteID;
   "index" :: uint64T;
   "keyname" :: stringT;
   "wg" :: ptrT;
   "ck" :: ptrT;
-  "chunkAddrs" :: slice.T uint64T
+  "chunkAddrs" :: slice.T grove_ffi.Address
 ].
 
 Definition Clerk__PrepareWrite: val :=

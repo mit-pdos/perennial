@@ -25,22 +25,22 @@ Definition lr2 : expr := #102.
 
 Definition mk_lconfig_hosts: val :=
   rec: "mk_lconfig_hosts" <> :=
-    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice grove_ffi.Address #0) in
     SliceAppend uint64T (![slice.T uint64T] "configHosts") lconfigHost.
 
 Definition mk_dconfig_hosts: val :=
   rec: "mk_dconfig_hosts" <> :=
-    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice grove_ffi.Address #0) in
     SliceAppend uint64T (![slice.T uint64T] "configHosts") dconfigHost.
 
 Definition mk_lconfig_paxosHosts: val :=
   rec: "mk_lconfig_paxosHosts" <> :=
-    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice grove_ffi.Address #0) in
     SliceAppend uint64T (![slice.T uint64T] "configHosts") lconfigHostPaxos.
 
 Definition mk_dconfig_paxosHosts: val :=
   rec: "mk_dconfig_paxosHosts" <> :=
-    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice grove_ffi.Address #0) in
     SliceAppend uint64T (![slice.T uint64T] "configHosts") dconfigHostPaxos.
 
 Definition lconfig_main: val :=
@@ -63,7 +63,7 @@ Definition kv_replica_main: val :=
   rec: "kv_replica_main" "fname" "me" "configHost" :=
     let: "x" := ref (zero_val uint64T) in
     "x" <-[uint64T] #1;;
-    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    let: "configHosts" := ref_to (slice.T uint64T) (NewSlice grove_ffi.Address #0) in
     "configHosts" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "configHosts") "configHost");;
     vkv.Start "fname" "me" (![slice.T uint64T] "configHosts");;
     #().

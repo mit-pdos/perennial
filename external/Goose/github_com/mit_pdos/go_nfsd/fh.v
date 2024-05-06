@@ -8,7 +8,7 @@ From Goose Require github_com.tchajed.marshal.
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
 Definition Fh := struct.decl [
-  "Ino" :: uint64T;
+  "Ino" :: common.Inum;
   "Gen" :: uint64T
 ].
 

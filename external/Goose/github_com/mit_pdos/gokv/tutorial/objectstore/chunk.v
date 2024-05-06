@@ -59,7 +59,7 @@ Definition Server := struct.decl [
   "m" :: ptrT;
   "chunks" :: mapT (slice.T byteT);
   "dir" :: ptrT;
-  "me" :: uint64T
+  "me" :: grove_ffi.Address
 ].
 
 Definition Server__WriteChunk: val :=

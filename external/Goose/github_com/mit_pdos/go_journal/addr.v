@@ -10,7 +10,7 @@ From Perennial.goose_lang Require Import ffi.disk_prelude.
    the object within the block (expressed as a bit offset). The size of the
    object is determined by the context in which Addr is used. *)
 Definition Addr := struct.decl [
-  "Blkno" :: uint64T;
+  "Blkno" :: common.Bnum;
   "Off" :: uint64T
 ].
 
