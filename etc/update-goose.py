@@ -312,18 +312,10 @@ def main():
 
     if chat_dir is not None:
         pkgs = [
-            "chat4",
-            "full",
-            "full2/shared",
-            "full2/fc_ffi_shim",
-            "full2",
-            "kt",
-            "kt/shared",
-            "kt/kt_shim",
-            "cryptoShim",
-            "cryptoHelpers",
+            "cryptoutil",
+            "marshalutil",
             "merkle",
-            "ktMerkle",
+            "ktmerkle",
         ]
 
         for pkg in pkgs:
