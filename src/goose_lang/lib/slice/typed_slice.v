@@ -265,6 +265,31 @@ Proof.
   iApply ("HΦ" with "Hs").
 Qed.
 
+(* TODO: why is this opaque? *)
+Transparent SliceAppendSlice.
+
+Lemma wp_SliceAppendSlice stk E s1 s2 t vs1 vs2 q2 :
+  has_zero t →
+  {{{ own_slice s1 t 1 vs1 ∗ own_slice_small s2 t q2 vs2 }}}
+    SliceAppendSlice t s1 s2 @ stk; E
+  {{{
+    s', RET slice_val s';
+    own_slice s' t 1 (vs1 ++ vs2) ∗
+    own_slice_small s2 t q2 vs2
+  }}}.
+Proof.
+  intros Hzero.
+  iIntros (Φ) "[Hs1 Hs2] HΦ".
+  wp_apply (slice.wp_SliceAppendSlice with "[$Hs1 $Hs2]"); [ auto | ].
+  iIntros (sl') "[Hs' Hs2]".
+  iApply "HΦ".
+  rewrite /own_slice /own_slice_small.
+  rewrite list_untype_app.
+  iFrame.
+Qed.
+
+Opaque SliceAppendSlice.
+
 (** Only works with the full fraction since some of the ownership is moved from
 the slice part to the extra part *)
 Lemma wp_SliceSubslice_full {stk E} s t `{!IntoVal V} (vs: list V) (n m: u64) :
