@@ -10,6 +10,11 @@ From Goose.github_com.tchajed.goose.internal.examples Require Import semantics.
 Example testAllocateDistinct_ok : testAllocateDistinct #() ~~> #true := t.
 Example testAllocateFull_ok : testAllocateFull #() ~~> #true := t.
 
+(* append.go *)
+Example testSingleAppend_ok : testSingleAppend #() ~~> #true := t.
+Example testAppendToCapacity_ok : testAppendToCapacity #() ~~> #true := t.
+Example testAppendSlice_ok : testAppendSlice #() ~~> #true := t.
+
 (* closures.go *)
 Example testClosureBasic_ok : testClosureBasic #() ~~> #true := t.
 

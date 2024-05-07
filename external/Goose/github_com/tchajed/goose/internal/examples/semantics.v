@@ -51,6 +51,36 @@ Definition testAllocateFull: val :=
     let: (<>, "ok3") := allocate "free" in
     ("ok1" && "ok2") && (~ "ok3").
 
+(* append.go *)
+
+Definition testSingleAppend: val :=
+  rec: "testSingleAppend" <> :=
+    let: "ok" := ref_to boolT #true in
+    let: "a" := ref (zero_val (slice.T uint64T)) in
+    "a" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "a") #1);;
+    "ok" <-[boolT] ((![boolT] "ok") && ((SliceGet uint64T (![slice.T uint64T] "a") #0) = #1));;
+    ![boolT] "ok".
+
+Definition testAppendToCapacity: val :=
+  rec: "testAppendToCapacity" <> :=
+    let: "ok" := ref_to boolT #true in
+    let: "a" := ref (zero_val (slice.T uint64T)) in
+    "a" <-[slice.T uint64T] (NewSliceWithCap uint64T #0 #1);;
+    "a" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "a") #1);;
+    "ok" <-[boolT] ((![boolT] "ok") && ((SliceGet uint64T (![slice.T uint64T] "a") #0) = #1));;
+    ![boolT] "ok".
+
+Definition testAppendSlice: val :=
+  rec: "testAppendSlice" <> :=
+    let: "ok" := ref_to boolT #true in
+    let: "a" := ref (zero_val (slice.T uint64T)) in
+    let: "b" := ref (zero_val (slice.T uint64T)) in
+    "b" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "b") #1);;
+    "b" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "b") #2);;
+    "a" <-[slice.T uint64T] (SliceAppendSlice uint64T (![slice.T uint64T] "a") (![slice.T uint64T] "b"));;
+    "ok" <-[boolT] (((![boolT] "ok") && ((SliceGet uint64T (![slice.T uint64T] "a") #0) = #1)) && ((SliceGet uint64T (![slice.T uint64T] "a") #1) = #2));;
+    ![boolT] "ok".
+
 (* closures.go *)
 
 Definition AdderType: ty := (uint64T -> uint64T)%ht.
