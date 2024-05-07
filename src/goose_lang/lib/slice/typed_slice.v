@@ -18,6 +18,12 @@ Proof.
   rewrite /list.untype fmap_length //.
 Qed.
 
+Lemma list_untype_app `{IntoVal V} (l1 l2: list V) :
+  list.untype (l1 ++ l2) = list.untype l1 ++ list.untype l2.
+Proof.
+  rewrite /list.untype fmap_app //.
+Qed.
+
 #[global]
 Hint Rewrite @list_untype_length : len.
 

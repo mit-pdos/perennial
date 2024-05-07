@@ -72,6 +72,31 @@ Proof.
   - rewrite /list.untype -fmap_drop drop_app_length' //.
 Qed.
 
+Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
+  {{{ own_slice_small s byteT q (bit :: tail) }}}
+    ReadBool (slice_val s)
+  {{{ (b: bool) s', RET (#b, slice_val s');
+      ⌜b = if decide (int.Z bit = 0) then false else true⌝ ∗
+      own_slice_small s' byteT q tail }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ". wp_call.
+  wp_apply (wp_SliceGet with "[$Hs]"); [ auto | ].
+  iIntros "Hs".
+  wp_pures.
+  (* TODO: this wp seems to come from untyped library *)
+  wp_apply (wp_SliceSkip_small with "Hs").
+  { rewrite list_untype_length /=. word. }
+  iIntros (s') "Hs".
+  wp_pures. iModIntro.
+  iApply "HΦ".
+  iSplit.
+  { iPureIntro. rewrite -bool_decide_not bool_decide_decide.
+    (* TODO: forgot how to deal with injectivity of to_val *)
+    admit.
+  }
+  iApply "Hs".
+Admitted.
+
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ True }}}
     compute_new_cap #old_cap #min_cap
@@ -175,6 +200,27 @@ Proof.
   rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
   rewrite /list.untype fmap_app. f_equal.
   rewrite take_app_length' //. len.
+Qed.
+
+Theorem wp_WriteBool s (vs: list u8) (b: bool) :
+  {{{ own_slice s byteT 1 vs }}}
+    WriteBool (slice_val s) #b
+  {{{ s', RET (slice_val s');
+      own_slice s' byteT 1 (vs ++ [if b then U8 1 else U8 0]) }}}.
+Proof.
+  iIntros (Φ) "Hs HΦ". wp_call.
+  destruct b; wp_pures.
+  (* TODO: this also breaks through the typed slice library *)
+  - wp_apply (wp_SliceAppend' with "Hs"); auto.
+    iIntros (s') "Hs".
+    iApply "HΦ".
+    rewrite /own_slice.
+    rewrite list_untype_app //.
+  - wp_apply (wp_SliceAppend' with "Hs"); auto.
+    iIntros (s') "Hs".
+    iApply "HΦ".
+    rewrite /own_slice.
+    rewrite list_untype_app //.
 Qed.
 
 End goose_lang.
