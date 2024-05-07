@@ -7,8 +7,10 @@
 -arg -w -arg +deprecated-tactic-notation
 -arg -w -arg -deprecated-since-8.19
 -arg -w -arg -deprecated-since-8.20
+# we haven't updated our code to fix this one
+-arg -w -arg -deprecated-typeclasses-transparency-without-locality
 # Iris-disabled warnings
--arg -w -arg -notation-overridden,-redundant-canonical-projection,-deprecated-typeclasses-transparency-without-locality
+-arg -w -arg -notation-overridden,-redundant-canonical-projection,-unknown-warning,-argument-scope-delimiter
 -Q external/stdpp/stdpp stdpp
 -Q external/stdpp/stdpp_unstable stdpp.unstable
 -Q external/stdpp/stdpp_bitvector stdpp.bitvector
