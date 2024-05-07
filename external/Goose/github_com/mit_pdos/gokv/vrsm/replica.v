@@ -91,7 +91,7 @@ Definition DecodeGetStateArgs: val :=
     "args".
 
 Definition GetStateReply := struct.decl [
-  "Err" :: e.Error;
+  "Err" :: uint64T;
   "NextIndex" :: uint64T;
   "CommittedNextIndex" :: uint64T;
   "State" :: slice.T byteT
@@ -124,7 +124,7 @@ Definition DecodeGetStateReply: val :=
 
 Definition BecomePrimaryArgs := struct.decl [
   "Epoch" :: uint64T;
-  "Replicas" :: slice.T grove_ffi.Address
+  "Replicas" :: slice.T uint64T
 ].
 
 Definition EncodeBecomePrimaryArgs: val :=
@@ -147,7 +147,7 @@ Definition DecodeBecomePrimaryArgs: val :=
     let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
     "replicasLen" <-[uint64T] "0_ret";;
     "enc" <-[slice.T byteT] "1_ret";;
-    struct.storeF BecomePrimaryArgs "Replicas" "args" (NewSlice grove_ffi.Address (![uint64T] "replicasLen"));;
+    struct.storeF BecomePrimaryArgs "Replicas" "args" (NewSlice uint64T (![uint64T] "replicasLen"));;
     ForSlice uint64T "i" <> (struct.loadF BecomePrimaryArgs "Replicas" "args")
       (let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "enc") in
       SliceSet uint64T (struct.loadF BecomePrimaryArgs "Replicas" "args") "i" "0_ret";;
@@ -155,7 +155,7 @@ Definition DecodeBecomePrimaryArgs: val :=
     "args".
 
 Definition ApplyReply := struct.decl [
-  "Err" :: e.Error;
+  "Err" :: uint64T;
   "Reply" :: slice.T byteT
 ].
 
@@ -404,7 +404,7 @@ Definition Server__Apply: val :=
           "op" ::= "op"
         ] in
         let: "clerks_inner" := SliceGet (slice.T ptrT) "clerks" ((rand.RandomUint64 #()) `rem` (slice.len "clerks")) in
-        let: "errs" := NewSlice e.Error (slice.len "clerks_inner") in
+        let: "errs" := NewSlice uint64T (slice.len "clerks_inner") in
         ForSlice ptrT "i" "clerk" "clerks_inner"
           (let: "clerk" := "clerk" in
           let: "i" := "i" in

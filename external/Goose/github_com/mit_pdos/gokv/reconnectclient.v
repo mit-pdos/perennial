@@ -8,7 +8,7 @@ Definition ReconnectingClient := struct.decl [
   "mu" :: ptrT;
   "valid" :: boolT;
   "urpcCl" :: ptrT;
-  "addr" :: grove_ffi.Address
+  "addr" :: uint64T
 ].
 
 Definition MakeReconnectingClient: val :=

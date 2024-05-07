@@ -29,7 +29,7 @@ Definition inum2Addr: val :=
 (* fh.go *)
 
 Definition Fh := struct.decl [
-  "Ino" :: common.Inum
+  "Ino" :: uint64T
 ].
 
 Definition MakeFh: val :=
@@ -60,9 +60,9 @@ Definition MkRootFh3: val :=
 (* inode.go *)
 
 Definition Inode := struct.decl [
-  "Inum" :: common.Inum;
+  "Inum" :: uint64T;
   "Size" :: uint64T;
-  "Data" :: common.Bnum
+  "Data" :: uint64T
 ].
 
 Definition Inode__Encode: val :=

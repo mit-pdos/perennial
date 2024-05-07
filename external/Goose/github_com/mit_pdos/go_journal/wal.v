@@ -46,7 +46,7 @@ Definition LOGSTART : expr := #2.
 Definition LogPosition: ty := uint64T.
 
 Definition Update := struct.decl [
-  "Addr" :: common.Bnum;
+  "Addr" :: uint64T;
   "Block" :: disk.blockT
 ].
 
@@ -163,7 +163,7 @@ Definition sliding := struct.decl [
 
 Definition mkSliding: val :=
   rec: "mkSliding" "log" "start" :=
-    let: "addrPos" := NewMap common.Bnum LogPosition #() in
+    let: "addrPos" := NewMap uint64T LogPosition #() in
     ForSlice (struct.t Update) "i" "buf" "log"
       (MapInsert "addrPos" (struct.get Update "Addr" "buf") ("start" + "i"));;
     struct.new sliding [

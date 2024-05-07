@@ -9,8 +9,8 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 (* 0_quorums.go *)
 
 Definition Config := struct.decl [
-  "Members" :: slice.T grove_ffi.Address;
-  "NextMembers" :: slice.T grove_ffi.Address
+  "Members" :: slice.T uint64T;
+  "NextMembers" :: slice.T uint64T
 ].
 
 (* Returns some integer i with the property that
@@ -98,8 +98,8 @@ Definition DecConfig: val :=
     let: "conf" := struct.alloc Config (zero_val (struct.t Config)) in
     let: ("numMembers", "dec") := marshal.ReadInt (![slice.T byteT] "dec") in
     let: ("numNextMembers", "dec") := marshal.ReadInt (![slice.T byteT] "dec") in
-    struct.storeF Config "Members" "conf" (NewSlice grove_ffi.Address "numMembers");;
-    struct.storeF Config "NextMembers" "conf" (NewSlice grove_ffi.Address "numNextMembers");;
+    struct.storeF Config "Members" "conf" (NewSlice uint64T "numMembers");;
+    struct.storeF Config "NextMembers" "conf" (NewSlice uint64T "numNextMembers");;
     ForSlice uint64T "i" <> (struct.loadF Config "Members" "conf")
       (let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "dec") in
       SliceSet uint64T (struct.loadF Config "Members" "conf") "i" "0_ret";;
@@ -210,7 +210,7 @@ Definition DecMembers: val :=
   rec: "DecMembers" "encoded" :=
     let: "dec" := ref_to (slice.T byteT) "encoded" in
     let: ("numMembers", "dec") := marshal.ReadInt (![slice.T byteT] "dec") in
-    let: "members" := NewSlice grove_ffi.Address "numMembers" in
+    let: "members" := NewSlice uint64T "numMembers" in
     ForSlice uint64T "i" <> "members"
       (let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "dec") in
       SliceSet uint64T "members" "i" "0_ret";;
@@ -338,7 +338,7 @@ Definition Replica__TryBecomeLeader: val :=
     let: "conf" := struct.loadF MonotonicValue "conf" (struct.loadF Replica "acceptedMVal" "r") in
     lock.release (struct.loadF Replica "mu" "r");;
     let: "mu" := lock.new #() in
-    let: "prepared" := NewMap grove_ffi.Address boolT #() in
+    let: "prepared" := NewMap uint64T boolT #() in
     Config__ForEachMember "conf" (λ: "addr",
       Fork (let: "reply_ptr" := struct.alloc PrepareReply (zero_val (struct.t PrepareReply)) in
             ClerkPool__PrepareRPC (struct.loadF Replica "clerkPool" "r") "addr" "newTerm" "reply_ptr";;
@@ -397,7 +397,7 @@ Definition Replica__tryCommit: val :=
       let: "mval" := struct.loadF Replica "acceptedMVal" "r" in
       lock.release (struct.loadF Replica "mu" "r");;
       let: "mu" := lock.new #() in
-      let: "accepted" := NewMap grove_ffi.Address boolT #() in
+      let: "accepted" := NewMap uint64T boolT #() in
       Config__ForEachMember (struct.loadF MonotonicValue "conf" "mval") (λ: "addr",
         Fork ((if: ClerkPool__ProposeRPC (struct.loadF Replica "clerkPool" "r") "addr" "term" "mval"
               then
@@ -446,7 +446,7 @@ Definition Replica__TryEnterNewConfig: val :=
       (if: (slice.len (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval"))) ≠ #0
       then
         struct.storeF Config "Members" (struct.loadF MonotonicValue "conf" "mval") (struct.loadF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval"));;
-        struct.storeF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval") (NewSlice grove_ffi.Address #0);;
+        struct.storeF Config "NextMembers" (struct.loadF MonotonicValue "conf" "mval") (NewSlice uint64T #0);;
         #()
       else #())
       ) "reply";;

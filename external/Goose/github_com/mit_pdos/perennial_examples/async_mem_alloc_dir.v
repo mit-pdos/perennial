@@ -8,7 +8,7 @@ From Perennial.goose_lang Require Import ffi.async_disk_prelude.
 Definition NumInodes : expr := #5.
 
 Definition Dir := struct.decl [
-  "d" :: async_disk.Disk;
+  "d" :: disk.Disk;
   "allocator" :: ptrT;
   "inodes" :: slice.T ptrT
 ].

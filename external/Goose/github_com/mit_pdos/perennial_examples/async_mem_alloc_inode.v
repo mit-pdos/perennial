@@ -8,7 +8,7 @@ From Perennial.goose_lang Require Import ffi.async_disk_prelude.
 Definition MaxBlocks : expr := #511.
 
 Definition Inode := struct.decl [
-  "d" :: async_disk.Disk;
+  "d" :: disk.Disk;
   "m" :: ptrT;
   "addr" :: uint64T;
   "addrs" :: slice.T uint64T
