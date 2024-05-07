@@ -143,12 +143,12 @@ Definition reserve: val :=
       "dest"
     else "b").
 
-(* Functions for the stateless decoder API *)
 Definition ReadInt: val :=
   rec: "ReadInt" "b" :=
     let: "i" := UInt64Get "b" in
     ("i", SliceSkip byteT "b" #8).
 
+(* ReadBytes reads `l` bytes from b and returns (bs, rest) *)
 Definition ReadBytes: val :=
   rec: "ReadBytes" "b" "l" :=
     let: "s" := SliceTake "b" "l" in
@@ -161,7 +161,18 @@ Definition ReadBytesCopy: val :=
     SliceCopy byteT "s" (SliceTake "b" "l");;
     ("s", SliceSkip byteT "b" "l").
 
-(* Functions for the stateless encoder API *)
+Definition ReadBool: val :=
+  rec: "ReadBool" "b" :=
+    let: "x" := (SliceGet byteT "b" #0) ≠ #(U8 0) in
+    ("x", SliceSkip byteT "b" #1).
+
+Definition ReadLenPrefixedBytes: val :=
+  rec: "ReadLenPrefixedBytes" "b" :=
+    let: ("l", "b2") := ReadInt "b" in
+    let: ("bs", "b3") := ReadBytes "b2" "l" in
+    ("bs", "b3").
+
+(* Encode i in little endian format and append it to b, returning the new slice. *)
 Definition WriteInt: val :=
   rec: "WriteInt" "b" "i" :=
     let: "b2" := reserve "b" #8 in
@@ -170,6 +181,7 @@ Definition WriteInt: val :=
     UInt64Put (SliceSkip byteT "b3" "off") "i";;
     "b3".
 
+(* Append data to b, returning the new slice. *)
 Definition WriteBytes: val :=
   rec: "WriteBytes" "b" "data" :=
     let: "b2" := reserve "b" (slice.len "data") in
@@ -177,5 +189,16 @@ Definition WriteBytes: val :=
     let: "b3" := SliceTake "b2" ("off" + (slice.len "data")) in
     SliceCopy byteT (SliceSkip byteT "b3" "off") "data";;
     "b3".
+
+Definition WriteBool: val :=
+  rec: "WriteBool" "b" "x" :=
+    (if: "x"
+    then SliceAppend byteT "b" #(U8 1)
+    else SliceAppend byteT "b" #(U8 0)).
+
+Definition WriteLenPrefixedBytes: val :=
+  rec: "WriteLenPrefixedBytes" "b" "bs" :=
+    let: "b2" := WriteInt "b" (slice.len "bs") in
+    WriteBytes "b2" "bs".
 
 End code.
