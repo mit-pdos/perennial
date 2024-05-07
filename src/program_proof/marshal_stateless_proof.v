@@ -178,28 +178,9 @@ Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
   }}}.
 Proof.
   iIntros (Φ) "[Hs Hdata] HΦ". wp_lam. wp_pures.
-  wp_apply wp_slice_len.
-  wp_apply (wp_reserve with "Hs"). clear s. iIntros (s) "[% Hs]". wp_pures.
-  iDestruct (own_slice_wf with "Hs") as %Hwf.
-  iDestruct (own_slice_sz with "Hs") as %Hsz.
-  iDestruct (own_slice_small_sz with "Hdata") as %Hdatasz.
-  wp_apply wp_slice_len. wp_pures.
-  wp_apply wp_slice_len.
-  wp_apply (wp_SliceTake_full_cap with "Hs").
-  { word. }
-  iIntros (ex) "[%Hex Hsl]".
-  set (s' := slice_take _ _).
-  wp_apply wp_SliceSkip.
-  { rewrite /slice_take /=. word. }
-  iDestruct (slice.own_slice_split_acc s.(Slice.sz) with "Hsl") as "[Hsl Hclose]".
-  { len. }
-  wp_apply (wp_SliceCopy_full with "[$Hdata $Hsl]").
-  { iPureIntro. len. rewrite Hdatasz Hex. word. }
-  iIntros "[Hdata Hsl]". iDestruct ("Hclose" with "Hsl") as "Hsl".
-  wp_pures. iApply "HΦ". iFrame "Hdata". iModIntro.
-  rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
-  rewrite /list.untype fmap_app. f_equal.
-  rewrite take_app_length' //. len.
+  wp_apply (wp_SliceAppendSlice with "[$Hs $Hdata]"); first done.
+  iIntros (s') "[Hs' Hdata]".
+  iApply ("HΦ" with "[$]").
 Qed.
 
 Theorem wp_WriteBool s (vs: list u8) (b: bool) :

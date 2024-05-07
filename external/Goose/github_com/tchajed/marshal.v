@@ -184,11 +184,7 @@ Definition WriteInt: val :=
 (* Append data to b, returning the new slice. *)
 Definition WriteBytes: val :=
   rec: "WriteBytes" "b" "data" :=
-    let: "b2" := reserve "b" (slice.len "data") in
-    let: "off" := slice.len "b2" in
-    let: "b3" := SliceTake "b2" ("off" + (slice.len "data")) in
-    SliceCopy byteT (SliceSkip byteT "b3" "off") "data";;
-    "b3".
+    SliceAppendSlice byteT "b" "data".
 
 Definition WriteBool: val :=
   rec: "WriteBool" "b" "x" :=
