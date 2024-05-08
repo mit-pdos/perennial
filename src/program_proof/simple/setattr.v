@@ -280,21 +280,21 @@ Proof using Ptimeless.
             iIntros "? !>".
             iExists _. iFrame. iExists _.
 
-            assert (length state < uint.Z u)%Z by (revert Heqb; word).
+            assert (length state < uint.Z w)%Z by (revert Heqb; word).
             rewrite -> Z.max_r in Heqb0 by word.
             rewrite -Heqb0. word_cleanup.
             rewrite -> Z.max_r by word.
             rewrite !app_length !replicate_length take_length_ge.
             2: word.
-            replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
-            replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
-            replace (length state + (uint.nat u - length state)) with (uint.nat u) by lia.
-            replace (W64 (uint.nat u)) with (W64 (uint.Z u)) by word. iFrame.
+            replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
+            replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
+            replace (length state + (uint.nat w - length state)) with (uint.nat w) by lia.
+            replace (W64 (uint.nat w)) with (W64 (uint.Z w)) by word. iFrame.
             replace (Z.to_nat (length state)) with (length state) by lia.
             rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
             rewrite drop_ge; last by lia. rewrite app_nil_r.
             rewrite firstn_all2. 2: rewrite replicate_length; lia.
-            replace (Z.to_nat (uint.Z u - length state)) with (uint.nat u - length state) by lia.
+            replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
             iFrame.
           }
 
@@ -346,21 +346,21 @@ Proof using Ptimeless.
               2: { iModIntro. iSplit; try (iIntros "? !>"); done. }
 
               iRight.
-              assert (length state < uint.Z u)%Z by (revert Heqb; word).
+              assert (length state < uint.Z w)%Z by (revert Heqb; word).
               rewrite -> Z.max_r in Heqb0 by word.
               rewrite -Heqb0. word_cleanup.
               rewrite -> Z.max_r by word.
               rewrite !app_length !replicate_length take_length_ge.
               2: word.
-              replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
-              replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
-              replace (length state + (uint.nat u - length state)) with (uint.nat u) by lia.
-              replace (W64 (uint.nat u)) with (W64 (uint.Z u)) by word. iFrame.
+              replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
+              replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
+              replace (length state + (uint.nat w - length state)) with (uint.nat w) by lia.
+              replace (W64 (uint.nat w)) with (W64 (uint.Z w)) by word. iFrame.
               replace (Z.to_nat (length state)) with (length state) by lia.
               rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
               rewrite drop_ge; last by lia. rewrite app_nil_r.
               rewrite firstn_all2. 2: rewrite replicate_length; lia.
-              replace (Z.to_nat (uint.Z u - length state)) with (uint.nat u - length state) by lia.
+              replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
               iFrame. }
 
             iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
@@ -374,21 +374,21 @@ Proof using Ptimeless.
             2: {
               iExists _. iFrame "Hinode_state".
               iExists _.
-              assert (length state < uint.Z u)%Z by (revert Heqb; word).
+              assert (length state < uint.Z w)%Z by (revert Heqb; word).
               rewrite -> Z.max_r in Heqb0 by word.
               rewrite -Heqb0. word_cleanup.
               rewrite -> Z.max_r by word.
               rewrite !app_length !replicate_length take_length_ge.
               2: word.
-              replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
-              replace (length state + (uint.Z u - length state))%Z with (uint.Z u) by lia.
-              replace (length state + (uint.nat u - length state)) with (uint.nat u) by lia.
-              replace (W64 (uint.nat u)) with (W64 (uint.Z u)) by word. iFrame.
+              replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
+              replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
+              replace (length state + (uint.nat w - length state)) with (uint.nat w) by lia.
+              replace (W64 (uint.nat w)) with (W64 (uint.Z w)) by word. iFrame.
               replace (Z.to_nat (length state)) with (length state) by lia.
               rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
               rewrite drop_ge; last by lia. rewrite app_nil_r.
               rewrite firstn_all2. 2: rewrite replicate_length; lia.
-              replace (Z.to_nat (uint.Z u - length state)) with (uint.nat u - length state) by lia.
+              replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
               iFrame. }
 
             iIntros "Hcrashlocked".

@@ -425,7 +425,7 @@ Proof.
         (* finish up *)
         iIntros (?) "Hrep_sl _ Hpbck".
         iNamed 1.
-        replace (u) with (seqno); last first.
+        replace (w) with (seqno); last first.
         {
           simpl in Hok.
           word.
