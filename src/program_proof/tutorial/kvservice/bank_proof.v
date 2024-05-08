@@ -128,7 +128,7 @@ Proof.
   }
 Qed.
 
-Add Ring u64ring : (word.ring_theory (word := i64_instance.i64)).
+Add Ring u64ring : (word.ring_theory (word := w64_instance.w64)).
 
 Lemma Bank__SimpleTransfer_spec (bck:loc) (amount:u64) γ :
 {{{

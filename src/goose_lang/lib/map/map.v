@@ -315,9 +315,9 @@ Proof using IntoValComparable0.
 Qed.
 
 (* Want this for u64 addition commutativity in wp_MapLen' *)
-Add Ring u64ring : (word.ring_theory (word := i64_instance.i64))
+Add Ring u64ring : (word.ring_theory (word := w64_instance.w64))
                     (preprocess [autorewrite with rew_word_morphism],
-                      morphism (word.ring_morph (word := i64_instance.i64)),
+                      morphism (word.ring_morph (word := w64_instance.w64)),
                       constants [word_cst]).
 
 (* The postcondition guarantees that the size of the map actually fits in a u64 *)
@@ -327,7 +327,7 @@ Theorem wp_MapLen' stk E(mv:val) (m:gmap K val * val) :
   }}}
     MapLen' mv @ stk ; E
   {{{
-    RET #(I64 (size m.1)); ⌜size m.1 = uint.nat (size m.1)⌝
+    RET #(W64 (size m.1)); ⌜size m.1 = uint.nat (size m.1)⌝
   }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "%Hmapval HΦ".
@@ -720,7 +720,7 @@ Proof using IntoValComparable0.
                   ⌜uint.nat s = size m ∧ (uint.Z s < 2^64-1)%Z⌝)%I
   with "Hm [Hlen]").
   { (* I ∅ *)
-    iExists (I64 0). iFrame.
+    iExists (W64 0). iFrame.
     by iPureIntro. }
   { (* inductive step *)
     clear.

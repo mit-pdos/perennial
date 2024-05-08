@@ -389,7 +389,7 @@ Proof.
   wp_apply (map.wp_MapIter_2 _ _ _ _ _ (SizeOfMarshalledMap_invariant m s)
               with "HKvsMap [Hs Hvals] [] [HΦ]").
   {
-    iExists (I64 8), m, ∅.
+    iExists (W64 8), m, ∅.
     simpl. iFrame.
     iSplitL "".
     { rewrite /own_slicemap_rep. rewrite ?dom_empty_L big_sepM_empty //=. }

@@ -51,19 +51,19 @@ Theorem wp_NFSPROC3_WRITE γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset 
           "Data" ::= slice_val fhslice
         ];
         "Offset" ::= #offset;
-        "Count" ::= #(I32 (length databuf));
+        "Count" ::= #(W32 (length databuf));
         "Stable" ::= #stab;
         "Data" ::= (slice_val dataslice)
       ])%V
   {{{ v,
       RET v;
       ( ∃ (count : u32) resok,
-        ⌜ getField_f nfstypes.WRITE3res "Status" v = #(I32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.WRITE3res "Status" v = #(W32 0) ⌝ ∗
         ⌜ getField_f nfstypes.WRITE3res "Resok" v = resok ⌝ ∗
         ⌜ getField_f nfstypes.WRITE3resok "Count" resok = #count ⌝ ∗
         Q (SimpleNFS.OK count) ) ∨
       ( ∃ (stat : Z),
-        ⌜ getField_f nfstypes.WRITE3res "Status" v = #(I32 stat) ⌝ ∗
+        ⌜ getField_f nfstypes.WRITE3res "Status" v = #(W32 stat) ⌝ ∗
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
@@ -205,7 +205,7 @@ Proof using Ptimeless.
     iModIntro. iClear "Hnooverflow".
 
     replace (uint.Z (length state)
-              `max` (uint.Z offset + uint.Z (u32_to_u64 (I32 (length databuf)))))%Z
+              `max` (uint.Z offset + uint.Z (u32_to_u64 (W32 (length databuf)))))%Z
       with (length (take (uint.nat offset) state ++
                     databuf ++ drop (uint.nat offset + length databuf) state) : Z).
     2: {

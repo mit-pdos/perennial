@@ -127,7 +127,7 @@ Proof.
     iIntros "[Hlocked Haof_own]".
     wp_pures.
     iAssert (∃ data', fname f↦ (data++data') ∗ aof_ctx (data++data') ∗ fmlist γ.(predurabledata) (1/2) (data ++ data')
-            ∗ l ↦[AppendOnlyFile :: "durableLength"]{1 / 2} #(I64 (length data'))
+            ∗ l ↦[AppendOnlyFile :: "durableLength"]{1 / 2} #(W64 (length data'))
             ∗ own γ.(len) (mono_nat_auth (1/2) (length (data')))
             )%I with "[Hpre Hpredur HdurLen Hlen]" as "Hfile_ctx".
     { iExists []; iFrame. rewrite app_nil_r. iFrame. }
@@ -298,7 +298,7 @@ Proof.
   wp_apply (wp_slice_len).
   wp_pures.
   rewrite -HnewDataSafe in Hsz Heqb.
-  assert (I64 (length newData) = data_sl.(Slice.sz)) as HH.
+  assert (W64 (length newData) = data_sl.(Slice.sz)) as HH.
   {
     apply Z2Nat.inj in Hsz.
     { word_cleanup. naive_solver. }
@@ -380,11 +380,11 @@ Proof.
   iDestruct "HH" as "[Htoks Hlen_toks]".
 
   (* TODO: factor this into a lemma *)
-  assert (uint.Z (word.add (I64 (length (predurableC ++ membufC))) (I64 (length newData))) =
-          uint.Z (I64 (length (predurableC ++ membufC))) + uint.Z (I64 (length newData))).
+  assert (uint.Z (word.add (W64 (length (predurableC ++ membufC))) (W64 (length newData))) =
+          uint.Z (W64 (length (predurableC ++ membufC))) + uint.Z (W64 (length newData))).
   {
     assert (uint.Z (word.add (length (predurableC ++ membufC)) (length newData)) >= uint.Z (length (predurableC ++ membufC)))%Z by lia.
-    destruct (bool_decide ((uint.Z (I64 (length (predurableC ++ membufC)))) + (uint.Z (I64 (length newData))) < 2 ^ 64 ))%Z eqn:Hnov.
+    destruct (bool_decide ((uint.Z (W64 (length (predurableC ++ membufC)))) + (uint.Z (W64 (length newData))) < 2 ^ 64 ))%Z eqn:Hnov.
     {
       apply bool_decide_eq_true in Hnov.
       rewrite word.unsigned_add.
@@ -399,12 +399,12 @@ Proof.
       { done. }
     }
     apply bool_decide_eq_false in Hnov.
-    assert (uint.Z (I64 (length (predurableC ++ membufC))) + uint.Z (I64 (length newData)) >= 2 ^ 64)%Z.
+    assert (uint.Z (W64 (length (predurableC ++ membufC))) + uint.Z (W64 (length newData)) >= 2 ^ 64)%Z.
     { lia. }
     apply sum_overflow_check in H0.
     contradiction.
   }
-  assert (uint.nat (I64 (length (predurableC ++ membufC'))) = (length (predurableC ++ membufC'))) as Hsafesize'.
+  assert (uint.nat (W64 (length (predurableC ++ membufC'))) = (length (predurableC ++ membufC'))) as Hsafesize'.
   {
     replace (membufC') with (membufC ++ newData) by done.
     rewrite app_assoc.
@@ -433,7 +433,7 @@ Proof.
             { apply bool_decide_eq_true in Hnov. done. }
             {
               apply bool_decide_eq_false in Hnov.
-              assert (uint.Z (I64 (length (predurableC ++ membufC))) + (uint.Z (length newData)) >= 2 ^ 64)%Z.
+              assert (uint.Z (W64 (length (predurableC ++ membufC))) + (uint.Z (length newData)) >= 2 ^ 64)%Z.
               { lia. }
               apply sum_overflow_check in H4.
               contradiction.
@@ -463,7 +463,7 @@ Proof.
                              ={⊤}=∗ own γ.(len)
                                       (mono_nat_auth (1 / 2)
                                          (length (predurableC ++ membufC'))))
-  ) ∗ (aof_length_lb γ (I64 (length (predurableC ++ membufC'))) ={⊤}=∗ ▷ Q))%I with "[Hmembuf_fupd Hfupd Htoks]" as "HH".
+  ) ∗ (aof_length_lb γ (W64 (length (predurableC ++ membufC'))) ={⊤}=∗ ▷ Q))%I with "[Hmembuf_fupd Hfupd Htoks]" as "HH".
   {
     (* allocate invariant to escrow Q *)
     iMod (own_alloc (Excl ())) as "HQtok".
@@ -472,7 +472,7 @@ Proof.
     iMod (own_alloc (Excl ())) as "HQexcl".
     { done. }
     iDestruct "HQexcl" as (γq) "HQexcl".
-    iDestruct (big_sepS_elem_of_acc _ _ (I64 (length (predurableC ++ membufC'))) with "Htoks") as "[Hlen_tok Hlen_toks_rest]".
+    iDestruct (big_sepS_elem_of_acc _ _ (W64 (length (predurableC ++ membufC'))) with "Htoks") as "[Hlen_tok Hlen_toks_rest]".
     { set_solver. }
     iDestruct "Hlen_tok" as "[Hlen_tok|%Hbad]"; last first.
     {
@@ -483,7 +483,7 @@ Proof.
       rewrite app_length in Hbad.
       word.
     }
-    iMod (inv_alloc aofN _ (own γtok (Excl ()) ∗ aof_length_lb γ (I64 (length (predurableC ++ membufC'))) ∨ (I64 (length (predurableC ++ membufC')) [[γ.(len_toks)]]↦ ()) ∨ Q ∗ own γq (Excl ())) with "[Hlen_tok]") as "#HQinv".
+    iMod (inv_alloc aofN _ (own γtok (Excl ()) ∗ aof_length_lb γ (W64 (length (predurableC ++ membufC'))) ∨ (W64 (length (predurableC ++ membufC')) [[γ.(len_toks)]]↦ ()) ∨ Q ∗ own γq (Excl ())) with "[Hlen_tok]") as "#HQinv".
     {
       iRight. iLeft.
       iFrame.
@@ -502,7 +502,7 @@ Proof.
         iDestruct "Ha" as (l) "[Hlen Ha]".
         iDestruct (own_valid_2 with "Hlen Haof_lb") as %Hineq.
         apply mono_nat_both_frac_valid in Hineq as [_ Hineq].
-        iDestruct (big_sepS_elem_of_acc _ _ (I64 (length (predurableC ++ membufC'))) with "Ha") as "[Ha Harest]".
+        iDestruct (big_sepS_elem_of_acc _ _ (W64 (length (predurableC ++ membufC'))) with "Ha") as "[Ha Harest]".
         { set_solver. }
         iDestruct "Ha" as "[Hlentok2|%Hbad]"; last first.
         { exfalso. lia. }
@@ -600,7 +600,7 @@ Proof.
     iFrame "∗#".
     iSplitR ""; last done.
     replace (word.add (length (predurableC ++ membufC)) (length newData)) with
-        (I64 (length (predurableC ++ membufC'))); last first.
+        (W64 (length (predurableC ++ membufC'))); last first.
     {
       repeat rewrite app_length.
       rewrite -word.ring_morph_add.
@@ -616,7 +616,7 @@ Proof.
   iFrame.
   iIntros "#Hlb".
   iMod ("HfupdQ" with "[Hlb]") as "$"; last by iModIntro.
-  replace (I64 (length (predurableC ++ membufC'))) with
+  replace (W64 (length (predurableC ++ membufC'))) with
       (word.add (length (predurableC ++ membufC)) (length newData)).
   { iFrame "#". }
 
@@ -624,7 +624,7 @@ Proof.
   repeat (rewrite Nat2Z.inj_add).
   rewrite Z.add_assoc.
   rewrite -word.ring_morph_add.
-  unfold I64.
+  unfold W64.
   done.
 Qed.
 

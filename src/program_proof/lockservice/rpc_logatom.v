@@ -9,13 +9,13 @@ From Perennial.program_proof.lockservice Require Import grove_ffi.
 Section rpc_namespace.
 
 Definition rpcReqInvUpToN_list (seqno:u64) : list coPset :=
- ((λ (n:nat), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(I64 n) |} ) <$> (seq 0 (uint.nat seqno))).
+ ((λ (n:nat), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(W64 n) |} ) <$> (seq 0 (uint.nat seqno))).
 Definition rpcReqInvUpToN (seqno:u64) : coPset :=
  ⋃ rpcReqInvUpToN_list seqno.
 
 (*
 Definition rpcReqInvUpToN (seqno:u64) : coPset :=
-  [^union list] x ∈ (seq 0 (uint.nat seqno)), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(I64 (Z.of_nat x)) |}. *)
+  [^union list] x ∈ (seq 0 (uint.nat seqno)), ↑rpcRequestInvN {| Req_CID:= 0; Req_Seq:=(W64 (Z.of_nat x)) |}. *)
 
 Lemma rpcReqInvUpToN_prop cid seq :
   ∀ seq', uint.nat seq' < uint.nat seq → (↑rpcRequestInvN {|Req_CID:=cid; Req_Seq:=seq' |}) ⊆ rpcReqInvUpToN seq.
@@ -32,7 +32,7 @@ Proof.
   2:{
     unfold rpcRequestInvN.
     simpl.
-    replace (I64 (Z.of_nat (uint.nat seq'))) with (seq'); first done.
+    replace (W64 (Z.of_nat (uint.nat seq'))) with (seq'); first done.
     admit.
   }
   admit.
@@ -308,7 +308,7 @@ Proof.
   rewrite rpc_atomic_pre_eq.
   iModIntro.
   iIntros "Htype".
-  iExists (I64 0).
+  iExists (W64 0).
   iFrame.
   iModIntro.
   by iModIntro.
@@ -326,12 +326,12 @@ Lemma modality_pnfupd_mixin γrpc cid :
     split; simpl; eauto.
     - rewrite rpc_atomic_pre_eq.
       iIntros (P) "#HP !> #Htype".
-      iExists (I64 0).
+      iExists (W64 0).
       iFrame "#".
       iModIntro. iModIntro. done.
     - iIntros (_).
       rewrite rpc_atomic_pre_eq.
-      iModIntro. iIntros "Htype". iExists (I64 0).
+      iModIntro. iIntros "Htype". iExists (W64 0).
       iFrame "Htype".
       by repeat iModIntro.
     - iIntros (?? HPQ). iApply pnfupd_wand. iModIntro. iIntros. iModIntro. iApply HPQ. done.

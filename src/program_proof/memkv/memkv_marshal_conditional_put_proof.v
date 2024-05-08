@@ -68,7 +68,7 @@ Proof.
   wp_apply wp_SumAssumeNoOverflow.
   iIntros (Hnooverflow1). wp_pures.
   wp_apply wp_SumAssumeNoOverflow.
-  change (word.add (word.add 8 8) 8) with (I64 24).
+  change (word.add (word.add 8 8) 8) with (W64 24).
   iIntros (Hnooverflow2).
 
   wp_apply (wp_new_enc).
@@ -116,8 +116,8 @@ Proof.
   iFrame "∗#".
   iPureIntro.
   rewrite /has_encoding_ConditionalPutRequest.
-  replace (I64 (length args.(CPR_ExpValue))) with expv_sl.(Slice.sz) by word.
-  replace (I64 (length args.(CPR_NewValue))) with newv_sl.(Slice.sz) by word.
+  replace (W64 (length args.(CPR_ExpValue))) with expv_sl.(Slice.sz) by word.
+  replace (W64 (length args.(CPR_NewValue))) with newv_sl.(Slice.sz) by word.
   done.
 Qed.
 

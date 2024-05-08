@@ -91,13 +91,13 @@ Theorem wp_NFSPROC3_GETATTR γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (Q : S
   {{{ v,
       RET v;
       ( ∃ (sz : u64) resok fattr3,
-        ⌜ getField_f nfstypes.GETATTR3res "Status" v = #(I32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.GETATTR3res "Status" v = #(W32 0) ⌝ ∗
         ⌜ getField_f nfstypes.GETATTR3res "Resok" v = resok ⌝ ∗
         ⌜ getField_f nfstypes.GETATTR3resok "Obj_attributes" resok = fattr3 ⌝ ∗
         ⌜ getField_f nfstypes.Fattr3 "Size" fattr3 = #sz ⌝ ∗
         Q (SimpleNFS.OK (SimpleNFS.Build_fattr sz)) ) ∨
       ( ∃ (stat : Z),
-        ⌜ getField_f nfstypes.GETATTR3res "Status" v = #(I32 stat) ⌝ ∗
+        ⌜ getField_f nfstypes.GETATTR3res "Status" v = #(W32 stat) ⌝ ∗
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.

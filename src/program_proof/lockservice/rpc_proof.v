@@ -18,14 +18,14 @@ Context `{!rpcregG Σ}.
 
 Record RPCValsC := mkRPCValsC
 {
-  I64_1:u64 ;
-  I64_2:u64 ;
+  W64_1:u64 ;
+  W64_2:u64 ;
 }.
 
 #[refine] Global Instance RPCValC_into_val : into_val.IntoVal (RPCValsC) :=
   {
-  to_val := λ x, (#x.(I64_1), (#x.(I64_2), #()))%V ;
-  IntoVal_def := {| I64_1 := 0; I64_2 := 0 |} ;
+  to_val := λ x, (#x.(W64_1), (#x.(W64_2), #()))%V ;
+  IntoVal_def := {| W64_1 := 0; W64_2 := 0 |} ;
   IntoVal_inj := _
   }.
 Proof.
@@ -284,8 +284,8 @@ Definition reqEncoded (req:RPCRequestID) (args:RPCValsC) (bs:list u8) : Prop :=
   uint.nat req.(Req_Seq) > 0 ∧
   has_encoding bs [EncUInt64 req.(Req_CID);
                    EncUInt64 req.(Req_Seq);
-                   EncUInt64 args.(I64_1);
-                   EncUInt64 args.(I64_2)].
+                   EncUInt64 args.(W64_1);
+                   EncUInt64 args.(W64_2)].
 
 Theorem wp_rpcReqEncode (req_ptr:loc) (req:RPCRequestID) (args:RPCValsC) :
   {{{
@@ -304,7 +304,7 @@ Proof.
   wp_apply wp_new_enc.
   iIntros (e) "He".
   wp_loadField.
-  replace (word.mul 4%Z 8%Z) with (I64 32); last first.
+  replace (word.mul 4%Z 8%Z) with (W64 32); last first.
   {
     rewrite -word.ring_morph_mul.
     word.

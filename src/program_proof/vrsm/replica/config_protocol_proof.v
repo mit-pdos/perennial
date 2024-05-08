@@ -45,7 +45,7 @@ Proof.
   iExists _; iFrame "Hconfpre".
   iMod (inv_alloc with "[-]") as "$"; last done.
   iNext.
-  iExists (I64 0), (I64 0), conf, confγs.
+  iExists (W64 0), (W64 0), conf, confγs.
   iFrame.
   iNamed "Hinitconf".
   iFrame "His_conf ∗#%".
@@ -163,7 +163,7 @@ Proof.
   iMod "Hmask".
 
   (* Hunset becomes skipped, and the first unused becomes unset. *)
-  iDestruct (big_sepS_elem_of_acc_impl (word.add reservedEpoch (I64 1)) with "Hunreserved") as "[Hunset_new Hunused]".
+  iDestruct (big_sepS_elem_of_acc_impl (word.add reservedEpoch (W64 1)) with "Hunreserved") as "[Hunset_new Hunused]".
   { set_solver. }
 
   iSpecialize ("Hunset_new" with "[]").
@@ -200,7 +200,7 @@ Proof.
         }
       }
       iIntros (???).
-      assert (uint.nat epoch_skip = uint.nat reservedEpoch ∨ uint.nat epoch_skip < uint.nat reservedEpoch ∨ uint.nat epoch_skip >= uint.nat (word.add reservedEpoch (I64 1))) as Hineq.
+      assert (uint.nat epoch_skip = uint.nat reservedEpoch ∨ uint.nat epoch_skip < uint.nat reservedEpoch ∨ uint.nat epoch_skip >= uint.nat (word.add reservedEpoch (W64 1))) as Hineq.
       { word. }
       destruct Hineq as [Heq|[Hineq|Hineq]].
       {
@@ -222,7 +222,7 @@ Proof.
 
     (* TODO: repetetive proof *)
     iIntros.
-    assert (uint.nat epoch_skip = uint.nat reservedEpoch ∨ uint.nat epoch_skip < uint.nat reservedEpoch ∨ uint.nat epoch_skip >= uint.nat (word.add reservedEpoch (I64 1))) as Hineq.
+    assert (uint.nat epoch_skip = uint.nat reservedEpoch ∨ uint.nat epoch_skip < uint.nat reservedEpoch ∨ uint.nat epoch_skip >= uint.nat (word.add reservedEpoch (W64 1))) as Hineq.
     { word. }
     destruct Hineq as [Heq|[Hineq|Hineq]].
     {
@@ -286,7 +286,7 @@ Lemma wp_Clerk__WriteConfig2 ck γ γconf Φ config_sl conf confγ epoch :
   ([∗ list] γsrv ; host ∈ confγ ; conf, is_pb_host host γ γsrv) -∗
   (∀ γsrv, ⌜γsrv ∈ (r_pb <$> confγ)⌝ → is_epoch_lb γsrv epoch) -∗
   □ (∀ (err:u64),
-      (if (decide (err = I64 0)) then
+      (if (decide (err = W64 0)) then
         is_epoch_config γ.(s_pb) epoch (r_pb <$> confγ)
       else
         True) -∗ Φ #err)

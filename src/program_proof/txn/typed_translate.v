@@ -271,7 +271,7 @@ Definition twophase_initP kind_sz (σimpl: @goose_lang.state disk_op disk_model)
   (neg_non_alloc σspec.(heap)) ∧
   (σimpl.(world) = init_disk ∅ (513 + sz)) ∧
   (σspec.(world) = Closed σj) ∧
-  dom kinds = list_to_set (I64 <$> (seqZ 513 sz)) ∧
+  dom kinds = list_to_set (W64 <$> (seqZ 513 sz)) ∧
   size (recovery_proof.kind_heap0 kinds) = kind_sz.
 
 End initP.

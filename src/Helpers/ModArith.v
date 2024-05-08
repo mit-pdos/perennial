@@ -60,7 +60,7 @@ Qed.
 Lemma word_add_comm (x y : u64) :
   word.add x y = word.add y x.
 Proof.
-  specialize (@word.ring_theory _ i64_instance.i64 _). intros W.
+  specialize (@word.ring_theory _ w64_instance.w64 _). intros W.
   rewrite W.(Radd_comm). done.
 Qed.
 
@@ -73,12 +73,12 @@ Proof.
 Qed.
 
 Theorem word_add1_neq (x: u64) :
-  uint.Z x ≠ uint.Z (word.add x (I64 1)).
+  uint.Z x ≠ uint.Z (word.add x (W64 1)).
 Proof.
   simpl.
   destruct (decide (uint.Z x + 1 < 2^64)%Z); [ word | ].
   rewrite word.unsigned_add.
-  change (uint.Z (I64 1)) with 1%Z.
+  change (uint.Z (W64 1)) with 1%Z.
   rewrite /word.wrap.
   lia.
 Qed.

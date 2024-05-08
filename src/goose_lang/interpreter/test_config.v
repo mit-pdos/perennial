@@ -68,9 +68,9 @@ Definition runWithTrace (e: expr) : Error (val * list string) :=
   (fun p => (fst p, reverse $ snd (snd p))) <$> runStateT (interpret 100 e) startstate.
 
 (* these notations make vm_compute'd values more readable *)
-Notation I64_val z := {| i64_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
-Notation I32_val z := {| i32_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
-Notation I8_val z := {| i8_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
+Notation W64_val z := {| w64_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
+Notation W32_val z := {| w32_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
+Notation W8_val z := {| w8_car := {| Naive.unsigned := z; Naive._unsigned_in_range := eq_refl |} |}.
 
 Module Examples.
   Coercion Var' := Var.
@@ -78,13 +78,13 @@ Module Examples.
     (rec: <> <> :=
        #3 + #3).
   Definition add2_u32 : val :=
-    (λ: "x", "x" + #(I32 2)).
+    (λ: "x", "x" + #(W32 2)).
 
   Definition addRecId : val :=
     (rec: "f" "x" := "x").
 
   Example run1 : computeSix #() ~~> #6 := t.
   Fail Example run1 : computeSix #() ~~> #5 := t.
-  Fail Example run2 : add2_u32 #333 ~~> #(I32 335) := t.
+  Fail Example run2 : add2_u32 #333 ~~> #(W32 335) := t.
 
 End Examples.

@@ -118,7 +118,7 @@ Proof.
   iIntros "Hwg".
   iDestruct "Hwg" as (??) "(%Hwg & His_lock & Hv)".
   iMod (ghost_map_alloc_fin ()) as (γtok) "Htokens".
-  iMod (ghost_var_alloc (I64 0)) as (γtotal) "[Htotal Ht2]".
+  iMod (ghost_var_alloc (W64 0)) as (γtotal) "[Htotal Ht2]".
   iExists (mkwaitgroup_names γtok γtotal).
   iFrame.
   iExists _, _.
@@ -127,7 +127,7 @@ Proof.
 
   iMod (alloc_lock with "His_lock [-]") as "$"; last done.
   iNext.
-  iExists ∅, (I64 0).
+  iExists ∅, (W64 0).
   rewrite size_empty.
   iFrame "Hv Htotal".
   iSplitL "".
@@ -186,17 +186,17 @@ Proof.
   - destruct W as [| x W] using set_ind_L; auto.
     { rewrite size_empty. lia. }
     exfalso. opose proof (Hvalid x _); first by set_solver. lia.
-  - transitivity (size ({[I64 n]} ∪ (W ∖ {[I64 n]}))).
-    { apply Nat2Z.inj_le. apply subseteq_size. set_unfold. intros x. destruct (decide (x = I64 n)); auto. }
+  - transitivity (size ({[W64 n]} ∪ (W ∖ {[W64 n]}))).
+    { apply Nat2Z.inj_le. apply subseteq_size. set_unfold. intros x. destruct (decide (x = W64 n)); auto. }
     rewrite size_union ?size_singleton; last by set_solver.
-    refine (_ (IHn (W ∖ {[I64 n]}) _)); first lia.
+    refine (_ (IHn (W ∖ {[W64 n]}) _)); first lia.
     { set_unfold. intros x (Hin&Hneq). opose proof (Hvalid x _); auto.
       cut (uint.nat x ≠ n); first lia.
       intros Heq.
       move: Hneq.
       rewrite -Heq.
       rewrite Z2Nat.id; last by word.
-      rewrite /I64 word.of_Z_unsigned. auto.
+      rewrite /W64 word.of_Z_unsigned. auto.
     }
 Qed.
 
@@ -252,7 +252,7 @@ Proof.
     iFrame "Htotal".
     iSplitL "Hv".
     {
-      replace ((word.add 1 (size remaining))) with (I64 (size (remaining ∪ {[total]}))); last first.
+      replace ((word.add 1 (size remaining))) with (W64 (size (remaining ∪ {[total]}))); last first.
       {
         rewrite size_union; last first.
         { set_unfold. intros x' Hin Heq. specialize (Hremaining x' Hin). subst. lia. }
@@ -435,7 +435,7 @@ Proof.
       eapply u64_set_size_all_lt in Hremaining.
       assert (size remaining = 0%nat) as Hzero.
       { word_cleanup.
-        rewrite /I64 in Heqb.
+        rewrite /W64 in Heqb.
         apply word.of_Z_inj_small in Heqb; try lia.
       }
       apply size_empty_inv in Hzero. set_solver.

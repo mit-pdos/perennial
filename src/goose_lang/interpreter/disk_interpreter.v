@@ -222,7 +222,7 @@ Definition disk_interpret_step (op: DiskOp) (v: val) : StateT btstate Error expr
   | (SizeOp, LitV LitUnit) =>
     bts <- mget;
     let '(σ,g) := fst (bts : btstate) in
-      mret (Val $ LitV $ LitInt (I64 (disk_size σ.(@world _ disk_model))))
+      mret (Val $ LitV $ LitInt (W64 (disk_size σ.(@world _ disk_model))))
   | _ => interpret_types.mfail ("DiskOp failed: Invalid argument types for " ++ (pretty op))
   end.
 

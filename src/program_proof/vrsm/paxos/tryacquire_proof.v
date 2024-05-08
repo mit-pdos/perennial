@@ -48,7 +48,7 @@ Definition own_releaseFn (f:val) γ sl_ptr oldstate : iProp Σ :=
   "Hupd" ∷ (|={⊤∖↑N,∅}=> ∃ oldstate', own_state γ oldstate' ∗
               (⌜ oldstate' = oldstate ⌝ -∗ own_state γ newstate ={∅,⊤∖↑N}=∗ Φ #0))
   ) -∗
-  (∀ (err:u64), ⌜ err ≠ I64 0 ⌝ → Φ #err) -∗
+  (∀ (err:u64), ⌜ err ≠ W64 0 ⌝ → Φ #err) -∗
   WP f #() {{ Φ }}
 .
 
@@ -232,7 +232,7 @@ Proof.
   rename pst0 into pst.
   iAssert (|={⊤}=> applyAsFollowerArgs.own args_ptr (applyAsFollowerArgs.mkC
                                                pst.(paxosState.epoch)
-                                               (I64 (length log + 1))
+                                               (W64 (length log + 1))
                                                newstate
           ))%I with "[Hargs]" as "Hargs".
   {
@@ -244,7 +244,7 @@ Proof.
 
     rewrite Z2Nat.id; last word.
     rewrite -Hno_overflow.
-    unfold I64.
+    unfold W64.
     rewrite word.of_Z_unsigned.
 
     iMod (readonly_alloc_1 with "nextIndex") as "$".
@@ -277,7 +277,7 @@ Proof.
                     "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
                     "#Hreplies" ∷ ([∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts),
                     ⌜reply_ptr = null⌝ ∨ □(∃ reply, readonly (applyAsFollowerReply.own reply_ptr reply 1) ∗
-                                                   if decide (reply.(applyAsFollowerReply.err) = (I64 0)) then
+                                                   if decide (reply.(applyAsFollowerReply.err) = (W64 0)) then
                                                      is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q)])
                                                    else
                                                      True
@@ -436,7 +436,7 @@ Proof.
                  ∃ (W: gset nat),
                  "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < uint.nat i⌝ ∗
                  "%HW_size_nooverflow" ∷ ⌜(size W) ≤ uint.nat i⌝ ∗
-                 "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(I64 (size W)) ∗
+                 "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(W64 (size W)) ∗
                  "#Hacc_lbs" ∷ ([∗ list] s ↦ γsrv' ∈ γ.(s_hosts), ⌜s ∈ W⌝ → is_accepted_lb γsrv' pst.(paxosState.epoch) (log ++ [(newstate, Q)]))
       )%I).
 
@@ -486,7 +486,7 @@ Proof.
         iExists (W ∪ {[ uint.nat i ]}).
         iSplitR.
         { (* prove that the new set W is still in range *)
-          replace (uint.nat (word.add i (I64 1))) with (uint.nat i + 1) by word.
+          replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1) by word.
           iPureIntro.
           intros ? Hin.
           rewrite elem_of_union in Hin.
@@ -560,7 +560,7 @@ Proof.
         iFrame "HnumSuccesses".
         iFrame "Hacc_lbs".
         iPureIntro.
-        replace (uint.nat (word.add i (I64 1))) with (uint.nat i + 1) by word.
+        replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1) by word.
         split.
         {
           intros.
@@ -579,7 +579,7 @@ Proof.
       iFrame "HnumSuccesses".
       iFrame "Hacc_lbs".
       iPureIntro.
-      replace (uint.nat (word.add i (I64 1))) with (uint.nat i + 1) by word.
+      replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1) by word.
       split.
       {
         intros.
@@ -766,7 +766,7 @@ Proof.
   }
   iIntros "* (Hlc1 & Hlc3 & Hpost)".
 
-  destruct (decide (err = I64 0)).
+  destruct (decide (err = W64 0)).
   { (* no error *)
     subst.
     setoid_rewrite decide_True.

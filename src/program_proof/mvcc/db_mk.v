@@ -142,7 +142,7 @@ Proof.
     "Hsites" ∷ (db ↦[DB :: "sites"] (to_val sites)) ∗
     "HactiveAuths" ∷ ([∗ list] sid ∈ (drop (uint.nat n) sids_all), site_active_tids_half_auth γ sid ∅) ∗
     "Hsids" ∷ ([∗ list] sid ∈ (drop (uint.nat n) sids_all), sid_own γ sid))%I.
-  wp_apply (wp_forUpto P _ _ (I64 0) (I64 N_TXN_SITES) with "[] [HsitesS sites $HiRef HactiveAuths Hsids]"); first done.
+  wp_apply (wp_forUpto P _ _ (W64 0) (W64 N_TXN_SITES) with "[] [HsitesS sites $HiRef HactiveAuths Hsids]"); first done.
   { clear Φ latch.
     iIntros (i Φ) "!> (Hloop & HiRef & %Hbound) HΦ".
     iNamed "Hloop".
@@ -194,7 +194,7 @@ Proof.
     rewrite take_length_le; last first.
     { rewrite insert_length. word. }
     (* Set Printing Coercions. *)
-    replace (I64 _) with i by word.
+    replace (W64 _) with i by word.
     eauto 10 with iFrame.
   }
   { iExists (replicate 32 null).
@@ -221,7 +221,7 @@ Proof.
   iMod (readonly_alloc_1 with "proph") as "#Hp".
   iMod (readonly_alloc_1 with "Hsites") as "#Hsites".
   iMod (readonly_alloc_1 with "HsitesS") as "#HsitesS".
-  replace (uint.nat (I64 N_TXN_SITES)) with (length sitesL); last first.
+  replace (uint.nat (W64 N_TXN_SITES)) with (length sitesL); last first.
   { unfold N_TXN_SITES in *. word. }
   iFrame "Hpts".
   rewrite firstn_all.

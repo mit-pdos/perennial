@@ -748,7 +748,7 @@ Proof.
     replace (uint.Z σ.(diskEnd) +
          (uint.nat σ.(memLog).(slidingM.mutable) - uint.nat σ.(diskEnd))%nat)
       with (uint.Z σ.(memLog).(slidingM.mutable)) by word.
-    replace (I64 (uint.Z σ.(memLog).(slidingM.mutable))) with σ.(memLog).(slidingM.mutable) by word.
+    replace (W64 (uint.Z σ.(memLog).(slidingM.mutable))) with σ.(memLog).(slidingM.mutable) by word.
     by iFrame "∗ #".
   }
 
@@ -765,7 +765,7 @@ Proof.
     by word.
   replace (uint.nat (uint.Z _)) with (uint.nat σ.(memLog).(slidingM.mutable))
     by word.
-  replace (I64 _) with (σ.(memLog).(slidingM.mutable)) by word.
+  replace (W64 _) with (σ.(memLog).(slidingM.mutable)) by word.
   iFrame.
   iSplit.
   { iPureIntro. word. }

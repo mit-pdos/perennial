@@ -385,7 +385,7 @@ Lemma wp_SliceCopy stk E sl t q vs dst vs' :
   (length vs' ≥ length vs) →
   {{{ own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs' }}}
     SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
-  {{{ RET #(I64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 (vs ++ drop (length vs) vs') }}}.
+  {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 (vs ++ drop (length vs) vs') }}}.
 Proof.
   iIntros (Hbound Φ) "(Hsrc&Hdst) HΦ".
   wp_call.
@@ -412,7 +412,7 @@ Proof.
     rewrite !take_length !fmap_length.
     repeat (f_equal; try lia). }
   wp_pures.
-  replace (Slice.sz sl) with (I64 (length vs)) by word.
+  replace (Slice.sz sl) with (W64 (length vs)) by word.
   iApply "HΦ".
   iFrame. iModIntro.
   iSplit.
@@ -433,7 +433,7 @@ Qed.
 Lemma wp_SliceCopy_full_typed stk E sl t q vs dst vs' :
   {{{ own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs' ∗ ⌜length vs = length vs'⌝}}}
     SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
-  {{{ RET #(I64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs }}}.
+  {{{ RET #(W64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs }}}.
 Proof.
   iIntros (Φ) "(Hsrc & Hdst & %Hlen) HΦ".
   wp_apply (wp_SliceCopy with "[$Hsrc $Hdst]"); [word|].
@@ -480,8 +480,8 @@ Theorem wp_forSlice_mut (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
       {{{ I i ∗ ⌜uint.Z i < uint.Z s.(Slice.sz)⌝ ∗
                 ⌜vs !! uint.nat i = Some x⌝ }}}
         body #i (to_val x) @ stk; E
-      {{{ (v : val), RET v; I (word.add i (I64 1)) }}}) -∗
-    {{{ I (I64 0) }}}
+      {{{ (v : val), RET v; I (word.add i (W64 1)) }}}) -∗
+    {{{ I (W64 0) }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) }}}.
 Proof.
@@ -509,8 +509,8 @@ Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
       {{{ I i ∗ ⌜uint.Z i < uint.Z s.(Slice.sz)⌝ ∗
                 ⌜vs !! uint.nat i = Some x⌝ }}}
         body #i (to_val x) @ stk; E
-      {{{ (v : val), RET v; I (word.add i (I64 1)) }}}) -∗
-    {{{ I (I64 0) ∗ own_slice_small s t q vs }}}
+      {{{ (v : val), RET v; I (word.add i (W64 1)) }}}) -∗
+    {{{ I (W64 0) ∗ own_slice_small s t q vs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) ∗ own_slice_small s t q vs }}}.
 Proof.
@@ -553,7 +553,7 @@ Proof.
   wp_apply (wp_forSlice (λ i, I i ∗ [∗ list] j ↦ v ∈ (drop (uint.nat i) l), ϕ (j + uint.nat i)%nat v) %I
              with "[] [$Hsl Hl HI]").
   2: { rewrite drop_0.
-       replace (uint.nat (I64 0)) with (0%nat) by word.
+       replace (uint.nat (W64 0)) with (0%nat) by word.
        setoid_rewrite <- plus_n_O. iFrame. }
   {
     clear Φ.

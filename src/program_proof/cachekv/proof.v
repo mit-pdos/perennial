@@ -19,7 +19,7 @@ Proof.
                                      "l" ::= #x.(l)
                                    ])%V ;
            from_val := λ v, match v with (#(LitString v), (#(LitInt t), #()))%V => Some (mk v t) | _ => None end ;
-           IntoVal_def := mk "" (I64 0) ;
+           IntoVal_def := mk "" (W64 0) ;
          |}.
   intros. simpl. by destruct v0.
 Defined.

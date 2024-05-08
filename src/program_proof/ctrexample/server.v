@@ -19,7 +19,7 @@ Definition ctrname := "ctr".
 
 Definition own_CtrServer_durable (c:u64) : iProp Σ :=
   ∃ l, ctrname f↦ l ∗
-               (⌜l = []⌝ ∗ ⌜c = I64 0⌝ ∨ ⌜has_encoding l [EncUInt64 c]⌝)
+               (⌜l = []⌝ ∗ ⌜c = W64 0⌝ ∨ ⌜has_encoding l [EncUInt64 c]⌝)
 .
 
 Definition own_CtrServer_ghost γ (c:u64) : iProp Σ :=
@@ -329,7 +329,7 @@ Proof using Type*.
       assert (c = 0) as ->.
       {
         apply bool_decide_eq_true in Hslice_empty.
-        replace (sl.(Slice.sz)) with (I64 0) in HslSize by naive_solver.
+        replace (sl.(Slice.sz)) with (W64 0) in HslSize by naive_solver.
         destruct Hpure as [Hpure|Hbad].
         { naive_solver. }
         exfalso.
@@ -350,7 +350,7 @@ Proof using Type*.
         destruct Hbad as [Hbad _].
         rewrite Hbad in HslSize.
         simpl in HslSize.
-        replace (sl.(Slice.sz)) with (I64 0) in Hslice_nonEmpty by word.
+        replace (sl.(Slice.sz)) with (W64 0) in Hslice_nonEmpty by word.
         done.
       }
       iDestruct (own_slice_to_small with "Hsl") as "Hsl".

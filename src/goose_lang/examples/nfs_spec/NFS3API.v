@@ -395,7 +395,7 @@ Definition inode_wcc (i : inode_state) : wcc_attr :=
   Build_wcc_attr
     ( match (inode_state_type i) with
       | Ifile b _ => len_buf b
-      | _ => I64 0
+      | _ => W64 0
       end )
     (inode_meta_mtime m)
     (inode_meta_ctime m).
@@ -495,7 +495,7 @@ Section SymbolicStep.
       ( match (inode_state_type i) with
         | Iblk mm => mm
         | Ichr mm => mm
-        | _ => Build_major_minor (I32 0) (I32 0)
+        | _ => Build_major_minor (W32 0) (W32 0)
         end )
       fsid
       (inode_meta_fileid m)
@@ -726,10 +726,10 @@ Section SymbolicStep.
     now <- get_time;
     fid <- symFID;
     ret (Build_inode_meta
-      (I32 0)(* XXX nlink? *)
-      (I32 420) (* mode 0644 *)
-      (I32 0)(* uid *)
-      (I32 0)(* gid *)
+      (W32 0)(* XXX nlink? *)
+      (W32 420) (* mode 0644 *)
+      (W32 0)(* uid *)
+      (W32 0)(* gid *)
       fid
       now
       now
@@ -1158,7 +1158,7 @@ Section SymbolicStep.
     i <~- get_fh h (@None fattr);
     iattr <- inode_attrs i;
     info <- suchThatBool (fun _ info =>
-      (bool_decide (info.(fsinfo_ok_time_delta) = (Build_time (I32 0) (I32 1)))) &&
+      (bool_decide (info.(fsinfo_ok_time_delta) = (Build_time (W32 0) (W32 1)))) &&
       info.(fsinfo_ok_properties_link) &&
       info.(fsinfo_ok_properties_symlink) &&
       info.(fsinfo_ok_properties_homogeneous) &&

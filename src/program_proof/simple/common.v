@@ -34,8 +34,8 @@ Proof.
   rewrite /NumInodes /InodeSz in H.
   replace (4096 `div` 128) with (32) in H by reflexivity.
 
-  replace (word.add (word.divu (word.sub 4096 8) 8) 2)%Z with (I64 513) by reflexivity.
-  replace (word.mul (word.mul inum 128) 8)%Z with (I64 (uint.nat inum * 128 * 8)%nat).
+  replace (word.add (word.divu (word.sub 4096 8) 8) 2)%Z with (W64 513) by reflexivity.
+  replace (word.mul (word.mul inum 128) 8)%Z with (W64 (uint.nat inum * 128 * 8)%nat).
   { iApply "HΦ". done. }
 
   assert (uint.Z (word.mul (word.mul inum 128) 8) = uint.Z inum * 1024)%Z.
@@ -133,8 +133,8 @@ Proof.
   iPureIntro. intuition.
   rewrite elem_of_covered_inodes.
   split; [ | word ].
-  assert (i ≠ I64 0) as Hnot_0%(not_inj (f:=uint.Z)) by congruence.
-  assert (i ≠ I64 1) as Hnot_1%(not_inj (f:=uint.Z)) by congruence.
+  assert (i ≠ W64 0) as Hnot_0%(not_inj (f:=uint.Z)) by congruence.
+  assert (i ≠ W64 1) as Hnot_1%(not_inj (f:=uint.Z)) by congruence.
   change (uint.Z 0%Z) with 0%Z in *.
   change (uint.Z 1%Z) with 1%Z in *.
   word.
@@ -207,7 +207,7 @@ Proof.
   iDestruct 1 as (?) "(H1&H2)".
   iApply is_inode_crash_prev_own; iFrame "∗#".
   Unshelve.
-  exact (I64 0).
+  exact (W64 0).
 Qed.
 
 End heap.

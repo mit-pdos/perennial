@@ -159,7 +159,7 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 Definition paxos_init px γ : iProp Σ :=
   "Hvs"  ∷ own_candidates_half γ ∅ ∗
   "Hv"   ∷ own_consensus_half γ Free ∗
-  "#Hpx" ∷ is_paxos px (I64 0) 3%nat γ.
+  "#Hpx" ∷ is_paxos px (W64 0) 3%nat γ.
 
 Theorem wp_MkPaxos :
   {{{ True }}}
@@ -1471,10 +1471,10 @@ Proof.
   { case_bool_decide.
     { case_decide; first done.
       inversion H as [Hterml]. subst terml.
-      by replace (uint.nat (I64 0)) with O by word.
+      by replace (uint.nat (W64 0)) with O by word.
     }
     { case_decide; last done.
-      replace terml with (I64 0) in H by word. done.
+      replace terml with (W64 0) in H by word. done.
     }
   }
   iMod "HAU" as (vs) "[Hvs HAU]".

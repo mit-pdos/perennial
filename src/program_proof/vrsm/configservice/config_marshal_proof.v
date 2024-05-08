@@ -52,7 +52,7 @@ Proof.
   wp_store.
   simpl.
 
-  replace (conf_sl.(Slice.sz)) with (I64 (length conf)) by word.
+  replace (conf_sl.(Slice.sz)) with (W64 (length conf)) by word.
   set (P:=(λ (i:u64),
       ∃ enc_sl,
       "Henc_sl" ∷ own_slice enc_sl byteT 1 ((u64_le (length conf)) ++ concat (u64_le <$> (take (uint.nat i) conf))) ∗
@@ -217,7 +217,7 @@ Proof.
   wp_pures.
 
   iDestruct (own_slice_small_sz with "Henc_sl") as %Henc_sz.
-  (* prove that conf's length is below I64_MAX *)
+  (* prove that conf's length is below W64_MAX *)
   assert (uint.nat (length conf) = length conf) as Hlen_no_overflow.
   {
     assert (length (concat (u64_le <$> conf)) ≥ length conf).
@@ -242,7 +242,7 @@ Proof.
       "Henc_sl" ∷ own_slice_small enc_sl byteT q (concat (u64_le <$> (drop (uint.nat i) conf))) ∗
       "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
       "Hconf_sl" ∷ own_slice_small conf_sl uint64T 1 ((take (uint.nat i) conf) ++
-                                                replicate (length conf - uint.nat i) (I64 0))
+                                                replicate (length conf - uint.nat i) (W64 0))
     )%I)
   .
   wp_apply (wp_ref_to).

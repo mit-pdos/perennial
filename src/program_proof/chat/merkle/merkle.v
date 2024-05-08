@@ -30,14 +30,14 @@ Fixpoint containsNodeAtEnd (tr : tree) (id : list u8) (node : tree) : Prop :=
 Fixpoint is_tree_hash (tr : tree) (hash : list u8) : iProp Σ :=
   match tr with
   | Cut hash' => ⌜hash = hash' ∧ length hash' = 32%nat⌝
-  | Empty => is_hash [I8 0] hash
-  | Leaf val => is_hash (val ++ [I8 1]) hash
+  | Empty => is_hash [W8 0] hash
+  | Leaf val => is_hash (val ++ [W8 1]) hash
   | Interior children =>
     ∃ (child_hashes : list (list u8)),
     let map_fn := (λ c h, is_tree_hash c h) in
     ([∗ list] child_fn;hash' ∈ (map_fn <$> children);child_hashes,
       child_fn hash') ∗
-    is_hash (concat child_hashes ++ [I8 2]) hash
+    is_hash (concat child_hashes ++ [W8 2]) hash
   end%I.
 
 Lemma tree_hash_len tr hash :
@@ -235,7 +235,7 @@ Definition tree_to_map (tr : tree) : gmap (list u8) (list u8) :=
       (* Grab all entries from the children, storing the ongoing id. *)
       (foldr
         (λ child (pIdxAcc:(Z * gmap (list u8) (list u8))),
-          let acc' := traverse child pIdxAcc.2 (id ++ [I8 pIdxAcc.1])
+          let acc' := traverse child pIdxAcc.2 (id ++ [W8 pIdxAcc.1])
           in (pIdxAcc.1 + 1, acc'))
         (0, acc) children
       ).2
@@ -468,7 +468,7 @@ Proof.
 
     (* Rewrite this early since it appears in multiple sub-terms. *)
     replace (word.sub (word.sub sl_ChildHashes.(Slice.sz) 1) loopIdx) with
-      (I64 (length list_dim0 - 1 - uint.nat loopIdx)) by word.
+      (W64 (length list_dim0 - 1 - uint.nat loopIdx)) by word.
 
     wp_apply (wp_SliceGet with "[$Hsl_dim0]"); [done|];
       iIntros "Hsl_dim0".
@@ -476,7 +476,7 @@ Proof.
 
     wp_if_destruct.
     { wp_store. iApply "HΦ2". by iFrame "#∗". }
-    replace (word.sub 256 1) with (I64 255) in Heqb;
+    replace (word.sub 256 1) with (W64 255) in Heqb;
       [|word]; rename Heqb into Hsz_sl_dim1'.
     wp_apply (wp_IsValidHashSl with "[$Hro_sl_dim1 $Hsep_dim1]").
       iIntros (ok) "H".
@@ -542,7 +542,7 @@ Proof.
     wp_apply wp_SliceSingleton; [val_ty|];
       iIntros (sl_tag) "H";
       iDestruct (slice.own_slice_to_small with "H") as "Hsl_tag".
-    iAssert (own_slice_small _ _ _ [I8 2]) with "Hsl_tag" as "Hsl_tag".
+    iAssert (own_slice_small _ _ _ [W8 2]) with "Hsl_tag" as "Hsl_tag".
     iMod (readonly_alloc_1 with "Hsl_tag") as "#Hro_sl_tag".
     wp_apply (wp_HasherWrite with "[$Hptr_hr $Hhr $Hro_sl_tag]").
     clear sl_hr; iIntros (sl_hr) "H"; iNamed "H".

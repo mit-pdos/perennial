@@ -544,7 +544,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   unfold spec_search in Hsearch.
-  (* [(I64 0), ""] is the zero-value of [u64, string]. *)
+  (* [(W64 0), ""] is the zero-value of [u64, string]. *)
   set ents' := (ents ++ [(key, "", false, null)]).
   unfold own_wrbuf_xtpls.
 
@@ -598,7 +598,7 @@ Proof.
   iApply "HΦ".
   iModIntro.
   iExists _, [].
-  iDestruct (own_slice_take_cap _ _ _ (I64 0) with "HentsS") as "HentsS"; first word.
+  iDestruct (own_slice_take_cap _ _ _ (W64 0) with "HentsS") as "HentsS"; first word.
   change (uint.nat 0) with 0%nat.
   rewrite take_0.
   do 2 rewrite fmap_nil.

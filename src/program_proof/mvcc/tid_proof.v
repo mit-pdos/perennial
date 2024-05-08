@@ -8,7 +8,7 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Local Definition sid_of (ts: u64) : u64 := word.modu ts (I64 N_TXN_SITES).
+Local Definition sid_of (ts: u64) : u64 := word.modu ts (W64 N_TXN_SITES).
 
 Local Definition gentid_au (γ : mvcc_names) (sid : u64) (Φ : val → iProp Σ) : iProp Σ :=
   (|NC={⊤ ∖ ↑mvccNTID,∅}=>
@@ -88,7 +88,7 @@ Proof.
 Qed.
 
 Local Lemma reserved_inc_clock γ now reserved :
-  reserved !! (I64 (S now)) = None →
+  reserved !! (W64 (S now)) = None →
   ([∗ map] ts↦γr ∈ reserved, reserved_inv γ γr now ts) -∗
   [∗ map] ts↦γr ∈ reserved, reserved_inv γ γr (S now) ts.
 Proof.
@@ -97,7 +97,7 @@ Proof.
   iIntros "!> %ts %γr %Hts (%Φ & HΦ & Hsid & HAU)".
   assert (uint.nat ts ≠ S now).
   { intros Heq. rewrite -Heq in Hnotnow.
-    replace (I64 (uint.nat ts)) with ts in Hnotnow by word. congruence. }
+    replace (W64 (uint.nat ts)) with ts in Hnotnow by word. congruence. }
   iExists _. iFrame.
   case_bool_decide.
   - rewrite bool_decide_true. 2:lia. done.
@@ -119,7 +119,7 @@ Proof.
   { iApply tsc_lb_weaken; last done. lia. }
   iDestruct "Hgentid" as "(%last & %reserved & %Hlast & Hts & _ & Hreserved_map & Hreserved)".
   set ts := S m.
-  destruct (reserved !! (I64 ts)) as [γr|] eqn:Hts; last first.
+  destruct (reserved !! (W64 ts)) as [γr|] eqn:Hts; last first.
   { (* Nothing reserved at this timestamp, not much to do. *)
     iExists _, _. iFrame. iSplitR; first by eauto with lia.
     iFrame "Htsc".
@@ -222,11 +222,11 @@ Proof.
   iMod "Hclose2" as "_".
   set inbounds := bool_decide (uint.Z clock2 + 32 < 2^64).
   set clock2_boundsafe := if inbounds then clock2 else 0.
-  opose proof (u64_round_up_spec clock2_boundsafe (I64 32) _ _) as H.
+  opose proof (u64_round_up_spec clock2_boundsafe (W64 32) _ _) as H.
   { subst clock2_boundsafe inbounds. case_bool_decide; word. }
   { word. }
   move:H.
-  set rounded_ts := u64_round_up clock2_boundsafe (I64 32).
+  set rounded_ts := u64_round_up clock2_boundsafe (W64 32).
   intros (Hmod & Hbound1 & Hbound2).
   set reserved_ts := word.add rounded_ts sid.
   assert ((uint.Z rounded_ts + uint.Z sid) `mod` 32 = uint.Z sid) as Hsidmod.

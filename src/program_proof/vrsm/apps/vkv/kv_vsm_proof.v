@@ -45,10 +45,10 @@ Definition compute_reply ops op : list u8 :=
 
 Definition encode_op op : list u8 :=
   match op with
-    | putOp k v => [I8 0] ++ u64_le (length (string_to_bytes k)) ++
+    | putOp k v => [W8 0] ++ u64_le (length (string_to_bytes k)) ++
                          string_to_bytes k ++ string_to_bytes v
-    | getOp k => [I8 1] ++ string_to_bytes k
-    | condPutOp k e v => [I8 2] ++ u64_le (length (string_to_bytes k)) ++
+    | getOp k => [W8 1] ++ string_to_bytes k
+    | condPutOp k e v => [W8 2] ++ u64_le (length (string_to_bytes k)) ++
                          string_to_bytes k ++
                          u64_le (length (string_to_bytes e)) ++
                          string_to_bytes e ++
@@ -110,7 +110,7 @@ Proof.
   wp_apply (wp_SliceSet with "[$Hbuf]").
   { iPureIntro. done. }
   iEval simpl.
-  change (<[uint.nat 0%Z:=I8 0]> (replicate (uint.nat 1%Z) (I8 0))) with [I8 0].
+  change (<[uint.nat 0%Z:=W8 0]> (replicate (uint.nat 1%Z) (W8 0))) with [W8 0].
   iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
   wp_loadField. wp_load.
   wp_apply (wp_WriteInt with "Hbuf"). iIntros (sl) "Hbuf". wp_store. clear ptr.
@@ -232,7 +232,7 @@ Proof.
   wp_apply (wp_SliceSet with "[$Hbuf]").
   { iPureIntro. done. }
   iEval simpl.
-  change (<[uint.nat 0%Z:=I8 1]> (replicate (uint.nat 1%Z) (I8 0))) with [I8 1].
+  change (<[uint.nat 0%Z:=W8 1]> (replicate (uint.nat 1%Z) (W8 0))) with [W8 1].
   iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
   wp_apply wp_StringToBytes.
   iIntros (?) "Hsl".
@@ -297,7 +297,7 @@ Proof.
   wp_apply (wp_SliceSet with "[$Hbuf]").
   { iPureIntro. done. }
   iEval simpl.
-  change (<[uint.nat 0%Z:=I8 0]> (replicate (uint.nat 1%Z) (I8 0))) with [I8 0].
+  change (<[uint.nat 0%Z:=W8 0]> (replicate (uint.nat 1%Z) (W8 0))) with [W8 0].
   iIntros "Hbuf". iDestruct ("Hbufclose" with "Hbuf") as "Hbuf".
   wp_pures.
   wp_loadField. wp_load.
@@ -981,7 +981,7 @@ Lemma wp_makeVersionedStateMachine :
   {{{
       sm own_MemStateMachine, RET #sm;
         is_VersionedStateMachine sm own_MemStateMachine ∗
-        (∀ γst, is_state γst (I64 0) [] -∗ own_MemStateMachine γst [] (I64 0))
+        (∀ γst, is_state γst (W64 0) [] -∗ own_MemStateMachine γst [] (W64 0))
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -1028,9 +1028,9 @@ Proof.
   repeat iExists _; iFrame.
   iSplitL.
   { iModIntro. iIntros. rewrite lookup_empty /= in H3.
-    replace (uint.nat (I64 0)) with (0) in * by word.
+    replace (uint.nat (W64 0)) with (0) in * by word.
     assert (uint.nat vnum' = uint.nat 0) by word.
-    replace (vnum') with (I64 0) by word.
+    replace (vnum') with (W64 0) by word.
     iExists _; by iFrame "#".
   }
   iPureIntro. intros. rewrite lookup_empty /= //.

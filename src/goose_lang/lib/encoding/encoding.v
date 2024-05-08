@@ -80,11 +80,11 @@ Hint Rewrite word.unsigned_sru : word.
 
 Theorem word_byte_extract (x:u32) k :
   0 <= k < 4 ->
-  word.of_Z (uint.Z x ≫ (k*8)) = u8_from_u32 (word.sru x (I32 (k*8))).
+  word.of_Z (uint.Z x ≫ (k*8)) = u8_from_u32 (word.sru x (W32 (k*8))).
 Proof.
   intros.
   apply word.unsigned_inj.
-  unfold u8_from_u32, I8.
+  unfold u8_from_u32, W8.
   autorewrite with word.
   rewrite word.unsigned_sru;
     rewrite unsigned_U32.
@@ -97,11 +97,11 @@ Qed.
 
 Theorem word64_byte_extract (x:u64) k :
   0 <= k < 8 ->
-  word.of_Z (uint.Z x ≫ (k*8)) = u8_from_u64 (word.sru x (I64 (k*8))).
+  word.of_Z (uint.Z x ≫ (k*8)) = u8_from_u64 (word.sru x (W64 (k*8))).
 Proof.
   intros.
   apply word.unsigned_inj.
-  unfold u8_from_u64, I8.
+  unfold u8_from_u64, W8.
   autorewrite with word.
   rewrite word.unsigned_sru;
     rewrite unsigned_U64.
@@ -114,10 +114,10 @@ Qed.
 
 Theorem u32_le_to_sru (x: u32) :
   b2val <$> u32_le x =
-  cons #(u8_from_u32 (word.sru x (I32 (0%nat * 8))))
-       (cons #(u8_from_u32 (word.sru x (I32 (1%nat * 8))))
-             (cons #(u8_from_u32 (word.sru x (I32 (2%nat * 8))))
-                   (cons #(u8_from_u32 (word.sru x (I32 (3%nat * 8))))
+  cons #(u8_from_u32 (word.sru x (W32 (0%nat * 8))))
+       (cons #(u8_from_u32 (word.sru x (W32 (1%nat * 8))))
+             (cons #(u8_from_u32 (word.sru x (W32 (2%nat * 8))))
+                   (cons #(u8_from_u32 (word.sru x (W32 (3%nat * 8))))
                          nil))).
 Proof.
   rewrite /b2val.
@@ -130,7 +130,7 @@ Proof.
 Qed.
 
 Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
-  {{{ ▷ l ↦∗[byteT] vs ∗ ⌜ length vs = i32_bytes ⌝ }}}
+  {{{ ▷ l ↦∗[byteT] vs ∗ ⌜ length vs = w32_bytes ⌝ }}}
     EncodeUInt32 #x #l @ s ; E
   {{{ RET #(); l ↦∗[byteT] (b2val <$> u32_le x) }}}.
 Proof.
@@ -171,7 +171,7 @@ Proof.
   iIntros "Hv2".
 
   iApply "HΦ".
-  change (I32 8) with (I32 (1 * 8)).
+  change (W32 8) with (W32 (1 * 8)).
   rewrite -?word_byte_extract; try lia.
   subst.
   simpl.
@@ -181,13 +181,13 @@ Qed.
 Definition u64_le_bytes (x: u64) : list val :=
   b2val <$> u64_le x.
 
-Lemma u64_le_bytes_length x : length (u64_le_bytes x) = i64_bytes.
+Lemma u64_le_bytes_length x : length (u64_le_bytes x) = w64_bytes.
 Proof.
   rewrite fmap_length //.
 Qed.
 
 Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
-  {{{ ▷ l ↦∗[byteT] vs ∗ ⌜ length vs = i64_bytes ⌝ }}}
+  {{{ ▷ l ↦∗[byteT] vs ∗ ⌜ length vs = w64_bytes ⌝ }}}
     EncodeUInt64 #x #l @ stk ; E
   {{{ RET #(); l ↦∗[byteT] (b2val <$> u64_le x) }}}.
 Proof.
@@ -256,7 +256,7 @@ Proof.
   iIntros "Hv6".
 
   iApply "HΦ".
-  change (I64 8) with (I64 (1 * 8)).
+  change (W64 8) with (W64 (1 * 8)).
   rewrite -?word64_byte_extract; try lia.
   subst.
   simpl.
@@ -264,10 +264,10 @@ Proof.
 Qed.
 
 Theorem wp_UInt64Put stk E s x vs :
-  length vs >= i64_bytes →
+  length vs >= w64_bytes →
   {{{ own_slice_small s byteT 1%Qp vs }}}
     UInt64Put (slice_val s) #x @ stk; E
-  {{{ RET #(); own_slice_small s byteT 1%Qp (u64_le_bytes x ++ (drop i64_bytes vs)) }}}.
+  {{{ RET #(); own_slice_small s byteT 1%Qp (u64_le_bytes x ++ (drop w64_bytes vs)) }}}.
 Proof.
   iIntros (? Φ) "Hsl HΦ".
   wp_lam.
@@ -292,16 +292,16 @@ Qed.
 Definition u32_le_bytes (x: u32) : list val :=
   b2val <$> u32_le x.
 
-Lemma u32_le_bytes_length x : length (u32_le_bytes x) = i32_bytes.
+Lemma u32_le_bytes_length x : length (u32_le_bytes x) = w32_bytes.
 Proof.
   rewrite fmap_length //.
 Qed.
 
 Theorem wp_UInt32Put stk E s (x: u32) vs :
-  length vs >= i32_bytes →
+  length vs >= w32_bytes →
   {{{ own_slice_small s byteT 1%Qp vs }}}
     UInt32Put (slice_val s) #x @ stk; E
-  {{{ RET #(); own_slice_small s byteT 1%Qp (u32_le_bytes x ++ (drop i32_bytes vs)) }}}.
+  {{{ RET #(); own_slice_small s byteT 1%Qp (u32_le_bytes x ++ (drop w32_bytes vs)) }}}.
 Proof.
   iIntros (? Φ) "Hsl HΦ".
   wp_lam.
@@ -332,13 +332,13 @@ Ltac eval_term t :=
 
 Ltac eval_u32 :=
   match goal with
-  | |- context[uint.Z (I32 ?z)] =>
+  | |- context[uint.Z (W32 ?z)] =>
     rewrite  (Z_u32 z ltac:(lia))
   end.
 
 Ltac eval_u64 :=
   match goal with
-  | |- context[uint.Z (I64 ?z)] =>
+  | |- context[uint.Z (W64 ?z)] =>
     rewrite  (Z_u64 z ltac:(lia))
   end.
 
@@ -346,7 +346,7 @@ Theorem u8_to_from_u32 x :
   uint.Z (u8_to_u32 (u8_from_u32 x)) =
   uint.Z x `mod` 2 ^ 8.
 Proof.
-  unfold u8_to_u32, u8_from_u32, I8, I32.
+  unfold u8_to_u32, u8_from_u32, W8, W32.
   autorewrite with word.
   rewrite word.unsigned_of_Z.
   rewrite word_wrap_wrap'; last lia.
@@ -356,7 +356,7 @@ Qed.
 Lemma val_u8_to_u32 x :
   uint.Z (u8_to_u32 x) = uint.Z x.
 Proof.
-  unfold u8_to_u32, I32.
+  unfold u8_to_u32, W32.
   rewrite word.unsigned_of_Z.
   pose proof (word.unsigned_range x).
   rewrite wrap_small; lia.
@@ -365,7 +365,7 @@ Qed.
 Lemma val_u8_to_u64 x :
   uint.Z (u8_to_u64 x) = uint.Z x.
 Proof.
-  unfold u8_to_u64, I64.
+  unfold u8_to_u64, W64.
   rewrite word.unsigned_of_Z.
   pose proof (word.unsigned_range x).
   rewrite wrap_small; lia.
@@ -526,8 +526,8 @@ Theorem decode_encode x :
            (word.or (u8_to_u32 (word.of_Z (uint.Z x ≫ 8)))
               (word.slu
                  (word.or (u8_to_u32 (word.of_Z ((uint.Z x ≫ 8) ≫ 8)))
-                    (word.slu (u8_to_u32 (word.of_Z (((uint.Z x ≫ 8) ≫ 8) ≫ 8))) (I32 8)))
-                 (I32 8))) (I32 8)) = x.
+                    (word.slu (u8_to_u32 (word.of_Z (((uint.Z x ≫ 8) ≫ 8) ≫ 8))) (W32 8)))
+                 (W32 8))) (W32 8)) = x.
 Proof.
   apply word.unsigned_inj.
   pose proof (u32_le_to_word x).
@@ -563,13 +563,13 @@ Theorem decode_encode64 x :
                                    (word.or (u8_to_u64 (word.of_Z (((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8)))
                                       (word.slu
                                          (word.or (u8_to_u64 (word.of_Z ((((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8)))
-                                            (word.slu (u8_to_u64 (word.of_Z (((((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8))) (I64 8)))
-                                         (I64 8)))
-                                    (I64 8)))
-                              (I64 8)))
-                        (I64 8)))
-                  (I64 8)))
-            (I64 8)) = x.
+                                            (word.slu (u8_to_u64 (word.of_Z (((((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8))) (W64 8)))
+                                         (W64 8)))
+                                    (W64 8)))
+                              (W64 8)))
+                        (W64 8)))
+                  (W64 8)))
+            (W64 8)) = x.
 Proof.
   apply word.unsigned_inj.
   pose proof (u64_le_to_word x).

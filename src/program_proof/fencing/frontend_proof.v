@@ -22,8 +22,8 @@ Record frontend_names :=
 Local Definition q2 := (1/2)%Qp.
 Local Definition q4 := (1/4)%Qp.
 
-Definition k0 := (I64 0).
-Definition k1 := (I64 1).
+Definition k0 := (W64 0).
+Definition k1 := (W64 1).
 
 Context `{!ctrG Σ}.
 Context `{!urpcregG Σ}.
@@ -79,7 +79,7 @@ Lemma wp_FetchAndIncrement (s:loc) γ (key:u64) Q :
   frontend_inv γ -∗
   {{{
         |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗
-      (⌜uint.nat v < uint.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
+      (⌜uint.nat v < uint.nat (word.add v (W64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1) ={∅,⊤∖↑frontendN}=∗ Q v)
   }}}
     Server__FetchAndIncrement #s #key
   {{{
@@ -751,7 +751,7 @@ Program Definition FAISpec_tada γ :=
   λ reqData, λne (Φ : list u8 -d> iPropO Σ),
   (∃ k, ⌜k = 0 ∨ k = 1⌝ ∗ ⌜has_encoding reqData [EncUInt64 k]⌝ ∗
       |={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) k v ∗
-        (⌜uint.nat v < uint.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) k (word.add v 1) ={∅,⊤∖↑frontendN}=∗
+        (⌜uint.nat v < uint.nat (word.add v (W64 1))⌝ -∗ kv_ptsto γ.(kv_gn) k (word.add v 1) ={∅,⊤∖↑frontendN}=∗
                 (∀ l, ⌜has_encoding l [EncUInt64 v]⌝ -∗ Φ l))
     )%I
 .
@@ -760,7 +760,7 @@ Next Obligation.
 Defined.
 
 Definition is_host γ host : iProp Σ :=
-  is_urpc_dom γ.(urpc_gn) {[ (I64 0) ]} ∗
+  is_urpc_dom γ.(urpc_gn) {[ (W64 0) ]} ∗
   is_urpc_spec_pred γ.(urpc_gn) host 0 (FAISpec_tada γ).
 
 Lemma wp_StartServer γ γcfg (me configHost host1 host2:u64) :
@@ -930,7 +930,7 @@ key = 0 ∨ key = 1 →
   is_Clerk γ ck -∗
   ret_ptr ↦[uint64T] #ret_placeholder -∗
   □ (|={⊤∖↑frontendN,∅}=> ∃ v, kv_ptsto γ.(kv_gn) key v ∗
-      (⌜uint.nat v < uint.nat (word.add v (I64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1)
+      (⌜uint.nat v < uint.nat (word.add v (W64 1))⌝ -∗ kv_ptsto γ.(kv_gn) key (word.add v 1)
        ={∅,⊤∖↑frontendN}=∗ (ret_ptr ↦[uint64T] #v -∗ Φ #0))) -∗
   □ (∀ (err:u64), ⌜err ≠ 0⌝ -∗ (ret_ptr ↦[uint64T] #ret_placeholder) -∗ Φ #err) -∗
   WP Clerk__FetchAndIncrement #ck #key #ret_ptr {{ Φ }}
@@ -978,7 +978,7 @@ Proof.
       iPureIntro.
       naive_solver.
     }
-    replace (I64 (uint.nat key)) with (key) by word.
+    replace (W64 (uint.nat key)) with (key) by word.
     iMod "HΦ1".
     iModIntro.
     iDestruct "HΦ1" as (?) "[Hkv HΦ1]".

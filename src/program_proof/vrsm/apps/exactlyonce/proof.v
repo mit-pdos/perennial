@@ -46,7 +46,7 @@ Definition apply_op_and_get_reply (state:EState) (op:EOp) : EState * list u8 :=
     match op with
     | getcid => (state <| nextCID := (word.add state.(nextCID) 1) |>, u64_le state.(nextCID))
     | eop cid seq op =>
-        if decide (uint.nat seq <= uint.nat (default (I64 0) (state.(lastSeq) !! cid))) then
+        if decide (uint.nat seq <= uint.nat (default (W64 0) (state.(lastSeq) !! cid))) then
           (state, default [] (state.(lastReply) !! cid))
         else
           let rep:=(low_compute_reply state.(lowops) op) in
@@ -72,15 +72,15 @@ Definition compute_reply ops op : (list u8) :=
 
 Definition esm_has_encoding op_bytes op :=
   match op with
-  | getcid => op_bytes = [I8 1]
+  | getcid => op_bytes = [W8 1]
   | eop cid seq lowop =>
       ∃ lowop_enc, low_has_op_encoding lowop_enc lowop ∧
-      op_bytes = [I8 0] ++ u64_le cid ++ u64_le seq ++ (lowop_enc)
+      op_bytes = [W8 0] ++ u64_le cid ++ u64_le seq ++ (lowop_enc)
   | ro_eop lowop =>
       ∃ lowop_enc,
   low_has_op_encoding lowop_enc lowop ∧
   low_is_readonly_op lowop ∧
-  op_bytes = [I8 2] ++ (lowop_enc)
+  op_bytes = [W8 2] ++ (lowop_enc)
   end
 .
 
@@ -246,7 +246,7 @@ Proof.
   wp_pure1_credit "Hlc".
   wp_pure1_credit "Hlc2".
   wp_load.
-  replace (#(I8 0)) with (_.(to_val) (I8 0)).
+  replace (#(W8 0)) with (_.(to_val) (W8 0)).
   2: { done. }
   iDestruct (own_slice_split with "Henc_sl") as "[Henc_sl Henc_cap]".
   wp_apply (wp_SliceSet with "[Henc_sl]").
@@ -319,7 +319,7 @@ Proof.
     iDestruct "Hi" as (?) "[>Hpblog >Hee]".
     iNamed "Hee".
 
-    destruct (decide (uint.Z (default (I64 0) ((compute_state ops).(lastSeq) !! cid)) < uint.Z seqno)%Z).
+    destruct (decide (uint.Z (default (W64 0) ((compute_state ops).(lastSeq) !! cid)) < uint.Z seqno)%Z).
     { (* case: first time running request *)
       iMod (server_takes_request with "Hreq HerpcServer") as "HH".
       { solve_ndisj. }
@@ -387,8 +387,8 @@ Proof.
       }
     }
     { (* case: request already ran *)
-      assert (uint.nat (default (I64 0) ((compute_state ops).(lastSeq) !! cid)) = uint.nat seqno ∨
-              uint.nat (default (I64 0) ((compute_state ops).(lastSeq) !! cid)) > uint.nat seqno)
+      assert (uint.nat (default (W64 0) ((compute_state ops).(lastSeq) !! cid)) = uint.nat seqno ∨
+              uint.nat (default (W64 0) ((compute_state ops).(lastSeq) !! cid)) > uint.nat seqno)
         as [Hok|HStale] by word.
       { (* case: not stale *)
         destruct (_ !! cid) eqn:X2; last first.
@@ -516,7 +516,7 @@ Proof.
   wp_pure1_credit "Hlc".
   wp_pure1_credit "Hlc2".
   wp_load.
-  replace (#(I8 2)) with (_.(to_val) (I8 2)).
+  replace (#(W8 2)) with (_.(to_val) (W8 2)).
   2: { done. }
   iDestruct (own_slice_split with "Henc_sl") as "[Henc_sl Henc_cap]".
   wp_apply (wp_SliceSet with "[Henc_sl]").
@@ -589,7 +589,7 @@ Definition own_StateMachine (s:loc) (ops:list EOp) : iProp Σ :=
   "HlastSeq" ∷ own_map lastSeq_ptr 1 st.(lastSeq) ∗
   "HlastReply" ∷ own_byte_map lastReply_ptr st.(lastReply) ∗
 
-  "HesmNextIndex" ∷ s ↦[eStateMachine :: "esmNextIndex"] #(I64 (length ops)) ∗
+  "HesmNextIndex" ∷ s ↦[eStateMachine :: "esmNextIndex"] #(W64 (length ops)) ∗
 
   "Hsm" ∷ s ↦[eStateMachine :: "sm"] #lowSm ∗
   "Hghost" ∷ own_ghost_vnums γst ops latestVnum ∗
@@ -606,7 +606,7 @@ Notation esm_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_rec
 
 Lemma u64_plus_1_le_no_overflow (y: u64) (n : nat) :
   n + 1 = uint.nat (word.add n 1) →
-  I64 (n + 1)%Z ≠ y →
+  W64 (n + 1)%Z ≠ y →
   uint.nat y ≤ n + 1 →
   uint.nat y ≤ n.
 Proof.
@@ -645,7 +645,7 @@ Proof.
   iMod (ghost_map_points_to_persist with "HH") as "#HH".
   iSplitL "Hversions".
   {
-    iDestruct (big_sepS_elem_of_acc_impl (I64 (length ops + 1)) with "Hversions") as "[_ Hversions]".
+    iDestruct (big_sepS_elem_of_acc_impl (W64 (length ops + 1)) with "Hversions") as "[_ Hversions]".
     { set_solver. }
     iApply "Hversions".
     {
@@ -740,7 +740,7 @@ Proof.
     }
     iSplitL "Hversions".
     {
-      iDestruct (big_sepS_elem_of_acc_impl (I64 (length ops + 1)) with "Hversions") as "[_ Hversions]".
+      iDestruct (big_sepS_elem_of_acc_impl (W64 (length ops + 1)) with "Hversions") as "[_ Hversions]".
       { set_solver. }
       iApply "Hversions".
       {
@@ -946,7 +946,7 @@ Proof.
     rewrite singleton_length.
     replace (1 + length (u64_le u ++ u64_le u0 ++ x) - uint.nat 1%Z)
       with (length (u64_le u ++ u64_le u0 ++ x)) by word.
-    replace (uint.nat (I64 1)) with (length [I8 0]) by done.
+    replace (uint.nat (W64 1)) with (length [W8 0]) by done.
     rewrite drop_app_length.
     rewrite take_ge; last word.
     rename x into eeop_bytes.
@@ -1177,7 +1177,7 @@ Proof.
     rewrite singleton_length.
     replace (1 + length x - uint.nat 1%Z)
       with (length (x)) by word.
-    replace (uint.nat (I64 1)) with (length [I8 2]) by done.
+    replace (uint.nat (W64 1)) with (length [W8 2]) by done.
     rewrite drop_app_length.
     rewrite take_ge; last word.
     rename x into eeop_bytes.
@@ -1243,7 +1243,7 @@ Proof.
   intros HnoOverflow.
   iMod (ghost_map_alloc_fin []) as (?) "Hmap".
   iExists _.
-  iDestruct (big_sepS_elem_of_acc_impl (I64 (length ops)) with "Hmap") as "[HH Hmap]".
+  iDestruct (big_sepS_elem_of_acc_impl (W64 (length ops)) with "Hmap") as "[HH Hmap]".
   { set_solver. }
   iMod (ghost_map_points_to_update (compute_state ops).(lowops) with "HH") as "HH".
   iMod (ghost_map_points_to_persist with "HH") as "#?".
@@ -1289,7 +1289,7 @@ Proof.
   iModIntro. iIntros.
   assert (uint.nat x = (length ops)).
   { rewrite /= in H2. word. }
-  replace (x) with (I64 (length ops)) by word.
+  replace (x) with (W64 (length ops)) by word.
   iFrame "#".
 Qed.
 
@@ -1504,7 +1504,7 @@ Proof.
 
   destruct (decide (uint.nat latestVnum <= length a)).
   { (* use HlatestVersion *)
-    iDestruct (big_sepS_elem_of_acc _ _ (I64 (length a)) with "HlatestVersion") as "[#HH _]".
+    iDestruct (big_sepS_elem_of_acc _ _ (W64 (length a)) with "HlatestVersion") as "[#HH _]".
     { set_solver. }
     iSpecialize ("HH" with "[%] [%]").
     {
@@ -1513,7 +1513,7 @@ Proof.
     }
     { word. }
 
-    iDestruct (big_sepS_elem_of_acc _ _ (I64 (length a)) with "Hversions") as "[H2 _]".
+    iDestruct (big_sepS_elem_of_acc _ _ (W64 (length a)) with "Hversions") as "[H2 _]".
     { set_solver. }
     iSpecialize ("H2" with "[%]").
     { apply prefix_length in a0. rewrite HaOverflow. done. }
@@ -1544,7 +1544,7 @@ Proof.
     { word. }
     { word. }
     iDestruct "Hstates" as (?) "[Hstate %]".
-    iDestruct (big_sepS_elem_of_acc _ _ (I64 (length a)) with "Hversions") as "[H2 _]".
+    iDestruct (big_sepS_elem_of_acc _ _ (W64 (length a)) with "Hversions") as "[H2 _]".
     { set_solver. }
     iSpecialize ("H2" with "[%]").
     { apply prefix_length in a0. rewrite HaOverflow. done. }
@@ -1638,7 +1638,7 @@ Proof.
   rewrite singleton_length.
   replace (1 + length lowop_bytes - uint.nat 1%Z)
     with (length lowop_bytes) by word.
-  replace (uint.nat (I64 1)) with (length [I8 2]) by done.
+  replace (uint.nat (W64 1)) with (length [W8 2]) by done.
   rewrite drop_app_length.
   rewrite take_ge; last word.
   wp_pures.
@@ -1675,7 +1675,7 @@ Lemma alloc_own_ghost_vnums :
 Proof.
   iMod (ghost_map_alloc_fin []) as (?) "Hmap".
   iExists _.
-  iDestruct (big_sepS_elem_of_acc_impl (I64 0) with "Hmap") as "[HH Hmap]".
+  iDestruct (big_sepS_elem_of_acc_impl (W64 0) with "Hmap") as "[HH Hmap]".
   { set_solver. }
   iMod (ghost_map_points_to_persist with "HH") as "#?".
   iModIntro.
@@ -1684,7 +1684,7 @@ Proof.
   {
     iApply "Hmap".
     { iModIntro. iIntros. iFrame. }
-    { iIntros. exfalso. simpl in H. replace (uint.nat (I64 0)) with (0) in H; word. }
+    { iIntros. exfalso. simpl in H. replace (uint.nat (W64 0)) with (0) in H; word. }
   }
   iSplitL.
   {
@@ -1693,7 +1693,7 @@ Proof.
     iModIntro. iIntros.
     assert (uint.nat x = 0).
     { rewrite /= in H1. word. }
-    replace (x) with (I64 0) by word.
+    replace (x) with (W64 0) by word.
     iFrame "#".
   }
   iApply big_sepS_forall.
@@ -1701,7 +1701,7 @@ Proof.
   iIntros. rewrite /= in H1.
   assert (uint.nat x = 0).
   { rewrite /= in H0. word. }
-  replace (x) with (I64 0) by word.
+  replace (x) with (W64 0) by word.
   iFrame "#".
 Qed.
 

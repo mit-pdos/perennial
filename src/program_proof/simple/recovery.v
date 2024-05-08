@@ -58,7 +58,7 @@ Context (P1 : SimpleNFS.State → iProp Σ).
 Context (P2 : SimpleNFS.State → iProp Σ).
 
 Definition fs_kinds sz : gmap u64 bufDataKind :=
-  {[I64 513 := KindInode]} ∪
+  {[W64 513 := KindInode]} ∪
   gset_to_gmap KindBlock (rangeSet 514 (sz - 514)).
 
 Definition fs_dinit sz : gmap Z Block :=
@@ -78,7 +78,7 @@ Qed.
 Lemma dom_fs_kinds:
   ∀ sz : Z,
     513 + 1 + (32 - 2) ≤ sz
-    → dom (fs_kinds sz) = list_to_set (I64 <$> seqZ 513 (sz - 513)).
+    → dom (fs_kinds sz) = list_to_set (W64 <$> seqZ 513 (sz - 513)).
 Proof.
   intros sz Hsz.
   rewrite /fs_kinds.
@@ -130,8 +130,8 @@ Abort.
 Lemma zero_disk_to_inodes γ sz :
   (513 + 1 + (32-2) ≤ sz < 2^49) →
   ([∗ map] a ↦ o ∈ kind_heap0 (fs_kinds sz), durable_pointsto_own γ a o) -∗
-  ([∗ set] inum ∈ covered_inodes, is_inode_enc inum (I64 0) (I64 0) (durable_pointsto_own γ)) ∗
-  ([∗ list] _ ↦ a ∈ seqZ 513 (32-2), durable_pointsto_own γ (blk2addr (I64 a)) (existT _ (bufBlock block0)))
+  ([∗ set] inum ∈ covered_inodes, is_inode_enc inum (W64 0) (W64 0) (durable_pointsto_own γ)) ∗
+  ([∗ list] _ ↦ a ∈ seqZ 513 (32-2), durable_pointsto_own γ (blk2addr (W64 a)) (existT _ (bufBlock block0)))
 .
 Proof.
   iIntros (Hsz) "Hobjs".

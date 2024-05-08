@@ -95,15 +95,15 @@ Proof.
 Qed.
 
 
-Definition dconfigHost : u64 := (I64 11).
-Definition dconfigHostPaxos : u64 := (I64 12).
-Definition dr1Host: u64 := (I64 1).
-Definition dr2Host: u64 := (I64 2).
+Definition dconfigHost : u64 := (W64 11).
+Definition dconfigHostPaxos : u64 := (W64 12).
+Definition dr1Host: u64 := (W64 1).
+Definition dr2Host: u64 := (W64 2).
 
-Definition lconfigHost : u64 := (I64 111).
-Definition lconfigHostPaxos : u64 := (I64 112).
-Definition lr1Host: u64 := (I64 101).
-Definition lr2Host: u64 := (I64 102).
+Definition lconfigHost : u64 := (W64 111).
+Definition lconfigHostPaxos : u64 := (W64 112).
+Definition lr1Host: u64 := (W64 101).
+Definition lr2Host: u64 := (W64 102).
 
 Lemma wp_mk_dconfig_hosts :
   {{{ True }}}

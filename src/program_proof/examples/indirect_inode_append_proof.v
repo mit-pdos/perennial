@@ -89,7 +89,7 @@ Proof.
   {
     rewrite HindAddrs in HindirLen.
     rewrite app_length replicate_length in HindirLen.
-    replace (Z.of_nat (length iaddrs + (uint.nat (I64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
+    replace (Z.of_nat (length iaddrs + (uint.nat (W64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
   }
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app_length; auto. }
@@ -99,7 +99,7 @@ Proof.
   wp_if_destruct.
   (* Fits within maxDirect *)
   {
-    replace (uint.Z (I64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0 by word.
+    replace (uint.Z (W64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0 by word.
     assert (length (σ.(inode.blocks)) <= 500) as Hsz by word.
     assert (Z.of_nat ds.(impl_s.numInd) = 0) as HnumInd0.
     {
@@ -126,8 +126,8 @@ Proof.
     }
     {
       iFrame.
-      replace (word.add (I64 (Z.of_nat (length σ.(inode.blocks)))) (I64 1))
-      with (I64 (Z.of_nat (length σ.(inode.blocks)) + 1)); auto; word.
+      replace (word.add (W64 (Z.of_nat (length σ.(inode.blocks)))) (W64 1))
+      with (W64 (Z.of_nat (length σ.(inode.blocks)) + 1)); auto; word.
     }
     iIntros (s b') "(Hb & %Hencoded' &?&?&?&?&?)"; iNamed.
     wp_let.
@@ -157,7 +157,7 @@ Proof.
 
     assert ((length daddrs) = (length σ.(inode.blocks))%nat) as HdaddrsLen.
     {
-      assert (length ds.(impl_s.dirAddrs) = length (daddrs ++ replicate (500 - length σ.(inode.blocks)) (I64 0))) as Hleneq.
+      assert (length ds.(impl_s.dirAddrs) = length (daddrs ++ replicate (500 - length σ.(inode.blocks)) (W64 0))) as Hleneq.
       {
         rewrite HdirAddrs. auto.
       }
@@ -171,17 +171,17 @@ Proof.
       rewrite take_app_length. auto.
     }
 
-    assert (drop (length σ.(inode.blocks) + 1) ds.(impl_s.dirAddrs) = replicate (500%nat - (length σ.(inode.blocks) + 1)) (I64 0)) as HdirAddrsEnd.
+    assert (drop (length σ.(inode.blocks) + 1) ds.(impl_s.dirAddrs) = replicate (500%nat - (length σ.(inode.blocks) + 1)) (W64 0)) as HdirAddrsEnd.
     {
       rewrite HdirAddrs.
-      replace (replicate (Z.to_nat 500 - length σ.(inode.blocks)) (I64 0)) with ((I64 0) :: (replicate (500 - (length σ.(inode.blocks) + 1)) (I64 0))).
+      replace (replicate (Z.to_nat 500 - length σ.(inode.blocks)) (W64 0)) with ((W64 0) :: (replicate (500 - (length σ.(inode.blocks) + 1)) (W64 0))).
       2: {
         replace (Z.to_nat 500 - length σ.(inode.blocks))%nat with (S (500%nat - (length σ.(inode.blocks) + 1%nat))%nat) by word.
         simpl; auto.
       }
       rewrite cons_middle app_assoc.
       rewrite -HdaddrsLen.
-      replace (length daddrs + 1)%nat with (length (daddrs ++ [(I64 0)])); last first.
+      replace (length daddrs + 1)%nat with (length (daddrs ++ [(W64 0)])); last first.
       { len. }
       by rewrite drop_app_length.
     }
@@ -286,28 +286,28 @@ Proof.
         rewrite !app_length.
         change (length [_]) with 1%nat.
         rewrite HdirAddrsEnd /maxIndirect.
-        replace (uint.nat (I64 (10 - Z.of_nat ds.(impl_s.numInd))))
-          with ((uint.nat (I64 10) - ds.(impl_s.numInd))%nat) by word.
+        replace (uint.nat (W64 (10 - Z.of_nat ds.(impl_s.numInd))))
+          with ((uint.nat (W64 10) - ds.(impl_s.numInd))%nat) by word.
         rewrite HindAddrs.
         replace
-          (uint.nat (I64 (500 - Z.of_nat (length (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) + 1)))%nat)
+          (uint.nat (W64 (500 - Z.of_nat (length (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs)) + 1)))%nat)
           with ((500 - (length σ.(inode.blocks) + 1))%nat); auto.
         2: {
           rewrite take_length. rewrite Nat.min_l; word.
         }
         replace
-          (EncUInt64 <$> iaddrs ++ replicate (uint.nat (I64 10) - ds.(impl_s.numInd)) (I64 0))
-          with ((EncUInt64 <$> iaddrs) ++ (EncUInt64 <$> replicate (uint.nat (I64 10) - ds.(impl_s.numInd)) (I64 0)));
+          (EncUInt64 <$> iaddrs ++ replicate (uint.nat (W64 10) - ds.(impl_s.numInd)) (W64 0))
+          with ((EncUInt64 <$> iaddrs) ++ (EncUInt64 <$> replicate (uint.nat (W64 10) - ds.(impl_s.numInd)) (W64 0)));
         [ | by rewrite fmap_app].
         replace
         (EncUInt64 <$> (take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a] ++
-                             (replicate (500 - (length σ.(inode.blocks) + 1)) (I64 0))))
+                             (replicate (500 - (length σ.(inode.blocks) + 1)) (W64 0))))
           with ((EncUInt64 <$> take (length σ.(inode.blocks)) ds.(impl_s.dirAddrs) ++ [a])
-                     ++ (EncUInt64 <$> replicate (500 - (length σ.(inode.blocks) + 1)) (I64 0))).
+                     ++ (EncUInt64 <$> replicate (500 - (length σ.(inode.blocks) + 1)) (W64 0))).
         2: { rewrite app_assoc -fmap_app. auto. }
         rewrite -!app_assoc.
-        replace (I64 (Z.of_nat (length σ.(inode.blocks)) + 1)) with
-            (I64 (Z.of_nat (length σ.(inode.blocks) + 1%nat))) by word.
+        replace (W64 (Z.of_nat (length σ.(inode.blocks)) + 1)) with
+            (W64 (Z.of_nat (length σ.(inode.blocks) + 1%nat))) by word.
         repeat f_equal.
         - rewrite take_app_le //; len.
           rewrite take_ge //; len.
@@ -373,7 +373,7 @@ Proof.
 
     iPureIntro.
     apply Znot_lt_ge in Heqb0.
-    replace (uint.Z (I64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0; word.
+    replace (uint.Z (W64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) in Heqb0; word.
   }
 Qed.
 
@@ -404,7 +404,7 @@ Theorem wp_writeIndirect {l σ d lref} (addr: u64) ds direct_s indirect_s
        "Hro_state" ∷ inode_state l d lref ∗
        "Ha" ∷ uint.Z a d↦ b ∗
        "Haddr_s" ∷ own_slice indblkaddrs_s uint64T 1
-       (indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length (indBlkAddrs) + 1)) `mod` indirectNumBlocks)) (I64 0))
+       (indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length (indBlkAddrs) + 1)) `mod` indirectNumBlocks)) (W64 0))
   }}}
   Inode__writeIndirect #l #indA (slice_val indblkaddrs_s)
   {{{ RET #();
@@ -451,12 +451,12 @@ Proof.
   {
     rewrite HindAddrs in HindirLen.
     rewrite app_length replicate_length in HindirLen.
-    replace (Z.of_nat (length iaddrs + (uint.nat (I64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
+    replace (Z.of_nat (length iaddrs + (uint.nat (W64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
   }
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app_length; auto. }
 
-  assert (Z.to_nat (4096 - 8 * length (indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (I64 0)))
+  assert (Z.to_nat (4096 - 8 * length (indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (W64 0)))
           = 0%nat) as Hrem0.
   {
     repeat rewrite app_length /indirectNumBlocks. rewrite replicate_length. simpl. word.
@@ -503,8 +503,8 @@ Proof.
       repeat (split; len; simpl; try word).
     }
     {
-      replace (word.add (I64 (Z.of_nat (length σ.(inode.blocks)))) (I64 1)) with
-            (I64 (Z.of_nat (length σ.(inode.blocks)) + 1)) by word.
+      replace (word.add (W64 (Z.of_nat (length σ.(inode.blocks)))) (W64 1)) with
+            (W64 (Z.of_nat (length σ.(inode.blocks)) + 1)) by word.
       iFrame.
     }
 
@@ -529,7 +529,7 @@ Proof.
       iSplitL.
       {
         rewrite app_length; simpl.
-        replace (I64 (Z.of_nat (length σ.(inode.blocks) + 1))) with (I64 ((Z.of_nat (length σ.(inode.blocks))) + 1)) by word.
+        replace (W64 (Z.of_nat (length σ.(inode.blocks) + 1))) with (W64 ((Z.of_nat (length σ.(inode.blocks))) + 1)) by word.
         repeat rewrite take_ge; try word.
         iFrame.
       }
@@ -558,17 +558,17 @@ Proof.
         rewrite /maxDirect -HdirLen replicate_0 fmap_nil app_nil_l.
         replace (EncUInt64 <$> ds.(impl_s.indAddrs)) with
             ((EncUInt64 <$> take ds.(impl_s.numInd) ds.(impl_s.indAddrs))
-                ++ (EncUInt64 <$> replicate (uint.nat (maxIndirect - length (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))) (I64 0))).
+                ++ (EncUInt64 <$> replicate (uint.nat (maxIndirect - length (take ds.(impl_s.numInd) ds.(impl_s.indAddrs)))) (W64 0))).
         2: {
           rewrite -Hiaddrs /maxIndirect HindAddrs HiaddrsLen fmap_app.
 
           replace
-            (uint.nat (I64 (10 - Z.of_nat (length iaddrs))))
-            with ((uint.nat (I64 10) - length iaddrs)%nat) by word.
+            (uint.nat (W64 (10 - Z.of_nat (length iaddrs))))
+            with ((uint.nat (W64 10) - length iaddrs)%nat) by word.
           auto.
         }
-        replace (I64 (Z.of_nat (length σ.(inode.blocks) + 1))) with
-            (I64 (Z.of_nat (length σ.(inode.blocks)) + 1)) by word.
+        replace (W64 (Z.of_nat (length σ.(inode.blocks) + 1))) with
+            (W64 (Z.of_nat (length σ.(inode.blocks)) + 1)) by word.
         repeat rewrite -app_assoc.
         rewrite take_ge; auto; word.
       }
@@ -666,7 +666,7 @@ Proof.
   {
     rewrite HindAddrs in HindirLen.
     rewrite app_length replicate_length in HindirLen.
-    replace (Z.of_nat (length iaddrs + (uint.nat (I64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
+    replace (Z.of_nat (length iaddrs + (uint.nat (W64 10) - ds.(impl_s.numInd)))) with (length iaddrs + (10 - ds.(impl_s.numInd))) in HindirLen; try word.
   }
   assert (iaddrs = take (ds.(impl_s.numInd)) ds.(impl_s.indAddrs)) as Hiaddrs.
   { rewrite HiaddrsLen HindAddrs. rewrite take_app_length; auto. }
@@ -806,7 +806,7 @@ Proof.
     {
         unfold ind_blocks_at_index; rewrite subslice_to_end;
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-        + by replace (uint.nat (I64 500) + uint.nat index * uint.nat (I64 512))%nat
+        + by replace (uint.nat (W64 500) + uint.nat index * uint.nat (W64 512))%nat
             with (Z.to_nat (500 + (uint.nat index) * 512)) by word.
         + rewrite Hindex. word.
     }
@@ -825,7 +825,7 @@ Proof.
       (* Index facts *)
       {
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-        replace (uint.Z (I64 (Z.of_nat (length σ.(inode.blocks)))) - 500)
+        replace (uint.Z (W64 (Z.of_nat (length σ.(inode.blocks)))) - 500)
           with (Z.of_nat (length σ.(inode.blocks)) - 500) in Hindex by word.
         word.
       }
@@ -836,11 +836,11 @@ Proof.
       { iPureIntro.
         rewrite Hlen HindBlksAtIndex drop_length.
         unfold MaxBlocks, maxDirect, maxIndirect, indirectNumBlocks in *.
-        replace (uint.nat (I64 500) + uint.nat index * uint.nat (I64 512))%nat
+        replace (uint.nat (W64 500) + uint.nat index * uint.nat (W64 512))%nat
           with (Z.to_nat (500 + uint.Z index * 512)) by word.
-        replace (Z.of_nat (uint.nat (I64 512))) with 512 by word.
+        replace (Z.of_nat (uint.nat (W64 512))) with 512 by word.
         rewrite Hindex.
-        replace (uint.Z (I64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
+        replace (uint.Z (W64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
         word.
       }
 
@@ -851,8 +851,8 @@ Proof.
         rewrite /own_slice /list.untype.
         rewrite -list_fmap_insert.
         assert (<[uint.nat offset:=a]>
-                (indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) (I64 0))
-                =  indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (I64 0)).
+                (indBlkAddrs ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs)) `mod` indirectNumBlocks)) (W64 0))
+                =  indBlkAddrs ++ [a] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (W64 0)).
         {
           assert ((length indBlkAddrs + 0)%nat = uint.nat offset).
           {
@@ -861,8 +861,8 @@ Proof.
           }
           rewrite -H.
           rewrite insert_app_r.
-          replace (replicate (Z.to_nat ((indirectNumBlocks - length indBlkAddrs) `mod` indirectNumBlocks)) (I64 0))
-            with ([I64 0] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (I64 0)).
+          replace (replicate (Z.to_nat ((indirectNumBlocks - length indBlkAddrs) `mod` indirectNumBlocks)) (W64 0))
+            with ([W64 0] ++ replicate (Z.to_nat ((indirectNumBlocks - (length indBlkAddrs + 1)) `mod` indirectNumBlocks)) (W64 0)).
           2: {
             simpl.
             rewrite -replicate_S.
@@ -1068,7 +1068,7 @@ Proof.
               {
                 eapply (Z.le_trans (500 + k * 512 + 512) (500 + (uint.Z index -1) * 512 + 512) (length σ.(inode.blocks))); [word|].
                 rewrite Hindex.
-                replace (uint.Z (I64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
+                replace (uint.Z (W64 (Z.of_nat (length σ.(inode.blocks))))) with (Z.of_nat (length σ.(inode.blocks))) by word.
                 word.
               }
               word.

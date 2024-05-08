@@ -134,7 +134,7 @@ Proof.
 
   iIntros (mref) "Hmap".
   wp_storeField. wp_loadField.
-  wp_apply (wp_MapInsert _ u64 (I64 65536) with "[$]").
+  wp_apply (wp_MapInsert _ u64 (W64 65536) with "[$]").
   { eauto. }
   iIntros "Hmap".
   wp_pures.
@@ -162,7 +162,7 @@ Proof.
     iSplitL "HownShards".
     {
       rewrite /all_are_shard_servers. iIntros (sid host Hlookup).
-      iDestruct (big_sepS_elem_of _ _ (I64 sid) with "HownShards") as "H".
+      iDestruct (big_sepS_elem_of _ _ (W64 sid) with "HownShards") as "H".
       { apply rangeSet_lookup; try word.
         - rewrite Heq_uNSHARD /uNSHARD. lia.
         - split.
@@ -183,7 +183,7 @@ Proof.
       iDestruct "H" as (??) "H". iExists _.
       assert (host = hid) as ->.
       {
-        assert (uint.nat (I64 (Z.of_nat sid)) = sid) as Hcoerce.
+        assert (uint.nat (W64 (Z.of_nat sid)) = sid) as Hcoerce.
         { word_cleanup.
           rewrite wrap_small; first lia.
           { split.

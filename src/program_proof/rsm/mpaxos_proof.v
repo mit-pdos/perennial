@@ -134,7 +134,7 @@ Section prog.
   Definition paxos_init px γ : iProp Σ :=
   "Hvs"  ∷ own_candidates_half γ ∅ ∗
   "Hv"   ∷ own_consensus_half γ [] ∗
-  "#Hpx" ∷ is_paxos px (I64 0) 3%nat γ.
+  "#Hpx" ∷ is_paxos px (W64 0) 3%nat γ.
 
   Theorem wp_MkPaxos :
     {{{ True }}}

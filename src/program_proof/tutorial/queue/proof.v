@@ -565,7 +565,7 @@ Proof.
             rewrite <- H0.
             apply H2. }
           word. }
-          replace queueSlice.(Slice.sz) with (I64 (length queue1)).
+          replace queueSlice.(Slice.sz) with (W64 (length queue1)).
           { rewrite add_one. 
             { rewrite big_sepL_app. simpl. iFrame. }
             { destruct Hqueue_size_inv. destruct H3. word. }
@@ -627,7 +627,7 @@ Proof.
     + wp_pures.
       wp_loadField.
       wp_apply (wp_condWait with "[H2 Hfirst Hcount isSlice Helem]").
-      { iFrame "# H2". iExists first1, (I64 0), queue1. iFrame. eauto. }
+      { iFrame "# H2". iExists first1, (W64 0), queue1. iFrame. eauto. }
       iIntros "[H2 H4]".
       wp_pures.
       iModIntro.

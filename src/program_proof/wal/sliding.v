@@ -20,7 +20,7 @@ Module slidingM.
   Global Instance _witness : Inhabited t := populate!.
 
   Definition endPos (σ:t): u64 :=
-    word.add σ.(start) (I64 $ Z.of_nat $ length σ.(log)).
+    word.add σ.(start) (W64 $ Z.of_nat $ length σ.(log)).
   Definition memEnd σ : Z :=
     uint.Z σ.(start) + length σ.(log).
   Definition numMutable (σ:t): u64 :=

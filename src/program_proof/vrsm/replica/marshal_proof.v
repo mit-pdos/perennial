@@ -552,7 +552,7 @@ Proof.
   wp_apply (wp_WriteInt with "Henc_sl").
   iIntros (?) "Henc_sl".
   wp_store.
-  replace (replicas_sl.(Slice.sz)) with (I64 (length args.(replicas))) by word.
+  replace (replicas_sl.(Slice.sz)) with (W64 (length args.(replicas))) by word.
 
   wp_loadField.
   wp_apply (wp_forSlice (V:=u64)
@@ -695,7 +695,7 @@ Proof.
   "Henc" ∷ enc_ptr ↦[slice.T byteT] (slice_val enc_sl) ∗
   "Henc_sl" ∷ own_slice_small enc_sl byteT 1 (flat_map u64_le replicas_left) ∗
   "HReplicas" ∷ args_ptr ↦[BecomePrimaryArgs :: "Replicas"] (slice_val replicas_sl) ∗
-  "Hreplicas_sl" ∷ own_slice_small replicas_sl uint64T 1 (replicas_done ++ (replicate (length replicas_left) (I64 0)))
+  "Hreplicas_sl" ∷ own_slice_small replicas_sl uint64T 1 (replicas_done ++ (replicate (length replicas_left) (W64 0)))
               )%I
               _ _ _ _ _ (replicate (uint.nat (length args.(replicas))) u64_IntoVal.(IntoVal_def u64))
               with "[] [] [Hreplicas_sl Henc Henc_sl $Replicas]"

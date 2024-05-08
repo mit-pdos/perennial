@@ -28,7 +28,7 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
     Clerk__GetState #ck #args_ptr
   {{{
         (reply:loc) (err:u64), RET #reply;
-        if (decide (err = I64 0)) then
+        if (decide (err = W64 0)) then
             ∃ epochacc opsfull enc committedNextIndex,
             ⌜uint.nat epoch_lb ≤ uint.nat epochacc⌝ ∗
             ⌜uint.nat epochacc ≤ uint.nat epoch⌝ ∗
@@ -39,7 +39,7 @@ Lemma wp_Clerk__GetState γ γsrv ck args_ptr (epoch_lb:u64) (epoch:u64) :
             commitIndex_facts γ epochacc committedNextIndex ∗
             GetStateReply.own reply (GetStateReply.mkC 0 (length (get_rwops opsfull)) committedNextIndex enc) ∗
             ⌜has_snap_encoding enc (get_rwops opsfull)⌝ ∗
-            ⌜length (get_rwops opsfull) = uint.nat (I64 (length (get_rwops opsfull)))⌝
+            ⌜length (get_rwops opsfull) = uint.nat (W64 (length (get_rwops opsfull)))⌝
           else
             GetStateReply.own reply (GetStateReply.mkC err 0 0 [])
   }}}.

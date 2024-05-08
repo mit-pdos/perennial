@@ -664,7 +664,7 @@ Ltac mod_bound :=
   end.
 
 Theorem wrap_small_log_addr (x:u64) :
-  word.wrap (word:=i64_instance.i64) (2 + uint.Z x `mod` word.wrap (word:=i64_instance.i64) LogSz) =
+  word.wrap (word:=w64_instance.w64) (2 + uint.Z x `mod` word.wrap (word:=w64_instance.w64) LogSz) =
   2 + uint.Z x `mod` LogSz.
 Proof.
   unfold LogSz.
@@ -877,7 +877,7 @@ Proof.
   wp_pures.
   wp_apply wp_DPrintf.
   wp_pures.
-  change (word.divu (word.sub 4096 8) 8) with (I64 LogSz).
+  change (word.divu (word.sub 4096 8) 8) with (W64 LogSz).
   wp_apply (wp_Write_atomic with "Hi").
   word_cleanup.
   rewrite wrap_small_log_addr.
@@ -937,13 +937,13 @@ Proof.
     split; auto.
     rewrite list_lookup_fmap.
     apply fmap_is_Some.
-    change (word.divu (word.sub 4096 8) 8) with (I64 511).
+    change (word.divu (word.sub 4096 8) 8) with (W64 511).
     word_cleanup.
     apply lookup_lt_is_Some_2; len.
   }
   iIntros "Haddrs".
   iApply "HΦ".
-  change (word.divu (word.sub 4096 8) 8) with (I64 511).
+  change (word.divu (word.sub 4096 8) 8) with (W64 511).
   word_cleanup.
   iFrame.
   iSplitL "Hγblocks".
@@ -1213,7 +1213,7 @@ Proof.
   wp_pures.
   rewrite -(app_nil_r (EncUInt64 <$> addrs)).
   wp_apply (wp_Dec__GetInts with "Hdec0").
-  { change (word.divu _ _) with (I64 LogSz).
+  { change (word.divu _ _) with (W64 LogSz).
     word. }
   iIntros (a_s) "[_ Hdiskaddrs]".
   wp_pures.
@@ -1240,7 +1240,7 @@ Qed.
 
 Theorem circ_low_wf_empty logblocks :
   length logblocks = Z.to_nat LogSz ->
-  circ_low_wf (replicate (Z.to_nat LogSz) (I64 0)) logblocks.
+  circ_low_wf (replicate (Z.to_nat LogSz) (W64 0)) logblocks.
 Proof.
   intros.
   split; auto.
@@ -1251,11 +1251,11 @@ Theorem wp_initCircular d logblocks :
   {{{ 0 d↦∗ logblocks ∗ ⌜length logblocks = Z.to_nat (2 + LogSz)⌝ }}}
     initCircular #d
   {{{ γ σ (c:loc), RET #c;
-      ⌜σ = circΣ.mk [] (I64 0)⌝ ∗
+      ⌜σ = circΣ.mk [] (W64 0)⌝ ∗
       ⌜circ_wf σ⌝ ∗
       is_circular_state γ σ ∗
       is_circular_appender γ c ∗
-      start_is γ (1/2) (I64 0) ∗
+      start_is γ (1/2) (W64 0) ∗
       diskEnd_is γ (1/2) 0
   }}}.
 Proof.
@@ -1266,7 +1266,7 @@ Proof.
   iDestruct (disk_array_cons with "Hd") as "[Hd1 Hd2]".
   change (0 + 1) with 1.
   change (1 + 1) with 2.
-  iMod (ghost_var_alloc (replicate (Z.to_nat LogSz) (I64 0))) as (addrs_name') "[Haddrs' Hγaddrs]".
+  iMod (ghost_var_alloc (replicate (Z.to_nat LogSz) (W64 0))) as (addrs_name') "[Haddrs' Hγaddrs]".
   iMod (ghost_var_alloc logblocks) as (blocks_name') "[Hblocks' Hγblocks]".
   iMod (mono_nat_own_alloc 0%nat) as (start_name') "[[Hstart1 Hstart2] #HstartLb]".
   iMod (mono_nat_own_alloc 0%nat) as (diskEnd_name') "[[HdiskEnd1 HdiskEnd2] #HdiskEndLb]".

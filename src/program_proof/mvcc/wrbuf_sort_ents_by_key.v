@@ -147,7 +147,7 @@ Proof.
 
       (* Read key of entry at [j - 1]. *)
       wp_load.
-      destruct (list_lookup_lt _ (wrent_to_val <$> ents'') (uint.nat (word.sub j (I64 1)))) as [entx Hlookupx].
+      destruct (list_lookup_lt _ (wrent_to_val <$> ents'') (uint.nat (word.sub j (W64 1)))) as [entx Hlookupx].
       { rewrite fmap_length. word. }
       wp_apply (wp_SliceGet with "[$HentsS]"); first done.
       iIntros "[HentsS %Hty]".

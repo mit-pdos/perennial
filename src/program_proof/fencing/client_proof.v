@@ -80,7 +80,7 @@ Lemma wp_Clerk__FetchAndIncrement γ ck (key:u64) Φ :
   key = 0 ∨ key = 1 →
   own_Clerk γ ck -∗
   □ (|={⊤∖↑frontend.frontendN, ∅}=> ∃ v, frontend.kv_ptsto γ.(kv_gn) key v
-        ∗ (⌜(uint.nat v < uint.nat (word.add v (I64 1)))%nat ⌝ -∗
+        ∗ (⌜(uint.nat v < uint.nat (word.add v (W64 1)))%nat ⌝ -∗
           frontend.kv_ptsto γ.(kv_gn) key (word.add v 1)
            ={∅, ⊤∖↑frontend.frontendN}=∗ (own_Clerk γ ck -∗ Φ #v))
     ) -∗

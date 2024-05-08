@@ -94,7 +94,7 @@ Section goose_lang.
     iIntros (γtxn l_txn) "Htxn".
     wp_pures.
     wp_loadField.
-    change (word.mul 8 4096) with (I64 32768).
+    change (word.mul 8 4096) with (W64 32768).
     iMod (lift_liftable_into_txn with "Htxn rb_rep") as "[rb_rep Htxn]".
     { solve_ndisj. }
     { solve_ndisj. }

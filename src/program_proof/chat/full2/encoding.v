@@ -10,8 +10,8 @@ Section err.
 Inductive fc_err := ErrSome.
 Definition fc_errno (err:option fc_err) : u64 :=
   match err with
-  | None => I64 0
-  | Some ErrSome => I64 1
+  | None => W64 0
+  | Some ErrSome => W64 1
   end.
 End err.
 

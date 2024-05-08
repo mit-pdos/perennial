@@ -9,14 +9,14 @@ From Goose.github_com.mit_pdos.vmvcc Require Import examples.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ, !mono_natG Σ}.
 
-Definition P_Fetch (r : dbmap) := ∃ v, r = {[ (I64 0) := (Value v) ]}.
-Definition Q_Fetch (r w : dbmap) := w !! (I64 0) = r !! (I64 0).
+Definition P_Fetch (r : dbmap) := ∃ v, r = {[ (W64 0) := (Value v) ]}.
+Definition Q_Fetch (r w : dbmap) := w !! (W64 0) = r !! (W64 0).
 Definition Ri_Fetch (p : loc) : iProp Σ :=
   ∃ (v : u64), p ↦[uint64T] #v.
 Definition Rc_Fetch (p : loc) (r w : dbmap) : iProp Σ :=
-  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (I64 0) = Some (Value v)⌝.
+  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (W64 0) = Some (Value v)⌝.
 Definition Ra_Fetch (p : loc) (r : dbmap) : iProp Σ :=
-  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (I64 0) = Some (Value v)⌝.
+  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (W64 0) = Some (Value v)⌝.
 
 Theorem wp_fetch txn (p : loc) tid r γ τ :
   {{{ Ri_Fetch p ∗ own_txn txn tid r γ τ ∗ ⌜P_Fetch r⌝ ∗ txnmap_ptstos τ r }}}
@@ -75,9 +75,9 @@ Qed.
 
 Theorem wp_Fetch (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (v : u64), dbmap_ptsto γ (I64 0) 1 (Value v) >>>
+    <<< ∀∀ (v : u64), dbmap_ptsto γ (W64 0) 1 (Value v) >>>
       Fetch #txn @ ↑mvccN
-    <<< dbmap_ptsto γ (I64 0) 1 (Value v) >>>
+    <<< dbmap_ptsto γ (W64 0) 1 (Value v) >>>
     {{{ RET #v; own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -112,7 +112,7 @@ Proof.
   iMod "HAU".
   iModIntro.
   iDestruct "HAU" as (v) "[Hdbpt HAU]".
-  iExists {[ (I64 0) := (Value v) ]}.
+  iExists {[ (W64 0) := (Value v) ]}.
   rewrite {1} /dbmap_ptstos. rewrite big_sepM_singleton.
   iFrame "Hdbpt".
   iSplit.
@@ -151,18 +151,18 @@ Proof.
   }
 Qed.
 
-Definition P_Increment (r : dbmap) := ∃ v, r = {[ (I64 0) := (Value v) ]}.
+Definition P_Increment (r : dbmap) := ∃ v, r = {[ (W64 0) := (Value v) ]}.
 Definition Q_Increment (r w : dbmap) :=
   ∃ (v u : u64),
-    r !! (I64 0) = Some (Value v) ∧
-    w !! (I64 0) = Some (Value u) ∧
+    r !! (W64 0) = Some (Value v) ∧
+    w !! (W64 0) = Some (Value u) ∧
     uint.Z u = uint.Z v + 1.
 Definition Ri_Increment (p : loc) : iProp Σ :=
   ∃ (v : u64), p ↦[uint64T] #v.
 Definition Rc_Increment (p : loc) (r w : dbmap) : iProp Σ :=
-  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (I64 0) = Some (Value v)⌝.
+  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (W64 0) = Some (Value v)⌝.
 Definition Ra_Increment (p : loc) (r : dbmap) : iProp Σ :=
-  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (I64 0) = Some (Value v)⌝.
+  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (W64 0) = Some (Value v)⌝.
 
 Theorem wp_increment txn (p : loc) tid r γ τ :
   {{{ Ri_Increment p ∗ own_txn txn tid r γ τ ∗ ⌜P_Increment r⌝ ∗ txnmap_ptstos τ r }}}
@@ -245,12 +245,12 @@ Qed.
 
 Theorem wp_Increment (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (v : u64), dbmap_ptsto γ (I64 0) 1 (Value v) >>>
+    <<< ∀∀ (v : u64), dbmap_ptsto γ (W64 0) 1 (Value v) >>>
       Increment #txn @ ↑mvccN
     <<< ∃∃ (ok : bool),
           if ok
-          then ∃ (u : u64), dbmap_ptsto γ (I64 0) 1 (Value u) ∗ ⌜uint.Z u = (uint.Z v + 1)%Z⌝
-          else dbmap_ptsto γ (I64 0) 1 (Value v)
+          then ∃ (u : u64), dbmap_ptsto γ (W64 0) 1 (Value u) ∗ ⌜uint.Z u = (uint.Z v + 1)%Z⌝
+          else dbmap_ptsto γ (W64 0) 1 (Value v)
     >>>
     {{{ RET (#v, #ok); own_txn_uninit txn γ }}}.
 Proof.
@@ -285,7 +285,7 @@ Proof.
   iMod "HAU".
   iModIntro.
   iDestruct "HAU" as (v) "[Hdbpt HAU]".
-  iExists {[ (I64 0) := (Value v) ]}.
+  iExists {[ (W64 0) := (Value v) ]}.
   rewrite {1} /dbmap_ptstos. rewrite big_sepM_singleton.
   iFrame "Hdbpt".
   iSplit.
@@ -328,18 +328,18 @@ Proof.
   }
 Qed.
 
-Definition P_Decrement (r : dbmap) := ∃ v, r = {[ (I64 0) := (Value v) ]}.
+Definition P_Decrement (r : dbmap) := ∃ v, r = {[ (W64 0) := (Value v) ]}.
 Definition Q_Decrement (r w : dbmap) :=
   ∃ (v u : u64),
-    r !! (I64 0) = Some (Value v) ∧
-    w !! (I64 0) = Some (Value u) ∧
+    r !! (W64 0) = Some (Value v) ∧
+    w !! (W64 0) = Some (Value u) ∧
     uint.Z u = uint.Z v - 1.
 Definition Ri_Decrement (p : loc) : iProp Σ :=
   ∃ (v : u64), p ↦[uint64T] #v.
 Definition Rc_Decrement (p : loc) (r w : dbmap) : iProp Σ :=
-  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (I64 0) = Some (Value v)⌝.
+  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (W64 0) = Some (Value v)⌝.
 Definition Ra_Decrement (p : loc) (r : dbmap) : iProp Σ :=
-  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (I64 0) = Some (Value v)⌝.
+  ∃ (v : u64), p ↦[uint64T] #v ∗ ⌜r !! (W64 0) = Some (Value v)⌝.
 
 Theorem wp_decrement txn (p : loc) tid r γ τ :
   {{{ Ri_Decrement p ∗ own_txn txn tid r γ τ ∗ ⌜P_Decrement r⌝ ∗ txnmap_ptstos τ r }}}
@@ -423,12 +423,12 @@ Qed.
 
 Theorem wp_Decrement (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (v : u64), dbmap_ptsto γ (I64 0) 1 (Value v) >>>
+    <<< ∀∀ (v : u64), dbmap_ptsto γ (W64 0) 1 (Value v) >>>
       Decrement #txn @ ↑mvccN
     <<< ∃∃ (ok : bool),
           if ok
-          then ∃ (u : u64), dbmap_ptsto γ (I64 0) 1 (Value u) ∗ ⌜uint.Z u = (uint.Z v - 1)%Z⌝
-          else dbmap_ptsto γ (I64 0) 1 (Value v)
+          then ∃ (u : u64), dbmap_ptsto γ (W64 0) 1 (Value u) ∗ ⌜uint.Z u = (uint.Z v - 1)%Z⌝
+          else dbmap_ptsto γ (W64 0) 1 (Value v)
     >>>
     {{{ RET (#v, #ok); own_txn_uninit txn γ }}}.
 Proof.
@@ -463,7 +463,7 @@ Proof.
   iMod "HAU".
   iModIntro.
   iDestruct "HAU" as (v) "[Hdbpt HAU]".
-  iExists {[ (I64 0) := (Value v) ]}.
+  iExists {[ (W64 0) := (Value v) ]}.
   rewrite {1} /dbmap_ptstos. rewrite big_sepM_singleton.
   iFrame "Hdbpt".
   iSplit.
@@ -510,7 +510,7 @@ Qed.
 #[local]
 Definition mvcc_inv_app_def γ α : iProp Σ :=
   ∃ (v : u64),
-    "Hdbpt" ∷ dbmap_ptsto γ (I64 0) 1 (Value v) ∗
+    "Hdbpt" ∷ dbmap_ptsto γ (W64 0) 1 (Value v) ∗
     "Hmn"   ∷ mono_nat_auth_own α 1 (uint.nat v).
 
 Instance mvcc_inv_app_timeless γ α :
@@ -550,8 +550,8 @@ Proof.
   set P := (λ (b : bool),
               own_txn_uninit txn γ ∗
               if b
-              then dbmap_ptsto γ (I64 0) 1 Nil
-              else ∃ v, dbmap_ptsto γ (I64 0) 1 (Value v)
+              then dbmap_ptsto γ (W64 0) 1 Nil
+              else ∃ v, dbmap_ptsto γ (W64 0) 1 (Value v)
            )%I.
   wp_apply (wp_forBreak_cond P with "[] [Htxn Hdbpts]").
   { clear Φ.
@@ -559,8 +559,8 @@ Proof.
     subst P. simpl.
     iDestruct "HP" as "[Htxn Hdbpt]".
     wp_pures.
-    set P := (λ r : dbmap, dom r = {[ (I64 0) ]}).
-    set Q := (λ r w : dbmap, ∃ u, w !! (I64 0) = Some (Value u)).
+    set P := (λ r : dbmap, dom r = {[ (W64 0) ]}).
+    set Q := (λ r w : dbmap, ∃ u, w !! (W64 0) = Some (Value u)).
     wp_apply (wp_txn__DoTxn_xres _ _ P Q with "[$Htxn]").
     { (* Txn body. *)
       iIntros (tid r τ).
@@ -578,7 +578,7 @@ Proof.
       iFrame "Htxn".
       subst Q. simpl.
       iModIntro.
-      iExists {[ (I64 0) := Value (I64 0) ]}.
+      iExists {[ (W64 0) := Value (W64 0) ]}.
       iSplit; last by rewrite big_sepM_singleton.
       iPureIntro.
       split; last set_solver.
@@ -588,7 +588,7 @@ Proof.
     (* Give [dbmap_ptsto] owned exclusively. *)
     iApply ncfupd_mask_intro; first set_solver.
     iIntros "Hclose".
-    iExists {[ (I64 0) := Nil ]}.
+    iExists {[ (W64 0) := Nil ]}.
     iSplitL "Hdbpt".
     { subst P. simpl.
       unfold dbmap_ptstos.
@@ -622,7 +622,7 @@ Proof.
   { (* Loop entry. *)
     subst P. simpl.
     unfold dbmap_ptstos.
-    iDestruct (big_sepM_lookup _ _ (I64 0) with "Hdbpts") as "Hdbpt".
+    iDestruct (big_sepM_lookup _ _ (W64 0) with "Hdbpts") as "Hdbpt".
     { rewrite lookup_gset_to_gmap_Some. split; [set_solver | reflexivity]. }
     iFrame.
   }

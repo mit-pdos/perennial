@@ -95,13 +95,13 @@ Proof. reflexivity. Qed.
 
 Lemma circ_own_init :
   ⊢ |==> ∃ γaddrs γblocks,
-        let addrs := repeat (I64 0) 511 in
+        let addrs := repeat (W64 0) 511 in
         let blocks := repeat block0 511 in
         ⌜circ_low_wf addrs blocks⌝ ∗
         ghost_var γaddrs 1 addrs ∗
         ghost_var γblocks 1 blocks.
 Proof.
-  iMod (ghost_var_alloc (repeat (I64 0) 511)) as (γaddrs) "?".
+  iMod (ghost_var_alloc (repeat (W64 0) 511)) as (γaddrs) "?".
   iMod (ghost_var_alloc (repeat block0 511)) as (γblocks) "?".
   iModIntro.
   iExists _, _; iFrame.
@@ -111,9 +111,9 @@ Proof.
 Qed.
 
 Lemma zero_encodings :
-  let σ := {| upds := []; start := I64 0; |} in
+  let σ := {| upds := []; start := W64 0; |} in
   block_encodes block0
-    ([EncUInt64 (circΣ.diskEnd σ)] ++ map EncUInt64 (repeat (I64 0) 511))
+    ([EncUInt64 (circΣ.diskEnd σ)] ++ map EncUInt64 (repeat (W64 0) 511))
   ∧ block_encodes block0 [EncUInt64 (start σ)].
 Proof.
   rewrite /block_encodes /has_encoding.
@@ -124,12 +124,12 @@ Qed.
 
 Lemma circular_init :
   0 d↦∗ repeat block0 513 -∗
-  |==> ∃ γ, is_circular_state γ {| upds := []; start := I64 0; |} ∗
+  |==> ∃ γ, is_circular_state γ {| upds := []; start := W64 0; |} ∗
             is_circular_appender_pre γ ∗
-            start_is γ (1/2) (I64 0) ∗
+            start_is γ (1/2) (W64 0) ∗
             diskEnd_is γ (1/2) 0.
 Proof.
-  set (σ:={| upds := []; start := I64 0; |}).
+  set (σ:={| upds := []; start := W64 0; |}).
   assert (circΣ.diskEnd σ = 0) as HdiskEnd by reflexivity.
   rewrite split_513_blocks.
   iIntros "(Hhdr1 & Hhdr2 & Hlog)".
@@ -283,7 +283,7 @@ Proof.
       mod_bound; word. }
     wp_apply (wp_SliceGet _ _ _ _ 1 addrs0 with "[$Hdiskaddrs]"); eauto.
     { iPureIntro.
-      change (word.divu _ _) with (I64 LogSz).
+      change (word.divu _ _) with (W64 LogSz).
       word_cleanup.
       rewrite Ha_lookup.
       eauto. }
@@ -297,7 +297,7 @@ Proof.
     iNamed 1.
 
     wpc_pures.
-    change (word.divu _ _) with (I64 LogSz).
+    change (word.divu _ _) with (W64 LogSz).
     destruct (list_lookup_lt _ blocks0 (Z.to_nat (uint.Z i `mod` LogSz))) as [b Hblookup].
     { destruct Hlow_wf.
       mod_bound; word. }

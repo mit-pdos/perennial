@@ -67,7 +67,7 @@ Definition ptsto_kvs (kvsl: loc) (kvsblks : gmap specs.addr {K & defs.bufDataT K
            (sz : nat) γDisk : iProp Σ :=
   ( ∃ (l : loc),
       kvsl↦[KVS :: "txn"] #l ∗
-      kvsl ↦[KVS :: "sz"] #(I64 (Z.of_nat sz)) ∗
+      kvsl ↦[KVS :: "sz"] #(W64 (Z.of_nat sz)) ∗
       is_txn l γDisk ∗
       ⌜(∀ n : nat, n < sz -> ∃ blk,
              kvsblks !! (nat_key_to_addr n) = Some (existT defs.KindBlock (defs.bufBlock blk))
@@ -80,7 +80,7 @@ Definition crashed_kvs kvp_ls kvsblks γDisk sz : iProp Σ :=
 
 Theorem wpc_MkKVS d (sz: nat) k E1 E2:
   {{{ True }}}
-    MkKVS #d #(I64(Z.of_nat sz)) @ E2
+    MkKVS #d #(W64(Z.of_nat sz)) @ E2
   {{{ kvsl kvsblks γDisk, RET #kvsl; ptsto_kvs kvsl kvsblks sz γDisk}}}
   {{{ True }}}.
 Proof.
@@ -117,8 +117,8 @@ Proof.
   destruct Hszcomp; wp_pures.
   - wp_apply wp_panic.
     destruct (decide_rel Z.lt (uint.Z sz) _); try discriminate. lia.
-  - change (i64_instance.i64.(@word.add 64) (i64_instance.i64.(@word.divu 64) (i64_instance.i64.(@word.sub 64) 4096 8) 8) 2)
-      with (I64 LogSz).
+  - change (w64_instance.w64.(@word.add 64) (w64_instance.w64.(@word.divu 64) (w64_instance.w64.(@word.sub 64) 4096 8) 8) 2)
+      with (W64 LogSz).
     remember(bool_decide (uint.Z _ < uint.Z LogSz)) as Hlgszcomp.
     destruct Hlgszcomp; wp_pures.
     * wp_apply wp_panic.
@@ -128,7 +128,7 @@ Proof.
       iIntros (buftx) "Hbtxn".
       wp_let.
       wp_call.
-      change (i64_instance.i64.(@word.mul 64) 4096 8) with (I64 32768).
+      change (w64_instance.w64.(@word.mul 64) 4096 8) with (W64 32768).
       change (#key.(specs.addrBlock), (#0, #()))%V with (specs.addr2val (specs.Build_addr key.(specs.addrBlock) 0)).
       pose Hkey as Hkey'.
 

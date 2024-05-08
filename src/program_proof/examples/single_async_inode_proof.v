@@ -79,7 +79,7 @@ Section goose.
     ∃ inode_ref alloc_ref δused δdur δbuf,
     "#Hstate" ∷ s_inode_state l inode_ref alloc_ref ∗
     "Hs_inv" ∷ s_inode_inv δdur δbuf σ ∗
-    "Hinode" ∷ (∃ s_inode, "Hpre_inode" ∷ pre_inode inode_ref (I64 0) s_inode ∗
+    "Hinode" ∷ (∃ s_inode, "Hpre_inode" ∷ pre_inode inode_ref (W64 0) s_inode ∗
                 "HPinode" ∷ Pinode δdur δbuf δused s_inode) ∗
     "Halloc" ∷ (∃ s_alloc, "Halloc_mem" ∷ is_allocator_mem_pre alloc_ref s_alloc ∗
                 "%Halloc_dom" ∷ ⌜alloc.domain s_alloc = rangeSet 1 (sz-1)⌝ ∗
@@ -90,7 +90,7 @@ Section goose.
   Definition is_single_inode γdur γbuf l (sz: Z) k' : iProp Σ :=
     ∃ (inode_ref alloc_ref: loc) δalloc δused δdur δbuf,
       "Hro_state" ∷ s_inode_state l inode_ref alloc_ref ∗
-      "#Hinode" ∷ is_inode inodeN inode_ref (S k') (Pinode δdur δbuf δused) (I64 0) ∗
+      "#Hinode" ∷ is_inode inodeN inode_ref (S k') (Pinode δdur δbuf δused) (W64 0) ∗
       "#Halloc" ∷ is_allocator (Palloc δused)
         allocΨ allocN alloc_ref (rangeSet 1 (sz-1)) δalloc k' ∗
       "#Hinv" ∷ ncinv s_inodeN (∃ σ, s_inode_inv δdur δbuf σ ∗ P γdur γbuf σ)
@@ -100,7 +100,7 @@ Section goose.
 
   Definition s_inode_cinv γdur γbuf sz σ (post_crash: bool) : iProp Σ :=
     ∃ δdur δused,
-    "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (I64 0) s_inode ∗
+    "Hinode" ∷ (∃ s_inode, "Hinode_cinv" ∷ inode_cinv (W64 0) s_inode ∗
                            "HPinode" ∷ Pinode_cinv δdur δused s_inode) ∗
     "Halloc" ∷ alloc_crash_cond (Palloc δused) allocΨ (rangeSet 1 (sz-1)) post_crash ∗
     "Hδdurable_blocks" ∷ ghost_var δdur (1/2) σ.(s_inode.durable_blocks) ∗
@@ -170,7 +170,7 @@ Section goose.
     rewrite big_sepL_app.
     iDestruct "Hd" as "[Hinodes Hfree]".
     iDestruct "Hinodes" as "[Hzero _]".
-    change (0%nat + 0)%Z with (uint.Z (I64 0)).
+    change (0%nat + 0)%Z with (uint.Z (W64 0)).
     iDestruct (init_inode with "Hzero") as "Hinode".
     simpl.
     iMod (ghost_var_alloc (nil : list Block)) as

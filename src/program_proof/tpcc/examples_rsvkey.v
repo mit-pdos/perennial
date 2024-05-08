@@ -10,8 +10,8 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 #[local]
 Definition mvcc_inv_app_def γ : iProp Σ :=
   ∃ (v0 v1 : dbval),
-    "Hdbpt0" ∷ dbmap_ptsto γ (I64 0) (1 / 2)%Qp v0 ∗
-    "Hdbpt1" ∷ dbmap_ptsto γ (I64 1) 1%Qp v1.
+    "Hdbpt0" ∷ dbmap_ptsto γ (W64 0) (1 / 2)%Qp v0 ∗
+    "Hdbpt1" ∷ dbmap_ptsto γ (W64 1) 1%Qp v1.
 
 Instance mvcc_inv_app_timeless γ :
   Timeless (mvcc_inv_app_def γ).
@@ -23,9 +23,9 @@ Definition mvccNApp := nroot .@ "app".
 Definition mvcc_inv_app γ : iProp Σ :=
   inv mvccNApp (mvcc_inv_app_def γ).
 
-Definition P_WriteReservedKey (r : dbmap) := dom r = {[ (I64 0) ]}.
+Definition P_WriteReservedKey (r : dbmap) := dom r = {[ (W64 0) ]}.
 Definition Q_WriteReservedKey (v : u64) (r w : dbmap) :=
-  w !! (I64 0) = Some (Value v).
+  w !! (W64 0) = Some (Value v).
 
 Theorem wp_WriteReservedKeySeq txn (v : u64) tid r γ τ :
   {{{ own_txn txn tid r γ τ ∗ ⌜P_WriteReservedKey r⌝ ∗ txnmap_ptstos τ r }}}
@@ -42,7 +42,7 @@ Proof.
   (* txn.Put(0, v)                                           *) 
   (* return true                                             *) 
   (***********************************************************)
-  assert (Helem : (I64 0) ∈ dom r) by set_solver.
+  assert (Helem : (W64 0) ∈ dom r) by set_solver.
   rewrite elem_of_dom in Helem. destruct Helem as [u Hlookup].
   wp_apply (wp_txn__Put with "[$Htxn Hpts]").
   { iDestruct (big_sepM_lookup with "Hpts") as "Hpts"; [apply Hlookup | iFrame]. }
@@ -51,7 +51,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iFrame "Htxn".
-  iExists {[ (I64 0) := (Value v) ]}.
+  iExists {[ (W64 0) := (Value v) ]}.
   iSplit.
   { iPureIntro. unfold Q_WriteReservedKey. split; [by rewrite lookup_singleton | set_solver]. }
   unfold txnmap_ptstos.
@@ -88,9 +88,9 @@ Proof.
   done.
 Qed.
 
-Definition P_WriteFreeKey (r : dbmap) := dom r = {[ (I64 1) ]}.
+Definition P_WriteFreeKey (r : dbmap) := dom r = {[ (W64 1) ]}.
 Definition Q_WriteFreeKey (v : u64) (r w : dbmap) :=
-  w !! (I64 1) = Some (Value v).
+  w !! (W64 1) = Some (Value v).
 
 Theorem wp_WriteFreeKeySeq txn (v : u64) tid r γ τ :
   {{{ own_txn txn tid r γ τ ∗ ⌜P_WriteFreeKey r⌝ ∗ txnmap_ptstos τ r }}}
@@ -107,7 +107,7 @@ Proof.
   (* txn.Put(1, v)                                           *) 
   (* return true                                             *) 
   (***********************************************************)
-  assert (Helem : (I64 1) ∈ dom r) by set_solver.
+  assert (Helem : (W64 1) ∈ dom r) by set_solver.
   rewrite elem_of_dom in Helem. destruct Helem as [u Hlookup].
   wp_apply (wp_txn__Put with "[$Htxn Hpts]").
   { iDestruct (big_sepM_lookup with "Hpts") as "Hpts"; [apply Hlookup | iFrame]. }
@@ -116,7 +116,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iFrame "Htxn".
-  iExists {[ (I64 1) := (Value v) ]}.
+  iExists {[ (W64 1) := (Value v) ]}.
   iSplit.
   { iPureIntro. unfold Q_WriteFreeKey. split; [by rewrite lookup_singleton | set_solver]. }
   unfold txnmap_ptstos.
@@ -160,13 +160,13 @@ Theorem wp_InitializeData (txnmgr : loc) γ :
   is_txnmgr txnmgr γ -∗
   {{{ dbmap_ptstos γ 1 (gset_to_gmap Nil keys_all) }}}
     InitializeData #txnmgr
-  {{{ (v : dbval), RET #(); dbmap_ptsto γ (I64 0) (1 / 2)%Qp v ∗ mvcc_inv_app γ }}}.
+  {{{ (v : dbval), RET #(); dbmap_ptsto γ (W64 0) (1 / 2)%Qp v ∗ mvcc_inv_app γ }}}.
 Proof.
   iIntros "#Htxn" (Φ) "!> Hdbpts HΦ".
   wp_call.
   iApply "HΦ".
   unfold dbmap_ptstos.
-  iDestruct (big_sepM_delete _ _ (I64 0) with "Hdbpts") as "[Hdbpt Hdbpts]".
+  iDestruct (big_sepM_delete _ _ (W64 0) with "Hdbpts") as "[Hdbpt Hdbpts]".
   { rewrite lookup_gset_to_gmap_Some. split; [set_solver | done]. }
   iDestruct (dbmap_elem_split (1 / 2) (1 / 2) with "Hdbpt") as "[H Hdbpt0]".
   { compute_done. }
@@ -174,7 +174,7 @@ Proof.
   iMod (inv_alloc mvccNApp _ (mvcc_inv_app_def γ) with "[-]") as "#Hinv".
   { iNext.
     do 2 iExists _.
-    iDestruct (big_sepM_delete _ _ (I64 1) with "Hdbpts") as "[Hdbpt1 Hdbpts]".
+    iDestruct (big_sepM_delete _ _ (W64 1) with "Hdbpts") as "[Hdbpt1 Hdbpts]".
     { rewrite lookup_delete_Some.
       split; first done.
       rewrite lookup_gset_to_gmap_Some. split; [set_solver | done].
@@ -188,7 +188,7 @@ Theorem wp_InitExample :
   {{{ True }}}
     InitExample #()
   {{{ γ (v : dbval) (mgr : loc), RET #mgr;
-      dbmap_ptsto γ (I64 0) (1 / 2)%Qp v ∗ is_txnmgr mgr γ ∗ mvcc_inv_app γ
+      dbmap_ptsto γ (W64 0) (1 / 2)%Qp v ∗ is_txnmgr mgr γ ∗ mvcc_inv_app γ
   }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -213,10 +213,10 @@ Qed.
 Theorem wp_WriteReservedKeyExample (mgr : loc) (u : u64) (v : dbval) γ :
   mvcc_inv_app γ -∗
   is_txnmgr mgr γ -∗
-  {{{ dbmap_ptsto γ (I64 0) (1 / 2)%Qp v }}}
+  {{{ dbmap_ptsto γ (W64 0) (1 / 2)%Qp v }}}
     WriteReservedKeyExample #mgr #u
   {{{ (ok : bool), RET #ok;
-      dbmap_ptsto γ (I64 0) (1 / 2)%Qp (if ok then (Value u) else v)
+      dbmap_ptsto γ (W64 0) (1 / 2)%Qp (if ok then (Value u) else v)
   }}}.
 Proof.
   iIntros "#Hinv #Hmgr" (Φ) "!> Hdbpt HΦ".
@@ -239,7 +239,7 @@ Proof.
   iIntros "Hclose".
   iNamed "HinvO".
   (* Give atomic precondition. *)
-  iExists {[ (I64 0) := v0 ]}.
+  iExists {[ (W64 0) := v0 ]}.
   unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
   iDestruct (dbmap_elem_combine with "Hdbpt Hdbpt0") as "[Hdbpt0 ->]".
   rewrite Qp.half_half.
@@ -311,7 +311,7 @@ Proof.
   iIntros "Hclose".
   iNamed "HinvO".
   (* Give atomic precondition *)
-  iExists {[ (I64 0) := v0 ]}.
+  iExists {[ (W64 0) := v0 ]}.
   unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
   (**
    * However, we only have one half of the ownership of key 0 (see
@@ -350,7 +350,7 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hclose".
   iNamed "HinvO".
-  iExists {[ (I64 1) := v1 ]}.
+  iExists {[ (W64 1) := v1 ]}.
   (* Give atomic precondition *)
   unfold dbmap_ptstos. rewrite {1} big_sepM_singleton.
   iFrame.

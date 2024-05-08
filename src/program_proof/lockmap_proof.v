@@ -468,8 +468,8 @@ Lemma covered_by_shard_empty x :
 Proof. done. Qed.
 
 Lemma covered_by_shard_insert x X :
-  covered_by_shard (uint.Z (word.modu x (I64 NSHARD))) ({[x]} ∪ X) =
-  {[x]} ∪ covered_by_shard (uint.Z (word.modu x (I64 NSHARD))) X.
+  covered_by_shard (uint.Z (word.modu x (W64 NSHARD))) ({[x]} ∪ X) =
+  {[x]} ∪ covered_by_shard (uint.Z (word.modu x (W64 NSHARD))) X.
 Proof.
   rewrite /covered_by_shard filter_union_L filter_singleton_L //.
   unseal_nshard.
@@ -489,7 +489,7 @@ Qed.
 
 Lemma rangeSet_lookup_mod (x : u64) (n : Z) :
   (0 < n < 2^64)%Z ->
-  word.modu x (I64 n) ∈ rangeSet 0 n.
+  word.modu x (W64 n) ∈ rangeSet 0 n.
 Proof.
   intros.
   apply rangeSet_lookup; try word.
@@ -619,7 +619,7 @@ Proof.
     iApply (big_sepL2_app with "Hshards").
     iApply big_sepL2_singleton.
     rewrite Hlen.
-    replace (Z.of_nat (uint.nat i + 0)) with (uint.Z (I64 (uint.Z i))) by word.
+    replace (Z.of_nat (uint.nat i + 0)) with (uint.Z (W64 (uint.Z i))) by word.
     by iFrame.
   }
   {

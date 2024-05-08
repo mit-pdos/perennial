@@ -39,7 +39,7 @@ Definition file_encodes_state (data:list u8) (epoch:u64) (ops: list OpType) (sea
   ∃ snap_ops snap (rest_ops:list OpType) (rest_ops_bytes:list (list u8)) sealed_bytes,
     ops = snap_ops ++ rest_ops ∧
     has_snap_encoding snap snap_ops ∧
-    sealed_bytes = match sealed with false => [] | true => [I8 0] end /\
+    sealed_bytes = match sealed with false => [] | true => [W8 0] end /\
     length rest_ops = length rest_ops_bytes ∧
     (∀ (i:nat), i < length rest_ops →
           ∃ op op_len_bytes op_bytes,
@@ -120,12 +120,12 @@ Qed.
 
 Lemma file_encodes_state_seal data ops epoch :
   file_encodes_state data epoch ops false →
-  file_encodes_state (data ++ [I8 0]) epoch ops true
+  file_encodes_state (data ++ [W8 0]) epoch ops true
 .
 Proof.
   destruct 1 as
     (snap_ops&snap&rest_ops&rest_ops_bytes&sealed_bytes&Heq_ops&Hsnaop_enc&Hsealed&Hlen&Hrest&?&Heq_data).
-  exists snap_ops, snap, rest_ops, rest_ops_bytes, [I8 0].
+  exists snap_ops, snap, rest_ops, rest_ops_bytes, [W8 0].
   split_and!; eauto.
   rewrite Heq_data Hsealed. rewrite -?app_assoc app_nil_l //.
 Qed.
@@ -263,7 +263,7 @@ Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) 
     "Hfname" ∷ s ↦[StateMachine :: "fname"] #(LitString fname) ∗
     "HlogFile" ∷ s ↦[StateMachine :: "logFile"] #aof_ptr ∗
     "HsmMem" ∷ s ↦[StateMachine :: "smMem"] #smMem_ptr ∗
-    "HnextIndex" ∷ s ↦[StateMachine :: "nextIndex"] #(I64 (length ops)) ∗
+    "HnextIndex" ∷ s ↦[StateMachine :: "nextIndex"] #(W64 (length ops)) ∗
     "Hlogsize" ∷ s ↦[StateMachine :: "logsize"] #logsize ∗
     "Hepoch" ∷ s ↦[StateMachine :: "epoch"] #epoch ∗
     "Hsealed" ∷ s ↦[StateMachine :: "sealed"] #sealed ∗
@@ -362,7 +362,7 @@ Proof.
   replace (uint.nat 0) with (0%nat) by word.
   rewrite replicate_0.
   rewrite app_nil_l.
-  replace (op_sl.(Slice.sz)) with (I64 (length op_bytes)); last first.
+  replace (op_sl.(Slice.sz)) with (W64 (length op_bytes)); last first.
   { word. }
 
   set (newsuffix:=u64_le (length op_bytes) ++ op_bytes).
@@ -490,7 +490,7 @@ Lemma wp_setStateAndUnseal s P ops_prev (epoch_prev:u64) sealed_prev ops epoch (
 .
 Proof.
   iIntros (Φ) "(%HsnapLen & %HsnapEnc & %HnextIndex & #Hsnap_sl & Hupd & Hown) HΦ".
-  assert (nextIndex = I64 (length ops)) by word; subst.
+  assert (nextIndex = W64 (length ops)) by word; subst.
   wp_lam.
   wp_pures.
   iNamed "Hown".
@@ -556,7 +556,7 @@ Proof.
   replace (uint.nat 0) with (0%nat) by word.
   rewrite replicate_0.
   rewrite app_nil_l.
-  replace (snap_sl.(Slice.sz)) with (I64 (length snap)); last first.
+  replace (snap_sl.(Slice.sz)) with (W64 (length snap)); last first.
   { word. }
 
   wp_loadField.
@@ -754,7 +754,7 @@ Proof.
       done.
     }
 
-    iDestruct (fmlist_lb_to_idx _ _ (length (data ++ [I8 0])) with "Hallstates_lb") as "#Hcurstate".
+    iDestruct (fmlist_lb_to_idx _ _ (length (data ++ [W8 0])) with "Hallstates_lb") as "#Hcurstate".
     {
       rewrite app_length.
       simpl.
@@ -1000,7 +1000,7 @@ Proof.
     2:{ (* bad case *)
       exfalso.
       rewrite HdataEmpty /= in Hdata_sz.
-      replace (data_sl.(Slice.sz)) with (I64 0) in * by word.
+      replace (data_sl.(Slice.sz)) with (W64 0) in * by word.
       done.
     }
 
@@ -1072,7 +1072,7 @@ Proof.
         iNext.
         iRight.
         iPureIntro.
-        replace (snap_sl.(Slice.sz)) with (I64 (length snap)); last first.
+        replace (snap_sl.(Slice.sz)) with (W64 (length snap)); last first.
         { word. }
         rewrite app_nil_l.
         rewrite -app_assoc.
@@ -1111,7 +1111,7 @@ Proof.
       iFrame "∗#".
       iPureIntro.
 
-      replace (snap_sl.(Slice.sz)) with (I64 (length snap)); last first.
+      replace (snap_sl.(Slice.sz)) with (W64 (length snap)); last first.
       { word. }
       rewrite app_nil_l.
       rewrite -app_assoc.
@@ -1155,7 +1155,7 @@ Proof.
     iSplitR; first done.
     iSplitR; first iPureIntro.
     {
-      replace (snap_sl.(Slice.sz)) with (I64 (length snap)); last first.
+      replace (snap_sl.(Slice.sz)) with (W64 (length snap)); last first.
       { word. }
       rewrite app_nil_l.
       rewrite -app_assoc.
@@ -1575,14 +1575,14 @@ Proof.
       rewrite -[a in a = _]unsigned_U64.
       f_equal.
       replace (Z.of_nat (length snap_ops + (numOpsApplied + 1)))%Z with
-        (Z.of_nat (length snap_ops + numOpsApplied) + uint.Z (I64 1))%Z; last first.
+        (Z.of_nat (length snap_ops + numOpsApplied) + uint.Z (W64 1))%Z; last first.
       { replace (uint.Z 1%Z) with 1%Z.
         { clear. f_equal. lia. }
         rewrite //=.
       }
       clear.
       remember (Z.of_nat (length snap_ops + numOpsApplied)) as x.
-      { rewrite /I64.
+      { rewrite /W64.
         rewrite ?word.ring_morph_add. f_equal.
         rewrite word.of_Z_unsigned. auto.
       }

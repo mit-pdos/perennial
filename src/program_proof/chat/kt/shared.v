@@ -180,7 +180,7 @@ Lemma wp_Len ptr arg :
   }}}
   KeyLog__Len #ptr
   {{{
-    RET #(I64 (length arg.(Log)));
+    RET #(W64 (length arg.(Log)));
     "Harg" ∷ own ptr arg
   }}}.
 Proof. Admitted.

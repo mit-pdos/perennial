@@ -168,7 +168,7 @@ Proof.
                                 end
                             | _ => None
                             end;
-           IntoVal_def := (I64 0, IntoVal_def Slice.t);
+           IntoVal_def := (W64 0, IntoVal_def Slice.t);
          |}.
   destruct v as [a []]; done.
 Defined.
@@ -378,9 +378,9 @@ Theorem wp_forSlice_updates (I: u64 -> iProp Σ) stk E s q q_b us (body: val) :
                 is_update uv q_b u ∗
                 ⌜us !! uint.nat i = Some u⌝ }}}
         body #i (update_val uv) @ stk; E
-      {{{ RET #(); I (word.add i (I64 1)) ∗
+      {{{ RET #(); I (word.add i (W64 1)) ∗
                    is_block uv.2 q_b u.(update.b) }}}) -∗
-    {{{ I (I64 0) ∗ updates_slice_frag' s q q_b us }}}
+    {{{ I (W64 0) ∗ updates_slice_frag' s q q_b us }}}
       forSlice (struct.t Update) body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) ∗ updates_slice_frag' s q q_b us }}}.
 Proof.
@@ -423,8 +423,8 @@ Theorem wp_forSlice_updates_consume {stk E}
                 is_update uv q_b u ∗
                 ⌜us !! uint.nat i = Some u⌝ }}}
         body #i (update_val uv) @ stk; E
-      {{{ RET #(); I (word.add i (I64 1)) }}}) -∗
-    {{{ I (I64 0) ∗ updates_slice_frag' s q q_b us }}}
+      {{{ RET #(); I (word.add i (W64 1)) }}}) -∗
+    {{{ I (W64 0) ∗ updates_slice_frag' s q q_b us }}}
       forSlice (struct.t Update) body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) }}}.
 Proof.

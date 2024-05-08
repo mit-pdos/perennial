@@ -54,14 +54,14 @@ Theorem wp_NFSPROC3_READ γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (offset :
   {{{ v,
       RET v;
       ( ∃ (eof : bool) (databuf : list u8) (dataslice : Slice.t) resok,
-        ⌜ getField_f nfstypes.READ3res "Status" v = #(I32 0) ⌝ ∗
+        ⌜ getField_f nfstypes.READ3res "Status" v = #(W32 0) ⌝ ∗
         ⌜ getField_f nfstypes.READ3res "Resok" v = resok ⌝ ∗
         ⌜ getField_f nfstypes.READ3resok "Eof" resok = #eof ⌝ ∗
         ⌜ getField_f nfstypes.READ3resok "Data" resok = slice_val dataslice ⌝ ∗
         own_slice dataslice u8T 1%Qp databuf ∗
         Q (SimpleNFS.OK (eof, databuf)) ) ∨
       ( ∃ (stat : Z),
-        ⌜ getField_f nfstypes.READ3res "Status" v = #(I32 stat) ⌝ ∗
+        ⌜ getField_f nfstypes.READ3res "Status" v = #(W32 stat) ⌝ ∗
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
@@ -281,7 +281,7 @@ Transparent nfstypes.READ3res.
     assert (length state < 2^64)%Z as Hlenstatebound.
     { eapply Hnooverflow; clear Hnooverflow. }
     clear Hnooverflow.
-    assert (uint.nat (I64 (Z.of_nat (length state))) = length state) as Hlenstate.
+    assert (uint.nat (W64 (Z.of_nat (length state))) = length state) as Hlenstate.
     { word. }
     f_equal. f_equal. f_equal.
     { destruct eof; (intuition idtac);

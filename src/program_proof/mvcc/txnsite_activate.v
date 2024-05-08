@@ -22,7 +22,7 @@ Proof.
   wp_loadField.
   wp_apply (acquire_spec with "[$Hlock]").
   iIntros "[Hlocked HsiteOwn]".
-  (* replace (I64 (Z.of_nat _)) with sid by word.  *)
+  (* replace (W64 (Z.of_nat _)) with sid by word.  *)
   iNamed "HsiteOwn".
   wp_pures.
 

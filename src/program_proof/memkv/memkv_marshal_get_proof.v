@@ -156,7 +156,7 @@ Proof.
   wp_loadField.
   wp_apply (wp_slice_len).
   wp_apply wp_SumAssumeNoOverflow.
-  change (word.add 8 8) with (I64 16).
+  change (word.add 8 8) with (W64 16).
   iIntros (Hoverflow).
 
   wp_apply (wp_new_enc).
@@ -190,7 +190,7 @@ Proof.
   iFrame.
   iPureIntro.
   unfold has_encoding_GetReply.
-  replace (I64 (length rep.(GR_Value))) with val_sl.(Slice.sz) by word.
+  replace (W64 (length rep.(GR_Value))) with val_sl.(Slice.sz) by word.
   done.
 Qed.
 

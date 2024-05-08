@@ -20,7 +20,7 @@ Local Definition encode1 (e:encodable) : list u8 :=
   | EncUInt64 x => u64_le x
   | EncUInt32 x => u32_le x
   | EncBytes bs => bs
-  | EncBool b => [I8 (if b then 1 else 0)%Z]
+  | EncBool b => [W8 (if b then 1 else 0)%Z]
   end.
 
 Lemma encode1_u64_inj : Inj (=) (=) (encode1 ∘ EncUInt64).
@@ -215,9 +215,9 @@ Proof.
   iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
   wp_apply wp_SliceSkip.
   { word. }
-  iDestruct (own_slice_small_take_drop _ _ _ (I64 off) with "Hs") as "[Hs2 Hs1]".
+  iDestruct (own_slice_small_take_drop _ _ _ (W64 off) with "Hs") as "[Hs2 Hs1]".
   { word. }
-  replace (uint.nat (I64 off)) with off by word.
+  replace (uint.nat (W64 off)) with off by word.
   wp_apply (wp_UInt64Put with "Hs2").
   { len. }
   iIntros "Hs2".
@@ -260,9 +260,9 @@ Proof.
   iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
   wp_apply wp_SliceSkip.
   { word. }
-  iDestruct (own_slice_small_take_drop _ _ _ (I64 off) with "Hs") as "[Hs2 Hs1]".
+  iDestruct (own_slice_small_take_drop _ _ _ (W64 off) with "Hs") as "[Hs2 Hs1]".
   { word. }
-  replace (uint.nat (I64 off)) with off by word.
+  replace (uint.nat (W64 off)) with off by word.
   wp_apply (wp_UInt32Put with "Hs2").
   { len. }
   iIntros "Hs2".
@@ -294,7 +294,7 @@ Qed.
 Local Lemma wp_bool2byte stk E (x:bool) :
   {{{ True }}}
     bool2byte #x @ stk; E
-  {{{ RET #(I8 (if x then 1 else 0))%Z; True }}}.
+  {{{ RET #(W8 (if x then 1 else 0))%Z; True }}}.
 Proof.
   iIntros (Φ) "_ HΦ". wp_lam.
   destruct x; wp_pures; by iApply "HΦ".
@@ -314,7 +314,7 @@ Proof.
   iDestruct (own_slice_small_sz with "Hs") as %Hslice_len.
   wp_pures.
   wp_apply wp_bool2byte.
-  set (u:=I8 (if x then 1 else 0)%Z).
+  set (u:=W8 (if x then 1 else 0)%Z).
   wp_pures.
   wp_apply (wp_SliceSet (V:=byte) with "[$Hs]").
   { iPureIntro. apply lookup_lt_is_Some_2. word. }
@@ -391,7 +391,7 @@ Proof.
   iDestruct (own_slice_small_sz with "Hs") as %Hs_sz.
   wp_apply wp_SliceSkip.
   { len. }
-  iDestruct (slice_small_split _ (I64 (encoded_length r)) with "Hs") as "[Hs1 Hs2]"; first by len.
+  iDestruct (slice_small_split _ (W64 (encoded_length r)) with "Hs") as "[Hs1 Hs2]"; first by len.
   wp_apply (wp_SliceCopy (V:=byte) with "[$Hbs $Hs2]"); first by len.
   iIntros "[Hbs Hs2]".
   iDestruct (own_slice_combine with "Hs1 Hs2") as "Hs"; first by len.
@@ -418,7 +418,7 @@ Proof.
   split_and.
   - len.
     simpl; len.
-  - replace (uint.nat (I64 (encoded_length r))) with (encoded_length r) by word.
+  - replace (uint.nat (W64 (encoded_length r))) with (encoded_length r) by word.
     rewrite Hencoded.
     rewrite app_assoc.
     eapply has_encoding_from_app.
@@ -573,7 +573,7 @@ Proof.
   change (length (encode1 _)) with 1%nat in H.
   apply has_encoding_inv in Henc as [extra [Henc ?]].
   rewrite encode_cons in Henc.
-  assert (drop (uint.nat off) data !! 0%nat = Some $ I8 (if x then 1 else 0)) as Hx.
+  assert (drop (uint.nat off) data !! 0%nat = Some $ W8 (if x then 1 else 0)) as Hx.
   { rewrite Henc. done. }
   rewrite lookup_drop Nat.add_0_r in Hx.
   wp_apply (wp_SliceGet (V:=byte) with "[$Hs]").
@@ -598,7 +598,7 @@ Qed.
 (* This version of GetBytes consumes full ownership of the decoder to be able to
    give the full fraction to the returned slice *)
 Theorem wp_Dec__GetBytes' stk E dec_v bs (n: u64) r s data :
-  n = I64 (length bs) →
+  n = W64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s 1 data ∗
       (∀ vs' : list u8, own_slice_small s byteT 1 vs' -∗ own_slice s byteT 1 vs') }}}
     Dec__GetBytes dec_v #n @ stk; E
@@ -629,7 +629,7 @@ Proof.
 Qed.
 
 Theorem wp_Dec__GetBytes stk E dec_v bs (n: u64) r s q data :
-  n = I64 (length bs) →
+  n = W64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
     Dec__GetBytes dec_v #n @ stk; E
   {{{ q' s', RET slice_val s'; own_slice_small s' byteT q' bs ∗ is_dec dec_v r s q' data }}}.
@@ -671,7 +671,7 @@ Proof.
 Qed.
 
 Theorem wp_Dec__GetBytes_ro stk E dec_v bs (n: u64) r s q data :
-  n = I64 (length bs) →
+  n = W64 (length bs) →
   {{{ is_dec dec_v (EncBytes bs :: r) s q data }}}
     Dec__GetBytes dec_v #n @ stk; E
   {{{ q' s', RET slice_val s'; readonly (own_slice_small s' byteT 1 bs) ∗ is_dec dec_v r s q' data }}}.

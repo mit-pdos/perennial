@@ -49,10 +49,10 @@ Definition wrapper (f : fh) {T} (fn : buf -> transition State T) : transition St
   end.
 
 Definition getattr (f : fh) (i : buf) : transition State fattr :=
-  ret (Build_fattr (I64 (length i))).
+  ret (Build_fattr (W64 (length i))).
 
 Definition full_getattr (f : fh) : transition State (res fattr) :=
-  if decide (f = I64 1) then
+  if decide (f = W64 1) then
     r <- suchThat (gen:=fun _ _ => None) (λ _ _, True);
     ret (OK r)
   else
@@ -68,7 +68,7 @@ Definition setattr (f : fh) (a : sattr) (i : buf) : transition State unit :=
   match (sattr_size a) with
   | None => ret tt
   | Some sz =>
-    let i' := i[:uint.nat sz] ++ replicate (uint.nat sz - length i) (I8 0) in
+    let i' := i[:uint.nat sz] ++ replicate (uint.nat sz - length i) (W8 0) in
     _ <- modify (fun s => insert f i' s);
     ret tt
   end.
@@ -85,6 +85,6 @@ Definition write (f : fh) (off : u64) (data : buf) (i : buf) : transition State 
   _ <- check (off ≤ length i);
   let i' := i[:off] ++ data ++ i[off + length data :] in
   _ <- modify (fun s => insert f i' s);
-  ret (I32 (length data)).
+  ret (W32 (length data)).
 
 End SimpleNFS.

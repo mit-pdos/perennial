@@ -97,7 +97,7 @@ Section instances.
   Proof.
     refine {| to_val := λ (x: u64), #x;
               from_val := λ v, match v with #(LitInt x) => Some x | _ => None end;
-              IntoVal_def := I64 0; |}; done.
+              IntoVal_def := W64 0; |}; done.
   Defined.
   Global Instance u64_IntoVal_uint64T : IntoValForType u64 uint64T.
   Proof.
@@ -116,7 +116,7 @@ Section instances.
   Proof.
     refine {| to_val := λ (x: u8), #x;
               from_val := λ v, match v with #(LitByte x) => Some x | _ => None end;
-              IntoVal_def := I8 0; |}; done.
+              IntoVal_def := W8 0; |}; done.
   Defined.
   Global Instance u8_IntoVal_byteT : IntoValForType u8 byteT.
   Proof.

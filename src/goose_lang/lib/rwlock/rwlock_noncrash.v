@@ -107,7 +107,7 @@ Section proof.
 
   Definition rwlock_inv (l : loc) (R: Qp → iProp Σ) : iProp Σ :=
     (∃ u : u64, l ↦{1/4} #u ∗
-                if decide (u = I64 0) then
+                if decide (u = W64 0) then
                   True
                 else
                   l ↦{3/4} #u ∗
@@ -388,7 +388,7 @@ Section proof.
       iModIntro.
       iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
       iDestruct "Hl" as "[Hl1 Hl2]".
-      iSplitL "Hl1"; first (iNext; iExists (I64 0); eauto).
+      iSplitL "Hl1"; first (iNext; iExists (W64 0); eauto).
       wp_pures.
       iApply "HΦ".
       rewrite remaining_free.
@@ -431,7 +431,7 @@ Section proof.
     iSplitR "HΦ"; last by wp_seq; iApply "HΦ".
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct "Hl" as "[Hl1 Hl2]".
-    iNext. iExists (I64 1). iFrame.
+    iNext. iExists (W64 1). iFrame.
     rewrite remaining_free. eauto.
   Qed.
 

@@ -97,8 +97,8 @@ Section goose_lang.
   Fixpoint zero_val (t:ty) : val :=
     match t with
     | baseT uint64BT => #0
-    | baseT uint32BT => #(I32 0)
-    | baseT byteBT => #(I8 0)
+    | baseT uint32BT => #(W32 0)
+    | baseT byteBT => #(W8 0)
     | baseT boolBT => #false
     | baseT unitBT => #()
     | baseT stringBT => #(str"")

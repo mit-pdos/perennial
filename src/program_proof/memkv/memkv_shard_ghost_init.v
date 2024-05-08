@@ -13,12 +13,12 @@ Context `{!gooseGlobalGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 (* TODO: duplicating this specs is unfortunate, should try to unify with the set up in shard_definitions *)
 
 Definition shard_SpecList γkv γrpc : plist (pprod u64 RpcSpec) :=
-    pcons (ppair (I64 uKV_PUT) (eRPCSpec_uRPC γrpc $ is_shard_server_putSpec γkv))
-  $ pcons (ppair (I64 uKV_CONDITIONAL_PUT) (eRPCSpec_uRPC γrpc $ is_shard_server_conditionalPutSpec γkv))
-  $ pcons (ppair (I64 uKV_GET) (eRPCSpec_uRPC γrpc $ is_shard_server_getSpec γkv))
-  $ pcons (ppair (I64 uKV_MOV_SHARD) (is_shard_server_moveSpec γkv))
-  $ pcons (ppair (I64 uKV_INS_SHARD) (eRPCSpec_uRPC γrpc $ is_shard_server_installSpec γkv))
-  $ pcons (ppair (I64 uKV_FRESHCID) (is_shard_server_freshSpec γrpc))
+    pcons (ppair (W64 uKV_PUT) (eRPCSpec_uRPC γrpc $ is_shard_server_putSpec γkv))
+  $ pcons (ppair (W64 uKV_CONDITIONAL_PUT) (eRPCSpec_uRPC γrpc $ is_shard_server_conditionalPutSpec γkv))
+  $ pcons (ppair (W64 uKV_GET) (eRPCSpec_uRPC γrpc $ is_shard_server_getSpec γkv))
+  $ pcons (ppair (W64 uKV_MOV_SHARD) (is_shard_server_moveSpec γkv))
+  $ pcons (ppair (W64 uKV_INS_SHARD) (eRPCSpec_uRPC γrpc $ is_shard_server_installSpec γkv))
+  $ pcons (ppair (W64 uKV_FRESHCID) (is_shard_server_freshSpec γrpc))
   $ pnil.
 
 Lemma shard_server_ghost_init host (γkv : gname) :

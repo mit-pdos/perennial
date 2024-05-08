@@ -62,7 +62,7 @@ Proof using waitgroupG0.
   wp_apply wp_RandomUint64.
   iIntros (rnd) "_".
   wp_pures.
-  set (s:=(word.add rnd (I64 1))).
+  set (s:=(word.add rnd (W64 1))).
   generalize s as randId.
   clear s.
   intros randId.
@@ -382,7 +382,7 @@ Proof using waitgroupG0.
   set (P:= (λ i, ∃ (err:u64) γsrv',
       ⌜server_γs !! uint.nat i = Some γsrv'⌝ ∗
         readonly ((errs_sl.(Slice.ptr) +ₗ[uint64T] uint.Z i)↦[uint64T] #err) ∗
-        □ if (decide (err = I64 0)) then
+        □ if (decide (err = W64 0)) then
             protocol.is_epoch_lb γsrv'.(r_pb) epoch
           else
             True
@@ -589,7 +589,7 @@ Proof using waitgroupG0.
               "Hj" ∷ i_ptr ↦[uint64T] #i ∗
               "%Hj_ub" ∷ ⌜uint.nat i ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
-              "#Hrest" ∷ □ if (decide (err = (I64 0)%Z)) then
+              "#Hrest" ∷ □ if (decide (err = (W64 0)%Z)) then
                 (∀ (k:u64) γsrv, ⌜uint.nat k < uint.nat i⌝ -∗ ⌜server_γs !! (uint.nat k) = Some γsrv⌝ -∗ protocol.is_epoch_lb γsrv.(r_pb) epoch)
               else
                 True
@@ -645,7 +645,7 @@ Proof using waitgroupG0.
     destruct (bool_decide (_)) as [] eqn:Herr; wp_pures.
     {
       rewrite bool_decide_eq_true in Herr.
-      replace (err0) with (I64 0%Z) by naive_solver.
+      replace (err0) with (W64 0%Z) by naive_solver.
       wp_pures.
       wp_load; wp_store.
       iLeft.
@@ -748,7 +748,7 @@ Proof using waitgroupG0.
   {
     iIntros (?) "%Hlookup".
     apply elem_of_list_lookup_1 in Hlookup as [i Hlookup].
-    iDestruct (big_sepS_elem_of_acc _ _ (I64 i) with "Hwg_post") as "[HH _]".
+    iDestruct (big_sepS_elem_of_acc _ _ (W64 i) with "Hwg_post") as "[HH _]".
     { set_solver. }
 
     assert (i < length server_γs).

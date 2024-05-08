@@ -101,7 +101,7 @@ Proof.
        *)
       assert (H : Z.ge (uint.Z (word.sub x idx)) 1).
       { subst x. word. }
-      replace (uint.Z (word.sub _ (I64 1))) with (uint.Z versS.(Slice.sz) - uint.Z idx - 1); last first.
+      replace (uint.Z (word.sub _ (W64 1))) with (uint.Z versS.(Slice.sz) - uint.Z idx - 1); last first.
       { subst x. word. }
       replace (Z.to_nat _) with ((length vers) - (S (uint.nat idx)))%nat; last first.
       { rewrite HversLen. word. }
@@ -144,7 +144,7 @@ Proof.
   }
   { (* Loop entry. *)
     unfold P.
-    iExists (I64 0, false, "").
+    iExists (W64 0, false, "").
     iExists _.
     iFrame.
     iPureIntro.

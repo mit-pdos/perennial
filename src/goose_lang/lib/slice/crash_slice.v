@@ -55,9 +55,9 @@ Theorem wpc_forSlice (I: u64 -> iProp Σ) Φc' stk E1 s t q (vs: list V) (body: 
       {{{ I i ∗ ⌜(uint.nat i < length vs)%nat⌝ ∗
                 ⌜vs !! uint.nat i = Some x⌝ }}}
         body #i (to_val x) @ stk; E1
-      {{{ RET #(); I (word.add i (I64 1)) }}}
+      {{{ RET #(); I (word.add i (W64 1)) }}}
       {{{ Φc' }}}) -∗
-    {{{ I (I64 0) ∗ own_slice_small s t q vs }}}
+    {{{ I (W64 0) ∗ own_slice_small s t q vs }}}
       forSlice t body (slice_val s) @ stk; E1
     {{{ RET #(); I s.(Slice.sz) ∗ own_slice_small s t q vs }}}
     {{{ Φc' }}}.
@@ -81,7 +81,7 @@ Proof.
   autorewrite with len in Hslen.
   clear Heqz; generalize dependent z.
   intros z Hzrange.
-  assert (uint.Z (I64 z) = z) by (rewrite /I64; word).
+  assert (uint.Z (W64 z) = z) by (rewrite /W64; word).
   (iLöb as "IH" forall (z Hzrange H)).
   wpc_if_destruct.
   - wpc_pures.
@@ -107,7 +107,7 @@ Proof.
           wpc_pures.
           { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
           assert (uint.Z (z + 1) = uint.Z z + 1) by word.
-          replace (word.add z 1) with (I64 (z + 1)) by word.
+          replace (word.add z 1) with (W64 (z + 1)) by word.
           iSpecialize ("IH" $! (z+1) with "[] []").
           { iPureIntro; word. }
           { iPureIntro; word. }
@@ -117,8 +117,8 @@ Proof.
     { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
     { iSpecialize ("HΦcI" with "[$]"). iLeft in "HΦ". iApply "HΦ". eauto. }
     iRight in "HΦ".
-    replace (I64 (uint.Z s.(Slice.sz))) with s.(Slice.sz); last first.
-    { rewrite /I64 word.of_Z_unsigned //. }
+    replace (W64 (uint.Z s.(Slice.sz))) with s.(Slice.sz); last first.
+    { rewrite /W64 word.of_Z_unsigned //. }
     iApply ("HΦ" with "[$]").
 Qed.
 

@@ -72,7 +72,7 @@ Proof.
     { wp_if_true.
       wp_storeField.
       iSplit; first done.
-      replace (I64 0) with (if b' then (I64 0) else (word.add sidcur (I64 1))) by by rewrite Eb'.
+      replace (W64 0) with (if b' then (W64 0) else (word.add sidcur (W64 1))) by by rewrite Eb'.
       iNamedAccu.
     }
     { wp_if_false.

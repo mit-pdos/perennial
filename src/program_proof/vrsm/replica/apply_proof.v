@@ -26,7 +26,7 @@ own_slice_small op_sl byteT q op_bytes -∗
   (⌜apply_postcond ops op⌝ -∗ own_int_log γ (ops ++ [op]) ={∅,⊤∖↑pbN}=∗
      (∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             own_slice_small op_sl byteT q op_bytes -∗
-                Φ (#(I64 0), slice_val reply_sl)%V)))
+                Φ (#(W64 0), slice_val reply_sl)%V)))
 ∗
 (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ own_slice_small op_sl byteT q op_bytes -∗
                                      Φ (#err, (slice_val unused_sl))%V )) -∗
@@ -292,7 +292,7 @@ Proof.
   wp_apply (wp_forSlice (λ i, I i ∗ [∗ list] j ↦ v ∈ (drop (uint.nat i) l), ϕ (j + uint.nat i) v) %I
              with "[] [$Hsl Hl HI]").
   2: { rewrite drop_0.
-       replace (uint.nat (I64 0)) with (0) by word.
+       replace (uint.nat (W64 0)) with (0) by word.
        setoid_rewrite <- plus_n_O. iFrame. }
   {
     clear Φ.
@@ -585,7 +585,7 @@ Proof.
     rewrite Hclerkss_sz.
     unfold clerkIdx.
     rewrite Hclerkss_len in Hclerkss_sz.
-    replace (clerks_sl.(Slice.sz)) with (I64 (32)); last first.
+    replace (clerks_sl.(Slice.sz)) with (W64 (32)); last first.
     {
       unfold numClerks in Hclerkss_sz.
       word.
@@ -620,7 +620,7 @@ Proof.
             ∃ (err:u64) γsrv',
             ⌜backups !! uint.nat i = Some γsrv'⌝ ∗
             readonly (own_slice_elt errs_sl i uint64T 1 err) ∗
-            □ if (decide (err = I64 0)) then
+            □ if (decide (err = W64 0)) then
               is_accepted_lb γsrv'.(r_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [_])
             else
               True
@@ -700,7 +700,7 @@ Proof.
       }
 
       iEval (replace (#err) with (to_val err) by done).
-      replace (I64 (uint.nat i)) with (i) by word.
+      replace (W64 (uint.nat i)) with (i) by word.
       wp_apply (wp_SliceSet_elt with "Herr").
       iIntros "Herr".
       wp_pures.
@@ -747,7 +747,7 @@ Proof.
               "Hj" ∷ j_ptr ↦[uint64T] #j ∗
               "%Hj_ub" ∷ ⌜uint.nat j ≤ length clerks⌝ ∗
               "Herr" ∷ err_ptr ↦[uint64T] #err ∗
-              "#Hrest" ∷ □ if (decide (err = (I64 0)%Z)) then
+              "#Hrest" ∷ □ if (decide (err = (W64 0)%Z)) then
                 (∀ (k:u64) γsrv', ⌜uint.nat k ≤ uint.nat j⌝ -∗ ⌜conf !! (uint.nat k) = Some γsrv'⌝ -∗
                   is_accepted_lb γsrv'.(r_pb) st.(server.epoch) (st.(server.ops_full_eph) ++ [_]))
               else
@@ -812,7 +812,7 @@ Proof.
     destruct (bool_decide (_)) as [] eqn:Herr; wp_pures.
     {
       rewrite bool_decide_eq_true in Herr.
-      replace (err0) with (I64 0%Z) by naive_solver.
+      replace (err0) with (W64 0%Z) by naive_solver.
       wp_pures.
       wp_load; wp_store.
       iLeft.
@@ -1103,7 +1103,7 @@ Proof using Type*.
   }
   iIntros (err reply).
   iIntros "(Hcred & Hcred2 & Hcred3 & Hreply & Hpost)".
-  destruct (decide (reply.(ApplyReply.err) = I64 0)).
+  destruct (decide (reply.(ApplyReply.err) = W64 0)).
   { (* no error *)
     iNamed "Hreply".
     rewrite e.

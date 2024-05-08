@@ -105,7 +105,7 @@ Theorem wp_forUpto (I: u64 -> iProp Σ) stk E (start max:u64) (l:loc) (body: val
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜uint.Z i < uint.Z max⌝ }}}
         body #() @ stk; E
-      {{{ RET #true; I (word.add i (I64 1)) ∗ l ↦[uint64T] #i }}}) -∗
+      {{{ RET #true; I (word.add i (W64 1)) ∗ l ↦[uint64T] #i }}}) -∗
   {{{ I start ∗ l ↦[uint64T] #start }}}
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
        body) @ stk; E
@@ -157,8 +157,8 @@ Theorem wp_simpleFor (I: u64 -> iProp Σ) (max:u64) (body: val) :
   (∀ (l:loc) (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜uint.Z i < uint.Z max⌝ }}}
         body #l
-      {{{ RET #true; I (word.add i (I64 1)) ∗ l ↦[uint64T] #i }}}) -∗
-  {{{ I (I64 0) }}}
+      {{{ RET #true; I (word.add i (W64 1)) ∗ l ↦[uint64T] #i }}}) -∗
+  {{{ I (W64 0) }}}
     (let: "i" := ref_to uint64T #0 in
      (for: (λ:<>, ![uint64T] (Var "i") < #max)%E;
            (λ:<>, (Var "i") <-[uint64T] ![uint64T] (Var "i") + #1)%E :=
@@ -286,8 +286,8 @@ Theorem wpc_forUpto (I I': u64 -> iProp Σ) stk E1 (start max:u64) (l:loc) (body
   (∀ (i:u64),
       {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜uint.Z i < uint.Z max⌝ }}}
         body #() @ stk; E1
-      {{{ RET #true; I (word.add i (I64 1)) ∗ l ↦[uint64T] #i }}}
-      {{{ I' i ∨ I' (word.add i (I64 1)) }}}) -∗
+      {{{ RET #true; I (word.add i (W64 1)) ∗ l ↦[uint64T] #i }}}
+      {{{ I' i ∨ I' (word.add i (W64 1)) }}}) -∗
   {{{ I start ∗ l ↦[uint64T] #start }}}
     (for: (λ:<>, #max > ![uint64T] #l)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l + #1)%V :=
        body) @ stk; E1

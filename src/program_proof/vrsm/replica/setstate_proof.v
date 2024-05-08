@@ -31,7 +31,7 @@ Lemma wp_Clerk__SetState γ γsrv ck args_ptr (prevEpoch epoch committedNextInde
     Clerk__SetState #ck #args_ptr
   {{{
         (err:u64), RET #err;
-        □(if (decide (err = I64 0)) then
+        □(if (decide (err = W64 0)) then
             is_epoch_lb γsrv.(r_pb) epoch
           else
             True)
@@ -318,7 +318,7 @@ Proof.
     wp_loadField.
 
     iDestruct "HΨ" as (prevEpoch) "(%Henc_snap &  %Hlen_nooverflow & %Hle & #Hprop_lb & #Hprop_facts & #Hprim_facts & #Hin_conf & #HcommitFacts & HΨ)".
-    replace (args.(SetStateArgs.nextIndex)) with (I64 (length (get_rwops opsfull))) by word.
+    replace (args.(SetStateArgs.nextIndex)) with (W64 (length (get_rwops opsfull))) by word.
 
     assert (uint.nat st.(server.epoch) < uint.nat args.(SetStateArgs.epoch)) as HepochIneq.
     (* FIXME: should be trivial, almost `word` proof. Have (a ≠ b) and ¬(a < b) *)
