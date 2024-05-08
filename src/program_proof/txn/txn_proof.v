@@ -1683,7 +1683,7 @@ Proof.
     apply map_Forall_insert_1_2 in Hvalids; assumption.
 Qed.
 
-Lemma unsigned_U8 z : int.Z (U8 z) = word.wrap (word:=u8_instance.u8) z.
+Lemma unsigned_U8 z : int.Z (U8 z) = @word.wrap 8 _ _ z.
 Proof.
   unfold U8; rewrite word.unsigned_of_Z; auto.
 Qed.

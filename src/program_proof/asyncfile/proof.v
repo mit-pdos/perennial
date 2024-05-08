@@ -255,7 +255,7 @@ Lemma write_step N γ fname somedata olddata data P Q idx durableIndex closeRequ
   own_close_req_token γ ∗
   own_vol_data γ data ∗
   own_AsyncFile_ghost N γ P fname data (word.add idx 1) durableIndex closeRequested closed ∗
-  own_escrow_token γ (u64_instance.u64.(word.add) idx 1) ∗
+  own_escrow_token γ (word.add idx 1) ∗
   is_write_inv N γ (word.add idx 1) Q
 .
 Proof.

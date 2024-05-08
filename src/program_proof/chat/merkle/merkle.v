@@ -467,8 +467,7 @@ Proof.
     iDestruct (own_slice_small_sz with "HId") as "%Hlen_Id".
 
     (* Rewrite this early since it appears in multiple sub-terms. *)
-    replace (u64_instance.u64.(word.sub) (u64_instance.u64.(word.sub)
-      sl_ChildHashes.(Slice.sz) 1) loopIdx) with
+    replace (word.sub (word.sub sl_ChildHashes.(Slice.sz) 1) loopIdx) with
       (U64 (length list_dim0 - 1 - int.nat loopIdx)) by word.
 
     wp_apply (wp_SliceGet with "[$Hsl_dim0]"); [done|];
@@ -477,7 +476,7 @@ Proof.
 
     wp_if_destruct.
     { wp_store. iApply "HΦ2". by iFrame "#∗". }
-    replace (u64_instance.u64.(word.sub) 256 1) with (U64 255) in Heqb;
+    replace (word.sub 256 1) with (U64 255) in Heqb;
       [|word]; rename Heqb into Hsz_sl_dim1'.
     wp_apply (wp_IsValidHashSl with "[$Hro_sl_dim1 $Hsep_dim1]").
       iIntros (ok) "H".
@@ -607,7 +606,7 @@ Proof.
     rewrite (drop_S _ pos _ _).
     2: { rewrite <-Hlook_pos. f_equal. word. }
     (* TODO: is there a good way of extracting this goal automatically? *)
-    replace (S (length proof.(PathProof.Id) - int.nat (u64_instance.u64.(word.add) loopIdx 1))) with
+    replace (S (length proof.(PathProof.Id) - int.nat (word.add loopIdx 1))) with
       ((length proof.(PathProof.Id) - int.nat loopIdx)%nat) by word.
     exists tr.
     split; [|done].
