@@ -121,7 +121,7 @@ Proof.
     iFrame "Hx Hy". iExists (S i).
     iSplit.
     { iPureIntro. word. }
-    replace (word.add i 1) with (U64 (S i)) by word.
+    replace (word.add i 1) with (I64 (S i)) by word.
     iFrame.
     case_bool_decide as Heq.
     + rewrite bool_decide_true; first done.

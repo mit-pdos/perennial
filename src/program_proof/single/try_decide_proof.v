@@ -449,7 +449,7 @@ Proof.
       iModIntro.
       iIntros (???) "#Hcommitted".
       iDestruct (big_sepS_sepS with "Hrejected") as "Hrejected2".
-      iDestruct (big_sepS_elem_of _ _ (U64 pn'') with "Hrejected2") as "Hrejected3".
+      iDestruct (big_sepS_elem_of _ _ (I64 pn'') with "Hrejected2") as "Hrejected3".
       { set_solver. }
       iAssert ([∗ set] x ∈ S, rejected γ x (int.nat pn''))%I with "[Hrejected3]" as "HmajorityRejected".
       {

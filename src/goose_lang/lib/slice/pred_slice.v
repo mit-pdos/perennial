@@ -90,8 +90,8 @@ Theorem wp_forSlice {stk E} (I: u64 → iProp Σ) s q xs (body: val) :
   (∀ (i: u64) v x,
       {{{ I i ∗ Ψ v x }}}
         body #i (to_val v) @ stk; E
-      {{{ RET #(); I (word.add i (U64 1)) ∗ Ψ v x }}}) -∗
-    {{{ I (U64 0) ∗ is_pred_slice s q xs }}}
+      {{{ RET #(); I (word.add i (I64 1)) ∗ Ψ v x }}}) -∗
+    {{{ I (I64 0) ∗ is_pred_slice s q xs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) ∗ is_pred_slice s q xs }}}.
 Proof.

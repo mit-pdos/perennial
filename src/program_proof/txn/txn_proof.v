@@ -1683,9 +1683,9 @@ Proof.
     apply map_Forall_insert_1_2 in Hvalids; assumption.
 Qed.
 
-Lemma unsigned_U8 z : int.Z (U8 z) = word.wrap (word:=u8_instance.u8) z.
+Lemma unsigned_U8 z : int.Z (I8 z) = word.wrap (word:=u8_instance.u8) z.
 Proof.
-  unfold U8; rewrite word.unsigned_of_Z; auto.
+  unfold I8; rewrite word.unsigned_of_Z; auto.
 Qed.
 
 Theorem wp_bitToByte (off: u64) (b: bool) :
@@ -1695,7 +1695,7 @@ Theorem wp_bitToByte (off: u64) (b: bool) :
   }}}
     bitToByte #off #b
   {{{
-    RET #(U8 (if b then (1 ≪ int.Z off) else 0));
+    RET #(I8 (if b then (1 ≪ int.Z off) else 0));
     True
   }}}.
 Proof.
@@ -1709,7 +1709,7 @@ Proof.
   }
   wp_pures.
   assert (
-    int.Z (word.slu (U8 1) (u8_from_u64 off)) = int.Z (U8 (1 ≪ int.Z off))
+    int.Z (word.slu (I8 1) (u8_from_u64 off)) = int.Z (I8 (1 ≪ int.Z off))
   ) as Harith.
   {
     rewrite /u8_from_u64 word.unsigned_slu.

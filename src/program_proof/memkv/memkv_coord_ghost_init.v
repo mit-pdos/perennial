@@ -11,8 +11,8 @@ Section memkv_coord_ghost_init_proof.
 Context `{!gooseGlobalGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.
 
 Definition coord_SpecList γkv : plist (pprod u64 RpcSpec) :=
-  pcons (ppair (U64 uCOORD_ADD) (is_coord_server_addSpec γkv))
-  $ pcons (ppair (U64 uCOORD_GET) (is_coord_server_getSpec γkv))
+  pcons (ppair (I64 uCOORD_ADD) (is_coord_server_addSpec γkv))
+  $ pcons (ppair (I64 uCOORD_GET) (is_coord_server_getSpec γkv))
   $ pnil.
 
 Lemma coord_server_ghost_init host (γkv : gname) :

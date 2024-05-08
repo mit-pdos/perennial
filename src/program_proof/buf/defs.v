@@ -9,7 +9,7 @@ Definition inode_bytes := Z.to_nat 128.
 Definition inode_buf := vec u8 inode_bytes.
 Definition inode_to_vals {ext: ffi_syntax} (i:inode_buf) : list val :=
   fmap b2val (vec_to_list i).
-Definition inode_buf0 : inode_buf := vreplicate inode_bytes (U8 0).
+Definition inode_buf0 : inode_buf := vreplicate inode_bytes (I8 0).
 #[global]
 Instance inode_witness : Inhabited inode_buf := populate inode_buf0.
 
@@ -123,7 +123,7 @@ Record buf := {
 }.
 
 Definition get_bit (b0 : u8) (off : u64) : bool :=
-  if decide (U8 1 = word.and (word.sru b0 (u8_from_u64 off)) (U8 1))
+  if decide (I8 1 = word.and (word.sru b0 (u8_from_u64 off)) (I8 1))
   then true
   else false.
 

@@ -85,7 +85,7 @@ Proof.
                     "Hreplies_sl" ∷ own_slice_small replies_sl ptrT 1 reply_ptrs ∗
                     "Hreplies" ∷ (ghost_var γescrow 1 () ∨ [∗ list] i ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts),
                     ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
-                                              (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
+                                              (if decide (reply.(enterNewEpochReply.err) = (I64 0)) then
                                                 enterNewEpoch_post γ γsrv' reply newepoch
                                               else
                                                 True)
@@ -282,12 +282,12 @@ Proof.
                  ∃ (W: gset nat) (latestReply_loc:loc),
                  "%HW_in_range" ∷ ⌜∀ s, s ∈ W → s < int.nat i⌝ ∗
                  "%HW_size_nooverflow" ∷ ⌜(size W) ≤ int.nat i⌝ ∗
-                 "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(U64 (size W)) ∗
+                 "HnumSuccesses" ∷ numSuccesses_ptr ↦[uint64T] #(I64 (size W)) ∗
                  "HlatestReply_loc" ∷ latestReply_ptr ↦[ptrT] #latestReply_loc ∗
                  "Hreplies" ∷ ([∗ list] j ↦ reply_ptr ; γsrv' ∈ reply_ptrs ; γ.(s_hosts) ,
                   ⌜int.nat i ≤ j⌝ →
                  ⌜reply_ptr = null⌝ ∨ (∃ reply, (enterNewEpochReply.own reply_ptr reply 1) ∗
-                                           (if decide (reply.(enterNewEpochReply.err) = (U64 0)) then
+                                           (if decide (reply.(enterNewEpochReply.err) = (I64 0)) then
                                              enterNewEpoch_post γ γsrv' reply newepoch
                                            else
                                              True)
@@ -361,7 +361,7 @@ Proof.
               apply (f_equal int.Z) in Heqb3.
               rewrite Z_u64 in Heqb3.
               2:{ word. }
-              replace (int.Z (U64 0)) with (0%Z) in Heqb3 by word.
+              replace (int.Z (I64 0)) with (0%Z) in Heqb3 by word.
               word.
             }
             apply size_empty_inv in Hsz.
@@ -501,7 +501,7 @@ Proof.
               iPureIntro.
               word.
             }
-            replace (word.add (size W) 1) with (U64 (size W + 1)%nat) by word.
+            replace (word.add (size W) 1) with (I64 (size W + 1)%nat) by word.
             iFrame.
 
             iSplitL "Hreplies".
@@ -643,7 +643,7 @@ Proof.
                   iPureIntro.
                   word.
                 }
-                replace (word.add (size W) 1) with (U64 (size W + 1)%nat) by word.
+                replace (word.add (size W) 1) with (I64 (size W + 1)%nat) by word.
                 iFrame.
 
                 iSplitL "Hreplies".
@@ -771,7 +771,7 @@ Proof.
                   iPureIntro.
                   word.
                 }
-                replace (word.add (size W) 1) with (U64 (size W + 1)%nat) by word.
+                replace (word.add (size W) 1) with (I64 (size W + 1)%nat) by word.
                 iFrame.
 
                 iSplitL "Hreplies".
@@ -907,7 +907,7 @@ Proof.
               iPureIntro.
               word.
             }
-            replace (word.add (size W) 1) with (U64 (size W + 1)%nat) by word.
+            replace (word.add (size W) 1) with (I64 (size W + 1)%nat) by word.
             iFrame.
 
             (* XXX: copy/pasted *)

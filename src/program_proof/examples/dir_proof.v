@@ -178,7 +178,7 @@ Section goose.
       "%Hlen" ∷ ⌜length inode_refs = num_inodes⌝ ∗
       "Hro_state" ∷ dir_state l alloc_ref inode_refs ∗
       "#Hinodes" ∷ ([∗ list] i ↦ inode_ref ∈ inode_refs,
-        is_inode inodeN inode_ref (Pinode γblocks γused i) (U64 (Z.of_nat i))) ∗
+        is_inode inodeN inode_ref (Pinode γblocks γused i) (I64 (Z.of_nat i))) ∗
       "#Halloc" ∷ is_allocator (Palloc γused)
         allocΨ allocN alloc_ref (rangeSet num_inodes (sz-num_inodes)) γalloc ∗
       "#Hinv" ∷ ncinv dirN (∃ σ, dir_inv γblocks σ ∗ P σ)
@@ -189,7 +189,7 @@ Section goose.
     "Hinodes" ∷ (∃ s_inodes,
                     "%Hinode_len" ∷ ⌜length s_inodes = num_inodes⌝ ∗
                     "Hinodes" ∷ ([∗ list] i↦s_inode ∈ s_inodes,
-                   "Hinode_cinv" ∷ inode_cinv (U64 (Z.of_nat i)) s_inode ∗
+                   "Hinode_cinv" ∷ inode_cinv (I64 (Z.of_nat i)) s_inode ∗
                     "HPinode" ∷ Pinode γblocks γused i s_inode)) ∗
     "Halloc" ∷ alloc_crash_cond_no_later (Palloc γused) allocΨ (rangeSet num_inodes (sz-num_inodes)) post_crash ∗
     "Hs_inode" ∷ dir_inv γblocks σ
@@ -210,7 +210,7 @@ Section goose.
       "Hd_inv" ∷ dir_inv γblocks dir ∗
       "Hinodes" ∷ (∃ s_inodes,
                       [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
-                     pre_inode inode_ref (U64 (Z.of_nat i)) s_inode ∗
+                     pre_inode inode_ref (I64 (Z.of_nat i)) s_inode ∗
                   Pinode γblocks γused i s_inode) ∗
       "Halloc" ∷ (∃ s_alloc,
                      "Halloc_mem" ∷ is_allocator_mem_pre alloc_ref s_alloc ∗
@@ -294,10 +294,10 @@ Section goose.
         ++ iPureIntro. rewrite app_length; simpl. lia.
         ++ rewrite big_sepL_app. iFrame "Hinodes".
            repeat rewrite big_sepL_singleton.
-           replace (Z.of_nat n) with (int.Z (U64 n)) by word.
+           replace (Z.of_nat n) with (int.Z (I64 n)) by word.
            rewrite Hinode_len.
            replace (n+0)%nat with n by word.
-           replace (Z.of_nat n) with (int.Z (U64 n)) by word.
+           replace (Z.of_nat n) with (int.Z (I64 n)) by word.
            iDestruct (init_inode with "Hinode") as "Hinode".
            iFrame.
     }
@@ -474,16 +474,16 @@ Section goose.
   Lemma wpc_openInodes d s_inodes :
     length s_inodes = num_inodes →
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
-          inode_cinv (U64 (Z.of_nat i)) s_inode)
+          inode_cinv (I64 (Z.of_nat i)) s_inode)
       }}}
       openInodes (disk_val d) @ ⊤
     {{{ inode_s inode_refs, RET (slice_val inode_s);
         own_slice_small inode_s ptrT 1 inode_refs ∗
         [∗ list] i↦inode_ref;s_inode ∈ inode_refs;s_inodes,
-            pre_inode inode_ref (U64 (Z.of_nat i)) s_inode
+            pre_inode inode_ref (I64 (Z.of_nat i)) s_inode
     }}}
     {{{ ([∗ list] i↦s_inode ∈ s_inodes,
-          inode_cinv (U64 (Z.of_nat i)) s_inode) }}}.
+          inode_cinv (I64 (Z.of_nat i)) s_inode) }}}.
   Proof.
     iIntros (? Φ Φc) "Hinode_cinvs HΦ".
     rewrite /openInodes; wpc_pures.
@@ -527,17 +527,17 @@ Section goose.
       { crash_case. iLeft. iFrame. by iApply pre_inodes_to_cinv. }
       wpc_bind (load_ty _ _). wpc_frame. wp_load. iModIntro. iNamed 1.
       wpc_bind (inode.Open _ _).
-      change (int.Z (U64 5)) with (Z.of_nat num_inodes) in Hbound.
+      change (int.Z (I64 5)) with (Z.of_nat num_inodes) in Hbound.
       list_elem s_inodes n as s_inode.
       rewrite [drop (int.nat n) s_inodes](drop_S _ s_inode); last by auto.
       iDestruct (big_sepL_cons with "Hinode_cinvs") as "[Hs_inode Hinode_cinvs]".
       wpc_apply (inode_proof.wpc_Open with "[Hs_inode]").
-      { replace (U64 $ int.nat n + 0) with n by word.
+      { replace (I64 $ int.nat n + 0) with n by word.
         iFrame. }
       iSplit.
       { iLeft in "HΦ". iIntros "Hs_inode".
         iDestruct (big_sepL_cons (λ k y, inode_cinv (int.nat n + k) y) with "[Hs_inode $Hinode_cinvs]") as "Hinode_cinvs".
-        { replace (U64 $ int.nat n + 0) with n by word.
+        { replace (I64 $ int.nat n + 0) with n by word.
           iFrame. }
         iApply ("HΦ").
         iLeft. iFrame.
@@ -590,14 +590,14 @@ Section goose.
         iExists _. iFrame.
       - iApply (big_sepL_mono with "Hinode_cinvs").
         iIntros (???) "Hpre".
-        change (int.Z (U64 5)) with 5%Z in Hbound'.
+        change (int.Z (I64 5)) with 5%Z in Hbound'.
         iExactEq "Hpre".
         f_equal; len.
         rewrite H /num_inodes.
         replace (int.nat i `min` 5)%nat with (int.nat i) by lia.
         f_equal. }
     iIntros "!> (Hinv&Haddr)". iNamed "Hinv".
-    change (int.Z (U64 5)) with 5%Z.
+    change (int.Z (I64 5)) with 5%Z.
     rewrite -> take_ge by word.
     rewrite -> drop_ge by word.
     wpc_frame_compl "Hinodes".

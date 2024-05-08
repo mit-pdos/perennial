@@ -700,7 +700,7 @@ Theorem wp_Inode__mkHdr {stk E} l addr_s addrs :
     Inode__mkHdr #l @ stk; E
   {{{ s b, RET (slice_val s);
       is_block s 1 b ∗
-      ⌜block_encodes b ([EncUInt64 (U64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
+      ⌜block_encodes b ([EncUInt64 (I64 $ length addrs)] ++ (EncUInt64 <$> addrs))⌝ ∗
       "addrs" ∷ l ↦[Inode :: "addrs"] (slice_val addr_s) ∗
       "Haddrs" ∷ own_slice addr_s uint64T 1 addrs
   }}}.

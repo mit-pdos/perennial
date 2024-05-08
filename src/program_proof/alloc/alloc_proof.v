@@ -7,14 +7,14 @@ From Goose.github_com.mit_pdos.go_journal Require Import alloc.
 
 Lemma Z_u8_to_u64 x : int.Z (u8_to_u64 x) = int.Z x.
 Proof.
-  rewrite /u8_to_u64 /U64.
-  rewrite /U64.
+  rewrite /u8_to_u64 /I64.
+  rewrite /I64.
   rewrite word.unsigned_of_Z_nowrap //.
   pose proof (word.unsigned_range x).
   lia.
 Qed.
 
-Lemma and_1_u8 (x: u8) : 0 ≤ int.Z (word.and x (U8 1)) ≤ 1.
+Lemma and_1_u8 (x: u8) : 0 ≤ int.Z (word.and x (I8 1)) ≤ 1.
 Proof.
   assert (Lt ≠ Gt) by congruence.
   assert (Eq ≠ Gt) by congruence.
@@ -48,9 +48,9 @@ Lemma wp_MkAlloc (bitmap_s: Slice.t) (data: list u8) :
   8 * Z.of_nat (length data) < 2^64 →
   {{{ own_slice_small bitmap_s byteT 1 (b2val <$> data) }}}
     MkAlloc (slice_val bitmap_s)
-  {{{ l, RET #l; is_alloc (U64 (8 * length data)) l }}}.
+  {{{ l, RET #l; is_alloc (I64 (8 * length data)) l }}}.
 Proof.
-  set (max := U64 (8 * length data)).
+  set (max := I64 (8 * length data)).
   intros Hlen_lb Hlen_ub.
   iIntros (Φ) "Hs HΦ".
   wp_call.
@@ -147,7 +147,7 @@ Proof.
   wp_pures.
   iApply own_slice_to_small in "Hs".
   replace (replicate (int.nat (word.divu max 8)) (zero_val byteT))
-          with (b2val <$> replicate (int.nat (word.divu max 8)) (U8 0));
+          with (b2val <$> replicate (int.nat (word.divu max 8)) (I8 0));
     last first.
   { rewrite fmap_replicate //. }
   wp_apply (wp_MkAlloc with "[$Hs]").

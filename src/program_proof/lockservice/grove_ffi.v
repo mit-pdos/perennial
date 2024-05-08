@@ -9,7 +9,7 @@ Require Import Decimal Ascii String DecimalString.
 Axiom Read : val.
 Axiom Write : val.
 Axiom AtomicAppend : val.
-Axiom U64ToString : val.
+Axiom I64ToString : val.
 Axiom GetServer : val.
 Axiom AllocServer : val.
 
@@ -85,7 +85,7 @@ Axiom wpc_AtomicAppend : ∀ filename content_old content (content_sl:Slice.t) q
 
 Definition u64_to_string : u64 -> string := λ u, NilZero.string_of_int (Z.to_int (int.Z u)).
 
-(* Spec for U64ToString will be annoying *)
+(* Spec for I64ToString will be annoying *)
 Axiom wp_U64ToString : ∀ (u:u64),
   {{{
        True

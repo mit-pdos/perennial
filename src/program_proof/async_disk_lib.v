@@ -498,7 +498,7 @@ Proof.
   - iModIntro. iRight in "HQ". iApply "HQ".
     iFrame.
     destruct s; simpl in Hsz.
-    replace sz with (U64 4096).
+    replace sz with (I64 4096).
     + iDestruct (block_array_to_slice_raw with "Hmapsto") as "[? %]".
       rewrite /is_block /own_slice_small. iFrame.
       iPureIntro. simpl. split; first done. simpl in Hwf. word.

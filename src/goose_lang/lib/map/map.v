@@ -327,7 +327,7 @@ Theorem wp_MapLen' stk E(mv:val) (m:gmap K val * val) :
   }}}
     MapLen' mv @ stk ; E
   {{{
-    RET #(U64 (size m.1)); ⌜size m.1 = int.nat (size m.1)⌝
+    RET #(I64 (size m.1)); ⌜size m.1 = int.nat (size m.1)⌝
   }}}.
 Proof using IntoValComparable0.
   iIntros (Φ) "%Hmapval HΦ".
@@ -720,7 +720,7 @@ Proof using IntoValComparable0.
                   ⌜int.nat s = size m ∧ (int.Z s < 2^64-1)%Z⌝)%I
   with "Hm [Hlen]").
   { (* I ∅ *)
-    iExists (U64 0). iFrame.
+    iExists (I64 0). iFrame.
     by iPureIntro. }
   { (* inductive step *)
     clear.

@@ -501,11 +501,11 @@ Opaque PeanoNat.Nat.div.
     }
     rewrite Hoff0.
     unfold block_bytes in *.
-    change (word.divu 0 8) with (U64 0).
-    change (word.add 0 (Z.to_nat 4096 * 8)%nat) with (U64 (4096 * 8)).
-    change (word.sub (4096 * 8) 1) with (U64 32767).
-    change (word.divu 32767 8) with (U64 4095).
-    change (word.add 4095 1) with (U64 4096).
+    change (word.divu 0 8) with (I64 0).
+    change (word.add 0 (Z.to_nat 4096 * 8)%nat) with (I64 (4096 * 8)).
+    change (word.sub (4096 * 8) 1) with (I64 32767).
+    change (word.divu 32767 8) with (I64 4095).
+    change (word.add 4095 1) with (I64 4096).
     rewrite firstn_all2.
     2: { rewrite length_Block_to_vals /block_bytes. word. }
     rewrite skipn_O //.
@@ -736,7 +736,7 @@ Qed.
 Lemma valid_block_off off :
   int.Z off < block_bytes * 8 →
   valid_off KindBlock off →
-  off = U64 0.
+  off = I64 0.
 Proof.
   intros Hbound.
   rewrite /valid_off => Hvalid_off.
@@ -747,7 +747,7 @@ Proof.
 Qed.
 
 Lemma is_bufData_block b off (d: bufDataT KindBlock) :
-  is_bufData_at_off b off d ↔ off = U64 0 ∧ bufBlock b = d.
+  is_bufData_at_off b off d ↔ off = I64 0 ∧ bufBlock b = d.
 Proof.
   dependent destruction d.
   rewrite /is_bufData_at_off /=.
@@ -803,10 +803,10 @@ Qed.
 
 Lemma mask_bit_ok (b: u8) (bit: u64) :
   int.Z bit < 8 →
-  word.and b (word.slu (U8 1) (u8_from_u64 bit)) =
+  word.and b (word.slu (I8 1) (u8_from_u64 bit)) =
   if default false (byte_to_bits b !! int.nat bit) then
-    U8 (2^(int.nat bit))
-  else U8 0.
+    I8 (2^(int.nat bit))
+  else I8 0.
 Proof.
   intros Hle.
   apply (inj int.Z).
@@ -815,10 +815,10 @@ Qed.
 
 Lemma masks_different (bit:u64) :
   int.Z bit < 8 →
-  U8 (2^int.nat bit ) ≠ U8 0.
+  I8 (2^int.nat bit ) ≠ I8 0.
 Proof.
   intros Hbound Heq%(f_equal int.Z).
-  change (int.Z (U8 0)) with 0 in Heq.
+  change (int.Z (I8 0)) with 0 in Heq.
   move: Heq.
   bit_cases bit; vm_compute; by inversion 1.
 Qed.
@@ -1233,7 +1233,7 @@ Proof. reflexivity. Qed.
 Lemma valid_block_off_addr a :
   valid_addr a →
   valid_off KindBlock (addrOff a) →
-  addrOff a = U64 0.
+  addrOff a = I64 0.
 Proof.
   destruct 1 as [? _].
   apply valid_block_off; auto.

@@ -8,8 +8,8 @@ From Perennial.goose_lang Require Import grove_ffi_adequacy.
 Section program.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 
-Definition P_Hello (r : dbmap) := ∃ v, r = {[ (U64 0) := v ]}.
-Definition Q_Hello (r w : dbmap) := w = {[ (U64 0) := Nil ]}.
+Definition P_Hello (r : dbmap) := ∃ v, r = {[ (I64 0) := v ]}.
+Definition Q_Hello (r w : dbmap) := w = {[ (I64 0) := Nil ]}.
 
 Theorem wp_hello txn tid r γ τ :
   {{{ own_txn txn tid r γ τ ∗ ⌜P_Hello r⌝ ∗ txnmap_ptstos τ r }}}
@@ -52,7 +52,7 @@ Proof.
   iApply "HΦ".
   iFrame.
   iModIntro.
-  iExists {[ (U64 0) := Nil ]}.
+  iExists {[ (I64 0) := Nil ]}.
   rewrite big_sepM_singleton.
   iFrame.
   iPureIntro.
@@ -62,9 +62,9 @@ Qed.
 
 Theorem wp_Hello (txn : loc) γ :
   ⊢ {{{ own_txn_uninit txn γ }}}
-    <<< ∀∀ (v : dbval), dbmap_ptsto γ (U64 0) 1 v >>>
+    <<< ∀∀ (v : dbval), dbmap_ptsto γ (I64 0) 1 v >>>
       Hello #txn @ ↑mvccN
-    <<< ∃∃ (ok : bool), if ok then dbmap_ptsto γ (U64 0) 1 Nil else dbmap_ptsto γ (U64 0) 1 v >>>
+    <<< ∃∃ (ok : bool), if ok then dbmap_ptsto γ (I64 0) 1 Nil else dbmap_ptsto γ (I64 0) 1 v >>>
     {{{ RET #(); own_txn_uninit txn γ }}}.
 Proof.
   iIntros "!>".
@@ -89,7 +89,7 @@ Proof.
   iMod "HAU".
   iModIntro.
   iDestruct "HAU" as (v) "[Hdbpt HAU]".
-  iExists {[ (U64 0) := v ]}.
+  iExists {[ (I64 0) := v ]}.
   iSplitL "Hdbpt".
   { unfold dbmap_ptstos.
     rewrite big_sepM_singleton.
@@ -146,7 +146,7 @@ Proof using heapGS0 mvcc_ghostG0 Σ.
   wp_apply (wp_Hello with "Htxn").
   iApply ncfupd_mask_intro; first set_solver.
   iIntros "Hmask".
-  iDestruct (big_sepM_lookup _ _ (U64 0) with "Hdbpts") as "Hdbpt".
+  iDestruct (big_sepM_lookup _ _ (I64 0) with "Hdbpts") as "Hdbpt".
   { rewrite lookup_gset_to_gmap_Some.
     split; [set_solver | reflexivity].
   }

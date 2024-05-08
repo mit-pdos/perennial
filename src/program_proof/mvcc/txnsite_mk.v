@@ -45,7 +45,7 @@ Proof.
   { iNext.
     unfold own_txnsite.
     iExists (Slice.mk tids 0 8), [], ∅.
-    replace (int.nat (U64 0)) with 0%nat by word.
+    replace (int.nat (I64 0)) with 0%nat by word.
     iFrame "∗%#".
     iPureIntro.
     rewrite fmap_nil.

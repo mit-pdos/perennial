@@ -221,10 +221,10 @@ Section jrnl.
     end.
 
   Definition gen_lt (max: u64) (Hpf: 0 < int.Z max) : {n: u64 | int.Z n < int.Z max }.
-  Proof. exists (U64 0). auto. Defined.
+  Proof. exists (I64 0). auto. Defined.
 
   Definition gen_le (max: u64) : {n: u64 | int.Z n ≤ int.Z max }.
-  Proof. exists (U64 0). word. Defined.
+  Proof. exists (I64 0). word. Defined.
 
   Global Instance allocnum_gen (max : u64) Hpf : GenPred u64 (state*global_state) (λ _ n, int.Z n < int.Z max) :=
     fun _ σ => Some (gen_lt max Hpf).

@@ -222,7 +222,7 @@ Proof using.
     )%I
     with "Hismap [Hmap Hn]").
   {
-    iExists (U64 0), m, ∅, ∅, am.
+    iExists (I64 0), m, ∅, ∅, am.
     rewrite big_sepM2_empty.
     iFrame.
     iPureIntro.

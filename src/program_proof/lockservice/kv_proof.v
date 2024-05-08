@@ -24,11 +24,11 @@ Implicit Types (γ : kvservice_names).
 Local Notation "k [[ γ ]]↦ '_'" := (∃ v, k [[γ]]↦ v)%I
 (at level 20, format "k  [[ γ ]]↦ '_'") : bi_scope.
 
-Definition Get_Pre γ va : RPCValsC -> iProp Σ := (λ args, args.(U64_1) [[γ.(ks_kvMapGN)]]↦ va)%I.
-Definition Get_Post γ va : RPCValsC -> u64 -> iProp Σ := λ args v, (⌜v = va⌝ ∗ args.(U64_1) [[γ.(ks_kvMapGN)]]↦ v)%I.
+Definition Get_Pre γ va : RPCValsC -> iProp Σ := (λ args, args.(I64_1) [[γ.(ks_kvMapGN)]]↦ va)%I.
+Definition Get_Post γ va : RPCValsC -> u64 -> iProp Σ := λ args v, (⌜v = va⌝ ∗ args.(I64_1) [[γ.(ks_kvMapGN)]]↦ v)%I.
 
-Definition Put_Pre γ : RPCValsC -> iProp Σ := (λ args, args.(U64_1) [[γ.(ks_kvMapGN)]]↦ _)%I.
-Definition Put_Post γ : RPCValsC -> u64 -> iProp Σ := (λ args _, args.(U64_1) [[γ.(ks_kvMapGN)]]↦ args.(U64_2))%I.
+Definition Put_Pre γ : RPCValsC -> iProp Σ := (λ args, args.(I64_1) [[γ.(ks_kvMapGN)]]↦ _)%I.
+Definition Put_Post γ : RPCValsC -> u64 -> iProp Σ := (λ args _, args.(I64_1) [[γ.(ks_kvMapGN)]]↦ args.(I64_2))%I.
 
 (* FIXME: this is currently just a placeholder *)
 Definition KVClerk_own γ ck_ptr (host : string) : iProp Σ :=
@@ -252,9 +252,9 @@ Qed.
 
 Definition is_kvserver_host γ (host:string) : iProp Σ :=
     "#Hputspec" ∷ (
-      handler_is2 host (U64 1) γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)) ∗
+      handler_is2 host (I64 1) γ.(ks_rpcGN) (Put_Pre γ) (Put_Post γ)) ∗
     "#Hgetspec" ∷ (∀ va,
-      handler_is2 host (U64 2) γ.(ks_rpcGN) (Get_Pre γ va) (Get_Post γ va)) ∗
+      handler_is2 host (I64 2) γ.(ks_rpcGN) (Get_Pre γ va) (Get_Post γ va)) ∗
     "#Hrpcserver" ∷ is_RPCServer γ.(ks_rpcGN).
 
 Lemma KVClerk__Get_spec (kck:loc) (srv:string) (key va:u64) γ  :
@@ -272,7 +272,7 @@ Proof.
   wp_pures. 
   iNamed "Hclerk".
   repeat wp_loadField.
-  wp_apply (RPCClient__MakeRequest_spec _ _ _ {|U64_1:=_ ; U64_2:= _ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
+  wp_apply (RPCClient__MakeRequest_spec _ _ _ {|U64_1:=_ ; I64_2:= _ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
   {
     iNamed "Hserver".
     iApply "Hgetspec".
@@ -305,7 +305,7 @@ Proof.
   wp_pures. 
   iNamed "Hclerk".
   repeat wp_loadField.
-  wp_apply (RPCClient__MakeRequest_spec _ _ _ {| U64_1:= _; U64_2:=_ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
+  wp_apply (RPCClient__MakeRequest_spec _ _ _ {| I64_1:= _; I64_2:=_ |} γ.(ks_rpcGN) with "[] [Hpre Hcl]"); eauto.
   {
     iNamed "Hserver". iApply "Hputspec".
   }

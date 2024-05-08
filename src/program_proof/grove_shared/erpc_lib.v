@@ -60,7 +60,7 @@ Implicit Types γreq : erpc_request_names.
 
 (** Ownership of *all* the server-side sequence number tracking tokens *)
 Definition RPCServer_lseq γrpc (lastSeqM:gmap u64 u64) : iProp Σ :=
-  ([∗ set] cid ∈ (fin_to_set u64), cid fm[[γrpc.(lseq)]]↦ int.nat (default (U64 0) (lastSeqM !! cid)))%I.
+  ([∗ set] cid ∈ (fin_to_set u64), cid fm[[γrpc.(lseq)]]↦ int.nat (default (I64 0) (lastSeqM !! cid)))%I.
 
 Definition eRPCServer_own_ghost γrpc (lastSeqM:gmap u64 u64) lastReplyM : iProp Σ :=
     "Hlseq_own" ∷ RPCServer_lseq γrpc lastSeqM

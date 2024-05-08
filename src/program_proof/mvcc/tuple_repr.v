@@ -1,10 +1,10 @@
 From Perennial.program_proof.mvcc Require Import tuple_prelude.
 
-Definition TID_SENTINEL := (U64 18446744073709551615).
-Definition RET_SUCCESS := (U64 0).
-Definition RET_NONEXIST := (U64 1).
-Definition RET_RETRY := (U64 100).
-Definition RET_UNSERIALIZABLE := (U64 200).
+Definition TID_SENTINEL := (I64 18446744073709551615).
+Definition RET_SUCCESS := (I64 0).
+Definition RET_NONEXIST := (I64 1).
+Definition RET_RETRY := (I64 100).
+Definition RET_UNSERIALIZABLE := (I64 200).
 
 Section repr.
 Context `{!heapGS Σ, !mvcc_ghostG Σ}.

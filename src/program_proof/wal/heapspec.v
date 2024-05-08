@@ -175,10 +175,10 @@ Proof.
 Qed.
 
 Definition gh_heapblock0 (bs: list Block) : gmap u64 heap_block :=
-  list_to_map (imap (λ (i:nat) b, (U64 (513 + i), HB b [])) bs).
+  list_to_map (imap (λ (i:nat) b, (I64 (513 + i), HB b [])) bs).
 
 Definition crash_heap0 (bs: list Block) : gmap u64 Block :=
-  list_to_map (imap (λ (i:nat) b, (U64 (513 + i), b)) bs).
+  list_to_map (imap (λ (i:nat) b, (I64 (513 + i), b)) bs).
 
 Lemma fst_imap {A B C} (f: nat → B) (g: A → C) (l: list A) :
   (imap (λ i x, (f i, g x)) l).*1 = f <$> seq 0 (length l).
@@ -211,7 +211,7 @@ Local Hint Resolve  disk_index_nodup : core.
 Lemma lookup_init_disk (bs: list Block) (idx: nat) b :
   513 + Z.of_nat (length bs) < 2^64 →
   bs !! idx = Some b →
-  list_to_map (M:=gmap _ _) (imap (λ (i0 : nat) (x0 : Block), (513 + i0, x0)) bs) !! int.Z (U64 (513 + idx)) = Some b.
+  list_to_map (M:=gmap _ _) (imap (λ (i0 : nat) (x0 : Block), (513 + i0, x0)) bs) !! int.Z (I64 (513 + idx)) = Some b.
 Proof.
   intros Hbound Hlookup.
   pose proof (lookup_lt_Some _ _ _ Hlookup) as Hlt.
@@ -245,7 +245,7 @@ Lemma wal_heap_inv_init (γwalnames: wal_names) bs :
                        "Hheap_inv" ∷ wal_heap_inv γheapnames (log_state0 bs) ∗
                        "wal_heap_locked" ∷ is_locked_walheap γheapnames
                          {| locked_wh_σd := (log_state0 bs).(log_state.d);
-                            locked_wh_σtxns := [(U64 0, [])]|} ∗
+                            locked_wh_σtxns := [(I64 0, [])]|} ∗
                        "wal_heap_h_pointsto" ∷ ([∗ map] l↦v ∈ gh_heapblock0 bs,
                           l ↪[γheapnames.(wal_heap_h)] v) ∗
                        "wal_heap_crash_heaps" ∷ ghost_var γheapnames.(wal_heap_crash_heaps)
@@ -264,7 +264,7 @@ Proof.
   iMod (ghost_map_insert_big gh with "wal_heap_h") as "(wal_heap_h & wal_heap_pointsto)".
   { apply map_disjoint_empty_r. }
   rewrite right_id_L.
-  iMod (ghost_var_update (list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs), [(U64 0, [])])
+  iMod (ghost_var_update (list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs), [(I64 0, [])])
        with "wal_heap_txns") as "[wal_heap_txns1 wal_heap_txns2]".
   iMod (ghost_var_update crash_heaps with "wal_heap_crash_heaps")
        as "H".
@@ -289,7 +289,7 @@ Proof.
     split; intros.
     - destruct H as [i [-> Hlookup]].
       apply rangeSet_lookup in Hlookup; word.
-    - exists (U64 x).
+    - exists (I64 x).
       rewrite -> rangeSet_lookup by word.
       word.
   }

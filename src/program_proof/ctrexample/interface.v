@@ -10,7 +10,7 @@ Section interface.
 
 Context `{!inG Σ mono_natUR}.
 
-Definition localhost : chan := U64 53021371269120.
+Definition localhost : chan := I64 53021371269120.
 
 Definition counter_lb γ (x:nat) : iProp Σ := own γ (◯MN x).
 Definition counter_own γ (x:nat) : iProp Σ := own γ (●MN x).
@@ -47,6 +47,6 @@ Defined.
 
 Definition is_CtrServer_urpc γurpc_gn γ : iProp Σ :=
   is_urpc_spec_pred γurpc_gn localhost 0 (FAISpec γ) ∗
-  is_urpc_dom (γurpc_gn) {[ U64 0 ]}.
+  is_urpc_dom (γurpc_gn) {[ I64 0 ]}.
 
 End interface.

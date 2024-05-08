@@ -15,7 +15,7 @@ Module Slice.
   Global Instance _eta: Settable _ := settable! mk <ptr; sz; cap>.
   Global Instance _witness: Inhabited _ := populate (mk inhabitant inhabitant inhabitant).
   Notation extra s := (int.Z (cap s) - int.Z (sz s)).
-  Definition nil := mk null (U64 0) (U64 0).
+  Definition nil := mk null (I64 0) (I64 0).
 End Slice.
 Add Printing Constructor Slice.t.
 
@@ -584,15 +584,15 @@ Proof.
   iDestruct (own_slice_small_sz with "Hs1") as %Hsz1.
   iDestruct (own_slice_small_sz with "Hs2") as %Hsz2.
   simpl in Hsz1, Hsz2.
-  iApply (own_slice_small_take_drop _ _ _ (U64 (length vs1))).
+  iApply (own_slice_small_take_drop _ _ _ (I64 (length vs1))).
   { word. }
-  replace (int.nat (U64 (length vs1))) with (length vs1) by word.
+  replace (int.nat (I64 (length vs1))) with (length vs1) by word.
   rewrite -> take_app_le by word.
   rewrite -> drop_app_ge, Nat.sub_diag by word.
   rewrite Hsz1.
   rewrite drop_0.
   rewrite -> take_ge by word.
-  replace (U64 (int.nat n)) with n; first by iFrame.
+  replace (I64 (int.nat n)) with n; first by iFrame.
   apply (inj int.Z).
   word.
 Qed.
@@ -918,8 +918,8 @@ Theorem wp_forSlice_mut (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
       {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
         body #i x @ stk; E
-      {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
-    {{{ I (U64 0) }}}
+      {{{ (v : val), RET v; I (word.add i (I64 1)) }}}) -∗
+    {{{ I (I64 0) }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) }}}.
 Proof.
@@ -935,7 +935,7 @@ Proof.
   clear Heqz; generalize dependent z.
   intros z Hzrange Hlookup'.
   pose proof (word.unsigned_range s.(Slice.sz)).
-  assert (int.Z (U64 z) = z) by (rewrite /U64; word).
+  assert (int.Z (I64 z) = z) by (rewrite /I64; word).
   iDestruct ("Hclo" with "[$]") as "Hi0".
   iRename "Hi0" into "Hiz".
   rewrite Hlen' in Hslen.
@@ -958,15 +958,15 @@ Proof.
     assert (int.Z (z + 1) = int.Z z + 1).
     { rewrite word.unsigned_of_Z.
       rewrite wrap_small; try lia. }
-    replace (word.add z 1) with (U64 (z + 1)) by word.
+    replace (word.add z 1) with (I64 (z + 1)) by word.
     iSpecialize ("IH" $! (z+1) with "[] []").
     { iPureIntro; lia. }
     { iPureIntro; lia. }
     wp_apply ("IH" with "HΦ Hiz1").
   - assert (z = int.Z s.(Slice.sz)) by lia; subst z.
     iApply "HΦ"; iFrame.
-    replace (U64 (int.Z s.(Slice.sz))) with s.(Slice.sz); auto.
-    unfold U64.
+    replace (I64 (int.Z s.(Slice.sz))) with s.(Slice.sz); auto.
+    unfold I64.
     rewrite word.of_Z_unsigned; auto.
 Qed.
 
@@ -975,8 +975,8 @@ Theorem wp_forSlice (I: u64 -> iProp Σ) stk E s t q vs (body: val) :
       {{{ I i ∗ ⌜int.Z i < int.Z s.(Slice.sz)⌝ ∗
                 ⌜vs !! int.nat i = Some x⌝ }}}
         body #i x @ stk; E
-      {{{ (v : val), RET v; I (word.add i (U64 1)) }}}) -∗
-    {{{ I (U64 0) ∗ own_slice_small s t q vs }}}
+      {{{ (v : val), RET v; I (word.add i (I64 1)) }}}) -∗
+    {{{ I (I64 0) ∗ own_slice_small s t q vs }}}
       forSlice t body (slice_val s) @ stk; E
     {{{ RET #(); I s.(Slice.sz) ∗ own_slice_small s t q vs }}}.
 Proof.
@@ -1079,7 +1079,7 @@ Proof.
   iApply "HΦ"; iFrame.
 Qed.
 
-Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = U64 0.
+Lemma u64_nat_0 (n: u64) : 0%nat = int.nat n -> n = I64 0.
 Proof.
   intros.
   apply (f_equal Z.of_nat) in H.
@@ -1133,7 +1133,7 @@ Qed.
 Lemma wp_SliceCopy_full stk E sl t q vs dst vs' :
   {{{ own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs' ∗ ⌜length vs = length vs'⌝ }}}
     SliceCopy t (slice_val dst) (slice_val sl) @ stk; E
-  {{{ RET #(U64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs }}}.
+  {{{ RET #(I64 (length vs)); own_slice_small sl t q vs ∗ own_slice_small dst t 1 vs }}}.
 Proof.
   iIntros (Φ) "(Hsrc&Hdst&%) HΦ".
   wp_call.
@@ -1153,7 +1153,7 @@ Proof.
     word. }
   iIntros "(Hdst & Hsrc)".
   wp_pures.
-  replace (Slice.sz sl) with (U64 (length vs)) by word.
+  replace (Slice.sz sl) with (I64 (length vs)) by word.
   iApply "HΦ".
   rewrite -> take_ge by word.
   iFrame.

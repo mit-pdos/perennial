@@ -126,7 +126,7 @@ Definition ApplyAsBackup_core_spec γ γsrv args opsfull op Q (Φ : u64 -> iProp
    "#Hprop_lb" ∷ is_proposal_lb γ.(s_pb) args.(ApplyAsBackupArgs.epoch) opsfull ∗
    "#Hprop_facts" ∷ is_proposal_facts γ.(s_pb) args.(ApplyAsBackupArgs.epoch) opsfull ∗
    "#Hprim_facts" ∷ is_proposal_facts_prim γ.(s_prim) args.(ApplyAsBackupArgs.epoch) opsfull ∗
-   "HΨ" ∷ ((is_accepted_lb γsrv.(r_pb) args.(ApplyAsBackupArgs.epoch) opsfull -∗ Φ (U64 0)) ∧
+   "HΨ" ∷ ((is_accepted_lb γsrv.(r_pb) args.(ApplyAsBackupArgs.epoch) opsfull -∗ Φ (I64 0)) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ err))
     )%I
 .
@@ -181,7 +181,7 @@ Definition SetState_core_spec γ γsrv args opsfull :=
     (
       (is_epoch_lb γsrv.(r_pb) args.(SetStateArgs.epoch) -∗
        Φ 0) ∧
-      (∀ err, ⌜err ≠ U64 0⌝ -∗ Φ err))
+      (∀ err, ⌜err ≠ I64 0⌝ -∗ Φ err))
     )%I
 .
 
@@ -214,9 +214,9 @@ Definition GetState_core_spec γ γsrv (epoch:u64) ghost_epoch_lb :=
             is_proposal_lb γ.(s_pb) epochacc opsfull -∗
             commitIndex_facts γ epochacc committedNextIndex -∗
             ⌜has_snap_encoding snap (get_rwops opsfull)⌝ -∗
-            ⌜length (get_rwops opsfull) = int.nat (U64 (length (get_rwops opsfull)))⌝ -∗
+            ⌜length (get_rwops opsfull) = int.nat (I64 (length (get_rwops opsfull)))⌝ -∗
                  Φ (GetStateReply.mkC 0 (length (get_rwops opsfull)) committedNextIndex snap)) ∧
-      (∀ err, ⌜err ≠ U64 0⌝ -∗ Φ (GetStateReply.mkC err 0 0 [])))
+      (∀ err, ⌜err ≠ I64 0⌝ -∗ Φ (GetStateReply.mkC err 0 0 [])))
     )
     )%I
 .
@@ -351,14 +351,14 @@ Defined.
 Definition is_pb_rpcs_pre ρ : (u64 -d> replica_system_names -d> replica_server_names -d> iPropO Σ) :=
   (λ host γ γsrv,
   ∃ γrpc,
-  is_urpc_spec_pred γrpc host (U64 0) (ApplyAsBackup_spec γ γsrv) ∗
-  is_urpc_spec_pred γrpc host (U64 1) (SetState_spec γ γsrv) ∗
-  is_urpc_spec_pred γrpc host (U64 2) (GetState_spec γ γsrv) ∗
-  is_urpc_spec_pred γrpc host (U64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
-  is_urpc_spec_pred γrpc host (U64 4) (Apply_spec γ) ∗
-  is_urpc_spec_pred γrpc host (U64 6) (ApplyRo_spec γ) ∗
-  is_urpc_spec_pred γrpc host (U64 7) (IncreaseCommit_spec γ γsrv) ∗
-  is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ; (U64 4) ; (U64 6) ; (U64 7) ]})%I
+  is_urpc_spec_pred γrpc host (I64 0) (ApplyAsBackup_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (I64 1) (SetState_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (I64 2) (GetState_spec γ γsrv) ∗
+  is_urpc_spec_pred γrpc host (I64 3) (BecomePrimary_spec_pre γ γsrv ρ) ∗
+  is_urpc_spec_pred γrpc host (I64 4) (Apply_spec γ) ∗
+  is_urpc_spec_pred γrpc host (I64 6) (ApplyRo_spec γ) ∗
+  is_urpc_spec_pred γrpc host (I64 7) (IncreaseCommit_spec γ γsrv) ∗
+  is_urpc_dom γrpc {[ (I64 0) ; (I64 1) ; (I64 2) ; (I64 3) ; (I64 4) ; (I64 6) ; (I64 7) ]})%I
 .
 
 Instance is_pb_rpcs_pre_contr : Contractive is_pb_rpcs_pre.
@@ -562,7 +562,7 @@ Definition is_SetStateAndUnseal_fn own_StateMachine (set_state_fn:val) P : iProp
         (P epoch_prev σ_prev sealed ={⊤∖↑pbAofN}=∗ P epoch σ false ∗ Q) ∗
         own_StateMachine epoch_prev σ_prev sealed P
   }}}
-    set_state_fn (slice_val snap_sl) #(U64 (length σ)) #epoch
+    set_state_fn (slice_val snap_sl) #(I64 (length σ)) #epoch
   {{{
         RET #();
         own_StateMachine epoch σ false P ∗
@@ -656,7 +656,7 @@ Definition is_Primary γ γsrv (s:server.t) clerks_sl : iProp Σ:=
 .
 
 
-Definition no_overflow (x:nat) : Prop := int.nat (U64 x) = x.
+Definition no_overflow (x:nat) : Prop := int.nat (I64 x) = x.
 Hint Unfold no_overflow : arith.
 
 (* physical (volatile) state; meant to be unfolded in code proof *)
@@ -665,7 +665,7 @@ Definition own_Server (s:loc) (st:server.t) γ γsrv mu : iProp Σ :=
     (committedNextIndex_cond isPrimary_cond:loc) (opAppliedConds_loc:loc) (opAppliedConds:gmap u64 loc),
   (* non-persistent physical *)
   "Hepoch" ∷ s ↦[Server :: "epoch"] #st.(server.epoch) ∗
-  "HnextIndex" ∷ s ↦[Server :: "nextIndex"] #(U64 (length (get_rwops st.(server.ops_full_eph)))) ∗
+  "HnextIndex" ∷ s ↦[Server :: "nextIndex"] #(I64 (length (get_rwops st.(server.ops_full_eph)))) ∗
   "HisPrimary" ∷ s ↦[Server :: "isPrimary"] #st.(server.isPrimary) ∗
   "HcanBecomePrimary" ∷ s ↦[Server :: "canBecomePrimary"] #st.(server.canBecomePrimary) ∗
   "Hsealed" ∷ s ↦[Server :: "sealed"] #st.(server.sealed) ∗

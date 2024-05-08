@@ -45,10 +45,10 @@ Defined.
 Context `{!urpcregG Σ}.
 
 Definition is_host γ (host:u64) (epoch_tok : u64 → iProp Σ) (host_inv:u64 → iProp Σ): iProp Σ :=
-  is_urpc_spec_pred γ.(urpc_gn) host (U64 0) (AcquireEpoch_spec epoch_tok host_inv) ∗
-  is_urpc_spec_pred γ.(urpc_gn) host (U64 1) (Get_spec host_inv) ∗
-  is_urpc_spec_pred γ.(urpc_gn) host (U64 2) trivial_spec ∗
-  is_urpc_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
+  is_urpc_spec_pred γ.(urpc_gn) host (I64 0) (AcquireEpoch_spec epoch_tok host_inv) ∗
+  is_urpc_spec_pred γ.(urpc_gn) host (I64 1) (Get_spec host_inv) ∗
+  is_urpc_spec_pred γ.(urpc_gn) host (I64 2) trivial_spec ∗
+  is_urpc_dom γ.(urpc_gn) {[ (I64 0) ; (I64 1) ; (I64 2)]}
 .
 
 Definition is_Clerk γ (ck:loc) epoch_tok host_inv : iProp Σ :=

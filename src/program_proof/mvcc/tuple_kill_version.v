@@ -128,7 +128,7 @@ Proof.
     erewrite extend_last_Some; last apply Hlast.
     rewrite -app_assoc.
     set phys' := phys ++ _ ++ _.
-    iExists false, (U64 (int.Z tid + 1)), tidgc, _, phys'.
+    iExists false, (I64 (int.Z tid + 1)), tidgc, _, phys'.
     iFrame "Hphys Hptuple".
     iNamed "Hwellformed".
     iSplit.
@@ -158,7 +158,7 @@ Proof.
           apply Znot_le_gt in n0.
           rewrite lookup_app_r; last first.
           { rewrite HlenN replicate_length. word. }
-          replace (int.Z (U64 _)) with (int.Z tid + 1) in Htidx by word.
+          replace (int.Z (I64 _)) with (int.Z tid + 1) in Htidx by word.
           assert (Etidx : int.Z tidx = int.Z tid + 1) by word.
           replace (int.nat tidx - _ - _)%nat with 0%nat; last first.
           { rewrite replicate_length. word. }

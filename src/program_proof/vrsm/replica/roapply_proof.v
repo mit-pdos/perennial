@@ -25,7 +25,7 @@ own_slice_small op_sl byteT q op_bytes -∗
   (own_int_log γ ops ={∅,⊤∖↑pbN}=∗
      □(∀ reply_sl, own_slice_small reply_sl byteT 1 (compute_reply ops op) -∗
             own_slice_small op_sl byteT q op_bytes -∗
-                Φ (#(U64 0), slice_val reply_sl)%V)))
+                Φ (#(I64 0), slice_val reply_sl)%V)))
 ∗
 (∀ (err:u64) unused_sl, ⌜err ≠ 0⌝ -∗ own_slice_small op_sl byteT q op_bytes -∗
                                      Φ (#err, (slice_val unused_sl))%V )) -∗

@@ -187,7 +187,7 @@ Theorem wp_WriteBool s (vs: list u8) (b: bool) :
   {{{ own_slice s byteT 1 vs }}}
     WriteBool (slice_val s) #b
   {{{ s', RET (slice_val s');
-      own_slice s' byteT 1 (vs ++ [if b then U8 1 else U8 0]) }}}.
+      own_slice s' byteT 1 (vs ++ [if b then I8 1 else I8 0]) }}}.
 Proof.
   iIntros (Φ) "Hs HΦ". wp_call.
   destruct b; wp_pures.

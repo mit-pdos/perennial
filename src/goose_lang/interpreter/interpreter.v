@@ -380,7 +380,7 @@ Section interpreter.
       | Primitive0 p =>
         match p return StateT btstate Error val with
         | PanicOp s => mfail_bt ("Interpret panic: " ++ s)
-        | ArbitraryIntOp => mret (LitV (LitInt (U64 1)))
+        | ArbitraryIntOp => mret (LitV (LitInt (I64 1)))
         end
 
       | Primitive1 p e =>

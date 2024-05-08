@@ -193,20 +193,20 @@ Lemma alloc_primary_protocol :
 Proof.
   iMod (fmlist_map_alloc_fin []) as (?) "H".
   iExists {| prim_init_proposal_gn := γ |}.
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "H") as "[Hprop H]".
+  iDestruct (big_sepS_elem_of_acc_impl (I64 0) with "H") as "[Hprop H]".
   { set_solver. }
   iMod (fmlist_ptsto_persist with "Hprop") as "#?".
   iModIntro.
   iSplitL.
   { iApply "H".
     { iModIntro. iIntros. iFrame. }
-    { iIntros. exfalso. replace (int.nat (U64 0)) with 0 in H0 by word. word. }
+    { iIntros. exfalso. replace (int.nat (I64 0)) with 0 in H0 by word. word. }
   }
   by iExists _; iFrame "#".
 Qed.
 
 Lemma alloc_primary_protocol_server :
-  ⊢ |==> ∃ γsrv, own_primary_escrow_ghost γsrv (U64 0)
+  ⊢ |==> ∃ γsrv, own_primary_escrow_ghost γsrv (I64 0)
 .
 Proof.
   iMod (ghost_map_alloc_fin ()) as (?) "H".

@@ -1149,12 +1149,12 @@ Definition own_server_pre γsrv : iProp Σ :=
 .
 
 Lemma paxos_ghost_server_pre_init :
-  ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) []
+  ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (I64 0) []
 .
 Proof.
   iMod (fmlist_map_alloc_fin []) as (γacc) "Hacc".
   iMod (mono_nat_own_alloc 0) as (γepoch) "[Hepoch Hepoch_lb]".
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hacc") as "[Hacc Haccrest]".
+  iDestruct (big_sepS_elem_of_acc_impl (I64 0) with "Hacc") as "[Hacc Haccrest]".
   { set_solver. }
   iDestruct (fmlist_ptsto_get_lb with "Hacc") as "#Hacc_lb".
   iMod (alloc_const_gmap (to_dfrac_agree (DfracOwn 1) ())) as (?) "Hvotes".
@@ -1175,11 +1175,11 @@ Proof.
 Qed.
 
 Definition is_sys_init_witness γsys : iProp Σ :=
-  is_proposal_lb γsys (U64 0) [] ∗ is_proposal_facts γsys (U64 0) [].
+  is_proposal_lb γsys (I64 0) [] ∗ is_proposal_facts γsys (I64 0) [].
 
 Lemma paxos_system_init :
 length config > 0 →
-(∀ γsrv, ⌜γsrv ∈ config⌝ → is_accepted_lb γsrv (U64 0) []) ={⊤}=∗
+(∀ γsrv, ⌜γsrv ∈ config⌝ → is_accepted_lb γsrv (I64 0) []) ={⊤}=∗
     ∃ γsys,
     is_repl_inv γsys ∗
     is_vote_inv γsys ∗
@@ -1196,7 +1196,7 @@ Proof.
   iMod (fmlist_map_alloc_fin []) as (γproposal) "Hproposal".
 
   (* set up proposal for epoch 0 *)
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hproposal") as "[Hprop Hprop_rest]".
+  iDestruct (big_sepS_elem_of_acc_impl (I64 0) with "Hproposal") as "[Hprop Hprop_rest]".
   { set_solver. }
   iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb".
 
@@ -1213,7 +1213,7 @@ Proof.
     {
       iIntros (???).
       exfalso.
-      replace (int.nat (U64 0)) with (0) in H by word.
+      replace (int.nat (I64 0)) with (0) in H by word.
       lia.
     }
     iModIntro.
@@ -1228,7 +1228,7 @@ Proof.
   iMod (inv_alloc with "[Hghost]") as "#$".
   { (* establish is_repl_inv *)
     iNext.
-    iExists [], (U64 0).
+    iExists [], (I64 0).
     simpl.
     iFrame "∗#".
     iExists (set_seq 0 (length config)); iFrame "#".

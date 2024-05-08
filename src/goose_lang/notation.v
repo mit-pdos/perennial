@@ -10,10 +10,10 @@ Global Open Scope Z. (* Make sure everyone gets this scope. *)
 (** Coercions to make programs easier to type. *)
 (* integers by default turn into u64 literals
 
-   note that we can't also make U32 a coercion because otherwise we would have
+   note that we can't also make I32 a coercion because otherwise we would have
    ambiguous paths between Z and base_lit.
  *)
-Coercion U64 : Z >-> u64.
+Coercion I64 : Z >-> u64.
 
 Coercion LitBool : bool >-> base_lit.
 Coercion LitLoc : loc >-> base_lit.
@@ -47,7 +47,7 @@ Notation LamV x e := (RecV BAnon x e) (only parsing).
 Notation LetCtx x e2 := (AppRCtx (LamV x e2)) (only parsing).
 Notation SeqCtx e2 := (LetCtx BAnon e2) (only parsing).
 Notation Match e0 x1 e1 x2 e2 := (Case e0 (Lam x1 e1) (Lam x2 e2)) (only parsing).
-Notation Alloc e := (AllocN (Val $ LitV $ LitInt (U64 1)) e).
+Notation Alloc e := (AllocN (Val $ LitV $ LitInt (I64 1)) e).
 (** Compare-and-set (CAS) returns just a boolean indicating success or failure. *)
 Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
 

@@ -16,7 +16,7 @@ Context `{!heapGS Σ}.
 Context `{!filesysG Σ}.
 
 Definition has_encoding_for_onetime_clerk data cid (args:RPCValsC) :=
-   has_encoding data [EncUInt64 cid ; EncUInt64 2 ; EncUInt64 args.(U64_1) ; EncUInt64 args.(U64_2)].
+   has_encoding data [EncUInt64 cid ; EncUInt64 2 ; EncUInt64 args.(I64_1) ; EncUInt64 args.(I64_2)].
 
 (* TODO: should probably make RPCValC to be nicer than (u64 * (u64 * ())); no need for the unit *)
 
@@ -70,8 +70,8 @@ Definition own_onetime_incr_clerk (ck isrv:loc) (cid:u64) : iProp Σ :=
 .
 
 Variable old_v:u64.
-Definition IncrPreCond : RPCValsC → iProp Σ := (λ a, a.(U64_1) [[γback.(incr_mapGN)]]↦ old_v)%I.
-Definition IncrPostCond : RPCValsC → u64 → iProp Σ := (λ a r, a.(U64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
+Definition IncrPreCond : RPCValsC → iProp Σ := (λ a, a.(I64_1) [[γback.(incr_mapGN)]]↦ old_v)%I.
+Definition IncrPostCond : RPCValsC → u64 → iProp Σ := (λ a r, a.(I64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1))%I.
 
 Definition own_unalloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValsC) : iProp Σ :=
   "cid" ∷ ck ↦[ShortTermIncrClerk :: "cid"] #cid ∗
@@ -79,7 +79,7 @@ Definition own_unalloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCVa
   "incrserver" ∷ ck ↦[ShortTermIncrClerk :: "incrserver"] #isrv ∗
   "#req" ∷ (readonly (ck ↦[ShortTermIncrClerk :: "req"] (#cid,
                                               (#1,
-                                              (#args.(U64_1), (#args.(U64_2), #()), #())))))
+                                              (#args.(I64_1), (#args.(I64_2), #()), #())))))
 .
 
 Definition own_alloc_prepared_onetime_incr_clerk ck isrv (cid:u64) (args:RPCValsC) : iProp Σ :=
@@ -306,7 +306,7 @@ Proof.
   iNamed "HArgs".
   wp_storeField.
   (* Close ref to args field in RPCRequest *)
-  iDestruct (RPCVals_merge with "U64_1 U64_2") as "HArgs".
+  iDestruct (RPCVals_merge with "U64_1 I64_2") as "HArgs".
   iDestruct (Hacc_Args with "HArgs") as "Args".
   clear Hacc_Args Args.
   (* Close ref to req field in ShortTermIncrClerk *)
@@ -330,7 +330,7 @@ Proof.
   iNamed "HArgs".
   wp_storeField.
   (* Close ref to args field in RPCRequest *)
-  iDestruct (RPCVals_merge with "U64_1 U64_2") as "HArgs".
+  iDestruct (RPCVals_merge with "U64_1 I64_2") as "HArgs".
   iDestruct (Hacc_Args with "HArgs") as "Args".
   clear Hacc_Args Args.
   (* Close ref to req field in ShortTermIncrClerk *)
@@ -608,9 +608,9 @@ Qed.
 
 Definition ProxyIncrCrashInvariant (sseq:u64) (args:RPCValsC) : iProp Σ :=
   ("Hfown_oldv" ∷ ("procy_incr_request_" +:+ u64_to_string sseq) f↦ [] ∗
-   "Hpointsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
+   "Hpointsto" ∷ args.(I64_1) [[γ.(incr_mapGN)]]↦ old_v ) ∨
   ("Hfown_oldv" ∷ ∃ data cid γreq, ("procy_incr_request_" +:+ u64_to_string sseq) f↦ data ∗
-   "Hpointsto" ∷ args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+   "Hpointsto" ∷ args.(I64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
    ⌜has_encoding_for_onetime_clerk data cid args⌝ ∗
    RPCClient_own γback.(incr_rpcGN) cid 2 ∗
    RPCRequest_token γreq ∗
@@ -634,7 +634,7 @@ is_RPCServer γback.(incr_rpcGN) -∗
         ProxyIncrServer_core_own_ghost server -∗
         SP ={⊤}=∗
         ProxyIncrServer_core_own_ghost server' ∗
-        args.(U64_1) [[γ.(incr_mapGN)]]↦ (word.add old_v 1)
+        args.(I64_1) [[γ.(incr_mapGN)]]↦ (word.add old_v 1)
       )
   }}}
   {{{
@@ -918,10 +918,10 @@ Proof.
       }
       wpc_pures.
       iDestruct "Hpost" as "[_ HΦ]".
-      iApply ("HΦ" $! (|={⊤}=> args.(U64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
-                       args.(U64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1)
+      iApply ("HΦ" $! (|={⊤}=> args.(I64_1) [[γ.(incr_mapGN)]]↦{1/2} old_v ∗
+                       args.(I64_1) [[γback.(incr_mapGN)]]↦ (word.add old_v 1)
                       )%I
-              {| kvsM:= <[args.(U64_1):=(word.add old_v 1)]> server.(kvsM)|}
+              {| kvsM:= <[args.(I64_1):=(word.add old_v 1)]> server.(kvsM)|}
              ).
       iSplitL "Hincrserver HlastCID".
       { iFrame "HlastCID Hincrserver #". }
@@ -940,7 +940,7 @@ Proof.
       iIntros "Hghost >[Hγpointsto Hγbackpointsto]".
       iNamed "Hghost".
       iDestruct (map_valid with "Hctx Hγpointsto") as %HkInMap.
-      iDestruct (big_sepM_insert_acc _ _ args.(U64_1) old_v with "Hback") as "[Hk Hback]".
+      iDestruct (big_sepM_insert_acc _ _ args.(I64_1) old_v with "Hback") as "[Hk Hback]".
       { done. }
       iDestruct "Hk" as "[Hk|Hk]".
       { (* Impossible case: big_sepM has γback ptsto *)
@@ -961,7 +961,7 @@ Proof.
       apply bool_decide_eq_false in Hlen.
       assert (int.Z content.(Slice.sz) = 0)%Z.
       { apply Znot_lt_ge in Hlen.
-        replace (int.Z (U64 0)) with 0%Z in Hlen by word.
+        replace (int.Z (I64 0)) with 0%Z in Hlen by word.
         word.
       }
       assert (content.(Slice.sz) = 0)%Z by word.

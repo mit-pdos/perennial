@@ -716,9 +716,9 @@ Section proof.
     intros Hnot_bit.
     destruct bufObj as [k [b|data|data]].
     - contradiction.
-    - eexists data, (U64 0, U64 0).
+    - eexists data, (I64 0, I64 0).
       rewrite /data_has_obj //.
-    - eexists data, (U64 0, U64 0).
+    - eexists data, (I64 0, I64 0).
       rewrite /data_has_obj //.
   Qed.
 

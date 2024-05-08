@@ -144,7 +144,7 @@ Proof.
     rewrite Hclerkss_sz.
     unfold clerkIdx.
     rewrite Hclerkss_len in Hclerkss_sz.
-    replace (clerks_sl.(Slice.sz)) with (U64 (32)); last first.
+    replace (clerks_sl.(Slice.sz)) with (I64 (32)); last first.
     {
       unfold numClerks in Hclerkss_sz.
       word.

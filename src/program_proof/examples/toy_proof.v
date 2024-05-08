@@ -13,18 +13,18 @@ Section goose.
   Context `{!stagedG Σ}.
 
   Definition EBlk (addr: u64) :=
-   (∃ v n, "Ha" ∷ int.Z addr d↦ v ∗ "%H0iseven" ∷ ⌜ Block_to_vals v !! O = Some #(U8 n) ∧ Z.even n ⌝)%I.
+   (∃ v n, "Ha" ∷ int.Z addr d↦ v ∗ "%H0iseven" ∷ ⌜ Block_to_vals v !! O = Some #(I8 n) ∧ Z.even n ⌝)%I.
 
   Definition written_slice : list val :=
-    <[int.nat 0:=#(U8 4)]> (replicate (int.nat 4096) (zero_val byteT)).
+    <[int.nat 0:=#(I8 4)]> (replicate (int.nat 4096) (zero_val byteT)).
 
-  Definition written_block : Block := list_to_vec (U8 4 :: replicate (int.nat 4095) (U8 0)).
+  Definition written_block : Block := list_to_vec (I8 4 :: replicate (int.nat 4095) (I8 0)).
 
   Lemma written_slice_to_written_block:
     written_slice = Block_to_vals written_block.
   Proof.
     rewrite /written_slice.
-    change (zero_val byteT) with #(U8 0).
+    change (zero_val byteT) with #(I8 0).
     change (int.nat 4095) with (Z.to_nat 4095).
     rewrite /Block_to_vals /written_block //=.
   Qed.

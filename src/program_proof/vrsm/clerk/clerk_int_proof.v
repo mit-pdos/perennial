@@ -282,7 +282,7 @@ Proof.
     destruct (decide (int.nat config_sl.(Slice.sz) = 0)).
     {
       exfalso.
-      replace (config_sl.(Slice.sz)) with (U64 0) in * by word.
+      replace (config_sl.(Slice.sz)) with (I64 0) in * by word.
       done.
     }
     word.

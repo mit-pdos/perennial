@@ -92,7 +92,7 @@ Proof.
   { iNext.
     unfold P.
     unfold own_tuple.
-    iExists false, (U64 1), (U64 0), [(U64 0, true, "")], [Nil; Nil].
+    iExists false, (I64 1), (I64 0), [(I64 0, true, "")], [Nil; Nil].
     iFrame.
     iSplit.
     { (* Prove [HtupleAbs]. *)
@@ -101,8 +101,8 @@ Proof.
       intros tid Htid.
       assert (H : int.Z tid = 0 ∨ int.Z tid = 1) by word.
       destruct H.
-      - by replace tid with (U64 0) by word.
-      - by replace tid with (U64 1) by word.
+      - by replace tid with (I64 0) by word.
+      - by replace tid with (I64 1) by word.
     }
     iSplit; first done.
     iSplit.

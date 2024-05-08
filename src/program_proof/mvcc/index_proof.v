@@ -384,7 +384,7 @@ Proof.
                     (idx ↦[Index :: "buckets"] (to_val bkts)) ∗
                     ([∗ set] key ∈ filter (λ x, (int.nat n) ≤ hash_modu x)%nat keys_all, ptuple_auth γ (1/2) key [Nil; Nil]) ∗
                     ⌜True⌝)%I
-              _ _ (U64 0) (U64 N_IDX_BUCKET) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
+              _ _ (I64 0) (I64 N_IDX_BUCKET) with "[] [HbktsS Hvchains $buckets $HiRef]"); first done.
   { clear Φ.
     iIntros (i Φ) "!> ((HbktsInv & Hidx & Hvchains & _) & HidxRef & %Hbound) HΦ".
     iDestruct "HbktsInv" as (bktsL) "(HbktsS & %Hlength & HbktsRP)".

@@ -811,7 +811,7 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | ToUInt8Op, LitV (LitInt32 v) => Some $ LitV $ LitByte (u8_from_u32 v)
   | ToUInt8Op, LitV (LitByte v) => Some $ LitV $ LitByte v
   | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString (u8_to_string v)
-  | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (U64 (String.length v))
+  | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (I64 (String.length v))
   | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide ((String.length v) < 2^64))
   | _, _ => None
   end.
@@ -864,7 +864,7 @@ Definition bin_op_eval_string (op : bin_op) (s1 s2 : string) : option base_lit :
   end.
 
 Definition string_to_bytes (s:string): list u8 :=
-  (λ x, U8 $ Ascii.nat_of_ascii x) <$> list_ascii_of_string s.
+  (λ x, I8 $ Ascii.nat_of_ascii x) <$> list_ascii_of_string s.
 
 Definition bin_op_eval_string_word (op : bin_op) (s1 : string) {width} {word: Interface.word width} (w2 : word): option base_lit :=
   match op with
@@ -1066,7 +1066,7 @@ Definition newProphId: transition (state*global_state) proph_id :=
   suchThat (fun '(σ,g) p => p ∉ g.(used_proph_id)).
 
 Instance gen_anyInt Σ: GenPred u64 Σ (fun _ _ => True).
-  refine (fun z _ => Some (U64 z ↾ _)); auto.
+  refine (fun z _ => Some (I64 z ↾ _)); auto.
 Defined.
 
 Definition arbitraryInt {state}: transition state u64 :=
@@ -1328,7 +1328,7 @@ Qed.
 
 Lemma arbitrary_int_step σ g :
   base_step_atomic (ArbitraryInt) σ g []
-            (Val $ LitV $ LitInt $ U64 0) σ g [].
+            (Val $ LitV $ LitInt $ I64 0) σ g [].
 Proof.
   intros.
   constructor 1.

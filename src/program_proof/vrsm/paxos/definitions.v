@@ -71,7 +71,7 @@ Definition applyAsFollower_core_spec γ γsrv args σ (Φ : applyAsFollowerReply
    "#HP" ∷ □ Pwf args.(applyAsFollowerArgs.state) ∗
    (* "%Hno_overflow" ∷ ⌜int.nat args.(applyAsFollowerArgs.nextIndex) < int.nat (word.add args.(applyAsFollowerArgs.nextIndex) 1) ⌝ ∗ *)
    "#Hprop" ∷ is_proposal (config:=γ.(s_hosts)) (N:=N) γ.(s_mp) args.(applyAsFollowerArgs.epoch) σ ∗
-   "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (U64 0))) ∧
+   "HΨ" ∷ ((is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ -∗ Φ (applyAsFollowerReply.mkC (I64 0))) ∧
            (∀ (err:u64), ⌜err ≠ 0⌝ -∗ Φ (applyAsFollowerReply.mkC err)))
     )%I
 .
@@ -161,10 +161,10 @@ Defined.
 
 Definition is_paxos_host (host:u64) γ (γsrv:mp_server_names) : iProp Σ :=
   ∃ γrpc,
-  "#Hdom" ∷ is_urpc_dom γrpc {[ (U64 0); (U64 1); (U64 2) ]} ∗
-  "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) (applyAsFollower_spec γ γsrv) ∗
-  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) (enterNewEpoch_spec γ γsrv) ∗
-  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) (becomeLeader_spec)
+  "#Hdom" ∷ is_urpc_dom γrpc {[ (I64 0); (I64 1); (I64 2) ]} ∗
+  "#H0" ∷ is_urpc_spec_pred γrpc host (I64 0) (applyAsFollower_spec γ γsrv) ∗
+  "#H1" ∷ is_urpc_spec_pred γrpc host (I64 1) (enterNewEpoch_spec γ γsrv) ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (I64 2) (becomeLeader_spec)
 .
 
 Global Instance is_paxos_host_pers host γ γsrv: Persistent (is_paxos_host host γ γsrv) := _.

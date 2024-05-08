@@ -24,7 +24,7 @@ Lemma wp_singleClerk__applyAsFollower ck γ γsrv σ args_ptr args :
     singleClerk__applyAsFollower #ck #args_ptr
   {{{
         reply_ptr reply, RET #reply_ptr; applyAsFollowerReply.own reply_ptr reply 1 ∗
-                                                 □if (decide (reply.(applyAsFollowerReply.err) = (U64 0))) then
+                                                 □if (decide (reply.(applyAsFollowerReply.err) = (I64 0))) then
                                                    is_accepted_lb γsrv args.(applyAsFollowerArgs.epoch) σ
                                                  else
                                                    True

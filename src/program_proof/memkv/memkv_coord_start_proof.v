@@ -95,7 +95,7 @@ Proof.
 
   (* We want to generalize over the loop argument, which is 0, but there are many occurrences of 0.
      This is a hack to only eplace that one occurence. *)
-  pose (k' := U64 0).
+  pose (k' := I64 0).
   assert (k' = 0) as Heqk by auto.
   iEval (rewrite -{-1}Heqk).
   clear Heqk. remember k' as k eqn:Heqk. clear Heqk.
@@ -269,7 +269,7 @@ Proof.
 Qed.
 
 Lemma wp_KVCoordServer__Start (s:loc) (host : u64) γ :
-is_urpc_dom γ.(coord_urpc_gn) {[ U64 1; U64 2 ]} -∗
+is_urpc_dom γ.(coord_urpc_gn) {[ I64 1; I64 2 ]} -∗
 is_coord_server host γ -∗
 is_KVCoordServer s γ -∗
   {{{

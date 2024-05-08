@@ -6,7 +6,7 @@ Section lockservice_proof.
 
 Context `{!kvMapG Σ}.
 Definition lock_inv (γkv : gname) key R : iProp Σ :=
-  ∃ b : bool, kvptsto γkv key (if b then [U8 0] else []) ∗ if b then True else R.
+  ∃ b : bool, kvptsto γkv key (if b then [I8 0] else []) ∗ if b then True else R.
 
 Context (N: namespace).
 

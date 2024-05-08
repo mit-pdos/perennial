@@ -442,7 +442,7 @@ Program Definition Get_proph_spec γ :=
   (∃ (prophV e:u64) γreq Φclient,
     ⌜has_encoding reqData [EncUInt64 e]⌝ ∗
     (Get_req_inv prophV e γ γreq Φclient) ∗
-    (∀ (err v:u64), (if (decide (err = (U64 0) ∧ v = prophV)) then operation_receipt γreq else True) -∗
+    (∀ (err v:u64), (if (decide (err = (I64 0) ∧ v = prophV)) then operation_receipt γreq else True) -∗
                   (∀ l, ⌜has_GetReply_encoding l err v⌝ -∗ Φ l))
   )%I
 .
@@ -500,10 +500,10 @@ Next Obligation.
 Defined.
 
 Definition is_host (host:u64) γ : iProp Σ :=
-  is_urpc_spec_pred γ.(urpc_gn) host (U64 0) (Get_proph_spec γ) ∗
-  is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (U64 1) (Put_spec_erpc γ) ∗
-  is_urpc_spec_pred γ.(urpc_gn) host (U64 2) (GetFreshCID_spec γ) ∗
-  is_urpc_dom γ.(urpc_gn) {[ (U64 0) ; (U64 1) ; (U64 2)]}
+  is_urpc_spec_pred γ.(urpc_gn) host (I64 0) (Get_proph_spec γ) ∗
+  is_erpc_spec γ.(urpc_gn) γ.(erpc_gn) host (I64 1) (Put_spec_erpc γ) ∗
+  is_urpc_spec_pred γ.(urpc_gn) host (I64 2) (GetFreshCID_spec γ) ∗
+  is_urpc_dom γ.(urpc_gn) {[ (I64 0) ; (I64 1) ; (I64 2)]}
 .
 
 Definition own_Clerk γ (ck:loc) : iProp Σ :=
@@ -614,7 +614,7 @@ Proof.
 
   wp_apply (wp_Client__Call_pred _ _ _ _ _ _ _ _ _ _
                           (λ (l:list u8), ∃ v e, ⌜has_GetReply_encoding l e v⌝ ∗
-                                  if (decide (e = (U64 0) ∧ v = prophVal)) then
+                                  if (decide (e = (I64 0) ∧ v = prophVal)) then
                                     operation_receipt _
                                   else
                                     True)%I
@@ -683,7 +683,7 @@ Proof.
   wp_loadField.
   destruct (decide (int.Z err = 0)).
   { (* no error *)
-    replace (err) with (U64 0) by word.
+    replace (err) with (I64 0) by word.
     wp_pures.
 
     wp_pures.

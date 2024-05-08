@@ -73,12 +73,12 @@ Proof.
 Qed.
 
 Theorem word_add1_neq (x: u64) :
-  int.Z x ≠ int.Z (word.add x (U64 1)).
+  int.Z x ≠ int.Z (word.add x (I64 1)).
 Proof.
   simpl.
   destruct (decide (int.Z x + 1 < 2^64)%Z); [ word | ].
   rewrite word.unsigned_add.
-  change (int.Z (U64 1)) with 1%Z.
+  change (int.Z (I64 1)) with 1%Z.
   rewrite /word.wrap.
   lia.
 Qed.

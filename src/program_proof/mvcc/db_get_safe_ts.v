@@ -35,7 +35,7 @@ Proof.
   set P := λ (i : u64), (∃ (tidmin : u64),
     "HminRef" ∷ minRef ↦[uint64T] #tidmin ∗
     "Htidlbs" ∷ [∗ list] sid ∈ (take (int.nat i) sids_all), site_min_tid_lb γ sid (int.nat tidmin))%I.
-  wp_apply (wp_forUpto P _ _ (U64 0) (U64 N_TXN_SITES) sidRef with "[] [HminRef HsidRef]"); first done.
+  wp_apply (wp_forUpto P _ _ (I64 0) (I64 N_TXN_SITES) sidRef with "[] [HminRef HsidRef]"); first done.
   { clear Φ.
     iIntros (i Φ) "!> (Hloop & HsidRef & %Hbound) HΦ".
     iNamed "Hloop".
@@ -62,7 +62,7 @@ Proof.
     wp_load.
     wp_pures.
 
-    replace (U64 (Z.of_nat _)) with i by word.
+    replace (I64 (Z.of_nat _)) with i by word.
     wp_if_destruct.
     - (* Find new min. *)
       wp_store.

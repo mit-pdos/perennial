@@ -17,13 +17,13 @@ Context `{!gooseGlobalGS Σ}.
 Context `{!pbG Σ}.
 
 Definition pb_spec_list γ γsrv :=
-  [ (U64 0, ApplyAsBackup_spec γ γsrv) ;
-    (U64 1, SetState_spec γ γsrv) ;
-    (U64 2, GetState_spec γ γsrv) ;
-    (U64 3, BecomePrimary_spec γ γsrv);
-    (U64 4, Apply_spec γ);
-    (U64 6, ApplyRo_spec γ);
-    (U64 7, IncreaseCommit_spec γ γsrv)].
+  [ (I64 0, ApplyAsBackup_spec γ γsrv) ;
+    (I64 1, SetState_spec γ γsrv) ;
+    (I64 2, GetState_spec γ γsrv) ;
+    (I64 3, BecomePrimary_spec γ γsrv);
+    (I64 4, Apply_spec γ);
+    (I64 6, ApplyRo_spec γ);
+    (I64 7, IncreaseCommit_spec γ γsrv)].
 
 Lemma alloc_pb_rpcs host γsys γsrv :
   host c↦ ∅ ={⊤}=∗
@@ -45,18 +45,18 @@ Qed.
 (* FIXME: make this global, not per-server by changing how to initialize idle replica servers *)
 Definition is_pb_sys_init_witness γ γsrv : iProp Σ :=
   is_sys_init_witness γ.(s_pb) ∗
-  is_in_config γ γsrv (U64 0) ∗
+  is_in_config γ γsrv (I64 0) ∗
   is_proposal_facts_prim γ.(s_prim) 0%Z []
 .
 
 Definition is_server_prealloc_witness γsrv : iProp Σ :=
-  is_accepted_lb γsrv.(r_pb) (U64 0) [] ∗ is_epoch_lb γsrv.(r_pb) 0
+  is_accepted_lb γsrv.(r_pb) (I64 0) [] ∗ is_epoch_lb γsrv.(r_pb) 0
 .
 
 Lemma prealloc_simplepb_server :
   ⊢ |={⊤}=> ∃ γsrv,
   is_server_prealloc_witness γsrv ∗
-  (∀ γ, is_pb_sys_init_witness γ γsrv -∗ own_Server_ghost_f γ γsrv (U64 0) [] false).
+  (∀ γ, is_pb_sys_init_witness γ γsrv -∗ own_Server_ghost_f γ γsrv (I64 0) [] false).
 Proof.
   iMod (pb_ghost_server_pre_init) as (γpb) "(Hpre & #? & #?)".
   iMod (alloc_primary_protocol_server) as (γprim) "Hprim".
@@ -100,7 +100,7 @@ Qed.
 
 Lemma alloc_simplepb_last γsrvs :
   length γsrvs > 0 →
-  (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_accepted_lb γsrv.(r_pb) (U64 0) [] ∗ is_epoch_lb γsrv.(r_pb) 0)
+  (∀ γsrv, ⌜γsrv ∈ γsrvs⌝ → is_accepted_lb γsrv.(r_pb) (I64 0) [] ∗ is_epoch_lb γsrv.(r_pb) 0)
   ={⊤}=∗ ∃ γ,
   is_pb_system_invs γ ∗
   own_op_log γ [] ∗
@@ -176,7 +176,7 @@ Proof.
   iAssert (|={⊤}=> [∗ list] h ∈ initconf (* ++ extrahosts*),
              ∃ γsrv,
            is_server_prealloc_witness γsrv ∗
-           (∀ γ, is_pb_sys_init_witness γ γsrv -∗ own_Server_ghost_f γ γsrv (U64 0) [] false)
+           (∀ γ, is_pb_sys_init_witness γ γsrv -∗ own_Server_ghost_f γ γsrv (I64 0) [] false)
            )%I with "[]" as ">Hpresrvs".
   {
     iApply big_sepL_fupd. iApply big_sepL_impl.

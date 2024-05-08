@@ -714,7 +714,7 @@ Proof.
           "Hkv2" ∷ kvptsto_lock γlk acc "" ∗
           "Hkv1" ∷ kvptsto acc "") ∗
         "%Hdone_dom" ∷ ⌜Permutation (elements sdone) done⌝ ∗
-        "Hdone" ∷ [∗ map] acc ↦ bal ∈ (gset_to_gmap (U64 0) sdone),
+        "Hdone" ∷ [∗ map] acc ↦ bal ∈ (gset_to_gmap (I64 0) sdone),
             kvptsto_lock γlk acc "" ∗
             kvptsto acc (bytes_to_string $ u64_le bal)
             )%I with "[] [$Haccts_slice $kvck Haccs]").
@@ -782,7 +782,7 @@ Proof.
     wp_pures.
 
     wp_loadField.
-    iMod (map_init_many (<[acc0 := bal_total]> (gset_to_gmap (U64 0) sdone))) as (γlog) "[Hmap_ctx Haccs]".
+    iMod (map_init_many (<[acc0 := bal_total]> (gset_to_gmap (I64 0) sdone))) as (γlog) "[Hmap_ctx Haccs]".
     set γ := {| bank_ls_names := γlk;
                 bank_kvptsto := kvptsto;
                 bank_logBalGN := γlog |}.
@@ -814,7 +814,7 @@ Proof.
       iModIntro. iFrame "#".
     }
 
-    iAssert (⌜map_total (gset_to_gmap (U64 0) sdone) = 0⌝)%I as %Hdone_zero_total.
+    iAssert (⌜map_total (gset_to_gmap (I64 0) sdone) = 0⌝)%I as %Hdone_zero_total.
     { iPureIntro. apply map_total_zero.
       intros ?? H.
       rewrite lookup_gset_to_gmap_Some in H.

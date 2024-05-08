@@ -616,11 +616,11 @@ Proof.
   iMod (ghost_map_alloc_fin ()) as (escrow) "Hunused2".
   iMod (ghost_var_alloc data) as (preData) "[HpreData HpreData2]".
   iMod (ghost_var_alloc data) as (volData) "[HvolData HvolData2]".
-  iMod (ghost_var_alloc (U64 0)) as (preIdx) "[HpreIdx HpreIdx2]".
-  iMod (ghost_var_alloc (U64 0)) as (durIdx) "[HdurIdx HdurIdx2]".
+  iMod (ghost_var_alloc (I64 0)) as (preIdx) "[HpreIdx HpreIdx2]".
+  iMod (ghost_var_alloc (I64 0)) as (durIdx) "[HdurIdx HdurIdx2]".
   iMod (ghost_var_alloc ()) as (closeReq) "HcloseReq".
   iMod (ghost_var_alloc ()) as (closed) "Hclosed".
-  iDestruct (big_sepS_delete _ _ (U64 0) with "Hunused1") as "[Hwit1 Hunused1]".
+  iDestruct (big_sepS_delete _ _ (I64 0) with "Hunused1") as "[Hwit1 Hunused1]".
   { set_solver. }
   iMod (ghost_map_points_to_persist with "Hwit1") as "#Hwit1".
   iModIntro.
@@ -630,12 +630,12 @@ Proof.
   rewrite /is_witnesses /own_unused /is_write_witness /own_predurable_index /own_write_token
           /own_escrow_token /own_durable_index /own_predurable_data /own_vol_data /own_close_req_token /=.
   iFrame.
-  iDestruct (big_sepS_delete _ _ (U64 0) with "Hunused2") as "[_ Hunused2]".
+  iDestruct (big_sepS_delete _ _ (I64 0) with "Hunused2") as "[_ Hunused2]".
   { set_solver. }
   iSplitL "Hunused1 Hunused2".
   {
     iDestruct (big_sepS_sep with "[$Hunused1 $Hunused2]") as "Hunused".
-    iApply (big_sepS_delete _ _ (U64 0)).
+    iApply (big_sepS_delete _ _ (I64 0)).
     { set_solver. }
     iSplitR.
     { setoid_rewrite decide_False; first done; word. }
@@ -653,7 +653,7 @@ Proof.
   iIntros.
   replace (int.nat 0) with (0%nat) by word.
   destruct (decide _).
-  { replace (x) with (U64 0).
+  { replace (x) with (I64 0).
     { done. }
     { word. }
   }

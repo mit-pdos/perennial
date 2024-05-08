@@ -16,7 +16,7 @@ Definition dbmap := gmap u64 dbval.
 Definition N_TXN_SITES : Z := 32.
 
 Definition keys_all : gset u64 := fin_to_set u64.
-Definition sids_all : list u64 := U64 <$> seqZ 0 N_TXN_SITES.
+Definition sids_all : list u64 := I64 <$> seqZ 0 N_TXN_SITES.
 
 (* Invariant namespaces. *)
 Definition mvccN := nroot .@ "mvcc".

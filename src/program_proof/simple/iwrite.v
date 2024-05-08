@@ -89,7 +89,7 @@ Theorem wp_Inode__Write γ γtxn ip inum len blk (btxn : loc) (offset : u64) (co
       ( ( let contents' := ((firstn (int.nat offset) contents) ++
                           (firstn (int.nat count) databuf) ++
                           (skipn (int.nat offset + int.nat count) contents))%list in
-        let len' := U64 (Z.max (int.Z len) (int.Z offset + int.Z count)) in
+        let len' := I64 (Z.max (int.Z len) (int.Z offset + int.Z count)) in
         is_inode_mem ip inum len' blk ∗
         is_inode_enc inum len' blk (jrnl_maps_to γtxn) ∗
         is_inode_data len' blk contents' (jrnl_maps_to γtxn) ∗
@@ -226,7 +226,7 @@ Proof.
   {
     iExists _. iFrame.
     iPureIntro.
-    replace (int.nat (U64 0)) with 0 by reflexivity.
+    replace (int.nat (I64 0)) with 0 by reflexivity.
     rewrite take_0. rewrite app_nil_l.
     replace (int.nat offset + 0) with (int.nat offset) by lia.
     rewrite take_drop. done.
@@ -309,7 +309,7 @@ Proof.
     iApply "HΦ". iModIntro. iFrame "Hjrnl". iLeft.
     rewrite Z.max_l.
     2: { revert Heqb2. word. }
-    replace (U64 (int.Z len)) with (len) by word.
+    replace (I64 (int.Z len)) with (len) by word.
     iFrame.
     iSplit.
     2: {

@@ -209,9 +209,14 @@ Global SubClass u8 := @word.rep _ u8_instance.u8.
 compatibility while we're still experimenting *)
 Notation byte := u8 (only parsing).
 
-Definition U64 (x:Z) : u64 := word.of_Z x.
-Definition U32 (x:Z) : u32 := word.of_Z x.
-Definition U8 (x:Z)  : u8  := word.of_Z x.
+Definition I64 (x:Z) : u64 := word.of_Z x.
+Definition I32 (x:Z) : u32 := word.of_Z x.
+Definition I8 (x:Z)  : u8  := word.of_Z x.
+
+(* Compatibility for Goose code that explicitly emits U64/U32/U8 for now *)
+Definition U64 (x:Z) := I64 x.
+Definition U32 (x:Z) := I32 x.
+Definition U8 (x:Z)  := I8 x.
 
 #[global]
 Instance word_eq_dec {width} (word: word width) {word_ok: word.ok word} : EqDecision word.
@@ -293,14 +298,14 @@ Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (int.nat x).
 Definition u8_to_string (x:byte) : String.string := String.String (u8_to_ascii x) String.EmptyString.
 
 (* conversions up *)
-Definition u8_to_u32 (x:byte) : u32 := U32 (int.Z x).
-Definition u8_to_u64 (x:byte) : u64 := U64 (int.Z x).
-Definition u32_to_u64 (x:u32) : u64 := U64 (int.Z x).
+Definition u8_to_u32 (x:byte) : u32 := I32 (int.Z x).
+Definition u8_to_u64 (x:byte) : u64 := I64 (int.Z x).
+Definition u32_to_u64 (x:u32) : u64 := I64 (int.Z x).
 
 (* conversions down *)
-Definition u32_from_u64 (x:u64) : u32 := U32 (int.Z x).
-Definition u8_from_u64 (x:u64) : byte := U8 (int.Z x).
-Definition u8_from_u32 (x:u32) : byte := U8 (int.Z x).
+Definition u32_from_u64 (x:u64) : u32 := I32 (int.Z x).
+Definition u8_from_u64 (x:u64) : byte := I8 (int.Z x).
+Definition u8_from_u32 (x:u32) : byte := I8 (int.Z x).
 
 Theorem wrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
   0 <= x < 2^width ->
@@ -322,7 +327,7 @@ Qed.
 
 Theorem u8_to_u64_Z x : int.Z (u8_to_u64 x) = int.Z x.
 Proof.
-  unfold u8_to_u64, U64.
+  unfold u8_to_u64, I64.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
   pose proof (word.unsigned_range x); lia.
@@ -330,7 +335,7 @@ Qed.
 
 Theorem u32_to_u64_Z x : int.Z (u32_to_u64 x) = int.Z x.
 Proof.
-  unfold u32_to_u64, U64.
+  unfold u32_to_u64, I64.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
   pose proof (word.unsigned_range x); lia.
@@ -339,7 +344,7 @@ Qed.
 Theorem u32_from_u64_Z (x: u64) : int.Z x < 2^32 ->
                                     int.Z (u32_from_u64 x) = int.Z x.
 Proof.
-  unfold u32_from_u64, U32; intros.
+  unfold u32_from_u64, I32; intros.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
   pose proof (word.unsigned_range x); lia.
@@ -512,42 +517,42 @@ Proof.
   exact H.
 Qed.
 
-Lemma unsigned_U64 z : int.Z (U64 z) = word.wrap (word:=u64_instance.u64) z.
+Lemma unsigned_U64 z : int.Z (I64 z) = word.wrap (word:=u64_instance.u64) z.
 Proof.
-  unfold U64; rewrite word.unsigned_of_Z; auto.
+  unfold I64; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U32 z : int.Z (U32 z) = word.wrap (word:=u32_instance.u32) z.
+Lemma unsigned_U32 z : int.Z (I32 z) = word.wrap (word:=u32_instance.u32) z.
 Proof.
-  unfold U32; rewrite word.unsigned_of_Z; auto.
+  unfold I32; rewrite word.unsigned_of_Z; auto.
 Qed.
 
-Lemma unsigned_U64_0 : int.Z (U64 0) = 0.
-Proof.
-  reflexivity.
-Qed.
-
-Lemma unsigned_U32_0 : int.Z (U32 0) = 0.
+Lemma unsigned_U64_0 : int.Z (I64 0) = 0.
 Proof.
   reflexivity.
 Qed.
 
-Lemma signed_U64 z : sint.Z (U64 z) = word.swrap (word:=u64_instance.u64) z.
-Proof.
-  unfold U64; rewrite word.signed_of_Z; auto.
-Qed.
-
-Lemma signed_U32 z : sint.Z (U32 z) = word.swrap (word:=u32_instance.u32) z.
-Proof.
-  unfold U32; rewrite word.signed_of_Z; auto.
-Qed.
-
-Lemma signed_U64_0 : sint.Z (U64 0) = 0.
+Lemma unsigned_U32_0 : int.Z (I32 0) = 0.
 Proof.
   reflexivity.
 Qed.
 
-Lemma signed_U32_0 : sint.Z (U32 0) = 0.
+Lemma signed_U64 z : sint.Z (I64 z) = word.swrap (word:=u64_instance.u64) z.
+Proof.
+  unfold I64; rewrite word.signed_of_Z; auto.
+Qed.
+
+Lemma signed_U32 z : sint.Z (I32 z) = word.swrap (word:=u32_instance.u32) z.
+Proof.
+  unfold I32; rewrite word.signed_of_Z; auto.
+Qed.
+
+Lemma signed_U64_0 : sint.Z (I64 0) = 0.
+Proof.
+  reflexivity.
+Qed.
+
+Lemma signed_U32_0 : sint.Z (I32 0) = 0.
 Proof.
   reflexivity.
 Qed.
@@ -569,10 +574,10 @@ Ltac word_cleanup :=
   ?word.unsigned_of_Z, ?word.of_Z_unsigned, ?unsigned_U64, ?unsigned_U32;
   try autorewrite with word;
   repeat match goal with
-         | [ H: context[word.unsigned (U64 (Zpos ?x))] |- _ ] => change (int.Z (Zpos x)) with (Zpos x) in *
-         | [ |- context[word.unsigned (U64 (Zpos ?x))] ] => change (int.Z (Zpos x)) with (Zpos x)
-         | [ H: context[word.unsigned (U32 (Zpos ?x))] |- _ ] => change (int.Z (U32 (Zpos x))) with (Zpos x) in *
-         | [ |- context[word.unsigned (U32 (Zpos ?x))] ] => change (int.Z (U32 (Zpos x))) with (Zpos x)
+         | [ H: context[word.unsigned (I64 (Zpos ?x))] |- _ ] => change (int.Z (Zpos x)) with (Zpos x) in *
+         | [ |- context[word.unsigned (I64 (Zpos ?x))] ] => change (int.Z (Zpos x)) with (Zpos x)
+         | [ H: context[word.unsigned (I32 (Zpos ?x))] |- _ ] => change (int.Z (I32 (Zpos x))) with (Zpos x) in *
+         | [ |- context[word.unsigned (I32 (Zpos ?x))] ] => change (int.Z (I32 (Zpos x))) with (Zpos x)
          end;
   repeat match goal with
          | [ |- context[int.Z ?x] ] =>
@@ -600,40 +605,40 @@ Ltac word := solve [ word_cleanup ].
 
 Theorem Z_u32 z :
   0 <= z < 2 ^ 32 ->
-  int.Z (U32 z) = z.
+  int.Z (I32 z) = z.
 Proof.
   intros.
-  unfold U32.
+  unfold I32.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
 Qed.
 
 Lemma u32_Z (x : u32) :
-  U32 (int.Z x) = x.
+  I32 (int.Z x) = x.
 Proof.
-  unfold U32. apply word.of_Z_unsigned.
+  unfold I32. apply word.of_Z_unsigned.
 Qed.
 
 Theorem Z_u64 z :
   0 <= z < 2 ^ 64 ->
-  int.Z (U64 z) = z.
+  int.Z (I64 z) = z.
 Proof.
   intros.
-  unfold U64.
+  unfold I64.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
 Qed.
 
 Lemma u64_Z (x : u64) :
-  U64 (int.Z x) = x.
+  I64 (int.Z x) = x.
 Proof.
-  unfold U64. apply word.of_Z_unsigned.
+  unfold I64. apply word.of_Z_unsigned.
 Qed.
 
 Lemma seq_U64_NoDup (m len : Z) :
   (0 ≤ m)%Z →
   (m+len < 2^64)%Z →
-  NoDup (U64 <$> seqZ m len).
+  NoDup (I64 <$> seqZ m len).
 Proof.
   intros Hlb Hub. apply NoDup_fmap_2_strong; cycle 1.
   { apply NoDup_seqZ. }

@@ -739,7 +739,7 @@ Lemma wp_input s E tr (sel: u64) Or :
 Proof.
   iIntros (Φ) "(Htr&Hor) HΦ". iApply wp_lift_atomic_base_step; [done|].
   iIntros (σ1 g1 ns mj D κ κs n) "(Hσ&?&Htr_auth&Hor_auth) Hg !>"; iSplit.
-  { iPureIntro. unshelve (by eauto); apply (U64 0). }
+  { iPureIntro. unshelve (by eauto); apply (I64 0). }
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
   iDestruct (trace_agree with "[$] [$]") as %?; subst.
   iDestruct (oracle_agree with "[$] [$]") as %?; subst.
@@ -1014,7 +1014,7 @@ Lemma wp_alloc_untyped stk E v v0 :
   {{{ True }}} ref (Val v) @ stk; E
   {{{ l, RET LitV (LitLoc l); l ↦ v0 }}}.
 Proof.
-  assert (0 < int.Z (U64 1)) by (change (int.Z 1) with 1; lia).
+  assert (0 < int.Z (I64 1)) by (change (int.Z 1) with 1; lia).
   iIntros (Hflat ?) "_ HΦ". iApply wp_allocN_seq; auto.
   iNext. iIntros (?) "H". iApply "HΦ".
   change (int.nat 1) with 1%nat; simpl.

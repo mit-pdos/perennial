@@ -74,7 +74,7 @@ Implicit Type Spec : savedSpecO Σ (list u8) (list u8).
 (* Crucially, this is persistent: note the □Spec *)
 Definition server_chan_inner_msg Γsrv m : iProp Σ :=
     ∃ rpcid seqno args Spec Post Γ γ1 γ2 d rep rpcdom,
-       "%Hlen_args" ∷ ⌜ length args = int.nat (U64 (Z.of_nat (length args))) ⌝ ∗
+       "%Hlen_args" ∷ ⌜ length args = int.nat (I64 (Z.of_nat (length args))) ⌝ ∗
        "#Hdom1" ∷ own (scset_name Γsrv) (to_agree (rpcdom)) ∗
        "%Hdom2" ∷ ⌜ rpcid ∈ rpcdom ⌝ ∗
        "%Henc" ∷ ⌜ msg_data m = u64_le rpcid ++ u64_le seqno ++ args  ⌝ ∗
@@ -702,7 +702,7 @@ Proof.
   wp_apply (wp_Assume).
   iIntros (Herr).
   apply bool_decide_eq_true in Herr.
-  replace (err) with (U64 0) by naive_solver.
+  replace (err) with (I64 0) by naive_solver.
   destruct (decide _); last first.
   { exfalso. done. }
   wp_pures.
@@ -876,7 +876,7 @@ Proof.
     iExists _, _, _, _, _, _, _.
     iExists _, _, _, _.
     iFrame "Hreg".
-    assert (U64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as Heqlen.
+    assert (I64 (Z.of_nat (int.nat (req.(Slice.sz)))) = req.(Slice.sz)) as Heqlen.
     { word. }
     iFrame "#". iSplit; last by eauto.
     iPureIntro. word.

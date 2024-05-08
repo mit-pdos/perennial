@@ -254,7 +254,7 @@ Proof.
   }
   { (* Case ABORT. *)
     iIntros "Hdbpts".
-    iDestruct ("HAU" $! false (U64 0) (U64 0) with "[Hdbpts]") as "HAU"; last done.
+    iDestruct ("HAU" $! false (I64 0) (I64 0) with "[Hdbpts]") as "HAU"; last done.
     iApply view_dbpts_xfer; done.
   }
 Qed.

@@ -23,7 +23,7 @@ Definition encode (x:t) : list u8 :=
   u64_le x.(epoch) ++
   u64_le x.(reservedEpoch) ++
   u64_le x.(leaseExpiration) ++
-  u64_le (if x.(wantLeaseToExpire) then U64 1 else U64 0) ++
+  u64_le (if x.(wantLeaseToExpire) then I64 1 else I64 0) ++
   (u64_le (length x.(config)) ++ concat (u64_le <$> x.(config))).
 
 
@@ -270,8 +270,8 @@ Program Definition ReserveEpochAndGetConfig_core_spec γ Φ :=
   (
     £ 1 -∗
     (|={⊤∖↑N,∅}=> ∃ reservedEpoch conf, own_reserved_epoch γ reservedEpoch ∗ own_config γ conf ∗
-    (⌜int.nat reservedEpoch < int.nat (word.add reservedEpoch (U64 1))⌝ -∗
-      own_reserved_epoch γ (word.add reservedEpoch (U64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
+    (⌜int.nat reservedEpoch < int.nat (word.add reservedEpoch (I64 1))⌝ -∗
+      own_reserved_epoch γ (word.add reservedEpoch (I64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
       Φ (word.add reservedEpoch 1) conf
       ))
     )%I.
@@ -289,7 +289,7 @@ Program Definition TryWriteConfig_core_spec γ (epoch:u64) (new_conf:list u64) �
    (⌜ reserved_epoch = epoch ⌝ -∗
     own_config γ new_conf -∗
     own_reserved_epoch γ reserved_epoch -∗
-    own_latest_epoch γ epoch ={∅,⊤∖↑N}=∗ Φ (U64 0))
+    own_latest_epoch γ epoch ={∅,⊤∖↑N}=∗ Φ (I64 0))
   ) ∗
   (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err)
 .
@@ -297,9 +297,9 @@ Program Definition TryWriteConfig_core_spec γ (epoch:u64) (new_conf:list u64) �
 Program Definition GetLease_core_spec γ (epoch:u64) Φ : iProp Σ :=
   (∀ (leaseExpiration:u64) γl,
     is_lease epochLeaseN γl (own_latest_epoch γ epoch) -∗
-    is_lease_valid_lb γl leaseExpiration -∗ Φ (U64 0) leaseExpiration
+    is_lease_valid_lb γl leaseExpiration -∗ Φ (I64 0) leaseExpiration
   ) ∧
-  (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err (U64 0))
+  (∀ (err:u64), ⌜err ≠ 0⌝ → Φ err (I64 0))
 .
 
 Program Definition ReserveEpochAndGetConfig_spec γ :=
@@ -310,7 +310,7 @@ Program Definition ReserveEpochAndGetConfig_spec γ :=
                                    ⌜Config.has_encoding enc_conf conf⌝ -∗
                                    Φ (u64_le 0 ++ u64_le newEpoch ++ enc_conf)
                                   ) ∗
-    (∀ err, ⌜ err ≠ U64 0 ⌝ -∗ Φ (u64_le err))
+    (∀ err, ⌜ err ≠ I64 0 ⌝ -∗ Φ (u64_le err))
     )%I.
 Next Obligation.
   rewrite /ReserveEpochAndGetConfig_core_spec.
@@ -360,11 +360,11 @@ Defined.
 
 Definition is_config_host (host:u64) γ : iProp Σ :=
   ∃ γrpc,
-  "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) (ReserveEpochAndGetConfig_spec γ) ∗
-  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) (GetConfig_spec γ) ∗
-  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) (TryWriteConfig_spec γ) ∗
-  "#H3" ∷ is_urpc_spec_pred γrpc host (U64 3) (GetLease_spec γ) ∗
-  "#Hdom" ∷ is_urpc_dom γrpc {[ (U64 0) ; (U64 1) ; (U64 2) ; (U64 3) ]}
+  "#H0" ∷ is_urpc_spec_pred γrpc host (I64 0) (ReserveEpochAndGetConfig_spec γ) ∗
+  "#H1" ∷ is_urpc_spec_pred γrpc host (I64 1) (GetConfig_spec γ) ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (I64 2) (TryWriteConfig_spec γ) ∗
+  "#H3" ∷ is_urpc_spec_pred γrpc host (I64 3) (GetLease_spec γ) ∗
+  "#Hdom" ∷ is_urpc_dom γrpc {[ (I64 0) ; (I64 1) ; (I64 2) ; (I64 3) ]}
 .
 
 Definition configN := N .@ "paxos".
@@ -1314,10 +1314,10 @@ Lemma wp_Clerk__ReserveEpochAndGetConfig (ck:loc) γ Φ :
   is_Clerk ck γ -∗
   □ (£ 1 -∗
       (|={⊤∖↑N,∅}=> ∃ epoch conf, own_reserved_epoch γ epoch ∗ own_config γ conf ∗
-       (⌜int.nat epoch < int.nat (word.add epoch (U64 1))⌝ -∗
-        own_reserved_epoch γ (word.add epoch (U64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
+       (⌜int.nat epoch < int.nat (word.add epoch (I64 1))⌝ -∗
+        own_reserved_epoch γ (word.add epoch (I64 1)) -∗ own_config γ conf ={∅,⊤∖↑N}=∗
          (∀ conf_sl, readonly (own_slice_small conf_sl uint64T 1 conf) -∗
-           Φ (#(LitInt $ word.add epoch (U64 1)), slice_val conf_sl)%V)))
+           Φ (#(LitInt $ word.add epoch (I64 1)), slice_val conf_sl)%V)))
   ) -∗
   WP Clerk__ReserveEpochAndGetConfig #ck {{ Φ }}
 .
@@ -2142,10 +2142,10 @@ Context `{!gooseGlobalGS Σ}.
 
 Context `(params:configParams.t Σ).
 Definition config_spec_list γ :=
-  [ (U64 0, ReserveEpochAndGetConfig_spec γ) ;
-    (U64 1, GetConfig_spec γ) ;
-    (U64 2, TryWriteConfig_spec γ) ;
-    (U64 3, GetLease_spec γ)].
+  [ (I64 0, ReserveEpochAndGetConfig_spec γ) ;
+    (I64 1, GetConfig_spec γ) ;
+    (I64 2, TryWriteConfig_spec γ) ;
+    (I64 3, GetLease_spec γ)].
 
 
 Lemma alloc_config_rpc host γ :

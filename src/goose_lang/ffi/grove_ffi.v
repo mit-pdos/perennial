@@ -145,7 +145,7 @@ Section grove.
   Proof. intros _ σg. refine (Some (exist _ _ (gen_isFreshChan σg))). Defined.
 
   Global Instance chan_GenType Σ : GenType chan Σ :=
-    fun z _ => Some (exist _ (U64 z) I).
+    fun z _ => Some (exist _ (I64 z) I).
 
   Local Definition modify_g (f : grove_global_state → grove_global_state) : transition (state*global_state) () :=
     modify (λ '(σ, g), (σ, set global_world f g)).
@@ -447,7 +447,7 @@ lemmas. *)
     { (* Failed to pick a fresh channel. *)
       monad_inv. simpl. iFrame. iModIntro.
       do 2 (iSplit; first done).
-      iApply ("HΦ" $! true (U64 0)). done. }
+      iApply ("HΦ" $! true (I64 0)). done. }
     simpl in *. monad_inv. simpl.
     iMod (@gen_heap_alloc with "Hg") as "[$ [Hr _]]"; first done.
     iIntros "!> /=".
@@ -471,7 +471,7 @@ lemmas. *)
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      1:by eapply (relation.suchThat_runs _ _ (I64 0)).
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
@@ -825,7 +825,7 @@ lemmas. *)
     { iPureIntro. eexists _, _, _, _, _; simpl.
       econstructor. rewrite /base_step/=.
       monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      1:by eapply (relation.suchThat_runs _ _ (I64 0)).
       monad_simpl. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
@@ -861,18 +861,18 @@ lemmas. *)
       econstructor. rewrite /base_step/=.
       monad_simpl.
       econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (U64 0)).
+      1:by eapply (relation.suchThat_runs _ _ (I64 0)).
       monad_simpl.
       econstructor.
       1: {
-        eapply (relation.suchThat_runs _ _ (U64 0)).
+        eapply (relation.suchThat_runs _ _ (I64 0)).
         apply Is_true_true_2.
         word.
       }
       monad_simpl.
       econstructor.
       {
-        eapply (relation.suchThat_runs _ _ (U64 (2^64-1))).
+        eapply (relation.suchThat_runs _ _ (I64 (2^64-1))).
         apply Is_true_true_2.
         word.
       }

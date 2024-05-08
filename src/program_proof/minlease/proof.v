@@ -140,7 +140,7 @@ Definition own_Server s γ : iProp Σ :=
 .
 
 
-Definition LEASE_EXP := U64 10.
+Definition LEASE_EXP := I64 10.
 
 Definition minleaseN := nroot .@ "minlease".
 
@@ -222,8 +222,8 @@ Qed.
 
 Lemma wp_StartServer γ :
   {{{
-      "Hlease" ∷ underLease minleaseN LEASE_EXP (ghost_var γ (1/2) (U64 0)) (∃ (v:u64), (ghost_var γ (1/2) v)) ∗
-      "Hauth" ∷ ghost_var γ (1/2) (U64 0)
+      "Hlease" ∷ underLease minleaseN LEASE_EXP (ghost_var γ (1/2) (I64 0)) (∃ (v:u64), (ghost_var γ (1/2) v)) ∗
+      "Hauth" ∷ ghost_var γ (1/2) (I64 0)
   }}}
     StartServer #()
   {{{
@@ -461,7 +461,7 @@ Lemma wp_main :
 Proof using Type*.
   iIntros (Φ) "_ HΦ".
   wp_lam.
-  iMod (ghost_var_alloc (U64 0)) as (γ) "[Hvar Hvar2]".
+  iMod (ghost_var_alloc (I64 0)) as (γ) "[Hvar Hvar2]".
   iApply fupd_wp.
   iMod (fupd_mask_subseteq (↑minleaseN)) as "Hmask".
   { set_solver. }

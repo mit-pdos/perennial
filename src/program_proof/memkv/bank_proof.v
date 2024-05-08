@@ -119,7 +119,7 @@ Definition init_lock_inv γlock γkv accts : iProp Σ :=
   (* Already init case *)
   (∃ γlog,
    let γ := {| bank_ls_names := γlock; bank_ks_names := γkv; bank_logBalGN := γlog |} in
-   kvptsto γkv init_flag [U8 0] ∗ inv bankN (bank_inv γ accts) ∗
+   kvptsto γkv init_flag [I8 0] ∗ inv bankN (bank_inv γ accts) ∗
     [∗ set] acc ∈ accts, is_lock lockN γlock acc (bankPs γ acc)).
 
 End bank_defs.
@@ -675,7 +675,7 @@ Proof.
           "Hkv1" ∷ kvptsto γ1.(coord_kv_gn) acc []) ∗
         "%Hdone_dom" ∷ ⌜Permutation (elements (dom mdone)) done⌝ ∗
         "Hdone" ∷ [∗ map] acc ↦ bal ∈ mdone,
-          ⌜bal = U64 0⌝ ∗
+          ⌜bal = I64 0⌝ ∗
           ∃ data,
             kvptsto γ1.(coord_kv_gn) acc [] ∗
             kvptsto γ2.(coord_kv_gn) acc data ∗
@@ -713,7 +713,7 @@ Proof.
         specialize (Hnodup x). apply Hnodup; eauto. constructor.
       }
 
-      iApply "HΨ". iExists (<[x := U64 0]> mdone).
+      iApply "HΨ". iExists (<[x := I64 0]> mdone).
       iFrame. iSplitR.
       { iPureIntro. rewrite dom_insert_L. rewrite elements_disj_union; last by set_solver.
         rewrite elements_singleton. rewrite Hdone_dom. apply Permutation_app_comm.

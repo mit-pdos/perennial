@@ -75,10 +75,10 @@ Theorem wp_NFSPROC3_SETATTR γ (nfs : loc) (fh : u64) (fhslice : Slice.t) (sattr
       ])%V
   {{{ v,
       RET v;
-      ( ⌜ getField_f nfstypes.SETATTR3res "Status" v = #(U32 0) ⌝ ∗
+      ( ⌜ getField_f nfstypes.SETATTR3res "Status" v = #(I32 0) ⌝ ∗
         Q (SimpleNFS.OK tt) ) ∨
       ( ∃ stat,
-        ⌜ getField_f nfstypes.SETATTR3res "Status" v = #(U32 stat) ⌝ ∗
+        ⌜ getField_f nfstypes.SETATTR3res "Status" v = #(I32 stat) ⌝ ∗
         ⌜ stat ≠ 0 ⌝ ∗
         Q SimpleNFS.Err )
   }}}.
@@ -289,7 +289,7 @@ Proof using Ptimeless.
             replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
             replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
             replace (length state + (int.nat u - length state)) with (int.nat u) by lia.
-            replace (U64 (int.nat u)) with (U64 (int.Z u)) by word. iFrame.
+            replace (I64 (int.nat u)) with (I64 (int.Z u)) by word. iFrame.
             replace (Z.to_nat (length state)) with (length state) by lia.
             rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
             rewrite drop_ge; last by lia. rewrite app_nil_r.
@@ -355,7 +355,7 @@ Proof using Ptimeless.
               replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
               replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
               replace (length state + (int.nat u - length state)) with (int.nat u) by lia.
-              replace (U64 (int.nat u)) with (U64 (int.Z u)) by word. iFrame.
+              replace (I64 (int.nat u)) with (I64 (int.Z u)) by word. iFrame.
               replace (Z.to_nat (length state)) with (length state) by lia.
               rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
               rewrite drop_ge; last by lia. rewrite app_nil_r.
@@ -383,7 +383,7 @@ Proof using Ptimeless.
               replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
               replace (length state + (int.Z u - length state))%Z with (int.Z u) by lia.
               replace (length state + (int.nat u - length state)) with (int.nat u) by lia.
-              replace (U64 (int.nat u)) with (U64 (int.Z u)) by word. iFrame.
+              replace (I64 (int.nat u)) with (I64 (int.Z u)) by word. iFrame.
               replace (Z.to_nat (length state)) with (length state) by lia.
               rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
               rewrite drop_ge; last by lia. rewrite app_nil_r.
@@ -597,7 +597,7 @@ Proof using Ptimeless.
         iDestruct (is_inode_data_shrink _ _ u with "H1") as "H1".
         { word. }
         rewrite -> firstn_length_le by word.
-        replace (U64 (Z.of_nat (int.nat u))) with u by word. iFrame.
+        replace (I64 (Z.of_nat (int.nat u))) with u by word. iFrame.
       }
 
       iModIntro.
@@ -653,7 +653,7 @@ Proof using Ptimeless.
           2: { iModIntro. iSplit; try (iIntros "? !>"); done. }
           iRight.
           repeat rewrite -> firstn_length_le by word.
-          replace (U64 (Z.of_nat (int.nat u))) with u by word. iFrame. }
+          replace (I64 (Z.of_nat (int.nat u))) with u by word. iFrame. }
 
         iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
         wp_storeField.
@@ -665,7 +665,7 @@ Proof using Ptimeless.
         2: {
           iExists _. iFrame "Hinode_state". iExists _.
           repeat rewrite -> firstn_length_le by word.
-          replace (U64 (Z.of_nat (int.nat u))) with u by word. iFrame. }
+          replace (I64 (Z.of_nat (int.nat u))) with u by word. iFrame. }
 
         iIntros "Hcrashlocked".
         iSplit.

@@ -63,7 +63,7 @@ Proof.
   iDestruct (slice.own_slice_small_sz with "Hs") as %Hsz.
   rewrite length_Block_to_vals /block_bytes in Hsz.
   destruct s.
-  replace sz0 with (U64 4096).
+  replace sz0 with (I64 4096).
   { iApply "HΦ".
     iDestruct (slice_to_block with "Hs") as "Hb"; [ done | ].
     iFrame.
@@ -746,7 +746,7 @@ Lemma is_log_reset disk_sz vs free :
   1 d↦∗ vs -∗
   (1 + length vs) d↦∗ free -∗
   ⌜(1 + length vs + length free)%Z = int.Z disk_sz⌝ -∗
-  is_log' (U64 0) disk_sz [].
+  is_log' (I64 0) disk_sz [].
 Proof.
   iIntros "Hhdr Hold Hfree %".
   iDestruct (disk_array_app with "[$Hold $Hfree]") as "Hfree".

@@ -148,14 +148,14 @@ Import adequacy dist_adequacy grove_ffi_adequacy.
 
 Definition shardΣ := #[heapΣ; kvMapΣ; erpcΣ; urpcregΣ; mapΣ u64 u64].
 
-Definition lockshardId := U64 0.
-Definition lockcoordId := U64 1.
-Definition kvshardId := U64 2.
-Definition kvcoordId := U64 3.
+Definition lockshardId := I64 0.
+Definition lockcoordId := I64 1.
+Definition kvshardId := I64 2.
+Definition kvcoordId := I64 3.
 
-Definition init := U64 0.
-Definition acc1 := U64 1.
-Definition acc2 := U64 2.
+Definition init := I64 0.
+Definition acc1 := I64 1.
+Definition acc2 := I64 2.
 
 Lemma bank_boot σlockshard σlockcoord σkvshard σkvcoord σclient (g : goose_lang.global_state) :
   ffi_initgP g.(global_world) →

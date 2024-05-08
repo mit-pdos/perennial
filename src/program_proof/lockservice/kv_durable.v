@@ -424,7 +424,7 @@ Proof.
   iNamed 1.
   wpc_pures.
   iDestruct "HΦ" as "[_ HΦ]".
-  iApply ("HΦ" $! {| kvsM := <[args.(U64_1):=args.(U64_2)]> kvserver.(kvsM) |} _ (Put_Pre γ args)).
+  iApply ("HΦ" $! {| kvsM := <[args.(I64_1):=args.(I64_2)]> kvserver.(kvsM) |} _ (Put_Pre γ args)).
   iFrame.
   iSplitL "Hpre".
   {
@@ -524,7 +524,7 @@ Proof.
                 (size rpc_server'.(lastSeqM)))
             (word.mul 2 (size rpc_server'.(lastSeqM))))
                               (word.mul 2 (size server'.(kvsM)))) 3) with
-      (U64 (8 * 2 * ((size rpc_server'.(lastSeqM)) + (size rpc_server'.(lastSeqM)) + (size server.(kvsM)) + 3))); last first.
+      (I64 (8 * 2 * ((size rpc_server'.(lastSeqM)) + (size rpc_server'.(lastSeqM)) + (size server.(kvsM)) + 3))); last first.
   {
     admit.
   }
@@ -535,7 +535,7 @@ Proof.
   iIntros (enc_v) "Henc".
   iNamed 1.
 
-  replace (int.Z (U64 (_))) with
+  replace (int.Z (I64 (_))) with
       ((8 * 2 * ((size rpc_server'.(lastSeqM)) + (size rpc_server'.(lastSeqM)) + (size server.(kvsM))+ 3))); last first.
   { (* want to know that the entire expression has not overflowed *) admit. }
 

@@ -4,7 +4,7 @@ From Perennial.Helpers Require Import gset.
 From Perennial.Helpers Require Import Integers.
 
 Definition rangeSet (start sz: Z): gset u64 :=
-  list_to_set (U64 <$> seqZ start sz).
+  list_to_set (I64 <$> seqZ start sz).
 
 Theorem rangeSet_lookup (start sz: Z) (i: u64) :
   0 ≤ start →
@@ -92,7 +92,7 @@ Qed.
 Lemma rangeSet_first:
   ∀ start sz,
     sz > 0 ->
-    rangeSet start sz = {[U64 start]} ∪ rangeSet (start+1) (sz-1).
+    rangeSet start sz = {[I64 start]} ∪ rangeSet (start+1) (sz-1).
 Proof.
   rewrite /rangeSet.
   intros.
@@ -104,11 +104,11 @@ Qed.
 Lemma rangeSet_first_disjoint start sz :
   0 ≤ start →
   start + sz < 2^64 →
-  {[U64 start]} ## (rangeSet (start+1) (sz-1)).
+  {[I64 start]} ## (rangeSet (start+1) (sz-1)).
 Proof.
   intros Hnonneg1 Hoverflow x Hin1 Hin2.
-  assert (x = U64 start) by set_solver.
+  assert (x = I64 start) by set_solver.
   subst. apply rangeSet_lookup in Hin2; eauto; try word.
-  assert (int.Z (U64 start) = start) by word.
+  assert (int.Z (I64 start) = start) by word.
   word.
 Qed.

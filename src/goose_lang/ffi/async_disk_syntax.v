@@ -63,7 +63,7 @@ Definition BlockSize {ext: ffi_syntax}: val := #4096.
 Definition Block := vec byte block_bytes.
 Definition blockT `{ext_tys:ext_types}: @ty val_tys := slice.T byteT.
 (* TODO: could use vreplicate; not sure how much easier it is to work with *)
-Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (U8 0)).
+Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (I8 0)).
 
 
 Lemma block_bytes_eq : block_bytes = Z.to_nat 4096.

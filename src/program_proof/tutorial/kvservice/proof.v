@@ -441,7 +441,7 @@ Context `{!heapGS Σ}.
 
 (* TODO: copied this naming convention from "u64_le". What does le actually
    mean? *)
-Definition bool_le (b:bool) : list u8 := if b then [U8 1] else [U8 0].
+Definition bool_le (b:bool) : list u8 := if b then [I8 1] else [I8 0].
 
 Lemma wp_EncodeBool (b:bool) :
   {{{ True }}}
@@ -936,11 +936,11 @@ Defined.
 
 Definition is_kvserver_host host : iProp Σ :=
   ∃ γrpc,
-  "#H0" ∷ is_urpc_spec_pred γrpc host (U64 0) getFreshNum_spec ∗
-  "#H1" ∷ is_urpc_spec_pred γrpc host (U64 1) put_spec ∗
-  "#H2" ∷ is_urpc_spec_pred γrpc host (U64 2) conditionalPut_spec ∗
-  "#H3" ∷ is_urpc_spec_pred γrpc host (U64 3) get_spec ∗
-  "#Hdom" ∷ is_urpc_dom γrpc {[ U64 0; U64 1; U64 2; U64 3 ]}
+  "#H0" ∷ is_urpc_spec_pred γrpc host (I64 0) getFreshNum_spec ∗
+  "#H1" ∷ is_urpc_spec_pred γrpc host (I64 1) put_spec ∗
+  "#H2" ∷ is_urpc_spec_pred γrpc host (I64 2) conditionalPut_spec ∗
+  "#H3" ∷ is_urpc_spec_pred γrpc host (I64 3) get_spec ∗
+  "#Hdom" ∷ is_urpc_dom γrpc {[ I64 0; I64 1; I64 2; I64 3 ]}
   .
 
 End encoded_rpc_definitions.

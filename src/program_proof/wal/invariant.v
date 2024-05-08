@@ -427,7 +427,7 @@ Definition wal_linv_durable γ cs : iProp Σ :=
     ⌜ int.Z σls.(diskEnd) = circΣ.diskEnd cs ⌝ ∗
     ⌜ σls.(memLog) = {| slidingM.log := cs.(circΣ.upds);
                               slidingM.start := cs.(circΣ.start);
-                              slidingM.mutable := U64 (circΣ.diskEnd cs);
+                              slidingM.mutable := I64 (circΣ.diskEnd cs);
                      |} ⌝ ∗
     ⌜ locked_wf σls ⌝ ∗
     "HdiskEnd_circ" ∷ diskEnd_linv γ σls.(diskEnd) ∗

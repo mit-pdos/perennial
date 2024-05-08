@@ -153,7 +153,7 @@ Lemma wp_bob γ skB vkA:
   {{{
     valid_sk skB (PB γ) ∗
     valid_vk vkA PA ∗
-    ghost_var γ 1 (U64 0)
+    ghost_var γ 1 (I64 0)
   }}}
   bobMain #skB #vkA
   {{{
@@ -250,7 +250,7 @@ Proof using ghost_varG0 heapGS0 waitgroupG0 Σ.
   rewrite /game.
   wp_apply (wp_makeKeys PA).
   iIntros (? ?) "[Hsk_a Hvk_a]".
-  iMod (ghost_var_alloc (U64 0)) as (γ) "Hg".
+  iMod (ghost_var_alloc (I64 0)) as (γ) "Hg".
   wp_apply (wp_makeKeys (PB γ)).
   iIntros (? ?) "[Hsk_b Hvk_b]".
   wp_pures.
@@ -315,9 +315,9 @@ Proof using ghost_varG0 heapGS0 waitgroupG0 Σ.
   wp_apply (wp_WaitGroup__Wait with "Hwg").
   iClear "Hiwg".
   iIntros "Hwg_post".
-  iDestruct (big_sepS_delete _ _ (U64 0) with "Hwg_post") as "[Halice Hwg_post]".
+  iDestruct (big_sepS_delete _ _ (I64 0) with "Hwg_post") as "[Halice Hwg_post]".
   { set_solver. }
-  iDestruct (big_sepS_delete _ _ (U64 1) with "Hwg_post") as "[Hbob _]".
+  iDestruct (big_sepS_delete _ _ (I64 1) with "Hwg_post") as "[Hbob _]".
   { set_solver. }
   iDestruct "Halice" as "[%Hbad|Halice]".
   {

@@ -24,7 +24,7 @@ Lemma wp_singleClerk__enterNewEpoch ck γ γsrv args_ptr args q :
     singleClerk__enterNewEpoch #ck #args_ptr
   {{{
         reply_ptr reply, RET #reply_ptr; enterNewEpochReply.own reply_ptr reply 1 ∗
-        if (decide (reply.(enterNewEpochReply.err) = (U64 0))) then
+        if (decide (reply.(enterNewEpochReply.err) = (I64 0))) then
           enterNewEpoch_post γ γsrv reply args.(enterNewEpochArgs.epoch)
         else
           True

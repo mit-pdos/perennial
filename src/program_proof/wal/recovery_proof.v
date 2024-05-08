@@ -28,13 +28,13 @@ Definition wal_init_ghost_state (γnew: wal_names) : iProp Σ :=
     "installer_pos" ∷ ghost_var γnew.(installer_pos_name) 1 0%nat ∗
     "installer_txn_id" ∷ ghost_var γnew.(installer_txn_id_name) 1 0%nat ∗
 
-    "installer_pos_mem" ∷ ghost_var γnew.(installer_pos_mem_name) 1 (U64 0) ∗
+    "installer_pos_mem" ∷ ghost_var γnew.(installer_pos_mem_name) 1 (I64 0) ∗
     "installer_txn_id_mem" ∷ ghost_var γnew.(installer_txn_id_mem_name) 1 0%nat ∗
 
-    "logger_pos" ∷ ghost_var γnew.(logger_pos_name) 1 (U64 0) ∗
+    "logger_pos" ∷ ghost_var γnew.(logger_pos_name) 1 (I64 0) ∗
     "logger_txn_id" ∷ ghost_var γnew.(logger_txn_id_name) 1 0%nat ∗
 
-    "installed_pos_mem" ∷ ghost_var γnew.(installed_pos_mem_name) 1 (U64 0) ∗
+    "installed_pos_mem" ∷ ghost_var γnew.(installed_pos_mem_name) 1 (I64 0) ∗
     "installed_txn_id_mem" ∷ ghost_var γnew.(installed_txn_id_mem_name) 1 0%nat ∗
 
     "diskEnd" ∷ ghost_var γnew.(diskEnd_name) 1 0%nat ∗
@@ -225,13 +225,13 @@ Proof.
   iMod (ghost_var_alloc 0%nat) as (installer_pos_name) "Hinstalled_pos".
   iMod (ghost_var_alloc 0%nat) as (installer_txn_id_name) "Hinstalled_txn_id".
 
-  iMod (ghost_var_alloc (U64 0)) as (installer_pos_mem_name) "?".
+  iMod (ghost_var_alloc (I64 0)) as (installer_pos_mem_name) "?".
   iMod (ghost_var_alloc 0%nat) as (installer_txn_id_mem_name) "?".
 
-  iMod (ghost_var_alloc (U64 0)) as (logger_pos_name) "?".
+  iMod (ghost_var_alloc (I64 0)) as (logger_pos_name) "?".
   iMod (ghost_var_alloc 0%nat) as (logger_txn_id_name) "?".
 
-  iMod (ghost_var_alloc (U64 0)) as (installed_pos_mem_name) "?".
+  iMod (ghost_var_alloc (I64 0)) as (installed_pos_mem_name) "?".
   iMod (ghost_var_alloc 0%nat) as (installed_txn_id_mem_name) "?".
 
   iMod (mono_nat_own_alloc 0%nat) as (diskEnd_mem_name) "[? _]".
@@ -278,7 +278,7 @@ Qed.
 Definition log_state0 bs : log_state.t :=
   {|
     log_state.d := list_to_map (imap (λ (i : nat) (x : Block), (513 + i, x)) bs);
-    log_state.txns := [(U64 0, [])];
+    log_state.txns := [(I64 0, [])];
     log_state.installed_lb := 0;
     log_state.durable_lb := 0
   |}.
@@ -347,14 +347,14 @@ Ltac iDestruct_2 H :=
   iDestruct H as pat.
 
 Definition memLog_linv_init_ghost_state γ : iProp Σ :=
-  (ghost_var γ.(txns_name) (1/2) [(U64 0, [])]
-    ∗ ghost_var γ.(logger_pos_name) (1/2) (U64 0)
+  (ghost_var γ.(txns_name) (1/2) [(I64 0, [])]
+    ∗ ghost_var γ.(logger_pos_name) (1/2) (I64 0)
     ∗ ghost_var γ.(logger_txn_id_name) (1/2) 0%nat
-    ∗ ghost_var γ.(installer_pos_mem_name) (1/2) (U64 0)
+    ∗ ghost_var γ.(installer_pos_mem_name) (1/2) (I64 0)
     ∗ ghost_var γ.(installer_txn_id_mem_name) (1/2) 0%nat
     ∗ mono_nat_auth_own γ.(diskEnd_mem_name) (1/2/2) 0%nat
     ∗ mono_nat_auth_own γ.(diskEnd_mem_txn_id_name) (1/2/2) 0%nat
-    ∗ ghost_var γ.(installed_pos_mem_name) (1/2) (U64 0)
+    ∗ ghost_var γ.(installed_pos_mem_name) (1/2) (I64 0)
     ∗ ghost_var γ.(installed_txn_id_mem_name) (1/2) 0%nat
     ∗ map_ctx γ.(stable_txn_ids_name) (1/2) {[0%nat := ()]}).
 
@@ -367,11 +367,11 @@ Lemma memLog_linv_pers_core_init γ :
   memLog_linv_init_pers_state γ
   -∗ memLog_linv_pers_core γ
     {| slidingM.log := []; slidingM.start := 0; slidingM.mutable := 0 |} 0 0 0 0
-    [(U64 0, [])] 0 0 0 0.
+    [(I64 0, [])] 0 0 0 0.
 Proof.
   iIntros "#(?&?&?)".
   rewrite /memLog_linv_pers_core /named /=.
-  change (slidingM.endPos _) with (U64 0).
+  change (slidingM.endPos _) with (I64 0).
   rewrite /slidingM.memEnd /=.
   iFrame "#".
   iSplit; first by done.
@@ -439,7 +439,7 @@ Proof.
   iIntros "#Hpers Hvars".
   iDestruct "Hvars" as "(?&?&?&?&?&?&?&?&?&Hstable)".
   rewrite /memLog_linv.
-  iExists 0%nat, 0%nat, [(U64 0, [])], (U64 0), 0%nat, (U64 0), 0%nat.
+  iExists 0%nat, 0%nat, [(I64 0, [])], (I64 0), 0%nat, (I64 0), 0%nat.
   rewrite /memLog_linv_core /named.
   iDestruct (memLog_linv_pers_core_init with "Hpers") as "$".
   simpl.
@@ -455,11 +455,11 @@ Lemma wal_linv_durable_init γ :
      ∗ thread_own_ctx γ.(start_avail_name) (start_is γ.(circ_name) (1 / 2) 0)) -∗
   memLog_linv_init_pers_state γ -∗
   memLog_linv_init_ghost_state γ -∗
-  wal_linv_durable γ {| circΣ.upds := []; circΣ.start := U64 0; |}.
+  wal_linv_durable γ {| circΣ.upds := []; circΣ.start := I64 0; |}.
 Proof.
   iIntros "[[#HdiskEnd_lb HdiskEnd_ctx] [#Hstart_lb Hstart_ctx]] #HmemLog_pers HmemLog_ghost".
   rewrite /wal_linv_durable.
-  iExists {| diskEnd := U64 0;
+  iExists {| diskEnd := I64 0;
              locked_diskEnd_txn_id := 0;
              memLog := _;
           |}; simpl.
@@ -508,12 +508,12 @@ Proof.
 Qed.
 
 Lemma dom_blocks_to_map_u64 {A} (f: Block → A) (bs: list Block) :
-  dom (list_to_map (imap (λ i x, (U64 (513 + i), f x)) bs) : gmap u64 _) =
+  dom (list_to_map (imap (λ i x, (I64 (513 + i), f x)) bs) : gmap u64 _) =
   rangeSet 513 (length bs).
 Proof.
   rewrite dom_list_to_map_L.
   rewrite fmap_imap /=.
-  change (λ n, fst ∘ _) with (λ (n:nat) (_:Block), U64 (513 + n)).
+  change (λ n, fst ∘ _) with (λ (n:nat) (_:Block), I64 (513 + n)).
   rewrite /rangeSet.
   f_equal.
   remember 513 as start. clear Heqstart.
@@ -571,8 +571,8 @@ Proof.
   iMod (map_alloc_ro 0%nat () with "stable_txn_ids") as "[stable_txn_ids #H0stable]".
   { done. }
   change (<[0%nat:=()]> ∅) with ({[0%nat:=()]} : gmap nat unit).
-  iMod (ghost_var_update [(U64 0, [])] with "txns") as "txns".
-  iMod (ghost_var_update {| circΣ.upds := []; circΣ.start := U64 0 |} with "cs") as "cs".
+  iMod (ghost_var_update [(I64 0, [])] with "txns") as "txns".
+  iMod (ghost_var_update {| circΣ.upds := []; circΣ.start := I64 0 |} with "cs") as "cs".
   iDestruct_2 "logger_pos".
   iDestruct_2 "logger_txn_id".
   iDestruct_2 "installer_pos".
@@ -597,7 +597,7 @@ Proof.
     as "#being_installed_start_txn_lb".
   iDestruct (mono_nat_lb_own_get with "diskEnd_mem_txn_id2")
     as "#diskEnd_mem_txn_id_lb".
-  iMod (alloc_txn_pos (U64 0) [] with "txns_ctx") as "[txns_ctx _]".
+  iMod (alloc_txn_pos (I64 0) [] with "txns_ctx") as "[txns_ctx _]".
   simpl.
   iMod (thread_own_replace with "start_avail_ctx start_avail Hstart")
     as "(start_avail_ctx&start_avail)".
@@ -713,7 +713,7 @@ Proof.
   iPureIntro.
   split.
   {
-    exists (U64 0), 0%nat.
+    exists (I64 0), 0%nat.
     rewrite /log_state0 /circΣ.diskEnd /=.
     split; first by lia.
     split; first by lia.
@@ -888,7 +888,7 @@ Proof.
 Qed.
 
 Lemma diskEnd_linv_post_crash γ' diskEnd Q :
-  int.Z (U64 diskEnd) = diskEnd →
+  int.Z (I64 diskEnd) = diskEnd →
   diskEnd_is γ'.(circ_name) (1/2) diskEnd -∗
   thread_own_ctx γ'.(diskEnd_avail_name) Q -∗
   thread_own γ'.(diskEnd_avail_name) Available -∗
@@ -899,7 +899,7 @@ Proof.
   iDestruct (diskEnd_is_to_at_least with "[$]") as "#Hatleast".
   iMod (thread_own_get with "Hctx Havail") as "(Hctx & _ & Hused)".
   rewrite /diskEnd_linv.
-  replace (int.Z (U64 diskEnd)) with diskEnd by auto.
+  replace (int.Z (I64 diskEnd)) with diskEnd by auto.
   iMod (thread_own_put (diskEnd_is γ'.(circ_name) (1/2) diskEnd) with
         "Hctx Hused H") as "[$ $]".
   by iFrame "#".
@@ -942,18 +942,18 @@ Qed.
 Lemma is_durable_txn_get_txn_pos γ' cs txns diskEnd_txn_id durable_lb :
   is_durable_txn γ' cs txns diskEnd_txn_id durable_lb -∗
   txns_ctx γ' txns -∗
-  txn_pos γ' diskEnd_txn_id (U64 (circΣ.diskEnd cs)) ∗
-  txn_pos γ' (durable_lb `max` diskEnd_txn_id) (U64 (circΣ.diskEnd cs)).
+  txn_pos γ' diskEnd_txn_id (I64 (circΣ.diskEnd cs)) ∗
+  txn_pos γ' (durable_lb `max` diskEnd_txn_id) (I64 (circΣ.diskEnd cs)).
 Proof.
   iNamed 1.
   iIntros "Hctx".
   iSplit.
   {
     iDestruct (txns_ctx_txn_pos with "Hctx") as "$"; eauto.
-    replace (U64 (circΣ.diskEnd cs)) with diskEnd by word; auto.
+    replace (I64 (circΣ.diskEnd cs)) with diskEnd by word; auto.
   }
   iDestruct (txns_ctx_txn_pos with "Hctx") as "$"; eauto.
-  replace (U64 (circΣ.diskEnd cs)) with diskEnd by word; auto.
+  replace (I64 (circΣ.diskEnd cs)) with diskEnd by word; auto.
 Qed.
 
 Lemma txns_mono_lt_last σ diskEnd :
@@ -1129,7 +1129,7 @@ Proof.
 
     iNamed "circ.end".
 
-    replace (U64 (circΣ.diskEnd cs0)) with diskEnd by word.
+    replace (I64 (circΣ.diskEnd cs0)) with diskEnd by word.
 
     iPoseProof "circ.start" as "#circ.start2"; iNamed "circ.start2".
     iDestruct "Hcirc_resources" as "(Hcirc_start&Hcirc_diskEnd & Happender)".
@@ -1185,7 +1185,7 @@ Proof.
          as "[installed_txn_id_mem1 installed_txn_id_mem2]".
     iMod (ghost_var_update installed_txn_id with "installer_txn_id_mem")
          as "[installer_txn_id_mem1 installer_txn_id_mem2]".
-    iMod (ghost_var_update (U64 (circΣ.diskEnd cs0)) with "logger_pos")
+    iMod (ghost_var_update (I64 (circΣ.diskEnd cs0)) with "logger_pos")
         as "[logger_pos1 logger_pos2]".
     iMod (ghost_var_update diskEnd_txn_id with "logger_txn_id")
         as "[logger_txn_id1 logger_txn_id2]".
@@ -1242,11 +1242,11 @@ Proof.
                    locked_diskEnd_txn_id := diskEnd_txn_id;
                    memLog := {| slidingM.log := cs0.(circΣ.upds);
                                 slidingM.start := cs0.(circΣ.start);
-                                slidingM.mutable := U64 (circΣ.diskEnd cs0);
+                                slidingM.mutable := I64 (circΣ.diskEnd cs0);
                              |}
                 |}.
         simpl.
-        replace (U64 (int.Z diskEnd)) with diskEnd by word.
+        replace (I64 (int.Z diskEnd)) with diskEnd by word.
         iFrame "HdiskEnd_linv HdiskStart_linv".
         rewrite /memLog_linv /memLog_linv_core.
         iSplitL "installer_pos_mem1 installer_txn_id_mem1
@@ -1274,7 +1274,7 @@ Proof.
 
           rewrite /memLog_linv_pers_core /=.
           iThaw "#".
-          replace (U64 (circΣ.diskEnd cs0)) with diskEnd in * by word.
+          replace (I64 (circΣ.diskEnd cs0)) with diskEnd in * by word.
           iSplit.
           {
             iPureIntro.
@@ -1471,7 +1471,7 @@ Proof.
                      rewrite sep_exist_l |
                      rewrite sep_exist_r ].
       rewrite -HdiskEnd_val.
-      replace (U64 (int.Z diskEnd)) with diskEnd by word.
+      replace (I64 (int.Z diskEnd)) with diskEnd by word.
       iFrame.
     }
   }

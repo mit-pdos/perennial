@@ -67,14 +67,14 @@ Qed.
 Theorem wp_log_len l q σ :
   {{{ is_sliding l q σ }}}
     slice.len (struct.loadF sliding "log" #l)
-  {{{ RET #(U64 $ length σ.(slidingM.log)); is_sliding l q σ }}}.
+  {{{ RET #(I64 $ length σ.(slidingM.log)); is_sliding l q σ }}}.
 Proof.
   iIntros (Φ) "Hsliding HΦ".
   iNamed "Hsliding"; iNamed "Hinv".
   iDestruct (memLog_sz with "log_mutable") as %Hsz.
   wp_loadField.
   rewrite /slice.len; wp_pures. (* XXX: wp_apply wp_slice_len doesn't work for some reason *)
-  replace logSlice.(Slice.sz) with (U64 $ length σ.(slidingM.log)) by word.
+  replace logSlice.(Slice.sz) with (I64 $ length σ.(slidingM.log)) by word.
   iApply "HΦ". iModIntro.
   iSplit; auto.
   iExists _, _; iFrame "∗#".
@@ -236,7 +236,7 @@ Proof.
   iDestruct (struct_fields_split with "Hl") as "(Hf1&Hf2&Hf3&HfneedFlush&Hf4&%)".
   iAssert (updates_slice_frag s q log) with "[Hs Hblocks]" as "Hlog".
   { iExists _; iFrame. }
-  iDestruct (updates_slice_frag_split _ _ _ (U64 $ length log) with "Hlog") as "[Hmut Hreadonly]".
+  iDestruct (updates_slice_frag_split _ _ _ (I64 $ length log) with "Hlog") as "[Hmut Hreadonly]".
   { word. }
   rewrite -> drop_ge by word.
   rewrite -> take_ge by word.
@@ -256,7 +256,7 @@ Proof.
   - rewrite /readonly_log /slidingM.numMutable /=.
     rewrite -> take_ge by word.
     replace (word.sub (int.Z start + length log) start)
-            with (U64 (length log)) by word.
+            with (I64 (length log)) by word.
     iFrame "Hreadonly".
   - rewrite /mutable_log /slidingM.numMutable /=.
     iSplit.
@@ -264,11 +264,11 @@ Proof.
       word.
     + rewrite -> drop_ge by word.
       replace (word.sub (int.Z start + length log) start)
-              with (U64 (length log)) by word.
+              with (I64 (length log)) by word.
       iExists []; simpl.
       rewrite right_id.
       iApply own_slice_split.
-      iDestruct (own_slice_cap_skip _ _ (U64 (length log)) with "Hcap") as "Hcap";
+      iDestruct (own_slice_cap_skip _ _ (I64 (length log)) with "Hcap") as "Hcap";
         first by word.
       iFrame.
       iApply own_slice_small_nil.
@@ -379,7 +379,7 @@ Proof.
 Qed.
 
 Theorem addrPosMap_lookup_inv σ pos :
-  slidingM.addrPosMap σ !! pos = (λ (n:nat), U64 (Z.of_nat (int.nat σ.(slidingM.start) + n)%nat)) <$> (find_highest_index (update.addr <$> σ.(slidingM.log)) pos).
+  slidingM.addrPosMap σ !! pos = (λ (n:nat), I64 (Z.of_nat (int.nat σ.(slidingM.start) + n)%nat)) <$> (find_highest_index (update.addr <$> σ.(slidingM.log)) pos).
 Proof.
   rewrite /slidingM.addrPosMap /compute_memLogMap.
   rewrite lookup_fmap.
@@ -1252,7 +1252,7 @@ Qed.
 Lemma numMutable_after_clear σ :
   slidingM.wf σ ->
   slidingM.numMutable (set slidingM.mutable (λ _ : u64, slidingM.endPos σ) σ) =
-  U64 (length σ.(slidingM.log)).
+  I64 (length σ.(slidingM.log)).
 Proof.
   intros Hwf.
   rewrite /slidingM.numMutable /slidingM.endPos /=.

@@ -713,11 +713,11 @@ Definition pb_init_for_config γsys confγs : iProp Σ :=
               ).
 
 Definition is_sys_init_witness γsys : iProp Σ :=
-  is_proposal_lb γsys (U64 0) [] ∗ is_proposal_facts γsys (U64 0) [].
+  is_proposal_lb γsys (I64 0) [] ∗ is_proposal_facts γsys (I64 0) [].
 
 Lemma pb_system_init (confγs:list pb_server_names) :
 length confγs > 0 →
-(∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv 0) ={⊤}=∗
+(∀ γsrv, ⌜γsrv ∈ confγs⌝ → is_accepted_lb γsrv (I64 0) [] ∗ is_epoch_lb γsrv 0) ={⊤}=∗
     ∃ γsys,
     is_repl_inv γsys ∗
     own_pb_log γsys [] ∗
@@ -743,12 +743,12 @@ Proof.
   { done. }
 
   (* set up proposal for epoch 0 *)
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hproposal") as "[Hprop Hprop_rest]".
+  iDestruct (big_sepS_elem_of_acc_impl (I64 0) with "Hproposal") as "[Hprop Hprop_rest]".
   { set_solver. }
   iDestruct (fmlist_ptsto_get_lb with "Hprop") as "#Hprop_lb".
 
   (* set up initial config proposal *)
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig_prop") as "[Hconfig_prop Hconfig_prop_rest]".
+  iDestruct (big_sepS_elem_of_acc_impl (I64 0) with "Hconfig_prop") as "[Hconfig_prop Hconfig_prop_rest]".
   { set_solver. }
   iMod (own_update with "Hconfig_prop") as "Hconf_prop".
   {
@@ -760,7 +760,7 @@ Proof.
   iDestruct "Hconf_prop" as "#Hconf_prop".
 
   (* set up initial config *)
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hconfig") as "[Hconfig Hconfig_rest]".
+  iDestruct (big_sepS_elem_of_acc_impl (I64 0) with "Hconfig") as "[Hconfig Hconfig_rest]".
   { set_solver. }
   iMod (own_update with "Hconfig") as "Hconf".
   {
@@ -792,7 +792,7 @@ Proof.
     {
       iIntros (???).
       exfalso.
-      replace (int.nat (U64 0)) with (0) in H by word.
+      replace (int.nat (I64 0)) with (0) in H by word.
       lia.
     }
     iModIntro.
@@ -807,7 +807,7 @@ Proof.
   iMod (inv_alloc with "[Hghost2]") as "$".
   { (* establish is_repl_inv *)
     iNext.
-    iExists [], (U64 0).
+    iExists [], (I64 0).
     simpl.
     iFrame "∗#".
     iSplitL; first done.
@@ -831,7 +831,7 @@ Proof.
     iIntros.
     iFrame.
   }
-  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+  { iIntros. exfalso. replace (int.nat (I64 0)) with (0) in H by word. lia. }
 
   iSpecialize ("Hconfig_prop_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → config_proposal_unset γsys epoch)%I with "[] []").
   {
@@ -839,7 +839,7 @@ Proof.
     iIntros.
     iFrame.
   }
-  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+  { iIntros. exfalso. replace (int.nat (I64 0)) with (0) in H by word. lia. }
 
   iSpecialize ("Hconfig_rest" $! (λ epoch, ⌜int.nat 0 < int.nat epoch⌝ → config_unset γsys epoch)%I with "[] []").
   {
@@ -847,7 +847,7 @@ Proof.
     iIntros.
     iFrame.
   }
-  { iIntros. exfalso. replace (int.nat (U64 0)) with (0) in H by word. lia. }
+  { iIntros. exfalso. replace (int.nat (I64 0)) with (0) in H by word. lia. }
 
   iDestruct (big_sepS_sep_2 with "Hprop_rest Hconfig_prop_rest") as "HH".
   iDestruct (big_sepS_sep_2 with "HH Hconfig_rest") as "HH".
@@ -868,12 +868,12 @@ Definition own_server_pre γsrv : iProp Σ :=
 .
 
 Lemma pb_ghost_server_pre_init :
-  ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (U64 0) [] ∗ is_epoch_lb γsrv (U64 0)
+  ⊢ |==> ∃ γsrv, own_server_pre γsrv ∗ is_accepted_lb γsrv (I64 0) [] ∗ is_epoch_lb γsrv (I64 0)
 .
 Proof.
   iMod (fmlist_map_alloc_fin []) as (γacc) "Hacc".
   iMod (mono_nat_own_alloc 0) as (γepoch) "[Hepoch Hepoch_lb]".
-  iDestruct (big_sepS_elem_of_acc_impl (U64 0) with "Hacc") as "[Hacc Haccrest]".
+  iDestruct (big_sepS_elem_of_acc_impl (I64 0) with "Hacc") as "[Hacc Haccrest]".
   { set_solver. }
   iDestruct (fmlist_ptsto_get_lb with "Hacc") as "#Hacc_lb".
 
@@ -902,7 +902,7 @@ Lemma pb_ghost_server_init γsys γsrv :
   is_sys_init_witness γsys -∗
   own_server_pre γsrv
   -∗
-  own_replica_ghost γsys γsrv (U64 0) [] false
+  own_replica_ghost γsys γsrv (I64 0) [] false
 .
 Proof.
   iIntros "[#Hprop_lb #Hfacts] Hown".
