@@ -319,7 +319,7 @@ Proof.
     iApply "HΦ".
     iFrame.
     rewrite drop_drop.
-    replace (uint.nat (i64_instance.i64.(word.add) i 1%Z)) with (uint.nat i + 1) by word.
+    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) by word.
     iApply (big_sepL_impl with "Hl").
     iModIntro.
     iIntros.

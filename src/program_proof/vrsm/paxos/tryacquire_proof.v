@@ -613,7 +613,7 @@ Proof.
     iDestruct (establish_committed_by with "[$Hacc_lbs]") as "Hcom".
     { done. }
     {
-      assert (2 * size W >= uint.Z (i64_instance.i64.(word.mul) 2 (size W)))%Z.
+      assert (2 * size W >= uint.Z (word.mul 2 (size W)))%Z.
       {
         rewrite word.unsigned_mul.
         rewrite /word.wrap /=.

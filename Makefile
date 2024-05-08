@@ -71,28 +71,7 @@ endif
 SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/goose_lang/interpreter/interpreter.v\
 	src/goose_lang/logical_reln_fund.v\
-	src/program_logic/crash_adequacy.v\
-	src/program_logic/crash_weakestpre.v\
-	src/program_logic/recovery_adequacy.v\
-	src/program_logic/staged_invariant.v\
-	src/program_proof/append_log_proof.v\
-	src/program_proof/lockmap_proof.v\
-	src/program_proof/wal/circ_proof.v\
-	src/program_proof/wal/flush_proof.v\
-	src/program_proof/wal/logger_proof.v\
-	src/program_proof/wal/installer_proof.v\
-	src/program_proof/wal/sliding_proof.v\
-	src/program_proof/wal/recovery_proof.v\
-	src/program_proof/obj/commit_proof.v\
-	src/program_proof/txn/twophase_refinement_proof.v\
-	src/program_proof/simple/setattr.v\
-	src/program_proof/simple/write.v\
-	src/program_proof/examples/inode_proof.v\
-	src/program_proof/grove_shared/urpc_proof.v\
-	src/program_proof/memkv/memkv_conditional_put_proof.v\
-	src/program_proof/memkv/memkv_coord_start_proof.v\
-	src/program_proof/memkv/memkv_get_proof.v\
-	src/program_proof/vrsm/storage/proof.v
+	$(shell find src/program_proof/ -name "*.v" )
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)

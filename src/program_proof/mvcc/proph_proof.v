@@ -148,7 +148,7 @@ Proof.
     wp_apply (wp_store with "Hl"). iIntros "Hl".
     iApply "HΦ". iExists (<[key:=to_dbval present str']> m'), _. iFrame "Hl". iPureIntro. split.
     - simpl. rewrite Hdecode. done.
-    - replace (uint.nat (i64_instance.i64.(word.add) i 1)) with (S (uint.nat i)) by word.
+    - replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
       erewrite take_S_r; last done.
       rewrite fmap_app list_to_map_app -Hm' /=.
       rewrite [_ m']insert_union_singleton_r //.

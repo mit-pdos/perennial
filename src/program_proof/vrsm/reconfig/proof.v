@@ -62,7 +62,7 @@ Proof using waitgroupG0.
   wp_apply wp_RandomUint64.
   iIntros (rnd) "_".
   wp_pures.
-  set (s:=(i64_instance.i64.(word.add) rnd (I64 1))).
+  set (s:=(word.add rnd (I64 1))).
   generalize s as randId.
   clear s.
   intros randId.

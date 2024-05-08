@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-#
 # Toggle between Qed and Admitted in source code.
 # To be safer than Admitted, we actually add some extra commands that ensure
 # there are no remaining goals.
 
-SED=sed
+set -eu
+
+SED="sed"
 
 if command -v gsed >/dev/null ; then
     SED=gsed

@@ -52,16 +52,16 @@ Lemma add_one_lemma_1 : forall slice (first : u64) (count : u64) (e : u64),
   uint.Z first < length slice ->
   uint.Z count < length slice ->
   subslice (uint.nat first) (uint.nat first + uint.nat count)
-  (<[Z.to_nat (uint.Z (i64_instance.i64.(word.add) first count) `mod` length slice):=e]>
+  (<[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
      slice ++
-   <[Z.to_nat (uint.Z (i64_instance.i64.(word.add) first count) `mod` length slice):=e]>
+   <[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
      slice) = subslice (uint.nat first) (uint.nat first + uint.nat count) (slice ++ slice).
 Proof.
   intuition.
   assert (uint.nat first0 + uint.nat count0 < length slice ∨ (length slice <= uint.nat first0 + uint.nat count0 < length slice + length slice)).
   { word. }
   destruct H3.
-  - replace (Z.to_nat(uint.Z (i64_instance.i64.(word.add) first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0)).
+  - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0)).
     + rewrite subslice_take_drop.
       rewrite subslice_take_drop.
       rewrite take_app_le.
@@ -77,7 +77,7 @@ Proof.
       rewrite Z.mod_small.
       { done. }
       word.
-  - replace (Z.to_nat(uint.Z (i64_instance.i64.(word.add) first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
+  - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
     + epose proof (subslice_split_r (uint.nat first0) (length slice) _ (_ ++ _)).
       rewrite H4.
       2: word.
@@ -161,16 +161,16 @@ Lemma add_one_lemma_2 : forall slice (first : u64) (count : u64) (e : u64),
   uint.Z first < length slice ->
   uint.Z count < length slice ->
   subslice (uint.nat first + uint.nat count) (uint.nat first + Z.to_nat(uint.Z count + 1))
-  (<[Z.to_nat (uint.Z (i64_instance.i64.(word.add) first count) `mod` length slice):=e]>
+  (<[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
      slice ++
-   <[Z.to_nat (uint.Z (i64_instance.i64.(word.add) first count) `mod` length slice):=e]>
+   <[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
      slice) = [e].
 Proof.
   intuition.
   assert (uint.nat first0 + uint.nat count0 < length slice ∨ (length slice <= uint.nat first0 + uint.nat count0 < length slice + length slice)).
   { word. }
   destruct H3.
-  - replace (Z.to_nat(uint.Z (i64_instance.i64.(word.add) first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0)).
+  - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0)).
     + rewrite subslice_comm.
       rewrite drop_app_le.
       2: { rewrite insert_length. word. }
@@ -198,7 +198,7 @@ Proof.
       rewrite Z.mod_small.
       { done. }
       word.
-  - replace (Z.to_nat(uint.Z (i64_instance.i64.(word.add) first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
+  - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
     + rewrite subslice_comm.
       rewrite drop_app_ge.
       2: { rewrite insert_length. word. }
@@ -284,10 +284,10 @@ Lemma remove_one_lemma_2 : forall (slice : list u64) (first : u64) (count : u64)
   0 < uint.Z count <= length slice ->
   subslice (uint.nat first + 1) (uint.nat first + uint.nat count) (slice ++ slice) = 
   subslice (Z.to_nat
-  (uint.Z (i64_instance.i64.(word.add) first 1)
+  (uint.Z (word.add first 1)
     `mod` length slice))
   (Z.to_nat
-    (uint.Z (i64_instance.i64.(word.add) first 1)
+    (uint.Z (word.add first 1)
     `mod` length slice) + Z.to_nat (uint.Z count - 1)) (slice ++ slice).
 Proof.
   intuition.
@@ -296,35 +296,35 @@ Proof.
   destruct H2.
   - rewrite Z.mod_small. 2: { word. }
     word_cleanup.
-    replace (Init.Nat.add (Z.to_nat (i64_instance.i64.(word.unsigned) first0)) 1)
-      with (Z.to_nat (Z.add (i64_instance.i64.(word.unsigned) first0) 1)).
+    replace (Init.Nat.add (Z.to_nat (word.unsigned first0)) 1)
+      with (Z.to_nat (Z.add (word.unsigned first0) 1)).
     2: word.
-    replace (Init.Nat.add (Z.to_nat (Z.add (i64_instance.i64.(word.unsigned) first0) 1))
-        (Z.to_nat (Z.sub (i64_instance.i64.(word.unsigned) count0) 1)))
-      with (Init.Nat.add (Z.to_nat (i64_instance.i64.(word.unsigned) first0))
-        (Z.to_nat (i64_instance.i64.(word.unsigned) count0))).
+    replace (Init.Nat.add (Z.to_nat (Z.add (word.unsigned first0) 1))
+        (Z.to_nat (Z.sub (word.unsigned count0) 1)))
+      with (Init.Nat.add (Z.to_nat (word.unsigned first0))
+        (Z.to_nat (word.unsigned count0))).
     2: word.
     done.
   - rewrite H2.
     replace (Init.Nat.add (Z.to_nat (Z.sub (Datatypes.length slice) 1)) 1) with ((length slice)).
     2: word.
-    replace (i64_instance.i64.(word.unsigned) (i64_instance.i64.(word.add) first0 1)) with (uint.Z (length slice)).
+    replace (word.unsigned (word.add first0 1)) with (uint.Z (length slice)).
     2: word.
     replace ((uint.Z (length slice) `mod` length slice)) with 0.
     2: { rewrite Z_u64. { rewrite Z_mod_same. { done. } word. } word. }
     rewrite Z2Nat.inj_0.
-    replace (Init.Nat.add 0 (Z.to_nat (Z.sub (i64_instance.i64.(word.unsigned) count0) 1))) with (Z.to_nat (Z.sub (i64_instance.i64.(word.unsigned) count0) 1)).
+    replace (Init.Nat.add 0 (Z.to_nat (Z.sub (word.unsigned count0) 1))) with (Z.to_nat (Z.sub (word.unsigned count0) 1)).
     2: word.
     rewrite subslice_comm.
     rewrite drop_app_length.
     rewrite subslice_comm.
     rewrite drop_0.
-    replace (Init.Nat.sub (Z.to_nat (Z.sub (i64_instance.i64.(word.unsigned) count0) 1)) 0) with (Z.to_nat (Z.sub (i64_instance.i64.(word.unsigned) count0) 1)).
+    replace (Init.Nat.sub (Z.to_nat (Z.sub (word.unsigned count0) 1)) 0) with (Z.to_nat (Z.sub (word.unsigned count0) 1)).
     2: word.
     replace (Init.Nat.sub
     (Init.Nat.add (Z.to_nat (Z.sub (Datatypes.length slice) 1))
-       (Z.to_nat (i64_instance.i64.(word.unsigned) count0)))
-    (Datatypes.length slice)) with (Z.to_nat (Z.sub (i64_instance.i64.(word.unsigned) count0) 1)).
+       (Z.to_nat (word.unsigned count0)))
+    (Datatypes.length slice)) with (Z.to_nat (Z.sub (word.unsigned count0) 1)).
     2: word.
     rewrite take_app_le.
     2: word.
@@ -516,9 +516,9 @@ Proof.
         rewrite <- H0.
         word.
       }
-      epose proof (word.unsigned_modu_nowrap (i64_instance.i64.(word.add) first1 count1) queueSlice.(Slice.sz)).
-      epose proof (u64_Z_through_nat (i64_instance.i64.(word.modu)
-      (i64_instance.i64.(word.add) first1 count1)
+      epose proof (word.unsigned_modu_nowrap (word.add first1 count1) queueSlice.(Slice.sz)).
+      epose proof (u64_Z_through_nat (word.modu
+      (word.add first1 count1)
       queueSlice.(Slice.sz))).
       rewrite H5.
       rewrite H4.
@@ -534,10 +534,10 @@ Proof.
     wp_loadField.
     wp_apply (release_spec with "[H2 Hqueue Hfirst Hcount H4 Helem HP]").
     { iFrame "HlockC". 
-      iFrame "H2". iNext. iExists _, (i64_instance.i64.(word.add) count1 1).
+      iFrame "H2". iNext. iExists _, (word.add count1 1).
       iExists (<[uint.nat
-      (i64_instance.i64.(word.modu)
-         (i64_instance.i64.(word.add) first1 count1)
+      (word.modu
+         (word.add first1 count1)
          queueSlice.(Slice.sz)):=a]> queue1). 
       iFrame.
       iFrame "Hqueue".
@@ -551,13 +551,13 @@ Proof.
         word.
       }
       edestruct (list_lookup_Z_lt queue1 (uint.nat
-      (i64_instance.i64.(word.modu)
-        (i64_instance.i64.(word.add) first1 count1)
+      (word.modu
+        (word.add first1 count1)
         queueSlice.(Slice.sz)))).
         { split. { word. }
           epose proof (Z_mod_lt _ (length queue1)).
           destruct H1. { word. }
-          epose proof (word.unsigned_modu_nowrap (i64_instance.i64.(word.add) first1 count1) queueSlice.(Slice.sz)).
+          epose proof (word.unsigned_modu_nowrap (word.add first1 count1) queueSlice.(Slice.sz)).
           rewrite u64_Z_through_nat.
           rewrite H3.
           { epose proof (u64_Z_through_nat (queueSlice.(Slice.sz))).
@@ -678,7 +678,7 @@ Proof.
     wp_apply (release_spec with "[HlockC H2 Hqueue Hfirst Hcount H3 Helem]").
     { iFrame "∗#". 
       iNext.
-      iExists _, (i64_instance.i64.(word.sub) count1 1).
+      iExists _, (word.sub count1 1).
       iExists _. 
       iFrame "Hfirst Hcount H3". 
       iFrame "Hqueue".

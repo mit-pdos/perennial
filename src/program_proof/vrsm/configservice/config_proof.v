@@ -1541,7 +1541,7 @@ Proof.
 
   iMod (readonly_load with "Hcls_sl") as (?) "Hcls_sl2".
   iDestruct (own_slice_small_sz with "Hcls_sl2") as %Hsl_sz.
-  set (idx:=(i64_instance.i64.(word.modu) r cls_sl.(Slice.sz))).
+  set (idx:=(word.modu r cls_sl.(Slice.sz))).
   assert (uint.nat idx < length cls) as Hlookup.
   {
     subst idx.
