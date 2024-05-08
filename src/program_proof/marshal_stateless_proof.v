@@ -91,14 +91,14 @@ Proof.
   iApply "HΦ".
   iSplit.
   { iPureIntro. rewrite -bool_decide_not !bool_decide_decide.
-    assert (#bit ≠ #(U8 0) ↔ int.Z bit ≠ 0).
+    assert (#bit ≠ #(U8 0) ↔ uint.Z bit ≠ 0).
     { apply not_iff_compat.
       split.
     - inversion 1; subst; auto.
     - intros H.
       do 2 f_equal.
-      apply (inj int.Z). (* don't know how I even figured this out *)
-      change (int.Z (U8 0)) with 0%Z; assumption.
+      apply (inj uint.Z). (* don't know how I even figured this out *)
+      change (uint.Z (U8 0)) with 0%Z; assumption.
     }
     destruct (decide _), (decide _); auto; tauto.
   }
