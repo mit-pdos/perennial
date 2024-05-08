@@ -476,8 +476,32 @@ Proof.
     { iPureIntro. apply comp_ctx'; last done. apply ectx_lang_ctx'. }
     iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
-    iAssert (∃ (vres: u64), ⌜ un_op_eval ToUInt64Op v1 = Some #vres ∧
-                            un_op_eval ToUInt64Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
+    iAssert (∃ (vres: u64), ⌜ un_op_eval UToW64Op v1 = Some #vres ∧
+                            un_op_eval UToW64Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
+    {
+      destruct t; try inversion e;
+      destruct t; try congruence;
+      rewrite /atomically_val_interp//=;
+      iDestruct "Hv1" as (?) "(%&%)"; subst;
+      iPureIntro; eexists; eauto.
+    }
+    destruct Hres as (x&Heq1&Heq2).
+    iApply wp_wpc.
+    iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
+    { intros ??.
+      apply base_prim_step_trans'. repeat econstructor; eauto.
+        rewrite Heq2; eauto. econstructor; eauto.
+    }
+    wp_pures; eauto.
+  - subst. simpl.
+    wpc_bind (subst_map _ e2).
+    iPoseProof (IHHtyping with "[//] [$] [$]") as "H"; first auto.
+    iSpecialize ("H" $! j _ _ (λ x, K (ectx_language.fill [UnOpCtx _] x)) with "[] Hj").
+    { iPureIntro. apply comp_ctx'; last done. apply ectx_lang_ctx'. }
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    iAssert (∃ (vres: u64), ⌜ un_op_eval SToW64Op v1 = Some #vres ∧
+                            un_op_eval SToW64Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
     {
       destruct t; try inversion e;
       destruct t; try congruence;
@@ -500,8 +524,8 @@ Proof.
     iSpecialize ("H" $! j _ _ _ Hctx' with "Hj"); clear Hctx'.
     iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
-    iAssert (∃ (vres: u32), ⌜ un_op_eval ToUInt32Op v1 = Some #vres ∧
-                            un_op_eval ToUInt32Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
+    iAssert (∃ (vres: u32), ⌜ un_op_eval UToW32Op v1 = Some #vres ∧
+                            un_op_eval UToW32Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
     {
       destruct t; try inversion e;
       destruct t; try congruence;
@@ -524,8 +548,56 @@ Proof.
     iSpecialize ("H" $! j _ _ _ Hctx' with "Hj"); clear Hctx'.
     iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
-    iAssert (∃ (vres: u8), ⌜ un_op_eval ToUInt8Op v1 = Some #vres ∧
-                            un_op_eval ToUInt8Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
+    iAssert (∃ (vres: u32), ⌜ un_op_eval SToW32Op v1 = Some #vres ∧
+                            un_op_eval SToW32Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
+    {
+      destruct t; try inversion e;
+      destruct t; try congruence;
+      rewrite /atomically_val_interp//=;
+      iDestruct "Hv1" as (?) "(%&%)"; subst;
+      iPureIntro; eexists; eauto.
+    }
+    destruct Hres as (x&Heq1&Heq2).
+    iApply wp_wpc.
+    iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
+    { intros ??.
+      apply base_prim_step_trans'. repeat econstructor; eauto.
+        rewrite Heq2; eauto. econstructor; eauto.
+    }
+    wp_pures; eauto.
+  - subst. simpl.
+    wpc_bind (subst_map _ e2).
+    iPoseProof (IHHtyping with "[//] [$] [$]") as "H"; first auto.
+    spec_bind (_ _ e1) as Hctx'.
+    iSpecialize ("H" $! j _ _ _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    iAssert (∃ (vres: u8), ⌜ un_op_eval UToW8Op v1 = Some #vres ∧
+                            un_op_eval UToW8Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
+    {
+      destruct t; try inversion e;
+      destruct t; try congruence;
+      rewrite /atomically_val_interp//=;
+      iDestruct "Hv1" as (?) "(%&%)"; subst;
+      iPureIntro; eexists; eauto.
+    }
+    destruct Hres as (x&Heq1&Heq2).
+    iApply wp_wpc.
+    iDestruct (twophase_started_step_puredet with "Hj") as "Hj".
+    { intros ??.
+      apply base_prim_step_trans'. repeat econstructor; eauto.
+        rewrite Heq2; eauto. econstructor; eauto.
+    }
+    wp_pures; eauto.
+  - subst. simpl.
+    wpc_bind (subst_map _ e2).
+    iPoseProof (IHHtyping with "[//] [$] [$]") as "H"; first auto.
+    spec_bind (_ _ e1) as Hctx'.
+    iSpecialize ("H" $! j _ _ _ Hctx' with "Hj"); clear Hctx'.
+    iApply (wpc_mono' with "[] [] H"); last by auto.
+    iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
+    iAssert (∃ (vres: u8), ⌜ un_op_eval SToW8Op v1 = Some #vres ∧
+                            un_op_eval SToW8Op vs1 = Some #vres ⌝)%I with "[Hv1]" as %Hres.
     {
       destruct t; try inversion e;
       destruct t; try congruence;

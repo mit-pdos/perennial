@@ -123,7 +123,7 @@ Record buf := {
 }.
 
 Definition get_bit (b0 : u8) (off : u64) : bool :=
-  if decide (W8 1 = word.and (word.sru b0 (u8_from_u64 off)) (W8 1))
+  if decide (W8 1 = word.and (word.sru b0 (W8 (uint.Z off))) (W8 1))
   then true
   else false.
 

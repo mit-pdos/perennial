@@ -337,7 +337,6 @@ Proof.
       rewrite word.unsigned_sru_nowrap.
       { change (uint.Z (W8 0)) with 0; simpl.
         rewrite Z.shiftr_0_l //. }
-      rewrite /u8_from_u64.
       rewrite word.unsigned_of_Z word.unsigned_modu_nowrap //.
       change (uint.Z 8) with 8.
       rewrite block_bytes_eq in H1.

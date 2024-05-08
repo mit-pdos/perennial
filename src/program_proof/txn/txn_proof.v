@@ -1709,10 +1709,10 @@ Proof.
   }
   wp_pures.
   assert (
-    uint.Z (word.slu (W8 1) (u8_from_u64 off)) = uint.Z (W8 (1 ≪ uint.Z off))
+    uint.Z (word.slu (W8 1) (W8 $ uint.Z off)) = uint.Z (W8 (1 ≪ uint.Z off))
   ) as Harith.
   {
-    rewrite /u8_from_u64 word.unsigned_slu.
+    rewrite word.unsigned_slu.
     2: rewrite unsigned_U8 /word.wrap !Z.mod_small; lia.
     rewrite !unsigned_U8 /word.wrap !(Z.mod_small 1); last by lia.
     rewrite !(Z.mod_small (uint.Z off)); last by lia.
@@ -1806,7 +1806,7 @@ Proof.
     1: refine _.
     unshelve (erewrite bool_decide_ext).
     4: {
-      rewrite word.unsigned_and /u8_from_u64 word.unsigned_modu;
+      rewrite word.unsigned_and word.unsigned_modu;
         last by word.
       rewrite unsigned_U64 (wrap_small 8); last by lia.
       unfold word.wrap at 2.

@@ -80,15 +80,27 @@ Section translate.
   | cast_u64_op_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       is_intTy t = true ->
-      Γ ⊢ UnOp ToUInt64Op e1 -- UnOp ToUInt64Op e2 : uint64T
+      Γ ⊢ UnOp UToW64Op e1 -- UnOp UToW64Op e2 : uint64T
+  | cast_s64_op_transTy e1 e2 t :
+      Γ ⊢ e1 -- e2 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp SToW64Op e1 -- UnOp SToW64Op e2 : uint64T
   | cast_u32_op_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       is_intTy t = true ->
-      Γ ⊢ UnOp ToUInt32Op e1 -- UnOp ToUInt32Op e2 : uint32T
+      Γ ⊢ UnOp UToW32Op e1 -- UnOp UToW32Op e2 : uint32T
+  | cast_s32_op_transTy e1 e2 t :
+      Γ ⊢ e1 -- e2 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp SToW32Op e1 -- UnOp SToW32Op e2 : uint32T
   | cast_u8_op_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       is_intTy t = true ->
-      Γ ⊢ UnOp ToUInt8Op e1 -- UnOp ToUInt8Op e2 : byteT
+      Γ ⊢ UnOp UToW8Op e1 -- UnOp UToW8Op e2 : byteT
+  | cast_s8_op_transTy e1 e2 t :
+      Γ ⊢ e1 -- e2 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp SToW8Op e1 -- UnOp SToW8Op e2 : byteT
   | cast_string_op_transTy e1 e2 t :
       Γ ⊢ e1 -- e2 : t ->
       is_byteTy t = true ->

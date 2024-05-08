@@ -80,11 +80,11 @@ Hint Rewrite word.unsigned_sru : word.
 
 Theorem word_byte_extract (x:u32) k :
   0 <= k < 4 ->
-  word.of_Z (uint.Z x ≫ (k*8)) = u8_from_u32 (word.sru x (W32 (k*8))).
+  word.of_Z (uint.Z x ≫ (k*8)) = W8 (uint.Z (word.sru x (W32 (k*8)))).
 Proof.
   intros.
   apply word.unsigned_inj.
-  unfold u8_from_u32, W8.
+  unfold W8.
   autorewrite with word.
   rewrite word.unsigned_sru;
     rewrite unsigned_U32.
@@ -97,11 +97,11 @@ Qed.
 
 Theorem word64_byte_extract (x:u64) k :
   0 <= k < 8 ->
-  word.of_Z (uint.Z x ≫ (k*8)) = u8_from_u64 (word.sru x (W64 (k*8))).
+  word.of_Z (uint.Z x ≫ (k*8)) = W8 (uint.Z (word.sru x (W64 (k*8)))).
 Proof.
   intros.
   apply word.unsigned_inj.
-  unfold u8_from_u64, W8.
+  unfold W8.
   autorewrite with word.
   rewrite word.unsigned_sru;
     rewrite unsigned_U64.
@@ -114,10 +114,10 @@ Qed.
 
 Theorem u32_le_to_sru (x: u32) :
   b2val <$> u32_le x =
-  cons #(u8_from_u32 (word.sru x (W32 (0%nat * 8))))
-       (cons #(u8_from_u32 (word.sru x (W32 (1%nat * 8))))
-             (cons #(u8_from_u32 (word.sru x (W32 (2%nat * 8))))
-                   (cons #(u8_from_u32 (word.sru x (W32 (3%nat * 8))))
+  cons #(W8 (uint.Z (word.sru x (W32 (0%nat * 8)))))
+       (cons #(W8 (uint.Z (word.sru x (W32 (1%nat * 8)))))
+             (cons #(W8 (uint.Z (word.sru x (W32 (2%nat * 8)))))
+                   (cons #(W8 (uint.Z (word.sru x (W32 (3%nat * 8)))))
                          nil))).
 Proof.
   rewrite /b2val.
@@ -342,30 +342,30 @@ Ltac eval_u64 :=
     rewrite  (Z_u64 z ltac:(lia))
   end.
 
-Theorem u8_to_from_u32 x :
-  uint.Z (u8_to_u32 (u8_from_u32 x)) =
+Theorem u8_to_from_u32 (x:w32) :
+  uint.Z (W32 (uint.Z (W8 (uint.Z x)))) =
   uint.Z x `mod` 2 ^ 8.
 Proof.
-  unfold u8_to_u32, u8_from_u32, W8, W32.
+  unfold W8, W32.
   autorewrite with word.
   rewrite word.unsigned_of_Z.
   rewrite word_wrap_wrap'; last lia.
   reflexivity.
 Qed.
 
-Lemma val_u8_to_u32 x :
-  uint.Z (u8_to_u32 x) = uint.Z x.
+Lemma val_u8_to_u32 (x:w8) :
+  uint.Z (W32 (uint.Z x)) = uint.Z x.
 Proof.
-  unfold u8_to_u32, W32.
+  unfold W32.
   rewrite word.unsigned_of_Z.
   pose proof (word.unsigned_range x).
   rewrite wrap_small; lia.
 Qed.
 
-Lemma val_u8_to_u64 x :
-  uint.Z (u8_to_u64 x) = uint.Z x.
+Lemma val_u8_to_u64 (x:w8) :
+  uint.Z (W64 (uint.Z x)) = uint.Z x.
 Proof.
-  unfold u8_to_u64, W64.
+  unfold W64.
   rewrite word.unsigned_of_Z.
   pose proof (word.unsigned_range x).
   rewrite wrap_small; lia.
@@ -520,13 +520,13 @@ Proof.
   intuition bit_bound.
 Qed.
 
-Theorem decode_encode x :
-  word.or (u8_to_u32 (word.of_Z (uint.Z x)))
+Theorem decode_encode (x : w32) :
+  word.or (W32 (uint.Z (@word.of_Z 8 _ (uint.Z x))))
         (word.slu
-           (word.or (u8_to_u32 (word.of_Z (uint.Z x ≫ 8)))
+           (word.or (W32 (uint.Z (@word.of_Z 8 _ (uint.Z x ≫ 8))))
               (word.slu
-                 (word.or (u8_to_u32 (word.of_Z ((uint.Z x ≫ 8) ≫ 8)))
-                    (word.slu (u8_to_u32 (word.of_Z (((uint.Z x ≫ 8) ≫ 8) ≫ 8))) (W32 8)))
+                 (word.or (W32 (uint.Z (@word.of_Z 8 _ ((uint.Z x ≫ 8) ≫ 8))))
+                    (word.slu (W32 (uint.Z (@word.of_Z 8 _ (((uint.Z x ≫ 8) ≫ 8) ≫ 8)))) (W32 8)))
                  (W32 8))) (W32 8)) = x.
 Proof.
   apply word.unsigned_inj.
@@ -544,26 +544,27 @@ Proof.
   rewrite ?val_u8_to_u32.
   rewrite <- H at 5; clear H.
   rewrite ?word.unsigned_of_Z.
+  repeat ( rewrite word_wrap_wrap'; last by lia ).
   repeat (( rewrite -> word_wrap_32_Zlor by intuition bit_bound ) ||
           ( rewrite -> word_wrap_32_Zshiftl by intuition bit_bound )).
   reflexivity.
 Qed.
 
-Theorem decode_encode64 x :
-  word.or (u8_to_u64 (word.of_Z (uint.Z x)))
+Theorem decode_encode64 (x : w64) :
+  word.or (W64 (uint.Z (@word.of_Z 8 _ (uint.Z x))))
         (word.slu
-           (word.or (u8_to_u64 (word.of_Z (uint.Z x ≫ 8)))
+           (word.or (W64 (uint.Z (@word.of_Z 8 _ (uint.Z x ≫ 8))))
               (word.slu
-                 (word.or (u8_to_u64 (word.of_Z ((uint.Z x ≫ 8) ≫ 8)))
+                 (word.or (W64 (uint.Z (@word.of_Z 8 _ ((uint.Z x ≫ 8) ≫ 8))))
                     (word.slu
-                       (word.or (u8_to_u64 (word.of_Z (((uint.Z x ≫ 8) ≫ 8) ≫ 8)))
+                       (word.or (W64 (uint.Z (@word.of_Z 8 _ (((uint.Z x ≫ 8) ≫ 8) ≫ 8))))
                           (word.slu
-                             (word.or (u8_to_u64 (word.of_Z ((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8)))
+                             (word.or (W64 (uint.Z (@word.of_Z 8 _ ((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8))))
                                 (word.slu
-                                   (word.or (u8_to_u64 (word.of_Z (((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8)))
+                                   (word.or (W64 (uint.Z (@word.of_Z 8 _ (((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8))))
                                       (word.slu
-                                         (word.or (u8_to_u64 (word.of_Z ((((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8)))
-                                            (word.slu (u8_to_u64 (word.of_Z (((((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8))) (W64 8)))
+                                         (word.or (W64 (uint.Z (@word.of_Z 8 _ ((((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8))))
+                                            (word.slu (W64 (uint.Z (@word.of_Z 8 _ (((((((uint.Z x ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8) ≫ 8)))) (W64 8)))
                                          (W64 8)))
                                     (W64 8)))
                               (W64 8)))
@@ -594,6 +595,7 @@ Proof.
   rewrite ?val_u8_to_u64.
   rewrite <- H at 9; clear H.
   rewrite ?word.unsigned_of_Z.
+  repeat ( rewrite word_wrap_wrap'; last by lia ).
   repeat (( rewrite -> word_wrap_64_Zlor by intuition bit_bound ) ||
           ( rewrite -> word_wrap_64_Zshiftl by intuition bit_bound )).
   reflexivity.

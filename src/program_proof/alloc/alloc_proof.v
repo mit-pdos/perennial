@@ -5,9 +5,8 @@ From Goose.github_com.mit_pdos.go_journal Require Import alloc.
 
 (* TODO: this file isn't using typed_slice, should fix that *)
 
-Lemma Z_u8_to_u64 x : uint.Z (u8_to_u64 x) = uint.Z x.
+Lemma Z_u8_to_u64 (x:w8) : uint.Z (W64 (uint.Z x)) = uint.Z x.
 Proof.
-  rewrite /u8_to_u64 /W64.
   rewrite /W64.
   rewrite word.unsigned_of_Z_nowrap //.
   pose proof (word.unsigned_range x).
@@ -373,10 +372,8 @@ Proof.
     iFrame "Hi".
     iExists _, _; iFrame.
     iPureIntro.
-    word_cleanup.
-    rewrite Z_u8_to_u64.
     pose proof (and_1_u8 x).
-    rewrite wrap_small; lia.
+    word_cleanup.
   - iExists _, _; iFrame.
     iPureIntro.
     word.

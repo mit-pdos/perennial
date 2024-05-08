@@ -803,7 +803,7 @@ Qed.
 
 Lemma mask_bit_ok (b: u8) (bit: u64) :
   uint.Z bit < 8 →
-  word.and b (word.slu (W8 1) (u8_from_u64 bit)) =
+  word.and b (word.slu (W8 1) (W8 (uint.Z bit))) =
   if default false (byte_to_bits b !! uint.nat bit) then
     W8 (2^(uint.nat bit))
   else W8 0.

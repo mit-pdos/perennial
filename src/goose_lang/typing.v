@@ -303,15 +303,27 @@ Section goose_lang.
   | cast_u64_op_hasTy e1 t :
       Γ ⊢ e1 : t ->
       is_intTy t = true ->
-      Γ ⊢ UnOp ToUInt64Op e1 : uint64T
+      Γ ⊢ UnOp UToW64Op e1 : uint64T
+  | cast_s64_op_hasTy e1 t :
+      Γ ⊢ e1 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp SToW64Op e1 : uint64T
   | cast_u32_op_hasTy e1 t :
       Γ ⊢ e1 : t ->
       is_intTy t = true ->
-      Γ ⊢ UnOp ToUInt32Op e1 : uint32T
+      Γ ⊢ UnOp UToW32Op e1 : uint32T
+  | cast_s32_op_hasTy e1 t :
+      Γ ⊢ e1 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp SToW32Op e1 : uint32T
   | cast_u8_op_hasTy e1 t :
       Γ ⊢ e1 : t ->
       is_intTy t = true ->
-      Γ ⊢ UnOp ToUInt8Op e1 : byteT
+      Γ ⊢ UnOp UToW8Op e1 : byteT
+  | cast_s8_op_hasTy e1 t :
+      Γ ⊢ e1 : t ->
+      is_intTy t = true ->
+      Γ ⊢ UnOp SToW8Op e1 : byteT
   | cast_string_op_hasTy e1 t :
       Γ ⊢ e1 : t ->
       is_byteTy t = true ->
@@ -633,9 +645,12 @@ Ltac _type_step :=
   match goal with
   | [ |- expr_hasTy _ _ _ ] => solve [eauto with types]
   | [ |- val_hasTy _ _ _ ] => solve [eauto with types]
-  | [ |- expr_hasTy _ (UnOp ToUInt64Op _) _ ] => eapply cast_u64_op_hasTy
-  | [ |- expr_hasTy _ (UnOp ToUInt32Op _) _ ] => eapply cast_u32_op_hasTy
-  | [ |- expr_hasTy _ (UnOp ToUInt8Op _) _ ] => eapply cast_u8_op_hasTy
+  | [ |- expr_hasTy _ (UnOp UToW64Op _) _ ] => eapply cast_u64_op_hasTy
+  | [ |- expr_hasTy _ (UnOp SToW64Op _) _ ] => eapply cast_s64_op_hasTy
+  | [ |- expr_hasTy _ (UnOp UToW32Op _) _ ] => eapply cast_u32_op_hasTy
+  | [ |- expr_hasTy _ (UnOp SToW32Op _) _ ] => eapply cast_s32_op_hasTy
+  | [ |- expr_hasTy _ (UnOp UToW8Op _) _ ] => eapply cast_u8_op_hasTy
+  | [ |- expr_hasTy _ (UnOp SToW8Op _) _ ] => eapply cast_s8_op_hasTy
   | [ |- expr_hasTy _ (UnOp ToStringOp _) _ ] => eapply cast_string_op_hasTy
   | [ |- expr_hasTy _ (BinOp _ _ _) uint32T ] => eapply bin_op_32_hasTy; [ reflexivity | | ]
   | [ |- expr_hasTy _ (BinOp _ _ _) uint64T ] => eapply bin_op_64_hasTy; [ reflexivity | | ]

@@ -68,8 +68,10 @@ Inductive base_lit : Type :=
   | LitLoc (l : loc) | LitProphecy (p: proph_id).
 Inductive un_op : Set :=
   (* TODO: operation to take length of string *)
-  | NegOp | MinusUnOp | ToUInt64Op | ToUInt32Op | ToUInt8Op | ToStringOp
-  | StringLenOp | IsNoStringOverflowOp
+  | NegOp | MinusUnOp
+  | UToW64Op | UToW32Op | UToW8Op
+  | SToW64Op | SToW32Op | SToW8Op
+  | ToStringOp | StringLenOp | IsNoStringOverflowOp
 .
 Inductive bin_op : Set :=
   | PlusOp | MinusOp | MultOp | QuotOp | RemOp (* Arithmetic *)
@@ -801,15 +803,24 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | NegOp, LitV (LitInt n) => Some $ LitV $ LitInt (word.not n)
   | NegOp, LitV (LitInt32 n) => Some $ LitV $ LitInt32 (word.not n)
   | NegOp, LitV (LitByte n) => Some $ LitV $ LitByte (word.not n)
-  | ToUInt64Op, LitV (LitInt v) => Some $ LitV $ LitInt v
-  | ToUInt64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (u32_to_u64 v)
-  | ToUInt64Op, LitV (LitByte v) => Some $ LitV $ LitInt (u8_to_u64 v)
-  | ToUInt32Op, LitV (LitInt v) => Some $ LitV $ LitInt32 (u32_from_u64 v)
-  | ToUInt32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 v
-  | ToUInt32Op, LitV (LitByte v) => Some $ LitV $ LitInt32 (u8_to_u32 v)
-  | ToUInt8Op, LitV (LitInt v) => Some $ LitV $ LitByte (u8_from_u64 v)
-  | ToUInt8Op, LitV (LitInt32 v) => Some $ LitV $ LitByte (u8_from_u32 v)
-  | ToUInt8Op, LitV (LitByte v) => Some $ LitV $ LitByte v
+  | UToW64Op, LitV (LitInt v)   => Some $ LitV $ LitInt (W64 (uint.Z v))
+  | UToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (uint.Z v))
+  | UToW64Op, LitV (LitByte v)  => Some $ LitV $ LitInt (W64 (uint.Z v))
+  | UToW32Op, LitV (LitInt v)   => Some $ LitV $ LitInt32 (W32 (uint.Z v))
+  | UToW32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 (W32 (uint.Z v))
+  | UToW32Op, LitV (LitByte v)  => Some $ LitV $ LitInt32 (W32 (uint.Z v))
+  | UToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (uint.Z v))
+  | UToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (uint.Z v))
+  | UToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (uint.Z v))
+  | SToW64Op, LitV (LitInt v)   => Some $ LitV $ LitInt (W64 (sint.Z v))
+  | SToW64Op, LitV (LitInt32 v) => Some $ LitV $ LitInt (W64 (sint.Z v))
+  | SToW64Op, LitV (LitByte v)  => Some $ LitV $ LitInt (W64 (sint.Z v))
+  | SToW32Op, LitV (LitInt v)   => Some $ LitV $ LitInt32 (W32 (sint.Z v))
+  | SToW32Op, LitV (LitInt32 v) => Some $ LitV $ LitInt32 (W32 (sint.Z v))
+  | SToW32Op, LitV (LitByte v)  => Some $ LitV $ LitInt32 (W32 (sint.Z v))
+  | SToW8Op, LitV (LitInt v)    => Some $ LitV $ LitByte (W8 (sint.Z v))
+  | SToW8Op, LitV (LitInt32 v)  => Some $ LitV $ LitByte (W8 (sint.Z v))
+  | SToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (sint.Z v))
   | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString (u8_to_string v)
   | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (W64 (String.length v))
   | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide ((String.length v) < 2^64))
@@ -909,17 +920,17 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
 
     (* Shifts do not require matching bit width *)
     | LitV (LitByte n1), LitV (LitInt n2) =>
-      LitV <$> (LitByte <$> bin_op_eval_shift op n1 (u8_from_u64 n2))
+      LitV <$> (LitByte <$> bin_op_eval_shift op n1 (W8 (uint.Z n2)))
     | LitV (LitByte n1), LitV (LitInt32 n2) =>
-      LitV <$> (LitByte <$> bin_op_eval_shift op n1 (u8_from_u32 n2))
+      LitV <$> (LitByte <$> bin_op_eval_shift op n1 (W8 (uint.Z n2)))
     | LitV (LitInt32 n1), LitV (LitInt n2) =>
-      LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (u32_from_u64 n2))
+      LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (W32 (uint.Z n2)))
     | LitV (LitInt32 n1), LitV (LitByte n2) =>
-      LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (u8_to_u32 n2))
+      LitV <$> (LitInt32 <$> bin_op_eval_shift op n1 (W32 (uint.Z n2)))
     | LitV (LitInt n1), LitV (LitByte n2) =>
-      LitV <$> (LitInt <$> bin_op_eval_shift op n1 (u8_to_u64 n2))
+      LitV <$> (LitInt <$> bin_op_eval_shift op n1 (W64 (uint.Z n2)))
     | LitV (LitInt n1), LitV (LitInt32 n2) =>
-      LitV <$> (LitInt <$> bin_op_eval_shift op n1 (u32_to_u64 n2))
+      LitV <$> (LitInt <$> bin_op_eval_shift op n1 (W64 (uint.Z n2)))
 
     | LitV (LitBool b1), LitV (LitBool b2) => LitV <$> bin_op_eval_bool op b1 b2
     | LitV (LitString s1), LitV (LitString s2) => LitV <$> bin_op_eval_string op s1 s2

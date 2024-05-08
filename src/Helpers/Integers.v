@@ -300,16 +300,6 @@ Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (uint.nat x)
 (* conversion to string *)
 Definition u8_to_string (x:byte) : String.string := String.String (u8_to_ascii x) String.EmptyString.
 
-(* conversions up *)
-Definition u8_to_u32 (x:byte) : w32 := W32 (uint.Z x).
-Definition u8_to_u64 (x:byte) : w64 := W64 (uint.Z x).
-Definition u32_to_u64 (x:w32) : w64 := W64 (uint.Z x).
-
-(* conversions down *)
-Definition u32_from_u64 (x:w64) : u32 := W32 (uint.Z x).
-Definition u8_from_u64 (x:u64) : byte := W8 (uint.Z x).
-Definition u8_from_u32 (x:u32) : byte := W8 (uint.Z x).
-
 Theorem wrap_small `{word: Interface.word width} {ok: word.ok word} (x:Z) :
   0 <= x < 2^width ->
   word.wrap x = x.
@@ -328,29 +318,53 @@ Proof.
   rewrite Zmod_small; lia.
 Qed.
 
-Theorem u8_to_u64_Z x : uint.Z (u8_to_u64 x) = uint.Z x.
+Theorem u8_to_u64_Z (x:w8) : uint.Z (W64 (uint.Z x)) = uint.Z x.
 Proof.
-  unfold u8_to_u64, W64.
+  unfold W64.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
-Theorem u32_to_u64_Z x : uint.Z (u32_to_u64 x) = uint.Z x.
+Theorem u32_to_u64_Z (x:w32) : uint.Z (W64 (uint.Z x)) = uint.Z x.
 Proof.
-  unfold u32_to_u64, W64.
+  unfold W64.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
   pose proof (word.unsigned_range x); lia.
 Qed.
 
 Theorem u32_from_u64_Z (x: u64) : uint.Z x < 2^32 ->
-                                    uint.Z (u32_from_u64 x) = uint.Z x.
+                                  uint.Z (W32 (uint.Z x)) = uint.Z x.
 Proof.
-  unfold u32_from_u64, W32; intros.
+  unfold W32; intros.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small; auto.
   pose proof (word.unsigned_range x); lia.
+Qed.
+
+Theorem s8_to_s64_Z (x:w8) : sint.Z (W64 (sint.Z x)) = sint.Z x.
+Proof.
+  unfold W64.
+  rewrite word.signed_of_Z.
+  rewrite swrap_small; auto; first by lia.
+  pose proof (word.signed_range x); lia.
+Qed.
+
+Theorem s32_to_s64_Z (x:w32) : sint.Z (W64 (sint.Z x)) = sint.Z x.
+Proof.
+  unfold W64.
+  rewrite word.signed_of_Z.
+  rewrite swrap_small; auto; first by lia.
+  pose proof (word.signed_range x); lia.
+Qed.
+
+Theorem s32_from_s64_Z (x: w64) : -2^(32-1) ≤ sint.Z x < 2^(32-1) ->
+                                  sint.Z (W32 (sint.Z x)) = sint.Z x.
+Proof.
+  unfold W32; intros.
+  rewrite word.signed_of_Z.
+  rewrite swrap_small; auto; first by lia.
 Qed.
 
 Theorem tuple_to_list_length A n (t: tuple A n) :

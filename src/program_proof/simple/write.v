@@ -166,7 +166,7 @@ Proof using Ptimeless.
   wp_apply (wp_Inode__Write with "[$Hjrnl_mem $Hinode_mem $Hinode_data $Hinode_enc Hdata]").
   { iDestruct (own_slice_to_small with "Hdata") as "$".
     iPureIntro. intuition eauto.
-    rewrite /u32_to_u64. word.
+    word.
   }
 
   iIntros (wcount ok) "[Hjrnl_mem [(Hinode_mem & Hinode_enc & Hinode_data & %Hok) | Hok]]"; intuition subst.
@@ -205,11 +205,11 @@ Proof using Ptimeless.
     iModIntro. iClear "Hnooverflow".
 
     replace (uint.Z (length state)
-              `max` (uint.Z offset + uint.Z (u32_to_u64 (W32 (length databuf)))))%Z
+              `max` (uint.Z offset + uint.Z (W64 $ uint.Z (W32 (length databuf)))))%Z
       with (length (take (uint.nat offset) state ++
                     databuf ++ drop (uint.nat offset + length databuf) state) : Z).
     2: {
-      rewrite /u32_to_u64. word_cleanup.
+      word_cleanup.
       destruct (decide (uint.Z offset + length databuf ≤ length state)%Z).
       { rewrite Z.max_l; last by lia.
         rewrite !app_length. rewrite drop_length.
@@ -219,7 +219,7 @@ Proof using Ptimeless.
         rewrite take_length_le; try lia.
         revert H3. word. }
     }
-    rewrite /u32_to_u64. word_cleanup.
+    word_cleanup.
     rewrite (firstn_all2 databuf); last by lia.
     replace (Z.to_nat (length databuf)) with (length databuf) by lia.
 
@@ -341,7 +341,7 @@ Proof using Ptimeless.
       iSplit; first done.
       iSplit; first done.
       iExactEq "HQ".
-      f_equal. f_equal. rewrite /u32_from_u64 /u32_to_u64. word.
+      f_equal.
     }
 
     { (* Simulate to get Q *)
